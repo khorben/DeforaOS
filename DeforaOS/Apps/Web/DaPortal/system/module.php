@@ -34,7 +34,10 @@ function module_cache_include($module, $cache)
 
 function module_id($module, $enable)
 {
-	if(($res = sql_query("select moduleid from daportal_modules where modulename='$module' and enable='$enable';")) == FALSE)
+	$query = "select moduleid, modulename from daportal_modules where modulename='$module'";
+	if($enable == 0 || $enable == 1)
+		$query .= " and enable='$enable'";
+	if(($res = sql_query($query)) == FALSE)
 		return 0;
 	return $res[0]["moduleid"];
 }
