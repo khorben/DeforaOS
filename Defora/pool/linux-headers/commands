@@ -9,7 +9,7 @@ make symlinks
 
 #install
 DESTDIR=$PWD/defora/${NAME}-${VERSION}
-mkdir -p $DESTDIR/usr/include/asm &&
+mkdir -p $DESTDIR/usr/{src,include/asm} &&
 cp include/asm/* $DESTDIR/usr/include/asm &&
 cp -R include/asm-generic $DESTDIR/usr/include &&
 cp -R include/linux $DESTDIR/usr/include &&
