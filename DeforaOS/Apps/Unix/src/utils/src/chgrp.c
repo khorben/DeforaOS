@@ -70,8 +70,10 @@ static int _chgrp_do_recursive(int opts, gid_t gid, char * file)
 
 	if((lstat(file, &st)) != 0)
 		return _chgrp_error(file, 1);
-	if(S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode))
-		_chgrp_do_recursive_do(opts, gid, file);
+	if(!S_ISDIR(st.st_mode))
+		return _chgrp_do(opts, gid, file);
+	if(!S_ISLNK(st.st_mode))
+		return _chgrp_do_recursive_do(opts, gid, file);
 	return 0;
 }
 
