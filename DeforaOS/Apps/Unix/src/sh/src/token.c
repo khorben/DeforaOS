@@ -37,3 +37,18 @@ void token_delete(Token * token)
 	free(token->string);
 	free(token);
 }
+
+
+void token_distinct(Token * token)
+{
+	int i;
+
+	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
+	{
+		if(strcmp(sTokenCode[i], token->string) == 0)
+		{
+			token->code = i;
+			return;
+		}
+	}
+}
