@@ -151,6 +151,11 @@ int main(int argc, char * argv[])
 			case 'u':
 				opts |= OPTS_u;
 				break;
+			case 'f':
+			case 's':
+				fprintf(stderr, "%s%c%s", "uniq: -", o,
+						": Not implemented yet\n");
+				return _usage();
 			default:
 				return _usage();
 		}
