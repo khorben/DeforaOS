@@ -64,11 +64,31 @@ Today I think my ideal operating system should be open source, micro-kernel base
 		<sect2>
 			<title>Programming languages</title>
 		</sect2>
+		<sect2>
+			<title>Applications</title>
+<!--
+- application engine
+- application interfaces
+- messages
+-->
+		</sect2>
+		<sect2>
+			<title>Graphical server</title>
+<!--
+- client-side toolkit
+- OpenGL only server
+-->
+		</sect2>
 	</sect1>
 </chapter>
 
 <chapter>
 	<title>Detailed design</title>
+<!--
+- filesystem
+- sessions
+- login process
+-->
 </chapter>
 
 <chapter>
