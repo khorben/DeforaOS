@@ -122,12 +122,16 @@ static int _exec_tcp(Service * s)
 		return inetd_error("fork", 1);
 	else if(pid > 0)
 		return close(fd);
+	if(s->id.uid && setuid(s->id.uid))
+		inetd_error("setuid", 0);
+	if(s->id.gid && setgid(s->id.gid))
+		inetd_error("setgid", 0);
 	if(close(0) != 0 || close(1) != 0 || dup2(fd, 0) != 0
 			|| dup2(fd, 1) != 1)
 		inetd_error("dup2", 0);
 	else
 	{
-		execv(s->program[0], s->program);
+		execv(s->program[0], &s->program[s->program[1] ? 1 : 0]);
 		inetd_error(s->program[0], 0);
 	}
 	exit(2);
