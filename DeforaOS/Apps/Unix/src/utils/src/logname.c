@@ -9,7 +9,7 @@
 /* usage */
 int usage(void)
 {
-	fprintf(stderr, "Usage: logname\n");
+	fprintf(stderr, "%s", "Usage: logname\n");
 	return 1;
 }
 
