@@ -71,6 +71,8 @@ typedef struct _GPuTTY {
 	GtkWidget * ac_connect;
 	/* about */
 	GtkWidget * ab_window;
+	GtkWidget * ab_vbox;
+	GtkWidget * ab_label;
 	GtkWidget * ab_close;
 } GPuTTY;
 

@@ -169,13 +169,28 @@ static void gputty_about(GtkWidget * widget, gpointer data)
 	if(g->ab_window == NULL)
 	{
 		g->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_container_set_border_width(GTK_CONTAINER(g->ab_window), 2);
 		gtk_window_set_title(GTK_WINDOW(g->ab_window), "About GPuTTY");
 		g_signal_connect(G_OBJECT(g->ab_window), "delete_event",
 				G_CALLBACK(gputty_about_closex), g);
+		g->ab_vbox = gtk_vbox_new(FALSE, 0);
+		gtk_container_add(GTK_CONTAINER(g->ab_window), g->ab_vbox);
+		g->ab_label = gtk_label_new("GPuTTY is a clone of PuTTY for Open Source desktops.\n\
+Project homepage is found at:\n\
+http://www.defora.org/index.php?page=gputty\n\
+This software has been written by:\n\
+- Pierre Pronchery <khorben@defora.org>\n\
+and mainly relies on the following software:\n\
+- Glib\n\
+- Gtk+\n\
+This project is released under the terms of the\n\
+GNU General Public License.\n\
+Credits go to every Free Software contributors.");
+		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_label, TRUE, TRUE, 0);
 		g->ab_close = gtk_button_new_with_label("Close");
 		g_signal_connect(G_OBJECT(g->ab_close), "clicked",
 				G_CALLBACK(gputty_about_close), g);
-		gtk_container_add(GTK_CONTAINER(g->ab_window), g->ab_close);
+		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_close, FALSE, FALSE, 0);
 	}
 	gtk_widget_show_all(g->ab_window);
 }
