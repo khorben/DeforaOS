@@ -115,13 +115,18 @@ style or interface.
 			<sect3>
 				<title>Documentation</title>
 				<para>
-FIXME: not decided yet
+The license for the documentation will certainly be more restrictive. It is currently:
 				</para>
+			<itemizedlist>
+				<listitem><para>any public documentation written about the project has to be submitted for approval to the project developpers.</para></listitem>
+				<listitem><para>anyone may write and submit documentation.</para></listitem>
+				<listitem><para>public documentation may be used freely as long as it remains synchronized and unmodified from the one on the project website, and it contains at least one link, on the frontmatter, pointing to the address of the official version on the project website.</para></listitem>
+			</itemizedlist>
 			</sect3>
 			<sect3>
 				<title>Other files</title>
 				<para>
-FIXME: depends if they're already copyrighted or not, etc, else not decided yet
+License terms for other kind of files used in the project are licensed individually.
 				</para>
 			</sect3>
 		</sect2>
@@ -135,14 +140,11 @@ The philosophy carried with the project licenses is to give as much freedom as p
 				<listitem><para>consequently, forks of concerned software, contained in this project, should not be started (so that development efforts can be shared as much as possible)</para></listitem>
 			</itemizedlist>
 			<para>
-These points are not absolutely mandatory because I am convinced that this development model is the best, even if as a software author I can't guarantee that I'll get rewarded for my work. In case of abuse of concerned software, I will certainly change this project license terms.
+These points are not absolutely mandatory because I am convinced that the free (as of freedom) software development model is the best, even if as a software author I can't guarantee that I'll get rewarded for my work. In case of abuse of concerned software, I will certainly change this project license terms.
 			</para>
 		</sect2>
 		<sect2>
 			<title>Other considerations</title>
-<!--
-- open => remain transparent, accept external contributions
--->
 			<para>
 Of course I am not supporting free software without a reason. There are even many actually, which I can sum up here:
 			</para>
@@ -150,9 +152,13 @@ Of course I am not supporting free software without a reason. There are even man
 				<listitem><para>interoperability: availability of the source code, transparency of the development process, and whenever possible strict adherence to the standards guarantee the users that they will be able to work even in heterogeneous environments.</para></listitem>
 				<listitem><para>security: availability of the source code guarantees that the software is exempt of intentional malicious code, and is possibly being used or auditable by competent persons.</para></listitem>
 				<listitem><para>perennity: availability of the source code guarantees that the software can be supported by third-party organisms at any time, and in a fair competition environment.</para></listitem>
+				<listitem><para>independance: the project is not related in any way to any software or hardware vendor, even though donations can be accepted (and improve hardware support for instance) the project decisions will not be influenced this way.</para></listitem>
 			</itemizedlist>
 			<para>
-Not everything is perfect though, there is one point I sometimes have to deal with, the global coherence of open-source projects. Of course they are not initially designed for a single platform, and it's the duty of software distributors to adapt them to their own environment. That's where I think there is a place for big improvement: I feel the need of a complete platform project: fully open source, which it would develop itself. And even then, to remain coherent this certainly requires a tight team, and smaller the better.
+Not everything is perfect though, there is one point I sometimes have to deal with, the global coherence of open-source projects. Of course they are not initially designed for a single platform, and it's the duty of software distributors to adapt them to their own environment. That's where I think there is a place for big improvement.
+			</para>
+			<para>
+I feel the need of a complete platform project, fully open source and autonomous. And even then, remaining coherent certainly requires a tight team, most probably as small as possible.
 			</para>
 		</sect2>
 	</sect1>
@@ -163,15 +169,13 @@ Not everything is perfect though, there is one point I sometimes have to deal wi
 			<sect3>
 				<title>UNIX</title>
 				<para>
-FIXME:
-- 200 distributions, few major applications per usage
-- simple concepts
-- light and flexible historical inheritances within more than 30 years
-- sophisticated yet flexible and clear setup
-- appropriate software versions handling
-- localization ease
-- things like they are
-- different development models, including open source...
+There are many UNIX systems developped and used worldwide. This OS design had proved to be very robust and is still considered as modern while it is more than 20 years old. Technically superior to most other systems, it is supported and more and more developped by the free software community, in its near entirety.
+				</para>
+				<para>
+A bug issue with UNIX is that there are as many different conceptions of the system as there are UNIX implementations and distribution. Both the developper and user suffer from inconsistency between these implementations, though it happens that they share a lot of high level software. There are even often not too many different implementations of major applications, which are also often among the best cross platform applications in their field.
+				</para>
+				<para>
+UNIX carries simple concepts of every part of the system. It has light and flexible historical inheritances within more than 30 years (some are more painful than others). It also provides a sophisticated yet flexible and clear setup, appropriate software versions handling, localization ease. It present things like they actually are, which fits experienced users and helps beginners. It allows very different development models, including open source bazaar.
 				</para>
 			</sect3>
 			<sect3>
