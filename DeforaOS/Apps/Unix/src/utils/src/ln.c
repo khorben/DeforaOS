@@ -12,7 +12,6 @@ extern int optind;
 #include <string.h>
 
 
-
 /* types */
 /* force link */
 typedef enum _LinkForce {
