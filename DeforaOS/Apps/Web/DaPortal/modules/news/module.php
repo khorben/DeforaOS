@@ -45,6 +45,23 @@ function count_news($enable)
 }
 
 
+function delete_news($id)
+{
+	global $administrator;
+	require_once('system/contents.php');
+
+	if($administrator != 1)
+		return 1;
+	if(!is_numeric($id))
+		return 1;
+	if(sql_query("select newsid from daportal_news where newsid='$id';") == NULL)
+		return 1;
+	sql_query("delete from daportal_news where newsid='$id';");
+	contents_delete($id);
+	return 0;
+}
+
+
 function display($title, $author, $date, $content)
 {
 	print("\t\t<div class=\"news\">
@@ -59,19 +76,14 @@ function display($title, $author, $date, $content)
 
 function display_admin($id, $title, $enable, $author, $date)
 {
+	static $chk = 0;
+
 	print("\t\t\t<tr>
-\t\t\t\t<td>$title</td>
+\t\t\t\t<td><input type=\"checkbox\"".($enable ? "" : " checked=checked")." name=\"id[".$chk++."]\" value=\"$id\"\"/></td>
+\t\t\t\t<td><a href=\"index.php?module=news&amp;id=$id\">$title</a></td>
 \t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
 \t\t\t\t<td>$date</td>
-\t\t\t\t<td>");
-	print("<form method=\"post\" action=\"index.php\" style=\"display: inline\">
-\t<input type=\"submit\" value=\"".($enable ? 'Disable' : 'Enable')."\">
-\t<input type=\"hidden\" name=\"module\" value=\"news\">
-\t<input type=\"hidden\" name=\"action\" value=\"moderate\">
-\t<input type=\"hidden\" name=\"newsid\" value=\"$id\">
-\t<input type=\"hidden\" name=\"enable\" value=\"".($enable ? "0" : "1")."\">
-</form>");
-	print("</td>
+\t\t\t\t<td>".($enable ? "Yes" : "No")."</td>
 \t\t\t</tr>\n");
 }
 
@@ -120,13 +132,23 @@ function news_admin()
 	$first = $offset + 1;
 	$last = $first + $npp - 1;
 	print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
-	print("\t\t<table>
-\t\t\t<tr>
-\t\t\t\t<th>Title</th>
-\t\t\t\t<th>Author</th>
-\t\t\t\t<th>Date</th>
-\t\t\t\t<th>Enabled</th>
-\t\t\t<tr/>\n");
+	print("\t\t<form action=\"index.php\" method=\"post\">
+<div class=\"headline\">
+\t<input type=\"hidden\" name=\"module\" value=\"news\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"moderate\"/>\n");
+	if($administrator == 1)
+		print("\t<input type=\"submit\" name=\"type\" value=\"Delete\"/>\n");
+	print("\t<input type=\"submit\" name=\"type\" value=\"Disable\"/>
+\t<input type=\"submit\" name=\"type\" value=\"Enable\"/>
+</div>
+<table>
+\t<tr>
+\t\t<th></th>
+\t\t<th>Title</th>
+\t\t<th>Author</th>
+\t\t<th>Date</th>
+\t\t<th>Enabled</th>
+\t<tr/>\n");
 	while(sizeof($res) >= 1)
 	{
 		display_admin($res[0]['newsid'],
@@ -136,7 +158,8 @@ function news_admin()
 				$res[0]['date']);
 		array_shift($res);
 	}
-	print("\t\t</table>\n");
+	print("</table>
+\t\t</form>\n");
 	print("\t\t<p>Page: ");
 	if($_GET['offset'] == 0)
 		print('1');
@@ -178,12 +201,11 @@ function news_summary()
 	global $moduleid;
 	$npp = 10; //news per page
 
-	if(($res = sql_query("select count(*) from daportal_news, daportal_contents where moduleid='$moduleid' and contentid=newsid and enable='1';")) == NULL)
+	if(($count = count_news(1)) == 0)
 	{
 		print("\t\t<p>There aren't any news yet.</p>\n");
 		return 0;
 	}
-	$count = $res[0]['count'];
 	$offset = is_numeric($_GET['offset']) ? $_GET['offset'] * $npp : 0;
 	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
 	{
@@ -237,6 +259,8 @@ function news_dump()
 
 function news_id($id)
 {
+	global $administrator, $moderator;
+
 	$query = "select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$id' and newsid=contentid and author=userid";
 	if($administrator == 0 && $moderator == 0)
 		$query .= " and enable='1'";
@@ -285,6 +309,39 @@ function news_last($number)
 }
 
 
+function _moderate_delete()
+{
+	$id = $_POST['id'];
+	while(sizeof($id) >= 1)
+	{
+		delete_news($id[0]);
+		array_shift($id);
+	}
+	return 0;
+}
+
+function _moderate_disable()
+{
+	$id = $_POST['id'];
+	while(sizeof($id) >= 1)
+	{
+		contents_disable($id[0]);
+		array_shift($id);
+	}
+	return 0;
+}
+
+function _moderate_enable()
+{
+	$id = $_POST['id'];
+	while(sizeof($id) >= 1)
+	{
+		contents_enable($id[0]);
+		array_shift($id);
+	}
+	return 0;
+}
+
 function news_moderate()
 {
 	global $administrator, $moderator;
@@ -294,12 +351,18 @@ function news_moderate()
 		return 0;
 	if($administrator != 1 && $moderator != 1)
 		return 0;
-	$newsid = $_POST['newsid'];
-	$enable = $_POST['enable'];
-	if($enable == '1')
-		contents_enable($newsid);
-	else
-		contents_disable($newsid);
+	switch($_POST['type'])
+	{
+		case 'Delete':
+			_moderate_delete();
+			break;
+		case 'Disable':
+			_moderate_disable();
+			break;
+		case 'Enable':
+			_moderate_enable();
+			break;
+	}
 	header('Location: index.php?module=news&action=admin');
 	return 0;
 }
