@@ -153,6 +153,26 @@ function user_default()
 }
 
 
+function user_dump()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	if(($res = sql_query("select userid, username, password, email, homepage from daportal_users;")) == NULL)
+	{
+		print(";error while dumping users\n");
+		return 0;
+	}
+	while(sizeof($res) >= 1)
+	{
+		print("insert into daportal_users (userid, username, password, email, homepage) values ('".$res[0]["userid"]."', '".$res[0]["username"]."', '".$res[0]["password"]."', '".$res[0]["email"]."', '".$res[0]["homepage"]."');\n");
+		array_shift($res);
+	}
+	return 0;
+}
+
+
 function user_install()
 {
 	//FIXME
@@ -236,6 +256,8 @@ function user_uninstall()
 
 switch($action)
 {
+	case "dump":
+		return user_dump();
 	case "install":
 		return user_install();
 	case "login":
