@@ -204,7 +204,7 @@ function news_view()
 	global $administrator, $moderator;
 
 	print("\t\t<h1>News</h1>\n");
-	$newsid = $_GET["newsid"];
+	$newsid = $_GET["id"];
 	if(($res = sql_query("select title, content, date, enable, username from daportal_news, daportal_contents, daportal_users where newsid='$newsid' and newsid=contentid and author=userid;")) == FALSE
 			|| (($res[0]["enable"] == "f" && $administrator != 1)
 			&& ($res[0]["enable"] == "f" && $moderator != 1)))
