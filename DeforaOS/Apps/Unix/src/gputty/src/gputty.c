@@ -35,7 +35,6 @@ GPuTTY * gputty_new(void)
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->hn_frame), 2);
 	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->hn_frame, FALSE, FALSE, 0);
 	gputty->hn_vbox = gtk_vbox_new(FALSE, 0);
-	gtk_container_set_border_width(GTK_CONTAINER(gputty->hn_vbox), 2);
 	gtk_container_add(GTK_CONTAINER(gputty->hn_frame), gputty->hn_vbox);
 	gputty->hn_hbox = gtk_hbox_new(FALSE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->hn_hbox), 2);
