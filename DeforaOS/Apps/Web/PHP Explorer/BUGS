@@ -14,7 +14,7 @@ The following list of features are planned:
 - improve the javascript tree collapsing function (it currently parses the whole
   sub-tree to hide the adequate folders, which is everything but optimal);
 - detect the browsers capacities as a file viewer, to allow direct visualization
-  of the adequate files;
+  of the adequate files (partially implemented);
 - allow files deletion, renaming and upload;
 - find a way to securely run the Explorer with different UIDs, with suExec for
   instance;
