@@ -62,9 +62,10 @@ function user_default()
 {
 	global $userid, $username, $administrator, $moderator;
 
+	print("\t\t<h1><img src=\"modules/user/icon.png\" alt=\"user\"/> ");
 	if($userid == 0)
 	{
-		print("\t\t<h1>User login</h1>
+		print("User login</h1>
 \t\t<form method=\"post\" action=\"index.php\">
 \t\t\t<div>
 \t\t\t\tUsername:<br/><input type=\"text\" name=\"username\" size=\"8\"/><br/>
@@ -92,11 +93,11 @@ function user_default()
 	{
 		if(($res = sql_query("select email, homepage, moderator from daportal_users where username='$user';")) == FALSE)
 		{
-			print("\t\t<h1>User information</h1>\n
+			print("User information</h1>\n
 \t\t<p>Unknown user.</p>\n");
 			return 0;
 		}
-		print("\t\t<h1>User information for $user</h1>\n");
+		print("User information for $user</h1>\n");
 		if($res[0]["moderator"] == "t")
 			print("\t\t<p>$user is a moderator.</p>\n");
 		if($res[0]["email"] != "")
@@ -105,9 +106,9 @@ function user_default()
 			print("\t\t<div><b>Homepage:</b> <a href=\"".$res[0]["homepage"]."\">".$res[0]["homepage"]."</a></div>\n");
 		return 0;
 	}
-	print("\t\t<h1>Homepage</h1>
+	print("Homepage</h1>
 \t\t<div>
-\t\t\tWelcome to your homepage here, $username.<br/>
+\t\t\tWelcome to your homepage, $username.<br/>
 \t\t\t<br/>\n");
 	if($administrator == 1)
 		print("\t\t\tYou are an <a href=\"index.php?module=admin\">administrator</a>.<br/>\n");
