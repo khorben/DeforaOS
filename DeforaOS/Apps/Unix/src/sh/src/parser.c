@@ -665,6 +665,8 @@ static Token ** separator(Token ** tokens)
 
 /* sequential_sep */
 static Token ** sequential_sep(Token ** tokens)
+	/* ";" linebreak
+	 * | newline_list */
 {
 	/* FIXME */
 	return NULL;
