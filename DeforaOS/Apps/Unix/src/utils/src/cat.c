@@ -21,6 +21,7 @@ typedef enum _OutputDelay {
  * 	returns:
  * 		0	successful
  * 		2	an error occured */
+static int _cat_error(char * message, int ret);
 static void _cat_file(FILE * fp, OutputDelay od);
 static int _cat(OutputDelay od, int argc, char * argv[])
 {
@@ -40,8 +41,7 @@ static int _cat(OutputDelay od, int argc, char * argv[])
 			fp = stdin;
 		else if((fp = fopen(argv[i], "r")) == NULL)
 		{
-			perror("fopen");
-			res = 2;
+			res = _cat_error(argv[i], 2);
 			continue;
 		}
 		_cat_file(fp, od);
@@ -49,6 +49,13 @@ static int _cat(OutputDelay od, int argc, char * argv[])
 			fclose(fp);
 	}
 	return res;
+}
+
+static int _cat_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "cat: ");
+	perror(message);
+	return ret;
 }
 
 static int _write_nonbuf(int c);
