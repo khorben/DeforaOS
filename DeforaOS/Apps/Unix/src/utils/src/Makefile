@@ -1,4 +1,4 @@
-TARGETS	= basename cat chgrp chmod chown cmp cp dirname du echo false head id kill link ln logname ls mkdir mkfifo pwd rmdir sleep strings test time true tty uname uniq unlink wc
+TARGETS	= basename cat chgrp chmod chown cmp cp dirname du echo false head id kill link ln logname ls mkdir mkfifo pwd rmdir sleep strings test time touch true tty uname uniq unlink wc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 CC	= cc
@@ -218,6 +218,14 @@ time: $(time_OBJS)
 time.o: time.c
 	$(CC) $(time_CFLAGS) -c time.c
 
+touch_OBJS= touch.o
+touch_CFLAGS=$(CFLAGSF) $(CFLAGS)
+touch: $(touch_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o touch $(touch_OBJS)
+
+touch.o: touch.c
+	$(CC) $(touch_CFLAGS) -c touch.c
+
 true_OBJS= true.o
 true_CFLAGS=$(CFLAGSF) $(CFLAGS)
 true: $(true_OBJS)
@@ -268,7 +276,7 @@ wc.o: wc.c
 
 
 clean:
-	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cmp_OBJS) $(cp_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(pwd_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(test_OBJS) $(time_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS)
+	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cmp_OBJS) $(cp_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(pwd_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
