@@ -1,4 +1,4 @@
-SUBDIRS	= sh
+SUBDIRS	= init sh
 
 
 all clean distclean:
