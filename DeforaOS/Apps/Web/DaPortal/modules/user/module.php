@@ -39,18 +39,29 @@ function admin_list()
 		return 0;
 	}
 	$count = $res[0]['count'];
-	if(($res = sql_query('select username from daportal_users order by username asc limit '.$upp.' offset '.$offset.';')) == FALSE)
+	if(($res = sql_query('select userid, username from daportal_users order by username asc limit '.$upp.' offset '.$offset.';')) == FALSE)
 	{
 		print("</h3>\n\t\t<p>No users found.</p>\n");
 		return 0;
 	}
 	print(' '.($offset + 1).' to '.($offset + $upp)."</h3>\n");
+	print("\t\t<form method=\"post\" action=\"index.php\">
+<div class=\"headline\">
+\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"moderate\"/>
+\t<input type=\"submit\" name=\"type\" value=\"Delete\"/>
+</div>
+<table>
+\t<tr><th></th><th>Username</th></tr>\n");
+	$chk = 0;
 	while(sizeof($res) >= 1)
 	{
 		$username = $res[0]['username'];
-		print("<a href=\"index.php?module=user&amp;action=admin&amp;username=$username\">$username</a><br/>\n");
+		print("\t\t<tr><td><input type=\"checkbox\" name=\"id[".($chk++)."]\" value=\"".$res[0]['userid']."\"/></td><td><a href=\"index.php?module=user&amp;action=admin&amp;username=$username\">$username</a></td></tr>\n");
 		array_shift($res);
 	}
+	print("</table>
+\t\t</form>\n");
 	print("\t\t<p>\n");
 	if($_GET['offset'] == 0)
 		print('1');
@@ -281,6 +292,22 @@ function user_logout()
 	sql_query("delete from daportal_sessions where userid='$userid' and sessionid='$sessionid' and ip='".$_SERVER['REMOTE_ADDR']."';");
 	header("Location: index.php");
 	return 0;
+}
+
+
+function user_moderate()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 1;
+	$id = $_POST['id'];
+	while(sizeof($id) >= 1)
+	{
+		$userid = array_shift($id);
+		sql_query("delete from daportal_users where userid='$userid';");
+	}
+	header('Location: index.php?module=user&action=admin');
 }
 
 

@@ -38,6 +38,8 @@ switch($action)
 		return user_login();
 	case 'logout':
 		return user_logout();
+	case 'moderate':
+		return user_moderate();
 	case 'register':
 		return user_register();
 	case 'sessions':
