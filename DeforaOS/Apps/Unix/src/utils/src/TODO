@@ -1,3 +1,9 @@
 id:
 - write more readable code
 - check if it's complete
+
+kill:
+- get signal number from its name
+
+ls:
+- only has basic functionalities
