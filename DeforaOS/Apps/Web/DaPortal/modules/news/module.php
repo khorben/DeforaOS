@@ -101,13 +101,16 @@ function news_admin()
 
 function news_default()
 {
-	global $username, $moduleid;
+	global $username, $moduleid, $administrator, $moderator;
 
 	print("\t\t<h1><img src=\"modules/news/icon.png\" alt=\"news\"/>News</h1>\n");
 	if(is_numeric($_GET["id"]))
 	{
 		$newsid = $_GET["id"];
-		if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$newsid' and enable='1' and newsid=contentid and author=userid;")) == FALSE)
+		$query = "select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$newsid' and newsid=contentid and author=userid";
+		if($administrator == 0 && $moderator == 0)
+			$query .= " and enable='1'";
+		if(($res = sql_query($query)) == FALSE)
 		{
 			print("\t\t<p>Unknown news.</p>\n");
 			return 0;
@@ -296,27 +299,8 @@ function news_uninstall()
 
 	if($administrator != 1)
 		return 0;
+	//FIXME remove linked content in daportal_contents
 	sql_table_drop("daportal_news");
-	return 0;
-}
-
-
-function news_view()
-{
-	global $administrator, $moderator;
-
-	print("\t\t<h1>News</h1>\n");
-	$newsid = $_GET["id"];
-	if(!is_numeric($newsid) || ($res = sql_query("select title, content, date, enable, username from daportal_news, daportal_contents, daportal_users where newsid='$newsid' and newsid=contentid and author=userid;")) == FALSE
-			|| (($res[0]["enable"] == "f" && $administrator != 1)
-			&& ($res[0]["enable"] == "f" && $moderator != 1)))
-	{
-	print("\t\t<div>
-\t\t\tUnknown news.
-\t\t</div>\n");
-		return 0;
-	}
-	display($res[0]["title"], $res[0]["username"], $res[0]["date"], $res[0]["content"]);
 	return 0;
 }
 
@@ -339,8 +323,6 @@ switch($action)
 		return news_thanks();
 	case "uninstall":
 		return news_uninstall();
-	case "view":
-		return news_view();
 	default:
 		return news_default();
 }
