@@ -1,4 +1,4 @@
-TARGETS	= false id logname true
+TARGETS	= basename dirname false id logname true
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -8,6 +8,12 @@ RM	= rm -f
 
 
 all: $(TARGETS)
+
+basename: basename.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o basename basename.o
+
+dirname: dirname.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o dirname dirname.o
 
 false: false.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o false false.o
