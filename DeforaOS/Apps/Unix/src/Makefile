@@ -1,4 +1,4 @@
-SUBDIRS	= init mktemp sh utils
+SUBDIRS	= init makepasswd mktemp sh utils
 
 
 all clean distclean:
