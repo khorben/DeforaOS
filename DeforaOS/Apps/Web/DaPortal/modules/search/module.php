@@ -53,7 +53,7 @@ function search_default()
 \t\t</form>\n");
 	if($_GET["q"] == "")
 		return 0;
-	if(($res = sql_query("select moduleid, contentid, title from daportal_contents where enable='1' content like '%".$_GET["q"]."%';")) == FALSE)
+	if(($res = sql_query("select moduleid, contentid, title from daportal_contents where enable='1' and content like '%".$_GET["q"]."%';")) == FALSE)
 	{
 		print("\t\t<div>No matches, sorry.</div>\n");
 		return 0;
