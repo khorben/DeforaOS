@@ -44,22 +44,24 @@ Today I think my ideal operating system should be open source, micro-kernel base
 	<sect1>
 		<title>Open source</title>
 		<sect2>
+			<title>Project licenses</title>
+			<para>
+FIXME: source code, documentation, ...
+			</para>
+		</sect2>
+		<sect2>
 			<title>Fundamental liberties</title>
 			<para>
-FIXME: free software definition
+FIXME: free software definition, ...
 			</para>
 		</sect2>
 		<sect2>
-			<title>Other advantages</title>
+			<title>Other considerations</title>
 			<para>
-FIXME: interoperability, security, ...
+FIXME:
+- advantages: interoperability, security, ...
+- issues: coherence (in community development)
 			</para>
-		</sect2>
-		<sect2>
-			<title>Issues</title>
-			<para>
-FIXME: often in community development, coherence
-			<para>
 		</sect2>
 	</sect1>
 	<sect1>
