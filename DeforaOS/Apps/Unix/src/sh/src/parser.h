@@ -39,4 +39,9 @@ int parser_check(Parser * parser, TokenCode tokencode);
 int parser_check_set(Parser * parser, TokenCode codeset[]);
 int parser_check_word(Parser * parser, char const * word);
 
+/* rules */
+void parser_rule1(Parser * parser);
+void parser_rule7a(Parser * parser);
+void parser_rule7b(Parser * parser);
+
 #endif /* !_PARSER_H */

@@ -62,6 +62,7 @@ extern TokenCode CS_COMPOUND_COMMAND[];
 extern TokenCode CS_COMPOUND_LIST[];
 extern TokenCode CS_DO_GROUP[];
 extern TokenCode CS_FUNCTION_BODY[];
+extern TokenCode CS_FUNCTION_DEFINITION[];
 extern TokenCode CS_IN[];
 extern TokenCode CS_IO_FILE[];
 extern TokenCode CS_IO_HERE[];

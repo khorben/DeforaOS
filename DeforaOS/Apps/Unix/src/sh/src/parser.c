@@ -56,6 +56,7 @@ void parser_error(Parser * parser, char const * format, ...)
 {
 	va_list vl;
 
+	fprintf(stderr, "%s", "sh: ");
 	va_start(vl, format);
 	vfprintf(stderr, format, vl);
 	va_end(vl);
@@ -98,35 +99,14 @@ int parser_test(Parser * parser, TokenCode tokencode)
 	return 0;
 }
 
-static void _parser_distinct(Parser * parser);
 int parser_test_set(Parser * parser, TokenCode codeset[])
 {
 	unsigned int i;
 
 	for(i = 0; codeset[i] != TC_NULL; i++)
-	{
-		if(codeset[i] == TC_WORD && parser_code(parser) == TC_TOKEN)
-			_parser_distinct(parser);
 		if(codeset[i] == parser_code(parser))
 			return 1;
-	}
 	return 0;
-}
-
-static void _parser_distinct(Parser * parser)
-{
-	int i;
-
-	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
-	{
-		if(strcmp(parser->token->str, sTokenCode[i]) == 0)
-		{
-			parser->token->code = i;
-			return;
-		}
-	}
-	/* FIXME assignment words */
-	parser->token->code = TC_WORD;
 }
 
 int parser_test_word(Parser * parser, char const * word)
@@ -147,9 +127,9 @@ int parser_check(Parser * parser, TokenCode tokencode)
 		return 1;
 	}
 	if(sTokenCode[tokencode] != NULL)
-		parser_error(parser, "%s%s", "Expected ", sTokenCode[tokencode]);
+		parser_error(parser, "%s%s", "expected ", sTokenCode[tokencode]);
 	else
-		parser_error(parser, "%s%d", "Expected code #", tokencode);
+		parser_error(parser, "%s%d", "expected code #", tokencode);
 	return 0;
 }
 
@@ -157,7 +137,7 @@ int parser_check_set(Parser * parser, TokenCode codeset[])
 {
 	if(!parser_test_set(parser, codeset))
 	{
-		parser_error(parser, "Expected set @%p", codeset);
+		parser_error(parser, "expected set @%p", codeset);
 		return 0;
 	}
 	return 1;
@@ -167,9 +147,55 @@ int parser_check_word(Parser * parser, char const * word)
 {
 	if(!parser_test_word(parser, word))
 	{
-		parser_error(parser, "Expected word \"%s\"", word);
+		parser_error(parser, "expected word \"%s\"", word);
 		return 0;
 	}
 	parser_scan(parser);
 	return 1;
+}
+
+
+/* rules */
+void parser_rule1(Parser * parser)
+{
+	int i;
+
+	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
+	{
+		if(strcmp(parser->token->str, sTokenCode[i]) == 0)
+		{
+			parser->token->code = i;
+			return;
+		}
+	}
+	parser->token->code = TC_WORD;
+}
+
+void parser_rule7a(Parser * parser)
+{
+	char * p;
+
+	for(p = parser->token->str; *p && *p != '='; p++);
+	if(*p == '=')
+		parser_rule7b(parser);
+	else
+		parser_rule1(parser);
+}
+
+void parser_rule7b(Parser * parser)
+{
+	char * p = parser->token->str;
+
+	if(*p == '=')
+	{
+		parser->token->code = TC_WORD;
+		return;
+	}
+	for(p++; *p && *p != '=' && ((*p >= 'a' && *p <= 'z')
+			|| (*p >= 'A' && *p <= 'Z')
+			|| *p == '_'); p++);
+	if(!*p || *p == '=')
+		parser->token->code = TC_ASSIGNMENT_WORD;
+	else
+		parser->token->code = TC_WORD;
 }

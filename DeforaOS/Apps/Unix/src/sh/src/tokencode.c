@@ -61,7 +61,10 @@ TokenCode CS_CMD_NAME[]		= {
 	TC_NULL
 };
 TokenCode CS_CMD_PREFIX[]	= {
+	/* io_redirect */
 	TC_IO_NUMBER,
+	/* ASSIGNMENT WORD */
+	TC_ASSIGNMENT_WORD,
 	TC_NULL
 };
 TokenCode CS_CMD_SUFFIX[]	= {
@@ -105,15 +108,39 @@ TokenCode CS_IN[]		= {
 	TC_NULL
 };
 TokenCode CS_IO_FILE[]		= {
+	/* '<' */
+	TC_OP_LESS,
+	/* LESSAND */
+	TC_OP_LESSAND,
+	/* '>' */
+	TC_OP_GREAT,
+	/* GREATAND */
+	TC_OP_GREATAND,
+	/* DGREAT */
+	TC_OP_DGREAT,
+	/* LESSGREAT */
+	TC_OP_LESSGREAT,
+	/* CLOBBER */
+	TC_OP_CLOBBER,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_IO_HERE[]		= {
+	/* DLESS */
+	TC_OP_DLESS,
+	/* DLESSDASH */
+	TC_OP_DLESSDASH,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_IO_REDIRECT[]	= {
+	/* io_file */
+	TC_OP_LESS, TC_OP_LESSAND, TC_OP_GREAT, TC_OP_GREATAND,
+	TC_OP_DGREAT, TC_OP_LESSGREAT, TC_OP_CLOBBER,
+	/* IO_NUMBER */
 	TC_IO_NUMBER,
+	/* io_here */
+	TC_OP_DLESS, TC_OP_DLESSDASH,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_LINEBREAK[]	= {
 	TC_NEWLINE,
 	TC_NULL

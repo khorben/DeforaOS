@@ -158,7 +158,7 @@ static void command(Parser * p)
 #ifdef DEBUG
 	grammar_debug("command", p);
 #endif
-/*	parser_distinct(p); */
+	parser_rule1(p);
 	if(parser_test_set(p, CS_SIMPLE_COMMAND))
 		return simple_command(p);
 	if(parser_test_set(p, CS_COMPOUND_COMMAND))
@@ -168,7 +168,9 @@ static void command(Parser * p)
 			return redirect_list(p);
 		return;
 	}
-	function_definition(p);
+	if(parser_check_set(p, CS_FUNCTION_DEFINITION))
+		return function_definition(p);
+	parser_error(p, "expected a simple or compound command, or a function");
 }
 
 
@@ -497,8 +499,8 @@ static void simple_command(Parser * p)
 		}
 		return;
 	}
-	if(!parser_check_set(p, CS_CMD_NAME))
-		return;
+	if(!parser_test_set(p, CS_CMD_NAME))
+		return parser_error(p, "expected a prefix or a name");
 	cmd_name(p);
 	if(parser_test_set(p, CS_CMD_SUFFIX))
 		cmd_suffix(p);
@@ -512,6 +514,7 @@ static void cmd_name(Parser * p)
 #ifdef DEBUG
 	grammar_debug("cmd_name", p);
 #endif
+	parser_rule7a(p);
 	/* FIXME */
 	parser_scan(p);
 }
@@ -524,6 +527,7 @@ static void cmd_word(Parser * p)
 #ifdef DEBUG
 	grammar_debug("cmd_word", p);
 #endif
+	parser_rule7b(p);
 	/* FIXME */
 	parser_scan(p);
 }
