@@ -6,8 +6,16 @@
 #include <stdio.h>
 
 
+/* dirname */
+static int _dirname(char * arg)
+{
+	printf("%s\n", dirname(arg));
+	return 0;
+}
+
+
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: dirname string\n");
 	return 1;
@@ -17,10 +25,7 @@ static int usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	/* check for errors */
 	if(argc != 2)
-		return usage();
-	/* dirname */
-	printf("%s\n", dirname(argv[1]));
-	return 0;
+		return _usage();
+	return _dirname(argv[1]);
 }
