@@ -45,13 +45,112 @@ Today I think my ideal operating system should be open source, micro-kernel base
 		<sect2>
 			<title>Project licenses</title>
 			<para>
-FIXME: source code, documentation, ...
+This section contains the major software licenses used in the project, either for application source code, documentation, or any other file contained in the system.
 			</para>
+			<para>
+The choices of these licenses are explained in the next section of this document.
+			</para>
+			<sect3>
+				<title>Global source code</title>
+				<para>
+The terms of this license are extracted from the "Open Source Definition", thus it should be compatible with the original terms.
+				</para>
+				<blockquote>
+DeforaOS project licensing terms
+--------------------------------
+
+
+
+Preamble
+--------
+"the author" in this license is myself, Pierre Pronchery.
+
+
+Introduction
+------------
+The use of the software distributed as part of the DeforaOS project must comply
+with the following criteria. The concerned software includes at least the
+following (unless explictly mentionned by the author):
+- every software contained in the SourceForge project "DeforaOS".
+- every software distributed on the DeforaOS project website,
+  "http://www.defora.org", belonging to the author.
+
+
+1. Free Redistribution
+----------------------
+Anyone is free to sell or give away the software, as a component of an
+aggregate software distribution containing programs from several different
+sources. Not royalty or any fee is required to do this.
+
+
+2. Source Code
+--------------
+Distribution of the software is allowed in source code as well as compiled form.
+Where some form of the product is not distributed with source code, there must
+be a well-publicized means of obtaining the source code, not exceeding the cost
+of an average internet download. The preferred form of modification is of source
+code, via the unified diff format. It is not allowed to obfuscate source code in
+any way, or to use any intermediate compilation format.
+
+
+3. Derived Works
+----------------
+Modifications and derived works are tolerated. They must be distributed
+according to the terms of this license. Moreover, the author kindly asks anyone
+working on such modifications or works to keep him informed of these. The aim is
+to let them benefit to everyone, and keep the best version of the software, and
+related works, available at the original place (as a matter of global coherence,
+and ease of use).
+
+
+4. Integrity Of The Author's Source Code
+----------------------------------------
+Any modification of the source code, must be distributed as patch files,
+according to the unified diff format. Distribution of software built from
+modified source code is allowed. Derived works must carry the same name, and
+must modify the version number this way: "original.version.number-vendor_name".
+
+
+5. No Discrimination Against Persons Or Groups
+----------------------------------------------
+This license doesn't discriminate against any person or group of persons.
+
+
+6. No Discrimination Against Fields Of Endeavor
+-----------------------------------------------
+This license does not restrict anyone from making use of the software in a
+specific field of endeavor.
+
+
+7. Distribution Of License
+--------------------------
+The rights attached to the software apply to all to whom the software is
+redistributed, without the need for execution of an additional license by those
+parties.
+
+
+8. License Must Not Be Specific To A Product
+--------------------------------------------
+The rights attached to the program do not depend of any other licensing rights.
+
+
+9. License Must Not Restrict Other Software
+-------------------------------------------
+This license does not place restrictions on other software that is distributed
+along with the licensed software.
+
+
+10. License Must Be Technology-Neutral
+--------------------------------------
+No provision of the license may be predicated on any individual technology or
+style or interface.
+				</blockquote>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Fundamental liberties</title>
 			<para>
-FIXME: free software definition, ...
+FIXME: free software definition, licenses choices, ...
 			</para>
 		</sect2>
 		<sect2>
