@@ -1,7 +1,7 @@
 configure 0.0.1 release notes
 -----------------------------
 
-configure automatically generated Makefiles from a project definition file.
+configure automatically generates Makefiles from a project definition file.
 
 configure is Copyright (c) 2004 Pierre Pronchery
 It is shipped under the terms of the GPL license, which you may read in the
