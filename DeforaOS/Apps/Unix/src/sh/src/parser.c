@@ -330,7 +330,9 @@ static Token ** if_clause(Token ** tokens)
 
 
 /* while_clause */
+static Token ** do_group(Token ** tokens);
 static Token ** while_clause(Token ** tokens)
+	/* While compound_list do_group */
 {
 	/* FIXME */
 	return NULL;
@@ -339,6 +341,7 @@ static Token ** while_clause(Token ** tokens)
 
 /* until_clause */
 static Token ** until_clause(Token ** tokens)
+	/* Until compound_list do_group */
 {
 	/* FIXME */
 	return NULL;
@@ -347,6 +350,16 @@ static Token ** until_clause(Token ** tokens)
 
 /* brace_group */
 static Token ** brace_group(Token ** tokens)
+	/* Lbrace compound_list Rbrace */
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* do_group */
+static Token ** do_group(Token ** tokens)
+	/* Do compound_list Done */
 {
 	/* FIXME */
 	return NULL;
