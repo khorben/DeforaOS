@@ -129,6 +129,7 @@ Today I think my ideal operating system should be open source, micro-kernel base
   * servers: network services engines and interfaces
 
   * posix compliant environment: unix apps
+    eventually, write the environment as an application engine, where usual apps are different interfaces...
 -->
 </chapter>
 
