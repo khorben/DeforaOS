@@ -69,26 +69,49 @@ FIXME: often in community development, coherence
 			<sect3>
 				<title>UNIX</title>
 				<para>
-FIXME
+FIXME:
+- 200 distributions, few major applications per usage
+- simple concepts
+- light and flexible historical inheritances within more than 30 years
+- sophisticated yet flexible and clear setup
+- appropriate software versions handling
+- localization ease
+- things like they are
+- different development models, including open source...
 				</para>
 			</sect3>
 			<sect3>
 				<title>Windows</title>
 				<para>
-FIXME
+FIXME:
+- few distributions, 200 major applications per usage
+- complex concepts
+- heavy historical inheritances within a few years
+- registry
+- DLL hell
+- localization issues
+- original terms renamed and appropriated
+- closed and lazy development where monopoly, aggressive standards conformance policy else (and often buggy too)
 				</para>
 			</sect3>
 			<sect3>
 				<title>Others</title>
 				<para>
-FIXME
+FIXME:
+- so few...
 				</para>
 			</sect3>
 		</sect2>
 		<sect2>
 			<title>User orientation</title>
 			<para>
-FIXME
+FIXME: always think like the users, and listen to them...
+			</para>
+		</sect2>
+		<sect2>
+			<title>Usage samples</title>
+			<para>
+FIXME: a few words, and conceptual screen shots, about it would feel like to use the system...
 			</para>
 		</sect2>
 <!--
