@@ -82,7 +82,8 @@ function admin_admin()
 		readdir($dir);
 		while(($dirname = readdir($dir)) != FALSE)
 		{
-			if(!is_file('modules/'.$dirname.'/module.php'))
+			if(!is_dir('modules/'.$dirname)
+					|| !is_file('modules/'.$dirname.'/module.php'))
 				continue;
 			if($installed[$dirname] == 1)
 				continue;
