@@ -62,7 +62,8 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'l':
-				fprintf(stderr, "%s", "Not yet implemented\n");
+				fprintf(stderr, "%s%c%s", "kill: -", o,
+						": Not yet implemented\n");
 				return _usage();
 			case 's':
 				/* FIXME signal_name expected, NaN... */
