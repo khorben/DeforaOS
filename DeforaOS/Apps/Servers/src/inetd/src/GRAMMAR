@@ -1,0 +1,28 @@
+config:		{ newline } service_list { newline }
+
+service:	service_name space socket space protocol space wait space
+		id space program newline
+
+space:		SPACE { SPACE }
+
+newline: 	[ space ] NEWLINE
+
+service_name:	WORD
+
+socket:		"stream" | "dgram"
+
+protocol:	"tcp" | "udp"
+
+wait:		"wait" | "nowait"
+
+id:		user [ "." group ]
+
+user:		NUMBER | WORD
+
+group:		NUMBER | WORD
+
+program:	program_name [ space program_argument_list ]
+
+program_name:	WORD
+
+program_argument_list:	WORD [ space program_argument ]
