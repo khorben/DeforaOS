@@ -109,7 +109,7 @@ require_once("system/raw.php");
 raw_require("html/xhtml.html");
 print("\t<head>
 \t\t<title>DaPortal</title>
-\t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/dark.css\"/>
+\t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/default.css\"/>
 \t</head>
 \t<body>\n");
 if($_GET["module"] != "")
