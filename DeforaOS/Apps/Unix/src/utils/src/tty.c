@@ -34,7 +34,7 @@ int usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	/* parse command line arguments */
+	/* check for errors */
 	if(argc != 1)
 		return usage();
 	return tty();
