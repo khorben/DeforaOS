@@ -51,4 +51,6 @@ void token_distinct(Token * token)
 			return;
 		}
 	}
+	/* FIXME assignment words */
+	token->code = TC_WORD;
 }
