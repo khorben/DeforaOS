@@ -18,7 +18,7 @@
 
 
 
-$title = "News";
+$title = "<a href=\"index.php?module=news\">News</a>";
 
 
 $content = "<ul>\n";

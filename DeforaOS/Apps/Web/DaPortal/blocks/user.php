@@ -18,7 +18,7 @@
 
 
 
-$title = "Login";
+$title = "<a href=\"index.php?module=user\">Login</a>";
 
 global $userid, $username, $administrator;
 if($userid == 0)
