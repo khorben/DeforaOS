@@ -18,6 +18,7 @@ dist: distclean
 	tar -czf $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/INSTALL \
