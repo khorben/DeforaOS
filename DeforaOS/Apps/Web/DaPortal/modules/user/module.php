@@ -88,6 +88,21 @@ function user_default()
 \t\t</div>\n");
 		return 0;
 	}
+	if(($user = $_GET["username"]) != "")
+	{
+		if(($res = sql_query("select email, homepage, moderator from daportal_users where username='$user';")) == FALSE)
+		{
+			print("\t\t<h1>User information</h1>\n
+\t\t<p>Unknown user.</p>\n");
+			return 0;
+		}
+		print("\t\t<h1>User information for $user</h1>\n");
+		if($res[0]["moderator"] == "t")
+			print("\t\t<p>$user is a moderator.</p>\n");
+		print("\t\t<div><b>E-mail address</b>: ".$res[0]["email"]."</div>
+\t\t<div><b>Homepage:</b> ".$res[0]["homepage"]."</div>\n");
+		return 0;
+	}
 	print("\t\t<h1>Homepage</h1>
 \t\t<div>
 \t\t\tWelcome to your homepage here, $username.<br/>
