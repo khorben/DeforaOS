@@ -30,7 +30,7 @@ function display($title, $author, $date, $content)
 {
 	print("\t\t<div class=\"news\">
 \t\t\t<div class=\"news_title\">$title</div>
-\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=user&user=$author\">$author</a>, on $date</div>
+\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=news&username=$author\">$author</a>, on $date</div>
 \t\t\t<div class=\"news_content\">$content</div>
 \t\t</div>\n");
 }
@@ -83,18 +83,40 @@ function news_admin()
 
 function news_default()
 {
+	global $username;
+
 	print("\t\t<h1>News</h1>\n");
-	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where enable='1' and newsid=contentid and author=userid order by date desc;")) == FALSE)
+	if(is_numeric($_GET["id"]))
 	{
-		print("\t\t<div>
-\t\t\tNot any news yet.
-\t\t</div>\n");
+		$newsid = $_GET["id"];
+		if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$newsid' and enable='1' and newsid=contentid and author=userid;")) == FALSE)
+		{
+			print("\t\t<h2>News</h2>
+\t\t<div>Unknown news.</div>\n");
+			return 0;
+		}
+		print("\t\t<h2>".$res[0]["title"]."</h2>\n");
+		display($res[0]["title"], $res[0]["username"],
+				$res[0]["date"], $res[0]["content"]);
 		return 0;
 	}
-	while(sizeof($res) >= 1)
+	print("\t\t<div>You can <a href=\"index.php?module=news&action=propose\">propose news</a>.</div>\n");
+	if(($author = $_GET["username"]) == "")
+		$author = $username;
+	if($author != "" &&
+			($res = sql_query("select newsid, title from daportal_news, daportal_contents, daportal_users where username='$author' and newsid=contentid and author=userid and enable='1';")) != FALSE)
 	{
-		display($res[0]["title"], $res[0]["username"], $res[0]["date"], $res[0]["content"]);
-		array_shift($res);
+		print("\t\t<h2>News by $author</h2>
+\t\t<p>You can see <a href=\"index.php?module=user&username=$author\">khorben's user informations</a>.</p>\n");
+		$i = 1;
+		while(sizeof($res) >= 1)
+		{
+			$id = $res[0]["newsid"];
+			$title = $res[0]["title"];
+			print("\t\t<div>$i. <a href=\"index.php?module=news&id=$id\">$title</a></div>\n");
+			$i++;
+			array_shift($res);
+		}
 	}
 	return 0;
 }
