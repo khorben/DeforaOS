@@ -1,0 +1,12 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr --enable-static --enable-shared &&
+
+#build
+make &&
+
+#install
+mkdir -p defora/${NAME}-${VERSION}/usr/{bin,include,lib,man/man1} &&
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
