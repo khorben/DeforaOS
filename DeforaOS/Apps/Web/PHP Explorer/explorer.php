@@ -42,8 +42,7 @@ function explorer_folder($folder)
 {
 	global $root;
 
-	$folder = $root.'/'.$folder;
-	if(($dir = opendir($folder)) == FALSE)
+	if(($dir = opendir($root.'/'.$folder)) == FALSE)
 		return;
 	readdir($dir);
 	readdir($dir);
@@ -53,7 +52,7 @@ function explorer_folder($folder)
 	usort($files, strcmp);
 	while(($name = array_shift($files)))
 	{
-		if(@is_dir($folder.'/'.$name))
+		if(@is_dir($root.'/'.$folder.'/'.$name))
 		{
 			$mime = 'folder';
 			$icon = 'icons/16x16/mime/folder.png';
@@ -75,7 +74,7 @@ function explorer_folder($folder)
 		$group = '?';
 		$size = '?';
 		$date = '?';
-		if(($stat = @lstat($folder.'/'.$name)))
+		if(($stat = @lstat($root.'/'.$folder.'/'.$name)))
 		{
 			$owner = posix_getpwuid($stat['uid']);
 			$owner = $owner['name'];
@@ -93,5 +92,5 @@ function explorer_folder($folder)
 
 if(isset($_GET['download']))
 	return explorer_download(filename_safe($_GET['download']));
-$folder = isset($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
+$folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
 include('explorer.tpl');
