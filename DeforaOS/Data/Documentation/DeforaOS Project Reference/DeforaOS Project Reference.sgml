@@ -38,34 +38,63 @@ Today I think my ideal operating system should be open source, micro-kernel base
 <chapter>
 	<title>Project orientations</title>
 <!--
-- licensed used
+- license used
+- for everything: pros and cons
 -->
 	<sect1>
 		<title>Open source</title>
-<!--
-- interoperability
-- ...
-- security
-- conclude with community open source limitations for coordination etc
-- for everything: pros and cons
--->
-		<para>
-FIXME
-		</para>
+		<sect2>
+			<title>Fundamental liberties</title>
+			<para>
+FIXME: free software definition
+			</para>
+		</sect2>
+		<sect2>
+			<title>Other advantages</title>
+			<para>
+FIXME: interoperability, security, ...
+			</para>
+		</sect2>
+		<sect2>
+			<title>Issues</title>
+			<para>
+FIXME: often in community development, coherence
+			<para>
+		</sect2>
 	</sect1>
 	<sect1>
 		<title>Usability</title>
-<!--
-- introduce with community open source coherence etc problem
-- UNIX pros and cons (what to keep, and what not)
-- coherence
-- user-proof
-=> developped by a small and tight team
-=> remain transparent, accept external contributions
--->
-		<para>
+		<sect2>
+			<title>Existing systems experiences</title>
+			<sect3>
+				<title>UNIX</title>
+				<para>
 FIXME
-		</para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>Windows</title>
+				<para>
+FIXME
+				</para>
+			</sect3>
+			<sect3>
+				<title>Others</title>
+				<para>
+FIXME
+				</para>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>User orientation</title>
+			<para>
+FIXME
+			</para>
+		</sect2>
+<!--
+- coherence => developped by a small and tight team
+- open => remain transparent, accept external contributions
+-->
 	</sect1>
 	<sect1>
 		<title>Technical choices</title>
@@ -284,6 +313,8 @@ write(Buffer buffer)
 
 position(Offset offset)
 position(Offset offset, FilePositionFrom)
+
+flush()
 				</programlisting>
 			</sect3>
 		</sect2>
