@@ -1,4 +1,4 @@
-TARGETS	= inetd echo
+TARGETS	= inetd discard echo
 CFLAGSF	= -W -Wall -ansi
 CC	= cc
 AR	= ar rc
@@ -32,6 +32,14 @@ token.o: token.c
 inetd.o: inetd.c
 	$(CC) $(inetd_CFLAGS) -c inetd.c
 
+discard_OBJS= discard.o
+discard_CFLAGS=$(CFLAGSF) $(CFLAGS)
+discard: $(discard_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o discard $(discard_OBJS)
+
+discard.o: discard.c
+	$(CC) $(discard_CFLAGS) -c discard.c
+
 echo_OBJS= echo.o
 echo_CFLAGS=$(CFLAGSF) $(CFLAGS)
 echo: $(echo_OBJS)
@@ -42,7 +50,7 @@ echo.o: echo.c
 
 
 clean:
-	$(RM) $(inetd_OBJS) $(echo_OBJS)
+	$(RM) $(inetd_OBJS) $(discard_OBJS) $(echo_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
