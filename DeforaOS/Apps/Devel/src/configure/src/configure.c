@@ -29,8 +29,8 @@ static int _configure(char const * directory)
 	else
 	{
 		res = 3;
-		fprintf(stderr, "%s%s", "configure: ",
-				"could not open project file\n");
+		fprintf(stderr, "%s%s%s", "configure: ", directory,
+				": Could not open project file\n");
 	}
 	config_delete(config);
 	return res;
@@ -261,7 +261,11 @@ static void _target_objs(FILE * fp, Config * config, char * target)
 
 	if((sources = config_get(config, target, "sources")) == NULL
 			|| *sources == '\0')
+	{
+		fprintf(stderr, "%s%s%s", "configure: ", target,
+				": Undefined target\n");
 		return;
+	}
 	fprintf(fp, "%s_OBJS=", target);
 	for(cur = sources; *sources != '\0'; sources++)
 	{
@@ -293,7 +297,7 @@ static void _obj_print(FILE * fp, char * obj)
 		return;
 	}
 	fprintf(stderr, "%s%s%s", "configure: ", obj,
-			": unknown source type\n");
+			": Unknown source type\n");
 }
 
 static void _target_link(FILE * fp, Config * config, char * target)
