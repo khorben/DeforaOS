@@ -77,6 +77,16 @@ function search_default()
 }
 
 
+function search_dump()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	return 0;
+}
+
+
 function search_install()
 {
 	global $administrator;
@@ -101,6 +111,8 @@ switch($action)
 {
 	case "admin":
 		return search_admin();
+	case "dump":
+		return search_dump();
 	case "install":
 		return search_install();
 	case "uninstall":

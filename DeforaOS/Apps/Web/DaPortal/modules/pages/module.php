@@ -71,6 +71,16 @@ function pages_default()
 }
 
 
+function pages_dump()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	return 0;
+}
+
+
 function pages_edit()
 {
 	require_once("system/raw.php");
@@ -150,6 +160,8 @@ switch($action)
 {
 	case "admin":
 		return pages_admin();
+	case "dump":
+		return pages_dump();
 	case "edit":
 		return pages_edit();
 	case "install":

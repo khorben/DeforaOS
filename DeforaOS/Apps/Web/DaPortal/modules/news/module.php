@@ -155,6 +155,27 @@ function news_default()
 }
 
 
+function news_dump()
+{
+	global $administrator, $moduleid;
+
+	if($administrator != 1)
+		return 0;
+	if(($res = sql_query("select contentid, title, content, author, date, enable from daportal_news, daportal_contents where moduleid='$moduleid' and newsid=contentid;")) == NULL)
+	{
+		print(";error while dumping news");
+		return 0;
+	}
+	while(sizeof($res) >= 1)
+	{
+		print("insert into daportal_contents (contentid, moduleid, title, content) values ('".$res[0]["contentid"]."', '$moduleid', '".$res[0]["title"]."');\n");
+		print("insert into daportal_news (newsid, author, date, enable) values ('".$res[0]["contentid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."', '".$res[0]["enable"]."');\n");
+		array_shift($res);
+	}
+	return 0;
+}
+
+
 function news_install()
 {
 	global $administrator, $moduleid;
@@ -279,6 +300,8 @@ switch($action)
 {
 	case "admin":
 		return news_admin();
+	case "dump":
+		return news_dump();
 	case "install":
 		return news_install();
 	case "moderate":
