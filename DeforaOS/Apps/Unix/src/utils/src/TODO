@@ -1,9 +1,3 @@
-basename:
-- separate usage()
-
-dirname:
-- separate usage()
-
 id:
 - write more readable code
 - check if it's complete
