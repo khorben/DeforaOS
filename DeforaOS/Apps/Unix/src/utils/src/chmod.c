@@ -102,7 +102,8 @@ static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: chmod [-R] mode file\n");
+	fprintf(stderr, "%s", "Usage: chmod [-R] mode file\n\
+  -R	recursively change file mode bits\n");
 	return 1;
 }
 
@@ -113,6 +114,7 @@ int main(int argc, char * argv[])
 	int opts = 0;
 	mode_t mode;
 	int o;
+	char * p;
 
 	while((o = getopt(argc, argv, "R")) != -1)
 	{
@@ -127,7 +129,9 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind < 2)
 		return _usage();
-	/* FIXME */
-	mode = strtol(argv[optind], NULL, 8);
+	/* FIXME mode may be an expression */
+	mode = strtol(argv[optind], &p, 8);
+	if(argv[optind][0] == '\0' || *p != '\0')
+		return _usage();
 	return _chmod(opts, mode, argc - optind - 1, &argv[optind+1]);
 }
