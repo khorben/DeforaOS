@@ -10,6 +10,10 @@ extern int optind;
 
 
 /* configure */
+/* PRE
+ * POST		specified directory has been setup
+ * 		2	chdir() failed
+ * 		else	other errors occured */
 static int _configure_config(Config * config);
 static int _configure(char const * directory)
 {
@@ -23,7 +27,7 @@ static int _configure(char const * directory)
 		return 2;
 	}
 	if((config = config_new()) == NULL)
-		return 2;
+		return 3;
 	if(config_load(config, "project.conf") == 0)
 		res = _configure_config(config);
 	else
@@ -49,7 +53,7 @@ static int _configure_config(Config * config)
 		return 1;
 	}
 	if(_config_makefile(fp, config) != 0)
-		res = 2;
+		res = 3;
 	fclose(fp);
 	return res;
 }
@@ -99,8 +103,8 @@ static int _subdir_configure(char const * subdir)
 	if(strstr(subdir, "/") == NULL && strcmp(subdir, ".")
 			&& strcmp(subdir, ".."))
 	{
-		_configure(subdir);
-		chdir("..");
+		if(_configure(subdir) != 2)
+			chdir("..");
 		return 0;
 	}
 	fprintf(stderr, "%s%s%s", "configure: ", subdir,
@@ -294,6 +298,13 @@ static void _obj_print(FILE * fp, char * obj)
 		obj[len+1] = 'o';
 		fprintf(fp, "%s", obj);
 		obj[len+1] = 'c';
+		return;
+	}
+	if(strcmp(&obj[len+1], "e") == 0)
+	{
+		obj[len+1] = 'o';
+		fprintf(fp, "%s", obj);
+		obj[len+1] = 'e';
 		return;
 	}
 	fprintf(stderr, "%s%s%s", "configure: ", obj,
