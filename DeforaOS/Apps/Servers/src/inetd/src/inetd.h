@@ -12,6 +12,7 @@
 typedef struct _InetdState {
 	int debug;
 	int queue;
+	char * filename;
 	Config * config;
 } InetdState;
 

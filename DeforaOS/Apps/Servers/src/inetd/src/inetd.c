@@ -26,9 +26,9 @@ int inetd_error(char const * message, int ret)
 
 
 /* inetd */
-static int _inetd_setup(InetdState * state, char * config);
+static int _inetd_setup(InetdState * state, char * filename);
 static int _inetd_do(InetdState * state);
-static int _inetd(int debug, int queue, char * config)
+static int _inetd(int debug, int queue, char * filename)
 {
 	InetdState state;
 	int ret;
@@ -36,7 +36,8 @@ static int _inetd(int debug, int queue, char * config)
 	inetd_state = &state;
 	state.debug = debug;
 	state.queue = queue;
-	if(_inetd_setup(&state, config))
+	state.filename = filename;
+	if(_inetd_setup(&state, filename))
 		return 2;
 	ret = _inetd_do(&state);
 	config_delete(state.config);
@@ -89,8 +90,19 @@ static void _inetd_sigchld(void)
 
 static void _inetd_sighup(void)
 {
+	Config * config;
+
+	if((config = parser(inetd_state->filename)) == NULL)
+	{
+		if(inetd_state->debug)
+			fprintf(stderr, "%s%s%s", "inetd: ",
+					inetd_state->filename,
+					"Ignoring reconfiguration request\n");
+		return;
+	}
+	config_delete(inetd_state->config);
+	inetd_state->config = config;
 	/* FIXME */
-	/* read new configuration and check its validity */
 	/* close all active fd to stop select and use the stack reliably, but
 	 * it will certainly result in an error => handle it... */
 }
@@ -144,7 +156,7 @@ int main(int argc, char * argv[])
 	int o;
 	int debug = 0;
 	int queue = 128;
-	char * config = "/etc/inetd.conf";
+	char * filename = "/etc/inetd.conf";
 	char * p;
 
 	while((o = getopt(argc, argv, "dq")) != -1)
@@ -161,8 +173,8 @@ int main(int argc, char * argv[])
 			return _usage();
 	}
 	if(argc - optind == 1)
-		config = argv[optind];
+		filename = argv[optind];
 	else if(argc != optind)
 		return _usage();
-	return _inetd(debug, queue, config) ? 2 : 0;
+	return _inetd(debug, queue, filename) ? 2 : 0;
 }

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "scanner.h"
 #include "service.h"
+#include "inetd.h"
 #include "parser.h"
 
 
@@ -27,13 +28,16 @@ Config * parser(char * filename)
 	State state;
 
 	if((state.config = config_new()) == NULL)
-		return NULL; /* FIXME be verbose */
+		return NULL;
 	if((state.fp = fopen(filename, "r")) == NULL)
-		return NULL; /* FIXME be verbose */
+	{
+		inetd_error(filename, 0);
+		return NULL;
+	}
 	if((state.token = scan(state.fp)) == NULL)
 	{
 		fclose(state.fp);
-		return NULL; /* FIXME be verbose */
+		return NULL;
 	}
 	state.filename = filename;
 	state.line = 1;
