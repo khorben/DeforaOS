@@ -92,7 +92,10 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 	len = strlen(file);
 	len += (len && file[len-1] == '/') ? 1 : 2;
 	if((s = malloc(len)) == NULL)
+	{
+		closedir(dir);
 		return _chgrp_error(file, 1);
+	}
 	strcpy(s, file);
 	s[len-2] = '/';
 	s[len-1] = '\0';
