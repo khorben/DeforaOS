@@ -1,0 +1,16 @@
+configure 0.0.1 release notes
+-----------------------------
+
+configure automatically generated Makefiles from a project definition file.
+
+configure is Copyright (c) 2004 Pierre Pronchery
+It is shipped under the terms of the GPL license, which you may read in the
+COPYING file also contained in this archive.
+
+Please read the INSTALL file for instructions about how to compile and install
+configure.
+
+Please read the BUGS file for information about known problems, and planned
+feature upgrades.
+
+Thanks for using this program. I hope it will be useful.
