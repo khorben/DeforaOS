@@ -211,7 +211,7 @@ static int slist_insert_sorted(SList * slist, void * data,
 static int _ls_error(char const * message, int ret);
 static int _ls_directory_do(char * dir, Prefs * prefs);
 static int _ls_args(SList ** files, SList ** dirs);
-static int _is_directory(char * dir, Prefs * prefs);
+static int _is_directory(char * dir);
 static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs);
 typedef int (*compare_func)(void*, void*);
 static int _ls(int argc, char * argv[], Prefs * prefs)
@@ -229,7 +229,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 		return 2;
 	for(i = 0; i < argc; i++)
 	{
-		if((j = _is_directory(argv[i], prefs)) == 2)
+		if((j = _is_directory(argv[i])) == 2)
 		{
 			res++;
 			continue;
@@ -294,7 +294,7 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 		}
 		file = p;
 		sprintf(file, "%s/%s", directory, de->d_name);
-		if((*prefs & PREFS_R) && _is_directory(file, prefs) == 1)
+		if((*prefs & PREFS_R) && _is_directory(file) == 1)
 			slist_insert_sorted(dirs, strdup(file),
 					(compare_func)strcmp);
 	}
@@ -316,7 +316,7 @@ static int _ls_args(SList ** files, SList ** dirs)
 	return 0;
 }
 
-static int _is_directory(char * file, Prefs * prefs)
+static int _is_directory(char * file)
 {
 	struct stat st;
 
