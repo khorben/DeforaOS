@@ -41,13 +41,12 @@ function page_include($page)
 			require_once("system/block.php");
 			block_include($args[1]);
 		}
-//		else if(ereg("^MODULE: ([a-z]+){| ([a-z]+)})\r\n$", $line, $args))
-		else if(ereg("^MODULE: ([a-z]+)\r\n$", $line, $args))
+		else if(ereg("^MODULE: ([a-z]{1,9})( ([a-z]{1,9}))?\r\n$", $line, $args))
 		{
 			require_once("system/module.php");
-			module_include($args[1], $args[2]);
+			module_include($args[1], $args[3]);
 		}
-		else if(ereg("^PAGE: ([a-z]+)\r\n$", $line, $args))
+		else if(ereg("^PAGE: ([a-z]{1,9})\r\n$", $line, $args))
 			page_include($args[1]);
 		else
 			print("$line");
