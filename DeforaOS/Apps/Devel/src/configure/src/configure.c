@@ -29,88 +29,276 @@ static int _configure(char const * directory)
 	else
 	{
 		res = 3;
-		fprintf(stderr, "%s", "configure: could not open project file\n");
+		fprintf(stderr, "%s%s", "configure: ",
+				"could not open project file\n");
 	}
 	config_delete(config);
 	return res;
 }
 
-static int _configure_target(Config * config, char const * target);
+static int _config_makefile(FILE * fp, Config * config);
 static int _configure_config(Config * config)
+{
+	FILE * fp;
+	int res = 0;
+
+	if((fp = fopen("Makefile.new", "w")) == NULL)
+	{
+		fprintf(stderr, "%s", "configure: ");
+		perror("Makefile.new");
+		return 1;
+	}
+	if(_config_makefile(fp, config) != 0)
+		res = 2;
+	fclose(fp);
+	return res;
+}
+
+static int _makefile_variables(FILE * fp, Config * config);
+static int _makefile_targets(FILE * fp, Config * config);
+static int _makefile_clean(FILE * fp, Config * config);
+static int _config_makefile(FILE * fp, Config * config)
+{
+	int res = 0;
+
+	res += _makefile_variables(fp, config);
+	fprintf(fp, "\n");
+	res += _makefile_targets(fp, config);
+	fprintf(fp, "\n");
+	res += _makefile_clean(fp, config);
+	return res;
+}
+
+static int _variables_subdirs(FILE * fp, Config * config);
+static int _variables_target(FILE * fp, Config * config);
+static int _variables_cflags(FILE * fp, Config * config);
+static int _variables_ldflags(FILE * fp, Config * config);
+static int _makefile_variables(FILE * fp, Config * config)
+{
+	int res = 0;
+
+	res += _variables_subdirs(fp, config);
+	res += _variables_target(fp, config);
+	res += _variables_cflags(fp, config);
+	res += _variables_ldflags(fp, config);
+	return res;
+}
+
+static int _variables_subdirs(FILE * fp, Config * config)
+{
+	char * subdirs;
+	char * cur;
+
+	if((subdirs = config_get(config, "", "subdirs")) == NULL
+			|| *subdirs == '\0')
+		return 0;
+	fprintf(fp, "%s", "SUBDIRS\t=");
+	for(cur = subdirs; *subdirs != '\0'; subdirs++)
+	{
+		if(*subdirs != ',')
+			continue;
+		*subdirs = '\0';
+		fprintf(fp, " %s", cur);
+		*subdirs = ',';
+		cur = subdirs + 1;
+	}
+	fprintf(fp, " %s\n", cur);
+	return 0;
+}
+
+static int _variables_target(FILE * fp, Config * config)
 {
 	char * targets;
 	char * cur;
-	
+
 	if((targets = config_get(config, "", "targets")) == NULL
 			|| *targets == '\0')
 	{
-		fprintf(stderr, "%s", "configure: no targets found\n");
+		/* FIXME */
 		return 1;
 	}
-	for(cur = targets; *targets; targets++)
+	fprintf(fp, "%s", "TARGETS\t=");
+	for(cur = targets; *targets != '\0'; targets++)
 	{
 		if(*targets != ',')
 			continue;
 		*targets = '\0';
-		_configure_target(config, cur);
+		fprintf(fp, " %s", cur);
+		*targets = ',';
 		cur = targets + 1;
 	}
-	_configure_target(config, cur);
+	fprintf(fp, " %s\n", cur);
 	return 0;
 }
 
-static int _configure_binary(Config * config, char const * target);
-static int _configure_library(Config * config, char const * target);
-static int _configure_target(Config * config, char const * target)
+static int _variables_cflags(FILE * fp, Config * config)
 {
-	char * type;
+	char * cflags;
 
-	if((type = config_get(config, target, "type")) == NULL)
-	{
-		fprintf(stderr, "%s%s%s", "configure: target \"", target,
-				"\" has empty type\n");
-		return 1;
-	}
-	if(strcmp("binary", type) == 0)
-		return _configure_binary(config, target);
-	if(strcmp("library", type) == 0)
-		return _configure_library(config, target);
-	fprintf(stderr, "%s%s%s%s%s", "configure: target \"", target,
-			"\" has unknown type \"", type, "\"\n");
-	return 1;
+	if((cflags = config_get(config, "", "cflags_force")) != NULL
+			&& *cflags != '\0')
+		fprintf(fp, "%s%s%s", "CFLAGSF\t= ", cflags, "\n");
+	if((cflags = config_get(config, "", "cflags")) != NULL
+			&& *cflags != '\0')
+		fprintf(fp, "%s%s%s", "CFLAGS\t= ", cflags, "\n");
+	return 0;
 }
 
-static int _configure_binary(Config * config, char const * target)
+static int _variables_ldflags(FILE * fp, Config * config)
+{
+	char * ldflags;
+
+	if((ldflags = config_get(config, "", "ldflags_force")) != NULL
+			&& *ldflags != '\0')
+		fprintf(fp, "%s%s%s", "LDFLAGSF= ", ldflags, "\n");
+	if((ldflags = config_get(config, "", "ldflags")) != NULL
+			&& *ldflags != '\0')
+		fprintf(fp, "%s%s%s", "LDFLAGS\t= ", ldflags, "\n");
+	return 0;
+}
+
+static int _targets_all(FILE * fp, Config * config);
+static int _makefile_targets(FILE * fp, Config * config)
+{
+	int res = 0;
+
+	res += _targets_all(fp, config);
+	return res;
+}
+
+static void _target_objs(FILE * fp, Config * config, char * target);
+static int _targets_all(FILE * fp, Config * config)
+{
+	char * targets;
+	char * cur;
+
+	fprintf(fp, "%s", "\nall:");
+	if((targets = config_get(config, "", "targets")) == NULL
+			|| *targets == '\0')
+	{
+		fprintf(fp, "\n");
+		return 0;
+	}
+	fprintf(fp, "%s", " $(TARGETS)\n\n");
+	for(cur = targets; *targets != '\0'; targets++)
+	{
+		if(*targets != ',')
+			continue;
+		*targets = '\0';
+		_target_objs(fp, config, cur);
+		*targets = ',';
+		cur = targets + 1;
+	}
+	_target_objs(fp, config, cur);
+	return 0;
+}
+
+static void _obj_print(FILE * fp, char * obj);
+static void _objs_handlers(FILE * fp, Config * config, char * target);
+static void _target_objs(FILE * fp, Config * config, char * target)
 {
 	char * sources;
 	char * cur;
 
 	if((sources = config_get(config, target, "sources")) == NULL
 			|| *sources == '\0')
-	{
-		fprintf(stderr, "%s%s%s", "configure: target \"", target,
-				"\" has empty type\n");
-		return 1;
-	}
-	for(cur = sources; *sources; sources++)
+		return;
+	fprintf(fp, "%s_OBJS=", target);
+	for(cur = sources; *sources != '\0'; sources++)
 	{
 		if(*sources != ',')
 			continue;
-		fprintf(stderr, "%s%s%s", "configure: would add source \"",
-				cur, "\"\n");
+		*sources = '\0';
+		fprintf(fp, "%s", " ");
+		_obj_print(fp, cur);
+		*sources = ',';
 		cur = sources + 1;
 	}
-	fprintf(stderr, "%s%s%s", "configure: would add source \"",
-			cur, "\"\n");
+	fprintf(fp, "%s", " ");
+	_obj_print(fp, cur);
+	fprintf(fp, "\n%s%s%s%s%s%s%s%s%s", target, ": $(", target, "_OBJS)\n",
+			"\t$(CC) $(LDFLAGSF) $(LDFLAGS) -o ", target, " $(",
+			target, "_OBJS)\n\n");
+	_objs_handlers(fp, config, target);
+}
+
+static void _obj_print(FILE * fp, char * obj)
+{
+	int len;
+
+	for(len = strlen(obj) - 1; len >= 0 && obj[len] != '.'; len--);
+	if(strcmp(&obj[len+1], "c") == 0)
+	{
+		obj[len+1] = 'o';
+		fprintf(fp, "%s", obj);
+		obj[len+1] = 'c';
+		return;
+	}
+	fprintf(stderr, "%s%s%s", "configure: ", obj,
+			": unknown source type\n");
+}
+
+static void _handler_print(FILE * fp, char * source);
+static void _objs_handlers(FILE * fp, Config * config, char * target)
+{
+	char * sources;
+	char * cur;
+
+	if((sources = config_get(config, target, "sources")) == NULL
+			|| *sources == '\0')
+		return;
+	for(cur = sources; *sources != '\0'; sources++)
+	{
+		if(*sources != ',')
+			continue;
+		*sources = '\0';
+		_handler_print(fp, cur);
+		*sources = ',';
+		cur = sources + 1;
+	}
+	_handler_print(fp, cur);
+}
+
+static void _handler_print(FILE * fp, char * source)
+{
+	_obj_print(fp, source);
+	fprintf(fp, "%s%s%s%s%s", ": ", source,
+			"\n\t$(CC) $(CFLAGSF) $(CFLAGS) -c ", source, "\n");
+}
+
+static void _clean_targets_objs(FILE * fp, Config * config);
+static int _makefile_clean(FILE * fp, Config * config)
+{
+	fprintf(fp, "%s", "clean:\n\t$(RM)");
+	if(config_get(config, "", "targets") != NULL)
+		_clean_targets_objs(fp, config);
+	fprintf(fp, "\n");
+	fprintf(fp, "%s", "\ndistclean: clean\n\t$(RM)");
+	if(config_get(config, "", "targets") != NULL)
+		fprintf(fp, "%s", " $(TARGETS)");
+	fprintf(fp, "\n");
 	return 0;
 }
 
-static int _configure_library(Config * config, char const * target)
+static void _clean_targets_objs(FILE * fp, Config * config)
 {
-	fprintf(stderr, "%s", "configure: libraries are not implemented yet\n");
-	return 1;
-}
+	char * targets;
+	char * cur;
 
+	if((targets = config_get(config, "", "targets")) == NULL
+			|| *targets == '\0')
+		return;
+	for(cur = targets; *targets != '\0'; targets++)
+	{
+		if(*targets != ',')
+			continue;
+		*targets = '\0';
+		fprintf(fp, "%s%s%s", " $(", cur, "_OBJS)");
+		*targets = ',';
+		cur = targets + 1;
+	}
+	fprintf(fp, "%s%s%s", " $(", cur, "_OBJS)");
+}
 
 /* usage */
 static int _usage(void)
