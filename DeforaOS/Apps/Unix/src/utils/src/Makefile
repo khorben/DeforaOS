@@ -1,4 +1,4 @@
-TARGETS	= basename dirname false id logname true
+TARGETS	= basename dirname false id logname true tty
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -27,6 +27,15 @@ logname: logname.o
 true: true.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o true true.o
 
+tty: tty.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o tty tty.o
+
+
+basename.o: basename.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c basename.c
+
+dirname.o: dirname.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c dirname.c
 
 false.o: false.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c false.c
@@ -39,6 +48,9 @@ logname.o: logname.c
 
 true.o: true.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c true.c
+
+tty.o: tty.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c tty.c
 
 
 clean:
