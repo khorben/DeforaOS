@@ -1,5 +1,5 @@
 PACKAGE	= gputty
-VERSION	= 0.9.6
+VERSION	= 0.9.7
 SUBDIRS	= src
 RM	= rm -f
 PREFIX	= /usr/local
@@ -13,7 +13,7 @@ install: all
 	@for i in $(SUBDIRS); do make -C $$i PREFIX=$(PREFIX) BINDIR=$(BINDIR) $@ || exit $$?; done
 
 dist: distclean
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -r $(PACKAGE)-$(VERSION)
 	ln -s . $(PACKAGE)-$(VERSION)
 	tar -czf $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/project.conf \
