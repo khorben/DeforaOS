@@ -1,24 +1,23 @@
 TARGETS	= configure
-CFLAGS	= -W -Wall -ansi
-CFLAGSF	= -g
+CFLAGSF	= -W -Wall -ansi
+CFLAGS	= -g
 LDFLAGSF= -lutils
-LDFLAGS	=
 CC	= cc
 RM	= rm -f
 
 
 all: $(TARGETS)
 
-configure: configure.o
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure configure.o
-
+configure_OBJS= configure.o
+configure: $(configure_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
 
 configure.o: configure.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c configure.c
 
 
 clean:
-	$(RM) configure.o
+	$(RM) $(configure_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
