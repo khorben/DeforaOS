@@ -26,11 +26,21 @@ if(eregi("module.php", $_SERVER["REQUEST_URI"]))
 }
 
 
+function display_date($date)
+{
+	$date = explode("-", $date);
+	$date = mktime(0, 0, 0, $date[1], $date[2], $date[0]);
+	print(date("l, F jS Y", $date));
+}
+
+
 function display($title, $author, $date, $content)
 {
 	print("\t\t<div class=\"news\">
 \t\t\t<div class=\"news_title\">$title</div>
-\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a>, on $date</div>
+\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a> on ");
+	display_date($date);
+	print("</div>
 \t\t\t<div class=\"news_content\">$content</div>
 \t\t</div>\n");
 }
@@ -39,7 +49,9 @@ function display_summary($id, $title, $author, $date)
 {
 	print("\t\t<p class=\"news_summary\">
 \t\t\t<div class=\"news_summary_title\"><a href=\"index.php?module=news&amp;id=$id\">$title</a></div>
-\t\t\t<div class=\"news_summary_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a>, on $date</div>
+\t\t\t<div class=\"news_summary_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a> on ");
+	display_date($date);
+	print("</div>
 \t\t</p>\n");
 }
 
@@ -146,9 +158,12 @@ function news_default()
 					$res[0]["date"]);
 			array_shift($res);
 		}
-		print("\t\t<p>Page: <a href=\"index.php?module=news&amp;offset=0\">1</a>");
+		print("\t\t<hr/>
+\t\t<p>Page: <a href=\"index.php?module=news&amp;offset=0\">1</a>");
 		for($i = 1; $i < $count / $npp; $i++)
+		{
 			print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1)."</a>");
+		}
 		print("</p>\n");
 	}
 	return 0;
