@@ -39,15 +39,18 @@ function module_id($module, $enable)
 		$query .= " and enable='$enable'";
 	if(($res = sql_query($query)) == FALSE)
 		return 0;
-	return $res[0]["moduleid"];
+	return $res[0]['moduleid'];
 }
 
 
-function module_name($module, $enable)
+function module_name($moduleid, $enable)
 {
-	if(($res = sql_query("select modulename from daportal_modules where enable='$enable' and moduleid='$module';")) == FALSE)
+	$query = "select modulename from daportal_modules where moduleid='$moduleid'";
+	if($enable == 0 || $enable == 1)
+		$query .= " and enable='$enable'";
+	if(($res = sql_query($query)) == FALSE)
 		return FALSE;
-	return $res[0]["modulename"];
+	return $res[0]['modulename'];
 }
 
 
@@ -78,18 +81,26 @@ function module_install($module)
 	sql_query("insert into daportal_modules (modulename, enable) values ('$module', '1');");
 	$res = sql_query("select moduleid from daportal_modules where modulename='$module';");
 	global $moduleid;
-	$moduleid = $res[0]["moduleid"];
-	$action = "install";
-	return include("modules/$module/action.php");
+	$moduleid = $res[0]['moduleid'];
+	$action = 'install';
+	return include('modules/'.$module.'/action.php');
+}
+
+
+function module_uninstall($module)
+{
+	$action = 'uninstall';
+	include('modules/'.$module.'/action.php');
+	sql_query("delete from daportal_modules where modulename='$module';");
 }
 
 
 //PRE	$module must be valid
 function module_process($module, $action)
 {
-	if($action == "install" || $action == "uninstall")
-		$action = "default";
-	return include("modules/".$module."/action.php");
+	if($action == 'install' || $action == 'uninstall')
+		$action = 'default';
+	return include('modules/'.$module.'/action.php');
 }
 
 
