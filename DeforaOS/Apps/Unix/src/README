@@ -1,0 +1,5 @@
+gputty		clone of the well-known windows putty program
+init		implementation attempt of my own concept of the init program
+mktemp		implementation of the mktemp program
+sh		susv3 compliant minimal shell
+unix		susv3 compliant utilities

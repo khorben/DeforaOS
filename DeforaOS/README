@@ -1,0 +1,11 @@
+This CVS tree contains files where they would be in the DeforaOS operating system.
+
+
+
+Apps		usual applications
+System		system files and applications
+Volumes		detected volumes
+
+
+Candidates:
+- directory for files shared/hosted? "Data"?
