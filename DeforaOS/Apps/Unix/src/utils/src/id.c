@@ -87,7 +87,7 @@ static int id_all(char * user)
 			return 2;
 		}
 	}
-	printf(" groups=%u(%s)", getgid(), user);
+	printf("%s%u(%s)", " groups=", passwd->pw_gid, user);
 	setgrent();
 	for(group = getgrent(); group != NULL; group = getgrent())
 		for(p = group->gr_mem; *p != NULL; p++)
@@ -256,7 +256,7 @@ int id(char * user, int flag, int flagn, int flagr)
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: id [-Ggu][-nr] [user]\n\
   -G    output all different group IDs\n\
@@ -292,12 +292,12 @@ int main(int argc, char * argv[])
 				flagr = 1;
 				break;
 			case '?':
-				return usage();
+				return _usage();
 		}
 	}
 	if(optind == argc)
 		return id(NULL, flag, flagn, flagr);
 	if(optind + 1 == argc)
 		return id(argv[optind], flag, flagn, flagr);
-	return usage();
+	return _usage();
 }
