@@ -254,6 +254,13 @@ static Token ** command(Token ** tokens)
 
 
 /* compound_command */
+static Token ** brace_group(Token ** tokens);
+static Token ** subshell(Token ** tokens);
+static Token ** for_clause(Token ** tokens);
+static Token ** case_clause(Token ** tokens);
+static Token ** if_clause(Token ** tokens);
+static Token ** while_clause(Token ** tokens);
+static Token ** until_clause(Token ** tokens);
 static Token ** compound_command(Token ** tokens)
 	/* brace_group
 	 * | subshell
@@ -266,6 +273,82 @@ static Token ** compound_command(Token ** tokens)
 #ifdef DEBUG
 	fprintf(stderr, "compound_command(): %s\n", tokens[0]->string);
 #endif
+	/* FIXME */
+	switch(tokens[0]->code)
+	{
+		case TC_RW_LBRACE:
+			return brace_group(tokens);
+		case TC_RW_FOR:
+			return for_clause(tokens);
+		case TC_RW_CASE:
+			return case_clause(tokens);
+		case TC_RW_IF:
+			return if_clause(tokens);
+		case TC_RW_WHILE:
+			return while_clause(tokens);
+		case TC_RW_UNTIL:
+			return until_clause(tokens);
+		default:
+			return NULL;
+	}
+	if(token_check_word(tokens, "(") != NULL)
+		return subshell(tokens);
+	return NULL;
+}
+
+
+/* subshell */
+static Token ** subshell(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* for_clause */
+static Token ** for_clause(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* case_clause */
+static Token ** case_clause(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* if_clause */
+static Token ** if_clause(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* while_clause */
+static Token ** while_clause(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* until_clause */
+static Token ** until_clause(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* brace_group */
+static Token ** brace_group(Token ** tokens)
+{
+	/* FIXME */
 	return NULL;
 }
 
