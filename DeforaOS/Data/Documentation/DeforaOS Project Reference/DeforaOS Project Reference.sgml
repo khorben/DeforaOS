@@ -442,8 +442,8 @@ new()
 new(Size size)
 delete()
 
-size()
-size(Size size)
+get_size()
+set_size(Size size)
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -479,10 +479,10 @@ close()
 read(Buffer buffer)
 write(Buffer buffer)
 
-position(Offset offset)
-position(Offset offset, FilePositionFrom)
-
 flush()
+
+set_position(Offset offset)
+set_position(Offset offset, FilePositionFrom)
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -495,8 +495,8 @@ new()
 new(ListType type)
 delete()
 
-type()
-type(ListType type)
+get_type()
+set_type(ListType type)
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -504,15 +504,26 @@ type(ListType type)
 				<para>
 Prefix is "String".
 				</para>
+				<para>
+A string can be stored in different encodings, possibly longer than the 7-bit ascii, or 8-bit ascii extensions ones (eg UTF-8).
+				</para>
+				<para>
+Strings are always properly terminated when manipulated using this interface.
+				</para>
 				<programlisting>
-new()
+new()					//creates an empty string
+new(Buffer buffer)			//creates a string from `buffer` using
+					//the default encoding
+new(Buffer buffer, StringEncoding encoding)
+					//creates a string from `buffer` encoded
+					//as `encoding`
 delete()
 
-size()
-size(Size size)
+get_size()				//get string buffer size
+set_size(Size size)			//set string buffer size to `size`
 
-length()
-length(Size size)
+get_length()				//get string length
+set_length(Size size)			//set string length to `size`
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -524,8 +535,12 @@ Prefix is "Variable".
 This type is used for data conversions.
 				</para>
 				<programlisting>
-new()
+new(VariableType type, Buffer data)	//creates a `type` variable from `data`
 delete()
+
+get(VariableType type)			//get variable as `type`
+set(VariableType type)			//set default type to `type`
+set(VariableType type, Buffer data)	//set variable as `type` from `data`
 				</programlisting>
 			</sect3>
 		</sect2>
@@ -534,12 +549,20 @@ delete()
 			<para>
 Prefix is "AE".
 			</para>
+			<programlisting>
+new()
+delete()
+			</programlisting>
 		</sect2>
 		<sect2>
 			<title>Applications interfaces</title>
 			<para>
 Prefix is "AI".
 			</para>
+			<programlisting>
+new()
+delete()
+			</programlisting>
 		</sect2>
 		<sect2>
 			<title>Graphical toolkit</title>
@@ -547,18 +570,78 @@ Prefix is "AI".
 Prefix is "G".
 			</para>
 			<sect3>
-				<title>Window</title>
+				<title>Conception proposal</title>
 				<para>
-Prefix is "Window".
+A list of a possible implementation guidelines follows.
 				</para>
-				<programlisting>
+				<itemizedlist>
+					<listitem><para>a GCanvas is a surface, containing GCanvasItems</para></listitem>
+					<listitem><para>a GCanvasItem is a graphical primitive</para></listitem>
+					<listitem><para>GCanvasItems can be grouped inside GCanvasGroups</para></listitem>
+					<listitem><para>a GWindow contains a GCanvas</para></listitem>
+					<listitem><para>a GCanvas is a GWidget</para></listitem>
+					<listitem><para>every GWidget is a GCanvas</para></listitem>
+				</itemizedlist>
+				<para>
+Consequently, every graphical item on screen is a GCanvasItem, GWidgets are groups of GCanvasItems, and can contain other GWidgets, possibly being GCanvases. This is a big advantage for code reuse.
+				</para>
+				<para>
+A problem is, it doesn't handle resizing properly as is.
+				</para>
+			</sect3>
+			<sect3>
+				<title>Widgets</title>
+				<sect4>
+					<title>Canvas</title>
+					<para>
+Prefix is "Canvas".
+					</para>
+					<programlisting>
+//FIXME functions applying to GCanvases, but not to GWidgets
+					</programlisting>
+				</sect4>
+				<sect4>
+					<title>CanvasItem</title>
+					<para>
+Prefix is "CanvasItem".
+					</para>
+					<programlisting>
+delete()			//deletes properly, whichever the type
+
+show()				//shows item
+hide()				//hides item
+					</programlisting>
+				</sect4>
+				<sect4>
+					<title>Label</title>
+					<para>
+Prefix is "Label".
+					</para>
+					<programlisting>
+new()
+new(String string)
+delete()
+					</programlisting>
+				</sect4>
+				<sect4>
+					<title>Window</title>
+					<para>
+Prefix is "Window".
+					</para>
+					<programlisting>
 new()
 new(String title)
+new(WindowType type)
+new(WindowType type, String title)
 delete()
 
-size()
-size(Size x, Size y)
-				</programlisting>
+get_type()
+set_type()
+
+get_size()
+set_size(Size x, Size y)
+					</programlisting>
+				</sect4>
 			</sect3>
 		</sect2>
 	</sect1>
