@@ -16,16 +16,16 @@ typedef TokenCode * CodeSet;
 /* variables */
 /* FIXME static Token token_null[1] = { TC_NULL, NULL }; */
 
-static TokenCode CS_AND_OR[]		= {
-	TC_RW_BANG,
+/*static TokenCode CS_AND_OR[]		= {
+	TC_RW_BANG,*/
 	/* command */
-	TC_TOKEN,
+/*	TC_TOKEN,
 	TC_NULL
-};
-static TokenCode CS_CMD_PREFIX[]	= {
+};*/
+/*static TokenCode CS_CMD_PREFIX[]	= {
 	TC_IONUMBER,
 	TC_NULL
-};
+};*/
 static TokenCode CS_CMD_SUFFIX[]	= {
 	TC_IONUMBER,
 	TC_NULL
@@ -333,11 +333,11 @@ static Token ** if_clause(Token ** tokens)
 	/* FIXME */
 	tokens = token_scan(tokens);
 /*	tokens = compound_list(tokens); */
-	token_distinct(tokens);
+	token_distinct(tokens[0]);
 	tokens = token_check(tokens, TC_RW_THEN);
 /*	tokens = compound_list(tokens); */
 	/* else_part */
-	token_distinct(tokens);
+	token_distinct(tokens[0]);
 	return token_check(tokens, TC_RW_FI);
 }
 
