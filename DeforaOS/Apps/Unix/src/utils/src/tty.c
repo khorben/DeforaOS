@@ -14,7 +14,10 @@ static int _tty(void)
 		char * tty;
 
 		if((tty = ttyname(0)) == NULL)
+		{
+			perror("ttyname");
 			return 2;
+		}
 		printf("%s\n", tty);
 		return 0;
 	}
