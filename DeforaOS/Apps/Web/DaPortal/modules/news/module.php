@@ -297,8 +297,12 @@ function news_last($number)
 {
 	global $moduleid;
 
+	print("\t\t<h1>Latest news</h1>\n");
 	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where enable='1' and moduleid='$moduleid' and contentid=newsid and userid=author order by date desc limit $number;")) == NULL)
+	{
+		print("\t\t<p>There aren't any recent news.</p>\n");
 		return 0;
+	}
 	while(sizeof($res) >= 1)
 	{
 		display($res[0]['title'], $res[0]['username'],
