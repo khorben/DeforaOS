@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <err.h>
 #include <gtk/gtk.h>
 #include "gputty.h"
@@ -244,13 +245,15 @@ static void gputty_save(GtkWidget * widget, gpointer data)
 	 * - remember saved sessions
 	 * - when 2 sessions have the same name, update it */
 	GPuTTY * g;
-	char const * session;
+	char * session;
 	char const * hostname;
 	int port;
 	char const * username;
 
 	g = data;
-	session = gtk_entry_get_text(GTK_ENTRY(g->sn_esessions));
+	session = strdup(gtk_entry_get_text(GTK_ENTRY(g->sn_esessions)));
+	if(session == NULL) /* FIXME should it be free'd some time? */
+		return;
 	if(session[0] == '\0')
 		return;
 	hostname = gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname));
