@@ -132,7 +132,7 @@ switch($action)
 	case "admin":
 		return chat_admin();
 	case "dump":
-		return char_dump();
+		return chat_dump();
 	case "install":
 		return chat_install();
 	case "send":
