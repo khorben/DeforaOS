@@ -1,0 +1,14 @@
+#clean
+make distclean
+
+#configure
+aclocal &&
+automake -acf &&
+autoconf &&
+./configure --host=$HOST --prefix=/usr --sysconfdir=/etc --mandir=/usr/share/man &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
