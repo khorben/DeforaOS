@@ -112,7 +112,7 @@ static int _chown_do_recursive(int opts, uid_t uid, gid_t gid, char * file)
 {
 	struct stat st;
 
-	if((lstat(file, &st)) != 0)
+	if(lstat(file, &st) != 0)
 		return _chown_error(file, 1);
 	if(!S_ISDIR(st.st_mode))
 		return _chown_do(opts, uid, gid, file);
