@@ -44,14 +44,23 @@ static int _chgrp(int opts, char * group, int argc, char * argv[])
 	return res;
 }
 
+static int _chgrp_error(char * message, int ret);
 static int _chgrp_grp_error(char * group)
 {
-	fprintf(stderr, "%s", "chgrp: ");
 	if(errno == 0)
-		fprintf(stderr, "%s%s", group, ": Unknown group\n");
-	else
-		perror(group);
-	return 2;
+	{
+		fprintf(stderr, "%s%s%s", "chgrp: ", group,
+				": Unknown group\n");
+		return 2;
+	}
+	return _chgrp_error(group, 2);
+}
+
+static int _chgrp_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "chgrp: ");
+	perror(message);
+	return ret;
 }
 
 static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file);
@@ -60,11 +69,7 @@ static int _chgrp_do_recursive(int opts, gid_t gid, char * file)
 	struct stat st;
 
 	if((lstat(file, &st)) != 0)
-	{
-		fprintf(stderr, "%s", "chgrp: ");
-		perror(file);
-		return 1;
-	}
+		return _chgrp_error(file, 1);
 	if(S_ISDIR(st.st_mode) && !S_ISLNK(st.st_mode))
 		_chgrp_do_recursive_do(opts, gid, file);
 	return 0;
@@ -79,21 +84,13 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 	char * p;
 
 	if((dir = opendir(file)) == NULL)
-	{
-		fprintf(stderr, "%s", "chgrp: ");
-		perror(file);
-		return 1;
-	}
+		return _chgrp_error(file, 1);
 	readdir(dir);
 	readdir(dir);
 	len = strlen(file);
 	len += (len && file[len-1] == '/') ? 1 : 2;
 	if((s = malloc(len)) == NULL)
-	{
-		fprintf(stderr, "%s", "chgrp: ");
-		perror(file);
-		return 1;
-	}
+		return _chgrp_error(file, 1);
 	strcpy(s, file);
 	s[len-2] = '/';
 	s[len-1] = '\0';
@@ -101,15 +98,11 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 	{
 		if((p = realloc(s, len + strlen(de->d_name))) == NULL)
 		{
-			fprintf(stderr, "%s", "chgrp: ");
-			perror("malloc");
+			_chgrp_error("malloc", 0);
 			continue;
 		}
 		s = p;
 		strcat(s, de->d_name);
-#ifdef DEBUG
-		fprintf(stderr, "%s\n", s);
-#endif
 		_chgrp_do(opts, gid, s);
 		_chgrp_do_recursive(opts, gid, s);
 		s[len-1] = '\0';
@@ -125,21 +118,13 @@ static int _chgrp_do(int opts, gid_t gid, char * file)
 	int res;
 
 	if(stat(file, &st) != 0)
-	{
-		fprintf(stderr, "%s", "chgrp: ");
-		perror(file);
-		return 1;
-	}
+		return _chgrp_error(file, 1);
 	if((opts & OPT_h) == OPT_h)
 		res = lchown(file, st.st_uid, gid);
 	else
 		res = chown(file, st.st_uid, gid);
 	if(res != 0)
-	{
-		fprintf(stderr, "%s", "chgrp: ");
-		perror(file);
-		return 1;
-	}
+		return _chgrp_error(file, 1);
 	return 0;
 }
 
