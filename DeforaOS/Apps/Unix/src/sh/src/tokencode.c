@@ -92,17 +92,29 @@ TokenCode CS_COMPOUND_COMMAND[]	= {
 	TC_NULL
 };
 TokenCode CS_COMPOUND_LIST[]	= {
+	/* term */
+	TC_RW_BANG,
+	TC_TOKEN,
+	/* newline_list */
+	TC_NEWLINE,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_DO_GROUP[]		= {
+	/* Do */
+	TC_RW_DO,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_FUNCTION_BODY[]	= {
+	/* compound_command */
+	TC_RW_LBRACE, /* SUBSHELL "(", */
+	TC_RW_FOR, TC_RW_CASE, TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_FUNCTION_DEFINITION[] = {
+	/* fname */
+	TC_NAME,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_IN[]		= {
 	TC_RW_IN,
 	TC_NULL
