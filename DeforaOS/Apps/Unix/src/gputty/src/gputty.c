@@ -69,7 +69,7 @@ GPuTTY * gputty_new(void)
 	/* sessions: list */
 	gputty->sn_vbox2 = gtk_vbox_new(FALSE, 0);
 	gputty->sn_esessions = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_esessions, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_esessions, FALSE, FALSE, 0);
 	gputty->sn_clsessions = gtk_clist_new(1);
 	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_clsessions, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(gputty->sn_hbox), gputty->sn_vbox2, TRUE, TRUE, 0);
@@ -77,13 +77,13 @@ GPuTTY * gputty_new(void)
 	gputty->sn_vbox3 = gtk_vbox_new(FALSE, 0);
 	gputty->sn_load = gtk_button_new_with_label("Load");
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_load), 2);
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_load, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_load, FALSE, FALSE, 0);
 	gputty->sn_save = gtk_button_new_with_label("Save");
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_save), 2);
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_save, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_save, FALSE, FALSE, 0);
 	gputty->sn_delete = gtk_button_new_with_label("Delete");
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_delete), 2);
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_delete, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_delete, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(gputty->sn_hbox), gputty->sn_vbox3, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox1), gputty->sn_hbox, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(gputty->sn_frame), gputty->sn_vbox1);
