@@ -13,3 +13,12 @@ chmod 0750 $DESTDIR/root &&
 chmod 1777 $DESTDIR/tmp $DESTDIR/var/tmp &&
 touch $DESTDIR/var/run/utmp $DESTDIR/var/log/{btmp,lastlog,wtmp} &&
 chmod 644 $DESTDIR/var/run/utmp $DESTDIR/var/log/{btmp,lastlog,wtmp} &&
+touch $DESTDIR/etc/fstab &&
+echo root:x:0:0:root:/root:/bin/bash > $DESTDIR/etc/passwd &&
+cat > $DESTDIR/etc/group << EOF
+root:x:0:
+bin:x:1:
+tty:x:4:
+users:x:100:
+nogroup:x:65535:
+EOF
