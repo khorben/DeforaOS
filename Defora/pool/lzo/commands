@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr --enable-shared &&
+
+#build
+make &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
