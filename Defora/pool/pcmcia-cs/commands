@@ -1,0 +1,13 @@
+#clean
+make realclean
+
+#configure
+./Configure -n --target=$PWD/defora/${NAME}-${VERSION}/ --sysv --rcdir=/etc/init/ &&
+
+#build
+make &&
+
+#install
+make install &&
+mv defora/${NAME}-${VERSION}/etc/init/init.d defora/${NAME}-${VERSION}/etc/init/rc.d &&
+rm defora/${NAME}-${VERSION}/etc/modules.conf &&
