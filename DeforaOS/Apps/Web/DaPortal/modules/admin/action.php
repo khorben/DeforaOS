@@ -34,6 +34,8 @@ switch($action)
 		return admin_dump();
 	case 'install':
 		return admin_install();
+	case 'modules':
+		return admin_modules();
 	case 'uninstall':
 		return admin_uninstall();
 	default:

@@ -59,7 +59,7 @@ function admin_admin()
 			$installed[$module] = 1;
 			if($res[0]['enable'] == 't')
 				$module = "<a href=\"index.php?module=$module&amp;action=admin\">$module<a>";
-			print("\t<tr><td><input type=\"checkbox\" name=\"id[$i]\" value=\"".$res[0]['moduleid']."\"/></td><td>$module</td><td>".$res[0]['moduleid']."</td><td>".($res[0]['enable'] == 't' ? 'Yes' : 'No')."</td></tr>\n");
+			print("\t<tr><td><input type=\"checkbox\" name=\"id[".($i++)."]\" value=\"".$res[0]['moduleid']."\"/></td><td>$module</td><td>".$res[0]['moduleid']."</td><td>".($res[0]['enable'] == 't' ? 'Yes' : 'No')."</td></tr>\n");
 			array_shift($res);
 		}
 		print("</table>
@@ -80,6 +80,7 @@ function admin_admin()
 \t<tr><th></th><th>Module</th></tr>\n");
 		readdir($dir);
 		readdir($dir);
+		$i = 0;
 		while(($dirname = readdir($dir)) != FALSE)
 		{
 			if(!is_dir('modules/'.$dirname)
@@ -87,7 +88,7 @@ function admin_admin()
 				continue;
 			if($installed[$dirname] == 1)
 				continue;
-			print("\t<tr><td><input type=\"checkbox\" name=\"id[$i] value=\"$dirname\"/></td><td>$dirname</td></tr>\n");
+			print("\t<tr><td><input type=\"checkbox\" name=\"id[".($i++)."]\" value=\"$dirname\"/></td><td>$dirname</td></tr>\n");
 		}
 		print("</table>\n");
 	}
@@ -144,6 +145,47 @@ function admin_install()
 
 	if($administrator != 1)
 		return 0;
+	return 0;
+}
+
+
+function admin_modules()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	$id = $_POST['id'];
+	while(sizeof($id) >= 1)
+	{
+		$module = array_shift($id);
+		switch($_POST['type'])
+		{
+			case 'Enable':
+			case 'Disable':
+				if(!is_numeric($module))
+					return 1;
+				sql_query("update daportal_modules set enable='".($_POST['type'] == 'Enable' ? 1 : 0)."' where moduleid='$module';");
+				break;
+			case 'Install':
+				if(!ereg("^[a-z]{1,9}$", $module))
+					return 1;
+				if(module_id($module, -1) != 0)
+					return 1;
+				module_install($module);
+				break;
+			case 'Uninstall':
+				if(!is_numeric($module))
+					return 1;
+				if(($name = module_name($module, -1)) == FALSE)
+					return 1;
+				module_uninstall($name);
+				break;
+			default:
+				return 1;
+		}
+	}
+	Header('Location: index.php?module=admin&action=admin');
 	return 0;
 }
 
