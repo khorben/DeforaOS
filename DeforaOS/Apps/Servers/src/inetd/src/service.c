@@ -107,7 +107,7 @@ int service_exec(Service * s)
 
 static int _exec_tcp(Service * s)
 {
-	int fd = s->fd;
+	int fd;
 	pid_t pid;
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
