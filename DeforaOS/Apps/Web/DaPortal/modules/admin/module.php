@@ -56,7 +56,7 @@ function admin_admin()
 		while(sizeof($res) >= 1)
 		{
 			$module = $res[0]['modulename'];;
-			$installed[] = $module;
+			$installed[$module] = 1;
 			if($res[0]['enable'] == 't')
 				$module = "<a href=\"index.php?module=$module&amp;action=admin\">$module<a>";
 			print("\t<tr><td><input type=\"checkbox\" name=\"id[$i]\" value=\"".$res[0]['moduleid']."\"/></td><td>$module</td><td>".$res[0]['moduleid']."</td><td>".($res[0]['enable'] == 't' ? 'Yes' : 'No')."</td></tr>\n");
@@ -84,7 +84,7 @@ function admin_admin()
 		{
 			if(!is_dir('modules/'.$dirname))
 				continue;
-			if(array_search($dirname, $installed) !== FALSE)
+			if($installed[$dirname] == 1)
 				continue;
 			print("\t<tr><td><input type=\"checkbox\" name=\"id[$i] value=\"$dirname\"/></td><td>$dirname</td></tr>\n");
 		}
