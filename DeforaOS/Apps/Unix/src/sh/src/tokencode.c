@@ -173,12 +173,17 @@ TokenCode CS_NEWLINE_LIST[]	= {
 	TC_NULL
 };
 TokenCode CS_PIPE_SEQUENCE[]	= {
+	/* command */
+	TC_TOKEN,
+	TC_RW_LBRACE, /* SUBSHELL "(", */ TC_RW_FOR, TC_RW_CASE, TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL,
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_PIPELINE[]		= {
+	/* Bang */
 	TC_RW_BANG,
+	/* pipe_sequence */
 	TC_NULL
-}; /* FIXME */
+};
 TokenCode CS_REDIRECT_LIST[]	= {
 	TC_NULL
 }; /* FIXME */
