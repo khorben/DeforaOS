@@ -189,6 +189,8 @@ static char * _load_value(FILE * fp)
 	int len = 1;
 	char * p;
 
+	if((str = malloc(len)) == NULL)
+		return NULL;
 	while((c = fgetc(fp)) != EOF && isprint(c))
 	{
 		if((p = realloc(str, len + 1)) == NULL)
