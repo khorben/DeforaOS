@@ -31,16 +31,20 @@
 /* callbacks */
 static void gputty_on_about(GtkWidget * widget, gpointer data);
 static void gputty_on_about_close(GtkWidget * widget, gpointer data);
-static void gputty_on_about_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void gputty_on_about_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static void gputty_on_connect(GtkWidget * widget, gpointer data);
 static void gputty_on_delete(GtkWidget * widget, gpointer data);
 static void gputty_on_load(GtkWidget * widget, gpointer data);
 static void gputty_on_options(GtkWidget * widget, gpointer data);
 static void gputty_on_quit(GtkWidget * widget, gpointer data);
-static void gputty_on_quitx(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void gputty_on_quitx(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static void gputty_on_save(GtkWidget * widget, gpointer data);
-static void gputty_on_select(GtkWidget * widget, gint row, gint column, GdkEventButton *event, gpointer data);
-static void gputty_on_unselect(GtkWidget * widget, gint row, gint column, GdkEventButton *event, gpointer data);
+static void gputty_on_select(GtkWidget * widget, gint row, gint column,
+		GdkEventButton *event, gpointer data);
+static void gputty_on_unselect(GtkWidget * widget, gint row, gint column,
+		GdkEventButton *event, gpointer data);
 GPuTTY * gputty_new(void)
 {
 	GPuTTY * g;
@@ -347,7 +351,7 @@ static void gputty_on_options(GtkWidget * widget, gpointer data)
 		g->op_vbox = gtk_vbox_new(FALSE, 0);
 		/* xterm */
 		g->op_hbox1 = gtk_hbox_new(TRUE, 0);
-		g->op_lxterm = gtk_label_new("xterm program");
+		g->op_lxterm = gtk_label_new("Terminal emulator");
 		gtk_box_pack_start(GTK_BOX(g->op_hbox1), g->op_lxterm,
 				FALSE, FALSE, 0);
 		g->op_exterm = gtk_entry_new();
@@ -357,7 +361,7 @@ static void gputty_on_options(GtkWidget * widget, gpointer data)
 				FALSE, FALSE, 0);
 		/* ssh */
 		g->op_hbox2 = gtk_hbox_new(TRUE, 0);
-		g->op_lssh = gtk_label_new("SSH program");
+		g->op_lssh = gtk_label_new("SSH client");
 		gtk_box_pack_start(GTK_BOX(g->op_hbox2), g->op_lssh,
 				FALSE, FALSE, 0);
 		g->op_essh = gtk_entry_new();
