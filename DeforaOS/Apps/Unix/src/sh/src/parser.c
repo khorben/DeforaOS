@@ -368,8 +368,14 @@ static Token ** wordlist(Token ** tokens)
 	 * | WORD */
 	/* WORD { WORD } */
 {
-	/* FIXME */
-	return NULL;
+	tokens = token_scan(tokens);
+	token_distinct(tokens[0]);
+	while(token_check(tokens, TC_WORD))
+	{
+		tokens = token_scan(tokens);
+		token_distinct(tokens[0]);
+	}
+	return tokens;
 }
 
 
