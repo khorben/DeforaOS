@@ -8,6 +8,8 @@
 extern int optind;
 #include <dirent.h>
 #include <stdlib.h>
+#include <pwd.h>
+#include <grp.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -18,25 +20,39 @@ extern int optind;
 /* Prefs */
 typedef int Prefs;
 #define PREFS_a 1
+#define PREFS_d 2
+#define PREFS_l 4
+#define PREFS_1 8
+#define PREFS_R 16
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
 	int o;
 
-/*	memset(prefs, 0, sizeof(Prefs)); */
-	*prefs = 0;
-	while((o = getopt(argc, argv, "CFRa")) != -1)
+	memset(prefs, 0, sizeof(Prefs));
+	while((o = getopt(argc, argv, "CFRadl1")) != -1)
 	{
 		switch(o)
 		{
 			case 'C':
 			case 'F':
-			case 'R':
 				fprintf(stderr, "%s%c%s", "ls: -", o,
-						": not yet implemented\n");
+						": Not yet implemented\n");
 				return 1;
+			case 'R':
+				*prefs |= PREFS_R;
+				break;
 			case 'a':
-				*prefs &= PREFS_a;
+				*prefs |= PREFS_a;
+				break;
+			case 'd':
+				*prefs |= PREFS_d;
+				break;
+			case 'l':
+				*prefs |= PREFS_l;
+				break;
+			case '1':
+				*prefs |= PREFS_1;
 				break;
 			case '?':
 				return 1;
@@ -119,14 +135,16 @@ static void slist_last(SList * slist)
 
 static int slist_append(SList * slist, void * data)
 {
-	slist_last(slist);
-	if(*slist == NULL)
+	SList sl = *slist;
+
+	if(sl == NULL)
 	{
 		*slist = _slistcell_new(data, NULL);
 		return *slist != NULL ? 0 : 2;
 	}
-	(*slist)->next = _slistcell_new(data, NULL);
-	return (*slist)->next != NULL ? 0 : 2;
+	slist_last(&sl);
+	sl->next = _slistcell_new(data, NULL);
+	return sl->next != NULL ? 0 : 2;
 }
 
 static void slist_apply(SList * slist, int (*func)(void *, void *), void * user)
@@ -177,58 +195,142 @@ static size_t slist_length(SList * slist)
 
 
 /* ls */
-static int _ls_do(SList * files, SList * dirs, Prefs * prefs);
+static int _ls_error(char * message, int ret);
+static int _ls_directory_do(char * dir, Prefs * prefs);
+static int _ls_args(SList ** files, SList ** dirs);
+static int _is_directory(char * dir, Prefs * prefs);
+static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs);
 static int _ls(int argc, char * argv[], Prefs * prefs)
 {
-	char * dircur = ".";
-	int i;
-	struct stat st;
 	SList * files;
 	SList * dirs;
-	int res;
+	int res = 0;
+	int i;
+	int j;
+	char * str;
 
 	if(argc == 0)
-		return _ls(1, &dircur, prefs);
-	if((files = slist_new()) == NULL)
-		return 1;
-	if((dirs = slist_new()) == NULL)
-	{
-		slist_delete(files);
-		return 1;
-	}
+		return _ls_directory_do(".", prefs);
+	if(_ls_args(&files, &dirs) != 0)
+		return 2;
 	for(i = 0; i < argc; i++)
 	{
-		if(stat(argv[i], &st) != 0)
+		if((j = _is_directory(argv[i], prefs)) == 2)
 		{
-			fprintf(stderr, "%s", "ls: ");
-			perror(argv[i]);
+			res++;
 			continue;
 		}
-		if(S_ISDIR(st.st_mode) == 0)
-			slist_insert_sorted(files, argv[i], strcmp);
-		else
-			slist_append(dirs, argv[i]);
+		if((str = strdup(argv[i])) == NULL)
+		{
+			res += _ls_error("malloc", 1);
+			continue;
+		}
+		if(*prefs & PREFS_d)
+		{
+			res += slist_insert_sorted(files, str, strcmp);
+			continue;
+		}
+		res += slist_insert_sorted(j ? dirs : files, str, strcmp);
 	}
-	res = _ls_do(files, dirs, prefs);
-	slist_delete(files);
-	slist_delete(dirs);
+	res += _ls_do(NULL, files, dirs, prefs);
+	return res == 1 ? 2 : res;
+}
+
+static int _ls_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "ls: ");
+	perror(message);
+	return ret;
+}
+
+static int _ls_directory_do(char * directory, Prefs * prefs)
+{
+	SList * files;
+	SList * dirs;
+	int res = 0;
+	DIR * dir;
+	struct dirent * de;
+	char * file = NULL;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "_ls_directory_do(%s, ...)\n", directory);
+#endif
+	if((dir = opendir(directory)) == NULL)
+		return _ls_error(directory, 2);
+	_ls_args(&files, &dirs);
+	readdir(dir);
+	readdir(dir);
+	while((de = readdir(dir)) != NULL)
+	{
+		slist_insert_sorted(files, strdup(de->d_name), strcmp);
+		if((p = realloc(file, strlen(directory)
+						+ strlen(de->d_name)
+						+ 2)) == NULL)
+		{
+			_ls_error("malloc", 0);
+			continue;
+		}
+		file = p;
+		sprintf(file, "%s/%s", directory, de->d_name);
+		if((*prefs & PREFS_R) && _is_directory(file, prefs) == 1)
+			slist_insert_sorted(dirs, strdup(file), strcmp);
+	}
+	free(file);
+	closedir(dir);
+	_ls_do(directory, files, dirs, prefs);
 	return res;
 }
 
-static int _ls_files(SList * files, Prefs * prefs);
-static int _ls_directories(SList * dirs, Prefs * prefs);
-static int _ls_do(SList * files, SList * dirs, Prefs * prefs)
+static int _ls_args(SList ** files, SList ** dirs)
 {
-	_ls_files(files, prefs);
-	if(slist_data(files) != NULL && slist_data(dirs) != NULL)
-		printf("%s%s%s", "\n", (char*)slist_data(dirs), ":\n");
-	else if(slist_length(dirs) > 1)
-		printf("%s%s", (char*)slist_data(dirs), ":\n");
-	_ls_directories(dirs, prefs);
+	if((*files = slist_new()) == NULL)
+		return _ls_error("slist", 1);
+	if((*dirs = slist_new()) == NULL)
+	{
+		slist_delete(*files);
+		return _ls_error("slist", 1);
+	}
 	return 0;
 }
 
-static int _ls_files(SList * files, Prefs * prefs)
+static int _is_directory(char * file, Prefs * prefs)
+{
+	struct stat st;
+
+	if((stat(file, &st)) != 0)
+		return _ls_error(file, 2);
+	return S_ISDIR(st.st_mode) ? 1 : 0;
+}
+
+static int _ls_do_files(char * directory, SList * files, Prefs * prefs);
+static int _ls_do_dirs(char * directory, SList * dirs, Prefs * prefs);
+static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs)
+{
+	int res = 0;
+
+	res += _ls_do_files(directory, files, prefs);
+	res += _ls_do_dirs(directory, dirs, prefs);
+	return res;
+}
+
+static int _ls_free(void * data, void * user);
+static int _ls_do_files_short(SList * files, Prefs * prefs);
+static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs);
+static int _ls_do_files(char * directory, SList * files, Prefs * prefs)
+{
+	int res = 0;
+
+	if(*prefs & PREFS_l)
+		res = _ls_do_files_long(directory, files, prefs);
+	else
+		res = _ls_do_files_short(files, prefs);
+	slist_apply(files, _ls_free, NULL);
+	slist_delete(files);
+	return res;
+}
+
+static int _ls_do_files_short(SList * files, Prefs * prefs)
 {
 	char * cols;
 	char * p;
@@ -237,30 +339,26 @@ static int _ls_files(SList * files, Prefs * prefs)
 	unsigned int colnb = 0;
 	unsigned int i = 0;
 	unsigned int j = 0;
-	SList cur = *files;
+	SList cur;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s", "_ls_files()\n");
-#endif
-	if((cols = getenv("COLUMNS")) != NULL
+	if(((*prefs & PREFS_1) == 0) && (cols = getenv("COLUMNS")) != NULL
 			&& *cols != '\0'
 			&& (len = strtol(cols, &p, 10)) > 0
 			&& *p == '\0')
 	{
-		while(cur != NULL)
-		{
+		for(cur = *files; cur != NULL; slist_next(&cur))
 			lenmax = max(lenmax, strlen(slist_data(&cur)));
-			slist_next(&cur);
-		}
 		if(lenmax > 0)
 			colnb = len / ++lenmax;
 	}
 	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
-		printf("%s", (char*)slist_data(&cur));
-		if(++i < colnb)
+		p = slist_data(&cur);
+		j = strlen(p);
+		fwrite(p, sizeof(char), j, stdout);
+		if(i + 1 < colnb)
 		{
-			for(j = strlen(slist_data(&cur)); j < lenmax; j++)
+			for(i++; j < lenmax; j++)
 				fputc(' ', stdout);
 			continue;
 		}
@@ -272,121 +370,120 @@ static int _ls_files(SList * files, Prefs * prefs)
 	return 0;
 }
 
-static int _ls_directory(char * filename, Prefs * prefs);
-static int _ls_directories(SList * directories, Prefs * prefs)
+static void _long_mode(char str[11], mode_t mode);
+static char * _long_owner(uid_t uid);
+static char * _long_group(gid_t gid);
+static char * _long_date(time_t date);
+static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 {
-	SList sl = *directories;
-
-#ifdef DEBUG
-	fprintf(stderr, "%s", "_ls_directories()\n");
-#endif
-	if(sl == NULL)
-		return 0;
-	_ls_directory((char*)slist_data(&sl), prefs);
-	slist_next(&sl);
-	while(sl != NULL)
-	{
-		printf("%s%s%s", "\n", (char*)slist_data(&sl), ":\n");
-		_ls_directory(slist_data(&sl), prefs);
-		slist_next(&sl);
-	}
-	return 0;
-}
-
-static int _ls_directory_do(char * filename, DIR * dir, SList * files,
-		Prefs * prefs);
-static int _ls_directory(char * filename, Prefs * prefs)
-{
-	DIR * dir;
-	SList * files;
-
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "_ls_directory(", filename, ")\n");
-#endif
-	if((dir = opendir(filename)) == NULL)
-	{
-		fprintf(stderr, "%s", "ls: ");
-		perror(filename);
-		return 2;
-	}
-	if((files = slist_new()) == NULL)
-	{
-		closedir(dir);
-		return 1;
-	}
-	_ls_directory_do(filename, dir, files, prefs);
-	slist_delete(files);
-	closedir(dir);
-	return 0;
-}
-
-static int _ls_free(char * filename, void * null);
-static int _ls_directory_do(char * filename, DIR * dir, SList * files,
-		Prefs * prefs)
-{
-	char * str = NULL;
-	unsigned int len;
-	struct dirent * dirent;
-	struct stat st;
+	SList cur;
+	char * file = NULL;
 	char * p;
+	struct stat st;
+	char mode[11];
+	char * owner;
+	char * group;
+	char * date;
 
-	len = strlen(filename);
-	if((str = strdup(filename)) == NULL)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG _ls_do_files_long(%s, ...)\n", directory);
+#endif
+	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
-		fprintf(stderr, "%s", "ls: ");
-		perror("strdup");
-		return 2;
-	}
-	while((dirent = readdir(dir)) != NULL)
-	{
-		if((p = realloc(str, len + strlen(dirent->d_name)
+		/* FIXME */
+		if((p = realloc(file, strlen(directory)
+						+ strlen(slist_data(&cur))
 						+ 2)) == NULL)
 		{
-			fprintf(stderr, "%s", "ls: ");
-			perror("realloc");
-			break;
+			_ls_error("malloc", 0);
+			continue;
 		}
-		str = p;
-		str[len] = '/';
-		str[len+1] = '\0';
-		strcat(str, dirent->d_name);
-#ifdef DEBUG
-		fprintf(stderr, "stat(%s)\n", str);
-#endif
-		if(stat(str, &st) == -1)
+		file = p;
+		sprintf(file, "%s/%s", directory, slist_data(&cur));
+		if(stat(file, &st) != 0)
 		{
-			fprintf(stderr, "%s", "ls: ");
-			perror(dirent->d_name);
+			_ls_error(file, 0);
 			continue;
 		}
-		if((*prefs & PREFS_a) == 0 && *(dirent->d_name) == '.')
-			continue;
-		if((p = strdup(dirent->d_name)) == NULL)
-		{
-			fprintf(stderr, "%s", "ls: ");
-			perror("strdup");
-			continue;
-		}
-		slist_insert_sorted(files, p, strcmp);
+		_long_mode(mode, st.st_mode);
+		owner = _long_owner(st.st_uid);
+		group = _long_group(st.st_gid);
+		date = _long_date(st.st_mtime);
+		printf("%s %u %s %s %lu %s %s\n", mode, st.st_nlink,
+				owner, group, st.st_size, date,
+				slist_data(&cur));
 	}
-	free(str);
-	_ls_files(files, prefs);
-	slist_apply(files, _ls_free, prefs);
+	free(file);
 	return 0;
 }
 
-static int _ls_free(char * filename, void * null)
+static void _long_mode(char str[11], mode_t mode)
 {
-	free(filename);
+	unsigned int i;
+
+	str[10] = '\0';
+	/* FIXME */
+	for(i = 0; i < 10; i++)
+		str[i] = '-';
+}
+
+static char * _long_owner(uid_t uid)
+{
+	struct passwd * pwd;
+
+	if((pwd = getpwuid(uid)) == NULL)
+		return "unknown";
+	return pwd->pw_name;
+}
+
+static char * _long_group(gid_t gid)
+{
+	struct group * grp;
+
+	if((grp = getgrgid(gid)) == NULL)
+		return "unknown";
+	return grp->gr_name;
+}
+
+static char * _long_date(time_t date)
+{
+	/* FIXME */
+	return NULL;
+}
+
+static int _ls_free(void * data, void * user)
+{
+	free(data);
 	return 0;
-	null = null;
+	user = user;
+}
+
+static int _ls_do_dirs(char * directory, SList * dirs, Prefs * prefs)
+{
+	int res = 0;
+	SList cur;
+	char * dir = NULL;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG _ls_do_dirs(%s, ...)\n", directory);
+#endif
+	for(cur = *dirs; cur != NULL; slist_next(&cur))
+	{
+		dir = slist_data(&cur);
+		printf("\n%s%s", dir, ":\n");
+		res += _ls_directory_do(dir, prefs);
+	}
+	slist_apply(dirs, _ls_free, NULL);
+	slist_delete(dirs);
+	return res;
 }
 
 
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: ls [-CFRa]\n");
+	fprintf(stderr, "%s", "Usage: ls [-CFRadl1]\n");
 	return 1;
 }
 
