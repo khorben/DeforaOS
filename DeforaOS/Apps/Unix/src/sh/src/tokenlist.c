@@ -176,7 +176,6 @@ TokenList * tokenlist_append(TokenList * tokenlist, Token * token)
 {
 	if(tokenlist == NULL)
 		return &token;
-	fprintf(stderr, "append\n");
-	(*tokenlist) = token;
-	return &(token->next);
+	(*tokenlist)->next = token;
+	return &token;
 }
