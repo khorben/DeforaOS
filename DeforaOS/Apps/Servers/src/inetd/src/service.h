@@ -14,7 +14,7 @@
 /* Service */
 /* types */
 typedef enum _ServiceSocket { SS_STREAM, SS_DGRAM } ServiceSocket;
-typedef uint16_t ServiceProtocol;
+typedef enum _ServiceProtocol { SP_TCP, SP_UDP } ServiceProtocol;
 typedef enum _ServiceWait { SW_WAIT, SW_NOWAIT } ServiceWait;
 typedef struct _ServiceId
 {
@@ -42,6 +42,6 @@ void service_delete(Service * service);
 
 /* useful */
 int service_listen(Service * service);
-void service_exec(Service * service, int fd);
+int service_exec(Service * service);
 
 #endif /* !__SERVICE_H */

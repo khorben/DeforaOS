@@ -34,18 +34,22 @@ static int _inetd_do(InetdState * state);
 static int _inetd(int debug, int queue, char * config)
 {
 	InetdState state;
+	int ret;
 
 	state.debug = debug;
 	state.queue = queue;
 	if(_inetd_setup(&state, config))
 		return 2;
-	return _inetd_do(&state);
+	ret = _inetd_do(&state);
+	config_delete(state.config);
+	return ret;
 }
 
 static void _inetd_sighandler(int signum);
 static int _inetd_setup(InetdState * state, char * config)
 {
-	if(signal(SIGCHLD, _inetd_sighandler) == SIG_ERR)
+	if(signal(SIGCHLD, _inetd_sighandler) == SIG_ERR
+			|| signal(SIGHUP, _inetd_sighandler) == SIG_ERR)
 		return inetd_error("signal", 1);
 	if((state->config = parser(config)) == NULL)
 		return 1;
@@ -88,46 +92,36 @@ static void _inetd_sigchld(void)
 static void _inetd_sighup(void)
 {
 	/* FIXME */
+	/* read new configuration and check its validity */
+	/* close all active fd to stop select and use the stack reliably, but
+	 * it will certainly result in an error => handle it... */
 }
 
-/* static void _inetd_accept(int fd, struct sockaddr_in addr, int addrlen); */
 static int _inetd_do(InetdState * state)
 {
-/*	struct sockaddr_in sa_conn;
-	int sa_size = sizeof(struct sockaddr_in);
-	int conn;
+	fd_set rfds;
+	unsigned int i;
+	int hifd = -1;
 
-	while((conn = accept(fd, &sa_conn, &sa_size)) != 0)
-		_inetd_accept(conn, sa_conn, sa_size); */
-	config_delete(state->config);
+	FD_ZERO(&rfds);
+	for(i = 0; i < state->config->services_nb; i++)
+	{
+		if(service_listen(state->config->services[i]))
+			continue;
+		FD_SET(state->config->services[i]->fd, &rfds);
+		hifd = hifd >= state->config->services[i]->fd ? hifd
+			: state->config->services[i]->fd;
+	}
+	for(;;)
+	{
+		if(select(hifd+1, &rfds, NULL, NULL, NULL) == -1)
+			return inetd_error("select", 2);
+		for(i = 0; i < state->config->services_nb; i++)
+			if(FD_ISSET(state->config->services[i]->fd, &rfds))
+				service_exec(state->config->services[i]);
+	}
 	return 0;
 }
-
-/* static void _inetd_log(struct sockaddr_in * addr, int addrlen); */
-/* static void _inetd_accept(int fd, struct sockaddr_in addr, int addrlen)
-{
-	pid_t pid;
-
-	if((pid = fork()) == -1)
-	{
-		inetd_error("fork", 0);
-		return;
-	}
-	if(pid > 0)
-	{
-		_inetd_log(&addr, addrlen); //FIXME only in debugging mode
-		close(fd);
-		return;
-	}
-} */
-
-/* static void _inetd_log(struct sockaddr_in * addr, int addrlen)
-{
-	uint8_t * ip = (uint8_t*)&(addr->sin_addr.s_addr);
-
-	fprintf(stderr, "%s%d.%d.%d.%d:%d\n", "Connection from ",
-			ip[0], ip[1], ip[2], ip[3], ntohs(addr->sin_port));
-} */
 
 
 /* usage */

@@ -5,24 +5,51 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
+#include <netdb.h>
 #include "inetd.h"
 #include "service.h"
 
 
+int _service_port(char * name, char * proto);
 Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 		ServiceWait wait, ServiceId id, char ** program)
 {
+	int port;
 	Service * s;
 
+	if((port = _service_port(name, proto == SP_TCP ? "tcp" : "udp")) == -1)
+		return NULL; /* FIXME */
 	if((s = malloc(sizeof(Service))) == NULL)
+	{
+		inetd_error("malloc", 0);
 		return NULL;
+	}
 	s->name = strdup(name);
 	s->socket = socket;
 	s->proto = proto;
 	s->wait = wait;
 	s->id = id;
 	s->program = program;
+	s->fd = -1;
+	s->port = port;
 	return s;
+}
+
+int _service_port(char * name, char * proto)
+{
+	struct servent * se;
+	char * p;
+	int port;
+
+	if((se = getservbyname(name, proto)) != NULL)
+		return se->s_port;
+	port = strtol(name, &p, 10);
+	if(*name == '\0' || *p != '\0')
+		return -1;
+	return htons(port);
 }
 
 
@@ -48,25 +75,41 @@ int service_listen(Service * s)
 
 	if((s->fd = socket(AF_INET, s->socket == SS_STREAM ? SOCK_STREAM
 					: SOCK_DGRAM, 0)) == -1)
-		return 1;
+		return inetd_error("socket", 1);
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(s->port);
+	sa.sin_port = s->port;
 	sa.sin_addr.s_addr = INADDR_ANY;
 	if(bind(s->fd, &sa, sizeof(sa)) != 0)
-		return 1;
-	if(listen(s->fd, 5) != 0)
-		return 1;
+		return inetd_error("bind", 1);
+	if(s->socket == SS_STREAM && listen(s->fd, 5) != 0)
+		return inetd_error("listen", 1);
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s%d%s", "service \"", s->name,
+			"\" listening on port ", ntohs(s->port), "\n");
+#endif
 	return 0;
 }
 
-void service_exec(Service * s, int fd)
+
+int service_exec(Service * s)
 {
+	pid_t pid;
+	int fd = s->fd;
+	struct sockaddr_in sa;
+	int sa_size = sizeof(struct sockaddr_in);
+
+	if((pid = fork()) == -1)
+		return inetd_error("fork", 1);
+	else if(pid > 0)
+		return 0;
+	if(s->proto == SP_TCP)
+		if((fd = accept(s->fd, &sa, &sa_size)) == -1)
+			return inetd_error("accept", 1);
 	if(close(0) != 0 || close(1) != 0 || dup2(fd, 0) != 0
 			|| dup2(fd, 1) != 1)
-	{
 		inetd_error("dup2", 0);
-		return;
-	}
-	execv(s->name, s->program);
-	exit(inetd_error(s->name, 2));
+	else
+		execv(s->program[0], s->program);
+	inetd_error(s->program[0], 0);
+	exit(2);
 }

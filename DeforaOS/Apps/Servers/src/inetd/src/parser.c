@@ -143,6 +143,8 @@ static void _service(State * state)
 static void _service_name(State * state)
 	/* WORD */
 {
+	char * p;
+
 	state->service.name = strdup(state->token->string);
 	_parser_check(state, TC_WORD);
 }
@@ -160,9 +162,15 @@ static void _socket(State * state)
 }
 
 static void _protocol(State * state)
+	/* "tcp" | "udp" */
 {
-	/* FIXME */
-	_parser_check(state, TC_WORD);
+	if(strcmp("tcp", state->token->string) == 0)
+		state->service.proto = SP_TCP;
+	else if(strcmp("udp", state->token->string) == 0)
+		state->service.proto = SP_UDP;
+	else
+		_parser_error(state, "Expected \"tcp\" or \"udp\"");
+	_parser_check(state, TC_WORD); /* FIXME use test result */
 }
 
 static void _wait(State * state)
@@ -173,7 +181,7 @@ static void _wait(State * state)
 	else if(strcmp("nowait", state->token->string) == 0)
 		state->service.wait = SW_NOWAIT;
 	else
-		_parser_error(state, "wait or nowait expected");
+		_parser_error(state, "Expected \"wait\" or \"nowait\"");
 	_parser_check(state, TC_WORD); /* FIXME use test result */
 }
 
