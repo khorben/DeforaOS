@@ -26,7 +26,7 @@ if(eregi("install.php", $_SERVER["REQUEST_URI"]))
 }
 
 
-require("system/raw.php");
+require_once("system/raw.php");
 
 
 //installing functions
@@ -73,6 +73,7 @@ function install_database()
 	moduleid integer,
 	title varchar(80) NOT NULL DEFAULT '',
 	content text NOT NULL,
+	enable bool NOT NULL DEFAULT '0',
 	PRIMARY KEY (contentid),
 	FOREIGN KEY (moduleid) REFERENCES daportal_modules (moduleid)
 )");
@@ -92,6 +93,7 @@ function install_database()
 	module_install("user");
 	module_install("pages");
 	module_install("news");
+	return 0;
 }
 
 function install_config($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword)
@@ -145,6 +147,10 @@ include(\"engine.php\");
 	return 0;
 }
 
+//
+//PRE
+//POST	1	error
+//	0	success
 function install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword)
 {
 	if(install_database() != 0
@@ -153,57 +159,54 @@ function install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpasswor
 			|| install_index() != 0)
 		return 1;
 	header("Location: index.php");
+	return 0;
 }
 
 
+
 //process get requests
+//PRE
+//POST	1	success
 function install_get()
 {
-	raw_require("html/xhtml.html");
-	if($_SERVER["REMOTE_ADDR"] != "127.0.0.1")
+	if(raw_include("html/xhtml.html") != 0)
+		print("<html>\n");
+	if(raw_include("html/install.html") != 0)
 		print("\t<head>
-\t\t<title>Server maintainance</title>
-\t</head>
-\t<body>
-\t\t<h1>Server maintainance</h1>
-\t\t<p>
-\t\t\tSorry, the server is currently closed for maintainance.
-\t\t</p>
-\t\t<p>
-\t\t\tIf you are the administrator of this site, please try it on the local interface of its host.
-\t\t</p>\n");
-	else
-	{
-		if(raw_include("html/install.html") != 0)
-			print("\t<head>
 \t\t<title>DaPortal configuration</title>
 \t</head>
 \t<body>
 \t\t<p>
 \t\t\t<b>Error:</b> could not include \"html/install.html\".
 \t\t</p>\n");
-	}
+	else
+		print("\t<body>\n");
 	print("\t</body>
 </html>\n");
-	return 0;
+	return 1;
 }
 
 
 //process post requests
+//PRE
+//POST	0	error
+//	1	success
 function install_post()
 {
-	$dbtype = $_POST['dbtype'];
-	$dbhost = $_POST['dbhost'];
-	$dbuser = $_POST['dbuser'];
-	$dbpassword = $_POST['dbpassword'];
-	$dbname = $_POST['dbname'];
+	$dbtype = $_POST["dbtype"];
+	$dbhost = $_POST["dbhost"];
+	$dbport = $_POST["dbport"];
+	$dbuser = $_POST["dbuser"];
+	$dbpassword = $_POST["dbpassword"];
+	$dbname = $_POST["dbname"];
 
-	require("system/sql.php");
+	require_once("system/sql.php");
 	//FIXME postgresql only
 	//FIXME check input (in sql_connect?)
 	if(sql_connect($dbhost, $dbport, $dbname, $dbuser, $dbpassword) != 0)
 	{
-		raw_require("html/xhtml.html");
+		if(raw_include("html/xhtml.html") != 0)
+			print("<html>\n");
 		print("\t<head>
 \t\t<title>DaPortal processing configuration</title>
 \t</head>
@@ -218,22 +221,25 @@ function install_post()
 				break;
 			default:
 				print("UNKNOWN<br/>\n");
-				exit(1);
+				break;
 		}
-		print("\t\t<b>Hostname</b>: ".$dbhost."<br/>
-\t\t<b>Username</b>: ".$dbuser."<br/>
+		print("\t\t<b>Hostname</b>: $dbhost<br/>
+\t\t<b>Port</b>: $dbport<br/>
+\t\t<b>Username</b>: $dbuser<br/>
 \t\t<b>Password</b>: (hidden)<br/>
-\t\t<b>Database</b>: ".$dbname."<br/>
+\t\t<b>Database</b>: $dbname<br/>
 \t</div>
 \t</body>
 </html>\n");
 		return 1;
 	}
-	return install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword);
+	return install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword) == 0 ? 1 : 0;
 }
 
 
 //process invalid requests
+//PRE
+//POST	exits with error
 function install_invalid()
 {
 	raw_require("html/xhtml.html");
@@ -243,10 +249,28 @@ function install_invalid()
 
 
 //process requests
-//FIXME check localhost?
-if($_SERVER['REQUEST_METHOD'] == "POST")
+if($_SERVER["REMOTE_ADDR"] != "127.0.0.1")
+{
+	if(raw_include("html/xhtml.html") != 0)
+		print("<html>\n");
+	print("\t<head>
+\t\t<title>Server maintainance</title>
+\t</head>
+\t<body>
+\t\t<h1>Server maintainance</h1>
+\t\t<p>
+\t\t\tSorry, the server is currently closed for maintainance.
+\t\t</p>
+\t\t<p>
+\t\t\tIf you are the administrator of this site, please try it on the local interface of its host.
+\t\t</p>\n");
+	return 1;
+}
+global $administrator;
+$administrator = 1;
+if($_SERVER["REQUEST_METHOD"] == "POST")
 	return install_post();
-if($_SERVER['REQUEST_METHOD'] != "GET")
+if($_SERVER["REQUEST_METHOD"] != "GET")
 	return install_invalid();
 return install_get();
 
