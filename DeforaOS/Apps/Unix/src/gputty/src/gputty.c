@@ -35,6 +35,7 @@ static void gputty_on_about_closex(GtkWidget * widget, GdkEvent * event, gpointe
 static void gputty_on_connect(GtkWidget * widget, gpointer data);
 static void gputty_on_delete(GtkWidget * widget, gpointer data);
 static void gputty_on_load(GtkWidget * widget, gpointer data);
+static void gputty_on_options(GtkWidget * widget, gpointer data);
 static void gputty_on_quit(GtkWidget * widget, gpointer data);
 static void gputty_on_quitx(GtkWidget * widget, GdkEvent * event, gpointer data);
 static void gputty_on_save(GtkWidget * widget, gpointer data);
@@ -152,6 +153,10 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->ac_hbox), g->ac_about, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(g->ac_about), "clicked",
 			G_CALLBACK(gputty_on_about), g);
+	g->ac_options = gtk_button_new_from_stock(GTK_STOCK_PREFERENCES);
+	gtk_box_pack_start(GTK_BOX(g->ac_hbox), g->ac_options, FALSE, FALSE, 4);
+	g_signal_connect(G_OBJECT(g->ac_options), "clicked",
+			G_CALLBACK(gputty_on_options), g);
 	g->ac_connect = gtk_button_new_with_label("Connect");
 	g_signal_connect(G_OBJECT(g->ac_connect), "clicked",
 			G_CALLBACK(gputty_on_connect), g);
@@ -161,6 +166,8 @@ GPuTTY * gputty_new(void)
 	g_signal_connect(G_OBJECT(g->ac_quit), "clicked",
 			G_CALLBACK(gputty_on_quit), g);
 	gtk_box_pack_start(GTK_BOX(g->vbox), g->ac_hbox, FALSE, FALSE, 0);
+	/* options */
+	g->op_window = NULL;
 	/* about */
 	g->ab_window = NULL;
 
@@ -190,9 +197,8 @@ void gputty_delete(GPuTTY * gputty)
 /* callbacks */
 static void gputty_on_about(GtkWidget * widget, gpointer data)
 {
-	GPuTTY * g;
+	GPuTTY * g = data;
 
-	g = data;
 	if(g->ab_window == NULL)
 	{
 		g->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -305,11 +311,10 @@ static void gputty_on_delete(GtkWidget * widget, gpointer data)
 
 static void gputty_on_load(GtkWidget * widget, gpointer data)
 {
-	GPuTTY * g;
+	GPuTTY * g = data;
 	char buf[11];
 	char * p;
 
-	g = data;
 	if(g->selection < 0 || g->selection >= 100)
 		return;
 	sprintf(buf, "session %d", g->selection);
@@ -323,16 +328,104 @@ static void gputty_on_load(GtkWidget * widget, gpointer data)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), p);
 }
 
+static void gputty_on_options_cancel(GtkWidget * widget, gpointer data);
+static void gputty_on_options_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void gputty_on_options_ok(GtkWidget * widget, gpointer data);
+static void gputty_on_options(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+	char * p;
+
+	if(g->op_window == NULL)
+	{
+		g->op_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_container_set_border_width(GTK_CONTAINER(g->op_window), 4);
+		gtk_window_set_title(GTK_WINDOW(g->op_window),
+				"GPuTTY Preferences");
+		g_signal_connect(G_OBJECT(g->op_window), "delete_event",
+				G_CALLBACK(gputty_on_options_closex), g);
+		g->op_vbox = gtk_vbox_new(FALSE, 0);
+		/* xterm */
+		g->op_hbox1 = gtk_hbox_new(TRUE, 0);
+		g->op_lxterm = gtk_label_new("xterm program");
+		gtk_box_pack_start(GTK_BOX(g->op_hbox1), g->op_lxterm,
+				FALSE, FALSE, 0);
+		g->op_exterm = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(g->op_hbox1), g->op_exterm,
+				FALSE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(g->op_vbox), g->op_hbox1,
+				FALSE, FALSE, 0);
+		/* ssh */
+		g->op_hbox2 = gtk_hbox_new(TRUE, 0);
+		g->op_lssh = gtk_label_new("SSH program");
+		gtk_box_pack_start(GTK_BOX(g->op_hbox2), g->op_lssh,
+				FALSE, FALSE, 0);
+		g->op_essh = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(g->op_hbox2), g->op_essh,
+				FALSE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(g->op_vbox), g->op_hbox2,
+				FALSE, FALSE, 4);
+		/* buttons */
+		g->op_hbox3 = gtk_hbox_new(FALSE, 0);
+		g->op_ok = gtk_button_new_from_stock(GTK_STOCK_OK);
+		g_signal_connect(G_OBJECT(g->op_ok), "clicked",
+				G_CALLBACK(gputty_on_options_ok), g);
+		gtk_box_pack_end(GTK_BOX(g->op_hbox3), g->op_ok,
+				FALSE, FALSE, 0);
+		g->op_cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+		g_signal_connect(G_OBJECT(g->op_cancel), "clicked",
+				G_CALLBACK(gputty_on_options_cancel), g);
+		gtk_box_pack_end(GTK_BOX(g->op_hbox3), g->op_cancel,
+				FALSE, FALSE, 4);
+		gtk_box_pack_start(GTK_BOX(g->op_vbox), g->op_hbox3,
+				FALSE, FALSE, 0);
+		gtk_container_add(GTK_CONTAINER(g->op_window), g->op_vbox);
+		gtk_widget_show_all(g->op_window);
+	}
+	if((p = config_get(g->config, "", "xterm")) != NULL)
+		gtk_entry_set_text(GTK_ENTRY(g->op_exterm), p);
+	if((p = config_get(g->config, "", "ssh")) != NULL)
+		gtk_entry_set_text(GTK_ENTRY(g->op_essh), p);
+	gtk_widget_show(g->op_window);
+}
+
+static void gputty_on_options_cancel(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+
+	gtk_widget_hide(g->op_window);
+}
+
+static void gputty_on_options_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+{
+	GPuTTY * g = data;
+
+	gtk_widget_hide(g->op_window);
+}
+
+static void gputty_on_options_ok(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+
+	gtk_widget_hide(g->op_window);
+	config_set(g->config, "", "xterm",
+			(void*)gtk_entry_get_text(GTK_ENTRY(g->op_exterm)));
+	config_set(g->config, "", "ssh",
+			(void*)gtk_entry_get_text(GTK_ENTRY(g->op_essh)));
+}
+
 static void gputty_on_quit(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 
-	config_set(g->config, "", "hostname", (void*)gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname)));
-	config_set(g->config, "", "username", (void*)gtk_entry_get_text(GTK_ENTRY(g->hn_eusername)));
+	config_set(g->config, "", "hostname",
+			(void*)gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname)));
+	config_set(g->config, "", "username",
+			(void*)gtk_entry_get_text(GTK_ENTRY(g->hn_eusername)));
 	if(g->config == NULL)
-		fprintf(stderr, "gputty: not saving configuration\n");
+		fprintf(stderr, "%s", "gputty: not saving configuration\n");
 	else if(config_save(g->config, ".gputty") != 0)
-		fprintf(stderr, "gputty: an error occured while saving configuration\n");
+		fprintf(stderr, "%s", "gputty: an error occured while saving configuration\n");
 	gtk_main_quit();
 }
 

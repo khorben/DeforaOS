@@ -68,8 +68,21 @@ typedef struct _GPuTTY {
 	/* actions */
 	GtkWidget * ac_hbox;
 	GtkWidget * ac_about;
+	GtkWidget * ac_options;
 	GtkWidget * ac_quit;
 	GtkWidget * ac_connect;
+	/* options */
+	GtkWidget * op_window;
+	GtkWidget * op_vbox;
+	GtkWidget * op_hbox1;
+	GtkWidget * op_lxterm;
+	GtkWidget * op_exterm;
+	GtkWidget * op_hbox2;
+	GtkWidget * op_lssh;
+	GtkWidget * op_essh;
+	GtkWidget * op_hbox3;
+	GtkWidget * op_ok;
+	GtkWidget * op_cancel;
 	/* about */
 	GtkWidget * ab_window;
 	GtkWidget * ab_vbox;
