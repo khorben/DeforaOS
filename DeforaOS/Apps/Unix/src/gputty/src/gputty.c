@@ -127,7 +127,7 @@ GPuTTY * gputty_new(void)
 	g->sn_delete = gtk_button_new_with_label("Delete");
 	gtk_container_set_border_width(GTK_CONTAINER(g->sn_delete), 2);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_delete, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox3, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox3, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox1), g->sn_hbox, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(g->sn_frame), g->sn_vbox1);
 	gtk_box_pack_start(GTK_BOX(g->vbox), g->sn_frame, TRUE, TRUE, 0);
