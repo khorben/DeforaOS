@@ -12,4 +12,4 @@ ls:
 - only has basic functionalities
 
 mkdir/rmdir:
-- check recursive creation algorithms
+- check recursive algorithms
