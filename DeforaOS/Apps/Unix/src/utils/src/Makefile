@@ -1,4 +1,4 @@
-TARGETS	= basename cat cmp dirname false kill id link ln logname ls mkfifo true tty uname unlink
+TARGETS	= basename cat cmp dirname false kill id link ln logname ls mkfifo rmdir true tty uname unlink
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -44,6 +44,9 @@ ls: ls.o
 
 mkfifo: mkfifo.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mkfifo mkfifo.o
+
+rmdir: rmdir.o
+	$(CC) $(CFLAGSF) $(CFLAGS) -o rmdir rmdir.o
 
 true: true.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o true true.o
@@ -91,6 +94,9 @@ ls.o: ls.c
 mkfifo.o: mkfifo.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c mkfifo.c
 
+rmdir.o: rmdir.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c rmdir.c
+
 true.o: true.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c true.c
 
@@ -105,7 +111,7 @@ unlink.o: unlink.c
 
 
 clean:
-	$(RM) basename.o cat.o cmp.o dirname.o false.o id.o kill.o link.o ln.o logname.o ls.o mkfifo.o true.o tty.o uname.o unlink.o
+	$(RM) basename.o cat.o cmp.o dirname.o false.o id.o kill.o link.o ln.o logname.o ls.o mkfifo.o rmdir.o true.o tty.o uname.o unlink.o
 
 distclean: clean
 	$(RM) $(TARGETS)
