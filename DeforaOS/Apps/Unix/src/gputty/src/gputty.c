@@ -53,6 +53,7 @@ GPuTTY * gputty_new(void)
 
 	if((g = malloc(sizeof(GPuTTY))) == NULL)
 	{
+		fprintf(stderr, "%s", "gputty: ");
 		perror("malloc");
 		return NULL;
 	}
@@ -102,6 +103,9 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox2), g->hn_lport, TRUE, TRUE, 0);
 	g->hn_sport_adj = (GtkAdjustment *)gtk_adjustment_new(22, 0, 65535, 1, 4, 4);
 	g->hn_sport = gtk_spin_button_new(g->hn_sport_adj, 1, 0);
+	i = strtol(config_get(g->config, "", "port"), &p, 10);
+	if(*p == '\0' && i >= 0 && i <= 65535)
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport), i);
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox2), g->hn_sport, TRUE, TRUE, 0);
 	/* hostname: username */
 	g->hn_vbox3 = gtk_vbox_new(FALSE, 0);
@@ -318,6 +322,7 @@ static void gputty_on_load(GtkWidget * widget, gpointer data)
 	GPuTTY * g = data;
 	char buf[11];
 	char * p;
+	int port;
 
 	if(g->selection < 0 || g->selection >= 100)
 		return;
@@ -330,6 +335,9 @@ static void gputty_on_load(GtkWidget * widget, gpointer data)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), "");
 	else
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), p);
+	port = strtol(config_get(g->config, buf, "port"), &p, 10);
+	if(*p == '\0' && port >= 0 && port <= 65535)
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport), port);
 }
 
 static void gputty_on_options_cancel(GtkWidget * widget, gpointer data);
@@ -421,15 +429,23 @@ static void gputty_on_options_ok(GtkWidget * widget, gpointer data)
 static void gputty_on_quit(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
+	char buf[11];
 
+	if(g->config == NULL)
+	{
+		fprintf(stderr, "%s", "gputty: not saving configuration\n");
+		gtk_main_quit();
+		return;
+	}
 	config_set(g->config, "", "hostname",
 			(void*)gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname)));
 	config_set(g->config, "", "username",
 			(void*)gtk_entry_get_text(GTK_ENTRY(g->hn_eusername)));
-	if(g->config == NULL)
-		fprintf(stderr, "%s", "gputty: not saving configuration\n");
-	else if(config_save(g->config, ".gputty") != 0)
-		fprintf(stderr, "%s", "gputty: an error occured while saving configuration\n");
+	sprintf(buf, "%d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport)));
+	config_set(g->config, "", "port", buf);
+	if(config_save(g->config, ".gputty") != 0)
+		fprintf(stderr, "%s%s", "gputty: an error occured while",
+				" saving configuration\n");
 	gtk_main_quit();
 }
 
@@ -447,6 +463,7 @@ static void gputty_on_save(GtkWidget * widget, gpointer data)
 	char const * username;
 	int row;
 	char buf[11];
+	char buf2[11];
 
 	g = data;
 	session = gtk_entry_get_text(GTK_ENTRY(g->sn_esessions));
@@ -469,9 +486,11 @@ static void gputty_on_save(GtkWidget * widget, gpointer data)
 	if(row >= 100 || row < 0)
 		return;
 	sprintf(buf, "session %d", row);
+	sprintf(buf2, "%d", port);
 	config_set(g->config, buf, "name", strdup(session));
 	config_set(g->config, buf, "hostname", strdup(hostname));
 	config_set(g->config, buf, "username", strdup(username));
+	config_set(g->config, buf, "port", strdup(buf2));
 }
 
 static void gputty_on_select(GtkWidget * widget, gint row, gint column, GdkEventButton *event, gpointer data)
