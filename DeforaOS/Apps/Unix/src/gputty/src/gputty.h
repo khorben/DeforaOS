@@ -26,7 +26,9 @@
 /* GPuTTY */
 /* defaults */
 # define SSH "ssh"
+# define SSH_PORT 22
 # define XTERM "xterm"
+# define GPUTTY_CONFIG_FILE ".gputty"
 
 
 /* types */
