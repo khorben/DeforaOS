@@ -59,7 +59,7 @@ GPuTTY * gputty_new(void)
 
 	/* widgets */
 	g->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(g->window), "GPuTTY configuration");
+	gtk_window_set_title(GTK_WINDOW(g->window), "GPuTTY");
 	gtk_container_set_border_width(GTK_CONTAINER(g->window), 2);
 	g_signal_connect(G_OBJECT(g->window), "delete_event",
 			G_CALLBACK(gputty_quitx), g);
