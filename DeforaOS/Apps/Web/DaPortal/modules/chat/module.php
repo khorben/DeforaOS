@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -52,15 +52,15 @@ function chat_default()
 		for($i = sizeof($res) - 1; $i >= 0; $i--)
 		{
 			print("\t\t<div style=\"font-family: monospace\">");
-			$time = explode(" ", $res[$i]["timestamp"]);
-			$time = explode("+", $time[1]);
-			print($time[0]." <font color=\"");
-			if($res[$i]["author"] == $userid)
+			$time = explode(' ', $res[$i]['timestamp']);
+			$time = explode('+', $time[1]);
+			print($time[0].' <font color="');
+			if($res[$i]['author'] == $userid)
 				print("red\">&lt;</font>$username<font color=\"red\"");
 			else if(($res2 = sql_query("select username from daportal_users where userid='".$res[$i]["author"]."';")) != FALSE)
-				print("blue\">&lt;</font>".$res2[0]["username"]."<font color=\"blue");
-			print("\">&gt;</font> ");
-			print($res[$i]["text"]."</div>\n");
+				print("blue\">&lt;</font>".$res2[0]['username']."<font color=\"blue");
+			print('">&gt;</font> ');
+			print($res[$i]['text']."</div>\n");
 		}
 	}
 	if($userid == 0)
@@ -84,11 +84,11 @@ function chat_dump()
 
 	if($administrator != 1)
 		return 0;
-	if(($res = sql_query("select author, timestamp, text from daportal_chat;")) == NULL)
+	if(($res = sql_query('select author, timestamp, text from daportal_chat;')) == NULL)
 		return 0;
 	while(sizeof($res) >= 1)
 	{
-		print("insert into daportal_chat (author, timestamp, text) values ('".$res[0]["author"]."', '".$res[0]["timestamp"]."', '".$res[0]["text"]."');\n");
+		print("insert into daportal_chat (author, timestamp, text) values ('".$res[0]['author']."', '".$res[0]['timestamp']."', '".$res[0]['text']."');\n");
 		array_shift($res);
 	}
 	return 0;
@@ -101,7 +101,7 @@ function chat_install()
 
 	if($administrator != 1)
 		return 0;
-	sql_table_create("daportal_chat", "(
+	sql_table_create('daportal_chat', "(
 	author integer,
 	timestamp timestamp NOT NULL DEFAULT ('now'),
 	text varchar(80),
@@ -118,9 +118,9 @@ function chat_send()
 	if($userid == 0)
 		return 1;
 	$author = $userid;
-	$text = htmlentities($_POST["text"]);
+	$text = htmlentities($_POST['text']);
 	sql_query("insert into daportal_chat (author, timestamp, text) values ('$author', '".date("Y-m-d H:i:s")."', '$text');");
-	header("Location: index.php?module=chat");
+	header('Location: index.php?module=chat');
 	return 0;
 }
 
@@ -131,25 +131,8 @@ function chat_uninstall()
 
 	if($administrator != 1)
 		return 0;
-	sql_table_drop("daportal_chat");
+	sql_table_drop('daportal_chat');
 	return 0;
-}
-
-
-switch($action)
-{
-	case "admin":
-		return chat_admin();
-	case "dump":
-		return chat_dump();
-	case "install":
-		return chat_install();
-	case "send":
-		return chat_send();
-	case "uninstall":
-		return chat_uninstall();
-	default:
-		return chat_default();
 }
 
 

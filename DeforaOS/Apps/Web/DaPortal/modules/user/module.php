@@ -275,26 +275,4 @@ function user_uninstall()
 	return 1;
 }
 
-
-switch($action)
-{
-	case "admin":
-		return user_admin();
-	case "dump":
-		return user_dump();
-	case "install":
-		return user_install();
-	case "login":
-		return user_login();
-	case "logout":
-		return user_logout();
-	case "register":
-		return user_register();
-	case "uninstall":
-		return user_uninstall();
-	default:
-		return user_default();
-}
-
-
 ?>

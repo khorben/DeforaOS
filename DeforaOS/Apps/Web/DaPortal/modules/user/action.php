@@ -19,57 +19,31 @@
 
 
 //check url
-if(eregi('module.php', $_SERVER['REQUEST_URI']))
+if(eregi('action.php', $_SERVER['REQUEST_URI']))
 {
 	header('Location: ../../index.php');
 	exit(1);
 }
+require_once('module.php');
 
-
-function skel_admin()
+switch($action)
 {
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
+	case 'admin':
+		return user_admin();
+	case 'dump':
+		return user_dump();
+	case 'install':
+		return user_install();
+	case 'login':
+		return user_login();
+	case 'logout':
+		return user_logout();
+	case 'register':
+		return user_register();
+	case 'uninstall':
+		return user_uninstall();
+	default:
+		return user_default();
 }
-
-
-function skel_default()
-{
-	return 0;
-}
-
-
-function skel_dump()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
-
-function skel_install()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
-
-function skel_uninstall()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
 
 ?>

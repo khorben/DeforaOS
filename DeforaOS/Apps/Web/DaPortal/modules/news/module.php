@@ -19,18 +19,18 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
 
 function display_date($date)
 {
-	$date = explode("-", $date);
+	$date = explode('-', $date);
 	$date = mktime(0, 0, 0, $date[1], $date[2], $date[0]);
-	print(date("l, F jS Y", $date));
+	print(date('l, F jS Y', $date));
 }
 
 
@@ -80,17 +80,17 @@ function news_admin()
 \t\t\t<tr/>\n");
 	while(sizeof($res) >= 1)
 	{
-		$author = $res[0]["username"];
-		$enable = $res[0]["enable"] == "t";
+		$author = $res[0]['username'];
+		$enable = $res[0]['enable'] == 't';
 		print("\t\t\t<tr>
-\t\t\t\t<td><a href=\"index.php?module=news&amp;id=".$res[0]["newsid"]."\">".$res[0]["title"]."</a></td>
+\t\t\t\t<td><a href=\"index.php?module=news&amp;id=".$res[0]['newsid']."\">".$res[0]['title']."</a></td>
 \t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
-\t\t\t\t<td>".$res[0]["date"]."</td>
+\t\t\t\t<td>".$res[0]['date']."</td>
 \t\t\t\t<td><form method=\"post\" action=\"index.php\" style=\"display: inline\">
-\t<input type=\"submit\" value=\"".($enable ? "Disable" : "Enable")."\">
+\t<input type=\"submit\" value=\"".($enable ? 'Disable' : 'Enable')."\">
 \t<input type=\"hidden\" name=\"module\" value=\"news\">
 \t<input type=\"hidden\" name=\"action\" value=\"moderate\">
-\t<input type=\"hidden\" name=\"newsid\" value=\"".$res[0]["newsid"]."\">
+\t<input type=\"hidden\" name=\"newsid\" value=\"".$res[0]['newsid']."\">
 \t<input type=\"hidden\" name=\"enable\" value=\"".($enable ? "0" : "1")."\">
 </form></td>
 \t\t\t<tr>\n");
@@ -104,15 +104,15 @@ function news_admin()
 function news_default()
 {
 	print("\t\t<h1><img src=\"modules/news/icon.png\" alt=\"news\"/>News");
-	if(is_numeric($_GET["id"]))
+	if(is_numeric($_GET['id']))
 	{
 		print("</h1>\n");
-		return news_id($_GET["id"]);
+		return news_id($_GET['id']);
 	}
-	if($_GET["username"] != "" && ereg("^[a-z]{1,9}$", $_GET["username"]))
+	if($_GET['username'] != "" && ereg('^[a-z]{1,9}$', $_GET['username']))
 	{
-		print(" by ".$_GET["username"]."</h1>\n");
-		return news_username($_GET["username"]);
+		print(' by '.$_GET['username']."</h1>\n");
+		return news_username($_GET['username']);
 	}
 	print(" summary</h1>
 \t\t<p>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</p>\n");
@@ -130,8 +130,8 @@ function news_summary()
 		print("\t\t<p>There aren't any news yet.</p>\n");
 		return 0;
 	}
-	$count = $res[0]["count"];
-	$offset = is_numeric($_GET["offset"]) ? $_GET["offset"] * $npp : 0;
+	$count = $res[0]['count'];
+	$offset = is_numeric($_GET['offset']) ? $_GET['offset'] * $npp : 0;
 	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
 	{
 		$first = $offset + 1;
@@ -139,23 +139,23 @@ function news_summary()
 		print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
 		while(sizeof($res) >= 1)
 		{
-			display($res[0]["title"],
-					$res[0]["username"],
-					$res[0]["date"],
-					$res[0]["content"]);
+			display($res[0]['title'],
+					$res[0]['username'],
+					$res[0]['date'],
+					$res[0]['content']);
 			array_shift($res);
 		}
 		print("\t\t<p>Page: ");
-		if($_GET["offset"] == 0)
-			print("1");
+		if($_GET['offset'] == 0)
+			print('1');
 		else
-			print("<a href=\"index.php?module=news&amp;offset=0\">1</a>");
+			print('<a href="index.php?module=news&amp;offset=0">1</a>');
 		for($i = 1; $i < $count / $npp; $i++)
 		{
-			if($i == $_GET["offset"])
-				print(" | ".($i+1));
+			if($i == $_GET['offset'])
+				print(' | '.($i+1));
 			else
-				print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1)."</a>");
+				print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1).'</a>');
 		}
 		print("</p>\n");
 	}
@@ -166,16 +166,16 @@ function news_summary()
 function news_dump()
 {
 	global $administrator, $moduleid;
-	require_once("system/contents.php");
+	require_once('system/contents.php');
 
 	if($administrator != 1)
 		return 0;
 	contents_dump();
-	if(($res = sql_query("select newsid, author, date from daportal_news;")) == NULL)
+	if(($res = sql_query('select newsid, author, date from daportal_news;')) == NULL)
 		return 0;
 	while(sizeof($res) >= 1)
 	{
-		print("insert into daportal_news (newsid, author, date) values ('".$res[0]["newsid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."');\n");
+		print("insert into daportal_news (newsid, author, date) values ('".$res[0]['newsid']."', '".$res[0]['author']."', '".$res[0]['date']."');\n");
 		array_shift($res);
 	}
 	return 0;
@@ -192,8 +192,8 @@ function news_id($id)
 		print("\t\t<p>Unknown news.</p>\n");
 		return 0;
 	}
-	display($res[0]["title"], $res[0]["username"],
-			$res[0]["date"], $res[0]["content"]);
+	display($res[0]['title'], $res[0]['username'],
+			$res[0]['date'], $res[0]['content']);
 	return 0;
 }
 
@@ -204,7 +204,7 @@ function news_install()
 
 	if($administrator != 1)
 		return 0;
-	sql_table_create("daportal_news", "(
+	sql_table_create('daportal_news', "(
 	newsid integer,
 	author integer,
 	date date NOT NULL DEFAULT ('now'),
@@ -224,8 +224,8 @@ function news_last($number)
 		return 0;
 	while(sizeof($res) >= 1)
 	{
-		display($res[0]["title"], $res[0]["username"],
-				$res[0]["date"], $res[0]["content"]);
+		display($res[0]['title'], $res[0]['username'],
+				$res[0]['date'], $res[0]['content']);
 		array_shift($res);
 	}
 	return 0;
@@ -235,19 +235,19 @@ function news_last($number)
 function news_moderate()
 {
 	global $administrator, $moderator;
-	require_once("system/contents.php");
+	require_once('system/contents.php');
 
-	if($_SERVER["REQUEST_METHOD"] != "POST")
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return 0;
 	if($administrator != 1 && $moderator != 1)
 		return 0;
-	$newsid = $_POST["newsid"];
-	$enable = $_POST["enable"];
-	if($enable == "1")
+	$newsid = $_POST['newsid'];
+	$enable = $_POST['enable'];
+	if($enable == '1')
 		contents_enable($newsid);
 	else
 		contents_disable($newsid);
-	header("Location: index.php?module=news&action=admin");
+	header('Location: index.php?module=news&action=admin');
 	return 0;
 }
 
@@ -283,13 +283,13 @@ function news_submit()
 
 	if($userid == 0)
 		return 1;
-	$title = htmlentities($_POST["title"]);
-	$content = htmlentities($_POST["content"]);
+	$title = htmlentities($_POST['title']);
+	$content = htmlentities($_POST['content']);
 	$res = sql_query("select nextval('daportal_contents_contentid_seq');");
-	$contentid = $res[0]["nextval"];
+	$contentid = $res[0]['nextval'];
 	sql_query("insert into daportal_contents (contentid, moduleid, title, content) values ('$contentid', '$moduleid', '$title', '$content');");
 	sql_query("insert into daportal_news (newsid, author) values ('$contentid', '$userid');");
-	header("Location: index.php?module=news&action=thanks");
+	header('Location: index.php?module=news&action=thanks');
 	exit(0);
 }
 
@@ -314,7 +314,7 @@ function news_uninstall()
 	if($administrator != 1)
 		return 0;
 	//FIXME remove linked content in daportal_contents
-	sql_table_drop("daportal_news");
+	sql_table_drop('daportal_news');
 	return 0;
 }
 
@@ -331,8 +331,8 @@ function news_username($username)
 	$i = 1;
 	while(sizeof($res) >= 1)
 	{
-		$id = $res[0]["newsid"];
-		$title = $res[0]["title"];
+		$id = $res[0]['newsid'];
+		$title = $res[0]['title'];
 		print("\t\t<p>
 \t\t\t$i. <a href=\"index.php?module=news&amp;id=$id\">$title</a><br/>
 \t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=news&amp;id=$id</i>
@@ -341,35 +341,6 @@ function news_username($username)
 		array_shift($res);
 	}
 	return 0;
-}
-
-
-switch($action)
-{
-	case "admin":
-		return news_admin();
-	case "dump":
-		return news_dump();
-	case "install":
-		return news_install();
-	case "last":
-		return news_last(1);
-	case "last2":
-		return news_last(2);
-	case "last3":
-		return news_last(3);
-	case "moderate":
-		return news_moderate();
-	case "propose":
-		return news_propose();
-	case "submit":
-		return news_submit();
-	case "thanks":
-		return news_thanks();
-	case "uninstall":
-		return news_uninstall();
-	default:
-		return news_default();
 }
 
 

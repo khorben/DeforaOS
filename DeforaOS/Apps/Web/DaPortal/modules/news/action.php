@@ -19,56 +19,39 @@
 
 
 //check url
-if(eregi('module.php', $_SERVER['REQUEST_URI']))
+if(eregi('action.php', $_SERVER['REQUEST_URI']))
 {
 	header('Location: ../../index.php');
 	exit(1);
 }
+require_once('module.php');
 
-
-function skel_admin()
+switch($action)
 {
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
-
-function skel_default()
-{
-	return 0;
-}
-
-
-function skel_dump()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
-
-function skel_install()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
-
-function skel_uninstall()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
+	case 'admin':
+		return news_admin();
+	case 'dump':
+		return news_dump();
+	case 'install':
+		return news_install();
+	case 'last':
+		return news_last(1);
+	case 'last2':
+		return news_last(2);
+	case 'last3':
+		return news_last(3);
+	case 'moderate':
+		return news_moderate();
+	case 'propose':
+		return news_propose();
+	case 'submit':
+		return news_submit();
+	case 'thanks':
+		return news_thanks();
+	case 'uninstall':
+		return news_uninstall();
+	default:
+		return news_default();
 }
 
 

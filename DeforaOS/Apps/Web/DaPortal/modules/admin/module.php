@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -47,7 +47,7 @@ function admin_admin()
 		}
 	}
 	else
-		print(" none.");
+		print(' none.');
 	print("\n\t\t</div>
 \t\t<div>
 \t\t\t<b>Disabled modules:</b>");
@@ -55,12 +55,12 @@ function admin_admin()
 	{
 		while(sizeof($res) >= 1)
 		{
-			print(" ".$res[0]["modulename"]);
+			print(' '.$res[0]['modulename']);
 			array_shift($res);
 		}
 	}
 	else
-		print(" none.");
+		print(' none.');
 	print("<br/>
 \t\t</div>");
 	return 0;
@@ -83,10 +83,10 @@ function admin_default()
 	{
 		while(sizeof($res) >= 1)
 		{
-			$modulename = $res[0]["modulename"];
+			$modulename = $res[0]['modulename'];
 			print("\t\t\t<div style=\"display: inline\">
 \t\t\t\t<a href=\"index.php?module=".$modulename."&amp;action=admin\">\n");
-			if(file_exists("modules/".$modulename."/icon.png"))
+			if(file_exists('modules/'.$modulename.'/icon.png'))
 				print("\t\t\t\t\t<div style=\"display: table-row\"><img src=\"modules/".$modulename."/icon.png\" alt=\"".$modulename."\"/></div>\n");
 			print("\t\t\t\t\t<div style=\"display: table-row; text-align: center\">$modulename</div>
 \t\t\t\t</a>
@@ -126,21 +126,6 @@ function admin_uninstall()
 	if($administrator != 1)
 		return 0;
 	return 0;
-}
-
-
-switch($action)
-{
-	case "admin":
-		return admin_admin();
-	case "dump":
-		return admin_dump();
-	case "install":
-		return admin_install();
-	case "uninstall":
-		return admin_uninstall();
-	default:
-		return admin_default();
 }
 
 

@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -51,9 +51,9 @@ function search_default()
 \t\t\t\t<input type=\"submit\" value=\"Search\"/>
 \t\t\t</div>
 \t\t</form>\n");
-	if($_GET["q"] == "")
+	if($_GET['q'] == '')
 		return 0;
-	if(($res = sql_query("select moduleid, contentid, title from daportal_contents where enable='1' and content like '%".$_GET["q"]."%';")) == FALSE)
+	if(($res = sql_query("select moduleid, contentid, title from daportal_contents where enable='1' and content like '%".$_GET['q']."%';")) == FALSE)
 	{
 		print("\t\t<div>No matches, sorry.</div>\n");
 		return 0;
@@ -62,9 +62,9 @@ function search_default()
 	$i = 1;
 	while(sizeof($res) >= 1)
 	{
-		$module = module_name($res[0]["moduleid"], 1);
-		$contentid = $res[0]["contentid"];
-		$title = $res[0]["title"];
+		$module = module_name($res[0]['moduleid'], 1);
+		$contentid = $res[0]['contentid'];
+		$title = $res[0]['title'];
 		print("\t\t<p>
 \t\t\t$i. <a href=\"index.php?module=$module&amp;id=$contentid\">$title</a><br/>
 \t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=$module&amp;id=$contentid</i>

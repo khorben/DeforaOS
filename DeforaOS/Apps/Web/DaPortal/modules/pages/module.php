@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -42,13 +42,13 @@ function pages_admin()
 \t\t\t\t<th>View</th>
 \t\t\t\t<th>Edit</th>
 \t\t\t</tr>\n");
-	if(($dir = opendir("pages")) != FALSE)
+	if(($dir = opendir('pages')) != FALSE)
 	{
 		readdir($dir);
 		readdir($dir);
 		while($file = readdir($dir))
 		{
-			if(!eregi("^([a-z]+)\.tpl$", $file, $args))
+			if(!eregi('^([a-z]+)\.tpl$', $file, $args))
 				continue;
 			$page = $args[1];
 			print("\t\t\t<tr>
@@ -65,12 +65,12 @@ function pages_admin()
 
 function pages_default()
 {
-	require_once("system/page.php");
-	$page = $_GET["page"];
-	if($page == "" || !ereg("^[a-z]+$", $page))
-		$page = "index";
+	require_once('system/page.php');
+	$page = $_GET['page'];
+	if($page == '' || !ereg('^[a-z]+$', $page))
+		$page = 'index';
 	print("\t\t<h1>Page preview: $page</h1>\n");
-	return raw_include("pages/".$page.".tpl");
+	return raw_include('pages/'.$page.'.tpl');
 }
 
 
@@ -86,19 +86,19 @@ function pages_dump()
 
 function pages_edit()
 {
-	require_once("system/raw.php");
-	require_once("system/page.php");
+	require_once('system/raw.php');
+	require_once('system/page.php');
 	global $administrator;
 
 	if($administrator != 1)
 		return 0;
-	$page = $_GET["page"];
-	if($page == "" || !ereg("^[a-z]+$", $page))
-		$page = "index";
+	$page = $_GET['page'];
+	if($page == '' || !ereg('^[a-z]+$', $page))
+		$page = 'index';
 	print("\t\t<h1>Page edition</h1>
 \t\t<form method=\"post\" action=\"index.php\">
 \t\t<textarea name=\"content\" rows=\"24\" cols=\"80\">");
-	raw_include("pages/$page.tpl");
+	raw_include('pages/'.$page.'.tpl');
 	print("</textarea>
 \t\t\t<br/>
 \t\t\t<input type=\"submit\" value=\"Save\"/>
@@ -106,7 +106,7 @@ function pages_edit()
 \t\t\t<input type=\"hidden\" name=\"action\" value=\"save\"/>
 \t\t\t<input type=\"hidden\" name=\"page\" value=\"$page\"/>
 \t\t</form>\n");
-	if(is_readable("pages/$page.tpl"))
+	if(is_readable('pages/'.$page.'.tpl'))
 	{
 		print("\t\t<h2>Page preview</h2>
 \t\t<div class=\"headline\">\n");
@@ -133,13 +133,13 @@ function pages_save()
 
 	if($administrator != 1)
 		return 0;
-	$page = $_POST["page"];
-	if(!ereg("^[a-z]+$", $page))
+	$page = $_POST['page'];
+	if(!ereg('^[a-z]+$', $page))
 		return 0;
-	if(($fp = fopen("pages/$page.tmp", "x")) == FALSE)
+	if(($fp = fopen("pages/$page.tmp", 'x')) == FALSE)
 		return 0;
 	
-	fwrite($fp, stripslashes($_POST["content"]));
+	fwrite($fp, stripslashes($_POST['content']));
 	fclose($fp);
 	if(file_exists("pages/$page.tpl"))
 		@unlink("pages/$page.tpl");
@@ -156,25 +156,6 @@ function pages_uninstall()
 	if($administrator != 1)
 		return 0;
 	return 0;
-}
-
-
-switch($action)
-{
-	case "admin":
-		return pages_admin();
-	case "dump":
-		return pages_dump();
-	case "edit":
-		return pages_edit();
-	case "install":
-		return pages_install();
-	case "save":
-		return pages_save();
-	case "uninstall":
-		return pages_uninstall();
-	default:
-		return pages_default();
 }
 
 

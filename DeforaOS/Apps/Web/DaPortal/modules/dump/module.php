@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -47,7 +47,7 @@ function dump_default()
 	if($administrator != 1)
 		return 0;
 	print("\t\t<h1>Database dump</h1>\n");
-	if(($modules = sql_query("select modulename from daportal_modules;")) == NULL)
+	if(($modules = sql_query('select modulename from daportal_modules;')) == NULL)
 	{
 		print("\t\t<div>Error while listing modules.</div>\n");
 		return 1;
@@ -55,10 +55,10 @@ function dump_default()
 	print("\t\t<pre>\n");
 	while(sizeof($modules) >= 1)
 	{
-		if($modules[0]["modulename"] != "dump")
+		if($modules[0]['modulename'] != 'dump')
 		{
-			print(";dump for module ".$modules[0]["modulename"]."\n");
-			module_include($modules[0]["modulename"], "dump");
+			print(';dump for module '.$modules[0]['modulename']."\n");
+			module_include($modules[0]['modulename'], 'dump');
 			print("\n");
 		}
 		array_shift($modules);
