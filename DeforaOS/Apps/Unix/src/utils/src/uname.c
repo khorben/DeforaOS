@@ -37,7 +37,7 @@ static int _uname(int m, int n, int r, int s, int v)
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "Usage: uname [-snrvma]\n\
   -s    operating system name\n\
@@ -87,7 +87,7 @@ int main(int argc, char * argv[])
 				flagr = 1;
 				break;
 			case '?':
-				return usage();
+				return _usage();
 		}
 	}
 	return _uname(flagm, flagn, flagr, flags, flagv);
