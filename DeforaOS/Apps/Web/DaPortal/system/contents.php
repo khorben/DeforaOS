@@ -34,6 +34,21 @@ function contents_disable($contentid)
 }
 
 
+function contents_dump()
+{
+	global $moduleid;
+
+	if(($res = sql_query("select contentid, title, content, enable from daportal_contents where moduleid='$moduleid';")) == NULL)
+		return 0;
+	while(sizeof($res) >= 1)
+	{
+		print("insert into daportal_contents (contentid, moduleid, title, content, enable) values ('".$res[0]["contentid"]."', '$moduleid', '".$res[0]["content"]."', '".$res[0]["enable"]."');\n");
+		array_shift($res);
+	}
+	return 0;
+}
+
+
 function contents_enable($contentid)
 {
 	global $moduleid;
