@@ -181,16 +181,22 @@ UNIX carries simple concepts of every part of the system. It has light and flexi
 			<sect3>
 				<title>Windows</title>
 				<para>
-FIXME:
-- few distributions, 200 major applications per usage
-- complex concepts
-- heavy historical inheritances within a few years
-- registry
-- DLL hell
-- localization issues
-- original terms renamed and appropriated
-- closed and lazy development where monopoly, aggressive standards conformance policy else (and often buggy too)
-- .Net/WinForms/XAML paradoxor
+Windows is the product of one company, which happens to have a very strong market share of critical fiels of computer software. Few versions of Windows exist, and they are nearly fully compatible with each other.
+				</para>
+				<para>
+However the big market share has attracted a huge part software development efforts on this platform, often gaining money from its design and implementations flaws. Consequently they are often many different major applications in every field, which often provide poor support, for they have commercial and proprietary development model, and often get bought by each other, or even disappear or simply drop support.
+				</para>
+				<para>
+Windows often carries very complex conceptions of an operating system, which are often badly documented, and of course won't be available in source code unless you pay or have any other kind of power. In consequence many applications are written the bad way, get famous and so must work on every different Windows, and so carry the system bugs forever.
+				</para>
+				<para>
+This leads to awful historical inheritances while the system is about 10 years old, and chaos deep inside the system (DLL conflicts, registry mess, localization issues, ...).
+				</para>
+				<para>
+The company wants its software to be accessible to any user, so many technical and original terms get renamed and appropriated, as a way to stuck and fool the user to the platform. On the other side, experienced users keep being frustrated, particularly where the development roadmap is so obfuscated and subject to contradictory decisions (eg MFC vs .net WinForms vs XAML).
+				</para>
+				<para>
+The most revealing company behaviour, even more than the FUD (fear, uncertainty, doubt) spread against its competitors, is the embrace and extend gluttony. The company uses aggressive standards conformance where it does not yet dominate a market, then buys the major actors in the given area, and then uses proprietary protocols and stops development of the product.
 				</para>
 			</sect3>
 			<sect3>
