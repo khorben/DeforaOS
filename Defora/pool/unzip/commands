@@ -1,0 +1,10 @@
+#clean
+make distclean
+
+#configure
+
+#build
+make -f unix/Makefile linux &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
