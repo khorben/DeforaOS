@@ -68,9 +68,18 @@ FIXME
 		<title>Technical choices</title>
 		<sect2>
 			<title>Micro kernel</title>
-			<para>
+			<sect3>
+				<title>Booting</title>
+				<para>
+The system will boot with a minimal filesystem image in memory, mounting the system directory from a location hard-coded in the image, or a bootloader parameter. Additional volumes will be directly available in the volumes hierarchy, and eventually mapped to the user defined applications and data files hierarchies.
+				</para>
+			</sect3>
+			<sect3>
+				<title>Virtual File System</title>
+				<para>
 FIXME
-			</para>
+				</para>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Programming languages</title>
@@ -140,7 +149,7 @@ About the graphical toolkit for applications, I insist that only one library wil
 The filesystem is highly inspired from the UNIX one, but taking in consideration the user only needs to access his files, applications, volumes or shared files most of the time. Consequently, the following directories are available at top level: "Apps", "Data", "System" and "Volumes". The "System" directory could even have been called ".System" to only let the advanced users access it via the common interfaces.
 		</para>
 		<para>
-Beware that this section may be subject to modifications, particularly about the applications binaries path, because the applications engines/interfaces design is not finished yet, even in my head. It could even be considered that the place of an executable in the filesystem hierarchy could determine its privileges; this can't be a security risk, since when one gains access to the filesystem, then he has already access to the full system.
+It could even be considered that the place of an executable in the filesystem hierarchy could determine its privileges; this can't be a security risk, since when one gains access to the filesystem, then he has already access to the full system.
 		</para>
 		<sect2>
 			<title>/Apps</title>
@@ -148,10 +157,11 @@ Beware that this section may be subject to modifications, particularly about the
 It contains a sub-directory per applications group. In this sub-directory one man find the following directories:
 			</para>
 			<itemizedlist>
-				<listitem><para>bin: the applications binaries</para></listitem>
-				<listitem><para>lib: the shared libraries</para></listitem>
-				<listitem><para>sbin: the applications binaries useful for administration</para></listitem>
-				<listitem><para>src: the applications source code (a sub-directory per package)</para></listitem>
+				<listitem><para>Binaries: the applications binaries</para></listitem>
+				<listitem><para>Engines: the applications binaries</para></listitem>
+				<listitem><para>Libraries: the shared libraries</para></listitem>
+				<listitem><para>System: the applications administration binaries</para></listitem>
+				<listitem><para>Sources: the applications source code (a sub-directory per package)</para></listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -169,6 +179,7 @@ System hierarchy. Contains the following sub-directories:
 				<listitem><para>Apps: system essential applications and libraries, containing a Apps/subdirectory like hierarchy.</para></listitem>
 				<listitem><para>Devices: equivalent to the /dev</para></listitem>
 				<listitem><para>Kernel: equivalent to the /proc on Linux</para></listitem>
+				<listitem><para>Sources: the associated source code (a sub-directory per entity)</para></listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -179,7 +190,6 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 		</sect2>
 	</sect1>
 <!--
-- filesystem: keep what's good in UNIX, present it in a friendlier way
 - APIs
   * C library:
     . str*() => string_*() and buffer_*()
@@ -291,7 +301,7 @@ FIXME
 		<sect2>
 			<title>End-user applications</title>
 			<para>
-Every application that fits on a desktop: file browser, web browser, mail and news reader, messaging application, images viewer, audio and video viewer, and optionnaly games, etc.
+Every application that fits on a desktop: file browser, web browser, mail and news reader, messaging application, images viewer, audio and video viewer, and optionaly games, etc.
 			</para>
 		</sect2>
 		<sect2>
