@@ -5,6 +5,7 @@ LDFLAGSF= `pkg-config --libs gtk+-2.0`
 LDFLAGS	=
 CC	= cc
 RM	= rm -f
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -26,3 +27,6 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
+install: all
+	$(INSTALL) -m 755 gputty $(DESTDIR)$(BINDIR)
