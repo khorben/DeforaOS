@@ -24,6 +24,11 @@
 
 
 /* GPuTTY */
+/* defaults */
+# define SSH "ssh"
+# define XTERM "xterm"
+
+
 /* types */
 typedef struct _GPuTTY {
 	/* Config */

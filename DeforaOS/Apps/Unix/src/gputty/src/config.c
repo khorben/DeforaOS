@@ -39,6 +39,15 @@ void config_delete(Config * config)
 
 
 /* useful */
+char * config_get(Config * config, char * section, char * variable)
+{
+	void * p;
+
+	if((p = hash_get(config, section)) == NULL)
+		return NULL;
+	return hash_get(p, variable);
+}
+
 int config_set(Config * config, char * section, char * variable, char * value)
 {
 	Hash * h;

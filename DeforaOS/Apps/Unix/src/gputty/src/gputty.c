@@ -47,13 +47,15 @@ GPuTTY * gputty_new(void)
 	}
 
 	/* Config */
-	if((g->config = config_new()) != NULL) /* FIXME */
+	if((g->config = config_new()) == NULL)
 	{
-		config_set(g->config, "", "ssh", "ssh");
-		config_set(g->config, "", "xterm", "xterm");
-/*		config_load(g->config, "/etc/gputty"); */
-		config_load(g->config, ".gputty");
+		free(g);
+		return NULL;
 	}
+	config_set(g->config, "", "ssh", SSH);
+	config_set(g->config, "", "xterm", XTERM);
+	config_load(g->config, "/etc/gputty");
+	config_load(g->config, ".gputty");
 
 	/* widgets */
 	g->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -192,13 +194,15 @@ static void gputty_connect(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	pid_t pid;
-	char * xterm;
+	char * xterm = NULL;
+	char * ssh = NULL;
 	char const * hostname;
 	char port[6];
 	char * useropt = NULL;
 	char const * username = NULL;
 
-	xterm = "xterm";
+	xterm = config_get(g->config, "", "xterm");
+	ssh = config_get(g->config, "", "ssh");
 	hostname = gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname));
 	if(snprintf(port, 6, "%d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport))) >= 6)
 		port[5] = '\0';
@@ -215,7 +219,7 @@ static void gputty_connect(GtkWidget * widget, gpointer data)
 		if(username[0] != '\0')
 			useropt = "-l";
 		execlp(xterm, xterm, "-e",
-				"ssh", hostname,
+				ssh, hostname,
 				"-p", port,
 				useropt, username,
 				NULL);
