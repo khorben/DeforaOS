@@ -41,7 +41,7 @@ static void hashentry_delete(HashEntry * he)
 
 
 /* Hash */
-Hash * hash_new()
+Hash * hash_new(void)
 {
 	return darray_new();
 }
@@ -75,6 +75,11 @@ void * hash_get(Hash * h, char * name)
 			return he->data;
 	}
 	return NULL;
+}
+
+void * hash_get_index(Hash * h, unsigned int index)
+{
+	return darray_get(h, index);
 }
 
 int hash_set(Hash * h, char * name, void * data)
