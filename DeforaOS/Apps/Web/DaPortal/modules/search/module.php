@@ -40,7 +40,7 @@ function search_admin()
 
 function search_default()
 {
-	if($_GET["q"] == "")
+	if($_GET['q'] == '')
 		print("\t\t<h1><img src=\"modules/search/icon.png\" alt=\"search\"/>Search</h1>\n");
 	else
 		print("\t\t<h1><img src=\"modules/search/icon.png\" alt=\"search\"/>Search results</h1>\n");
@@ -67,7 +67,7 @@ function search_default()
 		$title = $res[0]['title'];
 		print("\t\t<p>
 \t\t\t$i. <a href=\"index.php?module=$module&amp;id=$contentid\">$title</a><br/>
-\t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=$module&amp;id=$contentid</i>
+\t\t\t<i>".$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF']."?module=$module&amp;id=$contentid</i>
 \t\t</p>\n");
 		$i++;
 		array_shift($res);
@@ -103,21 +103,6 @@ function search_uninstall()
 	if($administrator != 1)
 		return 0;
 	return 0;
-}
-
-
-switch($action)
-{
-	case "admin":
-		return search_admin();
-	case "dump":
-		return search_dump();
-	case "install":
-		return search_install();
-	case "uninstall":
-		return search_uninstall();
-	default:
-		return search_default();
 }
 
 
