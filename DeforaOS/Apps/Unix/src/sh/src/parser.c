@@ -160,6 +160,7 @@ int complete_command(TokenList * tokenlist)
 {
 	if(tokenlist == NULL)
 		return 1;
+	fprintf(stderr, "complete_command: %p\n", tokenlist);
 	if(!check_set(tokenlist, CS_LIST))
 	{
 		error("Expected a list");
@@ -248,7 +249,9 @@ static TokenList * pipe_sequence(TokenList * tokenlist)
 #ifdef DEBUG
 	debug_rule("pipe_sequence", tokenlist);
 #endif
-	command(tokenlist);
+	tokenlist = command(tokenlist);
+	fprintf(stderr, "tokenlist %p, null_tokenlist %p\n",
+			tokenlist, null_tokenlist);
 	while(tokenlist_first_token(tokenlist)->code == TC_OP_BAR)
 	{
 		if((tokenlist = linebreak(tokenlist)) == NULL)

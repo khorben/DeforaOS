@@ -8,7 +8,7 @@
 
 /* TokenCode */
 typedef enum _TokenCode {
-	TC_TOKEN,
+	TC_TOKEN = 0,
 	TC_WORD,
 	TC_ASSIGNMENT_WORD,
 	TC_NAME,

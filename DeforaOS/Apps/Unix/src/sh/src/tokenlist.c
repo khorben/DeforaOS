@@ -21,10 +21,13 @@ static Token * read_word(char ** string);
 static void tokenlist_debug(TokenList * tokenlist);
 TokenList * tokenlist_new(char * string)
 {
-	TokenList * tokenlist = NULL;
-	TokenList * p = NULL;
-	Token * token;
+	Token * first = NULL;
+	Token * last = NULL;
+	Token * p;
+	TokenList * tokenlist;
 
+	if((tokenlist = malloc(sizeof(TokenList))) == NULL)
+		return NULL;
 	if(string == NULL)
 		return NULL;
 	while(*string)
@@ -33,22 +36,35 @@ TokenList * tokenlist_new(char * string)
 		read_comments(&string);
 		if(*string == '\0')
 			break;
-		if((token = read_operator(&string)) != NULL)
+		if((p = read_operator(&string)) != NULL)
 		{
-			p = tokenlist_append(p, token);
-			if(tokenlist == NULL)
-				tokenlist = p;
+			if(first == NULL)
+			{
+				first = p;
+				last = p;
+			}
+			else
+			{
+				last->next = p;
+				last = p;
+			}
 			continue;
 		}
-		if((token = read_word(&string)) != NULL)
+		if((p = read_word(&string)) != NULL)
 		{
-			p = tokenlist_append(p, token);
-			if(tokenlist == NULL)
-				tokenlist = p;
+			if(first == NULL)
+			{
+				first = p;
+				last = p;
+			}
+			else
+			{
+				last->next = p;
+				last = p;
+			}
 		}
 	}
-	fprintf(stderr, "tokenlist %p, p %p\n", tokenlist, p);
-	fprintf(stderr, "*tokenlist %p, *p %p\n", *tokenlist, *p);
+	tokenlist = &first;
 	tokenlist_debug(tokenlist);
 	return tokenlist;
 }
@@ -132,12 +148,12 @@ static void tokenlist_debug(TokenList * tokenlist)
 {
 	Token * t = *tokenlist;
 
-	while(t)
+	fprintf(stderr, "tokenlist: %p, *tokenlist %p\n",
+			tokenlist, *tokenlist);
+	while(t != NULL)
 	{
-		fprintf(stderr, "%p\n", t);
-		fprintf(stderr, "%s %s %p %p\n", sTokenCode[t->code], t->string, t, t->next);
+		token_debug(t);
 		t = t->next;
-		usleep(1000000);
 	}
 }
 
@@ -145,14 +161,19 @@ static void tokenlist_debug(TokenList * tokenlist)
 /* tokenlist_delete */
 void tokenlist_delete(TokenList * tokenlist)
 {
+	Token * token;
 	Token * p;
 
-	while(tokenlist)
+	if(tokenlist == NULL)
+		return;
+	token = *tokenlist;
+	while(token != NULL)
 	{
-		p = *tokenlist;
-		tokenlist = &(p->next);
-		token_delete(p);
+		p = token->next;
+		token_delete(token);
+		token = p;
 	}
+	free(tokenlist);
 }
 
 
@@ -160,7 +181,11 @@ void tokenlist_delete(TokenList * tokenlist)
 /* tokenlist_next */
 TokenList * tokenlist_next(TokenList * tokenlist)
 {
-	return &(*tokenlist)->next;
+	Token * t = *tokenlist;
+
+	if(t->next == NULL)
+		return null_tokenlist;
+	return &(t->next);
 }
 
 /* Token */
@@ -172,10 +197,11 @@ Token * tokenlist_first_token(TokenList * tokenlist)
 
 
 /* useful */
-TokenList * tokenlist_append(TokenList * tokenlist, Token * token)
+/* tokenlist_append */
+/*TokenList * tokenlist_append(TokenList * tokenlist, Token * token)
 {
 	if(tokenlist == NULL)
 		return &token;
 	(*tokenlist)->next = token;
 	return &token;
-}
+}*/
