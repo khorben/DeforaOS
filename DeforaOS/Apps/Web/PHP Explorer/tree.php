@@ -72,7 +72,7 @@ function _tree_level($level, $curroot)
 		$class = count($dirs) ? 'node' : 'lastnode';
 		$collapse = 0;
 		$expand = 0;
-		if($level == TREE_LEVEL && !is_link($root.'/'.$path)
+		if($level >= TREE_LEVEL && !is_link($root.'/'.$path)
 				&& dir_has_subdirs($root.'/'.$path))
 		{
 			$expand = 1;
