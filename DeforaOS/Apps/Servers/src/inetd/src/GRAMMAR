@@ -1,10 +1,8 @@
-config:		{ newline } service_list { newline }
+config:		{ newline | service }
 
 newline: 	[ space ] NEWLINE
 
 space:		SPACE { SPACE }
-
-service_list:	{ service { newline } }
 
 service:	service_name space socket space protocol space wait space
 		id space program newline
@@ -23,8 +21,8 @@ user:		NUMBER | WORD
 
 group:		NUMBER | WORD
 
-program:	program_name [ space program_argument_list ]
+program:	program_name [ space ] { program_argument space }
 
 program_name:	WORD
 
-program_argument_list:	WORD [ space program_argument ]
+program_argument:	WORD
