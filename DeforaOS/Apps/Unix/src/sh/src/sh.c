@@ -32,7 +32,7 @@ int sh_file(struct prefs * p, char * file)
 			cmd_prompt();
 		line = file_get_line(fp);
 		t = tokenlist_new_from_string(line);
-		complete_command(t, 0, NULL);
+		complete_command(t);
 		tokenlist_delete(t);
 		free(line);
 	}
@@ -85,7 +85,7 @@ int sh_string(struct prefs * p, char * string, int argc, char * argv[])
 			string, argc);
 #endif
 	t = tokenlist_new_from_string(string);
-	complete_command(t, argc, argv);
+	complete_command(t);
 	tokenlist_delete(t);
 	return 1;
 }
