@@ -13,6 +13,3 @@ ls:
 
 mkdir/rmdir:
 - check recursive algorithms
-
-uniq:
-- fgets() loop error near EOF
