@@ -19,29 +19,74 @@ FIXME
 			<sect3>
 				<title>Design by contract</title>
 				<para>
-FIXME
+Developping with contracts means that every component of the code has detailed
+specifications of what is done, what is taken, and what is given back when using
+it.
 				</para>
 				<para>
-In debugging mode, always assert the contract.
+In practice, in addition to the components specifications, every function must
+be written with the following comments block:
+					<itemizedlist>
+						<listitem><para>PRE: the requirements for the function
+						to be working as expected, and for the data given as
+						input;</para></listitem>
+						<listitem><para>POST: what is done when the function
+						exits, and what is given back if so.</para></listitem>
+					</itemizedlist>
+In many cases, and as recommended elsewhere in this document, one has to
+implement components as a combination of many functions. As this part of the
+code may suffer from significant changes, its design being let to the
+appreciation of the implementer, it is tolerated that this information is added
+as the implementer will find convenient. However, every interface with other
+component must be documented this way.
+				</para>
+				<para>
+Also keep in mind that it always help to maintain this information, and that to
+pass a successful audit a component will have to be entirely documented this
+way. Moreover, when used in debugging mode, any code should always assert the
+contract.
 				</para>
 			</sect3>
 			<sect3>
 				<title>Code indentation</title>
 				<para>
-FIXME
+Every single line of code must be properly indented. It generally means that
+every language-level instruction will have to be kept on single lines, for both
+clarity and the versions revision system.
+				</para>
+				<para>
+Whenever possible the code must be indented with tabs, which size defaults to 8
+characters wide. Code lines must not exceed 80 columns. Of course one can render
+tabs at his own convenience while working on code, though it must be fully
+readable on 80-columns wide terminals.
+				</para>
+				<para>
+There should never be any blank character following the end of the meaning of a
+line. Tabs should be use to substitute blank wherever possible.
 				</para>
 			</sect3>
 			<sect3>
-				<title>Language specific notes</title>
+				<title>Naming conventions</title>
+				<para>
+Variables, functions, globally every entity should have explicit names. They
+must be expressed in English, without spelling errors. Names can be abbreviated
+provided they don't lose meaning. 
+				</para>
+				<para>
+Whenever possible the context of a name should appear before the associated
+action. For instance, prefer "student_age_get" to "get_student_age".
+				</para>
+			</sect3>
+			<sect3>
+				<title>Language-specific applications</title>
 				<sect4>
 					<title>C</title>
 					<para>
 FIXME
 					</para>
-					<para>
+				<para>
 Function names are lower case.
-					</para>
-				</sect4>
+				</para>
 			</sect3>
 		</sect2>
 		<sect2>
