@@ -173,7 +173,16 @@ function install_get()
 \t\t\tIf you are the administrator of this site, please try it on the local interface of its host.
 \t\t</p>\n");
 	else
-		raw_require("html/install.html");
+	{
+		if(raw_include("html/install.html") != 0)
+			print("\t<head>
+\t\t<title>DaPortal configuration</title>
+\t</head>
+\t<body>
+\t\t<p>
+\t\t\t<b>Error:</b> could not include \"html/install.html\".
+\t\t</p>\n");
+	}
 	print("\t</body>
 </html>\n");
 	return 0;
