@@ -54,8 +54,7 @@ The choices of these licenses are explained in the next section of this document
 				<title>Global source code</title>
 				<para>
 The terms of this license are extracted from the "Open Source Definition", thus it should be compatible with the original terms.
-				</para>
-				<blockquote>
+					<blockquote>
 DeforaOS project licensing terms
 --------------------------------
 
@@ -144,7 +143,8 @@ along with the licensed software.
 --------------------------------------
 No provision of the license may be predicated on any individual technology or
 style or interface.
-				</blockquote>
+					</blockquote>
+				</para>
 			</sect3>
 		</sect2>
 		<sect2>
