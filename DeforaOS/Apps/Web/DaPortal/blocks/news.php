@@ -27,7 +27,7 @@ if(($res = sql_query("select newsid, title from daportal_news, daportal_contents
 {
 	while(sizeof($res) >= 1)
 	{
-		$content .= "\t<li><a href=\"index.php?module=news&amp;action=view&amp;id=".$res[0]["newsid"]."\">".$res[0]["title"]."</a></li>\n";
+		$content .= "\t<li><a href=\"index.php?module=news&amp;id=".$res[0]["newsid"]."\">".$res[0]["title"]."</a></li>\n";
 		array_shift($res);
 	}
 }
