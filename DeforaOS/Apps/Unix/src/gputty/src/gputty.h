@@ -37,11 +37,26 @@ typedef struct _GPuTTY {
 	GtkWidget * sn_load;
 	GtkWidget * sn_save;
 	GtkWidget * sn_delete;
+	/* actions */
+	GtkWidget * ac_hbox;
+	GtkWidget * ac_about;
+	GtkWidget * ac_quit;
+	GtkWidget * ac_connect;
+	/* about */
+	GtkWidget * ab_window;
+	GtkWidget * ab_close;
 } GPuTTY;
 
 
 /* functions */
 GPuTTY * gputty_new(void);
 void gputty_delete(GPuTTY * gputty);
+
+/* callbacks */
+void gputty_about(GtkWidget * widget, gpointer data);
+void gputty_about_close(GtkWidget * widget, gpointer data);
+void gputty_about_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+void gputty_quit(GtkWidget * widget, gpointer data);
+void gputty_quitx(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 #endif /* !_GPUTTY_H */
