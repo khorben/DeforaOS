@@ -56,7 +56,11 @@ function dump_default()
 	while(sizeof($modules) >= 1)
 	{
 		if($modules[0]["modulename"] != "dump")
+		{
+			print(";dump for module ".$modules[0]["modulename"]."\n");
 			module_include($modules[0]["modulename"], "dump");
+			print("\n");
+		}
 		array_shift($modules);
 	}
 	print("\t\t</pre>\n");
