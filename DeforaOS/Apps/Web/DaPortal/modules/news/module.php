@@ -159,10 +159,17 @@ function news_default()
 			array_shift($res);
 		}
 		print("\t\t<hr/>
-\t\t<p>Page: <a href=\"index.php?module=news&amp;offset=0\">1</a>");
+\t\t<p>Page: ");
+		if($_GET["offset"] == 0)
+			print("1");
+		else
+			print("<a href=\"index.php?module=news&amp;offset=0\">1</a>");
 		for($i = 1; $i < $count / $npp; $i++)
 		{
-			print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1)."</a>");
+			if($i == $_GET["offset"])
+				print(" | ".($i+1));
+			else
+				print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1)."</a>");
 		}
 		print("</p>\n");
 	}
