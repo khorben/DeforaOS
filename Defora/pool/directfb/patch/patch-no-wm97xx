@@ -1,0 +1,12 @@
+diff -Naur directfb-0.9.20/configure directfb-0.9.20.pkg/configure
+--- directfb-0.9.20/configure	2003-10-06 23:50:58.000000000 +0200
++++ directfb-0.9.20.pkg/configure	2004-04-29 03:46:16.000000000 +0200
+@@ -22223,7 +22223,7 @@
+ 
+ fi
+ if test $ac_cv_header_linux_wm97xx_h = yes; then
+-  wm97xx_ts=yes
++  wm97xx_ts=no
+ else
+   wm97xx_ts=no
+     { echo "$as_me:$LINENO: WARNING:
