@@ -22,7 +22,7 @@
 typedef struct _Prefs
 {
 	int flags;
-	char * time;
+	char * rtime;
 	time_t ttime;
 } Prefs;
 
@@ -48,7 +48,7 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 			case 'r':
 				prefs->flags -= prefs->flags & PREFS_t;
 				prefs->flags |= PREFS_r;
-				prefs->time = optarg;
+				prefs->rtime = optarg;
 				break;
 			case 't':
 				prefs->flags -= prefs->flags & PREFS_r;
@@ -209,7 +209,7 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 
 	if(prefs->flags & PREFS_r)
 	{
-		if(_touch_rtime(prefs->time, &atime, &mtime) != 0)
+		if(_touch_rtime(prefs->rtime, &atime, &mtime) != 0)
 			return 2;
 	}
 	else if(!(prefs->flags & PREFS_t))
