@@ -15,11 +15,11 @@ static int _tty(void)
 
 		if((tty = ttyname(0)) == NULL)
 			return 2;
-		printf("%s\n", ttyname(0));
+		printf("%s\n", tty);
 		return 0;
 	}
 	printf("not a tty\n");
-	return 1;
+	return 2;
 }
 
 
