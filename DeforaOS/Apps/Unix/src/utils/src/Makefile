@@ -1,4 +1,4 @@
-TARGETS	= false logname true
+TARGETS	= false id logname true
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -12,6 +12,9 @@ all: $(TARGETS)
 false: false.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o false false.o
 
+id: id.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o id id.o
+
 logname: logname.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o logname logname.o
 
@@ -21,6 +24,9 @@ true: true.o
 
 false.o: false.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c false.c
+
+id.o: id.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c id.c
 
 logname.o: logname.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c logname.c
