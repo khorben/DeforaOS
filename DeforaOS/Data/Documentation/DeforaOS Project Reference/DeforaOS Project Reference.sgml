@@ -131,9 +131,18 @@ The system will boot with a minimal filesystem image in memory, mounting the sys
 				</para>
 			</sect3>
 			<sect3>
+				<title>Drivers</title>
+				<para>
+They actually are applications engines, with the appropriate memory mappings and other priviledges necessary in their very purpose.
+				</para>
+				<para>
+Applications using the drivers connect to them like interfaces usually do.
+				</para>
+			</sect3>
+			<sect3>
 				<title>Virtual File System</title>
 				<para>
-FIXME
+Interface proxy to the filesystems drivers. Knows the filesystems mappings. Maintains the pid/fd mappings. Only interface allowed to connect to the filesystems drivers. Sanitizes all accesses (handles and removes special path like ".", "..", etc).
 				</para>
 			</sect3>
 		</sect2>
