@@ -1,0 +1,16 @@
+body {
+	margin:				0px;
+	padding:			0px;
+}
+
+div {
+	border:				1px solid #000000;
+}
+
+.bottom {
+	float:				right;
+}
+
+.menu {
+	float:				left;
+}
