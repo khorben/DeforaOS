@@ -7,11 +7,11 @@
 
 
 /* tty */
-static int tty(void)
+static int _tty(void)
 {
 	if(isatty(0) == 1)
 	{
-		char* tty;
+		char * tty;
 
 		if((tty = ttyname(0)) == NULL)
 			return 2;
@@ -24,7 +24,7 @@ static int tty(void)
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: tty\n");
 	return 1;
@@ -34,8 +34,8 @@ static int usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	/* check for errors */
 	if(argc != 1)
-		return usage();
-	return tty();
+		return _usage();
+	return _tty();
+	argv = argv;
 }
