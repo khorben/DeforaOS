@@ -375,10 +375,18 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 		<title>Programming interfaces</title>
 <!--
 - use a table, head with prefix, describe function
+- prefix actually is a namespace, it should not be an abbreviation, but then it would be a pain to develop in C with it; else we could think of tricks to implement namespaces in C in a way, like:
+  {
+	namespace_set("GToolkit");
+	gt_win = window_new();
+	namespace_set("AppEngine");
+	ae_win = window_new();
+  }
+  which could ease the implementation of shared libraries, though this is ugly and can be a pain sometimes...
 - detail every data type
 -->
 		<sect2>
-			<title>Data types</title>
+			<title>Essential classes</title>
 			<sect3>
 				<title>Buffers</title>
 				<para>
@@ -391,6 +399,48 @@ delete()
 
 size()
 size(Size size)
+				</programlisting>
+			</sect3>
+			<sect3>
+				<title>Config</title>
+				<para>
+Prefix is "Config".
+				</para>
+				<para>
+FIXME: write down the common Config files format; think about a DTD for Config files;
+				</para>
+				<programlisting>
+new()
+delete()
+
+load(File file)
+save(File file)
+
+get(String section, String name)
+set(String section, String name, Variable variable)
+				</programlisting>
+			</sect3>
+			<sect3>
+				<title>Files</title>
+				<para>
+Prefix is "File".
+				</para>
+				<programlisting>
+new()
+new(String filename)
+delete()
+
+open(String filename)
+open(String filename, FileOpenMode mode)
+close()
+
+read(Buffer buffer)
+write(Buffer buffer)
+
+position(Offset offset)
+position(Offset offset, FilePositionFrom)
+
+flush()
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -423,30 +473,49 @@ length()
 length(Size size)
 				</programlisting>
 			</sect3>
-		</sect2>
-		<sect2>
-			<title>Operations</title>
 			<sect3>
-				<title>Files</title>
+				<title>Variables</title>
 				<para>
-Prefix is "File".
+Prefix is "Variable".
+				</para>
+				<para>
+This type is used for data conversions.
 				</para>
 				<programlisting>
 new()
-new(String filename)
+delete()
+				</programlisting>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>Applications engines</title>
+			<para>
+Prefix is "AE".
+			</para>
+		</sect2>
+		<sect2>
+			<title>Applications interfaces</title>
+			<para>
+Prefix is "AI".
+			</para>
+		</sect2>
+		<sect2>
+			<title>Graphical toolkit</title>
+			<para>
+Prefix is "G".
+			</para>
+			<sect3>
+				<title>Window</title>
+				<para>
+Prefix is "Window".
+				</para>
+				<programlisting>
+new()
+new(String title)
 delete()
 
-open(String filename)
-open(String filename, FileOpenMode mode)
-close()
-
-read(Buffer buffer)
-write(Buffer buffer)
-
-position(Offset offset)
-position(Offset offset, FilePositionFrom)
-
-flush()
+size()
+size(Size x, Size y)
 				</programlisting>
 			</sect3>
 		</sect2>
