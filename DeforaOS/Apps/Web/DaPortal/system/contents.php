@@ -42,7 +42,7 @@ function contents_dump()
 		return 0;
 	while(sizeof($res) >= 1)
 	{
-		print("insert into daportal_contents (contentid, moduleid, title, content, enable) values ('".$res[0]["contentid"]."', '$moduleid', '".$res[0]["content"]."', '".$res[0]["enable"]."');\n");
+		print("insert into daportal_contents (contentid, moduleid, title, content, enable) values ('".$res[0]["contentid"]."', '$moduleid', '".htmlentities($res[0]["content"])."', '".$res[0]["enable"]."');\n");
 		array_shift($res);
 	}
 	return 0;
