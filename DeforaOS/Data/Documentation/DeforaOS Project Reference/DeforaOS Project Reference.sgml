@@ -84,8 +84,6 @@ FIXME
 - application interfaces
 - messages
 - toolkit programming interface
-  * same in text-mode and graphical mode if possible
-  * then, let applications check which mode is available ($DISPLAY, istty(), ?) and load the appropriate module for rendering
 -->
 			<para>
 Every application runs inside what's called a "session". They are split in two parts: the application "engine", and the "interface". The end-user interaction should be presented the same way in text mode or graphical mode, possibly via the same API, and using only one binary for both.
@@ -108,7 +106,7 @@ FIXME
 FIXME
 				</para>
 				<para>
-The applications interfaces may detect the requested toolkit to use accord
+The applications interfaces may detect the requested toolkit to use according to the availability of an environment variable ("DISPLAY" for instance), or by the result of an equivalent to the POSIX istty() call. Some applications may work with character streams as a fallback, typically like the UNIX filtering applications.
 				</para>
 			</sect3>
 			<sect3>
