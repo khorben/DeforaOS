@@ -16,16 +16,17 @@ static int _rmdir(int flagp, int argc, char * argv[])
 
 	for(i = 0; i < argc; i++)
 	{
+		if(rmdir(argv[i]) == -1)
+		{
+			fprintf(stderr, "%s", "rmdir: ");
+			perror(argv[i]);
+			res = 2;
+			continue;
+		}
 		if(flagp)
 		{
 			if(_rmdir_p(argv[i]) == -1)
 				res = 2;
-			continue;
-		}
-		if(rmdir(argv[i]) == -1)
-		{
-			perror(argv[i]);
-			res = 2;
 		}
 	}
 	return res;
@@ -44,6 +45,7 @@ static int _rmdir_p(char * pathname)
 		*str = '\0';
 		if(rmdir(pathname) == -1)
 		{
+			fprintf(stderr, "%s", "rmdir: ");
 			perror(pathname);
 			return -1;
 		}
