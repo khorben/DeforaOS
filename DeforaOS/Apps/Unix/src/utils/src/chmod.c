@@ -5,8 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 
 #define OPT_R 1
@@ -15,7 +17,7 @@
 /* chmod */
 static int _chmod_error(char * message, int ret);
 static int _chmod_do(mode_t mode, char * file);
-static int _chmod_do_recursive(mode_t mode, char * file);
+static int _chmod_do_recursive(int opts, mode_t mode, char * file);
 static int _chmod(int opts, mode_t mode, int filec, char * filev[])
 {
 	int i;
@@ -23,7 +25,7 @@ static int _chmod(int opts, mode_t mode, int filec, char * filev[])
 
 	for(i = 0; i < filec; i++)
 		if(opts & OPT_R)
-			res += _chmod_do_recursive(mode, filev[i]);
+			res += _chmod_do_recursive(opts, mode, filev[i]);
 		else
 			res += _chmod_do(mode, filev[i]);
 	return res == 0 ? 0 : 2;
@@ -43,9 +45,57 @@ static int _chmod_do(mode_t mode, char * file)
 	return 0;
 }
 
-static int _chmod_do_recursive(mode_t mode, char * file)
+static int _chmod_do_recursive_do(int opts, mode_t mode, char * file);
+static int _chmod_do_recursive(int opts, mode_t mode, char * file)
 {
-	return 1;
+	struct stat st;
+
+	if(lstat(file, &st) != 0)
+		return _chmod_error(file, 1);
+	if(!S_ISDIR(st.st_mode))
+		return _chmod_do(mode, file);
+	if(!S_ISLNK(st.st_mode))
+		return _chmod_do_recursive_do(opts, mode, file);
+	return 0;
+}
+
+static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
+{
+	DIR * dir;
+	struct dirent * de;
+	int len;
+	char * s;
+	char * p;
+
+	if((dir = opendir(file)) == NULL)
+		return _chmod_error(file, 1);
+	readdir(dir);
+	readdir(dir);
+	len = strlen(file);
+	len += (len && file[len-1] == '/') ? 1 : 2;
+	if((s = malloc(len)) == NULL)
+	{
+		closedir(dir);
+		return _chmod_error(file, 1);
+	}
+	strcpy(s, file);
+	s[len-2] = '/';
+	s[len-1] = '\0';
+	while((de = readdir(dir)) != NULL)
+	{
+		if((p = realloc(s, len + strlen(de->d_name))) == NULL)
+		{
+			_chmod_error("malloc", 0);
+			continue;
+		}
+		s = p;
+		strcat(s, de->d_name);
+		_chmod_do_recursive(opts, mode, s);
+		s[len-1] = '\0';
+	}
+	free(s);
+	closedir(dir);
+	return 0;
 }
 
 
