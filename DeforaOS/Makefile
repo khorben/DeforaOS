@@ -1,4 +1,4 @@
-SUBDIRS	= Apps System
+SUBDIRS	= System Apps
 
 
 all clean distclean:
