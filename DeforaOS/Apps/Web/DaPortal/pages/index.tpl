@@ -8,6 +8,6 @@ PAGE: top
 	It's designed to be reasonably modular, and primarily depends on PostgreSQL database server.
 </p>
 
-MODULE: news
+MODULE: news last3
 
 PAGE: bottom
