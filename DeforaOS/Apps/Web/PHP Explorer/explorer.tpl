@@ -1,4 +1,6 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
 		<title>Index of <? echo html_safe($folder); ?></title>
 		<link type="text/css" rel="stylesheet" href="explorer.css"/>
@@ -18,13 +20,13 @@
 				<div id="explorer_listing" class="listing_details">
 					<div class="header">
 						<div class="icon"></div>
-						<? explorer_sort($folder, 'name', $sort); ?>
-						<? explorer_sort($folder, 'owner', $sort); ?>
-						<? explorer_sort($folder, 'group', $sort); ?>
-						<? explorer_sort($folder, 'size', $sort); ?>
-						<? explorer_sort($folder, 'date', $sort); ?>
+						<? explorer_sort($folder, 'name', $sort, $reverse); ?>
+						<? explorer_sort($folder, 'owner', $sort, $reverse); ?>
+						<? explorer_sort($folder, 'group', $sort, $reverse); ?>
+						<? explorer_sort($folder, 'size', $sort, $reverse); ?>
+						<? explorer_sort($folder, 'date', $sort, $reverse); ?>
 					</div>
-<? explorer_folder($folder, $sort); ?>
+<? explorer_folder($folder, $sort, $reverse); ?>
 				</div>
 			</form>
 			<div style="clear: left">&nbsp;</div>

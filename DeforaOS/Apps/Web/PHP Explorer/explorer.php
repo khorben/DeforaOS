@@ -97,7 +97,7 @@ function _sort_date($a, $b)
 	return $stata['date'] < $statb['date'];
 }
 
-function explorer_folder($folder, $sort)
+function explorer_folder($folder, $sort, $reverse)
 {
 	global $root, $hidden, $path;
 
@@ -135,8 +135,12 @@ function explorer_folder($folder, $sort)
 			sort($files);
 			break;
 	}
-	while(($name = array_shift($files)))
+	while(count($files))
 	{
+		if($reverse)
+			$name = array_pop($files);
+		else
+			$name = array_shift($files);
 		if(@is_dir($root.'/'.$folder.'/'.$name))
 		{
 			$mime = 'folder';
@@ -175,13 +179,21 @@ function explorer_folder($folder, $sort)
 }
 
 
-function explorer_sort($folder, $name, $sort)
+function explorer_sort($folder, $name, $sort, $reverse)
 {
 	echo '<div class="'.$name.'">';
-	echo '<a href="explorer.php?folder='.html_safe($folder).'&sort='.$name
-			.'">'.ucfirst($name).'</a>';
 	if($sort == $name || ($sort == '' && $name == 'name'))
-		echo ' <img src="icons/16x16/down.png" alt=""/>';
+	{
+		echo '<a href="explorer.php?folder='.html_safe($folder)
+				.'&sort='.$name;
+		if(!$reverse)
+			echo '&reverse=';
+		echo '">'.ucfirst($name).'</a> <img src="icons/16x16/'
+				.($reverse ? 'down' : 'up').'.png" alt=""/>';
+	}
+	else
+		echo '<a href="explorer.php?folder='.html_safe($folder)
+				.'&sort='.$name.'">'.ucfirst($name).'</a>';
 	echo '</div>'."\n";
 }
 
@@ -190,4 +202,5 @@ if(isset($_GET['download']))
 	return explorer_download(filename_safe($_GET['download']));
 $folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
 $sort = $_GET['sort'];
+$reverse = isset($_GET['reverse']);
 include('explorer.tpl');

@@ -19,7 +19,6 @@ The following list of features are planned:
 - find a way to securely run the Explorer with different UIDs, with suExec for
   instance;
 - work on file/mime/icon associations (with freedesktop compliance in mind);
-- reverse sort order in detailed view;
 - themable icons;
 - remember users' default view;
 - test filesystems and web server charsets;
