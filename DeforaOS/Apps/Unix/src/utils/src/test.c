@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
 
 
 /* test */
@@ -33,23 +35,29 @@ static int _test(int argc, char * argv[])
 }
 
 /* test_single */
-static int _is_block(char * pathname);
-static int _is_char(char * pathname);
-static int _is_dir(char * pathname);
-static int _is_file(char * pathname);
-static int _is_file_regular(char * pathname);
-static int _is_file_sgid(char * pathname);
-static int _is_file_symlink(char * pathname);
+/* b */ static int _is_file_block(char * pathname);
+/* c */ static int _is_file_char(char * pathname);
+/* d */ static int _is_file_dir(char * pathname);
+/* e */ static int _is_file(char * pathname);
+/* f */ static int _is_file_regular(char * pathname);
+/* g */ static int _is_file_sgid(char * pathname);
+/* h */ static int _is_file_symlink(char * pathname);
+/* n */ static int _is_string_not_empty(char * string);
+/* r */ static int _is_file_readable(char * pathname);
+/* S */ static int _is_file_socket(char * pathname);
+/* w */ static int _is_file_writable(char * pathname);
+/* x */ static int _is_file_executable(char * pathname);
+/* z */ static int _is_string_empty(char * string);
 static int _test_single(char c, char * argv)
 {
 	switch(c)
 	{
 		case 'b':
-			return _is_block(argv);
+			return _is_file_block(argv);
 		case 'c':
-			return _is_char(argv);
+			return _is_file_char(argv);
 		case 'd':
-			return _is_dir(argv);
+			return _is_file_dir(argv);
 		case 'e':
 			return _is_file(argv);
 		case 'f':
@@ -59,11 +67,23 @@ static int _test_single(char c, char * argv)
 		case 'h':
 		case 'L':
 			return _is_file_symlink(argv);
+		case 'n':
+			return _is_string_not_empty(argv);
+		case 'r':
+			return _is_file_readable(argv);
+		case 'S':
+			return _is_file_socket(argv);
+		case 'w':
+			return _is_file_writable(argv);
+		case 'x':
+			return _is_file_executable(argv);
+		case 'z':
+			return _is_string_empty(argv);
 	}
 	return 0;
 }
 
-static int _is_block(char * pathname)
+static int _is_file_block(char * pathname)
 {
 	struct stat st;
 
@@ -72,7 +92,7 @@ static int _is_block(char * pathname)
 	return S_ISBLK(st.st_mode) ? 1 : 0;
 }
 
-static int _is_char(char * pathname)
+static int _is_file_char(char * pathname)
 {
 	struct stat st;
 
@@ -81,7 +101,7 @@ static int _is_char(char * pathname)
 	return S_ISCHR(st.st_mode) ? 1 : 0;
 }
 
-static int _is_dir(char * pathname)
+static int _is_file_dir(char * pathname)
 {
 	struct stat st;
 
@@ -122,6 +142,67 @@ static int _is_file_symlink(char * pathname)
 	if(stat(pathname, &st) != 0)
 		return 0;
 	return S_ISLNK(st.st_mode) ? 1 : 0; /* FIXME */
+}
+
+static int _is_string_not_empty(char * string)
+{
+	return *string == '\0' ? 0 : 1;
+}
+
+static int _is_file_rwx(char * pathname, mode_t u, mode_t g, mode_t o)
+{
+	struct stat st;
+	struct group * group;
+	struct passwd * passwd;
+	char ** p;
+
+	if(stat(pathname, &st) != 0)
+		return 0;
+	if(geteuid() == st.st_uid)
+		if((st.st_mode & u) != 0)
+			return 1;
+	if((st.st_mode & g) != 0)
+	{
+		if((passwd = getpwuid(geteuid())) == NULL)
+			return 0;
+		if((group = getgrgid(st.st_gid)) == NULL)
+			return 0;
+		for(p = group->gr_mem; *p != NULL; p++)
+			if(strcmp(passwd->pw_name, *p) == 0)
+				return 1;
+		if(geteuid() == st.st_uid)
+			return 0;
+	}
+	return (st.st_mode & o) != 0 ? 1 : 0;
+}
+
+static int _is_file_readable(char * pathname)
+{
+	return _is_file_rwx(pathname, S_IRUSR, S_IRGRP, S_IROTH);
+}
+
+static int _is_file_socket(char * pathname)
+{
+	struct stat st;
+
+	if(stat(pathname, &st) != 0)
+		return 0;
+	return (st.st_mode & S_IFSOCK) ? 1 : 0; /* FIXME */
+}
+
+static int _is_string_empty(char * string)
+{
+	return *string == '\0' ? 1 : 0;
+}
+
+static int _is_file_writable(char * pathname)
+{
+	return _is_file_rwx(pathname, S_IWUSR, S_IWGRP, S_IWOTH);
+}
+
+static int _is_file_executable(char * pathname)
+{
+	return _is_file_rwx(pathname, S_IXUSR, S_IXGRP, S_IXOTH);
 }
 
 
