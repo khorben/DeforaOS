@@ -1,4 +1,4 @@
-SUBDIRS	= libutils
+SUBDIRS	= libc libutils
 
 
 all clean distclean:
