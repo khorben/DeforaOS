@@ -146,6 +146,18 @@ No provision of the license may be predicated on any individual technology or
 style or interface.
 				</screen>
 			</sect3>
+			<sect3>
+				<title>Documentation</title>
+				<para>
+FIXME: not decided yet
+				</para>
+			</sect3>
+			<sect3>
+				<title>Other files</title>
+				<para>
+FIXME: depends if they're already copyrighted or not, etc, else not decided yet
+				</para>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Fundamental liberties</title>
@@ -326,49 +338,82 @@ About the graphical toolkit for applications, I insist that only one library wil
 <chapter>
 	<title>Detailed design</title>
 	<sect1>
-		<title>Filesystem hierarchy</title>
-		<para>
+		<title></title>
+		<sect2>
+			<title>Filesystem hierarchy</title>
+			<para>
 The filesystem is highly inspired from the UNIX one, but taking in consideration the user only needs to access his files, applications, volumes or shared files most of the time. Consequently, the following directories are available at top level: "Apps", "Data", "System" and "Volumes". The "System" directory could even have been called ".System" to only let the advanced users access it via the common interfaces.
-		</para>
-		<para>
+			</para>
+			<para>
 It could even be considered that the place of an executable in the filesystem hierarchy could determine its privileges; this can't be a security risk, since when one gains access to the filesystem, then he has already access to the full system.
-		</para>
-		<sect2>
-			<title>/Apps</title>
-			<para>
+			</para>
+			<sect3>
+				<title>/Apps</title>
+				<para>
 It contains a sub-directory per applications group. In this sub-directory one man find the following directories:
-			</para>
-			<itemizedlist>
-				<listitem><para>Binaries: the applications binaries</para></listitem>
-				<listitem><para>Engines: the applications' engines binaries</para></listitem>
-				<listitem><para>Libraries: the shared libraries</para></listitem>
-				<listitem><para>System: the applications administration binaries</para></listitem>
-				<listitem><para>Sources: the applications source code (a sub-directory per package)</para></listitem>
-			</itemizedlist>
-		</sect2>
-		<sect2>
-			<title>/Data</title>
-			<para>
+				</para>
+				<itemizedlist>
+					<listitem><para>Binaries: the applications binaries</para></listitem>
+					<listitem><para>Engines: the applications' engines binaries</para></listitem>
+					<listitem><para>Libraries: the shared libraries</para></listitem>
+					<listitem><para>System: the applications administration binaries</para></listitem>
+					<listitem><para>Sources: the applications source code (a sub-directory per package)</para></listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>/Data</title>
+				<para>
 Shared data: documentation, hosted files, ...
-			</para>
-		</sect2>
-		<sect2>
-			<title>/System</title>
-			<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>/System</title>
+				<para>
 System hierarchy. Contains the following sub-directories:
-			</para>
-			<itemizedlist>
-				<listitem><para>Apps: system essential applications and libraries, containing a Apps/subdirectory like hierarchy.</para></listitem>
-				<listitem><para>Devices: equivalent to the /dev</para></listitem>
-				<listitem><para>Kernel: equivalent to the /proc on Linux</para></listitem>
-				<listitem><para>Sources: the associated source code (a sub-directory per entity)</para></listitem>
-			</itemizedlist>
+				</para>
+				<itemizedlist>
+					<listitem><para>Apps: system essential applications and libraries, containing a Apps/subdirectory like hierarchy.</para></listitem>
+					<listitem><para>Devices: equivalent to the /dev</para></listitem>
+					<listitem><para>Kernel: equivalent to the /proc on Linux</para></listitem>
+					<listitem><para>Sources: the associated source code (a sub-directory per entity)</para></listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>/Volumes</title>
+				<para>
+Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mounted. To gain read and write access on them, one should have the necessary privileges though.
+				</para>
+			</sect3>
 		</sect2>
 		<sect2>
-			<title>/Volumes</title>
-			<para>
-Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mounted. To gain read and write access on them, one should have the necessary privileges though.
-			</para>
+			<title>Special files</title>
+			<sect3>
+				<title>Configuration files</title>
+				<para>
+FIXME: think about a DTD for configuration files;
+				</para>
+				<para>
+Configuration files contain variable names along with their values, nested inside sections. Default variables and values can be set in the global section, which name is "" (empty string). The global section is the default one. Comments are allowed on their own lines.
+				</para>
+				<screen>
+#this is a comment
+#default session is global
+variable=value
+
+[section]
+variable=value
+
+[another section]
+#another comment
+variable=value
+
+another variable=value
+
+[]
+#this is global section again
+variable=value
+				</screen>
+			</sect3>
 		</sect2>
 	</sect1>
 	<sect1>
@@ -405,9 +450,6 @@ size(Size size)
 				<title>Config</title>
 				<para>
 Prefix is "Config".
-				</para>
-				<para>
-FIXME: write down the common Config files format; think about a DTD for Config files;
 				</para>
 				<programlisting>
 new()
