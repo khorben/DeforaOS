@@ -1,4 +1,4 @@
-TARGETS	= basename dirname false id logname true tty
+TARGETS	= basename dirname false id logname true tty unlink
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
