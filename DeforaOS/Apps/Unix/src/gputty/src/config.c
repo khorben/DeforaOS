@@ -174,7 +174,9 @@ static char * _load_variable(FILE * fp, int c)
 	}
 	if(c != '=')
 	{
+#ifdef DEBUG
 		fprintf(stderr, "%d ici\n", c);
+#endif
 		free(str);
 		return NULL;
 	}
@@ -260,6 +262,8 @@ static void _save_variables(Hash * h, FILE * fp)
 	for(j = 0; j < i; j++)
 	{
 		he = array_get(h, j);
+		if(he->name == NULL || he->data == NULL)
+			continue;
 		fprintf(fp, "%s=%s\n", he->name, (char*)he->data);
 	}
 }

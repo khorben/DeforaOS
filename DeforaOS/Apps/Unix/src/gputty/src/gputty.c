@@ -33,6 +33,7 @@ static void gputty_on_about(GtkWidget * widget, gpointer data);
 static void gputty_on_about_close(GtkWidget * widget, gpointer data);
 static void gputty_on_about_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 static void gputty_on_connect(GtkWidget * widget, gpointer data);
+static void gputty_on_delete(GtkWidget * widget, gpointer data);
 static void gputty_on_load(GtkWidget * widget, gpointer data);
 static void gputty_on_quit(GtkWidget * widget, gpointer data);
 static void gputty_on_quitx(GtkWidget * widget, GdkEvent * event, gpointer data);
@@ -43,6 +44,7 @@ GPuTTY * gputty_new(void)
 {
 	GPuTTY * g;
 	char * p;
+	int i;
 
 	if((g = malloc(sizeof(GPuTTY))) == NULL)
 	{
@@ -137,6 +139,8 @@ GPuTTY * gputty_new(void)
 			G_CALLBACK(gputty_on_save), g);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_save, FALSE, FALSE, 0);
 	g->sn_delete = gtk_button_new_from_stock(GTK_STOCK_DELETE);
+	g_signal_connect(G_OBJECT(g->sn_delete), "clicked",
+			G_CALLBACK(gputty_on_delete), g);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_delete, FALSE, FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox3, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox1), g->sn_hbox, TRUE, TRUE, 0);
@@ -159,6 +163,18 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->vbox), g->ac_hbox, FALSE, FALSE, 0);
 	/* about */
 	g->ab_window = NULL;
+
+	/* load sessions */
+	for(i = 0; i <= 99; i++)
+	{
+		char buf[11];
+		sprintf(buf, "session %d", i);
+		if((p = config_get(g->config, buf, "name")) == NULL)
+			break;
+		gtk_clist_append(GTK_CLIST(g->sn_clsessions), &p);
+	}
+
+	/* show window */
 	gtk_widget_show_all(g->window);
 	return g;
 }
@@ -258,12 +274,53 @@ static void gputty_on_connect(GtkWidget * widget, gpointer data)
 	}
 }
 
+static void gputty_on_delete(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+	int i;
+	char buf1[11];
+	char buf2[11];
+	char * p;
+
+	if(g->selection == -1)
+		return;
+	i = g->selection;
+	gtk_clist_remove(GTK_CLIST(g->sn_clsessions), g->selection);
+	for(; i < 100; i++)
+	{
+		sprintf(buf1, "session %d", i);
+		sprintf(buf2, "session %d", i+1);
+		if((p = config_get(g->config, buf2, "name")) == NULL)
+		{
+			config_set(g->config, buf1, "name", NULL);
+			break;
+		}
+		config_set(g->config, buf1, "name", p);
+		config_set(g->config, buf1, "hostname",
+				config_get(g->config, buf2, "hostname"));
+		config_set(g->config, buf1, "username",
+				config_get(g->config, buf2, "username"));
+	}
+}
+
 static void gputty_on_load(GtkWidget * widget, gpointer data)
 {
-	/* FIXME */
 	GPuTTY * g;
+	char buf[11];
+	char * p;
 
 	g = data;
+	if(g->selection < 0 || g->selection >= 100)
+		return;
+	sprintf(buf, "session %d", g->selection);
+	if((p = config_get(g->config, buf, "hostname")) == NULL)
+		gtk_entry_set_text(GTK_ENTRY(g->hn_ehostname), "");
+	else
+		gtk_entry_set_text(GTK_ENTRY(g->hn_ehostname), p);
+	if((p = config_get(g->config, buf, "username")) == NULL)
+		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), "");
+	else
+		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), p);
 }
 
 static void gputty_on_quit(GtkWidget * widget, gpointer data)
@@ -286,14 +343,13 @@ static void gputty_on_quitx(GtkWidget * widget, GdkEvent * event, gpointer data)
 
 static void gputty_on_save(GtkWidget * widget, gpointer data)
 {
-	/* FIXME
-	 * - remember saved sessions
-	 * - when 2 sessions have the same name, update it */
 	GPuTTY * g;
 	char const * session;
 	char const * hostname;
 	int port;
 	char const * username;
+	int row;
+	char buf[11];
 
 	g = data;
 	session = gtk_entry_get_text(GTK_ENTRY(g->sn_esessions));
@@ -304,7 +360,21 @@ static void gputty_on_save(GtkWidget * widget, gpointer data)
 		return;
 	username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 	port = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport));
-	gtk_clist_append(GTK_CLIST(g->sn_clsessions), (char**)&session);
+	if(g->selection == -1)
+		row = gtk_clist_append(GTK_CLIST(g->sn_clsessions),
+				(char**)&session);
+	else
+	{
+		row = g->selection;
+		gtk_clist_set_text(GTK_CLIST(g->sn_clsessions),
+				row, 0, session);
+	}
+	if(row >= 100 || row < 0)
+		return;
+	sprintf(buf, "session %d", row);
+	config_set(g->config, buf, "name", strdup(session));
+	config_set(g->config, buf, "hostname", strdup(hostname));
+	config_set(g->config, buf, "username", strdup(username));
 }
 
 static void gputty_on_select(GtkWidget * widget, gint row, gint column, GdkEventButton *event, gpointer data)
