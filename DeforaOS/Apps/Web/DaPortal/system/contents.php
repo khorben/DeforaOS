@@ -26,11 +26,17 @@ if(eregi("contents.php", $_SERVER["REQUEST_URI"]))
 }
 
 
-function contents_disable($contentid)
+function contents_delete($id)
+{
+	sql_query("delete from daportal_contents where contentid='$id';");
+}
+
+
+function contents_disable($id)
 {
 	global $moduleid;
 
-	sql_query("update daportal_contents set enable='0' where contentid='$contentid' and moduleid='$moduleid';");
+	sql_query("update daportal_contents set enable='0' where contentid='$id' and moduleid='$moduleid';");
 }
 
 
