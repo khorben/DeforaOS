@@ -645,7 +645,7 @@ static void io_here(Parser * p)
 
 /* here_end */
 static void here_end(Parser * p)
-	/* WORD */
+	/* WORD (rule 3) */
 {
 	parser_scan(p);
 }
