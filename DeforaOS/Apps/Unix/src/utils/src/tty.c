@@ -7,7 +7,7 @@
 
 
 /* tty */
-int tty(void)
+static int tty(void)
 {
 	if(isatty(0) == 1)
 	{
@@ -24,7 +24,7 @@ int tty(void)
 
 
 /* usage */
-int usage(void)
+static int usage(void)
 {
 	fprintf(stderr, "%s", "Usage: tty\n");
 	return 1;
