@@ -1,10 +1,14 @@
-TARGETS	= basename cat cmp dirname false head id kill link ln logname ls mkdir mkfifo pwd rmdir sleep time true tty uname unlink wc
+TARGETS	= basename cat cmp cp dirname false head id kill link ln logname ls mkdir mkfifo pwd rmdir sleep strings time true tty uname unlink wc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
 LDFLAGS	=
 CC	= cc
+INSTALL	= install
+MKDIR	= mkdir -p
 RM	= rm -f
+PREFIX	= /usr/local
+BINDIR	= $(PREFIX)/bin
 
 
 all: $(TARGETS)
@@ -18,6 +22,9 @@ cat: cat.o
 
 cmp: cmp.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o cmp cmp.o
+
+cp: cp.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o cp cp.o
 
 dirname: dirname.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o dirname dirname.o
@@ -61,6 +68,9 @@ rmdir: rmdir.o
 sleep: sleep.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o sleep sleep.o
 
+strings: strings.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o strings strings.o
+
 time: time.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o time time.o
 
@@ -88,6 +98,9 @@ cat.o: cat.c
 
 cmp.o: cmp.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c cmp.c
+
+cp.o: cp.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c cp.c
 
 dirname.o: dirname.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c dirname.c
@@ -131,6 +144,9 @@ rmdir.o: rmdir.c
 sleep.o: sleep.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c sleep.c
 
+strings.o: strings.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c strings.c
+
 time.o: time.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c time.c
 
@@ -151,7 +167,12 @@ wc.o: wc.c
 
 
 clean:
-	$(RM) basename.o cat.o cmp.o dirname.o false.o head.o id.o kill.o link.o ln.o logname.o ls.o mkdir.o mkfifo.o pwd.o rmdir.o sleep.o time.o true.o tty.o uname.o unlink.o wc.o
+	$(RM) basename.o cat.o cmp.o cp.o dirname.o false.o head.o id.o kill.o link.o ln.o logname.o ls.o mkdir.o mkfifo.o pwd.o rmdir.o sleep.o strings.o time.o true.o tty.o uname.o unlink.o wc.o
 
 distclean: clean
 	$(RM) $(TARGETS)
+
+
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 $(TARGETS) $(DESTDIR)$(BINDIR)
