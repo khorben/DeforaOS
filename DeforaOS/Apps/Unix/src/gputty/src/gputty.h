@@ -57,6 +57,7 @@ void gputty_delete(GPuTTY * gputty);
 void gputty_about(GtkWidget * widget, gpointer data);
 void gputty_about_close(GtkWidget * widget, gpointer data);
 void gputty_about_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+void gputty_connect(GtkWidget * widget, gpointer data);
 void gputty_quit(GtkWidget * widget, gpointer data);
 void gputty_quitx(GtkWidget * widget, GdkEvent * event, gpointer data);
 

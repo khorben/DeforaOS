@@ -2,8 +2,11 @@
 
 
 
+#include <sys/types.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <err.h>
 #include <gtk/gtk.h>
 #include "gputty.h"
 
@@ -95,6 +98,8 @@ GPuTTY * gputty_new(void)
 	g_signal_connect(G_OBJECT(gputty->ac_about), "clicked",
 			G_CALLBACK(gputty_about), gputty);
 	gputty->ac_connect = gtk_button_new_with_label("Connect");
+	g_signal_connect(G_OBJECT(gputty->ac_connect), "clicked",
+			G_CALLBACK(gputty_connect), gputty);
 	gtk_box_pack_end(GTK_BOX(gputty->ac_hbox), gputty->ac_connect, FALSE, FALSE, 0);
 	gputty->ac_quit = gtk_button_new_with_label("Quit");
 	gtk_box_pack_end(GTK_BOX(gputty->ac_hbox), gputty->ac_quit, FALSE, FALSE, 2);
@@ -145,6 +150,31 @@ void gputty_about_close(GtkWidget * widget, gpointer data)
 void gputty_about_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	gputty_about_close(widget, data);
+}
+
+void gputty_connect(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+	pid_t pid;
+	char * useropt = NULL;
+	char * username = NULL;
+
+	if((pid = fork()) == -1)
+	{
+		warn("fork");
+		return;
+	}
+	else if(pid == 0)
+	{
+		username = gtk_entry_get_text(g->hn_eusername);
+		if(username[0] != '\0')
+			useropt = "-l";
+		execlp("wterm", "wterm", "-e",
+				"ssh", gtk_entry_get_text(g->hn_ehostname),
+				useropt, username,
+				NULL);
+		err(2, "exec");
+	}
 }
 
 void gputty_quit(GtkWidget * widget, gpointer data)
