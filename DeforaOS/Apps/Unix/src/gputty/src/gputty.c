@@ -183,7 +183,7 @@ and mainly relies on the following software:\n\
 - Gtk+\n\
 This project is released under the terms of the\n\
 GNU General Public License.\n\
-Credits go to every Free Software contributors.");
+Credits go to all Free Software contributors.");
 		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_label, TRUE, TRUE, 0);
 		g->ab_hsep = gtk_hseparator_new();
 		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_hsep, TRUE, TRUE, 4);
@@ -257,8 +257,12 @@ static void gputty_quit(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 
-	config_set(g->config, "", "hostname", strdup(gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname))));
-	config_set(g->config, "", "username", strdup(gtk_entry_get_text(GTK_ENTRY(g->hn_eusername))));
+	config_set(g->config, "", "hostname", gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname)));
+	config_set(g->config, "", "username", gtk_entry_get_text(GTK_ENTRY(g->hn_eusername)));
+	if(g->config == NULL)
+		fprintf(stderr, "gputty: not saving configuration\n");
+	else if(config_save(g->config, ".gputty") != 0)
+		fprintf(stderr, "gputty: an error occured while saving configuration\n");
 	gtk_main_quit();
 }
 
@@ -286,7 +290,10 @@ static void gputty_save(GtkWidget * widget, gpointer data)
 		return;
 	hostname = gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname));
 	if(hostname[0] == '\0')
+	{
+		free(session);
 		return;
+	}
 	username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 	port = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport));
 	gtk_clist_append(GTK_CLIST(g->sn_clsessions), &session);
@@ -303,10 +310,6 @@ int main(int argc, char * argv[])
 	if((gputty = gputty_new()) == NULL)
 		return 1;
 	gtk_main();
-	if(gputty->config == NULL)
-		fprintf(stderr, "gputty: not saving configuration\n");
-	else if(config_save(gputty->config, ".gputty") != 0)
-		fprintf(stderr, "gputty: an error occured while saving configuration\n");
 	gputty_delete(gputty);
 	return 0;
 }
