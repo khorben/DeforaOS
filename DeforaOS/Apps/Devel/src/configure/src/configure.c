@@ -230,18 +230,20 @@ static int _targets_all(FILE * fp, Config * config)
 	char * targets;
 	char * cur;
 
-	fprintf(fp, "%s", "\nall:\n");
+	fprintf(fp, "%s", "\nall:");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL
 			&& *subdirs != '\0')
-		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do $(MAKE) -C $$i $@ || exit $$?; done\n");
-	if((targets = config_get(config, "", "targets")) == NULL
-			|| *targets == '\0')
-	{
-		fprintf(fp, "\n");
+		fprintf(fp, "%s", " subdirs");
+	if((targets = config_get(config, "", "targets")) != NULL
+			&& *targets != '\0')
+		fprintf(fp, "%s", " $(TARGETS)");
+	fprintf(fp, "%s", "\n\nsubdirs:\n");
+	if(subdirs != NULL && *subdirs != '\0')
+		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); do ",
+				"$(MAKE) -C $$i all $@ || exit $$?; done\n");
+	fprintf(fp, "%s", "\n");
+	if(targets == NULL)
 		return 0;
-	}
-	fprintf(fp, "%s", "\t@$(MAKE) $(TARGETS)\n\n");
 	for(cur = targets; *targets != '\0'; targets++)
 	{
 		if(*targets != ',')
