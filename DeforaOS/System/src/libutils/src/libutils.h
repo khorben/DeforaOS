@@ -6,6 +6,8 @@
 # define ___LIBUTILS_H
 
 
+# include "config.h"
 # include "file.h"
+# include "slist.h"
 
-#endif /* ___LIBUTILS_H */
+#endif /* !___LIBUTILS_H */
