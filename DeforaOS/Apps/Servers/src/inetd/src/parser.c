@@ -251,7 +251,7 @@ static void _program_argument(State * state)
 		return; /* FIXME */
 	}
 	for(i = 0; state->service.program[i] != NULL; i++);
-	if((p = realloc(state->service.program, sizeof(char) * (i+1))) == NULL)
+	if((p = realloc(state->service.program, sizeof(char*) * (i+2))) == NULL)
 	{
 		_parser_check(state, TC_WORD);
 		return; /* FIXME */
