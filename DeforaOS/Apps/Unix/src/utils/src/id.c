@@ -6,14 +6,10 @@
 extern int optind;
 #include <pwd.h>
 #include <grp.h>
-struct group *getgrent(void);
-void setgrent(void);
-void endgrent(void);
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-char * strdup(char const * s);
 
 
 /* print_gid */
