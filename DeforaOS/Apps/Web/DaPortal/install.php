@@ -85,7 +85,7 @@ function install_database()
 
 	sql_table_create('daportal_layouts', "(
 	moduleid integer,
-	actionid varchar(9) NOT NULL DEFAULT '',
+	action varchar(9) NOT NULL DEFAULT '',
 	top varchar(9) NOT NULL DEFAULT '',
 	bottom varchar(9) NOT NULL DEFAULT '',
 	FOREIGN KEY (moduleid) REFERENCES daportal_modules (moduleid)
