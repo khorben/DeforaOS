@@ -13,6 +13,8 @@ extern int optind;
 
 /* time */
 static int _time_error(char * error, int ret);
+static int _time_exec(char * argv[]);
+static int _time_print(long real, long user, long sys);
 static int _time(int argc, char * argv[])
 {
 	pid_t pid;
@@ -25,12 +27,7 @@ static int _time(int argc, char * argv[])
 	if((pid = fork()) == -1)
 		return _time_error("fork", 2);
 	if(pid == 0)
-	{
-		execvp(argv[0], argv);
-		if(errno == ENOENT)
-			return _time_error(argv[0], 127);
-		return _time_error(argv[0], 126);
-	}
+		return _time_exec(argv);
 	for(;;)
 	{
 		if(waitpid(pid, &status, 0) == -1)
@@ -40,12 +37,9 @@ static int _time(int argc, char * argv[])
 	}
 	if((cafter = times(&tmsbuf)) == -1)
 		return _time_error("times", 2);
-	/* FIXME */
-	fprintf(stderr, "real %ld\nuser %ld\nsys %ld\n",
-			cafter - cbefore,
+	return _time_print(cafter - cbefore,
 			tmsbuf.tms_utime + tmsbuf.tms_cutime,
 			tmsbuf.tms_stime + tmsbuf.tms_cstime);
-	return 0;
 }
 
 static int _time_error(char * message, int ret)
@@ -53,6 +47,38 @@ static int _time_error(char * message, int ret)
 	fprintf(stderr, "%s", "time: ");
 	perror(message);
 	return ret;
+}
+
+static int _time_exec(char * argv[])
+{
+	execvp(argv[0], argv);
+	if(errno == ENOENT)
+		return _time_error(argv[0], 127);
+	return _time_error(argv[0], 126);
+}
+
+static int _time_print(long real, long user, long sys)
+{
+	char * args[3] = { "real", "user", "sys" };
+	long * argl[3] = { &real, &user, &sys };
+	int i;
+	long l;
+	long r;
+
+	if((r = sysconf(_SC_CLK_TCK)) == -1)
+	{
+		_time_error("sysconf", 0);
+		r = 100;
+	}
+	for(i = 0; i < 3; i++)
+	{
+		l = *argl[i] / r;
+		if(l * r > *argl[i])
+			l--;
+		/* FIXME */
+		fprintf(stderr, "%s %ld.%02lds\n", args[i], l, *argl[i] % r);
+	}
+	return 0;
 }
 
 
