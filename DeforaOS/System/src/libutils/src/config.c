@@ -76,7 +76,7 @@ int config_load(Config * config, char * filename)
 	while((c = fgetc(fp)) != EOF)
 	{
 		if(c == '#')
-			while((c = fgetc(fp)) != EOF && 'c' != '\n');
+			while((c = fgetc(fp)) != EOF && c != '\n');
 		else if(c == '[')
 		{
 			if((str = _load_section(fp)) == NULL)
