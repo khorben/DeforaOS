@@ -129,9 +129,7 @@ function news_admin()
 		print("\t\t<p>No news to display.</p>\n");
 		return 0;
 	}
-	$first = $offset + 1;
-	$last = $first + $npp - 1;
-	print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
+	print("\t\t<h3>Listing news ".($offset + 1)." to ".min($offset + $npp, $count)."</h3>\n");
 	print("\t\t<form action=\"index.php\" method=\"post\">
 <div class=\"headline\">
 \t<input type=\"hidden\" name=\"module\" value=\"news\"/>
