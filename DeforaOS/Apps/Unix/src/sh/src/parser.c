@@ -39,13 +39,16 @@ static TokenCode CS_COMMAND[]		= {
 	TC_TOKEN,
 	/* compound_command */
 	TC_RW_LBRACE, /* SUBSHELL "(", */ TC_RW_FOR, TC_RW_CASE, TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL,
-	/* function_definition, */
+	/* function_definition */
 	TC_NULL
 };
 static TokenCode CS_COMPOUND_COMMAND[]	= {
 	TC_RW_LBRACE, /* SUBSHELL "(", */
 	TC_RW_FOR, TC_RW_CASE, TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL,
 	TC_NULL
+};
+static TokenCode CS_FUNCTION_DEFINITION[] = {
+	/* FIXME */ TC_NULL
 };
 static TokenCode CS_LIST[]		= {
 	/* and_or */
@@ -58,6 +61,11 @@ static TokenCode CS_NEWLINE_LIST[]	= { TC_NEWLINE, TC_NULL }; /* FIXME */
 static TokenCode CS_REDIRECT_LIST[]	= { TC_NULL }; /* FIXME */
 static TokenCode CS_SEPARATOR[]		= { TC_NEWLINE, TC_NULL }; /* FIXME */
 static TokenCode CS_SEPARATOR_OP[]	= { TC_OP_AMPERSAND, TC_OP_SEMICOLON, TC_NULL };
+static TokenCode CS_SIMPLE_COMMAND[]	= {
+	/* cmd_prefix */
+	/* cmd_name */
+	TC_WORD,
+	TC_NULL };
 
 
 /* functions */
@@ -99,7 +107,7 @@ static Token ** token_check_word(Token ** tokens, char * word)
 /* complete_command */
 static Token ** list(Token ** tokens);
 static Token ** separator(Token ** tokens);
-Token ** complete_command(TokenList * tokenlist, int argc, char * argv[])
+Token ** complete_command(TokenList * tokenlist)
 	/* list [separator] */
 {
 	Token ** t;
@@ -229,6 +237,7 @@ static Token ** command(Token ** tokens)
 #ifdef DEBUG
 	fprintf(stderr, "command(): %s\n", tokens[0]->string);
 #endif
+	token_distinct(tokens[0]);
 	if(token_in_set(tokens[0], CS_COMPOUND_COMMAND))
 	{
 		tokens = compound_command(tokens);
@@ -236,8 +245,11 @@ static Token ** command(Token ** tokens)
 			return redirect_list(tokens);
 		return tokens;
 	}
-	/* FIXME */
-	return simple_command(tokens);
+	if(token_in_set(tokens[0], CS_SIMPLE_COMMAND))
+		return simple_command(tokens);
+	if(token_in_set(tokens[0], CS_FUNCTION_DEFINITION))
+		return function_definition(tokens);
+	return NULL;
 }
 
 
