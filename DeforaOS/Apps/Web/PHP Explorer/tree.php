@@ -22,6 +22,8 @@
 require('common.php');
 require('config.php');
 
+define(TREE_LEVEL, 1);
+
 
 function list_dirs($path)
 {
@@ -63,17 +65,29 @@ function _tree_level($level, $curroot)
 	$dirs = list_dirs($root.'/'.$curroot);
 	if($dirs == FALSE || count($dirs) == 0)
 		return;
+	$hidden = $level > TREE_LEVEL;
 	while($name = array_shift($dirs))
 	{
 		$path = $curroot.'/'.$name;
 		$class = count($dirs) ? 'node' : 'lastnode';
-		$collapse = !is_link($path) && dir_has_subdirs($path);
-		if($collapse)
+		$collapse = 0;
+		$expand = 0;
+		if($level == TREE_LEVEL && !is_link($root.'/'.$path)
+				&& dir_has_subdirs($root.'/'.$path))
+		{
+			$expand = 1;
+			$img = 'icons/tree/plastnode.gif';
+		}
+		else if(!is_link($root.'/'.$path)
+				&& dir_has_subdirs($root.'/'.$path))
+		{
+			$collapse = 1;
 			$img = 'icons/tree/mlastnode.gif';
+		}
 		else
 			$img = 'icons/tree/'.$class.'.gif';
 		include('tree.tpl');
-		if(!is_link($path))
+		if(!is_link($root.'/'.$path))
 			_tree_level($level+1, $path);
 		print("</div>\n");
 	}
@@ -82,7 +96,7 @@ function _tree_level($level, $curroot)
 
 function tree()
 {
-	_tree_level(0, '/');
+	_tree_level(1, '/');
 }
 
 ?>
@@ -94,7 +108,7 @@ function tree()
 	</head>
 	<body>
 		<div class="tree">
-<div class="lastnode"><img class="node" src="icons/tree/mlastnode.gif" alt="" onClick="folder_collapse(event)"/><a href="explorer.php?folder=/" target="explorer"><img src="icons/16x16/mime/folder.png" alt="directory"/> /</a>
+<div class="lastnode"><img class="node" <? if(TREE_LEVEL) { ?>src="icons/tree/mlastnode.gif" alt="" onClick="folder_collapse(event)"<? } else { ?>src="icons/tree/plastnode.gif" alt="" onClick="folder_expand(event)"<? } ?>/><a href="explorer.php?folder=/" target="explorer"><img src="icons/16x16/mime/folder.png" alt="directory"/> /</a>
 <? tree(); ?>
 </div>
 		</div>

@@ -18,13 +18,13 @@
 				<div id="explorer_listing" class="listing_details">
 					<div class="header">
 						<div class="icon"></div>
-						<div class="name">Name</div>
-						<div class="owner">Owner</div>
-						<div class="group">Group</div>
-						<div class="size">Size</div>
-						<div class="date">Date</div>
+						<? explorer_sort($folder, 'name', $sort); ?>
+						<? explorer_sort($folder, 'owner', $sort); ?>
+						<? explorer_sort($folder, 'group', $sort); ?>
+						<? explorer_sort($folder, 'size', $sort); ?>
+						<? explorer_sort($folder, 'date', $sort); ?>
 					</div>
-<? explorer_folder($folder); ?>
+<? explorer_folder($folder, $sort); ?>
 				</div>
 			</form>
 			<div style="clear: left">&nbsp;</div>

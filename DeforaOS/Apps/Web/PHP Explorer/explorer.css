@@ -55,6 +55,7 @@ img {
 
 .explorer .header div {
 	background-color:		#f0f0f0;
+	vertical-align:			text-bottom;
 }
 
 .explorer .entry {
@@ -167,12 +168,12 @@ img {
 
 
 /* tree */
-.tree .entry {
-	margin-left:			16px;
+.tree img {
+	vertical-align:			text-bottom;
 }
 
-.tree .entry img {
-	vertical-align:			text-bottom;
+.tree .entry {
+	margin-left:			16px;
 }
 
 .tree .node {

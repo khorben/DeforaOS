@@ -38,10 +38,55 @@ function explorer_download($filename)
 }
 
 
-function explorer_folder($folder)
+function _sort_owner($a, $b)
 {
-	global $root;
+	global $root, $path;
 
+	$stata = lstat($root.'/'.$path.'/'.$a);
+	$statb = lstat($root.'/'.$path.'/'.$b);
+	$ownera = posix_getpwuid($stata['uid']);
+	$ownera = $ownera['name'];
+	$ownerb = posix_getpwuid($statb['uid']);
+	$ownerb = $ownerb['name'];
+	return strcmp($ownera, $ownerb);
+}
+
+function _sort_group($a, $b)
+{
+	global $root, $path;
+
+	$stata = lstat($root.'/'.$path.'/'.$a);
+	$statb = lstat($root.'/'.$path.'/'.$b);
+	$groupa = posix_getgrgid($stata['gid']);
+	$groupa = $ownera['name'];
+	$groupb = posix_getgrgid($statb['gid']);
+	$groupb = $ownerb['name'];
+	return strcmp($groupa, $groupb);
+}
+
+function _sort_size($a, $b)
+{
+	global $root, $path;
+
+	$stata = lstat($root.'/'.$path.'/'.$a);
+	$statb = lstat($root.'/'.$path.'/'.$b);
+	return $stata['size'] < $statb['size'];
+}
+
+function _sort_date($a, $b)
+{
+	global $root, $path;
+
+	$stata = lstat($root.'/'.$path.'/'.$a);
+	$statb = lstat($root.'/'.$path.'/'.$b);
+	return $stata['date'] < $statb['date'];
+}
+
+function explorer_folder($folder, $sort)
+{
+	global $root, $path;
+	
+	$path = $folder;
 	if(($dir = opendir($root.'/'.$folder)) == FALSE)
 		return;
 	readdir($dir);
@@ -49,7 +94,25 @@ function explorer_folder($folder)
 	$files = array();
 	while(($de = readdir($dir)))
 		$files[] = $de;
-	usort($files, strcmp);
+	switch($sort)
+	{
+		case 'owner':
+			usort($files, _sort_owner);
+			break;
+		case 'group':
+			usort($files, _sort_group);
+			break;
+		case 'size':
+			usort($files, _sort_size);
+			break;
+		case 'date':
+			usort($files, _sort_date);
+			break;
+		case 'name':
+		default:
+			sort($files);
+			break;
+	}
 	while(($name = array_shift($files)))
 	{
 		if(@is_dir($root.'/'.$folder.'/'.$name))
@@ -90,7 +153,19 @@ function explorer_folder($folder)
 }
 
 
+function explorer_sort($folder, $name, $sort)
+{
+	echo '<div class="'.$name.'">';
+	echo '<a href="explorer.php?folder='.html_safe($folder).'&sort='.$name
+			.'">'.ucfirst($name).'</a>';
+	if($sort == $name || ($sort == '' && $name == 'name'))
+		echo ' <img src="icons/16x16/down.png" alt=""/>';
+	echo '</div>'."\n";
+}
+
+
 if(isset($_GET['download']))
 	return explorer_download(filename_safe($_GET['download']));
 $folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
+$sort = $_GET['sort'];
 include('explorer.tpl');
