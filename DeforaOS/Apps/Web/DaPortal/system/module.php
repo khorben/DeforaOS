@@ -32,20 +32,28 @@ function module_cache_include($module, $cache)
 }
 
 
+function module_id($module, $enable)
+{
+	if(($res = sql_query("select moduleid, modulename from daportal_modules where modulename='$module' and enable='$enable';")) == FALSE)
+		return 0;
+	return $res[0]["moduleid"];
+}
+
+
 function module_include($module, $action)
 {
-	if(($res = sql_query("select moduleid, modulename from daportal_modules where modulename='$module' and enable='1';")) == FALSE)
+	global $moduleid;
+
+	if(($moduleid = module_id($module, 1)) == 0)
 	{
-		print("<b>Warning:</b> could not include a module (unknown).<br/>\n");
+		print("\t\t<div><b>Warning:</b> could not include a module (unknown).</div>\n");
 		return 1;
 	}
-	global $moduleid;
-	$moduleid = $res[0]['moduleid'];
 	if(module_cache_include($module, $action) == 0)
 		return 0;
 	if(module_process($module, $action) != 0)
 	{
-		print("<b>Warning:</b> could not include a module (module error).<br/>\n");
+		print("\t\t<div><b>Warning:</b> could not include a module (module error).</div>\n");
 		return 1;
 	}
 	return 0;

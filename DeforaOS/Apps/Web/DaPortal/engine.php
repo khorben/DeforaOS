@@ -27,8 +27,8 @@ if(eregi("engine.php", $_SERVER["REQUEST_URI"]))
 
 
 //include system modules
-require("system/config.php");
-require("system/sql.php");
+require_once("system/config.php");
+require_once("system/sql.php");
 if(sql_connect($dbhost, $dbport, $dbname, $dbuser, $dbpassword) != 0)
 {
 	require_once("system/raw.php");
@@ -81,21 +81,21 @@ function engine_page($page)
 
 function engine_post()
 {
+	global $moduleid;
+
 	require_once("system/module.php");
 	if(($module = $_POST["module"]) == "")
 		return 1;
 	if(($action = $_POST["action"]) == "")
 		return 1;
 	if(!ereg("^[a-z]+$", $module)
-			|| ($res = sql_query("select moduleid from daportal_modules where modulename='$module'")) == FALSE)
+			|| ($moduleid = module_id($module, 1)) == 0)
 	{
 		require_once("system/raw.php");
 		raw_require("html/xhtml.html");
 		raw_require("html/invalid.html");
 		return 1;
 	}
-	global $moduleid;
-	$moduleid = $res[0]["moduleid"];
 	return module_process($module, $action);
 }
 
