@@ -19,7 +19,6 @@ extern int optind;
 typedef int Prefs;
 #define PREFS_a 1
 
-static int _usage(void);
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
 	int o;
@@ -34,13 +33,13 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 			case 'F':
 			case 'R':
 				fprintf(stderr, "%s%c%s", "ls: -", o,
-						": not yet implemented");
-				return _usage();
+						": not yet implemented\n");
+				return 1;
 			case 'a':
 				*prefs &= PREFS_a;
 				break;
 			case '?':
-				return _usage();
+				return 1;
 		}
 	}
 	return 0;
