@@ -66,7 +66,8 @@ function pages_default()
 	$page = $_GET["page"];
 	if($page == "" || !ereg("^[a-z]+$", $page))
 		$page = "index";
-	return page_include($page);
+	print("\t\t<h1>Page preview: $page</h1>\n");
+	return raw_include("pages/".$page.".tpl");
 }
 
 
