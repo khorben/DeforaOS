@@ -190,8 +190,8 @@ function news_dump()
 	}
 	while(sizeof($res) >= 1)
 	{
-		print("insert into daportal_contents (contentid, moduleid, title, content) values ('".$res[0]["contentid"]."', '$moduleid', '".$res[0]["title"]."');\n");
-		print("insert into daportal_news (newsid, author, date, enable) values ('".$res[0]["contentid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."', '".$res[0]["enable"]."');\n");
+		print("insert into daportal_contents (contentid, moduleid, title, content, enable) values ('".$res[0]["contentid"]."', '$moduleid', '".$res[0]["title"]."', '".$res[0]["enable"]."');\n");
+		print("insert into daportal_news (newsid, author, date) values ('".$res[0]["contentid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."');\n");
 		array_shift($res);
 	}
 	return 0;
@@ -208,7 +208,6 @@ function news_install()
 	newsid integer,
 	author integer,
 	date date NOT NULL DEFAULT ('now'),
-	enable bool NOT NULL DEFAULT '0',
 	FOREIGN KEY (newsid) REFERENCES daportal_contents (contentid),
 	FOREIGN KEY (author) REFERENCES daportal_users (userid)
 )");
@@ -219,6 +218,7 @@ function news_install()
 function news_moderate()
 {
 	global $administrator, $moderator;
+	require_once("system/contents.php");
 
 	if($_SERVER["REQUEST_METHOD"] != "POST")
 		return 0;
@@ -226,7 +226,10 @@ function news_moderate()
 		return 0;
 	$newsid = $_POST["newsid"];
 	$enable = $_POST["enable"];
-	sql_query("update daportal_news set enable='$enable' where newsid='$newsid';");
+	if($enable == "1")
+		contents_enable($newsid);
+	else
+		contents_disable($newsid);
 	header("Location: index.php?module=news&action=admin");
 	return 0;
 }
