@@ -147,7 +147,7 @@ function user_default()
 <div class=\"headline\">
 \t<input type=\"submit\" name=\"type\" value=\"Delete\"/>
 \t<input type=\"hidden\" name=\"module\" value=\"user\"/>
-\t<input type=\"hidden\" name=\"action\" value=\"session\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"sessions\"/>
 </div>
 <table cellspacing=\"0\">
 \t<tr>
@@ -286,6 +286,22 @@ function user_register()
 	$password = md5($password);
 	sql_query("insert into daportal_users (username, password) values ('$username', '$password');");
 	return user_login();
+}
+
+
+function user_sessions()
+{
+	global $userid;
+
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return 1;
+	$id = $_POST['id'];
+	while(sizeof($id) >= 1)
+	{
+		$sessionid = array_shift($id);
+		sql_query("delete from daportal_sessions where userid='$userid' and sessionid='$sessionid';");
+	}
+	header('Location: index.php?module=user');
 }
 
 
