@@ -143,8 +143,6 @@ static void _service(State * state)
 static void _service_name(State * state)
 	/* WORD */
 {
-	char * p;
-
 	state->service.name = strdup(state->token->string);
 	_parser_check(state, TC_WORD);
 }
