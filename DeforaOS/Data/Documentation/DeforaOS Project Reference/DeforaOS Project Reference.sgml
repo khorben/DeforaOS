@@ -38,7 +38,7 @@ Today I think my ideal operating system should be open source, micro-kernel base
 <chapter>
 	<title>Project orientations</title>
 	<sect1>
-		<title>Open Source</title>
+		<title>Open source</title>
 <!--
 - interoperability
 - ...
@@ -58,12 +58,21 @@ Today I think my ideal operating system should be open source, micro-kernel base
 	</sect1>
 	<sect1>
 		<title>Technical choices</title>
-<!--
-- micro-kernel
-- programming language
--->
+		<sect2>
+			<title>Micro kernel</title>
+		</sect2>
+		<sect2>
+			<title>Programming languages</title>
+		</sect2>
 	</sect1>
 </chapter>
 
+<chapter>
+	<title>Detailed design</title>
+</chapter>
+
+<chapter>
+	<title>Implementation process</title>
+</chapter>
 
 </book>
