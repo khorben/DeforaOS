@@ -114,15 +114,12 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 
 static int _chgrp_do(int opts, gid_t gid, char * file)
 {
-	struct stat st;
 	int res;
 
-	if(stat(file, &st) != 0)
-		return _chgrp_error(file, 1);
 	if((opts & OPT_h) == OPT_h)
-		res = lchown(file, st.st_uid, gid);
+		res = lchown(file, -1, gid);
 	else
-		res = chown(file, st.st_uid, gid);
+		res = chown(file, -1, gid);
 	if(res != 0)
 		return _chgrp_error(file, 1);
 	return 0;
