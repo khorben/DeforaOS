@@ -10,18 +10,23 @@
 
 /* TokenList */
 /* types */
-typedef struct _TokenList {
-	Token ** tokens;
-	int size;
-} TokenList;
+typedef Token * TokenList;
+
+
+/* variables */
+extern TokenList * null_tokenlist;
 
 
 /* functions */
-TokenList * tokenlist_new(void);
-TokenList * tokenlist_new_from_string(char * string);
+TokenList * tokenlist_new(char * string);
 void tokenlist_delete(TokenList * tokenlist);
 
+/* returns */
+TokenList * tokenlist_next(TokenList * tokenlist);
+/* Token */
+Token * tokenlist_first_token(TokenList * tokenlist);
+
 /* useful */
-void tokenlist_append(TokenList * tokenlist, Token * token);
+TokenList * tokenlist_append(TokenList * tokenlist, Token * token);
 
 #endif /* __TOKENLIST_H */

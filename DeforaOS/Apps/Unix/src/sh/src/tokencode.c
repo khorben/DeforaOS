@@ -44,5 +44,6 @@ char * sTokenCode[TC_NULL] = {
 	"{",
 	"}",
 	"!",
-	"in"
+	"in",
+	NULL
 };

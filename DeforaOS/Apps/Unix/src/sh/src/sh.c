@@ -5,73 +5,47 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <libutils/libutils.h>
 #include "cmd.h"
 #include "tokenlist.h"
 #include "parser.h"
-#include "sh.h"
+#include "prefs.h"
 
 
 /* sh */
 /* sh_file */
-static char * file_get_line(FILE * fp);
-int sh_file(struct prefs * p, char * file)
+static int sh_file(struct prefs * p, char * filename)
 {
-	FILE * fp = stdin;
+	File * file;
 	char * line;
-	TokenList * t;
+	TokenList * tokenlist;
+	int res;
 
-	if(file != NULL)
-		if((fp = fopen(file, "r")) == NULL)
-		{
-			perror("fopen");
-			return 127;
-		}
+	if(filename != NULL)
+		file = file_new(filename, "r");
+	else
+		file = file_new_from_pointer(stdin);
+	if(file == NULL)
+	{
+		perror("Couldn't open file");
+		return 127;
+	}
 	do
 	{
 		if(p->i)
 			cmd_prompt();
-		line = file_get_line(fp);
-		t = tokenlist_new_from_string(line);
-		complete_command(t);
-		tokenlist_delete(t);
+		line = file_get_line(file);
+#ifdef DEBUG
+		fprintf(stderr, "line is: \"%s\"\n", line);
+#endif
+		tokenlist = tokenlist_new(line);
+		res = complete_command(tokenlist);
+		tokenlist_delete(tokenlist);
 		free(line);
 	}
-	while(line != NULL);
-	if(p->i)
-		fprintf(stderr, "\n");
-	if(file != NULL)
-		fclose(fp);
-	return 0;
-}
-
-static char * file_get_line(FILE * fp)
-{
-#define FGL_BS 80
-	char * str;
-	char * p;
-	int n = 0;
-
-	if((str = malloc(sizeof(char) * FGL_BS + 1)) == NULL)
-		return NULL;
-	while(fgets(&str[n], FGL_BS + 1, fp))
-	{
-		p = &str[n];
-		while(*p)
-		{
-			if(*p == '\n')
-			{
-				*p = '\0';
-				return str;
-			}
-			p++;
-		}
-		n += FGL_BS;
-		if((p = realloc(str, sizeof(char) * FGL_BS + 1)) == NULL)
-			break;
-		str = p;
-	}
-	free(str);
-	return NULL;
+	while(res == 0 && line != NULL);
+	file_delete(file);
+	return res;
 }
 
 
@@ -84,7 +58,7 @@ int sh_string(struct prefs * p, char * string, int argc, char * argv[])
 	fprintf(stderr, "sh_string(p, %s, %d, argv)\n",
 			string, argc);
 #endif
-	t = tokenlist_new_from_string(string);
+	t = tokenlist_new(string);
 	complete_command(t);
 	tokenlist_delete(t);
 	return 1;

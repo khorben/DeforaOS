@@ -1,7 +1,7 @@
 TARGETS	= sh
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g -D_GNU_SOURCE -DDEBUG
-LDFLAGSF=
+LDFLAGSF= -lutils
 LDFLAGS	=
 CC	= cc
 RM	= rm -f

@@ -45,6 +45,7 @@ typedef enum _TokenCode {
 	TC_RW_RBRACE,	/* "}"     */
 	TC_RW_BANG,   	/* "!"     */
 	TC_RW_IN,   	/* "in"    */
+	TC_ANY,
 	TC_NULL
 } TokenCode;
 

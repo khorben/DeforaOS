@@ -5,10 +5,10 @@
 #ifndef __PARSER_H
 # define __PARSER_H
 
-#include "tokenlist.h"
+# include "tokenlist.h"
 
 
 /* functions */
-Token ** complete_command(TokenList * token);
+int complete_command(TokenList * token);
 
 #endif /* __PARSER_H */

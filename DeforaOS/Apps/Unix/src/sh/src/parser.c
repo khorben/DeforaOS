@@ -13,19 +13,16 @@
 typedef TokenCode * CodeSet;
 
 
-/* variables */
-/* FIXME static Token token_null[1] = { TC_NULL, NULL }; */
-
-/*static TokenCode CS_AND_OR[]		= {
-	TC_RW_BANG,*/
+static TokenCode CS_AND_OR[]		= {
+	TC_RW_BANG,
 	/* command */
-/*	TC_TOKEN,
+	TC_TOKEN,
 	TC_NULL
-};*/
-/*static TokenCode CS_CMD_PREFIX[]	= {
+};
+static TokenCode CS_CMD_PREFIX[]	= {
 	TC_IONUMBER,
 	TC_NULL
-};*/
+};
 static TokenCode CS_CMD_SUFFIX[]	= {
 	TC_IONUMBER,
 	TC_NULL
@@ -47,11 +44,18 @@ static TokenCode CS_COMPOUND_COMMAND[]	= {
 	TC_RW_FOR, TC_RW_CASE, TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL,
 	TC_NULL
 };
+static TokenCode CS_COMPOUND_LIST[]	= {
+	TC_NULL
+}; /* FIXME */
 static TokenCode CS_FUNCTION_DEFINITION[] = {
-	/* FIXME */ TC_NULL
-};
+	TC_NULL
+}; /* FIXME */
 static TokenCode CS_IN[]		= {
 	TC_RW_IN,
+	TC_NULL
+};
+static TokenCode CS_LINEBREAK[]		= {
+	TC_ANY,
 	TC_NULL
 };
 static TokenCode CS_LIST[]		= {
@@ -65,10 +69,26 @@ static TokenCode CS_NAME[]		= {
 	TC_NAME,
 	TC_NULL
 };
-static TokenCode CS_NEWLINE_LIST[]	= { TC_NEWLINE, TC_NULL }; /* FIXME */
-static TokenCode CS_REDIRECT_LIST[]	= { TC_NULL }; /* FIXME */
-static TokenCode CS_SEPARATOR[]		= { TC_NEWLINE, TC_NULL }; /* FIXME */
-static TokenCode CS_SEPARATOR_OP[]	= { TC_OP_AMPERSAND, TC_OP_SEMICOLON, TC_NULL };
+static TokenCode CS_NEWLINE_LIST[]	= {
+	TC_NEWLINE,
+	TC_NULL
+}; /* FIXME */
+static TokenCode CS_PIPELINE[]		= {
+	TC_RW_BANG,
+	TC_NULL
+}; /* FIXME */
+static TokenCode CS_REDIRECT_LIST[]	= {
+	TC_NULL
+}; /* FIXME */
+static TokenCode CS_SEPARATOR[]		= {
+	TC_NEWLINE,
+	TC_NULL
+}; /* FIXME */
+static TokenCode CS_SEPARATOR_OP[]	= {
+	TC_OP_AMPERSAND,
+	TC_OP_SEMICOLON,
+	TC_NULL
+};
 static TokenCode CS_SIMPLE_COMMAND[]	= {
 	/* cmd_prefix */
 	/* cmd_name */
@@ -76,168 +96,177 @@ static TokenCode CS_SIMPLE_COMMAND[]	= {
 	TC_NULL
 };
 static TokenCode CS_WORDLIST[]		= {
-	TC_NULL /* FIXME */
-};
+	TC_NULL
+}; /* FIXME */
 
 
 /* functions */
-static int token_in_set(Token * token, CodeSet set)
+static int check(TokenList * tokenlist, TokenCode tokencode)
 {
+	if((*tokenlist)->code != tokencode)
+	{
+		fprintf(stderr, "Expected: %d (got: %d)\n",
+				tokencode, (*tokenlist)->code);
+		return 0;
+	}
+	return 1;
+}
+
+static int check_set(TokenList * tokenlist, CodeSet set)
+{
+	Token * t;
 	int i;
 
+	t = tokenlist_first_token(tokenlist);
 	for(i = 0; set[i] != TC_NULL; i++)
-		if(token->code == set[i])
+		if(t->code == set[i])
 			return 1;
 	return 0;
 }
 
-static Token ** token_scan(Token ** tokens)
+static int check_word(TokenList * tokenlist, char * word)
 {
-	return tokens + 1;
-}
-
-static Token ** token_check(Token ** tokens, TokenCode tokencode)
-{
-	if(tokens[0]->code != tokencode)
-		fprintf(stderr, "Expected: %d (got: %d)\n",
-				tokencode, tokens[0]->code);
-	return token_scan(tokens);
-}
-
-static Token ** token_check_word(Token ** tokens, char * word)
-{
-	if(tokens[0]->code != TC_WORD || strcmp(word, tokens[0]->string) != 0)
+	if((*tokenlist)->code != TC_WORD
+			|| strcmp(word, (*tokenlist)->string) != 0)
 	{
 		fprintf(stderr, "Expected word \"%s\"\n", word);
-		return NULL;
+		return 0;
 	}
-	return &tokens[1];
+	return 1;
 }
+
+static TokenList * error(char * text)
+{
+	fprintf(stderr, "%s\n", text);
+	return null_tokenlist;
+}
+
+#define scan(tokenlist) tokenlist_next(tokenlist)
+
+#ifdef DEBUG
+static void debug_rule(char * rule, TokenList * tokenlist)
+{
+	fprintf(stderr, "%s(): %s\n", rule, (*tokenlist)->string);
+}
+#endif
 
 
 /* parser */
 /* complete_command */
-static Token ** list(Token ** tokens);
-static Token ** separator(Token ** tokens);
-Token ** complete_command(TokenList * tokenlist)
+static TokenList * list(TokenList * tokenlist);
+static TokenList * separator(TokenList * tokenlist);
+int complete_command(TokenList * tokenlist)
 	/* list [separator] */
 {
-	Token ** t;
-
 	if(tokenlist == NULL)
-		return NULL;
-	t = tokenlist->tokens;
-	if(!token_in_set(t[0], CS_LIST))
+		return 1;
+	if(!check_set(tokenlist, CS_LIST))
 	{
-		fprintf(stderr, "syntax error\n");
-		return NULL;
+		error("Expected a list");
+		return 1;
 	}
-	t = list(t);
-	if(token_in_set(t[0], CS_SEPARATOR))
-		return separator(t);
-	return t;
+	tokenlist = list(tokenlist);
+	if(check_set(tokenlist, CS_SEPARATOR))
+		tokenlist = separator(tokenlist);
+	return tokenlist == null_tokenlist ? 1 : 0;
+	/* FIXME: check if there are unused tokens? */
 }
 
 
 /* list */
-static Token ** and_or(Token ** t);
-static Token ** separator_op(Token ** tokens);
-static Token ** list(Token ** tokens)
+static TokenList * and_or(TokenList * tokenlist);
+static TokenList * separator_op(TokenList * tokenlist);
+static TokenList * list(TokenList * tokenlist)
 	/* list separator_op and_or
 	 * | and_or */
 	/* and_or { separator_op and_or } */
 {
-	tokens = and_or(tokens);
-	while(token_in_set(tokens[0], CS_SEPARATOR_OP))
+#ifdef DEBUG
+	debug_rule("list", tokenlist);
+#endif
+	tokenlist = and_or(tokenlist);
+	while(check_set(tokenlist, CS_SEPARATOR_OP))
 	{
-		tokens = separator_op(tokens);
-		tokens = separator_op(tokens);
+		if((tokenlist = separator_op(tokenlist)) == null_tokenlist)
+			return null_tokenlist;
+		if(!check_set(tokenlist, CS_AND_OR))
+			return error("Expected and_or");
+		tokenlist = and_or(tokenlist);
 	}
-	return tokens;
-/*	if(token_in_set(tokens[0], CS_AND_OR))
-		return and_or(tokens);
-	tokens = separator_op(tokens);
-	tokens = and_or(tokens);
-	while(token_in_set(tokens[0], CS_SEPARATOR_OP))
-	{
-		tokens = separator_op(tokens);
-		tokens = and_or(tokens);
-	}
-	return tokens;*/
+	return tokenlist;
 }
 
 
 /* and_or */
-static Token ** pipeline(Token ** tokens);
-static Token ** linebreak(Token ** tokens);
-static Token ** and_or(Token ** tokens)
+static TokenList * pipeline(TokenList * tokenlist);
+static TokenList * linebreak(TokenList * tokenlist);
+static TokenList * and_or(TokenList * tokenlist)
 	/* pipeline
 	 * | and_or AND_IF linebreak pipeline
 	 * | and_or OR_IF linebreak pipeline */
 	/* pipeline { (AND_IF | OR_IF) linebreak pipeline } */
 {
-	tokens = pipeline(tokens);
-	while(tokens[0]->code == TC_OP_AND_IF || tokens[0]->code == TC_OP_OR_IF)
+#ifdef DEBUG
+	debug_rule("and_or", tokenlist);
+#endif
+	tokenlist = pipeline(tokenlist);
+	while(tokenlist_first_token(tokenlist)->code == TC_OP_AND_IF
+			|| tokenlist_first_token(tokenlist)->code == TC_OP_OR_IF)
 	{
-		tokens = token_scan(tokens);
-		tokens = linebreak(tokens);
-		tokens = pipeline(tokens);
+		tokenlist = tokenlist_next(tokenlist);
+		if((tokenlist = linebreak(tokenlist)) == null_tokenlist)
+			return null_tokenlist;
+		if(!check_set(tokenlist, CS_PIPELINE))
+			return null_tokenlist;
+		tokenlist = pipeline(tokenlist);
 	}
-	return tokens;
-/*	if(token_in_set(t[0], CS_AND_OR))
-	{
-		t = and_or(t);
-		if(t[0]->code == TC_OP_AND_IF)
-			t = token_scan(t);
-		else
-			t = token_check(t, TC_OP_OR_IF);
-		t = linebreak(t);
-	}
-	return pipeline(t);*/
+	return tokenlist;
 }
 
 
 /* pipeline */
-static Token ** pipe_sequence(Token ** tokens);
-static Token ** pipeline(Token ** tokens)
+static TokenList * pipe_sequence(TokenList * tokenlist);
+static TokenList * pipeline(TokenList * tokenlist)
 	/* [Bang] pipe_sequence */
 {
 #ifdef DEBUG
-	fprintf(stderr, "pipeline(): %s\n", tokens[0]->string);
+	debug_rule("pipeline", tokenlist);
 #endif
-	if(tokens[0]->code == TC_RW_BANG)
-		tokens = token_scan(tokens);
-	return pipe_sequence(tokens);
+	if(tokenlist_first_token(tokenlist)->code == TC_RW_BANG)
+		tokenlist = tokenlist_next(tokenlist);
+	return pipe_sequence(tokenlist);
 }
 
 
 /* pipe_sequence */
-static Token ** command(Token ** tokens);
-static Token ** pipe_sequence(Token ** tokens)
+static TokenList * command(TokenList * tokenlist);
+static TokenList * pipe_sequence(TokenList * tokenlist)
 	/* command
 	 * pipe_sequence '|' linebreak command */
-	/* { command } '|' command */
+	/* command { '|' linebreak command } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "pipe_sequence(): %s\n", tokens[0]->string);
+	debug_rule("pipe_sequence", tokenlist);
 #endif
-	while(token_in_set(*tokens, CS_COMMAND))
-		tokens = command(tokens);
-	if(tokens[0]->code == TC_WORD && strcmp("|", tokens[0]->string) == 0)
+	command(tokenlist);
+	while(tokenlist_first_token(tokenlist)->code == TC_OP_BAR)
 	{
-		tokens = token_scan(tokens);
-		return command(tokens);
+		if((tokenlist = linebreak(tokenlist)) == NULL)
+			return NULL;
+		if(!check_set(tokenlist, CS_COMMAND))
+			return null_tokenlist;
+		tokenlist = command(tokenlist);
 	}
-	return tokens;
+	return tokenlist;
 }
 
 
 /* command */
-static Token ** compound_command(Token ** tokens);
-static Token ** redirect_list(Token ** tokens);
-static Token ** function_definition(Token ** tokens);
-static Token ** simple_command(Token ** tokens);
-static Token ** command(Token ** tokens)
+static TokenList * compound_command(TokenList * tokenlist);
+static TokenList * redirect_list(TokenList * tokenlist);
+static TokenList * function_definition(TokenList * tokenlist);
+static TokenList * simple_command(TokenList * tokenlist);
+static TokenList * command(TokenList * tokenlist)
 	/* simple_command
 	 * | compound_command
 	 * | compound_command redirect_list
@@ -247,33 +276,37 @@ static Token ** command(Token ** tokens)
 	 * | function_definition */
 {
 #ifdef DEBUG
-	fprintf(stderr, "command(): %s\n", tokens[0]->string);
+	debug_rule("command", tokenlist);
 #endif
-	token_distinct(tokens[0]);
-	if(token_in_set(tokens[0], CS_COMPOUND_COMMAND))
+	token_distinct(tokenlist_first_token(tokenlist));
+	if(check_set(tokenlist, CS_SIMPLE_COMMAND))
+		return simple_command(tokenlist);
+	if(check_set(tokenlist, CS_COMPOUND_COMMAND))
 	{
-		tokens = compound_command(tokens);
-		if(token_in_set(tokens[0], CS_REDIRECT_LIST))
-			return redirect_list(tokens);
-		return tokens;
+		tokenlist = compound_command(tokenlist);
+		if(check_set(tokenlist, CS_REDIRECT_LIST))
+			return redirect_list(tokenlist);
+		return tokenlist;
 	}
-	if(token_in_set(tokens[0], CS_SIMPLE_COMMAND))
-		return simple_command(tokens);
-	if(token_in_set(tokens[0], CS_FUNCTION_DEFINITION))
-		return function_definition(tokens);
-	return NULL;
+	if(check_set(tokenlist, CS_FUNCTION_DEFINITION))
+		return function_definition(tokenlist);
+#ifdef DEBUG
+	fprintf(stderr, "file %s, line %d: should never be reached\n",
+			__FILE__, __LINE__);
+#endif
+	return null_tokenlist;
 }
 
 
 /* compound_command */
-static Token ** brace_group(Token ** tokens);
-static Token ** subshell(Token ** tokens);
-static Token ** for_clause(Token ** tokens);
-static Token ** case_clause(Token ** tokens);
-static Token ** if_clause(Token ** tokens);
-static Token ** while_clause(Token ** tokens);
-static Token ** until_clause(Token ** tokens);
-static Token ** compound_command(Token ** tokens)
+static TokenList * brace_group(TokenList * tokenlist);
+static TokenList * subshell(TokenList * tokenlist);
+static TokenList * for_clause(TokenList * tokenlist);
+static TokenList * case_clause(TokenList * tokenlist);
+static TokenList * if_clause(TokenList * tokenlist);
+static TokenList * while_clause(TokenList * tokenlist);
+static TokenList * until_clause(TokenList * tokenlist);
+static TokenList * compound_command(TokenList * tokenlist)
 	/* brace_group
 	 * | subshell
 	 * | for_clause
@@ -283,227 +316,277 @@ static Token ** compound_command(Token ** tokens)
 	 * | until_clause */
 {
 #ifdef DEBUG
-	fprintf(stderr, "compound_command(): %s\n", tokens[0]->string);
+	debug_rule("compound_command", tokenlist);
 #endif
-	/* FIXME */
-	switch(tokens[0]->code)
+	switch(tokenlist_first_token(tokenlist)->code)
 	{
 		case TC_RW_LBRACE:
-			return brace_group(tokens);
+			return brace_group(tokenlist);
 		case TC_RW_FOR:
-			return for_clause(tokens);
+			return for_clause(tokenlist);
 		case TC_RW_CASE:
-			return case_clause(tokens);
+			return case_clause(tokenlist);
 		case TC_RW_IF:
-			return if_clause(tokens);
+			return if_clause(tokenlist);
 		case TC_RW_WHILE:
-			return while_clause(tokens);
+			return while_clause(tokenlist);
 		case TC_RW_UNTIL:
-			return until_clause(tokens);
+			return until_clause(tokenlist);
 		default:
-			return NULL;
+			return null_tokenlist;
 	}
-	if(token_check_word(tokens, "(") != NULL)
-		return subshell(tokens);
-	return NULL;
+	if(check_word(tokenlist, "("))
+		return subshell(tokenlist);
+	return null_tokenlist;
 }
 
 
 /* subshell */
-static Token ** subshell(Token ** tokens)
+static TokenList * compound_list(TokenList * tokenlist);
+static TokenList * subshell(TokenList * tokenlist)
+	/* '(' compound_list ')' */
 {
+#ifdef DEBUG
+	debug_rule("subshell", tokenlist);
+#endif
+	tokenlist = tokenlist_next(tokenlist);
+	tokenlist = compound_list(tokenlist);
+	return check_word(tokenlist, ")")
+		? tokenlist_next(tokenlist) : null_tokenlist;
+}
+
+
+/* compound_list */
+static TokenList * compound_list(TokenList * tokenlist)
+{
+#ifdef DEBUG
+	debug_rule("compound_list", tokenlist);
+#endif
 	/* FIXME */
-	return NULL;
+	return null_tokenlist;
 }
 
 
 /* for_clause */
-static Token ** do_group(Token ** tokens);
-static Token ** name(Token ** tokens);
-static Token ** in(Token ** tokens);
-static Token ** wordlist(Token ** tokens);
-static Token ** sequential_sep(Token ** tokens);
-static Token ** for_clause(Token ** tokens)
+static TokenList * do_group(TokenList * tokenlist);
+static TokenList * name(TokenList * tokenlist);
+static TokenList * in(TokenList * tokenlist);
+static TokenList * wordlist(TokenList * tokenlist);
+static TokenList * sequential_sep(TokenList * tokenlist);
+static TokenList * for_clause(TokenList * tokenlist)
 	/* For name linebreak do_group
 	 * | For name linebreak in sequential_sep do_group
 	 * | For name linebreak in wordlist sequential_sep do_group */
 	/* For name linebreak [in [wordlist] sequential_sep] do_group */
 {
 #ifdef DEBUG
-	fprintf(stderr, "for_clause(): %s\n", tokens[0]->string);
+	debug_rule("for_clause", tokenlist);
 #endif
-	/* FIXME */
-	tokens = token_scan(tokens);
-	if(!token_in_set(tokens[0], CS_NAME))
-		return NULL;
-	tokens = name(tokens);
-	tokens = linebreak(tokens);
-	if(token_in_set(tokens[0], CS_IN))
+	tokenlist = tokenlist_next(tokenlist);
+	if(!check_set(tokenlist, CS_NAME))
+		return null_tokenlist;
+	if((tokenlist = name(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	if(!check_set(tokenlist, CS_LINEBREAK))
+		return null_tokenlist;
+	if((tokenlist = linebreak(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	if(check_set(tokenlist, CS_IN))
 	{
-		tokens = in(tokens);
-		if(token_in_set(tokens[0], CS_WORDLIST))
-			tokens = wordlist(tokens);
-		tokens = sequential_sep(tokens);
+		if((tokenlist = in(tokenlist)) == null_tokenlist)
+			return null_tokenlist;
+		if(check_set(tokenlist, CS_WORDLIST))
+			if((tokenlist = wordlist(tokenlist)) == null_tokenlist)
+				return null_tokenlist;
+		if((tokenlist = sequential_sep(tokenlist)) == null_tokenlist)
+			return null_tokenlist;
 	}
-	return do_group(tokens);
+	return do_group(tokenlist);
 }
 
 
 /* name */
-static Token ** name(Token ** tokens)
+static TokenList * name(TokenList * tokenlist)
 	/* NAME (rule 5) */
 {
-	return token_scan(tokens);
+	return tokenlist_next(tokenlist);
 }
 
 
 /* in */
-static Token ** in(Token ** tokens)
+static TokenList * in(TokenList * tokenlist)
 	/* In (rule 6) */
 {
-	return token_scan(tokens);
+	return tokenlist_next(tokenlist);
 }
 
 
 /* wordlist */
-static Token ** wordlist(Token ** tokens)
+static TokenList * wordlist(TokenList * tokenlist)
 	/* wordlist WORD
 	 * | WORD */
 	/* WORD { WORD } */
 {
-	tokens = token_scan(tokens);
-	token_distinct(tokens[0]);
-	while(token_check(tokens, TC_WORD))
+	tokenlist = tokenlist_next(tokenlist);
+	token_distinct(tokenlist_first_token(tokenlist));
+	while(check(tokenlist, TC_WORD))
 	{
-		tokens = token_scan(tokens);
-		token_distinct(tokens[0]);
+		tokenlist = tokenlist_next(tokenlist);
+		token_distinct(tokenlist_first_token(tokenlist));
 	}
-	return tokens;
+	return tokenlist;
 }
 
 
 /* case_clause */
-static Token ** case_clause(Token ** tokens)
+static TokenList * case_clause(TokenList * tokenlist)
+	/* Case WORD linebreak in linebreak case_list Esac
+	 * | Case WORD linebreak in linebreak case_list_ns Esac
+	 * | Case WORD linebreak in linebreak Esac */
+	/* Case WORD linebreak in linebreak [(case_list | case_list_ns)] Esac */
 {
+	tokenlist = tokenlist_next(tokenlist);
+	token_distinct(tokenlist_first_token(tokenlist));
+	if(!check(tokenlist, TC_WORD))
+		return null_tokenlist;
+	tokenlist = tokenlist_next(tokenlist);
+	if((tokenlist = linebreak(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	if((tokenlist = in(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	if((tokenlist = linebreak(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
 	/* FIXME */
-	return NULL;
+	return check(tokenlist, TC_RW_ESAC) ? scan(tokenlist) : null_tokenlist;
 }
 
 
 /* if_clause */
-static Token ** if_clause(Token ** tokens)
+static TokenList * if_clause(TokenList * tokenlist)
 	/* If compound_list Then compound_list else_part Fi
 	 * If compound_list Then compound_list Fi */
 	/* If compound_list Then compound_list [else_part] Fi */
 {
 #ifdef DEBUG
-	fprintf(stderr, "if_clause(): %s\n", tokens[0]->string);
+	debug_rule("if_clause", tokenlist);
 #endif
+	tokenlist = scan(tokenlist);
+	if((tokenlist = compound_list(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	token_distinct(tokenlist_first_token(tokenlist));
+	if(!check(tokenlist, TC_RW_THEN))
+		return null_tokenlist;
+	tokenlist = compound_list(scan(tokenlist));
 	/* FIXME */
-	tokens = token_scan(tokens);
-/*	tokens = compound_list(tokens); */
-	token_distinct(tokens[0]);
-	tokens = token_check(tokens, TC_RW_THEN);
-/*	tokens = compound_list(tokens); */
-	/* else_part */
-	token_distinct(tokens[0]);
-	return token_check(tokens, TC_RW_FI);
+	token_distinct(tokenlist_first_token(tokenlist));
+	return check(tokenlist, TC_RW_FI) ? scan(tokenlist) : null_tokenlist;
 }
 
 
 /* while_clause */
-static Token ** while_clause(Token ** tokens)
+static TokenList * while_clause(TokenList * tokenlist)
 	/* While compound_list do_group */
 {
-	/* FIXME */
-	tokens = token_scan(tokens);
-/*	tokens = compound_list(tokens); */
-	return do_group(tokens);
+#ifdef DEBUG
+	debug_rule("while_clause", tokenlist);
+#endif
+	tokenlist = tokenlist_next(tokenlist);
+	if((tokenlist = compound_list(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	return do_group(tokenlist);
 }
 
 
 /* until_clause */
-static Token ** until_clause(Token ** tokens)
+static TokenList * until_clause(TokenList * tokenlist)
 	/* Until compound_list do_group */
 {
-	/* FIXME */
-	tokens = token_scan(tokens);
-/*	tokens = compound_list(tokens); */
-	return do_group(tokens);
+#ifdef DEBUG
+	debug_rule("while_clause", tokenlist);
+#endif
+	tokenlist = tokenlist_next(tokenlist);
+	if((tokenlist = compound_list(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	return do_group(tokenlist);
 }
 
 
 /* brace_group */
-static Token ** brace_group(Token ** tokens)
+static TokenList * brace_group(TokenList * tokenlist)
 	/* Lbrace compound_list Rbrace */
 {
-	/* FIXME */
-	tokens = token_scan(tokens);
-/*	tokens = compound_list(tokens); */
-	return token_check(tokens, TC_RW_RBRACE);
+	tokenlist = scan(tokenlist);
+	if(!check_set(tokenlist, CS_COMPOUND_LIST))
+		return null_tokenlist;
+	tokenlist = compound_list(tokenlist);
+	return check(tokenlist, TC_RW_RBRACE) ? scan(tokenlist) : null_tokenlist;
 }
 
 
 /* do_group */
-static Token ** do_group(Token ** tokens)
+static TokenList * do_group(TokenList * tokenlist)
 	/* Do compound_list Done */
 {
-	/* FIXME */
-	tokens = token_scan(tokens);
-/*	tokens = compound_list(tokens); */
-	return token_check(tokens, TC_RW_DONE);
+	tokenlist = scan(tokenlist);
+	if(!check_set(tokenlist, CS_COMPOUND_LIST))
+		return null_tokenlist;
+	tokenlist = compound_list(tokenlist);
+	return check(tokenlist, TC_RW_DONE)
+		? scan(tokenlist) : null_tokenlist;
 }
 
 
 /* function_definition */
-static Token ** function_body(Token ** tokens);
-static Token ** fname(Token ** tokens);
-static Token ** function_definition(Token ** tokens)
+static TokenList * function_body(TokenList * tokenlist);
+static TokenList * fname(TokenList * tokenlist);
+static TokenList * function_definition(TokenList * tokenlist)
 	/* fname '(' ')' linebreak function_body */
 {
 #ifdef DEBUG
-	fprintf(stderr, "function_definition(): %s\n", tokens[0]->string);
+	debug_rule("function_definition", tokenlist);
 #endif
-	tokens = fname(tokens);
-	tokens = token_check_word(tokens, "(");
-	tokens = token_check_word(tokens, ")");
-	tokens = token_check(tokens, TC_NEWLINE);
-	return function_body(tokens);
+	tokenlist = fname(tokenlist);
+	if(!check_word(tokenlist, "(") || !check_word(tokenlist, ")"))
+		return null_tokenlist;
+	if(!check_set(tokenlist, CS_LINEBREAK))
+		return null_tokenlist;
+	if((tokenlist = linebreak(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	return function_body(tokenlist);
 }
 
 
 /* function_body */
-static Token ** function_body(Token ** tokens)
+static TokenList * function_body(TokenList * tokenlist)
 	/* compound_command [redirect_list] (rule 9) */
 {
 #ifdef DEBUG
-	fprintf(stderr, "function_body(): %s\n", tokens[0]->string);
+	debug_rule("function_body", tokenlist);
 #endif
-	tokens = compound_command(tokens);
-	if(token_in_set(tokens[0], CS_REDIRECT_LIST))
-		return redirect_list(tokens);
-	return tokens;
+	tokenlist = compound_command(tokenlist);
+	if(check_set(tokenlist, CS_REDIRECT_LIST))
+		return redirect_list(tokenlist);
+	return tokenlist;
 }
 
 
 /* fname */
-static Token ** fname(Token ** tokens)
+static TokenList * fname(TokenList * tokenlist)
 	/* NAME (rule 8) */
 {
 #ifdef DEBUG
-	fprintf(stderr, "fname(): %s\n", tokens[0]->string);
+	debug_rule("fname", tokenlist);
 #endif
-	/* FIXME */
-	return token_scan(tokens);
+	return tokenlist_next(tokenlist);
 }
 
 
 /* simple_command */
-static Token ** cmd_prefix(Token ** tokens);
-static Token ** cmd_word(Token ** tokens);
-static Token ** cmd_suffix(Token ** tokens);
-static Token ** cmd_name(Token ** tokens);
-static Token ** simple_command(Token ** tokens)
+static TokenList * cmd_prefix(TokenList * tokenlist);
+static TokenList * cmd_word(TokenList * tokenlist);
+static TokenList * cmd_suffix(TokenList * tokenlist);
+static TokenList * cmd_name(TokenList * tokenlist);
+static TokenList * simple_command(TokenList * tokenlist)
 	/* cmd_prefix cmd_word cmd_suffix
 	 * | cmd_prefix cmd_word
 	 * | cmd_prefix
@@ -513,64 +596,64 @@ static Token ** simple_command(Token ** tokens)
 	 * | cmd_name [cmd_suffix] */
 {
 #ifdef DEBUG
-	fprintf(stderr, "simple_command(): %s\n", tokens[0]->string);
+	debug_rule("simple_command", tokenlist);
 #endif
-	if(tokens[0]->code == TC_WORD)
+	if(check_set(tokenlist, CS_CMD_PREFIX))
 	{
-		tokens = cmd_name(tokens);
-		if(token_in_set(tokens[0], CS_CMD_SUFFIX))
-			return cmd_suffix(tokens);
-		return tokens;
+		tokenlist = cmd_prefix(tokenlist);
+		if(check_set(tokenlist, CS_CMD_WORD))
+		{
+			tokenlist = cmd_word(tokenlist);
+			if(check_set(tokenlist, CS_CMD_SUFFIX))
+				tokenlist = cmd_suffix(tokenlist);
+		}
+		return tokenlist;
 	}
-	tokens = cmd_prefix(tokens);
-	if(token_in_set(tokens[0], CS_CMD_WORD))
-	{
-		tokens = cmd_word(tokens);
-		if(token_in_set(tokens[0], CS_CMD_SUFFIX))
-			tokens = cmd_suffix(tokens);
-	}
-	return tokens;
+	tokenlist = cmd_name(tokenlist);
+	if(check_set(tokenlist, CS_CMD_SUFFIX))
+		tokenlist = cmd_suffix(tokenlist);
+	return tokenlist;
 }
 
 
 /* cmd_name */
-static Token ** cmd_name(Token ** tokens)
+static TokenList * cmd_name(TokenList * tokenlist)
 	/* WORD (rule 7a) */
 {
 #ifdef DEBUG
-	fprintf(stderr, "cmd_name(): %s\n", tokens[0]->string);
+	debug_rule("cmd_name", tokenlist);
 #endif
-	return NULL;
+	return tokenlist_next(tokenlist);
 }
 
 
 /* cmd_word */
-static Token ** cmd_word(Token ** tokens)
+static TokenList * cmd_word(TokenList * tokenlist)
 	/* WORD (rule 7b) */
 {
 #ifdef DEBUG
-	fprintf(stderr, "cmd_word(): %s\n", tokens[0]->string);
+	debug_rule("cmd_word", tokenlist);
 #endif
-	return NULL;
+	return tokenlist_next(tokenlist);
 }
 
 
 /* cmd_prefix */
-static Token ** cmd_prefix(Token ** tokens)
+static TokenList * cmd_prefix(TokenList * tokenlist)
 	/* io_redirect
 	 * | cmd_prefix io_redirect
 	 * | ASSIGNMENT_WORD
 	 * | cmd_prefix ASSIGNMENT_WORD */
 {
 #ifdef DEBUG
-	fprintf(stderr, "cmd_prefix(): %s\n", tokens[0]->string);
+	debug_rule("cmd_prefix", tokenlist);
 #endif
-	return NULL;
+	return null_tokenlist;
 }
 
 
 /* cmd_suffix */
-static Token ** cmd_suffix(Token ** tokens)
+static TokenList * cmd_suffix(TokenList * tokenlist)
 	/* io_redirect
 	 * | cmd_suffix io_redirect
 	 * | WORD
@@ -579,114 +662,113 @@ static Token ** cmd_suffix(Token ** tokens)
 	 * | WORD { WORD } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "cmd_suffix(): %s\n", tokens[0]->string);
+	debug_rule("cmd_suffix", tokenlist);
 #endif
-	return NULL;
+	return null_tokenlist;
 }
 
 
 /* redirect_list */
-static Token ** io_redirect(Token ** tokens);
-static Token ** redirect_list(Token ** tokens)
+static TokenList * io_redirect(TokenList * tokenlist);
+static TokenList * redirect_list(TokenList * tokenlist)
 	/* io_redirect
 	 * | redirect_list io_redirect */
 	/* io_redirect { io_redirect } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "redirect_list(): %s\n", tokens[0]->string);
+	debug_rule("redirect_list", tokenlist);
 #endif
-	tokens = io_redirect(tokens);
-	while(token_in_set(tokens[0], CS_REDIRECT_LIST))
-		tokens = io_redirect(tokens);
-	return tokens;
+	tokenlist = io_redirect(tokenlist);
+	while(check_set(tokenlist, CS_REDIRECT_LIST))
+		tokenlist = io_redirect(tokenlist);
+	return tokenlist;
 }
 
 
 /* io_redirect */
-static Token ** io_redirect(Token ** tokens)
+static TokenList * io_redirect(TokenList * tokenlist)
 	/* io_file
 	 * | IO_NUMBER io_file
 	 * | io_here
 	 * | IO_NUMBER io_here */
 {
 #ifdef DEBUG
-	fprintf(stderr, "io_redirect(): %s\n", tokens[0]->string);
+	debug_rule("redirect_list", tokenlist);
 #endif
-	return NULL;
+	return null_tokenlist;
 }
 
 
 /* newline_list */
-static Token ** newline_list(Token ** t)
+static TokenList * newline_list(TokenList * tokenlist)
 	/* NEWLINE { NEWLINE } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "newline_list()\n");
+	debug_rule("newline_list", tokenlist);
 #endif
-	t = token_check(t, TC_NEWLINE);
-	while(t[0]->code == TC_NEWLINE)
-		t = token_scan(t);
-	return t;
+	tokenlist = tokenlist_next(tokenlist);
+	while(check(tokenlist, TC_NEWLINE))
+		tokenlist = tokenlist_next(tokenlist);
+	return tokenlist;
 }
 
 
 /* linebreak */
-static Token ** linebreak(Token ** tokens)
-	/* newline_list | */
+static TokenList * linebreak(TokenList * tokenlist)
+	/* newline_list
+	 * | */
 {
 #ifdef DEBUG
-	fprintf(stderr, "linebreak()\n");
+	debug_rule("newline_list", tokenlist);
 #endif
-	if(tokens[0]->code == TC_NEWLINE)
-		tokens = token_scan(tokens);
-	return tokens;
+	if(check_set(tokenlist, CS_NEWLINE_LIST))
+		tokenlist = newline_list(tokenlist);
+	return tokenlist;
 }
 
 
 /* separator_op */
-static Token ** separator_op(Token ** tokens)
+static TokenList * separator_op(TokenList * tokenlist)
 	/* '&' | ';' */
 {
 #ifdef DEBUG
-	fprintf(stderr, "separator_op(): %s\n", tokens[0]->string);
+	debug_rule("separator_op", tokenlist);
 #endif
-	if(tokens[0]->code == TC_OP_AMPERSAND)
-		return token_scan(tokens);
-	if(tokens[0]->code == TC_OP_SEMICOLON)
-		return token_scan(tokens);
-#ifdef DEBUG
-	fprintf(stderr, "separator_op(): should not happen!\n");
-#endif
-	return NULL;
+	if(check(tokenlist, TC_OP_AMPERSAND))
+		return scan(tokenlist);
+	return scan(tokenlist);
 }
 
 
 /* separator */
-static Token ** separator(Token ** tokens)
-	/* (separator_op linebreak | newline_list) */
+static TokenList * separator(TokenList * tokenlist)
+	/* separator_op linebreak
+	 * | newline_list) */
 {
 #ifdef DEBUG
-	fprintf(stderr, "separator()\n");
+	debug_rule("separator", tokenlist);
 #endif
-	if(token_in_set(*tokens, CS_NEWLINE_LIST))
-		return newline_list(tokens);
-	tokens = separator_op(tokens);
-	return linebreak(tokens);
+	if(check_set(tokenlist, CS_NEWLINE_LIST))
+		return newline_list(tokenlist);
+	if((tokenlist = separator_op(tokenlist)) == null_tokenlist)
+		return null_tokenlist;
+	if(!check_set(tokenlist, CS_LINEBREAK))
+		return error("Expected a linebreak");
+	return linebreak(tokenlist);
 }
 
 
 /* sequential_sep */
-static Token ** sequential_sep(Token ** tokens)
+static TokenList * sequential_sep(TokenList * tokenlist)
 	/* ";" linebreak
 	 * | newline_list */
 {
-	/* FIXME */
-	if(token_check_word(tokens, ";"))
+	if(check_word(tokenlist, ";"))
 	{
-		tokens = token_scan(tokens);
-		return linebreak(tokens);
+		tokenlist = scan(tokenlist);
+		if(!check_set(tokenlist, CS_LINEBREAK))
+			return error("Expected a linebreak");
+		return linebreak(tokenlist);
 	}
-	if(token_in_set(tokens[0], CS_NEWLINE_LIST))
-		return newline_list(tokens);
-	return NULL;
+	return newline_list(tokenlist);
 }

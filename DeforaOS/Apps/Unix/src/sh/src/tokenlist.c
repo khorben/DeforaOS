@@ -9,35 +9,23 @@
 
 
 /* TokenList */
+/* variables */
+TokenList * null_tokenlist = &null_token;
+
+
 /* tokenlist_new */
-TokenList * tokenlist_new(void)
-{
-	TokenList * tokenlist;
-
-	if((tokenlist = malloc(sizeof(TokenList))) == NULL)
-	{
-		perror("malloc");
-		return NULL;
-	}
-	tokenlist->tokens = NULL;
-	tokenlist->size = 0;
-	return tokenlist;
-}
-
-
-/* tokenlist_new_from_string */
 static void read_blanks(char ** string);
 static void read_comments(char ** string);
 static Token * read_operator(char ** string);
 static Token * read_word(char ** string);
-TokenList * tokenlist_new_from_string(char * string)
+static void tokenlist_debug(TokenList * tokenlist);
+TokenList * tokenlist_new(char * string)
 {
-	TokenList * tokenlist;
+	TokenList * tokenlist = NULL;
+	TokenList * p = NULL;
 	Token * token;
 
 	if(string == NULL)
-		return NULL;
-	if((tokenlist = tokenlist_new()) == NULL)
 		return NULL;
 	while(*string)
 	{
@@ -47,12 +35,21 @@ TokenList * tokenlist_new_from_string(char * string)
 			break;
 		if((token = read_operator(&string)) != NULL)
 		{
-			tokenlist_append(tokenlist, token);
+			p = tokenlist_append(p, token);
+			if(tokenlist == NULL)
+				tokenlist = p;
 			continue;
 		}
 		if((token = read_word(&string)) != NULL)
-			tokenlist_append(tokenlist, token);
+		{
+			p = tokenlist_append(p, token);
+			if(tokenlist == NULL)
+				tokenlist = p;
+		}
 	}
+	fprintf(stderr, "tokenlist %p, p %p\n", tokenlist, p);
+	fprintf(stderr, "*tokenlist %p, *p %p\n", *tokenlist, *p);
+	tokenlist_debug(tokenlist);
 	return tokenlist;
 }
 
@@ -100,7 +97,7 @@ static Token * read_word(char ** string)
 {
 	char sDelimiters[] = " \t#|&;<>()${}";
 	int len;
-	char c;
+	char c = ' ';
 	int i;
 	Token * token;
 
@@ -131,34 +128,55 @@ static Token * read_word(char ** string)
 	return token;
 }
 
+static void tokenlist_debug(TokenList * tokenlist)
+{
+	Token * t = *tokenlist;
+
+	while(t)
+	{
+		fprintf(stderr, "%p\n", t);
+		fprintf(stderr, "%s %s %p %p\n", sTokenCode[t->code], t->string, t, t->next);
+		t = t->next;
+		usleep(1000000);
+	}
+}
+
 
 /* tokenlist_delete */
 void tokenlist_delete(TokenList * tokenlist)
 {
-	int i;
+	Token * p;
 
-	if(tokenlist == NULL)
-		return;
-	for(i = 0; i < tokenlist->size; i++)
-		token_delete(tokenlist->tokens[i]);
-	free(tokenlist);
+	while(tokenlist)
+	{
+		p = *tokenlist;
+		tokenlist = &(p->next);
+		token_delete(p);
+	}
+}
+
+
+/* returns */
+/* tokenlist_next */
+TokenList * tokenlist_next(TokenList * tokenlist)
+{
+	return &(*tokenlist)->next;
+}
+
+/* Token */
+/* tokenlist_first_token */
+Token * tokenlist_first_token(TokenList * tokenlist)
+{
+	return *tokenlist;
 }
 
 
 /* useful */
-void tokenlist_append(TokenList * tokenlist, Token * token)
+TokenList * tokenlist_append(TokenList * tokenlist, Token * token)
 {
-	Token ** p;
-	int size;
-
-	size = tokenlist->size + 1;
-	if((p = realloc(tokenlist->tokens, size * sizeof(Token*))) == NULL)
-	{
-		perror("realloc");
-		token_delete(token); /* FIXME can be dangerous */
-		return;
-	}
-	tokenlist->tokens = p;
-	p[tokenlist->size] = token;
-	tokenlist->size = size;
+	if(tokenlist == NULL)
+		return &token;
+	fprintf(stderr, "append\n");
+	(*tokenlist) = token;
+	return &(token->next);
 }

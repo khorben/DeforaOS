@@ -9,6 +9,11 @@
 
 
 /* Token */
+/* variables */
+static Token _null_token = { TC_NULL, NULL, NULL };
+Token * null_token = &_null_token;
+
+/* token_new */
 Token * token_new(TokenCode code, char * string)
 {
 	Token * token;
@@ -21,13 +26,14 @@ Token * token_new(TokenCode code, char * string)
 		perror("malloc");
 		return NULL;
 	}
-	token->code = code;
 	if((token->string = strdup(string)) == NULL)
 	{
 		perror("strdup");
 		free(token);
 		return NULL;
 	}
+	token->code = code;
+	token->next = NULL;
 	return token;
 }
 
