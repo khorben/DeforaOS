@@ -11,3 +11,5 @@ mkdir -p $DESTDIR/usr/{bin,lib,libexec,local,sbin,share,src} &&
 mkdir -p $DESTDIR/var/{lib,lock,log,mail,run,spool,tmp} &&
 chmod 0750 $DESTDIR/root &&
 chmod 1777 $DESTDIR/tmp $DESTDIR/var/tmp &&
+touch $DESTDIR/var/run/utmp $DESTDIR/var/log/{btmp,lastlog,wtmp} &&
+chmod 644 $DESTDIR/var/run/utmp $DESTDIR/var/log/{btmp,lastlog,wtmp} &&
