@@ -134,11 +134,8 @@ static void slist_apply(SList * slist, int (*func)(void *, void *), void * user)
 {
 	SListCell * slc = *slist;
 
-	while(slc != NULL)
-	{
+	for(slc = *slist; slc != NULL; slc = slc->next)
 		func(slc->data, user);
-		slc = slc->next;
-	}
 }
 
 static int slist_insert_sorted(SList * slist, void * data,
