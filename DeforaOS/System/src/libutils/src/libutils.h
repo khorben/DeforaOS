@@ -7,8 +7,8 @@
 
 
 # include "common.h"
+# include "array.h"
 # include "config.h"
-# include "darray.h"
 # include "file.h"
 # include "hash.h"
 # include "slist.h"

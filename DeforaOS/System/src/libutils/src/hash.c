@@ -7,6 +7,7 @@
 #include "hash.h"
 
 
+/* HashEntry */
 /* types */
 typedef struct _HashEntry {
 	char * name;
@@ -14,14 +15,18 @@ typedef struct _HashEntry {
 } HashEntry;
 
 
-/* HashEntry */
-static HashEntry * hashentry_new(char * name, void * data)
+/* functions */
+static HashEntry * hashentry_new(char const * name, void * data)
 {
 	HashEntry * he;
 
 	if((he = malloc(sizeof(HashEntry))) == NULL)
 		return NULL;
-	he->name = strdup(name);
+	if((he->name = strdup(name)) == NULL)
+	{
+		free(he);
+		return NULL;
+	}
 	he->data = data;
 	return he;
 }
@@ -34,86 +39,76 @@ static void hashentry_delete(HashEntry * he)
 
 
 /* useful */
-/*static int hashentry_compare(HashEntry * h1, HashEntry * h2)
+static void hashentry_set_data(HashEntry * he, void * data)
 {
-	return strcmp(h1->name, h2->name);
-}*/
+	he->data = data;
+}
 
 
 /* Hash */
 Hash * hash_new(void)
 {
-	return darray_new();
+	Hash * hash;
+
+	if((hash = array_new()) == NULL)
+		return NULL;
+	return hash;
 }
 
-void hash_delete(Hash * h)
+void hash_delete(Hash * hash)
 {
+	unsigned int i;
 	HashEntry * he;
-	int i;
 
-	for(i = 0; i < darray_count(h); i++)
-	{
-		if((he = darray_get(h, i)) == NULL)
-			continue;
-		hashentry_delete(he);
-	}
-	free(h);
+	if((i = array_get_size(hash)) != 0)
+		for(; i > 0; i--)
+		{
+			if((he = array_get(hash, i - 1)) != NULL)
+				hashentry_delete(he);
+		}
+	array_delete(hash);
 }
 
 
 /* useful */
-void * hash_get(Hash * h, char * name)
+void * hash_get(Hash * hash, char const * name)
 {
+	unsigned int i;
 	HashEntry * he;
-	int i;
 
-	for(i = 0; i < darray_count(h); i++)
+	if((i = array_get_size(hash)) == 0)
+		return NULL;
+	for(; i > 0; i--)
 	{
-		if((he = darray_get(h, i)) == NULL)
-			continue;
-		if(strcmp(name, he->name) == 0)
+		if((he = array_get(hash, i - 1)) == NULL)
+			return NULL;
+		if(strcmp(he->name, name) == 0)
 			return he->data;
 	}
 	return NULL;
 }
 
-void * hash_get_index(Hash * h, unsigned int index)
-{
-	return darray_get(h, index);
-}
 
-unsigned int hash_get_size(Hash * h)
+int hash_set(Hash * hash, char const * name, void * data)
 {
-	return darray_count(h);
-}
-
-int hash_set(Hash * h, char * name, void * data)
-{
+	unsigned int i;
 	HashEntry * he;
-	int avail = -1;
-	int i;
 
-	for(i = 0; i < darray_count(h); i++)
-	{
-		if((he = darray_get(h, i)) == NULL)
+	if((i = array_get_size(hash)) != 0)
+		for(; i > 0; i--)
 		{
-			avail = i;
-			continue;
+			if((he = array_get(hash, i - 1)) == NULL)
+				return 1;
+			if(strcmp(he->name, name) == 0)
+			{
+				hashentry_set_data(he, data);
+				return 0;
+			}
 		}
-		if(strcmp(name, he->name) == 0)
-		{
-			he->data = data;
-			return 0;
-		}
-	}
 	if((he = hashentry_new(name, data)) == NULL)
-		return -1;
-	if(avail != -1)
-		i = avail;
-	if(darray_set(h, i, he) == -1) 
-	{
-		hashentry_delete(he);
-		return -1;
-	}
-	return 0;
+		return 1;
+	if(array_append(hash, he) == 0)
+		return 0;
+	hashentry_delete(he);
+	return 1;
 }
