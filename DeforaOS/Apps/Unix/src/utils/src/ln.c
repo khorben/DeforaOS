@@ -6,60 +6,83 @@
 #include <sys/stat.h>
 #include <unistd.h>
 extern int optind;
+#include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 
-/* ln */
-int ln(int flgf, int flgs, int argc, char * argv[])
+
+/* types */
+/* force link */
+typedef enum _LinkForce {
+	LF_NO,
+	LF_YES
+} LinkForce;
+/* link type */
+typedef enum _LinkType {
+	LT_HARD = 0,
+	LT_SOFT
+} LinkType;
+
+
+/* ln
+ * PRE	lf	whether to unlink destination if already exists or not
+ * 	lt	whether to link or symlink
+ * 	argc	number of source + destination arguments
+ * POST
+ * 	0	success
+ * 	2	error */
+static int _ln_is_directory(char * dest);
+static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest);
+static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[]);
+static int _ln(LinkForce lf, LinkType lt, int argc, char * argv[])
+{
+	if(argc == 2 && !_ln_is_directory(argv[1]))
+		return _ln_single(lf, lt, argv[0], argv[1]);
+	return _ln_multiple(lf, lt, argc, argv);
+}
+
+static int _ln_is_directory(char * dest)
 {
 	struct stat buf;
-	int i;
 
-	if(argc <= 1)
-		return 1;
-	if(stat(argv[argc-1], &buf) == -1)
-	{
-		if(errno != ENOENT)
-		{
-			perror("stat");
-			return 2;
-		}
-		if(argc > 2)
-			return 1;
-		if(flgs)
-		{
-			if(symlink(argv[0], argv[1]) == -1)
-			{
-				perror("symlink");
-				return 3;
-			}
-		}
-		else
-		{
-			if(link(argv[0], argv[1]) == -1)
-			{
-				perror("link");
-				return 3;
-			}
-		}
+	if(stat(dest, &buf) == -1 || !S_ISDIR(buf.st_mode))
 		return 0;
-	}
-	else
-	{
-		if(S_ISDIR(buf.st_mode))
-		{
-			char * newpath;
+	return 1;
+}
 
-			for(i = 0; i < argc - 1; i++)
-			{
-				/* FIXME */
-			}
-			return 0; /* FIXME could be errors */
-		}
-		if(argc > 2)
-			return 1;
+static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest)
+{
+	if(lf == LF_YES)
+		unlink(dest);
+	if((lt == LT_HARD ? link(src, dest)
+				: symlink(src, dest)) == -1)
+	{
+		perror(src);
+		return 2;
 	}
+	return 0;
+}
+
+static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
+{
+	int i;
+	char * dest = argv[argc-1];
+	char * p;
+
+	for(i = 0; i < argc - 1; i++)
+	{
+		if((p = realloc(dest, strlen(dest) + strlen(argv[i]) + 2))
+				== NULL)
+		{
+			perror("realloc");
+			continue;
+		}
+		sprintf(dest, "%s/%s", argv[argc-1], argv[i]);
+		_ln_single(lf, lt, argv[i], dest);
+	}
+	free(dest);
 	return 0;
 }
 
@@ -78,26 +101,25 @@ static int usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	int flgf = 0;
-	int flgs = 0;
+	LinkForce flgf = LF_NO;
+	LinkType flgs = LT_HARD;
 	int o;
-	int res;
 
 	while((o = getopt(argc, argv, "fs")) != -1)
 	{
 		switch(o)
 		{
 			case 'f':
-				flgf = 1;
+				flgf = LF_YES;
 				break;
 			case 's':
-				flgs = 1;
+				flgs = LT_SOFT;
 				break;
 			case '?':
 				return usage();
 		}
 	}
-	if((res = ln(flgf, flgs, argc - optind, &argv[optind])) == 1)
+	if(argc - optind <= 1)
 		return usage();
-	return res;
+	return _ln(flgf, flgs, argc - optind, &argv[optind]);
 }
