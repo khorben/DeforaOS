@@ -102,7 +102,7 @@ function install_config($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword
 
 
 //check url
-if(eregi(\"config.php\", \$_SERVER['REQUEST_URI']))
+if(eregi(\"config.php\", \$_SERVER[\"REQUEST_URI\"]))
 {
 	header(\"Location: index.php\");
 	exit(0);
