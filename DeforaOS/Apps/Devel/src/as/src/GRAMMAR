@@ -1,0 +1,21 @@
+as:		{ newline } section_list { newline }
+
+newline:	[ space ] NEWLINE
+
+space:		SPACE { SPACE }
+
+section_list:	{ section instruction_list }
+
+instruction_list:	{ (function | space instruction | [ space ] newline) }
+
+section:	"." WORD newline
+
+function:	WORD ":" newline
+
+instruction:	operator [ space operand_list ] newline
+
+operator:	WORD
+
+operand_list:	space operand { space "," space operand }
+
+operand:	(WORD | NUMBER)
