@@ -51,14 +51,9 @@ function engine_module($module, $action)
 		return 1;
 	}
 	require_once('system/page.php');
-	$layout = sql_query("select top, bottom from daportal_layouts where moduleid='$moduleid' and action='$action';");
-	if(sizeof($layout) == 0)
-		$layout = sql_query("select top, bottom from daportal_layouts where moduleid='$moduleid' and action='';");
-	if(sizeof($layout) == 1 && $layout[0]['top'] != '')
-		page_include($layout[0]['top']);
+	page_include('top');
 	$res = module_include($module, $action);
-	if(sizeof($layout) == 1 && $layout[0]['bottom'] != '')
-		page_include($layout[0]['bottom']);
+	page_include('bottom');
 	print("\t</body>
 </html>\n");
 	return $res;
