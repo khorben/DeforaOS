@@ -42,7 +42,7 @@ static int _configure_config(Config * config)
 	FILE * fp;
 	int res = 0;
 
-	if((fp = fopen("Makefile.new", "w")) == NULL)
+	if((fp = fopen("Makefile", "w")) == NULL)
 	{
 		fprintf(stderr, "%s", "configure: ");
 		perror("Makefile.new");
@@ -311,10 +311,11 @@ static void _target_link(FILE * fp, Config * config, char * target)
 				"_OBJS)\n", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) ",
 				"-o ", target, " $(", target, "_OBJS)\n\n");
 	else if(strcmp("library", type) == 0)
-		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", target,
-				".a: $(", target, "_OBJS)\n\t$(AR) ", target,
-				".a $(", target, "_OBJS)\n\t$(RANLIB) ", target,
-				".a\n\n", target, ".so: $(", target,
+		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
+				target, ": ", target, ".a ", target, ".so\n",
+				target, ".a: $(", target, "_OBJS)\n\t$(AR) ",
+				target,	".a $(", target, "_OBJS)\n\t$(RANLIB) ",
+				target,	".a\n\n", target, ".so: $(", target,
 				"_OBJS)\n\t$(LD) -o ", target, ".so $(",
 				target, "_OBJS)\n\n");
 	else
