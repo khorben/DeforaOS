@@ -158,7 +158,7 @@ It contains a sub-directory per applications group. In this sub-directory one ma
 			</para>
 			<itemizedlist>
 				<listitem><para>Binaries: the applications binaries</para></listitem>
-				<listitem><para>Engines: the applications binaries</para></listitem>
+				<listitem><para>Engines: the applications' engines binaries</para></listitem>
 				<listitem><para>Libraries: the shared libraries</para></listitem>
 				<listitem><para>System: the applications administration binaries</para></listitem>
 				<listitem><para>Sources: the applications source code (a sub-directory per package)</para></listitem>
