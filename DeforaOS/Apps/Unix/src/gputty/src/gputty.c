@@ -108,8 +108,11 @@ GPuTTY * gputty_new(void)
 	gtk_container_set_border_width(GTK_CONTAINER(g->sn_vbox2), 2);
 	g->sn_esessions = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox2), g->sn_esessions, FALSE, FALSE, 0);
+	g->sn_swsessions = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(g->sn_swsessions), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	g->sn_clsessions = gtk_clist_new(1);
-	gtk_box_pack_start(GTK_BOX(g->sn_vbox2), g->sn_clsessions, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(g->sn_swsessions), g->sn_clsessions);
+	gtk_box_pack_start(GTK_BOX(g->sn_vbox2), g->sn_swsessions, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox2, TRUE, TRUE, 0);
 	/* sessions: buttons */
 	g->sn_vbox3 = gtk_vbox_new(FALSE, 0);
