@@ -13,6 +13,7 @@ extern int optind;
 
 /* types */
 typedef struct _Prefs {
+	int R;
 	int a;
 	int l;
 } Prefs;
@@ -35,7 +36,8 @@ static int _ls(int argc, char * argv[], Prefs * p)
 			printf("\n");
 		if(_ls_is_directory(argv[i]))
 		{
-			printf("%s:\n", argv[i]);
+			if(argc != 1)
+				printf("%s:\n", argv[i]);
 			if(_ls_directory(argv[i], p) != 0)
 				res = 2;
 			continue;
@@ -100,6 +102,8 @@ static int _prefs_parse(int argc, char * argv[], Prefs * p)
 	{
 		switch(o)
 		{
+			case 'R':
+				p->R = 1;
 			case 'a':
 				p->a = 1;
 				break;
@@ -109,8 +113,8 @@ static int _prefs_parse(int argc, char * argv[], Prefs * p)
 			case '?':
 				return 1;
 			default:
-				fprintf(stderr, "-%c%s",
-						o, ": Not yet implemented\n");
+				fprintf(stderr, "-%c%s", o,
+						": Not yet implemented\n");
 				return 1;
 		}
 	}
@@ -122,6 +126,7 @@ static int _prefs_parse(int argc, char * argv[], Prefs * p)
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: ls [-CFRacdilqrtu1][-H|-L][-fgmnopsx]\n\
+  -R    recursively list subdirectories\n\
   -a    write out all directory entries\n\
   -c    use time of last modification of the files status\n\
   -l    write out as long format\n\
