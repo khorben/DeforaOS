@@ -19,30 +19,30 @@
 
 
 //check url
-if(eregi("engine.php", $_SERVER["REQUEST_URI"]))
+if(eregi('engine.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: index.php");
+	header('Location: index.php');
 	exit(1);
 }
 
 
 //include system modules
-require_once("system/config.php");
-require_once("system/sql.php");
+require_once('system/config.php');
+require_once('system/sql.php');
 if(sql_connect($dbhost, $dbport, $dbname, $dbuser, $dbpassword) != 0)
 {
-	require_once("system/raw.php");
-	raw_require("html/sql.html");
+	require_once('system/raw.php');
+	raw_require('html/sql.html');
 	return 1;
 }
-require("system/login.php");
+require('system/login.php');
 
 
 function engine_module($module, $action)
 {
-	require_once("system/module.php");
+	require_once('system/module.php');
 	$moduleid = 0;
-	if(!ereg("^[a-z]*$", $module)
+	if(!ereg('^[a-z]*$', $module)
 			|| ($moduleid = module_id($module, 1)) == 0)
 	{
 		print("\t\t<h1>Invalid module</h1>
@@ -50,15 +50,15 @@ function engine_module($module, $action)
 </html>\n");
 		return 1;
 	}
-	require_once("system/page.php");
+	require_once('system/page.php');
 	$layout = sql_query("select top, bottom from daportal_layouts where moduleid='$moduleid' and action='$action';");
 	if(sizeof($layout) == 0)
 		$layout = sql_query("select top, bottom from daportal_layouts where moduleid='$moduleid' and action='';");
-	if(sizeof($layout) == 1 && $layout[0]["top"] != "")
-		page_include($layout[0]["top"]);
+	if(sizeof($layout) == 1 && $layout[0]['top'] != '')
+		page_include($layout[0]['top']);
 	$res = module_include($module, $action);
-	if(sizeof($layout) == 1 && $layout[0]["bottom"] != "")
-		page_include($layout[0]["bottom"]);
+	if(sizeof($layout) == 1 && $layout[0]['bottom'] != '')
+		page_include($layout[0]['bottom']);
 	print("\t</body>
 </html>\n");
 	return $res;
@@ -67,18 +67,18 @@ function engine_module($module, $action)
 
 function engine_invalid()
 {
-	require_once("system/raw.php");
-	raw_require("html/xhtml.html");
-	raw_require("html/invalid.html");
+	require_once('system/raw.php');
+	raw_require('html/xhtml.html');
+	raw_require('html/invalid.html');
 	return 1;
 }
 
 
 function engine_page($page)
 {
-	require_once("system/page.php");
-	if($page == "" || !ereg("^[a-z]{1,9}$", $page))
-		$page = "index";
+	require_once('system/page.php');
+	if($page == '' || !ereg('^[a-z]{1,9}$', $page))
+		$page = 'index';
 	$res = page_include($page);
 	print("\t</body>
 </html>\n");
@@ -89,17 +89,17 @@ function engine_post()
 {
 	global $moduleid;
 
-	require_once("system/module.php");
-	if(($module = $_POST["module"]) == "")
+	require_once('system/module.php');
+	if(($module = $_POST['module']) == '')
 		return 1;
-	if(($action = $_POST["action"]) == "")
+	if(($action = $_POST['action']) == '')
 		return 1;
-	if(!ereg("^[a-z]{1,9}$", $module)
+	if(!ereg('^[a-z]{1,9}$', $module)
 			|| ($moduleid = module_id($module, 1)) == 0)
 	{
-		require_once("system/raw.php");
-		raw_require("html/xhtml.html");
-		raw_require("html/invalid.html");
+		require_once('system/raw.php');
+		raw_require('html/xhtml.html');
+		raw_require('html/invalid.html');
 		return 1;
 	}
 	return module_process($module, $action);
@@ -107,20 +107,21 @@ function engine_post()
 
 
 //process requests
-if($_SERVER["REQUEST_METHOD"] == "POST")
+if($_SERVER['REQUEST_METHOD'] == 'POST')
 	return engine_post();
-if($_SERVER["REQUEST_METHOD"] != "GET")
+if($_SERVER['REQUEST_METHOD'] != 'GET')
 	return engine_invalid();
-require_once("system/raw.php");
-raw_require("html/xhtml.html");
+require_once('system/raw.php');
+raw_require('html/xhtml.html');
 print("\t<head>
-\t\t<title>DaPortal</title>
-\t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/default.css\"/>
+\t\t<title>Defora.org - GNU/Linux distribution and other projects</title>
+\t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/dark.css\" title=\"Dark\"/>
+\t\t<link type=\"text/css\" rel=\"alternate stylesheet\" href=\"themes/defora.css\" title=\"Defora\"/>
 \t</head>
 \t<body>\n");
-if($_GET["module"] != "")
-	return engine_module($_GET["module"], $_GET["action"]);
-return engine_page($_GET["page"]);
+if($_GET['module'] != '')
+	return engine_module($_GET['module'], $_GET['action']);
+return engine_page($_GET['page']);
 
 
 ?>
