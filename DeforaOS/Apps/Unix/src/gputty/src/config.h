@@ -25,9 +25,7 @@
 
 /* Config */
 /* types */
-typedef struct _Config {
-	Hash * sections;
-} Config;
+typedef Hash Config;
 
 
 /* functions */
