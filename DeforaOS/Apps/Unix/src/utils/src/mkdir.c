@@ -12,6 +12,7 @@ extern char * optarg;
 
 
 /* mkdir */
+static int _mkdir_error(char * message, int ret);
 static int _mkdir_p(mode_t mode, char * pathname);
 static int _mkdir(int flagp, mode_t mode, int argc, char * argv[])
 {
@@ -23,22 +24,29 @@ static int _mkdir(int flagp, mode_t mode, int argc, char * argv[])
 		if(flagp == 1)
 		{
 			if(_mkdir_p(mode, argv[i]) != 0)
+			{
 				res = 2;
+				continue;
+			}
 		}
-		if(mkdir(argv[i], mode) == -1)
-		{
-			fprintf(stderr, "%s", "mkdir: ");
-			perror(argv[i]);
-			res = 2;
-		}
+		if(mkdir(argv[i], mode) != 0)
+			res = _mkdir_error(argv[i], 2);
 	}
 	return res;
+}
+
+static int _mkdir_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "mkdir: ");
+	perror(message);
+	return ret;
 }
 
 static int _mkdir_p(mode_t mode, char * pathname)
 {
 	char * p;
 	char c;
+	struct stat st;
 
 	for(p = pathname; *p != '\0'; p++)
 	{
@@ -46,12 +54,9 @@ static int _mkdir_p(mode_t mode, char * pathname)
 			continue;
 		c = *p;
 		*p = '\0';
-		if(mkdir(pathname, mode) == -1)
-		{
-			fprintf(stderr, "%s", "mkdir: ");
-			perror(pathname);
-			return 2;
-		}
+		if(!(stat(pathname, &st) == 0 && S_ISDIR(st.st_mode))
+				&& mkdir(pathname, mode) == -1)
+			return _mkdir_error(pathname, 2);
 		*p = c;
 	}
 	return 0;
