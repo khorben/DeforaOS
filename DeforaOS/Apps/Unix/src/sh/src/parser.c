@@ -669,5 +669,12 @@ static Token ** sequential_sep(Token ** tokens)
 	 * | newline_list */
 {
 	/* FIXME */
+	if(token_check_word(tokens, ";"))
+	{
+		tokens = token_scan(tokens);
+		return linebreak(tokens);
+	}
+	if(token_in_set(tokens[0], CS_NEWLINE_LIST))
+		return newline_list(tokens);
 	return NULL;
 }
