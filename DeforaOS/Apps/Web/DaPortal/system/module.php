@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../index.php");
+	header('Location: ../index.php');
 	exit(1);
 }
 
@@ -60,14 +60,14 @@ function module_include($module, $action)
 
 	if(($moduleid = module_id($module, 1)) == 0)
 	{
-		print("\t\t<div><b>Warning:</b> could not include a module (unknown).</div>\n");
+		print('\t\t<div><b>Warning:</b> could not include a module (unknown).</div>\n');
 		return 1;
 	}
 	if(module_cache_include($module, $action) == 0)
 		return 0;
 	if(module_process($module, $action) != 0)
 	{
-		print("\t\t<div><b>Warning:</b> could not include a module (module error).</div>\n");
+		print('\t\t<div><b>Warning:</b> could not include a module (module error).</div>\n');
 		return 1;
 	}
 	return 0;
