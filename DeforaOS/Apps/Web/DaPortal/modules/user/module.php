@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -82,20 +82,63 @@ function admin_list()
 //admin is trusted
 function admin_user()
 {
-	$username = $_GET["username"];
-	if(!ereg("^([a-z]){1,9}$", $username)
+	$username = $_GET['username'];
+	if(!ereg('^([a-z]){1,9}$', $username)
 			|| ($res = sql_query("select userid, email, homepage from daportal_users where username='$username';")) == FALSE)
 	{
 		print("\t\t<p>User unknown.</p>\n");
 		return 0;
 	}
+	$userid = $res[0]['userid'];
 	print("\t\t<div>
 \t\t<b>Username:</b> $username<br/>
-\t\t<b>User id:</b> ".$res[0]['userid']."<br/>
+\t\t<b>User id:</b> $userid<br/>
 \t\t<b>E-mail:</b> ".$res[0]['email']."<br/>
 \t\t<b>Homepage:</b> ".$res[0]['homepage']."<br/>
 \t</div>\n");
+	list_sessions($userid);
 	return 0;
+}
+
+
+function list_sessions($userid)
+{
+	print("\t\t<h3>Sessions</h3>\n");
+	if(($res = sql_query("select sessionid, ip, expires from daportal_sessions where userid='$userid';")) == FALSE)
+		print("\t\tNot any session.\n");
+	else
+	{
+		print("\t\t<form action=\"index.php\" method=\"post\">
+<div class=\"headline\">
+\t<input type=\"submit\" name=\"type\" value=\"Delete\"/>
+\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"sessions\"/>
+</div>
+<table>
+\t<tr>
+\t\t<th></th><th>Session ID</th><th>IP</th><th>Expiration</th>
+\t</tr>\n");
+		while(sizeof($res) >= 1)
+		{
+			global $sessionid;
+			static $chk = 0;
+			$boldi = '';
+			$boldo = '';
+			if($sessionid == $res[0]['sessionid'])
+			{
+				$boldi = '<b>';
+				$boldo = '</b>';
+			}
+			print("\t<tr>
+\t\t<td><input type=\"checkbox\" name=\"id[".($chk++)."]\" value=\"".$res[0]['sessionid']."\"/></td><td>");
+			print($boldi.$res[0]['sessionid'].$boldo);
+			print("</td><td>$boldi".$res[0]['ip']."$boldo</td><td>$boldi".$res[0]['expires']."$boldo</td>
+\t</tr>\n");
+			array_shift($res);
+		}
+		print("</table>
+\t\t</form>\n");
+	}
 }
 
 
@@ -107,9 +150,9 @@ function user_admin()
 	if($administrator != 1)
 	{
 		print("\t\t<p>Access denied.</p>\n");
-		return 0;
+		return 1;
 	}
-	if($_GET["username"] != "")
+	if($_GET['username'] != "")
 		return admin_user();
 	return admin_list();
 }
@@ -147,7 +190,7 @@ function user_default()
 \t\t</div>\n");
 		return 0;
 	}
-	if(($user = $_GET["username"]) != "")
+	if(($user = $_GET['username']) != "")
 	{
 		if(($res = sql_query("select email, homepage, moderator from daportal_users where username='$user';")) == FALSE)
 		{
@@ -156,11 +199,11 @@ function user_default()
 			return 0;
 		}
 		print("User information for $user</h1>\n");
-		if($res[0]["moderator"] == "t")
+		if($res[0]['moderator'] == "t")
 			print("\t\t<p>$user is a moderator.</p>\n");
-		if($res[0]["email"] != "")
-			print("\t\t<div><b>E-mail address</b>: <a href=\"mailto:".$res[0]["email"]."\">".$res[0]["email"]."</a></div>\n");
-		if($res[0]["homepage"] != "")
+		if($res[0]['email'] != "")
+			print("\t\t<div><b>E-mail address</b>: <a href=\"mailto:".$res[0]['email']."\">".$res[0]['email']."</a></div>\n");
+		if($res[0]['homepage'] != "")
 			print("\t\t<div><b>Homepage:</b> <a href=\"".$res[0]["homepage"]."\">".$res[0]["homepage"]."</a></div>\n");
 		return 0;
 	}
@@ -182,42 +225,7 @@ function user_default()
 	print("\t\t\t<b>E-mail address:</b> <a href=\"mailto:$email\">$email</a><br/>
 \t\t\t<b>Homepage:</b> <a href=\"$homepage\">$homepage</a><br/>
 \t\t</div>\n");
-	print("\t\t<h3>Sessions</h3>\n");
-	if(($res = sql_query("select sessionid, ip, expires from daportal_sessions where userid='$userid';")) == FALSE)
-		print("\t\t<b>Warning:</b> could not fetch sessions.<br/>\n");
-	else
-	{
-		print("\t\t<form action=\"index.php\" method=\"post\">
-<div class=\"headline\">
-\t<input type=\"submit\" name=\"type\" value=\"Delete\"/>
-\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
-\t<input type=\"hidden\" name=\"action\" value=\"sessions\"/>
-</div>
-<table cellspacing=\"0\">
-\t<tr>
-\t\t<th></th><th>Session ID</th><th>IP</th><th>Expiration</th>
-\t</tr>\n");
-		while(sizeof($res) >= 1)
-		{
-			global $sessionid;
-			static $chk = 0;
-			$boldi = '';
-			$boldo = '';
-			if($sessionid == $res[0]["sessionid"])
-			{
-				$boldi = '<b>';
-				$boldo = '</b>';
-			}
-			print("\t<tr>
-\t\t<td><input type=\"checkbox\" name=\"id[".($chk++)."]\" value=\"".$res[0]["sessionid"]."\"/></td><td>");
-			print($boldi.$res[0]["sessionid"].$boldo);
-			print("</td><td>$boldi".$res[0]["ip"]."$boldo</td><td>$boldi".$res[0]["expires"]."$boldo</td>
-\t</tr>\n");
-			array_shift($res);
-		}
-		print("</table>
-\t\t</form>\n");
-	}
+	list_sessions($userid);
 	print("\t\t<form method=\"post\" action=\"index.php\">
 \t\t\t<div>
 \t\t\t\t<input type=\"submit\" value=\"Logout\"/>
@@ -239,7 +247,7 @@ function user_dump()
 		return 0;
 	while(sizeof($res) >= 1)
 	{
-		print("insert into daportal_users (userid, username, password, email, homepage) values ('".$res[0]["userid"]."', '".$res[0]["username"]."', '".$res[0]["password"]."', '".$res[0]["email"]."', '".$res[0]["homepage"]."');\n");
+		print("insert into daportal_users (userid, username, password, email, homepage) values ('".$res[0]['userid']."', '".$res[0]['username']."', '".$res[0]['password']."', '".$res[0]['email']."', '".$res[0]['homepage']."');\n");
 		array_shift($res);
 	}
 	return 0;
