@@ -316,11 +316,11 @@ static void _obj_print(FILE * fp, char * obj)
 		fprintf(fp, "%s", obj);
 		obj[len+1] = 'c';
 	}
-	else if(strcmp(&obj[len+1], "e") == 0)
+	else if(strcmp(&obj[len+1], "S") == 0)
 	{
 		obj[len+1] = 'o';
 		fprintf(fp, "%s", obj);
-		obj[len+1] = 'e';
+		obj[len+1] = 'S';
 	}
 	else
 		fprintf(stderr, "%s%s%s", "configure: ", obj,
