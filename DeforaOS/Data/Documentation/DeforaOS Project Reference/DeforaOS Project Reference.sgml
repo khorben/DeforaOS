@@ -35,4 +35,35 @@ Today I think my ideal operating system should be open source, micro-kernel base
 	</para>
 </preface>
 
+<chapter>
+	<title>Project orientations</title>
+	<sect1>
+		<title>Open Source</title>
+<!--
+- interoperability
+- ...
+- security
+- conclude with community open source limitations for coordination etc
+-->
+	</sect1>
+	<sect1>
+		<title>Coherence</title>
+<!--
+- community open source problem
+- UNIX problem
+- user-proof
+=> developped by a small and tight team
+=> remain transparent, accept external contributions
+-->
+	</sect1>
+	<sect1>
+		<title>Technical choices</title>
+<!--
+- micro-kernel
+- programming language
+-->
+	</sect1>
+</chapter>
+
+
 </book>
