@@ -237,11 +237,11 @@ static int _targets_all(FILE * fp, Config * config)
 	if((targets = config_get(config, "", "targets")) != NULL
 			&& *targets != '\0')
 		fprintf(fp, "%s", " $(TARGETS)");
-	fprintf(fp, "%s", "\n\nsubdirs:\n");
+	fprintf(fp, "%s", "\n\n");
 	if(subdirs != NULL && *subdirs != '\0')
-		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); do ",
-				"$(MAKE) -C $$i all $@ || exit $$?; done\n");
-	fprintf(fp, "%s", "\n");
+		fprintf(fp, "%s%s%s", "subdirs:\n",
+				"\t@for i in $(SUBDIRS); do ",
+				"$(MAKE) -C $$i || exit $$?; done\n\n");
 	if(targets == NULL)
 		return 0;
 	for(cur = targets; *targets != '\0'; targets++)
@@ -382,7 +382,7 @@ static int _makefile_clean(FILE * fp, Config * config)
 	fprintf(fp, "%s", "clean:\n");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL)
 		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do $(MAKE) -C $$i $@ || exit $$?; done\n");
+				"do $(MAKE) -C $$i clean || exit $$?; done\n");
 	if(config_get(config, "", "targets") != NULL)
 	{
 		fprintf(fp, "%s", "\t$(RM)");
@@ -392,7 +392,7 @@ static int _makefile_clean(FILE * fp, Config * config)
 	fprintf(fp, "%s", "\ndistclean: clean\n");
 	if(subdirs != NULL)
 		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do $(MAKE) -C $$i $@ || exit $$?; done\n");
+				"do $(MAKE) -C $$i distclean || exit $$?; done\n");
 	if(config_get(config, "", "targets") != NULL)
 		fprintf(fp, "%s", "\t$(RM) $(TARGETS)\n");
 	return 0;
