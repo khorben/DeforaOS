@@ -9,4 +9,6 @@ make all &&
 
 #install
 DESTDIR=$PWD/defora/${NAME}-${VERSION}
-make TARGET_MODDIR=${DESTDIR}/lib/modules/2.4.25 TARGET_ROOT_ON_HOST=${DESTDIR} TARGET_INST_EXEDIR=${DESTDIR}/usr/sbin install &&
+make TARGET_MODDIR=${DESTDIR}/lib/modules/2.4.25 TARGET_ROOT_ON_HOST=${DESTDIR} TARGET_INST_EXEDIR=${DESTDIR}/usr/sbin install TARGET_PCMCIA_DIR=${DESTDIR}/etc/pcmcia &&
+mkdir -p ${DESTDIR}/etc/init &&
+mv ${DESTDIR}/init.d ${DESTDIR}/etc/init/rc.d &&
