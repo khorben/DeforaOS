@@ -43,7 +43,7 @@ static int _head_do(int flgn, char * filename)
 	{
 		if(c == '\n')
 			n++;
-		printf("%c", c);
+		fwrite(&c, sizeof(char), 1, stdout);
 	}
 	if(filename != NULL)
 		fclose(fp);
