@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+
+#build
+make PREFIX=/usr LIBDIR=/lib BINDIR=/sbin &&
+
+#install
+DESTDIR=$PWD/defora/${NAME}-${VERSION}
+make PREFIX=$DESTDIR/usr BINDIR=$DESTDIR/sbin LIBDIR=$DESTDIR/lib install &&
