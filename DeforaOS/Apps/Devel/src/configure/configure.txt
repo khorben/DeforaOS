@@ -1,0 +1,109 @@
+configure documentation
+-----------------------
+
+
+These are the documentation notes for configure. The configure project is a
+Makefile files generator. It uses project description files to propose simple
+Makefiles. It is intended to keep generated code as simple as possible.
+
+         -------------------------------------------------
+
+
+Table of contents
+-----------------
+
+I. Overview of configure
+1.1 What is configure
+1.2 Who should use configure
+1.3 Who should not use configure
+1.4 Why use configure
+
+II. Using configure
+2.1 configure usage
+2.2 Project configuration
+2.3 Migrating to configure
+
+III. Getting further
+3.1 Current caveats
+3.2 Planned improvements
+
+         -------------------------------------------------
+
+
+I. Overview of configure
+
+1.1 What is configure
+configure generates Makefile files needed in an entire project. Instead of
+trying every little trick to let it work in a number of potential uses, it
+sticks to the simplest possible code generation. Consequently, it will mostly
+be useful for projects running on standard-compliant platforms.
+
+1.2 Who should use configure
+Every software developper could gain using configure. However, due to its
+intentional simplicity, it may not be appropriate to use along with code
+compilation on some non-portable platforms.
+Of course an advanced user, trying to modify a given project Makefile on his
+platform, inside a project using configure as its Makefile files generator may
+have to use configure too.
+
+1.3 Who should not use configure
+
+configure will certainly not be appropriate alone for cross-plaform projects,
+and maybe not for big projects. However one should be able to keep its
+configuration files inside a project without creating any trouble for potential
+other Makefile files generators.
+
+1.4 Why use configure
+configure has been created to be efficient at writing simple and compliant
+Makefiles for small to big software development projects. It should be useful:
+- for people learning software development using Makefiles
+- for developpers of some small to big projects
+- for developpers concerned by the readability and efficiency of their Makefiles
+
+         -------------------------------------------------
+
+
+II. Using configure
+
+2.1 configure usage
+The configure utility may be invoked from the command line this way:
+$ configure [directory]
+
+It then processes the current directory, or the one given at the command line,
+according to the project configuration files.
+
+2.2 Project configuration
+The configuration is done in every project directory. This file must be called
+"project.conf". It is organized in sections, and string variables. Section names
+are written on their own line, between brackets (eg "[section]"). Variables are
+given on their own line too, like this:
+variable=value
+Configuration files may be commented, commentary lines being prepended with a
+hash sign "#".
+Recognized variables are the following:
+- in the default section (has an empty name, eg "[]" in the file)
+  * subdirs: subdirectories to look for too
+  * cflags_force: CFLAGS to force globally
+  * cflags: optional global CFLAGS
+  * ldflags_force: LDFLAGS to force globally
+  * ldflags: optional global LDFLAGS
+  * targets: targets to handle in the Makefile
+- in sections named like the target they define:
+  * type (mandatory): type of the target (eg "binary", "library", ...)
+  * cflags: additional CFLAGS for this target
+  * ldflags: additional LDFLAGS for this target
+  * sources: source files to compile
+
+2.3 Migrating to configure
+
+         -------------------------------------------------
+
+
+III. Getting further
+
+3.1 Current caveats
+- configure is not user-proof when necessary development files are not available
+  (relies on appropriate third-party programs error messages, eg
+  "project-config" or "pkgconfig")
+
+3.2 Planned improvements
