@@ -77,7 +77,7 @@ function engine_invalid()
 function engine_page($page)
 {
 	require_once("system/page.php");
-	if($page == "" || !ereg("^[a-z]+$", $page))
+	if($page == "" || !ereg("^[a-z]{1,9}$", $page))
 		$page = "index";
 	$res = page_include($page);
 	print("\t</body>
@@ -94,7 +94,7 @@ function engine_post()
 		return 1;
 	if(($action = $_POST["action"]) == "")
 		return 1;
-	if(!ereg("^[a-z]+$", $module)
+	if(!ereg("^[a-z]{1,9}$", $module)
 			|| ($moduleid = module_id($module, 1)) == 0)
 	{
 		require_once("system/raw.php");
@@ -107,9 +107,9 @@ function engine_post()
 
 
 //process requests
-if($_SERVER['REQUEST_METHOD'] == "POST")
+if($_SERVER["REQUEST_METHOD"] == "POST")
 	return engine_post();
-if($_SERVER['REQUEST_METHOD'] != "GET")
+if($_SERVER["REQUEST_METHOD"] != "GET")
 	return engine_invalid();
 require_once("system/raw.php");
 raw_require("html/xhtml.html");
@@ -119,7 +119,7 @@ print("\t<head>
 \t</head>
 \t<body>\n");
 if($_GET["module"] != "")
-	return engine_module($_GET['module'], $_GET['action']);
+	return engine_module($_GET["module"], $_GET["action"]);
 return engine_page($_GET["page"]);
 
 
