@@ -168,11 +168,11 @@ FIXME
 			</para>
 		</sect2>
 	</sect1>
-	<para>
-It seems reasonable, if not obvious, to determine independant tasks within the huge work described before in this document. There follows a proposal.
-	</para>
 	<sect1>
 		<title>Development tasks</title>
+		<para>
+It seems reasonable, if not obvious, to determine independant tasks within the huge work described before in this document. There follows a proposal.
+		</para>
 		<sect2>
 			<title>Global tasks</title>
 			<formalpara>
