@@ -35,6 +35,7 @@ if($userid == 0)
 \t<a href=\"index.php?module=user\">Register</a>
 </div>\n";
 else
+{
 	$content = "Logged in as <a href=\"index.php?module=user&action=homepage\">$username</a><br/>
 <br/>\n";
 	if($administrator == 1)
@@ -53,6 +54,7 @@ else
 \t\t<input type=\"hidden\" name=\"action\" value=\"logout\"/>
 \t</div>
 </form>";
+}
 
 
 ?>
