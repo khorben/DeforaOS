@@ -2,19 +2,38 @@
 		<title>DaPortal configuration</title>
 	</head>
 	<body>
-		<div>
+		<p>
 			Please fill in the database login information accordingly (some fields may be optional).
-		</div>
+		</p>
 		<form method="post" action="index.php">
-			Server type: <select name="dbtype">
-				<option value="pgsql">PostgreSQL</option>
-			</select><br/>
-			Hostname: <input type="text" name="dbhost" size="9"/><br/>
-			Port: <input type="text" name="dbport" size="5"/><br/>
-			Database: <input type="text" name="dbname" size="9"/><br/>
-			Username: <input type="text" name="dbuser" size="9"/><br/>
-			Password: <input type="password" name="dbpassword" size="9"><br/>
-			<input type="submit" value="Submit"/>
+			<table>
+				<tr>
+					<td>Server type</td>
+					<td><select name="dbtype"><option value="pgsql">PostgreSQL</option></select></td>
+				</tr>
+				<tr>
+					<td>Hostname</td>
+					<td><input type="text" name="dbhost" size="9"/></td>
+				</tr>
+				<tr>
+					<td>Port</td>
+					<td><input type="text" name="dbport" size="5"/></td>
+				</tr>
+				<tr>
+					<td>Database</td>
+					<td><input type="text" name="dbname" size="9"/></td>
+				</tr>
+				<tr>
+					<td>Username</td>
+					<td><input type="text" name="dbuser" size="9"/></td>
+				</tr>
+				<tr>
+					<td>Password</td>
+					<td><input type="password" name="dbpassword" size="9"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td><input type="submit" value="Submit"/></td>
+				</tr>
+			</table>
 		</form>
-	</body>
-</html>
