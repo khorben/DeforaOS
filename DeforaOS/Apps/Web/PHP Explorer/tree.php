@@ -56,15 +56,16 @@ function dir_has_subdirs($path)
 }
 
 
-function _tree_level($level, $root)
+function _tree_level($level, $curroot)
 {
-	$dirs = list_dirs($root);
+	global $root;
+
+	$dirs = list_dirs($root.'/'.$curroot);
 	if($dirs == FALSE || count($dirs) == 0)
 		return;
-	while($d = array_shift($dirs))
+	while($name = array_shift($dirs))
 	{
-		$name = $d;
-		$path = $root.'/'.$name;
+		$path = $curroot.'/'.$name;
 		$class = count($dirs) ? 'node' : 'lastnode';
 		$collapse = !is_link($path) && dir_has_subdirs($path);
 		if($collapse)
@@ -81,9 +82,7 @@ function _tree_level($level, $root)
 
 function tree()
 {
-	global $root;
-
-	_tree_level(0, $root);
+	_tree_level(0, '/');
 }
 
 ?>
