@@ -500,7 +500,10 @@ static void simple_command(Parser * p)
 		return;
 	}
 	if(!parser_test_set(p, CS_CMD_NAME))
-		return parser_error(p, "expected a prefix or a name");
+	{
+		parser_error(p, "expected a prefix or a name");
+		return;
+	}
 	cmd_name(p);
 	if(parser_test_set(p, CS_CMD_SUFFIX))
 		cmd_suffix(p);
