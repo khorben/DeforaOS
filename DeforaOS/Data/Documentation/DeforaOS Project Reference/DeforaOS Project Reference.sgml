@@ -142,100 +142,112 @@ About the graphical toolkit for applications, I insist that only one library wil
 
 <chapter>
 	<title>Implementation process</title>
+	<para>
+It seems reasonable, if not obvious, to determine independant tasks within the huge work described before in this document. There follows a proposal.
+	</para>
 	<sect1>
 		<title>Development tasks</title>
 		<sect2>
-			<title>Task groups</title>
-			<para>
-It seems reasonable, if not obvious, to determine independant tasks within the huge work described before in this document. There follows a proposal.
-			</para>
+			<title>Global tasks</title>
+			<formalpara>
+				<title>Programming interfaces</title>
+				<para>
+				</para>
+			</formalpara>
+		</sect2>
+		<sect2>
+			<title>Cooperation tasks</title>
+			<formalpara>
+				<title>Documentations</title>
+				<para>
+				</para>
+			</formalpara>
+		</sect2>
+		<sect2>
+			<title>Low-level applications</title>
 			<sect3>
-				<title>Global tasks</title>
-				<formalpara>
-					<title>Programming interfaces</title>
-					<para>
-					</para>
-				</formalpara>
-			</sect3>
-			<sect3>
-				<title>Cooperation tasks</title>
-				<formalpara>
-					<title>Documentations</title>
-					<para>
-					</para>
-				</formalpara>
-			</sect3>
-			<sect3>
-				<title>Low-level applications</title>
+				<title>Assembler</title>
 				<para>
 				</para>
 			</sect3>
 			<sect3>
-				<title>System applications</title>
+				<title>C compiler</title>
 				<para>
 				</para>
 			</sect3>
 			<sect3>
-				<title>End-user applications</title>
+				<title>Micro-kernel</title>
 				<para>
 				</para>
 			</sect3>
 			<sect3>
-				<title>Graphics</title>
-				<formalpara>
-					<title>Graphical server</title>
-					<para>
-					</para>
-				</formalpara>
-				<formalpara>
-					<title>Graphical mode toolkit</title>
-					<para>
-					</para>
-				</formalpara>
-			</sect3>
-			<sect3>
-				<title>Services</title>
-				<formalpara>
-					<title>General purpose daemons</title>
-					<para>
-					</para>
-				</formalpara>
-				<formalpara>
-					<title>Networking daemons</title>
-					<para>
-					</para>
-				</formalpara>
-				<formalpara>
-					<title>Applications interfaces</title>
-					<para>
-The only essential part of these services is their appengine/session (?).
-					</para>
-				</formalpara>
-			</sect3>
-			<sect3>
-				<title>POSIX environment</title>
+				<title>C library</title>
 				<para>
-At the moment it is not yet known if the system will be based on, or provide a native POSIX development environment.
-				</para>
-				<para>
-It may be possible to write an application engine providing the POSIX system and library calls, on which the POSIX utilities would connect as usual application interfaces. We could even imagine them with a graphical interface, which would fallback as the regular UNIX commands if the graphical toolkit is denied (using stdin, stdout and stderr as usual).
 				</para>
 			</sect3>
 		</sect2>
+		<sect2>
+			<title>System applications</title>
+			<sect3>
+				<title>General purpose services</title>
+				<para>
+These applications only require their application engines. For an easy and safe configuration, or monitoring, they may provide user interfaces though.
+				</para>
+			</sect3>
+			<sect3>
+				<title>Text mode toolkit</title>
+				<para>
+				</para>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>End-user applications</title>
+			<para>
+Every application that fits on a desktop: file browser, web browser, mail and news reader, messaging application, images viewer, audio and video viewer, and optionnaly games, etc.
+			</para>
+		</sect2>
+		<sect2>
+			<title>Graphics</title>
+			<formalpara>
+				<title>Graphical server</title>
+				<para>
+				</para>
+			</formalpara>
+			<formalpara>
+				<title>Graphical mode toolkit</title>
+				<para>
+				</para>
+			</formalpara>
+		</sect2>
+		<sect2>
+			<title>Services</title>
+			<formalpara>
+				<title>General purpose daemons</title>
+				<para>
+				</para>
+			</formalpara>
+			<formalpara>
+				<title>Networking daemons</title>
+				<para>
+				</para>
+			</formalpara>
+			<formalpara>
+				<title>Applications interfaces</title>
+				<para>
+The only essential part of these services is their application engines.
+				</para>
+			</formalpara>
+		</sect2>
+		<sect2>
+			<title>POSIX environment</title>
+			<para>
+At the moment it is not yet known if the system will be based on, or provide a native POSIX development environment.
+			</para>
+			<para>
+It may be possible to write an application engine providing the POSIX system and library calls, on which the POSIX utilities would connect as usual application interfaces. We could even imagine them with a graphical interface, which would fallback as the regular UNIX commands if the graphical toolkit is denied (using stdin, stdout and stderr as usual).
+			</para>
+		</sect2>
 	</sect1>
-<!--
-- determine task groups
-- global tasks: designing applications programming interfaces
-- cooperation tasks: writing documentations
-- preliminary tasks groups attempt:
-  * low-level: assembler, compiler, micro-kernel, libc
-  * system: essential applications engines and interfaces, text mode toolkit
-  * applications: end user applications engines
-    . file browser
-    . web browser
-    . mail reader
-    . messaging client
--->
 </chapter>
 
 </book>
