@@ -14,7 +14,7 @@ Config * config_new(void)
 {
 	Config * config;
 
-	if((config = malloc(sizeof(Config))) == NULL)
+	if((config = hash_new()) == NULL)
 		return NULL;
 	return config;
 }
@@ -67,7 +67,7 @@ int config_load(Config * config, char * filename)
 
 	if((section = strdup("")) == NULL)
 	{
-		fprintf(stderr, "%s", "gputty: ");
+		fprintf(stderr, "%s", "libutils: ");
 		perror("strdup");
 		return 1;
 	}
@@ -107,7 +107,7 @@ int config_load(Config * config, char * filename)
 	if(!feof(fp))
 	{
 		ret = 1;
-		fprintf(stderr, "%s", "gputty: error in configuration file\n");
+		fprintf(stderr, "%s", "libutils: error in configuration file\n");
 	}
 	fclose(fp);
 	return ret;
@@ -216,7 +216,7 @@ int config_save(Config * config, char * filename)
 		return 1;
 	if((fp = fopen(filename, "w")) == NULL)
 	{
-		fprintf(stderr, "%s", "gputty: ");
+		fprintf(stderr, "%s", "libutils: ");
 		perror(filename);
 		return 1;
 	}
