@@ -87,7 +87,25 @@ FIXME
 		<sect2>
 			<title>Programming languages</title>
 			<para>
-FIXME
+First, I want to avoid as much as possible to use assembly code. This is for obvious portability and readability reasons. I believe the micro-kernel should be coded in both assembly and C, because it has to be written with the computer limits and inner workings in mind. Object abstraction (in the programming language) is not necessary in the case of the kernel to my mind.
+			</para>
+			<para>
+I am also thinking about using C in the whole base system:
+			</para>
+			<itemizedlist>
+				<listitem><para>Ada: no, but it could be very interesting</para></listitem>
+				<listitem><para>Assembly: no, long to write, too close to the machine</para></listitem>
+				<listitem><para>C: yes, simpler to implement (and kind of mandatory anyway), few keywords, total liberty in APIs definitions, even if too close to the assembly language (then again we can handle the machine limits, ...if we think each time about each possibility)</para></listitem>
+				<listitem><para>C++: no, bloat, hell to implement</para></listitem>
+				<listitem><para>C#: no, I still have to look better at it</para></listitem>
+				<listitem><para>D: no, doesn't look mature yet</para></listitem>
+				<listitem><para>Java: no (virtual machine, verbosity of the language, classes names, ...)</para></listitem>
+				<listitem><para>Objective C: no, though certainly interesting, but I find the syntax cryptic</para></listitem>
+				<listitem><para>Perl: no, interpreter</para></listitem>
+				<listitem><para>Python: no, interpreter</para></listitem>
+			</itemizedlist>
+			<para>
+And also, as I care about coherence, the APIs in every language will be directly derived from a common definition, up to the point that every language would stick to its syntax, but could be compiled and linked against objects written in another one. If this is possible of course. Everything helping portability and interoperability will be appreciated.
 			</para>
 		</sect2>
 		<sect2>
@@ -192,6 +210,12 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 			</para>
 		</sect2>
 	</sect1>
+	<sect1>
+		<title>Programming interfaces</title>
+		<para>
+FIXME
+		</para>
+	</sect1>
 <!--
 - APIs
   * C library:
@@ -212,6 +236,33 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 	<sect1>
 		<title>Development policies</title>
 		<sect2>
+			<title>Communication</title>
+			<para>
+FIXME
+- decisions
+- project modifications: APIs, documentations, teams, ...
+- medias: IRC, mail, mailing-lists, web site, ...
+			</para>
+		</sect2>
+		<sect2>
+			<title>Code conventions</title>
+			<sect3>
+				<title>Design by contract</title>
+				<para>
+FIXME
+				</para>
+				<para>
+In debugging mode, always assert the contract.
+				</para>
+			</sect3>
+			<sect3>
+				<title>Code indentation</title>
+				<para>
+FIXME
+				</para>
+			</sect3>
+		</sect2>
+		<sect2>
 			<title>Validation process</title>
 			<orderedlist>
 				<listitem><para>Make it just work</para></listitem>
@@ -222,12 +273,6 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 				<listitem><para>If globally accepted, add selected features</para></listitem>
 				<listitem><para>Audit</para></listitem>
 			</orderedlist>
-		</sect2>
-		<sect2>
-			<title>Code conventions</title>
-			<para>
-FIXME
-			</para>
 		</sect2>
 	</sect1>
 	<sect1>
