@@ -1,5 +1,5 @@
 PACKAGE	= gputty
-VERSION	= 0.9.7
+VERSION	= 0.9.8
 SUBDIRS	= src
 RM	= rm -f
 PREFIX	= /usr/local
