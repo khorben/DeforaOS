@@ -109,10 +109,93 @@ Today I think my ideal operating system should be open source, micro-kernel base
 - login process
   * one can even login on a system service as if would join an existing session, and the setup and monitoring interfaces appear (make this possible generally from a user's session, and you've got the control panel)
 -->
+	<para>
+	</para>
 </chapter>
 
 <chapter>
 	<title>Implementation process</title>
+	<sect1>
+		<title>Development tasks</title>
+		<sect2>
+			<title>Task groups</title>
+			<para>
+It seems reasonable, if not obvious, to determine independant tasks within the huge work described before in this document. There follows a proposal.
+			</para>
+			<sect3>
+				<title>Global tasks</title>
+				<formalpara>
+					<title>Programming interfaces</title>
+					<para>
+					</para>
+				</formalpara>
+			</sect3>
+			<sect3>
+				<title>Cooperation tasks</title>
+				<formalpara>
+					<title>Documentations</title>
+					<para>
+					</para>
+				</formalpara>
+			</sect3>
+			<sect3>
+				<title>Low-level applications</title>
+				<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>System applications</title>
+				<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>End-user applications</title>
+				<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>Graphics</title>
+				<formalpara>
+					<title>Graphical server</title>
+					<para>
+					</para>
+				</formalpara>
+				<formalpara>
+					<title>Graphical mode toolkit</title>
+					<para>
+					</para>
+				</formalpara>
+			</sect3>
+			<sect3>
+				<title>Services</title>
+				<formalpara>
+					<title>General purpose daemons</title>
+					<para>
+					</para>
+				</formalpara>
+				<formalpara>
+					<title>Networking daemons</title>
+					<para>
+					</para>
+				</formalpara>
+				<formalpara>
+					<title>Applications interfaces</title>
+					<para>
+The only essential part of these services is their appengine/session (?).
+					</para>
+				</formalpara>
+			</sect3>
+			<sect3>
+				<title>POSIX environment</title>
+				<para>
+At the moment it is not yet known if the system will be based on, or provide a native POSIX development environment.
+				</para>
+				<para>
+It may be possible to write an application engine providing the POSIX system and library calls, on which the POSIX utilities would connect as usual application interfaces. We could even imagine them with a graphical interface, which would fallback as the regular UNIX commands if the graphical toolkit is denied (using stdin, stdout and stderr as usual).
+				</para>
+			</sect3>
+		</sect2>
+	</sect1>
 <!--
 - determine task groups
 - global tasks: designing applications programming interfaces
@@ -125,11 +208,6 @@ Today I think my ideal operating system should be open source, micro-kernel base
     . web browser
     . mail reader
     . messaging client
-  * graphics: graphical server, graphical mode toolkit
-  * servers: network services engines and interfaces
-
-  * posix compliant environment: unix apps
-    eventually, write the environment as an application engine, where usual apps are different interfaces...
 -->
 </chapter>
 
