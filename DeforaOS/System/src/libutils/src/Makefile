@@ -13,11 +13,11 @@ all: $(TARGETS)
 libutils: libutils.a libutils.so
 
 libutils.a: config.o darray.o file.o hash.o slist.o
-	$(AR) libutils.a config.o file.o slist.o
+	$(AR) libutils.a config.o darray.o file.o hash.o slist.o
 	$(RANLIB) libutils.a
 
 libutils.so: config.o darray.o file.o hash.o slist.o
-	$(LD) -o libutils.so config.o file.o slist.o
+	$(LD) -o libutils.so config.o darray.o file.o hash.o slist.o
 
 config.o: config.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c config.c
