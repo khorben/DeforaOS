@@ -99,7 +99,7 @@ unlink.o: unlink.c
 
 
 clean:
-	$(RM) basename.o dirname.o false.o id.o logname.o true.o tty.o unlink.o
+	$(RM) basename.o cat.o cmp.o dirname.o false.o id.o kill.o link.o ln.o logname.o mkfifo.o true.o tty.o uname.o unlink.o
 
 distclean: clean
 	$(RM) $(TARGETS)
