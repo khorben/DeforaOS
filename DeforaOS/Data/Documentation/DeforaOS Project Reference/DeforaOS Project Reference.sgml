@@ -152,27 +152,13 @@ About the graphical toolkit for applications, I insist that only one library wil
 		<sect2>
 			<title>Validation process</title>
 			<orderedlist>
-				<listitem><para>
-Make it just work
-				</listitem></para>
-				<listitem><para>
-Audit
-				</listitem></para>
-				<listitem><para>
-Optimize
-				</listitem></para>
-				<listitem><para>
-Audit
-				</listitem></para>
-				<listitem><para>
-Think about possible features
-				</listitem></para>
-				<listitem><para>
-If globally accepted, add selected features
-				</listitem></para>
-				<listitem><para>
-Audit
-				</listitem></para>
+				<listitem><para>Make it just work</para></listitem>
+				<listitem><para>Audit</para></listitem>
+				<listitem><para>Optimize</para></listitem>
+				<listitem><para>Audit</para></listitem>
+				<listitem><para>Think about possible features</para></listitem>
+				<listitem><para>If globally accepted, add selected features</para></listitem>
+				<listitem><para>Audit</para></listitem>
 			</orderedlist>
 		</sect2>
 		<sect2>
