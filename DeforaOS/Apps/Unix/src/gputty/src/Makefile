@@ -9,11 +9,16 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-gputty: gputty.o
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gputty gputty.o
+gputty: config.o gputty.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gputty config.o gputty.o
 
-gputty.o: gputty.c
+config.o: config.c config.h
+	$(CC) $(CFLAGSF) $(CFLAGS) -c config.c
+
+gputty.o: gputty.c gputty.h
 	$(CC) $(CFLAGSF) $(CFLAGS) -c gputty.c
+
+gputty.h: config.h
 
 clean:
 	$(RM) gputty.o
