@@ -1,5 +1,8 @@
+
+
 all:
 
-clean: distclean
 
-distclean:
+clean:
+
+distclean: clean

@@ -1,26 +1,30 @@
+TARGETS	= makepasswd
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
-LDFLAGSF= -lcrypt
-LDFLAGS	=
-TARGETS	= makepasswd
-CC	= gcc
+LDFLAGS	= -lcrypt
+CC	= cc
+AR	= ar rc
+RANLIB	= ranlib
+LD	= ld -shared
 RM	= rm -f
 
 
 all: $(TARGETS)
 
-MAKEPASSWD_OBJS= md5.o makepasswd.o
-makepasswd: $(MAKEPASSWD_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) $(MAKEPASSWD_OBJS) -o makepasswd
+makepasswd_OBJS= makepasswd.o md5.o
+makepasswd_CFLAGS=$(CFLAGSF) $(CFLAGS)
+makepasswd: $(makepasswd_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o makepasswd $(makepasswd_OBJS)
 
 makepasswd.o: makepasswd.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c makepasswd.c
+	$(CC) $(makepasswd_CFLAGS) -c makepasswd.c
 
 md5.o: md5.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c md5.c
+	$(CC) $(makepasswd_CFLAGS) -c md5.c
+
 
 clean:
-	$(RM) $(MAKEPASSWD_OBJS)
+	$(RM) $(makepasswd_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)

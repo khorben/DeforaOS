@@ -1,4 +1,4 @@
-TARGETS	= libutils
+TARGETS	= libutils.a libutils.so
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 CC	= cc
@@ -10,33 +10,33 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-libutils: libutils.a libutils.so
-
-LIBUTILS_OBJS = array.o config.o file.o hash.o slist.o
-libutils.a: $(LIBUTILS_OBJS)
-	$(AR) libutils.a $(LIBUTILS_OBJS)
+libutils_OBJS= config.o array.o file.o hash.o slist.o
+libutils_CFLAGS=$(CFLAGSF) $(CFLAGS)
+libutils.a: $(libutils_OBJS)
+	$(AR) libutils.a $(libutils_OBJS)
 	$(RANLIB) libutils.a
 
-libutils.so: $(LIBUTILS_OBJS)
-	$(LD) -o libutils.so $(LIBUTILS_OBJS)
-
-array.o: array.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c array.c
+libutils.so: $(libutils_OBJS)
+	$(LD) -o libutils.so $(libutils_OBJS)
 
 config.o: config.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c config.c
+	$(CC) $(libutils_CFLAGS) -c config.c
+
+array.o: array.c
+	$(CC) $(libutils_CFLAGS) -c array.c
 
 file.o: file.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c file.c
+	$(CC) $(libutils_CFLAGS) -c file.c
 
 hash.o: hash.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c hash.c
+	$(CC) $(libutils_CFLAGS) -c hash.c
 
 slist.o: slist.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c slist.c
+	$(CC) $(libutils_CFLAGS) -c slist.c
+
 
 clean:
-	$(RM) $(LIBUTILS_OBJS)
+	$(RM) $(libutils_OBJS)
 
 distclean: clean
-	$(RM) libutils.a libutils.so
+	$(RM) $(TARGETS)

@@ -1,22 +1,26 @@
 TARGETS	= mktemp
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
-LDFLAGSF=
-LDFLAGS	=
 CC	= cc
+AR	= ar rc
+RANLIB	= ranlib
+LD	= ld -shared
 RM	= rm -f
 
 
 all: $(TARGETS)
 
-mktemp: mktemp.o
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mktemp mktemp.o
+mktemp_OBJS= mktemp.o
+mktemp_CFLAGS=$(CFLAGSF) $(CFLAGS)
+mktemp: $(mktemp_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mktemp $(mktemp_OBJS)
 
 mktemp.o: mktemp.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c mktemp.c
+	$(CC) $(mktemp_CFLAGS) -c mktemp.c
+
 
 clean:
-	$(RM) mktemp.o
+	$(RM) $(mktemp_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
