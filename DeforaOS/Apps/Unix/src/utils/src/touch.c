@@ -240,7 +240,6 @@ static int _touch_rtime(char * filename, time_t * atime, time_t * mtime)
 	return 0;
 }
 
-
 static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 {
 	struct stat st;
