@@ -91,6 +91,7 @@ function install_database()
 	module_install("admin");
 	module_install("user");
 	module_install("pages");
+	module_install("news");
 }
 
 function install_config($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword)
