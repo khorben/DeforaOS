@@ -60,11 +60,13 @@ function news_admin()
 {
 	global $administrator, $moderator, $moduleid;
 
+	print("\t\t<h1>News administration</h1>\n");
 	if($administrator != 1 && $moderator != 1)
+	{
+		print("\t\t<p>Access denied.</p>\n");
 		return 0;
-	print("\t\t<h1>News administration</h1>
-\t\t<p>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</p>\n");
-	if(($res = sql_query("select newsid, title, username, date, enable from daportal_contents, daportal_news, daportal_users where moduleid='$moduleid' and contentid=newsid and userid=author;")) == FALSE)
+	}
+	if(($res = sql_query("select newsid, title, username, date, enable from daportal_contents, daportal_news, daportal_users where moduleid='$moduleid' and contentid=newsid and userid=author;")) == NULL)
 	{
 		print("\t\t<p>Not any news yet.</p>\n");
 		return 0;
@@ -84,7 +86,7 @@ function news_admin()
 \t\t\t\t<td><a href=\"index.php?module=news&amp;id=".$res[0]["newsid"]."\">".$res[0]["title"]."</a></td>
 \t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
 \t\t\t\t<td>".$res[0]["date"]."</td>
-\t\t\t\t<td>".($enable ? "yes" : "no")." <form method=\"post\" action=\"index.php\" style=\"display: inline\">
+\t\t\t\t<td><form method=\"post\" action=\"index.php\" style=\"display: inline\">
 \t<input type=\"submit\" value=\"".($enable ? "Disable" : "Enable")."\">
 \t<input type=\"hidden\" name=\"module\" value=\"news\">
 \t<input type=\"hidden\" name=\"action\" value=\"moderate\">
@@ -101,58 +103,39 @@ function news_admin()
 
 function news_default()
 {
-	global $username, $moduleid, $administrator, $moderator;
-
-	print("\t\t<h1><img src=\"modules/news/icon.png\" alt=\"news\"/>News</h1>\n");
+	print("\t\t<h1><img src=\"modules/news/icon.png\" alt=\"news\"/>News");
 	if(is_numeric($_GET["id"]))
 	{
-		$newsid = $_GET["id"];
-		$query = "select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$newsid' and newsid=contentid and author=userid";
-		if($administrator == 0 && $moderator == 0)
-			$query .= " and enable='1'";
-		if(($res = sql_query($query)) == FALSE)
-		{
-			print("\t\t<p>Unknown news.</p>\n");
-			return 0;
-		}
-		display($res[0]["title"], $res[0]["username"],
-				$res[0]["date"], $res[0]["content"]);
-		return 0;
+		print("</h1>\n");
+		return news_id($_GET["id"]);
 	}
-	print("\t\t<div>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</div>\n");
-	$author = $_GET["username"];
-	if($author != "" &&
-			($res = sql_query("select newsid, title from daportal_news, daportal_contents, daportal_users where username='$author' and newsid=contentid and author=userid and enable='1';")) != FALSE)
+	if($_GET["username"] != "" && ereg("^[a-z]{1,9}$", $_GET["username"]))
 	{
-		print("\t\t<h2>News by $author</h2>
-\t\t<p>You can see <a href=\"index.php?module=user&amp;username=$author\">khorben's user informations</a>.</p>\n");
-		$i = 1;
-		while(sizeof($res) >= 1)
-		{
-			$id = $res[0]["newsid"];
-			$title = $res[0]["title"];
-			print("\t\t<div>$i. <a href=\"index.php?module=news&amp;id=$id\">$title</a></div>\n");
-			$i++;
-			array_shift($res);
-		}
-		return 0;
+		print(" by ".$_GET["username"]."</h1>\n");
+		return news_username($_GET["username"]);
 	}
-	$count = -1;
-	print("\t\t<h2>News Summary</h2>\n");
-	if(($res = sql_query("select count(*) from daportal_news where enable='1';")) != FALSE)
-	{
-		$count = $res[0]["count"];
-		print("\t\t<p>There are $count news available.</p>\n");
-	}
-	else
-		print("\t\t<p>There aren't any news yet.</p>\n");
+	print(" summary</h1>\n");
+	return news_summary();
+}
+
+
+function news_summary()
+{
+	global $moduleid;
 	$npp = 5; //news per page
+
+	if(($res = sql_query("select count(*) from daportal_news, daportal_contents where moduleid='$moduleid' and contentid=newsid and enable='1';")) == NULL)
+	{
+		print("\t\t<p>There aren't any news yet.</p>\n");
+		return 0;
+	}
+	$count = $res[0]["count"];
 	$offset = is_numeric($_GET["offset"]) ? $_GET["offset"] * $npp : 0;
 	if(($res = sql_query("select newsid, title, username, date from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
 	{
 		$first = $offset + 1;
 		$last = $first + $npp - 1;
-		print("\t\t<h3>Listing news $first to $last</h3>\n");
+		print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
 		while(sizeof($res) >= 1)
 		{
 			display_summary($res[0]["newsid"],
@@ -161,8 +144,7 @@ function news_default()
 					$res[0]["date"]);
 			array_shift($res);
 		}
-		print("\t\t<hr/>
-\t\t<p>Page: ");
+		print("\t\t<p>Page: ");
 		if($_GET["offset"] == 0)
 			print("1");
 		else
@@ -195,6 +177,22 @@ function news_dump()
 		print("insert into daportal_news (newsid, author, date) values ('".$res[0]["newsid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."');\n");
 		array_shift($res);
 	}
+	return 0;
+}
+
+
+function news_id($id)
+{
+	$query = "select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$id' and newsid=contentid and author=userid";
+	if($administrator == 0 && $moderator == 0)
+		$query .= " and enable='1'";
+	if(($res = sql_query($query)) == FALSE)
+	{
+		print("\t\t<p>Unknown news.</p>\n");
+		return 0;
+	}
+	display($res[0]["title"], $res[0]["username"],
+			$res[0]["date"], $res[0]["content"]);
 	return 0;
 }
 
@@ -299,6 +297,31 @@ function news_uninstall()
 		return 0;
 	//FIXME remove linked content in daportal_contents
 	sql_table_drop("daportal_news");
+	return 0;
+}
+
+
+//PRE	$username is a valid username
+function news_username($username)
+{
+	if(($res = sql_query("select newsid, title from daportal_news, daportal_contents, daportal_users where username='$username' and newsid=contentid and author=userid and enable='1';")) == FALSE)
+	{
+		print("\t\t<p>This user has never posted news</p>\n");
+		return 0;
+	}
+	print("\t\t<p>See <a href=\"index.php?module=user&amp;username=$username\">$username's user informations</a>.</p>\n");
+	$i = 1;
+	while(sizeof($res) >= 1)
+	{
+		$id = $res[0]["newsid"];
+		$title = $res[0]["title"];
+		print("\t\t<p>
+\t\t\t$i. <a href=\"index.php?module=news&amp;id=$id\">$title</a><br/>
+\t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=news&amp;id=$id</i>
+\t\t</p>\n");
+		$i++;
+		array_shift($res);
+	}
 	return 0;
 }
 
