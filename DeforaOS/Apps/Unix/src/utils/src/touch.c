@@ -4,9 +4,12 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <utime.h>
+#include <errno.h>
 
 
 /* Prefs */
@@ -53,7 +56,7 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 				return 1;
 		}
 	}
-	if((prefs->flags & PREFS_a) && (prefs->flags & PREFS_m))
+	if(!((prefs->flags & PREFS_a) && (prefs->flags & PREFS_m)))
 		prefs->flags |= (PREFS_a | PREFS_m);
 	return 0;
 }
@@ -79,6 +82,11 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 	{
 		if(_touch_ttime(prefs->time, &atime) != 0)
 			return 2;
+		mtime = atime;
+	}
+	else
+	{
+		atime = time(NULL);
 		mtime = atime;
 	}
 	for(i = 0; i < argc; i++)
@@ -237,11 +245,38 @@ static int _ttime_second(char ** p, time_t * time)
 
 static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 {
+	struct stat st;
+	struct utimbuf ut;
+	int fd;
+
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%s%s%ld%s%ld%s", "_touch_do(", prefs->flags,
 			", ", filename, ", ", atime, ", ", mtime, ");\n");
 #endif
-	return 1;
+	if(!(prefs->flags & PREFS_c))
+	{
+		if((fd = creat(filename, 0666) == -1))
+			_touch_error(filename, 0);
+		else if(close(fd) != 0)
+			_touch_error(filename, 0);
+	}
+	if(prefs->flags == PREFS_m || prefs->flags == PREFS_c)
+		if(stat(filename, &st) != 0)
+		{
+			if(prefs->flags == PREFS_m)
+				atime = st.st_atime;
+			else
+				mtime = st.st_mtime;
+		}
+	ut.actime = atime;
+	ut.modtime = mtime;
+	if(utime(filename, &ut) != 0)
+	{
+		if((prefs->flags & PREFS_c) && errno == ENOENT)
+			return 0;
+		return _touch_error(filename, 1);
+	}
+	return 0;
 }
 
 
