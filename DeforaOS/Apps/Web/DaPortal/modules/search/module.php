@@ -41,37 +41,35 @@ function search_admin()
 function search_default()
 {
 	if($_GET["q"] == "")
-	{
-		print("\t\t<h1>Search</h1>
-\t\t<form method=\"get\" action=\"index.php\">
-\t\t\t<input type=\"hidden\" name=\"module\" value=\"search\"/>
-\t\t\t<input type=\"text\" size=\"30\" name=\"q\"/>
-\t\t\t<input type=\"submit\" value=\"Search\"/>
+		print("\t\t<h1>Search</h1>\n");
+	else
+		print("\t\t<h1>Search results</h1>\n");
+	print("\t\t<form method=\"get\" action=\"index.php\">
+\t\t\t<div>
+\t\t\t\t<input type=\"hidden\" name=\"module\" value=\"search\"/>
+\t\t\t\t<input type=\"text\" size=\"30\" name=\"q\" value=\"".htmlentities($_GET["q"])."\"/>
+\t\t\t\t<input type=\"submit\" value=\"Search\"/>
+\t\t\t</div>
 \t\t</form>\n");
+	if($_GET["q"] == "")
 		return 0;
-	}
-	print("\t\t<h1>Search results</h1>
-\t\t<form method=\"get\" action=\"index.php\">
-\t\t\t<input type=\"hidden\" name=\"module\" value=\"search\"/>
-\t\t\t<input type=\"text\" size=\"30\" name=\"q\" value=\"".htmlentities($_GET["q"])."\"/>
-\t\t\t<input type=\"submit\" value=\"Search\"/>
-\t\t</form>\n");
 	if(($res = sql_query("select moduleid, contentid, title from daportal_contents where content like '%".$_GET["q"]."%';")) == FALSE)
 	{
 		print("\t\t<div>No matches, sorry.</div>\n");
 		return 0;
 	}
+	print("\t\t<p>There are ".sizeof($res)." results for your query.</p>\n");
 	$i = 1;
 	while(sizeof($res) >= 1)
 	{
 		$module = module_name($res[0]["moduleid"], 1);
 		$contentid = $res[0]["contentid"];
 		$title = $res[0]["title"];
-		print("\t\t<div style=\"margin-bottom: 10px\">
-\t\t\t<div>$i. <a href=\"index.php?module=$module&id=$contentid\">$title</a></div>
-\t\t\t<div>Module: <a href=\"index.php?module=$module\">$module</a></div>
-\t\t\t<div><i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=$module&id=$contentid</i></div>
-\t\t</div>\n");
+		print("\t\t<p>
+\t\t\t$i. <a href=\"index.php?module=$module&amp;id=$contentid\">$title</a><br/>
+\t\t\tModule: <a href=\"index.php?module=$module\">$module</a><br/>
+\t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=$module&amp;id=$contentid</i>
+\t\t</p>\n");
 		$i++;
 		array_shift($res);
 	}
