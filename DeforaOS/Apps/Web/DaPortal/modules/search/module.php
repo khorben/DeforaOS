@@ -67,7 +67,6 @@ function search_default()
 		$title = $res[0]["title"];
 		print("\t\t<p>
 \t\t\t$i. <a href=\"index.php?module=$module&amp;id=$contentid\">$title</a><br/>
-\t\t\tModule: <a href=\"index.php?module=$module\">$module</a><br/>
 \t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=$module&amp;id=$contentid</i>
 \t\t</p>\n");
 		$i++;
