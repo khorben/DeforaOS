@@ -133,6 +133,7 @@ About the graphical toolkit for applications, I insist that only one library wil
   * sessions manager/init => itself a session? => can log on it and set it up?
   * system sessions/engines (services)
   * user sessions
+- inter process communications
 - login process
   * one can even login on a system service as if would join an existing session, and the setup and monitoring interfaces appear (make this possible generally from a user's session, and you've got the control panel)
 -->
