@@ -7,11 +7,11 @@
 		</div>
 
 		<div class="container">
-
-		<div class="logo"></div>
-		<div class="blocks">
+			<div class="logo"></div>
+			<div class="content">
+				<div class="menu">
 BLOCK: pages
 BLOCK: user
 BLOCK: news
-		</div>
-		<div class="content">
+				</div>
+				<div class="main">
