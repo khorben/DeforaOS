@@ -18,14 +18,14 @@ Token * token_new(TokenCode code, char * string)
 {
 	Token * token;
 
-#ifdef DEBUG
-	fprintf(stderr, "token_new(%d, \"%s\")\n", code, string);
-#endif
 	if((token = malloc(sizeof(Token))) == NULL)
 	{
 		perror("malloc");
 		return NULL;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "token_new(%d, \"%s\"): %p\n", code, string, token);
+#endif
 	if((token->string = strdup(string)) == NULL)
 	{
 		perror("strdup");
@@ -44,6 +44,13 @@ void token_delete(Token * token)
 	free(token);
 }
 
+
+/* useful */
+void token_debug(Token * token)
+{
+	fprintf(stderr, "Token code: %d, string: %s, next: %p\n",
+			token->code, token->string, token->next);
+}
 
 void token_distinct(Token * token)
 {
