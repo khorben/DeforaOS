@@ -27,6 +27,8 @@ define(TREE_LEVEL, 1);
 
 function list_dirs($path)
 {
+	global $hidden;
+
 	if(($dir = @opendir($path)) == FALSE)
 		return FALSE;
 	$dirs = array();
@@ -34,6 +36,8 @@ function list_dirs($path)
 	readdir($dir);
 	while(($de = readdir($dir)))
 	{
+		if(!$hidden && $de[0] == '.')
+			continue;
 		if(!@is_dir($path.'/'.$de))
 			continue;
 		$dirs[] = $de;

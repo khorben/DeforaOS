@@ -25,15 +25,22 @@ require('common.php');
 
 function explorer_download($filename)
 {
-	global $root;
+	global $root, $hidden;
 
 	$filename = $root.'/'.$filename;
-	if(!is_readable($filename) | is_dir($filename))
+	if(!is_readable($filename) || is_dir($filename))
 		return include('404.tpl');
+	if(!$hidden)
+	{
+		$f = basename($filename);
+		if($f[0] == '.')
+			return include('403.tpl');
+	}
 	$mime = mime_from_ext($filename);
 	header('Content-Type: '.$mime);
 	header('Content-Length: '.filesize($filename));
-	header('Content-Disposition: attachment; filename="'.html_safe(basename($filename)).'"');
+	header('Content-Disposition: attachment; filename="'
+			.html_safe(basename($filename)).'"');
 	readfile($filename);
 }
 
@@ -84,16 +91,23 @@ function _sort_date($a, $b)
 
 function explorer_folder($folder, $sort)
 {
-	global $root, $path;
-	
+	global $root, $hidden, $path;
+
 	$path = $folder;
 	if(($dir = opendir($root.'/'.$folder)) == FALSE)
 		return;
 	readdir($dir);
 	readdir($dir);
 	$files = array();
-	while(($de = readdir($dir)))
-		$files[] = $de;
+	if(!$hidden)
+		while($de = readdir($dir))
+		{
+			if($de[0] != '.')
+				$files[] = $de;
+		}
+	else
+		while($de = readdir($dir))
+			$files[] = $de;
 	switch($sort)
 	{
 		case 'owner':

@@ -22,5 +22,7 @@
 //file manager's root directory
 $root = '/';
 
+//enable hidden files
+$hidden = 1;
 
 ?>
