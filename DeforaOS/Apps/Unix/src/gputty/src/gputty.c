@@ -71,6 +71,7 @@ GPuTTY * gputty_new(void)
 	gputty->sn_hbox = gtk_hbox_new(FALSE, 0);
 	/* sessions: list */
 	gputty->sn_vbox2 = gtk_vbox_new(FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_vbox2), 2);
 	gputty->sn_esessions = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_esessions, FALSE, FALSE, 0);
 	gputty->sn_clsessions = gtk_clist_new(1);
@@ -156,9 +157,16 @@ void gputty_connect(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	pid_t pid;
+	char * hostname;
+	char port[6];
 	char * useropt = NULL;
 	char * username = NULL;
 
+	hostname = gtk_entry_get_text(g->hn_ehostname);
+	if(snprintf(port, 6, "%d", gtk_spin_button_get_value_as_int(g->hn_sport)) >= 6)
+		port[5] = '\0';
+	if(hostname[0] == '\0')
+		return; /* FIXME warn user */
 	if((pid = fork()) == -1)
 	{
 		warn("fork");
@@ -170,7 +178,8 @@ void gputty_connect(GtkWidget * widget, gpointer data)
 		if(username[0] != '\0')
 			useropt = "-l";
 		execlp("wterm", "wterm", "-e",
-				"ssh", gtk_entry_get_text(g->hn_ehostname),
+				"ssh", hostname,
+				"-p", port,
 				useropt, username,
 				NULL);
 		err(2, "exec");
