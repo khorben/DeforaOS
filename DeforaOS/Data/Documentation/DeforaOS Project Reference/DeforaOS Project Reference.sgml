@@ -79,6 +79,9 @@ Today I think my ideal operating system should be open source, micro-kernel base
 - application engine
 - application interfaces
 - messages
+- toolkit programming interface
+  * same in text-mode and graphical mode if possible
+  * then, let applications check which mode is available ($DISPLAY, istty(), ?) and load the appropriate module for rendering
 -->
 			<para>
 			</para>
@@ -98,14 +101,35 @@ Today I think my ideal operating system should be open source, micro-kernel base
 <chapter>
 	<title>Detailed design</title>
 <!--
-- filesystem
+- filesystem: keep what's good in UNIX, present it in a friendlier way
 - sessions
+  * sessions manager/init => itself a session? => can log on it and set it up?
+  * system sessions (services)
+  * user sessions
 - login process
+  * one can even login on a system service as if would join an existing session, and the setup and monitoring interfaces appear (make this possible generally from a user's session, and you've got the control panel)
 -->
 </chapter>
 
 <chapter>
 	<title>Implementation process</title>
+<!--
+- determine task groups
+- global tasks: designing applications programming interfaces
+- cooperation tasks: writing documentations
+- preliminary tasks groups attempt:
+  * low-level: assembler, compiler, micro-kernel, libc
+  * system: essential applications engines and interfaces, text mode toolkit
+  * applications: end user applications engines
+    . file browser
+    . web browser
+    . mail reader
+    . messaging client
+  * graphics: graphical server, graphical mode toolkit
+  * servers: network services engines and interfaces
+
+  * posix compliant environment: unix apps
+-->
 </chapter>
 
 </book>
