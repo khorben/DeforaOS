@@ -88,6 +88,9 @@ kill.o: kill.c
 link.o: link.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c link.c
 
+ln.o: ln.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c ln.c
+
 logname.o: logname.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c logname.c
 
