@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
 	/* parse command line arguments */
 	if(argc != 2 && argc != 3)
 	{
-		fprintf(stderr, "Usage: basename string [suffix]\n");
+		fprintf(stderr, "%s", "Usage: basename string [suffix]\n");
 		return 1;
 	}
 

@@ -256,14 +256,14 @@ int id(char * user, int flag, int flagn, int flagr)
 
 
 /* usage */
-static int usage()
+static int usage(void)
 {
-	fprintf(stderr, "Usage: id [-Ggu][-nr] [user]\n\
-  -G    \n\
-  -g    \n\
-  -u    \n\
-  -n    \n\
-  -r    \n");
+	fprintf(stderr, "%s", "Usage: id [-Ggu][-nr] [user]\n\
+  -G    output all different group IDs\n\
+  -g    output only the effective group ID\n\
+  -u    output only the effective user ID\n\
+  -n    output the name as a string\n\
+  -r    output the real ID instead of the effective ID\n");
 	return 1;
 }
 

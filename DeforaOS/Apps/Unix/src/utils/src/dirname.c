@@ -9,15 +9,13 @@
 /* main */
 int main(int argc, char * argv[])
 {
-	/* parse command line arguments */
+	/* check for errors */
 	if(argc != 2)
 	{
-		fprintf(stderr, "Usage: dirname string\n");
+		fprintf(stderr, "%s", "Usage: dirname string\n");
 		return 1;
 	}
-
 	/* dirname */
 	printf("%s\n", dirname(argv[1]));
-
 	return 0;
 }
