@@ -250,6 +250,7 @@ function news_uninstall()
 
 	if($administrator != 1)
 		return 0;
+	sql_table_drop("daportal_news");
 	return 0;
 }
 
