@@ -216,16 +216,15 @@ static void _id(State * state)
 static void _program_argument(State * state);
 static void _program_name(State * state);
 static void _program(State * state)
-	/* program_name [ space ] { program_argument space } */
+	/* program_name { [ space [ program_argument ] ] } */
 {
 	state->service.program = NULL;
 	_program_name(state);
-	if(token_in_set(state->token, TS_SPACE))
-		_space(state);
-	while(token_in_set(state->token, TS_PROGRAM_ARGUMENT))
+	while(token_in_set(state->token, TS_SPACE))
 	{
-		_program_argument(state);
 		_space(state);
+		if(token_in_set(state->token, TS_PROGRAM_ARGUMENT))
+			_program_argument(state);
 	}
 }
 
