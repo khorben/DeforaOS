@@ -23,14 +23,25 @@
 
 /* chgrp */
 static int _chgrp_grp_error(char * group);
-static int _chgrp_gid(int opts, gid_t gid, int argc, char * argv[]);
+static int _chgrp_do_recursive(int opts, gid_t gid, char * file);
+static int _chgrp_do(int opts, gid_t gid, char * file);
 static int _chgrp(int opts, char * group, int argc, char * argv[])
 {
 	struct group * grp;
+	int res = 0;
+	int i;
 
 	if((grp = getgrnam(group)) == NULL)
 		return _chgrp_grp_error(group);
-	return _chgrp_gid(opts, grp->gr_gid, argc, argv);
+	if((opts & OPT_R) == OPT_R)
+	{
+		for(i = 0; i < argc; i++)
+			res +=_chgrp_do_recursive(opts, grp->gr_gid, argv[i]);
+		return res;
+	}
+	for(i = 0; i < argc; i++)
+		res +=_chgrp_do(opts, grp->gr_gid, argv[i]);
+	return res;
 }
 
 static int _chgrp_grp_error(char * group)
@@ -41,24 +52,6 @@ static int _chgrp_grp_error(char * group)
 	else
 		perror(group);
 	return 2;
-}
-
-static int _chgrp_do_recursive(int opts, gid_t gid, char * file);
-static int _chgrp_do(int opts, gid_t gid, char * file);
-static int _chgrp_gid(int opts, gid_t gid, int argc, char * argv[])
-{
-	int res = 0;
-	int i;
-
-	if((opts & OPT_R) == OPT_R)
-	{
-		for(i = 0; i < argc; i++)
-			res +=_chgrp_do_recursive(opts, gid, argv[i]);
-		return res;
-	}
-	for(i = 0; i < argc; i++)
-		res +=_chgrp_do(opts, gid, argv[i]);
-	return res;
 }
 
 static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file);
