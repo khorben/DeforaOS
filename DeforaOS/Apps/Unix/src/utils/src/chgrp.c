@@ -113,7 +113,10 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 		}
 		s = p;
 		strcat(s, de->d_name);
+#ifdef DEBUG
 		fprintf(stderr, "%s\n", s);
+#endif
+		_chgrp_do(opts, gid, s);
 		_chgrp_do_recursive(opts, gid, s);
 		s[len-1] = '\0';
 	}
@@ -121,60 +124,6 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 	closedir(dir);
 	return 0;
 }
-
-/*{
-	struct stat st;
-	DIR * dir;
-	struct dirent * de;
-	unsigned int len;
-	char * s;
-	char * p;
-
-	fprintf(stderr, "_chgrp_do_recursive(%d, %d, %s)\n", opts, gid, file);
-	if(stat(file, &st) != 0)
-	{
-		fprintf(stderr, "%s", "chgrp: ");
-		perror(file);
-		return 1;
-	}
-	if(!S_ISLNK(st.st_mode) && S_ISDIR(st.st_mode))
-	{
-		if((dir = opendir(file)) == NULL)
-		{
-			fprintf(stderr, "%s", "chgrp: ");
-			perror(file);
-			return 1;
-		}
-		len = strlen(file) + 2;
-		if((s = malloc(len)) == NULL)
-		{
-			fprintf(stderr, "%s", "chgrp: ");
-			perror("alloc");
-			return 1;
-		}
-		sprintf(s, "%s/", file);
-		fprintf(stderr, "coucou %s\n", s);
-		readdir(dir);
-		readdir(dir);
-		while((de = readdir(dir)) != NULL)
-		{
-			if((p = realloc(s, len + strlen(de->d_name))) == NULL)
-			{
-				fprintf(stderr, "%s", "chgrp: ");
-				perror("alloc");
-				continue;
-			}
-			s = p;
-			s[len-1] = '\0';
-			strcat(s, de->d_name);
-			fprintf(stderr, "coucou2 %s\n", s);
-			_chgrp_do_recursive(opts, gid, s);
-		}
-		free(s);
-		closedir(dir);
-	}
-	return 0;
-}*/
 
 static int _chgrp_do(int opts, gid_t gid, char * file)
 {
