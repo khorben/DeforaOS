@@ -12,6 +12,7 @@ extern int optind;
 
 
 /* time */
+static int _time_error(char * error, int ret);
 static int _time(int argc, char * argv[])
 {
 	pid_t pid;
@@ -20,49 +21,38 @@ static int _time(int argc, char * argv[])
 	clock_t cbefore, cafter;
 
 	if((cbefore = times(NULL)) == -1)
-	{
-		fprintf(stderr, "%s", "time: ");
-		perror("times");
-		return 2;
-	}
+		return _time_error("times", 2);
 	if((pid = fork()) == -1)
-	{
-		fprintf(stderr, "%s", "time: ");
-		perror("fork");
-		return 2;
-	}
+		return _time_error("fork", 2);
 	if(pid == 0)
 	{
 		execvp(argv[0], argv);
-		fprintf(stderr, "%s", "time: ");
-		perror(argv[0]);
 		if(errno == ENOENT)
-			return 127;
-		return 126;
+			return _time_error(argv[0], 127);
+		return _time_error(argv[0], 126);
 	}
 	for(;;)
 	{
 		if(waitpid(pid, &status, 0) == -1)
-		{
-			fprintf(stderr, "%s", "time: ");
-			perror("waitpid");
-			return 2;
-		}
+			return _time_error("waitpid", 2);
 		if(WIFEXITED(status))
 			break;
 	}
 	if((cafter = times(&tmsbuf)) == -1)
-	{
-		fprintf(stderr, "%s", "time: ");
-		perror("times");
-		return 2;
-	}
+		return _time_error("times", 2);
 	/* FIXME */
 	fprintf(stderr, "real %ld\nuser %ld\nsys %ld\n",
 			cafter - cbefore,
 			tmsbuf.tms_utime + tmsbuf.tms_cutime,
 			tmsbuf.tms_stime + tmsbuf.tms_cstime);
 	return 0;
+}
+
+static int _time_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "time: ");
+	perror(message);
+	return ret;
 }
 
 
