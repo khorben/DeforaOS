@@ -6,7 +6,7 @@ These are the documentation notes for configure. The configure project is a
 Makefile files generator. It uses project description files to propose simple
 Makefiles. It is intended to keep generated code as simple as possible.
 
-         -------------------------------------------------
+                    ----------------------------------------
 
 
 Table of contents
@@ -21,13 +21,14 @@ I. Overview of configure
 II. Using configure
 2.1 configure usage
 2.2 Project configuration
-2.3 Migrating to configure
+2.3 Targets definition
+2.4 Migrating to configure
 
 III. Getting further
 3.1 Current caveats
 3.2 Planned improvements
 
-         -------------------------------------------------
+                    ----------------------------------------
 
 
 I. Overview of configure
@@ -60,7 +61,7 @@ Makefiles for small to big software development projects. It should be useful:
 - for developpers of some small to big projects
 - for developpers concerned by the readability and efficiency of their Makefiles
 
-         -------------------------------------------------
+                    ----------------------------------------
 
 
 II. Using configure
@@ -94,9 +95,16 @@ Recognized variables are the following:
   * ldflags: additional LDFLAGS for this target
   * sources: source files to compile
 
-2.3 Migrating to configure
+2.3 Targets definitions
+There following target types are currently supported:
+- "binary": produces binary files, linked from every object file produced with their source files.
+- "library": produces a static and a shared version of the target, linked from every object file produced with their source files, and respectively appending ".a" and ".so" extensions to the target name.
 
-         -------------------------------------------------
+2.4 Migrating to configure
+You may first create all necessary "project.conf" files with the subdirectories definitions. Then for every binary or library built, specify the adequate target along with its section.
+When migrating from automake/autoconf, the existing subdirectories are defined in the "Makefile.am" files, in the "SUBDIRS" variable. The binary targets are defined in the same file, as the "bin_PROGRAMS" variable, each declined to "program_SOURCES" for their respective source files.
+
+                    ----------------------------------------
 
 
 III. Getting further
