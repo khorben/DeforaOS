@@ -62,6 +62,7 @@ static int _pwd(pwd_flag pf)
 			perror("getcwd");
 			return 2;
 		}
+		buf[255] = '\0';
 		pwd = buf;
 	}
 	printf("%s\n", pwd);
