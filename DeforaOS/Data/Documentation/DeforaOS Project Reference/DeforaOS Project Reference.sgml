@@ -33,6 +33,9 @@ It is also certainly worth thinking about a technical re-design of the UNIX syst
 	<para>
 Today I think my ideal operating system should be open source, micro-kernel based, usable on pentium-class computers, coherent, connected, and distributed. This paper explains in detail how I would design and implement it.
 	</para>
+	<para>
+Even though I am a fervent supporter of free software, this project is important to me, and also carries some convictions I have about software development (which I explain in this document). Consequently, I will remain the project leader, and will be the only responsible person for decisions taken in the project (of course I'll try to be fair).
+	</para>
 </preface>
 
 <chapter>
@@ -162,19 +165,31 @@ FIXME: depends if they're already copyrighted or not, etc, else not decided yet
 		<sect2>
 			<title>Fundamental liberties</title>
 			<para>
-FIXME: free software definition, licenses choices, ...
+The philosophy carried with the project licenses is to give as much freedom as possible to its users. They are basically allowed to use, distribute, and study without permission the concerned software. Two important points are mentioned though:
+			</para>
+			<itemizedlist>
+				<listitem><para>modifications should be submitted to the current authors of the project, so that they can benefit to everyone</para></listitem>
+				<listitem><para>consequently, forks of concerned software, contained in this project, should not be started (so that development efforts can be shared as much as possible)</para></listitem>
+			</itemizedlist>
+			<para>
+These points are not absolutely mandatory because I am convinced that this development model is the best, even if as a software author I can't guarantee that I'll get rewarded for my work. In case of abuse of concerned software, I will certainly change this project license terms.
 			</para>
 		</sect2>
 		<sect2>
 			<title>Other considerations</title>
-			<para>
-FIXME:
-- advantages: interoperability, security, ...
-- issues: coherence (in community development)
 <!--
-- coherence => developped by a small and tight team
 - open => remain transparent, accept external contributions
 -->
+			<para>
+Of course I am not supporting free software without a reason. There are even many actually, which I can sum up here:
+			</para>
+			<itemizedlist>
+				<listitem><para>interoperability: availability of the source code, transparency of the development process, and whenever possible strict adherence to the standards guarantee the users that they will be able to work even in heterogeneous environments.</para></listitem>
+				<listitem><para>security: availability of the source code guarantees that the software is exempt of intentional malicious code, and is possibly being used or auditable by competent persons.</para></listitem>
+				<listitem><para>perennity: availability of the source code guarantees that the software can be supported by third-party organisms at any time, and in a fair competition environment.</para></listitem>
+			</itemizedlist>
+			<para>
+Not everything is perfect though, there is one point I sometimes have to deal with, the global coherence of open-source projects. Of course they are not initially designed for a single platform, and it's the duty of software distributors to adapt them to their own environment. That's where I think there is a place for big improvement: I feel the need of a complete platform project: fully open source, which it would develop itself. And even then, to remain coherent this certainly requires a tight team, and smaller the better.
 			</para>
 		</sect2>
 	</sect1>
@@ -752,7 +767,7 @@ An IRC channel has been registered on the freenode network: #DeforaOS. This chan
 			<sect3>
 				<title>Programming interfaces</title>
 				<para>
-FIXME
+The common APIs have to be decided and accepted by the project members, at the appreciation of the project leader. They are then presented in this reference paper.
 				</para>
 			</sect3>
 		</sect2>
