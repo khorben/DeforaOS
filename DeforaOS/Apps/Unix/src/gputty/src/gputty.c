@@ -22,6 +22,7 @@ GPuTTY * gputty_new(void)
 	/* widgets */
 	gputty->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(gputty->window), "GPuTTY configuration");
+	gtk_container_set_border_width(GTK_CONTAINER(gputty->window), 2);
 	g_signal_connect(G_OBJECT(gputty->window), "delete_event",
 			G_CALLBACK(gputty_quitx), gputty);
 	gputty->vbox = gtk_vbox_new(FALSE, 0);
@@ -29,11 +30,12 @@ GPuTTY * gputty_new(void)
 	/* hostname */
 	gputty->hn_frame = gtk_frame_new("Specify your connection");
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->hn_frame), 2);
-	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->hn_frame, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->hn_frame, FALSE, FALSE, 0);
 	gputty->hn_vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->hn_vbox), 2);
 	gtk_container_add(GTK_CONTAINER(gputty->hn_frame), gputty->hn_vbox);
 	gputty->hn_hbox = gtk_hbox_new(FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(gputty->hn_hbox), 2);
 	gtk_box_pack_start(GTK_BOX(gputty->hn_vbox), gputty->hn_hbox, TRUE, TRUE, 0);
 	/* hostname: hostname */
 	gputty->hn_vbox1 = gtk_vbox_new(FALSE, 0);
@@ -60,39 +62,45 @@ GPuTTY * gputty_new(void)
 	/* sessions */
 	gputty->sn_frame = gtk_frame_new("Manage sessions");
 	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_frame), 2);
-	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->sn_frame, TRUE, TRUE, 0);
-	gputty->sn_hbox = gtk_hbox_new(TRUE, 0);
-	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_hbox), 2);
-	gtk_container_add(GTK_CONTAINER(gputty->sn_frame), gputty->sn_hbox);
-	gputty->sn_vbox1 = gtk_vbox_new(TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(gputty->sn_hbox), gputty->sn_vbox1, TRUE, TRUE, 0);
+	gputty->sn_vbox1 = gtk_vbox_new(FALSE, 0);
 	gputty->sn_lsessions = gtk_label_new("Saved sessions");
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox1), gputty->sn_lsessions, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox1), gputty->sn_lsessions, FALSE, FALSE, 0);
+	gputty->sn_hbox = gtk_hbox_new(FALSE, 0);
+	/* sessions: list */
+	gputty->sn_vbox2 = gtk_vbox_new(FALSE, 0);
 	gputty->sn_esessions = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox1), gputty->sn_esessions, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_esessions, TRUE, FALSE, 0);
 	gputty->sn_clsessions = gtk_clist_new(1);
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox1), gputty->sn_clsessions, TRUE, TRUE, 0);
-	gputty->sn_vbox2 = gtk_vbox_new(TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_clsessions, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(gputty->sn_hbox), gputty->sn_vbox2, TRUE, TRUE, 0);
+	/* sessions: buttons */
+	gputty->sn_vbox3 = gtk_vbox_new(FALSE, 0);
 	gputty->sn_load = gtk_button_new_with_label("Load");
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_load, TRUE, TRUE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_load), 2);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_load, TRUE, FALSE, 0);
 	gputty->sn_save = gtk_button_new_with_label("Save");
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_save, TRUE, TRUE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_save), 2);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_save, TRUE, FALSE, 0);
 	gputty->sn_delete = gtk_button_new_with_label("Delete");
-	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox2), gputty->sn_delete, TRUE, TRUE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(gputty->sn_delete), 2);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox3), gputty->sn_delete, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_hbox), gputty->sn_vbox3, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->sn_vbox1), gputty->sn_hbox, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(gputty->sn_frame), gputty->sn_vbox1);
+	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->sn_frame, TRUE, TRUE, 0);
 	/* actions */
 	gputty->ac_hbox = gtk_hbox_new(FALSE, 0);
 	gputty->ac_about = gtk_button_new_with_label("About");
-	gtk_box_pack_start(GTK_BOX(gputty->ac_hbox), gputty->ac_about, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->ac_hbox), gputty->ac_about, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(gputty->ac_about), "clicked",
 			G_CALLBACK(gputty_about), gputty);
 	gputty->ac_connect = gtk_button_new_with_label("Connect");
-	gtk_box_pack_end(GTK_BOX(gputty->ac_hbox), gputty->ac_connect, TRUE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(gputty->ac_hbox), gputty->ac_connect, FALSE, FALSE, 0);
 	gputty->ac_quit = gtk_button_new_with_label("Quit");
-	gtk_box_pack_end(GTK_BOX(gputty->ac_hbox), gputty->ac_quit, TRUE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(gputty->ac_hbox), gputty->ac_quit, FALSE, FALSE, 2);
 	g_signal_connect(G_OBJECT(gputty->ac_quit), "clicked",
 			G_CALLBACK(gputty_quit), gputty);
-	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->ac_hbox, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(gputty->vbox), gputty->ac_hbox, FALSE, FALSE, 0);
 	/* about */
 	gputty->ab_window = NULL;
 	gtk_widget_show_all(gputty->window);

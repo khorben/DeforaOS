@@ -28,12 +28,13 @@ typedef struct _GPuTTY {
 	GtkWidget * hn_eusername;
 	/* sessions */
 	GtkWidget * sn_frame;
-	GtkWidget * sn_hbox;
 	GtkWidget * sn_vbox1;
 	GtkWidget * sn_lsessions;
+	GtkWidget * sn_hbox;
+	GtkWidget * sn_vbox2;
 	GtkWidget * sn_esessions;
 	GtkWidget * sn_clsessions;
-	GtkWidget * sn_vbox2;
+	GtkWidget * sn_vbox3;
 	GtkWidget * sn_load;
 	GtkWidget * sn_save;
 	GtkWidget * sn_delete;
