@@ -1,0 +1,14 @@
+Makepasswd generates (pseudo-)random passwords of a desired length.
+It is able to generate its crypted equivalent.
+
+
+Newest versions can be found at:
+http://www.defora.org/projects/makepasswd
+
+
+It just needs GCC, make and your glibc headers to compile (I'm using linux, glibc 2.2.5 and gcc 3.2.1).
+
+As the program now uses the GNU libc "crypt()" call, it may not compile anymore on non-GNU systems. Feedback about this would be greatly appreciated.
+
+
+Feel free to send comments, suggestions to the author (see the AUTHORS file).
