@@ -143,18 +143,36 @@ function user_default()
 		print("\t\t<b>Warning:</b> could not fetch sessions.<br/>\n");
 	else
 	{
-		print("\t\t<table cellspacing=\"0\">
-\t\t\t<tr>
-\t\t\t\t<th>Session ID</th><th>IP</th><th>Expiration</th>
-\t\t\t</tr>\n");
+		print("\t\t<form action=\"index.php\" method=\"post\">
+<div class=\"headline\">
+\t<input type=\"submit\" name=\"type\" value=\"Delete\"/>
+\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"session\"/>
+</div>
+<table cellspacing=\"0\">
+\t<tr>
+\t\t<th></th><th>Session ID</th><th>IP</th><th>Expiration</th>
+\t</tr>\n");
 		while(sizeof($res) >= 1)
 		{
-			print("\t\t\t<tr>
-\t\t\t\t<td>".$res[0]["sessionid"]."</td><td>".$res[0]["ip"]."</td><td>".$res[0]["expires"]."</td>
-\t\t\t</tr>\n");
+			global $sessionid;
+			static $chk = 0;
+			$boldi = '';
+			$boldo = '';
+			if($sessionid == $res[0]["sessionid"])
+			{
+				$boldi = '<b>';
+				$boldo = '</b>';
+			}
+			print("\t<tr>
+\t\t<td><input type=\"checkbox\" name=\"id[".($chk++)."]\" value=\"".$res[0]["sessionid"]."\"/></td><td>");
+			print($boldi.$res[0]["sessionid"].$boldo);
+			print("</td><td>$boldi".$res[0]["ip"]."$boldo</td><td>$boldi".$res[0]["expires"]."$boldo</td>
+\t</tr>\n");
 			array_shift($res);
 		}
-		print("\t\t</table>\n");
+		print("</table>
+\t\t</form>\n");
 	}
 	print("\t\t<form method=\"post\" action=\"index.php\">
 \t\t\t<div>
