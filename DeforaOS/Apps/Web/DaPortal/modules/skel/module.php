@@ -42,6 +42,16 @@ function skel_default()
 }
 
 
+function skel_dump()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	return 0;
+}
+
+
 function skel_install()
 {
 	global $administrator;
@@ -66,6 +76,8 @@ switch($action)
 {
 	case "admin":
 		return skel_admin();
+	case "dump":
+		return skel_dump();
 	case "install":
 		return skel_install();
 	case "uninstall":
