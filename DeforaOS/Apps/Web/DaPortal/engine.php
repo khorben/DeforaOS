@@ -41,18 +41,24 @@ require("system/login.php");
 function engine_module($module, $action)
 {
 	require_once("system/module.php");
-	if(!ereg("^[a-z]*$", $module))
+	$moduleid = 0;
+	if(!ereg("^[a-z]*$", $module)
+			|| ($moduleid = module_id($module, 1)) == 0)
 	{
 		print("\t\t<h1>Invalid module</h1>
 \t</body>
 </html>\n");
 		return 1;
 	}
-	//FIXME layout
 	require_once("system/page.php");
-	page_include("top");
+	$layout = sql_query("select top, bottom from daportal_layouts where moduleid='$moduleid' and action='$action';");
+	if(sizeof($layout) == 0)
+		$layout = sql_query("select top, bottom from daportal_layouts where moduleid='$moduleid' and action='';");
+	if(sizeof($layout) == 1 && $layout[0]["top"] != "")
+		page_include($layout[0]["top"]);
 	$res = module_include($module, $action);
-	page_include("bottom");
+	if(sizeof($layout) == 1 && $layout[0]["bottom"] != "")
+		page_include($layout[0]["bottom"]);
 	print("\t</body>
 </html>\n");
 	return $res;
