@@ -82,6 +82,13 @@ function chat_dump()
 
 	if($administrator != 1)
 		return 0;
+	if(($res = sql_query("select author, timestamp, text from daportal_chat;")) == NULL)
+		return 0;
+	while(sizeof($res) >= 1)
+	{
+		print("insert into daportal_chat (author, timestamp, text) values ('".$res[0]["author"]."', '".$res[0]["timestamp"]."', '".$res[0]["text"]."');\n");
+		array_shift($res);
+	}
 	return 0;
 }
 
