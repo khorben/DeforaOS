@@ -99,6 +99,16 @@ function admin_default()
 }
 
 
+function admin_dump()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	return 0;
+}
+
+
 function admin_install()
 {
 	global $administrator;
@@ -123,6 +133,8 @@ switch($action)
 {
 	case "admin":
 		return admin_admin();
+	case "dump":
+		return admin_dump();
 	case "install":
 		return admin_install();
 	case "uninstall":

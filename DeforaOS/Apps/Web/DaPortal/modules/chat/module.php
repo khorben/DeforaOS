@@ -76,6 +76,16 @@ function chat_default()
 }
 
 
+function chat_dump()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	return 0;
+}
+
+
 function chat_install()
 {
 	global $administrator;
@@ -121,6 +131,8 @@ switch($action)
 {
 	case "admin":
 		return chat_admin();
+	case "dump":
+		return char_dump();
 	case "install":
 		return chat_install();
 	case "send":
