@@ -89,7 +89,7 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "Usage: ln [-fs] source_file target_file\n\
         ln [-fs] source_file ... target_dir\n\
@@ -117,10 +117,10 @@ int main(int argc, char * argv[])
 				flgs = LT_SOFT;
 				break;
 			case '?':
-				return usage();
+				return _usage();
 		}
 	}
 	if(argc - optind <= 1)
-		return usage();
+		return _usage();
 	return _ln(flgf, flgs, argc - optind, &argv[optind]);
 }
