@@ -52,8 +52,6 @@ Token * scanner_next(Scanner * scanner)
 	if(scanner->c == '\n')
 		scanner->c = EOF;
 	return NULL;
-/*	if(scanner->c == '\0' || scanner->c == '\r' || scanner->c == '\n')
-		return NULL;*/
 }
 
 static void _scanner_next_char(Scanner * scanner)
@@ -107,7 +105,7 @@ static void _read_comment(Scanner * scanner)
 
 static Token * _read_word(Scanner * scanner)
 {
-	char eow[] = " \r\n;";
+	char eow[] = " \r\n&|;<>";
 	char * str = NULL;
 	char * p;
 	int len = 1;
