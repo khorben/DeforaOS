@@ -2,6 +2,8 @@
 
 
 
+#include <stdlib.h>
+#include <string.h>
 #include "inetd.h"
 #include "service.h"
 
@@ -15,7 +17,7 @@ Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 		return NULL;
 	s->name = strdup(name);
 	s->socket = socket;
-	s->protocol = proto;
+	s->proto = proto;
 	s->wait = wait;
 	s->id = id;
 	/* FIXME */
@@ -24,18 +26,18 @@ Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 }
 
 
-void service_delete(Service * service)
+void service_delete(Service * s)
 {
-	char * p;
+	char ** p;
 
-	free(name);
-	if(program != NULL)
+	free(s->name);
+	if(s->program != NULL)
 	{
-		free(program);
-		for(p = *program; p != NULL; p++)
-			free(p);
+		for(p = s->program; *p != NULL; p++)
+			free(*p);
+		free(s->program);
 	}
-	free(service);
+	free(s);
 }
 
 
@@ -49,6 +51,5 @@ void service_exec(Service * s, int fd, struct sockaddr_in * addr, int addrlen)
 		return;
 	}
 	execv(s->name, s->program);
-	inetd_error(s->name);
-	exit(2);
+	exit(inetd_error(s->name, 2));
 }
