@@ -2,7 +2,7 @@
 make distclean
 
 #configure
-./configure --host=$HOST --prefix=/usr &&
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr &&
 
 #build
 make &&
