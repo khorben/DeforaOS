@@ -144,21 +144,20 @@ function user_install()
 
 function user_login()
 {
-	$username = $_POST['username'];
+	$username = $_POST["username"];
 	if(!eregi("^[a-z]+$", $username))
 		exit(1);
-	$password = md5($_POST['password']);
-	$res = sql_query("select userid, username from daportal_users where username='".$_POST['username']."' and password='".$password."';");
+	$password = md5($_POST["password"]);
+	if(($res = sql_query("select userid, username from daportal_users where username='".$_POST["username"]."' and password='".$password."';")) == FALSE)
+		return 1;
 	if(sizeof($res) != 1)
 		return 1;
 	$userid = $res[0]["userid"];
 	$username = $res[0]["username"];
 	global $sessionid;
-	$date = getdate();
-	$year = $date["year"] + 1;
-	$month = $date["mon"];
-	$day = $date["mday"];
-	sql_query("insert into daportal_sessions (sessionid, userid, ip, expires) values ('$sessionid', '$userid', '".$_SERVER['REMOTE_ADDR']."', '$year-$month-$day');\n");
+	$date = date("Y-m-d", time() + 31536000);
+	$query = "insert into daportal_sessions (sessionid, userid, ip, expires) values ('$sessionid', '$userid', '".$_SERVER['REMOTE_ADDR']."', '$date');\n";
+	sql_query($query);
 	header("Location: index.php");
 	return 0;
 }
