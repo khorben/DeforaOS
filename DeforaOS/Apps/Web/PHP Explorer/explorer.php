@@ -94,7 +94,7 @@ function _sort_date($a, $b)
 
 	$stata = lstat($root.'/'.$path.'/'.$a);
 	$statb = lstat($root.'/'.$path.'/'.$b);
-	return $stata['date'] < $statb['date'];
+	return $stata['mtime'] < $statb['mtime'];
 }
 
 function explorer_folder($folder, $sort, $reverse)
