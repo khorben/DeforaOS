@@ -1,4 +1,4 @@
-SUBDIRS	=
+SUBDIRS	= FSProxy
 
 
 all clean distclean:
