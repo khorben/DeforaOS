@@ -116,15 +116,15 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox2, TRUE, TRUE, 0);
 	/* sessions: buttons */
 	g->sn_vbox3 = gtk_vbox_new(FALSE, 0);
-	g->sn_load = gtk_button_new_with_label("Load");
+	g->sn_load = gtk_button_new_from_stock(GTK_STOCK_OPEN);
 	g_signal_connect(G_OBJECT(g->sn_load), "clicked", G_CALLBACK(gputty_load), g);
 	gtk_container_set_border_width(GTK_CONTAINER(g->sn_load), 2);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_load, FALSE, FALSE, 0);
-	g->sn_save = gtk_button_new_with_label("Save");
+	g->sn_save = gtk_button_new_from_stock(GTK_STOCK_ADD);
 	g_signal_connect(G_OBJECT(g->sn_save), "clicked", G_CALLBACK(gputty_save), g);
 	gtk_container_set_border_width(GTK_CONTAINER(g->sn_save), 2);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_save, FALSE, FALSE, 0);
-	g->sn_delete = gtk_button_new_with_label("Delete");
+	g->sn_delete = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
 	gtk_container_set_border_width(GTK_CONTAINER(g->sn_delete), 2);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_delete, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox3, FALSE, FALSE, 0);
@@ -141,7 +141,7 @@ GPuTTY * gputty_new(void)
 	g_signal_connect(G_OBJECT(g->ac_connect), "clicked",
 			G_CALLBACK(gputty_connect), g);
 	gtk_box_pack_end(GTK_BOX(g->ac_hbox), g->ac_connect, FALSE, FALSE, 0);
-	g->ac_quit = gtk_button_new_with_label("Quit");
+	g->ac_quit = gtk_button_new_from_stock(GTK_STOCK_QUIT);
 	gtk_box_pack_end(GTK_BOX(g->ac_hbox), g->ac_quit, FALSE, FALSE, 2);
 	g_signal_connect(G_OBJECT(g->ac_quit), "clicked",
 			G_CALLBACK(gputty_quit), g);
@@ -187,7 +187,7 @@ This project is released under the terms of the\n\
 GNU General Public License.\n\
 Credits go to every Free Software contributors.");
 		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_label, TRUE, TRUE, 0);
-		g->ab_close = gtk_button_new_with_label("Close");
+		g->ab_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 		g_signal_connect(G_OBJECT(g->ab_close), "clicked",
 				G_CALLBACK(gputty_about_close), g);
 		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_close, FALSE, FALSE, 0);
