@@ -35,6 +35,14 @@ function display($title, $author, $date, $content)
 \t\t</div>\n");
 }
 
+function display_summary($id, $title, $author, $date)
+{
+	print("\t\t<p class=\"news_summary\">
+\t\t\t<div class=\"news_summary_title\"><a href=\"index.php?module=news&amp;id=$id\">$title</a></div>
+\t\t\t<div class=\"news_summary_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a>, on $date</div>
+\t\t</p>\n");
+}
+
 
 function news_admin()
 {
@@ -81,7 +89,7 @@ function news_admin()
 
 function news_default()
 {
-	global $username;
+	global $username, $moduleid;
 
 	print("\t\t<h1>News</h1>\n");
 	if(is_numeric($_GET["id"]))
@@ -97,8 +105,7 @@ function news_default()
 		return 0;
 	}
 	print("\t\t<div>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</div>\n");
-	if(($author = $_GET["username"]) == "")
-		$author = $username;
+	$author = $_GET["username"];
 	if($author != "" &&
 			($res = sql_query("select newsid, title from daportal_news, daportal_contents, daportal_users where username='$author' and newsid=contentid and author=userid and enable='1';")) != FALSE)
 	{
@@ -113,6 +120,34 @@ function news_default()
 			$i++;
 			array_shift($res);
 		}
+		return 0;
+	}
+	$count = -1;
+	print("\t\t<h2>News Summary</h2>\n");
+	if(($res = sql_query("select count(*) from daportal_news where enable='1';")) != FALSE)
+	{
+		$count = $res[0]["count"];
+		print("\t\t<p>There are $count news available.</p>\n");
+	}
+	$npp = 5; //news per page
+	$offset = is_numeric($_GET["offset"]) ? $_GET["offset"] * $npp : 0;
+	if(($res = sql_query("select newsid, title, username, date from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
+	{
+		$first = $offset + 1;
+		$last = $first + $npp - 1;
+		print("\t\t<h3>Listing news $first to $last</h3>\n");
+		while(sizeof($res) >= 1)
+		{
+			display_summary($res[0]["newsid"],
+					$res[0]["title"],
+					$res[0]["username"],
+					$res[0]["date"]);
+			array_shift($res);
+		}
+		print("\t\t<p>Page: <a href=\"index.php?module=news&amp;offset=0\">1</a>");
+		for($i = 1; $i < $count / $npp; $i++)
+			print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1)."</a>");
+		print("</p>\n");
 	}
 	return 0;
 }
