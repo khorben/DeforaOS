@@ -214,6 +214,23 @@ function news_install()
 }
 
 
+//PRE	$number is trusted
+function news_last($number)
+{
+	global $moduleid;
+
+	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where enable='1' and moduleid='$moduleid' and contentid=newsid and userid=author order by date desc limit $number;")) == NULL)
+		return 0;
+	while(sizeof($res) >= 1)
+	{
+		display($res[0]["title"], $res[0]["username"],
+				$res[0]["date"], $res[0]["content"]);
+		array_shift($res);
+	}
+	return 0;
+}
+
+
 function news_moderate()
 {
 	global $administrator, $moderator;
@@ -334,6 +351,12 @@ switch($action)
 		return news_dump();
 	case "install":
 		return news_install();
+	case "last":
+		return news_last(1);
+	case "last2":
+		return news_last(2);
+	case "last3":
+		return news_last(3);
 	case "moderate":
 		return news_moderate();
 	case "propose":
