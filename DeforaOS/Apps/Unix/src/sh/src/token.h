@@ -2,31 +2,21 @@
 
 
 
-#ifndef __TOKEN_H
-# define __TOKEN_H
+#ifndef _TOKEN_H
+# define _TOKEN_H
 
-#include "tokencode.h"
+# include "tokencode.h"
 
 
-/* Token */
 /* types */
 typedef struct _Token {
 	TokenCode code;
-	char * string;
-	struct _Token * next;
+	char * str;
 } Token;
 
 
-/* variables */
-extern Token * null_token;
-
-
 /* functions */
-Token * token_new(TokenCode code, char * string);
+Token * token_new(TokenCode tokencode, char * string);
 void token_delete(Token * token);
 
-/* useful */
-void token_debug(Token * token);
-void token_distinct(Token * token);
-
-#endif /* __TOKEN_H */
+#endif /* !_TOKEN_H */

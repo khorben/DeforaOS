@@ -1,7 +1,7 @@
 TARGETS	= sh
 CFLAGSF	= -W -Wall -ansi
-CFLAGS	= -g -D_GNU_SOURCE -DDEBUG
-LDFLAGSF= -lutils
+CFLAGS	= -g -DDEBUG
+LDFLAGSF=
 LDFLAGS	=
 CC	= cc
 RM	= rm -f
@@ -9,18 +9,18 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-sh: cmd.o parser.o prefs.o sh.o token.o tokencode.o tokenlist.o
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o $@ cmd.o parser.o prefs.o sh.o token.o tokencode.o tokenlist.o
+SH_OBJS	= grammar.o parser.o scanner.o sh.o token.o tokencode.o
+sh: $(SH_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o $@ $(SH_OBJS)
 
-
-cmd.o: cmd.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c cmd.c
+grammar.o: grammar.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c grammar.c
 
 parser.o: parser.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c parser.c
 
-prefs.o: prefs.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c prefs.c
+scanner.o: scanner.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c scanner.c
 
 sh.o: sh.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c sh.c
@@ -31,12 +31,9 @@ token.o: token.c
 tokencode.o: tokencode.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c tokencode.c
 
-tokenlist.o: tokenlist.c
-	$(CC) $(CFLAGSF) $(CFLAGS) -c tokenlist.c
-
 
 clean:
-	$(RM) cmd.o parser.o prefs.o sh.o token.o tokencode.o tokenlist.o
+	$(RM) $(SH_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)

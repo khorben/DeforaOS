@@ -3,100 +3,153 @@
 
 
 #include <unistd.h>
-#include <stdlib.h>
+extern int optind;
 #include <stdio.h>
-#include <libutils/libutils.h>
-#include "cmd.h"
-#include "tokenlist.h"
+#include <string.h>
 #include "parser.h"
-#include "prefs.h"
+
+
+/* types */
+typedef struct _Prefs {
+	/* FIXME optimize with enums */
+	char c;
+	char s;
+	char i;
+} Prefs;
 
 
 /* sh */
-/* sh_file */
-static int sh_file(struct prefs * p, char * filename)
+static void _sh_prompt(void);
+static int _sh_file(Prefs * prefs, char const * filename,
+		int argc, char * argv[])
 {
-	File * file;
-	char * line;
-	TokenList * tokenlist;
+	Parser * p;
+	FILE * fp = stdin;
+	int res = 0;
+	int i;
+
+#ifdef DEBUG
+	fprintf(stderr, "sh_file: %s", filename == NULL ? "stdin" : filename);
+	if(argc >= 1)
+	{
+		fprintf(stderr, "%s%d%s", ", with ", argc, " arguments");
+	}
+	fprintf(stderr, "\n");
+#endif
+	if(filename != NULL)
+		if((fp = fopen(filename, "r")) == NULL)
+		{
+			fprintf(stderr, "%s", "sh: ");
+			perror(filename);
+			return 127;
+		}
+	if((p = parser_new(fp)) == NULL)
+	{
+		if(filename != NULL)
+			fclose(fp);
+		return 1;
+	}
+	if(prefs->i)
+		_sh_prompt();
+	for(; (i = parser_parse(p)) >= 0; res = i)
+		if(prefs->i)
+			_sh_prompt();
+	parser_delete(p);
+	if(filename != NULL)
+		fclose(fp);
+	return -res;
+}
+
+static void _sh_prompt(void)
+{
+	fprintf(stderr, "$ ");
+}
+
+static int _sh_string(Prefs * prefs, char const * string,
+		int argc, char * argv[])
+{
+	Parser * p;
 	int res;
 
-	if(filename != NULL)
-		file = file_new(filename, "r");
-	else
-		file = file_new_from_pointer(stdin);
-	if(file == NULL)
-	{
-		perror("Couldn't open file");
-		return 127;
-	}
-	do
-	{
-		if(p->i)
-			cmd_prompt();
-		line = file_get_line(file);
 #ifdef DEBUG
-		fprintf(stderr, "line is: \"%s\"\n", line);
-#endif
-		tokenlist = tokenlist_new(line);
-		res = complete_command(tokenlist);
-		tokenlist_delete(tokenlist);
-		free(line);
+	fprintf(stderr, "%s%s",
+			"sh_string: ", string);
+	if(argc >= 1)
+	{
+		fprintf(stderr, "%s%s", ", name: ", argv[0]);
+		if(argc >= 2)
+		{
+			fprintf(stderr, "%s%d%s", ", with ",
+					argc-1, " arguments");
+		}
 	}
-	while(res == 0 && line != NULL);
-	file_delete(file);
+	fprintf(stderr, "\n");
+#endif
+	if((p = parser_new_from_string(string)) == NULL)
+		return 1;
+	res = parser_parse(p);
+	parser_delete(p);
 	return res;
 }
 
 
-/* sh_string */
-int sh_string(struct prefs * p, char * string, int argc, char * argv[])
-{
-	TokenList * t;
-
-#ifdef DEBUG
-	fprintf(stderr, "sh_string(p, %s, %d, argv)\n",
-			string, argc);
-#endif
-	t = tokenlist_new(string);
-	complete_command(t);
-	tokenlist_delete(t);
-	return 1;
-}
-
-
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
-	fprintf(stderr, "Usage: sh [-abCefhimnuvx][-o option]\n\
-		[command_file [argument...]]\n\
-	sh -c[-abCefhimnuvx][-o option]command_string\n\
-		[command_name [argument...]]\n\
-	sh -s[-abCefhimnuvx][-o option][argument]\n\
-  -c    read commands from the command_string operand\n\
-  -i    specify that the shell is interactive\n\
-  -s    read commands from the standard input\n");
+	fprintf(stderr, "%s", "Usage: sh    [-i] [command_file [argument...]]\n\
+       sh -c [-i] command_string [command_name [argument...]]\n\
+       sh -s [-i] [argument...]\n\
+  -c    read commands from command_string\n\
+  -s    read commands from standard input\n");
 	return 1;
 }
 
 
 /* main */
+static void _prefs_init(Prefs * prefs);
 int main(int argc, char * argv[])
 {
-	struct prefs p;
+	Prefs p;
+	int o;
 
-	if(prefs_parse(&p, argc, argv) != 0)
-		return usage();
+	_prefs_init(&p);
+	while((o = getopt(argc, argv, "csi")) != -1)
+	{
+		switch(o)
+		{
+			case 'c':
+				p.s = 0;
+				p.c = 1;
+				break;
+			case 's':
+				p.c = 0;
+				p.s = 1;
+				break;
+			case 'i':
+				p.i = 1;
+				break;
+			case '?':
+				return _usage();
+		}
+	}
 	if(p.c == 1)
 	{
 		if(optind == argc)
-			return usage();
-		return sh_string(&p, argv[optind], argc - optind, &argv[optind+1]);
+			return _usage();
+		return _sh_string(&p, argv[optind], argc - optind - 1,
+				&argv[optind+1]);
 	}
-	if(p.s == 1)
-		if(argc > optind + 1)
-			return usage();
-	if(isatty(0) && isatty(2))
-		p.i = 1;
-	return sh_file(&p, NULL);
+	if(p.s == 0 && optind != argc)
+		return _sh_file(&p, argv[optind], argc - optind - 1,
+				&argv[optind+1]);
+	p.s = 1;
+	if(optind == argc)
+		if(isatty(0) && isatty(2))
+			p.i = 1;
+	return _sh_file(&p, NULL, argc - optind, &argv[optind]);
+}
+
+static void _prefs_init(Prefs * prefs)
+{
+	memset(prefs, 0, sizeof(Prefs));
 }
