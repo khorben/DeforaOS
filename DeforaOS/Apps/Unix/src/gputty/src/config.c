@@ -58,14 +58,6 @@ int config_set(Config * config, char * section, char * variable, char * value)
 
 int config_load(Config * config, char * filename)
 {
-#ifdef DEBUG
-	config_set(config, "", "ssh", "/usr/bin/ssh");
-	config_set(config, "", "xterm", "/usr/bin/wterm");
-	config_set(config, "", "sessions", "Defora,INSIA");
-	config_set(config, "Defora", "hostname", "defora.org");
-	config_set(config, "INSIA", "hostname", "ssh.insia.org");
-	return 0;
-#endif
 	return 1;
 }
 
@@ -84,9 +76,6 @@ int config_save(Config * config, char * filename)
 
 	if((i = array_get_size(config)) == 0)
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "%u section(s) to save\n", i);
-#endif
 	if((fp = fopen(filename, "w")) == NULL)
 	{
 		fprintf(stderr, "%s", "gputty: ");
@@ -104,9 +93,6 @@ static void _save_section(Hash * h, unsigned int i, FILE * fp)
 	HashEntry * he;
 
 	he = array_get(h, i);
-#ifdef DEBUG
-	fprintf(stderr, "saving section [%s]\n", he->name);
-#endif
 	if(he->name[0] != '\0')
 		fprintf(fp, "[%s]\n", he->name);
 	else if(i != 0)
@@ -122,9 +108,6 @@ static void _save_variables(Hash * h, FILE * fp)
 	HashEntry * he;
 
 	i = array_get_size(h);
-#ifdef DEBUG
-	fprintf(stderr, "%u variable(s) to save\n", i);
-#endif
 	for(j = 0; j < i; j++)
 	{
 		he = array_get(h, j);
