@@ -85,7 +85,7 @@ function chat_install()
 
 	if($administrator != 1)
 		return 0;
-	sql_table_create("daportal_char", "(
+	sql_table_create("daportal_chat", "(
 	author integer,
 	timestamp timestamp NOT NULL DEFAULT ('now'),
 	text varchar(80),
