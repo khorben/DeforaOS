@@ -50,11 +50,19 @@ static TokenCode CS_COMPOUND_COMMAND[]	= {
 static TokenCode CS_FUNCTION_DEFINITION[] = {
 	/* FIXME */ TC_NULL
 };
+static TokenCode CS_IN[]		= {
+	TC_RW_IN,
+	TC_NULL
+};
 static TokenCode CS_LIST[]		= {
 	/* and_or */
 	TC_RW_BANG, TC_TOKEN,
 	/* separator_op */
 	TC_OP_AMPERSAND, TC_OP_SEMICOLON,
+	TC_NULL
+};
+static TokenCode CS_NAME[]		= {
+	TC_NAME,
 	TC_NULL
 };
 static TokenCode CS_NEWLINE_LIST[]	= { TC_NEWLINE, TC_NULL }; /* FIXME */
@@ -65,7 +73,11 @@ static TokenCode CS_SIMPLE_COMMAND[]	= {
 	/* cmd_prefix */
 	/* cmd_name */
 	TC_WORD,
-	TC_NULL };
+	TC_NULL
+};
+static TokenCode CS_WORDLIST[]		= {
+	TC_NULL /* FIXME */
+};
 
 
 /* functions */
@@ -306,11 +318,52 @@ static Token ** subshell(Token ** tokens)
 
 
 /* for_clause */
+static Token ** do_group(Token ** tokens);
+static Token ** name(Token ** tokens);
+static Token ** in(Token ** tokens);
+static Token ** wordlist(Token ** tokens);
+static Token ** sequential_sep(Token ** tokens);
 static Token ** for_clause(Token ** tokens)
 	/* For name linebreak do_group
 	 * | For name linebreak in sequential_sep do_group
 	 * | For name linebreak in wordlist sequential_sep do_group */
 	/* For name linebreak [in [wordlist] sequential_sep] do_group */
+{
+	/* FIXME */
+	tokens = token_scan(tokens);
+	if(!token_in_set(tokens[0], CS_NAME))
+		return NULL;
+	tokens = name(tokens);
+	tokens = linebreak(tokens);
+	if(token_in_set(tokens[0], CS_IN))
+	{
+		tokens = in(tokens);
+		if(token_in_set(tokens[0], CS_WORDLIST))
+			tokens = wordlist(tokens);
+		tokens = sequential_sep(tokens);
+	}
+	return do_group(tokens);
+}
+
+
+/* name */
+static Token ** name(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* in */
+static Token ** in(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
+}
+
+
+/* wordlist */
+static Token ** wordlist(Token ** tokens)
 {
 	/* FIXME */
 	return NULL;
@@ -347,7 +400,6 @@ static Token ** if_clause(Token ** tokens)
 
 
 /* while_clause */
-static Token ** do_group(Token ** tokens);
 static Token ** while_clause(Token ** tokens)
 	/* While compound_list do_group */
 {
@@ -608,4 +660,12 @@ static Token ** separator(Token ** tokens)
 		return newline_list(tokens);
 	tokens = separator_op(tokens);
 	return linebreak(tokens);
+}
+
+
+/* sequential_sep */
+static Token ** sequential_sep(Token ** tokens)
+{
+	/* FIXME */
+	return NULL;
 }
