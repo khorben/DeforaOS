@@ -217,18 +217,8 @@ static int _variables_misc(FILE * fp, Config * config)
 static int _targets_all(FILE * fp, Config * config);
 static int _makefile_targets(FILE * fp, Config * config)
 {
-	int res = 0;
-
-	res += _targets_all(fp, config);
-	return res;
-}
-
-static void _target_objs(FILE * fp, Config * config, char * target);
-static int _targets_all(FILE * fp, Config * config)
-{
 	char * subdirs;
 	char * targets;
-	char * cur;
 
 	fprintf(fp, "%s", "\nall:");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL
@@ -244,6 +234,18 @@ static int _targets_all(FILE * fp, Config * config)
 				"$(MAKE) -C $$i || exit $$?; done\n\n");
 	if(targets == NULL)
 		return 0;
+	return _targets_all(fp, config);
+}
+
+static void _target_objs(FILE * fp, Config * config, char * target);
+static int _targets_all(FILE * fp, Config * config)
+{
+	char * targets;
+	char * cur;
+
+	if((targets = config_get(config, "", "targets")) == NULL
+			|| *targets == '\0')
+		return;
 	for(cur = targets; *targets != '\0'; targets++)
 	{
 		if(*targets != ',')
