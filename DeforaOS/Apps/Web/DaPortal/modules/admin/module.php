@@ -18,23 +18,26 @@
 
 
 
-global $administrator;
-if($administrator != 1)
-	return 0;
-
-function admin_install()
+//check url
+if(eregi("module.php", $_SERVER["REQUEST_URI"]))
 {
-	return 0;
+	header("Location: ../../index.php");
+	exit(1);
 }
 
 
-function admin_summary()
+function admin_admin()
 {
-	print("\t<div>
-\t\t<h1>Administration</h1>
-\t\tThe administrator's page.<br/>
-\t\t<br/>
-\t\t<b>Enabled modules:</b>");
+	global $administrator;
+
+	print("\t\t<h1>Administration</h1>\n");
+	if($administrator != 1)
+	{
+		print("\t\t<div>You have to be an administrator to access this page.</div>\n");
+		return 0;
+	}
+	print("\t\t<div>
+\t\t\t<b>Enabled modules:</b>");
 	if(($res = sql_query("select modulename from daportal_modules where enable='1'")) != FALSE)
 	{
 		while(sizeof($res) >= 1)
@@ -45,8 +48,9 @@ function admin_summary()
 	}
 	else
 		print(" none.");
-	print("<br/>
-\t\t<b>Disabled modules:</b>");
+	print("\n\t\t</div>
+\t\t<div>
+\t\t\t<b>Disabled modules:</b>");
 	if(($res = sql_query("select modulename from daportal_modules where enable='0'")) != FALSE)
 	{
 		while(sizeof($res) >= 1)
@@ -58,17 +62,69 @@ function admin_summary()
 	else
 		print(" none.");
 	print("<br/>
-\t</div>");
+\t\t</div>");
+	return 0;
+}
+
+
+function admin_default()
+{
+	global $administrator;
+
+	print("\t\t<h1>Administration</h1>\n");
+	if($administrator != 1)
+	{
+		print("\t\t<div>You have to be an administrator to access this page.</div>\n");
+		return 0;
+	}
+	print("\t\t<h2>Modules administration</h2>
+\t\t<div class=\"headline\">\n");
+	if(($res = sql_query("select modulename from daportal_modules where enable='1' order by modulename asc;")) != FALSE)
+	{
+		while(sizeof($res) >= 1)
+		{
+			$modulename = $res[0]["modulename"];
+			if(file_exists("modules/".$modulename."/icon.png"))
+				print("\t\t\t<div><img src=\"modules/".$modulename."/icon.png\" alt=\"".$modulename."\"/></div>\n");
+			print("\t\t\t<div>$modulename</div>\n");
+			array_shift($res);
+		}
+	}
+	print("\t\t</div>\n");
+	return 0;
+}
+
+
+function admin_install()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
+	return 0;
+}
+
+
+function admin_uninstall()
+{
+	global $administrator;
+
+	if($administrator != 1)
+		return 0;
 	return 0;
 }
 
 
 switch($action)
 {
+	case "admin":
+		return admin_admin();
 	case "install":
 		return admin_install();
+	case "uninstall":
+		return admin_uninstall();
 	default:
-		return admin_summary();
+		return admin_default();
 }
 
 
