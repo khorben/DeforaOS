@@ -50,7 +50,7 @@ char * config_get(Config * config, char * section, char * variable)
 	return hash_get(p, variable);
 }
 
-int config_set(Config * config, char * section, char * variable, char * value)
+int config_set(Config * config, char const * section, char const * variable, char * value)
 {
 	Hash * h;
 

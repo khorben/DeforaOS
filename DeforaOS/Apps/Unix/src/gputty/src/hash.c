@@ -30,7 +30,7 @@ typedef struct _HashEntry {
 
 
 /* functions */
-static HashEntry * hashentry_new(char * name, void * data)
+static HashEntry * hashentry_new(char const * name, void * data)
 {
 	HashEntry * he;
 
@@ -85,7 +85,7 @@ void hash_delete(Hash * hash)
 
 
 /* useful */
-void * hash_get(Hash * hash, char * name)
+void * hash_get(Hash * hash, char const * name)
 {
 	unsigned int i;
 	HashEntry * he;
@@ -103,7 +103,7 @@ void * hash_get(Hash * hash, char * name)
 }
 
 
-int hash_set(Hash * hash, char * name, void * data)
+int hash_set(Hash * hash, char const * name, void * data)
 {
 	unsigned int i;
 	HashEntry * he;

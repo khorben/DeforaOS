@@ -61,19 +61,18 @@ GPuTTY * gputty_new(void)
 	/* widgets */
 	g->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(g->window), "GPuTTY");
-	gtk_container_set_border_width(GTK_CONTAINER(g->window), 2);
+	gtk_container_set_border_width(GTK_CONTAINER(g->window), 4);
 	g_signal_connect(G_OBJECT(g->window), "delete_event",
 			G_CALLBACK(gputty_quitx), g);
 	g->vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(g->window), g->vbox);
 	/* hostname */
 	g->hn_frame = gtk_frame_new("Specify your connection");
-	gtk_container_set_border_width(GTK_CONTAINER(g->hn_frame), 2);
 	gtk_box_pack_start(GTK_BOX(g->vbox), g->hn_frame, FALSE, FALSE, 0);
 	g->hn_vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(g->hn_vbox), 4);
 	gtk_container_add(GTK_CONTAINER(g->hn_frame), g->hn_vbox);
 	g->hn_hbox = gtk_hbox_new(FALSE, 0);
-	gtk_container_set_border_width(GTK_CONTAINER(g->hn_hbox), 2);
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox), g->hn_hbox, TRUE, TRUE, 0);
 	/* hostname: hostname */
 	g->hn_vbox1 = gtk_vbox_new(FALSE, 0);
@@ -86,7 +85,7 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox1), g->hn_ehostname, TRUE, TRUE, 0);
 	/* hostname: port */
 	g->hn_vbox2 = gtk_vbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(g->hn_hbox), g->hn_vbox2, TRUE, TRUE, 2);
+	gtk_box_pack_start(GTK_BOX(g->hn_hbox), g->hn_vbox2, TRUE, TRUE, 4);
 	g->hn_lport = gtk_label_new("Port");
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox2), g->hn_lport, TRUE, TRUE, 0);
 	g->hn_sport_adj = (GtkAdjustment *)gtk_adjustment_new(22, 0, 65535, 1, 4, 4);
@@ -103,12 +102,11 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox3), g->hn_eusername, TRUE, TRUE, 0);
 	/* sessions */
 	g->sn_frame = gtk_frame_new("Manage sessions");
-	gtk_container_set_border_width(GTK_CONTAINER(g->sn_frame), 2);
 	g->sn_vbox1 = gtk_vbox_new(FALSE, 0);
 	g->sn_hbox = gtk_hbox_new(FALSE, 0);
 	/* sessions: list */
 	g->sn_vbox2 = gtk_vbox_new(FALSE, 0);
-	gtk_container_set_border_width(GTK_CONTAINER(g->sn_vbox2), 2);
+	gtk_container_set_border_width(GTK_CONTAINER(g->sn_vbox2), 4);
 	g->sn_esessions = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox2), g->sn_esessions, FALSE, FALSE, 0);
 	g->sn_swsessions = gtk_scrolled_window_new(NULL, NULL);
@@ -121,19 +119,16 @@ GPuTTY * gputty_new(void)
 	g->sn_vbox3 = gtk_vbox_new(FALSE, 0);
 	g->sn_load = gtk_button_new_from_stock(GTK_STOCK_OPEN);
 	g_signal_connect(G_OBJECT(g->sn_load), "clicked", G_CALLBACK(gputty_load), g);
-	gtk_container_set_border_width(GTK_CONTAINER(g->sn_load), 2);
-	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_load, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_load, FALSE, FALSE, 4);
 	g->sn_save = gtk_button_new_from_stock(GTK_STOCK_SAVE);
 	g_signal_connect(G_OBJECT(g->sn_save), "clicked", G_CALLBACK(gputty_save), g);
-	gtk_container_set_border_width(GTK_CONTAINER(g->sn_save), 2);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_save, FALSE, FALSE, 0);
 	g->sn_delete = gtk_button_new_from_stock(GTK_STOCK_DELETE);
-	gtk_container_set_border_width(GTK_CONTAINER(g->sn_delete), 2);
-	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_delete, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(g->sn_vbox3), g->sn_delete, FALSE, FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(g->sn_hbox), g->sn_vbox3, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(g->sn_vbox1), g->sn_hbox, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(g->sn_frame), g->sn_vbox1);
-	gtk_box_pack_start(GTK_BOX(g->vbox), g->sn_frame, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(g->vbox), g->sn_frame, TRUE, TRUE, 4);
 	/* actions */
 	g->ac_hbox = gtk_hbox_new(FALSE, 0);
 	g->ac_about = gtk_button_new_with_label("About");
@@ -145,7 +140,7 @@ GPuTTY * gputty_new(void)
 			G_CALLBACK(gputty_connect), g);
 	gtk_box_pack_end(GTK_BOX(g->ac_hbox), g->ac_connect, FALSE, FALSE, 0);
 	g->ac_quit = gtk_button_new_from_stock(GTK_STOCK_QUIT);
-	gtk_box_pack_end(GTK_BOX(g->ac_hbox), g->ac_quit, FALSE, FALSE, 2);
+	gtk_box_pack_end(GTK_BOX(g->ac_hbox), g->ac_quit, FALSE, FALSE, 4);
 	g_signal_connect(G_OBJECT(g->ac_quit), "clicked",
 			G_CALLBACK(gputty_quit), g);
 	gtk_box_pack_start(GTK_BOX(g->vbox), g->ac_hbox, FALSE, FALSE, 0);
@@ -172,7 +167,7 @@ static void gputty_about(GtkWidget * widget, gpointer data)
 	if(g->ab_window == NULL)
 	{
 		g->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_container_set_border_width(GTK_CONTAINER(g->ab_window), 2);
+		gtk_container_set_border_width(GTK_CONTAINER(g->ab_window), 4);
 		gtk_window_set_title(GTK_WINDOW(g->ab_window), "About GPuTTY");
 		g_signal_connect(G_OBJECT(g->ab_window), "delete_event",
 				G_CALLBACK(gputty_about_closex), g);
@@ -190,6 +185,8 @@ This project is released under the terms of the\n\
 GNU General Public License.\n\
 Credits go to every Free Software contributors.");
 		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_label, TRUE, TRUE, 0);
+		g->ab_hsep = gtk_hseparator_new();
+		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_hsep, TRUE, TRUE, 4);
 		g->ab_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 		g_signal_connect(G_OBJECT(g->ab_close), "clicked",
 				G_CALLBACK(gputty_about_close), g);
@@ -260,8 +257,8 @@ static void gputty_quit(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 
-	config_set(g->config, "", "hostname", gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname)));
-	config_set(g->config, "", "username", gtk_entry_get_text(GTK_ENTRY(g->hn_eusername)));
+	config_set(g->config, "", "hostname", strdup(gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname))));
+	config_set(g->config, "", "username", strdup(gtk_entry_get_text(GTK_ENTRY(g->hn_eusername))));
 	gtk_main_quit();
 }
 

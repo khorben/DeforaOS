@@ -33,7 +33,7 @@ Hash * hash_new(void);
 void hash_delete(Hash * hash);
 
 /* useful */
-void * hash_get(Hash * hash, char * name);
-int hash_set(Hash * hash, char * name, void * data);
+void * hash_get(Hash * hash, char const * name);
+int hash_set(Hash * hash, char const * name, void * data);
 
 # endif /* !_HASH_H */
