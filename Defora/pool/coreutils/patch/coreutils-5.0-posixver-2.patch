@@ -1,0 +1,35 @@
+Submitted By: Greg Schafer <gschafer at zip dot com dot au>
+Date: 2004-01-18
+Initial Package Version: 5.0
+Upstream Status: Latest beta release makes this a compile-time config option.
+Origin: Idea borrowed from Debian.
+Description: Override system POSIX2 version.
+
+Glibc's newer than 2.3.2 define _POSIX2_VERSION as 200112L. Compiling Coreutils
+on such a Glibc system causes some of the utilities (head, tail, sort etc) to
+reject the traditional syntax of those utilities which, BTW, happens to be
+embedded in literally millions of scripts everywhere. e.g. tail -1 results in:
+
+tail: `-1' option is obsolete; use `-n 1'
+
+Even without this patch the problem can of course be worked around by exporting
+_POSIX2_VERSION=199209 into the environment. This patch addresses the issue at
+the source and restores the traditional behaviour until all of the many affected
+scripts and packages can be fixed. The new behaviour can still be had by
+exporting _POSIX2_VERSION=200112 into the environment.
+
+diff -Naur coreutils-5.0.orig/lib/posixver.c coreutils-5.0/lib/posixver.c
+--- coreutils-5.0.orig/lib/posixver.c	2002-02-16 08:13:08.000000000 +0000
++++ coreutils-5.0/lib/posixver.c	2003-12-01 05:09:19.000000000 +0000
+@@ -37,6 +37,11 @@
+ # define _POSIX2_VERSION 0
+ #endif
+ 
++/* Do what Debian does and override system POSIX2 version pending transition
++   discussions.  */
++#undef _POSIX2_VERSION
++#define _POSIX2_VERSION 199209L
++
+ /* The POSIX version that utilities should conform to.  The default is
+    specified by the system.  */
+ 

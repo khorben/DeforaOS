@@ -1,0 +1,16 @@
+#clean
+make distclean
+
+#configure
+
+#build
+make &&
+
+#install
+make PREFIX=$PWD/defora/${NAME}-${VERSION} CONFDIR=$PWD/defora/${NAME}-${VERSION}/etc/devfs install &&
+mkdir -p defora/${NAME}-${VERSION}/etc/init/rc{,S,0,6}.d &&
+cp defora/devfsd defora/${NAME}-${VERSION}/etc/init/rc.d &&
+chmod 755 defora/${NAME}-${VERSION}/etc/init/rc.d/devfsd &&
+ln -s ../rc.d/devfsd defora/${NAME}-${VERSION}/etc/init/rcS.d/S01devfsd &&
+ln -s ../rc.d/devfsd defora/${NAME}-${VERSION}/etc/init/rc0.d/K95devfsd &&
+ln -s ../rc.d/devfsd defora/${NAME}-${VERSION}/etc/init/rc6.d/K95devfsd &&

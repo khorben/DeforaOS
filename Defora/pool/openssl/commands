@@ -1,0 +1,13 @@
+#clean
+make distclean
+
+#configure
+./config --prefix=/usr --openssldir=/etc/ssl shared &&
+
+#build
+make MANDIR=/usr/share/man &&
+
+#install
+make INSTALL_PREFIX=$PWD/defora/${NAME}-${VERSION} MANDIR=/usr/share/man install &&
+rmdir defora/${NAME}-${VERSION}/etc/ssl/lib &&
+cp -r certs defora/${NAME}-${VERSION}/etc/ssl &&

@@ -1,0 +1,22 @@
+diff -Naur openssh-3.8p1.orig/defora/sshd openssh-3.8p1/defora/sshd
+--- openssh-3.8p1.orig/defora/sshd	1970-01-01 01:00:00.000000000 +0100
++++ openssh-3.8p1/defora/sshd	2004-03-21 22:19:52.000000000 +0100
+@@ -0,0 +1,18 @@
++#!/bin/sh
++
++
++
++NAME="sshd"
++DESC="Secure SHell server"
++DAEMON="/usr/sbin/sshd"
++ARGS=" "
++
++#create private keys if necesary
++[ -f /etc/ssh/ssh_host_key ] ||
++	ssh-keygen -t rsa1 -f /etc/ssh/ssh_host_key -N ""
++[ -f /etc/ssh/ssh_host_rsa_key ] ||
++	ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ""
++[ -f /etc/ssh/ssh_host_dsa_key ] ||
++	ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ""
++
++source /etc/init/rc.d/functions

@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+./configure -default -confdir=/etc &&
+
+#build
+make &&
+
+#install
+make PREFIX=$PWD/defora/${NAME}-${VERSION} install &&

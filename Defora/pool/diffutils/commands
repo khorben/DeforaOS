@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr &&
+
+#build
+make &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&

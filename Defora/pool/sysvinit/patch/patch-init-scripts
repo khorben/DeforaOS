@@ -1,0 +1,402 @@
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc sysvinit-2.85/defora/etc/init/rc
+--- sysvinit-2.85.orig/defora/etc/init/rc	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,24 @@
++#!/bin/bash
++
++
++
++#usage information
++if [ $# -ne 1 ]; then
++	echo "Usage: /etc/init/rc <runlevel>"
++	exit 1
++fi
++
++#look for services
++for i in /etc/init/rc$1.d/K??*; do
++	#ignore dangling symlinks
++	[ ! -f "$i" ] && continue
++
++	$i stop
++done
++
++for i in /etc/init/rc$1.d/S??*; do
++	#ignore dangling symlinks
++	[ ! -f "$i" ] && continue
++
++	$i start
++done
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/checkfs sysvinit-2.85/defora/etc/init/rc.d/checkfs
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/checkfs	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/checkfs	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,31 @@
++#!/bin/bash
++
++
++case "$1" in
++	start)
++		;;
++	*)
++		echo "Usage: /etc/init/rc.d/checkfs {start}"
++		exit 1
++		;;
++esac
++
++#check filesystems
++echo "Checking all file systems:"
++fsck -R -A -C -y
++if [ $? -gt 1 ]; then
++	echo "Filesystem checking failed, manual repair required."
++	echo "CTRL+D will exit from this shell and continue system startup."
++	/sbin/sulogin $CONSOLE
++fi
++
++#mount all local filesystems
++echo "Mounting local filesystems:"
++mount -avt nonfs,nosmbfs,noncpfs,noproc
++mount -at proc
++
++#mount all swap devices
++echo "Activating other swap devices:"
++swapon -a >& /dev/null
++
++exit 0
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/checkrootfs sysvinit-2.85/defora/etc/init/rc.d/checkrootfs
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/checkrootfs	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/checkrootfs	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,68 @@
++#!/bin/bash
++
++
++case "$1" in
++	start)
++		;;
++	*)
++		echo "Usage: /etc/init/rc.d/checkrootfs {start}"
++		exit 1
++		;;
++esac
++
++
++echo "Activating swap:"
++#read fstab without the commented lines
++rmode="rw"
++rpass="1"
++(cat /etc/fstab; echo) |
++while read device mount fs options dump pass junk; do
++	case "$device" in
++		""|\#*)
++			continue;
++			;;
++		/dev/hd*)
++			[ "$fs" = "swap" ] && swapon $device >& /dev/null
++			;;
++	esac
++	[ "$mount" != "/" ] && continue
++	#root filesystem to be mounted read-write or not
++	rmode="rw"
++	case "$options" in
++		ro|ro,*|*,ro|*,ro,*)
++			rmode="ro"
++			;;
++	esac
++	rpass="$pass"
++done
++
++#check root fs
++if [ "$rpass" = "0" ]; then
++	echo "Not checking root filesystem."
++else
++	echo "Checking root filesystem:"
++	#remount root read-only
++	mount -n -o remount,ro /
++	if [ $? = 0 ]; then
++		fsck -C -y /dev/root
++		if [ $? -gt 1 ]; then
++			echo "Root filesystem check failed."
++			echo "To remount it read-write:"
++			echo "# mount -n -o remount,rw /"
++			echo "CTRL+D will exit from this shell and reboot."
++			/sbin/sulogin $CONSOLE
++			reboot -f
++		fi
++	else
++		echo "ERROR! Can't check root filesystem because it's not mounted read-only."
++	fi
++fi
++
++#remount root with proper options
++if [ "$rmode" = "rw" ]; then
++	mount -n -o remount,$rmode /
++	> /etc/mtab
++	mount -f /
++fi
++
++exit 0
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/functions sysvinit-2.85/defora/etc/init/rc.d/functions
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/functions	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/functions	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,74 @@
++#functions
++
++
++
++#verify consistency
++[ -z "$NAME" ] && exit 1
++[ -z "$DESC" ] && exit 1
++[ -z "$DAEMON" ] && exit 1
++[ -z "$ARGS" ] && exit 1
++
++
++#functions
++function usage {
++	echo "Usage: /etc/init/rc.d/$NAME {start|stop|restart|status}"
++}
++
++
++#check syntax
++if [ $# != 1 ]; then
++	usage
++	exit 1
++fi
++
++
++#get information
++RUNNING=0
++PID=`pidof $DAEMON` && RUNNING=1
++
++#go for it
++case $1 in
++	start)
++		echo -n "Starting $DESC: "
++		if [ $RUNNING = 0 ]; then
++			#if we have to run under a different user
++			if [ ! -z "$RUNAS" ]; then
++				su - $RUNAS -c "$DAEMON $ARGS" && echo "$NAME" ||
++				echo "failed"
++			else
++				$DAEMON $ARGS >& /dev/null && echo "$NAME" ||
++				echo "failed"
++			fi
++		else
++			echo "already running ($PID)"
++		fi
++		;;
++	stop)
++		echo -n "Stopping $DESC: "
++		if [ $RUNNING = 1 ]; then
++			killall $DAEMON && echo "$NAME" ||
++			echo "failed"
++		else
++			echo "not running"
++		fi
++		;;
++	restart)
++		$0 stop
++		sleep 1s
++		$0 start
++		;;
++	status)
++		echo -n "Status for $DESC: "
++		if [ $RUNNING = 1 ]; then
++			echo "already running ($PID)"
++		else
++			echo "not running"
++		fi
++		;;
++	*)
++		if [ -z $USAGE ]; then
++			usage
++			exit 1
++		fi
++		;;
++esac
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/halt sysvinit-2.85/defora/etc/init/rc.d/halt
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/halt	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/halt	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,4 @@
++#!/bin/bash
++
++
++halt -d -f -i -p -h
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/nologin sysvinit-2.85/defora/etc/init/rc.d/nologin
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/nologin	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/nologin	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,5 @@
++#!/bin/bash
++
++
++echo "System bootup in progress - please wait" > /etc/nologin
++cp /etc/nologin /etc/nologin.boot
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/random sysvinit-2.85/defora/etc/init/rc.d/random
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/random	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/random	2004-03-07 16:37:17.000000000 +0100
+@@ -0,0 +1,29 @@
++#!/bin/bash
++
++
++
++NAME="random"
++DESC="random seed"
++
++
++case "$1" in
++	start)
++		echo -n "Starting $DESC: "
++		mkdir -p /var/lib/urandom/
++		if [ -f /var/lib/urandom/random-seed ]; then
++			cat /var/lib/urandom/random-seed > /dev/urandom
++		fi
++		rm -f /var/lib/urandom/random-seed
++		dd if=/dev/urandom of=/var/lib/urandom/random-seed count=1 >& /dev/null
++		echo $NAME
++		;;
++	stop)
++		echo -n "Stopping $DESC: "
++		dd if=/dev/urandom of=/var/lib/urandom/random-seed count=1 >& /dev/null
++		echo $NAME
++		;;
++	*)
++		echo "Usage: /etc/init/rc.d/$NAME {start|stop}"
++		exit 1
++		;;
++esac
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/reboot sysvinit-2.85/defora/etc/init/rc.d/reboot
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/reboot	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/reboot	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,4 @@
++#!/bin/bash
++
++
++reboot -d -f -i
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/rmnologin sysvinit-2.85/defora/etc/init/rc.d/rmnologin
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/rmnologin	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/rmnologin	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,8 @@
++#!/bin/bash
++
++
++if [ -f /etc/nologin.boot ]; then
++	rm -f /etc/nologin /etc/nologin.boot
++fi
++
++: exit 0
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/sendsigs sysvinit-2.85/defora/etc/init/rc.d/sendsigs
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/sendsigs	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/sendsigs	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,26 @@
++#!/bin/bash
++
++
++case $1 in
++	start)
++		echo -n "Sending all processes the TERM signal:"
++		killall5 -15
++		sleep 2s
++		echo " done"
++		echo -n "Sending all processes the KILL signal:"
++		killall5 -9
++		sleep 2s
++		echo " done"
++		;;
++	stop)
++		;;
++	restart)
++		$0 stop
++		sleep 1s
++		$0 start
++		;;
++	status)
++		;;
++	*)
++		;;
++esac;
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/sulogin sysvinit-2.85/defora/etc/init/rc.d/sulogin
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/sulogin	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/sulogin	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,5 @@
++#!/bin/bash
++
++
++
++exec /sbin/sulogin
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rc.d/umountfs sysvinit-2.85/defora/etc/init/rc.d/umountfs
+--- sysvinit-2.85.orig/defora/etc/init/rc.d/umountfs	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rc.d/umountfs	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,18 @@
++#!/bin/bash
++
++
++
++#deactivate swap
++echo -n "Deactivating swap:"
++swapoff -a &&
++echo " done" || echo " failed"
++
++#we leave /proc mounted
++echo -n "Unmounting local filesystems:"
++umount -f -a -r
++echo " done"
++
++#remount the root filesystem read-only
++mount -n -o remount,ro /
++
++exit 0
+diff -Naur sysvinit-2.85.orig/defora/etc/init/rcS sysvinit-2.85/defora/etc/init/rcS
+--- sysvinit-2.85.orig/defora/etc/init/rcS	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/init/rcS	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,12 @@
++#!/bin/bash
++
++
++
++#look for services
++for i in /etc/init/rcS.d/S??*; do
++	#ignore dangling symlinks
++	[ ! -f "$i" ] && continue
++
++	#start service
++	$i start
++done
+diff -Naur sysvinit-2.85.orig/defora/etc/inittab sysvinit-2.85/defora/etc/inittab
+--- sysvinit-2.85.orig/defora/etc/inittab	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/inittab	2004-03-07 16:36:06.000000000 +0100
+@@ -0,0 +1,38 @@
++#default runlevel
++id:3:initdefault:
++
++#initialization script
++si::sysinit:/etc/init/rcS
++
++#if in single-user mode
++~~:S:wait:/sbin/sulogin
++
++#runlevels
++l0:0:wait:/etc/init/rc 0
++l1:1:wait:/etc/init/rc 1
++l2:2:wait:/etc/init/rc 2
++l3:3:wait:/etc/init/rc 3
++l4:4:wait:/etc/init/rc 4
++l5:5:wait:/etc/init/rc 5
++l6:6:wait:/etc/init/rc 6
++#in case of emergency
++z6:6:respawn:/sbin/sulogin
++
++#when CTRL+ALT+DEL is pressed
++ca:12345:ctrlaltdel:/sbin/shutdown -t1 -a -r now
++
++#when ALT+UPARROW is pressed
++#kb::kbrequest:/bin/echo "Keyboard Request--edit /etc/inittab to let this work."
++
++#if the power fails/returns
++#pf::powerwait:/etc/init/rc.d/powerfail start
++#pn::powerfailnow:/etc/init/rc.d/powerfail now
++#po::powerokwait:/etc/init/rc.d/powerfail stop
++
++#agetty invocations
++1:2345:respawn:/sbin/agetty 38400 tty1
++2:23:respawn:/sbin/agetty 38400 tty2
++3:23:respawn:/sbin/agetty 38400 tty3
++4:23:respawn:/sbin/agetty 38400 tty4
++5:23:respawn:/sbin/agetty 38400 tty5
++6:23:respawn:/sbin/agetty 38400 tty6

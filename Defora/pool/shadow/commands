@@ -1,0 +1,21 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --libdir=/usr/lib --enable-shared &&
+echo '#define HAVE_SETLOCALE 1' >> config.h
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+mkdir -p defora/${NAME}-${VERSION}/{etc/default,lib} &&
+cp etc/{limits,login.access} defora/${NAME}-${VERSION}/etc &&
+cp etc/login.defs.linux defora/${NAME}-${VERSION}/etc/login.defs &&
+mv defora/${NAME}-${VERSION}/bin/sg defora/${NAME}-${VERSION}/usr/bin &&
+mv defora/${NAME}-${VERSION}/bin/vigr defora/${NAME}-${VERSION}/usr/sbin &&
+mv defora/${NAME}-${VERSION}/usr/lib/lib{shadow,misc}.so.0* defora/${NAME}-${VERSION}/lib &&
+ln -sf ../../lib/libshadow.so.0 defora/${NAME}-${VERSION}/usr/lib/libshadow.so &&
+ln -sf ../../lib/libmisc.so.0 defora/${NAME}-${VERSION}/usr/lib/libmisc.so &&
+rm defora/${NAME}-${VERSION}/bin/groups &&

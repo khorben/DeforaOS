@@ -1,0 +1,26 @@
+diff -Naur sysklogd-1.4.1.orig/defora/klogd sysklogd-1.4.1/defora/klogd
+--- sysklogd-1.4.1.orig/defora/klogd	1970-01-01 01:00:00.000000000 +0100
++++ sysklogd-1.4.1/defora/klogd	2004-03-07 08:05:38.000000000 +0100
+@@ -0,0 +1,9 @@
++#!/bin/sh
++
++
++NAME="klogd"
++DESC="kernel log daemon"
++DAEMON=/usr/sbin/klogd
++ARGS=" "
++
++source /etc/init/rc.d/functions
+diff -Naur sysklogd-1.4.1.orig/defora/syslogd sysklogd-1.4.1/defora/syslogd
+--- sysklogd-1.4.1.orig/defora/syslogd	1970-01-01 01:00:00.000000000 +0100
++++ sysklogd-1.4.1/defora/syslogd	2004-03-07 08:05:11.000000000 +0100
+@@ -0,0 +1,9 @@
++#!/bin/sh
++
++
++NAME="syslogd"
++DESC="system log daemon"
++DAEMON=/usr/sbin/syslogd
++ARGS=" "
++
++source /etc/init/rc.d/functions

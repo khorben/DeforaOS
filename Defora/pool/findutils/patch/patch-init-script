@@ -1,0 +1,41 @@
+diff -Naur findutils-4.1.20.orig/defora/clean findutils-4.1.20/defora/clean
+--- findutils-4.1.20.orig/defora/clean	1970-01-01 01:00:00.000000000 +0100
++++ findutils-4.1.20/defora/clean	2004-03-07 16:29:25.000000000 +0100
+@@ -0,0 +1,37 @@
++#!/bin/bash
++
++
++case "$1" in
++	start)
++		;;
++	*)
++		echo "Usage: /etc/init/rc.d/clean {start}"
++		exit 1
++		;;
++esac
++
++echo -n "Cleaning:"
++#clean /tmp
++echo -n " /tmp"
++(cd /tmp && find . ! -name . \
++	! \( -name lost+found -uid 0 \) \
++	! \( -name quota.user -uid 0 \) \
++	! \( -name quota.group -uid 0 \) \
++	! \( -name .journal -uid 0 \) \
++	-depth -exec rm -rf -- {} \; )
++
++#remove stale locks
++echo -n " /var/lock"
++( cd /var/lock && find . -type f -exec rm -f -- {} \; )
++
++#clean /var/run and create /var/run/utmp
++echo -n " /var/run"
++( cd /var/run && find . ! -type d ! -name utmp ! \
++	-exec rm -f -- {} \; )
++: > /var/run/utmp
++chmod 664 /var/run/utmp
++chgrp utmp /var/run/utmp
++
++echo
++
++exit 0

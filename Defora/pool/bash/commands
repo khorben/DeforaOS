@@ -1,0 +1,12 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr --bindir=/bin &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+ln -s bash defora/${NAME}-${VERSION}/bin/sh &&

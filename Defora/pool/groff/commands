@@ -1,0 +1,15 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" CXXFLAGS="-O2" PAGE="A4" ./configure --host=$HOST --prefix=/usr &&
+
+#build
+make &&
+
+#install
+mkdir -p defora/${NAME}-${VERSION}/usr &&
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
+ln -s soelim $PWD/defora/${NAME}-${VERSION}/usr/bin/zsoelim &&
+ln -s eqn $PWD/defora/${NAME}-${VERSION}/usr/bin/geqn &&
+ln -s tbl $PWD/defora/${NAME}-${VERSION}/usr/bin/gtbl &&

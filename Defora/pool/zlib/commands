@@ -1,0 +1,17 @@
+#clean
+make distclean
+
+#configure
+./configure --shared &&
+
+#build
+make &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
+make LIBS="libz.a" prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
+chmod 644 defora/${NAME}-${VERSION}/usr/lib/libz.a &&
+
+mkdir -p defora/${NAME}-${VERSION}/lib &&
+mv defora/${NAME}-${VERSION}/usr/lib/libz.so.* defora/${NAME}-${VERSION}/lib &&
+ln -sf /lib/libz.so.1 defora/${NAME}-${VERSION}/usr/lib/libz.so &&

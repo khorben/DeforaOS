@@ -1,0 +1,18 @@
+diff -Naur vim-6.2.orig/src/feature.h vim-6.2/src/feature.h
+--- vim-6.2.orig/src/feature.h	2003-05-25 19:44:49.000000000 +0200
++++ vim-6.2/src/feature.h	2004-03-07 01:08:22.000000000 +0100
+@@ -861,12 +861,12 @@
+ /*
+  * SYS_VIMRC_FILE	Name of the system-wide .vimrc file.
+  */
+-/* #define SYS_VIMRC_FILE	"/etc/vimrc" */
++#define SYS_VIMRC_FILE	"/etc/vim/vimrc"
+ 
+ /*
+  * SYS_GVIMRC_FILE	Name of the system-wide .gvimrc file.
+  */
+-/* #define SYS_GVIMRC_FILE	"/etc/gvimrc" */
++#define SYS_GVIMRC_FILE	"/etc/vim/gvimrc"
+ 
+ /*
+  * DFLT_HELPFILE	Name of the help file.

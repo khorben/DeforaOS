@@ -1,0 +1,21 @@
+diff -Naur devfsd-1.3.25/devfsd.c devfsd-1.3.25.pkg/devfsd.c
+--- devfsd-1.3.25/devfsd.c	2002-03-25 06:59:40.000000000 +0000
++++ devfsd-1.3.25.pkg/devfsd.c	2003-05-25 00:05:06.000000000 +0100
+@@ -293,7 +293,7 @@
+ #  define RTLD_DEFAULT NULL
+ #endif
+ 
+-#define CONFIG_FILE  "/etc/devfsd.conf"
++#define CONFIG_FILE  "/etc/devfs/devfsd.conf"
+ #define MAX_ARGS     (6 + 1)
+ #define MAX_SUBEXPR  10
+ 
+@@ -1240,7 +1240,7 @@
+     argv[0] = "/sbin/modprobe";
+     argv[1] = "-k";
+     argv[2] = "-C";
+-    argv[3] = "/etc/modules.devfs";
++    argv[3] = "/etc/devfs/modules.devfs";
+     argv[4] = device;
+     argv[5] = NULL;
+     snprintf (device, sizeof (device), "/dev/%s", info->devname);

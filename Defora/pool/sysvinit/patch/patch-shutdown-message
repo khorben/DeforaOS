@@ -1,0 +1,19 @@
+diff -Naur sysvinit-2.85.orig/src/init.c sysvinit-2.85/src/init.c
+--- sysvinit-2.85.orig/src/init.c	2003-04-15 13:16:41.000000000 +0200
++++ sysvinit-2.85/src/init.c	2004-03-07 14:05:06.000000000 +0100
+@@ -1334,13 +1334,13 @@
+ 	switch(round) {
+ 		case 0: /* Send TERM signal */
+ 			if (talk)
+-				log(L_CO, "Sending processes the TERM signal");
++				log(L_CO, "Sending processes started by init the TERM signal");
+ 			kill(-(ch->pid), SIGTERM);
+ 			foundOne = 1;
+ 			break;
+ 		case 1: /* Send KILL signal and collect status */
+ 			if (talk)
+-				log(L_CO, "Sending processes the KILL signal");
++				log(L_CO, "Sending processes started by init the KILL signal");
+ 			kill(-(ch->pid), SIGKILL);
+ 			break;
+ 	}

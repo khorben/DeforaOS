@@ -1,0 +1,6 @@
+diff -Naur sysvinit-2.85.orig/defora/etc/issue sysvinit-2.85/defora/etc/issue
+--- sysvinit-2.85.orig/defora/etc/issue	1970-01-01 01:00:00.000000000 +0100
++++ sysvinit-2.85/defora/etc/issue	2004-03-20 17:44:51.000000000 +0100
+@@ -0,0 +1,2 @@
++
++Defora GNU/Linux (\s \r \m) \l \b

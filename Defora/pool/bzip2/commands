@@ -1,0 +1,24 @@
+#clean
+make distclean
+
+#configure
+
+#build
+make -f Makefile-libbz2_so &&
+make &&
+
+#install
+make PREFIX=$PWD/defora/${NAME}-${VERSION}/usr install &&
+mkdir -p defora/${NAME}-${VERSION}/{bin,lib} &&
+rm -f defora/${NAME}-${VERSION}/usr/bin/{bzip2,bunzip2,bzcat} &&
+cp bzip2-shared defora/${NAME}-${VERSION}/bin/bzip2 &&
+ln -s bzip2 defora/${NAME}-${VERSION}/bin/bunzip2 &&
+ln -s bzip2 defora/${NAME}-${VERSION}/bin/bzcat &&
+rm -f defora/${NAME}-${VERSION}/usr/bin/{bzegrep,bzfgrep} &&
+ln -s bzgrep defora/${NAME}-${VERSION}/usr/bin/bzegrep &&
+ln -s bzgrep defora/${NAME}-${VERSION}/usr/bin/bzfgrep &&
+rm -f defora/${NAME}-${VERSION}/usr/bin/bzless &&
+ln -s bzmore defora/${NAME}-${VERSION}/usr/bin/bzless &&
+rm -f defora/${NAME}-${VERSION}/usr/bin/bzcmp &&
+ln -s bzdiff defora/${NAME}-${VERSION}/usr/bin/bzcmp &&
+cp -d libbz2.so.1.0 libbz2.so.1.0.2 defora/${NAME}-${VERSION}/lib/ &&

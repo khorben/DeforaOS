@@ -1,0 +1,19 @@
+#clean
+rm -fr defora/${NAME}-build/ &&
+make distclean
+
+#configure
+mkdir defora/${NAME}-build/ &&
+cd defora/${NAME}-build/ &&
+CFLAGS="-O2" ../../configure --host=$HOST --prefix=/usr --enable-shared &&
+
+#build
+make tooldir=/usr &&
+make check &&
+
+#install
+cd ../.. &&
+make -C defora/${NAME}-build DESTDIR=$PWD/defora/${NAME}-${VERSION} tooldir=/usr install &&
+make -C defora/${NAME}-build DESTDIR=$PWD/defora/${NAME}-${VERSION} tooldir=/usr install-info &&
+mkdir -p defora/${NAME}-${VERSION}/usr/include &&
+cp include/libiberty.h  defora/${NAME}-${VERSION}/usr/include &&

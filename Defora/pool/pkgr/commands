@@ -1,0 +1,13 @@
+#clean
+make distclean
+
+#configure
+
+#build
+make CFLAGS="" &&
+
+#install
+make PREFIX=$PWD/defora/${NAME}-${VERSION}/usr install &&
+
+#package
+pkgr_build

@@ -1,0 +1,18 @@
+#clean
+make mrproper
+
+#configure
+cp defora/config-${VERSION} .config &&
+make oldconfig &&
+
+#build
+make dep bzImage modules &&
+
+#install
+make INSTALL_MOD_PATH=$PWD/defora/${NAME}-${VERSION} modules_install &&
+rm defora/${NAME}-${VERSION}/lib/modules/${VERSION}/build &&
+ln -s /usr/src/${NAME}-${VERSION} defora/${NAME}-${VERSION}/lib/modules/${VERSION}/build &&
+mkdir -p defora/${NAME}-${VERSION}/boot &&
+install -m 644 arch/i386/boot/bzImage defora/${NAME}-${VERSION}/boot/vmlinuz-${VERSION} &&
+install -m 644 System.map defora/${NAME}-${VERSION}/boot/System.map-${VERSION} &&
+install -m 644 defora/config-${VERSION} defora/${NAME}-${VERSION}/boot &&

@@ -1,0 +1,9 @@
+#clean
+
+#configure
+
+#build
+make &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION} install &&

@@ -1,0 +1,38 @@
+diff -Naur net-tools-1.60/config.in net-tools-1.60.pkg/config.in
+--- net-tools-1.60/config.in	2000-05-21 15:32:12.000000000 +0100
++++ net-tools-1.60.pkg/config.in	2003-02-26 03:21:00.000000000 +0000
+@@ -42,14 +42,14 @@
+ * course, welcome.  Answer `n' here if you have no support for
+ * internationalization on your system.
+ *
+-bool 'Does your system support GNU gettext?' I18N n
++bool 'Does your system support GNU gettext?' I18N y
+ *
+ *
+ *             Protocol Families.
+ * 
+ bool 'UNIX protocol family' HAVE_AFUNIX y
+ bool 'INET (TCP/IP) protocol family' HAVE_AFINET y
+-bool 'INET6 (IPv6) protocol family' HAVE_AFINET6 n
++bool 'INET6 (IPv6) protocol family' HAVE_AFINET6 y
+ bool 'Novell IPX/SPX protocol family' HAVE_AFIPX y
+ bool 'Appletalk DDP protocol family' HAVE_AFATALK y
+ bool 'AX25 (packet radio) protocol family' HAVE_AFAX25 y
+@@ -75,7 +75,7 @@
+ bool 'NET/ROM (packet radio) support' HAVE_HWNETROM y
+ bool 'X.25 (generic) support' HAVE_HWX25 y
+ bool 'DLCI/FRAD (frame relay) support' HAVE_HWFR y
+-bool 'SIT (IPv6-in-IPv4) support' HAVE_HWSIT n
++bool 'SIT (IPv6-in-IPv4) support' HAVE_HWSIT y
+ bool 'FDDI (generic) support' HAVE_HWFDDI n
+ bool 'HIPPI (generic) support' HAVE_HWHIPPI n
+ bool 'Ash hardware support' HAVE_HWASH n
+@@ -86,6 +86,6 @@
+ *
+ *           Other Features.
+ *
+-bool 'IP Masquerading support' HAVE_FW_MASQUERADE n
++bool 'IP Masquerading support' HAVE_FW_MASQUERADE y
+ bool 'Build iptunnel and ipmaddr' HAVE_IP_TOOLS n
+-bool 'Build mii-tool' HAVE_MII n
++bool 'Build mii-tool' HAVE_MII y

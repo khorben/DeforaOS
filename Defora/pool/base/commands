@@ -1,0 +1,13 @@
+#clean
+
+#configure
+
+#build
+
+#install
+DESTDIR=$PWD/defora/${NAME}-${VERSION}/ &&
+mkdir -p $DESTDIR/{bin,boot,dev,etc,home,lib,mnt,opt,proc,root,sbin,tmp,usr,var} &&
+mkdir -p $DESTDIR/usr/{bin,lib,libexec,local,sbin,share,src} &&
+mkdir -p $DESTDIR/var/{lib,lock,log,mail,run,spool,tmp} &&
+chmod 0750 $DESTDIR/root &&
+chmod 1777 $DESTDIR/tmp $DESTDIR/var/tmp &&

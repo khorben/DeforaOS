@@ -1,0 +1,13 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --disable-logger --disable-syslogd --disable-whois --disable-servers
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+mkdir -p defora/${NAME}-${VERSION}/bin &&
+mv defora/${NAME}-${VERSION}/usr/bin/ping defora/${NAME}-${VERSION}/bin &&

@@ -1,0 +1,99 @@
+diff -Naur util-linux-2.12.orig/hwclock/hwclock.c util-linux-2.12/hwclock/hwclock.c
+--- util-linux-2.12.orig/hwclock/hwclock.c	2002-11-02 16:07:24.000000000 +0100
++++ util-linux-2.12/hwclock/hwclock.c	2004-03-07 02:00:04.000000000 +0100
+@@ -45,7 +45,7 @@
+  * reading '/etc/clock -au' instead of '/etc/clock -u -s', this error
+  * is automatically corrected at every boot.
+  *
+- * To do this job, the program reads and writes the file '/etc/adjtime'
++ * To do this job, the program reads and writes the file '/var/lib/hwclock/adjtime'
+  * to determine the correction, and to save its data. In this file are
+  * three numbers:
+  *
+@@ -58,13 +58,13 @@
+  *
+  * Installation and use of this program:
+  *
+- * a) create a file '/etc/adjtime' containing as the first and only line:
++ * a) create a file '/var/lib/hwclock/adjtime' containing as the first and only line:
+  *    '0.0 0 0.0'
+  * b) run 'clock -au' or 'clock -a', depending on whether your cmos is in
+  *    universal or local time. This updates the second number.
+  * c) set your system time using the 'date' command.
+  * d) update your cmos time using 'clock -wu' or 'clock -w'
+- * e) replace the first number in /etc/adjtime by your correction.
++ * e) replace the first number in /var/lib/hwclock/adjtime by your correction.
+  * f) put the command 'clock -au' or 'clock -a' in your '/etc/rc.local'
+  */
+ 
+@@ -95,7 +95,7 @@
+ #define FLOOR(arg) ((arg >= 0 ? (int) arg : ((int) arg) - 1));
+ 
+ /* Here the information for time adjustments is kept. */
+-#define ADJPATH "/etc/adjtime"
++#define ADJPATH "/var/lib/hwclock/adjtime"
+ 
+ /* Store the date here when "badyear" flag is set. */
+ #define LASTDATE "/var/lib/lastdate"
+@@ -230,10 +230,10 @@
+ static int
+ read_adjtime(struct adjtime *adjtime_p) {
+ /*----------------------------------------------------------------------------
+-  Read the adjustment parameters out of the /etc/adjtime file.
++  Read the adjustment parameters out of the /var/lib/hwclock/adjtime file.
+ 
+   Return them as the adjtime structure <*adjtime_p>.
+-  If there is no /etc/adjtime file, return defaults.
++  If there is no /var/lib/hwclock/adjtime file, return defaults.
+   If values are missing from the file, return defaults for them.
+   
+   return value 0 if all OK, !=0 otherwise.
+@@ -763,10 +763,10 @@
+ 	} else if (adjtime_p->last_calib_time != 0) {
+ 		/*
+ 		 * At adjustment time we adjust the hardware clock according
+-		 * to the contents of /etc/adjtime.
++		 * to the contents of /var/lib/hwclock/adjtime.
+ 		 *
+ 		 * At calibration time we set the hardware clock and
+-		 * update /etc/adjtime, that is, for each calibration
++		 * update /var/lib/hwclock/adjtime, that is, for each calibration
+ 		 * (except the first) we also do an adjustment.
+ 		 *
+ 		 * We are now at calibration time.
+@@ -1215,7 +1215,7 @@
+     "  --date        specifies the time to which to set the hardware clock\n"
+     "  --epoch=year  specifies the year which is the beginning of the \n"
+     "                hardware clock's epoch value\n"
+-    "  --noadjfile   do not access /etc/adjtime. Requires the use of\n"
++    "  --noadjfile   do not access /var/lib/hwclock/adjtime. Requires the use of\n"
+     "                either --utc or --localtime\n"
+     ),RTC_DEV);
+ #ifdef __alpha__
+@@ -1272,7 +1272,7 @@
+  * Returns:
+  *  EX_USAGE: bad invocation
+  *  EX_NOPERM: no permission
+- *  EX_OSFILE: cannot open /dev/rtc or /etc/adjtime
++ *  EX_OSFILE: cannot open /dev/rtc or /var/lib/hwclock/adjtime
+  *  EX_IOERR: ioctl error getting or setting the time
+  *  0: OK (or not)
+  *  1: failure
+@@ -1301,7 +1301,7 @@
+ 	setlocale(LC_ALL, "");
+ #ifdef LC_NUMERIC
+ 	/* We need LC_CTYPE and LC_TIME and LC_MESSAGES, but must avoid
+-	   LC_NUMERIC since it gives problems when we write to /etc/adjtime.
++	   LC_NUMERIC since it gives problems when we write to /var/lib/hwclock/adjtime.
+ 	   - gqueri@mail.dotcom.fr */
+ 	setlocale(LC_NUMERIC, "C");
+ #endif
+@@ -1575,7 +1575,7 @@
+     2) Running the "date" program to interpret the value of our --date
+        option.
+ 
+-  Reading the /etc/adjtime file is the next biggest source of delay and
++  Reading the /var/lib/hwclock/adjtime file is the next biggest source of delay and
+   uncertainty.
+ 
+   The user wants to know what time it was at the moment he invoked us,

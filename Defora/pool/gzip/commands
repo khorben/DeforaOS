@@ -1,0 +1,26 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr &&
+cp gzexe.in{,.bak} &&
+chmod u+w gzexe.in &&
+sed 's%"BINDIR"%/bin%' gzexe.in.bak > gzexe.in &&
+
+#build
+make &&
+
+#install
+DESTDIR=$PWD/defora/${NAME}-${VERSION}
+make DESTDIR=$DESTDIR install &&
+mkdir $DESTDIR/bin &&
+mv $DESTDIR/usr/bin/gzip $DESTDIR/bin &&
+rm $DESTDIR/usr/bin/{gunzip,zcat} &&
+ln -s gzip $DESTDIR/bin/gunzip &&
+ln -s gzip $DESTDIR/bin/zcat &&
+ln -s gunzip $DESTDIR/bin/uncompress &&
+rm $DESTDIR/usr/bin/zdiff &&
+ln -s zcmp $DESTDIR/usr/bin/zdiff &&
+rm $DESTDIR/usr/bin/{zfgrep,zgrep} &&
+ln -s zegrep $DESTDIR/usr/bin/zfgrep &&
+ln -s zegrep $DESTDIR/usr/bin/zgrep &&

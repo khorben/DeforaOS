@@ -1,0 +1,15 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr --with-sys-screenrc=/etc/screenrc &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+rm defora/${NAME}-${VERSION}/usr/bin/screen &&
+mv defora/${NAME}-${VERSION}/usr/bin/screen-${VERSION} defora/${NAME}-${VERSION}/usr/bin/screen &&
+mkdir defora/${NAME}-${VERSION}/etc &&
+cp etc/screenrc defora/${NAME}-${VERSION}/etc &&

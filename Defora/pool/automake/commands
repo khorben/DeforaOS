@@ -1,0 +1,13 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr --disable-debug &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+ln -sf aclocal-1.8 $PWD/defora/${NAME}-${VERSION}/usr/bin/aclocal &&
+ln -sf automake-1.8 $PWD/defora/${NAME}-${VERSION}/usr/bin/automake &&

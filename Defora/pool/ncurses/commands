@@ -1,0 +1,17 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr --with-shared --without-debug &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+chmod 755 defora/${NAME}-${VERSION}/usr/lib/lib*.so.$VERSION &&
+chmod 644 defora/${NAME}-${VERSION}/usr/lib/libncurses++.a &&
+mkdir -p defora/${NAME}-${VERSION}/lib &&
+mv defora/${NAME}-${VERSION}/usr/lib/lib*.so.5* defora/${NAME}-${VERSION}/lib/ &&
+ln -sf ../../lib/libncurses.so.5 defora/${NAME}-${VERSION}/usr/lib/libncurses.so &&
+ln -sf libncurses.so defora/${NAME}-${VERSION}/usr/lib/libcurses.so &&

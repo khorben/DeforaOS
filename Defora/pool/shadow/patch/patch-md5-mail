@@ -1,0 +1,21 @@
+diff -Naur shadow-4.0.4.1.orig/etc/login.defs.linux shadow-4.0.4.1/etc/login.defs.linux
+--- shadow-4.0.4.1.orig/etc/login.defs.linux	2003-05-04 22:09:43.000000000 +0200
++++ shadow-4.0.4.1/etc/login.defs.linux	2004-03-07 06:58:11.000000000 +0100
+@@ -126,7 +126,7 @@
+ #   QMAIL_DIR is for Qmail
+ #
+ #QMAIL_DIR	Maildir
+-MAIL_DIR	/var/spool/mail
++MAIL_DIR	/var/mail
+ #MAIL_FILE	.mail
+ 
+ #
+@@ -294,7 +294,7 @@
+ # Set to "no" if you need to copy encrypted passwords to other systems
+ # which don't understand the new algorithm.  Default is "no".
+ #
+-#MD5_CRYPT_ENAB	no
++MD5_CRYPT_ENAB	yes
+ 
+ #
+ # List of groups to add to the user's supplementary group set

@@ -1,0 +1,38 @@
+diff -Naur man-1.5m2.orig/configure man-1.5m2/configure
+--- man-1.5m2.orig/configure	2003-09-05 11:48:13.000000000 +0200
++++ man-1.5m2/configure	2004-03-07 05:50:39.000000000 +0100
+@@ -26,7 +26,7 @@
+ # (Indeed, -r may cause the terminal to get into funny states.
+ # Very inconvenient. For viewing pages in strange locales, set LC_*.)
+ #
+-DEFAULTLESSOPT="-is"
++DEFAULTLESSOPT="-isR"
+ #
+ # Note that not creating any cat directories (/var/cache/man or so)
+ # and not making man suid or sgid is recommended.
+diff -Naur man-1.5m2.orig/src/man.c man-1.5m2/src/man.c
+--- man-1.5m2.orig/src/man.c	2003-09-05 11:49:13.000000000 +0200
++++ man-1.5m2/src/man.c	2004-03-07 05:50:30.000000000 +0100
+@@ -547,7 +547,9 @@
+ 	       /* we should set line length and title line length */
+ 	       /* however, a .lt command here fails, only
+ 		  .ev 1; .lt ...; .ev helps for my version of groff */
+-	       sprintf(eos(bufh), "echo \".ll %d.%di\"; ", ll/10, ll%10);
++		  /* use the LL register instead of .ll to keep up with
++		  * changes in the groff-1.18 series */
++		  sprintf(eos(bufh), "echo \".nr LL %d.%di\"; ", ll/10, ll%10);
+ #if 0
+ 	       sprintf(eos(bufh), "echo \".lt %d.%di\"; ", ll/10, ll%10);
+ #endif
+diff -Naur man-1.5m2.orig/src/man.conf.in man-1.5m2/src/man.conf.in
+--- man-1.5m2.orig/src/man.conf.in	2003-09-05 11:48:13.000000000 +0200
++++ man-1.5m2/src/man.conf.in	2004-03-07 05:50:46.000000000 +0100
+@@ -36,7 +36,7 @@
+ #
+ # Every automatically generated MANPATH includes these fields
+ #
+-MANPATH	/usr/man
++#MANPATH	/usr/man
+ MANPATH /usr/share/man
+ MANPATH	/usr/local/man
+ MANPATH	/usr/X11R6/man

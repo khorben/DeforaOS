@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&

@@ -1,0 +1,14 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr --enable-gui=no &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+ln -s vim defora/${NAME}-${VERSION}/usr/bin/vi &&
+mkdir -p defora/${NAME}-${VERSION}/etc/vim &&
+cp runtime/vimrc_example.vim defora/${NAME}-${VERSION}/etc/vim/vimrc &&

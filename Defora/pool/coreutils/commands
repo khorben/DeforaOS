@@ -1,0 +1,21 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --host=$HOST --prefix=/usr &&
+
+#build
+make &&
+
+#install
+DESTDIR=$PWD/defora/${NAME}-${VERSION}
+make DESTDIR=$DESTDIR install &&
+mkdir -p $DESTDIR/{bin,usr/sbin} &&
+mv $DESTDIR/usr/bin/{basename,cat,chgrp,chmod,chown,cp,dd,df} $DESTDIR/bin &&
+mv $DESTDIR/usr/bin/{date,echo,false,head,install,ln,ls} $DESTDIR/bin &&
+mv $DESTDIR/usr/bin/{mkdir,mknod,mv,pwd,rm,rmdir,sync} $DESTDIR/bin &&
+mv $DESTDIR/usr/bin/{sleep,stty,su,test,touch,true,uname} $DESTDIR/bin &&
+mv $DESTDIR/usr/bin/chroot $DESTDIR/usr/sbin &&
+rm $DESTDIR/usr/bin/kill &&
+ln -s test $DESTDIR/bin/[ &&
+ln -s ../../bin/install $DESTDIR/usr/bin &&

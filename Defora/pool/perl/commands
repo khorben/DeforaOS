@@ -1,0 +1,12 @@
+#clean
+make distclean
+
+#configure
+./configure.gnu --prefix=/usr -Dpager="/bin/less -isR" &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+ln -sf perl5.8.3 defora/${NAME}-${VERSION}/usr/bin/perl &&

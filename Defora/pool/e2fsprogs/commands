@@ -1,0 +1,21 @@
+#clean
+make distclean
+
+#configure
+mkdir defora/${NAME}-build/ &&
+cd defora/${NAME}-build/ &&
+CFLAGS="-O2" ../../configure --host=$HOST --prefix=/usr --with-root-prefix="" --enable-elf-shlibs &&
+
+#build
+make &&
+
+#install
+cd ../.. &&
+make -C defora/${NAME}-build DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+make -C defora/${NAME}-build DESTDIR=$PWD/defora/${NAME}-${VERSION} install-libs &&
+ln -sf e2fsck defora/${NAME}-${VERSION}/sbin/fsck.ext2 &&
+ln -sf e2fsck defora/${NAME}-${VERSION}/sbin/fsck.ext3 &&
+ln -sf e2label defora/${NAME}-${VERSION}/sbin/findfs &&
+ln -sf e2label defora/${NAME}-${VERSION}/sbin/tune2fs &&
+ln -sf mke2fs defora/${NAME}-${VERSION}/sbin/mkfs.ext2 &&
+ln -sf mke2fs defora/${NAME}-${VERSION}/sbin/mkfs.ext3 &&

@@ -1,0 +1,16 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O" ./configure --host=$HOST --prefix=/usr --localstatedir=/var/lib/misc &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+mkdir -p defora/${NAME}-${VERSION}/var/lib/misc &&
+mkdir -p defora/${NAME}-${VERSION}/etc/init/rc{,S}.d &&
+cp defora/clean defora/${NAME}-${VERSION}/etc/init/rc.d/ &&
+chmod 755 defora/${NAME}-${VERSION}/etc/init/rc.d/clean &&
+ln -s ../rc.d/clean defora/${NAME}-${VERSION}/etc/init/rcS.d/S55clean &&

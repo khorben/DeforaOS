@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O2" ./configure --prefix=/usr --enable-nss=yes &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&

@@ -1,0 +1,12 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr &&
+
+#build
+make HAVE_KILL=yes HAVE_SLN=yes &&
+
+#install
+mkdir -p defora/${NAME}-${VERSION}/var/lib/hwclock &&
+make HAVE_KILL=yes HAVE_SLN=yes DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&

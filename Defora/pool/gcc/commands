@@ -1,0 +1,17 @@
+#clean
+make distclean
+
+#configure
+mkdir defora/${NAME}-build/ &&
+cd defora/${NAME}-build/ &&
+CFLAGS="-O2" CXXFLAGS="-O2" ../../configure --host=$HOST --prefix=/usr --enable-shared --enable-threads=posix --with-slibdir=/lib --enable-__cxa_atexit --enable-clocale=gnu &&
+
+#build
+make &&
+
+#install
+cd ../.. &&
+make -C defora/${NAME}-build DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
+ln -s gcc defora/${NAME}-${VERSION}/usr/bin/cc &&
+ln -s ../usr/bin/cpp defora/${NAME}-${VERSION}/lib/cpp &&
+ln -s ../bin/cpp defora/${NAME}-${VERSION}/usr/lib/cpp &&

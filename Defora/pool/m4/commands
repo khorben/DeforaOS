@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O" ./configure --host=$HOST --prefix=/usr --disable-debug &&
+
+#build
+make &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&

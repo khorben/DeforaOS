@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+./configure --host=$HOST --prefix=/usr --libdir=/etc --with-ssl --with-zlib &&
+
+#build
+make &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&

@@ -1,0 +1,18 @@
+#clean
+make distclean
+
+#configure
+CFLAGS="-O" ./configure --host=$HOST --prefix=/usr &&
+
+#build
+make &&
+
+#install
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
+ln -s libfl.a $PWD/defora/${NAME}-${VERSION}/usr/lib/libl.a &&
+cat > defora/${NAME}-${VERSION}/usr/bin/lex << "EOF"
+#!/bin/sh
+
+exec /usr/bin/flex -l "$@"
+EOF
+chmod 755 defora/${NAME}-${VERSION}/usr/bin/lex &&
