@@ -45,8 +45,8 @@ Config * parser(char * filename)
 
 static void _parser_error(State * state, char * message)
 {
-	fprintf(stderr, "%s%s%d%s%s\n", state->filename, ", line: ",
-			state->line, ": ", message);
+	fprintf(stderr, "%s%s%d%s%s\n", state->filename, ", line ", state->line,
+			": ", message);
 }
 
 static void _parser_scan(State * state)
@@ -116,8 +116,6 @@ static void _service(State * state)
 	/* service_name space socket space protocol space wait space id space
 	 * program newline */
 {
-	unsigned int i;
-
 	_service_name(state);
 	_space(state);
 	_socket(state);
@@ -131,18 +129,14 @@ static void _service(State * state)
 	_program(state);
 	_newline(state);
 	/* FIXME not so elegant */
-	if(state->service.name == NULL)
-		return;
-	config_service_add(state->config, service_new(state->service.name,
+	if(state->service.name != NULL)
+	{
+		config_service_add(state->config,
+				service_new(state->service.name,
 				state->service.socket, state->service.proto,
 				state->service.wait, state->service.id,
 				state->service.program));
-	free(state->service.name);
-	if(state->service.program != NULL)
-	{
-		for(i = 0; state->service.program[i] != NULL; i++)
-			free(state->service.program[i]);
-		free(state->service.program);
+		free(state->service.name);
 	}
 }
 
@@ -162,7 +156,7 @@ static void _socket(State * state)
 		state->service.socket = SS_DGRAM;
 	else
 		_parser_error(state, "stream or dgram expected");
-	_parser_check(state, TC_WORD);
+	_parser_check(state, TC_WORD); /* FIXME use test result */
 }
 
 static void _protocol(State * state)
@@ -180,7 +174,7 @@ static void _wait(State * state)
 		state->service.wait = SW_NOWAIT;
 	else
 		_parser_error(state, "wait or nowait expected");
-	_parser_check(state, TC_WORD);
+	_parser_check(state, TC_WORD); /* FIXME use test result */
 }
 
 static void _id(State * state)
@@ -209,11 +203,33 @@ static void _program(State * state)
 static void _program_name(State * state)
 	/* WORD */
 {
-	_parser_check(state, TC_WORD);
+	if((state->service.program = malloc(2 * sizeof(char*))) != NULL)
+	{
+		state->service.program[0] = strdup(state->token->string);
+		state->service.program[1] = NULL;
+	}
+	_parser_check(state, TC_WORD); /* FIXME use test result */
 }
 
 static void _program_argument(State * state)
 	/* WORD */
 {
+	unsigned int i;
+	char ** p;
+
+	if(state->service.program == NULL)
+	{
+		_parser_check(state, TC_WORD);
+		return; /* FIXME */
+	}
+	for(i = 0; state->service.program[i] != NULL; i++);
+	if((p = realloc(state->service.program, sizeof(char) * (i+1))) == NULL)
+	{
+		_parser_check(state, TC_WORD);
+		return; /* FIXME */
+	}
+	state->service.program = p;
+	state->service.program[i-1] = strdup(state->token->string);
+	state->service.program[i] = NULL;
 	_parser_check(state, TC_WORD);
 }
