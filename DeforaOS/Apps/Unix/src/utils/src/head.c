@@ -1,0 +1,78 @@
+/* head.c */
+
+
+
+#include <unistd.h>
+extern int optind;
+extern char * optarg;
+#include <stdio.h>
+
+
+/* head */
+static int _head_do(int flgn, char * filename);
+static int _head(int flgn, int argc, char * argv[])
+{
+	int res = 0;
+	int i;
+
+	if(argc == 0)
+		return _head_do(flgn, NULL);
+	for(i = 0; i < argc; i++)
+	{
+		if(_head_do(flgn, argv[i]) != 0)
+			res = 2;
+	}
+	return res;
+}
+
+static int _head_do(int flgn, char * filename)
+{
+	FILE * fp;
+	int n = 0;
+	int c;
+
+	if(filename == NULL)
+		fp = stdin;
+	else if((fp = fopen(filename, "r")) == NULL)
+	{
+		perror(filename);
+		return 1;
+	}
+	while((c = fgetc(fp)) != EOF && n < flgn)
+	{
+		if(c == '\n')
+			n++;
+		printf("%c", c);
+	}
+	if(filename != NULL)
+		fclose(fp);
+	return 0;
+}
+
+
+/* usage */
+static int _usage(void)
+{
+	fprintf(stderr, "%s", "Usage: head [-n number][file...]\n\
+  -n    print first number lines on standard output\n");
+	return 1;
+}
+
+
+/* main */
+int main(int argc, char* argv[])
+{
+	int flgn = 10;
+	int o;
+
+	while((o = getopt(argc, argv, "n:")) != -1)
+		switch(o)
+		{
+			case 'n':
+				flgn = atoi(optarg);
+				break;
+			case '?':
+				return _usage();
+		}
+	return _head(flgn, argc - optind, &argv[optind]);
+}
