@@ -51,67 +51,72 @@ static int _uniq_error(char * message, int ret)
 	return ret;
 }
 
+static void _do_count(int opts, char * line, FILE * fp);
 static int _uniq_do(int opts, char * fields, int chars,
 		FILE * infp, FILE * outfp)
 {
-	char * lastline = NULL;
+#define BUF 80
 	char * line = NULL;
 	int len = 0;
 	char * p;
-	unsigned int cnt = 1;
-#define BUF 80
 
 	for(;;)
 	{
-		if((p = realloc(line, sizeof(char) * (len + BUF))) == NULL)
+		if((p = realloc(line, len + BUF + 1)) == NULL)
 		{
-			free(lastline);
 			free(line);
-			return _uniq_error("malloc", 2);
+			_uniq_error("malloc", 0);
+			return 2;
 		}
 		line = p;
-		if(fgets(&line[len], BUF, infp) == NULL) /* FIXME */
+		if(fgets(&line[len], BUF + 1, infp) == NULL)
 		{
-			free(lastline);
-			free(line);
-			return _uniq_error("fread", 2);
+			if(!feof(infp))
+				_uniq_error("fread", 0);
+			break;
 		}
 		for(p = &line[len]; *p != '\0' && *p != '\n'; p++);
-		if(*p == '\0')
-		{
-			len += BUF;
+		if(p == line + BUF)
 			continue;
-		}
-		*p = '\0';
-		if(lastline == NULL)
-		{
-			lastline = line;
-			line = NULL;
-			len = 0;
-			continue;
-		}
-		if(strcmp(lastline, line) == 0)
-		{
-			cnt++;
-			continue;
-		}
-		if(cnt == 1 && !(opts & OPTS_d)) /* line is not repeated */
-			printf("%s%s\n", opts & OPTS_c ? "1 " : "", lastline);
-		else if(cnt > 1 && !(opts & OPTS_u)) /* line is repeated */
-		{
-			if(opts & OPTS_c)
-				printf("%d ", cnt);
-			printf("%s\n", lastline);
-		}
-		free(lastline);
-		lastline = line;
+		if(*p == '\n')
+			*p = '\0';
+#ifdef DEBUG
+		fprintf(stderr, "%s%s%s", "DEBUG: Got line \"", line, "\"\n");
+#endif
+		_do_count(opts, line, outfp);
 		line = NULL;
 		len = 0;
-		cnt = 1;
+	}
+	_do_count(opts, NULL, outfp);
+	return 0;
+}
+
+static void _do_count(int opts, char * line, FILE * fp)
+{
+	static char * lastline = NULL;
+	static unsigned int cnt = 1;
+
+	if(lastline == NULL)
+	{
+		lastline = line;
+		return;
+	}
+	if(line != NULL && strcmp(lastline, line) == 0)
+	{
+		cnt++;
+		return;
+	}
+	if(cnt == 1 && !(opts & OPTS_d)) /* line is not repeated */
+		fprintf(fp, "%s%s\n", opts & OPTS_c ? "1 " : "", lastline);
+	else if(cnt > 1 && !(opts & OPTS_u)) /* line is repeated */
+	{
+		if(opts & OPTS_c)
+			fprintf(fp, "%d ", cnt);
+		fprintf(fp, "%s\n", lastline);
 	}
 	free(lastline);
-	free(line);
-	return 0;
+	lastline = line;
+	cnt = 1;
 }
 
 
