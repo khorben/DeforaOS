@@ -1,4 +1,4 @@
-TARGETS	= basename cmp dirname false kill id link ln logname mkfifo true tty unlink
+TARGETS	= basename cat cmp dirname false kill id link ln logname mkfifo true tty unlink
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -11,6 +11,9 @@ all: $(TARGETS)
 
 basename: basename.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o basename basename.o
+
+cat: cat.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o cat cat.o
 
 cmp: cmp.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o cmp cmp.o
@@ -51,6 +54,9 @@ unlink: unlink.o
 
 basename.o: basename.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c basename.c
+
+cat.o: cat.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c cat.c
 
 cmp.o: cmp.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c cmp.c
