@@ -100,19 +100,4 @@ function articles_view($id)
 }
 
 
-switch($action)
-{
-	case "admin":
-		return articles_admin();
-	case "dump":
-		return articles_dump();
-	case "install":
-		return articles_install();
-	case "uninstall":
-		return articles_uninstall();
-	default:
-		return articles_default();
-}
-
-
 ?>
