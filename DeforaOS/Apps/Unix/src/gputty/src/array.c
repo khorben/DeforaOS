@@ -54,7 +54,8 @@ int array_set_size(Array * array, unsigned int size)
 	if((p = realloc(array->data, sizeof(void*) * size)) == NULL)
 		return 1;
 	array->data = p;
-	return 1;
+	array->size = size;
+	return 0;
 }
 
 

@@ -18,14 +18,18 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "config.h"
 
 
 /* Config */
 Config * config_new(void)
 {
-	/* FIXME */
-	return NULL;
+	Config * config;
+
+	if((config = hash_new()) == NULL)
+		return NULL;
+	return config;
 }
 
 void config_delete(Config * config)
@@ -37,16 +41,85 @@ void config_delete(Config * config)
 /* useful */
 int config_set(Config * config, char * section, char * variable, char * value)
 {
-	return 1;
+	Hash * h;
+
+	if((h = hash_get(config, section)) != NULL)
+		return hash_set(h, variable, value);
+	if((h = hash_new()) == NULL)
+		return 1;
+	if(hash_set(config, section, h) == 1)
+	{
+		hash_delete(h);
+		return 1;
+	}
+	return hash_set(h, variable, value);
 }
 
 
 int config_load(Config * config, char * filename)
 {
+#ifdef DEBUG
+	config_set(config, "", "ssh", "/usr/bin/ssh");
+	config_set(config, "", "xterm", "/usr/bin/wterm");
+	config_set(config, "", "sessions", "Defora,INSIA");
+	config_set(config, "Defora", "hostname", "defora.org");
+	config_set(config, "INSIA", "hostname", "ssh.insia.org");
+	return 0;
+#endif
 	return 1;
 }
 
+/* FIXME */
+typedef struct _HashEntry {
+	char * name;
+	void * data;
+} HashEntry;
+static void _save_section(Hash * h, unsigned int i, FILE * fp);
+static void _save_variables(Hash * h, FILE * fp);
 int config_save(Config * config, char * filename)
 {
-	return 1;
+	FILE * fp;
+	unsigned int i;
+	unsigned int j;
+
+	if((i = array_get_size(config)) == 0)
+		return 1;
+	if((fp = fopen(filename, "w")) == NULL)
+	{
+		fprintf(stderr, "%s", "gputty: ");
+		perror(filename);
+		return 1;
+	}
+	for(j = 0; j < i; j++)
+		_save_section(config, j, fp);
+	fclose(fp);
+	return 0;
+}
+
+static void _save_section(Hash * h, unsigned int i, FILE * fp)
+{
+	HashEntry * he;
+
+	he = array_get(h, i);
+	if(he->name[0] != '\0')
+		fprintf(fp, "[%s]\n", he->name);
+	else if(i != 0)
+		fwrite("[]\n", sizeof(char), 3, fp);
+	_save_variables(he->data, fp);
+	fwrite("\n", sizeof(char), 1, fp);
+}
+
+static void _save_variables(Hash * h, FILE * fp)
+{
+	unsigned int i;
+	unsigned int j;
+	HashEntry * he;
+
+	i = array_get_size(h);
+	for(j = 0; j < i; j++)
+	{
+		if((he = array_get(h, j)) == NULL)
+			break;
+		fprintf(fp, "%s=%s\n", he->name, (char*)he->data);
+	}
 }

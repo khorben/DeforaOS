@@ -47,11 +47,13 @@ GPuTTY * gputty_new(void)
 	}
 
 	/* Config */
-	/* FIXME */
-	g->config = config_new();
-	config_set(g->config, "", "ssh", "ssh");
-	config_load(g->config, "/etc/gputty");
-	config_load(g->config, ".gputty");
+	if((g->config = config_new()) != NULL) /* FIXME */
+	{
+		config_set(g->config, "", "ssh", "ssh");
+		config_set(g->config, "", "xterm", "xterm");
+/*		config_load(g->config, "/etc/gputty"); */
+		config_load(g->config, ".gputty");
+	}
 
 	/* widgets */
 	g->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -263,6 +265,7 @@ static void gputty_save(GtkWidget * widget, gpointer data)
 	username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 	port = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport));
 	gtk_clist_append(GTK_CLIST(g->sn_clsessions), &session);
+	free(session);
 }
 
 
@@ -275,6 +278,9 @@ int main(int argc, char * argv[])
 	if((gputty = gputty_new()) == NULL)
 		return 1;
 	gtk_main();
-	config_save(gputty->config, ".gputty");
+	if(gputty->config == NULL)
+		fprintf(stderr, "gputty: not saving configuration\n");
+	else if(config_save(gputty->config, ".gputty") != 0)
+		fprintf(stderr, "gputty: an error occured while saving configuration\n");
 	return 0;
 }

@@ -72,40 +72,53 @@ Hash * hash_new(void)
 void hash_delete(Hash * hash)
 {
 	unsigned int i;
+	HashEntry * he;
 
-	for(i = array_get_size(hash) - 1; i > 0; i--)
-		hashentry_delete(array_get(hash, i));
-	if(array_get_size(hash) > 0)
-		hashentry_delete(array_get(hash, 0));
+	if((i = array_get_size(hash)) != 0)
+		for(; i > 0; i--)
+		{
+			if((he = array_get(hash, i - 1)) != NULL)
+				hashentry_delete(he);
+		}
 	array_delete(hash);
 }
 
 
 /* useful */
+void * hash_get(Hash * hash, char * name)
+{
+	unsigned int i;
+	HashEntry * he;
+
+	if((i = array_get_size(hash)) == 0)
+		return NULL;
+	for(; i > 0; i--)
+	{
+		if((he = array_get(hash, i - 1)) == NULL)
+			return NULL;
+		if(strcmp(he->name, name) == 0)
+			return he->data;
+	}
+	return NULL;
+}
+
+
 int hash_set(Hash * hash, char * name, void * data)
 {
 	unsigned int i;
 	HashEntry * he;
 
-	for(i = array_get_size(hash) - 1; i > 0; i--)
-	{
-		if((he = array_get(hash, i)) == NULL)
-			return 1;
-		if(strcmp(he->name, name) == 0)
+	if((i = array_get_size(hash)) != 0)
+		for(; i > 0; i--)
 		{
-			hashentry_set_data(he, data);
-			return 0;
+			if((he = array_get(hash, i - 1)) == NULL)
+				return 1;
+			if(strcmp(he->name, name) == 0)
+			{
+				hashentry_set_data(he, data);
+				return 0;
+			}
 		}
-	}
-	if(array_get_size(hash) > 0)
-	{
-		he = array_get(hash, 0);
-		if(strcmp(he->name, name) == 0)
-		{
-			hashentry_set_data(he, data);
-			return 0;
-		}
-	}
 	if((he = hashentry_new(name, data)) == NULL)
 		return 1;
 	if(array_append(hash, he) == 0)
