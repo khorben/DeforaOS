@@ -4,6 +4,8 @@
 
 #include <unistd.h>
 extern int optind;
+#include <stdio.h>
+#include <string.h>
 #include <libutils/libutils.h>
 
 
@@ -33,9 +35,80 @@ static int _configure(char const * directory)
 	return res;
 }
 
+static int _configure_target(Config * config, char const * target);
 static int _configure_config(Config * config)
 {
+	char * targets;
+	char * cur;
+	
+	if((targets = config_get(config, "", "targets")) == NULL
+			|| *targets == '\0')
+	{
+		fprintf(stderr, "%s", "configure: no targets found\n");
+		return 1;
+	}
+	for(cur = targets; *targets; targets++)
+	{
+		if(*targets != ',')
+			continue;
+		*targets = '\0';
+		_configure_target(config, cur);
+		cur = targets + 1;
+	}
+	_configure_target(config, cur);
 	return 0;
+}
+
+static int _configure_binary(Config * config, char const * target);
+static int _configure_library(Config * config, char const * target);
+static int _configure_target(Config * config, char const * target)
+{
+	char * type;
+
+	if((type = config_get(config, target, "type")) == NULL)
+	{
+		fprintf(stderr, "%s%s%s", "configure: target \"", target,
+				"\" has empty type\n");
+		return 1;
+	}
+	if(strcmp("binary", type) == 0)
+		return _configure_binary(config, target);
+	if(strcmp("library", type) == 0)
+		return _configure_library(config, target);
+	fprintf(stderr, "%s%s%s%s%s", "configure: target \"", target,
+			"\" has unknown type \"", type, "\"\n");
+	return 1;
+}
+
+static int _configure_binary(Config * config, char const * target)
+{
+	char * sources;
+	char * cur;
+
+	if((sources = config_get(config, target, "sources")) == NULL
+			|| *sources == '\0')
+	{
+		fprintf(stderr, "%s%s%s", "configure: target \"", target,
+				"\" has empty type\n");
+		return 1;
+	}
+	for(cur = sources; *sources; sources++)
+	{
+		if(*sources != ',')
+			continue;
+		fprintf(stderr, "%s%s%s", "configure: would add source \"",
+				cur, "\"\n");
+		cur = sources + 1;
+	}
+	fprintf(stderr, "%s%s%s", "configure: would add source \"",
+			cur, "\"\n");
+	return 0;
+}
+
+static int _configure_library(Config * config, char const * target)
+{
+	fprintf(stderr, "%s", "configure: libraries are not implemented yet\n");
+	return 1;
 }
 
 
@@ -50,7 +123,6 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Config * config;
 	int o;
 
 	while((o = getopt(argc, argv, "h")) != -1)
