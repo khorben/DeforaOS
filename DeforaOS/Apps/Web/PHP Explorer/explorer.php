@@ -19,11 +19,15 @@
 
 
 
+require('config.php');
 require('common.php');
 
 
 function explorer_download($filename)
 {
+	global $root;
+
+	$filename = $root.'/'.$filename;
 	if(!is_readable($filename) | is_dir($filename))
 		return include('404.tpl');
 	$mime = mime_from_ext($filename);
@@ -36,6 +40,9 @@ function explorer_download($filename)
 
 function explorer_folder($folder)
 {
+	global $root;
+
+	$folder = $root.'/'.$folder;
 	if(($dir = opendir($folder)) == FALSE)
 		return;
 	readdir($dir);
@@ -84,12 +91,7 @@ function explorer_folder($folder)
 }
 
 
-if(isset($_GET['folder']))
-{
-	$folder = $_GET['folder'];
-	return include('explorer.tpl');
-}
 if(isset($_GET['download']))
-	return explorer_download($_GET['download']);
-$folder = '/';
-return include('explorer.tpl');
+	return explorer_download(filename_safe($_GET['download']));
+$folder = isset($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
+include('explorer.tpl');

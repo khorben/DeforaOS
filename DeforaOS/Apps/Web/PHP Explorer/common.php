@@ -19,6 +19,14 @@
 
 
 
+function filename_safe($filename)
+{
+	while($filename != ($filename = ereg_replace('(^|/)\.{1,2}($|/)', '/',
+					$filename)));
+	return $filename;
+}
+
+
 function html_safe($text)
 {
 	return htmlentities($text);

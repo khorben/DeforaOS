@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>Explorer</title>
+		<title>Index of <? echo html_safe($folder); ?></title>
 		<link type="text/css" rel="stylesheet" href="explorer.css"/>
 		<script type="text/javascript" src="explorer.js"></script>
 	</head>

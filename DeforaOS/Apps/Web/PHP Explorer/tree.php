@@ -20,6 +20,7 @@
 
 
 require('common.php');
+require('config.php');
 
 
 function list_dirs($path)
@@ -80,7 +81,9 @@ function _tree_level($level, $root)
 
 function tree()
 {
-	_tree_level(0, '/');
+	global $root;
+
+	_tree_level(0, $root);
 }
 
 ?>
