@@ -29,6 +29,7 @@ if($userid == 0)
 \t\t<input type=\"submit\" value=\"Login\"/>
 \t\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
 \t\t<input type=\"hidden\" name=\"action\" value=\"login\"/>
+\t\t<input type=\"hidden\" name=\"query\" value=\"".$_SERVER['QUERY_STRING']."\"/>
 \t</div>
 </form>
 <div>

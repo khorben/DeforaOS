@@ -86,6 +86,7 @@ function user_default()
 \t\t\t\t<input type=\"submit\" value=\"Login\"/>
 \t\t\t\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
 \t\t\t\t<input type=\"hidden\" name=\"action\" value=\"login\"/>
+\t\t\t\t<input type=\"hidden\" name=\"query\" value=\"".$_SERVER['QUERY_STRING']."\"/>
 \t\t\t</div>
 \t\t</form>
 \t\t<h2>Registration</h2>
@@ -214,7 +215,7 @@ function user_login()
 	$date = date("Y-m-d", time() + 31536000);
 	$query = "insert into daportal_sessions (sessionid, userid, ip, expires) values ('$sessionid', '$userid', '".$_SERVER['REMOTE_ADDR']."', '$date');\n";
 	sql_query($query);
-	header("Location: index.php");
+	header("Location: index.php?".$_POST['query']);
 	return 0;
 }
 
