@@ -170,12 +170,10 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'h':
-				if((opts & OPT_h) == 0)
-					opts += OPT_h;
+				opts |= OPT_h;
 				break;
 			case 'R':
-				if((opts & OPT_R) == 0)
-					opts += OPT_R;
+				opts |= OPT_R;
 				break;
 			case 'H':
 			case 'L':
