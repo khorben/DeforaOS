@@ -33,36 +33,64 @@ function admin_admin()
 	print("\t\t<h1>Administration</h1>\n");
 	if($administrator != 1)
 	{
-		print("\t\t<div>You have to be an administrator to access this page.</div>\n");
+		print("\t\t<p>You have to be an administrator to access this page.</p>\n");
 		return 0;
 	}
-	print("\t\t<div>
-\t\t\t<b>Enabled modules:</b>");
-	if(($res = sql_query("select modulename from daportal_modules where enable='1'")) != FALSE)
+	print("\t\t<h2>Installed modules</h2>\n");
+	$installed = array();
+	if(($res = sql_query("select moduleid, modulename, enable from daportal_modules order by modulename asc;")) == FALSE)
+		print("\t\t<p>Not any module installed.</p>\n");
+	else
 	{
+		print("\t\t<form method=\"post\" action=\"index.php\">
+<div class=\"headline\">
+\t<input type=\"submit\" name=\"type\" value=\"Enable\"/>
+\t<input type=\"submit\" name=\"type\" value=\"Disable\"/>
+\t<input type=\"submit\" name=\"type\" value=\"Uninstall\"/>
+\t<input type=\"hidden\" name=\"module\" value=\"admin\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"modules\"/>
+</div>
+<table>
+\t<tr><th></th><th>Module</th><th>ID</th><th>Enabled</th></tr>\n");
+		$i = 0;
 		while(sizeof($res) >= 1)
 		{
-			print(" <a href=\"index.php?module=".$res[0]["modulename"]."&action=admin\">".$res[0]["modulename"]."</a>");
+			$module = $res[0]['modulename'];;
+			if($res[0]['enable'] == 't')
+				$module = "<a href=\"index.php?module=$module&amp;action=admin\">$module<a>";
+			print("\t<tr><td><input type=\"checkbox\" name=\"id[$i]\" value=\"".$res[0]['moduleid']."\"/></td><td>$module</td><td>".$res[0]['moduleid']."</td><td>".($res[0]['enable'] == 't' ? 'Yes' : 'No')."</td></tr>\n");
+			$installed[] = $res[0]['modulename'];
 			array_shift($res);
 		}
+		print("</table>
+\t\t</form>\n");
 	}
+	print("\t\t<h2>Uninstalled modules</h2>
+\t\t<form method=\"post\" action=\"index.php\">
+<div class=\"headline\">
+\t<input type=\"submit\" name=\"type\" value=\"Install\"/>
+\t<input type=\"hidden\" name=\"module\" value=\"admin\"/>
+\t<input type=\"hidden\" name=\"action\" value=\"modules\"/>
+</div>");
+	if(($dir = opendir('modules')) == FALSE)
+		print("\t\t<p>Not any module available.</p>\n");
 	else
-		print(' none.');
-	print("\n\t\t</div>
-\t\t<div>
-\t\t\t<b>Disabled modules:</b>");
-	if(($res = sql_query("select modulename from daportal_modules where enable='0'")) != FALSE)
 	{
-		while(sizeof($res) >= 1)
+		print("<table>
+\t<tr><th></th><th>Module</th></tr>\n");
+		readdir($dir);
+		readdir($dir);
+		while(($dirname = readdir($dir)) != FALSE)
 		{
-			print(' '.$res[0]['modulename']);
-			array_shift($res);
+			if(!is_dir($dirname))
+				continue;
+			if(array_search($dirname, $installed) != FALSE)
+				continue;
+			print("\t<tr><td><input type=\"checkbox\" name=\"id[$i] value=\"$dirname\"/></td><td>$dirname</td></tr>\n");
 		}
+		print("</table>\n");
 	}
-	else
-		print(' none.');
-	print("<br/>
-\t\t</div>");
+	print("\t\t</form>\n");
 	return 0;
 }
 
