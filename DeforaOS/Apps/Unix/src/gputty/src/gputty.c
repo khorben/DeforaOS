@@ -49,6 +49,7 @@ GPuTTY * gputty_new(void)
 	/* Config */
 	/* FIXME */
 	g->config = config_new();
+	config_set(g->config, "", "ssh", "ssh");
 	config_load(g->config, "/etc/gputty");
 	config_load(g->config, ".gputty");
 

@@ -41,14 +41,13 @@ void array_delete(Array * array)
 }
 
 
-/* useful */
-unsigned int array_size(Array * array)
+unsigned int array_get_size(Array * array)
 {
 	return array->size;
 }
 
 
-int array_size_set(Array * array, unsigned int size)
+int array_set_size(Array * array, unsigned int size)
 {
 	void * p;
 
@@ -69,7 +68,7 @@ void * array_get(Array * array, unsigned int pos)
 
 int array_set(Array * array, unsigned int pos, void * data)
 {
-	if(array->size <= pos && array_size_set(array, pos + 1) != 0)
+	if(array->size <= pos && array_set_size(array, pos + 1) != 0)
 		return 1;
 	array->data[pos] = data;
 	return 0;
@@ -78,7 +77,7 @@ int array_set(Array * array, unsigned int pos, void * data)
 
 int array_append(Array * array, void * data)
 {
-	if(array_size_set(array, array->size + 1) != 0)
+	if(array_set_size(array, array->size + 1) != 0)
 		return 1;
 	array->data[array->size - 1] = data;
 	return 0;

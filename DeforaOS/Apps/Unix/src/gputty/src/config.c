@@ -35,12 +35,18 @@ void config_delete(Config * config)
 
 
 /* useful */
-int config_load(Config * config, char const * filename)
+int config_set(Config * config, char * section, char * variable, char * value)
 {
-	return 0;
+	return 1;
 }
 
-int config_save(Config * config, char const * filename)
+
+int config_load(Config * config, char * filename)
 {
-	return 0;
+	return 1;
+}
+
+int config_save(Config * config, char * filename)
+{
+	return 1;
 }

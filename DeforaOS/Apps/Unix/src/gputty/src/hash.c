@@ -73,9 +73,9 @@ void hash_delete(Hash * hash)
 {
 	unsigned int i;
 
-	for(i = array_size(hash) - 1; i > 0; i--)
+	for(i = array_get_size(hash) - 1; i > 0; i--)
 		hashentry_delete(array_get(hash, i));
-	if(array_size(hash) > 0)
+	if(array_get_size(hash) > 0)
 		hashentry_delete(array_get(hash, 0));
 	array_delete(hash);
 }
@@ -87,7 +87,7 @@ int hash_set(Hash * hash, char * name, void * data)
 	unsigned int i;
 	HashEntry * he;
 
-	for(i = array_size(hash) - 1; i > 0; i--)
+	for(i = array_get_size(hash) - 1; i > 0; i--)
 	{
 		if((he = array_get(hash, i)) == NULL)
 			return 1;
@@ -97,7 +97,7 @@ int hash_set(Hash * hash, char * name, void * data)
 			return 0;
 		}
 	}
-	if(array_size(hash) > 0)
+	if(array_get_size(hash) > 0)
 	{
 		he = array_get(hash, 0);
 		if(strcmp(he->name, name) == 0)

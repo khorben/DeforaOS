@@ -35,8 +35,8 @@ typedef struct _Array {
 Array * array_new(void);
 void array_delete(Array * array);
 
-/* useful */
-unsigned int array_size(Array * array);
+unsigned int array_get_size(Array * array);
+int array_set_size(Array * array, unsigned int size);
 
 void * array_get(Array * array, unsigned int pos);
 int array_set(Array * array, unsigned int pos, void * data);

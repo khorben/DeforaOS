@@ -35,7 +35,10 @@ Config * config_new(void);
 void config_delete(Config * config);
 
 /* useful */
-int config_load(Config * config, char const * filename);
-int config_save(Config * config, char const * filename);
+char * config_get(Config * config, char * section, char * variable);
+int config_set(Config * config, char * section, char * variable, char * value);
+
+int config_load(Config * config, char * filename);
+int config_save(Config * config, char * filename);
 
 # endif /* !_CONFIG_H */
