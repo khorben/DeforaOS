@@ -45,6 +45,7 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'm':
+				/* FIXME */
 				if((mode = strtol(optarg, NULL, 8)) > 0777)
 					return _usage();
 				break;
