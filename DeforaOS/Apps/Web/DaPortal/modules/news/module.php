@@ -183,18 +183,16 @@ function news_default()
 function news_dump()
 {
 	global $administrator, $moduleid;
+	require_once("system/contents.php");
 
 	if($administrator != 1)
 		return 0;
-	if(($res = sql_query("select contentid, title, content, author, date, enable from daportal_news, daportal_contents where moduleid='$moduleid' and newsid=contentid;")) == NULL)
-	{
-		print(";error while dumping news");
+	contents_dump();
+	if(($res = sql_query("select newsid, author, date from daportal_news;")) == NULL)
 		return 0;
-	}
 	while(sizeof($res) >= 1)
 	{
-		print("insert into daportal_contents (contentid, moduleid, title, content, enable) values ('".$res[0]["contentid"]."', '$moduleid', '".$res[0]["title"]."', '".$res[0]["enable"]."');\n");
-		print("insert into daportal_news (newsid, author, date) values ('".$res[0]["contentid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."');\n");
+		print("insert into daportal_news (newsid, author, date) values ('".$res[0]["newsid"]."', '".$res[0]["author"]."', '".$res[0]["date"]."');\n");
 		array_shift($res);
 	}
 	return 0;
@@ -245,9 +243,9 @@ function news_propose()
 	print("\t\t<h1>News proposal</h1>\n");
 	if($userid == 0)
 	{
-		print("\t\t<div>
+		print("\t\t<p>
 \t\t\tYou must be <a href=\"index.php?module=user\">identified</a> to propose a news.
-\t\t</div>\n");
+\t\t</p>\n");
 		return 0;
 	}
 
