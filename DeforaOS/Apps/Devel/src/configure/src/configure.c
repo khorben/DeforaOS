@@ -73,6 +73,7 @@ static int _variables_subdirs(FILE * fp, Config * config);
 static int _variables_target(FILE * fp, Config * config);
 static int _variables_cflags(FILE * fp, Config * config);
 static int _variables_ldflags(FILE * fp, Config * config);
+static int _variables_misc(FILE * fp, Config * config);
 static int _makefile_variables(FILE * fp, Config * config)
 {
 	int res = 0;
@@ -81,6 +82,7 @@ static int _makefile_variables(FILE * fp, Config * config)
 	res += _variables_target(fp, config);
 	res += _variables_cflags(fp, config);
 	res += _variables_ldflags(fp, config);
+	res += _variables_misc(fp, config);
 	return res;
 }
 
@@ -154,6 +156,12 @@ static int _variables_ldflags(FILE * fp, Config * config)
 	if((ldflags = config_get(config, "", "ldflags")) != NULL
 			&& *ldflags != '\0')
 		fprintf(fp, "%s%s%s", "LDFLAGS\t= ", ldflags, "\n");
+	return 0;
+}
+
+static int _variables_misc(FILE * fp, Config * config)
+{
+	fprintf(fp, "%s", "CC\t= cc\nRM\t= rm -f\n");
 	return 0;
 }
 
@@ -263,7 +271,7 @@ static void _handler_print(FILE * fp, char * source)
 {
 	_obj_print(fp, source);
 	fprintf(fp, "%s%s%s%s%s", ": ", source,
-			"\n\t$(CC) $(CFLAGSF) $(CFLAGS) -c ", source, "\n");
+			"\n\t$(CC) $(CFLAGSF) $(CFLAGS) -c ", source, "\n\n");
 }
 
 static void _clean_targets_objs(FILE * fp, Config * config);
