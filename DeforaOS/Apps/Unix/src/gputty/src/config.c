@@ -77,7 +77,7 @@ int config_load(Config * config, char * filename)
 	char * variable = NULL;
 	int c;
 	char * str;
-	int ret;
+	int ret = 0;
 
 	if((section = strdup("")) == NULL)
 	{
