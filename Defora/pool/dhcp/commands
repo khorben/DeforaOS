@@ -1,0 +1,11 @@
+#clean
+make distclean
+
+#configure
+./configure &&
+
+#build
+make DEBUG="" VARDB=/var/lib/dhcp &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} VARDB=/var/lib/dhcp LIBDIR=/usr/lib INCDIR=/usr/include install &&
