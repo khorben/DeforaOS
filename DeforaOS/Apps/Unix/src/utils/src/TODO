@@ -1,5 +1,6 @@
 all:
 - improve command line arguments fetching? (inspired from wc?)
+- factorize code (either need to improve configure or include a .c file)
 
 id:
 - write more readable code
@@ -7,9 +8,6 @@ id:
 
 kill:
 - get signal number from its name
-
-ls:
-- only has basic functionalities
 
 mkdir/rmdir:
 - check recursive algorithms
