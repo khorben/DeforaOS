@@ -149,12 +149,10 @@ static int _is_string_not_empty(char * string)
 	return *string == '\0' ? 0 : 1;
 }
 
+static int _file_rwx_g(mode_t g);
 static int _is_file_rwx(char * pathname, mode_t u, mode_t g, mode_t o)
 {
 	struct stat st;
-	struct group * group;
-	struct passwd * passwd;
-	char ** p;
 
 	if(stat(pathname, &st) != 0)
 		return 0;
@@ -163,17 +161,28 @@ static int _is_file_rwx(char * pathname, mode_t u, mode_t g, mode_t o)
 			return 1;
 	if((st.st_mode & g) != 0)
 	{
-		if((passwd = getpwuid(geteuid())) == NULL)
-			return 0;
-		if((group = getgrgid(st.st_gid)) == NULL)
-			return 0;
-		for(p = group->gr_mem; *p != NULL; p++)
-			if(strcmp(passwd->pw_name, *p) == 0)
-				return 1;
+		if(_file_rwx_g(st.st_gid) == 1)
+			return 1;
 		if(geteuid() == st.st_uid)
 			return 0;
 	}
 	return (st.st_mode & o) != 0 ? 1 : 0;
+}
+
+static int _file_rwx_g(gid_t gid)
+{
+	struct passwd * passwd;
+	struct group * group;
+	char ** p;
+
+	if((passwd = getpwuid(geteuid())) == NULL)
+		return 0;
+	if((group = getgrgid(gid)) == NULL)
+		return 0;
+	for(p = group->gr_mem; *p != NULL; p++)
+		if(strcmp(passwd->pw_name, *p) == 0)
+			return 1;
+	return 0;
 }
 
 static int _is_file_readable(char * pathname)
