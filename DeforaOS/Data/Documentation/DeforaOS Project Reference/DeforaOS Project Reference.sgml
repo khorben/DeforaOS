@@ -49,10 +49,11 @@ Today I think my ideal operating system should be open source, micro-kernel base
 		</para>
 	</sect1>
 	<sect1>
-		<title>Coherence</title>
+		<title>Usability</title>
 <!--
-- community open source problem
-- UNIX problem
+- introduce with community open source coherence etc problem
+- UNIX pros and cons (what to keep, and what not)
+- coherence
 - user-proof
 => developped by a small and tight team
 => remain transparent, accept external contributions
