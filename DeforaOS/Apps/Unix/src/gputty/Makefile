@@ -1,5 +1,5 @@
 PACKAGE	= gputty
-VERSION	= 0.9.5
+VERSION	= 0.9.6
 SUBDIRS	= src
 RM	= rm -f
 PREFIX	= /usr/local
@@ -18,7 +18,10 @@ dist: distclean
 	tar -czf $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/BUGS \
 		$(PACKAGE)-$(VERSION)/COPYING \
+		$(PACKAGE)-$(VERSION)/INSTALL \
+		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/*.c \
