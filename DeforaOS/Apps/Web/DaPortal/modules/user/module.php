@@ -139,21 +139,21 @@ function user_default()
 \t\t</div>\n");
 	print("\t\t<h3>Sessions</h3>\n");
 	if(($res = sql_query("select sessionid, ip, expires from daportal_sessions where userid='$userid';")) == FALSE)
-		print("\t\t\t<b>Warning:</b> could not fetch sessions.<br/>\n");
+		print("\t\t<b>Warning:</b> could not fetch sessions.<br/>\n");
 	else
 	{
-		print("\t\t\t<table cellspacing=\"0\">
-\t\t\t\t<tr>
-\t\t\t\t\t<th>Session ID</th><th>IP</th><th>Expiration</th>
-\t\t\t\t</tr>\n");
+		print("\t\t<table cellspacing=\"0\">
+\t\t\t<tr>
+\t\t\t\t<th>Session ID</th><th>IP</th><th>Expiration</th>
+\t\t\t</tr>\n");
 		while(sizeof($res) >= 1)
 		{
-			print("\t\t\t\t<tr>
-\t\t\t\t\t<td>".$res[0]["sessionid"]."</td><td>".$res[0]["ip"]."</td><td>".$res[0]["expires"]."</td>
-\t\t\t\t</tr>\n");
+			print("\t\t\t<tr>
+\t\t\t\t<td>".$res[0]["sessionid"]."</td><td>".$res[0]["ip"]."</td><td>".$res[0]["expires"]."</td>
+\t\t\t</tr>\n");
 			array_shift($res);
 		}
-		print("\t\t\t</table>\n");
+		print("\t\t</table>\n");
 	}
 	print("\t\t<form method=\"post\" action=\"index.php\">
 \t\t\t<div>
