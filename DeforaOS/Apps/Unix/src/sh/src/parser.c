@@ -348,17 +348,17 @@ static Token ** for_clause(Token ** tokens)
 
 /* name */
 static Token ** name(Token ** tokens)
+	/* NAME (rule 5) */
 {
-	/* FIXME */
-	return NULL;
+	return token_scan(tokens);
 }
 
 
 /* in */
 static Token ** in(Token ** tokens)
+	/* In (rule 6) */
 {
-	/* FIXME */
-	return NULL;
+	return token_scan(tokens);
 }
 
 
