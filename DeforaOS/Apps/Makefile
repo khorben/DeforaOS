@@ -1,4 +1,4 @@
-SUBDIRS	= Servers Unix
+SUBDIRS	= Devel Servers Unix
 
 
 all clean distclean:
