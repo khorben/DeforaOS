@@ -255,6 +255,13 @@ static Token ** command(Token ** tokens)
 
 /* compound_command */
 static Token ** compound_command(Token ** tokens)
+	/* brace_group
+	 * | subshell
+	 * | for_clause
+	 * | case_clause
+	 * | if_clause
+	 * | while_clause
+	 * | until_clause */
 {
 #ifdef DEBUG
 	fprintf(stderr, "compound_command(): %s\n", tokens[0]->string);
