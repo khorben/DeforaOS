@@ -335,7 +335,9 @@ static Token ** while_clause(Token ** tokens)
 	/* While compound_list do_group */
 {
 	/* FIXME */
-	return NULL;
+	tokens = token_scan(tokens);
+/*	tokens = compound_list */
+	return do_group(tokens);
 }
 
 
@@ -344,7 +346,9 @@ static Token ** until_clause(Token ** tokens)
 	/* Until compound_list do_group */
 {
 	/* FIXME */
-	return NULL;
+	tokens = token_scan(tokens);
+/*	tokens = compound_list */
+	return do_group(tokens);
 }
 
 
@@ -353,7 +357,9 @@ static Token ** brace_group(Token ** tokens)
 	/* Lbrace compound_list Rbrace */
 {
 	/* FIXME */
-	return NULL;
+	tokens = token_scan(tokens);
+/*	tokens = compound_list(tokens); */
+	return token_check(tokens, TC_RW_RBRACE);
 }
 
 
@@ -362,7 +368,9 @@ static Token ** do_group(Token ** tokens)
 	/* Do compound_list Done */
 {
 	/* FIXME */
-	return NULL;
+	tokens = token_scan(tokens);
+/*	tokens = compound_list(tokens); */
+	return token_check(tokens, TC_RW_DONE);
 }
 
 
