@@ -21,7 +21,7 @@
 //FIXME fill with main pages
 
 
-$title = "Pages";
+$title = "<a href=\"index.php\">Pages</a>";
 
 $content = "<ul>
 	<li><a href=\"index.php?page=index\">Homepage</a></li>
