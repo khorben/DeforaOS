@@ -15,7 +15,7 @@ extern int optind;
 static int _time_error(char * error, int ret);
 static int _time_exec(char * argv[]);
 static int _time_print(long real, long user, long sys);
-static int _time(int argc, char * argv[])
+static int _time(char * argv[])
 {
 	pid_t pid;
 	int status;
@@ -105,5 +105,5 @@ int main(int argc, char * argv[])
 	}
 	if(optind == argc)
 		return _usage();
-	return _time(argc - optind, &argv[optind]);
+	return _time(&argv[optind]);
 }
