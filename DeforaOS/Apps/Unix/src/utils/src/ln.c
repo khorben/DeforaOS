@@ -58,6 +58,7 @@ static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest)
 	if((lt == LT_HARD ? link(src, dest)
 				: symlink(src, dest)) == -1)
 	{
+		fprintf(stderr, "%s", "ln: ");
 		perror(src);
 		return 2;
 	}
@@ -75,7 +76,7 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 		if((p = realloc(dest, strlen(argv[argc-1]) + strlen(argv[i]) + 2))
 				== NULL)
 		{
-			perror("realloc");
+			perror("ln");
 			continue;
 		}
 		dest = p;

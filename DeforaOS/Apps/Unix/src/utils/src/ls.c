@@ -62,6 +62,7 @@ static int _ls_directory(char * filename, Prefs * p)
 
 	if((dir = opendir(filename)) == NULL)
 	{
+		fprintf(stderr, "%s", "ls: ");
 		perror(filename);
 		return 1;
 	}
@@ -80,6 +81,7 @@ static int _ls_file(char * filename, Prefs * p)
 
 	if(stat(filename, &buf) == -1)
 	{
+		fprintf(stderr, "%s", "ls: ");
 		perror(filename);
 		return 1;
 	}
