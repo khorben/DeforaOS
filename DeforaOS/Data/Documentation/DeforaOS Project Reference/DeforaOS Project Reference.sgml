@@ -46,6 +46,7 @@ Today I think my ideal operating system should be open source, micro-kernel base
 - conclude with community open source limitations for coordination etc
 -->
 		<para>
+FIXME
 		</para>
 	</sect1>
 	<sect1>
@@ -59,6 +60,7 @@ Today I think my ideal operating system should be open source, micro-kernel base
 => remain transparent, accept external contributions
 -->
 		<para>
+FIXME
 		</para>
 	</sect1>
 	<sect1>
@@ -66,11 +68,13 @@ Today I think my ideal operating system should be open source, micro-kernel base
 		<sect2>
 			<title>Micro kernel</title>
 			<para>
+FIXME
 			</para>
 		</sect2>
 		<sect2>
 			<title>Programming languages</title>
 			<para>
+FIXME
 			</para>
 		</sect2>
 		<sect2>
@@ -89,16 +93,19 @@ Every application runs inside what's called a "session". They are split in two p
 			<sect3>
 				<title>Sessions</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 			<sect3>
 				<title>Applications engines</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 			<sect3>
 				<title>Applications interfaces</title>
 				<para>
+FIXME
 				</para>
 				<para>
 The applications interfaces may detect the requested toolkit to use accord
@@ -107,6 +114,7 @@ The applications interfaces may detect the requested toolkit to use accord
 			<sect3>
 				<title>Interface toolkits</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 		</sect2>
@@ -142,6 +150,7 @@ About the graphical toolkit for applications, I insist that only one library wil
   * one can even login on a system service as if would join an existing session, and the setup and monitoring interfaces appear (make this possible generally from a user's session, and you've got the control panel)
 -->
 	<para>
+FIXME
 	</para>
 </chapter>
 
@@ -175,40 +184,52 @@ It seems reasonable, if not obvious, to determine independant tasks within the h
 		</para>
 		<sect2>
 			<title>Global tasks</title>
-			<formalpara>
+			<sect3>
+				<title>Communication</title>
+				<para>
+FIXME
+				</para>
+			</sect3>
+			<sect3>
 				<title>Programming interfaces</title>
 				<para>
+FIXME
 				</para>
-			</formalpara>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Cooperation tasks</title>
-			<formalpara>
+			<sect3>
 				<title>Documentations</title>
 				<para>
+FIXME
 				</para>
-			</formalpara>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Low-level applications</title>
 			<sect3>
 				<title>Assembler</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 			<sect3>
 				<title>C compiler</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 			<sect3>
 				<title>Micro-kernel</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 			<sect3>
 				<title>C library</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 		</sect2>
@@ -223,6 +244,7 @@ These applications only require their application engines. For an easy and safe 
 			<sect3>
 				<title>Text mode toolkit</title>
 				<para>
+FIXME
 				</para>
 			</sect3>
 		</sect2>
@@ -234,35 +256,39 @@ Every application that fits on a desktop: file browser, web browser, mail and ne
 		</sect2>
 		<sect2>
 			<title>Graphics</title>
-			<formalpara>
+			<sect3>
 				<title>Graphical server</title>
 				<para>
+FIXME
 				</para>
-			</formalpara>
-			<formalpara>
+			</sect3>
+			<sect3>
 				<title>Graphical mode toolkit</title>
 				<para>
+FIXME
 				</para>
-			</formalpara>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Services</title>
-			<formalpara>
+			<sect3>
 				<title>General purpose daemons</title>
 				<para>
+FIXME
 				</para>
-			</formalpara>
-			<formalpara>
+			</sect3>
+			<sect3>
 				<title>Networking daemons</title>
 				<para>
+FIXME
 				</para>
-			</formalpara>
-			<formalpara>
-				<title>Applications interfaces</title>
+			</sect3>
+			<sect3>
+				<title>User interfaces</title>
 				<para>
 The only essential part of these services is their application engines.
 				</para>
-			</formalpara>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>POSIX environment</title>
