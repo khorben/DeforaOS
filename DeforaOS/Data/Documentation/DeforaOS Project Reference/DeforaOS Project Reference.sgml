@@ -45,6 +45,8 @@ Today I think my ideal operating system should be open source, micro-kernel base
 - security
 - conclude with community open source limitations for coordination etc
 -->
+		<para>
+		</para>
 	</sect1>
 	<sect1>
 		<title>Coherence</title>
@@ -55,14 +57,20 @@ Today I think my ideal operating system should be open source, micro-kernel base
 => developped by a small and tight team
 => remain transparent, accept external contributions
 -->
+		<para>
+		</para>
 	</sect1>
 	<sect1>
 		<title>Technical choices</title>
 		<sect2>
 			<title>Micro kernel</title>
+			<para>
+			</para>
 		</sect2>
 		<sect2>
 			<title>Programming languages</title>
+			<para>
+			</para>
 		</sect2>
 		<sect2>
 			<title>Applications</title>
@@ -71,13 +79,17 @@ Today I think my ideal operating system should be open source, micro-kernel base
 - application interfaces
 - messages
 -->
+			<para>
+			</para>
 		</sect2>
 		<sect2>
 			<title>Graphical server</title>
 <!--
-- client-side toolkit
+- client-side toolkit?
 - OpenGL only server
 -->
+			<para>
+			</para>
 		</sect2>
 	</sect1>
 </chapter>
