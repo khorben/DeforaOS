@@ -207,8 +207,9 @@ static void _id(State * state)
 					": No such user\n");
 		else
 			inetd_error(state->token->string, 0);
-		state->service.id.uid = -1;
+		state->service.id.uid = 0;
 	}
+	state->service.id.gid = 0;
 	_parser_check(state, TC_WORD);
 }
 
