@@ -1,5 +1,5 @@
 all:
-- improve command line arguments fetching?
+- improve command line arguments fetching? (inspired from wc?)
 
 id:
 - write more readable code
