@@ -26,11 +26,22 @@ if(eregi('module.php', $_SERVER['REQUEST_URI']))
 }
 
 
-function display_date($date)
+//count available news
+//PRE	$enable		0	count disabled news
+//			1	count enabled news
+//			else	every news
+//POST		>= 0	success
+//		-1	error
+function count_news($enable)
 {
-	$date = explode('-', $date);
-	$date = mktime(0, 0, 0, $date[1], $date[2], $date[0]);
-	print(date('l, F jS Y', $date));
+	global $moduleid;
+
+	$query = 'select count(*) from daportal_news, daportal_contents where moduleid=\''.$moduleid.'\' and contentid=newsid';
+	if($enable == 0 || $enable == 1)
+		$query .= ' and enable=\''.$enable.'\'';
+	if(($res = sql_query($query)) == FALSE)
+		return -1;
+	return $res[0]['count'];
 }
 
 
@@ -44,6 +55,34 @@ function display($title, $author, $date, $content)
 \t\t\t<div class=\"news_content\">$content</div>
 \t\t</div>\n");
 }
+
+
+function display_admin($id, $title, $enable, $author, $date)
+{
+	print("\t\t\t<tr>
+\t\t\t\t<td>$title</td>
+\t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
+\t\t\t\t<td>$date</td>
+\t\t\t\t<td>");
+	print("<form method=\"post\" action=\"index.php\" style=\"display: inline\">
+\t<input type=\"submit\" value=\"".($enable ? 'Disable' : 'Enable')."\">
+\t<input type=\"hidden\" name=\"module\" value=\"news\">
+\t<input type=\"hidden\" name=\"action\" value=\"moderate\">
+\t<input type=\"hidden\" name=\"newsid\" value=\"$id\">
+\t<input type=\"hidden\" name=\"enable\" value=\"".($enable ? "0" : "1")."\">
+</form>");
+	print("</td>
+\t\t\t</tr>\n");
+}
+
+
+function display_date($date)
+{
+	$date = explode('-', $date);
+	$date = mktime(0, 0, 0, $date[1], $date[2], $date[0]);
+	print(date('l, F jS Y', $date));
+}
+
 
 function display_summary($id, $title, $author, $date)
 {
@@ -59,6 +98,7 @@ function display_summary($id, $title, $author, $date)
 function news_admin()
 {
 	global $administrator, $moderator, $moduleid;
+	$npp = 10; //news per page
 
 	print("\t\t<h1>News administration</h1>\n");
 	if($administrator != 1 && $moderator != 1)
@@ -66,11 +106,20 @@ function news_admin()
 		print("\t\t<p>Access denied.</p>\n");
 		return 0;
 	}
-	if(($res = sql_query("select newsid, title, username, date, enable from daportal_contents, daportal_news, daportal_users where moduleid='$moduleid' and contentid=newsid and userid=author;")) == NULL)
+	if(($count = count_news(-1)) == 0)
 	{
-		print("\t\t<p>Not any news yet.</p>\n");
+		print("\t\t<p>There aren't any news yet.</p>\n");
 		return 0;
 	}
+	$offset = is_numeric($_GET['offset']) ? $_GET['offset'] * $npp : 0;
+	if(($res = sql_query("select newsid, title, enable, date, username from daportal_contents, daportal_news, daportal_users where moduleid='$moduleid' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) == FALSE)
+	{
+		print("\t\t<p>No news to display.</p>\n");
+		return 0;
+	}
+	$first = $offset + 1;
+	$last = $first + $npp - 1;
+	print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
 	print("\t\t<table>
 \t\t\t<tr>
 \t\t\t\t<th>Title</th>
@@ -80,23 +129,27 @@ function news_admin()
 \t\t\t<tr/>\n");
 	while(sizeof($res) >= 1)
 	{
-		$author = $res[0]['username'];
-		$enable = $res[0]['enable'] == 't';
-		print("\t\t\t<tr>
-\t\t\t\t<td><a href=\"index.php?module=news&amp;id=".$res[0]['newsid']."\">".$res[0]['title']."</a></td>
-\t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
-\t\t\t\t<td>".$res[0]['date']."</td>
-\t\t\t\t<td><form method=\"post\" action=\"index.php\" style=\"display: inline\">
-\t<input type=\"submit\" value=\"".($enable ? 'Disable' : 'Enable')."\">
-\t<input type=\"hidden\" name=\"module\" value=\"news\">
-\t<input type=\"hidden\" name=\"action\" value=\"moderate\">
-\t<input type=\"hidden\" name=\"newsid\" value=\"".$res[0]['newsid']."\">
-\t<input type=\"hidden\" name=\"enable\" value=\"".($enable ? "0" : "1")."\">
-</form></td>
-\t\t\t<tr>\n");
+		display_admin($res[0]['newsid'],
+				$res[0]['title'],
+				$res[0]['enable'] == 't',
+				$res[0]['username'],
+				$res[0]['date']);
 		array_shift($res);
 	}
 	print("\t\t</table>\n");
+	print("\t\t<p>Page: ");
+	if($_GET['offset'] == 0)
+		print('1');
+	else
+		print('<a href="index.php?module=news&amp;action=admin&amp;offset=0">1</a>');
+	for($i = 1; $i < $count / $npp; $i++)
+	{
+		if($i == $_GET['offset'])
+			print(' | '.($i+1));
+		else
+			print(" | <a href=\"index.php?module=news&amp;action=admin&amp;offset=$i\">".($i+1).'</a>');
+	}
+	print("</p>\n");
 	return 0;
 }
 
