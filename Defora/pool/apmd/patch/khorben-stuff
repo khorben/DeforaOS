@@ -1,0 +1,76 @@
+diff -Naur apmd-3.0.2/Makefile apmd-3.0.2.pkg/Makefile
+--- apmd-3.0.2/Makefile	2001-11-25 23:46:16.000000000 +0100
++++ apmd-3.0.2.pkg/Makefile	2004-04-25 03:57:46.000000000 +0200
+@@ -28,19 +28,21 @@
+ .SUFFIXES:
+ 
+ OBJS=apmlib.o
+-EXES=apm apmd xapm apmsleep
++EXES=apm apmd apmsleep
+ HEADERS=apm.h
+ 
++DESTDIR=
+ PREFIX=/usr
+ MANDIR=${PREFIX}/man
+-APMD_PROXY_DIR=/etc
++APMD_PROXY_DIR=/etc/apm
+ 
+ CC=gcc
+ CFLAGS=-O -g
+-XTRACFLAGS=-Wall -pipe -I. -I/usr/src/linux/include \
++XTRACFLAGS=-Wall -pipe -I. -I/lib/modules/`uname -r`/build \
++		-I/usr/src/linux/include \
+ 		-I/usr/src/linux-2.2/include -I /usr/src/linux-2.0/include \
+ 		-DVERSION=\"$(VERSION)\" \
+-		-DAPMD_PROXY_NAME=\"$(APMD_PROXY_DIR)/apmd_proxy\"
++		-DAPMD_PROXY_NAME=\"$(APMD_PROXY_DIR)/proxy\"
+ LDFLAGS=
+ XTRALDFLAGS=-L. -lapm
+ XLDFLAGS=-L/usr/X11R6/lib
+@@ -80,27 +82,25 @@
+ 	rcs2log > ChangeLog
+ 
+ install: $(EXES)
+-	[ -d ${PREFIX}/bin      ] || install -d ${PREFIX}/bin
+-	[ -d ${PREFIX}/sbin     ] || install -d ${PREFIX}/sbin
+-	[ -d ${MANDIR}/man1     ] || install -d ${MANDIR}/man1
+-	[ -d ${MANDIR}/fr/man1  ] || install -d ${MANDIR}/fr/man1
+-	[ -d ${MANDIR}/man8     ] || install -d ${MANDIR}/man8
+-	[ -d ${PREFIX}/lib      ] || install -d ${PREFIX}/lib
+-	[ -d ${PREFIX}/include  ] || install -d ${PREFIX}/include
+-	[ -d ${APMD_PROXY_DIR}  ] || install -d ${APMD_PROXY_DIR}
+-	install        apm             ${PREFIX}/bin
+-	install        on_ac_power     ${PREFIX}/bin
+-	install -m 644 apm.1           ${MANDIR}/man1
+-	install        apmd            ${PREFIX}/sbin
+-	install -b -Vt apmd_proxy      ${APMD_PROXY_DIR}
+-	install -m 644 apmd.8          ${MANDIR}/man8
+-	install        xapm            ${PREFIX}/bin
+-	install -m 644 xapm.1          ${MANDIR}/man1/xapm.1
+-	install        apmsleep	       ${PREFIX}/bin
+-	install -m 644 apmsleep.1      ${MANDIR}/man1
+-	install -m 644 apmsleep.1.fr   ${MANDIR}/fr/man1
+-	install -m 644 libapm.a        ${PREFIX}/lib
+-	install -m 644 apm.h           ${PREFIX}/include
++	[ -d ${DESTDIR}${PREFIX}/bin      ] || install -d ${DESTDIR}${PREFIX}/bin
++	[ -d ${DESTDIR}${PREFIX}/sbin     ] || install -d ${DESTDIR}${PREFIX}/sbin
++	[ -d ${DESTDIR}${MANDIR}/man1     ] || install -d ${DESTDIR}${MANDIR}/man1
++	[ -d ${DESTDIR}${MANDIR}/fr/man1  ] || install -d ${DESTDIR}${MANDIR}/fr/man1
++	[ -d ${DESTDIR}${MANDIR}/man8     ] || install -d ${DESTDIR}${MANDIR}/man8
++	[ -d ${DESTDIR}${PREFIX}/lib      ] || install -d ${DESTDIR}${PREFIX}/lib
++	[ -d ${DESTDIR}${PREFIX}/include  ] || install -d ${DESTDIR}${PREFIX}/include
++	[ -d ${DESTDIR}${APMD_PROXY_DIR}  ] || install -d ${DESTDIR}${APMD_PROXY_DIR}
++	install        apm             ${DESTDIR}${PREFIX}/bin
++	install        on_ac_power     ${DESTDIR}${PREFIX}/bin
++	install -m 644 apm.1           ${DESTDIR}${MANDIR}/man1
++	install        apmd            ${DESTDIR}${PREFIX}/sbin
++	install -b -Vt apmd_proxy      ${DESTDIR}${APMD_PROXY_DIR}/proxy
++	install -m 644 apmd.8          ${DESTDIR}${MANDIR}/man8
++	install        apmsleep	       ${DESTDIR}${PREFIX}/bin
++	install -m 644 apmsleep.1      ${DESTDIR}${MANDIR}/man1
++	install -m 644 apmsleep.1.fr   ${DESTDIR}${MANDIR}/fr/man1
++	install -m 644 libapm.a        ${DESTDIR}${PREFIX}/lib
++	install -m 644 apm.h           ${DESTDIR}${PREFIX}/include
+ 
+ .PHONY:	clean distclean
+ distclean clean:

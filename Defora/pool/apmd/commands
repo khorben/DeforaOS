@@ -1,0 +1,10 @@
+#clean
+make distclean
+
+#configure
+
+#build
+make CFLAGS="-O3 -march=i686 -fomit-frame-pointer" LDFLAGS="-s" &&
+
+#install
+make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
