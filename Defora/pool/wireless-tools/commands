@@ -1,0 +1,10 @@
+#clean
+make clean
+
+#configure
+
+#build
+make &&
+
+#install
+make PREFIX=$PWD/defora/${NAME}-${VERSION}/usr install &&
