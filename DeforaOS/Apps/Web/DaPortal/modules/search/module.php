@@ -41,9 +41,9 @@ function search_admin()
 function search_default()
 {
 	if($_GET["q"] == "")
-		print("\t\t<h1>Search</h1>\n");
+		print("\t\t<h1><img src=\"modules/search/icon.png\" alt=\"search\"/>Search</h1>\n");
 	else
-		print("\t\t<h1>Search results</h1>\n");
+		print("\t\t<h1><img src=\"modules/search/icon.png\" alt=\"search\"/>Search results</h1>\n");
 	print("\t\t<form method=\"get\" action=\"index.php\">
 \t\t\t<div>
 \t\t\t\t<input type=\"hidden\" name=\"module\" value=\"search\"/>

@@ -91,7 +91,7 @@ function news_default()
 {
 	global $username, $moduleid;
 
-	print("\t\t<h1>News</h1>\n");
+	print("\t\t<h1><img src=\"modules/news/icon.png\" alt=\"news\"/>News</h1>\n");
 	if(is_numeric($_GET["id"]))
 	{
 		$newsid = $_GET["id"];

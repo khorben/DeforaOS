@@ -71,7 +71,7 @@ function admin_default()
 {
 	global $administrator;
 
-	print("\t\t<h1>Administration</h1>\n");
+	print("\t\t<h1><img src=\"modules/admin/icon.png\" alt=\"admin\"/>Administration</h1>\n");
 	if($administrator != 1)
 	{
 		print("\t\t<div>You have to be an administrator to access this page.</div>\n");
