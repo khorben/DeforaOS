@@ -303,6 +303,7 @@ static void _obj_print(FILE * fp, char * obj)
 static void _target_link(FILE * fp, Config * config, char * target)
 {
 	char * type;
+	char * p;
 
 	if((type = config_get(config, target, "type")) == NULL)
 	{
@@ -311,9 +312,14 @@ static void _target_link(FILE * fp, Config * config, char * target)
 		return;
 	}
 	if(strcmp("binary", type) == 0)
-		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s", target, ": $(", target,
-				"_OBJS)\n", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) ",
-				"-o ", target, " $(", target, "_OBJS)\n\n");
+	{
+		fprintf(fp, "%s%s%s%s%s", target, ": $(", target,
+				"_OBJS)\n", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) ");
+		if((p = config_get(config, target, "ldflags")) != NULL)
+			fprintf(fp, "%s%s", p, " ");
+		fprintf(fp, "%s%s%s%s%s", "-o ", target,
+				" $(", target, "_OBJS)\n\n");
+	}
 	else if(strcmp("library", type) == 0)
 		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 				target, ": ", target, ".a ", target, ".so\n",
