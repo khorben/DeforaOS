@@ -64,12 +64,15 @@ int main(int argc, char* argv[])
 {
 	int flgn = 10;
 	int o;
+	char * p;
 
 	while((o = getopt(argc, argv, "n:")) != -1)
 		switch(o)
 		{
 			case 'n':
-				flgn = atoi(optarg);
+				flgn = strtol(optarg, &p, 10);
+				if(*(optarg) == '\0' || *p != '\0')
+					return _usage();
 				break;
 			case '?':
 				return _usage();
