@@ -45,6 +45,7 @@ static int _test(int argc, char * argv[])
 /* n */ static int _is_string_not_empty(char * string);
 /* r */ static int _is_file_readable(char * pathname);
 /* S */ static int _is_file_socket(char * pathname);
+/* s */ static int _is_file_size(char * pathname);
 /* w */ static int _is_file_writable(char * pathname);
 /* x */ static int _is_file_executable(char * pathname);
 /* z */ static int _is_string_empty(char * string);
@@ -73,6 +74,8 @@ static int _test_single(char c, char * argv)
 			return _is_file_readable(argv);
 		case 'S':
 			return _is_file_socket(argv);
+		case 's':
+			return _is_file_size(argv);
 		case 'w':
 			return _is_file_writable(argv);
 		case 'x':
@@ -197,6 +200,15 @@ static int _is_file_socket(char * pathname)
 	if(stat(pathname, &st) != 0)
 		return 0;
 	return (st.st_mode & S_IFSOCK) ? 1 : 0; /* FIXME */
+}
+
+static int _is_file_size(char * pathname)
+{
+	struct stat st;
+
+	if(stat(pathname, &st) != 0)
+		return 0;
+	return st.st_size > 0 ? 1 : 0;
 }
 
 static int _is_string_empty(char * string)
