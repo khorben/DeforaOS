@@ -84,9 +84,13 @@ function admin_default()
 		while(sizeof($res) >= 1)
 		{
 			$modulename = $res[0]["modulename"];
+			print("\t\t\t<div style=\"display: inline\">
+\t\t\t\t<a href=\"index.php?module=".$modulename."&amp;action=admin\">\n");
 			if(file_exists("modules/".$modulename."/icon.png"))
-				print("\t\t\t<div><img src=\"modules/".$modulename."/icon.png\" alt=\"".$modulename."\"/></div>\n");
-			print("\t\t\t<div>$modulename</div>\n");
+				print("\t\t\t\t\t<div style=\"display: table-row\"><img src=\"modules/".$modulename."/icon.png\" alt=\"".$modulename."\"/></div>\n");
+			print("\t\t\t\t\t<div style=\"display: table-row\">$modulename</div>
+\t\t\t\t</a>
+\t\t\t</div>\n");
 			array_shift($res);
 		}
 	}
