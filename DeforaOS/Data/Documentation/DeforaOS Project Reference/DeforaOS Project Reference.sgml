@@ -84,15 +84,42 @@ Today I think my ideal operating system should be open source, micro-kernel base
   * then, let applications check which mode is available ($DISPLAY, istty(), ?) and load the appropriate module for rendering
 -->
 			<para>
+Every application runs inside what's called a "session". They are split in two parts: the application "engine", and the "interface". The end-user interaction should be presented the same way in text mode or graphical mode, possibly via the same API, and using only one binary for both.
 			</para>
+			<sect3>
+				<title>Sessions</title>
+				<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>Applications engines</title>
+				<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>Applications interfaces</title>
+				<para>
+				</para>
+				<para>
+The applications interfaces may detect the requested toolkit to use accord
+				</para>
+			</sect3>
+			<sect3>
+				<title>Interface toolkits</title>
+				<para>
+				</para>
+			</sect3>
 		</sect2>
 		<sect2>
 			<title>Graphical server</title>
 <!--
 - client-side toolkit?
-- OpenGL only server
 -->
 			<para>
+The graphics library would be fully OpenGL compliant. It is not yet known how the clients will communicate with the graphical server. In case of a socket based communication (maybe implemented anyway to run on other OSes), instead of the current kernel based one, the network transparency will be straight-forward. It may not be efficient though... This will be decided later.
+			</para>
+			<para>
+About the graphical toolkit for applications, I insist that only one library will be supported, and binary compatible with the text mode toolkit. It may be more efficient to implement the toolkit on the server side, this will be decided later too.
 			</para>
 		</sect2>
 	</sect1>
@@ -104,7 +131,7 @@ Today I think my ideal operating system should be open source, micro-kernel base
 - filesystem: keep what's good in UNIX, present it in a friendlier way
 - sessions
   * sessions manager/init => itself a session? => can log on it and set it up?
-  * system sessions (services)
+  * system sessions/engines (services)
   * user sessions
 - login process
   * one can even login on a system service as if would join an existing session, and the setup and monitoring interfaces appear (make this possible generally from a user's session, and you've got the control panel)
