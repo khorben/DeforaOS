@@ -20,7 +20,7 @@
 
 $title = "Login";
 
-global $userid, $username;
+global $userid, $username, $administrator;
 if($userid == 0)
 	$content = "<form method=\"post\" action=\"index.php\">
 \t<div>
@@ -36,8 +36,10 @@ if($userid == 0)
 </div>\n";
 else
 	$content = "Logged in as <a href=\"index.php?module=user&action=homepage\">$username</a><br/>
-<br/>
-<form method=\"post\" action=\"index.php\">
+<br/>\n";
+	if($administrator == 1)
+		$content .= "<a href=\"index.php?module=admin\">Administration</a><br/><br/>\n";
+	$content .= "<form method=\"post\" action=\"index.php\">
 \t<div>
 \t\t<input type=\"submit\" value=\"Logout\"/>
 \t\t<input type=\"hidden\" name=\"module\" value=\"user\"/>
