@@ -5,6 +5,7 @@
 #ifndef __INETD_H
 # define __INETD_H
 
+# include <sys/select.h>
 # include "config.h"
 
 
