@@ -14,7 +14,6 @@ static int _link(char * file1, char * file2)
 		perror("link");
 		return 2;
 	}
-
 	return 0;
 }
 
