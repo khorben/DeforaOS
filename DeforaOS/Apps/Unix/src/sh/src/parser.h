@@ -9,6 +9,6 @@
 
 
 /* functions */
-Token ** complete_command(TokenList * token, int argc, char * argv[]);
+Token ** complete_command(TokenList * token);
 
 #endif /* __PARSER_H */
