@@ -34,6 +34,8 @@ typedef struct _GPuTTY {
 	/* Config */
 	Config * config;
 
+	int selection;
+
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * vbox;
