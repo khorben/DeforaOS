@@ -5,7 +5,7 @@ PHP Explorer known bugs
 There are no known bugs up to this date. However, it is absolutely critical to
 know and understand the following:
 - this project is alpha software;
-- this project has not any security check at all.
+- this project may reveal critical information to the user.
 
 Consequently, do not allow access to this software to anyone you may not trust.
 
@@ -15,9 +15,7 @@ The following list of features are planned:
   sub-tree to hide the adequate folders, which is everything but optimal);
 - detect the browsers capacities as a file viewer, to allow direct visualization
   of the adequate files;
-- prevent directory traversal attacks;
 - allow files deletion, renaming and upload;
-- allow the configuration of a given root for the filesystem;
 - find a way to securely run the Explorer with different UIDs, with suExec for
   instance;
 - work on file/mime/icon associations (with freedesktop compliance in mind);
