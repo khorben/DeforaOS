@@ -30,7 +30,7 @@ function display($title, $author, $date, $content)
 {
 	print("\t\t<div class=\"news\">
 \t\t\t<div class=\"news_title\">$title</div>
-\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=news&username=$author\">$author</a>, on $date</div>
+\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a>, on $date</div>
 \t\t\t<div class=\"news_content\">$content</div>
 \t\t</div>\n");
 }
@@ -43,12 +43,10 @@ function news_admin()
 	if($administrator != 1 && $moderator != 1)
 		return 0;
 	print("\t\t<h1>News administration</h1>
-\t\t<div>
-\t\t\tYou can <a href=\"index.php?module=news&action=propose\">propose news</a>.
-\t\t</div>\n");
+\t\t<p>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</p>\n");
 	if(($res = sql_query("select newsid, title, username, date, enable from daportal_contents, daportal_news, daportal_users where moduleid='$moduleid' and contentid=newsid and userid=author;")) == FALSE)
 	{
-		print("\t\t<div>Not any news yet.</div>\n");
+		print("\t\t<p>Not any news yet.</p>\n");
 		return 0;
 	}
 	print("\t\t<table>
@@ -63,8 +61,8 @@ function news_admin()
 		$author = $res[0]["username"];
 		$enable = $res[0]["enable"] == "t";
 		print("\t\t\t<tr>
-\t\t\t\t<td><a href=\"index.php?module=news&action=view&newsid=".$res[0]["newsid"]."\">".$res[0]["title"]."</a></td>
-\t\t\t\t<td><a href=\"index.php?module=user&user=$author\">$author</a></td>
+\t\t\t\t<td><a href=\"index.php?module=news&amp;id=".$res[0]["newsid"]."\">".$res[0]["title"]."</a></td>
+\t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
 \t\t\t\t<td>".$res[0]["date"]."</td>
 \t\t\t\t<td>".($enable ? "yes" : "no")." <form method=\"post\" action=\"index.php\" style=\"display: inline\">
 \t<input type=\"submit\" value=\"".($enable ? "Disable" : "Enable")."\">
@@ -91,29 +89,27 @@ function news_default()
 		$newsid = $_GET["id"];
 		if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$newsid' and enable='1' and newsid=contentid and author=userid;")) == FALSE)
 		{
-			print("\t\t<h2>News</h2>
-\t\t<div>Unknown news.</div>\n");
+			print("\t\t<p>Unknown news.</p>\n");
 			return 0;
 		}
-		print("\t\t<h2>".$res[0]["title"]."</h2>\n");
 		display($res[0]["title"], $res[0]["username"],
 				$res[0]["date"], $res[0]["content"]);
 		return 0;
 	}
-	print("\t\t<div>You can <a href=\"index.php?module=news&action=propose\">propose news</a>.</div>\n");
+	print("\t\t<div>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</div>\n");
 	if(($author = $_GET["username"]) == "")
 		$author = $username;
 	if($author != "" &&
 			($res = sql_query("select newsid, title from daportal_news, daportal_contents, daportal_users where username='$author' and newsid=contentid and author=userid and enable='1';")) != FALSE)
 	{
 		print("\t\t<h2>News by $author</h2>
-\t\t<p>You can see <a href=\"index.php?module=user&username=$author\">khorben's user informations</a>.</p>\n");
+\t\t<p>You can see <a href=\"index.php?module=user&amp;username=$author\">khorben's user informations</a>.</p>\n");
 		$i = 1;
 		while(sizeof($res) >= 1)
 		{
 			$id = $res[0]["newsid"];
 			$title = $res[0]["title"];
-			print("\t\t<div>$i. <a href=\"index.php?module=news&id=$id\">$title</a></div>\n");
+			print("\t\t<div>$i. <a href=\"index.php?module=news&amp;id=$id\">$title</a></div>\n");
 			$i++;
 			array_shift($res);
 		}
