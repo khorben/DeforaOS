@@ -108,7 +108,6 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 		}
 		s = p;
 		strcat(s, de->d_name);
-		_chgrp_do(opts, gid, s);
 		_chgrp_do_recursive(opts, gid, s);
 		s[len-1] = '\0';
 	}
