@@ -51,16 +51,14 @@ function chat_default()
 	{
 		for($i = sizeof($res) - 1; $i >= 0; $i--)
 		{
-			print("\t\t<div>
-\t\t\t<div>");
+			print("\t\t<div style=\"font-family: monospace\">");
+			print($res[$i]["timestamp"]." <font color=\"");
 			if($res[$i]["author"] == $userid)
-				print("<div style=\"color: red\">&lt;</div>$username<div style=\"color: red\">&gt;</div>");
-			else if(($res2 = sql_query("select username from daportal_users where userid='".$res[0]["author"]."';")) != FALSE)
-				print("<div style=\"color: blue\">&lt;</div>".$res2[0]["username"]."<div style=\"color: blue\">&gt;</div>");
-			print("</div>
-\t\t\t<div>".$res[$i]["timestamp"]."</div>
-\t\t\t<div>".$res[$i]["text"]."</div>
-\t\t</div>\n");
+				print("red\">&lt;</font>$username<font color=\"red\"");
+			else if(($res2 = sql_query("select username from daportal_users where userid='".$res[$i]["author"]."';")) != FALSE)
+				print("blue\">&lt;</font>".$res2[0]["username"]."<font color=\"blue");
+			print("\">&gt;</font> ");
+			print($res[$i]["text"]."</div>\n");
 		}
 	}
 	if($userid == 0)
