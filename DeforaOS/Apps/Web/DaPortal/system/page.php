@@ -41,7 +41,7 @@ function page_include($page)
 			require_once("system/block.php");
 			block_include($args[1]);
 		}
-		else if(ereg("^MODULE: ([a-z]{1,9})( ([a-z]{1,9}))?\r\n$", $line, $args))
+		else if(ereg("^MODULE: ([a-z]{1,9})( ([a-z0-9]{1,9}))?\r\n$", $line, $args))
 		{
 			require_once("system/module.php");
 			module_include($args[1], $args[3]);
