@@ -223,6 +223,7 @@ FIXME:
 - localization issues
 - original terms renamed and appropriated
 - closed and lazy development where monopoly, aggressive standards conformance policy else (and often buggy too)
+- .Net/WinForms/XAML paradoxor
 				</para>
 			</sect3>
 			<sect3>
@@ -413,7 +414,7 @@ Configuration files contain variable names along with their values, nested insid
 				</para>
 				<screen>
 #this is a comment
-#default session is global
+#default section is global
 variable=value
 
 [section]
