@@ -1,0 +1,20 @@
+	<head>
+		<title>DaPortal configuration</title>
+	</head>
+	<body>
+		<div>
+			Please fill in the database login information accordingly (some fields may be optional).
+		</div>
+		<form method="post" action="index.php">
+			Server type: <select name="dbtype">
+				<option value="pgsql">PostgreSQL</option>
+			</select><br/>
+			Hostname: <input type="text" name="dbhost" size="9"/><br/>
+			Port: FIXME<br/>
+			Database: <input type="text" name="dbname" size="9"/><br/>
+			Username: <input type="text" name="dbuser" size="9"/><br/>
+			Password: <input type="password" name="dbpassword" size="9"><br/>
+			<input type="submit" value="Submit"/>
+		</form>
+	</body>
+</html>
