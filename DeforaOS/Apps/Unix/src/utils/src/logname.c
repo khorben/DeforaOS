@@ -7,7 +7,7 @@
 
 
 /* usage */
-int usage(void)
+int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: logname\n");
 	return 1;
@@ -20,7 +20,7 @@ int main(int argc, char * argv[])
 	char * lgnm;
 
 	if(argc != 1)
-		return usage();
+		return _usage();
 	if((lgnm = getlogin()) == NULL)
 	{
 		perror("getlogin");

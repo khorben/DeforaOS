@@ -75,7 +75,7 @@ static int _write_nonbuf(int c)
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "Usage: cat [-u][file ...]\n\
   -u    write without delay\n");
@@ -97,7 +97,7 @@ int main(int argc, char * argv[])
 				flagu = OD_NONE;
 				break;
 			case '?':
-				return usage();
+				return _usage();
 		}
 	}
 	return _cat(flagu, argc - optind, &argv[optind]);

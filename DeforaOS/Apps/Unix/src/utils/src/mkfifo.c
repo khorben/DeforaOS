@@ -24,7 +24,7 @@ static int _mkfifo(char const * pathname, mode_t mode)
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "Usage: mkfifo [-m mode] file...\n\
   -m    create fifo with the specified mode value\n");
@@ -46,14 +46,14 @@ int main(int argc, char * argv[])
 		{
 			case 'm':
 				if((mode = strtol(optarg, NULL, 8)) > 0777)
-					return usage();
+					return _usage();
 				break;
 			case '?':
-				return usage();
+				return _usage();
 		}
 	}
 	if(argc == optind)
-		return usage();
+		return _usage();
 	for(i = optind; i < argc; i++)
 		if(_mkfifo(argv[i], mode) == 2)
 			errcode = 2;
