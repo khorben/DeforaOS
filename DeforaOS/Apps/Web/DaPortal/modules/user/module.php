@@ -58,7 +58,7 @@ if($action == "admin" && $administrator = 1)
 }
 
 
-function user_homepage()
+function user_default()
 {
 	global $userid, $username, $administrator, $moderator;
 
@@ -138,7 +138,8 @@ function user_homepage()
 
 function user_install()
 {
-	return 0;
+	//FIXME
+	return 1;
 }
 
 
@@ -209,6 +210,13 @@ function user_register()
 }
 
 
+function user_uninstall()
+{
+	//FIXME
+	return 1;
+}
+
+
 switch($action)
 {
 	case "install":
@@ -219,8 +227,10 @@ switch($action)
 		return user_logout();
 	case "register":
 		return user_register();
+	case "uninstall":
+		return user_uninstall();
 	default:
-		return user_homepage();
+		return user_default();
 }
 
 
