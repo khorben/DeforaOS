@@ -54,7 +54,6 @@ typedef struct _GPuTTY {
 	/* sessions */
 	GtkWidget * sn_frame;
 	GtkWidget * sn_vbox1;
-	GtkWidget * sn_lsessions;
 	GtkWidget * sn_hbox;
 	GtkWidget * sn_vbox2;
 	GtkWidget * sn_esessions;
