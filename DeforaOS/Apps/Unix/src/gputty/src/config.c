@@ -84,6 +84,9 @@ int config_save(Config * config, char * filename)
 
 	if((i = array_get_size(config)) == 0)
 		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "%u section(s) to save\n", i);
+#endif
 	if((fp = fopen(filename, "w")) == NULL)
 	{
 		fprintf(stderr, "%s", "gputty: ");
@@ -101,6 +104,9 @@ static void _save_section(Hash * h, unsigned int i, FILE * fp)
 	HashEntry * he;
 
 	he = array_get(h, i);
+#ifdef DEBUG
+	fprintf(stderr, "saving section [%s]\n", he->name);
+#endif
 	if(he->name[0] != '\0')
 		fprintf(fp, "[%s]\n", he->name);
 	else if(i != 0)
@@ -116,10 +122,12 @@ static void _save_variables(Hash * h, FILE * fp)
 	HashEntry * he;
 
 	i = array_get_size(h);
+#ifdef DEBUG
+	fprintf(stderr, "%u variable(s) to save\n", i);
+#endif
 	for(j = 0; j < i; j++)
 	{
-		if((he = array_get(h, j)) == NULL)
-			break;
+		he = array_get(h, j);
 		fprintf(fp, "%s=%s\n", he->name, (char*)he->data);
 	}
 }

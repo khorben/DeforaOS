@@ -233,7 +233,6 @@ static void gputty_load(GtkWidget * widget, gpointer data)
 
 static void gputty_quit(GtkWidget * widget, gpointer data)
 {
-	gputty_delete(data);
 	gtk_main_quit();
 }
 
@@ -282,5 +281,6 @@ int main(int argc, char * argv[])
 		fprintf(stderr, "gputty: not saving configuration\n");
 	else if(config_save(gputty->config, ".gputty") != 0)
 		fprintf(stderr, "gputty: an error occured while saving configuration\n");
+	gputty_delete(gputty);
 	return 0;
 }
