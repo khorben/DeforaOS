@@ -80,7 +80,7 @@ function module_install($module)
 	global $moduleid;
 	$moduleid = $res[0]["moduleid"];
 	$action = "install";
-	return include("modules/$module/module.php");
+	return include("modules/$module/action.php");
 }
 
 
@@ -89,7 +89,7 @@ function module_process($module, $action)
 {
 	if($action == "install" || $action == "uninstall")
 		$action = "default";
-	return include("modules/".$module."/module.php");
+	return include("modules/".$module."/action.php");
 }
 
 
