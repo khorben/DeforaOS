@@ -245,7 +245,7 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 		g->ab_label = gtk_label_new(
 "GPuTTY is a clone of PuTTY for Open Source desktops.\n"
 "Project homepage is found at:\n"
-"http://www.defora.org/index.php?page=gputty\n"
+"http://people.defora.org/~khorben/projects/gputty/\n"
 "This software has been written by:\n"
 "- Pierre Pronchery <khorben@defora.org>\n"
 "and mainly relies on the following software:\n"
