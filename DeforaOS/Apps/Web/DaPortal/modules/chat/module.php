@@ -52,7 +52,9 @@ function chat_default()
 		for($i = sizeof($res) - 1; $i >= 0; $i--)
 		{
 			print("\t\t<div style=\"font-family: monospace\">");
-			print($res[$i]["timestamp"]." <font color=\"");
+			$time = explode(" ", $res[$i]["timestamp"]);
+			$time = explode("+", $time[1]);
+			print($time[0]." <font color=\"");
 			if($res[$i]["author"] == $userid)
 				print("red\">&lt;</font>$username<font color=\"red\"");
 			else if(($res2 = sql_query("select username from daportal_users where userid='".$res[$i]["author"]."';")) != FALSE)
