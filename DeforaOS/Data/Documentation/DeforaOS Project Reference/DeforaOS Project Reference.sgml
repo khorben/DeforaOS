@@ -60,6 +60,10 @@ FIXME: free software definition, ...
 FIXME:
 - advantages: interoperability, security, ...
 - issues: coherence (in community development)
+<!--
+- coherence => developped by a small and tight team
+- open => remain transparent, accept external contributions
+-->
 			</para>
 		</sect2>
 	</sect1>
@@ -115,10 +119,6 @@ FIXME: always think like the users, and listen to them...
 FIXME: a few words, and conceptual screen shots, about it would feel like to use the system...
 			</para>
 		</sect2>
-<!--
-- coherence => developped by a small and tight team
-- open => remain transparent, accept external contributions
--->
 	</sect1>
 	<sect1>
 		<title>Technical choices</title>
