@@ -5,9 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #include <netdb.h>
 #include "inetd.h"
 #include "service.h"
@@ -83,10 +81,9 @@ int service_listen(Service * s)
 		return inetd_error("bind", 1);
 	if(s->socket == SS_STREAM && listen(s->fd, 5) != 0)
 		return inetd_error("listen", 1);
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s%d%s", "service \"", s->name,
-			"\" listening on port ", ntohs(s->port), "\n");
-#endif
+	if(inetd_state->debug)
+		fprintf(stderr, "%s%s%s%d%s", "service \"", s->name,
+				"\" listening on port ", ntohs(s->port), "\n");
 	return 0;
 }
 
@@ -98,18 +95,22 @@ int service_exec(Service * s)
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
 
+	if(s->proto == SP_TCP)
+		if((fd = accept(s->fd, &sa, &sa_size)) == -1)
+			return inetd_error("accept", 2);
+	if(inetd_state->debug)
+		fprintf(stderr, "fork()\n");
 	if((pid = fork()) == -1)
 		return inetd_error("fork", 1);
 	else if(pid > 0)
 		return 0;
-	if(s->proto == SP_TCP)
-		if((fd = accept(s->fd, &sa, &sa_size)) == -1)
-			return inetd_error("accept", 1);
 	if(close(0) != 0 || close(1) != 0 || dup2(fd, 0) != 0
 			|| dup2(fd, 1) != 1)
 		inetd_error("dup2", 0);
 	else
+	{
 		execv(s->program[0], s->program);
-	inetd_error(s->program[0], 0);
+		inetd_error(s->program[0], 0);
+	}
 	exit(2);
 }

@@ -27,9 +27,7 @@ Token * scan(FILE * fp)
 			|| (t = _scan_space(fp, &la))
 			|| (t = _scan_word(fp, &la)))
 		return t;
-#ifdef DEBUG
-	fprintf(stderr, "%s", "should not happen...?\n");
-#endif
+	fprintf(stderr, "%s", "inetd: scan: Should not happen...?\n");
 	return NULL;
 }
 

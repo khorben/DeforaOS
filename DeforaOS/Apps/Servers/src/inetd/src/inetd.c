@@ -7,16 +7,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
-#include "config.h"
+#include <errno.h>
 #include "parser.h"
+#include "inetd.h"
 
 
-/* types */
-typedef struct _InetdState {
-	int debug;
-	int queue;
-	Config * config;
-} InetdState;
+/* variables */
+InetdState * inetd_state;
 
 
 /* inetd_error */
@@ -36,6 +33,7 @@ static int _inetd(int debug, int queue, char * config)
 	InetdState state;
 	int ret;
 
+	inetd_state = &state;
 	state.debug = debug;
 	state.queue = queue;
 	if(_inetd_setup(&state, config))
@@ -83,10 +81,10 @@ static void _inetd_sigchld(void)
 		inetd_error("waitpid", 0);
 		return;
 	}
-	/* FIXME only in debugging mode */
-	fprintf(stderr, "%s%d%s%s%d%s", "Child ", pid,
-			WIFEXITED(status) ? " exited" : " was terminated",
-			" with error code ", WEXITSTATUS(status), "\n");
+	if(inetd_state->debug)
+		fprintf(stderr, "%s%d%s%s%d%s", "Child ", pid, WIFEXITED(status)
+				? " exited" : " was terminated",
+				" with error code ", WEXITSTATUS(status), "\n");
 }
 
 static void _inetd_sighup(void)
@@ -114,8 +112,14 @@ static int _inetd_do(InetdState * state)
 	}
 	for(;;)
 	{
+		if(state->debug)
+			fprintf(stderr, "%s", "select()\n");
 		if(select(hifd+1, &rfds, NULL, NULL, NULL) == -1)
-			return inetd_error("select", 2);
+		{
+			if(errno != EINTR)
+				return inetd_error("select", 2);
+			continue;
+		}
 		for(i = 0; i < state->config->services_nb; i++)
 			if(FD_ISSET(state->config->services[i]->fd, &rfds))
 				service_exec(state->config->services[i]);
