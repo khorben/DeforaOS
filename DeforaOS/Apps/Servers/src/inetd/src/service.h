@@ -5,6 +5,11 @@
 #ifndef __SERVICE_H
 # define __SERVICE_H
 
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <stdint.h>
+# include <netinet/in.h>
+
 
 /* Service */
 /* types */
