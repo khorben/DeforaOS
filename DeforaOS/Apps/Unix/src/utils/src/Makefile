@@ -1,4 +1,4 @@
-TARGETS	= basename cat cmp cp dirname echo false head id kill link ln logname ls mkdir mkfifo pwd rmdir sleep strings time true tty uname unlink wc
+TARGETS	= basename cat cmp cp dirname echo false head id kill link ln logname ls mkdir mkfifo pwd rmdir sleep strings test time true tty uname unlink wc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -73,6 +73,9 @@ sleep: sleep.o
 
 strings: strings.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o strings strings.o
+
+test: test.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o test test.o
 
 time: time.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o time time.o
@@ -153,6 +156,9 @@ sleep.o: sleep.c
 strings.o: strings.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c strings.c
 
+test.o: test.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c test.c
+
 time.o: time.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c time.c
 
@@ -173,7 +179,7 @@ wc.o: wc.c
 
 
 clean:
-	$(RM) basename.o cat.o cmp.o cp.o dirname.o echo.o false.o head.o id.o kill.o link.o ln.o logname.o ls.o mkdir.o mkfifo.o pwd.o rmdir.o sleep.o strings.o time.o true.o tty.o uname.o unlink.o wc.o
+	$(RM) basename.o cat.o cmp.o cp.o dirname.o echo.o false.o head.o id.o kill.o link.o ln.o logname.o ls.o mkdir.o mkfifo.o pwd.o rmdir.o sleep.o strings.o test.o time.o true.o tty.o uname.o unlink.o wc.o
 
 distclean: clean
 	$(RM) $(TARGETS)
