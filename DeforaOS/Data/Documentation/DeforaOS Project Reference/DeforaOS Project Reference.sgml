@@ -338,7 +338,7 @@ About the graphical toolkit for applications, I insist that only one library wil
 <chapter>
 	<title>Detailed design</title>
 	<sect1>
-		<title></title>
+		<title>System overview</title>
 		<sect2>
 			<title>Filesystem hierarchy</title>
 			<para>
