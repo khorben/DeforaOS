@@ -257,7 +257,7 @@ static void _program_argument(State * state)
 		return; /* FIXME */
 	}
 	state->service.program = p;
-	state->service.program[i-1] = strdup(state->token->string);
-	state->service.program[i] = NULL;
+	state->service.program[i] = strdup(state->token->string);
+	state->service.program[i+1] = NULL;
 	_parser_check(state, TC_WORD);
 }
