@@ -85,7 +85,7 @@ function _sort_size($a, $b)
 
 	$stata = lstat($root.'/'.$path.'/'.$a);
 	$statb = lstat($root.'/'.$path.'/'.$b);
-	return $stata['size'] < $statb['size'];
+	return $stata['size'] > $statb['size'];
 }
 
 function _sort_date($a, $b)
@@ -94,7 +94,7 @@ function _sort_date($a, $b)
 
 	$stata = lstat($root.'/'.$path.'/'.$a);
 	$statb = lstat($root.'/'.$path.'/'.$b);
-	return $stata['mtime'] < $statb['mtime'];
+	return $stata['mtime'] > $statb['mtime'];
 }
 
 function explorer_folder($folder, $sort, $reverse)
@@ -189,7 +189,7 @@ function explorer_sort($folder, $name, $sort, $reverse)
 		if(!$reverse)
 			echo '&reverse=';
 		echo '">'.ucfirst($name).'</a> <img src="icons/16x16/'
-				.($reverse ? 'down' : 'up').'.png" alt=""/>';
+				.($reverse ? 'up' : 'down').'.png" alt=""/>';
 	}
 	else
 		echo '<a href="explorer.php?folder='.html_safe($folder)
