@@ -7,8 +7,10 @@ $ make
 [compiles and generates a whole lot of warnings]
 $ make install
 
-To install it in another path, use the DESTDIR variable:
-$ make install DESTDIR=<destination_path>
+To install it in another path, use the PREFIX variable:
+$ make install PREFIX=<destination_path>
 
-If you want to remove debugging symbols and silly warnings, add the following option (don't forget to complete a "make clean" before if some files have already been compiled):
+If you want to remove debugging symbols and silly warnings, add the following
+option (don't forget to complete a "make clean" before if some files have
+already been compiled):
 $ make CFLAGS="-O2 -D_GNU_SOURCE"
