@@ -88,19 +88,4 @@ function dump_uninstall()
 }
 
 
-switch($action)
-{
-	case "admin":
-		return dump_admin();
-	case "dump":
-		return 0;
-	case "install":
-		return dump_install();
-	case "uninstall":
-		return dump_uninstall();
-	default:
-		return dump_default();
-}
-
-
 ?>
