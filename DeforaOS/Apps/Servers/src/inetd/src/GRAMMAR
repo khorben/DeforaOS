@@ -1,11 +1,13 @@
 config:		{ newline } service_list { newline }
 
-service:	service_name space socket space protocol space wait space
-		id space program newline
+newline: 	[ space ] NEWLINE
 
 space:		SPACE { SPACE }
 
-newline: 	[ space ] NEWLINE
+service_list:	{ service { newline } }
+
+service:	service_name space socket space protocol space wait space
+		id space program newline
 
 service_name:	WORD
 
