@@ -1,4 +1,4 @@
-TARGETS	= basename dirname false id ln logname true tty unlink
+TARGETS	= basename dirname false id ln logname mkfifo true tty unlink
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF=
@@ -27,6 +27,9 @@ ln: ln.o
 logname: logname.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o logname logname.o
 
+mkfifo: mkfifo.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mkfifo mkfifo.o
+
 true: true.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o true true.o
 
@@ -54,6 +57,9 @@ ln.o: ln.c
 
 logname.o: logname.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c logname.c
+
+mkfifo.o: mkfifo.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c mkfifo.c
 
 true.o: true.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c true.c
