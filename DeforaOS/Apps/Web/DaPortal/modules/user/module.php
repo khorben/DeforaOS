@@ -26,6 +26,68 @@ if(eregi("module.php", $_SERVER["REQUEST_URI"]))
 }
 
 
+//admin is trusted
+function admin_list()
+{
+	$upp = 10; //users per page
+
+	$offset = is_numeric($_GET['offset']) ? $_GET['offset'] * $upp : 0;
+	print("\t\t<h3>Listing users");
+	if(($res = sql_query('select count(*) from daportal_users;')) == FALSE)
+	{
+		print("</h3>\n\t\t<p>No users found.</p>\n");
+		return 0;
+	}
+	$count = $res[0]['count'];
+	if(($res = sql_query('select username from daportal_users order by username asc limit '.$upp.' offset '.$offset.';')) == FALSE)
+	{
+		print("</h3>\n\t\t<p>No users found.</p>\n");
+		return 0;
+	}
+	print(' '.($offset + 1).' to '.($offset + $upp)."</h3>\n");
+	while(sizeof($res) >= 1)
+	{
+		$username = $res[0]['username'];
+		print("<a href=\"index.php?module=user&amp;action=admin&amp;username=$username\">$username</a><br/>\n");
+		array_shift($res);
+	}
+	print("\t\t<p>\n");
+	if($_GET['offset'] == 0)
+		print('1');
+	else
+		print('<a href="index.php?module=user&amp;action=admin">1</a>');
+	for($i = 1; $i < $count / $upp; $i++)
+	{
+		if($i == $_GET['offset'])
+			print(' | '.($i+1));
+		else
+			print(" | <a href=\"index.php?module=user&amp;action=admin&amp;offset=$i\">".($i+1).'</a>');
+	}
+	print("</p>\n");
+	return 0;
+}
+
+
+//admin is trusted
+function admin_user()
+{
+	$username = $_GET["username"];
+	if(!ereg("^([a-z]){1,9}$", $username)
+			|| ($res = sql_query("select userid, email, homepage from daportal_users where username='$username';")) == FALSE)
+	{
+		print("\t\t<p>User unknown.</p>\n");
+		return 0;
+	}
+	print("\t\t<div>
+\t\t<b>Username:</b> $username<br/>
+\t\t<b>User id:</b> ".$res[0]['userid']."<br/>
+\t\t<b>E-mail:</b> ".$res[0]['email']."<br/>
+\t\t<b>Homepage:</b> ".$res[0]['homepage']."<br/>
+\t</div>\n");
+	return 0;
+}
+
+
 function user_admin()
 {
 	global $administrator;
@@ -36,38 +98,9 @@ function user_admin()
 		print("\t\t<p>Access denied.</p>\n");
 		return 0;
 	}
-
 	if($_GET["username"] != "")
-	{
-		$username = $_GET["username"];
-		if(!ereg("^([a-z]){1,9}$", $username)
-				|| ($res = sql_query("select userid from daportal_users where username='$username';")) == FALSE)
-		{
-			print("\t\t<p>User unknown.</p>\n");
-			return 0;
-		}
-		print("\t\t<div>
-\t\t<b>Username:</b> $username<br/>
-\t\t<b>User id:</b> ".$res[0]["userid"]."<br/>
-\t</div>\n");
-		return 0;
-	}
-	print("\t<div>
-\t\t\t<b>Registered users:</b>");
-	if(($res = sql_query("select username from daportal_users order by username asc;")) != FALSE)
-	{
-		while(sizeof($res) >= 1)
-		{
-			$username = $res[0]["username"];
-			print(" <a href=\"index.php?module=user&amp;action=admin&amp;username=$username\">$username</a>");
-			array_shift($res);
-		}
-	}
-	else
-		print(" none.");
-	print("<br/>
-\t\t</div>\n");
-	return 0;
+		return admin_user();
+	return admin_list();
 }
 
 
@@ -133,10 +166,10 @@ function user_default()
 		print("\t\t\t<b>Warning:</b> other informations could not be fetched.<br/>
 \t\t</div>\n");
 	}
-	$email = $res[0]["email"];
-	$homepage = $res[0]["homepage"];
-	print("\t\t\t<b>E-mail address:</b> $email<br/>
-\t\t\t<b>Homepage:</b> $homepage<br/>
+	$email = $res[0]['email'];
+	$homepage = $res[0]['homepage'];
+	print("\t\t\t<b>E-mail address:</b> <a href=\"mailto:$email\">$email</a><br/>
+\t\t\t<b>Homepage:</b> <a href=\"$homepage\">$homepage</a><br/>
 \t\t</div>\n");
 	print("\t\t<h3>Sessions</h3>\n");
 	if(($res = sql_query("select sessionid, ip, expires from daportal_sessions where userid='$userid';")) == FALSE)
