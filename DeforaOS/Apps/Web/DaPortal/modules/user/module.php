@@ -215,7 +215,8 @@ function user_login()
 	$date = date("Y-m-d", time() + 31536000);
 	$query = "insert into daportal_sessions (sessionid, userid, ip, expires) values ('$sessionid', '$userid', '".$_SERVER['REMOTE_ADDR']."', '$date');\n";
 	sql_query($query);
-	header("Location: index.php?".$_POST['query']);
+	$query = strlen($_POST['query']) > 0 ? '?'.$_POST['query'] : '';
+	header('Location: index.php'.$query);
 	return 0;
 }
 
