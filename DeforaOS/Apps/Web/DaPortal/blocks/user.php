@@ -38,7 +38,14 @@ else
 	$content = "Logged in as <a href=\"index.php?module=user&action=homepage\">$username</a><br/>
 <br/>\n";
 	if($administrator == 1)
-		$content .= "<a href=\"index.php?module=admin\">Administration</a><br/><br/>\n";
+	{
+		$content .= "<a href=\"index.php?module=admin\">Administration</a><br/>\n";
+		if($_GET["module"] != "")
+			$content .= "<a href=\"index.php?module=".$_GET["module"]."&amp;action=admin\">Module ".$_GET["module"]."</a><br/>\n";
+		else
+			$content .= "<a href=\"index.php?module=pages&amp;action=edit&amp;page=".$_GET["page"]."\">Edit page</a><br/>\n";
+		$content .= "<br/>\n";
+	}
 	$content .= "<form method=\"post\" action=\"index.php\">
 \t<div>
 \t\t<input type=\"submit\" value=\"Logout\"/>
