@@ -85,13 +85,13 @@ static void and_or(Parser * p)
 		/* FIXME check set */
 		if(!parser_check_set(p, CS_LINEBREAK))
 		{
-			parser_error(p, "Expected: linebreak");
+			parser_error(p, "expected linebreak");
 			return;
 		}
 		linebreak(p);
 		if(!parser_check_set(p, CS_PIPELINE))
 		{
-			parser_error(p, "Expected: pipeline");
+			parser_error(p, "expected pipeline");
 			return;
 		}
 		pipeline(p);
