@@ -142,9 +142,9 @@ static int _is_file_symlink(char * pathname)
 {
 	struct stat st;
 
-	if(stat(pathname, &st) != 0)
+	if(lstat(pathname, &st) != 0)
 		return 0;
-	return S_ISLNK(st.st_mode) ? 1 : 0; /* FIXME */
+	return S_ISLNK(st.st_mode) ? 1 : 0;
 }
 
 static int _is_string_not_empty(char * string)
