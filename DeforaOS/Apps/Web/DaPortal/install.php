@@ -19,32 +19,37 @@
 
 
 //check url
-if(eregi("install.php", $_SERVER["REQUEST_URI"]))
+if(eregi('install.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: index.php");
+	header('Location: index.php');
 	exit(1);
 }
 
-
-require_once("system/raw.php");
+require_once('system/raw.php');
 
 
 //installing functions
+//install_database
+//resets and creates default tables
+//PRE
+//POST
 function install_database()
 {
-	sql_table_drop("daportal_sessions");
-	sql_table_drop("daportal_users");
-	sql_table_drop("daportal_layouts");
-	sql_table_drop("daportal_contents");
-	sql_table_drop("daportal_modules");
-	sql_sequence_drop("daportal_users_userid_seq");
-	sql_sequence_drop("daportal_modules_moduleid_seq");
-	sql_sequence_drop("daportal_contents_contentid_seq");
+	sql_table_drop('daportal_sessions');
+	sql_table_drop('daportal_users');
+	sql_table_drop('daportal_layouts');
+	sql_table_drop('daportal_contents');
+	sql_table_drop('daportal_modules');
+	sql_sequence_drop('daportal_users_userid_seq');
+	sql_sequence_drop('daportal_modules_moduleid_seq');
+	sql_sequence_drop('daportal_contents_contentid_seq');
 
-	sql_sequence_create("daportal_users_userid_seq");
-	sql_sequence_create("daportal_modules_moduleid_seq");
-	sql_sequence_create("daportal_contents_contentid_seq");
-	sql_table_create("daportal_users", "(
+	sql_sequence_create('daportal_users_userid_seq');
+	sql_sequence_create('daportal_modules_moduleid_seq');
+	sql_sequence_create('daportal_contents_contentid_seq');
+	//FIXME move users and sessions to module users,
+	//and set up login procedure depending on module users enabled
+	sql_table_create('daportal_users', "(
 	userid integer DEFAULT nextval('daportal_users_userid_seq'),
 	username varchar(9) NOT NULL UNIQUE,
 	password varchar(32) NOT NULL,
@@ -55,20 +60,20 @@ function install_database()
 	homepage varchar(60) NOT NULL DEFAULT '',
 	PRIMARY KEY (userid)
 )");
-	sql_table_create("daportal_sessions", "(
+	sql_table_create('daportal_sessions', "(
 	sessionid varchar(32),
 	userid integer,
 	ip varchar(15) NOT NULL,
 	expires date NOT NULL,
 	FOREIGN KEY (userid) REFERENCES daportal_users (userid)
 )");
-	sql_table_create("daportal_modules", "(
+	sql_table_create('daportal_modules', "(
 	moduleid integer DEFAULT nextval('daportal_modules_moduleid_seq'),
 	modulename varchar(9) NOT NULL UNIQUE,
 	enable bool NOT NULL DEFAULT '1',
 	PRIMARY KEY (moduleid)
 )");
-	sql_table_create("daportal_contents", "(
+	sql_table_create('daportal_contents', "(
 	contentid integer DEFAULT nextval('daportal_contents_contentid_seq'),
 	moduleid integer,
 	title varchar(80) NOT NULL DEFAULT '',
@@ -78,7 +83,7 @@ function install_database()
 	FOREIGN KEY (moduleid) REFERENCES daportal_modules (moduleid)
 )");
 
-	sql_table_create("daportal_layouts", "(
+	sql_table_create('daportal_layouts', "(
 	moduleid integer,
 	actionid varchar(9) NOT NULL DEFAULT '',
 	top varchar(9) NOT NULL DEFAULT '',
@@ -88,17 +93,17 @@ function install_database()
 
 	sql_query("insert into daportal_users (username, password, administrator) values ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1');");
 
-	require_once("system/module.php");
-	module_install("admin");
-	module_install("user");
-	module_install("pages");
-	module_install("news");
+	require_once('system/module.php');
+	module_install('admin');
+	module_install('user');
+	module_install('pages');
+	module_install('news');
 	return 0;
 }
 
 function install_config($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword)
 {
-	if(($fp = fopen("config.php", "w")) == FALSE)
+	if(($fp = fopen('config.php', 'w')) == FALSE)
 		return 1;
 	fwrite($fp, "<?php
 
@@ -126,7 +131,7 @@ if(eregi(\"config.php\", \$_SERVER[\"REQUEST_URI\"]))
 
 function install_index()
 {
-	if(($fp = fopen("index.php", "w")) == FALSE)
+	if(($fp = fopen('index.php', 'w')) == FALSE)
 		return 1;
 	fwrite($fp, "<?php
 
@@ -151,14 +156,14 @@ include(\"engine.php\");
 //PRE
 //POST	1	error
 //	0	success
-function install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword)
+function install_process($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword)
 {
 	if(install_database() != 0
 			|| install_config($dbtype, $dbhost, $dbport,
 					$dbname, $dbuser, $dbpassword) != 0
 			|| install_index() != 0)
 		return 1;
-	header("Location: index.php");
+	header('Location: index.php');
 	return 0;
 }
 
@@ -169,9 +174,9 @@ function install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpasswor
 //POST	1	success
 function install_get()
 {
-	if(raw_include("html/xhtml.html") != 0)
+	if(raw_include('html/xhtml.html') != 0)
 		print("<html>\n");
-	if(raw_include("html/install.html") != 0)
+	if(raw_include('html/install.html') != 0)
 		print("\t<head>
 \t\t<title>DaPortal configuration</title>
 \t</head>
@@ -189,8 +194,8 @@ function install_get()
 
 //process post requests
 //PRE
-//POST	0	error
-//	1	success
+//POST	0	success
+//	1	error
 function install_post()
 {
 	$dbtype = $_POST["dbtype"];
@@ -211,7 +216,8 @@ function install_post()
 \t\t<title>DaPortal processing configuration</title>
 \t</head>
 \t<body>
-\t<div>
+\t<h3>Connection to the database failed</h3>
+\t<p>
 \t\t<b>Summary of your settings:</b><br/>
 \t\t<b>Server type</b>: ");
 		switch($dbtype)
@@ -228,12 +234,27 @@ function install_post()
 \t\t<b>Username</b>: $dbuser<br/>
 \t\t<b>Password</b>: (hidden)<br/>
 \t\t<b>Database</b>: $dbname<br/>
-\t</div>
+\t</p>
 \t</body>
 </html>\n");
 		return 1;
 	}
-	return install_success($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword) == 0 ? 1 : 0;
+	if(!is_writable('.'))
+	{
+		if(raw_include('html/xhtml.html') != 0)
+			print("<html>\n");
+		print("\t<head>
+\t\t<title>DaPortal processing configuration</title>
+\t</head>
+\t<body>
+\t<h3>Directory is not writable</h3>
+\t<p>
+\t\tThe installation process has to modify \"index.php\" and create \"config.php\" at its installation root to complete. Please give the webserver the appropriate rights (and don't forget to secure permissions after the install).
+\t</p>
+</html>\n");
+		return 1;
+	}
+	return install_process($dbtype, $dbhost, $dbport, $dbname, $dbuser, $dbpassword);
 }
 
 
