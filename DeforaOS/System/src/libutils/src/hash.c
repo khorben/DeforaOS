@@ -82,6 +82,11 @@ void * hash_get_index(Hash * h, unsigned int index)
 	return darray_get(h, index);
 }
 
+unsigned int hash_get_size(Hash * h)
+{
+	return darray_count(h);
+}
+
 int hash_set(Hash * h, char * name, void * data)
 {
 	HashEntry * he;
