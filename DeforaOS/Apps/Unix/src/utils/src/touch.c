@@ -23,8 +23,10 @@ typedef struct _Prefs
 {
 	int flags;
 	char * time;
+	time_t ttime;
 } Prefs;
 
+static int _prefs_ttime(char * string, time_t * time);
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
 	int o;
@@ -51,7 +53,8 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 			case 't':
 				prefs->flags -= prefs->flags & PREFS_r;
 				prefs->flags |= PREFS_t;
-				prefs->time = optarg;
+				if(!_prefs_ttime(optarg, &prefs->ttime))
+					return 1;
 				break;
 			default:
 				return 1;
@@ -62,57 +65,6 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 	return 0;
 }
 
-
-/* touch */
-static int _touch_error(char * message, int ret);
-static int _touch_rtime(char * filename, time_t * atime, time_t * mtime);
-static int _touch_ttime(char * string, time_t * time);
-static int _touch_do(Prefs * prefs, char * filename,
-		time_t atime, time_t mtime);
-static int _touch(Prefs * prefs, int argc, char * argv[])
-{
-	int res = 0;
-	time_t atime = 0;
-	time_t mtime = 0;
-	int i;
-
-	if(prefs->flags & PREFS_r
-			&& _touch_rtime(prefs->time, &atime, &mtime) != 0)
-		return 2;
-	else if(prefs->flags & PREFS_t)
-	{
-		if(_touch_ttime(prefs->time, &atime) != 0)
-			return 2;
-		mtime = atime;
-	}
-	else
-	{
-		atime = time(NULL);
-		mtime = atime;
-	}
-	for(i = 0; i < argc; i++)
-		res += _touch_do(prefs, argv[i], atime, mtime);
-	return res > 0 ? 2 : 0;
-}
-
-static int _touch_error(char * message, int ret)
-{
-	fprintf(stderr, "%s", "touch: ");
-	perror(message);
-	return ret;
-}
-
-static int _touch_rtime(char * filename, time_t * atime, time_t * mtime)
-{
-	struct stat st;
-
-	if(stat(filename, &st) != 0)
-		return _touch_error(filename, 1);
-	*atime = st.st_atime;
-	*mtime = st.st_mtime;
-	return 0;
-}
-
 static int _ttime_century(char ** p, time_t * time);
 static int _ttime_year(char ** p, time_t * time);
 static int _ttime_month(char ** p, time_t * time);
@@ -120,7 +72,7 @@ static int _ttime_day(char ** p, time_t * time);
 static int _ttime_hour(char ** p, time_t * time);
 static int _ttime_minut(char ** p, time_t * time);
 static int _ttime_second(char ** p, time_t * time);
-static int _touch_ttime(char * string, time_t * time)
+static int _prefs_ttime(char * string, time_t * time)
 {
 	time_t t = 0;
 	char ** p = &string;
@@ -145,8 +97,6 @@ static int _touch_ttime(char * string, time_t * time)
 				ret += _ttime_second(p, &t);
 			break;
 		default:
-			/* FIXME call usage() instead */
-			fprintf(stderr, "%s", "touch: -t: invalid time\n");
 			return 1;
 	}
 	if(ret != 0)
@@ -244,6 +194,53 @@ static int _ttime_second(char ** p, time_t * time)
 	return 0;
 }
 
+
+/* touch */
+static int _touch_error(char * message, int ret);
+static int _touch_rtime(char * filename, time_t * atime, time_t * mtime);
+static int _touch_do(Prefs * prefs, char * filename,
+		time_t atime, time_t mtime);
+static int _touch(Prefs * prefs, int argc, char * argv[])
+{
+	int res = 0;
+	time_t atime = prefs->ttime;
+	time_t mtime = prefs->ttime;
+	int i;
+
+	if(prefs->flags & PREFS_r)
+	{
+		if(_touch_rtime(prefs->time, &atime, &mtime) != 0)
+			return 2;
+	}
+	else if(!(prefs->flags & PREFS_t))
+	{
+		atime = time(NULL);
+		mtime = atime;
+	}
+	for(i = 0; i < argc; i++)
+		res += _touch_do(prefs, argv[i], atime, mtime);
+	return res > 0 ? 2 : 0;
+}
+
+static int _touch_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "touch: ");
+	perror(message);
+	return ret;
+}
+
+static int _touch_rtime(char * filename, time_t * atime, time_t * mtime)
+{
+	struct stat st;
+
+	if(stat(filename, &st) != 0)
+		return _touch_error(filename, 1);
+	*atime = st.st_atime;
+	*mtime = st.st_mtime;
+	return 0;
+}
+
+
 static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 {
 	struct stat st;
@@ -256,12 +253,12 @@ static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 #endif
 	if(!(prefs->flags & PREFS_c))
 	{
-		if((fd = creat(filename, 0666) == -1))
+		if((fd = open(filename, 0666, O_CREAT) == -1))
 			_touch_error(filename, 0);
 		else if(close(fd) != 0)
 			_touch_error(filename, 0);
 	}
-	if(prefs->flags == PREFS_m || prefs->flags == PREFS_c)
+	if(prefs->flags == PREFS_m || prefs->flags == PREFS_a)
 		if(stat(filename, &st) != 0)
 		{
 			if(prefs->flags == PREFS_m)
@@ -289,7 +286,7 @@ file...\n\
   -a	change the access time\n\
   -c	do not create file if it doesn't exist\n\
   -m	change the modification time\n\
-  -r	use the file of the given file\n\
+  -r	use the time of the given file\n\
   -t	use the specified time as [[CC]YY]MMDDhhmm[.SS]\n");
 	return 1;
 }
