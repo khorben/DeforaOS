@@ -1,0 +1,11 @@
+#clean
+make -f scripts/makefile.linux clean
+
+#configure
+
+#build
+make -f scripts/makefile.linux prefix=/usr ZLIBINC=/usr/include ZLIBLIB=/usr/lib &&
+
+#install
+mkdir -p defora/${NAME}-${VERSION}/usr &&
+make -f scripts/makefile.linux DESTDIR=$PWD/defora/${NAME}-${VERSION} prefix=/usr install &&
