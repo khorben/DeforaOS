@@ -106,7 +106,6 @@ function news_install()
 
 	if($administrator != 1)
 		return 0;
-//	sql_sequence_create("daportal_news_newsid_seq");
 	sql_table_create("daportal_news", "(
 	newsid integer,
 	author integer,
