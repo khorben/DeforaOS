@@ -116,6 +116,8 @@ raw_require('html/xhtml.html');
 print("\t<head>
 \t\t<title>DaPortal</title>
 \t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/default.css\" title=\"Default\"/>
+\t\t<link type=\"text/css\" rel=\"alternate stylesheet\" href=\"themes/centered.css\" title=\"Centered\"/>
+\t\t<link type=\"text/css\" rel=\"alternate stylesheet\" href=\"themes/floating.css\" title=\"Floating\"/>
 \t</head>
 \t<body>\n");
 if($_GET['module'] != '')
