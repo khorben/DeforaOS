@@ -95,7 +95,7 @@ I am also thinking about using C in the whole base system:
 			<itemizedlist>
 				<listitem><para>Ada: no, but it could be very interesting</para></listitem>
 				<listitem><para>Assembly: no, long to write, too close to the machine</para></listitem>
-				<listitem><para>C: yes, simpler to implement (and kind of mandatory anyway), few keywords, total liberty in APIs definitions, even if too close to the assembly language (then again we can handle the machine limits, ...if we think each time about each possibility)</para></listitem>
+				<listitem><para>C: yes, simpler to implement (and kind of mandatory anyway), few keywords, total liberty in APIs definitions, even if lacks exceptions, and is too close to the assembly language (then again we can handle the machine limits, ...if we think each time about each possibility)</para></listitem>
 				<listitem><para>C++: no, bloat, hell to implement</para></listitem>
 				<listitem><para>C#: no, I still have to look better at it</para></listitem>
 				<listitem><para>D: no, doesn't look mature yet</para></listitem>
@@ -212,43 +212,80 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 	</sect1>
 	<sect1>
 		<title>Programming interfaces</title>
+<!--
+- use a table, head with prefix, describe function
+- detail every data type
+-->
 		<sect2>
-			<title>Buffers</title>
-			<para>
-FIXME
-			</para>
-		</sect2>
-		<sect2>
-			<title>Strings</title>
-			<para>
+			<title>Data types</title>
+			<sect3>
+				<title>Buffers</title>
+				<para>
+Prefix is "Buffer".
+				</para>
+				<programlisting>
+new()
+new(Size size)
+delete()
+
+size()
+size(Size size)
+				</programlisting>
+			</sect3>
+			<sect3>
+				<title>Lists</title>
+				<para>
+Prefix is "List".
+				</para>
+				<programlisting>
+new()
+new(ListType type)
+delete()
+
+type()
+type(ListType type)
+				</programlisting>
+			</sect3>
+			<sect3>
+				<title>Strings</title>
+				<para>
 Prefix is "String".
-			</para>
-			<programlisting>
+				</para>
+				<programlisting>
 new()
 delete()
 
-FIXME
-			</programlisting>
+size()
+size(Size size)
+
+length()
+length(Size size)
+				</programlisting>
+			</sect3>
+		</sect2>
 		<sect2>
-			<title>Files processing</title>
-			<para>
+			<title>Operations</title>
+			<sect3>
+				<title>Files</title>
+				<para>
 Prefix is "File".
-			</para>
-			<programlisting>
+				</para>
+				<programlisting>
 new()
 new(String filename)
 delete()
 
-open()
+open(String filename)
+open(String filename, FileOpenMode mode)
 close()
 
-read()
-write()
+read(Buffer buffer)
+write(Buffer buffer)
 
-seek()
-
-FIXME
-			</programlisting>
+position(Offset offset)
+position(Offset offset, FilePositionFrom)
+				</programlisting>
+			</sect3>
 		</sect2>
 	</sect1>
 <!--
