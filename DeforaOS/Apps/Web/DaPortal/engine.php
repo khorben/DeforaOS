@@ -114,9 +114,8 @@ if($_SERVER['REQUEST_METHOD'] != 'GET')
 require_once('system/raw.php');
 raw_require('html/xhtml.html');
 print("\t<head>
-\t\t<title>Defora.org - GNU/Linux distribution and other projects</title>
-\t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/dark.css\" title=\"Dark\"/>
-\t\t<link type=\"text/css\" rel=\"alternate stylesheet\" href=\"themes/defora.css\" title=\"Defora\"/>
+\t\t<title>DaPortal</title>
+\t\t<link type=\"text/css\" rel=\"stylesheet\" href=\"themes/default.css\" title=\"Default\"/>
 \t</head>
 \t<body>\n");
 if($_GET['module'] != '')
