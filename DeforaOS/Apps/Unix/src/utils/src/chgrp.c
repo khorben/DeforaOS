@@ -93,7 +93,8 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 	}
 	readdir(dir);
 	readdir(dir);
-	len = strlen(file) + 2;
+	len = strlen(file);
+	len += (len && file[len-1] == '/') ? 1 : 2;
 	if((s = malloc(len)) == NULL)
 	{
 		fprintf(stderr, "%s", "chgrp: ");
