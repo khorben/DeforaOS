@@ -20,10 +20,13 @@
 #ifndef _CONFIG_H
 # define _CONFIG_H
 
+# include "hash.h"
+
 
 /* Config */
 /* types */
 typedef struct _Config {
+	Hash * sections;
 } Config;
 
 
