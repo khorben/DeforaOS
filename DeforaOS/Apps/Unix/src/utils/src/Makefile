@@ -60,7 +60,7 @@ unlink.o: unlink.c
 
 
 clean:
-	$(RM) false.o true.o
+	$(RM) basename.o dirname.o false.o id.o logname.o true.o tty.o unlink.o
 
 distclean: clean
 	$(RM) $(TARGETS)
