@@ -284,8 +284,6 @@ And also, as I care about coherence, the APIs in every language will be directly
 		<sect2>
 			<title>Applications</title>
 <!--
-- application engine
-- application interfaces
 - messages
 - toolkit programming interface
 -->
@@ -295,19 +293,22 @@ Every application runs inside what's called a "session". They are split in two p
 			<sect3>
 				<title>Sessions</title>
 				<para>
-FIXME
+The session program manages the applications running. It may start some automatically upon startup, or scheduled tasks, and remember its state upon close for next start. It keeps listening to the state of its child applications, possibly reacting to their behaviour (excessive resources usage, abnormal termination, ...).
+				</para>
+				<para>
+It is also in charge of interaction between the applications engines and interfaces, and knows where to call or deport a call between engines (eg open an internet browser window on local engine, open an IRC engine application always on a distant server, ...). It can be considered as an applications engines directory.
 				</para>
 			</sect3>
 			<sect3>
 				<title>Applications engines</title>
 				<para>
-FIXME
+Application engines actually do their job, and keep their state, without handling any end-user interaction (but this doesn't prevent them to log messages for instance).
 				</para>
 			</sect3>
 			<sect3>
 				<title>Applications interfaces</title>
 				<para>
-FIXME
+Application interfaces are dedicated to the rendering and interaction with an application engine state. Ideally a given interface would propose identically either graphical, and text-mode graphical versions of the interface (and optionally a text only).
 				</para>
 				<para>
 The applications interfaces may detect the requested toolkit to use according to the availability of an environment variable ("DISPLAY" for instance), or by the result of an equivalent to the POSIX istty() call. Some applications may work with character streams as a fallback, typically like the UNIX filtering applications.
@@ -469,12 +470,12 @@ Prefix is "File".
 				</para>
 				<programlisting>
 new(): File
-new(String filename): File
 delete()
 
-open(String filename): Bool
 open(String filename, FileOpenMode mode): Bool
 close()
+
+is_end(): Bool
 
 read(Buffer buffer): Size
 write(Buffer buffer): Size
