@@ -68,17 +68,18 @@ static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest)
 static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 {
 	int i;
-	char * dest = argv[argc-1];
+	char * dest = NULL;
 	char * p;
 
 	for(i = 0; i < argc - 1; i++)
 	{
-		if((p = realloc(dest, strlen(dest) + strlen(argv[i]) + 2))
+		if((p = realloc(dest, strlen(argv[argc-1]) + strlen(argv[i]) + 2))
 				== NULL)
 		{
 			perror("realloc");
 			continue;
 		}
+		dest = p;
 		sprintf(dest, "%s/%s", argv[argc-1], argv[i]);
 		_ln_single(lf, lt, argv[i], dest);
 	}
