@@ -307,6 +307,10 @@ static Token ** subshell(Token ** tokens)
 
 /* for_clause */
 static Token ** for_clause(Token ** tokens)
+	/* For name linebreak do_group
+	 * | For name linebreak in sequential_sep do_group
+	 * | For name linebreak in wordlist sequential_sep do_group */
+	/* For name linebreak [in [wordlist] sequential_sep] do_group */
 {
 	/* FIXME */
 	return NULL;
