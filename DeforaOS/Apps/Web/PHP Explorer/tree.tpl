@@ -1,0 +1,1 @@
+<div class="entry <? echo $class; ?>"><img class="node" src="<? echo $img; ?>" alt=""<? if($collapse) { ?> onClick="folder_collapse(event)"<? } ?>/><a href="explorer.php?folder=<? echo html_safe($path); ?>" target="explorer"><img src="icons/16x16/mime/folder.png" alt="directory"/> <? echo html_safe($name); ?></a>

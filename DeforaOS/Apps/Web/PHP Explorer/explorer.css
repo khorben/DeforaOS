@@ -1,0 +1,182 @@
+/* Copyright 2005 Pierre Pronchery
+* Some parts Copyright 2005 FPconcept (used with permission)
+* This file is part of PHP Explorer
+*
+* PHP Explorer is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* PHP Explorer is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with PHP Explorer; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
+
+
+
+body {
+	background-color:		#ffffff;
+	color:				#000000;
+	font-family:			sans-serif;
+	font-size:			9pt;
+	margin:				0;
+	padding:			0;
+}
+
+a {
+	color:				#000000;
+	text-decoration:		none;
+}
+
+a:hover {
+	color:				#0000ff;
+}
+
+img {
+	border-width:			0;
+}
+
+
+/* explorer */
+.explorer .toolbar {
+	border-bottom:			1px solid #f0f0f0;
+	padding:			2px;
+	padding-bottom:			0;
+}
+
+.explorer .toolbar div.separator {
+	border-left:			1px solid #f0f0f0;
+	display:			inline;
+}
+
+.explorer .header div {
+	background-color:		#f0f0f0;
+}
+
+.explorer .entry {
+	border:				1px solid #ffffff;
+	overflow:			hidden;
+}
+
+.explorer .entry .icon {
+	text-align:			center;
+	vertical-align:			middle;
+	width:				20px;
+}
+
+.explorer .entry .name {
+	overflow:			hidden;
+}
+
+.explorer .entry .thumbnail {
+	height:				100px;
+	margin:				5px;
+	text-align:			center;
+	width:				100px;
+}
+
+.explorer .entry .thumbnail img {
+	max-height:			100px;
+	max-width:			100px;
+	vertical-align:			middle;
+}
+
+/* explorer details */
+.explorer .listing_details {
+	display:			table;
+	width:				100%;
+}
+
+.explorer .listing_details .header {
+	display:			table-row;
+}
+
+.explorer .listing_details .header div {
+	display:			table-cell;
+}
+
+.explorer .listing_details .entry {
+	display:			table-row;
+}
+
+.explorer .listing_details .entry div {
+	display:			table-cell;
+}
+
+.explorer .listing_details .entry .icon {
+	vertical-align:			middle;
+	padding:			1px;
+}
+
+.explorer .listing_details .entry .thumbnail {
+	display:			none;
+}
+
+/* explorer list */
+.explorer .listing_list .header {
+	display:			none;
+}
+
+.explorer .listing_list .entry {
+	float:				left;
+	height:				12pt;
+	width:				150pt;
+}
+
+.explorer .listing_list .entry div {
+	display:			none;
+}
+
+.explorer .listing_list .entry div.icon {
+	display:			inline;
+}
+
+.explorer .listing_list .entry div.name {
+	display:			inline;
+}
+
+/* explorer thumbnails */
+.explorer .listing_thumbnails .header {
+	display:			none;
+}
+
+.explorer .listing_thumbnails .entry {
+	border:				1px solid #f0f0f0;
+	float:				left;
+	margin:				2px;
+	width:				105px;
+}
+
+.explorer .listing_thumbnails .entry div {
+	display:			none;
+}
+
+.explorer .listing_thumbnails .entry .name {
+	display:			block;
+	height:				24pt;
+	text-align:			center;
+}
+
+.explorer .listing_thumbnails .entry .thumbnail {
+	display:			block;
+}
+
+
+/* tree */
+.tree .entry {
+	margin-left:			16px;
+}
+
+.tree .entry img {
+	vertical-align:			text-bottom;
+}
+
+.tree .node {
+	background-image:		url(icons/tree/vertline.gif);
+	background-position:		top left;
+	background-repeat:		repeat-y;
+}
