@@ -1,3 +1,6 @@
+all:
+- improve command line arguments fetching?
+
 id:
 - write more readable code
 - check if it's complete
