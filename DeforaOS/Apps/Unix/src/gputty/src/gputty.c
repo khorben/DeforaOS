@@ -156,12 +156,14 @@ void gputty_connect(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	pid_t pid;
+	char * xterm;
 	char * hostname;
 	char port[6];
 	char * useropt = NULL;
 	char * username = NULL;
 
-	hostname = gtk_entry_get_text(g->hn_ehostname);
+	xterm = "xterm";
+	hostname = gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname));
 	if(snprintf(port, 6, "%d", gtk_spin_button_get_value_as_int(g->hn_sport)) >= 6)
 		port[5] = '\0';
 	if(hostname[0] == '\0')
@@ -173,15 +175,15 @@ void gputty_connect(GtkWidget * widget, gpointer data)
 	}
 	else if(pid == 0)
 	{
-		username = gtk_entry_get_text(g->hn_eusername);
+		username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 		if(username[0] != '\0')
 			useropt = "-l";
-		execlp("wterm", "wterm", "-e",
+		execlp(xterm, xterm, "-e",
 				"ssh", hostname,
 				"-p", port,
 				useropt, username,
 				NULL);
-		err(2, "exec");
+		err(2, xterm);
 	}
 }
 
