@@ -20,11 +20,10 @@
 
 $title = "News";
 
-//FIXME
-$content = "
-<ul>\n";
 
-if(($res = sql_query("select newsid, title from daportal_news, daportal_contents where enable='1' and newsid=contentid order by date desc;")) != FALSE)
+$content = "<ul>\n";
+
+if(($res = sql_query("select newsid, title from daportal_news, daportal_contents where enable='1' and newsid=contentid order by date desc limit 3;")) != FALSE)
 {
 	while(sizeof($res) >= 1)
 	{
@@ -33,6 +32,4 @@ if(($res = sql_query("select newsid, title from daportal_news, daportal_contents
 	}
 }
 
-$content .= "</ul>
-<div><a href=\"index.php?module=news&amp;action=propose\">Propose news</a></div>
-<div><a href=\"index.php?module=news\">View all news</a></div>\n";
+$content .= "</ul>\n";
