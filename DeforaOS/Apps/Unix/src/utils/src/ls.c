@@ -35,7 +35,7 @@ static int _ls(int argc, char * argv[], Prefs * p)
 			printf("\n");
 		if(_ls_is_directory(argv[i]))
 		{
-			printf("%s:", argv[i]);
+			printf("%s:\n", argv[i]);
 			if(_ls_directory(argv[i], p) != 0)
 				res = 2;
 			continue;
