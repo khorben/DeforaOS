@@ -7,7 +7,7 @@ USER-FRIENDLY SETUP
 -------------------
 If you want to give a try to what should be the easiest way to install DaPortal, follow these instructions. If you like to do things manually, or if you have a problem here (doh!), please try the manual configuration below.
 
-Install DaPortal files in your web server documents tree as desired. Though this is bad practice, your web server should be allowed to modify "index.php", and write to "config.php", to apply your settings. Now get your favorite web browser to the index.php file: you should see a basic web form, asking for your database settings.
+Install DaPortal files in your web server documents tree as desired. Though this is bad practice, your web server should be allowed to modify "index.php", and write to "config.php", to apply your settings. As a security measure, the next step has to be done talking directly to the server, using the 127.0.0.1 IP for instance. Get your web browser to the index.php file: you should see a basic web form, asking for your database settings.
 
 Please note that if the connection is successful, the basic DaPortal SQL tables will be reinitialized. Then your index.php and config.php files will be updated, and your next access to the site should point you to the default page. You are then advised to lock the permissions on DaPortal files.
 
