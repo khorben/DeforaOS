@@ -7,7 +7,7 @@
 
 
 /* usage */
-static int usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: unlink file\n");
 	return 1;
@@ -17,10 +17,8 @@ static int usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	/* check for errors */
 	if(argc != 2)
-		return usage();
-	/* unlink */
+		return _usage();
 	if(unlink(argv[1]) == -1)
 	{
 		perror("unlink");
