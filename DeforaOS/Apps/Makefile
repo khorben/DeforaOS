@@ -1,4 +1,4 @@
-SUBDIRS	= Devel Servers Unix
+SUBDIRS	= Devel Graphics Servers Unix
 
 
 all clean distclean:
