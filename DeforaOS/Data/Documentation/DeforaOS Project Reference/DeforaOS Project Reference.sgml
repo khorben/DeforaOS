@@ -438,12 +438,12 @@ variable=value
 Prefix is "Buffer".
 				</para>
 				<programlisting>
-new()
-new(Size size)
+new(): Buffer
+new(Size size): Buffer
 delete()
 
-get_size()
-set_size(Size size)
+get_size(): Size
+set_size(Size size): Bool
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -452,14 +452,14 @@ set_size(Size size)
 Prefix is "Config".
 				</para>
 				<programlisting>
-new()
+new(): Config
 delete()
 
-load(File file)
-save(File file)
+load(File file): Bool
+save(File file): Bool
 
-get(String section, String name)
-set(String section, String name, Variable variable)
+get(String section, String name): String
+set(String section, String name, Variable variable): Bool
 				</programlisting>
 			</sect3>
 			<sect3>
@@ -468,16 +468,16 @@ set(String section, String name, Variable variable)
 Prefix is "File".
 				</para>
 				<programlisting>
-new()
-new(String filename)
+new(): File
+new(String filename): File
 delete()
 
-open(String filename)
-open(String filename, FileOpenMode mode)
+open(String filename): Bool
+open(String filename, FileOpenMode mode): Bool
 close()
 
-read(Buffer buffer)
-write(Buffer buffer)
+read(Buffer buffer): Size
+write(Buffer buffer): Size
 
 flush()
 
@@ -491,11 +491,11 @@ set_position(Offset offset, FilePositionFrom)
 Prefix is "List".
 				</para>
 				<programlisting>
-new()
-new(ListType type)
+new(): List
+new(ListType type): List
 delete()
 
-get_type()
+get_type(): ListType
 set_type(ListType type)
 				</programlisting>
 			</sect3>
@@ -511,18 +511,18 @@ A string can be stored in different encodings, possibly longer than the 7-bit as
 Strings are always properly terminated when manipulated using this interface.
 				</para>
 				<programlisting>
-new()					//creates an empty string
-new(Buffer buffer)			//creates a string from `buffer` using
+new(): String				//creates an empty string
+new(Buffer buffer): String		//creates a string from `buffer` using
 					//the default encoding
-new(Buffer buffer, StringEncoding encoding)
+new(Buffer buffer, StringEncoding encoding): String
 					//creates a string from `buffer` encoded
 					//as `encoding`
 delete()
 
-get_size()				//get string buffer size
+get_size(): Size			//get string buffer size
 set_size(Size size)			//set string buffer size to `size`
 
-get_length()				//get string length
+get_length(): Size			//get string length
 set_length(Size size)			//set string length to `size`
 				</programlisting>
 			</sect3>
@@ -535,10 +535,11 @@ Prefix is "Variable".
 This type is used for data conversions.
 				</para>
 				<programlisting>
-new(VariableType type, Buffer data)	//creates a `type` variable from `data`
+new(VariableType type, Buffer data): Variable
+					//creates a `type` variable from `data`
 delete()
 
-get(VariableType type)			//get variable as `type`
+get(VariableType type):			//get variable as `type`
 set(VariableType type)			//set default type to `type`
 set(VariableType type, Buffer data)	//set variable as `type` from `data`
 				</programlisting>
@@ -547,20 +548,20 @@ set(VariableType type, Buffer data)	//set variable as `type` from `data`
 		<sect2>
 			<title>Applications engines</title>
 			<para>
-Prefix is "AE".
+Prefix is "AppEngine".
 			</para>
 			<programlisting>
-new()
+new(): AppEngine
 delete()
 			</programlisting>
 		</sect2>
 		<sect2>
 			<title>Applications interfaces</title>
 			<para>
-Prefix is "AI".
+Prefix is "AppIface".
 			</para>
 			<programlisting>
-new()
+new(): AppIface
 delete()
 			</programlisting>
 		</sect2>
@@ -618,9 +619,12 @@ hide()				//hides item
 Prefix is "Label".
 					</para>
 					<programlisting>
-new()
-new(String string)
+new(): GLabel
+new(String string): GLabel
 delete()
+
+get_text(): String
+set_text(String string)
 					</programlisting>
 				</sect4>
 				<sect4>
@@ -629,16 +633,16 @@ delete()
 Prefix is "Window".
 					</para>
 					<programlisting>
-new()
-new(String title)
-new(WindowType type)
-new(WindowType type, String title)
+new(): GWindow
+new(String title): GWindow
+new(GWindowType type): GWindow
+new(GWindowType type, String title): GWindow
 delete()
 
-get_type()
-set_type()
+get_type(): GWindowType
+set_type(GWindowType type)
 
-get_size()
+get_size(): Size
 set_size(Size x, Size y)
 					</programlisting>
 				</sect4>
