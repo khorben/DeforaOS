@@ -99,8 +99,10 @@ function user_default()
 		print("\t\t<h1>User information for $user</h1>\n");
 		if($res[0]["moderator"] == "t")
 			print("\t\t<p>$user is a moderator.</p>\n");
-		print("\t\t<div><b>E-mail address</b>: ".$res[0]["email"]."</div>
-\t\t<div><b>Homepage:</b> ".$res[0]["homepage"]."</div>\n");
+		if($res[0]["email"] != "")
+			print("\t\t<div><b>E-mail address</b>: <a href=\"mailto:".$res[0]["email"]."\">".$res[0]["email"]."</a></div>\n");
+		if($res[0]["homepage"] != "")
+			print("\t\t<div><b>Homepage:</b> <a href=\"".$res[0]["homepage"]."\">".$res[0]["homepage"]."</a></div>\n");
 		return 0;
 	}
 	print("\t\t<h1>Homepage</h1>
