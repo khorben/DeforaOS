@@ -1,4 +1,4 @@
-SUBDIRS	= configure
+SUBDIRS	= as configure
 
 
 all: subdirs
