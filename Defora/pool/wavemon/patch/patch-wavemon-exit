@@ -1,0 +1,31 @@
+diff -Naur wavemon-0.4.0b/error.c wavemon-0.4.0b.pkg/error.c
+--- wavemon-0.4.0b/error.c	2002-12-21 13:18:30.000000000 +0100
++++ wavemon-0.4.0b.pkg/error.c	2004-04-29 19:37:35.000000000 +0200
+@@ -18,6 +18,7 @@
+  * Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  */
+ 
++#include <stdlib.h>
+ #include <stdio.h>
+ #include <stdarg.h>
+ #include <ncurses.h>
+diff -Naur wavemon-0.4.0b/wavemon.c wavemon-0.4.0b.pkg/wavemon.c
+--- wavemon-0.4.0b/wavemon.c	2002-12-21 13:18:30.000000000 +0100
++++ wavemon-0.4.0b.pkg/wavemon.c	2004-04-29 19:37:20.000000000 +0200
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <sys/time.h>
++#include <stdlib.h>
+ #include <ncurses.h>
+ 
+ #include "conf.h"
+@@ -170,7 +171,7 @@
+ 
+ 	if (conf.dump == 1) {
+ 	  dump_parameters(&conf);
+-	  exit();
++	  exit(1);
+ 	}
+ 
+ 	/* initialize the ncurses interface */

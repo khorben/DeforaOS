@@ -1,0 +1,12 @@
+#clean
+make clean
+
+#configure
+./configure --host=$HOST --prefix=/usr &&
+
+#build
+make &&
+
+#install
+mkdir -p defora/${NAME}-${VERSION}/usr/{bin,man/man1,man/man5} &&
+make prefix=$PWD/defora/${NAME}-${VERSION}/usr install &&
