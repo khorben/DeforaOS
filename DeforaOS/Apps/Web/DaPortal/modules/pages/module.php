@@ -30,10 +30,13 @@ function pages_admin()
 {
 	global $administrator;
 
+	print("\t\t<h1>Pages administration</h1>\n");
 	if($administrator != 1)
+	{
+		print("\t\t<p>Access denied.</p>\n");
 		return 0;
-	print("\t\t<h1>Pages administration</h1>
-\t\t<table>
+	}
+	print("\t\t<table>
 \t\t\t<tr>
 \t\t\t\t<th>Page</th>
 \t\t\t\t<th>View</th>
