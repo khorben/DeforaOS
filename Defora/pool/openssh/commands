@@ -11,6 +11,7 @@ make &&
 make DESTDIR=$PWD/defora/${NAME}-${VERSION} install &&
 mkdir -p defora/${NAME}-${VERSION}/etc/init/rc{,0,1,6}.d &&
 cp defora/sshd defora/${NAME}-${VERSION}/etc/init/rc.d &&
+chmod 755 defora/${NAME}-${VERSION}/etc/init/rc.d/sshd &&
 ln -s ../rc.d/sshd defora/${NAME}-${VERSION}/etc/init/rc0.d/K80sshd &&
 ln -s ../rc.d/sshd defora/${NAME}-${VERSION}/etc/init/rc1.d/K80sshd &&
 ln -s ../rc.d/sshd defora/${NAME}-${VERSION}/etc/init/rc6.d/K80sshd &&
