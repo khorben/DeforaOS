@@ -300,7 +300,7 @@ function news_last($number)
 	print("\t\t<h1>Latest news</h1>\n");
 	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where enable='1' and moduleid='$moduleid' and contentid=newsid and userid=author order by date desc limit $number;")) == NULL)
 	{
-		print("\t\t<p>There aren't any recent news.</p>\n");
+		print("\t\t<p>There aren't any recent <a href=\"index.php?module=news\">news</a>.</p>\n");
 		return 0;
 	}
 	while(sizeof($res) >= 1)
@@ -317,10 +317,7 @@ function _moderate_delete()
 {
 	$id = $_POST['id'];
 	while(sizeof($id) >= 1)
-	{
-		delete_news($id[0]);
-		array_shift($id);
-	}
+		delete_news(array_shift($id));
 	return 0;
 }
 
@@ -328,10 +325,7 @@ function _moderate_disable()
 {
 	$id = $_POST['id'];
 	while(sizeof($id) >= 1)
-	{
-		contents_disable($id[0]);
-		array_shift($id);
-	}
+		contents_disable(array_shift($id));
 	return 0;
 }
 
@@ -339,10 +333,7 @@ function _moderate_enable()
 {
 	$id = $_POST['id'];
 	while(sizeof($id) >= 1)
-	{
-		contents_enable($id[0]);
-		array_shift($id);
-	}
+		contents_enable(array_shift($id));
 	return 0;
 }
 
