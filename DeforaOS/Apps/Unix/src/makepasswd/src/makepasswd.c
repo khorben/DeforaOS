@@ -60,7 +60,7 @@ struct options
 };
 struct options args[] = {
 	{ 'c', "chars", -1, "string of allowed characters (A..Za..z0..9)" },
-	{ 'e', "encrypt", -1, "encryption algorithm {none,des,md5,shmd5} (none)" },
+	{ 'e', "encrypt", -1, "encryption algorithm {none,base64,des,md5,shmd5} (none)" },
 	{ 'l', "length", -1, "password length" },
 	{ 'M', "max", 8, "password maximum length" },
 	{ 'm', "min", 8, "password minimum length" },
@@ -70,12 +70,14 @@ struct options args[] = {
 	{ 'h', "help", -1, "display this help screen" },
 	{ 'V', "version", -1, "display program version" }
 };
-enum { EMD5 = 0, EDES, ESHMD5, ENONE };
-char* options_encryption[] = { "md5", "des", "shmd5", "none", NULL };
+enum { EB64 = 0, EMD5, EDES, ESHMD5, ENONE };
+char* options_encryption[] = { "base64", "md5", "des", "shmd5", "none", NULL };
 
 
 
 /* functions */
+/* base64 */
+void base64(char string[]);
 /* md5 */
 void md5in(char buffer[], unsigned int length);
 /* des */
@@ -283,6 +285,13 @@ int main(int argc, char* argv[])
 			case ENONE:
 				printf("%s\n", str);
 				break;
+			case EB64:
+				printf("%s", str);
+				for(; l <= max; l++)
+					printf(" ");
+				base64(str);
+				printf("\n");
+				break;
 			case EMD5:
 				md5in(str, l);
 				printf("%s", str);
@@ -336,6 +345,42 @@ int main(int argc, char* argv[])
 
 
 /* functions */
+/* base64 */
+void base64(char string[])
+{
+	unsigned int len;
+	unsigned int i;
+	unsigned int j;
+	unsigned char bufi[3];
+	unsigned char bufo[4];
+	char conv[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+	len = strlen(string);
+	for(i = 0; i < len;)
+	{
+		j = 0;
+		for(; j < 3 && i < len; j++)
+			bufi[j] = string[i++];
+		for(; j < 3; j++)
+			bufi[j] = 0;
+		bufo[0] = bufi[0] >> 2;
+/*		bufo[1] = ((bufi[0] << 6) >> 2) + (bufi[1] >> 4); */
+		bufo[1] = bufi[0] << 6;
+		bufo[1] = bufo[1] >> 2;
+		bufo[2] = bufi[1] >> 4;
+		bufo[1] += bufo[2];
+/*		bufo[2] = ((bufi[1] << 4) >> 2) + (bufi[2] >> 6); */
+		bufo[2] = bufi[1] << 4;
+		bufo[2] = bufo[2] >> 2;
+		bufo[3] = bufi[2] >> 6;
+		bufo[2] += bufo[3];
+		bufo[3] = bufi[3] << 2;
+		bufo[3] = bufo[3] >> 2;
+		for(j = 0; j < 4; j++)
+			printf("%c", conv[bufo[j]]);
+	}
+}
+
 /* md5 */
 void md5in(char buffer[], unsigned int length)
 {
