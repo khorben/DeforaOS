@@ -1,4 +1,4 @@
-SUBDIRS	= Unix
+SUBDIRS	= Servers Unix
 
 
 all clean distclean:
