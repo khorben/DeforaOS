@@ -323,6 +323,9 @@ static Token ** case_clause(Token ** tokens)
 
 /* if_clause */
 static Token ** if_clause(Token ** tokens)
+	/* If compound_list Then compound_list else_part Fi
+	 * If compound_list Then compound_list Fi */
+	/* If compound_list Then compound_list [else_part] Fi */
 {
 	/* FIXME */
 	return NULL;
