@@ -364,6 +364,9 @@ static Token ** in(Token ** tokens)
 
 /* wordlist */
 static Token ** wordlist(Token ** tokens)
+	/* wordlist WORD
+	 * | WORD */
+	/* WORD { WORD } */
 {
 	/* FIXME */
 	return NULL;
