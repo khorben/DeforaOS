@@ -166,7 +166,12 @@ function install_get()
 \t</head>
 \t<body>
 \t\t<h1>Server maintainance</h1>
-\t\t<div>Sorry, the server is currently closed for maintainance.</div>\n");
+\t\t<p>
+\t\t\tSorry, the server is currently closed for maintainance.
+\t\t</p>
+\t\t<p>
+\t\t\tIf you are the administrator of this site, please try it on the local interface of its host.
+\t\t</p>\n");
 	else
 		raw_require("html/install.html");
 	print("\t</body>
