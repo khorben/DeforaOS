@@ -14,6 +14,8 @@ typedef struct _InetdState {
 	int queue;
 	char * filename;
 	Config * config;
+	fd_set rfds;
+	int fdmax;
 } InetdState;
 
 

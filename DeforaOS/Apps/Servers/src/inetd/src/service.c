@@ -90,28 +90,38 @@ int service_listen(Service * s)
 }
 
 
+static int _exec_tcp(Service * s);
 int service_exec(Service * s)
 {
-	pid_t pid;
+	switch(s->proto)
+	{
+		case SP_TCP:
+			return _exec_tcp(s);
+		default:
+			if(inetd_state->debug)
+				fprintf(stderr, "%s",
+						"inetd: Not implemented\n");
+			return 1;
+	}
+}
+
+static int _exec_tcp(Service * s)
+{
 	int fd = s->fd;
+	pid_t pid;
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
 
-	if(s->proto == SP_TCP)
-	{
-		if(inetd_state->debug)
-			fprintf(stderr, "%s%d%s", "accept(", s->fd, ")\n");
-		if((fd = accept(s->fd, &sa, &sa_size)) == -1)
-			return inetd_error("accept", 2);
-	}
-	else if(inetd_state->debug)
-		fprintf(stderr, "%s", "inetd: Not implemented\n");
+	if(inetd_state->debug)
+		fprintf(stderr, "%s%d%s", "accept(", s->fd, ")\n");
+	if((fd = accept(s->fd, &sa, &sa_size)) == -1)
+		return inetd_error("accept", 2);
 	if(inetd_state->debug)
 		fprintf(stderr, "fork()\n");
 	if((pid = fork()) == -1)
 		return inetd_error("fork", 1);
 	else if(pid > 0)
-		return 0;
+		return close(fd);
 	if(close(0) != 0 || close(1) != 0 || dup2(fd, 0) != 0
 			|| dup2(fd, 1) != 1)
 		inetd_error("dup2", 0);

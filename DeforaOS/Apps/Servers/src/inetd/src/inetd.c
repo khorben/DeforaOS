@@ -27,7 +27,7 @@ int inetd_error(char const * message, int ret)
 
 
 /* inetd */
-static int _inetd_setup(InetdState * state, char * filename);
+static int _inetd_init(InetdState * state, char * filename);
 static int _inetd_do(InetdState * state);
 static int _inetd(int debug, int queue, char * filename)
 {
@@ -38,20 +38,23 @@ static int _inetd(int debug, int queue, char * filename)
 	state.debug = debug;
 	state.queue = queue;
 	state.filename = filename;
-	if(_inetd_setup(&state, filename))
+	if(_inetd_init(&state, filename))
 		return 2;
 	ret = _inetd_do(&state);
 	config_delete(state.config);
-	return ret;
+	return ret ? 2 : 0;
 }
 
 static void _inetd_sighandler(int signum);
-static int _inetd_setup(InetdState * state, char * config)
+static int _inetd_setup(InetdState * state);
+static int _inetd_init(InetdState * state, char * config)
 {
 	if(signal(SIGCHLD, _inetd_sighandler) == SIG_ERR
 			|| signal(SIGHUP, _inetd_sighandler) == SIG_ERR)
 		return inetd_error("signal", 1);
 	if((state->config = parser(config)) == NULL)
+		return 1;
+	if(_inetd_setup(state))
 		return 1;
 	return 0;
 }
@@ -92,6 +95,10 @@ static void _inetd_sigchld(void)
 static void _inetd_sighup(void)
 {
 	Config * config;
+	unsigned int i;
+	unsigned int j;
+	Service * sold;
+	Service * snew;
 
 	if((config = parser(inetd_state->filename)) == NULL)
 	{
@@ -101,41 +108,69 @@ static void _inetd_sighup(void)
 					"Ignoring reconfiguration request\n");
 		return;
 	}
+	for(i = 0; i < inetd_state->config->services_nb; i++)
+	{
+		sold = inetd_state->config->services[i];
+		for(j = 0; j < config->services_nb; j++)
+		{
+			snew = config->services[i];
+			if(snew->socket != sold->socket
+					|| snew->proto != sold->proto
+					|| snew->wait != sold->wait
+					|| snew->port != sold->port)
+				continue;
+			snew->fd = sold->fd;
+			sold->fd = -1;
+			if(inetd_state->debug)
+				fprintf(stderr, "%s%s%s", "inetd: service \"",
+						sold->name, "\" kept\n");
+			break;
+		}
+	}
+	for(i = 0; i < inetd_state->config->services_nb; i++)
+		if(inetd_state->config->services[i]->fd != -1)
+			close(inetd_state->config->services[i]->fd);
 	config_delete(inetd_state->config);
 	inetd_state->config = config;
-	/* FIXME */
-	/* close all active fd to stop select and use the stack reliably, but
-	 * it will certainly result in an error => handle it... */
+	_inetd_setup(inetd_state);
+}
+
+static int _inetd_setup(InetdState * state)
+{
+	unsigned int i;
+
+	state->fdmax = -1;
+	FD_ZERO(&state->rfds);
+	for(i = 0; i < state->config->services_nb; i++)
+	{
+		if(state->config->services[i]->fd == -1
+				&& service_listen(state->config->services[i]))
+			continue;
+		FD_SET(state->config->services[i]->fd, &state->rfds);
+		if(state->fdmax < state->config->services[i]->fd)
+			state->fdmax = state->config->services[i]->fd;
+	}
+	return 0;
 }
 
 static int _inetd_do(InetdState * state)
 {
-	fd_set rfds;
 	fd_set rfdstmp;
 	unsigned int i;
-	int hifd = -1;
 
-	FD_ZERO(&rfds);
-	for(i = 0; i < state->config->services_nb; i++)
-	{
-		if(service_listen(state->config->services[i]))
-			continue;
-		FD_SET(state->config->services[i]->fd, &rfds);
-		hifd = hifd >= state->config->services[i]->fd ? hifd
-			: state->config->services[i]->fd;
-	}
-	for(rfdstmp = rfds;; rfds = rfdstmp)
+	for(rfdstmp = state->rfds;; rfdstmp = state->rfds)
 	{
 		if(state->debug)
-			fprintf(stderr, "%s%d%s", "select(", hifd+1, ")\n");
-		if(select(hifd+1, &rfds, NULL, NULL, NULL) == -1)
+			fprintf(stderr, "%s%d%s", "select(", state->fdmax+1,
+					")\n");
+		if(select(state->fdmax+1, &rfdstmp, NULL, NULL, NULL) == -1)
 		{
 			if(errno != EINTR)
 				return inetd_error("select", 2);
 			continue;
 		}
 		for(i = 0; i < state->config->services_nb; i++)
-			if(FD_ISSET(state->config->services[i]->fd, &rfds))
+			if(FD_ISSET(state->config->services[i]->fd, &rfdstmp))
 				service_exec(state->config->services[i]);
 	}
 	return 0;
