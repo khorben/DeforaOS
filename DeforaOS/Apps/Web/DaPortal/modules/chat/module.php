@@ -54,9 +54,9 @@ function chat_default()
 			print("\t\t<div>
 \t\t\t<div>");
 			if($res[$i]["author"] == $userid)
-				print("&lt;$username&gt;");
+				print("<div style=\"color: red\">&lt;</div>$username<div style=\"color: red\">&gt;</div>");
 			else if(($res2 = sql_query("select username from daportal_users where userid='".$res[0]["author"]."';")) != FALSE)
-				print("&lt;".$res2[0]["username"]."&gt;");
+				print("<div style=\"color: blue\">&lt;</div>".$res2[0]["username"]."<div style=\"color: blue\">&gt;</div>");
 			print("</div>
 \t\t\t<div>".$res[$i]["timestamp"]."</div>
 \t\t\t<div>".$res[$i]["text"]."</div>
