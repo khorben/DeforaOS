@@ -327,8 +327,18 @@ static Token ** if_clause(Token ** tokens)
 	 * If compound_list Then compound_list Fi */
 	/* If compound_list Then compound_list [else_part] Fi */
 {
+#ifdef DEBUG
+	fprintf(stderr, "if_clause(): %s\n", tokens[0]->string);
+#endif
 	/* FIXME */
-	return NULL;
+	tokens = token_scan(tokens);
+/*	tokens = compound_list(tokens); */
+	token_distinct(tokens);
+	tokens = token_check(tokens, TC_RW_THEN);
+/*	tokens = compound_list(tokens); */
+	/* else_part */
+	token_distinct(tokens);
+	return token_check(tokens, TC_RW_FI);
 }
 
 
@@ -339,7 +349,7 @@ static Token ** while_clause(Token ** tokens)
 {
 	/* FIXME */
 	tokens = token_scan(tokens);
-/*	tokens = compound_list */
+/*	tokens = compound_list(tokens); */
 	return do_group(tokens);
 }
 
@@ -350,7 +360,7 @@ static Token ** until_clause(Token ** tokens)
 {
 	/* FIXME */
 	tokens = token_scan(tokens);
-/*	tokens = compound_list */
+/*	tokens = compound_list(tokens); */
 	return do_group(tokens);
 }
 
