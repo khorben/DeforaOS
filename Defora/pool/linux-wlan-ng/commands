@@ -1,0 +1,12 @@
+#clean
+make mrproper
+
+#configure
+yes "" | ./Configure &&
+
+#build
+make all &&
+
+#install
+DESTDIR=$PWD/defora/${NAME}-${VERSION}
+make TARGET_MODDIR=${DESTDIR}/lib/modules/2.4.25 TARGET_ROOT_ON_HOST=${DESTDIR} TARGET_INST_EXEDIR=${DESTDIR}/usr/sbin install &&

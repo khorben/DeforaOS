@@ -1,0 +1,15 @@
+diff -Naur linux-wlan-ng-0.2.1-pre20/man/Makefile linux-wlan-ng-0.2.1-pre20.pkg/man/Makefile
+--- linux-wlan-ng-0.2.1-pre20/man/Makefile	2004-02-13 18:34:07.000000000 +0100
++++ linux-wlan-ng-0.2.1-pre20.pkg/man/Makefile	2004-04-29 21:58:39.000000000 +0200
+@@ -48,9 +48,9 @@
+ 	@echo "Nothing to do..."
+ 
+ install:
+-	mkdir -p $(TARGET_ROOT_ON_HOST)/usr/local/man/man1
++	mkdir -p $(TARGET_ROOT_ON_HOST)/usr/share/man/man1
+ 	cp nwepgen.man wlancfg.man wlanctl-ng.man wland.man \
+-	$(TARGET_ROOT_ON_HOST)/usr/local/man/man1
++	$(TARGET_ROOT_ON_HOST)/usr/share/man/man1
+ 
+ clean:
+ 	rm -f core core.* *.o .*.o *.s *.a .depend tmp_make *~ tags
