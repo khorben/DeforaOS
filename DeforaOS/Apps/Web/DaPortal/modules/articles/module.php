@@ -19,9 +19,9 @@
 
 
 //check url
-if(eregi("module.php", $_SERVER["REQUEST_URI"]))
+if(eregi('module.php', $_SERVER['REQUEST_URI']))
 {
-	header("Location: ../../index.php");
+	header('Location: ../../index.php');
 	exit(1);
 }
 
@@ -39,8 +39,8 @@ function articles_admin()
 
 function articles_default()
 {
-	if($_GET["id"] != "")
-		return articles_view($_GET["id"]);
+	if($_GET['id'] != "")
+		return articles_view($_GET['id']);
 	print("\t<h1>Articles list</h1>\n");
 	return 0;
 }
@@ -49,7 +49,7 @@ function articles_default()
 function articles_dump()
 {
 	global $administrator;
-	require_once("system/contents.php");
+	require_once('system/contents.php');
 
 	if($administrator != 1)
 		return 0;
@@ -94,8 +94,8 @@ function articles_view($id)
 \t</p>\n");
 		return 0;
 	}
-	print("\t<h1>".$res[0]["title"]."</h1>\n");
-	print(htmlentities($res[0]["content"]));
+	print("\t<h1>".$res[0]['title']."</h1>\n");
+	print(htmlentities($res[0]['content']));
 	return 0;
 }
 
