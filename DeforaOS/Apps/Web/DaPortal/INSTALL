@@ -1,3 +1,8 @@
+IMPORTANT
+---------
+Since I've been writing these notes, I've implemented the administration interface for the layout pages. It requires the server to have full write access on the "pages" subfolder. It's the only one that requires this.
+
+
 USER-FRIENDLY SETUP
 -------------------
 If you want to give a try to what should be the easiest way to install DaPortal, follow these instructions. If you like to do things manually, or if you have a problem here (doh!), please try the manual configuration below.
@@ -37,4 +42,6 @@ include("install.php");
 with this one:
 include("engine.php");
 
-The last thing to do is to populate the database. I'll explain this later, sorry :-/
+At this stage the database is already filled with default values, and an administration account. Its default username/password pair is admin/password. To install more modules, like the "news" one, a system has been implemented, though there isn't any way to activate it yet. I'll finish this as soon as I can, if you want to try by yourself, give it an entry in the "daportal_modules" table, then read the "modules/<module_name>/module.php" file, its "<module_name>_install()" PHP function contains the necessary steps.
+
+Thanks.
