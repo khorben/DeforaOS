@@ -1,5 +1,5 @@
 /* gputty.c */
-/* Copyright (C) 2004 Pierre Pronchery */
+/* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 
 
 /* GPuTTY */
+static char * _gputty_config_file(void);
 /* callbacks */
 static void gputty_on_about(GtkWidget * widget, gpointer data);
 static void gputty_on_about_close(GtkWidget * widget, gpointer data);
@@ -49,6 +50,7 @@ GPuTTY * gputty_new(void)
 {
 	GPuTTY * g;
 	char * p;
+	char * q;
 	int i;
 
 	if((g = malloc(sizeof(GPuTTY))) == NULL)
@@ -66,8 +68,13 @@ GPuTTY * gputty_new(void)
 	}
 	config_set(g->config, "", "ssh", SSH);
 	config_set(g->config, "", "xterm", XTERM);
+	config_set(g->config, "", "port", "22"); /* FIXME should be define'd */
 	config_load(g->config, "/etc/gputty");
-	config_load(g->config, ".gputty");
+	if((p = _gputty_config_file()) != NULL)
+	{
+		config_load(g->config, p);
+		free(p);
+	}
 
 	g->selection = -1;
 
@@ -103,9 +110,13 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox2), g->hn_lport, TRUE, TRUE, 0);
 	g->hn_sport_adj = (GtkAdjustment *)gtk_adjustment_new(22, 0, 65535, 1, 4, 4);
 	g->hn_sport = gtk_spin_button_new(g->hn_sport_adj, 1, 0);
-	i = strtol(config_get(g->config, "", "port"), &p, 10);
-	if(*p == '\0' && i >= 0 && i <= 65535)
-		gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport), i);
+	if((p = config_get(g->config, "", "port")) != NULL)
+	{
+		i = strtol(p, &q, 10);
+		if(*q == '\0' && i >= 0 && i <= 65535)
+			gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport),
+					i);
+	}
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox2), g->hn_sport, TRUE, TRUE, 0);
 	/* hostname: username */
 	g->hn_vbox3 = gtk_vbox_new(FALSE, 0);
@@ -194,6 +205,21 @@ GPuTTY * gputty_new(void)
 	return g;
 }
 
+static char * _gputty_config_file(void)
+{
+	char * homedir;
+	char * filename;
+	unsigned int len;
+
+	if((homedir = getenv("HOME")) == NULL)
+		return NULL;
+	len = strlen(homedir) + 1 + strlen(GPUTTY_CONFIG_FILE) + 1;
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	sprintf(filename, "%s/%s", homedir, GPUTTY_CONFIG_FILE);
+	return filename;
+}
+
 
 void gputty_delete(GPuTTY * gputty)
 {
@@ -216,24 +242,28 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 				G_CALLBACK(gputty_on_about_closex), g);
 		g->ab_vbox = gtk_vbox_new(FALSE, 0);
 		gtk_container_add(GTK_CONTAINER(g->ab_window), g->ab_vbox);
-		g->ab_label = gtk_label_new("GPuTTY is a clone of PuTTY for Open Source desktops.\n\
-Project homepage is found at:\n\
-http://www.defora.org/index.php?page=gputty\n\
-This software has been written by:\n\
-- Pierre Pronchery <khorben@defora.org>\n\
-and mainly relies on the following software:\n\
-- Glib\n\
-- Gtk+\n\
-This project is released under the terms of the\n\
-GNU General Public License.\n\
-Credits go to all Free Software contributors.");
-		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_label, TRUE, TRUE, 0);
+		g->ab_label = gtk_label_new(
+"GPuTTY is a clone of PuTTY for Open Source desktops.\n"
+"Project homepage is found at:\n"
+"http://www.defora.org/index.php?page=gputty\n"
+"This software has been written by:\n"
+"- Pierre Pronchery <khorben@defora.org>\n"
+"and mainly relies on the following software:\n"
+"- Glib\n"
+"- Gtk+\n"
+"This project is released under the terms of the\n"
+"GNU General Public License.\n"
+"Credits go to all Free Software contributors.");
+		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_label,
+				TRUE, TRUE, 0);
 		g->ab_hsep = gtk_hseparator_new();
-		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_hsep, TRUE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_hsep,
+				TRUE, TRUE, 4);
 		g->ab_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 		g_signal_connect(G_OBJECT(g->ab_close), "clicked",
 				G_CALLBACK(gputty_on_about_close), g);
-		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_close, FALSE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(g->ab_vbox), g->ab_close,
+				FALSE, FALSE, 0);
 	}
 	gtk_widget_show_all(g->ab_window);
 }
@@ -322,6 +352,7 @@ static void gputty_on_load(GtkWidget * widget, gpointer data)
 	GPuTTY * g = data;
 	char buf[11];
 	char * p;
+	char * q;
 	int port;
 
 	if(g->selection < 0 || g->selection >= 100)
@@ -335,8 +366,14 @@ static void gputty_on_load(GtkWidget * widget, gpointer data)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), "");
 	else
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), p);
-	port = strtol(config_get(g->config, buf, "port"), &p, 10);
-	if(*p == '\0' && port >= 0 && port <= 65535)
+	if((p = config_get(g->config, buf, "port")) == NULL)
+	{
+		gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport),
+				SSH_PORT);
+		return;
+	}
+	port = strtol(p, &q, 10);
+	if(*q == '\0' && port >= 0 && port <= 65535)
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport), port);
 }
 
@@ -430,6 +467,7 @@ static void gputty_on_quit(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	char buf[11];
+	char * filename;
 
 	if(g->config == NULL)
 	{
@@ -443,9 +481,14 @@ static void gputty_on_quit(GtkWidget * widget, gpointer data)
 			(void*)gtk_entry_get_text(GTK_ENTRY(g->hn_eusername)));
 	sprintf(buf, "%d", gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport)));
 	config_set(g->config, "", "port", buf);
-	if(config_save(g->config, ".gputty") != 0)
+	if((filename = _gputty_config_file()) == NULL
+			|| config_save(g->config, filename) != 0)
+	{
 		fprintf(stderr, "%s%s", "gputty: an error occured while",
 				" saving configuration\n");
+		if(filename != NULL)
+			free(filename);
+	}
 	gtk_main_quit();
 }
 
