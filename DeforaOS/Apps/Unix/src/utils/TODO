@@ -1,0 +1,30 @@
+- improve command line arguments fetching? (inspired from wc?)
+- factorize code; either:
+  * need to improve configure;
+  * include a .c files;
+  * write a library;
+  * use libSystem;
+- decide how to include the utils only defined in XSI, at the moment:
+  * du
+  * link
+  * nice
+  * renice
+  * strings
+  * time
+  * unlink
+  and for those with special features, at the moment:
+  * ls
+  => either:
+    . include always;
+    . build conditionally;
+    . improve configure to allow conditional targets;
+
+id:
+- write more readable code
+- check if it's complete
+
+kill:
+- get signal number from its name
+
+mkdir/rmdir:
+- check recursive algorithms
