@@ -55,7 +55,7 @@ static void _do_count(int opts, char * line, FILE * fp);
 static int _uniq_do(int opts, char * fields, int chars,
 		FILE * infp, FILE * outfp)
 {
-#define BUF 3
+#define BUF 80
 	char * line = NULL;
 	int len = 0;
 	char * p;
