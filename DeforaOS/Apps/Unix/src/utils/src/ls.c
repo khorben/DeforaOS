@@ -13,9 +13,18 @@ extern int optind;
 
 /* types */
 typedef struct _Prefs {
+	int C;
+	int F;
 	int R;
 	int a;
+	int c;
+	int d;
+	int i;
 	int l;
+	int q;
+	int r;
+	int t;
+	int u;
 } Prefs;
 
 
@@ -102,19 +111,34 @@ static int _prefs_parse(int argc, char * argv[], Prefs * p)
 	{
 		switch(o)
 		{
+			case 'C':
+				p->C = 1;
+				break;
+			case 'F':
+				p->F = 1;
+				break;
 			case 'R':
 				p->R = 1;
+				break;
 			case 'a':
 				p->a = 1;
 				break;
 			case 'l':
 				p->l = 1;
 				break;
+			case 'q':
+				p->q = 1;
+				break;
+			case 'r':
+				p->r = 1;
+				break;
+			case 't':
+				p->t = 1;
+				break;
+			case 'u':
+				p->u = 1;
+				break;
 			case '?':
-				return 1;
-			default:
-				fprintf(stderr, "-%c%s", o,
-						": Not yet implemented\n");
 				return 1;
 		}
 	}
