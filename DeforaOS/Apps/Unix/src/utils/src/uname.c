@@ -4,7 +4,6 @@
 
 #include <sys/utsname.h>
 #include <unistd.h>
-int getopt(int argc, char * const argv[], const char *optstring);
 #include <stdio.h>
 
 
