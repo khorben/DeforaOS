@@ -20,7 +20,8 @@ int main(int argc, char * argv[])
 
 	if(argc != 1)
 		return usage();
-	if((config = config_new("project.conf")) == NULL)
+/*	if((config = config_new("project.conf")) == NULL) */
+	if((config = config_new()) == NULL)
 		return 2;
 	config_delete(config);
 	return 0;
