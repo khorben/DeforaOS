@@ -1,4 +1,3 @@
-- configuration file is loaded and saved in current directory, instead of the user's directory
 - leaks memory (just a little bit though, have to check the Config class design)
 - controls should be disabled when not usable
 - remembers a part of old sessions if they were in configuration file, and there are less sessions than its number
