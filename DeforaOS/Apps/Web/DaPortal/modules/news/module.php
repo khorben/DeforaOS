@@ -129,6 +129,8 @@ function news_default()
 		$count = $res[0]["count"];
 		print("\t\t<p>There are $count news available.</p>\n");
 	}
+	else
+		print("\t\t<p>There aren't any news yet.</p>\n");
 	$npp = 5; //news per page
 	$offset = is_numeric($_GET["offset"]) ? $_GET["offset"] * $npp : 0;
 	if(($res = sql_query("select newsid, title, username, date from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
