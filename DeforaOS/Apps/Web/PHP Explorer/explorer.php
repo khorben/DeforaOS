@@ -37,9 +37,17 @@ function explorer_download($filename)
 			return include('403.tpl');
 	}
 	$mime = mime_from_ext($filename);
+	$client_mime = explode(',', $_SERVER['HTTP_ACCEPT']);
+	for($i = 0; $i < count($client_mime); $i++)
+	{
+		if(($pos = strpos($client_mime[$i], ';')) == FALSE)
+			continue;
+		$client_mime[$i] = substr($client_mime[$i], 0, $pos);
+	}
+	$attachment = in_array($mime, $client_mime) ? 'inline' : 'attachment';
 	header('Content-Type: '.$mime);
 	header('Content-Length: '.filesize($filename));
-	header('Content-Disposition: attachment; filename="'
+	header('Content-Disposition: '.$attachment.'; filename="'
 			.html_safe(basename($filename)).'"');
 	readfile($filename);
 }
