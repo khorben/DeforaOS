@@ -49,7 +49,7 @@ static int _configure_config(Config * config)
 	if((fp = fopen("Makefile", "w")) == NULL)
 	{
 		fprintf(stderr, "%s", "configure: ");
-		perror("Makefile.new");
+		perror("Makefile");
 		return 1;
 	}
 	if(_config_makefile(fp, config) != 0)
@@ -108,7 +108,7 @@ static int _subdir_configure(char const * subdir)
 		return 0;
 	}
 	fprintf(stderr, "%s%s%s", "configure: ", subdir,
-			"Invalid subdirectory\n");
+			": Invalid subdirectory\n");
 	return 1;
 }
 
@@ -151,6 +151,7 @@ static int _variables_subdirs(FILE * fp, Config * config)
 	return 0;
 }
 
+static void _target_print(FILE * fp, Config * config, char * target);
 static int _variables_target(FILE * fp, Config * config)
 {
 	char * targets;
@@ -158,22 +159,31 @@ static int _variables_target(FILE * fp, Config * config)
 
 	if((targets = config_get(config, "", "targets")) == NULL
 			|| *targets == '\0')
-	{
-		/* FIXME */
 		return 1;
-	}
 	fprintf(fp, "%s", "TARGETS\t=");
 	for(cur = targets; *targets != '\0'; targets++)
 	{
 		if(*targets != ',')
 			continue;
 		*targets = '\0';
-		fprintf(fp, " %s", cur);
+		_target_print(fp, config, cur);
 		*targets = ',';
 		cur = targets + 1;
 	}
-	fprintf(fp, " %s\n", cur);
+	_target_print(fp, config, cur);
+	fputc('\n', fp);
 	return 0;
+}
+
+static void _target_print(FILE * fp, Config * config, char * target)
+{
+	char * p;
+
+	if((p = config_get(config, target, "type")) != NULL
+			&& strcmp(p, "library") == 0)
+		fprintf(fp, " %s.a %s.so", target, target);
+	else
+		fprintf(fp, " %s", target);
 }
 
 static int _variables_cflags(FILE * fp, Config * config)
@@ -231,7 +241,7 @@ static int _makefile_targets(FILE * fp, Config * config)
 	if(subdirs != NULL && *subdirs != '\0')
 		fprintf(fp, "%s%s%s", "subdirs:\n",
 				"\t@for i in $(SUBDIRS); do ",
-				"$(MAKE) -C $$i || exit $$?; done\n\n");
+				"(cd $$i && $(MAKE)) || exit; done\n\n");
 	if(targets == NULL)
 		return 0;
 	return _targets_all(fp, config);
@@ -245,7 +255,7 @@ static int _targets_all(FILE * fp, Config * config)
 
 	if((targets = config_get(config, "", "targets")) == NULL
 			|| *targets == '\0')
-		return;
+		return 0;
 	for(cur = targets; *targets != '\0'; targets++)
 	{
 		if(*targets != ',')
@@ -274,7 +284,7 @@ static void _target_objs(FILE * fp, Config * config, char * target)
 				": Undefined target\n");
 		return;
 	}
-	fprintf(fp, "%s_OBJS=", target);
+	fprintf(fp, "%s%s", target, "_OBJS=");
 	for(cur = sources; *sources != '\0'; sources++)
 	{
 		if(*sources != ',')
@@ -287,7 +297,10 @@ static void _target_objs(FILE * fp, Config * config, char * target)
 	}
 	fprintf(fp, "%s", " ");
 	_obj_print(fp, cur);
-	fprintf(fp, "%s", "\n");
+	fprintf(fp, "\n%s%s", target, "_CFLAGS=$(CFLAGSF)");
+	cur = config_get(config, target, "cflags");
+	fprintf(fp, "%s%s%s", cur != NULL ? " " : "", cur != NULL ? cur : "",
+			" $(CFLAGS)\n");
 	_target_link(fp, config, target);
 	_objs_handlers(fp, config, target);
 }
@@ -302,16 +315,15 @@ static void _obj_print(FILE * fp, char * obj)
 		obj[len+1] = 'o';
 		fprintf(fp, "%s", obj);
 		obj[len+1] = 'c';
-		return;
 	}
-	if(strcmp(&obj[len+1], "e") == 0)
+	else if(strcmp(&obj[len+1], "e") == 0)
 	{
 		obj[len+1] = 'o';
 		fprintf(fp, "%s", obj);
 		obj[len+1] = 'e';
-		return;
 	}
-	fprintf(stderr, "%s%s%s", "configure: ", obj,
+	else
+		fprintf(stderr, "%s%s%s", "configure: ", obj,
 			": Unknown source type\n");
 }
 
@@ -336,8 +348,7 @@ static void _target_link(FILE * fp, Config * config, char * target)
 				" $(", target, "_OBJS)\n\n");
 	}
 	else if(strcmp("library", type) == 0)
-		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-				target, ": ", target, ".a ", target, ".so\n",
+		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 				target, ".a: $(", target, "_OBJS)\n\t$(AR) ",
 				target,	".a $(", target, "_OBJS)\n\t$(RANLIB) ",
 				target,	".a\n\n", target, ".so: $(", target,
@@ -348,7 +359,7 @@ static void _target_link(FILE * fp, Config * config, char * target)
 				": Unknown type \"", type, "\"\n");
 }
 
-static void _handler_print(FILE * fp, char * source);
+static void _handler_print(FILE * fp, char * target, char * source);
 static void _objs_handlers(FILE * fp, Config * config, char * target)
 {
 	char * sources;
@@ -362,18 +373,28 @@ static void _objs_handlers(FILE * fp, Config * config, char * target)
 		if(*sources != ',')
 			continue;
 		*sources = '\0';
-		_handler_print(fp, cur);
+		_handler_print(fp, target, cur);
 		*sources = ',';
 		cur = sources + 1;
 	}
-	_handler_print(fp, cur);
+	_handler_print(fp, target, cur);
 }
 
-static void _handler_print(FILE * fp, char * source)
+static void _handler_print(FILE * fp, char * target, char * source)
 {
+	int len;
+
 	_obj_print(fp, source);
-	fprintf(fp, "%s%s%s%s%s", ": ", source,
-			"\n\t$(CC) $(CFLAGSF) $(CFLAGS) -c ", source, "\n\n");
+	fprintf(fp, "%s%s%s%s%s%s%s", ": ", source, "\n\t$(CC) $(", target,
+			"_CFLAGS)", " -c ", source);
+	if(strstr(source, "/") != NULL)
+	{
+		len = strlen(source);
+		source[len-1] = 'o';
+		fprintf(fp, "%s%s", " -o ", source);
+		source[len-1] = 'c';
+	}
+	fprintf(fp, "%s", "\n\n");
 }
 
 static void _clean_targets_objs(FILE * fp, Config * config);
@@ -384,7 +405,7 @@ static int _makefile_clean(FILE * fp, Config * config)
 	fprintf(fp, "%s", "clean:\n");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL)
 		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do $(MAKE) -C $$i clean || exit $$?; done\n");
+				"do (cd $$i && $(MAKE) clean) || exit; done\n");
 	if(config_get(config, "", "targets") != NULL)
 	{
 		fprintf(fp, "%s", "\t$(RM)");
@@ -394,7 +415,7 @@ static int _makefile_clean(FILE * fp, Config * config)
 	fprintf(fp, "%s", "\ndistclean: clean\n");
 	if(subdirs != NULL)
 		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do $(MAKE) -C $$i distclean || exit $$?; done\n");
+				"do (cd $$i && $(MAKE) distclean) || exit; done\n");
 	if(config_get(config, "", "targets") != NULL)
 		fprintf(fp, "%s", "\t$(RM) $(TARGETS)\n");
 	return 0;
