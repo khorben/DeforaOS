@@ -6,6 +6,18 @@
 #include <stdio.h>
 
 
+/* unlink */
+static int _unlink(char * arg)
+{
+	if(unlink(arg) == -1)
+	{
+		perror(arg);
+		return 2;
+	}
+	return 0;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -19,10 +31,5 @@ int main(int argc, char * argv[])
 {
 	if(argc != 2)
 		return _usage();
-	if(unlink(argv[1]) == -1)
-	{
-		perror("unlink");
-		return 2;
-	}
-	return 0;
+	return _unlink(argv[1]);
 }
