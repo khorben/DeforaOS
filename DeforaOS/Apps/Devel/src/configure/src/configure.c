@@ -54,6 +54,7 @@ static int _configure_config(Config * config)
 	return res;
 }
 
+static int _makefile_subdirs(Config * config);
 static int _makefile_variables(FILE * fp, Config * config);
 static int _makefile_targets(FILE * fp, Config * config);
 static int _makefile_clean(FILE * fp, Config * config);
@@ -61,12 +62,50 @@ static int _config_makefile(FILE * fp, Config * config)
 {
 	int res = 0;
 
+	res += _makefile_subdirs(config);
 	res += _makefile_variables(fp, config);
 	fprintf(fp, "\n");
 	res += _makefile_targets(fp, config);
 	fprintf(fp, "\n");
 	res += _makefile_clean(fp, config);
 	return res;
+}
+
+static int _subdir_configure(char const * subdirectory);
+static int _makefile_subdirs(Config * config)
+{
+	char * subdirs;
+	char * cur;
+	int res = 0;
+
+	if((subdirs = config_get(config, "", "subdirs")) == NULL
+			|| *subdirs == '\0')
+		return 0;
+	for(cur = subdirs; *subdirs != '\0'; subdirs++)
+	{
+		if(*subdirs != ',')
+			continue;
+		*subdirs = '\0';
+		res += _subdir_configure(cur);
+		*subdirs = ',';
+		cur = subdirs + 1;
+	}
+	res += _subdir_configure(cur);
+	return res;
+}
+
+static int _subdir_configure(char const * subdir)
+{
+	if(strstr(subdir, "/") == NULL && strcmp(subdir, ".")
+			&& strcmp(subdir, ".."))
+	{
+		_configure(subdir);
+		chdir("..");
+		return 0;
+	}
+	fprintf(stderr, "%s%s%s", "configure: ", subdir,
+			"Invalid subdirectory\n");
+	return 1;
 }
 
 static int _variables_subdirs(FILE * fp, Config * config);
@@ -161,7 +200,13 @@ static int _variables_ldflags(FILE * fp, Config * config)
 
 static int _variables_misc(FILE * fp, Config * config)
 {
-	fprintf(fp, "%s", "CC\t= cc\nRM\t= rm -f\n");
+	char * targets;
+
+	if((targets = config_get(config, "", "targets")) != NULL
+			&& *targets != '\0')
+		fprintf(fp, "%s%s%s", "CC\t= cc\nAR\t= ar rc\n",
+				"RANLIB\t= ranlib\nLD\t= ld -shared\n",
+				"RM\t= rm -f\n");
 	return 0;
 }
 
@@ -177,17 +222,22 @@ static int _makefile_targets(FILE * fp, Config * config)
 static void _target_objs(FILE * fp, Config * config, char * target);
 static int _targets_all(FILE * fp, Config * config)
 {
+	char * subdirs;
 	char * targets;
 	char * cur;
 
-	fprintf(fp, "%s", "\nall:");
+	fprintf(fp, "%s", "\nall:\n");
+	if((subdirs = config_get(config, "", "subdirs")) != NULL
+			&& *subdirs != '\0')
+		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
+				"do make -C $$i $@ || exit $$?; done\n");
 	if((targets = config_get(config, "", "targets")) == NULL
 			|| *targets == '\0')
 	{
 		fprintf(fp, "\n");
 		return 0;
 	}
-	fprintf(fp, "%s", " $(TARGETS)\n\n");
+	fprintf(fp, "%s", "\t@make $(TARGETS)\n\n");
 	for(cur = targets; *targets != '\0'; targets++)
 	{
 		if(*targets != ',')
@@ -202,6 +252,7 @@ static int _targets_all(FILE * fp, Config * config)
 }
 
 static void _obj_print(FILE * fp, char * obj);
+static void _target_link(FILE * fp, Config * config, char * target);
 static void _objs_handlers(FILE * fp, Config * config, char * target);
 static void _target_objs(FILE * fp, Config * config, char * target)
 {
@@ -224,9 +275,8 @@ static void _target_objs(FILE * fp, Config * config, char * target)
 	}
 	fprintf(fp, "%s", " ");
 	_obj_print(fp, cur);
-	fprintf(fp, "\n%s%s%s%s%s%s%s%s%s", target, ": $(", target, "_OBJS)\n",
-			"\t$(CC) $(LDFLAGSF) $(LDFLAGS) -o ", target, " $(",
-			target, "_OBJS)\n\n");
+	fprintf(fp, "%s", "\n");
+	_target_link(fp, config, target);
 	_objs_handlers(fp, config, target);
 }
 
@@ -244,6 +294,32 @@ static void _obj_print(FILE * fp, char * obj)
 	}
 	fprintf(stderr, "%s%s%s", "configure: ", obj,
 			": unknown source type\n");
+}
+
+static void _target_link(FILE * fp, Config * config, char * target)
+{
+	char * type;
+
+	if((type = config_get(config, target, "type")) == NULL)
+	{
+		fprintf(stderr, "%s%s%s", "configure: ", target,
+				": Empty type\n");
+		return;
+	}
+	if(strcmp("binary", type) == 0)
+		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s", target, ": $(", target,
+				"_OBJS)\n", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) ",
+				"-o ", target, " $(", target, "_OBJS)\n\n");
+	else if(strcmp("library", type) == 0)
+		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", target,
+				".a: $(", target, "_OBJS)\n\t$(AR) ", target,
+				".a $(", target, "_OBJS)\n\t$(RANLIB) ", target,
+				".a\n\n", target, ".so: $(", target,
+				"_OBJS)\n\t$(LD) -o ", target, ".so $(",
+				target, "_OBJS)\n\n");
+	else
+		fprintf(stderr, "%s%s%s%s%s", "configure: ", target,
+				": Unknown type \"", type, "\"\n");
 }
 
 static void _handler_print(FILE * fp, char * source);
@@ -277,14 +353,24 @@ static void _handler_print(FILE * fp, char * source)
 static void _clean_targets_objs(FILE * fp, Config * config);
 static int _makefile_clean(FILE * fp, Config * config)
 {
-	fprintf(fp, "%s", "clean:\n\t$(RM)");
+	char * subdirs;
+
+	fprintf(fp, "%s", "clean:\n");
+	if((subdirs = config_get(config, "", "subdirs")) != NULL)
+		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
+				"do make -C $$i $@ || exit $$?; done\n");
 	if(config_get(config, "", "targets") != NULL)
+	{
+		fprintf(fp, "%s", "\t$(RM)");
 		_clean_targets_objs(fp, config);
-	fprintf(fp, "\n");
-	fprintf(fp, "%s", "\ndistclean: clean\n\t$(RM)");
+		fprintf(fp, "\n");
+	}
+	fprintf(fp, "%s", "\ndistclean: clean\n");
+	if(subdirs != NULL)
+		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
+				"do make -C $$i $@ || exit $$?; done\n");
 	if(config_get(config, "", "targets") != NULL)
-		fprintf(fp, "%s", " $(TARGETS)");
-	fprintf(fp, "\n");
+		fprintf(fp, "%s", "\t$(RM) $(TARGETS)\n");
 	return 0;
 }
 
@@ -330,7 +416,7 @@ int main(int argc, char * argv[])
 				return _usage();
 		}
 	}
-	if(argc - optind > 2)
+	if(argc - optind > 1)
 		return _usage();
 	return _configure(argc - optind == 1 ? argv[argc - 1] : ".");
 }
