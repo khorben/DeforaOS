@@ -42,7 +42,39 @@ function chat_admin()
 
 function chat_default()
 {
+	global $userid, $username;
+
 	print("\t\t<h1>Chat</h1>\n");
+	$expiration = date("Y-m-d H:i:s", strtotime("-1 day"));
+	print($expiration);
+	sql_query("delete from daportal_chat where timestamp < '$expiration';");
+	if(($res = sql_query("select author, timestamp, text from daportal_chat order by timestamp desc limit 20;")) != FALSE)
+	{
+		for($i = sizeof($res) - 1; $i >= 0; $i--)
+		{
+			print("\t\t<div>
+\t\t\t<div>");
+			if($res[$i]["author"] == $userid)
+				print("&lt;$username&gt;");
+			else if(($res2 = sql_query("select username from daportal_users where userid='".$res[0]["author"]."';")) != FALSE)
+				print("&lt;".$res2[0]["username"]."&gt;");
+			print("</div>
+\t\t\t<div>".$res[$i]["timestamp"]."</div>
+\t\t\t<div>".$res[$i]["text"]."</div>
+\t\t</div>\n");
+		}
+	}
+	if($userid == 0)
+		print("\t\t<p>
+\t\t\tYou must be <a href=\"index.php?module=user\">identified</a> to chat.
+\t\t</p>\n");
+	else
+		print("\t\t<form method=\"post\" action=\"index.php\">
+\t\t\t<input type=\"text\" size=\"80\" name=\"text\"/>
+\t\t\t<input type=\"submit\" value=\"Send\"/>
+\t\t\t<input type=\"hidden\" name=\"module\" value=\"chat\"/>
+\t\t\t<input type=\"hidden\" name=\"action\" value=\"send\"/>
+\t\t</form>\n");
 	return 0;
 }
 
@@ -55,9 +87,24 @@ function chat_install()
 		return 0;
 	sql_table_create("daportal_char", "(
 	author integer,
-	date date NOT NULL DEFAULT ('now'),
-	text varchar(80)
+	timestamp timestamp NOT NULL DEFAULT ('now'),
+	text varchar(80),
+	FOREIGN KEY (author) REFERENCES daportal_users (userid)
 )");
+	return 0;
+}
+
+
+function chat_send()
+{
+	global $userid;
+
+	if($userid == 0)
+		return 1;
+	$author = $userid;
+	$text = htmlentities($_POST["text"]);
+	sql_query("insert into daportal_chat (author, timestamp, text) values ('$author', '".date("Y-m-d H:i:s")."', '$text');");
+	header("Location: index.php?module=chat");
 	return 0;
 }
 
@@ -79,6 +126,8 @@ switch($action)
 		return chat_admin();
 	case "install":
 		return chat_install();
+	case "send":
+		return chat_send();
 	case "uninstall":
 		return chat_uninstall();
 	default:
