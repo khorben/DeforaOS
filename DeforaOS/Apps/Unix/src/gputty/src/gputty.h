@@ -5,10 +5,15 @@
 #ifndef _GPUTTY_H
 # define _GPUTTY_H
 
+# include "config.h"
+
 
 /* GPuTTY */
 /* types */
 typedef struct _GPuTTY {
+	/* Config */
+	Config * config;
+
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * vbox;
@@ -52,13 +57,5 @@ typedef struct _GPuTTY {
 /* functions */
 GPuTTY * gputty_new(void);
 void gputty_delete(GPuTTY * gputty);
-
-/* callbacks */
-void gputty_about(GtkWidget * widget, gpointer data);
-void gputty_about_close(GtkWidget * widget, gpointer data);
-void gputty_about_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
-void gputty_connect(GtkWidget * widget, gpointer data);
-void gputty_quit(GtkWidget * widget, gpointer data);
-void gputty_quitx(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 #endif /* !_GPUTTY_H */
