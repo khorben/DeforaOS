@@ -110,6 +110,7 @@ static void _inetd_sighup(void)
 static int _inetd_do(InetdState * state)
 {
 	fd_set rfds;
+	fd_set rfdstmp;
 	unsigned int i;
 	int hifd = -1;
 
@@ -122,10 +123,10 @@ static int _inetd_do(InetdState * state)
 		hifd = hifd >= state->config->services[i]->fd ? hifd
 			: state->config->services[i]->fd;
 	}
-	for(;;)
+	for(rfdstmp = rfds;; rfds = rfdstmp)
 	{
 		if(state->debug)
-			fprintf(stderr, "%s", "select()\n");
+			fprintf(stderr, "%s%d%s", "select(", hifd+1, ")\n");
 		if(select(hifd+1, &rfds, NULL, NULL, NULL) == -1)
 		{
 			if(errno != EINTR)

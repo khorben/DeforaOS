@@ -96,8 +96,14 @@ int service_exec(Service * s)
 	int sa_size = sizeof(struct sockaddr_in);
 
 	if(s->proto == SP_TCP)
+	{
+		if(inetd_state->debug)
+			fprintf(stderr, "%s%d%s", "accept(", s->fd, ")\n");
 		if((fd = accept(s->fd, &sa, &sa_size)) == -1)
 			return inetd_error("accept", 2);
+	}
+	else if(inetd_state->debug)
+		fprintf(stderr, "%s", "inetd: Not implemented\n");
 	if(inetd_state->debug)
 		fprintf(stderr, "fork()\n");
 	if((pid = fork()) == -1)

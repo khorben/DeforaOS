@@ -2,6 +2,9 @@
 
 
 
+#include <sys/types.h>
+#include <errno.h>
+#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 #include "scanner.h"
@@ -190,7 +193,22 @@ static void _wait(State * state)
 static void _id(State * state)
 	/* user [ "." group ] */
 {
+	struct passwd * pwd;
+
 	/* FIXME */
+	errno = 0;
+	if((pwd = getpwnam(state->token->string)) != NULL)
+		state->service.id.uid = pwd->pw_uid;
+	else
+	{
+		if(errno == 0)
+			fprintf(stderr, "%s%s%s", "inetd: ",
+					state->token->string,
+					": No such user\n");
+		else
+			inetd_error(state->token->string, 0);
+		state->service.id.uid = -1;
+	}
 	_parser_check(state, TC_WORD);
 }
 
