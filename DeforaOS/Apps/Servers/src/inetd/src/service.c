@@ -2,6 +2,7 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include "inetd.h"
@@ -20,8 +21,7 @@ Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 	s->proto = proto;
 	s->wait = wait;
 	s->id = id;
-	/* FIXME */
-	s->program = NULL;
+	s->program = program;
 	return s;
 }
 
@@ -42,10 +42,27 @@ void service_delete(Service * s)
 
 
 /* useful */
-void service_exec(Service * s, int fd, struct sockaddr_in * addr, int addrlen)
+int service_listen(Service * s)
 {
-	if(close(0) != 0 || close(1) != 0
-			|| dup2(fd, 0) != 0 || dup2(fd, 1) != 1)
+	struct sockaddr_in sa;
+
+	if((s->fd = socket(AF_INET, s->socket == SS_STREAM ? SOCK_STREAM
+					: SOCK_DGRAM, 0)) == -1)
+		return 1;
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(s->port);
+	sa.sin_addr.s_addr = INADDR_ANY;
+	if(bind(s->fd, &sa, sizeof(sa)) != 0)
+		return 1;
+	if(listen(s->fd, 5) != 0)
+		return 1;
+	return 0;
+}
+
+void service_exec(Service * s, int fd)
+{
+	if(close(0) != 0 || close(1) != 0 || dup2(fd, 0) != 0
+			|| dup2(fd, 1) != 1)
 	{
 		inetd_error("dup2", 0);
 		return;

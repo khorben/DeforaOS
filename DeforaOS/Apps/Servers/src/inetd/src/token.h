@@ -23,6 +23,7 @@ extern char * sTokenCode[TC_NULL];
 
 typedef TokenCode * TokenSet;
 extern TokenCode TS_NEWLINE[];
+extern TokenCode TS_PROGRAM_ARGUMENT[];
 extern TokenCode TS_SERVICE[];
 extern TokenCode TS_SPACE[];
 

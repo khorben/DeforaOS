@@ -23,6 +23,7 @@ char * sTokenCode[TC_NULL] = {
 };
 TokenCode TS_NEWLINE[] = { TC_SPACE, TC_TAB, TC_NEWLINE, TC_NULL };
 TokenCode TS_NEWLINE_LIST[] = { TC_SPACE, TC_TAB, TC_NEWLINE, TC_NULL };
+TokenCode TS_PROGRAM_ARGUMENT[] = { TC_WORD, TC_NULL };
 TokenCode TS_SERVICE[] = { TC_WORD, TC_NULL };
 TokenCode TS_SPACE[] = { TC_SPACE, TC_TAB, TC_NULL };
 

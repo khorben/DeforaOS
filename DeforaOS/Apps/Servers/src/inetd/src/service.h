@@ -13,7 +13,7 @@
 
 /* Service */
 /* types */
-typedef enum _ServiceSocket { SS_TCP, SS_UDP } ServiceSocket;
+typedef enum _ServiceSocket { SS_STREAM, SS_DGRAM } ServiceSocket;
 typedef uint16_t ServiceProtocol;
 typedef enum _ServiceWait { SW_WAIT, SW_NOWAIT } ServiceWait;
 typedef struct _ServiceId
@@ -30,6 +30,8 @@ typedef struct _Service
 	ServiceWait wait;
 	ServiceId id;
 	char ** program;
+	int fd;
+	unsigned short port;
 } Service;
 
 
@@ -39,6 +41,7 @@ Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 void service_delete(Service * service);
 
 /* useful */
-void service_exec(Service * s, int fd, struct sockaddr_in * addr, int addrlen);
+int service_listen(Service * service);
+void service_exec(Service * service, int fd);
 
 #endif /* !__SERVICE_H */

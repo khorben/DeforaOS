@@ -2,42 +2,90 @@
 
 
 
+#include <stdlib.h>
+#include <string.h>
+#include "scanner.h"
+#include "service.h"
 #include "parser.h"
 
 
 /* types */
 typedef struct _State
 {
-	int prefs;
 	char * filename;
 	FILE * fp;
-	unsigned int line : 1;
+	Token * token;
+	unsigned int line;
+	Config * config;
+	Service service;
 } State;
 
 
 static void _config(State * state);
-int parser(int prefs, char * filename, FILE * fp)
+Config * parser(char * filename)
 {
 	State state;
 
-	state.prefs = prefs;
+	if((state.config = config_new()) == NULL)
+		return NULL; /* FIXME be verbose */
+	if((state.fp = fopen(filename, "r")) == NULL)
+		return NULL; /* FIXME be verbose */
+	if((state.token = scan(state.fp)) == NULL)
+	{
+		fclose(state.fp);
+		return NULL; /* FIXME be verbose */
+	}
 	state.filename = filename;
-	state.fp = fp;
+	state.line = 1;
 	_config(&state);
-	return 1; /* FIXME */
+	token_delete(state.token);
+	fclose(state.fp);
+	return state.config;
+}
+
+static void _parser_error(State * state, char * message)
+{
+	fprintf(stderr, "%s%s%d%s%s\n", state->filename, ", line: ",
+			state->line, ": ", message);
+}
+
+static void _parser_scan(State * state)
+{
+	token_delete(state->token);
+	state->token = scan(state->fp);
+}
+
+static int _parser_check(State * state, TokenCode code)
+{
+	int ret = 0;
+
+	if(state->token == NULL || state->token->code != code)
+		_parser_error(state, "parse error"); /* FIXME tell expected */
+	else
+		ret = 1;
+	_parser_scan(state);
+	return ret;
 }
 
 static void _newline(State * state);
-static void _service_list(State * state);
+static void _service(State * state);
 static void _config(State * state)
-	/* { newline } service_list { newline } */
+	/* { newline | service } */
 {
-	/* FIXME uncomment */
-/*	while(token_in_set(state->token, TS_NEWLINE))
-		_newline(state); */
-	_service_list(state);
-/*	while(token_in_set(state->token, TS_NEWLINE))
-		_newline(state); */
+	for(;;)
+	{
+		if(token_in_set(state->token, TS_NEWLINE))
+			_newline(state);
+		else if(token_in_set(state->token, TS_SERVICE))
+			_service(state);
+		else if(state->token->code == TC_EOF)
+			break;
+		else
+		{
+			/* FIXME be verbose */
+			break;
+		}
+	}
 }
 
 static void _space(State * state);
@@ -58,18 +106,6 @@ static void _space(State * state)
 		_parser_scan(state);
 }
 
-static void _service(State * state);
-static void _service_list(State * state)
-	/* { service { newline } } */
-{
-	while(token_in_set(state->token, TS_SERVICE))
-	{
-		_service(state);
-		while(token_in_set(state->token, TS_NEWLINE))
-			_newline(state);
-	}
-}
-
 static void _service_name(State * state);
 static void _socket(State * state);
 static void _protocol(State * state);
@@ -77,9 +113,11 @@ static void _wait(State * state);
 static void _id(State * state);
 static void _program(State * state);
 static void _service(State * state)
-	/* service_name space socket space protocol space wait space
-	 * id space program newline */
+	/* service_name space socket space protocol space wait space id space
+	 * program newline */
 {
+	unsigned int i;
+
 	_service_name(state);
 	_space(state);
 	_socket(state);
@@ -92,28 +130,90 @@ static void _service(State * state)
 	_space(state);
 	_program(state);
 	_newline(state);
+	/* FIXME not so elegant */
+	if(state->service.name == NULL)
+		return;
+	config_service_add(state->config, service_new(state->service.name,
+				state->service.socket, state->service.proto,
+				state->service.wait, state->service.id,
+				state->service.program));
+	free(state->service.name);
+	if(state->service.program != NULL)
+	{
+		for(i = 0; state->service.program[i] != NULL; i++)
+			free(state->service.program[i]);
+		free(state->service.program);
+	}
 }
 
-static void _service_name(State * state);
+static void _service_name(State * state)
+	/* WORD */
 {
+	state->service.name = strdup(state->token->string);
+	_parser_check(state, TC_WORD);
 }
 
-static void _socket(State * state);
+static void _socket(State * state)
+	/* "stream" | "dgram" */
 {
+	if(strcmp("stream", state->token->string) == 0)
+		state->service.socket = SS_STREAM;
+	else if(strcmp("dgram", state->token->string) == 0)
+		state->service.socket = SS_DGRAM;
+	else
+		_parser_error(state, "stream or dgram expected");
+	_parser_check(state, TC_WORD);
 }
 
-static void _protocol(State * state);
+static void _protocol(State * state)
 {
+	/* FIXME */
+	_parser_check(state, TC_WORD);
 }
 
-static void _wait(State * state);
+static void _wait(State * state)
+	/* "wait" | "nowait" */
 {
+	if(strcmp("wait", state->token->string) == 0)
+		state->service.wait = SW_WAIT;
+	else if(strcmp("nowait", state->token->string) == 0)
+		state->service.wait = SW_NOWAIT;
+	else
+		_parser_error(state, "wait or nowait expected");
+	_parser_check(state, TC_WORD);
 }
 
-static void _id(State * state);
+static void _id(State * state)
+	/* user [ "." group ] */
 {
+	/* FIXME */
+	_parser_check(state, TC_WORD);
 }
 
+static void _program_argument(State * state);
+static void _program_name(State * state);
 static void _program(State * state)
+	/* program_name [ space ] { program_argument space } */
 {
+	state->service.program = NULL;
+	_program_name(state);
+	if(token_in_set(state->token, TS_SPACE))
+		_space(state);
+	while(token_in_set(state->token, TS_PROGRAM_ARGUMENT))
+	{
+		_program_argument(state);
+		_space(state);
+	}
+}
+
+static void _program_name(State * state)
+	/* WORD */
+{
+	_parser_check(state, TC_WORD);
+}
+
+static void _program_argument(State * state)
+	/* WORD */
+{
+	_parser_check(state, TC_WORD);
 }
