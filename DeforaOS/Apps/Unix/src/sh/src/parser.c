@@ -329,6 +329,9 @@ static Token ** for_clause(Token ** tokens)
 	 * | For name linebreak in wordlist sequential_sep do_group */
 	/* For name linebreak [in [wordlist] sequential_sep] do_group */
 {
+#ifdef DEBUG
+	fprintf(stderr, "for_clause(): %s\n", tokens[0]->string);
+#endif
 	/* FIXME */
 	tokens = token_scan(tokens);
 	if(!token_in_set(tokens[0], CS_NAME))
