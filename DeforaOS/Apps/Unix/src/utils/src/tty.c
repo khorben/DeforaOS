@@ -21,7 +21,7 @@ static int _tty(void)
 		printf("%s\n", tty);
 		return 0;
 	}
-	printf("not a tty\n");
+	printf("%s", "not a tty\n");
 	return 2;
 }
 
