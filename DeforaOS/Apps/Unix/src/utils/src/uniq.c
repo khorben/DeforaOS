@@ -19,9 +19,10 @@
  * 	0	success
  * 	else	error(s) occured */
 static int _uniq_error(char * message, int ret);
-static int _uniq_do(int opts, char * fields, int chars,
+static int _uniq_do(int opts, char * fields, unsigned int skip,
 		FILE * infp, FILE * outfp);
-static int _uniq(int opts, char * fields, int chars, char * in, char * out)
+static int _uniq(int opts, char * fields, unsigned int skip,
+		char * in, char * out)
 {
 	FILE * infp = stdin;
 	FILE * outfp = stdout;
@@ -34,7 +35,7 @@ static int _uniq(int opts, char * fields, int chars, char * in, char * out)
 		fclose(infp);
 		return _uniq_error(out, 2);
 	}
-	ret = _uniq_do(opts, fields, chars, infp, outfp);
+	ret = _uniq_do(opts, fields, skip, infp, outfp);
 	if(in == NULL)
 	{
 		fclose(infp);
@@ -51,8 +52,8 @@ static int _uniq_error(char * message, int ret)
 	return ret;
 }
 
-static void _do_count(int opts, char * line, FILE * fp);
-static int _uniq_do(int opts, char * fields, int chars,
+static void _do_count(int opts, unsigned int skip, char * line, FILE * fp);
+static int _uniq_do(int opts, char * fields, unsigned int skip,
 		FILE * infp, FILE * outfp)
 {
 #define BUF 80
@@ -84,15 +85,16 @@ static int _uniq_do(int opts, char * fields, int chars,
 #ifdef DEBUG
 		fprintf(stderr, "%s%s%s", "DEBUG: Got line \"", line, "\"\n");
 #endif
-		_do_count(opts, line, outfp);
+		_do_count(opts, skip, line, outfp);
 		line = NULL;
 		len = 0;
 	}
-	_do_count(opts, NULL, outfp);
+	_do_count(opts, skip, NULL, outfp);
 	return 0;
 }
 
-static void _do_count(int opts, char * line, FILE * fp)
+static int _count_repeated(char * lastline, char * line, unsigned int skip);
+static void _do_count(int opts, unsigned int skip, char * line, FILE * fp)
 {
 	static char * lastline = NULL;
 	static unsigned int cnt = 1;
@@ -102,7 +104,7 @@ static void _do_count(int opts, char * line, FILE * fp)
 		lastline = line;
 		return;
 	}
-	if(line != NULL && strcmp(lastline, line) == 0)
+	if(line != NULL && _count_repeated(lastline, line, skip))
 	{
 		cnt++;
 		return;
@@ -120,12 +122,29 @@ static void _do_count(int opts, char * line, FILE * fp)
 	cnt = 1;
 }
 
+/* PRE	line and lastline are valid strings
+ * POST */
+static int _count_repeated(char * lastline, char * line, unsigned int skip)
+{
+	if(strlen(lastline) < skip)
+		return strlen(line) < skip;
+	if(strlen(line) < skip)
+		return 0;
+	if(strcmp(&lastline[skip], &line[skip]) == 0)
+		return 1;
+	return 0;
+}
+
 
 /* usage */
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: uniq [-c|-d|-u][-f fields][-s char]\
-[input_file [output_file]]\n");
+[input_file [output_file]]\n\
+  -c    precede each output line with a count of the repetitions for the line\n\
+  -d    suppress the writing of lines that are not repeated\n\
+  -s    ignore the first char characters when doing comparisons\n\
+  -u    suppress the writing of lines that are repeated\n");
 	return 1;
 }
 
@@ -133,7 +152,8 @@ int main(int argc, char * argv[])
 {
 	int opts = 0;
 	char * fields = NULL;
-	int chars = 0;
+	int skip = 0;
+	char * p;
 	char * in = NULL;
 	char * out = NULL;
 	int o;
@@ -148,11 +168,15 @@ int main(int argc, char * argv[])
 			case 'd':
 				opts |= OPTS_d;
 				break;
+			case 's':
+				skip = strtol(optarg, &p, 10);
+				if(*optarg == '\0' || *p != '\0' || skip < 0)
+					return _usage();
+				break;
 			case 'u':
 				opts |= OPTS_u;
 				break;
 			case 'f':
-			case 's':
 				fprintf(stderr, "%s%c%s", "uniq: -", o,
 						": Not implemented yet\n");
 				return _usage();
@@ -168,5 +192,5 @@ int main(int argc, char * argv[])
 		else if(argc - optind > 2)
 			return _usage();
 	}
-	return _uniq(opts, fields, chars, in, out);
+	return _uniq(opts, fields, skip, in, out);
 }

@@ -5,13 +5,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-extern int optind;
 #include <dirent.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <grp.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 
 /* FIXME */
@@ -20,24 +20,26 @@ extern int optind;
 /* Prefs */
 typedef int Prefs;
 #define PREFS_a 1
-#define PREFS_d 2
-#define PREFS_l 4
-#define PREFS_1 8
-#define PREFS_R 16
+#define PREFS_c 2
+#define PREFS_d 4
+#define PREFS_l 8
+#define PREFS_u 16
+#define PREFS_1 32
+#define PREFS_R 64
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
 	int o;
 
 	memset(prefs, 0, sizeof(Prefs));
-	while((o = getopt(argc, argv, "CFRadl1")) != -1)
+	while((o = getopt(argc, argv, "CFRacdlu1")) != -1)
 	{
 		switch(o)
 		{
 			case 'C':
 			case 'F':
 				fprintf(stderr, "%s%c%s", "ls: -", o,
-						": Not yet implemented\n");
+						": Not implemented yet\n");
 				return 1;
 			case 'R':
 				*prefs |= PREFS_R;
@@ -45,11 +47,19 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 			case 'a':
 				*prefs |= PREFS_a;
 				break;
+			case 'c':
+				*prefs -= *prefs & PREFS_u;
+				*prefs |= PREFS_c;
+				break;
 			case 'd':
 				*prefs |= PREFS_d;
 				break;
 			case 'l':
 				*prefs |= PREFS_l;
+				break;
+			case 'u':
+				*prefs -= *prefs & PREFS_c;
+				*prefs |= PREFS_u;
 				break;
 			case '1':
 				*prefs |= PREFS_1;
@@ -125,15 +135,15 @@ static void slist_next(SList * slist)
 	*slist = (*slist)->next;
 }
 
-static void slist_last(SList * slist)
+/* static void slist_last(SList * slist)
 {
 	if(*slist == NULL)
 		return;
 	while((*slist)->next != NULL)
 		*slist = (*slist)->next;
-}
+} */
 
-static int slist_append(SList * slist, void * data)
+/* static int slist_append(SList * slist, void * data)
 {
 	SList sl = *slist;
 
@@ -145,7 +155,7 @@ static int slist_append(SList * slist, void * data)
 	slist_last(&sl);
 	sl->next = _slistcell_new(data, NULL);
 	return sl->next != NULL ? 0 : 2;
-}
+} */
 
 static void slist_apply(SList * slist, int (*func)(void *, void *), void * user)
 {
@@ -183,7 +193,7 @@ static int slist_insert_sorted(SList * slist, void * data,
 	return 0;
 }
 
-static size_t slist_length(SList * slist)
+/* static size_t slist_length(SList * slist)
 {
 	SListCell * slc = *slist;
 	size_t len;
@@ -191,7 +201,7 @@ static size_t slist_length(SList * slist)
 	for(len = 0; slc != NULL; len++)
 		slc = slc->next;
 	return len;
-}
+} */
 
 
 /* ls */
@@ -200,6 +210,7 @@ static int _ls_directory_do(char * dir, Prefs * prefs);
 static int _ls_args(SList ** files, SList ** dirs);
 static int _is_directory(char * dir, Prefs * prefs);
 static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs);
+typedef int (*compare_func)(void*, void*);
 static int _ls(int argc, char * argv[], Prefs * prefs)
 {
 	SList * files;
@@ -227,10 +238,12 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 		}
 		if(*prefs & PREFS_d)
 		{
-			res += slist_insert_sorted(files, str, strcmp);
+			res += slist_insert_sorted(files, str,
+					(compare_func)strcmp);
 			continue;
 		}
-		res += slist_insert_sorted(j ? dirs : files, str, strcmp);
+		res += slist_insert_sorted(j ? dirs : files, str,
+				(compare_func)strcmp);
 	}
 	res += _ls_do(NULL, files, dirs, prefs);
 	return res == 1 ? 2 : res;
@@ -252,6 +265,7 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 	struct dirent * de;
 	char * file = NULL;
 	char * p;
+	int pos = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "_ls_directory_do(%s, ...)\n", directory);
@@ -259,11 +273,15 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 	if((dir = opendir(directory)) == NULL)
 		return _ls_error(directory, 2);
 	_ls_args(&files, &dirs);
-	readdir(dir);
-	readdir(dir);
 	while((de = readdir(dir)) != NULL)
 	{
-		slist_insert_sorted(files, strdup(de->d_name), strcmp);
+		pos++;
+		if(*(de->d_name) == '.' && !(*prefs & PREFS_a))
+			continue;
+		slist_insert_sorted(files, strdup(de->d_name),
+				(compare_func)strcmp);
+		if(pos <= 2)
+			continue;
 		if((p = realloc(file, strlen(directory)
 						+ strlen(de->d_name)
 						+ 2)) == NULL)
@@ -274,7 +292,8 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 		file = p;
 		sprintf(file, "%s/%s", directory, de->d_name);
 		if((*prefs & PREFS_R) && _is_directory(file, prefs) == 1)
-			slist_insert_sorted(dirs, strdup(file), strcmp);
+			slist_insert_sorted(dirs, strdup(file),
+					(compare_func)strcmp);
 	}
 	free(file);
 	closedir(dir);
@@ -304,13 +323,13 @@ static int _is_directory(char * file, Prefs * prefs)
 }
 
 static int _ls_do_files(char * directory, SList * files, Prefs * prefs);
-static int _ls_do_dirs(char * directory, SList * dirs, Prefs * prefs);
+static int _ls_do_dirs(SList * dirs, Prefs * prefs);
 static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs)
 {
 	int res = 0;
 
 	res += _ls_do_files(directory, files, prefs);
-	res += _ls_do_dirs(directory, dirs, prefs);
+	res += _ls_do_dirs(dirs, prefs);
 	return res;
 }
 
@@ -373,7 +392,7 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 static void _long_mode(char str[11], mode_t mode);
 static char * _long_owner(uid_t uid);
 static char * _long_group(gid_t gid);
-static char * _long_date(time_t date);
+static void _long_date(time_t date, char buf[15]);
 static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 {
 	SList cur;
@@ -383,7 +402,7 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 	char mode[11];
 	char * owner;
 	char * group;
-	char * date;
+	char date[15];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG _ls_do_files_long(%s, ...)\n", directory);
@@ -391,15 +410,16 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
 		/* FIXME */
-		if((p = realloc(file, strlen(directory)
-						+ strlen(slist_data(&cur))
-						+ 2)) == NULL)
+		p = slist_data(&cur);
+		if((p = realloc(file, strlen(directory) + strlen(p) + 2))
+				== NULL)
 		{
 			_ls_error("malloc", 0);
 			continue;
 		}
 		file = p;
-		sprintf(file, "%s/%s", directory, slist_data(&cur));
+		p = slist_data(&cur);
+		sprintf(file, "%s/%s", directory, p);
 		if(stat(file, &st) != 0)
 		{
 			_ls_error(file, 0);
@@ -408,10 +428,14 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 		_long_mode(mode, st.st_mode);
 		owner = _long_owner(st.st_uid);
 		group = _long_group(st.st_gid);
-		date = _long_date(st.st_mtime);
+		if(*prefs & PREFS_u)
+			_long_date(st.st_atime, date);
+		else if(*prefs & PREFS_c)
+			_long_date(st.st_ctime, date);
+		else
+			_long_date(st.st_mtime, date);
 		printf("%s %u %s %s %lu %s %s\n", mode, st.st_nlink,
-				owner, group, st.st_size, date,
-				slist_data(&cur));
+				owner, group, st.st_size, date, p);
 	}
 	free(file);
 	return 0;
@@ -421,10 +445,43 @@ static void _long_mode(char str[11], mode_t mode)
 {
 	unsigned int i;
 
-	str[10] = '\0';
-	/* FIXME */
-	for(i = 0; i < 10; i++)
+	str[0] = '-';
+	if(!S_ISREG(mode))
+	{
+		if(S_ISLNK(mode))
+			str[0] = 'l';
+		else if(S_ISBLK(mode))
+			str[0] = 'b';
+		else if(S_ISCHR(mode))
+			str[0] = 'c';
+		else if(S_ISFIFO(mode))
+			str[0] = 'p';
+		else if(S_ISDIR(mode))
+			str[0] = 'd';
+	}
+	for(i = 1; i < 10; i++)
 		str[i] = '-';
+	if(mode & S_IRUSR)
+		str[1] = 'r';
+	if(mode & S_IWUSR)
+		str[2] = 'w';
+	if(mode & S_IXUSR)
+		str[3] = (mode & S_ISUID ? 's' : 'x');
+	else if(mode & S_ISUID)
+		str[3] = 'S';
+	if(mode & S_IRGRP)
+		str[4] = 'r';
+	if(mode & S_IWGRP)
+		str[5] = 'w';
+	if(mode & S_IXGRP)
+		str[6] = 'x';
+	if(mode & S_IROTH)
+		str[7] = 'r';
+	if(mode & S_IWOTH)
+		str[8] = 'w';
+	if(mode & S_IXOTH)
+		str[9] = 'x';
+	str[10] = '\0';
 }
 
 static char * _long_owner(uid_t uid)
@@ -445,10 +502,18 @@ static char * _long_group(gid_t gid)
 	return grp->gr_name;
 }
 
-static char * _long_date(time_t date)
+static void _long_date(time_t date, char buf[15])
 {
-	/* FIXME */
-	return NULL;
+	struct tm tm;
+	static time_t sixmonths = -1;
+
+	if(sixmonths == -1)
+		sixmonths = time(NULL) - 15552000;
+	localtime_r(&date, &tm);
+	if(date < sixmonths)
+		strftime(buf, 14, "%b %e  %Y", &tm);
+	else
+		strftime(buf, 14, "%b %e %H:%M", &tm);
 }
 
 static int _ls_free(void * data, void * user)
@@ -458,16 +523,12 @@ static int _ls_free(void * data, void * user)
 	user = user;
 }
 
-static int _ls_do_dirs(char * directory, SList * dirs, Prefs * prefs)
+static int _ls_do_dirs(SList * dirs, Prefs * prefs)
 {
 	int res = 0;
 	SList cur;
 	char * dir = NULL;
-	char * p;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG _ls_do_dirs(%s, ...)\n", directory);
-#endif
 	for(cur = *dirs; cur != NULL; slist_next(&cur))
 	{
 		dir = slist_data(&cur);
@@ -483,7 +544,12 @@ static int _ls_do_dirs(char * directory, SList * dirs, Prefs * prefs)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: ls [-CFRadl1]\n");
+	fprintf(stderr, "%s", "Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
+  -R    recursively list subdirectories encountered\n\
+  -a    write out all hidden directory entries\n\
+  -c    use time of last modification of file status\n\
+  -l    write out in long format\n\
+  -u    use time of last access\n");
 	return 1;
 }
 
