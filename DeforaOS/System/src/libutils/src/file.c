@@ -47,18 +47,15 @@ void file_delete(File * file)
 char * file_get_line(File * file)
 {
 #define FGL_BUFSIZ 80
-	char * str;
+	char * str = NULL;
 	char * p;
-	int len = FGL_BUFSIZ;
+	int len = 0;
 	int pos = 0;
 	int c;
 
-	if((str = malloc(sizeof(char) * FGL_BUFSIZ + 1)) == NULL)
-		return NULL;
-	while((c = fgetc(file->fp)) != EOF && c != '\n')
+	while((c = fgetc(file->fp)) != EOF)
 	{
-		str[pos++] = c;
-		if(pos == len)
+		if(len == pos)
 		{
 			if((p = realloc(str, (len + FGL_BUFSIZ) * sizeof(char)))
 					== NULL)
@@ -66,8 +63,13 @@ char * file_get_line(File * file)
 				free(str);
 				return NULL;
 			}
+			str = p;
 		}
+		if(c == '\n')
+			break;
+		str[pos++] = c;
 	}
-	str[pos] = '\0';
+	if(str != NULL)
+		str[pos] = '\0';
 	return str;
 }
