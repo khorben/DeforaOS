@@ -40,6 +40,8 @@ switch($action)
 		return user_logout();
 	case 'register':
 		return user_register();
+	case 'session':
+		return user_session();
 	case 'uninstall':
 		return user_uninstall();
 	default:
