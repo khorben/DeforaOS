@@ -152,7 +152,7 @@ static int _is_string_not_empty(char * string)
 	return *string == '\0' ? 0 : 1;
 }
 
-static int _file_rwx_g(mode_t g);
+static int _file_rwx_g(gid_t g);
 static int _is_file_rwx(char * pathname, mode_t u, mode_t g, mode_t o)
 {
 	struct stat st;
