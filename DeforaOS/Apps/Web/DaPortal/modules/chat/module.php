@@ -46,7 +46,6 @@ function chat_default()
 
 	print("\t\t<h1>Chat</h1>\n");
 	$expiration = date("Y-m-d H:i:s", strtotime("-1 day"));
-	print($expiration);
 	sql_query("delete from daportal_chat where timestamp < '$expiration';");
 	if(($res = sql_query("select author, timestamp, text from daportal_chat order by timestamp desc limit 20;")) != FALSE)
 	{
