@@ -42,9 +42,10 @@ function block_include($block)
 		print("\t\t<b>Warning:</b> could not include a block.<br/>\n");
 		return 1;
 	}
-	print("\t\t<!-- block -->
-\t\t<div class=\"block\">
-\t\t\t<div class=\"block_title\">$title</div>
+	print("\t\t<div class=\"block\">
+\t\t\t<div class=\"block_title\">
+\t\t\t\t$title
+\t\t\t</div>
 \t\t\t<div class=\"block_content\">
 $content
 \t\t\t</div>
