@@ -1,0 +1,9 @@
+PHP Explorer installation instructions
+--------------------------------------
+
+
+Basically, this project should run out of the box simply by decompressing the
+archive on a web server with PHP support.
+
+It is known to run on Debian's version of apache 1.3.x web server, with PHP 4.
+For enjoyable icony experience the "shared-mime-info" package is recommended.
