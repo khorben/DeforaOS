@@ -189,7 +189,7 @@ function install_post()
 	//FIXME check input (in sql_connect?)
 	if(sql_connect($dbhost, $dbport, $dbname, $dbuser, $dbpassword) != 0)
 	{
-		require_raw("html/xhtml.html");
+		raw_require("html/xhtml.html");
 		print("\t<head>
 \t\t<title>DaPortal processing configuration</title>
 \t</head>
@@ -222,8 +222,8 @@ function install_post()
 //process invalid requests
 function install_invalid()
 {
-	require_raw("html/xhtml.html");
-	require_raw("html/invalid.html");
+	raw_require("html/xhtml.html");
+	raw_require("html/invalid.html");
 	exit(1);
 }
 

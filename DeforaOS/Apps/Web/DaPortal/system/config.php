@@ -30,7 +30,7 @@ if(eregi("config.php", $_SERVER["REQUEST_URI"]))
 if(!@include("config.php"))
 {
 	require_once("system/raw.php");
-	require_raw("html/config.html");
+	raw_require("html/config.html");
 	exit(1);
 }
 
