@@ -70,9 +70,9 @@ static int _chown_owner(char * owner, uid_t * uid, gid_t * gid)
 			owner[i++] = '\0';
 			break;
 		}
-	if((*uid = _chown_uid(owner)) == -1)
+	if((*uid = _chown_uid(owner)) == (uid_t)-1)
 		return 1;
-	if(owner[i] != '\0' && (*gid = _chown_gid(&owner[i])) == -1)
+	if(owner[i] != '\0' && (*gid = _chown_gid(&owner[i])) == (gid_t)-1)
 		return 1;
 	return 0;
 }
