@@ -105,7 +105,8 @@ Function names are lower case.
 	<sect1>
 		<title>Development tasks</title>
 		<para>
-It seems reasonable, if not obvious, to determine independant tasks within the huge work described before in this document. There follows a proposal.
+It seems reasonable, if not obvious, to determine independant tasks within the
+huge work described before in this document. There follows a proposal.
 		</para>
 		<sect2>
 			<title>Global tasks</title>
@@ -114,26 +115,39 @@ It seems reasonable, if not obvious, to determine independant tasks within the h
 				<sect4>
 					<title>Project frontmatter</title>
 					<para>
-The project main access is its web site, hosted at http://www.defora.org/ . Its content management system is nearly finished, and will allow desiring members to contribute to its maintainance. The rules for membership and privileged access will be available when the portal is ready.
+The project main access is its web site, hosted at http://www.defora.org/ . Its
+content management system is nearly finished, and will allow desiring members
+to contribute to its maintainance. The rules for membership and privileged
+access will be available when the portal is ready.
 					</para>
 				</sect4>
 				<sect4>
 					<title>Important announces and debates</title>
 					<para>
-Though it has not been setup yet, one or more mailing-lists will be available. Their use is dedicated to announces and discussions, that deserve to be read by their subscribers. They will be archived on the project website. Please use the IRC channel below, until a list has been setup.
+Though it has not been setup yet, one or more mailing-lists will be available.
+Their use is dedicated to announces and discussions, that deserve to be read by
+their subscribers. They will be archived on the project website. Please use the
+IRC channel below, until a list has been setup.
 					</para>
 				</sect4>
 				<sect4>
 					<title>General discussions</title>
 					<para>
-An IRC channel has been registered on the freenode network: #DeforaOS. This channel is dedicated to discussions related to the DeforaOS system. The preferred language is english, and the preferred charset is either ISO-8859-1 or ISO-8859-15. The rules are basically to be social, there won't be any moderation unless complaints are filed to the project appropriate members, say the mailing-list as a start.
+An IRC channel has been registered on the freenode network: #DeforaOS. This
+channel is dedicated to discussions related to the DeforaOS system. The
+preferred language is english, and the preferred charset is either ISO-8859-1
+or ISO-8859-15. The rules are basically to be social, there won't be any
+moderation unless complaints are filed to the project appropriate members, say
+the mailing-list as a start.
 					</para>
 				</sect4>
 			</sect3>
 			<sect3>
 				<title>Programming interfaces</title>
 				<para>
-The common APIs have to be decided and accepted by the project members, at the appreciation of the project leader. They are then presented in this reference paper.
+The common APIs have to be decided and accepted by the project members, at the
+appreciation of the project leader. They are then presented in this reference
+paper.
 				</para>
 			</sect3>
 		</sect2>
@@ -178,7 +192,8 @@ FIXME
 			<sect3>
 				<title>General purpose services</title>
 				<para>
-These applications only require their application engines. For an easy and safe configuration, or monitoring, they may provide user interfaces though.
+These applications only require their application engines. For an easy and safe
+configuration, or monitoring, they may provide user interfaces though.
 				</para>
 			</sect3>
 			<sect3>
@@ -191,7 +206,9 @@ FIXME
 		<sect2>
 			<title>End-user applications</title>
 			<para>
-Every application that fits on a desktop: file browser, web browser, mail and news reader, messaging application, images viewer, audio and video viewer, and optionaly games, etc.
+Every application that fits on a desktop: file browser, web browser, mail and
+news reader, messaging application, images viewer, audio and video viewer, and
+optionaly games, etc.
 			</para>
 		</sect2>
 		<sect2>
@@ -233,10 +250,15 @@ The only essential part of these services is their application engines.
 		<sect2>
 			<title>POSIX environment</title>
 			<para>
-At the moment it is not yet known if the system will be based on, or provide a native POSIX development environment.
+At the moment it is not yet known if the system will be based on, or provide a
+native POSIX development environment.
 			</para>
 			<para>
-It may be possible to write an application engine providing the POSIX system and library calls, on which the POSIX utilities would connect as usual application interfaces. We could even imagine them with a graphical interface, which would fallback as the regular UNIX commands if the graphical toolkit is denied (using stdin, stdout and stderr as usual).
+It may be possible to write an application engine providing the POSIX system
+and library calls, on which the POSIX utilities would connect as usual
+application interfaces. We could even imagine them with a graphical interface,
+which would fallback as the regular UNIX commands if the graphical toolkit is
+denied (using stdin, stdout and stderr as usual).
 			</para>
 		</sect2>
 	</sect1>
