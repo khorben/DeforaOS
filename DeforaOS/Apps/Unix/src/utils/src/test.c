@@ -10,11 +10,7 @@
 
 
 /* test */
-static int _is_block(char * pathname);
-static int _is_char(char * pathname);
-static int _is_dir(char * pathname);
-static int _is_file(char * pathname);
-static int _is_file_regular(char * pathname);
+static int _test_single(char c, char * argv);
 static int _test(int argc, char * argv[])
 {
 	int i;
@@ -25,35 +21,46 @@ static int _test(int argc, char * argv[])
 		p = argv[i];
 		if(strlen(p) == 2 && *p == '-')
 		{
-			switch(*++p)
-			{
-				case 'b':
-					if(!_is_block(argv[++i]))
-						return 1;
-				case 'c':
-					if(!_is_char(argv[++i]))
-						return 1;
-					break;
-				case 'd':
-					if(!_is_dir(argv[++i]))
-						return 1;
-					break;
-				case 'e':
-					if(!_is_file(argv[++i]))
-						return 1;
-					break;
-				case 'f':
-					if(!_is_file_regular(argv[++i]))
-						return 1;
-					break;
-				default:
-					return 1;
-			}
+			if(i + 1 == argc)
+				return 1;
+			if(_test_single(*++p, argv[++i]) != 1)
+				return 1;
 			continue;
 		}
 		return 1;
 	}
 	return i == argc ? 0 : 1;
+}
+
+/* test_single */
+static int _is_block(char * pathname);
+static int _is_char(char * pathname);
+static int _is_dir(char * pathname);
+static int _is_file(char * pathname);
+static int _is_file_regular(char * pathname);
+static int _is_file_sgid(char * pathname);
+static int _is_file_symlink(char * pathname);
+static int _test_single(char c, char * argv)
+{
+	switch(c)
+	{
+		case 'b':
+			return _is_block(argv);
+		case 'c':
+			return _is_char(argv);
+		case 'd':
+			return _is_dir(argv);
+		case 'e':
+			return _is_file(argv);
+		case 'f':
+			return _is_file_regular(argv);
+		case 'g':
+			return _is_file_sgid(argv);
+		case 'h':
+		case 'L':
+			return _is_file_symlink(argv);
+	}
+	return 0;
 }
 
 static int _is_block(char * pathname)
@@ -99,6 +106,24 @@ static int _is_file_regular(char * pathname)
 	return S_ISREG(st.st_mode) ? 1 : 0;
 }
 
+static int _is_file_sgid(char * pathname)
+{
+	struct stat st;
+
+	if(stat(pathname, &st) != 0)
+		return 0;
+	return (st.st_mode & S_ISGID) ? 1 : 0; /* FIXME */
+}
+
+static int _is_file_symlink(char * pathname)
+{
+	struct stat st;
+
+	if(stat(pathname, &st) != 0)
+		return 0;
+	return S_ISLNK(st.st_mode) ? 1 : 0; /* FIXME */
+}
+
 
 /* usage */
 static int _usage(void)
@@ -117,5 +142,5 @@ int main(int argc, char * argv[])
 	if(strcmp(argv[0], "[") == 0)
 		if(strcmp(argv[--argc], "]") != 0)
 			return _usage();
-	return _test(argc, argv);
+	return _test(argc - 1, argv + 1);
 }
