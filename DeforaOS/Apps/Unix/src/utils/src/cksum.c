@@ -2,8 +2,12 @@
 
 
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 
 /* constants */
@@ -65,14 +69,25 @@ static unsigned long crctab[] = {
 
 /* cksum */
 int _cksum_error(char * message, int ret);
-int _cksum_do(char * filename);
+int _cksum_do(FILE * fp, char * filename);
 int _cksum(int argc, char * argv[])
 {
 	int i;
 	int ret = 0;
+	FILE * fp;
 
+	if(argc == 0)
+		return _cksum_do(stdin, "stdin") == 0 ? 0 : 2;
 	for(i = 0; i < argc; i++)
-		ret += _cksum_do(argv[i]);
+	{
+		if((fp = fopen(argv[i], "r")) == NULL)
+		{
+			ret += _cksum_error(argv[i], 1);
+			continue;
+		}
+		ret += _cksum_do(fp, argv[i]);
+		fclose(fp);
+	}
 	return ret == 0 ? 0 : 2;
 }
 
@@ -83,18 +98,46 @@ int _cksum_error(char * message, int ret)
 	return ret;
 }
 
-int _cksum_do(char * filename)
+static int _do_is_directory(FILE * fp);
+int _cksum_do(FILE * fp, char * filename)
 {
-	FILE * fp;
-	unsigned int sum;
-	int size;
+	unsigned int sum = 0;
+	unsigned int size = 0;
+	int c;
+	unsigned int n;
 
-	if((fp = fopen(filename, "r")) == NULL)
+	if(_do_is_directory(fp))
 		return _cksum_error(filename, 1);
-	/* FIXME */
-	printf("%u %d %s\n", sum, size, filename);
-	fclose(fp);
-	return 1;
+	while((c = fgetc(fp)) != EOF)
+	{
+		sum = (sum << 8) ^ crctab[(sum >> 24) ^ c];
+		size++;
+	}
+	for(n = size; n != 0;)
+	{
+		c = n & 0377;
+		n >>= 8;
+		sum = (sum << 8) ^ crctab[(sum >> 24) ^ c];
+	}
+	printf("%u %d %s\n", ~sum, size, filename);
+	return 0;
+}
+
+static int _do_is_directory(FILE * fp)
+{
+	int fd;
+	struct stat st;
+
+	if((fd = fileno(fp)) == -1)
+		return 1;
+	if(fstat(fd, &st) != 0)
+		return 1;
+	if(S_ISDIR(st.st_mode))
+	{
+		errno = EISDIR;
+		return 1;
+	}
+	return 0;
 }
 
 
