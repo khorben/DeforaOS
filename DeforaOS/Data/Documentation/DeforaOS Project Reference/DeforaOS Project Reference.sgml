@@ -1,0 +1,21 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.2//EN">
+
+
+<book>
+<bookinfo>
+	<title>DeforaOS Project Reference</title>
+	<author>
+		<firstname>Pierre</firstname><surname>Pronchery</surname>
+		<affiliation>
+			<address>
+				<email>pierre@defora.org</email>
+			</address>
+		</affiliation>
+	</author>
+	<copyright>
+		<year>2004</year>
+		<holder>Pierre Pronchery</holder>
+	</copyright>
+</bookinfo>
+
+</book>
