@@ -30,6 +30,9 @@ true: true.o
 tty: tty.o
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o tty tty.o
 
+unlink: unlink.o
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o unlink unlink.o
+
 
 basename.o: basename.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c basename.c
@@ -51,6 +54,9 @@ true.o: true.c
 
 tty.o: tty.c
 	$(CC) $(CFLAGSF) $(CFLAGS) -c tty.c
+
+unlink.o: unlink.c
+	$(CC) $(CFLAGSF) $(CFLAGS) -c unlink.c
 
 
 clean:
