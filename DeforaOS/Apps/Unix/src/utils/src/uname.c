@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
 				flags = 1;
 				break;
 			case 'v':
-				flagr = 1;
+				flagv = 1;
 				break;
 			case '?':
 				return _usage();
