@@ -1,4 +1,4 @@
-SUBDIRS	=
+SUBDIRS	= src
 
 
 all clean distclean:
