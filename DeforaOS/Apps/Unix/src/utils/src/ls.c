@@ -25,7 +25,8 @@ typedef int Prefs;
 #define PREFS_l 8
 #define PREFS_u 16
 #define PREFS_1 32
-#define PREFS_R 64
+#define PREFS_F 64
+#define PREFS_R 128
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
@@ -37,10 +38,12 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 		switch(o)
 		{
 			case 'C':
-			case 'F':
 				fprintf(stderr, "%s%c%s", "ls: -", o,
 						": Not implemented yet\n");
 				return 1;
+			case 'F':
+				*prefs |= PREFS_F;
+				break;
 			case 'R':
 				*prefs |= PREFS_R;
 				break;
@@ -205,7 +208,7 @@ static int slist_insert_sorted(SList * slist, void * data,
 
 
 /* ls */
-static int _ls_error(char * message, int ret);
+static int _ls_error(char const * message, int ret);
 static int _ls_directory_do(char * dir, Prefs * prefs);
 static int _ls_args(SList ** files, SList ** dirs);
 static int _is_directory(char * dir, Prefs * prefs);
@@ -249,7 +252,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	return res == 1 ? 2 : res;
 }
 
-static int _ls_error(char * message, int ret)
+static int _ls_error(char const * message, int ret)
 {
 	fprintf(stderr, "%s", "ls: ");
 	perror(message);
@@ -349,6 +352,7 @@ static int _ls_do_files(char * directory, SList * files, Prefs * prefs)
 	return res;
 }
 
+static char _short_file_mode(char const * file);
 static int _ls_do_files_short(SList * files, Prefs * prefs)
 {
 	char * cols;
@@ -358,6 +362,7 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 	unsigned int colnb = 0;
 	unsigned int i = 0;
 	unsigned int j = 0;
+	char c;
 	SList cur;
 
 	if(((*prefs & PREFS_1) == 0) && (cols = getenv("COLUMNS")) != NULL
@@ -375,6 +380,11 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 		p = slist_data(&cur);
 		j = strlen(p);
 		fwrite(p, sizeof(char), j, stdout);
+		if((*prefs & PREFS_F) && (c = _short_file_mode(p)))
+		{
+			fputc(c, stdout);
+			j++;
+		}
 		if(i + 1 < colnb)
 		{
 			for(i++; j < lenmax; j++)
@@ -389,10 +399,21 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 	return 0;
 }
 
+static char _file_mode_letter(mode_t mode);
+static char _short_file_mode(char const * file)
+{
+	struct stat st;
+
+	if(stat(file, &st) != 0)
+		return _ls_error(file, 0);
+	return _file_mode_letter(st.st_mode);
+}
+
 static void _long_mode(char str[11], mode_t mode);
 static char * _long_owner(uid_t uid);
 static char * _long_group(gid_t gid);
 static void _long_date(time_t date, char buf[15]);
+static char _file_mode_letter(mode_t mode);
 static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 {
 	SList cur;
@@ -434,8 +455,10 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 			_long_date(st.st_ctime, date);
 		else
 			_long_date(st.st_mtime, date);
-		printf("%s %u %s %s %lu %s %s\n", mode, st.st_nlink,
-				owner, group, st.st_size, date, p);
+		printf("%s %u %s %s %lu %s %s%c\n", mode, st.st_nlink,
+				owner, group, st.st_size, date, p,
+				(*prefs & PREFS_F)
+				? _file_mode_letter(st.st_mode) : '\0');
 	}
 	free(file);
 	return 0;
@@ -514,6 +537,19 @@ static void _long_date(time_t date, char buf[15])
 		strftime(buf, 14, "%b %e  %Y", &tm);
 	else
 		strftime(buf, 14, "%b %e %H:%M", &tm);
+}
+
+static char _file_mode_letter(mode_t mode)
+{
+	if(S_ISLNK(mode)) /* FIXME not in POSIX? */
+		return '@';
+	if(S_ISDIR(mode))
+		return '/';
+	if(S_ISFIFO(mode))
+		return '|';
+	if(mode & S_IXUSR) /* FIXME */
+		return '*';
+	return '\0';
 }
 
 static int _ls_free(void * data, void * user)
