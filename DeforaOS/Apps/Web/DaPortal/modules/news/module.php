@@ -114,7 +114,8 @@ function news_default()
 		print(" by ".$_GET["username"]."</h1>\n");
 		return news_username($_GET["username"]);
 	}
-	print(" summary</h1>\n");
+	print(" summary</h1>
+\t\t<p>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</p>\n");
 	return news_summary();
 }
 
@@ -122,7 +123,7 @@ function news_default()
 function news_summary()
 {
 	global $moduleid;
-	$npp = 5; //news per page
+	$npp = 10; //news per page
 
 	if(($res = sql_query("select count(*) from daportal_news, daportal_contents where moduleid='$moduleid' and contentid=newsid and enable='1';")) == NULL)
 	{
@@ -131,17 +132,17 @@ function news_summary()
 	}
 	$count = $res[0]["count"];
 	$offset = is_numeric($_GET["offset"]) ? $_GET["offset"] * $npp : 0;
-	if(($res = sql_query("select newsid, title, username, date from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
+	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
 	{
 		$first = $offset + 1;
 		$last = $first + $npp - 1;
 		print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
 		while(sizeof($res) >= 1)
 		{
-			display_summary($res[0]["newsid"],
-					$res[0]["title"],
+			display($res[0]["title"],
 					$res[0]["username"],
-					$res[0]["date"]);
+					$res[0]["date"],
+					$res[0]["content"]);
 			array_shift($res);
 		}
 		print("\t\t<p>Page: ");
