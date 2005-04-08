@@ -77,14 +77,17 @@ int main(int argc, char * argv[])
 	mode_t mode = 0777;
 	int flagp = 0;
 	int o;
+	char * p;
 
 	while((o = getopt(argc, argv, "pm:")) != -1)
 	{
 		switch(o)
 		{
 			case 'm':
-				/* FIXME */
-				mode = strtol(optarg, NULL, 8);
+				/* FIXME mode may be an expression */
+				mode = strtol(optarg, &p, 8);
+				if(optarg == '\0' || *p != '\0')
+					return _usage();
 				break;
 			case 'p':
 				flagp = 1;
