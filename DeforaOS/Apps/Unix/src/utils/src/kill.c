@@ -5,8 +5,6 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
-extern char * optarg;
-extern int optind;
 #include <stdlib.h>
 #include <stdio.h>
 

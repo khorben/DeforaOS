@@ -3,7 +3,6 @@
 
 
 #include <unistd.h>
-extern int optind;
 #include <stdio.h>
 #include <string.h>
 

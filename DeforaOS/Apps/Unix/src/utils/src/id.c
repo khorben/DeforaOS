@@ -3,7 +3,6 @@
 
 
 #include <unistd.h>
-extern int optind;
 #include <pwd.h>
 #include <grp.h>
 #include <sys/types.h>

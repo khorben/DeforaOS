@@ -6,7 +6,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-extern int optind;
 #include <stdio.h>
 #include <errno.h>
 
