@@ -7,6 +7,7 @@
 
 
 /* rmdir */
+static int _rmdir_error(char * message, int ret);
 static int _rmdir_p(char * pathname);
 static int _rmdir(int flagp, int argc, char * argv[])
 {
@@ -17,9 +18,7 @@ static int _rmdir(int flagp, int argc, char * argv[])
 	{
 		if(rmdir(argv[i]) == -1)
 		{
-			fprintf(stderr, "%s", "rmdir: ");
-			perror(argv[i]);
-			res = 2;
+			res = _rmdir_error(argv[i], 2);
 			continue;
 		}
 		if(flagp)
@@ -29,6 +28,13 @@ static int _rmdir(int flagp, int argc, char * argv[])
 		}
 	}
 	return res;
+}
+
+static int _rmdir_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "rmdir: ");
+	perror(message);
+	return ret;
 }
 
 static int _rmdir_p(char * pathname)
@@ -43,11 +49,7 @@ static int _rmdir_p(char * pathname)
 			continue;
 		*str = '\0';
 		if(rmdir(pathname) == -1)
-		{
-			fprintf(stderr, "%s", "rmdir: ");
-			perror(pathname);
-			return -1;
-		}
+			return _rmdir_error(pathname, 2);
 	}
 	return 0;
 }
