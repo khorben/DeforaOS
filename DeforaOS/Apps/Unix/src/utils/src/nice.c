@@ -11,7 +11,7 @@
 
 /* nice */
 static int _nice_error(char * message, int ret);
-static int _nice(int nice, int argc, char * argv[])
+static int _nice(int nice, char * argv[])
 {
 	if(setpriority(PRIO_PROCESS, 0, nice) != 0)
 		return _nice_error("Unable to set priority", 2);
@@ -58,5 +58,5 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind < 1)
 		return _usage();
-	return _nice(nice, argc - optind, &argv[optind]);
+	return _nice(nice, &argv[optind]);
 }
