@@ -16,16 +16,10 @@ static int _rmdir(int flagp, int argc, char * argv[])
 
 	for(i = 0; i < argc; i++)
 	{
-		if(rmdir(argv[i]) == -1)
-		{
+		if(rmdir(argv[i]) != 0)
 			res = _rmdir_error(argv[i], 2);
-			continue;
-		}
-		if(flagp)
-		{
-			if(_rmdir_p(argv[i]) == -1)
-				res = 2;
-		}
+		if(flagp && _rmdir_p(argv[i]) != 0)
+			res = 2;
 	}
 	return res;
 }
@@ -41,13 +35,15 @@ static int _rmdir_p(char * pathname)
 {
 	char * str;
 
-	str = pathname;
-	while(*str++);
-	while(--str != pathname)
+	for(str = pathname; *str != '\0'; str++);
+	for(str--; str > pathname && *str == '/'; str--);
+	while(--str > pathname)
 	{
 		if(*str != '/')
 			continue;
-		*str = '\0';
+		for(*str = '\0'; --str > pathname && *str == '/'; *str = '\0');
+		if(*str == '\0')
+			return 0;
 		if(rmdir(pathname) == -1)
 			return _rmdir_error(pathname, 2);
 	}
