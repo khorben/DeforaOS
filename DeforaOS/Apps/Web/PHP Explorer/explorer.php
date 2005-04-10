@@ -135,7 +135,7 @@ function explorer_folder($folder, $sort, $reverse)
 			sort($files);
 			break;
 	}
-	while(count($files))
+	for($i = 0; count($files); $i++)
 	{
 		if($reverse)
 			$name = array_pop($files);

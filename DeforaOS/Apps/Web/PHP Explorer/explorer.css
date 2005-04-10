@@ -63,6 +63,10 @@ img {
 	overflow:			hidden;
 }
 
+.explorer .entry input {
+	display:			none;
+}
+
 .explorer .entry .icon {
 	text-align:			center;
 	vertical-align:			middle;
@@ -84,6 +88,15 @@ img {
 	max-height:			100px;
 	max-width:			100px;
 	vertical-align:			middle;
+}
+
+.explorer .selected {
+	background-color:		#333399;
+	color:				#ffffff;
+}
+
+.explorer .selected a {
+	color:				#ffffff;
 }
 
 /* explorer details */
@@ -150,6 +163,10 @@ img {
 	float:				left;
 	margin:				2px;
 	width:				105px;
+}
+
+.explorer .listing_thumbnails .selected {
+	border:				1px solid #333399;
 }
 
 .explorer .listing_thumbnails .entry div {

@@ -28,6 +28,59 @@ function change_class(id, newClass)
 }
 
 
+var _entry_click_last = 0;
+
+function _entry_set(nb, checked)
+{
+	var ckbox = document.getElementsByName('entry_'+nb);
+	if(ckbox.length == 0)
+		return 1;
+	ckbox = ckbox.item(0);
+	ckbox.checked = checked;
+	ckbox.parentNode.className = 'entry'+(checked ? ' selected' : '');
+	return 0;
+}
+
+function entry_click(nb, event)
+{
+	var ckbox;
+
+	if(!event)
+		event = window.event;
+	if(event.ctrlKey)
+	{
+		ckbox = document.getElementsByName('entry_'+nb).item(0);
+		_entry_set(nb, !ckbox.checked);
+		_entry_click_last = 0;
+	}
+	else if(event.shiftKey)
+	{
+		for(var i = _entry_click_last; i < nb; i++)
+			if(_entry_set(i, 1))
+				break;
+		_entry_set(nb, 1);
+		for(var i = nb + 1; i < _entry_click_last; i++)
+			if(_entry_set(i, 1))
+				break;
+	}
+	else
+	{
+		unselect_all();
+		_entry_set(nb, 1);
+		_entry_click_last = nb;
+	}
+}
+
+
+function unselect_all()
+{
+	var ckbox;
+
+	_entry_click_last = 0;
+	for(var i = 0; _entry_set(i, 0) == 0; i++);
+}
+
+
 //tree
 function folder_expand(e)
 {

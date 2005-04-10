@@ -27,6 +27,10 @@
 						<? explorer_sort($folder, 'date', $sort, $reverse); ?>
 					</div>
 <? explorer_folder($folder, $sort, $reverse); ?>
+					<script type="text/javascript">
+<!--
+unselect_all();
+//-->					</script>
 				</div>
 			</form>
 			<div style="clear: left">&nbsp;</div>
