@@ -72,6 +72,15 @@ function entry_click(nb, event)
 }
 
 
+function select_all()
+{
+	var ckbox;
+
+	_entry_click_last = 0;
+	for(var i = 0; _entry_set(i, 1) == 0; i++);
+}
+
+
 function unselect_all()
 {
 	var ckbox;

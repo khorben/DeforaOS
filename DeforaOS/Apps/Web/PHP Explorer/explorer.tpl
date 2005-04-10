@@ -10,12 +10,13 @@
 		<div class="explorer">
 			<form name="explorer_form" action="explorer.php" method="post">
 				<div class="toolbar">
-					<img src="refresh.png" alt="refresh" onClick="location.reload()"/>
-					<img src="print.png" alt="print" onClick="print()"/>
+					<img src="icons/16x16/select_all.png" alt="select all" onclick="select_all()"/>
+					<img src="refresh.png" alt="refresh" onclick="location.reload()"/>
+					<img src="print.png" alt="print" onclick="print()"/>
 					<div class="separator"></div>
-					<img src="icons/16x16/details.png" alt="details" onClick="change_class('explorer_listing', 'listing_details')"/>
-					<img src="icons/16x16/list.png" alt="list" onClick="change_class('explorer_listing', 'listing_list')"/>
-					<img src="icons/16x16/thumbnails.png" alt="thumbnails" onClick="change_class('explorer_listing', 'listing_thumbnails')"/>
+					<img src="icons/16x16/details.png" alt="details" onclick="change_class('explorer_listing', 'listing_details')"/>
+					<img src="icons/16x16/list.png" alt="list" onclick="change_class('explorer_listing', 'listing_list')"/>
+					<img src="icons/16x16/thumbnails.png" alt="thumbnails" onclick="change_class('explorer_listing', 'listing_thumbnails')"/>
 				</div>
 				<div id="explorer_listing" class="listing_details">
 					<div class="header">
