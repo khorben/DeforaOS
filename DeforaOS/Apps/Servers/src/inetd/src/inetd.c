@@ -89,9 +89,10 @@ static void _inetd_sigchld(void)
 		return;
 	}
 	if(inetd_state->debug)
-		fprintf(stderr, "%s%d%s%s%d%s", "Child ", pid, WIFEXITED(status)
-				? " exited" : " was terminated",
-				" with error code ", WEXITSTATUS(status), "\n");
+		fprintf(stderr, "%s%d%s%s%d%s", "inetd: Child ", pid,
+				WIFEXITED(status) ? " exited"
+				: " was terminated", " with error code ",
+				WEXITSTATUS(status), "\n");
 }
 
 static void _inetd_sighup(void)

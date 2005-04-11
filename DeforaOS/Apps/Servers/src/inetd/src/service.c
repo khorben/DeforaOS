@@ -84,7 +84,7 @@ int service_listen(Service * s)
 	if(s->socket == SS_STREAM && listen(s->fd, 5) != 0)
 		return inetd_error("listen", 1);
 	if(inetd_state->debug)
-		fprintf(stderr, "%s%s%s%d%s", "service \"", s->name,
+		fprintf(stderr, "%s%s%s%d%s", "inetd: Service \"", s->name,
 				"\" listening on port ", ntohs(s->port), "\n");
 	return 0;
 }
