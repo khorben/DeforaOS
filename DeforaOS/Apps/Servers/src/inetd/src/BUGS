@@ -1,0 +1,10 @@
+- move parser.c to config.c (_config_parse())
+- UDP is unsupported, here's what's said about it in netkit's inetd:
+ * Datagram oriented services are invoked when a datagram
+ * arrives; a process is created and passed a pending message
+ * on file descriptor 0.  Datagram servers may either connect
+ * to their peer, freeing up the original socket for inetd
+ * to receive further messages on, or ``take over the socket'',
+ * processing all arriving datagrams and, eventually, timing
+ * out.  The first type of server is said to be ``multi-threaded'';
+ * the second type of server ``single-threaded''.
