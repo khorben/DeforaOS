@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/select.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -46,15 +47,16 @@ static int _inetd(int debug, int queue, char * filename)
 }
 
 static void _inetd_sighandler(int signum);
+static int _inetd_daemonize(InetdState * state);
 static int _inetd_setup(InetdState * state);
 static int _inetd_init(InetdState * state, char * config)
 {
 	if(signal(SIGCHLD, _inetd_sighandler) == SIG_ERR
 			|| signal(SIGHUP, _inetd_sighandler) == SIG_ERR)
 		return inetd_error("signal", 1);
-	if((state->config = parser(config)) == NULL)
-		return 1;
-	if(_inetd_setup(state))
+	if((state->config = parser(config)) == NULL
+			|| _inetd_daemonize(state)
+			|| _inetd_setup(state))
 		return 1;
 	return 0;
 }
@@ -133,6 +135,31 @@ static void _inetd_sighup(void)
 	config_delete(inetd_state->config);
 	inetd_state->config = config;
 	_inetd_setup(inetd_state);
+}
+
+static int _inetd_daemonize(InetdState * state)
+{
+	pid_t pid;
+	int fd;
+	int i;
+
+	if(state->debug)
+	{
+		fprintf(stderr, "%s", "inetd: Entered debugging mode\n");
+		return 0;
+	}
+	if((pid = fork()) == -1)
+		return inetd_error("fork", 1);
+	if(pid != 0)
+		exit(0);
+	if((fd = open("/dev/null", O_RDWR, 0)) == -1)
+		return inetd_error("/dev/null", 0);
+	for(i = 0; i <= 2; i++)
+	{
+		close(i);
+		dup2(fd, i);
+	}
+	return 0;
 }
 
 static int _inetd_setup(InetdState * state)
