@@ -188,9 +188,6 @@ static int _inetd_do(InetdState * state)
 
 	for(rfdstmp = state->rfds;; rfdstmp = state->rfds)
 	{
-		if(state->debug)
-			fprintf(stderr, "%s%d%s", "select(", state->fdmax+1,
-					")\n");
 		if(select(state->fdmax+1, &rfdstmp, NULL, NULL, NULL) == -1)
 		{
 			if(errno != EINTR)

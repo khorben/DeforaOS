@@ -112,12 +112,8 @@ static int _exec_tcp(Service * s)
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
 
-	if(inetd_state->debug)
-		fprintf(stderr, "%s%d%s", "accept(", s->fd, ")\n");
 	if((fd = accept(s->fd, &sa, &sa_size)) == -1)
 		return inetd_error("accept", 2);
-	if(inetd_state->debug)
-		fprintf(stderr, "fork()\n");
 	if((pid = fork()) == -1)
 		return inetd_error("fork", 1);
 	else if(pid > 0)
