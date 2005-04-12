@@ -125,7 +125,7 @@ static void _inetd_sighup(void)
 			snew->fd = sold->fd;
 			sold->fd = -1;
 			if(inetd_state->debug)
-				fprintf(stderr, "%s%s%s", "inetd: service \"",
+				fprintf(stderr, "%s%s%s", "inetd: Service \"",
 						sold->name, "\" kept\n");
 			break;
 		}
