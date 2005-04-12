@@ -80,9 +80,17 @@ int service_listen(Service * s)
 	sa.sin_port = s->port;
 	sa.sin_addr.s_addr = INADDR_ANY;
 	if(bind(s->fd, &sa, sizeof(sa)) != 0)
+	{
+		close(s->fd);
+		s->fd = -1;
 		return inetd_error("bind", 1);
+	}
 	if(s->socket == SS_STREAM && listen(s->fd, 5) != 0)
+	{
+		close(s->fd);
+		s->fd = -1;
 		return inetd_error("listen", 1);
+	}
 	if(inetd_state->debug)
 		fprintf(stderr, "%s%s%s%d%s", "inetd: Service \"", s->name,
 				"\" listening on port ", ntohs(s->port), "\n");
