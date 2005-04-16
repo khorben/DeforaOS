@@ -113,6 +113,8 @@ img {
 
 .explorer .listing_details .header div {
 	display:			table-cell;
+	padding-left:			2px;
+	padding-right:			2px;
 }
 
 .explorer .listing_details .entry {
@@ -122,6 +124,8 @@ img {
 
 .explorer .listing_details .entry div {
 	display:			table-cell;
+	padding-left:			2px;
+	padding-right:			2px;
 }
 
 .explorer .listing_details .entry .icon {
