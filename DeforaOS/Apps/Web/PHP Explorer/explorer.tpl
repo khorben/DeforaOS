@@ -11,8 +11,8 @@
 			<form name="explorer_form" action="explorer.php" method="post">
 				<div class="toolbar">
 					<img src="icons/16x16/select_all.png" alt="select all" onclick="select_all()"/>
-					<img src="refresh.png" alt="refresh" onclick="location.reload()"/>
-					<img src="print.png" alt="print" onclick="print()"/>
+					<img src="icons/16x16/refresh.png" alt="refresh" onclick="location.reload()"/>
+					<img src="icons/16x16/print.png" alt="print" onclick="print()"/>
 					<div class="separator"></div>
 					<img src="icons/16x16/details.png" alt="details" onclick="change_class('explorer_listing', 'listing_details')"/>
 					<img src="icons/16x16/list.png" alt="list" onclick="change_class('explorer_listing', 'listing_list')"/>
