@@ -99,7 +99,7 @@ function _sort_date($a, $b)
 
 function explorer_folder($folder, $sort, $reverse)
 {
-	global $root, $hidden, $path;
+	global $root, $hidden, $path, $thumbnails;
 
 	$path = $folder;
 	if(($dir = opendir($root.'/'.$folder)) == FALSE)
@@ -154,8 +154,12 @@ function explorer_folder($folder, $sort, $reverse)
 			$icon = 'icons/16x16/mime/'.$mime.'.png';
 			if(!is_readable($icon))
 				$icon = 'icons/16x16/mime/default.png';
-			$thumbnail = 'icons/48x48/mime/'.$mime.'.png';
-			if(!is_readable($thumbnail))
+			if($thumbnails && strncmp($mime, 'image/', 6) == 0)
+				$thumbnail = 'explorer.php?download='
+						.$folder.'/'.$name;
+			else if(is_readable('icons/48x48/mime/'.$mime.'.png'))
+				$thumbnail = 'icons/48x48/mime/'.$mime.'.png';
+			else
 				$thumbnail = 'icons/48x48/mime/default.png';
 			$link = 'explorer.php?download='.$folder.'/'.$name;
 		}

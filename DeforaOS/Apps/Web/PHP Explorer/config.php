@@ -25,4 +25,7 @@ $root = '/';
 //enable hidden files
 $hidden = 1;
 
+//enable actual images as thumbnails
+$thumbnails = 0;
+
 ?>
