@@ -117,6 +117,7 @@ img {
 
 .explorer .listing_details .entry {
 	display:			table-row;
+	white-space:			nowrap;
 }
 
 .explorer .listing_details .entry div {
@@ -140,6 +141,7 @@ img {
 .explorer .listing_list .entry {
 	float:				left;
 	height:				12pt;
+	white-space:			nowrap;
 	width:				150pt;
 }
 
@@ -193,6 +195,7 @@ img {
 
 .tree .entry {
 	margin-left:			16px;
+	white-space:			nowrap;
 }
 
 .tree .node {
