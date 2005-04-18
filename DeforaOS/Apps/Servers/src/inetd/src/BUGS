@@ -1,4 +1,5 @@
 - move parser.c to config.c (_config_parse())
+- check DGRAM + NOWAIT for TCP
 - UDP is unsupported, here's what's said about it in netkit's inetd:
  * Datagram oriented services are invoked when a datagram
  * arrives; a process is created and passed a pending message
