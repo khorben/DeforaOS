@@ -99,12 +99,16 @@ int service_listen(Service * s)
 
 
 static int _exec_tcp(Service * s);
+static int _exec_udp_nowait(Service * s);
 int service_exec(Service * s)
 {
 	switch(s->proto)
 	{
 		case SP_TCP:
 			return _exec_tcp(s);
+		case SP_UDP:
+			if(s->wait == SW_NOWAIT)
+				return _exec_udp_nowait(s);
 		default:
 			if(inetd_state->debug)
 				fprintf(stderr, "%s",
@@ -138,5 +142,23 @@ static int _exec_tcp(Service * s)
 		execv(s->program[0], &s->program[s->program[1] ? 1 : 0]);
 		inetd_error(s->program[0], 0);
 	}
+	exit(2);
+}
+
+static int _exec_udp_nowait(Service * s)
+{
+	pid_t pid;
+
+	if((pid = fork()) == -1)
+		return inetd_error("fork", 1);
+	else if(pid > 0)
+		return 0;
+	if(s->id.uid && setuid(s->id.uid))
+		inetd_error("setuid", 0);
+	if(s->id.gid && setgid(s->id.gid))
+		inetd_error("setgid", 0);
+	/* FIXME */
+	execv(s->program[0], &s->program[s->program[1] ? 1 : 0]);
+	inetd_error(s->program[0], 0);
 	exit(2);
 }
