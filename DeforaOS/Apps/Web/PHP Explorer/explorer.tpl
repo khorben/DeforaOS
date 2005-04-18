@@ -22,6 +22,7 @@
 					<div class="header">
 						<div class="icon"></div>
 						<? explorer_sort($folder, 'name', $sort, $reverse); ?>
+						<? explorer_sort($folder, 'permissions', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'owner', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'group', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'size', $sort, $reverse); ?>

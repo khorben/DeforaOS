@@ -52,6 +52,14 @@ function explorer_download($filename)
 	readfile($filename);
 }
 
+function _sort_permissions($a, $b)
+{
+	global $root, $path;
+
+	$stata = lstat($root.'/'.$path.'/'.$a);
+	$statb = lstat($root.'/'.$path.'/'.$b);
+	return $stata['mode'] > $statb['mode'];
+}
 
 function _sort_owner($a, $b)
 {
@@ -97,6 +105,22 @@ function _sort_date($a, $b)
 	return $stata['mtime'] > $statb['mtime'];
 }
 
+function _permissions($mode)
+{
+	$str = '----------';
+	$str[0] = $mode & 040000 ? 'd' : '-';
+	$str[1] = $mode & 0400 ? 'r' : '-';
+	$str[2] = $mode & 0200 ? 'w' : '-';
+	$str[3] = $mode & 0100 ? 'x' : '-';
+	$str[4] = $mode & 040 ? 'r' : '-';
+	$str[5] = $mode & 020 ? 'w' : '-';
+	$str[6] = $mode & 010 ? 'x' : '-';
+	$str[7] = $mode & 04 ? 'r' : '-';
+	$str[8] = $mode & 02 ? 'w' : '-';
+	$str[9] = $mode & 01 ? 'x' : '-';
+	return $str;
+}
+
 function explorer_folder($folder, $sort, $reverse)
 {
 	global $root, $hidden, $path, $thumbnails;
@@ -118,6 +142,9 @@ function explorer_folder($folder, $sort, $reverse)
 			$files[] = $de;
 	switch($sort)
 	{
+		case 'permissions':
+			usort($files, _sort_permissions);
+			break;
 		case 'owner':
 			usort($files, _sort_owner);
 			break;
@@ -163,12 +190,14 @@ function explorer_folder($folder, $sort, $reverse)
 				$thumbnail = 'icons/48x48/mime/default.png';
 			$link = 'explorer.php?download='.$folder.'/'.$name;
 		}
+		$permissions = '';
 		$owner = '?';
 		$group = '?';
 		$size = '?';
 		$date = '?';
 		if(($stat = @lstat($root.'/'.$folder.'/'.$name)))
 		{
+			$permissions = _permissions($stat['mode']);
 			$owner = posix_getpwuid($stat['uid']);
 			$owner = $owner['name'];
 			$group = posix_getgrgid($stat['gid']);
