@@ -100,6 +100,7 @@ int service_listen(Service * s)
 
 static int _exec_tcp(Service * s);
 static int _exec_udp_nowait(Service * s);
+static int _exec_udp_wait(Service * s);
 int service_exec(Service * s)
 {
 	switch(s->proto)
@@ -109,6 +110,7 @@ int service_exec(Service * s)
 		case SP_UDP:
 			if(s->wait == SW_NOWAIT)
 				return _exec_udp_nowait(s);
+			return _exec_udp_wait(s);
 		default:
 			if(inetd_state->debug)
 				fprintf(stderr, "%s",
@@ -125,7 +127,7 @@ static int _exec_tcp(Service * s)
 	int sa_size = sizeof(struct sockaddr_in);
 
 	if((fd = accept(s->fd, &sa, &sa_size)) == -1)
-		return inetd_error("accept", 2);
+		return inetd_error("accept", 1);
 	if((pid = fork()) == -1)
 		return inetd_error("fork", 1);
 	else if(pid > 0)
@@ -159,6 +161,17 @@ static int _exec_udp_nowait(Service * s)
 		inetd_error("setgid", 0);
 	/* FIXME */
 	execv(s->program[0], &s->program[s->program[1] ? 1 : 0]);
+	/* FIXME
+	 * - recv packet anyway */
 	inetd_error(s->program[0], 0);
 	exit(2);
+}
+
+static int _exec_udp_wait(Service * s)
+{
+	/* FIXME
+	 * - fork()
+	 * - close socket in inetd (remember pid and check it on SIGCHLD)?
+	 * - handle recvmsg/sendmsg in a separate process? */
+	return 1;
 }
