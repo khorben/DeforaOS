@@ -32,6 +32,7 @@ typedef struct _Service
 	char ** program;
 	int fd;
 	unsigned short port;
+	pid_t pid;
 } Service;
 
 

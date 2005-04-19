@@ -51,9 +51,13 @@ static int _inetd_daemonize(InetdState * state);
 static int _inetd_setup(InetdState * state);
 static int _inetd_init(InetdState * state, char * config)
 {
-	if(signal(SIGCHLD, _inetd_sighandler) == SIG_ERR
-			|| signal(SIGHUP, _inetd_sighandler) == SIG_ERR)
-		return inetd_error("signal", 1);
+	struct sigaction sa;
+
+	sa.sa_handler = _inetd_sighandler;
+	sigfillset(&sa.sa_mask);
+	if(sigaction(SIGCHLD, &sa, NULL) == -1
+			|| sigaction(SIGHUP, &sa, NULL) == -1)
+		return inetd_error("sigaction", 1);
 	if((state->config = parser(config)) == NULL
 			|| _inetd_daemonize(state)
 			|| _inetd_setup(state))
@@ -65,8 +69,6 @@ static void _inetd_sigchld(void);
 static void _inetd_sighup(void);
 static void _inetd_sighandler(int signum)
 {
-	if(signal(signum, _inetd_sighandler) == SIG_ERR)
-		inetd_error("signal", 0);
 	switch(signum)
 	{
 		case SIGCHLD:
@@ -82,12 +84,21 @@ static void _inetd_sigchld(void)
 {
 	pid_t pid;
 	int status;
+	unsigned int i;
 
 	if((pid = waitpid(-1, &status, WNOHANG)) == -1)
 	{
 		inetd_error("waitpid", 0);
 		return;
 	}
+	for(i = 0; i < inetd_state->config->services_nb; i++)
+		if(inetd_state->config->services[i]->pid == pid)
+		{
+			inetd_state->config->services[i]->pid = -1;
+			FD_SET(inetd_state->config->services[i]->fd,
+					&inetd_state->rfds);
+			break;
+		}
 	if(inetd_state->debug)
 		fprintf(stderr, "%s%d%s%s%d%s", "inetd: Child ", pid,
 				WIFEXITED(status) ? " exited"
@@ -171,6 +182,8 @@ static int _inetd_setup(InetdState * state)
 	FD_ZERO(&state->rfds);
 	for(i = 0; i < state->config->services_nb; i++)
 	{
+		if(state->config->services[i]->pid != -1)
+			continue;
 		if(state->config->services[i]->fd == -1
 				&& service_listen(state->config->services[i]))
 			continue;
@@ -184,8 +197,12 @@ static int _inetd_setup(InetdState * state)
 static int _inetd_do(InetdState * state)
 {
 	fd_set rfdstmp;
+	sigset_t sigset;
 	unsigned int i;
+	Service * s;
+	int fd;
 
+	sigfillset(&sigset);
 	for(rfdstmp = state->rfds;; rfdstmp = state->rfds)
 	{
 		if(select(state->fdmax+1, &rfdstmp, NULL, NULL, NULL) == -1)
@@ -194,9 +211,19 @@ static int _inetd_do(InetdState * state)
 				return inetd_error("select", 2);
 			continue;
 		}
+		sigprocmask(SIG_SETMASK, &sigset, NULL);
 		for(i = 0; i < state->config->services_nb; i++)
-			if(FD_ISSET(state->config->services[i]->fd, &rfdstmp))
-				service_exec(state->config->services[i]);
+		{
+			s = state->config->services[i];
+			if(FD_ISSET(s->fd, &rfdstmp))
+			{
+				fd = s->fd;
+				service_exec(s);
+				if(s->pid != -1)
+					FD_CLR(s->fd, &state->rfds);
+			}
+		}
+		sigprocmask(SIG_UNBLOCK, &sigset, NULL);
 	}
 	return 0;
 }

@@ -35,6 +35,7 @@ Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 	s->program = program;
 	s->fd = -1;
 	s->port = port;
+	s->pid = -1;
 	return s;
 }
 
@@ -159,19 +160,29 @@ static int _exec_udp_nowait(Service * s)
 		inetd_error("setuid", 0);
 	if(s->id.gid && setgid(s->id.gid))
 		inetd_error("setgid", 0);
-	/* FIXME */
+	if(close(0) != 0 || close(1) != 0 || dup2(s->fd, 0) != 0
+			|| dup2(2, 1) != 1)
+		inetd_error("dup2", 0);
 	execv(s->program[0], &s->program[s->program[1] ? 1 : 0]);
 	/* FIXME
-	 * - recv packet anyway */
+	 * - receive packet some time (normal and error cases) */
 	inetd_error(s->program[0], 0);
 	exit(2);
 }
 
 static int _exec_udp_wait(Service * s)
 {
-	/* FIXME
-	 * - fork()
-	 * - close socket in inetd (remember pid and check it on SIGCHLD)?
-	 * - handle recvmsg/sendmsg in a separate process? */
-	return 1;
+	if((s->pid = fork()) == -1)
+		return inetd_error("fork", 1);
+	else if(s->pid > 0)
+		return 0;
+	if(close(0) != 0 || close(1) != 0 || dup2(s->fd, 0) != 0
+			|| dup2(2, 1) != 1)
+		inetd_error("dup2", 0);
+	else
+	{
+		execv(s->program[0], &s->program[s->program[1] ? 1 : 0]);
+		inetd_error(s->program[0], 0);
+	}
+	exit(2);
 }
