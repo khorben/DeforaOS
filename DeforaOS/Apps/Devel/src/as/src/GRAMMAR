@@ -1,21 +1,19 @@
-as:		{ newline } section_list { newline }
+as:		{ newline } { section instruction_list } { newline }
 
 newline:	[ space ] NEWLINE
 
 space:		SPACE { SPACE }
 
-section_list:	{ section instruction_list }
-
-instruction_list:	{ (function | space instruction | [ space ] newline) }
+instruction_list:	{ function | space (instruction | newline) | newline }
 
 section:	"." WORD newline
 
 function:	WORD ":" newline
 
-instruction:	operator [ space operand_list ] newline
+instruction:	operator [ space ] [ operand_list ] newline
 
 operator:	WORD
 
-operand_list:	space operand { space "," space operand }
+operand_list:	operand [ space ] { "," [ space ] operand [ space ] }
 
-operand:	(WORD | NUMBER)
+operand:	WORD | NUMBER
