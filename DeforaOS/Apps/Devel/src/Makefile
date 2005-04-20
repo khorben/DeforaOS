@@ -1,4 +1,4 @@
-SUBDIRS	= as configure
+SUBDIRS	= as configure GEDI
 
 
 all: subdirs
