@@ -122,6 +122,7 @@ ArchInstruction arch_x86_set[] =
 	{ NULL,		0x0000, 0 }
 };
 
-Arch arch_x86 = {
+Arch arch_x86 =
+{
 	arch_x86_set
 };

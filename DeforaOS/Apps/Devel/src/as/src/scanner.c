@@ -14,8 +14,10 @@ static Token * _scan_comma(FILE * fp, int * la);
 static Token * _scan_comment(FILE * fp, int * la);
 static Token * _scan_dot(FILE * fp, int * la);
 static Token * _scan_eof(int * la);
+static Token * _scan_immediate(FILE * fp, int * la);
 static Token * _scan_newline(FILE * fp, int * la);
 static Token * _scan_number(FILE * fp, int * la);
+static Token * _scan_register(FILE * fp, int * la);
 static Token * _scan_space(FILE * fp, int * la);
 static Token * _scan_word(FILE * fp, int * la);
 Token * scan(FILE * fp)
@@ -30,14 +32,13 @@ Token * scan(FILE * fp)
 			|| (t = _scan_comment(fp, &la))
 			|| (t = _scan_dot(fp, &la))
 			|| (t = _scan_eof(&la))
+			|| (t = _scan_immediate(fp, &la))
 			|| (t = _scan_newline(fp, &la))
 			|| (t = _scan_number(fp, &la))
+			|| (t = _scan_register(fp, &la))
 			|| (t = _scan_space(fp, &la))
 			|| (t = _scan_word(fp, &la)))
 		return t;
-#ifdef DEBUG
-	fprintf(stderr, "%s", "should not happen...?\n");
-#endif
 	return NULL;
 }
 
@@ -103,6 +104,34 @@ static Token * _scan_eof(int * la)
 	return NULL;
 }
 
+static Token * _scan_immediate(FILE * fp, int * la)
+{
+	char * str = NULL;
+	int len = 1;
+	char * p;
+	Token * t;
+
+	if(*la != '$' || !isdigit(*la = fgetc(fp)) || (str = malloc(1)) == NULL)
+		return NULL;
+	str[0] = '$';
+	do
+	{
+		if((p = realloc(str, len+2)) == NULL)
+		{
+			free(str);
+			return NULL; /* FIXME report error */
+		}
+		str = p;
+		str[len++] = *la;
+		*la = fgetc(fp);
+	}
+	while(isdigit(*la));
+	str[len] = '\0';
+	t = token_new(TC_IMMEDIATE, str);
+	free(str);
+	return t;
+}
+
 static Token * _scan_newline(FILE * fp, int * la)
 {
 	if(*la == '\n' || *la == '\r') /* FIXME '\r\n' */
@@ -136,6 +165,34 @@ static Token * _scan_number(FILE * fp, int * la)
 	while(isdigit(*la));
 	str[len] = '\0';
 	t = token_new(TC_NUMBER, str);
+	free(str);
+	return t;
+}
+
+static Token * _scan_register(FILE * fp, int * la)
+{
+	char * str = NULL;
+	int len = 1;
+	char * p;
+	Token * t;
+
+	if(*la != '%' || !islower(*la = fgetc(fp)) || (str = malloc(1)) == NULL)
+		return NULL;
+	str[0] = '%';
+	do
+	{
+		if((p = realloc(str, len+2)) == NULL)
+		{
+			free(str);
+			return NULL; /* FIXME report error */
+		}
+		str = p;
+		str[len++] = *la;
+		*la = fgetc(fp);
+	}
+	while(islower(*la));
+	str[len] = '\0';
+	t = token_new(TC_REGISTER, str);
 	free(str);
 	return t;
 }

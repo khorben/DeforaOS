@@ -20,8 +20,6 @@ static int as(int prefs, char * infile, char * outfile)
 
 	if((infp = fopen(infile, "r")) == NULL)
 		return _as_error(infile, 1);
-	if(outfile == NULL)
-		outfile = AS_FILENAME_DEFAULT;
 	if((outfp = fopen(outfile, "w")) == NULL)
 	{
 		fclose(infp);
@@ -60,7 +58,7 @@ static unsigned int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	char * outfile = NULL;
+	char * outfile = AS_FILENAME_DEFAULT;
 
 	while((o = getopt(argc, argv, "o:")) != -1)
 	{

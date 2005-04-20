@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "arch/arch.h"
 #include "scanner.h"
 #include "parser.h"
 
@@ -20,7 +21,9 @@ typedef struct _State
 	Token * token;
 	unsigned int line;
 	unsigned int errors;
+	Arch * arch;
 } State;
+
 
 /* parser */
 static int _parser_fatal(State * state, char * message);
@@ -39,9 +42,9 @@ int parser(int prefs, char * infile, FILE * infp, char * outfile, FILE * outfp)
 	state.infp = infp;
 	state.outfile = outfile;
 	state.outfp = outfp;
-	state.token = scan(infp);
 	state.line = 1;
 	state.errors = 0;
+	state.token = scan(infp);
 	if(state.token != NULL)
 		_as(&state);
 	if(state.token == NULL)
@@ -215,7 +218,8 @@ static void _function(State * state)
 	_newline(state);
 #ifdef DEBUG
 	if(function)
-		fprintf(stderr, "%s%s%s", "Entering function: \"", function, "\"\n");
+		fprintf(stderr, "%s%s%s", "Entering function: \"", function,
+				"\"\n");
 #endif
 	free(function);
 }
@@ -258,23 +262,27 @@ static void _operator(State * state)
 
 static void _operand(State * state);
 static void _operand_list(State * state)
-	/* operand { "," { space } operand } */
+	/* operand [ space ] { "," [ space ] operand [ space ] } */
 {
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operand_list()\n");
 #endif
 	_operand(state);
+	if(token_in_set(state->token, TS_SPACE))
+		_space(state);
 	while(state->token->code == TC_COMMA)
 	{
 		_parser_scan(state);
-		while(token_in_set(state->token, TS_SPACE))
+		if(token_in_set(state->token, TS_SPACE))
 			_space(state);
 		_operand(state);
+		if(token_in_set(state->token, TS_SPACE))
+			_space(state);
 	}
 }
 
 static void _operand(State * state)
-	/* (WORD | NUMBER) */
+	/* WORD | NUMBER */
 {
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operand()\n");
@@ -283,4 +291,3 @@ static void _operand(State * state)
 #endif
 	_parser_scan(state);
 }
-
