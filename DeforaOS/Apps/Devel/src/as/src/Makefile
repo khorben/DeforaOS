@@ -1,7 +1,6 @@
 SUBDIRS	= arch
 TARGETS	= as
 CFLAGSF	= -W -Wall -ansi
-CFLAGS	= -g
 CC	= cc
 AR	= ar rc
 RANLIB	= ranlib
