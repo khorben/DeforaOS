@@ -33,6 +33,7 @@ GEDI * gedi_new(void);
 void gedi_delete(GEDI * gedi);
 
 /* useful */
-void gedi_open_file(GEDI * gedi, char const * file);
+void gedi_file_open(GEDI * gedi, char const * file);
+void gedi_project_open(GEDI * gedi, char const * file);
 
 #endif /* !__GEDI_H */

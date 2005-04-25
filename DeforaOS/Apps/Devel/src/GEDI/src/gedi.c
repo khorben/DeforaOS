@@ -126,8 +126,15 @@ void gedi_delete(GEDI * gedi)
 
 
 /* useful */
-/* gedi_open_file */
-void gedi_open_file(GEDI * gedi, char const * file)
+/* gedi_file_open */
+void gedi_file_open(GEDI * gedi, char const * file)
+{
+	/* FIXME */
+}
+
+
+/* gedi_project_open */
+void gedi_project_open(GEDI * gedi, char const * project)
 {
 	/* FIXME */
 }
@@ -178,14 +185,14 @@ static void _on_file_open(GtkWidget * widget, gpointer data)
 	GtkWidget * dialog;
 	char * file;
 
-	dialog = gtk_file_chooser_dialog_new ("Open File", NULL,
+	dialog = gtk_file_chooser_dialog_new ("Open file...", NULL,
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 	{
 		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gedi_open_file(g, file);
+		gedi_file_open(g, file);
 		g_free(file);
 	}
 	gtk_widget_destroy(dialog);
@@ -206,8 +213,20 @@ static void _on_project_new(GtkWidget * widget, gpointer data)
 static void _on_project_open(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
+	GtkWidget * dialog;
+	char * file;
 
-	/* FIXME */
+	dialog = gtk_file_chooser_dialog_new ("Open project...", NULL,
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+	{
+		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gedi_project_open(g, file);
+		g_free(file);
+	}
+	gtk_widget_destroy(dialog);
 }
 
 static void _on_project_save(GtkWidget * widget, gpointer data)
