@@ -22,6 +22,9 @@ typedef struct _GEDI
 	GtkWidget * tb_vbox;
 	GtkWidget * tb_menubar;
 	GtkWidget * tb_toolbar;
+
+	/* about */
+	GtkWidget * ab_window;
 } GEDI;
 
 

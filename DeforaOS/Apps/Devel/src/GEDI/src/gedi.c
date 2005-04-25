@@ -7,7 +7,12 @@
 
 
 /* GEDI */
+char const * _about_authors[] = { "Fabien Dombard", "Pierre Pronchery", NULL };
+char const _about_website[] =
+"http://cvs.defora.org/cgi-bin/cvsweb/DeforaOS/Apps/Devel/src/GEDI";
 /* callbacks */
+static void _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static void _on_exit(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 static void _on_file_new(GtkWidget * widget, gpointer data);
@@ -60,6 +65,7 @@ GEDI * gedi_new(void)
 		return NULL;
 	gedi->config = config_new();
 	_new_toolbar(gedi);
+	gedi->ab_window = NULL;
 	return gedi;
 }
 
@@ -119,6 +125,12 @@ void gedi_delete(GEDI * gedi)
 
 
 /* callbacks */
+static void _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+}
+
 static void _on_exit(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
@@ -130,7 +142,18 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
 
+	if(g->ab_window == NULL)
+	{
+		g->ab_window = gtk_about_dialog_new();
+		g_signal_connect(G_OBJECT(g->ab_window), "delete_event",
+				G_CALLBACK(_on_about_xkill), NULL);
+		gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(g->ab_window),
+				_about_authors);
+		gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(g->ab_window),
+				_about_website);
+	}
 	/* FIXME */
+	gtk_widget_show(g->ab_window);
 }
 
 static void _on_file_new(GtkWidget * widget, gpointer data)
