@@ -6,14 +6,22 @@
 # define __GEDI_H
 
 # include <gtk/gtk.h>
+# include <libutils.h>
+# include "project.h"
 
 
 /* types */
 typedef struct _GEDI
 {
+	Config * config;
+	Project ** projects;
+
 	/* widgets */
 	/* toolbar */
-	GtkWidget * window_toolbar;
+	GtkWidget * tb_window;
+	GtkWidget * tb_vbox;
+	GtkWidget * tb_menubar;
+	GtkWidget * tb_toolbar;
 } GEDI;
 
 
