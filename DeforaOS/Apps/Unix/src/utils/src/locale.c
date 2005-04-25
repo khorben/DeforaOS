@@ -67,6 +67,7 @@ static int _locale_default(void)
 
 static int _locale_do(Prefs * p, char * locale)
 {
+	/* FIXME */
 	return 0;
 }
 
