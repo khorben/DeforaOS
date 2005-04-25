@@ -9,5 +9,5 @@ id:
 kill:
 - get signal number from its name
 
-mkdir/rmdir:
-- check recursive algorithms
+ls:
+- race condition between looking if is a directory and opendir()? (check cksum too)
