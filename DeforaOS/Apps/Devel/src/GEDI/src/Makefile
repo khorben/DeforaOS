@@ -1,5 +1,5 @@
 TARGETS	= gedi
-CFLAGSF	= `pkg-config --cflags gtk+-2.0` -I /usr/local/include/libutils
+CFLAGSF	= -W -Wall -ansi `pkg-config --cflags gtk+-2.0` -I /usr/local/include/libutils
 CFLAGS	= -g
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -l utils
 CC	= cc
