@@ -23,6 +23,9 @@ typedef struct _GEDI
 	GtkWidget * tb_menubar;
 	GtkWidget * tb_toolbar;
 
+	/* preferences */
+	GtkWidget * pr_window;
+
 	/* about */
 	GtkWidget * ab_window;
 } GEDI;
@@ -33,7 +36,10 @@ GEDI * gedi_new(void);
 void gedi_delete(GEDI * gedi);
 
 /* useful */
+void gedi_error(GEDI * gedi, char const * title, char const * message);
 void gedi_file_open(GEDI * gedi, char const * file);
 void gedi_project_open(GEDI * gedi, char const * file);
+void gedi_project_save(GEDI * gedi);
+void gedi_project_save_as(GEDI * gedi, char const * file);
 
 #endif /* !__GEDI_H */

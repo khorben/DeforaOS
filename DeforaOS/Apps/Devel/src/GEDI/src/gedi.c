@@ -3,6 +3,8 @@
 
 
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include "gedi.h"
 
 
@@ -17,7 +19,9 @@ static void _on_exit(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 static void _on_file_new(GtkWidget * widget, gpointer data);
 static void _on_file_open(GtkWidget * widget, gpointer data);
-static void _on_file_open_cancel(GtkWidget * widget, gpointer data);
+static void _on_file_preferences(GtkWidget * widget, gpointer data);
+static void _on_file_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static void _on_project_new(GtkWidget * widget, gpointer data);
 static void _on_project_open(GtkWidget * widget, gpointer data);
 static void _on_project_save(GtkWidget * widget, gpointer data);
@@ -27,32 +31,38 @@ static void _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data);
 struct _menu {
 	char * name;
 	GtkSignalFunc callback;
+/*	char * item; */
 };
 struct _menubar {
 	char * name;
 	struct _menu * menu;
 };
 struct _menu _menu_file[] = {
-	{ "New file...", G_CALLBACK(_on_file_new) },
-	{ "Open file...", G_CALLBACK(_on_file_open) },
-	{ "Exit GEDI", G_CALLBACK(_on_exit) },
-	{ NULL, NULL }
+	{ "_New file...", G_CALLBACK(_on_file_new) /*, GTK_STOCK_NEW */ },
+	{ "_Open file...", G_CALLBACK(_on_file_open) /*, GTK_STOCK_OPEN */ },
+	{ "", NULL /*, NULL */ },
+	{ "_Preferences...", G_CALLBACK(_on_file_preferences) /*,
+		GTK_STOCK_PREFERENCES */ },
+	{ "", NULL /*, NULL */ },
+	{ "_Exit GEDI", G_CALLBACK(_on_exit) /*, GTK_STOCK_QUIT */ },
+	{ NULL, NULL /*, NULL */ }
 };
 struct _menu _menu_projects[] = { /* FIXME will certainly be dynamic */
-	{ "New project...", G_CALLBACK(_on_project_new) },
-	{ "Open project...", G_CALLBACK(_on_project_open) },
-	{ "Save project", G_CALLBACK(_on_project_save) },
-	{ "Save project as...", G_CALLBACK(_on_project_save_as) },
-	{ NULL, NULL }
+	{ "_New project...", G_CALLBACK(_on_project_new) /*, GTK_STOCK_NEW */ },
+	{ "_Open project...", G_CALLBACK(_on_project_open) /*, GTK_STOCK_OPEN */ },
+	{ "_Save project", G_CALLBACK(_on_project_save) /*, GTK_STOCK_SAVE */ },
+	{ "Save project _as...", G_CALLBACK(_on_project_save_as) /*,
+		GTK_STOCK_SAVE_AS */ },
+	{ NULL, NULL /*, NULL */ }
 };
 struct _menu _menu_help[] = {
-	{ "About GEDI...", G_CALLBACK(_on_help_about) },
-	{ NULL, NULL }
+	{ "_About GEDI...", G_CALLBACK(_on_help_about) /*, GTK_STOCK_ABOUT */ },
+	{ NULL, NULL /*, NULL */ }
 };
 struct _menubar _menubar[] = {
-	{ "File", _menu_file },
-	{ "Projects", _menu_projects },
-	{ "Help", _menu_help },
+	{ "_File", _menu_file },
+	{ "_Projects", _menu_projects },
+	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
 
@@ -99,15 +109,18 @@ static void _new_toolbar_menu(GEDI * g)
 	g->tb_menubar = gtk_menu_bar_new();
 	for(i = 0; _menubar[i].name != NULL; i++)
 	{
-		menubar = gtk_menu_item_new_with_label(_menubar[i].name);
+		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
 		menu = gtk_menu_new();
 		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
 		{
-			menuitem = gtk_menu_item_new_with_label(
-					_menubar[i].menu[j].name);
-			g_signal_connect(G_OBJECT(menuitem), "activate",
-					G_CALLBACK(_menubar[i].menu[j].callback),
-					g);
+			if(_menubar[i].menu[j].name[0] == '\0')
+				menuitem = gtk_separator_menu_item_new();
+			else
+				menuitem = gtk_menu_item_new_with_mnemonic(
+						_menubar[i].menu[j].name);
+			if(_menubar[i].menu[j].callback != NULL)
+				g_signal_connect(G_OBJECT(menuitem), "activate",
+						G_CALLBACK(_menubar[i].menu[j].callback), g);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
@@ -126,27 +139,68 @@ void gedi_delete(GEDI * gedi)
 
 
 /* useful */
+/* gedi_error */
+void gedi_error(GEDI * gedi, char const * title, char const * message)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(NULL,
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", title);
+	gtk_message_dialog_format_secondary_text(GTK_DIALOG(dialog), "%s",
+			message);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+
+}
+
+
 /* gedi_file_open */
 void gedi_file_open(GEDI * gedi, char const * file)
+{
+	/* FIXME */
+	FILE * fp;
+
+	if((fp = fopen(file, "r")) == NULL)
+	{
+		gedi_error(gedi, "Could not open file", strerror(errno));
+		return;
+	}
+	fclose(fp);
+}
+
+
+/* gedi_project_open */
+void gedi_project_open(GEDI * gedi, char const * file)
 {
 	/* FIXME */
 }
 
 
-/* gedi_project_open */
-void gedi_project_open(GEDI * gedi, char const * project)
+/* gedi_project_save */
+void gedi_project_save(GEDI * gedi)
+{
+	/* FIXME */
+}
+
+
+/* gedi_project_save_as */
+void gedi_project_save_as(GEDI * gedi, char const * file)
 {
 	/* FIXME */
 }
 
 
 /* callbacks */
+/* _on_about_xkill */
 static void _on_about_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
 }
 
+
+/* _on_exit */
 static void _on_exit(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
@@ -154,6 +208,8 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 	gtk_main_quit();
 }
 
+
+/* _on_help_about */
 static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
@@ -172,6 +228,8 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	gtk_widget_show(g->ab_window);
 }
 
+
+/* _on_file_new */
 static void _on_file_new(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
@@ -179,6 +237,8 @@ static void _on_file_new(GtkWidget * widget, gpointer data)
 	/* FIXME */
 }
 
+
+/* _on_file_open */
 static void _on_file_open(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
@@ -198,11 +258,33 @@ static void _on_file_open(GtkWidget * widget, gpointer data)
 	gtk_widget_destroy(dialog);
 }
 
-static void _on_file_open_cancel(GtkWidget * widget, gpointer data)
+
+/* _on_file_preferences */
+static void _on_file_preferences(GtkWidget * widget, gpointer data)
 {
-	gtk_widget_destroy(widget);
+	GEDI * g = data;
+
+	if(g->pr_window == NULL)
+	{
+		g->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(g->pr_window), "Preferences");
+		g_signal_connect(G_OBJECT(g->pr_window), "delete_event",
+				G_CALLBACK(_on_file_preferences_xkill), g);
+		/* FIXME */
+	}
+	gtk_widget_show_all(g->pr_window);
 }
 
+
+/* _on_file_preferences_xkill */
+static void _on_file_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+}
+
+
+/* _on_project_new */
 static void _on_project_new(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
@@ -210,13 +292,15 @@ static void _on_project_new(GtkWidget * widget, gpointer data)
 	/* FIXME */
 }
 
+
+/* _on_project_open */
 static void _on_project_open(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
 	GtkWidget * dialog;
 	char * file;
 
-	dialog = gtk_file_chooser_dialog_new ("Open project...", NULL,
+	dialog = gtk_file_chooser_dialog_new("Open project...", NULL,
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
@@ -229,20 +313,40 @@ static void _on_project_open(GtkWidget * widget, gpointer data)
 	gtk_widget_destroy(dialog);
 }
 
+
+/* _on_project_save */
 static void _on_project_save(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
 
 	/* FIXME */
+	gedi_project_save(g);
 }
 
+
+/* _on_project_save_as */
 static void _on_project_save_as(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
+	GtkWidget * dialog;
+	char * file;
 
-	/* FIXME */
+	dialog = gtk_file_chooser_dialog_new("Save project as...", NULL,
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	/* FIXME add options? (recursive save) */
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+	{
+		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gedi_project_save_as(g, file);
+		g_free(file);
+	}
+	gtk_widget_destroy(dialog);
 }
 
+
+/* _on_xkill */
 static void _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	_on_exit(widget, data);
