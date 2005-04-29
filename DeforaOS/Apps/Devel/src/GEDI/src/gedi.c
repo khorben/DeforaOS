@@ -9,7 +9,12 @@
 
 
 /* GEDI */
-char const * _about_authors[] = { "Fabien Dombard", "Pierre Pronchery", NULL };
+char const * _about_authors[] =
+{
+	"Fabien Dombard <fdombard@fpconcept.net>",
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
 char const _about_website[] =
 "http://cvs.defora.org/cgi-bin/cvsweb/DeforaOS/Apps/Devel/src/GEDI";
 /* callbacks */
@@ -66,7 +71,9 @@ struct _menubar _menubar[] = {
 	{ NULL, NULL }
 };
 
+
 /* gedi_new */
+static void _new_config(GEDI * g);
 static void _new_toolbar(GEDI * g);
 GEDI * gedi_new(void)
 {
@@ -74,10 +81,44 @@ GEDI * gedi_new(void)
 
 	if((gedi = malloc(sizeof(GEDI))) == NULL)
 		return NULL;
-	gedi->config = config_new();
+	_new_config(gedi);
 	_new_toolbar(gedi);
 	gedi->ab_window = NULL;
 	return gedi;
+}
+
+static void _new_config(GEDI * g)
+{
+	char * filename;
+
+	if((g->config = config_new()) == NULL)
+	{
+		gedi_error(g, "Could not read configuration",
+				strerror(errno));
+		return;
+	}
+#ifdef PREFIX
+	config_load(g->config, PREFIX "/etc/GEDI.conf");
+#endif
+	if((filename = _config_file()) == NULL)
+		return;
+	config_load(g->config, filename);
+	free(filename);
+}
+
+static char * _config_file(void)
+{
+	char conffile[] = ".gedi";
+	char * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		return NULL;
+	if((filename = malloc(strlen(homedir) + 1 + strlen(conffile) + 1))
+			== NULL)
+		return NULL;
+	sprintf(filename, "%s/%s", homedir, conffile);
+	return filename;
 }
 
 static void _new_toolbar_menu(GEDI * g);
@@ -133,6 +174,13 @@ static void _new_toolbar_menu(GEDI * g)
 /* gedi_delete */
 void gedi_delete(GEDI * gedi)
 {
+	char * filename;
+
+	if((filename = _config_file()) != NULL)
+	{
+		config_save(gedi->config, filename);
+		free(filename);
+	}
 	config_delete(gedi->config);
 	free(gedi);
 }
@@ -205,6 +253,7 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
 
+	/* FIXME check that everything is properly saved */
 	gtk_main_quit();
 }
 
