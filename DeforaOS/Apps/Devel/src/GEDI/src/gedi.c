@@ -25,7 +25,10 @@ static void _on_help_about(GtkWidget * widget, gpointer data);
 static void _on_file_new(GtkWidget * widget, gpointer data);
 static void _on_file_open(GtkWidget * widget, gpointer data);
 static void _on_file_preferences(GtkWidget * widget, gpointer data);
-static void _on_file_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+static void _on_preferences_apply(GtkWidget * widget, gpointer data);
+static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
+static void _on_preferences_ok(GtkWidget * widget, gpointer data);
+static void _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_project_new(GtkWidget * widget, gpointer data);
 static void _on_project_open(GtkWidget * widget, gpointer data);
@@ -310,24 +313,94 @@ static void _on_file_open(GtkWidget * widget, gpointer data)
 
 
 /* _on_file_preferences */
+static void _file_preferences_new(GEDI * g);
 static void _on_file_preferences(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
 
 	if(g->pr_window == NULL)
-	{
-		g->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_window_set_title(GTK_WINDOW(g->pr_window), "Preferences");
-		g_signal_connect(G_OBJECT(g->pr_window), "delete_event",
-				G_CALLBACK(_on_file_preferences_xkill), g);
-		/* FIXME */
-	}
+		_file_preferences_new(g);
 	gtk_widget_show_all(g->pr_window);
 }
 
+static void _file_preferences_new(GEDI * g)
+{
+	GtkWidget * vbox;
+	GtkWidget * nb;
+	GtkWidget * ed_vbox;
+	GtkWidget * hbox;
+	GtkWidget * b_ok;
+	GtkWidget * b_apply;
+	GtkWidget * b_cancel;
 
-/* _on_file_preferences_xkill */
-static void _on_file_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+	g->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(g->pr_window), 4);
+	gtk_window_set_title(GTK_WINDOW(g->pr_window), "Preferences");
+	g_signal_connect(G_OBJECT(g->pr_window), "delete_event",
+			G_CALLBACK(_on_preferences_xkill), g);
+	vbox = gtk_vbox_new(FALSE, 0);
+	nb = gtk_notebook_new();
+	/* notebook page editor */
+	ed_vbox = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(ed_vbox), gtk_label_new("Choose editor"),
+			FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(ed_vbox), gtk_label_new(
+				"Program executable"), FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(ed_vbox), gtk_label_new(
+				"Runs in a terminal"), FALSE, FALSE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), ed_vbox, gtk_label_new(
+				"Editor"));
+	gtk_box_pack_start(GTK_BOX(vbox), nb, TRUE, TRUE, 4);
+	/* buttons */
+	hbox = gtk_hbox_new(TRUE, 0);
+	b_ok = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect(G_OBJECT(b_ok), "clicked", G_CALLBACK(
+				_on_preferences_ok), g);
+	gtk_box_pack_end(GTK_BOX(hbox), b_ok, FALSE, TRUE, 0);
+	b_apply = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	g_signal_connect(G_OBJECT(b_apply), "clicked", G_CALLBACK(
+				_on_preferences_apply), g);
+	gtk_box_pack_end(GTK_BOX(hbox), b_apply, FALSE, TRUE, 4);
+	b_cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect(G_OBJECT(b_cancel), "clicked", G_CALLBACK(
+				_on_preferences_cancel), g);
+	gtk_box_pack_end(GTK_BOX(hbox), b_cancel, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(g->pr_window), vbox);
+}
+
+
+/* _on_preferences_apply */
+static void _on_preferences_apply(GtkWidget * widget, gpointer data)
+{
+	GEDI * g = data;
+
+	/* FIXME */
+}
+
+
+/* _on_preferences_cancel */
+static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
+{
+	GEDI * g = data;
+
+	/* FIXME */
+	gtk_widget_hide(g->pr_window);
+}
+
+
+/* _on_preferences_ok */
+static void _on_preferences_ok(GtkWidget * widget, gpointer data)
+{
+	GEDI * g = data;
+
+	_on_preferences_apply(widget, data);
+	gtk_widget_hide(g->pr_window);
+}
+
+
+/* _on_preferences_xkill */
+static void _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
