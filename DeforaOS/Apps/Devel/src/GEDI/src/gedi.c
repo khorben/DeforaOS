@@ -87,6 +87,7 @@ GEDI * gedi_new(void)
 	return gedi;
 }
 
+static char * _config_file(void);
 static void _new_config(GEDI * g)
 {
 	char * filename;
@@ -195,8 +196,8 @@ void gedi_error(GEDI * gedi, char const * title, char const * message)
 	dialog = gtk_message_dialog_new(NULL,
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", title);
-	gtk_message_dialog_format_secondary_text(GTK_DIALOG(dialog), "%s",
-			message);
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 
