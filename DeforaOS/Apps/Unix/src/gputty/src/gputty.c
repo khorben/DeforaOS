@@ -209,12 +209,11 @@ static char * _gputty_config_file(void)
 {
 	char * homedir;
 	char * filename;
-	unsigned int len;
 
 	if((homedir = getenv("HOME")) == NULL)
 		return NULL;
-	len = strlen(homedir) + 1 + strlen(GPUTTY_CONFIG_FILE) + 1;
-	if((filename = malloc(len)) == NULL)
+	if((filename = malloc(strlen(homedir) + 1 + strlen(GPUTTY_CONFIG_FILE)
+					+ 1)) == NULL)
 		return NULL;
 	sprintf(filename, "%s/%s", homedir, GPUTTY_CONFIG_FILE);
 	return filename;
