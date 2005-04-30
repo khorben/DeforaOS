@@ -15,6 +15,7 @@ typedef struct _GEDI
 {
 	Config * config;
 	Project ** projects;
+	Project * project;
 
 	/* widgets */
 	/* toolbar */

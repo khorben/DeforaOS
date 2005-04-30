@@ -84,14 +84,16 @@ static void _new_config(GEDI * g);
 static void _new_toolbar(GEDI * g);
 GEDI * gedi_new(void)
 {
-	GEDI * gedi;
+	GEDI * g;
 
-	if((gedi = malloc(sizeof(GEDI))) == NULL)
+	if((g = malloc(sizeof(GEDI))) == NULL)
 		return NULL;
-	_new_config(gedi);
-	_new_toolbar(gedi);
-	gedi->ab_window = NULL;
-	return gedi;
+	g->projects = NULL;
+	g->project = NULL;
+	_new_config(g);
+	_new_toolbar(g);
+	g->ab_window = NULL;
+	return g;
 }
 
 static char * _config_file(void);
@@ -444,7 +446,13 @@ static void _on_project_properties(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
 
-	/* FIXME */
+	if(g->project == NULL)
+	{
+		/* FIXME should not happen (disable callback action) */
+		gedi_error(g, "Error", "No project opened");
+		return;
+	}
+	project_properties(g->project);
 }
 
 

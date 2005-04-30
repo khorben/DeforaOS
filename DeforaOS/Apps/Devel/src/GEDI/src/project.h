@@ -15,6 +15,7 @@ typedef struct _Project
 	Config * config;
 
 	/* widgets */
+	/* properties window */
 	GtkWidget * pr_window;
 } Project;
 
