@@ -32,6 +32,7 @@ static void _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_project_new(GtkWidget * widget, gpointer data);
 static void _on_project_open(GtkWidget * widget, gpointer data);
+static void _on_project_properties(GtkWidget * widget, gpointer data);
 static void _on_project_save(GtkWidget * widget, gpointer data);
 static void _on_project_save_as(GtkWidget * widget, gpointer data);
 static void _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data);
@@ -61,6 +62,9 @@ struct _menu _menu_projects[] = { /* FIXME will certainly be dynamic */
 	{ "_Save project", G_CALLBACK(_on_project_save) /*, GTK_STOCK_SAVE */ },
 	{ "Save project _as...", G_CALLBACK(_on_project_save_as) /*,
 		GTK_STOCK_SAVE_AS */ },
+	{ "", NULL /*, NULL */ },
+	{ "_Properties...", G_CALLBACK(_on_project_properties) /*,
+		GTK_STOCK_PREFERENCES */ },
 	{ NULL, NULL /*, NULL */ }
 };
 struct _menu _menu_help[] = {
@@ -196,14 +200,13 @@ void gedi_error(GEDI * gedi, char const * title, char const * message)
 {
 	GtkWidget * dialog;
 
-	dialog = gtk_message_dialog_new(NULL,
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", title);
+	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL
+			| GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s", title);
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-
 }
 
 
@@ -211,21 +214,16 @@ void gedi_error(GEDI * gedi, char const * title, char const * message)
 void gedi_file_open(GEDI * gedi, char const * file)
 {
 	/* FIXME */
-	FILE * fp;
-
-	if((fp = fopen(file, "r")) == NULL)
-	{
-		gedi_error(gedi, "Could not open file", strerror(errno));
-		return;
-	}
-	fclose(fp);
 }
 
 
 /* gedi_project_open */
 void gedi_project_open(GEDI * gedi, char const * file)
 {
-	/* FIXME */
+	/* FIXME
+	 * - open project.conf file
+	 * - verify it has a package name
+	 * - */
 }
 
 
@@ -327,7 +325,7 @@ static void _file_preferences_new(GEDI * g)
 {
 	GtkWidget * vbox;
 	GtkWidget * nb;
-	GtkWidget * ed_vbox;
+	GtkWidget * nb_vbox;
 	GtkWidget * hbox;
 	GtkWidget * b_ok;
 	GtkWidget * b_apply;
@@ -341,15 +339,19 @@ static void _file_preferences_new(GEDI * g)
 	vbox = gtk_vbox_new(FALSE, 0);
 	nb = gtk_notebook_new();
 	/* notebook page editor */
-	ed_vbox = gtk_vbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(ed_vbox), gtk_label_new("Choose editor"),
+	nb_vbox = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new("Choose editor"),
 			FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(ed_vbox), gtk_label_new(
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new(
 				"Program executable"), FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(ed_vbox), gtk_label_new(
+	gtk_box_pack_start(GTK_BOX(nb_vbox), gtk_label_new(
 				"Runs in a terminal"), FALSE, FALSE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(nb), ed_vbox, gtk_label_new(
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
 				"Editor"));
+	/* notebook page plug-ins */
+	nb_vbox = gtk_vbox_new(FALSE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(nb), nb_vbox, gtk_label_new(
+				"Plug-ins"));
 	gtk_box_pack_start(GTK_BOX(vbox), nb, TRUE, TRUE, 4);
 	/* buttons */
 	hbox = gtk_hbox_new(TRUE, 0);
@@ -434,6 +436,15 @@ static void _on_project_open(GtkWidget * widget, gpointer data)
 		g_free(file);
 	}
 	gtk_widget_destroy(dialog);
+}
+
+
+/* _on_project_properties */
+static void _on_project_properties(GtkWidget * widget, gpointer data)
+{
+	GEDI * g = data;
+
+	/* FIXME */
 }
 
 

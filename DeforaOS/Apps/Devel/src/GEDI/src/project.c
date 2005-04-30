@@ -22,3 +22,11 @@ void project_delete(Project * project)
 {
 	free(project);
 }
+
+
+/* useful */
+/* project_properties */
+void project_properties(Project * project)
+{
+	/* FIXME */
+}
