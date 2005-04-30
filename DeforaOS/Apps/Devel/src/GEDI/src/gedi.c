@@ -9,13 +9,14 @@
 
 
 /* GEDI */
-char const * _about_authors[] =
+static char const * _about_authors[] =
 {
 	"Fabien Dombard <fdombard@fpconcept.net>",
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-char const _about_website[] =
+static char const _about_copyright[] = "Copyright © 2005 DeforaOS developpers";
+static char const _about_website[] =
 "http://cvs.defora.org/cgi-bin/cvsweb/DeforaOS/Apps/Devel/src/GEDI";
 /* callbacks */
 static void _on_about_xkill(GtkWidget * widget, GdkEvent * event,
@@ -274,6 +275,8 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 				G_CALLBACK(_on_about_xkill), NULL);
 		gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(g->ab_window),
 				_about_authors);
+		gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(g->ab_window),
+				_about_copyright);
 		gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(g->ab_window),
 				_about_website);
 	}
