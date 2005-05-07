@@ -56,7 +56,7 @@ static int _du_do(Prefs * prefs, char * filename)
 		return _du_error(filename);
 	if(!S_ISDIR(st.st_mode))
 	{
-		_du_print(prefs, st.st_size, filename);
+		_du_print(prefs, st.st_blocks, filename);
 		return 0;
 	}
 	return _du_do_recursive(prefs, filename);
@@ -64,15 +64,9 @@ static int _du_do(Prefs * prefs, char * filename)
 
 static off_t _du_blocks(Prefs * prefs, off_t size)
 {
-	off_t unb;
-	off_t usize = 512;
-
 	if(*prefs & PREFS_k)
-		usize = 1024;
-	unb = size / usize;
-	if(unb * usize < size)
-		unb++;
-	return unb;
+		return size / 2;
+	return size;
 }
 
 static int _recursive_do(Prefs * prefs, off_t * size, char ** filename);
@@ -137,21 +131,22 @@ static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename)
 		_du_error(*filename);
 		return;
 	}
-	*size += _du_blocks(prefs, st.st_size);
+	*size += _du_blocks(prefs, st.st_blocks);
 	if(S_ISDIR(st.st_mode))
 	{
-		dirsize = _du_blocks(prefs, st.st_size) - *size;
+		dirsize = _du_blocks(prefs, st.st_blocks) - *size;
 		if((p = strdup(*filename)) == NULL)
 		{
 			_du_error("malloc");
 			return;
 		}
 		_recursive_do(prefs, size, filename);
-		printf("%ld %s\n", dirsize + *size, p);
+		if(!(*prefs & PREFS_s))
+			printf("%ld %s\n", dirsize + *size, p);
 		free(p);
 	}
 	else if(*prefs & PREFS_a)
-		_du_print(prefs, st.st_size, *filename);
+		_du_print(prefs, st.st_blocks, *filename);
 }
 
 static void _du_print(Prefs * prefs, off_t size, char * filename)
