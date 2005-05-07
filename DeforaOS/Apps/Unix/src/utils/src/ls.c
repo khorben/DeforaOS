@@ -41,12 +41,9 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 		switch(o)
 		{
 			case 'C':
-				fprintf(stderr, "%s%c%s", "ls: -", o,
-						": Not implemented yet\n");
-				return 1;
+				*prefs -= *prefs & PREFS_1;
+				break;
 			case 'F':
-				*prefs -= *prefs & PREFS_H;
-				*prefs |= PREFS_L;
 				*prefs |= PREFS_F;
 				break;
 			case 'R':
