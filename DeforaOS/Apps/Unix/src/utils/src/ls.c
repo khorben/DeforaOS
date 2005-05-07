@@ -19,21 +19,24 @@
 
 /* Prefs */
 typedef int Prefs;
-#define PREFS_a 1
-#define PREFS_c 2
-#define PREFS_d 4
-#define PREFS_l 8
-#define PREFS_u 16
-#define PREFS_1 32
-#define PREFS_F 64
-#define PREFS_R 128
+#define PREFS_C 00001
+#define PREFS_F 00002
+#define PREFS_R 00004
+#define PREFS_a 00010
+#define PREFS_c 00020
+#define PREFS_d 00040
+#define PREFS_l 00100
+#define PREFS_u 00200
+#define PREFS_1 00400
+#define PREFS_H 01000
+#define PREFS_L 02000
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
 	int o;
 
 	memset(prefs, 0, sizeof(Prefs));
-	while((o = getopt(argc, argv, "CFRacdlu1")) != -1)
+	while((o = getopt(argc, argv, "CFRacdlu1HL")) != -1)
 	{
 		switch(o)
 		{
@@ -42,6 +45,8 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 						": Not implemented yet\n");
 				return 1;
 			case 'F':
+				*prefs -= *prefs & PREFS_H;
+				*prefs |= PREFS_L;
 				*prefs |= PREFS_F;
 				break;
 			case 'R':
@@ -66,6 +71,14 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 				break;
 			case '1':
 				*prefs |= PREFS_1;
+				break;
+			case 'H':
+				*prefs -= *prefs & PREFS_L;
+				*prefs |= PREFS_H;
+				break;
+			case 'L':
+				*prefs -= *prefs & PREFS_H;
+				*prefs |= PREFS_L;
 				break;
 			case '?':
 				return 1;
@@ -211,7 +224,7 @@ static int slist_insert_sorted(SList * slist, void * data,
 static int _ls_error(char const * message, int ret);
 static int _ls_directory_do(char * dir, Prefs * prefs);
 static int _ls_args(SList ** files, SList ** dirs);
-static int _is_directory(char * dir);
+static int _is_directory(Prefs * prefs, char * dir);
 static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs);
 typedef int (*compare_func)(void*, void*);
 static int _ls(int argc, char * argv[], Prefs * prefs)
@@ -229,7 +242,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 		return 2;
 	for(i = 0; i < argc; i++)
 	{
-		if((isdir = _is_directory(argv[i])) == 2)
+		if((isdir = _is_directory(prefs, argv[i])) == 2)
 			res++;
 		else if((str = strdup(argv[i])) == NULL)
 			res += _ls_error("malloc", 1);
@@ -284,7 +297,7 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 		}
 		file = p;
 		sprintf(file, "%s/%s", directory, de->d_name);
-		if((*prefs & PREFS_R) && _is_directory(file) == 1)
+		if((*prefs & PREFS_R) && _is_directory(prefs, file) == 1)
 			slist_insert_sorted(dirs, strdup(file),
 					(compare_func)strcmp);
 	}
@@ -306,11 +319,14 @@ static int _ls_args(SList ** files, SList ** dirs)
 	return 0;
 }
 
-static int _is_directory(char * file)
+static int _is_directory(Prefs * prefs, char * file)
 {
+	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
-	if((stat(file, &st)) != 0)
+	if(*prefs & PREFS_H)
+		_stat = stat;
+	if((_stat(file, &st)) != 0)
 		return _ls_error(file, 2);
 	return S_ISDIR(st.st_mode) ? 1 : 0;
 }
@@ -342,7 +358,8 @@ static int _ls_do_files(char * directory, SList * files, Prefs * prefs)
 	return res;
 }
 
-static char _short_file_mode(char const * directory, char const * file);
+static char _short_file_mode(Prefs * prefs, char const * directory,
+		char const * file);
 static int _ls_do_files_short(char * directory, SList * files, Prefs * prefs)
 {
 	char * cols;
@@ -361,6 +378,8 @@ static int _ls_do_files_short(char * directory, SList * files, Prefs * prefs)
 	{
 		for(cur = *files; cur != NULL; slist_next(&cur))
 			lenmax = max(lenmax, strlen(slist_data(&cur)));
+		if(*prefs * PREFS_F)
+			lenmax++;
 		if(lenmax > 0)
 			colnb = len / ++lenmax;
 	}
@@ -369,7 +388,8 @@ static int _ls_do_files_short(char * directory, SList * files, Prefs * prefs)
 		p = slist_data(&cur);
 		j = strlen(p);
 		fwrite(p, sizeof(char), j, stdout);
-		if((*prefs & PREFS_F) && (c = _short_file_mode(directory, p)))
+		if((*prefs & PREFS_F)
+				&& (c = _short_file_mode(prefs, directory, p)))
 		{
 			fputc(c, stdout);
 			j++;
@@ -389,8 +409,10 @@ static int _ls_do_files_short(char * directory, SList * files, Prefs * prefs)
 }
 
 static char _file_mode_letter(mode_t mode);
-static char _short_file_mode(char const * directory, char const * file)
+static char _short_file_mode(Prefs * prefs, char const * directory,
+		char const * file)
 {
+	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 	char * p;
 	char c = '\0';
@@ -398,7 +420,9 @@ static char _short_file_mode(char const * directory, char const * file)
 	if((p = malloc(strlen(directory) + 1 + strlen(file) + 1)) == NULL)
 		return _ls_error("malloc", 0);
 	sprintf(p, "%s/%s", directory, file);
-	if(stat(p, &st) != 0)
+	if(*prefs & PREFS_H)
+		_stat = stat;
+	if(_stat(p, &st) != 0)
 		_ls_error(file, 0);
 	else
 		c = _file_mode_letter(st.st_mode);
@@ -416,6 +440,7 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 	SList cur;
 	char * file = NULL;
 	char * p;
+	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 	char mode[11];
 	char * owner;
@@ -425,6 +450,8 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG _ls_do_files_long(%s, ...)\n", directory);
 #endif
+	if(*prefs & PREFS_H)
+		_stat = stat;
 	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
 		/* FIXME */
@@ -438,7 +465,7 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 		file = p;
 		p = slist_data(&cur);
 		sprintf(file, "%s/%s", directory, p);
-		if(stat(file, &st) != 0)
+		if(_stat(file, &st) != 0)
 		{
 			_ls_error(file, 0);
 			continue;
@@ -578,11 +605,14 @@ static int _ls_do_dirs(SList * dirs, Prefs * prefs)
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
+  -F    write a symbol after files names depending on their type\n\
   -R    recursively list subdirectories encountered\n\
   -a    write out all hidden directory entries\n\
   -c    use time of last modification of file status\n\
   -l    write out in long format\n\
-  -u    use time of last access\n");
+  -u    use time of last access\n\
+  -H    dereference symbolic links\n\
+  -L    evaluate symbolic links\n");
 	return 1;
 }
 
