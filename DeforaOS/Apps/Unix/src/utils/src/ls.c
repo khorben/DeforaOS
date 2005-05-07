@@ -42,6 +42,7 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 		{
 			case 'C':
 				*prefs -= *prefs & PREFS_1;
+				*prefs |= PREFS_C;
 				break;
 			case 'F':
 				*prefs |= PREFS_F;
