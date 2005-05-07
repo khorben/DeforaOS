@@ -273,9 +273,6 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 	char * p;
 	int pos = 1;
 
-#ifdef DEBUG
-	fprintf(stderr, "_ls_directory_do(%s, ...)\n", directory);
-#endif
 	if((dir = opendir(directory)) == NULL)
 		return _ls_error(directory, 2);
 	_ls_args(&files, &dirs);
@@ -413,19 +410,28 @@ static char _short_file_mode(Prefs * prefs, char const * directory,
 	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 	char * p;
-	char c = '\0';
 
-	if((p = malloc(strlen(directory) + 1 + strlen(file) + 1)) == NULL)
-		return _ls_error("malloc", 0);
-	sprintf(p, "%s/%s", directory, file);
 	if(*prefs & PREFS_H)
 		_stat = stat;
-	if(_stat(p, &st) != 0)
-		_ls_error(file, 0);
+	if(directory == NULL)
+	{
+		if(_stat(file, &st) != 0)
+			return _ls_error(file, 0);
+	}
 	else
-		c = _file_mode_letter(st.st_mode);
-	free(p);
-	return c;
+	{
+		if((p = malloc(strlen(directory) + 1 + strlen(file) + 1))
+				== NULL)
+			return _ls_error("malloc", 0);
+		sprintf(p, "%s/%s", directory, file);
+		if(_stat(p, &st) != 0)
+		{
+			free(p);
+			return _ls_error(file, 0);
+		}
+		free(p);
+	}
+	return _file_mode_letter(st.st_mode);
 }
 
 static void _long_mode(char str[11], mode_t mode);
@@ -445,25 +451,24 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 	char * group;
 	char date[15];
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG _ls_do_files_long(%s, ...)\n", directory);
-#endif
 	if(*prefs & PREFS_H)
 		_stat = stat;
 	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
-		/* FIXME */
 		p = slist_data(&cur);
-		if((p = realloc(file, strlen(directory) + strlen(p) + 2))
-				== NULL)
+		if(directory != NULL)
 		{
-			_ls_error("malloc", 0);
-			continue;
+			if((p = realloc(file, strlen(directory) + strlen(p)
+							+ 2)) == NULL)
+			{
+				_ls_error("malloc", 0);
+				continue;
+			}
+			file = p;
+			p = slist_data(&cur);
+			sprintf(file, "%s/%s", directory, p);
 		}
-		file = p;
-		p = slist_data(&cur);
-		sprintf(file, "%s/%s", directory, p);
-		if(_stat(file, &st) != 0)
+		if(_stat(directory == NULL ? p : file, &st) != 0)
 		{
 			_ls_error(file, 0);
 			continue;
@@ -480,7 +485,7 @@ static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs)
 		printf("%s %u %s %s %lu %s %s%c\n", mode, st.st_nlink,
 				owner, group, st.st_size, date, p,
 				(*prefs & PREFS_F)
-				? _file_mode_letter(st.st_mode) : '\0');
+				? _file_mode_letter(st.st_mode) : ' ');
 	}
 	free(file);
 	return 0;
@@ -571,7 +576,7 @@ static char _file_mode_letter(mode_t mode)
 		return '|';
 	if(mode & (S_IXUSR | S_IXGRP | S_IXOTH))
 		return '*';
-	return '\0';
+	return ' ';
 }
 
 static int _ls_free(void * data, void * user)
@@ -603,12 +608,14 @@ static int _ls_do_dirs(SList * dirs, Prefs * prefs)
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
+  -C    write multi-column output\n\
   -F    write a symbol after files names depending on their type\n\
   -R    recursively list subdirectories encountered\n\
   -a    write out all hidden directory entries\n\
   -c    use time of last modification of file status\n\
   -l    write out in long format\n\
   -u    use time of last access\n\
+  -1    force output to be one entry per line\n\
   -H    dereference symbolic links\n\
   -L    evaluate symbolic links\n");
 	return 1;
