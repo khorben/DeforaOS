@@ -149,28 +149,6 @@ static void slist_next(SList * slist)
 	*slist = (*slist)->next;
 }
 
-/* static void slist_last(SList * slist)
-{
-	if(*slist == NULL)
-		return;
-	while((*slist)->next != NULL)
-		*slist = (*slist)->next;
-} */
-
-/* static int slist_append(SList * slist, void * data)
-{
-	SList sl = *slist;
-
-	if(sl == NULL)
-	{
-		*slist = _slistcell_new(data, NULL);
-		return *slist != NULL ? 0 : 2;
-	}
-	slist_last(&sl);
-	sl->next = _slistcell_new(data, NULL);
-	return sl->next != NULL ? 0 : 2;
-} */
-
 static void slist_apply(SList * slist, int (*func)(void *, void *), void * user)
 {
 	SListCell * slc = *slist;
@@ -206,16 +184,6 @@ static int slist_insert_sorted(SList * slist, void * data,
 	slc->next = p;
 	return 0;
 }
-
-/* static size_t slist_length(SList * slist)
-{
-	SListCell * slc = *slist;
-	size_t len;
-
-	for(len = 0; slc != NULL; len++)
-		slc = slc->next;
-	return len;
-} */
 
 
 /* ls */
