@@ -220,7 +220,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	SList * dirs;
 	int res = 0;
 	int i;
-	int j;
+	int isdir;
 	char * str;
 
 	if(argc == 0)
@@ -229,23 +229,15 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 		return 2;
 	for(i = 0; i < argc; i++)
 	{
-		if((j = _is_directory(argv[i])) == 2)
-		{
+		if((isdir = _is_directory(argv[i])) == 2)
 			res++;
-			continue;
-		}
-		if((str = strdup(argv[i])) == NULL)
-		{
+		else if((str = strdup(argv[i])) == NULL)
 			res += _ls_error("malloc", 1);
-			continue;
-		}
-		if(*prefs & PREFS_d)
-		{
+		else if(*prefs & PREFS_d)
 			res += slist_insert_sorted(files, str,
 					(compare_func)strcmp);
-			continue;
-		}
-		res += slist_insert_sorted(j ? dirs : files, str,
+		else
+			res += slist_insert_sorted(isdir ? dirs : files, str,
 				(compare_func)strcmp);
 	}
 	res += _ls_do(NULL, files, dirs, prefs);
@@ -268,7 +260,7 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 	struct dirent * de;
 	char * file = NULL;
 	char * p;
-	int pos = 0;
+	int pos = 1;
 
 #ifdef DEBUG
 	fprintf(stderr, "_ls_directory_do(%s, ...)\n", directory);
@@ -276,17 +268,15 @@ static int _ls_directory_do(char * directory, Prefs * prefs)
 	if((dir = opendir(directory)) == NULL)
 		return _ls_error(directory, 2);
 	_ls_args(&files, &dirs);
-	while((de = readdir(dir)) != NULL)
+	for(; (de = readdir(dir)) != NULL; pos++)
 	{
-		pos++;
 		if(*(de->d_name) == '.' && !(*prefs & PREFS_a))
 			continue;
 		slist_insert_sorted(files, strdup(de->d_name),
 				(compare_func)strcmp);
 		if(pos <= 2)
 			continue;
-		if((p = realloc(file, strlen(directory)
-						+ strlen(de->d_name)
+		if((p = realloc(file, strlen(directory) + strlen(de->d_name)
 						+ 2)) == NULL)
 		{
 			_ls_error("malloc", 0);
@@ -337,7 +327,7 @@ static int _ls_do(char * directory, SList * files, SList * dirs, Prefs * prefs)
 }
 
 static int _ls_free(void * data, void * user);
-static int _ls_do_files_short(SList * files, Prefs * prefs);
+static int _ls_do_files_short(char * directory, SList * files, Prefs * prefs);
 static int _ls_do_files_long(char * directory, SList * files, Prefs * prefs);
 static int _ls_do_files(char * directory, SList * files, Prefs * prefs)
 {
@@ -346,14 +336,14 @@ static int _ls_do_files(char * directory, SList * files, Prefs * prefs)
 	if(*prefs & PREFS_l)
 		res = _ls_do_files_long(directory, files, prefs);
 	else
-		res = _ls_do_files_short(files, prefs);
+		res = _ls_do_files_short(directory, files, prefs);
 	slist_apply(files, _ls_free, NULL);
 	slist_delete(files);
 	return res;
 }
 
-static char _short_file_mode(char const * file);
-static int _ls_do_files_short(SList * files, Prefs * prefs)
+static char _short_file_mode(char const * directory, char const * file);
+static int _ls_do_files_short(char * directory, SList * files, Prefs * prefs)
 {
 	char * cols;
 	char * p;
@@ -366,8 +356,7 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 	SList cur;
 
 	if(((*prefs & PREFS_1) == 0) && (cols = getenv("COLUMNS")) != NULL
-			&& *cols != '\0'
-			&& (len = strtol(cols, &p, 10)) > 0
+			&& *cols != '\0' && (len = strtol(cols, &p, 10)) > 0
 			&& *p == '\0')
 	{
 		for(cur = *files; cur != NULL; slist_next(&cur))
@@ -380,7 +369,7 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 		p = slist_data(&cur);
 		j = strlen(p);
 		fwrite(p, sizeof(char), j, stdout);
-		if((*prefs & PREFS_F) && (c = _short_file_mode(p)))
+		if((*prefs & PREFS_F) && (c = _short_file_mode(directory, p)))
 		{
 			fputc(c, stdout);
 			j++;
@@ -400,13 +389,21 @@ static int _ls_do_files_short(SList * files, Prefs * prefs)
 }
 
 static char _file_mode_letter(mode_t mode);
-static char _short_file_mode(char const * file)
+static char _short_file_mode(char const * directory, char const * file)
 {
 	struct stat st;
+	char * p;
+	char c = '\0';
 
-	if(stat(file, &st) != 0)
-		return _ls_error(file, 0);
-	return _file_mode_letter(st.st_mode);
+	if((p = malloc(strlen(directory) + 1 + strlen(file) + 1)) == NULL)
+		return _ls_error("malloc", 0);
+	sprintf(p, "%s/%s", directory, file);
+	if(stat(p, &st) != 0)
+		_ls_error(file, 0);
+	else
+		c = _file_mode_letter(st.st_mode);
+	free(p);
+	return c;
 }
 
 static void _long_mode(char str[11], mode_t mode);
@@ -547,7 +544,7 @@ static char _file_mode_letter(mode_t mode)
 		return '/';
 	if(S_ISFIFO(mode))
 		return '|';
-	if(mode & S_IXUSR) /* FIXME */
+	if(mode & (S_IXUSR | S_IXGRP | S_IXOTH))
 		return '*';
 	return '\0';
 }
