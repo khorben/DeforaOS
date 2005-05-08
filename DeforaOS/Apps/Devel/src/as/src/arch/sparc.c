@@ -10,7 +10,12 @@ ArchInstruction arch_sparc_set[] =
 {
 };
 
+ArchRegister arch_sparc_regs[] =
+{
+};
+
 Arch arch_sparc =
 {
-	arch_sparc_set
+	arch_sparc_set,
+	arch_sparc_regs
 };
