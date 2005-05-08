@@ -39,6 +39,7 @@ int parser(int prefs, Code * code, char * infile, FILE * infp)
 	state.infp = infp;
 	state.line = 1;
 	state.errors = 0;
+	state.code = code;
 	state.token = scan(infp);
 	if(state.token != NULL)
 		_as(&state);
@@ -48,10 +49,10 @@ int parser(int prefs, Code * code, char * infile, FILE * infp)
 	{
 		if(state.token->string != NULL)
 		{
-			_parser_warning(&state, "parse error near token:");
+			_parser_warning(&state, "Parse error near token:");
 			_parser_warning(&state, state.token->string);
 		}
-		_parser_error(&state, "unhandled syntax error, exiting");
+		_parser_error(&state, "Unhandled syntax error, exiting");
 	}
 	if(state.errors)
 		fprintf(stderr, "%s%s%s%d%s", "as: ", infile,
@@ -63,22 +64,22 @@ int parser(int prefs, Code * code, char * infile, FILE * infp)
 
 static int _parser_fatal(State * state, char * message)
 {
-	fprintf(stderr, "%s%s%u%s", state->infile, ", line ", state->line,
-			": ");
+	fprintf(stderr, "%s%s%s%u%s", "as: ", state->infile, ", line ",
+			state->line, ": ");
 	perror(message);
 	return 2;
 }
 
 static void _parser_error(State * state, char * message)
 {
-	fprintf(stderr, "%s%s%u%s%s%s", state->infile, ", line ",
+	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
 			state->line, ": ", message, "\n");
 	state->errors++;
 }
 
 static void _parser_warning(State * state, char * message)
 {
-	fprintf(stderr, "%s%s%u%s%s%s", state->infile, ", line ",
+	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
 			state->line, ": ", message, "\n");
 }
 
@@ -93,7 +94,7 @@ static int _parser_check(State * state, TokenCode code)
 	int ret = 0;
 
 	if(state->token == NULL || state->token->code != code)
-		_parser_error(state, "parse error");
+		_parser_error(state, "Parse error");
 	else
 		ret = 1;
 	_parser_scan(state);
