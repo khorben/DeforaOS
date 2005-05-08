@@ -1,9 +1,9 @@
-/* arch.h */
+/* arch/arch.h */
 
 
 
-#ifndef __ARCH_H
-# define __ARCH_H
+#ifndef __ARCH_ARCH_H
+# define __ARCH_ARCH_H
 
 
 /* types */
@@ -28,4 +28,9 @@ typedef struct _Arch {
 	ArchRegisterSet registers;
 } Arch;
 
-#endif /* !__ARCH_H */
+
+/* functions */
+Arch * arch_new(char * arch);
+void arch_delete(Arch * arch);
+
+#endif /* !__ARCH_ARCH_H */

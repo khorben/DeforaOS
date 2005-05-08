@@ -11,46 +11,28 @@
 
 
 /* as */
-static int _as_error(char * msg, int ret);
-static int _as_do(int prefs, char * infile, FILE * infp,
-		char * outfile, FILE * outfp);
-static int as(int prefs, char * infile, char * outfile)
+static int as(int prefs, char * arch, char * format, char * infile,
+		char * outfile)
 {
 	FILE * infp;
-	FILE * outfp;
+	Code * code;
 	int ret;
-	int fd;
 
 	if((infp = fopen(infile, "r")) == NULL)
-		return _as_error(infile, 1);
-	if((outfp = fopen(outfile, "w")) == NULL)
-	{
-		fclose(infp);
-		return _as_error(outfile, 1);
-	}
-	ret = _as_do(prefs, infile, infp, outfile, outfp);
+		return as_error(infile, 2);
+	if((code = code_new(arch, format, outfile)) == NULL)
+		ret = 2;
+	else
+		ret = parser(prefs, code, infile, infp);
 	fclose(infp);
-	if(ret == 0 && (fd = fileno(outfp)) != -1)
-		if(fchmod(fd, S_IRUSR | S_IWUSR | S_IXUSR) != 0)
-			ret = _as_error(outfile, 2);
-	fclose(outfp);
-	if(ret != 0)
-		if(unlink(outfile) != 0)
-			_as_error(outfile, 0);
 	return ret;
 }
 
-static int _as_error(char * msg, int ret)
+int as_error(char * msg, int ret)
 {
 	fprintf(stderr, "%s", "as: ");
 	perror(msg);
 	return ret;
-}
-
-static int _as_do(int prefs, char * infile, FILE * infp,
-		char * outfile, FILE * outfp)
-{
-	return parser(prefs, infile, infp, outfile, outfp);
 }
 
 
@@ -58,6 +40,8 @@ static int _as_do(int prefs, char * infile, FILE * infp,
 static unsigned int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: as [-o file] file\n"
+"  -a    target architecture (default: guessed)\n"
+"  -f    target file format (default: ELF)\n"
 "  -o    filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n");
 	return 1;
 }
@@ -68,11 +52,19 @@ int main(int argc, char * argv[])
 {
 	int o;
 	char * outfile = AS_FILENAME_DEFAULT;
+	char * arch = NULL;
+	char * format = NULL;
 
-	while((o = getopt(argc, argv, "o:")) != -1)
+	while((o = getopt(argc, argv, "a:f:o:")) != -1)
 	{
 		switch(o)
 		{
+			case 'a':
+				arch = optarg;
+				break;
+			case 'f':
+				format = optarg;
+				break;
 			case 'o':
 				outfile = optarg;
 				break;
@@ -82,5 +74,5 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind != 1)
 		return _usage();
-	return as(0, argv[optind], outfile) ? 2 : 0;
+	return as(0, arch, format, argv[optind], outfile) ? 2 : 0;
 }

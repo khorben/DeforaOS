@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "arch/arch.h"
 #include "scanner.h"
 #include "parser.h"
 
@@ -16,12 +15,10 @@ typedef struct _State
 	int prefs;
 	char * infile;
 	FILE * infp;
-	char * outfile;
-	FILE * outfp;
 	Token * token;
 	unsigned int line;
 	unsigned int errors;
-	Arch * arch;
+	Code * code;
 } State;
 
 
@@ -32,7 +29,7 @@ static void _parser_warning(State * state, char * message);
 static void _parser_scan(State * state);
 static int _parser_check(State * state, TokenCode code);
 static void _as(State * state);
-int parser(int prefs, char * infile, FILE * infp, char * outfile, FILE * outfp)
+int parser(int prefs, Code * code, char * infile, FILE * infp)
 	/* as */
 {
 	State state;
@@ -40,8 +37,6 @@ int parser(int prefs, char * infile, FILE * infp, char * outfile, FILE * outfp)
 	state.prefs = prefs;
 	state.infile = infile;
 	state.infp = infp;
-	state.outfile = outfile;
-	state.outfp = outfp;
 	state.line = 1;
 	state.errors = 0;
 	state.token = scan(infp);
@@ -105,6 +100,8 @@ static int _parser_check(State * state, TokenCode code)
 	return ret;
 }
 
+
+/* as */
 static void _newline(State * state);
 static void _section_list(State * state);
 static void _as(State * state)
@@ -120,6 +117,8 @@ static void _as(State * state)
 		_newline(state);
 }
 
+
+/* newline */
 static void _space(State * state);
 static void _newline(State * state)
 	/* [ space ] NEWLINE */
@@ -133,6 +132,8 @@ static void _newline(State * state)
 		state->line++;
 }
 
+
+/* space */
 static void _space(State * state)
 	/* SPACE { SPACE } */
 {
@@ -144,6 +145,8 @@ static void _space(State * state)
 		_parser_scan(state);
 }
 
+
+/* section_list */
 static void _section(State * state);
 static void _instruction_list(State * state);
 static void _section_list(State * state)
@@ -159,6 +162,8 @@ static void _section_list(State * state)
 	}
 }
 
+
+/* section */
 static void _section(State * state)
 	/* "." WORD newline */
 {
@@ -180,6 +185,8 @@ static void _section(State * state)
 	free(section);
 }
 
+
+/* instruction_list */
 static void _function(State * state);
 static void _instruction(State * state);
 static void _instruction_list(State * state)
@@ -203,6 +210,8 @@ static void _instruction_list(State * state)
 	}
 }
 
+
+/* function */
 static void _function(State * state)
 	/* WORD ":" newline */
 {
@@ -224,6 +233,8 @@ static void _function(State * state)
 	free(function);
 }
 
+
+/* instruction */
 static void _operator(State * state);
 static void _operand_list(State * state);
 static void _instruction(State * state)
@@ -242,6 +253,8 @@ static void _instruction(State * state)
 	_newline(state);
 }
 
+
+/* operator */
 static void _operator(State * state)
 	/* WORD */
 {
@@ -260,6 +273,8 @@ static void _operator(State * state)
 	free(operator);
 }
 
+
+/* operand_list */
 static void _operand(State * state);
 static void _operand_list(State * state)
 	/* operand [ space ] { "," [ space ] operand [ space ] } */
@@ -281,6 +296,8 @@ static void _operand_list(State * state)
 	}
 }
 
+
+/* operand */
 static void _operand(State * state)
 	/* WORD | NUMBER */
 {

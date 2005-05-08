@@ -6,8 +6,9 @@
 # define __PARSER_H
 
 # include <stdio.h>
+# include "code.h"
 
 
-int parser(int prefs, char * infile, FILE * infp, char * outfile, FILE * outfp);
+int parser(int prefs, Code * code, char * infile, FILE * infp);
 
 #endif /* !__PARSER_H */
