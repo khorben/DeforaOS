@@ -122,7 +122,36 @@ ArchInstruction arch_x86_set[] =
 	{ NULL,		0x0000, 0 }
 };
 
+ArchRegister arch_x86_regs[] =
+{
+	{ "eax",	32 },
+	{ "ax",		16 },
+	{ "ah",		8 },
+	{ "al",		8 },
+	{ "ebx",	32 },
+	{ "bx",		16 },
+	{ "bh",		8 },
+	{ "bl",		8 },
+	{ "ecx",	32 },
+	{ "cx",		16 },
+	{ "ch",		8 },
+	{ "cl",		8 },
+	{ "edx",	32 },
+	{ "dx",		16 },
+	{ "dh",		8 },
+	{ "dl",		8 },
+	{ "esp",	32 },
+	{ "sp",		16 },
+	{ "ebp",	32 },
+	{ "bp",		16 },
+	{ "esi",	32 },
+	{ "si",		16 },
+	{ "edi",	32 },
+	{ "di",		16 },
+};
+
 Arch arch_x86 =
 {
-	arch_x86_set
+	arch_x86_set,
+	arch_x86_regs
 };
