@@ -23,7 +23,10 @@ static int as(int prefs, char * arch, char * format, char * infile,
 	if((code = code_new(arch, format, outfile)) == NULL)
 		ret = 2;
 	else
+	{
 		ret = parser(prefs, code, infile, infp);
+		code_delete(code, ret);
+	}
 	fclose(infp);
 	return ret;
 }

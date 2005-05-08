@@ -2,6 +2,7 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #include "as.h"
 #include "arch/arch.h"
@@ -27,7 +28,11 @@ Code * code_new(char * arch, char * format, char * filename)
 		if(c->format != NULL)
 			format_delete(c->format);
 		if(c->fp != NULL)
+		{
 			fclose(c->fp);
+			if(unlink(filename) != 0)
+				as_error(filename, 0);
+		}
 		else
 			as_error(filename, 0);
 		free(c);
@@ -39,9 +44,13 @@ Code * code_new(char * arch, char * format, char * filename)
 
 
 /* code_delete */
-void code_delete(Code * code)
+void code_delete(Code * code, int error)
 {
 	arch_delete(code->arch);
 	format_delete(code->format);
+	fclose(code->fp);
+	if(error != 0)
+		if(unlink(code->filename) != 0)
+			as_error(code->filename, 0);
 	free(code);
 }

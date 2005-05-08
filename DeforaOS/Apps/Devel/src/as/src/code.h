@@ -22,6 +22,6 @@ typedef struct _Code
 
 /* functions */
 Code * code_new(char * arch, char * format, char * filename);
-void code_delete(Code * code);
+void code_delete(Code * code, int error);
 
 #endif /* !__CODE_H */
