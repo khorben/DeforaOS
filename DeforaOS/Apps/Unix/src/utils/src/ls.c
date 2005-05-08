@@ -452,7 +452,7 @@ static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 			_long_date(st.st_ctime, date);
 		else
 			_long_date(st.st_mtime, date);
-		printf("%s %u %s %s %lu %s %s%c\n", mode, st.st_nlink,
+		printf("%s %u %s %s %6lu %s %s%c\n", mode, st.st_nlink,
 				owner, group, st.st_size, date, p,
 				(*prefs & PREFS_F)
 				? _file_mode_letter(st.st_mode) : ' ');
