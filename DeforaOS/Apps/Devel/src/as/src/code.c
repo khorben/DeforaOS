@@ -13,8 +13,9 @@
 /* Code */
 char const * code_error[CE_LAST] = {
 	"Success",
+	"Invalid arguments",
 	"Unknown instruction",
-	"Invalid arguments"
+	"Write error"
 };
 
 
@@ -33,9 +34,9 @@ Code * code_new(char * arch, char * format, char * filename)
 	{
 		if(c->arch != NULL)
 			arch_delete(c->arch);
-		if(c->format != NULL)
+		else if(c->format != NULL)
 			format_delete(c->format);
-		if(c->fp != NULL)
+		else if(c->fp != NULL)
 		{
 			fclose(c->fp);
 			if(unlink(filename) != 0)
@@ -56,10 +57,12 @@ void code_delete(Code * code, int error)
 {
 	arch_delete(code->arch);
 	format_delete(code->format);
-	fclose(code->fp);
-	if(error != 0)
-		if(unlink(code->filename) != 0)
+	if(code->fp != NULL)
+	{
+		fclose(code->fp);
+		if(error != 0 && unlink(code->filename) != 0)
 			as_error(code->filename, 0);
+	}
 	free(code);
 }
 
@@ -72,7 +75,6 @@ CodeError code_instruction(Code * code, char * instruction,
 	unsigned int i;
 	ArchInstruction * ai;
 	int cmp;
-	CodeError error = CE_INVALID_ARGUMENTS;
 
 	for(i = 0; (ai = &(code->arch->instructions[i])) && ai->name != NULL; i++)
 	{
@@ -87,7 +89,9 @@ CodeError code_instruction(Code * code, char * instruction,
 		fprintf(stderr, "%s%s%s", "DEBUG instruction: ", instruction,
 				"\n");
 #endif
-		fwrite(&ai->opcode, sizeof(char), 1, code->fp);
+		if(fwrite(&ai->opcode, sizeof(char), 1, code->fp)
+				!= sizeof(char))
+			return CE_WRITE_ERROR;
 		return CE_SUCCESS;
 	}
 	return CE_UNKNOWN_INSTRUCTION;

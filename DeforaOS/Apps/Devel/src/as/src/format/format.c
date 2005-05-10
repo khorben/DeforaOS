@@ -3,6 +3,7 @@
 
 
 #include <stdlib.h>
+#include <dlfcn.h>
 #include "../as.h"
 #include "format.h"
 
@@ -11,13 +12,25 @@
 Format * format_new(char * format)
 {
 	Format * f;
+	void * handle;
+	Format * plugin;
 
+	if(format == NULL)
+		format = "elf";
+	if((handle = as_plugin_new("format", format)) == NULL)
+		return NULL;
+	if((plugin = dlsym(handle, "format_plugin")) == NULL)
+	{
+		as_error("dlsym", 0); /* FIXME not very explicit */
+		return NULL;
+	}
 	if((f = malloc(sizeof(Format))) == NULL)
 	{
 		as_error("malloc", 0);
+		as_plugin_delete(handle);
 		return NULL;
 	}
-	/* FIXME */
+	f->plugin = handle;
 	return f;
 }
 
@@ -25,5 +38,6 @@ Format * format_new(char * format)
 /* format_delete */
 void format_delete(Format * format)
 {
+	as_plugin_delete(format->plugin);
 	free(format);
 }

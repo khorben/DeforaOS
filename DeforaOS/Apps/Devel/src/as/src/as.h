@@ -10,6 +10,11 @@
 
 
 /* functions */
+/* useful */
 int as_error(char * msg, int ret);
+
+/* plug-ins helpers */
+void * as_plugin_new(char * type, char * name);
+void as_plugin_delete(void * plugin);
 
 #endif /* !__AS_H */

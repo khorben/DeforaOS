@@ -7,7 +7,13 @@
 
 
 /* types */
-typedef struct _Format {
+typedef struct _FormatPlugin
+{
+} FormatPlugin;
+
+typedef struct _Format
+{
+	void * plugin;
 } Format;
 
 

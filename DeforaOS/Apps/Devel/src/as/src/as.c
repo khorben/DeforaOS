@@ -5,7 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <dlfcn.h>
 #include "parser.h"
 #include "as.h"
 
@@ -31,6 +34,9 @@ static int as(int prefs, char * arch, char * format, char * infile,
 	return ret;
 }
 
+
+/* useful */
+/* as_error */
 int as_error(char * msg, int ret)
 {
 	fprintf(stderr, "%s", "as: ");
@@ -39,12 +45,43 @@ int as_error(char * msg, int ret)
 }
 
 
+/* plug-ins helpers */
+void * as_plugin_new(char * type, char * name)
+{
+	char * filename;
+	void * handle;
+
+#ifndef PREFIX
+# define PREFIX "."
+#endif
+	if((filename = malloc(strlen(PREFIX) + 1 + strlen(type) + 1
+					+ strlen(name) + strlen(".so") + 1))
+				== NULL)
+	{
+		as_error("malloc", 0);
+		return NULL;
+	}
+	sprintf(filename, "%s/%s/%s%s", PREFIX, type, name, ".so");
+	if((handle = dlopen(filename, RTLD_NOW)) == NULL)
+		as_error(filename, 0);
+	free(filename);
+	return handle;
+}
+
+
+/* as_plugin_delete */
+void as_plugin_delete(void * plugin)
+{
+	dlclose(plugin);
+}
+
+
 /* usage */
 static unsigned int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: as [-o file] file\n"
 "  -a    target architecture (default: guessed)\n"
-"  -f    target file format (default: ELF)\n"
+"  -f    target file format (default: elf)\n"
 "  -o    filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n");
 	return 1;
 }
