@@ -150,7 +150,7 @@ ArchRegister arch_x86_regs[] =
 	{ "di",		16 },
 };
 
-Arch arch_x86 =
+ArchPlugin arch_plugin =
 {
 	arch_x86_set,
 	arch_x86_regs

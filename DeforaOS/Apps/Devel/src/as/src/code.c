@@ -4,12 +4,20 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include "as.h"
 #include "arch/arch.h"
 #include "code.h"
 
 
 /* Code */
+char const * code_error[CE_LAST] = {
+	"Success",
+	"Unknown instruction",
+	"Invalid arguments"
+};
+
+
 Code * code_new(char * arch, char * format, char * filename)
 {
 	Code * c;
@@ -53,4 +61,27 @@ void code_delete(Code * code, int error)
 		if(unlink(code->filename) != 0)
 			as_error(code->filename, 0);
 	free(code);
+}
+
+
+/* useful */
+/* code_instruction */
+CodeError code_instruction(Code * code, char * instruction,
+		CodeOperand operands[], unsigned int operands_cnt)
+{
+	unsigned int i;
+	ArchInstruction * ai;
+	int cmp;
+	CodeError error = CE_INVALID_ARGUMENTS;
+
+	for(i = 0; (ai = &(code->arch->instructions[i])) && ai->name != NULL; i++)
+	{
+		if((cmp = strcmp(instruction, ai->name)) > 0)
+			continue;
+		if(cmp < 0)
+			return error;
+		if(operands_cnt != ai->operands_cnt)
+			continue;
+	}
+	return CE_SUCCESS;
 }

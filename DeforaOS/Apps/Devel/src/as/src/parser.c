@@ -19,13 +19,16 @@ typedef struct _State
 	unsigned int line;
 	unsigned int errors;
 	Code * code;
+	char * instruction;
+	CodeOperand * operands;
+	int operands_cnt;
 } State;
 
 
 /* parser */
-static int _parser_fatal(State * state, char * message);
-static void _parser_error(State * state, char * message);
-static void _parser_warning(State * state, char * message);
+static int _parser_fatal(State * state, char const * message);
+static void _parser_error(State * state, char const * message);
+static void _parser_warning(State * state, char const * message);
 static void _parser_scan(State * state);
 static int _parser_check(State * state, TokenCode code);
 static void _as(State * state);
@@ -40,6 +43,9 @@ int parser(int prefs, Code * code, char * infile, FILE * infp)
 	state.line = 1;
 	state.errors = 0;
 	state.code = code;
+	state.instruction = NULL;
+	state.operands = NULL;
+	state.operands_cnt = 0;
 	state.token = scan(infp);
 	if(state.token != NULL)
 		_as(&state);
@@ -59,10 +65,11 @@ int parser(int prefs, Code * code, char * infile, FILE * infp)
 				": Compilation failed with ",
 				state.errors, " error(s)\n");
 	token_delete(state.token);
+	free(state.operands);
 	return state.errors;
 }
 
-static int _parser_fatal(State * state, char * message)
+static int _parser_fatal(State * state, char const * message)
 {
 	fprintf(stderr, "%s%s%s%u%s", "as: ", state->infile, ", line ",
 			state->line, ": ");
@@ -70,14 +77,14 @@ static int _parser_fatal(State * state, char * message)
 	return 2;
 }
 
-static void _parser_error(State * state, char * message)
+static void _parser_error(State * state, char const * message)
 {
 	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
 			state->line, ": ", message, "\n");
 	state->errors++;
 }
 
-static void _parser_warning(State * state, char * message)
+static void _parser_warning(State * state, char const * message)
 {
 	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
 			state->line, ": ", message, "\n");
@@ -241,6 +248,8 @@ static void _operand_list(State * state);
 static void _instruction(State * state)
 	/* operator [ space [ operand_list ] ] newline */
 {
+	CodeError error;
+
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_instruction()\n");
 #endif
@@ -252,6 +261,15 @@ static void _instruction(State * state)
 			_operand_list(state);
 	}
 	_newline(state);
+	if(state->instruction != NULL)
+	{
+		if((error = code_instruction(state->code, state->instruction,
+				state->operands, state->operands_cnt))
+				!= CE_SUCCESS)
+			_parser_error(state, code_error[error]);
+		free(state->instruction);
+		state->operands_cnt = 0;
+	}
 }
 
 
@@ -259,19 +277,20 @@ static void _instruction(State * state)
 static void _operator(State * state)
 	/* WORD */
 {
-	char * operator = NULL;
+	char * instruction = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operator()\n");
 #endif
-	if(state->token->code == TC_WORD && state->token->string != NULL)
-		operator = strdup(state->token->string);
-	_parser_check(state, TC_WORD);
+	if(state->token->string != NULL)
+		instruction = strdup(state->token->string);
+	if(_parser_check(state, TC_WORD) && instruction)
+	{
+		state->instruction = instruction;
 #ifdef DEBUG
-	if(operator)
-		fprintf(stderr, "%s%s%s", "Operator \"", operator, "\"\n");
+		fprintf(stderr, "%s%s%s", "Operator \"", instruction, "\"\n");
 #endif
-	free(operator);
+	}
 }
 
 
@@ -300,12 +319,29 @@ static void _operand_list(State * state)
 
 /* operand */
 static void _operand(State * state)
-	/* WORD | NUMBER */
+	/* WORD | NUMBER | IMMEDIATE | REGISTER */
 {
+	char * operand;
+	CodeOperand * p;
+
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operand()\n");
 	fprintf(stderr, "%s%s%s", "New operand: \"", state->token->string,
 			"\"\n");
 #endif
+	if(state->token->string != NULL)
+	{
+		if((p = realloc(state->operands, (state->operands_cnt+1)
+						* sizeof(CodeOperand))) == NULL)
+		{
+			state->operands = p;
+			state->operands[state->operands_cnt].type
+				= state->token->code;
+			state->operands[state->operands_cnt].value
+				= strdup(state->token->string);
+			state->operands_cnt++;
+		}
+		/* FIXME else...? */
+	}
 	_parser_scan(state);
 }
