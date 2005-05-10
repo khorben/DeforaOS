@@ -79,9 +79,16 @@ CodeError code_instruction(Code * code, char * instruction,
 		if((cmp = strcmp(instruction, ai->name)) > 0)
 			continue;
 		if(cmp < 0)
-			return error;
+			break;
 		if(operands_cnt != ai->operands_cnt)
 			continue;
+		/* FIXME check operands types */
+#ifdef DEBUG
+		fprintf(stderr, "%s%s%s", "DEBUG instruction: ", instruction,
+				"\n");
+#endif
+		fwrite(&ai->opcode, sizeof(char), 1, code->fp);
+		return CE_SUCCESS;
 	}
-	return CE_SUCCESS;
+	return CE_UNKNOWN_INSTRUCTION;
 }
