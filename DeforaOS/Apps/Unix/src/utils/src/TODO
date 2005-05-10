@@ -2,6 +2,9 @@ all:
 - improve command line arguments fetching? (inspired from wc?)
 - factorize code (either need to improve configure or include a .c file)
 
+du:
+- implement -x
+
 id:
 - write more readable code
 - check if it's complete
