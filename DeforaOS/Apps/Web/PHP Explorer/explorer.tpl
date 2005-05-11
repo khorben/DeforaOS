@@ -8,7 +8,7 @@
 	</head>
 	<body>
 		<div class="explorer">
-			<form name="explorer_form" action="explorer.php" method="post">
+			<form action="explorer.php" method="post">
 				<div class="toolbar">
 					<img src="icons/16x16/select_all.png" alt="select all" onclick="select_all()"/>
 					<img src="icons/16x16/refresh.png" alt="refresh" onclick="location.reload()"/>
