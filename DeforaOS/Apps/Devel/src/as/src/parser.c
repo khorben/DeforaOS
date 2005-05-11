@@ -260,7 +260,6 @@ static void _instruction(State * state)
 		if(token_in_set(state->token, TS_OPERAND_LIST))
 			_operand_list(state);
 	}
-	_newline(state);
 	if(state->instruction != NULL)
 	{
 		if((error = code_instruction(state->code, state->instruction,
@@ -270,6 +269,7 @@ static void _instruction(State * state)
 		free(state->instruction);
 		state->operands_cnt = 0;
 	}
+	_newline(state);
 }
 
 
@@ -333,6 +333,8 @@ static void _operand(State * state)
 	{
 		if((p = realloc(state->operands, (state->operands_cnt+1)
 						* sizeof(CodeOperand))) == NULL)
+			_parser_error(state, "Internal error");
+		else
 		{
 			state->operands = p;
 			state->operands[state->operands_cnt].type
@@ -341,7 +343,6 @@ static void _operand(State * state)
 				= strdup(state->token->string);
 			state->operands_cnt++;
 		}
-		/* FIXME else...? */
 	}
 	_parser_scan(state);
 }
