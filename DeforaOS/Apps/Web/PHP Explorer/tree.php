@@ -32,10 +32,10 @@ function list_dirs($path)
 	if(($dir = @opendir($path)) == FALSE)
 		return FALSE;
 	$dirs = array();
-	readdir($dir);
-	readdir($dir);
 	while(($de = readdir($dir)))
 	{
+		if($de == '.' || $de == '..')
+			continue;
 		if(!$hidden && $de[0] == '.')
 			continue;
 		if(!@is_dir($path.'/'.$de))
