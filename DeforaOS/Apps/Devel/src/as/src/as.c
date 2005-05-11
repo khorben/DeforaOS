@@ -76,13 +76,23 @@ void as_plugin_delete(void * plugin)
 }
 
 
+/* as_plugin_list */
+void as_plugin_list(char * name, char * type)
+{
+	fprintf(stderr, "%s%s%s", "Available \"", type, "\" plug-ins:\n");
+	/* FIXME */
+}
+
+
 /* usage */
 static unsigned int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: as [-o file] file\n"
+	fprintf(stderr, "%s", "Usage: as [-a arch][-f format][-o file] file\n"
+"       as -l\n"
 "  -a    target architecture (default: guessed)\n"
 "  -f    target file format (default: elf)\n"
-"  -o    filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n");
+"  -o    filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n"
+"  -l    list available architectures and formats\n");
 	return 1;
 }
 
@@ -95,7 +105,7 @@ int main(int argc, char * argv[])
 	char * arch = NULL;
 	char * format = NULL;
 
-	while((o = getopt(argc, argv, "a:f:o:")) != -1)
+	while((o = getopt(argc, argv, "a:f:o:l")) != -1)
 	{
 		switch(o)
 		{
@@ -108,6 +118,10 @@ int main(int argc, char * argv[])
 			case 'o':
 				outfile = optarg;
 				break;
+			case 'l':
+				as_plugin_list("architecture", "arch");
+				as_plugin_list("file format", "format");
+				return 0;
 			default:
 				return _usage();
 		}
