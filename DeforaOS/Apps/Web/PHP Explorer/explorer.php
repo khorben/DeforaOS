@@ -126,8 +126,9 @@ function explorer_folder($folder, $sort, $reverse)
 	global $root, $hidden, $path, $thumbnails;
 
 	$path = $folder;
-	if(($dir = opendir($root.'/'.$folder)) == FALSE)
-		return;
+	if(($dir = @opendir($root.'/'.$folder)) == FALSE)
+		return print("</div>
+<h3 style=\"text-align: center\">Could not open directory</h3><div>\n");
 	readdir($dir);
 	readdir($dir);
 	$files = array();
@@ -218,15 +219,15 @@ function explorer_sort($folder, $name, $sort, $reverse)
 	if($sort == $name || ($sort == '' && $name == 'name'))
 	{
 		echo '<a href="explorer.php?folder='.html_safe($folder)
-				.'&sort='.$name;
+				.'&amp;sort='.$name;
 		if(!$reverse)
-			echo '&reverse=';
+			echo '&amp;reverse=';
 		echo '">'.ucfirst($name).'</a> <img src="icons/16x16/'
 				.($reverse ? 'up' : 'down').'.png" alt=""/>';
 	}
 	else
 		echo '<a href="explorer.php?folder='.html_safe($folder)
-				.'&sort='.$name.'">'.ucfirst($name).'</a>';
+				.'&amp;sort='.$name.'">'.ucfirst($name).'</a>';
 	echo '</div>'."\n";
 }
 
