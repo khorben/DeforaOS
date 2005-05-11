@@ -55,3 +55,5 @@ function mime_from_ext($filename)
 			return $g[0];
 	return 'default';
 }
+
+?>
