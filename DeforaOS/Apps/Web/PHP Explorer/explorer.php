@@ -129,18 +129,19 @@ function explorer_folder($folder, $sort, $reverse)
 	if(($dir = @opendir($root.'/'.$folder)) == FALSE)
 		return print("</div>
 <h3 style=\"text-align: center\">Could not open directory</h3><div>\n");
-	readdir($dir);
-	readdir($dir);
 	$files = array();
 	if(!$hidden)
 		while($de = readdir($dir))
 		{
+			if($de == '.' || $de == '..')
+				continue;
 			if($de[0] != '.')
 				$files[] = $de;
 		}
 	else
 		while($de = readdir($dir))
-			$files[] = $de;
+			if($de != '.' && $de != '..')
+				$files[] = $de;
 	switch($sort)
 	{
 		case 'permissions':
