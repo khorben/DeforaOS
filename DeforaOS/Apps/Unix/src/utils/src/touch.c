@@ -252,7 +252,7 @@ static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 #endif
 	if(!(prefs->flags & PREFS_c))
 	{
-		if((fd = open(filename, 0666, O_CREAT) == -1))
+		if((fd = open(filename, O_CREAT, 0666) == -1))
 			_touch_error(filename, 0);
 		else if(close(fd) != 0)
 			_touch_error(filename, 0);
