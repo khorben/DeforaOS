@@ -2,6 +2,7 @@ SUBDIRS	= arch format
 TARGETS	= as
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
+LDFLAGSF= -l dl
 CC	= cc
 AR	= ar rc
 RANLIB	= ranlib
