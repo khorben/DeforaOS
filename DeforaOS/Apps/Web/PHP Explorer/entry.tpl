@@ -2,7 +2,7 @@
 						<input type="checkbox" name="entry_<? echo $i; ?>" value="<? echo html_safe($folder.'/'.$name); ?>"/>
 						<div class="thumbnail"><? if(strlen($link)) { ?><a href="<? echo html_safe($link); ?>"><? } ?><img src="<? echo $thumbnail; ?>" alt=""/><? if(strlen($link)) { ?></a><? } ?></div>
 						<div class="icon"><? if(strlen($link)) { ?><a href="<? echo html_safe($link); ?>"><? } ?><img src="<? echo $icon; ?>" alt=""/><? if(strlen($link)) { ?></a><? } ?></div>
-						<div class="name"><? if(strlen($link)) { ?><a href="<? echo html_safe($link); ?>"><? } ?><? echo html_safe($name); ?><? if(strlen($link)) { ?></a><? } ?></div>
+						<div class="name"><? if(strlen($link)) { ?><a href="<? echo str_replace('&amp;', '%26', html_safe($link)); ?>"><? } ?><? echo html_safe($name); ?><? if(strlen($link)) { ?></a><? } ?></div>
 						<div class="permissions"><? echo html_safe($permissions); ?></div>
 						<div class="owner"><? echo html_safe($owner); ?></div>
 						<div class="group"><? echo html_safe($group); ?></div>

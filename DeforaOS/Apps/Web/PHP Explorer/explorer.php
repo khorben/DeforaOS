@@ -27,7 +27,7 @@ function explorer_download($filename)
 {
 	global $root, $hidden;
 
-	$filename = $root.'/'.$filename;
+	$filename = $root.'/'.stripslashes($filename);
 	if(!is_readable($filename) || is_dir($filename))
 		return include('404.tpl');
 	if(!$hidden)
@@ -125,6 +125,7 @@ function explorer_folder($folder, $sort, $reverse)
 {
 	global $root, $hidden, $path, $thumbnails;
 
+	$folder = stripslashes($folder);
 	$path = $folder;
 	if(($dir = @opendir($root.'/'.$folder)) == FALSE)
 		return print("</div>
