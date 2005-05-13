@@ -34,9 +34,9 @@ Code * code_new(char * arch, char * format, char * filename)
 	{
 		if(c->arch != NULL)
 			arch_delete(c->arch);
-		else if(c->format != NULL)
+		if(c->format != NULL)
 			format_delete(c->format);
-		else if(c->fp != NULL)
+		if(c->fp != NULL)
 		{
 			fclose(c->fp);
 			if(unlink(filename) != 0)
