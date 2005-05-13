@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -79,8 +80,37 @@ void as_plugin_delete(void * plugin)
 /* as_plugin_list */
 void as_plugin_list(char * name, char * type)
 {
+	char * path;
+	DIR * dir;
+	struct dirent * de;
+	unsigned int len;
+
 	fprintf(stderr, "%s%s%s", "Available \"", type, "\" plug-ins:\n");
-	/* FIXME */
+#ifndef PREFIX
+# define PREFIX "."
+#endif
+	if((path = malloc(strlen(PREFIX) + 1 + strlen(type) + 1)) == NULL)
+	{
+		as_error("malloc", 0);
+		return;
+	}
+	sprintf(path, "%s/%s", PREFIX, type);
+	if((dir = opendir(path)) == NULL)
+	{
+		as_error(path, 0);
+		return;
+	}
+	while((de = readdir(dir)) != NULL)
+	{
+		if((len = strlen(de->d_name)) < 4)
+			continue;
+		if(strcmp(".so", &de->d_name[len-3]) != 0)
+			continue;
+		de->d_name[len-3] = '\0';
+		printf("%s\n", de->d_name);
+	}
+	free(path);
+	closedir(dir);
 }
 
 
