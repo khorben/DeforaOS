@@ -13,6 +13,10 @@
 #include "parser.h"
 #include "as.h"
 
+#ifndef PREFIX
+# define PREFIX "."
+#endif
+
 
 /* as */
 static int as(int prefs, char * arch, char * format, char * infile,
@@ -52,9 +56,6 @@ void * as_plugin_new(char * type, char * name)
 	char * filename;
 	void * handle;
 
-#ifndef PREFIX
-# define PREFIX "."
-#endif
 	if((filename = malloc(strlen(PREFIX) + 1 + strlen(type) + 1
 					+ strlen(name) + strlen(".so") + 1))
 				== NULL)
@@ -86,9 +87,6 @@ void as_plugin_list(char * name, char * type)
 	unsigned int len;
 
 	fprintf(stderr, "%s%s%s", "Available \"", type, "\" plug-ins:\n");
-#ifndef PREFIX
-# define PREFIX "."
-#endif
 	if((path = malloc(strlen(PREFIX) + 1 + strlen(type) + 1)) == NULL)
 	{
 		as_error("malloc", 0);
