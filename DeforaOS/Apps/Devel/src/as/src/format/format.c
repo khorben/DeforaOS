@@ -30,6 +30,8 @@ Format * format_new(char * format)
 		as_plugin_delete(handle);
 		return NULL;
 	}
+	f->format_init = plugin->format_init;
+	f->format_exit = plugin->format_exit;
 	f->plugin = handle;
 	return f;
 }
@@ -40,4 +42,12 @@ void format_delete(Format * format)
 {
 	as_plugin_delete(format->plugin);
 	free(format);
+}
+
+
+/* useful */
+/* format_init */
+int format_init(Format * format, FILE * fp)
+{
+	return format->format_init(fp);
 }
