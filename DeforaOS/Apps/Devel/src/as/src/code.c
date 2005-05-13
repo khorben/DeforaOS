@@ -30,7 +30,8 @@ Code * code_new(char * arch, char * format, char * filename)
 	}
 	if((c->arch = arch_new(arch)) == NULL
 			|| (c->format = format_new(format)) == NULL
-			|| (c->fp = fopen(filename, "w")) == NULL)
+			|| (c->fp = fopen(filename, "w")) == NULL
+			|| format_init(c->format, c->fp) != 0)
 	{
 		if(c->arch != NULL)
 			arch_delete(c->arch);
