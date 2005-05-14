@@ -39,7 +39,7 @@ with the following criteria. The concerned software includes at least the
 following (unless explictly mentionned by the author):
 - every software contained in the project "DeforaOS".
 - every software distributed on the DeforaOS project website,
-  "http://www.defora.org", belonging to the author.
+  "http://www.defora.org/", belonging to the author.
 
 
 1. Free Redistribution
@@ -118,8 +118,8 @@ style or interface.
 The license for the documentation will certainly be more restrictive. It is currently:
 				</para>
 			<itemizedlist>
-				<listitem><para>any public documentation written about the project has to be submitted for approval to the project developpers.</para></listitem>
-				<listitem><para>anyone may write and submit documentation.</para></listitem>
+				<listitem><para>any public documentation written about the project has to be submitted for approval to the project developpers;</para></listitem>
+				<listitem><para>anyone may write and submit documentation;</para></listitem>
 				<listitem><para>public documentation may be used freely as long as it remains synchronized and unmodified from the one on the project website, and it contains at least one link, on the frontmatter, pointing to the address of the official version on the project website.</para></listitem>
 			</itemizedlist>
 			</sect3>
@@ -136,8 +136,8 @@ License terms for other kind of files used in the project are licensed individua
 The philosophy carried with the project licenses is to give as much freedom as possible to its users. They are basically allowed to use, distribute, and study without permission the concerned software. Two important points are mentioned though:
 			</para>
 			<itemizedlist>
-				<listitem><para>modifications should be submitted to the current authors of the project, so that they can benefit to everyone</para></listitem>
-				<listitem><para>consequently, forks of concerned software, contained in this project, should not be started (so that development efforts can be shared as much as possible)</para></listitem>
+				<listitem><para>modifications should be submitted to the current authors of the project, so that they can benefit to everyone;</para></listitem>
+				<listitem><para>consequently, forks of concerned software, contained in this project, should not be started (so that development efforts can be shared as much as possible).</para></listitem>
 			</itemizedlist>
 			<para>
 These points are not absolutely mandatory because I am convinced that the free (as of freedom) software development model is the best, even if as a software author I can't guarantee that I'll get rewarded for my work. In case of abuse of concerned software, I will certainly change this project license terms.
@@ -149,9 +149,9 @@ These points are not absolutely mandatory because I am convinced that the free (
 Of course I am not supporting free software without a reason. There are even many actually, which I can sum up here:
 			</para>
 			<itemizedlist>
-				<listitem><para>interoperability: availability of the source code, transparency of the development process, and whenever possible strict adherence to the standards guarantee the users that they will be able to work even in heterogeneous environments.</para></listitem>
-				<listitem><para>security: availability of the source code guarantees that the software is exempt of intentional malicious code, and is possibly being used or auditable by competent persons.</para></listitem>
-				<listitem><para>perennity: availability of the source code guarantees that the software can be supported by third-party organisms at any time, and in a fair competition environment.</para></listitem>
+				<listitem><para>interoperability: availability of the source code, transparency of the development process, and whenever possible strict adherence to the standards guarantee the users that they will be able to work even in heterogeneous environments;</para></listitem>
+				<listitem><para>security: availability of the source code guarantees that the software is exempt of intentional malicious code, and is possibly being used or auditable by competent persons;</para></listitem>
+				<listitem><para>perennity: availability of the source code guarantees that the software can be supported by third-party organisms at any time, and in a fair competition environment;</para></listitem>
 				<listitem><para>independance: the project is not related in any way to any software or hardware vendor, even though donations can be accepted (and improve hardware support for instance) the project decisions will not be influenced this way.</para></listitem>
 			</itemizedlist>
 			<para>
@@ -254,19 +254,20 @@ First, I want to avoid as much as possible to use assembly code. This is for obv
 I am also thinking about using C in the whole base system:
 			</para>
 			<itemizedlist>
-				<listitem><para>Ada: no, but it could be very interesting</para></listitem>
-				<listitem><para>Assembly: no, long to write, too close to the machine</para></listitem>
+				<listitem><para>Ada: no; it could be very interesting, but not close enough to the hardware;</para></listitem>
+				<listitem><para>Assembly: no, long to write, too close to the machine;</para></listitem>
 				<listitem><para>C: yes, simpler to implement (and kind of mandatory anyway), few keywords, total liberty in APIs definitions, even if lacks exceptions, and is too close to the assembly language (then again we can handle the machine limits, ...if we think each time about each possibility)</para></listitem>
-				<listitem><para>C++: no, bloat, hell to implement</para></listitem>
-				<listitem><para>C#: no, I still have to look better at it</para></listitem>
-				<listitem><para>D: no, doesn't look mature yet</para></listitem>
-				<listitem><para>Java: no (virtual machine, verbosity of the language, classes names, ...)</para></listitem>
-				<listitem><para>Objective C: no, though certainly interesting, but I find the syntax cryptic</para></listitem>
-				<listitem><para>Perl: no, interpreter</para></listitem>
-				<listitem><para>Python: no, interpreter</para></listitem>
+				<listitem><para>C++: no, bloat, hell to implement;</para></listitem>
+				<listitem><para>C#: no, I still have to look better at it;</para></listitem>
+				<listitem><para>D: no, doesn't look mature yet;</para></listitem>
+				<listitem><para>Haskell: no, I am not convinced by functional languages here;</para></listitem>
+				<listitem><para>Java: no (virtual machine, verbosity of the language, classes names, ...);</para></listitem>
+				<listitem><para>Objective C: no, though certainly interesting, but I find the syntax cryptic;</para></listitem>
+				<listitem><para>Perl: no, interpreted;</para></listitem>
+				<listitem><para>Python: no, interpreted;</para></listitem>
 			</itemizedlist>
 			<para>
-And also, as I care about coherence, the APIs in every language will be directly derived from a common definition, up to the point that every language would stick to its syntax, but could be compiled and linked against objects written in another one. If this is possible of course. Everything helping portability and interoperability will be appreciated.
+And also, as I care about coherence, the APIs in every language will be directly derived from a common definition, up to the point that every language would stick to its syntax, but could be compiled and linked against objects written in another one. If this is possible of course. Everything helping portability and interoperability will be appreciated, even though coherence in between languages supported by the platform is the primary objective.
 			</para>
 		</sect2>
 		<sect2>
@@ -299,7 +300,7 @@ Application engines actually do their job, and keep their state, without handlin
 Application interfaces are dedicated to the rendering and interaction with an application engine state. Ideally a given interface would propose identically either graphical, and text-mode graphical versions of the interface (and optionally a text only).
 				</para>
 				<para>
-The applications interfaces may detect the requested toolkit to use according to the availability of an environment variable ("DISPLAY" for instance), or by the result of an equivalent to the POSIX istty() call. Some applications may work with character streams as a fallback, typically like the UNIX filtering applications.
+The applications interfaces may detect the requested toolkit to use according to the availability of an environment variable ("DISPLAY" for instance), or by the result of an equivalent to the istty() call. Some applications may work with character streams as a fallback, typically like the UNIX filtering applications.
 				</para>
 			</sect3>
 			<sect3>
@@ -315,7 +316,7 @@ FIXME
 - client-side toolkit?
 -->
 			<para>
-The graphics library would be fully OpenGL compliant. It is not yet known how the clients will communicate with the graphical server. In case of a socket based communication (maybe implemented anyway to run on other OSes), instead of the current kernel based one, the network transparency will be straight-forward. It may not be efficient though... This will be decided later.
+The graphics library would be fully OpenGL compliant. The clients will certainly communicate with the graphical server like an Application Interface.
 			</para>
 			<para>
 About the graphical toolkit for applications, I insist that only one library will be supported, and binary compatible with the text mode toolkit. It may be more efficient to implement the toolkit on the server side, this will be decided later too.
