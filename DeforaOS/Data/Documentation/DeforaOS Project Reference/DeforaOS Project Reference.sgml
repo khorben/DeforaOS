@@ -12,12 +12,13 @@
 		<firstname>Pierre</firstname><surname>Pronchery</surname>
 		<affiliation>
 			<address>
-				<email>pierre@defora.org</email>
+				<email>khorben@defora.org</email>
 			</address>
 		</affiliation>
 	</author>
 	<copyright>
 		<year>2004</year>
+		<year>2005</year>
 		<holder>Pierre Pronchery</holder>
 	</copyright>
 </bookinfo>
