@@ -91,6 +91,9 @@ Function names are lower case.
 		</sect2>
 		<sect2>
 			<title>Validation process</title>
+			<para>
+Every project should be developped while taking care of this process:
+			</para>
 			<orderedlist>
 				<listitem><para>Make it just work</para></listitem>
 				<listitem><para>Audit</para></listitem>
@@ -100,6 +103,42 @@ Function names are lower case.
 				<listitem><para>If globally accepted, add selected features</para></listitem>
 				<listitem><para>Audit</para></listitem>
 			</orderedlist>
+			<para>
+The following versioning scheme would be used, to ease the development tracking of every project state coherently:
+			</para>
+			<table>
+				<title>Versioning policy</title>
+				<tgroup cols="2">
+					<thead>
+						<row>
+							<entry>Version</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>0.0.x</entry>
+							<entry>When the project just begins. Say x equals 0 without any functionality, 1 for early usage and user input handling, and increments upon successive versions.</entry>
+						</row>
+						<row>
+							<entry>0.x.y</entry>
+							<entry>Where x increments when the project hits new milestones. First y equals 0, and then increments upon successive versions.</entry>
+						</row>
+						<row>
+							<entry>1.0.y</entry>
+							<entry>Stable and complete version is reached, without any additional feature. Just like above, y first equals 0, and then increments upon successive versions.</entry>
+						</row>
+						<row>
+							<entry>1.x.y</entry>
+							<entry>If there is a need for a new design of the stable version, x gets incremented every time, and then y upon successive revisions.</entry>
+						</row>
+						<row>
+							<entry>x.y.z</entry>
+							<entry>Then on, every set of new functionalities increases x (starting at 2), then y upon design reviews, and z upon successive revisions (both starting at 0)</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
 		</sect2>
 	</sect1>
 	<sect1>
