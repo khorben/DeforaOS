@@ -10,8 +10,15 @@
 		<div class="explorer">
 			<form action="explorer.php" method="post">
 				<div class="toolbar">
-					<img src="icons/16x16/select_all.png" alt="select all" onclick="select_all()"/>
+					<img src="icons/16x16/back.png" alt="back" onclick="history.back()"/>
+					<a href="explorer.php?folder=<? echo html_safe(dirname($folder)); ?>"><img src="icons/16x16/updir.png" alt="up one directory"/></a>
+					<img src="icons/16x16/forward.png" alt="forward" onclick="history.forward()"/>
 					<img src="icons/16x16/refresh.png" alt="refresh" onclick="location.reload()"/>
+					<div class="separator"></div>
+					<a href="newdir.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/newdir.png" alt="create directory" onclick="return popup('newdir.php?folder=<? echo html_safe($folder); ?>')"/></a>
+					<div class="separator"></div>
+					<img src="icons/16x16/select_all.png" alt="select all" onclick="select_all()"/>
+					<div class="separator"></div>
 					<img src="icons/16x16/print.png" alt="print" onclick="print()"/>
 					<div class="separator"></div>
 					<img src="icons/16x16/details.png" alt="details" onclick="change_class('explorer_listing', 'listing_details')"/>
@@ -22,9 +29,9 @@
 					<div class="header">
 						<div class="icon"></div>
 						<? explorer_sort($folder, 'name', $sort, $reverse); ?>
-						<? explorer_sort($folder, 'permissions', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'owner', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'group', $sort, $reverse); ?>
+						<? explorer_sort($folder, 'permissions', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'size', $sort, $reverse); ?>
 						<? explorer_sort($folder, 'date', $sort, $reverse); ?>
 					</div>

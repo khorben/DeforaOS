@@ -72,10 +72,17 @@ function entry_click(nb, event)
 }
 
 
+function popup(url)
+{
+	var p = window.open(url, 'popup', 'height=200, width=300');
+	if(p.focus)
+		p.focus();
+	return false;
+}
+
+
 function select_all()
 {
-	var ckbox;
-
 	_entry_click_last = 0;
 	for(var i = 0; _entry_set(i, 1) == 0; i++);
 }
@@ -83,8 +90,6 @@ function select_all()
 
 function unselect_all()
 {
-	var ckbox;
-
 	_entry_click_last = 0;
 	for(var i = 0; _entry_set(i, 0) == 0; i++);
 }

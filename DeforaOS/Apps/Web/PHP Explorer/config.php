@@ -28,4 +28,7 @@ $hidden = 1;
 //enable actual images as thumbnails
 $thumbnails = 0;
 
+//enable uploading functions
+$upload = 1;
+
 ?>
