@@ -1,98 +1,120 @@
 <?php
-//Copyright 2004 Pierre Pronchery
-//This file is part of DaPortal
-//
-//DaPortal is free software; you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation; either version 2 of the License, or
-//(at your option) any later version.
-//
-//DaPortal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with DaPortal; if not, write to the Free Software
-//Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//system/sql.php
 
 
 
 //check url
-if(eregi("sql.php", $_SERVER["REQUEST_URI"]))
+if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+	exit(header('Location: ../index.php'));
+
+
+function _query($query)
 {
-	header("Location: ../index.php");
-	exit(1);
-}
+	global $dbtype, $_pg_res;
 
-
-function sql_connect($dbhost, $dbport, $dbname, $dbuser, $dbpassword)
-{
-	global $connection;
-
-	$str = "";
-	if($dbhost != "")
-		$str.="host=".$dbhost;
-	if($dbport != "")
-		$str.=" port=".$dbport;
-	if($dbname != "")
-		$str.=" dbname='".$dbname."'";
-	if($dbuser != "")
-		$str.=" user='".$dbuser."'";
-	if($dbpassword != "")
-		$str.=" password='".$dbpassword."'";
-	if(!$connection = @pg_connect($str))
-		return -1;
-	return 0;
-}
-
-
-function sql_query($query)
-{
-	global $connection;
-
-	if(version_compare(phpversion(), "4.2.0", "<"))
+	_info($query);
+	switch($dbtype)
 	{
-		if(($res = @pg_exec($query)) == FALSE)
-			return FALSE;
+		case 'mysql':
+			return @mysql_query($query);
+		case 'pgsql':
+			$_pg_res = @pg_query($query);
+			if(strlen($str = @pg_last_error()))
+				_error($str);
+			return $_pg_res;
 	}
-	else
+}
+
+
+function _sql_array($query)
+{
+	global $dbtype;
+
+	if(($res = _query($query)) == FALSE)
+		return FALSE;
+	$array = array();
+	for(;; $array[] = $a)
 	{
-		if(($res = @pg_query($query)) == FALSE)
-			return FALSE;
+		switch($dbtype)
+		{
+			case 'mysql':
+				$a = mysql_fetch_array($res);
+				break;
+			case 'pgsql':
+				$a = pg_fetch_array($res);
+				break;
+		}
+		if($a == FALSE)
+			break;
 	}
-	if(version_compare(phpversion(), "4.3.0", "<"))
+	return $array;
+}
+
+
+function _sql_enum($table, $field)
+{
+	$str = sql_array('SHOW COLUMNS FROM '.$table." LIKE '$field';");
+	$str = ereg_replace("^enum\('(.*)'\)$", '\1', $str[0]['Type']);
+	return split("[']?,[']?", $str);
+}
+
+
+function _sql_id($table, $field)
+{
+	global $dbtype, $_pg_res;
+
+	switch($dbtype)
 	{
-		while($row = pg_fetch_array($res))
-			$array[] = $row;
-		return $array;
+		case 'mysql':
+			return mysql_insert_id();
+		case 'pgsql':
+			return _sql_single("SELECT currval('".$table
+					."_".$field."_seq');");
 	}
-	return pg_fetch_all($res);
 }
 
 
-//tables
-function sql_table_create($table, $query)
+function _sql_query($query)
 {
-	sql_query("create table ".$table." ".$query.";");
+	return _query($query);
 }
 
-function sql_table_drop($table)
+
+function _sql_single($query)
 {
-	sql_query("drop table ".$table.";");
+	global $dbtype;
+
+	$res = _sql_query($query);
+	if($res == FALSE)
+		return FALSE;
+	switch($dbtype)
+	{
+		case 'mysql':
+			if(mysql_num_rows($res) != 1 || mysql_num_fields($res) != 1)
+				return FALSE;
+			return mysql_result($res, 0);
+		case 'pgsql':
+			if(pg_num_rows($res) != 1 || pg_num_fields($res) != 1)
+				return FALSE;
+			return pg_fetch_result($res, 0, 0);
+	}
 }
 
 
-//sequences
-function sql_sequence_create($sequence)
+//main
+global $dbtype, $dbhost, $dbuser, $dbpassword, $dbname;
+require_once('system/debug.php');
+switch($dbtype)
 {
-	sql_query("create sequence ".$sequence.";");
+	case 'mysql':
+		$connection = @mysql_connect($dbhost, $dbuser, $dbpassword)
+				&& mysql_select_db($dbname, $connection);
+		break;
+	case 'pgsql':
+		$connection = @pg_connect("user='$dbuser' password='$dbpassword'");
+		break;
 }
-
-function sql_sequence_drop($sequence)
-{
-	sql_query("drop sequence ".$sequence.";");
-}
-
+if($connection == FALSE)
+	_error('Unable to connect to SQL server');
 
 ?>

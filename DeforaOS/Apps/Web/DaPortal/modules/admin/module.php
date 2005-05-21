@@ -1,203 +1,128 @@
 <?php
-//Copyright 2004 Pierre Pronchery
-//This file is part of DaPortal
-//
-//DaPortal is free software; you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation; either version 2 of the License, or
-//(at your option) any later version.
-//
-//DaPortal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with DaPortal; if not, write to the Free Software
-//Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//modules/admin/module.php
 
 
 
 //check url
-if(eregi('module.php', $_SERVER['REQUEST_URI']))
+if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+	exit(header('Location: ../../index.php'));
+require_once('system/user.php');
+
+
+function _content_modify($id)
 {
-	header('Location: ../../index.php');
-	exit(1);
+	if(!is_numeric($id))
+		return _error('Invalid content');
+	$content = _sql_array('SELECT timestamp, title, content, enabled'
+			.' FROM daportal_content'
+			." WHERE content_id='$id';");
+	if(!is_array($content) || count($content) != 1)
+		return _error('Invalid content');
+	$content = $content[0];
+	include('content_update.tpl');
 }
 
 
-function admin_admin()
+function admin_content($args)
 {
-	global $administrator;
+	global $user_id;
 
-	print("\t\t<h1>Administration</h1>\n");
-	if($administrator != 1)
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(isset($args['id']))
+		return _content_modify($args['id']);
+	print('<h1><img src="modules/admin/icon.png" alt=""/> Contents administration</h1>'."\n");
+	$contents = _sql_array('SELECT content_id AS id, timestamp AS date'
+			.', name AS module, username, title AS name'
+			.', daportal_content.enabled'
+			.' FROM daportal_content, daportal_module'
+			.', daportal_user'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' ORDER BY timestamp DESC;');
+	if(!is_array($contents))
+		return _error('Could not list contents');
+	$count = count($contents);
+	for($i = 0; $i < $count; $i++)
 	{
-		print("\t\t<p>You have to be an administrator to access this page.</p>\n");
-		return 0;
+		$contents[$i]['icon'] = 'modules/'.$contents[$i]['module']
+				.'/icon.png';
+		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
+		$contents[$i]['module'] = 'admin';
+		$contents[$i]['action'] = 'content';
+/*		$contents[$i]['date'] = date('l, F jS Y, H:i',
+				strtotime($contents[$i]['date'])); */
 	}
-	print("\t\t<h2>Installed modules</h2>\n");
-	$installed = array();
-	if(($res = sql_query("select moduleid, modulename, enable from daportal_modules order by modulename asc;")) == FALSE)
-		print("\t\t<p>Not any module installed.</p>\n");
-	else
-	{
-		print("\t\t<form method=\"post\" action=\"index.php\">
-<div class=\"headline\">
-\t<input type=\"submit\" name=\"type\" value=\"Enable\"/>
-\t<input type=\"submit\" name=\"type\" value=\"Disable\"/>
-\t<input type=\"submit\" name=\"type\" value=\"Uninstall\"/>
-\t<input type=\"hidden\" name=\"module\" value=\"admin\"/>
-\t<input type=\"hidden\" name=\"action\" value=\"modules\"/>
-</div>
-<table>
-\t<tr><th></th><th>Module</th><th>ID</th><th>Enabled</th></tr>\n");
-		$i = 0;
-		while(sizeof($res) >= 1)
-		{
-			$module = $res[0]['modulename'];;
-			$installed[$module] = 1;
-			if($res[0]['enable'] == 't')
-				$module = "<a href=\"index.php?module=$module&amp;action=admin\">$module<a>";
-			print("\t<tr><td><input type=\"checkbox\" name=\"id[".($i++)."]\" value=\"".$res[0]['moduleid']."\"/></td><td>$module</td><td>".$res[0]['moduleid']."</td><td>".($res[0]['enable'] == 't' ? 'Yes' : 'No')."</td></tr>\n");
-			array_shift($res);
-		}
-		print("</table>
-\t\t</form>\n");
-	}
-	print("\t\t<h2>Uninstalled modules</h2>
-\t\t<form method=\"post\" action=\"index.php\">
-<div class=\"headline\">
-\t<input type=\"submit\" name=\"type\" value=\"Install\"/>
-\t<input type=\"hidden\" name=\"module\" value=\"admin\"/>
-\t<input type=\"hidden\" name=\"action\" value=\"modules\"/>
-</div>");
-	if(($dir = opendir('modules')) == FALSE)
-		print("\t\t<p>Not any module available.</p>\n");
-	else
-	{
-		print("<table>
-\t<tr><th></th><th>Module</th></tr>\n");
-		readdir($dir);
-		readdir($dir);
-		$i = 0;
-		while(($dirname = readdir($dir)) != FALSE)
-		{
-			if(!is_dir('modules/'.$dirname)
-					|| !is_file('modules/'.$dirname.'/module.php'))
-				continue;
-			if($installed[$dirname] == 1)
-				continue;
-			print("\t<tr><td><input type=\"checkbox\" name=\"id[".($i++)."]\" value=\"$dirname\"/></td><td>$dirname</td></tr>\n");
-		}
-		print("</table>\n");
-	}
-	print("\t\t</form>\n");
-	return 0;
+	_module('explorer', 'browse', array(
+			'class' => array('date' => 'Date'),
+			'entries' => $contents,
+			'view' => 'details'));
+}
+
+
+function admin_content_update($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(_sql_query('UPDATE daportal_content SET '
+			." title='".$args['title']."'"
+			.", content='".$args['content']."'"
+			.", enabled='".$args['enabled']."'"
+			." WHERE content_id='".$args['id']."';") == FALSE)
+		_error();
+	_content_modify($args['id']);
 }
 
 
 function admin_default()
 {
-	global $administrator;
+	global $user_id;
 
-	print("\t\t<h1><img src=\"modules/admin/icon.png\" alt=\"admin\"/>Administration</h1>\n");
-	if($administrator != 1)
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(!_sql_single('SELECT admin FROM daportal_user'
+			." WHERE user_id='$user_id';"))
+		return error('Permission denied');
+	include('default.tpl');
+}
+
+
+function admin_module($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(isset($args['id']))
+		return _module_admin($args['id']);
+	print('<h1><img src="modules/admin/icon.png" alt=""/> Modules administration</h1>'."\n");
+	if(($modules = _sql_array('SELECT module_id, name, enabled'
+			.' FROM daportal_module'
+			.' ORDER BY enabled DESC, name ASC;')) == FALSE)
+		return _error('Could not list modules');
+	$count = count($modules);
+	for($i = 0; $i < $count; $i++)
 	{
-		print("\t\t<div>You have to be an administrator to access this page.</div>\n");
-		return 0;
+		$name = $modules[$i]['name'];
+		$modules[$i]['icon'] = 'modules/'.$name.'/icon.png';
+		$modules[$i]['thumbnail'] = 'modules/'.$name.'/icon.png';
+		$modules[$i]['name'] = ucfirst($name);
+		$modules[$i]['module'] = $name;
+		$modules[$i]['action'] = 'admin';
 	}
-	print("\t\t<h2>Modules administration</h2>
-\t\t<div class=\"headline\">\n");
-	if(($res = sql_query("select modulename from daportal_modules where enable='1' order by modulename asc;")) != FALSE)
-	{
-		while(sizeof($res) >= 1)
-		{
-			$modulename = $res[0]['modulename'];
-			print("\t\t\t<div style=\"display: inline\">
-\t\t\t\t<a href=\"index.php?module=".$modulename."&amp;action=admin\">\n");
-			if(file_exists('modules/'.$modulename.'/icon.png'))
-				print("\t\t\t\t\t<div style=\"display: table-row\"><img src=\"modules/".$modulename."/icon.png\" alt=\"".$modulename."\"/></div>\n");
-			print("\t\t\t\t\t<div style=\"display: table-row; text-align: center\">$modulename</div>
-\t\t\t\t</a>
-\t\t\t</div>\n");
-			array_shift($res);
-		}
-	}
-	print("\t\t</div>\n");
-	return 0;
+	_module('explorer', 'browse', array('entries' => $modules));
 }
 
 
-function admin_dump()
+function admin_site($args)
 {
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
+	//FIXME remember exactly what I wanted to do here:
+	//- virtual hosts? with database switching?
+	//- ...?
+	print('<h1><img src="modules/admin/icon.png" alt=""/> Sites administration</h1>'."\n");
 }
-
-
-function admin_install()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
-
-function admin_modules()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	$id = $_POST['id'];
-	while(sizeof($id) >= 1)
-	{
-		$module = array_shift($id);
-		switch($_POST['type'])
-		{
-			case 'Enable':
-			case 'Disable':
-				if(!is_numeric($module))
-					return 1;
-				sql_query("update daportal_modules set enable='".($_POST['type'] == 'Enable' ? 1 : 0)."' where moduleid='$module';");
-				break;
-			case 'Install':
-				if(!ereg("^[a-z]{1,9}$", $module))
-					return 1;
-				if(module_id($module, -1) != 0)
-					return 1;
-				module_install($module);
-				break;
-			case 'Uninstall':
-				if(!is_numeric($module))
-					return 1;
-				if(($name = module_name($module, -1)) == FALSE)
-					return 1;
-				module_uninstall($name);
-				break;
-			default:
-				return 1;
-		}
-	}
-	Header('Location: index.php?module=admin&action=admin');
-	return 0;
-}
-
-
-function admin_uninstall()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	return 0;
-}
-
 
 ?>

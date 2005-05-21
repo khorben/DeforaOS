@@ -1,456 +1,122 @@
 <?php
-//Copyright 2004 Pierre Pronchery
-//This file is part of DaPortal
-//
-//DaPortal is free software; you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation; either version 2 of the License, or
-//(at your option) any later version.
-//
-//DaPortal is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//GNU General Public License for more details.
-//
-//You should have received a copy of the GNU General Public License
-//along with DaPortal; if not, write to the Free Software
-//Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//modules/news/module.php
 
 
 
 //check url
-if(eregi('module.php', $_SERVER['REQUEST_URI']))
+if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+	exit(header('Location: ../../index.php'));
+
+
+define(DATE_FORMAT, 'l, F jS Y, H:i');
+
+
+function _news_insert($news)
 {
-	header('Location: ../../index.php');
-	exit(1);
+	global $user_id;
+
+	if(!$user_id)
+		return _error('Permission denied');
+	require_once('system/content.php');
+	return _content_insert($news['title'], $news['content']);
 }
 
 
-//count available news
-//PRE	$enable		0	count disabled news
-//			1	count enabled news
-//			else	every news
-//POST		>= 0	success
-//		-1	error
-function count_news($enable)
+function news_admin($args)
 {
-	global $moduleid;
+	global $user_id;
 
-	$query = 'select count(*) from daportal_news, daportal_contents where moduleid=\''.$moduleid.'\' and contentid=newsid';
-	if($enable == 0 || $enable == 1)
-		$query .= ' and enable=\''.$enable.'\'';
-	if(($res = sql_query($query)) == FALSE)
-		return -1;
-	return $res[0]['count'];
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	print('<h1><img src="modules/news/icon.png" alt=""/> News administration</h1>'."\n");
 }
 
 
-function delete_news($id)
+function news_default($args)
 {
-	global $administrator;
-	require_once('system/contents.php');
-
-	if($administrator != 1)
-		return 1;
-	if(!is_numeric($id))
-		return 1;
-	if(sql_query("select newsid from daportal_news where newsid='$id';") == NULL)
-		return 1;
-	sql_query("delete from daportal_news where newsid='$id';");
-	contents_delete($id);
-	return 0;
+	if(isset($args['id']))
+		return news_display(array('id' => $args['id']));
+	return news_list($args);
 }
 
 
-function display($title, $author, $date, $content)
+function news_display($args)
 {
-	print("\t\t<div class=\"news\">
-\t\t\t<div class=\"news_title\">$title</div>
-\t\t\t<div class=\"news_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a> on ");
-	display_date($date);
-	print("</div>
-\t\t\t<div class=\"news_content\">$content</div>
-\t\t</div>\n");
+	require_once('system/content.php');
+	if(($news = _content_select($args['id'], 1)) == FALSE)
+		return _error('Invalid news');
+	if(($news['username'] = _sql_single('SELECT username'
+			.' FROM daportal_user'
+			." WHERE user_id='".$news['user_id']."';"))
+			== FALSE)
+		return _error('Invalid user');
+	$long = 1;
+	$title = $news['title'];
+	$news['date'] = date(DATE_FORMAT, strtotime($news['timestamp']));
+	include('news_display.tpl');
 }
 
 
-function display_admin($id, $title, $enable, $author, $date)
+function news_list($args)
 {
-	static $chk = 0;
-
-	print("\t\t\t<tr>
-\t\t\t\t<td><input type=\"checkbox\"".($enable ? "" : " checked=checked")." name=\"id[".$chk++."]\" value=\"$id\"\"/></td>
-\t\t\t\t<td><a href=\"index.php?module=news&amp;id=$id\">$title</a></td>
-\t\t\t\t<td><a href=\"index.php?module=news&amp;username=$author\">$author</a></td>
-\t\t\t\t<td>$date</td>
-\t\t\t\t<td>".($enable ? "Yes" : "No")."</td>
-\t\t\t</tr>\n");
-}
-
-
-function display_date($date)
-{
-	$date = explode('-', $date);
-	$date = mktime(0, 0, 0, $date[1], $date[2], $date[0]);
-	print(date('l, F jS Y', $date));
-}
-
-
-function display_summary($id, $title, $author, $date)
-{
-	print("\t\t<p class=\"news_summary\">
-\t\t\t<div class=\"news_summary_title\"><a href=\"index.php?module=news&amp;id=$id\">$title</a></div>
-\t\t\t<div class=\"news_summary_author\">Posted by <a href=\"index.php?module=news&amp;username=$author\">$author</a> on ");
-	display_date($date);
-	print("</div>
-\t\t</p>\n");
-}
-
-
-function news_admin()
-{
-	global $administrator, $moderator, $moduleid;
-	$npp = 10; //news per page
-
-	print("\t\t<h1>News administration</h1>\n");
-	if($administrator != 1 && $moderator != 1)
+	$title = 'News';
+	$where = '';
+	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
+			.' FROM daportal_user'
+			." WHERE user_id='".$args['user_id']."';")))
 	{
-		print("\t\t<p>Access denied.</p>\n");
-		return 0;
+		$title.=' by '.$username;
+		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	if(($count = count_news(-1)) == 0)
+	print('<h1><img src="modules/news/icon.png" alt=""/> '.$title.'</h1>'
+			."\n");
+	$res = _sql_array('SELECT content_id AS id, timestamp'
+			.', title, content, username'
+			.' FROM daportal_content, daportal_user'
+			.', daportal_module'
+			.' WHERE daportal_user.user_id=daportal_content.user_id'
+			." AND daportal_content.enabled='1'"
+			." AND daportal_module.name='news'"
+			.' AND daportal_module.module_id'
+			.'=daportal_content.module_id'
+			.$where
+			.' ORDER BY timestamp DESC;');
+	if(!is_array($res))
+		return _error('Unable to list news');
+	foreach($res as $news)
 	{
-		print("\t\t<p>There aren't any news yet.</p>\n");
-		return 0;
+		$news['date'] = date(DATE_FORMAT,
+				strtotime($news['timestamp']));
+		include('news_display.tpl');
 	}
-	$offset = is_numeric($_GET['offset']) ? $_GET['offset'] * $npp : 0;
-	if(($res = sql_query("select newsid, title, enable, date, username from daportal_contents, daportal_news, daportal_users where moduleid='$moduleid' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) == FALSE)
-	{
-		print("\t\t<p>No news to display.</p>\n");
-		return 0;
-	}
-	print("\t\t<h3>Listing news ".($offset + 1)." to ".min($offset + $npp, $count)."</h3>\n");
-	print("\t\t<form action=\"index.php\" method=\"post\">
-<div class=\"headline\">
-\t<input type=\"hidden\" name=\"module\" value=\"news\"/>
-\t<input type=\"hidden\" name=\"action\" value=\"moderate\"/>\n");
-	if($administrator == 1)
-		print("\t<input type=\"submit\" name=\"type\" value=\"Delete\"/>\n");
-	print("\t<input type=\"submit\" name=\"type\" value=\"Disable\"/>
-\t<input type=\"submit\" name=\"type\" value=\"Enable\"/>
-</div>
-<table>
-\t<tr>
-\t\t<th></th>
-\t\t<th>Title</th>
-\t\t<th>Author</th>
-\t\t<th>Date</th>
-\t\t<th>Enabled</th>
-\t<tr/>\n");
-	while(sizeof($res) >= 1)
-	{
-		display_admin($res[0]['newsid'],
-				$res[0]['title'],
-				$res[0]['enable'] == 't',
-				$res[0]['username'],
-				$res[0]['date']);
-		array_shift($res);
-	}
-	print("</table>
-\t\t</form>\n");
-	print("\t\t<p>Page: ");
-	if($_GET['offset'] == 0)
-		print('1');
-	else
-		print('<a href="index.php?module=news&amp;action=admin&amp;offset=0">1</a>');
-	for($i = 1; $i < $count / $npp; $i++)
-	{
-		if($i == $_GET['offset'])
-			print(' | '.($i+1));
-		else
-			print(" | <a href=\"index.php?module=news&amp;action=admin&amp;offset=$i\">".($i+1).'</a>');
-	}
-	print("</p>\n");
-	return 0;
 }
 
 
-function news_default()
+function news_submit($news)
 {
-	print("\t\t<h1><img src=\"modules/news/icon.png\" alt=\"news\"/>News");
-	if(is_numeric($_GET['id']))
+	global $user_id, $user_name;
+
+	if(!$user_id)
+		return _error('Permission denied');
+	if(isset($news['preview']))
 	{
-		print("</h1>\n");
-		return news_id($_GET['id']);
+		$long = 1;
+		$title = 'News preview';
+		$news['user_id'] = $user_id;
+		$news['username'] = $user_name;
+		$news['date'] = date(DATE_FORMAT);
+		include('news_display.tpl');
+		return include('news_update.tpl');
 	}
-	if($_GET['username'] != "" && ereg('^[a-z]{1,9}$', $_GET['username']))
+	if(!isset($news['send']))
 	{
-		print(' by '.$_GET['username']."</h1>\n");
-		return news_username($_GET['username']);
+		print('<h1><img src="modules/news/icon.png" alt=""/> News submission</h1>'."\n");
+		return include('news_update.tpl');
 	}
-	print(" summary</h1>
-\t\t<p>You can <a href=\"index.php?module=news&amp;action=propose\">propose news</a>.</p>\n");
-	return news_summary();
+	if(!_news_insert($news))
+		return _error('Could not insert news');
+	return include('news_posted.tpl');
 }
-
-
-function news_summary()
-{
-	global $moduleid;
-	$npp = 10; //news per page
-
-	if(($count = count_news(1)) == 0)
-	{
-		print("\t\t<p>There aren't any news yet.</p>\n");
-		return 0;
-	}
-	$offset = is_numeric($_GET['offset']) ? $_GET['offset'] * $npp : 0;
-	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where moduleid='$moduleid' and enable='1' and contentid=newsid and userid=author order by date desc limit $npp offset $offset;")) != FALSE)
-	{
-		$first = $offset + 1;
-		$last = $first + $npp - 1;
-		print("\t\t<h3>Listing news $first to ".min($last, $count)."</h3>\n");
-		while(sizeof($res) >= 1)
-		{
-			display($res[0]['title'],
-					$res[0]['username'],
-					$res[0]['date'],
-					$res[0]['content']);
-			array_shift($res);
-		}
-		print("\t\t<p>Page: ");
-		if($_GET['offset'] == 0)
-			print('1');
-		else
-			print('<a href="index.php?module=news&amp;offset=0">1</a>');
-		for($i = 1; $i < $count / $npp; $i++)
-		{
-			if($i == $_GET['offset'])
-				print(' | '.($i+1));
-			else
-				print(" | <a href=\"index.php?module=news&amp;offset=$i\">".($i+1).'</a>');
-		}
-		print("</p>\n");
-	}
-	return 0;
-}
-
-
-function news_dump()
-{
-	global $administrator, $moduleid;
-	require_once('system/contents.php');
-
-	if($administrator != 1)
-		return 0;
-	contents_dump();
-	if(($res = sql_query('select newsid, author, date from daportal_news;')) == NULL)
-		return 0;
-	while(sizeof($res) >= 1)
-	{
-		print("insert into daportal_news (newsid, author, date) values ('".$res[0]['newsid']."', '".$res[0]['author']."', '".$res[0]['date']."');\n");
-		array_shift($res);
-	}
-	return 0;
-}
-
-
-function news_id($id)
-{
-	global $administrator, $moderator;
-
-	$query = "select title, username, date, content from daportal_news, daportal_contents, daportal_users where contentid='$id' and newsid=contentid and author=userid";
-	if($administrator == 0 && $moderator == 0)
-		$query .= " and enable='1'";
-	if(($res = sql_query($query)) == FALSE)
-	{
-		print("\t\t<p>Unknown news.</p>\n");
-		return 0;
-	}
-	display($res[0]['title'], $res[0]['username'],
-			$res[0]['date'], $res[0]['content']);
-	return 0;
-}
-
-
-function news_install()
-{
-	global $administrator, $moduleid;
-
-	if($administrator != 1)
-		return 0;
-	sql_table_create('daportal_news', "(
-	newsid integer,
-	author integer,
-	date date NOT NULL DEFAULT ('now'),
-	FOREIGN KEY (newsid) REFERENCES daportal_contents (contentid),
-	FOREIGN KEY (author) REFERENCES daportal_users (userid)
-)");
-	return 0;
-}
-
-
-//PRE	$number is trusted
-function news_last($number)
-{
-	global $moduleid;
-
-	print("\t\t<h1>Latest news</h1>\n");
-	if(($res = sql_query("select title, username, date, content from daportal_news, daportal_contents, daportal_users where enable='1' and moduleid='$moduleid' and contentid=newsid and userid=author order by date desc limit $number;")) == NULL)
-	{
-		print("\t\t<p>There aren't any recent <a href=\"index.php?module=news\">news</a>.</p>\n");
-		return 0;
-	}
-	while(sizeof($res) >= 1)
-	{
-		display($res[0]['title'], $res[0]['username'],
-				$res[0]['date'], $res[0]['content']);
-		array_shift($res);
-	}
-	return 0;
-}
-
-
-function _moderate_delete()
-{
-	$id = $_POST['id'];
-	while(sizeof($id) >= 1)
-		delete_news(array_shift($id));
-	return 0;
-}
-
-function _moderate_disable()
-{
-	$id = $_POST['id'];
-	while(sizeof($id) >= 1)
-		contents_disable(array_shift($id));
-	return 0;
-}
-
-function _moderate_enable()
-{
-	$id = $_POST['id'];
-	while(sizeof($id) >= 1)
-		contents_enable(array_shift($id));
-	return 0;
-}
-
-function news_moderate()
-{
-	global $administrator, $moderator;
-	require_once('system/contents.php');
-
-	if($_SERVER['REQUEST_METHOD'] != 'POST')
-		return 0;
-	if($administrator != 1 && $moderator != 1)
-		return 0;
-	switch($_POST['type'])
-	{
-		case 'Delete':
-			_moderate_delete();
-			break;
-		case 'Disable':
-			_moderate_disable();
-			break;
-		case 'Enable':
-			_moderate_enable();
-			break;
-	}
-	header('Location: index.php?module=news&action=admin');
-	return 0;
-}
-
-
-function news_propose()
-{
-	global $userid;
-
-	print("\t\t<h1>News proposal</h1>\n");
-	if($userid == 0)
-	{
-		print("\t\t<p>
-\t\t\tYou must be <a href=\"index.php?module=user\">identified</a> to propose a news.
-\t\t</p>\n");
-		return 0;
-	}
-
-	print("\t\t<form method=\"post\" action=\"index.php\">
-\t\t\tTitle: <input type=\"text\" size=\"40\" name=\"title\"/><br/>
-\t\t\tContent:<br/>
-\t\t\t<textarea cols=\"80\" rows=\"10\" name=\"content\"></textarea><br/>
-\t\t\t<input type=\"submit\" value=\"Submit\"/>
-\t\t\t<input type=\"hidden\" name=\"module\" value=\"news\"/>
-\t\t\t<input type=\"hidden\" name=\"action\" value=\"submit\"/>
-\t\t</form>\n");
-	return 0;
-}
-
-
-function news_submit()
-{
-	global $moduleid, $userid;
-
-	if($userid == 0)
-		return 1;
-	$title = htmlentities($_POST['title']);
-	$content = htmlentities($_POST['content']);
-	$res = sql_query("select nextval('daportal_contents_contentid_seq');");
-	$contentid = $res[0]['nextval'];
-	sql_query("insert into daportal_contents (contentid, moduleid, title, content) values ('$contentid', '$moduleid', '$title', '$content');");
-	sql_query("insert into daportal_news (newsid, author) values ('$contentid', '$userid');");
-	header('Location: index.php?module=news&action=thanks');
-	exit(0);
-}
-
-
-function news_thanks()
-{
-	print("\t\t<h1>Thanks!</h1>
-\t\t<div>
-\t\t\tYour news has been submitted to the webmasters, they will check it as soon as possible. Thanks!
-\t\t</div>
-\t\t<div>
-\t\t\tReturn to the <a href=\"index.php\">main page</a>.
-\t\t</div>\n");
-	return 0;
-}
-
-
-function news_uninstall()
-{
-	global $administrator;
-
-	if($administrator != 1)
-		return 0;
-	//FIXME remove linked content in daportal_contents
-	sql_table_drop('daportal_news');
-	return 0;
-}
-
-
-//PRE	$username is a valid username
-function news_username($username)
-{
-	if(($res = sql_query("select newsid, title from daportal_news, daportal_contents, daportal_users where username='$username' and newsid=contentid and author=userid and enable='1';")) == FALSE)
-	{
-		print("\t\t<p>This user has never posted news</p>\n");
-		return 0;
-	}
-	print("\t\t<p>See <a href=\"index.php?module=user&amp;username=$username\">$username's user informations</a>.</p>\n");
-	$i = 1;
-	while(sizeof($res) >= 1)
-	{
-		$id = $res[0]['newsid'];
-		$title = $res[0]['title'];
-		print("\t\t<p>
-\t\t\t$i. <a href=\"index.php?module=news&amp;id=$id\">$title</a><br/>
-\t\t\t<i>".$_SERVER["SERVER_NAME"].$_SERVER["PHP_SELF"]."?module=news&amp;id=$id</i>
-\t\t</p>\n");
-		$i++;
-		array_shift($res);
-	}
-	return 0;
-}
-
 
 ?>
