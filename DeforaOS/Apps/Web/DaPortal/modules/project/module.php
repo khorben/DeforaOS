@@ -4,7 +4,8 @@
 
 
 //check url
-//FIXME
+if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+	exit(header('Location: ../../index.php'));
 
 
 function project_default($args)
@@ -31,8 +32,7 @@ function project_display($args)
 	$project = $project[0];
 	if($project['enabled'] != 't' && !_user_admin($user_id))
 		return include('project_submitted.tpl');
-	$title = strlen($project['title']) ? $project['title']
-			: $project['name'];
+	$title = $project['name'];
 	include('project_display.tpl');
 }
 
