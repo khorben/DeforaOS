@@ -25,6 +25,7 @@ if(eregi('install.php', $_SERVER['REQUEST_URI']))
 	exit(1);
 }
 
+exit(0); //FIXME DaPortal has been restarted from scratch
 require_once('system/raw.php');
 
 
