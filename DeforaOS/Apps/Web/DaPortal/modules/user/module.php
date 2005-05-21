@@ -47,14 +47,29 @@ function user_default($args)
 {
 	global $user_id, $user_name;
 
+	if(isset($args['id']))
+		return user_display($args);
 	if($user_id == 0)
 		return user_login($args);
 	if(($user = _sql_array('SELECT user_id, username, admin'
 			.' FROM daportal_user'
 			." WHERE user_id='$user_id';")) == FALSE)
-		return error('Invalid user');
+		return _error('Invalid user');
 	$user = $user[0];
 	include('user_homepage.tpl');
+}
+
+
+function user_display($args)
+{
+	if(!is_numeric($args['id']))
+		return _error('Invalid user ID');
+	if(($user = _sql_array('SELECT user_id, username'
+			.' FROM daportal_user'
+			." WHERE user_id='".$args['id']."';")) == FALSE)
+		return _error('Invalid user');
+	$user = $user[0];
+	include('user_display.tpl');
 }
 
 
