@@ -1,0 +1,105 @@
+/* modules/explorer/style.css */
+
+
+
+/* explorer */
+.explorer .toolbar img {
+	padding:		2px;
+}
+
+.explorer .toolbar .separator {
+	display:		inline;
+}
+
+.explorer .header {
+	font-weight:		bold;
+}
+
+.explorer .entry {
+	cursor:			default;
+}
+
+.explorer .entry .icon {
+	padding-left:		2px;
+	padding-right:		2px;
+}
+
+.explorer .entry .icon img {
+	max-height:		16px;
+	max-width:		16px;
+}
+
+/* explorer listing_details */
+.explorer .listing_details .entry div {
+	vertical-align:		middle;
+}
+
+.explorer .listing_details {
+	display:		table;
+	width:			100%;
+}
+
+.explorer .listing_details .header {
+	display:		table-row;
+}
+
+.explorer .listing_details .header div {
+	display:		table-cell;
+}
+
+.explorer .listing_details .entry {
+	display:		table-row;
+}
+
+.explorer .listing_details .entry div {
+	display:		table-cell;
+	white-space:		nowrap;
+}
+
+.explorer .listing_details .entry .thumbnail {
+	display:		none;
+}
+
+/* explorer listing_list */
+.explorer .listing_list .header {
+	display:		none;
+}
+
+.explorer .listing_list .entry {
+	float:			left;
+}
+
+.explorer .listing_list .entry div {
+	display:		none;
+}
+
+.explorer .listing_list .entry .icon {
+	display:		inline;
+}
+
+.explorer .listing_list .entry .name {
+	display:		inline;
+	vertical-align:		top;
+}
+
+/* explorer listing_thumbnails */
+.explorer .listing_thumbnails .header {
+	display:		none;
+}
+
+.explorer .listing_thumbnails .entry {
+	float:			left;
+}
+
+.explorer .listing_thumbnails .entry div {
+	display:		none;
+}
+
+.explorer .listing_thumbnails .entry .name {
+	display:		block;
+	text-align:		center;
+}
+
+.explorer .listing_thumbnails .entry .thumbnail {
+	display:		block;
+}
