@@ -24,6 +24,10 @@ function top_admin($args)
 	$last_id = 0;
 	for($i = 0; $i < $count; $i++)
 	{
+		/* $links[$i]['icon'] = ereg('^http://[^/]+/$',
+				$links[$i]['url'])
+				? _html_safe($links[$i]['url']).'favicon.png'
+				: 'modules/top/icon.png'; */
 		$links[$i]['icon'] = 'modules/top/icon.png';
 		$links[$i]['thumbnail'] = 'modules/top/icon.png';
 		$links[$i]['link'] = 'index.php?module=top&action=modify&id='
