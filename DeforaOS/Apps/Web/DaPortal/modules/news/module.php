@@ -53,7 +53,8 @@ function news_display($args)
 		return _error('Invalid user');
 	$long = 1;
 	$title = $news['title'];
-	$news['date'] = date(DATE_FORMAT, strtotime($news['timestamp']));
+	$news['date'] = date(DATE_FORMAT, strtotime(substr($news['timestamp'],
+					0, 19)));
 	include('news_display.tpl');
 }
 
@@ -90,7 +91,7 @@ function news_list($args)
 	foreach($res as $news)
 	{
 		$news['date'] = date(DATE_FORMAT,
-				strtotime($news['timestamp']));
+				strtotime(substr($news['timestamp'], 0, 19)));
 		include('news_display.tpl');
 	}
 }
