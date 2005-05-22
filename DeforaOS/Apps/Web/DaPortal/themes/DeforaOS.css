@@ -2,7 +2,7 @@ html {
 	background-color:		#636363;
 }
 
-html, input, select, table, textarea {
+html, button, input, select, table, textarea {
 	color:				#000000;
 	font-family:			bitstream vera sans, sans-serif;
 	font-size:			10pt;
@@ -48,9 +48,11 @@ img {
 	vertical-align:			text-bottom;
 }
 
-input, select, textarea {
+button, input, select, textarea {
 	background-color:		#959595;
 	border:				1px solid #636363;
+	border-left:			1px solid #959595;
+	border-top:			1px solid #959595;
 }
 
 p {
