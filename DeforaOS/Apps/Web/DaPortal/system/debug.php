@@ -44,15 +44,15 @@ function _error($message, $visible = 1)
 }
 
 
-function _info($message)
+function _info($message, $visible = 0)
 {
-	_debug_message('info', $message);
+	_debug_message('info', $message, $visible);
 }
 
 
-function _warning($message)
+function _warning($message, $visible = 0)
 {
-	_debug_message('warning', $message);
+	_debug_message('warning', $message, $visible);
 }
 
 ?>
