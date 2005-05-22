@@ -3,7 +3,7 @@
 
 
 
-$title = 'Search engine';
+$title = 'Search';
 $list = 1;
 
 
