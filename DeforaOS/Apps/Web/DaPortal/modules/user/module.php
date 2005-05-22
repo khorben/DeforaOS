@@ -35,7 +35,7 @@ function user_admin($args)
 		return _error('Permission denied');
 	if(isset($args['id']))
 		return _modify($args['id']);
-	print('<h1><img src="module/user/icon.png" alt=""/> Users administration</h1>'."\n");
+	print('<h1><img src="modules/user/icon.png" alt=""/> Users administration</h1>'."\n");
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.' FROM daportal_user'
 			.' ORDER BY name ASC;');
