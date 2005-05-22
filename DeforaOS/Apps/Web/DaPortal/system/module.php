@@ -29,12 +29,12 @@ function _module($module = '', $action = '', $args = FALSE)
 		$action = strlen($action) ? $action : $_POST['action'];
 	}
 	else
-		return _error('Invalid module request');
+		return _error('Invalid module request', 0);
 	if(!strlen($action))
 		$action = 'default';
 	if(($id = _sql_single('SELECT module_id FROM daportal_module'
 			." WHERE name='".$module."' AND enabled='1'")) == FALSE)
-		return _error('Invalid module');
+		return _error('Invalid module', 0);
 	$module_id = $id;
 	$module_name = $module;
 	if(!include_once('modules/'.$module_name.'/module.php'))

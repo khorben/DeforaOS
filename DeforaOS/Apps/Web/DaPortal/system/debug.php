@@ -24,18 +24,23 @@ function _debug()
 
 //PRE
 //	$level is trusted
-function _debug_message($level, $message)
+function _debug_message($level, $message, $visible = 0)
 {
-	global $debug_messages;
+	global $debug_messages, $html;
 
 	$debug_messages.="\t".'<div class="'.$level.'"><b>'.(ucfirst($level))
 			.':</b> '.htmlspecialchars($message)."</div>\n";
+	if($visible && $html)
+		print('<div class="debug"><div class="visible error">'
+				.' <img src="images/'.$level.'.png"'
+				.' alt="error"/>'.htmlspecialchars($message)
+				."</div></div>\n");
 }
 
 
-function _error($message)
+function _error($message, $visible = 1)
 {
-	_debug_message('error', $message);
+	_debug_message('error', $message, $visible);
 }
 
 
