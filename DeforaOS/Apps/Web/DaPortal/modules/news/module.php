@@ -61,15 +61,18 @@ function news_display($args)
 function news_list($args)
 {
 	$title = 'News';
+	$level = 1;
 	$where = '';
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 	{
 		$title.=' by '.$username;
+		$level = 2;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h1><img src="modules/news/icon.png" alt=""/> '.$title.'</h1>'
+	print('<h'.$level.'><img src="modules/news/icon.png" alt=""/> '
+			.$title.'</h'.$level.'>'
 			."\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp'
 			.', title, content, username'

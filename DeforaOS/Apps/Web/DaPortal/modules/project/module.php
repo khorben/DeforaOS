@@ -65,10 +65,19 @@ function project_list($args)
 {
 	global $module_id;
 
-	print('<h1><img src="modules/project/icon.png" alt=""/> Projects list</h1>'."\n");
+	$title = 'Projects list';
+	$level = 1;
 	$where = '';
-	if(isset($args['user_id']))
+	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
+			." FROM daportal_user WHERE user_id='".$args['user_id']
+			."';")) != FALSE)
+	{
+		$title = 'Projects by '.$username;
+		$level = 2;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
+	}
+	print('<h'.$level.'><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($title).'</h'.$level.'>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin'
 			.' FROM daportal_content, daportal_user'
