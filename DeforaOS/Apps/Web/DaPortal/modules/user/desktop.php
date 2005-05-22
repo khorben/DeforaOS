@@ -8,7 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
-$title = 'User';
+$title = 'Users';
 $list = 1;
 global $user_id;
 if($user_id != 0)
