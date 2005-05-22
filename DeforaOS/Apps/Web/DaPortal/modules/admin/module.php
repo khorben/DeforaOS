@@ -69,10 +69,11 @@ function admin_content_update($args)
 		return _error('Permission denied');
 	if(_sql_query('UPDATE daportal_content SET '
 			." title='".$args['title']."'"
+			.", timestamp='".$args['timestamp']."'"
 			.", content='".$args['content']."'"
 			.", enabled='".$args['enabled']."'"
 			." WHERE content_id='".$args['id']."';") == FALSE)
-		_error();
+		_error('Unable to update content');
 	_content_modify($args['id']);
 }
 
