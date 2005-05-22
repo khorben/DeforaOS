@@ -1,0 +1,359 @@
+html {
+	background-color:		#636363;
+}
+
+html, input, select, table, textarea {
+	color:				#000000;
+	font-family:			bitstream vera sans, sans-serif;
+	font-size:			10pt;
+	text-align:			justify;
+}
+
+body {
+	margin:				0px;
+	padding:			0px;
+}
+
+a {
+	color:				#959595;
+	text-decoration:		none;
+}
+
+a:hover {
+	text-decoration:		underline;
+}
+
+h1, h2 {
+	font-style:			italic;
+	font-variant:			small-caps;
+	font-weight:			bold;
+	letter-spacing:			3pt;
+}
+
+h1 img, h2 img {
+	vertical-align:			middle;
+}
+
+h2 img {
+	max-height:			24px;
+}
+
+hr {
+	border:				1px solid #959595;
+	width:				95%;
+}
+
+img {
+	border-width:			0;
+	vertical-align:			text-bottom;
+}
+
+input, select, textarea {
+	background-color:		#959595;
+	border:				1px solid #636363;
+}
+
+p {
+	text-align:			justify;
+}
+
+pre {
+	border:				1px solid #959595;
+	font-family:			bitstream vera sans mono, monospace;
+	margin:				10px;
+	padding:			10px;
+}
+
+strong {
+	font-style:			italic;
+}
+
+
+/* classes */
+table.bordered {
+	border:				1px solid #959595;
+	border-collapse:		collapse;
+}
+
+table.bordered td {
+	border:				1px dotted #959595;
+}
+
+table.bordered th {
+	background-color:		#790000;
+	border:				1px solid #959595;
+}
+
+.container {
+	background-color:		#000000;
+	border:				1px solid #959595;
+	margin:				10px;
+	padding-bottom:			10pt;
+}
+
+.container, .container table {
+	color:				#ffffff;
+}
+
+.main {
+	min-height:			400px;
+	padding-left:			200px;
+	padding-right:			10px;
+}
+
+.debug {
+	background-color:		#400000;
+	border:				solid 1px #404040;
+	font-family:			monospace;
+	margin:				10px;
+	padding:			10px;
+	text-align:			left;
+}
+
+.debug .error {
+	color:				#ff0000;
+}
+
+.debug .info {
+	color:				#00ff00;
+}
+
+.debug .visible {
+	font-family:			sans-serif;
+}
+
+.debug .visible img {
+	float:				left;
+}
+
+.debug .warning {
+	color:				#ff8000;
+}
+
+.explorer .entry .icon {
+	text-align:			center;
+	width:				20px;
+}
+
+.explorer .entry .thumbnail {
+	height:				100px;
+	text-align:			center;
+	width:				100px;
+}
+
+.explorer .header {
+	background-color:		#404040;
+}
+
+.explorer .selected {
+	background-color:		#400000;
+}
+
+.explorer .toolbar {
+	background-color:		#790000;
+}
+
+.explorer .toolbar img {
+	max-height:			16px;
+	max-width:			16px;
+}
+
+.explorer .toolbar .separator {
+	background-color:		#404040;
+	padding-left:			1px;
+}
+
+.field {
+	font-weight:			bold;
+	vertical-align:			top;
+}
+
+.hidden {
+	display:			none;
+}
+
+.logo {
+	background-image:		url("DeforaOS-logo.png");
+	height:				51px;
+	margin-bottom:			16px;
+	margin-left:			auto;
+	margin-right:			33px;
+	margin-top:			16px;
+	width:				517px;
+}
+
+.menu {
+	background-image:		url("DeforaOS-menusep.png");
+	background-position:		bottom center;
+	background-repeat:		no-repeat;
+	float:				left;
+	margin-left:			10px;
+	margin-top:			10px;
+	padding-bottom:			30px;
+	width:				160px;
+}
+
+.menu .active ul li {
+	display:			none;
+}
+
+.menu .active:hover ul li {
+	display:			block;
+}
+
+.menu a {
+	background-color:		#790000;
+	border:				1px solid #790000;
+	display:			block;
+	font-variant:			small-caps;
+	font-style:			italic;
+	font-weight:			bold;
+	letter-spacing:			2pt;
+	padding:			2px;
+	padding-left:			5px;
+	text-decoration:		none;
+}
+
+.menu a:hover {
+	border:				1px solid #636363;
+	border-left:			1px solid #959595;
+	border-top:			1px solid #959595;
+}
+
+.menu ul {
+	list-style-type:		none;
+	margin:				0px;
+	padding:			0px;
+}
+
+.menu ul li.active {
+	margin-bottom:			5px;
+}
+
+.menu ul li ul li a {
+	background-color:		#000000;
+	font-variant:			normal;
+	font-size:			smaller;
+	font-style:			normal;
+	border:				1px solid #000000;
+	letter-spacing:			0pt;
+	padding-left:			10px;
+}
+
+.menu ul li ul li a:hover {
+	background-color:		#000000;
+	background-image:		url("DeforaOS-right.png");
+	background-position:		center right;
+	background-repeat:		no-repeat;
+	border:				1px solid #636363;
+	border-left:			1px solid #959595;
+	border-top:			1px solid #959595;
+}
+
+.news {
+	margin-bottom:			20px;
+}
+
+.news .author, .news .date {
+	display:			inline;
+}
+
+.news .content {
+	padding:			10px;
+}
+
+.search .entry {
+	margin-bottom:			20px;
+}
+
+.search .entry .author, .search .entry .date {
+	display:			inline;
+}
+
+.style1 {
+	background-color:		#790000;
+	font-weight:			bold;
+	padding-left:			200px;
+}
+
+.style1 a {
+	color:				#ffffff;
+}
+
+.style1 img {
+	padding:			2px;
+}
+
+.title {
+	background-color:		#790000;
+	font-size:			110%;
+	font-weight:			bold;
+}
+
+.top {
+	background-color:		#959595;
+	color:				#000000;
+	padding-left:			12px;
+}
+
+.top a {
+	color:				#313131;
+}
+
+
+/* cvsweb */
+body.src {
+	background-color:		#000000;
+	color:				#ffffff;
+	border:				1px solid #959595;
+	margin:				10px;
+	min-height:			500px;
+	padding:			10px;
+}
+
+.attic {
+	font-size: smaller;
+}
+
+.current-rev {
+	font-weight: bold;
+}
+
+.diff, .diff-heading span {
+	font-family: monospace;
+}
+
+.diff-added {
+	background-color: #9f9;
+	color:				#000000;
+}
+
+.diff-changed {
+	background-color: #ff6;
+	color:				#000000;
+}
+
+.diff-changed-missing {
+	background-color: #ee6;
+	color:				#000000;
+}
+
+.diff-empty {
+	background-color: #ccc;
+	color:				#000000;
+}
+
+.diff-removed {
+	background-color: #f99;
+	color:				#000000;
+}
+
+.diff-unchanged {
+	background-color: #ccc;
+	color:				#000000;
+}
+
+.navigate-header {
+	background-color:		#790000;
+	border:				1px solid #959595;
+}
