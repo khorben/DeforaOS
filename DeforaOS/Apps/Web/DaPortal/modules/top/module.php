@@ -29,10 +29,17 @@ function top_admin($args)
 				.$links[$i]['top_id'];
 		$links[$i]['url'] = '<a href="'._html_safe($links[$i]['url'])
 				.'">'._html_safe($links[$i]['url']).'</a>';
+		$links[$i]['move'] = '<img src="modules/top/up.png" alt="up"/>'
+				.'<img src="modules/top/down.png" alt="down"/>';
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => 'New link',
+			'icon' => 'modules/top/icon.png',
+			'link' => 'index.php?module=top&action=new');
 	_module('explorer', 'browse_trusted', array(
 			'view' => 'details',
-			'class' => array('url' => 'Address'),
+			'class' => array('url' => 'Address', 'move' => 'Move'),
+			'toolbar' => $toolbar,
 			'entries' => $links));
 }
 
@@ -55,6 +62,20 @@ function top_default($args)
 }
 
 
+function top_insert($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(_sql_query('INSERT INTO daportal_top (name, link) VALUES ('
+			."'".$args['name']."', '".$args['link']."');") == FALSE)
+		return _error('Unable to insert link');
+	top_admin(array());
+}
+
+
 function top_modify($args)
 {
 	global $user_id;
@@ -67,6 +88,21 @@ function top_modify($args)
 	if(!is_array($top) || count($top) != 1)
 		return _error('Invalid link ID');
 	$top = $top[0];
+	$title = 'Top link modification';
+	$action = 'update';
+	include('update.tpl');
+}
+
+
+function top_new($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	$title = 'New top link';
+	$action = 'insert';
 	include('update.tpl');
 }
 
