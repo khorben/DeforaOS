@@ -99,21 +99,30 @@ function admin_module($args)
 	if(isset($args['id']))
 		return _module_admin($args['id']);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> Modules administration</h1>'."\n");
-	if(($modules = _sql_array('SELECT module_id, name, enabled'
+	if(($modules = _sql_array('SELECT module_id, name AS module_name'
+			.', enabled'
 			.' FROM daportal_module'
-			.' ORDER BY enabled DESC, name ASC;')) == FALSE)
+			.' ORDER BY enabled DESC, module_name ASC;')) == FALSE)
 		return _error('Could not list modules');
 	$count = count($modules);
 	for($i = 0; $i < $count; $i++)
 	{
-		$name = $modules[$i]['name'];
-		$modules[$i]['icon'] = 'modules/'.$name.'/icon.png';
-		$modules[$i]['thumbnail'] = 'modules/'.$name.'/icon.png';
-		$modules[$i]['name'] = ucfirst($name);
-		$modules[$i]['module'] = $name;
+		$module = $modules[$i]['module_name'];
+		$modules[$i]['icon'] = 'modules/'.$module.'/icon.png';
+		$modules[$i]['thumbnail'] = 'modules/'.$module.'/icon.png';
+		$modules[$i]['module'] = $module;
 		$modules[$i]['action'] = 'admin';
+		$modules[$i]['module_name'] = '<a href="index.php?module='
+				._html_safe($module).'">'._html_safe($module)
+				.'</a>';
+		$title = '';
+		@include('modules/'.$module.'/desktop.php');
+		$modules[$i]['name'] = _html_safe(strlen($title) ? $title
+				: $modules[$i]['module']);
 	}
-	_module('explorer', 'browse', array('entries' => $modules));
+	_module('explorer', 'browse_trusted', array(
+			'class' => array('module_name' => 'Module name'),
+			'entries' => $modules));
 }
 
 
