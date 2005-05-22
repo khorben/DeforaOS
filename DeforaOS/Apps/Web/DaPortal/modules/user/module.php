@@ -8,10 +8,20 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
-function _admin_modify($id)
+function _modify($id)
 {
+	global $user_id;
+
 	if(!is_numeric($id))
 		return _error('Invalid user ID');
+	require_once('system/user.php');
+	$admin = _user_admin($user_id) ? 1 : 0;
+	$super = ($id == $user_id) ? 1 : 0;
+	$user = _sql_array('SELECT username, admin FROM daportal_user'
+			." WHERE user_id='$id';");
+	if(!is_array($user) || count($user) != 1)
+		return _error('Invalid user');
+	$user = $user[0];
 	include('user_update.tpl');
 }
 
@@ -24,7 +34,7 @@ function user_admin($args)
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	if(isset($args['id']))
-		return _admin_modify($args['id']);
+		return _modify($args['id']);
 	print('<h1><img src="module/user/icon.png" alt=""/> Users administration</h1>'."\n");
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.' FROM daportal_user'
@@ -36,8 +46,8 @@ function user_admin($args)
 	{
 		$users[$i]['module'] = 'user';
 		$users[$i]['action'] = 'admin';
-		$users[$i]['icon'] = 'modules/user/icon.png';
-		$users[$i]['thumbnail'] = 'modules/user/icon.png';
+		$users[$i]['icon'] = 'modules/user/user.png';
+		$users[$i]['thumbnail'] = 'modules/user/user.png';
 	}
 	_module('explorer', 'browse', array('entries' => $users));
 }
@@ -95,6 +105,16 @@ function user_logout($args)
 	if($user_id != 0)
 		return _error('Unable to logout');
 	return include('user_logout.tpl');
+}
+
+
+function user_modify($args)
+{
+	global $user_id;
+
+	if($args['id'] != $user_id)
+		return _error('Permission denied');
+	_modify($args['id']);
 }
 
 

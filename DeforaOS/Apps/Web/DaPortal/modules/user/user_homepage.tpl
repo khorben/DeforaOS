@@ -1,4 +1,4 @@
-<h1><img src="modules/user/icon.png" alt=""/> <? echo _html_safe($user_name); ?>'s page</h1>
+<h1><img src="modules/user/home.png" alt=""/> <? echo _html_safe($user_name); ?>'s page</h1>
 <? global $user_id; require_once('system/user.php'); if(_user_admin($user_id)) { ?>
 <p>You are an <a href="index.php?module=admin">administrator</a>.</p>
 <? } ?>
