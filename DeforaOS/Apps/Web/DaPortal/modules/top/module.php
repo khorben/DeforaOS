@@ -21,6 +21,7 @@ function top_admin($args)
 	if(!is_array($links))
 		return _error('Unable to get links');
 	$count = count($links);
+	$last_id = 0;
 	for($i = 0; $i < $count; $i++)
 	{
 		$links[$i]['icon'] = 'modules/top/icon.png';
@@ -29,8 +30,19 @@ function top_admin($args)
 				.$links[$i]['top_id'];
 		$links[$i]['url'] = '<a href="'._html_safe($links[$i]['url'])
 				.'">'._html_safe($links[$i]['url']).'</a>';
-		$links[$i]['move'] = '<img src="modules/top/up.png" alt="up"/>'
-				.'<img src="modules/top/down.png" alt="down"/>';
+		$links[$i]['move'] = '';
+		if($i+1 < $count)
+			$links[$i]['move'].='<a href="index.php?module=top'
+				.'&action=move&id='.$links[$i]['top_id']
+				.'&to='.$links[$i+1]['top_id'].'">'
+				.'<img src="modules/top/down.png" alt="down"/>'
+				.'</a>';
+		if($last_id)
+			$links[$i]['move'].= '<a href="index.php?module=top'
+				.'&action=move&id='.$links[$i]['top_id']
+				.'&to='.$last_id.'">'
+				.'<img src="modules/top/up.png" alt="up"/></a>';
+		$last_id = $links[$i]['top_id'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => 'New link',
@@ -91,6 +103,34 @@ function top_modify($args)
 	$title = 'Top link modification';
 	$action = 'update';
 	include('update.tpl');
+}
+
+
+function top_move($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	$from = _sql_array('SELECT name, link FROM daportal_top'
+			." WHERE top_id='".$args['id']."';");
+	$to = _sql_array('SELECT name, link FROM daportal_top'
+			." WHERE top_id='".$args['to']."';");
+	if(!is_array($from) || count($from) != 1 || !is_array($to)
+			|| count($to) != 1)
+		return _error('Unable to move links');
+	$from = $from[0];
+	$to = $to[0];
+	if(!_sql_query("UPDATE daportal_top SET name='".$from['name']."'"
+			.", link='".$from['link']."'"
+			." WHERE top_id='".$args['to']."';")
+			|| !_sql_query('UPDATE daportal_top'
+					." SET name='".$to['name']."'"
+					.", link='".$to['link']."'"
+					." WHERE top_id='".$args['id']."';"))
+		_error('Error while moving links');
+	top_admin(array());
 }
 
 
