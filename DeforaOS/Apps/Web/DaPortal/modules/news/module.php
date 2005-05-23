@@ -76,7 +76,7 @@ function news_list($args)
 			.$title.'</h'.$level.'>'
 			."\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp'
-			.', title, content, username'
+			.', title, content, daportal_content.user_id, username'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_module'
 			.' WHERE daportal_user.user_id=daportal_content.user_id'
