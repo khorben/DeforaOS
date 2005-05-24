@@ -167,7 +167,7 @@ function _system_login()
 	if(($res = _sql_array('SELECT user_id, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"
 			.' and password='."'$password';")) == FALSE)
-		return _error('Unable to login');
+		return _error('Unable to login', 0);
 	$res = $res[0];
 	$_SESSION['user_id'] = $res['user_id'];
 	$_SESSION['user_name'] = stripslashes($_POST['username']);
