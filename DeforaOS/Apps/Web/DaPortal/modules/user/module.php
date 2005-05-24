@@ -17,7 +17,7 @@ function _modify($id)
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$super = ($id == $user_id) ? 1 : 0;
-	$user = _sql_array('SELECT username, admin FROM daportal_user'
+	$user = _sql_array('SELECT user_id, username, admin FROM daportal_user'
 			." WHERE user_id='$id';");
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
@@ -97,7 +97,7 @@ function user_insert($args)
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	if(!ereg('^[a-z]{1,9}$', $args['username']))
-		return _error('Username must be lower-case and no longer than 9 characters');
+		return _error('Username must be lower-case and no longer than 9 characters', 1);
 	if(strlen($args['password1']) < 1
 			|| $args['password1'] != $args['password2'])
 		return _error('Passwords must be non-empty and match', 1);
@@ -192,6 +192,23 @@ function user_system($args)
 		_system_logout();
 	$user_id = $_SESSION['user_id'];
 	$user_name = $_SESSION['user_name'];
+}
+
+
+function user_update($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	//FIXME should also allow user to update some of his own details
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	//FIXME check if password is set and matches
+	if(!_sql_query('UPDATE daportal_user SET '
+			."admin='".(isset($args['admin']) ? '1' : '0')."'"
+			." WHERE user_id='".$args['user_id']."';"))
+		return _error('Could not update user');
+	user_display(array('id' => $args['user_id']));
 }
 
 ?>
