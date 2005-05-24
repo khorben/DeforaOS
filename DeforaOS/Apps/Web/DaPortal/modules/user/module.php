@@ -22,6 +22,7 @@ function _modify($id)
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
+	$title = 'User modification';
 	include('user_update.tpl');
 }
 
@@ -49,7 +50,12 @@ function user_admin($args)
 		$users[$i]['icon'] = 'modules/user/user.png';
 		$users[$i]['thumbnail'] = 'modules/user/user.png';
 	}
-	_module('explorer', 'browse', array('entries' => $users));
+	$toolbar = array();
+	$toolbar[] = array('title' => 'New user',
+			'icon' => 'modules/user/icon.png',
+			'link' => 'index.php?module=user&action=new');
+	_module('explorer', 'browse', array('toolbar' => $toolbar,
+				'entries' => $users));
 }
 
 
@@ -80,6 +86,28 @@ function user_display($args)
 		return _error('Invalid user');
 	$user = $user[0];
 	include('user_display.tpl');
+}
+
+
+function user_insert($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(!ereg('^[a-z]{1,9}$', $args['username']))
+		return _error('Username must be lower-case and no longer than 9 characters');
+	if(strlen($args['password1']) < 1
+			|| $args['password1'] != $args['password2'])
+		return _error('Passwords must be non-empty and match', 1);
+	$password = md5($args['password1']);
+	if(!_sql_query('INSERT INTO daportal_user (username, password) VALUES ('
+			."'".$args['username']."'"
+			.", '$password');"))
+		return _error('Could not insert user');
+	$id = _sql_id('daportal_user', 'user_id');
+	user_display(array('id' => $id));
 }
 
 
@@ -115,6 +143,19 @@ function user_modify($args)
 	if($args['id'] != $user_id)
 		return _error('Permission denied');
 	_modify($args['id']);
+}
+
+
+function user_new($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	$title = 'New user';
+	$admin = 1;
+	include('user_update.tpl');
 }
 
 
