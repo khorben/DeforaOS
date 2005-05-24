@@ -11,3 +11,14 @@ img {
 .field {
 	font-weight:			bold;
 }
+
+.hidden {
+	display:			none;
+}
+
+
+/* modules */
+.explorer .selected, .explorer .selected a {
+	background-color:		#0000ff;
+	color:				#ffffff;
+}
