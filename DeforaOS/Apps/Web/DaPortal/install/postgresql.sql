@@ -11,9 +11,10 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 CREATE TABLE daportal_user (
 	user_id SERIAL UNIQUE,
-	username VARCHAR(255),
+	username VARCHAR(255) UNIQUE,
 	password CHAR(32),
 	admin BOOLEAN DEFAULT FALSE,
+	email VARCHAR(255) NOT NULL,
 	PRIMARY KEY (user_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
