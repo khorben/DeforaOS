@@ -42,9 +42,23 @@ CREATE TABLE daportal_top (
 INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
 
 
+/* module: project */
 CREATE TABLE daportal_project (
 	project_id SERIAL UNIQUE,
-	name VARCHAR(255),
+	name VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
+);
+CREATE TABLE daportal_bug (
+	bug_id SERIAL UNIQUE,
+	content_id SERIAL UNIQUE,
+	project_id SERIAL UNIQUE,
+	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented')) NOT NULL DEFAULT 'New',
+	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')) NOT NULL,
+	priority VARCHAR(6) CHECK (priority IN ('Urgent', 'High', 'Medium', 'Low')) NOT NULL DEFAULT 'Medium',
+	assigned SERIAL UNIQUE DEFAULT NULL,
+	PRIMARY KEY (bug_id),
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
+	FOREIGN KEY (assigned) REFERENCES daportal_user (user_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
