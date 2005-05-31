@@ -51,8 +51,8 @@ img {
 button, input, select, textarea {
 	background-color:		#959595;
 	border:				1px solid #636363;
-	border-left:			1px solid #959595;
-	border-top:			1px solid #959595;
+	border-left:			1px solid #b0b0b0;
+	border-top:			1px solid #b0b0b0;
 }
 
 p {
@@ -103,13 +103,16 @@ table.bordered th {
 	padding-right:			10px;
 }
 
-.debug {
+.debug, .headline {
 	background-color:		#400000;
 	border:				solid 1px #404040;
-	font-family:			monospace;
 	margin:				10px;
 	padding:			10px;
 	text-align:			left;
+}
+
+.debug {
+	font-family:			monospace;
 }
 
 .debug .error {
