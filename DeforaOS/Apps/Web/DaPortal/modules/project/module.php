@@ -19,6 +19,25 @@ function project_admin($args)
 }
 
 
+function project_browse($args)
+{
+	$project = _sql_array('SELECT name, cvsroot'
+			.' FROM daportal_content, daportal_project'
+			." WHERE project_id='".$args['id']."'"
+			.' AND daportal_content.content_id'
+			.'=daportal_project.project_id;');
+	if(!is_array($project) || count($project) != 1)
+		return _error('Invalid project');
+	$project = $project[0];
+	if(strlen($project['cvsroot']) == 0)
+		return _info('This project does not have any CVS repository',
+				1);
+	if(($dir = @opendir('/Apps/CVS/DeforaOS/'.$cvsroot)) == FALSE)
+		return _error('Could not open CVS repository', 1);
+	closedir($dir);
+}
+
+
 function project_default($args)
 {
 	if(isset($args['id']))
@@ -33,9 +52,11 @@ function project_display($args)
 
 	require_once('system/user.php');
 	$project = _sql_array('SELECT name, title, content AS description'
-			.', enabled'
+			.', enabled, daportal_content.user_id, username'
 			.' FROM daportal_content, daportal_project'
+			.', daportal_user'
 			." WHERE content_id='".$args['id']."'"
+			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' AND daportal_content.content_id'
 			.'=daportal_project.project_id;');
 	if(!is_array($project) || count($project) != 1)
@@ -44,6 +65,13 @@ function project_display($args)
 	if($project['enabled'] != 't' && !_user_admin($user_id))
 		return include('project_submitted.tpl');
 	$title = $project['name'];
+	//FIXME display members + administrator in an explorer
+	$project['members'] = _sql_array('SELECT daportal_user.user_id AS id'
+			.', username AS name'
+			.' FROM daportal_project_user, daportal_user'
+			." WHERE project_id='".$args['id']."'"
+			.' AND daportal_project_user.user_id'
+			.'=daportal_user.user_id;');
 	include('project_display.tpl');
 }
 
