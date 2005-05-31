@@ -26,13 +26,15 @@ function top_admin($args)
 	{
 		/* $links[$i]['icon'] = ereg('^http://[^/]+/$',
 				$links[$i]['url'])
-				? _html_safe($links[$i]['url']).'favicon.png'
+				? _html_safe_link($links[$i]['url'])
+						.'favicon.png'
 				: 'modules/top/icon.png'; */
 		$links[$i]['icon'] = 'modules/top/icon.png';
 		$links[$i]['thumbnail'] = 'modules/top/icon.png';
 		$links[$i]['link'] = 'index.php?module=top&action=modify&id='
 				.$links[$i]['top_id'];
-		$links[$i]['url'] = '<a href="'._html_safe($links[$i]['url'])
+		$links[$i]['url'] = '<a href="'
+				._html_safe_link($links[$i]['url'])
 				.'">'._html_safe($links[$i]['url']).'</a>';
 		$links[$i]['move'] = '';
 		if($i+1 < $count)
@@ -70,7 +72,7 @@ function top_default($args)
 	$sep = '';
 	foreach($links as $l)
 	{
-		print("\t\t\t".$sep.'<a href="'._html_safe($l['link']).'">'
+		print("\t\t\t".$sep.'<a href="'._html_safe_link($l['link']).'">'
 				._html_safe($l['name']).'</a>'."\n");
 		$sep = '· ';
 	}

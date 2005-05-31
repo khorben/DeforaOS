@@ -114,11 +114,11 @@ function admin_module($args)
 		$modules[$i]['module'] = $module;
 		$modules[$i]['action'] = 'admin';
 		$modules[$i]['module_name'] = '<a href="index.php?module='
-				._html_safe($module).'">'._html_safe($module)
-				.'</a>';
+				._html_safe_link($module).'">'
+				._html_safe($module).'</a>';
 		$title = '';
 		@include('modules/'.$module.'/desktop.php');
-		$modules[$i]['name'] = _html_safe(strlen($title) ? $title
+		$modules[$i]['name'] = _html_safe_link(strlen($title) ? $title
 				: $modules[$i]['module']);
 	}
 	_module('explorer', 'browse_trusted', array(

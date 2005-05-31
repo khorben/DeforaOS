@@ -10,6 +10,12 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 function _html_safe($string)
 {
+	return htmlentities($string);
+}
+
+
+function _html_safe_link($string)
+{
 	return str_replace('&amp;amp;', '%26', htmlentities($string));
 }
 

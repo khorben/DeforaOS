@@ -1,7 +1,7 @@
 		<div class="toolbar">
 <? if(isset($args['toolbar'])) { ?>
 <? foreach($args['toolbar'] as $t) { ?>
-			<a href="<? echo _html_safe($t['link']); ?>"><img src="<? echo _html_safe($t['icon']); ?>" alt="" title="<? echo _html_safe($t['title']); ?>"/></a>
+			<a href="<? echo _html_safe_link($t['link']); ?>"><img src="<? echo _html_safe_link($t['icon']); ?>" alt="" title="<? echo _html_safe($t['title']); ?>"/></a>
 <? } ?>
 			<div class="separator"></div>
 <? } ?>

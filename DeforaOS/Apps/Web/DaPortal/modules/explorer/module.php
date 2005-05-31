@@ -33,15 +33,15 @@ function _explorer(&$args)
 function _explorer_link(&$entry)
 {
 	if(isset($entry['link']))
-		return '<a href="'._html_safe($entry['link']).'">';
+		return '<a href="'._html_safe_link($entry['link']).'">';
 	else if(!isset($entry['link']) && isset($entry['module'])
 			&& isset($entry['action']))
 	{
-		$link = '<a href="'._html_safe('index.php'
+		$link = '<a href="'._html_safe_link('index.php'
 				.'?module='.$entry['module']
 				.'&action='.$entry['action']);
 		if(isset($entry['id']))
-			$link.=_html_safe('&id='.$entry['id']);
+			$link.=_html_safe_link('&id='.$entry['id']);
 		return $link.'">';
 	}
 	return '';
