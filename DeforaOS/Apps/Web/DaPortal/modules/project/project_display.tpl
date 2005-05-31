@@ -1,6 +1,6 @@
 <h1><img src="modules/project/icon.png" alt=""/> <? echo _html_safe($title); ?></h1>
-<div class="title"><? echo _html_safe($project['title']); ?></div>
-<div class="headline"><? echo _html_tags($project['description']); ?></div>
+<? if(strlen($project['title'])) { ?><div class="title"><? echo _html_safe($project['title']); ?></div><? } ?>
+<? if(strlen($project['description'])) { ?><div class="headline"><? echo _html_tags($project['description']); ?></div><? } ?>
 <table>
 	<tr><td class="field">Project administrator:</td><td><a href="index.php?module=user&id=<? echo _html_safe($project['user_id']); ?>"><? echo _html_safe($project['username']); ?></a></td></tr>
 	<tr><td class="field">Project members:</td><td><?
