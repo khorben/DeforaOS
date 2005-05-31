@@ -14,6 +14,18 @@ function _html_safe($string)
 }
 
 
+function _html_tags($string, $tags = FALSE)
+{
+	if(!is_array($tags))
+		$tags = array('b', '/b', 'br/', 'li', '/li', 'p', '/p',
+				'ul', '/ul');
+	$string = _html_safe($string);
+	foreach($tags as $t)
+		$string = str_replace("&lt;$t&gt;", "<$t>", $string);
+	return $string;
+}
+
+
 function _start_css_themes($theme)
 {
 	if(($dir = opendir('themes')) == FALSE)
