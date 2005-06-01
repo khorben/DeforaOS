@@ -17,7 +17,6 @@ function _project_toolbar($id)
 function project_admin($args)
 {
 	global $user_id;
-	global $module_id;
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
