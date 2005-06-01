@@ -118,6 +118,11 @@ function admin_module($args)
 		$modules[$i]['icon'] = 'modules/'.$module.'/icon.png';
 		$modules[$i]['thumbnail'] = 'modules/'.$module.'/icon.png';
 		$modules[$i]['action'] = 'admin';
+		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == 't')
+				? 'enabled' : 'disabled';
+		$modules[$i]['enabled'] = '<img src="modules/admin/'
+				.$modules[$i]['enabled'].'" alt="'
+				.$moduless[$i]['enabled'].'"/>';
 		$modules[$i]['module_name'] = '<a href="index.php?module='
 				._html_safe_link($module).'">'
 				._html_safe($module).'</a>';
@@ -127,7 +132,8 @@ function admin_module($args)
 				: $modules[$i]['module']);
 	}
 	_module('explorer', 'browse_trusted', array(
-			'class' => array('module_name' => 'Module name'),
+			'class' => array('enabled' => '',
+					'module_name' => 'Module name'),
 			'entries' => $modules));
 }
 
