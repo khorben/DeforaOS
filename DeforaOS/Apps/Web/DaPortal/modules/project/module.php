@@ -17,11 +17,53 @@ function _project_toolbar($id)
 function project_admin($args)
 {
 	global $user_id;
+	global $module_id;
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	print('<h1><img src="modules/project/icon.png" alt=""/> Projects administration</h1>'."\n");
+	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
+			.', username AS admin, enabled'
+			.', daportal_content.user_id AS user_id'
+			.' FROM daportal_content, daportal_user'
+			.', daportal_project'
+			.' WHERE daportal_content.user_id=daportal_user.user_id'
+			.' AND daportal_content.content_id'
+			.'=daportal_project.project_id'
+			.' ORDER BY name ASC;');
+	if(!is_array($projects))
+		return _error('Could not list projects');
+	$count = count($projects);
+	for($i = 0; $i < $count; $i++)
+	{
+		$projects[$i]['name'] = _html_safe_link($projects[$i]['name']);
+		$projects[$i]['admin'] = '<a href="index.php?module=user'
+				.'&amp;id='.$projects[$i]['user_id'].'">'
+				._html_safe_link($projects[$i]['admin'])
+				.'</a>';
+		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
+		$projects[$i]['module'] = 'project';
+		$projects[$i]['action'] = 'update';
+		$projects[$i]['icon'] = 'modules/project/icon.png';
+		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
+		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == 't')
+			? 'enabled' : 'disabled';
+		$projects[$i]['enabled'] = '<img src="modules/admin/'
+			.$projects[$i]['enabled'].'" alt="'
+			.$projects[$i]['enabled'].'"/>';
+	}
+	$toolbar = array();
+	$toolbar[] = array('title' => 'New project',
+			'icon' => 'modules/project/icon.png',
+			'link' => 'index.php?module=project&action=new');
+	_module('explorer', 'browse_trusted', array(
+			'class' => array('enabled' => '',
+					'admin' => 'Administrator',
+					'desc' => 'Description'),
+			'toolbar' => $toolbar,
+			'view' => 'details',
+			'entries' => $projects));
 }
 
 
