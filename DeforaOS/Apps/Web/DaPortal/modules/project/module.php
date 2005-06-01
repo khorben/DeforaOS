@@ -37,8 +37,9 @@ function project_admin($args)
 	for($i = 0; $i < $count; $i++)
 	{
 		$projects[$i]['name'] = _html_safe_link($projects[$i]['name']);
-		$projects[$i]['admin'] = '<a href="index.php?module=user'
-				.'&amp;id='.$projects[$i]['user_id'].'">'
+		$projects[$i]['admin'] = '<a href="index.php?module=project'
+				.'&amp;action=list'
+				.'&amp;user_id='.$projects[$i]['user_id'].'">'
 				._html_safe_link($projects[$i]['admin'])
 				.'</a>';
 		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
@@ -282,8 +283,6 @@ function project_installer($args)
 
 function project_list($args)
 {
-	global $module_id;
-
 	$title = 'Projects list';
 	$level = 1;
 	$where = '';
