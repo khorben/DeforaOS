@@ -39,9 +39,9 @@ function _explorer_link(&$entry)
 	{
 		$link = '<a href="'._html_safe_link('index.php'
 				.'?module='.$entry['module']
-				.'&action='.$entry['action']);
+				.'&amp;action='.$entry['action']);
 		if(isset($entry['id']))
-			$link.=_html_safe_link('&id='.$entry['id']);
+			$link.=_html_safe_link('&amp;id='.$entry['id']);
 		return $link.'">';
 	}
 	return '';

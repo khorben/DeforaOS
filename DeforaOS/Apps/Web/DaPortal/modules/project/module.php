@@ -125,7 +125,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 				." WHERE username='".addslashes($author)."';");
 		$author = _html_safe_link($author);
 		if(is_numeric($author_id))
-			$author = '<a href="index.php?module=user&id='
+			$author = '<a href="index.php?module=user&amp;id='
 					.$author_id.'">'.$author.'</a>';
 		$message = _html_safe($rcs[14]);
 		//FIXME choose icon depending on the file type
