@@ -311,4 +311,16 @@ function project_report($args)
 	include('bug_display.tpl');
 }
 
+
+function project_update($args)
+{
+	//FIXME TODO
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	include('project_update.tpl');
+}
+
 ?>
