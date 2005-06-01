@@ -29,13 +29,6 @@
 			<div class="main">
 <? if(strlen($module)) { _module(); } else { ?>
 		<h1>DeforaOS Homepage</h1>
-
-		<hr/>
-		<p><i>
-This web site is still under construction. Sorry for the inconvenience.
-		</i></p>
-		<hr/>
-
 		<h3>About the project</h3>
 		<p>
 This project aims at the implementation of a micro-kernel based operating
