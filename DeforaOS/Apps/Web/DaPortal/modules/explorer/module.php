@@ -49,16 +49,21 @@ function _explorer_link(&$entry)
 }
 
 
-function explorer_browse($args)
+function explorer_browse(&$args)
 {
-	foreach($args['entries'] as $entry)
-		foreach($args['columns'] as $key)
-			$entry[$key] = _html_safe($entry[$key]);
+	for($i = 0, $ic = count($args['entries']); $i < $ic; $i++)
+	{
+		$args['entries'][$i]['name'] = _html_safe(
+				$args['entries'][$i]['name']);
+		foreach($classes as $c)
+			$args['entries'][$i][$c] = _html_safe(
+					$args['entries'][$i][$c]);
+	}
 	return _explorer($args);
 }
 
 
-function explorer_browse_trusted($args)
+function explorer_browse_trusted(&$args)
 {
 	return _explorer($args);
 }
