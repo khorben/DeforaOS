@@ -34,6 +34,7 @@ CREATE TABLE daportal_content (
 );
 
 
+/* module: top */
 CREATE TABLE daportal_top (
 	top_id SERIAL UNIQUE,
 	name VARCHAR(255),
