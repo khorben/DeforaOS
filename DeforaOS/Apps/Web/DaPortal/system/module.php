@@ -51,6 +51,12 @@ function _module($module = '', $action = '', $args = FALSE)
 	return call_user_func_array($function, array($args));
 }
 
+
+function _module_desktop()
+	//FIXME fetch an option from a module desktop file
+{
+}
+
 _module('', 'system');
 
 ?>
