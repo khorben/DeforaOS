@@ -68,6 +68,7 @@ function news_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 	{
+		//FIXME list users' news in an explorer instead
 		$title.=' by '.$username;
 		$level = 2;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
