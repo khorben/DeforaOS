@@ -53,7 +53,7 @@ function explorer_browse(&$args)
 {
 	for($i = 0, $ic = count($args['entries']); $i < $ic; $i++)
 	{
-		$args['entries'][$i]['name'] = _html_safe(
+		$args['entries'][$i]['name'] = _html_safe_link(
 				$args['entries'][$i]['name']);
 		$classes = array_keys($args['class']);
 		foreach($classes as $c)
