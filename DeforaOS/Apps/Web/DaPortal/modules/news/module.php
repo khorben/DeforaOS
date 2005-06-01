@@ -107,9 +107,11 @@ function news_submit($news)
 	{
 		$long = 1;
 		$title = 'News preview';
+		$news['title'] = stripslashes($news['title']);
 		$news['user_id'] = $user_id;
 		$news['username'] = $user_name;
 		$news['date'] = date(DATE_FORMAT);
+		$news['content'] = stripslashes($news['content']);
 		include('news_display.tpl');
 		return include('news_update.tpl');
 	}
