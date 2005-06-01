@@ -34,7 +34,7 @@ function admin_content($args)
 	print('<h1><img src="modules/admin/icon.png" alt=""/> Contents administration</h1>'."\n");
 	$contents = _sql_array('SELECT content_id AS id, timestamp AS date'
 			.', name AS module, username, title AS name'
-			.', daportal_content.enabled'
+			.', daportal_content.enabled AS enabled'
 			.' FROM daportal_content, daportal_module'
 			.', daportal_user'
 			.' WHERE daportal_content.module_id'
@@ -49,13 +49,19 @@ function admin_content($args)
 		$contents[$i]['icon'] = 'modules/'.$contents[$i]['module']
 				.'/icon.png';
 		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
+		$contents[$i]['name'] = _html_safe_link($contents[$i]['name']);
 		$contents[$i]['module'] = 'admin';
 		$contents[$i]['action'] = 'content';
+		$contents[$i]['enabled'] = ($contents[$i]['enabled'] == 't')
+				? 'enabled' : 'disabled';
+		$contents[$i]['enabled'] = '<img src="modules/admin/'
+				.$contents[$i]['enabled'].'" alt="'
+				.$contents[$i]['enabled'].'"/>';
 /*		$contents[$i]['date'] = date('l, F jS Y, H:i',
 				strtotime($contents[$i]['date'])); */
 	}
-	_module('explorer', 'browse', array(
-			'class' => array('date' => 'Date'),
+	_module('explorer', 'browse_trusted', array(
+			'class' => array('enabled' => '', 'date' => 'Date'),
 			'entries' => $contents,
 			'view' => 'details'));
 }
@@ -100,18 +106,17 @@ function admin_module($args)
 	if(isset($args['id']))
 		return _module_admin($args['id']);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> Modules administration</h1>'."\n");
-	if(($modules = _sql_array('SELECT module_id, name AS module_name'
+	if(($modules = _sql_array('SELECT module_id, name AS module'
 			.', enabled'
 			.' FROM daportal_module'
-			.' ORDER BY enabled DESC, module_name ASC;')) == FALSE)
+			.' ORDER BY enabled DESC, module ASC;')) == FALSE)
 		return _error('Could not list modules');
 	$count = count($modules);
 	for($i = 0; $i < $count; $i++)
 	{
-		$module = $modules[$i]['module_name'];
+		$module = $modules[$i]['module'];
 		$modules[$i]['icon'] = 'modules/'.$module.'/icon.png';
 		$modules[$i]['thumbnail'] = 'modules/'.$module.'/icon.png';
-		$modules[$i]['module'] = $module;
 		$modules[$i]['action'] = 'admin';
 		$modules[$i]['module_name'] = '<a href="index.php?module='
 				._html_safe_link($module).'">'
