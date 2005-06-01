@@ -37,11 +37,12 @@ function _explorer_link(&$entry)
 	else if(!isset($entry['link']) && isset($entry['module'])
 			&& isset($entry['action']))
 	{
-		$link = '<a href="'._html_safe_link('index.php'
-				.'?module='.$entry['module']
-				.'&amp;action='.$entry['action']);
+		$link = '<a href="index.php?module='
+				._html_safe_link($entry['module'])
+				.'&amp;action='
+				._html_safe_link($entry['action']);
 		if(isset($entry['id']))
-			$link.=_html_safe_link('&amp;id='.$entry['id']);
+			$link.='&amp;id='._html_safe_link($entry['id']);
 		return $link.'">';
 	}
 	return '';
