@@ -8,6 +8,12 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+function _project_toolbar($id)
+{
+	include('toolbar.tpl');
+}
+
+
 function project_admin($args)
 {
 	global $user_id;
@@ -29,6 +35,7 @@ function project_browse($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error('Invalid project');
 	$project = $project[0];
+	_project_toolbar($args['id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
 		print('<h1><img src="modules/project/icon.png" alt=""/> '
@@ -198,6 +205,7 @@ function project_display($args)
 			." WHERE project_id='".$args['id']."'"
 			.' AND daportal_project_user.user_id'
 			.'=daportal_user.user_id;');
+	_project_toolbar($args['id']);
 	include('project_display.tpl');
 }
 
