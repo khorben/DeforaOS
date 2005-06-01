@@ -92,6 +92,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 	foreach($files as $f)
 	{
 		unset($rcs);
+		//FIXME maybe use -h and -z among other options
 		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
 		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
 		for($i = 0, $count = count($rcs); $i < $count; $i++)
@@ -150,6 +151,7 @@ function _browse_file($id, $project, $cvsroot, $filename, $revision)
 	//- timeline
 {
 	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	//FIXME maybe use -h and -z among other options
 	exec('rlog "'.str_replace('"', '\"', $path).'"', $rcs);
 	_info('rlog "'.str_replace('"', '\"', $path).'"', 0);
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
