@@ -30,11 +30,135 @@ function project_browse($args)
 		return _error('Invalid project');
 	$project = $project[0];
 	if(strlen($project['cvsroot']) == 0)
-		return _info('This project does not have any CVS repository',
-				1);
-	if(($dir = @opendir('/Apps/CVS/DeforaOS/'.$cvsroot)) == FALSE)
+	{
+		print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($project['name']).' CVS</h1>'."\n");
+		return _info('This project does not have a CVS repository', 1);
+	}
+	if(!ereg('^[a-zA-Z0-9., /]+$', $project['cvsroot'])
+			|| ereg('\.\.', $project['cvsroot']))
+		return _error('Invalid CVSROOT', 1);
+	if(!isset($args['file']))
+		return _browse_dir($args['id'], $project['name'],
+				$project['cvsroot'], '');
+	$file = stripslashes($args['file']);
+	if(!ereg('^[a-zA-Z0-9., /]+$', $file) || ereg('\.\.', $file))
+		return _error('Invalid path', 1);
+	$filename = '/Apps/CVS/DeforaOS/'.$project['cvsroot'].'/'.$file;
+	if(is_dir($filename))
+		return _browse_dir($args['id'], $project['name'],
+				$project['cvsroot'], $file);
+	else if(file_exists($filename))
+		return _browse_file($args['id'], $project['name'],
+				$project['cvsroot'], $file, $args['revision']);
+	_error($filename, 1);
+	_browse_dir($args['id'], $project['name'], $project['cvsroot'], '');
+}
+
+function _browse_dir($id, $project, $cvsroot, $filename)
+{
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($project).' CVS: '
+			._html_safe($filename).'</h1>'."\n");
+	//FIXME un-hardcode locations (invoke the cvs executable instead?)
+	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	if(($dir = opendir($path)) == FALSE)
 		return _error('Could not open CVS repository', 1);
+	$dirs = array();
+	$files = array();
+	while($de = readdir($dir))
+	{
+		if($de == '.' || $de == '..')
+			continue;
+		if(is_dir($path.'/'.$de))
+			$dirs[] = $de;
+		else
+			$files[] = $de;
+	}
 	closedir($dir);
+	sort($dirs);
+	sort($files);
+	$entries = array();
+	foreach($dirs as $d)
+	{
+		$name = _html_safe_link($d);
+		$name = '<a href="index.php?module=project&amp;action=browse'
+				.'&amp;id='.$id.'&amp;file='.$filename.'/'
+				.$name.'">'.$name.'</a>';
+		$entries[] = array('name' => $name,
+				'icon' => 'modules/project/folder.png',
+				'thumbnail' => 'modules/project/folder.png');
+	}
+	foreach($files as $f)
+	{
+		unset($rcs);
+		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
+		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
+		for($i = 0, $count = count($rcs); $i < $count; $i++)
+			_info($i.': '.$rcs[$i], 0);
+		$file = _html_safe_link($filename.'/'.$f);
+		$name = _html_safe(substr($rcs[2], 14));
+		$name = '<a href="index.php?module=project&amp;action=browse'
+				.'&amp;id='.$id.'&amp;file='.$file.'">'
+				.$name.'</a>';
+		$revision = _html_safe(substr($rcs[12], 9));
+		$revision = '<a href="index.php?module=project'
+				.'&amp;action=browse&amp;id='.$id
+				.'&amp;file='.$file.'&amp;revision='.$revision
+				.'">'.$revision.'</a>';
+		$date = _html_safe(substr($rcs[13], 6, 19));
+		$author = substr($rcs[13], 36);
+		$author = substr($author, 0, strspn($author,
+				'abcdefghijklmnopqrstuvwxyz'
+				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+				.'0123456789'));
+		//FIXME cache this info
+		$author_id = _sql_single('SELECT user_id FROM daportal_user'
+				." WHERE username='".addslashes($author)."';");
+		$author = _html_safe_link($author);
+		if(is_numeric($author_id))
+			$author = '<a href="index.php?module=user&id='
+					.$author_id.'">'.$author.'</a>';
+		$message = _html_safe($rcs[14]);
+		//FIXME choose icon depending on the file type
+		$entries[] = array('name' => $name,
+				'icon' => 'modules/project/default.png',
+				'thumbnail' => 'modules/project/default.png',
+				'revision' => $revision,
+				'date' => $date,
+				'author' => $author,
+				'message' => $message);
+	}
+	_module('explorer', 'browse_trusted', array('entries' => $entries,
+			'class' => array('revision' => 'Revision',
+					'date' => 'Date',
+					'author' => 'Author',
+					'message' => 'Message'),
+			'view' => 'details'));
+}
+
+function _browse_file($id, $project, $cvsroot, $filename, $revision)
+	//FIXME if revision is specified and valid:
+	//- display file content
+	//else:
+	//- list revisions in an explorer
+	//- allow diff requests
+	//also think about:
+	//- downloads
+	//- creating archives
+	//other ideas:
+	//- timeline
+{
+	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	exec('rlog "'.str_replace('"', '\"', $path).'"', $rcs);
+	_info('rlog "'.str_replace('"', '\"', $path).'"', 0);
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($project).' CVS: '
+			._html_safe(substr($rcs[2], 14)).'</h1>'."\n");
+	print('<pre>');
+	for($i = 0, $count = count($rcs); $i < $count; $i++)
+		print(_html_safe($i.': '.$rcs[$i])."\n");
+	print('</pre>'."\n");
 }
 
 
