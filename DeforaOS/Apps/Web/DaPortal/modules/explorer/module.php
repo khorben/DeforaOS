@@ -55,6 +55,8 @@ function explorer_browse(&$args)
 	{
 		$args['entries'][$i]['name'] = _html_safe_link(
 				$args['entries'][$i]['name']);
+		if(!isset($args['class']) || !is_array($args['class']))
+			continue;
 		$classes = array_keys($args['class']);
 		foreach($classes as $c)
 			$args['entries'][$i][$c] = _html_safe(
