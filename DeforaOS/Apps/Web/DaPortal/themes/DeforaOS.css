@@ -168,6 +168,11 @@ table.bordered th {
 	padding-left:			1px;
 }
 
+.explorer .listing_list .entry {
+	height:				1em;
+	width:				200px;
+}
+
 .field {
 	font-weight:			bold;
 	vertical-align:			top;
