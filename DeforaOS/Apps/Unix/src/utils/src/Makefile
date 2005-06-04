@@ -1,4 +1,4 @@
-TARGETS	= basename cat chgrp chmod chown cksum cmp cp dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo nice pwd renice rmdir sleep strings test time touch true tty uname uniq unlink wc
+TARGETS	= basename cat chgrp chmod chown cksum cmp cp dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo nice pwd renice rm rmdir sleep strings test time touch true tty uname uniq unlink wc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 CC	= cc
@@ -218,6 +218,14 @@ renice: $(renice_OBJS)
 renice.o: renice.c
 	$(CC) $(renice_CFLAGS) -c renice.c
 
+rm_OBJS= rm.o
+rm_CFLAGS=$(CFLAGSF) $(CFLAGS)
+rm: $(rm_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o rm $(rm_OBJS)
+
+rm.o: rm.c
+	$(CC) $(rm_CFLAGS) -c rm.c
+
 rmdir_OBJS= rmdir.o
 rmdir_CFLAGS=$(CFLAGSF) $(CFLAGS)
 rmdir: $(rmdir_OBJS)
@@ -316,7 +324,7 @@ wc.o: wc.c
 
 
 clean:
-	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cksum_OBJS) $(cmp_OBJS) $(cp_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(file_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(locale_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(nice_OBJS) $(pwd_OBJS) $(renice_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS)
+	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cksum_OBJS) $(cmp_OBJS) $(cp_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(file_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(locale_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(nice_OBJS) $(pwd_OBJS) $(renice_OBJS) $(rm_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
