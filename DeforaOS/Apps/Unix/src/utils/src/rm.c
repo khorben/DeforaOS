@@ -39,11 +39,12 @@ static int _rm_error(char * message, int ret)
 static int _rm_confirm(char * message)
 {
 	int c;
+	int tmp;
 
 	fprintf(stderr, "%s%s%s", "rm: Remove file \"", message, "\"? ");
 	if((c = fgetc(stdin)) == EOF)
 		return _rm_error("stdin", 0);
-	fflush(stdin);
+	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
 	return c == 'y';
 }
 
