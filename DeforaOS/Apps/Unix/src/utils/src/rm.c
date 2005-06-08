@@ -40,6 +40,7 @@ static int _rm_confirm(char * message)
 {
 	int c;
 
+	fprintf(stderr, "%s%s%s", "rm: Remove file \"", message, "\"? ");
 	if((c = fgetc(stdin)) == EOF)
 		return _rm_error("stdin", 0);
 	fflush(stdin);
@@ -67,6 +68,8 @@ static int _rm_do(Prefs * prefs, char * file)
 		/* FIXME */
 	}
 	/* FIXME */
+	if(*prefs & PREFS_i && !_rm_confirm(file))
+		return 0;
 	if(unlink(file) != 0)
 		return _rm_error(file, 2);
 	return 0;
