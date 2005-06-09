@@ -235,9 +235,70 @@ function project_bug_display($args)
 }
 
 
+function project_bug_insert($args)
+{
+	require_once('system/content.php');
+	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
+		return _error('Unable to insert bug content', 1);
+	if(!_sql_query('INSERT INTO daportal_bug (content_id, project_id'
+			.', state, type, priority) VALUES'
+			." ('$id'"
+			.", '".$args['project_id']."'"
+			.", '".$args['state']."'"
+			.", '".$args['type']."'"
+			.", '".$args['priority']."'"
+			.");"))
+	{
+		_sql_query('DELETE FROM daportal_content'
+				." WHERE content_id='$id';");
+		return _error('Unable to insert bug', 1);
+	}
+	project_bug_display(array('id' => $id));
+}
+
+
 function project_bug_list($args)
 {
-	print('<h1><img src="modules/project/bug.png" alt=""/> Bug reports</h1>'."\n");
+	$title = 'Bug reports';
+	if(isset($args['project_id']))
+	{
+		if(($args['project'] = _sql_single('SELECT name'
+				.' FROM daportal_project'
+				." WHERE project_id='"
+				.$args['project_id']."';"))
+				!= FALSE)
+			$project = $args['project'];
+	}
+	else if(isset($args['project']))
+	{
+		if(($args['project'] = _sql_single('SELECT name'
+				.' FROM daportal_project'
+				." WHERE name='".$args['project']."';"))
+				!= FALSE)
+			$project = $args['project'];
+	}
+	if(isset($args['user_id']))
+	{
+		if(($args['username'] = _sql_single('SELECT username'
+				.' FROM daportal_user'
+				." WHERE user_id='".$args['user_id']."';"))
+				!= FALSE)
+			$username = $args['username'];
+	}
+	else if(isset($args['username']))
+	{
+		if(($args['username'] = _sql_single('SELECT username'
+				.' FROM daportal_user'
+				." WHERE username='".$args['username']."';"))
+				!= FALSE)
+			$username = $args['username'];
+	}
+	if(isset($project))
+		$title.=' for '.$project;
+	if(isset($username))
+		$title.=' by '.$username;
+	print('<h1><img src="modules/project/bug.png" alt=""/> '
+			._html_safe($title).'</h1>'."\n");
 	$where = '';
 	if(strlen($args['project']))
 		$where.=" AND daportal_project.name='".$args['project']."'";
@@ -250,7 +311,6 @@ function project_bug_list($args)
 	if(strlen($args['priority']))
 		$where.=" AND daportal_bug.priority='".$args['priority']."'";
 	include('bug_list_filter.tpl');
-	/* FIXME */
 	$bugs = _sql_array('SELECT daportal_content.content_id as content_id'
 			.', bug_id AS id, timestamp AS date, title AS name'
 			.', content, daportal_project.name AS project, username'
@@ -269,7 +329,7 @@ function project_bug_list($args)
 	$toolbar[] = array('icon' => 'modules/project/bug.png',
 		'title' => 'Report a bug',
 		'link' => 'index.php?module=project&action=bug_new');
-	_module('explorer', 'browse', array('entries' => $bugs,
+	_module('explorer', 'browse_trusted', array('entries' => $bugs,
 			'class' => array('id' => '',
 					'project' => 'Project',
 					'date' => 'Date',
@@ -343,8 +403,8 @@ function project_insert($args)
 	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
 		return _error('Unable to insert project content');
 	if(!_sql_query('INSERT INTO daportal_project (project_id, name) VALUES'
-			."('$id', '".$args['name']."');"))
-		return _error('Unable to insert project');
+			." ('$id', '".$args['name']."');"))
+		return _error('Unable to insert project', 1);
 	project_display(array('id' => $id));
 }
 
