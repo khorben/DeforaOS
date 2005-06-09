@@ -1,2 +1,6 @@
-<h1><img src="modules/project/bug.png" alt=""/> Bug reports</h1>
-<p>This page will allow developpers and users to give feedback about the system. It will feature a bug-tracking system, which will be as convenient to use as possible. It still has to be developped.</p>
+<h1><img src="modules/project/report.png" alt=""/> <? echo _html_safe($title); ?></h1>
+<div class="title"><? echo _html_safe($bug['title']); ?></div>
+<table>
+	<td></td><td><a href="index.php?module=project&amp;action=bug_modify&amp;<? echo _html_safe_link($bug['id']); ?>"><input type="button" value="Modifier"/></a></td>
+	<td class="name"></td><td></td>
+</table>
