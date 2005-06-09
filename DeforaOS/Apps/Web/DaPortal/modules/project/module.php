@@ -217,16 +217,20 @@ function _browse_file($id, $project, $cvsroot, $filename, $revision)
 
 function project_bug_display($args)
 {
-	$bug = _sql_array('SELECT content_id as id, timestamp, title'
+	if(!is_numeric($args['id']))
+		return _error('Invalid bug ID', 1);
+	$bug = _sql_array('SELECT daportal_content.content_id as content_id'
+			.', daportal_bug.bug_id AS id, timestamp, title'
 			.', content, name, username'
 			.' FROM daportal_content, daportal_bug, daportal_user'
+			.', daportal_project'
 			." WHERE enabled='t'"
 			.' AND daportal_content.content_id=daportal_bug.bug_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND id='".$args['id']."';");
+			." AND bug_id='".$args['id']."';");
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
-	$title = $bug['title'];
+	$title = '#'.$bug['id'].': '.$bug['title'];
 	$bug = $bug[0];
 }
 
