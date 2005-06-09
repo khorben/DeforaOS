@@ -13,7 +13,7 @@ $list = 1;
 $actions = array('download' => 'Downloads',
 		'installer' => 'Installer',
 		'package' => 'Packages',
-		'report' => 'Reports');
+		'bug_list' => 'Reports');
 
 
 ?>

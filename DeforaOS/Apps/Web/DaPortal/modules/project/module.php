@@ -1,5 +1,7 @@
 <?php
 //modules/project/module.php
+//FIXME license
+//FIXME hide attic option
 
 
 
@@ -111,7 +113,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 			._html_safe($filename).'</h1>'."\n");
 	//FIXME un-hardcode locations (invoke the cvs executable instead?)
 	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
-	if(($dir = opendir($path)) == FALSE)
+	if(($dir = @opendir($path)) == FALSE)
 		return _error('Could not open CVS repository', 1);
 	$dirs = array();
 	$files = array();
@@ -210,6 +212,74 @@ function _browse_file($id, $project, $cvsroot, $filename, $revision)
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		print(_html_safe($i.': '.$rcs[$i])."\n");
 	print('</pre>'."\n");
+}
+
+
+function project_bug_display($args)
+{
+	$bug = _sql_array('SELECT content_id as id, timestamp, title'
+			.', content, name, username'
+			.' FROM daportal_content, daportal_bug, daportal_user'
+			." WHERE enabled='t'"
+			.' AND daportal_content.content_id=daportal_bug.bug_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND id='".$args['id']."';");
+	if(!is_array($bug) || count($bug) != 1)
+		return _error('Unable to display bug', 1);
+	$title = $bug['title'];
+	$bug = $bug[0];
+}
+
+
+function project_bug_list($args)
+{
+	print('<h1><img src="modules/project/bug.png" alt=""/> Bug reports</h1>'."\n");
+	$where = '';
+	if(strlen($args['project']))
+		$where.=" AND daportal_project.name='".$args['project']."'";
+	if(strlen($args['username']))
+		$where.=" AND daportal_user.username='".$args['username']."'";
+	if(strlen($args['state']))
+		$where.=" AND daportal_bug.state='".$args['state']."'";
+	if(strlen($args['type']))
+		$where.=" AND daportal_bug.type='".$args['type']."'";
+	if(strlen($args['priority']))
+		$where.=" AND daportal_bug.priority='".$args['priority']."'";
+	include('bug_list_filter.tpl');
+	/* FIXME */
+	$bugs = _sql_array('SELECT daportal_content.content_id as content_id'
+			.', bug_id AS id, timestamp AS date, title AS name'
+			.', content, daportal_project.name AS project, username'
+			.' FROM daportal_content, daportal_bug, daportal_user'
+			.', daportal_project'
+			." WHERE enabled='t'"
+			.' AND daportal_content.content_id=daportal_bug.bug_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			.$where
+			.' ORDER BY date DESC;');
+	if(!is_array($bugs))
+		return _error('Unable to list bugs', 1);
+	for($i = 0, $count = count($bugs); $i < $count; $i++)
+		$bugs[$i]['id'] = '#'.$bugs[$i]['id'];
+	$toolbar = array();
+	$toolbar[] = array('icon' => 'modules/project/bug.png',
+		'title' => 'Report a bug',
+		'link' => 'index.php?module=project&action=bug_new');
+	_module('explorer', 'browse', array('entries' => $bugs,
+			'class' => array('id' => '',
+					'project' => 'Project',
+					'date' => 'Date',
+					'state' => 'State',
+					'type' => 'Type',
+					'priority' => 'Priority'),
+			'view' => 'details',
+			'toolbar' => $toolbar));
+}
+
+
+function project_bug_new($args)
+{
+	include('bug_update.tpl');
 }
 
 
@@ -343,12 +413,6 @@ function project_new($args)
 function project_package($args)
 {
 	include('package.tpl');
-}
-
-
-function project_report($args)
-{
-	include('bug_display.tpl');
 }
 
 
