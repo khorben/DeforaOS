@@ -152,7 +152,6 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 	foreach($files as $f)
 	{
 		unset($rcs);
-		//FIXME maybe use -h and -z among other options
 		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
 		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
 		for($i = 0, $count = count($rcs); $i < $count; $i++)
@@ -202,7 +201,6 @@ function _browse_file($id, $project, $cvsroot, $filename, $revision)
 	//FIXME if revision is specified and valid:
 	//- display file content
 	//else:
-	//- list revisions in an explorer
 	//- allow diff requests
 	//also think about:
 	//- downloads
@@ -211,16 +209,41 @@ function _browse_file($id, $project, $cvsroot, $filename, $revision)
 	//- timeline
 {
 	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
-	//FIXME maybe use -h and -z among other options
+	//FIXME will interpret variables
 	exec('rlog "'.str_replace('"', '\"', $path).'"', $rcs);
 	_info('rlog "'.str_replace('"', '\"', $path).'"', 0);
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project).' CVS: '
 			._html_safe(substr($rcs[2], 14)).'</h1>'."\n");
-	print('<pre>');
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
-		print(_html_safe($i.': '.$rcs[$i])."\n");
-	print('</pre>'."\n");
+		_info($i.': '.$rcs[$i], 0);
+	$revisions = array();
+	for($i = 12, $count = count($rcs); $i < $count; $i+=4)
+	{
+		$name = substr($rcs[$i], 9);
+		$author = substr($rcs[$i+1], 36);
+		$author = substr($author, 0, strspn($author,
+				'abcdefghijklmnopqrstuvwxyz'
+				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+				.'0123456789'));
+		//FIXME cache this info
+		$author_id = _sql_single('SELECT username FROM daportal_user'
+				." WHERE username='".addslashes($author)."';");
+		$author = _html_safe_link($author);
+		$revisions[] = array('module' => 'project',
+				'action' => 'browse',
+				'id' => $id,
+				'args' => '&file='.$filename.'&revision='.$name,
+				'name' => $name,
+				'date' => substr($rcs[$i+1], 5, 20),
+				'author' => $author,
+				'message' => $rcs[$i+2]);
+	}
+	_module('explorer', 'browse', array('entries' => $revisions,
+			'class' => array('date' => 'Date',
+					'author' => 'Username',
+					'message' => 'Message'),
+			'view' => 'details'));
 }
 
 
