@@ -380,6 +380,11 @@ function project_bug_modify($args)
 	 * of affected bugs etc */
 	/* FIXME maybe also restore original project listing function and
 	 * create a project_assign one with current number of (open) bugs etc */
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied', 1);
 }
 
 
@@ -526,7 +531,7 @@ function project_modify($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error('Permission denied', 1);
 	$project = _sql_array('SELECT name FROM daportal_project'
 			." WHERE project_id='".$args['id']."';");
 	if(!is_array($project) || count($project) != 1)
