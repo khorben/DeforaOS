@@ -332,6 +332,7 @@ function project_bug_list($args)
 	$bugs = _sql_array('SELECT daportal_content.content_id as content_id'
 			.', bug_id AS id, timestamp AS date, title AS name'
 			.', content, daportal_project.name AS project, username'
+			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE enabled='t'"
