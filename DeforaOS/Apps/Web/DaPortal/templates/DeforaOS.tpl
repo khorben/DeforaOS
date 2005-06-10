@@ -21,7 +21,7 @@
 		</ul></li>
 	<li><a href="support.html">Support</a><ul>
 		<li><a href="documentation.html">Documentation</a></li>
-		<li><a href="index.php?module=project&amp;action=bug_new">Reports</a></li>
+		<li><a href="index.php?module=project&amp;action=bug_list">Reports</a></li>
 		</ul></li>
 </ul>
 <? } ?>
