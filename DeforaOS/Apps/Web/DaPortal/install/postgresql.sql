@@ -54,7 +54,7 @@ CREATE TABLE daportal_project (
 CREATE TABLE daportal_bug (
 	bug_id SERIAL UNIQUE,
 	content_id SERIAL UNIQUE,
-	project_id SERIAL UNIQUE,
+	project_id SERIAL,
 	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented')) NOT NULL DEFAULT 'New',
 	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')) NOT NULL,
 	priority VARCHAR(6) CHECK (priority IN ('Urgent', 'High', 'Medium', 'Low')) NOT NULL DEFAULT 'Medium',
