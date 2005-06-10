@@ -620,6 +620,8 @@ function project_timeline($args)
 	{
 		$line = fgets($fp);
 		$fields = explode('|', $line);
+		if(!strlen($fields[4]))
+			continue;
 		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot, $len) != 0)
 			continue;
 		$entries[] = array('name' => substr($fields[3], $len+1).'/'
