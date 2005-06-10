@@ -43,6 +43,8 @@ function _explorer_link(&$entry)
 				._html_safe_link($entry['action']);
 		if(isset($entry['id']))
 			$link.='&amp;id='._html_safe_link($entry['id']);
+		if(isset($entry['args']))
+			$link.=_html_safe($entry['args']);
 		return $link.'">';
 	}
 	return '';
