@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -36,18 +38,19 @@ static int _rm_error(char * message, int ret)
 	return ret;
 }
 
-static int _rm_confirm(char * message)
+static int _rm_confirm(char const * message, char const * type)
 {
 	int c;
 	int tmp;
 
-	fprintf(stderr, "%s%s%s", "rm: Remove file \"", message, "\"? ");
+	fprintf(stderr, "%s%s%s%s%s", "rm: ", message, ": Remove ", type, "? ");
 	if((c = fgetc(stdin)) == EOF)
 		return _rm_error("stdin", 0);
 	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
 	return c == 'y';
 }
 
+static int _rm_do_recursive(Prefs * prefs, char * file);
 static int _rm_do(Prefs * prefs, char * file)
 {
 	struct stat st;
@@ -66,12 +69,52 @@ static int _rm_do(Prefs * prefs, char * file)
 					": Is a directory\n");
 			return 0;
 		}
-		/* FIXME */
+		return _rm_do_recursive(prefs, file);
 	}
-	/* FIXME */
-	if(*prefs & PREFS_i && !_rm_confirm(file))
+	/* FIXME ask also if permissions do not allow file removal */
+	if(*prefs & PREFS_i && !_rm_confirm(file, "file"))
 		return 0;
 	if(unlink(file) != 0)
+		return _rm_error(file, 2);
+	return 0;
+}
+
+static int _rm_do_recursive(Prefs * prefs, char * file)
+{
+	DIR * dir;
+	struct dirent * de;
+	int len = strlen(file) + 2;
+	char * path;
+	char * p;
+
+	if((dir = opendir(file)) == NULL)
+		return _rm_error(file, 2);
+	readdir(dir);
+	readdir(dir);
+	if((path = malloc(len)) == NULL)
+	{
+		closedir(dir);
+		return _rm_error("malloc", 2);
+	}
+	sprintf(path, "%s/", file);
+	while((de = readdir(dir)) != NULL)
+	{
+		if((p = realloc(path, len + strlen(de->d_name))) == NULL)
+		{
+			free(path);
+			closedir(dir);
+			return _rm_error("malloc", 2);
+		}
+		path = p;
+		strcpy(&path[len-1], de->d_name);
+		if(_rm_do(prefs, path) != 0)
+			return 2;
+	}
+	free(path);
+	closedir(dir);
+	if(*prefs & PREFS_i && !_rm_confirm(file, "directory"))
+		return 0;
+	if(rmdir(file) != 0)
 		return _rm_error(file, 2);
 	return 0;
 }
