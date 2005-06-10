@@ -16,6 +16,13 @@ function _project_toolbar($id)
 }
 
 
+function _project_name($id)
+{
+	return _sql_single('SELECT name FROM daportal_project'
+			." WHERE project_id='$id';");
+}
+
+
 function project_admin($args)
 {
 	global $user_id;
@@ -225,13 +232,18 @@ function project_bug_display($args)
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE enabled='t'"
-			.' AND daportal_content.content_id=daportal_bug.bug_id'
+			.' AND daportal_content.content_id'
+			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' AND daportal_project.project_id'
+			.'=daportal_bug.project_id'
 			." AND bug_id='".$args['id']."';");
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
+	$bug = $bug[0];
 	$title = '#'.$bug['id'].': '.$bug['title'];
 	$bug = $bug[0];
+	include('bug_display.tpl');
 }
 
 
@@ -244,7 +256,7 @@ function project_bug_insert($args)
 			.', state, type, priority) VALUES'
 			." ('$id'"
 			.", '".$args['project_id']."'"
-			.", '".$args['state']."'"
+			.", 'New'"
 			.", '".$args['type']."'"
 			.", '".$args['priority']."'"
 			.");"))
@@ -262,17 +274,13 @@ function project_bug_list($args)
 	$title = 'Bug reports';
 	if(isset($args['project_id']))
 	{
-		if(($args['project'] = _sql_single('SELECT name'
-				.' FROM daportal_project'
-				." WHERE project_id='"
-				.$args['project_id']."';"))
+		if(($args['project'] = _project_name($args['project_id']))
 				!= FALSE)
 			$project = $args['project'];
 	}
 	else if(isset($args['project']))
 	{
 		if(($args['project'] = _sql_single('SELECT name'
-				.' FROM daportal_project'
 				." WHERE name='".$args['project']."';"))
 				!= FALSE)
 			$project = $args['project'];
@@ -294,7 +302,15 @@ function project_bug_list($args)
 			$username = $args['username'];
 	}
 	if(isset($project))
+	{
+		if(isset($args['project_id']))
+			$project_id = $args['project_id'];
+		else if(($project_id = _sql_single('SELECT project_id'
+				.' FROM daportal_project'
+				." WHERE name='$project';")) == FALSE)
+			unset($project_id);
 		$title.=' for '.$project;
+	}
 	if(isset($username))
 		$title.=' by '.$username;
 	print('<h1><img src="modules/project/bug.png" alt=""/> '
@@ -317,18 +333,29 @@ function project_bug_list($args)
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE enabled='t'"
-			.' AND daportal_content.content_id=daportal_bug.bug_id'
+			.' AND daportal_content.content_id'
+			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' AND daportal_project.project_id'
+			.'=daportal_bug.project_id'
 			.$where
-			.' ORDER BY date DESC;');
+			.' ORDER BY bug_id DESC;');
 	if(!is_array($bugs))
 		return _error('Unable to list bugs', 1);
 	for($i = 0, $count = count($bugs); $i < $count; $i++)
-		$bugs[$i]['id'] = '#'.$bugs[$i]['id'];
+	{
+		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
+		$bugs[$i]['id'] = '<a href="index.php?module=project'
+				.'&amp;action=bug_display'
+				.'&amp;id='.$bugs[$i]['id'].'">#'
+				.$bugs[$i]['id'].'</a>';
+	}
 	$toolbar = array();
+	$link = 'index.php?module=project&action=bug_new'.(isset($project_id)
+			? '&project_id='.$project_id : '');
 	$toolbar[] = array('icon' => 'modules/project/bug.png',
 		'title' => 'Report a bug',
-		'link' => 'index.php?module=project&action=bug_new');
+		'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
 			'class' => array('id' => '',
 					'project' => 'Project',
@@ -341,8 +368,24 @@ function project_bug_list($args)
 }
 
 
+function project_bug_modify($args)
+{
+	/* FIXME we won't use bug_update.tpl here but propose a series of
+	 * logical actions (choose different project, assign to a user, etc) */
+	/* FIXME for instance create a user_assign function with current number
+	 * of affected bugs etc */
+	/* FIXME maybe also restore original project listing function and
+	 * create a project_assign one with current number of (open) bugs etc */
+}
+
+
 function project_bug_new($args)
 {
+	if(!is_numeric($args['project_id'])
+			|| !($project = _project_name($args['project_id'])))
+		return project_list(array('action' => 'bug_new'));
+	$title = 'Report bug for '.$project;
+	$project_id = $args['project_id'];
 	include('bug_update.tpl');
 }
 
@@ -420,7 +463,12 @@ function project_list($args)
 	$title = 'Projects list';
 	$level = 1;
 	$where = '';
-	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
+	if($args['action'] == 'bug_new')
+	{
+		$title = 'Select project to bug';
+		$action = $args['action'];
+	}
+	else if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			." FROM daportal_user WHERE user_id='".$args['user_id']
 			."';")) != FALSE)
 	{
@@ -447,6 +495,10 @@ function project_list($args)
 	{
 		$projects[$i]['module'] = 'project';
 		$projects[$i]['action'] = 'display';
+		if(isset($action))
+			$projects[$i]['link'] = 'index.php?module=project'
+					.'&action='.$action
+					.'&project_id='.$projects[$i]['id'];
 		$projects[$i]['icon'] = 'modules/project/icon.png';
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 	}

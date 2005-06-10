@@ -5,7 +5,7 @@
 	<table>
 		<tr><td class="field">Name:</td><td><input type="text" name="name" value="<? echo _html_safe($project['name']); ?>" size="20"/></td></tr>
 		<tr><td class="field">Short description:</td><td><input type="text" name="title" value="<? echo _html_safe($project['title']); ?>" size="80"/></td></tr>
-		<tr><td class="field">Long description:</td><td><textarea name="content" cols="80" rows="20"><? echo _html_safe($project['content']); ?></textarea></td></tr>
+		<tr><td class="field">Long description:</td><td><textarea name="content" cols="80" rows="10"><? echo _html_safe($project['content']); ?></textarea></td></tr>
 		<tr><td></td><td><input type="submit" value="Send"/></td></tr>
 	</table>
 </form>
