@@ -243,7 +243,7 @@ function project_bug_display($args)
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
-	$title = '#'.$bug['id'].': '.$bug['title'];
+	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
 	$bug = $bug[0];
 	include('bug_display.tpl');
 }
