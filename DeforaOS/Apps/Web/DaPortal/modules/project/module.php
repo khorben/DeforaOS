@@ -615,14 +615,15 @@ function project_timeline($args)
 		return _error('Unable to open history file', 1);
 	$entries = array();
 	$i = 0;
+	$len = strlen('DeforaOS/'.$cvsroot);
 	while(!feof($fp))
 	{
 		$line = fgets($fp);
 		$fields = explode('|', $line);
-		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot,
-				strlen('DeforaOS/'.$cvsroot)) != 0)
+		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot, $len) != 0)
 			continue;
-		$entries[] = array('name' => $fields[5],
+		$entries[] = array('name' => substr($fields[3], $len+1).'/'
+						.$fields[5],
 				'revision' => $fields[4],
 				'author' => $fields[1]);
 	}
