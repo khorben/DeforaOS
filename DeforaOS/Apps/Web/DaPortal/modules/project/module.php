@@ -283,6 +283,7 @@ function project_bug_list($args)
 	else if(isset($args['project']))
 	{
 		if(($args['project'] = _sql_single('SELECT name'
+				.' FROM daportal_project'
 				." WHERE name='".$args['project']."';"))
 				!= FALSE)
 			$project = $args['project'];
