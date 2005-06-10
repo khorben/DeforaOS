@@ -625,8 +625,6 @@ function project_timeline($args)
 		$entries[] = array('name' => $fields[5],
 				'revision' => $fields[4],
 				'author' => $fields[1]);
-		if($i++ == 200)
-			break;
 	}
 	_module('explorer', 'browse', array('entries' => $entries,
 			'class' => array('revision' => 'Revision',
