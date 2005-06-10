@@ -18,6 +18,7 @@ CREATE TABLE daportal_user (
 	PRIMARY KEY (user_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
+INSERT INTO daportal_user (username, password, admin, email) VALUES ('admin', 'password', '1', 'username@domain.tld');
 
 
 CREATE TABLE daportal_content (
@@ -57,10 +58,9 @@ CREATE TABLE daportal_bug (
 	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented')) NOT NULL DEFAULT 'New',
 	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')) NOT NULL,
 	priority VARCHAR(6) CHECK (priority IN ('Urgent', 'High', 'Medium', 'Low')) NOT NULL DEFAULT 'Medium',
-	assigned SERIAL UNIQUE DEFAULT NULL,
+	assigned INTEGER,
 	PRIMARY KEY (bug_id),
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
-	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
-	FOREIGN KEY (assigned) REFERENCES daportal_user (user_id)
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
