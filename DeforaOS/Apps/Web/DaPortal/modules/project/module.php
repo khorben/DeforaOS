@@ -360,6 +360,8 @@ function project_bug_list($args)
 		return _error('Unable to list bugs', 1);
 	for($i = 0, $count = count($bugs); $i < $count; $i++)
 	{
+		$bugs[$i]['icon'] = 'modules/project/bug.png';
+		$bugs[$i]['thumbnail'] = 'modules/project/bug.png';
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['id'] = '<a href="index.php?module=project'
 				.'&amp;action=bug_display'
@@ -384,6 +386,7 @@ function project_bug_list($args)
 			'module' => 'project',
 			'action' => 'bug_list',
 			'sort' => isset($args['sort']) ? $args['sort'] : 'id',
+			/* FIXME should set args according to filters */
 			'view' => 'details',
 			'toolbar' => $toolbar));
 }
