@@ -603,6 +603,39 @@ function project_package($args)
 }
 
 
+function project_timeline($args)
+{
+	if(($cvsroot = _sql_single('SELECT cvsroot FROM daportal_project'
+			." WHERE project_id='".$args['id']."';")) == FALSE)
+		return _error('Invalid project ID', 1);
+	_project_toolbar($args['id']);
+	print('<h1><img src="modules/project/icon.png" alt=""/> Project timeline</h1>'."\n");
+	//FIXME one more hard-coded variable
+	if(($fp = fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
+		return _error('Unable to open history file', 1);
+	$entries = array();
+	$i = 0;
+	while(!feof($fp))
+	{
+		$line = fgets($fp);
+		$fields = explode('|', $line);
+		if(strncmp($fields[3], 'DeforaOS'.$cvsroot,
+				strlen('DeforaOS'.$cvsroot)) != 0)
+			continue;
+		$entries[] = array('name' => $fields[5],
+				'revision' => $fields[4],
+				'author' => $fields[1]);
+		if($i++ == 200)
+			break;
+	}
+	_module('explorer', 'browse', array('entries' => $entries,
+			'class' => array('revision' => 'Revision',
+					'author' => 'Username'),
+			'view' => 'details'));
+	fclose($fp);
+}
+
+
 function project_update($args)
 {
 	//FIXME TODO
