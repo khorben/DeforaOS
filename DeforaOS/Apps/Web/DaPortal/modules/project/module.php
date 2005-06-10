@@ -30,6 +30,8 @@ function project_admin($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
+	if(isset($args['id']))
+		return project_modify($args);
 	print('<h1><img src="modules/project/icon.png" alt=""/> Projects administration</h1>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin, enabled'
