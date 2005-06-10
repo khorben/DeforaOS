@@ -330,6 +330,18 @@ function project_bug_list($args)
 	if(strlen($args['priority']))
 		$where.=" AND daportal_bug.priority='".$args['priority']."'";
 	include('bug_list_filter.tpl');
+	$order = ' ORDER BY ';
+	switch($args['sort'])
+	{
+		case 'name':	$order.='name DESC'; break;
+		case 'project':	$order.='project DESC'; break;
+		case 'username':$order.='username DESC'; break;
+		case 'state':	$order.='state DESC'; break;
+		case 'type':	$order.='type DESC'; break;
+		case 'priority':$order.='priority DESC'; break;
+		default:
+		case 'id':	$order.='bug_id DESC'; break;
+	}
 	$bugs = _sql_array('SELECT daportal_content.content_id as content_id'
 			.', bug_id AS id, timestamp AS date, title AS name'
 			.', content, daportal_project.name AS project, username'
@@ -343,7 +355,7 @@ function project_bug_list($args)
 			.' AND daportal_project.project_id'
 			.'=daportal_bug.project_id'
 			.$where
-			.' ORDER BY bug_id DESC;');
+			.$order);
 	if(!is_array($bugs))
 		return _error('Unable to list bugs', 1);
 	for($i = 0, $count = count($bugs); $i < $count; $i++)
@@ -353,6 +365,8 @@ function project_bug_list($args)
 				.'&amp;action=bug_display'
 				.'&amp;id='.$bugs[$i]['id'].'">#'
 				.$bugs[$i]['id'].'</a>';
+		$bugs[$i]['date'] = date('j/m/Y H:i',
+				strtotime(substr($bugs[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
 	$link = 'index.php?module=project&action=bug_new'.(isset($project_id)
@@ -361,12 +375,15 @@ function project_bug_list($args)
 		'title' => 'Report a bug',
 		'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
-			'class' => array('id' => '',
+			'class' => array('id' => '#',
 					'project' => 'Project',
 					'date' => 'Date',
 					'state' => 'State',
 					'type' => 'Type',
 					'priority' => 'Priority'),
+			'module' => 'project',
+			'action' => 'bug_list',
+			'sort' => isset($args['sort']) ? $args['sort'] : 'id',
 			'view' => 'details',
 			'toolbar' => $toolbar));
 }
