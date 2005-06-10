@@ -53,7 +53,7 @@ function project_admin($args)
 				.'</a>';
 		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
 		$projects[$i]['module'] = 'project';
-		$projects[$i]['action'] = 'update';
+		$projects[$i]['action'] = 'modify';
 		$projects[$i]['icon'] = 'modules/project/icon.png';
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == 't')
@@ -515,6 +515,24 @@ function project_list($args)
 }
 
 
+function project_modify($args)
+{
+	//FIXME TODO
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	$project = _sql_array('SELECT name FROM daportal_project'
+			." WHERE project_id='".$args['id']."';");
+	if(!is_array($project) || count($project) != 1)
+		return error('Unable to update project', 1);
+	$project = $project[0];
+	$title = 'Modification of '.$project['name'];
+	include('project_update.tpl');
+}
+
+
 function project_new($args)
 {
 	global $user_id;
@@ -522,6 +540,7 @@ function project_new($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
+	$title = 'New project';
 	include('project_update.tpl');
 }
 
@@ -540,7 +559,6 @@ function project_update($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	include('project_update.tpl');
 }
 
 ?>
