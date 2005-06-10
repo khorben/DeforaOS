@@ -619,8 +619,8 @@ function project_timeline($args)
 	{
 		$line = fgets($fp);
 		$fields = explode('|', $line);
-		if(strncmp($fields[3], 'DeforaOS'.$cvsroot,
-				strlen('DeforaOS'.$cvsroot)) != 0)
+		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot,
+				strlen('DeforaOS/'.$cvsroot)) != 0)
 			continue;
 		$entries[] = array('name' => $fields[5],
 				'revision' => $fields[4],
