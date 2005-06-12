@@ -20,7 +20,7 @@ function _query($query)
 		case 'pgsql':
 			$_pg_res = @pg_query($query);
 			if(strlen($str = @pg_last_error()))
-				_error($str);
+				_error($str, 0);
 			return $_pg_res;
 	}
 }
