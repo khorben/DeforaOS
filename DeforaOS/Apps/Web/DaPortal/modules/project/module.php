@@ -178,6 +178,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 				.'0123456789'));
+		require_once('system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
 		{
 			$author = _html_safe_link($author);
@@ -684,21 +685,36 @@ function project_timeline($args)
 	while(!feof($fp))
 	{
 		$line = fgets($fp);
-		_info($line);
 		$fields = explode('|', $line);
 		if(!strlen($fields[4]))
 			continue;
 		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot, $len) != 0)
 			continue;
-		/* FIXME determine action, cf cvs manual history options
-		 * line 2412 */
-		$entries[] = array('name' => substr($fields[3], $len+1).'/'
-						.$fields[5],
+		_info($line);
+		unset($event);
+		switch($fields[0][0])
+		{
+			case 'A': $event = 'Add'; break;
+			case 'F': $event = 'Release'; break;
+			case 'M': $event = 'Modify'; break;
+			case 'R': $event = 'Remove'; break;
+		}
+		if(!isset($event))
+			continue;
+		$name = substr($fields[3], $len+1).'/'.$fields[5];
+		$entries[] = array('name' => $name,
+				'module' => 'project',
+				'action' => 'browse',
+				'id' => $args['id'],
+				'args' => '&file='.$name.',v',
+				'event' => $event,
 				'revision' => $fields[4],
 				'author' => $fields[1]);
 	}
-	_module('explorer', 'browse', array('entries' => $entries,
-			'class' => array('revision' => 'Revision',
+	_module('explorer', 'browse', array(
+			'entries' => array_reverse($entries),
+			'class' => array('event' => 'Action',
+					'revision' => 'Revision',
 					'author' => 'Username'),
 			'view' => 'details'));
 	fclose($fp);
