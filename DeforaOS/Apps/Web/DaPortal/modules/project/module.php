@@ -671,24 +671,29 @@ function project_package($args)
 
 function project_timeline($args)
 {
-	if(($cvsroot = _sql_single('SELECT cvsroot FROM daportal_project'
-			." WHERE project_id='".$args['id']."';")) == FALSE)
+	$project = _sql_array('SELECT name, cvsroot FROM daportal_project'
+			." WHERE project_id='".$args['id']."';");
+	if(!is_array($project) || count($project) != 1)
 		return _error('Invalid project ID', 1);
+	$project = $project[0];
 	_project_toolbar($args['id']);
-	print('<h1><img src="modules/project/icon.png" alt=""/> Project timeline</h1>'."\n");
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($project['name'])
+			.' CVS timeline</h1>'."\n");
 	//FIXME one more hard-coded variable
 	if(($fp = fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
 		return _error('Unable to open history file', 1);
 	$entries = array();
 	$i = 0;
-	$len = strlen('DeforaOS/'.$cvsroot);
+	$len = strlen('DeforaOS/'.$project['cvsroot']);
 	while(!feof($fp))
 	{
 		$line = fgets($fp);
 		$fields = explode('|', $line);
 		if(!strlen($fields[4]))
 			continue;
-		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot, $len) != 0)
+		if(strncmp($fields[3], 'DeforaOS/'.$project['cvsroot'], $len)
+				!= 0)
 			continue;
 		_info($line);
 		unset($event);
