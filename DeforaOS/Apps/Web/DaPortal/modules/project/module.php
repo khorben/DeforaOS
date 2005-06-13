@@ -274,8 +274,15 @@ function project_bug_display($args)
 
 function project_bug_insert($args)
 {
+	global $user_id;
+
 	require_once('system/content.php');
-	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
+	require_once('system/user.php');
+	$enable = 0;
+	if(_user_admin($user_id))
+		$enable = 1;
+	if(($id = _content_insert($args['title'], $args['content'], $enable))
+			== FALSE)
 		return _error('Unable to insert bug content', 1);
 	if(!_sql_query('INSERT INTO daportal_bug (content_id, project_id'
 			.', state, type, priority) VALUES'
@@ -290,7 +297,10 @@ function project_bug_insert($args)
 				." WHERE content_id='$id';");
 		return _error('Unable to insert bug', 1);
 	}
-	project_bug_display(array('id' => $id));
+	$id = _sql_id('daportal_bug', 'bug_id');
+	if($enable)
+		return project_bug_display(array('id' => $id));
+	include('bug_posted.tpl');
 }
 
 
@@ -619,11 +629,14 @@ function project_timeline($args)
 	while(!feof($fp))
 	{
 		$line = fgets($fp);
+		_info($line);
 		$fields = explode('|', $line);
 		if(!strlen($fields[4]))
 			continue;
 		if(strncmp($fields[3], 'DeforaOS/'.$cvsroot, $len) != 0)
 			continue;
+		/* FIXME determine action, cf cvs manual history options
+		 * line 2412 */
 		$entries[] = array('name' => substr($fields[3], $len+1).'/'
 						.$fields[5],
 				'revision' => $fields[4],
