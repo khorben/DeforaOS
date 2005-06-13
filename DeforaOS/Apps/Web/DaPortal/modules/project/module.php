@@ -707,18 +707,22 @@ function project_timeline($args)
 		if(!isset($event))
 			continue;
 		$name = substr($fields[3], $len+1).'/'.$fields[5];
+		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
+		$date = date('d/m/Y H:i', $date);
 		$entries[] = array('name' => $name,
 				'module' => 'project',
 				'action' => 'browse',
 				'id' => $args['id'],
 				'args' => '&file='.$name.',v',
+				'date' => $date,
 				'event' => $event,
 				'revision' => $fields[4],
 				'author' => $fields[1]);
 	}
 	_module('explorer', 'browse', array(
 			'entries' => array_reverse($entries),
-			'class' => array('event' => 'Action',
+			'class' => array('date' => 'Date',
+					'event' => 'Action',
 					'revision' => 'Revision',
 					'author' => 'Username'),
 			'view' => 'details'));
