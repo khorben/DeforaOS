@@ -385,7 +385,10 @@ function project_bug_list($args)
 	if(isset($project))
 	{
 		if(isset($args['project_id']))
+		{
 			$project_id = $args['project_id'];
+			_project_toolbar($project_id);
+		}
 		else if(($project_id = _sql_single('SELECT project_id'
 				.' FROM daportal_project'
 				." WHERE name='$project';")) == FALSE)
