@@ -18,4 +18,19 @@ function _user_admin($id)
 			." WHERE user_id='$id';") == 't';
 }
 
+
+function _user_id($username)
+{
+	static $cache = array();
+
+	if(array_key_exists($username, $cache))
+		return $cache[$username];
+	if(($id = _sql_single('SELECT user_id FROM daportal_user'
+			." WHERE username='".addslashes($username)."';"))
+			== FALSE)
+		return FALSE;
+	$cache[$username] = $id;
+	return $id;
+}
+
 ?>
