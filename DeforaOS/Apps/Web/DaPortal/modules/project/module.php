@@ -423,9 +423,10 @@ function project_bug_list($args)
 		default:
 		case 'id':	$order.='bug_id DESC'; break;
 	}
-	$bugs = _sql_array('SELECT daportal_content.content_id as content_id'
+	$bugs = _sql_array('SELECT daportal_content.content_id AS content_id'
 			.', bug_id AS id, timestamp AS date, title AS name'
 			.', content, daportal_project.name AS project, username'
+			.', daportal_project.project_id'
 			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
@@ -444,10 +445,16 @@ function project_bug_list($args)
 		$bugs[$i]['icon'] = 'modules/project/bug.png';
 		$bugs[$i]['thumbnail'] = 'modules/project/bug.png';
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
-		$bugs[$i]['id'] = '<a href="index.php?module=project'
+		$bugs[$i]['module'] = 'project';
+		$bugs[$i]['action'] = 'bug_display';
+		$bugs[$i]['nb'] = '<a href="index.php?module=project'
 				.'&amp;action=bug_display'
 				.'&amp;id='.$bugs[$i]['id'].'">#'
 				.$bugs[$i]['id'].'</a>';
+		$bugs[$i]['project'] = '<a href="index.php?module=project'
+				.'&amp;id='.$bugs[$i]['project_id'].'">'
+				._html_safe($bugs[$i]['project'])
+				.'</a>';
 		$bugs[$i]['date'] = date('j/m/Y H:i',
 				strtotime(substr($bugs[$i]['date'], 0, 19)));
 	}
@@ -458,7 +465,7 @@ function project_bug_list($args)
 		'title' => 'Report a bug',
 		'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
-			'class' => array('id' => '#',
+			'class' => array('nb' => '#',
 					'project' => 'Project',
 					'date' => 'Date',
 					'state' => 'State',
@@ -466,7 +473,7 @@ function project_bug_list($args)
 					'priority' => 'Priority'),
 			'module' => 'project',
 			'action' => 'bug_list',
-			'sort' => isset($args['sort']) ? $args['sort'] : 'id',
+			'sort' => isset($args['sort']) ? $args['sort'] : 'nb',
 			/* FIXME should set args according to filters */
 			'view' => 'details',
 			'toolbar' => $toolbar));
