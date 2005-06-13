@@ -95,7 +95,7 @@ function project_browse($args)
 			._html_safe($project['name']).' CVS</h1>'."\n");
 		return _info('This project does not have a CVS repository', 1);
 	}
-	if(!ereg('^[a-zA-Z0-9., /]+$', $project['cvsroot'])
+	if(!ereg('^[a-zA-Z0-9. /]+$', $project['cvsroot'])
 			|| ereg('\.\.', $project['cvsroot']))
 		return _error('Invalid CVSROOT', 1);
 	if(!isset($args['file']))
@@ -109,8 +109,14 @@ function project_browse($args)
 		return _browse_dir($args['id'], $project['name'],
 				$project['cvsroot'], $file);
 	else if(file_exists($filename))
+	{
+		if(isset($args['revision']))
+			return _browse_file_revision($args['id'],
+					$project['name'], $project['cvsroot'],
+					$file, $args['revision']);
 		return _browse_file($args['id'], $project['name'],
-				$project['cvsroot'], $file, $args['revision']);
+				$project['cvsroot'], $file);
+	}
 	_error($filename, 1);
 	_browse_dir($args['id'], $project['name'], $project['cvsroot'], '');
 }
@@ -172,13 +178,14 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 				.'0123456789'));
-		//FIXME cache this info
-		$author_id = _sql_single('SELECT user_id FROM daportal_user'
-				." WHERE username='".addslashes($author)."';");
-		$author = _html_safe_link($author);
-		if(is_numeric($author_id))
+		if(($author_id = _user_id($author)) != FALSE)
+		{
+			$author = _html_safe_link($author);
 			$author = '<a href="index.php?module=user&amp;id='
 					.$author_id.'">'.$author.'</a>';
+		}
+		else
+			$author = '';
 		$message = _html_safe($rcs[14]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
@@ -197,47 +204,59 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 			'view' => 'details'));
 }
 
-function _browse_file($id, $project, $cvsroot, $filename, $revision)
-	//FIXME if revision is specified and valid:
-	//- display file content
-	//else:
+function _browse_file($id, $project, $cvsroot, $filename)
+	//FIXME
 	//- allow diff requests
 	//also think about:
 	//- downloads
 	//- creating archives
-	//other ideas:
-	//- timeline
 {
 	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
-	//FIXME will interpret variables
-	exec('rlog "'.str_replace('"', '\"', $path).'"', $rcs);
-	_info('rlog "'.str_replace('"', '\"', $path).'"', 0);
+	$path = str_replace('"', '\"', $path);
+	$path = str_replace('$', '\$', $path);
+	exec('rlog "'.$path.'"', $rcs);
+	_info('rlog "'.$path.'"', 0);
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project).' CVS: '
+			._html_safe(dirname($filename)).'/'
 			._html_safe(substr($rcs[2], 14)).'</h1>'."\n");
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		_info($i.': '.$rcs[$i], 0);
 	$revisions = array();
-	for($i = 12, $count = count($rcs); $i < $count; $i+=4)
+	for($i = 12, $count = count($rcs); $i < $count; $i+=3)
 	{
 		$name = substr($rcs[$i], 9);
+		$date = substr($rcs[$i+1], 5, 20);
 		$author = substr($rcs[$i+1], 36);
 		$author = substr($author, 0, strspn($author,
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 				.'0123456789'));
-		//FIXME cache this info
-		$author_id = _sql_single('SELECT username FROM daportal_user'
-				." WHERE username='".addslashes($author)."';");
-		$author = _html_safe_link($author);
+		require_once('system/user.php');
+		if(($author_id = _user_id($author)) != FALSE)
+			$author = _html_safe_link($author);
+		else
+			$author = '';
+		$message = $rcs[$i+2];
+		if($message == '----------------------------'
+				|| $message ==
+'=============================================================================')
+			$message = '';
+		else
+			for(; $i < $count
+					&& $rcs[$i+2] !=
+					'----------------------------'
+					&& $rcs[$i+2] !=
+'=============================================================================';
+				$i++);
 		$revisions[] = array('module' => 'project',
 				'action' => 'browse',
 				'id' => $id,
 				'args' => '&file='.$filename.'&revision='.$name,
 				'name' => $name,
-				'date' => substr($rcs[$i+1], 5, 20),
+				'date' => $date,
 				'author' => $author,
-				'message' => $rcs[$i+2]);
+				'message' => $message);
 	}
 	_module('explorer', 'browse', array('entries' => $revisions,
 			'class' => array('date' => 'Date',
@@ -246,6 +265,32 @@ function _browse_file($id, $project, $cvsroot, $filename, $revision)
 			'view' => 'details'));
 }
 
+function _browse_file_revision($id, $project, $cvsroot, $filename, $revision)
+{
+	if(!ereg('^[0-9]+\.[0-9]+$', $revision))
+		return _error('Invalid revision');
+	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	$path = str_replace('"', '\"', $path);
+	$path = str_replace('$', '\$', $path);
+	exec('rlog -h "'.$path.'"', $rcs);
+	_info('rlog -h "'.$path.'"', 0);
+	for($i = 0, $count = count($rcs); $i < $count; $i++)
+		_info($i.': '.$rcs[$i], 0);
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($project).' CVS: '
+			._html_safe(dirname($filename)).'/'
+			._html_safe(substr($rcs[2], 14))
+			.' '.$revision.'</h1>'."\n");
+	unset($rcs);
+	exec('co -p'.$revision.' "'.$path.'"', $rcs);
+	_info('co -p'.$revision.' "'.$path.'"', 0);
+	for($i = 0, $count = count($rcs); $i < $count; $i++)
+		_info($i.': '.$rcs[$i], 0);
+	print('<pre>'."\n");
+	for($i = 0, $count = count($rcs); $i < $count; $i++)
+		print(_html_safe($rcs[$i])."\n");
+	print('</pre>'."\n");
+}
 
 function project_bug_display($args)
 {
@@ -253,7 +298,8 @@ function project_bug_display($args)
 		return _error('Invalid bug ID', 1);
 	$bug = _sql_array('SELECT daportal_content.content_id as content_id'
 			.', daportal_bug.bug_id AS id, timestamp, title'
-			.', content, name, username'
+			.', content, name AS project, username'
+			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE enabled='t'"
@@ -267,7 +313,6 @@ function project_bug_display($args)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
-	$bug = $bug[0];
 	include('bug_display.tpl');
 }
 
