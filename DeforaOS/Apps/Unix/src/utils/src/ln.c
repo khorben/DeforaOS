@@ -72,7 +72,8 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 
 	for(i = 0; i < argc - 1; i++)
 	{
-		if((p = realloc(dest, strlen(argv[argc-1]) + strlen(argv[i]) + 2))
+		if((p = realloc(dest, strlen(argv[argc-1]) + strlen(argv[i])
+						+ 2))
 				== NULL)
 		{
 			perror("ln");
