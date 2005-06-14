@@ -297,7 +297,9 @@ function project_bug_display($args)
 {
 	if(!is_numeric($args['id']))
 		return _error('Invalid bug ID', 1);
-	$bug = _sql_array('SELECT daportal_content.content_id as content_id'
+	$bug = _sql_array('SELECT daportal_content.content_id AS content_id'
+			.', daportal_project.project_id AS project_id'
+			.', daportal_user.user_id AS user_id'
 			.', daportal_bug.bug_id AS id, timestamp, title'
 			.', content, name AS project, username'
 			.', state, type, priority'
