@@ -90,7 +90,7 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: ln [-fs] source_file target_file\n\
+	fprintf(stderr, "%s", "Usage: ln [-fs] source_file target_file\n\
         ln [-fs] source_file ... target_dir\n\
   -f    force existing destination pathnames to be removed\n\
   -s    create symbolic links instead of hard links\n");
