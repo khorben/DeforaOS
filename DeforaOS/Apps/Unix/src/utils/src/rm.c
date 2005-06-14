@@ -58,8 +58,8 @@ static int _rm_do(Prefs * prefs, char * file)
 	if(lstat(file, &st) != 0)
 	{
 		if(!(*prefs & PREFS_f))
-			_rm_error(file, 0);
-		return 1;
+			return _rm_error(file, 1);
+		return 0;
 	}
 	if(S_ISDIR(st.st_mode))
 	{
