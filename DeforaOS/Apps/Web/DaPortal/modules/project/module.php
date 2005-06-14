@@ -671,12 +671,19 @@ function project_package($args)
 
 function project_timeline($args)
 {
-	$project = _sql_array('SELECT name, cvsroot FROM daportal_project'
+	$project = _sql_array('SELECT project_id, name, cvsroot'
+			.' FROM daportal_project'
 			." WHERE project_id='".$args['id']."';");
 	if(!is_array($project) || count($project) != 1)
 		return _error('Invalid project ID', 1);
 	$project = $project[0];
-	_project_toolbar($args['id']);
+	_project_toolbar($project['project_id']);
+	if(strlen($project['cvsroot']) == 0)
+	{
+		print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($project['name']).' CVS</h1>'."\n");
+		return _info('This project does not have a CVS repository', 1);
+	}
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project['name'])
 			.' CVS timeline</h1>'."\n");
