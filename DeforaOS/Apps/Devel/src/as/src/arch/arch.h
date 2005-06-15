@@ -52,6 +52,6 @@ void arch_delete(Arch * arch);
 
 
 /* ArchOperands */
-int archoperands_count(ArchOperands op);
+int archoperands_count(ArchOperands operands);
 
 #endif /* !__ARCH_ARCH_H */

@@ -2,6 +2,7 @@
 
 
 
+#include <sys/utsname.h>
 #include <stdlib.h>
 #include <dlfcn.h>
 #include "../as.h"
@@ -9,15 +10,15 @@
 
 
 /* Arch */
+static char * _new_guess(void);
 Arch * arch_new(char * arch)
 {
 	Arch * a;
 	void * handle;
 	Arch * plugin;
 
-	/* FIXME if(arch == NULL) then guess... */
-	if(arch == NULL)
-		arch = "x86";
+	if(arch == NULL && (arch = _new_guess()) == NULL)
+		return NULL;
 	if((handle = as_plugin_new("arch", arch)) == NULL)
 		return NULL;
 	if((plugin = dlsym(handle, "arch_plugin")) == NULL)
@@ -37,6 +38,18 @@ Arch * arch_new(char * arch)
 	return a;
 }
 
+static char * _new_guess(void)
+{
+	static struct utsname uts;
+
+	if(uname(&uts) != 0)
+	{
+		as_error("architecture guess", 0);
+		return NULL;
+	}
+	return uts.machine;
+}
+
 
 /* arch_delete */
 void arch_delete(Arch * arch)
@@ -47,9 +60,9 @@ void arch_delete(Arch * arch)
 
 
 /* ArchOperands */
-int archoperands_count(ArchOperands op)
+int archoperands_count(ArchOperands operands)
 {
-	switch(op)
+	switch(operands)
 	{
 		case AO_NONE:
 			return 0;
