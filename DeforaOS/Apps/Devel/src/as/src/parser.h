@@ -9,6 +9,6 @@
 # include "code.h"
 
 
-int parser(int prefs, Code * code, char * infile, FILE * infp);
+int parser(Code * code, char * infile, FILE * infp);
 
 #endif /* !__PARSER_H */

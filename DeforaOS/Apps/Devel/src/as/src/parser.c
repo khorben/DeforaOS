@@ -12,7 +12,6 @@
 /* types */
 typedef struct _State
 {
-	int prefs;
 	char * infile;
 	FILE * infp;
 	Token * token;
@@ -32,12 +31,11 @@ static void _parser_warning(State * state, char const * message);
 static void _parser_scan(State * state);
 static int _parser_check(State * state, TokenCode code);
 static void _as(State * state);
-int parser(int prefs, Code * code, char * infile, FILE * infp)
+int parser(Code * code, char * infile, FILE * infp)
 	/* as */
 {
 	State state;
 
-	state.prefs = prefs;
 	state.infile = infile;
 	state.infp = infp;
 	state.line = 1;
