@@ -73,6 +73,8 @@ void token_delete(Token * t)
 
 int token_in_set(Token * t, TokenSet ts)
 {
+	if(t == NULL)
+		return 0;
 	for(; *ts != TC_NULL && t->code != *ts; ts++);
 	return *ts != TC_NULL;
 }
