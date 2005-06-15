@@ -7,12 +7,21 @@
 
 
 /* types */
+typedef enum _ArchOperands {
+	AO_NONE,
+	AO_IMM,
+	AO_REG,
+	AO_IMM_IMM,
+	AO_IMM_REG,
+	AO_REG_IMM,
+	AO_REG_REG
+} ArchOperands;
+
 typedef struct _ArchInstruction
 {
 	char * name;
 	unsigned int opcode;
-	unsigned int operands_cnt;
-	/* FIXME type of data relevant to this instruction */
+	ArchOperands operands;
 } ArchInstruction;
 typedef ArchInstruction * ArchInstructionSet;
 
