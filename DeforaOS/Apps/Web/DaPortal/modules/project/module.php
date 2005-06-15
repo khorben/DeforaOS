@@ -102,7 +102,7 @@ function project_browse($args)
 		return _browse_dir($args['id'], $project['name'],
 				$project['cvsroot'], '');
 	$file = stripslashes($args['file']);
-	if(!ereg('^[a-zA-Z0-9., /]+$', $file) || ereg('\.\.', $file))
+	if(!ereg('^[a-zA-Z0-9.,_ /]+$', $file) || ereg('\.\.', $file))
 		return _error('Invalid path', 1);
 	$filename = '/Apps/CVS/DeforaOS/'.$project['cvsroot'].'/'.$file;
 	if(is_dir($filename))
