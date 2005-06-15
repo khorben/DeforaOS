@@ -12,6 +12,7 @@ $title = 'Projects';
 $list = 1;
 $actions = array('download' => 'Downloads',
 		'installer' => 'Installer',
+		'list' => 'List',
 		'package' => 'Packages',
 		'bug_list' => 'Reports');
 
