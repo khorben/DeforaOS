@@ -117,7 +117,7 @@ function project_browse($args)
 		return _browse_file($args['id'], $project['name'],
 				$project['cvsroot'], $file);
 	}
-	_error($filename, 1);
+	_error('Invalid filename: "'.$filename.'"', 0);
 	_browse_dir($args['id'], $project['name'], $project['cvsroot'], '');
 }
 
