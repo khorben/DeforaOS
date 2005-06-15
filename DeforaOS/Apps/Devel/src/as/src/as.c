@@ -19,8 +19,7 @@
 
 
 /* as */
-static int as(int prefs, char * arch, char * format, char * infile,
-		char * outfile)
+static int as(char * arch, char * format, char * infile, char * outfile)
 {
 	FILE * infp;
 	Code * code;
@@ -32,7 +31,7 @@ static int as(int prefs, char * arch, char * format, char * infile,
 		ret = 2;
 	else
 	{
-		ret = parser(prefs, code, infile, infp);
+		ret = parser(code, infile, infp);
 		code_delete(code, ret);
 	}
 	fclose(infp);
@@ -79,14 +78,14 @@ void as_plugin_delete(void * plugin)
 
 
 /* as_plugin_list */
-void as_plugin_list(char * name, char * type)
+void as_plugin_list(char * type, char * name)
 {
 	char * path;
 	DIR * dir;
 	struct dirent * de;
 	unsigned int len;
 
-	fprintf(stderr, "%s%s%s", "Available \"", type, "\" plug-ins:\n");
+	fprintf(stderr, "%s%s%s", "Available ", name, " plug-ins:\n");
 	if((path = malloc(strlen(PREFIX) + 1 + strlen(type) + 1)) == NULL)
 	{
 		as_error("malloc", 0);
@@ -147,8 +146,8 @@ int main(int argc, char * argv[])
 				outfile = optarg;
 				break;
 			case 'l':
-				as_plugin_list("architecture", "arch");
-				as_plugin_list("file format", "format");
+				as_plugin_list("arch", "architecture");
+				as_plugin_list("format", "file format");
 				return 0;
 			default:
 				return _usage();
@@ -156,5 +155,5 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind != 1)
 		return _usage();
-	return as(0, arch, format, argv[optind], outfile) ? 2 : 0;
+	return as(arch, format, argv[optind], outfile) ? 2 : 0;
 }
