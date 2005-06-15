@@ -14,8 +14,8 @@
 int as_error(char * msg, int ret);
 
 /* plug-ins helpers */
-void * as_plugin_new(char * type, char * name);
+void * as_plugin_new(char * type, char * name, char * description);
 void as_plugin_delete(void * plugin);
-void as_plugin_list(char * type, char * name);
+void as_plugin_list(char * type, char * description);
 
 #endif /* !__AS_H */

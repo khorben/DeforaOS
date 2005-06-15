@@ -50,7 +50,7 @@ int as_error(char * msg, int ret)
 
 
 /* plug-ins helpers */
-void * as_plugin_new(char * type, char * name)
+void * as_plugin_new(char * type, char * name, char * description)
 {
 	char * filename;
 	void * handle;
@@ -64,7 +64,8 @@ void * as_plugin_new(char * type, char * name)
 	}
 	sprintf(filename, "%s/%s/%s%s", PREFIX, type, name, ".so");
 	if((handle = dlopen(filename, RTLD_NOW)) == NULL)
-		as_error(filename, 0);
+		fprintf(stderr, "%s%s%s%s%s", "as: ", name, ": No such ",
+				description, " plug-in\n");
 	free(filename);
 	return handle;
 }
@@ -78,14 +79,14 @@ void as_plugin_delete(void * plugin)
 
 
 /* as_plugin_list */
-void as_plugin_list(char * type, char * name)
+void as_plugin_list(char * type, char * description)
 {
 	char * path;
 	DIR * dir;
 	struct dirent * de;
 	unsigned int len;
 
-	fprintf(stderr, "%s%s%s", "Available ", name, " plug-ins:\n");
+	fprintf(stderr, "%s%s%s", "Available ", description, " plug-ins:\n");
 	if((path = malloc(strlen(PREFIX) + 1 + strlen(type) + 1)) == NULL)
 	{
 		as_error("malloc", 0);
