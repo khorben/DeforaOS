@@ -32,7 +32,7 @@ typedef struct _CodeOperand
 
 
 /* variables */
-char const * code_error[CE_LAST];
+extern char const * code_error[CE_LAST];
 
 
 /* functions */
@@ -41,6 +41,6 @@ void code_delete(Code * code, int error);
 
 /* useful */
 CodeError code_instruction(Code * code, char * instruction,
-		CodeOperand operands[], unsigned int operands_cnt);
+		CodeOperand operands[], int operands_cnt);
 
 #endif /* !__CODE_H */
