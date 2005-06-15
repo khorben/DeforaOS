@@ -46,8 +46,12 @@ typedef struct _Arch
 } Arch;
 
 
-/* functions */
+/* Arch */
 Arch * arch_new(char * arch);
 void arch_delete(Arch * arch);
+
+
+/* ArchOperands */
+int archoperands_count(ArchOperands op);
 
 #endif /* !__ARCH_ARCH_H */

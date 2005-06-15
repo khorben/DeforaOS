@@ -44,3 +44,23 @@ void arch_delete(Arch * arch)
 	as_plugin_delete(arch->plugin);
 	free(arch);
 }
+
+
+/* ArchOperands */
+int archoperands_count(ArchOperands op)
+{
+	switch(op)
+	{
+		case AO_NONE:
+			return 0;
+		case AO_IMM:
+		case AO_REG:
+			return 1;
+		case AO_IMM_IMM:
+		case AO_IMM_REG:
+		case AO_REG_IMM:
+		case AO_REG_REG:
+			return 2;
+	}
+	return -1;
+}
