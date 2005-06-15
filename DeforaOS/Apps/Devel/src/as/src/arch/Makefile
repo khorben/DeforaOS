@@ -1,4 +1,4 @@
-TARGETS	= x86.a x86.so sparc.a sparc.so
+TARGETS	= i386.a i386.so i486.a i486.so sparc.a sparc.so
 CFLAGSF	= -W -Wall -ansi
 CC	= cc
 AR	= ar rc
@@ -9,17 +9,29 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-x86_OBJS= x86.o
-x86_CFLAGS=$(CFLAGSF) $(CFLAGS)
-x86.a: $(x86_OBJS)
-	$(AR) x86.a $(x86_OBJS)
-	$(RANLIB) x86.a
+i386_OBJS= i386.o
+i386_CFLAGS=$(CFLAGSF) $(CFLAGS)
+i386.a: $(i386_OBJS)
+	$(AR) i386.a $(i386_OBJS)
+	$(RANLIB) i386.a
 
-x86.so: $(x86_OBJS)
-	$(LD) -o x86.so $(x86_OBJS)
+i386.so: $(i386_OBJS)
+	$(LD) -o i386.so $(i386_OBJS)
 
-x86.o: x86.c
-	$(CC) $(x86_CFLAGS) -c x86.c
+i386.o: i386.c
+	$(CC) $(i386_CFLAGS) -c i386.c
+
+i486_OBJS= i486.o
+i486_CFLAGS=$(CFLAGSF) $(CFLAGS)
+i486.a: $(i486_OBJS)
+	$(AR) i486.a $(i486_OBJS)
+	$(RANLIB) i486.a
+
+i486.so: $(i486_OBJS)
+	$(LD) -o i486.so $(i486_OBJS)
+
+i486.o: i486.c
+	$(CC) $(i486_CFLAGS) -c i486.c
 
 sparc_OBJS= sparc.o
 sparc_CFLAGS=$(CFLAGSF) $(CFLAGS)
@@ -35,7 +47,7 @@ sparc.o: sparc.c
 
 
 clean:
-	$(RM) $(x86_OBJS) $(sparc_OBJS)
+	$(RM) $(i386_OBJS) $(i486_OBJS) $(sparc_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
