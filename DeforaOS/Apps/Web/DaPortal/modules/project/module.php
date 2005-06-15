@@ -187,6 +187,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 		}
 		else
 			$author = '';
+		//FIXME this is certainly variable (number of lines)
 		$message = _html_safe($rcs[14]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
@@ -244,12 +245,15 @@ function _browse_file($id, $project, $cvsroot, $filename)
 '=============================================================================')
 			$message = '';
 		else
+		{
 			for(; $i < $count
 					&& $rcs[$i+2] !=
 					'----------------------------'
 					&& $rcs[$i+2] !=
 '=============================================================================';
 				$i++);
+			$message.='...';
+		}
 		$revisions[] = array('module' => 'project',
 				'action' => 'browse',
 				'id' => $id,
