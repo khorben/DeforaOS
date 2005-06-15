@@ -70,8 +70,7 @@ int parser(Code * code, char * infile, FILE * infp)
 static int _parser_fatal(State * state, char const * message)
 {
 	fprintf(stderr, "%s%s%s%u%s", "as: ", state->infile, ", line ",
-			state->line, ": ");
-	perror(message);
+			state->line, ": Fatal error\n");
 	return 2;
 }
 
@@ -147,7 +146,7 @@ static void _space(State * state)
 	fprintf(stderr, "%s", "_space()\n");
 #endif
 	_parser_check(state, TC_SPACE);
-	while(state->token->code == TC_SPACE)
+	while(state->token != NULL && state->token->code == TC_SPACE)
 		_parser_scan(state);
 }
 
@@ -179,6 +178,8 @@ static void _section(State * state)
 	fprintf(stderr, "%s", "_section()\n");
 #endif
 	_parser_check(state, TC_DOT);
+	if(state->token == NULL)
+		return;
 	if(state->token->code == TC_WORD && state->token->string != NULL)
 		section = strdup(state->token->string);
 	_parser_check(state, TC_WORD);
@@ -226,6 +227,8 @@ static void _function(State * state)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_instruction_list()\n");
 #endif
+	if(state->token == NULL)
+		return;
 	if(state->token->code == TC_WORD && state->token->string != NULL)
 		function = strdup(state->token->string);
 	_parser_check(state, TC_WORD);
@@ -280,6 +283,8 @@ static void _operator(State * state)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operator()\n");
 #endif
+	if(state->token == NULL)
+		return;
 	if(state->token->string != NULL)
 		instruction = strdup(state->token->string);
 	if(_parser_check(state, TC_WORD) && instruction)
@@ -303,7 +308,7 @@ static void _operand_list(State * state)
 	_operand(state);
 	if(token_in_set(state->token, TS_SPACE))
 		_space(state);
-	while(state->token->code == TC_COMMA)
+	while(state->token != NULL && state->token->code == TC_COMMA)
 	{
 		_parser_scan(state);
 		if(token_in_set(state->token, TS_SPACE))
@@ -322,6 +327,8 @@ static void _operand(State * state)
 	char * operand;
 	CodeOperand * p;
 
+	if(state->token == NULL)
+		return;
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operand()\n");
 	fprintf(stderr, "%s%s%s", "New operand: \"", state->token->string,
