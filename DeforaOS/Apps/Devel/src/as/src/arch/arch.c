@@ -4,6 +4,7 @@
 
 #include <sys/utsname.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <dlfcn.h>
 #include "../as.h"
 #include "arch.h"
@@ -19,11 +20,13 @@ Arch * arch_new(char * arch)
 
 	if(arch == NULL && (arch = _new_guess()) == NULL)
 		return NULL;
-	if((handle = as_plugin_new("arch", arch)) == NULL)
+	if((handle = as_plugin_new("arch", arch, "architecture")) == NULL)
 		return NULL;
 	if((plugin = dlsym(handle, "arch_plugin")) == NULL)
 	{
-		as_error("dlsym", 0); /* FIXME not very explicit */
+		/* FIXME factorize dlsym() operation */
+		fprintf(stderr, "%s%s%s", "as: ", arch,
+				": Invalid architecture plug-in\n");
 		return NULL;
 	}
 	if((a = malloc(sizeof(Arch))) == NULL)
