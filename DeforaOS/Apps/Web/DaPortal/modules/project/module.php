@@ -246,13 +246,15 @@ function _browse_file($id, $project, $cvsroot, $filename)
 			$message = '';
 		else
 		{
+			$apnd = '';
 			for($i++; $i < $count
 					&& $rcs[$i+2] !=
 					'----------------------------'
 					&& $rcs[$i+2] !=
 '=============================================================================';
-					$i++);
-			$message.='...';
+					$i++)
+				$apnd = '...';
+			$message.=$apnd;
 		}
 		$revisions[] = array('module' => 'project',
 				'action' => 'browse',
