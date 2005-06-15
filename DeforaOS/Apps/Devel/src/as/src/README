@@ -7,3 +7,7 @@
 
 - CC will provide a framework for other compiled languages (TEST_EQUAL, AFFECT, ...)
 - AS will provide a framework for CC (architecture level operations)
+
+
+Art Of Assembly language:
+- 6.5 Introduction To Intel Instruction Format
