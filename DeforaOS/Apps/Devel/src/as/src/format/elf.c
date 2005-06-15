@@ -12,7 +12,7 @@ int elf_init(FILE * fp)
 {
 	Elf32_Ehdr hdr;
 
-	strcpy(&hdr.e_ident, ELFMAG);
+	memcpy(&hdr.e_ident, ELFMAG, SELFMAG);
 	hdr.e_ident[4] = ELFCLASS32;	/* FIXME */
 	hdr.e_ident[5] = ELFDATA2LSB;	/* FIXME */
 	hdr.e_type = ET_REL;		/* FIXME */
