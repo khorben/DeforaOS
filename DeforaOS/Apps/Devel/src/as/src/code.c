@@ -71,7 +71,7 @@ void code_delete(Code * code, int error)
 /* useful */
 /* code_instruction */
 CodeError code_instruction(Code * code, char * instruction,
-		CodeOperand operands[], unsigned int operands_cnt)
+		CodeOperand operands[], int operands_cnt)
 {
 	unsigned int i;
 	ArchInstruction * ai;
@@ -83,7 +83,7 @@ CodeError code_instruction(Code * code, char * instruction,
 			continue;
 		if(cmp < 0)
 			break;
-		if(operands_cnt != ai->operands_cnt)
+		if(operands_cnt != archoperands_count(ai->operands))
 			continue;
 		/* FIXME check operands types */
 #ifdef DEBUG
