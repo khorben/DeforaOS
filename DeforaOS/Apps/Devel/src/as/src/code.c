@@ -28,23 +28,23 @@ Code * code_new(char * arch, char * format, char * filename)
 		as_error("malloc", 0);
 		return NULL;
 	}
+	c->format = NULL;
+	c->fp = NULL;
 	if((c->arch = arch_new(arch)) == NULL
 			|| (c->format = format_new(format)) == NULL
 			|| (c->fp = fopen(filename, "w")) == NULL
 			|| format_init(c->format, c->fp) != 0)
 	{
-		if(c->arch != NULL)
-			arch_delete(c->arch);
-		if(c->format != NULL)
-			format_delete(c->format);
 		if(c->fp != NULL)
 		{
 			fclose(c->fp);
 			if(unlink(filename) != 0)
 				as_error(filename, 0);
 		}
-		else
-			as_error(filename, 0);
+		if(c->format != NULL)
+			format_delete(c->format);
+		if(c->arch != NULL)
+			arch_delete(c->arch);
 		free(c);
 		return NULL;
 	}
@@ -77,7 +77,8 @@ CodeError code_instruction(Code * code, char * instruction,
 	ArchInstruction * ai;
 	int cmp;
 
-	for(i = 0; (ai = &(code->arch->instructions[i])) && ai->name != NULL; i++)
+	for(i = 0; (ai = &(code->arch->instructions[i])) && ai->name != NULL;
+			i++)
 	{
 		if((cmp = strcmp(instruction, ai->name)) > 0)
 			continue;
@@ -86,10 +87,6 @@ CodeError code_instruction(Code * code, char * instruction,
 		if(operands_cnt != archoperands_count(ai->operands))
 			continue;
 		/* FIXME check operands types */
-#ifdef DEBUG
-		fprintf(stderr, "%s%s%s", "DEBUG instruction: ", instruction,
-				"\n");
-#endif
 		if(fwrite(&ai->opcode, sizeof(char), 1, code->fp)
 				!= sizeof(char))
 			return CE_WRITE_ERROR;
