@@ -45,7 +45,7 @@ typedef struct _Token
 } Token;
 
 
-/* functions */
+/* Token */
 Token * token_new(TokenCode code, char * string);
 void token_delete(Token * token);
 
