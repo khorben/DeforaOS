@@ -135,6 +135,10 @@ table.bordered th {
 	color:				#ff8000;
 }
 
+.explorer .entry {
+	overflow:			hidden;
+}
+
 .explorer .entry .icon {
 	text-align:			center;
 	width:				20px;
@@ -171,6 +175,10 @@ table.bordered th {
 .explorer .listing_list .entry {
 	height:				1em;
 	width:				200px;
+}
+
+.explorer .listing_thumbnails .entry {
+	width:				100px;
 }
 
 .field {
