@@ -12,7 +12,6 @@ kill:
 ls:
 - race condition between looking if is a directory and opendir()? (check cksum too)
 - segmentation fault on netbsd/sparc on long listings
-- should display uid/gid when they're unknown users/groups
 
 rm:
 - check for symlinks in recursive removal?
