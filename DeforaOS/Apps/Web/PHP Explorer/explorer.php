@@ -234,7 +234,6 @@ function explorer_sort($folder, $name, $sort, $reverse)
 }
 
 
-set_magic_quotes_runtime(0);
 if(isset($_GET['download']))
 	return explorer_download(filename_safe($_GET['download']));
 $folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';

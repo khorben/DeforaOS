@@ -20,13 +20,13 @@
 
 
 //file manager's root directory
-$root = '/';
+$root = '/Data';
 
 //enable hidden files
 $hidden = 1;
 
 //enable actual images as thumbnails
-$thumbnails = 0;
+$thumbnails = 1;
 
 //enable uploading functions
 $upload = 1;

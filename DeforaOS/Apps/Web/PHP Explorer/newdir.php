@@ -30,7 +30,8 @@ else if(isset($_POST['newdir']))
 {
 	global $root;
 
-	$newdir = filename_safe($_POST['folder']).'/'.filename_safe($_POST['newdir']);
+	$newdir = filename_safe(stripslashes($_POST['folder']))
+			.'/'.filename_safe(stripslashes($_POST['newdir']));
 	if(@mkdir($root.'/'.$newdir) == FALSE)
 		$message = 'Could not create directory "'.$newdir.'"';
 	else
@@ -46,11 +47,11 @@ else if(isset($_POST['newdir']))
 		<link type="text/css" rel="stylesheet" href="explorer.css"/>
 		<script type="text/javascript" src="explorer.js"></script>
 	</head>
-	<body>
+	<body style="margin: 0; padding: 5px">
 <? if(strlen($message)) { ?>
 		<h3>Directory creation</h3>
 		<p><? echo html_safe($message); ?></p>
-		<a href="window.close()">Close</a> <!-- FIXME detect if we're in a popup (if not go to explorer.php) -->
+		<center><input type="button" value="Close" onclick="window.close()"/></center>
 <? } else { ?>
 		<h3>Create directory</h3>
 		<p>The new directory will be created in folder:<br/><i><? echo html_safe($folder); ?></i></p>
@@ -58,7 +59,7 @@ else if(isset($_POST['newdir']))
 			<input type="hidden" name="folder" value="<? echo html_safe($folder); ?>"/>
 			<table>
 				<tr><td><b>Directory name:</b></td><td><input type="text" name="newdir" size="20"/></td></tr>
-				<tr><td></td><td><input type="submit" value="Create"/></td></tr>
+				<tr><td align="center"><input type="button" value="Cancel" onclick="window.close()"/></td><td align="center"><input type="submit" value="Create"/></td></tr>
 			</table>
 		</form>
 <? } ?>
