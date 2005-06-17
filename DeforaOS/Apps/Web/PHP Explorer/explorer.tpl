@@ -15,8 +15,11 @@
 					<img src="icons/16x16/forward.png" alt="forward" onclick="history.forward()"/>
 					<img src="icons/16x16/refresh.png" alt="refresh" onclick="location.reload()"/>
 					<div class="separator"></div>
+<? if($upload) { ?>
 					<a href="newdir.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/newdir.png" alt="create directory" onclick="return popup('newdir.php?folder=<? echo html_safe($folder); ?>')"/></a>
+					<a href="upload.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/upload.png" alt="upload file" onclick="return popup('upload.php?folder=<? echo html_safe($folder); ?>')"/></a>
 					<div class="separator"></div>
+<? } ?>
 					<img src="icons/16x16/select_all.png" alt="select all" onclick="select_all()"/>
 					<div class="separator"></div>
 					<img src="icons/16x16/print.png" alt="print" onclick="print()"/>
