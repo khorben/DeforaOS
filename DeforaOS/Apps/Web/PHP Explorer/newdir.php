@@ -25,7 +25,7 @@ require('config.php');
 
 $folder = filename_safe($_GET['folder']);
 if(!$upload)
-	$message = '';
+	$message = 'Directory creation is forbidden';
 else if(isset($_POST['newdir']))
 {
 	global $root;
