@@ -20,7 +20,7 @@
 
 
 //file manager's root directory
-$root = '/Data';
+$root = '/';
 
 //enable hidden files
 $hidden = 1;
@@ -30,5 +30,8 @@ $thumbnails = 1;
 
 //enable uploading functions
 $upload = 1;
+
+//maximum uploading file size
+$upload_size_max = 2000000;
 
 ?>
