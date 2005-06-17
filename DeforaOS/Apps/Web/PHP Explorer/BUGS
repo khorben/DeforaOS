@@ -2,8 +2,11 @@ PHP Explorer known bugs
 -----------------------
 
 
-There are no known bugs up to this date. However, it is absolutely critical to
-know and understand the following:
+The following may affect you:
+- there have been problems with ampersands and quotes in files, this is being
+  worked on, but still tell me if you find any that isn't fixed;
+
+in any case, it is absolutely critical to know and understand the following:
 - this project is alpha software;
 - this project may reveal critical information to the user.
 
@@ -15,13 +18,15 @@ The following list of features are planned:
   sub-tree to hide the adequate folders, which is everything but optimal);
 - detect the browsers capacities as a file viewer, to allow direct visualization
   of the adequate files (partially implemented);
-- allow files deletion, renaming and upload;
+- allow files deletion and renaming;
 - find a way to securely run the Explorer with different UIDs, with suExec for
   instance;
-- work on file/mime/icon associations (with freedesktop compliance in mind);
-- themable icons;
+- work on file/mime/icon associations (with freedesktop compliance in mind,
+  partially implemented);
+- themable icons (you currently just have to rename a directory);
 - remember users' default view;
 - test filesystems and web server charsets;
+- detect PHP's "magic_quotes" setting;
 
 and as this is free software, potentially anything that may come to one's mind.
 
