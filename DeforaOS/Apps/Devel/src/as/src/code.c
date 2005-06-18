@@ -31,7 +31,7 @@ Code * code_new(char * arch, char * format, char * filename)
 	c->format = NULL;
 	c->fp = NULL;
 	if((c->arch = arch_new(arch)) == NULL
-			|| (c->format = format_new(format)) == NULL
+			|| (c->format = format_new(format, arch)) == NULL
 			|| (c->fp = fopen(filename, "w")) == NULL
 			|| format_init(c->format, c->fp) != 0)
 	{

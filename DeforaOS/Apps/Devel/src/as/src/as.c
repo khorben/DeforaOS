@@ -156,5 +156,7 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind != 1)
 		return _usage();
+	/* FIXME if arch is set to NULL we should auto-detect (think about
+	 * format too) */
 	return as(arch, format, argv[optind], outfile) ? 2 : 0;
 }

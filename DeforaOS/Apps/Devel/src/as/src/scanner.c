@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include "as.h"
 #include "token.h"
 
 
@@ -118,8 +119,9 @@ static Token * _scan_immediate(FILE * fp, int * la)
 	{
 		if((p = realloc(str, len+2)) == NULL)
 		{
+			as_error("malloc", 0);
 			free(str);
-			return NULL; /* FIXME report error */
+			return NULL;
 		}
 		str = p;
 		str[len++] = *la;
@@ -155,8 +157,9 @@ static Token * _scan_number(FILE * fp, int * la)
 	{
 		if((p = realloc(str, len+2)) == NULL)
 		{
+			as_error("malloc", 0);
 			free(str);
-			return NULL; /* FIXME report error */
+			return NULL;
 		}
 		str = p;
 		str[len++] = *la;

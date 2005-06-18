@@ -1,8 +1,7 @@
 /* format/format.h */
 /* FIXME
- * - get rid of format_init() and format_exit() (should be handled in
- *   format_new() and format_delete()
- * - format plug-ins should be told and aware of the target architecture */
+ * - get rid of format_init() and format_exit(): should be handled in
+ *   format_new() and format_delete() */
 
 
 
@@ -13,23 +12,23 @@
 
 
 /* types */
-
 typedef struct _FormatPlugin
 {
-	int (*format_init)(FILE * fp);
-	int (*format_exit)(FILE * fp);
+	int (*format_init)(FILE * fp, char * arch);
+	int (*format_exit)(void);
 } FormatPlugin;
 
 typedef struct _Format
 {
-	int (*format_init)(FILE * fp);
-	int (*format_exit)(FILE * fp);
+	char * arch;
+	int (*format_init)(FILE * fp, char * arch);
+	int (*format_exit)(void);
 	void * plugin;
 } Format;
 
 
 /* functions */
-Format * format_new(char * format);
+Format * format_new(char * format, char * arch);
 void format_delete(Format * format);
 
 /* useful */

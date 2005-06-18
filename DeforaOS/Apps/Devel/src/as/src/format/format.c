@@ -4,17 +4,18 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <dlfcn.h>
 #include "../as.h"
 #include "format.h"
 
 
 /* Format */
-Format * format_new(char * format)
+Format * format_new(char * format, char * arch)
 {
 	Format * f;
 	void * handle;
-	Format * plugin;
+	FormatPlugin * plugin;
 
 	if(format == NULL)
 		format = "elf";
@@ -27,8 +28,11 @@ Format * format_new(char * format)
 				": Invalid format plug-in\n");
 		return NULL;
 	}
-	if((f = malloc(sizeof(Format))) == NULL)
+	if((f = malloc(sizeof(Format))) == NULL || (f->arch = strdup(arch))
+			== NULL)
 	{
+		if(f != NULL)
+			free(f);
 		as_error("malloc", 0);
 		as_plugin_delete(handle);
 		return NULL;
@@ -44,6 +48,7 @@ Format * format_new(char * format)
 void format_delete(Format * format)
 {
 	as_plugin_delete(format->plugin);
+	free(format->arch);
 	free(format);
 }
 
@@ -52,5 +57,5 @@ void format_delete(Format * format)
 /* format_init */
 int format_init(Format * format, FILE * fp)
 {
-	return format->format_init(fp);
+	return format->format_init(fp, format->arch);
 }

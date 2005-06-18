@@ -48,7 +48,7 @@ int parser(Code * code, char * infile, FILE * infp)
 	if(state.token != NULL)
 		_as(&state);
 	if(state.token == NULL)
-		return _parser_fatal(&state, infile);
+		return _parser_fatal(&state, "Could not initialize scanner");
 	if(state.token->code != TC_EOF)
 	{
 		if(state.token->string != NULL)
@@ -69,8 +69,8 @@ int parser(Code * code, char * infile, FILE * infp)
 
 static int _parser_fatal(State * state, char const * message)
 {
-	fprintf(stderr, "%s%s%s%u%s", "as: ", state->infile, ", line ",
-			state->line, ": Fatal error\n");
+	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
+			state->line, ": ", message, "\n");
 	return 2;
 }
 
