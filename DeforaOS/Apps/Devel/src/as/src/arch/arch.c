@@ -2,7 +2,6 @@
 
 
 
-#include <sys/utsname.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
@@ -18,8 +17,6 @@ Arch * arch_new(char * arch)
 	void * handle;
 	Arch * plugin;
 
-	if(arch == NULL && (arch = _new_guess()) == NULL)
-		return NULL;
 	if((handle = as_plugin_new("arch", arch, "architecture")) == NULL)
 		return NULL;
 	if((plugin = dlsym(handle, "arch_plugin")) == NULL)
@@ -39,18 +36,6 @@ Arch * arch_new(char * arch)
 	a->registers = plugin->registers;
 	a->plugin = handle;
 	return a;
-}
-
-static char * _new_guess(void)
-{
-	static struct utsname uts;
-
-	if(uname(&uts) != 0)
-	{
-		as_error("architecture guess", 0);
-		return NULL;
-	}
-	return uts.machine;
 }
 
 

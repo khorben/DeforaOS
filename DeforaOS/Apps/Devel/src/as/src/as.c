@@ -3,6 +3,7 @@
 
 
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -19,12 +20,15 @@
 
 
 /* as */
+static char * _as_guess(void);
 static int as(char * arch, char * format, char * infile, char * outfile)
 {
 	FILE * infp;
 	Code * code;
 	int ret;
 
+	if(arch == NULL && (arch = _as_guess()) == NULL)
+		return 2;
 	if((infp = fopen(infile, "r")) == NULL)
 		return as_error(infile, 2);
 	if((code = code_new(arch, format, outfile)) == NULL)
@@ -36,6 +40,19 @@ static int as(char * arch, char * format, char * infile, char * outfile)
 	}
 	fclose(infp);
 	return ret;
+}
+
+int as_error(char * msg, int ret);
+static char * _as_guess(void)
+{
+	static struct utsname uts;
+
+	if(uname(&uts) != 0)
+	{
+		as_error("architecture guess", 0);
+		return NULL;
+	}
+	return uts.machine;
 }
 
 
@@ -156,7 +173,5 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind != 1)
 		return _usage();
-	/* FIXME if arch is set to NULL we should auto-detect (think about
-	 * format too) */
 	return as(arch, format, argv[optind], outfile) ? 2 : 0;
 }
