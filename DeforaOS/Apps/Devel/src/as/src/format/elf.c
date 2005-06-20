@@ -1,4 +1,6 @@
 /* format/elf.c */
+/* FIXME
+ * - executable files must have a program header table */
 
 
 
@@ -23,6 +25,7 @@ static FormatArch _elf_endian[] =
 {
 	{ "i386",    EM_386,	ELFCLASS32, ELFDATA2LSB },
 	{ "i486",    EM_386,	ELFCLASS32, ELFDATA2LSB },
+	{ "i686",    EM_386,	ELFCLASS32, ELFDATA2LSB },
 	{ "sparc",   EM_SPARC,	ELFCLASS32, ELFDATA2LSB },
 	{ "sparc64", EM_SPARCV9,ELFCLASS64, ELFDATA2MSB },
 	{ NULL,      0,		0,          0           }
@@ -44,7 +47,16 @@ int elf_init(FILE * fp, char * arch)
 	hdr.e_type = ET_REL;		/* FIXME */
 	hdr.e_machine = fa->machine;
 	hdr.e_version = EV_CURRENT;	/* FIXME */
-	hdr.e_flags = EF_CPU32;		/* FIXME */
+	hdr.e_entry = NULL;		/* FIXME may be redefined later */
+	hdr.e_phoff = 0;		/* FIXME may be redefined later */
+	hdr.e_shoff = 0;		/* FIXME may be redefined later */
+	hdr.e_flags = EF_CPU32;
+	hdr.e_ehsize = sizeof(hdr);
+	hdr.e_phentsize = 4;		/* FIXME */
+	hdr.e_phnum = 0;
+	hdr.e_shentsize = 4;		/* FIXME */
+	hdr.e_shnum = 0;
+	hdr.e_shstrndx = SHN_UNDEF;	/* FIXME */
 	return fwrite(&hdr, sizeof(hdr), 1, fp) == 1 ? 0 : 1;
 }
 
