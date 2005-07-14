@@ -3,13 +3,12 @@
 
 
 #include <unistd.h>
-extern int optind;
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
 
 
-/* types */
+/* Prefs */
 typedef struct _Prefs {
 	/* FIXME optimize with enums */
 	char c;
@@ -17,11 +16,36 @@ typedef struct _Prefs {
 	char i;
 } Prefs;
 
+static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
+{
+	int o;
+
+	memset(prefs, 0, sizeof(Prefs));
+	while((o = getopt(argc, argv, "csi")) != -1)
+		switch(o)
+		{
+			case 'c':
+				prefs->s = 0;
+				prefs->c = 1;
+				break;
+			case 's':
+				prefs->c = 0;
+				prefs->s = 1;
+				break;
+			case 'i':
+				prefs->i = 1;
+				break;
+			default:
+				return -1;
+		}
+	return 0;
+}
+
 
 /* sh */
 static void _sh_prompt(void);
-static int _sh_file(Prefs * prefs, char const * filename,
-		int argc, char * argv[])
+static int _sh_file(Prefs * prefs, char const * filename, int argc,
+		char * argv[])
 {
 	Parser * p;
 	FILE * fp = stdin;
@@ -106,32 +130,12 @@ static int _usage(void)
 
 
 /* main */
-static void _prefs_init(Prefs * prefs);
 int main(int argc, char * argv[])
 {
 	Prefs p;
-	int o;
 
-	_prefs_init(&p);
-	while((o = getopt(argc, argv, "csi")) != -1)
-	{
-		switch(o)
-		{
-			case 'c':
-				p.s = 0;
-				p.c = 1;
-				break;
-			case 's':
-				p.c = 0;
-				p.s = 1;
-				break;
-			case 'i':
-				p.i = 1;
-				break;
-			case '?':
-				return _usage();
-		}
-	}
+	if(_prefs_parse(&p, argc, argv) != 0)
+		return _usage();
 	if(p.c == 1)
 	{
 		if(optind == argc)
@@ -147,9 +151,4 @@ int main(int argc, char * argv[])
 		if(isatty(0) && isatty(2))
 			p.i = 1;
 	return _sh_file(&p, NULL, argc - optind, &argv[optind]);
-}
-
-static void _prefs_init(Prefs * prefs)
-{
-	memset(prefs, 0, sizeof(Prefs));
 }
