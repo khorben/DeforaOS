@@ -7,11 +7,12 @@
 
 
 /* unlink */
-static int _unlink(char * arg)
+static int _unlink(char * file)
 {
-	if(unlink(arg) == -1)
+	if(unlink(file) == -1)
 	{
-		perror(arg);
+		fprintf(stderr, "%s", "unlink: ");
+		perror(file);
 		return 2;
 	}
 	return 0;
