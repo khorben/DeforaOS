@@ -107,7 +107,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "fs")) != -1)
-	{
 		switch(o)
 		{
 			case 'f':
@@ -116,10 +115,9 @@ int main(int argc, char * argv[])
 			case 's':
 				flgs = LT_SOFT;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(argc - optind <= 1)
 		return _usage();
 	return _ln(flgf, flgs, argc - optind, &argv[optind]);

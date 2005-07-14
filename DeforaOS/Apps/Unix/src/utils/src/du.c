@@ -177,7 +177,6 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "askxHL")) != -1)
-	{
 		switch(o)
 		{
 			case 'a':
@@ -203,6 +202,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	return _du(&prefs, argc - optind, &argv[optind]);
 }

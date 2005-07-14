@@ -88,7 +88,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "amck")) != -1)
-	{
 		switch(o)
 		{
 			case 'a':
@@ -110,6 +109,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	return _locale(&p, argc-optind, &argv[optind]);
 }

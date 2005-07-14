@@ -1,5 +1,4 @@
 all:
-- improve command line arguments fetching? (inspired from wc?)
 - factorize code (either need to improve configure or include a .c file)
 
 id:
@@ -12,6 +11,8 @@ kill:
 ls:
 - race condition between looking if is a directory and opendir()? (check cksum too)
 - segmentation fault on netbsd/sparc on long listings
+- should display uid/gid when they're unknown users/groups
+- should display symlinks targets in some modes
 
 rm:
 - check for symlinks in recursive removal?

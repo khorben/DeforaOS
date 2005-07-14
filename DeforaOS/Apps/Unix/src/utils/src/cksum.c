@@ -154,12 +154,10 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "")) != -1)
-	{
 		switch(o)
 		{
 			default:
 				return _usage();
 		}
-	}
 	return _cksum(argc - optind, &argv[optind]);
 }

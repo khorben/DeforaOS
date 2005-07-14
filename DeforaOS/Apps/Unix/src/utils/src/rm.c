@@ -140,7 +140,6 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "fiRr")) != -1)
-	{
 		switch(o)
 		{
 			case 'f':
@@ -155,10 +154,9 @@ int main(int argc, char * argv[])
 			case 'r':
 				prefs |= PREFS_R;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(optind == argc)
 		return _usage();
 	if(!(prefs & PREFS_f) && isatty(0))

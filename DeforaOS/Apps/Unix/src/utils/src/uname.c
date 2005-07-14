@@ -60,7 +60,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "amnrsv")) != -1)
-	{
 		switch(o)
 		{
 			case 'a':
@@ -85,9 +84,8 @@ int main(int argc, char * argv[])
 			case 'v':
 				flagv = 1;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	return _uname(flagm, flagn, flagr, flags, flagv);
 }

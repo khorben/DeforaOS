@@ -137,7 +137,7 @@ int main(int argc, char * argv[])
 			case 'w':
 				flags = flags | WF_W;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
 	return _wc(flags, argc - optind, &argv[optind]);

@@ -77,10 +77,12 @@ static void _strings_do(int flgn, FILE * fp)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: strings [-a][-t format][-n number][file...]\n\
-  -a\n\
-  -t\n\
-  -n\n");
+	/* FIXME */
+	fprintf(stderr, "%s", "Usage: strings [-a][-t format][-n number]\
+[file...]\n\
+  -a	\n\
+  -t	\n\
+  -n	\n");
 	return 1;
 }
 
@@ -93,7 +95,6 @@ int main(int argc, char * argv[])
 	char * p;
 
 	while((o = getopt(argc, argv, "at:n:")) != -1)
-	{
 		switch(o)
 		{
 			case 'a':
@@ -105,9 +106,8 @@ int main(int argc, char * argv[])
 				if(*(optarg) == '\0' || *p != '\0')
 					return _usage();
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	return _strings(flgn, argc - optind, &argv[optind]);
 }

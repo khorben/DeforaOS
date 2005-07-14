@@ -109,7 +109,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "ls")) != -1)
-	{
 		switch(o)
 		{
 			case 'l':
@@ -118,10 +117,9 @@ int main(int argc, char * argv[])
 			case 's':
 				ot = OT_NONE;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(argc - optind != 2)
 		return _usage();
 	return _cmp(ot, argv[optind], argv[optind+1]);

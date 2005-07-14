@@ -33,7 +33,6 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 
 	memset(prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "acmr:t:")) != -1)
-	{
 		switch(o)
 		{
 			case 'a':
@@ -59,7 +58,6 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 			default:
 				return 1;
 		}
-	}
 	if(!((prefs->flags & PREFS_a) && (prefs->flags & PREFS_m)))
 		prefs->flags |= (PREFS_a | PREFS_m);
 	return 0;

@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 				if(*(optarg) == '\0' || *p != '\0')
 					return _usage();
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
 	return _head(flgn, argc - optind, &argv[optind]);

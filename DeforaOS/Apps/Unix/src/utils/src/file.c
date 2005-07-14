@@ -80,7 +80,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "dhM:m:i")) != -1)
-	{
 		switch(o)
 		{
 			case 'd':
@@ -109,6 +108,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	return _file(&p, argc-optind, &argv[optind]);
 }

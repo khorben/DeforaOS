@@ -142,7 +142,6 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "")) != -1)
-	{
 		switch(o)
 		{
 			case 'f':
@@ -171,10 +170,9 @@ int main(int argc, char * argv[])
 			case 'r':
 				prefs -= prefs & PREFS_r;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(optind + 1 >= argc)
 		return _usage();
 	return _cp(&prefs, argc - optind, &argv[optind]);

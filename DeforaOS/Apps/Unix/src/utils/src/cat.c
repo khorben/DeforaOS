@@ -96,7 +96,6 @@ int main(int argc, char * argv[])
 	OutputDelay flagu = OD_BUFFER;
 
 	while((o = getopt(argc, argv, "u")) != -1)
-	{
 		switch(o)
 		{
 			case 'u':
@@ -105,6 +104,5 @@ int main(int argc, char * argv[])
 			case '?':
 				return _usage();
 		}
-	}
 	return _cat(flagu, argc - optind, &argv[optind]);
 }

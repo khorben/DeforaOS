@@ -45,11 +45,12 @@ static int _renice_error(char * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: renice -n increment [-g | -p | -u] ID...\n\
-  -n\tpriority to set\n\
-  -g\tprocess group IDs\n\
-  -p\tinteger process IDs\n\
-  -u\tuser IDs\n");
+	fprintf(stderr, "%s", "Usage: renice -n increment [-g | -p | -u]\
+ ID...\n\
+  -n	priority to set\n\
+  -g	process group IDs\n\
+  -p	integer process IDs\n\
+  -u	user IDs\n");
 	return 1;
 }
 
@@ -63,7 +64,6 @@ int main(int argc, char * argv[])
 	char * p;
 
 	while((o = getopt(argc, argv, "n:gpu")) != -1)
-	{
 		switch(o)
 		{
 			case 'n':
@@ -83,7 +83,6 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	if(argc - optind < 1)
 		return _usage();
 	return _renice(nice, type, argc-optind, &argv[optind]);

@@ -36,12 +36,10 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "")) != -1)
-	{
 		switch(o)
 		{
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	return _echo(argc - 1, &argv[1]);
 }

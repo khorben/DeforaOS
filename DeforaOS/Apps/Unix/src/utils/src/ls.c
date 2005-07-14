@@ -37,7 +37,6 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 
 	memset(prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "CFRacdlu1HL")) != -1)
-	{
 		switch(o)
 		{
 			case 'C':
@@ -78,10 +77,9 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 				*prefs -= *prefs & PREFS_H;
 				*prefs |= PREFS_L;
 				break;
-			case '?':
+			default:
 				return 1;
 		}
-	}
 	return 0;
 }
 

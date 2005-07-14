@@ -86,7 +86,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "LP")) != -1)
-	{
 		switch(o)
 		{
 			case 'L':
@@ -95,10 +94,9 @@ int main(int argc, char * argv[])
 			case 'P':
 				pf = PWD_P;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(optind != argc)
 		return _usage();
 	return _pwd(pf);

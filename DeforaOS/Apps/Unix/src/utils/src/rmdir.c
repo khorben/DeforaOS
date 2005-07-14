@@ -67,16 +67,14 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "p")) != -1)
-	{
 		switch(o)
 		{
 			case 'p':
 				flagp = 1;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(optind == argc)
 		return _usage();
 	return _rmdir(flagp, argc - optind, &argv[optind]);

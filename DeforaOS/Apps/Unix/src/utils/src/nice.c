@@ -31,7 +31,7 @@ static int _nice_error(char * message, int ret)
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: nice [-n increment] utility [argument...]\n\
-  -n\tpriority to set\n");
+  -n	priority to set\n");
 	return 1;
 }
 
@@ -44,7 +44,6 @@ int main(int argc, char * argv[])
 	char * p;
 
 	while((o = getopt(argc, argv, "n:")) != -1)
-	{
 		switch(o)
 		{
 			case 'n':
@@ -55,7 +54,6 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	if(argc - optind < 1)
 		return _usage();
 	return _nice(nice, &argv[optind]);

@@ -191,7 +191,6 @@ int main(int argc, char * argv[])
 	int opts = 0;
 
 	while((o = getopt(argc, argv, "hRHLP")) != -1)
-	{
 		switch(o)
 		{
 			case 'h':
@@ -208,7 +207,6 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	if(argc - optind < 2)
 		return _usage();
 	return _chown(opts, argv[optind], argc - optind - 1, &argv[optind+1]);

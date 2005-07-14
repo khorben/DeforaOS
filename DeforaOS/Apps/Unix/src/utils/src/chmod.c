@@ -117,7 +117,6 @@ int main(int argc, char * argv[])
 	char * p;
 
 	while((o = getopt(argc, argv, "R")) != -1)
-	{
 		switch(o)
 		{
 			case 'R':
@@ -126,7 +125,6 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	if(argc - optind < 2)
 		return _usage();
 	/* FIXME mode may be an expression */
