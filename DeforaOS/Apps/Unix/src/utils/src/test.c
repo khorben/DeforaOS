@@ -231,7 +231,7 @@ static int _is_file_executable(char * pathname)
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: test [expression]\n\
-       [ [expression] ]\n");
+[ [expression] ]\n");
 	return 1;
 }
 
