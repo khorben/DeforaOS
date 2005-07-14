@@ -36,21 +36,21 @@ int main(int argc, char * argv[])
 	mode_t mode = 0777;
 	int errcode = 0;
 	int o;
+	char * p;
 	int i;
 
 	while((o = getopt(argc, argv, "m:")) != -1)
-	{
 		switch(o)
 		{
 			case 'm':
-				/* FIXME */
-				if((mode = strtol(optarg, NULL, 8)) > 0777)
+				/* FIXME mode may be an expression */
+				mode = strtol(optarg, &p, 8);
+				if(*optarg == '\0' || *p != '\0' || mode > 0777)
 					return _usage();
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
-	}
 	if(argc == optind)
 		return _usage();
 	for(i = optind; i < argc; i++)
