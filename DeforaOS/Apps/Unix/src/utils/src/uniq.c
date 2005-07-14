@@ -159,7 +159,6 @@ int main(int argc, char * argv[])
 	int o;
 
 	while((o = getopt(argc, argv, "cduf:s:")) != -1)
-	{
 		switch(o)
 		{
 			case 'c':
@@ -177,13 +176,10 @@ int main(int argc, char * argv[])
 				opts |= OPTS_u;
 				break;
 			case 'f':
-				fprintf(stderr, "%s%c%s", "uniq: -", o,
-						": Not implemented yet\n");
-				return _usage();
+				/* FIXME */
 			default:
 				return _usage();
 		}
-	}
 	if(argc - optind >= 1)
 	{
 		in = argv[optind];
