@@ -80,13 +80,12 @@ int main(int argc, char * argv[])
 	char * p;
 
 	while((o = getopt(argc, argv, "pm:")) != -1)
-	{
 		switch(o)
 		{
 			case 'm':
 				/* FIXME mode may be an expression */
 				mode = strtol(optarg, &p, 8);
-				if(optarg == '\0' || *p != '\0')
+				if(*optarg == '\0' || *p != '\0')
 					return _usage();
 				break;
 			case 'p':
@@ -95,7 +94,6 @@ int main(int argc, char * argv[])
 			case '?':
 				return _usage();
 		}
-	}
 	if(argc == optind)
 		return _usage();
 	return _mkdir(flagp, mode, argc - optind, &argv[optind]);
