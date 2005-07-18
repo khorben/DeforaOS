@@ -143,11 +143,11 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'f':
-				prefs = prefs - (prefs & PREFS_i);
+				prefs -= prefs & PREFS_i;
 				prefs |= PREFS_f;
 				break;
 			case 'i':
-				prefs = prefs - (prefs & PREFS_f);
+				prefs -= prefs & PREFS_f;
 				prefs |= PREFS_i;
 				break;
 			case 'R':
@@ -159,7 +159,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	if(!(prefs & PREFS_f) && isatty(0))
-		prefs |= PREFS_i;
 	return _rm(&prefs, argc-optind, &argv[optind]);
 }
