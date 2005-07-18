@@ -16,4 +16,3 @@ ls:
 
 rm:
 - check for symlinks in recursive removal?
-- seems to incorrectly ask for confirmation in non-interactive scripts
