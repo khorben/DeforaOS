@@ -9,12 +9,10 @@
 
 
 /* Prefs */
-typedef struct _Prefs {
-	/* FIXME optimize with enums */
-	char c;
-	char s;
-	char i;
-} Prefs;
+typedef int Prefs;
+#define PREFS_c 01
+#define PREFS_i 02
+#define PREFS_s 03
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
@@ -25,15 +23,15 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 		switch(o)
 		{
 			case 'c':
-				prefs->s = 0;
-				prefs->c = 1;
+				*prefs -= *prefs & PREFS_s;
+				*prefs |= PREFS_c;
 				break;
 			case 's':
-				prefs->c = 0;
-				prefs->s = 1;
+				*prefs -= *prefs & PREFS_c;
+				*prefs |= PREFS_s;
 				break;
 			case 'i':
-				prefs->i = 1;
+				*prefs |= PREFS_i;
 				break;
 			default:
 				return -1;
@@ -73,10 +71,10 @@ static int _sh_file(Prefs * prefs, char const * filename, int argc,
 			fclose(fp);
 		return 1;
 	}
-	if(prefs->i)
+	if(*prefs & PREFS_i)
 		_sh_prompt();
 	for(; (i = parser_parse(p)) >= 0; res = i)
-		if(prefs->i)
+		if(*prefs & PREFS_i)
 			_sh_prompt();
 	parser_delete(p);
 	if(filename != NULL)
@@ -86,28 +84,25 @@ static int _sh_file(Prefs * prefs, char const * filename, int argc,
 
 static void _sh_prompt(void)
 {
-	fprintf(stderr, "$ ");
+	fprintf(stderr, "%s", "$ ");
 }
 
-static int _sh_string(Prefs * prefs, char const * string,
-		int argc, char * argv[])
+static int _sh_string(Prefs * prefs, char const * string, int argc,
+		char * argv[])
 {
 	Parser * p;
 	int res;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s",
-			"sh_string: ", string);
+	fprintf(stderr, "%s%s", "sh_string: ", string);
 	if(argc >= 1)
 	{
 		fprintf(stderr, "%s%s", ", name: ", argv[0]);
 		if(argc >= 2)
-		{
-			fprintf(stderr, "%s%d%s", ", with ",
-					argc-1, " arguments");
-		}
+			fprintf(stderr, "%s%d%s", ", with ", argc-1,
+					" arguments");
 	}
-	fprintf(stderr, "\n");
+	fputc('\n', stderr);
 #endif
 	if((p = parser_new_from_string(string)) == NULL)
 		return 1;
@@ -123,8 +118,8 @@ static int _usage(void)
 	fprintf(stderr, "%s", "Usage: sh    [-i] [command_file [argument...]]\n\
        sh -c [-i] command_string [command_name [argument...]]\n\
        sh -s [-i] [argument...]\n\
-  -c    read commands from command_string\n\
-  -s    read commands from standard input\n");
+  -c	read commands from command_string\n\
+  -s	read commands from standard input\n");
 	return 1;
 }
 
@@ -132,23 +127,23 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs p;
+	Prefs prefs;
 
-	if(_prefs_parse(&p, argc, argv) != 0)
+	if(_prefs_parse(&prefs, argc, argv) != 0)
 		return _usage();
-	if(p.c == 1)
+	if(prefs & PREFS_c)
 	{
 		if(optind == argc)
 			return _usage();
-		return _sh_string(&p, argv[optind], argc - optind - 1,
+		return _sh_string(&prefs, argv[optind], argc-optind-1,
 				&argv[optind+1]);
 	}
-	if(p.s == 0 && optind != argc)
-		return _sh_file(&p, argv[optind], argc - optind - 1,
+	if(!(prefs & PREFS_s) && optind != argc)
+		return _sh_file(&prefs, argv[optind], argc-optind-1,
 				&argv[optind+1]);
-	p.s = 1;
+	prefs |= PREFS_s;
 	if(optind == argc)
 		if(isatty(0) && isatty(2))
-			p.i = 1;
-	return _sh_file(&p, NULL, argc - optind, &argv[optind]);
+			prefs |= PREFS_i;
+	return _sh_file(&prefs, NULL, argc - optind, &argv[optind]);
 }
