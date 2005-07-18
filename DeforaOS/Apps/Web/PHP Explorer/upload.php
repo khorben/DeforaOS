@@ -35,7 +35,8 @@ else if(isset($_POST['folder']))
 	$newfile = filename_safe(stripslashes($_POST['folder']
 			.'/'.$_FILES['file']['name']));
 	$tmpfile = filename_safe(stripslashes($_FILES['file']['tmp_name']));
-	if($newfile != FALSE && move_uploaded_file($tmpfile, $root.'/'.$newfile)
+	if($newfile != FALSE
+			&& @move_uploaded_file($tmpfile, $root.'/'.$newfile)
 			== FALSE)
 		$message = 'Could not upload file "'.$newfile.'"';
 	else
