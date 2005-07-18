@@ -51,8 +51,7 @@ function project_admin($args)
 		$projects[$i]['admin'] = '<a href="index.php?module=project'
 				.'&amp;action=list'
 				.'&amp;user_id='.$projects[$i]['user_id'].'">'
-				._html_safe_link($projects[$i]['admin'])
-				.'</a>';
+				._html_safe_link($projects[$i]['admin']).'</a>';
 		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
 		$projects[$i]['module'] = 'project';
 		$projects[$i]['action'] = 'modify';
@@ -162,18 +161,21 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
 		for($i = 0, $count = count($rcs); $i < $count; $i++)
 			_info($i.': '.$rcs[$i], 0);
+		for($revs = 0; $revs < $count; $revs++)
+			if($rcs[$revs] == '----------------------------')
+				break;
 		$file = _html_safe_link($filename.'/'.$f);
 		$name = _html_safe(substr($rcs[2], 14));
 		$name = '<a href="index.php?module=project&amp;action=browse'
 				.'&amp;id='.$id.'&amp;file='.$file.'">'
 				.$name.'</a>';
-		$revision = _html_safe(substr($rcs[12], 9));
+		$revision = _html_safe(substr($rcs[$revs+1], 9));
 		$revision = '<a href="index.php?module=project'
 				.'&amp;action=browse&amp;id='.$id
 				.'&amp;file='.$file.'&amp;revision='.$revision
 				.'">'.$revision.'</a>';
-		$date = _html_safe(substr($rcs[13], 6, 19));
-		$author = substr($rcs[13], 36);
+		$date = _html_safe(substr($rcs[$revs+2], 6, 19));
+		$author = substr($rcs[$revs+2], 36);
 		$author = substr($author, 0, strspn($author,
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -188,7 +190,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 		else
 			$author = '';
 		//FIXME this is certainly variable (number of lines)
-		$message = _html_safe($rcs[14]);
+		$message = _html_safe($rcs[$revs+3]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
 				'icon' => 'modules/project/default.png',
