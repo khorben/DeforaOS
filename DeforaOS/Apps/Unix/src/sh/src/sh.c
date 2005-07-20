@@ -41,6 +41,24 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 
 
 /* sh */
+static int _sh_error(char const * message, int ret);
+static int _sh_file(Prefs * prefs, char const * filename, int argc,
+		char * argv[]);
+static int _sh_string(Prefs * prefs, char const * string, int argc,
+		char * argv[]);
+static int _sh(Prefs * prefs, int argc, char * argv[])
+{
+	if(*prefs & PREFS_c)
+		return _sh_string(prefs, *argv, argc, argv);
+	if(!(*prefs & PREFS_s) && argc != 0)
+		return _sh_file(prefs, *argv, argc, argv);
+	*prefs |= PREFS_s;
+	if(optind == argc)
+		if(isatty(0) && isatty(2))
+			*prefs |= PREFS_i;
+	return _sh_file(prefs, NULL, argc, argv);
+}
+
 static void _sh_prompt(void);
 static int _sh_file(Prefs * prefs, char const * filename, int argc,
 		char * argv[])
@@ -50,21 +68,9 @@ static int _sh_file(Prefs * prefs, char const * filename, int argc,
 	int res = 0;
 	int i;
 
-#ifdef DEBUG
-	fprintf(stderr, "sh_file: %s", filename == NULL ? "stdin" : filename);
-	if(argc >= 1)
-	{
-		fprintf(stderr, "%s%d%s", ", with ", argc, " arguments");
-	}
-	fprintf(stderr, "\n");
-#endif
 	if(filename != NULL)
 		if((fp = fopen(filename, "r")) == NULL)
-		{
-			fprintf(stderr, "%s", "sh: ");
-			perror(filename);
-			return 127;
-		}
+			return _sh_error(filename, 127);
 	if((p = parser_new(fp)) == NULL)
 	{
 		if(filename != NULL)
@@ -80,6 +86,13 @@ static int _sh_file(Prefs * prefs, char const * filename, int argc,
 	if(filename != NULL)
 		fclose(fp);
 	return -res;
+}
+
+static int _sh_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "sh: ");
+	perror(message);
+	return ret;
 }
 
 static void _sh_prompt(void)
@@ -131,19 +144,7 @@ int main(int argc, char * argv[])
 
 	if(_prefs_parse(&prefs, argc, argv) != 0)
 		return _usage();
-	if(prefs & PREFS_c)
-	{
-		if(optind == argc)
-			return _usage();
-		return _sh_string(&prefs, argv[optind], argc-optind-1,
-				&argv[optind+1]);
-	}
-	if(!(prefs & PREFS_s) && optind != argc)
-		return _sh_file(&prefs, argv[optind], argc-optind-1,
-				&argv[optind+1]);
-	prefs |= PREFS_s;
-	if(optind == argc)
-		if(isatty(0) && isatty(2))
-			prefs |= PREFS_i;
-	return _sh_file(&prefs, NULL, argc - optind, &argv[optind]);
+	if(prefs & PREFS_c && optind == argc)
+		return _usage();
+	return _sh(&prefs, argc-optind, &argv[optind]);
 }

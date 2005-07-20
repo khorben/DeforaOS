@@ -9,26 +9,19 @@
 /* Scanner */
 void scanner_init(Scanner * scanner, FILE * fp, char const * string)
 {
-	if(fp != NULL)
-	{
-		scanner->fp = fp;
+	if((scanner->fp = fp) != NULL)
 		scanner->str = NULL;
-	}
 	else
-	{
-		scanner->fp = NULL;
 		scanner->str = string;
-	}
 	scanner->c = EOF;
 }
 
 
 /* useful */
-static void _scanner_next_char(Scanner * scanner);
-static void _scanner_next_char(Scanner * scanner);
+static void _next_char(Scanner * scanner);
 static Token * _read_operator(Scanner * scanner);
-static void _read_blank(Scanner * scanner);
-static void _read_comment(Scanner * scanner);
+static Token * _read_blank(Scanner * scanner);
+static Token * _read_comment(Scanner * scanner);
 static Token * _read_word(Scanner * scanner);
 Token * scanner_next(Scanner * scanner)
 {
@@ -38,28 +31,27 @@ Token * scanner_next(Scanner * scanner)
 	fprintf(stderr, "%s", "scanner_next()\n");
 #endif
 	if(scanner->c == EOF)
-		_scanner_next_char(scanner);
+		_next_char(scanner);
 	if(scanner->c == EOF)
 		return token_new(TC_EOI, NULL);
+	if(scanner->c == '\n') /* FIXME only if interactive */
+		_next_char(scanner);
 	/* '\' '\'' '"' */
 	/* '$' '`' */
-	if((t = _read_operator(scanner)) != NULL)
+	if((t = _read_operator(scanner))
+			|| _read_blank(scanner)
+			|| _read_comment(scanner)
+			|| (t = _read_word(scanner)))
 		return t;
-	_read_blank(scanner);
-	_read_comment(scanner);
-	if((t = _read_word(scanner)) != NULL)
-		return t;
-	if(scanner->c == '\n')
-		scanner->c = EOF;
 	return NULL;
 }
 
-static void _scanner_next_char(Scanner * scanner)
+static void _next_char(Scanner * scanner)
 {
 	static unsigned int pos = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_scanner_next_char()\n");
+	fprintf(stderr, "%s", "_next_char()\n");
 #endif
 	if(scanner->fp != NULL)
 		scanner->c = fgetc(scanner->fp);
@@ -77,59 +69,59 @@ static Token * _read_operator(Scanner * scanner)
 	int i;
 
 	for(i = TC_OP_AND_IF; i <= TC_OP_GREAT; i++)
-	{
 		if(scanner->c == sTokenCode[i][0])
 			break;
-	}
 	if(i > TC_OP_GREAT)
 		return NULL;
-	_scanner_next_char(scanner);
+	_next_char(scanner);
 	return token_new(i, NULL);
 }
 
-static void _read_blank(Scanner * scanner)
+static Token * _read_blank(Scanner * scanner)
 {
 	while(scanner->c == '\t' || scanner->c == ' ')
-		_scanner_next_char(scanner);
+		_next_char(scanner);
+	return NULL;
 }
 
-static void _read_comment(Scanner * scanner)
+static Token * _read_comment(Scanner * scanner)
 {
 	if(scanner->c != '#')
-		return;
-	_scanner_next_char(scanner);
+		return NULL;
+	_next_char(scanner);
 	while(scanner->c != EOF || scanner->c != '\0'
 			|| scanner->c != '\r' || scanner->c != '\n')
-		_scanner_next_char(scanner);
+		_next_char(scanner);
+	return NULL;
 }
 
 static Token * _read_word(Scanner * scanner)
 {
 	char eow[] = " \r\n&|;<>";
 	char * str = NULL;
+	unsigned int len = 0;
+	unsigned int i;
 	char * p;
-	int len = 1;
-	int i;
 
-	for(;;)
+#ifdef DEBUG
+	fprintf(stderr, "%s", "read_word()\n");
+#endif
+	for(; scanner->c != EOF; _next_char(scanner))
 	{
-		if(scanner->c == EOF)
-			break;
 		for(i = 0; eow[i] != '\0' && scanner->c != eow[i]; i++);
 		if(scanner->c == eow[i])
 			break;
-		if((p = realloc(str, len+1)) == NULL)
+		if((p = realloc(str, len+2)) == NULL)
 		{
+			perror("malloc"); /* FIXME */
 			free(str);
 			return NULL;
 		}
 		str = p;
-		str[len-1] = scanner->c;
-		len++;
-		_scanner_next_char(scanner);
+		str[len++] = scanner->c;
 	}
 	if(str == NULL)
 		return NULL;
-	str[len-1] = '\0';
+	str[len] = '\0';
 	return token_new(TC_TOKEN, str);
 }

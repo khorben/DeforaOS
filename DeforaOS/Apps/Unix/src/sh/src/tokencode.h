@@ -2,8 +2,8 @@
 
 
 
-#ifndef _TOKENCODE_H
-# define _TOKENCODE_H
+#ifndef __TOKENCODE_H
+# define __TOKENCODE_H
 
 
 /* types */
@@ -30,26 +30,27 @@ typedef enum _TokenCode {
 	TC_OP_SEMICOLON,	/* ";"     */
 	TC_OP_LESS,		/* "<"     */
 	TC_OP_GREAT,		/* ">"     */
-	TC_RW_IF,	/* "if"    */
-	TC_RW_THEN,	/* "then"  */
-	TC_RW_ELSE,	/* "else"  */
-	TC_RW_ELIF,	/* "elif"  */
-	TC_RW_FI,	/* "fi"    */
-	TC_RW_DO,	/* "do"    */
-	TC_RW_DONE,	/* "done"  */
-	TC_RW_CASE,	/* "case"  */
-	TC_RW_ESAC,	/* "esac"  */
-	TC_RW_WHILE,	/* "while" */
-	TC_RW_UNTIL,	/* "until" */
-	TC_RW_FOR,	/* "for"   */
-	TC_RW_LBRACE,	/* "{"     */
-	TC_RW_RBRACE,	/* "}"     */
-	TC_RW_BANG,	/* "!"     */
-	TC_RW_IN,	/* "in"    */
+	TC_RW_IF,		/* "if"    */
+	TC_RW_THEN,		/* "then"  */
+	TC_RW_ELSE,		/* "else"  */
+	TC_RW_ELIF,		/* "elif"  */
+	TC_RW_FI,		/* "fi"    */
+	TC_RW_DO,		/* "do"    */
+	TC_RW_DONE,		/* "done"  */
+	TC_RW_CASE,		/* "case"  */
+	TC_RW_ESAC,		/* "esac"  */
+	TC_RW_WHILE,		/* "while" */
+	TC_RW_UNTIL,		/* "until" */
+	TC_RW_FOR,		/* "for"   */
+	TC_RW_LBRACE,		/* "{"     */
+	TC_RW_RBRACE,		/* "}"     */
+	TC_RW_BANG,		/* "!"     */
+	TC_RW_IN,		/* "in"    */
 	TC_NULL
 } TokenCode;
+#define TC_LAST TC_NULL
 
-extern char * sTokenCode[TC_NULL];
+extern char * sTokenCode[TC_LAST+1];
 
 
 /* TokenCode sets */
@@ -82,4 +83,4 @@ extern TokenCode CS_SIMPLE_COMMAND[];
 extern TokenCode CS_TERM[];
 extern TokenCode CS_WORDLIST[];
 
-#endif /* !_TOKENCODE_H */
+#endif /* !__TOKENCODE_H */

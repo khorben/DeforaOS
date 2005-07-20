@@ -2,8 +2,8 @@
 
 
 
-#ifndef _PARSER_H
-# define _PARSER_H
+#ifndef __PARSER_H
+# define __PARSER_H
 
 # include <stdio.h>
 # include "scanner.h"
@@ -44,4 +44,4 @@ void parser_rule1(Parser * parser);
 void parser_rule7a(Parser * parser);
 void parser_rule7b(Parser * parser);
 
-#endif /* !_PARSER_H */
+#endif /* !__PARSER_H */

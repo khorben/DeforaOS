@@ -60,7 +60,7 @@ void parser_error(Parser * parser, char const * format, ...)
 	va_start(vl, format);
 	vfprintf(stderr, format, vl);
 	va_end(vl);
-	fprintf(stderr, "\n");
+	fputc('\n', stderr);
 	parser->token = NULL;
 }
 
@@ -68,11 +68,11 @@ int parser_parse(Parser * parser)
 {
 	parser->token = scanner_next(&parser->scanner);
 #ifdef DEBUG
-	fprintf(stderr, "New token: %p", parser->token);
+	fprintf(stderr, "%s%p", "New token: ", parser->token);
 	if(parser->token != NULL)
-		fprintf(stderr, ", %d, \"%s\"",
-				parser->token->code, parser->token->str);
-	fprintf(stderr, "\n");
+		fprintf(stderr, ", %d, \"%s\"", parser->token->code,
+				parser->token->str);
+	fputc('\n', stderr);
 #endif
 	if(parser_code(parser) == TC_EOI)
 		return -1;
@@ -86,7 +86,11 @@ void parser_scan(Parser * parser)
 	token_delete(parser->token);
 	parser->token = scanner_next(&parser->scanner);
 #ifdef DEBUG
-	fprintf(stderr, "New token: %p\n", parser->token);
+	fprintf(stderr, "%s%p", "New token: ", parser->token);
+	if(parser->token != NULL)
+		fprintf(stderr, ", %d, \"%s\"", parser->token->code,
+				parser->token->str);
+	fputc('\n', stderr);
 #endif
 }
 
@@ -160,6 +164,8 @@ void parser_rule1(Parser * parser)
 {
 	int i;
 
+	if(parser->token == NULL)
+		return;
 	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
 	{
 		if(strcmp(parser->token->str, sTokenCode[i]) == 0)

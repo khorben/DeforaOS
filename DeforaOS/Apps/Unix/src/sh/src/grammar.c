@@ -494,6 +494,7 @@ static void simple_command(Parser * p)
 		if(parser_test_set(p, CS_CMD_WORD))
 		{
 			cmd_word(p);
+			parser_rule1(p);
 			if(parser_test_set(p, CS_CMD_SUFFIX))
 				cmd_suffix(p);
 		}
@@ -505,6 +506,7 @@ static void simple_command(Parser * p)
 		return;
 	}
 	cmd_name(p);
+	parser_rule1(p);
 	if(parser_test_set(p, CS_CMD_SUFFIX))
 		cmd_suffix(p);
 }
@@ -564,18 +566,21 @@ static void cmd_suffix(Parser * p)
 	 * | cmd_suffix io_redirect
 	 * | WORD
 	 * | cmd_suffix WORD */
-	/* io_redirect { io_redirect }
-	 * | WORD { WORD } */
+	/* io_redirect | WORD { io_redirect | WORD } */
 {
-	if(parser_code(p) == TC_WORD)
+	for(;; parser_scan(p))
 	{
-		parser_scan(p);
-		while(parser_code(p) == TC_WORD)
-			parser_scan(p);
+#ifdef DEBUG
+		grammar_debug("cmd_suffix", p);
+#endif
+		if(parser_code(p) == TC_WORD)
+			;
+		else if(parser_test_set(p, CS_IO_REDIRECT))
+			io_redirect(p);
+		else
+			break;
+		parser_rule1(p);
 	}
-	io_redirect(p);
-	while(parser_test_set(p, CS_IO_REDIRECT))
-		io_redirect(p);
 }
 
 

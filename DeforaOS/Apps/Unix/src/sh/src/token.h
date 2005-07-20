@@ -2,8 +2,8 @@
 
 
 
-#ifndef _TOKEN_H
-# define _TOKEN_H
+#ifndef __TOKEN_H
+# define __TOKEN_H
 
 # include "tokencode.h"
 
@@ -19,4 +19,4 @@ typedef struct _Token {
 Token * token_new(TokenCode tokencode, char * string);
 void token_delete(Token * token);
 
-#endif /* !_TOKEN_H */
+#endif /* !__TOKEN_H */

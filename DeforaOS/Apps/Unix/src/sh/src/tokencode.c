@@ -7,7 +7,7 @@
 
 
 /* TokenCode */
-char * sTokenCode[TC_NULL] = {
+char * sTokenCode[TC_LAST+1] = {
 	NULL,
 	NULL,
 	NULL,
@@ -45,7 +45,8 @@ char * sTokenCode[TC_NULL] = {
 	"{",
 	"}",
 	"!",
-	"in"
+	"in",
+	NULL
 };
 
 
