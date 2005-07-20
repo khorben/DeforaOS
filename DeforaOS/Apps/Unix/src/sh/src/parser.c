@@ -164,7 +164,7 @@ void parser_rule1(Parser * parser)
 {
 	int i;
 
-	if(parser->token == NULL)
+	if(parser->token == NULL || parser->token->str == NULL)
 		return;
 	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
 	{

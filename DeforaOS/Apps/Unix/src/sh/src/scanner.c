@@ -32,10 +32,10 @@ Token * scanner_next(Scanner * scanner)
 #endif
 	if(scanner->c == EOF)
 		_next_char(scanner);
+	if(scanner->c == '\n') /* FIXME: only if interactive */
+		scanner->c = EOF;
 	if(scanner->c == EOF)
 		return token_new(TC_EOI, NULL);
-	if(scanner->c == '\n') /* FIXME only if interactive */
-		_next_char(scanner);
 	/* '\' '\'' '"' */
 	/* '$' '`' */
 	if((t = _read_operator(scanner))
