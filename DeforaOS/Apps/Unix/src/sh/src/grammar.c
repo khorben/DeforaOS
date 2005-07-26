@@ -39,7 +39,7 @@ int complete_command(Parser * p)
 	list(p);
 	if(parser_test_set(p, CS_SEPARATOR))
 		separator(p);
-	/* FIXME: check if there are unused tokens? */
+	/* FIXME check if there are unused tokens? */
 	return 0;
 }
 
@@ -567,12 +567,13 @@ static void cmd_suffix(Parser * p)
 	 * | WORD
 	 * | cmd_suffix WORD */
 	/* io_redirect | WORD { io_redirect | WORD } */
+	/* FIXME what about { WORD | io_redirect } instead? */
 {
+#ifdef DEBUG
+	grammar_debug("cmd_suffix", p);
+#endif
 	for(;; parser_scan(p))
 	{
-#ifdef DEBUG
-		grammar_debug("cmd_suffix", p);
-#endif
 		if(parser_code(p) == TC_WORD)
 			;
 		else if(parser_test_set(p, CS_IO_REDIRECT))

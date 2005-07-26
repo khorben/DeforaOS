@@ -167,13 +167,11 @@ void parser_rule1(Parser * parser)
 	if(parser->token == NULL || parser->token->str == NULL)
 		return;
 	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
-	{
 		if(strcmp(parser->token->str, sTokenCode[i]) == 0)
 		{
 			parser->token->code = i;
 			return;
 		}
-	}
 	parser->token->code = TC_WORD;
 }
 
