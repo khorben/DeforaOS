@@ -226,8 +226,11 @@ function _browse_file($id, $project, $cvsroot, $filename)
 			._html_safe(substr($rcs[2], 14)).'</h1>'."\n");
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		_info($i.': '.$rcs[$i], 0);
+	for($i = 0; $i < $count;)
+		if($rcs[$i++] == '----------------------------')
+			break;
 	$revisions = array();
-	for($i = 12, $count = count($rcs); $i < $count; $i+=3)
+	for($count = count($rcs); $i < $count; $i+=3)
 	{
 		$name = substr($rcs[$i], 9);
 		$date = substr($rcs[$i+1], 5, 20);
