@@ -430,15 +430,13 @@ static void cmd_suffix(Parser * p)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "cmd_suffix()\n");
 #endif
-	while(p->token != NULL)
-	{
+	for(; p->token != NULL; parser_rule1(p))
 		if(token_in_set(p->token, TS_IO_REDIRECT))
 			io_redirect(p);
 		else if(p->token->code == TC_WORD)
 			parser_scan(p);
 		else
 			break;
-	}
 }
 
 
