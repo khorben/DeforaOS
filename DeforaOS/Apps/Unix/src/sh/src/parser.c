@@ -2,57 +2,64 @@
 
 
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <stdarg.h>
 #include <string.h>
-#include "grammar.h"
+#include "token.h"
+#include "scanner.h"
 #include "parser.h"
 
 
 /* Parser */
-Parser * parser_new(FILE * fp)
+typedef struct _Parser
 {
-	Parser * parser;
+	Prefs * prefs;
+	int argc;
+	char ** argv;
+	Scanner scanner;
+	Token ** tokens;
+	unsigned int tokens_cnt;
+	Token * token;
+} Parser;
 
-	if((parser = malloc(sizeof(Parser))) == NULL)
-		return NULL;
-	scanner_init(&parser->scanner, fp, NULL);
-	parser->token = NULL;
-	return parser;
+static void parser_scan(Parser * parser);
+static void parser_exec(Parser * parser);
+static int complete_command(Parser * parser);
+int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
+		char * argv[])
+{
+	Parser parser;
+
+	parser.prefs = prefs;
+	parser.argc = argc;
+	parser.argv = argv;
+	scanner_init(&parser.scanner, prefs, fp, string);
+	parser.tokens = NULL;
+	parser.tokens_cnt = 0;
+	for(parser_scan(&parser); parser.token != NULL;)
+	{
+		if(parser.token->code == TC_EOI)
+		{
+			token_delete(parser.token);
+			break;
+		}
+		complete_command(&parser);
+		parser_exec(&parser);
+		if(parser.token == NULL)
+			parser_scan(&parser);
+	}
+	free(parser.tokens);
+	return 0;
 }
 
-Parser * parser_new_from_string(char const * string)
-{
-	Parser * parser;
 
-	if((parser = malloc(sizeof(Parser))) == NULL)
-		return NULL;
-	scanner_init(&parser->scanner, NULL, string);
-	parser->token = NULL;
-	return parser;
-}
-
-
-void parser_delete(Parser * parser)
-{
-	if(parser->token != NULL)
-		token_delete(parser->token);
-	free(parser);
-}
-
-
-/* returns */
-TokenCode parser_code(Parser * parser)
-{
-	if(parser->token == NULL)
-		return TC_NULL;
-	return parser->token->code;
-}
-
-
-/* useful */
-void parser_error(Parser * parser, char const * format, ...)
+static void parser_error(Parser * parser, char * format, ...)
 {
 	va_list vl;
 
@@ -64,142 +71,453 @@ void parser_error(Parser * parser, char const * format, ...)
 	parser->token = NULL;
 }
 
-int parser_parse(Parser * parser)
-{
-	parser->token = scanner_next(&parser->scanner);
-#ifdef DEBUG
-	fprintf(stderr, "%s%p", "New token: ", parser->token);
-	if(parser->token != NULL)
-		fprintf(stderr, ", %d, \"%s\"", parser->token->code,
-				parser->token->str);
-	fputc('\n', stderr);
-#endif
-	if(parser_code(parser) == TC_EOI)
-		return -1;
-	return complete_command(parser);
-}
 
-void parser_scan(Parser * parser)
+static void parser_scan(Parser * parser)
 {
-	if(parser->token == NULL)
+	Token ** p;
+
+	if((parser->token = scanner_next(&parser->scanner)) == NULL)
+		return; /* FIXME ? */
+	if((p = realloc(parser->tokens, (parser->tokens_cnt+1)
+					* sizeof(Token *))) == NULL)
+	{
+		sh_error("malloc", 0);
 		return;
-	token_delete(parser->token);
-	parser->token = scanner_next(&parser->scanner);
-#ifdef DEBUG
-	fprintf(stderr, "%s%p", "New token: ", parser->token);
-	if(parser->token != NULL)
-		fprintf(stderr, ", %d, \"%s\"", parser->token->code,
-				parser->token->str);
-	fputc('\n', stderr);
-#endif
+	}
+	parser->tokens = p;
+	parser->tokens[parser->tokens_cnt++] = parser->token;
 }
 
 
-/* tests */
-int parser_test(Parser * parser, TokenCode tokencode)
-{
-	if(parser_code(parser) == tokencode)
-		return 1;
-	return 0;
-}
-
-int parser_test_set(Parser * parser, TokenCode codeset[])
+static int _exec_cmd(Parser * parser, unsigned int * pos);
+static void _exec_free(Parser * parser);
+static void parser_exec(Parser * parser)
 {
 	unsigned int i;
 
-	for(i = 0; codeset[i] != TC_NULL; i++)
-		if(codeset[i] == parser_code(parser))
-			return 1;
-	return 0;
-}
-
-int parser_test_word(Parser * parser, char const * word)
-{
-	if(parser_code(parser) != TC_WORD
-			|| strcmp(word, parser->token->str) != 0)
-		return 0;
-	return 1;
-}
-
-
-/* checks */
-int parser_check(Parser * parser, TokenCode tokencode)
-{
-	if(parser_test(parser, tokencode))
+#ifdef DEBUG
+	fprintf(stderr, "%s", "parser_exec()\n");
+#endif
+	/* FIXME */
+	for(i = 0; i < parser->tokens_cnt; i++)
 	{
-		parser_scan(parser);
-		return 1;
+		switch(parser->tokens[i]->code)
+		{
+			case TC_ASSIGNMENT_WORD:
+			case TC_IO_NUMBER:
+			case TC_OP_CLOBBER:
+			case TC_OP_GREAT:
+			case TC_OP_GREATAND:
+			case TC_OP_LESS:
+			case TC_OP_LESSAND:
+			case TC_OP_LESSGREAT:
+			case TC_WORD:
+				_exec_cmd(parser, &i);
+				break;
+			case TC_EOI:
+			case TC_NEWLINE:
+				break;
+			case TC_TOKEN:
+			case TC_NULL:
+#ifdef DEBUG
+				fprintf(stderr, "%s%s%s%d%s%d%s", "sh: ",
+						__FILE__, ", line ",__LINE__,
+						": should not happen (",
+						parser->tokens[i]->code, ")\n");
+#endif
+				break;
+		}
 	}
-	if(sTokenCode[tokencode] != NULL)
-		parser_error(parser, "%s%s", "expected ", sTokenCode[tokencode]);
-	else
-		parser_error(parser, "%s%d", "expected code #", tokencode);
-	return 0;
+	_exec_free(parser);
 }
 
-int parser_check_set(Parser * parser, TokenCode codeset[])
+static int _exec_cmd_child(Parser * parser, char ** argv, char ** envp);
+static int _exec_cmd(Parser * parser, unsigned int * pos)
 {
-	if(!parser_test_set(parser, codeset))
+	pid_t pid;
+	int status;
+	int ret;
+	char ** argv = NULL;
+	unsigned int argv_cnt = 0;
+	char ** envp = NULL;
+	unsigned int envp_cnt = 0;
+	char ** p;
+
+	for(; *pos < parser->tokens_cnt; (*pos)++)
 	{
-		parser_error(parser, "expected set @%p", codeset);
-		return 0;
+		switch(parser->tokens[*pos]->code)
+		{
+			case TC_ASSIGNMENT_WORD:
+				if((p = realloc(envp, sizeof(char *)
+								* (envp_cnt+2)))
+						== NULL)
+					exit(sh_error("malloc", 125));
+				envp = p;
+				envp[envp_cnt++] = parser->tokens[*pos]->string;
+				continue;
+			case TC_IO_NUMBER:
+			case TC_OP_CLOBBER:
+			case TC_OP_GREAT:
+			case TC_OP_GREATAND:
+			case TC_OP_LESS:
+			case TC_OP_LESSAND:
+			case TC_OP_LESSGREAT:
+				/* FIXME */
+				continue;
+			case TC_WORD:
+				if((p = realloc(argv, sizeof(char *)
+								* (argv_cnt+2)))
+						== NULL)
+					exit(sh_error("malloc", 125));
+				argv = p;
+				argv[argv_cnt++] = parser->tokens[*pos]->string;
+				continue;
+			default:
+				break;
+		}
 	}
-	return 1;
+	if((pid = fork()) == -1)
+		return sh_error("fork", 125);
+	if(pid == 0)
+	{
+		if(argv == NULL)
+			exit(125);
+		argv[argv_cnt] = NULL;
+		if(envp != NULL)
+			envp[envp_cnt] = NULL;
+		return _exec_cmd_child(parser, argv, envp);
+	}
+	while((ret = waitpid(pid, &status, 0)) != -1)
+		if(WIFEXITED(status))
+			break;
+	free(argv);
+	free(envp);
+	if(ret == -1)
+		return sh_error("waitpid", 125);
+	return WEXITSTATUS(status);
 }
 
-int parser_check_word(Parser * parser, char const * word)
+static int _exec_cmd_child(Parser * parser, char ** argv, char ** envp)
 {
-	if(!parser_test_word(parser, word))
-	{
-		parser_error(parser, "expected word \"%s\"", word);
-		return 0;
-	}
-	parser_scan(parser);
-	return 1;
+	/* FIXME handle environment */
+	execvp(argv[0], argv);
+	exit(sh_error(argv[0], 125));
+}
+
+static void _exec_free(Parser * parser)
+{
+	unsigned int i;
+
+	for(i = 0; i < parser->tokens_cnt-1; i++)
+		token_delete(parser->tokens[i]);
+	free(parser->tokens);
+	parser->tokens = NULL;
+	parser->tokens_cnt = 0;
+	if(parser->token == NULL)
+		return;
+	if(parser->token->code == TC_EOI)
+		return;
+	token_delete(parser->token);
+	parser->token = NULL;
 }
 
 
 /* rules */
-void parser_rule1(Parser * parser)
+static void parser_rule1(Parser * parser)
 {
-	int i;
+	unsigned int i;
 
-	if(parser->token == NULL || parser->token->str == NULL)
+	if(parser->token == NULL || parser->token->string == NULL)
 		return;
 	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
-		if(strcmp(parser->token->str, sTokenCode[i]) == 0)
+		if(strcmp(parser->token->string, sTokenCode[i]) == 0)
 		{
 			parser->token->code = i;
 			return;
 		}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "rule 1: TC_WORD\n");
+#endif
 	parser->token->code = TC_WORD;
 }
 
-void parser_rule7a(Parser * parser)
-{
-	char * p;
 
-	for(p = parser->token->str; *p && *p != '='; p++);
-	if(*p == '=')
-		parser_rule7b(parser);
-	else
-		parser_rule1(parser);
+/* complete_command */
+static void list(Parser * p);
+static void separator(Parser * p);
+static int complete_command(Parser * p)
+	/* list [separator] */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "complete_command()\n");
+#endif
+	list(p);
+	if(p->token != NULL && token_in_set(p->token, TS_SEPARATOR))
+		separator(p);
+	return 0;
 }
 
-void parser_rule7b(Parser * parser)
-{
-	char * p = parser->token->str;
 
-	if(*p == '=')
+/* list */
+static void and_or(Parser * p);
+static void separator_op(Parser * p);
+static void list(Parser * p)
+	/* and_or { separator_op and_or } */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "list()\n");
+#endif
+	and_or(p);
+	while(p->token != NULL && token_in_set(p->token, TS_SEPARATOR_OP))
 	{
-		parser->token->code = TC_WORD;
-		return;
+		separator_op(p);
+		and_or(p);
 	}
-	for(p++; *p && *p != '=' && ((*p >= 'a' && *p <= 'z')
-			|| (*p >= 'A' && *p <= 'Z')
-			|| *p == '_'); p++);
-	if(!*p || *p == '=')
-		parser->token->code = TC_ASSIGNMENT_WORD;
-	else
-		parser->token->code = TC_WORD;
 }
+
+
+/* and_or */
+static void pipeline(Parser * p);
+static void linebreak(Parser * p);
+static void and_or(Parser * p)
+	/* pipeline { (AND_IF | OR_IF) linebreak pipeline } */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "and_or()\n");
+#endif
+	pipeline(p);
+	while(p->token != NULL)
+	{
+		if(p->token->code == TC_OP_AND_IF)
+			;
+		else if(p->token->code == TC_OP_OR_IF)
+			;
+		else
+			return;
+		linebreak(p);
+		pipeline(p);
+	}
+}
+
+
+/* pipeline */
+static void pipe_sequence(Parser * p);
+static void pipeline(Parser * p)
+	/* [Bang] pipe_sequence */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "pipeline()\n");
+#endif
+	/* FIXME */
+	pipe_sequence(p);
+}
+
+
+/* pipe_sequence */
+static void command(Parser * p);
+static void pipe_sequence(Parser * p)
+	/* command { '|' linebreak command } */
+{
+	/* FIXME */
+	command(p);
+}
+
+
+/* command */
+static void simple_command(Parser * p);
+static void command(Parser * p)
+	/* simple_command
+	 * | compound_command [redirect_list]
+	 * | function_definition */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "command()\n");
+#endif
+	parser_rule1(p);
+	/* FIXME */
+	simple_command(p);
+}
+
+
+/* compound_command */
+
+
+/* subshell */
+
+
+/* compound_list */
+
+
+/* term */
+
+
+/* for_clause */
+
+
+/* name */
+
+
+/* simple_command */
+static void cmd_prefix(Parser * p);
+static void cmd_word(Parser * p);
+static void cmd_suffix(Parser * p);
+static void cmd_name(Parser * p);
+static void simple_command(Parser * p)
+	/* cmd_prefix [cmd_word [cmd_suffix]]
+	 * | cmd_name [cmd_suffix] */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "simple_command()\n");
+#endif
+	if(p->token == NULL)
+		return;
+	if(token_in_set(p->token, TS_CMD_PREFIX))
+	{
+		cmd_prefix(p);
+		if(p->token == NULL || !token_in_set(p->token, TS_CMD_WORD))
+			return;
+		cmd_word(p);
+	}
+	else if(!token_in_set(p->token, TS_CMD_NAME))
+		/* FIXME parser_error(p, "%s", "prefix or name expected"); */
+		return;
+	else
+		cmd_name(p);
+	if(p->token == NULL)
+		return;
+	parser_rule1(p);
+	if(token_in_set(p->token, TS_CMD_SUFFIX))
+		cmd_suffix(p);
+}
+
+
+/* cmd_name */
+static void cmd_name(Parser * p)
+	/* WORD  (rule 7a) */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "cmd_name()\n");
+#endif
+	/* FIXME */
+	parser_scan(p);
+}
+
+
+/* cmd_word */
+static void cmd_word(Parser * p)
+	/* WORD  (rule 7b) */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "cmd_word()\n");
+#endif
+	/* FIXME */
+	parser_scan(p);
+}
+
+
+/* cmd_prefix */
+static void cmd_prefix(Parser * p)
+{
+	/* FIXME */
+}
+
+
+/* cmd_suffix */
+static void io_redirect(Parser * p);
+static void cmd_suffix(Parser * p)
+	/* { WORD | io_redirect } */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "cmd_suffix()\n");
+#endif
+	while(p->token != NULL)
+	{
+		if(token_in_set(p->token, TS_IO_REDIRECT))
+			io_redirect(p);
+		else if(p->token->code == TC_WORD)
+			parser_scan(p);
+		else
+			break;
+	}
+}
+
+
+/* redirect_list */
+
+
+/* io_redirect */
+static void io_redirect(Parser * p)
+{
+	/* FIXME */
+}
+
+
+/* linebreak */
+static void newline_list(Parser * p);
+static void linebreak(Parser * p)
+	/* newline_list
+	 * | */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "linebreak()\n");
+#endif
+	if(p->token != NULL && token_in_set(p->token, TS_NEWLINE_LIST))
+		newline_list(p);
+}
+
+
+/* newline_list */
+static void newline_list(Parser * p)
+	/* NEWLINE { NEWLINE } */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "newline_list()\n");
+#endif
+	if(p->token != NULL && p->token->code != TC_NEWLINE)
+		return parser_error(p, "%s", "newline expected");
+	/* FIXME
+	parser_scan(p);
+	while(p->token != NULL && p->token->code == TC_NEWLINE)
+		parser_scan(p); */
+	p->token = NULL;
+}
+
+
+/* separator_op */
+static void separator_op(Parser * p)
+	/* '&' | ';' */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "separator_op()\n");
+#endif
+	if(p->token == NULL)
+		return;
+	if(p->token->code == TC_OP_AMPERSAND || p->token->code
+			== TC_OP_SEMICOLON)
+		parser_scan(p);
+	else
+		parser_error(p, "%s", "\"&\" or \";\" expected");
+}
+
+
+/* separator */
+static void separator(Parser * p)
+	/* separator_op linebreak
+	 * | newline_list */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "separator()\n");
+#endif
+	if(p->token == NULL)
+		return;
+	if(token_in_set(p->token, TS_NEWLINE_LIST))
+		return newline_list(p);
+	if(!token_in_set(p->token, TS_SEPARATOR_OP))
+		return parser_error(p, "%s", "separator or newline expected");
+	separator_op(p);
+	linebreak(p);
+}
+
+
+/* sequential_sep */
+/* FIXME */

@@ -7,20 +7,19 @@
 
 # include <stdio.h>
 # include "token.h"
+# include "sh.h"
 
 
-/* types */
-typedef struct _Scanner {
+/* Scanner */
+typedef struct _Scanner
+{
 	FILE * fp;
-	char const * str;
-	int c;
+	const char * string;
+	int (* next)(struct _Scanner *);
 } Scanner;
 
-
-/* functions */
-void scanner_init(Scanner * scanner, FILE * fp, char const * string);
-
-/* useful */
+void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
+		char const * string);
 Token * scanner_next(Scanner * scanner);
 
 #endif /* !__SCANNER_H */
