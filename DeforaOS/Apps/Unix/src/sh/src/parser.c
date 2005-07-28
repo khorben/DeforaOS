@@ -195,11 +195,11 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 
 static int _exec_cmd_env(char * envp[])
 {
-	char * p;
+	char ** p;
 
 	if(envp == NULL)
 		return 0;
-	for(p = *envp; p != NULL; p++)
+	for(p = envp; *p != NULL; p++)
 	{
 		/* FIXME affect environment */
 	}
@@ -499,8 +499,8 @@ static void cmd_prefix(Parser * p)
 			io_redirect(p);
 		else
 			return;
+		parser_rule7b(p);
 	}
-	parser_rule7b(p);
 }
 
 
