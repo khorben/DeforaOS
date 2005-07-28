@@ -131,17 +131,16 @@ static void parser_exec(Parser * parser)
 	_exec_free(parser);
 }
 
-static int _exec_cmd_child(Parser * parser, char ** argv, char ** envp);
+static int _exec_cmd_env(char * envp[]);
+static int _exec_cmd_child(char ** argv);
 static int _exec_cmd(Parser * parser, unsigned int * pos)
 {
-	pid_t pid;
-	int status;
-	int ret;
 	char ** argv = NULL;
 	unsigned int argv_cnt = 0;
 	char ** envp = NULL;
 	unsigned int envp_cnt = 0;
 	char ** p;
+	int ret;
 
 	for(; *pos < parser->tokens_cnt; (*pos)++)
 	{
@@ -151,6 +150,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 				if((p = realloc(envp, sizeof(char *)
 								* (envp_cnt+2)))
 						== NULL)
+					/* FIXME should not exit */
 					exit(sh_error("malloc", 125));
 				envp = p;
 				envp[envp_cnt++] = parser->tokens[*pos]->string;
@@ -168,6 +168,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 				if((p = realloc(argv, sizeof(char *)
 								* (argv_cnt+2)))
 						== NULL)
+					/* FIXME should not exit */
 					exit(sh_error("malloc", 125));
 				argv = p;
 				argv[argv_cnt++] = parser->tokens[*pos]->string;
@@ -176,32 +177,54 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 				break;
 		}
 	}
+	if(envp != NULL)
+		envp[envp_cnt] = NULL;
+	ret = _exec_cmd_env(envp);
+	free(envp);
+	if(argv != NULL && ret == 0)
+	{
+		/* FIXME look for builtins utilities (should be none) */
+		/* FIXME look for functions */
+		/* FIXME look for builtin utilities */
+		argv[argv_cnt] = NULL;
+		ret = _exec_cmd_child(argv);
+	}
+	free(argv);
+	return ret;
+}
+
+static int _exec_cmd_env(char * envp[])
+{
+	char * p;
+
+	if(envp == NULL)
+		return 0;
+	for(p = *envp; p != NULL; p++)
+	{
+		/* FIXME affect environment */
+	}
+	return 0;
+}
+
+static int _exec_cmd_child(char ** argv)
+{
+	pid_t pid;
+	int status;
+	int ret;
+
 	if((pid = fork()) == -1)
 		return sh_error("fork", 125);
 	if(pid == 0)
 	{
-		if(argv == NULL)
-			exit(125);
-		argv[argv_cnt] = NULL;
-		if(envp != NULL)
-			envp[envp_cnt] = NULL;
-		return _exec_cmd_child(parser, argv, envp);
+		execvp(argv[0], argv);
+		exit(sh_error(argv[0], 125));
 	}
 	while((ret = waitpid(pid, &status, 0)) != -1)
 		if(WIFEXITED(status))
 			break;
-	free(argv);
-	free(envp);
 	if(ret == -1)
 		return sh_error("waitpid", 125);
 	return WEXITSTATUS(status);
-}
-
-static int _exec_cmd_child(Parser * parser, char ** argv, char ** envp)
-{
-	/* FIXME handle environment */
-	execvp(argv[0], argv);
-	exit(sh_error(argv[0], 125));
 }
 
 static void _exec_free(Parser * parser)
@@ -227,6 +250,9 @@ static void parser_rule1(Parser * parser)
 {
 	unsigned int i;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s", "rule 1\n");
+#endif
 	if(parser->token == NULL || parser->token->string == NULL)
 		return;
 	for(i = TC_RW_IF; i <= TC_RW_IN; i++)
@@ -235,9 +261,51 @@ static void parser_rule1(Parser * parser)
 			parser->token->code = i;
 			return;
 		}
+	parser->token->code = TC_WORD;
+}
+
+
+static void parser_rule7b(Parser * parser);
+static void parser_rule7a(Parser * parser)
+{
+	unsigned int i;
+
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 1: TC_WORD\n");
+	fprintf(stderr, "%s", "rule 7a\n");
 #endif
+	if(parser->token == NULL || parser->token->string == NULL)
+		return;
+	for(i = 0; parser->token->string[i] != '\0'; i++)
+		if(parser->token->string[i] == '=')
+			return parser_rule7b(parser);
+	return parser_rule1(parser);
+}
+
+
+static void parser_rule7b(Parser * parser)
+{
+	unsigned int i;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s", "rule 7b\n");
+#endif
+	if(parser->token == NULL || parser->token->string == NULL)
+		return;
+	switch(parser->token->string[0])
+	{
+		case '=':
+		case '\0':
+			parser->token->code = TC_WORD;
+			return;
+		default:
+			break;
+	}
+	for(i = 1; parser->token->string[i] != '\0'; i++)
+		if(parser->token->string[i] == '=')
+		{
+			parser->token->code = TC_ASSIGNMENT_WORD;
+			return;
+		}
 	parser->token->code = TC_WORD;
 }
 
@@ -333,7 +401,7 @@ static void command(Parser * p)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "command()\n");
 #endif
-	parser_rule1(p);
+	parser_rule7a(p);
 	/* FIXME */
 	simple_command(p);
 }
@@ -416,14 +484,27 @@ static void cmd_word(Parser * p)
 
 
 /* cmd_prefix */
+static void io_redirect(Parser * p);
 static void cmd_prefix(Parser * p)
+	/* (ASSIGNMENT_WORD | io_redirect) { ASSIGNMENT_WORD | io_redirect } */
 {
-	/* FIXME */
+#ifdef DEBUG
+	fprintf(stderr, "%s", "cmd_prefix()\n");
+#endif
+	while(p->token != NULL)
+	{
+		if(p->token->code == TC_ASSIGNMENT_WORD)
+			parser_scan(p);
+		else if(token_in_set(p->token, TS_IO_REDIRECT))
+			io_redirect(p);
+		else
+			return;
+	}
+	parser_rule7b(p);
 }
 
 
 /* cmd_suffix */
-static void io_redirect(Parser * p);
 static void cmd_suffix(Parser * p)
 	/* { WORD | io_redirect } */
 {
