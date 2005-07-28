@@ -31,7 +31,7 @@ int builtin_cd(int argc, char * argv[])
 			default:
 				return _cd_usage();
 		}
-	if(argc - optind != 1)
+	if(argc-optind != 1)
 		return _cd_usage();
 	if(strcmp("-", argv[optind]) == 0)
 		return _cd_previous();
@@ -48,9 +48,19 @@ static int _cd_usage(void)
 }
 
 static int _cd_previous(void)
+	/* FIXME error code */
 {
-	/* FIXME set $OLDPWD */
-	/* FIXME everything else */
+	char * oldpwd;
+	char buf[256];
+
+	if((oldpwd = getenv("OLDPWD")) == NULL)
+		return sh_error("getenv", 125);
+	if(getcwd(buf, sizeof(buf)) == NULL)
+		return sh_error("getcwd", 125);
+	if(chdir(oldpwd) != 0)
+		return sh_error("chdir", 125);
+	if(setenv("OLDPWD", buf, 1) != 0)
+		return sh_error("setenv", 125);
 	return 0;
 }
 
