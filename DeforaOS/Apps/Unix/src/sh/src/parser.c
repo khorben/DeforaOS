@@ -466,7 +466,6 @@ static void cmd_name(Parser * p)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "cmd_name()\n");
 #endif
-	/* FIXME */
 	parser_scan(p);
 }
 
@@ -478,7 +477,6 @@ static void cmd_word(Parser * p)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "cmd_word()\n");
 #endif
-	/* FIXME */
 	parser_scan(p);
 }
 
