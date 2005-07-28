@@ -197,16 +197,25 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 }
 
 static int _exec_cmd_env(char * envp[])
+	/* FIXME share code with the builtin set? */
 {
-	char ** p;
+	char ** e;
+	char * p;
+	int ret = 0;
 
 	if(envp == NULL)
 		return 0;
-	for(p = envp; *p != NULL; p++)
+	for(e = envp; *e != NULL; e++)
 	{
-		/* FIXME affect environment */
+		for(p = *e; *p != '\0' && *p != '='; p++);
+		if(*p == '\0')
+			continue;
+		*p = '\0';
+		if(setenv(*e, p+1, 1) != 0)
+			ret+=sh_error("setenv", 1);
+		*p = '=';
 	}
-	return 0;
+	return ret;
 }
 
 static int _exec_cmd_builtin(int argc, char ** argv)
@@ -215,8 +224,14 @@ static int _exec_cmd_builtin(int argc, char ** argv)
 		char * cmd;
 		int (*func)(int, char**);
 	} builtins[] = {
-		{ "cd", builtin_cd },
-		{ NULL, NULL }
+		{ "bg",    builtin_bg },
+		{ "cd",    builtin_cd },
+		{ "fg",    builtin_fg },
+		{ "jobs",  builtin_jobs },
+		{ "read",  builtin_read },
+		{ "set",   builtin_set },
+		{ "unset", builtin_unset },
+		{ NULL,    NULL }
 	};
 	unsigned int i;
 
