@@ -13,6 +13,7 @@
 #include <string.h>
 #include "token.h"
 #include "scanner.h"
+#include "builtin.h"
 #include "parser.h"
 
 
@@ -132,7 +133,8 @@ static void parser_exec(Parser * parser)
 }
 
 static int _exec_cmd_env(char * envp[]);
-static int _exec_cmd_child(char ** argv);
+static int _exec_cmd_builtin(int argc, char ** argv);
+static int _exec_cmd_child(int argc, char ** argv);
 static int _exec_cmd(Parser * parser, unsigned int * pos)
 {
 	char ** argv = NULL;
@@ -183,11 +185,12 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 	free(envp);
 	if(argv != NULL && ret == 0)
 	{
+		argv[argv_cnt] = NULL;
 		/* FIXME look for builtins utilities (should be none) */
 		/* FIXME look for functions */
 		/* FIXME look for builtin utilities */
-		argv[argv_cnt] = NULL;
-		ret = _exec_cmd_child(argv);
+		if((ret = _exec_cmd_builtin(argv_cnt, argv)) >= 125) /* FIXME */
+			ret = _exec_cmd_child(argv_cnt, argv);
 	}
 	free(argv);
 	return ret;
@@ -206,7 +209,24 @@ static int _exec_cmd_env(char * envp[])
 	return 0;
 }
 
-static int _exec_cmd_child(char ** argv)
+static int _exec_cmd_builtin(int argc, char ** argv)
+{
+	struct {
+		char * cmd;
+		int (*func)(int, char**);
+	} builtins[] = {
+		{ "cd", builtin_cd },
+		{ NULL, NULL }
+	};
+	unsigned int i;
+
+	for(i = 0; builtins[i].cmd != NULL; i++)
+		if(strcmp(builtins[i].cmd, argv[0]) == 0)
+			return builtins[i].func(argc, argv);
+	return 125; /* FIXME */
+}
+
+static int _exec_cmd_child(int argc, char ** argv)
 {
 	pid_t pid;
 	int status;
