@@ -2,10 +2,13 @@
 
 
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include "sh.h"
 #include "builtin.h"
 
@@ -110,10 +113,73 @@ int builtin_jobs(int argc, char * argv[])
 
 
 /* builtin_read */
+static int _read_usage(void);
+static int _read_do(int argc, char * argv[]);
 int builtin_read(int argc, char * argv[])
 {
-	/* FIXME fgets/realloc */
-	return 0;
+	int o;
+
+	optind = 1;
+	while((o = getopt(argc, argv, "r")) != -1)
+		switch(o)
+		{
+			case 'r':
+				/* FIXME */
+				break;
+			default:
+				return _read_usage();
+		}
+	return _read_do(argc-optind, &argv[optind]);
+}
+
+static int _read_usage(void)
+{
+	fprintf(stderr, "%s", "Usage: read [-r] var...\n\
+  -r	do not escape backslashes\n");
+	return 1;
+}
+
+static int _read_do(int argc, char * argv[])
+{
+	int c;
+	char ** arg = argv;
+	char * value = NULL;
+	int value_cnt = 0;
+	char * p;
+	int ret = 0;
+
+	if(arg == NULL)
+		return 0;
+	for(c = fgetc(stdin);; c = fgetc(stdin))
+	{
+		/* FIXME backslash escaping is optional */
+		if(c == '\\')
+		{
+			if((c = fgetc(stdin)) == '\n')
+				continue;
+		}
+		else if(c == EOF || c == '\n' || (isblank(c) && *(arg+1) != NULL))
+		{
+			value[value_cnt] = '\0';
+			if(setenv(arg, value, 1) != 0)
+				ret+=sh_error("setenv", 1);
+			value_cnt = 0;
+			if(*(arg+1) != NULL)
+				arg++;
+			if(c == EOF || c == '\n')
+				break;
+			continue;
+		}
+		if((p = realloc(value, value_cnt+2)) == NULL)
+		{
+			free(value);
+			return sh_error("malloc", 2);
+		}
+		value = p;
+		value[value_cnt++] = c;
+	}
+	free(value);
+	return ret == 0 ? 0 : 2;
 }
 
 
