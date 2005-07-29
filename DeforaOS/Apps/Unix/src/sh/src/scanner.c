@@ -169,5 +169,8 @@ static Token * _next_word(Scanner * scanner, int * c)
 	if(str == NULL)
 		return NULL;
 	str[len] = '\0';
+	/* FIXME aliases need to be replaced now; I suggest changing the
+	 * scanner->next() function for a while but I don't really like it,
+	 * moreover it wouldn't parse the alias into tokens... */
 	return token_new(TC_TOKEN, str);
 }
