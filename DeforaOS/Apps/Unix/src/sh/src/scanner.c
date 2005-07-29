@@ -27,11 +27,23 @@ void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
 
 static void _prompt(void)
 {
-	static int prompt = EOF;
-	
-	if(prompt == EOF)
-		prompt = geteuid() == 0 ? '#' : '$';
-	fputc(prompt, stderr);
+	char * prompt = NULL;
+
+	if((prompt = getenv("PS1")) == NULL)
+		prompt = "$ ";
+	fprintf(stderr, "%s", prompt);
+}
+
+static void _lineno(void)
+{
+	static unsigned int i = 1;
+	char lineno[11];
+	int len = sizeof(lineno)-1;
+
+	if(snprintf(lineno, len, "%u", i++) >= len)
+		lineno[len] = '\0';
+	if(setenv("LINENO", lineno, 1) != 0)
+		sh_error("setenv", 0);
 }
 
 static int _next_file_prompt(Scanner * scanner)
@@ -39,7 +51,10 @@ static int _next_file_prompt(Scanner * scanner)
 	static int c = '\n';
 
 	if(c == '\n')
+	{
 		_prompt();
+		_lineno();
+	}
 	if((c = fgetc(scanner->fp)) == EOF)
 		fputc('\n', stderr);
 	return c;
@@ -47,7 +62,11 @@ static int _next_file_prompt(Scanner * scanner)
 
 static int _next_file(Scanner * scanner)
 {
-	return fgetc(scanner->fp);
+	int c;
+
+	if((c = fgetc(scanner->fp)) == '\n')
+		_lineno();
+	return c;
 }
 
 static int _next_string(Scanner * scanner)
