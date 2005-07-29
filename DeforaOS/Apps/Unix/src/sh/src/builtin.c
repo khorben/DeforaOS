@@ -161,7 +161,7 @@ static int _read_do(int argc, char * argv[])
 		else if(c == EOF || c == '\n' || (isblank(c) && *(arg+1) != NULL))
 		{
 			value[value_cnt] = '\0';
-			if(setenv(arg, value, 1) != 0)
+			if(setenv(*arg, value, 1) != 0)
 				ret+=sh_error("setenv", 1);
 			value_cnt = 0;
 			if(*(arg+1) != NULL)
