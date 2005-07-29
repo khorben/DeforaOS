@@ -203,6 +203,61 @@ static int _set_unset(void)
 }
 
 
+/* umask */
+static int _umask_usage(void);
+static int _umask_get(void);
+static int _umask_set(char * mask);
+int builtin_umask(int argc, char * argv[])
+{
+	int o;
+
+	optind = 1;
+	while((o = getopt(argc, argv, "S")) != -1)
+		switch(o)
+		{
+			case 'S':
+				/* FIXME */
+				break;
+			default:
+				return _umask_usage();
+		}
+	if(argc > optind+1)
+		return _umask_usage();
+	if(optind == argc)
+		return _umask_get();
+	return _umask_set(argv[optind]);
+}
+
+static int _umask_usage(void)
+{
+	fprintf(stderr, "%s", "Usage: umask [-s][mask]\n\
+  -S	provide symbolic output\n");
+	return 1;
+}
+
+static int _umask_get(void)
+{
+	mode_t mask;
+
+	mask = umask(0);
+	printf("%04o%s", mask, "\n");
+	umask(mask);
+	return 0;
+}
+
+static int _umask_set(char * mask)
+{
+	mode_t mode;
+	char * p;
+
+	mode = strtol(mask, &p, 8);
+	if(mask[0] == '\0' || *p != '\0')
+		return _umask_usage();
+	umask(mode);
+	return 0;
+}
+
+
 /* unset */
 static int _unset_usage(void);
 int builtin_unset(int argc, char * argv[])
