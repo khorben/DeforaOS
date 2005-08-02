@@ -106,19 +106,43 @@ static void parser_exec(Parser * parser)
 		{
 			case TC_ASSIGNMENT_WORD:
 			case TC_IO_NUMBER:
-			case TC_OP_CLOBBER:
-			case TC_OP_GREAT:
-			case TC_OP_GREATAND:
-			case TC_OP_LESS:
+			case TC_OP_DLESS:
+			case TC_OP_DGREAT:
 			case TC_OP_LESSAND:
+			case TC_OP_GREATAND:
 			case TC_OP_LESSGREAT:
+			case TC_OP_CLOBBER:
+			case TC_OP_LESS:
+			case TC_OP_GREAT:
 			case TC_WORD:
 				_exec_cmd(parser, &i);
+				break;
+			case TC_RW_IF:
+				/* FIXME */
+				break;
+			case TC_RW_CASE:
+				/* FIXME */
+				break;
+			case TC_RW_WHILE:
+				/* FIXME */
+				break;
+			case TC_RW_UNTIL:
+				/* FIXME */
+				break;
+			case TC_RW_FOR:
+				/* FIXME */
 				break;
 			case TC_EOI:
 			case TC_NEWLINE:
 				break;
 			case TC_TOKEN:
+			case TC_NAME:
+			case TC_RW_ELSE:
+			case TC_RW_ELIF:
+			case TC_RW_FI:
+			case TC_RW_ESAC:
+			case TC_RW_LBRACE:
+			case TC_RW_RBRACE:
 			case TC_NULL:
 #ifdef DEBUG
 				fprintf(stderr, "%s%s%s%d%s%d%s", "sh: ",
@@ -411,7 +435,8 @@ static void pipeline(Parser * p)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "pipeline()\n");
 #endif
-	/* FIXME */
+	if(p->token != NULL && p->token->code == TC_RW_BANG)
+		parser_scan(p);
 	pipe_sequence(p);
 }
 
@@ -421,8 +446,13 @@ static void command(Parser * p);
 static void pipe_sequence(Parser * p)
 	/* command { '|' linebreak command } */
 {
-	/* FIXME */
 	command(p);
+	while(p->token != NULL && p->token->code == TC_OP_BAR)
+	{
+		parser_scan(p);
+		linebreak(p);
+		command(p);
+	}
 }
 
 

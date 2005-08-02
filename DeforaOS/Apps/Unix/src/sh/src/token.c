@@ -36,6 +36,20 @@ char const * sTokenCode[TC_LAST+1] =
 	"<",
 	">",
 	"if",
+	"then",
+	"else",
+	"elif",
+	"fi",
+	"do",
+	"done",
+	"case",
+	"esac",
+	"while",
+	"until",
+	"for",
+	"{",
+	"}",
+	"!",
 	"in"
 };
 
