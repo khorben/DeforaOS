@@ -551,6 +551,9 @@ static void compound_list(Parser * p);
 static void subshell(Parser * p)
 	/* '(' compound_list ')' */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "subshell()\n");
+#endif
 	parser_scan(p);
 	compound_list(p);
 	if(p->token == NULL || p->token->code != TC_TOKEN
@@ -568,6 +571,9 @@ static void term(Parser * p);
 static void compound_list(Parser * p)
 	/* [newline_list] term [separator] */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "compound_list()\n");
+#endif
 	if(p->token != NULL && token_in_set(p->token, TS_NEWLINE_LIST))
 		newline_list(p);
 	term(p);
@@ -598,6 +604,9 @@ static void sequential_sep(Parser * p);
 static void for_clause(Parser * p)
 	/* For name linebreak [in [wordlist] sequential_sep] do_group */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "for_clause()\n");
+#endif
 	parser_scan(p);
 	name(p);
 	linebreak(p);
@@ -644,6 +653,9 @@ static void wordlist(Parser * p)
 static void case_clause(Parser * p)
 	/* Case WORD linebreak in linebreak [(case_list | case_list_ns)] Esac */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "case_clause()\n");
+#endif
 	parser_scan(p);
 	if(!parser_check(p, TC_WORD))
 		return;
@@ -675,6 +687,9 @@ static void else_part(Parser * p);
 static void if_clause(Parser * p)
 	/* If compound_list Then compound_list [else_part] Fi */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "if_clause()\n");
+#endif
 	parser_scan(p);
 	compound_list(p);
 	if(!parser_check(p, TC_RW_THEN))
@@ -691,6 +706,9 @@ static void else_part(Parser * p)
 	/* Elif compound_list Then else_part
 	 * | Else compound_list */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "else_part()\n");
+#endif
 	if(p->token == NULL)
 		return;
 	if(p->token->code == TC_RW_ELIF)
@@ -712,6 +730,9 @@ static void else_part(Parser * p)
 static void while_clause(Parser * p)
 	/* While compound_list do_group */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "while_clause()\n");
+#endif
 	parser_scan(p);
 	compound_list(p);
 	do_group(p);
@@ -722,6 +743,9 @@ static void while_clause(Parser * p)
 static void until_clause(Parser * p)
 	/* Until compound_list do_group */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "until_clause()\n");
+#endif
 	parser_scan(p);
 	compound_list(p);
 	do_group(p);
