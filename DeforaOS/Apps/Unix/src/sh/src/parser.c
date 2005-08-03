@@ -30,6 +30,7 @@ typedef struct _Parser
 } Parser;
 
 static void parser_scan(Parser * parser);
+static int parser_check(Parser * parser, TokenCode code);
 static void parser_exec(Parser * parser);
 static int complete_command(Parser * parser);
 int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
@@ -87,6 +88,19 @@ static void parser_scan(Parser * parser)
 	}
 	parser->tokens = p;
 	parser->tokens[parser->tokens_cnt++] = parser->token;
+}
+
+
+static int parser_check(Parser * parser, TokenCode code)
+{
+	if(parser->token == NULL || parser->token->code != code)
+	{
+		parser_error(parser, "%s%s%s", "\"", sTokenCode[code],
+				"\" expected");
+		return 0;
+	}
+	parser_scan(parser);
+	return 1;
 }
 
 
@@ -457,6 +471,9 @@ static void pipe_sequence(Parser * p)
 
 
 /* command */
+static void compound_command(Parser * p);
+static void redirect_list(Parser * p);
+static void function_definition(Parser * p);
 static void simple_command(Parser * p);
 static void command(Parser * p)
 	/* simple_command
@@ -466,28 +483,278 @@ static void command(Parser * p)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "command()\n");
 #endif
+	if(p->token == NULL)
+		return;
 	parser_rule7a(p);
-	/* FIXME */
-	simple_command(p);
+	if(token_in_set(p->token, TS_COMPOUND_COMMAND))
+	{
+		compound_command(p);
+		if(p->token != NULL && token_in_set(p->token, TS_REDIRECT_LIST))
+			redirect_list(p);
+	}
+	/* FIXME
+	else if(token_in_set(p->token, TS_FUNCTION_DEFINITION))
+		function_definition(p); */
+	else
+		simple_command(p);
 }
 
 
 /* compound_command */
+static void brace_group(Parser * p);
+static void subshell(Parser * p);
+static void for_clause(Parser * p);
+static void case_clause(Parser * p);
+static void if_clause(Parser * p);
+static void while_clause(Parser * p);
+static void until_clause(Parser * p);
+static void compound_command(Parser * p)
+	/* brace_group
+	 * | subshell
+	 * | for_clause
+	 * | case_clause
+	 * | if_clause
+	 * | while_clause
+	 * | until_clause */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "compound_command()\n");
+#endif
+	if(p->token == NULL)
+		return;
+	switch(p->token->code)
+	{
+		case TC_RW_LBRACE:
+			return brace_group(p);
+		case TC_RW_FOR:
+			return for_clause(p);
+		case TC_RW_CASE:
+			return case_clause(p);
+		case TC_RW_IF:
+			return if_clause(p);
+		case TC_RW_WHILE:
+			return while_clause(p);
+		case TC_RW_UNTIL:
+			return until_clause(p);
+		default:
+			break;
+	}
+	if(p->token != NULL && p->token->code == TC_TOKEN
+			&& p->token->string != NULL
+			&& strcmp("(", p->token->string) == 0)
+		subshell(p);
+}
 
 
 /* subshell */
+static void compound_list(Parser * p);
+static void subshell(Parser * p)
+	/* '(' compound_list ')' */
+{
+	parser_scan(p);
+	compound_list(p);
+	if(p->token == NULL || p->token->code != TC_TOKEN
+			|| p->token->string != NULL
+			|| strcmp("(", p->token->string) != 0)
+		parser_error(p, "%s", "\"(\" expected");
+	else
+		parser_scan(p);
+}
 
 
 /* compound_list */
+static void newline_list(Parser * p);
+static void term(Parser * p);
+static void compound_list(Parser * p)
+	/* [newline_list] term [separator] */
+{
+	if(p->token != NULL && token_in_set(p->token, TS_NEWLINE_LIST))
+		newline_list(p);
+	term(p);
+	if(p->token != NULL && token_in_set(p->token, TS_SEPARATOR))
+		separator(p);
+}
 
 
 /* term */
+static void term(Parser * p)
+	/* and_or { separator and_or } */
+{
+	and_or(p);
+	while(p->token != NULL && token_in_set(p->token, TS_SEPARATOR))
+	{
+		separator(p);
+		and_or(p);
+	}
+}
 
 
 /* for_clause */
+static void do_group(Parser * p);
+static void name(Parser * p);
+static void in(Parser * p);
+static void wordlist(Parser * p);
+static void sequential_sep(Parser * p);
+static void for_clause(Parser * p)
+	/* For name linebreak [in [wordlist] sequential_sep] do_group */
+{
+	parser_scan(p);
+	name(p);
+	linebreak(p);
+	if(p->token != NULL && p->token->code == TC_RW_IN)
+	{
+		parser_scan(p);
+		if(p->token != NULL && token_in_set(p->token, TS_WORDLIST))
+			wordlist(p);
+		sequential_sep(p);
+	}
+	do_group(p);
+}
 
 
 /* name */
+static void name(Parser * p)
+	/* NAME (rule 5) */
+{
+	/* FIXME */
+	parser_check(p, TC_NAME);
+}
+
+
+/* in */
+static void in(Parser * p)
+	/* In (rule 6) */
+{
+	/* FIXME */
+	parser_scan(p);
+}
+
+
+/* wordlist */
+static void wordlist(Parser * p)
+	/* WORD { WORD } */
+{
+	parser_scan(p);
+	while(p->token != NULL && p->token->code == TC_WORD)
+		parser_scan(p);
+}
+
+
+/* case_clause */
+static void case_clause(Parser * p)
+	/* Case WORD linebreak in linebreak [(case_list | case_list_ns)] Esac */
+{
+	parser_scan(p);
+	if(!parser_check(p, TC_WORD))
+		return;
+	linebreak(p);
+	in(p);
+	linebreak(p);
+	/* FIXME */
+	parser_check(p, TC_RW_ESAC);
+}
+
+
+/* case_list_ns */
+
+
+/* case_list */
+
+
+/* case_item_ns */
+
+
+/* case_item */
+
+
+/* pattern */
+
+
+/* if_clause */
+static void else_part(Parser * p);
+static void if_clause(Parser * p)
+	/* If compound_list Then compound_list [else_part] Fi */
+{
+	parser_scan(p);
+	compound_list(p);
+	if(!parser_check(p, TC_RW_THEN))
+		return;
+	compound_list(p);
+	if(p->token != NULL && token_in_set(p->token, TS_ELSE_PART))
+		else_part(p);
+	parser_check(p, TC_RW_FI);
+}
+
+
+/* else_part */
+static void else_part(Parser * p)
+	/* Elif compound_list Then else_part
+	 * | Else compound_list */
+{
+	if(p->token == NULL)
+		return;
+	if(p->token->code == TC_RW_ELIF)
+	{
+		parser_scan(p);
+		compound_list(p);
+		parser_check(p, TC_RW_THEN);
+		else_part(p);
+	}
+	else if(p->token->code == TC_RW_ELSE)
+	{
+		parser_scan(p);
+		compound_list(p);
+	}
+}
+
+
+/* while_clause */
+static void while_clause(Parser * p)
+	/* While compound_list do_group */
+{
+	parser_scan(p);
+	compound_list(p);
+	do_group(p);
+}
+
+
+/* until_clause */
+static void until_clause(Parser * p)
+	/* Until compound_list do_group */
+{
+	parser_scan(p);
+	compound_list(p);
+	do_group(p);
+}
+
+
+/* function_definition */
+
+
+/* function_body */
+
+
+/* fname */
+
+
+/* brace_group */
+static void brace_group(Parser * p)
+	/* Lbrace compound_list Rbrace */
+{
+	parser_scan(p);
+	compound_list(p);
+	parser_check(p, TC_RW_RBRACE);
+}
+
+
+/* do_group */
+static void do_group(Parser * p)
+	/* Do compound_list Done */
+{
+	parser_scan(p);
+	compound_list(p);
+	parser_check(p, TC_RW_DONE);
+}
 
 
 /* simple_command */
@@ -585,12 +852,78 @@ static void cmd_suffix(Parser * p)
 
 
 /* redirect_list */
+static void redirect_list(Parser * p)
+	/* io_redirect { io_redirect } */
+{
+	io_redirect(p);
+	while(p->token != NULL && token_in_set(p->token, TS_IO_REDIRECT))
+		io_redirect(p);
+}
 
 
 /* io_redirect */
+static void io_file(Parser * p);
+static void io_here(Parser * p);
 static void io_redirect(Parser * p)
+	/* [IO_NUMBER] (io_file | io_here) */
+{
+	if(p->token == NULL)
+		return;
+	if(p->token->code == TC_IO_NUMBER)
+		parser_scan(p);
+	if(p->token == NULL)
+		return;
+	if(token_in_set(p->token, TS_IO_FILE))
+		io_file(p);
+	else if(token_in_set(p->token, TS_IO_HERE))
+		io_here(p);
+	else
+		parser_error(p, "%s", "filename or here-document expected");
+}
+
+
+/* io_file */
+static void filename(Parser * p);
+static void io_file(Parser * p)
+	/* '<' filename
+	 * | LESSAND filename
+	 * | '>' filename
+	 * | GREATAND filename */
 {
 	/* FIXME */
+	parser_scan(p);
+	filename(p);
+}
+
+
+/* filename */
+static void filename(Parser * p)
+	/* WORD (rule 2) */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "filename()\n");
+#endif
+	/* FIXME */
+	parser_scan(p);
+}
+
+
+/* io_here */
+static void here_end(Parser * p);
+static void io_here(Parser * p)
+	/* (DLESS | DLESSDASH) here_end */
+{
+	parser_scan(p);
+	here_end(p);
+}
+
+
+/* here_end */
+static void here_end(Parser * p)
+	/* WORD (rule 3) */
+{
+	/* FIXME */
+	parser_scan(p);
 }
 
 
@@ -662,4 +995,15 @@ static void separator(Parser * p)
 
 
 /* sequential_sep */
-/* FIXME */
+static void sequential_sep(Parser * p)
+		/* ";" linebreak
+		 * | newline_list */
+{
+	if(p->token != NULL && p->token->code == TC_TOKEN
+			&& strcmp(p->token->string, ";") == 0)
+	{
+		parser_scan(p);
+		return linebreak(p);
+	}
+	newline_list(p);
+}
