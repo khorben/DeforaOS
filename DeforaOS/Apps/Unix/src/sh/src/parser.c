@@ -344,6 +344,12 @@ static void _exec_free(Parser * parser)
 {
 	unsigned int i;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s", "parser_free()\n");
+#endif
+	if(parser->token == NULL && parser->tokens_cnt > 0)
+		/* FIXME ugly workaround for newlines */
+		parser->token = parser->tokens[parser->tokens_cnt-1];
 	for(i = 0; i < parser->tokens_cnt-1; i++)
 		token_delete(parser->tokens[i]);
 	free(parser->tokens);
