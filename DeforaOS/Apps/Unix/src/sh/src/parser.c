@@ -307,51 +307,35 @@ static int _exec_if(Parser * parser, unsigned int * pos)
 {
 	int skip = 0;
 
-	for(; *pos < parser->tokens_cnt; (*pos)++)
+	for(; *pos < parser->tokens_cnt;)
 	{
 		switch(parser->tokens[*pos]->code)
 		{
 			case TC_RW_IF:
 			case TC_RW_ELIF:
-#ifdef DEBUG
-				fprintf(stderr, "%s%d%s", "DEBUG: if/elif ",
-						*pos, "\n");
-#endif
 				(*pos)++;
 				skip = parser_exec(parser, pos);
-				(*pos)-=2;
-#ifdef DEBUG
-				fprintf(stderr, "%s%d%s", "DEBUG: if/elif ",
-						*pos, "\n");
-#endif
+				(*pos)--;
 				continue;
 			case TC_RW_THEN:
-#ifdef DEBUG
-				fprintf(stderr, "%s", "DEBUG: then\n");
-#endif
 				/* FIXME possibly skip code */
 				(*pos)++;
 				parser_exec(parser, pos);
-				(*pos)-=2;
+				(*pos)--;
 				continue;
 			case TC_RW_ELSE:
-#ifdef DEBUG
-				fprintf(stderr, "%s", "DEBUG: else\n");
-#endif
 				skip = (skip == 0) ? 1 : 0;
-				continue;
-			case TC_RW_FI:
-#ifdef DEBUG
-				fprintf(stderr, "%s", "DEBUG: fi\n");
-#endif
 				break;
+			case TC_RW_FI:
+				return 0;
 			default:
 #ifdef DEBUG
 				/* FIXME should not happen */
 				fprintf(stderr, "%s", "exec_if(): FIXME\n");
 #endif
-				continue;
+				break;
 		}
+		(*pos)++;
 	}
 	return skip;
 }
