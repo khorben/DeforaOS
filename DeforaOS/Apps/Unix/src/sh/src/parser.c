@@ -31,12 +31,14 @@ typedef struct _Parser
 
 static void parser_scan(Parser * parser);
 static int parser_check(Parser * parser, TokenCode code);
-static void parser_exec(Parser * parser);
+static int parser_exec(Parser * parser, unsigned int * pos);
 static int complete_command(Parser * parser);
+static void _exec_free(Parser * parser);
 int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 		char * argv[])
 {
 	Parser parser;
+	unsigned int pos;
 
 	parser.prefs = prefs;
 	parser.argc = argc;
@@ -52,7 +54,9 @@ int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 			break;
 		}
 		complete_command(&parser);
-		parser_exec(&parser);
+		for(pos = 0; pos < parser.tokens_cnt; pos++)
+			parser_exec(&parser, &pos);
+		_exec_free(&parser); /* FIXME rename function accordingly */
 		if(parser.token == NULL)
 			parser_scan(&parser);
 	}
@@ -105,69 +109,63 @@ static int parser_check(Parser * parser, TokenCode code)
 
 
 static int _exec_cmd(Parser * parser, unsigned int * pos);
-static void _exec_free(Parser * parser);
-static void parser_exec(Parser * parser)
+static int _exec_if(Parser * parser, unsigned int * pos);
+static int parser_exec(Parser * parser, unsigned int * pos)
 {
-	unsigned int i;
+	int ret = 1;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s", "parser_exec()\n");
 #endif
-	/* FIXME */
-	for(i = 0; i < parser->tokens_cnt; i++)
+	switch(parser->tokens[*pos]->code)
 	{
-		switch(parser->tokens[i]->code)
-		{
-			case TC_ASSIGNMENT_WORD:
-			case TC_IO_NUMBER:
-			case TC_OP_DLESS:
-			case TC_OP_DGREAT:
-			case TC_OP_LESSAND:
-			case TC_OP_GREATAND:
-			case TC_OP_LESSGREAT:
-			case TC_OP_CLOBBER:
-			case TC_OP_LESS:
-			case TC_OP_GREAT:
-			case TC_WORD:
-				_exec_cmd(parser, &i);
-				break;
-			case TC_RW_IF:
-				/* FIXME */
-				break;
-			case TC_RW_CASE:
-				/* FIXME */
-				break;
-			case TC_RW_WHILE:
-				/* FIXME */
-				break;
-			case TC_RW_UNTIL:
-				/* FIXME */
-				break;
-			case TC_RW_FOR:
-				/* FIXME */
-				break;
-			case TC_EOI:
-			case TC_NEWLINE:
-				break;
-			case TC_TOKEN:
-			case TC_NAME:
-			case TC_RW_ELSE:
-			case TC_RW_ELIF:
-			case TC_RW_FI:
-			case TC_RW_ESAC:
-			case TC_RW_LBRACE:
-			case TC_RW_RBRACE:
-			case TC_NULL:
+		case TC_ASSIGNMENT_WORD:
+		case TC_IO_NUMBER:
+		case TC_OP_DLESS:
+		case TC_OP_DGREAT:
+		case TC_OP_LESSAND:
+		case TC_OP_GREATAND:
+		case TC_OP_LESSGREAT:
+		case TC_OP_CLOBBER:
+		case TC_OP_LESS:
+		case TC_OP_GREAT:
+		case TC_WORD:
+			return _exec_cmd(parser, pos);
+		case TC_RW_IF:
+			return _exec_if(parser, pos);
+		case TC_RW_CASE:
+			/* FIXME */
+			break;
+		case TC_RW_WHILE:
+			/* FIXME */
+			break;
+		case TC_RW_UNTIL:
+			/* FIXME */
+			break;
+		case TC_RW_FOR:
+			/* FIXME */
+			break;
+		case TC_EOI:
+		case TC_NEWLINE:
+			break;
+		case TC_TOKEN:
+		case TC_NAME:
+		case TC_RW_ELSE:
+		case TC_RW_ELIF:
+		case TC_RW_FI:
+		case TC_RW_ESAC:
+		case TC_RW_LBRACE:
+		case TC_RW_RBRACE:
+		case TC_NULL:
 #ifdef DEBUG
-				fprintf(stderr, "%s%s%s%d%s%d%s", "sh: ",
-						__FILE__, ", line ",__LINE__,
-						": should not happen (",
-						parser->tokens[i]->code, ")\n");
+			fprintf(stderr, "%s%s%s%d%s%d%s", "sh: ",
+					__FILE__, ", line ",__LINE__,
+					": should not happen (",
+					parser->tokens[*pos]->code, ")\n");
 #endif
-				break;
-		}
+			break;
 	}
-	_exec_free(parser);
+	return ret;
 }
 
 static int _exec_cmd_env(char * envp[]);
@@ -180,10 +178,13 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 	char ** envp = NULL;
 	unsigned int envp_cnt = 0;
 	char ** p;
-	int ret;
+	int ret = 1;
 
-	for(; *pos < parser->tokens_cnt; (*pos)++)
+	for(; ret != 0 && *pos < parser->tokens_cnt; (*pos)++)
 	{
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "DEBUG: cmd ", *pos, "\n");
+#endif
 		switch(parser->tokens[*pos]->code)
 		{
 			case TC_ASSIGNMENT_WORD:
@@ -214,11 +215,13 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 				argv[argv_cnt++] = parser->tokens[*pos]->string;
 				continue;
 			default:
+				ret = 0;
 				break;
 		}
 	}
 	if(envp != NULL)
 		envp[envp_cnt] = NULL;
+	/* FIXME assignment words should affect only a child...? */
 	ret = _exec_cmd_env(envp);
 	free(envp);
 	if(argv != NULL && ret == 0)
@@ -298,6 +301,59 @@ static int _exec_cmd_child(int argc, char ** argv)
 	if(ret == -1)
 		return sh_error("waitpid", 125);
 	return WEXITSTATUS(status);
+}
+
+static int _exec_if(Parser * parser, unsigned int * pos)
+{
+	int skip = 0;
+
+	for(; *pos < parser->tokens_cnt; (*pos)++)
+	{
+		switch(parser->tokens[*pos]->code)
+		{
+			case TC_RW_IF:
+			case TC_RW_ELIF:
+#ifdef DEBUG
+				fprintf(stderr, "%s%d%s", "DEBUG: if/elif ",
+						*pos, "\n");
+#endif
+				(*pos)++;
+				skip = parser_exec(parser, pos);
+				(*pos)-=2;
+#ifdef DEBUG
+				fprintf(stderr, "%s%d%s", "DEBUG: if/elif ",
+						*pos, "\n");
+#endif
+				continue;
+			case TC_RW_THEN:
+#ifdef DEBUG
+				fprintf(stderr, "%s", "DEBUG: then\n");
+#endif
+				/* FIXME possibly skip code */
+				(*pos)++;
+				parser_exec(parser, pos);
+				(*pos)-=2;
+				continue;
+			case TC_RW_ELSE:
+#ifdef DEBUG
+				fprintf(stderr, "%s", "DEBUG: else\n");
+#endif
+				skip = (skip == 0) ? 1 : 0;
+				continue;
+			case TC_RW_FI:
+#ifdef DEBUG
+				fprintf(stderr, "%s", "DEBUG: fi\n");
+#endif
+				break;
+			default:
+#ifdef DEBUG
+				/* FIXME should not happen */
+				fprintf(stderr, "%s", "exec_if(): FIXME\n");
+#endif
+				continue;
+		}
+	}
+	return skip;
 }
 
 static void _exec_free(Parser * parser)
