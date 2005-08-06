@@ -54,8 +54,9 @@ int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 			break;
 		}
 		complete_command(&parser);
-		for(pos = 0; pos < parser.tokens_cnt; pos++)
-			parser_exec(&parser, &pos, 0);
+		if(parser.token != NULL)
+			for(pos = 0; pos < parser.tokens_cnt; pos++)
+				parser_exec(&parser, &pos, 0);
 		parser_free(&parser);
 		if(parser.token == NULL)
 			parser_scan(&parser);
@@ -139,7 +140,7 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 	int ret = 1;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "parser_exec()\n");
+	fprintf(stderr, "%s%s", "parser_exec()", skip ? "\n" : " skip\n");
 #endif
 	switch(parser->tokens[*pos]->code)
 	{
@@ -335,6 +336,7 @@ static int _exec_cmd_child(int argc, char ** argv)
 
 static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 {
+	/* FIXME it doesn't remember if already exec'd sth */
 	for(; *pos < parser->tokens_cnt;)
 	{
 		switch(parser->tokens[*pos]->code)
@@ -352,8 +354,12 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 				(*pos)--;
 				continue;
 			case TC_RW_ELSE:
+				(*pos)++;
+				if(parser->tokens[*pos]->code == TC_RW_IF)
+					(*pos)++;
 				skip = (skip == 0) ? 1 : 0;
-				break;
+				skip = parser_exec(parser, pos, 0);
+				continue;
 			case TC_RW_FI:
 				return 0;
 			default:
@@ -480,12 +486,10 @@ static void and_or(Parser * p)
 	pipeline(p);
 	while(p->token != NULL)
 	{
-		if(p->token->code == TC_OP_AND_IF)
-			;
-		else if(p->token->code == TC_OP_OR_IF)
-			;
-		else
+		if(p->token->code != TC_OP_AND_IF
+				&& p->token->code != TC_OP_OR_IF)
 			return;
+		parser_scan(p);
 		linebreak(p);
 		pipeline(p);
 	}
@@ -1029,7 +1033,6 @@ static void newline_list(Parser * p)
 	parser_scan(p);
 	while(p->token != NULL && p->token->code == TC_NEWLINE)
 		parser_scan(p); */
-	p->token = NULL;
 }
 
 
