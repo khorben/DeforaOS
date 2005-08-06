@@ -29,11 +29,11 @@ typedef struct _Parser
 	Token * token;
 } Parser;
 
+static void parser_free(Parser * parser);
 static void parser_scan(Parser * parser);
 static int parser_check(Parser * parser, TokenCode code);
-static int parser_exec(Parser * parser, unsigned int * pos);
+static int parser_exec(Parser * parser, unsigned int * pos, int skip);
 static int complete_command(Parser * parser);
-static void _exec_free(Parser * parser);
 int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 		char * argv[])
 {
@@ -55,13 +55,37 @@ int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 		}
 		complete_command(&parser);
 		for(pos = 0; pos < parser.tokens_cnt; pos++)
-			parser_exec(&parser, &pos);
-		_exec_free(&parser); /* FIXME rename function accordingly */
+			parser_exec(&parser, &pos, 0);
+		parser_free(&parser);
 		if(parser.token == NULL)
 			parser_scan(&parser);
 	}
 	free(parser.tokens);
 	return 0;
+}
+
+
+static void parser_free(Parser * parser)
+{
+	unsigned int i;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s", "parser_free()\n");
+#endif
+	if(parser->token == NULL && parser->tokens_cnt > 0)
+		/* FIXME ugly workaround for newlines */
+		parser->token = parser->tokens[parser->tokens_cnt-1];
+	for(i = 0; i < parser->tokens_cnt-1; i++)
+		token_delete(parser->tokens[i]);
+	free(parser->tokens);
+	parser->tokens = NULL;
+	parser->tokens_cnt = 0;
+	if(parser->token == NULL)
+		return;
+	if(parser->token->code == TC_EOI)
+		return;
+	token_delete(parser->token);
+	parser->token = NULL;
 }
 
 
@@ -108,9 +132,9 @@ static int parser_check(Parser * parser, TokenCode code)
 }
 
 
-static int _exec_cmd(Parser * parser, unsigned int * pos);
-static int _exec_if(Parser * parser, unsigned int * pos);
-static int parser_exec(Parser * parser, unsigned int * pos)
+static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
+static int _exec_if(Parser * parser, unsigned int * pos, int skip);
+static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 {
 	int ret = 1;
 
@@ -130,9 +154,9 @@ static int parser_exec(Parser * parser, unsigned int * pos)
 		case TC_OP_LESS:
 		case TC_OP_GREAT:
 		case TC_WORD:
-			return _exec_cmd(parser, pos);
+			return _exec_cmd(parser, pos, skip);
 		case TC_RW_IF:
-			return _exec_if(parser, pos);
+			return _exec_if(parser, pos, skip);
 		case TC_RW_CASE:
 			/* FIXME */
 			break;
@@ -171,7 +195,7 @@ static int parser_exec(Parser * parser, unsigned int * pos)
 static int _exec_cmd_env(char * envp[]);
 static int _exec_cmd_builtin(int argc, char ** argv);
 static int _exec_cmd_child(int argc, char ** argv);
-static int _exec_cmd(Parser * parser, unsigned int * pos)
+static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 {
 	char ** argv = NULL;
 	unsigned int argv_cnt = 0;
@@ -188,6 +212,8 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 		switch(parser->tokens[*pos]->code)
 		{
 			case TC_ASSIGNMENT_WORD:
+				if(skip)
+					continue;
 				if((p = realloc(envp, sizeof(char *)
 								* (envp_cnt+2)))
 						== NULL)
@@ -206,6 +232,8 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 				/* FIXME */
 				continue;
 			case TC_WORD:
+				if(skip)
+					continue;
 				if((p = realloc(argv, sizeof(char *)
 								* (argv_cnt+2)))
 						== NULL)
@@ -219,6 +247,8 @@ static int _exec_cmd(Parser * parser, unsigned int * pos)
 				break;
 		}
 	}
+	if(skip)
+		return skip;
 	if(envp != NULL)
 		envp[envp_cnt] = NULL;
 	/* FIXME assignment words should affect only a child...? */
@@ -303,10 +333,8 @@ static int _exec_cmd_child(int argc, char ** argv)
 	return WEXITSTATUS(status);
 }
 
-static int _exec_if(Parser * parser, unsigned int * pos)
+static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 {
-	int skip = 0;
-
 	for(; *pos < parser->tokens_cnt;)
 	{
 		switch(parser->tokens[*pos]->code)
@@ -314,13 +342,13 @@ static int _exec_if(Parser * parser, unsigned int * pos)
 			case TC_RW_IF:
 			case TC_RW_ELIF:
 				(*pos)++;
-				skip = parser_exec(parser, pos);
+				skip = parser_exec(parser, pos, skip);
 				(*pos)--;
 				continue;
 			case TC_RW_THEN:
 				/* FIXME possibly skip code */
 				(*pos)++;
-				parser_exec(parser, pos);
+				parser_exec(parser, pos, skip);
 				(*pos)--;
 				continue;
 			case TC_RW_ELSE:
@@ -338,29 +366,6 @@ static int _exec_if(Parser * parser, unsigned int * pos)
 		(*pos)++;
 	}
 	return skip;
-}
-
-static void _exec_free(Parser * parser)
-{
-	unsigned int i;
-
-#ifdef DEBUG
-	fprintf(stderr, "%s", "parser_free()\n");
-#endif
-	if(parser->token == NULL && parser->tokens_cnt > 0)
-		/* FIXME ugly workaround for newlines */
-		parser->token = parser->tokens[parser->tokens_cnt-1];
-	for(i = 0; i < parser->tokens_cnt-1; i++)
-		token_delete(parser->tokens[i]);
-	free(parser->tokens);
-	parser->tokens = NULL;
-	parser->tokens_cnt = 0;
-	if(parser->token == NULL)
-		return;
-	if(parser->token->code == TC_EOI)
-		return;
-	token_delete(parser->token);
-	parser->token = NULL;
 }
 
 
