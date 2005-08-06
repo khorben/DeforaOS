@@ -74,6 +74,10 @@ Token * token_new(TokenCode code, char * string)
 
 void token_delete(Token * token)
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%s%s", "token_delete(", token->code, ", ",
+			token->string != NULL ? token->string : "NULL", ")\n");
+#endif
 	free(token->string);
 	free(token);
 }
