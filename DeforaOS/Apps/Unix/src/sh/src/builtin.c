@@ -23,6 +23,7 @@ int builtin_bg(int argc, char * argv[])
 
 /* builtin_cd */
 static int _cd_usage(void);
+static int _cd_home(void);
 static int _cd_previous(void);
 static int _cd_chdir(int prefs, char * path);
 int builtin_cd(int argc, char * argv[])
@@ -43,8 +44,10 @@ int builtin_cd(int argc, char * argv[])
 			default:
 				return _cd_usage();
 		}
-	if(argc-optind != 1)
+	if(argc-optind > 1)
 		return _cd_usage();
+	if(argc-optind == 0)
+		return _cd_home();
 	if(strcmp("-", argv[optind]) == 0)
 		return _cd_previous();
 	return _cd_chdir(prefs, argv[optind]);
@@ -59,30 +62,45 @@ static int _cd_usage(void)
 	return 1;
 }
 
+static int _cd_home(void)
+{
+	char * home;
+	int prefs = 0;
+
+	if((home = getenv("HOME")) == NULL)
+		return sh_error("HOME", 2);
+	return _cd_chdir(&prefs, home);
+}
+
 static int _cd_previous(void)
-	/* FIXME error codes */
 {
 	char * oldpwd;
-	char buf[256];
+	int prefs = 0;
+	int ret;
 
 	if((oldpwd = getenv("OLDPWD")) == NULL)
-		return sh_error("getenv", 125);
-	if(getcwd(buf, sizeof(buf)) == NULL)
-		return sh_error("getcwd", 125);
-	if(chdir(oldpwd) != 0)
-		return sh_error("chdir", 125);
-	if(setenv("OLDPWD", buf, 1) != 0)
-		return sh_error("setenv", 125);
-	return 0;
+	{
+		fprintf(stderr, "%s", "sh: cd: $OLDPWD is not set\n");
+		return 125;
+	}
+	if((ret = _cd_chdir(&prefs, oldpwd)) == 0)
+		fprintf(stderr, "%s%s", oldpwd, "\n");
+	return ret;
 }
 
 static int _cd_chdir(int prefs, char * path)
 {
+	char * oldpwd;
+
 	/* FIXME use prefs */
-	/* FIXME set $PWD correctly */
-	if(chdir(path) == 0)
-		return 0;
-	return sh_error(path, 125); /* FIXME */
+	if(chdir(path) != 0)
+		return sh_error(path, 125); /* FIXME */
+	if((oldpwd = getenv("PWD")) != NULL)
+		if(setenv("OLDPWD", oldpwd, 1) != 0)
+			sh_error("setenv OLDPWD", 0);
+	if(setenv("PWD", path, 1) != 0)
+		sh_error("setenv PWD", 0);
+	return 0;
 }
 
 
