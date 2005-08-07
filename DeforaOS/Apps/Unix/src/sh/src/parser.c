@@ -11,6 +11,7 @@
 #endif
 #include <stdarg.h>
 #include <string.h>
+#include <stdint.h>
 #include "token.h"
 #include "scanner.h"
 #include "builtin.h"
@@ -200,8 +201,8 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 }
 
 static int _exec_cmd_env(char * envp[]);
-static int _exec_cmd_builtin(int argc, char ** argv);
-static int _exec_cmd_child(int argc, char ** argv);
+static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error);
+static int _exec_cmd_child(int argc, char ** argv, uint8_t * error);
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 {
 	char ** argv = NULL;
@@ -209,13 +210,9 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 	char ** envp = NULL;
 	unsigned int envp_cnt = 0;
 	char ** p;
-	int ret = 1;
+	uint8_t ret = 1;
 
 	for(; ret != 0 && *pos < parser->tokens_cnt; (*pos)++)
-	{
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "DEBUG: cmd ", *pos, "\n");
-#endif
 		switch(parser->tokens[*pos]->code)
 		{
 			case TC_ASSIGNMENT_WORD:
@@ -253,7 +250,6 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 				ret = 0;
 				break;
 		}
-	}
 	if(skip)
 		return skip;
 	if(envp != NULL)
@@ -266,8 +262,9 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 		argv[argv_cnt] = NULL;
 		/* FIXME look for builtins utilities (should be none) */
 		/* FIXME look for functions */
-		if((ret = _exec_cmd_builtin(argv_cnt, argv)) == -1)
-			ret = _exec_cmd_child(argv_cnt, argv);
+		if(_exec_cmd_builtin(argv_cnt, argv, &ret) != 0)
+			if(_exec_cmd_child(argv_cnt, argv, &ret) != 0)
+				ret = 1;
 	}
 	free(argv);
 	return ret;
@@ -295,7 +292,7 @@ static int _exec_cmd_env(char * envp[])
 	return ret;
 }
 
-static int _exec_cmd_builtin(int argc, char ** argv)
+static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error)
 {
 	struct {
 		char * cmd;
@@ -315,29 +312,33 @@ static int _exec_cmd_builtin(int argc, char ** argv)
 
 	for(i = 0; builtins[i].cmd != NULL; i++)
 		if(strcmp(builtins[i].cmd, argv[0]) == 0)
-			return builtins[i].func(argc, argv);
+		{
+			*error = builtins[i].func(argc, argv);
+			return 0;
+		}
 	return -1;
 }
 
-static int _exec_cmd_child(int argc, char ** argv)
+static int _exec_cmd_child(int argc, char ** argv, uint8_t * error)
 {
 	pid_t pid;
 	int status;
 	int ret;
 
 	if((pid = fork()) == -1)
-		return sh_error("fork", 125);
+		return sh_error("fork", -1);
 	if(pid == 0)
 	{
 		execvp(argv[0], argv);
-		exit(sh_error(argv[0], 125));
+		exit(sh_error(argv[0], -1));
 	}
 	while((ret = waitpid(pid, &status, 0)) != -1)
 		if(WIFEXITED(status))
 			break;
 	if(ret == -1)
-		return sh_error("waitpid", 125);
-	return WEXITSTATUS(status);
+		return sh_error("waitpid", -1);
+	*error = WEXITSTATUS(status);
+	return 0;
 }
 
 static int _exec_if(Parser * parser, unsigned int * pos, int skip)
