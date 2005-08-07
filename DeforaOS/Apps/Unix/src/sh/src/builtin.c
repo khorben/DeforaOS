@@ -101,6 +101,7 @@ static int _cd_chdir(int prefs, char * path)
 	if((oldpwd = getenv("PWD")) != NULL)
 		if(setenv("OLDPWD", oldpwd, 1) != 0)
 			sh_error("setenv OLDPWD", 0);
+	/* FIXME else get current directory using getcwd */
 	if(setenv("PWD", path, 1) != 0)
 		sh_error("setenv PWD", 0);
 	return 0;
