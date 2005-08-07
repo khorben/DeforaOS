@@ -653,6 +653,9 @@ static void term(Parser * p)
 	while(p->token != NULL && token_in_set(p->token, TS_SEPARATOR))
 	{
 		separator(p);
+		parser_rule1(p);
+		if(p->token != NULL && !token_in_set(p->token, TS_AND_OR))
+			break;
 		and_or(p);
 	}
 }

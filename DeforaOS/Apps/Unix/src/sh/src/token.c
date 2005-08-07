@@ -85,6 +85,12 @@ void token_delete(Token * token)
 
 int token_in_set(Token * token, TokenSet set)
 {
+	TokenCode set_and_or[] = {
+		TC_RW_LBRACE, /* SUBSHELL "(", */ TC_RW_FOR, TC_RW_CASE,
+		TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL,
+		/* FIXME io_file too? */
+		TC_IO_NUMBER, TC_ASSIGNMENT_WORD, TC_WORD, TC_NULL
+	};
 	TokenCode set_cmd_name[] = { TC_WORD, TC_NULL };
 	TokenCode set_cmd_prefix[] = {
 		TC_IO_NUMBER, TC_ASSIGNMENT_WORD, TC_NULL
@@ -110,6 +116,7 @@ int token_in_set(Token * token, TokenSet set)
 	};
 	TokenCode set_wordlist[] = { TC_WORD, TC_NULL };
 	TokenCode * sets[TS_LAST+1] = {
+		set_and_or,
 		set_cmd_name,
 		set_cmd_prefix,
 		set_cmd_suffix,

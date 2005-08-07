@@ -60,7 +60,8 @@ typedef struct _Token
 
 typedef enum _TokenSet
 {
-	TS_CMD_NAME = 0,
+	TS_AND_OR = 0,
+	TS_CMD_NAME,
 	TS_CMD_PREFIX,
 	TS_CMD_SUFFIX,
 	TS_CMD_WORD,
