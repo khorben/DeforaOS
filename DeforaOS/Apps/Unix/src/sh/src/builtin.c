@@ -12,6 +12,8 @@
 #include "sh.h"
 #include "builtin.h"
 
+extern char ** environ;
+
 
 /* builtin_bg */
 int builtin_bg(int argc, char * argv[])
