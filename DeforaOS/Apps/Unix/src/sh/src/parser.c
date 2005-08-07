@@ -266,7 +266,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 		argv[argv_cnt] = NULL;
 		/* FIXME look for builtins utilities (should be none) */
 		/* FIXME look for functions */
-		if((ret = _exec_cmd_builtin(argv_cnt, argv)) >= 125) /* FIXME */
+		if((ret = _exec_cmd_builtin(argv_cnt, argv)) == -1)
 			ret = _exec_cmd_child(argv_cnt, argv);
 	}
 	free(argv);
@@ -316,7 +316,7 @@ static int _exec_cmd_builtin(int argc, char ** argv)
 	for(i = 0; builtins[i].cmd != NULL; i++)
 		if(strcmp(builtins[i].cmd, argv[0]) == 0)
 			return builtins[i].func(argc, argv);
-	return 125; /* FIXME */
+	return -1;
 }
 
 static int _exec_cmd_child(int argc, char ** argv)
