@@ -301,6 +301,7 @@ static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error)
 	} builtins[] = {
 		{ "bg",    builtin_bg },
 		{ "cd",    builtin_cd },
+		{ "exit",  builtin_exit },
 		{ "fg",    builtin_fg },
 		{ "jobs",  builtin_jobs },
 		{ "read",  builtin_read },

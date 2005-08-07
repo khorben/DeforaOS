@@ -120,6 +120,33 @@ int builtin_exec(int argc, char * argv[])
 }
 
 
+/* builtin_exit */
+static int _exit_usage(void);
+int builtin_exit(int argc, char * argv[])
+{
+	int status = 0;
+	char * p;
+
+	if(argc > 2)
+		return _exit_usage();
+	if(argc == 2)
+	{
+		status = strtol(argv[1], &p, 10);
+		if(*(argv[1]) == '\0' || *p != '\0' || status < 0
+				|| status > 255)
+			return _exit_usage();
+	}
+	exit(status);
+	return 0;
+}
+
+static int _exit_usage(void)
+{
+	fprintf(stderr, "%s", "Usage: exit [n]\n");
+	return 1;
+}
+
+
 /* builtin_fg */
 int builtin_fg(int argc, char * argv[])
 {
