@@ -25,7 +25,7 @@ int builtin_bg(int argc, char * argv[])
 static int _cd_usage(void);
 static int _cd_home(void);
 static int _cd_previous(void);
-static int _cd_chdir(int prefs, char * path);
+static int _cd_chdir(int * prefs, char * path);
 int builtin_cd(int argc, char * argv[])
 {
 	int o;
@@ -50,7 +50,7 @@ int builtin_cd(int argc, char * argv[])
 		return _cd_home();
 	if(strcmp("-", argv[optind]) == 0)
 		return _cd_previous();
-	return _cd_chdir(prefs, argv[optind]);
+	return _cd_chdir(&prefs, argv[optind]);
 }
 
 static int _cd_usage(void)
@@ -91,7 +91,7 @@ static int _cd_previous(void)
 	return ret;
 }
 
-static int _cd_chdir(int prefs, char * path)
+static int _cd_chdir(int * prefs, char * path)
 {
 	char * oldpwd;
 
