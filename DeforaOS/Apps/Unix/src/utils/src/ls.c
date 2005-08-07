@@ -201,10 +201,13 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	int isdir;
 	char * str;
 
-	if(argc == 0)
+	if(argc == 0 && !(*prefs & PREFS_d))
 		return _ls_directory_do(prefs, ".");
 	if(_ls_args(&files, &dirs) != 0)
 		return 2;
+	if(argc == 0)
+		res += slist_insert_sorted(files, strdup("."),
+				(compare_func)strcmp);
 	for(i = 0; i < argc; i++)
 	{
 		if((isdir = _is_directory(prefs, argv[i])) == 2)
@@ -579,16 +582,17 @@ static int _ls_do_dirs(Prefs * prefs, int argc, SList * dirs)
 static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
-  -C    write multi-column output\n\
-  -F    write a symbol after files names depending on their type\n\
-  -R    recursively list subdirectories encountered\n\
-  -a    write out all hidden directory entries\n\
-  -c    use time of last modification of file status\n\
-  -l    write out in long format\n\
-  -u    use time of last access\n\
-  -1    force output to be one entry per line\n\
-  -H    dereference symbolic links\n\
-  -L    evaluate symbolic links\n");
+  -C	write multi-column output\n\
+  -F	write a symbol after files names depending on their type\n\
+  -R	recursively list subdirectories encountered\n\
+  -a	write out all hidden directory entries\n\
+  -c	use time of last modification of file status\n\
+  -d	treat directories like files\n\
+  -l	write out in long format\n\
+  -u	use time of last access\n\
+  -1	force output to be one entry per line\n\
+  -H	dereference symbolic links\n\
+  -L	evaluate symbolic links\n");
 	return 1;
 }
 
