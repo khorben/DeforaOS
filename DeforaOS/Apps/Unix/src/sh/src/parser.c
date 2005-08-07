@@ -144,6 +144,11 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 #endif
 	switch(parser->tokens[*pos]->code)
 	{
+		case TC_OP_AND_IF:
+		case TC_OP_OR_IF:
+			/* FIXME use $? */
+			skip = 1;
+			(*pos)++;
 		case TC_ASSIGNMENT_WORD:
 		case TC_IO_NUMBER:
 		case TC_OP_DLESS:
@@ -175,6 +180,7 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 			break;
 		case TC_TOKEN:
 		case TC_NAME:
+		case TC_OP_AMPERSAND:
 		case TC_RW_ELSE:
 		case TC_RW_ELIF:
 		case TC_RW_FI:
