@@ -53,7 +53,7 @@ int builtin_cd(int argc, char * argv[])
 static int _cd_usage(void)
 {
 	fprintf(stderr, "%s", "Usage: cd [-L | -P] directory\n\
-	cd -\n\
+       cd -\n\
   -L	resolve symbolic links after parent directories\n\
   -P	resolve symbolic links before parent directories\n");
 	return 1;
