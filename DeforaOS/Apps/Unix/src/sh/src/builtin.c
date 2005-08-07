@@ -68,7 +68,10 @@ static int _cd_home(void)
 	int prefs = 0;
 
 	if((home = getenv("HOME")) == NULL)
-		return sh_error("HOME", 2);
+	{
+		fprintf(stderr, "%s", "sh: cd: $HOME is not set\n");
+		return 125;
+	}
 	return _cd_chdir(&prefs, home);
 }
 
