@@ -141,7 +141,8 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 	int ret = 1;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s", "parser_exec()", skip ? "\n" : " skip\n");
+	fprintf(stderr, "%s%d%s%s", "parser_exec(", *pos, ")",
+			skip ? " skip\n" : "\n");
 #endif
 	switch(parser->tokens[*pos]->code)
 	{
@@ -343,7 +344,8 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * error)
 
 static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 {
-	/* FIXME it doesn't remember if already exec'd sth */
+	int execd = 0;
+
 	for(; *pos < parser->tokens_cnt;)
 	{
 		switch(parser->tokens[*pos]->code)
@@ -351,21 +353,20 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 			case TC_RW_IF:
 			case TC_RW_ELIF:
 				(*pos)++;
-				skip = parser_exec(parser, pos, skip);
-				(*pos)--;
-				continue;
-			case TC_RW_THEN:
-				/* FIXME possibly skip code */
-				(*pos)++;
-				parser_exec(parser, pos, skip);
+				skip = parser_exec(parser, pos, skip
+						&& execd != 0);
 				(*pos)--;
 				continue;
 			case TC_RW_ELSE:
+				if(parser->tokens[(*pos)+1]->code == TC_RW_IF)
+					break;
+				skip = skip && execd != 0;
+			case TC_RW_THEN:
 				(*pos)++;
-				if(parser->tokens[*pos]->code == TC_RW_IF)
-					(*pos)++;
-				skip = (skip == 0) ? 1 : 0;
-				skip = parser_exec(parser, pos, 0);
+				parser_exec(parser, pos, skip);
+				if(skip == 0)
+					execd = 1;
+				(*pos)--;
 				continue;
 			case TC_RW_FI:
 				return 0;
