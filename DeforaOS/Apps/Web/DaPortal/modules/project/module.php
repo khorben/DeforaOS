@@ -232,8 +232,8 @@ function _browse_file($id, $project, $cvsroot, $filename)
 	$revisions = array();
 	for($count = count($rcs); $i < $count; $i+=3)
 	{
-		$name = substr($rcs[$i], 9);
-		$date = substr($rcs[$i+1], 5, 20);
+		$name = _html_safe(substr($rcs[$i], 9));
+		$date = _html_safe(substr($rcs[$i+1], 6, 19));
 		$author = substr($rcs[$i+1], 36);
 		$author = substr($author, 0, strspn($author,
 				'abcdefghijklmnopqrstuvwxyz'
@@ -241,7 +241,11 @@ function _browse_file($id, $project, $cvsroot, $filename)
 				.'0123456789'));
 		require_once('system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
+		{
 			$author = _html_safe_link($author);
+			$author = '<a href="index.php?module=user&amp;id='
+					.$author_id.'">'.$author.'</a>';
+		}
 		else
 			$author = '';
 		$message = $rcs[$i+2];
@@ -260,6 +264,7 @@ function _browse_file($id, $project, $cvsroot, $filename)
 					$i++)
 				$apnd = '...';
 			$message.=$apnd;
+			$message = _html_safe($message);
 		}
 		$revisions[] = array('module' => 'project',
 				'action' => 'browse',
@@ -270,9 +275,9 @@ function _browse_file($id, $project, $cvsroot, $filename)
 				'author' => $author,
 				'message' => $message);
 	}
-	_module('explorer', 'browse', array('entries' => $revisions,
+	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => 'Date',
-					'author' => 'Username',
+					'author' => 'Author',
 					'message' => 'Message'),
 			'view' => 'details'));
 }
