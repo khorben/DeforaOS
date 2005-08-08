@@ -299,15 +299,16 @@ static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error)
 		char * cmd;
 		int (*func)(int, char**);
 	} builtins[] = {
-		{ "bg",    builtin_bg },
-		{ "cd",    builtin_cd },
-		{ "exit",  builtin_exit },
-		{ "fg",    builtin_fg },
-		{ "jobs",  builtin_jobs },
-		{ "read",  builtin_read },
-		{ "set",   builtin_set },
-		{ "umask", builtin_umask },
-		{ "unset", builtin_unset },
+		{ "bg",     builtin_bg },
+		{ "cd",     builtin_cd },
+		{ "exit",   builtin_exit },
+		{ "export", builtin_export },
+		{ "fg",     builtin_fg },
+		{ "jobs",   builtin_jobs },
+		{ "read",   builtin_read },
+		{ "set",    builtin_set },
+		{ "umask",  builtin_umask },
+		{ "unset",  builtin_unset },
 		{ NULL,    NULL }
 	};
 	unsigned int i;

@@ -147,6 +147,54 @@ static int _exit_usage(void)
 }
 
 
+/* builtin_export */
+static int _export_usage(void);
+static void _export_list(void);
+static void _export_do(char * arg);
+int builtin_export(int argc, char * argv[])
+{
+	int prefs = 0;
+	int o;
+	int i;
+
+	optind = 1;
+	while((o = getopt(argc, argv, "p")) != -1)
+		switch(o)
+		{
+			case 'p':
+				prefs = 1;
+				break;
+			default:
+				return _export_usage();
+		}
+	if(prefs == 1 && optind == argc)
+		_export_list();
+	else if(optind == argc)
+		return _export_usage();
+	else
+		for(i = optind; i < argc; i++)
+			_export_do(argv[i]);
+	return 0;
+}
+
+static int _export_usage(void)
+{
+	fprintf(stderr, "%s", "Usage: export name[=value]...\n\
+       export -p\n\
+  -p	list all variables\n");
+}
+
+static void _export_list(void)
+{
+	/* FIXME */
+}
+
+static void _export_do(char * arg)
+{
+	/* FIXME */
+}
+
+
 /* builtin_fg */
 int builtin_fg(int argc, char * argv[])
 {

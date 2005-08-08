@@ -17,6 +17,7 @@ int builtin_bg(int argc, char * argv[]); /* FIXME only in XSI */
 int builtin_cd(int argc, char * argv[]);
 int builtin_exec(int argc, char * argv[]);
 int builtin_exit(int argc, char * argv[]);
+int builtin_export(int argc, char * argv[]);
 int builtin_fg(int argc, char * argv[]); /* FIXME only in XSI */
 int builtin_jobs(int argc, char * argv[]); /* FIXME only in XSI */
 int builtin_read(int argc, char * argv[]);
