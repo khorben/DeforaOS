@@ -187,9 +187,28 @@ static int _export_usage(void)
 static void _export_list(void)
 {
 	char ** e;
+	char * p;
 
+	/* FIXME should read exported variables list instead */
 	for(e = environ; *e != NULL; e++)
-		printf("%s%s%s", "export ", *e, "\n");
+	{
+		printf("%s", "export ");
+		for(p = *e; *p != '\0' && *p != '='; p++)
+			fputc(*p, stdout);
+		if(*p == '\0')
+		{
+			fputc('\n', stdout);
+			continue;
+		}
+		printf("%s", "=\"");
+		for(p++; *p != '\0'; p++)
+		{
+			if(*p == '"')
+				fputc('\\', stdout);
+			fputc(*p, stdout);
+		}
+		printf("%s", "\"\n");
+	}
 	return 0;
 }
 
