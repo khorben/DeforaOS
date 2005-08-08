@@ -169,7 +169,7 @@ int builtin_export(int argc, char * argv[])
 		}
 	if(prefs == 1 && optind == argc)
 		_export_list();
-	else if(optind == argc)
+	else if(prefs == 1 || optind == argc)
 		return _export_usage();
 	else
 		for(i = optind; i < argc; i++)
@@ -186,7 +186,11 @@ static int _export_usage(void)
 
 static void _export_list(void)
 {
-	/* FIXME */
+	char ** e;
+
+	for(e = environ; *e != NULL; e++)
+		printf("%s%s%s", "export ", *e, "\n");
+	return 0;
 }
 
 static void _export_do(char * arg)
