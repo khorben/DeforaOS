@@ -182,6 +182,7 @@ static int _export_usage(void)
 	fprintf(stderr, "%s", "Usage: export name[=value]...\n\
        export -p\n\
   -p	list all variables\n");
+	return 1;
 }
 
 static void _export_list(void)
