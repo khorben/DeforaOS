@@ -210,7 +210,6 @@ static void _export_list(void)
 		}
 		printf("%s", "\"\n");
 	}
-	return 0;
 }
 
 static void _export_do(char * arg)
