@@ -352,11 +352,10 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 	name = ++(*pos);
 	(*pos)++;
 	if(parser->tokens[*pos]->code == TC_RW_IN)
-		for(; parser->tokens[*pos]->code == TC_NAME; (*pos)++)
+		for((*pos)++; parser->tokens[*pos]->code == TC_WORD; (*pos)++)
 			count++;
-	for(; parser->tokens[*pos]->code != TC_RW_DO; (*pos)++);
-	(*pos)++;
-	p = *pos;
+	for((*pos)++; parser->tokens[*pos]->code != TC_RW_DO; (*pos)++);
+	p = ++(*pos);
 	for(i = 0; i < count; i++)
 	{
 		if(skip != 0)
@@ -455,6 +454,22 @@ static void parser_rule5(Parser * parser)
 			return;
 		}
 	parser->token->code = TC_NAME;
+}
+
+
+static void parser_rule6_for(Parser * parser)
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "rule 6 (for)\n");
+#endif
+	if(parser->token == NULL || parser->token->string == NULL)
+		return;
+	if(strcmp(sTokenCode[TC_RW_DO], parser->token->string) == 0)
+		parser->token->code = TC_RW_DO;
+	if(strcmp(sTokenCode[TC_RW_IN], parser->token->string) == 0)
+		parser->token->code = TC_RW_IN;
+	else
+		parser->token->code = TC_WORD;
 }
 
 
@@ -731,6 +746,7 @@ static void for_clause(Parser * p)
 	parser_scan(p);
 	name(p);
 	linebreak(p);
+	parser_rule6_for(p);
 	if(p->token != NULL && p->token->code == TC_RW_IN)
 	{
 		parser_scan(p);
@@ -756,7 +772,6 @@ static void name(Parser * p)
 static void in(Parser * p)
 	/* In (rule 6) */
 {
-	/* FIXME */
 	parser_scan(p);
 }
 
@@ -901,7 +916,8 @@ static void brace_group(Parser * p)
 static void do_group(Parser * p)
 	/* Do compound_list Done */
 {
-	parser_scan(p);
+	parser_rule1(p);
+	parser_check(p, TC_RW_DO);
 	compound_list(p);
 	parser_check(p, TC_RW_DONE);
 }
@@ -1148,8 +1164,10 @@ static void sequential_sep(Parser * p)
 		/* ";" linebreak
 		 * | newline_list */
 {
-	if(p->token != NULL && p->token->code == TC_TOKEN
-			&& strcmp(p->token->string, ";") == 0)
+#ifdef DEBUG
+	fprintf(stderr, "%s", "sequential_sep()\n");
+#endif
+	if(p->token != NULL && p->token->code == TC_OP_SEMICOLON)
 	{
 		parser_scan(p);
 		return linebreak(p);
