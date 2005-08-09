@@ -6,9 +6,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdint.h>
@@ -135,6 +133,7 @@ static int parser_check(Parser * parser, TokenCode code)
 
 
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
+static int _exec_for(Parser * parser, unsigned int * pos, int skip);
 static int _exec_if(Parser * parser, unsigned int * pos, int skip);
 static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 {
@@ -175,8 +174,7 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 			/* FIXME */
 			break;
 		case TC_RW_FOR:
-			/* FIXME */
-			break;
+			return _exec_for(parser, pos, skip);
 		case TC_EOI:
 		case TC_NEWLINE:
 			break;
@@ -344,6 +342,36 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * error)
 	return 0;
 }
 
+static int _exec_for(Parser * parser, unsigned int * pos, int skip)
+{
+	Token * name;
+	unsigned int count = 0;
+	unsigned int i;
+	unsigned int p;
+
+	name = ++(*pos);
+	(*pos)++;
+	if(parser->tokens[*pos]->code == TC_RW_IN)
+		for(; parser->tokens[*pos]->code == TC_NAME; (*pos)++)
+			count++;
+	for(; parser->tokens[*pos]->code != TC_RW_DO; (*pos)++);
+	(*pos)++;
+	p = *pos;
+	for(i = 0; i < count; i++)
+	{
+		if(skip != 0)
+			continue;
+		/* FIXME affect variables */
+		/* FIXME parser_exec() should loop until an incoherent code is
+		 * found */
+		*pos = p;
+		parser_exec(parser, pos, 0);
+	}
+	/* FIXME should be RW_DONE here */
+	(*pos)++;
+	return skip;
+}
+
 static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 {
 	int execd = 0;
@@ -402,6 +430,31 @@ static void parser_rule1(Parser * parser)
 			return;
 		}
 	parser->token->code = TC_WORD;
+}
+
+
+static void parser_rule5(Parser * parser)
+{
+	unsigned int i;
+	char c;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s", "rule 5\n");
+#endif
+	if(parser->token == NULL || parser->token->string == NULL)
+		return;
+	if(isdigit(parser->token->string[0]))
+	{
+		parser->token->code = TC_WORD;
+		return;
+	}
+	for(i = 0; (c = parser->token->string[i]) != '\0'; i++)
+		if(!isalnum(c) && c != '_')
+		{
+			parser->token->code = TC_WORD;
+			return;
+		}
+	parser->token->code = TC_NAME;
 }
 
 
@@ -681,6 +734,7 @@ static void for_clause(Parser * p)
 	if(p->token != NULL && p->token->code == TC_RW_IN)
 	{
 		parser_scan(p);
+		parser_rule1(p);
 		if(p->token != NULL && token_in_set(p->token, TS_WORDLIST))
 			wordlist(p);
 		sequential_sep(p);
@@ -693,7 +747,7 @@ static void for_clause(Parser * p)
 static void name(Parser * p)
 	/* NAME (rule 5) */
 {
-	/* FIXME */
+	parser_rule5(p);
 	parser_check(p, TC_NAME);
 }
 
@@ -711,7 +765,11 @@ static void in(Parser * p)
 static void wordlist(Parser * p)
 	/* WORD { WORD } */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "wordlist()\n");
+#endif
 	parser_scan(p);
+	parser_rule1(p);
 	while(p->token != NULL && p->token->code == TC_WORD)
 		parser_scan(p);
 }
