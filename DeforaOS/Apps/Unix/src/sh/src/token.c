@@ -110,7 +110,9 @@ int token_in_set(Token * token, TokenSet set)
 	TokenCode set_io_redirect[] = { TC_IO_NUMBER, TC_NULL };
 	TokenCode set_newline_list[] = { TC_NEWLINE, TC_NULL };
 	TokenCode * set_redirect_list = set_io_redirect;
-	TokenCode set_separator[] = { TC_NEWLINE, TC_NULL };
+	TokenCode set_separator[] = {
+		TC_OP_AMPERSAND, TC_OP_SEMICOLON, TC_NEWLINE, TC_NULL
+	};
 	TokenCode set_separator_op[] = {
 		TC_OP_AMPERSAND, TC_OP_SEMICOLON, TC_NULL
 	};
