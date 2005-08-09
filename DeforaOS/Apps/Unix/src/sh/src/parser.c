@@ -358,13 +358,13 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 	p = ++(*pos);
 	for(i = 0; i < count; i++)
 	{
-		if(skip != 0)
-			continue;
 		/* FIXME affect variables */
 		/* FIXME parser_exec() should loop until an incoherent code is
 		 * found */
 		*pos = p;
-		parser_exec(parser, pos, 0);
+		parser_exec(parser, pos, skip);
+		if(skip != 0)
+			break;
 	}
 	/* FIXME should be RW_DONE here */
 	(*pos)++;
