@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdint.h>
+#include <ctype.h>
 #include "token.h"
 #include "scanner.h"
 #include "builtin.h"
@@ -135,6 +136,7 @@ static int parser_check(Parser * parser, TokenCode code)
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
 static int _exec_for(Parser * parser, unsigned int * pos, int skip);
 static int _exec_if(Parser * parser, unsigned int * pos, int skip);
+static int _exec_until(Parser * parser, unsigned int * pos, int skip);
 static int _exec_while(Parser * parser, unsigned int * pos, int skip);
 static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 {
@@ -171,8 +173,7 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 		case TC_RW_WHILE:
 			return _exec_while(parser, pos, skip);
 		case TC_RW_UNTIL:
-			/* FIXME */
-			break;
+			return _exec_until(parser, pos, skip);
 		case TC_RW_FOR:
 			return _exec_for(parser, pos, skip);
 		case TC_EOI:
@@ -349,7 +350,7 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 	unsigned int i;
 	unsigned int p;
 
-	name = ++(*pos);
+	name = parser->tokens[++(*pos)];
 	(*pos)++;
 	if(parser->tokens[*pos]->code == TC_RW_IN)
 		for((*pos)++; parser->tokens[*pos]->code == TC_WORD; (*pos)++)
@@ -411,14 +412,32 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 	return skip;
 }
 
+static int _exec_until(Parser * parser, unsigned int * pos, int skip)
+{
+	unsigned int test;
+
+	for(test = ++(*pos); parser_exec(parser, pos, skip) != 0; *pos = test)
+		parser_exec(parser, pos, skip);
+	/* FIXME should be RW_DONE here */
+	(*pos)++;
+	return skip;
+}
+
 static int _exec_while(Parser * parser, unsigned int * pos, int skip)
 {
 	unsigned int test;
 
-	for(test = ++(*pos); parser_exec(parser, pos, skip) == 0; *pos = test)
+	for(test = ++(*pos);; *pos = test)
+	{
+		skip = parser_exec(parser, pos, skip) || skip;
+		(*pos)+=2;
 		parser_exec(parser, pos, skip);
+		if(skip != 0)
+			break;
+	}
 	/* FIXME should be RW_DONE here */
 	(*pos)++;
+	return skip;
 }
 
 
