@@ -416,8 +416,14 @@ static int _exec_until(Parser * parser, unsigned int * pos, int skip)
 {
 	unsigned int test;
 
-	for(test = ++(*pos); parser_exec(parser, pos, skip) != 0; *pos = test)
+	for(test = ++(*pos);; *pos = test)
+	{
+		skip = parser_exec(parser, pos, skip) == 0 || skip;
+		(*pos)+=2;
 		parser_exec(parser, pos, skip);
+		if(skip != 0)
+			break;
+	}
 	/* FIXME should be RW_DONE here */
 	(*pos)++;
 	return skip;
@@ -429,7 +435,7 @@ static int _exec_while(Parser * parser, unsigned int * pos, int skip)
 
 	for(test = ++(*pos);; *pos = test)
 	{
-		skip = parser_exec(parser, pos, skip) || skip;
+		skip = parser_exec(parser, pos, skip) != 0 || skip;
 		(*pos)+=2;
 		parser_exec(parser, pos, skip);
 		if(skip != 0)
