@@ -109,14 +109,18 @@ static Token * _next_operator(Scanner * scanner, int * c)
 	unsigned int pos = 0;
 
 	for(i = TC_OP_AND_IF; i <= TC_OP_GREAT;)
-		if(*c != sTokenCode[i][pos])
+	{
+		if(sTokenCode[i][pos] == '\0')
+			return token_new(i, NULL);
+		if(*c == sTokenCode[i][pos])
+		{
+			*c = scanner->next(scanner);
+			pos++;
+		}
+		else
 			i++;
-		else if(sTokenCode[i][++pos] == '\0')
-			break;
-	if(i > TC_OP_GREAT)
-		return NULL;
-	*c = scanner->next(scanner);
-	return token_new(i, NULL);
+	}
+	return NULL;
 }
 
 static Token * _next_blank(Scanner * scanner, int * c)
