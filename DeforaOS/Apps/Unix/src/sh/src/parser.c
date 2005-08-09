@@ -108,7 +108,7 @@ static void parser_scan(Parser * parser)
 	Token ** p;
 
 	if((parser->token = scanner_next(&parser->scanner)) == NULL)
-		return; /* FIXME ? */
+		return;
 	if((p = realloc(parser->tokens, (parser->tokens_cnt+1)
 					* sizeof(Token *))) == NULL)
 	{
@@ -359,7 +359,9 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 	p = ++(*pos);
 	for(i = 0; i < count; i++)
 	{
-		/* FIXME affect variables */
+		if(setenv(name->string, parser->tokens[p-2-count+i]->string, 1)
+				!= 0)
+			skip = sh_error("setenv", 1);
 		/* FIXME parser_exec() should loop until an incoherent code is
 		 * found */
 		*pos = p;
@@ -819,8 +821,8 @@ static void wordlist(Parser * p)
 	fprintf(stderr, "%s", "wordlist()\n");
 #endif
 	parser_scan(p);
-	parser_rule1(p);
-	while(p->token != NULL && p->token->code == TC_WORD)
+	for(parser_rule1(p); p->token != NULL && p->token->code == TC_WORD;
+			parser_rule1(p))
 		parser_scan(p);
 }
 
