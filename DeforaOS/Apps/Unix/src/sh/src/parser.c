@@ -135,6 +135,7 @@ static int parser_check(Parser * parser, TokenCode code)
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
 static int _exec_for(Parser * parser, unsigned int * pos, int skip);
 static int _exec_if(Parser * parser, unsigned int * pos, int skip);
+static int _exec_while(Parser * parser, unsigned int * pos, int skip);
 static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 {
 	int ret = 1;
@@ -168,8 +169,7 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 			/* FIXME */
 			break;
 		case TC_RW_WHILE:
-			/* FIXME */
-			break;
+			return _exec_while(parser, pos, skip);
 		case TC_RW_UNTIL:
 			/* FIXME */
 			break;
@@ -409,6 +409,16 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 		(*pos)++;
 	}
 	return skip;
+}
+
+static int _exec_while(Parser * parser, unsigned int * pos, int skip)
+{
+	unsigned int test;
+
+	for(test = ++(*pos); parser_exec(parser, pos, skip) == 0; *pos = test)
+		parser_exec(parser, pos, skip);
+	/* FIXME should be RW_DONE here */
+	(*pos)++;
 }
 
 
