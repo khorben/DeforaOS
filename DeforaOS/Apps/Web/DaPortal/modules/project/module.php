@@ -26,6 +26,7 @@ $text['TIMELINE'] = 'Timeline';
 global $lang;
 if($lang == 'de')
 {
+	$text['BROWSE_SOURCE'] = 'Quellcode betrachten';
 	$text['PRIORITY'] = 'Priorität';
 	$text['PROJECT'] = 'Projekt';
 	$text['PROJECTS'] = 'Projekte';
@@ -246,7 +247,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
 			'class' => array('revision' => 'Revision',
 					'date' => 'Date',
-					'author' => 'Author',
+					'author' => AUTHOR,
 					'message' => 'Message'),
 			'view' => 'details'));
 }
@@ -320,7 +321,7 @@ function _browse_file($id, $project, $cvsroot, $filename)
 	}
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => 'Date',
-					'author' => 'Author',
+					'author' => AUTHOR,
 					'message' => 'Message'),
 			'view' => 'details'));
 }

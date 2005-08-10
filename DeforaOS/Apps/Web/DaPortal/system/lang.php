@@ -28,6 +28,7 @@ function lang($text)
 $text['_BY_'] = ' by ';
 $text['_FOR_'] = ' for ';
 $text['ADMINISTRATOR'] = 'Administrator';
+$text['AUTHOR'] = 'Author';
 $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DESCRIPTION'] = 'Description';
@@ -47,6 +48,7 @@ if($lang == 'de')
 {
 	$text['_BY_'] = ' von ';
 	$text['_FOR_'] = ' für ';
+	$text['AUTHOR'] = 'Autor';
 	$text['DESCRIPTION'] = 'Beschreibung';
 	$text['LOGIN'] = 'Einloggen';
 	$text['LOGOUT'] = 'Ausloggen';
@@ -60,6 +62,7 @@ else if($lang == 'fr')
 	$text['_BY_'] = ' par ';
 	$text['_FOR_'] = ' pour ';
 	$text['ADMINISTRATOR'] = 'Administrateur';
+	$text['AUTHOR'] = 'Auteur';
 	$text['CONTENT'] = 'Contenu';
 	$text['HOMEPAGE'] = 'Accueil';
 	$text['LOGIN'] = 'Authentification';
