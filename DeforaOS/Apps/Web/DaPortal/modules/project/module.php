@@ -133,6 +133,7 @@ function project_browse($args)
 	if(!is_array($project) || count($project) != 1
 			|| !($cvsrep = _config_get('project', 'cvsroot')))
 		return _error(INVALID_PROJECT);
+	$cvsrep.='/';
 	$project = $project[0];
 	_project_toolbar($args['id']);
 	if(strlen($project['cvsroot']) == 0)
