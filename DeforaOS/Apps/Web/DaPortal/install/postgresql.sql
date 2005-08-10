@@ -9,6 +9,14 @@ INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
+CREATE TABLE daportal_config (
+	module_id SERIAL,
+	name VARCHAR(255) NOT NULL,
+	value VARCHAR(255) NOT NULL,
+	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id)
+);
+
+
 CREATE TABLE daportal_user (
 	user_id SERIAL UNIQUE,
 	username VARCHAR(255) UNIQUE,
