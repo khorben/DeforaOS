@@ -787,6 +787,13 @@ function project_timeline($args)
 		$name = substr($fields[3], $len+1).'/'.$fields[5];
 		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
 		$date = date('d/m/Y H:i', $date);
+		if(($author = _user_id($fields[1])) != 0)
+			$author = '<a href="index.php?module=project'
+					.'&amp;action=list&amp;user_id='
+					.$author.'">'._html_safe($fields[1])
+					.'</a>';
+		else
+			$author = _html_safe($fields[1]);
 		$entries[] = array('name' => _html_safe($name),
 				'module' => 'project',
 				'action' => 'browse',
@@ -804,7 +811,7 @@ function project_timeline($args)
 						._html_safe_link($fields[4])
 						.'">'._html_safe($fields[4])
 						.'</a>',
-				'author' => $fields[1]);
+				'author' => $author);
 	}
 	_module('explorer', 'browse_trusted', array(
 			'entries' => array_reverse($entries),
