@@ -5,3 +5,4 @@
 <p><a href="index.php?module=user&amp;action=logout"><button>Logout</button></a></p>
 <? _module('news', 'list', array('user_id' => $user_id)); ?>
 <? _module('project', 'list', array('user_id' => $user_id)); ?>
+<? _module('project', 'bug_list', array('user_id' => $user_id)); ?>
