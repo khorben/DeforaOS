@@ -30,6 +30,7 @@ if($lang == 'de')
 	$text['PROJECT'] = 'Projekt';
 	$text['PROJECTS'] = 'Projekte';
 	$text['STATE'] = 'Stand';
+	$text['TIMELINE'] = 'Fortschritt';
 }
 else if($lang == 'fr')
 {
