@@ -45,8 +45,14 @@ $text['UPDATE'] = 'Update';
 $text['USERNAME'] = 'Username';
 if($lang == 'de')
 {
+	$text['_BY_'] = ' von ';
+	$text['_FOR_'] = ' für ';
+	$text['DESCRIPTION'] = 'Beschreibung';
+	$text['LOGIN'] = 'Einloggen';
+	$text['LOGOUT'] = 'Ausloggen';
 	$text['PASSWORD'] = 'Passwort';
 	$text['TITLE'] = 'Titel';
+	$text['TYPE'] = 'Typ';
 	$text['USERNAME'] = 'Benutzername';
 }
 else if($lang == 'fr')

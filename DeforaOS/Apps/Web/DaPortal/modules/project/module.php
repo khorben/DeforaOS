@@ -24,7 +24,14 @@ $text['PROJECTS_LIST'] = 'Projects list';
 $text['STATE'] = 'State';
 $text['TIMELINE'] = 'Timeline';
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$text['PRIORITY'] = 'Priorität';
+	$text['PROJECT'] = 'Projekt';
+	$text['PROJECTS'] = 'Projekte';
+	$text['STATE'] = 'Stand';
+}
+else if($lang == 'fr')
 {
 	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
 	$text['BUG_REPORTS'] = 'Rapports de bugs';

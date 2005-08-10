@@ -6,7 +6,9 @@
 $title = 'Search';
 $list = 1;
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+	$title = 'Suche';
+else if($lang == 'fr')
 	$title = 'Recherche';
 
 
