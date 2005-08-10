@@ -791,8 +791,7 @@ function project_timeline($args)
 				'module' => 'project',
 				'action' => 'browse',
 				'id' => $args['id'],
-				'args' => '&amp;file='._html_safe_link($name)
-						.',v',
+				'args' => '&file='._html_safe_link($name).',v',
 				'date' => _html_safe($date),
 				'event' => _html_safe($event),
 				'revision' => '<a href="index.php'
@@ -801,8 +800,9 @@ function project_timeline($args)
 						.'&amp;id='.$args['id']
 						.'&amp;file='
 						._html_safe_link($name).',v'
-						.'">'
+						.'&amp;revision='
 						._html_safe_link($fields[4])
+						.'">'._html_safe($fields[4])
 						.'</a>',
 				'author' => $fields[1]);
 	}
