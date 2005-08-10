@@ -8,6 +8,16 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//lang
+$text['SELECT_ALL'] = 'Select all';
+global $lang;
+if($lang == 'de')
+	$text['SELECT_ALL'] = 'Alles markieren';
+else if($lang == 'fr')
+	$text['SELECT_ALL'] = 'Tout sélectionner';
+lang($text);
+
+
 function _explorer(&$args)
 {
 	static $explorer_id = 0;
@@ -15,7 +25,7 @@ function _explorer(&$args)
 	$explorer_id++;
 	//FIXME default values table
 	include('top.tpl');
-	if(!isset($args['toolbar']) || $args['toolbar'])
+	if(!isset($args['toolbar']) || is_array($args['toolbar']))
 		include('toolbar.tpl');
 	$view = isset($args['view']) ? $args['view'] : 'thumbnails';
 	include('header.tpl');
