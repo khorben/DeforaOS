@@ -201,8 +201,8 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 }
 
 static int _exec_cmd_env(char * envp[]);
-static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error);
-static int _exec_cmd_child(int argc, char ** argv, uint8_t * error);
+static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error);
+static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error);
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 {
 	char ** argv = NULL;
@@ -211,7 +211,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 	unsigned int envp_cnt = 0;
 	char ** p;
 	int ret = 1;
-	uint8_t error;
+	uint8_t bg_error = 0;
 
 	for(; *pos < parser->tokens_cnt; (*pos)++)
 	{
@@ -248,6 +248,8 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 				argv = p;
 				argv[argv_cnt++] = parser->tokens[*pos]->string;
 				break;
+			case TC_OP_AMPERSAND:
+				bg_error = 1;
 			default:
 				ret = -1;
 				break;
@@ -267,11 +269,11 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 		argv[argv_cnt] = NULL;
 		/* FIXME look for builtins utilities (should be none) */
 		/* FIXME look for functions */
-		if(_exec_cmd_builtin(argv_cnt, argv, &error) != 0)
-			if(_exec_cmd_child(argv_cnt, argv, &error) != 0)
+		if(_exec_cmd_builtin(argv_cnt, argv, &bg_error) != 0)
+			if(_exec_cmd_child(argv_cnt, argv, &bg_error) != 0)
 				ret = 1;
 		if(ret == 0)
-			ret = error;
+			ret = bg_error;
 	}
 	free(argv);
 	return ret;
@@ -299,7 +301,7 @@ static int _exec_cmd_env(char * envp[])
 	return ret;
 }
 
-static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error)
+static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error)
 {
 	struct {
 		char * cmd;
@@ -322,17 +324,18 @@ static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * error)
 	for(i = 0; builtins[i].cmd != NULL; i++)
 		if(strcmp(builtins[i].cmd, argv[0]) == 0)
 		{
-			*error = builtins[i].func(argc, argv);
+			/* FIXME if(*bg_error != 0) jobs_new(); */
+			*bg_error = builtins[i].func(argc, argv);
 			return 0;
 		}
 	return -1;
 }
 
-static int _exec_cmd_child(int argc, char ** argv, uint8_t * error)
+static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error)
 {
 	pid_t pid;
 	int status;
-	int ret;
+	int ret = 0;
 
 	if((pid = fork()) == -1)
 		return sh_error("fork", -1);
@@ -341,12 +344,18 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * error)
 		execvp(argv[0], argv);
 		exit(sh_error(argv[0], -1));
 	}
+	if(*bg_error != 0)
+	{
+		*bg_error = 0;
+		return 0;
+	}
+	/* FIXME jobs_new(); */
 	while((ret = waitpid(pid, &status, 0)) != -1)
 		if(WIFEXITED(status))
 			break;
 	if(ret == -1)
 		return sh_error("waitpid", -1);
-	*error = WEXITSTATUS(status);
+	*bg_error = WEXITSTATUS(status);
 	return 0;
 }
 
