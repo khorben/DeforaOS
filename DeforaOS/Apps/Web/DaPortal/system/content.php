@@ -21,6 +21,18 @@ function _content_insert($title, $content, $enabled = '0')
 }
 
 
+function _content_readable($id)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(_user_admin($user_id) == TRUE)
+		return TRUE;
+	return _sql_single('SELECT enabled FROM daportal_content'
+			." WHERE content_id='$id';") == 't';
+}
+
+
 function _content_select($id, $enabled = '')
 {
 	if(!is_numeric($id))
