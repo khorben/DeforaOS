@@ -9,6 +9,16 @@ INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
+CREATE TABLE daportal_config (
+	module_id SERIAL,
+	name VARCHAR(255) NOT NULL,
+	value VARCHAR(255) NOT NULL,
+	PRIMARY KEY (module_id, name),
+	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id)
+);
+INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'lang', 'en');
+
+
 CREATE TABLE daportal_lang (
 	lang_id VARCHAR(2) NOT NULL,
 	name VARCHAR(255) NOT NULL,
@@ -18,14 +28,6 @@ CREATE TABLE daportal_lang (
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('en', 'English', '1');
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1');
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1');
-
-
-CREATE TABLE daportal_config (
-	module_id SERIAL,
-	name VARCHAR(255) NOT NULL,
-	value VARCHAR(255) NOT NULL,
-	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id)
-);
 
 
 CREATE TABLE daportal_user (
