@@ -248,7 +248,7 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 			'class' => array('revision' => 'Revision',
 					'date' => 'Date',
 					'author' => AUTHOR,
-					'message' => 'Message'),
+					'message' => MESSAGE),
 			'view' => 'details'));
 }
 
@@ -322,7 +322,7 @@ function _browse_file($id, $project, $cvsroot, $filename)
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => 'Date',
 					'author' => AUTHOR,
-					'message' => 'Message'),
+					'message' => MESSAGE),
 			'view' => 'details'));
 }
 

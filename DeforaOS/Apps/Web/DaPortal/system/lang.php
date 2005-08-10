@@ -36,6 +36,7 @@ $text['HOMEPAGE'] = 'Homepage';
 $text['LOGIN'] = 'Login';
 $text['LOGOUT'] = 'Logout';
 $text['MEMBERS'] = 'Members';
+$text['MESSAGE'] = 'Message';
 $text['NAME'] = 'Name';
 $text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
@@ -52,6 +53,7 @@ if($lang == 'de')
 	$text['DESCRIPTION'] = 'Beschreibung';
 	$text['LOGIN'] = 'Einloggen';
 	$text['LOGOUT'] = 'Ausloggen';
+	$text['MESSAGE'] = 'Mitteilung';
 	$text['PASSWORD'] = 'Passwort';
 	$text['TITLE'] = 'Titel';
 	$text['TYPE'] = 'Typ';
