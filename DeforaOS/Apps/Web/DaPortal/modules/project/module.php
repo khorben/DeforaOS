@@ -27,9 +27,11 @@ global $lang;
 if($lang == 'de')
 {
 	$text['BROWSE_SOURCE'] = 'Quellcode betrachten';
+	$text['NEW_PROJECT'] = 'Neues projekt';
 	$text['PRIORITY'] = 'Priorität';
 	$text['PROJECT'] = 'Projekt';
 	$text['PROJECTS'] = 'Projekte';
+	$text['PROJECTS_LIST'] = 'Projektliste';
 	$text['STATE'] = 'Stand';
 	$text['TIMELINE'] = 'Fortschritt';
 }
