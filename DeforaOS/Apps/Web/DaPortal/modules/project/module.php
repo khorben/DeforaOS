@@ -13,6 +13,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
+$text['INVALID_PROJECT'] = 'Invalid project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
 $text['PROJECT'] = 'Project';
@@ -24,6 +25,7 @@ if($lang == 'fr')
 {
 	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
 	$text['BUG_REPORTS'] = 'Rapports de bugs';
+	$text['INVALID_PROJECT'] = 'Projet non valide';
 	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
 	$text['PRIORITY'] = 'Priorité';
 	$text['PROJECT'] = 'Projet';
@@ -112,7 +114,7 @@ function project_browse($args)
 			.'=daportal_project.project_id'
 			." AND enabled='1';");
 	if(!is_array($project) || count($project) != 1)
-		return _error('Invalid project');
+		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	_project_toolbar($args['id']);
 	if(strlen($project['cvsroot']) == 0)
@@ -442,7 +444,7 @@ function project_bug_list($args)
 		$title.=_FOR_.$project;
 	}
 	if(isset($username))
-		$title.=' by '.$username;
+		$title.=_BY_.$username;
 	print('<h1><img src="modules/project/bug.png" alt=""/> '
 			._html_safe($title).'</h1>'."\n");
 	$where = '';
@@ -630,7 +632,8 @@ function project_list($args)
 		$title = 'Select project to bug';
 		$action = $args['action'];
 	}
-	else if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
+	else if(isset($args['user_id'])
+			&& ($username = _sql_single('SELECT username'
 			." FROM daportal_user WHERE user_id='".$args['user_id']
 			."';")) != FALSE)
 	{
@@ -668,8 +671,8 @@ function project_list($args)
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
 	_module('explorer', 'browse', array(
-			'class' => array('admin' => 'Administrator',
-					'desc' => 'Description'),
+			'class' => array('admin' => ADMINISTRATOR,
+					'desc' => DESCRIPTION),
 			'toolbar' => $toolbar,
 			'view' => 'details',
 			'entries' => $projects));
@@ -728,7 +731,7 @@ function project_timeline($args)
 	{
 		print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project['name']).' CVS</h1>'."\n");
-		return _info('This project does not have a CVS repository', 1);
+		return _info(NO_CVS_REPOSITORY, 1);
 	}
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project['name'])
@@ -774,10 +777,10 @@ function project_timeline($args)
 	}
 	_module('explorer', 'browse', array(
 			'entries' => array_reverse($entries),
-			'class' => array('date' => 'Date',
+			'class' => array('date' => DATE,
 					'event' => 'Action',
 					'revision' => 'Revision',
-					'author' => 'Username'),
+					'author' => USERNAME),
 			'view' => 'details'));
 	fclose($fp);
 }
