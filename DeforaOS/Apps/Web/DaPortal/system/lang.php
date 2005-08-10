@@ -25,23 +25,31 @@ function lang($text)
 
 
 //global translations
+$text['_BY_'] = ' by ';
 $text['_FOR_'] = ' for ';
 $text['ADMINISTRATOR'] = 'Administrator';
 $text['DATE'] = 'Date';
 $text['DESCRIPTION'] = 'Description';
 $text['HOMEPAGE'] = 'Homepage';
+$text['LOGIN'] = 'Login';
 $text['MEMBERS'] = 'Members';
 $text['NAME'] = 'Name';
+$text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
 $text['TYPE'] = 'Type';
+$text['USERNAME'] = 'Username';
 if($lang == 'fr')
 {
+	$text['_BY_'] = ' par ';
 	$text['_FOR_'] = ' pour ';
 	$text['ADMINISTRATOR'] = 'Administrateur';
 	$text['HOMEPAGE'] = 'Accueil';
+	$text['LOGIN'] = 'Authentification';
 	$text['MEMBERS'] = 'Membres';
 	$text['NAME'] = 'Nom';
+	$text['PASSWORD'] = 'Mot de passe';
 	$text['PERMISSION_DENIED'] = 'Permission non accordée';
+	$text['USERNAME'] = 'Utilisateur';
 }
 lang($text);
 
