@@ -59,7 +59,7 @@ Token * token_new(TokenCode code, char * string)
 
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%s%s", "token_new(", code, ", ",
-			string != NULL ? string : "NULL", ")\n");
+			string != NULL ? string : sTokenCode[code], ")\n");
 #endif
 	if((t = malloc(sizeof(Token))) == NULL)
 	{
