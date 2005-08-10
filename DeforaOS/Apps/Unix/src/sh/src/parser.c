@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <ctype.h>
+#include <assert.h>
 #include "token.h"
 #include "scanner.h"
 #include "builtin.h"
@@ -369,7 +370,7 @@ static int _exec_for(Parser * parser, unsigned int * pos, int skip)
 		if(skip != 0)
 			break;
 	}
-	/* FIXME should be RW_DONE here */
+	assert(parser->tokens[*pos]->code == TC_RW_DONE);
 	(*pos)++;
 	return skip;
 }
@@ -426,7 +427,7 @@ static int _exec_until(Parser * parser, unsigned int * pos, int skip)
 		if(skip != 0)
 			break;
 	}
-	/* FIXME should be RW_DONE here */
+	assert(parser->tokens[*pos]->code == TC_RW_DONE);
 	(*pos)++;
 	return skip;
 }
@@ -443,7 +444,7 @@ static int _exec_while(Parser * parser, unsigned int * pos, int skip)
 		if(skip != 0)
 			break;
 	}
-	/* FIXME should be RW_DONE here */
+	assert(parser->tokens[*pos]->code == TC_RW_DONE);
 	(*pos)++;
 	return skip;
 }
