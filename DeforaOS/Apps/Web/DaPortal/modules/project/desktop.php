@@ -15,6 +15,16 @@ $actions = array('download' => 'Downloads',
 		'list' => 'List',
 		'package' => 'Packages',
 		'bug_list' => 'Reports');
+global $lang;
+if($lang == 'fr')
+{
+	$title = 'Projets';
+	$actions['download'] = 'Téléchargement';
+	$actions['installer'] = 'Installeur';
+	$actions['list'] = 'Liste';
+	$actions['package'] = 'Packages';
+	$actions['bug_list'] = 'Rapports';
+}
 
 
 ?>

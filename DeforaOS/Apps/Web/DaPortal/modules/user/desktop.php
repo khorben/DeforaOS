@@ -12,9 +12,12 @@ $title = 'Users';
 $list = 1;
 global $user_id;
 if($user_id != 0)
-	$actions = array('logout' => 'Logout');
+	$actions = array('logout' => LOGOUT);
 else
-	$actions = array('login' => 'Login');
+	$actions = array('login' => LOGIN);
+global $lang;
+if($lang == 'fr')
+	$title = 'Utilisateurs';
 
 
 ?>

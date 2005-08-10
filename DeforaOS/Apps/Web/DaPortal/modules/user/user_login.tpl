@@ -6,8 +6,8 @@
 <? if($message) { ?>
 	<tr><td></td><td><strong><? echo $message; ?></strong></td></tr>
 <? } ?>
-		<tr><td>Username:</td><td><input type="text" name="username"<? if($username) print(' value="'._html_safe($username).'"'); ?>/></td></tr>
-		<tr><td>Password:</td><td><input type="password" name="password"/></td></tr>
-	<tr><td></td><td><input type="submit" name="submit" value="Login"/></td></tr>
+		<tr><td><? echo _html_safe(USERNAME); ?>:</td><td><input type="text" name="username"<? if($username) print(' value="'._html_safe($username).'"'); ?>/></td></tr>
+		<tr><td><? echo _html_safe(PASSWORD); ?>:</td><td><input type="password" name="password"/></td></tr>
+	<tr><td></td><td><input type="submit" name="submit" value="<? echo _html_safe(LOGIN); ?>"/></td></tr>
 	</table>
 </form>
