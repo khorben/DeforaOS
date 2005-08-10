@@ -1,18 +1,3 @@
-<?
-function _sort($module, $action, $args, $class, $sort, $name)
-{
-	if($class == $sort)
-	{
-		print(_html_safe($name));
-		print('<img src="modules/explorer/sort.png" alt="sort"/>');
-		return;
-	}
-	print('<a href="index.php?');
-	$link = 'module='.$module.'&action='.$action.$args
-			.'&sort='.$class;
-	print(_html_safe($link).'">'._html_safe($name).'</a>');
-}
-?>
 	<div id="explorer_<? echo $explorer_id; ?>" class="listing_<? echo _html_safe($view); ?>">
 		<div class="header">
 			<div class="icon"></div>
