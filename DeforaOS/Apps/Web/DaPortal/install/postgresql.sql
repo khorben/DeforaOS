@@ -9,6 +9,17 @@ INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
+CREATE TABLE daportal_lang (
+	lang_id VARCHAR(2) NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	enabled BOOLEAN NOT NULL DEFAULT false,
+	PRIMARY KEY (lang_id)
+);
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('en', 'English', '1');
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1');
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1');
+
+
 CREATE TABLE daportal_config (
 	module_id SERIAL,
 	name VARCHAR(255) NOT NULL,
