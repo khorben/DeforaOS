@@ -14,6 +14,4 @@ $dbtype = 'pgsql';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
 
-//$lang = 'en';
-
 ?>
