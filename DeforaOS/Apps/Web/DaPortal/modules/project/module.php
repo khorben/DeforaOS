@@ -690,7 +690,7 @@ function project_list($args)
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 		$projects[$i]['admin'] = '<a href="index.php?module=user'
 				.'&amp;id='
-				._html_safe_link($projects[$i]['user_id']).
+				._html_safe_link($projects[$i]['user_id'])
 				.'">'._html_safe($projects[$i]['admin']).'</a>';
 	}
 	$toolbar = array();
