@@ -8,8 +8,27 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
-//FIXME lang
-define(DATE_FORMAT, 'l, F jS Y, H:i');
+//lang
+$text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
+$text['NEWS_ADMINISTRATION'] = 'News administration';
+$text['NEWS_BY'] = 'by';
+$text['NEWS_ON'] = 'on';
+global $lang;
+$locale = $lang.'_'.strtoupper($lang);
+/* FIXME set in system/lang instead? */
+setlocale(LC_ALL, $locale.'@euro', $locale, $lang);
+if($lang == 'de')
+{
+	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
+}
+else if($lang == 'fr')
+{
+	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
+	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
+	$text['NEWS_BY'] = 'par';
+	$text['NEWS_ON'] = 'le';
+}
+_lang($text);
 
 
 function _news_insert($news)
@@ -17,7 +36,7 @@ function _news_insert($news)
 	global $user_id;
 
 	if(!$user_id)
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
 	return _content_insert($news['title'], $news['content']);
 }
@@ -29,8 +48,9 @@ function news_admin($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	print('<h1><img src="modules/news/icon.png" alt=""/> News administration</h1>'."\n");
+		return _error(PERMISSION_DENIED);
+	print('<h1><img src="modules/news/icon.png" alt=""/> '
+			.NEWS_ADMINISTRATION.'</h1>'."\n");
 }
 
 
@@ -54,8 +74,8 @@ function news_display($args)
 		return _error('Invalid user');
 	$long = 1;
 	$title = $news['title'];
-	$news['date'] = date(DATE_FORMAT, strtotime(substr($news['timestamp'],
-					0, 19)));
+	$news['date'] = strftime(DATE_FORMAT,
+			strtotime(substr($news['timestamp'], 0, 19)));
 	include('news_display.tpl');
 }
 
@@ -89,7 +109,7 @@ function news_list($args)
 		return _error('Unable to list news');
 	foreach($res as $news)
 	{
-		$news['date'] = date(DATE_FORMAT,
+		$news['date'] = strftime(DATE_FORMAT,
 				strtotime(substr($news['timestamp'], 0, 19)));
 		include('news_display.tpl');
 	}
@@ -101,7 +121,7 @@ function news_submit($news)
 	global $user_id, $user_name;
 
 	if(!$user_id)
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	if(isset($news['preview']))
 	{
 		$long = 1;
@@ -109,7 +129,7 @@ function news_submit($news)
 		$news['title'] = stripslashes($news['title']);
 		$news['user_id'] = $user_id;
 		$news['username'] = $user_name;
-		$news['date'] = date(DATE_FORMAT);
+		$news['date'] = strftime(DATE_FORMAT);
 		$news['content'] = stripslashes($news['content']);
 		include('news_display.tpl');
 		return include('news_update.tpl');
