@@ -50,6 +50,20 @@ function _explorer_link(&$entry)
 	return '';
 }
 
+function _explorer_sort($module, $action, $args, $class, $sort, $name)
+{
+	if($class == $sort)
+	{
+		print(_html_safe($name));
+		print('<img src="modules/explorer/sort.png" alt="sort"/>');
+		return;
+	}
+	print('<a href="index.php?');
+	$link = 'module='.$module.'&action='.$action.$args
+		.'&sort='.$class;
+	print(_html_safe($link).'">'._html_safe($name).'</a>');
+}
+
 
 function explorer_browse(&$args)
 {
@@ -72,3 +86,5 @@ function explorer_browse_trusted(&$args)
 {
 	return _explorer($args);
 }
+
+?>
