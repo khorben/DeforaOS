@@ -666,6 +666,7 @@ function project_list($args)
 			._html_safe($title).'</h1>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin'
+			.', daportal_content.user_id AS user_id'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_project'
 			." WHERE daportal_content.enabled='1'"
@@ -687,12 +688,16 @@ function project_list($args)
 					.'&project_id='.$projects[$i]['id'];
 		$projects[$i]['icon'] = 'modules/project/icon.png';
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
+		$projects[$i]['admin'] = '<a href="index.php?module=user'
+				.'&amp;id='
+				._html_safe_link($projects[$i]['user_id']).
+				.'">'._html_safe($projects[$i]['admin']).'</a>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
-	_module('explorer', 'browse', array(
+	_module('explorer', 'browse_trusted', array(
 			'class' => array('admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION),
 			'toolbar' => $toolbar,
