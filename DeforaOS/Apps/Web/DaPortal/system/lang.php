@@ -7,24 +7,8 @@
 if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
-/* FIXME look through the following in order and check if they're known and
- * enabled:
- * - fetch current value in session
- * - fetch default users' value from database if logged in
- * - read through thes one supplied by the navigator */
-if(!isset($lang) && ereg('^([a-zA-Z]+)', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $r))
-	$lang = $r[1];
 
-
-function lang($text)
-{
-	$keys = array_keys($text);
-	foreach($keys as $k)
-		define($k, $text[$k]);
-}
-
-
-//global translations
+//lang
 $text['_BY_'] = ' by ';
 $text['_FOR_'] = ' for ';
 $text['ADMINISTRATOR'] = 'Administrator';
@@ -78,6 +62,41 @@ else if($lang == 'fr')
 	$text['UPDATE'] = 'Mettre à jour';
 	$text['USERNAME'] = 'Utilisateur';
 }
-lang($text);
+
+
+function _lang($text)
+{
+	$keys = array_keys($text);
+	foreach($keys as $k)
+		define($k, $text[$k]);
+}
+
+
+function _lang_check($lang)
+{
+	return _sql_single('SELECT enabled FROM daportal_lang'
+			." WHERE enabled='1' AND lang_id='$lang';");
+}
+
+
+if(isset($_SESSION['lang']) && _lang_check($_SESSION['lang']))
+	$lang = $_SESSION['lang'];
+else
+{
+	for($hal = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+			ereg('^,?([a-zA-Z]+)(;q=[0-9.]+)?(.*)$', $hal, $regs);
+			$hal = $regs[3])
+	{
+		if(!_lang_check($regs[1]))
+			continue;
+		$lang = $regs[1];
+		break;
+	}
+}
+if(!isset($lang) && !($lang = _config_get('admin', 'lang'))
+		&& !_lang_check($lang))
+	$lang = 'en';
+
+_lang($text);
 
 ?>

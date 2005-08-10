@@ -10,15 +10,46 @@ require_once('system/user.php');
 
 
 //lang
+$text['GLOBAL_CONFIGURATION'] = 'Global configuration';
+$text['MODULE_NAME'] = 'Module name';
 $text['MODULES_ADMINISTRATION'] = 'Modules administration';
 global $lang;
 if($lang == 'fr')
 {
+	$text['MODULE_NAME'] = 'Nom du module';
 	$text['MODULES_ADMINISTRATION'] = 'Administration des modules';
 }
-lang($text);
+_lang($text);
 
 
+/* config */
+function admin_config($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	print('<h1><img src="modules/admin/icon.png" alt=""/> '
+			.GLOBAL_CONFIGURATION.'</h1>'."\n");
+	$keys = array_keys($args);
+	foreach($keys as $k)
+	{
+		if(!ereg('^([a-zA-Z]+)_([a-zA-Z_]+)$', $k, $regs))
+			continue;
+		_config_set($regs[1], $regs[2], $args[$k], 0);
+	}
+	$configs = _sql_array('SELECT daportal_module.name AS module'
+			.', daportal_config.name AS name, value'
+			.' FROM daportal_config, daportal_module'
+			.' WHERE daportal_config.module_id'
+			.'=daportal_module.module_id'
+			.' ORDER BY daportal_module.name ASC'
+			.', daportal_config.name ASC;');
+	include('config_update.tpl');
+}
+
+
+/* content */
 function _content_modify($id)
 {
 	if(!is_numeric($id))
@@ -38,7 +69,7 @@ function admin_content($args)
 	global $user_id;
 
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return _content_modify($args['id']);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> Contents administration</h1>'."\n");
@@ -82,7 +113,7 @@ function admin_content_update($args)
 	global $user_id;
 
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	if(_sql_query('UPDATE daportal_content SET '
 			." title='".$args['title']."'"
 			.", timestamp='".$args['timestamp']."'"
@@ -99,20 +130,18 @@ function admin_default()
 	global $user_id;
 
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	if(!_sql_single('SELECT admin FROM daportal_user'
-			." WHERE user_id='$user_id';"))
-		return error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	include('default.tpl');
 }
 
 
+/* module */
 function admin_module($args)
 {
 	global $user_id;
 
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return _module_admin($args['id']);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> '
@@ -145,11 +174,12 @@ function admin_module($args)
 	}
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => '',
-					'module_name' => 'Module name'),
+					'module_name' => MODULE_NAME),
 			'entries' => $modules));
 }
 
 
+/* site */
 function admin_site($args)
 {
 	//FIXME remember exactly what I wanted to do here:

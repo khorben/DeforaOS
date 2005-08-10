@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//FIXME lang
 define(DATE_FORMAT, 'l, F jS Y, H:i');
 
 

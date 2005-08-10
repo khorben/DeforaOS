@@ -9,13 +9,21 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text['LISTING_DETAILS'] = 'Details';
+$text['LISTING_LIST'] = 'List';
+$text['LISTING_THUMBNAILS'] = 'Thumbnails';
 $text['SELECT_ALL'] = 'Select all';
 global $lang;
 if($lang == 'de')
 	$text['SELECT_ALL'] = 'Alles markieren';
 else if($lang == 'fr')
+{
+	$text['LISTING_DETAILS'] = 'Détails';
+	$text['LISTING_LIST'] = 'Liste';
+	$text['LISTING_THUMBNAILS'] = 'Vignettes';
 	$text['SELECT_ALL'] = 'Tout sélectionner';
-lang($text);
+}
+_lang($text);
 
 
 function _explorer(&$args)

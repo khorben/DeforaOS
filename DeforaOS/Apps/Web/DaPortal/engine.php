@@ -46,6 +46,7 @@ foreach($vars as $v)
 	$$v = $_SESSION[$v];
 require_once('system/debug.php');
 require_once('system/sql.php');
+require_once('system/config.php');
 require_once('system/lang.php');
 require_once('system/module.php');
 if($html)

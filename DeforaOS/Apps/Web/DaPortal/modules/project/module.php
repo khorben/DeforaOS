@@ -50,7 +50,7 @@ else if($lang == 'fr')
 	$text['STATE'] = 'Etat';
 	$text['TIMELINE'] = 'Progression';
 }
-lang($text);
+_lang($text);
 
 
 function _project_toolbar($id)

@@ -7,7 +7,7 @@
 <? } ?>
 		<img src="modules/explorer/select_all.png" alt="select all" title="<? echo _html_safe(SELECT_ALL); ?>" onclick="select_all(<? echo $explorer_id; ?>)"/>
 		<div class="separator"></div>
-		<img src="modules/explorer/details.png" alt="details" title="Details" onclick="change_class('explorer_<? echo $explorer_id; ?>', 'listing_details')"/>
-		<img src="modules/explorer/list.png" alt="list" title="List" onclick="change_class('explorer_<? echo $explorer_id; ?>', 'listing_list')"/>
-		<img src="modules/explorer/thumbnails.png" alt="thumbnails" title="Thumbnails" onclick="change_class('explorer_<? echo $explorer_id; ?>', 'listing_thumbnails')"/>
+		<img src="modules/explorer/details.png" alt="details" title="<? echo _html_safe(LISTING_DETAILS); ?>" onclick="change_class('explorer_<? echo $explorer_id; ?>', 'listing_details')"/>
+		<img src="modules/explorer/list.png" alt="list" title="<? echo _html_safe(LISTING_LIST); ?>" onclick="change_class('explorer_<? echo $explorer_id; ?>', 'listing_list')"/>
+		<img src="modules/explorer/thumbnails.png" alt="thumbnails" title="<? echo _html_safe(LISTING_THUMBNAILS); ?>" onclick="change_class('explorer_<? echo $explorer_id; ?>', 'listing_thumbnails')"/>
 	</div>
