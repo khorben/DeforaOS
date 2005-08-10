@@ -130,7 +130,8 @@ function project_browse($args)
 			.' AND daportal_content.content_id'
 			.'=daportal_project.project_id'
 			." AND enabled='1';");
-	if(!is_array($project) || count($project) != 1)
+	if(!is_array($project) || count($project) != 1
+			|| !($cvsrep = _config_get('project', 'cvsroot')))
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	_project_toolbar($args['id']);
@@ -144,35 +145,37 @@ function project_browse($args)
 			|| ereg('\.\.', $project['cvsroot']))
 		return _error('Invalid CVSROOT', 1);
 	if(!isset($args['file']))
-		return _browse_dir($args['id'], $project['name'],
+		return _browse_dir($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], '');
 	$file = stripslashes($args['file']);
 	if(!ereg('^[a-zA-Z0-9.,_ /]+$', $file) || ereg('\.\.', $file))
 		return _error('Invalid path', 1);
-	$filename = '/Apps/CVS/DeforaOS/'.$project['cvsroot'].'/'.$file;
+	$filename = $cvsrep.$project['cvsroot'].'/'.$file;
 	if(is_dir($filename))
-		return _browse_dir($args['id'], $project['name'],
+		return _browse_dir($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], $file);
 	else if(file_exists($filename))
 	{
 		if(isset($args['revision']))
 			return _browse_file_revision($args['id'],
-					$project['name'], $project['cvsroot'],
+					$project['name'], $cvsrep,
+					$project['cvsroot'],
 					$file, $args['revision']);
-		return _browse_file($args['id'], $project['name'],
+		return _browse_file($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], $file);
 	}
 	_error('Invalid filename: "'.$filename.'"', 0);
-	_browse_dir($args['id'], $project['name'], $project['cvsroot'], '');
+	_browse_dir($args['id'], $project['name'], $cvsrep, $project['cvsroot'],
+			'');
 }
 
-function _browse_dir($id, $project, $cvsroot, $filename)
+function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 {
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project).' CVS: '
 			._html_safe($filename).'</h1>'."\n");
 	//FIXME un-hardcode locations (invoke the cvs executable instead?)
-	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	$path = $cvsrep.$cvsroot.'/'.$filename;
 	if(($dir = @opendir($path)) == FALSE)
 		return _error('Could not open CVS repository', 1);
 	$dirs = array();
@@ -254,14 +257,14 @@ function _browse_dir($id, $project, $cvsroot, $filename)
 			'view' => 'details'));
 }
 
-function _browse_file($id, $project, $cvsroot, $filename)
+function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	//FIXME
 	//- allow diff requests
 	//also think about:
 	//- downloads
 	//- creating archives
 {
-	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);
 	$path = str_replace('$', '\$', $path);
 	exec('rlog "'.$path.'"', $rcs);
@@ -328,11 +331,12 @@ function _browse_file($id, $project, $cvsroot, $filename)
 			'view' => 'details'));
 }
 
-function _browse_file_revision($id, $project, $cvsroot, $filename, $revision)
+function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
+		$revision)
 {
 	if(!ereg('^[0-9]+\.[0-9]+$', $revision))
 		return _error('Invalid revision');
-	$path = '/Apps/CVS/DeforaOS/'.$cvsroot.'/'.$filename;
+	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);
 	$path = str_replace('$', '\$', $path);
 	exec('rlog -h "'.$path.'"', $rcs);
