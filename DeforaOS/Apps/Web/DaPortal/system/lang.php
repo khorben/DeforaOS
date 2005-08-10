@@ -28,6 +28,7 @@ function lang($text)
 $text['_BY_'] = ' by ';
 $text['_FOR_'] = ' for ';
 $text['ADMINISTRATOR'] = 'Administrator';
+$text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DESCRIPTION'] = 'Description';
 $text['HOMEPAGE'] = 'Homepage';
@@ -37,13 +38,23 @@ $text['MEMBERS'] = 'Members';
 $text['NAME'] = 'Name';
 $text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
+$text['SEND'] = 'Send';
+$text['TITLE'] = 'Title';
 $text['TYPE'] = 'Type';
+$text['UPDATE'] = 'Update';
 $text['USERNAME'] = 'Username';
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$text['PASSWORD'] = 'Passwort';
+	$text['TITLE'] = 'Titel';
+	$text['USERNAME'] = 'Benutzername';
+}
+else if($lang == 'fr')
 {
 	$text['_BY_'] = ' par ';
 	$text['_FOR_'] = ' pour ';
 	$text['ADMINISTRATOR'] = 'Administrateur';
+	$text['CONTENT'] = 'Contenu';
 	$text['HOMEPAGE'] = 'Accueil';
 	$text['LOGIN'] = 'Authentification';
 	$text['LOGOUT'] = 'Déconnexion';
@@ -51,6 +62,9 @@ if($lang == 'fr')
 	$text['NAME'] = 'Nom';
 	$text['PASSWORD'] = 'Mot de passe';
 	$text['PERMISSION_DENIED'] = 'Permission non accordée';
+	$text['SEND'] = 'Envoyer';
+	$text['TITLE'] = 'Titre';
+	$text['UPDATE'] = 'Mettre à jour';
 	$text['USERNAME'] = 'Utilisateur';
 }
 lang($text);

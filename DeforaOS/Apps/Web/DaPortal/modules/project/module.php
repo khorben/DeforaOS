@@ -14,10 +14,13 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['INVALID_PROJECT'] = 'Invalid project';
+$text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
 $text['PROJECT'] = 'Project';
+$text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
+$text['PROJECTS_LIST'] = 'Projects list';
 $text['STATE'] = 'State';
 $text['TIMELINE'] = 'Timeline';
 global $lang;
@@ -26,10 +29,13 @@ if($lang == 'fr')
 	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
 	$text['BUG_REPORTS'] = 'Rapports de bugs';
 	$text['INVALID_PROJECT'] = 'Projet non valide';
+	$text['NEW_PROJECT'] = 'Nouveau projet';
 	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
 	$text['PRIORITY'] = 'Priorité';
 	$text['PROJECT'] = 'Projet';
+	$text['PROJECTS'] = 'Projets';
 	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
+	$text['PROJECTS_LIST'] = 'Liste des projets';
 	$text['STATE'] = 'Etat';
 	$text['TIMELINE'] = 'Progression';
 }
@@ -92,7 +98,7 @@ function project_admin($args)
 			.$projects[$i]['enabled'].'"/>';
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'New project',
+	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
 	_module('explorer', 'browse_trusted', array(
@@ -625,7 +631,7 @@ function project_installer($args)
 
 function project_list($args)
 {
-	$title = 'Projects list';
+	$title = PROJECTS_LIST;
 	$where = '';
 	if($args['action'] == 'bug_new')
 	{
@@ -637,7 +643,7 @@ function project_list($args)
 			." FROM daportal_user WHERE user_id='".$args['user_id']
 			."';")) != FALSE)
 	{
-		$title = 'Projects by '.$username;
+		$title = PROJECTS._BY_.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
@@ -667,7 +673,7 @@ function project_list($args)
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'New project',
+	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
 	_module('explorer', 'browse', array(
@@ -704,7 +710,7 @@ function project_new($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	$title = 'New project';
+	$title = NEW_PROJECT;
 	include('project_update.tpl');
 }
 
