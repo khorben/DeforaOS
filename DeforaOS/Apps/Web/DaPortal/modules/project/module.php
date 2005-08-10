@@ -10,6 +10,30 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//lang
+$text['BROWSE_SOURCE'] = 'Browse source';
+$text['BUG_REPORTS'] = 'Bug reports';
+$text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
+$text['PRIORITY'] = 'Priority';
+$text['PROJECT'] = 'Project';
+$text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
+$text['STATE'] = 'State';
+$text['TIMELINE'] = 'Timeline';
+global $lang;
+if($lang == 'fr')
+{
+	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
+	$text['BUG_REPORTS'] = 'Rapports de bugs';
+	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
+	$text['PRIORITY'] = 'Priorité';
+	$text['PROJECT'] = 'Projet';
+	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
+	$text['STATE'] = 'Etat';
+	$text['TIMELINE'] = 'Progression';
+}
+lang($text);
+
+
 function _project_toolbar($id)
 {
 	include('toolbar.tpl');
@@ -29,10 +53,12 @@ function project_admin($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return project_modify($args);
-	print('<h1><img src="modules/project/icon.png" alt=""/> Projects administration</h1>'."\n");
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe(PROJECTS_ADMINISTRATION)
+			.'</h1>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin, enabled'
 			.', daportal_content.user_id AS user_id'
@@ -69,8 +95,8 @@ function project_admin($args)
 			'link' => 'index.php?module=project&action=new');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => '',
-					'admin' => 'Administrator',
-					'desc' => 'Description'),
+					'admin' => ADMINISTRATOR,
+					'desc' => DESCRIPTION),
 			'toolbar' => $toolbar,
 			'view' => 'details',
 			'entries' => $projects));
@@ -83,7 +109,8 @@ function project_browse($args)
 			.' FROM daportal_content, daportal_project'
 			." WHERE project_id='".$args['id']."'"
 			.' AND daportal_content.content_id'
-			.'=daportal_project.project_id;');
+			.'=daportal_project.project_id'
+			." AND enabled='1';");
 	if(!is_array($project) || count($project) != 1)
 		return _error('Invalid project');
 	$project = $project[0];
@@ -92,7 +119,7 @@ function project_browse($args)
 	{
 		print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project['name']).' CVS</h1>'."\n");
-		return _info('This project does not have a CVS repository', 1);
+		return _info(NO_CVS_REPOSITORY, 1);
 	}
 	if(!ereg('^[a-zA-Z0-9. /]+$', $project['cvsroot'])
 			|| ereg('\.\.', $project['cvsroot']))
@@ -370,7 +397,7 @@ function project_bug_insert($args)
 
 function project_bug_list($args)
 {
-	$title = 'Bug reports';
+	$title = BUG_REPORTS;
 	if(isset($args['project_id']))
 	{
 		if(($args['project'] = _project_name($args['project_id']))
@@ -412,7 +439,7 @@ function project_bug_list($args)
 				.' FROM daportal_project'
 				." WHERE name='$project';")) == FALSE)
 			unset($project_id);
-		$title.=' for '.$project;
+		$title.=_FOR_.$project;
 	}
 	if(isset($username))
 		$title.=' by '.$username;
@@ -485,11 +512,11 @@ function project_bug_list($args)
 		'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
 			'class' => array('nb' => '#',
-					'project' => 'Project',
-					'date' => 'Date',
-					'state' => 'State',
-					'type' => 'Type',
-					'priority' => 'Priority'),
+					'project' => PROJECT,
+					'date' => DATE,
+					'state' => STATE,
+					'type' => TYPE,
+					'priority' => PRIORITY),
 			'module' => 'project',
 			'action' => 'bug_list',
 			'sort' => isset($args['sort']) ? $args['sort'] : 'nb',
@@ -511,7 +538,7 @@ function project_bug_modify($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied', 1);
+		return _error(PERMISSION_DENIED, 1);
 }
 
 
@@ -577,7 +604,7 @@ function project_insert($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
 	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
 		return _error('Unable to insert project content');
@@ -597,7 +624,6 @@ function project_installer($args)
 function project_list($args)
 {
 	$title = 'Projects list';
-	$level = 1;
 	$where = '';
 	if($args['action'] == 'bug_new')
 	{
@@ -609,11 +635,10 @@ function project_list($args)
 			."';")) != FALSE)
 	{
 		$title = 'Projects by '.$username;
-		$level = 2;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h'.$level.'><img src="modules/project/icon.png" alt=""/> '
-			._html_safe($title).'</h'.$level.'>'."\n");
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			._html_safe($title).'</h1>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin'
 			.' FROM daportal_content, daportal_user'
@@ -658,7 +683,7 @@ function project_modify($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied', 1);
+		return _error(PERMISSION_DENIED, 1);
 	$project = _sql_array('SELECT name FROM daportal_project'
 			." WHERE project_id='".$args['id']."';");
 	if(!is_array($project) || count($project) != 1)
@@ -675,7 +700,7 @@ function project_new($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	$title = 'New project';
 	include('project_update.tpl');
 }
@@ -689,6 +714,9 @@ function project_package($args)
 
 function project_timeline($args)
 {
+	require_once('system/content.php');
+	if(_content_readable($args['id']) == FALSE)
+		return include('project_submitted.tpl');
 	$project = _sql_array('SELECT project_id, name, cvsroot'
 			.' FROM daportal_project'
 			." WHERE project_id='".$args['id']."';");
@@ -704,7 +732,7 @@ function project_timeline($args)
 	}
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe($project['name'])
-			.' CVS timeline</h1>'."\n");
+			.' '._html_safe(TIMELINE).'</h1>'."\n");
 	//FIXME one more hard-coded variable
 	if(($fp = fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
 		return _error('Unable to open history file', 1);
@@ -762,7 +790,7 @@ function project_update($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 }
 
 ?>

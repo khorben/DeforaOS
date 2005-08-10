@@ -9,6 +9,16 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 require_once('system/user.php');
 
 
+//lang
+$text['MODULES_ADMINISTRATION'] = 'Modules administration';
+global $lang;
+if($lang == 'fr')
+{
+	$text['MODULES_ADMINISTRATION'] = 'Administration des modules';
+}
+lang($text);
+
+
 function _content_modify($id)
 {
 	if(!is_numeric($id))
@@ -105,7 +115,9 @@ function admin_module($args)
 		return _error('Permission denied');
 	if(isset($args['id']))
 		return _module_admin($args['id']);
-	print('<h1><img src="modules/admin/icon.png" alt=""/> Modules administration</h1>'."\n");
+	print('<h1><img src="modules/admin/icon.png" alt=""/> '
+			._html_safe(MODULES_ADMINISTRATION)
+			.'</h1>'."\n");
 	if(($modules = _sql_array('SELECT module_id, name AS module'
 			.', enabled'
 			.' FROM daportal_module'
