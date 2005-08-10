@@ -63,7 +63,6 @@ function news_display($args)
 function news_list($args)
 {
 	$title = 'News';
-	$level = 1;
 	$where = '';
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			.' FROM daportal_user'
@@ -71,11 +70,9 @@ function news_list($args)
 	{
 		//FIXME list users' news in an explorer instead
 		$title.=' by '.$username;
-		$level = 2;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h'.$level.'><img src="modules/news/icon.png" alt=""/> '
-			.$title.'</h'.$level.'>'
+	print('<h1><img src="modules/news/icon.png" alt=""/> '.$title.'</h1>'
 			."\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp'
 			.', title, content, daportal_content.user_id, username'
