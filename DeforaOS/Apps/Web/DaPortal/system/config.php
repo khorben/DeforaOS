@@ -1,0 +1,41 @@
+<?php
+//system/config.php
+
+
+
+//check url
+if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+	exit(header('Location: ../index.php'));
+
+
+function _config_get($module, $name)
+{
+	return _sql_single('SELECT value'
+			.' FROM daportal_config, daportal_module'
+			.' WHERE daportal_config.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_module.name='$module'"
+			." AND daportal_config.name='$name';");
+}
+
+
+function _config_set($module, $name, $value, $overwrite = FALSE)
+{
+	if(($module_id = _sql_single('SELECT daportal_config.module_id'
+			.' FROM daportal_config, daportal_module'
+			.' WHERE daportal_config.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_module.name='$module'"
+			." AND daportal_config.name='$name';")) == FALSE)
+	{
+		if($overwrite != 0)
+			return FALSE;
+		return _sql_query('INSERT INTO daportal_config'
+				.' (module_id, name, value)'
+				." VALUES ('$module_id', '$name', '$value');");
+	}
+	return _sql_query("UPDATE daportal_config SET value='$value'"
+			." WHERE module_id='$module_id' AND name='$name';");
+}
+
+?>
