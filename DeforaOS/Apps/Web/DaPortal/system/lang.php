@@ -32,6 +32,7 @@ $text['DATE'] = 'Date';
 $text['DESCRIPTION'] = 'Description';
 $text['HOMEPAGE'] = 'Homepage';
 $text['LOGIN'] = 'Login';
+$text['LOGOUT'] = 'Logout';
 $text['MEMBERS'] = 'Members';
 $text['NAME'] = 'Name';
 $text['PASSWORD'] = 'Password';
@@ -45,6 +46,7 @@ if($lang == 'fr')
 	$text['ADMINISTRATOR'] = 'Administrateur';
 	$text['HOMEPAGE'] = 'Accueil';
 	$text['LOGIN'] = 'Authentification';
+	$text['LOGOUT'] = 'Déconnexion';
 	$text['MEMBERS'] = 'Membres';
 	$text['NAME'] = 'Nom';
 	$text['PASSWORD'] = 'Mot de passe';
