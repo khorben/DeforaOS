@@ -16,13 +16,17 @@ $actions = array('download' => 'Downloads',
 		'package' => 'Packages',
 		'bug_list' => 'Reports');
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$title = 'Projekte';
+	$actions['list'] = 'Projektliste';
+}
+else if($lang == 'fr')
 {
 	$title = 'Projets';
 	$actions['download'] = 'Téléchargement';
 	$actions['installer'] = 'Installeur';
 	$actions['list'] = 'Liste';
-	$actions['package'] = 'Packages';
 	$actions['bug_list'] = 'Rapports';
 }
 
