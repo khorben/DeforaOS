@@ -9,21 +9,12 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
-$text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS_BY'] = 'by';
 $text['NEWS_ON'] = 'on';
 global $lang;
-$locale = $lang.'_'.strtoupper($lang);
-/* FIXME set in system/lang instead? */
-setlocale(LC_ALL, $locale.'@euro', $locale, $lang);
-if($lang == 'de')
+if($lang == 'fr')
 {
-	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
-}
-else if($lang == 'fr')
-{
-	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
 	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
 	$text['NEWS_BY'] = 'par';
 	$text['NEWS_ON'] = 'le';

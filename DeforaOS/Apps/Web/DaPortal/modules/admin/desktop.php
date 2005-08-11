@@ -15,10 +15,9 @@ require_once('system/user.php');
 if(_user_admin($user_id))
 {
 	$list = 1;
-	$actions = array('content' => 'Content',
+	$actions = array('content' => CONTENT,
 			'module' => 'Modules',
 			'site' => 'Sites');
 }
-
 
 ?>

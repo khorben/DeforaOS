@@ -8,6 +8,22 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//lang
+$text['RESULTS_FOUND'] = 'result(s) found';
+$text['SEARCH'] = 'Search';
+$text['SEARCH_RESULTS'] = 'Search results';
+global $lang;
+if($lang == 'de')
+	$text['SEARCH'] = 'Suche';
+else if($lang == 'fr')
+{
+	$text['RESULTS_FOUND'] = 'résultat(s) trouvés';
+	$text['SEARCH'] = 'Recherche';
+	$text['SEARCH_RESULTS'] = 'Résultats de la recherche';
+}
+_lang($text);
+
+
 function _default_results($q, $field)
 {
 	$q = explode(' ', $q);
@@ -42,7 +58,8 @@ function search_default($args)
 	$i = 1;
 	foreach($res as $q)
 	{
-		$q['date'] = date('l, F jS Y');
+		$q['date'] = strftime(DATE_FORMAT, strtotime(substr(
+						$q['timestamp'], 0, 19)));
 		include('search_entry.tpl');
 		$i++;
 	}

@@ -15,6 +15,7 @@ $text['ADMINISTRATOR'] = 'Administrator';
 $text['AUTHOR'] = 'Author';
 $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
+$text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
 $text['DESCRIPTION'] = 'Description';
 $text['HOMEPAGE'] = 'Homepage';
 $text['LOGIN'] = 'Login';
@@ -34,6 +35,7 @@ if($lang == 'de')
 	$text['_BY_'] = ' von ';
 	$text['_FOR_'] = ' für ';
 	$text['AUTHOR'] = 'Autor';
+	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
 	$text['DESCRIPTION'] = 'Beschreibung';
 	$text['LOGIN'] = 'Einloggen';
 	$text['LOGOUT'] = 'Ausloggen';
@@ -50,6 +52,7 @@ else if($lang == 'fr')
 	$text['ADMINISTRATOR'] = 'Administrateur';
 	$text['AUTHOR'] = 'Auteur';
 	$text['CONTENT'] = 'Contenu';
+	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
 	$text['HOMEPAGE'] = 'Accueil';
 	$text['LOGIN'] = 'Authentification';
 	$text['LOGOUT'] = 'Déconnexion';
@@ -96,7 +99,9 @@ else
 if(!isset($lang) && !($lang = _config_get('admin', 'lang'))
 		&& !_lang_check($lang))
 	$lang = 'en';
-
+$locale = $lang.'_'.strtoupper($lang);
+if(!setlocale(LC_ALL, $locale.'@euro', $locale, $lang))
+	_warning('Unable to set locale');
 _lang($text);
 
 ?>

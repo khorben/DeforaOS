@@ -1,2 +1,2 @@
 <div class="search">
-	<p><? echo $count; ?> result(s) found.</p>
+	<p><? echo $count.' '; echo _html_safe(RESULTS_FOUND); ?>.</p>
