@@ -25,6 +25,23 @@
 		</ul></li>
 </ul>
 <? } ?>
+<? if(is_array(($langs = _sql_array('SELECT lang_id AS id, name'
+		.' FROM daportal_lang'
+		." WHERE enabled='t' ORDER BY name ASC;")))) { ?>
+			<form class="lang" action="index.php" method="post">
+				<select name="lang" onchange="submit()">
+<? global $lang; foreach($langs as $l) { ?>
+					<option value="<? echo _html_safe($l['id']); ?>"<? if($lang == $l['id']) { ?> selected="selected"<? } ?>><? echo _html_safe($l['name']); ?></option>
+<? } ?>
+				</select>
+				<input id="lang" type="submit" value="Choose"/>
+				<script type="text/javascript">
+<!--
+document.getElementById('lang').style.display='none';
+//-->
+				</script>
+			</form>
+<? } ?>
 			</div>
 			<div class="main">
 <? if(strlen($module)) { _module(); } else { ?>

@@ -8,6 +8,47 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
 
+function _lang($text)
+{
+	$keys = array_keys($text);
+	foreach($keys as $k)
+		define($k, $text[$k]);
+}
+
+
+function _lang_check($lang)
+{
+	return _sql_single('SELECT enabled FROM daportal_lang'
+			." WHERE enabled='1' AND lang_id='$lang';");
+}
+
+
+if(isset($_POST['lang']) && _lang_check($_POST['lang']))
+{
+	$lang = $_POST['lang'];
+	$_SESSION['lang'] = $lang;
+}
+else if(isset($_SESSION['lang']) && _lang_check($_SESSION['lang']))
+	$lang = $_SESSION['lang'];
+else
+{
+	for($hal = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
+			ereg('^,?([a-zA-Z]+)(;q=[0-9.]+)?(.*)$', $hal,
+					$regs);
+			$hal = $regs[3])
+	{
+		if(!_lang_check($regs[1]))
+			continue;
+		$lang = $regs[1];
+		break;
+	}
+}
+if(!isset($lang) && !($lang = _config_get('admin', 'lang'))
+		&& !_lang_check($lang))
+	$lang = 'en';
+$locale = $lang.'_'.strtoupper($lang);
+if(!setlocale(LC_ALL, $locale.'@euro', $locale, $lang))
+	_warning('Unable to set locale');
 //lang
 $text['_BY_'] = ' by ';
 $text['_FOR_'] = ' for ';
@@ -65,43 +106,6 @@ else if($lang == 'fr')
 	$text['UPDATE'] = 'Mettre à jour';
 	$text['USERNAME'] = 'Utilisateur';
 }
-
-
-function _lang($text)
-{
-	$keys = array_keys($text);
-	foreach($keys as $k)
-		define($k, $text[$k]);
-}
-
-
-function _lang_check($lang)
-{
-	return _sql_single('SELECT enabled FROM daportal_lang'
-			." WHERE enabled='1' AND lang_id='$lang';");
-}
-
-
-if(isset($_SESSION['lang']) && _lang_check($_SESSION['lang']))
-	$lang = $_SESSION['lang'];
-else
-{
-	for($hal = $_SERVER['HTTP_ACCEPT_LANGUAGE'];
-			ereg('^,?([a-zA-Z]+)(;q=[0-9.]+)?(.*)$', $hal, $regs);
-			$hal = $regs[3])
-	{
-		if(!_lang_check($regs[1]))
-			continue;
-		$lang = $regs[1];
-		break;
-	}
-}
-if(!isset($lang) && !($lang = _config_get('admin', 'lang'))
-		&& !_lang_check($lang))
-	$lang = 'en';
-$locale = $lang.'_'.strtoupper($lang);
-if(!setlocale(LC_ALL, $locale.'@euro', $locale, $lang))
-	_warning('Unable to set locale');
 _lang($text);
 
 ?>
