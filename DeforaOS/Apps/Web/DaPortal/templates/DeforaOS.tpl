@@ -5,36 +5,38 @@
 			<div class="style1"><a href="index.php">DeforaOS</a> :: <? echo (strlen($module) ? '<a href="index.php?module='.$module.'">'.ucfirst($module).'</a>' : 'Homepage'); ?></div>
 			<div class="menu">
 <? if($user_id) { _module('menu'); } else { ?>
-<ul>
-	<li><a href="index.php">About</a><ul>
-		<li><a href="index.php?module=news">News</a></li>
-		<li><a href="index.php?module=project">Project</a></li>
-		<li><a href="roadmap.html">Roadmap</a></li>
-		</ul></li>
-	<li><a href="development.html">Development</a><ul>
-		<li><a href="policy.html">Policy</a></li>
-		<li><a href="index.php?module=project&amp;action=list">Projects</a></li>
-		</ul></li>
-	<li><a href="index.php?module=project&amp;action=download">Download</a><ul>
-		<li><a href="index.php?module=project&amp;action=installer">Installer</a></li>
-		<li><a href="index.php?module=project&amp;action=package">Packages</a></li>
-		</ul></li>
-	<li><a href="support.html">Support</a><ul>
-		<li><a href="documentation.html">Documentation</a></li>
-		<li><a href="index.php?module=project&amp;action=bug_list">Reports</a></li>
-		</ul></li>
-</ul>
+			<ul>
+				<li><a href="index.php">About</a><ul>
+					<li><a href="index.php?module=news">News</a></li>
+					<li><a href="index.php?module=project">Project</a></li>
+					<li><a href="roadmap.html">Roadmap</a></li>
+					</ul></li>
+				<li><a href="development.html">Development</a><ul>
+					<li><a href="policy.html">Policy</a></li>
+					<li><a href="index.php?module=project&amp;action=list">Projects</a></li>
+					</ul></li>
+				<li><a href="index.php?module=project&amp;action=download">Download</a><ul>
+					<li><a href="index.php?module=project&amp;action=installer">Installer</a></li>
+					<li><a href="index.php?module=project&amp;action=package">Packages</a></li>
+					</ul></li>
+				<li><a href="support.html">Support</a><ul>
+					<li><a href="documentation.html">Documentation</a></li>
+					<li><a href="index.php?module=project&amp;action=bug_list">Reports</a></li>
+					</ul></li>
+			</ul>
 <? } ?>
 <? if(is_array(($langs = _sql_array('SELECT lang_id AS id, name'
 		.' FROM daportal_lang'
 		." WHERE enabled='t' ORDER BY name ASC;")))) { ?>
 			<form class="lang" action="index.php" method="post">
-				<select name="lang" onchange="submit()">
+				<div>
+					<select name="lang" onchange="submit()">
 <? global $lang; foreach($langs as $l) { ?>
-					<option value="<? echo _html_safe($l['id']); ?>"<? if($lang == $l['id']) { ?> selected="selected"<? } ?>><? echo _html_safe($l['name']); ?></option>
+						<option value="<? echo _html_safe($l['id']); ?>"<? if($lang == $l['id']) { ?> selected="selected"<? } ?>><? echo _html_safe($l['name']); ?></option>
 <? } ?>
-				</select>
-				<input id="lang" type="submit" value="Choose"/>
+					</select>
+					<input id="lang" type="submit" value="Choose"/>
+				</div>
 				<script type="text/javascript">
 <!--
 document.getElementById('lang').style.display='none';
