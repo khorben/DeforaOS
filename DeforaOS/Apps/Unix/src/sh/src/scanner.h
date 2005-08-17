@@ -15,7 +15,7 @@ typedef struct _Scanner
 {
 	FILE * fp;
 	const char * string;
-	int (* next)(struct _Scanner *);
+	int (*next)(struct _Scanner *);
 } Scanner;
 
 void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
