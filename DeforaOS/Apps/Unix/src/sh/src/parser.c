@@ -667,9 +667,8 @@ static void command(Parser * p)
 		if(p->token != NULL && token_in_set(p->token, TS_REDIRECT_LIST))
 			redirect_list(p);
 	}
-	/* FIXME
 	else if(token_in_set(p->token, TS_FUNCTION_DEFINITION))
-		function_definition(p); */
+		function_definition(p);
 	else
 		simple_command(p);
 }
@@ -803,7 +802,7 @@ static void for_clause(Parser * p)
 
 /* name */
 static void name(Parser * p)
-	/* NAME (rule 5) */
+	/* NAME  (rule 5) */
 {
 	parser_rule5(p);
 	parser_check(p, TC_NAME);
@@ -812,7 +811,7 @@ static void name(Parser * p)
 
 /* in */
 static void in(Parser * p)
-	/* In (rule 6) */
+	/* In  (rule 6) */
 {
 	parser_scan(p);
 }
@@ -936,12 +935,35 @@ static void until_clause(Parser * p)
 
 
 /* function_definition */
+static void fname(Parser * p);
+static void function_body(Parser * p);
+static void function_definition(Parser * p)
+	/* fname "(" ")" linebreak function_body */
+{
+	fname(p);
+	/* FIXME */
+	linebreak(p);
+	function_body(p);
+}
 
 
 /* function_body */
+static void io_redirect(Parser * p);
+static void function_body(Parser * p)
+	/* compound_command [redirect_list]  (rule 9) */
+{
+	compound_command(p);
+	if(p->token != NULL && token_in_set(p->token, TS_IO_REDIRECT))
+		io_redirect(p);
+}
 
 
 /* fname */
+static void fname(Parser * p)
+	/* NAME  (rule 8) */
+{
+	parser_scan(p);
+}
 
 
 /* brace_group */
@@ -1022,7 +1044,6 @@ static void cmd_word(Parser * p)
 
 
 /* cmd_prefix */
-static void io_redirect(Parser * p);
 static void cmd_prefix(Parser * p)
 	/* (ASSIGNMENT_WORD | io_redirect) { ASSIGNMENT_WORD | io_redirect } */
 {
@@ -1104,7 +1125,7 @@ static void io_file(Parser * p)
 
 /* filename */
 static void filename(Parser * p)
-	/* WORD (rule 2) */
+	/* WORD  (rule 2) */
 {
 #ifdef DEBUG
 	fprintf(stderr, "%s", "filename()\n");
@@ -1126,7 +1147,7 @@ static void io_here(Parser * p)
 
 /* here_end */
 static void here_end(Parser * p)
-	/* WORD (rule 3) */
+	/* WORD  (rule 3) */
 {
 	/* FIXME */
 	parser_scan(p);
