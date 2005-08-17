@@ -573,6 +573,23 @@ static void parser_rule7b(Parser * parser)
 }
 
 
+static void parser_rule8(Parser * parser)
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "rule 8\n");
+#endif
+	if(parser->token == NULL)
+		return;
+	parser_rule1(parser);
+	if(parser->token->code != TC_WORD)
+		return;
+	parser_rule5(parser);
+	if(parser->token->code != TC_NAME)
+		return;
+	parser_rule7a(parser);
+}
+
+
 /* complete_command */
 static void list(Parser * p);
 static void separator(Parser * p);
@@ -673,7 +690,7 @@ static void command(Parser * p)
 #endif
 	if(p->token == NULL)
 		return;
-	parser_rule7a(p);
+	parser_rule8(p);
 	if(token_in_set(p->token, TS_COMPOUND_COMMAND))
 	{
 		compound_command(p);
