@@ -15,6 +15,7 @@
 #include "token.h"
 #include "scanner.h"
 #include "builtin.h"
+#include "job.h"
 #include "parser.h"
 
 
@@ -334,8 +335,6 @@ static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error)
 static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error)
 {
 	pid_t pid;
-	int status;
-	int ret = 0;
 
 	if((pid = fork()) == -1)
 		return sh_error("fork", -1);
@@ -345,17 +344,9 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error)
 		exit(sh_error(argv[0], -1));
 	}
 	if(*bg_error != 0)
-	{
-		*bg_error = 0;
-		return 0;
-	}
-	/* FIXME jobs_new(); */
-	while((ret = waitpid(pid, &status, 0)) != -1)
-		if(WIFEXITED(status))
-			break;
-	if(ret == -1)
-		return sh_error("waitpid", -1);
-	*bg_error = WEXITSTATUS(status);
+		*bg_error = job_add(argv[0], pid, JS_RUNNING);
+	else
+		*bg_error = job_add(argv[0], pid, JS_WAIT);
 	return 0;
 }
 

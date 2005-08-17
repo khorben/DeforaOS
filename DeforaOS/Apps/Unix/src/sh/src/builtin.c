@@ -10,9 +10,19 @@
 #include <string.h>
 #include <ctype.h>
 #include "sh.h"
+#include "job.h"
 #include "builtin.h"
 
 extern char ** environ;
+
+
+/* getopt_reset */
+static void _getopt_reset(int argc, char * argv[])
+	/* FIXME */
+{
+	optind = 1;
+	optarg = argv[1];
+}
 
 
 /* builtin_bg */
@@ -33,7 +43,7 @@ int builtin_cd(int argc, char * argv[])
 	int o;
 	int prefs = 0;
 
-	optind = 1;
+	_getopt_reset(argc, argv);
 	while((o = getopt(argc, argv, "LP")) != -1)
 		switch(o)
 		{
@@ -157,7 +167,7 @@ int builtin_export(int argc, char * argv[])
 	int o;
 	int i;
 
-	optind = 1;
+	_getopt_reset(argc, argv);
 	while((o = getopt(argc, argv, "p")) != -1)
 		switch(o)
 		{
@@ -227,10 +237,34 @@ int builtin_fg(int argc, char * argv[])
 
 
 /* builtin_jobs */
+static int _jobs_usage(void);
 int builtin_jobs(int argc, char * argv[])
 {
-	/* FIXME */
-	return 0;
+	int (*func)(int argc, char * argv[]) = job_status;
+	int o;
+
+	_getopt_reset(argc, argv);
+	while((o = getopt(argc, argv, "lp")) != -1)
+		switch(o)
+		{
+			case 'l':
+				func = job_list;
+				break;
+			case 'p':
+				func = job_pgids;
+				break;
+			default:
+				return _jobs_usage();
+		}
+	return func(argc-optind, &argv[optind]);
+}
+
+static int _jobs_usage(void)
+{
+	fprintf(stderr, "%s", "Usage: jobs [-l | -p][job_id...]\n\
+  -l	provide information about listed jobs (default: all)\n\
+  -p	display process group leaders ID about listed jobs (default: all)\n");
+	return 1;
 }
 
 
@@ -241,7 +275,7 @@ int builtin_read(int argc, char * argv[])
 {
 	int o;
 
-	optind = 1;
+	_getopt_reset(argc, argv);
 	while((o = getopt(argc, argv, "r")) != -1)
 		switch(o)
 		{
@@ -280,7 +314,8 @@ static int _read_do(int argc, char * argv[])
 			if((c = fgetc(stdin)) == '\n')
 				continue;
 		}
-		else if(c == EOF || c == '\n' || (isblank(c) && *(arg+1) != NULL))
+		else if(c == EOF || c == '\n'
+				|| (isblank(c) && *(arg+1) != NULL))
 		{
 			value[value_cnt] = '\0';
 			if(setenv(*arg, value, 1) != 0)
@@ -314,7 +349,7 @@ int builtin_set(int argc, char * argv[])
 {
 	int o;
 
-	optind = 1;
+	_getopt_reset(argc, argv);
 	while((o = getopt(argc, argv, "o")) != -1)
 		switch(o)
 		{
@@ -399,7 +434,7 @@ int builtin_umask(int argc, char * argv[])
 {
 	int o;
 
-	optind = 1;
+	_getopt_reset(argc, argv);
 	while((o = getopt(argc, argv, "S")) != -1)
 		switch(o)
 		{
@@ -453,7 +488,7 @@ int builtin_unset(int argc, char * argv[])
 {
 	int o;
 
-	optind = 1;
+	_getopt_reset(argc, argv);
 	while((o = getopt(argc, argv, "fv")) != -1)
 		switch(o)
 		{

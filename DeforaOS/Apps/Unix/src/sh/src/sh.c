@@ -5,7 +5,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include "parser.h"
+#include "job.h"
 #include "sh.h"
 
 
@@ -59,6 +61,7 @@ static int _sh(Prefs * prefs, int argc, char * argv[])
 	fclose(fp);
 	return ret;
 }
+
 
 int sh_error(char * message, int ret)
 {
