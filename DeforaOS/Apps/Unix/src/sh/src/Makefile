@@ -10,7 +10,7 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-sh_OBJS= token.o scanner.o parser.o builtin.o sh.o
+sh_OBJS= token.o scanner.o parser.o builtin.o job.o sh.o
 sh_CFLAGS=$(CFLAGSF) $(CFLAGS)
 sh: $(sh_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o sh $(sh_OBJS)
@@ -26,6 +26,9 @@ parser.o: parser.c
 
 builtin.o: builtin.c
 	$(CC) $(sh_CFLAGS) -c builtin.c
+
+job.o: job.c
+	$(CC) $(sh_CFLAGS) -c job.c
 
 sh.o: sh.c
 	$(CC) $(sh_CFLAGS) -c sh.c
