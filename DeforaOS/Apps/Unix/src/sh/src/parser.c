@@ -33,7 +33,6 @@ typedef struct _Parser
 
 static void parser_free(Parser * parser);
 static void parser_scan(Parser * parser);
-static int parser_check(Parser * parser, TokenCode code);
 static int parser_exec(Parser * parser, unsigned int * pos, int skip);
 static int complete_command(Parser * parser);
 int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
@@ -128,6 +127,20 @@ static int parser_check(Parser * parser, TokenCode code)
 	{
 		parser_error(parser, "%s%s%s", "\"", sTokenCode[code],
 				"\" expected");
+		return 0;
+	}
+	parser_scan(parser);
+	return 1;
+}
+
+
+static int parser_check_word(Parser * parser, char * word)
+{
+	if(parser->token == NULL || parser->token->code != TC_TOKEN
+			|| parser->token->string == NULL
+			|| strcmp(parser->token->string, word) != 0)
+	{
+		parser_error(parser, "%s%s%s", "\"", word, "\" expected");
 		return 0;
 	}
 	parser_scan(parser);
@@ -730,12 +743,7 @@ static void subshell(Parser * p)
 #endif
 	parser_scan(p);
 	compound_list(p);
-	if(p->token == NULL || p->token->code != TC_TOKEN
-			|| p->token->string != NULL
-			|| strcmp("(", p->token->string) != 0)
-		parser_error(p, "%s", "\"(\" expected");
-	else
-		parser_scan(p);
+	parser_check_word(p, ")");
 }
 
 
@@ -941,7 +949,9 @@ static void function_definition(Parser * p)
 	/* fname "(" ")" linebreak function_body */
 {
 	fname(p);
-	/* FIXME */
+	parser_scan(p);
+	parser_check_word(p, "(");
+	parser_check_word(p, ")");
 	linebreak(p);
 	function_body(p);
 }
