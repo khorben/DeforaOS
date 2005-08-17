@@ -102,6 +102,8 @@ int token_in_set(Token * token, TokenSet set)
 		TC_RW_IF, TC_RW_WHILE, TC_RW_UNTIL, TC_NULL
 	};
 	TokenCode set_else_part[] = { TC_RW_ELSE, TC_RW_ELIF, TC_NULL };
+	/* FIXME */
+	TokenCode set_function_definition[] = { TC_NULL };
 	TokenCode set_io_file[] = {
 		TC_OP_LESS, TC_OP_LESSAND, TC_OP_GREAT, TC_OP_GREATAND,
 		TC_OP_DGREAT, TC_OP_LESSGREAT, TC_OP_CLOBBER, TC_NULL
@@ -125,6 +127,7 @@ int token_in_set(Token * token, TokenSet set)
 		set_cmd_word,
 		set_compound_command,
 		set_else_part,
+		set_function_definition,
 		set_io_file,
 		set_io_here,
 		set_io_redirect,
