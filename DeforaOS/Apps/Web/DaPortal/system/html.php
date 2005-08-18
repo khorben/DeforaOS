@@ -58,7 +58,7 @@ function _html_start()
 	readfile('html/doctype.html');
 	print('	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-15"/>
-		<title>'.$title.'</title>
+		<title>'._html_safe($title).'</title>
 		<link rel="stylesheet" href="themes/'.$theme.'.css" title="'
 .$theme.'"/>'."\n");
 	_start_css_themes($theme);
