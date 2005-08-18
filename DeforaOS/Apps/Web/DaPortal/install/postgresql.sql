@@ -17,6 +17,7 @@ CREATE TABLE daportal_config (
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id)
 );
 INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'lang', 'en');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'title', 'DaPortal');
 
 
 CREATE TABLE daportal_lang (
