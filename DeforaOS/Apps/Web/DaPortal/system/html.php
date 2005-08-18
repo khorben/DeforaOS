@@ -55,8 +55,6 @@ function _html_start()
 {
 	global $title, $theme;
 
-	if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
-		$title = 'DaPortal';
 	readfile('html/doctype.html');
 	print('	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-15"/>

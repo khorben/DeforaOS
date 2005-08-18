@@ -27,7 +27,6 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //global variables
 $debug = 1;
 $html = 1;
-$title = 'DaPortal';
 $template = 'DaPortal';
 $theme = 'DaPortal';
 require_once('config.php');
@@ -47,6 +46,11 @@ foreach($vars as $v)
 require_once('system/debug.php');
 require_once('system/sql.php');
 require_once('system/config.php');
+
+//configuration variables
+if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
+	$title = 'DaPortal';
+
 require_once('system/lang.php');
 require_once('system/module.php');
 if($html)
