@@ -188,4 +188,12 @@ function admin_site($args)
 	print('<h1><img src="modules/admin/icon.png" alt=""/> Sites administration</h1>'."\n");
 }
 
+
+function admin_system($args)
+{
+	global $title;
+
+	$title.=' - Administration';
+}
+
 ?>

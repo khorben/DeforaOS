@@ -742,6 +742,14 @@ function project_package($args)
 }
 
 
+function project_system($args)
+{
+	global $title;
+
+	$title.=' - Projects';
+}
+
+
 function project_timeline($args)
 {
 	require_once('system/content.php');

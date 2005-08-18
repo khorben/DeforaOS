@@ -66,4 +66,12 @@ function search_default($args)
 	include('search_bottom.tpl');
 }
 
+
+function search_system($args)
+{
+	global $title;
+
+	$title.=' - Search';
+}
+
 ?>

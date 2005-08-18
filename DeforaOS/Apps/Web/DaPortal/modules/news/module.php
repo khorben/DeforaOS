@@ -135,4 +135,12 @@ function news_submit($news)
 	return include('news_posted.tpl');
 }
 
+
+function news_system($args)
+{
+	global $title;
+
+	$title.=' - News';
+}
+
 ?>
