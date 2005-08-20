@@ -421,10 +421,7 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 			case TC_RW_FI:
 				return 0;
 			default:
-#ifdef DEBUG
-				/* FIXME should not happen */
-				fprintf(stderr, "%s", "exec_if(): FIXME\n");
-#endif
+				assert(0);
 				break;
 		}
 		(*pos)++;
