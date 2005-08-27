@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#define COMMON_MODE
+#include "common.c"
+
 
 #define OPT_R 1
 
@@ -114,7 +117,6 @@ int main(int argc, char * argv[])
 	int opts = 0;
 	mode_t mode;
 	int o;
-	char * p;
 
 	while((o = getopt(argc, argv, "R")) != -1)
 		switch(o)
@@ -127,9 +129,7 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 2)
 		return _usage();
-	/* FIXME mode may be an expression */
-	mode = strtol(argv[optind], &p, 8);
-	if(argv[optind][0] == '\0' || *p != '\0')
+	if(_mode(argv[optind], &mode) != 0)
 		return _usage();
 	return _chmod(opts, mode, argc - optind - 1, &argv[optind+1]);
 }

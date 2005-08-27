@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define COMMON_MODE
+#include "common.c"
+
 
 /* mkdir */
 static int _mkdir_error(char * message, int ret);
@@ -77,15 +80,12 @@ int main(int argc, char * argv[])
 	mode_t mode = 0777;
 	int flagp = 0;
 	int o;
-	char * p;
 
 	while((o = getopt(argc, argv, "pm:")) != -1)
 		switch(o)
 		{
 			case 'm':
-				/* FIXME mode may be an expression */
-				mode = strtol(optarg, &p, 8);
-				if(*optarg == '\0' || *p != '\0')
+				if(_mode(optarg, &mode) != 0)
 					return _usage();
 				break;
 			case 'p':
