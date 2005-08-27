@@ -8,16 +8,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define COMMON_MODE
+#include "common.c"
+
 
 /* mkfifo */
-static int _mkfifo(char const * pathname, mode_t mode)
+static int _mkfifo_error(char * message, int ret);
+static int _mkfifo(mode_t mode, int argc, char * argv[])
 {
-	if(mkfifo(pathname, mode) == -1)
-	{
-		perror("mkfifo");
-		return 2;
-	}
-	return 0;
+	int ret = 0;
+	int i;
+
+	for(i = 0; i < argc; i++)
+		if(mkfifo(argv[i], mode) == -1)
+			ret+=_mkfifo_error(argv[i], 1);
+	return ret;
+}
+
+static int _mkfifo_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "mkfifo: ");
+	perror(message);
+	return ret;
 }
 
 
@@ -34,18 +46,13 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	mode_t mode = 0777;
-	int errcode = 0;
 	int o;
-	char * p;
-	int i;
 
 	while((o = getopt(argc, argv, "m:")) != -1)
 		switch(o)
 		{
 			case 'm':
-				/* FIXME mode may be an expression */
-				mode = strtol(optarg, &p, 8);
-				if(*optarg == '\0' || *p != '\0' || mode > 0777)
+				if(_mode(optarg, &mode) != 0)
 					return _usage();
 				break;
 			default:
@@ -53,8 +60,5 @@ int main(int argc, char * argv[])
 		}
 	if(argc == optind)
 		return _usage();
-	for(i = optind; i < argc; i++)
-		if(_mkfifo(argv[i], mode) == 2)
-			errcode = 2;
-	return errcode;
+	return _mkfifo(mode, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
