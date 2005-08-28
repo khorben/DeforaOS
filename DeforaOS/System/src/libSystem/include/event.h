@@ -5,6 +5,9 @@
 #ifndef _EVENT_H
 # define _EVENT_H
 
+# include <sys/time.h>
+# include <time.h>
+
 
 /* Event */
 /* types */
