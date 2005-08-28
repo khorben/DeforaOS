@@ -6,9 +6,9 @@
 # define _ARRAY_H
 
 
-# define ARRAY(type) \
-	typedef Array type ## Array; \
-	Array * type ## ArrayNew(void) { return array_new(sizeof(type)); }
+# define ARRAY(type, name) \
+	typedef Array name ## Array; \
+	Array * name ## ArrayNew(void) { return array_new(sizeof(type)); }
 
 
 /* types */
@@ -23,7 +23,7 @@ void array_delete(Array * array);
 
 /* useful */
 int array_append(Array * array, void * data);
-void array_apply(Array * array, ArrayApplyFunc * func, void * userdata);
+void array_apply(Array * array, ArrayApplyFunc func, void * userdata);
 unsigned int array_count(Array * array);
 
 #endif /* !_ARRAY_H */
