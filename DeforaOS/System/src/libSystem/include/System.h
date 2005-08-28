@@ -9,5 +9,6 @@
 # include <appclient.h>
 # include <appserver.h>
 # include <event.h>
+# include <string.h>
 
 #endif /* !_SYSTEM_H */
