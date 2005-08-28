@@ -8,6 +8,6 @@
 
 # include <appclient.h>
 # include <appserver.h>
-# include <event>
+# include <event.h>
 
 #endif /* !_SYSTEM_H */
