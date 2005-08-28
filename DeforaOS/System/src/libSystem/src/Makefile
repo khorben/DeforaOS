@@ -1,5 +1,5 @@
 TARGETS	= libSystem.a libSystem.so
-CFLAGSF	= -W -Wall -ansi
+CFLAGSF	= -W -Wall -ansi -I ../include
 CFLAGS	= -g
 CC	= cc
 AR	= ar rc
@@ -10,7 +10,7 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-libSystem_OBJS= appclient.o appserver.o
+libSystem_OBJS= appclient.o appserver.o array.o event.o string.o
 libSystem_CFLAGS=$(CFLAGSF) $(CFLAGS)
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
@@ -24,6 +24,15 @@ appclient.o: appclient.c
 
 appserver.o: appserver.c
 	$(CC) $(libSystem_CFLAGS) -c appserver.c
+
+array.o: array.c
+	$(CC) $(libSystem_CFLAGS) -c array.c
+
+event.o: event.c
+	$(CC) $(libSystem_CFLAGS) -c event.c
+
+string.o: string.c
+	$(CC) $(libSystem_CFLAGS) -c string.c
 
 
 clean:
