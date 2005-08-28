@@ -31,15 +31,15 @@ void string_delete(String * string)
 int string_append(String ** string, String * append)
 {
 	char * p;
-	int len = string_length(*string);
+	int length = string_length(*string);
 
-	if((p = realloc(string, len + string_length(append) + 1)) == NULL)
+	if((p = realloc(string, length + string_length(append) + 1)) == NULL)
 	{
 		perror("realloc");
 		return 1;
 	}
 	*string = p;
-	strcpy(*string + len, append);
+	strcpy(*string + length, append);
 	return 0;
 }
 
