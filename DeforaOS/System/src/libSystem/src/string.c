@@ -28,6 +28,7 @@ void string_delete(String * string)
 
 
 /* useful */
+/* string_append */
 int string_append(String ** string, String * append)
 {
 	char * p;
@@ -44,6 +45,24 @@ int string_append(String ** string, String * append)
 }
 
 
+/* string_compare */
+int string_compare(String const * string, String const * string2)
+{
+	unsigned char const * u1;
+	unsigned char const * u2;
+
+	u1 = string;
+	u2 = string2;
+	while(*u1 && *u2 && *u1 == *u2)
+	{
+		u1++;
+		u2++;
+	}
+	return *u1 - *u2;
+}
+
+
+/* string_length */
 int string_length(String * string)
 {
 	int length;
