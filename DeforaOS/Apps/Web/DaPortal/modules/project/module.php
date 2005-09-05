@@ -525,7 +525,7 @@ function project_bug_list($args)
 				.'&amp;id='.$bugs[$i]['project_id'].'">'
 				._html_safe($bugs[$i]['project'])
 				.'</a>';
-		$bugs[$i]['date'] = date('j/m/Y H:i',
+		$bugs[$i]['date'] = date('d/m/Y H:i',
 				strtotime(substr($bugs[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
