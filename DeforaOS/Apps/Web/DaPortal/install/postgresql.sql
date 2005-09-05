@@ -40,6 +40,7 @@ CREATE TABLE daportal_user (
 	PRIMARY KEY (user_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
+INSERT INTO daportal_user (user_id, username, email) VALUES ('0', 'Anonymous', '');
 INSERT INTO daportal_user (username, password, admin, email) VALUES ('admin', 'password', '1', 'username@domain.tld');
 
 
