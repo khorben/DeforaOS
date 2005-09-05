@@ -171,6 +171,8 @@ function _system_login()
 	$res = $res[0];
 	$_SESSION['user_id'] = $res['user_id'];
 	$_SESSION['user_name'] = stripslashes($_POST['username']);
+	header('Location: index.php?module=user');
+	exit(0);
 }
 
 function _system_logout()
@@ -179,19 +181,17 @@ function _system_logout()
 
 	$_SESSION['user_id'] = 0;
 	$_SESSION['user_name'] = 'Anonymous';
+	$user_id = $_SESSION['user_id'];
+	$user_name = $_SESSION['user_name'];
 }
 
 function user_system($args)
 {
-	global $user_id, $user_name;
-
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'login')
 		_system_login();
 	else if($_SERVER['REQUEST_METHOD'] == 'GET'
 			&& $_GET['action'] == 'logout')
 		_system_logout();
-	$user_id = $_SESSION['user_id'];
-	$user_name = $_SESSION['user_name'];
 }
 
 
