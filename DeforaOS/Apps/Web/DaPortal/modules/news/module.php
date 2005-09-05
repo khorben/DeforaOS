@@ -79,7 +79,6 @@ function news_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 	{
-		//FIXME list users' news in an explorer instead
 		$title.=' by '.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
@@ -98,12 +97,30 @@ function news_list($args)
 			.' ORDER BY timestamp DESC;');
 	if(!is_array($res))
 		return _error('Unable to list news');
-	foreach($res as $news)
+	if(!isset($username))
 	{
-		$news['date'] = strftime(DATE_FORMAT,
-				strtotime(substr($news['timestamp'], 0, 19)));
-		include('news_display.tpl');
+		foreach($res as $news)
+		{
+			$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
+						$news['timestamp'], 0, 19)));
+			include('news_display.tpl');
+		}
+		return;
 	}
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['module'] = 'news';
+		$res[$i]['action'] = 'default';
+		$res[$i]['icon'] = 'modules/news/icon.png';
+		$res[$i]['thumbnail'] = 'modules/news/icon.png';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
+						$res[$i]['timestamp'], 0, 19)));
+	}
+	_module('explorer', 'browse', array(
+				'class' => array('date' => 'Date'),
+				'view' => 'details',
+				'entries' => $res));
 }
 
 
