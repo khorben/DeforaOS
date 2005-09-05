@@ -32,8 +32,7 @@ function _module($module = '', $action = '', $args = FALSE)
 		return _error('Invalid module request', 0);
 	if(!strlen($action))
 		$action = 'default';
-	if(($id = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='".$module."' AND enabled='1'")) == FALSE)
+	if(($id = _module_id($module)) == 0)
 		return _error('Invalid module', 0);
 	$module_id = $id;
 	$module_name = $module;
@@ -49,6 +48,20 @@ function _module($module = '', $action = '', $args = FALSE)
 		print("\t\t\t".'<style type="text/css"><!-- @import url('
 				.$css.'); --></style>'."\n");
 	return call_user_func_array($function, array($args));
+}
+
+
+function _module_id($name)
+{
+	static $cache = array();
+
+	if(isset($cache[$name]))
+		return $cache[$name];
+	if(($id = _sql_single('SELECT module_id FROM daportal_module'
+			." WHERE name='$name' AND enabled='1'")) == FALSE)
+		return 0;
+	$cache[$name] = $id;
+	return $id;
 }
 
 
