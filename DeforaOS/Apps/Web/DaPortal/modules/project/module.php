@@ -201,8 +201,8 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				.'&amp;id='.$id.'&amp;file='.$filename.'/'
 				.$name.'">'.$name.'</a>';
 		$entries[] = array('name' => $name,
-				'icon' => 'modules/project/folder.png',
-				'thumbnail' => 'modules/project/folder.png');
+				'icon' => 'icons/16x16/mime/folder.png',
+				'thumbnail' => 'icons/48x48/mime/folder.png');
 	}
 	foreach($files as $f)
 	{
