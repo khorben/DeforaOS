@@ -33,7 +33,7 @@ function explorer_delete($args)
 		if(!ereg('^entry_[0-9]+$', $k))
 			continue;
 		$file = filename_safe($args[$k]);
-		unlink($root.'/'.$file);
+		@unlink($root.'/'.$file);
 	}
 }
 
@@ -253,13 +253,14 @@ if(isset($_GET['download']))
 	return explorer_download(filename_safe($_GET['download']));
 if(isset($_POST['action']))
 {
-	$folder = strlen($_POST['folder']) ? filename_safe($_POST['folder'])
+	$folder = strlen($_POST['folder']) ? html_safe($_POST['folder'])
 		: '/';
-	$sort = $_POST['sort'];
-	$reverse = isset($_POST['reverse']);
+	$sort = html_safe($_POST['sort']);
+	$reverse = isset($_POST['reverse']) ? '1' : '0';
 	if($_POST['action'] == 'delete')
 		explorer_delete($_POST);
-	return include('explorer.tpl');
+	return header('Location: explorer.php?folder='.$folder.'&sort='.$sort
+			.'&reverse='.$reverse);
 }
 $folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
 $sort = $_GET['sort'];
