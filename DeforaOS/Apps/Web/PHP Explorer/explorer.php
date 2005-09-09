@@ -257,7 +257,7 @@ if(isset($_POST['action']))
 		: '/';
 	$sort = html_safe($_POST['sort']);
 	$reverse = isset($_POST['reverse']) ? '1' : '0';
-	if($_POST['action'] == 'delete')
+	if($upload && $_POST['action'] == 'delete')
 		explorer_delete($_POST);
 	return header('Location: explorer.php?folder='.$folder.'&sort='.$sort
 			.'&reverse='.$reverse);
