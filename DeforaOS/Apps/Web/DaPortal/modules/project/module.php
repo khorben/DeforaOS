@@ -216,9 +216,18 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				break;
 		$file = _html_safe_link($filename.'/'.$f);
 		$name = _html_safe(substr($rcs[2], 14));
+		require_once('system/mime.php');
+		$mime = _mime_from_ext($name);
 		$name = '<a href="index.php?module=project&amp;action=browse'
 				.'&amp;id='.$id.'&amp;file='.$file.'">'
 				.$name.'</a>';
+		$thumbnail = is_readable('icons/48x48/mime/'.$mime
+				.'.png')
+			? 'icons/48x48/mime/'.$mime.'.png'
+			: 'modules/project/default.png';
+		$icon = is_readable('icons/16x16/mime/'.$mime.'.png')
+			? 'icons/16x16/mime/'.$mime.'.png'
+			: $thumbnail;
 		$revision = _html_safe(substr($rcs[$revs+1], 9));
 		$revision = '<a href="index.php?module=project'
 				.'&amp;action=browse&amp;id='.$id
@@ -243,8 +252,8 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		$message = _html_safe($rcs[$revs+3]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
-				'icon' => 'modules/project/default.png',
-				'thumbnail' => 'modules/project/default.png',
+				'icon' => $icon,
+				'thumbnail' => $thumbnail,
 				'revision' => $revision,
 				'date' => $date,
 				'author' => $author,
