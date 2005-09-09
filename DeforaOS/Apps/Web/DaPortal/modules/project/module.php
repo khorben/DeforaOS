@@ -224,7 +224,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		$thumbnail = is_readable('icons/48x48/mime/'.$mime
 				.'.png')
 			? 'icons/48x48/mime/'.$mime.'.png'
-			: 'modules/project/default.png';
+			: 'icons/48x48/mime/default.png';
 		$icon = is_readable('icons/16x16/mime/'.$mime.'.png')
 			? 'icons/16x16/mime/'.$mime.'.png'
 			: $thumbnail;
