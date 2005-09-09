@@ -28,7 +28,7 @@ $hidden = 1;
 //enable actual images as thumbnails
 $thumbnails = 1;
 
-//enable uploading functions
+//enable upload and delete functions
 $upload = 1;
 
 //maximum uploading file size
