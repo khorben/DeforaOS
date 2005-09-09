@@ -236,6 +236,14 @@ function explorer_sort($folder, $name, $sort, $reverse)
 
 if(isset($_GET['download']))
 	return explorer_download(filename_safe($_GET['download']));
+if(isset($_POST['action']))
+{
+	$folder = strlen($_POST['folder']) ? filename_safe($_POST['folder'])
+		: '/';
+	$sort = $_POST['sort'];
+	$reverse = isset($_POST['reverse']);
+	return include('explorer.tpl');
+}
 $folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
 $sort = $_GET['sort'];
 $reverse = isset($_GET['reverse']);

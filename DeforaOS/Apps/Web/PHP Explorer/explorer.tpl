@@ -8,7 +8,13 @@
 	</head>
 	<body>
 		<div class="explorer">
-			<form action="explorer.php" method="post">
+			<form name="explorer" action="explorer.php" method="post">
+				<input type="hidden" name="folder" value="<? echo html_safe($folder); ?>"/>
+				<input type="hidden" name="sort" value="<? echo html_safe($sort); ?>"/>
+<? if($reverse) { ?>
+				<input type="hidden" name="reverse" value=""/>
+<? } ?>
+				<input type="hidden" name="action" value=""/>
 				<div class="toolbar">
 					<img src="icons/16x16/back.png" alt="back" title="Back" onclick="history.back()"/>
 					<a href="explorer.php?folder=<? echo html_safe(dirname($folder)); ?>"><img src="icons/16x16/updir.png" alt="up one directory" title="Up one directory"/></a>
@@ -18,6 +24,7 @@
 <? if($upload) { ?>
 					<a href="newdir.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/newdir.png" alt="create directory" title="Create directory" onclick="return popup('newdir.php?folder=<? echo html_safe($folder); ?>')"/></a>
 					<a href="upload.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/upload.png" alt="upload file" title="Upload file" onclick="return popup('upload.php?folder=<? echo html_safe($folder); ?>')"/></a>
+					<img src="icons/16x16/delete.png" alt="delete" onclick="selection_delete()"/>
 					<div class="separator"></div>
 <? } ?>
 					<img src="icons/16x16/select_all.png" alt="select all" title="Select all" onclick="select_all()"/>

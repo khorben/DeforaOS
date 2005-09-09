@@ -146,3 +146,25 @@ function folder_collapse(e)
 		}
 	}
 }
+
+
+function selection_delete()
+{
+	var count = 0;
+	var ckbox;
+
+	for(var i = 0; ckbox = document.getElementsByName('entry_'+i); i++)
+	{
+		if(ckbox.length == 0)
+			break;
+		ckbox = ckbox.item(0);
+		if(ckbox.checked)
+			count++;
+	}
+	if(count == 0)
+		return;
+	if(!window.confirm('Confirm you want to delete '+count+' file(s):'))
+		return;
+	document.explorer.action.value = 'delete';
+	document.explorer.submit();
+}
