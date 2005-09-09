@@ -23,6 +23,21 @@ require('config.php');
 require('common.php');
 
 
+function explorer_delete($args)
+{
+	global $root;
+
+	$keys = array_keys($args);
+	foreach($keys as $k)
+	{
+		if(!ereg('^entry_[0-9]+$', $k))
+			continue;
+		$file = filename_safe($args[$k]);
+		unlink($root.'/'.$file);
+	}
+}
+
+
 function explorer_download($filename)
 {
 	global $root, $hidden;
@@ -242,6 +257,8 @@ if(isset($_POST['action']))
 		: '/';
 	$sort = $_POST['sort'];
 	$reverse = isset($_POST['reverse']);
+	if($_POST['action'] == 'delete')
+		explorer_delete($_POST);
 	return include('explorer.tpl');
 }
 $folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
