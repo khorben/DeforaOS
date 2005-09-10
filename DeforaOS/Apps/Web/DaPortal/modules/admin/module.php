@@ -98,13 +98,48 @@ function admin_content($args)
 		$contents[$i]['enabled'] = '<img src="modules/admin/'
 				.$contents[$i]['enabled'].'" alt="'
 				.$contents[$i]['enabled'].'"/>';
-/*		$contents[$i]['date'] = date('l, F jS Y, H:i',
-				strtotime($contents[$i]['date'])); */
+		$contents[$i]['date'] = substr($contents[$i]['date'], 0, 19);
+		$contents[$i]['date'] = date('d/m/Y H:i',
+				strtotime($contents[$i]['date']));
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => DISABLE,
+			'icon' => 'modules/admin/disabled.png',
+			'action' => 'content_disable');
+	$toolbar[] = array('title' => ENABLE,
+			'icon' => 'modules/admin/enabled.png',
+			'action' => 'content_enable');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => '', 'date' => 'Date'),
 			'entries' => $contents,
-			'view' => 'details'));
+			'view' => 'details',
+			'toolbar' => $toolbar,
+			'module' => 'admin',
+			'action' => 'content'));
+}
+
+
+function admin_content_disable($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(_sql_query("UPDATE daportal_content SET enabled='f'"
+			." WHERE content_id='".$args['id']."';") == FALSE)
+		_error('Unable to update content');
+}
+
+
+function admin_content_enable($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(_sql_query("UPDATE daportal_content SET enabled='t'"
+			." WHERE content_id='".$args['id']."';") == FALSE)
+		_error('Unable to update content');
 }
 
 
