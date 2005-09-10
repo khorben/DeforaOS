@@ -30,7 +30,7 @@ function _module($module = '', $action = '', $args = FALSE)
 	}
 	else
 		return _error('Invalid module request', 0);
-	if(!strlen($action))
+	if(!strlen($action) || !ereg('^[a-z0-9_]{1,30}$', $action))
 		$action = 'default';
 	if(($id = _module_id($module)) == 0)
 		return _error('Invalid module', 0);
