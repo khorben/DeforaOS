@@ -20,7 +20,7 @@ $text['PRIORITY'] = 'Priority';
 $text['PROJECT'] = 'Project';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
-$text['PROJECTS_LIST'] = 'Projects list';
+$text['PROJECTS_LIST'] = 'Project list';
 $text['STATE'] = 'State';
 $text['TIMELINE'] = 'Timeline';
 global $lang;
