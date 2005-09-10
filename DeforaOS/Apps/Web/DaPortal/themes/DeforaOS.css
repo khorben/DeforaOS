@@ -277,6 +277,38 @@ table.bordered th {
 	margin-bottom:			20px;
 }
 
+.news .title {
+	background-color:		#000000;
+	border-bottom:			solid 2px #790000;
+}
+
+.news .title span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtl.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	padding-left:			10px;
+	padding-top:			2px;
+}
+
+.news .title span span {
+	background-color:		#000000;
+	background-image:		url("DeforaOS-bbl.png");
+	background-position:		bottom right;
+	background-repeat:		no-repeat;
+	padding:			0;
+	padding-right:			10px;
+	padding-top:			2px;
+}
+
+.news .title span span span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtr.png");
+	background-position:		top right;
+	background-repeat:		no-repeat;
+	padding-right:			10px;
+}
+
 .news .author, .news .date {
 	display:			inline;
 }
@@ -287,6 +319,38 @@ table.bordered th {
 
 .search .entry {
 	margin-bottom:			20px;
+}
+
+.search .entry .title {
+	background-color:		#000000;
+	border-bottom:			solid 2px #790000;
+}
+
+.search .entry .title span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtl.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	padding-left:			10px;
+	padding-top:			2px;
+}
+
+.search .entry .title span span {
+	background-color:		#000000;
+	background-image:		url("DeforaOS-bbl.png");
+	background-position:		bottom right;
+	background-repeat:		no-repeat;
+	padding:			0;
+	padding-right:			10px;
+	padding-top:			2px;
+}
+
+.search .entry .title span span span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtr.png");
+	background-position:		top right;
+	background-repeat:		no-repeat;
+	padding-right:			10px;
 }
 
 .search .entry .author, .search .entry .date {
