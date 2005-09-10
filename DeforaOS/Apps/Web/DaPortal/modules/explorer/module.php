@@ -102,7 +102,9 @@ function explorer_apply($args)
 			continue;
 		_module($module, $action, array('id' => $id));
 	}
-	_module($args['link_module'], $args['link_action'], array());
+	header('Location: index.php?module='.$args['link_module']
+			.'&action='.$args['link_action']);
+	exit(0);
 }
 
 
@@ -126,6 +128,15 @@ function explorer_browse(&$args)
 function explorer_browse_trusted(&$args)
 {
 	return _explorer($args);
+}
+
+
+function explorer_system($args)
+{
+	global $html;
+
+	if($args['action'] == 'apply')
+		$html = 0;
 }
 
 ?>

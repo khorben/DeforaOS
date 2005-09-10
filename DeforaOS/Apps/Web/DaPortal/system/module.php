@@ -1,4 +1,5 @@
 <?php
+//system/module.php
 
 
 
@@ -19,13 +20,13 @@ function _module($module = '', $action = '', $args = FALSE)
 	else if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
 		$module = $_GET['module'];
-		$args = strlen($action) ? $args : $_GET;
+		$args = strlen($action) && $args ? $args : $_GET;
 		$action = strlen($action) ? $action : $_GET['action'];
 	}
 	else if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		$module = $_POST['module'];
-		$args = strlen($action) ? $args : $_POST;
+		$args = strlen($action) && $args ? $args : $_POST;
 		$action = strlen($action) ? $action : $_POST['action'];
 	}
 	else
@@ -44,7 +45,7 @@ function _module($module = '', $action = '', $args = FALSE)
 				.$module_name.'"');
 	_info('Module "'.$module_name.'", action "'.$action.'"');
 	$css = 'modules/'.$module_name.'/style.css';
-	if($html && file_exists($css))
+	if($action != 'system' && $html && file_exists($css))
 		print("\t\t\t".'<style type="text/css"><!-- @import url('
 				.$css.'); --></style>'."\n");
 	return call_user_func_array($function, array($args));
