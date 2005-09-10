@@ -58,6 +58,8 @@ $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
 $text['DESCRIPTION'] = 'Description';
+$text['DISABLE'] = 'Disable';
+$text['ENABLE'] = 'Enable';
 $text['HOMEPAGE'] = 'Homepage';
 $text['LOGIN'] = 'Login';
 $text['LOGOUT'] = 'Logout';
@@ -94,6 +96,8 @@ else if($lang == 'fr')
 	$text['AUTHOR'] = 'Auteur';
 	$text['CONTENT'] = 'Contenu';
 	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
+	$text['DISABLE'] = 'Désactiver';
+	$text['ENABLE'] = 'Activer';
 	$text['HOMEPAGE'] = 'Accueil';
 	$text['LOGIN'] = 'Authentification';
 	$text['LOGOUT'] = 'Déconnexion';
