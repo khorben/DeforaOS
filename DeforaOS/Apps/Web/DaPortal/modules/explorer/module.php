@@ -31,7 +31,8 @@ function _explorer(&$args)
 	static $explorer_id = 0;
 
 	$explorer_id++;
-	//FIXME default values table
+	$module = $args['module'];
+	$action = $args['action'];
 	include('top.tpl');
 	if(!isset($args['toolbar']) || is_array($args['toolbar']))
 		include('toolbar.tpl');
@@ -80,6 +81,28 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 	$link = 'module='.$module.'&action='.$action.$args
 		.'&sort='.$class;
 	print(_html_safe($link).'">'._html_safe($name).'</a>');
+}
+
+
+function explorer_apply($args)
+{
+	if(!strlen($args['link_module']) || !strlen($args['link_action']))
+		return _error('Need a module and action to link to');
+	if(!ereg('^[a-z0-9_]{1,30}$', $args['apply']))
+		return _error('Invalid action to apply');
+	$keys = array_keys($args);
+	foreach($keys as $k)
+	{
+		if(!ereg('^entry_[0-9]+_[0-9]+$', $k))
+			continue;
+		$module = $args[$k.'_module'];
+		$action = $args['apply'];
+		$id = $args[$k.'_id'];
+		if(!strlen($module) || !strlen($action) || !strlen($id))
+			continue;
+		_module($module, $action, array('id' => $id));
+	}
+	_module($args['link_module'], $args['link_action'], array());
 }
 
 

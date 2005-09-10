@@ -71,3 +71,27 @@ function unselect_all(explorer)
 	_entry_click_last[explorer] = 0;
 	for(var i = 1; _entry_set(explorer, i, 0) == 0; i++);
 }
+
+
+function selection_apply(explorer, action, confirm)
+{
+	var count = 0;
+	var ckbox;
+	var explorer;
+
+	for(var i = 1; ckbox = document.getElementsByName('entry_'+explorer+'_'+i); i++)
+	{
+		if(ckbox.length == 0)
+			break;
+		if(ckbox.item(0).checked)
+			count++;
+	}
+	if(count == 0)
+		return;
+	if(confirm && !window.confirm('Confirm you want to "'+confirm+'" '
+			+count+' element(s):'))
+		return;
+	explorer = document.getElementsByName('explorer_'+explorer).item(0);
+	explorer.apply.value = action;
+	explorer.submit();
+}

@@ -1,8 +1,10 @@
 	<div class="toolbar">
 <? if(isset($args['toolbar'])) { ?>
-<? foreach($args['toolbar'] as $t) { ?>
+<? foreach($args['toolbar'] as $t) { if(isset($t['link'])) { ?>
 		<a href="<? echo _html_safe_link($t['link']); ?>"><img src="<? echo _html_safe_link($t['icon']); ?>" alt="" title="<? echo _html_safe($t['title']); ?>"/></a>
-<? } ?>
+<? } else if(isset($t['action'])) { ?>
+		<img src="<? echo _html_safe_link($t['icon']); ?>" alt="" title="<? echo _html_safe($t['title']); ?>" onclick="selection_apply(<? echo $explorer_id; ?>, '<? echo _html_safe($t['action']); ?>', <? echo $t['confirm'] ? '1' : '0'; ?>)"/>
+<? } } ?>
 		<div class="separator"></div>
 <? } ?>
 		<img src="modules/explorer/select_all.png" alt="select all" title="<? echo _html_safe(SELECT_ALL); ?>" onclick="select_all(<? echo $explorer_id; ?>)"/>
