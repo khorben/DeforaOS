@@ -229,6 +229,7 @@ table.bordered th {
 	background-image:		url("DeforaOS-rtr.png");
 	background-position:		top right;
 	background-repeat:		no-repeat;
+	border:				solid 1px black;
 	display:			block;
 	font-variant:			small-caps;
 	font-style:			italic;
