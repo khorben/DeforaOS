@@ -182,6 +182,10 @@ table.bordered th {
 	width:				200px;
 }
 
+.explorer .listing_list .entry .name {
+	text-align:			left;
+}
+
 .explorer .listing_thumbnails .entry {
 	width:				100px;
 }
