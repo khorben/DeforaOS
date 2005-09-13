@@ -8,6 +8,36 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
 
+function _html_pre($string)
+{
+	$strings = explode("\n", $string);
+	$string = '';
+	$list = 0;
+	for($i = 0, $cnt = count($strings); $i < $cnt; $i++)
+	{
+		$line = htmlentities($strings[$i]);
+		if(strncmp($line, ' * ', 3) == 0)
+		{
+			if($list == 0)
+			{
+				$list = 1;
+				$string.="<ul>\n";
+			}
+			$line = '<li>'.substr($line, 3)."</li>\n";
+		}
+		else if($list != 0)
+		{
+			$list = 0;
+			$line.="\n</ul>\n";
+		}
+		else
+			$line.="<br/>\n";
+		$string.=$line;
+	}
+	return $string;
+}
+
+
 function _html_safe($string)
 {
 	return htmlentities($string);
@@ -17,18 +47,6 @@ function _html_safe($string)
 function _html_safe_link($string)
 {
 	return str_replace('&amp;amp;', '%26', htmlentities($string));
-}
-
-
-function _html_tags($string, $tags = FALSE)
-{
-	if(!is_array($tags))
-		$tags = array('b', '/b', 'br/', 'li', '/li', 'p', '/p',
-				'ul', '/ul');
-	$string = _html_safe($string);
-	foreach($tags as $t)
-		$string = str_replace("&lt;$t&gt;", "<$t>", $string);
-	return $string;
 }
 
 
@@ -70,6 +88,18 @@ function _html_start()
 function _html_stop()
 {
 	print("\t</body>\n</html>");
+}
+
+
+function _html_tags($string, $tags = FALSE)
+{
+	if(!is_array($tags))
+		$tags = array('b', '/b', 'br/', 'li', '/li', 'p', '/p',
+				'ul', '/ul');
+	$string = _html_safe($string);
+	foreach($tags as $t)
+		$string = str_replace("&lt;$t&gt;", "<$t>", $string);
+	return $string;
 }
 
 
