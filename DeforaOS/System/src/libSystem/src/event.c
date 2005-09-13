@@ -204,6 +204,12 @@ int event_register_timeout(Event * event, struct timeval timeout,
 	eventtimeout->func = func;
 	eventtimeout->data = data;
 	array_append(event->timeouts, eventtimeout);
-	/* FIXME fast recompute next timeout */
+	if(event->timeout.tv_sec > timeout.tv_sec
+			|| (event->timeout.tv_sec == timeout.tv_sec
+				&& event->timeout.tv_usec > timeout.tv_usec))
+	{
+		event->timeout.tv_sec = timeout.tv_sec;
+		event->timeout.tv_usec = timeout.tv_usec;
+	}
 	return 0;
 }
