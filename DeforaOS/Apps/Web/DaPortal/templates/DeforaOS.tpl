@@ -84,5 +84,6 @@ the site content management system.
 <? } ?>
 <? _debug(); ?>
 			</div>
+			<div style="clear: left">&nbsp;</div>
 			<div class="style1" style="padding-right: 33px; text-align: right;">Validate <a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt=""/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt=""/></a></div>
 		</div>
