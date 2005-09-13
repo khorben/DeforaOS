@@ -65,3 +65,24 @@ unsigned int array_count(Array * array)
 {
 	return array->count;
 }
+
+
+int array_get(Array * array, unsigned int pos, void ** data)
+{
+	if(pos >= array->count)
+		return 1;
+	memcpy(*data, &array->data[pos * array->size], array->size);
+	return 0;
+}
+
+
+int array_remove_pos(Array * array, unsigned int pos)
+{
+	if(pos >= array->count)
+		return 1;
+	array->count--; /* FIXME resize array? */
+	memmove(&array->data[pos * array->size],
+			&array->data[(pos + 1) * array->size],
+			(array->count - pos) * array->size);
+	return 0;
+}

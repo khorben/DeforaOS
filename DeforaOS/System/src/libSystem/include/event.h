@@ -13,8 +13,8 @@
 /* types */
 typedef struct _Event Event;
 
-typedef void (*EventFunc)(int fd, void * data);
-typedef void (*EventTimeoutFunc)(void * data);
+typedef int (*EventIOFunc)(int fd, void * data);
+typedef int (*EventTimeoutFunc)(void * data);
 
 
 /* functions */
@@ -23,8 +23,11 @@ void event_delete(Event * event);
 
 /* useful */
 int event_loop(Event * event);
-int event_register_fd_read(Event * event, int fd, EventFunc * func);
-int event_register_timeout(Event * event, EventTimeoutFunc * func,
-		struct timeval timeout, void * userdata);
+int event_register_io_read(Event * event, int fd, EventIOFunc func,
+		void * userdata);
+int event_register_io_write(Event * event, int fd, EventIOFunc func,
+		void * userdata);
+int event_register_timeout(Event * event, struct timeval timeout,
+		EventTimeoutFunc * func, void * userdata);
 
 #endif /* !_EVENT_H */

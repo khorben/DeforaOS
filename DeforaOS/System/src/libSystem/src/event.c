@@ -3,110 +3,103 @@
 
 
 #include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <time.h>
-#include <sys/select.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
+
 #include "array.h"
 #include "event.h"
 
+#define max(a, b) ((a) >= (b)) ? (a) : (b)
+
 
 /* Event */
+/* private */
+/* types */
 typedef struct _EventTimeout
 {
-	EventTimeoutFunc * func;
-	void * data;
-	struct timeval now;
 	struct timeval timeout;
+	EventTimeoutFunc func;
+	void * data;
 } EventTimeout;
-ARRAY(EventTimeout, EventTimeout);
+ARRAY(EventTimeout, eventtimeout);
+
+typedef struct _EventIO
+{
+	int fd;
+	EventIOFunc func;
+	void * data;
+} EventIO;
+ARRAY(EventIO, eventio);
 
 struct _Event
 {
 	fd_set rfds;
 	fd_set wfds;
 	EventTimeoutArray * timeouts;
-	struct timeval now;
-	struct timeval * timeout;
+	struct timeval timeout;
+	EventIOArray * reads;
+	EventIOArray * writes;
+	int fdmax;
 };
 
 
-#ifdef DEBUG
-static void _debug_timeval(struct timeval * tv, char * message)
-{
-	fprintf(stderr, "%s%s%lu%s%lu%s", message, ": ", tv->tv_sec, "s, ",
-			tv->tv_usec, "us\n");
-}
-#endif
-
-
+/* public */
+/* functions */
+/* event_new */
 Event * event_new(void)
 {
 	Event * event;
 
 	if((event = malloc(sizeof(Event))) == NULL)
 		return NULL;
-	if(gettimeofday(&event->now, NULL) != 0
-			|| (event->timeouts = EventTimeoutArrayNew()) == NULL)
+	if((event->timeouts = eventtimeoutarray_new()) == NULL)
 	{
-		perror("event");
 		free(event);
 		return NULL;
 	}
-#ifdef DEBUG
-	_debug_timeval(&event->now, "event_new()");
-#endif
+	event->timeout.tv_sec = LONG_MAX;
+	event->timeout.tv_usec = LONG_MAX;
+	event->reads = eventioarray_new(); /* FIXME */
+	event->writes = eventioarray_new(); /* FIXME */
 	FD_ZERO(&event->rfds);
 	FD_ZERO(&event->wfds);
-	event->timeout = NULL;
 	return event;
 }
 
 
+/* event_delete */
 void event_delete(Event * event)
 {
+	array_delete(event->timeouts);
+	array_delete(event->reads);
+	array_delete(event->writes);
 	free(event);
 }
 
 
-/* internal */
-static void _event_timeout_set(Event * event)
-{
-	static struct timeval tv;
-
-	if(array_count(event->timeouts) == 0)
-	{
-		event->timeout = NULL;
-		return;
-	}
-	if(gettimeofday(&tv, NULL) != 0)
-		perror("gettimeofday");
-	/* FIXME set event->timeout */
-}
-
-static int _event_timeout_hit(Event * event)
-{
-	if(event->timeout == NULL)
-		return 0;
-	/* FIXME look at every timeout func and run it if necessary */
-	return 0;
-}
-
-
 /* useful */
+static void _loop_timeouts(Event * event);
+static void _loop_reads(Event * event);
+static void _loop_writes(Event * event);
 int event_loop(Event * event)
 {
+	struct timeval * timeout = event->timeout.tv_sec == LONG_MAX
+		&& event->timeout.tv_usec == LONG_MAX ? NULL : &event->timeout;
 	int ret;
 
-	for(_event_timeout_set(event);
-			(ret = select(0, &event->rfds, &event->wfds, NULL,
-				      event->timeout)) != -1;
-			_event_timeout_set(event))
+	for(; (ret = select(event->fdmax+1, &event->rfds, &event->wfds, NULL,
+					timeout)) != -1;
+			timeout = event->timeout.tv_sec == LONG_MAX
+			&& event->timeout.tv_usec == LONG_MAX
+			? NULL : &event->timeout)
 	{
-		if(_event_timeout_hit(event))
-			continue;
-		/* FIXME */
+		_loop_timeouts(event);
+		_loop_reads(event);
+		_loop_writes(event);
 	}
 	if(ret != -1)
 		return 0;
@@ -114,16 +107,101 @@ int event_loop(Event * event)
 	return 1;
 }
 
+static void _loop_timeouts(Event * event)
+{
+	struct timeval now;
+	unsigned int i = 0;
 
-int event_timeout(Event * event, EventTimeoutFunc * func,
-		struct timeval timeout, void * data)
+	if(gettimeofday(&now, NULL) != 0)
+		return perror("gettimeofday");
+	while(i < array_count(event->timeouts))
+	{
+		/* FIXME */
+		i++;
+	}
+}
+
+static void _loop_reads(Event * event)
+{
+	unsigned int i = 0;
+	EventIO * eio;
+
+	while(i < array_count(event->reads))
+	{
+		array_get(event->reads, i, &eio);
+		if(FD_ISSET(eio->fd, &event->rfds)
+				&& eio->func(eio->fd, eio->data) != 0)
+		{
+			array_remove_pos(event->reads, i);
+			continue;
+		}
+		i++;
+	}
+}
+
+static void _loop_writes(Event * event)
+{
+	unsigned int i = 0;
+	EventIO * eio;
+
+	while(i < array_count(event->writes))
+	{
+		array_get(event->writes, i, &eio);
+		if(FD_ISSET(eio->fd, &event->wfds)
+				&& eio->func(eio->fd, eio->data) != 0)
+		{
+			array_remove_pos(event->writes, i);
+			continue;
+		}
+		i++;
+	}
+}
+
+
+/* event_register_io_read */
+int event_register_io_read(Event * event, int fd, EventIOFunc func,
+		void * userdata)
+{
+	EventIO * eventio;
+
+	if((eventio = malloc(sizeof(EventIO))) == NULL)
+		return 1;
+	eventio->fd = fd;
+	eventio->func = func;
+	eventio->data = userdata;
+	array_append(event->reads, eventio);
+	event->fdmax = max(event->fdmax, fd);
+	return 0;
+}
+
+
+/* event_register_io_write */
+int event_register_io_write(Event * event, int fd, EventIOFunc func,
+		void * userdata)
+{
+	EventIO * eventio;
+
+	if((eventio = malloc(sizeof(EventIO))) == NULL)
+		return 1;
+	eventio->fd = fd;
+	eventio->func = func;
+	eventio->data = userdata;
+	array_append(event->writes, eventio);
+	event->fdmax = max(event->fdmax, fd);
+	return 0;
+}
+
+
+/* event_register_timeout */
+int event_register_timeout(Event * event, struct timeval timeout,
+		EventTimeoutFunc * func, void * data)
 {
 	EventTimeout * eventtimeout;
 
 	if((eventtimeout = malloc(sizeof(EventTimeout))) == NULL)
 		return 1;
-	eventtimeout->func = func;
 	eventtimeout->timeout = timeout;
+	eventtimeout->func = func;
 	eventtimeout->data = data;
 	array_append(event->timeouts, eventtimeout);
 	/* FIXME fast recompute next timeout */

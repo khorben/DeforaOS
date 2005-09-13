@@ -23,4 +23,7 @@ AppServer * appserver_new(const char * app, int options);
 AppServer * appserver_new_event(const char * app, int options, Event * event);
 void appserver_delete(AppServer * appserver);
 
+/* useful */
+int appserver_loop(AppServer * appserver);
+
 #endif /* !_APPSERVER_H */

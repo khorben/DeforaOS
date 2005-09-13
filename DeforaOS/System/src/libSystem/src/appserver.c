@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <array.h>
-#include <string.h>
+#include "array.h"
+#include "string.h"
 #include "appserver.h"
 
 
@@ -65,7 +65,7 @@ struct _AppServer
 
 
 /* functions */
-static void _appserver_accept(int fd, AppServer * appserver)
+static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
@@ -74,11 +74,15 @@ static void _appserver_accept(int fd, AppServer * appserver)
 
 	/* FIXME append client to the clients list with the appropriate state */
 	if((fd2 = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
-		return perror("accept"); /* FIXME report error */
+	{
+		perror("accept"); /* FIXME report error */
+		return 0;
+	}
 	if((asc = appserverclient_new(fd2, sa.sin_addr.s_addr, sa.sin_port))
 			== NULL)
-		return;
+		return 0;
 	array_append(appserver->clients, asc);
+	return 0;
 }
 
 
@@ -127,12 +131,20 @@ AppServer * appserver_new_event(const char * app, int options, Event * event)
 }
 
 static int _new_interface(AppServer * appserver, const char * app)
-{
 	/* FIXME interfaces are hardcoded */
+{
 	if(string_compare(app, "Session") == 0)
 	{
 		appserver->port = 4242; /* FIXME */
 		return 0;
+	}
+	else if(string_compare(app, "Network") == 0)
+	{
+		/* FIXME */
+	}
+	else if(string_compare(app, "Probe") == 0)
+	{
+		/* FIXME */
 	}
 	return 1;
 }
@@ -146,7 +158,8 @@ static int _new_server(AppServer * appserver, int options)
 		return 1; /* FIXME report error */
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appserver->port);
-	sa.sin_addr.s_addr = options & ASO_LOCAL ? INADDR_LOOPBACK : INADDR_ANY;
+	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
+			: INADDR_ANY);
 	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 			|| listen(fd, 5) != 0)
 	{
@@ -155,7 +168,7 @@ static int _new_server(AppServer * appserver, int options)
 			perror("close"); /* FIXME report error appropriately */
 		return 1;
 	}
-	event_register_fd_read(appserver->event, fd, _appserver_accept);
+	event_register_io_read(appserver->event, fd, _appserver_accept, NULL);
 	return 0;
 }
 
@@ -165,4 +178,11 @@ void appserver_delete(AppServer * appserver)
 {
 	event_delete(appserver->event);
 	free(appserver);
+}
+
+
+/* useful */
+int appserver_loop(AppServer * appserver)
+{
+	return event_loop(appserver->event);
 }
