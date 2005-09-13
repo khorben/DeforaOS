@@ -226,13 +226,15 @@ table.bordered th {
 
 .menu a {
 	background-color:		#790000;
-	border:				1px solid #790000;
+	background-image:		url("DeforaOS-rtr.png");
+	background-position:		top right;
+	background-repeat:		no-repeat;
 	display:			block;
 	font-variant:			small-caps;
 	font-style:			italic;
 	font-weight:			bold;
 	letter-spacing:			2pt;
-	padding:			2px;
+	padding:			3px;
 	padding-left:			5px;
 	text-decoration:		none;
 }
@@ -255,6 +257,7 @@ table.bordered th {
 
 .menu ul li ul li a {
 	background-color:		#000000;
+	background-image:		none;
 	font-variant:			normal;
 	font-size:			smaller;
 	font-style:			normal;
