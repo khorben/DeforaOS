@@ -1,4 +1,4 @@
-<h1><img src="modules/admin/edit.png" alt=""/> Content update</h1>
+<h1><img src="modules/admin/content.png" alt=""/> Content update</h1>
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="admin"/>
 	<input type="hidden" name="action" value="content_update"/>
