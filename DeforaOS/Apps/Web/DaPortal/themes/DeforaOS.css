@@ -391,6 +391,24 @@ table.bordered th {
 	color:				#313131;
 }
 
+.top_search {
+	float:				left;
+	margin-left:			10px;
+	margin-top:			19px;
+	text-align:			right;
+	width:				160px;
+}
+
+.top_search input {
+	font-size:			smaller;
+}
+
+.top_search input[type="text"] {
+	border:				solid 1px #797979;
+	margin-bottom:			2px;
+	width:				158px;
+}
+
 
 /* cvsweb */
 body.src {

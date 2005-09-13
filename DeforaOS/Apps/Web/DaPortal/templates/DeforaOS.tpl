@@ -1,6 +1,18 @@
 <? global $user_id, $title, $module_name; $module = $module_name; ?>
 <? _module('top'); ?>
 		<div class="container">
+			<div class="top_search">
+				<form action="index.php" method="get">
+					<input type="hidden" name="module" value="search"/>
+					<input type="text" name="q" value="search..." size="20" onfocus="if(value == 'search...') value=''"/>
+					<input id="search" type="submit" value="Search"/>
+				</form>
+				<script type="text/javascript">
+<!--
+document.getElementById('search').style.display='none';
+//-->
+				</script>
+			</div>
 			<div class="logo"></div>
 			<div class="style1"><a href="index.php">DeforaOS</a> :: <? echo (strlen($module) ? '<a href="index.php?module='.$module.'">'.ucfirst($module).'</a>' : 'Homepage'); ?></div>
 			<div class="menu">
