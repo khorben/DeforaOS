@@ -3,5 +3,5 @@
 	<div class="title"><span><span><span><? if(!$long) { ?><a href="index.php?module=news&amp;id=<? echo _html_safe_link($news['id']); ?>"><? } ?><? echo _html_safe($news['title']); ?><? if(!$long) { ?></a><? } ?></span></span></span></div>
 	<div class="author"><? echo _html_safe(NEWS_BY); ?> <a href="index.php?module=user&amp;id=<? echo _html_safe_link($news['user_id']); ?>"><? echo _html_safe($news['username']); ?></a></div>
 	<div class="date"><? echo _html_safe(NEWS_ON); ?> <? echo _html_safe($news['date']); ?></div>
-	<div class="content"><? echo _html_tags($news['content']); ?></div>
+	<div class="content"><? echo _html_pre($news['content']); ?></div>
 </div>
