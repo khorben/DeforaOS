@@ -92,7 +92,9 @@ function admin_content($args)
 		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
 		$contents[$i]['name'] = _html_safe_link($contents[$i]['name']);
 		$contents[$i]['module'] = 'admin';
+		$contents[$i]['apply_module'] = 'admin';
 		$contents[$i]['action'] = 'content';
+		$contents[$i]['apply_id'] = $contents[$i]['id'];
 		$contents[$i]['enabled'] = ($contents[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
 		$contents[$i]['enabled'] = '<img src="modules/admin/'
@@ -185,7 +187,7 @@ function admin_module($args)
 	print('<h1><img src="modules/admin/icon.png" alt=""/> '
 			._html_safe(MODULES_ADMINISTRATION)
 			.'</h1>'."\n");
-	if(($modules = _sql_array('SELECT module_id AS id, name AS module'
+	if(($modules = _sql_array('SELECT module_id AS apply_id, name AS module'
 			.', enabled'
 			.' FROM daportal_module'
 			.' ORDER BY module ASC;')) == FALSE)
@@ -196,8 +198,8 @@ function admin_module($args)
 		$module = $modules[$i]['module'];
 		$modules[$i]['icon'] = 'modules/'.$module.'/icon.png';
 		$modules[$i]['thumbnail'] = 'modules/'.$module.'/icon.png';
-		$modules[$i]['module'] = 'admin';
 		$modules[$i]['action'] = 'admin';
+		$modules[$i]['apply_module'] = 'admin';
 		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
 		$modules[$i]['enabled'] = '<img src="modules/admin/'
