@@ -25,7 +25,7 @@ typedef struct _EventTimeout
 	EventTimeoutFunc func;
 	void * data;
 } EventTimeout;
-ARRAY(EventTimeout, eventtimeout);
+ARRAY(EventTimeout *, eventtimeout);
 
 typedef struct _EventIO
 {
@@ -33,17 +33,17 @@ typedef struct _EventIO
 	EventIOFunc func;
 	void * data;
 } EventIO;
-ARRAY(EventIO, eventio);
+ARRAY(EventIO *, eventio);
 
 struct _Event
 {
+	int fdmax;
 	fd_set rfds;
 	fd_set wfds;
-	EventTimeoutArray * timeouts;
+	eventioArray * reads;
+	eventioArray * writes;
+	eventtimeoutArray * timeouts;
 	struct timeval timeout;
-	EventIOArray * reads;
-	EventIOArray * writes;
-	int fdmax;
 };
 
 
@@ -89,17 +89,21 @@ int event_loop(Event * event)
 {
 	struct timeval * timeout = event->timeout.tv_sec == LONG_MAX
 		&& event->timeout.tv_usec == LONG_MAX ? NULL : &event->timeout;
+	fd_set rfds;
+	fd_set wfds;
 	int ret;
 
-	for(; (ret = select(event->fdmax+1, &event->rfds, &event->wfds, NULL,
+	for(rfds = event->rfds, wfds = event->wfds;
+			(ret = select(event->fdmax+1, &rfds, &wfds, NULL,
 					timeout)) != -1;
-			timeout = event->timeout.tv_sec == LONG_MAX
-			&& event->timeout.tv_usec == LONG_MAX
-			? NULL : &event->timeout)
+			rfds = event->rfds, wfds = event->wfds)
 	{
 		_loop_timeouts(event);
 		_loop_reads(event);
 		_loop_writes(event);
+		timeout = event->timeout.tv_sec == LONG_MAX
+			&& event->timeout.tv_usec == LONG_MAX
+			? NULL : &event->timeout;
 	}
 	if(ret != -1)
 		return 0;
@@ -169,8 +173,9 @@ int event_register_io_read(Event * event, int fd, EventIOFunc func,
 	eventio->fd = fd;
 	eventio->func = func;
 	eventio->data = userdata;
-	array_append(event->reads, eventio);
 	event->fdmax = max(event->fdmax, fd);
+	FD_SET(fd, &event->rfds);
+	array_append(event->reads, eventio);
 	return 0;
 }
 
@@ -186,15 +191,16 @@ int event_register_io_write(Event * event, int fd, EventIOFunc func,
 	eventio->fd = fd;
 	eventio->func = func;
 	eventio->data = userdata;
-	array_append(event->writes, eventio);
 	event->fdmax = max(event->fdmax, fd);
+	FD_SET(fd, &event->wfds);
+	array_append(event->writes, eventio);
 	return 0;
 }
 
 
 /* event_register_timeout */
 int event_register_timeout(Event * event, struct timeval timeout,
-		EventTimeoutFunc * func, void * data)
+		EventTimeoutFunc func, void * data)
 {
 	EventTimeout * eventtimeout;
 

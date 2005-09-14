@@ -28,6 +28,6 @@ int event_register_io_read(Event * event, int fd, EventIOFunc func,
 int event_register_io_write(Event * event, int fd, EventIOFunc func,
 		void * userdata);
 int event_register_timeout(Event * event, struct timeval timeout,
-		EventTimeoutFunc * func, void * userdata);
+		EventTimeoutFunc func, void * userdata);
 
 #endif /* !_EVENT_H */
