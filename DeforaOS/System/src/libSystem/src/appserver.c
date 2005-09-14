@@ -55,7 +55,7 @@ void appserverclient_delete(AppServerClient * appserverclient)
 /* AppServer */
 /* private */
 /* types */
-ARRAY(AppServerClient, AppServerClient);
+ARRAY(AppServerClient *, AppServerClient);
 struct _AppServer
 {
 	Event * event;
@@ -69,18 +69,15 @@ static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
-	int fd2;
+	int newfd;
 	AppServerClient * asc;
 
 	/* FIXME append client to the clients list with the appropriate state */
-	if((fd2 = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
-	{
-		perror("accept"); /* FIXME report error */
-		return 0;
-	}
-	if((asc = appserverclient_new(fd2, sa.sin_addr.s_addr, sa.sin_port))
+	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
+		return 1;
+	if((asc = appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port))
 			== NULL)
-		return 0;
+		return 1;
 	array_append(appserver->clients, asc);
 	return 0;
 }
@@ -94,19 +91,13 @@ static int _new_server(AppServer * appserver, int options);
 AppServer * appserver_new(const char * app, int options)
 {
 	AppServer * appserver;
+	Event * event;
 
-	if((appserver = malloc(sizeof(AppServer))) == NULL)
+	if((event = event_new()) == NULL)
 		return NULL;
-	if((appserver->event = event_new()) == NULL)
+	if((appserver = appserver_new_event(app, options, event)) == NULL)
 	{
-		free(appserver);
-		return NULL;
-	}
-	if(_new_interface(appserver, app) != 0
-			|| _new_server(appserver, options) != 0)
-	{
-		event_delete(appserver->event);
-		free(appserver);
+		event_delete(event);
 		return NULL;
 	}
 	return appserver;
@@ -168,7 +159,8 @@ static int _new_server(AppServer * appserver, int options)
 			perror("close"); /* FIXME report error appropriately */
 		return 1;
 	}
-	event_register_io_read(appserver->event, fd, _appserver_accept, NULL);
+	event_register_io_read(appserver->event, fd, _appserver_accept,
+			appserver);
 	return 0;
 }
 

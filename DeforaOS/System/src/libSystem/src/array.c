@@ -13,7 +13,7 @@
 /* Array */
 struct _Array
 {
-	void * data;
+	char * data;
 	unsigned int count;
 	unsigned int size;
 };
@@ -45,10 +45,13 @@ int array_append(Array * array, void * data)
 {
 	void * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%p%s", "array_append(", data, ")\n");
+#endif
 	if((p = realloc(array->data, array->size * (array->count + 1))) == NULL)
 		return 1;
 	array->data = p;
-	memcpy(&p[array->size * array->count], data, array->size);
+	memcpy(&p[array->size * array->count], &data, array->size);
 	array->count++;
 	return 0;
 }
@@ -71,11 +74,11 @@ unsigned int array_count(Array * array)
 
 int array_get(Array * array, unsigned int pos, void * data)
 {
+	if(pos >= array->count)
+		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "array_get(array, ", pos, ", data)\n");
 #endif
-	if(pos >= array->count)
-		return 1;
 	memcpy(data, &array->data[pos * array->size], array->size);
 	return 0;
 }
