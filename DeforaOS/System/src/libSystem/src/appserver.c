@@ -72,6 +72,10 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	int newfd;
 	AppServerClient * asc;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%p%s", "_appserver_accept(", fd, ", ", appserver,
+			")\n");
+#endif
 	/* FIXME append client to the clients list with the appropriate state */
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return 1;
@@ -112,7 +116,8 @@ AppServer * appserver_new_event(const char * app, int options, Event * event)
 	if((appserver = malloc(sizeof(AppServer))) == NULL)
 		return NULL;
 	appserver->event = event;
-	if(_new_interface(appserver, app) != 0
+	if((appserver->clients = AppServerClientarray_new()) == NULL
+			|| _new_interface(appserver, app) != 0
 			|| _new_server(appserver, options) != 0)
 	{
 		free(appserver);
