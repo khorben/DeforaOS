@@ -41,9 +41,11 @@ function user_admin($args)
 	$order = 'name ASC';
 	switch($args['sort'])
 	{
+		case 'admin':	$order = 'admin ASC'; break;
 		case 'email':	$order = 'email ASC'; break;
 	}
-	$users = _sql_array('SELECT user_id AS id, username AS name, email'
+	$users = _sql_array('SELECT user_id AS id, username AS name'
+			.', admin, email'
 			.' FROM daportal_user'
 			.' ORDER BY '.$order.';');
 	if(!is_array($users))
@@ -57,6 +59,7 @@ function user_admin($args)
 		$users[$i]['thumbnail'] = 'modules/user/user.png';
 		$users[$i]['apply_module'] = 'user';
 		$users[$i]['apply_id'] = $users[$i]['id'];
+		$users[$i]['admin'] = $users[$i]['admin'] == 't' ? YES : NO;
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => 'New user',
@@ -69,7 +72,8 @@ function user_admin($args)
 			'confirm' => 'delete');
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
 				'entries' => $users,
-				'class' => array('email' => 'e-mail'),
+				'class' => array('admin' => 'Admin',
+					'email' => 'e-mail'),
 				'module' => 'user',
 				'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
