@@ -37,9 +37,14 @@ function user_admin($args)
 	if(isset($args['id']))
 		return _modify($args['id']);
 	print('<h1><img src="modules/user/icon.png" alt=""/> Users administration</h1>'."\n");
-	$users = _sql_array('SELECT user_id AS id, username AS name'
+	$order = 'name ASC';
+	switch($args['sort'])
+	{
+		case 'email':	$order = 'email ASC'; break;
+	}
+	$users = _sql_array('SELECT user_id AS id, username AS name, email'
 			.' FROM daportal_user'
-			.' ORDER BY name ASC;');
+			.' ORDER BY '.$order.';');
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
@@ -49,13 +54,26 @@ function user_admin($args)
 		$users[$i]['action'] = 'admin';
 		$users[$i]['icon'] = 'modules/user/user.png';
 		$users[$i]['thumbnail'] = 'modules/user/user.png';
+		$users[$i]['apply_module'] = 'user';
+		$users[$i]['apply_id'] = $users[$i]['id'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => 'New user',
 			'icon' => 'modules/user/icon.png',
 			'link' => 'index.php?module=user&action=new');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => 'Delete',
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'delete',
+			'confirm' => 'delete');
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
-				'entries' => $users));
+				'entries' => $users,
+				'class' => array('email' => 'e-mail'),
+				'module' => 'user',
+				'action' => 'admin',
+				'sort' => isset($args['sort']) ? $args['sort']
+				: 'name',
+				'view' => 'details'));
 }
 
 
@@ -89,6 +107,19 @@ function user_display($args)
 }
 
 
+function user_delete($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(!_sql_query('DELETE FROM daportal_user'
+			." WHERE user_id='".$args['id']."';"))
+		return _error('Could not delete user');
+}
+
+
 function user_insert($args)
 {
 	global $user_id;
@@ -102,9 +133,10 @@ function user_insert($args)
 			|| $args['password1'] != $args['password2'])
 		return _error('Passwords must be non-empty and match', 1);
 	$password = md5($args['password1']);
-	if(!_sql_query('INSERT INTO daportal_user (username, password) VALUES ('
+	if(!_sql_query('INSERT INTO daportal_user (username, password, email'
+			.') VALUES ('
 			."'".$args['username']."'"
-			.", '$password');"))
+			.", '$password', '".$args['email']."');"))
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
 	user_display(array('id' => $id));
