@@ -16,6 +16,7 @@
 <? } ?>
 <? if($admin) { ?>
 		<tr><td class="field">Administrator:</td><td><input type="checkbox" name="admin"<? if($user['admin'] == 't') { ?> checked="checked"<? } ?>/></td>
+		<tr><td class="field">e-mail:</td><td><input type="text" name="email" value="<? echo _html_safe($user['email']); ?>"/></td>
 <? } ?>
 		<tr><td></td><td><input type="submit" value="<? echo isset($user) ? 'Update' : 'Create'; ?>"/></td></tr>
 	</table>

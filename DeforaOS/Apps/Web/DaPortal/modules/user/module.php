@@ -17,7 +17,8 @@ function _modify($id)
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$super = ($id == $user_id) ? 1 : 0;
-	$user = _sql_array('SELECT user_id, username, admin FROM daportal_user'
+	$user = _sql_array('SELECT user_id, username, admin, email'
+			.' FROM daportal_user'
 			." WHERE user_id='$id';");
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
