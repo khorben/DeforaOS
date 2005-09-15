@@ -263,12 +263,28 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				'author' => $author,
 				'message' => $message);
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+			'link' => 'javascript:history.back()');
+	$toolbar[] = array('title' => 'Parent directory',
+			'icon' => 'icons/16x16/updir.png',
+			'link' => 'index.php?module=project&action=browse'
+					.'&id='.$id.'&file='
+					.dirname($filename));
+	$toolbar[] = array('title' => 'Forward',
+			'icon' => 'icons/16x16/forward.png',
+			'link' => 'javascript:history.forward()');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => 'Parent directory',
+			'icon' => 'icons/16x16/refresh.png',
+			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
 			'class' => array('revision' => 'Revision',
 					'date' => 'Date',
 					'author' => AUTHOR,
 					'message' => MESSAGE),
-			'view' => 'details'));
+			'view' => 'details',
+			'toolbar' => $toolbar));
 }
 
 function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
