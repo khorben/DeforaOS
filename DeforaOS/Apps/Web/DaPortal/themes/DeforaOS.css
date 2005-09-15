@@ -28,6 +28,7 @@ h1, h2 {
 	font-variant:			small-caps;
 	font-weight:			bold;
 	letter-spacing:			3pt;
+	text-align:			left;
 }
 
 h1 img, h2 img {
