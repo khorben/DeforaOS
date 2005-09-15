@@ -55,7 +55,10 @@ _lang($text);
 
 function _project_toolbar($id)
 {
-	include('toolbar.tpl');
+	global $html;
+
+	if($html)
+		include('toolbar.tpl');
 }
 
 
@@ -149,7 +152,7 @@ function project_browse($args)
 		return _browse_dir($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], '');
 	$file = stripslashes($args['file']);
-	if(!ereg('^[a-zA-Z0-9.,_ /]+$', $file) || ereg('\.\.', $file))
+	if(!ereg('^[a-zA-Z0-9.,-_ /]+$', $file) || ereg('\.\.', $file))
 		return _error('Invalid path', 1);
 	$filename = $cvsrep.$project['cvsroot'].'/'.$file;
 	if(is_dir($filename))
@@ -161,7 +164,8 @@ function project_browse($args)
 			return _browse_file_revision($args['id'],
 					$project['name'], $cvsrep,
 					$project['cvsroot'],
-					$file, $args['revision']);
+					$file, $args['revision'],
+					$args['download'] == 1);
 		return _browse_file($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], $file);
 	}
@@ -342,7 +346,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 }
 
 function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
-		$revision)
+		$revision, $download)
 {
 	if(!ereg('^[0-9]+\.[0-9]+$', $revision))
 		return _error('Invalid revision');
@@ -353,21 +357,41 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	_info('rlog -h "'.$path.'"', 0);
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		_info($i.': '.$rcs[$i], 0);
-	print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe($project).' CVS: '
-			._html_safe(dirname($filename)).'/'
-			._html_safe(substr($rcs[2], 14))
-			.' '.$revision.'</h1>'."\n");
-	unset($rcs);
-	exec('co -p'.$revision.' "'.$path.'"', $rcs);
+	if(!$download)
+		print('<h1><img src="modules/project/icon.png" alt=""/> '
+				._html_safe($project).' CVS: '
+				._html_safe(dirname($filename)).'/'
+				._html_safe(substr($rcs[2], 14))
+				.' '.$revision.'</h1>'."\n");
+	$basename = substr($rcs[2], 14);
+	$fp = popen('co -p'.$revision.' "'.$path.'"', 'r');
 	_info('co -p'.$revision.' "'.$path.'"', 0);
-	for($i = 0, $count = count($rcs); $i < $count; $i++)
-		_info($i.': '.$rcs[$i], 0);
-	print('<pre>'."\n");
-	for($i = 0, $count = count($rcs); $i < $count; $i++)
-		print(_html_safe($rcs[$i])."\n");
-	print('</pre>'."\n");
+	require_once('system/mime.php');
+	if(($mime = _mime_from_ext($basename)) == 'default')
+		$mime = 'text/plain';
+	$content = '';
+	while(!feof($fp))
+		$content .= fread($fp, 8192);
+	if($download)
+	{
+		require_once('system/html.php');
+		header('Content-Type: '.$mime);
+		header('Content-Length: '.strlen($content));
+		header('Content-Disposition: inline; filename="'
+				._html_safe(basename($basename)).'"');
+		print($content);
+		return;
+	}
+	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
+		."&amp;file="._html_safe_link($filename)
+		."&amp;revision=$revision&amp;download=1";
+	print('<div><a href="'.$link.'">Download file</a></div>'."\n");
+	if(strncmp('image/', $mime, 6) == 0)
+		print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
+	else
+		print('<pre>'."\n"._html_safe($content).'</pre>'."\n");
 }
+
 
 function project_bug_display($args)
 {
@@ -753,9 +777,11 @@ function project_package($args)
 
 function project_system($args)
 {
-	global $title;
+	global $title, $html;
 
 	$title.=' - Projects';
+	if($args['action'] == 'browse' && $args['download'] == 1)
+		$html = 0;
 }
 
 
