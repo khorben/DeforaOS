@@ -269,8 +269,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	$toolbar[] = array('title' => 'Parent directory',
 			'icon' => 'icons/16x16/updir.png',
 			'link' => 'index.php?module=project&action=browse'
-					.'&id='.$id.'&file='
-					.dirname($filename));
+					.'&id='.$id
+					.(strlen($filename)
+					? '&file='.dirname($filename) : ''));
 	$toolbar[] = array('title' => 'Forward',
 			'icon' => 'icons/16x16/forward.png',
 			'link' => 'javascript:history.forward()');
