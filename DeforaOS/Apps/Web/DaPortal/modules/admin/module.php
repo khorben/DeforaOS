@@ -97,7 +97,7 @@ function admin_content($args)
 		$contents[$i]['apply_id'] = $contents[$i]['id'];
 		$contents[$i]['enabled'] = ($contents[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
-		$contents[$i]['enabled'] = '<img src="modules/admin/'
+		$contents[$i]['enabled'] = '<img src="icons/16x16/'
 				.$contents[$i]['enabled'].'" alt="'
 				.$contents[$i]['enabled'].'" title="'
 				.($contents[$i]['enabled'] == 'enabled'
@@ -109,10 +109,10 @@ function admin_content($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'modules/admin/disabled.png',
+			'icon' => 'icons/16x16/disabled.png',
 			'action' => 'content_disable');
 	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'modules/admin/enabled.png',
+			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'content_enable');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => '', 'date' => 'Date'),
@@ -202,7 +202,7 @@ function admin_module($args)
 		$modules[$i]['apply_module'] = 'admin';
 		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
-		$modules[$i]['enabled'] = '<img src="modules/admin/'
+		$modules[$i]['enabled'] = '<img src="icons/16x16/'
 				.$modules[$i]['enabled'].'" alt="'
 				.$modules[$i]['enabled'].'" title="'
 				.($modules[$i]['enabled'] == 'enabled'
@@ -218,10 +218,10 @@ function admin_module($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'modules/admin/disabled.png',
+			'icon' => 'icons/16x16/disabled.png',
 			'action' => 'module_disable');
 	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'modules/admin/enabled.png',
+			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'module_enable');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => '',
