@@ -8,6 +8,20 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//lang
+$text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
+$text['EMAIL_INVALID'] = 'e-mail is not valid';
+$text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
+global $lang;
+if($lang == 'fr')
+{
+	$text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
+	$text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
+	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
+}
+_lang($text);
+
+
 function _modify($id)
 {
 	global $user_id;
@@ -79,6 +93,48 @@ function user_admin($args)
 				'sort' => isset($args['sort']) ? $args['sort']
 				: 'name',
 				'view' => 'details'));
+}
+
+
+function user_register($args)
+{
+	global $user_id;
+
+	if($user_id)
+		return _error(ALREADY_LOGGED_IN, 1);
+	$message = '';
+	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
+			&& isset($args['email']))
+	{
+		if(_sql_single('SELECT username FROM daportal_user'
+				." WHERE username='".$args['username']."';")
+				== FALSE)
+		{
+			if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
+					.'[a-zA-Z]{1,4}$', $args['email']))
+				$message = EMAIL_INVALID;
+			else if(_sql_array('SELECT email'
+					.' FROM daportal_user'
+					." WHERE email='".$args['email']."';")
+					== FALSE)
+				return _register_mail($args['username'],
+						$args['email']);
+			else
+				$message = EMAIL_ALREADY_ASSIGNED;
+		}
+		else
+			$message = USER_ALREADY_ASSIGNED;
+	}
+	print('<h1><img src="modules/user/icon.png" alt=""/>'
+			.' User registration</h1>');
+	if(strlen($message))
+		_error($message, 1);
+	include('user_register.tpl');
+}
+
+function _register_mail($username, $email)
+{
+	/* FIXME */
 }
 
 
