@@ -10,6 +10,7 @@
 
 #include "array.h"
 #include "string.h"
+#include "common.h"
 #include "appserver.h"
 
 
@@ -27,6 +28,8 @@ typedef struct _AppServerClient
 	int fd;
 	uint32_t addr; /* FIXME uint8_t[4] instead? */
 	uint16_t port;
+	char buffer_read[ASC_BUFSIZE];
+	char buffer_write[ASC_BUFSIZE];
 } AppServerClient;
 
 
@@ -65,6 +68,8 @@ struct _AppServer
 
 
 /* functions */
+static int _appserver_read(int fd, AppServer * appserver);
+static int _appserver_write(int fd, AppServer * appserver);
 static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
@@ -83,6 +88,35 @@ static int _appserver_accept(int fd, AppServer * appserver)
 			== NULL)
 		return 1;
 	array_append(appserver->clients, asc);
+	event_register_io_read(appserver->event, newfd, _appserver_read,
+			appserver);
+/*	event_register_io_write(appserver->event, newfd, _appserver_write,
+			appserver); */
+	return 0;
+}
+
+
+static int _appserver_read(int fd, AppServer * appserver)
+{
+	char buf[16];
+	int len;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "_appserver_read(", fd, ", appserver)\n");
+#endif
+	if((len = read(fd, buf, sizeof(buf)-1)) < 0)
+		return 1;
+	buf[len] = '\0';
+	fprintf(stderr, "\"%s\"\n", buf);
+	return 0;
+}
+
+
+static int _appserver_write(int fd, AppServer * appserver)
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "_appserver_write(", fd, ", appserver)\n");
+#endif
 	return 0;
 }
 

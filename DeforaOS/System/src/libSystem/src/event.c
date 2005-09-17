@@ -83,27 +83,26 @@ void event_delete(Event * event)
 
 /* useful */
 static void _loop_timeouts(Event * event);
-static void _loop_reads(Event * event);
-static void _loop_writes(Event * event);
+static void _loop_reads(Event * event, fd_set * rfds);
+static void _loop_writes(Event * event, fd_set * wfds);
 int event_loop(Event * event)
 {
 	struct timeval * timeout = event->timeout.tv_sec == LONG_MAX
 		&& event->timeout.tv_usec == LONG_MAX ? NULL : &event->timeout;
-	fd_set rfds;
-	fd_set wfds;
+	fd_set rfds = event->rfds;
+	fd_set wfds = event->wfds;
 	int ret;
 
-	for(rfds = event->rfds, wfds = event->wfds;
-			(ret = select(event->fdmax+1, &rfds, &wfds, NULL,
-					timeout)) != -1;
-			rfds = event->rfds, wfds = event->wfds)
+	while((ret = select(event->fdmax+1, &rfds, &wfds, NULL, timeout)) != -1)
 	{
 		_loop_timeouts(event);
-		_loop_reads(event);
-		_loop_writes(event);
+		_loop_reads(event, &rfds);
+		_loop_writes(event, &wfds);
 		timeout = event->timeout.tv_sec == LONG_MAX
 			&& event->timeout.tv_usec == LONG_MAX
 			? NULL : &event->timeout;
+		rfds = event->rfds;
+		wfds = event->wfds;
 	}
 	if(ret != -1)
 		return 0;
@@ -125,7 +124,7 @@ static void _loop_timeouts(Event * event)
 	}
 }
 
-static void _loop_reads(Event * event)
+static void _loop_reads(Event * event, fd_set * rfds)
 {
 	unsigned int i = 0;
 	EventIO * eio;
@@ -133,7 +132,11 @@ static void _loop_reads(Event * event)
 	while(i < array_count(event->reads))
 	{
 		array_get(event->reads, i, &eio);
-		if(FD_ISSET(eio->fd, &event->rfds)
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s%p%s", "_loop_reads(): i=", i,
+				", eio=", eio, "\n");
+#endif
+		if(FD_ISSET(eio->fd, rfds)
 				&& eio->func(eio->fd, eio->data) != 0)
 		{
 			array_remove_pos(event->reads, i);
@@ -143,7 +146,7 @@ static void _loop_reads(Event * event)
 	}
 }
 
-static void _loop_writes(Event * event)
+static void _loop_writes(Event * event, fd_set * wfds)
 {
 	unsigned int i = 0;
 	EventIO * eio;
@@ -151,7 +154,11 @@ static void _loop_writes(Event * event)
 	while(i < array_count(event->writes))
 	{
 		array_get(event->writes, i, &eio);
-		if(FD_ISSET(eio->fd, &event->wfds)
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s%p%s", "_loop_writes(): i=", i,
+				", eio=", eio, "\n");
+#endif
+		if(FD_ISSET(eio->fd, wfds)
 				&& eio->func(eio->fd, eio->data) != 0)
 		{
 			array_remove_pos(event->writes, i);
