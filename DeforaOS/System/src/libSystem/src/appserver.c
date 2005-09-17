@@ -98,16 +98,34 @@ static int _appserver_accept(int fd, AppServer * appserver)
 
 static int _appserver_read(int fd, AppServer * appserver)
 {
-	char buf[16];
+	AppServerClient * asc = NULL;
+	unsigned int i;
 	int len;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "_appserver_read(", fd, ", appserver)\n");
 #endif
-	if((len = read(fd, buf, sizeof(buf)-1)) < 0)
+	for(i = 0; i < array_count(appserver->clients); i++)
+	{
+		if(!array_get(appserver->clients, i, &asc))
+			break;
+		if(fd == asc->fd)
+			break;
+		asc = NULL;
+	}
+	if(asc == NULL || (len = read(fd, asc->buffer_read,
+					sizeof(asc->buffer_read)-1)) < 0)
 		return 1;
-	buf[len] = '\0';
-	fprintf(stderr, "\"%s\"\n", buf);
+	if(len == 0)
+	{
+#ifdef DEBUG
+		perror("read");
+#endif
+		close(fd);
+		return 1;
+	}
+	asc->buffer_read[len] = '\0';
+	fprintf(stderr, "\"%s\"\n", asc->buffer_read);
 	return 0;
 }
 
