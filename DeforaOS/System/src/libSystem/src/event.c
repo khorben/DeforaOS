@@ -61,12 +61,13 @@ Event * event_new(void)
 		free(event);
 		return NULL;
 	}
-	event->timeout.tv_sec = LONG_MAX;
-	event->timeout.tv_usec = LONG_MAX;
-	event->reads = eventioarray_new(); /* FIXME */
-	event->writes = eventioarray_new(); /* FIXME */
+	event->fdmax = -1;
 	FD_ZERO(&event->rfds);
 	FD_ZERO(&event->wfds);
+	event->reads = eventioarray_new(); /* FIXME */
+	event->writes = eventioarray_new(); /* FIXME */
+	event->timeout.tv_sec = LONG_MAX;
+	event->timeout.tv_usec = LONG_MAX;
 	return event;
 }
 
@@ -83,8 +84,7 @@ void event_delete(Event * event)
 
 /* useful */
 static void _loop_timeout(Event * event);
-static void _loop_io_read(Event * event, fd_set * rfds);
-static void _loop_io_write(Event * event, fd_set * wfds);
+static void _loop_io(Event * event, eventioArray * eios, fd_set * fds);
 int event_loop(Event * event)
 {
 	struct timeval * timeout = event->timeout.tv_sec == LONG_MAX
@@ -96,8 +96,8 @@ int event_loop(Event * event)
 	while((ret = select(event->fdmax+1, &rfds, &wfds, NULL, timeout)) != -1)
 	{
 		_loop_timeout(event);
-		_loop_io_read(event, &rfds);
-		_loop_io_write(event, &wfds);
+		_loop_io(event, event->reads, &rfds);
+		_loop_io(event, event->writes, &wfds);
 		timeout = event->timeout.tv_sec == LONG_MAX
 			&& event->timeout.tv_usec == LONG_MAX
 			? NULL : &event->timeout;
@@ -107,8 +107,8 @@ int event_loop(Event * event)
 	if(ret != -1)
 		return 0;
 #ifdef DEBUG
-	sleep(1);
 	perror("select");
+	sleep(1);
 #endif
 	return 1;
 }
@@ -131,82 +131,25 @@ static void _loop_timeout(Event * event)
 	}
 }
 
-static int _io_fd_remove(Event * event, int fd);
-static void _loop_io_read(Event * event, fd_set * rfds)
+static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)
 {
 	unsigned int i = 0;
 	EventIO * eio;
+	int fd;
 
-	while(i < array_count(event->reads))
+	while(i < array_count(eios))
 	{
-		array_get(event->reads, i, &eio);
+		array_get(eios, i, &eio);
 #ifdef DEBUG
-		fprintf(stderr, "%s%d%s%p%s", "_loop_reads(): i=", i,
+		fprintf(stderr, "%s%d%s%p%s", "_loop_io(): i=", i,
 				", eio=", eio, "\n");
 #endif
-		if(FD_ISSET(eio->fd, rfds)
-				&& eio->func(eio->fd, eio->data) != 0)
-		{
-			event->fdmax = _io_fd_remove(event, eio->fd);
-			continue;
-		}
-		i++;
+		if((fd = eio->fd) <= event->fdmax && FD_ISSET(fd, fds)
+				&& eio->func(fd, eio->data) != 0)
+			event_unregister_io_read(event, fd);
+		else
+			i++;
 	}
-}
-
-static void _loop_io_write(Event * event, fd_set * wfds)
-{
-	unsigned int i = 0;
-	EventIO * eio;
-
-	while(i < array_count(event->writes))
-	{
-		array_get(event->writes, i, &eio); /* FIXME check error */
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s%p%s", "_loop_writes(): i=", i,
-				", eio=", eio, "\n");
-#endif
-		if(FD_ISSET(eio->fd, wfds)
-				&& eio->func(eio->fd, eio->data) != 0)
-		{
-			event->fdmax = _io_fd_remove(event, eio->fd);
-			continue;
-		}
-		i++;
-	}
-}
-
-static int _io_fd_remove(Event * event, int fd)
-{
-	unsigned int i;
-	int fdmax = -1;
-	EventIO * eio;
-
-	for(i = 0; i < array_count(event->reads); i++)
-	{
-		array_get(event->reads, i, &eio); /* FIXME check error */
-		if(eio->fd != fd)
-		{
-			fdmax = max(fdmax, eio->fd);
-			continue;
-		}
-		FD_CLR(eio->fd, &event->rfds);
-		free(eio);
-		array_remove_pos(event->reads, i);
-	}
-	for(i = 0; i < array_count(event->writes); i++)
-	{
-		array_get(event->writes, i, &eio); /* FIXME check error */
-		if(eio->fd != fd)
-		{
-			fdmax = max(fdmax, eio->fd);
-			continue;
-		}
-		FD_CLR(eio->fd, &event->wfds);
-		free(eio);
-		array_remove_pos(event->writes, i);
-	}
-	return fdmax;
 }
 
 
@@ -266,4 +209,47 @@ int event_register_timeout(Event * event, struct timeval timeout,
 		event->timeout.tv_usec = timeout.tv_usec;
 	}
 	return 0;
+}
+
+
+/* event_unregister_io_read */
+static int _unregister_io(eventioArray * eios, fd_set * fds, int fd);
+int event_unregister_io_read(Event * event, int fd)
+{
+	event->fdmax = _unregister_io(event->reads, &event->rfds, fd);
+	event->fdmax = max(event->fdmax, _unregister_io(event->writes, NULL,
+				-1));
+	return 0;
+}
+
+
+/* event_unregister_io_write */
+int event_unregister_io_write(Event * event, int fd)
+{
+	event->fdmax = _unregister_io(event->writes, &event->wfds, fd);
+	event->fdmax = max(event->fdmax, _unregister_io(event->reads, NULL,
+				-1));
+	return 0;
+}
+
+static int _unregister_io(eventioArray * eios, fd_set * fds, int fd)
+{
+	unsigned int i = 0;
+	EventIO * eio;
+	int fdmax = -1;
+
+	while(i < array_count(eios))
+	{
+		array_get(eios, i, &eio);
+		if(eio->fd != fd)
+		{
+			fdmax = max(fdmax, eio->fd);
+			i++;
+			continue;
+		}
+		FD_CLR(fd, fds);
+		array_remove_pos(eios, i);
+		free(eio);
+	}
+	return fdmax;
 }
