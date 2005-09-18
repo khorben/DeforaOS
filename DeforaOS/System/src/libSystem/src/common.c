@@ -3,6 +3,9 @@
 
 
 #include <stdint.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 
 #include "common.h"
 
@@ -43,6 +46,9 @@ int asc_send_call(ASCCall * call, char buf[], int buflen, void ** args)
 	int i;
 	int size;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s", "asc_send_call(", call->name, ");\n");
+#endif
 	if(_send_string(call->name, buf, buflen, &pos) != 0)
 		return -1;
 	for(i = 0; i < call->args_cnt; i++)
@@ -65,6 +71,9 @@ int asc_send_call(ASCCall * call, char buf[], int buflen, void ** args)
 			case ASC_UINT64:
 				size = sizeof(int64_t);
 				break;
+			default:
+				/* FIXME */
+				return -1;
 		}
 		if(_send_buffer(args[i], size, buf, buflen, &pos) != 0)
 			return 1;
