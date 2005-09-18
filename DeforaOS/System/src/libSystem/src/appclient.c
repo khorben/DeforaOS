@@ -12,7 +12,7 @@
 #endif
 
 #include "string.h"
-#include "common.h"
+#include "appinterface.h"
 #include "appclient.h"
 
 
@@ -22,13 +22,13 @@
 struct _AppClient
 {
 	Event * event;
+	AppInterface * interface;
 	int fd;
+#define ASC_BUFSIZE 65536 /* FIXME */
 	char buf_read[ASC_BUFSIZE];
 	int buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	int buf_write_cnt;
-	ASCCall * ascc;
-	int ascc_cnt;
 };
 
 
@@ -44,7 +44,7 @@ static int _appclient_timeout(AppClient * appclient)
 }
 
 
-static int _appclient_read(int fd, AppClient * ac)
+/* static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len;
 
@@ -52,13 +52,13 @@ static int _appclient_read(int fd, AppClient * ac)
 			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
 					len)) <= 0)
 	{
-		/* FIXME */
+		/ * FIXME * /
 		return 1;
 	}
 	ac->buf_read_cnt+=len;
-	/* FIXME */
+	/ * FIXME * /
 	return 0;
-}
+} */
 
 
 static int _appclient_write(int fd, AppClient * ac)
@@ -112,8 +112,6 @@ AppClient * appclient_new_event(char * app, Event * event)
 	appclient->fd = -1;
 	appclient->buf_read_cnt = 0;
 	appclient->buf_write_cnt = 0;
-	appclient->ascc = NULL;
-	appclient->ascc_cnt = 0;
 	if(_new_connect(appclient, app) != 0)
 	{
 		free(appclient);
@@ -130,7 +128,7 @@ static int _new_connect(AppClient * appclient, char * app)
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(ASC_PORT_SESSION);
+	sa.sin_port = htons(4242); /* FIXME */
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	if(connect(appclient->fd, &sa, sizeof(sa)) != 0)
 		return 1;
@@ -138,7 +136,7 @@ static int _new_connect(AppClient * appclient, char * app)
 			(EventTimeoutFunc)_appclient_timeout, appclient);
 	event_register_io_write(appclient->event, appclient->fd,
 			(EventIOFunc)_appclient_write, appclient); */
-	if((port = appclient_call(appclient, "service_info", app)) == -1)
+	if((port = appclient_call(appclient, "info", app)) == -1)
 		return 1;
 	if(port == 0)
 		return 0;
@@ -160,16 +158,15 @@ void appclient_delete(AppClient * appclient)
 
 
 /* useful */
-int appclient_call(AppClient * appclient, char * function, ...)
+int appclient_call(AppClient * ac, char * function, ...)
 {
-	ASCCall * ascc = NULL;
 	va_list arg;
 	int i;
 	void ** args = NULL;
 	void ** p;
 	struct timeval tv = { 0, 10 };
 
-	for(i = 0; i < appclient->ascc_cnt; i++)
+/*	for(i = 0; i < appclient->ascc_cnt; i++)
 	{
 		if(string_compare(appclient->ascc[i].name, function) != 0)
 			continue;
@@ -177,9 +174,9 @@ int appclient_call(AppClient * appclient, char * function, ...)
 		break;
 	}
 	if(ascc == NULL)
-		return -1;
+		return -1; */
 	va_start(arg, function);
-	for(i = 0; i < ascc->args_cnt; i++)
+	for(i = 0; i < 0 /* FIXME XXX */; i++)
 	{
 		if((p = realloc(args, i * sizeof(void*))) == NULL)
 			break;
@@ -187,12 +184,15 @@ int appclient_call(AppClient * appclient, char * function, ...)
 		args[i] = va_arg(arg, void *);
 	}
 	va_end(arg);
-	if(asc_send_call(ascc, &appclient->buf_write[appclient->buf_write_cnt], sizeof(appclient->buf_write) - appclient->buf_write_cnt, args) != 0)
+	if(appinterface_call(ac->interface, function,
+				&ac->buf_write[ac->buf_write_cnt],
+				sizeof(ac->buf_write) - ac->buf_write_cnt,
+				args) != 0)
 		return -1;
-	event_register_timeout(appclient->event, tv,
-			(EventTimeoutFunc)_appclient_timeout, appclient);
-	event_register_io_write(appclient->event, appclient->fd,
-			(EventIOFunc)_appclient_write, appclient);
-	event_loop(appclient->event);
+	event_register_timeout(ac->event, tv,
+			(EventTimeoutFunc)_appclient_timeout, ac);
+	event_register_io_write(ac->event, ac->fd,
+			(EventIOFunc)_appclient_write, ac);
+	event_loop(ac->event);
 	return 0;
 }

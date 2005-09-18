@@ -12,7 +12,7 @@
 
 #include "array.h"
 #include "string.h"
-#include "common.h"
+#include "appinterface.h"
 #include "appserver.h"
 
 
@@ -30,6 +30,7 @@ typedef struct _AppServerClient
 	int fd;
 	uint32_t addr; /* FIXME uint8_t[4] instead? */
 	uint16_t port;
+#define ASC_BUFSIZE 65536 /* FIXME */
 	char buf_read[ASC_BUFSIZE];
 	unsigned int buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
@@ -72,15 +73,14 @@ void appserverclient_delete(AppServerClient * appserverclient)
 ARRAY(AppServerClient *, AppServerClient);
 struct _AppServer
 {
+	AppInterface * interface;
 	Event * event;
-	uint16_t port;
 	AppServerClientArray * clients;
 };
 
 
 /* functions */
 static int _appserver_read(int fd, AppServer * appserver);
-static int _appserver_write(int fd, AppServer * appserver);
 static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
@@ -160,7 +160,7 @@ static int _read_process(AppServer * appserver, AppServerClient * asc)
 }
 
 
-static int _appserver_write(int fd, AppServer * appserver)
+/* static int _appserver_write(int fd, AppServer * appserver)
 {
 	AppServerClient * asc = NULL;
 	unsigned int i;
@@ -193,7 +193,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 			", appserver): ", len, " characters written\n");
 #endif
 	return 0;
-}
+} */
 
 
 /* public */
@@ -216,49 +216,29 @@ AppServer * appserver_new(const char * app, int options)
 
 
 /* appserver_new_event */
-static int _new_interface(AppServer * appserver, const char * app);
 static int _new_server(AppServer * appserver, int options);
-AppServer * appserver_new_event(const char * app, int options, Event * event)
+AppServer * appserver_new_event(char const * app, int options, Event * event)
 {
 	AppServer * appserver;
 
 	if((appserver = malloc(sizeof(AppServer))) == NULL)
 		return NULL;
+	appserver->interface = NULL;
 	appserver->event = event;
+	appserver->clients = NULL;
 	if((appserver->clients = AppServerClientarray_new()) == NULL
-			|| _new_interface(appserver, app) != 0
+			|| (appserver->interface = appinterface_new(app))
+			!= NULL
 			|| _new_server(appserver, options) != 0)
 	{
+		if(appserver->clients != NULL)
+			array_delete(appserver->clients);
+		if(appserver->interface != NULL)
+			appinterface_delete(appserver->interface);
 		free(appserver);
 		return NULL;
 	}
 	return appserver;
-}
-
-static int _new_interface(AppServer * appserver, const char * app)
-	/* FIXME interfaces are hardcoded */
-{
-	if(string_compare(app, "Session") == 0)
-	{
-		appserver->port = ASC_PORT_SESSION; /* FIXME */
-		return 0;
-	}
-	else if(string_compare(app, "Hello") == 0)
-	{
-		appserver->port = 4343;
-		return 0; /* FIXME */
-	}
-	else if(string_compare(app, "Network") == 0)
-	{
-		/* FIXME */
-		return 0;
-	}
-	else if(string_compare(app, "Probe") == 0)
-	{
-		/* FIXME */
-		return 0;
-	}
-	return 1;
 }
 
 static int _new_server(AppServer * appserver, int options)
@@ -269,7 +249,7 @@ static int _new_server(AppServer * appserver, int options)
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(appserver->port);
+	sa.sin_port = htons(4242); /* FIXME */
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
 			: INADDR_ANY);
 	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0

@@ -19,8 +19,8 @@ enum _AppServerOptions
 
 
 /* functions */
-AppServer * appserver_new(const char * app, int options);
-AppServer * appserver_new_event(const char * app, int options, Event * event);
+AppServer * appserver_new(char const * app, int options);
+AppServer * appserver_new_event(char const * app, int options, Event * event);
 void appserver_delete(AppServer * appserver);
 
 /* useful */
