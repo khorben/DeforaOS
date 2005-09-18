@@ -6,7 +6,9 @@
 #include <netinet/ip.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 
 #include "array.h"
 #include "string.h"
@@ -53,8 +55,13 @@ AppServerClient * appserverclient_new(int fd, uint32_t addr, uint16_t port)
 
 void appserverclient_delete(AppServerClient * appserverclient)
 {
+	/* FIXME find a way to properly report error */
+#ifdef DEBUG
 	if(close(appserverclient->fd) != 0)
-		perror("close"); /* FIXME find a way to properly report error */
+		perror("close");
+# else
+	close(appserverclient->fd);
+#endif
 	free(appserverclient);
 }
 
@@ -85,7 +92,6 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	fprintf(stderr, "%s%d%s%p%s", "_appserver_accept(", fd, ", ", appserver,
 			")\n");
 #endif
-	/* FIXME append client to the clients list with the appropriate state */
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return 1;
 	if((asc = appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port))
@@ -102,6 +108,7 @@ static int _appserver_accept(int fd, AppServer * appserver)
 }
 
 
+static int _read_process(AppServer * appserver, AppServerClient * asc);
 static int _appserver_read(int fd, AppServer * appserver)
 {
 	AppServerClient * asc = NULL;
@@ -122,6 +129,8 @@ static int _appserver_read(int fd, AppServer * appserver)
 			|| (len = read(fd, &asc->buf_read[asc->buf_read_cnt],
 					len)) <= 0)
 	{
+		/* FIXME do all this in appserverclient_delete() or something
+		 * like appserver_remove_client() */
 		if(asc->buf_write_cnt > 0)
 			event_unregister_io_write(appserver->event, fd);
 		event_unregister_io_read(appserver->event, fd);
@@ -134,6 +143,19 @@ static int _appserver_read(int fd, AppServer * appserver)
 	fprintf(stderr, "%s%d%s%d%s", "_appserver_read(", fd,
 			", appserver): ", len, " characters read\n");
 #endif
+	return _read_process(appserver, asc);
+}
+
+static int _read_process(AppServer * appserver, AppServerClient * asc)
+{
+	switch(asc->state)
+	{
+		case ASCS_NEW:
+			/* FIXME authenticate */
+		case ASCS_LOGGED:
+			/* FIXME check errors */
+			break;
+	}
 	return 0;
 }
 
@@ -177,8 +199,6 @@ static int _appserver_write(int fd, AppServer * appserver)
 /* public */
 /* functions */
 /* appserver_new */
-static int _new_interface(AppServer * appserver, const char * app);
-static int _new_server(AppServer * appserver, int options);
 AppServer * appserver_new(const char * app, int options)
 {
 	AppServer * appserver;
@@ -196,6 +216,8 @@ AppServer * appserver_new(const char * app, int options)
 
 
 /* appserver_new_event */
+static int _new_interface(AppServer * appserver, const char * app);
+static int _new_server(AppServer * appserver, int options);
 AppServer * appserver_new_event(const char * app, int options, Event * event)
 {
 	AppServer * appserver;
@@ -218,16 +240,23 @@ static int _new_interface(AppServer * appserver, const char * app)
 {
 	if(string_compare(app, "Session") == 0)
 	{
-		appserver->port = 4242; /* FIXME */
+		appserver->port = ASC_PORT_SESSION; /* FIXME */
 		return 0;
+	}
+	else if(string_compare(app, "Hello") == 0)
+	{
+		appserver->port = 4343;
+		return 0; /* FIXME */
 	}
 	else if(string_compare(app, "Network") == 0)
 	{
 		/* FIXME */
+		return 0;
 	}
 	else if(string_compare(app, "Probe") == 0)
 	{
 		/* FIXME */
+		return 0;
 	}
 	return 1;
 }
@@ -238,7 +267,7 @@ static int _new_server(AppServer * appserver, int options)
 	struct sockaddr_in sa;
 
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		return 1; /* FIXME report error */
+		return 1;
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appserver->port);
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
@@ -247,8 +276,12 @@ static int _new_server(AppServer * appserver, int options)
 			|| listen(fd, 5) != 0)
 	{
 		/* FIXME report error */
+#ifdef DEBUG
 		if(close(fd) != 0)
-			perror("close"); /* FIXME report error appropriately */
+			perror("close");
+# else
+		close(fd);
+#endif
 		return 1;
 	}
 	event_register_io_read(appserver->event, fd,
