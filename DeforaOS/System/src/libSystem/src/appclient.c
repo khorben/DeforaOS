@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 
 #include "string.h"
 #include "common.h"
@@ -34,6 +37,9 @@ static int _appclient_timeout(AppClient * appclient)
 {
 	static int cnt = 0;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "appclient_timeout(): ", cnt, "\n");
+#endif
 	return cnt++ > 1000 || appclient->fd > -1; /* FIXME use a constant */
 }
 
@@ -59,6 +65,9 @@ static int _appclient_write(int fd, AppClient * ac)
 {
 	ssize_t len;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "appclient_write(", fd, ")\n");
+#endif
 	len = ac->buf_write_cnt;
 	if((len = write(fd, ac->buf_write, len)) <= 0)
 	{
@@ -94,6 +103,9 @@ AppClient * appclient_new_event(char * app, Event * event)
 {
 	AppClient * appclient;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s", "appclient_new(", app, ")\n");
+#endif
 	if((appclient = malloc(sizeof(AppClient))) == NULL)
 		return NULL;
 	appclient->event = event;
@@ -113,7 +125,6 @@ AppClient * appclient_new_event(char * app, Event * event)
 static int _new_connect(AppClient * appclient, char * app)
 {
 	struct sockaddr_in sa;
-	struct timeval tv = { 0, 10 };
 	int port;
 
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -123,10 +134,10 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	if(connect(appclient->fd, &sa, sizeof(sa)) != 0)
 		return 1;
-	event_register_timeout(appclient->event, tv,
+/*	event_register_timeout(appclient->event, tv,
 			(EventTimeoutFunc)_appclient_timeout, appclient);
 	event_register_io_write(appclient->event, appclient->fd,
-			(EventIOFunc)_appclient_write, appclient);
+			(EventIOFunc)_appclient_write, appclient); */
 	if((port = appclient_call(appclient, "service_info", app)) == -1)
 		return 1;
 	if(port == 0)
@@ -153,10 +164,10 @@ int appclient_call(AppClient * appclient, char * function, ...)
 {
 	ASCCall * ascc = NULL;
 	va_list arg;
-	int ret;
 	int i;
 	void ** args = NULL;
 	void ** p;
+	struct timeval tv = { 0, 10 };
 
 	for(i = 0; i < appclient->ascc_cnt; i++)
 	{
@@ -166,7 +177,7 @@ int appclient_call(AppClient * appclient, char * function, ...)
 		break;
 	}
 	if(ascc == NULL)
-		return 1;
+		return -1;
 	va_start(arg, function);
 	for(i = 0; i < ascc->args_cnt; i++)
 	{
@@ -176,6 +187,12 @@ int appclient_call(AppClient * appclient, char * function, ...)
 		args[i] = va_arg(arg, void *);
 	}
 	va_end(arg);
-	ret = asc_send_call(ascc, &appclient->buf_write[appclient->buf_write_cnt], sizeof(appclient->buf_write) - appclient->buf_write_cnt, args);
-	return ret;
+	if(asc_send_call(ascc, &appclient->buf_write[appclient->buf_write_cnt], sizeof(appclient->buf_write) - appclient->buf_write_cnt, args) != 0)
+		return -1;
+	event_register_timeout(appclient->event, tv,
+			(EventTimeoutFunc)_appclient_timeout, appclient);
+	event_register_io_write(appclient->event, appclient->fd,
+			(EventIOFunc)_appclient_write, appclient);
+	event_loop(appclient->event);
+	return 0;
 }
