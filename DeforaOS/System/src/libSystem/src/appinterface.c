@@ -66,7 +66,7 @@ AppInterface * appinterface_new(char const * app)
 		if(string_compare(app, ifaces[i].name) != 0)
 			continue;
 #ifdef DEBUG
-		fprintf(stderr, "%s%s%s", "Creating a \"", app, "\"\n");
+		fprintf(stderr, "%s%s%s", "AppInterface \"", app, "\"\n");
 #endif
 		if(ifaces[i].func(appinterface) != 0)
 			i = sizeof(ifaces) / sizeof(struct iface);
@@ -209,7 +209,7 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 		if(_send_buffer(args[i], size, buf, buflen, &pos) != 0)
 			return -1;
 	}
-	return 0;
+	return pos;
 }
 
 static int _send_buffer(char * data, int datalen, char * buf, int buflen,

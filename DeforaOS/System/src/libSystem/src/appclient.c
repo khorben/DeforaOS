@@ -69,6 +69,9 @@ static int _appclient_write(int fd, AppClient * ac)
 	fprintf(stderr, "%s%d%s", "appclient_write(", fd, ")\n");
 #endif
 	len = ac->buf_write_cnt;
+#ifdef DEBUG
+	fprintf(stderr, "writing %d\n", len);
+#endif
 	if((len = write(fd, ac->buf_write, len)) <= 0)
 	{
 		/* FIXME */
@@ -76,6 +79,9 @@ static int _appclient_write(int fd, AppClient * ac)
 	}
 	memmove(ac->buf_write, &ac->buf_write[len], len);
 	ac->buf_write_cnt-=len;
+#ifdef DEBUG
+	fprintf(stderr, "written %d, %d left\n", len, ac->buf_write_cnt);
+#endif
 	return ac->buf_write_cnt > 0 ? 0 : 1;
 }
 
@@ -140,7 +146,12 @@ static int _new_connect(AppClient * appclient, char * app)
 	if((port = appclient_call(appclient, "port", 1, app)) == -1)
 		return 1;
 	if(port == 0)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "%s", "AppClient's Session supports our Interface\n");
+#endif
 		return 0;
+	}
 	close(appclient->fd);
 	appinterface_delete(appclient->interface);
 	if((appclient->interface = appinterface_new(app)) == NULL)
@@ -179,15 +190,21 @@ int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 		args[i] = va_arg(arg, void *);
 	}
 	va_end(arg);
-	if(appinterface_call(ac->interface, function,
+	if(i != args_cnt)
+		return -1;
+	if((i = appinterface_call(ac->interface, function,
 				&ac->buf_write[ac->buf_write_cnt],
 				sizeof(ac->buf_write) - ac->buf_write_cnt,
-				args) != 0)
+				args)) <= 0)
 		return -1;
+	ac->buf_write_cnt+=i;
 	event_register_timeout(ac->event, tv,
 			(EventTimeoutFunc)_appclient_timeout, ac);
 	event_register_io_write(ac->event, ac->fd,
 			(EventIOFunc)_appclient_write, ac);
+#ifdef DEBUG
+	fprintf(stderr, "%s", "AppClient looping in wait for answer()\n");
+#endif
 	event_loop(ac->event);
 	return 0;
 }

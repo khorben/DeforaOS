@@ -21,6 +21,7 @@
 /* types */
 typedef struct _EventTimeout
 {
+	struct timeval initial;
 	struct timeval timeout;
 	EventTimeoutFunc func;
 	void * data;
@@ -117,6 +118,7 @@ static void _loop_timeout(Event * event)
 {
 	struct timeval now;
 	unsigned int i = 0;
+	EventTimeout * et;
 
 	if(gettimeofday(&now, NULL) != 0)
 #ifdef DEBUG
@@ -124,9 +126,30 @@ static void _loop_timeout(Event * event)
 # else
 		return;
 #endif
+	event->timeout.tv_sec = LONG_MAX;
+	event->timeout.tv_usec = LONG_MAX;
 	while(i < array_count(event->timeouts))
 	{
-		/* FIXME */
+		array_get(event->timeouts, i, &et);
+		if(now.tv_sec > et->timeout.tv_sec
+				|| (now.tv_sec == et->timeout.tv_sec
+					&& now.tv_usec >= et->timeout.tv_usec))
+			if(et->func(et->data) != 0)
+			{
+				array_remove_pos(event->timeouts, i);
+				free(et);
+				continue;
+			}
+		et->timeout.tv_sec = et->initial.tv_sec + now.tv_sec;
+		et->timeout.tv_usec = et->initial.tv_usec + now.tv_usec;
+		if(et->timeout.tv_sec < event->timeout.tv_sec
+				|| (et->timeout.tv_sec == event->timeout.tv_sec
+					&& et->timeout.tv_usec
+					< event->timeout.tv_usec))
+		{
+			event->timeout.tv_sec = et->timeout.tv_sec;
+			event->timeout.tv_usec = et->timeout.tv_usec;
+		}
 		i++;
 	}
 }
@@ -146,7 +169,18 @@ static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)
 #endif
 		if((fd = eio->fd) <= event->fdmax && FD_ISSET(fd, fds)
 				&& eio->func(fd, eio->data) != 0)
-			event_unregister_io_read(event, fd);
+		{
+			if(eios == event->reads)
+				event_unregister_io_read(event, fd);
+			else if(eios == event->writes)
+				event_unregister_io_write(event, fd);
+#ifdef DEBUG
+			else
+				fprintf(stderr, "%s%s%d%s", __FILE__, ", ",
+						__LINE__,
+						": should not happen\n");
+#endif
+		}
 		else
 			i++;
 	}
@@ -197,10 +231,15 @@ int event_register_timeout(Event * event, struct timeval timeout,
 		EventTimeoutFunc func, void * data)
 {
 	EventTimeout * eventtimeout;
+	struct timeval now;
 
+	if(gettimeofday(&now, NULL) != 0)
+		return 1;
 	if((eventtimeout = malloc(sizeof(EventTimeout))) == NULL)
 		return 1;
-	eventtimeout->timeout = timeout;
+	eventtimeout->initial = timeout;
+	eventtimeout->timeout.tv_sec = now.tv_sec + timeout.tv_sec;
+	eventtimeout->timeout.tv_usec = now.tv_usec + timeout.tv_usec;
 	eventtimeout->func = func;
 	eventtimeout->data = data;
 	array_append(event->timeouts, eventtimeout);
