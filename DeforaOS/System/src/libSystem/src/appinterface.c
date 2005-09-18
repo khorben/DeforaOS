@@ -194,8 +194,16 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 			case AICT_UINT64:
 				size = sizeof(int64_t);
 				break;
+			case AICT_STRING:
+				_send_string(args[i], buf, buflen, &pos);
+				continue;
 			default:
 				/* FIXME */
+#ifdef DEBUG
+				fprintf(stderr, "%s, %d: %s", __FILE__,
+						__LINE__,
+						"Should not happen\n");
+#endif
 				return -1;
 		}
 		if(_send_buffer(args[i], size, buf, buflen, &pos) != 0)
@@ -218,6 +226,9 @@ static int _send_string(char * string, char * buf, int buflen, int * pos)
 {
 	int i = 0;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s", "send_string(", string, ");\n");
+#endif
 	while(*pos < buflen)
 	{
 		buf[*pos] = string[i++];

@@ -76,7 +76,7 @@ static int _appclient_write(int fd, AppClient * ac)
 	}
 	memmove(ac->buf_write, &ac->buf_write[len], len);
 	ac->buf_write_cnt-=len;
-	return 0;
+	return ac->buf_write_cnt > 0 ? 0 : 1;
 }
 
 
@@ -137,7 +137,7 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	if(connect(appclient->fd, &sa, sizeof(sa)) != 0)
 		return 1;
-	if((port = appclient_call(appclient, "port", app)) == -1)
+	if((port = appclient_call(appclient, "port", 1, app)) == -1)
 		return 1;
 	if(port == 0)
 		return 0;
@@ -162,7 +162,7 @@ void appclient_delete(AppClient * appclient)
 
 
 /* useful */
-int appclient_call(AppClient * ac, char * function, ...)
+int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 {
 	va_list arg;
 	int i;
@@ -170,8 +170,8 @@ int appclient_call(AppClient * ac, char * function, ...)
 	void ** p;
 	struct timeval tv = { 0, 10 };
 
-	va_start(arg, function);
-	for(i = 0; i < 0 /* FIXME XXX */; i++)
+	va_start(arg, args_cnt);
+	for(i = 0; i < args_cnt; i++) /* FIXME */
 	{
 		if((p = realloc(args, i * sizeof(void*))) == NULL)
 			break;

@@ -19,6 +19,6 @@ AppClient * appclient_new_event(char * service, Event * event);
 void appclient_delete(AppClient * appclient);
 
 /* useful */
-int appclient_call(AppClient * appclient, char * function, ...);
+int appclient_call(AppClient * appclient, char * function, int args_cnt, ...);
 
 #endif /* !_APPCLIENT_H */
