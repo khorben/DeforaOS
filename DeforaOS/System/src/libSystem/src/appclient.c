@@ -44,7 +44,7 @@ static int _appclient_timeout(AppClient * appclient)
 }
 
 
-/* static int _appclient_read(int fd, AppClient * ac)
+static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len;
 
@@ -52,13 +52,13 @@ static int _appclient_timeout(AppClient * appclient)
 			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
 					len)) <= 0)
 	{
-		/ * FIXME * /
+		/* FIXME */
 		return 1;
 	}
 	ac->buf_read_cnt+=len;
-	/ * FIXME * /
-	return 0;
-} */
+	/* FIXME */
+	return ac->buf_read_cnt < 65536 ? 0 : 1; /* FIXME */
+}
 
 
 static int _appclient_write(int fd, AppClient * ac)
@@ -82,7 +82,10 @@ static int _appclient_write(int fd, AppClient * ac)
 #ifdef DEBUG
 	fprintf(stderr, "written %d, %d left\n", len, ac->buf_write_cnt);
 #endif
-	return ac->buf_write_cnt > 0 ? 0 : 1;
+	if(ac->buf_write_cnt > 0)
+		return 0;
+	event_register_io_read(ac->event, fd, _appclient_read, ac);
+	return 1;
 }
 
 
