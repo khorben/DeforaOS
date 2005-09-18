@@ -3,8 +3,6 @@
 
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "string.h"
 
 
@@ -15,7 +13,7 @@ String * string_new(String * string)
 	int length = string_length(string);
 
 	if((str = malloc(length + 1)) == NULL)
-		perror("strdup");
+		return NULL;
 	strcpy(str, string);
 	return str;
 }
@@ -35,10 +33,7 @@ int string_append(String ** string, String * append)
 	int length = string_length(*string);
 
 	if((p = realloc(string, length + string_length(append) + 1)) == NULL)
-	{
-		perror("realloc");
 		return 1;
-	}
 	*string = p;
 	strcpy(*string + length, append);
 	return 0;
