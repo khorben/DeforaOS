@@ -228,7 +228,7 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 	appserver->clients = NULL;
 	if((appserver->clients = AppServerClientarray_new()) == NULL
 			|| (appserver->interface = appinterface_new(app))
-			!= NULL
+			== NULL
 			|| _new_server(appserver, options) != 0)
 	{
 		if(appserver->clients != NULL)

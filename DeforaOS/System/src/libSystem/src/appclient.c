@@ -21,8 +21,8 @@
 /* types */
 struct _AppClient
 {
-	Event * event;
 	AppInterface * interface;
+	Event * event;
 	int fd;
 #define ASC_BUFSIZE 65536 /* FIXME */
 	char buf_read[ASC_BUFSIZE];
@@ -108,6 +108,11 @@ AppClient * appclient_new_event(char * app, Event * event)
 #endif
 	if((appclient = malloc(sizeof(AppClient))) == NULL)
 		return NULL;
+	if((appclient->interface = appinterface_new("Session")) == NULL)
+	{
+		free(appclient);
+		return NULL;
+	}
 	appclient->event = event;
 	appclient->fd = -1;
 	appclient->buf_read_cnt = 0;
@@ -132,15 +137,14 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	if(connect(appclient->fd, &sa, sizeof(sa)) != 0)
 		return 1;
-/*	event_register_timeout(appclient->event, tv,
-			(EventTimeoutFunc)_appclient_timeout, appclient);
-	event_register_io_write(appclient->event, appclient->fd,
-			(EventIOFunc)_appclient_write, appclient); */
-	if((port = appclient_call(appclient, "info", app)) == -1)
+	if((port = appclient_call(appclient, "port", app)) == -1)
 		return 1;
 	if(port == 0)
 		return 0;
 	close(appclient->fd);
+	appinterface_delete(appclient->interface);
+	if((appclient->interface = appinterface_new(app)) == NULL)
+		return 1;
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_port = htons(port);
@@ -166,15 +170,6 @@ int appclient_call(AppClient * ac, char * function, ...)
 	void ** p;
 	struct timeval tv = { 0, 10 };
 
-/*	for(i = 0; i < appclient->ascc_cnt; i++)
-	{
-		if(string_compare(appclient->ascc[i].name, function) != 0)
-			continue;
-		ascc = &appclient->ascc[i];
-		break;
-	}
-	if(ascc == NULL)
-		return -1; */
 	va_start(arg, function);
 	for(i = 0; i < 0 /* FIXME XXX */; i++)
 	{

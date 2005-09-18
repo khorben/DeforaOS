@@ -91,6 +91,10 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 	int i;
 	int j;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s%d%s", "interface supports ", function, "(",
+			args_cnt, ")\n");
+#endif
 	for(i = 0; i < ai->calls_cnt; i++)
 		if(string_compare(ai->calls[i].name, function) == 0)
 			return 1;
@@ -111,7 +115,7 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 	for(j = 0; j < args_cnt; j++)
 		ai->calls[i].args[j] = va_arg(args, AppInterfaceCallType);
 	va_end(args);
-	return i == args_cnt ? 0 : 1;
+	return 0;
 }
 
 static int _new_session(AppInterface * appinterface)
