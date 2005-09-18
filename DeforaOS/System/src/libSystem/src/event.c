@@ -177,6 +177,9 @@ int event_register_io_write(Event * event, int fd, EventIOFunc func,
 {
 	EventIO * eventio;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s", "event_register_io_write()\n");
+#endif
 	if((eventio = malloc(sizeof(EventIO))) == NULL)
 		return 1;
 	eventio->fd = fd;
