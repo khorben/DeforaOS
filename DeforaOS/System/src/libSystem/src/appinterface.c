@@ -7,6 +7,7 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <dlfcn.h>
 
 #include "string.h"
 #include "appinterface.h"
@@ -30,6 +31,7 @@ typedef struct _AppInterfaceCall
 	AppInterfaceCallType type;
 	AppInterfaceCallType * args;
 	int args_cnt;
+	void * func;
 } AppInterfaceCall;
 
 struct _AppInterface
@@ -107,7 +109,6 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 	ai->calls = p;
 	ai->calls_cnt++;
 	ai->calls[i].type = type;
-	/* FIXME */
 	ai->calls[i].name = string_new(function);
 	ai->calls[i].args = malloc(sizeof(AppInterfaceCallType) * args_cnt);
 	ai->calls[i].args_cnt = args_cnt;
@@ -132,6 +133,32 @@ static int _new_session(AppInterface * appinterface)
 static int _new_hello(AppInterface * appinterface)
 {
 	return _new_append(appinterface, AICT_VOID, "hello", 0);
+}
+
+
+/* appinterface_new_server */
+AppInterface * appinterface_new_server(char const * app)
+{
+	AppInterface * appinterface;
+	void * handle;
+	int i;
+
+	if((handle = dlopen(NULL, RTLD_LAZY)) == NULL)
+		return NULL;
+	if((appinterface = appinterface_new(app)) == NULL)
+		return NULL;
+	for(i = 0; i < appinterface->calls_cnt; i++)
+	{
+		appinterface->calls[i].func = dlsym(handle,
+				appinterface->calls[i].name);
+#ifdef DEBUG
+		if(appinterface->calls[i].func == NULL)
+			fprintf(stderr, "%s%s%s", "AppServer lacks function \"",
+					appinterface->calls[i].name, "\"\n");
+#endif
+	}
+	dlclose(handle);
+	return appinterface;
 }
 
 

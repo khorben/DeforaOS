@@ -13,6 +13,7 @@ typedef struct _AppInterface AppInterface;
 
 /* functions */
 AppInterface * appinterface_new(char const * app);
+AppInterface * appinterface_new_server(char const * app);
 void appinterface_delete(AppInterface * appinterface);
 
 /* useful */
