@@ -28,7 +28,7 @@ static int _init(void)
 		event_delete(event);
 		return 1;
 	}
-	for(; event_loop(event) == 0;);
+	event_loop(event);
 	appserver_delete(appserver);
 	event_delete(event);
 	return 0;
