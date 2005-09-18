@@ -10,7 +10,7 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-libSystem_OBJS= appclient.o appserver.o array.o common.o event.o string.o
+libSystem_OBJS= appclient.o appinterface.o appserver.o array.o event.o string.o
 libSystem_CFLAGS=$(CFLAGSF) $(CFLAGS)
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
@@ -22,14 +22,14 @@ libSystem.so: $(libSystem_OBJS)
 appclient.o: appclient.c
 	$(CC) $(libSystem_CFLAGS) -c appclient.c
 
+appinterface.o: appinterface.c
+	$(CC) $(libSystem_CFLAGS) -c appinterface.c
+
 appserver.o: appserver.c
 	$(CC) $(libSystem_CFLAGS) -c appserver.c
 
 array.o: array.c
 	$(CC) $(libSystem_CFLAGS) -c array.c
-
-common.o: common.c
-	$(CC) $(libSystem_CFLAGS) -c common.c
 
 event.o: event.c
 	$(CC) $(libSystem_CFLAGS) -c event.c
