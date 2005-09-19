@@ -42,6 +42,41 @@ function _modify($id)
 }
 
 
+function _password_mail($id, $username, $email, $password = FALSE)
+	/* FIXME weak passwords and keys...? */
+{
+	if($password == FALSE)
+		$password = _password_new();
+	$key = md5(_password_new());
+	if(_sql_query('INSERT INTO daportal_user_register (user_id, key)'
+			.' VALUES ('
+			."'$id', '$key');") == FALSE)
+		return _error('Could not create confirmation key');
+	$message = "Your password is '$password'\n\n"
+			."Please click on the following link to confirm:\n"
+			.$_SERVER[''].'://'.$_SERVER['']
+			.'/index.php?module=user&action=confirm&key='
+			.$key;
+	$headers = "From: DeforaOS Administration Team <root@defora.org>\n";
+	_info('Mail sent to: '.$username.' <'.$email.'>');
+	if(mail($username.' <'.$email.'>', 'User confirmation', $message,
+		$headers) == FALSE)
+		return _error('Could not send mail');
+}
+
+
+function _password_new()
+{
+	$string = 'abcdefghijklmnopqrstuvwxyz'
+			.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+			.'0123456789';
+	$password = '';
+	for($i = 0; $i < 8; $i++)
+		$password.=$string[rand(0, strlen($string))];
+	return $password;
+}
+
+
 function user_admin($args)
 {
 	global $user_id;
@@ -132,8 +167,7 @@ function user_register($args)
 			if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
 					.'[a-zA-Z]{1,4}$', $args['email']))
 				$message = EMAIL_INVALID;
-			else if(_sql_array('SELECT email'
-					.' FROM daportal_user'
+			else if(_sql_array('SELECT email FROM daportal_user'
 					." WHERE email='".$args['email']."';")
 					== FALSE)
 				return _register_mail($args['username'],
@@ -153,7 +187,17 @@ function user_register($args)
 
 function _register_mail($username, $email)
 {
-	/* FIXME */
+	$password = _password_new();
+	_info('New password is: '.$password);
+	$password = md5($password);
+	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
+			.', admin, email) VALUES ('
+			."'$username', '$password', '0', '0', '".$email."');")
+			== FALSE)
+		return _error('Could not insert user');
+	$id = _sql_id('daportal_user', 'user_id');
+	include('user_pending.tpl');
+	_password_mail($id, $username, $email, $password);
 }
 
 

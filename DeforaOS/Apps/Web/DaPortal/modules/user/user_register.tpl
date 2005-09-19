@@ -1,4 +1,3 @@
-<? _error('User registration is currently disabled'); ?>
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="user"/>
 	<input type="hidden" name="action" value="register"/>
