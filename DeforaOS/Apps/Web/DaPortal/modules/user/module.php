@@ -152,7 +152,7 @@ function user_admin($args)
 			'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('toolbar' => $toolbar,
 				'entries' => $users,
-				'class' => array('enabled' => 'Enabled',
+				'class' => array('enabled' => ENABLED,
 					'admin' => 'Admin',
 					'email' => 'e-mail'),
 				'module' => 'user',
