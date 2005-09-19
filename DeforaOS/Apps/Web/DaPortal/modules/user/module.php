@@ -54,7 +54,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 		return _error('Could not create confirmation key');
 	$message = "Your password is '$password'\n\n"
 			."Please click on the following link to confirm:\n"
-			'https://'.$_SERVER['SERVER_NAME']
+			.'https://'.$_SERVER['SERVER_NAME']
 			.$_SERVER['SCRIPT_NAME']
 			.'?module=user&action=confirm&key='.$key;
 	$headers = 'From: DeforaOS Administration Team <'
