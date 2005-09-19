@@ -4,6 +4,7 @@ $text['DEVELOPMENT'] = 'Development';
 $text['DOCUMENTATION'] = 'Documentation';
 $text['DOWNLOAD'] = 'Download';
 $text['INSTALLER'] = 'Installer';
+$text['POLICY'] = 'Policy';
 $text['PROJECT'] = 'Project';
 $text['PROJECTS'] = 'Projects';
 $text['REPORTS'] = 'Reports';
