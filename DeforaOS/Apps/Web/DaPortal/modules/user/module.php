@@ -134,6 +134,12 @@ function user_admin($args)
 			'icon' => 'modules/user/icon.png',
 			'link' => 'index.php?module=user&action=new');
 	$toolbar[] = array();
+	$toolbar[] = array('title' => 'Disable',
+			'icon' => 'icons/16x16/disabled.png',
+			'action' => 'disable');
+	$toolbar[] = array('title' => 'Enable',
+			'icon' => 'icons/16x16/enabled.png',
+			'action' => 'enable');
 	$toolbar[] = array('title' => 'Delete',
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'delete',
@@ -174,6 +180,33 @@ function user_default($args)
 }
 
 
+function user_delete($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(!_sql_query('DELETE FROM daportal_user'
+			." WHERE user_id='".$args['id']."';"))
+		return _error('Could not delete user');
+}
+
+
+function user_disable($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error('Permission denied');
+	if(!_sql_query('UPDATE daportal_user SET'
+			." enabled='f'"
+			." WHERE user_id='".$args['id']."';"))
+		return _error('Could not disable user');
+}
+
+
 function user_display($args)
 {
 	if(!is_numeric($args['id']))
@@ -187,16 +220,17 @@ function user_display($args)
 }
 
 
-function user_delete($args)
+function user_enable($args)
 {
 	global $user_id;
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	if(!_sql_query('DELETE FROM daportal_user'
+	if(!_sql_query('UPDATE daportal_user SET'
+			." enabled='t'"
 			." WHERE user_id='".$args['id']."';"))
-		return _error('Could not delete user');
+		return _error('Could not enable user');
 }
 
 
