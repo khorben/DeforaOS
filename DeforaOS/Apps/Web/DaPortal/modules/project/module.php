@@ -18,6 +18,7 @@ $text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
 $text['PROJECT'] = 'Project';
+$text['PROJECT_NAME'] = 'Project name';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
 $text['PROJECTS_LIST'] = 'Project list';
@@ -44,6 +45,7 @@ else if($lang == 'fr')
 	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
 	$text['PRIORITY'] = 'Priorité';
 	$text['PROJECT'] = 'Projet';
+	$text['PROJECT_NAME'] = 'Nom du projet';
 	$text['PROJECTS'] = 'Projets';
 	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
 	$text['PROJECTS_LIST'] = 'Liste des projets';

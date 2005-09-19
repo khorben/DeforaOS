@@ -10,14 +10,14 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['NEWS_ADMINISTRATION'] = 'News administration';
-$text['NEWS_BY'] = 'by';
+$text['NEWS_BY'] = 'News by ';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_PREVIEW'] = 'News preview';
 global $lang;
 if($lang == 'fr')
 {
 	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
-	$text['NEWS_BY'] = 'par';
+	$text['NEWS_BY'] = 'Actualités par ';
 	$text['NEWS_ON'] = 'le';
 	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
 }
@@ -81,7 +81,7 @@ function news_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 	{
-		$title.=' by '.$username;
+		$title = NEWS_BY.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1><img src="modules/news/icon.png" alt=""/> '.$title.'</h1>'
