@@ -151,54 +151,9 @@ function user_admin($args)
 }
 
 
-function user_register($args)
+function user_confirm($args)
 {
-	global $user_id;
-
-	if($user_id)
-		return _error(ALREADY_LOGGED_IN, 1);
-	$message = '';
-	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
-			&& isset($args['email']))
-	{
-		if(_sql_single('SELECT username FROM daportal_user'
-				." WHERE username='".$args['username']."';")
-				== FALSE)
-		{
-			if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
-					.'[a-zA-Z]{1,4}$', $args['email']))
-				$message = EMAIL_INVALID;
-			else if(_sql_array('SELECT email FROM daportal_user'
-					." WHERE email='".$args['email']."';")
-					== FALSE)
-				return _register_mail($args['username'],
-						$args['email']);
-			else
-				$message = EMAIL_ALREADY_ASSIGNED;
-		}
-		else
-			$message = USER_ALREADY_ASSIGNED;
-	}
-	print('<h1><img src="modules/user/icon.png" alt=""/>'
-			.' User registration</h1>');
-	if(strlen($message))
-		_error($message, 1);
-	include('user_register.tpl');
-}
-
-function _register_mail($username, $email)
-{
-	$password = _password_new();
-	_info('New password is: '.$password);
-	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
-			.', admin, email) VALUES ('
-			."'$username', '".md5($password)."', '0', '0', '"
-			.$email."');")
-			== FALSE)
-		return _error('Could not insert user');
-	$id = _sql_id('daportal_user', 'user_id');
-	include('user_pending.tpl');
-	_password_mail($id, $username, $email, $password);
+	include('user_confirm.tpl');
 }
 
 
@@ -316,19 +271,92 @@ function user_new($args)
 }
 
 
+function user_register($args)
+{
+	global $user_id;
+
+	if($user_id)
+		return _error(ALREADY_LOGGED_IN, 1);
+	$message = '';
+	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
+			&& isset($args['email']))
+	{
+		if(_sql_single('SELECT username FROM daportal_user'
+				." WHERE username='".$args['username']."';")
+				== FALSE)
+		{
+			if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
+					.'[a-zA-Z]{1,4}$', $args['email']))
+				$message = EMAIL_INVALID;
+			else if(_sql_array('SELECT email FROM daportal_user'
+					." WHERE email='".$args['email']."';")
+					== FALSE)
+				return _register_mail($args['username'],
+						$args['email']);
+			else
+				$message = EMAIL_ALREADY_ASSIGNED;
+		}
+		else
+			$message = USER_ALREADY_ASSIGNED;
+	}
+	print('<h1><img src="modules/user/icon.png" alt=""/>'
+			.' User registration</h1>');
+	if(strlen($message))
+		_error($message, 1);
+	include('user_register.tpl');
+}
+
+function _register_mail($username, $email)
+{
+	$password = _password_new();
+	_info('New password is: '.$password);
+	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
+			.', admin, email) VALUES ('
+			."'$username', '".md5($password)."', '0', '0', '"
+			.$email."');")
+			== FALSE)
+		return _error('Could not insert user');
+	$id = _sql_id('daportal_user', 'user_id');
+	include('user_pending.tpl');
+	_password_mail($id, $username, $email, $password);
+}
+
+
+function _system_confirm($key)
+{
+	/* FIXME remove expired registration keys */
+	$user = _sql_array('SELECT daportal_user.user_id'
+			.', daportal_user.username'
+			.' FROM daportal_user, daportal_user_register'
+			.' WHERE daportal_user.user_id'
+			.'=daportal_user_register.user_id'
+			." AND key='$key';");
+	if(!is_array($user) || count($user) != 1)
+		return;
+	$user = $user[0];
+	_sql_query('DELETE FROM daportal_user_register'
+			." WHERE key='$key';");
+	$_SESSION['user_id'] = $user['user_id'];
+	$_SESSION['user_name'] = $user['username'];
+	header('Location: index.php?module=user');
+	exit(0);
+}
+
+
 function _system_login()
 {
 	global $user_id; 
 
 	$password = md5($_POST['password']);
-	if(($res = _sql_array('SELECT user_id, admin FROM daportal_user'
+	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"
 			.' AND password='."'$password'"
-			." AND enabled='t';")) == FALSE)
+			." AND enabled='t';");
+	if(!is_array($res) || count($res) != 1)
 		return _error('Unable to login', 0);
 	$res = $res[0];
 	$_SESSION['user_id'] = $res['user_id'];
-	$_SESSION['user_name'] = stripslashes($_POST['username']);
+	$_SESSION['user_name'] = $res['username'];
 	header('Location: index.php?module=user');
 	exit(0);
 }
@@ -347,9 +375,13 @@ function user_system($args)
 {
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'login')
 		_system_login();
-	else if($_SERVER['REQUEST_METHOD'] == 'GET'
-			&& $_GET['action'] == 'logout')
-		_system_logout();
+	else if($_SERVER['REQUEST_METHOD'] == 'GET')
+	{
+		if($_GET['action'] == 'logout')
+			_system_logout();
+		else if($_GET['action'] == 'confirm')
+			_system_confirm($args['key']);
+	}
 }
 
 
