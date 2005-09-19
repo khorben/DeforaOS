@@ -103,7 +103,6 @@ function _sql_single($query)
 
 //main
 global $dbtype, $dbhost, $dbuser, $dbpassword, $dbname;
-require_once('system/debug.php');
 switch($dbtype)
 {
 	case 'mysql':
