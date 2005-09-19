@@ -44,10 +44,11 @@ INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
 INSERT INTO daportal_user (user_id, username, email) VALUES ('0', 'Anonymous', '');
 INSERT INTO daportal_user (username, password, admin, email) VALUES ('admin', 'password', '1', 'username@domain.tld');
 
+
 CREATE TABLE daportal_user_register (
 	user_id INTEGER UNIQUE,
 	key CHAR(32) UNIQUE NOT NULL,
-	timestamp DATE DEFAULT now(),
+	timestamp TIMESTAMP NOT NULL DEFAULT now(),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
 

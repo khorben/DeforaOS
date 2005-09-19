@@ -54,10 +54,11 @@ function _password_mail($id, $username, $email, $password = FALSE)
 		return _error('Could not create confirmation key');
 	$message = "Your password is '$password'\n\n"
 			."Please click on the following link to confirm:\n"
-			.$_SERVER[''].'://'.$_SERVER['']
-			.'/index.php?module=user&action=confirm&key='
-			.$key;
-	$headers = "From: DeforaOS Administration Team <root@defora.org>\n";
+			'https://'.$_SERVER['SERVER_NAME']
+			.$_SERVER['SCRIPT_NAME']
+			.'?module=user&action=confirm&key='.$key;
+	$headers = 'From: DeforaOS Administration Team <'
+			.$_SERVER['SERVER_ADMIN'].">\n";
 	_info('Mail sent to: '.$username.' <'.$email.'>');
 	if(mail($username.' <'.$email.'>', 'User confirmation', $message,
 		$headers) == FALSE)
@@ -189,10 +190,10 @@ function _register_mail($username, $email)
 {
 	$password = _password_new();
 	_info('New password is: '.$password);
-	$password = md5($password);
 	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
 			.', admin, email) VALUES ('
-			."'$username', '$password', '0', '0', '".$email."');")
+			."'$username', '".md5($password)."', '0', '0', '"
+			.$email."');")
 			== FALSE)
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
