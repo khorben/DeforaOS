@@ -15,6 +15,7 @@
 		<tr><td class="field">Password:</td><td><input type="password" name="password1"/><br/><input type="password" name="password2"/></td></tr>
 <? } ?>
 <? if($admin) { ?>
+		<tr><td class="field">Enabled:</td><td><input type="checkbox" name="enabled"<? if($user['enabled'] == 't') { ?> checked="checked"<? } ?>/></td>
 		<tr><td class="field">Administrator:</td><td><input type="checkbox" name="admin"<? if($user['admin'] == 't') { ?> checked="checked"<? } ?>/></td>
 		<tr><td class="field">e-mail:</td><td><input type="text" name="email" value="<? echo _html_safe($user['email']); ?>"/></td>
 <? } ?>

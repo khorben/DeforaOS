@@ -14,12 +14,14 @@ function _user_admin($id)
 {
 	if(!is_numeric($id))
 		return 0;
+	/* FIXME cache results? */
 	return _sql_single('SELECT admin FROM daportal_user'
-			." WHERE user_id='$id';") == 't';
+			." WHERE user_id='$id' AND enabled='t';") == 't';
 }
 
 
 function _user_id($username)
+	/* FIXME check if enabled? */
 {
 	static $cache = array();
 

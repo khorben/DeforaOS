@@ -31,7 +31,7 @@ function _modify($id)
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$super = ($id == $user_id) ? 1 : 0;
-	$user = _sql_array('SELECT user_id, username, admin, email'
+	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
 			.' FROM daportal_user'
 			." WHERE user_id='$id';");
 	if(!is_array($user) || count($user) != 1)
@@ -259,7 +259,8 @@ function _system_login()
 	$password = md5($_POST['password']);
 	if(($res = _sql_array('SELECT user_id, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"
-			.' and password='."'$password';")) == FALSE)
+			.' AND password='."'$password'"
+			." AND enabled='t';")) == FALSE)
 		return _error('Unable to login', 0);
 	$res = $res[0];
 	$_SESSION['user_id'] = $res['user_id'];
@@ -297,8 +298,9 @@ function user_update($args)
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	//FIXME check if password is set and matches
-	if(!_sql_query('UPDATE daportal_user SET '
-			."admin='".(isset($args['admin']) ? '1' : '0')."'"
+	if(!_sql_query('UPDATE daportal_user SET'
+			." enabled='".(isset($args['enabled']) ? '1' : '0')."'"
+			." AND admin='".(isset($args['admin']) ? '1' : '0')."'"
 			." WHERE user_id='".$args['user_id']."';"))
 		return _error('Could not update user');
 	user_display(array('id' => $args['user_id']));
