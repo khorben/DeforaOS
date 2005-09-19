@@ -59,7 +59,7 @@ function user_admin($args)
 		case 'email':	$order = 'email ASC'; break;
 	}
 	$users = _sql_array('SELECT user_id AS id, username AS name'
-			.', admin, email'
+			.', enabled, admin, email'
 			.' FROM daportal_user'
 			.' ORDER BY '.$order.';');
 	if(!is_array($users))
@@ -71,9 +71,27 @@ function user_admin($args)
 		$users[$i]['action'] = 'admin';
 		$users[$i]['icon'] = 'modules/user/user.png';
 		$users[$i]['thumbnail'] = 'modules/user/user.png';
+		$users[$i]['name'] = _html_safe_link($users[$i]['name']);
 		$users[$i]['apply_module'] = 'user';
 		$users[$i]['apply_id'] = $users[$i]['id'];
-		$users[$i]['admin'] = $users[$i]['admin'] == 't' ? YES : NO;
+		$users[$i]['enabled'] = $users[$i]['enabled'] == 't'
+			? 'enabled' : 'disabled';
+		$users[$i]['enabled'] = '<img src="icons/16x16/'
+				.$users[$i]['enabled'].'" alt="'
+				.$users[$i]['enabled'].'" title="'
+				.($users[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED)
+				.'"/>';
+		$users[$i]['admin'] = $users[$i]['admin'] == 't'
+			? 'enabled' : 'disabled';
+		$users[$i]['admin'] = '<img src="icons/16x16/'
+				.$users[$i]['admin'].'" alt="'
+				.$users[$i]['admin'].'" title="'
+				.($users[$i]['admin'] == 'enabled'
+						? ENABLED : DISABLED)
+				.'"/>';
+		$users[$i]['email'] = '<a href="mailto:'.$users[$i]['email']
+				.'">'._html_safe($users[$i]['email']).'</a>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => 'New user',
@@ -84,9 +102,10 @@ function user_admin($args)
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'delete',
 			'confirm' => 'delete');
-	_module('explorer', 'browse', array('toolbar' => $toolbar,
+	_module('explorer', 'browse_trusted', array('toolbar' => $toolbar,
 				'entries' => $users,
-				'class' => array('admin' => 'Admin',
+				'class' => array('enabled' => 'Enabled',
+					'admin' => 'Admin',
 					'email' => 'e-mail'),
 				'module' => 'user',
 				'action' => 'admin',
