@@ -325,6 +325,7 @@ function _register_mail($username, $email)
 function _system_confirm($key)
 {
 	/* FIXME remove expired registration keys */
+	/* FIXME use a transaction */
 	$user = _sql_array('SELECT daportal_user.user_id'
 			.', daportal_user.username'
 			.' FROM daportal_user, daportal_user_register'
@@ -334,8 +335,13 @@ function _system_confirm($key)
 	if(!is_array($user) || count($user) != 1)
 		return;
 	$user = $user[0];
-	_sql_query('DELETE FROM daportal_user_register'
-			." WHERE key='$key';");
+	if(_sql_query('UPDATE daportal_user SET'
+			." enabled='t' WHERE user_id='".$user['user_id']."';")
+			== FALSE)
+		return _error('Could not enable user');
+	if(_sql_query('DELETE FROM daportal_user_register'
+			." WHERE key='$key';") == FALSE)
+		_error('Could not remove registration key');
 	$_SESSION['user_id'] = $user['user_id'];
 	$_SESSION['user_name'] = $user['username'];
 	header('Location: index.php?module=user');
