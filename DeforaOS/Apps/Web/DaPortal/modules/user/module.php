@@ -11,13 +11,19 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
+$text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
+$text['USER_LOGIN'] = 'User login';
+$text['USER_REGISTRATION'] = 'User registration';
 global $lang;
 if($lang == 'fr')
 {
 	$text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
 	$text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
+	$text['REGISTER'] = "S'inscrire";
 	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
+	$text['USER_LOGIN'] = 'Authentification utilisateur';
+	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
 }
 _lang($text);
 
@@ -333,8 +339,8 @@ function user_register($args)
 		else
 			$message = USER_ALREADY_ASSIGNED;
 	}
-	print('<h1><img src="modules/user/icon.png" alt=""/>'
-			.' User registration</h1>');
+	print('<h1><img src="modules/user/icon.png" alt=""/> '
+			._html_safe(USER_REGISTRATION).'</h1>');
 	if(strlen($message))
 		_error($message, 1);
 	include('user_register.tpl');
