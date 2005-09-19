@@ -28,9 +28,8 @@ _lang($text);
 			<div class="top_search">
 				<form action="index.php" method="get">
 					<input type="hidden" name="module" value="search"/>
-<? $search = SEARCH; ?>
-					<input type="text" name="q" value="<? echo _html_safe($search); ?>..." size="20" onfocus="if(value == '<? echo _html_safe($search); ?>...') value=''"/>
-					<input id="search" type="submit" value="Search"/>
+					<input type="text" name="q" value="<? echo _html_safe(SEARCH); ?>..." size="20" onfocus="if(value == '<? echo _html_safe(SEARCH); ?>...') value=''"/>
+					<input id="search" type="submit" value="<? echo _html_safe(SEARCH); ?>"/>
 				</form>
 				<script type="text/javascript">
 <!--
