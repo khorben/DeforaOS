@@ -71,6 +71,7 @@ $text['NAME'] = 'Name';
 $text['NO'] = 'No';
 $text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
+$text['SEARCH'] = 'Search';
 $text['SEND'] = 'Send';
 $text['TITLE'] = 'Title';
 $text['TYPE'] = 'Type';
@@ -89,6 +90,7 @@ if($lang == 'de')
 	$text['MESSAGE'] = 'Mitteilung';
 	$text['NO'] = 'Nein';
 	$text['PASSWORD'] = 'Passwort';
+	$text['SEARCH'] = 'Suche';
 	$text['TITLE'] = 'Titel';
 	$text['TYPE'] = 'Typ';
 	$text['USERNAME'] = 'Benutzername';
@@ -114,6 +116,7 @@ else if($lang == 'fr')
 	$text['NO'] = 'Non';
 	$text['PASSWORD'] = 'Mot de passe';
 	$text['PERMISSION_DENIED'] = 'Permission non accordée';
+	$text['SEARCH'] = 'Recherche';
 	$text['SEND'] = 'Envoyer';
 	$text['TITLE'] = 'Titre';
 	$text['UPDATE'] = 'Mettre à jour';

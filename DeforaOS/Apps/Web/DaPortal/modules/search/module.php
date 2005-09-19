@@ -10,15 +10,11 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['RESULTS_FOUND'] = 'result(s) found';
-$text['SEARCH'] = 'Search';
 $text['SEARCH_RESULTS'] = 'Search results';
 global $lang;
-if($lang == 'de')
-	$text['SEARCH'] = 'Suche';
-else if($lang == 'fr')
+if($lang == 'fr')
 {
 	$text['RESULTS_FOUND'] = 'résultat(s) trouvés';
-	$text['SEARCH'] = 'Recherche';
 	$text['SEARCH_RESULTS'] = 'Résultats de la recherche';
 }
 _lang($text);
