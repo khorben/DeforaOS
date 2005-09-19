@@ -82,7 +82,7 @@ function project_admin($args)
 			._html_safe(PROJECTS_ADMINISTRATION)
 			.'</h1>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
-			.', username AS admin, enabled'
+			.', username AS admin, daportal_content.enabled'
 			.', daportal_content.user_id AS user_id'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_project'
@@ -422,7 +422,7 @@ function project_bug_display($args)
 			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
-			." WHERE enabled='t'"
+			." WHERE daportal_content.enabled='t'"
 			.' AND daportal_content.content_id'
 			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
@@ -550,7 +550,7 @@ function project_bug_list($args)
 			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
-			." WHERE enabled='t'"
+			." WHERE daportal_content.enabled='t'"
 			.' AND daportal_content.content_id'
 			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
@@ -641,7 +641,8 @@ function project_display($args)
 
 	require_once('system/user.php');
 	$project = _sql_array('SELECT name, title, content AS description'
-			.', enabled, daportal_content.user_id, username'
+			.', daportal_content.enabled, daportal_content.user_id'
+			.', username'
 			.' FROM daportal_content, daportal_project'
 			.', daportal_user'
 			." WHERE content_id='".$args['id']."'"
