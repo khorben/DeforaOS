@@ -4,7 +4,8 @@
 			<div class="top_search">
 				<form action="index.php" method="get">
 					<input type="hidden" name="module" value="search"/>
-					<input type="text" name="q" value="search..." size="20" onfocus="if(value == 'search...') value=''"/>
+<? $search = SEARCH; ?>
+					<input type="text" name="q" value="<? echo _html_safe($search); ?>..." size="20" onfocus="if(value == '<? echo _html_safe($search); ?>...') value=''"/>
 					<input id="search" type="submit" value="Search"/>
 				</form>
 				<script type="text/javascript">
@@ -59,7 +60,31 @@ document.getElementById('lang').style.display='none';
 			</div>
 			<div class="main">
 <? if(strlen($module)) { _module(); } else { ?>
-		<h1>DeforaOS Homepage</h1>
+		<h1>DeforaOS <? echo _html_safe(HOMEPAGE); ?></h1>
+<? switch($lang) { ?>
+<? case 'fr': ?>
+		<h3>A propos du projet</h3>
+		<p>
+Ce projet a pour but d'implémenter un système d'exploitation, basé sur un
+micro-kernel. Les principaux objectifs comprennent:
+		</p>
+		<ul>
+			<li>une conception simple;</li>
+			<li>un code clair;</li>
+			<li>un r&eacute;sultat utilisable.</li>
+		</ul>
+		<p>
+Le projet est toujours en <a href="index.php?module=project">phase de
+conception</a>.
+		</p>
+
+		<h3>Actualit&eacute;s</h3>
+		<p>
+Mises &agrave; jour incluant les <a href="index.php?module=news">&eacute;tapes
+d&eacute;terminantes</a> du projet. Celles-ci seront facilit&eacute;es par
+l'&eacute;volution du d&eacute;veloppement du portail web.
+		</p>
+<? break; case 'en': default: ?>
 		<h3>About the project</h3>
 		<p>
 This project aims at the implementation of a micro-kernel based operating
@@ -81,6 +106,7 @@ Will hopefully be filled with <a href="index.php?module=news">every significant
 work made</a> for the project. This will be eased with the implementation of
 the site content management system.
 		</p>
+<? } ?>
 <? } ?>
 <? _debug(); ?>
 			</div>
