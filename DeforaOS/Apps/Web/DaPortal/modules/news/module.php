@@ -12,12 +12,14 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS_BY'] = 'by';
 $text['NEWS_ON'] = 'on';
+$text['NEWS_PREVIEW'] = 'News preview';
 global $lang;
 if($lang == 'fr')
 {
 	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
 	$text['NEWS_BY'] = 'par';
 	$text['NEWS_ON'] = 'le';
+	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
 }
 _lang($text);
 
@@ -73,7 +75,7 @@ function news_display($args)
 
 function news_list($args)
 {
-	$title = 'News';
+	$title = NEWS;
 	$where = '';
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			.' FROM daportal_user'
@@ -133,7 +135,7 @@ function news_submit($news)
 	if(isset($news['preview']))
 	{
 		$long = 1;
-		$title = 'News preview';
+		$title = NEWS_PREVIEW;
 		$news['title'] = stripslashes($news['title']);
 		$news['user_id'] = $user_id;
 		$news['username'] = $user_name;

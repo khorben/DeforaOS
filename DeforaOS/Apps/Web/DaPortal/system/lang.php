@@ -50,8 +50,10 @@ $locale = $lang.'_'.strtoupper($lang);
 if(!setlocale(LC_ALL, $locale.'@euro', $locale, $lang))
 	_warning('Unable to set locale');
 //lang
+$text = array();
 $text['_BY_'] = ' by ';
 $text['_FOR_'] = ' for ';
+$text['ABOUT'] = 'About';
 $text['ADMINISTRATOR'] = 'Administrator';
 $text['AUTHOR'] = 'Author';
 $text['CONTENT'] = 'Content';
@@ -68,6 +70,7 @@ $text['LOGOUT'] = 'Logout';
 $text['MEMBERS'] = 'Members';
 $text['MESSAGE'] = 'Message';
 $text['NAME'] = 'Name';
+$text['NEWS'] = 'News';
 $text['NO'] = 'No';
 $text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
@@ -100,6 +103,7 @@ else if($lang == 'fr')
 {
 	$text['_BY_'] = ' par ';
 	$text['_FOR_'] = ' pour ';
+	$text['ABOUT'] = 'A propos';
 	$text['ADMINISTRATOR'] = 'Administrateur';
 	$text['AUTHOR'] = 'Auteur';
 	$text['CONTENT'] = 'Contenu';
@@ -113,6 +117,7 @@ else if($lang == 'fr')
 	$text['LOGOUT'] = 'Déconnexion';
 	$text['MEMBERS'] = 'Membres';
 	$text['NAME'] = 'Nom';
+	$text['NEWS'] = 'Actualités';
 	$text['NO'] = 'Non';
 	$text['PASSWORD'] = 'Mot de passe';
 	$text['PERMISSION_DENIED'] = 'Permission non accordée';

@@ -1,4 +1,28 @@
-<? global $user_id, $title, $module_name; $module = $module_name; ?>
+<? global $lang, $user_id, $title, $module_name; $module = $module_name; ?>
+<? $text = array();
+$text['DEVELOPMENT'] = 'Development';
+$text['DOCUMENTATION'] = 'Documentation';
+$text['DOWNLOAD'] = 'Download';
+$text['INSTALLER'] = 'Installer';
+$text['PROJECT'] = 'Project';
+$text['PROJECTS'] = 'Projects';
+$text['REPORTS'] = 'Reports';
+$text['ROADMAP'] = 'Roadmap';
+$text['SUPPORT'] = 'Support';
+$text['VALIDATE'] = 'Validate';
+if($lang == 'fr')
+{
+	$text['DEVELOPMENT'] = 'Développement';
+	$text['DOWNLOAD'] = 'Télécharger';
+	$text['POLICY'] = 'Objectifs';
+	$text['PROJECT'] = 'Projet';
+	$text['PROJECTS'] = 'Projets';
+	$text['REPORTS'] = 'Rapports';
+	$text['ROADMAP'] = 'Progression';
+	$text['VALIDATE'] = 'Valider';
+}
+_lang($text);
+?>
 <? _module('top'); ?>
 		<div class="container">
 			<div class="top_search">
@@ -19,22 +43,22 @@ document.getElementById('search').style.display='none';
 			<div class="menu">
 <? if($user_id) { _module('menu'); } else { ?>
 			<ul>
-				<li><a href="index.php">About</a><ul>
-					<li><a href="index.php?module=news">News</a></li>
-					<li><a href="index.php?module=project">Project</a></li>
-					<li><a href="roadmap.html">Roadmap</a></li>
+				<li><a href="index.php"><? echo _html_safe(ABOUT); ?></a><ul>
+					<li><a href="index.php?module=news"><? echo _html_safe(NEWS); ?></a></li>
+					<li><a href="index.php?module=project"><? echo _html_safe(PROJECT); ?></a></li>
+					<li><a href="roadmap.html"><? echo _html_safe(ROADMAP); ?></a></li>
 					</ul></li>
-				<li><a href="development.html">Development</a><ul>
-					<li><a href="policy.html">Policy</a></li>
-					<li><a href="index.php?module=project&amp;action=list">Projects</a></li>
+				<li><a href="development.html"><? echo _html_safe(DEVELOPMENT); ?></a><ul>
+					<li><a href="policy.html"><? echo _html_safe(POLICY); ?></a></li>
+					<li><a href="index.php?module=project&amp;action=list"><? echo _html_safe(PROJECTS); ?></a></li>
 					</ul></li>
-				<li><a href="index.php?module=project&amp;action=download">Download</a><ul>
-					<li><a href="index.php?module=project&amp;action=installer">Installer</a></li>
+				<li><a href="index.php?module=project&amp;action=download"><? echo _html_safe(DOWNLOAD); ?></a><ul>
+					<li><a href="index.php?module=project&amp;action=installer"><? echo _html_safe(INSTALLER); ?></a></li>
 					<li><a href="index.php?module=project&amp;action=package">Packages</a></li>
 					</ul></li>
-				<li><a href="support.html">Support</a><ul>
-					<li><a href="documentation.html">Documentation</a></li>
-					<li><a href="index.php?module=project&amp;action=bug_list">Reports</a></li>
+				<li><a href="support.html"><? echo _html_safe(SUPPORT); ?></a><ul>
+					<li><a href="documentation.html"><? echo _html_safe(DOCUMENTATION); ?></a></li>
+					<li><a href="index.php?module=project&amp;action=bug_list"><? echo _html_safe(REPORTS); ?></a></li>
 					</ul></li>
 			</ul>
 <? } ?>
@@ -44,7 +68,7 @@ document.getElementById('search').style.display='none';
 			<form class="lang" action="index.php" method="post">
 				<div>
 					<select name="lang" onchange="submit()">
-<? global $lang; foreach($langs as $l) { ?>
+<? foreach($langs as $l) { ?>
 						<option value="<? echo _html_safe($l['id']); ?>"<? if($lang == $l['id']) { ?> selected="selected"<? } ?>><? echo _html_safe($l['name']); ?></option>
 <? } ?>
 					</select>
@@ -111,5 +135,5 @@ the site content management system.
 <? _debug(); ?>
 			</div>
 			<div style="clear: left">&nbsp;</div>
-			<div class="style1" style="padding-right: 33px; text-align: right;">Validate <a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt=""/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt=""/></a></div>
+			<div class="style1" style="padding-right: 33px; text-align: right;"><? echo _html_safe(VALIDATE); ?> <a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt=""/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt=""/></a></div>
 		</div>
