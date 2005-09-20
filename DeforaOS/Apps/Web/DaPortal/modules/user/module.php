@@ -448,6 +448,7 @@ function user_update($args)
 			." username='".$args['username']."'"
 			.", enabled='".(isset($args['enabled']) ? '1' : '0')."'"
 			.", admin='".(isset($args['admin']) ? '1' : '0')."'"
+			.", email='".$args['email']."'"
 			." WHERE user_id='".$args['user_id']."';"))
 		return _error('Could not update user');
 	user_display(array('id' => $args['user_id']));
