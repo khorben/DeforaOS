@@ -34,7 +34,7 @@ INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1')
 CREATE TABLE daportal_user (
 	user_id SERIAL UNIQUE,
 	username VARCHAR(255) UNIQUE,
-	password CHAR(32),
+	"password" CHAR(32),
 	enabled BOOLEAN NOT NULL DEFAULT FALSE,
 	admin BOOLEAN DEFAULT FALSE,
 	email VARCHAR(255) NOT NULL,
@@ -42,13 +42,13 @@ CREATE TABLE daportal_user (
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
 INSERT INTO daportal_user (user_id, username, email) VALUES ('0', 'Anonymous', '');
-INSERT INTO daportal_user (username, password, admin, email) VALUES ('admin', 'password', '1', 'username@domain.tld');
+INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'username@domain.tld');
 
 
 CREATE TABLE daportal_user_register (
 	user_id INTEGER UNIQUE,
-	key CHAR(32) UNIQUE NOT NULL,
-	timestamp TIMESTAMP NOT NULL DEFAULT now(),
+	"key" CHAR(32) UNIQUE NOT NULL,
+	"timestamp" TIMESTAMP NOT NULL DEFAULT now(),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
 
@@ -82,6 +82,12 @@ CREATE TABLE daportal_project (
 	project_id SERIAL UNIQUE,
 	name VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
+);
+CREATE TABLE daportal_project_user (
+	project_id serial NOT NULL,
+	user_id serial NOT NULL,
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
+	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
 CREATE TABLE daportal_bug (
 	bug_id SERIAL UNIQUE,
