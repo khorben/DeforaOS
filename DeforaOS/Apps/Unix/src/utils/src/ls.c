@@ -289,7 +289,7 @@ static int _is_directory(Prefs * prefs, char * file)
 	int (*_stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
-	if(*prefs & PREFS_H)
+	if(*prefs & PREFS_H || *prefs & PREFS_L)
 		_stat = stat;
 	if((_stat(file, &st)) != 0)
 		return _ls_error(file, 2);
@@ -382,7 +382,7 @@ static char _short_file_mode(Prefs * prefs, char const * directory,
 	struct stat st;
 	char * p;
 
-	if(*prefs & PREFS_H)
+	if(*prefs & PREFS_H || *prefs & PREFS_L)
 		_stat = stat;
 	if(directory == NULL)
 	{
@@ -405,7 +405,8 @@ static char _short_file_mode(Prefs * prefs, char const * directory,
 	return _file_mode_letter(st.st_mode);
 }
 
-static void _long_print(Prefs * prefs, char const * filename, struct stat * st);
+static void _long_print(Prefs * prefs, char const * filename,
+		char const * basename, struct stat * st);
 static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 {
 	SList cur;
@@ -434,7 +435,7 @@ static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 		if(_stat(directory == NULL ? p : file, &st) != 0)
 			_ls_error(file, 0);
 		else
-			_long_print(prefs, p, &st);
+			_long_print(prefs, file != NULL ? file : p, p, &st);
 	}
 	free(file);
 	return 0;
@@ -445,7 +446,9 @@ static char * _long_owner(uid_t uid);
 static char * _long_group(gid_t gid);
 static void _long_date(time_t date, char buf[15]);
 static char _file_mode_letter(mode_t mode);
-static void _long_print(Prefs * prefs, char const * filename, struct stat * st)
+static void _print_link(char const * filename);
+static void _long_print(Prefs * prefs, char const * filename,
+		char const * basename, struct stat * st)
 {
 	char mode[11];
 	char * owner;
@@ -462,8 +465,10 @@ static void _long_print(Prefs * prefs, char const * filename, struct stat * st)
 	else
 		_long_date(st->st_mtime, date);
 	printf("%s %u %s %s %6lu %s %s", mode, st->st_nlink,
-			owner, group, st->st_size, date, filename);
-	if(*prefs & PREFS_F)
+			owner, group, st->st_size, date, basename);
+	if(S_ISLNK(st->st_mode) && !(*prefs & PREFS_L)) /* FIXME not in POSIX? */
+		_print_link(filename);
+	else if(*prefs & PREFS_F)
 		fputc(_file_mode_letter(st->st_mode), stdout);
 	fputc('\n', stdout);
 }
@@ -554,6 +559,18 @@ static char _file_mode_letter(mode_t mode)
 	if(mode & (S_IXUSR | S_IXGRP | S_IXOTH))
 		return '*';
 	return ' ';
+}
+
+static void _print_link(char const * filename)
+{
+	char buf[PATH_MAX+1];
+
+	if(readlink(filename, buf, sizeof(buf)-1) == -1)
+	{
+		_ls_error(filename, 0);
+		return;
+	}
+	printf("%s%s", " -> ", buf);
 }
 
 static int _ls_free(void * data, void * user)
