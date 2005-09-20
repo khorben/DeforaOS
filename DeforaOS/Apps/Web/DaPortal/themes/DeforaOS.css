@@ -56,6 +56,10 @@ button, input, select, textarea {
 	border-top:			1px solid #b0b0b0;
 }
 
+input[type="text"], input[type="password"] {
+	border:				1px solid #797979;
+}
+
 p {
 	text-align:			justify;
 }
@@ -377,7 +381,8 @@ table.bordered th {
 }
 
 .style1 img {
-	padding:			2px;
+	padding-left:			2px;
+	padding-right:			2px;
 }
 
 .title {
@@ -409,7 +414,6 @@ table.bordered th {
 }
 
 .top_search input[type="text"] {
-	border:				solid 1px #797979;
 	margin-bottom:			2px;
 	width:				158px;
 }
