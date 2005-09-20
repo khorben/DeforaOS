@@ -115,7 +115,8 @@ function admin_content($args)
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'content_enable');
 	_module('explorer', 'browse_trusted', array(
-			'class' => array('enabled' => '', 'date' => 'Date'),
+			'class' => array('enabled' => ENABLED,
+				'date' => DATE),
 			'entries' => $contents,
 			'view' => 'details',
 			'toolbar' => $toolbar,
@@ -224,7 +225,7 @@ function admin_module($args)
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'module_enable');
 	_module('explorer', 'browse_trusted', array(
-			'class' => array('enabled' => '',
+			'class' => array('enabled' => ENABLED,
 					'module_name' => MODULE_NAME),
 			'entries' => $modules,
 			'view' => 'details',
