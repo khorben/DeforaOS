@@ -253,10 +253,14 @@ function user_insert($args)
 			|| $args['password1'] != $args['password2'])
 		return _error('Passwords must be non-empty and match', 1);
 	$password = md5($args['password1']);
-	if(!_sql_query('INSERT INTO daportal_user (username, password, email'
+	if(!_sql_query('INSERT INTO daportal_user (username, password, enabled'
+			.', admin, email'
 			.') VALUES ('
 			."'".$args['username']."'"
-			.", '$password', '".$args['email']."');"))
+			.", '$password'"
+			.", '".(isset($args['enabled']) ? '1' : '0')."'"
+			.", '".(isset($args['admin']) ? '1' : '0')."'"
+			.", '".$args['email']."');"))
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
 	user_display(array('id' => $id));
@@ -441,8 +445,9 @@ function user_update($args)
 		return _error('Permission denied');
 	//FIXME check if password is set and matches
 	if(!_sql_query('UPDATE daportal_user SET'
-			." enabled='".(isset($args['enabled']) ? '1' : '0')."'"
-			." AND admin='".(isset($args['admin']) ? '1' : '0')."'"
+			." username='".$args['username']."'"
+			.", enabled='".(isset($args['enabled']) ? '1' : '0')."'"
+			.", admin='".(isset($args['admin']) ? '1' : '0')."'"
 			." WHERE user_id='".$args['user_id']."';"))
 		return _error('Could not update user');
 	user_display(array('id' => $args['user_id']));
