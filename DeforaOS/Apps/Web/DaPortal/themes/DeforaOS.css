@@ -383,6 +383,7 @@ table.bordered th {
 .style1 img {
 	padding-left:			2px;
 	padding-right:			2px;
+	vertical-align:			middle;
 }
 
 .title {
