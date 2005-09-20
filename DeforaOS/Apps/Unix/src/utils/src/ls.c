@@ -286,7 +286,7 @@ static int _ls_args(SList ** files, SList ** dirs)
 
 static int _is_directory(Prefs * prefs, char * file)
 {
-	int (* _stat)(const char * filename, struct stat * buf) = lstat;
+	int (*_stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
 	if(*prefs & PREFS_H)
@@ -405,11 +405,7 @@ static char _short_file_mode(Prefs * prefs, char const * directory,
 	return _file_mode_letter(st.st_mode);
 }
 
-static void _long_mode(char str[11], mode_t mode);
-static char * _long_owner(uid_t uid);
-static char * _long_group(gid_t gid);
-static void _long_date(time_t date, char buf[15]);
-static char _file_mode_letter(mode_t mode);
+static void _long_print(Prefs * prefs, char const * filename, struct stat * st);
 static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 {
 	SList cur;
@@ -417,12 +413,8 @@ static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 	char * p;
 	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
-	char mode[11];
-	char * owner;
-	char * group;
-	char date[15];
 
-	if(*prefs & PREFS_H)
+	if(*prefs & PREFS_H || *prefs & PREFS_L)
 		_stat = stat;
 	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
@@ -440,26 +432,40 @@ static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 			sprintf(file, "%s/%s", directory, p);
 		}
 		if(_stat(directory == NULL ? p : file, &st) != 0)
-		{
 			_ls_error(file, 0);
-			continue;
-		}
-		_long_mode(mode, st.st_mode);
-		owner = _long_owner(st.st_uid);
-		group = _long_group(st.st_gid);
-		if(*prefs & PREFS_u)
-			_long_date(st.st_atime, date);
-		else if(*prefs & PREFS_c)
-			_long_date(st.st_ctime, date);
 		else
-			_long_date(st.st_mtime, date);
-		printf("%s %u %s %s %6lu %s %s%c\n", mode, st.st_nlink,
-				owner, group, st.st_size, date, p,
-				(*prefs & PREFS_F)
-				? _file_mode_letter(st.st_mode) : ' ');
+			_long_print(prefs, p, &st);
 	}
 	free(file);
 	return 0;
+}
+
+static void _long_mode(char str[11], mode_t mode);
+static char * _long_owner(uid_t uid);
+static char * _long_group(gid_t gid);
+static void _long_date(time_t date, char buf[15]);
+static char _file_mode_letter(mode_t mode);
+static void _long_print(Prefs * prefs, char const * filename, struct stat * st)
+{
+	char mode[11];
+	char * owner;
+	char * group;
+	char date[15];
+
+	_long_mode(mode, st->st_mode);
+	owner = _long_owner(st->st_uid);
+	group = _long_group(st->st_gid);
+	if(*prefs & PREFS_u)
+		_long_date(st->st_atime, date);
+	else if(*prefs & PREFS_c)
+		_long_date(st->st_ctime, date);
+	else
+		_long_date(st->st_mtime, date);
+	printf("%s %u %s %s %6lu %s %s", mode, st->st_nlink,
+			owner, group, st->st_size, date, filename);
+	if(*prefs & PREFS_F)
+		fputc(_file_mode_letter(st->st_mode), stdout);
+	fputc('\n', stdout);
 }
 
 static void _long_mode(char str[11], mode_t mode)
@@ -554,7 +560,6 @@ static int _ls_free(void * data, void * user)
 {
 	free(data);
 	return 0;
-	user = user;
 }
 
 static int _ls_do_dirs(Prefs * prefs, int argc, SList * dirs)
