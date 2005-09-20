@@ -11,7 +11,12 @@ $text['REPORTS'] = 'Reports';
 $text['ROADMAP'] = 'Roadmap';
 $text['SUPPORT'] = 'Support';
 $text['VALIDATE'] = 'Validate';
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$text['PROJECT'] = 'Projekt';
+	$text['PROJECTS'] = 'Projekte';
+}
+else if($lang == 'fr')
 {
 	$text['DEVELOPMENT'] = 'Développement';
 	$text['DOWNLOAD'] = 'Télécharger';
