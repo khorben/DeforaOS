@@ -56,7 +56,7 @@ button, input, select, textarea {
 	border-top:			1px solid #b0b0b0;
 }
 
-input[type="text"], input[type="password"] {
+input[type="text"], input[type="password"], textarea {
 	border:				1px solid #797979;
 }
 
