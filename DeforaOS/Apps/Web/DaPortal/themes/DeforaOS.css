@@ -179,6 +179,7 @@ table.bordered th {
 
 .explorer .listing_list .entry {
 	height:				1em;
+	min-height:			16px;
 	width:				200px;
 }
 
