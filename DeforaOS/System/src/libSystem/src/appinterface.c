@@ -3,6 +3,7 @@
 
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
