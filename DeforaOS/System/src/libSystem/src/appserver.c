@@ -146,6 +146,7 @@ static int _appserver_read(int fd, AppServer * appserver)
 	return _read_process(appserver, asc);
 }
 
+static int _read_logged(AppServer * appserver, AppServerClient * asc);
 static int _read_process(AppServer * appserver, AppServerClient * asc)
 {
 	switch(asc->state)
@@ -153,47 +154,30 @@ static int _read_process(AppServer * appserver, AppServerClient * asc)
 		case ASCS_NEW:
 			/* FIXME authenticate */
 		case ASCS_LOGGED:
-			/* FIXME check errors */
-			break;
+			return _read_logged(appserver, asc);
 	}
-	return 0;
+	return 1;
 }
 
-
-/* static int _appserver_write(int fd, AppServer * appserver)
+static int _appserver_receive(AppServer * appserver, AppServerClient * asc);
+static int _read_logged(AppServer * appserver, AppServerClient * asc)
 {
-	AppServerClient * asc = NULL;
-	unsigned int i;
-	int len;
+	return _appserver_receive(appserver, asc);
+}
 
-	for(i = 0; i < array_count(appserver->clients); i++)
-	{
-		if(!array_get(appserver->clients, i, &asc))
-			break;
-		if(fd == asc->fd)
-			break;
-		asc = NULL;
-	}
-	if(asc == NULL)
-		return 1;
-	len = asc->buf_read_cnt;
-	if((len = write(fd, asc->buf_write, len)) <= 0)
-	{
-		if(asc->buf_read_cnt == ASC_BUFSIZE)
-			event_unregister_io_read(appserver->event, fd);
-		event_unregister_io_write(appserver->event, fd);
-		array_remove_pos(appserver->clients, i);
-		appserverclient_delete(asc);
-		return 1;
-	}
-	memmove(asc->buf_write, &asc->buf_write[len], len);
-	asc->buf_write_cnt-=len;
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s%d%s", "_appserver_write(", fd,
-			", appserver): ", len, " characters written\n");
-#endif
+static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
+{
+	int i;
+
+	if((i = appinterface_receive(appserver->interface, asc->buf_read,
+			asc->buf_read_cnt)) == -1)
+		return -1;
+	if(i <= 0 || i > asc->buf_read_cnt)
+		return -1;
+	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
+	asc->buf_read_cnt-=i;
 	return 0;
-} */
+}
 
 
 /* public */

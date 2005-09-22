@@ -250,7 +250,7 @@ static int _send_buffer(char * data, int datalen, char * buf, int buflen,
 	return 0;
 }
 
-static int _send_string(char * string, char * buf, int buflen, int * pos)
+static int _send_string(char * string, char buf[], int buflen, int * pos)
 {
 	int i = 0;
 
@@ -265,4 +265,35 @@ static int _send_string(char * string, char * buf, int buflen, int * pos)
 			return 0;
 	}
 	return 1;
+}
+
+
+/* appinterface_receive */
+static char * _read_string(char buf[], int buflen, int * pos);
+int appinterface_receive(AppInterface * appinterface, char buf[], int buflen)
+{
+	int pos = 0;
+	char * func;
+	int i;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s", "appinterface_receive();\n");
+#endif
+	if((func = _read_string(buf, buflen, &pos)) == NULL)
+		return -1;
+	for(i = 0; i < appinterface->calls_cnt; i++)
+		if(string_compare(appinterface->calls[i].name, func) == 0)
+			break;
+	if(i == appinterface->calls_cnt)
+		return -1;
+	return pos;
+}
+
+static char * _read_string(char buf[], int buflen, int * pos)
+{
+	for(; *pos < buflen && buf[*pos] != '\0'; (*pos)++);
+	if(*pos == buflen)
+		return NULL;
+	(*pos)++;
+	return buf;
 }
