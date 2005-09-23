@@ -163,6 +163,7 @@ function news_submit($news)
 		$news['date'] = strftime(DATE_FORMAT);
 		$news['content'] = stripslashes($news['content']);
 		include('news_display.tpl');
+		unset($title);
 		return include('news_update.tpl');
 	}
 	if(!isset($news['send']))
