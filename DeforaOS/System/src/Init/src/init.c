@@ -70,6 +70,35 @@ static void _init_sighandler(int signum)
 }
 
 
+/* port */
+int port(char * app)
+{
+	/* FIXME */
+	return 4243;
+}
+
+
+/* list */
+int list(void)
+{
+	return 0;
+}
+
+
+/* start */
+int start(char * app)
+{
+	return 0;
+}
+
+
+/* stop */
+int stop(char * app)
+{
+	return 0;
+}
+
+
 /* usage */
 static int _init_usage(void)
 {
