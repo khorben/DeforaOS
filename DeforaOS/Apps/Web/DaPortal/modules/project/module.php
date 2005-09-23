@@ -761,14 +761,16 @@ function project_list($args)
 
 function project_modify($args)
 {
-	//FIXME TODO
 	global $user_id;
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
-	$project = _sql_array('SELECT name FROM daportal_project'
-			." WHERE project_id='".$args['id']."';");
+	$project = _sql_array('SELECT name, title, content'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND project_id='".$args['id']."';");
 	if(!is_array($project) || count($project) != 1)
 		return error('Unable to update project', 1);
 	$project = $project[0];

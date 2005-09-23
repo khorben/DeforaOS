@@ -6,6 +6,6 @@
 		<tr><td class="field"><? echo _html_safe(NAME); ?>:</td><td><input type="text" name="name" value="<? echo _html_safe($project['name']); ?>" size="20"/></td></tr>
 		<tr><td class="field">Short description:</td><td><input type="text" name="title" value="<? echo _html_safe($project['title']); ?>" size="80"/></td></tr>
 		<tr><td class="field">Long description:</td><td><textarea name="content" cols="80" rows="10"><? echo _html_safe($project['content']); ?></textarea></td></tr>
-		<tr><td></td><td><input type="submit" value="<? echo _html_safe(SEND); ?>"/></td></tr>
+		<tr><td></td><td><input type="submit" value="<? echo isset($project) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/></td></tr>
 	</table>
 </form>
