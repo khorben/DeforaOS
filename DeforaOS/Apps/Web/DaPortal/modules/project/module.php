@@ -898,14 +898,12 @@ function project_update($args)
 {
 	global $user_id;
 
+	require_once('system/content.php');
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	/* FIXME allow project's admin to update */
-	if(!_sql_query('UPDATE daportal_content SET'
-			." title='".$args['title']."'"
-			.", content='".$args['content']."'"
-			." WHERE content_id='".$args['id']."';"))
+	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return _error('Could not update project');
 	return project_display(array('id' => $args['id']));
 }

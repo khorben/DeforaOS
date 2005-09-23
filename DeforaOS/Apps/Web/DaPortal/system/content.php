@@ -46,4 +46,12 @@ function _content_select($id, $enabled = '')
 	return $content[0];
 }
 
+
+function _content_update($id, $title, $content)
+{
+	return _sql_query('UPDATE daportal_content SET'
+			." title='$title', content='$content'"
+			." WHERE content_id='$id';");
+}
+
 ?>
