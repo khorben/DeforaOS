@@ -95,7 +95,7 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 	int j;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s%d%s", "interface supports ", function, "(",
+	fprintf(stderr, "%s%s%s%d%s", "AppInterface supports ", function, "(",
 			args_cnt, ")\n");
 #endif
 	for(i = 0; i < ai->calls_cnt; i++)
@@ -138,11 +138,16 @@ static int _new_hello(AppInterface * appinterface)
 
 
 /* appinterface_new_server */
+/* FIXME */
+extern void * handle;
 AppInterface * appinterface_new_server(char const * app)
 {
 	AppInterface * appinterface;
 	void * handle;
 	int i;
+#ifdef DEBUG
+	char * error;
+#endif
 
 	if((handle = dlopen(NULL, RTLD_LAZY)) == NULL)
 		return NULL;
@@ -150,12 +155,14 @@ AppInterface * appinterface_new_server(char const * app)
 		return NULL;
 	for(i = 0; i < appinterface->calls_cnt; i++)
 	{
+#ifdef DEBUG
+		dlerror();
+#endif
 		appinterface->calls[i].func = dlsym(handle,
 				appinterface->calls[i].name);
 #ifdef DEBUG
-		if(appinterface->calls[i].func == NULL)
-			fprintf(stderr, "%s%s%s", "AppServer lacks function \"",
-					appinterface->calls[i].name, "\"\n");
+		if((error = dlerror()) != NULL)
+			fprintf(stderr, "%s%s\n", "AppServer: ", error);
 #endif
 	}
 	dlclose(handle);
@@ -206,6 +213,7 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 	{
 		switch(aic->args[i])
 		{
+			case AICT_BOOL:
 			case AICT_INT8:
 			case AICT_UINT8:
 				size = sizeof(int8_t);
@@ -270,6 +278,8 @@ static int _send_string(char * string, char buf[], int buflen, int * pos)
 
 /* appinterface_receive */
 static char * _read_string(char buf[], int buflen, int * pos);
+static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
+		int * pos);
 int appinterface_receive(AppInterface * appinterface, char buf[], int buflen)
 {
 	int pos = 0;
@@ -284,7 +294,10 @@ int appinterface_receive(AppInterface * appinterface, char buf[], int buflen)
 	for(i = 0; i < appinterface->calls_cnt; i++)
 		if(string_compare(appinterface->calls[i].name, func) == 0)
 			break;
+	string_delete(func);
 	if(i == appinterface->calls_cnt)
+		return -1;
+	if(_receive_args(&appinterface->calls[i], buf, buflen, &pos) != 0)
 		return -1;
 	return pos;
 }
@@ -295,5 +308,108 @@ static char * _read_string(char buf[], int buflen, int * pos)
 	if(*pos == buflen)
 		return NULL;
 	(*pos)++;
-	return buf;
+	return string_new(buf);
+}
+
+static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
+		int * pos);
+static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
+		int * pos)
+{
+	int i;
+	char ** args;
+	size_t size;
+	int j;
+
+	if((args = malloc(sizeof(char*) * calls->args_cnt)) == NULL)
+		return 1;
+	for(i = 0; i < calls->args_cnt; i++)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "_receive_args() reading ", i,
+				" arg\n");
+#endif
+		switch(calls->args[i])
+		{
+			case AICT_VOID:
+				continue;
+			case AICT_BOOL:
+			case AICT_INT8:
+			case AICT_UINT8:
+				size = sizeof(int8_t);
+				break;
+			case AICT_INT16:
+			case AICT_UINT16:
+				size = sizeof(int16_t);
+				break;
+			case AICT_INT32:
+			case AICT_UINT32:
+				size = sizeof(int32_t);
+				break;
+			case AICT_INT64:
+			case AICT_UINT64:
+				size = sizeof(int64_t);
+				break;
+			case AICT_STRING:
+				args[i] = _read_string(buf, buflen, pos);
+				continue;
+		}
+		if(sizeof(char*) < size)
+		{
+			if((args[i] = malloc(size)) == NULL)
+				break;
+			if(_read_buffer(args[i], size, buf, buflen, pos) != 0)
+				break;
+		}
+		else if(_read_buffer(&args[i], size, buf, buflen, pos) != 0)
+			break;
+	}
+	/* FIXME exec target code */
+	/* FIXME free everything allocated */
+	for(j = 0; j < i; j++)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "_receive_args() freeing ", j,
+				" arg\n");
+#endif
+		switch(calls->args[j])
+		{
+			case AICT_VOID:
+				continue;
+			case AICT_BOOL:
+			case AICT_INT8:
+			case AICT_UINT8:
+				size = sizeof(int8_t);
+				break;
+			case AICT_INT16:
+			case AICT_UINT16:
+				size = sizeof(int16_t);
+				break;
+			case AICT_INT32:
+			case AICT_UINT32:
+				size = sizeof(int32_t);
+				break;
+			case AICT_INT64:
+			case AICT_UINT64:
+				size = sizeof(int64_t);
+				break;
+			case AICT_STRING:
+				free(args[j]);
+				continue;
+		}
+		if(sizeof(char*) < size)
+			free(args[i]);
+	}
+	free(args);
+	return 0;
+}
+
+static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
+		int * pos)
+{
+	if(datalen > buflen - *pos)
+		return 1;
+	memcpy(data, buf, datalen);
+	(*pos)+=datalen;
+	return 0;
 }

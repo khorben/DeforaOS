@@ -162,7 +162,12 @@ static int _read_process(AppServer * appserver, AppServerClient * asc)
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc);
 static int _read_logged(AppServer * appserver, AppServerClient * asc)
 {
-	return _appserver_receive(appserver, asc);
+	if(_appserver_receive(appserver, asc) != 0)
+	{
+		close(asc->fd);
+		return 1;
+	}
+	return 0;
 }
 
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
