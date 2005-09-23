@@ -114,6 +114,10 @@ function admin_content($args)
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'content_enable');
+	$toolbar[] = array('title' => ENABLE,
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'content_delete',
+			'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => ENABLED,
 				'date' => DATE),
@@ -122,6 +126,18 @@ function admin_content($args)
 			'toolbar' => $toolbar,
 			'module' => 'admin',
 			'action' => 'content'));
+}
+
+
+function admin_content_delete($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(_sql_query('DELETE FROM daportal_content WHERE'
+			." content_id='".$args['id']."';") == FALSE)
+		_error('Unable to delete content');
 }
 
 
