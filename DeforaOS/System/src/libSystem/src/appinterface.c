@@ -267,9 +267,9 @@ static int _send_string(char * string, char buf[], int buflen, int * pos)
 #endif
 	while(*pos < buflen)
 	{
-		buf[*pos] = string[i++];
+		buf[*pos] = string[i];
 		(*pos)++;
-		if(string[i] == '\0')
+		if(string[i++] == '\0')
 			return 0;
 	}
 	return 1;
