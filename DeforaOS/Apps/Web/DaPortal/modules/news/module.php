@@ -126,7 +126,7 @@ function news_list($args)
 }
 
 
-function news_modify($news)
+function news_modify($args)
 {
 	global $user_id;
 
@@ -167,7 +167,7 @@ function news_submit($news)
 	}
 	if(!isset($news['send']))
 	{
-		print('<h1><img src="modules/news/icon.png" alt=""/> News submission</h1>'."\n");
+		$title = 'News submission';
 		return include('news_update.tpl');
 	}
 	if(!_news_insert($news))
