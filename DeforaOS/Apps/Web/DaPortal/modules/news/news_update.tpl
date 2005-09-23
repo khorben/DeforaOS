@@ -3,7 +3,10 @@
 <? } ?>
 <form class="news" action="index.php" method="post">
 	<input type="hidden" name="module" value="news"/>
-	<input type="hidden" name="action" value="submit"/>
+	<input type="hidden" name="action" value="<? echo isset($news['id']) ? 'update' : 'submit'; ?>"/>
+<? if(isset($news['id'])) { ?>
+	<input type="hidden" name="id" value="<? echo _html_safe($news['id']); ?>"/>
+<? } ?>
 	<table>
 		<tr>
 			<td class="field">Title:</td>
@@ -17,7 +20,7 @@ if(isset($news['content'])) print(_html_safe($news['content']));
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" name="preview" value="Preview"/><? if(isset($news)) { ?> <input type="submit" name="send" value="Send"/><? } ?></td>
+			<td><input type="submit" name="preview" value="Preview"/><? if(isset($news)) { ?> <input type="submit" name="send" value="<? echo isset($news['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/><? } ?></td>
 		</tr>
 	</table>
 </form>

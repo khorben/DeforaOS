@@ -184,4 +184,32 @@ function news_system($args)
 	$title.=' - News';
 }
 
+
+function news_update($news)
+{
+	global $user_id, $user_name;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(isset($news['preview']))
+	{
+		$long = 1;
+		$title = NEWS_PREVIEW;
+		$news['id'] = stripslashes($news['id']);
+		$news['title'] = stripslashes($news['title']);
+		$news['user_id'] = $user_id;
+		$news['username'] = $user_name;
+		$news['date'] = strftime(DATE_FORMAT);
+		$news['content'] = stripslashes($news['content']);
+		include('news_display.tpl');
+		unset($title);
+		return include('news_update.tpl');
+	}
+	require_once('system/content.php');
+	if(!_content_update($news['id'], $news['title'], $news['content']))
+		return _error('Could not update news');
+	return news_display(array('id' => $news['id']));
+}
+
 ?>
