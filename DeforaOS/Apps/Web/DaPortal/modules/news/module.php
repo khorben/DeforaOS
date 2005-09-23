@@ -126,6 +126,27 @@ function news_list($args)
 }
 
 
+function news_modify($news)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(!($module_id = _module_id('news')))
+		return _error('Could not verify module');
+	$news = _sql_array('SELECT content_id AS id, title, content'
+			.' FROM daportal_content'
+			." WHERE module_id='$module_id'"
+			." AND content_id='".$args['id']."';");
+	if(!is_array($news) || count($news) != 1)
+		return _error('Unable to modify news');
+	$news = $news[0];
+	$title = 'Modification of news "'.$news['title'].'"';
+	include('news_update.tpl');
+}
+
+
 function news_submit($news)
 {
 	global $user_id, $user_name;
