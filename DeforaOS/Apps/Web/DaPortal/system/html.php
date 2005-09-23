@@ -34,6 +34,8 @@ function _html_pre($string)
 			$line.="<br/>\n";
 		$string.=$line;
 	}
+	if($list != 0)
+		$string.="</ul>\n";
 	return $string;
 }
 
