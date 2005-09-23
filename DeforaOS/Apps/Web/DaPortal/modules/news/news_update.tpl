@@ -1,4 +1,4 @@
-<h1><img src="modules/news/icon.png" alt=""/> <? echo _html_safe($title); ?></h1?
+<h1><img src="modules/news/icon.png" alt=""/> <? echo _html_safe($title); ?></h1>
 <form class="news" action="index.php" method="post">
 	<input type="hidden" name="module" value="news"/>
 	<input type="hidden" name="action" value="submit"/>
