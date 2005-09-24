@@ -10,13 +10,14 @@
 #ifdef BSD
 # include <sys/param.h>
 # include <sys/sysctl.h>
+# include <sys/resource.h>
+# include <string.h>
 #endif
 
 #define PROBE_REFRESH 5
 
 
 /* globals */
-static int _probe_error(char * message, int ret);
 #ifdef BSD
 struct sysinfo
 {
@@ -29,20 +30,27 @@ static int sysinfo(struct sysinfo * info)
 	struct timeval tv;
 	struct loadavg la;
 	int mib[2];
+	int len;
+	int ret = 0;
 
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_BOOTTIME;
-	if(sysctl(mib, 2, &tv, NULL, NULL, 0) != sizeof(tv))
-		info->uptime = _probe_error("kern.boottime", 0);
+	len = sizeof(tv);
+	if(sysctl(mib, 2, &tv, &len, NULL, 0) != len)
+	{
+		info->uptime = 0;
+		ret++;
+	}
 	else
 		info->uptime = tv.tv_sec;
 	/* FIXME getloadavg() looks portable */
 	mib[0] = CTL_VM;
-	mib[1] = KERN_BOOTTIME;
-	if(sysctl(mib, 2, &la, NULL, NULL, 0) != sizeof(la))
+	mib[1] = VM_LOADAVG;
+	len = sizeof(la);
+	if(sysctl(mib, 2, &la, &len, NULL, 0) != len)
 	{
 		memset(info->loads, 0, sizeof(info->loads));
-		_probe_error("vm.boottime", 0);
+		ret++;
 	}
 	else
 	{
@@ -50,12 +58,14 @@ static int sysinfo(struct sysinfo * info)
 		info->loads[1] = la.ldavg[1];
 		info->loads[2] = la.ldavg[2];
 	}
+	return ret;
 }
 #endif
 struct sysinfo info;
 
 
 /* Probe */
+static int _probe_error(char * message, int ret);
 static int _probe_timeout(struct sysinfo * info);
 static int _probe(void)
 {
