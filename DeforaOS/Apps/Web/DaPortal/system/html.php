@@ -28,7 +28,7 @@ function _html_pre($string)
 		else if($list != 0)
 		{
 			$list = 0;
-			$line.="\n</ul>\n";
+			$line ="</ul>\n".$line;
 		}
 		else
 			$line.="<br/>\n";
