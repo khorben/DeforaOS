@@ -8,7 +8,9 @@
 #include <time.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <stdio.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 
 #include "array.h"
 #include "event.h"
@@ -344,7 +346,6 @@ int event_unregister_timeout(Event * event, EventTimeoutFunc func)
 	EventTimeout * et;
 	struct timeval now;
 
-	fprintf(stderr, "%s", "event_unregister_timeout()\n");
 	while(i < array_count(event->timeouts))
 	{
 		array_get(event->timeouts, i, &et);
