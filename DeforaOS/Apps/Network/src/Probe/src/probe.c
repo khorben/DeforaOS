@@ -27,6 +27,7 @@ struct sysinfo
 
 static int sysinfo(struct sysinfo * info)
 {
+	struct timeval now;
 	struct timeval tv;
 	struct loadavg la;
 	int mib[2];
@@ -36,18 +37,19 @@ static int sysinfo(struct sysinfo * info)
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_BOOTTIME;
 	len = sizeof(tv);
-	if(sysctl(mib, 2, &tv, &len, NULL, 0) != len)
+	if(gettimeofday(&now, NULL) != 0
+			|| sysctl(mib, 2, &tv, &len, NULL, 0) == -1)
 	{
 		info->uptime = 0;
 		ret++;
 	}
 	else
-		info->uptime = tv.tv_sec;
+		info->uptime = now.tv_sec - tv.tv_sec;
 	/* FIXME getloadavg() looks portable */
 	mib[0] = CTL_VM;
 	mib[1] = VM_LOADAVG;
 	len = sizeof(la);
-	if(sysctl(mib, 2, &la, &len, NULL, 0) != len)
+	if(sysctl(mib, 2, &la, &len, NULL, 0) == -1)
 	{
 		memset(info->loads, 0, sizeof(info->loads));
 		ret++;
