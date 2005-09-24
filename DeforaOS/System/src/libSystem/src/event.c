@@ -101,15 +101,18 @@ int event_loop(Event * event)
 		_loop_timeout(event);
 		_loop_io(event, event->reads, &rfds);
 		_loop_io(event, event->writes, &wfds);
-		timeout = event->timeout.tv_sec == LONG_MAX
-			&& event->timeout.tv_usec == LONG_MAX
-			? NULL : &event->timeout;
+		if(event->timeout.tv_sec == LONG_MAX
+				&& event->timeout.tv_usec == LONG_MAX)
+			timeout = NULL;
+		else
+			timeout = &event->timeout;
 		rfds = event->rfds;
 		wfds = event->wfds;
 	}
 	if(ret != -1)
 		return 0;
 #ifdef DEBUG
+	fprintf(stderr, "%s", "event_loop(): ");
 	perror("select");
 	sleep(1);
 #endif
@@ -123,7 +126,7 @@ static void _loop_timeout(Event * event)
 	EventTimeout * et;
 
 #ifdef DEBUG
-		fprintf(stderr, "%s", "_loop_timeout()\n");
+	fprintf(stderr, "%s", "_loop_timeout()\n");
 #endif
 	if(gettimeofday(&now, NULL) != 0)
 #ifdef DEBUG
@@ -182,9 +185,8 @@ static void _loop_timeout(Event * event)
 		i++;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "%s%ld%s", "loop event.tv_sec=",
-			event->timeout.tv_sec, "\n");
-	fprintf(stderr, "%s%ld%s", "loop event.tv_usec=",
+	fprintf(stderr, "%s%ld%s%ld%s", "_loop_timeout() tv_sec=",
+			event->timeout.tv_sec, ", tv_usec=",
 			event->timeout.tv_usec, "\n");
 #endif
 }
@@ -195,13 +197,12 @@ static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)
 	EventIO * eio;
 	int fd;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s", "_loop_io()\n");
+#endif
 	while(i < array_count(eios))
 	{
 		array_get(eios, i, &eio);
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s%p%s", "_loop_io(): i=", i,
-				", eio=", eio, "\n");
-#endif
 		if((fd = eio->fd) <= event->fdmax && FD_ISSET(fd, fds)
 				&& eio->func(fd, eio->data) != 0)
 		{
@@ -246,9 +247,6 @@ int event_register_io_write(Event * event, int fd, EventIOFunc func,
 {
 	EventIO * eventio;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s", "event_register_io_write()\n");
-#endif
 	if((eventio = malloc(sizeof(EventIO))) == NULL)
 		return 1;
 	eventio->fd = fd;
@@ -272,7 +270,8 @@ int event_register_timeout(Event * event, struct timeval timeout,
 		return 1;
 	if((eventtimeout = malloc(sizeof(EventTimeout))) == NULL)
 		return 1;
-	eventtimeout->initial = timeout;
+	eventtimeout->initial.tv_sec = timeout.tv_sec;
+	eventtimeout->initial.tv_usec = timeout.tv_usec;
 	eventtimeout->timeout.tv_sec = now.tv_sec + timeout.tv_sec;
 	eventtimeout->timeout.tv_usec = now.tv_usec + timeout.tv_usec;
 	eventtimeout->func = func;
@@ -282,6 +281,12 @@ int event_register_timeout(Event * event, struct timeval timeout,
 			|| (event->timeout.tv_sec == timeout.tv_sec
 				&& event->timeout.tv_usec > timeout.tv_usec))
 	{
+#ifdef DEBUG
+		fprintf(stderr, "%s%ld%s%ld%s",
+				"event_register_timeout() tv_sec=",
+				timeout.tv_sec, ", tv_usec=", timeout.tv_usec,
+				"\n");
+#endif
 		event->timeout.tv_sec = timeout.tv_sec;
 		event->timeout.tv_usec = timeout.tv_usec;
 	}
@@ -329,4 +334,54 @@ static int _unregister_io(eventioArray * eios, fd_set * fds, int fd)
 		free(eio);
 	}
 	return fdmax;
+}
+
+
+/* event_unregister_timeout */
+int event_unregister_timeout(Event * event, EventTimeoutFunc func)
+{
+	unsigned int i = 0;
+	EventTimeout * et;
+	struct timeval now;
+
+	fprintf(stderr, "%s", "event_unregister_timeout()\n");
+	while(i < array_count(event->timeouts))
+	{
+		array_get(event->timeouts, i, &et);
+		if(et->func != func)
+		{
+			i++;
+			continue;
+		}
+		array_remove_pos(event->timeouts, i);
+		free(et);
+	}
+	if(gettimeofday(&now, NULL) != 0)
+		return 1;
+	event->timeout.tv_sec = LONG_MAX;
+	event->timeout.tv_usec = LONG_MAX;
+	for(i = 0; i < array_count(event->timeouts); i++)
+	{
+		array_get(event->timeouts, i, &et);
+		if(et->timeout.tv_sec < event->timeout.tv_sec
+				|| (et->timeout.tv_sec == event->timeout.tv_sec
+					&& et->timeout.tv_usec
+					< event->timeout.tv_usec))
+		{
+			if((event->timeout.tv_sec = et->timeout.tv_sec
+						- now.tv_sec) < 0)
+			{
+				event->timeout.tv_sec = 0;
+				event->timeout.tv_usec = 0;
+				break;
+			}
+			event->timeout.tv_usec = et->timeout.tv_usec
+				- now.tv_usec;
+			if(event->timeout.tv_usec >= 0)
+				continue;
+			event->timeout.tv_sec = max(0, event->timeout.tv_sec-1);
+			event->timeout.tv_usec = -event->timeout.tv_usec;
+		}
+	}
+	return 0;
 }
