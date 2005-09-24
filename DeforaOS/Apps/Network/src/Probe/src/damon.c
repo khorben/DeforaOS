@@ -13,31 +13,55 @@
 #define DAMON_REFRESH 5
 
 
-/* DaMon */
-static int _damon_error(char * message, int ret);
-static int _damon_refresh(AppClient * appclient);
-static int _damon(void)
+/* types */
+typedef struct _Host
 {
 	AppClient * appclient;
+	char * hostname;
+} Host;
+
+
+/* DaMon */
+static int _damon_error(char * message, int ret);
+static int _damon_refresh(Host * hosts);
+static int _damon(void)
+{
+	Host hosts[] = {
+		{ NULL, "pinge.lan.defora.org" },
+		{ NULL, "rst.defora.org" },
+		{ NULL, "raq3.dmz.defora.org" },
+		{ NULL, "raq4.dmz.defora.org" },
+/*		{ NULL, "ss20.dmz.defora.org" }, */
+		{ NULL, NULL }
+	};
 	Event * event;
 	struct timeval tv;
+	int i;
+	int j;
 
 	if((event = event_new()) == NULL)
 		return _damon_error("Event", 2);
-	if((appclient = appclient_new("Probe")) == NULL)
+	for(i = 0; hosts[i].hostname != NULL; i++)
 	{
-		event_delete(event);
-		return _damon_error("AppClient", 2);
+		if(setenv("APPSERVER_Probe", hosts[i].hostname, 1) != 0)
+			break;
+		if((hosts[i].appclient = appclient_new_event("Probe", event))
+				== NULL)
+			break;
+		fprintf(stderr, "AppClientNew => %p\n", hosts[i].appclient);
 	}
-	tv.tv_sec = DAMON_REFRESH;
-	tv.tv_usec = 0;
-	fprintf(stderr, "appclient = %p;\n", appclient);
-	event_register_timeout(event, tv, (EventTimeoutFunc)_damon_refresh,
-			appclient);
-	_damon_refresh(appclient);
-	if(event_loop(event) != 0)
-		_damon_error("AppClient", 0);
-	appclient_delete(appclient);
+	if(hosts[i].hostname == NULL)
+	{
+		_damon_refresh(hosts);
+		tv.tv_sec = DAMON_REFRESH;
+		tv.tv_usec = 0;
+		event_register_timeout(event, tv,
+				(EventTimeoutFunc)_damon_refresh, hosts);
+		if(event_loop(event) != 0)
+			_damon_error("AppClient", 0);
+	}
+	for(j = 0; j < i; j++)
+		appclient_delete(hosts[j].appclient);
 	event_delete(event);
 	return 2;
 }
@@ -50,12 +74,30 @@ static int _damon_error(char * message, int ret)
 }
 
 static int _rrd_update(char * file, int args_cnt, ...);
-static int _damon_refresh(AppClient * appclient)
+static int _damon_refresh(Host * hosts)
 {
-	_rrd_update("uptime.rrd", 1, appclient_call(appclient, "uptime", 0));
-	_rrd_update("load.rrd", 3, appclient_call(appclient, "load1", 0),
-			appclient_call(appclient, "load5", 0),
-			appclient_call(appclient, "load15", 0));
+	int i;
+	AppClient * ac = NULL;
+	char * rrd = NULL;
+	char * p;
+
+	fprintf(stderr, "%s", "_damon_refresh()\n");
+	for(i = 0; (ac = hosts[i].appclient) != NULL; i++)
+	{
+		if((p = realloc(rrd, string_length(hosts[i].hostname) + 12))
+				== NULL)
+			break;
+		rrd = p;
+		sprintf(rrd, "%s/%s", hosts[i].hostname, "uptime.rrd");
+		_rrd_update(rrd, 1, appclient_call(ac, "uptime", 0));
+		sprintf(rrd, "%s/%s", hosts[i].hostname, "load.rrd");
+		_rrd_update(rrd, 3, appclient_call(ac, "load1", 0),
+				appclient_call(ac, "load5", 0),
+				appclient_call(ac, "load15", 0));
+	}
+	free(rrd);
+	if(ac != NULL)
+		fprintf(stderr, "%s", "DaMon: refresh: An error occured\n");
 	return 0;
 }
 
