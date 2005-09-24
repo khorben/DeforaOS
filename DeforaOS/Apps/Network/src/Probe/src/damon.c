@@ -4,6 +4,7 @@
 
 #include <System.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -75,7 +76,7 @@ static int _rrd_update(char * file, int args_cnt, ...)
 	pos = sprintf(argv[3], "%ld", tv.tv_sec);
 	va_start(args, args_cnt);
 	for(i = 0; i < args_cnt; i++)
-		pos+=sprintf(&argv[3][pos], ":%ld", va_arg(args, char *));
+		pos+=sprintf(&argv[3][pos], ":%d", va_arg(args, int));
 	va_end(args);
 	ret = _exec(argv);
 	free(argv[3]);
