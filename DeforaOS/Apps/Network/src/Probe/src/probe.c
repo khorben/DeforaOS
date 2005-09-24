@@ -3,18 +3,59 @@
 
 
 #include <System.h>
-#include <sys/sysinfo.h>
 #include <stdio.h>
+#ifdef LINUX
+# include <sys/sysinfo.h>
+#endif
+#ifdef BSD
+# include <sys/param.h>
+# include <sys/sysctl.h>
+#endif
 
 #define PROBE_REFRESH 5
 
 
 /* globals */
+static int _probe_error(char * message, int ret);
+#ifdef BSD
+struct sysinfo
+{
+	long uptime;
+	unsigned long loads[3];
+};
+
+static int sysinfo(struct sysinfo * info)
+{
+	struct timeval tv;
+	struct loadavg la;
+	int mib[2];
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_BOOTTIME;
+	if(sysctl(mib, 2, &tv, NULL, NULL, 0) != sizeof(tv))
+		info->uptime = _probe_error("kern.boottime", 0);
+	else
+		info->uptime = tv.tv_sec;
+	/* FIXME getloadavg() looks portable */
+	mib[0] = CTL_VM;
+	mib[1] = KERN_BOOTTIME;
+	if(sysctl(mib, 2, &la, NULL, NULL, 0) != sizeof(la))
+	{
+		memset(info->loads, 0, sizeof(info->loads));
+		_probe_error("vm.boottime", 0);
+	}
+	else
+	{
+		info->loads[0] = la.ldavg[0];
+		info->loads[1] = la.ldavg[1];
+		info->loads[2] = la.ldavg[2];
+	}
+}
+#endif
 struct sysinfo info;
 
 
 /* Probe */
-static int _probe_error(char * message, int ret);
 static int _probe_timeout(struct sysinfo * info);
 static int _probe(void)
 {
