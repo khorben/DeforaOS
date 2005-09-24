@@ -431,6 +431,9 @@ static int _receive_exec(AppInterfaceCall * calls, char ** args)
 		case 1:
 			func1 = calls->func;
 			return func1(args[0]);
+		case 2:
+			func2 = calls->func;
+			return func2(args[0], args[1]);
 		default:
 #ifdef DEBUG
 			fprintf(stderr, "%s%d%s",
