@@ -313,6 +313,7 @@ static char * _read_string(char buf[], int buflen, int * pos)
 
 static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
 		int * pos);
+static int _receive_exec(AppInterfaceCall * calls, char ** args);
 static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 		int * pos)
 {
@@ -326,8 +327,8 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 	for(i = 0; i < calls->args_cnt; i++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "_receive_args() reading ", i,
-				" arg\n");
+		fprintf(stderr, "%s%d%s", "_receive_args() reading arg ", i+1,
+				"\n");
 #endif
 		switch(calls->args[i])
 		{
@@ -364,13 +365,14 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 		else if(_read_buffer(&args[i], size, buf, buflen, pos) != 0)
 			break;
 	}
-	/* FIXME exec target code */
+	/* FIXME send result back */
+	_receive_exec(calls, args);
 	/* FIXME free everything allocated */
 	for(j = 0; j < i; j++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "_receive_args() freeing ", j,
-				" arg\n");
+		fprintf(stderr, "%s%d%s", "_receive_args() freeing arg ", j+1,
+				"\n");
 #endif
 		switch(calls->args[j])
 		{
@@ -412,4 +414,31 @@ static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
 	memcpy(data, buf, datalen);
 	(*pos)+=datalen;
 	return 0;
+}
+
+static int _receive_exec(AppInterfaceCall * calls, char ** args)
+{
+	int (*func0)(void);
+	int (*func1)(char *);
+	int (*func2)(char *, char *);
+
+	/* FIXME */
+	switch(calls->args_cnt)
+	{
+		case 0:
+			func0 = calls->func;
+			return func0();
+		case 1:
+			func1 = calls->func;
+			return func1(args[0]);
+		default:
+#ifdef DEBUG
+			fprintf(stderr, "%s%d%s",
+					"AppInterface: functions with ",
+					calls->args_cnt,
+					" arguments are not supported\n");
+#endif
+			return -1;
+	}
+	return -1;
 }
