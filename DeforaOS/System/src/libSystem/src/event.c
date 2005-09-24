@@ -122,6 +122,9 @@ static void _loop_timeout(Event * event)
 	unsigned int i = 0;
 	EventTimeout * et;
 
+#ifdef DEBUG
+		fprintf(stderr, "%s", "_loop_timeout()\n");
+#endif
 	if(gettimeofday(&now, NULL) != 0)
 #ifdef DEBUG
 		return perror("gettimeofday");
@@ -136,24 +139,54 @@ static void _loop_timeout(Event * event)
 		if(now.tv_sec > et->timeout.tv_sec
 				|| (now.tv_sec == et->timeout.tv_sec
 					&& now.tv_usec >= et->timeout.tv_usec))
+		{
 			if(et->func(et->data) != 0)
 			{
 				array_remove_pos(event->timeouts, i);
 				free(et);
 				continue;
 			}
-		et->timeout.tv_sec = et->initial.tv_sec + now.tv_sec;
-		et->timeout.tv_usec = et->initial.tv_usec + now.tv_usec;
-		if(et->timeout.tv_sec < event->timeout.tv_sec
-				|| (et->timeout.tv_sec == event->timeout.tv_sec
-					&& et->timeout.tv_usec
-					< event->timeout.tv_usec))
+			et->timeout.tv_sec = et->initial.tv_sec + now.tv_sec;
+			et->timeout.tv_usec = et->initial.tv_usec + now.tv_usec;
+			if(et->initial.tv_sec < event->timeout.tv_sec
+					|| (et->initial.tv_sec == event->timeout.tv_sec
+						&& et->initial.tv_usec
+						< event->timeout.tv_usec))
+			{
+				event->timeout.tv_sec = et->initial.tv_sec;
+				event->timeout.tv_usec = et->initial.tv_usec;
+			}
+		}
+		else
 		{
-			event->timeout.tv_sec = et->timeout.tv_sec;
-			event->timeout.tv_usec = et->timeout.tv_usec;
+			if(et->timeout.tv_sec - now.tv_sec < event->timeout.tv_sec
+					|| (et->timeout.tv_sec - now.tv_sec == event->timeout.tv_sec
+						&& et->timeout.tv_usec - now.tv_usec < event->timeout.tv_usec))
+			{
+				event->timeout.tv_sec = et->timeout.tv_sec
+					- now.tv_sec;
+				/* FIXME may be needed elsewhere too */
+				if(et->timeout.tv_usec >= now.tv_usec)
+					event->timeout.tv_usec
+						= et->timeout.tv_usec
+						- now.tv_usec;
+				else
+				{
+					event->timeout.tv_sec--;
+					event->timeout.tv_usec
+						= now.tv_usec
+						- et->timeout.tv_usec;
+				}
+			}
 		}
 		i++;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "%s%ld%s", "loop event.tv_sec=",
+			event->timeout.tv_sec, "\n");
+	fprintf(stderr, "%s%ld%s", "loop event.tv_usec=",
+			event->timeout.tv_usec, "\n");
+#endif
 }
 
 static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)

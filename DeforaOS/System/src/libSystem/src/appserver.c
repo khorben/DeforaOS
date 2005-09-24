@@ -125,7 +125,7 @@ static int _appserver_read(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
-	if((len = sizeof(asc->buf_read) - asc->buf_read_cnt) < 0
+	if((len = sizeof(asc->buf_read) - asc->buf_read_cnt) <= 0
 			|| (len = read(fd, &asc->buf_read[asc->buf_read_cnt],
 					len)) <= 0)
 	{
@@ -186,7 +186,8 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	/* FIXME should be done in AppInterface? */
 	if(asc->buf_write_cnt+sizeof(int) > sizeof(asc->buf_write))
 		return -1;
-	memcpy(&asc->buf_write[asc->buf_write_cnt], &ret, sizeof(int));
+	fprintf(stderr, "stocking %d to send\n", ret);
+	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(int));
 	asc->buf_write_cnt+=sizeof(int);
 	event_register_io_write(appserver->event, asc->fd,
 			(EventIOFunc)_appserver_write_int, appserver);
@@ -218,6 +219,10 @@ static int _appserver_write_int(int fd, AppServer * appserver)
 	}
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%d%s", "_appserver_write_int(", fd,
+			", appserver): ", len, " characters written\n");
+#endif
 	return 0;
 }
 
@@ -275,7 +280,7 @@ static int _new_server(AppServer * appserver, int options)
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(4242); /* FIXME */
+	sa.sin_port = htons(appinterface_port(appserver->interface));
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
 			: INADDR_ANY);
 	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0

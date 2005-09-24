@@ -39,6 +39,7 @@ struct _AppInterface
 {
 	AppInterfaceCall * calls;
 	int calls_cnt;
+	int port;
 };
 
 
@@ -47,13 +48,19 @@ struct _AppInterface
 static int _new_append(AppInterface * appinterface, AppInterfaceCallType type,
 		char const * function, int args_cnt, ...);
 static int _new_session(AppInterface * appinterface);
+static int _new_probe(AppInterface * appinterface);
 static int _new_hello(AppInterface * appinterface);
 AppInterface * appinterface_new(char const * app)
 {
 	AppInterface * appinterface;
-	struct iface { char * name; int (* func)(AppInterface *); } ifaces[] = {
-		{ "Session", _new_session },
-		{ "Hello", _new_hello }
+	struct iface {
+		char * name;
+		int (*func)(AppInterface *);
+		int port;
+	} ifaces[] = {
+		{ "Session", _new_session, 4242 },
+		{ "Probe", _new_probe, 4243 },
+		{ "Hello", _new_hello, 4244 }
 	};
 	size_t i;
 
@@ -83,6 +90,10 @@ AppInterface * appinterface_new(char const * app)
 		free(appinterface);
 		return NULL;
 	}
+	appinterface->port = ifaces[i].port;
+#ifdef DEBUG
+	fprintf(stderr, "%p%s", appinterface, "\n");
+#endif
 	return appinterface;
 }
 
@@ -128,6 +139,17 @@ static int _new_session(AppInterface * appinterface)
 	ret += _new_append(appinterface, AICT_VOID, "list", 0);
 	ret += _new_append(appinterface, AICT_BOOL, "start", 1, AICT_STRING);
 	ret += _new_append(appinterface, AICT_BOOL, "stop", 1, AICT_STRING);
+	return ret;
+}
+
+static int _new_probe(AppInterface * appinterface)
+{
+	int ret = 0;
+
+	ret += _new_append(appinterface, AICT_UINT32, "uptime", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "load1", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "load5", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "load15", 0);
 	return ret;
 }
 
@@ -182,6 +204,13 @@ void appinterface_delete(AppInterface * appinterface)
 	}
 	free(appinterface->calls);
 	free(appinterface);
+}
+
+
+/* returns */
+int appinterface_port(AppInterface * appinterface)
+{
+	return appinterface->port;
 }
 
 
@@ -288,10 +317,13 @@ int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
 	int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "appinterface_receive();\n");
+	fprintf(stderr, "%s", "appinterface_receive()\n");
 #endif
 	if((func = _read_string(buf, buflen, &pos)) == NULL)
 		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s", "appinterface_receive(): ", func, "\n");
+#endif
 	for(i = 0; i < appinterface->calls_cnt; i++)
 		if(string_compare(appinterface->calls[i].name, func) == 0)
 			break;
@@ -423,6 +455,9 @@ static int _receive_exec(AppInterfaceCall * calls, char ** args)
 	int (*func1)(char *);
 	int (*func2)(char *, char *);
 
+#ifdef DEBUG
+	fprintf(stderr, "%s", "_receive_exec()\n");
+#endif
 	/* FIXME */
 	switch(calls->args_cnt)
 	{

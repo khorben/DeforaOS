@@ -65,16 +65,16 @@ static int _appclient_read(int fd, AppClient * ac)
 }
 
 
-static int _appclient_read_answer(int fd, AppClient * ac)
+static int _appclient_read_int(int fd, AppClient * ac)
 {
 	ssize_t len;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_read(", fd, ")\n");
+	fprintf(stderr, "%s%d%s", "appclient_read_int(", fd, ")\n");
 #endif
-	if((len = sizeof(ac->buf_read) - ac->buf_read_cnt) < sizeof(int)
+	if((len = (sizeof(ac->buf_read) - ac->buf_read_cnt)) <= 0
 			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
-					sizeof(int))) <= 0)
+					len)) <= 0)
 	{
 		/* FIXME */
 		return 1;
@@ -83,7 +83,10 @@ static int _appclient_read_answer(int fd, AppClient * ac)
 	if(ac->buf_read_cnt < sizeof(int))
 		return 0;
 	memcpy(&ac->res, ac->buf_read, sizeof(int));
-	memmove(ac->buf_read, &ac->buf_read[sizeof(int)], sizeof(int));
+	fprintf(stderr, "just read %d as an answer\n", ac->res);
+	memmove(ac->buf_read, &ac->buf_read[sizeof(int)],
+			ac->buf_read_cnt-sizeof(int));
+	ac->buf_read_cnt-=sizeof(int);
 	return 1;
 }
 
@@ -112,7 +115,7 @@ static int _appclient_write(int fd, AppClient * ac)
 	if(ac->buf_write_cnt > 0)
 		return 0;
 	event_register_io_read(ac->event, fd,
-			(EventIOFunc)_appclient_read_answer, ac);
+			(EventIOFunc)_appclient_read_int, ac);
 	return 1;
 }
 
@@ -195,6 +198,9 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_port = htons(port);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "HERE %p\n", appclient->interface);
+#endif
 	return 0;
 }
 
@@ -215,6 +221,10 @@ int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 	void ** p;
 	struct timeval tv = { 0, 10 };
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%p%s", "appclient_call(), interface ", ac->interface,
+			"\n");
+#endif
 	va_start(arg, args_cnt);
 	for(i = 0; i < args_cnt; i++) /* FIXME */
 	{
