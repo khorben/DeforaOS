@@ -186,7 +186,6 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	/* FIXME should be done in AppInterface? */
 	if(asc->buf_write_cnt+sizeof(int) > sizeof(asc->buf_write))
 		return -1;
-	fprintf(stderr, "stocking %d to send\n", ret);
 	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(int));
 	asc->buf_write_cnt+=sizeof(int);
 	event_register_io_write(appserver->event, asc->fd,

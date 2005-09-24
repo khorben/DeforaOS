@@ -83,7 +83,6 @@ static int _appclient_read_int(int fd, AppClient * ac)
 	if(ac->buf_read_cnt < sizeof(int))
 		return 0;
 	memcpy(&ac->res, ac->buf_read, sizeof(int));
-	fprintf(stderr, "just read %d as an answer\n", ac->res);
 	memmove(ac->buf_read, &ac->buf_read[sizeof(int)],
 			ac->buf_read_cnt-sizeof(int));
 	ac->buf_read_cnt-=sizeof(int);
