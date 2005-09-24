@@ -92,9 +92,11 @@ int event_loop(Event * event)
 		&& event->timeout.tv_usec == LONG_MAX ? NULL : &event->timeout;
 	fd_set rfds = event->rfds;
 	fd_set wfds = event->wfds;
-	int ret;
+	int ret = 0;
 
-	while((ret = select(event->fdmax+1, &rfds, &wfds, NULL, timeout)) != -1)
+	while(!(timeout == NULL && event->fdmax == -1)
+			&& (ret = select(event->fdmax+1, &rfds, &wfds, NULL,
+					timeout)) != -1)
 	{
 		_loop_timeout(event);
 		_loop_io(event, event->reads, &rfds);

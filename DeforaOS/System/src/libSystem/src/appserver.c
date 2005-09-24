@@ -170,17 +170,54 @@ static int _read_logged(AppServer * appserver, AppServerClient * asc)
 	return 0;
 }
 
+static int _appserver_write_int(int fd, AppServer * appserver);
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 {
 	int i;
+	int ret;
 
 	if((i = appinterface_receive(appserver->interface, asc->buf_read,
-			asc->buf_read_cnt)) == -1)
+			asc->buf_read_cnt, &ret)) == -1)
 		return -1;
 	if(i <= 0 || i > asc->buf_read_cnt)
 		return -1;
 	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
 	asc->buf_read_cnt-=i;
+	/* FIXME should be done in AppInterface? */
+	if(asc->buf_write_cnt+sizeof(int) > sizeof(asc->buf_write))
+		return -1;
+	memcpy(&asc->buf_write[asc->buf_write_cnt], &ret, sizeof(int));
+	asc->buf_write_cnt+=sizeof(int);
+	event_register_io_write(appserver->event, asc->fd,
+			(EventIOFunc)_appserver_write_int, appserver);
+	return 0;
+}
+
+static int _appserver_write_int(int fd, AppServer * appserver)
+{
+	AppServerClient * asc;
+	size_t len;
+	unsigned int i;
+
+	/* FIXME factorize this code */
+	for(i = 0; i < array_count(appserver->clients); i++)
+	{
+		if(array_get(appserver->clients, i, &asc))
+			break;
+		if(fd == asc->fd)
+			break;
+		asc = NULL;
+	}
+	if(asc == NULL)
+		return 1;
+	if(asc->buf_write_cnt == 0 || (len = write(fd, asc->buf_write,
+					asc->buf_write_cnt)) <= 0)
+	{
+		/* FIXME what here?!? */
+		return 1;
+	}
+	memmove(asc->buf_write, &asc->buf_write[len], len);
+	asc->buf_write_cnt-=len;
 	return 0;
 }
 

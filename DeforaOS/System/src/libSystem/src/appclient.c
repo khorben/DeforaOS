@@ -29,6 +29,7 @@ struct _AppClient
 	int buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	int buf_write_cnt;
+	int res;
 };
 
 
@@ -48,7 +49,10 @@ static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len;
 
-	if((len = sizeof(ac->buf_read) - ac->buf_read_cnt) < 0
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "appclient_read(", fd, ")\n");
+#endif
+	if((len = sizeof(ac->buf_read) - ac->buf_read_cnt) <= 0
 			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
 					len)) <= 0)
 	{
@@ -57,7 +61,30 @@ static int _appclient_read(int fd, AppClient * ac)
 	}
 	ac->buf_read_cnt+=len;
 	/* FIXME */
-	return ac->buf_read_cnt < 65536 ? 0 : 1; /* FIXME */
+	return ac->buf_read_cnt < sizeof(ac->buf_read) ? 0 : 1; /* FIXME */
+}
+
+
+static int _appclient_read_answer(int fd, AppClient * ac)
+{
+	ssize_t len;
+
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "appclient_read(", fd, ")\n");
+#endif
+	if((len = sizeof(ac->buf_read) - ac->buf_read_cnt) < sizeof(int)
+			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
+					sizeof(int))) <= 0)
+	{
+		/* FIXME */
+		return 1;
+	}
+	ac->buf_read_cnt+=len;
+	if(ac->buf_read_cnt < sizeof(int))
+		return 0;
+	memcpy(&ac->res, ac->buf_read, sizeof(int));
+	memmove(ac->buf_read, &ac->buf_read[sizeof(int)], sizeof(int));
+	return 1;
 }
 
 
@@ -84,7 +111,8 @@ static int _appclient_write(int fd, AppClient * ac)
 #endif
 	if(ac->buf_write_cnt > 0)
 		return 0;
-	event_register_io_read(ac->event, fd, _appclient_read, ac);
+	event_register_io_read(ac->event, fd,
+			(EventIOFunc)_appclient_read_answer, ac);
 	return 1;
 }
 
@@ -144,7 +172,7 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(4242); /* FIXME */
 	sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	if(connect(appclient->fd, &sa, sizeof(sa)) != 0)
+	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return 1;
 	if((port = appclient_call(appclient, "port", 1, app)) == -1)
 		return 1;
@@ -156,13 +184,16 @@ static int _new_connect(AppClient * appclient, char * app)
 		return 0;
 	}
 	close(appclient->fd);
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "AppClient bouncing to port ", port, "\n");
+#endif
 	appinterface_delete(appclient->interface);
 	if((appclient->interface = appinterface_new(app)) == NULL)
 		return 1;
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_port = htons(port);
-	if(connect(appclient->fd, &sa, sizeof(sa)) != 0)
+	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return 1;
 	return 0;
 }
@@ -209,5 +240,5 @@ int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 	fprintf(stderr, "%s", "AppClient looping in wait for answer()\n");
 #endif
 	event_loop(ac->event);
-	return 0;
+	return ac->res;
 }

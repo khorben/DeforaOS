@@ -19,6 +19,7 @@ void appinterface_delete(AppInterface * appinterface);
 /* useful */
 int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 		int buflen, void ** args);
-int appinterface_receive(AppInterface * appinterface, char buf[], int buflen);
+int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
+		int * ret);
 
 #endif /* !APP_INTERFACE_H */

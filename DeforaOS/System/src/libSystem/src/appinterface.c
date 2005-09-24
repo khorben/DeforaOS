@@ -280,7 +280,8 @@ static int _send_string(char * string, char buf[], int buflen, int * pos)
 static char * _read_string(char buf[], int buflen, int * pos);
 static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 		int * pos);
-int appinterface_receive(AppInterface * appinterface, char buf[], int buflen)
+int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
+		int * ret)
 {
 	int pos = 0;
 	char * func;
@@ -297,8 +298,8 @@ int appinterface_receive(AppInterface * appinterface, char buf[], int buflen)
 	string_delete(func);
 	if(i == appinterface->calls_cnt)
 		return -1;
-	if(_receive_args(&appinterface->calls[i], buf, buflen, &pos) != 0)
-		return -1;
+	/* FIXME give a way to catch errors if any */
+	*ret = _receive_args(&appinterface->calls[i], buf, buflen, &pos);
 	return pos;
 }
 
@@ -321,6 +322,7 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 	char ** args;
 	size_t size;
 	int j;
+	int ret;
 
 	if((args = malloc(sizeof(char*) * calls->args_cnt)) == NULL)
 		return 1;
@@ -365,8 +367,7 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 		else if(_read_buffer(&args[i], size, buf, buflen, pos) != 0)
 			break;
 	}
-	/* FIXME send result back */
-	_receive_exec(calls, args);
+	ret = _receive_exec(calls, args);
 	/* FIXME free everything allocated */
 	for(j = 0; j < i; j++)
 	{
@@ -403,7 +404,7 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 			free(args[i]);
 	}
 	free(args);
-	return 0;
+	return ret;
 }
 
 static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
