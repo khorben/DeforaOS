@@ -38,7 +38,7 @@ struct _AppClient
 static int _appclient_timeout(AppClient * appclient)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_timeout()\n");
+	fprintf(stderr, "%s", "appclient_timeout()\n");
 #endif
 	close(appclient->fd);
 	return 1;
@@ -215,7 +215,7 @@ int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 	int i;
 	void ** args = NULL;
 	void ** p;
-	struct timeval tv = { 0, 1000000 };
+	struct timeval tv = { 10, 0 };
 	Event * eventtmp;
 
 #ifdef DEBUG
