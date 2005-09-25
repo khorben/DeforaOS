@@ -23,6 +23,7 @@ struct sysinfo
 {
 	long uptime;
 	unsigned long loads[3];
+	unsigned short procs;
 };
 
 static int sysinfo(struct sysinfo * info)
@@ -34,6 +35,7 @@ static int sysinfo(struct sysinfo * info)
 	int len;
 	int ret = 0;
 
+	/* uptime */
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_BOOTTIME;
 	len = sizeof(tv);
@@ -45,6 +47,8 @@ static int sysinfo(struct sysinfo * info)
 	}
 	else
 		info->uptime = now.tv_sec - tv.tv_sec;
+
+	/* loads */
 	/* FIXME getloadavg() looks portable */
 	mib[0] = CTL_VM;
 	mib[1] = VM_LOADAVG;
@@ -60,6 +64,17 @@ static int sysinfo(struct sysinfo * info)
 		info->loads[1] = la.ldavg[1];
 		info->loads[2] = la.ldavg[2];
 	}
+
+	/* procs */
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	if(sysctl(mib, 2, NULL, &len, NULL, 0) == -1)
+	{
+		info->procs = 0;
+		ret++;
+	}
+	else
+		info->procs = len;
 	return ret;
 }
 #endif
