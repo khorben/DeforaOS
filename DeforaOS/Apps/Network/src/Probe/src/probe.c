@@ -161,6 +161,13 @@ int load15(void)
 }
 
 
+int procs(void)
+{
+	printf("%s%u%s", "Procs: ", info.procs, "\n");
+	return info.procs;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
