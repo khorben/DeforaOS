@@ -94,6 +94,8 @@ static int _damon_refresh(Host * hosts)
 		_rrd_update(rrd, 3, appclient_call(ac, "load1", 0),
 				appclient_call(ac, "load5", 0),
 				appclient_call(ac, "load15", 0));
+		sprintf(rrd, "%s/%s", hosts[i].hostname, "procs.rrd");
+		_rrd_update(rrd, 1, appclient_call(ac, "procs", 0));
 	}
 	free(rrd);
 	if(ac != NULL)
