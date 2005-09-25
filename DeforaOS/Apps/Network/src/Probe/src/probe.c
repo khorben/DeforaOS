@@ -31,7 +31,7 @@ static int sysinfo(struct sysinfo * info)
 	struct timeval now;
 	struct timeval tv;
 	struct loadavg la;
-	int mib[2];
+	int mib[3];
 	int len;
 	int ret = 0;
 
@@ -68,13 +68,15 @@ static int sysinfo(struct sysinfo * info)
 	/* procs */
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_PROC;
-	if(sysctl(mib, 2, NULL, &len, NULL, 0) == -1)
+	mib[2] = KERN_PROC_ALL;
+	len = 0;
+	if(sysctl(mib, 3, NULL, &len, NULL, 0) == -1)
 	{
 		info->procs = 0;
 		ret++;
 	}
 	else
-		info->procs = len;
+		info->procs = len / sizeof(struct kinfo_proc);
 	return ret;
 }
 #endif
