@@ -338,11 +338,13 @@ int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
 
 static char * _read_string(char buf[], int buflen, int * pos)
 {
+	char * str = &buf[*pos];
+
 	for(; *pos < buflen && buf[*pos] != '\0'; (*pos)++);
 	if(*pos == buflen)
 		return NULL;
 	(*pos)++;
-	return string_new(buf);
+	return string_new(str);
 }
 
 static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
