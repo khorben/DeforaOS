@@ -1,5 +1,5 @@
 /* config.c */
-/* Copyright (C) 2004 Pierre Pronchery */
+/* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include "config.h"
 
 
@@ -34,9 +35,30 @@ Config * config_new(void)
 	return config;
 }
 
+/* FIXME should be an API to avoid this */
+typedef struct _HashEntry
+{
+	char * name;
+	void * data;
+} HashEntry;
 void config_delete(Config * config)
 {
-	free(config);
+	unsigned int i;
+	HashEntry * hi;
+	int j;
+	HashEntry * hj;
+
+	for(i = array_get_size(config); i > 0; i--)
+	{
+		hi = array_get(config, i - 1);
+		for(j = array_get_size(hi->data); j > 0; j--)
+		{
+			hj = array_get(hi->data, j - 1);
+			free(hj->data);
+		}
+		hash_delete(hi->data);
+	}
+	hash_delete(config);
 }
 
 
@@ -50,20 +72,29 @@ char * config_get(Config * config, char * section, char * variable)
 	return hash_get(p, variable);
 }
 
-int config_set(Config * config, char const * section, char const * variable, char * value)
+
+int config_set(Config * config, char const * section, char const * variable,
+		char const * value)
 {
 	Hash * h;
+	char * p;
 
-	if((h = hash_get(config, section)) != NULL)
-		return hash_set(h, variable, value);
-	if((h = hash_new()) == NULL)
-		return 1;
-	if(hash_set(config, section, h) == 1)
+	if((h = hash_get(config, section)) == NULL)
 	{
-		hash_delete(h);
-		return 1;
+		if((h = hash_new()) == NULL)
+			return 1;
+		if(hash_set(config, section, h) == 1)
+		{
+			hash_delete(h);
+			return 1;
+		}
 	}
-	return hash_set(h, variable, value);
+	if((p = strdup(value)) == NULL)
+		return 1;
+	if(hash_set(h, variable, p) == 0)
+		return 0;
+	free(p);
+	return 1;
 }
 
 
@@ -79,18 +110,16 @@ int config_load(Config * config, char * filename)
 	char * str;
 	int ret = 0;
 
-	if((section = strdup("")) == NULL)
+	if((section = strdup("")) == NULL
+			|| (fp = fopen(filename, "r")) == NULL)
 	{
-		fprintf(stderr, "%s", "gputty: ");
-		perror("strdup");
+		free(section);
 		return 1;
 	}
-	if((fp = fopen(filename, "r")) == NULL)
-		return 1;
 	while((c = fgetc(fp)) != EOF)
 	{
 		if(c == '#')
-			while((c = fgetc(fp)) != EOF && 'c' != '\n');
+			while((c = fgetc(fp)) != EOF && c != '\n');
 		else if(c == '[')
 		{
 			if((str = _load_section(fp)) == NULL)
@@ -106,12 +135,8 @@ int config_load(Config * config, char * filename)
 			variable = str;
 			if((str = _load_value(fp)) == NULL)
 				break;
-#ifdef DEBUG
-			fprintf(stderr, "%s%p, %s, %s, %s%s",
-					"config_set(", config,
-					section, variable, str, ");\n");
-#endif
 			config_set(config, section, variable, str);
+			free(str);
 		}
 		else if(c != '\n')
 			break;
@@ -120,8 +145,8 @@ int config_load(Config * config, char * filename)
 	free(variable);
 	if(!feof(fp))
 	{
+		errno = EINVAL;
 		ret = 1;
-		fprintf(stderr, "%s", "gputty: error in configuration file\n");
 	}
 	fclose(fp);
 	return ret;
@@ -131,56 +156,53 @@ static char * _load_section(FILE * fp)
 {
 	int c;
 	char * str = NULL;
-	int len = 1;
+	int len = 0;
 	char * p;
 
 	while((c = fgetc(fp)) != EOF && c != ']' && isprint(c))
 	{
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, sizeof(char) * (len+2))) == NULL)
 		{
 			free(str);
 			return NULL;
 		}
 		str = p;
-		str[len++ - 1] = c;
+		str[len++] = c;
 	}
 	if(c != ']')
 	{
 		free(str);
 		return NULL;
 	}
-	str[len - 1] = '\0';
+	str[len] = '\0';
 	return str;
 }
 
 static char * _load_variable(FILE * fp, int c)
 {
 	char * str;
-	int len = 2;
+	int len = 1;
 	char * p;
 
-	if((str = malloc(len)) == NULL)
+	if((str = malloc(sizeof(char) * (len+1))) == NULL)
 		return NULL;
 	str[0] = c;
 	while((c = fgetc(fp)) != EOF && c != '=' && isprint(c))
 	{
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, sizeof(char) * (len+2))) == NULL)
 		{
 			free(str);
 			return NULL;
 		}
 		str = p;
-		str[len++ - 1] = c;
+		str[len++] = c;
 	}
 	if(c != '=')
 	{
-#ifdef DEBUG
-		fprintf(stderr, "%d ici\n", c);
-#endif
 		free(str);
 		return NULL;
 	}
-	str[len - 1] = '\0';
+	str[len] = '\0';
 	return str;
 }
 
@@ -188,71 +210,74 @@ static char * _load_value(FILE * fp)
 {
 	int c;
 	char * str = NULL;
-	int len = 1;
+	int len = 0;
 	char * p;
 
-	if((str = malloc(len)) == NULL)
-		return NULL;
 	while((c = fgetc(fp)) != EOF && isprint(c))
 	{
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, sizeof(char) * (len+2))) == NULL)
 		{
 			free(str);
 			return NULL;
 		}
 		str = p;
-		str[len++ - 1] = c;
+		str[len++] = c;
 	}
 	if(c != '\n')
 	{
 		free(str);
 		return NULL;
 	}
-	str[len - 1] = '\0';
+	if(str == NULL)
+		return strdup("");
+	str[len] = '\0';
 	return str;
 }
 
-/* FIXME */
-typedef struct _HashEntry {
-	char * name;
-	void * data;
-} HashEntry;
-static void _save_section(Hash * h, unsigned int i, FILE * fp);
-static void _save_variables(Hash * h, FILE * fp);
+
+static int _save_section(Hash * h, unsigned int i, FILE * fp);
+static int _save_variables(Hash * h, FILE * fp);
 int config_save(Config * config, char * filename)
 {
 	FILE * fp;
 	unsigned int i;
 	unsigned int j;
+	int ret = 0;
 
 	if((i = array_get_size(config)) == 0)
 		return 1;
 	if((fp = fopen(filename, "w")) == NULL)
 	{
-		fprintf(stderr, "%s", "gputty: ");
+		fprintf(stderr, "%s", "libutils: ");
 		perror(filename);
 		return 1;
 	}
 	for(j = 0; j < i; j++)
-		_save_section(config, j, fp);
+		if((ret = _save_section(config, j, fp)) != 0)
+			break;
 	fclose(fp);
-	return 0;
+	return ret;
 }
 
-static void _save_section(Hash * h, unsigned int i, FILE * fp)
+static int _save_section(Hash * h, unsigned int i, FILE * fp)
 {
 	HashEntry * he;
 
 	he = array_get(h, i);
 	if(he->name[0] != '\0')
-		fprintf(fp, "[%s]\n", he->name);
+	{
+		if(fprintf(fp, "[%s]\n", he->name) < 0)
+			return 1;
+	}
 	else if(i != 0)
-		fwrite("[]\n", sizeof(char), 3, fp);
-	_save_variables(he->data, fp);
-	fwrite("\n", sizeof(char), 1, fp);
+		if(fwrite("[]\n", sizeof(char), 3, fp) != 3)
+			return 1;
+	if(_save_variables(he->data, fp) != 0)
+		return 1;
+	return fputc('\n', fp) == '\n' ? 0 : 1;
 }
 
-static void _save_variables(Hash * h, FILE * fp)
+static int _save_variables(Hash * h, FILE * fp)
 {
 	unsigned int i;
 	unsigned int j;
@@ -264,6 +289,8 @@ static void _save_variables(Hash * h, FILE * fp)
 		he = array_get(h, j);
 		if(he->name == NULL || he->data == NULL)
 			continue;
-		fprintf(fp, "%s=%s\n", he->name, (char*)he->data);
+		if(fprintf(fp, "%s=%s\n", he->name, (char*)he->data) < 0)
+			return 1;
 	}
+	return 0;
 }

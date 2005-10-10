@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <err.h>
 #include <gtk/gtk.h>
 #include "gputty.h"
 
@@ -68,7 +67,10 @@ GPuTTY * gputty_new(void)
 	}
 	config_set(g->config, "", "ssh", SSH);
 	config_set(g->config, "", "xterm", XTERM);
-	config_set(g->config, "", "port", "22"); /* FIXME should be define'd */
+	p = malloc(sizeof(char) * 6);
+	sprintf(p, "%hu", SSH_PORT);
+	config_set(g->config, "", "port", p);
+	free(p);
 	config_load(g->config, "/etc/gputty");
 	if((p = _gputty_config_file()) != NULL)
 	{
@@ -300,7 +302,8 @@ static void gputty_on_connect(GtkWidget * widget, gpointer data)
 		return;
 	if((pid = fork()) == -1)
 	{
-		warn("fork");
+		fprintf(stderr, "%s", "GPuTTY: ");
+		perror("fork");
 		return;
 	}
 	else if(pid == 0)
@@ -313,7 +316,9 @@ static void gputty_on_connect(GtkWidget * widget, gpointer data)
 				"-p", port,
 				useropt, username,
 				NULL);
-		err(2, xterm);
+		fprintf(stderr, "%s", "GPuTTY: ");
+		perror(xterm);
+		exit(2);
 	}
 }
 
@@ -529,10 +534,10 @@ static void gputty_on_save(GtkWidget * widget, gpointer data)
 		return;
 	sprintf(buf, "session %d", row);
 	sprintf(buf2, "%d", port);
-	config_set(g->config, buf, "name", strdup(session));
-	config_set(g->config, buf, "hostname", strdup(hostname));
-	config_set(g->config, buf, "username", strdup(username));
-	config_set(g->config, buf, "port", strdup(buf2));
+	config_set(g->config, buf, "name", session);
+	config_set(g->config, buf, "hostname", hostname);
+	config_set(g->config, buf, "username", username);
+	config_set(g->config, buf, "port", buf2);
 }
 
 static void gputty_on_select(GtkWidget * widget, gint row, gint column, GdkEventButton *event, gpointer data)
