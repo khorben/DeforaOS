@@ -1,4 +1,4 @@
-SUBDIRS	= init makepasswd mktemp sh utils
+SUBDIRS	= makepasswd mktemp sh utils
 
 
 all: subdirs
