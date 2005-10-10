@@ -1,5 +1,5 @@
 /* array.c */
-/* Copyright (C) 2004 Pierre Pronchery */
+/* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
