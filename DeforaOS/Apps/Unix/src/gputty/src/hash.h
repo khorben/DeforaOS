@@ -1,5 +1,5 @@
 /* hash.h */
-/* Copyright (C) 2004 Pierre Pronchery */
+/* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 /* types */
 typedef Array Hash;
 
-
 /* functions */
 Hash * hash_new(void);
 void hash_delete(Hash * hash);
@@ -36,4 +35,4 @@ void hash_delete(Hash * hash);
 void * hash_get(Hash * hash, char const * name);
 int hash_set(Hash * hash, char const * name, void * data);
 
-# endif /* !_HASH_H */
+#endif /* !_HASH_H */
