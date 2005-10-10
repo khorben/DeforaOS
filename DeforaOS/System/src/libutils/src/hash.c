@@ -62,10 +62,8 @@ void hash_delete(Hash * hash)
 
 	if((i = array_get_size(hash)) != 0)
 		for(; i > 0; i--)
-		{
 			if((he = array_get(hash, i - 1)) != NULL)
 				hashentry_delete(he);
-		}
 	array_delete(hash);
 }
 
