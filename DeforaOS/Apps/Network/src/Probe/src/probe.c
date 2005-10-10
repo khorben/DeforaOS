@@ -4,10 +4,9 @@
 
 #include <System.h>
 #include <stdio.h>
-#ifdef LINUX
+#ifdef _GNU_SOURCE
 # include <sys/sysinfo.h>
-#endif
-#ifdef BSD
+#else
 # include <sys/param.h>
 # include <sys/sysctl.h>
 # include <sys/resource.h>
