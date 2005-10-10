@@ -1,5 +1,5 @@
 /* hash.c */
-/* Copyright (C) 2004 Pierre Pronchery */
+/* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 
 /* HashEntry */
+/* types */
 typedef struct _HashEntry {
 	char * name;
 	void * data;
@@ -76,10 +77,8 @@ void hash_delete(Hash * hash)
 
 	if((i = array_get_size(hash)) != 0)
 		for(; i > 0; i--)
-		{
 			if((he = array_get(hash, i - 1)) != NULL)
 				hashentry_delete(he);
-		}
 	array_delete(hash);
 }
 
