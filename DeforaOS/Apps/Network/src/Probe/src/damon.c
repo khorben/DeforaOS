@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DAMON_REFRESH 5
+#define DAMON_REFRESH 10
 
 
 /* types */
