@@ -36,6 +36,7 @@ static int sysinfo(struct sysinfo * info)
 	struct timeval now;
 	struct timeval tv;
 	struct loadavg la;
+	struct uvmexp ue;
 	int mib[3];
 	int len;
 	int ret = 0;
@@ -71,20 +72,28 @@ static int sysinfo(struct sysinfo * info)
 	}
 
 	/* ram */
-	info->totalram = 0;
-	info->freeram = 0;
-	info->sharedram = 0;
 	mib[0] = CTL_VM;
-	mib[1] = VM_BUFMEM;
-	if(sysctl(mib, 2, &info->bufferram, &len, NULL, 0) == -1)
+	mib[1] = VM_UVMEXP;
+	len = sizeof(ue);
+	if(sysctl(mib, 2, &ue, &len, NULL, 0) == -1)
 	{
+		info->totalram = 0;
+		info->freeram = 0;
+		info->sharedram = 0;
 		info->bufferram = 0;
+		info->totalswap = 0;
+		info->freeswap = 0;
 		ret++;
 	}
-
-	/* swap */
-	info->totalswap = 0;
-	info->freeswap = 0;
+	else
+	{
+		info->totalram = ue.pagesize * ue.npages;
+		info->freeram = ue.pagesize * ue.free;
+		info->sharedram = ue.pagesize * ue.execpages;
+		info->bufferram = ue.pagesize * ue.filepages;
+		info->totalswap = ue.pagesize * ue.swpages;
+		info->freeswap = ue.pagesize * ue.swpgavail;
+	}
 
 	/* procs */
 	mib[0] = CTL_KERN;
@@ -201,7 +210,7 @@ int ram_shared(void)
 
 int ram_buffer(void)
 {
-	printf("%s%u%s", "Buffered RAM: ", info.bufferram, "\n");
+	printf("%s%lu%s", "Buffered RAM: ", info.bufferram, "\n");
 	return info.bufferram;
 }
 
@@ -213,7 +222,7 @@ int procs(void)
 
 
 /* main */
-int main(int argc, char * argv[])
+int main(void)
 {
 	return _probe();
 }
