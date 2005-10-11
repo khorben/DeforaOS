@@ -47,8 +47,10 @@ static int _damon(void)
 			break;
 		if((hosts[i].appclient = appclient_new_event("Probe", event))
 				== NULL)
+		{
+			_damon_error(hosts[i].hostname, 0);
 			break;
-		fprintf(stderr, "AppClientNew => %p\n", hosts[i].appclient);
+		}
 	}
 	if(hosts[i].hostname == NULL)
 	{
