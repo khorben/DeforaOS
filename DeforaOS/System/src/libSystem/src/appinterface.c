@@ -150,6 +150,12 @@ static int _new_probe(AppInterface * appinterface)
 	ret += _new_append(appinterface, AICT_UINT32, "load1", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "load5", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "load15", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "totalram", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "freeram", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "sharedram", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "bufferram", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "totalswap", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "freeswap", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "procs", 0);
 	return ret;
 }
