@@ -195,16 +195,19 @@ int load_15(void)
 
 int ram_total(void)
 {
+	printf("%s%lu%s", "Total RAM: ", info.totalram, "\n");
 	return info.totalram;
 }
 
 int ram_free(void)
 {
+	printf("%s%lu%s", "Free RAM: ", info.freeram, "\n");
 	return info.freeram;
 }
 
 int ram_shared(void)
 {
+	printf("%s%lu%s", "Shared RAM: ", info.sharedram, "\n");
 	return info.sharedram;
 }
 
