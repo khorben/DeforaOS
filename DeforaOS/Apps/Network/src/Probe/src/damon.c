@@ -93,9 +93,17 @@ static int _damon_refresh(Host * hosts)
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "uptime.rrd");
 		_rrd_update(rrd, 1, appclient_call(ac, "uptime", 0));
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "load.rrd");
-		_rrd_update(rrd, 3, appclient_call(ac, "load1", 0),
-				appclient_call(ac, "load5", 0),
-				appclient_call(ac, "load15", 0));
+		_rrd_update(rrd, 3, appclient_call(ac, "load_1", 0),
+				appclient_call(ac, "load_5", 0),
+				appclient_call(ac, "load_15", 0));
+		sprintf(rrd, "%s/%s", hosts[i].hostname, "ram.rrd");
+		_rrd_update(rrd, 4, appclient_call(ac, "ram_total", 0),
+				appclient_call(ac, "ram_free", 0),
+				appclient_call(ac, "ram_shared", 0),
+				appclient_call(ac, "ram_buffer", 0));
+		sprintf(rrd, "%s/%s", hosts[i].hostname, "swap.rrd");
+		_rrd_update(rrd, 2, appclient_call(ac, "swap_total", 0),
+				appclient_call(ac, "swap_free", 0));
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "procs.rrd");
 		_rrd_update(rrd, 1, appclient_call(ac, "procs", 0));
 	}

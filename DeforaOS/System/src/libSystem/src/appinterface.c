@@ -147,15 +147,15 @@ static int _new_probe(AppInterface * appinterface)
 	int ret = 0;
 
 	ret += _new_append(appinterface, AICT_UINT32, "uptime", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "load1", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "load5", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "load15", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "totalram", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "freeram", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "sharedram", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "bufferram", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "totalswap", 0);
-	ret += _new_append(appinterface, AICT_UINT32, "freeswap", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "load_1", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "load_5", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "load_15", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "ram_total", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "ram_free", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "ram_shared", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "ram_buffer", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "swap_total", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "swap_free", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "procs", 0);
 	return ret;
 }

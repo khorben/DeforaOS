@@ -172,21 +172,21 @@ int uptime(void)
 }
 
 
-int load1(void)
+int load_1(void)
 {
 	printf("%s%lu%s", "Load 1: ", info.loads[0], "\n");
 	return info.loads[0];
 }
 
 
-int load5(void)
+int load_5(void)
 {
 	printf("%s%lu%s", "Load 5: ", info.loads[1], "\n");
 	return info.loads[1];
 }
 
 
-int load15(void)
+int load_15(void)
 {
 	printf("%s%lu%s", "Load 15: ", info.loads[2], "\n");
 	return info.loads[2];
@@ -213,6 +213,18 @@ int ram_buffer(void)
 	printf("%s%lu%s", "Buffered RAM: ", info.bufferram, "\n");
 	return info.bufferram;
 }
+
+
+int swap_total(void)
+{
+	return info.totalswap;
+}
+
+int swap_free(void)
+{
+	return info.freeswap;
+}
+
 
 int procs(void)
 {
