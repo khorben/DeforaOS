@@ -156,6 +156,7 @@ static int _new_probe(AppInterface * appinterface)
 	ret += _new_append(appinterface, AICT_UINT32, "ram_buffer", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "swap_total", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "swap_free", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "users", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "procs", 0);
 	return ret;
 }
