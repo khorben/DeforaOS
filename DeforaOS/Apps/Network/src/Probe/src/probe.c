@@ -13,15 +13,21 @@
 # include <string.h>
 #endif
 
-#define PROBE_REFRESH 5
+#define PROBE_REFRESH 10
 
 
 /* globals */
-#ifdef BSD
+#ifndef _GNU_SOURCE
 struct sysinfo
 {
 	long uptime;
 	unsigned long loads[3];
+	unsigned long totalram;
+	unsigned long freeram;
+	unsigned long sharedram;
+	unsigned long bufferram;
+	unsigned long totalswap;
+	unsigned long freeswap;
 	unsigned short procs;
 };
 
@@ -63,6 +69,22 @@ static int sysinfo(struct sysinfo * info)
 		info->loads[1] = la.ldavg[1];
 		info->loads[2] = la.ldavg[2];
 	}
+
+	/* ram */
+	info->totalram = 0;
+	info->freeram = 0;
+	info->sharedram = 0;
+	mib[0] = CTL_VM;
+	mib[1] = VM_BUFMEM;
+	if(sysctl(mib, 2, &info->bufferram, &len, NULL, 0) == -1)
+	{
+		info->bufferram = 0;
+		ret++;
+	}
+
+	/* swap */
+	info->totalswap = 0;
+	info->freeswap = 0;
 
 	/* procs */
 	mib[0] = CTL_KERN;
@@ -161,6 +183,27 @@ int load15(void)
 	return info.loads[2];
 }
 
+
+int ram_total(void)
+{
+	return info.totalram;
+}
+
+int ram_free(void)
+{
+	return info.freeram;
+}
+
+int ram_shared(void)
+{
+	return info.sharedram;
+}
+
+int ram_buffer(void)
+{
+	printf("%s%u%s", "Buffered RAM: ", info.bufferram, "\n");
+	return info.bufferram;
+}
 
 int procs(void)
 {
