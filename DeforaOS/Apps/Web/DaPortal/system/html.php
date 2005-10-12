@@ -107,7 +107,8 @@ function _html_tags($string, $tags = FALSE)
 
 function _html_template($template)
 {
-	include('templates/'.$template.'.tpl');
+	if(!@include('templates/'.$template.'.tpl'))
+		return _error('Could not include template');
 }
 
 ?>
