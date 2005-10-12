@@ -325,23 +325,30 @@ function user_register($args)
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
 			&& isset($args['email']))
 	{
-		if(_sql_single('SELECT username FROM daportal_user'
-				." WHERE username='".$args['username']."';")
-				== FALSE)
-		{
-			if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
-					.'[a-zA-Z]{1,4}$', $args['email']))
-				$message = EMAIL_INVALID;
-			else if(_sql_array('SELECT email FROM daportal_user'
-					." WHERE email='".$args['email']."';")
-					== FALSE)
-				return _register_mail($args['username'],
-						$args['email']);
-			else
-				$message = EMAIL_ALREADY_ASSIGNED;
-		}
+		if(!ereg('^[a-z]{1,9}$', $args['username']))
+			$message = 'Username must be lower-case and no longer than 9 characters';
 		else
-			$message = USER_ALREADY_ASSIGNED;
+		{
+			if(_sql_single('SELECT username FROM daportal_user'
+					." WHERE username='".$args['username']."';")
+					== FALSE)
+			{
+				if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
+						.'[a-zA-Z]{1,4}$',
+						$args['email']))
+					$message = EMAIL_INVALID;
+				else if(_sql_array('SELECT email'
+						.' FROM daportal_user'
+						." WHERE email='".$args['email']."';")
+						== FALSE)
+					return _register_mail($args['username'],
+							$args['email']);
+				else
+					$message = EMAIL_ALREADY_ASSIGNED;
+			}
+			else
+				$message = USER_ALREADY_ASSIGNED;
+		}
 	}
 	print('<h1><img src="modules/user/icon.png" alt=""/> '
 			._html_safe(USER_REGISTRATION).'</h1>');
@@ -443,9 +450,13 @@ function user_update($args)
 	//FIXME should also allow user to update some of his own details
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	//FIXME check if password is set and matches
+	$password = '';
+	if(strlen($args['password1'])
+			&& $args['password1'] == $args['password2'])
+		$password = ", password='".md5($args['password1'])."'";
 	if(!_sql_query('UPDATE daportal_user SET'
 			." username='".$args['username']."'"
+			.$password
 			.", enabled='".(isset($args['enabled']) ? '1' : '0')."'"
 			.", admin='".(isset($args['admin']) ? '1' : '0')."'"
 			.", email='".$args['email']."'"
