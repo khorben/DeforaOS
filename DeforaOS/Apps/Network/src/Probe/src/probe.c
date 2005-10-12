@@ -93,7 +93,7 @@ static int sysinfo(struct sysinfo * info)
 		info->sharedram = ue.pagesize * ue.execpages;
 		info->bufferram = ue.pagesize * ue.filepages;
 		info->totalswap = ue.pagesize * ue.swpages;
-		info->freeswap = ue.pagesize * ue.swpgavail;
+		info->freeswap = info->totalswap - (ue.pagesize * ue.swpgonly);
 	}
 
 	/* procs */
@@ -231,11 +231,13 @@ int ram_buffer(void)
 
 int swap_total(void)
 {
+	printf("%s%lu%s", "Total swap: ", probe.sysinfo.totalswap, "\n");
 	return probe.sysinfo.totalswap;
 }
 
 int swap_free(void)
 {
+	printf("%s%lu%s", "Free swap: ", probe.sysinfo.freeswap, "\n");
 	return probe.sysinfo.freeswap;
 }
 
