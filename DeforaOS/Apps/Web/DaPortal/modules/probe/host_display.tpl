@@ -15,11 +15,11 @@ $times = array('hour', 'day', 'week');
 </div>
 <div class="comment"><? echo _html_safe($host['comment']); ?></div>
 <center>
-<table width="100%">
+<table>
 <? if(array_key_exists($args['graph'], $graphs)) { ?>
-<h2><? echo _html_safe($graphs[$args['graph']]); ?></h2>
+<tr><td><h2><? echo _html_safe($graphs[$args['graph']]); ?></h2></td></tr>
 <? foreach($times as $t) { ?>
-<img src="<? echo _html_safe($host['hostname'].'/'.$args['graph'].'-'.$t); ?>.png" alt=""/><br/>
+<tr><td><img src="<? echo _html_safe($host['hostname'].'/'.$args['graph'].'-'.$t); ?>.png" alt=""/></td></tr>
 <? } ?>
 <? } else { ?>
 <? $keys = array_keys($graphs); for($i = 0, $cnt = count($keys); $i < $cnt; $i++) { ?>
