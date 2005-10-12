@@ -170,6 +170,9 @@ function probe_host_update($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
+	require_once('system/content.php');
+	_content_update($args['id'], $args['hostname'], $args['comment']);
+	probe_host_display(array('id' => $args['id']));
 }
 
 
