@@ -83,23 +83,25 @@ img {
 	padding-left:			150px;
 }
 
-.menu {
+ul.menu {
 	background-color:		#cfcfff;
 	float:				left;
-	margin:				0;
-	padding:			0;
 	padding-bottom:			3em;
 	padding-top:			3em;
 	width:				150px;
 }
 
-.menu ul {
+ul.menu, ul.menu ul {
 	list-style-type:		none;
-	padding:			0;
+	margin:				0;
+	padding-left:			0;
+	padding-right:			0;
 }
 
-.menu ul li {
+ul.menu li {
+	margin:				0;
 	margin-left:			10px;
+	padding:			0;
 }
 
 .selected {
