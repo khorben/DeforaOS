@@ -59,6 +59,14 @@ img {
 	margin-bottom:			0;
 }
 
+.debug .visible {
+	font-weight:			bold;
+}
+
+.debug .visible img {
+	vertical-align:			middle;
+}
+
 .explorer .entry .thumbnail {
 	text-align:			center;
 }
