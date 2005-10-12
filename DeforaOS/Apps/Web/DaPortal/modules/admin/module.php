@@ -114,7 +114,7 @@ function admin_content($args)
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'content_enable');
-	$toolbar[] = array('title' => ENABLE,
+	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'content_delete',
 			'confirm' => 'delete');
