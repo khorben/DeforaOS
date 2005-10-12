@@ -104,6 +104,8 @@ static int _damon_refresh(Host * hosts)
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "swap.rrd");
 		_rrd_update(rrd, 2, appclient_call(ac, "swap_total", 0),
 				appclient_call(ac, "swap_free", 0));
+		sprintf(rrd, "%s/%s", hosts[i].hostname, "users.rrd");
+		_rrd_update(rrd, 1, appclient_call(ac, "users", 0));
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "procs.rrd");
 		_rrd_update(rrd, 1, appclient_call(ac, "procs", 0));
 	}
