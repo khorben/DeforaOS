@@ -15,7 +15,7 @@ $times = array('hour', 'day', 'week');
 </div>
 <div class="comment"><? echo _html_safe($host['comment']); ?></div>
 <center>
-<table>
+<table width="100%">
 <? if(array_key_exists($args['graph'], $graphs)) { ?>
 <h2><? echo _html_safe($graphs[$args['graph']]); ?></h2>
 <? foreach($times as $t) { ?>
