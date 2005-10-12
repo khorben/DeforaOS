@@ -59,6 +59,7 @@ $text['AUTHOR'] = 'Author';
 $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
+$text['DELETE'] = 'Delete';
 $text['DESCRIPTION'] = 'Description';
 $text['DISABLE'] = 'Disable';
 $text['DISABLED'] = 'Disabled';
@@ -108,6 +109,7 @@ else if($lang == 'fr')
 	$text['AUTHOR'] = 'Auteur';
 	$text['CONTENT'] = 'Contenu';
 	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
+	$text['DELETE'] = 'Supprimer';
 	$text['DISABLE'] = 'Désactiver';
 	$text['DISABLED'] = 'Désactivé';
 	$text['ENABLE'] = 'Activer';
