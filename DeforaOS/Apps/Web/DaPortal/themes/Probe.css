@@ -1,0 +1,103 @@
+html body {
+	background-color:		#cfcfff;
+	color:				#000000;
+	font-family:			sans-serif;
+	font-size:			9pt;
+	margin:				0;
+	padding:			0;
+}
+
+a {
+	color:				#3f3f8f;
+	text-decoration:		none;
+}
+
+a:hover {
+	text-decoration:		underline;
+}
+
+h1 {
+	font-size:			19pt;
+	margin:				0;
+	padding-top:			5px;
+}
+
+h1 img {
+	vertical-align:			middle;
+}
+
+h2 {
+	font-size:			14pt;
+	margin:				0;
+	padding-top:			5px;
+}
+
+h2 img {
+	max-height:			32px;
+	max-width:			32px;
+}
+
+h3 {
+	font-size:			11pt;
+	margin:				0;
+	padding-top:			5px;
+}
+
+img {
+	border-width:			0;
+	vertical-align:			text-bottom;
+}
+
+/* classes */
+.debug {
+	background-color:		#cfcfff;
+	margin:				25px;
+	margin-bottom:			0;
+}
+
+.explorer .entry .thumbnail {
+	text-align:			center;
+}
+
+.explorer .listing_thumbnails .entry {
+	margin:				10px;
+}
+
+.field {
+	font-weight:			bold;
+}
+
+.hidden {
+	display:			none;
+}
+
+.main {
+	background-color:		#ffffff;
+	margin:				25px;
+	margin-left:			10px;
+	padding-left:			150px;
+	padding-bottom:			10px;
+}
+
+.menu {
+	background-color:		#cfcfff;
+	float:				left;
+	margin:				0;
+	padding:			0;
+	padding-bottom:			3em;
+	padding-top:			3em;
+	width:				150px;
+}
+
+.menu ul {
+	list-style-type:		none;
+	padding:			0;
+}
+
+.menu ul li {
+	margin-left:			10px;
+}
+
+.selected {
+	background-color:		#afafff;
+}
