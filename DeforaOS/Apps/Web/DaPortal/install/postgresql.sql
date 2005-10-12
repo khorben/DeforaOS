@@ -102,3 +102,11 @@ CREATE TABLE daportal_bug (
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
+
+
+/* module: probe */
+CREATE TABLE daportal_probe_host (
+	host_id SERIAL UNIQUE,
+	FOREIGN KEY (host_id) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
