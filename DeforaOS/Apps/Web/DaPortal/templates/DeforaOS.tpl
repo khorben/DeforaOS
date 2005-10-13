@@ -47,7 +47,7 @@ document.getElementById('search').style.display='none';
 			<div class="style1"><a href="index.php">DeforaOS</a> :: <? echo (strlen($module) ? '<a href="index.php?module='.$module.'">'.ucfirst($module).'</a>' : 'Homepage'); ?></div>
 			<div class="menu">
 <? if($user_id) { _module('menu'); } else { ?>
-			<ul>
+			<ul class="menu">
 				<li><a href="index.php"><? echo _html_safe(ABOUT); ?></a><ul>
 					<li><a href="index.php?module=news"><? echo _html_safe(NEWS); ?></a></li>
 					<li><a href="index.php?module=project"><? echo _html_safe(PROJECT); ?></a></li>
