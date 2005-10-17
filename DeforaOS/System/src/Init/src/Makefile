@@ -1,4 +1,4 @@
-TARGETS	= Init Hello
+TARGETS	= Init
 CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
 LDFLAGSF= -L /System/Libraries -l System -rdynamic
@@ -19,17 +19,9 @@ Init: $(Init_OBJS)
 init.o: init.c
 	$(CC) $(Init_CFLAGS) -c init.c
 
-Hello_OBJS= hello.o
-Hello_CFLAGS=$(CFLAGSF) $(CFLAGS)
-Hello: $(Hello_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o Hello $(Hello_OBJS)
-
-hello.o: hello.c
-	$(CC) $(Hello_CFLAGS) -c hello.c
-
 
 clean:
-	$(RM) $(Init_OBJS) $(Hello_OBJS)
+	$(RM) $(Init_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
