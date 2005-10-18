@@ -66,7 +66,7 @@ int as_error(char * msg, int ret)
 }
 
 
-/* plug-ins helpers */
+/* plugins helpers */
 void * as_plugin_new(char * type, char * name, char * description)
 {
 	char * filename;

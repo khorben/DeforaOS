@@ -6,6 +6,15 @@
 #include "arch.h"
 
 
+/* types */
+typedef enum _ArchOperands
+{
+#include "common.ops"
+#include "80386.ops"
+#include "80486.ops"
+} ArchOperands;
+
+
 /* variables */
 ArchInstruction arch_i486_set[] =
 {
@@ -21,6 +30,6 @@ ArchRegister arch_i486_regs[] =
 
 ArchPlugin arch_plugin =
 {
-	arch_i486_set,
-	arch_i486_regs
+	arch_i486_regs,
+	arch_i486_set
 };

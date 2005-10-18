@@ -48,20 +48,7 @@ void arch_delete(Arch * arch)
 
 
 /* ArchOperands */
-int archoperands_count(ArchOperands operands)
+int archoperands_count(int operands)
 {
-	switch(operands)
-	{
-		case AO_NONE:
-			return 0;
-		case AO_IMM:
-		case AO_REG:
-			return 1;
-		case AO_IMM_IMM:
-		case AO_IMM_REG:
-		case AO_REG_IMM:
-		case AO_REG_REG:
-			return 2;
-	}
-	return -1;
+	return operands % 010;
 }

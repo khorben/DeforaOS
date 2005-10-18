@@ -16,6 +16,6 @@ ArchRegister arch_sparc_regs[] =
 
 ArchPlugin arch_sparc =
 {
-	arch_sparc_set,
-	arch_sparc_regs
+	arch_sparc_regs,
+	arch_sparc_set
 };
