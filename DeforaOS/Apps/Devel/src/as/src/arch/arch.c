@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
+#include <assert.h>
 #include "../as.h"
 #include "arch.h"
 
@@ -50,5 +51,12 @@ void arch_delete(Arch * arch)
 /* ArchOperands */
 int archoperands_count(int operands)
 {
-	return operands % 010;
+	if(operands & _AO_OP__)
+		return 3;
+	if(operands & _AO_OP_)
+		return 2;
+	if(operands & _AO_OP)
+		return 1;
+	assert(operands == 0);
+	return 0;
 }

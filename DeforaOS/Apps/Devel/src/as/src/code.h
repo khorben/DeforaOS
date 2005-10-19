@@ -20,8 +20,11 @@ typedef struct _Code
 	FILE * fp;
 } Code;
 
-typedef enum _CodeError { CE_SUCCESS = 0, CE_INVALID_ARGUMENTS,
-	CE_UNKNOWN_INSTRUCTION, CE_WRITE_ERROR } CodeError;
+typedef enum _CodeError
+{
+	CE_SUCCESS = 0, CE_INVALID_ARGUMENTS,
+	CE_UNKNOWN_INSTRUCTION, CE_WRITE_ERROR
+} CodeError;
 # define CE_LAST (CE_WRITE_ERROR+1)
 
 typedef struct _CodeOperand
