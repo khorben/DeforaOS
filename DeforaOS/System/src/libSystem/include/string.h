@@ -16,6 +16,7 @@ void string_delete(String * string);
 int string_append(String ** string, String const * append);
 int string_compare(String const * string, String const * string2);
 void string_cut(String * string, unsigned int length);
+String const * string_find(String const * string, String const * key);
 int string_length(String const * string);
 
 #endif /* !_STRING_H */
