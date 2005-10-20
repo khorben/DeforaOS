@@ -3,9 +3,6 @@
 
 
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
 #include <string.h>
 #include "array.h"
 
@@ -22,9 +19,6 @@ Array * array_new(unsigned int size)
 {
 	Array * array;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "array_new(", size, ")\n");
-#endif
 	if((array = malloc(sizeof(Array))) == NULL)
 		return NULL;
 	array->data = NULL;
@@ -45,9 +39,6 @@ int array_append(Array * array, void * data)
 {
 	void * p;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%p%s", "array_append(", data, ")\n");
-#endif
 	if((p = realloc(array->data, array->size * (array->count + 1))) == NULL)
 		return 1;
 	array->data = p;
@@ -72,13 +63,18 @@ unsigned int array_count(Array * array)
 }
 
 
-int array_get(Array * array, unsigned int pos, void * data)
+void * array_get(Array * array, unsigned int pos)
+{
+	if(pos >= array->count)
+		return NULL;
+	return &array->data[pos * array->size];
+}
+
+
+int array_get_copy(Array * array, unsigned int pos, void * data)
 {
 	if(pos >= array->count)
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "array_get(array, ", pos, ", data)\n");
-#endif
 	memcpy(data, &array->data[pos * array->size], array->size);
 	return 0;
 }

@@ -140,7 +140,7 @@ static void _loop_timeout(Event * event)
 	event->timeout.tv_usec = LONG_MAX;
 	while(i < array_count(event->timeouts))
 	{
-		array_get(event->timeouts, i, &et);
+		array_get_copy(event->timeouts, i, &et);
 		if(now.tv_sec > et->timeout.tv_sec
 				|| (now.tv_sec == et->timeout.tv_sec
 					&& now.tv_usec >= et->timeout.tv_usec))
@@ -204,7 +204,7 @@ static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)
 #endif
 	while(i < array_count(eios))
 	{
-		array_get(eios, i, &eio);
+		array_get_copy(eios, i, &eio);
 		if((fd = eio->fd) <= event->fdmax && FD_ISSET(fd, fds)
 				&& eio->func(fd, eio->data) != 0)
 		{
@@ -324,7 +324,7 @@ static int _unregister_io(eventioArray * eios, fd_set * fds, int fd)
 
 	while(i < array_count(eios))
 	{
-		array_get(eios, i, &eio);
+		array_get_copy(eios, i, &eio);
 		if(eio->fd != fd)
 		{
 			fdmax = max(fdmax, eio->fd);
@@ -348,7 +348,7 @@ int event_unregister_timeout(Event * event, EventTimeoutFunc func)
 
 	while(i < array_count(event->timeouts))
 	{
-		array_get(event->timeouts, i, &et);
+		array_get_copy(event->timeouts, i, &et);
 		if(et->func != func)
 		{
 			i++;
@@ -363,7 +363,7 @@ int event_unregister_timeout(Event * event, EventTimeoutFunc func)
 	event->timeout.tv_usec = LONG_MAX;
 	for(i = 0; i < array_count(event->timeouts); i++)
 	{
-		array_get(event->timeouts, i, &et);
+		array_get_copy(event->timeouts, i, &et);
 		if(et->timeout.tv_sec < event->timeout.tv_sec
 				|| (et->timeout.tv_sec == event->timeout.tv_sec
 					&& et->timeout.tv_usec

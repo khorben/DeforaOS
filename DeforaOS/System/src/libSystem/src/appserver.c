@@ -117,7 +117,7 @@ static int _appserver_read(int fd, AppServer * appserver)
 
 	for(i = 0; i < array_count(appserver->clients); i++)
 	{
-		if(array_get(appserver->clients, i, &asc))
+		if(array_get_copy(appserver->clients, i, &asc))
 			break;
 		if(fd == asc->fd)
 			break;
@@ -202,7 +202,7 @@ static int _appserver_write_int(int fd, AppServer * appserver)
 	/* FIXME factorize this code */
 	for(i = 0; i < array_count(appserver->clients); i++)
 	{
-		if(array_get(appserver->clients, i, &asc))
+		if(array_get_copy(appserver->clients, i, &asc))
 			break;
 		if(fd == asc->fd)
 			break;

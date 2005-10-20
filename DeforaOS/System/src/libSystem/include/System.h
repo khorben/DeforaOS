@@ -8,6 +8,7 @@
 
 # include <appclient.h>
 # include <appserver.h>
+# include <config.h>
 # include <event.h>
 # include <string.h>
 

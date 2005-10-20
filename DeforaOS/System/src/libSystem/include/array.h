@@ -25,7 +25,8 @@ void array_delete(Array * array);
 int array_append(Array * array, void * data);
 void array_apply(Array * array, ArrayApplyFunc func, void * userdata);
 unsigned int array_count(Array * array);
-int array_get(Array * array, unsigned int pos, void * data);
+void * array_get(Array * array, unsigned int pos);
+int array_get_copy(Array * array, unsigned int pos, void * data);
 int array_remove_pos(Array * array, unsigned int pos);
 int array_set(Array * array, unsigned int pos, void * data);
 

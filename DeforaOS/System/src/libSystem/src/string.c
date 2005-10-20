@@ -7,7 +7,7 @@
 
 
 /* String */
-String * string_new(String * string)
+String * string_new(String const * string)
 {
 	String * str;
 	int length = string_length(string);
@@ -27,7 +27,7 @@ void string_delete(String * string)
 
 /* useful */
 /* string_append */
-int string_append(String ** string, String * append)
+int string_append(String ** string, String const * append)
 {
 	char * p;
 	int length = string_length(*string);
@@ -58,7 +58,7 @@ int string_compare(String const * string, String const * string2)
 
 
 /* string_length */
-int string_length(String * string)
+int string_length(String const * string)
 {
 	int length;
 
