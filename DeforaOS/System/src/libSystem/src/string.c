@@ -66,7 +66,7 @@ int string_compare_length(String const * string, String const * string2,
 
 	u1 = string;
 	u2 = string2;
-	while(length-- && *u1 && *u2 && *u1 == *u2)
+	while(--length && *u1 && *u2 && *u1 == *u2)
 	{
 		u1++;
 		u2++;
