@@ -13,7 +13,7 @@ typedef struct _HashEntry {
 	char * name;
 	void * data;
 } HashEntry;
-ARRAY(HashEntry *, hashentry);
+ARRAY(HashEntry, hashentry);
 
 
 /* functions */

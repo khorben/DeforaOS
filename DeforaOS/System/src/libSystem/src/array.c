@@ -42,7 +42,7 @@ int array_append(Array * array, void * data)
 	if((p = realloc(array->data, array->size * (array->count + 1))) == NULL)
 		return 1;
 	array->data = p;
-	memcpy(&p[array->size * array->count], &data, array->size);
+	memcpy(&p[array->size * array->count], data, array->size);
 	array->count++;
 	return 0;
 }
