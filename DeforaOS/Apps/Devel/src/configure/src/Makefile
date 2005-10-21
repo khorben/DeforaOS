@@ -1,7 +1,7 @@
 TARGETS	= configure
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
-LDFLAGSF= -lutils
+LDFLAGSF= -lSystem
 CC	= cc
 AR	= ar rc
 RANLIB	= ranlib

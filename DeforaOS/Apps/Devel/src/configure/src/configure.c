@@ -9,9 +9,7 @@
 
 /* configure */
 /* PRE
- * POST		specified directory has been setup
- * 		2	chdir() failed
- * 		else	other errors occured */
+ * POST		specified directory has been setup */
 static int _configure_config(Config * config);
 static int _configure(char const * directory)
 {
@@ -25,12 +23,12 @@ static int _configure(char const * directory)
 		return 2;
 	}
 	if((config = config_new()) == NULL)
-		return 3;
+		return 2;
 	if(config_load(config, "project.conf") == 0)
 		res = _configure_config(config);
 	else
 	{
-		res = 3;
+		res = 2;
 		fprintf(stderr, "%s%s%s", "configure: ", directory,
 				": Could not open project file\n");
 	}
