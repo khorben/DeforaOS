@@ -57,12 +57,32 @@ int string_compare(String const * string, String const * string2)
 }
 
 
+/* string_compare_length */
+int string_compare_length(String const * string, String const * string2,
+		unsigned int length)
+{
+	unsigned char const * u1;
+	unsigned char const * u2;
+
+	u1 = string;
+	u2 = string2;
+	while(length-- && *u1 && *u2 && *u1 == *u2)
+	{
+		u1++;
+		u2++;
+	}
+	return *u1 - *u2;
+}
+
+
 /* string_find */
 String const * string_find(String const * string, String const * key)
 {
+	unsigned int len = string_length(key);
 	unsigned char const * p;
 
-	for(p = string; *p != '\0' && string_compare(key, p) != 0; p++);
+	for(p = string; *p != '\0' && string_compare_length(key, p, len) != 0;
+			p++);
 	if(*p == '\0')
 		return NULL;
 	return p;
