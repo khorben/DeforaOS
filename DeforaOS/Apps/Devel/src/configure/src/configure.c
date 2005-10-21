@@ -2,10 +2,9 @@
 
 
 
+#include <System.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <string.h>
-#include <libutils/libutils.h>
 
 
 /* configure */
@@ -99,8 +98,8 @@ static int _makefile_subdirs(Config * config)
 
 static int _subdir_configure(char const * subdir)
 {
-	if(strstr(subdir, "/") == NULL && strcmp(subdir, ".")
-			&& strcmp(subdir, ".."))
+	if(string_find(subdir, "/") == NULL && string_compare(subdir, ".")
+			&& string_compare(subdir, ".."))
 	{
 		if(_configure(subdir) != 2)
 			chdir("..");
@@ -179,7 +178,7 @@ static void _target_print(FILE * fp, Config * config, char * target)
 	char * p;
 
 	if((p = config_get(config, target, "type")) != NULL
-			&& strcmp(p, "library") == 0)
+			&& string_compare(p, "library") == 0)
 		fprintf(fp, " %s.a %s.so", target, target);
 	else
 		fprintf(fp, " %s", target);
@@ -308,14 +307,14 @@ static void _obj_print(FILE * fp, char * obj)
 {
 	int len;
 
-	for(len = strlen(obj) - 1; len >= 0 && obj[len] != '.'; len--);
-	if(strcmp(&obj[len+1], "c") == 0)
+	for(len = string_length(obj) - 1; len >= 0 && obj[len] != '.'; len--);
+	if(string_compare(&obj[len+1], "c") == 0)
 	{
 		obj[len+1] = 'o';
 		fprintf(fp, "%s", obj);
 		obj[len+1] = 'c';
 	}
-	else if(strcmp(&obj[len+1], "S") == 0)
+	else if(string_compare(&obj[len+1], "S") == 0)
 	{
 		obj[len+1] = 'o';
 		fprintf(fp, "%s", obj);
@@ -337,7 +336,7 @@ static void _target_link(FILE * fp, Config * config, char * target)
 				": Empty type\n");
 		return;
 	}
-	if(strcmp("binary", type) == 0)
+	if(string_compare("binary", type) == 0)
 	{
 		fprintf(fp, "%s%s%s%s%s", target, ": $(", target,
 				"_OBJS)\n", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) ");
@@ -346,7 +345,7 @@ static void _target_link(FILE * fp, Config * config, char * target)
 		fprintf(fp, "%s%s%s%s%s", "-o ", target,
 				" $(", target, "_OBJS)\n\n");
 	}
-	else if(strcmp("library", type) == 0)
+	else if(string_compare("library", type) == 0)
 		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
 				target, ".a: $(", target, "_OBJS)\n\t$(AR) ",
 				target,	".a $(", target, "_OBJS)\n\t$(RANLIB) ",
@@ -386,9 +385,9 @@ static void _handler_print(FILE * fp, char * target, char * source)
 	_obj_print(fp, source);
 	fprintf(fp, "%s%s%s%s%s%s%s", ": ", source, "\n\t$(CC) $(", target,
 			"_CFLAGS)", " -c ", source);
-	if(strstr(source, "/") != NULL)
+	if(string_find(source, "/") != NULL)
 	{
-		len = strlen(source);
+		len = string_length(source);
 		source[len-1] = 'o';
 		fprintf(fp, "%s%s", " -o ", source);
 		source[len-1] = 'c';
