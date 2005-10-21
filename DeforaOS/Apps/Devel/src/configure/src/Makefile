@@ -1,7 +1,7 @@
 TARGETS	= configure
-CFLAGSF	= -W -Wall -ansi
+CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
-LDFLAGSF= -lSystem
+LDFLAGSF= -L /System/Libraries -l System -l dl
 CC	= cc
 AR	= ar rc
 RANLIB	= ranlib
