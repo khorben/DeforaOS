@@ -12,7 +12,12 @@
 
 
 /* types */
-typedef struct _Array Array;
+typedef struct _Array
+{
+	char * data;
+	unsigned int count;
+	unsigned int size;
+} Array;
 
 typedef void (*ArrayApplyFunc)(void * data, void * userdata);
 

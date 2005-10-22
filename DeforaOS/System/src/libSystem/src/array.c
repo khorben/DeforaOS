@@ -8,13 +8,6 @@
 
 
 /* Array */
-struct _Array
-{
-	char * data;
-	unsigned int count;
-	unsigned int size;
-};
-
 Array * array_new(unsigned int size)
 {
 	Array * array;
