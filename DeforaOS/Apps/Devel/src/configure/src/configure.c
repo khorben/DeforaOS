@@ -437,6 +437,7 @@ static void _clean_targets_objs(FILE * fp, Config * config)
 	fprintf(fp, "%s%s%s", " $(", cur, "_OBJS)");
 }
 
+
 /* usage */
 static int _usage(void)
 {
@@ -450,15 +451,12 @@ int main(int argc, char * argv[])
 {
 	int o;
 
-	while((o = getopt(argc, argv, "h")) != -1)
-	{
+	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
 		{
-			case 'h':
 			case '?':
 				return _usage();
 		}
-	}
 	if(argc - optind > 1)
 		return _usage();
 	return _configure(argc - optind == 1 ? argv[argc - 1] : ".");
