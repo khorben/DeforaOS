@@ -32,7 +32,7 @@ int string_append(String ** string, String const * append)
 	char * p;
 	int length = string_length(*string);
 
-	if((p = realloc(string, length + string_length(append) + 1)) == NULL)
+	if((p = realloc(*string, length + string_length(append) + 1)) == NULL)
 		return 1;
 	*string = p;
 	strcpy(*string + length, append);
