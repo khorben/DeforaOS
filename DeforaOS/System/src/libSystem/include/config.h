@@ -2,8 +2,8 @@
 
 
 
-#ifndef ___CONFIG_H
-# define ___CONFIG_H
+#ifndef _CONFIG_H
+# define _CONFIG_H
 
 # include "hash.h"
 
@@ -25,4 +25,4 @@ int config_set(Config * config, char const * section, char const * variable,
 int config_load(Config * config, char * filename);
 int config_save(Config * config, char * filename);
 
-#endif /* !___CONFIG_H */
+#endif /* !_CONFIG_H */
