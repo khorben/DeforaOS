@@ -1,4 +1,4 @@
-SUBDIRS	= libc libutils libSystem
+SUBDIRS	= libSystem libc
 
 
 all: subdirs
