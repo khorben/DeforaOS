@@ -48,7 +48,7 @@ void config_delete(Config * config)
 
 
 /* useful */
-char * config_get(Config * config, char * section, char * variable)
+char * config_get(Config * config, char const * section, char const * variable)
 {
 	void * p;
 
@@ -86,7 +86,7 @@ int config_set(Config * config, char const * section, char const * variable,
 static char * _load_section(FILE * fp);
 static char * _load_variable(FILE * fp, int c);
 static char * _load_value(FILE * fp);
-int config_load(Config * config, char * filename)
+int config_load(Config * config, char const * filename)
 {
 	FILE * fp;
 	char * section;
@@ -222,7 +222,7 @@ static char * _load_value(FILE * fp)
 
 static int _save_section(Hash * h, unsigned int i, FILE * fp);
 static int _save_variables(Hash * h, FILE * fp);
-int config_save(Config * config, char * filename)
+int config_save(Config * config, char const * filename)
 {
 	FILE * fp;
 	unsigned int i;
