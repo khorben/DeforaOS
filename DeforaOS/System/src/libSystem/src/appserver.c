@@ -101,7 +101,7 @@ static int _appserver_accept(int fd, AppServer * appserver)
 		close(newfd);
 		return 0;
 	}
-	array_append(appserver->clients, asc);
+	array_append(appserver->clients, &asc);
 	event_register_io_read(appserver->event, newfd,
 			(EventIOFunc)_appserver_read, appserver);
 	return 0;
