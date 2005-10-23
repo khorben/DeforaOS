@@ -5,8 +5,8 @@
 #ifndef __GEDI_H
 # define __GEDI_H
 
+# include <System.h>
 # include <gtk/gtk.h>
-# include <libutils.h>
 # include "project.h"
 
 

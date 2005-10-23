@@ -5,8 +5,8 @@
 #ifndef __PROJECT_H
 # define __PROJECT_H
 
+# include <System.h>
 # include <gtk/gtk.h>
-# include <libutils.h>
 
 
 /* types */
