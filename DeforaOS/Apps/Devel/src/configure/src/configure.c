@@ -4,444 +4,926 @@
 
 #include <System.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+
+ARRAY(Config *, config);
+
+
+#define PROJECT_CONF "project.conf"
+#define MAKEFILE "Makefile"
+
+
+/* types */
+typedef enum _TargetType { TT_BINARY = 0, TT_LIBRARY, TT_OBJECT, TT_UNKNOWN
+} TargetType;
+#define TT_LAST TT_UNKNOWN
+String * sTargetType[TT_LAST] = { "binary", "library", "object" };
+static TargetType _target_type(String const * target)
+{
+	int i;
+
+	for(i = 0; i < TT_LAST; i++)
+		if(string_compare(sTargetType[i], target) == 0)
+			return i;
+	return TT_UNKNOWN;
+}
+
+typedef enum _ObjectType { OT_C_SOURCE = 0, OT_ASM_SOURCE, OT_UNKNOWN
+} ObjectType;
+#define OT_LAST OT_UNKNOWN
+String * sObjectType[OT_LAST] = { "c", "S" };
+static String * _source_extension(String * source)
+{
+	int len;
+
+	for(len = string_length(source)-1; len >= 0; len--)
+		if(source[len] == '.')
+			return &source[len+1];
+	return NULL;
+}
+static ObjectType _object_type(String * extension)
+{
+	int i;
+
+	for(i = 0; i < OT_LAST; i++)
+		if(string_compare(sObjectType[i], extension) == 0)
+			return i;
+	return OT_UNKNOWN;
+}
 
 
 /* configure */
-/* PRE
- * POST		specified directory has been setup */
-static int _configure_config(Config * config);
-static int _configure(char const * directory)
+/* types */
+typedef int Prefs;
+#define PREFS_n		0x1
+#define PREFS_v		0x2
+
+
+/* functions */
+static int _configure_error(char const * message, int ret);
+static int _configure_load(Prefs * prefs, char const * directory,
+		configArray * ca);
+static int _configure_do(Prefs * prefs, configArray * ca);
+static int _configure(Prefs * prefs, char const * directory)
+{
+	configArray * ca;
+	int ret;
+	int i;
+	Config * p;
+	int prefs2;
+
+	if((ca = configarray_new()) == NULL)
+		return _configure_error("libSystem", 2);
+	ret = _configure_load(prefs, directory, ca);
+	if(ret == 0)
+	{
+		if(*prefs & PREFS_n)
+			ret = _configure_do(prefs, ca);
+		else
+		{
+			prefs2 = PREFS_n;
+			if(_configure_do(&prefs2, ca) == 0)
+				ret = _configure_do(prefs, ca);
+		}
+	}
+	for(i = array_count(ca); i > 0; i--)
+	{
+		array_get_copy(ca, i - 1, &p);
+		config_delete(p);
+	}
+	array_delete(ca);
+	return ret;
+}
+
+static int _configure_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "configure: ");
+	perror(message);
+	return ret;
+}
+
+
+static int _load_subdirs(Prefs * prefs, char const * directory,
+		configArray * ca, String * subdirs);
+static int _configure_load(Prefs * prefs, String const * directory,
+		configArray * ca)
 {
 	Config * config;
-	int res = 0;
+	String * path;
+	String * subdirs;
 
-	if(chdir(directory) != 0)
+	if((path = string_new(directory)) == NULL)
+		return _configure_error(directory, 2);
+	if(string_append(&path, "/") != 0
+			|| string_append(&path, PROJECT_CONF) != 0
+			|| (config = config_new()) == NULL)
 	{
-		fprintf(stderr, "%s", "configure: ");
-		perror(directory);
-		return 2;
+		string_delete(path);
+		return _configure_error(directory, 2);
 	}
-	if((config = config_new()) == NULL)
-		return 2;
-	if(config_load(config, "project.conf") == 0)
-		res = _configure_config(config);
+	config_set(config, "", "directory", directory);
+	if(*prefs & PREFS_v)
+		fprintf(stderr, "%s%s%s", "Loading project file ", path, "\n");
+	if(config_load(config, path) != 0)
+		_configure_error(directory, 2);
 	else
 	{
-		res = 2;
-		fprintf(stderr, "%s%s%s", "configure: ", directory,
-				": Could not open project file\n");
+		array_append(ca, &config);
+		subdirs = config_get(config, "", "subdirs");
 	}
-	config_delete(config);
-	return res;
-}
-
-static int _config_makefile(FILE * fp, Config * config);
-static int _configure_config(Config * config)
-{
-	FILE * fp;
-	int res = 0;
-
-	if((fp = fopen("Makefile", "w")) == NULL)
-	{
-		fprintf(stderr, "%s", "configure: ");
-		perror("Makefile");
-		return 1;
-	}
-	if(_config_makefile(fp, config) != 0)
-		res = 3;
-	fclose(fp);
-	return res;
-}
-
-static int _makefile_subdirs(Config * config);
-static int _makefile_variables(FILE * fp, Config * config);
-static int _makefile_targets(FILE * fp, Config * config);
-static int _makefile_clean(FILE * fp, Config * config);
-static int _config_makefile(FILE * fp, Config * config)
-{
-	int res = 0;
-
-	res += _makefile_subdirs(config);
-	res += _makefile_variables(fp, config);
-	fprintf(fp, "\n");
-	res += _makefile_targets(fp, config);
-	fprintf(fp, "\n");
-	res += _makefile_clean(fp, config);
-	return res;
-}
-
-static int _subdir_configure(char const * subdirectory);
-static int _makefile_subdirs(Config * config)
-{
-	char * subdirs;
-	char * cur;
-	int res = 0;
-
-	if((subdirs = config_get(config, "", "subdirs")) == NULL
-			|| *subdirs == '\0')
+	string_delete(path);
+	if(subdirs == NULL)
 		return 0;
-	for(cur = subdirs; *subdirs != '\0'; subdirs++)
+	return _load_subdirs(prefs, directory, ca, subdirs);
+}
+
+static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
+		configArray * ca, char const * subdir);
+static int _load_subdirs(Prefs * prefs, char const * directory,
+		configArray * ca, String * subdirs)
+{
+	int i;
+	char c;
+	String * subdir;
+	
+	subdir = subdirs;
+	for(i = 0;; i++)
 	{
-		if(*subdirs != ',')
+		if(subdir[i] != ',' && subdir[i] != '\0')
 			continue;
-		*subdirs = '\0';
-		res += _subdir_configure(cur);
-		*subdirs = ',';
-		cur = subdirs + 1;
+		c = subdir[i];
+		subdir[i] = '\0';
+		_load_subdirs_subdir(prefs, directory, ca, subdir);
+		if(c == '\0')
+			break;
+		subdir[i] = c;
+		subdir+=i+1;
+		i = 0;
 	}
-	res += _subdir_configure(cur);
-	return res;
-}
-
-static int _subdir_configure(char const * subdir)
-{
-	if(string_find(subdir, "/") == NULL && string_compare(subdir, ".")
-			&& string_compare(subdir, ".."))
-	{
-		if(_configure(subdir) != 2)
-			chdir("..");
-		return 0;
-	}
-	fprintf(stderr, "%s%s%s", "configure: ", subdir,
-			": Invalid subdirectory\n");
-	return 1;
-}
-
-static int _variables_subdirs(FILE * fp, Config * config);
-static int _variables_target(FILE * fp, Config * config);
-static int _variables_cflags(FILE * fp, Config * config);
-static int _variables_ldflags(FILE * fp, Config * config);
-static int _variables_misc(FILE * fp, Config * config);
-static int _makefile_variables(FILE * fp, Config * config)
-{
-	int res = 0;
-
-	res += _variables_subdirs(fp, config);
-	res += _variables_target(fp, config);
-	res += _variables_cflags(fp, config);
-	res += _variables_ldflags(fp, config);
-	res += _variables_misc(fp, config);
-	return res;
-}
-
-static int _variables_subdirs(FILE * fp, Config * config)
-{
-	char * subdirs;
-	char * cur;
-
-	if((subdirs = config_get(config, "", "subdirs")) == NULL
-			|| *subdirs == '\0')
-		return 0;
-	fprintf(fp, "%s", "SUBDIRS\t=");
-	for(cur = subdirs; *subdirs != '\0'; subdirs++)
-	{
-		if(*subdirs != ',')
-			continue;
-		*subdirs = '\0';
-		fprintf(fp, " %s", cur);
-		*subdirs = ',';
-		cur = subdirs + 1;
-	}
-	fprintf(fp, " %s\n", cur);
 	return 0;
 }
 
-static void _target_print(FILE * fp, Config * config, char * target);
-static int _variables_target(FILE * fp, Config * config)
-{
-	char * targets;
-	char * cur;
 
-	if((targets = config_get(config, "", "targets")) == NULL
-			|| *targets == '\0')
-		return 1;
-	fprintf(fp, "%s", "TARGETS\t=");
-	for(cur = targets; *targets != '\0'; targets++)
+static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
+		configArray * ca, char const * subdir)
+/* FIXME error checking */
+{
+	String * p;
+
+	p = string_new(directory);
+	string_append(&p, "/");
+	string_append(&p, subdir);
+	_configure_load(prefs, p, ca);
+	string_delete(p);
+	return 0;
+}
+
+
+static int _do_makefile(Prefs * prefs, Config * config, String * directory,
+		configArray * ca, int from, int to);
+static int _configure_do(Prefs * prefs, configArray * ca)
+{
+	int i;
+	int cnt = array_count(ca);
+	Config * ci;
+	String * di;
+	int j;
+	Config * cj;
+	String * dj;
+
+	for(i = 0; i < cnt; i++)
 	{
-		if(*targets != ',')
-			continue;
-		*targets = '\0';
-		_target_print(fp, config, cur);
-		*targets = ',';
-		cur = targets + 1;
+		array_get_copy(ca, i, &ci);
+		di = config_get(ci, "", "directory");
+		for(j = i; j < cnt; j++)
+		{
+			array_get_copy(ca, j, &cj);
+			dj = config_get(cj, "", "directory");
+			if(string_find(dj, di) == NULL)
+				break;
+		}
+		if(_do_makefile(prefs, ci, di, ca, i, j) != 0)
+			break;
 	}
-	_target_print(fp, config, cur);
+	return i == cnt ? 0 : 1;
+}
+
+static int _makefile_write(Prefs * prefs, Config * config, FILE * fp,
+		configArray * ca, int from, int to);
+static int _do_makefile(Prefs * prefs, Config * config, String * directory,
+		configArray * ca, int from, int to)
+{
+	String * makefile;
+	FILE * fp = NULL;
+	int ret = 0;
+
+	makefile = string_new(directory);
+	string_append(&makefile, "/");
+	string_append(&makefile, MAKEFILE);
+	if(!(*prefs & PREFS_n) && (fp = fopen(makefile, "w")) == NULL)
+		ret = _configure_error(makefile, 1);
+	else
+	{
+		if(*prefs & PREFS_v)
+			printf("%s%s%s%s%s", "Creating ", MAKEFILE, " in ",
+					directory, "\n");
+		ret += _makefile_write(prefs, config, fp, ca, from, to);
+		if(fp != NULL)
+			fclose(fp);
+	}
+	string_delete(makefile);
+	return ret;
+}
+
+static int _write_variables(Prefs * prefs, Config * config, FILE * fp);
+static int _write_targets(Prefs * prefs, Config * config, FILE * fp);
+static int _write_objects(Prefs * prefs, Config * config, FILE * fp);
+static int _write_clean(Prefs * prefs, Config * config, FILE * fp);
+static int _write_distclean(Prefs * prefs, Config * config, FILE * fp);
+static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
+		configArray * ca, int from, int to);
+static int _makefile_write(Prefs * prefs, Config * config, FILE * fp,
+		configArray * ca, int from, int to)
+{
+	if(_write_variables(prefs, config, fp) != 0
+			|| _write_targets(prefs, config, fp) != 0
+			|| _write_objects(prefs, config, fp) != 0
+			|| _write_clean(prefs, config, fp) != 0
+			|| _write_distclean(prefs, config, fp) != 0
+			|| _write_dist(prefs, config, fp, ca, from, to) != 0)
+		return 1;
+	return 0;
+}
+
+static int _variables_package(Prefs * prefs, Config * config, FILE * fp,
+		String const * directory);
+static int _variables_print(Prefs * prefs, Config * config, FILE * fp,
+		char const * input, char const * output);
+static int _variables_targets(Prefs * prefs, Config * config, FILE * fp);
+static int _variables_executables(Prefs * prefs, Config * config, FILE * fp);
+static int _write_variables(Prefs * prefs, Config * config, FILE * fp)
+{
+	String const * directory = config_get(config, "", "directory");
+	int ret = 0;
+
+	ret += _variables_package(prefs, config, fp, directory);
+	ret += _variables_print(prefs, config, fp, "subdirs", "SUBDIRS");
+	ret += _variables_targets(prefs, config, fp);
+	ret += _variables_executables(prefs, config, fp);
+	if(!(*prefs & PREFS_n))
+		fputc('\n', fp);
+	return ret;
+}
+
+static int _variables_package(Prefs * prefs, Config * config, FILE * fp,
+		String const * directory)
+{
+	String * package;
+	String * version;
+
+	if((package = config_get(config, "", "package")) == NULL)
+		return 0;
+	if(*prefs & PREFS_v)
+		printf("%s%s", "Package: ", package);
+	if((version = config_get(config, "", "version")) == NULL)
+	{
+		if(*prefs & PREFS_v)
+			fputc('\n', stdout);
+		fprintf(stderr, "%s%s%s", "configure: ", directory,
+				": \"package\" needs \"version\"\n");
+		return 1;
+	}
+	if(*prefs & PREFS_v)
+		printf("%s%s%s", " ", version, "\n");
+	if(fp != NULL)
+		fprintf(fp, "%s%s%s%s%s", "PACKAGE\t= ", package,
+				"\nVERSION\t= ", version, "\n");
+	return 0;
+}
+
+static int _variables_print(Prefs * prefs, Config * config, FILE * fp,
+		char const * input, char const * output)
+{
+	String * prints;
+	int i;
+	char c;
+
+	if(*prefs & PREFS_n)
+		return 0;
+	if((prints = config_get(config, "", input)) == NULL)
+		return 0;
+	fprintf(fp, "%s%s", output, "\t=");
+	for(i = 0;; i++)
+	{
+		if(prints[i] != ',' && prints[i] != '\0')
+			continue;
+		c = prints[i];
+		prints[i] = '\0';
+		fprintf(fp, " %s", prints);
+		if(c == '\0')
+			break;
+		prints[i] = c;
+		prints+=i+1;
+		i = 0;
+	}
 	fputc('\n', fp);
 	return 0;
 }
 
-static void _target_print(FILE * fp, Config * config, char * target)
+static int _variables_targets(Prefs * prefs, Config * config, FILE * fp)
 {
-	char * p;
+	String * prints;
+	int i;
+	char c;
+	String * type;
 
-	if((p = config_get(config, target, "type")) != NULL
-			&& string_compare(p, "library") == 0)
-		fprintf(fp, " %s.a %s.so", target, target);
-	else
-		fprintf(fp, " %s", target);
-}
-
-static int _variables_cflags(FILE * fp, Config * config)
-{
-	char * cflags;
-
-	if((cflags = config_get(config, "", "cflags_force")) != NULL
-			&& *cflags != '\0')
-		fprintf(fp, "%s%s%s", "CFLAGSF\t= ", cflags, "\n");
-	if((cflags = config_get(config, "", "cflags")) != NULL
-			&& *cflags != '\0')
-		fprintf(fp, "%s%s%s", "CFLAGS\t= ", cflags, "\n");
+	if(*prefs & PREFS_n)
+		return 0;
+	if((prints = config_get(config, "", "targets")) == NULL)
+		return 0;
+	fprintf(fp, "%s%s", "TARGETS", "\t=");
+	for(i = 0;; i++)
+	{
+		if(prints[i] != ',' && prints[i] != '\0')
+			continue;
+		c = prints[i];
+		prints[i] = '\0';
+		if((type = config_get(config, prints, "type")) == NULL)
+			fprintf(fp, " %s", prints);
+		else
+			switch(_target_type(type))
+			{
+				case TT_BINARY:
+				case TT_OBJECT:
+				case TT_UNKNOWN:
+					fprintf(fp, " %s", prints);
+					break;
+				case TT_LIBRARY:
+					fprintf(fp, " %s%s%s%s", prints, ".a ",
+							prints, ".so");
+					break;
+			}
+		if(c == '\0')
+			break;
+		prints[i] = c;
+		prints+=i+1;
+		i = 0;
+	}
+	fputc('\n', fp);
 	return 0;
 }
 
-static int _variables_ldflags(FILE * fp, Config * config)
+static int _executables_variables(Config * config, FILE * fp, String * target);
+static int _variables_executables(Prefs * prefs, Config * config, FILE * fp)
 {
-	char * ldflags;
+	String * targets;
+	int i;
+	char c;
 
-	if((ldflags = config_get(config, "", "ldflags_force")) != NULL
-			&& *ldflags != '\0')
-		fprintf(fp, "%s%s%s", "LDFLAGSF= ", ldflags, "\n");
-	if((ldflags = config_get(config, "", "ldflags")) != NULL
-			&& *ldflags != '\0')
-		fprintf(fp, "%s%s%s", "LDFLAGS\t= ", ldflags, "\n");
+	if(*prefs & PREFS_n)
+		return 0;
+	if((targets = config_get(config, "", "targets")) != NULL)
+	{
+		for(i = 0;; i++)
+		{
+			if(targets[i] != ',' && targets[i] != '\0')
+				continue;
+			c = targets[i];
+			targets[i] = '\0';
+			_executables_variables(config, fp, targets);
+			if(c == '\0')
+				break;
+			targets[i] = c;
+			targets+=i+1;
+			i = 0;
+		}
+		fprintf(fp, "%s", "RM\t= rm -f\n");
+	}
+	if(config_get(config, "", "package"))
+		fprintf(fp, "%s", "TAR\t= tar cfzv\n");
 	return 0;
 }
 
-static int _variables_misc(FILE * fp, Config * config)
+static int _executables_variables(Config * config, FILE * fp, String * target)
 {
-	char * targets;
+	static Config * flag = NULL;
+	String * type;
+	char done[TT_LAST]; /* FIXME even better if'd be variable by variable */
+	String * p;
+	TargetType tt;
 
-	if((targets = config_get(config, "", "targets")) != NULL
-			&& *targets != '\0')
-		fprintf(fp, "%s%s%s", "CC\t= cc\nAR\t= ar rc\n",
-				"RANLIB\t= ranlib\nLD\t= ld -shared\n",
-				"RM\t= rm -f\n");
+	if(flag != config)
+	{
+		flag = config;
+		memset(done, 0, sizeof(done));
+	}
+	if((type = config_get(config, target, "type")) == NULL)
+		return 0;
+	if(done[(tt = _target_type(type))])
+		return 0;
+	switch(tt)
+	{
+		case TT_BINARY:
+			if(!done[TT_LIBRARY])
+			{
+				fprintf(fp, "%s", "CC\t= cc\n");
+				if((p = config_get(config, "", "cflags_force"))
+						!= NULL)
+					fprintf(fp, "%s%s%s", "CFLAGSF\t= ", p,
+							"\n");
+				if((p = config_get(config, "", "cflags"))
+						!= NULL)
+					fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
+							"\n");
+			}
+			if((p = config_get(config, "", "ldflags_force"))
+					!= NULL)
+				fprintf(fp, "%s%s%s", "LDFLAGSF= ", p, "\n");
+			if((p = config_get(config, "", "ldflags")) != NULL)
+				fprintf(fp, "%s%s%s", "LDFLAGS\t= ", p, "\n");
+			break;
+		case TT_LIBRARY:
+			if(!done[TT_BINARY])
+			{
+				fprintf(fp, "%s", "CC\t= cc\n");
+				if((p = config_get(config, "", "cflags_force"))
+						!= NULL)
+					fprintf(fp, "%s%s%s", "CFLAGSF\t= ", p,
+							"\n");
+				if((p = config_get(config, "", "cflags"))
+						!= NULL)
+					fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
+							"\n");
+			}
+			fprintf(fp, "%s", "AR\t= ar rc\n");
+			fprintf(fp, "%s", "RANLIB\t= ranlib\n");
+			fprintf(fp, "%s", "LD\t= ld -shared\n");
+			break;
+		case TT_OBJECT:
+			/* FIXME */
+			break;
+		case TT_UNKNOWN:
+			break;
+	}
+	done[tt] = 1;
 	return 0;
 }
 
-static int _targets_all(FILE * fp, Config * config);
-static int _makefile_targets(FILE * fp, Config * config)
+static int _targets_all(Prefs * prefs, Config * config, FILE * fp);
+static int _targets_subdirs(Prefs * prefs, Config * config, FILE * fp);
+static int _targets_target(Prefs * prefs, Config * config, FILE * fp,
+		String * target);
+static int _write_targets(Prefs * prefs, Config * config, FILE * fp)
 {
-	char * subdirs;
-	char * targets;
+	char * targets = config_get(config, "", "targets");
+	char c;
+	int i;
+	int ret = 0;
 
-	fprintf(fp, "%s", "\nall:");
-	if((subdirs = config_get(config, "", "subdirs")) != NULL
-			&& *subdirs != '\0')
-		fprintf(fp, "%s", " subdirs");
-	if((targets = config_get(config, "", "targets")) != NULL
-			&& *targets != '\0')
-		fprintf(fp, "%s", " $(TARGETS)");
-	fprintf(fp, "%s", "\n\n");
-	if(subdirs != NULL && *subdirs != '\0')
-		fprintf(fp, "%s%s%s", "subdirs:\n",
-				"\t@for i in $(SUBDIRS); do ",
-				"(cd $$i && $(MAKE)) || exit; done\n\n");
+	if(_targets_all(prefs, config, fp) != 0
+			|| _targets_subdirs(prefs, config, fp) != 0)
+		return 1;
 	if(targets == NULL)
 		return 0;
-	return _targets_all(fp, config);
+	for(i = 0;; i++)
+	{
+		if(targets[i] != ',' && targets[i] != '\0')
+			continue;
+		c = targets[i];
+		targets[i] = '\0';
+		ret += _targets_target(prefs, config, fp, targets);
+		if(c == '\0')
+			break;
+		targets[i] = c;
+		targets+=i+1;
+		i = 0;
+	}
+	return ret;
 }
 
-static void _target_objs(FILE * fp, Config * config, char * target);
-static int _targets_all(FILE * fp, Config * config)
+static int _targets_all(Prefs * prefs, Config * config, FILE * fp)
 {
-	char * targets;
-	char * cur;
-
-	if((targets = config_get(config, "", "targets")) == NULL
-			|| *targets == '\0')
+	if(*prefs & PREFS_n)
 		return 0;
-	for(cur = targets; *targets != '\0'; targets++)
-	{
-		if(*targets != ',')
-			continue;
-		*targets = '\0';
-		_target_objs(fp, config, cur);
-		*targets = ',';
-		cur = targets + 1;
-	}
-	_target_objs(fp, config, cur);
+	fprintf(fp, "%s", "\nall:");
+	if(config_get(config, "", "subdirs") != NULL)
+		fprintf(fp, "%s", " subdirs");
+	if(config_get(config, "", "targets") != NULL)
+		fprintf(fp, "%s", " $(TARGETS)");
+	fprintf(fp, "%s", "\n");
 	return 0;
 }
 
-static void _obj_print(FILE * fp, char * obj);
-static void _target_link(FILE * fp, Config * config, char * target);
-static void _objs_handlers(FILE * fp, Config * config, char * target);
-static void _target_objs(FILE * fp, Config * config, char * target)
+static int _targets_subdirs(Prefs * prefs, Config * config, FILE * fp)
 {
-	char * sources;
-	char * cur;
+	String * subdirs;
 
-	if((sources = config_get(config, target, "sources")) == NULL
-			|| *sources == '\0')
-	{
-		fprintf(stderr, "%s%s%s", "configure: ", target,
-				": Undefined target\n");
-		return;
-	}
-	fprintf(fp, "%s%s", target, "_OBJS=");
-	for(cur = sources; *sources != '\0'; sources++)
-	{
-		if(*sources != ',')
-			continue;
-		*sources = '\0';
-		fprintf(fp, "%s", " ");
-		_obj_print(fp, cur);
-		*sources = ',';
-		cur = sources + 1;
-	}
-	fprintf(fp, "%s", " ");
-	_obj_print(fp, cur);
-	fprintf(fp, "\n%s%s", target, "_CFLAGS=$(CFLAGSF)");
-	cur = config_get(config, target, "cflags");
-	fprintf(fp, "%s%s%s", cur != NULL ? " " : "", cur != NULL ? cur : "",
-			" $(CFLAGS)\n");
-	_target_link(fp, config, target);
-	_objs_handlers(fp, config, target);
+	if(*prefs & PREFS_n)
+		return 0;
+	if((subdirs = config_get(config, "", "subdirs")) != NULL)
+		fprintf(fp, "%s", "\nsubdirs:\n\t@for i in $(SUBDIRS); do"
+				" (cd $$i && $(MAKE)) || exit; done\n");
+	return 0;
 }
 
-static void _obj_print(FILE * fp, char * obj)
+static int _target_objs(Prefs * prefs, Config * config, FILE * fp,
+		String * target);
+static int _target_library(Prefs * prefs, Config * config, FILE * fp,
+		String * target);
+static int _targets_target(Prefs * prefs, Config * config, FILE * fp,
+		String * target)
 {
-	int len;
-
-	for(len = string_length(obj) - 1; len >= 0 && obj[len] != '.'; len--);
-	if(string_compare(&obj[len+1], "c") == 0)
-	{
-		obj[len+1] = 'o';
-		fprintf(fp, "%s", obj);
-		obj[len+1] = 'c';
-	}
-	else if(string_compare(&obj[len+1], "S") == 0)
-	{
-		obj[len+1] = 'o';
-		fprintf(fp, "%s", obj);
-		obj[len+1] = 'S';
-	}
-	else
-		fprintf(stderr, "%s%s%s", "configure: ", obj,
-			": Unknown source type\n");
-}
-
-static void _target_link(FILE * fp, Config * config, char * target)
-{
-	char * type;
-	char * p;
+	String * type;
+	TargetType tt;
+	String * p;
 
 	if((type = config_get(config, target, "type")) == NULL)
 	{
 		fprintf(stderr, "%s%s%s", "configure: ", target,
-				": Empty type\n");
-		return;
+				": no type defined for target\n");
+		return 1;
 	}
-	if(string_compare("binary", type) == 0)
+	tt = _target_type(type);
+	switch(tt)
 	{
-		fprintf(fp, "%s%s%s%s%s", target, ": $(", target,
-				"_OBJS)\n", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) ");
-		if((p = config_get(config, target, "ldflags")) != NULL)
-			fprintf(fp, "%s%s", p, " ");
-		fprintf(fp, "%s%s%s%s%s", "-o ", target,
-				" $(", target, "_OBJS)\n\n");
+		case TT_BINARY:
+			if(_target_objs(prefs, config, fp, target) != 0)
+				return 1;
+			if(*prefs & PREFS_n)
+				return 0;
+			fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF)"
+					" $(CFLAGS)");
+			if((p = config_get(config, target, "cflags")) != NULL)
+				fprintf(fp, "%s%s", " ", p);
+			fputc('\n', fp);
+			fprintf(fp, "%s%s%s%s", target, ": $(", target,
+					"_OBJS)\n");
+			fprintf(fp, "%s%s%s%s%s", "\t$(CC) $(LDFLAGSF)"
+					" $(LDFLAGS) -o ", target, " $(",
+					target, "_OBJS)\n");
+			break;
+		case TT_LIBRARY:
+			return _target_library(prefs, config, fp, target);
+		case TT_OBJECT:
+			if((p = config_get(config, target, "sources")) == NULL)
+			{
+				fprintf(stderr, "%s%s%s", "configure: ", target,
+						" no sources for target\n");
+				return 1;
+			}
+			if(*prefs & PREFS_n)
+				return 0;
+			fprintf(fp, "%s%s%s%s", target, ": ", p, "\n");
+			/* FIXME */
+			break;
+		case TT_UNKNOWN:
+			fprintf(stderr, "%s%s%s", "configure: ", target,
+					": unknown type for target\n");
+			return 1;
 	}
-	else if(string_compare("library", type) == 0)
-		fprintf(fp, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-				target, ".a: $(", target, "_OBJS)\n\t$(AR) ",
-				target,	".a $(", target, "_OBJS)\n\t$(RANLIB) ",
-				target,	".a\n\n", target, ".so: $(", target,
-				"_OBJS)\n\t$(LD) -o ", target, ".so $(",
-				target, "_OBJS)\n\n");
-	else
-		fprintf(stderr, "%s%s%s%s%s", "configure: ", target,
-				": Unknown type \"", type, "\"\n");
+	return 0;
 }
 
-static void _handler_print(FILE * fp, char * target, char * source);
-static void _objs_handlers(FILE * fp, Config * config, char * target)
+static int _objs_source(Prefs * prefs, FILE * fp, String * source);
+static int _target_objs(Prefs * prefs, Config * config, FILE * fp,
+		String * target)
 {
-	char * sources;
-	char * cur;
+	int ret = 0;
+	String * sources;
+	int i;
+	char c;
 
-	if((sources = config_get(config, target, "sources")) == NULL
-			|| *sources == '\0')
-		return;
-	for(cur = sources; *sources != '\0'; sources++)
+	if((sources = config_get(config, target, "sources")) == NULL)
 	{
-		if(*sources != ',')
+		fprintf(stderr, "%s%s%s", "configure: ", target,
+				": no sources defined for target\n");
+		return 1;
+	}
+	if(!(*prefs & PREFS_n))
+		fprintf(fp, "%s%s%s", "\n", target, "_OBJS =");
+	for(i = 0; ret == 0; i++)
+	{
+		if(sources[i] != ',' && sources[i] != '\0')
 			continue;
-		*sources = '\0';
-		_handler_print(fp, target, cur);
-		*sources = ',';
-		cur = sources + 1;
+		c = sources[i];
+		sources[i] = '\0';
+		ret = _objs_source(prefs, fp, sources);
+		if(c == '\0')
+			break;
+		sources[i] = c;
+		sources+=i+1;
+		i = 0;
 	}
-	_handler_print(fp, target, cur);
+	if(!(*prefs & PREFS_n))
+		fputc('\n', fp);
+	return ret;
 }
 
-static void _handler_print(FILE * fp, char * target, char * source)
+static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 {
+	int ret = 0;
+	String * extension;
+	ObjectType ot;
 	int len;
 
-	_obj_print(fp, source);
-	fprintf(fp, "%s%s%s%s%s%s%s", ": ", source, "\n\t$(CC) $(", target,
-			"_CFLAGS)", " -c ", source);
-	if(string_find(source, "/") != NULL)
+	if((extension = _source_extension(source)) == NULL)
 	{
-		len = string_length(source);
-		source[len-1] = 'o';
-		fprintf(fp, "%s%s", " -o ", source);
-		source[len-1] = 'c';
+		fprintf(stderr, "%s%s%s", "configure: ", source,
+				": no extension for source\n");
+		return 1;
 	}
-	fprintf(fp, "%s", "\n\n");
+	len = string_length(source) - string_length(extension) - 1;
+	source[len] = '\0';
+	ot = _object_type(extension);
+	switch(ot)
+	{
+		case OT_ASM_SOURCE:
+		case OT_C_SOURCE:
+			if(*prefs & PREFS_n)
+				break;
+			fprintf(fp, "%s%s%s", " ", source, ".o");
+			break;
+		case OT_UNKNOWN:
+			ret = 1;
+			fprintf(stderr, "%s%s%s", "configure: ", source,
+					": unknown extension for source\n");
+			break;
+	}
+	source[len] = '.';
+	return ret;
 }
 
-static void _clean_targets_objs(FILE * fp, Config * config);
-static int _makefile_clean(FILE * fp, Config * config)
+static int _target_library(Prefs * prefs, Config * config, FILE * fp,
+		String * target)
 {
-	char * subdirs;
+	String * p;
 
-	fprintf(fp, "%s", "clean:\n");
-	if((subdirs = config_get(config, "", "subdirs")) != NULL)
-		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do (cd $$i && $(MAKE) clean) || exit; done\n");
-	if(config_get(config, "", "targets") != NULL)
+	if(_target_objs(prefs, config, fp, target) != 0)
+		return 1;
+	if(*prefs & PREFS_n)
+		return 0;
+	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
+	if((p = config_get(config, target, "cflags")) != NULL)
+		fprintf(fp, "%s%s", " ", p);
+	fputc('\n', fp);
+	fprintf(fp, "%s%s%s%s", target, ".a: $(", target, "_OBJS)\n");
+	fprintf(fp, "%s%s%s%s%s", "\t$(AR) ", target, ".a $(", target,
+			"_OBJS)\n");
+	fprintf(fp, "%s%s%s", "\t$(RANLIB) ", target, ".a\n");
+	fprintf(fp, "%s%s%s%s", target, ".so: $(", target, "_OBJS)\n");
+	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
+			"_OBJS)\n");
+	return 0;
+}
+
+static int _objects_target(Prefs * prefs, Config * config, FILE * fp,
+		String * target);
+static int _write_objects(Prefs * prefs, Config * config, FILE * fp)
+{
+	char * targets = config_get(config, "", "targets");
+	char c;
+	int i;
+	int ret = 0;
+
+	if(targets == NULL)
+		return 0;
+	for(i = 0;; i++)
 	{
-		fprintf(fp, "%s", "\t$(RM)");
-		_clean_targets_objs(fp, config);
-		fprintf(fp, "\n");
+		if(targets[i] != ',' && targets[i] != '\0')
+			continue;
+		c = targets[i];
+		targets[i] = '\0';
+		ret += _objects_target(prefs, config, fp, targets);
+		if(c == '\0')
+			break;
+		targets[i] = c;
+		targets+=i+1;
+		i = 0;
 	}
-	fprintf(fp, "%s", "\ndistclean: clean\n");
-	if(subdirs != NULL)
-		fprintf(fp, "%s%s", "\t@for i in $(SUBDIRS); ",
-				"do (cd $$i && $(MAKE) distclean) || exit; done\n");
+	return ret;
+}
+
+static int _target_source(Prefs * prefs, FILE * fp, String * target,
+		String * source);
+static int _objects_target(Prefs * prefs, Config * config, FILE * fp,
+		String * target)
+{
+	String * sources;
+	int i;
+	char c;
+
+	if((sources = config_get(config, target, "sources")) == NULL)
+		return 0;
+	for(i = 0;; i++)
+	{
+		if(sources[i] != ',' && sources[i] != '\0')
+			continue;
+		c = sources[i];
+		sources[i] = '\0';
+		_target_source(prefs, fp, target, sources);
+		if(c == '\0')
+			break;
+		sources[i] = c;
+		sources+=i+1;
+		i = 0;
+	}
+	return 0;
+}
+
+static int _target_source(Prefs * prefs, FILE * fp, String * target,
+		String * source)
+{
+	int ret = 0;
+	String * extension;
+	ObjectType ot;
+	int len;
+
+	if((extension = _source_extension(source)) == NULL)
+		return 1;
+	len = string_length(source) - string_length(extension) - 1;
+	source[len] = '\0';
+	ot = _object_type(extension);
+	switch(ot)
+	{
+		case OT_ASM_SOURCE:
+		case OT_C_SOURCE:
+			if(*prefs & PREFS_n)
+				break;
+			fprintf(fp, "%s%s%s%s%s%s%s", "\n", source, ".o: ",
+					source, ".", sObjectType[ot], "\n");
+			fprintf(fp, "%s%s%s%s%s%s", "\t$(CC) $(", target,
+					"_CFLAGS) -c ", source, ".",
+					sObjectType[ot]);
+			if(string_find(source, "/"))
+				fprintf(fp, "%s%s%s", " -o ", source, ".o");
+			fputc('\n', fp);
+			break;
+		case OT_UNKNOWN:
+			ret = 1;
+			break;
+	}
+	source[len] = '.';
+	return ret;
+}
+
+static int _clean_targets(Config * config, FILE * fp);
+static int _write_clean(Prefs * prefs, Config * config, FILE * fp)
+{
+	if(*prefs & PREFS_n)
+		return 0;
+	fprintf(fp, "%s", "\nclean:\n");
+	if(config_get(config, "", "subdirs") != NULL)
+		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do"
+				" (cd $$i && $(MAKE) clean) || exit; done\n");
+	return _clean_targets(config, fp);
+}
+
+static int _clean_targets(Config * config, FILE * fp)
+{
+	String * targets;
+	int i;
+	char c;
+
+	if((targets = config_get(config, "", "targets")) == NULL)
+		return 0;
+	fprintf(fp, "%s", "\t$(RM)");
+	for(i = 0;; i++)
+	{
+		if(targets[i] != ',' && targets[i] != '\0')
+			continue;
+		c = targets[i];
+		targets[i] = '\0';
+		fprintf(fp, "%s%s%s", " $(", targets, "_OBJS)");
+		if(c == '\0')
+			break;
+		targets[i] = c;
+		targets+=i+1;
+		i = 0;
+	}
+	fputc('\n', fp);
+	return 0;
+}
+
+static int _write_distclean(Prefs * prefs, Config * config, FILE * fp)
+{
+	String * subdirs;
+
+	if(*prefs & PREFS_n)
+		return 0;
+	fprintf(fp, "%s", "\ndistclean:");
+	if((subdirs = config_get(config, "", "subdirs")) == NULL)
+		fprintf(fp, "%s", " clean\n");
+	else
+	{
+		fprintf(fp, "%s", "\n\t@for i in $(SUBDIRS); do (cd $$i"
+				" && $(MAKE) distclean) || exit; done\n");
+		_clean_targets(config, fp);
+	}
 	if(config_get(config, "", "targets") != NULL)
 		fprintf(fp, "%s", "\t$(RM) $(TARGETS)\n");
 	return 0;
 }
 
-static void _clean_targets_objs(FILE * fp, Config * config)
+static int _dist_subdir(Config * config, FILE * fp, Config * subdir);
+static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
+		configArray * ca, int from, int to)
 {
-	char * targets;
-	char * cur;
+	String const * package;
+	String const * version;
+	Config * p;
+	int i;
 
-	if((targets = config_get(config, "", "targets")) == NULL
-			|| *targets == '\0')
-		return;
-	for(cur = targets; *targets != '\0'; targets++)
+	if(*prefs & PREFS_n)
+		return 0;
+	if((package = config_get(config, "", "package")) == NULL
+			|| (version = config_get(config, "", "version"))
+			== NULL)
+		return 0;
+	fprintf(fp, "%s%s", "\ndist: distclean\n",
+			"\t$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
+	for(i = to; i > from; i--)
 	{
-		if(*targets != ',')
-			continue;
-		*targets = '\0';
-		fprintf(fp, "%s%s%s", " $(", cur, "_OBJS)");
-		*targets = ',';
-		cur = targets + 1;
+		array_get_copy(ca, i - 1, &p);
+		_dist_subdir(config, fp, p);
 	}
-	fprintf(fp, "%s%s%s", " $(", cur, "_OBJS)");
+	return 0;
+}
+
+static int _dist_subdir_dist(FILE * fp, String * path, String * dist);
+static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
+{
+	String * path;
+	int len;
+	String * targets;
+	String * dist;
+	int i;
+	char c;
+
+	path = config_get(config, "", "directory");
+	len = string_length(path);
+	path = config_get(subdir, "", "directory");
+	path = &path[len];
+	if(path[0] == '/')
+		path++;
+	if((targets = config_get(subdir, "", "targets")) != NULL)
+	{
+		/* FIXME unique SOURCES */
+		for(i = 0;; i++)
+		{
+			if(targets[i] != ',' && targets[i] != '\0')
+				continue;
+			c = targets[i];
+			targets[i] = '\0';
+			if((dist = config_get(subdir, targets, "sources"))
+					!= NULL)
+				_dist_subdir_dist(fp, path, dist);
+			if(c == '\0')
+				break;
+			targets[i] = c;
+			targets+=i+1;
+			i = 0;
+		}
+	}
+	if((dist = config_get(subdir, "", "dist")) != NULL)
+		_dist_subdir_dist(fp, path, dist);
+	fprintf(fp, "%s%s%s%s", "\t\t", path, path[0] == '\0' ? "" : "/",
+			PROJECT_CONF " \\\n");
+	fprintf(fp, "%s%s%s%s%s", "\t\t", path, path[0] == '\0' ? "" : "/",
+			MAKEFILE, path[0] == '\0' ? "\n" : " \\\n");
+	return 0;
+}
+
+static int _dist_subdir_dist(FILE * fp, String * path, String * dist)
+{
+	int i;
+	char c;
+
+	for(i = 0;; i++)
+	{
+		if(dist[i] != ',' && dist[i] != '\0')
+			continue;
+		c = dist[i];
+		dist[i] = '\0';
+		fprintf(fp, "%s%s%s%s%s", "\t\t", path[0] == '\0' ? "" : path,
+				path[0] == '\0' ? "" : "/", dist, " \\\n");
+		if(c == '\0')
+			break;
+		dist[i] = c;
+		dist+=i+1;
+		i = 0;
+	}
+	return 0;
 }
 
 
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: configure [directory]\n");
+	fprintf(stderr, "%s", "Usage: configure [-nv][directory]\n\
+  -n	do not actually write Makefiles\n\
+  -v	verbose mode\n");
 	return 1;
 }
 
@@ -449,15 +931,22 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Prefs prefs = 0;
 	int o;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "nv")) != -1)
 		switch(o)
 		{
+			case 'n':
+				prefs |= PREFS_n;
+				break;
+			case 'v':
+				prefs |= PREFS_v;
+				break;
 			case '?':
 				return _usage();
 		}
 	if(argc - optind > 1)
 		return _usage();
-	return _configure(argc - optind == 1 ? argv[argc - 1] : ".");
+	return _configure(&prefs, argc - optind == 1 ? argv[argc - 1] : ".");
 }
