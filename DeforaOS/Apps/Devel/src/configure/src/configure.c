@@ -110,24 +110,25 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 static int _configure_load(Prefs * prefs, String const * directory,
 		configArray * ca)
 {
+	int ret = 0;
 	Config * config;
 	String * path;
-	String * subdirs;
+	String * subdirs = NULL;
 
 	if((path = string_new(directory)) == NULL)
-		return _configure_error(directory, 2);
+		return _configure_error(directory, 1);
 	if(string_append(&path, "/") != 0
 			|| string_append(&path, PROJECT_CONF) != 0
 			|| (config = config_new()) == NULL)
 	{
 		string_delete(path);
-		return _configure_error(directory, 2);
+		return _configure_error(directory, 1);
 	}
 	config_set(config, "", "directory", directory);
 	if(*prefs & PREFS_v)
-		fprintf(stderr, "%s%s%s", "Loading project file ", path, "\n");
+		printf("%s%s%s", "Loading project file ", path, "\n");
 	if(config_load(config, path) != 0)
-		_configure_error(directory, 2);
+		ret = _configure_error(path, 1);
 	else
 	{
 		array_append(ca, &config);
@@ -135,7 +136,7 @@ static int _configure_load(Prefs * prefs, String const * directory,
 	}
 	string_delete(path);
 	if(subdirs == NULL)
-		return 0;
+		return ret;
 	return _load_subdirs(prefs, directory, ca, subdirs);
 }
 
@@ -144,25 +145,26 @@ static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 static int _load_subdirs(Prefs * prefs, char const * directory,
 		configArray * ca, String * subdirs)
 {
+	int ret = 0;
 	int i;
 	char c;
 	String * subdir;
 	
 	subdir = subdirs;
-	for(i = 0;; i++)
+	for(i = 0; ret == 0; i++)
 	{
 		if(subdir[i] != ',' && subdir[i] != '\0')
 			continue;
 		c = subdir[i];
 		subdir[i] = '\0';
-		_load_subdirs_subdir(prefs, directory, ca, subdir);
+		ret = _load_subdirs_subdir(prefs, directory, ca, subdir);
 		if(c == '\0')
 			break;
 		subdir[i] = c;
 		subdir+=i+1;
 		i = 0;
 	}
-	return 0;
+	return ret;
 }
 
 
@@ -170,14 +172,15 @@ static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 		configArray * ca, char const * subdir)
 /* FIXME error checking */
 {
+	int ret;
 	String * p;
 
 	p = string_new(directory);
 	string_append(&p, "/");
 	string_append(&p, subdir);
-	_configure_load(prefs, p, ca);
+	ret = _configure_load(prefs, p, ca);
 	string_delete(p);
-	return 0;
+	return ret;
 }
 
 
