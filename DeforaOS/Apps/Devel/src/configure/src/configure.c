@@ -842,7 +842,7 @@ static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 			== NULL)
 		return 0;
 	fprintf(fp, "%s%s", "\ndist: distclean\n",
-			"\t$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
+			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
 	for(i = to; i > from; i--)
 	{
 		array_get_copy(ca, i - 1, &p);
