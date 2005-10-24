@@ -1,12 +1,9 @@
 SUBDIRS	= arch format
 TARGETS	= as
+CC	= cc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF= -l dl
-CC	= cc
-AR	= ar rc
-RANLIB	= ranlib
-LD	= ld -shared
 RM	= rm -f
 
 
@@ -15,8 +12,8 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-as_OBJS= as.o code.o parser.o scanner.o token.o arch/arch.o format/format.o
-as_CFLAGS=$(CFLAGSF) $(CFLAGS)
+as_OBJS = as.o code.o parser.o scanner.o token.o arch/arch.o format/format.o
+as_CFLAGS = $(CFLAGSF) $(CFLAGS)
 as: $(as_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o as $(as_OBJS)
 
@@ -41,11 +38,11 @@ arch/arch.o: arch/arch.c
 format/format.o: format/format.c
 	$(CC) $(as_CFLAGS) -c format/format.c -o format/format.o
 
-
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) $(as_OBJS)
 
-distclean: clean
+distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) $(as_OBJS)
 	$(RM) $(TARGETS)

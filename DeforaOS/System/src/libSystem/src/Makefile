@@ -1,7 +1,7 @@
 TARGETS	= libSystem.a libSystem.so
+CC	= cc
 CFLAGSF	= -W -Wall -ansi -I ../include
 CFLAGS	= -g
-CC	= cc
 AR	= ar rc
 RANLIB	= ranlib
 LD	= ld -shared
@@ -10,12 +10,11 @@ RM	= rm -f
 
 all: $(TARGETS)
 
-libSystem_OBJS= appclient.o appinterface.o appserver.o array.o config.o event.o hash.o string.o
-libSystem_CFLAGS=$(CFLAGSF) $(CFLAGS)
+libSystem_OBJS = appclient.o appinterface.o appserver.o array.o config.o event.o hash.o string.o
+libSystem_CFLAGS = $(CFLAGSF) $(CFLAGS)
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
-
 libSystem.so: $(libSystem_OBJS)
 	$(LD) -o libSystem.so $(libSystem_OBJS)
 
@@ -42,7 +41,6 @@ hash.o: hash.c
 
 string.o: string.c
 	$(CC) $(libSystem_CFLAGS) -c string.c
-
 
 clean:
 	$(RM) $(libSystem_OBJS)

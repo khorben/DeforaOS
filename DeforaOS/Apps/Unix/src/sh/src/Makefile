@@ -1,17 +1,14 @@
 TARGETS	= sh
+CC	= cc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
-CC	= cc
-AR	= ar rc
-RANLIB	= ranlib
-LD	= ld -shared
 RM	= rm -f
 
 
 all: $(TARGETS)
 
-sh_OBJS= token.o scanner.o parser.o builtin.o job.o sh.o
-sh_CFLAGS=$(CFLAGSF) $(CFLAGS)
+sh_OBJS = token.o scanner.o parser.o builtin.o job.o sh.o
+sh_CFLAGS = $(CFLAGSF) $(CFLAGS)
 sh: $(sh_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o sh $(sh_OBJS)
 
@@ -32,7 +29,6 @@ job.o: job.c
 
 sh.o: sh.c
 	$(CC) $(sh_CFLAGS) -c sh.c
-
 
 clean:
 	$(RM) $(sh_OBJS)
