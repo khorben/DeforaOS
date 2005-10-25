@@ -25,8 +25,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
+		$(PACKAGE)-$(VERSION)/CHANGES \
 		$(PACKAGE)-$(VERSION)/configure.txt \
 		$(PACKAGE)-$(VERSION)/INSTALL \
+		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile
 	$(RM) $(PACKAGE)-$(VERSION)
