@@ -409,7 +409,7 @@ static int _variables_executables(Prefs * prefs, Config * config, FILE * fp)
 		fprintf(fp, "%s", "RM\t= rm -f\n");
 	}
 	if(config_get(config, "", "package"))
-		fprintf(fp, "%s", "TAR\t= tar cfzv\n");
+		fprintf(fp, "%s", "LN\t= ln -sf\nTAR\t= tar cfzv\n");
 	if(targets != NULL)
 	{
 		fprintf(fp, "%s", "MKDIR\t= mkdir -p\n");
@@ -865,13 +865,16 @@ static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 			|| (version = config_get(config, "", "version"))
 			== NULL)
 		return 0;
-	fprintf(fp, "%s%s", "\ndist: distclean\n",
+	fprintf(fp, "%s", "\ndist:\n"
+			"\t$(RM) $(PACKAGE)-$(VERSION)\n"
+			"\t$(LN) . $(PACKAGE)-$(VERSION)\n"
 			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
 	for(i = to; i > from; i--)
 	{
 		array_get_copy(ca, i - 1, &p);
 		_dist_subdir(config, fp, p);
 	}
+	fprintf(fp, "%s", "\t$(RM) $(PACKAGE)-$(VERSION)\n");
 	return 0;
 }
 
@@ -912,10 +915,11 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	}
 	if((dist = config_get(subdir, "", "dist")) != NULL)
 		_dist_subdir_dist(fp, path, dist);
-	fprintf(fp, "%s%s%s%s", "\t\t", path, path[0] == '\0' ? "" : "/",
-			PROJECT_CONF " \\\n");
-	fprintf(fp, "%s%s%s%s%s", "\t\t", path, path[0] == '\0' ? "" : "/",
-			MAKEFILE, path[0] == '\0' ? "\n" : " \\\n");
+	fprintf(fp, "%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/", path,
+			path[0] == '\0' ? "" : "/", PROJECT_CONF " \\\n");
+	fprintf(fp, "%s%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/", path,
+			path[0] == '\0' ? "" : "/", MAKEFILE,
+			path[0] == '\0' ? "\n" : " \\\n");
 	return 0;
 }
 
@@ -930,7 +934,8 @@ static int _dist_subdir_dist(FILE * fp, String * path, String * dist)
 			continue;
 		c = dist[i];
 		dist[i] = '\0';
-		fprintf(fp, "%s%s%s%s%s", "\t\t", path[0] == '\0' ? "" : path,
+		fprintf(fp, "%s%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/",
+				path[0] == '\0' ? "" : path,
 				path[0] == '\0' ? "" : "/", dist, " \\\n");
 		if(c == '\0')
 			break;
