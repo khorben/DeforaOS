@@ -247,6 +247,7 @@ static int _write_clean(Prefs * prefs, Config * config, FILE * fp);
 static int _write_distclean(Prefs * prefs, Config * config, FILE * fp);
 static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 		configArray * ca, int from, int to);
+static int _write_install(Prefs * prefs, Config * config, FILE * fp);
 static int _makefile_write(Prefs * prefs, Config * config, FILE * fp,
 		configArray * ca, int from, int to)
 {
@@ -255,7 +256,8 @@ static int _makefile_write(Prefs * prefs, Config * config, FILE * fp,
 			|| _write_objects(prefs, config, fp) != 0
 			|| _write_clean(prefs, config, fp) != 0
 			|| _write_distclean(prefs, config, fp) != 0
-			|| _write_dist(prefs, config, fp, ca, from, to) != 0)
+			|| _write_dist(prefs, config, fp, ca, from, to) != 0
+			|| _write_install(prefs, config, fp) != 0)
 		return 1;
 	return 0;
 }
@@ -431,6 +433,12 @@ static int _executables_variables(Config * config, FILE * fp, String * target)
 		case TT_BINARY:
 			if(!done[TT_LIBRARY])
 			{
+				fprintf(fp, "%s", "PREFIX\t= /usr/local\n");
+				fprintf(fp, "%s", "DESTDIR\t=\n");
+			}
+			fprintf(fp, "%s", "BINDIR\t= $(PREFIX)/bin\n");
+			if(!done[TT_LIBRARY])
+			{
 				fprintf(fp, "%s", "CC\t= cc\n");
 				if((p = config_get(config, "", "cflags_force"))
 						!= NULL)
@@ -448,6 +456,12 @@ static int _executables_variables(Config * config, FILE * fp, String * target)
 				fprintf(fp, "%s%s%s", "LDFLAGS\t= ", p, "\n");
 			break;
 		case TT_LIBRARY:
+			if(!done[TT_LIBRARY])
+			{
+				fprintf(fp, "%s", "PREFIX\t= /usr/local\n");
+				fprintf(fp, "%s", "DESTDIR\t=\n");
+			}
+			fprintf(fp, "%s", "LIBDIR\t= $(PREFIX)/lib\n");
 			if(!done[TT_BINARY])
 			{
 				fprintf(fp, "%s", "CC\t= cc\n");
@@ -920,6 +934,64 @@ static int _dist_subdir_dist(FILE * fp, String * path, String * dist)
 	return 0;
 }
 
+static int _install_target(Config * config, FILE * fp, String * target);
+static int _write_install(Prefs * prefs, Config * config, FILE * fp)
+{
+	String * subdirs;
+	String * targets;
+	int i;
+	char c;
+
+	if(*prefs & PREFS_n)
+		return 0;
+	fprintf(fp, "%s", "install: all\n");
+	if((subdirs = config_get(config, "", "subdirs")) != NULL)
+		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do"
+				" (cd $$i && $(MAKE) install) || exit; done\n");
+	if((targets = config_get(config, "", "targets")) != NULL)
+		for(i = 0;; i++)
+		{
+			if(targets[i] != ',' && targets[i] != '\0')
+				continue;
+			c = targets[i];
+			targets[i] = '\0';
+			_install_target(config, fp, targets);
+			if(c == '\0')
+				break;
+			targets[i] = c;
+			targets+=i+1;
+			i = 0;
+		}
+	return 0;
+}
+
+static int _install_target(Config * config, FILE * fp, String * target)
+{
+	String * type;
+
+	if((type = config_get(config, target, "type")) == NULL)
+		return 1;
+	switch(_target_type(type))
+	{
+		case TT_BINARY:
+			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0755 ",
+					target, " $(DESTDIR)$(BINDIR)/",
+					target, "\n");
+			break;
+		case TT_LIBRARY:
+			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0644 ",
+					target, ".a $(DESTDIR)$(LIBDIR)/",
+					target, ".a\n");
+			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0755 ",
+					target, ".so $(DESTDIR)$(LIBDIR)/",
+					target, ".so\n");
+			break;
+		case TT_OBJECT:
+		case TT_UNKNOWN:
+			break;
+	}
+	return 0;
+}
 
 /* usage */
 static int _usage(void)
