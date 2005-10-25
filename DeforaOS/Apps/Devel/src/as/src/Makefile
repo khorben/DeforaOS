@@ -1,10 +1,15 @@
 SUBDIRS	= arch format
 TARGETS	= as
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF= -l dl
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: subdirs $(TARGETS)
@@ -46,3 +51,7 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 	$(RM) $(as_OBJS)
 	$(RM) $(TARGETS)
+install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 as $(DESTDIR)$(BINDIR)/as

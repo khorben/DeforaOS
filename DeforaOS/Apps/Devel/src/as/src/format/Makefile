@@ -1,10 +1,15 @@
 TARGETS	= elf.a elf.so flat.a flat.so
+PREFIX	= /usr/local
+DESTDIR	=
+LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 AR	= ar rc
 RANLIB	= ranlib
 LD	= ld -shared
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -36,3 +41,9 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0644 elf.a $(DESTDIR)$(LIBDIR)/elf.a
+	$(INSTALL) -m 0755 elf.so $(DESTDIR)$(LIBDIR)/elf.so
+	$(INSTALL) -m 0644 flat.a $(DESTDIR)$(LIBDIR)/flat.a
+	$(INSTALL) -m 0755 flat.so $(DESTDIR)$(LIBDIR)/flat.so

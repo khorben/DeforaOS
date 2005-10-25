@@ -11,3 +11,5 @@ clean:
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

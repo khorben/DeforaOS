@@ -1,9 +1,14 @@
 TARGETS	= makepasswd
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGS	= -lcrypt
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -24,3 +29,6 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 makepasswd $(DESTDIR)$(BINDIR)/makepasswd

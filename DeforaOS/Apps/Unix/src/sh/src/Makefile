@@ -1,8 +1,13 @@
 TARGETS	= sh
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -35,3 +40,6 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 sh $(DESTDIR)$(BINDIR)/sh

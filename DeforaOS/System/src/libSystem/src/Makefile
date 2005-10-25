@@ -1,4 +1,7 @@
 TARGETS	= libSystem.a libSystem.so
+PREFIX	= /usr/local
+DESTDIR	=
+LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -I ../include
 CFLAGS	= -g
@@ -6,6 +9,8 @@ AR	= ar rc
 RANLIB	= ranlib
 LD	= ld -shared
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -47,3 +52,7 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0644 libSystem.a $(DESTDIR)$(LIBDIR)/libSystem.a
+	$(INSTALL) -m 0755 libSystem.so $(DESTDIR)$(LIBDIR)/libSystem.so

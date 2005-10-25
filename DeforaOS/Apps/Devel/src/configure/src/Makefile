@@ -1,9 +1,14 @@
 TARGETS	= configure
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
 LDFLAGSF= -L /System/Libraries -l System -l dl
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -21,3 +26,6 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 configure $(DESTDIR)$(BINDIR)/configure

@@ -1,7 +1,12 @@
 TARGETS	= inetd discard echo
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -50,3 +55,8 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 inetd $(DESTDIR)$(BINDIR)/inetd
+	$(INSTALL) -m 0755 discard $(DESTDIR)$(BINDIR)/discard
+	$(INSTALL) -m 0755 echo $(DESTDIR)$(BINDIR)/echo

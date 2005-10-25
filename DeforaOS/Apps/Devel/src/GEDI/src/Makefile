@@ -1,9 +1,14 @@
 TARGETS	= gedi
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi `pkg-config --cflags gtk+-2.0` -I /System/Include
 CFLAGS	= -g
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -L /System/Libraries -l System
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -27,3 +32,6 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 gedi $(DESTDIR)$(BINDIR)/gedi

@@ -1,8 +1,13 @@
 TARGETS	= basename cat chgrp chmod chown cksum cmp cp dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo nice pwd renice rm rmdir sleep strings test time touch true tty uname uniq unlink wc
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -324,3 +329,44 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 basename $(DESTDIR)$(BINDIR)/basename
+	$(INSTALL) -m 0755 cat $(DESTDIR)$(BINDIR)/cat
+	$(INSTALL) -m 0755 chgrp $(DESTDIR)$(BINDIR)/chgrp
+	$(INSTALL) -m 0755 chmod $(DESTDIR)$(BINDIR)/chmod
+	$(INSTALL) -m 0755 chown $(DESTDIR)$(BINDIR)/chown
+	$(INSTALL) -m 0755 cksum $(DESTDIR)$(BINDIR)/cksum
+	$(INSTALL) -m 0755 cmp $(DESTDIR)$(BINDIR)/cmp
+	$(INSTALL) -m 0755 cp $(DESTDIR)$(BINDIR)/cp
+	$(INSTALL) -m 0755 dirname $(DESTDIR)$(BINDIR)/dirname
+	$(INSTALL) -m 0755 du $(DESTDIR)$(BINDIR)/du
+	$(INSTALL) -m 0755 echo $(DESTDIR)$(BINDIR)/echo
+	$(INSTALL) -m 0755 false $(DESTDIR)$(BINDIR)/false
+	$(INSTALL) -m 0755 file $(DESTDIR)$(BINDIR)/file
+	$(INSTALL) -m 0755 head $(DESTDIR)$(BINDIR)/head
+	$(INSTALL) -m 0755 id $(DESTDIR)$(BINDIR)/id
+	$(INSTALL) -m 0755 kill $(DESTDIR)$(BINDIR)/kill
+	$(INSTALL) -m 0755 link $(DESTDIR)$(BINDIR)/link
+	$(INSTALL) -m 0755 ln $(DESTDIR)$(BINDIR)/ln
+	$(INSTALL) -m 0755 locale $(DESTDIR)$(BINDIR)/locale
+	$(INSTALL) -m 0755 logname $(DESTDIR)$(BINDIR)/logname
+	$(INSTALL) -m 0755 ls $(DESTDIR)$(BINDIR)/ls
+	$(INSTALL) -m 0755 mkdir $(DESTDIR)$(BINDIR)/mkdir
+	$(INSTALL) -m 0755 mkfifo $(DESTDIR)$(BINDIR)/mkfifo
+	$(INSTALL) -m 0755 nice $(DESTDIR)$(BINDIR)/nice
+	$(INSTALL) -m 0755 pwd $(DESTDIR)$(BINDIR)/pwd
+	$(INSTALL) -m 0755 renice $(DESTDIR)$(BINDIR)/renice
+	$(INSTALL) -m 0755 rm $(DESTDIR)$(BINDIR)/rm
+	$(INSTALL) -m 0755 rmdir $(DESTDIR)$(BINDIR)/rmdir
+	$(INSTALL) -m 0755 sleep $(DESTDIR)$(BINDIR)/sleep
+	$(INSTALL) -m 0755 strings $(DESTDIR)$(BINDIR)/strings
+	$(INSTALL) -m 0755 test $(DESTDIR)$(BINDIR)/test
+	$(INSTALL) -m 0755 time $(DESTDIR)$(BINDIR)/time
+	$(INSTALL) -m 0755 touch $(DESTDIR)$(BINDIR)/touch
+	$(INSTALL) -m 0755 true $(DESTDIR)$(BINDIR)/true
+	$(INSTALL) -m 0755 tty $(DESTDIR)$(BINDIR)/tty
+	$(INSTALL) -m 0755 uname $(DESTDIR)$(BINDIR)/uname
+	$(INSTALL) -m 0755 uniq $(DESTDIR)$(BINDIR)/uniq
+	$(INSTALL) -m 0755 unlink $(DESTDIR)$(BINDIR)/unlink
+	$(INSTALL) -m 0755 wc $(DESTDIR)$(BINDIR)/wc

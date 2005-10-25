@@ -1,10 +1,15 @@
 TARGETS	= i386.a i386.so i486.a i486.so sparc.a sparc.so
+PREFIX	= /usr/local
+DESTDIR	=
+LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi
 AR	= ar rc
 RANLIB	= ranlib
 LD	= ld -shared
 RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
 
 
 all: $(TARGETS)
@@ -47,3 +52,11 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+install: all
+	$(MKDIR) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0644 i386.a $(DESTDIR)$(LIBDIR)/i386.a
+	$(INSTALL) -m 0755 i386.so $(DESTDIR)$(LIBDIR)/i386.so
+	$(INSTALL) -m 0644 i486.a $(DESTDIR)$(LIBDIR)/i486.a
+	$(INSTALL) -m 0755 i486.so $(DESTDIR)$(LIBDIR)/i486.so
+	$(INSTALL) -m 0644 sparc.a $(DESTDIR)$(LIBDIR)/sparc.a
+	$(INSTALL) -m 0755 sparc.so $(DESTDIR)$(LIBDIR)/sparc.so

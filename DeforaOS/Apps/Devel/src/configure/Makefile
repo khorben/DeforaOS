@@ -1,5 +1,5 @@
 PACKAGE	= configure
-VERSION	= 0.0.1
+VERSION	= 0.0.2
 SUBDIRS	= src
 TAR	= tar cfzv
 
@@ -22,3 +22,5 @@ dist: distclean
 		src/Makefile \
 		project.conf \
 		Makefile
+install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
