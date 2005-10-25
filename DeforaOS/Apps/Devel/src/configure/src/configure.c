@@ -408,6 +408,11 @@ static int _variables_executables(Prefs * prefs, Config * config, FILE * fp)
 	}
 	if(config_get(config, "", "package"))
 		fprintf(fp, "%s", "TAR\t= tar cfzv\n");
+	if(targets != NULL)
+	{
+		fprintf(fp, "%s", "MKDIR\t= mkdir -p\n");
+		fprintf(fp, "%s", "INSTALL\t= install\n");
+	}
 	return 0;
 }
 
@@ -937,6 +942,7 @@ static int _dist_subdir_dist(FILE * fp, String * path, String * dist)
 static int _install_target(Config * config, FILE * fp, String * target);
 static int _write_install(Prefs * prefs, Config * config, FILE * fp)
 {
+	int ret = 0;
 	String * subdirs;
 	String * targets;
 	int i;
@@ -949,36 +955,50 @@ static int _write_install(Prefs * prefs, Config * config, FILE * fp)
 		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do"
 				" (cd $$i && $(MAKE) install) || exit; done\n");
 	if((targets = config_get(config, "", "targets")) != NULL)
-		for(i = 0;; i++)
+		for(i = 0; ret == 0; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
 				continue;
 			c = targets[i];
 			targets[i] = '\0';
-			_install_target(config, fp, targets);
+			ret = _install_target(config, fp, targets);
 			if(c == '\0')
 				break;
 			targets[i] = c;
 			targets+=i+1;
 			i = 0;
 		}
-	return 0;
+	return ret;
 }
 
 static int _install_target(Config * config, FILE * fp, String * target)
 {
 	String * type;
+	static Config * flag = NULL;
+	static int done[TT_LAST];
+	TargetType tt;
 
 	if((type = config_get(config, target, "type")) == NULL)
 		return 1;
-	switch(_target_type(type))
+	if(flag != config)
+	{
+		flag = config;
+		memset(done, 0, sizeof(done));
+	}
+	switch((tt = _target_type(type)))
 	{
 		case TT_BINARY:
+			if(!done[tt])
+				fprintf(fp, "%s", "\t$(MKDIR) $(DESTDIR)"
+						"$(BINDIR)\n");
 			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0755 ",
 					target, " $(DESTDIR)$(BINDIR)/",
 					target, "\n");
 			break;
 		case TT_LIBRARY:
+			if(!done[tt])
+				fprintf(fp, "%s", "\t$(MKDIR) $(DESTDIR)"
+						"$(LIBDIR)\n");
 			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0644 ",
 					target, ".a $(DESTDIR)$(LIBDIR)/",
 					target, ".a\n");
@@ -990,6 +1010,7 @@ static int _install_target(Config * config, FILE * fp, String * target)
 		case TT_UNKNOWN:
 			break;
 	}
+	done[tt] = 1;
 	return 0;
 }
 
