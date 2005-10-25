@@ -45,21 +45,23 @@ static int _mkdir_p(mode_t mode, char * pathname)
 	char * p;
 	struct stat st;
 
-	for(p = pathname; *p != '\0'; p++)
+	if(pathname[0] == '\0')
+		return 1;
+	for(p = &pathname[1]; *p != '\0'; p++)
 	{
 		if(*p != '/')
 			continue;
 		*p = '\0';
 		if(!(stat(pathname, &st) == 0 && S_ISDIR(st.st_mode))
 				&& mkdir(pathname, mode) == -1)
-			return _mkdir_error(pathname, 2);
+			return _mkdir_error(pathname, 1);
 		for(*p++ = '/'; *p == '/'; p++);
 		if(*p == '\0')
 			return 0;
 	}
 	if(!(stat(pathname, &st) == 0 && S_ISDIR(st.st_mode))
 			&& mkdir(pathname, mode) == -1)
-		return _mkdir_error(pathname, 2);
+		return _mkdir_error(pathname, 1);
 	return 0;
 }
 
