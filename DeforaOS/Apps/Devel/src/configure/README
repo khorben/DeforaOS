@@ -1,16 +1,18 @@
-configure 0.0.1 release notes
+configure 0.0.2 release notes
 -----------------------------
 
-configure automatically generates Makefiles from a project definition file.
+configure automatically generates Makefiles from project definition files.
 
-configure is Copyright (c) 2004 Pierre Pronchery
-It is shipped under the terms of the GPL license, which you may read in the
-COPYING file also contained in this archive.
+configure is Copyright (c) 2005 Pierre Pronchery
+It is shipped under the terms of the GPL version 2 license, which you may read
+on the GNU project web site, http://www.gnu.org/ .
 
 Please read the INSTALL file for instructions about how to compile and install
 configure.
 
 Please read the BUGS file for information about known problems, and planned
 feature upgrades.
+
+Please read the configure.txt file for information about how to use configure.
 
 Thanks for using this program. I hope it will be useful.
