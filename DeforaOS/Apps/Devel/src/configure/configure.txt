@@ -34,21 +34,19 @@ III. Getting further
 I. Overview of configure
 
 1.1 What is configure
-configure generates Makefile files needed in an entire project. Instead of
-trying every little trick to let it work in a number of potential uses, it
-sticks to the simplest possible code generation. Consequently, it will mostly
-be useful for projects running on standard-compliant platforms.
+configure generates Makefiles needed in an entire project. Instead of trying
+every little trick to let it work in a number of potential uses, it sticks to
+the simplest possible code generation. Consequently, it will mostly be useful
+for projects running on UNIX platforms first.
 
 1.2 Who should use configure
 Every software developper could gain using configure. However, due to its
 intentional simplicity, it may not be appropriate to use along with code
 compilation on some non-portable platforms.
 Of course an advanced user, trying to modify a given project Makefile on his
-platform, inside a project using configure as its Makefile files generator may
-have to use configure too.
+platform, inside a project using configure may have to use configure too.
 
 1.3 Who should not use configure
-
 configure will certainly not be appropriate alone for cross-plaform projects,
 and maybe not for big projects. However one should be able to keep its
 configuration files inside a project without creating any trouble for potential
@@ -57,9 +55,10 @@ other Makefile files generators.
 1.4 Why use configure
 configure has been created to be efficient at writing simple and compliant
 Makefiles for small to big software development projects. It should be useful:
-- for people learning software development using Makefiles
-- for developpers of some small to big projects
-- for developpers concerned by the readability and efficiency of their Makefiles
+- for people learning software development using Makefiles;
+- for developpers of some small to big projects;
+- for developpers concerned by the readability and efficiency of their
+  Makefiles.
 
                     ----------------------------------------
 
@@ -68,20 +67,24 @@ II. Using configure
 
 2.1 configure usage
 The configure utility may be invoked from the command line this way:
-$ configure [directory]
+$ configure [-nv][directory]
 
-It then processes the current directory, or the one given at the command line,
+The "-n" option just parses the project definition files, without actually
+re-generating the Makefiles.
+The "-v" option gives information about the progress of the operation.
+
+It then processes the current directory, or one given at the command line,
 according to the project configuration files.
 
 2.2 Project configuration
-The configuration is done in every project directory. This file must be called
+This file should be found in every project directory. It must be named
 "project.conf". It is organized in sections, and string variables. Section names
 are written on their own line, between brackets (eg "[section]"). Variables are
 given on their own line too, like this:
 variable=value
-Configuration files may be commented, commentary lines being prepended with a
+Configuration files may be commented, comment lines being prepended with a
 hash sign "#".
-Recognized variables are the following:
+The significant variables are the following:
 - in the default section (has an empty name, eg "[]" in the file)
   * subdirs: subdirectories to look for too
   * cflags_force: CFLAGS to force globally
@@ -89,20 +92,30 @@ Recognized variables are the following:
   * ldflags_force: LDFLAGS to force globally
   * ldflags: optional global LDFLAGS
   * targets: targets to handle in the Makefile
+  * dist: additional files to include in a source archive
 - in sections named like the target they define:
-  * type (mandatory): type of the target (eg "binary", "library", ...)
+  * type (mandatory): type of the target (eg "binary", "library", "object", ...)
   * cflags: additional CFLAGS for this target
   * ldflags: additional LDFLAGS for this target
   * sources: source files to compile
 
 2.3 Targets definitions
-There following target types are currently supported:
-- "binary": produces binary files, linked from every object file produced with their source files.
-- "library": produces a static and a shared version of the target, linked from every object file produced with their source files, and respectively appending ".a" and ".so" extensions to the target name.
+The following target types are currently supported:
+- "binary": produces binary files, linked from every object file produced with
+  their source files.
+- "library": produces a static and a shared version of the target, linked from
+  every object file produced with their source files, and respectively appending
+  ".a" and ".so" extensions to the target name.
+- "object": produces a binary object file from the given source.
 
 2.4 Migrating to configure
-You may first create all necessary "project.conf" files with the subdirectories definitions. Then for every binary or library built, specify the adequate target along with its section.
-When migrating from automake/autoconf, the existing subdirectories are defined in the "Makefile.am" files, in the "SUBDIRS" variable. The binary targets are defined in the same file, as the "bin_PROGRAMS" variable, each declined to "program_SOURCES" for their respective source files.
+You may first create all necessary "project.conf" files with the subdirectories
+definitions. Then for every binary or library built, specify the adequate target
+along with its section.
+When migrating from automake/autoconf, the existing subdirectories are defined
+in the "Makefile.am" files, in the "SUBDIRS" variable. The binary targets are
+defined in the same file, as the "bin_PROGRAMS" variable, each declined to
+"program_SOURCES" for their respective source files.
 
                     ----------------------------------------
 
@@ -115,3 +128,6 @@ III. Getting further
   "project-config" or "pkgconfig")
 
 3.2 Planned improvements
+- run-time system detection or selection;
+- generation of the Makefiles altered acordingly;
+- tweakable installation path.
