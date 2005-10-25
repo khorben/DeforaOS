@@ -29,6 +29,10 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 makepasswd $(DESTDIR)$(BINDIR)/makepasswd
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/makepasswd

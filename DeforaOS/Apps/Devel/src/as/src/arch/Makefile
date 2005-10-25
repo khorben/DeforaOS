@@ -52,6 +52,7 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 i386.a $(DESTDIR)$(LIBDIR)/i386.a
@@ -60,3 +61,11 @@ install: all
 	$(INSTALL) -m 0755 i486.so $(DESTDIR)$(LIBDIR)/i486.so
 	$(INSTALL) -m 0644 sparc.a $(DESTDIR)$(LIBDIR)/sparc.a
 	$(INSTALL) -m 0755 sparc.so $(DESTDIR)$(LIBDIR)/sparc.so
+
+uninstall:
+	$(RM) $(DESTDIR)$(LIBDIR)/i386.a
+	$(RM) $(DESTDIR)$(LIBDIR)/i386.so
+	$(RM) $(DESTDIR)$(LIBDIR)/i486.a
+	$(RM) $(DESTDIR)$(LIBDIR)/i486.so
+	$(RM) $(DESTDIR)$(LIBDIR)/sparc.a
+	$(RM) $(DESTDIR)$(LIBDIR)/sparc.so

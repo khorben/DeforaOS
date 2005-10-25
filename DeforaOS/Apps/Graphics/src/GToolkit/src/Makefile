@@ -31,7 +31,12 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 libGToolkit.a $(DESTDIR)$(LIBDIR)/libGToolkit.a
 	$(INSTALL) -m 0755 libGToolkit.so $(DESTDIR)$(LIBDIR)/libGToolkit.so
+
+uninstall:
+	$(RM) $(DESTDIR)$(LIBDIR)/libGToolkit.a
+	$(RM) $(DESTDIR)$(LIBDIR)/libGToolkit.so

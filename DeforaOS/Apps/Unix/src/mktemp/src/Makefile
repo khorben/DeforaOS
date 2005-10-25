@@ -25,6 +25,10 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 mktemp $(DESTDIR)$(BINDIR)/mktemp
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/mktemp

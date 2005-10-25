@@ -32,6 +32,10 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 gedi $(DESTDIR)$(BINDIR)/gedi
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/gedi

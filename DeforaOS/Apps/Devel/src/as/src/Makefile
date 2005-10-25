@@ -51,7 +51,12 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 	$(RM) $(as_OBJS)
 	$(RM) $(TARGETS)
+
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 as $(DESTDIR)$(BINDIR)/as
+
+uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+	$(RM) $(DESTDIR)$(BINDIR)/as

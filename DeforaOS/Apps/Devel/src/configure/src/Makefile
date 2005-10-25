@@ -26,6 +26,10 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 configure $(DESTDIR)$(BINDIR)/configure
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/configure

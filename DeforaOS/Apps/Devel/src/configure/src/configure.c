@@ -248,6 +248,7 @@ static int _write_distclean(Prefs * prefs, Config * config, FILE * fp);
 static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 		configArray * ca, int from, int to);
 static int _write_install(Prefs * prefs, Config * config, FILE * fp);
+static int _write_uninstall(Prefs * prefs, Config * config, FILE * fp);
 static int _makefile_write(Prefs * prefs, Config * config, FILE * fp,
 		configArray * ca, int from, int to)
 {
@@ -257,7 +258,8 @@ static int _makefile_write(Prefs * prefs, Config * config, FILE * fp,
 			|| _write_clean(prefs, config, fp) != 0
 			|| _write_distclean(prefs, config, fp) != 0
 			|| _write_dist(prefs, config, fp, ca, from, to) != 0
-			|| _write_install(prefs, config, fp) != 0)
+			|| _write_install(prefs, config, fp) != 0
+			|| _write_uninstall(prefs, config, fp) != 0)
 		return 1;
 	return 0;
 }
@@ -950,7 +952,7 @@ static int _write_install(Prefs * prefs, Config * config, FILE * fp)
 
 	if(*prefs & PREFS_n)
 		return 0;
-	fprintf(fp, "%s", "install: all\n");
+	fprintf(fp, "%s", "\ninstall: all\n");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL)
 		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do"
 				" (cd $$i && $(MAKE) install) || exit; done\n");
@@ -1013,6 +1015,61 @@ static int _install_target(Config * config, FILE * fp, String * target)
 	done[tt] = 1;
 	return 0;
 }
+
+static int _uninstall_target(Config * config, FILE * fp, String * target);
+static int _write_uninstall(Prefs * prefs, Config * config, FILE * fp)
+{
+	int ret = 0;
+	String * subdirs;
+	String * targets;
+	int i;
+	char c;
+
+	if(*prefs & PREFS_n)
+		return 0;
+	fprintf(fp, "%s", "\nuninstall:\n");
+	if((subdirs = config_get(config, "", "subdirs")) != NULL)
+		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do (cd $$i &&"
+				" $(MAKE) uninstall) || exit; done\n");
+	if((targets = config_get(config, "", "targets")) != NULL)
+		for(i = 0; ret == 0; i++)
+		{
+			if(targets[i] != ',' && targets[i] != '\0')
+				continue;
+			c = targets[i];
+			targets[i] = '\0';
+			ret = _uninstall_target(config, fp, targets);
+			if(c == '\0')
+				break;
+			targets[i] = c;
+			targets+=i+1;
+			i = 0;
+		}
+	return ret;
+}
+
+static int _uninstall_target(Config * config, FILE * fp, String * target)
+{
+	String * type;
+
+	if((type = config_get(config, target, "type")) == NULL)
+		return 1;
+	switch(_target_type(type))
+	{
+		case TT_BINARY:
+			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(BINDIR)/", target, "\n");
+			break;
+		case TT_LIBRARY:
+			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/", target, ".a\n");
+			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/", target, ".so\n");
+			break;
+		case TT_OBJECT:
+		case TT_UNKNOWN:
+			break;
+	}
+	return 0;
+}
+
 
 /* usage */
 static int _usage(void)

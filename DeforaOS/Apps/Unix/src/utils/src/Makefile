@@ -329,6 +329,7 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 basename $(DESTDIR)$(BINDIR)/basename
@@ -370,3 +371,44 @@ install: all
 	$(INSTALL) -m 0755 uniq $(DESTDIR)$(BINDIR)/uniq
 	$(INSTALL) -m 0755 unlink $(DESTDIR)$(BINDIR)/unlink
 	$(INSTALL) -m 0755 wc $(DESTDIR)$(BINDIR)/wc
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/basename
+	$(RM) $(DESTDIR)$(BINDIR)/cat
+	$(RM) $(DESTDIR)$(BINDIR)/chgrp
+	$(RM) $(DESTDIR)$(BINDIR)/chmod
+	$(RM) $(DESTDIR)$(BINDIR)/chown
+	$(RM) $(DESTDIR)$(BINDIR)/cksum
+	$(RM) $(DESTDIR)$(BINDIR)/cmp
+	$(RM) $(DESTDIR)$(BINDIR)/cp
+	$(RM) $(DESTDIR)$(BINDIR)/dirname
+	$(RM) $(DESTDIR)$(BINDIR)/du
+	$(RM) $(DESTDIR)$(BINDIR)/echo
+	$(RM) $(DESTDIR)$(BINDIR)/false
+	$(RM) $(DESTDIR)$(BINDIR)/file
+	$(RM) $(DESTDIR)$(BINDIR)/head
+	$(RM) $(DESTDIR)$(BINDIR)/id
+	$(RM) $(DESTDIR)$(BINDIR)/kill
+	$(RM) $(DESTDIR)$(BINDIR)/link
+	$(RM) $(DESTDIR)$(BINDIR)/ln
+	$(RM) $(DESTDIR)$(BINDIR)/locale
+	$(RM) $(DESTDIR)$(BINDIR)/logname
+	$(RM) $(DESTDIR)$(BINDIR)/ls
+	$(RM) $(DESTDIR)$(BINDIR)/mkdir
+	$(RM) $(DESTDIR)$(BINDIR)/mkfifo
+	$(RM) $(DESTDIR)$(BINDIR)/nice
+	$(RM) $(DESTDIR)$(BINDIR)/pwd
+	$(RM) $(DESTDIR)$(BINDIR)/renice
+	$(RM) $(DESTDIR)$(BINDIR)/rm
+	$(RM) $(DESTDIR)$(BINDIR)/rmdir
+	$(RM) $(DESTDIR)$(BINDIR)/sleep
+	$(RM) $(DESTDIR)$(BINDIR)/strings
+	$(RM) $(DESTDIR)$(BINDIR)/test
+	$(RM) $(DESTDIR)$(BINDIR)/time
+	$(RM) $(DESTDIR)$(BINDIR)/touch
+	$(RM) $(DESTDIR)$(BINDIR)/true
+	$(RM) $(DESTDIR)$(BINDIR)/tty
+	$(RM) $(DESTDIR)$(BINDIR)/uname
+	$(RM) $(DESTDIR)$(BINDIR)/uniq
+	$(RM) $(DESTDIR)$(BINDIR)/unlink
+	$(RM) $(DESTDIR)$(BINDIR)/wc

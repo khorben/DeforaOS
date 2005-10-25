@@ -52,7 +52,12 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 libSystem.a $(DESTDIR)$(LIBDIR)/libSystem.a
 	$(INSTALL) -m 0755 libSystem.so $(DESTDIR)$(LIBDIR)/libSystem.so
+
+uninstall:
+	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.a
+	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.so

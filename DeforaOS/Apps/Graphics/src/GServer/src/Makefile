@@ -25,6 +25,10 @@ clean:
 
 distclean: clean
 	$(RM) $(TARGETS)
+
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 GServer $(DESTDIR)$(BINDIR)/GServer
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/GServer
