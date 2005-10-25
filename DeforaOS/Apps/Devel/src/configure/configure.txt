@@ -3,7 +3,7 @@ configure documentation
 
 
 These are the documentation notes for configure. The configure project is a
-Makefile files generator. It uses project description files to propose simple
+Makefiles generator. It uses project description files to propose simple
 Makefiles. It is intended to keep generated code as simple as possible.
 
                     ----------------------------------------
