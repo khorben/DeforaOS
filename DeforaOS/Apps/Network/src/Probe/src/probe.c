@@ -367,7 +367,7 @@ int ifrxbytes(char * dev)
 		return -1;
 	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " RX: ",
 			probe.ifinfo[i].stats[IF_RX_BYTES], "\n");
-	return 0;
+	return probe.ifinfo[i].stats[IF_RX_BYTES];
 }
 
 int iftxbytes(char * dev)
@@ -380,7 +380,7 @@ int iftxbytes(char * dev)
 		return -1;
 	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " TX: ",
 			probe.ifinfo[i].stats[IF_TX_BYTES], "\n");
-	return 0;
+	return probe.ifinfo[i].stats[IF_TX_BYTES];
 }
 
 
