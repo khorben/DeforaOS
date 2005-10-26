@@ -18,6 +18,7 @@ typedef struct _Host
 {
 	AppClient * appclient;
 	char * hostname;
+	char * iface;
 } Host;
 
 
@@ -27,12 +28,12 @@ static int _damon_refresh(Host * hosts);
 static int _damon(void)
 {
 	Host hosts[] = {
-		{ NULL, "pinge.lan.defora.org" },
-		{ NULL, "rst.defora.org" },
-		{ NULL, "raq3.dmz.defora.org" },
-		{ NULL, "raq4.dmz.defora.org" },
+		{ NULL, "pinge.lan.defora.org", "eth0" },
+		{ NULL, "rst.defora.org", "ppp0" },
+		{ NULL, "raq3.dmz.defora.org", "eth0" },
+		{ NULL, "raq4.dmz.defora.org", "eth0" },
 /*		{ NULL, "ss20.dmz.defora.org" }, */
-		{ NULL, NULL }
+		{ NULL, NULL, NULL }
 	};
 	Event * event;
 	struct timeval tv;
@@ -82,6 +83,7 @@ static int _damon_refresh(Host * hosts)
 	AppClient * ac = NULL;
 	char * rrd = NULL;
 	char * p;
+	int res[4];
 
 	fprintf(stderr, "%s", "_damon_refresh()\n");
 	for(i = 0; (ac = hosts[i].appclient) != NULL; i++)
@@ -91,23 +93,36 @@ static int _damon_refresh(Host * hosts)
 			break;
 		rrd = p;
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "uptime.rrd");
-		_rrd_update(rrd, 1, appclient_call(ac, "uptime", 0));
+		res[0] = appclient_call(ac, "uptime", 0);
+		_rrd_update(rrd, 1, res[0]);
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "load.rrd");
-		_rrd_update(rrd, 3, appclient_call(ac, "load_1", 0),
-				appclient_call(ac, "load_5", 0),
-				appclient_call(ac, "load_15", 0));
+		res[0] = appclient_call(ac, "load_1", 0);
+		res[1] = appclient_call(ac, "load_5", 0);
+		res[2] = appclient_call(ac, "load_15", 0);
+		_rrd_update(rrd, 3, res[0], res[1], res[2]);
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "ram.rrd");
-		_rrd_update(rrd, 4, appclient_call(ac, "ram_total", 0),
-				appclient_call(ac, "ram_free", 0),
-				appclient_call(ac, "ram_shared", 0),
-				appclient_call(ac, "ram_buffer", 0));
+		res[0] = appclient_call(ac, "ram_total", 0);
+		res[1] = appclient_call(ac, "ram_free", 0);
+		res[2] = appclient_call(ac, "ram_shared", 0);
+		res[3] = appclient_call(ac, "ram_buffer", 0);
+		_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "swap.rrd");
-		_rrd_update(rrd, 2, appclient_call(ac, "swap_total", 0),
-				appclient_call(ac, "swap_free", 0));
+		res[0] = appclient_call(ac, "swap_total", 0);
+		res[1] = appclient_call(ac, "swap_free", 0);
+		_rrd_update(rrd, 2, res[0], res[1]);
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "users.rrd");
-		_rrd_update(rrd, 1, appclient_call(ac, "users", 0));
+		res[0] = appclient_call(ac, "users", 0);
+		_rrd_update(rrd, 1, res[0]);
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "procs.rrd");
-		_rrd_update(rrd, 1, appclient_call(ac, "procs", 0));
+		res[0] = appclient_call(ac, "procs", 0);
+		_rrd_update(rrd, 1, res[0]);
+		if((p = hosts[i].iface) != NULL)
+		{
+			sprintf(rrd, "%s/%s%s", hosts[i].hostname, p, ".rrd");
+			res[0] = appclient_call(ac, "ifrxbytes", 1, p);
+			res[1] = appclient_call(ac, "iftxbytes", 1, p);
+			_rrd_update(rrd, 2, res[0], res[1]);
+		}
 	}
 	free(rrd);
 	if(ac != NULL)
