@@ -4,6 +4,7 @@
 
 #include <System.h>
 #include <utmpx.h>
+#include <stdlib.h>
 #include <stdio.h>
 #ifdef _GNU_SOURCE
 # include <sys/sysinfo.h>
@@ -18,6 +19,7 @@
 
 
 /* globals */
+/* sysinfo */
 #ifndef _GNU_SOURCE
 struct sysinfo
 {
@@ -113,13 +115,102 @@ static int sysinfo(struct sysinfo * info)
 #endif
 
 
+/* ifinfo */
+enum InterfaceInfo
+{
+	IF_RX_BYTES = 0, IF_RX_PACKETS, IF_RX_ERRS, IF_RX_DROP, IF_RX_FIFO,
+	IF_RX_FRAME, IF_RX_COMPRESSED, IF_RX_MULTICAST,
+	IF_TX_BYTES, IF_TX_PACKETS, IF_TX_ERRS, IF_TX_DROP, IF_TX_FIFO,
+	IF_TX_FRAME, IF_TX_COMPRESSED
+};
+#define IF_LAST IF_TX_COMPRESSED
+struct ifinfo
+{
+	char name[6];
+	int stats[IF_LAST+1];
+};
+
+static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb);
+static int ifinfo(struct ifinfo ** dev)
+{
+	int ret = 0;
+	FILE * fp;
+	char buf[200];
+	int i;
+	int len;
+
+#ifdef _GNU_SOURCE
+	if((fp = fopen("/proc/net/dev", "r")) == NULL)
+		return -1;
+	for(i = 0; fgets(buf, sizeof(buf), fp) != NULL; i++)
+	{
+		len = string_length(buf);
+		if(buf[len-1] != '\n')
+		{
+			ret = 1;
+			break;
+		}
+		if(i < 2)
+			continue;
+		if(ifinfo_append(dev, buf, i - 2) != 0)
+		{
+			ret = -1;
+			break;
+		}
+		ret++;
+	}
+	fclose(fp);
+	return ret;
+#endif
+}
+
+static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
+{
+	struct ifinfo * p;
+	int i;
+	char * q;
+	int j = 0;
+
+	if((p = realloc(*dev, sizeof(struct ifinfo) * (nb + 1))) == NULL)
+		return 1;
+	*dev = p;
+	for(i = 0; i < 6 && buf[i] != '\0'; i++);
+	if(i != 6)
+		return 1;
+	buf[6] = '\0';
+	for(q = buf; q[0] == ' '; q++);
+	strcpy((*dev)[nb].name, q);
+	for(i++; buf[i] != '\0'; i++)
+	{
+		if(j > IF_LAST)
+			break;
+		if(buf[i] == ' ')
+			continue;
+		q = &buf[i];
+		for(; buf[i] >= '0' && buf[i] <= '9'; i++);
+		buf[i] = '\0';
+		(*dev)[nb].stats[j++] = strtol(q, &q, 10);
+		if(*q != '\0')
+			return 1;
+	}
+	return 0;
+}
+
+
 /* Probe */
+/* types */
 typedef struct _Probe
 {
 	struct sysinfo sysinfo;
 	unsigned int users;
+	struct ifinfo * ifinfo;
+	unsigned int ifinfo_cnt;
 } Probe;
+
+/* variables */
 Probe probe;
+
+/* functions */
 static int _probe_error(char * message, int ret);
 static int _probe_timeout(Probe * probe);
 static int _probe(void)
@@ -128,15 +219,17 @@ static int _probe(void)
 	Event * event;
 	struct timeval tv;
 
+	probe.ifinfo = NULL;
+	probe.ifinfo_cnt = 0;
 	if(_probe_timeout(&probe) != 0)
-		return _probe_error("sysinfo", 2);
+		return _probe_error("sysinfo", 1);
 	if((event = event_new()) == NULL)
 		return _probe_error("Event", 2);
 	if((appserver = appserver_new_event("Probe", ASO_REMOTE, event))
 			== NULL)
 	{
 		event_delete(event);
-		return _probe_error("AppServer", 2);
+		return _probe_error("AppServer", 1);
 	}
 	tv.tv_sec = PROBE_REFRESH;
 	tv.tv_usec = 0;
@@ -162,6 +255,7 @@ static int _probe_timeout(Probe * probe)
 	struct utmpx * ut;
 #ifdef DEBUG
 	static unsigned int count = 0;
+	static int i;
 
 	fprintf(stderr, "%s%d%s", "_probe_timeout(", count++, ")\n");
 #endif
@@ -171,6 +265,9 @@ static int _probe_timeout(Probe * probe)
 		if(ut->ut_type == USER_PROCESS)
 			probe->users++;
 	endutxent();
+	if((i = ifinfo(&probe->ifinfo)) < 0)
+		return _probe_error("ifinfo", 1);
+	probe->ifinfo_cnt = i;
 	return 0;
 }
 
@@ -256,8 +353,35 @@ int users(void)
 }
 
 
+int ifrxbytes(char * dev)
+{
+	unsigned int i;
+
+	for(i = 0; i < probe.ifinfo_cnt
+			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
+	if(i == probe.ifinfo_cnt)
+		return -1;
+	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, ": ",
+			probe.ifinfo[i].stats[IF_RX_BYTES], "\n");
+	return 0;
+}
+
+int iftxbytes(char * dev)
+{
+	unsigned int i;
+
+	for(i = 0; i < probe.ifinfo_cnt
+			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
+	if(i == probe.ifinfo_cnt)
+		return -1;
+	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, ": ",
+			probe.ifinfo[i].stats[IF_TX_BYTES], "\n");
+	return 0;
+}
+
+
 /* main */
 int main(void)
 {
-	return _probe();
+	return _probe() == 0 ? 0 : 2;
 }
