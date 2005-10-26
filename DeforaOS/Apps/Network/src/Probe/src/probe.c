@@ -365,7 +365,7 @@ int ifrxbytes(char * dev)
 			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
 	if(i == probe.ifinfo_cnt)
 		return -1;
-	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, ": ",
+	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " RX: ",
 			probe.ifinfo[i].stats[IF_RX_BYTES], "\n");
 	return 0;
 }
@@ -378,7 +378,7 @@ int iftxbytes(char * dev)
 			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
 	if(i == probe.ifinfo_cnt)
 		return -1;
-	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, ": ",
+	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " TX: ",
 			probe.ifinfo[i].stats[IF_TX_BYTES], "\n");
 	return 0;
 }
