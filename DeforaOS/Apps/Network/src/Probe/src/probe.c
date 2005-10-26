@@ -130,16 +130,18 @@ struct ifinfo
 	int stats[IF_LAST+1];
 };
 
+#ifdef _GNU_SOURCE
 static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb);
+#endif
 static int ifinfo(struct ifinfo ** dev)
 {
 	int ret = 0;
+#ifdef _GNU_SOURCE
 	FILE * fp;
 	char buf[200];
 	int i;
 	int len;
 
-#ifdef _GNU_SOURCE
 	if((fp = fopen("/proc/net/dev", "r")) == NULL)
 		return -1;
 	for(i = 0; fgets(buf, sizeof(buf), fp) != NULL; i++)
@@ -160,10 +162,11 @@ static int ifinfo(struct ifinfo ** dev)
 		ret++;
 	}
 	fclose(fp);
-	return ret;
 #endif
+	return ret;
 }
 
+#ifdef _GNU_SOURCE
 static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 {
 	struct ifinfo * p;
@@ -195,6 +198,7 @@ static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 	}
 	return 0;
 }
+#endif
 
 
 /* Probe */
@@ -253,9 +257,9 @@ static int _probe_error(char * message, int ret)
 static int _probe_timeout(Probe * probe)
 {
 	struct utmpx * ut;
+	int i;
 #ifdef DEBUG
 	static unsigned int count = 0;
-	static int i;
 
 	fprintf(stderr, "%s%d%s", "_probe_timeout(", count++, ")\n");
 #endif
