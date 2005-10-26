@@ -158,6 +158,10 @@ static int _new_probe(AppInterface * appinterface)
 	ret += _new_append(appinterface, AICT_UINT32, "swap_free", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "users", 0);
 	ret += _new_append(appinterface, AICT_UINT32, "procs", 0);
+	ret += _new_append(appinterface, AICT_UINT32, "ifrxbytes", 1,
+			AICT_STRING);
+	ret += _new_append(appinterface, AICT_UINT32, "iftxbytes", 1,
+			AICT_STRING);
 	return ret;
 }
 
