@@ -63,6 +63,7 @@ $text['DELETE'] = 'Delete';
 $text['DESCRIPTION'] = 'Description';
 $text['DISABLE'] = 'Disable';
 $text['DISABLED'] = 'Disabled';
+$text['EDIT'] = 'Edit';
 $text['ENABLE'] = 'Enable';
 $text['ENABLED'] = 'Enabled';
 $text['HOMEPAGE'] = 'Homepage';
@@ -112,6 +113,7 @@ else if($lang == 'fr')
 	$text['DELETE'] = 'Supprimer';
 	$text['DISABLE'] = 'Désactiver';
 	$text['DISABLED'] = 'Désactivé';
+	$text['EDIT'] = 'Modifier';
 	$text['ENABLE'] = 'Activer';
 	$text['ENABLED'] = 'Activé';
 	$text['HOMEPAGE'] = 'Accueil';
