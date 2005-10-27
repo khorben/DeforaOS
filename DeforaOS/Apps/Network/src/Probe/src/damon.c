@@ -23,6 +23,7 @@ typedef struct _Host
 
 
 /* DaMon */
+Event * event; /* FIXME */
 static int _damon_error(char * message, int ret);
 static int _damon_refresh(Host * hosts);
 static int _damon(void)
@@ -35,36 +36,21 @@ static int _damon(void)
 /*		{ NULL, "ss20.dmz.defora.org" }, */
 		{ NULL, NULL, NULL }
 	};
-	Event * event;
 	struct timeval tv;
 	int i;
-	int j;
 
 	if((event = event_new()) == NULL)
 		return _damon_error("Event", 2);
+	_damon_refresh(hosts);
+	tv.tv_sec = DAMON_REFRESH;
+	tv.tv_usec = 0;
+	event_register_timeout(event, tv,
+			(EventTimeoutFunc)_damon_refresh, hosts);
+	if(event_loop(event) != 0)
+		_damon_error("AppClient", 0);
 	for(i = 0; hosts[i].hostname != NULL; i++)
-	{
-		if(setenv("APPSERVER_Probe", hosts[i].hostname, 1) != 0)
-			break;
-		if((hosts[i].appclient = appclient_new_event("Probe", event))
-				== NULL)
-		{
-			_damon_error(hosts[i].hostname, 0);
-			break;
-		}
-	}
-	if(hosts[i].hostname == NULL)
-	{
-		_damon_refresh(hosts);
-		tv.tv_sec = DAMON_REFRESH;
-		tv.tv_usec = 0;
-		event_register_timeout(event, tv,
-				(EventTimeoutFunc)_damon_refresh, hosts);
-		if(event_loop(event) != 0)
-			_damon_error("AppClient", 0);
-	}
-	for(j = 0; j < i; j++)
-		appclient_delete(hosts[j].appclient);
+		if(hosts[i].appclient != NULL)
+			appclient_delete(hosts[i].appclient);
 	event_delete(event);
 	return 2;
 }
@@ -76,6 +62,7 @@ static int _damon_error(char * message, int ret)
 	return ret;
 }
 
+static AppClient * _refresh_connect(Host * host);
 static int _rrd_update(char * file, int args_cnt, ...);
 static int _damon_refresh(Host * hosts)
 {
@@ -86,48 +73,120 @@ static int _damon_refresh(Host * hosts)
 	int res[4];
 
 	fprintf(stderr, "%s", "_damon_refresh()\n");
-	for(i = 0; (ac = hosts[i].appclient) != NULL; i++)
+	for(i = 0; hosts[i].hostname != NULL; i++)
 	{
+		if((ac = hosts[i].appclient) == NULL)
+			if((ac = _refresh_connect(&hosts[i])) == NULL)
+				continue;
 		if((p = realloc(rrd, string_length(hosts[i].hostname) + 12))
 				== NULL)
 			break;
 		rrd = p;
+
+		/* uptime */
+		if((res[0] = appclient_call(ac, "uptime", 0)) == -1)
+		{
+			appclient_delete(ac);
+			hosts[i].appclient = NULL;
+			continue;
+		}
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "uptime.rrd");
-		res[0] = appclient_call(ac, "uptime", 0);
 		_rrd_update(rrd, 1, res[0]);
+
+		/* load */
+		if((res[0] = appclient_call(ac, "load_1", 0)) == -1
+				|| (res[1] = appclient_call(ac, "load_5",
+						0)) == -1
+				|| (res[2] = appclient_call(ac, "load_15",
+						0)) == -1)
+		{
+			appclient_delete(ac);
+			hosts[i].appclient = NULL;
+			continue;
+		}
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "load.rrd");
-		res[0] = appclient_call(ac, "load_1", 0);
-		res[1] = appclient_call(ac, "load_5", 0);
-		res[2] = appclient_call(ac, "load_15", 0);
 		_rrd_update(rrd, 3, res[0], res[1], res[2]);
+
+		/* ram */
+		if((res[0] = appclient_call(ac, "ram_total", 0)) == -1
+				|| (res[1] = appclient_call(ac, "ram_free",
+						0)) == -1
+				|| (res[2] = appclient_call(ac, "ram_shared",
+						0)) == -1
+				|| (res[3] = appclient_call(ac, "ram_buffer",
+						0)) == -1)
+		{
+			appclient_delete(ac);
+			hosts[i].appclient = NULL;
+			continue;
+		}
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "ram.rrd");
-		res[0] = appclient_call(ac, "ram_total", 0);
-		res[1] = appclient_call(ac, "ram_free", 0);
-		res[2] = appclient_call(ac, "ram_shared", 0);
-		res[3] = appclient_call(ac, "ram_buffer", 0);
 		_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
+
+		/* swap */
+		if((res[0] = appclient_call(ac, "swap_total", 0)) == -1
+				|| (res[1] = appclient_call(ac, "swap_free",
+						0)) == -1)
+		{
+			appclient_delete(ac);
+			hosts[i].appclient = NULL;
+			continue;
+		}
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "swap.rrd");
-		res[0] = appclient_call(ac, "swap_total", 0);
-		res[1] = appclient_call(ac, "swap_free", 0);
 		_rrd_update(rrd, 2, res[0], res[1]);
+
+		/* users */
+		if((res[0] = appclient_call(ac, "users", 0)) == -1)
+		{
+			appclient_delete(ac);
+			hosts[i].appclient = NULL;
+			continue;
+		}
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "users.rrd");
-		res[0] = appclient_call(ac, "users", 0);
 		_rrd_update(rrd, 1, res[0]);
+
+		/* procs */
+		if((res[0] = appclient_call(ac, "procs", 0)) == -1)
+		{
+			appclient_delete(ac);
+			hosts[i].appclient = NULL;
+			continue;
+		}
 		sprintf(rrd, "%s/%s", hosts[i].hostname, "procs.rrd");
-		res[0] = appclient_call(ac, "procs", 0);
 		_rrd_update(rrd, 1, res[0]);
+
+		/* if */
 		if((p = hosts[i].iface) != NULL)
 		{
+			if((res[0] = appclient_call(ac, "ifrxbytes", 1,
+							p)) == -1
+					|| (res[1] = appclient_call(ac,
+							"iftxbytes", 1,
+							p)) == -1)
+			{
+				appclient_delete(ac);
+				hosts[i].appclient = NULL;
+				continue;
+			}
 			sprintf(rrd, "%s/%s%s", hosts[i].hostname, p, ".rrd");
-			res[0] = appclient_call(ac, "ifrxbytes", 1, p);
-			res[1] = appclient_call(ac, "iftxbytes", 1, p);
 			_rrd_update(rrd, 2, res[0], res[1]);
 		}
+		ac = NULL;
 	}
 	free(rrd);
 	if(ac != NULL)
 		fprintf(stderr, "%s", "DaMon: refresh: An error occured\n");
 	return 0;
+}
+
+static AppClient * _refresh_connect(Host * host)
+{
+	if(setenv("APPSERVER_Probe", host->hostname, 1) != 0)
+		return NULL;
+	if((host->appclient = appclient_new_event("Probe", event))
+			== NULL)
+		_damon_error(host->hostname, 0);
+	return host->appclient;
 }
 
 static int _exec(char * argv[]);
@@ -180,7 +239,7 @@ static int _exec(char * argv[])
 
 
 /* main */
-int main(int argc, char * argv[])
+int main(void)
 {
 	return _damon();
 }
