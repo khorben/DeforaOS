@@ -122,6 +122,8 @@ function news_default($args)
 
 function news_display($args)
 {
+	global $user_id;
+
 	require_once('system/content.php');
 	if(($news = _content_select($args['id'], 1)) == FALSE)
 		return _error('Invalid news');
@@ -140,6 +142,8 @@ function news_display($args)
 
 function news_list($args)
 {
+	global $user_id;
+
 	$title = NEWS;
 	$where = '';
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
