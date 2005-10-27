@@ -1,6 +1,7 @@
 PACKAGE	= GToolkit
 VERSION	= 0.0.0
 SUBDIRS	= src
+LN	= ln -sf
 TAR	= tar cfzv
 
 
@@ -15,13 +16,16 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-dist: distclean
+dist:
+	$(RM) $(PACKAGE)-$(VERSION)
+	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		src/gtoolkit.c \
-		src/project.conf \
-		src/Makefile \
-		project.conf \
-		Makefile
+		$(PACKAGE)-$(VERSION)/src/gtoolkit.c \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile
+	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

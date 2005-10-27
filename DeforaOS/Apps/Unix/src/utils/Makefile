@@ -1,6 +1,7 @@
 PACKAGE	= utils
 VERSION	= 0.0.0
 SUBDIRS	= src
+LN	= ln -sf
 TAR	= tar cfzv
 
 
@@ -15,52 +16,55 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-dist: distclean
+dist:
+	$(RM) $(PACKAGE)-$(VERSION)
+	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		src/basename.c \
-		src/cat.c \
-		src/chgrp.c \
-		src/chmod.c \
-		src/chown.c \
-		src/cksum.c \
-		src/cmp.c \
-		src/cp.c \
-		src/dirname.c \
-		src/du.c \
-		src/echo.c \
-		src/false.c \
-		src/file.c \
-		src/head.c \
-		src/id.c \
-		src/kill.c \
-		src/link.c \
-		src/ln.c \
-		src/locale.c \
-		src/logname.c \
-		src/ls.c \
-		src/mkdir.c \
-		src/mkfifo.c \
-		src/nice.c \
-		src/pwd.c \
-		src/renice.c \
-		src/rm.c \
-		src/rmdir.c \
-		src/sleep.c \
-		src/strings.c \
-		src/test.c \
-		src/time.c \
-		src/touch.c \
-		src/true.c \
-		src/tty.c \
-		src/uname.c \
-		src/uniq.c \
-		src/unlink.c \
-		src/wc.c \
-		src/common.c \
-		src/project.conf \
-		src/Makefile \
-		project.conf \
-		Makefile
+		$(PACKAGE)-$(VERSION)/src/basename.c \
+		$(PACKAGE)-$(VERSION)/src/cat.c \
+		$(PACKAGE)-$(VERSION)/src/chgrp.c \
+		$(PACKAGE)-$(VERSION)/src/chmod.c \
+		$(PACKAGE)-$(VERSION)/src/chown.c \
+		$(PACKAGE)-$(VERSION)/src/cksum.c \
+		$(PACKAGE)-$(VERSION)/src/cmp.c \
+		$(PACKAGE)-$(VERSION)/src/cp.c \
+		$(PACKAGE)-$(VERSION)/src/dirname.c \
+		$(PACKAGE)-$(VERSION)/src/du.c \
+		$(PACKAGE)-$(VERSION)/src/echo.c \
+		$(PACKAGE)-$(VERSION)/src/false.c \
+		$(PACKAGE)-$(VERSION)/src/file.c \
+		$(PACKAGE)-$(VERSION)/src/head.c \
+		$(PACKAGE)-$(VERSION)/src/id.c \
+		$(PACKAGE)-$(VERSION)/src/kill.c \
+		$(PACKAGE)-$(VERSION)/src/link.c \
+		$(PACKAGE)-$(VERSION)/src/ln.c \
+		$(PACKAGE)-$(VERSION)/src/locale.c \
+		$(PACKAGE)-$(VERSION)/src/logname.c \
+		$(PACKAGE)-$(VERSION)/src/ls.c \
+		$(PACKAGE)-$(VERSION)/src/mkdir.c \
+		$(PACKAGE)-$(VERSION)/src/mkfifo.c \
+		$(PACKAGE)-$(VERSION)/src/nice.c \
+		$(PACKAGE)-$(VERSION)/src/pwd.c \
+		$(PACKAGE)-$(VERSION)/src/renice.c \
+		$(PACKAGE)-$(VERSION)/src/rm.c \
+		$(PACKAGE)-$(VERSION)/src/rmdir.c \
+		$(PACKAGE)-$(VERSION)/src/sleep.c \
+		$(PACKAGE)-$(VERSION)/src/strings.c \
+		$(PACKAGE)-$(VERSION)/src/test.c \
+		$(PACKAGE)-$(VERSION)/src/time.c \
+		$(PACKAGE)-$(VERSION)/src/touch.c \
+		$(PACKAGE)-$(VERSION)/src/true.c \
+		$(PACKAGE)-$(VERSION)/src/tty.c \
+		$(PACKAGE)-$(VERSION)/src/uname.c \
+		$(PACKAGE)-$(VERSION)/src/uniq.c \
+		$(PACKAGE)-$(VERSION)/src/unlink.c \
+		$(PACKAGE)-$(VERSION)/src/wc.c \
+		$(PACKAGE)-$(VERSION)/src/common.c \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile
+	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

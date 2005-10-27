@@ -1,6 +1,7 @@
 PACKAGE	= makepasswd
 VERSION	= 0.4.2
 SUBDIRS	= src
+LN	= ln -sf
 TAR	= tar cfzv
 
 
@@ -15,16 +16,19 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-dist: distclean
+dist:
+	$(RM) $(PACKAGE)-$(VERSION)
+	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		src/makepasswd.c \
-		src/md5.c \
-		src/global.h \
-		src/md5.h \
-		src/project.conf \
-		src/Makefile \
-		project.conf \
-		Makefile
+		$(PACKAGE)-$(VERSION)/src/makepasswd.c \
+		$(PACKAGE)-$(VERSION)/src/md5.c \
+		$(PACKAGE)-$(VERSION)/src/global.h \
+		$(PACKAGE)-$(VERSION)/src/md5.h \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile
+	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

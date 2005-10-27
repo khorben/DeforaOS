@@ -1,6 +1,7 @@
 PACKAGE	= GEDI
 VERSION	= 0.0.0
 SUBDIRS	= src
+LN	= ln -sf
 TAR	= tar cfzv
 
 
@@ -15,17 +16,20 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-dist: distclean
+dist:
+	$(RM) $(PACKAGE)-$(VERSION)
+	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		src/gedi.c \
-		src/main.c \
-		src/project.c \
-		src/gedi.h \
-		src/project.h \
-		src/project.conf \
-		src/Makefile \
-		project.conf \
-		Makefile
+		$(PACKAGE)-$(VERSION)/src/gedi.c \
+		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/project.c \
+		$(PACKAGE)-$(VERSION)/src/gedi.h \
+		$(PACKAGE)-$(VERSION)/src/project.h \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile
+	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

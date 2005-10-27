@@ -1,6 +1,7 @@
 PACKAGE	= sh
 VERSION	= 0.0.0
 SUBDIRS	= src
+LN	= ln -sf
 TAR	= tar cfzv
 
 
@@ -15,24 +16,27 @@ clean:
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
-dist: distclean
+dist:
+	$(RM) $(PACKAGE)-$(VERSION)
+	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		src/token.c \
-		src/scanner.c \
-		src/parser.c \
-		src/builtin.c \
-		src/job.c \
-		src/sh.c \
-		src/builtin.h \
-		src/job.h \
-		src/parser.h \
-		src/scanner.h \
-		src/sh.h \
-		src/token.h \
-		src/project.conf \
-		src/Makefile \
-		project.conf \
-		Makefile
+		$(PACKAGE)-$(VERSION)/src/token.c \
+		$(PACKAGE)-$(VERSION)/src/scanner.c \
+		$(PACKAGE)-$(VERSION)/src/parser.c \
+		$(PACKAGE)-$(VERSION)/src/builtin.c \
+		$(PACKAGE)-$(VERSION)/src/job.c \
+		$(PACKAGE)-$(VERSION)/src/sh.c \
+		$(PACKAGE)-$(VERSION)/src/builtin.h \
+		$(PACKAGE)-$(VERSION)/src/job.h \
+		$(PACKAGE)-$(VERSION)/src/parser.h \
+		$(PACKAGE)-$(VERSION)/src/scanner.h \
+		$(PACKAGE)-$(VERSION)/src/sh.h \
+		$(PACKAGE)-$(VERSION)/src/token.h \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile
+	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
