@@ -4,6 +4,7 @@
 
 
 $title = 'Search';
+$admin = 0;
 $list = 1;
 global $lang;
 if($lang == 'de')

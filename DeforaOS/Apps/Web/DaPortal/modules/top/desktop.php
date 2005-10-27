@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Top links';
+$admin = 1;
 $list = 0;
 
 

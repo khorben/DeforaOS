@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Monitoring';
+$admin = 1;
 $list = 1;
 $actions = array('host_list' => 'Hosts');
 

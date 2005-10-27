@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Explorer';
+$admin = 0;
 $list = 0;
 
 

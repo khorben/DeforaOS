@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Menu generation';
+$admin = 0;
 $list = 0;
 
 

@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = NEWS;
+$admin = 1;
 $list = 1;
 if($user_id)
 	$actions = array('submit' => 'Submit');

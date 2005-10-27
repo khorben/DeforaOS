@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Administration';
+$admin = 1;
 $list = 0;
 global $user_id;
 require_once('system/user.php');

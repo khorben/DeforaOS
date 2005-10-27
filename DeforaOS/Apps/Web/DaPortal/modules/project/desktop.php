@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Projects';
+$admin = 1;
 $list = 1;
 $actions = array('download' => 'Downloads',
 		'installer' => 'Installer',

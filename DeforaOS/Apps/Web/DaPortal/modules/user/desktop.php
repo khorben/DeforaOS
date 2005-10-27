@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Users';
+$admin = 1;
 $list = 1;
 global $user_id;
 if($user_id != 0)
