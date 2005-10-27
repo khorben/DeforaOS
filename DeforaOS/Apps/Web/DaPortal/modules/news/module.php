@@ -79,6 +79,10 @@ function news_admin($args)
 		$res[$i]['icon'] = 'modules/news/icon.png';
 		$res[$i]['thumbnail'] = 'modules/news/icon.png';
 		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['username'] = '<a href="index.php?module=user&id='
+				.$res[$i]['user_id'].'">'
+				._html_safe($res[$i]['username'])
+				.'</a>';
 		$res[$i]['enabled'] = $res[$i]['enabled'] == 't' ?
 			'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
