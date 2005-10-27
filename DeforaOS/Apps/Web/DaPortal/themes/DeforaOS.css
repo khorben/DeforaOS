@@ -322,8 +322,12 @@ table.bordered th {
 	padding-right:			10px;
 }
 
-.news .author, .news .date {
+.news .author, .news .date, .news .edit {
 	display:			inline;
+}
+
+.news .edit {
+	font-style:			italic;
 }
 
 .news .content {
