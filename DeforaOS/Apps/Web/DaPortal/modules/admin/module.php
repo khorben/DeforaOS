@@ -22,6 +22,16 @@ if($lang == 'fr')
 _lang($text);
 
 
+function admin_admin($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	include('admin.tpl');
+}
+
+
 /* config */
 function admin_config($args)
 {
@@ -188,6 +198,16 @@ function admin_default()
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
+	$modules = _sql_array('SELECT module_id, name FROM daportal_module'
+			.' ORDER BY NAME ASC;');
+	for($i = 0, $cnt = count($modules); $i < $cnt; $i++)
+	{
+		$admin = 0;
+		$title = '';
+		@include('modules/'.$modules[$i]['name'].'/desktop.php');
+		$modules[$i]['admin'] = $admin;
+		$modules[$i]['title'] = $title;
+	}
 	include('default.tpl');
 }
 
