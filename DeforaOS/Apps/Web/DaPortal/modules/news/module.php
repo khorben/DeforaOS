@@ -43,7 +43,68 @@ function news_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/news/icon.png" alt=""/> '
-			.NEWS_ADMINISTRATION.'</h1>'."\n");
+		.NEWS_ADMINISTRATION.'</h1>'."\n");
+	switch($args['sort'])
+	{
+		case 'username':
+			$order = 'username';
+			break;
+		case 'enabled':
+			$order = 'enabled';
+			break;
+		case 'name':
+			$order = 'title';
+			break;
+		default:
+		case 'date':
+			$order = 'timestamp';
+			break;
+	}
+	$res = _sql_array('SELECT content_id AS id, timestamp'
+		.', daportal_content.enabled, title, content'
+		.', daportal_content.user_id, username'
+		.' FROM daportal_content, daportal_user'
+		.', daportal_module'
+		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		." AND daportal_module.name='news'"
+		.' AND daportal_module.module_id'
+		.'=daportal_content.module_id'
+		.' ORDER BY '.$order.' DESC;');
+	if(!is_array($res))
+		return _error('Unable to list news');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['module'] = 'news';
+		$res[$i]['action'] = 'modify';
+		$res[$i]['icon'] = 'modules/news/icon.png';
+		$res[$i]['thumbnail'] = 'modules/news/icon.png';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['enabled'] = $res[$i]['enabled'] == 't' ?
+			'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+				.$res[$i]['enabled'].'" alt="'
+				.$res[$i]['enabled'].'" title="'
+				.($res[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED)
+				.'"/>';
+		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
+						$res[$i]['timestamp'], 0, 19)));
+	}
+	$toolbar = array();
+	$toolbar[] = array('icon' => 'modules/news/icon.png',
+			'title' => 'Submit news',
+			'link' => 'index.php?module=news&action=submit');
+	_module('explorer', 'browse_trusted', array(
+				'class' => array('username' => AUTHOR,
+					'enabled' => ENABLED,
+					'date' => DATE),
+				'module' => 'news',
+				'action' => 'admin',
+				'sort' => isset($args['sort']) ? $args['sort']
+						: 'date',
+				'view' => 'details',
+				'toolbar' => $toolbar,
+				'entries' => $res));
 }
 
 
