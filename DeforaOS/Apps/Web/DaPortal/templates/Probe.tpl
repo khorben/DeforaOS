@@ -8,4 +8,5 @@
 <? if(strlen($module)) _module(); else _module('probe'); ?>
 <? _debug(); ?>
 	</div>
+	<div style="clear: both"></div>
 </div>
