@@ -18,10 +18,10 @@ $text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
 $text['PROJECT'] = 'Project';
+$text['PROJECT_LIST'] = 'Project list';
 $text['PROJECT_NAME'] = 'Project name';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
-$text['PROJECTS_LIST'] = 'Project list';
 $text['STATE'] = 'State';
 $text['TIMELINE'] = 'Timeline';
 global $lang;
@@ -31,8 +31,8 @@ if($lang == 'de')
 	$text['NEW_PROJECT'] = 'Neues projekt';
 	$text['PRIORITY'] = 'Priorität';
 	$text['PROJECT'] = 'Projekt';
+	$text['PROJECT_LIST'] = 'Projektliste';
 	$text['PROJECTS'] = 'Projekte';
-	$text['PROJECTS_LIST'] = 'Projektliste';
 	$text['STATE'] = 'Stand';
 	$text['TIMELINE'] = 'Fortschritt';
 }
@@ -45,10 +45,10 @@ else if($lang == 'fr')
 	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
 	$text['PRIORITY'] = 'Priorité';
 	$text['PROJECT'] = 'Projet';
+	$text['PROJECT_LIST'] = 'Liste des projets';
 	$text['PROJECT_NAME'] = 'Nom du projet';
 	$text['PROJECTS'] = 'Projets';
 	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
-	$text['PROJECTS_LIST'] = 'Liste des projets';
 	$text['STATE'] = 'Etat';
 	$text['TIMELINE'] = 'Progression';
 }
@@ -73,7 +73,7 @@ function _project_name($id)
 
 function project_admin($args)
 {
-	global $user_id;
+	global $user_id, $module_id;
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
@@ -83,6 +83,18 @@ function project_admin($args)
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
 			._html_safe(PROJECTS_ADMINISTRATION)
 			.'</h1>'."\n");
+	print('<h2><img src="modules/project/icon.png" alt=""/> '
+			.'Configuration</h2>'."\n");
+	$configs = _sql_array('SELECT daportal_config.name AS name, value'
+			.' FROM daportal_config'
+			." WHERE daportal_config.module_id='".$module_id."'"
+			.' ORDER BY name ASC;');
+	$module = 'project';
+	$action = 'config_update';
+	include('system/config.tpl');
+	print('<h2><img src="modules/project/icon.png" alt=""/> '
+			._html_safe(PROJECT_LIST)
+			.'</h2>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin, daportal_content.enabled'
 			.', daportal_content.user_id AS user_id'
@@ -109,8 +121,8 @@ function project_admin($args)
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == 't')
 			? 'enabled' : 'disabled';
-		$projects[$i]['enabled'] = '<img src="modules/admin/'
-			.$projects[$i]['enabled'].'" alt="'
+		$projects[$i]['enabled'] = '<img src="icons/16x16/'
+			.$projects[$i]['enabled'].'.png" alt="'
 			.$projects[$i]['enabled'].'"/>';
 	}
 	$toolbar = array();
@@ -629,6 +641,26 @@ function project_bug_new($args)
 }
 
 
+function project_config_update($args)
+{
+	global $user_id, $module_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('system/config.php');
+	$keys = array_keys($args);
+	foreach($keys as $k)
+	{
+		if(!ereg('^([a-zA-Z]+)_([a-zA-Z_]+)$', $k, $regs))
+			continue;
+		_config_set($regs[1], $regs[2], $args[$k], 0);
+	}
+	header('Location: index.php?module=project&action=admin');
+	exit(0);
+}
+
+
 function project_default($args)
 {
 	if(isset($args['id']))
@@ -700,7 +732,7 @@ function project_installer($args)
 
 function project_list($args)
 {
-	$title = PROJECTS_LIST;
+	$title = PROJECT_LIST;
 	$where = '';
 	if($args['action'] == 'bug_new')
 	{
@@ -803,6 +835,8 @@ function project_system($args)
 
 	$title.=' - Projects';
 	if($args['action'] == 'browse' && $args['download'] == 1)
+		$html = 0;
+	else if($args['action'] == 'config_update')
 		$html = 0;
 }
 
