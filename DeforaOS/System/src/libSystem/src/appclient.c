@@ -195,6 +195,7 @@ static uint32_t _connect_addr(char * service)
 	appserver = getenv(env);
 	free(env);
 	if(appserver == NULL || (he = gethostbyname(appserver)) == NULL)
+		/* FIXME this is an error case */
 		return htonl(INADDR_LOOPBACK);
 	return *((uint32_t*)(he->h_addr));
 }
