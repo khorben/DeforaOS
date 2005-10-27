@@ -652,9 +652,9 @@ function project_config_update($args)
 	$keys = array_keys($args);
 	foreach($keys as $k)
 	{
-		if(!ereg('^([a-zA-Z]+)_([a-zA-Z_]+)$', $k, $regs))
+		if(!ereg('^project_([a-zA-Z_]+)$', $k, $regs))
 			continue;
-		_config_set($regs[1], $regs[2], $args[$k], 0);
+		_config_set('project', $regs[1], $args[$k], 0);
 	}
 	header('Location: index.php?module=project&action=admin');
 	exit(0);
