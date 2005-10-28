@@ -65,6 +65,7 @@ CREATE TABLE daportal_content (
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
+INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 
 /* module: top */
