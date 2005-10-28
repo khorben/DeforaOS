@@ -35,7 +35,7 @@ function probe_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => 'New host',
-			'icon' => 'modules/probe/host.png',
+			'icon' => 'modules/probe/icon.png',
 			'link' => 'index.php?module=probe&action=host_new');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE,
