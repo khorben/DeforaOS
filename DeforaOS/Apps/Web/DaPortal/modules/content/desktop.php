@@ -10,7 +10,6 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 $title = 'Contents';
 $admin = 1;
-$list = 1;
-$actions = array('search' => SEARCH);
+$list = 0;
 
 ?>
