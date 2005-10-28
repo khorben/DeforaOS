@@ -7,10 +7,6 @@
 			<div class="name"><a href="index.php?module=admin&action=config">Configuration</a></div>
 		</div>
 		<div class="entry">
-			<div class="thumbnail"><img src="modules/admin/content.png" alt=""/></div>
-			<div class="name"><a href="index.php?module=admin&action=content">Contents</a></div>
-		</div>
-		<div class="entry">
 			<div class="thumbnail"><img src="modules/admin/icon.png" alt=""/></div>
 			<div class="name"><a href="index.php?module=admin&action=module">Modules</a></div>
 		</div>
