@@ -75,7 +75,9 @@ function news_admin($args)
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'news';
+		$res[$i]['apply_module'] = 'news';
 		$res[$i]['action'] = 'modify';
+		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['icon'] = 'modules/news/icon.png';
 		$res[$i]['thumbnail'] = 'modules/news/icon.png';
 		$res[$i]['name'] = $res[$i]['title'];
@@ -98,6 +100,13 @@ function news_admin($args)
 	$toolbar[] = array('icon' => 'modules/news/icon.png',
 			'title' => 'Submit news',
 			'link' => 'index.php?module=news&action=submit');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => DISABLE,
+			'icon' => 'icons/16x16/disabled.png',
+			'action' => 'disable');
+	$toolbar[] = array('title' => ENABLE,
+			'icon' => 'icons/16x16/enabled.png',
+			'action' => 'enable');
 	_module('explorer', 'browse_trusted', array(
 				'class' => array('username' => AUTHOR,
 					'enabled' => ENABLED,
@@ -120,6 +129,12 @@ function news_default($args)
 }
 
 
+function news_disable($args)
+{
+	_module('content', 'disable', array('id' => $args['id']));
+}
+
+
 function news_display($args)
 {
 	require_once('system/content.php');
@@ -135,6 +150,12 @@ function news_display($args)
 	$news['date'] = strftime(DATE_FORMAT,
 			strtotime(substr($news['timestamp'], 0, 19)));
 	include('news_display.tpl');
+}
+
+
+function news_enable($args)
+{
+	_module('content', 'enable', array('id' => $args['id']));
 }
 
 
