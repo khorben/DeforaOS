@@ -3,7 +3,8 @@
 <?
 $graphs = array('uptime' => 'Uptime', 'load' => 'Load average',
 		'ram' => 'Memory usage', 'swap' => 'Swap usage',
-		'users' => 'Logged users', 'procs' => 'Process count');
+		'users' => 'Logged users', 'procs' => 'Process count',
+		'eth0' => 'Network traffic');
 $times = array('hour', 'day', 'week');
 ?>
 <div class="toolbar">
@@ -25,9 +26,13 @@ $times = array('hour', 'day', 'week');
 <? $keys = array_keys($graphs); for($i = 0, $cnt = count($keys); $i < $cnt; $i++) { ?>
 	<tr>
 		<td><h3><? echo _html_safe($graphs[$keys[$i]]); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($keys[$i]); ?>"><img src="<? echo _html_safe($host['hostname'].'/'.$keys[$i]); ?>-hour.png" alt=""/></a></td>
-<? $i++; if($i == $cnt) break; ?>
+<? $i++; if($i == $cnt) { ?>
+		<td></td>
+	</tr>
+<? break; } else { ?>
 		<td><h3><? echo _html_safe($graphs[$keys[$i]]); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($keys[$i]); ?>"><img src="<? echo _html_safe($host['hostname'].'/'.$keys[$i]); ?>-hour.png" alt=""/></a></td>
 	</tr>
+<? } ?>
 <? } ?>
 <? } ?>
 </table>
