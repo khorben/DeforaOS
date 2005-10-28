@@ -9,7 +9,7 @@
 		</div>
 <? } ?>
 		<div class="entry">
-			<div class="thumbnail"><img src="modules/admin/content.png" alt=""/></div>
+			<div class="thumbnail"><img src="modules/content/icon.png" alt=""/></div>
 			<div class="name"><a href="index.php?module=user&amp;id=<? echo _html_safe($user_id); ?>">My Contents</a></div>
 		</div>
 		<div class="entry">
