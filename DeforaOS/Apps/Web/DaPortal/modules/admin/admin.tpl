@@ -12,7 +12,7 @@
 		</div>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/admin/icon.png" alt=""/></div>
-			<div class="name"><a href="index.php?module=admin&action=content">Sites</a></div>
+			<div class="name"><a href="index.php?module=admin&action=sites">Sites</a></div>
 		</div>
 	</div>
 	<div style="clear: left">&nbsp;</div>
