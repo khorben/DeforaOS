@@ -41,7 +41,7 @@ CREATE TABLE daportal_user (
 	PRIMARY KEY (user_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
-INSERT INTO daportal_user (user_id, username, email) VALUES ('0', 'Anonymous', '');
+INSERT INTO daportal_user (user_id, username, password, email) VALUES ('0', 'Anonymous', '', '');
 INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'username@domain.tld');
 
 
@@ -66,6 +66,16 @@ CREATE TABLE daportal_content (
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
+
+
+/* module: comment */
+CREATE TABLE daportal_comment (
+	content_id SERIAL UNIQUE,
+	parent SERIAL,
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
 
 
 /* module: top */
