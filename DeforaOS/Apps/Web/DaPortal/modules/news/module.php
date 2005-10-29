@@ -88,13 +88,15 @@ function news_admin($args)
 		$res[$i]['enabled'] = $res[$i]['enabled'] == 't' ?
 			'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
-				.$res[$i]['enabled'].'" alt="'
+				.$res[$i]['enabled'].'.png" alt="'
 				.$res[$i]['enabled'].'" title="'
 				.($res[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED)
 				.'"/>';
-		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
-						$res[$i]['timestamp'], 0, 19)));
+		$res[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
+					strtotime(substr(
+							$res[$i]['timestamp'],
+							0, 19))));
 	}
 	$toolbar = array();
 	$toolbar[] = array('icon' => 'modules/news/icon.png',
@@ -150,6 +152,8 @@ function news_display($args)
 	$news['date'] = strftime(DATE_FORMAT,
 			strtotime(substr($news['timestamp'], 0, 19)));
 	include('news_display.tpl');
+	if(_module_id('comment'))
+		_module('comment', 'childs', array('id' => $news['id']));
 }
 
 
@@ -237,6 +241,7 @@ function news_submit($news)
 {
 	global $user_id, $user_name;
 
+	//FIXME tweakable?
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	if(isset($news['preview']))
