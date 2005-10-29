@@ -3,6 +3,8 @@
 //TODO:
 //- enable/disable anonymous comments
 //- enable/disable comments per content
+//- max nested comments
+//- fix comments recursion issues
 
 
 
@@ -39,6 +41,7 @@ function comment_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
 		.COMMENT_ADMINISTRATION.'</h1>'."\n");
+	//FIXME add username
 	$comments = _sql_array('SELECT daportal_comment.content_id AS id'
 			.', title AS name, enabled, timestamp'
 			.' FROM daportal_comment, daportal_content'
@@ -50,8 +53,9 @@ function comment_admin($args)
 	for($i = 0, $cnt = count($comments); $i < $cnt; $i++)
 	{
 		$comments[$i]['module'] = 'content';
+		$comments[$i]['apply_module'] = 'content';
 		$comments[$i]['action'] = 'modify';
-		$comments[$i]['apply_id'] = $comment[$i]['id'];
+		$comments[$i]['apply_id'] = $comments[$i]['id'];
 		$comments[$i]['icon'] = 'modules/comment/icon.png';
 		$comments[$i]['thumbnail'] = 'modules/comment/icon.png';
 		$comments[$i]['enabled'] = $comments[$i]['enabled'] == 't' ?
@@ -63,10 +67,20 @@ function comment_admin($args)
 				strtotime(substr($comments[$i]['timestamp'], 0,
 						19))));
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => DISABLE,
+			'icon' => 'icons/16x16/disabled.png',
+			'action' => 'disable');
+	$toolbar[] = array('title' => ENABLE,
+			'icon' => 'icons/16x16/enabled.png',
+			'action' => 'enable');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => ENABLED, 'date' => DATE),
 			'entries' => $comments,
-			'view' => 'details'));
+			'toolbar' => $toolbar,
+			'view' => 'details',
+			'module' => 'comment',
+			'action' => 'admin'));
 }
 
 
