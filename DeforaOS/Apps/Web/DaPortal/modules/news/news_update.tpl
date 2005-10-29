@@ -14,7 +14,7 @@
 		</tr>
 		<tr>
 			<td class="field">Content:</td>
-			<td><textarea name="content" cols="80" rows="20"><?
+			<td><textarea name="content" cols="80" rows="15"><?
 if(isset($news['content'])) print(_html_safe($news['content']));
 			?></textarea></td>
 		</tr>
