@@ -39,12 +39,47 @@ function comment_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
 		.COMMENT_ADMINISTRATION.'</h1>'."\n");
-	//FIXME
+	$comments = _sql_array('SELECT daportal_comment.content_id AS id'
+			.', title AS name, enabled, timestamp'
+			.' FROM daportal_comment, daportal_content'
+			.' WHERE daportal_comment.content_id'
+			.'=daportal_content.content_id'
+			.' ORDER BY timestamp DESC;');
+	if(!is_array($comments))
+		return _error('Could not list comments');
+	for($i = 0, $cnt = count($comments); $i < $cnt; $i++)
+	{
+		$comments[$i]['module'] = 'content';
+		$comments[$i]['action'] = 'modify';
+		$comments[$i]['apply_id'] = $comment[$i]['id'];
+		$comments[$i]['icon'] = 'modules/comment/icon.png';
+		$comments[$i]['thumbnail'] = 'modules/comment/icon.png';
+		$comments[$i]['enabled'] = $comments[$i]['enabled'] == 't' ?
+			'enabled' : 'disabled';
+		$comments[$i]['enabled'] = '<img src="icons/16x16/'
+				.$comments[$i]['enabled'].'.png" alt="'
+				.$comments[$i]['enabled'].'"/>';
+		$comments[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
+				strtotime(substr($comments[$i]['timestamp'], 0,
+						19))));
+	}
+	_module('explorer', 'browse_trusted', array(
+			'class' => array('enabled' => ENABLED, 'date' => DATE),
+			'entries' => $comments,
+			'view' => 'details'));
 }
 
 
 function comment_childs($args)
 {
+	global $user_id;
+
+	require_once('system/user.php');
+	if(_user_admin($user_id))
+		$where = '';
+	else
+		$where = " AND daportal_content.enabled='t'"
+			." AND child.enabled='t'";
 	$parent = $args['id'];
 	//FIXME
 	$comments = _sql_array('SELECT child.content_id AS id'
@@ -53,7 +88,9 @@ function comment_childs($args)
 			.' WHERE daportal_comment.parent'
 			.'=daportal_content.content_id'
 			.' AND daportal_comment.content_id=child.content_id'
-			." AND daportal_content.content_id='$parent';");
+			." AND daportal_content.content_id='$parent'"
+			.$where
+			.' ORDER BY child.timestamp ASC;');
 	if(!is_array($comments))
 	{
 		_error('Could not display comments');
@@ -68,7 +105,11 @@ function comment_count($args)
 {
 	//FIXME does not recurse
 	return _sql_single('SELECT COUNT(*) FROM daportal_comment'
-			." WHERE parent='".$args['id']."';");
+			.', daportal_content'
+			.' WHERE daportal_comment.content_id'
+			.'=daportal_content.content_id'
+			." AND enabled='t'"
+			." AND parent='".$args['id']."';");
 }
 
 
@@ -82,15 +123,24 @@ function comment_default($args)
 
 function comment_display($args)
 {
+	global $user_id;
+
+	require_once('system/user.php');
+	if(_user_admin($user_id))
+		$where = '';
+	else
+		$where = " AND daportal_content.enabled='t'";
 	$comment = _sql_array('SELECT daportal_comment.content_id AS id'
-			.', timestamp, title'
+			.', daportal_content.enabled, timestamp, title'
 			.', content, daportal_content.user_id, username'
 			.' FROM daportal_comment, daportal_content'
 			.', daportal_user'
 			.' WHERE daportal_comment.content_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_comment.content_id='".$args['id']."';");
+			." AND daportal_comment.content_id='".$args['id']."'"
+			.$where
+			.' ORDER BY timestamp ASC;');
 	if(!is_array($comment) || count($comment) != 1)
 		return _error('Could not display comment');
 	$comment = $comment[0];
@@ -132,7 +182,8 @@ function comment_new($args)
 	$parent = $args['parent'];
 	$comment['title'] = 'Re: '._sql_single('SELECT title'
 			.' FROM daportal_content'
-			." WHERE content_id='$parent';");
+			." WHERE enabled='t'"
+			." AND content_id='$parent';");
 	include('update.tpl');
 }
 

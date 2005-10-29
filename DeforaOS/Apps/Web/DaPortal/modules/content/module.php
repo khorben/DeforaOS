@@ -3,20 +3,6 @@
 
 
 
-function _content_modify($id)
-{
-	if(!is_numeric($id))
-		return _error('Invalid content');
-	$content = _sql_array('SELECT timestamp, title, content, enabled'
-			.' FROM daportal_content'
-			." WHERE content_id='$id';");
-	if(!is_array($content) || count($content) != 1)
-		return _error('Invalid content');
-	$content = $content[0];
-	include('update.tpl');
-}
-
-
 function content_admin($args)
 {
 	global $user_id;
@@ -25,7 +11,7 @@ function content_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
-		return _content_modify($args['id']);
+		return content_modify(array('id' => $args['id']));
 	print('<h1><img src="modules/content/icon.png" alt=""/> '
 			.'Contents administration</h1>'."\n");
 	$contents = _sql_array('SELECT content_id AS id, timestamp AS date'
@@ -84,6 +70,30 @@ function content_admin($args)
 }
 
 
+function content_default($args)
+{
+	global $user_id;
+
+	if(!isset($args['id']))
+		return include('default.tpl');
+	require_once('system/user.php');
+	if(_user_admin($user_id))
+		$where = '';
+	else
+		$where = " AND daportal_content.enabled='t'";
+	$content = _sql_array('SELECT name'
+			.' FROM daportal_content, daportal_module'
+			.' WHERE daportal_content'
+			.'.module_id=daportal_module.module_id'
+			.$where
+			." AND content_id='".$args['id']."';");
+	if(!is_array($content) || count($content) != 1)
+		return _error('Could not display content');
+	$content = $content[0];
+	_module($content['name'], 'default', array('id' => $args['id']));
+}
+
+
 function content_delete($args)
 {
 	global $user_id;
@@ -107,6 +117,8 @@ function content_disable($args)
 	if(_sql_query("UPDATE daportal_content SET enabled='f'"
 			." WHERE content_id='".$args['id']."';") == FALSE)
 		_error('Unable to update content');
+	if(isset($args['show']))
+		content_default(array('id' => $args['id']));
 }
 
 
@@ -120,6 +132,28 @@ function content_enable($args)
 	if(_sql_query("UPDATE daportal_content SET enabled='t'"
 			." WHERE content_id='".$args['id']."';") == FALSE)
 		_error('Unable to update content');
+	if(isset($args['show']))
+		content_default(array('id' => $args['id']));
+}
+
+
+function content_modify($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$id = $args['id'];
+	if(!is_numeric($id))
+		return _error('Invalid content');
+	$content = _sql_array('SELECT timestamp, title, content, enabled'
+			.' FROM daportal_content'
+			." WHERE content_id='$id';");
+	if(!is_array($content) || count($content) != 1)
+		return _error('Invalid content');
+	$content = $content[0];
+	include('update.tpl');
 }
 
 
@@ -137,31 +171,7 @@ function content_update($args)
 			.", enabled='".$args['enabled']."'"
 			." WHERE content_id='".$args['id']."';") == FALSE)
 		_error('Unable to update content');
-	_content_modify($args['id']);
-}
-
-
-function content_default($args)
-{
-	global $user_id;
-
-	if(!isset($args['id']))
-		return include('default.tpl');
-	require_once('system/user.php');
-	if(_user_admin($user_id))
-		$where = '';
-	else
-		$where = " AND enabled='t'";
-	$content = _sql_array('SELECT name'
-			.' FROM daportal_content, daportal_module'
-			.' WHERE daportal_content'
-			.'.module_id=daportal_module.module_id'
-			.$where
-			." AND content_id='".$args['id']."';");
-	if(!is_array($content) || count($content) != 1)
-		return _error('Could not display content');
-	$content = $content[0];
-	_module($content['name'], 'default', array('id' => $args['id']));
+	content_modify(array('id' => $args['id']));
 }
 
 ?>

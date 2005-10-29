@@ -96,6 +96,31 @@ table.bordered th {
 	border:				1px solid #959595;
 }
 
+.comment .author, .comment .date {
+	display:			inline;
+}
+
+.comment .comment {
+	margin-left:			15px;
+}
+
+.comment .container {
+	background-color:		#400000;
+	padding:			5px;
+}
+
+.comment .content {
+	padding:			5px;
+}
+
+.comment .status {
+	background-color:		#400000;
+}
+
+.comment .title {
+	background-color:		#400000;
+}
+
 .container {
 	background-color:		#000000;
 	border:				1px solid #959595;
@@ -372,6 +397,10 @@ table.bordered th {
 
 .search .entry .author, .search .entry .date {
 	display:			inline;
+}
+
+.status {
+	background-color:		#790000;
 }
 
 .style1 {
