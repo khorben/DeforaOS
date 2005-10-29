@@ -19,6 +19,7 @@ $text['COMMENT_BY'] = 'Comment by';
 $text['COMMENT_ON'] = 'on';
 $text['COMMENT_PREVIEW'] = 'Comment preview';
 $text['COMMENT_S'] = 'comment(s)';
+$text['COMMENTS_BY'] = 'Comments by';
 $text['NEW_COMMENT'] = 'New comment';
 global $lang;
 if($lang == 'fr')
@@ -185,6 +186,47 @@ function _comment_insert($comment)
 		return 0;
 	}
 	return $comment['parent'];
+}
+
+
+function comment_list($args)
+{
+	//FIXME cleanup
+	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
+			.' FROM daportal_user'
+			." WHERE user_id='".$args['user_id']."';")))
+		$where = " AND daportal_content.user_id='".$args['user_id']."'";
+	else
+		return _error('Could not list comments');
+	print('<h1><img src="modules/comment/icon.png" alt=""/> '.COMMENTS_BY
+			.' '._html_safe($username).'</h1>'."\n");
+	$comments = _sql_array('SELECT content_id AS id, timestamp'
+			.', title AS name, content, daportal_content.user_id'
+			.', username, daportal_module.name AS module'
+			.' FROM daportal_content, daportal_user'
+			.', daportal_module'
+			.' WHERE daportal_user.user_id=daportal_content.user_id'
+			." AND daportal_content.enabled='1'"
+			." AND daportal_module.name='comment'"
+			.' AND daportal_module.module_id'
+			.'=daportal_content.module_id'
+			.$where
+			.' ORDER BY timestamp DESC;');
+	if(!is_array($comments))
+		return _error('Could not list comments');
+	for($i = 0, $cnt = count($comments); $i < $cnt; $i++)
+	{
+		$comments[$i]['icon'] = 'modules/comment/icon.png';
+		$comments[$i]['thumbnail'] = 'modules/comment/icon.png';
+		$comments[$i]['action'] = 'display';
+		$comments[$i]['date'] = strftime('%d/%m/%y %H:%M',
+				strtotime(substr($comments[$i]['timestamp'], 0,
+						19)));
+	}
+	_module('explorer', 'browse', array(
+			'view' => 'details',
+			'class' => array('date' => DATE),
+			'entries' => $comments));
 }
 
 
