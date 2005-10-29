@@ -12,11 +12,15 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //	0	is not admin
 function _user_admin($id)
 {
+	static $cache = array();
+
 	if(!is_numeric($id))
 		return 0;
-	/* FIXME cache results? */
-	return _sql_single('SELECT admin FROM daportal_user'
+	if(array_key_exists($id, $cache))
+		return $cache[$id];
+	$cache[$id] = _sql_single('SELECT admin FROM daportal_user'
 			." WHERE user_id='$id' AND enabled='t';") == 't';
+	return $cache[$id];
 }
 
 
