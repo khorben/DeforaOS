@@ -94,8 +94,7 @@ function news_admin($args)
 						? ENABLED : DISABLED)
 				.'"/>';
 		$res[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
-					strtotime(substr(
-							$res[$i]['timestamp'],
+					strtotime(substr($res[$i]['timestamp'],
 							0, 19))));
 	}
 	$toolbar = array();
