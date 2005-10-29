@@ -8,7 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
 
-function _content_insert($title, $content, $enabled = '0')
+function _content_insert($title, $content, $enabled = 0)
 {
 	global $module_id, $user_id;
 
