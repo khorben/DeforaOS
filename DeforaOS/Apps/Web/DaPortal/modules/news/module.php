@@ -173,8 +173,8 @@ function news_list($args)
 		$title = NEWS_BY.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h1><img src="modules/news/icon.png" alt=""/> '.$title.'</h1>'
-			."\n");
+	print('<h1><img src="modules/news/icon.png" alt=""/> '
+			._html_safe($title).'</h1>'."\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp'
 			.', title, content, daportal_content.user_id, username'
 			.' FROM daportal_content, daportal_user'
