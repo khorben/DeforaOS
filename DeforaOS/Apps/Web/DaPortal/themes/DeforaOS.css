@@ -312,12 +312,17 @@ table.bordered th {
 }
 
 .news {
+	margin-top:			20px;
 	margin-bottom:			20px;
 }
 
 .news .title {
 	background-color:		#000000;
 	border-bottom:			solid 2px #790000;
+}
+
+.news .title img {
+	float:				right;
 }
 
 .news .title span {
