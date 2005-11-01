@@ -127,7 +127,7 @@ enum InterfaceInfo
 struct ifinfo
 {
 	char name[6];
-	int stats[IF_LAST+1];
+	unsigned int stats[IF_LAST+1];
 };
 
 #ifdef _GNU_SOURCE
@@ -192,7 +192,7 @@ static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 		q = &buf[i];
 		for(; buf[i] >= '0' && buf[i] <= '9'; i++);
 		buf[i] = '\0';
-		(*dev)[nb].stats[j++] = strtol(q, &q, 10);
+		(*dev)[nb].stats[j++] = strtoll(q, &q, 10);
 		if(*q != '\0')
 			return 1;
 	}
