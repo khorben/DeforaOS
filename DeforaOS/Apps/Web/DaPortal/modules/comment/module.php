@@ -246,12 +246,17 @@ function comment_new($args)
 
 function comment_submit($comment)
 {
+	global $user_id, $user_name;
+
 	if(isset($comment['preview']))
 	{
 		print('<h1><img src="modules/comment/icon.png" alt=""/> '
 				._html_safe(COMMENT_PREVIEW).'</h1>');
 		_module('content', 'default',
 				array('id' => $comment['parent']));
+		$comment['user_id'] = $user_id;
+		$comment['username'] = $user_name;
+		$comment['date'] = strftime('%d/%m/%y %H:%M');
 		include('display.tpl');
 		$parent = $comment['parent'];
 		return include('update.tpl');
