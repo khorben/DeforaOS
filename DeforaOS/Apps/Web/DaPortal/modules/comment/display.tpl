@@ -1,6 +1,6 @@
 <div class="comment">
 	<div class="container">
-		<div class="title"><a href="index.php?module=comment&amp;id=<? echo _html_safe($comment['id']); ?>"><? echo _html_safe($comment['title']); ?></a></div>
+		<div class="title"><? if(isset($comment['id'])) { ?><a href="index.php?module=comment&amp;id=<? echo _html_safe($comment['id']); ?>"><? echo _html_safe($comment['title']); ?></a><? } else { echo _html_safe($comment['title']); } ?></div>
 		<div class="author"><? echo _html_safe(COMMENT_BY); ?> <a href="index.php?module=user&amp;id=<? echo _html_safe($comment['user_id']); ?>"><? echo _html_safe($comment['username']); ?></a></div>
 		<div class="date"><? echo _html_safe(COMMENT_ON); ?> <? echo _html_safe($comment['date']); ?></div>
 		<div class="content"><? echo _html_pre($comment['content']); ?></div>
