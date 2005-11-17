@@ -55,7 +55,8 @@ static int _ar_do(Prefs * prefs, char const * archive, int filec,
 	int ret = 0;
 	FILE * fp;
 	struct ar_hdr hdr;
-	unsigned int i;
+	unsigned int h;
+	int i;
 	char * p;
 
 	if((fp = fopen(archive, "r")) == NULL)
@@ -74,14 +75,14 @@ static int _ar_do(Prefs * prefs, char const * archive, int filec,
 			ret = 1;
 			break;
 		}
-		for(i = 0, p = hdr.ar_name; i < sizeof(hdr.ar_name); i++)
-			if(p[i] == '/')
+		for(h = 0, p = hdr.ar_name; h < sizeof(hdr.ar_name); h++)
+			if(p[h] == '/')
 			{
-				p[i] = '\0';
+				p[h] = '\0';
 				break;
 			}
 		/* FIXME what if the string doesn't get terminated? */
-		if(i == 0)
+		if(h == 0)
 		{
 			if((ret = _do_seek_next(archive, fp, &hdr)) != 0)
 				break;
