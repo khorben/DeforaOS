@@ -46,8 +46,8 @@ function _module($module = '', $action = '', $args = FALSE)
 	_info('Module "'.$module_name.'", action "'.$action.'"');
 	$css = 'modules/'.$module_name.'/style.css';
 	if($action != 'system' && $html && file_exists($css))
-		print("\t\t\t".'<style type="text/css"><!-- @import url('
-				.$css.'); --></style>'."\n");
+		print('<style type="text/css"><!-- @import url("'.$css
+					.'"); --></style>'."\n");
 	return call_user_func_array($function, array($args));
 }
 
