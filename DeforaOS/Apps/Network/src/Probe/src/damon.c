@@ -23,35 +23,41 @@ typedef struct _Host
 
 
 /* DaMon */
-Event * event; /* FIXME */
+typedef struct _Hosts_Event
+{
+	Host * hosts;
+	Event * event;
+} Hosts_Event;
 static int _damon_error(char * message, int ret);
-static int _damon_refresh(Host * hosts);
+static int _damon_refresh(Hosts_Event * h_e);
 static int _damon(void)
 {
 	Host hosts[] = {
 		{ NULL, "pinge.lan.defora.org", "eth0" },
-		{ NULL, "rst.defora.org", "ppp0" },
+		{ NULL, "rst.defora.org", NULL },
 		{ NULL, "raq3.dmz.defora.org", "eth0" },
 		{ NULL, "raq4.dmz.defora.org", "eth0" },
 /*		{ NULL, "ss20.dmz.defora.org" }, */
 		{ NULL, NULL, NULL }
 	};
+	Hosts_Event h_e;
 	struct timeval tv;
 	int i;
 
-	if((event = event_new()) == NULL)
+	if((h_e.event = event_new()) == NULL)
 		return _damon_error("Event", 2);
-	_damon_refresh(hosts);
+	h_e.hosts = hosts;
+	_damon_refresh(&h_e);
 	tv.tv_sec = DAMON_REFRESH;
 	tv.tv_usec = 0;
-	event_register_timeout(event, tv,
-			(EventTimeoutFunc)_damon_refresh, hosts);
-	if(event_loop(event) != 0)
+	event_register_timeout(h_e.event, tv,
+			(EventTimeoutFunc)_damon_refresh, &h_e);
+	if(event_loop(h_e.event) != 0)
 		_damon_error("AppClient", 0);
 	for(i = 0; hosts[i].hostname != NULL; i++)
 		if(hosts[i].appclient != NULL)
 			appclient_delete(hosts[i].appclient);
-	event_delete(event);
+	event_delete(h_e.event);
 	return 2;
 }
 
@@ -62,21 +68,23 @@ static int _damon_error(char * message, int ret)
 	return ret;
 }
 
-static AppClient * _refresh_connect(Host * host);
+static AppClient * _refresh_connect(Host * host, Event * event);
 static int _rrd_update(char * file, int args_cnt, ...);
-static int _damon_refresh(Host * hosts)
+static int _damon_refresh(Hosts_Event * h_e)
 {
 	int i;
 	AppClient * ac = NULL;
 	char * rrd = NULL;
 	char * p;
 	int res[4];
+	Host * hosts = h_e->hosts;
 
 	fprintf(stderr, "%s", "_damon_refresh()\n");
 	for(i = 0; hosts[i].hostname != NULL; i++)
 	{
 		if((ac = hosts[i].appclient) == NULL)
-			if((ac = _refresh_connect(&hosts[i])) == NULL)
+			if((ac = _refresh_connect(&hosts[i], h_e->event))
+					== NULL)
 				continue;
 		if((p = realloc(rrd, string_length(hosts[i].hostname) + 12))
 				== NULL)
@@ -179,7 +187,7 @@ static int _damon_refresh(Host * hosts)
 	return 0;
 }
 
-static AppClient * _refresh_connect(Host * host)
+static AppClient * _refresh_connect(Host * host, Event * event)
 {
 	if(setenv("APPSERVER_Probe", host->hostname, 1) != 0)
 		return NULL;
