@@ -1,0 +1,140 @@
+body {
+	background-color:	#dcdad5;
+	color:			#000000;
+	font-family:		sans-serif;
+	font-size:		8pt;
+	margin:			0;
+	padding:		0;
+}
+
+a {
+	color:			#000000;
+	text-decoration:	none;
+}
+
+h1 {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	height:			48px;
+	margin:			0;
+	padding:		0;
+}
+
+h1 img {
+	float:			right;
+}
+
+img {
+	border-width:		0;
+	vertical-align:		middle;
+}
+
+
+/* classes */
+.hidden {
+	display:		none;
+}
+
+.explorer {
+	background-color:	#ffffff;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+}
+
+.explorer .entry .thumbnail {
+	text-align:		center;
+}
+
+.explorer .header div {
+	background-color:	#dcdad5;
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+}
+
+.explorer .listing_list .entry {
+	height:			1em;
+	min-height:		16px;
+	width:			200px;
+}
+
+.explorer .listing_thumbnails .entry {
+	width:			100px;
+}
+
+.explorer .selected {
+	background-color:	#4b6983;
+	color:			#ffffff;
+}
+
+.explorer .toolbar {
+	background-color:	#dcdad5;
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+}
+
+.main {
+	clear:			both;
+	padding-top:		4px;
+}
+
+.menu {
+	height:			10pt;
+	margin:			0;
+	padding:		0;
+}
+
+.menu ul {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-top:		solid 1px #ffffff;
+	list-style-type:	none;
+	margin:			0;
+	padding:		2px;
+}
+
+.menu ul li {
+	float:			left;
+	padding-left:		1em;
+	padding-right:		1em;
+}
+
+.menu ul li ul {
+	display:		none;
+	padding:		0;
+}
+
+.menu ul li:hover ul {
+	background-color:	#dcdad5;
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #000000;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	display:		block;
+	position:		absolute;
+}
+
+.menu ul li ul li {
+	float:			none;
+	border-left:		solid 1px #ffffff;
+	padding:		0;
+	padding-bottom:		1px;
+	padding-top:		1px;
+}
+
+.menu ul li ul li a {
+	display:		block;
+	padding-left:		20px;
+	padding-right:		10px;
+	padding-top:		1px;
+}
+
+.menu ul li ul li a:hover {
+	background-color:	#4b6983;
+	color:			#ffffff;
+}
