@@ -196,11 +196,6 @@ table.bordered th {
 	background-color:		#790000;
 }
 
-.explorer .toolbar img {
-	max-height:			16px;
-	max-width:			16px;
-}
-
 .explorer .toolbar .separator {
 	background-color:		#404040;
 	padding-left:			1px;

@@ -5,6 +5,8 @@
 /* explorer */
 .explorer .toolbar img {
 	padding:		2px;
+	max-height:		16px;
+	max-width:		16px;
 }
 
 .explorer .toolbar .separator {
