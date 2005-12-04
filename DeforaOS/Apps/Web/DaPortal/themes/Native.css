@@ -261,3 +261,25 @@ pre {
 	border-top:		solid 1px #000000;
 	margin:			1px;
 }
+
+.top {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	padding-bottom:		3px;
+	padding-top:		3px;
+}
+
+.top a {
+	padding:		3px;
+}
+
+.top a:hover {
+	background-color:	#eeebe7;
+	border-bottom:		solid 1px #afa699;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #afa699;
+	border-top:		solid 1px #ffffff;
+	padding:		2px;
+}
