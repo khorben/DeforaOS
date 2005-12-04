@@ -43,7 +43,11 @@ img {
 	border-right:		solid 1px #000000;
 }
 
-.explorer .entry .thumbnail {
+.explorer .entry .icon {
+	width:			20px;
+}
+
+.explorer .entry .icon, .entry .entry .thumbnail {
 	text-align:		center;
 }
 
@@ -53,6 +57,7 @@ img {
 	border-left:		solid 1px #ffffff;
 	border-right:		solid 1px #000000;
 	border-top:		solid 1px #ffffff;
+	padding-left:		2px;
 }
 
 .explorer .listing_list .entry {
@@ -82,6 +87,18 @@ img {
 	border-top:		solid 1px #ffffff;
 }
 
+.explorer .toolbar img {
+	border:			solid 1px #dcdad5;
+}
+
+.explorer .toolbar img:hover {
+	background-color:	#eeebe7;
+	border-bottom:		solid 1px #afa699;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #afa699;
+	border-top:		solid 1px #ffffff;
+}
+
 .explorer .toolbar .separator {
 	border-left:		solid 1px #9e9a91;
 	border-right:		solid 1px #ffffff;
@@ -90,6 +107,28 @@ img {
 .main {
 	border-top:		solid 1px #000000;
 	clear:			both;
+}
+
+.main .toolbar {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	padding-bottom:		3px;
+	padding-top:		3px;
+}
+
+.main .toolbar a {
+	padding:		3px;
+}
+
+.main .toolbar a:hover {
+	background-color:	#eeebe7;
+	border-bottom:		solid 1px #afa699;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #afa699;
+	border-top:		solid 1px #ffffff;
+	padding:		2px;
 }
 
 .menu {
