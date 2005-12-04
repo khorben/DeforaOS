@@ -24,6 +24,7 @@ h1 {
 
 h1 img {
 	float:			right;
+	padding-right:		2px;
 }
 
 img {
@@ -47,7 +48,7 @@ img {
 	width:			20px;
 }
 
-.explorer .entry .icon, .entry .entry .thumbnail {
+.explorer .entry .icon, .explorer .entry .thumbnail {
 	text-align:		center;
 }
 
