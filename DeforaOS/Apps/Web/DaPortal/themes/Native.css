@@ -84,11 +84,11 @@ img {
 }
 
 .main {
+	border-top:		solid 1px #000000;
 	clear:			both;
 }
 
 .menu {
-	height:			14pt;
 	margin:			0;
 	padding:		0;
 }
@@ -98,21 +98,20 @@ img {
 }
 
 .menu ul {
-	border-bottom:		solid 1px #000000;
 	border-left:		solid 1px #ffffff;
 	border-top:		solid 1px #ffffff;
 	list-style-type:	none;
 	margin:			0;
-	padding-top:		0;
+	padding:		0;
 }
 
 .menu ul li {
 	float:			left;
 	margin:			0;
-	margin-left:		4px;
-	margin-right:		4px;
 	margin-top:		1px;
 	padding:		2px;
+	padding-left:		4px;
+	padding-right:		4px;
 }
 
 .menu ul li:hover {
