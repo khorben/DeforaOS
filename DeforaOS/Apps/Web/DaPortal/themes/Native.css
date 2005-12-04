@@ -59,6 +59,17 @@ p {
 
 
 /* classes */
+.debug {
+	background-color:	#ffffff;
+	border-bottom:		solid 1px #ffffff;
+	border-left:		solid 1px #000000;
+	border-right:		solid 1px #ffffff;
+	border-top:		solid 1px #000000;
+	height:			10em;
+	overflow:		auto;
+	margin:			4px;
+}
+
 .hidden {
 	display:		none;
 }
@@ -232,4 +243,12 @@ p {
 .menu ul li:hover ul li a:hover {
 	background-color:	#4b6983;
 	color:			#ffffff;
+}
+
+.style1 {
+	border-bottom:		solid 1px #ffffff;
+	border-left:		solid 1px #000000;
+	border-right:		solid 1px #ffffff;
+	border-top:		solid 1px #000000;
+	margin:			1px;
 }
