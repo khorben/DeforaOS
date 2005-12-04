@@ -114,26 +114,10 @@ img {
 	padding-right:		4px;
 }
 
-.menu ul li:hover {
-	background-color:	#4b6983;
-	color:			#ffffff;
-}
-
 .menu ul li ul {
 	display:		none;
 	padding-top:		2px;
 	padding:		0;
-}
-
-.menu ul li:hover ul {
-	background-color:	#dcdad5;
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #000000;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
-	display:		block;
-	position:		absolute;
-	margin-left:		-3px;
 }
 
 .menu ul li ul li {
@@ -152,7 +136,31 @@ img {
 	padding-top:		1px;
 }
 
-.menu ul li ul li a:hover {
+.menu ul li:hover {
+	background-color:	#4b6983;
+	color:			#ffffff;
+}
+
+.menu ul li:hover a {
+	color:			#ffffff;
+}
+
+.menu ul li:hover ul {
+	background-color:	#dcdad5;
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #000000;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	display:		block;
+	position:		absolute;
+	margin-left:		-3px;
+}
+
+.menu ul li:hover ul li a {
+	color:			#000000;
+}
+
+.menu ul li:hover ul li a:hover {
 	background-color:	#4b6983;
 	color:			#ffffff;
 }
