@@ -413,7 +413,8 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
 		."&amp;file="._html_safe_link($filename)
 		."&amp;revision=$revision&amp;download=1";
-	print('<div><a href="'.$link.'">Download file</a></div>'."\n");
+	print('<div class="toolbar"><a href="'.$link.'">Download file</a></div>'
+			."\n");
 	if(strncmp('image/', $mime, 6) == 0)
 		print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
 	else
