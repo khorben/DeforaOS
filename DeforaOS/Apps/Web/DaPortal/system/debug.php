@@ -16,9 +16,9 @@ function _debug()
 
 	if(!$debug || !$html)
 		return;
-	print('<div class="debug">'."\n");
+	print('<div class="debug"><div class="system">'."\n");
 	print($debug_messages);
-	print('</div>'."\n");
+	print('</div></div>'."\n");
 }
 
 
@@ -32,8 +32,8 @@ function _debug_message($level, $message, $visible = 0)
 			.':</b> '.htmlspecialchars($message)."</div>\n";
 	if($visible && $html)
 		print('<div class="debug"><div class="visible error">'
-				.' <img src="images/'.$level.'.png"'
-				.' alt="error"/>'.htmlspecialchars($message)
+				.'<img src="images/'.$level.'.png"'
+				.' alt="error"/> '.htmlspecialchars($message)
 				."</div></div>\n");
 }
 
