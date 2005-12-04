@@ -11,7 +11,7 @@ $times = array('hour', 'day', 'week');
 	<a href="index.php?module=probe&amp;action=host_modify&amp;id=<? echo _html_safe($host['id']); ?>">Modify</a>
 	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>">Summary</a>
 <? $keys = array_keys($graphs); foreach($keys as $k) { ?>
-	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($k); ?>"><? echo _html_safe($graphs[$k]); ?></a>
+	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($k); ?>" title="<? echo _html_safe($graphs[$k]); ?>"><? echo _html_safe($graphs[$k]); ?></a>
 <? } ?>
 </div>
 <div class="comment"><? echo _html_safe($host['comment']); ?></div>
