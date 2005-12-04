@@ -287,7 +287,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 			'icon' => 'icons/16x16/forward.png',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Parent directory',
+	$toolbar[] = array('title' => 'Refresh',
 			'icon' => 'icons/16x16/refresh.png',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
