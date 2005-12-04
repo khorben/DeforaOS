@@ -19,6 +19,17 @@ function _config_get($module, $name)
 }
 
 
+function _config_list($module)
+{
+	if(!($module_id = _module_id($module)))
+		return FALSE;
+	return _sql_array('SELECT daportal_config.name AS name, value'
+			.' FROM daportal_config'
+			." WHERE daportal_config.module_id='".$module_id."'"
+			.' ORDER BY name ASC;');
+}
+
+
 function _config_set($module, $name, $value, $overwrite = FALSE)
 {
 	if(($module_id = _sql_single('SELECT daportal_config.module_id'
