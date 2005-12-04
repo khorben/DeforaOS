@@ -57,6 +57,15 @@ p {
 	padding:		4px;
 }
 
+pre {
+	background-color:	#ffffff;
+	border-bottom:		solid 1px #ffffff;
+	border-left:		solid 1px #000000;
+	border-right:		solid 1px #ffffff;
+	border-top:		solid 1px #000000;
+	margin:			4px;
+}
+
 
 /* classes */
 .debug {
