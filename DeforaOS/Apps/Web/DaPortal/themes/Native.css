@@ -17,7 +17,7 @@ h1 {
 	border-left:		solid 1px #ffffff;
 	border-right:		solid 1px #000000;
 	border-top:		solid 1px #ffffff;
-	height:			48px;
+	min-height:		48px;
 	margin:			0;
 	padding:		0;
 }
@@ -85,7 +85,6 @@ img {
 
 .main {
 	clear:			both;
-	padding-top:		4px;
 }
 
 .menu {
