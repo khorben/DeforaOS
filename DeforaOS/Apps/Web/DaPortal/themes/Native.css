@@ -78,15 +78,24 @@ img {
 	border-top:		solid 1px #ffffff;
 }
 
+.explorer .toolbar .separator {
+	border-left:		solid 1px #9e9a91;
+	border-right:		solid 1px #ffffff;
+}
+
 .main {
 	clear:			both;
 	padding-top:		4px;
 }
 
 .menu {
-	height:			10pt;
+	height:			14pt;
 	margin:			0;
 	padding:		0;
+}
+
+.menu select {
+	float:			left;
 }
 
 .menu ul {
@@ -95,17 +104,26 @@ img {
 	border-top:		solid 1px #ffffff;
 	list-style-type:	none;
 	margin:			0;
-	padding:		2px;
+	padding-top:		0;
 }
 
 .menu ul li {
 	float:			left;
-	padding-left:		1em;
-	padding-right:		1em;
+	margin:			0;
+	margin-left:		4px;
+	margin-right:		4px;
+	margin-top:		1px;
+	padding:		2px;
+}
+
+.menu ul li:hover {
+	background-color:	#4b6983;
+	color:			#ffffff;
 }
 
 .menu ul li ul {
 	display:		none;
+	padding-top:		2px;
 	padding:		0;
 }
 
@@ -117,11 +135,13 @@ img {
 	border-top:		solid 1px #ffffff;
 	display:		block;
 	position:		absolute;
+	margin-left:		-3px;
 }
 
 .menu ul li ul li {
 	float:			none;
 	border-left:		solid 1px #ffffff;
+	margin:			0;
 	padding:		0;
 	padding-bottom:		1px;
 	padding-top:		1px;
