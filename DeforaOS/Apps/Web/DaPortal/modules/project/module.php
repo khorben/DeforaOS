@@ -1,5 +1,4 @@
-<?php
-//modules/project/module.php
+<?php //modules/project/module.php
 //FIXME license
 //FIXME hide attic option
 
@@ -81,17 +80,15 @@ function project_admin($args)
 	if(isset($args['id']))
 		return project_modify($args);
 	print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe(PROJECTS_ADMINISTRATION)
-			.'</h1>'."\n");
-	print('<h2><img src="modules/project/icon.png" alt=""/> '
-			.'Configuration</h2>'."\n");
-	$configs = _sql_array('SELECT daportal_config.name AS name, value'
-			.' FROM daportal_config'
-			." WHERE daportal_config.module_id='".$module_id."'"
-			.' ORDER BY name ASC;');
-	$module = 'project';
-	$action = 'config_update';
-	include('system/config.tpl');
+			._html_safe(PROJECTS_ADMINISTRATION).'</h1>'."\n");
+	if(($configs = _config_list('project')))
+	{
+		print('<h2><img src="modules/project/icon.png" alt=""/> '
+				.'Configuration</h2>'."\n");
+		$module = 'project';
+		$action = 'config_update';
+		include('system/config.tpl');
+	}
 	print('<h2><img src="modules/project/icon.png" alt=""/> '
 			._html_safe(PROJECT_LIST)
 			.'</h2>'."\n");
@@ -651,11 +648,8 @@ function project_config_update($args)
 	require_once('system/config.php');
 	$keys = array_keys($args);
 	foreach($keys as $k)
-	{
-		if(!ereg('^project_([a-zA-Z_]+)$', $k, $regs))
-			continue;
-		_config_set('project', $regs[1], $args[$k], 0);
-	}
+		if(ereg('^project_([a-zA-Z_]+)$', $k, $regs))
+			_config_set('project', $regs[1], $args[$k], 0);
 	header('Location: index.php?module=project&action=admin');
 	exit(0);
 }
@@ -833,7 +827,7 @@ function project_system($args)
 {
 	global $title, $html;
 
-	$title.=' - Projects';
+	$title.=' - '.PROJECTS;
 	if($args['action'] == 'browse' && $args['download'] == 1)
 		$html = 0;
 	else if($args['action'] == 'config_update')
