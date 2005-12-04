@@ -20,6 +20,7 @@ h1 {
 	min-height:		48px;
 	margin:			0;
 	padding:		0;
+	padding-left:		4px;
 }
 
 h1 img {
@@ -27,9 +28,33 @@ h1 img {
 	padding-right:		2px;
 }
 
+h2 {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	margin:			0;
+	padding:		0;
+	padding-left:		4px;
+}
+
+h3 {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	margin:			0;
+	padding:		0;
+	padding-left:		4px;
+}
+
 img {
 	border-width:		0;
 	vertical-align:		middle;
+}
+
+p {
+	padding:		4px;
 }
 
 
