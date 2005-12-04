@@ -9,6 +9,7 @@ body {
 
 a {
 	color:			#000000;
+	cursor:			default;
 	text-decoration:	none;
 }
 
@@ -33,9 +34,16 @@ h2 {
 	border-left:		solid 1px #ffffff;
 	border-right:		solid 1px #000000;
 	border-top:		solid 1px #ffffff;
+	min-height:		32px;
 	margin:			0;
 	padding:		0;
 	padding-left:		4px;
+}
+
+h2 img {
+	float:			right;
+	max-height:		32px;
+	padding-right:		2px;
 }
 
 h3 {
@@ -68,7 +76,7 @@ pre {
 
 
 /* classes */
-.debug {
+.debug .system {
 	background-color:	#ffffff;
 	border-bottom:		solid 1px #ffffff;
 	border-left:		solid 1px #000000;
@@ -77,6 +85,10 @@ pre {
 	height:			10em;
 	overflow:		auto;
 	margin:			4px;
+}
+
+.field {
+	font-weight:		bold;
 }
 
 .hidden {
@@ -282,4 +294,33 @@ pre {
 	border-right:		solid 1px #afa699;
 	border-top:		solid 1px #ffffff;
 	padding:		2px;
+}
+
+.tree {
+	background-color:	#ffffff;
+	border-bottom:		solid 1px #000000;
+	border-right:		solid 1px #000000;
+	overflow:		auto;
+	padding-right:		4px;
+}
+
+.tree img {
+	vertical-align:		text-bottom;
+}
+
+.tree .entry
+{
+	margin-left:		16px;
+	white-space:		nowrap;
+}
+
+.tree .node {
+	background-image:	url(/DaPortal/icons/tree/vertline.gif);
+	background-position:	top left;
+	background-repeat:	repeat-y;
+}
+
+#folders {
+	float:			left;
+	width:			200px;
 }
