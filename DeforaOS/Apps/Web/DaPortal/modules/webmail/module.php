@@ -114,10 +114,20 @@ function webmail_default($args)
 		$message = array('link' => 'index.php?module=webmail'
 				.'&action=read&folder='.$folder
 				.'&id='.imap_uid($mbox, $i));
-		$message['name'] = $header->from[0]->personal;
-		if(!strlen($message['name']))
-			$message['name'] = $header->from[0]->mailbox.'@'
+		if($folder == 'Sent')
+		{
+			$message['name'] = $header->to[0]->personal;
+			if(!strlen($message['name']))
+				$message['name'] = $header->to[0]->mailbox.'@'
+					.$header->to[0]->host;
+		}
+		else
+		{
+			$message['name'] = $header->from[0]->personal;
+			if(!strlen($message['name']))
+				$message['name'] = $header->from[0]->mailbox.'@'
 					.$header->from[0]->host;
+		}
 		$message['subject'] = $header->fetchsubject;
 		$message['date'] = date('d/m/Y H:i', $header->udate);
 		$messages[] = $message;
