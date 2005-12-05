@@ -9,7 +9,8 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 $title = 'Webmail';
 $admin = 1;
-$list = 1;
+global $user_id;
+$list = $user_id != 0 ? 1 : 0;
 $actions = array('default' => 'Message list',
 		'logout' => 'Logout');
 global $lang;
