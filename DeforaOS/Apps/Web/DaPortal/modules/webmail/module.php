@@ -114,6 +114,12 @@ function webmail_default($args)
 		$message = array('link' => 'index.php?module=webmail'
 				.'&action=read&folder='.$folder
 				.'&id='.imap_uid($mbox, $i));
+		$message['icon'] = 'mail_read';
+		if($header->Unseen == 'U' || $header->Unseen == 'N')
+			$message['icon'] = 'mail_unread';
+		else if($header->Answered == 'A')
+			$message['icon'] = 'mail_replied';
+		$message['icon'] = 'modules/webmail/'.$message['icon'].'.png';
 		if($folder == 'Sent')
 		{
 			$message['name'] = $header->to[0]->personal;
