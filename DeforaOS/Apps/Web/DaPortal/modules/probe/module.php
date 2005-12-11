@@ -1,7 +1,4 @@
-<?php
-//modules/probe/module.php
-//TODO:
-//- on-demand RRD graphs creation? (optional?)
+<?php //modules/probe/module.php
 
 
 
