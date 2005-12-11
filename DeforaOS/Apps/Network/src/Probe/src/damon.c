@@ -98,7 +98,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 			hosts[i].appclient = NULL;
 			continue;
 		}
-		sprintf(rrd, "%s/%s", hosts[i].hostname, "uptime.rrd");
+		sprintf(rrd, "%s_%s", hosts[i].hostname, "uptime.rrd");
 		_rrd_update(rrd, 1, res[0]);
 
 		/* load */
@@ -112,7 +112,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 			hosts[i].appclient = NULL;
 			continue;
 		}
-		sprintf(rrd, "%s/%s", hosts[i].hostname, "load.rrd");
+		sprintf(rrd, "%s_%s", hosts[i].hostname, "load.rrd");
 		_rrd_update(rrd, 3, res[0], res[1], res[2]);
 
 		/* ram */
@@ -128,7 +128,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 			hosts[i].appclient = NULL;
 			continue;
 		}
-		sprintf(rrd, "%s/%s", hosts[i].hostname, "ram.rrd");
+		sprintf(rrd, "%s_%s", hosts[i].hostname, "ram.rrd");
 		_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
 
 		/* swap */
@@ -140,7 +140,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 			hosts[i].appclient = NULL;
 			continue;
 		}
-		sprintf(rrd, "%s/%s", hosts[i].hostname, "swap.rrd");
+		sprintf(rrd, "%s_%s", hosts[i].hostname, "swap.rrd");
 		_rrd_update(rrd, 2, res[0], res[1]);
 
 		/* users */
@@ -150,7 +150,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 			hosts[i].appclient = NULL;
 			continue;
 		}
-		sprintf(rrd, "%s/%s", hosts[i].hostname, "users.rrd");
+		sprintf(rrd, "%s_%s", hosts[i].hostname, "users.rrd");
 		_rrd_update(rrd, 1, res[0]);
 
 		/* procs */
@@ -160,7 +160,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 			hosts[i].appclient = NULL;
 			continue;
 		}
-		sprintf(rrd, "%s/%s", hosts[i].hostname, "procs.rrd");
+		sprintf(rrd, "%s_%s", hosts[i].hostname, "procs.rrd");
 		_rrd_update(rrd, 1, res[0]);
 
 		/* if */
@@ -176,7 +176,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 				hosts[i].appclient = NULL;
 				continue;
 			}
-			sprintf(rrd, "%s/%s%s", hosts[i].hostname, p, ".rrd");
+			sprintf(rrd, "%s_%s%s", hosts[i].hostname, p, ".rrd");
 			_rrd_update(rrd, 2, res[0], res[1]);
 		}
 		ac = NULL;
