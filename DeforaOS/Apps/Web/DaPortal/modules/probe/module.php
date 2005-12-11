@@ -10,6 +10,128 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//private
+function _host_graph($hostname, $graph, $time)
+{
+	$rrd = '/var/lib/Probe/'.$hostname.'_'.$graph.'.rrd'; //FIXME
+	_info('rrd: '.$rrd);
+	switch($time)
+	{
+		case 'week':
+			$start = '-604800';
+			break;
+		case 'day':
+			$start = '-86400';
+			break;
+		case 'hour':
+		default:
+			$start = '-3600';
+			$time = 'hour';
+			break;
+	}
+	$png = 'tmp/'.$hostname.'_'.$graph.'_'.$time.'.png'; //FIXME
+	if(($st = stat($png)) != FALSE && $st['mtime'] + 30 > time())
+		return $png;
+	$title = '';
+	$label = '';
+	$base = '';
+	$def = array();
+	$cdef = array();
+	$data = '';
+	switch($graph)
+	{
+		case 'uptime':
+			$title = 'uptime';
+			$label = 'uptime';
+			$def = array('uptime');
+			$cdef = array('ruptime' => 'uptime,3600,/');
+			$data = ' AREA:ruptime#ff7f7f'
+				.' LINE2:ruptime#ff4f4f:"Uptime"'
+				.' GPRINT:ruptime:LAST:" %.2lf"';
+			break;
+		case 'load':
+			$title = 'load average';
+			$label = 'load';
+			$def = array('load1', 'load5', 'load15');
+			$cdef = array('rload1' => 'load1,65536,/',
+				'rload5' => 'load15,65536,/',
+				'rload15' => 'load15,65536,/');
+			$data = ' AREA:rload1#ffef00'
+				.' AREA:rload5#ffbf00'
+				.' AREA:rload15#ff8f00'
+				.' LINE2:rload1#ffdf00:"Load 1 min\:\g"'
+				.' GPRINT:rload1:LAST:" %.2lf"'
+				.' LINE2:rload5#ffaf00:"Load 5 min\:\g"'
+				.' GPRINT:rload5:LAST:" %.2lf"'
+				.' LINE2:rload15#ff7f00:"Load 15 min\:\g"'
+				.' GPRINT:rload15:LAST:" %.2lf"';
+			break;
+		case 'ram':
+			$title = 'memory usage';
+			$label = 'MB';
+			$base = '1024';
+			$def = array('ramtotal', 'ramfree', 'ramshared',
+					'rambuffer');
+			$cdef = array('pramtotal' => 'ramtotal,1024,/,1024,/',
+				'pramfree' => 'ramfree,1024,/,1024,/',
+				'pramshared' => 'ramshared,1024,/,1024,/',
+				'prambuffer' => 'rambuffer,1024,/,1024,/');
+			$data = ' AREA:ramtotal#ff0000:"Total\:\g"'
+				.' GPRINT:pramtotal:LAST:" %.0lf MB"'
+				.' AREA:ramfree#0000ff:"Free\:\g"'
+				.' GPRINT:pramfree:LAST:" %.0lf MB"'
+				.' STACK:ramshared#00ffff:"Shared\:\g"'
+				.' GPRINT:pramshared:LAST:" %.0lf MB"'
+				.' STACK:rambuffer#00ff00:"Buffer\:\g"'
+				.' GPRINT:prambuffer:LAST:" %.0lf MB"';
+			break;
+		case 'swap':
+			$title = 'swap usage';
+			$label = 'MB';
+			$base = '1024';
+			$def = array('swaptotal', 'swapfree');
+			$cdef = array('pswaptotal' => 'swaptotal,1024,/,1024,/',
+				'pswapfree' => 'swapfree,1024,/,1024,/');
+			$data = ' AREA:swaptotal#ff0000:"Total\:\g"'
+				.' GPRINT:pswaptotal:LAST:" %.0lf MB"'
+				.' AREA:swapfree#0000ff:"Free\:\g"'
+				.' GPRINT:pswapfree:LAST:" %.0lf MB"';
+			break;
+		case 'users':
+			$title = 'logged users';
+			$label = 'users';
+			$def = array('users');
+			$data = ' AREA:users#7f7fff'
+				.' LINE2:users#4f4fff:"Logged users\:\g"'
+				.' GPRINT:users:LAST:" %.0lf"';
+			break;
+		case 'procs':
+			$title = 'processes';
+			$label = 'processes';
+			$def = array('procs');
+			$data = ' AREA:procs#7f7fff'
+				.' LINE2:procs#4f4fff:"Process count\:\g"'
+				.' GPRINT:procs:LAST:" %.0lf"';
+			break;
+	}
+	$cmd = 'rrdtool graph '.$png.' --start '.$start.' --imgformat PNG'
+		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
+	if(strlen($base))
+		$cmd.=' --base '.$base;
+	foreach($def as $d)
+		$cmd.=' DEF:'.$d.'='.$rrd.':'.$d.':AVERAGE';
+	$keys = array_keys($cdef);
+	foreach($keys as $k)
+		$cmd.=' CDEF:'.$k.'='.$cdef[$k];
+	$cmd.=$data;
+	$cmd.=' --title "'.$hostname.' '.$title.' (last '.$time.')"'
+		.' --vertical-label "'.$label.'"';
+	_info('exec: '.$cmd);
+	exec($cmd);
+	return $png;
+}
+
+
 function probe_admin($args)
 {
 	global $user_id;
@@ -108,7 +230,7 @@ function probe_host_list($args)
 {
 	print('<h1><img src="modules/probe/icon.png" alt=""/>'
 			.' Hosts list</h1>'."\n");
-	/* FIXME sort and display by category */
+	//FIXME sort and display by category
 	$hosts = _sql_array('SELECT host_id AS id, title AS name'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id'
@@ -122,8 +244,7 @@ function probe_host_list($args)
 		$hosts[$i]['icon'] = 'modules/probe/icon.png';
 		$hosts[$i]['thumbnail'] = 'modules/probe/icon.png';
 	}
-	_module('explorer', 'browse', array(
-			'entries' => $hosts,
+	_module('explorer', 'browse', array('entries' => $hosts,
 			'view' => 'thumbnails',
 			'toolbar' => 0));
 }
@@ -146,7 +267,7 @@ function probe_host_modify($args)
 		return _error('Could not modify host');
 	$host = $host[0];
 	$title = 'Host: '.$host['hostname'];
-	/* FIXME graphs, categories, ... */
+	//FIXME graphs, categories, ...
 	include('host_update.tpl');
 }
 

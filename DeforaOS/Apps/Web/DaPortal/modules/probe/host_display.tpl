@@ -20,17 +20,17 @@ $times = array('hour', 'day', 'week');
 <? if(array_key_exists($args['graph'], $graphs)) { ?>
 <tr><td><h2><? echo _html_safe($graphs[$args['graph']]); ?></h2></td></tr>
 <? foreach($times as $t) { ?>
-<tr><td><img src="<? echo _html_safe($host['hostname'].'/'.$args['graph'].'-'.$t); ?>.png" alt=""/></td></tr>
+<tr><td><img src="<? echo _host_graph($host['hostname'], $args['graph'], $t); ?>" alt=""/></td></tr>
 <? } ?>
 <? } else { ?>
 <? $keys = array_keys($graphs); for($i = 0, $cnt = count($keys); $i < $cnt; $i++) { ?>
 	<tr>
-		<td><h3><? echo _html_safe($graphs[$keys[$i]]); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($keys[$i]); ?>"><img src="<? echo _html_safe($host['hostname'].'/'.$keys[$i]); ?>-hour.png" alt=""/></a></td>
+		<td><h3><? echo _html_safe($graphs[$keys[$i]]); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($keys[$i]); ?>"><img src="<? echo _host_graph($host['hostname'], $keys[$i], 'hour'); ?>" alt=""/></a></td>
 <? $i++; if($i == $cnt) { ?>
 		<td></td>
 	</tr>
 <? break; } else { ?>
-		<td><h3><? echo _html_safe($graphs[$keys[$i]]); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($keys[$i]); ?>"><img src="<? echo _html_safe($host['hostname'].'/'.$keys[$i]); ?>-hour.png" alt=""/></a></td>
+		<td><h3><? echo _html_safe($graphs[$keys[$i]]); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($keys[$i]); ?>"><img src="<? echo _host_graph($host['hostname'], $keys[$i], 'hour'); ?>" alt=""/></a></td>
 	</tr>
 <? } ?>
 <? } ?>
