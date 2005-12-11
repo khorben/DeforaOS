@@ -175,8 +175,9 @@ function news_list($args)
 	}
 	print('<h1><img src="modules/news/icon.png" alt=""/> '
 			._html_safe($title).'</h1>'."\n");
-	$res = _sql_array('SELECT content_id AS id, timestamp'
-			.', title, content, daportal_content.user_id, username'
+	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
+			.', daportal_content.enabled, daportal_content.user_id'
+			.', username'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_module'
 			.' WHERE daportal_user.user_id=daportal_content.user_id'
