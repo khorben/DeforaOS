@@ -564,12 +564,14 @@ static char _file_mode_letter(mode_t mode)
 static void _print_link(char const * filename)
 {
 	char buf[PATH_MAX+1];
+	int len;
 
-	if(readlink(filename, buf, sizeof(buf)-1) == -1)
+	if((len = readlink(filename, buf, sizeof(buf)-1)) == -1)
 	{
 		_ls_error(filename, 0);
 		return;
 	}
+	buf[len] = '\0';
 	printf("%s%s", " -> ", buf);
 }
 
