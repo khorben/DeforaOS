@@ -39,12 +39,12 @@ function _host_graph($hostname, $graph, $time)
 	{
 		case 'uptime':
 			$title = 'uptime';
-			$label = 'uptime';
+			$label = 'hours';
 			$def = array('uptime');
 			$cdef = array('ruptime' => 'uptime,3600,/');
 			$data = ' AREA:ruptime#ff7f7f'
 				.' LINE2:ruptime#ff4f4f:"Uptime"'
-				.' GPRINT:ruptime:LAST:" %.2lf"';
+				.' GPRINT:ruptime:LAST:" %.2lf h"';
 			break;
 		case 'load':
 			$title = 'load average';
@@ -65,7 +65,7 @@ function _host_graph($hostname, $graph, $time)
 			break;
 		case 'ram':
 			$title = 'memory usage';
-			$label = 'MB';
+			$label = 'bytes';
 			$base = '1024';
 			$def = array('ramtotal', 'ramfree', 'ramshared',
 					'rambuffer');
@@ -84,7 +84,7 @@ function _host_graph($hostname, $graph, $time)
 			break;
 		case 'swap':
 			$title = 'swap usage';
-			$label = 'MB';
+			$label = 'bytes';
 			$base = '1024';
 			$def = array('swaptotal', 'swapfree');
 			$cdef = array('pswaptotal' => 'swaptotal,1024,/,1024,/',
@@ -103,13 +103,15 @@ function _host_graph($hostname, $graph, $time)
 				.' GPRINT:users:LAST:" %.0lf"';
 			break;
 		case 'procs':
-			$title = 'processes';
-			$label = 'processes';
+			$title = 'process count';
+			$label = 'process';
 			$def = array('procs');
 			$data = ' AREA:procs#7f7fff'
 				.' LINE2:procs#4f4fff:"Process count\:\g"'
 				.' GPRINT:procs:LAST:" %.0lf"';
 			break;
+		default:
+			return ''; //FIXME
 	}
 	$cmd = 'rrdtool graph '.$png.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
