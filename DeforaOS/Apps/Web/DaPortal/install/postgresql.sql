@@ -121,3 +121,8 @@ CREATE TABLE daportal_probe_host (
 	FOREIGN KEY (host_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
+
+
+/* module: webmail */
+INSERT INTO daportal_config (module_id, name, value) VALUES ('11', 'server', '');
+INSERT INTO daportal_module (name, enabled) VALUES ('webmail', 1);
