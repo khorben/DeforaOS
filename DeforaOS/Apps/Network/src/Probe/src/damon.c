@@ -45,7 +45,7 @@ static int _damon(void)
 	int i;
 
 	if((h_e.event = event_new()) == NULL)
-		return _damon_error("Event", 2);
+		return _damon_error("Event", 1);
 	h_e.hosts = hosts;
 	_damon_refresh(&h_e);
 	tv.tv_sec = DAMON_REFRESH;
@@ -58,7 +58,7 @@ static int _damon(void)
 		if(hosts[i].appclient != NULL)
 			appclient_delete(hosts[i].appclient);
 	event_delete(h_e.event);
-	return 2;
+	return 1;
 }
 
 static int _damon_error(char * message, int ret)
@@ -249,5 +249,5 @@ static int _exec(char * argv[])
 /* main */
 int main(void)
 {
-	return _damon();
+	return _damon() == 0 ? 0 : 2;
 }
