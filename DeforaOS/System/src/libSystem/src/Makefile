@@ -15,7 +15,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libSystem_OBJS = appclient.o appinterface.o appserver.o array.o config.o event.o hash.o string.o
+libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o event.o hash.o string.o
 libSystem_CFLAGS = $(CFLAGSF) $(CFLAGS)
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
@@ -34,6 +34,9 @@ appserver.o: appserver.c
 
 array.o: array.c
 	$(CC) $(libSystem_CFLAGS) -c array.c
+
+buffer.o: buffer.c
+	$(CC) $(libSystem_CFLAGS) -c buffer.c
 
 config.o: config.c
 	$(CC) $(libSystem_CFLAGS) -c config.c

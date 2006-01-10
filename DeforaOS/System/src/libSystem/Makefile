@@ -24,6 +24,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/appclient.h \
 		$(PACKAGE)-$(VERSION)/include/appserver.h \
 		$(PACKAGE)-$(VERSION)/include/array.h \
+		$(PACKAGE)-$(VERSION)/include/buffer.h \
 		$(PACKAGE)-$(VERSION)/include/config.h \
 		$(PACKAGE)-$(VERSION)/include/event.h \
 		$(PACKAGE)-$(VERSION)/include/hash.h \
@@ -34,6 +35,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/appinterface.c \
 		$(PACKAGE)-$(VERSION)/src/appserver.c \
 		$(PACKAGE)-$(VERSION)/src/array.c \
+		$(PACKAGE)-$(VERSION)/src/buffer.c \
 		$(PACKAGE)-$(VERSION)/src/config.c \
 		$(PACKAGE)-$(VERSION)/src/event.c \
 		$(PACKAGE)-$(VERSION)/src/hash.c \
