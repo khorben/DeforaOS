@@ -1,7 +1,7 @@
 TARGETS	= Init
 CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
-LDFLAGSF= -L /System/Libraries -l System -rdynamic
+LDFLAGSF= -L /System/Libraries -l System -rdynamic -l dl
 CC	= cc
 AR	= ar rc
 RANLIB	= ranlib

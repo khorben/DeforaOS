@@ -74,7 +74,11 @@ static void _init_sighandler(int signum)
 int port(char * app)
 {
 	/* FIXME */
-	return 4243;
+	if(strcmp(app, "Probe") == 0)
+		return 4243;
+	if(strcmp(app, "VFS") == 0)
+		return 4245;
+	return -1;
 }
 
 
