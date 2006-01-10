@@ -172,9 +172,7 @@ function webmail_folders($args)
 	}
 	sort($list);
 	$oldlevel = 0;
-	print('<script type="text/javascript" src="modules/webmail/tree.js">'
-			.'</script>'."\n");
-	print('<div class="tree">'."\n");
+	include('folders_top.tpl');
 	$class = 'lastnode';
 	$expand = 0;
 	$collapse = 1;
@@ -241,6 +239,7 @@ function webmail_folders($args)
 		$oldlevel = $level;
 	}
 	print("</div>\n</div>\n</div>\n");
+	include('folders_bottom.tpl');
 }
 
 
