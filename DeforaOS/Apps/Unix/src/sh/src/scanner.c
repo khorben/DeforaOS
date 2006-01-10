@@ -5,11 +5,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include "scanner.h"
 
 
 /* Scanner */
-static void _prompt(void);
+static void _prompt(Scanner * scanner);
 static int _next_file_prompt(Scanner * scanner);
 static int _next_file(Scanner * scanner);
 static int _next_string(Scanner * scanner);
@@ -22,15 +23,18 @@ void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
 		scanner->next = _next_file_prompt;
 	else
 		scanner->next = _next_file;
+	scanner->prompt = SP_PS1;
 	scanner->string = string;
 }
 
-static void _prompt(void)
+static void _prompt(Scanner * scanner)
 {
-	char * prompt = NULL;
+	char * prompt;
+	char * env[SP_LAST+1] = { "PS1", "PS2", "PS4" };
+	char * dflt[SP_LAST+1] = { "$ ", "> ", "+ " };
 
-	if((prompt = getenv("PS1")) == NULL)
-		prompt = "$ ";
+	if((prompt = getenv(env[scanner->prompt])) == NULL)
+		prompt = dflt[scanner->prompt];
 	fprintf(stderr, "%s", prompt);
 }
 
@@ -52,7 +56,7 @@ static int _next_file_prompt(Scanner * scanner)
 
 	if(c == '\n')
 	{
-		_prompt();
+		_prompt(scanner);
 		_lineno();
 	}
 	if((c = fgetc(scanner->fp)) == EOF)
@@ -92,8 +96,10 @@ Token * scanner_next(Scanner * scanner)
 #ifdef DEBUG
 	fprintf(stderr, "%s", "scanner_next()\n");
 #endif
+	scanner->prompt = SP_PS1;
 	if(c == EOF && (c = scanner->next(scanner)) == EOF)
 		return token_new(TC_EOI, NULL);
+	scanner->prompt = SP_PS2;
 	_next_blank(scanner, &c);
 	_next_comment(scanner, &c);
 	if((t = _next_operator(scanner, &c)) != NULL
@@ -148,6 +154,9 @@ static Token * _next_newline(Scanner * scanner, int * c)
 	return token_new(TC_NEWLINE, NULL);
 }
 
+static char _word_escape(Scanner * scanner, int * c);
+static char * _word_dquote(Scanner * scanner, int * c, char * str, int * len);
+static char * _word_quote(Scanner * scanner, int * c, char * str, int * len);
 static Token * _next_word(Scanner * scanner, int * c)
 {
 	char eow[] = "\t \r\n&|;<>";
@@ -161,14 +170,34 @@ static Token * _next_word(Scanner * scanner, int * c)
 		for(i = 0; eow[i] != '\0' && *c != eow[i]; i++);
 		if(*c == eow[i])
 			break;
-		if((p = realloc(str, len+2)) == NULL)
+		if(*c == '"')
+			p = _word_dquote(scanner, c, str, &len);
+		else if(*c == '\'')
+			p = _word_quote(scanner, c, str, &len);
+		else
+		{
+			if(*c == '\\' && (*c = _word_escape(scanner, c)) == EOF)
+				break;
+			if((p = realloc(str, len+2)) == NULL)
+			{
+				sh_error("malloc", 0);
+				free(str);
+				return NULL;
+			}
+			else
+			{
+				str = p;
+				str[len++] = *c;
+				continue;
+			}
+		}
+		if(p == NULL)
 		{
 			sh_error("malloc", 0);
 			free(str);
 			return NULL;
 		}
 		str = p;
-		str[len++] = *c;
 	}
 	if(str == NULL)
 		return NULL;
@@ -177,4 +206,49 @@ static Token * _next_word(Scanner * scanner, int * c)
 	 * scanner->next() function for a while but I don't really like it,
 	 * moreover it wouldn't parse the alias into tokens... */
 	return token_new(TC_TOKEN, str);
+}
+
+static char _word_escape(Scanner * scanner, int * c)
+{
+	char p;
+
+	if((p = scanner->next(scanner)) == EOF)
+		return *c;
+	return p;
+}
+
+static char * _word_dquote(Scanner * scanner, int * c, char * str, int * len)
+{
+	char * p;
+
+	if(str == NULL && (str = strdup("")) == NULL)
+		return NULL;
+	for(*c = scanner->next(scanner); *c != EOF && *c != '"';
+			*c = scanner->next(scanner))
+	{
+		if(*c == '\\')
+			*c = _word_escape(scanner, c);
+		if((p = realloc(str, (*len)+2)) == NULL)
+			return NULL;
+		str = p;
+		str[(*len)++] = *c;
+	}
+	return str;
+}
+
+static char * _word_quote(Scanner * scanner, int * c, char * str, int * len)
+{
+	char * p;
+
+	if(str == NULL && (str = strdup("")) == NULL)
+		return NULL;
+	for(*c = scanner->next(scanner); *c != EOF && *c != '\'';
+			*c = scanner->next(scanner))
+	{
+		if((p = realloc(str, (*len)+2)) == NULL)
+			return NULL;
+		str = p;
+		str[(*len)++] = *c;
+	}
+	return str;
 }
