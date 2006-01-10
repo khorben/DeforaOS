@@ -30,7 +30,9 @@ struct _AppClient
 	int buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	int buf_write_cnt;
-	int res;
+	int ret;
+	char * lastfunc;
+	void ** lastargs;
 };
 
 
@@ -45,12 +47,12 @@ static int _appclient_timeout(AppClient * appclient)
 }
 
 
-static int _appclient_read_int(int fd, AppClient * ac)
+static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_read_int(", fd, ")\n");
+	fprintf(stderr, "%s%d%s", "appclient_read(", fd, ")\n");
 #endif
 	if((len = (sizeof(ac->buf_read) - ac->buf_read_cnt)) < 0
 			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
@@ -61,15 +63,32 @@ static int _appclient_read_int(int fd, AppClient * ac)
 		return 1;
 	}
 	ac->buf_read_cnt+=len;
-	if(ac->buf_read_cnt < sizeof(int))
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "appclient_read() ", len, " bytes\n");
+#endif
+	len = appinterface_call_receive(ac->interface, &ac->ret, ac->lastfunc,
+			ac->lastargs, ac->buf_read, ac->buf_read_cnt);
+	if(len < 0)
+	{
+		/* FIXME */
+		close(fd);
+		return 1;
+	}
+	if(len == 0)
 		return 0;
-	memcpy(&ac->res, ac->buf_read, sizeof(int));
+	ac->buf_read_cnt-=len;
+	event_unregister_timeout(ac->event,
+			(EventTimeoutFunc)_appclient_timeout);
+	return 1;
+/*	if(ac->buf_read_cnt < sizeof(int))
+		return 0;
+	memcpy(&ac->ret, ac->buf_read, sizeof(int));
 	memmove(ac->buf_read, &ac->buf_read[sizeof(int)],
 			ac->buf_read_cnt-sizeof(int));
 	ac->buf_read_cnt-=sizeof(int);
 	event_unregister_timeout(ac->event,
 			(EventTimeoutFunc)_appclient_timeout);
-	return 1;
+	return 1; */
 }
 
 
@@ -92,7 +111,7 @@ static int _appclient_write(int fd, AppClient * ac)
 	if(ac->buf_write_cnt > 0)
 		return 0;
 	event_register_io_read(ac->event, fd,
-			(EventIOFunc)_appclient_read_int, ac);
+			(EventIOFunc)_appclient_read, ac);
 	return 1;
 }
 
@@ -134,7 +153,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 	appclient->fd = -1;
 	appclient->buf_read_cnt = 0;
 	appclient->buf_write_cnt = 0;
-	appclient->res = -1;
+	appclient->ret = -1;
 	if(_new_connect(appclient, app) != 0)
 	{
 		free(appclient);
@@ -159,12 +178,7 @@ static int _new_connect(AppClient * appclient, char * app)
 	if((port = appclient_call(appclient, "port", 1, app)) == -1)
 		return 1;
 	if(port == 0)
-	{
-#ifdef DEBUG
-		fprintf(stderr, "%s", "AppClient's Session supports our Interface\n");
-#endif
 		return 0;
-	}
 	close(appclient->fd);
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "AppClient bouncing to port ", port, "\n");
@@ -210,40 +224,45 @@ void appclient_delete(AppClient * appclient)
 
 
 /* useful */
+static int _call_event(AppClient * ac);
 int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 {
 	va_list arg;
 	int i;
 	void ** args = NULL;
-	void ** p;
-	struct timeval tv = { 10, 0 };
-	Event * eventtmp;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s%p%s", "appclient_call(), interface ", ac->interface,
 			"\n");
 #endif
+	if((args = malloc(sizeof(void*) * args_cnt)) == NULL)
+		return -1;
 	va_start(arg, args_cnt);
-	for(i = 0; i < args_cnt; i++) /* FIXME */
-	{
-		if((p = realloc(args, (i+1) * sizeof(void*))) == NULL)
-			break;
-		args = p;
+	for(i = 0; i < args_cnt; i++)
 		args[i] = va_arg(arg, void *);
-	}
 	va_end(arg);
-	if(i != args_cnt || (i = appinterface_call(ac->interface, function,
-				&ac->buf_write[ac->buf_write_cnt],
-				sizeof(ac->buf_write) - ac->buf_write_cnt,
-				args)) <= 0)
+	i = appinterface_call(ac->interface, function,
+			&ac->buf_write[ac->buf_write_cnt],
+			sizeof(ac->buf_write) - ac->buf_write_cnt, args);
+	if(i <= 0)
 	{
 		free(args);
 		return -1;
 	}
-	free(args);
+	ac->lastfunc = function;
+	ac->lastargs = args;
 	ac->buf_write_cnt+=i;
+	return _call_event(ac);
+}
+
+static int _call_event(AppClient * ac)
+{
+	Event * eventtmp;
+	struct timeval tv = { 10, 0 };
+
 	eventtmp = ac->event;
 	ac->event = event_new();
+	ac->ret = -1;
 	event_register_timeout(ac->event, tv,
 			(EventTimeoutFunc)_appclient_timeout, ac);
 	event_register_io_write(ac->event, ac->fd,
@@ -254,5 +273,5 @@ int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
 	event_loop(ac->event);
 	event_delete(ac->event);
 	ac->event = eventtmp;
-	return ac->res;
+	return ac->ret;
 }

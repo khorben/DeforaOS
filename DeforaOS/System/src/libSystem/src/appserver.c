@@ -170,14 +170,15 @@ static int _read_logged(AppServer * appserver, AppServerClient * asc)
 	return 0;
 }
 
-static int _appserver_write_int(int fd, AppServer * appserver);
+static int _appserver_write(int fd, AppServer * appserver);
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 {
 	int i;
 	int ret;
 
 	if((i = appinterface_receive(appserver->interface, asc->buf_read,
-			asc->buf_read_cnt, &ret)) == -1)
+			asc->buf_read_cnt, asc->buf_write, ASC_BUFSIZE,
+			&asc->buf_write_cnt, &ret)) == -1)
 		return -1;
 	if(i <= 0 || i > asc->buf_read_cnt)
 		return -1;
@@ -189,11 +190,11 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(int));
 	asc->buf_write_cnt+=sizeof(int);
 	event_register_io_write(appserver->event, asc->fd,
-			(EventIOFunc)_appserver_write_int, appserver);
+			(EventIOFunc)_appserver_write, appserver);
 	return 0;
 }
 
-static int _appserver_write_int(int fd, AppServer * appserver)
+static int _appserver_write(int fd, AppServer * appserver)
 {
 	AppServerClient * asc;
 	size_t len;
@@ -210,19 +211,19 @@ static int _appserver_write_int(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "sending result: %d long\n", asc->buf_write_cnt);
+#endif
 	if(asc->buf_write_cnt == 0 || (len = write(fd, asc->buf_write,
 					asc->buf_write_cnt)) <= 0)
-	{
-		/* FIXME what here?!? */
-		return 1;
-	}
+		return 1; /* FIXME what here?!? */
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%d%s", "_appserver_write_int(", fd,
 			", appserver): ", len, " characters written\n");
 #endif
-	return 0;
+	return asc->buf_write_cnt == 0 ? 1 : 0;
 }
 
 
