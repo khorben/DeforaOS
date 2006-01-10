@@ -117,23 +117,23 @@ static int _job_remove(unsigned int id)
 /* job_list */
 int job_list(int argc, char * argv[])
 {
-	unsigned int i;
-	int j;
+	int i;
+	unsigned int j;
 	unsigned int id;
 	char * p;
 
 	if(argc == 0)
 	{
-		for(i = 0; i < jobs_cnt; i++)
-			_job_print(i+1, 'X', "FIXME");
+		for(j = 0; j < jobs_cnt; j++)
+			_job_print(j+1, 'X', "FIXME");
 		return 0;
 	}
-	for(j = 1; j < argc; j++)
+	for(i = 1; i < argc; i++)
 	{
-		id = strtol(argv[j], &p, 10);
-		if(*(argv[j]) == '\0' || *p != '\0' || id < 1 || id >= jobs_cnt)
+		id = strtol(argv[i], &p, 10);
+		if(*(argv[i]) == '\0' || *p != '\0' || id < 1 || id >= jobs_cnt)
 			continue;
-		_job_print(i+1, 'X', "FIXME");
+		_job_print(id+1, 'X', "FIXME");
 	}
 	return 0;
 }
