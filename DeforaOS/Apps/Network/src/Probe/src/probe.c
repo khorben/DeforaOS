@@ -181,7 +181,7 @@ static int _ifinfo(struct ifinfo ** dev)
 		}
 		if(i < 2)
 			continue;
-		if(_ifinfo_append(dev, buf, i - 2) != 0)
+		if(_ifinfo_append(dev, buf, i - 1) != 0)
 		{
 			ret = -1;
 			break;
@@ -207,9 +207,12 @@ static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 	for(i = 0; i < sizeof(p->name) && buf[i] != '\0'; i++);
 	if(i != sizeof(p->name))
 		return 1;
-	buf[sizeof(p->name)-1] = '\0';
+	buf[sizeof(p->name)] = '\0';
 	for(q = buf; q[0] == ' '; q++);
 	strcpy(p[nb].name, q);
+#ifdef DEBUG
+	fprintf(stderr, "_ifinfo_append: %s\n", p[nb].name);
+#endif
 	for(i++; buf[i] != '\0'; i++)
 	{
 		if(j > IF_LAST)
