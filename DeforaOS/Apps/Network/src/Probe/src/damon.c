@@ -69,14 +69,19 @@ static int _damon_error(char * message, int ret)
 }
 
 static AppClient * _refresh_connect(Host * host, Event * event);
-static int _rrd_update(char * file, int args_cnt, ...);
+static int _refresh_uptime(AppClient * ac, Host * host, char * rrd);
+static int _refresh_load(AppClient * ac, Host * host, char * rrd);
+static int _refresh_ram(AppClient * ac, Host * host, char * rrd);
+static int _refresh_swap(AppClient * ac, Host * host, char * rrd);
+static int _refresh_procs(AppClient * ac, Host * host, char * rrd);
+static int _refresh_users(AppClient * ac, Host * host, char * rrd);
+static int _refresh_if(AppClient * ac, Host * host, char * rrd);
 static int _damon_refresh(Hosts_Event * h_e)
 {
 	int i;
 	AppClient * ac = NULL;
 	char * rrd = NULL;
 	char * p;
-	int res[4];
 	Host * hosts = h_e->hosts;
 
 	fprintf(stderr, "%s", "_damon_refresh()\n");
@@ -90,94 +95,17 @@ static int _damon_refresh(Hosts_Event * h_e)
 				== NULL)
 			break;
 		rrd = p;
-
-		/* uptime */
-		if((res[0] = appclient_call(ac, "uptime", 0)) == -1)
+		if(_refresh_uptime(ac, &hosts[i], rrd) != 0
+				|| _refresh_load(ac, &hosts[i], rrd) != 0
+				|| _refresh_ram(ac, &hosts[i], rrd) != 0
+				|| _refresh_swap(ac, &hosts[i], rrd) != 0
+				|| _refresh_procs(ac, &hosts[i], rrd) != 0
+				|| _refresh_users(ac, &hosts[i], rrd) != 0
+				|| _refresh_if(ac, &hosts[i], rrd) != 0)
 		{
 			appclient_delete(ac);
 			hosts[i].appclient = NULL;
 			continue;
-		}
-		sprintf(rrd, "%s_%s", hosts[i].hostname, "uptime.rrd");
-		_rrd_update(rrd, 1, res[0]);
-
-		/* load */
-		if((res[0] = appclient_call(ac, "load_1", 0)) == -1
-				|| (res[1] = appclient_call(ac, "load_5",
-						0)) == -1
-				|| (res[2] = appclient_call(ac, "load_15",
-						0)) == -1)
-		{
-			appclient_delete(ac);
-			hosts[i].appclient = NULL;
-			continue;
-		}
-		sprintf(rrd, "%s_%s", hosts[i].hostname, "load.rrd");
-		_rrd_update(rrd, 3, res[0], res[1], res[2]);
-
-		/* ram */
-		if((res[0] = appclient_call(ac, "ram_total", 0)) == -1
-				|| (res[1] = appclient_call(ac, "ram_free",
-						0)) == -1
-				|| (res[2] = appclient_call(ac, "ram_shared",
-						0)) == -1
-				|| (res[3] = appclient_call(ac, "ram_buffer",
-						0)) == -1)
-		{
-			appclient_delete(ac);
-			hosts[i].appclient = NULL;
-			continue;
-		}
-		sprintf(rrd, "%s_%s", hosts[i].hostname, "ram.rrd");
-		_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
-
-		/* swap */
-		if((res[0] = appclient_call(ac, "swap_total", 0)) == -1
-				|| (res[1] = appclient_call(ac, "swap_free",
-						0)) == -1)
-		{
-			appclient_delete(ac);
-			hosts[i].appclient = NULL;
-			continue;
-		}
-		sprintf(rrd, "%s_%s", hosts[i].hostname, "swap.rrd");
-		_rrd_update(rrd, 2, res[0], res[1]);
-
-		/* users */
-		if((res[0] = appclient_call(ac, "users", 0)) == -1)
-		{
-			appclient_delete(ac);
-			hosts[i].appclient = NULL;
-			continue;
-		}
-		sprintf(rrd, "%s_%s", hosts[i].hostname, "users.rrd");
-		_rrd_update(rrd, 1, res[0]);
-
-		/* procs */
-		if((res[0] = appclient_call(ac, "procs", 0)) == -1)
-		{
-			appclient_delete(ac);
-			hosts[i].appclient = NULL;
-			continue;
-		}
-		sprintf(rrd, "%s_%s", hosts[i].hostname, "procs.rrd");
-		_rrd_update(rrd, 1, res[0]);
-
-		/* if */
-		if((p = hosts[i].iface) != NULL)
-		{
-			if((res[0] = appclient_call(ac, "ifrxbytes", 1,
-							p)) == -1
-					|| (res[1] = appclient_call(ac,
-							"iftxbytes", 1,
-							p)) == -1)
-			{
-				appclient_delete(ac);
-				hosts[i].appclient = NULL;
-				continue;
-			}
-			sprintf(rrd, "%s_%s%s", hosts[i].hostname, p, ".rrd");
-			_rrd_update(rrd, 2, res[0], res[1]);
 		}
 		ac = NULL;
 	}
@@ -195,6 +123,95 @@ static AppClient * _refresh_connect(Host * host, Event * event)
 			== NULL)
 		_damon_error(host->hostname, 0);
 	return host->appclient;
+}
+
+static int _rrd_update(char * file, int args_cnt, ...);
+static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
+{
+	int res;
+
+	if((res = appclient_call(ac, "uptime", 0)) == -1)
+		return 1;
+	sprintf(rrd, "%s_%s", host->hostname, "uptime.rrd");
+	_rrd_update(rrd, 1, res);
+	return 0;
+}
+
+static int _refresh_load(AppClient * ac, Host * host, char * rrd)
+{
+	int res[3];
+
+	if((res[0] = appclient_call(ac, "load_1", 0)) == -1
+			|| (res[1] = appclient_call(ac, "load_5", 0)) == -1
+			|| (res[2] = appclient_call(ac, "load_15", 0)) == -1)
+		return 1;
+	sprintf(rrd, "%s_%s", host->hostname, "load.rrd");
+	_rrd_update(rrd, 3, res[0], res[1], res[2]);
+	return 0;
+}
+
+static int _refresh_procs(AppClient * ac, Host * host, char * rrd)
+{
+	int res;
+
+	if((res = appclient_call(ac, "procs", 0)) == -1)
+		return 1;
+	sprintf(rrd, "%s_%s", host->hostname, "procs.rrd");
+	_rrd_update(rrd, 1, res);
+	return 0;
+}
+
+static int _refresh_ram(AppClient * ac, Host * host, char * rrd)
+{
+	int res[4];
+
+	if((res[0] = appclient_call(ac, "ram_total", 0)) == -1
+			|| (res[1] = appclient_call(ac, "ram_free", 0)) == -1
+			|| (res[2] = appclient_call(ac, "ram_shared", 0)) == -1
+			|| (res[3] = appclient_call(ac, "ram_buffer", 0)) == -1)
+		return 1;
+	sprintf(rrd, "%s_%s", host->hostname, "ram.rrd");
+	_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
+	return 0;
+}
+
+static int _refresh_swap(AppClient * ac, Host * host, char * rrd)
+{
+	int res[2];
+
+	if((res[0] = appclient_call(ac, "swap_total", 0)) == -1
+			|| (res[1] = appclient_call(ac, "swap_free", 0)) == -1)
+		return 1;
+	sprintf(rrd, "%s_%s", host->hostname, "swap.rrd");
+	_rrd_update(rrd, 2, res[0], res[1]);
+	return 0;
+}
+
+static int _refresh_users(AppClient * ac, Host * host, char * rrd)
+{
+	int res[2];
+
+	if((res[0] = appclient_call(ac, "users", 0)) == -1)
+		return 1;
+	sprintf(rrd, "%s_%s", host->hostname, "users.rrd");
+	_rrd_update(rrd, 1, res[0]);
+	return 0;
+}
+
+static int _refresh_if(AppClient * ac, Host * host, char * rrd)
+{
+	int res[2];
+	char * iface;
+
+	if((iface = host->iface) == NULL)
+		return 0;
+	if((res[0] = appclient_call(ac, "ifrxbytes", 1, iface)) == -1
+			|| (res[1] = appclient_call(ac, "iftxbytes", 1, iface))
+			== -1)
+		return 1;
+	sprintf(rrd, "%s_%s%s", host->hostname, iface, ".rrd");
+	_rrd_update(rrd, 2, res[0], res[1]);
+	return 0;
 }
 
 static int _exec(char * argv[]);
