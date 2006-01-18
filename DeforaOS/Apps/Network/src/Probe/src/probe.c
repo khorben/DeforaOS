@@ -1,18 +1,22 @@
 /* probe.c */
+/* TODO:
+ * - check ifinfo code (and thus volinfo)
+ * - free memory allocated */
 
 
 
 #include <System.h>
 #include <utmpx.h>
+#include <sys/statvfs.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef _GNU_SOURCE
 # include <sys/sysinfo.h>
 #else
 # include <sys/param.h>
 # include <sys/sysctl.h>
 # include <sys/resource.h>
-# include <string.h>
 #endif
 
 #define PROBE_REFRESH 10
@@ -34,17 +38,28 @@ struct sysinfo
 	unsigned short procs;
 };
 
+static int _sysinfo_uptime(struct sysinfo * info);
+static int _sysinfo_loads(struct sysinfo * info);
+static int _sysinfo_ram(struct sysinfo * info);
+static int _sysinfo_procs(struct sysinfo * info);
 static int sysinfo(struct sysinfo * info)
 {
-	struct timeval now;
-	struct timeval tv;
-	struct loadavg la;
-	struct uvmexp ue;
-	int mib[3];
-	int len;
 	int ret = 0;
 
-	/* uptime */
+	ret += _sysinfo_uptime(info);
+	ret += _sysinfo_loads(info);
+	ret += _sysinfo_ram(info);
+	ret += _sysinfo_procs(info);
+	return ret;
+}
+
+static int _sysinfo_uptime(struct sysinfo * info)
+{
+	int mib[2];
+	size_t len;
+	struct timeval now;
+	struct timeval tv;
+
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_BOOTTIME;
 	len = sizeof(tv);
@@ -52,12 +67,18 @@ static int sysinfo(struct sysinfo * info)
 			|| sysctl(mib, 2, &tv, &len, NULL, 0) == -1)
 	{
 		info->uptime = 0;
-		ret++;
+		return 1;
 	}
-	else
-		info->uptime = now.tv_sec - tv.tv_sec;
+	info->uptime = now.tv_sec - tv.tv_sec;
+	return 0;
+}
 
-	/* loads */
+static int _sysinfo_loads(struct sysinfo * info)
+{
+	int mib[2];
+	size_t len;
+	struct loadavg la;
+
 	/* FIXME getloadavg() looks portable */
 	mib[0] = CTL_VM;
 	mib[1] = VM_LOADAVG;
@@ -65,16 +86,20 @@ static int sysinfo(struct sysinfo * info)
 	if(sysctl(mib, 2, &la, &len, NULL, 0) == -1)
 	{
 		memset(info->loads, 0, sizeof(info->loads));
-		ret++;
+		return 1;
 	}
-	else
-	{
-		info->loads[0] = la.ldavg[0];
-		info->loads[1] = la.ldavg[1];
-		info->loads[2] = la.ldavg[2];
-	}
+	info->loads[0] = la.ldavg[0];
+	info->loads[1] = la.ldavg[1];
+	info->loads[2] = la.ldavg[2];
+	return 0;
+}
 
-	/* ram */
+static int _sysinfo_ram(struct sysinfo * info)
+{
+	int mib[2];
+	size_t len;
+	struct uvmexp ue;
+
 	mib[0] = CTL_VM;
 	mib[1] = VM_UVMEXP;
 	len = sizeof(ue);
@@ -86,19 +111,22 @@ static int sysinfo(struct sysinfo * info)
 		info->bufferram = 0;
 		info->totalswap = 0;
 		info->freeswap = 0;
-		ret++;
+		return 1;
 	}
-	else
-	{
-		info->totalram = ue.pagesize * ue.npages;
-		info->freeram = ue.pagesize * ue.free;
-		info->sharedram = ue.pagesize * ue.execpages;
-		info->bufferram = ue.pagesize * ue.filepages;
-		info->totalswap = ue.pagesize * ue.swpages;
-		info->freeswap = info->totalswap - (ue.pagesize * ue.swpgonly);
-	}
+	info->totalram = ue.pagesize * ue.npages;
+	info->freeram = ue.pagesize * ue.free;
+	info->sharedram = ue.pagesize * ue.execpages;
+	info->bufferram = ue.pagesize * ue.filepages;
+	info->totalswap = ue.pagesize * ue.swpages;
+	info->freeswap = info->totalswap - (ue.pagesize * ue.swpgonly);
+	return 0;
+}
 
-	/* procs */
+static int _sysinfo_procs(struct sysinfo * info)
+{
+	int mib[3];
+	size_t len;
+
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_PROC;
 	mib[2] = KERN_PROC_ALL;
@@ -106,11 +134,10 @@ static int sysinfo(struct sysinfo * info)
 	if(sysctl(mib, 3, NULL, &len, NULL, 0) == -1)
 	{
 		info->procs = 0;
-		ret++;
+		return 1;
 	}
-	else
-		info->procs = len / sizeof(struct kinfo_proc);
-	return ret;
+	info->procs = len / sizeof(struct kinfo_proc);
+	return 0;
 }
 #endif
 
@@ -131,9 +158,9 @@ struct ifinfo
 };
 
 #ifdef _GNU_SOURCE
-static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb);
+static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb);
 #endif
-static int ifinfo(struct ifinfo ** dev)
+static int _ifinfo(struct ifinfo ** dev)
 {
 	int ret = 0;
 #ifdef _GNU_SOURCE
@@ -149,12 +176,12 @@ static int ifinfo(struct ifinfo ** dev)
 		len = string_length(buf);
 		if(buf[len-1] != '\n')
 		{
-			ret = 1;
+			ret = -1;
 			break;
 		}
 		if(i < 2)
 			continue;
-		if(ifinfo_append(dev, buf, i - 2) != 0)
+		if(_ifinfo_append(dev, buf, i - 2) != 0)
 		{
 			ret = -1;
 			break;
@@ -167,22 +194,22 @@ static int ifinfo(struct ifinfo ** dev)
 }
 
 #ifdef _GNU_SOURCE
-static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
+static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 {
 	struct ifinfo * p;
-	int i;
+	size_t i;
 	char * q;
 	int j = 0;
 
 	if((p = realloc(*dev, sizeof(struct ifinfo) * (nb + 1))) == NULL)
 		return 1;
 	*dev = p;
-	for(i = 0; i < 6 && buf[i] != '\0'; i++);
-	if(i != 6)
+	for(i = 0; i < sizeof(p->name) && buf[i] != '\0'; i++);
+	if(i != sizeof(p->name))
 		return 1;
-	buf[6] = '\0';
+	buf[sizeof(p->name)-1] = '\0';
 	for(q = buf; q[0] == ' '; q++);
-	strcpy((*dev)[nb].name, q);
+	strcpy(p[nb].name, q);
 	for(i++; buf[i] != '\0'; i++)
 	{
 		if(j > IF_LAST)
@@ -201,6 +228,81 @@ static int ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 #endif
 
 
+/* volinfo */
+enum VolInfo
+{
+	VI_DEVICE = 0, VI_MOUNTPOINT, VI_FS, VI_OPTIONS, VI_DUMP, VI_PASS
+};
+#define VI_LAST VI_PASS
+struct volinfo
+{
+	char name[256];
+	unsigned long block_size;
+	fsblkcnt_t total;
+	fsblkcnt_t free;
+};
+
+static int _volinfo_append(struct volinfo ** dev, char * buf, int nb);
+static int _volinfo(struct volinfo ** dev)
+{
+	int ret = 0;
+	FILE * fp;
+	char buf[200];
+	int i;
+	int len;
+
+	if((fp = fopen("/etc/mtab", "r")) == NULL)
+		return -1;
+	for(i = 0; fgets(buf, sizeof(buf), fp) != NULL; i++)
+	{
+		len = string_length(buf);
+		if(buf[len-1] != '\n')
+		{
+			ret = -1;
+			break;
+		}
+		if(_volinfo_append(dev, buf, i) != 0)
+		{
+			ret = -1;
+			break;
+		}
+		ret++;
+	}
+	fclose(fp);
+	return ret;
+}
+
+static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
+{
+	int i;
+	int j;
+	struct volinfo * p;
+	struct statvfs sv;
+
+	for(i = 0; buf[i] != '\0' && buf[i] != ' '; i++);
+	if(buf[i] == '\0')
+		return 1;
+	for(j = ++i; buf[j] != '\0' && buf[j] != ' '; j++);
+	if(buf[j] == '\0')
+		return 1;
+	if((p = realloc(*dev, sizeof(struct volinfo) * (nb + 1))) == NULL)
+		return 1;
+	*dev = p;
+	memset(&p[nb], 0, sizeof(struct volinfo));
+	strncpy(p[nb].name, &buf[i], j-i); /* FIXME overflow possible */
+	p[nb].name[j-i] = '\0';
+#ifdef DEBUG
+	fprintf(stderr, "_volinfo_append: %s\n", p[nb].name);
+#endif
+	if(statvfs(p[nb].name, &sv) != 0)
+		return 1;
+	p[nb].block_size = sv.f_bsize;
+	p[nb].total = sv.f_blocks;
+	p[nb].free = sv.f_bavail;
+	return 0;
+}
+
+
 /* Probe */
 /* types */
 typedef struct _Probe
@@ -209,6 +311,8 @@ typedef struct _Probe
 	unsigned int users;
 	struct ifinfo * ifinfo;
 	unsigned int ifinfo_cnt;
+	struct volinfo * volinfo;
+	unsigned int volinfo_cnt;
 } Probe;
 
 /* variables */
@@ -223,10 +327,10 @@ static int _probe(void)
 	Event * event;
 	struct timeval tv;
 
-	probe.ifinfo = NULL;
-	probe.ifinfo_cnt = 0;
+	memset(&probe, 0, sizeof(Probe));
 	if(_probe_timeout(&probe) != 0)
-		return _probe_error("sysinfo", 1);
+		/* FIXME free memory */
+		return 1;
 	if((event = event_new()) == NULL)
 		return _probe_error("Event", 2);
 	if((appserver = appserver_new_event("Probe", ASO_REMOTE, event))
@@ -244,7 +348,7 @@ static int _probe(void)
 		event_loop(event);
 	appserver_delete(appserver);
 	event_delete(event);
-	return 2;
+	return 1;
 }
 
 static int _probe_error(char * message, int ret)
@@ -269,9 +373,12 @@ static int _probe_timeout(Probe * probe)
 		if(ut->ut_type == USER_PROCESS)
 			probe->users++;
 	endutxent();
-	if((i = ifinfo(&probe->ifinfo)) < 0)
+	if((i = _ifinfo(&probe->ifinfo)) < 0)
 		return _probe_error("ifinfo", 1);
 	probe->ifinfo_cnt = i;
+	if((i = _volinfo(&probe->volinfo)) < 0)
+		return _probe_error("volinfo", 1);
+	probe->volinfo_cnt = i;
 	return 0;
 }
 
@@ -279,80 +386,104 @@ static int _probe_timeout(Probe * probe)
 /* AppInterface */
 int uptime(void)
 {
+#ifdef DEBUG
 	printf("%s%ld%s", "Uptime: ", probe.sysinfo.uptime, "\n");
+#endif
 	return probe.sysinfo.uptime;
 }
 
 
 int load_1(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Load 1: ", probe.sysinfo.loads[0], "\n");
+#endif
 	return probe.sysinfo.loads[0];
 }
 
 
 int load_5(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Load 5: ", probe.sysinfo.loads[1], "\n");
+#endif
 	return probe.sysinfo.loads[1];
 }
 
 
 int load_15(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Load 15: ", probe.sysinfo.loads[2], "\n");
+#endif
 	return probe.sysinfo.loads[2];
 }
 
 
 int ram_total(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Total RAM: ", probe.sysinfo.totalram, "\n");
+#endif
 	return probe.sysinfo.totalram;
 }
 
 int ram_free(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Free RAM: ", probe.sysinfo.freeram, "\n");
+#endif
 	return probe.sysinfo.freeram;
 }
 
 int ram_shared(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Shared RAM: ", probe.sysinfo.sharedram, "\n");
+#endif
 	return probe.sysinfo.sharedram;
 }
 
 int ram_buffer(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Buffered RAM: ", probe.sysinfo.bufferram, "\n");
+#endif
 	return probe.sysinfo.bufferram;
 }
 
 
 int swap_total(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Total swap: ", probe.sysinfo.totalswap, "\n");
+#endif
 	return probe.sysinfo.totalswap;
 }
 
 int swap_free(void)
 {
+#ifdef DEBUG
 	printf("%s%lu%s", "Free swap: ", probe.sysinfo.freeswap, "\n");
+#endif
 	return probe.sysinfo.freeswap;
 }
 
 
 int procs(void)
 {
+#ifdef DEBUG
 	printf("%s%u%s", "Procs: ", probe.sysinfo.procs, "\n");
+#endif
 	return probe.sysinfo.procs;
 }
 
 
 int users(void)
 {
+#ifdef DEBUG
 	printf("%s%u%s", "Users: ", probe.users, "\n");
+#endif
 	return probe.users;
 }
 
@@ -365,8 +496,10 @@ int ifrxbytes(char * dev)
 			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
 	if(i == probe.ifinfo_cnt)
 		return -1;
+#ifdef DEBUG
 	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " RX: ",
 			probe.ifinfo[i].stats[IF_RX_BYTES], "\n");
+#endif
 	return probe.ifinfo[i].stats[IF_RX_BYTES];
 }
 
@@ -378,8 +511,10 @@ int iftxbytes(char * dev)
 			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
 	if(i == probe.ifinfo_cnt)
 		return -1;
+#ifdef DEBUG
 	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " TX: ",
 			probe.ifinfo[i].stats[IF_TX_BYTES], "\n");
+#endif
 	return probe.ifinfo[i].stats[IF_TX_BYTES];
 }
 
