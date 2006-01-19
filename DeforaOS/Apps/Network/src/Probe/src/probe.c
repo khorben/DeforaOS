@@ -105,12 +105,7 @@ static int _sysinfo_ram(struct sysinfo * info)
 	len = sizeof(ue);
 	if(sysctl(mib, 2, &ue, &len, NULL, 0) == -1)
 	{
-		info->totalram = 0;
-		info->freeram = 0;
-		info->sharedram = 0;
-		info->bufferram = 0;
-		info->totalswap = 0;
-		info->freeswap = 0;
+		memset(info, 0, sizeof(*info));
 		return 1;
 	}
 	info->totalram = ue.pagesize * ue.npages;
@@ -181,7 +176,7 @@ static int _ifinfo(struct ifinfo ** dev)
 		}
 		if(i < 2)
 			continue;
-		if(_ifinfo_append(dev, buf, i - 1) != 0)
+		if(_ifinfo_append(dev, buf, i - 2) != 0)
 		{
 			ret = -1;
 			break;
