@@ -34,7 +34,7 @@ static int _damon(void)
 {
 	Host hosts[] = {
 		{ NULL, "pinge.lan.defora.org", "eth0" },
-		{ NULL, "rst.defora.org", NULL },
+		{ NULL, "rst.lan.defora.org", NULL },
 		{ NULL, "raq3.dmz.defora.org", "eth0" },
 		{ NULL, "raq4.dmz.defora.org", "eth0" },
 /*		{ NULL, "ss20.dmz.defora.org" }, */
