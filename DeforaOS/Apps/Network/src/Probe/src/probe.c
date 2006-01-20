@@ -517,6 +517,40 @@ int iftxbytes(char * dev)
 }
 
 
+int voltotal(char * vol)
+{
+	unsigned int i;
+
+	for(i = 0; i < probe.volinfo_cnt
+			&& string_compare(probe.volinfo[i].name, vol) != 0;
+			i++);
+	if(i == probe.volinfo_cnt)
+		return -1;
+#ifdef DEBUG
+	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " total: ",
+			probe.volinfo[i].total, "\n");
+#endif
+	return probe.volinfo[i].total;
+}
+
+
+int volfree(char * vol)
+{
+	unsigned int i;
+
+	for(i = 0; i < probe.volinfo_cnt
+			&& string_compare(probe.volinfo[i].name, vol) != 0;
+			i++);
+	if(i == probe.volinfo_cnt)
+		return -1;
+#ifdef DEBUG
+	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " free: ",
+			probe.volinfo[i].free, "\n");
+#endif
+	return probe.volinfo[i].free;
+}
+
+
 /* main */
 int main(void)
 {

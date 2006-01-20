@@ -19,6 +19,7 @@ typedef struct _Host
 	AppClient * appclient;
 	char * hostname;
 	char ** ifaces;
+	char ** vols;
 } Host;
 
 
@@ -143,6 +144,7 @@ static int _hosts_host(Config * config, Host * host, char * h, unsigned int pos)
 
 	host->appclient = NULL;
 	host->ifaces = NULL;
+	host->vols = NULL;
 	if((host->hostname = malloc(pos+1)) == NULL)
 		return _damon_error("malloc", 1);
 	strncpy(host->hostname, h, pos);
@@ -152,6 +154,8 @@ static int _hosts_host(Config * config, Host * host, char * h, unsigned int pos)
 #endif
 	if((p = config_get(config, host->hostname, "interfaces")) != NULL)
 		host->ifaces = _host_comma(p);
+	if((p = config_get(config, host->hostname, "volumes")) != NULL)
+		host->vols = _host_comma(p);
 	return 0;
 }
 
@@ -224,6 +228,7 @@ static int _refresh_swap(AppClient * ac, Host * host, char * rrd);
 static int _refresh_procs(AppClient * ac, Host * host, char * rrd);
 static int _refresh_users(AppClient * ac, Host * host, char * rrd);
 static int _refresh_ifaces(AppClient * ac, Host * host, char * rrd);
+static int _refresh_vols(AppClient * ac, Host * host, char * rrd);
 static int _damon_refresh(DaMon * damon)
 {
 	unsigned int i;
@@ -251,7 +256,8 @@ static int _damon_refresh(DaMon * damon)
 				|| _refresh_swap(ac, &hosts[i], rrd) != 0
 				|| _refresh_procs(ac, &hosts[i], rrd) != 0
 				|| _refresh_users(ac, &hosts[i], rrd) != 0
-				|| _refresh_ifaces(ac, &hosts[i], rrd) != 0)
+				|| _refresh_ifaces(ac, &hosts[i], rrd) != 0
+				|| _refresh_vols(ac, &hosts[i], rrd) != 0)
 		{
 			appclient_delete(ac);
 			hosts[i].appclient = NULL;
@@ -370,6 +376,32 @@ static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface)
 			== -1)
 		return 1;
 	sprintf(rrd, "%s_%s%s", host->hostname, iface, ".rrd");
+	_rrd_update(rrd, 2, res[0], res[1]);
+	return 0;
+}
+
+static int _vols_vol(AppClient * ac, Host * host, char * rrd, char * vol);
+static int _refresh_vols(AppClient * ac, Host * host, char * rrd)
+{
+	char ** p = host->vols;
+	int ret = 0;
+
+	if(p == NULL)
+		return 0;
+	for(; *p != NULL; p++)
+		ret+=_vols_vol(ac, host, rrd, *p);
+	return ret;
+}
+
+static int _vols_vol(AppClient * ac, Host * host, char * rrd, char * vol)
+{
+	int res[2];
+
+	if((res[0] = appclient_call(ac, "voltotal", 1, vol)) == -1
+			|| (res[1] = appclient_call(ac, "volfree", 1, vol))
+			== -1)
+		return 1;
+	sprintf(rrd, "%s%s%s", host->hostname, vol, ".rrd"); /* FIXME */
 	_rrd_update(rrd, 2, res[0], res[1]);
 	return 0;
 }
