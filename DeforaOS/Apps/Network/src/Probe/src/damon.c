@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DAMON_REFRESH 10
+#define DAMON_DEFAULT_REFRESH 10
 
 
 /* types */
@@ -18,46 +18,31 @@ typedef struct _Host
 {
 	AppClient * appclient;
 	char * hostname;
-	char * iface;
+	char ** ifaces;
 } Host;
 
 
 /* DaMon */
-typedef struct _Hosts_Event
+typedef struct _DaMon
 {
+	unsigned int refresh;
 	Host * hosts;
+	unsigned int hosts_cnt;
 	Event * event;
-} Hosts_Event;
+} DaMon;
 static int _damon_error(char * message, int ret);
-static int _damon_refresh(Hosts_Event * h_e);
+static int _damon_init(DaMon * damon);
+static void _damon_destroy(DaMon * damon);
+static int _damon_refresh(DaMon * damon);
 static int _damon(void)
 {
-	Host hosts[] = {
-		{ NULL, "pinge.lan.defora.org", "eth0" },
-		{ NULL, "rst.lan.defora.org", NULL },
-		{ NULL, "raq3.dmz.defora.org", "eth0" },
-		{ NULL, "raq4.dmz.defora.org", "eth0" },
-/*		{ NULL, "ss20.dmz.defora.org" }, */
-		{ NULL, NULL, NULL }
-	};
-	Hosts_Event h_e;
-	struct timeval tv;
-	int i;
+	DaMon damon;
 
-	if((h_e.event = event_new()) == NULL)
-		return _damon_error("Event", 1);
-	h_e.hosts = hosts;
-	_damon_refresh(&h_e);
-	tv.tv_sec = DAMON_REFRESH;
-	tv.tv_usec = 0;
-	event_register_timeout(h_e.event, tv,
-			(EventTimeoutFunc)_damon_refresh, &h_e);
-	if(event_loop(h_e.event) != 0)
+	if(_damon_init(&damon) != 0)
+		return 1;
+	if(event_loop(damon.event) != 0)
 		_damon_error("AppClient", 0);
-	for(i = 0; hosts[i].hostname != NULL; i++)
-		if(hosts[i].appclient != NULL)
-			appclient_delete(hosts[i].appclient);
-	event_delete(h_e.event);
+	_damon_destroy(&damon);
 	return 1;
 }
 
@@ -68,6 +53,169 @@ static int _damon_error(char * message, int ret)
 	return ret;
 }
 
+static int _init_config(DaMon * damon);
+static int _damon_init(DaMon * damon)
+{
+	struct timeval tv;
+
+	if(_init_config(damon) != 0)
+		return 1;
+	if((damon->event = event_new()) == NULL)
+		return _damon_error("Event", 1);
+	_damon_refresh(damon);
+	tv.tv_sec = damon->refresh;
+	tv.tv_usec = 0;
+	event_register_timeout(damon->event, tv,
+			(EventTimeoutFunc)_damon_refresh, damon);
+	return 0;
+}
+
+static int _config_hosts(DaMon * damon, Config * config, char * hosts);
+static int _init_config(DaMon * damon)
+{
+	Config * config;
+	char * p;
+	char * q;
+
+	if((config = config_new()) == NULL)
+		return 1;
+	damon->refresh = DAMON_DEFAULT_REFRESH;
+	damon->hosts = NULL;
+	damon->hosts_cnt = 0;
+	if(config_load(config, "damon.cfg") != 0) /* FIXME multiple filenames */
+	{
+		config_delete(config);
+		return 0;
+	}
+	if((p = config_get(config, "", "refresh")) != NULL)
+	{
+		damon->refresh = strtol(p, &q, 10);
+		if(*p == '\0' || *q != '\0' || damon->refresh <= 0)
+			damon->refresh = DAMON_DEFAULT_REFRESH;
+#ifdef DEBUG
+		fprintf(stderr, "refresh set to %d\n", damon->refresh);
+#endif
+	}
+	if((p = config_get(config, "", "hosts")) != NULL)
+		_config_hosts(damon, config, p);
+	config_delete(config);
+	return 0;
+}
+
+static int _hosts_host(Config * config, Host * host, char * h,
+		unsigned int pos);
+static int _config_hosts(DaMon * damon, Config * config, char * hosts)
+{
+	char * h = hosts;
+	unsigned int pos = 0;
+	Host * p;
+
+	for(; h[0] != '\0';)
+	{
+		if(h[pos] != '\0' && h[pos] != ',')
+		{
+			pos++;
+			continue;
+		}
+		if(pos == 0)
+		{
+			h++;
+			continue;
+		}
+		if((p = realloc(damon->hosts, sizeof(Host)
+						* (damon->hosts_cnt+1)))
+				== NULL)
+			return _damon_error("malloc", 1);
+		damon->hosts = p;
+		if(_hosts_host(config, &damon->hosts[damon->hosts_cnt++], h,
+					pos) != 0)
+			return 1;
+		h+=pos;
+		pos = 0;
+	}
+	return 0;
+}
+
+static char ** _host_comma(char * line);
+static int _hosts_host(Config * config, Host * host, char * h, unsigned int pos)
+{
+	char * p;
+
+	host->appclient = NULL;
+	host->ifaces = NULL;
+	if((host->hostname = malloc(pos+1)) == NULL)
+		return _damon_error("malloc", 1);
+	strncpy(host->hostname, h, pos);
+	host->hostname[pos] = '\0';
+#ifdef DEBUG
+	fprintf(stderr, "config: Host %s\n", host->hostname);
+#endif
+	if((p = config_get(config, host->hostname, "interfaces")) != NULL)
+		host->ifaces = _host_comma(p);
+	return 0;
+}
+
+static char ** _host_comma(char * line)
+{
+	char * l = line;
+	unsigned int pos = 0;
+	char ** values = NULL;
+	char ** p;
+	unsigned int cnt = 0;
+
+	for(; l[0] != '\0';)
+	{
+		if(l[pos] != '\0' && l[pos] != ',')
+		{
+			pos++;
+			continue;
+		}
+		if(pos == 0)
+		{
+			l++;
+			continue;
+		}
+		if((p = realloc(values, sizeof(char*) * (cnt+2))) == NULL)
+			break;
+		values = p;
+		if((values[cnt] = malloc(pos+1)) != NULL)
+		{
+			strncpy(values[cnt], l, pos);
+			values[cnt][pos] = '\0';
+#ifdef DEBUG
+	fprintf(stderr, "config: %s\n", values[cnt]);
+#endif
+		}
+		values[++cnt] = NULL;
+		if(values[cnt-1] == NULL)
+			break;
+		l+=pos;
+		pos = 0;
+	}
+	if(l[0] == '\0')
+		return values;
+	if(values == NULL)
+		return NULL;
+	for(p = values; *p != NULL; p++)
+		free(*p);
+	free(values);
+	return NULL;
+}
+
+static void _damon_destroy(DaMon * damon)
+{
+	unsigned int i;
+
+	for(i = 0; i < damon->hosts_cnt; i++)
+	{
+		free(damon->hosts[i].hostname);
+		if(damon->hosts[i].appclient != NULL)
+			appclient_delete(damon->hosts[i].appclient);
+	}
+	event_delete(damon->event);
+	free(damon->hosts);
+}
+
 static AppClient * _refresh_connect(Host * host, Event * event);
 static int _refresh_uptime(AppClient * ac, Host * host, char * rrd);
 static int _refresh_load(AppClient * ac, Host * host, char * rrd);
@@ -75,20 +223,22 @@ static int _refresh_ram(AppClient * ac, Host * host, char * rrd);
 static int _refresh_swap(AppClient * ac, Host * host, char * rrd);
 static int _refresh_procs(AppClient * ac, Host * host, char * rrd);
 static int _refresh_users(AppClient * ac, Host * host, char * rrd);
-static int _refresh_if(AppClient * ac, Host * host, char * rrd);
-static int _damon_refresh(Hosts_Event * h_e)
+static int _refresh_ifaces(AppClient * ac, Host * host, char * rrd);
+static int _damon_refresh(DaMon * damon)
 {
-	int i;
+	unsigned int i;
 	AppClient * ac = NULL;
 	char * rrd = NULL;
 	char * p;
-	Host * hosts = h_e->hosts;
+	Host * hosts = damon->hosts;
 
+#ifdef DEBUG
 	fprintf(stderr, "%s", "_damon_refresh()\n");
-	for(i = 0; hosts[i].hostname != NULL; i++)
+#endif
+	for(i = 0; i < damon->hosts_cnt; i++)
 	{
 		if((ac = hosts[i].appclient) == NULL)
-			if((ac = _refresh_connect(&hosts[i], h_e->event))
+			if((ac = _refresh_connect(&hosts[i], damon->event))
 					== NULL)
 				continue;
 		if((p = realloc(rrd, string_length(hosts[i].hostname) + 12))
@@ -101,7 +251,7 @@ static int _damon_refresh(Hosts_Event * h_e)
 				|| _refresh_swap(ac, &hosts[i], rrd) != 0
 				|| _refresh_procs(ac, &hosts[i], rrd) != 0
 				|| _refresh_users(ac, &hosts[i], rrd) != 0
-				|| _refresh_if(ac, &hosts[i], rrd) != 0)
+				|| _refresh_ifaces(ac, &hosts[i], rrd) != 0)
 		{
 			appclient_delete(ac);
 			hosts[i].appclient = NULL;
@@ -198,13 +348,23 @@ static int _refresh_users(AppClient * ac, Host * host, char * rrd)
 	return 0;
 }
 
-static int _refresh_if(AppClient * ac, Host * host, char * rrd)
+static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface);
+static int _refresh_ifaces(AppClient * ac, Host * host, char * rrd)
+{
+	char ** p = host->ifaces;
+	int ret = 0;
+
+	if(p == NULL)
+		return 0;
+	for(; *p != NULL; p++)
+		ret+=_ifaces_if(ac, host, rrd, *p);
+	return ret;
+}
+
+static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface)
 {
 	int res[2];
-	char * iface;
 
-	if((iface = host->iface) == NULL)
-		return 0;
 	if((res[0] = appclient_call(ac, "ifrxbytes", 1, iface)) == -1
 			|| (res[1] = appclient_call(ac, "iftxbytes", 1, iface))
 			== -1)
