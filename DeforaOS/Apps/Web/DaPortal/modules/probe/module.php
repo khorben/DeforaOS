@@ -115,10 +115,10 @@ function _host_graph($hostname, $graph, $time)
 			$label = 'bytes';
 			$def = array('ifrxbytes', 'iftxbytes');
 			$data = ' AREA:ifrxbytes#30ff30'
-					.' LINE2:ifrxbytes#00d000'
-					.' GPRINT:ifrxbytes:LAST:" %.0lf"'
-					.' LINE2:iftxbytes#4f4fff'
-					.' GPRINT:iftxbytes:LAST:" %.0lf"';
+				.' LINE2:ifrxbytes#00d000:"RX bytes\:\g"'
+				.' GPRINT:ifrxbytes:LAST:" %.0lf"'
+				.' LINE2:iftxbytes#4f4fff:"TX bytes\:\g"'
+				.' GPRINT:iftxbytes:LAST:" %.0lf"';
 			break;
 		default:
 			return ''; //FIXME
