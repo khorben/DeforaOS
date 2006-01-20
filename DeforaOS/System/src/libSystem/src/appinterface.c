@@ -210,6 +210,8 @@ static int _new_probe(AppInterface * ai)
 	ret += _new_append(ai, AICT_UINT32, "procs", 0);
 	ret += _new_append(ai, AICT_UINT32, "ifrxbytes", 1, AICT_STRING);
 	ret += _new_append(ai, AICT_UINT32, "iftxbytes", 1, AICT_STRING);
+	ret += _new_append(ai, AICT_UINT32, "voltotal", 1, AICT_STRING);
+	ret += _new_append(ai, AICT_UINT32, "volfree", 1, AICT_STRING);
 	return ret;
 }
 
