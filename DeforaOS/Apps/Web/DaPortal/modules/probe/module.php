@@ -196,6 +196,8 @@ function probe_admin($args)
 		$action = 'config_update';
 		include('system/config.tpl');
 	}
+	print('<h2><img src="modules/probe/icon.png" alt=""/> '
+			.'Host list</h2>'."\n");
 	$hosts = _sql_array('SELECT host_id AS id, title AS name, enabled'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id;');
