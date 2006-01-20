@@ -1,4 +1,6 @@
 <?php //modules/probe/module.php
+//TODO:
+//- fix configuration when name has a space
 
 
 
@@ -7,10 +9,23 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
+//lang
+$text['CONFIGURATION_ERROR'] = 'Configuration error';
+$text['MONITORING'] = 'Monitoring';
+$text['MONITORING_ADMINISTRATION'] = 'Monitoring administration';
+global $lang;
+if($lang == 'fr')
+	$text['CONFIGURATION_ERROR'] = 'Erreur de configuration';
+_lang($text);
+
+
 //private
-function _host_graph($hostname, $graph, $time)
+function _host_graph($hostname, $graph, $time, $param)
 {
-	$rrd = '/var/lib/Probe/'.$hostname.'_'.$graph.'.rrd'; //FIXME
+	if(!($probe = _config_get('probe', 'RRD_repository')))
+		return _error(CONFIGURATION_ERROR);
+	//FIXME not always true (if, vol)
+	$rrd = $probe.'/'.$hostname.'_'.$graph.'.rrd';
 	_info('rrd: '.$rrd);
 	switch($time)
 	{
@@ -26,7 +41,8 @@ function _host_graph($hostname, $graph, $time)
 			$time = 'hour';
 			break;
 	}
-	$png = 'tmp/'.$hostname.'_'.$graph.'_'.$time.'.png'; //FIXME
+	//FIXME hardcoded path + not always true (if, vol)
+	$png = 'tmp/'.$hostname.'_'.$graph.'_'.$time.'.png';
 	if(($st = stat($png)) != FALSE && $st['mtime'] + 30 > time())
 		return $png;
 	$title = '';
@@ -110,7 +126,10 @@ function _host_graph($hostname, $graph, $time)
 				.' LINE2:procs#4f4fff:"Process count\:\g"'
 				.' GPRINT:procs:LAST:" %.0lf"';
 			break;
-		case 'eth0':
+		case 'iface':
+			$rrd = $probe.'/'.$hostname.'_'.$param.'.rrd';
+			//FIXME hardcoded path
+			$png = 'tmp/'.$hostname.'_'.$param.'_'.$time.'.png';
 			$title = 'network traffic';
 			$label = 'bytes';
 			$def = array('ifrxbytes', 'iftxbytes');
@@ -120,8 +139,26 @@ function _host_graph($hostname, $graph, $time)
 				.' LINE2:iftxbytes#4f4fff:"TX bytes\:\g"'
 				.' GPRINT:iftxbytes:LAST:" %.0lf"';
 			break;
+		case 'vol':
+			$rrd = $probe.'/'.$hostname.$param.'.rrd';
+			//FIXME hardcoded path
+			if(!is_dir('tmp/'.$hostname))
+				mkdir('tmp/'.$hostname);
+			$png = 'tmp/'.$hostname.$param.'_'.$time.'.png';
+			$title = 'volume usage: '.$param;
+			$label = 'blocks';
+			$base = 1000;
+			$def = array('voltotal', 'volfree');
+			$cdef = array('pvoltotal' => 'voltotal,1024,/,4,*',
+				'pvolfree' => 'volfree,1024,/,4,*');
+			$data = ' AREA:pvoltotal#ff0000:"Total\:\g"'
+				.' GPRINT:pvoltotal:LAST:" %.0lf MB"'
+				.' AREA:pvolfree#0000ff:"Free\:\g"'
+				.' GPRINT:pvolfree:LAST:" %.0lf MB"';
+			break;
 		default:
-			return ''; //FIXME
+			_error('Unknown graph to update');
+			return '';
 	}
 	$cmd = 'rrdtool graph '.$png.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
@@ -136,6 +173,7 @@ function _host_graph($hostname, $graph, $time)
 	$cmd.=' --title "'.$hostname.' '.$title.' (last '.$time.')"'
 		.' --vertical-label "'.$label.'"';
 	_info('exec: '.$cmd);
+	//FIXME check potential command insertion through hostname/title/etc
 	exec($cmd);
 	return $png;
 }
@@ -148,8 +186,16 @@ function probe_admin($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	print('<h1><img src="modules/probe/icon.png" alt=""/>'
-			.' Monitoring administration</h1>'."\n");
+	print('<h1><img src="modules/probe/icon.png" alt=""/> '
+			._html_safe(MONITORING_ADMINISTRATION).'</h1>'."\n");
+	if(($configs = _config_list('probe')))
+	{
+		print('<h2><img src="modules/probe/icon.png" alt=""/> '
+				.'Configuration</h2>'."\n");
+		$module = 'probe';
+		$action = 'config_update';
+		include('system/config.tpl');
+	}
 	$hosts = _sql_array('SELECT host_id AS id, title AS name, enabled'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id;');
@@ -181,6 +227,23 @@ function probe_admin($args)
 }
 
 
+function probe_config_update($args)
+{
+	global $user_id, $module_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('system/config.php');
+	$keys = array_keys($args);
+	foreach($keys as $k)
+		if(ereg('^probe_([a-zA-Z_]+)$', $k, $regs))
+			_config_set('probe', $regs[1], $args[$k], 0);
+	header('Location: index.php?module=probe&action=admin');
+	exit(0);
+}
+
+
 function probe_default($args)
 {
 	return probe_host_list(array());
@@ -203,6 +266,8 @@ function probe_host_delete($args)
 
 function probe_host_display($args)
 {
+	if(!($probe = _config_get('probe', 'RRD_repository')))
+		return _error(CONFIGURATION_ERROR);
 	$host = _sql_array('SELECT host_id AS id, title AS hostname'
 			.', content AS comment'
 			.' FROM daportal_probe_host, daportal_content'
@@ -213,7 +278,36 @@ function probe_host_display($args)
 		return _error('Could not display host');
 	$host = $host[0];
 	$title = 'Host: '.$host['hostname'];
-	/* FIXME graphs, categories, ... */
+	//FIXME graphs, categories, ...
+	$graphs = array();
+	$graphs[] = array('graph' => 'uptime', 'title' => 'Uptime');
+	$graphs[] = array('graph' => 'load', 'title' => 'Load average');
+	$graphs[] = array('graph' => 'ram', 'title' => 'Memory usage');
+	$graphs[] = array('graph' => 'swap', 'title' => 'Swap usage');
+	$graphs[] = array('graph' => 'users', 'title' => 'Logged users');
+	$graphs[] = array('graph' => 'procs', 'title' => 'Process count');
+	//FIXME potential directory traversal
+	if(is_readable($probe.'/'.$host['hostname'].'_eth0.rrd'))
+		$graphs[] = array('graph' => 'iface',
+				'title' => 'Network usage: eth0',
+				'param' => 'eth0');
+	//FIXME directory traversal + hidden rrd (*/.rrd)
+	$vols = glob($probe.'/'.$host['hostname'].'/*.rrd');
+	foreach($vols as $v)
+	{
+		$v = substr($v, 15 + strlen($host['hostname']));
+		$v = substr($v, 0, -4);
+		$graphs[] = array('graph' => 'vol',
+				'title' => 'Volume usage: '.$v,
+				'param' => $v);
+	}
+	if(isset($args['graph']))
+		foreach($graphs as $g)
+			if($g['graph'] == $args['graph'])
+			{
+				$graph = $args['graph'];
+				break;
+			}
 	include('host_display.tpl');
 }
 
@@ -308,8 +402,14 @@ function probe_host_update($args)
 
 function probe_system($args)
 {
+	global $title, $html;
+
+	$title.=' - '.MONITORING;
 	switch($args['action'])
 	{
+		case 'config_update':
+			$html = 0;
+			break;
 		case 'host_display':
 			header('refresh: 30');
 			break;
