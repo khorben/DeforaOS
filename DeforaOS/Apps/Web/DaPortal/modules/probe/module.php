@@ -110,6 +110,16 @@ function _host_graph($hostname, $graph, $time)
 				.' LINE2:procs#4f4fff:"Process count\:\g"'
 				.' GPRINT:procs:LAST:" %.0lf"';
 			break;
+		case 'eth0':
+			$title = 'network traffic';
+			$label = 'bytes';
+			$def = array('ifrxbytes', 'iftxbytes');
+			$data = ' AREA:ifrxbytes#30ff30'
+					.' LINE2:ifrxbytes#00d000'
+					.' GPRINT:ifrxbytes:LAST:" %.0lf"'
+					.' LINE2:iftxbytes#4f4fff'
+					.' GPRINT:iftxbytes:LAST:" %.0lf"';
+			break;
 		default:
 			return ''; //FIXME
 	}
