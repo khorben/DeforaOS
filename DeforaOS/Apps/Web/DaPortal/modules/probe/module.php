@@ -149,6 +149,7 @@ function _host_graph($hostname, $graph, $time, $param)
 			$label = 'blocks';
 			$base = 1000;
 			$def = array('voltotal', 'volfree');
+			//FIXME block size may not be 4
 			$cdef = array('pvoltotal' => 'voltotal,1024,/,4,*',
 				'pvolfree' => 'volfree,1024,/,4,*');
 			$data = ' AREA:pvoltotal#ff0000:"Total\:\g"'
