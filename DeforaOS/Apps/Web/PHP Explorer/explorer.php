@@ -262,7 +262,7 @@ if(isset($_POST['action']))
 	return header('Location: explorer.php?folder='.$folder.'&sort='.$sort
 			.'&reverse='.$reverse);
 }
-$folder = strlen($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
-$sort = $_GET['sort'];
+$folder = isset($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
+$sort = isset($_GET['sort']) ? $_GET['sort'] : '';
 $reverse = isset($_GET['reverse']);
 include('explorer.tpl');

@@ -22,7 +22,7 @@
 require('common.php');
 require('config.php');
 
-define(TREE_LEVEL, 1);
+define('TREE_LEVEL', 1);
 
 
 function list_dirs($path)
@@ -42,7 +42,7 @@ function list_dirs($path)
 			continue;
 		$dirs[] = $de;
 	}
-	usort($dirs, strcmp);
+	usort($dirs, 'strcmp');
 	return $dirs;
 }
 
