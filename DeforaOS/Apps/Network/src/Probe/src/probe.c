@@ -7,16 +7,17 @@
 
 #include <System.h>
 #include <utmpx.h>
-#include <sys/statvfs.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #ifdef _GNU_SOURCE
 # include <sys/sysinfo.h>
+# include <sys/statvfs.h>
 #else
 # include <sys/param.h>
 # include <sys/sysctl.h>
 # include <sys/resource.h>
+# include <sys/mount.h>
 #endif
 
 #define PROBE_REFRESH 10
@@ -236,8 +237,13 @@ struct volinfo
 {
 	char name[256];
 	unsigned long block_size;
+#ifdef _GNU_SOURCE
 	fsblkcnt_t total;
 	fsblkcnt_t free;
+#else
+	long total;
+	long free;
+#endif
 };
 
 static int _probe_error(char * message, int ret); /* FIXME re-place */
@@ -276,7 +282,11 @@ static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
 	unsigned int i;
 	unsigned int j;
 	struct volinfo * p;
+#ifdef _GNU_SOURCE
 	struct statvfs sv;
+#else
+	struct statfs sf;
+#endif
 
 	for(i = 0; buf[i] != '\0' && buf[i] != ' '; i++);
 	if(buf[i] == '\0')
@@ -295,11 +305,19 @@ static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
 #ifdef DEBUG
 	fprintf(stderr, "_volinfo_append: %s\n", p[nb].name);
 #endif
+#ifdef _GNU_SOURCE
 	if(statvfs(p[nb].name, &sv) != 0)
 		return 1;
 	p[nb].block_size = sv.f_bsize;
 	p[nb].total = sv.f_blocks;
 	p[nb].free = sv.f_bavail;
+#else
+	if(statfs(p[nb].name, &sf) != 0)
+		return 1;
+	p[nb].block_size = sf.f_bsize;
+	p[nb].total = sf.f_blocks;
+	p[nb].free = sf.f_bfree;
+#endif
 	return 0;
 }
 
@@ -388,7 +406,7 @@ static int _probe_timeout(Probe * probe)
 		return _probe_error("ifinfo", 1);
 	probe->ifinfo_cnt = i;
 	if((i = _volinfo(&probe->volinfo)) < 0)
-		return 1;
+		return 0;
 	probe->volinfo_cnt = i;
 	return 0;
 }
