@@ -51,6 +51,7 @@ function _host_graph($hostname, $graph, $time, $param)
 	$def = array();
 	$cdef = array();
 	$data = '';
+	$args = '-l 0';
 	switch($graph)
 	{
 		case 'uptime':
@@ -150,8 +151,8 @@ function _host_graph($hostname, $graph, $time, $param)
 			$base = 1000;
 			$def = array('voltotal', 'volfree');
 			//FIXME block size may not be 4
-			$cdef = array('pvoltotal' => 'voltotal,1024,/,4,*',
-				'pvolfree' => 'volfree,1024,/,4,*');
+			$cdef = array('pvoltotal' => 'voltotal,1024,/',
+				'pvolfree' => 'volfree,1024,/');
 			$data = ' AREA:pvoltotal#ff0000:"Total\:\g"'
 				.' GPRINT:pvoltotal:LAST:" %.0lf MB"'
 				.' AREA:pvolfree#0000ff:"Free\:\g"'
@@ -171,6 +172,8 @@ function _host_graph($hostname, $graph, $time, $param)
 	foreach($keys as $k)
 		$cmd.=' CDEF:'.$k.'='.$cdef[$k];
 	$cmd.=$data;
+	if(strlen($args))
+		$cmd.=' '.$args;
 	$cmd.=' --title "'.$hostname.' '.$title.' (last '.$time.')"'
 		.' --vertical-label "'.$label.'"';
 	_info('exec: '.$cmd);
