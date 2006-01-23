@@ -240,6 +240,7 @@ struct volinfo
 	fsblkcnt_t free;
 };
 
+static int _probe_error(char * message, int ret); /* FIXME re-place */
 static int _volinfo_append(struct volinfo ** dev, char * buf, int nb);
 static int _volinfo(struct volinfo ** dev)
 {
@@ -319,7 +320,6 @@ typedef struct _Probe
 Probe probe;
 
 /* functions */
-static int _probe_error(char * message, int ret);
 static int _probe_timeout(Probe * probe);
 static int _probe(void)
 {
