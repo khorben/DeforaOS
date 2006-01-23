@@ -250,7 +250,7 @@ static int _volinfo(struct volinfo ** dev)
 	int len;
 
 	if((fp = fopen("/etc/mtab", "r")) == NULL)
-		return -1;
+		return _probe_error("/etc/mtab", -1);
 	for(i = 0; fgets(buf, sizeof(buf), fp) != NULL; i++)
 	{
 		len = string_length(buf);
@@ -329,13 +329,22 @@ static int _probe(void)
 
 	memset(&probe, 0, sizeof(Probe));
 	if(_probe_timeout(&probe) != 0)
-		/* FIXME free memory */
+	{
+		free(probe.ifinfo);
+		free(probe.volinfo);
 		return 1;
+	}
 	if((event = event_new()) == NULL)
-		return _probe_error("Event", 2);
+	{
+		free(probe.ifinfo);
+		free(probe.volinfo);
+		return _probe_error("Event", 1);
+	}
 	if((appserver = appserver_new_event("Probe", ASO_REMOTE, event))
 			== NULL)
 	{
+		free(probe.ifinfo);
+		free(probe.volinfo);
 		event_delete(event);
 		return _probe_error("AppServer", 1);
 	}
@@ -348,6 +357,8 @@ static int _probe(void)
 		event_loop(event);
 	appserver_delete(appserver);
 	event_delete(event);
+	free(probe.ifinfo);
+	free(probe.volinfo);
 	return 1;
 }
 
@@ -377,7 +388,7 @@ static int _probe_timeout(Probe * probe)
 		return _probe_error("ifinfo", 1);
 	probe->ifinfo_cnt = i;
 	if((i = _volinfo(&probe->volinfo)) < 0)
-		return _probe_error("volinfo", 1);
+		return 1;
 	probe->volinfo_cnt = i;
 	return 0;
 }
