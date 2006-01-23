@@ -272,8 +272,8 @@ static int _volinfo(struct volinfo ** dev)
 
 static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
 {
-	int i;
-	int j;
+	unsigned int i;
+	unsigned int j;
 	struct volinfo * p;
 	struct statvfs sv;
 
@@ -287,7 +287,9 @@ static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
 		return 1;
 	*dev = p;
 	memset(&p[nb], 0, sizeof(struct volinfo));
-	strncpy(p[nb].name, &buf[i], j-i); /* FIXME overflow possible */
+	if(j-i >= sizeof(p[nb].name)-1)
+		return 1;
+	strncpy(p[nb].name, &buf[i], j-i);
 	p[nb].name[j-i] = '\0';
 #ifdef DEBUG
 	fprintf(stderr, "_volinfo_append: %s\n", p[nb].name);
@@ -530,9 +532,8 @@ int voltotal(char * vol)
 	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " total: ",
 			probe.volinfo[i].total, "\n");
 #endif
-	return probe.volinfo[i].total;
+	return probe.volinfo[i].total * (probe.volinfo[i].block_size / 1024);
 }
-
 
 int volfree(char * vol)
 {
@@ -547,7 +548,7 @@ int volfree(char * vol)
 	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " free: ",
 			probe.volinfo[i].free, "\n");
 #endif
-	return probe.volinfo[i].free;
+	return probe.volinfo[i].free * (probe.volinfo[i].block_size / 1024);
 }
 
 
