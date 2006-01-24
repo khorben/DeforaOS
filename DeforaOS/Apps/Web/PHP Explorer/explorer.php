@@ -124,6 +124,7 @@ function _permissions($mode)
 {
 	$str = '----------';
 	$str[0] = $mode & 040000 ? 'd' : '-';
+	$str[0] = $mode & 0120000 ? 'l' : '-';
 	$str[1] = $mode & 0400 ? 'r' : '-';
 	$str[2] = $mode & 0200 ? 'w' : '-';
 	$str[3] = $mode & 0100 ? 'x' : '-';
