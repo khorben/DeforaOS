@@ -315,6 +315,107 @@ set_size(Size x, Size y)
 			</sect3>
 		</sect2>
 	</sect1>
+	<sect1>
+		<title>Sub-systems interactions</title>
+		<sect2>
+			<title>Booting process</title>
+			<sect3>
+				<title>ukernel</title>
+				<para>
+				</para>
+			</sect3>
+			<sect3>
+				<title>Init</title>
+				<para>
+Maintains the system's session, just like users' session do. Shares the
+necessary system and subsystems states with authorized users.
+				</para>
+			</sect3>
+			<sect3>
+				<title>Virtual file system</title>
+				<para>
+Has plugins for the different necessary filesystems. Maps volumes to the
+filesystem hierarchy if necessary. Connects to other VFS AppServers if
+necessary. May run as multiple instances on a system, with different priviledges
+("chroot" equivalent).
+				</para>
+			</sect3>
+			<sect3>
+				<title>Hardware daemon</title>
+				<para>
+Has the list of mappings between hardware identifiers and drivers. Watches
+after the various hardware buses and loads/unloads the drivers consequently.
+				</para>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>Development tools</title>
+			<sect3>
+				<title>Assembly</title>
+				<para>
+The assembly utility, "as", and the disassembly one "disas", are to be based on
+a library, "libas". It should provide the following distinct facilities:
+					<itemizedlist>
+						<listitem><para>
+<emphasis>parsing</emphasis>, if possible on top of the parsing library;
+						</para></listitem>
+						<listitem><para>
+<emphasis>file output</emphasis>, using a dynamic plug-in system for architecture and file format;
+						</para></listitem>
+						<listitem><para>
+<emphasis>disassembly</emphasis>, if it actually requires any significant additional code at all.
+						</para></listitem>
+					</itemizedlist>
+				</para>
+			</sect3>
+			<sect3>
+				<title>C compiler</title>
+				<para>
+The C compiler, "cc", is to be based on top of a library, "libcc". It should
+parse C code on top of the parsing library if possible, and provide this
+functionality to other programs. A C interpreter, and other development
+assisting tools would also be desired on top of this library.
+				</para>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>Graphical system</title>
+			<sect3>
+				<title>Graphical server</title>
+				<para>
+The server is to use a common API for hardware access, implementing directly the
+necessary OpenGL layer calls. It serves the OpenGL interface as an AppServer,
+plus functions to handle user interaction and whatnot.
+				</para>
+				<para>
+Each window has its own OpenGL context, and is actually drawing into a texture
+and not directly on the screen, except while running fullscreen.
+				</para>
+				<para>
+The window manager is an optional plug-in, which would benefit from a common
+library ("libGWM"), and hook some or all of the window handling functions.
+				</para>
+			</sect3>
+			<sect3>
+				<title>Graphical toolkit</title>
+				<para>
+				</para>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>User applications</title>
+			<sect3>
+				<title>Accessories</title>
+				<sect4>
+					<title>Text editor</title>
+					<para>
+It should provide syntax highlighting, through dynamic plugins, built on top of
+the existing parsing libraries.
+					</para>
+				</sect4>
+			</sect3>
+		</sect2>
+	</sect1>
 <!--
 - APIs
   * C library:
