@@ -322,6 +322,28 @@ set_size(Size x, Size y)
 			<sect3>
 				<title>ukernel</title>
 				<para>
+Bootable file containing:
+					<itemizedlist>
+						<listitem><para>
+memory management code;
+						</para></listitem>
+						<listitem><para>
+process handling code;
+						</para></listitem>
+						<listitem><para>
+the plugin for the / filesystem;
+						</para></listitem>
+					</itemizedlist>
+it then reads and launches the following AppServers off /System in sequence,
+waiting until they each have their system call interface ready:
+					<itemizedlist>
+						<listitem><para>
+							VFS;
+						</para></listitem>
+						<listitem><para>
+							Init.
+						</para></listitem>
+					</itemizedlist>
 				</para>
 			</sect3>
 			<sect3>
@@ -411,6 +433,25 @@ library ("libGWM"), and hook some or all of the window handling functions.
 					<para>
 It should provide syntax highlighting, through dynamic plugins, built on top of
 the existing parsing libraries.
+					</para>
+				</sect4>
+			</sect3>
+			<sect3>
+				<title>Communications</title>
+				<sect4>
+					<title>Instant messager</title>
+					<para>
+Built on top of a series of plugins to connect to the different existing
+networks protocols. It focuses on multipart conversations (private ones being
+just 2 parties conversations), with audio/video support. It could interact with
+the users' session managers to update lists of allowed clients to shared
+applications (drawing program for whiteboard, etc).
+					</para>
+				<sect4>
+					<title>Web browser</title>
+					<para>
+Built on top of the XML parsing library, using strict mode for XHTML if
+possible, else tolerant mode to also parse HTML code to valid XHTML.
 					</para>
 				</sect4>
 			</sect3>
