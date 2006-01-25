@@ -447,6 +447,7 @@ just 2 parties conversations), with audio/video support. It could interact with
 the users' session managers to update lists of allowed clients to shared
 applications (drawing program for whiteboard, etc).
 					</para>
+				</sect4>
 				<sect4>
 					<title>Web browser</title>
 					<para>
