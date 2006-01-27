@@ -21,7 +21,7 @@ static int _time(char * argv[])
 	struct tms tmsbuf;
 	clock_t cbefore, cafter;
 
-	if((cbefore = times(NULL)) == -1)
+	if((cbefore = times(NULL)) == (clock_t)-1)
 		return _time_error("times", 2);
 	if((pid = fork()) == -1)
 		return _time_error("fork", 2);
@@ -34,7 +34,7 @@ static int _time(char * argv[])
 		if(WIFEXITED(status))
 			break;
 	}
-	if((cafter = times(&tmsbuf)) == -1)
+	if((cafter = times(&tmsbuf)) == (clock_t)-1)
 		return _time_error("times", 2);
 	return _time_print(cafter - cbefore,
 			tmsbuf.tms_utime + tmsbuf.tms_cutime,
