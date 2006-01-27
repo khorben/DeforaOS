@@ -2,6 +2,7 @@
 
 
 
+#include <System.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -136,7 +137,7 @@ static void _configure_detect(Configure * configure)
 	configure->kernel = enum_string_short(HK_LAST, sHostKernel,
 			un.release);
 	if(configure->prefs & PREFS_v)
-		fprintf(stderr, "Detected system %s version %s on %s\n",
+		printf("Detected system %s version %s on %s\n",
 				sHostOS[configure->os],
 				sHostKernel[configure->kernel],
 				sHostArch[configure->arch]);
