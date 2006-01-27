@@ -13,13 +13,16 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-configure_OBJS = configure.o
+configure_OBJS = configure.o makefile.o
 configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
 configure: $(configure_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
 
 configure.o: configure.c
 	$(CC) $(configure_CFLAGS) -c configure.c
+
+makefile.o: makefile.c
+	$(CC) $(configure_CFLAGS) -c makefile.c
 
 clean:
 	$(RM) $(configure_OBJS)
