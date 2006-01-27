@@ -11,7 +11,6 @@
 
 
 /* Arch */
-static char * _new_guess(void);
 Arch * arch_new(char * arch)
 {
 	Arch * a;
