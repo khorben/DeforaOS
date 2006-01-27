@@ -1,5 +1,5 @@
 PACKAGE	= configure
-VERSION	= 0.0.2
+VERSION	= 0.0.3
 SUBDIRS	= src
 LN	= ln -sf
 TAR	= tar cfzv
@@ -21,6 +21,7 @@ dist:
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/configure.c \
+		$(PACKAGE)-$(VERSION)/src/makefile.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
