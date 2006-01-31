@@ -28,12 +28,26 @@ typedef int Prefs;
 
 /* functions */
 static int _ar_error(char const * message, int ret);
-static int _ar_do(Prefs * prefs, char const * archive, int filec,
+static int _do_sig_check(char const * archive, FILE * fp);
+static int _ar_do(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[]);
-static int _ar(Prefs * prefs, char * archive, int filec, char * filev[])
+static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 {
-	/* FIXME */
-	return _ar_do(prefs, archive, filec, filev);
+	int ret = 0;
+	FILE * fp;
+
+	if((fp = fopen(archive, "r")) == NULL)
+		return _ar_error(archive, 1);
+	if(_do_sig_check(archive, fp) != 0)
+	{
+		fclose(fp);
+		return 1;
+	}
+	if((ret = _ar_do(prefs, archive, fp, filec, filev)) == 0 && !feof(fp))
+		_ar_error(archive, 0);
+	if(fclose(fp) != 0)
+		return _ar_error(archive, 1);
+	return ret;
 }
 
 static int _ar_error(char const * message, int ret)
@@ -43,37 +57,26 @@ static int _ar_error(char const * message, int ret)
 	return ret;
 }
 
-static int _do_sig_check(char const * archive, FILE * fp);
 static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr);
 static int _do_t(Prefs * prefs, char const * archive, FILE * fp,
 		struct ar_hdr * hdr);
 static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 		struct ar_hdr * hdr);
-static int _ar_do(Prefs * prefs, char const * archive, int filec,
+static int _ar_do(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[])
 {
-	int ret = 0;
-	FILE * fp;
 	struct ar_hdr hdr;
 	unsigned int h;
 	int i;
 	char * p;
 
-	if((fp = fopen(archive, "r")) == NULL)
-		return _ar_error(archive, 1);
-	if(_do_sig_check(archive, fp) != 0)
-	{
-		fclose(fp);
-		return 1;
-	}
 	while(fread(&hdr, sizeof(hdr), 1, fp) == 1)
 	{
 		if(strncmp(ARFMAG, hdr.ar_fmag, sizeof(hdr.ar_fmag)) != 0)
 		{
 			fprintf(stderr, "%s%s%s", "ar: ", archive,
 					": Invalid archive\n");
-			ret = 1;
-			break;
+			return 1;
 		}
 		for(h = 0, p = hdr.ar_name; h < sizeof(hdr.ar_name); h++)
 			if(p[h] == '/')
@@ -84,8 +87,8 @@ static int _ar_do(Prefs * prefs, char const * archive, int filec,
 		/* FIXME what if the string doesn't get terminated? */
 		if(h == 0)
 		{
-			if((ret = _do_seek_next(archive, fp, &hdr)) != 0)
-				break;
+			if(_do_seek_next(archive, fp, &hdr) != 0)
+				return 1; /* FIXME error case? */
 			continue;
 		}
 		for(i = 0; i < filec; i++)
@@ -93,22 +96,26 @@ static int _ar_do(Prefs * prefs, char const * archive, int filec,
 				break;
 		if(i > 0 && i == filec)
 		{
-			if((ret = _do_seek_next(archive, fp, &hdr)) != 0)
-				break;
+			if(_do_seek_next(archive, fp, &hdr) != 0)
+				return 1;
 			continue;
 		}
 		if(*prefs & PREFS_t)
-			ret = _do_t(prefs, archive, fp, &hdr);
+		{
+			if(_do_t(prefs, archive, fp, &hdr) != 0)
+				return 1;
+			continue;
+		}
 		else if(*prefs & PREFS_x)
-			ret = _do_x(prefs, archive, fp, &hdr);
-		if(ret != 0)
-			break;
+		{
+			if(_do_x(prefs, archive, fp, &hdr) != 0)
+				return 1;
+			continue;
+		}
+		fprintf(stderr, "%s", "ar: Not implemented yet\n");
+		return 1;
 	}
-	if(ret == 0 && !feof(fp))
-		_ar_error(archive, 0);
-	if(fclose(fp) != 0)
-		return _ar_error(archive, 1);
-	return ret;
+	return 0;
 }
 
 static int _do_sig_check(char const * archive, FILE * fp)
@@ -117,13 +124,10 @@ static int _do_sig_check(char const * archive, FILE * fp)
 
 	if(fread(sig, sizeof(sig), 1, fp) != 1 && !feof(fp))
 		return _ar_error(archive, 1);
-	if(strncmp(ARMAG, sig, SARMAG) != 0)
-	{
-		fprintf(stderr, "%s%s%s", "ar: ", archive,
-				": Invalid archive\n");
-		return 1;
-	}
-	return 0;
+	if(strncmp(ARMAG, sig, SARMAG) == 0)
+		return 0;
+	fprintf(stderr, "%s%s%s", "ar: ", archive, ": Invalid archive\n");
+	return 1;
 }
 
 static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
@@ -318,6 +322,6 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1])
+	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1]) != 0
 		? 2 : 0;
 }
