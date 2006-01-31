@@ -167,20 +167,18 @@ static int _t_print_long(char const * archive, struct ar_hdr * hdr)
 	time_t date;
 	struct tm * tm;
 	/* FIXME use libc's functions if possible (locales) */
-	char const * month[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	static char const * month[] = { "Jan", "Feb", "Mar", "Apr", "May",
+		"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
+	/* FIXME the header fields should be finished or their value copied */
 	mode = strtol(hdr->ar_mode, NULL, 8);
 	uid = strtol(hdr->ar_uid, NULL, 10);
 	gid = strtol(hdr->ar_gid, NULL, 10);
 	size = strtol(hdr->ar_size, NULL, 10);
 	date = strtol(hdr->ar_date, NULL, 10);
 	if((tm = gmtime(&date)) == NULL)
-	{
-		fprintf(stderr, "%s%s%s", "ar: ", archive,
-				": Invalid archive\n");
-		return 1;
-	}
+		return fprintf(stderr, "%s%s%s", "ar: ", archive,
+				": Invalid archive\n") ? 1 : 1;
 	printf("%s %u/%u %u %s %d %02d:%02d %d %s\n", _long_mode(mode), uid,
 			gid, size, month[tm->tm_mon], tm->tm_mday, tm->tm_hour,
 			tm->tm_min, tm->tm_year + 1900, hdr->ar_name);
