@@ -78,8 +78,27 @@ Event * event_new(void)
 /* event_delete */
 void event_delete(Event * event)
 {
+	unsigned int i;
+	EventTimeout * et;
+	EventIO * eio;
+
+	for(i = 0; i < array_count(event->timeouts); i++)
+	{
+		array_get_copy(event->writes, i, &et);
+		free(et);
+	}
 	array_delete(event->timeouts);
+	for(i = 0; i < array_count(event->reads); i++)
+	{
+		array_get_copy(event->reads, i, &eio);
+		free(eio);
+	}
 	array_delete(event->reads);
+	for(i = 0; i < array_count(event->writes); i++)
+	{
+		array_get_copy(event->writes, i, &eio);
+		free(eio);
+	}
 	array_delete(event->writes);
 	free(event);
 }

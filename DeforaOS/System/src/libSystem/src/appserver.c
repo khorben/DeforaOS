@@ -307,8 +307,10 @@ static int _new_server(AppServer * appserver, int options)
 /* appserver_delete */
 void appserver_delete(AppServer * appserver)
 {
+	appinterface_delete(appserver->interface);
 	if(appserver->event_free)
 		event_delete(appserver->event);
+	array_delete(appserver->clients);
 	free(appserver);
 }
 
