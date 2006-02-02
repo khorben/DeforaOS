@@ -75,6 +75,7 @@ struct _AppServer
 {
 	AppInterface * interface;
 	Event * event;
+	int event_free;
 	AppServerClientArray * clients;
 };
 
@@ -242,6 +243,7 @@ AppServer * appserver_new(const char * app, int options)
 		event_delete(event);
 		return NULL;
 	}
+	appserver->event_free = 1;
 	return appserver;
 }
 
@@ -256,6 +258,7 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 		return NULL;
 	appserver->interface = NULL;
 	appserver->event = event;
+	appserver->event_free = 0;
 	appserver->clients = NULL;
 	if((appserver->clients = AppServerClientarray_new()) == NULL
 			|| (appserver->interface = appinterface_new_server(app))
@@ -304,7 +307,8 @@ static int _new_server(AppServer * appserver, int options)
 /* appserver_delete */
 void appserver_delete(AppServer * appserver)
 {
-	event_delete(appserver->event);
+	if(appserver->event_free)
+		event_delete(appserver->event);
 	free(appserver);
 }
 
