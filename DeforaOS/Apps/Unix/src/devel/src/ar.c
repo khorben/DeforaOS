@@ -120,28 +120,20 @@ static int _create_append(char const * archive, FILE * fp, char * filename)
 	FILE * fp2;
 	char buf[BUFSIZ];
 	size_t i;
+	size_t j;
 
 	if((fp2 = fopen(filename, "r")) == NULL)
 		return _ar_error(filename, 1);
 	if(_append_header(archive, fp, filename, fp2) != 0)
 		return fclose(fp2) ? 1 : 1;
-	for(;;)
+	for(; (i = fread(buf, sizeof(char), sizeof(buf), fp2)) > 0
+			&& (j = fwrite(buf, sizeof(char), i, fp)) == i;);
+	if(!feof(fp2) || i > 0)
 	{
-		if((i = fread(buf, sizeof(char), sizeof(buf), fp2)) == 0)
-			break;
-		if(fwrite(buf, sizeof(char), i, fp) == i)
-			continue;
-		fclose(fp2);
-		return _ar_error(archive, 1);
-	}
-	if(!feof(fp2))
-	{
-		_ar_error(filename, 0);
+		_ar_error(i > 0 ? archive : filename, 0);
 		return fclose(fp2) ? 1 : 1;
 	}
-	if(fclose(fp2) != 0)
-		return _ar_error(filename, 1);
-	return 0;
+	return fclose(fp2) == 0 ? 0 : _ar_error(filename, 1);
 }
 
 static int _append_header(char const * archive, FILE * fp, char * filename,
@@ -391,8 +383,8 @@ static int _usage(void)
 	fprintf(stderr, "%s", "Usage: ar -d[-v] archive file...\n\
        ar -p[-v] archive file...\n\
        ar -r[-cuv] archive file...\n\
-       ar -t[-v] archive file...\n\
-       ar -x[-v] archive file...\n\
+       ar -t[-v] archive [file...]\n\
+       ar -x[-v] archive [file...]\n\
   -d	delete one or more files from the archive\n\
   -r	replace or add files to archive\n\
   -t	write a table of contents of archive\n\
@@ -438,7 +430,9 @@ int main(int argc, char * argv[])
 			case '?':
 				return _usage();
 		}
-	if(!(p & (PREFS_d | PREFS_r | PREFS_t | PREFS_x)) || optind+1 >= argc)
+	if(!(p & (PREFS_d | PREFS_r | PREFS_t | PREFS_x))
+			|| optind == argc
+			|| (optind+1 >= argc && !(p & (PREFS_t | PREFS_x))))
 		return _usage();
 	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1]) != 0
 		? 2 : 0;
