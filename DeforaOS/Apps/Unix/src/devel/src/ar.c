@@ -222,6 +222,7 @@ static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 				return 1;
 			continue;
 		}
+		/* FIXME clean up this so it won't have to appear */
 		fprintf(stderr, "%s", "ar: Not implemented yet\n");
 		return 1;
 	}
@@ -252,9 +253,7 @@ static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
 				": Invalid archive\n");
 		return 1;
 	}
-	if(fseek(fp, size, SEEK_CUR) == 0)
-		return 0;
-	return _ar_error(archive, 1);
+	return fseek(fp, size, SEEK_CUR) == 0 ? 0 : _ar_error(archive, 1);
 }
 
 static int _t_print_long(char const * archive, struct ar_hdr * hdr);
