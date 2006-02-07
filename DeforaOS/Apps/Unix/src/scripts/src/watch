@@ -1,0 +1,18 @@
+#! /bin/sh
+
+
+
+if [ $# -eq 0 -o "$1" = "-h" -o $# -eq 1 -a "$1" = "--" ]; then
+	echo "Usage: watch command..." 2>&1
+	exit 1
+fi
+[ "$1" = "--" ] && shift 1
+
+
+while true; do
+	clear
+	date
+	echo
+	"$@"
+	sleep 2
+done

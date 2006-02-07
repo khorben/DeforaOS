@@ -1,0 +1,82 @@
+#! /bin/sh
+
+
+
+if [ $# -eq 0 -o "$1" = "-h" -o $# -eq 1 -a "$1" = "--" ]; then
+	echo "Usage: dirstats path..." 2>&1
+	exit 1
+fi
+[ "$1" = "--" ] && shift 1
+
+
+function calc_sizeh()
+{
+	KB=$1
+	if [ $KB -lt 1024 ]; then
+		echo "${KB}.0KB"
+		return
+	fi
+	MB=`echo "$KB / 1024" | bc -l`
+	CUT=`echo "$MB" | cut -d '.' -f 1`
+	if [ "$CUT" -lt 1024 ]; then
+		printf "%.1fMB" "$MB"
+		return
+	fi
+	GB=`echo "$MB / 1024" | bc -l`
+	CUT=`echo "$GB" | cut -d '.' -f 1`
+	printf "%.1fGB" "$GB"
+}
+
+
+function dirstat()
+{
+	printf -- "--------------------------------------------------------------------------------\n"
+	printf "|%-33s|%-8s|%-7s|%-27s|\n" "Directory" "Size" "Ratio" " "
+	printf -- "|------------------------------------------------------------------------------|\n"
+	if [ ! -r "$1" ]; then
+		echo "Not readable"
+		return
+	fi
+	echo -n "Reading sub-directories..."
+	TOTAL=`du -ks "$1" 2> /dev/null | cut -d ' ' -f 1 | cut -f 1`
+	echo -n ""
+	ls -aF1 "$1" | grep '/$' | while read FILE; do
+		[ "$FILE" = "./" ] && continue
+		[ "$FILE" = "../" ] && continue
+		echo -n "Reading: $FILE"
+		echo -n ""
+		SIZE=`du -ks "$1/$FILE" 2> /dev/null | cut -d ' ' -f 1 | cut -f 1`
+		SIZEH=`calc_sizeh "$SIZE"`
+		VALUE=`echo "$SIZE * 100 / $TOTAL" | bc -l`
+		VALUE=`printf "%.2f" "$VALUE"`
+		printf "|%-33s|%8s|%6s%%|" "$FILE" "$SIZEH" "$VALUE"
+		HASH=`echo "$SIZE * 26 / $TOTAL" | bc`
+		SIGN="#"
+		i=0
+		while [ "$i" -lt 27 ]; do
+			[ "$i" -eq "$HASH" ] && SIGN=" "
+			echo -n "$SIGN"
+			i=$((i+1))
+		done
+		printf "|\n"
+	done
+	printf -- "|------------------------------------------------------------------------------|\n"
+	SIZEH=`calc_sizeh "$TOTAL"`
+	VALUE="100.00"
+	printf "|%-33s|%8s|%6s%%|%27s|\n" "Total" "$SIZEH" "$VALUE" " "
+	printf -- "--------------------------------------------------------------------------------\n"
+}
+
+
+while [ $# -gt 0 ]; do
+	if [ -f "$1" ]; then
+		echo "$1: Not a directory" 1>&2
+	else
+		if [ -d "$1" ]; then
+			dirstat "$1"
+		else
+			echo "$1: No such file or directory" 1>&2
+		fi
+	fi
+	shift 1
+done

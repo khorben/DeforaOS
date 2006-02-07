@@ -1,0 +1,21 @@
+#! /bin/sh
+
+
+
+if [ $# -ne 1 -o "$1" = "-h" ]; then
+	echo "Usage: which command" 2>&1
+	exit 1
+fi
+
+
+P="$PATH"
+while [ -n "$P" ]; do
+	CUR=`echo "$P" | cut -d ':' -f 1`
+	if [ -x "$CUR/$1" ]; then
+		echo "$1 is $CUR/$1"
+		exit 0
+	fi
+	P=`echo "$P" | cut -d ':' -f 2-`
+	[ "$CUR" = "$P" ] && break
+done
+exit 2
