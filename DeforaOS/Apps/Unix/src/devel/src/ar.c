@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <libgen.h>
+#include <errno.h>
 #include <ar.h>
 
 #define min(a, b) (a) < (b) ? (a) : (b)
@@ -29,13 +31,17 @@ typedef int Prefs;
 /* functions */
 static int _ar_error(char const * message, int ret);
 static int _do_sig_check(char const * archive, FILE * fp);
-static int _ar_do(Prefs * prefs, char const * archive, FILE * fp, int filec,
+static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
+		char * filev[]);
+static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[]);
 static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 {
 	int ret = 0;
 	FILE * fp;
 
+	if(*prefs & PREFS_r)
+		return _ar_do_r(prefs, archive, filec, filev);
 	if((fp = fopen(archive, "r")) == NULL)
 		return _ar_error(archive, 1);
 	if(_do_sig_check(archive, fp) != 0)
@@ -43,7 +49,8 @@ static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 		fclose(fp);
 		return 1;
 	}
-	if((ret = _ar_do(prefs, archive, fp, filec, filev)) == 0 && !feof(fp))
+	if((ret = _ar_do_tx(prefs, archive, fp, filec, filev)) == 0
+			&& !feof(fp))
 		_ar_error(archive, 0);
 	if(fclose(fp) != 0)
 		return _ar_error(archive, 1);
@@ -57,12 +64,123 @@ static int _ar_error(char const * message, int ret)
 	return ret;
 }
 
+
+static int _do_create(Prefs * prefs, char const * archive, int filec,
+		char * filev[]);
+static int _do_replace(Prefs * prefs, char const * archive, FILE * fp,
+		int filec, char * filev[]);
+static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
+		char * filev[])
+{
+	FILE * fp;
+
+	if((fp = fopen(archive, "r")) == NULL)
+	{
+		if(errno != ENOENT)
+			return _ar_error(archive, 1);
+		if(!(*prefs & PREFS_c))
+			fprintf(stderr, "%s%s%s", "ar: ", archive,
+					": Creating archive\n");
+		return _do_create(prefs, archive, filec, filev);
+	}
+	return _do_replace(prefs, archive, fp, filec, filev);
+}
+
+static int _create_append(char const * archive, FILE * fp, char * filename);
+static int _do_create(Prefs * prefs, char const * archive, int filec,
+		char * filev[])
+{
+	FILE * fp;
+	int i;
+
+	if((fp = fopen(archive, "w")) == NULL)
+		return _ar_error(archive, 1);
+	if(fwrite(ARMAG, SARMAG, 1, fp) != 1)
+	{
+		fclose(fp);
+		return _ar_error(archive, 1);
+	}
+	for(i = 0; i < filec; i++)
+	{
+		if(*prefs & PREFS_v)
+			printf("a - %s\n", filev[i]);
+		if(_create_append(archive, fp, filev[i]) != 0)
+			break;
+	}
+	if(fclose(fp) != 0)
+		_ar_error(archive, 0);
+	return i != filec;
+}
+
+static int _append_header(char const * archive, FILE * fp, char * filename,
+		FILE * fp2);
+static int _create_append(char const * archive, FILE * fp, char * filename)
+	/* FIXME filename may get truncated by basename() */
+{
+	FILE * fp2;
+	char buf[BUFSIZ];
+	size_t i;
+
+	if((fp2 = fopen(filename, "r")) == NULL)
+		return _ar_error(filename, 1);
+	if(_append_header(archive, fp, filename, fp2) != 0)
+		return fclose(fp2) ? 1 : 1;
+	for(;;)
+	{
+		if((i = fread(buf, sizeof(char), sizeof(buf), fp2)) == 0)
+			break;
+		if(fwrite(buf, sizeof(char), i, fp) == i)
+			continue;
+		fclose(fp2);
+		return _ar_error(archive, 1);
+	}
+	if(!feof(fp2))
+	{
+		_ar_error(filename, 0);
+		return fclose(fp2) ? 1 : 1;
+	}
+	if(fclose(fp2) != 0)
+		return _ar_error(filename, 1);
+	return 0;
+}
+
+static int _append_header(char const * archive, FILE * fp, char * filename,
+		FILE * fp2)
+{
+	struct ar_hdr hdr;
+	struct stat st;
+
+	if(fstat(fileno(fp2), &st) != 0)
+		return _ar_error(filename, 1);
+	strncpy(hdr.ar_name, basename(filename), sizeof(hdr.ar_name)-1);
+	hdr.ar_name[sizeof(hdr.ar_name)-1] = '\0'; /* FIXME necessary? */
+	snprintf(hdr.ar_date, sizeof(hdr.ar_date), "%u", st.st_mtime);
+	snprintf(hdr.ar_uid, sizeof(hdr.ar_uid), "%u", st.st_uid);
+	snprintf(hdr.ar_gid, sizeof(hdr.ar_gid), "%u", st.st_gid);
+	snprintf(hdr.ar_mode, sizeof(hdr.ar_mode), "%o", st.st_mode);
+	snprintf(hdr.ar_size, sizeof(hdr.ar_size), "%u", st.st_size);
+	strncpy(hdr.ar_fmag, ARFMAG, sizeof(hdr.ar_fmag));
+	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
+		return _ar_error(archive, 1);
+	return 0;
+}
+
+static int _do_replace(Prefs * prefs, char const * archive, FILE * fp,
+		int filec, char * filev[])
+{
+	/* FIXME */
+	if(fclose(fp) != 0)
+		return _ar_error(archive, 1);
+	return 1;
+}
+
+
 static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr);
 static int _do_t(Prefs * prefs, char const * archive, FILE * fp,
 		struct ar_hdr * hdr);
 static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 		struct ar_hdr * hdr);
-static int _ar_do(Prefs * prefs, char const * archive, FILE * fp, int filec,
+static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[])
 {
 	struct ar_hdr hdr;
@@ -320,7 +438,7 @@ int main(int argc, char * argv[])
 			case '?':
 				return _usage();
 		}
-	if(optind == argc)
+	if(!(p & (PREFS_d | PREFS_r | PREFS_t | PREFS_x)) || optind+1 >= argc)
 		return _usage();
 	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1]) != 0
 		? 2 : 0;
