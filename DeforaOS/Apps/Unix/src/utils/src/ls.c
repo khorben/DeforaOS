@@ -26,17 +26,18 @@ typedef int Prefs;
 #define PREFS_c 00020
 #define PREFS_d 00040
 #define PREFS_l 00100
-#define PREFS_u 00200
-#define PREFS_1 00400
-#define PREFS_H 01000
-#define PREFS_L 02000
+#define PREFS_t 00200
+#define PREFS_u 00400
+#define PREFS_1 01000
+#define PREFS_H 02000
+#define PREFS_L 04000
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
 	int o;
 
 	memset(prefs, 0, sizeof(Prefs));
-	while((o = getopt(argc, argv, "CFRacdlu1HL")) != -1)
+	while((o = getopt(argc, argv, "CFRacdltu1HL")) != -1)
 		switch(o)
 		{
 			case 'C':
@@ -61,6 +62,9 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 				break;
 			case 'l':
 				*prefs |= PREFS_l;
+				break;
+			case 't':
+				*prefs |= PREFS_t;
 				break;
 			case 'u':
 				*prefs -= *prefs & PREFS_c;
@@ -186,16 +190,18 @@ static int slist_insert_sorted(SList * slist, void * data,
 
 /* ls */
 static int _ls_error(char const * message, int ret);
+typedef int (*compare_func)(void *, void *);
+static compare_func _ls_compare(Prefs * prefs);
 static int _ls_directory_do(Prefs * prefs, char * directory);
 static int _ls_args(SList ** files, SList ** dirs);
 static int _is_directory(Prefs * prefs, char * dir);
 static int _ls_do(Prefs * prefs, int argc, char * directory, SList * files,
 		SList * dirs);
-typedef int (*compare_func)(void*, void*);
 static int _ls(int argc, char * argv[], Prefs * prefs)
 {
 	SList * files;
 	SList * dirs;
+	compare_func cmp = _ls_compare(prefs);
 	int res = 0;
 	int i;
 	int isdir;
@@ -206,8 +212,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	if(_ls_args(&files, &dirs) != 0)
 		return 2;
 	if(argc == 0)
-		res += slist_insert_sorted(files, strdup("."),
-				(compare_func)strcmp);
+		res += slist_insert_sorted(files, strdup("."), cmp);
 	for(i = 0; i < argc; i++)
 	{
 		if((isdir = _is_directory(prefs, argv[i])) == 2)
@@ -215,11 +220,10 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 		else if((str = strdup(argv[i])) == NULL)
 			res += _ls_error("malloc", 1);
 		else if(*prefs & PREFS_d)
-			res += slist_insert_sorted(files, str,
-					(compare_func)strcmp);
+			res += slist_insert_sorted(files, str, cmp);
 		else
 			res += slist_insert_sorted(isdir ? dirs : files, str,
-				(compare_func)strcmp);
+					cmp);
 	}
 	res += _ls_do(prefs, argc, NULL, files, dirs);
 	return res == 1 ? 2 : res;
@@ -230,6 +234,41 @@ static int _ls_error(char const * message, int ret)
 	fprintf(stderr, "%s", "ls: ");
 	perror(message);
 	return ret;
+}
+
+static int _acccmp(char * a, char * b);
+static int _modcmp(char * a, char * b);
+static compare_func _ls_compare(Prefs * prefs)
+{
+	if(!(*prefs & PREFS_t))
+		return (compare_func)strcmp;
+	if(*prefs & PREFS_u)
+		return (compare_func)_acccmp;
+	return (compare_func)_modcmp;
+}
+
+static int _acccmp(char * a, char * b)
+{
+	struct stat sta;
+	struct stat stb;
+
+	if(lstat(a, &sta) != 0)
+		return _ls_error(a, 0);
+	if(lstat(b, &stb) != 0)
+		return _ls_error(b, 0);
+	return sta.st_atime - stb.st_atime;
+}
+
+static int _modcmp(char * a, char * b)
+{
+	struct stat sta;
+	struct stat stb;
+
+	if(lstat(a, &sta) != 0)
+		return _ls_error(a, 0);
+	if(lstat(b, &stb) != 0)
+		return _ls_error(b, 0);
+	return sta.st_mtime - stb.st_mtime;
 }
 
 static int _ls_directory_do(Prefs * prefs, char * directory)
@@ -613,6 +652,7 @@ static int _usage(void)
   -c	use time of last modification of file status\n\
   -d	treat directories like files\n\
   -l	write out in long format\n\
+  -t	sort with the last modified file first\n\
   -u	use time of last access\n\
   -1	force output to be one entry per line\n\
   -H	dereference symbolic links\n\
