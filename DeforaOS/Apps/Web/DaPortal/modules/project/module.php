@@ -13,6 +13,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['INVALID_PROJECT'] = 'Invalid project';
+$text['MEMBERS'] = 'Members';
 $text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
@@ -40,6 +41,7 @@ else if($lang == 'fr')
 	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
 	$text['BUG_REPORTS'] = 'Rapports de bugs';
 	$text['INVALID_PROJECT'] = 'Projet non valide';
+	$text['MEMBERS'] = 'Membres';
 	$text['NEW_PROJECT'] = 'Nouveau projet';
 	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
 	$text['PRIORITY'] = 'Priorité';
@@ -720,15 +722,32 @@ function project_display($args)
 	if($enabled == 0 && !$admin)
 		return include('project_submitted.tpl');
 	$title = $project['name'];
-	//FIXME display members + administrator in an explorer
-	$project['members'] = _sql_array('SELECT daportal_user.user_id AS id'
+	_project_toolbar($args['id'], $admin, $enabled);
+	include('project_display.tpl');
+	$members = array();
+	$members[] = array('id' => $project['user_id'],
+			'name' => _html_safe($project['username']),
+			'icon' => 'modules/user/icon.png',
+			'thumbnail' => 'modules/user/icon.png',
+			'module' => 'user', 'action' => 'default',
+			'admin' => '<img src="icons/16x16/enabled.png" alt="yes"/>');
+	$m = _sql_array('SELECT daportal_user.user_id AS id'
 			.', username AS name'
 			.' FROM daportal_project_user, daportal_user'
 			." WHERE project_id='".$args['id']."'"
 			.' AND daportal_project_user.user_id'
 			.'=daportal_user.user_id;');
-	_project_toolbar($args['id'], $admin, $enabled);
-	include('project_display.tpl');
+	foreach($m as $n)
+		$members[] = array('id' => $n['id'],
+				'name' => _html_safe($n['name']),
+				'icon' => 'modules/user/icon.png',
+				'thumbnail' => 'modules/user/icon.png',
+				'module' => 'user', 'action' => 'default',
+				'admin' => '<img src="icons/16x16/disabled.png" alt="no"/>');
+	print('<h2><img src="modules/user/icon.png" alt=""/> '.MEMBERS.'</h2>');
+	_module('explorer', 'browse_trusted', array('view' => 'details',
+				'entries' => $members,
+				'class' => array('admin' => ADMINISTRATOR)));
 }
 
 
