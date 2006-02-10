@@ -8,6 +8,29 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
 
+function _content_delete($id)
+{
+	return _sql_query('DELETE FROM daportal_content WHERE'
+			." WHERE content_id='$id';");
+}
+
+
+function _content_disable($id)
+{
+	return _sql_query('UPDATE daportal_content SET'
+			." enabled='f'"
+			." WHERE content_id='$id';");
+}
+
+
+function _content_enable($id)
+{
+	return _sql_query('UPDATE daportal_content SET'
+			." enabled='t'"
+			." WHERE content_id='$id';");
+}
+
+
 function _content_insert($title, $content, $enabled = 0)
 {
 	global $module_id, $user_id;
