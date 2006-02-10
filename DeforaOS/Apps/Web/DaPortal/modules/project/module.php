@@ -54,7 +54,7 @@ else if($lang == 'fr')
 _lang($text);
 
 
-function _project_toolbar($id)
+function _project_toolbar($id, $admin = 0, $enabled = 1)
 {
 	global $html;
 
@@ -664,6 +664,39 @@ function project_default($args)
 }
 
 
+function project_delete($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(($id = _sql_single('SELECT project_id FROM daportal_project'
+			." WHERE project_id='".$args['id']."';")) == FALSE)
+		return _error(INVALID_PROJECT);
+	//FIXME remove bug reports and comments?
+	_sql_query('DELETE FROM daportal_project'
+			." WHERE project_id='$id';");
+	_content_delete($id);
+}
+
+
+function project_disable($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(($id = _sql_single('SELECT project_id FROM daportal_project'
+			." WHERE project_id='".$args['id']."';")) == FALSE)
+		return _error(INVALID_PROJECT);
+	require_once('system/content.php');
+	_content_disable($id);
+	project_display(array('id' => $id));
+}
+
+
 function project_display($args)
 {
 	global $user_id;
@@ -681,7 +714,10 @@ function project_display($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error('Unable to display project');
 	$project = $project[0];
-	if($project['enabled'] != 't' && !_user_admin($user_id))
+	//FIXME or the user is the administrator of this project
+	$admin = _user_admin($user_id);
+	$enabled = $project['enabled'] == 't';
+	if($enabled == 0 && !$admin)
 		return include('project_submitted.tpl');
 	$title = $project['name'];
 	//FIXME display members + administrator in an explorer
@@ -691,7 +727,7 @@ function project_display($args)
 			." WHERE project_id='".$args['id']."'"
 			.' AND daportal_project_user.user_id'
 			.'=daportal_user.user_id;');
-	_project_toolbar($args['id']);
+	_project_toolbar($args['id'], $admin, $enabled);
 	include('project_display.tpl');
 }
 
@@ -699,6 +735,22 @@ function project_display($args)
 function project_download($args)
 {
 	include('download.tpl');
+}
+
+
+function project_enable($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(($id = _sql_single('SELECT project_id FROM daportal_project'
+			." WHERE project_id='".$args['id']."';")) == FALSE)
+		return _error(INVALID_PROJECT);
+	require_once('system/content.php');
+	_content_enable($id);
+	project_display(array('id' => $id));
 }
 
 
@@ -727,6 +779,8 @@ function project_installer($args)
 
 function project_list($args)
 {
+	global $user_id;
+
 	$title = PROJECT_LIST;
 	$where = '';
 	if($args['action'] == 'bug_new')
@@ -774,13 +828,21 @@ function project_list($args)
 				.'">'._html_safe($projects[$i]['admin']).'</a>';
 	}
 	$toolbar = array();
+	require_once('system/user.php');
 	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
+	if(_user_admin($user_id))
+		return _module('explorer', 'browse_trusted', array(
+					'class' => array(
+						'admin' => ADMINISTRATOR,
+						'desc' => DESCRIPTION),
+					'toolbar' => $toolbar,
+					'view' => 'details',
+					'entries' => $projects));
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION),
-			'toolbar' => $toolbar,
 			'view' => 'details',
 			'entries' => $projects));
 }
