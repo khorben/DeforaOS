@@ -74,6 +74,7 @@ struct _AppInterface
 static int _new_append(AppInterface * appinterface, AppInterfaceCallType type,
 		char const * function, int args_cnt, ...);
 static int _new_session(AppInterface * appinterface);
+static int _new_gserver(AppInterface * appinterface);
 static int _new_probe(AppInterface * appinterface);
 static int _new_hello(AppInterface * appinterface);
 static int _new_vfs(AppInterface * appinterface);
@@ -86,6 +87,7 @@ AppInterface * appinterface_new(char const * app)
 		int port;
 	} ifaces[] = {
 		{ "Session", _new_session, 4242 },
+		{ "GServer", _new_gserver, 4246 },
 		{ "Probe", _new_probe, 4243 },
 		{ "Hello", _new_hello, 4244 },
 		{ "VFS", _new_vfs, 4245 }
@@ -191,6 +193,11 @@ static int _new_session(AppInterface * ai)
 	return ret;
 }
 
+static int _new_gserver(AppInterface * ai)
+{
+	return 0;
+}
+
 static int _new_probe(AppInterface * ai)
 {
 	int ret = 0;
@@ -235,11 +242,15 @@ static int _new_vfs(AppInterface * ai)
 	ret+=_new_append(ai, AICT_UINT32, "fchown", 3, AICT_UINT32, AICT_UINT32,
 			AICT_UINT32);
 	ret+=_new_append(ai, AICT_UINT32, "flock", 2, AICT_UINT32, AICT_UINT32);
+/*	ret+=_new_append(ai, AICT_UINT32, "fstat", 2, AICT_UINT32,
+			AICT_BUFFER | AICD_OUT); */
 	ret+=_new_append(ai, AICT_UINT32, "lchown", 3, AICT_STRING, AICT_UINT32,
 			AICT_UINT32);
 	ret+=_new_append(ai, AICT_UINT32, "link", 2, AICT_STRING, AICT_STRING);
 	ret+=_new_append(ai, AICT_UINT32, "lseek", 3, AICT_UINT32, AICT_UINT32,
 			AICT_UINT32);
+	ret+=_new_append(ai, AICT_UINT32, "lstat", 2, AICT_STRING,
+			AICT_BUFFER | AICD_OUT);
 	ret+=_new_append(ai, AICT_UINT32, "mkdir", 2, AICT_STRING, AICT_UINT32);
 /*	ret+=_new_append(ai, AICT_UINT32, "mknod", 2, AICT_STRING, AICT_UINT32,
 			AICT_UINT32); */
@@ -250,6 +261,8 @@ static int _new_vfs(AppInterface * ai)
 	ret+=_new_append(ai, AICT_UINT32, "rename", 2, AICT_STRING,
 			AICT_STRING);
 	ret+=_new_append(ai, AICT_UINT32, "rmdir", 1, AICT_STRING);
+	ret+=_new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
+			AICT_BUFFER | AICD_OUT);
 	ret+=_new_append(ai, AICT_UINT32, "symlink", 2, AICT_STRING,
 			AICT_STRING);
 	ret+=_new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32);
@@ -465,13 +478,7 @@ int appinterface_call_receive(AppInterface * appinterface, int * ret,
 	}
 	if(pos - buflen < sizeof(int))
 		return 0;
-#ifdef DEBUG
-	fprintf(stderr, "*ret=%d, pos=%d\n", *ret, pos);
-#endif
 	memcpy(ret, &(buf[pos]), sizeof(int));
-#ifdef DEBUG
-	fprintf(stderr, "*ret=%d, pos=%d\n", *ret, pos);
-#endif
 	return pos+sizeof(int);
 }
 
