@@ -93,6 +93,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/makepasswd/src/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/makepasswd/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/makepasswd/Makefile \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/devel/src/ar.c \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/devel/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/devel/src/Makefile \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/devel/project.conf \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/devel/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/project.conf \
@@ -138,6 +143,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GToolkit/src/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GToolkit/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GToolkit/Makefile \
+		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/video/vbe.c \
+		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/video/vesa.c \
+		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/video/project.conf \
+		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/video/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/gserver.c \
 		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Graphics/src/GServer/src/Makefile \
@@ -157,6 +166,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Apps/Devel/src/GEDI/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Devel/src/GEDI/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Devel/src/configure/src/configure.c \
+		$(PACKAGE)-$(VERSION)/Apps/Devel/src/configure/src/makefile.c \
 		$(PACKAGE)-$(VERSION)/Apps/Devel/src/configure/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Devel/src/configure/src/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Devel/src/configure/AUTHORS \
@@ -262,6 +272,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/appclient.h \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/appserver.h \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/array.h \
+		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/buffer.h \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/config.h \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/event.h \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/include/hash.h \
@@ -272,6 +283,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/appinterface.c \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/appserver.c \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/array.c \
+		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/buffer.c \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/config.c \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/event.c \
 		$(PACKAGE)-$(VERSION)/System/src/libSystem/src/hash.c \
