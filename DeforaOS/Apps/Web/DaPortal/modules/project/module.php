@@ -323,7 +323,6 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	//FIXME
 	//- allow diff requests
 	//also think about:
-	//- downloads
 	//- creating archives
 {
 	$path = $cvsrep.$cvsroot.'/'.$filename;
@@ -821,8 +820,10 @@ function project_insert($args)
 	require_once('system/content.php');
 	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
 		return _error('Unable to insert project content');
-	if(!_sql_query('INSERT INTO daportal_project (project_id, name) VALUES'
-			." ('$id', '".$args['name']."');"))
+	if(!_sql_query('INSERT INTO daportal_project (project_id, name'
+			.', cvsroot) VALUES'
+			." ('$id', '".$args['name']."', '".$args['cvsroot']."'"
+			.');'))
 		return _error('Unable to insert project', 1);
 	project_display(array('id' => $id));
 }
