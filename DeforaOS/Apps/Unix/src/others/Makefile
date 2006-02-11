@@ -1,4 +1,4 @@
-PACKAGE	= mktemp
+PACKAGE	= others
 VERSION	= 0.0.0
 SUBDIRS	= src
 LN	= ln -sf
@@ -21,6 +21,7 @@ dist:
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
+		$(PACKAGE)-$(VERSION)/src/w.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf \
