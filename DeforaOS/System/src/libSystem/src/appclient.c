@@ -80,15 +80,6 @@ static int _appclient_read(int fd, AppClient * ac)
 	event_unregister_timeout(ac->event,
 			(EventTimeoutFunc)_appclient_timeout);
 	return 1;
-/*	if(ac->buf_read_cnt < sizeof(int))
-		return 0;
-	memcpy(&ac->ret, ac->buf_read, sizeof(int));
-	memmove(ac->buf_read, &ac->buf_read[sizeof(int)],
-			ac->buf_read_cnt-sizeof(int));
-	ac->buf_read_cnt-=sizeof(int);
-	event_unregister_timeout(ac->event,
-			(EventTimeoutFunc)_appclient_timeout);
-	return 1; */
 }
 
 
@@ -140,7 +131,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 	AppClient * appclient;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "appclient_new(", app, ")\n");
+	fprintf(stderr, "%s%s%s", "appclient_new(\"", app, "\")\n");
 #endif
 	if((appclient = malloc(sizeof(AppClient))) == NULL)
 		return NULL;
