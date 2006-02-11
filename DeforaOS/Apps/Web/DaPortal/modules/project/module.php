@@ -139,6 +139,10 @@ function project_admin($args)
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable',
 			'confirm' => 'enable');
+	$toolbar[] = array('title' => DELETE,
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'delete',
+			'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => 'Enabled',
 					'admin' => ADMINISTRATOR,
@@ -693,6 +697,7 @@ function project_delete($args)
 	//FIXME remove bug reports and comments?
 	_sql_query('DELETE FROM daportal_project'
 			." WHERE project_id='$id';");
+	require_once('system/content.php');
 	_content_delete($id);
 }
 
