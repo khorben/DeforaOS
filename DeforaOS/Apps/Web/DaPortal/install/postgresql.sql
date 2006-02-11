@@ -92,6 +92,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
 CREATE TABLE daportal_project (
 	project_id SERIAL UNIQUE,
 	name VARCHAR(255) NOT NULL,
+	cvsroot VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
 );
 CREATE TABLE daportal_project_user (
