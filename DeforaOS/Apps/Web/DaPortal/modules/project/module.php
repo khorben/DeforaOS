@@ -971,6 +971,7 @@ function project_modify($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
 	$project = _sql_array('SELECT project_id AS id, name, title, content'
+			.', cvsroot'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
@@ -1111,6 +1112,9 @@ function project_update($args)
 	/* FIXME allow project's admin to update */
 	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return _error('Could not update project');
+	_sql_query('UPDATE daportal_project SET'
+			." cvsroot='".$args['cvsroot']."'"
+			." WHERE project_id='".$args['id']."';");
 	return project_display(array('id' => $args['id']));
 }
 
