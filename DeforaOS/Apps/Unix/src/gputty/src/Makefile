@@ -1,38 +1,44 @@
 TARGETS	= gputty
-CFLAGSF	= -Wall -ansi `pkg-config --cflags gtk+-2.0`
-CFLAGS	= -W -g
-LDFLAGSF= `pkg-config --libs gtk+-2.0`
-LDFLAGS	=
+PREFIX	= /usr/local
+DESTDIR	=
+BINDIR	= $(PREFIX)/bin
 CC	= cc
+CFLAGSF	= -W -Wall `pkg-config --cflags gtk+-2.0`
+CFLAGS	= -g
+LDFLAGSF= `pkg-config --libs gtk+-2.0`
 RM	= rm -f
+MKDIR	= mkdir -p
 INSTALL	= install
 
 
 all: $(TARGETS)
 
-GPUTTY_OBJS = array.o config.o gputty.o hash.o
-gputty: $(GPUTTY_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gputty $(GPUTTY_OBJS)
+gputty_OBJS = array.o config.o gputty.o hash.o
+gputty_CFLAGS = $(CFLAGSF) $(CFLAGS)
+gputty: $(gputty_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gputty $(gputty_OBJS)
 
-array.o: array.c array.h
-	$(CC) $(CFLAGSF) $(CFLAGS) -c array.c
+array.o: array.c
+	$(CC) $(gputty_CFLAGS) -c array.c
 
-config.o: config.c config.h
-	$(CC) $(CFLAGSF) $(CFLAGS) -c config.c
+config.o: config.c
+	$(CC) $(gputty_CFLAGS) -c config.c
 
-gputty.o: gputty.c gputty.h
-	$(CC) $(CFLAGSF) $(CFLAGS) -c gputty.c
+gputty.o: gputty.c
+	$(CC) $(gputty_CFLAGS) -c gputty.c
 
-gputty.h: config.h
-
-hash.o: hash.c hash.h array.h
-	$(CC) $(CFLAGSF) $(CFLAGS) -c hash.c
+hash.o: hash.c
+	$(CC) $(gputty_CFLAGS) -c hash.c
 
 clean:
-	$(RM) $(GPUTTY_OBJS)
+	$(RM) $(gputty_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(INSTALL) -m 755 gputty $(DESTDIR)$(BINDIR)
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 gputty $(DESTDIR)$(BINDIR)/gputty
+
+uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/gputty
