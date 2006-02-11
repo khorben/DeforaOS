@@ -6,8 +6,8 @@
 <? if($admin != 0) { ?>
 	· <a href="index.php?module=project&amp;action=admin&amp;id=<? echo _html_safe_link($id); ?>"><img src="modules/admin/icon.png" alt="" style="height: 16px; width: 16px"/> Administration</a>
 <? if($enabled != 0) { ?>
-	· <a href="index.php?module=project&amp;action=disable&amp;id=<? echo _html_safe_link($id); ?>"><img src="icons/16x16/disabled.png" alt=""/> Disable</a>
+	· <a href="index.php?module=project&amp;action=disable&amp;id=<? echo _html_safe_link($id); ?>&amp;display=1"><img src="icons/16x16/disabled.png" alt=""/> Disable</a>
 <? } else { ?>
-	· <a href="index.php?module=project&amp;action=enable&amp;id=<? echo _html_safe_link($id); ?>"><img src="icons/16x16/enabled.png" alt=""/> Enable</a>
+	· <a href="index.php?module=project&amp;action=enable&amp;id=<? echo _html_safe_link($id); ?>&amp;display=1"><img src="icons/16x16/enabled.png" alt=""/> Enable</a>
 <? } } ?>
 </div>

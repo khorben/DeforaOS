@@ -109,6 +109,8 @@ function project_admin($args)
 	for($i = 0; $i < $count; $i++)
 	{
 		$projects[$i]['name'] = _html_safe_link($projects[$i]['name']);
+		$projects[$i]['icon'] = 'modules/project/icon.png';
+		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 		$projects[$i]['admin'] = '<a href="index.php?module=project'
 				.'&amp;action=list'
 				.'&amp;user_id='.$projects[$i]['user_id'].'">'
@@ -116,8 +118,8 @@ function project_admin($args)
 		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
 		$projects[$i]['module'] = 'project';
 		$projects[$i]['action'] = 'modify';
-		$projects[$i]['icon'] = 'modules/project/icon.png';
-		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
+		$projects[$i]['apply_module'] = 'project';
+		$projects[$i]['apply_id'] = $projects[$i]['id'];
 		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == 't')
 			? 'enabled' : 'disabled';
 		$projects[$i]['enabled'] = '<img src="icons/16x16/'
@@ -128,13 +130,23 @@ function project_admin($args)
 	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
+	$toolbar[] = array('title' => DISABLE,
+			'icon' => 'icons/16x16/disabled.png',
+			'action' => 'disable',
+			'confirm' => 'disable');
+	$toolbar[] = array('title' => ENABLE,
+			'icon' => 'icons/16x16/enabled.png',
+			'action' => 'enable',
+			'confirm' => 'enable');
 	_module('explorer', 'browse_trusted', array(
-			'class' => array('enabled' => '',
+			'class' => array('enabled' => 'Enabled',
 					'admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION),
 			'toolbar' => $toolbar,
 			'view' => 'details',
-			'entries' => $projects));
+			'entries' => $projects,
+			'module' => 'project',
+			'action' => 'admin'));
 }
 
 
@@ -695,7 +707,8 @@ function project_disable($args)
 		return _error(INVALID_PROJECT);
 	require_once('system/content.php');
 	_content_disable($id);
-	project_display(array('id' => $id));
+	if($args['display'] != 0)
+		project_display(array('id' => $id));
 }
 
 
@@ -786,7 +799,8 @@ function project_enable($args)
 		return _error(INVALID_PROJECT);
 	require_once('system/content.php');
 	_content_enable($id);
-	project_display(array('id' => $id));
+	if($args['display'] != 0)
+		project_display(array('id' => $id));
 }
 
 
