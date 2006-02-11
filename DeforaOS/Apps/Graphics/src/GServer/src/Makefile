@@ -1,16 +1,21 @@
+SUBDIRS	= video
 TARGETS	= GServer
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CFLAGSF	= -W -Wall -ansi
+CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
+LDFLAGSF= -L /System/Libraries -l System -l dl -l GL
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 GServer_OBJS = gserver.o
 GServer_CFLAGS = $(CFLAGSF) $(CFLAGS)
@@ -21,14 +26,19 @@ gserver.o: gserver.c
 	$(CC) $(GServer_CFLAGS) -c gserver.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) $(GServer_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) $(GServer_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 GServer $(DESTDIR)$(BINDIR)/GServer
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/GServer
