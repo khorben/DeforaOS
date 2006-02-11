@@ -12,6 +12,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
+$text['CVS_PATH'] = 'CVS path';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
 $text['NEW_PROJECT'] = 'New project';
@@ -96,7 +97,7 @@ function project_admin($args)
 			.'</h2>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin, daportal_content.enabled'
-			.', daportal_content.user_id AS user_id'
+			.', daportal_content.user_id AS user_id, cvsroot'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_project'
 			.' WHERE daportal_content.user_id=daportal_user.user_id'
@@ -141,7 +142,8 @@ function project_admin($args)
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => 'Enabled',
 					'admin' => ADMINISTRATOR,
-					'desc' => DESCRIPTION),
+					'desc' => DESCRIPTION,
+					'cvsroot' => CVS_PATH),
 			'toolbar' => $toolbar,
 			'view' => 'details',
 			'entries' => $projects,
