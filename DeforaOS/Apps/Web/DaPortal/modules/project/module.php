@@ -729,7 +729,8 @@ function project_display($args)
 			'name' => _html_safe($project['username']),
 			'icon' => 'modules/user/icon.png',
 			'thumbnail' => 'modules/user/icon.png',
-			'module' => 'user', 'action' => 'default',
+			'module' => 'user',
+			'action' => 'default',
 			'admin' => '<img src="icons/16x16/enabled.png" alt="yes"/>');
 	$m = _sql_array('SELECT daportal_user.user_id AS id'
 			.', username AS name'
@@ -743,23 +744,27 @@ function project_display($args)
 				'icon' => 'modules/user/icon.png',
 				'thumbnail' => 'modules/user/icon.png',
 				'module' => 'user', 'action' => 'default',
+				'apply_module' => 'project',
+				'apply_id' => $n['id'],
+				'apply_args' => 'project_id='.$project['id'],
 				'admin' => '<img src="icons/16x16/disabled.png" alt="no"/>');
 	print('<h2><img src="modules/user/icon.png" alt=""/> '.MEMBERS.'</h2>');
+	$explorer = array('view' => 'details', 'entries' => $members,
+			'class' => array('admin' => ADMINISTRATOR),
+			'module' => 'project', 'action' => 'display',
+			'id' => $project['id']);
 	$toolbar = array();
 	$toolbar[] = array('title' => 'Add member(s)',
 			'icon' => 'modules/user/icon.png',
 			'link' => 'index.php?module=project&action=member_add'
 					.'&id='.$project['id']);
+	$toolbar[] = array('title' => 'Delete member(s)',
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'member_delete',
+			'confirm' => 'delete');
 	if($admin)
-		return _module('explorer', 'browse_trusted', array(
-					'toolbar' => $toolbar,
-					'view' => 'details',
-					'entries' => $members,
-					'class' => array(
-						'admin' => ADMINISTRATOR)));
-	_module('explorer', 'browse_trusted', array('view' => 'details',
-				'entries' => $members,
-				'class' => array('admin' => ADMINISTRATOR)));
+		$explorer['toolbar'] = $toolbar;
+	_module('explorer', 'browse_trusted', $explorer);
 }
 
 
@@ -900,8 +905,8 @@ function project_member_add($args)
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
 			." WHERE project_id='".$project['id']."';");
 	$where = " WHERE user_id <> '".$project['user_id']."'";
-	foreach($members as $id)
-		$where.=" AND user_id <> '$id'";
+	foreach($members as $m)
+		$where.=" AND user_id <> '".$m['id']."'";
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.' FROM daportal_user'.$where.';');
 	for($i = 0, $cnt = count($users); $i < $cnt; $i++)
@@ -924,6 +929,19 @@ function project_member_add($args)
 				'module' => 'project',
 				'action' => 'display',
 				'id' => $project['id']));
+}
+
+
+function project_member_delete($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED, 1);
+	_sql_query('DELETE FROM daportal_project_user WHERE '
+			." project_id='".$args['project_id']."'"
+			." AND user_id='".$args['id']."';");
 }
 
 
