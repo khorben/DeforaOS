@@ -904,7 +904,8 @@ function project_member_add($args)
 			.'Add member to project '.$project['name']."</h1>\n");
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
 			." WHERE project_id='".$project['id']."';");
-	$where = " WHERE user_id <> '".$project['user_id']."'";
+	$where = " WHERE user_id <> '".$project['user_id']."'"
+		." AND user_id <> '0'";
 	foreach($members as $m)
 		$where.=" AND user_id <> '".$m['id']."'";
 	$users = _sql_array('SELECT user_id AS id, username AS name'
