@@ -33,6 +33,7 @@ function _explorer(&$args)
 	$explorer_id++;
 	$module = $args['module'];
 	$action = $args['action'];
+	$id = $args['id'];
 	include('top.tpl');
 	if(!isset($args['toolbar']) || is_array($args['toolbar']))
 		include('toolbar.tpl');
@@ -100,10 +101,23 @@ function explorer_apply($args)
 		$id = $args[$k.'_id'];
 		if(!strlen($module) || !strlen($action) || !strlen($id))
 			continue;
-		_module($module, $action, array('id' => $id));
+		$params = array('id' => $id);
+		if(isset($args[$k.'_args']))
+		{
+			$extras = split(';', $args[$k.'_args']);
+			foreach($extras as $e)
+			{
+				$extra = split('=', $e);
+				$params[$extra[0]] = $extra[1];
+			}
+		}
+		_module($module, $action, $params);
 	}
-	header('Location: index.php?module='.$args['link_module']
-			.'&action='.$args['link_action']);
+	$link = 'index.php?module='.$args['link_module']
+			.'&action='.$args['link_action'];
+	if(is_numeric($args['link_id']))
+		$link.='&id='.$args['link_id'];
+	header('Location: '.$link);
 	exit(0);
 }
 

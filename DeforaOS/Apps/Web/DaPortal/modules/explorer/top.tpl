@@ -6,4 +6,6 @@
 <? if(strlen($module) && strlen($action)) { ?>
 	<input type="hidden" name="link_module" value="<? echo _html_safe_link($module); ?>"/>
 	<input type="hidden" name="link_action" value="<? echo _html_safe_link($action); ?>"/>
-<? } ?>
+<? if(strlen($id)) { ?>
+	<input type="hidden" name="link_id" value="<? echo _html_safe_link($id); ?>"/>
+<? } } ?>

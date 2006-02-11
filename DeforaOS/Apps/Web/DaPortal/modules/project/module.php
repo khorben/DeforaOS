@@ -704,9 +704,9 @@ function project_display($args)
 	global $user_id;
 
 	require_once('system/user.php');
-	$project = _sql_array('SELECT name, title, content AS description'
-			.', daportal_content.enabled, daportal_content.user_id'
-			.', username'
+	$project = _sql_array('SELECT project_id AS id, name, title'
+			.', content AS description, daportal_content.enabled'
+			.', daportal_content.user_id, username'
 			.' FROM daportal_content, daportal_project'
 			.', daportal_user'
 			." WHERE content_id='".$args['id']."'"
@@ -745,6 +745,18 @@ function project_display($args)
 				'module' => 'user', 'action' => 'default',
 				'admin' => '<img src="icons/16x16/disabled.png" alt="no"/>');
 	print('<h2><img src="modules/user/icon.png" alt=""/> '.MEMBERS.'</h2>');
+	$toolbar = array();
+	$toolbar[] = array('title' => 'Add member(s)',
+			'icon' => 'modules/user/icon.png',
+			'link' => 'index.php?module=project&action=member_add'
+					.'&id='.$project['id']);
+	if($admin)
+		return _module('explorer', 'browse_trusted', array(
+					'toolbar' => $toolbar,
+					'view' => 'details',
+					'entries' => $members,
+					'class' => array(
+						'admin' => ADMINISTRATOR)));
 	_module('explorer', 'browse_trusted', array('view' => 'details',
 				'entries' => $members,
 				'class' => array('admin' => ADMINISTRATOR)));
@@ -864,6 +876,71 @@ function project_list($args)
 					'desc' => DESCRIPTION),
 			'view' => 'details',
 			'entries' => $projects));
+}
+
+
+function project_member_add($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$project = _sql_array('SELECT project_id AS id, name, user_id'
+			.' FROM daportal_project'
+			.', daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND project_id='".$args['id']."';");
+	if(!is_array($project) || count($project) != 1)
+		return _error(INVALID_PROJECT);
+	$project = $project[0];
+	print('<h1><img src="modules/project/icon.png" alt=""/> '
+			.'Add member to project '.$project['name']."</h1>\n");
+	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
+			." WHERE project_id='".$project['id']."';");
+	$where = " WHERE user_id <> '".$project['user_id']."'";
+	foreach($members as $id)
+		$where.=" AND user_id <> '$id'";
+	$users = _sql_array('SELECT user_id AS id, username AS name'
+			.' FROM daportal_user'.$where.';');
+	for($i = 0, $cnt = count($users); $i < $cnt; $i++)
+	{
+		$users[$i]['icon'] = 'modules/user/icon.png';
+		$users[$i]['thumbnail'] = 'modules/user/icon.png';
+		$users[$i]['module'] = 'user';
+		$users[$i]['action'] = 'default';
+		$users[$i]['apply_module'] = 'project';
+		$users[$i]['apply_id'] = $users[$i]['id'];
+		$users[$i]['apply_args'] = 'project_id='.$project['id'];
+	}
+	$toolbar = array();
+	$toolbar[] = array('title' => 'Add selected users',
+			'icon' => 'modules/user/icon.png',
+			'action' => 'member_insert',
+			'confirm' => 'add');
+	_module('explorer', 'browse', array('toolbar' => $toolbar,
+				'entries' => $users,
+				'module' => 'project',
+				'action' => 'display',
+				'id' => $project['id']));
+}
+
+
+function project_member_insert($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED, 1);
+	if(($id = _sql_single('SELECT user_id FROM daportal_project_user'
+			." WHERE project_id='".$args['project_id']."'"
+			." AND user_id='".$args['id']."';")) == $args['id'])
+		return;
+	_sql_query('INSERT INTO daportal_project_user (project_id, user_id)'
+			." VALUES ('".$args['project_id']."'"
+			.", '".$args['id']."');");
 }
 
 
