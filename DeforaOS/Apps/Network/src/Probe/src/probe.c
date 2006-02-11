@@ -1,7 +1,8 @@
 /* probe.c */
 /* TODO:
  * - check ifinfo code (and thus volinfo)
- * - free memory allocated */
+ * - free memory allocated
+ * - kvm_getprocs() may be more portable for *BSD */
 
 
 
