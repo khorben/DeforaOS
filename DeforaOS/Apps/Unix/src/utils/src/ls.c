@@ -275,6 +275,7 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 {
 	SList * files;
 	SList * dirs;
+	compare_func cmp = _ls_compare(prefs);
 	int res = 0;
 	DIR * dir;
 	struct dirent * de;
@@ -289,8 +290,7 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 	{
 		if(*(de->d_name) == '.' && !(*prefs & PREFS_a))
 			continue;
-		slist_insert_sorted(files, strdup(de->d_name),
-				(compare_func)strcmp);
+		slist_insert_sorted(files, strdup(de->d_name), cmp);
 		if(pos <= 2)
 			continue;
 		if((p = realloc(file, strlen(directory) + strlen(de->d_name)
@@ -302,8 +302,7 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 		file = p;
 		sprintf(file, "%s/%s", directory, de->d_name);
 		if((*prefs & PREFS_R) && _is_directory(prefs, file) == 1)
-			slist_insert_sorted(dirs, strdup(file),
-					(compare_func)strcmp);
+			slist_insert_sorted(dirs, strdup(file), cmp);
 	}
 	free(file);
 	closedir(dir);
