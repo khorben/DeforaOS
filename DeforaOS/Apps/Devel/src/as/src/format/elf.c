@@ -1,6 +1,4 @@
 /* format/elf.c */
-/* FIXME
- * - executable files must have a program header table */
 
 
 
@@ -44,7 +42,7 @@ int elf_init(FILE * fp, char * arch)
 	memcpy(&hdr.e_ident, ELFMAG, SELFMAG);
 	hdr.e_ident[4] = fa->objsize;
 	hdr.e_ident[5] = fa->endian;
-	hdr.e_type = ET_REL;		/* FIXME */
+	hdr.e_type = ET_REL;
 	hdr.e_machine = fa->machine;
 	hdr.e_version = EV_CURRENT;	/* FIXME */
 	hdr.e_entry = NULL;		/* FIXME may be redefined later */
