@@ -134,10 +134,10 @@ static unsigned int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: as [-a arch][-f format][-o file] file\n"
 "       as -l\n"
-"  -a    target architecture (default: guessed)\n"
-"  -f    target file format (default: elf)\n"
-"  -o    filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n"
-"  -l    list available architectures and formats\n");
+"  -a	target architecture (default: guessed)\n"
+"  -f	target file format (default: elf)\n"
+"  -o	filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n"
+"  -l	list available architectures and formats\n");
 	return 1;
 }
 
