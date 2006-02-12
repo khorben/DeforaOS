@@ -693,6 +693,12 @@ function project_bug_update($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$id = $args['bug_id'];
+	if(($content_id = _sql_single('SELECT content_id FROM daportal_bug'
+			." WHERE bug_id='".$id."';")) != FALSE)
+		_sql_query('UPDATE daportal_content SET'
+				." title='".$args['title']."'"
+				.", content='".$args['content']."'"
+				." WHERE content_id='".$content_id."';");
 	_sql_query('UPDATE daportal_bug SET'
 			." state='".$args['state']."'"
 			.", type='".$args['type']."'"
