@@ -114,6 +114,7 @@ CREATE TABLE daportal_bug (
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('9', 'cvsroot', '');
 
 
 /* module: probe */
