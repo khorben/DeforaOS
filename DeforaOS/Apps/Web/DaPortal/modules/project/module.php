@@ -13,6 +13,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['CVS_PATH'] = 'CVS path';
+$text['INVALID_BUG'] = 'Invalid bug';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
 $text['NEW_PROJECT'] = 'New project';
@@ -57,12 +58,25 @@ else if($lang == 'fr')
 _lang($text);
 
 
-function _project_toolbar($id, $admin = 0, $enabled = 1)
+function _project_toolbar($id, $admin = 0)
 {
 	global $html;
 
-	if($html)
-		include('toolbar.tpl');
+	if(!$html)
+		return;
+	$cvsroot = '';
+	$enabled = 0;
+	$project = _sql_array('SELECT cvsroot, enabled'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND project_id='$id';");
+	if(is_array($project) && count($project) == 1)
+	{
+		$cvsroot = $project[0]['cvsroot'];
+		$enabled = $project[0]['enabled'] == 't' ? 1 : 0;
+	}
+	include('toolbar.tpl');
 }
 
 
@@ -634,7 +648,7 @@ function project_bug_list($args)
 
 function project_bug_modify($args)
 {
-	/* FIXME we won't use bug_update.tpl here but propose a series of
+	/* FIXME we won't use only bug_update.tpl here but propose a series of
 	 * logical actions (choose different project, assign to a user, etc) */
 	/* FIXME for instance create a user_assign function with current number
 	 * of affected bugs etc */
@@ -645,6 +659,17 @@ function project_bug_modify($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
+	$bug = _sql_array('SELECT bug_id AS id, title, content, state, type'
+			.', priority'
+			.' FROM daportal_bug, daportal_content'
+			.' WHERE daportal_bug.content_id'
+			.'=daportal_content.content_id'
+			." AND bug_id='".$args['id']."';");
+	if(!is_array($bug) || count($bug) != 1)
+		return _error(INVALID_BUG);
+	$bug = $bug[0];
+	$title = 'Modification of bug #'.$bug['id'].': '.$bug['title'];
+	include('bug_update.tpl');
 }
 
 
@@ -656,6 +681,24 @@ function project_bug_new($args)
 	$title = 'Report bug for '.$project;
 	$project_id = $args['project_id'];
 	include('bug_update.tpl');
+}
+
+
+function project_bug_update($args)
+{
+	global $user_id, $module_id;
+
+	require_once('system/user.php');
+	/* FIXME could be the project admin */
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$id = $args['bug_id'];
+	_sql_query('UPDATE daportal_bug SET'
+			." state='".$args['state']."'"
+			.", type='".$args['type']."'"
+			.", priority='".$args['priority']."'"
+			." WHERE bug_id='$id';");
+	project_bug_display($id);
 }
 
 
@@ -742,7 +785,7 @@ function project_display($args)
 	if($enabled == 0 && !$admin)
 		return include('project_submitted.tpl');
 	$title = $project['name'];
-	_project_toolbar($args['id'], $admin, $enabled);
+	_project_toolbar($args['id'], $admin);
 	include('project_display.tpl');
 	$members = array();
 	$members[] = array('id' => $project['user_id'],
