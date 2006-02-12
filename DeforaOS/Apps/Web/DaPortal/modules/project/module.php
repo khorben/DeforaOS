@@ -459,7 +459,7 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 function project_bug_display($args)
 {
 	if(!is_numeric($args['id']))
-		return _error('Invalid bug ID', 1);
+		return _error(INVALID_BUG);
 	$bug = _sql_array('SELECT daportal_content.content_id AS content_id'
 			.', daportal_project.project_id AS project_id'
 			.', daportal_user.user_id AS user_id'
@@ -698,7 +698,7 @@ function project_bug_update($args)
 			.", type='".$args['type']."'"
 			.", priority='".$args['priority']."'"
 			." WHERE bug_id='$id';");
-	project_bug_display($id);
+	project_bug_display(array('id' => $id));
 }
 
 
