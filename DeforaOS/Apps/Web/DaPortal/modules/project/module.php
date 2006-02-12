@@ -131,6 +131,7 @@ function project_admin($args)
 	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
+	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE,
 			'icon' => 'icons/16x16/disabled.png',
 			'action' => 'disable',
