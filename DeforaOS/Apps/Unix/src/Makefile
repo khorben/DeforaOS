@@ -1,4 +1,4 @@
-SUBDIRS	= devel makepasswd mktemp sh utils
+SUBDIRS	= devel makepasswd others sh utils
 
 
 all: subdirs
