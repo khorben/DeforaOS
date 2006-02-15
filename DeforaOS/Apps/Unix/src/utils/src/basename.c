@@ -11,13 +11,12 @@
 static int _basename(char * arg, char * suf)
 {
 	char * str;
+	int slen;
+	int alen;
 
 	str = basename(arg);
 	if(suf != NULL)
 	{
-		int slen;
-		int alen;
-
 		slen = strlen(str);
 		alen = strlen(suf);
 		if(alen < slen && strcmp(suf, &str[slen - alen]) == 0)
