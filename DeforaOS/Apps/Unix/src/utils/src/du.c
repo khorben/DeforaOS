@@ -22,8 +22,8 @@ typedef int Prefs;
 
 
 /* du */
-static int _du_do(Prefs * prefs, char * filename);
-static void _du_print(Prefs * prefs, off_t size, char * filename);
+static int _du_do(Prefs * prefs, char const * filename);
+static void _du_print(Prefs * prefs, off_t size, char const * filename);
 static int _du(Prefs * prefs, int argc, char * argv[])
 {
 	int res = 0;
@@ -36,7 +36,7 @@ static int _du(Prefs * prefs, int argc, char * argv[])
 	return res == 0 ? 0 : 2;
 }
 
-static int _du_error(char * error)
+static int _du_error(char const * error)
 {
 	fprintf(stderr, "%s", "du: ");
 	perror(error);
@@ -44,8 +44,8 @@ static int _du_error(char * error)
 }
 
 static off_t _du_blocks(Prefs * prefs, off_t size);
-static int _du_do_recursive(Prefs * prefs, char * filename);
-static int _du_do(Prefs * prefs, char * filename)
+static int _du_do_recursive(Prefs * prefs, char const * filename);
+static int _du_do(Prefs * prefs, char const * filename)
 {
 	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
@@ -70,7 +70,7 @@ static off_t _du_blocks(Prefs * prefs, off_t size)
 }
 
 static int _recursive_do(Prefs * prefs, off_t * size, char ** filename);
-static int _du_do_recursive(Prefs * prefs, char * filename)
+static int _du_do_recursive(Prefs * prefs, char const * filename)
 {
 	off_t size = 0;
 	char * p;
@@ -149,7 +149,7 @@ static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename)
 		_du_print(prefs, st.st_blocks, *filename);
 }
 
-static void _du_print(Prefs * prefs, off_t size, char * filename)
+static void _du_print(Prefs * prefs, off_t size, char const * filename)
 {
 	printf("%ld %s\n", _du_blocks(prefs, size), filename);
 }
