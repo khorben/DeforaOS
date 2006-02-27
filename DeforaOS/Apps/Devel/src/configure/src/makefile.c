@@ -326,7 +326,7 @@ static void _variables_library(Configure * configure, Config * config,
 			fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
 					"\n");
 	}
-	fprintf(fp, "%s", "AR\t= ar rc\n");
+	fprintf(fp, "%s", "AR\t= ar -rc\n");
 	fprintf(fp, "%s", "RANLIB\t= ranlib\n");
 	fprintf(fp, "%s", "LD\t= ld -shared\n");
 }
