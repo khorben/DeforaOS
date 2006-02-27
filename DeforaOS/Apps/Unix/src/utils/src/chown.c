@@ -1,4 +1,6 @@
 /* chown.c */
+/* FIXME
+ * - rename opts to prefs */
 
 
 
@@ -12,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 
 /* types */
@@ -81,30 +84,36 @@ static int _chown_id_error(char * message, char * unknown, int ret);
 static uid_t _chown_uid(char * owner)
 {
 	struct passwd * pwd;
+	char * p;
 
-	if((pwd = getpwnam(owner)) == NULL)
+	if((pwd = getpwnam(owner)) != NULL)
+		return pwd->pw_uid;
+	for(p = owner; *p != '\0' && isdigit(*p); p++);
+	if(*p != '\0' || *owner == '\0')
 		return _chown_id_error(owner, "user", -1);
-	return pwd->pw_uid;
+	return strtol(owner, NULL, 10);
 }
 
 static int _chown_id_error(char * message, char * unknown, int ret)
 {
-	if(errno == 0)
-	{
-		fprintf(stderr, "%s%s%s%s%s", "chown: ", message,
-				": Unknown ", unknown, "\n");
-		return ret;
-	}
-	return _chown_error(message, ret);
+	if(errno != 0)
+		return _chown_error(message, ret);
+	fprintf(stderr, "%s%s%s%s%s", "chown: ", message, ": Unknown ", unknown,
+			"\n");
+	return ret;
 }
 
 static gid_t _chown_gid(char * group)
 {
 	struct group * grp;
+	char * p;
 
-	if((grp = getgrnam(group)) == NULL)
+	if((grp = getgrnam(group)) != NULL)
+		return grp->gr_gid;
+	for(p = group; *p != '\0' && isdigit(*p); p++);
+	if(*p != '\0' || *group == '\0')
 		return _chown_id_error(group, "group", -1);
-	return grp->gr_gid;
+	return strtol(group, NULL, 10);
 }
 
 static int _chown_do_recursive_do(int opts, uid_t uid, gid_t gid, char * file);
