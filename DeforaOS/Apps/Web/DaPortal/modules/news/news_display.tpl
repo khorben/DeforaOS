@@ -4,11 +4,14 @@
 	<div class="date"><? echo _html_safe(NEWS_ON); ?> <? echo _html_safe($news['date']); ?></div>
 	<div class="content"><? echo _html_pre($news['content']); ?></div>
 	<div class="status">
+<? if(isset($news['preview'])) { ?>
+		<? echo _html_safe(NEWS_PREVIEW); ?>
+<? } else { ?>
 		<a href="index.php?module=news&amp;id=<? echo _html_safe_link($news['id']); ?>"><img src="icons/16x16/read.png" alt=""/> Read</a>
 <? if(_module_id('comment')) { ?>
 		(<? echo _html_safe(_module('comment', 'count', array('id' => $news['id'])).' '.COMMENT_S); ?>)
 		· <a href="index.php?module=comment&amp;action=new&amp;parent=<? echo _html_safe($news['id']); ?>#edit"><img src="icons/16x16/reply.png" alt=""/> Reply</a>
-<? } ?>
+<? } } ?>
 <? global $user_id; require_once('system/user.php');
 if($news['id'] && _user_admin($user_id)) { ?>
 		· <a href="index.php?module=news&amp;action=modify&amp;id=<? echo _html_safe($news['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <? echo _html_safe(EDIT); ?></a>
