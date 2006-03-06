@@ -1,6 +1,4 @@
 /* chown.c */
-/* FIXME
- * - rename opts to prefs */
 
 
 
@@ -18,36 +16,38 @@
 
 
 /* types */
-#define OPT_h 1
-#define OPT_R 2
-#define OPT_H 4
-#define OPT_L 8
-#define OPT_P 12
+typedef int Prefs;
+#define PREFS_h 1
+#define PREFS_R 2
+#define PREFS_H 4
+#define PREFS_L 8
+#define PREFS_P 12
 
 
 /* chown */
 static int _chown_error(char * message, int ret);
 static int _chown_owner(char * owner, uid_t * uid, gid_t * gid);
-static int _chown_do_recursive(int opts, uid_t uid, gid_t gid, char * file);
-static int _chown_do(int opts, uid_t uid, gid_t gid, char * file);
-static int _chown(int opts, char * owner, int argc, char * argv[])
+static int _chown_do_recursive(Prefs * prefs, uid_t uid, gid_t gid,
+		char * file);
+static int _chown_do(Prefs * prefs, uid_t uid, gid_t gid, char * file);
+static int _chown(Prefs * prefs, char * owner, int argc, char * argv[])
 {
 	uid_t uid;
 	gid_t gid;
-	int res = 0;
+	int ret = 0;
 	int i;
 
 	if(_chown_owner(owner, &uid, &gid) != 0)
 		return 2;
-	if(opts & OPT_R)
+	if(*prefs & PREFS_R)
 	{
 		for(i = 0; i < argc; i++)
-			res += _chown_do_recursive(opts, uid, gid, argv[i]);
-		return res;
+			ret |= _chown_do_recursive(prefs, uid, gid, argv[i]);
+		return ret;
 	}
 	for(i = 0; i < argc; i++)
-		res += _chown_do(opts, uid, gid, argv[i]);
-	return res;
+		ret |= _chown_do(prefs, uid, gid, argv[i]);
+	return ret;
 }
 
 static int _chown_error(char * message, int ret)
@@ -116,21 +116,22 @@ static gid_t _chown_gid(char * group)
 	return strtol(group, NULL, 10);
 }
 
-static int _chown_do_recursive_do(int opts, uid_t uid, gid_t gid, char * file);
-static int _chown_do_recursive(int opts, uid_t uid, gid_t gid, char * file)
+static int _chown_do_recursive_do(Prefs * p, uid_t uid, gid_t gid, char * file);
+static int _chown_do_recursive(Prefs * p, uid_t uid, gid_t gid, char * file)
 {
 	struct stat st;
 
 	if(lstat(file, &st) != 0)
 		return _chown_error(file, 1);
 	if(!S_ISDIR(st.st_mode))
-		return _chown_do(opts, uid, gid, file);
+		return _chown_do(p, uid, gid, file);
 	if(!S_ISLNK(st.st_mode))
-		return _chown_do_recursive_do(opts, uid, gid, file);
+		return _chown_do_recursive_do(p, uid, gid, file);
 	return 0;
 }
 
-static int _chown_do_recursive_do(int opts, uid_t uid, gid_t gid, char * file)
+static int _chown_do_recursive_do(Prefs * prefs, uid_t uid, gid_t gid,
+		char * file)
 {
 	DIR * dir;
 	struct dirent * de;
@@ -161,7 +162,7 @@ static int _chown_do_recursive_do(int opts, uid_t uid, gid_t gid, char * file)
 		}
 		s = p;
 		strcat(s, de->d_name);
-		_chown_do_recursive(opts, uid, gid, s);
+		_chown_do_recursive(prefs, uid, gid, s);
 		s[len-1] = '\0';
 	}
 	free(s);
@@ -169,11 +170,11 @@ static int _chown_do_recursive_do(int opts, uid_t uid, gid_t gid, char * file)
 	return 0;
 }
 
-static int _chown_do(int opts, uid_t uid, gid_t gid, char * file)
+static int _chown_do(Prefs * prefs, uid_t uid, gid_t gid, char * file)
 {
 	int res;
 
-	if((opts & OPT_h) == OPT_h)
+	if((*prefs & PREFS_h) == PREFS_h)
 		res = lchown(file, uid, gid);
 	else
 		res = chown(file, uid, gid);
@@ -188,25 +189,26 @@ static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: chown [-hR] owner[:group] file ...\n\
        chown -R [-H | -L | -P] owner[:group] file ...\n\
-  -h    Set the user and group IDs on symbolic links\n\
-  -R    Recursively change file user and group IDs\n");
+  -h	Set the user and group IDs on symbolic links\n\
+  -R	Recursively change file user and group IDs\n");
 	return 1;
 }
+
 
 /* main */
 int main(int argc, char * argv[])
 {
 	int o;
-	int opts = 0;
+	Prefs prefs = 0;
 
 	while((o = getopt(argc, argv, "hRHLP")) != -1)
 		switch(o)
 		{
 			case 'h':
-				opts |= OPT_h;
+				prefs |= PREFS_h;
 				break;
 			case 'R':
-				opts |= OPT_R;
+				prefs |= PREFS_R;
 				break;
 			case 'H':
 			case 'L':
@@ -218,5 +220,6 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 2)
 		return _usage();
-	return _chown(opts, argv[optind], argc - optind - 1, &argv[optind+1]);
+	return _chown(&prefs, argv[optind], argc-optind-1, &argv[optind+1]) == 0
+		? 0 : 2;
 }
