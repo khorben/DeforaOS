@@ -12,7 +12,7 @@ static int _link(char * file1, char * file2)
 	if(link(file1, file2) == -1)
 	{
 		perror("link");
-		return 2;
+		return 1;
 	}
 	return 0;
 }
@@ -31,5 +31,5 @@ int main(int argc, char* argv[])
 {
 	if(argc != 3)
 		return _usage();
-	return _link(argv[1], argv[2]);
+	return _link(argv[1], argv[2]) == 0 ? 0 : 2;
 }
