@@ -24,6 +24,8 @@ $text['PROJECT_LIST'] = 'Project list';
 $text['PROJECT_NAME'] = 'Project name';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
+$text['REPORT_A_BUG'] = 'Report a bug';
+$text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['STATE'] = 'State';
 $text['TIMELINE'] = 'Timeline';
 global $lang;
@@ -52,6 +54,8 @@ else if($lang == 'fr')
 	$text['PROJECT_NAME'] = 'Nom du projet';
 	$text['PROJECTS'] = 'Projets';
 	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
+	$text['REPORT_A_BUG'] = 'Rapporter un bug';
+	$text['REPORT_BUG_FOR'] = 'Rapporter un bug pour';
 	$text['STATE'] = 'Etat';
 	$text['TIMELINE'] = 'Progression';
 }
@@ -628,7 +632,7 @@ function project_bug_list($args)
 	$link = 'index.php?module=project&action=bug_new'.(isset($project_id)
 			? '&project_id='.$project_id : '');
 	$toolbar[] = array('icon' => 'modules/project/bug.png',
-		'title' => 'Report a bug',
+		'title' => REPORT_A_BUG,
 		'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
 			'class' => array('nb' => '#',
@@ -678,7 +682,7 @@ function project_bug_new($args)
 	if(!is_numeric($args['project_id'])
 			|| !($project = _project_name($args['project_id'])))
 		return project_list(array('action' => 'bug_new'));
-	$title = 'Report bug for '.$project;
+	$title = REPORT_BUG_FOR.' '.$project;
 	$project_id = $args['project_id'];
 	include('bug_update.tpl');
 }
