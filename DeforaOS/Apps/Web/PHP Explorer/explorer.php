@@ -64,6 +64,8 @@ function explorer_download($filename)
 	header('Content-Length: '.filesize($filename));
 	header('Content-Disposition: '.$attachment.'; filename="'
 			.html_safe(basename($filename)).'"');
+	if(($st = stat($filename)) != FALSE)
+		header('Date: '.strftime('%a %b %e %T %Y', $st['mtime']));
 	readfile($filename);
 }
 
