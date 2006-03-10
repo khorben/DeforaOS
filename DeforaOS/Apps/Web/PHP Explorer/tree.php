@@ -114,7 +114,7 @@ function tree()
 	</head>
 	<body>
 		<div class="tree">
-<div class="lastnode"><img class="node" <? if(TREE_LEVEL) { ?>src="icons/tree/mlastnode.gif" alt="" onClick="folder_collapse(event)"<? } else { ?>src="icons/tree/plastnode.gif" alt="" onClick="folder_expand(event)"<? } ?>/><a href="explorer.php?folder=/" target="explorer"><img src="icons/16x16/mime/folder.png" alt="directory"/> /</a>
+<div class="lastnode"><img class="node" <? if(TREE_LEVEL) { ?>src="icons/tree/mlastnode.gif" alt="" onClick="folder_collapse(event)"<? } else { ?>src="icons/tree/plastnode.gif" alt="" onClick="folder_expand(event)"<? } ?>/><a href="explorer.php" target="explorer"><img src="icons/16x16/mime/folder.png" alt="directory"/> /</a>
 <? tree(); ?>
 </div>
 		</div>
