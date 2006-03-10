@@ -23,7 +23,7 @@ require('common.php');
 require('config.php');
 
 
-$folder = filename_safe($_GET['folder']);
+$folder = filename_safe(stripslashes($_GET['folder']));
 if(!$upload)
 	$message = 'File uploading is forbidden';
 else if(isset($_POST['folder']))
@@ -48,7 +48,7 @@ else if(isset($_POST['folder']))
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
-		<title>Create directory</title>
+		<title>Upload file</title>
 		<link type="text/css" rel="stylesheet" href="explorer.css"/>
 		<script type="text/javascript" src="explorer.js"></script>
 	</head>
