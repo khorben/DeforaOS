@@ -137,6 +137,12 @@ img {
 	display:			none;
 }
 
+.explorer .listing_details .entry .permissions,
+.explorer .listing_details .entry .size
+.explorer .listing_details .entry .date {
+	font-family:			monospace;
+}
+
 /* explorer list */
 .explorer .listing_list .header {
 	display:			none;
