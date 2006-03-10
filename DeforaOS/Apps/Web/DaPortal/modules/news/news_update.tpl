@@ -10,11 +10,11 @@
 	<table>
 		<tr>
 			<td class="field">Title:</td>
-			<td><input type="text" name="title"<? if(isset($news['title'])) print(' value="'._html_safe($news['title']).'"'); ?> size="80"/></td>
+			<td><input type="text" name="title"<? if(isset($news['title'])) print(' value="'._html_safe($news['title']).'"'); ?> size="50"/></td>
 		</tr>
 		<tr>
 			<td class="field">Content:</td>
-			<td><textarea name="content" cols="80" rows="15"><?
+			<td><textarea name="content" cols="50" rows="15"><?
 if(isset($news['content'])) print(_html_safe($news['content']));
 			?></textarea></td>
 		</tr>
