@@ -1,5 +1,5 @@
 					<div class="entry" onclick="entry_click(<? echo $i; ?>, event)">
-						<input type="checkbox" name="entry_<? echo $i; ?>" value="<? echo html_safe($folder.'/'.$name); ?>"/>
+						<input type="checkbox" name="entry_<? echo $i; ?>" value="<? echo html_safe($file.'/'.$name); ?>"/>
 						<div class="thumbnail"><? if(strlen($link)) { ?><a href="<? echo html_safe($link); ?>"><? } ?><img src="<? echo $thumbnail; ?>" alt=""/><? if(strlen($link)) { ?></a><? } ?></div>
 						<div class="icon"><? if(strlen($link)) { ?><a href="<? echo html_safe($link); ?>"><? } ?><img src="<? echo $icon; ?>" alt=""/><? if(strlen($link)) { ?></a><? } ?></div>
 						<div class="name"><? if(strlen($link)) { ?><a href="<? echo html_safe($link); ?>"><? } ?><? echo html_safe($name); ?><? if(strlen($link)) { ?></a><? } ?></div>

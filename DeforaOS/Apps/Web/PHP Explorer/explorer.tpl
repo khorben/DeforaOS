@@ -2,14 +2,14 @@
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
-		<title>Index of <? echo html_safe($folder); ?></title>
+		<title>Index of <? echo html_safe($file); ?></title>
 		<link type="text/css" rel="stylesheet" href="explorer.css"/>
 		<script type="text/javascript" src="explorer.js"></script>
 	</head>
 	<body>
 		<div class="explorer">
 			<form name="explorer" action="explorer.php" method="post">
-				<input type="hidden" name="folder" value="<? echo html_safe($folder); ?>"/>
+				<input type="hidden" name="file" value="<? echo html_safe($file); ?>"/>
 				<input type="hidden" name="sort" value="<? echo html_safe($sort); ?>"/>
 <? if($reverse) { ?>
 				<input type="hidden" name="reverse" value=""/>
@@ -17,13 +17,13 @@
 				<input type="hidden" name="action" value=""/>
 				<div class="toolbar">
 					<img src="icons/16x16/back.png" alt="back" title="Back" onclick="history.back()"/>
-					<a href="explorer.php?folder=<? echo html_safe(dirname($folder)); ?>"><img src="icons/16x16/updir.png" alt="up one directory" title="Up one directory"/></a>
+					<a href="explorer.php?file=<? echo html_safe(dirname($file)); ?>"><img src="icons/16x16/updir.png" alt="up one directory" title="Up one directory"/></a>
 					<img src="icons/16x16/forward.png" alt="forward" title="Forward" onclick="history.forward()"/>
 					<img src="icons/16x16/refresh.png" alt="refresh" title="Refresh" onclick="location.reload()"/>
 					<div class="separator"></div>
 <? if($upload) { ?>
-					<a href="newdir.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/newdir.png" alt="create directory" title="Create directory" onclick="return popup('newdir.php?folder=<? echo html_safe($folder); ?>')"/></a>
-					<a href="upload.php?folder=<? echo html_safe($folder); ?>"><img src="icons/16x16/upload.png" alt="upload file" title="Upload file" onclick="return popup('upload.php?folder=<? echo html_safe($folder); ?>')"/></a>
+					<a href="newdir.php?folder=<? echo html_safe($file); ?>"><img src="icons/16x16/newdir.png" alt="create directory" title="Create directory" onclick="return popup('newdir.php?folder=<? echo html_safe($file); ?>')"/></a>
+					<a href="upload.php?folder=<? echo html_safe($file); ?>"><img src="icons/16x16/upload.png" alt="upload file" title="Upload file" onclick="return popup('upload.php?folder=<? echo html_safe($file); ?>')"/></a>
 					<img src="icons/16x16/delete.png" alt="delete" onclick="selection_delete()"/>
 					<div class="separator"></div>
 <? } ?>
@@ -38,14 +38,14 @@
 				<div id="explorer_listing" class="listing_details">
 					<div class="header">
 						<div class="icon"></div>
-						<? explorer_sort($folder, 'name', $sort, $reverse); ?>
-						<? explorer_sort($folder, 'owner', $sort, $reverse); ?>
-						<? explorer_sort($folder, 'group', $sort, $reverse); ?>
-						<? explorer_sort($folder, 'permissions', $sort, $reverse); ?>
-						<? explorer_sort($folder, 'size', $sort, $reverse); ?>
-						<? explorer_sort($folder, 'date', $sort, $reverse); ?>
+						<? explorer_sort($file, 'name', $sort, $reverse); ?>
+						<? explorer_sort($file, 'owner', $sort, $reverse); ?>
+						<? explorer_sort($file, 'group', $sort, $reverse); ?>
+						<? explorer_sort($file, 'permissions', $sort, $reverse); ?>
+						<? explorer_sort($file, 'size', $sort, $reverse); ?>
+						<? explorer_sort($file, 'date', $sort, $reverse); ?>
 					</div>
-<? explorer_folder($folder, $sort, $reverse); ?>
+<? explorer_folder($file, $dir, $sort, $reverse); ?>
 					<script type="text/javascript">
 <!--
 unselect_all();

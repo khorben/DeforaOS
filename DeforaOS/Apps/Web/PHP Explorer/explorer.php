@@ -42,7 +42,7 @@ function explorer_download($filename)
 {
 	global $root, $hidden;
 
-	$filename = $root.'/'.stripslashes($filename);
+	$filename = $root.'/'.$filename;
 	if(!is_readable($filename) || is_dir($filename))
 		return include('404.tpl');
 	if(!$hidden)
@@ -125,8 +125,10 @@ function _sort_date($a, $b)
 function _permissions($mode)
 {
 	$str = '----------';
-	$str[0] = $mode & 040000 ? 'd' : '-';
-	$str[0] = $mode & 0120000 ? 'l' : '-';
+	if(($mode & 040000) == 040000)
+		$str[0] = 'd';
+	else
+		$str[0] = (($mode & 0120000) == 0120000) ? 'l' : '-';
 	$str[1] = $mode & 0400 ? 'r' : '-';
 	$str[2] = $mode & 0200 ? 'w' : '-';
 	$str[3] = $mode & 0100 ? 'x' : '-';
@@ -139,15 +141,14 @@ function _permissions($mode)
 	return $str;
 }
 
-function explorer_folder($folder, $sort, $reverse)
+function explorer_folder($folder, $dir, $sort, $reverse)
 {
 	global $root, $hidden, $path, $thumbnails;
 
-	$folder = stripslashes($folder);
-	$path = $folder;
-	if(($dir = @opendir($root.'/'.$folder)) == FALSE)
+	if($dir == FALSE)
 		return print("</div>
 <h3 style=\"text-align: center\">Could not open directory</h3><div>\n");
+	$path = $folder;
 	$files = array();
 	if(!$hidden)
 		while($de = readdir($dir))
@@ -194,7 +195,7 @@ function explorer_folder($folder, $sort, $reverse)
 			$mime = 'folder';
 			$icon = 'icons/16x16/mime/folder.png';
 			$thumbnail = 'icons/48x48/mime/folder.png';
-			$link = 'explorer.php?folder='.$folder.'/'.$name;
+			$link = 'explorer.php?file='.$folder.'/'.$name;
 		}
 		else
 		{
@@ -203,13 +204,13 @@ function explorer_folder($folder, $sort, $reverse)
 			if(!is_readable($icon))
 				$icon = 'icons/16x16/mime/default.png';
 			if($thumbnails && strncmp($mime, 'image/', 6) == 0)
-				$thumbnail = 'explorer.php?download='
+				$thumbnail = 'explorer.php?file='
 						.$folder.'/'.$name;
 			else if(is_readable('icons/48x48/mime/'.$mime.'.png'))
 				$thumbnail = 'icons/48x48/mime/'.$mime.'.png';
 			else
 				$thumbnail = 'icons/48x48/mime/default.png';
-			$link = 'explorer.php?download='.$folder.'/'.$name;
+			$link = 'explorer.php?file='.$folder.'/'.$name;
 		}
 		$permissions = '';
 		$owner = '?';
@@ -224,8 +225,8 @@ function explorer_folder($folder, $sort, $reverse)
 			$group = posix_getgrgid($stat['gid']);
 			$group = $group['name'];
 			$size = round($stat['size']/1024);
-			$size = $size > 1024 ? round($size/1024).'M'
-					: $size.'K';
+			$size = $size > 1024 ? round($size/1024).' M'
+					: $size.' K';
 			$date = date('Y-m-d h:m:s', $stat['mtime']);
 		}
 		include('entry.tpl');
@@ -238,7 +239,7 @@ function explorer_sort($folder, $name, $sort, $reverse)
 	echo '<div class="'.$name.'">';
 	if($sort == $name || ($sort == '' && $name == 'name'))
 	{
-		echo '<a href="explorer.php?folder='.html_safe($folder)
+		echo '<a href="explorer.php?file='.html_safe($folder)
 				.'&amp;sort='.$name;
 		if(!$reverse)
 			echo '&amp;reverse=';
@@ -246,14 +247,12 @@ function explorer_sort($folder, $name, $sort, $reverse)
 				.($reverse ? 'up' : 'down').'.png" alt=""/>';
 	}
 	else
-		echo '<a href="explorer.php?folder='.html_safe($folder)
+		echo '<a href="explorer.php?file='.html_safe($folder)
 				.'&amp;sort='.$name.'">'.ucfirst($name).'</a>';
 	echo '</div>'."\n";
 }
 
 
-if(isset($_GET['download']))
-	return explorer_download(filename_safe($_GET['download']));
 if(isset($_POST['action']))
 {
 	$folder = strlen($_POST['folder']) ? html_safe($_POST['folder'])
@@ -262,10 +261,15 @@ if(isset($_POST['action']))
 	$reverse = isset($_POST['reverse']) ? '1' : '0';
 	if($upload && $_POST['action'] == 'delete')
 		explorer_delete($_POST);
-	return header('Location: explorer.php?folder='.$folder.'&sort='.$sort
+	return header('Location: explorer.php?file='.$folder.'&sort='.$sort
 			.'&reverse='.$reverse);
 }
-$folder = isset($_GET['folder']) ? filename_safe($_GET['folder']) : '/';
+$file = isset($_GET['file']) ? filename_safe(stripslashes($_GET['file'])) : '/';
+if(!is_dir($root.'/'.$file))
+	return explorer_download($file);
+if(($dir = @opendir($root.'/'.$file)) != FALSE
+		&& ($st = stat($root.'/'.$file)) != FALSE)
+	header('Last-Modified: '.strftime('%a, %e %b %Y %T GMT', $st['mtime']));
 $sort = isset($_GET['sort']) ? $_GET['sort'] : '';
 $reverse = isset($_GET['reverse']);
 include('explorer.tpl');
