@@ -229,31 +229,33 @@ table.bordered th {
 	height:				51px;
 	margin-bottom:			16px;
 	margin-left:			auto;
-	margin-right:			33px;
+	margin-right:			30px;
 	margin-top:			16px;
 	width:				517px;
 }
 
-.menu {
+ul.menu {
 	background-image:		url("DeforaOS-menusep.png");
 	background-position:		bottom center;
 	background-repeat:		no-repeat;
 	float:				left;
+	list-style-type:		none;
 	margin-left:			10px;
 	margin-top:			10px;
+	padding:			0px;
 	padding-bottom:			30px;
 	width:				160px;
 }
 
-.menu .active ul li {
+ul.menu .active ul li {
 	display:			none;
 }
 
-.menu .active:hover ul li {
+ul.menu .active:hover ul li {
 	display:			block;
 }
 
-.menu a {
+ul.menu a {
 	background-color:		#790000;
 	background-image:		url("DeforaOS-rtr.png");
 	background-position:		top right;
@@ -269,23 +271,23 @@ table.bordered th {
 	text-decoration:		none;
 }
 
-.menu a:hover {
+ul.menu a:hover {
 	border:				1px solid #636363;
 	border-left:			1px solid #959595;
 	border-top:			1px solid #959595;
 }
 
-.menu ul {
+ul.menu ul {
 	list-style-type:		none;
 	margin:				0px;
 	padding:			0px;
 }
 
-.menu ul li.active {
+ul.menu li.active {
 	margin-bottom:			5px;
 }
 
-.menu ul li ul li a {
+ul.menu ul li a {
 	background-color:		#000000;
 	background-image:		none;
 	font-variant:			normal;
@@ -296,7 +298,7 @@ table.bordered th {
 	padding-left:			10px;
 }
 
-.menu ul li ul li a:hover {
+ul.menu ul li a:hover {
 	background-color:		#000000;
 	background-image:		url("DeforaOS-right.png");
 	background-position:		center right;
@@ -414,8 +416,7 @@ table.bordered th {
 }
 
 .style1 img {
-	padding-left:			2px;
-	padding-right:			2px;
+	padding:			2px;
 	vertical-align:			middle;
 }
 
