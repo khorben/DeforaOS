@@ -10,6 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['ADDRESS'] = 'Address';
+$text['BOOKMARK_LIST'] = 'Bookmark list';
 $text['BOOKMARKS'] = 'Bookmarks';
 $text['NEW_BOOKMARK'] = 'New bookmark';
 global $lang;
@@ -121,8 +122,8 @@ function bookmark_update($args)
 
 function bookmark_list($args)
 {
-	print('<h1><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(BOOKMARKS_LIST).'</h1>'."\n");
+	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
+			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
 }
 
 
