@@ -53,6 +53,7 @@ function _module($module = '', $action = '', $args = FALSE)
 
 
 function _module_id($name)
+	//FIXME allow administrator to access disabled modules
 {
 	static $cache = array();
 
