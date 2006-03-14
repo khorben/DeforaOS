@@ -1,6 +1,10 @@
 <? global $title, $module_name; ?>
-<? echo "$title :: ".(strlen($module_name) ? $module_name : "Homepage"); ?>
 
+<div class="container">
 <? _module('menu'); ?>
+	<div class="main">
 <? _module(); ?>
+	</div>
 <? _debug(); ?>
+
+</div>

@@ -189,16 +189,16 @@ pre {
 	padding:		2px;
 }
 
-.menu {
+ul.menu {
 	margin:			0;
 	padding:		0;
 }
 
-.menu select {
+ul.menu select {
 	float:			left;
 }
 
-.menu ul {
+ul.menu, ul.menu ul {
 	border-left:		solid 1px #ffffff;
 	border-top:		solid 1px #ffffff;
 	list-style-type:	none;
@@ -206,7 +206,7 @@ pre {
 	padding:		0;
 }
 
-.menu ul li {
+ul.menu li {
 	float:			left;
 	margin:			0;
 	margin-top:		1px;
@@ -215,13 +215,13 @@ pre {
 	padding-right:		4px;
 }
 
-.menu ul li ul {
+ul.menu ul {
 	display:		none;
 	padding-top:		2px;
 	padding:		0;
 }
 
-.menu ul li ul li {
+ul.menu li ul li {
 	float:			none;
 	border-left:		solid 1px #ffffff;
 	margin:			0;
@@ -230,23 +230,23 @@ pre {
 	padding-top:		1px;
 }
 
-.menu ul li ul li a {
+ul.menu li ul li a {
 	display:		block;
 	padding-left:		20px;
 	padding-right:		10px;
 	padding-top:		1px;
 }
 
-.menu ul li:hover {
+ul.menu li:hover {
 	background-color:	#4b6983;
 	color:			#ffffff;
 }
 
-.menu ul li:hover a {
+ul.menu li:hover a {
 	color:			#ffffff;
 }
 
-.menu ul li:hover ul {
+ul.menu li:hover ul {
 	background-color:	#dcdad5;
 	border-bottom:		solid 1px #000000;
 	border-left:		solid 1px #000000;
@@ -257,11 +257,11 @@ pre {
 	margin-left:		-4px;
 }
 
-.menu ul li:hover ul li a {
+ul.menu li:hover ul li a {
 	color:			#000000;
 }
 
-.menu ul li:hover ul li a:hover {
+ul.menu li:hover ul li a:hover {
 	background-color:	#4b6983;
 	color:			#ffffff;
 }
