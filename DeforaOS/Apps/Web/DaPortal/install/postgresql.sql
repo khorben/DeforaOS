@@ -136,4 +136,4 @@ CREATE TABLE daportal_bookmark (
 	url VARCHAR(256),
 	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
 );
-INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
