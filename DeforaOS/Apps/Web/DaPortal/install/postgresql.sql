@@ -129,3 +129,11 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('10', 'RRD_reposito
 /* module: webmail */
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', 1);
 INSERT INTO daportal_config (module_id, name, value) VALUES ('11', 'server', '');
+
+/* module: bookmark */
+CREATE TABLE daportal_bookmark (
+	bookmark_id SERIAL UNIQUE,
+	url VARCHAR(256),
+	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', 1);
