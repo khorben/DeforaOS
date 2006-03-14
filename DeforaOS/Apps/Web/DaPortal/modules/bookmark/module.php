@@ -122,8 +122,28 @@ function bookmark_update($args)
 
 function bookmark_list($args)
 {
+	global $user_id;
+
+	if(!$user_id)
+		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
 			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
+	$bookmarks = _sql_array('SELECT bookmark_id AS id, title, content, url'
+			.' FROM daportal_bookmark, daportal_content'
+			.' WHERE daportal_bookmark.bookmark_id'
+			.'=daportal_content.content_id'
+			." AND user_id='$user_id';");
+	if(!is_array($bookmarks))
+		return _error('Could not list bookmarks');
+	$toolbar = array();
+	$toolbar[] = array('title' => NEW_BOOKMARK,
+			'icon' => 'modules/bookmark/icon.png',
+			'link' => 'index.php?module=bookmark&action=new');
+	_module('explorer', 'browse', array(
+			'class' => array('url' => ADDRESS),
+			'view' => 'details',
+			'toolbar' => $toolbar,
+			'entries' => $bookmarks));
 }
 
 
