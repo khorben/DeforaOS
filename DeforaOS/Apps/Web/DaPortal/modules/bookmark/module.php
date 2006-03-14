@@ -12,11 +12,14 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['ADDRESS'] = 'Address';
 $text['BOOKMARK_LIST'] = 'Bookmark list';
 $text['BOOKMARKS'] = 'Bookmarks';
+$text['MODIFICATION_OF'] = 'Modification of';
 $text['NEW_BOOKMARK'] = 'New bookmark';
 global $lang;
 if($lang == 'fr')
 {
+	$text['ADDRESS'] = 'Adresse';
 	$text['BOOKMARKS'] = 'Liens';
+	$text['MODIFICATION_OF'] = 'Modification de';
 }
 _lang($text);
 
