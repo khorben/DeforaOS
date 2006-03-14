@@ -91,17 +91,20 @@ function bookmark_list($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
 			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
-	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, content, url'
+	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
 			." AND user_id='$user_id';");
 	if(!is_array($bookmarks))
 		return _error('Could not list bookmarks');
-	for($i = 0, $count = count($bookmarks); $i < $count; $i++)
+	$count = count($bookmarks);
+	for($i = 0; $i < $count; $i++)
 	{
 		$bookmarks[$i]['module'] = 'bookmark';
 		$bookmarks[$i]['action'] = 'display';
+		$bookmarks[$i]['icon'] = 'modules/bookmark/icon.png';
+		$bookmarks[$i]['thumbnail'] = 'modules/bookmark/icon.png';
 		$bookmarks[$i]['url'] = '<a href="'
 			._html_safe_link($bookmarks[$i]['url']).'">'
 			._html_safe($bookmarks[$i]['url'])."</a>";
