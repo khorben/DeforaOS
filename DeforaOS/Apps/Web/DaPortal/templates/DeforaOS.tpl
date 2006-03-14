@@ -45,7 +45,6 @@ document.getElementById('search').style.display='none';
 			</div>
 			<div class="logo"></div>
 			<div class="style1"><a href="index.php">DeforaOS</a> :: <? echo (strlen($module) ? '<a href="index.php?module='.$module.'">'.ucfirst($module).'</a>' : 'Homepage'); ?></div>
-			<div class="menu">
 <? if($user_id) { _module('menu'); } else { ?>
 			<ul class="menu">
 				<li><a href="index.php"><? echo _html_safe(ABOUT); ?></a><ul>
@@ -70,15 +69,13 @@ document.getElementById('search').style.display='none';
 <? if(is_array(($langs = _sql_array('SELECT lang_id AS id, name'
 		.' FROM daportal_lang'
 		." WHERE enabled='t' ORDER BY name ASC;")))) { ?>
-			<form class="lang" action="index.php" method="post">
-				<div>
-					<select name="lang" onchange="submit()">
+			<form class="lang" action="index.php" method="post" style="float: right; margin-right: 30px">
+				<select name="lang" onchange="submit()">
 <? foreach($langs as $l) { ?>
-						<option value="<? echo _html_safe($l['id']); ?>"<? if($lang == $l['id']) { ?> selected="selected"<? } ?>><? echo _html_safe($l['name']); ?></option>
+					<option value="<? echo _html_safe($l['id']); ?>"<? if($lang == $l['id']) { ?> selected="selected"<? } ?>><? echo _html_safe($l['name']); ?></option>
 <? } ?>
-					</select>
-					<input id="lang" type="submit" value="Choose"/>
-				</div>
+				</select>
+				<input id="lang" type="submit" value="Choose"/>
 				<script type="text/javascript">
 <!--
 document.getElementById('lang').style.display='none';
@@ -86,7 +83,6 @@ document.getElementById('lang').style.display='none';
 				</script>
 			</form>
 <? } ?>
-			</div>
 			<div class="main">
 <? if(strlen($module)) { _module(); } else { ?>
 		<h1>DeforaOS <? echo _html_safe(HOMEPAGE); ?></h1>
@@ -140,5 +136,5 @@ the site content management system.
 <? _debug(); ?>
 			</div>
 			<div style="clear: left">&nbsp;</div>
-			<div class="style1" style="padding-right: 33px; text-align: right;"><? echo _html_safe(VALIDATE); ?> <a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt=""/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt=""/></a></div>
+			<div class="style1" style="padding-right: 33px; text-align: right;"><a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt=""/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt=""/></a></div>
 		</div>
