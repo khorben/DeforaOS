@@ -47,6 +47,21 @@ function bookmark_default($args)
 }
 
 
+function bookmark_delete($args)
+{
+	global $user_id;
+
+	if(($id = _sql_single('SELECT content_id FROM daportal_content'
+			." WHERE user_id='$user_id'"
+			." AND content_id='".$args['id']."';")) == FALSE)
+		return _error(INVALID_BOOKMARK);
+	_sql_query('DELETE FROM daportal_bookmark'
+			." WHERE bookmark_id='".$args['id']."';");
+	require_once('system/content.php');
+	_content_delete($id);
+}
+
+
 function bookmark_display($args)
 {
 	global $user_id;
@@ -111,16 +126,25 @@ function bookmark_list($args)
 		$bookmarks[$i]['url'] = '<a href="'
 			._html_safe_link($bookmarks[$i]['url']).'">'
 			._html_safe($bookmarks[$i]['url'])."</a>";
+		$bookmarks[$i]['apply_module'] = 'bookmark';
+		$bookmarks[$i]['apply_id'] = $bookmarks[$i]['id'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_BOOKMARK,
 			'icon' => 'modules/bookmark/icon.png',
 			'link' => 'index.php?module=bookmark&action=new');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => DELETE,
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'delete',
+			'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array(
 				'class' => array('url' => ADDRESS),
 				'view' => 'details',
 				'toolbar' => $toolbar,
-				'entries' => $bookmarks));
+				'entries' => $bookmarks,
+				'module' => 'bookmark',
+				'action' => 'list'));
 }
 
 
