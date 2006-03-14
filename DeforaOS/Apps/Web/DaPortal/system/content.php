@@ -69,6 +69,14 @@ function _content_select($id, $enabled = '')
 	return $content[0];
 }
 
+function _content_user_update($id, $title, $content)
+{
+	global $user_id;
+
+	return _sql_query('UPDATE daportal_content SET'
+			." title='$title', content='$content'"
+			." WHERE user_id='$user_id' AND content_id='$id';");
+}
 
 function _content_update($id, $title, $content)
 {
