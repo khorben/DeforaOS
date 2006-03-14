@@ -6,5 +6,5 @@
 <? _module(); ?>
 	</div>
 <? _debug(); ?>
-
+<div style="clear: both"></div>
 </div>
