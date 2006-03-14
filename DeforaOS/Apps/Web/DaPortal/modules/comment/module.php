@@ -130,9 +130,9 @@ function comment_count($args)
 
 function comment_default($args)
 {
-	if(!isset($args['id']))
-		return include('default.tpl');
-	return comment_display(array('id' => $args['id']));
+	if(isset($args['id']))
+		return comment_display(array('id' => $args['id']));
+	return comment_list($args);
 }
 
 
