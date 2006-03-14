@@ -8,6 +8,12 @@
 			<div class="name"><a href="index.php?module=admin">Administration</a></div>
 		</div>
 <? } ?>
+<? if(_module_id('bookmark')) { ?>
+		<div class="entry">
+			<div class="thumbnail"><img src="modules/bookmark/icon.png" alt=""/></div>
+			<div class="name"><a href="index.php?module=bookmark&amp;user_id=<? echo _html_safe_link($user['user_id']); ?>">Bookmarks</a></div>
+		</div>
+<? } ?>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/content/icon.png" alt=""/></div>
 			<div class="name"><a href="index.php?module=user&amp;id=<? echo _html_safe($user_id); ?>">My Contents</a></div>
