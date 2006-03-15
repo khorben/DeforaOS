@@ -35,7 +35,50 @@ function bookmark_admin($args)
 		return bookmark_modify($args);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> '
 			._html_safe(BOOKMARKS_ADMINISTRATION).'</h1>'."\n");
-	bookmark_list(array());
+	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, url'
+			.' FROM daportal_bookmark, daportal_content'
+			.' WHERE daportal_bookmark.bookmark_id'
+			.'=daportal_content.content_id'
+			." AND user_id='".$args['user_id']."';");
+	if(!is_array($bookmarks))
+		return _error('Could not list bookmarks');
+	$count = count($bookmarks);
+	for($i = 0; $i < $count; $i++)
+	{
+		$bookmarks[$i]['module'] = 'bookmark';
+		$bookmarks[$i]['action'] = 'display';
+		$bookmarks[$i]['icon'] = 'modules/bookmark/icon.png';
+		$bookmarks[$i]['thumbnail'] = 'modules/bookmark/icon.png';
+		$bookmarks[$i]['url'] = '<a href="'
+			._html_safe_link($bookmarks[$i]['url']).'">'
+			._html_safe($bookmarks[$i]['url'])."</a>";
+		$bookmarks[$i]['apply_module'] = 'bookmark';
+		$bookmarks[$i]['apply_id'] = $bookmarks[$i]['id'];
+	}
+	$toolbar = array();
+	$toolbar[] = array('title' => NEW_BOOKMARK,
+			'icon' => 'modules/bookmark/icon.png',
+			'link' => 'index.php?module=bookmark&action=new');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => UNPUBLISH,
+			'icon' => 'icons/16x16/disabled.png',
+			'action' => 'disable',
+			'confirm' => 'publish');
+	$toolbar[] = array('title' => PUBLISH,
+			'icon' => 'icons/16x16/enabled.png',
+			'action' => 'enable',
+			'confirm' => 'publish');
+	$toolbar[] = array('title' => DELETE,
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'delete',
+			'confirm' => 'delete');
+	_module('explorer', 'browse_trusted', array(
+				'class' => array('url' => ADDRESS),
+				'view' => 'details',
+				'toolbar' => $toolbar,
+				'entries' => $bookmarks,
+				'module' => 'bookmark',
+				'action' => 'list'));
 }
 
 
@@ -66,17 +109,14 @@ function bookmark_display($args)
 {
 	global $user_id;
 
-	if(!$user_id)
-		return _error(PERMISSION_DENIED);
 	$id = $args['id'];
-	if(!is_numeric($id))
-		return _error(INVALID_ARGUMENT);
-	$bookmark = _sql_array('SELECT bookmark_id AS id, title, content, url'
+	$bookmark = _sql_array('SELECT bookmark_id AS id, user_id, enabled, title'
+			.', content, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1'"
-			." AND user_id='$user_id' AND bookmark_id='$id';");
+			." AND (user_id='$user_id' OR enabled='1')"
+			." AND bookmark_id='$id';");
 	if(!is_array($bookmark) || count($bookmark) != 1)
 		return _error('Unable to display bookmark');
 	$bookmark = $bookmark[0];
@@ -92,7 +132,9 @@ function bookmark_insert($args)
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
-	if(($id = _content_insert($args['title'], $args['content'], TRUE)) == FALSE)
+	$enabled = $args['enabled'] == 'on' ? 1 : 0;
+	if(($id = _content_insert($args['title'], $args['content'], $enabled))
+			== FALSE)
 		return _error('Unable to insert bookmark content');
 	if(!_sql_query('INSERT INTO daportal_bookmark (bookmark_id, url)'
 			.' VALUES ('."'$id', '".$args['url']."');"))
@@ -105,15 +147,19 @@ function bookmark_list($args)
 {
 	global $user_id;
 
+	if(!isset($args['user_id']))
+		$args['user_id'] = $user_id;
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
 			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
+	$enabled = $args['user_id'] == $user_id ? '' : " AND enabled='1'";
 	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
-			." AND user_id='$user_id';");
+			." AND user_id='".$args['user_id']."'"
+			.$enabled);
 	if(!is_array($bookmarks))
 		return _error('Could not list bookmarks');
 	$count = count($bookmarks);
@@ -134,6 +180,14 @@ function bookmark_list($args)
 			'icon' => 'modules/bookmark/icon.png',
 			'link' => 'index.php?module=bookmark&action=new');
 	$toolbar[] = array();
+	$toolbar[] = array('title' => UNPUBLISH,
+			'icon' => 'icons/16x16/disabled.png',
+			'action' => 'disable',
+			'confirm' => 'publish');
+	$toolbar[] = array('title' => PUBLISH,
+			'icon' => 'icons/16x16/enabled.png',
+			'action' => 'enable',
+			'confirm' => 'publish');
 	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'delete',
@@ -157,14 +211,13 @@ function bookmark_modify($args)
 	$id = $args['id'];
 	if(!is_numeric($id))
 		return _error(INVALID_ARGUMENT);
-	$bookmark = _sql_array('SELECT bookmark_id AS id, title, content, url'
+	$bookmark = _sql_array('SELECT bookmark_id AS id, title, content, enabled, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1'"
 			." AND user_id='$user_id' AND bookmark_id='$id';");
 	if(!is_array($bookmark) || count($bookmark) != 1)
-		return _error('Unable to display bookmark');
+		return _error('Unable to modify bookmark');
 	$bookmark = $bookmark[0];
 	$title = MODIFICATION_OF.' '.$bookmark['title'];
 	include('update.tpl');
@@ -190,10 +243,15 @@ function bookmark_update($args)
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
-	if(!_content_user_update($args['id'], $args['title'], $args['content']))
+	if(!_content_user_update($args['id'], $args['title'], $args['content'])
+			|| !_sql_query('UPDATE daportal_bookmark'
+				." SET url='".$args['url']."'"
+				." WHERE bookmark_id='".$args['id']."';"))
 		return _error('Could not update bookmark');
-	_sql_query("UPDATE daportal_bookmark SET url='".$args['url']."'"
-			." WHERE bookmark_id='".$args['id']."';");
+	if($args['enabled'] == 'on')
+		_content_enable($args['id']);
+	else
+		_content_disable($args['id']);
 	return bookmark_display(array('id' => $args['id']));
 }
 
