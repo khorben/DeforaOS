@@ -154,7 +154,7 @@ function bookmark_list($args)
 	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
 			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
 	$enabled = $args['user_id'] == $user_id ? '' : " AND enabled='1'";
-	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, url'
+	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, enabled, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
@@ -169,6 +169,14 @@ function bookmark_list($args)
 		$bookmarks[$i]['action'] = 'display';
 		$bookmarks[$i]['icon'] = 'modules/bookmark/icon.png';
 		$bookmarks[$i]['thumbnail'] = 'modules/bookmark/icon.png';
+		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled'] == 't'
+			? 'enabled' : 'disabled';
+		$bookmarks[$i]['enabled'] = '<img src="icons/16x16/'
+				.$bookmarks[$i]['enabled'].'" alt="'
+				.$bookmarks[$i]['enabled'].'" title="'
+				.($bookmarks[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED)
+				.'"/>';
 		$bookmarks[$i]['url'] = '<a href="'
 			._html_safe_link($bookmarks[$i]['url']).'">'
 			._html_safe($bookmarks[$i]['url'])."</a>";
@@ -193,7 +201,7 @@ function bookmark_list($args)
 			'action' => 'delete',
 			'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array(
-				'class' => array('url' => ADDRESS),
+				'class' => array('enabled' => PUBLIC, 'url' => ADDRESS),
 				'view' => 'details',
 				'toolbar' => $toolbar,
 				'entries' => $bookmarks,
