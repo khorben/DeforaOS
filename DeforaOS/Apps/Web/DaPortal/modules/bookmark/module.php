@@ -12,6 +12,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['ADDRESS'] = 'Address';
 $text['BOOKMARK_LIST'] = 'Bookmark list';
 $text['BOOKMARKS'] = 'Bookmarks';
+$text['BOOKMARKS_ADMINISTRATION'] = 'Bookmarks administration';
 $text['MODIFICATION_OF'] = 'Modification of';
 $text['NEW_BOOKMARK'] = 'New bookmark';
 $text['PRIVATE'] = 'Private';
@@ -41,7 +42,7 @@ function bookmark_admin($args)
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
-			." AND user_id='".$args['user_id']."';");
+			." AND user_id='$user_id';");
 	if(!is_array($bookmarks))
 		return _error('Could not list bookmarks');
 	$count = count($bookmarks);
@@ -88,7 +89,7 @@ function bookmark_admin($args)
 				'toolbar' => $toolbar,
 				'entries' => $bookmarks,
 				'module' => 'bookmark',
-				'action' => 'list'));
+				'action' => 'admin'));
 }
 
 
@@ -159,7 +160,7 @@ function bookmark_list($args)
 
 	if(!isset($args['user_id']))
 		$args['user_id'] = $user_id;
-	if(!$user_id)
+	if(!$args['user_id'])
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
 			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
