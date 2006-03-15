@@ -97,6 +97,8 @@ function bookmark_default($args)
 {
 	if(isset($args['id']))
 		return bookmark_display($args);
+	if(isset($args['user_id']))
+		return bookmark_list($args);
 	include('default.tpl');
 }
 
@@ -195,22 +197,28 @@ function bookmark_list($args)
 		$bookmarks[$i]['apply_id'] = $bookmarks[$i]['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_BOOKMARK,
-			'icon' => 'modules/bookmark/icon.png',
-			'link' => 'index.php?module=bookmark&action=new');
-	$toolbar[] = array();
-	$toolbar[] = array('title' => PRIVATE,
-			'icon' => 'icons/16x16/disabled.png',
-			'action' => 'disable',
-			'confirm' => 'publish');
-	$toolbar[] = array('title' => PUBLIC,
-			'icon' => 'icons/16x16/enabled.png',
-			'action' => 'enable',
-			'confirm' => 'publish');
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
-			'action' => 'delete',
-			'confirm' => 'delete');
+	if($user_id)
+	{
+		$toolbar[] = array('title' => NEW_BOOKMARK,
+				'icon' => 'modules/bookmark/icon.png',
+				'link' => 'index.php?module=bookmark&action=new');
+		if($user_id == $args['user_id'])
+		{
+			$toolbar[] = array();
+			$toolbar[] = array('title' => PRIVATE,
+					'icon' => 'icons/16x16/disabled.png',
+					'action' => 'disable',
+					'confirm' => 'publish');
+			$toolbar[] = array('title' => PUBLIC,
+					'icon' => 'icons/16x16/enabled.png',
+					'action' => 'enable',
+					'confirm' => 'publish');
+			$toolbar[] = array('title' => DELETE,
+					'icon' => 'icons/16x16/delete.png',
+					'action' => 'delete',
+					'confirm' => 'delete');
+		}
+	}
 	_module('explorer', 'browse_trusted', array(
 				'class' => array('enabled' => PUBLIC, 'url' => ADDRESS),
 				'view' => 'details',
