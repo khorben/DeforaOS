@@ -71,6 +71,7 @@ $text['LOGIN'] = 'Login';
 $text['LOGOUT'] = 'Logout';
 $text['MEMBERS'] = 'Members';
 $text['MESSAGE'] = 'Message';
+$text['MODIFY'] = 'Modify';
 $text['NAME'] = 'Name';
 $text['NEWS'] = 'News';
 $text['NO'] = 'No';
@@ -120,6 +121,7 @@ else if($lang == 'fr')
 	$text['LOGIN'] = 'Authentification';
 	$text['LOGOUT'] = 'Déconnexion';
 	$text['MEMBERS'] = 'Membres';
+	$text['MODIFY'] = 'Modifier';
 	$text['NAME'] = 'Nom';
 	$text['NEWS'] = 'Actualités';
 	$text['NO'] = 'Non';
