@@ -246,8 +246,7 @@ function bookmark_new($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
-	if(!_user_admin($user_id))
+	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	$title = NEW_BOOKMARK;
 	include('update.tpl');
