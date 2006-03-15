@@ -1,7 +1,4 @@
 <h1><img src="" alt=""/> <? echo _html_safe($bookmark['title']); ?></h1>
-<? if($bookmark['enabled'] == 't') { ?>
-<p><i>This bookmark is public.</i></p>
-<? } ?>
 <p><? echo _html_safe($bookmark['content']); ?>
 <p><a href="<? echo _html_safe_link($bookmark['url']); ?>"><? echo _html_safe($bookmark['url']); ?></a></p>
 <? if($user_id == $bookmark['user_id']) { ?>
