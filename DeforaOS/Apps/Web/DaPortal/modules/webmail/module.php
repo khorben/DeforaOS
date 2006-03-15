@@ -8,7 +8,6 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
-global $lang;
 $text['DRAFTS'] = 'Drafts';
 $text['INBOX'] = 'Inbox';
 $text['MESSAGE_LIST'] = 'Message list';
@@ -16,8 +15,12 @@ $text['SENT'] = 'Sent';
 $text['SUBJECT'] = 'Subject';
 $text['TRASH'] = 'Trash';
 $text['WEBMAIL_ADMINISTRATION'] = 'Webmail administration';
+global $lang;
 if($lang == 'fr')
 {
+	$text['DRAFTS'] = 'Brouillons';
+	$text['SUBJECT'] = 'Sujet';
+	$text['TRASH'] = 'Corbeille';
 }
 _lang($text);
 
@@ -76,7 +79,7 @@ function webmail_config_update($args)
 	require_once('system/config.php');
 	$keys = array_keys($args);
 	foreach($keys as $k)
-		if(ereg('^project_([a-zA-Z_]+)$', $k, $regs))
+		if(ereg('^webmail_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('webmail', $regs[1], $args[$k], 0);
 	header('Location: index.php?module=webmail&action=admin');
 	exit(0);
