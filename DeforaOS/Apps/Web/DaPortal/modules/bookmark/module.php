@@ -257,6 +257,9 @@ function bookmark_new($args)
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	$title = NEW_BOOKMARK;
+	$bookmark = array();
+	$bookmark['url'] = stripslashes($args['url']);
+	$bookmark['title'] = stripslashes($args['title']);
 	include('update.tpl');
 }
 
