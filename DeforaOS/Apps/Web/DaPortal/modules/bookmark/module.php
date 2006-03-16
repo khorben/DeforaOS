@@ -1,5 +1,4 @@
-<?php
-//modules/bookmark/module.php
+<?php //modules/bookmark/module.php
 
 
 
