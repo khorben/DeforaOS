@@ -17,13 +17,13 @@
 				<input type="hidden" name="action" value=""/>
 				<div class="toolbar">
 					<img src="icons/16x16/back.png" alt="back" title="Back" onclick="history.back()"/>
-					<a href="explorer.php?file=<? echo html_safe(dirname($file)); ?>"><img src="icons/16x16/updir.png" alt="up one directory" title="Up one directory"/></a>
+					<a href="explorer.php?file=<? echo html_safe_link(dirname($file)); ?>"><img src="icons/16x16/updir.png" alt="up one directory" title="Up one directory"/></a>
 					<img src="icons/16x16/forward.png" alt="forward" title="Forward" onclick="history.forward()"/>
 					<img src="icons/16x16/refresh.png" alt="refresh" title="Refresh" onclick="location.reload()"/>
 					<div class="separator"></div>
 <? if($upload) { ?>
-					<a href="newdir.php?folder=<? echo html_safe($file); ?>"><img src="icons/16x16/newdir.png" alt="create directory" title="Create directory" onclick="return popup('newdir.php?folder=<? echo html_safe($file); ?>')"/></a>
-					<a href="upload.php?folder=<? echo html_safe($file); ?>"><img src="icons/16x16/upload.png" alt="upload file" title="Upload file" onclick="return popup('upload.php?folder=<? echo html_safe($file); ?>')"/></a>
+					<a href="newdir.php?folder=<? echo html_safe_link($file); ?>"><img src="icons/16x16/newdir.png" alt="create directory" title="Create directory" onclick="return popup('newdir.php?folder=<? echo html_safe_link($file); ?>')"/></a>
+					<a href="upload.php?folder=<? echo html_safe_link($file); ?>"><img src="icons/16x16/upload.png" alt="upload file" title="Upload file" onclick="return popup('upload.php?folder=<? echo html_safe_link($file); ?>')"/></a>
 					<img src="icons/16x16/delete.png" alt="delete" onclick="selection_delete()"/>
 					<div class="separator"></div>
 <? } ?>

@@ -29,6 +29,12 @@ function filename_safe($filename)
 
 function html_safe($text)
 {
+	return htmlentities($text);
+}
+
+
+function html_safe_link($text)
+{
 	return str_replace('&amp;', '%26', htmlentities($text));
 }
 

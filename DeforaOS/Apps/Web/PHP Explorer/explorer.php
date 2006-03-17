@@ -63,7 +63,7 @@ function explorer_download($filename)
 	header('Content-Type: '.$mime);
 	header('Content-Length: '.filesize($filename));
 	header('Content-Disposition: '.$attachment.'; filename="'
-			.html_safe(basename($filename)).'"');
+			.addslashes(basename($filename)).'"');
 	if(($st = stat($filename)) != FALSE)
 		header('Last-Modified: '.strftime('%a, %e %b %Y %T GMT', $st['mtime']));
 	readfile($filename);
@@ -239,7 +239,7 @@ function explorer_sort($folder, $name, $sort, $reverse)
 	echo '<div class="'.$name.'">';
 	if($sort == $name || ($sort == '' && $name == 'name'))
 	{
-		echo '<a href="explorer.php?file='.html_safe($folder)
+		echo '<a href="explorer.php?file='.html_safe_link($folder)
 				.'&amp;sort='.$name;
 		if(!$reverse)
 			echo '&amp;reverse=';
@@ -247,7 +247,7 @@ function explorer_sort($folder, $name, $sort, $reverse)
 				.($reverse ? 'up' : 'down').'.png" alt=""/>';
 	}
 	else
-		echo '<a href="explorer.php?file='.html_safe($folder)
+		echo '<a href="explorer.php?file='.html_safe_link($folder)
 				.'&amp;sort='.$name.'">'.ucfirst($name).'</a>';
 	echo '</div>'."\n";
 }
@@ -257,7 +257,7 @@ if(isset($_POST['action']))
 {
 	$folder = strlen($_POST['folder']) ? html_safe($_POST['folder'])
 		: '/';
-	$sort = html_safe($_POST['sort']);
+	$sort = html_safe_link($_POST['sort']);
 	$reverse = isset($_POST['reverse']) ? '1' : '0';
 	if($upload && $_POST['action'] == 'delete')
 		explorer_delete($_POST);
