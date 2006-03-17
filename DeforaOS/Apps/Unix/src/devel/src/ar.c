@@ -426,13 +426,13 @@ int main(int argc, char * argv[])
 			case 'v':
 				p |= PREFS_v;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
 	if(!(p & (PREFS_d | PREFS_r | PREFS_t | PREFS_x))
 			|| optind == argc
 			|| (optind+1 >= argc && !(p & (PREFS_t | PREFS_x))))
 		return _usage();
-	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1]) != 0
-		? 2 : 0;
+	return _ar(&p, argv[optind], argc - optind - 1, &argv[optind + 1]) == 0
+		? 0 : 2;
 }

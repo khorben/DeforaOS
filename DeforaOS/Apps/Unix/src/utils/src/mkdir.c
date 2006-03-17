@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
 			case 'p':
 				flagp = 1;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
 	if(argc == optind)

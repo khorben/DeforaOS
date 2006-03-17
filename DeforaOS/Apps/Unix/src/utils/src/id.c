@@ -286,7 +286,7 @@ int main(int argc, char * argv[])
 			case 'r':
 				flagr = 1;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
 	}

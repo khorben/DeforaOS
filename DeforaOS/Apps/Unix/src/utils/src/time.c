@@ -99,8 +99,7 @@ int main(int argc, char * argv[])
 	{
 		if(o == 'p')
 			continue;
-		if(o == '?')
-			return _usage();
+		return _usage();
 	}
 	if(optind == argc)
 		return _usage();
