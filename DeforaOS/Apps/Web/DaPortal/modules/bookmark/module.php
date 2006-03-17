@@ -117,6 +117,20 @@ function bookmark_delete($args)
 }
 
 
+function bookmark_disable($args)
+{
+	global $user_id;
+
+	if(!$user_id)
+		return _error(PERMISSION_DENIED);
+	require_once('system/content.php');
+	if(_sql_single('SELECT user_id FROM daportal_content'
+			." WHERE content_id='".$args['id']."';") != $user_id)
+		return _error('Could not update bookmark');
+	_content_disable($args['id']);
+}
+
+
 function bookmark_display($args)
 {
 	global $user_id;
@@ -134,6 +148,20 @@ function bookmark_display($args)
 	$bookmark = $bookmark[0];
 	$title = $bookmark['title'];
 	include('display.tpl');
+}
+
+
+function bookmark_enable($args)
+{
+	global $user_id;
+
+	if(!$user_id)
+		return _error(PERMISSION_DENIED);
+	require_once('system/content.php');
+	if(_sql_single('SELECT user_id FROM daportal_content'
+			." WHERE content_id='".$args['id']."';") != $user_id)
+		return _error('Could not update bookmark');
+	_content_enable($args['id']);
 }
 
 
@@ -205,7 +233,7 @@ function bookmark_list($args)
 		$toolbar[] = array('title' => PRIVATE,
 				'icon' => 'icons/16x16/disabled.png',
 				'action' => 'disable',
-				'confirm' => 'publish');
+				'confirm' => 'private');
 		$toolbar[] = array('title' => PUBLIC,
 				'icon' => 'icons/16x16/enabled.png',
 				'action' => 'enable',
