@@ -42,12 +42,12 @@ function comment_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
 		.COMMENT_ADMINISTRATION.'</h1>'."\n");
-	$comments = _sql_array('SELECT daportal_comment.content_id AS id'
+	$comments = _sql_array('SELECT daportal_comment.comment_id AS id'
 			.', title AS name, daportal_user.user_id, username'
 			.', daportal_content.enabled, timestamp'
 			.' FROM daportal_comment, daportal_content'
 			.', daportal_user'
-			.' WHERE daportal_comment.content_id'
+			.' WHERE daportal_comment.comment_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' ORDER BY timestamp DESC;');
@@ -108,7 +108,7 @@ function comment_childs($args)
 			.', daportal_content AS child'
 			.' WHERE daportal_comment.parent'
 			.'=daportal_content.content_id'
-			.' AND daportal_comment.content_id=child.content_id'
+			.' AND daportal_comment.comment_id=child.content_id'
 			." AND daportal_content.content_id='$parent'"
 			.$where
 			.' ORDER BY child.timestamp ASC;');
@@ -124,13 +124,28 @@ function comment_childs($args)
 
 function comment_count($args)
 {
-	//FIXME does not recurse
-	return _sql_single('SELECT COUNT(*) FROM daportal_comment'
-			.', daportal_content'
-			.' WHERE daportal_comment.content_id'
-			.'=daportal_content.content_id'
-			." AND enabled='t'"
-			." AND parent='".$args['id']."';");
+	$cnt = 0;
+	$ids = array();
+	$parents = array();
+
+	for($parents[] = $args['id']; $parent = array_shift($parents);)
+	{
+		$ids[] = $parent;
+		$comments = _sql_array('SELECT comment_id FROM daportal_comment'
+				.', daportal_content'
+				.' WHERE daportal_comment.comment_id'
+				.'=daportal_content.content_id'
+				." AND enabled='t'"
+				." AND parent='$parent';");
+		foreach($comments as $c)
+		{
+			if(in_array($c['comment_id'], $ids))
+				continue;
+			$cnt++;
+			$parents[] = $c['comment_id'];
+		}
+	}
+	return $cnt;
 }
 
 
@@ -151,15 +166,15 @@ function comment_display($args)
 		$where = '';
 	else
 		$where = " AND daportal_content.enabled='t'";
-	$comment = _sql_array('SELECT daportal_comment.content_id AS id'
+	$comment = _sql_array('SELECT daportal_comment.comment_id AS id'
 			.', daportal_content.enabled, timestamp, title'
 			.', content, daportal_content.user_id, username'
 			.' FROM daportal_comment, daportal_content'
 			.', daportal_user'
-			.' WHERE daportal_comment.content_id'
+			.' WHERE daportal_comment.comment_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_comment.content_id='".$args['id']."'"
+			." AND daportal_comment.comment_id='".$args['id']."'"
 			.$where
 			.' ORDER BY timestamp ASC;');
 	if(!is_array($comment) || count($comment) != 1)
@@ -185,7 +200,7 @@ function _comment_insert($comment)
 		return 0;
 	}
 	//FIXME endless recursion may happen here
-	if(!_sql_query('INSERT INTO daportal_comment (content_id, parent)'
+	if(!_sql_query('INSERT INTO daportal_comment (comment_id, parent)'
 			.' VALUES ('."'$id', '".$comment['parent']."');"))
 	{
 		_error('Could not reference comment');
