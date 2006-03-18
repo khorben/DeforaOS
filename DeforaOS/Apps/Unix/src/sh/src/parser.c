@@ -221,12 +221,14 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 {
 	char ** argv = NULL;
 	unsigned int argv_cnt = 0;
-	char ** envp = NULL;
+	char ** envp;
 	unsigned int envp_cnt = 0;
 	char ** p;
 	int ret = 1;
 	uint8_t bg_error = 0;
 
+	if(!skip && (envp = sh_export()) != NULL)
+		for(envp_cnt = 0; envp[envp_cnt] != NULL; envp_cnt++);
 	for(; *pos < parser->tokens_cnt; (*pos)++)
 	{
 		switch(parser->tokens[*pos]->code)
@@ -234,7 +236,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 			case TC_ASSIGNMENT_WORD:
 				if(skip)
 					break;
-				if((p = realloc(envp, sizeof(char *)
+				if((p = realloc(envp, sizeof(char*)
 								* (envp_cnt+2)))
 						== NULL)
 					/* FIXME should not exit */
@@ -254,7 +256,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 			case TC_WORD:
 				if(skip)
 					break;
-				if((p = realloc(argv, sizeof(char *)
+				if((p = realloc(argv, sizeof(char*)
 								* (argv_cnt+2)))
 						== NULL)
 					/* FIXME should not exit */

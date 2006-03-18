@@ -3,12 +3,15 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
 #include "parser.h"
 #include "job.h"
 #include "sh.h"
+
+#define min(a, b) (a) < (b) ? (a) : (b)
 
 
 /* Prefs */
@@ -39,26 +42,35 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 
 
 /* sh */
+char ** export;
 static int _sh(Prefs * prefs, int argc, char * argv[])
 {
 	int ret;
 	FILE * fp;
 
+	export = sh_export();
 	if(*prefs & PREFS_c)
-		return parser(prefs, *argv, NULL, argc-1, &argv[1]);
-	if(!(*prefs & PREFS_s) && argc != 0)
-		return parser(prefs, NULL, stdin, argc-1, &argv[1]);
+		ret = parser(prefs, *argv, NULL, argc-1, &argv[1]);
+	else if(!(*prefs & PREFS_s) && argc != 0)
+		ret = parser(prefs, NULL, stdin, argc-1, &argv[1]);
 	/* *prefs |= PREFS_s; FIXME necessary? */
-	if(argc == 0)
+	else if(argc == 0)
 	{
 		if(isatty(0) && isatty(2))
 			*prefs |= PREFS_i;
-		return parser(prefs, NULL, stdin, 0, NULL);
+		ret = parser(prefs, NULL, stdin, 0, NULL);
 	}
-	if((fp = fopen(argv[0], "r")) == NULL)
-		return sh_error(argv[0], 127);
-	ret = parser(prefs, NULL, fp, argc-1, &argv[1]);
-	fclose(fp);
+	else
+	{
+		if((fp = fopen(argv[0], "r")) == NULL)
+			ret = sh_error(argv[0], 127);
+		else
+		{
+			ret = parser(prefs, NULL, fp, argc-1, &argv[1]);
+			fclose(fp);
+		}
+	}
+	free(export);
 	return ret;
 }
 
@@ -68,6 +80,26 @@ int sh_error(char * message, int ret)
 	fprintf(stderr, "%s", "sh: ");
 	perror(message);
 	return ret;
+}
+
+
+char ** sh_export(void)
+{
+	int cnt;
+	char ** export;
+	char ** e;
+	int i;
+
+	for(cnt = 0, e = environ; *e != NULL; cnt++, e++);
+	if((export = malloc((cnt+1) * sizeof(char*))) == NULL)
+	{
+		sh_error("malloc", 0);
+		return NULL;
+	}
+	for(i = 0; i < cnt; i++)
+		export[i] = environ[i];
+	export[i] = NULL;
+	return export;
 }
 
 

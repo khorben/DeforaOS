@@ -199,24 +199,26 @@ static void _export_list(void)
 {
 	char ** e;
 	char * p;
+	int i;
 
-	/* FIXME should read exported variables list instead */
-	for(e = environ; *e != NULL; e++)
+	if(export == NULL)
+		return;
+	for(e = export; (p = *e) != NULL; e++)
 	{
 		printf("%s", "export ");
-		for(p = *e; *p != '\0' && *p != '='; p++)
-			fputc(*p, stdout);
-		if(*p == '\0')
+		for(i = 0; p[i] != '\0' && p[i] != '='; i++)
+			fputc(p[i], stdout);
+		if(p[i] != '=')
 		{
 			fputc('\n', stdout);
 			continue;
 		}
 		printf("%s", "=\"");
-		for(p++; *p != '\0'; p++)
+		for(i++; p[i] != '\0'; i++)
 		{
-			if(*p == '"')
+			if(p[i] == '$' || p[i] == '"')
 				fputc('\\', stdout);
-			fputc(*p, stdout);
+			fputc(p[i], stdout);
 		}
 		printf("%s", "\"\n");
 	}
