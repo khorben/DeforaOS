@@ -42,12 +42,14 @@ function comment_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
 		.COMMENT_ADMINISTRATION.'</h1>'."\n");
-	//FIXME add username
 	$comments = _sql_array('SELECT daportal_comment.content_id AS id'
-			.', title AS name, enabled, timestamp'
+			.', title AS name, daportal_user.user_id, username'
+			.', daportal_content.enabled, timestamp'
 			.' FROM daportal_comment, daportal_content'
+			.', daportal_user'
 			.' WHERE daportal_comment.content_id'
 			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' ORDER BY timestamp DESC;');
 	if(!is_array($comments))
 		return _error('Could not list comments');
@@ -59,6 +61,9 @@ function comment_admin($args)
 		$comments[$i]['apply_id'] = $comments[$i]['id'];
 		$comments[$i]['icon'] = 'modules/comment/icon.png';
 		$comments[$i]['thumbnail'] = 'modules/comment/icon.png';
+		$comments[$i]['username'] = '<a href="index.php?module=user'
+			.'&amp;id='.$comments[$i]['user_id'].'">'
+			._html_safe($comments[$i]['username']).'</a>';
 		$comments[$i]['enabled'] = $comments[$i]['enabled'] == 't' ?
 			'enabled' : 'disabled';
 		$comments[$i]['enabled'] = '<img src="icons/16x16/'
@@ -76,7 +81,8 @@ function comment_admin($args)
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable');
 	_module('explorer', 'browse_trusted', array(
-			'class' => array('enabled' => ENABLED, 'date' => DATE),
+			'class' => array('username' => USERNAME,
+				'enabled' => ENABLED, 'date' => DATE),
 			'entries' => $comments,
 			'toolbar' => $toolbar,
 			'view' => 'details',
