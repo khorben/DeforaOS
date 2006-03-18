@@ -1,4 +1,5 @@
 /* ls.c */
+/* TODO: use a dynamic array and qsort() instead of lists */
 
 
 
@@ -14,9 +15,8 @@
 #include <time.h>
 #include <limits.h>
 
-
-/* FIXME */
 #define max(a, b) ((a) > (b) ? (a) : (b))
+
 
 /* Prefs */
 typedef int Prefs;
