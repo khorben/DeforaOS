@@ -689,7 +689,7 @@ static void command(Parser * p)
 #endif
 	if(p->token == NULL)
 		return;
-	parser_rule8(p);
+	parser_rule7a(p);
 	if(token_in_set(p->token, TS_COMPOUND_COMMAND))
 	{
 		compound_command(p);
