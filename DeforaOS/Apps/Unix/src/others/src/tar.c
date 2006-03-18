@@ -198,7 +198,7 @@ static int _create_do(Prefs * prefs, FILE * fp, char * archive, char * filename)
 		case FT_SYMLINK:
 		case FT_CHAR:
 		case FT_BLOCK:
-		case FT_DIRECTORY:
+		case FT_DIRECTORY: /* FIXME recurse */
 		case FT_FIFO:
 			ret = 0;
 			break;
