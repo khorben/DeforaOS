@@ -10,7 +10,6 @@ $text['PROJECTS'] = 'Projects';
 $text['REPORTS'] = 'Reports';
 $text['ROADMAP'] = 'Roadmap';
 $text['SUPPORT'] = 'Support';
-$text['VALIDATE'] = 'Validate';
 if($lang == 'de')
 {
 	$text['PROJECT'] = 'Projekt';
@@ -25,7 +24,6 @@ else if($lang == 'fr')
 	$text['PROJECTS'] = 'Projets';
 	$text['REPORTS'] = 'Rapports';
 	$text['ROADMAP'] = 'Progression';
-	$text['VALIDATE'] = 'Valider';
 }
 _lang($text);
 ?>
