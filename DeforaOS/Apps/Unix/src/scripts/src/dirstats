@@ -49,6 +49,7 @@ function dirstat()
 		SIZEH=`calc_sizeh "$SIZE"`
 		VALUE=`echo "$SIZE * 100 / $TOTAL" | bc -l`
 		VALUE=`printf "%.2f" "$VALUE"`
+		FILE=`echo "$FILE" | cut -c 1-33`
 		printf "|%-33s|%8s|%6s%%|" "$FILE" "$SIZEH" "$VALUE"
 		HASH=`echo "$SIZE * 26 / $TOTAL" | bc`
 		SIGN="#"
