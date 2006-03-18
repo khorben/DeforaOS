@@ -12,8 +12,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include "tar.h"
 
 #define min(a, b) ((a) < (b)) ? (a) : (b)
 
@@ -25,6 +25,44 @@ typedef int Prefs;
 #define PREFS_v  0x04
 #define PREFS_vv 0x0c
 #define PREFS_x  0x10
+
+typedef enum {
+	FT_NORMAL = 0,
+	FT_HARDLINK = 1,
+	FT_SYMLINK = 2,
+	FT_CHAR = 3,
+	FT_BLOCK = 4,
+	FT_DIRECTORY = 5,
+	FT_FIFO = 6,
+	FT_CONTIGUOUS = 7
+} FileType;
+
+#pragma pack(1)
+typedef struct _TarFileHeaderBuffer
+{
+	char filename[100];
+	char mode[8];
+	char uid[8];
+	char gid[8];
+	char size[12];
+	char mtime[12];
+	char checksum[8];
+	uint8_t type;
+	char link[100];
+} TarFileHeaderBuffer;
+#pragma pack()
+
+typedef struct _TarFileHeader
+{
+	char filename[101];
+	mode_t mode;
+	uid_t uid;
+	gid_t gid;
+	size_t size;
+	time_t mtime;
+	FileType type;
+	char link[101];
+} TarFileHeader;
 
 
 /* tar */
@@ -48,6 +86,16 @@ static int _tar_error(char * message, int ret)
 	return ret;
 }
 
+static void _tar_print(Prefs * prefs, TarFileHeader * fh)
+{
+	if((*prefs & PREFS_vv) == PREFS_vv)
+		/* FIXME */
+		printf("%s %d %d %s\n", "----------", fh->uid, fh->gid,
+				fh->filename);
+	else if(*prefs & PREFS_v)
+		printf("%s\n", fh->filename);
+}
+
 #define _from_buffer_cpy(a) tfhb->a[sizeof(tfhb->a)-1] = '\0'; \
 		tfh->a = strtol(tfhb->a, &p, 8); \
 	if(*tfhb->a == '\0' || *p != '\0') return 1;
@@ -56,8 +104,8 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 	char * p;
 
 	_from_buffer_cpy(mode);
-	_from_buffer_cpy(owner);
-	_from_buffer_cpy(group);
+	_from_buffer_cpy(uid);
+	_from_buffer_cpy(gid);
 	_from_buffer_cpy(size); /* FIXME data type too short? */
 	_from_buffer_cpy(mtime);
 	for(p = tfhb->filename; *p == '/'; p++);
@@ -71,6 +119,19 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 	memcpy(&tfh->link, tfhb->link, sizeof(tfhb->link));
 	tfh->link[sizeof(tfh->link)-1] = '\0';
 	return 0;
+}
+
+static void _tar_stat_to_buffer(char * filename, struct stat * st,
+		TarFileHeaderBuffer * tfhb)
+{
+	memset(tfhb, 0, sizeof(*tfhb));
+	snprintf(tfhb->filename, sizeof(tfhb->filename), "%s", filename);
+	snprintf(tfhb->mode, sizeof(tfhb->mode), "%08o", st->st_mode);
+	snprintf(tfhb->uid, sizeof(tfhb->uid), "%08o", st->st_uid);
+	snprintf(tfhb->gid, sizeof(tfhb->gid), "%08o", st->st_gid);
+	snprintf(tfhb->size, sizeof(tfhb->size), "%012o", st->st_size);
+	snprintf(tfhb->mtime, sizeof(tfhb->mtime), "%012o", st->st_mtime);
+	memset(&tfhb->checksum, ' ', sizeof(tfhb->checksum));
 }
 
 static int _create_do(Prefs * prefs, FILE * fp, char * archive,
@@ -89,18 +150,50 @@ static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
 	return i == filec ? 0 : 1;
 }
 
-static int _doc_normal(FILE * fp, char * archive, char * filename);
+static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
+		char * filename, TarFileHeaderBuffer * tfhb);
+static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename);
 static int _create_do(Prefs * prefs, FILE * fp, char * archive, char * filename)
 {
+	FILE * fp2;
 	TarFileHeaderBuffer tfhb;
+	int ret;
+
+	if((fp2 = fopen(filename, "r")) == NULL)
+		return 1;
+	if(_doc_header(prefs, fp, archive, fp2, filename, &tfhb) != 0)
+	{
+		fclose(fp2);
+		return 1;
+	}
+	switch(tfhb.type)
+	{
+		case FT_NORMAL:
+		case FT_CONTIGUOUS:
+			ret = _doc_normal(fp, archive, fp2, filename);
+			break;
+		case FT_HARDLINK:
+		case FT_SYMLINK:
+		case FT_CHAR:
+		case FT_BLOCK:
+		case FT_DIRECTORY:
+		case FT_FIFO:
+			ret = 0;
+			break;
+		default:
+			ret = 1;
+	}
+	fclose(fp2);
+	return ret;
+/*	TarFileHeaderBuffer tfhb;
 
 	if((*prefs & PREFS_vv) == PREFS_vv)
-		/* FIXME */
+		/ * FIXME * /
 		printf("%s %d %d %s\n", "----------", -1, -1, filename);
 	else if(*prefs & PREFS_v)
 		printf("%s\n", filename);
 	memset(&tfhb, 0, sizeof(tfhb));
-	/* FIXME */
+	/ * FIXME * /
 	if(fwrite(&tfhb, sizeof(tfhb), 1, fp) != 1)
 		return _tar_error(filename, 1);
 	if(fseek(fp, 512-sizeof(tfhb), SEEK_CUR) != 0)
@@ -109,21 +202,40 @@ static int _create_do(Prefs * prefs, FILE * fp, char * archive, char * filename)
 	{
 		case FT_NORMAL:
 		case FT_CONTIGUOUS:
-			return _doc_normal(fp, archive, filename);
+			ret = _doc_normal(fp, archive, filename);
 		default:
 			return 0;
 	}
+	fclose(fp2);
+	return 0; */
 }
 
-static int _doc_normal(FILE * fp, char * archive, char * filename)
+static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
+		char * filename, TarFileHeaderBuffer * tfhb)
 {
-	FILE * fp2;
+	TarFileHeader tfh;
+	struct stat st;
+	int i;
+
+	if(fstat(fileno(fp2), &st) != 0)
+		return _tar_error(filename, 1);
+	_tar_stat_to_buffer(filename, &st, tfhb);
+	_tar_from_buffer(tfhb, &tfh);
+	_tar_print(prefs, &tfh);
+	if(fwrite(tfhb, sizeof(*tfhb), 1, fp) != 1)
+		return _tar_error(archive, 1);
+	for(i = sizeof(*tfhb); i < 512 && fputc('\0', fp) == '\0'; i++);
+	if(i != 512)
+		return _tar_error(archive, 1);
+	return 0;
+}
+
+static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename)
+{
 	int ret = 0;
 	size_t read;
 	char buf[BUFSIZ];
 
-	if((fp2 = fopen(filename, "r")) == NULL)
-		return 1;
 	while((read = fread(buf, sizeof(char), sizeof(buf), fp2)) != 0)
 		if(fwrite(buf, sizeof(char), read, fp) != read)
 		{
@@ -132,7 +244,6 @@ static int _doc_normal(FILE * fp, char * archive, char * filename)
 		}
 	if(ret == 0 && read == 0 && !feof(fp2))
 		ret = _tar_error(filename, 1);
-	fclose(fp2);
 	return ret;
 }
 
@@ -170,14 +281,13 @@ static int _tar_extract(Prefs * prefs, char * archive, int filec,
 	return ret;
 }
 
-static void _dox_print(Prefs * prefs, TarFileHeader * fh);
 static int _dox_normal(FILE * fp, char * archive, TarFileHeader * fh);
 static int _dox_hardlink(TarFileHeader * fh);
 static int _dox_symlink(TarFileHeader * fh);
 static int _dox_char(FILE * fp, char * archive, TarFileHeader * fh);
 static int _dox_block(FILE * fp, char * archive, TarFileHeader * fh);
 static int _dox_directory(TarFileHeader * fh);
-static int _dox_fifo(FILE * fp, char * archive, TarFileHeader * fh);
+static int _dox_fifo(TarFileHeader * fh);
 static int _dox_skip(FILE * fp, char * archive, TarFileHeader * fh);
 static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
 		TarFileHeader * fh, int filec, char * filev[])
@@ -189,7 +299,7 @@ static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
 			break;
 	if(filec != 0 && i == filec)
 		return _dox_skip(fp, archive, fh);
-	_dox_print(prefs, fh);
+	_tar_print(prefs, fh);
 	switch(fh->type)
 	{
 		case FT_NORMAL:
@@ -207,20 +317,10 @@ static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
 		case FT_DIRECTORY:
 			return _dox_directory(fh);
 		case FT_FIFO:
-			return _dox_fifo(fp, archive, fh);
+			return _dox_fifo(fh);
 		default:
 			return _dox_skip(fp, archive, fh);
 	}
-}
-
-static void _dox_print(Prefs * prefs, TarFileHeader * fh)
-{
-	if((*prefs & PREFS_vv) == PREFS_vv)
-		/* FIXME */
-		printf("%s %d %d %s\n", "----------", fh->owner, fh->group,
-				fh->filename);
-	else if(*prefs & PREFS_v)
-		printf("%s\n", fh->filename);
 }
 
 static int _dox_normal(FILE * fp, char * archive, TarFileHeader * fh)
@@ -279,7 +379,7 @@ static int _dox_directory(TarFileHeader * fh)
 	return 0;
 }
 
-static int _dox_fifo(FILE * fp, char * archive, TarFileHeader * fh)
+static int _dox_fifo(TarFileHeader * fh)
 {
 	if(mkfifo(fh->filename, fh->mode) != 0)
 		return _tar_error(fh->filename, 1);
