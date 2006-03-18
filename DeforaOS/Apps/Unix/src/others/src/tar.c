@@ -207,29 +207,6 @@ static int _create_do(Prefs * prefs, FILE * fp, char * archive, char * filename)
 	}
 	fclose(fp2);
 	return ret;
-/*	TarFileHeaderBuffer tfhb;
-
-	if((*prefs & PREFS_vv) == PREFS_vv)
-		/ * FIXME * /
-		printf("%s %d %d %s\n", "----------", -1, -1, filename);
-	else if(*prefs & PREFS_v)
-		printf("%s\n", filename);
-	memset(&tfhb, 0, sizeof(tfhb));
-	/ * FIXME * /
-	if(fwrite(&tfhb, sizeof(tfhb), 1, fp) != 1)
-		return _tar_error(filename, 1);
-	if(fseek(fp, 512-sizeof(tfhb), SEEK_CUR) != 0)
-		return _tar_error(filename, 1);
-	switch(tfhb.type)
-	{
-		case FT_NORMAL:
-		case FT_CONTIGUOUS:
-			ret = _doc_normal(fp, archive, filename);
-		default:
-			return 0;
-	}
-	fclose(fp2);
-	return 0; */
 }
 
 static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
