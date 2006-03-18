@@ -5,6 +5,6 @@
 	<div class="main">
 <? _module(); ?>
 	</div>
-<? _debug(); ?>
 <div style="clear: both"></div>
+<? _debug(); ?>
 </div>
