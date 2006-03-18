@@ -124,8 +124,8 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 static void _tar_stat_to_buffer(char * filename, struct stat * st,
 		TarFileHeaderBuffer * tfhb)
 {
-	int i;
 	uint8_t * p;
+	size_t i;
 	int checksum = 0;
 
 	memset(tfhb, 0, sizeof(*tfhb));
@@ -136,7 +136,12 @@ static void _tar_stat_to_buffer(char * filename, struct stat * st,
 	snprintf(tfhb->size, sizeof(tfhb->size), "%011o", st->st_size);
 	snprintf(tfhb->mtime, sizeof(tfhb->mtime), "%011o", st->st_mtime);
 	memset(&tfhb->checksum, ' ', sizeof(tfhb->checksum));
-	/* FIXME type */
+	if(S_ISDIR(st->st_mode))
+		tfhb->type = FT_DIRECTORY;
+	else if(S_ISCHR(st->st_mode))
+		tfhb->type = FT_CHAR;
+	else if(S_ISBLK(st->st_mode))
+		tfhb->type = FT_BLOCK;
 	/* FIXME link */
 	p = tfhb;
 	for(i = 0; i < sizeof(*tfhb); i++)
