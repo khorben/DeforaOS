@@ -124,14 +124,25 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 static void _tar_stat_to_buffer(char * filename, struct stat * st,
 		TarFileHeaderBuffer * tfhb)
 {
+	int i;
+	uint8_t * p;
+	int checksum = 0;
+
 	memset(tfhb, 0, sizeof(*tfhb));
 	snprintf(tfhb->filename, sizeof(tfhb->filename), "%s", filename);
-	snprintf(tfhb->mode, sizeof(tfhb->mode), "%08o", st->st_mode);
-	snprintf(tfhb->uid, sizeof(tfhb->uid), "%08o", st->st_uid);
-	snprintf(tfhb->gid, sizeof(tfhb->gid), "%08o", st->st_gid);
-	snprintf(tfhb->size, sizeof(tfhb->size), "%012o", st->st_size);
-	snprintf(tfhb->mtime, sizeof(tfhb->mtime), "%012o", st->st_mtime);
+	snprintf(tfhb->mode, sizeof(tfhb->mode), "%07o", st->st_mode);
+	snprintf(tfhb->uid, sizeof(tfhb->uid), "%07o", st->st_uid);
+	snprintf(tfhb->gid, sizeof(tfhb->gid), "%07o", st->st_gid);
+	snprintf(tfhb->size, sizeof(tfhb->size), "%011o", st->st_size);
+	snprintf(tfhb->mtime, sizeof(tfhb->mtime), "%011o", st->st_mtime);
 	memset(&tfhb->checksum, ' ', sizeof(tfhb->checksum));
+	/* FIXME type */
+	/* FIXME link */
+	p = tfhb;
+	for(i = 0; i < sizeof(*tfhb); i++)
+		checksum+=p[i];
+	snprintf(tfhb->checksum, sizeof(tfhb->checksum), "%06o%c ", checksum,
+			'\0');
 }
 
 static int _create_do(Prefs * prefs, FILE * fp, char * archive,
@@ -146,8 +157,14 @@ static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
 	for(i = 0; i < filec; i++)
 		if(_create_do(prefs, fp, archive, filev[i]) != 0)
 			break;
+	if(i != filec)
+	{
+		fclose(fp);
+		return 1;
+	}
+	for(i = 0; i < 512 * 2 && fputc('\0', fp) == '\0'; i++);
 	fclose(fp);
-	return i == filec ? 0 : 1;
+	return i == 512 * 2 ? 0 : 1;
 }
 
 static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
@@ -234,17 +251,20 @@ static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename)
 {
 	int ret = 0;
 	size_t read;
+	size_t cnt;
 	char buf[BUFSIZ];
 
-	while((read = fread(buf, sizeof(char), sizeof(buf), fp2)) != 0)
+	for(cnt = 0; (read = fread(buf, sizeof(char), sizeof(buf), fp2)) != 0;
+			cnt+=read)
 		if(fwrite(buf, sizeof(char), read, fp) != read)
 		{
 			ret = _tar_error(archive, 1);
 			break;
 		}
 	if(ret == 0 && read == 0 && !feof(fp2))
-		ret = _tar_error(filename, 1);
-	return ret;
+		return _tar_error(filename, 1);
+	for(cnt = 512 - (cnt % 512); cnt > 0 && fputc('\0', fp) == '\0'; cnt--);
+	return cnt == 0 ? 0 : _tar_error(archive, 1);
 }
 
 static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
@@ -363,13 +383,13 @@ static int _dox_symlink(TarFileHeader * fh)
 static int _dox_char(FILE * fp, char * archive, TarFileHeader * fh)
 {
 	/* FIXME */
-	return _dox_skip(fp, archive, fh);
+	return 1;
 }
 
 static int _dox_block(FILE * fp, char * archive, TarFileHeader * fh)
 {
 	/* FIXME */
-	return _dox_skip(fp, archive, fh);
+	return 1;
 }
 
 static int _dox_directory(TarFileHeader * fh)
