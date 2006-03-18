@@ -18,6 +18,10 @@
 #define min(a, b) ((a) < (b)) ? (a) : (b)
 
 
+/* constants */
+#define TAR_BLKSIZ 512
+
+
 /* types */
 typedef int Prefs;
 #define PREFS_A  0x01
@@ -167,9 +171,9 @@ static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
 		fclose(fp);
 		return 1;
 	}
-	for(i = 0; i < 512 * 2 && fputc('\0', fp) == '\0'; i++);
+	for(i = 0; i < TAR_BLKSIZ * 2 && fputc('\0', fp) == '\0'; i++);
 	fclose(fp);
-	return i == 512 * 2 ? 0 : 1;
+	return i == TAR_BLKSIZ * 2 ? 0 : 1;
 }
 
 static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
@@ -223,8 +227,8 @@ static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
 	_tar_print(prefs, &tfh);
 	if(fwrite(tfhb, sizeof(*tfhb), 1, fp) != 1)
 		return _tar_error(archive, 1);
-	for(i = sizeof(*tfhb); i < 512 && fputc('\0', fp) == '\0'; i++);
-	if(i != 512)
+	for(i = sizeof(*tfhb); i < TAR_BLKSIZ && fputc('\0', fp) == '\0'; i++);
+	if(i != TAR_BLKSIZ)
 		return _tar_error(archive, 1);
 	return 0;
 }
@@ -245,7 +249,8 @@ static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename)
 		}
 	if(ret == 0 && read == 0 && !feof(fp2))
 		return _tar_error(filename, 1);
-	for(cnt = 512 - (cnt % 512); cnt > 0 && fputc('\0', fp) == '\0'; cnt--);
+	for(cnt = TAR_BLKSIZ - (cnt % TAR_BLKSIZ);
+			cnt > 0 && fputc('\0', fp) == '\0'; cnt--);
 	return cnt == 0 ? 0 : _tar_error(archive, 1);
 }
 
@@ -264,7 +269,7 @@ static int _tar_extract(Prefs * prefs, char * archive, int filec,
 		return _tar_error(archive, 1);
 	while((size = fread(&fhdrb, sizeof(fhdrb), 1, fp)) == 1)
 	{
-		if(fseek(fp, 512 - sizeof(fhdrb), SEEK_CUR) != 0)
+		if(fseek(fp, TAR_BLKSIZ - sizeof(fhdrb), SEEK_CUR) != 0)
 		{
 			ret = _tar_error(archive, 1);
 			break;
@@ -343,8 +348,9 @@ static int _dox_normal(FILE * fp, char * archive, TarFileHeader * fh)
 			return _tar_error(fh->filename, 1);
 	}
 	fclose(fp2);
-	if((cnt = fh->size % 512) != 0 && fseek(fp, 512-cnt, SEEK_CUR) != 0)
-			return _tar_error(archive, 1);
+	if((cnt = fh->size % TAR_BLKSIZ) != 0
+			&& fseek(fp, TAR_BLKSIZ-cnt, SEEK_CUR) != 0)
+		return _tar_error(archive, 1);
 	return 0;
 }
 
@@ -394,7 +400,8 @@ static int _dox_skip(FILE * fp, char * archive, TarFileHeader * fh)
 
 	if(fseek(fp, fh->size, SEEK_CUR) != 0)
 		return _tar_error(archive, 1);
-	if((cnt = fh->size % 512) != 0 && fseek(fp, 512-cnt, SEEK_CUR) != 0)
+	if((cnt = fh->size % TAR_BLKSIZ) != 0
+			&& fseek(fp, TAR_BLKSIZ-cnt, SEEK_CUR) != 0)
 		return _tar_error(archive, 1);
 	return 0;
 }
