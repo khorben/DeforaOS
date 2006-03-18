@@ -69,7 +69,7 @@ function comment_admin($args)
 		$comments[$i]['enabled'] = '<img src="icons/16x16/'
 				.$comments[$i]['enabled'].'.png" alt="'
 				.$comments[$i]['enabled'].'"/>';
-		$comments[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
+		$comments[$i]['date'] = _html_safe(strftime('%d/%m/%Y %H:%M',
 				strtotime(substr($comments[$i]['timestamp'], 0,
 						19))));
 	}
