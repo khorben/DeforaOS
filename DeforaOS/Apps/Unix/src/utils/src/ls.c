@@ -203,7 +203,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	SList * files;
 	SList * dirs;
 	compare_func cmp = _ls_compare(prefs);
-	int res = 0;
+	int ret = 0;
 	int i;
 	int isdir;
 	char * str;
@@ -213,21 +213,21 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	if(_ls_args(&files, &dirs) != 0)
 		return 2;
 	if(argc == 0)
-		res += slist_insert_sorted(files, strdup("."), cmp);
+		ret |= slist_insert_sorted(files, strdup("."), cmp);
 	for(i = 0; i < argc; i++)
 	{
 		if((isdir = _is_directory(prefs, argv[i])) == 2)
-			res++;
+			ret |= 1;
 		else if((str = strdup(argv[i])) == NULL)
-			res += _ls_error("malloc", 1);
+			ret |= _ls_error("malloc", 1);
 		else if(*prefs & PREFS_d)
-			res += slist_insert_sorted(files, str, cmp);
+			ret |= slist_insert_sorted(files, str, cmp);
 		else
-			res += slist_insert_sorted(isdir ? dirs : files, str,
+			ret |= slist_insert_sorted(isdir ? dirs : files, str,
 					cmp);
 	}
-	res += _ls_do(prefs, argc, NULL, files, dirs);
-	return res == 1 ? 2 : res;
+	ret |= _ls_do(prefs, argc, NULL, files, dirs);
+	return ret == 0 ? 0 : 1;
 }
 
 static int _ls_error(char const * message, int ret)
@@ -277,7 +277,6 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 	SList * files;
 	SList * dirs;
 	compare_func cmp = _ls_compare(prefs);
-	int res = 0;
 	DIR * dir;
 	struct dirent * de;
 	char * file = NULL;
@@ -285,7 +284,7 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 	int pos = 1;
 
 	if((dir = opendir(directory)) == NULL)
-		return _ls_error(directory, 2);
+		return _ls_error(directory, 1);
 	_ls_args(&files, &dirs);
 	for(; (de = readdir(dir)) != NULL; pos++)
 	{
@@ -308,7 +307,7 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 	free(file);
 	closedir(dir);
 	_ls_do(prefs, 2, directory, files, dirs);
-	return res;
+	return 0;
 }
 
 static int _ls_args(SList ** files, SList ** dirs)
@@ -341,8 +340,13 @@ static int _ls_do(Prefs * prefs, int argc, char * directory, SList * files,
 		SList * dirs)
 {
 	int res = 0;
+	char sep = 0;
 
+	if(slist_data(files) != NULL && slist_data(dirs) != NULL)
+		sep = '\n';
 	res += _ls_do_files(prefs, directory, files);
+	if(sep != 0)
+		fputc(sep, stdout);
 	res += _ls_do_dirs(prefs, argc, dirs);
 	return res;
 }
@@ -669,5 +673,5 @@ int main(int argc, char * argv[])
 
 	if(_prefs_parse(&p, argc, argv) != 0)
 		return _usage();
-	return _ls(argc - optind, &argv[optind], &p);
+	return _ls(argc - optind, &argv[optind], &p) == 0 ? 0 : 1;
 }
