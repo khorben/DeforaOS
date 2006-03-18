@@ -2,7 +2,7 @@
 <style type="text/css"><!-- @import url(modules/explorer/style.css); --></style>
 <div class="explorer">
 	<div class="listing_thumbnails">
-<? if(_module_id('bookmark')) { ?>
+<? global $user_id; if(_module_id('bookmark') && $user_id != 0) { ?>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/bookmark/icon.png" alt=""/></div>
 			<div class="name"><a href="index.php?module=bookmark&amp;user_id=<? echo _html_safe_link($user['user_id']); ?>">Bookmarks</a></div>
