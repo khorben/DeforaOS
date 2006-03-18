@@ -64,8 +64,8 @@ function comment_admin($args)
 		$comments[$i]['username'] = '<a href="index.php?module=user'
 			.'&amp;id='.$comments[$i]['user_id'].'">'
 			._html_safe($comments[$i]['username']).'</a>';
-		$comments[$i]['enabled'] = $comments[$i]['enabled'] == 't' ?
-			'enabled' : 'disabled';
+		$comments[$i]['enabled'] = $comments[$i]['enabled'] == 't'
+			? 'enabled' : 'disabled';
 		$comments[$i]['enabled'] = '<img src="icons/16x16/'
 				.$comments[$i]['enabled'].'.png" alt="'
 				.$comments[$i]['enabled'].'"/>';
