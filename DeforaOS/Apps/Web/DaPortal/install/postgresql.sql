@@ -70,7 +70,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 /* module: comment */
 CREATE TABLE daportal_comment (
-	content_id SERIAL UNIQUE,
+	comment_id SERIAL UNIQUE,
 	parent SERIAL,
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
