@@ -30,7 +30,7 @@ int makefile(Configure * configure, Config * config, String * directory,
 		if(configure->prefs & PREFS_v)
 			printf("%s%s%s%s%s", "Creating ", MAKEFILE, " in ",
 					directory, "\n");
-		ret += _makefile_write(configure, config, fp, ca, from, to);
+		ret |= _makefile_write(configure, config, fp, ca, from, to);
 		if(fp != NULL)
 			fclose(fp);
 	}
@@ -706,11 +706,18 @@ static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 			"\t$(RM) $(PACKAGE)-$(VERSION)\n"
 			"\t$(LN) . $(PACKAGE)-$(VERSION)\n"
 			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
-	for(i = to; i > from; i--)
+	for(i = from+1; i < to; i++)
 	{
-		array_get_copy(ca, i - 1, &p);
+		array_get_copy(ca, i, &p);
 		_dist_subdir(config, fp, p);
 	}
+	if(from < to)
+	{
+		array_get_copy(ca, from, &p);
+		_dist_subdir(config, fp, p);
+	}
+	else
+		return 1;
 	fprintf(fp, "%s", "\t$(RM) $(PACKAGE)-$(VERSION)\n");
 	return 0;
 }
@@ -732,7 +739,6 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	if(path[0] == '/')
 		path++;
 	if((targets = config_get(subdir, "", "targets")) != NULL)
-	{
 		/* FIXME unique SOURCES */
 		for(i = 0;; i++)
 		{
@@ -749,7 +755,6 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 			targets+=i+1;
 			i = 0;
 		}
-	}
 	if((dist = config_get(subdir, "", "dist")) != NULL)
 		_dist_subdir_dist(fp, path, dist);
 	fprintf(fp, "%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/", path,
