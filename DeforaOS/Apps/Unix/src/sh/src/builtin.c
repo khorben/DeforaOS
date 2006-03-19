@@ -226,7 +226,35 @@ static void _export_list(void)
 
 static void _export_do(char * arg)
 {
-	/* FIXME */
+	int i;
+	char * e = arg;
+	char ** p;
+
+	for(i = 0; e[i] != '\0' && e[i] != '='; i++);
+	if(i == '\0')
+		e = "";
+	else
+	{
+		e[i] = '\0';
+		e++;
+	}
+	if(setenv(arg, e, 1) != 0)
+	{
+		sh_error(arg, 0);
+		return;
+	}
+	if((arg = getenv(arg)) == NULL)
+		return;
+	if(export != NULL)
+		for(i = 0; export[i] != NULL; i++);
+	if((p = realloc(export, (i+2) * sizeof(char*))) == NULL)
+	{
+		sh_error("malloc", 0);
+		return;
+	}
+	export = p;
+	export[i] = arg;
+	export[i+1] = NULL;
 }
 
 
