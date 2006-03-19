@@ -9,7 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Bookmarks';
-$admin = 0;
-$list = 1;
+$admin = 1;
+$list = 0;
 
 ?>
