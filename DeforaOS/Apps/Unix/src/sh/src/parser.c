@@ -221,7 +221,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 {
 	char ** argv = NULL;
 	unsigned int argv_cnt = 0;
-	char ** envp;
+	char ** envp = NULL;
 	unsigned int envp_cnt = 0;
 	char ** p;
 	int ret = 1;
