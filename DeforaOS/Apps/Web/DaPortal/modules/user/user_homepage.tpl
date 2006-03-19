@@ -19,6 +19,10 @@
 			<div class="name"><a href="index.php?module=user&amp;id=<? echo _html_safe($user_id); ?>">My Contents</a></div>
 		</div>
 		<div class="entry">
+			<div class="thumbnail"><img src="modules/admin/icon.png" alt=""/></div>
+			<div class="name"><a href="index.php?module=user&amp;action=modify&amp;id=<? echo _html_safe($user_id); ?>">Preferences</a></div>
+		</div>
+		<div class="entry">
 			<div class="thumbnail"><img src="modules/user/logout.png" alt=""/></div>
 			<div class="name"><a href="index.php?module=user&amp;action=logout"><? echo _html_safe(LOGOUT); ?></a></div>
 		</div>
