@@ -15,7 +15,8 @@ global $user_id;
 if($user_id != 0)
 {
 	$actions = array('logout' => LOGOUT);
-	$title = "User's page";
+	require_once('system/user.php');
+	$title = _user_admin($user_id) ? 'Users' : "User's page";
 }
 else
 	$actions = array('login' => LOGIN);
