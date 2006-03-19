@@ -57,8 +57,7 @@ function bookmark_admin($args)
 				.$bookmarks[$i]['enabled'].'" alt="'
 				.$bookmarks[$i]['enabled'].'" title="'
 				.($bookmarks[$i]['enabled'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
+						? ENABLED : DISABLED).'"/>';
 		$bookmarks[$i]['url'] = '<a href="'
 			._html_safe_link($bookmarks[$i]['url']).'">'
 			._html_safe($bookmarks[$i]['url'])."</a>";
