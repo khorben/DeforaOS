@@ -3,7 +3,7 @@
 	<input type="hidden" name="module" value="user"/>
 	<input type="hidden" name="action" value="<? echo isset($user) ? 'update' : 'insert'; ?>"/>
 <? if(isset($user)) { ?>
-	<input type="hidden" name="user_id" value="<? echo _html_safe($user['user_id']); ?>"/>
+	<input type="hidden" name="id" value="<? echo _html_safe($user['user_id']); ?>"/>
 <? } ?>
 	<table>
 <? if($admin) { ?>
