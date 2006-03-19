@@ -137,3 +137,6 @@ CREATE TABLE daportal_bookmark (
 	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
+
+/* module: category */
+INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
