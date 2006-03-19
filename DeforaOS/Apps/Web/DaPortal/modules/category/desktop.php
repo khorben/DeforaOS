@@ -9,7 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Categories';
-$admin = 0;
+$admin = 1;
 $list = 1;
 
 ?>
