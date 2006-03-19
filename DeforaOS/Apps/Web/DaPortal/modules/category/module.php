@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORIES_LIST'] = 'Categories list';
 global $lang;
 _lang($text);
