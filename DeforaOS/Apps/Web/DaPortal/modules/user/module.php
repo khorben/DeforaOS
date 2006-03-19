@@ -27,26 +27,6 @@ if($lang == 'fr')
 _lang($text);
 
 
-function _modify($id)
-{
-	global $user_id;
-
-	if(!is_numeric($id))
-		return _error('Invalid user ID');
-	require_once('system/user.php');
-	$admin = _user_admin($user_id) ? 1 : 0;
-	$super = ($id == $user_id) ? 1 : 0;
-	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
-			.' FROM daportal_user'
-			." WHERE user_id='$id';");
-	if(!is_array($user) || count($user) != 1)
-		return _error('Invalid user');
-	$user = $user[0];
-	$title = 'User modification';
-	include('user_update.tpl');
-}
-
-
 function _password_mail($id, $username, $email, $password = FALSE)
 	/* FIXME weak passwords and keys...? */
 {
@@ -87,11 +67,11 @@ function user_admin($args)
 {
 	global $user_id;
 
+	if(isset($args['id']))
+		return user_modify($args);
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	if(isset($args['id']))
-		return _modify($args['id']);
 	print('<h1><img src="modules/user/icon.png" alt=""/> Users administration</h1>'."\n");
 	$order = 'name ASC';
 	switch($args['sort'])
@@ -297,9 +277,24 @@ function user_modify($args)
 {
 	global $user_id;
 
-	if($args['id'] != $user_id)
+	if($user_id == 0)
 		return _error('Permission denied');
-	_modify($args['id']);
+	require_once('system/user.php');
+	if(_user_admin($user_id))
+		$id = $args['id'];
+	else if(!isset($args['id']) || $args['id'] == $user_id)
+		$id = $user_id;
+	else
+		return _error('Permission denied');
+	$admin = _user_admin($user_id) ? 1 : 0;
+	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
+			.' FROM daportal_user'
+			." WHERE user_id='$id';");
+	if(!is_array($user) || count($user) != 1)
+		return _error('Invalid user');
+	$user = $user[0];
+	$title = 'User modification';
+	include('user_update.tpl');
 }
 
 
@@ -448,20 +443,31 @@ function user_update($args)
 	global $user_id;
 
 	require_once('system/user.php');
-	//FIXME should also allow user to update some of his own details
-	if(!_user_admin($user_id))
+	if(_user_admin($user_id))
+		$id = $args['id'];
+	else if($user_id != 0)
+		$id = $user_id;
+	else
 		return _error('Permission denied');
 	$password = '';
 	if(strlen($args['password1'])
 			&& $args['password1'] == $args['password2'])
 		$password = ", password='".md5($args['password1'])."'";
-	if(!_sql_query('UPDATE daportal_user SET'
-			." username='".$args['username']."'"
-			.$password
-			.", enabled='".(isset($args['enabled']) ? '1' : '0')."'"
-			.", admin='".(isset($args['admin']) ? '1' : '0')."'"
-			.", email='".$args['email']."'"
-			." WHERE user_id='".$args['user_id']."';"))
+	if(_user_admin($user_id))
+	{
+		if(!_sql_query('UPDATE daportal_user SET'
+					." username='".$args['username']."'"
+					.$password
+					.", enabled='".($args['enabled'] == 'on'
+						? '1' : '0')."'"
+					.", admin='".($args['admin'] == 'on'
+						? '1' : '0')."'"
+					.", email='".$args['email']."'"
+					." WHERE user_id='$id';"))
+			return _error('Could not update user');
+	}
+	else if(strlen($password) && !_sql_query('UPDATE daportal_user SET'
+				$password." WHERE user_id='$id';"))
 		return _error('Could not update user');
 	user_display(array('id' => $args['user_id']));
 }
