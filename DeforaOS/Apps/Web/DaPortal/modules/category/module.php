@@ -10,6 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORIES_LIST'] = 'Categories list';
+$text['CATEGORY'] = 'Category';
 global $lang;
 _lang($text);
 
@@ -84,8 +85,27 @@ function category_disable($args)
 
 function category_display($args)
 {
-	/* FIXME */
+	$module = _module_id('category');
+	$category = _sql_array('SELECT title'
+			.' FROM daportal_content'
+			." WHERE content_id='".$args['id']."'"
+			." AND module_id='$module'"
+			." AND enabled='1';");
+	if(!is_array($category) || count($category) != 1)
+		return _error('Unable to display category', 1);
+	$category = $category[0];
+	$title = CATEGORY.' '.$category['title'];
 	include('display.tpl');
+	$contents = _sql_array('SELECT category_content_id AS id'
+			.', module_id, user_id, title AS name'
+			.' FROM daportal_category_content, daportal_content'
+			.' WHERE daportal_category_content.category_content_id'
+			.'=daportal_content.content_id'
+			." AND enabled='1'"
+			." AND category_id='".$args['id']."';");
+	if(!is_array($contents))
+		return _error('Unable to display category', 1);
+	_module('explorer', 'browse', array('entries' => $contents));
 }
 
 
