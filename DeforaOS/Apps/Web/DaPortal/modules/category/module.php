@@ -11,6 +11,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORIES_LIST'] = 'Categories list';
 $text['CATEGORY'] = 'Category';
+$text['NEW_CATEGORY'] = ' New category';
 global $lang;
 _lang($text);
 
@@ -30,7 +31,7 @@ function category_admin($args)
 	for($i = 0; $i < $count; $i++)
 	{
 		$categories[$i]['module'] = 'category';
-		$categories[$i]['action'] = 'default';
+		$categories[$i]['action'] = 'modify';
 		$categories[$i]['icon'] = 'modules/category/icon.png';
 		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
 		$categories[$i]['enabled'] = $categories[$i]['enabled'] == 't'
@@ -40,6 +41,10 @@ function category_admin($args)
 				.$categories[$i]['enabled'].'" title="'
 				.($categories[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
+		$categories[$i]['members'] = _sql_single('SELECT COUNT(*)'
+				.' FROM daportal_category_content'
+				." WHERE category_id='".$categories[$i]['id']
+				."';");
 		$categories[$i]['apply_module'] = 'category';
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
 	}
@@ -55,7 +60,8 @@ function category_admin($args)
 			'icon' => 'icons/16x16/disabled.png',
 			'action' => 'disable');
 	_module('explorer', 'browse_trusted', array('entries' => $categories,
-				'class' => array('enabled' => ENABLED),
+				'class' => array('enabled' => ENABLED,
+					'members' => MEMBERS),
 				'toolbar' => $toolbar,
 				'view' => 'details',
 				'module' => 'category',
@@ -163,6 +169,27 @@ function category_list($args)
 }
 
 
+function category_modify($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$module = _module_id('category');
+	$category = _sql_array('SELECT content_id AS id, title AS name, content'
+			.' FROM daportal_content'
+			." WHERE content_id='".$args['id']."'"
+			." AND module_id='$module'"
+			." AND enabled='1';");
+	if(!is_array($category) || count($category) != 1)
+		return _error('Unable to modify category');
+	$category = $category[0];
+	$title = MODIFICATION_OF_CATEGORY.' '.$category['title'];
+	include('update.tpl');
+}
+
+
 function category_new($args)
 {
 	global $user_id;
@@ -176,7 +203,17 @@ function category_new($args)
 
 function category_update($args)
 {
-	/* FIXME */
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(_sql_query('UPDATE daportal_content SET'
+			." title='".$args['title']."'"
+			.", content='".$args['content']."'"
+			." WHERE content_id='".$args['id']."';") == FALSE)
+		return _error('Unable to update category');
+	category_display(array('id' => $args['id']));
 }
 
 ?>
