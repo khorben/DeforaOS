@@ -1,5 +1,4 @@
-<?php
-//system/config.php
+<?php //system/config.php
 
 
 

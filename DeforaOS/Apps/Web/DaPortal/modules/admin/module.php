@@ -1,5 +1,4 @@
-<?php
-//modules/admin/module.php
+<?php //modules/admin/module.php
 
 
 
