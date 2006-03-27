@@ -180,10 +180,7 @@ function category_get($args)
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
-	$toolbar = array();
-	$toolbar[] = array('title' => NEW_CATEGORY,
-			'icon' => 'modules/category/icon.png',
-			'link' => 'index.php?module=category&action=new');
+	$toolbar = 0;
 	$module = _sql_single('SELECT name'
 			.' FROM daportal_content, daportal_module'
 			.' WHERE daportal_content.module_id'
@@ -194,6 +191,11 @@ function category_get($args)
 			." WHERE enabled='1' AND content_id='".$args['id']."';")
 			== $user_id)
 	{
+		$toolbar = array();
+		$toolbar[] = array('title' => NEW_CATEGORY,
+				'icon' => 'modules/category/icon.png',
+				'link' => 'index.php?module=category&action=set'
+				.'&id='.$args['id']);
 		$toolbar[] = array();
 		$toolbar[] = array('title' => DELETE_LINK,
 				'icon' => 'icons/16x16/delete.png',
