@@ -135,8 +135,8 @@ function bookmark_display($args)
 	global $user_id;
 
 	$id = $args['id'];
-	$bookmark = _sql_array('SELECT bookmark_id AS id, user_id, enabled, title'
-			.', content, url'
+	$bookmark = _sql_array('SELECT bookmark_id AS id, user_id, enabled'
+			.', title, content, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
@@ -178,6 +178,8 @@ function bookmark_insert($args)
 	if(!_sql_query('INSERT INTO daportal_bookmark (bookmark_id, url)'
 			.' VALUES ('."'$id', '".$args['url']."');"))
 		return _error('Unable to insert bookmark', 1);
+	if(_module_id('category'))
+		_module('category', 'set', array('id' => $id));
 	bookmark_display(array('id' => $id));
 }
 
