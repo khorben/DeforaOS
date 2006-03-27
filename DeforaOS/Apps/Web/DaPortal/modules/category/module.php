@@ -12,6 +12,7 @@ $text['ALREADY_LINKED'] = 'Already linked';
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORIES_LIST'] = 'Categories list';
 $text['CATEGORY'] = 'Category';
+$text['CHOOSE_CATEGORIES'] = 'Choose categories';
 $text['DELETE_LINK'] = 'Delete link';
 $text['MEMBER_OF'] = 'Member of';
 $text['NEW_CATEGORY'] = 'New category';
@@ -355,8 +356,8 @@ function category_set($args)
 	require_once('system/content.php');
 	if(!_content_display($args['id']))
 		return _error('Could not display content');
-	print('<h2><img src="modules/category/icon.png" alt=""/>'
-			.' Choose categories</h2>'."\n");
+	print('<h2><img src="modules/category/icon.png" alt=""/> '
+			.CHOOSE_CATEGORIES.'</h2>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title AS name'
 			.' FROM daportal_content'
 			." WHERE module_id='$module'"
