@@ -1,5 +1,4 @@
-<?php
-//system/content.php
+<?php //system/content.php
 
 
 
@@ -20,6 +19,19 @@ function _content_disable($id)
 	return _sql_query('UPDATE daportal_content SET'
 			." enabled='f'"
 			." WHERE content_id='$id';");
+}
+
+
+function _content_display($id)
+{
+	if(($module = _sql_single('SELECT name'
+			.' FROM daportal_content, daportal_module'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND content_id='$id';")) == FALSE)
+		return FALSE;
+	_module($module, 'display', array('id' => $id));
+	return TRUE;
 }
 
 
