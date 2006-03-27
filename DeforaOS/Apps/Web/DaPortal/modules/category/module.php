@@ -380,7 +380,7 @@ function category_set($args)
 			'icon' => 'modules/category/icon.png',
 			'action' => 'link_insert');
 	_module('explorer', 'browse', array('entries' => $categories,
-				'view' => 'details', 'toolbar' => $toolbar,
+				'view' => 'list', 'toolbar' => $toolbar,
 				'module' => 'category',
 				'action' => 'set',
 				'id' => $args['id']));
