@@ -376,7 +376,7 @@ function category_set($args)
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Associate to categories',
+	$toolbar[] = array('title' => 'Associate to content',
 			'icon' => 'modules/category/icon.png',
 			'action' => 'link_insert');
 	_module('explorer', 'browse', array('entries' => $categories,
