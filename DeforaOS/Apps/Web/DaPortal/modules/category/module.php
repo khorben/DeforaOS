@@ -86,18 +86,6 @@ function category_default($args)
 }
 
 
-function category_disable($args)
-{
-	global $user_id;
-
-	require_once('system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
-	_content_disable($args['id']);
-}
-
-
 function category_delete($args)
 {
 	global $user_id;
@@ -109,6 +97,18 @@ function category_delete($args)
 			." WHERE category_id='".$args['id']."';");
 	_sql_query('DELETE FROM daportal_content'
 			." WHERE content_id='".$args['id']."';");
+}
+
+
+function category_disable($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('system/content.php');
+	_content_disable($args['id']);
 }
 
 
@@ -126,14 +126,26 @@ function category_display($args)
 	$title = CATEGORY.' '.$category['title'];
 	include('display.tpl');
 	$contents = _sql_array('SELECT category_content_id AS id'
-			.', module_id, user_id, title AS name'
+			.', daportal_content.module_id, name AS module'
+			.', user_id, title AS name'
 			.' FROM daportal_category_content, daportal_content'
-			.' WHERE daportal_category_content.category_content_id'
+			.', daportal_module'
+			.' WHERE daportal_category_content.content_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1'"
+			.' AND daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_content.enabled='1'"
 			." AND category_id='".$args['id']."';");
 	if(!is_array($contents))
 		return _error('Unable to display category');
+	$cnt = count($contents);
+	for($i = 0; $i < $cnt; $i++)
+	{
+		$contents[$i]['icon'] = 'modules/'.$contents[$i]['module']
+			.'/icon.png';
+		$contents[$i]['thumbnail'] = 'modules/'.$contents[$i]['module']
+			.'/icon.png';
+	}
 	_module('explorer', 'browse', array('entries' => $contents));
 }
 
@@ -189,8 +201,7 @@ function category_get($args)
 			." AND daportal_content.enabled='1'"
 			." AND content_id='".$args['id']."';");
 	if($user_id != 0 && _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE enabled='1' AND content_id='".$args['id']."';")
-			== $user_id)
+			." WHERE content_id='".$args['id']."';") == $user_id)
 	{
 		$toolbar = array();
 		$toolbar[] = array('title' => NEW_CATEGORY,
@@ -266,8 +277,7 @@ function category_link_insert($args)
 			== $module)
 		return _error(INVALID_ARGUMENT);
 	if(_sql_single('SELECT user_id FROM daportal_content'
-			." WHERE enabled='1'"
-			." AND content_id='".$args['content_id']."';")
+			." WHERE content_id='".$args['content_id']."';")
 			!= $user_id)
 		return _error(PERMISSION_DENIED);
 	if(_sql_single('SELECT content_id FROM daportal_category_content'
@@ -346,7 +356,7 @@ function category_set($args)
 	global $user_id;
 
 	if($user_id == 0 || _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE enabled='1' AND content_id='".$args['id']."';")
+			." WHERE content_id='".$args['id']."';")
 			!= $user_id)
 		return _error(PERMISSION_DENIED);
 	$module = _module_id('category');
