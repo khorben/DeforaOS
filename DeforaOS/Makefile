@@ -43,6 +43,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/ls.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/mkdir.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/mkfifo.c \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/mv.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/nice.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/pwd.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/utils/src/renice.c \
@@ -80,11 +81,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/sh/src/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/sh/project.conf \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/sh/Makefile \
-		$(PACKAGE)-$(VERSION)/Apps/Unix/src/mktemp/src/mktemp.c \
-		$(PACKAGE)-$(VERSION)/Apps/Unix/src/mktemp/src/project.conf \
-		$(PACKAGE)-$(VERSION)/Apps/Unix/src/mktemp/src/Makefile \
-		$(PACKAGE)-$(VERSION)/Apps/Unix/src/mktemp/project.conf \
-		$(PACKAGE)-$(VERSION)/Apps/Unix/src/mktemp/Makefile \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/src/mktemp.c \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/src/tar.c \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/src/w.c \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/src/Makefile \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/project.conf \
+		$(PACKAGE)-$(VERSION)/Apps/Unix/src/others/Makefile \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/makepasswd/src/makepasswd.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/makepasswd/src/md5.c \
 		$(PACKAGE)-$(VERSION)/Apps/Unix/src/makepasswd/src/global.h \
