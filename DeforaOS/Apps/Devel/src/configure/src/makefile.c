@@ -212,7 +212,7 @@ static int _variables_executables(Configure * configure, Config * config,
 		fprintf(fp, "%s", "RM\t= rm -f\n");
 	}
 	if(config_get(config, "", "package"))
-		fprintf(fp, "%s", "LN\t= ln -sf\nTAR\t= tar cfzv\n");
+		fprintf(fp, "%s", "LN\t= ln -sf\nTAR\t= tar -czvf\n");
 	if(targets != NULL)
 	{
 		fprintf(fp, "%s", "MKDIR\t= mkdir -p\n");
