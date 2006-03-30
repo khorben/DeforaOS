@@ -55,7 +55,6 @@
 
 .explorer .listing_details .entry div {
 	display:		table-cell;
-	white-space:		nowrap;
 }
 
 .explorer .listing_details .entry .thumbnail {
