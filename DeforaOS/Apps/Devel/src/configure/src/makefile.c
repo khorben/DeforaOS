@@ -5,6 +5,7 @@
 #include <System.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "configure.h"
 
 ARRAY(Config *, config);
@@ -75,11 +76,11 @@ static int _write_variables(Configure * configure, Config * config, FILE * fp)
 	String const * directory = config_get(config, "", "directory");
 	int ret = 0;
 
-	ret += _variables_package(&configure->prefs, config, fp, directory);
-	ret += _variables_print(&configure->prefs, config, fp, "subdirs",
+	ret |= _variables_package(&configure->prefs, config, fp, directory);
+	ret |= _variables_print(&configure->prefs, config, fp, "subdirs",
 			"SUBDIRS");
-	ret += _variables_targets(&configure->prefs, config, fp);
-	ret += _variables_executables(configure, config, fp);
+	ret |= _variables_targets(&configure->prefs, config, fp);
+	ret |= _variables_executables(configure, config, fp);
 	if(!(configure->prefs & PREFS_n))
 		fputc('\n', fp);
 	return ret;
@@ -225,7 +226,6 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 		char * done);
 static void _variables_library(Configure * configure, Config * config,
 		FILE * fp, char * done);
-static void _variables_object(void);
 static int _executables_variables(Configure * configure, Config * config,
 		FILE * fp, String * target)
 {
@@ -252,8 +252,6 @@ static int _executables_variables(Configure * configure, Config * config,
 			_variables_library(configure, config, fp, done);
 			break;
 		case TT_OBJECT:
-			_variables_object();
-			break;
 		case TT_UNKNOWN:
 			break;
 	}
@@ -331,10 +329,6 @@ static void _variables_library(Configure * configure, Config * config,
 	fprintf(fp, "%s", "LD\t= ld -shared\n");
 }
 
-static void _variables_object(void)
-{
-}
-
 static int _targets_all(Prefs * prefs, Config * config, FILE * fp);
 static int _targets_subdirs(Prefs * prefs, Config * config, FILE * fp);
 static int _targets_target(Prefs * prefs, Config * config, FILE * fp,
@@ -394,6 +388,8 @@ static int _targets_subdirs(Prefs * prefs, Config * config, FILE * fp)
 
 static int _target_objs(Prefs * prefs, Config * config, FILE * fp,
 		String * target);
+static int _target_binary(Prefs * prefs, Config * config, FILE * fp,
+		String * target);
 static int _target_library(Prefs * prefs, Config * config, FILE * fp,
 		String * target);
 static int _targets_target(Prefs * prefs, Config * config, FILE * fp,
@@ -413,21 +409,7 @@ static int _targets_target(Prefs * prefs, Config * config, FILE * fp,
 	switch(tt)
 	{
 		case TT_BINARY:
-			if(_target_objs(prefs, config, fp, target) != 0)
-				return 1;
-			if(*prefs & PREFS_n)
-				return 0;
-			fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF)"
-					" $(CFLAGS)");
-			if((p = config_get(config, target, "cflags")) != NULL)
-				fprintf(fp, "%s%s", " ", p);
-			fputc('\n', fp);
-			fprintf(fp, "%s%s%s%s", target, ": $(", target,
-					"_OBJS)\n");
-			fprintf(fp, "%s%s%s%s%s", "\t$(CC) $(LDFLAGSF)"
-					" $(LDFLAGS) -o ", target, " $(",
-					target, "_OBJS)\n");
-			break;
+			return _target_binary(prefs, config, fp, target);
 		case TT_LIBRARY:
 			return _target_library(prefs, config, fp, target);
 		case TT_OBJECT:
@@ -517,6 +499,25 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 	return ret;
 }
 
+static int _target_binary(Prefs * prefs, Config * config, FILE * fp,
+		String * target)
+{
+	String * p;
+
+	if(_target_objs(prefs, config, fp, target) != 0)
+		return 1;
+	if(*prefs & PREFS_n)
+		return 0;
+	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
+	if((p = config_get(config, target, "cflags")) != NULL)
+		fprintf(fp, "%s%s", " ", p);
+	fputc('\n', fp);
+	fprintf(fp, "%s%s%s%s", target, ": $(", target, "_OBJS)\n");
+	fprintf(fp, "%s%s%s%s%s", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) -o ",
+			target, " $(", target, "_OBJS)\n");
+	return 0;
+}
+
 static int _target_library(Prefs * prefs, Config * config, FILE * fp,
 		String * target)
 {
@@ -567,8 +568,8 @@ static int _write_objects(Prefs * prefs, Config * config, FILE * fp)
 	return ret;
 }
 
-static int _target_source(Prefs * prefs, FILE * fp, String * target,
-		String * source);
+static int _target_source(Prefs * prefs, Config * config, FILE * fp,
+		String * target, String * source);
 static int _objects_target(Prefs * prefs, Config * config, FILE * fp,
 		String * target)
 {
@@ -584,7 +585,7 @@ static int _objects_target(Prefs * prefs, Config * config, FILE * fp,
 			continue;
 		c = sources[i];
 		sources[i] = '\0';
-		_target_source(prefs, fp, target, sources);
+		_target_source(prefs, config, fp, target, sources);
 		if(c == '\0')
 			break;
 		sources[i] = c;
@@ -594,8 +595,9 @@ static int _objects_target(Prefs * prefs, Config * config, FILE * fp,
 	return 0;
 }
 
-static int _target_source(Prefs * prefs, FILE * fp, String * target,
-		String * source)
+static void _source_c_depends(Config * config, FILE * fp, String * source);
+static int _target_source(Prefs * prefs, Config * config, FILE * fp,
+		String * target, String * source)
 {
 	int ret = 0;
 	String * extension;
@@ -612,8 +614,12 @@ static int _target_source(Prefs * prefs, FILE * fp, String * target,
 		case OT_C_SOURCE:
 			if(*prefs & PREFS_n)
 				break;
-			fprintf(fp, "%s%s%s%s%s%s%s", "\n", source, ".o: ",
-					source, ".", sObjectType[ot], "\n");
+			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
+					source, ".", sObjectType[ot]);
+			source[len] = '.'; /* FIXME ugly */
+			_source_c_depends(config, fp, source);
+			source[len] = '\0';
+			fputc('\n', fp);
 			fprintf(fp, "%s%s%s%s%s%s", "\t$(CC) $(", target,
 					"_CFLAGS) -c ", source, ".",
 					sObjectType[ot]);
@@ -627,6 +633,29 @@ static int _target_source(Prefs * prefs, FILE * fp, String * target,
 	}
 	source[len] = '.';
 	return ret;
+}
+
+static void _source_c_depends(Config * config, FILE * fp, String * source)
+{
+	String * depends;
+	int i;
+	char c;
+
+	if((depends = config_get(config, source, "depends")) == NULL)
+		return;
+	for(i = 0;; i++)
+	{
+		if(depends[i] != ',' && depends[i] != '\0')
+			continue;
+		c = depends[i];
+		depends[i] = '\0';
+		fprintf(fp, " %s", depends);
+		if(c == '\0')
+			break;
+		depends[i] = c;
+		depends+=i+1;
+		i = 0;
+	}
 }
 
 static int _clean_targets(Config * config, FILE * fp);
