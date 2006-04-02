@@ -18,10 +18,10 @@ configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
 configure: $(configure_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
 
-configure.o: configure.c
+configure.o: configure.c configure.h makefile.h
 	$(CC) $(configure_CFLAGS) -c configure.c
 
-makefile.o: makefile.c
+makefile.o: makefile.c configure.h
 	$(CC) $(configure_CFLAGS) -c makefile.c
 
 clean:
