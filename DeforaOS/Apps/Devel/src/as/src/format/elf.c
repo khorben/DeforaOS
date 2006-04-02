@@ -10,9 +10,6 @@
 #include <string.h>
 #include "format.h"
 
-/* FIXME */
-#define as_error(message, ret) fprintf(stderr, "%d\n", (ret))
-
 
 /* types */
 typedef struct _FormatArch
@@ -38,6 +35,13 @@ static FormatArch _elf_endian[] =
 
 
 /* Format */
+static int _elf_error(char * message, int ret)
+{
+	fprintf(stderr, "%s", "as: ELF format: ");
+	perror(message);
+	return ret;
+}
+
 static FormatArch * _init_arch(char * arch);
 int elf_init(FILE * fp, char * arch)
 {
@@ -115,20 +119,20 @@ static int _section_update(FILE * fp, char * section)
 		return 0;
 	}
 	if((size = ftell(fp)) == -1)
-		return as_error(section, 1);
+		return _elf_error(section, 1);
 	size -= offset + sizeof(hdr);
 	if(fseek(fp, offset, SEEK_SET) != 0)
-		return as_error(section, 1); /* FIXME free memory if section == NULL */
+		return _elf_error(section, 1); /* FIXME free memory if section == NULL */
 	if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
-		return as_error(section, 1);
+		return _elf_error(section, 1);
 	hdr.sh_size = size;
 	if(fseek(fp, offset, SEEK_SET) != 0)
-		return as_error(section, 1); /* FIXME free memory if section == NULL */
+		return _elf_error(section, 1); /* FIXME free memory if section == NULL */
 	/* FIXME update the section structure */
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
-		return as_error(section, 1);
+		return _elf_error(section, 1);
 	if(fseek(fp, 0, SEEK_END) != 0)
-		return 1; /* FIXME free memory if section == NULL */
+		return _elf_error(section, 1); /* FIXME free memory if section == NULL */
 	if(section == NULL)
 	{
 		free(current);
@@ -137,7 +141,7 @@ static int _section_update(FILE * fp, char * section)
 	}
 	if((offset = ftell(fp)) == -1
 			|| (current = strdup(section)) == NULL)
-		return 1;
+		return _elf_error(section, 1);
 	return 0;
 }
 
