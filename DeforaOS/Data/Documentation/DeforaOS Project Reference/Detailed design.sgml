@@ -8,15 +8,24 @@
 		<sect2>
 			<title>Filesystem hierarchy</title>
 			<para>
-The filesystem is highly inspired from the UNIX one, but taking in consideration the user only needs to access his files, applications, volumes or shared files most of the time. Consequently, the following directories are available at top level: "Apps", "Data", "System" and "Volumes". The "System" directory could even have been called ".System" to only let the advanced users access it via the common interfaces.
+The filesystem is highly inspired from the UNIX one, but taking in consideration
+the user only needs to access his files, applications, volumes or shared files
+most of the time. Consequently, the following directories are available at top
+level: "Apps", "Data", "System" and "Volumes". The "System" directory could even
+have been called ".System" to only let the advanced users access it via the
+common interfaces.
 			</para>
 			<para>
-It could even be considered that the place of an executable in the filesystem hierarchy could determine its privileges; this can't be a security risk, since when one gains access to the filesystem, then he has already access to the full system.
+It could even be considered that the place of an executable in the filesystem
+hierarchy could determine its privileges; this can't be a security risk, since
+when one gains access to the filesystem, then he has already access to the full
+system.
 			</para>
 			<sect3>
 				<title>/Apps</title>
 				<para>
-It contains a sub-directory per applications group. In this sub-directory one man find the following directories:
+It contains a sub-directory per applications group. In this sub-directory one
+man find the following directories:
 				</para>
 				<itemizedlist>
 					<listitem><para>Binaries: the applications binaries</para></listitem>
@@ -47,7 +56,9 @@ System hierarchy. Contains the following sub-directories:
 			<sect3>
 				<title>/Volumes</title>
 				<para>
-Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mounted. To gain read and write access on them, one should have the necessary privileges though.
+Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically
+mounted. To gain read and write access on them, one should have the necessary
+privileges though.
 				</para>
 			</sect3>
 		</sect2>
@@ -56,10 +67,15 @@ Hard disks, CD-ROM and DVD-ROM drives, USB keys, etc, that get automatically mou
 			<sect3>
 				<title>Configuration files</title>
 				<para>
-FIXME: think about a DTD for configuration files;
+FIXME: think about a DTD for configuration files, with maybe a type enforcement
+(boolean, integer, enum, string), a way to specify multiple lines in strings,
+and a way to handle lists of values.
 				</para>
 				<para>
-Configuration files contain variable names along with their values, nested inside sections. Default variables and values can be set in the global section, which name is "" (empty string). The global section is the default one. Comments are allowed on their own lines.
+Configuration files contain variable names along with their values, nested
+inside sections. Default variables and values can be set in the global section,
+which name is "" (empty string). The global section is the default one. Comments
+are allowed on their own lines.
 				</para>
 				<screen>
 #this is a comment
@@ -171,7 +187,8 @@ set_type(ListType type)
 Prefix is "String".
 				</para>
 				<para>
-A string can be stored in different encodings, possibly longer than the 7-bit ascii, or 8-bit ascii extensions ones (eg UTF-8).
+A string can be stored in different encodings, possibly longer than the 7-bit
+ascii, or 8-bit ascii extensions ones (eg UTF-8).
 				</para>
 				<para>
 Strings are always properly terminated when manipulated using this interface.
@@ -250,7 +267,9 @@ A list of a possible implementation guidelines follows.
 					<listitem><para>every GWidget is a GCanvas</para></listitem>
 				</itemizedlist>
 				<para>
-Consequently, every graphical item on screen is a GCanvasItem, GWidgets are groups of GCanvasItems, and can contain other GWidgets, possibly being GCanvases. This is a big advantage for code reuse.
+Consequently, every graphical item on screen is a GCanvasItem, GWidgets are
+groups of GCanvasItems, and can contain other GWidgets, possibly being
+GCanvases. This is a big advantage for code reuse.
 				</para>
 				<para>
 A problem is, it doesn't handle resizing properly as is.
