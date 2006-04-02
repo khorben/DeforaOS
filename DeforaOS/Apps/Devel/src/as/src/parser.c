@@ -325,8 +325,7 @@ static void _operand(State * state)
 		return;
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_operand()\n");
-	fprintf(stderr, "%s%s%s", "New operand: \"", state->token->string,
-			"\"\n");
+	fprintf(stderr, "%s%s%s\"\n", "New operand: \"", state->token->string);
 #endif
 	if(state->token->string != NULL)
 	{
