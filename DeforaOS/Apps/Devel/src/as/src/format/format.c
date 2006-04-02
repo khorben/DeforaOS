@@ -39,14 +39,16 @@ Format * format_new(char * format, char * arch)
 	}
 	f->format_init = plugin->format_init;
 	f->format_exit = plugin->format_exit;
+	f->format_section = plugin->format_section;
 	f->plugin = handle;
 	return f;
 }
 
 
 /* format_delete */
-void format_delete(Format * format)
+void format_delete(Format * format, FILE * fp)
 {
+	format->format_exit(fp);
 	as_plugin_delete(format->plugin);
 	free(format->arch);
 	free(format);
@@ -58,4 +60,12 @@ void format_delete(Format * format)
 int format_init(Format * format, FILE * fp)
 {
 	return format->format_init(fp, format->arch);
+}
+
+
+/* format_section */
+int format_section(Format * format, FILE * fp, char * section)
+{
+	/* FIXME allow only a list of known sections for an architecture? */
+	return format->format_section(fp, section);
 }

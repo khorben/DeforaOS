@@ -34,17 +34,8 @@ static void _as(State * state);
 int parser(Code * code, char * infile, FILE * infp)
 	/* as */
 {
-	State state;
+	State state = { infile, infp, scan(infp), 1, 0, code, NULL, NULL, 0 };
 
-	state.infile = infile;
-	state.infp = infp;
-	state.line = 1;
-	state.errors = 0;
-	state.code = code;
-	state.instruction = NULL;
-	state.operands = NULL;
-	state.operands_cnt = 0;
-	state.token = scan(infp);
 	if(state.token != NULL)
 		_as(&state);
 	if(state.token == NULL)
@@ -189,6 +180,7 @@ static void _section(State * state)
 		fprintf(stderr, "%s%s%s", "Entering section \"", section,
 				"\"\n");
 #endif
+	format_section(state->code->format, state->code->fp, section);
 	free(section);
 }
 
@@ -250,6 +242,7 @@ static void _instruction(State * state)
 	/* operator [ space [ operand_list ] ] newline */
 {
 	CodeError error;
+	int i;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s", "_instruction()\n");
@@ -268,6 +261,8 @@ static void _instruction(State * state)
 				!= CE_SUCCESS)
 			_parser_error(state, code_error[error]);
 		free(state->instruction);
+		for(i = 0; i < state->operands_cnt; i++)
+			free(state->operands[i].value);
 		state->operands_cnt = 0;
 	}
 	_newline(state);
@@ -344,6 +339,7 @@ static void _operand(State * state)
 			state->operands = p;
 			state->operands[state->operands_cnt].type
 				= state->token->code;
+			/* FIXME necessary already here? */
 			state->operands[state->operands_cnt].value
 				= strdup(state->token->string);
 			state->operands_cnt++;

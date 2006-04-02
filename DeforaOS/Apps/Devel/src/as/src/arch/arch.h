@@ -5,6 +5,8 @@
 #ifndef __ARCH_ARCH_H
 # define __ARCH_ARCH_H
 
+# include <stdint.h>
+
 
 /* types */
 typedef struct _ArchRegister
@@ -31,6 +33,9 @@ typedef struct _ArchInstruction
 	char * name;
 	unsigned int opcode;
 	ArchOperands operands;
+	uint8_t size;
+	uint8_t op1size;
+	uint8_t op2size;
 } ArchInstruction;
 
 typedef struct _ArchPlugin

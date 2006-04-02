@@ -26,6 +26,8 @@ Arch * arch_new(char * arch)
 				": Invalid architecture plug-in\n");
 		return NULL;
 	}
+	/* if((handle = as_plugin_new("arch", arch, "architecture", &plugin)) == NULL)
+	 * 	... */
 	if((a = malloc(sizeof(Arch))) == NULL)
 	{
 		as_error("malloc", 0);

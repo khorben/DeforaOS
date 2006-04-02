@@ -12,7 +12,9 @@
 
 
 /* Code */
-char const * code_error[CE_LAST] = {
+/* variables */
+char const * code_error[CE_LAST+1] =
+{
 	"Success",
 	"Invalid arguments",
 	"Unknown instruction",
@@ -20,37 +22,38 @@ char const * code_error[CE_LAST] = {
 };
 
 
+/* functions */
 Code * code_new(char * arch, char * format, char * filename)
 {
-	Code * c;
+	Code * code;
 
-	if((c = malloc(sizeof(Code))) == NULL)
+	if((code = malloc(sizeof(Code))) == NULL)
 	{
 		as_error("malloc", 0);
 		return NULL;
 	}
-	c->format = NULL;
-	c->fp = NULL;
-	if((c->arch = arch_new(arch)) == NULL
-			|| (c->format = format_new(format, arch)) == NULL
-			|| (c->fp = fopen(filename, "w")) == NULL
-			|| format_init(c->format, c->fp) != 0)
+	code->format = NULL;
+	code->fp = NULL;
+	if((code->arch = arch_new(arch)) == NULL
+			|| (code->format = format_new(format, arch)) == NULL
+			|| (code->fp = fopen(filename, "w+")) == NULL
+			|| format_init(code->format, code->fp) != 0)
 	{
-		if(c->fp != NULL)
+		if(code->fp != NULL)
 		{
-			fclose(c->fp);
+			fclose(code->fp);
 			if(unlink(filename) != 0)
 				as_error(filename, 0);
 		}
-		if(c->format != NULL)
-			format_delete(c->format);
-		if(c->arch != NULL)
-			arch_delete(c->arch);
-		free(c);
+		if(code->format != NULL)
+			format_delete(code->format, code->fp);
+		if(code->arch != NULL)
+			arch_delete(code->arch);
+		free(code);
 		return NULL;
 	}
-	c->filename = filename;
-	return c;
+	code->filename = filename;
+	return code;
 }
 
 
@@ -58,7 +61,7 @@ Code * code_new(char * arch, char * format, char * filename)
 void code_delete(Code * code, int error)
 {
 	arch_delete(code->arch);
-	format_delete(code->format);
+	format_delete(code->format, code->fp);
 	if(code->fp != NULL)
 	{
 		fclose(code->fp);
@@ -71,38 +74,78 @@ void code_delete(Code * code, int error)
 
 /* useful */
 /* code_instruction */
-static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], int operands_cnt);
+static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
+		char * instruction, CodeOperand operands[], int operands_cnt);
 CodeError code_instruction(Code * code, char * instruction,
 		CodeOperand operands[], int operands_cnt)
+/* FIXME being rewritten */
+{
+	ArchInstruction * ai;
+	int ret;
+	int i;
+	char buf[sizeof(long long)];
+	size_t size;
+
+	if((ret = _instruction_instruction(code, &ai, instruction, operands,
+					operands_cnt)) != CE_SUCCESS)
+		return ret;
+#ifdef DEBUG
+	fprintf(stderr, "instruction %s, opcode 0x%x, operands: 0x%x\n",
+			instruction, ai->opcode, ai->operands);
+#endif
+	if(fwrite(&ai->opcode, ai->size, 1, code->fp) != ai->size)
+		return CE_WRITE_ERROR;
+	if(ai->size == 0) /* FIXME bad definition? */
+		return 0;
+	for(i = 0; i < operands_cnt; i++)
+	{
+		if(i >= 2)
+			break;
+		size = i == 0 ? ai->op1size : ai->op2size;
+		if(size == 0)
+			continue;
+		memset(buf, 0, sizeof(buf));
+		switch(operands[i].type)
+		{
+			case TC_IMMEDIATE:
+				/* FIXME only valid if size == 4 */
+				*buf = strtoll(operands[i].value+1, NULL, 0);
+				break;
+			case TC_REGISTER:
+				continue;
+			default:
+				/* FIXME */
+				continue;
+		}
+		if(fwrite(buf, size, 1, code->fp) == 1)
+			continue;
+		return CE_WRITE_ERROR;
+	}
+	return CE_SUCCESS;
+}
+
+static int _instruction_operands(Code * code, ArchInstruction * ai,
+		CodeOperand operands[], int operands_cnt);
+static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
+		char * instruction, CodeOperand operands[], int operands_cnt)
 {
 	int i;
-	ArchInstruction * ai;
 	int cmp;
 	int found = 0;
 
-	for(i = 0; (ai = &(code->arch->instructions[i])) && ai->name != NULL;
-			i++)
+	/* FIXME check */
+	for(i = 0; ((*ai) = &(code->arch->instructions[i]))
+			&& (*ai)->name != NULL; i++)
 	{
-		if((cmp = strcmp(instruction, ai->name)) > 0)
+		if((cmp = strcmp(instruction, (*ai)->name)) > 0)
 			continue;
 		if(cmp < 0)
 			break;
 		found = 1;
-		if(_instruction_operands(code, ai, operands, operands_cnt) != 0)
+		if(_instruction_operands(code, *ai, operands, operands_cnt)
+				!= 0)
 			continue;
-		if(fwrite(&ai->opcode, sizeof(char), 1, code->fp)
-				!= sizeof(char))
-			return CE_WRITE_ERROR;
-		for(i = 0; i < operands_cnt; i++)
-		{
-			if(operands[i].type != TC_IMMEDIATE)
-				continue;
-			if(fwrite(&operands[i], sizeof(char), 1, code->fp)
-					!= sizeof(char))
-				return CE_WRITE_ERROR;
-		}
-		return 0;
+		return CE_SUCCESS;
 	}
 	return found ? CE_INVALID_ARGUMENTS : CE_UNKNOWN_INSTRUCTION;
 }
@@ -128,21 +171,22 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 #endif
 				break;
 			case TC_REGISTER:
-				reg = operands[i].value + 1;
-				if((ar = _operands_register(code->arch->registers, reg)) == NULL)
+				reg = operands[i].value + 1; /* "%rg" => "rg" */
+				ar = code->arch->registers;
+				if((ar = _operands_register(ar, reg)) == NULL)
 					return 1;
 				op |= (_AO_REG | (ar->id << 2));
 #ifdef DEBUG
-				fprintf(stderr, "op %d: reg; ", i);
+				fprintf(stderr, "op %d: reg %s; ", i, reg);
 #endif
 				break;
 			default:
-				assert(0);
 				break;
 		}
 	}
 #ifdef DEBUG
-	fprintf(stderr, "%d & %d => %d\n", op, ai->operands, op & ai->operands);
+	fprintf(stderr, "0x%x & 0x%x => 0x%x\n", op, ai->operands,
+			op & ai->operands);
 #endif
 	return op == ai->operands ? 0 : 1;
 }
@@ -156,56 +200,3 @@ static ArchRegister * _operands_register(ArchRegister * registers, char * name)
 			return &registers[i];
 	return NULL;
 }
-
-/* static int _operands_compare(Code * code, int operand, CodeOperand * co);
-static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], int operands_cnt)
-{
-	int i;
-	int op;
-	int ai_op;
-
-	if(operands_cnt != archoperands_count(ai->operands))
-		return 1;
-	for(i = 0; i < operands_cnt; i++)
-	{
-		op = (operands_cnt - i - 1);
-		ai_op = (ai->operands >> (op * 8));
-		if(_operands_compare(code, ai_op, &operands[i]) != 0)
-			break;
-	}
-	return i == operands_cnt ? 0 : 1;
-}
-
-static int _operands_compare(Code * code, int operand, CodeOperand * co)
-{
-	int co_op = 0;
-	char * reg;
-	ArchRegister * ar;
-	int i;
-
-	switch(co->type)
-	{
-		case TC_REGISTER:
-			reg = co->value;
-			reg++;
-			for(i = 0; (ar = &code->arch->registers[i]) != NULL;
-					i++)
-				if(strcmp(reg, ar->name) == 0)
-				{
-					co_op |= (_AO_REG | ar->id);
-					break;
-				}
-			if(co_op == 0)
-				return 1;
-			printf("Found opcode for register: %s (%d)\n", reg, ar->id);
-			break;
-		case TC_IMMEDIATE:
-			co_op |= _AO_IMM;
-			break;
-		default:
-			return 1;
-	}
-	printf("Comparing %d to %d (%d)\n", operand, co_op, operand & co_op);
-	return operand & co_op ? 0 : 1;
-} */

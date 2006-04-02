@@ -12,7 +12,13 @@ int flat_init(FILE * fp, char * arch)
 }
 
 
-int flat_exit(void)
+int flat_exit(FILE * fp)
+{
+	return 0;
+}
+
+
+int flat_section(FILE * fp, char * section)
 {
 	return 0;
 }
@@ -20,5 +26,6 @@ int flat_exit(void)
 
 FormatPlugin format_plugin = {
 	flat_init,
-	flat_exit
+	flat_exit,
+	flat_section
 };
