@@ -319,7 +319,6 @@ static void _operand_list(State * state)
 static void _operand(State * state)
 	/* WORD | NUMBER | IMMEDIATE | REGISTER */
 {
-	char * operand;
 	CodeOperand * p;
 
 	if(state->token == NULL)
