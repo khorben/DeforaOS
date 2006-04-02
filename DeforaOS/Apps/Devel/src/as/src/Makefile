@@ -22,19 +22,19 @@ as_CFLAGS = $(CFLAGSF) $(CFLAGS)
 as: $(as_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o as $(as_OBJS)
 
-as.o: as.c
+as.o: as.c as.h parser.h
 	$(CC) $(as_CFLAGS) -c as.c
 
-code.o: code.c
+code.o: code.c as.h arch/arch.h code.h
 	$(CC) $(as_CFLAGS) -c code.c
 
-parser.o: parser.c
+parser.o: parser.c parser.h scanner.h
 	$(CC) $(as_CFLAGS) -c parser.c
 
-scanner.o: scanner.c
+scanner.o: scanner.c as.h token.h
 	$(CC) $(as_CFLAGS) -c scanner.c
 
-token.o: token.c
+token.o: token.c token.h
 	$(CC) $(as_CFLAGS) -c token.c
 
 arch/arch.o: arch/arch.c
