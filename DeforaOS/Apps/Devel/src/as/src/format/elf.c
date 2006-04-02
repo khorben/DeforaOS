@@ -64,7 +64,7 @@ int elf_init(FILE * fp, char * arch)
 	hdr.e_ehsize = sizeof(hdr);
 	hdr.e_phentsize = 4;		/* FIXME */
 	hdr.e_phnum = 0;
-	hdr.e_shentsize = 4;		/* FIXME */
+	hdr.e_shentsize = sizeof(Elf32_Shdr);
 	hdr.e_shnum = 0;
 	hdr.e_shstrndx = SHN_UNDEF;	/* FIXME */
 	return fwrite(&hdr, sizeof(hdr), 1, fp) == 1 ? 0 : 1;
