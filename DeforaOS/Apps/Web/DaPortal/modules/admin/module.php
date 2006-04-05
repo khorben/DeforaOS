@@ -75,7 +75,7 @@ function admin_admin($args)
 			'view' => 'details',
 			'toolbar' => $toolbar,
 			'module' => 'admin',
-			'action' => 'module'));
+			'action' => 'admin'));
 }
 
 
