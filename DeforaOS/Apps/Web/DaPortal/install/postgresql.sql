@@ -68,6 +68,10 @@ CREATE TABLE daportal_content (
 INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 
+/* module: news */
+INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
+
+
 /* module: comment */
 CREATE TABLE daportal_comment (
 	comment_id SERIAL UNIQUE,
