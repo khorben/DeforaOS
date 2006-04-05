@@ -452,17 +452,17 @@ function user_update($args)
 	$password = '';
 	if(strlen($args['password1'])
 			&& $args['password1'] == $args['password2'])
-		$password = " password='".md5($args['password1'])."'";
+		$password = ", password='".md5($args['password1'])."'";
 	if(_user_admin($user_id))
 	{
 		if(!_sql_query('UPDATE daportal_user SET'
-					.$password
-					.", username='".$args['username']."'"
+					." username='".$args['username']."'"
 					.", enabled='".($args['enabled'] == 'on'
 						? '1' : '0')."'"
 					.", admin='".($args['admin'] == 'on'
 						? '1' : '0')."'"
 					.", email='".$args['email']."'"
+					.$password
 					." WHERE user_id='$id';"))
 			return _error('Could not update user');
 	}
