@@ -14,6 +14,7 @@ $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
 $text['USER_REGISTRATION'] = 'User registration';
+$text['WRONG_PASSWORD'] = 'Wrong password';
 global $lang;
 if($lang == 'fr')
 {
@@ -23,6 +24,7 @@ if($lang == 'fr')
 	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
 	$text['USER_LOGIN'] = 'Authentification utilisateur';
 	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
+	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
 }
 _lang($text);
 
@@ -71,8 +73,17 @@ function user_admin($args)
 		return user_modify($args);
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	print('<h1><img src="modules/user/icon.png" alt=""/> Users administration</h1>'."\n");
+		return _error(PERMISSION_DENIED);
+	print('<h1><img src="modules/user/icon.png" alt=""/>'
+			.' Users administration</h1>'."\n");
+	if(($configs = _config_list('user')))
+	{
+		print('<h2><img src="modules/admin/icon.png" alt=""/>'
+			.' Configuration</h2>'."\n");
+		$module = 'user';
+		$action = 'config_update';
+		include('system/config.tpl');
+	}
 	$order = 'name ASC';
 	switch($args['sort'])
 	{
@@ -98,7 +109,7 @@ function user_admin($args)
 		$users[$i]['enabled'] = $users[$i]['enabled'] == 't'
 			? 'enabled' : 'disabled';
 		$users[$i]['enabled'] = '<img src="icons/16x16/'
-				.$users[$i]['enabled'].'" alt="'
+				.$users[$i]['enabled'].'.png" alt="'
 				.$users[$i]['enabled'].'" title="'
 				.($users[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED)
@@ -139,6 +150,22 @@ function user_admin($args)
 				'sort' => isset($args['sort']) ? $args['sort']
 				: 'name',
 				'view' => 'details'));
+}
+
+
+function user_config_update($args)
+{
+	global $user_id, $module_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$keys = array_keys($args);
+	foreach($keys as $k)
+		if(ereg('^user_([a-zA-Z_]+)$', $k, $regs))
+			_config_set('user', $regs[1], $args[$k], 0);
+	header('Location: index.php?module=user&action=admin');
+	exit(0);
 }
 
 
@@ -254,9 +281,10 @@ function user_login($args)
 
 	if($user_id != 0)
 		return user_default($args);
+	$register = _config_get('user', 'register') == 't' ? 1 : 0;
 	if(isset($_POST['username']))
 	{
-		$message = 'Wrong password';
+		$message = WRONG_PASSWORD;
 		$username = stripslashes($_POST['username']);
 	}
 	include('user_login.tpl');
@@ -315,8 +343,10 @@ function user_register($args)
 {
 	global $user_id;
 
+	if(_config_get('user', 'register') != 't')
+		return _error(PERMISSION_DENIED);
 	if($user_id)
-		return _error(ALREADY_LOGGED_IN, 1);
+		return _error(ALREADY_LOGGED_IN);
 	$message = '';
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($args['username'])
 			&& isset($args['email']))
@@ -426,8 +456,15 @@ function _system_logout()
 
 function user_system($args)
 {
-	if($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'login')
-		_system_login();
+	global $html;
+
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
+	{
+		if($_POST['action'] == 'login')
+			_system_login();
+		else if($_POST['action'] == 'config_update')
+			$html = 0;
+	}
 	else if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
 		if($_GET['action'] == 'logout')
