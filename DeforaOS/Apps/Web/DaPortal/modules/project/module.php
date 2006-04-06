@@ -104,8 +104,8 @@ function project_admin($args)
 			._html_safe(PROJECTS_ADMINISTRATION).'</h1>'."\n");
 	if(($configs = _config_list('project')))
 	{
-		print('<h2><img src="modules/project/icon.png" alt=""/> '
-				.'Configuration</h2>'."\n");
+		print('<h2><img src="modules/project/icon.png" alt=""/>'
+				.' Configuration</h2>'."\n");
 		$module = 'project';
 		$action = 'config_update';
 		include('system/config.tpl');
