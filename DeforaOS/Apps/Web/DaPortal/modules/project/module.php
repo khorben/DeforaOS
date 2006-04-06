@@ -719,7 +719,6 @@ function project_config_update($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/config.php');
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^project_([a-zA-Z_]+)$', $k, $regs))
