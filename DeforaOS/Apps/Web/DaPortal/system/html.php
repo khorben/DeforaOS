@@ -54,7 +54,7 @@ function _html_safe_link($string)
 
 function _start_css_themes($theme)
 {
-	if(($dir = opendir('themes')) == FALSE)
+	if(($dir = @opendir('themes')) == FALSE)
 		return;
 	while(($de = readdir($dir)))
 	{
