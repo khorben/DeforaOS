@@ -36,6 +36,7 @@ function content_admin($args)
 				.'/icon.png';
 		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
 		$contents[$i]['name'] = _html_safe_link($contents[$i]['name']);
+		$contents[$i]['username'] = _html_safe($contents[$i]['username']);
 		$contents[$i]['module'] = 'content';
 		$contents[$i]['apply_module'] = 'content';
 		$contents[$i]['action'] = 'admin';
