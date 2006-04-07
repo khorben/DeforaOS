@@ -1,5 +1,4 @@
-<?php
-//modules/comment/module.php
+<?php //modules/comment/module.php
 //TODO:
 //- enable/disable anonymous comments
 //- enable/disable comments per content
