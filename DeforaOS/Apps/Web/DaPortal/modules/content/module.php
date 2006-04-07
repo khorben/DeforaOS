@@ -1,5 +1,4 @@
-<?php
-//modules/content/module.php
+<?php //modules/content/module.php
 
 
 
@@ -44,7 +43,7 @@ function content_admin($args)
 		$contents[$i]['enabled'] = ($contents[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
 		$contents[$i]['enabled'] = '<img src="icons/16x16/'
-				.$contents[$i]['enabled'].'" alt="'
+				.$contents[$i]['enabled'].'.png" alt="'
 				.$contents[$i]['enabled'].'" title="'
 				.($contents[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED)
@@ -66,6 +65,7 @@ function content_admin($args)
 			'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('enabled' => ENABLED,
+				'username' => AUTHOR,
 				'date' => DATE),
 			'entries' => $contents,
 			'view' => 'details',
