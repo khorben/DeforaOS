@@ -48,7 +48,7 @@ function admin_admin($args)
 		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
 		$modules[$i]['enabled'] = '<img src="icons/16x16/'
-				.$modules[$i]['enabled'].'" alt="'
+				.$modules[$i]['enabled'].'.png" alt="'
 				.$modules[$i]['enabled'].'" title="'
 				.($modules[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED)
