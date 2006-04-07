@@ -117,7 +117,7 @@ function user_admin($args)
 		$users[$i]['admin'] = $users[$i]['admin'] == 't'
 			? 'enabled' : 'disabled';
 		$users[$i]['admin'] = '<img src="icons/16x16/'
-				.$users[$i]['admin'].'" alt="'
+				.$users[$i]['admin'].'.png" alt="'
 				.$users[$i]['admin'].'" title="'
 				.($users[$i]['admin'] == 'enabled'
 						? ENABLED : DISABLED)
