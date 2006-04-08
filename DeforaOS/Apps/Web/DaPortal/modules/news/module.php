@@ -30,7 +30,7 @@ function _news_insert($news)
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
-	return _content_insert($news['title'], $news['content']);
+	_content_insert($news['title'], $news['content']);
 }
 
 
@@ -109,14 +109,11 @@ function news_admin($args)
 			'action' => 'enable');
 	_module('explorer', 'browse_trusted', array(
 				'class' => array('username' => AUTHOR,
-					'enabled' => ENABLED,
-					'date' => DATE),
-				'module' => 'news',
-				'action' => 'admin',
+					'enabled' => ENABLED, 'date' => DATE),
+				'module' => 'news', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 						: 'date',
-				'view' => 'details',
-				'toolbar' => $toolbar,
+				'toolbar' => $toolbar, 'view' => 'details',
 				'entries' => $res));
 }
 
@@ -125,7 +122,7 @@ function news_default($args)
 {
 	if(isset($args['id']))
 		return news_display(array('id' => $args['id']));
-	return news_list($args);
+	news_list($args);
 }
 
 
@@ -220,8 +217,7 @@ function news_list($args)
 		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
 						$res[$i]['timestamp'], 0, 19)));
 	}
-	_module('explorer', 'browse', array(
-				'class' => array('date' => 'Date'),
+	_module('explorer', 'browse', array('class' => array('date' => 'Date'),
 				'view' => 'details',
 				'entries' => $res));
 }
@@ -311,7 +307,7 @@ function news_update($news)
 	require_once('system/content.php');
 	if(!_content_update($news['id'], $news['title'], $news['content']))
 		return _error('Could not update news');
-	return news_display(array('id' => $news['id']));
+	news_display(array('id' => $news['id']));
 }
 
 ?>
