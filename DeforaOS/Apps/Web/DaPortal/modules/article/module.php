@@ -93,8 +93,7 @@ function article_admin($args)
 				.$articles[$i]['enabled'].'.png" alt="'
 				.$articles[$i]['enabled'].'" title="'
 				.($articles[$i]['enabled'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
+						? ENABLED : DISABLED).'"/>';
 		$articles[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
 				strtotime(substr($articles[$i]['timestamp'],
 						0, 19))));
@@ -134,7 +133,13 @@ function article_default($args)
 
 function article_disable($args)
 {
-	_module('content', 'disable', array('id' => $args['id']));
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('system/content.php');
+	_content_disable('id');
 }
 
 
@@ -158,7 +163,13 @@ function article_display($args)
 
 function article_enable($args)
 {
-	_module('content', 'enable', array('id' => $args['id']));
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('system/content.php');
+	_content_enable('id');
 }
 
 
