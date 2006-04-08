@@ -139,7 +139,7 @@ function article_disable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
-	_content_disable('id');
+	_content_disable($args['id']);
 }
 
 
@@ -169,7 +169,7 @@ function article_enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
-	_content_enable('id');
+	_content_enable($args['id']);
 }
 
 
