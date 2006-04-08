@@ -46,21 +46,15 @@ function article_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/article/icon.png" alt=""/> '
 		.ARTICLES_ADMINISTRATION.'</h1>'."\n");
+	$order = 'ASC';
 	switch($args['sort'])
 	{
-		case 'username':
-			$order = 'username';
-			break;
-		case 'enabled':
-			$order = 'enabled';
-			break;
-		case 'name':
-			$order = 'title';
-			break;
-		default:
+		case 'username':$sort = 'username';	break;
+		case 'enabled':	$sort = 'enabled';	break;
+		case 'name':	$sort = 'title';	break;
 		case 'date':
-			$order = 'timestamp';
-			break;
+		default:	$order = 'DESC';
+				$sort = 'timestamp';	break;
 	}
 	$articles = _sql_array('SELECT content_id AS id, timestamp'
 		.', daportal_content.enabled, title, content'
@@ -71,7 +65,7 @@ function article_admin($args)
 		." AND daportal_module.name='article'"
 		.' AND daportal_module.module_id'
 		.'=daportal_content.module_id'
-		.' ORDER BY '.$order.' DESC;');
+		.' ORDER BY '.$sort.' '.$order.';');
 	if(!is_array($articles))
 		return _error('Unable to list articles');
 	for($i = 0, $cnt = count($articles); $i < $cnt; $i++)
@@ -111,14 +105,11 @@ function article_admin($args)
 			'action' => 'enable');
 	_module('explorer', 'browse_trusted', array(
 				'class' => array('username' => AUTHOR,
-					'enabled' => ENABLED,
-					'date' => DATE),
-				'module' => 'article',
-				'action' => 'admin',
+					'enabled' => ENABLED, 'date' => DATE),
+				'module' => 'article', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 						: 'date',
-				'view' => 'details',
-				'toolbar' => $toolbar,
+				'toolbar' => $toolbar, 'view' => 'details',
 				'entries' => $articles));
 }
 
@@ -222,8 +213,7 @@ function article_list($args)
 				strtotime(substr($articles[$i]['timestamp'],
 						0, 19)));
 	}
-	_module('explorer', 'browse', array(
-				'class' => array('date' => 'Date'),
+	_module('explorer', 'browse', array('class' => array('date' => 'Date'),
 				'view' => 'details',
 				'entries' => $articles));
 }
@@ -277,7 +267,7 @@ function article_submit($article)
 	}
 	if(!_article_insert($article))
 		return _error('Could not insert article');
-	return include('posted.tpl');
+	include('posted.tpl');
 }
 
 
@@ -314,7 +304,7 @@ function article_update($article)
 	if(!_content_update($article['id'], $article['title'],
 				$article['content']))
 		return _error('Could not update article');
-	return article_display(array('id' => $article['id']));
+	article_display(array('id' => $article['id']));
 }
 
 ?>
