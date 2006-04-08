@@ -1,5 +1,4 @@
-<?php
-//modules/news/module.php
+<?php //modules/news/module.php
 
 
 
@@ -137,7 +136,8 @@ function news_disable($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	_module('content', 'disable', array('id' => $args['id']));
+	require_once('system/content.php');
+	_content_disable($args['id']);
 }
 
 
@@ -168,7 +168,8 @@ function news_enable($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	_module('content', 'enable', array('id' => $args['id']));
+	require_once('system/content.php');
+	_content_enable($args['id']);
 }
 
 
