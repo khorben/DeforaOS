@@ -13,6 +13,7 @@ function _html_pre($string)
 	$strings = explode("\n", $string);
 	$string = '';
 	$list = 0;
+	$pre = 0;
 	for($i = 0, $cnt = count($strings); $i < $cnt; $i++)
 	{
 		$line = htmlentities($strings[$i]);
@@ -21,6 +22,9 @@ function _html_pre($string)
 			if($list == 0)
 			{
 				$list = 1;
+				if($pre == 1)
+					$string.="</pre>\n";
+				$pre = 0;
 				$string.="<ul>\n";
 			}
 			$line = '<li>'.substr($line, 3)."</li>\n";
@@ -30,8 +34,24 @@ function _html_pre($string)
 			$list = 0;
 			$line ="</ul>\n".$line;
 		}
+		else if($line[0] == ' ')
+		{
+			$line = substr($line, 1);
+			if($pre == 0)
+			{
+				$pre = 1;
+				$string.='<pre>';
+			}
+		}
+		else if($pre == 1)
+		{
+			$pre = 0;
+			$string.="</pre>\n";
+		}
 		else
 			$line.="<br/>\n";
+		$line = preg_replace('/((ftp|http):\/\/[-a-zA-Z0-9.\/_%]+)/',
+				'<a href="\1">\1</a>', $line);
 		$string.=$line;
 	}
 	if($list != 0)
