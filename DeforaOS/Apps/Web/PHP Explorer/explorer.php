@@ -82,7 +82,6 @@ function explorer_download($filename)
 	while(($buf = @fread($fp, 8192)) != FALSE)
 		print($buf);
 	fclose($fp);
-	
 }
 
 
