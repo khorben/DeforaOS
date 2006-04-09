@@ -43,7 +43,7 @@ function explorer_download($filename)
 	global $root, $hidden;
 
 	$filename = $root.'/'.$filename;
-	if(!is_readable($filename) || is_dir($filename))
+	if(is_dir($filename) || ($fp = @fopen($filename, 'r')) == FALSE)
 		return include('404.tpl');
 	if(!$hidden)
 	{
@@ -53,7 +53,7 @@ function explorer_download($filename)
 	}
 	$mime = mime_from_ext($filename);
 	$client_mime = explode(',', $_SERVER['HTTP_ACCEPT']);
-	for($i = 0; $i < count($client_mime); $i++)
+	for($i = 0; $i < count($client_mime); $i++) //FIXME should glob
 	{
 		if(($pos = strpos($client_mime[$i], ';')) == FALSE)
 			continue;
@@ -64,10 +64,27 @@ function explorer_download($filename)
 	header('Content-Length: '.filesize($filename));
 	header('Content-Disposition: '.$attachment.'; filename="'
 			.addslashes(basename($filename)).'"');
-	if(($st = stat($filename)) != FALSE)
-		header('Last-Modified: '.strftime('%a, %e %b %Y %T GMT', $st['mtime']));
-	readfile($filename);
+	if(($st = fstat($fp)) != FALSE)
+		header('Last-Modified: '.strftime('%a, %e %b %Y %T GMT',
+					$st['mtime']));
+	if(isset($_SERVER['HTTP_RANGE'])
+			&& preg_match_all('/^bytes=([0-9]+)-$/',
+				$_SERVER['HTTP_RANGE'], $offset))
+	{
+		$offset = $offset[1][0];
+		if(@fseek($fp, $offset) == 0)
+		{
+			$range = isset($st) ? ($st['size']-1).'/'.$st['size']
+				: '*/*';
+			header('Content-Range: bytes '.$offset.'-'.$range);
+		}
+	}
+	while(($buf = @fread($fp, 8192)) != FALSE)
+		print($buf);
+	fclose($fp);
+	
 }
+
 
 function _sort_permissions($a, $b)
 {
