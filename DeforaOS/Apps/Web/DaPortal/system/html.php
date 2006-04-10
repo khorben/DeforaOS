@@ -7,6 +7,22 @@
 if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
+function _html_paging($link, $page, $count)
+{
+	print('<div class="paging">'."\n");
+	for($i = 1; $i <= $count; $i++)
+	{
+		print('	');
+		if($i != 1)
+			print('| ');
+		if($i == $page)
+			print($page."\n");
+		else
+			print('<a href="'.$link.'page='.$i.'">'.$i."</a>\n");
+	}
+	print("</div>\n");
+}
+
 
 function _html_pre($string)
 {
