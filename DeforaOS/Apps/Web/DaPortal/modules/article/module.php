@@ -8,20 +8,22 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
-$text['ARTICLE_BY'] = 'Article by ';
+$text['ARTICLE_BY'] = 'Article by';
 $text['ARTICLE_ON'] = 'on';
 $text['ARTICLE_PREVIEW'] = 'Article preview';
 $text['ARTICLE_SUBMISSION'] = 'Article submission';
 $text['ARTICLES'] = 'Articles';
 $text['ARTICLES_ADMINISTRATION'] = 'Articles administration';
+$text['ARTICLES_BY'] = 'Articles by';
 $text['MODIFICATION_OF_ARTICLE'] = 'Modification of article';
 global $lang;
 if($lang == 'fr')
 {
-	$text['ARTICLE_BY'] = 'Article par ';
+	$text['ARTICLE_BY'] = 'Article par';
 	$text['ARTICLE_ON'] = 'le';
 	$text['ARTICLE_PREVIEW'] = "Aperçu de l'article";
 	$text['ARTICLES_ADMINISTRATION'] = 'Administration des articles';
+	$text['ARTICLES_BY'] = 'Articles par';
 }
 _lang($text);
 
@@ -172,7 +174,7 @@ function article_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 	{
-		$title = ARTICLE_BY.$username;
+		$title = ARTICLES_BY.' '.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1><img src="modules/article/icon.png" alt=""/> '
