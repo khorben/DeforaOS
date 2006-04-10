@@ -30,7 +30,7 @@ function _news_insert($news)
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	require_once('system/content.php');
-	_content_insert($news['title'], $news['content']);
+	return _content_insert($news['title'], $news['content']);
 }
 
 
