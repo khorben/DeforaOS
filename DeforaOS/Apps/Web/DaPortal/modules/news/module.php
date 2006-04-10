@@ -9,14 +9,14 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['NEWS_ADMINISTRATION'] = 'News administration';
-$text['NEWS_BY'] = 'News by ';
+$text['NEWS_BY'] = 'News by';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_PREVIEW'] = 'News preview';
 global $lang;
 if($lang == 'fr')
 {
 	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
-	$text['NEWS_BY'] = 'Actualités par ';
+	$text['NEWS_BY'] = 'Actualités par';
 	$text['NEWS_ON'] = 'le';
 	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
 }
@@ -170,19 +170,10 @@ function news_enable($args)
 }
 
 
-function news_list($args)
+function _list_user($user_id, $username)
 {
-	$title = NEWS;
-	$where = '';
-	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
-			.' FROM daportal_user'
-			." WHERE user_id='".$args['user_id']."';")))
-	{
-		$title = NEWS_BY.$username;
-		$where = " AND daportal_content.user_id='".$args['user_id']."'";
-	}
 	print('<h1><img src="modules/news/icon.png" alt=""/> '
-			._html_safe($title).'</h1>'."\n");
+			._html_safe(NEWS_BY.' '.$username).'</h1>'."\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 			.', daportal_content.enabled, daportal_content.user_id'
 			.', username'
@@ -193,20 +184,10 @@ function news_list($args)
 			." AND daportal_module.name='news'"
 			.' AND daportal_module.module_id'
 			.'=daportal_content.module_id'
-			.$where
+			." AND daportal_content.user_id='$user_id'"
 			.' ORDER BY timestamp DESC;');
 	if(!is_array($res))
 		return _error('Unable to list news');
-	if(!isset($username))
-	{
-		foreach($res as $news)
-		{
-			$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
-						$news['timestamp'], 0, 19)));
-			include('news_display.tpl');
-		}
-		return;
-	}
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'news';
@@ -220,6 +201,42 @@ function news_list($args)
 	_module('explorer', 'browse', array('class' => array('date' => 'Date'),
 				'view' => 'details',
 				'entries' => $res));
+}
+
+function news_list($args)
+{
+	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
+			.' FROM daportal_user'
+			." WHERE user_id='".$args['user_id']."';")))
+		return _list_user($args['user_id'], $username);
+	$sql = ' FROM daportal_content, daportal_user'
+		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_module.name='news'"
+		.' AND daportal_module.module_id'
+		.'=daportal_content.module_id';
+	$npp = 10;
+	$page = isset($args['page']) ? $args['page'] : 1;
+	$cnt = _sql_single('SELECT COUNT(*)'.$sql);
+	$pages = ceil($cnt / $npp);
+	$page = min($page, $pages);
+	print('<h1><img src="modules/news/icon.png" alt=""/> '._html_safe(NEWS)
+			.'</h1>'."\n");
+	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
+			.', daportal_content.enabled, daportal_content.user_id'
+			.', username'.$sql
+			.' ORDER BY timestamp DESC'
+			." OFFSET ".(($page-1) * $npp)." LIMIT $npp;");
+	if(!is_array($res))
+		return _error('Unable to list news');
+	foreach($res as $news)
+	{
+		$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
+						$news['timestamp'], 0, 19)));
+		include('news_display.tpl');
+	}
+	_html_paging('index.php?module=news&amp;action=list&amp;', $page,
+			$pages);
 }
 
 
