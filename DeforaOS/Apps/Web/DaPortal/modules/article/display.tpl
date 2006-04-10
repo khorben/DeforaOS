@@ -1,5 +1,8 @@
+<? if($long) { ?><h1><img src="modules/article/icon.png" alt=""/> <? echo _html_safe($article['title']); ?></h1><? } ?>
 <div class="article entry">
-	<div class="title"><span><span><span><? if($long) { ?><img src="modules/article/icon.png" alt=""/> <? } else { ?><a href="index.php?module=article&amp;id=<? echo _html_safe_link($article['id']); ?>"><? } ?><? echo _html_safe($article['title']); ?><? if(!$long) { ?></a><? } ?></span></span></span></div>
+<? if(!$long) { ?>
+	<div class="title"><span><span><span><a href="index.php?module=article&amp;id=<? echo _html_safe_link($article['id']); ?>"><? echo _html_safe($article['title']); ?></a></span></span></span></div>
+<? } ?>
 	<div class="author"><? echo _html_safe(ARTICLE_BY); ?> <a href="index.php?module=user&amp;id=<? echo _html_safe_link($article['user_id']); ?>"><? echo _html_safe($article['username']); ?></a></div>
 	<div class="date"><? echo _html_safe(ARTICLE_ON); ?> <? echo _html_safe($article['date']); ?></div>
 <? if($long) { ?>
