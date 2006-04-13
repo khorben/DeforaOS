@@ -10,6 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['RESULTS_FOUND'] = 'result(s) found';
+$text['SEARCH'] = 'Search';
 $text['SEARCH_RESULTS'] = 'Search results';
 global $lang;
 if($lang == 'fr')
@@ -20,24 +21,8 @@ if($lang == 'fr')
 _lang($text);
 
 
-function _default_results($q, $field)
+function _default_results($q)
 {
-	$q = explode(' ', $q);
-	if(!count($q))
-		return array();
-	$query = " AND $field LIKE '%".implode("%' AND $field LIKE '%", $q)
-			."%'";
-	$ret = _sql_array('SELECT content_id AS id, timestamp'
-			.', daportal_content.module_id, name AS module'
-			.', daportal_content.user_id, title, content, username'
-			.' FROM daportal_content, daportal_module'
-			.', daportal_user'
-			.' WHERE daportal_content.module_id'
-			.'=daportal_module.module_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_content.enabled='1'"
-			." AND daportal_module.enabled='1'"
-			.$query.' ORDER by timestamp DESC;');
 	return is_array($ret) ? $ret : array();
 }
 
@@ -46,12 +31,33 @@ function search_default($args)
 	include('search.tpl');
 	if(strlen($args['q']) == 0)
 		return;
-	$res = _default_results($args['q'], 'title');
-	$res = array_merge($res, _default_results($args['q'], 'content'));
-	//FIXME sort so that duplicates are put on top and unique'd
-	$count = count($res);
+	$q = explode(' ', $args['q']);
+	if(!count($q))
+		return;
+	$sql = ' FROM daportal_content, daportal_module, daportal_user'
+		.' WHERE daportal_content.module_id=daportal_module.module_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_module.enabled='1'";
+	$sql .= " AND ((title LIKE '%".implode("%' AND title LIKE '%", $q)
+			."%')";
+	$sql .= " OR (content LIKE '%".implode("%' AND content LIKE '%", $q)
+			."%'))";
+	$spp = 10;
+	$page = isset($args['page']) ? $args['page'] : 1;
+	$count = _sql_single('SELECT COUNT(*)'.$sql);
 	include('search_top.tpl');
-	$i = 1;
+	$pages = ceil($count / $spp);
+	$page = min($page, $pages);
+	$res = _sql_array('SELECT content_id AS id, timestamp'
+			.', daportal_content.module_id, name AS module'
+			.', daportal_content.user_id, title, content, username'
+			.$sql
+			.' ORDER by timestamp DESC'
+			." OFFSET ".(($page-1) * $spp)." LIMIT $spp;");
+	if(!is_array($res))
+		return _error('Unable to search');
+	$i = 1 + (($page-1) * $spp);
 	foreach($res as $q)
 	{
 		$q['date'] = strftime(DATE_FORMAT, strtotime(substr(
@@ -60,6 +66,8 @@ function search_default($args)
 		$i++;
 	}
 	include('search_bottom.tpl');
+	_html_paging('index.php?module=search&amp;q='
+			._html_safe_link($args['q']).'&amp;', $page, $pages);
 }
 
 
@@ -67,7 +75,7 @@ function search_system($args)
 {
 	global $title;
 
-	$title.=' - Search';
+	$title.=' - '.SEARCH;
 }
 
 ?>
