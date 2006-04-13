@@ -103,5 +103,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _cat(flagu, argc - optind, &argv[optind]);
+	return _cat(flagu, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
