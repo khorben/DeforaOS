@@ -15,6 +15,7 @@ $text['CATEGORY'] = 'Category';
 $text['CHOOSE_CATEGORIES'] = 'Choose categories';
 $text['DELETE_LINK'] = 'Delete link';
 $text['MEMBER_OF'] = 'Member of';
+$text['MODIFICATION_OF_CATEGORY'] = 'Modification of category';
 $text['NEW_CATEGORY'] = 'New category';
 global $lang;
 _lang($text);
@@ -291,6 +292,34 @@ function category_link_insert($args)
 }
 
 
+function category_link_insert_new($args)
+{
+	global $user_id;
+
+	if($user_id == 0)
+		return _error(PERMISSION_DENIED);
+	$module = _module_id('category');
+	if(($id = _sql_single('SELECT content_id FROM daportal_content'
+			." WHERE module_id='$module'"
+			." AND title='".$args['title']."';")) != FALSE)
+		category_link_insert(array('id' => $id,
+				'content_id' => $args['content_id']));
+	else
+	{
+		if(_sql_single('SELECT user_id FROM daportal_content'
+				." WHERE content_id='".$args['content_id']."';")
+			!= $user_id)
+			return _error(PERMISSION_DENIED);
+		require_once('system/content.php');
+		if(($id = _content_insert($args['title'], '', 1)) == FALSE)
+			return _error('Unable to insert category');
+		category_link_insert(array('id' => $id,
+					'content_id' => $args['content_id']));
+	}
+	category_set(array('id' => $args['content_id']));
+}
+
+
 function category_list($args)
 {
 	print('<h1><img src="modules/category/icon.png" alt=""/> '
@@ -394,6 +423,7 @@ function category_set($args)
 				'module' => 'category',
 				'action' => 'set',
 				'id' => $args['id']));
+	include('choose.tpl');
 }
 
 
@@ -404,10 +434,12 @@ function category_update($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
+	$module = _module_id('category');
 	if(_sql_query('UPDATE daportal_content SET'
 			." title='".$args['title']."'"
 			.", content='".$args['content']."'"
-			." WHERE content_id='".$args['id']."';") == FALSE)
+			." WHERE content_id='".$args['id']."'"
+			." AND module_id='$module';") == FALSE)
 		return _error('Unable to update category');
 	category_display(array('id' => $args['id']));
 }
