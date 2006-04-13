@@ -24,8 +24,9 @@ static int _cat_error(char * message, int ret);
 static void _cat_file(FILE * fp, OutputDelay od);
 static int _cat(OutputDelay od, int argc, char * argv[])
 {
-	int res = 0;
+	int ret = 0;
 	int i;
+	FILE * fp;
 
 	if(argc == 0)
 	{
@@ -34,20 +35,18 @@ static int _cat(OutputDelay od, int argc, char * argv[])
 	}
 	for(i = 0; i < argc; i++)
 	{
-		FILE * fp;
-
 		if(strcmp("-", argv[i]) == 0)
 			fp = stdin;
 		else if((fp = fopen(argv[i], "r")) == NULL)
 		{
-			res = _cat_error(argv[i], 2);
+			ret = _cat_error(argv[i], 1);
 			continue;
 		}
 		_cat_file(fp, od);
 		if(fp != stdin)
 			fclose(fp);
 	}
-	return res;
+	return ret;
 }
 
 static int _cat_error(char * message, int ret)
@@ -83,7 +82,7 @@ static int _write_nonbuf(int c)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: cat [-u][file ...]\n\
+	fprintf(stderr, "%s", "Usage: cat [-u][file ...]\n\
   -u    write without delay\n");
 	return 1;
 }
@@ -101,7 +100,7 @@ int main(int argc, char * argv[])
 			case 'u':
 				flagu = OD_NONE;
 				break;
-			case '?':
+			default:
 				return _usage();
 		}
 	return _cat(flagu, argc - optind, &argv[optind]);

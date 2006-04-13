@@ -72,7 +72,7 @@ static int _pwd(pwd_flag pf)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: pwd [-L|-P]\n\
+	fprintf(stderr, "%s", "Usage: pwd [-L|-P]\n\
   -L    avoid \".\" or \"..\" filenames\n\
   -P    avoid symbolic links\n");
 	return 1;

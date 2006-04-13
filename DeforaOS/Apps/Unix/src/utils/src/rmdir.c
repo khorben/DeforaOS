@@ -54,7 +54,7 @@ static int _rmdir_p(char * pathname)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: rmdir [-p] dir...\n\
+	fprintf(stderr, "%s", "Usage: rmdir [-p] dir...\n\
   -p    remove all directories in a pathname\n");
 	return 1;
 }

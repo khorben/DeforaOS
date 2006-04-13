@@ -38,7 +38,7 @@ static int _uname(int m, int n, int r, int s, int v)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: uname [-snrvma]\n\
+	fprintf(stderr, "%s", "Usage: uname [-snrvma]\n\
   -s    operating system name\n\
   -n    name of this node on the network\n\
   -r    operating system release name\n\
