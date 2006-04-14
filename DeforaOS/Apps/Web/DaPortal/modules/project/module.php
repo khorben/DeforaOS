@@ -435,17 +435,14 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	require_once('system/mime.php');
 	if(($mime = _mime_from_ext($basename)) == 'default')
 		$mime = 'text/plain';
-	$content = '';
-	while(!feof($fp))
-		$content .= fread($fp, 8192);
 	if($download)
 	{
 		require_once('system/html.php');
 		header('Content-Type: '.$mime);
-		header('Content-Length: '.strlen($content));
 		header('Content-Disposition: inline; filename="'
 				._html_safe(basename($basename)).'"');
-		print($content);
+		while(!feof($fp))
+			print(fread($fp, 8192));
 		return;
 	}
 	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
@@ -454,9 +451,63 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	print('<div class="toolbar"><a href="'.$link.'">Download file</a></div>'
 			."\n");
 	if(strncmp('image/', $mime, 6) == 0)
-		print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
-	else
-		print('<pre>'."\n"._html_safe($content).'</pre>'."\n");
+		return print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
+	print('<pre>'."\n");
+	while(!feof($fp))
+	{
+		$line = _html_safe(fgets($fp, 8192));
+		switch($mime)
+		{
+			case 'text/x-chdr':
+			case 'text/x-csrc':
+				$line = _file_csrc($line);
+				break;
+		}
+		print($line);
+	}
+	print('</pre>'."\n");
+}
+
+function _file_csrc($line)
+{
+	static $comment = 0;
+
+	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
+			'<span class="string">\1</span>',
+			$line);
+	if($line[0] == '#')
+	{
+		$line = '<span class="preprocessed">'.substr($line, 0, -1)
+			.'</span>'."\n";
+		return $line;
+	}
+	$line = preg_replace('/(^|[^a-zA-Z0-9])(break|case|continue|default'
+				.'|do|else|for|if|return|switch'
+				.'|until|while'
+				.')($|[^a-zA-Z0-9])/',
+			'\1<span class="keyword">\2</span>\3', $line);
+	$line = preg_replace('/(^|[^a-zA-Z0-9])('
+				.'char|double|FILE|float|int'
+				.'|long|short|signed|static'
+				.'|struct|typedef|unsigned|void'
+				.')($|[^a-zA-Z0-9])/',
+			'\1<span class="type">\2</span>\3', $line);
+	/* FIXME fails on quoted strings, use prefix.line.suffix to escape hl */
+	if($comment == 0 && strstr($line, '/*'))
+	{
+		$p = strpos($line, '/*');
+		$line = substr($line, 0, $p).'<span class="comment">'
+			.substr($line, $p);
+		$comment = 1;
+	}
+	if($comment != 0 && strstr($line, '*/'))
+	{
+		$p = strpos($line, '*/');
+		$line = substr($line, 0, $p+2).'</span>'
+			.substr($line, $p+2);
+		$comment = 0;
+	}
+	return $line;
 }
 
 
