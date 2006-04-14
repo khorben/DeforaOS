@@ -16,7 +16,7 @@ typedef struct _FormatArch
 {
 	char * arch;
 	int8_t machine;
-	int8_t objsize;
+	int8_t capacity;
 	int8_t endian;
 } FormatArch;
 
@@ -85,8 +85,9 @@ int elf_init(FILE * fp, char * arch)
 		return 1;
 	memset(&hdr, 0, sizeof(hdr));
 	memcpy(&hdr.e_ident, ELFMAG, SELFMAG);
-	hdr.e_ident[4] = fa->objsize;
-	hdr.e_ident[5] = fa->endian;
+	hdr.e_ident[EI_CLASS] = fa->capacity;
+	hdr.e_ident[EI_DATA] = fa->endian;
+	hdr.e_ident[EI_VERSION] = EV_CURRENT;
 	hdr.e_type = ET_REL;
 	hdr.e_machine = fa->machine;
 	hdr.e_version = EV_CURRENT;
