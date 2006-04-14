@@ -26,7 +26,7 @@ static FormatArch _elf_endian[] =
 	{ "i486",    EM_386,	ELFCLASS32, ELFDATA2LSB },
 	{ "i586",    EM_386,	ELFCLASS32, ELFDATA2LSB },
 	{ "i686",    EM_386,	ELFCLASS32, ELFDATA2LSB },
-	{ "sparc",   EM_SPARC,	ELFCLASS32, ELFDATA2LSB },
+	{ "sparc",   EM_SPARC,	ELFCLASS32, ELFDATA2MSB },
 	{ "sparc64", EM_SPARCV9,ELFCLASS64, ELFDATA2MSB },
 	{ NULL,      0,		0,          0           }
 };
