@@ -93,7 +93,7 @@ int elf_init(FILE * fp, char * arch)
 	hdr.e_entry = 0;
 	hdr.e_phoff = 0;
 	hdr.e_shoff = 0;
-	hdr.e_flags = EF_CPU32;
+	hdr.e_flags = 0;
 	hdr.e_ehsize = sizeof(hdr);
 	hdr.e_phentsize = 0;
 	hdr.e_phnum = 0;
