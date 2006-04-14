@@ -11,7 +11,7 @@
 #include "format.h"
 
 
-/* types */
+/* variables */
 typedef struct _FormatArch
 {
 	char * arch;
@@ -20,8 +20,6 @@ typedef struct _FormatArch
 	int8_t endian;
 } FormatArch;
 
-
-/* variables */
 static FormatArch _elf_endian[] =
 {
 	{ "i386",    EM_386,	ELFCLASS32, ELFDATA2LSB },
@@ -31,6 +29,41 @@ static FormatArch _elf_endian[] =
 	{ "sparc",   EM_SPARC,	ELFCLASS32, ELFDATA2LSB },
 	{ "sparc64", EM_SPARCV9,ELFCLASS64, ELFDATA2MSB },
 	{ NULL,      0,		0,          0           }
+};
+
+
+typedef struct _SectionValues
+{
+	char * section;
+	Elf32_Word type;
+	Elf32_Word flags;
+} SectionValues;
+
+static SectionValues _elf_section[] =
+{
+	{ "bss",	SHT_NOBITS,	SHF_ALLOC | SHF_WRITE		},
+	{ "comment",	SHT_PROGBITS,	0				},
+	{ "data",	SHT_PROGBITS,	SHF_ALLOC | SHF_WRITE		},
+	{ "data1",	SHT_PROGBITS,	SHF_ALLOC | SHF_WRITE		},
+	{ "debug",	SHT_PROGBITS,	0				},
+	{ "dynamic",	SHT_DYNAMIC,	0				},
+	{ "dynstr",	SHT_STRTAB,	SHF_ALLOC			},
+	{ "dynsym",	SHT_DYNSYM,	SHF_ALLOC			},
+	{ "fini",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
+	{ "got",	SHT_PROGBITS,	0				},
+	{ "hash",	SHT_HASH,	SHF_ALLOC			},
+	{ "init",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
+	{ "interp",	SHT_PROGBITS,	0				},
+	{ "line",	SHT_PROGBITS,	0				},
+	{ "note",	SHT_NOTE,	0				},
+	{ "plt",	SHT_PROGBITS,	0				},
+	{ "rodata",	SHT_PROGBITS,	SHF_ALLOC			},
+	{ "rodata1",	SHT_PROGBITS,	SHF_ALLOC			},
+	{ "shstrtab",	SHT_STRTAB,	0				},
+	{ "strtab",	SHT_STRTAB,	0				},
+	{ "symtab",	SHT_SYMTAB,	0				},
+	{ "text",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
+	{ NULL,		0,		0				}
 };
 
 
@@ -56,17 +89,17 @@ int elf_init(FILE * fp, char * arch)
 	hdr.e_ident[5] = fa->endian;
 	hdr.e_type = ET_REL;
 	hdr.e_machine = fa->machine;
-	hdr.e_version = EV_CURRENT;	/* FIXME */
-	hdr.e_entry = 0;		/* FIXME may be redefined later */
-	hdr.e_phoff = 0;		/* FIXME may be redefined later */
-	hdr.e_shoff = 0;		/* FIXME may be redefined later */
+	hdr.e_version = EV_CURRENT;
+	hdr.e_entry = 0;
+	hdr.e_phoff = 0;
+	hdr.e_shoff = 0;
 	hdr.e_flags = EF_CPU32;
 	hdr.e_ehsize = sizeof(hdr);
-	hdr.e_phentsize = 4;		/* FIXME */
+	hdr.e_phentsize = 0;
 	hdr.e_phnum = 0;
 	hdr.e_shentsize = sizeof(Elf32_Shdr);
 	hdr.e_shnum = 0;
-	hdr.e_shstrndx = SHN_UNDEF;	/* FIXME */
+	hdr.e_shstrndx = SHN_UNDEF;
 	return fwrite(&hdr, sizeof(hdr), 1, fp) == 1 ? 0 : 1;
 }
 
@@ -90,15 +123,25 @@ int elf_exit(FILE * fp)
 }
 
 
+static SectionValues * _section_values(char * section);
 int elf_section(FILE * fp, char * section)
 {
 	Elf32_Shdr hdr;
+	SectionValues * sv;
 
 	if(_section_update(fp, section) != 0)
 		return 1;
 	memset(&hdr, 0, sizeof(hdr));
-	hdr.sh_type = SHT_PROGBITS;	/* FIXME */
-	hdr.sh_flags = SHF_EXECINSTR;	/* FIXME */
+	sv = _section_values(section);
+	hdr.sh_name = 0;
+	hdr.sh_type = sv->type;
+	hdr.sh_flags = sv->flags;
+	hdr.sh_addr = 0;
+	hdr.sh_offset = ftell(fp);
+	hdr.sh_link = SHN_UNDEF;
+	hdr.sh_info = 0;
+	hdr.sh_addralign = 0;
+	hdr.sh_entsize = 0;
 	return fwrite(&hdr, sizeof(hdr), 1, fp) == 1 ? 0 : 1;
 }
 
@@ -143,6 +186,20 @@ static int _section_update(FILE * fp, char * section)
 			|| (current = strdup(section)) == NULL)
 		return _elf_error(section, 1);
 	return 0;
+}
+
+static SectionValues * _section_values(char * section)
+{
+	SectionValues * sv;
+	int cmp;
+
+	for(sv = _elf_section; sv->section != NULL; sv++)
+		if((cmp = strcmp(section, sv->section)) == 0)
+			return sv;
+		else if(cmp < 0)
+			break;
+	for(sv = _elf_section; sv->section != NULL; sv++);
+	return sv;
 }
 
 
