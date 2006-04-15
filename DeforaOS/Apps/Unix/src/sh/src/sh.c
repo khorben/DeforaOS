@@ -12,6 +12,8 @@
 
 #define min(a, b) (a) < (b) ? (a) : (b)
 
+extern char ** environ;
+
 
 /* Prefs */
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
