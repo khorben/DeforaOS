@@ -82,5 +82,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
+	if(optind == argc)
+		return _usage();
 	return _hexdump(argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
