@@ -8,16 +8,15 @@
 <? } ?>
 	<hr/>
 	<table>
-		<tr><td class="field">Title:</td><td><input type="text" name="title" value="<? echo _html_safe($reply['title']); ?>" size="50"/></td></tr>
-		<tr><td class="field">Description:</td><td><textarea name="content" cols="50" rows="10"><? echo _html_safe($reply['content']); ?></textarea></td></tr>
+		<tr><td class="field">Title:</td><td colspan="3"><input type="text" name="title" value="<? echo _html_safe($reply['title']); ?>" size="50"/></td></tr>
 <? if($admin) { ?>
 		<tr><td class="field">State:</td><td><select name="state">
 <? $states = array('New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
 foreach($states as $s) { ?>
 				<option value="<? echo _html_safe($s); ?>"<? if($bug['state'] == $s) { ?> selected="selected"<? } ?>><? echo _html_safe($s); ?></option>
 <? } ?>
-			</select></td></tr>
-		<tr><td class="field">Type:</td><td><select name="type">
+			</select></td>
+		<td class="field">Type:</td><td><select name="type">
 <? $types = array('Major', 'Minor', 'Functionality', 'Feature');
 foreach($types as $t) { ?>
 				<option value="<? echo _html_safe($t); ?>"<? if($bug['type'] == $t) { ?> selected="selected"<? } ?>><? echo _html_safe($t); ?></option>
@@ -28,8 +27,9 @@ foreach($types as $t) { ?>
 foreach($priorities as $p) { ?>
 				<option value="<? echo _html_safe($p); ?>"<? if($bug['priority'] == $p) { ?> selected="selected"<? } ?>><? echo _html_safe($p); ?></option>
 <? } ?>
-			</select></td></tr>
+			</select></td><td></td></tr>
 <? } /* FIXME re-assign */ ?>
+		<tr><td class="field">Description:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><? echo _html_safe($reply['content']); ?></textarea></td></tr>
 		<tr><td></td><td><input type="submit" value="<? echo _html_safe(isset($reply['id']) ? UPDATE : SEND); ?>"/></td></tr>
 	</table>
 </form>
