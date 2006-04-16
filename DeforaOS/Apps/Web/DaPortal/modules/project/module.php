@@ -16,6 +16,7 @@ $text['BUG_REPORTS'] = 'Bug reports';
 $text['CVS_PATH'] = 'CVS path';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
+$text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
 $text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
@@ -49,6 +50,7 @@ if($lang == 'de')
 }
 else if($lang == 'fr')
 {
+	$text['ASSIGNED_TO'] = 'Affecté à';
 	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
 	$text['BUG_REPORTS'] = 'Rapports de bugs';
 	$text['INVALID_PROJECT'] = 'Projet non valide';
@@ -61,9 +63,13 @@ else if($lang == 'fr')
 	$text['PROJECT_NAME'] = 'Nom du projet';
 	$text['PROJECTS'] = 'Projets';
 	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
+	$text['REPLY_BY'] = 'Réponse par';
+	$text['REPLY_ON'] = 'le';
 	$text['REPORT_A_BUG'] = 'Rapporter un bug';
 	$text['REPORT_BUG_FOR'] = 'Rapporter un bug pour';
 	$text['STATE'] = 'Etat';
+	$text['STATE_CHANGED_TO'] = 'Etat changé à';
+	$text['SUBMITTER'] = 'Envoyé par';
 	$text['TIMELINE'] = 'Progression';
 }
 _lang($text);
@@ -465,6 +471,9 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 		$line = _html_safe(fgets($fp, 8192));
 		switch($mime)
 		{
+			case 'application/x-php':
+				$line = _file_php($line);
+				break;
 			case 'text/x-chdr':
 			case 'text/x-csrc':
 				$line = _file_csrc($line);
@@ -480,11 +489,9 @@ function _file_csrc($line)
 	static $comment = 0;
 
 	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
-			'<span class="string">\1</span>',
-			$line);
+			'<span class="string">\1</span>', $line);
 	$line = preg_replace("/('(\\\\?.|[^'])')/",
-			'<span class="character">\1</span>',
-			$line);
+			'<span class="character">\1</span>', $line);
 	if($line[0] == '#')
 	{
 		$line = '<span class="preprocessed">'.substr($line, 0, -1)
@@ -513,8 +520,44 @@ function _file_csrc($line)
 	if($comment != 0 && strstr($line, '*/'))
 	{
 		$p = strpos($line, '*/');
-		$line = substr($line, 0, $p+2).'</span>'
-			.substr($line, $p+2);
+		$line = substr($line, 0, $p+2).'</span>'.substr($line, $p+2);
+		$comment = 0;
+	}
+	return $line;
+}
+
+function _file_php($line)
+{
+	static $comment = 0;
+
+	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
+			'<span class="string">\1</span>', $line);
+	$line = preg_replace("/('(.|[^']*)')/",
+			'<span class="string">\1</span>', $line);
+	$line = preg_replace('/(^|[^a-zA-Z0-9_])(break|case|continue|default'
+				.'|do|else|for|foreach|if|return|switch'
+				.'|until|while'
+				.')($|[^a-zA-Z0-9_])/',
+			'\1<span class="keyword">\2</span>\3', $line);
+	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
+				.'array|function|global|include|include_once'
+				.'|require|require_once|static'
+				.')($|[^a-zA-Z0-9_])/',
+			'\1<span class="type">\2</span>\3', $line);
+	$line = preg_replace('/(\/\/.*$)/',
+			'<span class="comment">\1</span>', $line);
+	/* FIXME fails on quoted strings, use prefix.line.suffix to escape hl */
+	if($comment == 0 && strstr($line, '/*'))
+	{
+		$p = strpos($line, '/*');
+		$line = substr($line, 0, $p).'<span class="comment">'
+			.substr($line, $p);
+		$comment = 1;
+	}
+	if($comment != 0 && strstr($line, '*/'))
+	{
+		$p = strpos($line, '*/');
+		$line = substr($line, 0, $p+2).'</span>'.substr($line, $p+2);
 		$comment = 0;
 	}
 	return $line;
@@ -532,7 +575,7 @@ function project_bug_display($args)
 			.', daportal_user.user_id AS user_id'
 			.', daportal_bug.bug_id AS id, timestamp, title'
 			.', content, name AS project, username'
-			.', state, type, priority'
+			.', state, type, priority, assigned AS assigned_id'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE daportal_content.enabled='t'"
@@ -548,6 +591,9 @@ function project_bug_display($args)
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
+	$bug['assigned'] = _sql_single('SELECT username FROM daportal_user'
+			." WHERE enabled='1'"
+			." AND user_id='".$bug['assigned_id']."';");
 	include('bug_display.tpl');
 	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
 			.', timestamp AS date'
@@ -676,14 +722,14 @@ function project_bug_list($args)
 	$order = ' ORDER BY ';
 	switch($args['sort'])
 	{
-		case 'name':	$order.='name DESC'; break;
-		case 'project':	$order.='project DESC'; break;
-		case 'username':$order.='username DESC'; break;
-		case 'state':	$order.='state DESC'; break;
-		case 'type':	$order.='type DESC'; break;
-		case 'priority':$order.='priority DESC'; break;
+		case 'name':	$order.='name DESC';	break;
+		case 'project':	$order.='project DESC';	break;
+		case 'username':$order.='username DESC';break;
+		case 'state':	$order.='state DESC';	break;
+		case 'type':	$order.='type DESC';	break;
+		case 'priority':$order.='priority DESC';break;
 		default:
-		case 'id':	$order.='bug_id DESC'; break;
+		case 'id':	$order.='bug_id DESC';	break;
 	}
 	$bugs = _sql_array('SELECT daportal_content.content_id AS content_id'
 			.', bug_id AS id, timestamp AS date, title AS name'
@@ -698,8 +744,7 @@ function project_bug_list($args)
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' AND daportal_project.project_id'
 			.'=daportal_bug.project_id'
-			.$where
-			.$order);
+			.$where.$order);
 	if(!is_array($bugs))
 		return _error('Unable to list bugs', 1);
 	for($i = 0, $count = count($bugs); $i < $count; $i++)
@@ -715,8 +760,7 @@ function project_bug_list($args)
 				.$bugs[$i]['id'].'</a>';
 		$bugs[$i]['project'] = '<a href="index.php?module=project'
 				.'&amp;id='.$bugs[$i]['project_id'].'">'
-				._html_safe($bugs[$i]['project'])
-				.'</a>';
+				._html_safe($bugs[$i]['project']).'</a>';
 		$bugs[$i]['date'] = date('d/m/Y H:i',
 				strtotime(substr($bugs[$i]['date'], 0, 19)));
 	}
@@ -724,8 +768,7 @@ function project_bug_list($args)
 	$link = 'index.php?module=project&action=bug_new'.(isset($project_id)
 			? '&project_id='.$project_id : '');
 	$toolbar[] = array('icon' => 'modules/project/bug.png',
-		'title' => REPORT_A_BUG,
-		'link' => $link);
+		'title' => REPORT_A_BUG, 'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
 			'class' => array('nb' => '#',
 					'project' => PROJECT,
@@ -764,7 +807,7 @@ function project_bug_modify($args)
 	if(!is_array($bug) || count($bug) != 1)
 		return _error(INVALID_ARGUMENT);
 	$bug = $bug[0];
-	$title = 'Modification of bug #'.$bug['id'].': '.$bug['title'];
+	$title = MODIFICATION_OF_BUG_HASH.$bug['id'].': '.$bug['title'];
 	include('bug_update.tpl');
 }
 
