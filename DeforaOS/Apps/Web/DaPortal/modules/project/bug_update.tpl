@@ -8,8 +8,8 @@
 	<input type="hidden" name="bug_id" value="<? echo _html_safe($bug['id']); ?>"/>
 <? } ?>
 	<table>
-		<tr><td class="field"><? echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<? echo _html_safe($bug['title']); ?>" size="80"/></td></tr>
-		<tr><td class="field"><? echo _html_safe(DESCRIPTION); ?>:</td><td><textarea name="content" cols="80" rows="10"><? echo _html_safe($bug['content']); ?></textarea></td></tr>
+		<tr><td class="field"><? echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<? echo _html_safe($bug['title']); ?>" size="50"/></td></tr>
+		<tr><td class="field"><? echo _html_safe(DESCRIPTION); ?>:</td><td><textarea name="content" cols="50" rows="10"><? echo _html_safe($bug['content']); ?></textarea></td></tr>
 <? if(isset($bug)) { ?>
 		<tr><td class="field">State:</td><td><select name="state">
 <? $states = array('New', 'Assigned', 'Closed', 'Fixed', 'Implemented');

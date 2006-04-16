@@ -13,7 +13,6 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['CVS_PATH'] = 'CVS path';
-$text['INVALID_BUG'] = 'Invalid bug';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
 $text['NEW_PROJECT'] = 'New project';
@@ -24,6 +23,7 @@ $text['PROJECT_LIST'] = 'Project list';
 $text['PROJECT_NAME'] = 'Project name';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
+$text['REPLY_TO_BUG'] = 'Reply to bug';
 $text['REPORT_A_BUG'] = 'Report a bug';
 $text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['STATE'] = 'State';
@@ -513,8 +513,10 @@ function _file_csrc($line)
 
 function project_bug_display($args)
 {
+	global $user_id;
+
 	if(!is_numeric($args['id']))
-		return _error(INVALID_BUG);
+		return _error(INVALID_ARGUMENT);
 	$bug = _sql_array('SELECT daportal_content.content_id AS content_id'
 			.', daportal_project.project_id AS project_id'
 			.', daportal_user.user_id AS user_id'
@@ -534,7 +536,28 @@ function project_bug_display($args)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
+	require_once('system/user.php');
+	$admin = _user_admin($user_id) ? 1 : 0;
 	include('bug_display.tpl');
+	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
+			.', state, type, priority, daportal_user.user_id'
+			.', username'
+			.' FROM daportal_bug_reply, daportal_content'
+			.', daportal_user'
+			.' WHERE daportal_bug_reply.content_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND daportal_content.enabled='1'"
+			." AND (daportal_user.enabled='1' OR daportal_user.user_id='0')"
+			." AND daportal_bug_reply.bug_id='".$bug['id']."';");
+	if(!is_array($replies))
+		return _error('Unable to display bug feedback');
+	$cnt = count($replies);
+	for($i = 0; $i < $cnt; $i++)
+	{
+		$reply = $replies[$i];
+		include('bug_reply_display.tpl');
+	}
 }
 
 
@@ -721,7 +744,7 @@ function project_bug_modify($args)
 			.'=daportal_content.content_id'
 			." AND bug_id='".$args['id']."';");
 	if(!is_array($bug) || count($bug) != 1)
-		return _error(INVALID_BUG);
+		return _error(INVALID_ARGUMENT);
 	$bug = $bug[0];
 	$title = 'Modification of bug #'.$bug['id'].': '.$bug['title'];
 	include('bug_update.tpl');
@@ -736,6 +759,53 @@ function project_bug_new($args)
 	$title = REPORT_BUG_FOR.' '.$project;
 	$project_id = $args['project_id'];
 	include('bug_update.tpl');
+}
+
+
+function project_bug_reply($args)
+{
+	global $user_id;
+
+	$bug = _sql_array('SELECT daportal_content.content_id AS content_id'
+			.', daportal_project.project_id AS project_id'
+			.', daportal_user.user_id AS user_id'
+			.', daportal_bug.bug_id AS id, timestamp, title'
+			.', content, name AS project, username'
+			.', state, type, priority'
+			.' FROM daportal_content, daportal_bug, daportal_user'
+			.', daportal_project'
+			." WHERE daportal_content.enabled='t'"
+			.' AND daportal_content.content_id'
+			.'=daportal_bug.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' AND daportal_project.project_id'
+			.'=daportal_bug.project_id'
+			." AND bug_id='".$args['id']."';");
+	if(!is_array($bug) || count($bug) != 1)
+		return _error('Unable to display bug', 1);
+	$bug = $bug[0];
+	$title = REPLY_TO_BUG.' #'.$bug['id'].': '.$bug['title'];
+	require_once('system/user.php');
+	$admin = _user_admin($user_id) ? 1 : 0;
+	include('bug_display.tpl');
+	include('bug_reply_update.tpl');
+}
+
+
+function project_bug_reply_insert($args)
+{
+	global $user_id;
+
+	/* FIXME */
+	require_once('system/content.php');
+	if(($id = _content_insert($args['title'], $args['content'], 1))
+			== FALSE)
+		return _error('Unable to insert bug reply');
+	_sql_query('INSERT INTO daportal_bug_reply (content_id, bug_id)'
+			.' VALUES '
+			." ('$id', '".$args['id']."');");
+	/* FIXME insert updates */
+	project_bug_display(array('id' => $args['id']));
 }
 
 
