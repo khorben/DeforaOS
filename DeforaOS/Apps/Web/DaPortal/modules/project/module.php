@@ -25,10 +25,13 @@ $text['PROJECT_LIST'] = 'Project list';
 $text['PROJECT_NAME'] = 'Project name';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
+$text['REPLY_BY'] = 'Reply by';
+$text['REPLY_ON'] = 'on';
 $text['REPLY_TO_BUG'] = 'Reply to bug';
 $text['REPORT_A_BUG'] = 'Report a bug';
 $text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['STATE'] = 'State';
+$text['SUBMITTER'] = 'Submitter';
 $text['STATE_CHANGED_TO'] = 'State changed to';
 $text['TYPE_CHANGED_TO'] = 'Type changed to';
 $text['TIMELINE'] = 'Timeline';
@@ -547,6 +550,7 @@ function project_bug_display($args)
 	$admin = _user_admin($user_id) ? 1 : 0;
 	include('bug_display.tpl');
 	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
+			.', timestamp AS date'
 			.', state, type, priority, daportal_user.user_id'
 			.', username, assigned AS assigned_id'
 			.' FROM daportal_bug_reply, daportal_content'
@@ -563,6 +567,8 @@ function project_bug_display($args)
 	$cnt = count($replies);
 	for($i = 0; $i < $cnt; $i++)
 	{
+		$replies[$i]['date'] = strftime(DATE_FORMAT,
+				strtotime(substr($replies[$i]['date'], 0, 19)));
 		$reply = $replies[$i];
 		$reply['assigned'] = _sql_single('SELECT username'
 				.' FROM daportal_user'
