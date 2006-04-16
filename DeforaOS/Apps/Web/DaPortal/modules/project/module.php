@@ -10,6 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text['ASSIGNED_TO'] = 'Assigned to';
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['CVS_PATH'] = 'CVS path';
@@ -18,6 +19,7 @@ $text['MEMBERS'] = 'Members';
 $text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
+$text['PRIORITY_CHANGED_TO'] = 'Priority changed to';
 $text['PROJECT'] = 'Project';
 $text['PROJECT_LIST'] = 'Project list';
 $text['PROJECT_NAME'] = 'Project name';
@@ -27,6 +29,8 @@ $text['REPLY_TO_BUG'] = 'Reply to bug';
 $text['REPORT_A_BUG'] = 'Report a bug';
 $text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['STATE'] = 'State';
+$text['STATE_CHANGED_TO'] = 'State changed to';
+$text['TYPE_CHANGED_TO'] = 'Type changed to';
 $text['TIMELINE'] = 'Timeline';
 global $lang;
 if($lang == 'de')
@@ -475,22 +479,25 @@ function _file_csrc($line)
 	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
 			'<span class="string">\1</span>',
 			$line);
+	$line = preg_replace("/('(\\\\?.|[^'])')/",
+			'<span class="character">\1</span>',
+			$line);
 	if($line[0] == '#')
 	{
 		$line = '<span class="preprocessed">'.substr($line, 0, -1)
 			.'</span>'."\n";
 		return $line;
 	}
-	$line = preg_replace('/(^|[^a-zA-Z0-9])(break|case|continue|default'
+	$line = preg_replace('/(^|[^a-zA-Z0-9_])(break|case|continue|default'
 				.'|do|else|for|if|return|switch'
 				.'|until|while'
-				.')($|[^a-zA-Z0-9])/',
+				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="keyword">\2</span>\3', $line);
-	$line = preg_replace('/(^|[^a-zA-Z0-9])('
-				.'char|double|FILE|float|int'
+	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
+				.'char|DIR|double|FILE|float|int'
 				.'|long|short|signed|static'
 				.'|struct|typedef|unsigned|void'
-				.')($|[^a-zA-Z0-9])/',
+				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="type">\2</span>\3', $line);
 	/* FIXME fails on quoted strings, use prefix.line.suffix to escape hl */
 	if($comment == 0 && strstr($line, '/*'))
@@ -541,14 +548,15 @@ function project_bug_display($args)
 	include('bug_display.tpl');
 	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
 			.', state, type, priority, daportal_user.user_id'
-			.', username'
+			.', username, assigned AS assigned_id'
 			.' FROM daportal_bug_reply, daportal_content'
 			.', daportal_user'
 			.' WHERE daportal_bug_reply.content_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			." AND daportal_content.enabled='1'"
-			." AND (daportal_user.enabled='1' OR daportal_user.user_id='0')"
+			." AND (daportal_user.enabled='1'"
+			." OR daportal_user.user_id='0')"
 			." AND daportal_bug_reply.bug_id='".$bug['id']."';");
 	if(!is_array($replies))
 		return _error('Unable to display bug feedback');
@@ -556,6 +564,10 @@ function project_bug_display($args)
 	for($i = 0; $i < $cnt; $i++)
 	{
 		$reply = $replies[$i];
+		$reply['assigned'] = _sql_single('SELECT username'
+				.' FROM daportal_user'
+				." WHERE enabled='1'"
+				." AND user_id='".$reply['assigned_id']."';");
 		include('bug_reply_display.tpl');
 	}
 }
@@ -788,6 +800,7 @@ function project_bug_reply($args)
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	include('bug_display.tpl');
+	$reply['title'] = 'Re: '.$bug['title'];
 	include('bug_reply_update.tpl');
 }
 
