@@ -3,7 +3,7 @@
 	<input type="hidden" name="action" value="bug_list"/>
 	<table>
 		<tr><td class="field"><? echo _html_safe(PROJECT_NAME); ?>:</td><td><input type="text" name="project" value="<? echo _html_safe(stripslashes($args['project'])); ?>" size="20"/></td>
-		<td class="field">Submitter:</td><td><input type="text" name="username" value="<? echo _html_safe(stripslashes($args['username'])); ?>" size="20"/></td></tr>
+		<td class="field"><? echo _html_safe(SUBMITTER); ?>:</td><td><input type="text" name="username" value="<? echo _html_safe(stripslashes($args['username'])); ?>" size="20"/></td></tr>
 		<tr><td class="field"><? echo _html_safe(STATE); ?>:</td><td><select name="state">
 				<option value=""<? if($args['state'] == '') { ?> selected="selected"<? } ?>>All</option>
 <? $states = array('New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
@@ -25,6 +25,6 @@ foreach($priorities as $p) { ?>
 				<option value="<? echo _html_safe($p); ?>"<? if($args['priority'] == $p) { ?> selected="selected"<? } ?>><? echo _html_safe($p); ?></option>
 <? } ?>
 			</select></td>
-		<td></td><td><input type="submit" value="Filter"/></td></tr>
+		<td></td><td><input type="submit" value="<? echo _html_safe(FILTER); ?>"/></td></tr>
 	</table>
 </form>
