@@ -1,5 +1,4 @@
-<?php
-//modules/search/module.php
+<?php //modules/search/module.php
 
 
 
