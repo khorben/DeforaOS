@@ -203,6 +203,8 @@ function news_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 		return _list_user($args['user_id'], $username);
+	print('<h1><img src="modules/news/icon.png" alt=""/> '._html_safe(NEWS)
+			.'</h1>'."\n");
 	$sql = ' FROM daportal_content, daportal_user'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_content.enabled='1'"
@@ -214,8 +216,6 @@ function news_list($args)
 	$cnt = _sql_single('SELECT COUNT(*)'.$sql);
 	$pages = ceil($cnt / $npp);
 	$page = min($page, $pages);
-	print('<h1><img src="modules/news/icon.png" alt=""/> '._html_safe(NEWS)
-			.'</h1>'."\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 			.', daportal_content.enabled, daportal_content.user_id'
 			.', username'.$sql
