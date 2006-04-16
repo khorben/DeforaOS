@@ -536,7 +536,7 @@ function _file_php($line)
 			'<span class="string">\1</span>', $line);
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])(break|case|continue|default'
 				.'|do|else|for|foreach|if|return|switch'
-				.'|until|while'
+				.'|until|while|=&gt;|&amp;&amp;|\|\|'
 				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="keyword">\2</span>\3', $line);
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
