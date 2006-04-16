@@ -101,8 +101,8 @@ CREATE TABLE daportal_project (
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
 );
 CREATE TABLE daportal_project_user (
-	project_id serial NOT NULL,
-	user_id serial NOT NULL,
+	project_id SERIAL NOT NULL,
+	user_id SERIAL NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
@@ -117,6 +117,18 @@ CREATE TABLE daportal_bug (
 	PRIMARY KEY (bug_id),
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id)
+);
+CREATE TABLE daportal_bug_reply (
+	bug_reply_id SERIAL UNIQUE,
+	content_id SERIAL UNIQUE,
+	bug_id SERIAL,
+	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented')),
+	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')),
+	priority VARCHAR(6) CHECK (priority IN ('Urgent', 'High', 'Medium', 'Low')),
+	assigned INTEGER,
+	PRIMARY KEY (bug_reply_id),
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (bug_id) REFERENCES daportal_bug (bug_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('9', 'cvsroot', '');
