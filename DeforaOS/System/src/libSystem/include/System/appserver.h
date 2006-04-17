@@ -2,8 +2,8 @@
 
 
 
-#ifndef _APPSERVER_H
-# define _APPSERVER_H
+#ifndef _APPSERVER_H_
+# define _APPSERVER_H_
 
 # include "event.h"
 
@@ -26,4 +26,4 @@ void appserver_delete(AppServer * appserver);
 /* useful */
 int appserver_loop(AppServer * appserver);
 
-#endif /* !_APPSERVER_H */
+#endif /* !_APPSERVER_H_ */

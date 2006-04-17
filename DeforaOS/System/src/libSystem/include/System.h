@@ -2,8 +2,8 @@
 
 
 
-#ifndef _SYSTEM_H
-# define _SYSTEM_H
+#ifndef _SYSTEM_H_
+# define _SYSTEM_H_
 
 
 # include "System/appclient.h"
@@ -13,4 +13,4 @@
 # include "System/event.h"
 # include "System/string.h"
 
-#endif /* !_SYSTEM_H */
+#endif /* !_SYSTEM_H_ */

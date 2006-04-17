@@ -2,8 +2,8 @@
 
 
 
-#ifndef _APPCLIENT_H
-# define _APPCLIENT_H
+#ifndef _APPCLIENT_H_
+# define _APPCLIENT_H_
 
 # include "event.h"
 
@@ -21,4 +21,4 @@ void appclient_delete(AppClient * appclient);
 /* useful */
 int appclient_call(AppClient * appclient, char * function, int args_cnt, ...);
 
-#endif /* !_APPCLIENT_H */
+#endif /* !_APPCLIENT_H_ */

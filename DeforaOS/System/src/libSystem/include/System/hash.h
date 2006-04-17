@@ -2,8 +2,8 @@
 
 
 
-#ifndef _HASH_H
-# define _HASH_H
+#ifndef _HASH_H_
+# define _HASH_H_
 
 # include "array.h"
 
@@ -24,4 +24,4 @@ void * hash_get(Hash * h, char const * name);
 int hash_set(Hash * h, char const * name, void * data);
 
 
-#endif /* !_HASH_H */
+#endif /* !_HASH_H_ */

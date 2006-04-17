@@ -2,8 +2,8 @@
 
 
 
-#ifndef _BUFFER_H
-# define _BUFFER_H
+#ifndef _BUFFER_H_
+# define _BUFFER_H_
 
 
 /* Buffer */
@@ -20,4 +20,4 @@ void buffer_delete(Buffer * buffer);
 char * buffer_data(Buffer const * buffer);
 unsigned int buffer_length(Buffer const * buffer);
 
-#endif /* !_BUFFER_H */
+#endif /* !_BUFFER_H_ */

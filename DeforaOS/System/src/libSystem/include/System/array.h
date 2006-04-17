@@ -2,8 +2,8 @@
 
 
 
-#ifndef _ARRAY_H
-# define _ARRAY_H
+#ifndef _ARRAY_H_
+# define _ARRAY_H_
 
 
 # define ARRAY(type, name) \
@@ -35,4 +35,4 @@ int array_get_copy(Array * array, unsigned int pos, void * data);
 int array_remove_pos(Array * array, unsigned int pos);
 int array_set(Array * array, unsigned int pos, void * data);
 
-#endif /* !_ARRAY_H */
+#endif /* !_ARRAY_H_ */
