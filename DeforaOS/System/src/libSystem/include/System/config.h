@@ -2,8 +2,8 @@
 
 
 
-#ifndef _CONFIG_H_
-# define _CONFIG_H_
+#ifndef LIBSYSTEM_CONFIG_H
+# define LIBSYSTEM_CONFIG_H
 
 # include "hash.h"
 
@@ -25,4 +25,4 @@ int config_set(Config * config, char const * section, char const * variable,
 int config_load(Config * config, char const * filename);
 int config_save(Config * config, char const * filename);
 
-#endif /* !_CONFIG_H_ */
+#endif /* !LIBSYSTEM_CONFIG_H */

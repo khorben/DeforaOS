@@ -2,8 +2,8 @@
 
 
 
-#ifndef _APPCLIENT_H_
-# define _APPCLIENT_H_
+#ifndef LIBSYSTEM_APPCLIENT_H
+# define LIBSYSTEM_APPCLIENT_H
 
 # include "event.h"
 
@@ -21,4 +21,4 @@ void appclient_delete(AppClient * appclient);
 /* useful */
 int appclient_call(AppClient * appclient, char * function, int args_cnt, ...);
 
-#endif /* !_APPCLIENT_H_ */
+#endif /* !LIBSYSTEM_APPCLIENT_H */

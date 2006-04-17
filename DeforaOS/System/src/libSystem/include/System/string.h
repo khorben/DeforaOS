@@ -2,8 +2,8 @@
 
 
 
-#ifndef _STRING_H_
-# define _STRING_H_
+#ifndef LIBSYSTEM_STRING_H
+# define LIBSYSTEM_STRING_H
 
 
 /* String */
@@ -21,4 +21,4 @@ void string_cut(String * string, unsigned int length);
 String const * string_find(String const * string, String const * key);
 int string_length(String const * string);
 
-#endif /* !_STRING_H_ */
+#endif /* !LIBSYSTEM_STRING_H */

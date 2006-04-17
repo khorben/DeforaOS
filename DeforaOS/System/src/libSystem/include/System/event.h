@@ -2,8 +2,8 @@
 
 
 
-#ifndef _EVENT_H_
-# define _EVENT_H_
+#ifndef LIBSYSTEM_EVENT_H
+# define LIBSYSTEM_EVENT_H
 
 # include <sys/time.h>
 # include <time.h>
@@ -33,4 +33,4 @@ int event_unregister_io_read(Event * event, int fd);
 int event_unregister_io_write(Event * event, int fd);
 int event_unregister_timeout(Event * event, EventTimeoutFunc func);
 
-#endif /* !_EVENT_H_ */
+#endif /* !LIBSYSTEM_EVENT_H */

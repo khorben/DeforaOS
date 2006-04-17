@@ -2,8 +2,8 @@
 
 
 
-#ifndef _SYSTEM_H_
-# define _SYSTEM_H_
+#ifndef LIBSYSTEM_SYSTEM_H
+# define LIBSYSTEM_SYSTEM_H
 
 
 # include "System/appclient.h"
@@ -13,4 +13,4 @@
 # include "System/event.h"
 # include "System/string.h"
 
-#endif /* !_SYSTEM_H_ */
+#endif /* !LIBSYSTEM_SYSTEM_H */

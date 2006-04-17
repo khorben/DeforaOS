@@ -2,8 +2,8 @@
 
 
 
-#ifndef _HASH_H_
-# define _HASH_H_
+#ifndef LIBSYSTEM_HASH_H
+# define LIBSYSTEM_HASH_H
 
 # include "array.h"
 
@@ -24,4 +24,4 @@ void * hash_get(Hash * h, char const * name);
 int hash_set(Hash * h, char const * name, void * data);
 
 
-#endif /* !_HASH_H_ */
+#endif /* !LIBSYSTEM_HASH_H */

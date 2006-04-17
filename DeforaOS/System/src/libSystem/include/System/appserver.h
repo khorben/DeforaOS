@@ -2,8 +2,8 @@
 
 
 
-#ifndef _APPSERVER_H_
-# define _APPSERVER_H_
+#ifndef LIBSYSTEM_APPSERVER_H
+# define LIBSYSTEM_APPSERVER_H
 
 # include "event.h"
 
@@ -26,4 +26,4 @@ void appserver_delete(AppServer * appserver);
 /* useful */
 int appserver_loop(AppServer * appserver);
 
-#endif /* !_APPSERVER_H_ */
+#endif /* !LIBSYSTEM_APPSERVER_H */

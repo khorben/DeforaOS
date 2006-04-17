@@ -2,8 +2,8 @@
 
 
 
-#ifndef _ARRAY_H_
-# define _ARRAY_H_
+#ifndef LIBSYSTEM_ARRAY_H
+# define LIBSYSTEM_ARRAY_H
 
 
 # define ARRAY(type, name) \
@@ -35,4 +35,4 @@ int array_get_copy(Array * array, unsigned int pos, void * data);
 int array_remove_pos(Array * array, unsigned int pos);
 int array_set(Array * array, unsigned int pos, void * data);
 
-#endif /* !_ARRAY_H_ */
+#endif /* !LIBSYSTEM_ARRAY_H */

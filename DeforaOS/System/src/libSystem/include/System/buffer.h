@@ -2,8 +2,8 @@
 
 
 
-#ifndef _BUFFER_H_
-# define _BUFFER_H_
+#ifndef LIBSYSTEM_BUFFER_H
+# define LIBSYSTEM_BUFFER_H
 
 
 /* Buffer */
@@ -20,4 +20,4 @@ void buffer_delete(Buffer * buffer);
 char * buffer_data(Buffer const * buffer);
 unsigned int buffer_length(Buffer const * buffer);
 
-#endif /* !_BUFFER_H_ */
+#endif /* !LIBSYSTEM_BUFFER_H */
