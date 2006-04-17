@@ -6,28 +6,27 @@
 <? } else { ?>
 	<input type="hidden" name="id" value="<? echo $reply['id']; ?>"/>
 <? } ?>
-	<hr/>
 	<table>
 		<tr><td class="field">Title:</td><td colspan="3"><input type="text" name="title" value="<? echo _html_safe($reply['title']); ?>" size="50"/></td></tr>
 <? if($admin) { ?>
 		<tr><td class="field">State:</td><td><select name="state">
-<? $states = array('New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
+<? $states = array('', 'New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
 foreach($states as $s) { ?>
-				<option value="<? echo _html_safe($s); ?>"<? if($bug['state'] == $s) { ?> selected="selected"<? } ?>><? echo _html_safe($s); ?></option>
+				<option value="<? echo _html_safe($s); ?>"<? if($reply['state'] == $s) { ?> selected="selected"<? } ?>><? echo _html_safe($s); ?></option>
 <? } ?>
 			</select></td>
 		<td class="field">Type:</td><td><select name="type">
-<? $types = array('Major', 'Minor', 'Functionality', 'Feature');
+<? $types = array('', 'Major', 'Minor', 'Functionality', 'Feature');
 foreach($types as $t) { ?>
-				<option value="<? echo _html_safe($t); ?>"<? if($bug['type'] == $t) { ?> selected="selected"<? } ?>><? echo _html_safe($t); ?></option>
+				<option value="<? echo _html_safe($t); ?>"<? if($reply['type'] == $t) { ?> selected="selected"<? } ?>><? echo _html_safe($t); ?></option>
 <? } ?>
 			</select></td></tr>
 		<tr><td class="field">Priority:</td><td><select name="priority">
-<? $priorities = array('Urgent', 'High', 'Medium', 'Low');
+<? $priorities = array('', 'Urgent', 'High', 'Medium', 'Low');
 foreach($priorities as $p) { ?>
-				<option value="<? echo _html_safe($p); ?>"<? if($bug['priority'] == $p) { ?> selected="selected"<? } ?>><? echo _html_safe($p); ?></option>
+				<option value="<? echo _html_safe($p); ?>"<? if($reply['priority'] == $p) { ?> selected="selected"<? } ?>><? echo _html_safe($p); ?></option>
 <? } ?>
-			</select></td><td></td></tr>
+			</select></td><td class="field"><? echo _html_safe(ASSIGNED_TO); ?>:</td><td><? echo _html_safe($reply['assigned']); ?></td></tr>
 <? } /* FIXME re-assign */ ?>
 		<tr><td class="field">Description:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><? echo _html_safe($reply['content']); ?></textarea></td></tr>
 		<tr><td></td><td><input type="submit" value="<? echo _html_safe(isset($reply['id']) ? UPDATE : SEND); ?>"/></td></tr>

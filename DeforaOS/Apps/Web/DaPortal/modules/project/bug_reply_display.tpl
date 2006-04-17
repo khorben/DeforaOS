@@ -15,4 +15,7 @@
 <? if(isset($reply['priority'])) { ?>
 	<div class="status"><? echo _html_safe(PRIORITY_CHANGED_TO.' "'.$reply['priority'].'"'); ?></div>
 <? } ?>
+<? if($admin) { ?>
+	<div><a href="index.php?module=project&amp;action=bug_reply_modify&amp;id=<? echo _html_safe_link($reply['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <? echo _html_safe(EDIT); ?></a></div>
+<? } ?>
 </div>

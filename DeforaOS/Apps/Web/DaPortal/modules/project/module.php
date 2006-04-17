@@ -17,6 +17,7 @@ $text['CVS_PATH'] = 'CVS path';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
 $text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
+$text['MODIFICATION_OF_REPLY_TO_BUG_HASH'] = 'Modification of reply to bug #';
 $text['NEW_PROJECT'] = 'New project';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
@@ -616,10 +617,12 @@ function project_bug_display($args)
 		$replies[$i]['date'] = strftime(DATE_FORMAT,
 				strtotime(substr($replies[$i]['date'], 0, 19)));
 		$reply = $replies[$i];
-		$reply['assigned'] = _sql_single('SELECT username'
+		$reply['assigned'] = is_numeric($reply['assigned_id'])
+			? _sql_single('SELECT username'
 				.' FROM daportal_user'
 				." WHERE enabled='1'"
-				." AND user_id='".$reply['assigned_id']."';");
+				." AND user_id='".$reply['assigned_id']."';")
+			: '';
 		include('bug_reply_display.tpl');
 	}
 }
@@ -866,8 +869,73 @@ function project_bug_reply_insert($args)
 	_sql_query('INSERT INTO daportal_bug_reply (content_id, bug_id)'
 			.' VALUES '
 			." ('$id', '".$args['id']."');");
-	/* FIXME insert updates */
+	/* FIXME insert updates as well if allowed */
 	project_bug_display(array('id' => $args['id']));
+}
+
+
+function project_bug_reply_modify($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$admin = 1;
+	$reply = _sql_array('SELECT bug_reply_id AS id, bug_id, title, content'
+			.', timestamp AS date'
+			.', state, type, priority, daportal_user.user_id'
+			.', username, assigned AS assigned_id'
+			.' FROM daportal_bug_reply, daportal_content'
+			.', daportal_user'
+			.' WHERE daportal_bug_reply.content_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND daportal_content.enabled='1'"
+			." AND (daportal_user.enabled='1'"
+			." OR daportal_user.user_id='0')"
+			." AND bug_reply_id='".$args['id']."';");
+	if(!is_array($reply) || count($reply) != 1)
+		return _error('Unable to modify bug feedback');
+	$reply = $reply[0];
+	print('<h1><img src="modules/project/bug.png" alt=""/> '
+			._html_safe(MODIFICATION_OF_REPLY_TO_BUG_HASH
+				.$reply['bug_id'].': '.$reply['title'])
+			.'</h1>'."\n");
+	$reply['assigned'] = _sql_single('SELECT username'
+			.' FROM daportal_user'
+			." WHERE enabled='1'"
+			." AND user_id='".$reply['assigned_id']."';");
+	include('bug_reply_update.tpl');
+}
+
+
+function project_bug_reply_update($args)
+{
+	global $user_id;
+
+	require_once('system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(!($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
+			." WHERE bug_reply_id='".$args['id']."';")))
+		return _error(INVALID_ARGUMENT);
+	if(!($bug_id = _sql_single('SELECT bug_id FROM daportal_bug_reply'
+			." WHERE bug_reply_id='".$args['id']."';")))
+		return _error(INVALID_ARGUMENT);
+	_sql_query('UPDATE daportal_content SET'
+			." title='".$args['title']."'"
+			.", content='".$args['content']."'"
+			." WHERE content_id='$id';");
+	$sql = ' state='.(strlen($args['state']) ? "'".$args['state']."'"
+			: 'NULL');
+	$sql .= ', type='.(strlen($args['type']) ? "'".$args['type']."'"
+			: 'NULL');
+	$sql .= ', priority='.(strlen($args['priority'])
+			? "'".$args['priority']."'" : 'NULL');
+	_sql_query('UPDATE daportal_bug_reply SET'.$sql
+			." WHERE bug_reply_id='".$args['id']."';");
+	project_bug_display(array('id' => $bug_id));
 }
 
 
