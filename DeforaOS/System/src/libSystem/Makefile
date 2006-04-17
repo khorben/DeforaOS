@@ -2,7 +2,7 @@ PACKAGE	= libSystem
 VERSION	= 0.0.0
 SUBDIRS	= src include
 LN	= ln -sf
-TAR	= tar cfzv
+TAR	= tar -czvf
 
 
 all: subdirs
@@ -20,17 +20,6 @@ dist:
 	$(RM) $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		$(PACKAGE)-$(VERSION)/include/System.h \
-		$(PACKAGE)-$(VERSION)/include/appclient.h \
-		$(PACKAGE)-$(VERSION)/include/appserver.h \
-		$(PACKAGE)-$(VERSION)/include/array.h \
-		$(PACKAGE)-$(VERSION)/include/buffer.h \
-		$(PACKAGE)-$(VERSION)/include/config.h \
-		$(PACKAGE)-$(VERSION)/include/event.h \
-		$(PACKAGE)-$(VERSION)/include/hash.h \
-		$(PACKAGE)-$(VERSION)/include/string.h \
-		$(PACKAGE)-$(VERSION)/include/project.conf \
-		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/src/appclient.c \
 		$(PACKAGE)-$(VERSION)/src/appinterface.c \
 		$(PACKAGE)-$(VERSION)/src/appserver.c \
@@ -43,6 +32,20 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/appinterface.h  \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/include/System.h \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/System/System.h \
+		$(PACKAGE)-$(VERSION)/include/System/appclient.h \
+		$(PACKAGE)-$(VERSION)/include/System/appserver.h \
+		$(PACKAGE)-$(VERSION)/include/System/array.h \
+		$(PACKAGE)-$(VERSION)/include/System/buffer.h \
+		$(PACKAGE)-$(VERSION)/include/System/config.h \
+		$(PACKAGE)-$(VERSION)/include/System/event.h \
+		$(PACKAGE)-$(VERSION)/include/System/hash.h \
+		$(PACKAGE)-$(VERSION)/include/System/string.h \
+		$(PACKAGE)-$(VERSION)/include/System/project.conf \
+		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile
 	$(RM) $(PACKAGE)-$(VERSION)
