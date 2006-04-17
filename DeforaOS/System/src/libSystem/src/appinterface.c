@@ -11,10 +11,10 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <string.h>
 #include <dlfcn.h>
 
-#include "buffer.h"
-#include "string.h"
+#include "System.h"
 #include "appinterface.h"
 
 

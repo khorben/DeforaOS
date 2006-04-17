@@ -7,14 +7,12 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
+#include <string.h>
 #include <netdb.h>
 
-#include "string.h"
+#include "System.h"
 #include "appinterface.h"
-#include "appclient.h"
 
 
 /* AppClient */

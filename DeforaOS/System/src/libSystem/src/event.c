@@ -12,8 +12,7 @@
 # include <stdio.h>
 #endif
 
-#include "array.h"
-#include "event.h"
+#include "System.h"
 
 #define max(a, b) ((a) >= (b)) ? (a) : (b)
 

@@ -9,11 +9,10 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+# include <string.h>
 
-#include "array.h"
-#include "string.h"
+#include "System.h"
 #include "appinterface.h"
-#include "appserver.h"
 
 
 /* AppServerClient */
