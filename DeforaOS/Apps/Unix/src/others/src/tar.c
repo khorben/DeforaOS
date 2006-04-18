@@ -158,10 +158,10 @@ static int _create_do(Prefs * prefs, FILE * fp, char * archive,
 		char * filename);
 static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
 {
-	FILE * fp;
+	FILE * fp = stdout;
 	int i;
 
-	if((fp = fopen(archive, "w")) == NULL)
+	if(archive != NULL && (fp = fopen(archive, "w")) == NULL)
 		return _tar_error(archive, 1);
 	for(i = 0; i < filec; i++)
 		if(_create_do(prefs, fp, archive, filev[i]) != 0)
@@ -172,7 +172,8 @@ static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
 		return 1;
 	}
 	for(i = 0; i < TAR_BLKSIZ * 2 && fputc('\0', fp) == '\0'; i++);
-	fclose(fp);
+	if(archive != NULL)
+		fclose(fp);
 	return i == TAR_BLKSIZ * 2 ? 0 : 1;
 }
 
@@ -259,13 +260,13 @@ static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
 static int _tar_extract(Prefs * prefs, char * archive, int filec,
 		char * filev[])
 {
-	FILE * fp;
+	FILE * fp = stdin; /* FIXME breaks fseek */
 	TarFileHeaderBuffer fhdrb;
 	TarFileHeader fhdr;
 	size_t size;
 	int ret = 0;
 
-	if((fp = fopen(archive, "r")) == NULL)
+	if(archive != NULL && (fp = fopen(archive, "r")) == NULL)
 		return _tar_error(archive, 1);
 	while((size = fread(&fhdrb, sizeof(fhdrb), 1, fp)) == 1)
 	{
@@ -284,7 +285,8 @@ static int _tar_extract(Prefs * prefs, char * archive, int filec,
 	}
 	if(ret == 0 && size == 0 && !feof(fp))
 		ret = _tar_error(archive, 1);
-	fclose(fp);
+	if(archive != NULL)
+		fclose(fp);
 	return ret;
 }
 
@@ -410,7 +412,11 @@ static int _dox_skip(FILE * fp, char * archive, TarFileHeader * fh)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: tar -cvx archive [file...]\n");
+	fprintf(stderr, "%s", "Usage: tar -cvx [-f archive][file...]\n\
+  -c	Create an archive\n\
+  -f	Specify an archive to read from or write to (default: stdin or stdout)\n\
+  -v	Verbose mode\n\
+  -x	Extract from archive\n");
 	return 1;
 }
 
@@ -420,13 +426,17 @@ int main(int argc, char * argv[])
 {
 	int o;
 	Prefs prefs = 0;
+	char * archive = NULL;
 
-	while((o = getopt(argc, argv, "cvx")) != -1)
+	while((o = getopt(argc, argv, "cvxf:")) != -1)
 		switch(o)
 		{
 			case 'c':
 				prefs -= prefs & PREFS_x;
 				prefs |= PREFS_c;
+				break;
+			case 'f':
+				archive = optarg;
 				break;
 			case 'v':
 				prefs |= (prefs & PREFS_v) == PREFS_v
@@ -439,8 +449,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(prefs == 0 || argc == optind)
+	if(prefs == 0)
 		return _usage();
-	return _tar(&prefs, argv[optind], argc-optind-1, &argv[optind+1]) == 0
-		? 0 : 2;
+	return _tar(&prefs, archive, argc-optind-1, &argv[optind]) == 0 ? 0 : 2;
 }
