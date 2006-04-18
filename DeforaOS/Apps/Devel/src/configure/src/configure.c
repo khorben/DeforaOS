@@ -3,10 +3,13 @@
 
 
 #include <System.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "makefile.h"
 #include "configure.h"
 
@@ -16,7 +19,7 @@
 const String * sHostArch[HA_LAST+1] =
 {
 	"i386", "i486", "i586", "i686",
-	"sparc",
+	"sparc", "sparc64",
 	"unknown"
 };
 const String * sHostOS[HO_LAST+1] =
@@ -28,7 +31,7 @@ const String * sHostOS[HO_LAST+1] =
 const String * sHostKernel[HK_LAST+1] =
 {
 	"2.0", "2.2", "2.4", "2.6",
-	"2.0",
+	"2.0", "3.0",
 	"unknown"
 };
 
@@ -87,24 +90,25 @@ static int _configure(Prefs * prefs, char const * directory)
 	Configure cfgr;
 	configArray * ca;
 	int ret;
+	int flags = prefs->flags;
 	int i;
 	Config * p;
 
 	if((ca = configarray_new()) == NULL)
 		return configure_error("libSystem", 2);
-	cfgr.prefs = *prefs;
+	cfgr.prefs = prefs;
 	_configure_detect(&cfgr);
 	ret = _configure_load(prefs, directory, ca);
 	if(ret == 0)
 	{
-		if(*prefs & PREFS_n)
+		if(prefs->flags & PREFS_n)
 			ret = _configure_do(&cfgr, ca);
 		else
 		{
-			cfgr.prefs = PREFS_n;
+			prefs->flags = PREFS_n;
 			if(_configure_do(&cfgr, ca) == 0)
 			{
-				cfgr.prefs = *prefs;
+				prefs->flags = flags;
 				ret = _configure_do(&cfgr, ca);
 			}
 		}
@@ -136,7 +140,7 @@ static void _configure_detect(Configure * configure)
 	configure->os = enum_string(HO_LAST, sHostOS, un.sysname);
 	configure->kernel = enum_string_short(HK_LAST, sHostKernel,
 			un.release);
-	if(configure->prefs & PREFS_v)
+	if(configure->prefs->flags & PREFS_v)
 		printf("Detected system %s version %s on %s\n",
 				sHostOS[configure->os],
 				sHostKernel[configure->kernel],
@@ -164,7 +168,7 @@ static int _configure_load(Prefs * prefs, String const * directory,
 		return configure_error(directory, 1);
 	}
 	config_set(config, "", "directory", directory);
-	if(*prefs & PREFS_v)
+	if(prefs->flags & PREFS_v)
 		printf("%s%s%s", "Loading project file ", path, "\n");
 	if(config_load(config, path) != 0)
 		ret = configure_error(path, 1);
@@ -252,11 +256,20 @@ static int _configure_do(Configure * configure, configArray * ca)
 
 
 /* usage */
+static void _prefs_init(Prefs * prefs);
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: configure [-nv][directory]\n\
-  -n	do not actually write Makefiles\n\
-  -v	verbose mode\n");
+	Prefs prefs;
+
+	_prefs_init(&prefs);
+	fprintf(stderr, "%s%s%s%s%s%s%s",
+"Usage: configure [-nv][options...][directory]\n\
+  -n	Do not actually write Makefiles\n\
+  -v	Verbose mode\n\
+  -b	Binary files directory (default: \"", prefs.bindir, "\")\n\
+  -d	Destination prefix (default: \"\")\n\
+  -i	Include files directory (default: \"", prefs.includedir, "\")\n\
+  -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n");
 	return 1;
 }
 
@@ -264,17 +277,30 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs prefs = 0;
+	Prefs prefs;
 	int o;
 
-	while((o = getopt(argc, argv, "nv")) != -1)
+	_prefs_init(&prefs);
+	while((o = getopt(argc, argv, "d:i:np:v")) != -1)
 		switch(o)
 		{
+			case 'b':
+				prefs.bindir = optarg;
+				break;
+			case 'd':
+				prefs.destdir = optarg;
+				break;
+			case 'i':
+				prefs.includedir = optarg;
+				break;
 			case 'n':
-				prefs |= PREFS_n;
+				prefs.flags |= PREFS_n;
+				break;
+			case 'p':
+				prefs.prefix = optarg;
 				break;
 			case 'v':
-				prefs |= PREFS_v;
+				prefs.flags |= PREFS_v;
 				break;
 			case '?':
 				return _usage();
@@ -282,4 +308,22 @@ int main(int argc, char * argv[])
 	if(argc - optind > 1)
 		return _usage();
 	return _configure(&prefs, argc - optind == 1 ? argv[argc - 1] : ".");
+}
+
+static void _prefs_init(Prefs * prefs)
+{
+	struct stat st;
+
+	memset(prefs, 0, sizeof(Prefs));
+	prefs->destdir = "";
+	if(stat("/usr", &st) == 0) /* FIXME see below */
+	{
+		prefs->bindir = "bin";
+		prefs->includedir = "include";
+		prefs->prefix = "/usr/local";
+		return;
+	}
+	prefs->bindir = "Binaries";
+	prefs->includedir = "Include";
+	prefs->prefix = "/Apps"; /* FIXME detect System or Apps/x first */
 }

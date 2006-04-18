@@ -24,11 +24,12 @@ int makefile(Configure * configure, Config * config, String * directory,
 	makefile = string_new(directory);
 	string_append(&makefile, "/");
 	string_append(&makefile, MAKEFILE);
-	if(!(configure->prefs & PREFS_n) && (fp = fopen(makefile, "w")) == NULL)
+	if(!(configure->prefs->flags & PREFS_n)
+			&& (fp = fopen(makefile, "w")) == NULL)
 		ret = configure_error(makefile, 1);
 	else
 	{
-		if(configure->prefs & PREFS_v)
+		if(configure->prefs->flags & PREFS_v)
 			printf("%s%s%s%s%s", "Creating ", MAKEFILE, " in ",
 					directory, "\n");
 		ret |= _makefile_write(configure, config, fp, ca, from, to);
@@ -52,14 +53,14 @@ static int _makefile_write(Configure * configure, Config * config, FILE * fp,
 		configArray * ca, int from, int to)
 {
 	if(_write_variables(configure, config, fp) != 0
-			|| _write_targets(&configure->prefs, config, fp) != 0
-			|| _write_objects(&configure->prefs, config, fp) != 0
-			|| _write_clean(&configure->prefs, config, fp) != 0
-			|| _write_distclean(&configure->prefs, config, fp) != 0
-			|| _write_dist(&configure->prefs, config, fp, ca, from,
+			|| _write_targets(configure->prefs, config, fp) != 0
+			|| _write_objects(configure->prefs, config, fp) != 0
+			|| _write_clean(configure->prefs, config, fp) != 0
+			|| _write_distclean(configure->prefs, config, fp) != 0
+			|| _write_dist(configure->prefs, config, fp, ca, from,
 				to) != 0
-			|| _write_install(&configure->prefs, config, fp) != 0
-			|| _write_uninstall(&configure->prefs, config, fp) != 0)
+			|| _write_install(configure->prefs, config, fp) != 0
+			|| _write_uninstall(configure->prefs, config, fp) != 0)
 		return 1;
 	return 0;
 }
@@ -76,12 +77,12 @@ static int _write_variables(Configure * configure, Config * config, FILE * fp)
 	String const * directory = config_get(config, "", "directory");
 	int ret = 0;
 
-	ret |= _variables_package(&configure->prefs, config, fp, directory);
-	ret |= _variables_print(&configure->prefs, config, fp, "subdirs",
+	ret |= _variables_package(configure->prefs, config, fp, directory);
+	ret |= _variables_print(configure->prefs, config, fp, "subdirs",
 			"SUBDIRS");
-	ret |= _variables_targets(&configure->prefs, config, fp);
+	ret |= _variables_targets(configure->prefs, config, fp);
 	ret |= _variables_executables(configure, config, fp);
-	if(!(configure->prefs & PREFS_n))
+	if(!(configure->prefs->flags & PREFS_n))
 		fputc('\n', fp);
 	return ret;
 }
@@ -94,17 +95,17 @@ static int _variables_package(Prefs * prefs, Config * config, FILE * fp,
 
 	if((package = config_get(config, "", "package")) == NULL)
 		return 0;
-	if(*prefs & PREFS_v)
+	if(prefs->flags & PREFS_v)
 		printf("%s%s", "Package: ", package);
 	if((version = config_get(config, "", "version")) == NULL)
 	{
-		if(*prefs & PREFS_v)
+		if(prefs->flags & PREFS_v)
 			fputc('\n', stdout);
 		fprintf(stderr, "%s%s%s", "configure: ", directory,
 				": \"package\" needs \"version\"\n");
 		return 1;
 	}
-	if(*prefs & PREFS_v)
+	if(prefs->flags & PREFS_v)
 		printf("%s%s%s", " ", version, "\n");
 	if(fp != NULL)
 		fprintf(fp, "%s%s%s%s%s", "PACKAGE\t= ", package,
@@ -119,7 +120,7 @@ static int _variables_print(Prefs * prefs, Config * config, FILE * fp,
 	int i;
 	char c;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	if((prints = config_get(config, "", input)) == NULL)
 		return 0;
@@ -148,7 +149,7 @@ static int _variables_targets(Prefs * prefs, Config * config, FILE * fp)
 	char c;
 	String * type;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	if((prints = config_get(config, "", "targets")) == NULL)
 		return 0;
@@ -193,7 +194,7 @@ static int _variables_executables(Configure * configure, Config * config,
 	int i;
 	char c;
 
-	if(configure->prefs & PREFS_n)
+	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	if((targets = config_get(config, "", "targets")) != NULL)
 	{
@@ -267,10 +268,20 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 	/* FIXME path given from user or autodetected */
 	if(!done[TT_LIBRARY])
 	{
-		fprintf(fp, "%s", "PREFIX\t= /usr/local\n");
-		fprintf(fp, "%s", "DESTDIR\t=\n");
+		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
+		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
 	}
-	fprintf(fp, "%s", "BINDIR\t= $(PREFIX)/bin\n");
+	if(configure->prefs->bindir[0] == '/')
+		fprintf(fp, "%s%s\n", "BINDIR\t= ", configure->prefs->bindir);
+	else
+		fprintf(fp, "%s%s\n", "BINDIR\t= $(PREFIX)/",
+				configure->prefs->bindir);
+	if(configure->prefs->includedir[0] == '/')
+		fprintf(fp, "%s%s\n", "INCLUDEDIR= ",
+				configure->prefs->includedir);
+	else
+		fprintf(fp, "%s%s\n", "INCLUDEDIR= $(PREFIX)/",
+				configure->prefs->includedir);
 	if(!done[TT_LIBRARY])
 	{
 		fprintf(fp, "%s", "CC\t= cc\n");
@@ -288,6 +299,7 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 			fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
 					"\n");
 	}
+	/* FIXME remove -l dl and -l crypt on BSD, check on Solaris etc */
 	if((p = config_get(config, "", "ldflags_force"))
 			!= NULL)
 		fprintf(fp, "%s%s%s", "LDFLAGSF= ", p, "\n");
@@ -363,7 +375,7 @@ static int _write_targets(Prefs * prefs, Config * config, FILE * fp)
 
 static int _targets_all(Prefs * prefs, Config * config, FILE * fp)
 {
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s", "\nall:");
 	if(config_get(config, "", "subdirs") != NULL)
@@ -378,7 +390,7 @@ static int _targets_subdirs(Prefs * prefs, Config * config, FILE * fp)
 {
 	String * subdirs;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	if((subdirs = config_get(config, "", "subdirs")) != NULL)
 		fprintf(fp, "%s", "\nsubdirs:\n\t@for i in $(SUBDIRS); do"
@@ -419,7 +431,7 @@ static int _targets_target(Prefs * prefs, Config * config, FILE * fp,
 						" no sources for target\n");
 				return 1;
 			}
-			if(*prefs & PREFS_n)
+			if(prefs->flags & PREFS_n)
 				return 0;
 			fprintf(fp, "%s%s%s%s", target, ": ", p, "\n");
 			/* FIXME */
@@ -447,7 +459,7 @@ static int _target_objs(Prefs * prefs, Config * config, FILE * fp,
 				": no sources defined for target\n");
 		return 1;
 	}
-	if(!(*prefs & PREFS_n))
+	if(!(prefs->flags & PREFS_n))
 		fprintf(fp, "%s%s%s", "\n", target, "_OBJS =");
 	for(i = 0; ret == 0; i++)
 	{
@@ -462,7 +474,7 @@ static int _target_objs(Prefs * prefs, Config * config, FILE * fp,
 		sources+=i+1;
 		i = 0;
 	}
-	if(!(*prefs & PREFS_n))
+	if(!(prefs->flags & PREFS_n))
 		fputc('\n', fp);
 	return ret;
 }
@@ -485,7 +497,7 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 	{
 		case OT_ASM_SOURCE:
 		case OT_C_SOURCE:
-			if(*prefs & PREFS_n)
+			if(prefs->flags & PREFS_n)
 				break;
 			fprintf(fp, "%s%s%s", " ", source, ".o");
 			break;
@@ -506,15 +518,19 @@ static int _target_binary(Prefs * prefs, Config * config, FILE * fp,
 
 	if(_target_objs(prefs, config, fp, target) != 0)
 		return 1;
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
 	if((p = config_get(config, target, "cflags")) != NULL)
-		fprintf(fp, "%s%s", " ", p);
+		fprintf(fp, " %s", p);
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s", target, ": $(", target, "_OBJS)\n");
-	fprintf(fp, "%s%s%s%s%s", "\t$(CC) $(LDFLAGSF) $(LDFLAGS) -o ",
-			target, " $(", target, "_OBJS)\n");
+	fprintf(fp, "%s", "\t$(CC) $(LDFLAGSF)");
+	if((p = config_get(config, target, "ldflags_force")) != NULL)
+		fprintf(fp, " %s", p);
+	/* FIXME also find a way to add ldflags */
+	fprintf(fp, "%s%s%s%s%s", " $(LDFLAGS) -o ", target, " $(", target,
+			"_OBJS)\n");
 	return 0;
 }
 
@@ -525,7 +541,7 @@ static int _target_library(Prefs * prefs, Config * config, FILE * fp,
 
 	if(_target_objs(prefs, config, fp, target) != 0)
 		return 1;
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
 	if((p = config_get(config, target, "cflags")) != NULL)
@@ -612,7 +628,7 @@ static int _target_source(Prefs * prefs, Config * config, FILE * fp,
 	{
 		case OT_ASM_SOURCE:
 		case OT_C_SOURCE:
-			if(*prefs & PREFS_n)
+			if(prefs->flags & PREFS_n)
 				break;
 			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
 					source, ".", sObjectType[ot]);
@@ -661,7 +677,7 @@ static void _source_c_depends(Config * config, FILE * fp, String * source)
 static int _clean_targets(Config * config, FILE * fp);
 static int _write_clean(Prefs * prefs, Config * config, FILE * fp)
 {
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s", "\nclean:\n");
 	if(config_get(config, "", "subdirs") != NULL)
@@ -700,7 +716,7 @@ static int _write_distclean(Prefs * prefs, Config * config, FILE * fp)
 {
 	String * subdirs;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s", "\ndistclean:");
 	if((subdirs = config_get(config, "", "subdirs")) == NULL)
@@ -725,7 +741,7 @@ static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 	Config * p;
 	int i;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	if((package = config_get(config, "", "package")) == NULL
 			|| (version = config_get(config, "", "version"))
@@ -826,7 +842,7 @@ static int _write_install(Prefs * prefs, Config * config, FILE * fp)
 	int i;
 	char c;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s", "\ninstall: all\n");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL)
@@ -901,7 +917,7 @@ static int _write_uninstall(Prefs * prefs, Config * config, FILE * fp)
 	int i;
 	char c;
 
-	if(*prefs & PREFS_n)
+	if(prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "%s", "\nuninstall:\n");
 	if((subdirs = config_get(config, "", "subdirs")) != NULL)

@@ -12,7 +12,7 @@
 typedef enum _HostArch
 {
 	HA_I386, HA_I486, HA_I586, HA_I686,
-	HA_SPARC,
+	HA_SPARC, HA_SPARC64,
 	HA_UNKNOWN
 } HostArch;
 # define HA_LAST HA_UNKNOWN
@@ -27,10 +27,10 @@ typedef enum _HostOS
 # define HO_LAST HO_UNKNOWN
 extern const String * sHostOS[HO_LAST+1];
 
-typedef enum _HostKernel
+typedef enum _HostKernel /* FIXME feels wrong */
 {
 	HK_LINUX20, HK_LINUX22, HK_LINUX24, HK_LINUX26,
-	HK_NETBSD,
+	HK_NETBSD20, HK_NETBSD30,
 	HK_UNKNOWN
 } HostKernel;
 # define HK_LAST HK_UNKNOWN
@@ -59,12 +59,19 @@ String * _source_extension(String * source);
 
 /* configure */
 /* types */
-typedef int Prefs;
+typedef struct _Prefs
+{
+	int flags;
+	char * bindir;
+	char * destdir;
+	char * includedir;
+	char * prefix;
+} Prefs;
 # define PREFS_n	0x1
 # define PREFS_v	0x2
 typedef struct _Configure
 {
-	Prefs prefs;
+	Prefs * prefs;
 	HostArch arch;
 	HostOS os;
 	HostKernel kernel;
