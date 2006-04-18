@@ -1,11 +1,12 @@
 TARGETS	= configure makedepend
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi -I /System/Include -D_GNU_SOURCE
+CFLAGSF	= -W -Wall -ansi -D_GNU_SOURCE
 CFLAGS	= -g
-LDFLAGSF= -L /System/Libraries -l System -l dl
+LDFLAGSF= -l System -l dl
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
