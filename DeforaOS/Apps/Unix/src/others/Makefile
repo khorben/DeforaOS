@@ -2,7 +2,7 @@ PACKAGE	= others
 VERSION	= 0.0.0
 SUBDIRS	= src
 LN	= ln -sf
-TAR	= tar cfzv
+TAR	= tar -czvf
 
 
 all: subdirs
@@ -20,7 +20,9 @@ dist:
 	$(RM) $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/hexdump.c \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
+		$(PACKAGE)-$(VERSION)/src/tar.c \
 		$(PACKAGE)-$(VERSION)/src/w.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
