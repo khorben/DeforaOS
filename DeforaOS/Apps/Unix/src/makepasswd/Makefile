@@ -2,7 +2,7 @@ PACKAGE	= makepasswd
 VERSION	= 0.4.2
 SUBDIRS	= src
 LN	= ln -sf
-TAR	= tar cfzv
+TAR	= tar -czvf
 
 
 all: subdirs
