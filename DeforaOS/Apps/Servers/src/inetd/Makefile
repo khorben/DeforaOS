@@ -2,7 +2,7 @@ PACKAGE	= inetd
 VERSION	= 0.0.0
 SUBDIRS	= src
 LN	= ln -sf
-TAR	= tar cfzv
+TAR	= tar -czvf
 
 
 all: subdirs
