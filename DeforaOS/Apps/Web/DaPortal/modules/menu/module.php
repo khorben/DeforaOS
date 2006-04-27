@@ -1,5 +1,4 @@
-<?php
-//modules/menu/module.php
+<?php //modules/menu/module.php
 
 
 
@@ -30,9 +29,10 @@ function menu_default()
 			$keys = array_keys($actions);
 			foreach($keys as $k)
 				print("\t\t\t".'<li><a href="index.php?module='
-						.$m['name'].'&action='.$k
-						.'">'.$actions[$k].'</a></li>'
-						."\n");
+						.$m['name'].'&amp;action='
+						._html_safe_link($k).'">'
+						._html_safe($actions[$k])
+						.'</a></li>'."\n");
 			print("\t\t</ul>");
 		}
 		print('</li>'."\n");
