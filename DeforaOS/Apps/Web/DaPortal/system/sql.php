@@ -1,5 +1,4 @@
-<?php
-//system/sql.php
+<?php //system/sql.php
 
 
 
