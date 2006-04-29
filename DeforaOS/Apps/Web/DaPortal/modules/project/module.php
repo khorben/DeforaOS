@@ -918,37 +918,55 @@ function project_bug_reply_insert($args)
 			.' (content_id, bug_id'.$fields.') VALUES '
 			." ('$id', '".$args['id']."'".$values.');');
 	project_bug_display(array('id' => $args['id']));
-	//send mail FIXME also to bug author, only to assigned user if possible
+	//send mail
 	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
 			." WHERE bug_id='".$args['id']."';")) == FALSE)
 		return _error('Could not determine project', 0);
-	$to = _sql_array('SELECT username, email'
+	$ba = _sql_array('SELECT username, email' //bug author
+			.' FROM daportal_bug, daportal_content, daportal_user'
+			.' WHERE daportal_bug.content_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id'
+			.'=daportal_user.user_id'
+			." AND bug_id='".$args['id']."';");
+	$pa = _sql_array('SELECT username, email' //project admin
 			.' FROM daportal_project, daportal_content'
 			.', daportal_user'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			." AND project_id='$project_id';");
-	$members = _sql_array('SELECT username, email'
+	$assigned = _sql_array('SELECT username, email' //assigned member
+			.' FROM daportal_bug, daportal_user'
+			.' WHERE daportal_bug.assigned=daportal_user.user_id'
+			." AND bug_id='".$args['id']."';");
+	$members = _sql_array('SELECT username, email' //all members
 			.' FROM daportal_project_user, daportal_user'
 			.' WHERE daportal_project_user.user_id'
 			.'=daportal_user.user_id'
 			." AND project_id='$project_id' AND enabled='t';");
-	if(!is_array($to) || !is_array($members))
-		return _error('Could not list members', 0);
-	else
-	{
-		$to = $to[0]['username'].' <'.$to[0]['email'].'>';
-		foreach($members as $m)
-			$to.=', '.$m['username'].' <'.$m['email'].'>';
-		$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-		if(!mail($to, 'Bug reply: '.$args['title'],
-					'State: '.$args['state']."\n"
-					.'Type: '.$args['type']."\n"
-					.'Priority: '.$args['priority']."\n\n"
-					.$args['content'], $headers))
-			_error('Could not send mail to: '.$to, 0);
-	}
+	if(!is_array($ba) || !is_array($pa) || !is_array($assigned)
+			|| !is_array($members))
+		return _error('Could not list addresses for mailing');
+	$array = count($assigned) == 1 ? array_merge($ba, $pa, $assigned)
+		: array_merge($ba, $pa, $members);
+	if(count($array) == 0)
+		return _error('No recipients for mailing');
+	$rcpt = array();
+	foreach($array as $a)
+		$rcpt[$a['username']] = $a['email'];
+	$keys = array_keys($rcpt);
+	$to = $keys[0].' <'.$rcpt[$keys[0]].'>';
+	$cnt = count($keys);
+	for($i = 1; $i < $cnt; $i++)
+		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
+	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
+	if(!mail($to, 'Bug reply: '.$args['title'],
+				'State: '.$args['state']."\n"
+				.'Type: '.$args['type']."\n"
+				.'Priority: '.$args['priority']."\n\n"
+				.$args['content'], $headers))
+		_error('Could not send mail to: '.$to, 0);
 }
 
 
