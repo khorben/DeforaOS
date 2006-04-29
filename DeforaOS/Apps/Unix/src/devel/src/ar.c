@@ -146,11 +146,11 @@ static int _append_header(char const * archive, FILE * fp, char * filename,
 		return _ar_error(filename, 1);
 	strncpy(hdr.ar_name, basename(filename), sizeof(hdr.ar_name)-1);
 	hdr.ar_name[sizeof(hdr.ar_name)-1] = '\0'; /* FIXME necessary? */
-	snprintf(hdr.ar_date, sizeof(hdr.ar_date), "%u", st.st_mtime);
-	snprintf(hdr.ar_uid, sizeof(hdr.ar_uid), "%u", st.st_uid);
-	snprintf(hdr.ar_gid, sizeof(hdr.ar_gid), "%u", st.st_gid);
-	snprintf(hdr.ar_mode, sizeof(hdr.ar_mode), "%o", st.st_mode);
-	snprintf(hdr.ar_size, sizeof(hdr.ar_size), "%u", st.st_size);
+	snprintf(hdr.ar_date, sizeof(hdr.ar_date), "%u", (unsigned)st.st_mtime);
+	snprintf(hdr.ar_uid, sizeof(hdr.ar_uid), "%u", (unsigned)st.st_uid);
+	snprintf(hdr.ar_gid, sizeof(hdr.ar_gid), "%u", (unsigned)st.st_gid);
+	snprintf(hdr.ar_mode, sizeof(hdr.ar_mode), "%o", (unsigned)st.st_mode);
+	snprintf(hdr.ar_size, sizeof(hdr.ar_size), "%u", (unsigned)st.st_size);
 	strncpy(hdr.ar_fmag, ARFMAG, sizeof(hdr.ar_fmag));
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _ar_error(archive, 1);
@@ -292,9 +292,10 @@ static int _t_print_long(char const * archive, struct ar_hdr * hdr)
 	if((tm = gmtime(&date)) == NULL)
 		return fprintf(stderr, "%s%s%s", "ar: ", archive,
 				": Invalid archive\n") ? 1 : 1;
-	printf("%s %u/%u %u %s %d %02d:%02d %d %s\n", _long_mode(mode), uid,
-			gid, size, month[tm->tm_mon], tm->tm_mday, tm->tm_hour,
-			tm->tm_min, tm->tm_year + 1900, hdr->ar_name);
+	printf("%s %u/%u %u %s %d %02d:%02d %d %s\n", _long_mode(mode),
+			(unsigned)uid, (unsigned)gid, size, month[tm->tm_mon],
+			tm->tm_mday, tm->tm_hour, tm->tm_min,
+			tm->tm_year + 1900, hdr->ar_name);
 	return 0;
 }
 
