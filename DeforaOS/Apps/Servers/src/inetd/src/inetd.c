@@ -100,7 +100,7 @@ static void _inetd_sigchld(void)
 			break;
 		}
 	if(inetd_state->debug)
-		fprintf(stderr, "%s%d%s%s%d%s", "inetd: Child ", pid,
+		fprintf(stderr, "%s%u%s%s%d%s", "inetd: Child ", (unsigned)pid,
 				WIFEXITED(status) ? " exited"
 				: " was terminated", " with error code ",
 				WEXITSTATUS(status), "\n");
