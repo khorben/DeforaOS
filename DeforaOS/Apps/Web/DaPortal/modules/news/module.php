@@ -296,8 +296,8 @@ function news_submit($news)
 		$comma = ', ';
 	}
 	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-	if(!mail($to, 'News submission: '.$news['title'], $news['content'],
-				$headers))
+	if(!mail($to, '[DaPortal News submission] '.$news['title'],
+				$news['content'], $headers))
 		_error('Could not send mail to: '.$to, 0);
 }
 

@@ -608,7 +608,8 @@ function project_bug_display($args)
 			." AND daportal_content.enabled='1'"
 			." AND (daportal_user.enabled='1'"
 			." OR daportal_user.user_id='0')"
-			." AND daportal_bug_reply.bug_id='".$bug['id']."';");
+			." AND daportal_bug_reply.bug_id='".$bug['id']."'"
+			.' ORDER BY timestamp ASC;');
 	if(!is_array($replies))
 		return _error('Unable to display bug feedback');
 	$cnt = count($replies);
@@ -618,8 +619,7 @@ function project_bug_display($args)
 				strtotime(substr($replies[$i]['date'], 0, 19)));
 		$reply = $replies[$i];
 		$reply['assigned'] = is_numeric($reply['assigned_id'])
-			? _sql_single('SELECT username'
-				.' FROM daportal_user'
+			? _sql_single('SELECT username FROM daportal_user'
 				." WHERE enabled='1'"
 				." AND user_id='".$reply['assigned_id']."';")
 			: '';
@@ -674,7 +674,7 @@ function project_bug_insert($args)
 		foreach($members as $m)
 			$to.=', '.$m['username'].' <'.$m['email'].'>';
 		$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-		if(!mail($to, 'Bug submission: '.$args['title'],
+		if(!mail($to, '[DaPortal Bug submission] '.$args['title'],
 					'State: New'."\n"
 					.'Type: '.$args['type']."\n"
 					.'Priority: '.$args['priority']."\n\n"
@@ -961,7 +961,7 @@ function project_bug_reply_insert($args)
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
 	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-	if(!mail($to, 'Bug reply: '.$args['title'],
+	if(!mail($to, '[DaPortal Bug reply] '.$args['title'],
 				'State: '.$args['state']."\n"
 				.'Type: '.$args['type']."\n"
 				.'Priority: '.$args['priority']."\n\n"
