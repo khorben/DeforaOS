@@ -282,7 +282,23 @@ function news_submit($news)
 	}
 	if(!_news_insert($news))
 		return _error('Could not insert news');
-	return include('news_posted.tpl');
+	include('news_posted.tpl');
+	//send mail
+	$admins = _sql_array('SELECT username, email FROM daportal_user'
+			." WHERE enabled='t' AND admin='t';");
+	if(!is_array($admins))
+		return _error('Could not list moderators', 0);
+	$to = '';
+	$comma = '';
+	foreach($admins as $a)
+	{
+		$to.=$comma.$a['username'].' <'.$a['email'].'>';
+		$comma = ', ';
+	}
+	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
+	if(!mail($to, 'News submission: '.$news['title'], $news['content'],
+				$headers))
+		_error('Could not send mail to: '.$to, 0);
 }
 
 
