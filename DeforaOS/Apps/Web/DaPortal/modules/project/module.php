@@ -635,25 +635,54 @@ function project_bug_insert($args)
 	require_once('system/content.php');
 	require_once('system/user.php');
 	$enable = 0;
-	if(_user_admin($user_id))
+	if(_user_admin($user_id)) //FIXME also for project members
 		$enable = 1;
 	if(($id = _content_insert($args['title'], $args['content'], $enable))
 			== FALSE)
 		return _error('Unable to insert bug content', 1);
 	if(!_sql_query('INSERT INTO daportal_bug (content_id, project_id'
 			.', state, type, priority) VALUES'
-			." ('$id'"
-			.", '".$args['project_id']."'"
-			.", 'New'"
-			.", '".$args['type']."'"
-			.", '".$args['priority']."'"
-			.");"))
+			." ('$id'".", '".$args['project_id']."'"
+			.", 'New'".", '".$args['type']."'"
+			.", '".$args['priority']."'".");"))
 	{
 		_sql_query('DELETE FROM daportal_content'
 				." WHERE content_id='$id';");
 		return _error('Unable to insert bug', 1);
 	}
-	$id = _sql_id('daportal_bug', 'bug_id');
+	$id = _sql_id('daportal_bug', 'bug_id'); //FIXME race condition
+	//send mail
+	$to = _sql_array('SELECT username, email'
+			.' FROM daportal_project, daportal_content'
+			.', daportal_user'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id'
+			.'=daportal_user.user_id'
+			." AND project_id='".$args['project_id']."';");
+	$members = _sql_array('SELECT username, email'
+			.' FROM daportal_project_user, daportal_user'
+			.' WHERE daportal_project_user.user_id'
+			.'=daportal_user.user_id'
+			." AND project_id='".$args['project_id']."'"
+			." AND enabled='t';");
+	if(!is_array($to) || !is_array($members))
+		_error('Could not list members', 0);
+	else
+	{
+		$to = $to[0]['username'].' <'.$to[0]['email'].'>';
+		foreach($members as $m)
+			$to.=', '.$m['username'].' <'.$m['email'].'>';
+		_info('To: '.$to, 0);
+		$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
+		if(!mail($to, 'Bug submission: '.$args['title'],
+					'State: New'."\n"
+					.'Type: '.$args['type']."\n"
+					.'Priority: '.$args['priority']."\n\n"
+					.$args['content'],
+					$headers))
+			_error('Could not send mail to: '.$to, 0);
+	}
 	if($enable)
 		return project_bug_display(array('id' => $id));
 	include('bug_posted.tpl');
