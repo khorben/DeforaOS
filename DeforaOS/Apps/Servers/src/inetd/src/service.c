@@ -80,7 +80,7 @@ int service_listen(Service * s)
 	sa.sin_family = AF_INET;
 	sa.sin_port = s->port;
 	sa.sin_addr.s_addr = INADDR_ANY;
-	if(bind(s->fd, &sa, sizeof(sa)) != 0)
+	if(bind(s->fd, (struct sockaddr*)&sa, sizeof(sa)) != 0)
 	{
 		close(s->fd);
 		s->fd = -1;
@@ -127,7 +127,7 @@ static int _exec_tcp(Service * s)
 	struct sockaddr_in sa;
 	int sa_size = sizeof(struct sockaddr_in);
 
-	if((fd = accept(s->fd, &sa, &sa_size)) == -1)
+	if((fd = accept(s->fd, (struct sockaddr*)&sa, &sa_size)) == -1)
 		return inetd_error("accept", 1);
 	if((pid = fork()) == -1)
 		return inetd_error("fork", 1);
