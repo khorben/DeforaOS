@@ -762,7 +762,8 @@ function project_bug_list($args)
 				.'&amp;id='.$bugs[$i]['id'].'">#'
 				.$bugs[$i]['id'].'</a>';
 		$bugs[$i]['project'] = '<a href="index.php?module=project'
-				.'&amp;id='.$bugs[$i]['project_id'].'">'
+				.'&amp;action=bug_list'
+				.'&amp;project_id='.$bugs[$i]['project_id'].'">'
 				._html_safe($bugs[$i]['project']).'</a>';
 		$bugs[$i]['date'] = date('d/m/Y H:i',
 				strtotime(substr($bugs[$i]['date'], 0, 19)));
