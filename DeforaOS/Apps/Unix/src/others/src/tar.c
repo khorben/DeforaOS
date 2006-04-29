@@ -94,8 +94,8 @@ static void _tar_print(Prefs * prefs, TarFileHeader * fh)
 {
 	if((*prefs & PREFS_vv) == PREFS_vv)
 		/* FIXME */
-		printf("%s %d %d %s\n", "----------", fh->uid, fh->gid,
-				fh->filename);
+		printf("%s %u %u %s\n", "----------", (unsigned)fh->uid,
+				(unsigned)fh->gid, fh->filename);
 	else if(*prefs & PREFS_v)
 		printf("%s\n", fh->filename);
 }
@@ -134,11 +134,13 @@ static void _tar_stat_to_buffer(char * filename, struct stat * st,
 
 	memset(tfhb, 0, sizeof(*tfhb));
 	snprintf(tfhb->filename, sizeof(tfhb->filename), "%s", filename);
-	snprintf(tfhb->mode, sizeof(tfhb->mode), "%07o", st->st_mode);
-	snprintf(tfhb->uid, sizeof(tfhb->uid), "%07o", st->st_uid);
-	snprintf(tfhb->gid, sizeof(tfhb->gid), "%07o", st->st_gid);
-	snprintf(tfhb->size, sizeof(tfhb->size), "%011o", st->st_size);
-	snprintf(tfhb->mtime, sizeof(tfhb->mtime), "%011o", st->st_mtime);
+	snprintf(tfhb->mode, sizeof(tfhb->mode), "%07o", (unsigned)st->st_mode);
+	snprintf(tfhb->uid, sizeof(tfhb->uid), "%07o", (unsigned)st->st_uid);
+	snprintf(tfhb->gid, sizeof(tfhb->gid), "%07o", (unsigned)st->st_gid);
+	snprintf(tfhb->size, sizeof(tfhb->size), "%011o",
+			(unsigned)st->st_size);
+	snprintf(tfhb->mtime, sizeof(tfhb->mtime), "%011o",
+			(unsigned)st->st_mtime);
 	memset(&tfhb->checksum, ' ', sizeof(tfhb->checksum));
 	if(S_ISDIR(st->st_mode))
 		tfhb->type = FT_DIRECTORY;
@@ -147,7 +149,7 @@ static void _tar_stat_to_buffer(char * filename, struct stat * st,
 	else if(S_ISBLK(st->st_mode))
 		tfhb->type = FT_BLOCK;
 	/* FIXME link */
-	p = tfhb;
+	p = (uint8_t*)tfhb;
 	for(i = 0; i < sizeof(*tfhb); i++)
 		checksum+=p[i];
 	snprintf(tfhb->checksum, sizeof(tfhb->checksum), "%06o%c ", checksum,
