@@ -40,38 +40,11 @@ $text['TIMELINE'] = 'Timeline';
 global $lang;
 if($lang == 'de')
 {
-	$text['BROWSE_SOURCE'] = 'Quellcode betrachten';
-	$text['NEW_PROJECT'] = 'Neues projekt';
-	$text['PRIORITY'] = 'Priorität';
-	$text['PROJECT'] = 'Projekt';
-	$text['PROJECT_LIST'] = 'Projektliste';
-	$text['PROJECTS'] = 'Projekte';
-	$text['STATE'] = 'Stand';
-	$text['TIMELINE'] = 'Fortschritt';
+	include('lang.de.php');
 }
 else if($lang == 'fr')
 {
-	$text['ASSIGNED_TO'] = 'Affecté à';
-	$text['BROWSE_SOURCE'] = 'Parcourir les sources';
-	$text['BUG_REPORTS'] = 'Rapports de bugs';
-	$text['INVALID_PROJECT'] = 'Projet non valide';
-	$text['MEMBERS'] = 'Membres';
-	$text['NEW_PROJECT'] = 'Nouveau projet';
-	$text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
-	$text['PRIORITY'] = 'Priorité';
-	$text['PROJECT'] = 'Projet';
-	$text['PROJECT_LIST'] = 'Liste des projets';
-	$text['PROJECT_NAME'] = 'Nom du projet';
-	$text['PROJECTS'] = 'Projets';
-	$text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
-	$text['REPLY_BY'] = 'Réponse par';
-	$text['REPLY_ON'] = 'le';
-	$text['REPORT_A_BUG'] = 'Rapporter un bug';
-	$text['REPORT_BUG_FOR'] = 'Rapporter un bug pour';
-	$text['STATE'] = 'Etat';
-	$text['STATE_CHANGED_TO'] = 'Etat changé à';
-	$text['SUBMITTER'] = 'Envoyé par';
-	$text['TIMELINE'] = 'Progression';
+	include('lang.fr.php');
 }
 _lang($text);
 
@@ -409,10 +382,15 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 			$message.=$apnd;
 			$message = _html_safe($message);
 		}
+		$icon = (strcmp($name, '1.1') == 0)
+			? 'modules/project/cvs-added.png'
+			: 'modules/project/cvs-modified.png';
 		$revisions[] = array('module' => 'project',
 				'action' => 'browse',
 				'id' => $id,
 				'args' => '&file='.$filename.'&revision='.$name,
+				'icon' => $icon,
+				'thumbnail' => $icon,
 				'name' => $name,
 				'date' => $date,
 				'author' => $author,
@@ -1524,15 +1502,18 @@ function project_timeline($args)
 			continue;
 		_info($line);
 		unset($event);
+		$icon = '';
 		switch($fields[0][0])
 		{
-			case 'A': $event = 'Add'; break;
+			case 'A': $event = 'Add'; $icon = 'added'; break;
 			case 'F': $event = 'Release'; break;
-			case 'M': $event = 'Modify'; break;
-			case 'R': $event = 'Remove'; break;
+			case 'M': $event = 'Modify'; $icon = 'modified'; break;
+			case 'R': $event = 'Remove'; $icon = 'removed'; break;
 		}
 		if(!isset($event))
 			continue;
+		if(strlen($icon))
+			$icon = 'modules/project/cvs-'.$icon.'.png';
 		$name = substr($fields[3], $len+1).'/'.$fields[5];
 		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
 		$date = date('d/m/Y H:i', $date);
@@ -1543,11 +1524,13 @@ function project_timeline($args)
 					.'</a>';
 		else
 			$author = _html_safe($fields[1]);
-		$entries[] = array('name' => _html_safe($name),
-				'module' => 'project',
+		$entries[] = array('module' => 'project',
 				'action' => 'browse',
 				'id' => $args['id'],
 				'args' => '&file='._html_safe_link($name).',v',
+				'name' => _html_safe($name),
+				'icon' => $icon,
+				'thumbnail' => $icon,
 				'date' => _html_safe($date),
 				'event' => _html_safe($event),
 				'revision' => '<a href="index.php'
@@ -1562,13 +1545,23 @@ function project_timeline($args)
 						.'</a>',
 				'author' => $author);
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+			'link' => 'javascript:history.back()');
+	$toolbar[] = array('title' => 'Forward',
+			'icon' => 'icons/16x16/forward.png',
+			'link' => 'javascript:history.forward()');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => 'Refresh',
+			'icon' => 'icons/16x16/refresh.png',
+			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array(
 			'entries' => array_reverse($entries),
 			'class' => array('date' => DATE,
 					'event' => 'Action',
 					'revision' => 'Revision',
 					'author' => AUTHOR),
-			'view' => 'details'));
+			'toolbar' => $toolbar, 'view' => 'details'));
 	fclose($fp);
 }
 
