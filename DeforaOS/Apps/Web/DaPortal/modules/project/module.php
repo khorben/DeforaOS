@@ -418,10 +418,26 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 				'author' => $author,
 				'message' => $message);
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+			'link' => 'javascript:history.back()');
+	$toolbar[] = array('title' => 'Parent directory',
+			'icon' => 'icons/16x16/updir.png',
+			'link' => 'index.php?module=project&action=browse'
+					.'&id='.$id
+					.'&file='.dirname($filename));
+	$toolbar[] = array('title' => 'Forward',
+			'icon' => 'icons/16x16/forward.png',
+			'link' => 'javascript:history.forward()');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => 'Refresh',
+			'icon' => 'icons/16x16/refresh.png',
+			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => 'Date',
 					'author' => AUTHOR,
 					'message' => MESSAGE),
+			'toolbar' => $toolbar,
 			'view' => 'details'));
 }
 
@@ -460,27 +476,36 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 		return;
 	}
 	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
-		."&amp;file="._html_safe_link($filename)
-		."&amp;revision=$revision&amp;download=1";
-	print('<div class="toolbar"><a href="'.$link.'">Download file</a></div>'
-			."\n");
+		."&amp;file="._html_safe_link($filename);
+	print('<div class="toolbar">'
+			.'<a href="'.$link.'">Browse revisions</a>'
+			.' · <a href="'.$link."&amp;revision=$revision"
+			.'&amp;download=1">'
+			.'<img src="icons/16x16/save.png" alt=""/>'
+			.' Download file</a>'
+			.'</div>'."\n");
 	if(strncmp('image/', $mime, 6) == 0)
 		return print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
 	print('<pre>'."\n");
-	while(!feof($fp))
+	switch($mime)
 	{
-		$line = _html_safe(fgets($fp, 8192));
-		switch($mime)
-		{
-			case 'application/x-php':
-				$line = _file_php($line);
-				break;
-			case 'text/x-chdr':
-			case 'text/x-csrc':
-				$line = _file_csrc($line);
-				break;
-		}
-		print($line);
+		case 'application/x-php':
+			while(!feof($fp))
+				print(_file_php(_html_safe(fgets($fp, 8192))));
+			break;
+		case 'text/x-chdr':
+		case 'text/x-csrc':
+			while(!feof($fp))
+				print(_file_csrc(_html_safe(fgets($fp, 8192))));
+			break;
+		case 'text/x-makefile':
+			while(!feof($fp))
+				print(_file_makefile(_html_safe(fgets($fp, 8192))));
+			break;
+		default:
+			while(!feof($fp))
+				print(_html_safe(fgets($fp, 8192)));
+			break;
 	}
 	print('</pre>'."\n");
 }
@@ -524,6 +549,19 @@ function _file_csrc($line)
 		$line = substr($line, 0, $p+2).'</span>'.substr($line, $p+2);
 		$comment = 0;
 	}
+	return $line;
+}
+
+function _file_makefile($line)
+{
+	$line = preg_replace('/\s(#.*$)/',
+			'<span class="comment">\1</span>', $line);
+	$line = preg_replace('/^([a-zA-Z]+)(\s*=)/',
+			'<span class="variable">\1</span>\2', $line);
+	$line = preg_replace('/(^[a-zA-Z]+:)/',
+			'<span class="variable">\1</span>', $line);
+	$line = preg_replace('/(\$\([a-zA-Z_]+\))/',
+			'<span class="variable">\1</span>', $line);
 	return $line;
 }
 
