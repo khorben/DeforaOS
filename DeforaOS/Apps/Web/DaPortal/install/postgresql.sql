@@ -1,7 +1,8 @@
 CREATE TABLE daportal_module (
-	module_id SERIAL UNIQUE,
+	module_id SERIAL,
 	name VARCHAR(255) UNIQUE NOT NULL,
-	enabled BOOLEAN NOT NULL DEFAULT false
+	enabled BOOLEAN NOT NULL DEFAULT false,
+	PRIMARY KEY (module_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('admin', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('explorer', '1');
