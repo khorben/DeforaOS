@@ -593,6 +593,7 @@ function project_bug_display($args)
 			.', daportal_bug.bug_id AS id, timestamp, title'
 			.', content, name AS project, username'
 			.', state, type, priority, assigned AS assigned_id'
+			.', cvsroot'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE daportal_content.enabled='t'"
@@ -605,6 +606,9 @@ function project_bug_display($args)
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
+	$id = $bug['project_id'];
+	$cvsroot = $bug['cvsroot'];
+	include('toolbar.tpl');
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
