@@ -500,14 +500,14 @@ function _file_csrc($line)
 		return $line;
 	}
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])(break|case|continue|default'
-				.'|do|else|for|if|return|switch'
+				.'|do|else|for|goto|if|return|sizeof|switch'
 				.'|until|while'
 				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="keyword">\2</span>\3', $line);
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
 				.'char|DIR|double|FILE|float|int'
-				.'|long|short|signed|static'
-				.'|struct|typedef|unsigned|void'
+				.'|long|short|size_t|ssize_t|signed|static'
+				.'|struct|typedef|union|unsigned|va_list|void'
 				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="type">\2</span>\3', $line);
 	/* FIXME fails on quoted strings, use prefix.line.suffix to escape hl */
@@ -895,6 +895,7 @@ function project_bug_reply_insert($args)
 		return _error('Unable to insert bug reply');
 	$fields = '';
 	$values = '';
+	$update = '';
 	require_once('system/user.php');
 	if(_user_admin($user_id)) //FIXME
 	{
@@ -902,21 +903,28 @@ function project_bug_reply_insert($args)
 		{
 			$fields.=', state';
 			$values.=", '".$args['state']."'";
+			$update.=", state='".$args['state']."'";
 		}
 		if(strlen($args['type']))
 		{
 			$fields.=', type';
 			$values.=", '".$args['type']."'";
+			$update.=", type='".$args['type']."'";
 		}
 		if(strlen($args['priority']))
 		{
 			$fields.=', priority';
 			$values.=", '".$args['priority']."'";
+			$update.=", priority='".$args['priority']."'";
 		}
 	}
 	_sql_query('INSERT INTO daportal_bug_reply'
 			.' (content_id, bug_id'.$fields.') VALUES '
 			." ('$id', '".$args['id']."'".$values.');');
+	if(strlen($update))
+		_sql_query('UPDATE daportal_bug SET'
+				." bug_id='".$args['id']."'".$update
+				." WHERE bug_id='".$args['id']."';");
 	project_bug_display(array('id' => $args['id']));
 	//send mail
 	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
