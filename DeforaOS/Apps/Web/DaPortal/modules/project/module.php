@@ -1030,7 +1030,7 @@ function project_delete($args)
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
 			." WHERE project_id='".$args['id']."';")) == FALSE)
 		return _error(INVALID_PROJECT);
-	//FIXME remove bug reports and comments?
+	//FIXME remove bug reports and replies?
 	_sql_query('DELETE FROM daportal_project'
 			." WHERE project_id='$id';");
 	require_once('system/content.php');
@@ -1087,8 +1087,7 @@ function project_display($args)
 			'name' => _html_safe($project['username']),
 			'icon' => 'modules/user/icon.png',
 			'thumbnail' => 'modules/user/icon.png',
-			'module' => 'user',
-			'action' => 'default',
+			'module' => 'user', 'action' => 'default',
 			'admin' => '<img src="icons/16x16/enabled.png" alt="yes"/>');
 	$m = _sql_array('SELECT daportal_user.user_id AS id'
 			.', username AS name'
@@ -1204,8 +1203,7 @@ function project_list($args)
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' AND daportal_content.content_id'
 			.'=daportal_project.project_id'
-			.$where
-			.' ORDER BY name ASC;');
+			.$where.' ORDER BY name ASC;');
 	if(!is_array($projects))
 		return _error('Could not list projects');
 	$count = count($projects);
@@ -1215,14 +1213,13 @@ function project_list($args)
 		$projects[$i]['action'] = 'display';
 		if(isset($action))
 			$projects[$i]['link'] = 'index.php?module=project'
-					.'&action='.$action
-					.'&project_id='.$projects[$i]['id'];
+				.'&action='.$action
+				.'&project_id='.$projects[$i]['id'];
 		$projects[$i]['icon'] = 'modules/project/icon.png';
 		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
 		$projects[$i]['admin'] = '<a href="index.php?module=user'
-				.'&amp;id='
-				._html_safe_link($projects[$i]['user_id'])
-				.'">'._html_safe($projects[$i]['admin']).'</a>';
+			.'&amp;id='._html_safe_link($projects[$i]['user_id'])
+			.'">'._html_safe($projects[$i]['admin']).'</a>';
 	}
 	$toolbar = array();
 	require_once('system/user.php');
@@ -1240,8 +1237,7 @@ function project_list($args)
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION),
-			'view' => 'details',
-			'entries' => $projects));
+			'view' => 'details', 'entries' => $projects));
 }
 
 
@@ -1288,8 +1284,7 @@ function project_member_add($args)
 			'confirm' => 'add');
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
 				'entries' => $users,
-				'module' => 'project',
-				'action' => 'display',
+				'module' => 'project', 'action' => 'display',
 				'id' => $project['id']));
 }
 
@@ -1432,30 +1427,24 @@ function project_timeline($args)
 		$date = date('d/m/Y H:i', $date);
 		if(($author = _user_id($fields[1])) != 0)
 			$author = '<a href="index.php?module=project'
-					.'&amp;action=list&amp;user_id='
-					.$author.'">'._html_safe($fields[1])
-					.'</a>';
+				.'&amp;action=list&amp;user_id='
+				.$author.'">'._html_safe($fields[1]).'</a>';
 		else
 			$author = _html_safe($fields[1]);
-		$entries[] = array('module' => 'project',
-				'action' => 'browse',
+		$entries[] = array('module' => 'project', 'action' => 'browse',
 				'id' => $args['id'],
 				'args' => '&file='._html_safe_link($name).',v',
 				'name' => _html_safe($name),
-				'icon' => $icon,
-				'thumbnail' => $icon,
+				'icon' => $icon, 'thumbnail' => $icon,
 				'date' => _html_safe($date),
 				'event' => _html_safe($event),
 				'revision' => '<a href="index.php'
-						.'?module=project'
-						.'&amp;action=browse'
-						.'&amp;id='.$args['id']
-						.'&amp;file='
-						._html_safe_link($name).',v'
-						.'&amp;revision='
-						._html_safe_link($fields[4])
-						.'">'._html_safe($fields[4])
-						.'</a>',
+					.'?module=project&amp;action=browse'
+					.'&amp;id='.$args['id']
+					.'&amp;file='._html_safe_link($name)
+					.',v&amp;revision='
+					._html_safe_link($fields[4])
+					.'">'._html_safe($fields[4]).'</a>',
 				'author' => $author);
 	}
 	$toolbar = array();
@@ -1487,7 +1476,7 @@ function project_update($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	/* FIXME allow project's admin to update */
+	//FIXME allow project's admin to update
 	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return _error('Could not update project');
 	_sql_query('UPDATE daportal_project SET'
