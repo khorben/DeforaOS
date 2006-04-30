@@ -1147,7 +1147,9 @@ function project_display($args)
 	$admin = _user_admin($user_id);
 	$enabled = $project['enabled'] == 't';
 	if($enabled == 0 && !$admin)
+	{
 		return include('project_submitted.tpl');
+	}
 	$title = $project['name'];
 	_project_toolbar($args['id'], $admin);
 	include('project_display.tpl');
@@ -1448,7 +1450,9 @@ function project_timeline($args)
 {
 	require_once('system/content.php');
 	if(_content_readable($args['id']) == FALSE)
+	{
 		return include('project_submitted.tpl');
+	}
 	$project = _sql_array('SELECT project_id, name, cvsroot'
 			.' FROM daportal_project'
 			." WHERE project_id='".$args['id']."';");
