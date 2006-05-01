@@ -18,10 +18,10 @@ $connection = FALSE;
 switch($dbtype)
 {
 	case 'mysql':
-		require('sql.mysql.php');
+		require('./system/sql.mysql.php');
 		break;
 	case 'pgsql':
-		require('sql.pgsql.php');
+		require('./system/sql.pgsql.php');
 		break;
 }
 if($connection == FALSE)

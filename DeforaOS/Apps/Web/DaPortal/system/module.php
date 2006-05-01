@@ -37,7 +37,7 @@ function _module($module = '', $action = '', $args = FALSE)
 		return _error('Invalid module', 0);
 	$module_id = $id;
 	$module_name = $module;
-	if(!include_once('modules/'.$module_name.'/module.php'))
+	if(!include_once('./modules/'.$module_name.'/module.php'))
 		return _error('Could not include module "'.$module_name.'"');
 	$function = $module_name.'_'.$action;
 	if(!function_exists($function))
