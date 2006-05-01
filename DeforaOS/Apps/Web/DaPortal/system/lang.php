@@ -91,64 +91,11 @@ $text['USERNAME'] = 'Username';
 $text['YES'] = 'Yes';
 if($lang == 'de')
 {
-	$text['_BY_'] = ' von ';
-	$text['_FOR_'] = ' für ';
-	$text['AUTHOR'] = 'Autor';
-	$text['CONTENT'] = 'Inhalt';
-	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
-	$text['DESCRIPTION'] = 'Beschreibung';
-	$text['EDIT'] = 'Andern';
-	$text['LOGIN'] = 'Einloggen';
-	$text['LOGOUT'] = 'Ausloggen';
-	$text['MESSAGE'] = 'Mitteilung';
-	$text['NO'] = 'Nein';
-	$text['PASSWORD'] = 'Passwort';
-	$text['READ'] = 'Lesen';
-	$text['REPLY'] = 'Antworten';
-	$text['SEARCH'] = 'Suche';
-	$text['SEND'] = 'Schicken';
-	$text['TITLE'] = 'Titel';
-	$text['TYPE'] = 'Typ';
-	$text['UPDATE'] = 'Anwenden';
-	$text['USERNAME'] = 'Benutzername';
-	$text['YES'] = 'Ja';
+	include('lang.de.php');
 }
 else if($lang == 'fr')
 {
-	$text['_BY_'] = ' par ';
-	$text['_FOR_'] = ' pour ';
-	$text['ABOUT'] = 'A propos';
-	$text['ADMINISTRATOR'] = 'Administrateur';
-	$text['AUTHOR'] = 'Auteur';
-	$text['CONTENT'] = 'Contenu';
-	$text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
-	$text['DELETE'] = 'Supprimer';
-	$text['DISABLE'] = 'Désactiver';
-	$text['DISABLED'] = 'Désactivé';
-	$text['EDIT'] = 'Modifier';
-	$text['ENABLE'] = 'Activer';
-	$text['ENABLED'] = 'Activé';
-	$text['FILTER'] = 'Filtrer';
-	$text['HOMEPAGE'] = 'Accueil';
-	$text['INVALID_ARGUMENT'] = 'Argument invalide';
-	$text['LOGIN'] = 'Authentification';
-	$text['LOGOUT'] = 'Déconnexion';
-	$text['MEMBERS'] = 'Membres';
-	$text['MODIFY'] = 'Modifier';
-	$text['NAME'] = 'Nom';
-	$text['NEWS'] = 'Actualités';
-	$text['NO'] = 'Non';
-	$text['PASSWORD'] = 'Mot de passe';
-	$text['PERMISSION_DENIED'] = 'Permission non accordée';
-	$text['READ'] = 'Lire';
-	$text['REPLY'] = 'Répondre';
-	$text['SEARCH'] = 'Recherche';
-	$text['SEND'] = 'Envoyer';
-	$text['SUBMIT'] = 'Soumettre';
-	$text['TITLE'] = 'Titre';
-	$text['UPDATE'] = 'Appliquer';
-	$text['USERNAME'] = 'Utilisateur';
-	$text['YES'] = 'Oui';
+	include('lang.fr.php');
 }
 _lang($text);
 
