@@ -27,7 +27,7 @@ function _default_results($q)
 
 function search_default($args)
 {
-	include('search.tpl');
+	include('./modules/search/search.tpl');
 	if(strlen($args['q']) == 0)
 		return;
 	$q = explode(' ', $args['q']);
@@ -45,14 +45,13 @@ function search_default($args)
 	$spp = 10;
 	$page = isset($args['page']) ? $args['page'] : 1;
 	$count = _sql_single('SELECT COUNT(*)'.$sql);
-	include('search_top.tpl');
+	include('./modules/search/search_top.tpl');
 	$pages = ceil($count / $spp);
 	$page = min($page, $pages);
-	$res = _sql_array('SELECT content_id AS id, timestamp'
-			.', daportal_content.module_id, name AS module'
-			.', daportal_content.user_id, title, content, username'
-			.$sql
-			.' ORDER by timestamp DESC'
+	$res = $count == 0 ? array() :_sql_array('SELECT content_id AS id'
+			.', timestamp, daportal_content.module_id'
+			.', name AS module, daportal_content.user_id, title'
+			.', content, username'.$sql.' ORDER by timestamp DESC'
 			." OFFSET ".(($page-1) * $spp)." LIMIT $spp;");
 	if(!is_array($res))
 		return _error('Unable to search');
@@ -61,10 +60,10 @@ function search_default($args)
 	{
 		$q['date'] = strftime(DATE_FORMAT, strtotime(substr(
 						$q['timestamp'], 0, 19)));
-		include('search_entry.tpl');
+		include('./modules/search/search_entry.tpl');
 		$i++;
 	}
-	include('search_bottom.tpl');
+	include('./modules/search/search_bottom.tpl');
 	_html_paging('index.php?module=search&amp;q='
 			._html_safe_link($args['q']).'&amp;', $page, $pages);
 }
