@@ -1,5 +1,4 @@
-<?php
-//system/user.php
+<?php //system/user.php
 
 
 

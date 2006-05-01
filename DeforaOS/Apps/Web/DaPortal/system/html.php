@@ -6,6 +6,7 @@
 if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
+
 function _html_paging($link, $page, $count)
 {
 	print('<div class="paging">'."\n");
@@ -142,7 +143,7 @@ function _html_tags($string, $tags = FALSE)
 
 function _html_template($template)
 {
-	if(!@include('templates/'.$template.'.tpl'))
+	if(!@include('./templates/'.$template.'.tpl'))
 		return _error('Could not include template');
 }
 

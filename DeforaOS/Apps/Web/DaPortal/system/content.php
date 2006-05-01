@@ -9,15 +9,14 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 function _content_delete($id)
 {
-	return _sql_query('DELETE FROM daportal_content WHERE'
+	return _sql_query('DELETE FROM daportal_content'
 			." WHERE content_id='$id';");
 }
 
 
 function _content_disable($id)
 {
-	return _sql_query('UPDATE daportal_content SET'
-			." enabled='f'"
+	return _sql_query('UPDATE daportal_content SET enabled='."'f'"
 			." WHERE content_id='$id';");
 }
 
@@ -37,8 +36,7 @@ function _content_display($id)
 
 function _content_enable($id)
 {
-	return _sql_query('UPDATE daportal_content SET'
-			." enabled='t'"
+	return _sql_query('UPDATE daportal_content SET enabled='."'t'"
 			." WHERE content_id='$id';");
 }
 

@@ -1,5 +1,4 @@
-<?php
-//system/lang.php
+<?php //system/lang.php
 
 
 
@@ -91,11 +90,11 @@ $text['USERNAME'] = 'Username';
 $text['YES'] = 'Yes';
 if($lang == 'de')
 {
-	include('lang.de.php');
+	include('./lang.de.php');
 }
 else if($lang == 'fr')
 {
-	include('lang.fr.php');
+	include('./lang.fr.php');
 }
 _lang($text);
 
