@@ -21,7 +21,9 @@ if($user_id != 0)
 else
 	$actions = array('login' => LOGIN);
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+	$title = 'Benutzer';
+else if($lang == 'fr')
 	$title = 'Utilisateurs';
 
 

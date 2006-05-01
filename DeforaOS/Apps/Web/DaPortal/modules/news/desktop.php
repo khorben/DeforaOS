@@ -12,7 +12,7 @@ $title = NEWS;
 $admin = 1;
 $list = 1;
 if($user_id)
-	$actions = array('submit' => 'Submit');
+	$actions = array('submit' => SUBMIT);
 
 
 ?>
