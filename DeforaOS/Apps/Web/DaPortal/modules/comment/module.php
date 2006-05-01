@@ -21,7 +21,12 @@ $text['COMMENT_S'] = 'comment(s)';
 $text['COMMENTS_BY'] = 'Comments by';
 $text['NEW_COMMENT'] = 'New comment';
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$text['COMMENT_S'] = 'Kommentar';
+	$text['NEW_COMMENT'] = 'Neu Kommentar';
+}
+else if($lang == 'fr')
 {
 	$text['COMMENT_ADMINISTRATION'] = 'Administration des commentaires';
 	$text['COMMENT_BY'] = 'Commentaire de';
