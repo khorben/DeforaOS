@@ -1,5 +1,4 @@
-<?php
-//system/mime.php
+<?php //system/mime.php
 
 
 

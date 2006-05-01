@@ -1,5 +1,4 @@
-<?php
-//system/html.php
+<?php //system/html.php
 
 
 
@@ -132,8 +131,8 @@ function _html_stop()
 function _html_tags($string, $tags = FALSE)
 {
 	if(!is_array($tags))
-		$tags = array('b', '/b', 'br/', 'li', '/li', 'p', '/p',
-				'ul', '/ul');
+		$tags = array('b', '/b', 'br/', 'li', '/li', 'p', '/p', 'ul',
+				'/ul');
 	$string = _html_safe($string);
 	foreach($tags as $t)
 		$string = str_replace("&lt;$t&gt;", "<$t>", $string);
