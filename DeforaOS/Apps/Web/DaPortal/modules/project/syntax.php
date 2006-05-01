@@ -25,8 +25,10 @@ function _file_csrc($line)
 			'\1<span class="keyword">\2</span>\3', $line);
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
 				.'char|DIR|double|FILE|float|int'
+				.'|int8_t|int16_t|int32_t|int64_t'
 				.'|long|short|size_t|ssize_t|signed|static'
 				.'|struct|typedef|union|unsigned|va_list|void'
+				.'|uint8_t|uint16_t|uint32_t|uint64_t'
 				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="type">\2</span>\3', $line);
 	/* FIXME fails on quoted strings, use prefix.line.suffix to escape hl */
