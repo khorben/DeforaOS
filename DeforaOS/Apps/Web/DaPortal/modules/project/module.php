@@ -40,11 +40,11 @@ $text['TIMELINE'] = 'Timeline';
 global $lang;
 if($lang == 'de')
 {
-	include('lang.de.php');
+	include('./modules/project/lang.de.php');
 }
 else if($lang == 'fr')
 {
-	include('lang.fr.php');
+	include('./modules/project/lang.fr.php');
 }
 _lang($text);
 
@@ -67,7 +67,7 @@ function _project_toolbar($id, $admin = 0)
 		$cvsroot = $project[0]['cvsroot'];
 		$enabled = $project[0]['enabled'] == 't' ? 1 : 0;
 	}
-	include('toolbar.tpl');
+	include('./modules/project/toolbar.tpl');
 }
 
 
@@ -95,7 +95,7 @@ function project_admin($args)
 				.' Configuration</h2>'."\n");
 		$module = 'project';
 		$action = 'config_update';
-		include('system/config.tpl');
+		include('./system/config.tpl');
 	}
 	print('<h2><img src="modules/project/icon.png" alt=""/> '
 			._html_safe(PROJECT_LIST)
@@ -185,7 +185,7 @@ function project_browse($args)
 	if(!ereg('^[a-zA-Z0-9. /]+$', $project['cvsroot'])
 			|| ereg('\.\.', $project['cvsroot']))
 		return _error('Invalid CVSROOT', 1);
-	include('browse.php');
+	include('./modules/project/browse.php');
 	if(!isset($args['file']))
 		return _browse_dir($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], '');
@@ -240,14 +240,14 @@ function project_bug_display($args)
 	$bug = $bug[0];
 	$id = $bug['project_id'];
 	$cvsroot = $bug['cvsroot'];
-	include('toolbar.tpl');
+	include('./modules/project/toolbar.tpl');
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$bug['assigned'] = _sql_single('SELECT username FROM daportal_user'
 			." WHERE enabled='1'"
 			." AND user_id='".$bug['assigned_id']."';");
-	include('bug_display.tpl');
+	include('./modules/project/bug_display.tpl');
 	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
 			.', timestamp AS date'
 			.', state, type, priority, daportal_user.user_id'
@@ -275,7 +275,7 @@ function project_bug_display($args)
 				." WHERE enabled='1'"
 				." AND user_id='".$reply['assigned_id']."';")
 			: '';
-		include('bug_reply_display.tpl');
+		include('./modules/project/bug_reply_display.tpl');
 	}
 }
 
@@ -335,7 +335,7 @@ function project_bug_insert($args)
 	}
 	if($enable)
 		return project_bug_display(array('id' => $id));
-	include('bug_posted.tpl');
+	include('./modules/project/bug_posted.tpl');
 }
 
 
@@ -400,7 +400,7 @@ function project_bug_list($args)
 		$where.=" AND daportal_bug.type='".$args['type']."'";
 	if(strlen($args['priority']))
 		$where.=" AND daportal_bug.priority='".$args['priority']."'";
-	include('bug_list_filter.tpl');
+	include('./modules/project/bug_list_filter.tpl');
 	$order = ' ORDER BY ';
 	switch($args['sort'])
 	{
@@ -491,7 +491,7 @@ function project_bug_modify($args)
 		return _error(INVALID_ARGUMENT);
 	$bug = $bug[0];
 	$title = MODIFICATION_OF_BUG_HASH.$bug['id'].': '.$bug['title'];
-	include('bug_update.tpl');
+	include('./modules/project/bug_update.tpl');
 }
 
 
@@ -502,7 +502,7 @@ function project_bug_new($args)
 		return project_list(array('action' => 'bug_new'));
 	$title = REPORT_BUG_FOR.' '.$project;
 	$project_id = $args['project_id'];
-	include('bug_update.tpl');
+	include('./modules/project/bug_update.tpl');
 }
 
 
@@ -531,9 +531,9 @@ function project_bug_reply($args)
 	$title = REPLY_TO_BUG.' #'.$bug['id'].': '.$bug['title'];
 	require_once('system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
-	include('bug_display.tpl');
+	include('./modules/project/bug_display.tpl');
 	$reply['title'] = 'Re: '.$bug['title'];
-	include('bug_reply_update.tpl');
+	include('./modules/project/bug_reply_update.tpl');
 }
 
 
@@ -662,7 +662,7 @@ function project_bug_reply_modify($args)
 			.' FROM daportal_user'
 			." WHERE enabled='1'"
 			." AND user_id='".$reply['assigned_id']."';");
-	include('bug_reply_update.tpl');
+	include('./modules/project/bug_reply_update.tpl');
 }
 
 
@@ -739,7 +739,7 @@ function project_default($args)
 {
 	if(isset($args['id']))
 		return project_display($args);
-	include('default.tpl');
+	include('./modules/project/default.tpl');
 }
 
 
@@ -800,11 +800,11 @@ function project_display($args)
 	$enabled = $project['enabled'] == 't';
 	if($enabled == 0 && !$admin)
 	{
-		return include('project_submitted.tpl');
+		return include('./modules/project/project_submitted.tpl');
 	}
 	$title = $project['name'];
 	_project_toolbar($args['id'], $admin);
-	include('project_display.tpl');
+	include('./modules/project/project_display.tpl');
 	$members = array();
 	$members[] = array('id' => $project['user_id'],
 			'name' => _html_safe($project['username']),
@@ -850,7 +850,7 @@ function project_display($args)
 
 function project_download($args)
 {
-	include('download.tpl');
+	include('./modules/project/download.tpl');
 }
 
 
@@ -892,7 +892,7 @@ function project_insert($args)
 
 function project_installer($args)
 {
-	include('installer.tpl');
+	include('./modules/project/installer.tpl');
 }
 
 
@@ -1059,7 +1059,7 @@ function project_modify($args)
 		return error('Unable to update project', 1);
 	$project = $project[0];
 	$title = 'Modification of '.$project['name'];
-	include('project_update.tpl');
+	include('./modules/project/project_update.tpl');
 }
 
 
@@ -1071,13 +1071,13 @@ function project_new($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$title = NEW_PROJECT;
-	include('project_update.tpl');
+	include('./modules/project/project_update.tpl');
 }
 
 
 function project_package($args)
 {
-	include('package.tpl');
+	include('./modules/project/package.tpl');
 }
 
 
@@ -1098,7 +1098,7 @@ function project_timeline($args)
 	require_once('system/content.php');
 	if(_content_readable($args['id']) == FALSE)
 	{
-		return include('project_submitted.tpl');
+		return include('./modules/project/project_submitted.tpl');
 	}
 	$project = _sql_array('SELECT project_id, name, cvsroot'
 			.' FROM daportal_project'

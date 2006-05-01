@@ -186,7 +186,7 @@ function comment_display($args)
 	$comment = $comment[0];
 	$comment['date'] = strftime(DATE_FORMAT, strtotime(
 				substr($comment['timestamp'], 0, 19)));
-	include('display.tpl');
+	include('./modules/comment/display.tpl');
 }
 
 
@@ -265,7 +265,7 @@ function comment_new($args)
 			.' FROM daportal_content'
 			." WHERE enabled='t'"
 			." AND content_id='$parent';");
-	include('update.tpl');
+	include('./modules/comment/update.tpl');
 }
 
 
@@ -282,9 +282,9 @@ function comment_submit($comment)
 		$comment['user_id'] = $user_id;
 		$comment['username'] = $user_name;
 		$comment['date'] = strftime('%d/%m/%y %H:%M');
-		include('display.tpl');
+		include('./modules/comment/display.tpl');
 		$parent = $comment['parent'];
-		return include('update.tpl');
+		return include('./modules/comment/update.tpl');
 	}
 	if(($id = _comment_insert($comment)))
 		return _module('content', 'default', array('id'

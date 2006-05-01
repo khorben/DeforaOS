@@ -29,7 +29,7 @@ $debug = 1;
 $html = 1;
 $template = 'DaPortal';
 $theme = 'DaPortal';
-require_once('config.php');
+require_once('./config.php');
 
 //internals
 $user_id = 0;
@@ -43,19 +43,19 @@ session_start();
 $vars = array_keys($_SESSION);
 foreach($vars as $v)
 	$$v = $_SESSION[$v];
-require_once('system/debug.php');
-require_once('system/sql.php');
-require_once('system/config.php');
+require_once('./system/debug.php');
+require_once('./system/sql.php');
+require_once('./system/config.php');
 
 //configuration variables
 if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
 
-require_once('system/lang.php');
-require_once('system/module.php');
+require_once('./system/lang.php');
+require_once('./system/module.php');
 if($html)
 {
-	require_once('system/html.php');
+	require_once('./system/html.php');
 	_html_start();
 	_html_template($template);
 	_html_stop();

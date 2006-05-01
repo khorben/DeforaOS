@@ -34,20 +34,22 @@ function _explorer(&$args)
 	$module = $args['module'];
 	$action = $args['action'];
 	$id = $args['id'];
-	include('top.tpl');
+	include('./modules/explorer/top.tpl');
 	if(!isset($args['toolbar']) || is_array($args['toolbar']))
-		include('toolbar.tpl');
+	{
+		include('./modules/explorer/toolbar.tpl');
+	}
 	$view = isset($args['view']) ? $args['view'] : 'thumbnails';
-	include('header.tpl');
+	include('./modules/explorer/header.tpl');
 	$i = 0;
 	foreach($args['entries'] as $entry)
 	{
 		$i++;
 		$link = _explorer_link($entry);
 		$link_end = strlen($link) ? '</a>' : '';
-		include('entry.tpl');
+		include('./modules/explorer/entry.tpl');
 	}
-	include('bottom.tpl');
+	include('./modules/explorer/bottom.tpl');
 }
 
 function _explorer_link(&$entry)
