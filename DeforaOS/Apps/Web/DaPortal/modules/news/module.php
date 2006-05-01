@@ -29,7 +29,7 @@ function _news_insert($news)
 
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	return _content_insert($news['title'], $news['content']);
 }
 
@@ -38,7 +38,7 @@ function news_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/news/icon.png" alt=""/> '
@@ -124,17 +124,17 @@ function news_disable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_disable($args['id']);
 }
 
 
 function news_display($args)
 {
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(($news = _content_select($args['id'], 1)) == FALSE)
 		return _error('Invalid news');
 	if(($news['username'] = _sql_single('SELECT username'
@@ -146,7 +146,7 @@ function news_display($args)
 	$title = $news['title'];
 	$news['date'] = strftime(DATE_FORMAT,
 			strtotime(substr($news['timestamp'], 0, 19)));
-	include('news_display.tpl');
+	include('./modules/news/news_display.tpl');
 	if(_module_id('comment'))
 		_module('comment', 'childs', array('id' => $news['id']));
 }
@@ -156,10 +156,10 @@ function news_enable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_enable($args['id']);
 }
 
@@ -227,7 +227,7 @@ function news_list($args)
 	{
 		$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
 						$news['timestamp'], 0, 19)));
-		include('news_display.tpl');
+		include('./modules/news/news_display.tpl');
 	}
 	_html_paging('index.php?module=news&amp;action=list&amp;', $page,
 			$pages);
@@ -238,7 +238,7 @@ function news_modify($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($module_id = _module_id('news')))
@@ -251,7 +251,7 @@ function news_modify($args)
 		return _error('Unable to modify news');
 	$news = $news[0];
 	$title = 'Modification of news "'.$news['title'].'"';
-	include('news_update.tpl');
+	include('./modules/news/news_update.tpl');
 }
 
 
@@ -271,18 +271,18 @@ function news_submit($news)
 		$news['username'] = $user_name;
 		$news['date'] = strftime(DATE_FORMAT);
 		$news['content'] = stripslashes($news['content']);
-		include('news_display.tpl');
+		include('./modules/news/news_display.tpl');
 		unset($title);
-		return include('news_update.tpl');
+		return include('./modules/news/news_update.tpl');
 	}
 	if(!isset($news['send']))
 	{
 		$title = 'News submission';
-		return include('news_update.tpl');
+		return include('./modules/news/news_update.tpl');
 	}
 	if(!_news_insert($news))
 		return _error('Could not insert news');
-	include('news_posted.tpl');
+	include('./modules/news/news_posted.tpl');
 	//send mail
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
 			." WHERE enabled='t' AND admin='t';");
@@ -314,7 +314,7 @@ function news_update($news)
 {
 	global $user_id, $user_name;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(isset($news['preview']))
@@ -327,11 +327,11 @@ function news_update($news)
 		$news['username'] = $user_name;
 		$news['date'] = strftime(DATE_FORMAT);
 		$news['content'] = stripslashes($news['content']);
-		include('news_display.tpl');
+		include('./modules/news/news_display.tpl');
 		unset($title);
-		return include('news_update.tpl');
+		return include('./modules/news/news_update.tpl');
 	}
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(!_content_update($news['id'], $news['title'], $news['content']))
 		return _error('Could not update news');
 	news_display(array('id' => $news['id']));
