@@ -12,7 +12,7 @@ function top_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/top/icon.png" alt=""/> '
@@ -94,7 +94,7 @@ function top_delete($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	_sql_query('DELETE FROM daportal_top'
@@ -106,7 +106,7 @@ function top_insert($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(_sql_query('INSERT INTO daportal_top (name, link) VALUES ('
@@ -120,7 +120,7 @@ function top_modify($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$top = _sql_array('SELECT top_id, name, link FROM daportal_top'
@@ -130,7 +130,7 @@ function top_modify($args)
 	$top = $top[0];
 	$title = 'Top link modification';
 	$action = 'update';
-	include('update.tpl');
+	include('./modules/top/update.tpl');
 }
 
 
@@ -138,7 +138,7 @@ function top_move($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$from = _sql_array('SELECT name, link FROM daportal_top'
@@ -166,12 +166,12 @@ function top_new($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$title = 'New top link';
 	$action = 'insert';
-	include('update.tpl');
+	include('./modules/top/update.tpl');
 }
 
 
@@ -179,7 +179,7 @@ function top_update($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!_sql_query('UPDATE daportal_top SET'
