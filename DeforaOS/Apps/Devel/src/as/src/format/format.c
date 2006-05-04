@@ -37,21 +37,23 @@ Format * format_new(char * format, char * arch)
 		as_plugin_delete(handle);
 		return NULL;
 	}
-	f->format_init = plugin->format_init;
-	f->format_exit = plugin->format_exit;
-	f->format_section = plugin->format_section;
-	f->plugin = handle;
+	f->plugin = plugin;
+	f->handle = handle;
 	return f;
 }
 
 
 /* format_delete */
-void format_delete(Format * format, FILE * fp)
+int format_delete(Format * format, FILE * fp)
 {
-	format->format_exit(fp);
-	as_plugin_delete(format->plugin);
+	int ret = 0;
+
+	if(format->plugin->exit != NULL)
+		ret = format->plugin->exit(fp);
+	as_plugin_delete(format->handle);
 	free(format->arch);
 	free(format);
+	return ret;
 }
 
 
@@ -59,13 +61,16 @@ void format_delete(Format * format, FILE * fp)
 /* format_init */
 int format_init(Format * format, FILE * fp)
 {
-	return format->format_init(fp, format->arch);
+	if(format->plugin->init == NULL)
+		return 0;
+	return format->plugin->init(fp, format->arch);
 }
 
 
 /* format_section */
 int format_section(Format * format, FILE * fp, char * section)
 {
-	/* FIXME allow only a list of known sections for an architecture? */
-	return format->format_section(fp, section);
+	if(format->plugin->section == NULL)
+		return 0;
+	return format->plugin->section(fp, section);
 }
