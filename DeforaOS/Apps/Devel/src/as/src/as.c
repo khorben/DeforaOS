@@ -89,9 +89,9 @@ void * as_plugin_new(char * type, char * name, char * description)
 
 
 /* as_plugin_delete */
-void as_plugin_delete(void * plugin)
+void as_plugin_delete(void * handle)
 {
-	dlclose(plugin);
+	dlclose(handle);
 }
 
 

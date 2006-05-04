@@ -36,7 +36,7 @@ Arch * arch_new(char * arch)
 	}
 	a->instructions = plugin->instructions;
 	a->registers = plugin->registers;
-	a->plugin = handle;
+	a->handle = handle;
 	return a;
 }
 
@@ -44,7 +44,7 @@ Arch * arch_new(char * arch)
 /* arch_delete */
 void arch_delete(Arch * arch)
 {
-	as_plugin_delete(arch->plugin);
+	as_plugin_delete(arch->handle);
 	free(arch);
 }
 

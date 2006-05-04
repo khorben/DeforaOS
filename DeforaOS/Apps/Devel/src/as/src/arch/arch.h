@@ -51,7 +51,7 @@ typedef struct _Arch
 {
 	ArchRegister * registers;
 	ArchInstruction * instructions;
-	void * plugin;
+	void * handle;
 } Arch;
 
 /* functions */
