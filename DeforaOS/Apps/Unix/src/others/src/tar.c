@@ -94,10 +94,11 @@ static void _tar_print(Prefs * prefs, TarFileHeader * fh)
 {
 	if((*prefs & PREFS_vv) == PREFS_vv)
 		/* FIXME */
-		printf("%s %u %u %s\n", "----------", (unsigned)fh->uid,
-				(unsigned)fh->gid, fh->filename);
+		fprintf(stderr, "%s %u %u %s\n", "----------",
+				(unsigned)fh->uid, (unsigned)fh->gid,
+				fh->filename);
 	else if(*prefs & PREFS_v)
-		printf("%s\n", fh->filename);
+		fprintf(stderr, "%s\n", fh->filename);
 }
 
 #define _from_buffer_cpy(a) tfhb->a[sizeof(tfhb->a)-1] = '\0'; \
