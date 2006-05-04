@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include "scanner.h"
 #include "parser.h"
@@ -26,7 +27,8 @@ typedef struct _State
 
 /* parser */
 static int _parser_fatal(State * state, char const * message);
-static void _parser_error(State * state, char const * message);
+/* static void _parser_error(State * state, char const * message); */
+static void _parser_error(State * state, char const * format, ...);
 static void _parser_warning(State * state, char const * message);
 static void _parser_scan(State * state);
 static int _parser_check(State * state, TokenCode code);
@@ -47,7 +49,7 @@ int parser(Code * code, char * infile, FILE * infp)
 			_parser_warning(&state, "Parse error near token:");
 			_parser_warning(&state, state.token->string);
 		}
-		_parser_error(&state, "Unhandled syntax error, exiting");
+		_parser_error(&state, "%s", "Unhandled syntax error, exiting");
 	}
 	if(state.errors)
 		fprintf(stderr, "%s%s%s%d%s", "as: ", infile,
@@ -65,10 +67,17 @@ static int _parser_fatal(State * state, char const * message)
 	return 2;
 }
 
-static void _parser_error(State * state, char const * message)
+/* static void _parser_error(State * state, char const * message) */
+static void _parser_error(State * state, char const * format, ...)
 {
-	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
-			state->line, ": ", message, "\n");
+	va_list ap;
+
+	fprintf(stderr, "%s%s%s%u%s", "as: ", state->infile, ", line ",
+			state->line, ": ");
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	va_end(ap);
+	fputc('\n', stderr);
 	state->errors++;
 }
 
@@ -89,7 +98,7 @@ static int _parser_check(State * state, TokenCode code)
 	int ret = 0;
 
 	if(state->token == NULL || state->token->code != code)
-		_parser_error(state, "Parse error");
+		_parser_error(state, "%s", "Parse error");
 	else
 		ret = 1;
 	_parser_scan(state);
@@ -259,7 +268,14 @@ static void _instruction(State * state)
 		if((error = code_instruction(state->code, state->instruction,
 				state->operands, state->operands_cnt))
 				!= CE_SUCCESS)
-			_parser_error(state, code_error[error]);
+		{
+			if(error == CE_UNKNOWN_INSTRUCTION)
+				_parser_error(state, "%s \"%s\"",
+						code_error[error],
+						state->instruction);
+			else
+				_parser_error(state, "%s", code_error[error]);
+		}
 		free(state->instruction);
 		for(i = 0; i < state->operands_cnt; i++)
 			free(state->operands[i].value);
@@ -331,7 +347,7 @@ static void _operand(State * state)
 	{
 		if((p = realloc(state->operands, (state->operands_cnt+1)
 						* sizeof(CodeOperand))) == NULL)
-			_parser_error(state, "Internal error");
+			_parser_error(state, "%s", "Internal error");
 		else
 		{
 			state->operands = p;
