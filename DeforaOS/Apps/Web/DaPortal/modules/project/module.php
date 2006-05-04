@@ -346,11 +346,14 @@ function project_bug_list($args)
 	{
 		if(($args['project'] = _project_name($args['project_id']))
 				!= FALSE)
+		{
+			$project_id = $args['project_id'];
 			$project = $args['project'];
+		}
 	}
 	else if(isset($args['project']))
 	{
-		if(($args['project'] = _sql_single('SELECT name'
+		if(($project_id = _sql_single('SELECT project_id'
 				.' FROM daportal_project'
 				." WHERE name='".$args['project']."';"))
 				!= FALSE)
@@ -372,17 +375,9 @@ function project_bug_list($args)
 				!= FALSE)
 			$username = $args['username'];
 	}
-	if(isset($project))
+	if(isset($project) && isset($project_id))
 	{
-		if(isset($args['project_id']))
-		{
-			$project_id = $args['project_id'];
-			_project_toolbar($project_id);
-		}
-		else if(($project_id = _sql_single('SELECT project_id'
-				.' FROM daportal_project'
-				." WHERE name='$project';")) == FALSE)
-			unset($project_id);
+		_project_toolbar($project_id);
 		$title.=_FOR_.$project;
 	}
 	if(isset($username))
