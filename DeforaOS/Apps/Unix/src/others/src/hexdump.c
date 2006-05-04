@@ -50,7 +50,7 @@ static int _hexdump_do(char * filename)
 	buf[pos % 16] = '\0';
 	if(pos % 16 != 0)
 	{
-		if(pos % 16 < 8)
+		if(pos % 16 <= 8)
 			fputc(' ', stdout);
 		for(c = pos % 16; c < 16; c++)
 			printf("%s", "   ");
