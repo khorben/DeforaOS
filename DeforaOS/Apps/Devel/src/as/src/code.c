@@ -61,7 +61,7 @@ Code * code_new(char * arch, char * format, char * filename)
 void code_delete(Code * code, int error)
 {
 	arch_delete(code->arch);
-	format_delete(code->format, code->fp);
+	error |= format_delete(code->format, code->fp);
 	if(code->fp != NULL)
 	{
 		fclose(code->fp);
