@@ -1,5 +1,4 @@
-<?php
-//modules/menu/desktop.php
+<?php //modules/menu/desktop.php
 
 
 
@@ -11,6 +10,5 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $title = 'Menu generation';
 $admin = 0;
 $list = 0;
-
 
 ?>
