@@ -12,8 +12,8 @@ function _query($query)
 	global $_pg_res;
 
 	_info($query);
-	$_pg_res = @pg_query($query);
-	if(strlen($str = @pg_last_error()))
+	$_pg_res = pg_query($query);
+	if(strlen($str = pg_last_error()))
 		_error($str, 0);
 	return $_pg_res;
 }
@@ -62,6 +62,6 @@ function _sql_single($query)
 
 //main
 global $dbtype, $dbhost, $dbuser, $dbpassword, $dbname;
-$connection = @pg_connect("user='$dbuser' password='$dbpassword'");
+$connection = pg_connect("user='$dbuser' password='$dbpassword'");
 
 ?>
