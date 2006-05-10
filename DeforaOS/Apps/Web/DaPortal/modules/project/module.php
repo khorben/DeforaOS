@@ -420,8 +420,20 @@ function project_bug_list($args)
 		return _error('Unable to list bugs', 1);
 	for($i = 0, $count = count($bugs); $i < $count; $i++)
 	{
-		$bugs[$i]['icon'] = 'modules/project/bug.png';
-		$bugs[$i]['thumbnail'] = 'modules/project/bug.png';
+		switch($bugs[$i]['state'])
+		{
+			case 'New': $bugs[$i]['thumbnail']
+				 = 'modules/project/bug-new.png'; break;
+			case 'Assigned': $bugs[$i]['thumbnail']
+				 = 'modules/project/bug-assigned.png'; break;
+			case 'Closed': $bugs[$i]['thumbnail']
+				 = 'modules/project/bug-closed.png'; break;
+			case 'Fixed': case 'Implemented': $bugs[$i]['thumbnail']
+				 = 'modules/project/bug-fixed.png'; break;
+			default: $bugs[$i]['thumbnail']
+				 = 'modules/project/bug.png'; break;
+		}
+		$bugs[$i]['icon'] = $bugs[$i]['thumbnail'];
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['module'] = 'project';
 		$bugs[$i]['action'] = 'bug_display';
