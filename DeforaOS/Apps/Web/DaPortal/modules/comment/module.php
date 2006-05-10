@@ -166,10 +166,9 @@ function comment_display($args)
 	global $user_id;
 
 	require_once('system/user.php');
+	$where = " AND daportal_content.enabled='t'";
 	if(_user_admin($user_id))
 		$where = '';
-	else
-		$where = " AND daportal_content.enabled='t'";
 	$comment = _sql_array('SELECT daportal_comment.comment_id AS id'
 			.', daportal_content.enabled, timestamp, title'
 			.', content, daportal_content.user_id, username'
@@ -179,8 +178,7 @@ function comment_display($args)
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			." AND daportal_comment.comment_id='".$args['id']."'"
-			.$where
-			.' ORDER BY timestamp ASC;');
+			.$where.' ORDER BY timestamp ASC;');
 	if(!is_array($comment) || count($comment) != 1)
 		return _error('Could not display comment');
 	$comment = $comment[0];
@@ -235,8 +233,7 @@ function comment_list($args)
 			." AND daportal_module.name='comment'"
 			.' AND daportal_module.module_id'
 			.'=daportal_content.module_id'
-			.$where
-			.' ORDER BY timestamp DESC;');
+			.$where.' ORDER BY timestamp DESC;');
 	if(!is_array($comments))
 		return _error('Could not list comments');
 	for($i = 0, $cnt = count($comments); $i < $cnt; $i++)
@@ -248,8 +245,7 @@ function comment_list($args)
 				strtotime(substr($comments[$i]['timestamp'], 0,
 						19)));
 	}
-	_module('explorer', 'browse', array(
-			'view' => 'details',
+	_module('explorer', 'browse', array('view' => 'details',
 			'class' => array('date' => DATE),
 			'entries' => $comments));
 }
