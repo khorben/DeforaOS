@@ -118,6 +118,8 @@ function _html_start()
 		<link rel="stylesheet" href="themes/'.$theme.'.css" title="'
 .$theme.'"/>'."\n");
 	_start_css_themes($theme);
+	if(is_readable('favicon.ico'))
+		print('		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>'."\n");
 	print('	</head>
 	<body>'."\n");
 }
