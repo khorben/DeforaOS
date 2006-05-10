@@ -10,19 +10,22 @@
 		<tr><td class="field">Title:</td><td colspan="3"><input type="text" name="title" value="<? echo _html_safe($reply['title']); ?>" size="50"/></td></tr>
 <? if($admin) { ?>
 		<tr><td class="field">State:</td><td><select name="state">
-<? $states = array('', 'New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
+				<option value=""<? if($reply['state'] == '') { ?> selected="selected"<? } ?>></option>
+<? $states = _sql_enum('daportal_bug', 'state');
 foreach($states as $s) { ?>
 				<option value="<? echo _html_safe($s); ?>"<? if($reply['state'] == $s) { ?> selected="selected"<? } ?>><? echo _html_safe($s); ?></option>
 <? } ?>
 			</select></td>
 		<td class="field">Type:</td><td><select name="type">
-<? $types = array('', 'Major', 'Minor', 'Functionality', 'Feature');
+				<option value=""<? if($reply['type'] == '') { ?> selected="selected"<? } ?>></option>
+<? $types = _sql_enum('daportal_bug', 'type');
 foreach($types as $t) { ?>
 				<option value="<? echo _html_safe($t); ?>"<? if($reply['type'] == $t) { ?> selected="selected"<? } ?>><? echo _html_safe($t); ?></option>
 <? } ?>
 			</select></td></tr>
 		<tr><td class="field">Priority:</td><td><select name="priority">
-<? $priorities = array('', 'Urgent', 'High', 'Medium', 'Low');
+				<option value=""<? if($reply['priority'] == '') { ?> selected="selected"<? } ?>></option>
+<? $priorities = _sql_enum('daportal_bug', 'priority');
 foreach($priorities as $p) { ?>
 				<option value="<? echo _html_safe($p); ?>"<? if($reply['priority'] == $p) { ?> selected="selected"<? } ?>><? echo _html_safe($p); ?></option>
 <? } ?>
