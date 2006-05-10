@@ -1,30 +1,30 @@
-<h1><img src="modules/user/home.png" alt=""/> <? echo _html_safe($user_name); ?>'s page</h1>
+<h1><img src="modules/user/home.png" alt=""/> <?php echo _html_safe($user_name); ?>'s page</h1>
 <style type="text/css"><!-- @import url(modules/explorer/style.css); --></style>
 <div class="explorer">
 	<div class="listing_thumbnails">
-<? global $user_id; require_once('system/user.php'); if(_user_admin($user_id)) { ?>
+<?php global $user_id; require_once('./system/user.php'); if(_user_admin($user_id)) { ?>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/admin/icon.png" alt=""/></div>
 			<div class="name"><a href="index.php?module=admin">Administration</a></div>
 		</div>
-<? } ?>
-<? if(_module_id('bookmark')) { ?>
+<?php } ?>
+<?php if(_module_id('bookmark')) { ?>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/bookmark/icon.png" alt=""/></div>
-			<div class="name"><a href="index.php?module=bookmark&amp;user_id=<? echo _html_safe_link($user['user_id']); ?>">Bookmarks</a></div>
+			<div class="name"><a href="index.php?module=bookmark&amp;user_id=<?php echo _html_safe_link($user['user_id']); ?>">Bookmarks</a></div>
 		</div>
-<? } ?>
+<?php } ?>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/content/icon.png" alt=""/></div>
-			<div class="name"><a href="index.php?module=user&amp;id=<? echo _html_safe($user_id); ?>">My Contents</a></div>
+			<div class="name"><a href="index.php?module=user&amp;id=<?php echo _html_safe($user_id); ?>">My Contents</a></div>
 		</div>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/admin/icon.png" alt=""/></div>
-			<div class="name"><a href="index.php?module=user&amp;action=modify&amp;id=<? echo _html_safe($user_id); ?>">Preferences</a></div>
+			<div class="name"><a href="index.php?module=user&amp;action=modify&amp;id=<?php echo _html_safe($user_id); ?>">Preferences</a></div>
 		</div>
 		<div class="entry">
 			<div class="thumbnail"><img src="modules/user/logout.png" alt=""/></div>
-			<div class="name"><a href="index.php?module=user&amp;action=logout"><? echo _html_safe(LOGOUT); ?></a></div>
+			<div class="name"><a href="index.php?module=user&amp;action=logout"><?php echo _html_safe(LOGOUT); ?></a></div>
 		</div>
 	</div>
 	<div style="clear: left">&nbsp;</div>
