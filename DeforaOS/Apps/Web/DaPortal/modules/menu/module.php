@@ -11,7 +11,7 @@ function menu_default()
 {
 	if(($modules = _sql_array('SELECT name FROM daportal_module'
 			." WHERE enabled='1' ORDER BY name ASC;")) == FALSE)
-		return error('No modules to link to');
+		return _error('No modules to link to');
 	print('<ul class="menu">'."\n");
 	foreach($modules as $m)
 	{
