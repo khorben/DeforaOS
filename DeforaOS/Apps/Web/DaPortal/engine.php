@@ -1,5 +1,4 @@
-<?php
-//engine.php
+<?php //engine.php
 //Copyright 2004, 2005 Pierre Pronchery
 //This file is part of DaPortal
 //
