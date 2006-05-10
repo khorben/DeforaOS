@@ -1,10 +1,10 @@
-<? global $title, $module_name; ?>
+<?php global $title, $module_name; ?>
 
 <div class="container">
-<? _module('menu'); ?>
+<?php _module('menu'); ?>
 	<div class="main">
-<? _module(); ?>
+<?php _module(); ?>
 	</div>
 <div style="clear: both"></div>
-<? _debug(); ?>
+<?php _debug(); ?>
 </div>
