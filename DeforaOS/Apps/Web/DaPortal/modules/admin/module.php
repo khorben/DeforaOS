@@ -9,14 +9,14 @@ require_once('system/user.php');
 
 
 //lang
+$text['DAPORTAL_ADMINISTRATION'] = 'Portal administration';
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
 $text['MODULE_NAME'] = 'Module name';
-$text['MODULES_ADMINISTRATION'] = 'Modules administration';
 global $lang;
 if($lang == 'fr')
 {
+	$text['DAPORTAL_ADMINISTRATION'] = 'Administration du portail';
 	$text['MODULE_NAME'] = 'Nom du module';
-	$text['MODULES_ADMINISTRATION'] = 'Administration des modules';
 }
 _lang($text);
 
@@ -27,18 +27,48 @@ function admin_admin($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(isset($args['id']))
-		return _module_admin($args['id']);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(MODULES_ADMINISTRATION)
-			.'</h1>'."\n");
+			._html_safe(DAPORTAL_ADMINISTRATION).'</h1>'."\n"
+			.'<h2><img src="modules/admin/icon.png" alt=""/> '
+			._html_safe(LANGUAGES).'</h2>'."\n");
+	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
+			.' FROM daportal_lang;')) == FALSE)
+		_error('Unable to list languages');
+	else
+	{
+		for($cnt = count($lang), $i = 0; $i < $cnt; $i++)
+		{
+			$lang[$i]['name'] = _html_safe($lang[$i]['name']);
+			$lang[$i]['apply_module'] = 'admin';
+			$lang[$i]['apply_id']
+				= _html_safe($lang[$i]['apply_id']);
+			$lang[$i]['enabled'] = ($lang[$i]['enabled']
+					== 't') ? 'enabled' : 'disabled';
+			$lang[$i]['enabled'] = '<img src="icons/16x16/'
+				.$lang[$i]['enabled'].'.png" alt="'
+				.$lang[$i]['enabled'].'.png" title="'
+				.($lang[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED).'"/>';
+		}
+		$toolbar = array();
+		$toolbar[] = array('title' => DISABLE,
+				'icon' => 'icons/16x16/disabled.png',
+				'action' => 'lang_disable');
+		$toolbar[] = array('title' => ENABLE,
+				'icon' => 'icons/16x16/enabled.png',
+				'action' => 'lang_enable');
+		_module('explorer', 'browse_trusted', array('entries' => $lang,
+				'class' => array('enabled' => ENABLED),
+				'toolbar' => $toolbar, 'view' => 'details',
+				'module' => 'admin', 'action' => 'admin'));
+	}
+	print('<h2><img src="modules/admin/icon.png" alt=""/> '
+			._html_safe(MODULES).'</h2>'."\n");
 	if(($modules = _sql_array('SELECT module_id AS apply_id, name AS module'
-			.', enabled'
-			.' FROM daportal_module'
+			.', enabled FROM daportal_module'
 			.' ORDER BY module ASC;')) == FALSE)
 		return _error('Could not list modules');
-	$count = count($modules);
-	for($i = 0; $i < $count; $i++)
+	for($cnt = count($modules), $i = 0; $i < $cnt; $i++)
 	{
 		$module = $modules[$i]['module'];
 		$modules[$i]['icon'] = 'modules/'.$module.'/icon.png';
@@ -48,14 +78,13 @@ function admin_admin($args)
 		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == 't')
 				? 'enabled' : 'disabled';
 		$modules[$i]['enabled'] = '<img src="icons/16x16/'
-				.$modules[$i]['enabled'].'.png" alt="'
-				.$modules[$i]['enabled'].'" title="'
-				.($modules[$i]['enabled'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
+			.$modules[$i]['enabled'].'.png" alt="'
+			.$modules[$i]['enabled'].'" title="'
+			.($modules[$i]['enabled'] == 'enabled'
+					? ENABLED : DISABLED).'"/>';
 		$modules[$i]['module_name'] = '<a href="index.php?module='
-				._html_safe_link($module).'">'
-				._html_safe($module).'</a>';
+			._html_safe_link($module).'">'
+			._html_safe($module).'</a>';
 		$title = '';
 		@include('modules/'.$module.'/desktop.php');
 		$modules[$i]['name'] = _html_safe_link(strlen($title) ? $title
@@ -64,22 +93,43 @@ function admin_admin($args)
 	$toolbar = array();
 	$toolbar[] = array('title' => DISABLE,
 			'icon' => 'icons/16x16/disabled.png',
-			'action' => 'disable');
+			'action' => 'module_disable');
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
-			'action' => 'enable');
-	_module('explorer', 'browse_trusted', array(
+			'action' => 'module_enable');
+	_module('explorer', 'browse_trusted', array('entries' => $modules,
 			'class' => array('enabled' => ENABLED,
 					'module_name' => MODULE_NAME),
-			'entries' => $modules,
-			'view' => 'details',
-			'toolbar' => $toolbar,
-			'module' => 'admin',
-			'action' => 'admin'));
+			'toolbar' => $toolbar, 'view' => 'details',
+			'module' => 'admin', 'action' => 'admin'));
 }
 
 
-function admin_disable($args)
+function admin_lang_disable($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(_sql_query("UPDATE daportal_lang SET enabled='f'"
+			." WHERE lang_id='".$args['id']."';") == FALSE)
+		_error('Unable to update language');
+}
+
+
+function admin_lang_enable($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(_sql_query("UPDATE daportal_lang SET enabled='t'"
+			." WHERE lang_id='".$args['id']."';") == FALSE)
+		_error('Unable to update language');
+}
+
+
+function admin_module_disable($args)
 {
 	global $user_id;
 
@@ -91,7 +141,7 @@ function admin_disable($args)
 }
 
 
-function admin_enable($args)
+function admin_module_enable($args)
 {
 	global $user_id;
 
