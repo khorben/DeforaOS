@@ -139,26 +139,20 @@ function project_admin($args)
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE,
 			'icon' => 'icons/16x16/disabled.png',
-			'action' => 'disable',
-			'confirm' => 'disable');
+			'action' => 'disable', 'confirm' => 'disable');
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
-			'action' => 'enable',
-			'confirm' => 'enable');
+			'action' => 'enable', 'confirm' => 'enable');
 	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
-			'action' => 'delete',
-			'confirm' => 'delete');
-	_module('explorer', 'browse_trusted', array(
+			'action' => 'delete', 'confirm' => 'delete');
+	_module('explorer', 'browse_trusted', array('entries' => $projects,
 			'class' => array('enabled' => 'Enabled',
 					'admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION,
 					'cvsroot' => CVS_PATH),
-			'toolbar' => $toolbar,
-			'view' => 'details',
-			'entries' => $projects,
-			'module' => 'project',
-			'action' => 'admin'));
+			'toolbar' => $toolbar, 'view' => 'details',
+			'module' => 'project', 'action' => 'admin'));
 }
 
 
