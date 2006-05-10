@@ -6,21 +6,21 @@
 		<td class="field"><? echo _html_safe(SUBMITTER); ?>:</td><td><input type="text" name="username" value="<? echo _html_safe(stripslashes($args['username'])); ?>" size="20"/></td></tr>
 		<tr><td class="field"><? echo _html_safe(STATE); ?>:</td><td><select name="state">
 				<option value=""<? if($args['state'] == '') { ?> selected="selected"<? } ?>>All</option>
-<? $states = array('New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
+<? $states = _sql_enum('daportal_bug', 'state');
 foreach($states as $s) { ?>
 				<option value="<? echo _html_safe($s); ?>"<? if($args['state'] == $s) { ?> selected="selected"<? } ?>><? echo _html_safe($s); ?></option>
 <? } ?>
 			</select></td>
 		<td class="field"><? echo _html_safe(TYPE); ?>:</td><td><select name="type">
 				<option value=""<? if($args['type'] == '') { ?> selected="selected"<? } ?>>All</option>
-<? $types = array('Major', 'Minor', 'Functionality', 'Feature');
+<? $types = _sql_enum('daportal_bug', 'type');
 foreach($types as $t) { ?>
 				<option value="<? echo _html_safe($t); ?>"<? if($args['type'] == $t) { ?> selected="selected"<? } ?>><? echo _html_safe($t); ?></option>
 <? } ?>
 			</select></td></tr>
 		<tr><td class="field"><? echo _html_safe(PRIORITY); ?>:</td><td><select name="priority">
 				<option value=""<? if($args['priority'] == '') { ?> selected="selected"<? } ?>>All</option>
-<? $priorities = array('Urgent', 'High', 'Medium', 'Low');
+<? $priorities = _sql_enum('daportal_bug', 'priority');
 foreach($priorities as $p) { ?>
 				<option value="<? echo _html_safe($p); ?>"<? if($args['priority'] == $p) { ?> selected="selected"<? } ?>><? echo _html_safe($p); ?></option>
 <? } ?>
