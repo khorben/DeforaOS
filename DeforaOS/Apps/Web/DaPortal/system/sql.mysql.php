@@ -10,7 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 function _query($query)
 {
 	_info($query);
-	return @mysql_query($query);
+	return mysql_query($query);
 }
 
 
@@ -50,7 +50,7 @@ function _sql_single($query)
 
 //main
 global $dbtype, $dbhost, $dbuser, $dbpassword, $dbname;
-if(($connection = @mysql_connect($dbhost, $dbuser, $dbpassword)) != FALSE)
+if(($connection = mysql_connect($dbhost, $dbuser, $dbpassword)) != FALSE)
 	mysql_select_db($dbname, $connection);
 
 ?>
