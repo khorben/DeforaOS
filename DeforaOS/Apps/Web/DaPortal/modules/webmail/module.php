@@ -35,7 +35,7 @@ function _webmail_connect($folder = 'INBOX')
 	if(!isset($_SESSION['webmail']['username'])
 			|| !isset($_SESSION['webmail']['password']))
 		return FALSE;
-	$mbox = @imap_open('{'.$server.':993/imap/ssl/novalidate-cert}'.$folder,
+	$mbox = imap_open('{'.$server.':993/imap/ssl/novalidate-cert}'.$folder,
 			$_SESSION['webmail']['username'],
 			$_SESSION['webmail']['password'],
 			strlen($folder) ? 0 : OP_HALFOPEN);
