@@ -18,7 +18,7 @@ function menu_default()
 		$title = $m['name'];
 		$list = 0;
 		$actions = FALSE;
-		@include('./modules/'.$m['name'].'/desktop.php');
+		include('./modules/'.$m['name'].'/desktop.php');
 		if(!$list)
 			continue;
 		print("\t".'<li><a href="index.php?module='.$m['name']
