@@ -82,6 +82,36 @@ form.lang {
 	margin-left:			10px;
 }
 
+pre span.character {
+	color:				#ff0000;
+	font-weight:			bold;
+}
+
+pre span.comment, pre span.variable {
+	color:				#00ffff;
+	font-weight:			bold;
+}
+
+pre span.keyword {
+	color:				#ffff00;
+	font-weight:			bold;
+}
+
+pre span.preprocessed {
+	color:				#0000ff;
+	font-weight:			bold;
+}
+
+pre span.string {
+	color:				#ff00ff;
+	font-weight:			bold;
+}
+
+pre span.type {
+	color:				#00ff00;
+	font-weight:			bold;
+}
+
 table.bordered {
 	border:				1px solid #959595;
 	border-collapse:		collapse;
@@ -94,6 +124,34 @@ table.bordered td {
 table.bordered th {
 	background-color:		#790000;
 	border:				1px solid #959595;
+}
+
+.bug_reply {
+	background-color:		#400000;
+	border:				1px solid #959595;
+	margin-top:			20px;
+}
+
+.bug_reply div {
+	padding:			5px;
+}
+
+.bug_reply .status {
+	font-weight:			bold;
+}
+
+.bug_reply .title {
+	background-color:		#400000;
+}
+
+.bug_reply .author {
+	display:			inline;
+	padding-right:			0;
+}
+
+.bug_reply .date {
+	display:			inline;
+	padding-left:			0;
 }
 
 .comment .author, .comment .date {
@@ -180,6 +238,7 @@ table.bordered th {
 
 .explorer .entry .thumbnail {
 	height:				100px;
+	margin-top:			4px;
 	text-align:			center;
 	width:				100px;
 }
@@ -201,6 +260,24 @@ table.bordered th {
 	padding-left:			1px;
 }
 
+.explorer .listing_details .header div,
+.explorer .listing_details .entry div {
+	padding-left:			4px;
+}
+
+.explorer .listing_details .header div.icon,
+.explorer .listing_details .header div.name,
+.explorer .listing_details .entry div.icon,
+.explorer .listing_details .entry div.name {
+	padding:			0;
+}
+
+.explorer .listing_details .entry .date,
+.explorer .listing_details .entry .revision {
+	font-family:			monospace;
+	font-size:			90%;
+}
+
 .explorer .listing_list .entry {
 	height:				1em;
 	min-height:			16px;
@@ -212,6 +289,8 @@ table.bordered th {
 }
 
 .explorer .listing_thumbnails .entry {
+	margin-right:			4px;
+	margin-top:			4px;
 	width:				100px;
 }
 
@@ -451,62 +530,4 @@ ul.menu ul li a:hover {
 .top_search input[type="text"] {
 	margin-bottom:			2px;
 	width:				158px;
-}
-
-
-/* cvsweb */
-body.src {
-	background-color:		#000000;
-	color:				#ffffff;
-	border:				1px solid #959595;
-	margin:				10px;
-	min-height:			500px;
-	padding:			10px;
-}
-
-.attic {
-	font-size: smaller;
-}
-
-.current-rev {
-	font-weight: bold;
-}
-
-.diff, .diff-heading span {
-	font-family: monospace;
-}
-
-.diff-added {
-	background-color: #9f9;
-	color:				#000000;
-}
-
-.diff-changed {
-	background-color: #ff6;
-	color:				#000000;
-}
-
-.diff-changed-missing {
-	background-color: #ee6;
-	color:				#000000;
-}
-
-.diff-empty {
-	background-color: #ccc;
-	color:				#000000;
-}
-
-.diff-removed {
-	background-color: #f99;
-	color:				#000000;
-}
-
-.diff-unchanged {
-	background-color: #ccc;
-	color:				#000000;
-}
-
-.navigate-header {
-	background-color:		#790000;
-	border:				1px solid #959595;
 }
