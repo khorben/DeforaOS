@@ -1,5 +1,4 @@
-<?php
-//modules/user/desktop.php
+<?php //modules/user/desktop.php
 
 
 
@@ -10,6 +9,10 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 $text['USERS'] = 'Users';
 global $lang;
+if($lang == 'de')
+	$text['USERS'] = 'Benutzer';
+else if($lang == 'fr')
+	$text['USERS'] = 'Utilisateurs';
 _lang($text);
 
 $title = USERS;
@@ -24,11 +27,5 @@ if($user_id != 0)
 }
 else
 	$actions = array('login' => LOGIN);
-global $lang;
-if($lang == 'de')
-	$title = 'Benutzer';
-else if($lang == 'fr')
-	$title = 'Utilisateurs';
-
 
 ?>
