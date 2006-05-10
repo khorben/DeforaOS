@@ -238,9 +238,10 @@ function project_bug_display($args)
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
-	$bug['assigned'] = _sql_single('SELECT username FROM daportal_user'
+	$bug['assigned'] = is_numeric($bug['assigned_id'])
+		? _sql_single('SELECT username FROM daportal_user'
 			." WHERE enabled='1'"
-			." AND user_id='".$bug['assigned_id']."';");
+			." AND user_id='".$bug['assigned_id']."';") : '';
 	include('./modules/project/bug_display.tpl');
 	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
 			.', timestamp AS date'
