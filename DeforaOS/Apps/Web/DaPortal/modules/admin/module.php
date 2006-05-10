@@ -11,11 +11,16 @@ require_once('system/user.php');
 //lang
 $text['DAPORTAL_ADMINISTRATION'] = 'Portal administration';
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
+$text['LANGUAGES'] = 'Languages';
 $text['MODULE_NAME'] = 'Module name';
+$text['MODULES'] = 'Modules';
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+	$text['LANGUAGES'] = 'Spräche';
+else if($lang == 'fr')
 {
 	$text['DAPORTAL_ADMINISTRATION'] = 'Administration du portail';
+	$text['LANGUAGES'] = 'Langages';
 	$text['MODULE_NAME'] = 'Nom du module';
 }
 _lang($text);
