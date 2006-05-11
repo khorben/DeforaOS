@@ -38,7 +38,7 @@ function download_admin($args)
 			.', mode'
 			.' FROM daportal_download, daportal_content'
 			.' WHERE daportal_download.content_id'
-			.'=daportal_content.content_id;');
+			.'=daportal_content.content_id ORDER BY id DESC;');
 	if(!is_array($dls))
 		return _error('Unable to list downloads');
 	for($cnt = count($dls), $i = 0; $i < $cnt; $i++)
@@ -130,7 +130,7 @@ function download_default($args)
 			.' FROM daportal_download, daportal_content'
 			.' WHERE daportal_download.content_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1' AND parent$parent;");
+			." AND enabled='1' AND parent$parent ORDER BY name;");
 	if(!is_array($dls))
 		return _error('Unable to list downloads');
 	for($cnt = count($dls), $i = 0; $i < $cnt; $i++)
