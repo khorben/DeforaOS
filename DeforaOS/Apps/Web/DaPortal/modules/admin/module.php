@@ -34,7 +34,7 @@ function admin_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> '
 			._html_safe(DAPORTAL_ADMINISTRATION).'</h1>'."\n"
-			.'<h2><img src="modules/admin/icon.png" alt=""/> '
+			.'<h2><img src="modules/admin/lang.png" alt=""/> '
 			._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
 			.' FROM daportal_lang;')) == FALSE)
