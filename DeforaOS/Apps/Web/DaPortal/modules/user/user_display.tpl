@@ -1,5 +1,5 @@
 <h1><img src="modules/user/user.png" alt=""/> <?php echo _html_safe($user['username']); ?></h1>
-<style type="text/css"><!-- @import url(modules/explorer/style.css); --></style>
+<style type="text/css"><!-- @import url('css/explorer.css'); --></style>
 <div class="explorer">
 	<div class="listing_thumbnails">
 <?php if(_module_id('article')) { ?>

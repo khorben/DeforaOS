@@ -1,5 +1,5 @@
 <h1><img src="modules/user/home.png" alt=""/> <?php echo _html_safe($user_name); ?>'s page</h1>
-<style type="text/css"><!-- @import url(modules/explorer/style.css); --></style>
+<style type="text/css"><!-- @import url('css/explorer.css'); --></style>
 <div class="explorer">
 	<div class="listing_thumbnails">
 <?php global $user_id; require_once('./system/user.php'); if(_user_admin($user_id)) { ?>
