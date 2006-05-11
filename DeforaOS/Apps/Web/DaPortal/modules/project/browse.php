@@ -53,7 +53,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				break;
 		$file = _html_safe_link($filename.'/'.$f);
 		$name = _html_safe(substr($rcs[2], 14));
-		require_once('system/mime.php');
+		require_once('./system/mime.php');
 		$mime = _mime_from_ext($name);
 		$name = '<a href="index.php?module=project&amp;action=browse'
 				.'&amp;id='.$id.'&amp;file='.$file.'">'
@@ -76,7 +76,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 				.'0123456789'));
-		require_once('system/user.php');
+		require_once('./system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
 		{
 			$author = _html_safe_link($author);
@@ -151,7 +151,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 				.'0123456789'));
-		require_once('system/user.php');
+		require_once('./system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
 		{
 			$author = _html_safe_link($author);
@@ -236,12 +236,12 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	$basename = substr($rcs[2], 14);
 	$fp = popen('co -p'.$revision.' "'.$path.'"', 'r');
 	_info('co -p'.$revision.' "'.$path.'"', 0);
-	require_once('system/mime.php');
+	require_once('./system/mime.php');
 	if(($mime = _mime_from_ext($basename)) == 'default')
 		$mime = 'text/plain';
 	if($download)
 	{
-		require_once('system/html.php');
+		require_once('./system/html.php');
 		header('Content-Type: '.$mime);
 		header('Content-Disposition: inline; filename="'
 				._html_safe(basename($basename)).'"');
@@ -251,13 +251,11 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	}
 	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
 		."&amp;file="._html_safe_link($filename);
-	print('<div class="toolbar">'
-			.'<a href="'.$link.'">Browse revisions</a>'
+	print('<div class="toolbar"><a href="'.$link.'">Browse revisions</a>'
 			.' · <a href="'.$link."&amp;revision=$revision"
 			.'&amp;download=1">'
 			.'<img src="icons/16x16/save.png" alt=""/>'
-			.' Download file</a>'
-			.'</div>'."\n");
+			.' Download file</a></div>'."\n");
 	if(strncmp('image/', $mime, 6) == 0)
 		return print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
 	include('syntax.php');
