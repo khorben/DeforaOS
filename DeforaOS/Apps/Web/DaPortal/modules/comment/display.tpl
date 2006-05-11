@@ -6,7 +6,7 @@
 		<div class="content"><?php echo _html_pre($comment['content']); ?></div>
 		<div class="status">
 			<a href="index.php?module=comment&amp;action=new&amp;parent=<?php echo _html_safe($comment['id']); ?>#edit"><img src="icons/16x16/reply.png" alt=""/> Reply</a>
-<?php global $user_id; require_once('system/user.php');
+<?php global $user_id; require_once('./system/user.php');
 if($comment['id'] && _user_admin($user_id)) { ?>
 			· <a href="index.php?module=content&amp;action=modify&amp;id=<?php echo _html_safe($comment['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
 <?php if($comment['enabled'] == 't') { ?>
