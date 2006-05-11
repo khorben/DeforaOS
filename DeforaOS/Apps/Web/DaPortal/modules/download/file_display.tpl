@@ -1,6 +1,6 @@
 <h1><img src="modules/download/icon.png" alt=""/> <?php echo _html_safe(DOWNLOADS.': '.$file['name']); ?></h1>
 <p>
-<a href="index.php?module=download&amp;action=download&amp;id=<? echo _html_safe($file['id']); ?>"><img src="icons/16x16/save.png" alt-""/> Download file</a>
+<a href="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>"><img src="icons/16x16/save.png" alt-""/> Download file</a>
 </p>
 <table>
 	<tr><td class="field">Name:</td><td><?php echo _html_safe($file['name']); ?></td></tr>
@@ -16,4 +16,4 @@
 <?php if(strncmp('image/', $file['mime'], 6) == 0) { ?>
 <h2>Image preview</h2>
 <img src="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>" alt="" style="max-height: 100px; max-width: 100px"/>
-<? } ?>
+<?php } ?>
