@@ -52,14 +52,18 @@ function _module($module = '', $action = '', $args = FALSE)
 
 
 function _module_id($name)
-	//FIXME allow administrator to access disabled modules
 {
 	static $cache = array();
+	global $user_id;
 
 	if(isset($cache[$name]))
 		return $cache[$name];
+	require_once('./system/user.php');
+	$enabled = " AND enabled='1'";
+	if(_user_admin($user_id))
+		$enabled = '';
 	if(($id = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='$name' AND enabled='1'")) == FALSE)
+			." WHERE name='$name'$enabled;")) == FALSE)
 		return 0;
 	$cache[$name] = $id;
 	return $id;
