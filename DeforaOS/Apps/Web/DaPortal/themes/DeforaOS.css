@@ -273,6 +273,7 @@ table.bordered th {
 }
 
 .explorer .listing_details .entry .date,
+.explorer .listing_details .entry .mode,
 .explorer .listing_details .entry .revision {
 	font-family:			monospace;
 	font-size:			90%;
