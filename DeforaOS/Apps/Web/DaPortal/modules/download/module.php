@@ -53,12 +53,6 @@ function download_admin($args)
 		$dls[$i]['apply_id'] = $dls[$i]['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
-			'link' => 'javascript:history.back()');
-	$toolbar[] = array('title' => 'Forward',
-			'icon' => 'icons/16x16/forward.png',
-			'link' => 'javascript:history.forward()');
-	$toolbar[] = array();
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable');
