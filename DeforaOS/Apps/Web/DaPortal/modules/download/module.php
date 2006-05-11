@@ -218,12 +218,12 @@ function _default_download($file)
 	$filename = $root.'/'.$file['id'];
 	$st = stat($filename);
 	$file['mode'] = _permissions($file['mode']);
-	$file['ctime'] = $st['ctime'];
-	$file['mtime'] = $st['mtime'];
-	$file['atime'] = $st['atime'];
+	$file['ctime'] = strftime(DATE_FORMAT, $st['ctime']);
+	$file['mtime'] = strftime(DATE_FORMAT, $st['mtime']);
+	$file['atime'] = strftime(DATE_FORMAT, $st['atime']);
 	$file['size'] = round($st['size'] / 1024);
-	$file['size'] = $file['size'] > 1024 ? round($file['size'] / 1024)
-		.' MB' : $file['size'].' KB';
+	$file['size'] = $file['size'] > 1024 ? round($file['size'] / 1024).' MB'
+		: $file['size'].' KB';
 	include('./modules/download/file_display.tpl');
 }
 
