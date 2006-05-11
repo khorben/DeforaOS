@@ -51,6 +51,15 @@ function download_admin($args)
 		$dls[$i]['action'] = 'default';
 		$dls[$i]['apply_module'] = 'download';
 		$dls[$i]['apply_id'] = $dls[$i]['id'];
+		$dls[$i]['name'] = _html_safe($dls[$i]['name']);
+		$dls[$i]['enabled'] = ($dls[$i]['enabled'] == 't')
+			? 'enabled' : 'disabled';
+		$dls[$i]['enabled'] = '<img src="icons/16x16/'
+			.$dls[$i]['enabled'].'.png" alt="'
+			.$dls[$i]['enabled'].'.png" title="'
+			.($dls[$i]['enabled'] == 'enabled' ? ENABLED : DISABLED)
+			.'"/>';
+		$dls[$i]['mode'] = _html_safe($dls[$i]['mode']);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => ENABLE,
@@ -67,7 +76,7 @@ function download_admin($args)
 	$toolbar[] = array('title' => 'Refresh',
 			'icon' => 'icons/16x16/refresh.png',
 			'link' => 'javascript:location.reload()');
-	_module('explorer', 'browse', array('entries' => $dls,
+	_module('explorer', 'browse_trusted', array('entries' => $dls,
 				'class' => array('enabled' => ENABLED,
 					'mode' => MODE),
 				'toolbar' => $toolbar, 'view' => 'details',
