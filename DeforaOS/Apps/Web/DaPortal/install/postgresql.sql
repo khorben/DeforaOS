@@ -150,7 +150,7 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('11', 'server', '')
 
 /* module: bookmark */
 CREATE TABLE daportal_bookmark (
-	bookmark_id SERIAL UNIQUE,
+	bookmark_id SERIAL,
 	url VARCHAR(256),
 	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
 );
@@ -158,7 +158,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
 
 /* module: category */
 CREATE TABLE daportal_category_content (
-	category_content_id SERIAL UNIQUE,
+	category_content_id SERIAL,
 	category_id SERIAL,
 	content_id SERIAL,
 	PRIMARY KEY (category_content_id),
@@ -166,3 +166,16 @@ CREATE TABLE daportal_category_content (
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
+
+/* module: download */
+CREATE TABLE daportal_download (
+	download_id SERIAL,
+	content_id SERIAL NOT NULL,
+	parent INTEGER,
+	mode SMALLINT DEFAULT '0420',
+	PRIMARY KEY (download_id),
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (parent) REFERENCES daportal_download (download_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp');
