@@ -20,6 +20,24 @@ _lang($text);
 define('S_IFDIR', 01000);
 
 
+function _permissions($mode)
+{
+	$str = '----------';
+	if(($mode & S_IFDIR) == S_IFDIR)
+		$str[0] = 'd';
+	$str[1] = $mode & 0400 ? 'r' : '-';
+	$str[2] = $mode & 0200 ? 'w' : '-';
+	$str[3] = $mode & 0100 ? 'x' : '-';
+	$str[4] = $mode & 040 ? 'r' : '-';
+	$str[5] = $mode & 020 ? 'w' : '-';
+	$str[6] = $mode & 010 ? 'x' : '-';
+	$str[7] = $mode & 04 ? 'r' : '-';
+	$str[8] = $mode & 02 ? 'w' : '-';
+	$str[9] = $mode & 01 ? 'x' : '-';
+	return $str;
+}
+
+
 function download_admin($args)
 {
 	global $user_id;
@@ -59,7 +77,7 @@ function download_admin($args)
 			.$dls[$i]['enabled'].'.png" title="'
 			.($dls[$i]['enabled'] == 'enabled' ? ENABLED : DISABLED)
 			.'"/>';
-		$dls[$i]['mode'] = _html_safe($dls[$i]['mode']);
+		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => ENABLE,
@@ -110,10 +128,15 @@ function download_default($args)
 	{
 		$file = _sql_array('SELECT download_id AS id, title AS name'
 				.', mode, parent, timestamp AS ctime, content'
+				.', daportal_content.user_id, username AS user'
 				.' FROM daportal_download, daportal_content'
+				.', daportal_user'
 				.' WHERE daportal_download.content_id'
 				.'=daportal_content.content_id'
-				." AND enabled='1'"
+				.' AND daportal_content.user_id'
+				.'=daportal_user.user_id'
+				." AND daportal_content.enabled='1'"
+				." AND daportal_user.enabled='1'"
 				." AND download_id='".$args['id']."';");
 		if(is_array($file) && count($file) == 1)
 		{
@@ -189,8 +212,12 @@ function _default_download($file)
 {
 	if(!($root = _config_get('download', 'root')))
 		return _error('No root directory');
+	require_once('./system/mime.php');
+	if(($file['mime'] = _mime_from_ext($file['name'])) == 'default')
+		$file['mime'] = 'text/plain';
 	$filename = $root.'/'.$file['id'];
 	$st = stat($filename);
+	$file['mode'] = _permissions($file['mode']);
 	$file['ctime'] = $st['ctime'];
 	$file['mtime'] = $st['mtime'];
 	$file['atime'] = $st['atime'];
