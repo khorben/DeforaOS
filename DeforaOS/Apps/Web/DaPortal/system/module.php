@@ -1,5 +1,4 @@
-<?php
-//system/module.php
+<?php //system/module.php
 
 
 
