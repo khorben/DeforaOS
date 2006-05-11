@@ -1,5 +1,4 @@
-<?php
-//modules/bookmark/desktop.php
+<?php //modules/bookmark/desktop.php
 
 
 

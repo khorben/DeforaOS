@@ -1,5 +1,4 @@
-<?php
-//modules/news/desktop.php
+<?php //modules/news/desktop.php
 
 
 

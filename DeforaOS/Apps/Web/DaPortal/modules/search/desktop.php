@@ -1,5 +1,4 @@
-<?php
-//modules/search/desktop.php
+<?php //modules/search/desktop.php
 
 
 

@@ -1,5 +1,4 @@
-<?php
-//modules/comment/desktop.php
+<?php //modules/comment/desktop.php
 
 
 

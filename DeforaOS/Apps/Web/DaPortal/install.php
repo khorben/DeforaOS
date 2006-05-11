@@ -1,4 +1,4 @@
-<?php
+<?php //install.php
 //Copyright 2004 Pierre Pronchery
 //This file is part of DaPortal
 //

@@ -1,5 +1,4 @@
-<?php
-//modules/explorer/module.php
+<?php //modules/explorer/module.php
 
 
 
