@@ -159,12 +159,29 @@ function download_default($args)
 			." AND enabled='1' AND parent$parent ORDER BY name;");
 	if(!is_array($dls))
 		return _error('Unable to list downloads');
+	require_once('./system/mime.php');
 	for($cnt = count($dls), $i = 0; $i < $cnt; $i++)
 	{
-		$dls[$i]['icon'] = $dls[$i]['mode'] & S_IFDIR
-			? 'folder.png' : 'default.png';
-		$dls[$i]['thumbnail'] = 'icons/48x48/mime/'.$dls[$i]['icon'];
-		$dls[$i]['icon'] = 'icons/16x16/mime/'.$dls[$i]['icon'];
+		$mime = _mime_from_ext($dls[$i]['name']);
+		if($dls[$i]['mode'] & S_IFDIR)
+		{
+			$dls[$i]['icon'] = 'icons/16x16/mime/folder.png';
+			$dls[$i]['thumbnail'] = 'icons/48x48/mime/folder.png';
+		}
+		else
+		{
+			if(is_readable('icons/48x48/mime/'.$mime.'.png'))
+				$dls[$i]['thumbnail'] = 'icons/48x48/mime/'
+					.$mime.'.png';
+			else
+				$dls[$i]['thumbnail'] = 'icons/48x48/mime/'
+					.'default.png';
+			if(is_readable('icons/16x16/mime/'.$mime.'.png'))
+				$dls[$i]['icon'] = 'icons/16x16/mime/'
+					.$mime.'.png';
+			else
+				$dls[$i]['icon'] = $dls[$i]['thumbnail'];
+		}
 		$dls[$i]['module'] = 'download';
 		$dls[$i]['action'] = 'default';
 		$dls[$i]['apply_module'] = 'download';
@@ -210,6 +227,7 @@ function download_default($args)
 
 function _default_download($file)
 {
+	//FIXME replace default icon
 	if(!($root = _config_get('download', 'root')))
 		return _error('No root directory');
 	require_once('./system/mime.php');
@@ -379,6 +397,7 @@ function download_file_insert($args)
 {
 	global $user_id;
 
+	//FIXME call this code on system, do html if error
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$title = $_FILES['file']['name'];
@@ -405,7 +424,8 @@ function download_file_insert($args)
 		_content_delete($content_id);
 		return _error('Unable to rename file');
 	}
-	download_default(array('id' => $args['parent']));
+	header('Location: index.php?module=download&id='
+		.(is_numeric($args['parent']) ? $args['parent'] : ''));
 }
 
 
@@ -427,7 +447,8 @@ function download_system($args)
 	global $html, $title;
 
 	$title.=' - '.DOWNLOADS;
-	if($args['action'] == 'config_update' || $args['action'] == 'download')
+	if($args['action'] == 'config_update' || $args['action'] == 'download'
+			|| $args['action'] == 'file_insert')
 		$html = 0;
 }
 
