@@ -1,8 +1,9 @@
 SUBDIRS	= arch format
 TARGETS	= as
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W -Wall
 CFLAGS	= -g
@@ -40,7 +41,7 @@ token.o: token.c token.h
 arch/arch.o: arch/arch.c
 	$(CC) $(as_CFLAGS) -c arch/arch.c -o arch/arch.o
 
-format/format.o: format/format.c
+format/format.o: format/format.c format/format.h
 	$(CC) $(as_CFLAGS) -c format/format.c -o format/format.o
 
 clean:
