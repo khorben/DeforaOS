@@ -151,12 +151,16 @@ function download_default($args)
 	if(isset($file['name']))
 		print(': '._html_safe($file['name']));
 	print('</h1>'."\n");
-	$dls = _sql_array('SELECT download_id AS id, title AS name, enabled'
-			.', mode'
+	$dls = _sql_array('SELECT download_id AS id, title AS name'
+			.', daportal_content.enabled, mode'
+			.', daportal_content.user_id, username'
 			.' FROM daportal_download, daportal_content'
+			.', daportal_user'
 			.' WHERE daportal_download.content_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1' AND parent$parent ORDER BY name;");
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND daportal_content.enabled='1'"
+			." AND parent$parent ORDER BY name;");
 	if(!is_array($dls))
 		return _error('Unable to list downloads');
 	require_once('./system/mime.php');
@@ -220,6 +224,7 @@ function download_default($args)
 			'icon' => 'icons/16x16/refresh.png',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse', array('entries' => $dls,
+				'class' => array('username' => AUTHOR),
 				'toolbar' => $toolbar, 'view' => 'thumbnails',
 				'module' => 'download', 'action' => 'default',
 				'id' => $file['id']));
