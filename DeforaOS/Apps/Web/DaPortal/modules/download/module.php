@@ -12,6 +12,8 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['DOWNLOADS'] = 'Downloads';
 $text['DOWNLOADS_ADMINISTRATION'] = 'Downloads administration';
+$text['DOWNLOADS_CONFIGURATION'] = 'Downloads configuration';
+$text['DOWNLOADS_LIST'] = 'Downloads list';
 $text['MODE'] = 'Permissions';
 $text['NEW_DIRECTORY'] = 'New directory';
 $text['UPLOAD_FILE'] = 'Upload file';
@@ -46,12 +48,16 @@ function download_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/download/icon.png" alt=""/> '
 			._html_safe(DOWNLOADS_ADMINISTRATION).'</h1>'."\n");
+	print('<h2><img src="modules/admin/icon.png" alt=""/> '
+			._html_safe(DOWNLOADS_CONFIGURATION).'</h2>'."\n");
 	if(($configs = _config_list('download')))
 	{
 		$module = 'download';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
+	print('<h2><img src="modules/download/icon.png" alt=""/> '
+			._html_safe(DOWNLOADS_LIST).'</h2>'."\n");
 	$dls = _sql_array('SELECT download_id AS id, title AS name, enabled'
 			.', mode'
 			.' FROM daportal_download, daportal_content'
