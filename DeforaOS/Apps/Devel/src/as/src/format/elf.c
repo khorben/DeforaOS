@@ -35,7 +35,7 @@ static ElfArch * ea;
 
 typedef struct _ElfSectionValues
 {
-	char * section;
+	char * name;
 	Elf32_Word type;	/* works for 64-bit too */
 	Elf32_Word flags;
 } ElfSectionValues;
@@ -91,10 +91,10 @@ static int _elf_error(char * message, int ret)
 static ElfArch * _init_arch(char * arch);
 static int _init_32(FILE * fp);
 static int _exit_32(FILE * fp);
-static int _section_32(FILE * fp, char * section);
+static int _section_32(FILE * fp, char * name);
 static int _init_64(FILE * fp);
 static int _exit_64(FILE * fp);
-static int _section_64(FILE * fp, char * section);
+static int _section_64(FILE * fp, char * name);
 static int _elf_init(FILE * fp, char * arch)
 {
 	if((ea = _init_arch(arch)) == NULL)
@@ -128,28 +128,24 @@ static ElfArch * _init_arch(char * arch)
 
 
 /* elf_section */
-static ElfSectionValues * _section_values(char * section)
+static ElfSectionValues * _section_values(char * name)
 {
 	ElfSectionValues * esv;
 	int cmp;
 
-	for(esv = elf_section_values; esv->section != NULL; esv++)
-		if((cmp = strcmp(esv->section, section)) == 0)
+	for(esv = elf_section_values; esv->name != NULL; esv++)
+		if((cmp = strcmp(esv->name, name)) == 0)
 			return esv;
 		else if(cmp > 0)
 			break;
-	for(; esv->section != NULL; esv++);
+	for(; esv->name != NULL; esv++);
 	return esv;
 }
 
 
 /* elf 32 */
 /* variables */
-typedef struct _ElfSection32
-{
-	Elf32_Off offset;
-} ElfSection32;
-static ElfSection32 * es32 = NULL;
+static Elf32_Shdr * es32 = NULL;
 static int es32_cnt = 0;
 
 static int _init_32(FILE * fp)
@@ -173,9 +169,8 @@ static int _init_32(FILE * fp)
 }
 
 
-static int _exit_32_phdr(FILE * fp);
-static int _exit_32_shdr(FILE * fp, long offset);
-static int _exit_32_shdr_table(FILE * fp, long offset);
+static int _exit_32_phdr(FILE * fp, Elf32_Off offset);
+static int _exit_32_shdr(FILE * fp, Elf32_Off offset);
 static int _exit_32(FILE * fp)
 {
 	int ret = 0;
@@ -183,75 +178,55 @@ static int _exit_32(FILE * fp)
 
 	if((offset = ftell(fp)) == -1)
 		ret = _elf_error("ftell", 1); /* FIXME */
-	else if(_exit_32_phdr(fp) != 0 || _exit_32_shdr(fp, offset) != 0
-			|| _exit_32_shdr_table(fp, offset) != 0)
+	else if(_exit_32_phdr(fp, offset) != 0
+			|| _exit_32_shdr(fp, offset) != 0)
 		ret = 1;
 	free(es32);
 	return ret;
 }
 
-static int _exit_32_phdr(FILE * fp)
+static int _exit_32_phdr(FILE * fp, Elf32_Off offset)
 {
 	Elf32_Ehdr hdr;
 
 	if(es32_cnt == 0)
 		return 0;
 	if(fseek(fp, 0, SEEK_SET) != 0)
-		return _elf_error("fseek", 1);
+		return _elf_error("fseek", 1); /* FIXME */
 	if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
-		return _elf_error("fread", 1);
+		return _elf_error("fread", 1); /* FIXME */
+	hdr.e_shoff = offset;
 	hdr.e_shnum = es32_cnt;
 	if(fseek(fp, 0, SEEK_SET) != 0)
-		return _elf_error("fseek", 1);
+		return _elf_error("fseek", 1); /* FIXME */
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error("fwrite", 1);
 	return 0;
 }
 
-static int _exit_32_shdr(FILE * fp, long offset)
+static int _exit_32_shdr(FILE * fp, Elf32_Off offset)
 {
-	Elf32_Shdr hdr;
 	int i;
 
+	if(fseek(fp, 0, SEEK_END) != 0)
+		return _elf_error("fseek", 1); /* FIXME */
 	for(i = 0; i < es32_cnt; i++)
 	{
-		if(fseek(fp, es32[i].offset, SEEK_SET) != 0)
-			return _elf_error("fseek", 1); /* FIXME */
-		if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
-			return _elf_error("fread", 1); /* FIXME */
 		if(i+1 == es32_cnt)
-			hdr.sh_size = offset - es32[i].offset - sizeof(hdr);
+			es32[i].sh_size = offset - es32[i].sh_offset;
 		else
-			hdr.sh_size = es32[i+1].offset - es32[i].offset
-				- sizeof(hdr);
-		if(fseek(fp, es32[i].offset, SEEK_SET) != 0)
-			return _elf_error("fseek", 1); /* FIXME */
-		if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
+			es32[i].sh_size = es32[i+1].sh_offset
+				- es32[i].sh_offset;
+		if(fwrite(&es32[i], sizeof(Elf32_Shdr), 1, fp) != 1)
 			return _elf_error("fwrite", 1); /* FIXME */
 	}
 	return 0;
 }
 
-static int _exit_32_shdr_table(FILE * fp, long offset)
+
+static int _section_32(FILE * fp, char * name)
 {
-	Elf32_Shdr hdr;
-
-	if(fseek(fp, 0, SEEK_END) != 0)
-		return _elf_error("fseek", 1); /* FIXME */
-	memset(&hdr, 0, sizeof(hdr));
-	hdr.sh_type = SHT_NULL;
-	hdr.sh_offset = offset + sizeof(hdr);
-	hdr.sh_link = SHN_UNDEF;
-	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
-		return _elf_error("fwrite", 1); /* FIXME */
-	return 0;
-}
-
-
-static int _section_32(FILE * fp, char * section)
-{
-	ElfSection32 * p;
-	Elf32_Shdr hdr;
+	Elf32_Shdr * p;
 	ElfSectionValues * esv;
 	long offset;
 
@@ -259,29 +234,21 @@ static int _section_32(FILE * fp, char * section)
 		return _elf_error("malloc", 1);
 	es32 = p;
 	p = &es32[es32_cnt++];
-	memset(p, 0, sizeof(ElfSection32));
-	esv = _section_values(section);
-	memset(&hdr, 0, sizeof(hdr));
-	hdr.sh_type = esv->type;
-	hdr.sh_flags = esv->flags;
+	memset(p, 0, sizeof(*p));
+	esv = _section_values(name);
+	p->sh_type = esv->type;
+	p->sh_flags = esv->flags;
 	if((offset = ftell(fp)) == -1)
 		return _elf_error("ftell", 1); /* FIXME */
-	hdr.sh_offset = offset + sizeof(hdr);
-	p->offset = offset;
-	hdr.sh_link = SHN_UNDEF; /* FIXME */
-	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
-		return _elf_error("fwrite", 1); /* FIXME */
+	p->sh_offset = offset;
+	p->sh_link = SHN_UNDEF; /* FIXME */
 	return 0;
 }
 
 
 /* elf 64 */
 /* variables */
-typedef struct _ElfSection64
-{
-	Elf64_Off offset;
-} ElfSection64;
-static ElfSection64 * es64 = NULL;
+static Elf64_Shdr * es64 = NULL;
 static int es64_cnt = 0;
 
 static int _init_64(FILE * fp)
@@ -305,9 +272,8 @@ static int _init_64(FILE * fp)
 }
 
 
-static int _exit_64_phdr(FILE * fp);
-static int _exit_64_shdr(FILE * fp, long offset);
-static int _exit_64_shdr_table(FILE * fp, long offset);
+static int _exit_64_phdr(FILE * fp, Elf64_Off offset);
+static int _exit_64_shdr(FILE * fp, Elf64_Off offset);
 static int _exit_64(FILE * fp)
 {
 	int ret = 0;
@@ -315,75 +281,55 @@ static int _exit_64(FILE * fp)
 
 	if((offset = ftell(fp)) == -1)
 		ret = _elf_error("ftell", 1); /* FIXME */
-	else if(_exit_64_phdr(fp) != 0 || _exit_64_shdr(fp, offset) != 0
-			|| _exit_64_shdr_table(fp, offset) != 0)
+	else if(_exit_64_phdr(fp, offset) != 0
+			|| _exit_64_shdr(fp, offset) != 0)
 		ret = 1;
 	free(es64);
 	return ret;
 }
 
-static int _exit_64_phdr(FILE * fp)
+static int _exit_64_phdr(FILE * fp, Elf64_Off offset)
 {
 	Elf64_Ehdr hdr;
 
 	if(es64_cnt == 0)
 		return 0;
 	if(fseek(fp, 0, SEEK_SET) != 0)
-		return _elf_error("fseek", 1);
+		return _elf_error("fseek", 1); /* FIXME */
 	if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
-		return _elf_error("fread", 1);
+		return _elf_error("fread", 1); /* FIXME */
+	hdr.e_shoff = offset;
 	hdr.e_shnum = es64_cnt;
 	if(fseek(fp, 0, SEEK_SET) != 0)
 		return _elf_error("fseek", 1);
-	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
-		return _elf_error("fwrite", 1);
-	return 0;
-}
-
-static int _exit_64_shdr(FILE * fp, long offset)
-{
-	Elf64_Shdr hdr;
-	int i;
-
-	for(i = 0; i < es64_cnt; i++)
-	{
-		if(fseek(fp, es64[i].offset, SEEK_SET) != 0)
-			return _elf_error("fseek", 1); /* FIXME */
-		if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
-			return _elf_error("fread", 1); /* FIXME */
-		if(i+1 == es64_cnt)
-			hdr.sh_size = offset - es64[i].offset - sizeof(hdr);
-		else
-			hdr.sh_size = es64[i+1].offset - es64[i].offset
-				- sizeof(hdr);
-		if(fseek(fp, es64[i].offset, SEEK_SET) != 0)
-			return _elf_error("fseek", 1); /* FIXME */
-		if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
-			return _elf_error("fwrite", 1); /* FIXME */
-	}
-	return 0;
-}
-
-static int _exit_64_shdr_table(FILE * fp, long offset)
-{
-	Elf64_Shdr hdr;
-
-	if(fseek(fp, 0, SEEK_END) != 0)
-		return _elf_error("fseek", 1); /* FIXME */
-	memset(&hdr, 0, sizeof(hdr));
-	hdr.sh_type = SHT_NULL;
-	hdr.sh_offset = offset + sizeof(hdr);
-	hdr.sh_link = SHN_UNDEF;
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error("fwrite", 1); /* FIXME */
 	return 0;
 }
 
-
-static int _section_64(FILE * fp, char * section)
+static int _exit_64_shdr(FILE * fp, Elf64_Off offset)
 {
-	ElfSection64 * p;
-	Elf64_Shdr hdr;
+	int i;
+
+	if(fseek(fp, 0, SEEK_END) != 0)
+		return _elf_error("fseek", 1); /* FIXME */
+	for(i = 0; i < es64_cnt; i++)
+	{
+		if(i+1 == es64_cnt)
+			es64[i].sh_size = offset - es64[i].sh_offset;
+		else
+			es64[i].sh_size = es64[i+1].sh_offset
+				- es64[i].sh_offset;
+		if(fwrite(&es64[i], sizeof(Elf64_Shdr), 1, fp) != 1)
+			return _elf_error("fwrite", 1); /* FIXME */
+	}
+	return 0;
+}
+
+
+static int _section_64(FILE * fp, char * name)
+{
+	Elf64_Shdr * p;
 	ElfSectionValues * esv;
 	long offset;
 
@@ -391,17 +337,13 @@ static int _section_64(FILE * fp, char * section)
 		return _elf_error("malloc", 1);
 	es64 = p;
 	p = &es64[es64_cnt++];
-	memset(p, 0, sizeof(ElfSection64));
-	esv = _section_values(section);
-	memset(&hdr, 0, sizeof(hdr));
-	hdr.sh_type = esv->type;
-	hdr.sh_flags = esv->flags;
+	memset(p, 0, sizeof(*p));
+	esv = _section_values(name);
+	p->sh_type = esv->type;
+	p->sh_flags = esv->flags;
 	if((offset = ftell(fp)) == -1)
 		return _elf_error("ftell", 1); /* FIXME */
-	hdr.sh_offset = offset + sizeof(hdr);
-	p->offset = offset;
-	hdr.sh_link = SHN_UNDEF; /* FIXME */
-	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
-		return _elf_error("fwrite", 1); /* FIXME */
+	p->sh_offset = offset;
+	p->sh_link = SHN_UNDEF; /* FIXME */
 	return 0;
 }
