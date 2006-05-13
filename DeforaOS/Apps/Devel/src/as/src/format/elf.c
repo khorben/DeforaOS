@@ -1,6 +1,5 @@
 /* format/elf.c */
 /* FIXME:
- * - understand the section header table
  * - implement string table */
 
 
@@ -102,19 +101,19 @@ static int _elf_init(FILE * fp, char * arch)
 		return 1;
 	if(ea->capacity == ELFCLASS32)
 	{
-		/* FIXME use elf_exit to write default sections cross-class if
-		 * necessary? */
+		if(_init_32(fp) != 0)
+			return 1;
 		format_plugin.exit = _exit_32;
 		format_plugin.section = _section_32;
-		return _init_32(fp);
 	}
 	else if(ea->capacity == ELFCLASS64)
 	{
+		if(_init_64(fp) != 0)
+			return 1;
 		format_plugin.exit = _exit_64;
 		format_plugin.section = _section_64;
-		return _init_64(fp);
 	}
-	return 1;
+	return 0;
 }
 
 static ElfArch * _init_arch(char * arch)
