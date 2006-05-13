@@ -1,5 +1,5 @@
 PACKAGE	= as
-VERSION	= 0.0.0
+VERSION	= 0.1.0
 SUBDIRS	= src
 LN	= ln -sf
 TAR	= tar -czvf
