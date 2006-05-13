@@ -251,7 +251,9 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	}
 	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
 		."&amp;file="._html_safe_link($filename);
-	print('<div class="toolbar"><a href="'.$link.'">Browse revisions</a>'
+	print('<div class="toolbar"><a href="'.$link.'">'
+			.'<img src="icons/16x16/updir.png" alt=""/>'
+			.' Browse revisions</a>'
 			.' · <a href="'.$link."&amp;revision=$revision"
 			.'&amp;download=1">'
 			.'<img src="icons/16x16/save.png" alt=""/>'
