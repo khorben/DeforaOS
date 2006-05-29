@@ -1,5 +1,5 @@
 	{ "adc",	0x14, AO_IMM_ | AO_al,	1, 1, 0 },
-	{ "adc",	0x15, AO_IMM_ | AO_ax,	1, 2, 0 },
+/*	{ "adc",	0x15, AO_IMM_ | AO_ax,	1, 2, 0 }, */
 	{ "adc",	0x15, AO_IMM_ | AO_eax,	1, 4, 0 },
 	{ "adc",	0x10, AO_IMM_ | AO_IMM,	1, 0, 0 },
 	{ "adc",	0x11, AO_IMM_ | AO_IMM,	1, 0, 0 },
@@ -56,11 +56,11 @@
 	{ "jz",		0x74, AO_IMM,		1, 0, 0 },
 	{ "jbe",	0x76, AO_IMM,		1, 0, 0 },
 	{ "lea",	0x8d, AO_IMM_ | AO_REG,	1, 0, 0 },
-	{ "mov",	0x88, AO_IMM_ | AO_REG,	1, 0, 0 },
+/*	{ "mov",	0x88, AO_IMM_ | AO_REG,	1, 0, 0 },
 	{ "mov",	0x89, AO_IMM_ | AO_REG,	1, 0, 0 },
 	{ "mov",	0x8a, AO_IMM_ | AO_REG,	1, 0, 0 },
-	{ "mov",	0x8b, AO_IMM_ | AO_REG,	1, 0, 0 },
-	{ "mov",	0xb8, AO_IMM_ | AO_eax,	1, 0, 0 },
+	{ "mov",	0x8b, AO_IMM_ | AO_REG,	1, 0, 0 }, */
+	{ "mov",	0xb8, AO_IMM_ | AO_eax,	1, 4, 0 },
 	{ "mov",	0xb9, AO_IMM_ | AO_REG,	1, 0, 0 },
 	{ "mov",	0xba, AO_IMM_ | AO_REG,	1, 0, 0 },
 	{ "mov",	0xbb, AO_IMM_ | AO_REG,	1, 0, 0 },
