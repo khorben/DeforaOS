@@ -55,7 +55,7 @@ static int _df_do(Prefs * prefs, char const * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: df [-k][-P|-T][file...]\n");
+	fprintf(stderr, "%s", "Usage: df [-k][-P][file...]\n");
 	return 1;
 }
 
@@ -67,15 +67,13 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 
 	memset(&prefs, sizeof(prefs), 0);
-	while((o = getopt(argc, argv, "kPT")) != -1)
+	while((o = getopt(argc, argv, "kP")) != -1)
 		switch(o)
 		{
 			case 'k':
 				prefs |= PREFS_k;
 				break;
 			case 'P':
-				break;
-			case 'T':
 				break;
 			default:
 				return _usage();
