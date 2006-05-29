@@ -31,10 +31,10 @@ flat.a: $(flat_OBJS)
 flat.so: $(flat_OBJS)
 	$(LD) -o flat.so $(flat_OBJS)
 
-elf.o: elf.c
+elf.o: elf.c format.h
 	$(CC) $(elf_CFLAGS) -c elf.c
 
-flat.o: flat.c
+flat.o: flat.c format.h
 	$(CC) $(flat_CFLAGS) -c flat.c
 
 clean:

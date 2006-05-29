@@ -46,7 +46,7 @@ sparc64.a: $(sparc64_OBJS)
 sparc64.so: $(sparc64_OBJS)
 	$(LD) -o sparc64.so $(sparc64_OBJS)
 
-i386.o: i386.c
+i386.o: i386.c 80386.ins 80386.reg
 	$(CC) $(i386_CFLAGS) -c i386.c
 
 i486.o: i486.c
