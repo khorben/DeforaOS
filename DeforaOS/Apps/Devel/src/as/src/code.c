@@ -7,7 +7,6 @@
 #include <string.h>
 #include <assert.h>
 #include "as.h"
-#include "arch/arch.h"
 #include "code.h"
 
 
@@ -23,7 +22,7 @@ char const * code_error[CE_LAST+1] =
 
 
 /* functions */
-Code * code_new(char * arch, char * format, char * filename)
+Code * code_new(char const * arch, char const * format, char const * filename)
 {
 	Code * code;
 
@@ -35,7 +34,8 @@ Code * code_new(char * arch, char * format, char * filename)
 	code->format = NULL;
 	code->fp = NULL;
 	if((code->arch = arch_new(arch)) == NULL
-			|| (code->format = format_new(format, arch)) == NULL
+			|| (code->format = format_new(format, arch, filename))
+			== NULL
 			|| (code->fp = fopen(filename, "w+")) == NULL
 			|| format_init(code->format, code->fp) != 0)
 	{

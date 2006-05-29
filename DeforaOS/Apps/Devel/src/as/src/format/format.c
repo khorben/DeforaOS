@@ -11,7 +11,8 @@
 
 
 /* Format */
-Format * format_new(char * format, char * arch)
+Format * format_new(char const * format, char const * arch,
+		char const * filename)
 {
 	Format * f;
 	void * handle;
@@ -28,8 +29,7 @@ Format * format_new(char * format, char * arch)
 				": Invalid format plug-in\n");
 		return NULL;
 	}
-	if((f = malloc(sizeof(Format))) == NULL || (f->arch = strdup(arch))
-			== NULL)
+	if((f = malloc(sizeof(*f))) == NULL || (f->arch = strdup(arch)) == NULL)
 	{
 		if(f != NULL)
 			free(f);
@@ -38,6 +38,7 @@ Format * format_new(char * format, char * arch)
 		return NULL;
 	}
 	f->plugin = plugin;
+	plugin->filename = filename;
 	f->handle = handle;
 	return f;
 }
@@ -68,7 +69,7 @@ int format_init(Format * format, FILE * fp)
 
 
 /* format_section */
-int format_section(Format * format, FILE * fp, char * section)
+int format_section(Format * format, FILE * fp, char const * section)
 {
 	if(format->plugin->section == NULL)
 		return 0;

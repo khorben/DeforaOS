@@ -55,7 +55,7 @@ typedef struct _Arch
 } Arch;
 
 /* functions */
-Arch * arch_new(char * arch);
+Arch * arch_new(char const * arch);
 void arch_delete(Arch * arch);
 
 

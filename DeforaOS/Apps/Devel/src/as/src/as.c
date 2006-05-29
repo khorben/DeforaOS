@@ -21,7 +21,8 @@
 
 /* as */
 static char * _as_guess(void);
-static int as(char * arch, char * format, char * infile, char * outfile)
+static int as(char const * arch, char const * format,
+		char * infile, char * outfile)
 {
 	FILE * infp;
 	Code * code;
@@ -42,7 +43,6 @@ static int as(char * arch, char * format, char * infile, char * outfile)
 	return ret;
 }
 
-int as_error(char * msg, int ret);
 static char * _as_guess(void)
 {
 	static struct utsname uts;
@@ -58,7 +58,7 @@ static char * _as_guess(void)
 
 /* useful */
 /* as_error */
-int as_error(char * msg, int ret)
+int as_error(char const * msg, int ret)
 {
 	fprintf(stderr, "%s", "as: ");
 	perror(msg);
@@ -67,7 +67,8 @@ int as_error(char * msg, int ret)
 
 
 /* plugins helpers */
-void * as_plugin_new(char * type, char * name, char * description)
+void * as_plugin_new(char const * type, char const * name,
+		char const * description)
 {
 	char * filename;
 	void * handle;
@@ -96,7 +97,7 @@ void as_plugin_delete(void * handle)
 
 
 /* as_plugin_list */
-void as_plugin_list(char * type, char * description)
+void as_plugin_list(char const * type, char const * description)
 {
 	char * path;
 	DIR * dir;

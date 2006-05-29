@@ -11,7 +11,7 @@
 
 
 /* Arch */
-Arch * arch_new(char * arch)
+Arch * arch_new(char const * arch)
 {
 	Arch * a;
 	void * handle;

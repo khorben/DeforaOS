@@ -8,7 +8,9 @@
 /* Flat */
 
 
-FormatPlugin format_plugin = {
+FormatPlugin format_plugin =
+{
+	NULL,
 	NULL,
 	NULL,
 	NULL

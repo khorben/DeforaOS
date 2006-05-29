@@ -10,11 +10,12 @@
 
 /* functions */
 /* useful */
-int as_error(char * msg, int ret);
+int as_error(char const * msg, int ret);
 
 /* plugins helpers */
-void * as_plugin_new(char * type, char * name, char * description);
+void * as_plugin_new(char const * type, char const * name,
+		char const * description);
 void as_plugin_delete(void * plugin);
-void as_plugin_list(char * type, char * description);
+void as_plugin_list(char const * type, char const * description);
 
 #endif /* !__AS_H */

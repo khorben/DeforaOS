@@ -16,7 +16,7 @@ typedef struct _Code
 {
 	Arch * arch;
 	Format * format;
-	char * filename;
+	char const * filename;
 	FILE * fp;
 } Code;
 
@@ -39,7 +39,7 @@ extern char const * code_error[CE_LAST+1];
 
 
 /* functions */
-Code * code_new(char * arch, char * format, char * filename);
+Code * code_new(char const * arch, char const * format, char const * filename);
 void code_delete(Code * code, int error);
 
 /* useful */
