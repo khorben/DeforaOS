@@ -27,7 +27,6 @@ typedef struct _State
 
 /* parser */
 static int _parser_fatal(State * state, char const * message);
-/* static void _parser_error(State * state, char const * message); */
 static void _parser_error(State * state, char const * format, ...);
 static void _parser_warning(State * state, char const * message);
 static void _parser_scan(State * state);
