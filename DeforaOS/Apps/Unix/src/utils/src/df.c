@@ -15,6 +15,7 @@ typedef int Prefs;
 
 /* df */
 static int _df_error(char const * message, int ret);
+static int _df_mtab(Prefs * prefs);
 static int _df_do(Prefs * prefs, char const * file);
 static int _df(Prefs * prefs, int filec, char * filev[])
 {
@@ -23,6 +24,8 @@ static int _df(Prefs * prefs, int filec, char * filev[])
 
 	printf("%s%s%s", "Filesystem ", *prefs & PREFS_k ? "1024" : " 512",
 			"-blocks       Used  Available Capacity Mounted on\n");
+	if(filec == 0)
+		return _df_mtab(prefs);
 	for(i = 0; i < filec; i++)
 		ret |= _df_do(prefs, filev[i]);
 	return ret;
@@ -33,6 +36,14 @@ static int _df_error(char const * message, int ret)
 	fprintf(stderr, "%s", "df: ");
 	perror(message);
 	return ret;
+}
+
+static int _df_mtab(Prefs * prefs)
+{
+	/* FIXME not portable code here:
+	 * - Linux: /etc/mtab
+	 * - NetBSD: getvfsstat() */
+	return 0;
 }
 
 static int _df_do(Prefs * prefs, char const * file)
