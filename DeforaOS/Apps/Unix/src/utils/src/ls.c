@@ -497,7 +497,6 @@ static void _long_print(Prefs * prefs, char const * filename,
 	char * owner;
 	char * group;
 	char date[15];
-	unsigned long int size = st->st_size;
 
 	_long_mode(mode, st->st_mode);
 	owner = _long_owner(st->st_uid);
@@ -508,8 +507,8 @@ static void _long_print(Prefs * prefs, char const * filename,
 		_long_date(st->st_ctime, date);
 	else
 		_long_date(st->st_mtime, date);
-	printf("%s %u %s %s %6lu %s %s", mode, (unsigned)st->st_nlink,
-			owner, group, size, date, basename);
+	printf("%s %u %s %s %6u %s %s", mode, (unsigned)st->st_nlink,
+			owner, group, (unsigned)st->st_size, date, basename);
 	if(S_ISLNK(st->st_mode) && !(*prefs & PREFS_L)) /* FIXME not in POSIX? */
 		_print_link(filename);
 	else if(*prefs & PREFS_F)
