@@ -508,7 +508,7 @@ static void _long_print(Prefs * prefs, char const * filename,
 		_long_date(st->st_ctime, date);
 	else
 		_long_date(st->st_mtime, date);
-	printf("%s %u %s %s %6lu %s %s", mode, st->st_nlink,
+	printf("%s %u %s %s %6lu %s %s", mode, (unsigned)st->st_nlink,
 			owner, group, size, date, basename);
 	if(S_ISLNK(st->st_mode) && !(*prefs & PREFS_L)) /* FIXME not in POSIX? */
 		_print_link(filename);
