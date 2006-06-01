@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text['MODIFICATION_OF_NEWS'] = 'Modification of news';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS_BY'] = 'News by';
 $text['NEWS_ON'] = 'on';
@@ -15,6 +16,7 @@ $text['NEWS_PREVIEW'] = 'News preview';
 global $lang;
 if($lang == 'fr')
 {
+	$text['MODIFICATION_OF_NEWS'] = 'Modification de la dépêche';
 	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
 	$text['NEWS_BY'] = 'Actualités par';
 	$text['NEWS_ON'] = 'le';
@@ -250,7 +252,18 @@ function news_modify($args)
 	if(!is_array($news) || count($news) != 1)
 		return _error('Unable to modify news');
 	$news = $news[0];
-	$title = 'Modification of news "'.$news['title'].'"';
+	print('<h1><img src="modules/news/icon.png" alt=""/> '
+			.MODIFICATION_OF_NEWS.' "'.$news['title']."\"</h1>\n");
+	$long = 1;
+	$title = NEWS_PREVIEW;
+	$news['id'] = stripslashes($news['id']);
+	$news['title'] = stripslashes($news['title']);
+	$news['user_id'] = $user_id;
+	$news['username'] = $user_name;
+	$news['date'] = strftime(DATE_FORMAT);
+	$news['content'] = stripslashes($news['content']);
+	include('./modules/news/news_display.tpl');
+	unset($title);
 	include('./modules/news/news_update.tpl');
 }
 
