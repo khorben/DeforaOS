@@ -275,9 +275,11 @@ function comment_submit($comment)
 				._html_safe(COMMENT_PREVIEW).'</h1>');
 		_module('content', 'default',
 				array('id' => $comment['parent']));
+		$comment['title'] = stripslashes($comment['title']);
 		$comment['user_id'] = $user_id;
-		$comment['username'] = $user_name;
+		$comment['username'] = stripslashes($user_name);
 		$comment['date'] = strftime('%d/%m/%y %H:%M');
+		$comment['content'] = stripslashes($comment['content']);
 		include('./modules/comment/display.tpl');
 		$parent = $comment['parent'];
 		return include('./modules/comment/update.tpl');
