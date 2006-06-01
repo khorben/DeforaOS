@@ -84,6 +84,9 @@ function comment_admin($args)
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable');
+	$toolbar[] = array('title' => DELETE, //FIXME does not work
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'delete', 'confirm' => DELETE);
 	_module('explorer', 'browse_trusted', array(
 			'class' => array('username' => USERNAME,
 				'enabled' => ENABLED, 'date' => DATE),
@@ -113,14 +116,10 @@ function comment_childs($args)
 			.' WHERE daportal_comment.parent'
 			.'=daportal_content.content_id'
 			.' AND daportal_comment.comment_id=child.content_id'
-			." AND daportal_content.content_id='$parent'"
-			.$where
+			." AND daportal_content.content_id='$parent'".$where
 			.' ORDER BY child.timestamp ASC;');
 	if(!is_array($comments))
-	{
-		_error('Could not display comments');
-		return;
-	}
+		return _error('Could not display comments');
 	foreach($comments as $comment)
 		comment_display(array('id' => $comment['id']));
 }
@@ -284,9 +283,27 @@ function comment_submit($comment)
 		$parent = $comment['parent'];
 		return include('./modules/comment/update.tpl');
 	}
-	if(($id = _comment_insert($comment)))
-		return _module('content', 'default', array('id'
-					=> $comment['parent']));
+	if(!_comment_insert($comment))
+		return;
+	_module('content', 'default', array('id' => $comment['parent']));
+	//send mail
+	$admins = _sql_array('SELECT username, email FROM daportal_user'
+			." WHERE enabled='t' AND admin='t';");
+	if(!is_array($admins))
+		return _error('Could not list moderators', 0);
+	$to = '';
+	$comma = '';
+	foreach($admins as $a)
+	{
+		$to.=$comma.$a['username'].' <'.$a['email'].'>';
+		$comma = ', ';
+	}
+	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
+	$comment['title'] = stripslashes($comment['title']);
+	$comment['content'] = stripslashes($comment['content']);
+	if(!mail($to, '[DaPortal Comment submission] '.$comment['title'],
+				$comment['content'], $headers))
+		_error('Could not send mail to: '.$to, 0);
 }
 
 ?>
