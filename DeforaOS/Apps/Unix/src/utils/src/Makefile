@@ -1,4 +1,4 @@
-TARGETS	= basename cat chgrp chmod chown cksum cmp cp df dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo nice pwd renice rm rmdir sleep strings test time touch true tty uname uniq unlink wc
+TARGETS	= basename cat chgrp chmod chown cksum cmp cp df dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo nice pwd renice rm rmdir sleep strings test time touch true tty uname uniq unlink wc who
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -213,6 +213,11 @@ wc_CFLAGS = $(CFLAGSF) $(CFLAGS)
 wc: $(wc_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o wc $(wc_OBJS)
 
+who_OBJS = who.o
+who_CFLAGS = $(CFLAGSF) $(CFLAGS)
+who: $(who_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o who $(who_OBJS)
+
 basename.o: basename.c
 	$(CC) $(basename_CFLAGS) -c basename.c
 
@@ -333,8 +338,11 @@ unlink.o: unlink.c
 wc.o: wc.c
 	$(CC) $(wc_CFLAGS) -c wc.c
 
+who.o: who.c
+	$(CC) $(who_CFLAGS) -c who.c
+
 clean:
-	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cksum_OBJS) $(cmp_OBJS) $(cp_OBJS) $(df_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(file_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(locale_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(nice_OBJS) $(pwd_OBJS) $(renice_OBJS) $(rm_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS)
+	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cksum_OBJS) $(cmp_OBJS) $(cp_OBJS) $(df_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(file_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(locale_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(nice_OBJS) $(pwd_OBJS) $(renice_OBJS) $(rm_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS) $(who_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -381,6 +389,7 @@ install: all
 	$(INSTALL) -m 0755 uniq $(DESTDIR)$(BINDIR)/uniq
 	$(INSTALL) -m 0755 unlink $(DESTDIR)$(BINDIR)/unlink
 	$(INSTALL) -m 0755 wc $(DESTDIR)$(BINDIR)/wc
+	$(INSTALL) -m 0755 who $(DESTDIR)$(BINDIR)/who
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/basename
@@ -423,3 +432,4 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/uniq
 	$(RM) $(DESTDIR)$(BINDIR)/unlink
 	$(RM) $(DESTDIR)$(BINDIR)/wc
+	$(RM) $(DESTDIR)$(BINDIR)/who
