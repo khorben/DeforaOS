@@ -7,22 +7,27 @@
 
 
 /* tty */
+static int _tty_error(char const * message, int ret);
 static int _tty(void)
 {
+	char * tty;
+
 	if(isatty(0) == 1)
 	{
-		char * tty;
-
 		if((tty = ttyname(0)) == NULL)
-		{
-			perror("ttyname");
-			return 2;
-		}
+			return _tty_error("ttyname", 2);
 		printf("%s\n", tty);
 		return 0;
 	}
 	printf("%s", "not a tty\n");
-	return 2;
+	return 1;
+}
+
+static int _tty_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "tty: ");
+	perror(message);
+	return ret;
 }
 
 

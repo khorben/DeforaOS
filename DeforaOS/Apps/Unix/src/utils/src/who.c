@@ -17,6 +17,7 @@ typedef int Prefs;
 
 /* who */
 static int _who_error(char const * message, int ret);
+static char * _who_tty(void);
 static int _who(Prefs * prefs)
 {
 	struct utmpx * u;
@@ -25,15 +26,8 @@ static int _who(Prefs * prefs)
 	char * tty = NULL;
 
 	memset(&tm, 0, sizeof(tm));
-	if(*prefs & PREFS_m)
-	{
-		if((tty = ttyname(0)) == NULL)
-			return _who_error("ttyname", 1);
-		if(strncmp(tty, "/dev/", 5) != 0)
-			tty = NULL;
-		else
-			tty+=5;
-	}
+	if(*prefs & PREFS_m && (tty = _who_tty()) == NULL)
+		return 1;
 	for(; (u = getutxent()) != NULL;)
 	{
 		if(u->ut_type != USER_PROCESS)
@@ -59,6 +53,19 @@ static int _who_error(char const * message, int ret)
 	return ret;
 }
 
+static char * _who_tty(void)
+{
+	char * tty;
+
+	if((tty = ttyname(0)) == NULL)
+	{
+		_who_error("ttyname", 1);
+		return NULL;
+	}
+	if(strncmp(tty, "/dev/", 5) != 0)
+		return tty;
+	return tty + 5;
+}
 
 /* usage */
 static int _usage(void)
