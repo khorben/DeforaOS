@@ -67,6 +67,7 @@ static char * _who_tty(void)
 	return tty + 5;
 }
 
+
 /* usage */
 static int _usage(void)
 {
