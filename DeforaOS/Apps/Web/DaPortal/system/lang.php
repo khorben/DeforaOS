@@ -78,6 +78,7 @@ $text['NEWS'] = 'News';
 $text['NO'] = 'No';
 $text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
+$text['PREVIEW'] = 'Preview';
 $text['READ'] = 'Read';
 $text['REPLY'] = 'Reply';
 $text['SEARCH'] = 'Search';
