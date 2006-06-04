@@ -1,6 +1,6 @@
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="project"/>
-	<input type="hidden" name="action" value="bug_reply_<?php echo isset($reply['id']) ? 'update' : 'insert'; ?>"/>
+	<input type="hidden" name="action" value="bug_reply<?php echo isset($reply['id']) ? '_update' : ''; ?>"/>
 <?php if(!isset($reply['id'])) { ?>
 	<input type="hidden" name="id" value="<?php echo $bug['id']; ?>"/>
 <?php } else { ?>
@@ -32,6 +32,6 @@ foreach($priorities as $p) { ?>
 			</select></td><td class="field"><?php echo _html_safe(ASSIGNED_TO); ?>:</td><td><?php echo _html_safe($reply['assigned']); ?></td></tr>
 <?php } /* FIXME re-assign */ ?>
 		<tr><td class="field">Description:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><?php echo _html_safe($reply['content']); ?></textarea></td></tr>
-		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(isset($reply['id']) ? UPDATE : SEND); ?>"/></td></tr>
+		<tr><td></td><td><?php if(!isset($reply['id'])) { ?><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>"/><?php } else { ?><input type="submit" value="<?php echo _html_safe(UPDATE); ?>"/><?php } ?></td></tr>
 	</table>
 </form>
