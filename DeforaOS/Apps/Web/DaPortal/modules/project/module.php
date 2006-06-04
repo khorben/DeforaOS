@@ -49,12 +49,14 @@ else if($lang == 'fr')
 _lang($text);
 
 
-function _project_toolbar($id, $admin = 0)
+function _project_toolbar($id)
 {
-	global $html;
+	global $user_id, $html;
 
 	if(!$html)
 		return;
+	require_once('./system/user.php');
+	$admin = _user_admin($user_id);
 	$cvsroot = '';
 	$enabled = 0;
 	$project = _sql_array('SELECT cvsroot, enabled'
@@ -82,7 +84,7 @@ function project_admin($args)
 {
 	global $user_id, $module_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
@@ -217,9 +219,8 @@ function project_bug_display($args)
 			.', daportal_project.project_id AS project_id'
 			.', daportal_user.user_id AS user_id'
 			.', daportal_bug.bug_id AS id, timestamp, title'
-			.', content, name AS project, username'
-			.', state, type, priority, assigned AS assigned_id'
-			.', cvsroot'
+			.', content, name AS project, username, state, type'
+			.', priority, assigned AS assigned_id, cvsroot'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
 			." WHERE daportal_content.enabled='t'"
@@ -244,7 +245,7 @@ function project_bug_display($args)
 			." AND user_id='".$bug['assigned_id']."';") : '';
 	include('./modules/project/bug_display.tpl');
 	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
-			.', timestamp AS date'
+			.', daportal_content.content_id, timestamp AS date'
 			.', state, type, priority, daportal_user.user_id'
 			.', username, assigned AS assigned_id'
 			.' FROM daportal_bug_reply, daportal_content'
@@ -279,8 +280,8 @@ function project_bug_insert($args)
 {
 	global $user_id;
 
-	require_once('system/content.php');
-	require_once('system/user.php');
+	require_once('./system/content.php');
+	require_once('./system/user.php');
 	$enable = 0;
 	if(_user_admin($user_id)) //FIXME also for project members
 		$enable = 1;
@@ -480,7 +481,7 @@ function project_bug_modify($args)
 	 * create a project_assign one with current number of (open) bugs etc */
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
 	$bug = _sql_array('SELECT bug_id AS id, title, content, state, type'
@@ -508,9 +509,9 @@ function project_bug_new($args)
 }
 
 
-function project_bug_reply($args)
+function project_bug_reply($reply)
 {
-	global $user_id;
+	global $user_id, $user_name;
 
 	$bug = _sql_array('SELECT daportal_content.content_id AS content_id'
 			.', daportal_project.project_id AS project_id'
@@ -526,16 +527,46 @@ function project_bug_reply($args)
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' AND daportal_project.project_id'
 			.'=daportal_bug.project_id'
-			." AND bug_id='".$args['id']."';");
+			." AND bug_id='".$reply['id']."';");
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
 	$title = REPLY_TO_BUG.' #'.$bug['id'].': '.$bug['title'];
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
-	include('./modules/project/bug_display.tpl');
-	$reply['title'] = 'Re: '.$bug['title'];
-	include('./modules/project/bug_reply_update.tpl');
+	if(isset($reply['preview']))
+	{
+		include('./modules/project/bug_display.tpl');
+		unset($reply['id']); //XXX
+		$reply['title'] = stripslashes($reply['title']);
+		$reply['date'] = strftime(DATE_FORMAT);
+		$reply['user_id'] = $user_id;
+		$reply['username'] = $user_name;
+		//FIXME check state, type and priority are coherent
+		if(strlen($reply['state']))
+			$reply['state'] = stripslashes($reply['state']);
+		else
+			unset($reply['state']);
+		if(strlen($reply['type']))
+			$reply['type'] = stripslashes($reply['type']);
+		else
+			unset($reply['type']);
+		if(strlen($reply['priority']))
+			$reply['priority'] = stripslashes($reply['priority']);
+		else
+			unset($reply['priority']);
+		$reply['content'] = stripslashes($reply['content']);
+		include('./modules/project/bug_reply_display.tpl');
+		return include('./modules/project/bug_reply_update.tpl');
+	}
+	if(!isset($reply['submit']))
+	{
+		include('./modules/project/bug_display.tpl');
+		unset($reply['id']); //XXX
+		$reply['title'] = 'Re: '.$bug['title'];
+		return include('./modules/project/bug_reply_update.tpl');
+	}
+	project_bug_reply_insert($reply);
 }
 
 
@@ -543,14 +574,14 @@ function project_bug_reply_insert($args)
 {
 	global $user_id;
 
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], $args['content'], 1))
 			== FALSE)
 		return _error('Unable to insert bug reply');
 	$fields = '';
 	$values = '';
 	$update = '';
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(_user_admin($user_id)) //FIXME
 	{
 		if(strlen($args['state']))
@@ -636,7 +667,7 @@ function project_bug_reply_modify($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$admin = 1;
@@ -672,7 +703,7 @@ function project_bug_reply_update($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
@@ -701,7 +732,7 @@ function project_bug_update($args)
 {
 	global $user_id, $module_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	//FIXME could be the project admin
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
@@ -749,7 +780,7 @@ function project_delete($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
@@ -758,7 +789,7 @@ function project_delete($args)
 	//FIXME remove bug reports and replies?
 	_sql_query('DELETE FROM daportal_project'
 			." WHERE project_id='$id';");
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_delete($id);
 }
 
@@ -767,13 +798,13 @@ function project_disable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
 			." WHERE project_id='".$args['id']."';")) == FALSE)
 		return _error(INVALID_PROJECT);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_disable($id);
 	if($args['display'] != 0)
 		project_display(array('id' => $id));
@@ -784,7 +815,7 @@ function project_display($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	$project = _sql_array('SELECT project_id AS id, name, title'
 			.', content AS description, daportal_content.enabled'
 			.', daportal_content.user_id, username'
@@ -805,7 +836,7 @@ function project_display($args)
 		return include('./modules/project/project_submitted.tpl');
 	}
 	$title = $project['name'];
-	_project_toolbar($args['id'], $admin);
+	_project_toolbar($args['id']);
 	include('./modules/project/project_display.tpl');
 	$members = array();
 	$members[] = array('id' => $project['user_id'],
@@ -860,13 +891,13 @@ function project_enable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
 			." WHERE project_id='".$args['id']."';")) == FALSE)
 		return _error(INVALID_PROJECT);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_enable($id);
 	if($args['display'] != 0)
 		project_display(array('id' => $id));
@@ -877,10 +908,10 @@ function project_insert($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
 		return _error('Unable to insert project content');
 	if(!_sql_query('INSERT INTO daportal_project (project_id, name'
@@ -947,7 +978,7 @@ function project_list($args)
 			.'">'._html_safe($projects[$i]['admin']).'</a>';
 	}
 	$toolbar = array();
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
@@ -970,7 +1001,7 @@ function project_member_add($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$project = _sql_array('SELECT project_id AS id, name, user_id'
@@ -1018,7 +1049,7 @@ function project_member_delete($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
 	_sql_query('DELETE FROM daportal_project_user WHERE '
@@ -1031,7 +1062,7 @@ function project_member_insert($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
 	if(($id = _sql_single('SELECT user_id FROM daportal_project_user'
@@ -1048,7 +1079,7 @@ function project_modify($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED, 1);
 	$project = _sql_array('SELECT project_id AS id, name, title, content'
@@ -1069,7 +1100,7 @@ function project_new($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$title = NEW_PROJECT;
@@ -1097,7 +1128,7 @@ function project_system($args)
 
 function project_timeline($args)
 {
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(_content_readable($args['id']) == FALSE)
 	{
 		return include('./modules/project/project_submitted.tpl');
@@ -1197,8 +1228,8 @@ function project_update($args)
 {
 	global $user_id;
 
-	require_once('system/content.php');
-	require_once('system/user.php');
+	require_once('./system/content.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	//FIXME allow project's admin to update
