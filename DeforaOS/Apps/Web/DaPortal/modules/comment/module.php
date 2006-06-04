@@ -41,7 +41,7 @@ function comment_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
@@ -102,7 +102,7 @@ function comment_childs($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$where = '';
 	else
@@ -164,7 +164,7 @@ function comment_display($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	$where = " AND daportal_content.enabled='t'";
 	if(_user_admin($user_id))
 		$where = '';
@@ -189,7 +189,7 @@ function comment_display($args)
 
 function _comment_insert($comment)
 {
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(!($id = _content_insert($comment['title'], $comment['content'], 1)))
 	{
 		_error('Could not insert comment');

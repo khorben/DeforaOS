@@ -34,7 +34,7 @@ function _article_insert($article)
 
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	return _content_insert($article['title'], $article['content']);
 }
 
@@ -43,7 +43,7 @@ function article_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/article/icon.png" alt=""/> '
@@ -128,17 +128,17 @@ function article_disable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_disable($args['id']);
 }
 
 
 function article_display($args)
 {
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(($article = _content_select($args['id'], 1)) == FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(($article['username'] = _sql_single('SELECT username'
@@ -158,10 +158,10 @@ function article_enable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	_content_enable($args['id']);
 }
 
@@ -225,7 +225,7 @@ function article_modify($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($module_id = _module_id('article')))
@@ -285,7 +285,7 @@ function article_update($article)
 {
 	global $user_id, $user_name;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(isset($article['preview']))
@@ -302,7 +302,7 @@ function article_update($article)
 		unset($title);
 		return include('update.tpl');
 	}
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(!_content_update($article['id'], $article['title'],
 				$article['content']))
 		return _error('Could not update article');

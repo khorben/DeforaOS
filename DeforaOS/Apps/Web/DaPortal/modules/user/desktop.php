@@ -22,7 +22,7 @@ global $user_id;
 if($user_id != 0)
 {
 	$actions = array('logout' => LOGOUT);
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	$title = _user_admin($user_id) ? USERS : "User's page";
 }
 else

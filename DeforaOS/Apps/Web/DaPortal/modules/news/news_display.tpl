@@ -12,7 +12,7 @@
 		(<?php echo _html_safe(_module('comment', 'count', array('id' => $news['id'])).' '.COMMENT_S); ?>)
 		· <a href="index.php?module=comment&amp;action=new&amp;parent=<?php echo _html_safe($news['id']); ?>#edit"><img src="icons/16x16/reply.png" alt=""/> <?php echo _html_safe(REPLY); ?></a>
 <?php } } ?>
-<?php global $user_id; require_once('system/user.php');
+<?php global $user_id; require_once('./system/user.php');
 if($news['id'] && _user_admin($user_id)) { ?>
 		· <a href="index.php?module=news&amp;action=modify&amp;id=<?php echo _html_safe($news['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
 <?php if($news['enabled'] == 't') { ?>

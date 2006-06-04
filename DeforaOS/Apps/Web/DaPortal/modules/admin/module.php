@@ -5,7 +5,7 @@
 //check url
 if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
-require_once('system/user.php');
+require_once('./system/user.php');
 
 
 //lang

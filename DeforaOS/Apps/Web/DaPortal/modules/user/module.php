@@ -30,7 +30,7 @@ _lang($text);
 
 
 function _password_mail($id, $username, $email, $password = FALSE)
-	/* FIXME weak passwords and keys...? */
+	//FIXME weak passwords and keys...?
 {
 	if($password == FALSE)
 		$password = _password_new();
@@ -71,7 +71,7 @@ function user_admin($args)
 
 	if(isset($args['id']))
 		return user_modify($args);
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/user/icon.png" alt=""/>'
@@ -82,7 +82,7 @@ function user_admin($args)
 			.' Configuration</h2>'."\n");
 		$module = 'user';
 		$action = 'config_update';
-		include('system/config.tpl');
+		include('./system/config.tpl');
 	}
 	$order = 'name ASC';
 	switch($args['sort'])
@@ -157,7 +157,7 @@ function user_config_update($args)
 {
 	global $user_id, $module_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$keys = array_keys($args);
@@ -171,7 +171,7 @@ function user_config_update($args)
 
 function user_confirm($args)
 {
-	include('user_confirm.tpl');
+	include('./modules/user/user_confirm.tpl');
 }
 
 
@@ -188,7 +188,7 @@ function user_default($args)
 			." WHERE user_id='$user_id';")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
-	include('user_homepage.tpl');
+	include('./modules/user/user_homepage.tpl');
 }
 
 
@@ -196,7 +196,7 @@ function user_delete($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	_sql_query('DELETE FROM daportal_user_register'
@@ -211,7 +211,7 @@ function user_disable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	if(!_sql_query('UPDATE daportal_user SET'
@@ -230,7 +230,7 @@ function user_display($args)
 			." WHERE user_id='".$args['id']."';")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
-	include('user_display.tpl');
+	include('./modules/user/user_display.tpl');
 }
 
 
@@ -238,7 +238,7 @@ function user_enable($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	if(!_sql_query('UPDATE daportal_user SET'
@@ -252,7 +252,7 @@ function user_insert($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	if(!ereg('^[a-z]{1,9}$', $args['username']))
@@ -287,7 +287,7 @@ function user_login($args)
 		$message = WRONG_PASSWORD;
 		$username = stripslashes($_POST['username']);
 	}
-	include('user_login.tpl');
+	include('./modules/user/user_login.tpl');
 }
 
 
@@ -297,7 +297,7 @@ function user_logout($args)
 
 	if($user_id != 0)
 		return _error('Unable to logout');
-	return include('user_logout.tpl');
+	return include('./modules/user/user_logout.tpl');
 }
 
 
@@ -307,7 +307,7 @@ function user_modify($args)
 
 	if($user_id == 0)
 		return _error('Permission denied');
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$id = $args['id'];
 	else if(!isset($args['id']) || $args['id'] == $user_id)
@@ -322,7 +322,7 @@ function user_modify($args)
 		return _error('Invalid user');
 	$user = $user[0];
 	$title = 'User modification';
-	include('user_update.tpl');
+	include('./modules/user/user_update.tpl');
 }
 
 
@@ -330,12 +330,12 @@ function user_new($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	$title = 'New user';
 	$admin = 1;
-	include('user_update.tpl');
+	include('./modules/user/user_update.tpl');
 }
 
 
@@ -380,7 +380,7 @@ function user_register($args)
 			._html_safe(USER_REGISTRATION).'</h1>');
 	if(strlen($message))
 		_error($message, 1);
-	include('user_register.tpl');
+	include('./modules/user/user_register.tpl');
 }
 
 function _register_mail($username, $email)
@@ -394,15 +394,15 @@ function _register_mail($username, $email)
 			== FALSE)
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
-	include('user_pending.tpl');
+	include('./modules/user/user_pending.tpl');
 	_password_mail($id, $username, $email, $password);
 }
 
 
 function _system_confirm($key)
 {
-	/* FIXME remove expired registration keys */
-	/* FIXME use a transaction */
+	//FIXME remove expired registration keys
+	//FIXME use a transaction
 	$user = _sql_array('SELECT daportal_user.user_id'
 			.', daportal_user.username'
 			.' FROM daportal_user, daportal_user_register'
@@ -479,7 +479,7 @@ function user_update($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$id = $args['id'];
 	else if($user_id != 0)
