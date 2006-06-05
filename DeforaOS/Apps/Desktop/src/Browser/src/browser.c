@@ -108,11 +108,7 @@ Browser * browser_new(char const * directory)
 	/* FIXME */
 
 	/* mime */
-	if((browser->mime = mime_new()) == NULL)
-	{
-		free(browser);
-		return NULL;
-	}
+	browser->mime = mime_new();
 
 	/* history */
 	browser->history = g_list_append(NULL, strdup(directory == NULL
@@ -296,7 +292,8 @@ static void _fill_store(Browser * browser)
 		gtk_list_store_append(browser->store, &iter);
 		if(is_dir)
 			icon = browser->pb_folder;
-		else if(!is_dir && (type = mime_type(browser->mime, name))
+		else if(!is_dir && browser->mime != NULL
+				&& (type = mime_type(browser->mime, name))
 				!= NULL)
 		{
 			strncpy(&buf[11], type, sizeof(buf)-11);

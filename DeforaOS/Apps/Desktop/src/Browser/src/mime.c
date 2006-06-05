@@ -15,7 +15,13 @@
 Mime * mime_new(void)
 {
 	Mime * mime;
-	FILE * fp;
+	char * globs[] = { /* ideally taken from Gtk+ but seems impossible */
+	       	"/usr/pkg/share/mime/globs",
+	       	"/usr/local/share/mime/globs",
+	       	"/usr/share/mime/globs",
+		NULL };
+	char ** g = globs;
+	FILE * fp = NULL;
 	char buf[256];
 	size_t len;
 	char * glob;
@@ -23,9 +29,12 @@ Mime * mime_new(void)
 
 	if((mime = malloc(sizeof(*mime))) == NULL)
 		return NULL;
-	if((fp = fopen("/usr/share/mime/globs", "r")) == NULL)
+	for(g = globs; *g != NULL; g++)
+		if((fp = fopen(*g, "r")) != NULL)
+			break;
+	if(fp == NULL)
 	{
-		perror("/usr/share/mime/globs"); /* FIXME */
+		perror("Error while loading MIME globs");
 		free(mime);
 		return NULL;
 	}
