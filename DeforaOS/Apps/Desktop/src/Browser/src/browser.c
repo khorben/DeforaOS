@@ -6,10 +6,7 @@
 
 
 
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -19,8 +16,7 @@
 
 
 /* Browser */
-static int _browser_error(Browser * browser, char const * message, int ret);
-static int _new_pixbufs(Browser * browser, GError ** error);
+static int _new_pixbufs(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
 static GtkListStore * _create_store(void);
 static void _fill_store(Browser * browser);
@@ -91,7 +87,6 @@ static struct _menubar _menubar[] =
 Browser * browser_new(char const * directory)
 {
 	Browser * browser;
-	GError * error = NULL;
 	GtkWidget * sw;
 	GtkWidget * vbox;
 	GtkWidget * tb_menubar;
@@ -102,16 +97,22 @@ Browser * browser_new(char const * directory)
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
 		return NULL;
-	if(!_new_pixbufs(browser, &error))
+	if(!_new_pixbufs(browser))
 	{
-		_browser_error(browser, error->message, 0);
-		g_error_free(error);
+		browser_error(browser, "Error while loading default icons", 0);
 		free(browser);
 		return NULL;
 	}
 
 	/* config */
 	/* FIXME */
+
+	/* mime */
+	if((browser->mime = mime_new()) == NULL)
+	{
+		free(browser);
+		return NULL;
+	}
 
 	/* history */
 	browser->history = g_list_append(NULL, strdup(directory == NULL
@@ -167,7 +168,7 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
-	widget = gtk_label_new("Location:");
+	widget = gtk_label_new("Location: ");
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
@@ -217,30 +218,14 @@ Browser * browser_new(char const * directory)
 	return browser;
 }
 
-static int _browser_error(Browser * browser, char const * message, int ret)
+static int _new_pixbufs(Browser * browser)
 {
-	GtkWidget * dialog;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
-	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy),
-			NULL);
-	gtk_widget_show(dialog);
-	return ret;
-}
-
-static int _new_pixbufs(Browser * browser, GError ** error)
-{
-	GtkIconTheme * theme;
-	GList * list;
-
-	theme = gtk_icon_theme_new();
-	gtk_icon_theme_set_custom_theme(theme, "gnome");
-	if((browser->pb_file = gtk_icon_theme_load_icon(theme,
+	browser->theme = gtk_icon_theme_new();
+	gtk_icon_theme_set_custom_theme(browser->theme, "gnome");
+	if((browser->pb_file = gtk_icon_theme_load_icon(browser->theme,
 			"gnome-fs-regular", 48, 0, NULL)) == NULL)
 		return FALSE;
-	browser->pb_folder = gtk_icon_theme_load_icon(theme,
+	browser->pb_folder = gtk_icon_theme_load_icon(browser->theme,
 			"gnome-fs-directory", 48, 0, NULL);
 	return browser->pb_folder != NULL;
 }
@@ -296,26 +281,50 @@ static void _fill_store(Browser * browser)
 	for(cnt = 0; (name = g_dir_read_name(dir)) != NULL;)
 	{
 		gchar * path, * display_name;
+		char const * type;
+		char buf[256];
+		char * p;
 		gboolean is_dir;
+		GdkPixbuf * icon;
 
-		if(name[0] != '.') /* FIXME optional */
+		strcpy(buf, "gnome-mime-");
+		if(name[0] == '.') /* FIXME optional */
+			continue;
+		path = g_build_filename(browser->current->data, name, NULL);
+		is_dir = g_file_test(path, G_FILE_TEST_IS_DIR);
+		display_name = g_filename_to_utf8(name, -1, NULL, NULL, NULL);
+		gtk_list_store_append(browser->store, &iter);
+		if(is_dir)
+			icon = browser->pb_folder;
+		else if(!is_dir && (type = mime_type(browser->mime, name))
+				!= NULL)
 		{
-			path = g_build_filename(browser->current->data, name,
-					NULL);
-			is_dir = g_file_test(path, G_FILE_TEST_IS_DIR);
-			display_name = g_filename_to_utf8(name, -1, NULL, NULL,
-					NULL);
-			gtk_list_store_append(browser->store, &iter);
-			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
-					path, BR_COL_DISPLAY_NAME, display_name,
-					BR_COL_IS_DIRECTORY, is_dir,
-					BR_COL_PIXBUF,
-					is_dir ? browser->pb_folder
-					: browser->pb_file, -1);
-			g_free(path);
-			g_free(display_name);
-			cnt++;
+			strncpy(&buf[11], type, sizeof(buf)-11);
+			for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
+			if((icon = gtk_icon_theme_load_icon(browser->theme,
+							buf, 48, 0, NULL))
+					== NULL)
+			{
+				if((p = strchr(&buf[11], '-')) != NULL)
+				{
+					*p = '\0';
+					icon = gtk_icon_theme_load_icon(
+							browser->theme, buf, 48,
+							0, NULL);
+				}
+				if(icon == NULL)
+					icon = browser->pb_file;
+			}
 		}
+		else
+			icon = browser->pb_file;
+		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, path,
+				BR_COL_DISPLAY_NAME, display_name,
+				BR_COL_IS_DIRECTORY, is_dir, BR_COL_PIXBUF,
+				icon, -1);
+		g_free(path);
+		g_free(display_name);
+		cnt++;
 	}
 	if(browser->statusbar_id)
 		gtk_statusbar_remove(GTK_STATUSBAR(browser->statusbar),
@@ -474,7 +483,7 @@ static void _browser_on_file_new_window(GtkWidget * widget, gpointer data)
 
 	if((pid = fork()) == -1)
 	{
-		_browser_error(browser, strerror(errno), 0);
+		browser_error(browser, strerror(errno), 0);
 		return;
 	}
 	if(pid == 0)
@@ -621,43 +630,16 @@ void browser_delete(Browser * browser)
 }
 
 
-/* usage */
-static int _usage(void)
+/* useful */
+int browser_error(Browser * browser, char const * message, int ret)
 {
-	fprintf(stderr, "%s", "Usage: browser [directory]\n");
-	return 1;
-}
+	GtkWidget * dialog;
 
-
-/* main */
-static void _main_sigchld(int signum);
-int main(int argc, char * argv[])
-{
-	int o;
-	Browser * browser;
-	struct sigaction sa;
-
-	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
-		switch(o)
-		{
-			default:
-				return _usage();
-		}
-	if(optind < argc-1)
-		return _usage();
-	browser = browser_new(argv[optind]);
-	sa.sa_handler = _main_sigchld;
-	sigfillset(&sa.sa_mask);
-	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		_browser_error(browser, "signal handling error", 0);
-	gtk_main();
-	if(browser != NULL)
-		browser_delete(browser);
-	return 0;
-}
-
-static void _main_sigchld(int signum)
-{
-	wait(NULL);
+	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy),
+			NULL);
+	gtk_widget_show(dialog);
+	return ret;
 }

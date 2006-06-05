@@ -6,6 +6,7 @@
 # define BROWSER_BROWSER_H
 
 # include <gtk/gtk.h>
+# include "mime.h"
 
 
 /* Browser */
@@ -25,11 +26,15 @@ typedef struct _Browser
 	/* config */
 /*	Config * config; */
 
+	/* mime */
+	Mime * mime;
+
 	/* history */
 	GList * history;
 	GList * current;
 
 	/* widgets */
+	GtkIconTheme * theme;
 	GdkPixbuf * pb_file;
 	GdkPixbuf * pb_folder;
 	GtkWidget * window;
@@ -47,5 +52,8 @@ typedef struct _Browser
 /* functions */
 Browser * browser_new(char const * directory);
 void browser_delete(Browser * browser);
+
+/* useful */
+int browser_error(Browser * browser, char const * message, int ret);
 
 #endif /* !BROWSER_BROWSER_H */
