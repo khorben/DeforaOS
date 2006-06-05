@@ -9,12 +9,6 @@
 
 
 /* Browser */
-/* defaults */
-# define BROWSER_DATA_FOLDER	"/usr/share/icons/gnome/48x48/filesystems"
-# define BROWSER_MIME_FOLDER	"gnome-fs-directory.png"
-# define BROWSER_MIME_DEFAULT	"gnome-fs-regular.png"
-
-
 /* types */
 enum
 {

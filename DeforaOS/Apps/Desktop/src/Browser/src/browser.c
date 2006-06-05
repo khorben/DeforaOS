@@ -228,43 +228,16 @@ static int _browser_error(Browser * browser, char const * message, int ret)
 	return ret;
 }
 
-static char * _pixbufs_find_file(char const * base, GError ** err);
 static int _new_pixbufs(Browser * browser, GError ** error)
 {
-	char * filename;
+	GtkIconTheme * theme;
+	GList * list;
 
-	if((filename = _pixbufs_find_file(BROWSER_MIME_DEFAULT, error)) == NULL)
-		return FALSE;
-	browser->pb_file = gdk_pixbuf_new_from_file(filename, error);
-	g_free(filename);
-	while(browser->pb_file)
-	{
-		if((filename = _pixbufs_find_file(BROWSER_MIME_FOLDER, error))
-				== NULL)
-			break;
-		browser->pb_folder = gdk_pixbuf_new_from_file(filename, error);
-		g_free(filename);
-		if(!browser->pb_folder)
-			break;
-		return TRUE;
-	}
-	return FALSE;
-}
-
-static char * _pixbufs_find_file(char const * base, GError ** err)
-{
-	char * filename;
-
-	g_return_val_if_fail(err == NULL || *err == NULL, NULL);
-	filename = g_build_filename(BROWSER_DATA_FOLDER, base, NULL);
-	if(!g_file_test(filename, G_FILE_TEST_EXISTS))
-	{
-		g_set_error(err, G_FILE_ERROR, G_FILE_ERROR_NOENT,
-				"Cannot find file \"%s\"", base);
-		g_free(filename);
-		return NULL;
-	}
-	return filename;
+	theme = gtk_icon_theme_new();
+	gtk_icon_theme_set_custom_theme(theme, "gnome");
+	browser->pb_file = gtk_icon_theme_load_icon(theme, "gnome-fs-regular", 48, 0, error);
+	browser->pb_folder = gtk_icon_theme_load_icon(theme, "gnome-fs-directory", 48, 0, error);
+	return browser->pb_file != NULL && browser->pb_folder != NULL;
 }
 
 static GtkWidget * _new_menubar(Browser * browser)
