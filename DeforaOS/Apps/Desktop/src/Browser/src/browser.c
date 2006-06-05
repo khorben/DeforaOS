@@ -155,6 +155,8 @@ Browser * browser_new(char const * directory)
 	g_signal_connect(tb_button, "clicked", G_CALLBACK(_browser_on_refresh),
 			browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
+			-1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_HOME);
 	g_signal_connect(tb_button, "clicked", G_CALLBACK(_browser_on_home),
 			browser);
@@ -235,9 +237,12 @@ static int _new_pixbufs(Browser * browser, GError ** error)
 
 	theme = gtk_icon_theme_new();
 	gtk_icon_theme_set_custom_theme(theme, "gnome");
-	browser->pb_file = gtk_icon_theme_load_icon(theme, "gnome-fs-regular", 48, 0, error);
-	browser->pb_folder = gtk_icon_theme_load_icon(theme, "gnome-fs-directory", 48, 0, error);
-	return browser->pb_file != NULL && browser->pb_folder != NULL;
+	if((browser->pb_file = gtk_icon_theme_load_icon(theme,
+			"gnome-fs-regular", 48, 0, NULL)) == NULL)
+		return FALSE;
+	browser->pb_folder = gtk_icon_theme_load_icon(theme,
+			"gnome-fs-directory", 48, 0, NULL);
+	return browser->pb_folder != NULL;
 }
 
 static GtkWidget * _new_menubar(Browser * browser)
@@ -641,14 +646,14 @@ int main(int argc, char * argv[])
 		}
 	if(optind < argc-1)
 		return _usage();
-	if((browser = browser_new(argv[optind])) == NULL)
-		return 2;
+	browser = browser_new(argv[optind]);
 	sa.sa_handler = _main_sigchld;
 	sigfillset(&sa.sa_mask);
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
 		_browser_error(browser, "signal handling error", 0);
 	gtk_main();
-	browser_delete(browser);
+	if(browser != NULL)
+		browser_delete(browser);
 	return 0;
 }
 
