@@ -286,7 +286,7 @@ static void _fill_store(Browser * browser)
 	GDir * dir;
 	char const * name;
 	GtkTreeIter iter;
-	size_t cnt;
+	unsigned int cnt;
 	char status[17];
 
 	gtk_list_store_clear(browser->store);
@@ -322,7 +322,7 @@ static void _fill_store(Browser * browser)
 				gtk_statusbar_get_context_id(
 					GTK_STATUSBAR(browser->statusbar), ""),
 				browser->statusbar_id);
-	snprintf(status, sizeof(status), "%d file%c", cnt, cnt <= 1
+	snprintf(status, sizeof(status), "%u file%c", cnt, cnt <= 1
 			? '\0' : 's');
 	browser->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
 				browser->statusbar),
