@@ -1,4 +1,4 @@
-SUBDIRS	= Devel Graphics Network Servers Unix
+SUBDIRS	= Desktop Devel Graphics Network Servers Unix
 
 
 all: subdirs
