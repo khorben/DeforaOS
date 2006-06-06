@@ -14,6 +14,7 @@ static int _fontsel(void)
 	GtkWidget * fontsel;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "Font browser");
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_fontsel_on_exitx), NULL);
