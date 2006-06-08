@@ -24,7 +24,7 @@ function _debug()
 	$usec = $debug_time_after['usec'] - $debug_time_before['usec'];
 	if($usec < 0)
 	{
-		$usec = $debug_time_before['usec'] - $debug_time_after['usec'];
+		$usec = -$usec;
 		$sec++;
 	}
 	print('<div class="info"><b>Info:</b> Page execution duration: '
