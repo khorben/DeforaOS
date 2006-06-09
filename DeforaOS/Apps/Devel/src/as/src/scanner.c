@@ -235,7 +235,7 @@ static Token * _scan_word(FILE * fp, int * la)
 		str[len++] = *la;
 		*la = fgetc(fp);
 	}
-	while(islower(*la));
+	while(islower(*la) || isdigit(*la));
 	str[len] = '\0';
 	t = token_new(TC_WORD, str);
 	free(str);
