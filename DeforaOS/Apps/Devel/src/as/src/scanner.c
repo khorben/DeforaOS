@@ -111,6 +111,7 @@ static Token * _scan_immediate(FILE * fp, int * la)
 	int len = 1;
 	char * p;
 	Token * t;
+	int hex = 0;
 
 	if(*la != '$' || !isdigit(*la = fgetc(fp)) || (str = malloc(1)) == NULL)
 		return NULL;
@@ -126,8 +127,11 @@ static Token * _scan_immediate(FILE * fp, int * la)
 		str = p;
 		str[len++] = *la;
 		*la = fgetc(fp);
+		if(len == 2 && str[1] == '0' && *la == 'x')
+			hex = 1;
 	}
-	while(isdigit(*la) || (len == 2 && str[1] == '0' && *la == 'x'));
+	while(isdigit(*la) || (len == 2 && hex) || (hex && (tolower(*la) >= 'a'
+					&& tolower(*la) <= 'f')));
 	str[len] = '\0';
 	t = token_new(TC_IMMEDIATE, str);
 	free(str);
