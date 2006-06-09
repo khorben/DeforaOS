@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <arpa/inet.h>
 #include "as.h"
 #include "code.h"
 
@@ -83,7 +84,8 @@ CodeError code_instruction(Code * code, char * instruction,
 	ArchInstruction * ai;
 	int ret;
 	int i;
-	char buf[sizeof(long long)];
+	long long buf;
+	unsigned long opcode;
 	size_t size;
 
 	if((ret = _instruction_instruction(code, &ai, instruction, operands,
@@ -93,10 +95,22 @@ CodeError code_instruction(Code * code, char * instruction,
 	fprintf(stderr, "instruction %s, opcode 0x%x, operands: 0x%x\n",
 			instruction, ai->opcode, ai->operands);
 #endif
-	if(fwrite(&ai->opcode, ai->size, 1, code->fp) != ai->size)
+	switch(ai->size)
+	{
+		case sizeof(short):
+			opcode = htons(ai->opcode); /* FIXME provide this */
+			break;
+		case sizeof(long):
+			opcode = htonl(ai->opcode); /* FIXME provide this */
+			break;
+		default:
+			opcode = ai->opcode;
+			break;
+	}
+	if(fwrite(&opcode, ai->size, 1, code->fp) != 1)
 		return CE_WRITE_ERROR;
 	if(ai->size == 0) /* FIXME bad definition? */
-		return 0;
+		return CE_SUCCESS;
 	for(i = 0; i < operands_cnt; i++)
 	{
 		if(i >= 2)
@@ -104,12 +118,12 @@ CodeError code_instruction(Code * code, char * instruction,
 		size = i == 0 ? ai->op1size : ai->op2size;
 		if(size == 0)
 			continue;
-		memset(buf, 0, sizeof(buf));
+		memset(&buf, 0, sizeof(buf));
 		switch(operands[i].type)
 		{
 			case TC_IMMEDIATE:
 				/* FIXME only valid if size == 4 */
-				*buf = strtoll(operands[i].value+1, NULL, 0);
+				buf = strtoll(operands[i].value+1, NULL, 0);
 				break;
 			case TC_REGISTER:
 				continue;
@@ -117,7 +131,7 @@ CodeError code_instruction(Code * code, char * instruction,
 				/* FIXME */
 				continue;
 		}
-		if(fwrite(buf, size, 1, code->fp) == 1)
+		if(fwrite(&buf, size, 1, code->fp) == 1)
 			continue;
 		return CE_WRITE_ERROR;
 	}

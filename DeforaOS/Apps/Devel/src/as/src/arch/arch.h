@@ -31,7 +31,7 @@ typedef unsigned int ArchOperands;
 typedef struct _ArchInstruction
 {
 	char * name;
-	unsigned int opcode;
+	unsigned long opcode;
 	ArchOperands operands;
 	uint8_t size;
 	uint8_t op1size;
