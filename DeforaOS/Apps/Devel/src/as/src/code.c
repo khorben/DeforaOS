@@ -100,6 +100,10 @@ CodeError code_instruction(Code * code, char * instruction,
 		case sizeof(short):
 			opcode = htons(ai->opcode); /* FIXME provide this */
 			break;
+		case 3:
+			/* FIXME not even portable */
+			opcode = htonl(ai->opcode << 8);
+			break;
 		case sizeof(long):
 			opcode = htonl(ai->opcode); /* FIXME provide this */
 			break;
