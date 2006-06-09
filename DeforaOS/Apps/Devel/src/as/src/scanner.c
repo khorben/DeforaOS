@@ -127,7 +127,7 @@ static Token * _scan_immediate(FILE * fp, int * la)
 		str[len++] = *la;
 		*la = fgetc(fp);
 	}
-	while(isdigit(*la));
+	while(isdigit(*la) || (len == 2 && str[1] == '0' && *la == 'x'));
 	str[len] = '\0';
 	t = token_new(TC_IMMEDIATE, str);
 	free(str);
