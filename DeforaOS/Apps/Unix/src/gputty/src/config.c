@@ -89,6 +89,8 @@ int config_set(Config * config, char const * section, char const * variable,
 			return 1;
 		}
 	}
+	if(value == NULL)
+		return hash_set(h, variable, NULL) == 0 ? 0 : 1;
 	if((p = strdup(value)) == NULL)
 		return 1;
 	if(hash_set(h, variable, p) == 0)
