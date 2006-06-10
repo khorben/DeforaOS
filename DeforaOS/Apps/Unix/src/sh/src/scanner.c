@@ -250,11 +250,23 @@ static char const * _read_variable(Scanner * scanner, int * c)
 	char buf[80];
 	unsigned long i;
 	char * p;
+	char delim = '\0';
 
 	for(i = 0; i < sizeof(buf)-1; i++)
 	{
-		if((*c = scanner->next(scanner)) == EOF
-				|| (!isalnum(*c) && *c != '_'))
+		*c = scanner->next(scanner);
+		if(i == 0 && *c == '{')
+		{
+			delim = '}';
+			i--;
+			continue;
+		}
+		if(i != 0 && delim != '\0' && *c == delim)
+		{
+			*c = scanner->next(scanner);
+			break;
+		}
+		if(*c == EOF || (!isalnum(*c) && *c != '_'))
 			break;
 		buf[i] = *c;
 	}
