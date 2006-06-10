@@ -1,5 +1,5 @@
 /* gputty.h */
-/* Copyright (C) 2004 Pierre Pronchery */
+/* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 
 
 
-#ifndef _GPUTTY_H
-# define _GPUTTY_H
+#ifndef GPUTTY_GPUTTY_H
+# define GPUTTY_GPUTTY_H
 
 # include "config.h"
 
@@ -32,7 +32,8 @@
 
 
 /* types */
-typedef struct _GPuTTY {
+typedef struct _GPuTTY
+{
 	/* Config */
 	Config * config;
 
@@ -62,7 +63,9 @@ typedef struct _GPuTTY {
 	GtkWidget * sn_vbox2;
 	GtkWidget * sn_esessions;
 	GtkWidget * sn_swsessions;
-	GtkWidget * sn_clsessions;
+	GtkTreeIter sn_ilsessions;
+	GtkListStore * sn_lsessions;
+	GtkWidget * sn_tlsessions;
 	GtkWidget * sn_vbox3;
 	GtkWidget * sn_load;
 	GtkWidget * sn_save;
@@ -71,7 +74,7 @@ typedef struct _GPuTTY {
 	GtkWidget * ac_hbox;
 	GtkWidget * ac_about;
 	GtkWidget * ac_options;
-	GtkWidget * ac_quit;
+	GtkWidget * ac_exit;
 	GtkWidget * ac_connect;
 	/* options */
 	GtkWidget * op_window;
@@ -85,12 +88,6 @@ typedef struct _GPuTTY {
 	GtkWidget * op_hbox3;
 	GtkWidget * op_ok;
 	GtkWidget * op_cancel;
-	/* about */
-	GtkWidget * ab_window;
-	GtkWidget * ab_vbox;
-	GtkWidget * ab_label;
-	GtkWidget * ab_hsep;
-	GtkWidget * ab_close;
 } GPuTTY;
 
 
@@ -98,4 +95,4 @@ typedef struct _GPuTTY {
 GPuTTY * gputty_new(void);
 void gputty_delete(GPuTTY * gputty);
 
-#endif /* !_GPUTTY_H */
+#endif /* !GPUTTY_GPUTTY_H */
