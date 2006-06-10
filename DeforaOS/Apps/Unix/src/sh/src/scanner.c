@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "scanner.h"
 
 
@@ -178,13 +179,7 @@ static Token * _next_word(Scanner * scanner, int * c)
 		{
 			if(*c == '\\' && (*c = _word_escape(scanner, c)) == EOF)
 				break;
-			if((p = realloc(str, len+2)) == NULL)
-			{
-				sh_error("malloc", 0);
-				free(str);
-				return NULL;
-			}
-			else
+			if((p = realloc(str, len+2)) != NULL)
 			{
 				str = p;
 				str[len++] = *c;
@@ -217,17 +212,31 @@ static char _word_escape(Scanner * scanner, int * c)
 	return p;
 }
 
+static char const * _read_variable(Scanner * scanner, int * c);
 static char * _word_dquote(Scanner * scanner, int * c, char * str, int * len)
 {
 	char * p;
+	char const * var;
 
-	if(str == NULL && (str = strdup("")) == NULL)
+	if(str == NULL && (str = malloc(1)) == NULL)
 		return NULL;
 	for(*c = scanner->next(scanner); *c != EOF && *c != '"';
 			*c = scanner->next(scanner))
 	{
 		if(*c == '\\')
 			*c = _word_escape(scanner, c);
+		else if(*c == '$')
+		{
+			if((var = _read_variable(scanner, c)) == NULL)
+				return NULL;
+			if((p = realloc(str, (*len)+strlen(var)+1)) == NULL)
+				return NULL;
+			str = p;
+			strcpy(&str[(*len)], var);
+			(*len)+=strlen(var);
+			if(*c == '"')
+				break;
+		}
 		if((p = realloc(str, (*len)+2)) == NULL)
 			return NULL;
 		str = p;
@@ -236,11 +245,34 @@ static char * _word_dquote(Scanner * scanner, int * c, char * str, int * len)
 	return str;
 }
 
+static char const * _read_variable(Scanner * scanner, int * c)
+{
+	char buf[80];
+	unsigned long i;
+	char * p;
+
+	for(i = 0; i < sizeof(buf)-1; i++)
+	{
+		if((*c = scanner->next(scanner)) == EOF
+				|| (!isalnum(*c) && *c != '_'))
+			break;
+		buf[i] = *c;
+	}
+	if(i == sizeof(buf)-1)
+		return NULL;
+	if(i == 0)
+		return "$";
+	buf[i] = '\0';
+	if((p = getenv(buf)) == NULL)
+		return "";
+	return p;
+}
+
 static char * _word_quote(Scanner * scanner, int * c, char * str, int * len)
 {
 	char * p;
 
-	if(str == NULL && (str = strdup("")) == NULL)
+	if(str == NULL && (str = malloc(1)) == NULL)
 		return NULL;
 	for(*c = scanner->next(scanner); *c != EOF && *c != '\'';
 			*c = scanner->next(scanner))
