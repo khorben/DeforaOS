@@ -8,11 +8,11 @@
 	<table>
 		<tr>
 			<td class="field">Title&nbsp;:</td>
-			<td><input type="text" name="title" value="<?php echo _html_safe($comment['title']); ?>" size="80"/></td>
+			<td><input type="text" name="title" value="<?php echo _html_safe($comment['title']); ?>" size="50"/></td>
 		</tr>
 		<tr>
 			<td class="field">Content&nbsp;:</td>
-			<td><textarea name="content" cols="80" rows="15"><?php echo _html_safe($comment['content']); ?></textarea></td>
+			<td><textarea name="content" cols="50" rows="10"><?php echo _html_safe($comment['content']); ?></textarea></td>
 		</tr>
 		<tr>
 			<td></td>

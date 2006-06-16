@@ -4,6 +4,7 @@
 		<div class="author"><?php echo _html_safe(COMMENT_BY); ?> <a href="index.php?module=user&amp;id=<?php echo _html_safe($comment['user_id']); ?>"><?php echo _html_safe($comment['username']); ?></a></div>
 		<div class="date"><?php echo _html_safe(COMMENT_ON); ?> <?php echo _html_safe($comment['date']); ?></div>
 		<div class="content"><?php echo _html_pre($comment['content']); ?></div>
+<?php if(!isset($comment['preview'])) { ?>
 		<div class="status">
 			<a href="index.php?module=comment&amp;action=new&amp;parent=<?php echo _html_safe($comment['id']); ?>#edit"><img src="icons/16x16/reply.png" alt=""/> Reply</a>
 <?php global $user_id; require_once('./system/user.php');
@@ -16,6 +17,7 @@ if($comment['id'] && _user_admin($user_id)) { ?>
 <?php } ?>
 <?php } ?>
 		</div>
+<?php } ?>
 	</div>
 <?php if(isset($comment['id'])) comment_childs(array('id' => $comment['id'])); ?>
 </div>
