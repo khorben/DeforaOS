@@ -11,7 +11,7 @@
 /* types */
 typedef enum _HostArch
 {
-	HA_I386, HA_I486, HA_I586, HA_I686,
+	HA_I386 = 0, HA_I486, HA_I586, HA_I686,
 	HA_SPARC, HA_SPARC64,
 	HA_UNKNOWN
 } HostArch;
@@ -20,21 +20,28 @@ extern const String * sHostArch[HA_LAST+1];
 
 typedef enum _HostOS
 {
-	HO_GNU_LINUX,
+	HO_GNU_LINUX = 0,
 	HO_FREEBSD, HO_NETBSD, HO_OPENBSD,
+	HO_SUNOS,
 	HO_UNKNOWN
 } HostOS;
 # define HO_LAST HO_UNKNOWN
 extern const String * sHostOS[HO_LAST+1];
 
-typedef enum _HostKernel /* FIXME feels wrong */
+typedef enum _HostKernel
 {
-	HK_LINUX20, HK_LINUX22, HK_LINUX24, HK_LINUX26,
+	HK_LINUX20 = 0, HK_LINUX22, HK_LINUX24, HK_LINUX26,
 	HK_NETBSD20, HK_NETBSD30,
+	HK_SUNOS57, HK_SUNOS58, HK_SUNOS59, HK_SUNOS510,
 	HK_UNKNOWN
 } HostKernel;
 # define HK_LAST HK_UNKNOWN
-extern const String * sHostKernel[HK_LAST+1];
+struct HostKernel
+{
+	HostOS os;
+	const char * version;
+};
+extern const struct HostKernel sHostKernel[HK_LAST+1];
 
 typedef enum _TargetType
 {

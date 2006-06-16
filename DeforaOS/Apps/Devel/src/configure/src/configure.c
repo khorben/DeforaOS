@@ -26,13 +26,22 @@ const String * sHostOS[HO_LAST+1] =
 {
 	"Linux",
 	"FreeBSD", "NetBSD", "OpenBSD",
+	"SunOS",
 	"unknown"
 };
-const String * sHostKernel[HK_LAST+1] =
+const struct HostKernel sHostKernel[] =
 {
-	"2.0", "2.2", "2.4", "2.6",
-	"2.0", "3.0",
-	"unknown"
+	{ HO_GNU_LINUX,	"2.0"		},
+	{ HO_GNU_LINUX,	"2.2"		},
+	{ HO_GNU_LINUX,	"2.4"		},
+	{ HO_GNU_LINUX,	"2.6"		},
+	{ HO_NETBSD,	"2.0"		},
+	{ HO_NETBSD,	"3.0"		},
+	{ HO_SUNOS,	"5.7",		},
+	{ HO_SUNOS,	"5.8",		},
+	{ HO_SUNOS,	"5.9",		},
+	{ HO_SUNOS,	"5.10",		},
+	{ HO_UNKNOWN,	"unknown"	}
 };
 
 const String * sTargetType[TT_LAST] = { "binary", "library", "object" };
@@ -124,11 +133,12 @@ static int _configure(Prefs * prefs, char const * directory)
 
 
 /* private */
+static HostKernel _detect_kernel(HostOS os, char const * release);
 static void _configure_detect(Configure * configure)
 {
 	struct utsname un;
 
-	if(uname(&un) != 0)
+	if(uname(&un) < 0)
 	{
 		configure_error("system detection failed", 0);
 		configure->arch = HA_UNKNOWN;
@@ -138,13 +148,29 @@ static void _configure_detect(Configure * configure)
 	}
 	configure->arch = enum_string(HA_LAST, sHostArch, un.machine);
 	configure->os = enum_string(HO_LAST, sHostOS, un.sysname);
-	configure->kernel = enum_string_short(HK_LAST, sHostKernel,
-			un.release);
+	configure->kernel = _detect_kernel(configure->os, un.release);
 	if(configure->prefs->flags & PREFS_v)
 		printf("Detected system %s version %s on %s\n",
 				sHostOS[configure->os],
-				sHostKernel[configure->kernel],
+				sHostKernel[configure->kernel].version,
 				sHostArch[configure->arch]);
+}
+
+static HostKernel _detect_kernel(HostOS os, char const * release)
+{
+	unsigned int i;
+
+	for(i = 0; i != HK_LAST; i++)
+	{
+		if(sHostKernel[i].os < os)
+			continue;
+		if(sHostKernel[i].os > os)
+			return HK_UNKNOWN;
+		if(strncmp(release, sHostKernel[i].version,
+					strlen(sHostKernel[i].version)) == 0)
+			return i;
+	}
+	return i;
 }
 
 
