@@ -104,15 +104,17 @@ void as_plugin_list(char const * type, char const * description)
 	struct dirent * de;
 	unsigned int len;
 
-	fprintf(stderr, "%s%s%s", "Available ", description, " plug-ins:\n");
+	fprintf(stderr, "%s%s%s", "Available ", description, " plug-ins:");
 	if((path = malloc(strlen(PREFIX) + 1 + strlen(type) + 1)) == NULL)
 	{
+		fputc('\n', stderr);
 		as_error("malloc", 0);
 		return;
 	}
 	sprintf(path, "%s/%s", PREFIX, type);
 	if((dir = opendir(path)) == NULL)
 	{
+		fputc('\n', stderr);
 		as_error(path, 0);
 		return;
 	}
@@ -123,10 +125,11 @@ void as_plugin_list(char const * type, char const * description)
 		if(strcmp(".so", &de->d_name[len-3]) != 0)
 			continue;
 		de->d_name[len-3] = '\0';
-		printf("%s\n", de->d_name);
+		fprintf(stderr, " %s", de->d_name);
 	}
 	free(path);
 	closedir(dir);
+	fputc('\n', stderr);
 }
 
 
