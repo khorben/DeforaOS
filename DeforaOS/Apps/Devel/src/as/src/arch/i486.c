@@ -7,7 +7,7 @@
 
 
 /* types */
-#define REG(name, size, id) AO_ ## name = (id | AO_REG), \
+#define REG(name, size, id) AO_ ## name = ((id << 2) | AO_REG), \
 				AO_ ## name ## _ = ((id << 10) | AO_REG_), \
 				AO_ ## name ## __ = ((id << 18) | AO_REG__),
 enum
