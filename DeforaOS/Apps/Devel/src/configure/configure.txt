@@ -40,7 +40,7 @@ the simplest possible code generation. Consequently, it will mostly be useful
 for projects running on UNIX platforms first.
 
 1.2 Who should use configure
-Every software developper could gain using configure. However, due to its
+Every software developer could gain using configure. However, due to its
 intentional simplicity, it may not be appropriate to use along with code
 compilation on some non-portable platforms.
 Of course an advanced user, trying to modify a given project Makefile on his
@@ -56,8 +56,8 @@ other Makefile files generators.
 configure has been created to be efficient at writing simple and compliant
 Makefiles for small to big software development projects. It should be useful:
 - for people learning software development using Makefiles;
-- for developpers of some small to big projects;
-- for developpers concerned by the readability and efficiency of their
+- for developers of some small to big projects;
+- for developers concerned by the readability and efficiency of their
   Makefiles.
 
                     ----------------------------------------
