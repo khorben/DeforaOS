@@ -322,7 +322,6 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 static void _binary_ldflags(Configure * configure, Config * config, FILE * fp,
 		String const * ldflags)
 {
-	/* FIXME remove -l dl and -l crypt on BSD, check on Solaris etc */
 	char * libs_gnu[] = { "socket", NULL };
 	char * libs_bsd[] = { "dl", "socket", NULL };
 	char * libs_sunos[] = { "dl", NULL };
