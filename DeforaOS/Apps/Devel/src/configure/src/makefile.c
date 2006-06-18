@@ -859,10 +859,8 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 		}
 	if((dist = config_get(subdir, "", "dist")) != NULL)
 		_dist_subdir_dist(fp, path, dist);
-	fprintf(fp, "%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/", path,
-			path[0] == '\0' ? "" : "/", PROJECT_CONF " \\\n");
 	fprintf(fp, "%s%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/", path,
-			path[0] == '\0' ? "" : "/", MAKEFILE,
+			path[0] == '\0' ? "" : "/", PROJECT_CONF,
 			path[0] == '\0' ? "\n" : " \\\n");
 	return 0;
 }
