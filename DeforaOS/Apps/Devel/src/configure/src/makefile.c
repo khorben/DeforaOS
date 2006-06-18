@@ -265,10 +265,12 @@ static int _executables_variables(Configure * configure, Config * config,
 	return 0;
 }
 
+static void _binary_ldflags(Configure * configure, Config * config, FILE * fp,
+		String const * ldflags);
 static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 		char * done)
 {
-	String * p;
+	String const * p;
 
 	/* FIXME path given from user or autodetected */
 	if(!done[TT_LIBRARY])
@@ -304,12 +306,63 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 			fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
 					"\n");
 	}
-	/* FIXME remove -l dl and -l crypt on BSD, check on Solaris etc */
 	if((p = config_get(config, "", "ldflags_force"))
 			!= NULL)
-		fprintf(fp, "%s%s%s", "LDFLAGSF= ", p, "\n");
+	{
+		fprintf(fp, "%s", "LDFLAGSF= ");
+		_binary_ldflags(configure, config, fp, p);
+	}
 	if((p = config_get(config, "", "ldflags")) != NULL)
-		fprintf(fp, "%s%s%s", "LDFLAGS\t= ", p, "\n");
+	{
+		fprintf(fp, "%s", "LDFLAGS\t= ");
+		_binary_ldflags(configure, config, fp, p);
+	}
+}
+
+static void _binary_ldflags(Configure * configure, Config * config, FILE * fp,
+		String const * ldflags)
+{
+	/* FIXME remove -l dl and -l crypt on BSD, check on Solaris etc */
+	char * libs_gnu[] = { "socket", NULL };
+	char * libs_bsd[] = { "dl", "socket", NULL };
+	char * libs_sunos[] = { "dl", NULL };
+	char buf[10];
+	char ** libs;
+	char * p;
+	char * q;
+	int i;
+
+	if((p = string_new(ldflags)) == NULL)
+	{
+		fprintf(fp, "%s%s", ldflags, "\n");
+		return;
+	}
+	switch(configure->os)
+	{
+		case HO_GNU_LINUX:
+			libs = libs_gnu;
+			break;
+		case HO_FREEBSD:
+		case HO_NETBSD:
+		case HO_OPENBSD:
+			libs = libs_bsd;
+			break;
+		case HO_SUNOS:
+			libs = libs_sunos;
+			break;
+		default:
+			libs = libs_gnu;
+			break;
+	}
+	for(i = 0; libs[i] != NULL; i++)
+	{
+		snprintf(buf, sizeof(buf), "-l %s", libs[i]);
+		if((q = string_find(p, buf)) == NULL)
+			continue;
+		memmove(q, q+strlen(buf), strlen(buf));
+	}
+	fprintf(fp, "%s%s", p, "\n");
+	free(p);
 }
 
 static void _variables_library(Configure * configure, Config * config,
