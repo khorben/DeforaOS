@@ -62,6 +62,11 @@ static int _makefile_write(Configure * configure, Config * config, FILE * fp,
 			|| _write_install(configure->prefs, config, fp) != 0
 			|| _write_uninstall(configure->prefs, config, fp) != 0)
 		return 1;
+	if(!(configure->prefs->flags & PREFS_n))
+		fprintf(fp, "%s%s%s", "\n.PHONY: all",
+				config_get(config, "", "subdirs") != NULL
+				? " subdirs" : "",
+				" clean distclean install uninstall\n");
 	return 0;
 }
 
