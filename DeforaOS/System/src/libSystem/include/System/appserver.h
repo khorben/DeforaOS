@@ -11,7 +11,7 @@
 /* AppServer */
 /* types */
 typedef struct _AppServer AppServer;
-enum _AppServerOptions
+typedef enum _AppServerOptions
 {
 	ASO_LOCAL = 1,
 	ASO_REMOTE = 2
