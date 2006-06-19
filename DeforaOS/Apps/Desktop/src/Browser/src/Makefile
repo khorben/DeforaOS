@@ -4,8 +4,8 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi -g -O2 `pkg-config gtk+-2.0 --cflags`
-CFLAGS	= -g
+CFLAGSF	= -W -Wall -ansi `pkg-config gtk+-2.0 --cflags`
+CFLAGS	= -g -O2
 LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
 MKDIR	= mkdir -p
@@ -40,3 +40,5 @@ install: all
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/browser
+
+.PHONY: all clean distclean install uninstall
