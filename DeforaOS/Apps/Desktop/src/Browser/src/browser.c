@@ -6,6 +6,7 @@
 
 
 
+#include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -268,13 +269,14 @@ static void _fill_store(Browser * browser)
 	char const * name;
 	GtkTreeIter iter;
 	unsigned int cnt;
-	char status[17];
+	unsigned int hidden_cnt;
+	char status[36];
 
 	gtk_list_store_clear(browser->store);
 	if((dir = g_dir_open(browser->current->data, 0, NULL)) == NULL)
 		return;
 	gtk_entry_set_text(GTK_ENTRY(browser->tb_path), browser->current->data);
-	for(cnt = 0; (name = g_dir_read_name(dir)) != NULL;)
+	for(cnt = 0, hidden_cnt = 0; (name = g_dir_read_name(dir)) != NULL;)
 	{
 		gchar * path, * display_name;
 		char const * type;
@@ -282,7 +284,10 @@ static void _fill_store(Browser * browser)
 		GdkPixbuf * icon;
 
 		if(name[0] == '.') /* FIXME optional */
+		{
+			hidden_cnt++;
 			continue;
+		}
 		path = g_build_filename(browser->current->data, name, NULL);
 		is_dir = g_file_test(path, G_FILE_TEST_IS_DIR);
 		display_name = g_filename_to_utf8(name, -1, NULL, NULL, NULL);
@@ -312,8 +317,8 @@ static void _fill_store(Browser * browser)
 				gtk_statusbar_get_context_id(
 					GTK_STATUSBAR(browser->statusbar), ""),
 				browser->statusbar_id);
-	snprintf(status, sizeof(status), "%u file%c", cnt, cnt <= 1
-			? '\0' : 's');
+	snprintf(status, sizeof(status), "%u file%c (%u hidden)", cnt, cnt <= 1
+			? '\0' : 's', hidden_cnt);
 	browser->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
 				browser->statusbar),
 			gtk_statusbar_get_context_id(GTK_STATUSBAR(
@@ -467,12 +472,11 @@ static void _browser_on_file_new_window(GtkWidget * widget, gpointer data)
 		browser_error(browser, strerror(errno), 0);
 		return;
 	}
-	if(pid == 0)
-	{
-		execlp("browser", "browser", browser->current->data, NULL);
-		fprintf(stderr, "%s%s", "browser: browser: ", strerror(errno));
-		exit(2);
-	}
+	if(pid != 0)
+		return;
+	execlp("browser", "browser", browser->current->data, NULL);
+	fprintf(stderr, "%s%s", "browser: browser: ", strerror(errno));
+	exit(2);
 }
 
 static void _browser_on_file_close(GtkWidget * widget, gpointer data)
@@ -526,6 +530,8 @@ static void _browser_on_home(GtkWidget * widget, gpointer data)
 
 static void _browser_go(Browser * browser, char const * path)
 {
+	if(g_file_test(path, G_FILE_TEST_IS_REGULAR))
+		return mime_open(browser->mime, path);
 	if(!g_file_test(path, G_FILE_TEST_IS_DIR))
 		return;
 	if(browser->history == NULL)
@@ -535,10 +541,7 @@ static void _browser_go(Browser * browser, char const * path)
 		browser->history->data = strdup(path);
 		browser->current = browser->history;
 	}
-	else if(strcmp(browser->current->data, path) == 0)
-	{
-	}
-	else
+	else if(strcmp(browser->current->data, path) != 0)
 	{
 		g_list_foreach(browser->current->next, (GFunc)free, NULL);
 		g_list_free(browser->current->next);
@@ -568,11 +571,6 @@ static void _browser_on_icon_default(GtkIconView * iconview,
 			tree_path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&path, BR_COL_IS_DIRECTORY, &is_dir, -1);
-	if(!is_dir)
-	{
-		g_free(path);
-		return;
-	}
 	_browser_go(browser, path);
 	g_free(path);
 }

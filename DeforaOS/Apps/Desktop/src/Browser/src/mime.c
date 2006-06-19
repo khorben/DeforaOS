@@ -2,7 +2,9 @@
 
 
 
+#include <sys/types.h>
 #include <errno.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +14,7 @@
 
 
 /* Mime */
+static void _new_config(Mime * mime);
 Mime * mime_new(void)
 {
 	Mime * mime;
@@ -40,6 +43,7 @@ Mime * mime_new(void)
 	}
 	mime->types = NULL;
 	mime->types_cnt = 0;
+	_new_config(mime);
 	while(fgets(buf, sizeof(buf), fp) != NULL)
 	{
 		errno = EINVAL;
@@ -57,7 +61,9 @@ Mime * mime_new(void)
 		mime->types = p;
 		p[mime->types_cnt].type = strdup(buf);
 		p[mime->types_cnt].glob = strdup(glob);
-		p[mime->types_cnt++].icon = NULL;
+		p[mime->types_cnt].icon = NULL;
+		p[mime->types_cnt++].open = mime->config != NULL
+			? config_get(mime->config, buf, "open") : NULL;
 		if(p[mime->types_cnt-1].type == NULL
 				|| p[mime->types_cnt-1].glob == NULL)
 			break;
@@ -72,6 +78,23 @@ Mime * mime_new(void)
 	return mime;
 }
 
+static void _new_config(Mime * mime)
+{
+	char * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		return;
+	if((mime->config = config_new()) == NULL)
+		return;
+	if((filename = malloc(strlen(homedir) + 1 + strlen(MIME_CONFIG_FILE)
+					+ 1)) == NULL)
+		return;
+	sprintf(filename, "%s/%s", homedir, MIME_CONFIG_FILE);
+	config_load(mime->config, filename);
+	free(filename);
+}
+
 
 void mime_delete(Mime * mime)
 {
@@ -82,8 +105,11 @@ void mime_delete(Mime * mime)
 		free(mime->types[i].type);
 		free(mime->types[i].glob);
 		free(mime->types[i].icon);
+		free(mime->types[i].open);
 	}
 	free(mime->types);
+	if(mime->config != NULL)
+		config_delete(mime->config);
 	free(mime);
 }
 
@@ -97,6 +123,35 @@ char const * mime_type(Mime * mime, char const * path)
 		if(fnmatch(mime->types[i].glob, path, FNM_NOESCAPE) == 0)
 			break;
 	return i < mime->types_cnt ? mime->types[i].type : NULL;
+}
+
+
+void mime_open(Mime * mime, char const * path)
+	/* FIXME report errors */
+{
+	char const * type;
+	unsigned int i;
+	pid_t pid;
+
+	if((type = mime_type(mime, path)) == NULL)
+		return;
+	for(i = 0; i < mime->types_cnt; i++)
+		/* FIXME have strncmp instead for fallbacks? */
+		if(strcmp(type, mime->types[i].type) == 0)
+			break;
+	if(i == mime->types_cnt || mime->types[i].open == NULL)
+		return;
+	if((pid = fork()) == -1)
+	{
+		perror("fork");
+		return;
+	}
+	if(pid != 0)
+		return;
+	execlp(mime->types[i].open, mime->types[i].open, path, NULL);
+	fprintf(stderr, "%s%s%s%s", "browser: ", mime->types[i].open, ": ",
+			strerror(errno));
+	exit(2);
 }
 
 
