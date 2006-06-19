@@ -136,7 +136,6 @@ void mime_open(Mime * mime, char const * path)
 	if((type = mime_type(mime, path)) == NULL)
 		return;
 	for(i = 0; i < mime->types_cnt; i++)
-		/* FIXME have strncmp instead for fallbacks? */
 		if(strcmp(type, mime->types[i].type) == 0)
 			break;
 	if(i == mime->types_cnt || mime->types[i].open == NULL)
