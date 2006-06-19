@@ -56,7 +56,8 @@ Mime * mime_new(void)
 			break;
 		mime->types = p;
 		p[mime->types_cnt].type = strdup(buf);
-		p[mime->types_cnt++].glob = strdup(glob);
+		p[mime->types_cnt].glob = strdup(glob);
+		p[mime->types_cnt++].icon = NULL;
 		if(p[mime->types_cnt-1].type == NULL
 				|| p[mime->types_cnt-1].glob == NULL)
 			break;
@@ -80,6 +81,7 @@ void mime_delete(Mime * mime)
 	{
 		free(mime->types[i].type);
 		free(mime->types[i].glob);
+		free(mime->types[i].icon);
 	}
 	free(mime->types);
 	free(mime);
@@ -95,4 +97,33 @@ char const * mime_type(Mime * mime, char const * path)
 		if(fnmatch(mime->types[i].glob, path, FNM_NOESCAPE) == 0)
 			break;
 	return i < mime->types_cnt ? mime->types[i].type : NULL;
+}
+
+
+GdkPixbuf * mime_icon(Mime * mime, GtkIconTheme * theme, char const * type)
+{
+	unsigned int i;
+	static char buf[256] = "gnome-mime-";
+	char * p;
+
+	for(i = 0; i < mime->types_cnt; i++)
+		if(strcmp(type, mime->types[i].type) == 0)
+			break;
+	if(i == mime->types_cnt)
+		return NULL;
+	if(mime->types[i].icon != NULL)
+		return mime->types[i].icon;
+	strncpy(&buf[11], type, sizeof(buf)-11);
+	for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
+	if((mime->types[i].icon = gtk_icon_theme_load_icon(theme, buf, 48, 0,
+					NULL)) == NULL)
+	{
+		if((p = strchr(&buf[11], '-')) != NULL)
+		{
+			*p = '\0';
+			mime->types[i].icon = gtk_icon_theme_load_icon(theme,
+					buf, 48, 0, NULL);
+		}
+	}
+	return mime->types[i].icon;
 }

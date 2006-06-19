@@ -164,7 +164,7 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
-	widget = gtk_label_new("Location: ");
+	widget = gtk_label_new(" Location: ");
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
@@ -204,7 +204,7 @@ Browser * browser_new(char const * directory)
 			BR_COL_DISPLAY_NAME);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_PIXBUF);
-	g_signal_connect(browser->iconview, "item_activated",
+	g_signal_connect(browser->iconview, "item-activated",
 			G_CALLBACK(_browser_on_icon_default), browser);
 	gtk_container_add(GTK_CONTAINER(sw), browser->iconview);
 	gtk_widget_grab_focus(browser->iconview);
@@ -278,12 +278,9 @@ static void _fill_store(Browser * browser)
 	{
 		gchar * path, * display_name;
 		char const * type;
-		char buf[256];
-		char * p;
 		gboolean is_dir;
 		GdkPixbuf * icon;
 
-		strcpy(buf, "gnome-mime-");
 		if(name[0] == '.') /* FIXME optional */
 			continue;
 		path = g_build_filename(browser->current->data, name, NULL);
@@ -296,22 +293,9 @@ static void _fill_store(Browser * browser)
 				&& (type = mime_type(browser->mime, name))
 				!= NULL)
 		{
-			strncpy(&buf[11], type, sizeof(buf)-11);
-			for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
-			if((icon = gtk_icon_theme_load_icon(browser->theme,
-							buf, 48, 0, NULL))
-					== NULL)
-			{
-				if((p = strchr(&buf[11], '-')) != NULL)
-				{
-					*p = '\0';
-					icon = gtk_icon_theme_load_icon(
-							browser->theme, buf, 48,
-							0, NULL);
-				}
-				if(icon == NULL)
-					icon = browser->pb_file;
-			}
+			if((icon = mime_icon(browser->mime, browser->theme,
+							type)) == NULL)
+				icon = browser->pb_file;
 		}
 		else
 			icon = browser->pb_file;

@@ -12,6 +12,7 @@ typedef struct _MimeType
 {
 	char * type;
 	char * glob;
+	GdkPixbuf * icon;
 } MimeType;
 
 typedef struct _Mime
@@ -27,5 +28,6 @@ void mime_delete(Mime * mime);
 
 /* useful */
 char const * mime_type(Mime * mime, char const * path);
+GdkPixbuf * mime_icon(Mime * mime, GtkIconTheme * theme, char const * type);
 
 #endif /* !BROWSER_MIME_H */
