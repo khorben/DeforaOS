@@ -309,15 +309,15 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 		button = gtk_button_new_with_mnemonic("C_redits");
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 					_about_credits), NULL);
-		gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, FALSE, 4);
+		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		button = gtk_button_new_with_mnemonic("_License");
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 					_about_license), NULL);
-		gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, FALSE, 4);
+		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 					_about_close), window);
-		gtk_box_pack_end(GTK_BOX(hbox), button, TRUE, FALSE, 4);
+		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 		gtk_container_add(GTK_CONTAINER(window), vbox);
 	}
