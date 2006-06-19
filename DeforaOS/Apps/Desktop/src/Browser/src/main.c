@@ -37,7 +37,8 @@ int main(int argc, char * argv[])
 		return _usage();
 	browser = browser_new(argv[optind]);
 	sa.sa_handler = _main_sigchld;
-	sigfillset(&sa.sa_mask);
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
 		browser_error(browser, "signal handling error", 0);
 	gtk_main();
