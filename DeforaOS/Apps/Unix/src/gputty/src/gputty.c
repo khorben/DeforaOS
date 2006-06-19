@@ -254,10 +254,23 @@ void gputty_delete(GPuTTY * gputty)
 
 
 /* callbacks */
+#if !GTK_CHECK_VERSION(2, 6, 0)
+static void _about_close(GtkWidget * widget, gpointer data);
+static void _about_credits(GtkWidget * widget, gpointer data);
+static void _about_license(GtkWidget * widget, gpointer data);
+#endif
 static void gputty_on_about(GtkWidget * widget, gpointer data)
 {
 	static GtkWidget * window = NULL;
 	static char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
+	char const comment[] =
+"GPuTTY is a clone of PuTTY for Open Source desktops.\n"
+"This software mainly relies on:\n"
+"- Glib\n"
+"- Gtk+\n"
+"Credits go to all Free Software contributors.";
+	char const copyright[] = "Copyright (c) 2004-2006 Pierre Pronchery";
+	char const website[] = "http://people.defora.org/~khorben/projects/gputty/";
 
 	if(window != NULL)
 	{
@@ -269,24 +282,65 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), "GPuTTY");
 	/* FIXME automatic version */
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), "0.9.8");
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window),
-			"Copyright (c) 2004-2006 Pierre Pronchery");
-	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(window),
-"GPuTTY is a clone of PuTTY for Open Source desktops.\n"
-"This software mainly relies on:\n"
-"- Glib\n"
-"- Gtk+\n"
-"Credits go to all Free Software contributors.");
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(window), comment);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
-	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(window),
-			"http://people.defora.org/~khorben/projects/gputty/");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(window), website);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
 #else
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(window, "About GPuTTY");
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
+	gtk_window_set_title(GTK_WINDOW(window), "About GPuTTY");
+	{
+		GtkWidget * vbox;
+		GtkWidget * hbox;
+		GtkWidget * button;
+
+		vbox = gtk_vbox_new(FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new("GPuTTY 0.9.8"),
+				FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(comment),
+				FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright),
+				FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(website),
+				FALSE, FALSE, 2);
+		hbox = gtk_hbox_new(TRUE, 0);
+		button = gtk_button_new_with_mnemonic("C_redits");
+		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+					_about_credits), NULL);
+		gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, FALSE, 4);
+		button = gtk_button_new_with_mnemonic("_License");
+		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+					_about_license), NULL);
+		gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, FALSE, 4);
+		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+					_about_close), window);
+		gtk_box_pack_end(GTK_BOX(hbox), button, TRUE, FALSE, 4);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+		gtk_container_add(GTK_CONTAINER(window), vbox);
+	}
 #endif
-	gtk_widget_show(window);
+	gtk_widget_show_all(window);
 }
+
+#if !GTK_CHECK_VERSION(2, 6, 0)
+static void _about_close(GtkWidget * widget, gpointer data)
+{
+	GtkWidget * window = data;
+
+	gtk_widget_hide(window);
+}
+
+static void _about_credits(GtkWidget * widget, gpointer data)
+{
+}
+
+static void _about_license(GtkWidget * widget, gpointer data)
+{
+}
+#endif
 
 static void gputty_on_connect(GtkWidget * widget, gpointer data)
 {
