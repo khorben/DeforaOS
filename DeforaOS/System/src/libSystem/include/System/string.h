@@ -18,7 +18,7 @@ int string_compare(String const * string, String const * string2);
 int string_compare_length(String const * string, String const * string2,
 		unsigned int length);
 void string_cut(String * string, unsigned int length);
-String const * string_find(String const * string, String const * key);
+String * string_find(String const * string, String const * key);
 int string_length(String const * string);
 
 #endif /* !LIBSYSTEM_STRING_H */

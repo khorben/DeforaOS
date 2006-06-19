@@ -77,7 +77,7 @@ int string_compare_length(String const * string, String const * string2,
 
 
 /* string_find */
-String const * string_find(String const * string, String const * key)
+String * string_find(String const * string, String const * key)
 {
 	unsigned int len = string_length(key);
 	unsigned char const * p;
