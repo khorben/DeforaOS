@@ -178,7 +178,11 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(g->vbox), g->sn_frame, TRUE, TRUE, 4);
 	/* actions */
 	g->ac_hbox = gtk_hbox_new(FALSE, 0);
+#if GTK_CHECK_VERSION(2, 6, 0)
 	g->ac_about = gtk_button_new_from_stock(GTK_STOCK_ABOUT);
+#else
+	g->ac_about = gtk_button_new_with_mnemonic("_About");
+#endif
 	gtk_box_pack_start(GTK_BOX(g->ac_hbox), g->ac_about, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(g->ac_about), "clicked",
 			G_CALLBACK(gputty_on_about), g);
@@ -260,6 +264,7 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 		gtk_widget_show(window);
 		return;
 	}
+#if GTK_CHECK_VERSION(2, 6, 0)
 	window = gtk_about_dialog_new();
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), "GPuTTY");
 	/* FIXME automatic version */
@@ -276,6 +281,10 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(window),
 			"http://people.defora.org/~khorben/projects/gputty/");
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
+#else
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(window, "About GPuTTY");
+#endif
 	gtk_widget_show(window);
 }
 
