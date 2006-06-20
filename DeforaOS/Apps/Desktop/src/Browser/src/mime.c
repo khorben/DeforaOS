@@ -169,14 +169,23 @@ GdkPixbuf * mime_icon(Mime * mime, GtkIconTheme * theme, char const * type)
 		return mime->types[i].icon;
 	strncpy(&buf[11], type, sizeof(buf)-11);
 	for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
+#if GTK_CHECK_VERSION(2, 6, 0)
 	if((mime->types[i].icon = gtk_icon_theme_load_icon(theme, buf, 48, 0,
+#else
+	if((mime->types[i].icon = gtk_icon_theme_load_icon(theme, buf, 24, 0,
+#endif
 					NULL)) == NULL)
 	{
 		if((p = strchr(&buf[11], '-')) != NULL)
 		{
 			*p = '\0';
+#if GTK_CHECK_VERSION(2, 6, 0)
 			mime->types[i].icon = gtk_icon_theme_load_icon(theme,
 					buf, 48, 0, NULL);
+#else
+			mime->types[i].icon = gtk_icon_theme_load_icon(theme,
+					buf, 24, 0, NULL);
+#endif
 		}
 	}
 	return mime->types[i].icon;

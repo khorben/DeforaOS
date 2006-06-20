@@ -246,10 +246,18 @@ static int _new_pixbufs(Browser * browser)
 	browser->theme = gtk_icon_theme_new();
 	gtk_icon_theme_set_custom_theme(browser->theme, "gnome");
 	if((browser->pb_file = gtk_icon_theme_load_icon(browser->theme,
+#if GTK_CHECK_VERSION(2, 6, 0)
 			"gnome-fs-regular", 48, 0, NULL)) == NULL)
+#else
+			"gnome-fs-regular", 24, 0, NULL)) == NULL)
+#endif
 		return FALSE;
 	browser->pb_folder = gtk_icon_theme_load_icon(browser->theme,
+#if GTK_CHECK_VERSION(2, 6, 0)
 			"gnome-fs-directory", 48, 0, NULL);
+#else
+			"gnome-fs-directory", 24, 0, NULL);
+#endif
 	return browser->pb_folder != NULL;
 }
 
