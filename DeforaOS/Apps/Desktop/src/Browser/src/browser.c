@@ -424,6 +424,7 @@ static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 static void _copy_foreach(gpointer data, Browser * browser);
 static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 	GList * selection;
 
@@ -432,6 +433,7 @@ static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 				browser->iconview));
 	g_list_foreach(selection, (GFunc)_copy_foreach, browser);
 	/* FIXME differentiate cut from paste */
+#endif
 }
 
 static void _copy_foreach(gpointer data, Browser * browser)
