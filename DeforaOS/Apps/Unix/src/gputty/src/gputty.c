@@ -262,14 +262,14 @@ static void _about_license(GtkWidget * widget, gpointer data);
 static void gputty_on_about(GtkWidget * widget, gpointer data)
 {
 	static GtkWidget * window = NULL;
-	static char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
+	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
 	char const comment[] =
 "GPuTTY is a clone of PuTTY for Open Source desktops.\n"
 "This software mainly relies on:\n"
 "- Glib\n"
 "- Gtk+\n"
 "Credits go to all Free Software contributors.";
-	char const copyright[] = "Copyright (c) 2004-2006 Pierre Pronchery";
+	char const copyright[] = "Copyright (c) 2004-2006 khorben";
 	char const website[] = "http://people.defora.org/~khorben/projects/gputty/";
 
 	if(window != NULL)
@@ -287,6 +287,7 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(window), website);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
+	gtk_widget_show(window);
 #else
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
@@ -321,8 +322,8 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 		gtk_container_add(GTK_CONTAINER(window), vbox);
 	}
-#endif
 	gtk_widget_show_all(window);
+#endif
 }
 
 #if !GTK_CHECK_VERSION(2, 6, 0)
