@@ -1,8 +1,7 @@
 /* browser.c */
 /* TODO:
  * - hitting refresh unaligns the icons (factorize initialization code with
- *   _fill_store())
- * - factorize widgets sensitization/etc operations upon refresh or change */
+ *   _fill_store()) */
 
 
 
