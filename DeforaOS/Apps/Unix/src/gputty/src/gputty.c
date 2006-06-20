@@ -216,7 +216,7 @@ GPuTTY * gputty_new(void)
 	}
 	cell = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("Sessions", cell,
-			"text", NULL, NULL);
+			"text", 0, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(g->sn_tlsessions),
 			GTK_TREE_VIEW_COLUMN(column));
 
