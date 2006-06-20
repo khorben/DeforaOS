@@ -444,6 +444,7 @@ static void _copy_foreach(gpointer data, Browser * browser)
 
 static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 	GList * selection;
 
@@ -451,6 +452,7 @@ static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
 	selection = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
 				browser->iconview));
 	/* FIXME differentiate cut from paste */
+#endif
 }
 
 static void _browser_on_edit_paste(GtkWidget * widget, gpointer data)
@@ -468,9 +470,11 @@ static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data)
 
 static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data)
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
 	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
+#endif
 }
 
 static void _browser_on_preferences_close(GtkWidget * widget, GdkEvent * event,
