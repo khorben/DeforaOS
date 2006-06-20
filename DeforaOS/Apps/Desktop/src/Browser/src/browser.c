@@ -35,8 +35,14 @@ static void _browser_on_file_close(GtkWidget * widget, gpointer data);
 static void _browser_on_forward(GtkWidget * widget, gpointer data);
 static void _browser_on_help_about(GtkWidget * widget, gpointer data);
 static void _browser_on_home(GtkWidget * widget, gpointer data);
+#if GTK_CHECK_VERSION(2, 6, 0)
 static void _browser_on_icon_default(GtkIconView * iconview,
 		GtkTreePath *tree_path, gpointer data);
+#else
+static void _browser_on_icon_default(GtkTreeView * view,
+		GtkTreePath * tree_path, GtkTreeViewColumn * column,
+		gpointer data);
+#endif
 static void _browser_on_path_activate(GtkWidget * widget, gpointer data);
 static void _browser_on_refresh(GtkWidget * widget, gpointer data);
 static void _browser_on_updir(GtkWidget * widget, gpointer data);
@@ -199,9 +205,9 @@ Browser * browser_new(char const * directory)
 	/* store */
 	browser->store = _create_store();
 	_fill_store(browser);
+#if GTK_CHECK_VERSION(2, 6, 0)
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
-	g_object_unref(browser->store);
 	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
 			GTK_SELECTION_MULTIPLE);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
@@ -210,6 +216,19 @@ Browser * browser_new(char const * directory)
 			BR_COL_PIXBUF);
 	g_signal_connect(browser->iconview, "item-activated",
 			G_CALLBACK(_browser_on_icon_default), browser);
+#else
+	browser->iconview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				browser->store));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->iconview),
+			gtk_tree_view_column_new_with_attributes("Filename",
+				gtk_cell_renderer_text_new(), "text", NULL,
+				NULL));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->iconview),
+			FALSE);
+	g_signal_connect(G_OBJECT(browser->iconview), "row-activated",
+			G_CALLBACK(_browser_on_icon_default), browser);
+#endif
+	g_object_unref(browser->store);
 	gtk_container_add(GTK_CONTAINER(sw), browser->iconview);
 	gtk_widget_grab_focus(browser->iconview);
 
@@ -618,8 +637,14 @@ static void _browser_go(Browser * browser, char const * path)
 	_fill_store(browser);
 }
 
+#if GTK_CHECK_VERSION(2, 6, 0)
 static void _browser_on_icon_default(GtkIconView * iconview,
 		GtkTreePath * tree_path, gpointer data)
+#else
+static void _browser_on_icon_default(GtkTreeView * view,
+		GtkTreePath * tree_path, GtkTreeViewColumn * column,
+		gpointer data)
+#endif
 {
 	Browser * browser = data;
 	char * path;
