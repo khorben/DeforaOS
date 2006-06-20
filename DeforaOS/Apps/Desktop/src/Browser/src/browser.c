@@ -220,9 +220,13 @@ Browser * browser_new(char const * directory)
 	browser->iconview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->iconview),
+			gtk_tree_view_column_new_with_attributes("Icon",
+				gtk_cell_renderer_pixbuf_new(), "pixbuf",
+				BR_COL_PIXBUF, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->iconview),
 			gtk_tree_view_column_new_with_attributes("Filename",
-				gtk_cell_renderer_text_new(), "text", NULL,
-				NULL));
+				gtk_cell_renderer_text_new(), "text",
+				BR_COL_DISPLAY_NAME, NULL));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->iconview),
 			FALSE);
 	g_signal_connect(G_OBJECT(browser->iconview), "row-activated",
@@ -328,8 +332,9 @@ static void _fill_store(Browser * browser)
 			icon = browser->pb_file;
 		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, path,
 				BR_COL_DISPLAY_NAME, display_name,
-				BR_COL_IS_DIRECTORY, is_dir, BR_COL_PIXBUF,
-				icon, -1);
+				BR_COL_IS_DIRECTORY, is_dir,
+				BR_COL_PIXBUF, icon,
+				-1);
 		g_free(path);
 		g_free(display_name);
 		cnt++;
