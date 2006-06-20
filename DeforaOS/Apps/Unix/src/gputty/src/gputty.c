@@ -145,9 +145,8 @@ GPuTTY * gputty_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(g->sn_swsessions),
 			GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	g->sn_lsessions = gtk_list_store_new(1, G_TYPE_STRING);
-	g->sn_tlsessions = gtk_tree_view_new();
-	gtk_tree_view_set_model(GTK_TREE_VIEW(g->sn_tlsessions),
-			GTK_TREE_MODEL(g->sn_lsessions));
+	g->sn_tlsessions = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				g->sn_lsessions));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g->sn_tlsessions),
 			FALSE);
 	g_signal_connect(G_OBJECT(g->sn_tlsessions), "cursor-changed",
