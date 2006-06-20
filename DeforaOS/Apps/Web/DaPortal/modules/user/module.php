@@ -430,6 +430,7 @@ function _system_login()
 {
 	global $user_id; 
 
+	session_start();
 	$password = md5($_POST['password']);
 	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"

@@ -24,6 +24,7 @@ function _lang_check($lang)
 
 if(isset($_POST['lang']) && _lang_check($_POST['lang']))
 {
+	session_start();
 	$lang = $_POST['lang'];
 	$_SESSION['lang'] = $lang;
 }

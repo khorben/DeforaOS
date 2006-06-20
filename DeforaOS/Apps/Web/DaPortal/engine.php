@@ -38,16 +38,19 @@ $module_name = '';
 
 //mandatory code
 //FIXME force magic quotes
-session_start();
-$vars = array_keys($_SESSION);
-foreach($vars as $v)
-	$$v = $_SESSION[$v];
+if(isset($_COOKIE[session_name()]))
+{
+	session_start();
+	$vars = array_keys($_SESSION);
+	foreach($vars as $v)
+		$$v = $_SESSION[$v];
+}
 require_once('./system/debug.php');
 require_once('./system/sql.php');
 require_once('./system/config.php');
 
 //configuration variables
-if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
+if($html && !isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
 
 require_once('./system/lang.php');
