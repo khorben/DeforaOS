@@ -74,7 +74,11 @@ static struct _menu _menu_edit[] =
 };
 static struct _menu _menu_help[] =
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
 	{ "_About", G_CALLBACK(_browser_on_help_about), GTK_STOCK_ABOUT },
+#else
+	{ "_About", G_CALLBACK(_browser_on_help_about), NULL },
+#endif
 	{ NULL, NULL, NULL }
 };
 static struct _menubar _menubar[] =
