@@ -102,6 +102,8 @@ GPuTTY * gputty_new(void)
 	g->hn_ehostname = gtk_entry_new();
 	if((p = config_get(g->config, "", "hostname")) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_ehostname), p);
+	g_signal_connect(G_OBJECT(g->hn_ehostname), "activate", G_CALLBACK(
+				gputty_on_connect), g);
 	gtk_box_pack_start(GTK_BOX(g->hn_vbox1), g->hn_ehostname, TRUE, TRUE, 0);
 	/* hostname: port */
 	g->hn_vbox2 = gtk_vbox_new(FALSE, 0);
