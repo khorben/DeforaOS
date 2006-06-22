@@ -21,6 +21,10 @@ static int _new_pixbufs(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
 static GtkListStore * _create_store(void);
 static void _fill_store(Browser * browser);
+#if GTK_CHECK_VERSION(2, 6, 0)
+static void _new_iconview(Browser * browser);
+#endif
+static void _new_listview(Browser * browser);
 /* callbacks */
 static void _browser_on_back(GtkWidget * widget, gpointer data);
 static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
@@ -37,8 +41,8 @@ static void _browser_on_forward(GtkWidget * widget, gpointer data);
 static void _browser_on_help_about(GtkWidget * widget, gpointer data);
 static void _browser_on_home(GtkWidget * widget, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
-static void _browser_on_icon_default(GtkIconView * iconview,
-		GtkTreePath *tree_path, gpointer data);
+static void _browser_on_icon_default(GtkIconView * view, GtkTreePath *tree_path,
+		gpointer data);
 #else
 static void _browser_on_icon_default(GtkTreeView * view,
 		GtkTreePath * tree_path, GtkTreeViewColumn * column,
@@ -47,6 +51,10 @@ static void _browser_on_icon_default(GtkTreeView * view,
 static void _browser_on_path_activate(GtkWidget * widget, gpointer data);
 static void _browser_on_refresh(GtkWidget * widget, gpointer data);
 static void _browser_on_updir(GtkWidget * widget, gpointer data);
+#if GTK_CHECK_VERSION(2, 6, 0)
+static void _browser_on_view_icons(GtkWidget * widget, gpointer data);
+#endif
+static void _browser_on_view_list(GtkWidget * widget, gpointer data);
 struct _menu
 {
 	char * name;
@@ -98,11 +106,12 @@ static struct _menubar _menubar[] =
 Browser * browser_new(char const * directory)
 {
 	Browser * browser;
-	GtkWidget * sw;
 	GtkWidget * vbox;
 	GtkWidget * tb_menubar;
 	GtkWidget * toolbar;
 	GtkWidget * widget;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
 	GtkToolItem * toolitem;
 	GtkToolItem * tb_button;
 
@@ -169,6 +178,25 @@ Browser * browser_new(char const * directory)
 	g_signal_connect(tb_button, "clicked", G_CALLBACK(_browser_on_home),
 			browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
+			-1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_PROPERTIES);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	toolitem = gtk_menu_tool_button_new(NULL, "View as...");
+	menu = gtk_menu_new();
+	menuitem = gtk_menu_item_new_with_label("Icons");
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_browser_on_view_icons), browser);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_menu_item_new_with_label("List");
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_browser_on_view_list), browser);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolitem), menu);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
@@ -193,12 +221,12 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* icon view */
-	sw = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),
-			GTK_SHADOW_ETCHED_IN);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+	browser->scrolled = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(
+				browser->scrolled), GTK_SHADOW_ETCHED_IN);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(browser->scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start(GTK_BOX(vbox), sw, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), browser->scrolled, TRUE, TRUE, 0);
 	/* statusbar */
 	browser->statusbar = gtk_statusbar_new();
 	browser->statusbar_id = 0;
@@ -207,35 +235,12 @@ Browser * browser_new(char const * directory)
 	browser->store = _create_store();
 	_fill_store(browser);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
-				browser->store));
-	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
-			GTK_SELECTION_MULTIPLE);
-	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_DISPLAY_NAME);
-	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_PIXBUF);
-	g_signal_connect(browser->iconview, "item-activated",
-			G_CALLBACK(_browser_on_icon_default), browser);
+	_new_iconview(browser);
 #else
-	browser->iconview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
-				browser->store));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->iconview),
-			gtk_tree_view_column_new_with_attributes("Icon",
-				gtk_cell_renderer_pixbuf_new(), "pixbuf",
-				BR_COL_PIXBUF, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->iconview),
-			gtk_tree_view_column_new_with_attributes("Filename",
-				gtk_cell_renderer_text_new(), "text",
-				BR_COL_DISPLAY_NAME, NULL));
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->iconview),
-			FALSE);
-	g_signal_connect(G_OBJECT(browser->iconview), "row-activated",
-			G_CALLBACK(_browser_on_icon_default), browser);
+	_new_listview(browser);
 #endif
-	g_object_unref(browser->store);
-	gtk_container_add(GTK_CONTAINER(sw), browser->iconview);
-	gtk_widget_grab_focus(browser->iconview);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->view);
+	gtk_widget_grab_focus(browser->view);
 
 	gtk_container_add(GTK_CONTAINER(browser->window), vbox);
 	gtk_widget_show_all(browser->window);
@@ -398,6 +403,40 @@ static GtkListStore * _create_store(void)
 	return store;
 }
 
+#if GTK_CHECK_VERSION(2, 6, 0)
+static void _new_iconview(Browser * browser)
+{
+	browser->view = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
+				browser->store));
+	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->view),
+			GTK_SELECTION_MULTIPLE);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->view),
+			BR_COL_DISPLAY_NAME);
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->view),
+			BR_COL_PIXBUF);
+	g_signal_connect(browser->view, "item-activated",
+			G_CALLBACK(_browser_on_icon_default), browser);
+}
+#endif
+
+static void _new_listview(Browser * browser)
+{
+	browser->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				browser->store));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->view),
+			gtk_tree_view_column_new_with_attributes("Icon",
+				gtk_cell_renderer_pixbuf_new(), "pixbuf",
+				BR_COL_PIXBUF, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->view),
+			gtk_tree_view_column_new_with_attributes("Filename",
+				gtk_cell_renderer_text_new(), "text",
+				BR_COL_DISPLAY_NAME, NULL));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->view),
+			FALSE);
+	g_signal_connect(G_OBJECT(browser->view), "row-activated",
+			G_CALLBACK(_browser_on_icon_default), browser);
+}
+
 /* callbacks */
 static void _browser_on_back(GtkWidget * widget, gpointer data)
 {
@@ -431,7 +470,7 @@ static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 
 	/* FIXME free previous buffer */
 	selection = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->iconview));
+				browser->view));
 	g_list_foreach(selection, (GFunc)_copy_foreach, browser);
 	/* FIXME differentiate cut from paste */
 #endif
@@ -450,7 +489,7 @@ static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
 
 	/* FIXME free previous buffer */
 	selection = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->iconview));
+				browser->view));
 	/* FIXME differentiate cut from paste */
 #endif
 }
@@ -464,7 +503,7 @@ static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
-	gtk_icon_view_select_all(GTK_ICON_VIEW(browser->iconview));
+	gtk_icon_view_select_all(GTK_ICON_VIEW(browser->view));
 #endif
 }
 
@@ -473,7 +512,7 @@ static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
+	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->view));
 #endif
 }
 
@@ -605,7 +644,7 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 #if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_close(GtkWidget * widget, gpointer * data)
 {
-	GtkWidget * window = data;
+	GtkWidget * window = (GtkWidget*)data;
 
 	gtk_widget_hide(window);
 }
@@ -660,7 +699,7 @@ static void _browser_go(Browser * browser, char const * path)
 }
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-static void _browser_on_icon_default(GtkIconView * iconview,
+static void _browser_on_icon_default(GtkIconView * view,
 		GtkTreePath * tree_path, gpointer data)
 #else
 static void _browser_on_icon_default(GtkTreeView * view,
@@ -706,11 +745,34 @@ static void _browser_on_updir(GtkWidget * widget, gpointer data)
 	g_free(dir);
 }
 
+#if GTK_CHECK_VERSION(2, 6, 0)
+static void _browser_on_view_icons(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	gtk_widget_destroy(browser->view);
+	_new_iconview(browser);
+	gtk_widget_show(browser->view);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->view);
+}
+#endif
+
+static void _browser_on_view_list(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	gtk_widget_destroy(browser->view);
+	_new_listview(browser);
+	gtk_widget_show(browser->view);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->view);
+}
+
 
 void browser_delete(Browser * browser)
 {
 	g_list_foreach(browser->history, (GFunc)free, NULL);
 	g_list_free(browser->history);
+	g_object_unref(browser->store);
 	free(browser);
 }
 

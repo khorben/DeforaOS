@@ -42,7 +42,8 @@ typedef struct _Browser
 	GtkToolItem * tb_updir;
 	GtkToolItem * tb_forward;
 	GtkWidget * tb_path;
-	GtkWidget * iconview; /* FIXME fix selection and probably remove */
+	GtkWidget * scrolled;
+	GtkWidget * view;
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
