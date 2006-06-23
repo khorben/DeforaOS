@@ -424,8 +424,13 @@ static void _new_iconview(Browser * browser)
 
 static void _new_listview(Browser * browser)
 {
+	GtkTreeSelection * treesel;
+
 	browser->listview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						browser->listview))) != NULL)
+		gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->listview),
 			gtk_tree_view_column_new_with_attributes("Icon",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
@@ -473,19 +478,35 @@ static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 	gchar * q;
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-	/* FIXME free previous buffer */
-	if((sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+	if(browser->iconview != NULL)
+	{
+		if((sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
 				browser->iconview))) == NULL)
-		return;
+			return;
+	}
+	else
+	{
+		GtkTreeSelection * treesel;
+
+		if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+							browser->listview)))
+				== NULL)
+			return;
+		if((sel = gtk_tree_selection_get_selected_rows(treesel, NULL))
+				== NULL)
+			return;
+	}
 	for(p = sel; p->next != NULL; p = p->next)
 	{
-		if(!gtk_tree_model_get_iter(browser->store, &iter, p->data))
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, p->data))
 			continue;
-		gtk_tree_model_get(browser->store, &iter, BR_COL_PATH, &q, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &q, -1);
 		printf("%s\n", q);
 		g_free(q);
 	}
-	g_list_foreach(sel, gtk_tree_path_free, NULL);
+	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
 	/* FIXME differentiate cut from paste */
 #endif
