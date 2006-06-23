@@ -53,8 +53,8 @@ static void _browser_on_refresh(GtkWidget * widget, gpointer data);
 static void _browser_on_updir(GtkWidget * widget, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _browser_on_view_icons(GtkWidget * widget, gpointer data);
-#endif
 static void _browser_on_view_list(GtkWidget * widget, gpointer data);
+#endif
 struct _menu
 {
 	char * name;
@@ -469,7 +469,9 @@ static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 	gtk_main_quit();
 }
 
+static GList * _copy_selection(Browser * browser);
 static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
+	/* FIXME */
 {
 	Browser * browser = data;
 	GtkTreeIter iter;
@@ -477,25 +479,8 @@ static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 	GList * p;
 	gchar * q;
 
-#if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
-	{
-		if((sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->iconview))) == NULL)
-			return;
-	}
-	else
-	{
-		GtkTreeSelection * treesel;
-
-		if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-							browser->listview)))
-				== NULL)
-			return;
-		if((sel = gtk_tree_selection_get_selected_rows(treesel, NULL))
-				== NULL)
-			return;
-	}
+	if((sel = _copy_selection(browser)) == NULL)
+		return;
 	for(p = sel; p->next != NULL; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
@@ -508,21 +493,50 @@ static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
-	/* FIXME differentiate cut from paste */
+}
+
+static GList * _copy_selection(Browser * browser)
+{
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		return gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+				browser->iconview));
+	else
 #endif
+	{
+		GtkTreeSelection * treesel;
+
+		if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+							browser->listview)))
+				== NULL)
+			return NULL;
+		return gtk_tree_selection_get_selected_rows(treesel, NULL);
+	}
 }
 
 static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
+	/* FIXME */
 {
-#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
-	GList * selection;
+	GtkTreeIter iter;
+	GList * sel;
+	GList * p;
+	gchar * q;
 
-	/* FIXME free previous buffer */
-	selection = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->iconview));
-	/* FIXME differentiate cut from paste */
-#endif
+	if((sel = _copy_selection(browser)) == NULL)
+		return;
+	for(p = sel; p->next != NULL; p = p->next)
+	{
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, p->data))
+			continue;
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &q, -1);
+		printf("%s\n", q);
+		g_free(q);
+	}
+	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(sel);
 }
 
 static void _browser_on_edit_paste(GtkWidget * widget, gpointer data)
@@ -789,7 +803,6 @@ static void _browser_on_view_icons(GtkWidget * widget, gpointer data)
 	gtk_widget_show(browser->iconview);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
 }
-#endif
 
 static void _browser_on_view_list(GtkWidget * widget, gpointer data)
 {
@@ -803,6 +816,7 @@ static void _browser_on_view_list(GtkWidget * widget, gpointer data)
 	gtk_widget_show(browser->listview);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->listview);
 }
+#endif
 
 
 void browser_delete(Browser * browser)
