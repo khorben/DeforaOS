@@ -236,11 +236,14 @@ Browser * browser_new(char const * directory)
 	_fill_store(browser);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	_new_iconview(browser);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
+	gtk_widget_grab_focus(browser->iconview);
+	browser->listview = NULL;
 #else
 	_new_listview(browser);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->listview);
+	gtk_widget_grab_focus(browser->listview);
 #endif
-	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->view);
-	gtk_widget_grab_focus(browser->view);
 
 	gtk_container_add(GTK_CONTAINER(browser->window), vbox);
 	gtk_widget_show_all(browser->window);
@@ -406,34 +409,34 @@ static GtkListStore * _create_store(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _new_iconview(Browser * browser)
 {
-	browser->view = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
+	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
-	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->view),
+	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
 			GTK_SELECTION_MULTIPLE);
-	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->view),
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_DISPLAY_NAME);
-	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->view),
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_PIXBUF);
-	g_signal_connect(browser->view, "item-activated",
+	g_signal_connect(browser->iconview, "item-activated",
 			G_CALLBACK(_browser_on_icon_default), browser);
 }
 #endif
 
 static void _new_listview(Browser * browser)
 {
-	browser->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+	browser->listview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->view),
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->listview),
 			gtk_tree_view_column_new_with_attributes("Icon",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
 				BR_COL_PIXBUF, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->view),
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->listview),
 			gtk_tree_view_column_new_with_attributes("Filename",
 				gtk_cell_renderer_text_new(), "text",
 				BR_COL_DISPLAY_NAME, NULL));
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->view),
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->listview),
 			FALSE);
-	g_signal_connect(G_OBJECT(browser->view), "row-activated",
+	g_signal_connect(G_OBJECT(browser->listview), "row-activated",
 			G_CALLBACK(_browser_on_icon_default), browser);
 }
 
@@ -461,24 +464,31 @@ static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 	gtk_main_quit();
 }
 
-static void _copy_foreach(gpointer data, Browser * browser);
 static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
 {
-#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
-	GList * selection;
+	GtkTreeIter iter;
+	GList * sel;
+	GList * p;
+	gchar * q;
 
+#if GTK_CHECK_VERSION(2, 6, 0)
 	/* FIXME free previous buffer */
-	selection = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->view));
-	g_list_foreach(selection, (GFunc)_copy_foreach, browser);
+	if((sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+				browser->iconview))) == NULL)
+		return;
+	for(p = sel; p->next != NULL; p = p->next)
+	{
+		if(!gtk_tree_model_get_iter(browser->store, &iter, p->data))
+			continue;
+		gtk_tree_model_get(browser->store, &iter, BR_COL_PATH, &q, -1);
+		printf("%s\n", q);
+		g_free(q);
+	}
+	g_list_foreach(sel, gtk_tree_path_free, NULL);
+	g_list_free(sel);
 	/* FIXME differentiate cut from paste */
 #endif
-}
-
-static void _copy_foreach(gpointer data, Browser * browser)
-{
-	printf("%p\n", data); /* FIXME */
 }
 
 static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
@@ -489,7 +499,7 @@ static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
 
 	/* FIXME free previous buffer */
 	selection = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->view));
+				browser->iconview));
 	/* FIXME differentiate cut from paste */
 #endif
 }
@@ -503,7 +513,7 @@ static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
-	gtk_icon_view_select_all(GTK_ICON_VIEW(browser->view));
+	gtk_icon_view_select_all(GTK_ICON_VIEW(browser->iconview));
 #endif
 }
 
@@ -512,7 +522,7 @@ static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->view));
+	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
 #endif
 }
 
@@ -750,10 +760,13 @@ static void _browser_on_view_icons(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
-	gtk_widget_destroy(browser->view);
+	if(browser->iconview != NULL)
+		return;
+	gtk_widget_destroy(browser->listview);
+	browser->listview = NULL;
 	_new_iconview(browser);
-	gtk_widget_show(browser->view);
-	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->view);
+	gtk_widget_show(browser->iconview);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
 }
 #endif
 
@@ -761,10 +774,13 @@ static void _browser_on_view_list(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
-	gtk_widget_destroy(browser->view);
+	if(browser->listview != NULL)
+		return;
+	gtk_widget_destroy(browser->iconview);
+	browser->iconview = NULL;
 	_new_listview(browser);
-	gtk_widget_show(browser->view);
-	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->view);
+	gtk_widget_show(browser->listview);
+	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->listview);
 }
 
 

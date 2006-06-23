@@ -43,7 +43,8 @@ typedef struct _Browser
 	GtkToolItem * tb_forward;
 	GtkWidget * tb_path;
 	GtkWidget * scrolled;
-	GtkWidget * view;
+	GtkWidget * iconview;
+	GtkWidget * listview;
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
