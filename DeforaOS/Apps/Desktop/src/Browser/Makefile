@@ -1,4 +1,4 @@
-PACKAGE	= browser
+PACKAGE	= Browser
 VERSION	= 0.0.0
 SUBDIRS	= src
 LN	= ln -sf
@@ -23,6 +23,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/browser.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/browser.h \
+		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf \
