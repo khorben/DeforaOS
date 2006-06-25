@@ -73,3 +73,5 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/tar
 	$(RM) $(DESTDIR)$(BINDIR)/uptime
 	$(RM) $(DESTDIR)$(BINDIR)/w
+
+.PHONY: all clean distclean install uninstall
