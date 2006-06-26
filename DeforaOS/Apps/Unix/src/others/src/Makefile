@@ -4,7 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi -D_GNU_SOURCE
+CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 RM	= rm -f
 MKDIR	= mkdir -p
@@ -44,7 +44,7 @@ hexdump.o: hexdump.c
 mktemp.o: mktemp.c
 	$(CC) $(mktemp_CFLAGS) -c mktemp.c
 
-tar.o: tar.c
+tar.o: tar.c tar.h
 	$(CC) $(tar_CFLAGS) -c tar.c
 
 uptime.o: uptime.c
