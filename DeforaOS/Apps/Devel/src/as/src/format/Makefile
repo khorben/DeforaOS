@@ -1,6 +1,6 @@
 TARGETS	= elf.a elf.so flat.a flat.so
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -fPIC
@@ -55,3 +55,5 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/elf.so
 	$(RM) $(DESTDIR)$(LIBDIR)/flat.a
 	$(RM) $(DESTDIR)$(LIBDIR)/flat.so
+
+.PHONY: all clean distclean install uninstall

@@ -23,9 +23,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/calendar.c \
 		$(PACKAGE)-$(VERSION)/src/fontsel.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all

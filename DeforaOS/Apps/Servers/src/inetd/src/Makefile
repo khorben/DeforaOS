@@ -1,9 +1,11 @@
 TARGETS	= inetd discard echo
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall
+CFLAGSF	= -W -Wall -ansi
+CFLAGS	= -g
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -66,3 +68,5 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/inetd
 	$(RM) $(DESTDIR)$(BINDIR)/discard
 	$(RM) $(DESTDIR)$(BINDIR)/echo
+
+.PHONY: all clean distclean install uninstall

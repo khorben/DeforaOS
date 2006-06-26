@@ -2,7 +2,7 @@ PACKAGE	= configure
 VERSION	= 0.0.3
 SUBDIRS	= src
 LN	= ln -sf
-TAR	= tar cfzv
+TAR	= tar -czvf
 
 
 all: subdirs
@@ -22,16 +22,18 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/configure.c \
 		$(PACKAGE)-$(VERSION)/src/makefile.c \
+		$(PACKAGE)-$(VERSION)/src/settings.c \
+		$(PACKAGE)-$(VERSION)/src/makedepend.c \
+		$(PACKAGE)-$(VERSION)/src/configure.h \
+		$(PACKAGE)-$(VERSION)/src/makefile.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
 		$(PACKAGE)-$(VERSION)/CHANGES \
 		$(PACKAGE)-$(VERSION)/configure.txt \
 		$(PACKAGE)-$(VERSION)/INSTALL \
 		$(PACKAGE)-$(VERSION)/README \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
@@ -39,3 +41,5 @@ install: all
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean install uninstall

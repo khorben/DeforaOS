@@ -22,13 +22,12 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/gserver.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/video/vbe.c \
 		$(PACKAGE)-$(VERSION)/src/video/vesa.c \
+		$(PACKAGE)-$(VERSION)/src/video/vbe.h \
+		$(PACKAGE)-$(VERSION)/src/video/video.h \
 		$(PACKAGE)-$(VERSION)/src/video/project.conf \
-		$(PACKAGE)-$(VERSION)/src/video/Makefile \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
@@ -36,3 +35,5 @@ install: all
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean install uninstall

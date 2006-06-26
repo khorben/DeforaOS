@@ -2,7 +2,7 @@ PACKAGE	= GEDI
 VERSION	= 0.0.0
 SUBDIRS	= src
 LN	= ln -sf
-TAR	= tar cfzv
+TAR	= tar -czvf
 
 
 all: subdirs
@@ -26,9 +26,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/gedi.h \
 		$(PACKAGE)-$(VERSION)/src/project.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
@@ -36,3 +34,5 @@ install: all
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean install uninstall

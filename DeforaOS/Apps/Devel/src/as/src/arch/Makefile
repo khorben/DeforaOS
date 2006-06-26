@@ -1,6 +1,6 @@
 TARGETS	= i386.a i386.so i386_real.a i386_real.so i486.a i486.so i586.a i586.so i686.a i686.so sparc.a sparc.so sparc64.a sparc64.so
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -fPIC
@@ -129,3 +129,5 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/sparc.so
 	$(RM) $(DESTDIR)$(LIBDIR)/sparc64.a
 	$(RM) $(DESTDIR)$(LIBDIR)/sparc64.so
+
+.PHONY: all clean distclean install uninstall

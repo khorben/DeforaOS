@@ -25,9 +25,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/global.h \
 		$(PACKAGE)-$(VERSION)/src/md5.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
@@ -35,3 +33,5 @@ install: all
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean install uninstall

@@ -1,6 +1,6 @@
 TARGETS	= vesa.a vesa.so
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi

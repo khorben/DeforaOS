@@ -17,3 +17,5 @@ install: all
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean install uninstall

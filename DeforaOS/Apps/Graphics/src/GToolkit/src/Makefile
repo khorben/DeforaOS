@@ -1,6 +1,6 @@
 TARGETS	= libGToolkit.a libGToolkit.so
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -D_GNU_SOURCE
@@ -40,3 +40,5 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/libGToolkit.a
 	$(RM) $(DESTDIR)$(LIBDIR)/libGToolkit.so
+
+.PHONY: all clean distclean install uninstall

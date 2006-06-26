@@ -1,8 +1,9 @@
 SUBDIRS	= video
 TARGETS	= GServer
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
@@ -42,3 +43,5 @@ install: all
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/GServer
+
+.PHONY: all subdirs clean distclean install uninstall

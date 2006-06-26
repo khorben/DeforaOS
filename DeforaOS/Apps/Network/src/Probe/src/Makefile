@@ -1,7 +1,8 @@
 TARGETS	= Probe DaMon
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -I /System/Include
 CFLAGS	= -g
@@ -43,3 +44,5 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/Probe
 	$(RM) $(DESTDIR)$(BINDIR)/DaMon
+
+.PHONY: all clean distclean install uninstall
