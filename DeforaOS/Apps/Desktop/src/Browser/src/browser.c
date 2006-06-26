@@ -12,6 +12,7 @@
 #include <string.h>
 #include <errno.h>
 #include "browser.h"
+#include "config.h"
 
 #define min(a, b) ((a) > (b) ? (b) : (a))
 
@@ -44,15 +45,15 @@ static void _browser_on_home(GtkWidget * widget, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _browser_on_icon_default(GtkIconView * view, GtkTreePath *tree_path,
 		gpointer data);
-#else
-static void _browser_on_icon_default(GtkTreeView * view,
+#endif
+static void _browser_on_list_default(GtkTreeView * view,
 		GtkTreePath * tree_path, GtkTreeViewColumn * column,
 		gpointer data);
-#endif
 static void _browser_on_path_activate(GtkWidget * widget, gpointer data);
 static void _browser_on_refresh(GtkWidget * widget, gpointer data);
 static void _browser_on_updir(GtkWidget * widget, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
+static void _browser_on_view_as(GtkWidget * widget, gpointer data);
 static void _browser_on_view_icons(GtkWidget * widget, gpointer data);
 static void _browser_on_view_list(GtkWidget * widget, gpointer data);
 #endif
@@ -142,10 +143,8 @@ Browser * browser_new(char const * directory)
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
 	/* FIXME */
 	gtk_window_set_title(GTK_WINDOW(browser->window), "File browser");
-	/* g_signal_connect(window, "destroy", G_CALLBACK(gtk_widget_destroyed),
-		&window); */
-	g_signal_connect(browser->window, "delete_event",
-			G_CALLBACK(_browser_on_closex), NULL);
+	g_signal_connect(browser->window, "delete_event", G_CALLBACK(
+				_browser_on_closex), NULL);
 
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
@@ -162,13 +161,13 @@ Browser * browser_new(char const * directory)
 	browser->tb_updir = gtk_tool_button_new_from_stock(GTK_STOCK_GO_UP);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir),
 			strcmp(browser->current->data, "/") != 0);
-	g_signal_connect(browser->tb_updir, "clicked",
-			G_CALLBACK(_browser_on_updir), browser);
+	g_signal_connect(browser->tb_updir, "clicked", G_CALLBACK(
+				_browser_on_updir), browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), browser->tb_updir, -1);
 	browser->tb_forward = gtk_tool_button_new_from_stock(
 			GTK_STOCK_GO_FORWARD);
-	g_signal_connect(browser->tb_forward, "clicked",
-			G_CALLBACK(_browser_on_forward), browser);
+	g_signal_connect(browser->tb_forward, "clicked", G_CALLBACK(
+				_browser_on_forward), browser);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward), FALSE);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), browser->tb_forward, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
@@ -187,6 +186,8 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	toolitem = gtk_menu_tool_button_new(NULL, "View as...");
+	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_browser_on_view_as), browser);
 	menu = gtk_menu_new();
 	menuitem = gtk_menu_item_new_with_label("Icons");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
@@ -212,15 +213,15 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	browser->tb_path = gtk_entry_new();
 	gtk_entry_set_text(GTK_ENTRY(browser->tb_path), browser->current->data);
-	g_signal_connect(G_OBJECT(browser->tb_path), "activate",
-			G_CALLBACK(_browser_on_path_activate), browser);
+	g_signal_connect(G_OBJECT(browser->tb_path), "activate", G_CALLBACK(
+				_browser_on_path_activate), browser);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), browser->tb_path);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_JUMP_TO);
-	g_signal_connect(G_OBJECT(toolitem), "clicked",
-			G_CALLBACK(_browser_on_path_activate), browser);
+	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				_browser_on_path_activate), browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* icon view */
@@ -334,6 +335,7 @@ static void _fill_store(Browser * browser)
 			hidden_cnt++;
 			continue;
 		}
+		type = NULL;
 		path = g_build_filename(browser->current->data, name, NULL);
 		is_dir = g_file_test(path, G_FILE_TEST_IS_DIR);
 		display_name = g_filename_to_utf8(name, -1, NULL, NULL, NULL);
@@ -354,6 +356,7 @@ static void _fill_store(Browser * browser)
 				BR_COL_DISPLAY_NAME, display_name,
 				BR_COL_IS_DIRECTORY, is_dir,
 				BR_COL_PIXBUF, icon,
+				BR_COL_MIME_TYPE, type == NULL ? "" : type,
 				-1);
 		g_free(path);
 		g_free(display_name);
@@ -400,7 +403,7 @@ static GtkListStore * _create_store(void)
 	GtkListStore * store;
 
 	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, 
-			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN);
+			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, NULL, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -420,8 +423,8 @@ static void _new_iconview(Browser * browser)
 			BR_COL_DISPLAY_NAME);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_PIXBUF);
-	g_signal_connect(browser->iconview, "item-activated",
-			G_CALLBACK(_browser_on_icon_default), browser);
+	g_signal_connect(browser->iconview, "item-activated", G_CALLBACK(
+				_browser_on_icon_default), browser);
 }
 #endif
 
@@ -435,17 +438,21 @@ static void _new_listview(Browser * browser)
 						browser->listview))) != NULL)
 		gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->listview),
-			gtk_tree_view_column_new_with_attributes("Icon",
+			gtk_tree_view_column_new_with_attributes("",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
 				BR_COL_PIXBUF, NULL));
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->listview),
 			gtk_tree_view_column_new_with_attributes("Filename",
 				gtk_cell_renderer_text_new(), "text",
 				BR_COL_DISPLAY_NAME, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->listview),
+			gtk_tree_view_column_new_with_attributes("MIME type",
+				gtk_cell_renderer_text_new(), "text",
+				BR_COL_MIME_TYPE, NULL));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->listview),
-			FALSE);
+			TRUE);
 	g_signal_connect(G_OBJECT(browser->listview), "row-activated",
-			G_CALLBACK(_browser_on_icon_default), browser);
+			G_CALLBACK(_browser_on_list_default), browser);
 }
 
 /* callbacks */
@@ -542,8 +549,77 @@ static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
 	g_list_free(sel);
 }
 
+/* FIXME correct callback? */
+static void _delete_do(Browser * browser, GList * selection, unsigned long cnt);
 static void _browser_on_edit_delete(GtkWidget * widget, gpointer data)
 {
+	Browser * browser = data;
+	GtkWidget * dialog;
+	unsigned long cnt = 0;
+	int ret;
+	GtkTreeIter iter;
+	GList * selection;
+	GList * p;
+
+	if((selection = _copy_selection(browser)) == NULL)
+		return;
+	for(p = selection; p->next != NULL; p = p->next)
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, p->data))
+			continue;
+		else
+			cnt++;
+	if(cnt == 0)
+		return;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s%lu%s",
+			"Are you sure you want to delete ", cnt, " file(s)?");
+	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	if(ret != GTK_RESPONSE_YES)
+		return;
+	_delete_do(browser, selection, cnt);
+	g_list_foreach(selection, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(selection);
+}
+
+static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
+{
+	unsigned long i = 1;
+	char ** argv;
+	pid_t pid;
+	GtkTreeIter iter;
+	GList * p;
+	gchar * q;
+
+	if((pid = fork()) == -1)
+	{
+		browser_error(browser, "fork", 0);
+		return;
+	}
+	else if(pid != 0)
+		return;
+	if((argv = malloc(sizeof(char*) * (cnt+2))) == NULL)
+	{
+		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
+		exit(2);
+	}
+	argv[0] = "delete";
+	argv[cnt+1] = NULL;
+	for(p = selection; p->next != NULL; p = p->next)
+	{
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, p->data))
+			continue;
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &q, -1);
+		argv[i++] = q;
+	}
+	execvp(argv[0], argv);
+	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
+			strerror(errno));
+	exit(2);
 }
 
 static void _browser_on_edit_paste(GtkWidget * widget, gpointer data)
@@ -583,8 +659,8 @@ static void _browser_on_edit_preferences(GtkWidget * widget, gpointer data)
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "File browser preferences");
-	g_signal_connect(G_OBJECT(window), "delete_event",
-			G_CALLBACK(_browser_on_preferences_close), browser);
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_browser_on_preferences_close), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* FIXME */
 	gtk_container_add(GTK_CONTAINER(window), vbox);
@@ -610,7 +686,7 @@ static void _browser_on_file_new_window(GtkWidget * widget, gpointer data)
 	if(pid != 0)
 		return;
 	execlp("browser", "browser", browser->current->data, NULL);
-	fprintf(stderr, "%s%s", "browser: browser: ", strerror(errno));
+	fprintf(stderr, "%s%s\n", "browser: browser: ", strerror(errno));
 	exit(2);
 }
 
@@ -641,24 +717,36 @@ static void _about_license(GtkWidget * widget, gpointer * data);
 #endif
 static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 {
+	Browser * browser = data;
 	static GtkWidget * window = NULL;
 	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
 	char const copyright[] = "Copyright (c) 2006 khorben";
-
+	gsize cnt = 65536;
+	gchar * buf;
+	
 	if(window != NULL)
 	{
 		gtk_widget_show(window);
 		return;
 	}
 #if GTK_CHECK_VERSION(2, 6, 0)
+	if((buf = malloc(sizeof(*buf) * cnt)) == NULL)
+	{
+		browser_error(browser, "malloc", 0);
+		return;
+	}
 	window = gtk_about_dialog_new();
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), "File browser");
-	/* FIXME automatic version */
-	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), "0.0.0");
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
-	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
+	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
+				NULL) == TRUE)
+		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
+	else
+		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
 	gtk_widget_show(window);
+	free(buf);
 #else
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
@@ -753,11 +841,24 @@ static void _browser_go(Browser * browser, char const * path)
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _browser_on_icon_default(GtkIconView * view,
 		GtkTreePath * tree_path, gpointer data)
-#else
-static void _browser_on_icon_default(GtkTreeView * view,
+{
+	Browser * browser = data;
+	char * path;
+	GtkTreeIter iter;
+	gboolean is_dir;
+
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
+			tree_path);
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
+			&path, BR_COL_IS_DIRECTORY, &is_dir, -1);
+	_browser_go(browser, path);
+	g_free(path);
+}
+#endif
+
+static void _browser_on_list_default(GtkTreeView * view,
 		GtkTreePath * tree_path, GtkTreeViewColumn * column,
 		gpointer data)
-#endif
 {
 	Browser * browser = data;
 	char * path;
@@ -798,6 +899,16 @@ static void _browser_on_updir(GtkWidget * widget, gpointer data)
 }
 
 #if GTK_CHECK_VERSION(2, 6, 0)
+static void _browser_on_view_as(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	if(browser->iconview == NULL)
+		_browser_on_view_icons(widget, data);
+	else
+		_browser_on_view_list(widget, data);
+}
+
 static void _browser_on_view_icons(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -843,8 +954,8 @@ int browser_error(Browser * browser, char const * message, int ret)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
-	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy),
-			NULL);
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }
