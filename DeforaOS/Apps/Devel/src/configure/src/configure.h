@@ -2,8 +2,8 @@
 
 
 
-#ifndef __CONFIGURE_H
-# define __CONFIGURE_H
+#ifndef CONFIGURE_CONFIGURE_H
+# define CONFIGURE_CONFIGURE_H
 
 # include <System.h>
 
@@ -73,6 +73,7 @@ typedef struct _Prefs
 	char * bindir;
 	char * destdir;
 	char * includedir;
+	char * libdir;
 	char * prefix;
 } Prefs;
 # define PREFS_n	0x1
@@ -92,4 +93,4 @@ int configure_error(char const * message, int ret);
 int enum_string(int last, const String * strings[], String * str);
 int enum_string_short(int last, const String * strings[], String * str);
 
-#endif /* !__CONFIGURE_H */
+#endif /* !CONFIGURE_CONFIGURE_H */

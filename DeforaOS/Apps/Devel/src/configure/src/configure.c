@@ -289,13 +289,14 @@ static int _usage(void)
 	Prefs prefs;
 
 	_prefs_init(&prefs);
-	fprintf(stderr, "%s%s%s%s%s%s%s",
+	fprintf(stderr, "%s%s%s%s%s%s%s%s%s",
 "Usage: configure [-nv][options...][directory]\n\
   -n	Do not actually write Makefiles\n\
   -v	Verbose mode\n\
   -b	Binary files directory (default: \"", prefs.bindir, "\")\n\
   -d	Destination prefix (default: \"\")\n\
   -i	Include files directory (default: \"", prefs.includedir, "\")\n\
+  -l	Library files directory (default: \"", prefs.libdir, "\")\n\
   -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n");
 	return 1;
 }
@@ -319,6 +320,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'i':
 				prefs.includedir = optarg;
+				break;
+			case 'l':
+				prefs.libdir = optarg;
 				break;
 			case 'n':
 				prefs.flags |= PREFS_n;
@@ -347,10 +351,12 @@ static void _prefs_init(Prefs * prefs)
 	{
 		prefs->bindir = "bin";
 		prefs->includedir = "include";
+		prefs->libdir = "lib";
 		prefs->prefix = "/usr/local";
 		return;
 	}
 	prefs->bindir = "Binaries";
-	prefs->includedir = "Include";
+	prefs->includedir = "Includes";
+	prefs->libdir = "Libraries";
 	prefs->prefix = "/Apps"; /* FIXME detect System or Apps/x first */
 }

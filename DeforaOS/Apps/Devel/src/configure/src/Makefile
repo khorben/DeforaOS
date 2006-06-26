@@ -4,7 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi -D_GNU_SOURCE
+CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF= -l System -l dl
 RM	= rm -f
@@ -14,7 +14,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-configure_OBJS = configure.o makefile.o
+configure_OBJS = configure.o makefile.o settings.o
 configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
 configure: $(configure_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
@@ -27,8 +27,11 @@ makedepend: $(makedepend_OBJS)
 configure.o: configure.c configure.h makefile.h
 	$(CC) $(configure_CFLAGS) -c configure.c
 
-makefile.o: makefile.c configure.h
+makefile.o: makefile.c configure.h settings.h
 	$(CC) $(configure_CFLAGS) -c makefile.c
+
+settings.o: settings.c settings.h
+	$(CC) $(configure_CFLAGS) -c settings.c
 
 makedepend.o: makedepend.c
 	$(CC) $(makedepend_CFLAGS) -c makedepend.c
@@ -47,3 +50,5 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/configure
 	$(RM) $(DESTDIR)$(BINDIR)/makedepend
+
+.PHONY: all clean distclean install uninstall

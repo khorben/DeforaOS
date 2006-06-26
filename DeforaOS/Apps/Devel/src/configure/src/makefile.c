@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "settings.h"
 #include "configure.h"
 
 ARRAY(Config *, config);
@@ -97,6 +98,7 @@ static int _variables_package(Prefs * prefs, Config * config, FILE * fp,
 {
 	String * package;
 	String * version;
+	String * p;
 
 	if((package = config_get(config, "", "package")) == NULL)
 		return 0;
@@ -115,6 +117,8 @@ static int _variables_package(Prefs * prefs, Config * config, FILE * fp,
 	if(fp != NULL)
 		fprintf(fp, "%s%s%s%s%s", "PACKAGE\t= ", package,
 				"\nVERSION\t= ", version, "\n");
+	if((p = config_get(config, "", "config")) != NULL)
+		return settings(prefs, config, directory, package, version);
 	return 0;
 }
 
@@ -122,7 +126,7 @@ static int _variables_print(Prefs * prefs, Config * config, FILE * fp,
 		char const * input, char const * output)
 {
 	String * prints;
-	int i;
+	unsigned long i;
 	char c;
 
 	if(prefs->flags & PREFS_n)
@@ -150,7 +154,7 @@ static int _variables_print(Prefs * prefs, Config * config, FILE * fp,
 static int _variables_targets(Prefs * prefs, Config * config, FILE * fp)
 {
 	String * prints;
-	int i;
+	unsigned long i;
 	char c;
 	String * type;
 
@@ -265,14 +269,13 @@ static int _executables_variables(Configure * configure, Config * config,
 	return 0;
 }
 
-static void _binary_ldflags(Configure * configure, Config * config, FILE * fp,
+static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
 static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 		char * done)
 {
 	String const * p;
 
-	/* FIXME path given from user or autodetected */
 	if(!done[TT_LIBRARY])
 	{
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
@@ -310,20 +313,20 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 			!= NULL)
 	{
 		fprintf(fp, "%s", "LDFLAGSF= ");
-		_binary_ldflags(configure, config, fp, p);
+		_binary_ldflags(configure, fp, p);
 	}
 	if((p = config_get(config, "", "ldflags")) != NULL)
 	{
 		fprintf(fp, "%s", "LDFLAGS\t= ");
-		_binary_ldflags(configure, config, fp, p);
+		_binary_ldflags(configure, fp, p);
 	}
 }
 
-static void _binary_ldflags(Configure * configure, Config * config, FILE * fp,
+static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
 	char * libs_gnu[] = { "socket", NULL };
-	char * libs_bsd[] = { "dl", "socket", NULL };
+	char * libs_bsd[] = { "crypt", "dl", "socket", NULL };
 	char * libs_sunos[] = { "dl", NULL };
 	char buf[10];
 	char ** libs;
@@ -369,13 +372,16 @@ static void _variables_library(Configure * configure, Config * config,
 {
 	String * p;
 
-	/* FIXME path given from user or autodetected */
 	if(!done[TT_LIBRARY])
 	{
-		fprintf(fp, "%s", "PREFIX\t= /usr/local\n");
-		fprintf(fp, "%s", "DESTDIR\t=\n");
+		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
+		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
 	}
-	fprintf(fp, "%s", "LIBDIR\t= $(PREFIX)/lib\n");
+	if(configure->prefs->libdir[0] == '/')
+		fprintf(fp, "%s%s\n", "LIBDIR\t= ", configure->prefs->libdir);
+	else
+		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/",
+				configure->prefs->libdir);
 	if(!done[TT_BINARY])
 	{
 		fprintf(fp, "%s", "CC\t= cc\n");
