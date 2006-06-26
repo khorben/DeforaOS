@@ -92,7 +92,7 @@ CodeError code_instruction(Code * code, char * instruction,
 					operands_cnt)) != CE_SUCCESS)
 		return ret;
 #ifdef DEBUG
-	fprintf(stderr, "instruction %s, opcode 0x%x, operands: 0x%x\n",
+	fprintf(stderr, "instruction %s, opcode 0x%lx, operands: 0x%x\n",
 			instruction, ai->opcode, ai->operands);
 #endif
 	switch(ai->size)
@@ -172,7 +172,7 @@ static ArchRegister * _operands_register(ArchRegister * registers, char * name);
 static int _instruction_operands(Code * code, ArchInstruction * ai,
 		CodeOperand operands[], int operands_cnt)
 {
-	unsigned int op = 0;
+	unsigned long op = 0;
 	char * reg;
 	int i;
 	ArchRegister * ar;
@@ -203,7 +203,7 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 		}
 	}
 #ifdef DEBUG
-	fprintf(stderr, "0x%x & 0x%x => 0x%x\n", op, ai->operands,
+	fprintf(stderr, "0x%lx & 0x%x => 0x%lx\n", op, ai->operands,
 			op & ai->operands);
 #endif
 	return op == ai->operands ? 0 : 1;
