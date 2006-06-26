@@ -81,16 +81,18 @@ static int _new_vfs(AppInterface * appinterface);
 AppInterface * appinterface_new(char const * app)
 {
 	AppInterface * appinterface;
+	/* FIXME read this from available Servers configuration, or imagine a
+	 * solution to negociate it directly */
 	struct iface {
 		char * name;
 		int (*func)(AppInterface *);
 		int port;
 	} ifaces[] = {
-		{ "Session", _new_session, 4242 },
-		{ "GServer", _new_gserver, 4246 },
-		{ "Probe", _new_probe, 4243 },
-		{ "Hello", _new_hello, 4244 },
-		{ "VFS", _new_vfs, 4245 }
+		{ "Session",	_new_session,	4242 },
+		{ "GServer",	_new_gserver,	4246 },
+		{ "Probe",	_new_probe,	4243 },
+		{ "Hello",	_new_hello,	4244 },
+		{ "VFS",	_new_vfs,	4245 }
 	};
 	size_t i;
 
@@ -275,7 +277,6 @@ static int _new_vfs(AppInterface * ai)
 
 /* appinterface_new_server */
 /* FIXME */
-extern void * handle;
 AppInterface * appinterface_new_server(char const * app)
 {
 	AppInterface * ai;
