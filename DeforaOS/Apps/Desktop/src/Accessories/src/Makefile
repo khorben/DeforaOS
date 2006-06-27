@@ -44,3 +44,5 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/calendar
 	$(RM) $(DESTDIR)$(BINDIR)/fontsel
+
+.PHONY: all clean distclean install uninstall
