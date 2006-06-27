@@ -1,7 +1,8 @@
 TARGETS	= makepasswd
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -D_GNU_SOURCE
 CFLAGS	= -g
@@ -36,3 +37,5 @@ install: all
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/makepasswd
+
+.PHONY: all clean distclean install uninstall
