@@ -87,8 +87,9 @@ static int _settings_do(Prefs * prefs, String const * directory,
 		ret |= configure_error(filename, 1);
 	else
 	{
-		printf("%s%s%s%s\n", "Creating config.", extension, " in ",
-				directory);
+		if(prefs->flags & PREFS_v)
+			printf("%s%s%s%s\n", "Creating config.", extension,
+					" in ", directory);
 		switch(i)
 		{
 			case ST_H:
