@@ -23,12 +23,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/browser.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/delete.c \
 		$(PACKAGE)-$(VERSION)/src/browser.h \
 		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
