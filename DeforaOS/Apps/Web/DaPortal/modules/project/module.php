@@ -67,7 +67,7 @@ function _project_toolbar($id)
 	if(is_array($project) && count($project) == 1)
 	{
 		$cvsroot = $project[0]['cvsroot'];
-		$enabled = $project[0]['enabled'] == 't' ? 1 : 0;
+		$enabled = $project[0]['enabled'] == SQL_TRUE ? 1 : 0;
 	}
 	include('./modules/project/toolbar.tpl');
 }
@@ -128,7 +128,7 @@ function project_admin($args)
 		$projects[$i]['action'] = 'modify';
 		$projects[$i]['apply_module'] = 'project';
 		$projects[$i]['apply_id'] = $projects[$i]['id'];
-		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == 't')
+		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == SQL_TRUE)
 			? 'enabled' : 'disabled';
 		$projects[$i]['enabled'] = '<img src="icons/16x16/'
 			.$projects[$i]['enabled'].'.png" alt="'
@@ -223,7 +223,7 @@ function project_bug_display($args)
 			.', priority, assigned AS assigned_id'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
-			." WHERE daportal_content.enabled='t'"
+			." WHERE daportal_content.enabled='1'"
 			.' AND daportal_content.content_id'
 			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
@@ -311,7 +311,7 @@ function project_bug_insert($args)
 			.' WHERE daportal_project_user.user_id'
 			.'=daportal_user.user_id'
 			." AND project_id='".$args['project_id']."'"
-			." AND enabled='t';");
+			." AND enabled='1';");
 	if(!is_array($to) || !is_array($members))
 		_error('Could not list members', 0);
 	else
@@ -409,7 +409,7 @@ function project_bug_list($args)
 			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
-			." WHERE daportal_content.enabled='t'"
+			." WHERE daportal_content.enabled='1'"
 			.' AND daportal_content.content_id'
 			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
@@ -519,7 +519,7 @@ function project_bug_reply($reply)
 			.', state, type, priority'
 			.' FROM daportal_content, daportal_bug, daportal_user'
 			.', daportal_project'
-			." WHERE daportal_content.enabled='t'"
+			." WHERE daportal_content.enabled='1'"
 			.' AND daportal_content.content_id'
 			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
@@ -635,7 +635,7 @@ function project_bug_reply_insert($args)
 			.' FROM daportal_project_user, daportal_user'
 			.' WHERE daportal_project_user.user_id'
 			.'=daportal_user.user_id'
-			." AND project_id='$project_id' AND enabled='t';");
+			." AND project_id='$project_id' AND enabled='1';");
 	if(!is_array($ba) || !is_array($pa) || !is_array($assigned)
 			|| !is_array($members))
 		return _error('Could not list addresses for mailing');
@@ -828,7 +828,7 @@ function project_display($args)
 	$project = $project[0];
 	//FIXME or the user is the administrator of this project
 	$admin = _user_admin($user_id);
-	$enabled = $project['enabled'] == 't';
+	$enabled = $project['enabled'] == SQL_TRUE;
 	if($enabled == 0 && !$admin)
 	{
 		return include('./modules/project/project_submitted.tpl');

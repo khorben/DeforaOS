@@ -13,8 +13,8 @@
 <?php } ?>
 		<tr><td class="field">Password:</td><td><input type="password" name="password1"/><br/><input type="password" name="password2"/></td></tr>
 <?php if($admin) { ?>
-		<tr><td class="field">Enabled:</td><td><input type="checkbox" name="enabled"<?php if($user['enabled'] == 't') { ?> checked="checked"<?php } ?>/></td>
-		<tr><td class="field">Administrator:</td><td><input type="checkbox" name="admin"<?php if($user['admin'] == 't') { ?> checked="checked"<?php } ?>/></td>
+		<tr><td class="field">Enabled:</td><td><input type="checkbox" name="enabled"<?php if($user['enabled'] == SQL_TRUE) { ?> checked="checked"<?php } ?>/></td>
+		<tr><td class="field">Administrator:</td><td><input type="checkbox" name="admin"<?php if($user['admin'] == SQL_TRUE) { ?> checked="checked"<?php } ?>/></td>
 		<tr><td class="field">e-mail:</td><td><input type="text" name="email" value="<?php echo _html_safe($user['email']); ?>"/></td>
 <?php } ?>
 		<tr><td></td><td><input type="submit" value="<?php echo isset($user) ? 'Update' : 'Create'; ?>"/></td></tr>

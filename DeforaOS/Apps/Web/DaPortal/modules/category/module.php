@@ -39,8 +39,8 @@ function category_admin($args)
 		$categories[$i]['action'] = 'modify';
 		$categories[$i]['icon'] = 'modules/category/icon.png';
 		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
-		$categories[$i]['enabled'] = $categories[$i]['enabled'] == 't'
-			? 'enabled' : 'disabled';
+		$categories[$i]['enabled'] = $categories[$i]['enabled']
+			== SQL_TRUE ? 'enabled' : 'disabled';
 		$categories[$i]['enabled'] = '<img src="icons/16x16/'
 				.$categories[$i]['enabled'].'" alt="'
 				.$categories[$i]['enabled'].'" title="'

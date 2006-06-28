@@ -48,7 +48,7 @@ function admin_admin($args)
 			$lang[$i]['apply_id']
 				= _html_safe($lang[$i]['apply_id']);
 			$lang[$i]['enabled'] = ($lang[$i]['enabled']
-					== 't') ? 'enabled' : 'disabled';
+					== SQL_TRUE) ? 'enabled' : 'disabled';
 			$lang[$i]['enabled'] = '<img src="icons/16x16/'
 				.$lang[$i]['enabled'].'.png" alt="'
 				.$lang[$i]['enabled'].'.png" title="'
@@ -80,7 +80,7 @@ function admin_admin($args)
 		$modules[$i]['thumbnail'] = 'modules/'.$module.'/icon.png';
 		$modules[$i]['action'] = 'admin';
 		$modules[$i]['apply_module'] = 'admin';
-		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == 't')
+		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == SQL_TRUE)
 				? 'enabled' : 'disabled';
 		$modules[$i]['enabled'] = '<img src="icons/16x16/'
 			.$modules[$i]['enabled'].'.png" alt="'
@@ -128,7 +128,7 @@ function admin_lang_enable($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_lang SET enabled='t'"
+	if(_sql_query("UPDATE daportal_lang SET enabled='1'"
 			." WHERE lang_id='".$args['id']."';") == FALSE)
 		_error('Unable to update language');
 }
@@ -152,7 +152,7 @@ function admin_module_enable($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_module SET enabled='t'"
+	if(_sql_query("UPDATE daportal_module SET enabled='1'"
 			." WHERE module_id='".$args['id']."';") == FALSE)
 		_error('Unable to update module');
 }

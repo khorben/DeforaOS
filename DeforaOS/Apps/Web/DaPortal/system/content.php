@@ -36,7 +36,7 @@ function _content_display($id)
 
 function _content_enable($id)
 {
-	return _sql_query('UPDATE daportal_content SET enabled='."'t'"
+	return _sql_query('UPDATE daportal_content SET enabled='."'1'"
 			." WHERE content_id='$id';");
 }
 
@@ -62,7 +62,7 @@ function _content_readable($id)
 	if(_user_admin($user_id) == TRUE)
 		return TRUE;
 	return _sql_single('SELECT enabled FROM daportal_content'
-			." WHERE content_id='$id';") == 't';
+			." WHERE content_id='$id';") == SQL_TRUE;
 }
 
 

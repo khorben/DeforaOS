@@ -51,8 +51,8 @@ function bookmark_admin($args)
 		$bookmarks[$i]['action'] = 'display';
 		$bookmarks[$i]['icon'] = 'modules/bookmark/icon.png';
 		$bookmarks[$i]['thumbnail'] = 'modules/bookmark/icon.png';
-		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled'] == 't'
-			? 'enabled' : 'disabled';
+		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled']
+			== SQL_TRUE ? 'enabled' : 'disabled';
 		$bookmarks[$i]['enabled'] = '<img src="icons/16x16/'
 				.$bookmarks[$i]['enabled'].'" alt="'
 				.$bookmarks[$i]['enabled'].'" title="'
@@ -210,8 +210,8 @@ function bookmark_list($args)
 		$bookmarks[$i]['action'] = 'display';
 		$bookmarks[$i]['icon'] = 'modules/bookmark/icon.png';
 		$bookmarks[$i]['thumbnail'] = 'modules/bookmark/icon.png';
-		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled'] == 't'
-			? 'enabled' : 'disabled';
+		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled']
+			== SQL_TRUE ? 'enabled' : 'disabled';
 		$bookmarks[$i]['enabled'] = '<img src="icons/16x16/'
 				.$bookmarks[$i]['enabled'].'" alt="'
 				.$bookmarks[$i]['enabled'].'" title="'

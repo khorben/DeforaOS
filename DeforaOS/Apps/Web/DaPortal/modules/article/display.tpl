@@ -14,7 +14,7 @@
 <?php global $user_id; require_once('./system/user.php');
 if($article['id'] && _user_admin($user_id)) { ?>
 		· <a href="index.php?module=article&amp;action=modify&amp;id=<?php echo _html_safe($article['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
-<?php if($article['enabled'] == 't') { ?>
+<?php if($article['enabled'] == SQL_TRUE) { ?>
 		· <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe($article['id']); ?>&amp;show"><img src="icons/16x16/disabled.png" alt=""/> <?php echo _html_safe(DISABLE); ?></a>
 <?php } else { ?>
 		· <a href="index.php?module=content&amp;action=enable&amp;id=<?php echo _html_safe($article['id']); ?>&amp;show"><img src="icons/16x16/enabled.png" alt=""/> <?php echo _html_safe(ENABLE); ?></a>

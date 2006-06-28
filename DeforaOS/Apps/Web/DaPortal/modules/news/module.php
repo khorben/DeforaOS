@@ -80,7 +80,7 @@ function news_admin($args)
 				.$res[$i]['user_id'].'">'
 				._html_safe_link($res[$i]['username'])
 				.'</a>';
-		$res[$i]['enabled'] = $res[$i]['enabled'] == 't' ?
+		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
 			'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
 				.$res[$i]['enabled'].'.png" alt="'
@@ -207,7 +207,7 @@ function news_list($args)
 		return _list_user($args['user_id'], $username);
 	print('<h1><img src="modules/news/icon.png" alt=""/> '._html_safe(NEWS)
 			.'</h1>'."\n");
-	$sql = ' FROM daportal_content, daportal_user'
+	$sql = ' FROM daportal_module, daportal_content, daportal_user'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_content.enabled='1'"
 		." AND daportal_module.name='news'"
@@ -215,14 +215,15 @@ function news_list($args)
 		.'=daportal_content.module_id';
 	$npp = 10;
 	$page = isset($args['page']) ? $args['page'] : 1;
-	$cnt = _sql_single('SELECT COUNT(*)'.$sql);
+	if(($cnt = _sql_single('SELECT COUNT(*)'.$sql.';')) == 0)
+		$cnt = 1;
 	$pages = ceil($cnt / $npp);
 	$page = min($page, $pages);
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 			.', daportal_content.enabled, daportal_content.user_id'
 			.', username'.$sql
-			.' ORDER BY timestamp DESC'
-			." OFFSET ".(($page-1) * $npp)." LIMIT $npp;");
+			.' ORDER BY timestamp DESC '
+			.(_sql_offset(($page-1) * $npp, $npp)).';');
 	if(!is_array($res))
 		return _error('Unable to list news');
 	foreach($res as $news)
@@ -298,7 +299,7 @@ function news_submit($news)
 	include('./modules/news/news_posted.tpl');
 	//send mail
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
-			." WHERE enabled='t' AND admin='t';");
+			." WHERE enabled='1' AND admin='1';");
 	if(!is_array($admins))
 		return _error('Could not list moderators', 0);
 	$to = '';

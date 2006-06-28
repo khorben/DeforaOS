@@ -41,8 +41,8 @@ function content_admin($args)
 		$contents[$i]['apply_module'] = 'content';
 		$contents[$i]['action'] = 'admin';
 		$contents[$i]['apply_id'] = $contents[$i]['id'];
-		$contents[$i]['enabled'] = ($contents[$i]['enabled'] == 't')
-				? 'enabled' : 'disabled';
+		$contents[$i]['enabled'] = ($contents[$i]['enabled']
+				== SQL_TRUE) ? 'enabled' : 'disabled';
 		$contents[$i]['enabled'] = '<img src="icons/16x16/'
 				.$contents[$i]['enabled'].'.png" alt="'
 				.$contents[$i]['enabled'].'" title="'
@@ -86,7 +86,7 @@ function content_default($args)
 	if(_user_admin($user_id))
 		$where = '';
 	else
-		$where = " AND daportal_content.enabled='t'";
+		$where = " AND daportal_content.enabled='1'";
 	$content = _sql_array('SELECT name'
 			.' FROM daportal_content, daportal_module'
 			.' WHERE daportal_content'
@@ -135,7 +135,7 @@ function content_enable($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_content SET enabled='t'"
+	if(_sql_query("UPDATE daportal_content SET enabled='1'"
 			." WHERE content_id='".$args['id']."';") == FALSE)
 		_error('Unable to update content');
 	if(isset($args['show']))

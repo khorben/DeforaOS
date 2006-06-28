@@ -68,7 +68,7 @@ function comment_admin($args)
 		$comments[$i]['username'] = '<a href="index.php?module=user'
 			.'&amp;id='.$comments[$i]['user_id'].'">'
 			._html_safe($comments[$i]['username']).'</a>';
-		$comments[$i]['enabled'] = $comments[$i]['enabled'] == 't'
+		$comments[$i]['enabled'] = $comments[$i]['enabled'] == SQL_TRUE
 			? 'enabled' : 'disabled';
 		$comments[$i]['enabled'] = '<img src="icons/16x16/'
 				.$comments[$i]['enabled'].'.png" alt="'
@@ -106,8 +106,8 @@ function comment_childs($args)
 	if(_user_admin($user_id))
 		$where = '';
 	else
-		$where = " AND daportal_content.enabled='t'"
-			." AND child.enabled='t'";
+		$where = " AND daportal_content.enabled='1'"
+			." AND child.enabled='1'";
 	$parent = $args['id'];
 	//FIXME
 	$comments = _sql_array('SELECT child.content_id AS id'
@@ -138,7 +138,7 @@ function comment_count($args)
 				.', daportal_content'
 				.' WHERE daportal_comment.comment_id'
 				.'=daportal_content.content_id'
-				." AND enabled='t'"
+				." AND enabled='1'"
 				." AND parent='$parent';");
 		foreach($comments as $c)
 		{
@@ -165,7 +165,7 @@ function comment_display($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	$where = " AND daportal_content.enabled='t'";
+	$where = " AND daportal_content.enabled='1'";
 	if(_user_admin($user_id))
 		$where = '';
 	$comment = _sql_array('SELECT daportal_comment.comment_id AS id'
@@ -258,7 +258,7 @@ function comment_new($args)
 	$parent = $args['parent'];
 	$comment['title'] = 'Re: '._sql_single('SELECT title'
 			.' FROM daportal_content'
-			." WHERE enabled='t'"
+			." WHERE enabled='1'"
 			." AND content_id='$parent';");
 	include('./modules/comment/update.tpl');
 }
@@ -288,7 +288,7 @@ function comment_submit($comment)
 	_module('content', 'default', array('id' => $comment['parent']));
 	//send mail
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
-			." WHERE enabled='t' AND admin='t';");
+			." WHERE enabled='1' AND admin='1';");
 	if(!is_array($admins))
 		return _error('Could not list moderators', 0);
 	$to = '';

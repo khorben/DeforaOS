@@ -83,8 +83,8 @@ function article_admin($args)
 				.$articles[$i]['user_id'].'">'
 				._html_safe_link($articles[$i]['username'])
 				.'</a>';
-		$articles[$i]['enabled'] = $articles[$i]['enabled'] == 't' ?
-			'enabled' : 'disabled';
+		$articles[$i]['enabled'] = $articles[$i]['enabled']
+			== SQL_TRUE ? 'enabled' : 'disabled';
 		$articles[$i]['enabled'] = '<img src="icons/16x16/'
 				.$articles[$i]['enabled'].'.png" alt="'
 				.$articles[$i]['enabled'].'" title="'

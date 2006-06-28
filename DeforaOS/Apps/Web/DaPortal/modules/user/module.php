@@ -48,7 +48,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 			.$_SERVER['SERVER_ADMIN'].">\n";
 	_info('Mail sent to: '.$username.' <'.$email.'>');
 	if(mail($username.' <'.$email.'>', 'User confirmation', $message,
-		$headers) == FALSE)
+			$headers) == FALSE)
 		return _error('Could not send mail');
 }
 
@@ -87,13 +87,12 @@ function user_admin($args)
 	$order = 'name ASC';
 	switch($args['sort'])
 	{
-		case 'admin':	$order = 'admin ASC'; break;
-		case 'email':	$order = 'email ASC'; break;
+		case 'admin':	$order = 'admin ASC';	break;
+		case 'email':	$order = 'email ASC';	break;
 	}
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.', enabled, admin, email'
-			.' FROM daportal_user'
-			.' ORDER BY '.$order.';');
+			.' FROM daportal_user ORDER BY '.$order.';');
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
@@ -106,22 +105,20 @@ function user_admin($args)
 		$users[$i]['name'] = _html_safe_link($users[$i]['name']);
 		$users[$i]['apply_module'] = 'user';
 		$users[$i]['apply_id'] = $users[$i]['id'];
-		$users[$i]['enabled'] = $users[$i]['enabled'] == 't'
+		$users[$i]['enabled'] = $users[$i]['enabled'] == SQL_TRUE
 			? 'enabled' : 'disabled';
 		$users[$i]['enabled'] = '<img src="icons/16x16/'
 				.$users[$i]['enabled'].'.png" alt="'
 				.$users[$i]['enabled'].'" title="'
 				.($users[$i]['enabled'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
-		$users[$i]['admin'] = $users[$i]['admin'] == 't'
+						? ENABLED : DISABLED).'"/>';
+		$users[$i]['admin'] = $users[$i]['admin'] == SQL_TRUE
 			? 'enabled' : 'disabled';
 		$users[$i]['admin'] = '<img src="icons/16x16/'
 				.$users[$i]['admin'].'.png" alt="'
 				.$users[$i]['admin'].'" title="'
 				.($users[$i]['admin'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
+						? ENABLED : DISABLED).'"/>';
 		$users[$i]['email'] = '<a href="mailto:'.$users[$i]['email']
 				.'">'._html_safe($users[$i]['email']).'</a>';
 	}
@@ -138,15 +135,13 @@ function user_admin($args)
 			'action' => 'enable');
 	$toolbar[] = array('title' => 'Delete',
 			'icon' => 'icons/16x16/delete.png',
-			'action' => 'delete',
-			'confirm' => 'delete');
+			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('toolbar' => $toolbar,
 				'entries' => $users,
 				'class' => array('enabled' => ENABLED,
 					'admin' => 'Admin',
 					'email' => 'e-mail'),
-				'module' => 'user',
-				'action' => 'admin',
+				'module' => 'user', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 				: 'name',
 				'view' => 'details'));
@@ -242,7 +237,7 @@ function user_enable($args)
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	if(!_sql_query('UPDATE daportal_user SET'
-			." enabled='t'"
+			." enabled='1'"
 			." WHERE user_id='".$args['id']."';"))
 		return _error('Could not enable user');
 }
@@ -281,7 +276,7 @@ function user_login($args)
 
 	if($user_id != 0)
 		return user_default($args);
-	$register = _config_get('user', 'register') == 't' ? 1 : 0;
+	$register = _config_get('user', 'register') == SQL_TRUE ? 1 : 0;
 	if(isset($_POST['username']))
 	{
 		$message = WRONG_PASSWORD;
@@ -343,7 +338,7 @@ function user_register($args)
 {
 	global $user_id;
 
-	if(_config_get('user', 'register') != 't')
+	if(_config_get('user', 'register') != SQL_TRUE)
 		return _error(PERMISSION_DENIED);
 	if($user_id)
 		return _error(ALREADY_LOGGED_IN);
@@ -413,8 +408,8 @@ function _system_confirm($key)
 		return;
 	$user = $user[0];
 	if(_sql_query('UPDATE daportal_user SET'
-			." enabled='t' WHERE user_id='".$user['user_id']."';")
-			== FALSE)
+			." enabled='1'"
+			." WHERE user_id='".$user['user_id']."';") == FALSE)
 		return _error('Could not enable user');
 	if(_sql_query('DELETE FROM daportal_user_register'
 			." WHERE key='$key';") == FALSE)
@@ -435,7 +430,7 @@ function _system_login()
 	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"
 			.' AND password='."'$password'"
-			." AND enabled='t';");
+			." AND enabled='1';");
 	if(!is_array($res) || count($res) != 1)
 		return _error('Unable to login', 0);
 	$res = $res[0];

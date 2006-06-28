@@ -148,7 +148,6 @@ function _host_graph($hostname, $graph, $time, $param)
 			$png = 'tmp/'.$hostname.$param.'_'.$time.'.png';
 			$title = 'volume usage: '.$param;
 			$label = 'blocks';
-			$base = 1000;
 			$def = array('voltotal', 'volfree');
 			//FIXME block size may not be 4
 			$cdef = array('pvoltotal' => 'voltotal,1024,/',
@@ -278,7 +277,7 @@ function probe_host_display($args)
 			.', content AS comment'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id'
-			." AND enabled='t'"
+			." AND enabled='1'"
 			." AND host_id='".$args['id']."';");
 	if(!is_array($host) || count($host) != 1)
 		return _error('Could not display host');
@@ -343,7 +342,7 @@ function probe_host_list($args)
 	$hosts = _sql_array('SELECT host_id AS id, title AS name'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id'
-			." AND enabled='t';");
+			." AND enabled='1';");
 	if(!is_array($hosts))
 		return _error('Could not list hosts');
 	for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
@@ -370,7 +369,7 @@ function probe_host_modify($args)
 			.', content AS comment'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id'
-			." AND enabled='t'"
+			." AND enabled='1'"
 			." AND host_id='".$args['id']."';");
 	if(!is_array($host) || count($host) != 1)
 		return _error('Could not modify host');

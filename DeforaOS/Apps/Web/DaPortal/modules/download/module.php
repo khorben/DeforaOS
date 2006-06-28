@@ -76,7 +76,7 @@ function download_admin($args)
 		$dls[$i]['apply_module'] = 'download';
 		$dls[$i]['apply_id'] = $dls[$i]['id'];
 		$dls[$i]['name'] = _html_safe($dls[$i]['name']);
-		$dls[$i]['enabled'] = ($dls[$i]['enabled'] == 't')
+		$dls[$i]['enabled'] = ($dls[$i]['enabled'] == SQL_TRUE)
 			? 'enabled' : 'disabled';
 		$dls[$i]['enabled'] = '<img src="icons/16x16/'
 			.$dls[$i]['enabled'].'.png" alt="'
