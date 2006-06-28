@@ -25,6 +25,6 @@ switch($dbtype)
 		break;
 }
 if($connection == FALSE)
-	_error('Unable to connect to SQL server');
+	exit(_error('Unable to connect to SQL server'));
 
 ?>
