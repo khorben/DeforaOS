@@ -6,6 +6,9 @@
 if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
+define(SQL_TRUE, 't');
+define(SQL_FALSE, 'f');
+
 
 function _query($query)
 {
@@ -47,6 +50,12 @@ function _sql_enum($table, $field)
 function _sql_id($table, $field)
 {
 	return _sql_single("SELECT currval('".$table."_".$field."_seq');");
+}
+
+
+function _sql_offset($offset, $limit)
+{
+	return 'OFFSET '.$offset.' LIMIT '.$limit;
 }
 
 
