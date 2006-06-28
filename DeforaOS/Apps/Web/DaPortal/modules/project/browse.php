@@ -58,11 +58,11 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		$name = '<a href="index.php?module=project&amp;action=browse'
 				.'&amp;id='.$id.'&amp;file='.$file.'">'
 				.$name.'</a>';
-		$thumbnail = is_readable('icons/48x48/mime/'.$mime
+		$thumbnail = is_readable('./icons/48x48/mime/'.$mime
 				.'.png')
 			? 'icons/48x48/mime/'.$mime.'.png'
 			: 'icons/48x48/mime/default.png';
-		$icon = is_readable('icons/16x16/mime/'.$mime.'.png')
+		$icon = is_readable('./icons/16x16/mime/'.$mime.'.png')
 			? 'icons/16x16/mime/'.$mime.'.png'
 			: $thumbnail;
 		$revision = _html_safe(substr($rcs[$revs+1], 9));
