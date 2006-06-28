@@ -66,7 +66,7 @@ document.getElementById('search').style.display='none';
 <?php } ?>
 <?php if(is_array(($langs = _sql_array('SELECT lang_id AS id, name'
 		.' FROM daportal_lang'
-		." WHERE enabled='t' ORDER BY name ASC;")))) { ?>
+		." WHERE enabled='1' ORDER BY name ASC;")))) { ?>
 			<form class="lang" action="index.php" method="post" style="float: right; margin-right: 30px">
 				<select name="lang" onchange="submit()">
 <?php foreach($langs as $l) { ?>
