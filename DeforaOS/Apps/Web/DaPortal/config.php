@@ -1,4 +1,4 @@
-<?php
+<?php //config.php
 
 
 //check url
@@ -9,7 +9,9 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $template = 'DaPortal';
 $theme = 'DaPortal';
 $debug = 1;
-$dbtype = 'pgsql';
+$dbtype = 'pgsql';	//or 'mysql'
+//$dbhostname = '';	//defaults to local connections
+$dbname = 'daportal';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
 
