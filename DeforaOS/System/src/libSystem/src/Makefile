@@ -1,6 +1,6 @@
 TARGETS	= libSystem.a libSystem.so
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
 CFLAGSF	= -W -Wall -ansi -fPIC -I ../include
@@ -64,3 +64,5 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.a
 	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.so
+
+.PHONY: all clean distclean install uninstall
