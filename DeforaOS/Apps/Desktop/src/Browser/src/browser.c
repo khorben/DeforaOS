@@ -408,7 +408,7 @@ static GtkListStore * _create_store(void)
 			_sort_func, NULL, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
 			GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID,
-			GTK_SORT_ASCENDING); /* FIXME resettable */
+			GTK_SORT_ASCENDING); /* FIXME optional */
 	return store;
 }
 
@@ -577,9 +577,8 @@ static void _browser_on_edit_delete(GtkWidget * widget, gpointer data)
 			"Are you sure you want to delete ", cnt, " file(s)?");
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(GTK_WIDGET(dialog));
-	if(ret != GTK_RESPONSE_YES)
-		return;
-	_delete_do(browser, selection, cnt);
+	if(ret == GTK_RESPONSE_YES)
+		_delete_do(browser, selection, cnt);
 	g_list_foreach(selection, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(selection);
 }
@@ -711,9 +710,9 @@ static void _browser_on_forward(GtkWidget * widget, gpointer data)
 }
 
 #if !GTK_CHECK_VERSION(2, 6, 0)
-static void _about_close(GtkWidget * widget, gpointer * data);
-static void _about_credits(GtkWidget * widget, gpointer * data);
-static void _about_license(GtkWidget * widget, gpointer * data);
+static void _about_close(GtkWidget * widget, gpointer data);
+static void _about_credits(GtkWidget * widget, gpointer data);
+static void _about_license(GtkWidget * widget, gpointer data);
 #endif
 static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 {
@@ -782,18 +781,18 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 }
 
 #if !GTK_CHECK_VERSION(2, 6, 0)
-static void _about_close(GtkWidget * widget, gpointer * data)
+static void _about_close(GtkWidget * widget, gpointer data)
 {
-	GtkWidget * window = (GtkWidget*)data;
+	GtkWidget * window = data;
 
 	gtk_widget_hide(window);
 }
 
-static void _about_credits(GtkWidget * widget, gpointer * data)
+static void _about_credits(GtkWidget * widget, gpointer data)
 {
 }
 
-static void _about_license(GtkWidget * widget, gpointer * data)
+static void _about_license(GtkWidget * widget, gpointer data)
 {
 }
 #endif
