@@ -715,6 +715,7 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 	static GtkWidget * window = NULL;
 	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
 	char const copyright[] = "Copyright (c) 2006 khorben";
+#if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
 	
@@ -723,7 +724,6 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 		gtk_widget_show(window);
 		return;
 	}
-#if GTK_CHECK_VERSION(2, 6, 0)
 	if((buf = malloc(sizeof(*buf) * cnt)) == NULL)
 	{
 		browser_error(browser, "malloc", 0);
@@ -739,9 +739,14 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
 	else
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
-	gtk_widget_show(window);
 	free(buf);
+	gtk_widget_show(window);
 #else
+	if(window != NULL)
+	{
+		gtk_widget_show(window);
+		return;
+	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "About Browser");
