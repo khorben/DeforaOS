@@ -16,7 +16,10 @@ typedef struct _MimeType
 {
 	char * type;
 	char * glob;
-	GdkPixbuf * icon;
+	GdkPixbuf * icon_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	GdkPixbuf * icon_48;
+#endif
 	char * open;
 } MimeType;
 
@@ -35,6 +38,7 @@ void mime_delete(Mime * mime);
 /* useful */
 char const * mime_type(Mime * mime, char const * path);
 void mime_open(Mime * mime, char const * path);
-GdkPixbuf * mime_icon(Mime * mime, GtkIconTheme * theme, char const * type);
+GdkPixbuf * mime_icons(Mime * mime, GtkIconTheme * theme, char const * type,
+		GdkPixbuf ** icon_48);
 
 #endif /* !BROWSER_MIME_H */

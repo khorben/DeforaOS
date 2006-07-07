@@ -15,7 +15,10 @@ enum
 {
 	BR_COL_PATH = 0,
 	BR_COL_DISPLAY_NAME,
-	BR_COL_PIXBUF,
+	BR_COL_PIXBUF_24,
+#if GTK_CHECK_VERSION(2, 6, 0)
+	BR_COL_PIXBUF_48,
+#endif
 	BR_COL_IS_DIRECTORY,
 	BR_COL_MIME_TYPE,
 	BR_NUM_COLS
@@ -36,16 +39,20 @@ typedef struct _Browser
 
 	/* widgets */
 	GtkIconTheme * theme;
-	GdkPixbuf * pb_file;
-	GdkPixbuf * pb_folder;
+	GdkPixbuf * pb_file_24;
+	GdkPixbuf * pb_folder_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	GdkPixbuf * pb_file_48;
+	GdkPixbuf * pb_folder_48;
+#endif
 	GtkWidget * window;
 	GtkToolItem * tb_back;
 	GtkToolItem * tb_updir;
 	GtkToolItem * tb_forward;
 	GtkWidget * tb_path;
 	GtkWidget * scrolled;
+	GtkWidget * detailview;
 	GtkWidget * iconview;
-	GtkWidget * listview;
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
