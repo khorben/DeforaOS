@@ -300,6 +300,8 @@ static GtkWidget * _new_menubar(Browser * browser)
 			if(_menubar[i].menu[j].callback != NULL)
 				g_signal_connect(G_OBJECT(menuitem), "activate",
 						G_CALLBACK(_menubar[i].menu[j].callback), browser);
+			else
+				gtk_widget_set_sensitive(menuitem, FALSE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
