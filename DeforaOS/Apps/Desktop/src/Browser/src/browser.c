@@ -33,7 +33,6 @@ static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 static void _browser_on_edit_copy(GtkWidget * widget, gpointer data);
 static void _browser_on_edit_cut(GtkWidget * widget, gpointer data);
 static void _browser_on_edit_delete(GtkWidget * widget, gpointer data);
-static void _browser_on_edit_paste(GtkWidget * widget, gpointer data);
 static void _browser_on_edit_preferences(GtkWidget * widget, gpointer data);
 static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data);
 static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data);
@@ -80,7 +79,7 @@ static struct _menu _menu_edit[] =
 {
 	{ "_Cut", G_CALLBACK(_browser_on_edit_cut), GTK_STOCK_CUT },
 	{ "Cop_y", G_CALLBACK(_browser_on_edit_copy), GTK_STOCK_COPY },
-	{ "_Paste", G_CALLBACK(_browser_on_edit_paste), GTK_STOCK_PASTE },
+	{ "_Paste", NULL, GTK_STOCK_PASTE },
 	{ "", NULL, NULL },
 	{ "_Delete", G_CALLBACK(_browser_on_edit_delete), GTK_STOCK_DELETE },
 	{ "", NULL, NULL },
@@ -619,10 +618,6 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
 			strerror(errno));
 	exit(2);
-}
-
-static void _browser_on_edit_paste(GtkWidget * widget, gpointer data)
-{
 }
 
 static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data)
