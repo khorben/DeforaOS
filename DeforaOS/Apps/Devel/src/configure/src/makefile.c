@@ -273,6 +273,7 @@ static int _executables_variables(Configure * configure, Config * config,
 	return 0;
 }
 
+static void _targets_cflags(Configure * configure, Config * config, FILE * fp);
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
 static void _variables_binary(Configure * configure, Config * config, FILE * fp,
@@ -297,22 +298,7 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 		fprintf(fp, "%s%s\n", "INCLUDEDIR= $(PREFIX)/",
 				configure->prefs->includedir);
 	if(!done[TT_LIBRARY])
-	{
-		fprintf(fp, "%s", "CC\t= cc\n");
-		if((p = config_get(config, "", "cflags_force"))
-				!= NULL)
-		{
-			fprintf(fp, "%s%s", "CFLAGSF\t= ", p);
-			if(configure->os == HO_GNU_LINUX
-					&& string_find(p, "-ansi"))
-				fprintf(fp, "%s", " -D_GNU_SOURCE");
-			fputc('\n', fp);
-		}
-		if((p = config_get(config, "", "cflags"))
-				!= NULL)
-			fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
-					"\n");
-	}
+		_targets_cflags(configure, config, fp);
 	if((p = config_get(config, "", "ldflags_force"))
 			!= NULL)
 	{
@@ -324,6 +310,27 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 		fprintf(fp, "%s", "LDFLAGS\t= ");
 		_binary_ldflags(configure, fp, p);
 	}
+}
+
+static void _targets_cflags(Configure * configure, Config * config, FILE * fp)
+{
+	String const * p;
+
+	fprintf(fp, "%s", "CC\t= cc\nCFLAGSF\t=");
+	if((p = config_get(config, "", "cflags_force")) != NULL)
+	{
+		fprintf(fp, " %s", p);
+		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+			fprintf(fp, "%s", " -D_GNU_SOURCE");
+	}
+	fprintf(fp, "%s", "\nCFLAGS\t=");
+	if((p = config_get(config, "", "cflags")) != NULL)
+	{
+		fprintf(fp, " %s", p);
+		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+			fprintf(fp, "%s", " -D_GNU_SOURCE");
+	}
+	fputc('\n', fp);
 }
 
 static void _binary_ldflags(Configure * configure, FILE * fp,
@@ -374,8 +381,6 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 static void _variables_library(Configure * configure, Config * config,
 		FILE * fp, char * done)
 {
-	String * p;
-
 	if(!done[TT_LIBRARY])
 	{
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
@@ -387,22 +392,7 @@ static void _variables_library(Configure * configure, Config * config,
 		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/",
 				configure->prefs->libdir);
 	if(!done[TT_BINARY])
-	{
-		fprintf(fp, "%s", "CC\t= cc\n");
-		if((p = config_get(config, "", "cflags_force"))
-				!= NULL)
-		{
-			fprintf(fp, "%s%s", "CFLAGSF\t= ", p);
-			if(configure->os == HO_GNU_LINUX
-					&& string_find(p, "-ansi"))
-				fprintf(fp, "%s", " -D_GNU_SOURCE");
-			fputc('\n', fp);
-		}
-		if((p = config_get(config, "", "cflags"))
-				!= NULL)
-			fprintf(fp, "%s%s%s", "CFLAGS\t= ", p,
-					"\n");
-	}
+		_targets_cflags(configure, config, fp);
 	fprintf(fp, "%s", "AR\t= ar -rc\n");
 	fprintf(fp, "%s", "RANLIB\t= ranlib\n");
 	fprintf(fp, "%s", "LD\t= ld -shared\n");
@@ -815,7 +805,7 @@ static int _write_dist(Prefs * prefs, Config * config, FILE * fp,
 			== NULL)
 		return 0;
 	fprintf(fp, "%s", "\ndist:\n"
-			"\t$(RM) $(PACKAGE)-$(VERSION)\n"
+			"\t$(RM) -r $(PACKAGE)-$(VERSION)\n"
 			"\t$(LN) . $(PACKAGE)-$(VERSION)\n"
 			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
 	for(i = from+1; i < to; i++)
@@ -1014,11 +1004,14 @@ static int _uninstall_target(Config * config, FILE * fp, String * target)
 	switch(enum_string(TT_LAST, sTargetType, type))
 	{
 		case TT_BINARY:
-			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(BINDIR)/", target, "\n");
+			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(BINDIR)/",
+					target, "\n");
 			break;
 		case TT_LIBRARY:
-			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/", target, ".a\n");
-			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/", target, ".so\n");
+			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/",
+					target, ".a\n");
+			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/",
+					target, ".so\n");
 			break;
 		case TT_OBJECT:
 		case TT_UNKNOWN:
