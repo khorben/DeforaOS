@@ -1,30 +1,36 @@
 PACKAGE	= gputty
 VERSION	= 0.9.8
 SUBDIRS	= src
-RM	= rm -f
-PREFIX	= /usr/local
-BINDIR	= $(PREFIX)/bin
+LN	= ln -sf
+TAR	= tar -czvf
 
 
-all clean distclean:
-	@for i in $(SUBDIRS); do make -C $$i $@ || exit $$?; done
+all: subdirs
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
+
+clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
+
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+
+dist:
+	$(RM) -r $(PACKAGE)-$(VERSION)
+	$(LN) . $(PACKAGE)-$(VERSION)
+	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/gputty.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/gputty.h \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/project.conf
+	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
-	@for i in $(SUBDIRS); do make -C $$i PREFIX=$(PREFIX) BINDIR=$(BINDIR) $@ || exit $$?; done
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 
-dist: distclean
-	$(RM) -r $(PACKAGE)-$(VERSION)
-	ln -s . $(PACKAGE)-$(VERSION)
-	tar -czf $(PACKAGE)-$(VERSION).tar.gz \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile \
-		$(PACKAGE)-$(VERSION)/AUTHORS \
-		$(PACKAGE)-$(VERSION)/BUGS \
-		$(PACKAGE)-$(VERSION)/COPYING \
-		$(PACKAGE)-$(VERSION)/INSTALL \
-		$(PACKAGE)-$(VERSION)/README \
-		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/*.c \
-		$(PACKAGE)-$(VERSION)/src/*.h
-	$(RM) $(PACKAGE)-$(VERSION)
+uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean dist install uninstall

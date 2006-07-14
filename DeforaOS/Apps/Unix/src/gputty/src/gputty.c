@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
-#include "config.h"
 #include "gputty.h"
+#include "../config.h"
 
 
 /* GPuTTY */
