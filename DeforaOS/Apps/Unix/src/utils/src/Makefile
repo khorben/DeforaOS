@@ -4,8 +4,8 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi
-CFLAGS	= -g
+CFLAGSF	= -W
+CFLAGS	= -Wall -g -O2 -ansi
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -433,3 +433,5 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/unlink
 	$(RM) $(DESTDIR)$(BINDIR)/wc
 	$(RM) $(DESTDIR)$(BINDIR)/who
+
+.PHONY: all clean distclean install uninstall
