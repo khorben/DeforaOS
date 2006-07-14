@@ -20,7 +20,7 @@
 #ifndef GPUTTY_GPUTTY_H
 # define GPUTTY_GPUTTY_H
 
-# include "config.h"
+# include <System.h>
 
 
 /* GPuTTY */
@@ -41,53 +41,38 @@ typedef struct _GPuTTY
 
 	/* widgets */
 	GtkWidget * window;
-	GtkWidget * vbox;
 	/* hostname */
 	GtkWidget * hn_frame;
-	GtkWidget * hn_vbox;
-	GtkWidget * hn_hbox;
-	GtkWidget * hn_vbox1;
 	GtkWidget * hn_lhostname;
 	GtkWidget * hn_ehostname;
-	GtkWidget * hn_vbox2;
 	GtkWidget * hn_lport;
 	GtkAdjustment * hn_sport_adj;
 	GtkWidget * hn_sport;
-	GtkWidget * hn_vbox3;
 	GtkWidget * hn_lusername;
 	GtkWidget * hn_eusername;
 	/* sessions */
 	GtkWidget * sn_frame;
-	GtkWidget * sn_vbox1;
-	GtkWidget * sn_hbox;
-	GtkWidget * sn_vbox2;
 	GtkWidget * sn_esessions;
 	GtkWidget * sn_swsessions;
 	GtkTreeIter sn_ilsessions;
 	GtkListStore * sn_lsessions;
 	GtkWidget * sn_tlsessions;
-	GtkWidget * sn_vbox3;
 	GtkWidget * sn_load;
 	GtkWidget * sn_save;
 	GtkWidget * sn_delete;
 	/* actions */
-	GtkWidget * ac_hbox;
 	GtkWidget * ac_about;
 	GtkWidget * ac_options;
 	GtkWidget * ac_exit;
 	GtkWidget * ac_connect;
 	/* options */
-	GtkWidget * op_window;
-	GtkWidget * op_vbox;
-	GtkWidget * op_hbox1;
-	GtkWidget * op_lxterm;
-	GtkWidget * op_exterm;
-	GtkWidget * op_hbox2;
-	GtkWidget * op_lssh;
-	GtkWidget * op_essh;
-	GtkWidget * op_hbox3;
-	GtkWidget * op_ok;
-	GtkWidget * op_cancel;
+	GtkWidget * pr_window;
+	GtkWidget * pr_lxterm;
+	GtkWidget * pr_exterm;
+	GtkWidget * pr_lssh;
+	GtkWidget * pr_essh;
+	GtkWidget * pr_ok;
+	GtkWidget * pr_cancel;
 } GPuTTY;
 
 
