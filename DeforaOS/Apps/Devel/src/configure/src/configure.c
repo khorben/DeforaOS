@@ -46,7 +46,8 @@ const struct HostKernel sHostKernel[] =
 };
 
 const String * sTargetType[TT_LAST] = { "binary", "library", "object" };
-const String * sObjectType[OT_LAST] = { "c", "S" };
+const String * sObjectType[OT_LAST] = { "c", "cc", "cpp", "S" };
+
 String * _source_extension(String * source)
 {
 	int len;

@@ -274,6 +274,8 @@ static int _executables_variables(Configure * configure, Config * config,
 }
 
 static void _targets_cflags(Configure * configure, Config * config, FILE * fp);
+static void _targets_cxxflags(Configure * configure, Config * config,
+	       	FILE * fp);
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
 static void _variables_binary(Configure * configure, Config * config, FILE * fp,
@@ -298,9 +300,11 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 		fprintf(fp, "%s%s\n", "INCLUDEDIR= $(PREFIX)/",
 				configure->prefs->includedir);
 	if(!done[TT_LIBRARY])
+	{
 		_targets_cflags(configure, config, fp);
-	if((p = config_get(config, "", "ldflags_force"))
-			!= NULL)
+		_targets_cxxflags(configure, config, fp);
+	}
+	if((p = config_get(config, "", "ldflags_force")) != NULL)
 	{
 		fprintf(fp, "%s", "LDFLAGSF= ");
 		_binary_ldflags(configure, fp, p);
@@ -315,22 +319,47 @@ static void _variables_binary(Configure * configure, Config * config, FILE * fp,
 static void _targets_cflags(Configure * configure, Config * config, FILE * fp)
 {
 	String const * p;
+	String const * q;
 
-	fprintf(fp, "%s", "CC\t= cc\nCFLAGSF\t=");
 	if((p = config_get(config, "", "cflags_force")) != NULL)
 	{
-		fprintf(fp, " %s", p);
+		fprintf(fp, "%s%s", "CC\t= cc\nCFLAGSF\t= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
 			fprintf(fp, "%s", " -D_GNU_SOURCE");
+		fputc('\n', fp);
 	}
-	fprintf(fp, "%s", "\nCFLAGS\t=");
-	if((p = config_get(config, "", "cflags")) != NULL)
+	if((q = config_get(config, "", "cflags")) != NULL)
 	{
-		fprintf(fp, " %s", p);
+		if(p == NULL)
+			fprintf(fp, "%s", "CC\t= cc\n");
+		fprintf(fp, "%s%s", "CFLAGS\t= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
 			fprintf(fp, "%s", " -D_GNU_SOURCE");
+		fputc('\n', fp);
 	}
-	fputc('\n', fp);
+}
+
+static void _targets_cxxflags(Configure * configure, Config * config, FILE * fp)
+{
+	String const * p;
+	String const * q;
+
+	if((p = config_get(config, "", "cxxflags_force")) != NULL)
+	{
+		fprintf(fp, "%s%s", "CXX\t= c++\nCXXFLAGSF= ", p);
+		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+			fprintf(fp, "%s", " -D_GNU_SOURCE");
+		fputc('\n', fp);
+	}
+	if((q = config_get(config, "", "cxxflags")) != NULL)
+	{
+		if(p == NULL)
+			fprintf(fp, "%s", "CXX\t= c++\n");
+		fprintf(fp, "%s%s", "CXXFLAGS= ", p);
+		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+			fprintf(fp, "%s", " -D_GNU_SOURCE");
+		fputc('\n', fp);
+	}
 }
 
 static void _binary_ldflags(Configure * configure, FILE * fp,
@@ -342,7 +371,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 	char buf[10];
 	char ** libs;
 	char * p;
-	char * q;
+	String * q;
 	int i;
 
 	if((p = string_new(ldflags)) == NULL)
@@ -374,7 +403,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 			continue;
 		memmove(q, q + strlen(buf), strlen(q) - strlen(buf) + 1);
 	}
-	fprintf(fp, "%s%s", p, "\n");
+	fprintf(fp, "%s\n", p);
 	free(p);
 }
 
@@ -392,7 +421,10 @@ static void _variables_library(Configure * configure, Config * config,
 		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/",
 				configure->prefs->libdir);
 	if(!done[TT_BINARY])
+	{
 		_targets_cflags(configure, config, fp);
+		_targets_cxxflags(configure, config, fp);
+	}
 	fprintf(fp, "%s", "AR\t= ar -rc\n");
 	fprintf(fp, "%s", "RANLIB\t= ranlib\n");
 	fprintf(fp, "%s", "LD\t= ld -shared\n");
@@ -558,6 +590,12 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 				break;
 			fprintf(fp, "%s%s%s", " ", source, ".o");
 			break;
+		case OT_CXX_SOURCE:
+		case OT_CPP_SOURCE:
+			if(prefs->flags & PREFS_n)
+				break;
+			fprintf(fp, "%s%s%s", " ", source, ".o");
+			break;
 		case OT_UNKNOWN:
 			ret = 1;
 			fprintf(stderr, "%s%s%s", "configure: ", source,
@@ -568,6 +606,7 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 	return ret;
 }
 
+static void _target_flags(Config * config, FILE * fp, String * target);
 static int _target_binary(Prefs * prefs, Config * config, FILE * fp,
 		String * target)
 {
@@ -577,33 +616,97 @@ static int _target_binary(Prefs * prefs, Config * config, FILE * fp,
 		return 1;
 	if(prefs->flags & PREFS_n)
 		return 0;
-	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
-	if((p = config_get(config, target, "cflags")) != NULL)
-		fprintf(fp, " %s", p);
-	fputc('\n', fp);
+	_target_flags(config, fp, target);
 	fprintf(fp, "%s%s%s%s", target, ": $(", target, "_OBJS)\n");
 	fprintf(fp, "%s", "\t$(CC) $(LDFLAGSF)");
-	if((p = config_get(config, target, "ldflags_force")) != NULL)
+	if((p = config_get(config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
-	/* FIXME also find a way to add ldflags */
 	fprintf(fp, "%s%s%s%s%s", " $(LDFLAGS) -o ", target, " $(", target,
 			"_OBJS)\n");
 	return 0;
 }
 
+static void _flags_c(Config * config, FILE * fp, String * target);
+static void _flags_cxx(Config * config, FILE * fp, String * target);
+static void _target_flags(Config * config, FILE * fp, String * target)
+{
+	char done[OT_LAST+1];
+	String * sources;
+	String * extension;
+	ObjectType type;
+	char c;
+	unsigned int i;
+
+	memset(done, 0, sizeof(done));
+	if((sources = config_get(config, target, "sources")) == NULL)
+		return;
+	for(i = 0;; i++)
+	{
+		if(sources[i] != ',' && sources[i] != '\0')
+			continue;
+		c = sources[i];
+		sources[i] = '\0';
+		extension = _source_extension(sources);
+		if(extension == NULL)
+		{
+			sources[i] = c;
+			continue;
+		}
+		type = enum_string(OT_LAST, sObjectType, extension);
+		sources[i] = c;
+		if(!done[type])
+			switch(type)
+			{
+				case OT_ASM_SOURCE:
+					break;
+				case OT_C_SOURCE:
+					_flags_c(config, fp, target);
+					break;
+				case OT_CXX_SOURCE:
+				case OT_CPP_SOURCE:
+					done[OT_CXX_SOURCE] = 1;
+					done[OT_CPP_SOURCE] = 1;
+					_flags_cxx(config, fp, target);
+					break;
+				case OT_UNKNOWN:
+					break;
+			}
+		done[type] = 1;
+		if(c == '\0')
+			break;
+		sources+=i+1;
+		i = 0;
+	}
+}
+
+static void _flags_c(Config * config, FILE * fp, String * target)
+{
+	char * p;
+
+	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
+	if((p = config_get(config, target, "cflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
+}
+
+static void _flags_cxx(Config * config, FILE * fp, String * target)
+{
+	char * p;
+
+	fprintf(fp, "%s%s", target, "_CXXFLAGS = $(CXXFLAGSF) $(CXXFLAGS)");
+	if((p = config_get(config, target, "cxxflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
+}
+
 static int _target_library(Prefs * prefs, Config * config, FILE * fp,
 		String * target)
 {
-	String * p;
-
 	if(_target_objs(prefs, config, fp, target) != 0)
 		return 1;
 	if(prefs->flags & PREFS_n)
 		return 0;
-	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
-	if((p = config_get(config, target, "cflags")) != NULL)
-		fprintf(fp, "%s%s", " ", p);
-	fputc('\n', fp);
+	_target_flags(config, fp, target);
 	fprintf(fp, "%s%s%s%s", target, ".a: $(", target, "_OBJS)\n");
 	fprintf(fp, "%s%s%s%s%s", "\t$(AR) ", target, ".a $(", target,
 			"_OBJS)\n");
@@ -676,6 +779,7 @@ static int _target_source(Prefs * prefs, Config * config, FILE * fp,
 	String * extension;
 	ObjectType ot;
 	int len;
+	String const * p;
 
 	if((extension = _source_extension(source)) == NULL)
 		return 1;
@@ -691,11 +795,34 @@ static int _target_source(Prefs * prefs, Config * config, FILE * fp,
 					source, ".", sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
 			_source_c_depends(config, fp, source);
+			p = config_get(config, source, "cflags");
 			source[len] = '\0';
-			fputc('\n', fp);
-			fprintf(fp, "%s%s%s%s%s%s", "\t$(CC) $(", target,
-					"_CFLAGS) -c ", source, ".",
+			fprintf(fp, "%s%s%s", "\n\t$(CC) $(", target,
+				       	"_CFLAGS)");
+			if(p != NULL)
+				fprintf(fp, " %s", p);
+			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
 					sObjectType[ot]);
+			if(string_find(source, "/"))
+				fprintf(fp, "%s%s%s", " -o ", source, ".o");
+			fputc('\n', fp);
+			break;
+		case OT_CXX_SOURCE:
+		case OT_CPP_SOURCE:
+			if(prefs->flags & PREFS_n)
+				break;
+			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
+					source, ".", sObjectType[ot]);
+			source[len] = '.'; /* FIXME ugly */
+			_source_c_depends(config, fp, source);
+			p = config_get(config, source, "cxxflags");
+			source[len] = '\0';
+			fprintf(fp, "%s%s%s", "\n\t$(CXX) $(", target,
+					"_CXXFLAGS)");
+			if(p != NULL)
+				fprintf(fp, " %s", p);
+			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
+				       	sObjectType[ot]);
 			if(string_find(source, "/"))
 				fprintf(fp, "%s%s%s", " -o ", source, ".o");
 			fputc('\n', fp);

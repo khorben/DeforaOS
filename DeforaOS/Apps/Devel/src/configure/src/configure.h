@@ -53,7 +53,10 @@ extern const String * sTargetType[TT_LAST];
 
 typedef enum _ObjectType
 {
-	OT_C_SOURCE = 0, OT_ASM_SOURCE, OT_UNKNOWN
+	OT_C_SOURCE = 0,
+       	OT_CXX_SOURCE, OT_CPP_SOURCE,
+       	OT_ASM_SOURCE,
+       	OT_UNKNOWN
 } ObjectType;
 # define OT_LAST OT_UNKNOWN
 extern const String * sObjectType[OT_LAST];
