@@ -84,6 +84,7 @@ typedef struct _Prefs
 typedef struct _Configure
 {
 	Prefs * prefs;
+	Config * config;
 	HostArch arch;
 	HostOS os;
 	HostKernel kernel;

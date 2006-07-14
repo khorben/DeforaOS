@@ -259,7 +259,6 @@ static int _configure_do(Configure * configure, configArray * ca)
 {
 	int i;
 	int cnt = array_count(ca);
-	Config * ci;
 	String * di;
 	int j;
 	Config * cj;
@@ -267,8 +266,8 @@ static int _configure_do(Configure * configure, configArray * ca)
 
 	for(i = 0; i < cnt; i++)
 	{
-		array_get_copy(ca, i, &ci);
-		di = config_get(ci, "", "directory");
+		array_get_copy(ca, i, &configure->config);
+		di = config_get(configure->config, "", "directory");
 		for(j = i; j < cnt; j++)
 		{
 			array_get_copy(ca, j, &cj);
@@ -276,7 +275,7 @@ static int _configure_do(Configure * configure, configArray * ca)
 			if(string_find(dj, di) == NULL)
 				break;
 		}
-		if(makefile(configure, ci, di, ca, i, j) != 0)
+		if(makefile(configure, di, ca, i, j) != 0)
 			break;
 	}
 	return i == cnt ? 0 : 1;

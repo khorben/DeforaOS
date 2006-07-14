@@ -18,7 +18,8 @@ extern configArray * configarray_new(void);
 
 
 /* functions */
-int makefile(Configure * configure, Config * config, String * directory,
-		configArray * ca, int from, int to);
+int makefile(Configure * configure, String * directory, configArray * ca,
+	       	int from, int to);
+		
 
 #endif /* !CONFIGURE_MAKEFILE_H */
