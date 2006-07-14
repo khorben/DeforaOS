@@ -330,8 +330,8 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	{
 		if(p == NULL)
 			fprintf(fp, "%s", "CC\t= cc\n");
-		fprintf(fp, "%s%s", "CFLAGS\t= ", p);
-		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+		fprintf(fp, "%s%s", "CFLAGS\t= ", q);
+		if(configure->os == HO_GNU_LINUX && string_find(q, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
@@ -353,8 +353,8 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 	{
 		if(p == NULL)
 			fprintf(fp, "%s", "CXX\t= c++\n");
-		fprintf(fp, "%s%s", "CXXFLAGS= ", p);
-		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+		fprintf(fp, "%s%s", "CXXFLAGS= ", q);
+		if(configure->os == HO_GNU_LINUX && string_find(q, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
@@ -676,9 +676,11 @@ static void _flags_c(Configure * configure, FILE * fp, String * target)
 
 	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
 	if((p = config_get(configure->config, target, "cflags")) != NULL)
+	{
 		fprintf(fp, " %s", p);
-	if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
-		fprintf(fp, "%s", " -D _GNU_SOURCE");
+		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+			fprintf(fp, "%s", " -D _GNU_SOURCE");
+	}
 	fputc('\n', fp);
 }
 
