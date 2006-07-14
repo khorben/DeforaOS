@@ -24,6 +24,7 @@ static int _who(Prefs * prefs)
 	struct tm * tm;
 	char buf[13];
 	char * tty = NULL;
+	time_t t;
 
 	memset(&tm, 0, sizeof(tm));
 	if(*prefs & PREFS_m && (tty = _who_tty()) == NULL)
@@ -38,7 +39,8 @@ static int _who(Prefs * prefs)
 		if(*prefs & PREFS_T)
 			printf(" %c", '?');
 		printf(" %-8s", u->ut_line);
-		if((tm = localtime(&u->ut_tv.tv_sec)) == NULL || strftime(buf,
+		t = u->ut_tv.tv_sec;
+		if((tm = localtime(&t)) == NULL || strftime(buf,
 					sizeof(buf), "%b %e %H:%M", tm) == 0)
 			strcpy(buf, "n/a");
 		printf(" %s\n", buf);
