@@ -323,7 +323,7 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	{
 		fprintf(fp, "%s%s", "CC\t= cc\nCFLAGSF\t= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
-			fprintf(fp, "%s", " -D_GNU_SOURCE"); /* FIXME undup */
+			fprintf(fp, "%s", " -D _GNU_SOURCE"); /* FIXME undup */
 		fputc('\n', fp);
 	}
 	if((q = config_get(configure->config, "", "cflags")) != NULL)
@@ -332,7 +332,7 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 			fprintf(fp, "%s", "CC\t= cc\n");
 		fprintf(fp, "%s%s", "CFLAGS\t= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
-			fprintf(fp, "%s", " -D_GNU_SOURCE");
+			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
 }
@@ -346,7 +346,7 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 	{
 		fprintf(fp, "%s%s", "CXX\t= c++\nCXXFLAGSF= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
-			fprintf(fp, "%s", " -D_GNU_SOURCE");
+			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
 	if((q = config_get(configure->config, "", "cxxflags")) != NULL)
@@ -355,7 +355,7 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 			fprintf(fp, "%s", "CXX\t= c++\n");
 		fprintf(fp, "%s%s", "CXXFLAGS= ", p);
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
-			fprintf(fp, "%s", " -D_GNU_SOURCE");
+			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
 }
@@ -678,7 +678,7 @@ static void _flags_c(Configure * configure, FILE * fp, String * target)
 	if((p = config_get(configure->config, target, "cflags")) != NULL)
 		fprintf(fp, " %s", p);
 	if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
-		fprintf(fp, "%s", " -D_GNU_SOURCE");
+		fprintf(fp, "%s", " -D _GNU_SOURCE");
 	fputc('\n', fp);
 }
 
@@ -794,7 +794,7 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 				fprintf(fp, " %s", p);
 				if(configure->os == HO_GNU_LINUX
 					       	&& string_find(p, "-ansi"))
-					fprintf(fp, "%s", " -D_GNU_SOURCE");
+					fprintf(fp, "%s", " -D _GNU_SOURCE");
 			}
 			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
 					sObjectType[ot]);
