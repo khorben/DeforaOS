@@ -50,7 +50,7 @@ static int _print_idle(struct timeval * tv, char * device)
 {
 	char dev[16];
 	struct stat st;
-	time_t idle;
+	unsigned long idle;
 
 	if(snprintf(dev, sizeof(dev), "%s%s", "/dev/", device)
 			> (int)sizeof(dev))
@@ -59,10 +59,10 @@ static int _print_idle(struct timeval * tv, char * device)
 		return printf("%5s ", "?");
 	idle = tv->tv_sec - st.st_atime;
 	if(idle / 3600 >= 24)
-		return printf("%4ldd ", idle / 3600 / 24);
+		return printf("%4lud ", idle / 3600 / 24);
 	else if(idle / 60 >= 60)
-		return printf("%02ld:%02ld ", idle / 3600, idle % 3600 / 60);
-	return printf("%02ldm%02ld ", idle / 60, idle % 60);
+		return printf("%02lu:%02lu ", idle / 3600, idle % 3600 / 60);
+	return printf("%02lum%02lu ", idle / 60, idle % 60);
 }
 
 static int _print_what(pid_t pid)
