@@ -67,12 +67,8 @@ typedef struct _GPuTTY
 	GtkWidget * ac_connect;
 	/* options */
 	GtkWidget * pr_window;
-	GtkWidget * pr_lxterm;
 	GtkWidget * pr_exterm;
-	GtkWidget * pr_lssh;
 	GtkWidget * pr_essh;
-	GtkWidget * pr_ok;
-	GtkWidget * pr_cancel;
 } GPuTTY;
 
 

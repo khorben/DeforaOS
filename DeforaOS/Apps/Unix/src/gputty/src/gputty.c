@@ -467,6 +467,7 @@ static void gputty_on_options(GtkWidget * widget, gpointer data)
 	GPuTTY * g = data;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkSizeGroup * group;
 	char const * p;
 
 	if(g->pr_window != NULL)
@@ -483,28 +484,31 @@ static void gputty_on_options(GtkWidget * widget, gpointer data)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* xterm */
 	hbox = gtk_hbox_new(FALSE, 0);
-	g->pr_lxterm = gtk_label_new("Terminal emulator: ");
-	gtk_box_pack_start(GTK_BOX(hbox), g->pr_lxterm, TRUE, TRUE, 0);
+	widget = gtk_label_new("Terminal emulator: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	g->pr_exterm = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), g->pr_exterm, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	/* ssh */
 	hbox = gtk_hbox_new(FALSE, 0);
-	g->pr_lssh = gtk_label_new("SSH client: ");
-	gtk_box_pack_start(GTK_BOX(hbox), g->pr_lssh, TRUE, TRUE, 0);
+	widget = gtk_label_new("SSH client: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	g->pr_essh = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), g->pr_essh, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	/* buttons */
 	hbox = gtk_hbox_new(FALSE, 4);
-	g->pr_ok = gtk_button_new_from_stock(GTK_STOCK_OK);
-	g_signal_connect(G_OBJECT(g->pr_ok), "clicked", G_CALLBACK(
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				gputty_on_options_ok), g);
-	gtk_box_pack_end(GTK_BOX(hbox), g->pr_ok, FALSE, TRUE, 0);
-	g->pr_cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect(G_OBJECT(g->pr_cancel), "clicked", G_CALLBACK(
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				gputty_on_options_cancel), g);
-	gtk_box_pack_end(GTK_BOX(hbox), g->pr_cancel, FALSE, TRUE, 0);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(g->pr_window), vbox);
 	if((p = config_get(g->config, "", "xterm")) != NULL)
