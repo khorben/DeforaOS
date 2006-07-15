@@ -311,6 +311,8 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "About GPuTTY");
+	gtk_window_set_transient(GTK_WINDOW(window), GTK_WINDOW(
+				gputty->window));
 	{
 		GtkWidget * vbox;
 		GtkWidget * hbox;
