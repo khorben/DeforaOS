@@ -59,7 +59,7 @@ typedef struct _GPuTTY
 	GtkWidget * sn_delete;
 	/* actions */
 	GtkWidget * ac_about;
-	GtkWidget * ac_options;
+	GtkWidget * ac_prefs;
 	GtkWidget * ac_exit;
 	GtkWidget * ac_connect;
 	/* preferences */
