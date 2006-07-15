@@ -62,7 +62,7 @@ typedef struct _GPuTTY
 	GtkWidget * ac_options;
 	GtkWidget * ac_exit;
 	GtkWidget * ac_connect;
-	/* options */
+	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_exterm;
 	GtkWidget * pr_essh;

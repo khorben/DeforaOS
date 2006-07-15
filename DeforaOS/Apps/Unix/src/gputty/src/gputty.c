@@ -318,8 +318,7 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 
 		vbox = gtk_vbox_new(FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " "
-					VERSION),
-				FALSE, FALSE, 2);
+					VERSION), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(comment),
 				FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright),
