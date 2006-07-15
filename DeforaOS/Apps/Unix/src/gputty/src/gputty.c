@@ -52,6 +52,7 @@ GPuTTY * gputty_new(void)
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
 	GtkWidget * hbox;
+	GtkWidget * widget;
 	GtkCellRenderer * cell;
 	GtkTreeViewColumn * column;
 
@@ -101,8 +102,8 @@ GPuTTY * gputty_new(void)
 	/* hostname: hostname */
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
-	g->hn_lhostname = gtk_label_new("Host name");
-	gtk_box_pack_start(GTK_BOX(vbox2), g->hn_lhostname, TRUE, TRUE, 0);
+	widget = gtk_label_new("Host name");
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
 	g->hn_ehostname = gtk_entry_new();
 	if((p = config_get(g->config, "", "hostname")) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_ehostname), p);
@@ -112,8 +113,8 @@ GPuTTY * gputty_new(void)
 	/* hostname: port */
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 4);
-	g->hn_lport = gtk_label_new("Port");
-	gtk_box_pack_start(GTK_BOX(vbox2), g->hn_lport, TRUE, TRUE, 0);
+	widget = gtk_label_new("Port");
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
 	g->hn_sport_adj = (GtkAdjustment*)gtk_adjustment_new(22, 0, 65535, 1, 4,
 			4);
 	g->hn_sport = gtk_spin_button_new(g->hn_sport_adj, 1, 0);
@@ -128,8 +129,8 @@ GPuTTY * gputty_new(void)
 	/* hostname: username */
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
-	g->hn_lusername = gtk_label_new("User name");
-	gtk_box_pack_start(GTK_BOX(vbox2), g->hn_lusername, TRUE, TRUE, 0);
+	widget = gtk_label_new("User name");
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
 	g->hn_eusername = gtk_entry_new();
 	if((p = config_get(g->config, "", "username")) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), p);

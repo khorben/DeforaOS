@@ -43,12 +43,9 @@ typedef struct _GPuTTY
 	GtkWidget * window;
 	/* hostname */
 	GtkWidget * hn_frame;
-	GtkWidget * hn_lhostname;
 	GtkWidget * hn_ehostname;
-	GtkWidget * hn_lport;
 	GtkAdjustment * hn_sport_adj;
 	GtkWidget * hn_sport;
-	GtkWidget * hn_lusername;
 	GtkWidget * hn_eusername;
 	/* sessions */
 	GtkWidget * sn_frame;
