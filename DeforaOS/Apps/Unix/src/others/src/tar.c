@@ -60,17 +60,6 @@ static int _tar_error(char const * message, int ret)
 	return ret;
 }
 
-static void _tar_print(Prefs * prefs, TarFileHeader * fh)
-{
-	if((*prefs & PREFS_vv) == PREFS_vv)
-		/* FIXME */
-		fprintf(stderr, "%s %u %u %s\n", "----------",
-				(unsigned)fh->uid, (unsigned)fh->gid,
-				fh->filename);
-	else if(*prefs & PREFS_v)
-		fprintf(stderr, "%s\n", fh->filename);
-}
-
 #define _from_buffer_cpy(a) tfhb->a[sizeof(tfhb->a)-1] = '\0'; \
 		tfh->a = strtol(tfhb->a, &p, 8); \
 	if(*tfhb->a == '\0' || *p != '\0') return 1;
@@ -94,6 +83,70 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 	memcpy(&tfh->link, tfhb->link, sizeof(tfhb->link));
 	tfh->link[sizeof(tfh->link)-1] = '\0';
 	return 0;
+}
+
+static int _tar_mkdir_parent(char const * filename)
+{
+	char * p;
+	struct stat st;
+
+	if(filename[0] == '\0')
+		return 0;
+	for(p = &filename[1]; *p != '\0'; p++)
+	{
+		if(*p != '/')
+			continue;
+		*p = '\0';
+		if(!(stat(filename, &st) == 0 && S_ISDIR(st.st_mode))
+				&& mkdir(filename, 0777) == -1)
+		{
+			*p = '/';
+			return _tar_error(filename, 1);
+		}
+		for(*p++ = '/'; *p == '/'; p++);
+		if(*p == '\0')
+			return 0;
+	}
+	return 0;
+}
+
+static void _tar_print(Prefs * prefs, TarFileHeader * fh)
+{
+	if((*prefs & PREFS_vv) == PREFS_vv)
+		/* FIXME */
+		fprintf(stderr, "%s %u %u %s\n", "----------",
+				(unsigned)fh->uid, (unsigned)fh->gid,
+				fh->filename);
+	else if(*prefs & PREFS_v)
+		fprintf(stderr, "%s\n", fh->filename);
+}
+
+static int _tar_seek(FILE * fp, char const * archive, size_t count)
+{
+	char buf[TAR_BLKSIZ];
+	size_t step;
+
+	if(fp == stdin)
+		for(; count != 0; count -= step)
+		{
+			if((step = count % TAR_BLKSIZ) == 0)
+				step = TAR_BLKSIZ;
+			if(fread(buf, sizeof(char), step, fp) != step)
+				return _tar_error(archive, 1);
+		}
+	else if(fseek(fp, count, SEEK_CUR) != 0)
+		return _tar_error(archive, 1);
+	return 0;
+}
+
+static int _tar_skip(FILE * fp, char const * archive, TarFileHeader * fh)
+{
+	size_t count = fh->size % TAR_BLKSIZ;
+
+	if(count != 0)
+		count = TAR_BLKSIZ - count;
+	count+=fh->size;
+	return _tar_seek(fp, archive, count);
 }
 
 static void _tar_stat_to_buffer(char const * filename, struct stat * st,
@@ -125,35 +178,6 @@ static void _tar_stat_to_buffer(char const * filename, struct stat * st,
 		checksum+=p[i];
 	snprintf(tfhb->checksum, sizeof(tfhb->checksum), "%06o%c ", checksum,
 			'\0');
-}
-
-static int _tar_seek(FILE * fp, char const * archive, size_t count);
-static int _tar_skip(FILE * fp, char const * archive, TarFileHeader * fh)
-{
-	size_t count = fh->size % TAR_BLKSIZ;
-
-	if(count != 0)
-		count = TAR_BLKSIZ - count;
-	count+=fh->size;
-	return _tar_seek(fp, archive, count);
-}
-
-static int _tar_seek(FILE * fp, char const * archive, size_t count)
-{
-	char buf[TAR_BLKSIZ];
-	size_t step;
-
-	if(fp == stdin)
-		for(; count != 0; count -= step)
-		{
-			if((step = count % TAR_BLKSIZ) == 0)
-				step = TAR_BLKSIZ;
-			if(fread(buf, sizeof(char), step, fp) != step)
-				return _tar_error(archive, 1);
-		}
-	else if(fseek(fp, count, SEEK_CUR) != 0)
-		return _tar_error(archive, 1);
-	return 0;
 }
 
 static int _create_do(Prefs * prefs, FILE * fp, char const * archive,
@@ -311,6 +335,8 @@ static int _extract_do(Prefs * prefs, FILE * fp, char const * archive,
 	if(filec != 0 && i == filec)
 		return _tar_skip(fp, archive, fh);
 	_tar_print(prefs, fh);
+	if(_tar_mkdir_parent(fh->filename) != 0)
+		return _tar_skip(fp, archive, fh);
 	switch(fh->type)
 	{
 		case FT_NORMAL:
