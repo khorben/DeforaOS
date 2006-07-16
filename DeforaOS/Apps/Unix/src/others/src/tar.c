@@ -427,10 +427,9 @@ static int _list_do(Prefs * prefs, FILE * fp, char const * archive,
 	for(i = 0; i < filec; i++)
 		if(strcmp(fh->filename, filev[i]) == 0)
 			break;
-	if(filec != 0 && i == filec)
-		return _tar_skip(fp, archive, fh);
-	_tar_print(prefs, fh);
-	return 0;
+	if(filec == 0 || i != filec)
+		_tar_print(prefs, fh);
+	return _tar_skip(fp, archive, fh);
 }
 
 
