@@ -27,26 +27,33 @@
 typedef int Prefs;
 #define PREFS_A  0x01
 #define PREFS_c  0x02
-#define PREFS_v  0x04
-#define PREFS_vv 0x0c
-#define PREFS_x  0x10
+#define PREFS_t  0x04
+#define PREFS_v  0x08
+#define PREFS_vv 0x18
+#define PREFS_x  0x20
 
 
 /* tar */
-static int _tar_create(Prefs * prefs, char * archive, int filec,
-		char * filev[]);
-static int _tar_extract(Prefs * prefs, char * archive, int filec,
-		char * filev[]);
-static int _tar(Prefs * prefs, char * archive, int filec, char * filev[])
+static int _tar_error(char const * message, int ret);
+static int _tar_create(Prefs * prefs, char const * archive, int filec,
+		char const * filev[]);
+static int _tar_extract(Prefs * prefs, char const * archive, int filec,
+		char const * filev[]);
+static int _tar_list(Prefs * prefs, char const * archive, int filec,
+		char const * filev[]);
+static int _tar(Prefs * prefs, char const * archive, int filec,
+		char const * filev[])
 {
 	if(*prefs & PREFS_c)
 		return _tar_create(prefs, archive, filec, filev);
+	if(*prefs & PREFS_t)
+		return _tar_list(prefs, archive, filec, filev);
 	if(*prefs & PREFS_x)
 		return _tar_extract(prefs, archive, filec, filev);
 	return 1;
 }
 
-static int _tar_error(char * message, int ret)
+static int _tar_error(char const * message, int ret)
 {
 	fprintf(stderr, "%s", "tar: ");
 	perror(message);
@@ -89,7 +96,7 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 	return 0;
 }
 
-static void _tar_stat_to_buffer(char * filename, struct stat * st,
+static void _tar_stat_to_buffer(char const * filename, struct stat * st,
 		TarFileHeaderBuffer * tfhb)
 {
 	uint8_t * p;
@@ -120,9 +127,22 @@ static void _tar_stat_to_buffer(char * filename, struct stat * st,
 			'\0');
 }
 
-static int _create_do(Prefs * prefs, FILE * fp, char * archive,
-		char * filename);
-static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
+static int _tar_skip(FILE * fp, char const * archive, TarFileHeader * fh)
+{
+	size_t cnt;
+
+	if(fseek(fp, fh->size, SEEK_CUR) != 0)
+		return _tar_error(archive, 1);
+	if((cnt = fh->size % TAR_BLKSIZ) != 0
+			&& fseek(fp, TAR_BLKSIZ-cnt, SEEK_CUR) != 0)
+		return _tar_error(archive, 1);
+	return 0;
+}
+
+static int _create_do(Prefs * prefs, FILE * fp, char const * archive,
+		char const * filename);
+static int _tar_create(Prefs * prefs, char const * archive, int filec,
+		char const * filev[])
 {
 	FILE * fp = stdout;
 	int i;
@@ -143,10 +163,12 @@ static int _tar_create(Prefs * prefs, char * archive, int filec, char * filev[])
 	return i == TAR_BLKSIZ * 2 ? 0 : 1;
 }
 
-static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
-		char * filename, TarFileHeaderBuffer * tfhb);
-static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename);
-static int _create_do(Prefs * prefs, FILE * fp, char * archive, char * filename)
+static int _doc_header(Prefs * prefs, FILE * fp, char const * archive,
+		FILE * fp2, char const * filename, TarFileHeaderBuffer * tfhb);
+static int _doc_normal(FILE * fp, char const * archive, FILE * fp2,
+		char const * filename);
+static int _create_do(Prefs * prefs, FILE * fp, char const * archive,
+		char const * filename)
 {
 	FILE * fp2;
 	TarFileHeaderBuffer tfhb;
@@ -180,8 +202,8 @@ static int _create_do(Prefs * prefs, FILE * fp, char * archive, char * filename)
 	return ret;
 }
 
-static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
-		char * filename, TarFileHeaderBuffer * tfhb)
+static int _doc_header(Prefs * prefs, FILE * fp, char const * archive,
+		FILE * fp2, char const * filename, TarFileHeaderBuffer * tfhb)
 {
 	TarFileHeader tfh;
 	struct stat st;
@@ -200,7 +222,8 @@ static int _doc_header(Prefs * prefs, FILE * fp, char * archive, FILE * fp2,
 	return 0;
 }
 
-static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename)
+static int _doc_normal(FILE * fp, char const * archive, FILE * fp2,
+		char const * filename)
 {
 	int ret = 0;
 	size_t read;
@@ -221,10 +244,10 @@ static int _doc_normal(FILE * fp, char * archive, FILE * fp2, char * filename)
 	return cnt == 0 ? 0 : _tar_error(archive, 1);
 }
 
-static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
-		TarFileHeader * fh, int filec, char * filev[]);
-static int _tar_extract(Prefs * prefs, char * archive, int filec,
-		char * filev[])
+static int _extract_do(Prefs * prefs, FILE * fp, char const * archive,
+		TarFileHeader * fh, int filec, char const * filev[]);
+static int _tar_extract(Prefs * prefs, char const * archive, int filec,
+		char const * filev[])
 {
 	FILE * fp = stdin; /* FIXME breaks fseek */
 	TarFileHeaderBuffer fhdrb;
@@ -256,16 +279,15 @@ static int _tar_extract(Prefs * prefs, char * archive, int filec,
 	return ret;
 }
 
-static int _dox_normal(FILE * fp, char * archive, TarFileHeader * fh);
+static int _dox_normal(FILE * fp, char const * archive, TarFileHeader * fh);
 static int _dox_hardlink(TarFileHeader * fh);
 static int _dox_symlink(TarFileHeader * fh);
-static int _dox_char(FILE * fp, char * archive, TarFileHeader * fh);
-static int _dox_block(FILE * fp, char * archive, TarFileHeader * fh);
+static int _dox_char(FILE * fp, char const * archive, TarFileHeader * fh);
+static int _dox_block(FILE * fp, char const * archive, TarFileHeader * fh);
 static int _dox_directory(TarFileHeader * fh);
 static int _dox_fifo(TarFileHeader * fh);
-static int _dox_skip(FILE * fp, char * archive, TarFileHeader * fh);
-static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
-		TarFileHeader * fh, int filec, char * filev[])
+static int _extract_do(Prefs * prefs, FILE * fp, char const * archive,
+		TarFileHeader * fh, int filec, char const * filev[])
 {
 	int i;
 
@@ -273,7 +295,7 @@ static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
 		if(strcmp(fh->filename, filev[i]) == 0)
 			break;
 	if(filec != 0 && i == filec)
-		return _dox_skip(fp, archive, fh);
+		return _tar_skip(fp, archive, fh);
 	_tar_print(prefs, fh);
 	switch(fh->type)
 	{
@@ -294,11 +316,11 @@ static int _extract_do(Prefs * prefs, FILE * fp, char * archive,
 		case FT_FIFO:
 			return _dox_fifo(fh);
 		default:
-			return _dox_skip(fp, archive, fh);
+			return _tar_skip(fp, archive, fh);
 	}
 }
 
-static int _dox_normal(FILE * fp, char * archive, TarFileHeader * fh)
+static int _dox_normal(FILE * fp, char const * archive, TarFileHeader * fh)
 {
 	FILE * fp2;
 	size_t cnt;
@@ -336,13 +358,13 @@ static int _dox_symlink(TarFileHeader * fh)
 	return 0;
 }
 
-static int _dox_char(FILE * fp, char * archive, TarFileHeader * fh)
+static int _dox_char(FILE * fp, char const * archive, TarFileHeader * fh)
 {
 	/* FIXME */
 	return 1;
 }
 
-static int _dox_block(FILE * fp, char * archive, TarFileHeader * fh)
+static int _dox_block(FILE * fp, char const * archive, TarFileHeader * fh)
 {
 	/* FIXME */
 	return 1;
@@ -362,15 +384,52 @@ static int _dox_fifo(TarFileHeader * fh)
 	return 0;
 }
 
-static int _dox_skip(FILE * fp, char * archive, TarFileHeader * fh)
+static int _list_do(Prefs * prefs, FILE * fp, char const * archive,
+		TarFileHeader * fh, int filec, char const * filev[]);
+static int _tar_list(Prefs * prefs, char const * archive, int filec,
+		char const * filev[])
 {
-	size_t cnt;
+	FILE * fp = stdin;
+	TarFileHeaderBuffer fhdrb;
+	TarFileHeader fhdr;
+	size_t size;
+	int ret = 0;
 
-	if(fseek(fp, fh->size, SEEK_CUR) != 0)
+	if(archive != NULL && (fp = fopen(archive, "r")) == NULL)
 		return _tar_error(archive, 1);
-	if((cnt = fh->size % TAR_BLKSIZ) != 0
-			&& fseek(fp, TAR_BLKSIZ-cnt, SEEK_CUR) != 0)
-		return _tar_error(archive, 1);
+	while((size = fread(&fhdrb, sizeof(fhdrb), 1, fp)) == 1)
+	{
+		if(fseek(fp, TAR_BLKSIZ - sizeof(fhdrb), SEEK_CUR) != 0)
+		{
+			ret = _tar_error(archive, 1);
+			break;
+		}
+		if(_tar_from_buffer(&fhdrb, &fhdr) != 0
+				|| _list_do(prefs, fp, archive, &fhdr, filec,
+					filev) != 0)
+		{
+			ret = 1;
+			break;
+		}
+	}
+	if(ret == 0 && size == 0 && !feof(fp))
+		ret = _tar_error(archive, 1);
+	if(archive != NULL)
+		fclose(fp);
+	return ret;
+}
+
+static int _list_do(Prefs * prefs, FILE * fp, char const * archive,
+		TarFileHeader * fh, int filec, char const * filev[])
+{
+	int i;
+
+	for(i = 0; i < filec; i++)
+		if(strcmp(fh->filename, filev[i]) == 0)
+			break;
+	if(filec != 0 && i == filec)
+		return _tar_skip(fp, archive, fh);
+	_tar_print(prefs, fh);
 	return 0;
 }
 
@@ -380,7 +439,8 @@ static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: tar -cvx [-f archive][file...]\n\
   -c	Create an archive\n\
-  -f	Specify an archive to read from or write to (default: stdin or stdout)\n\
+  -f	Specify an archive to work with (default: stdin or stdout)\n\
+  -t	List the contents of an archive\n\
   -v	Verbose mode\n\
   -x	Extract from archive\n");
 	return 1;
@@ -392,17 +452,23 @@ int main(int argc, char * argv[])
 {
 	int o;
 	Prefs prefs = 0;
-	char * archive = NULL;
+	char const * archive = NULL;
 
-	while((o = getopt(argc, argv, "cvxf:")) != -1)
+	while((o = getopt(argc, argv, "cvtxf:")) != -1)
 		switch(o)
 		{
 			case 'c':
+				prefs -= prefs & PREFS_t;
 				prefs -= prefs & PREFS_x;
 				prefs |= PREFS_c;
 				break;
 			case 'f':
 				archive = optarg;
+				break;
+			case 't':
+				prefs -= prefs & PREFS_c;
+				prefs -= prefs & PREFS_x;
+				prefs |= PREFS_t;
 				break;
 			case 'v':
 				prefs |= (prefs & PREFS_v) == PREFS_v
@@ -410,6 +476,7 @@ int main(int argc, char * argv[])
 				break;
 			case 'x':
 				prefs -= prefs & PREFS_c;
+				prefs -= prefs & PREFS_t;
 				prefs |= PREFS_x;
 				break;
 			default:
