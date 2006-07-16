@@ -436,7 +436,7 @@ static int _list_do(Prefs * prefs, FILE * fp, char const * archive,
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: tar -cvx [-f archive][file...]\n\
+	fprintf(stderr, "%s", "Usage: tar -ctvx [-f archive][file...]\n\
   -c	Create an archive\n\
   -f	Specify an archive to work with (default: stdin or stdout)\n\
   -t	List the contents of an archive\n\
