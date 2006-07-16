@@ -127,14 +127,31 @@ static void _tar_stat_to_buffer(char const * filename, struct stat * st,
 			'\0');
 }
 
+static int _tar_seek(FILE * fp, char const * archive, size_t count);
 static int _tar_skip(FILE * fp, char const * archive, TarFileHeader * fh)
 {
-	size_t cnt;
+	size_t count = fh->size % TAR_BLKSIZ;
 
-	if(fseek(fp, fh->size, SEEK_CUR) != 0)
-		return _tar_error(archive, 1);
-	if((cnt = fh->size % TAR_BLKSIZ) != 0
-			&& fseek(fp, TAR_BLKSIZ-cnt, SEEK_CUR) != 0)
+	if(count != 0)
+		count = TAR_BLKSIZ - count;
+	count+=fh->size;
+	return _tar_seek(fp, archive, count);
+}
+
+static int _tar_seek(FILE * fp, char const * archive, size_t count)
+{
+	char buf[TAR_BLKSIZ];
+	size_t step;
+
+	if(fp == stdin)
+		for(; count != 0; count -= step)
+		{
+			if((step = count % TAR_BLKSIZ) == 0)
+				step = TAR_BLKSIZ;
+			if(fread(buf, sizeof(char), step, fp) != step)
+				return _tar_error(archive, 1);
+		}
+	else if(fseek(fp, count, SEEK_CUR) != 0)
 		return _tar_error(archive, 1);
 	return 0;
 }
@@ -249,7 +266,7 @@ static int _extract_do(Prefs * prefs, FILE * fp, char const * archive,
 static int _tar_extract(Prefs * prefs, char const * archive, int filec,
 		char const * filev[])
 {
-	FILE * fp = stdin; /* FIXME breaks fseek */
+	FILE * fp = stdin;
 	TarFileHeaderBuffer fhdrb;
 	TarFileHeader fhdr;
 	size_t size;
@@ -259,9 +276,9 @@ static int _tar_extract(Prefs * prefs, char const * archive, int filec,
 		return _tar_error(archive, 1);
 	while((size = fread(&fhdrb, sizeof(fhdrb), 1, fp)) == 1)
 	{
-		if(fseek(fp, TAR_BLKSIZ - sizeof(fhdrb), SEEK_CUR) != 0)
+		if(_tar_seek(fp, archive, TAR_BLKSIZ - sizeof(fhdrb)) != 0)
 		{
-			ret = _tar_error(archive, 1);
+			ret = 1;
 			break;
 		}
 		if(_tar_from_buffer(&fhdrb, &fhdr) != 0
@@ -336,8 +353,8 @@ static int _dox_normal(FILE * fp, char const * archive, TarFileHeader * fh)
 	}
 	fclose(fp2);
 	if((cnt = fh->size % TAR_BLKSIZ) != 0
-			&& fseek(fp, TAR_BLKSIZ-cnt, SEEK_CUR) != 0)
-		return _tar_error(archive, 1);
+			&& _tar_seek(fp, archive, TAR_BLKSIZ-cnt) != 0)
+		return 1;
 	return 0;
 }
 
@@ -396,9 +413,9 @@ static int _tar_list(Prefs * prefs, char const * archive, int filec,
 		return _tar_error(archive, 1);
 	while((size = fread(&fhdrb, sizeof(fhdrb), 1, fp)) == 1)
 	{
-		if(fseek(fp, TAR_BLKSIZ - sizeof(fhdrb), SEEK_CUR) != 0)
+		if(_tar_seek(fp, archive, TAR_BLKSIZ - sizeof(fhdrb)) != 0)
 		{
-			ret = _tar_error(archive, 1);
+			ret = 1;
 			break;
 		}
 		if(_tar_from_buffer(&fhdrb, &fhdr) != 0
