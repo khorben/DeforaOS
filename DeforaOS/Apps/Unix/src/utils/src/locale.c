@@ -9,7 +9,10 @@
 
 /* prefs */
 typedef int Prefs;
-enum { PREFS_a = 1, PREFS_m = 2, PREFS_c = 4, PREFS_k = 8 };
+#define PREFS_a 0x1
+#define PREFS_m 0x2
+#define PREFS_c 0x4
+#define PREFS_k 0x8
 
 
 /* locale */
