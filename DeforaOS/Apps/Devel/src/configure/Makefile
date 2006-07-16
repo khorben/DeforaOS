@@ -1,5 +1,5 @@
 PACKAGE	= configure
-VERSION	= 0.0.3
+VERSION	= 0.0.4
 SUBDIRS	= src
 LN	= ln -sf
 TAR	= tar -czvf
@@ -17,13 +17,12 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/configure.c \
 		$(PACKAGE)-$(VERSION)/src/makefile.c \
 		$(PACKAGE)-$(VERSION)/src/settings.c \
-		$(PACKAGE)-$(VERSION)/src/makedepend.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/configure.h \
 		$(PACKAGE)-$(VERSION)/src/makefile.h \
@@ -34,6 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/CHANGES \
 		$(PACKAGE)-$(VERSION)/configure.txt \
 		$(PACKAGE)-$(VERSION)/INSTALL \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
