@@ -520,7 +520,8 @@ static void _long_mode(char str[11], mode_t mode)
 {
 	unsigned int i;
 
-	str[0] = '-';
+	for(i = 0; i < 10; i++)
+		str[i] = '-';
 	if(!S_ISREG(mode))
 	{
 		if(S_ISLNK(mode))
@@ -534,8 +535,6 @@ static void _long_mode(char str[11], mode_t mode)
 		else if(S_ISDIR(mode))
 			str[0] = 'd';
 	}
-	for(i = 1; i < 10; i++)
-		str[i] = '-';
 	if(mode & S_IRUSR)
 		str[1] = 'r';
 	if(mode & S_IWUSR)
