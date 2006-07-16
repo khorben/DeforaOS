@@ -1,11 +1,11 @@
-TARGETS	= configure makedepend
+TARGETS	= configure
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2 -ansi
+CFLAGS	= -Wall -g -O2
 LDFLAGSF= -l System
 RM	= rm -f
 MKDIR	= mkdir -p
@@ -19,11 +19,6 @@ configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
 configure: $(configure_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
 
-makedepend_OBJS = makedepend.o
-makedepend_CFLAGS = $(CFLAGSF) $(CFLAGS)
-makedepend: $(makedepend_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o makedepend $(makedepend_OBJS)
-
 configure.o: configure.c configure.h makefile.h
 	$(CC) $(configure_CFLAGS) -c configure.c
 
@@ -33,11 +28,8 @@ makefile.o: makefile.c configure.h settings.h
 settings.o: settings.c settings.h
 	$(CC) $(configure_CFLAGS) -c settings.c
 
-makedepend.o: makedepend.c
-	$(CC) $(makedepend_CFLAGS) -c makedepend.c
-
 clean:
-	$(RM) $(configure_OBJS) $(makedepend_OBJS)
+	$(RM) $(configure_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -45,10 +37,8 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 configure $(DESTDIR)$(BINDIR)/configure
-	$(INSTALL) -m 0755 makedepend $(DESTDIR)$(BINDIR)/makedepend
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/configure
-	$(RM) $(DESTDIR)$(BINDIR)/makedepend
 
 .PHONY: all clean distclean install uninstall
