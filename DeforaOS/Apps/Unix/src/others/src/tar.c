@@ -267,10 +267,7 @@ static int _tar_extract(Prefs * prefs, char const * archive, int filec,
 		if(_tar_from_buffer(&fhdrb, &fhdr) != 0
 				|| _extract_do(prefs, fp, archive, &fhdr,
 					filec, filev) != 0)
-		{
 			ret = 1;
-			break;
-		}
 	}
 	if(ret == 0 && size == 0 && !feof(fp))
 		ret = _tar_error(archive, 1);
@@ -407,10 +404,7 @@ static int _tar_list(Prefs * prefs, char const * archive, int filec,
 		if(_tar_from_buffer(&fhdrb, &fhdr) != 0
 				|| _list_do(prefs, fp, archive, &fhdr, filec,
 					filev) != 0)
-		{
 			ret = 1;
-			break;
-		}
 	}
 	if(ret == 0 && size == 0 && !feof(fp))
 		ret = _tar_error(archive, 1);
@@ -483,5 +477,5 @@ int main(int argc, char * argv[])
 		}
 	if(prefs == 0)
 		return _usage();
-	return _tar(&prefs, archive, argc-optind-1, &argv[optind]) == 0 ? 0 : 2;
+	return _tar(&prefs, archive, argc-optind, &argv[optind]) == 0 ? 0 : 2;
 }
