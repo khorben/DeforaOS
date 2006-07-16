@@ -24,8 +24,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/makefile.c \
 		$(PACKAGE)-$(VERSION)/src/settings.c \
 		$(PACKAGE)-$(VERSION)/src/makedepend.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/configure.h \
 		$(PACKAGE)-$(VERSION)/src/makefile.h \
+		$(PACKAGE)-$(VERSION)/src/settings.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
@@ -42,4 +44,4 @@ install: all
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 
-.PHONY: all subdirs clean distclean install uninstall
+.PHONY: all subdirs clean distclean dist install uninstall
