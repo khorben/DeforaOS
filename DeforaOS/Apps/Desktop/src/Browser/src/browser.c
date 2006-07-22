@@ -1,7 +1,4 @@
 /* browser.c */
-/* TODO:
- * - hitting refresh unaligns the icons (factorize initialization code with
- *   _fill_store()) */
 
 
 
@@ -12,7 +9,7 @@
 #include <string.h>
 #include <errno.h>
 #include "browser.h"
-#include "config.h"
+#include "../config.h"
 
 #define min(a, b) ((a) > (b) ? (b) : (a))
 
