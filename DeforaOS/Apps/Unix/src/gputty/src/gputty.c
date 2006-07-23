@@ -36,7 +36,7 @@ static void gputty_on_connect(GtkWidget * widget, gpointer data);
 static void gputty_on_delete(GtkWidget * widget, gpointer data);
 static void gputty_on_load(GtkWidget * widget, gpointer data);
 static void gputty_on_exit(GtkWidget * widget, gpointer data);
-static void gputty_on_exitx(GtkWidget * widget, GdkEvent * event,
+static gboolean gputty_on_exitx(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void gputty_on_preferences(GtkWidget * widget, gpointer data);
 static void gputty_on_save(GtkWidget * widget, gpointer data);
@@ -491,9 +491,11 @@ static void gputty_on_exit(GtkWidget * widget, gpointer data)
 	gtk_main_quit();
 }
 
-static void gputty_on_exitx(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gboolean gputty_on_exitx(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
 {
 	gputty_on_exit(widget, data);
+	return FALSE;
 }
 
 static void gputty_on_preferences_cancel(GtkWidget * widget, gpointer data);
