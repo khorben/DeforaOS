@@ -74,7 +74,8 @@ GPuTTY * gputty_new(void)
 	sprintf(p, "%hu", SSH_PORT);
 	config_set(g->config, "", "port", p);
 	free(p);
-	config_load(g->config, "/etc/gputty");
+	/* FIXME use ETCDIR */
+	config_load(g->config, "/etc/gputty.conf");
 	if((p = _gputty_config_file()) != NULL)
 	{
 		config_load(g->config, p);
