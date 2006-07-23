@@ -25,10 +25,17 @@ enum
 };
 # define BR_LAST BR_NUM_COLS
 
+typedef struct _BrowserPreferences
+{
+	gboolean show_hidden_files;
+} BrowserPreferences;
+
 typedef struct _Browser
 {
 	/* config */
 /*	Config * config; */
+	BrowserPreferences prefs;
+	BrowserPreferences prefs_tmp;
 
 	/* mime */
 	Mime * mime;
@@ -56,6 +63,9 @@ typedef struct _Browser
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
+	/* preferences */
+	GtkWidget * pr_window;
+	GtkWidget * pr_hidden;
 } Browser;
 
 

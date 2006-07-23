@@ -25,7 +25,7 @@ static void _new_iconview(Browser * browser);
 static void _new_detailview(Browser * browser);
 /* callbacks */
 static void _browser_on_back(GtkWidget * widget, gpointer data);
-static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
+static gboolean _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _browser_on_edit_copy(GtkWidget * widget, gpointer data);
 static void _browser_on_edit_cut(GtkWidget * widget, gpointer data);
@@ -132,6 +132,8 @@ Browser * browser_new(char const * directory)
 
 	/* config */
 	/* FIXME */
+	memset(&browser->prefs, sizeof(browser->prefs), 0);
+	memset(&browser->prefs_tmp, sizeof(browser->prefs_tmp), 0);
 
 	/* mime */
 	browser->mime = mime_new();
@@ -260,6 +262,9 @@ Browser * browser_new(char const * directory)
 #endif
 	_fill_store(browser);
 
+	/* preferences */
+	browser->pr_window = NULL;
+
 	gtk_container_add(GTK_CONTAINER(browser->window), vbox);
 	gtk_widget_show_all(browser->window);
 	return browser;
@@ -339,10 +344,13 @@ static void _fill_store(Browser * browser)
 	for(cnt = 0, hidden_cnt = 0; (name = g_dir_read_name(dir)) != NULL;
 			cnt++)
 	{
-		if(name[0] == '.') /* FIXME optional */
+		if(name[0] == '.')
+		{
 			hidden_cnt++;
-		else
-			_store_loop(browser, name);
+			if(!browser->prefs.show_hidden_files)
+				continue;
+		}
+		_store_loop(browser, name);
 	}
 	if(browser->statusbar_id)
 		gtk_statusbar_remove(GTK_STATUSBAR(browser->statusbar),
@@ -525,11 +533,12 @@ static void _browser_on_back(GtkWidget * widget, gpointer data)
 	_fill_store(browser);
 }
 
-static void _browser_on_closex(GtkWidget * widget, GdkEvent * event,
+static gboolean _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
 	gtk_main_quit();
+	return FALSE;
 }
 
 static GList * _copy_selection(Browser * browser);
@@ -691,33 +700,99 @@ static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data)
 #endif
 }
 
-static void _browser_on_preferences_close(GtkWidget * widget, GdkEvent * event,
+static void _preferences_set(Browser * browser);
+/* callbacks */
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
+static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+static void _preferences_on_show_hidden_files(GtkToggleButton * button,
 		gpointer data);
 static void _browser_on_edit_preferences(GtkWidget * widget, gpointer data)
 {
-	static GtkWidget * window = NULL;
 	Browser * browser = data;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkSizeGroup * group;
 
-	if(window != NULL)
+	if(browser->pr_window != NULL)
 	{
-		gtk_widget_show(window);
+		gtk_widget_show(browser->pr_window);
 		return;
 	}
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), "File browser preferences");
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_browser_on_preferences_close), browser);
+	browser->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(browser->pr_window), FALSE);
+	gtk_window_set_title(GTK_WINDOW(browser->pr_window),
+			"File browser preferences");
+	gtk_window_set_transient_for(GTK_WINDOW(browser->pr_window), GTK_WINDOW(
+				browser->window));
+	g_signal_connect(G_OBJECT(browser->pr_window), "delete_event",
+			G_CALLBACK(_preferences_on_close), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* FIXME */
-	gtk_container_add(GTK_CONTAINER(window), vbox);
-	gtk_widget_show_all(window);
+	browser->pr_hidden = gtk_check_button_new_with_mnemonic(
+			"Show _hidden files");
+	g_signal_connect(G_OBJECT(browser->pr_hidden), "toggled", G_CALLBACK(
+				_preferences_on_show_hidden_files), browser);
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 4);
+	/* dialog */
+	hbox = gtk_hbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_ok), browser);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_cancel), browser);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
+	gtk_widget_show_all(browser->pr_window);
 }
 
-static void _browser_on_preferences_close(GtkWidget * widget, GdkEvent * event,
+static void _preferences_set(Browser * browser)
+{
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
+			browser->prefs_tmp.show_hidden_files);
+}
+
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	gtk_widget_hide(browser->pr_window);
+	memcpy(&browser->prefs_tmp, &browser->prefs,
+			sizeof(browser->prefs_tmp));
+	_preferences_set(browser);
+}
+
+static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
-	gtk_widget_hide(widget);
+	Browser * browser = data;
+
+	_preferences_on_cancel(widget, browser);
+	return TRUE;
+}
+
+static void _preferences_on_ok(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	gtk_widget_hide(browser->pr_window);
+	memcpy(&browser->prefs, &browser->prefs_tmp,
+			sizeof(browser->prefs_tmp));
+}
+
+static void _preferences_on_show_hidden_files(GtkToggleButton * button,
+		gpointer data)
+{
+	Browser * browser = data;
+
+	browser->prefs_tmp.show_hidden_files
+		= gtk_toggle_button_get_active(button);
 }
 
 static void _browser_on_file_new_window(GtkWidget * widget, gpointer data)
@@ -758,9 +833,10 @@ static void _browser_on_forward(GtkWidget * widget, gpointer data)
 }
 
 #if !GTK_CHECK_VERSION(2, 6, 0)
-static void _about_close(GtkWidget * widget, gpointer data);
-static void _about_credits(GtkWidget * widget, gpointer data);
-static void _about_license(GtkWidget * widget, gpointer data);
+/* callbacks */
+static void _about_on_close(GtkWidget * widget, gpointer data);
+static void _about_on_credits(GtkWidget * widget, gpointer data);
+static void _about_on_license(GtkWidget * widget, gpointer data);
 #endif
 static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 {
@@ -794,6 +870,7 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
 	free(buf);
 	gtk_widget_show(window);
+}
 #else
 	if(window != NULL)
 	{
@@ -803,50 +880,52 @@ static void _browser_on_help_about(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "About Browser");
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				browser->window));
 	{
 		GtkWidget * vbox;
 		GtkWidget * hbox;
 		GtkWidget * button;
 
 		vbox = gtk_vbox_new(FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(
-					"Browser 0.0.0"), FALSE, FALSE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " "
+					VERSION), FALSE, FALSE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright),
 				FALSE, FALSE, 2);
 		hbox = gtk_hbox_new(TRUE, 4);
 		button = gtk_button_new_with_mnemonic("C_redits");
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_credits), window);
+					_about_on_credits), window);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		button = gtk_button_new_with_mnemonic("_License");
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_license), window);
+					_about_on_license), window);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_close), window);
+					_about_on_close), window);
 		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 		gtk_container_add(GTK_CONTAINER(window), vbox);
 	}
 	gtk_widget_show_all(window);
-#endif
 }
 
-#if !GTK_CHECK_VERSION(2, 6, 0)
-static void _about_close(GtkWidget * widget, gpointer data)
+static void _about_on_close(GtkWidget * widget, gpointer data)
 {
 	GtkWidget * window = data;
 
 	gtk_widget_hide(window);
 }
 
-static void _about_credits(GtkWidget * widget, gpointer data)
+static void _about_on_credits(GtkWidget * widget, gpointer data)
 {
+	/* FIXME */
 }
 
-static void _about_license(GtkWidget * widget, gpointer data)
+static void _about_on_license(GtkWidget * widget, gpointer data)
 {
+	/* FIXME */
 }
 #endif
 
