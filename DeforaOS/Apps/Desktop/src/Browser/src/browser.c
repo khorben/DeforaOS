@@ -125,7 +125,7 @@ Browser * browser_new(char const * directory)
 		return NULL;
 	if(_new_pixbufs(browser) != 0)
 	{
-		browser_error(browser, "Error while loading default icons", 0);
+		browser_error(browser, "Error while loading default icons", -1);
 		free(browser);
 		return NULL;
 	}
@@ -1128,8 +1128,12 @@ int browser_error(Browser * browser, char const * message, int ret)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
+	if(ret < 0)
+		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+					gtk_main_quit), NULL);
+	else
+		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+					gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }

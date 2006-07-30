@@ -35,15 +35,18 @@ int main(int argc, char * argv[])
 		}
 	if(optind < argc-1)
 		return _usage();
-	browser = browser_new(argv[optind]);
+	if((browser = browser_new(argv[optind])) == NULL)
+	{
+		gtk_main();
+		return 2;
+	}
 	sa.sa_handler = _main_sigchld;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
 		browser_error(browser, "signal handling error", 0);
 	gtk_main();
-	if(browser != NULL)
-		browser_delete(browser);
+	browser_delete(browser);
 	return 0;
 }
 
