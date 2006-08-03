@@ -1,4 +1,4 @@
-TARGETS	= Editor
+TARGETS	= editor
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -14,28 +14,28 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-Editor_OBJS = editor.o main.o
-Editor_CFLAGS = $(CFLAGSF) $(CFLAGS)
-Editor: $(Editor_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o Editor $(Editor_OBJS)
+editor_OBJS = editor.o main.o
+editor_CFLAGS = $(CFLAGSF) $(CFLAGS)
+editor: $(editor_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o editor $(editor_OBJS)
 
 editor.o: editor.c
-	$(CC) $(Editor_CFLAGS) -c editor.c
+	$(CC) $(editor_CFLAGS) -c editor.c
 
 main.o: main.c
-	$(CC) $(Editor_CFLAGS) -c main.c
+	$(CC) $(editor_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(Editor_OBJS)
+	$(RM) $(editor_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 Editor $(DESTDIR)$(BINDIR)/Editor
+	$(INSTALL) -m 0755 editor $(DESTDIR)$(BINDIR)/editor
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/Editor
+	$(RM) $(DESTDIR)$(BINDIR)/editor
 
 .PHONY: all clean distclean install uninstall
