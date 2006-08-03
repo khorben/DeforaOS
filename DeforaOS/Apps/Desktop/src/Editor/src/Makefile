@@ -19,7 +19,7 @@ editor_CFLAGS = $(CFLAGSF) $(CFLAGS)
 editor: $(editor_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o editor $(editor_OBJS)
 
-editor.o: editor.c
+editor.o: editor.c ../config.h
 	$(CC) $(editor_CFLAGS) -c editor.c
 
 main.o: main.c
