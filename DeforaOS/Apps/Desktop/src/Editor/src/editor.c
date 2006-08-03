@@ -15,6 +15,8 @@ static gboolean _editor_on_close(GtkWidget * widget, GdkEvent * event,
 static void _editor_on_file_close(GtkWidget * widget, gpointer data);
 static void _editor_on_file_new(GtkWidget * widget, gpointer data);
 static void _editor_on_file_open(GtkWidget * widget, gpointer data);
+static void _editor_on_file_save(GtkWidget * widget, gpointer data);
+static void _editor_on_file_save_as(GtkWidget * widget, gpointer data);
 static void _editor_on_edit_preferences(GtkWidget * widget, gpointer data);
 static void _editor_on_help_about(GtkWidget * widget, gpointer data);
 struct _menu
@@ -32,6 +34,10 @@ struct _menu _menu_file[] =
 {
 	{ "_New", G_CALLBACK(_editor_on_file_new), GTK_STOCK_NEW },
 	{ "_Open", G_CALLBACK(_editor_on_file_open), GTK_STOCK_OPEN },
+	{ "", NULL, NULL },
+	{ "_Save", G_CALLBACK(_editor_on_file_save), GTK_STOCK_SAVE },
+	{ "_Save as...", G_CALLBACK(_editor_on_file_save_as),
+	       	GTK_STOCK_SAVE_AS },
 	{ "", NULL, NULL },
 	{ "_Close", G_CALLBACK(_editor_on_file_close), GTK_STOCK_CLOSE },
 	{ NULL, NULL, NULL }
@@ -64,6 +70,7 @@ Editor * editor_new(void)
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * tb_button;
+	GtkWidget * widget;
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
@@ -88,8 +95,12 @@ Editor * editor_new(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* view */
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
-	gtk_box_pack_start(GTK_BOX(vbox), editor->view, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(widget), editor->view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* statusbar */
 	editor->statusbar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), editor->statusbar, FALSE, FALSE, 0);
@@ -251,6 +262,14 @@ static void _editor_on_file_new(GtkWidget * widget, gpointer data)
 static void _editor_on_file_open(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
+}
+
+static void _editor_on_file_save(GtkWidget * widget, gpointer data)
+{
+}
+
+static void _editor_on_file_save_as(GtkWidget * widget, gpointer data)
+{
 }
 
 static void _editor_on_help_about(GtkWidget * widget, gpointer data)
