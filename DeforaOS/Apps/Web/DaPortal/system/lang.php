@@ -63,6 +63,7 @@ $text['DELETE'] = 'Delete';
 $text['DESCRIPTION'] = 'Description';
 $text['DISABLE'] = 'Disable';
 $text['DISABLED'] = 'Disabled';
+$text['DOWNLOADS'] = 'Downloads';
 $text['EDIT'] = 'Edit';
 $text['ENABLE'] = 'Enable';
 $text['ENABLED'] = 'Enabled';
