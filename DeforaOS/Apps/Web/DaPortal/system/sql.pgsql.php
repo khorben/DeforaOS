@@ -6,8 +6,8 @@
 if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../index.php'));
 
-define(SQL_TRUE, 't');
-define(SQL_FALSE, 'f');
+define('SQL_TRUE', 't');
+define('SQL_FALSE', 'f');
 
 
 function _query($query)
