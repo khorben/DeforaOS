@@ -226,6 +226,7 @@ function news_list($args)
 			.(_sql_offset(($page-1) * $npp, $npp)).';');
 	if(!is_array($res))
 		return _error('Unable to list news');
+	$long = 0;
 	foreach($res as $news)
 	{
 		$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
