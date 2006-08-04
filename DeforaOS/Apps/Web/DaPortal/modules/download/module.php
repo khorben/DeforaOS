@@ -10,7 +10,6 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
-$text['DOWNLOADS'] = 'Downloads';
 $text['DOWNLOADS_ADMINISTRATION'] = 'Downloads administration';
 $text['DOWNLOADS_CONFIGURATION'] = 'Downloads configuration';
 $text['DOWNLOADS_LIST'] = 'Downloads list';
