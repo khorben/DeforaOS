@@ -23,6 +23,9 @@ switch($dbtype)
 	case 'pgsql':
 		require('./system/sql.pgsql.php');
 		break;
+	case 'sqlite':
+		require('./system/sql.sqlite.php');
+		break;
 }
 if($connection == FALSE)
 	exit(_error('Unable to connect to SQL server'));

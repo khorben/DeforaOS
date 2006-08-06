@@ -9,7 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $template = 'DaPortal';
 $theme = 'DaPortal';
 $debug = 1;
-$dbtype = 'pgsql';	//or 'mysql'
+$dbtype = 'pgsql';	//or 'mysql' or 'sqlite'
 //$dbhostname = '';	//defaults to local connections
 $dbname = 'daportal';
 $dbuser = 'daportal';
