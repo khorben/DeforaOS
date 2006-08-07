@@ -3,7 +3,7 @@
 <?php foreach($args['toolbar'] as $t) { if(isset($t['link'])) { ?>
 		<a href="<?php echo _html_safe_link($t['link']); ?>"><img src="<?php echo _html_safe_link($t['icon']); ?>" alt="" title="<?php echo _html_safe($t['title']); ?>"/></a>
 <?php } else if(isset($t['action'])) { ?>
-		<img src="<?php echo _html_safe_link($t['icon']); ?>" alt="" title="<?php echo _html_safe($t['title']); ?>" onclick="selection_apply(<?php echo $explorer_id; ?>, '<?php echo _html_safe($t['action']); ?>', <?php echo strlen($t['confirm']) ? "'"._html_safe($t['confirm'])."'" : '0'; ?>)"/>
+		<img src="<?php echo _html_safe_link($t['icon']); ?>" alt="" title="<?php echo _html_safe($t['title']); ?>" onclick="selection_apply(<?php echo $explorer_id; ?>, '<?php echo _html_safe($t['action']); ?>', <?php echo isset($t['confirm']) ? "'"._html_safe($t['confirm'])."'" : '0'; ?>)"/>
 <?php } else { ?>
 		<div class="separator"></div>
 <?php } } ?>
