@@ -1,0 +1,71 @@
+/* install/sqlite.sql */
+
+
+
+CREATE TABLE daportal_module (
+	module_id int AUTOINCREMENT,
+	name varchar(255) NOT NULL,
+	enabled tinyint(4) NOT NULL DEFAULT '0',
+	PRIMARY KEY (module_id),
+	UNIQUE (name)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('admin', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('explorer', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
+INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
+
+
+CREATE TABLE daportal_config (
+	module_id INT AUTOINCREMENT,
+	name VARCHAR(255) NOT NULL,
+	value VARCHAR(255) NOT NULL,
+	PRIMARY KEY (module_id, name),
+	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id)
+);
+INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'lang', 'en');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'title', 'DaPortal');
+
+
+CREATE TABLE daportal_lang (
+	lang_id VARCHAR(2) NOT NULL,
+	name VARCHAR(255) NOT NULL,
+	enabled BOOLEAN NOT NULL DEFAULT FALSE,
+	PRIMARY KEY (lang_id)
+);
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('en', 'English', '1');
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1');
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1');
+
+
+CREATE TABLE daportal_user (
+	user_id INT AUTOINCREMENT,
+	username VARCHAR(255) UNIQUE,
+	password CHAR(32),
+	enabled BOOLEAN DEFAULT FALSE,
+	admin BOOLEAN DEFAULT FALSE,
+	email VARCHAR(255) NOT NULL,
+	PRIMARY KEY (user_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('5', 'register', 't');
+INSERT INTO daportal_user (user_id, username, password, email) VALUES ('0', 'Anonymous', '', '');
+INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'username@domain.tld');
+
+
+CREATE TABLE daportal_content (
+	content_id INT AUTOINCREMENT,
+	timestamp TIMESTAMP NOT NULL,
+	module_id INTEGER,
+	user_id INTEGER,
+	title VARCHAR(255),
+	content TEXT,
+	enabled BOOLEAN NOT NULL default FALSE,
+	PRIMARY KEY (content_id),
+	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
+	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
+
+
+/* module: news */
+INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
