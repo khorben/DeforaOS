@@ -3,11 +3,9 @@
 
 
 CREATE TABLE daportal_module (
-	module_id int AUTOINCREMENT,
-	name varchar(255) NOT NULL,
-	enabled tinyint(4) NOT NULL DEFAULT '0',
-	PRIMARY KEY (module_id),
-	UNIQUE (name)
+	module_id INTEGER PRIMARY KEY,
+	name VARCHAR(255) UNIQUE,
+	enabled TINYINT(4) NOT NULL DEFAULT '0'
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('admin', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('explorer', '1');
@@ -16,7 +14,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
 CREATE TABLE daportal_config (
-	module_id INT AUTOINCREMENT,
+	module_id INTEGER NOT NULL,
 	name VARCHAR(255) NOT NULL,
 	value VARCHAR(255) NOT NULL,
 	PRIMARY KEY (module_id, name),
@@ -27,10 +25,9 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'title', 'DaPo
 
 
 CREATE TABLE daportal_lang (
-	lang_id VARCHAR(2) NOT NULL,
+	lang_id VARCHAR(2) PRIMARY KEY,
 	name VARCHAR(255) NOT NULL,
-	enabled BOOLEAN NOT NULL DEFAULT FALSE,
-	PRIMARY KEY (lang_id)
+	enabled BOOLEAN NOT NULL DEFAULT FALSE
 );
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('en', 'English', '1');
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1');
@@ -38,13 +35,12 @@ INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1')
 
 
 CREATE TABLE daportal_user (
-	user_id INT AUTOINCREMENT,
+	user_id INTEGER PRIMARY KEY,
 	username VARCHAR(255) UNIQUE,
 	password CHAR(32),
 	enabled BOOLEAN DEFAULT FALSE,
 	admin BOOLEAN DEFAULT FALSE,
-	email VARCHAR(255) NOT NULL,
-	PRIMARY KEY (user_id)
+	email VARCHAR(255) NOT NULL
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('5', 'register', 't');
@@ -53,14 +49,13 @@ INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('a
 
 
 CREATE TABLE daportal_content (
-	content_id INT AUTOINCREMENT,
+	content_id INTEGER PRIMARY KEY,
 	timestamp TIMESTAMP NOT NULL,
 	module_id INTEGER,
 	user_id INTEGER,
 	title VARCHAR(255),
 	content TEXT,
-	enabled BOOLEAN NOT NULL default FALSE,
-	PRIMARY KEY (content_id),
+	enabled BOOLEAN NOT NULL DEFAULT FALSE,
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
