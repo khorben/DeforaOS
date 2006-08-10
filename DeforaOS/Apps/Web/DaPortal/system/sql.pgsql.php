@@ -70,7 +70,7 @@ function _sql_single($query)
 
 
 //main
-global $dbtype, $dbhost, $dbuser, $dbpassword, $dbname;
+global $dbuser, $dbpassword;
 $connection = pg_connect("user='$dbuser' password='$dbpassword'");
 
 ?>
