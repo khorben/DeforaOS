@@ -9,7 +9,6 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['RESULTS_FOUND'] = 'result(s) found';
-$text['SEARCH'] = 'Search';
 $text['SEARCH_RESULTS'] = 'Search results';
 global $lang;
 if($lang == 'fr')
