@@ -1,3 +1,7 @@
+/* install/postgresql.sql */
+
+
+
 CREATE TABLE daportal_module (
 	module_id SERIAL,
 	name VARCHAR(255) UNIQUE NOT NULL,
@@ -62,7 +66,7 @@ CREATE TABLE daportal_content (
 	user_id INTEGER,
 	title VARCHAR(255),
 	content TEXT,
-	enabled BOOLEAN NOT NULL DEFAULT false,
+	enabled BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (content_id),
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
@@ -148,6 +152,7 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('10', 'RRD_reposito
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', 1);
 INSERT INTO daportal_config (module_id, name, value) VALUES ('11', 'server', '');
 
+
 /* module: bookmark */
 CREATE TABLE daportal_bookmark (
 	bookmark_id SERIAL,
@@ -155,6 +160,7 @@ CREATE TABLE daportal_bookmark (
 	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
+
 
 /* module: category */
 CREATE TABLE daportal_category_content (
@@ -166,6 +172,7 @@ CREATE TABLE daportal_category_content (
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
+
 
 /* module: download */
 CREATE TABLE daportal_download (
