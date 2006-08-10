@@ -27,7 +27,7 @@ function _default_results($q)
 function search_default($args)
 {
 	include('./modules/search/search.tpl');
-	if(strlen($args['q']) == 0)
+	if(!isset($args['q']) || strlen($args['q']) == 0)
 		return;
 	$q = explode(' ', $args['q']);
 	if(!count($q))
