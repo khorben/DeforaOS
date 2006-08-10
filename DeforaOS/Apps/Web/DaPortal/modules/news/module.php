@@ -45,25 +45,26 @@ function news_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/news/icon.png" alt=""/> '
 		.NEWS_ADMINISTRATION.'</h1>'."\n");
-	$order = 'ASC';
-	switch($args['sort'])
+	$order = 'DESC';
+	$sort = 'timestamp';
+	if(isset($args['sort']))
 	{
-		case 'username':$sort = 'username';	break;
-		case 'enabled':	$sort = 'enabled';	break;
-		case 'name':	$sort = 'title';	break;
-		case 'date':
-		default:	$order = 'DESC';
-				$sort = 'timestamp';	break;
+		$order = 'ASC';
+		switch($args['sort'])
+		{
+			case 'username':$sort = 'username';	break;
+			case 'enabled':	$sort = 'enabled';	break;
+			case 'name':	$sort = 'title';	break;
+			default:	$order = 'DESC';	break;
+		}
 	}
 	$res = _sql_array('SELECT content_id AS id, timestamp'
 		.', daportal_content.enabled, title, content'
 		.', daportal_content.user_id, username'
-		.' FROM daportal_content, daportal_user'
-		.', daportal_module'
+		.' FROM daportal_content, daportal_user, daportal_module'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_module.name='news'"
-		.' AND daportal_module.module_id'
-		.'=daportal_content.module_id'
+		.' AND daportal_module.module_id=daportal_content.module_id'
 		.' ORDER BY '.$sort.' '.$order.';');
 	if(!is_array($res))
 		return _error('Unable to list news');
