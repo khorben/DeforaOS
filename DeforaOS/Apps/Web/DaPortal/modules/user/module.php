@@ -277,6 +277,8 @@ function user_login($args)
 	if($user_id != 0)
 		return user_default($args);
 	$register = _config_get('user', 'register') == SQL_TRUE ? 1 : 0;
+	$message = '';
+	$username = '';
 	if(isset($_POST['username']))
 	{
 		$message = WRONG_PASSWORD;
