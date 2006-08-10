@@ -21,6 +21,22 @@ function _query($query)
 }
 
 
+function _sql_array($query)
+{
+	if(($res = _query($query)) == FALSE)
+		return FALSE;
+	for($array = array(); ($a = sqlite_fetch_array($res)) != FALSE;
+			$array[] = $a);
+	return $array;
+}
+
+
+function _sql_offset($offset, $limit)
+{
+	return 'LIMIT '.$limit.' OFFSET '.$offset;
+}
+
+
 function _sql_single($query)
 {
 	if(($res = _query($query)) == FALSE)
