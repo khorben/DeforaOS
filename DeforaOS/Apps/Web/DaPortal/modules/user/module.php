@@ -456,14 +456,14 @@ function user_system($args)
 {
 	global $html;
 
-	if($_SERVER['REQUEST_METHOD'] == 'POST')
+	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']))
 	{
 		if($_POST['action'] == 'login')
 			_system_login();
 		else if($_POST['action'] == 'config_update')
 			$html = 0;
 	}
-	else if($_SERVER['REQUEST_METHOD'] == 'GET')
+	else if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['action']))
 	{
 		if($_GET['action'] == 'logout')
 			_system_logout();
