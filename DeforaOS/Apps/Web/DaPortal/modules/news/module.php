@@ -196,8 +196,7 @@ function _list_user($user_id, $username)
 						$res[$i]['timestamp'], 0, 19)));
 	}
 	_module('explorer', 'browse', array('class' => array('date' => 'Date'),
-				'view' => 'details',
-				'entries' => $res));
+				'view' => 'details', 'entries' => $res));
 }
 
 function news_list($args)
