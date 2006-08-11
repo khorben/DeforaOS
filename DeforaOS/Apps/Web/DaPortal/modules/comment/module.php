@@ -287,6 +287,12 @@ function comment_submit($comment)
 		return;
 	_module('content', 'default', array('id' => $comment['parent']));
 	//send mail
+	if(($user_email = _sql_single('SELECT email FROM daportal_user'
+					." WHERE enabled='1'"
+					." AND user_id='$user_id';")) == FALSE)
+		$user_email = 'unknown';
+	$pw = posix_getpwuid(posix_getuid()); //FIXME working all the time?
+	$from = $pw['name'];
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
 			." WHERE enabled='1' AND admin='1';");
 	if(!is_array($admins))
@@ -298,7 +304,8 @@ function comment_submit($comment)
 		$to.=$comma.$a['username'].' <'.$a['email'].'>';
 		$comma = ', ';
 	}
-	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
+	$headers = 'From: '.$from.' <'.$from.'@'.$_SERVER['SERVER_NAME'].'>';
+	$headers.="\r\n".'Reply-To: '.$user_name.' <'.$user_email.'>';
 	$comment['title'] = stripslashes($comment['title']);
 	$comment['content'] = stripslashes($comment['content']);
 	if(!mail($to, '[DaPortal Comment submission] '.$comment['title'],
