@@ -425,12 +425,12 @@ function _system_login()
 {
 	global $user_id; 
 
-	session_start();
+	if(strlen(session_id()) == 0)
+		session_start();
 	$password = md5($_POST['password']);
 	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"
-			.' AND password='."'$password'"
-			." AND enabled='1';");
+			.' AND password='."'$password' AND enabled='1';");
 	if(!is_array($res) || count($res) != 1)
 		return _error('Unable to login', 0);
 	$res = $res[0];
@@ -490,13 +490,15 @@ function user_update($args)
 	{
 		if(!_sql_query('UPDATE daportal_user SET'
 					." username='".$args['username']."'"
-					.", enabled='".($args['enabled'] == 'on'
+					.", enabled='".(isset($args['enabled'])
+						&& $args['enabled'] == 'on'
 						? '1' : '0')."'"
-					.", admin='".($args['admin'] == 'on'
+					.", admin='".(isset($args['admin'])
+						&& $args['admin'] == 'on'
 						? '1' : '0')."'"
 					.", email='".$args['email']."'"
-					.', '.$password
-					." WHERE user_id='$id';"))
+					.(strlen($password) ? ', '.$password
+					       	: '')." WHERE user_id='$id';"))
 			return _error('Could not update user');
 	}
 	else if(strlen($password) && !_sql_query('UPDATE daportal_user SET '
