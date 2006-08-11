@@ -313,8 +313,7 @@ function user_modify($args)
 		return _error('Permission denied');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
-			.' FROM daportal_user'
-			." WHERE user_id='$id';");
+			.' FROM daportal_user WHERE user_id='."'$id';");
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
@@ -387,8 +386,7 @@ function _register_mail($username, $email)
 	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
 			.', admin, email) VALUES ('
 			."'$username', '".md5($password)."', '0', '0', '"
-			.$email."');")
-			== FALSE)
+			.$email."');") == FALSE)
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
 	include('./modules/user/user_pending.tpl');
