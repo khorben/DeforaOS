@@ -221,8 +221,8 @@ function news_list($args)
 	$pages = ceil($cnt / $npp);
 	$page = min($page, $pages);
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-			.', daportal_content.enabled, daportal_content.user_id'
-			.', username'.$sql
+			.', daportal_content.enabled AS enabled'
+			.', daportal_content.user_id, username'.$sql
 			.' ORDER BY timestamp DESC '
 			.(_sql_offset(($page-1) * $npp, $npp)).';');
 	if(!is_array($res))
@@ -241,14 +241,14 @@ function news_list($args)
 
 function news_modify($args)
 {
-	global $user_id;
+	global $user_id, $user_name;
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($module_id = _module_id('news')))
 		return _error('Could not verify module');
-	$news = _sql_array('SELECT content_id AS id, title, content'
+	$news = _sql_array('SELECT content_id AS id, title, content, enabled'
 			.' FROM daportal_content'
 			." WHERE module_id='$module_id'"
 			." AND content_id='".$args['id']."';");
@@ -261,7 +261,7 @@ function news_modify($args)
 	$title = NEWS_PREVIEW;
 	$news['id'] = stripslashes($news['id']);
 	$news['title'] = stripslashes($news['title']);
-	$news['user_id'] = $user_id;
+	$news['user_id'] = $user_id; //FIXME keep original user
 	$news['username'] = $user_name;
 	$news['date'] = strftime(DATE_FORMAT);
 	$news['content'] = stripslashes($news['content']);
