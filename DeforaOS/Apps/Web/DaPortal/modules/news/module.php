@@ -59,8 +59,8 @@ function news_admin($args)
 		}
 	}
 	$res = _sql_array('SELECT content_id AS id, timestamp'
-		.', daportal_content.enabled, title, content'
-		.', daportal_content.user_id, username'
+		.', daportal_content.enabled AS enabled, title, content'
+		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_content, daportal_user, daportal_module'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_module.name='news'"
