@@ -11,7 +11,8 @@ function _lang($text)
 {
 	$keys = array_keys($text);
 	foreach($keys as $k)
-		define($k, $text[$k]);
+		if(!defined($k))
+			define($k, $text[$k]);
 }
 
 
