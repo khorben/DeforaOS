@@ -13,7 +13,7 @@
 		· <a href="index.php?module=comment&amp;action=new&amp;parent=<?php echo _html_safe($news['id']); ?>#edit"><img src="icons/16x16/reply.png" alt=""/> <?php echo _html_safe(REPLY); ?></a>
 <?php } } ?>
 <?php global $user_id; require_once('./system/user.php');
-if($news['id'] && _user_admin($user_id)) { ?>
+if(isset($news['id']) && _user_admin($user_id)) { ?>
 		· <a href="index.php?module=news&amp;action=modify&amp;id=<?php echo _html_safe($news['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
 <?php if($news['enabled'] == SQL_TRUE) { ?>
 		· <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe($news['id']); ?>&amp;show"><img src="icons/16x16/disabled.png" alt=""/> <?php echo _html_safe(DISABLE); ?></a>
