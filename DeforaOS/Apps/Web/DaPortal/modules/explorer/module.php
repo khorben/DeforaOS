@@ -30,8 +30,8 @@ function _explorer(&$args)
 	static $explorer_id = 0;
 
 	$explorer_id++;
-	$module = $args['module'];
-	$action = $args['action'];
+	$module = isset($args['module']) ? $args['module'] : '';
+	$action = isset($args['action']) ? $args['action'] : '';
 	$id = isset($args['id']) ? $args['id'] : '';
 	include('./modules/explorer/top.tpl');
 	if(!isset($args['toolbar']) || is_array($args['toolbar']))
