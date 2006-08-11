@@ -50,7 +50,7 @@ INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('a
 
 CREATE TABLE daportal_content (
 	content_id INTEGER PRIMARY KEY,
-	timestamp TIMESTAMP NOT NULL,
+	timestamp TIMESTAMP NOT NULL DEFAULT now,
 	module_id INTEGER,
 	user_id INTEGER,
 	title VARCHAR(255),
