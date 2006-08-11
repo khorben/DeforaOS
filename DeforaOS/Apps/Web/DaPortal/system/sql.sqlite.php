@@ -31,6 +31,14 @@ function _sql_array($query)
 }
 
 
+function _sql_id($table, $field)
+{
+	global $connection;
+
+	return sqlite_last_insert_rowid($connection);
+}
+
+
 function _sql_offset($offset, $limit)
 {
 	return 'LIMIT '.$limit.' OFFSET '.$offset;
