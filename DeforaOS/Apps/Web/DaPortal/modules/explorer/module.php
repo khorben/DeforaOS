@@ -32,7 +32,7 @@ function _explorer(&$args)
 	$explorer_id++;
 	$module = $args['module'];
 	$action = $args['action'];
-	$id = $args['id'];
+	$id = isset($args['id']) ? $args['id'] : '';
 	include('./modules/explorer/top.tpl');
 	if(!isset($args['toolbar']) || is_array($args['toolbar']))
 	{
