@@ -270,6 +270,31 @@ function news_modify($args)
 }
 
 
+function news_rss($args)
+{
+	require_once('./system/html.php');
+	$title = NEWS;
+	$link = 'http://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['PHP_SELF'];
+	$content = ''; //FIXME
+	include('./modules/news/rss_channel_top.tpl');
+	$res = _sql_array('SELECT content_id AS id, title, content'
+		       .' FROM daportal_content'
+		       ." WHERE enabled='".SQL_TRUE."'"
+		       .' ORDER BY timestamp DESC '
+		       ._sql_offset(0, 10).';');
+	if(is_array($res))
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$news = $res[$i];
+			$news['link'] = 'http://'.$_SERVER['HTTP_HOST'].'/'
+				.$_SERVER['PHP_SELF'].'?module=news&id='
+				.$news['id'];
+			include('./modules/news/rss_item.tpl');
+		}
+	include('./modules/news/rss_channel_bottom.tpl');
+}
+
+
 function news_submit($news)
 {
 	global $user_id, $user_name;
@@ -321,9 +346,15 @@ function news_submit($news)
 
 function news_system($args)
 {
-	global $title;
+	global $html, $title;
 
-	$title.=' - News';
+	if($args['action'] == 'rss')
+	{
+		$html = 0;
+		header('Content-Type: text/xml');
+	}
+	else
+		$title.=' - News';
 }
 
 
