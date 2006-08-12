@@ -348,7 +348,7 @@ function news_system($args)
 {
 	global $html, $title;
 
-	if($args['action'] == 'rss')
+	if(isset($args['action']) && $args['action'] == 'rss')
 	{
 		$html = 0;
 		header('Content-Type: text/xml');
