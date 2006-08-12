@@ -272,6 +272,8 @@ function news_modify($args)
 
 function news_rss($args)
 {
+	if(($module_id = _module_id('news')) == FALSE)
+		return;
 	require_once('./system/html.php');
 	$title = NEWS;
 	$link = 'http://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['PHP_SELF'];
@@ -279,7 +281,8 @@ function news_rss($args)
 	include('./modules/news/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, title, content'
 		       .' FROM daportal_content'
-		       ." WHERE enabled='".SQL_TRUE."'"
+		       ." WHERE module_id='$module_id'"
+		       ." AND enabled='".SQL_TRUE."'"
 		       .' ORDER BY timestamp DESC '
 		       ._sql_offset(0, 10).';');
 	if(is_array($res))
