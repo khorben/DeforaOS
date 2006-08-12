@@ -272,10 +272,11 @@ function news_modify($args)
 
 function news_rss($args)
 {
+	global $title;
+
 	if(($module_id = _module_id('news')) == FALSE)
 		return;
 	require_once('./system/html.php');
-	$title = NEWS;
 	$link = 'http://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['PHP_SELF'];
 	$content = ''; //FIXME
 	include('./modules/news/rss_channel_top.tpl');
@@ -351,13 +352,12 @@ function news_system($args)
 {
 	global $html, $title;
 
+	$title.=' - News';
 	if(isset($args['action']) && $args['action'] == 'rss')
 	{
 		$html = 0;
 		header('Content-Type: text/xml');
 	}
-	else
-		$title.=' - News';
 }
 
 
