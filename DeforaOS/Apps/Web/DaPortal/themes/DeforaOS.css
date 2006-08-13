@@ -388,6 +388,14 @@ ul.menu ul li a:hover {
 	border-top:			1px solid #959595;
 }
 
+h1.news {
+	background-image:		url("../modules/news/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
+
 .news {
 	margin-top:			20px;
 	margin-bottom:			20px;

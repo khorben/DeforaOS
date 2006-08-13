@@ -43,8 +43,7 @@ function news_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/news/icon.png" alt=""/> '
-		.NEWS_ADMINISTRATION.'</h1>'."\n");
+	print('<h1 class="news">'._html_safe(NEWS_ADMINISTRATION)."</h1>\n");
 	$order = 'DESC';
 	$sort = 'timestamp';
 	if(isset($args['sort']))
@@ -169,8 +168,7 @@ function news_enable($args)
 
 function _list_user($user_id, $username)
 {
-	print('<h1><img src="modules/news/icon.png" alt=""/> '
-			._html_safe(NEWS_BY.' '.$username).'</h1>'."\n");
+	print('<h1 class="news">'._html_safe(NEWS_BY.' '.$username)."</h1>\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 			.', daportal_content.enabled, daportal_content.user_id'
 			.', username'
@@ -205,8 +203,7 @@ function news_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."';")))
 		return _list_user($args['user_id'], $username);
-	print('<h1><img src="modules/news/icon.png" alt=""/> '._html_safe(NEWS)
-			.'</h1>'."\n");
+	print('<h1 class="news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_content.enabled='1'"
@@ -254,8 +251,8 @@ function news_modify($args)
 	if(!is_array($news) || count($news) != 1)
 		return _error('Unable to modify news');
 	$news = $news[0];
-	print('<h1><img src="modules/news/icon.png" alt=""/> '
-			.MODIFICATION_OF_NEWS.' "'.$news['title']."\"</h1>\n");
+	print('<h1 class="news">'._html_safe(MODIFICATION_OF_NEWS.' "'
+				.$news['title'])."\"</h1>\n");
 	$long = 1;
 	$title = NEWS_PREVIEW;
 	$news['id'] = stripslashes($news['id']);
