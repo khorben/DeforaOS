@@ -1,5 +1,5 @@
 <?php if(isset($title)) { ?>
-<h1><img src="modules/news/icon.png" alt=""/> <?php echo _html_safe($title); ?></h1>
+<h1 class="news"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
 <form class="news" action="index.php" method="post">
 	<input type="hidden" name="module" value="news"/>
