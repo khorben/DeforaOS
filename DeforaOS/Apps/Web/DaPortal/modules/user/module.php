@@ -14,6 +14,7 @@ $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
 $text['USER_REGISTRATION'] = 'User registration';
+$text['USERS_ADMINISTRATION'] = 'Users administration';
 $text['WRONG_PASSWORD'] = 'Wrong password';
 global $lang;
 if($lang == 'fr')
@@ -74,8 +75,7 @@ function user_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/user/icon.png" alt=""/>'
-			.' Users administration</h1>'."\n");
+	print('<h1 class="user">'._html_safe(USERS_ADMINISTRATION)."</h1>\n");
 	if(($configs = _config_list('user')))
 	{
 		print('<h2><img src="modules/admin/icon.png" alt=""/>'
@@ -85,11 +85,12 @@ function user_admin($args)
 		include('./system/config.tpl');
 	}
 	$order = 'name ASC';
-	switch($args['sort'])
-	{
-		case 'admin':	$order = 'admin ASC';	break;
-		case 'email':	$order = 'email ASC';	break;
-	}
+	if(isset($args['sort']))
+		switch($args['sort'])
+		{
+			case 'admin':	$order = 'admin ASC';	break;
+			case 'email':	$order = 'email ASC';	break;
+		}
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.', enabled, admin, email'
 			.' FROM daportal_user ORDER BY '.$order.';');
@@ -372,8 +373,7 @@ function user_register($args)
 				$message = USER_ALREADY_ASSIGNED;
 		}
 	}
-	print('<h1><img src="modules/user/icon.png" alt=""/> '
-			._html_safe(USER_REGISTRATION).'</h1>');
+	print('<h1 class="user>'._html_safe(USER_REGISTRATION)."</h1>\n");
 	if(strlen($message))
 		_error($message, 1);
 	include('./modules/user/user_register.tpl');
