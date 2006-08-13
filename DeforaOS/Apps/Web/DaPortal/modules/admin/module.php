@@ -9,9 +9,9 @@ require_once('./system/user.php');
 
 
 //lang
-$text['DAPORTAL_ADMINISTRATION'] = 'Portal administration';
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
 $text['LANGUAGES'] = 'Languages';
+$text['PORTAL_ADMINISTRATION'] = 'Portal administration';
 $text['MODULE_NAME'] = 'Module name';
 $text['MODULES'] = 'Modules';
 global $lang;
@@ -19,9 +19,9 @@ if($lang == 'de')
 	$text['LANGUAGES'] = 'Spräche';
 else if($lang == 'fr')
 {
-	$text['DAPORTAL_ADMINISTRATION'] = 'Administration du portail';
 	$text['LANGUAGES'] = 'Langages';
 	$text['MODULE_NAME'] = 'Nom du module';
+	$text['PORTAL_ADMINISTRATION'] = 'Administration du portail';
 }
 _lang($text);
 
@@ -32,8 +32,7 @@ function admin_admin($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(DAPORTAL_ADMINISTRATION).'</h1>'."\n"
+	print('<h1 class="admin">'._html_safe(PORTAL_ADMINISTRATION)."</h1>\n"
 			.'<h2><img src="modules/admin/lang.png" alt=""/> '
 			._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
