@@ -530,6 +530,14 @@ h1.news {
 	font-weight:			bold;
 }
 
+h1.top {
+	background-image:		url("../modules/top/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
+
 .top {
 	background-color:		#959595;
 	color:				#000000;

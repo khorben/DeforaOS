@@ -1,5 +1,4 @@
-<?php
-//modules/top/module.php
+<?php //modules/top/module.php
 
 
 
@@ -15,8 +14,7 @@ function top_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/top/icon.png" alt=""/> '
-			.'Top links administration</h1>'."\n");
+	print('<h1 class="top">Top links administration</h1>'."\n");
 	$links = _sql_array('SELECT top_id, name, link AS url FROM daportal_top'
 			.' ORDER BY top_id ASC;');
 	if(!is_array($links))
