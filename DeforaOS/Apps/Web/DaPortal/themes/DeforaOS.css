@@ -538,13 +538,13 @@ h1.top {
 	padding-left:			52px;
 }
 
-.top {
+div.top {
 	background-color:		#959595;
 	color:				#000000;
 	padding-left:			12px;
 }
 
-.top a {
+div.top a {
 	color:				#313131;
 }
 
