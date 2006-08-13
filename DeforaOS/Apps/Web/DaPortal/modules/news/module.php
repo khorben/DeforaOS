@@ -147,7 +147,7 @@ function news_display($args)
 		return _error('Invalid user');
 	$long = 1;
 	$title = $news['title'];
-	$news['date'] = strftime(DATE_FORMAT,
+	$news['date'] = date(DATE_FORMAT,
 			strtotime(substr($news['timestamp'], 0, 19)));
 	include('./modules/news/news_display.tpl');
 	if(_module_id('comment'))
@@ -277,23 +277,28 @@ function news_rss($args)
 	if(($module_id = _module_id('news')) == FALSE)
 		return;
 	require_once('./system/html.php');
-	$link = 'http://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['PHP_SELF'];
+	$link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
 	$content = ''; //FIXME
 	include('./modules/news/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-		       .' FROM daportal_content'
-		       ." WHERE module_id='$module_id'"
-		       ." AND enabled='".SQL_TRUE."'"
-		       .' ORDER BY timestamp DESC '
-		       ._sql_offset(0, 10).';');
+			.', username, email'
+			.' FROM daportal_content, daportal_user'
+			.' WHERE daportal_content.user_id'
+			.'=daportal_user.user_id'
+			." AND module_id='$module_id'"
+			." AND daportal_content.enabled='".SQL_TRUE."'"
+			.' ORDER BY timestamp DESC '
+			._sql_offset(0, 10).';');
 	if(is_array($res))
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$news = $res[$i];
-			$news['date'] = date('D, j M y H:i:s T', strtotime(
+			$news['username'] = $news['username'].' <'
+				.$news['email'].'>';
+			$news['date'] = date('D, j M Y H:i:s O', strtotime(
 						substr($news['timestamp'], 0,
 						       19)));
-			$news['link'] = 'http://'.$_SERVER['HTTP_HOST'].'/'
+			$news['link'] = 'http://'.$_SERVER['HTTP_HOST']
 				.$_SERVER['PHP_SELF'].'?module=news&id='
 				.$news['id'];
 			$news['content'] = _html_pre($news['content']);
