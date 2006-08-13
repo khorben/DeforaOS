@@ -5,7 +5,7 @@ html {
 html, button, input, select, table, textarea {
 	color:				#000000;
 	font-family:			bitstream vera sans, sans-serif;
-	font-size:			10pt;
+	font-size:			90%;
 	text-align:			justify;
 }
 
@@ -371,7 +371,7 @@ ul.menu ul li a {
 	background-color:		#000000;
 	background-image:		none;
 	font-variant:			normal;
-	font-size:			smaller;
+	font-size:			85%;
 	font-style:			normal;
 	border:				1px solid #000000;
 	letter-spacing:			0pt;
@@ -525,7 +525,7 @@ ul.menu ul li a:hover {
 }
 
 .top_search input {
-	font-size:			smaller;
+	font-size:			85%;
 }
 
 .top_search input[type="text"] {
