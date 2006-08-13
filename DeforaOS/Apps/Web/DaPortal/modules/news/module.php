@@ -146,7 +146,7 @@ function news_display($args)
 		return _error('Invalid user');
 	$long = 1;
 	$title = $news['title'];
-	$news['date'] = date(DATE_FORMAT,
+	$news['date'] = strftime(DATE_FORMAT,
 			strtotime(substr($news['timestamp'], 0, 19)));
 	include('./modules/news/news_display.tpl');
 	if(_module_id('comment'))
