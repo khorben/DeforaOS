@@ -1,4 +1,4 @@
-<?php echo '<?xml version="1.0" encoding="iso8859-15"?>'; ?>
+<?php echo '<?xml version="1.0" encoding="iso-8859-15"?>'; ?>
 
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
 	<channel>
