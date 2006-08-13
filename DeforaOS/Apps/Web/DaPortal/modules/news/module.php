@@ -293,6 +293,7 @@ function news_rss($args)
 			$news['link'] = 'http://'.$_SERVER['HTTP_HOST'].'/'
 				.$_SERVER['PHP_SELF'].'?module=news&id='
 				.$news['id'];
+			$news['content'] = _html_pre($news['content']);
 			include('./modules/news/rss_item.tpl');
 		}
 	include('./modules/news/rss_channel_bottom.tpl');
