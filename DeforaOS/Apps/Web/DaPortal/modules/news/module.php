@@ -280,7 +280,7 @@ function news_rss($args)
 	$link = 'http://'.$_SERVER['HTTP_HOST'].'/'.$_SERVER['PHP_SELF'];
 	$content = ''; //FIXME
 	include('./modules/news/rss_channel_top.tpl');
-	$res = _sql_array('SELECT content_id AS id, title, content'
+	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 		       .' FROM daportal_content'
 		       ." WHERE module_id='$module_id'"
 		       ." AND enabled='".SQL_TRUE."'"
@@ -290,6 +290,9 @@ function news_rss($args)
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$news = $res[$i];
+			$news['date'] = date('D, j M y H:i:s T', strtotime(
+						substr($news['timestamp'], 0,
+						       19)));
 			$news['link'] = 'http://'.$_SERVER['HTTP_HOST'].'/'
 				.$_SERVER['PHP_SELF'].'?module=news&id='
 				.$news['id'];
