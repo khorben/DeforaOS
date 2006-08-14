@@ -564,3 +564,11 @@ div.top a {
 	margin-bottom:			2px;
 	width:				158px;
 }
+
+h1.download {
+	background-image:		url("../modules/download/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}

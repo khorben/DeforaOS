@@ -45,8 +45,8 @@ function download_admin($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/download/icon.png" alt=""/> '
-			._html_safe(DOWNLOADS_ADMINISTRATION).'</h1>'."\n");
+	print('<h1 class="download">'._html_safe(DOWNLOADS_ADMINISTRATION)
+			.'</h1>'."\n");
 	print('<h2><img src="modules/admin/icon.png" alt=""/> '
 			._html_safe(DOWNLOADS_CONFIGURATION).'</h2>'."\n");
 	if(($configs = _config_list('download')))
@@ -151,8 +151,7 @@ function download_default($args)
 			$parent = "='".$args['id']."'";
 		}
 	}
-	print('<h1><img src="modules/download/icon.png" alt=""/> '
-			._html_safe(DOWNLOADS));
+	print('<h1 class="download">'._html_safe(DOWNLOADS));
 	if(isset($file['name']))
 		print(': '._html_safe($file['name']));
 	print('</h1>'."\n");
@@ -446,8 +445,7 @@ function download_file_new($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/download/icon.png" alt=""/> '
-			._html_safe(UPLOAD_FILE).'</h1>'."\n");
+	print('<h1 class="download">'._html_safe(UPLOAD_FILE).'</h1>'."\n");
 	$parent = $args['id'];
 	include('./modules/download/file_update.tpl');
 }
