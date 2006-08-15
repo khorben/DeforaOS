@@ -1,4 +1,4 @@
-<?php //modules/articles/module.php
+<?php //modules/article/module.php
 
 
 
@@ -46,8 +46,7 @@ function article_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/article/icon.png" alt=""/> '
-		.ARTICLES_ADMINISTRATION.'</h1>'."\n");
+	print('<h1 class="article">'.ARTICLES_ADMINISTRATION.'</h1>'."\n");
 	$order = 'ASC';
 	switch($args['sort'])
 	{
@@ -177,8 +176,7 @@ function article_list($args)
 		$title = ARTICLES_BY.' '.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h1><img src="modules/article/icon.png" alt=""/> '
-			._html_safe($title).'</h1>'."\n");
+	print('<h1 class="article">'._html_safe($title).'</h1>'."\n");
 	$articles = _sql_array('SELECT content_id AS id, timestamp, title'
 			.', content, daportal_content.enabled'
 			.', daportal_content.user_id, username'
