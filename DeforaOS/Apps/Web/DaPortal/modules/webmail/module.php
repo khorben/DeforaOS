@@ -109,7 +109,8 @@ function webmail_default($args)
 	include('default.tpl');
 	$messages = array();
 	$mpp = 20; //FIXME
-	$offset = is_numeric($args['page']) ? $args['page']-1 : 0;
+	$offset = isset($args['page']) && is_numeric($args['page'])
+		? $args['page']-1 : 0;
 	$offset = $offset * $mpp;
 	$cnt = imap_num_msg($mbox);
 	$max = min($cnt, $offset + $mpp);
@@ -178,6 +179,7 @@ function webmail_folders($args)
 		$list[] = $lsub[$i][1];
 	}
 	sort($list);
+	$level = 0;
 	$oldlevel = 0;
 	include('./modules/webmail/folders_top.tpl');
 	$class = 'lastnode';
@@ -188,7 +190,7 @@ function webmail_folders($args)
 	$icon = '../../modules/webmail/inbox_16';
 	$folder = '';
 	$name = INBOX;
-	include('tree.tpl');
+	include('./modules/webmail/tree.tpl');
 	$expand = 0;
 	$collapse = 0;
 	$img = 'icons/tree/node.gif';
@@ -196,17 +198,17 @@ function webmail_folders($args)
 	$folder = '';
 	$name = DRAFTS;
 	$folder = 'Drafts';
-	include('tree.tpl');
+	include('modules/webmail/tree.tpl');
 	print("</div>\n");
 	$icon = '../../modules/webmail/outbox_16';
 	$name = SENT;
 	$folder = 'Sent';
-	include('tree.tpl');
+	include('./modules/webmail/tree.tpl');
 	print("</div>\n");
 	$icon = 'delete';
 	$name = TRASH;
 	$folder = 'Trash';
-	include('tree.tpl');
+	include('./modules/webmail/tree.tpl');
 	print("</div>\n");
 	$icon = 'mime/folder';
 	for($i = 0, $cnt = count($list); $i < $cnt; $i++)
@@ -242,7 +244,7 @@ function webmail_folders($args)
 		else
 			$img = 'icons/tree/'.$class.'.gif';
 		$hidden = $level > 1;
-		include('tree.tpl');
+		include('./modules/webmail/tree.tpl');
 		$oldlevel = $level;
 	}
 	print("</div>\n</div>\n</div>\n");
