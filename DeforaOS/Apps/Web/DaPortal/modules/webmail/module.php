@@ -92,9 +92,13 @@ function webmail_default($args)
 
 	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
-	$folder = strlen($args['folder']) ? $args['folder'] : 'INBOX';
+	$folder = isset($args['folder']) ? $args['folder'] : 'INBOX';
 	if(!($mbox = _webmail_connect($folder)))
-		return include('login.tpl');
+	{
+		$message = '';
+		include('login.tpl');
+		return;
+	}
 	$img = 'inbox';
 	if($folder == 'Drafts')
 		$img = 'drafts';
@@ -252,6 +256,7 @@ function webmail_login($args)
 
 	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
+	$message = '';
 	if(isset($_POST['username']))
 	{
 		$message = 'Wrong password';
@@ -323,7 +328,7 @@ function webmail_system($args)
 	$title.=' - Webmail';
 	if($args['action'] == 'config_update')
 		$html = 0;
-	if($args['ajax'] == 1)
+	if(isset($args['ajax']) && $args['ajax'] == 1)
 	{
 		$html = 0;
 		require_once('system/html.php');
