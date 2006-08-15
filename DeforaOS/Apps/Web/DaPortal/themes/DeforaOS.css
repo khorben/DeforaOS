@@ -572,3 +572,11 @@ h1.download {
 	min-height:			48px;
 	padding-left:			52px;
 }
+
+h1.webmail {
+	background-image:		url("../modules/webmail/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
