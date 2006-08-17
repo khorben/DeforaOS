@@ -9,18 +9,7 @@
 
 
 /* GEDI */
-static char const * _about_authors[] =
-{
-	"Fabien Dombard <fdombard@fpconcept.net>",
-	"Pierre Pronchery <khorben@defora.org>",
-	NULL
-};
-static char const _about_copyright[] = "Copyright © 2005 DeforaOS developpers";
-static char const _about_website[] =
-"http://cvs.defora.org/cgi-bin/cvsweb/DeforaOS/Apps/Devel/src/GEDI";
 /* callbacks */
-static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
 static void _on_exit(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 static void _on_file_new(GtkWidget * widget, gpointer data);
@@ -93,7 +82,6 @@ GEDI * gedi_new(void)
 	g->project = NULL;
 	_new_config(g);
 	_new_toolbar(g);
-	g->ab_window = NULL;
 	return g;
 }
 
@@ -270,24 +258,27 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 
 
 /* _on_help_about */
+/* callbacks */
+static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	GEDI * g = data;
+	static GtkWidget * window = NULL;
+	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
+	char const copyright[] = "Copyright (c) 2005 khorben";
 
-	if(g->ab_window == NULL)
+	if(window != NULL)
 	{
-		g->ab_window = gtk_about_dialog_new();
-		g_signal_connect(G_OBJECT(g->ab_window), "delete_event",
-				G_CALLBACK(_on_about_xkill), NULL);
-		gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(g->ab_window),
-				_about_authors);
-		gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(g->ab_window),
-				_about_copyright);
-		gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(g->ab_window),
-				_about_website);
+		gtk_widget_show(window);
+		return;
 	}
-	/* FIXME */
-	gtk_widget_show(g->ab_window);
+	window = gtk_about_dialog_new();
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_on_about_xkill), NULL);
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_widget_show(window);
 }
 
 
