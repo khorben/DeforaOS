@@ -238,15 +238,6 @@ void gedi_project_save_as(GEDI * gedi, char const * file)
 
 
 /* callbacks */
-/* _on_about_xkill */
-static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
-{
-	gtk_widget_hide(widget);
-	return TRUE;
-}
-
-
 /* _on_exit */
 static void _on_exit(GtkWidget * widget, gpointer data)
 {
@@ -279,6 +270,13 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
 	gtk_widget_show(window);
+}
+
+static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
