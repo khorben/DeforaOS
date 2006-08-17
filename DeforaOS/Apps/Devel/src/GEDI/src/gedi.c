@@ -19,7 +19,7 @@ static char const _about_copyright[] = "Copyright © 2005 DeforaOS developpers";
 static char const _about_website[] =
 "http://cvs.defora.org/cgi-bin/cvsweb/DeforaOS/Apps/Devel/src/GEDI";
 /* callbacks */
-static void _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_exit(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
@@ -29,14 +29,14 @@ static void _on_file_preferences(GtkWidget * widget, gpointer data);
 static void _on_preferences_apply(GtkWidget * widget, gpointer data);
 static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
 static void _on_preferences_ok(GtkWidget * widget, gpointer data);
-static void _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_project_new(GtkWidget * widget, gpointer data);
 static void _on_project_open(GtkWidget * widget, gpointer data);
 static void _on_project_properties(GtkWidget * widget, gpointer data);
 static void _on_project_save(GtkWidget * widget, gpointer data);
 static void _on_project_save_as(GtkWidget * widget, gpointer data);
-static void _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data);
+static gboolean _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data);
 /* menus */
 struct _menu {
 	char * name;
@@ -104,8 +104,7 @@ static void _new_config(GEDI * g)
 
 	if((g->config = config_new()) == NULL)
 	{
-		gedi_error(g, "Could not read configuration",
-				strerror(errno));
+		gedi_error(g, "Could not read configuration", strerror(errno));
 		return;
 	}
 #ifdef PREFIX
@@ -144,7 +143,7 @@ static void _new_toolbar(GEDI * g)
 	_new_toolbar_menu(g);
 	g->tb_toolbar = gtk_toolbar_new();
 	gtk_toolbar_insert_stock(GTK_TOOLBAR(g->tb_toolbar), GTK_STOCK_QUIT,
-			"Exit GEDI", NULL, G_CALLBACK(_on_exit), g, 0);
+			"Exit", NULL, G_CALLBACK(_on_exit), g, 0);
 	gtk_box_pack_start(GTK_BOX(g->tb_vbox), g->tb_toolbar, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(g->tb_window), g->tb_vbox);
 	gtk_widget_show_all(g->tb_window);
@@ -252,10 +251,11 @@ void gedi_project_save_as(GEDI * gedi, char const * file)
 
 /* callbacks */
 /* _on_about_xkill */
-static void _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
@@ -413,10 +413,11 @@ static void _on_preferences_ok(GtkWidget * widget, gpointer data)
 
 
 /* _on_preferences_xkill */
-static void _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
@@ -498,7 +499,8 @@ static void _on_project_save_as(GtkWidget * widget, gpointer data)
 
 
 /* _on_xkill */
-static void _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gboolean _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	_on_exit(widget, data);
+	return FALSE;
 }
