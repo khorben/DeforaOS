@@ -41,36 +41,36 @@ static void _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data);
 struct _menu {
 	char * name;
 	GtkSignalFunc callback;
-/*	char * item; */
+	char * stock;
 };
 struct _menubar {
 	char * name;
 	struct _menu * menu;
 };
 struct _menu _menu_file[] = {
-	{ "_New file...", G_CALLBACK(_on_file_new) /*, GTK_STOCK_NEW */ },
-	{ "_Open file...", G_CALLBACK(_on_file_open) /*, GTK_STOCK_OPEN */ },
-	{ "", NULL /*, NULL */ },
-	{ "_Preferences...", G_CALLBACK(_on_file_preferences) /*,
-		GTK_STOCK_PREFERENCES */ },
-	{ "", NULL /*, NULL */ },
-	{ "_Exit GEDI", G_CALLBACK(_on_exit) /*, GTK_STOCK_QUIT */ },
-	{ NULL, NULL /*, NULL */ }
+	{ "_New file...", G_CALLBACK(_on_file_new), GTK_STOCK_NEW },
+	{ "_Open file...", G_CALLBACK(_on_file_open), GTK_STOCK_OPEN },
+	{ "", NULL , NULL },
+	{ "_Preferences...", G_CALLBACK(_on_file_preferences),
+		GTK_STOCK_PREFERENCES },
+	{ "", NULL, NULL },
+	{ "_Exit", G_CALLBACK(_on_exit), GTK_STOCK_QUIT },
+	{ NULL, NULL, NULL }
 };
 struct _menu _menu_projects[] = { /* FIXME will certainly be dynamic */
-	{ "_New project...", G_CALLBACK(_on_project_new) /*, GTK_STOCK_NEW */ },
-	{ "_Open project...", G_CALLBACK(_on_project_open) /*, GTK_STOCK_OPEN */ },
-	{ "_Save project", G_CALLBACK(_on_project_save) /*, GTK_STOCK_SAVE */ },
-	{ "Save project _as...", G_CALLBACK(_on_project_save_as) /*,
-		GTK_STOCK_SAVE_AS */ },
-	{ "", NULL /*, NULL */ },
-	{ "_Properties...", G_CALLBACK(_on_project_properties) /*,
-		GTK_STOCK_PREFERENCES */ },
-	{ NULL, NULL /*, NULL */ }
+	{ "_New project...", G_CALLBACK(_on_project_new), GTK_STOCK_NEW },
+	{ "_Open project...", G_CALLBACK(_on_project_open), GTK_STOCK_OPEN },
+	{ "_Save project", G_CALLBACK(_on_project_save), GTK_STOCK_SAVE },
+	{ "Save project _as...", G_CALLBACK(_on_project_save_as),
+		GTK_STOCK_SAVE_AS },
+	{ "", NULL, NULL },
+	{ "_Properties...", G_CALLBACK(_on_project_properties),
+		GTK_STOCK_PROPERTIES },
+	{ NULL, NULL, NULL }
 };
 struct _menu _menu_help[] = {
-	{ "_About GEDI...", G_CALLBACK(_on_help_about) /*, GTK_STOCK_ABOUT */ },
-	{ NULL, NULL /*, NULL */ }
+	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT },
+	{ NULL, NULL, NULL }
 };
 struct _menubar _menubar[] = {
 	{ "_File", _menu_file },
@@ -167,12 +167,18 @@ static void _new_toolbar_menu(GEDI * g)
 		{
 			if(_menubar[i].menu[j].name[0] == '\0')
 				menuitem = gtk_separator_menu_item_new();
-			else
+			else if(_menubar[i].menu[j].stock == 0)
 				menuitem = gtk_menu_item_new_with_mnemonic(
 						_menubar[i].menu[j].name);
+			else
+				menuitem = gtk_image_menu_item_new_from_stock(
+						_menubar[i].menu[j].stock,
+						NULL);
 			if(_menubar[i].menu[j].callback != NULL)
 				g_signal_connect(G_OBJECT(menuitem), "activate",
 						G_CALLBACK(_menubar[i].menu[j].callback), g);
+			else
+				gtk_widget_set_sensitive(menuitem, FALSE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
