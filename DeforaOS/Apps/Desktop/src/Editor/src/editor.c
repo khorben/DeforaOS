@@ -20,6 +20,7 @@ static void _editor_on_file_open(GtkWidget * widget, gpointer data);
 static void _editor_on_file_save(GtkWidget * widget, gpointer data);
 static void _editor_on_file_save_as(GtkWidget * widget, gpointer data);
 static void _editor_on_help_about(GtkWidget * widget, gpointer data);
+static void _editor_on_new(GtkWidget * widget, gpointer data);
 static void _editor_on_open(GtkWidget * widget, gpointer data);
 struct _menu
 {
@@ -46,6 +47,10 @@ struct _menu _menu_file[] =
 };
 struct _menu _menu_edit[] =
 {
+	{ "_Cut", NULL, GTK_STOCK_CUT },
+	{ "_Copy", NULL, GTK_STOCK_COPY },
+	{ "_Paste", NULL, GTK_STOCK_PASTE },
+	{ "", NULL, NULL },
 	{ "_Preferences", G_CALLBACK(_editor_on_edit_preferences),
 	       	GTK_STOCK_PREFERENCES },
 	{ NULL, NULL, NULL }
@@ -76,6 +81,7 @@ Editor * editor_new(void)
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
+	editor->filename = NULL;
 	editor->saved = 1;
 	/* widgets */
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -90,6 +96,8 @@ Editor * editor_new(void)
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
+				_editor_on_new), editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
 	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
@@ -270,6 +278,8 @@ static void _editor_on_file_close(GtkWidget * widget, gpointer data)
 static void _editor_on_file_new(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
+
+	editor_open(editor, NULL);
 }
 
 static void _editor_on_file_open(GtkWidget * widget, gpointer data)
@@ -333,6 +343,13 @@ static void _editor_on_help_about(GtkWidget * widget, gpointer data)
 #endif
 }
 
+static void _editor_on_new(GtkWidget * widget, gpointer data)
+{
+	Editor * editor = data;
+
+	editor_open(editor, NULL);
+}
+
 static void _editor_on_open(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
@@ -359,8 +376,31 @@ gboolean editor_close(Editor * editor)
 	return TRUE;
 }
 
+
 void editor_open(Editor * editor, char const * filename)
 {
+	FILE * fp;
+	GtkTextBuffer * tbuf;
+	GtkTextIter iter;
+	char buf[BUFSIZ];
+	size_t len;
+
+	/* FIXME close previously opened file */
+	if(filename == NULL)
+		return;
+	if((fp = fopen(filename, "r")) == NULL)
+	{
+		_editor_error(editor, filename, 0);
+		return;
+	}
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	gtk_text_buffer_set_text(tbuf, "", 0);
+	while((len = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
+	{
+		gtk_text_buffer_get_end_iter(tbuf, &iter);
+		gtk_text_buffer_insert(tbuf, &iter, buf, len);
+	}
+	fclose(fp);
 }
 
 
