@@ -10,15 +10,17 @@
 /* Editor */
 static GtkWidget * _new_menubar(Editor * editor);
 /* callbacks */
-static gboolean _editor_on_close(GtkWidget * widget, GdkEvent * event,
+static void _editor_on_close(GtkWidget * widget, gpointer data);
+static void _editor_on_edit_preferences(GtkWidget * widget, gpointer data);
+static gboolean _editor_on_exit(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _editor_on_file_close(GtkWidget * widget, gpointer data);
 static void _editor_on_file_new(GtkWidget * widget, gpointer data);
 static void _editor_on_file_open(GtkWidget * widget, gpointer data);
 static void _editor_on_file_save(GtkWidget * widget, gpointer data);
 static void _editor_on_file_save_as(GtkWidget * widget, gpointer data);
-static void _editor_on_edit_preferences(GtkWidget * widget, gpointer data);
 static void _editor_on_help_about(GtkWidget * widget, gpointer data);
+static void _editor_on_open(GtkWidget * widget, gpointer data);
 struct _menu
 {
 	char * name;
@@ -80,7 +82,7 @@ Editor * editor_new(void)
 	gtk_window_set_default_size(GTK_WINDOW(editor->window), 512, 384);
 	gtk_window_set_title(GTK_WINDOW(editor->window), "Text editor");
 	g_signal_connect(G_OBJECT(editor->window), "delete_event", G_CALLBACK(
-			_editor_on_close), editor);
+			_editor_on_exit), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	gtk_box_pack_start(GTK_BOX(vbox), _new_menubar(editor), FALSE, FALSE,
@@ -90,8 +92,12 @@ Editor * editor_new(void)
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
+				_editor_on_open), editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
+				_editor_on_close), editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* view */
@@ -163,12 +169,11 @@ static int _editor_error(Editor * editor, char const * message, int ret)
 	return ret;
 }
 
-static gboolean _editor_on_close(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static void _editor_on_close(GtkWidget * widget, gpointer data)
 {
-	/* FIXME ask the user whether to save or not */
-	gtk_main_quit();
-	return FALSE;
+	Editor * editor = data;
+
+	editor_close(editor);
 }
 
 static void _preferences_set(Editor * editor);
@@ -246,6 +251,14 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 	/* FIXME apply settings */
 }
 
+static gboolean _editor_on_exit(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	Editor * editor = data;
+
+	return editor_close(editor);
+}
+
 static void _editor_on_file_close(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
@@ -262,6 +275,8 @@ static void _editor_on_file_new(GtkWidget * widget, gpointer data)
 static void _editor_on_file_open(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
+
+	editor_open_dialog(editor);
 }
 
 static void _editor_on_file_save(GtkWidget * widget, gpointer data)
@@ -312,14 +327,56 @@ static void _editor_on_help_about(GtkWidget * widget, gpointer data)
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_transient(GTK_WINDOW(window),
-			 GTK_WINDOW(editor->window));
+			GTK_WINDOW(editor->window));
 	gtk_window_set_title(GTK_WINDOW(window), "About Editor");
 	gtk_widget_show_all(window);
 #endif
+}
+
+static void _editor_on_open(GtkWidget * widget, gpointer data)
+{
+	Editor * editor = data;
+
+	editor_open_dialog(editor);
 }
 
 
 void editor_delete(Editor * editor)
 {
 	free(editor);
+}
+
+
+/* useful */
+gboolean editor_close(Editor * editor)
+{
+	if(editor->saved)
+	{
+		gtk_main_quit();
+		return FALSE;
+	}
+	/* FIXME dialog for confirmation */
+	return TRUE;
+}
+
+void editor_open(Editor * editor, char const * filename)
+{
+}
+
+
+void editor_open_dialog(Editor * editor)
+{
+	GtkWidget * dialog;
+	int ret;
+	char * filename;
+
+	dialog = gtk_file_chooser_dialog_new("Open file...",
+			GTK_WINDOW(editor->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, 1,
+			GTK_STOCK_OPEN, 0, NULL);
+	if((ret = gtk_dialog_run(GTK_DIALOG(dialog))) == 0)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	editor_open(editor, filename);
 }

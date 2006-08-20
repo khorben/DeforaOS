@@ -25,4 +25,9 @@ typedef struct _Editor
 Editor * editor_new(void);
 void editor_delete(Editor * editor);
 
+/* useful */
+gboolean editor_close(Editor * editor);
+void editor_open(Editor * editor, char const * filename);
+void editor_open_dialog(Editor * editor);
+
 #endif /* !EDITOR_EDITOR_H */
