@@ -139,7 +139,16 @@ function _html_tags($string, $tags = FALSE)
 				'/ul');
 	$string = _html_safe($string);
 	foreach($tags as $t)
-		$string = str_replace("&lt;$t&gt;", "<$t>", $string);
+		if($t == 'a')
+			$string = preg_replace(
+'/&lt;a href=&quot;([a-zA-Z0-9:.-_+%~\/?=&]+)&quot;&gt;(.*)&lt;\/a&gt;/',
+					'<a href="\1">\2</a>', $string);
+		else if($t == 'img')
+			$string = preg_replace(
+'/&lt;img src=&quot;(.*)&quot; alt=&quot;(.*)&quot;\/&gt;/',
+				'<img src="\1" alt="\2"/>', $string);
+		else
+			$string = str_replace("&lt;$t&gt;", "<$t>", $string);
 	return $string;
 }
 
