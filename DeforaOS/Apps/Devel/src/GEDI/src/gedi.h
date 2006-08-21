@@ -26,9 +26,6 @@ typedef struct _GEDI
 
 	/* preferences */
 	GtkWidget * pr_window;
-
-	/* about */
-	GtkWidget * ab_window;
 } GEDI;
 
 
