@@ -74,15 +74,15 @@ static void _new_config(GEDI * g);
 static void _new_toolbar(GEDI * g);
 GEDI * gedi_new(void)
 {
-	GEDI * g;
+	GEDI * gedi;
 
-	if((g = malloc(sizeof(GEDI))) == NULL)
+	if((gedi = malloc(sizeof(*gedi))) == NULL)
 		return NULL;
-	g->projects = NULL;
-	g->project = NULL;
-	_new_config(g);
-	_new_toolbar(g);
-	return g;
+	gedi->projects = NULL;
+	gedi->project = NULL;
+	_new_config(gedi);
+	_new_toolbar(gedi);
+	return gedi;
 }
 
 static char * _config_file(void);
@@ -241,8 +241,6 @@ void gedi_project_save_as(GEDI * gedi, char const * file)
 /* _on_exit */
 static void _on_exit(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
-
 	/* FIXME check that everything is properly saved */
 	gtk_main_quit();
 }
@@ -254,7 +252,7 @@ static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 	static GtkWidget * window = NULL;
 	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
 	char const copyright[] = "Copyright (c) 2005 khorben";
@@ -265,6 +263,8 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 		return;
 	}
 	window = gtk_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				gedi->tb_window));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_on_about_xkill), NULL);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
@@ -283,8 +283,6 @@ static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
 /* _on_file_new */
 static void _on_file_new(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
-
 	/* FIXME */
 }
 
@@ -292,7 +290,7 @@ static void _on_file_new(GtkWidget * widget, gpointer data)
 /* _on_file_open */
 static void _on_file_open(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 	GtkWidget * dialog;
 	char * file;
 
@@ -303,7 +301,7 @@ static void _on_file_open(GtkWidget * widget, gpointer data)
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 	{
 		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gedi_file_open(g, file);
+		gedi_file_open(gedi, file);
 		g_free(file);
 	}
 	gtk_widget_destroy(dialog);
@@ -375,8 +373,6 @@ static void _file_preferences_new(GEDI * g)
 /* _on_preferences_apply */
 static void _on_preferences_apply(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
-
 	/* FIXME */
 }
 
@@ -384,10 +380,10 @@ static void _on_preferences_apply(GtkWidget * widget, gpointer data)
 /* _on_preferences_cancel */
 static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 
 	/* FIXME */
-	gtk_widget_hide(g->pr_window);
+	gtk_widget_hide(gedi->pr_window);
 }
 
 
@@ -413,8 +409,6 @@ static gboolean _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
 /* _on_project_new */
 static void _on_project_new(GtkWidget * widget, gpointer data)
 {
-	GEDI * g = data;
-
 	/* FIXME */
 }
 
