@@ -265,6 +265,7 @@ static void _about_license(GtkWidget * widget, gpointer data);
 #endif
 static void gputty_on_about(GtkWidget * widget, gpointer data)
 {
+	GPuTTY * gputty = data;
 	static GtkWidget * window = NULL;
 	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
 	char const comment[] =
@@ -290,6 +291,8 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 		return;
 	}
 	window = gtk_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				gputty->window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
@@ -312,7 +315,7 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "About " PACKAGE);
-	gtk_window_set_transient(GTK_WINDOW(window), GTK_WINDOW(
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				gputty->window));
 	{
 		GtkWidget * vbox;
