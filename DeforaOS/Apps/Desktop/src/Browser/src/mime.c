@@ -65,8 +65,11 @@ Mime * mime_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 		p[mime->types_cnt].icon_48 = NULL;
 #endif
-		p[mime->types_cnt++].open = mime->config != NULL
+		p[mime->types_cnt].open = mime->config != NULL
 			? config_get(mime->config, buf, "open") : NULL;
+		p[mime->types_cnt].edit = mime->config != NULL
+			? config_get(mime->config, buf, "edit") : NULL;
+		mime->types_cnt++;
 		if(p[mime->types_cnt-1].type == NULL
 				|| p[mime->types_cnt-1].glob == NULL)
 			break;
@@ -112,6 +115,7 @@ void mime_delete(Mime * mime)
 		free(mime->types[i].icon_48);
 #endif
 		free(mime->types[i].open);
+		free(mime->types[i].edit);
 	}
 	free(mime->types);
 	if(mime->config != NULL)
@@ -155,6 +159,34 @@ void mime_open(Mime * mime, char const * path)
 		return;
 	execlp(mime->types[i].open, mime->types[i].open, path, NULL);
 	fprintf(stderr, "%s%s%s%s", "browser: ", mime->types[i].open, ": ",
+			strerror(errno));
+	exit(2);
+}
+
+
+void mime_edit(Mime * mime, char const * path)
+	/* FIXME report errors */
+{
+	char const * type;
+	unsigned int i;
+	pid_t pid;
+
+	if((type = mime_type(mime, path)) == NULL)
+		return;
+	for(i = 0; i < mime->types_cnt; i++)
+		if(strcmp(type, mime->types[i].type) == 0)
+			break;
+	if(i == mime->types_cnt || mime->types[i].edit == NULL)
+		return;
+	if((pid = fork()) == -1)
+	{
+		perror("fork");
+		return;
+	}
+	if(pid != 0)
+		return;
+	execlp(mime->types[i].edit, mime->types[i].edit, path, NULL);
+	fprintf(stderr, "%s%s%s%s", "browser: ", mime->types[i].edit, ": ",
 			strerror(errno));
 	exit(2);
 }

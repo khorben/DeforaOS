@@ -21,6 +21,7 @@ typedef struct _MimeType
 	GdkPixbuf * icon_48;
 #endif
 	char * open;
+	char * edit;
 } MimeType;
 
 typedef struct _Mime
@@ -38,6 +39,8 @@ void mime_delete(Mime * mime);
 /* useful */
 char const * mime_type(Mime * mime, char const * path);
 void mime_open(Mime * mime, char const * path);
+/* FIXME have mime_action("open" | "edit" | ...) instead */
+void mime_edit(Mime * mime, char const * path);
 GdkPixbuf * mime_icons(Mime * mime, GtkIconTheme * theme, char const * type,
 		GdkPixbuf ** icon_48);
 
