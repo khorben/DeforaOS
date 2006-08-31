@@ -298,6 +298,7 @@ static GtkWidget * _new_menubar(Browser * browser)
 	GtkWidget * menuitem;
 	unsigned int i;
 	unsigned int j;
+	struct _menu * p;
 
 	tb_menubar = gtk_menu_bar_new();
 	for(i = 0; _menubar[i].name != NULL; i++)
@@ -306,18 +307,19 @@ static GtkWidget * _new_menubar(Browser * browser)
 		menu = gtk_menu_new();
 		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
 		{
-			if(_menubar[i].menu[j].name[0] == '\0')
+			p = &_menubar[i].menu[j];
+			if(p->name[0] == '\0')
 				menuitem = gtk_separator_menu_item_new();
-			else if(_menubar[i].menu[j].stock == 0)
+			else if(p->stock == NULL)
 				menuitem = gtk_menu_item_new_with_mnemonic(
-						_menubar[i].menu[j].name);
+						p->name);
 			else
 				menuitem = gtk_image_menu_item_new_from_stock(
-						_menubar[i].menu[j].stock,
-						NULL);
-			if(_menubar[i].menu[j].callback != NULL)
+						p->stock, NULL);
+			if(p->callback != NULL)
 				g_signal_connect(G_OBJECT(menuitem), "activate",
-						G_CALLBACK(_menubar[i].menu[j].callback), browser);
+						G_CALLBACK(p->callback),
+						browser);
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
