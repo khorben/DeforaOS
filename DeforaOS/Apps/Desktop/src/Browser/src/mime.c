@@ -11,6 +11,7 @@
 #include <fnmatch.h>
 #include "browser.h"
 #include "mime.h"
+#include "../config.h"
 
 
 /* Mime */
@@ -18,10 +19,11 @@ static void _new_config(Mime * mime);
 Mime * mime_new(void)
 {
 	Mime * mime;
-	char * globs[] = { /* ideally taken from Gtk+ but seems impossible */
-	       	"/usr/pkg/share/mime/globs",
-	       	"/usr/local/share/mime/globs",
+	char * globs[] = {
+		PREFIX "/share/mime/globs",
 	       	"/usr/share/mime/globs",
+	       	"/usr/local/share/mime/globs",
+	       	"/usr/pkg/share/mime/globs",
 		NULL };
 	char ** g = globs;
 	FILE * fp = NULL;
