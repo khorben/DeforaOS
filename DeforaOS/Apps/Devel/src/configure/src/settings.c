@@ -24,9 +24,9 @@ String * sSettingsType[ST_LAST+1] =
 
 /* functions */
 /* settings */
-static int _settings_do(Prefs * prefs, String const * directory,
-		String const * package, String const * version,
-		String const * extension);
+static int _settings_do(Prefs * prefs, Config * config,
+		String const * directory, String const * package,
+		String const * version, String const * extension);
 int settings(Prefs * prefs, Config * config, String const * directory,
 		String const * package, String const * version)
 {
@@ -43,7 +43,8 @@ int settings(Prefs * prefs, Config * config, String const * directory,
 			continue;
 		c = p[i];
 		p[i] = '\0';
-		ret |= _settings_do(prefs, directory, package, version, p);
+		ret |= _settings_do(prefs, config, directory, package, version,
+				p);
 		if(c == '\0')
 			break;
 		p[i] = c;
@@ -53,11 +54,13 @@ int settings(Prefs * prefs, Config * config, String const * directory,
 	return ret;
 }
 
-static int _do_h(FILE * fp, String const * package, String const * version);
-static int _do_sh(FILE * fp, String const * package, String const * version);
-static int _settings_do(Prefs * prefs, String const * directory,
-		String const * package, String const * version,
-		String const * extension)
+static int _do_h(Prefs * prefs, Config * config, FILE * fp,
+		String const * package, String const * version);
+static int _do_sh(Prefs * prefs, Config * config, FILE * fp,
+		String const * package, String const * version);
+static int _settings_do(Prefs * prefs, Config * config,
+		String const * directory, String const * package,
+		String const * version, String const * extension)
 {
 	int ret = 0;
 	int i;
@@ -84,39 +87,51 @@ static int _settings_do(Prefs * prefs, String const * directory,
 		return 1;
 	}
 	if((fp = fopen(filename, "w")) == NULL)
-		ret |= configure_error(filename, 1);
-	else
-	{
-		if(prefs->flags & PREFS_v)
-			printf("%s%s%s%s\n", "Creating config.", extension,
-					" in ", directory);
-		switch(i)
-		{
-			case ST_H:
-				ret |= _do_h(fp, package, version);
-				break;
-			case ST_SH:
-				ret |= _do_sh(fp, package, version);
-				break;
-			default:
-				break;
-		}
-		fclose(fp);
-	}
+		configure_error(filename, 0);
 	string_delete(filename);
+	if(fp == NULL)
+		return 1;
+	if(prefs->flags & PREFS_v)
+		printf("%s%s%s%s\n", "Creating config.", extension, " in ",
+				directory);
+	switch(i)
+	{
+		case ST_H:
+			ret |= _do_h(prefs, config, fp, package, version);
+			break;
+		case ST_SH:
+			ret |= _do_sh(prefs, config, fp, package, version);
+			break;
+		default:
+			/* FIXME warn user? */
+			break;
+	}
+	fclose(fp);
 	return ret;
 }
 
-static int _do_h(FILE * fp, String const * package, String const * version)
+static int _do_h(Prefs * prefs, Config * config, FILE * fp,
+		String const * package, String const * version)
 {
+	char const * p;
+
 	fprintf(fp, "%s%s%s%s%s%s", "#define PACKAGE \"", package, "\"\n",
 			"#define VERSION \"", version, "\"\n");
+	if((p = prefs->prefix) != NULL || (p = config_get(config, "", "prefix"))
+			!= NULL)
+		fprintf(fp, "%s%s%s", "\n#define PREFIX \"", p, "\"\n");
 	return 0;
 }
 
-static int _do_sh(FILE * fp, String const * package, String const * version)
+static int _do_sh(Prefs * prefs, Config * config, FILE * fp,
+		String const * package, String const * version)
 {
+	char const * p;
+
 	fprintf(fp, "%s%s%s%s%s%s", "PACKAGE=\"", package, "\"\n",
 			"VERSION=\"", version, "\"\n");
+	if((p = prefs->prefix) != NULL || (p = config_get(config, "", "prefix"))
+			!= NULL)
+		fprintf(fp, "%s%s%s", "\nPREFIX=\"", p, "\"\n");
 	return 0;
 }
