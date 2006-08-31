@@ -27,14 +27,14 @@ static void _new_detailview(Browser * browser);
 static void _browser_on_back(GtkWidget * widget, gpointer data);
 static gboolean _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
-static void _browser_on_edit_copy(GtkWidget * widget, gpointer data);
-static void _browser_on_edit_cut(GtkWidget * widget, gpointer data);
-static void _browser_on_edit_delete(GtkWidget * widget, gpointer data);
-static void _browser_on_edit_preferences(GtkWidget * widget, gpointer data);
-static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data);
-static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data);
-static void _browser_on_file_new_window(GtkWidget * widget, gpointer data);
-static void _browser_on_file_close(GtkWidget * widget, gpointer data);
+static void _browser_on_edit_copy(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_edit_cut(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_edit_delete(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_edit_preferences(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_edit_select_all(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_file_new_window(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_file_close(GtkMenuItem * menuitem, gpointer data);
 static void _browser_on_forward(GtkWidget * widget, gpointer data);
 static void _browser_on_help_about(GtkWidget * widget, gpointer data);
 static void _browser_on_home(GtkWidget * widget, gpointer data);
@@ -51,9 +51,9 @@ static void _browser_on_refresh(GtkWidget * widget, gpointer data);
 static void _browser_on_updir(GtkWidget * widget, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _browser_on_view_as(GtkWidget * widget, gpointer data);
-static void _browser_on_view_detail(GtkWidget * widget, gpointer data);
-static void _browser_on_view_icon(GtkWidget * widget, gpointer data);
-static void _browser_on_view_list(GtkWidget * widget, gpointer data);
+static void _browser_on_view_detail(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_view_icon(GtkMenuItem * menuitem, gpointer data);
+static void _browser_on_view_list(GtkMenuItem * menuitem, gpointer data);
 #endif
 struct _menu
 {
@@ -471,7 +471,10 @@ static GtkListStore * _create_store(void)
 	return store;
 }
 
+static void _browser_go(Browser * browser, char const * path);
 #if GTK_CHECK_VERSION(2, 6, 0)
+static gboolean _browser_on_icon_button(GtkWidget * widget,
+		GdkEventButton * event, gpointer data);
 static void _new_iconview(Browser * browser)
 {
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
@@ -484,8 +487,103 @@ static void _new_iconview(Browser * browser)
 	gtk_icon_view_set_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
 			GTK_SELECTION_MULTIPLE);
-	g_signal_connect(browser->iconview, "item-activated", G_CALLBACK(
-				_browser_on_icon_default), browser);
+	g_signal_connect(G_OBJECT(browser->iconview), "item-activated",
+			G_CALLBACK(_browser_on_icon_default), browser);
+	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
+			G_CALLBACK(_browser_on_icon_button), browser);
+}
+
+/* FIXME rather ugly, maybe could go directly in Browser */
+typedef struct _IconCallback
+{
+	Browser * browser;
+	char * path;
+} IconCallback;
+static IconCallback _icon_cb_data;
+static void _browser_on_icon_edit(GtkWidget * widget, gpointer data);
+static void _browser_on_icon_open(GtkWidget * widget, gpointer data);
+static gboolean _browser_on_icon_button(GtkWidget * widget,
+		GdkEventButton * event, gpointer data)
+{
+	Browser * browser = data;
+	GtkWidget * menu;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	int p;
+	char * q;
+	GtkWidget * menuitem;
+
+	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
+		return FALSE;
+	menu = gtk_menu_new();
+	/* FIXME prevents actions to be called but probably leaks memory
+	g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(
+				gtk_widget_destroy), NULL); */
+	if(gtk_icon_view_get_item_at_pos(GTK_ICON_VIEW(browser->iconview),
+				(int)event->x, (int)event->y, &path, NULL)
+			== TRUE)
+	{
+		/* FIXME error checking + sub-functions */
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
+				path);
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_IS_DIRECTORY, &p, -1);
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &q, -1);
+		_icon_cb_data.browser = browser;
+		_icon_cb_data.path = q;
+		if(p == TRUE)
+		{
+			menuitem = gtk_menu_item_new_with_mnemonic("_Open");
+			g_signal_connect(G_OBJECT(menuitem), "activate",
+					G_CALLBACK(_browser_on_icon_open),
+					&_icon_cb_data);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			menuitem = gtk_menu_item_new_with_mnemonic(
+					"_Properties");
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		}
+		else
+		{
+			menuitem = gtk_menu_item_new_with_mnemonic("_Open");
+			g_signal_connect(G_OBJECT(menuitem), "activate",
+					G_CALLBACK(_browser_on_icon_open),
+					&_icon_cb_data);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			menuitem = gtk_menu_item_new_with_mnemonic("_Edit");
+			g_signal_connect(G_OBJECT(menuitem), "activate",
+					G_CALLBACK(_browser_on_icon_edit),
+					&_icon_cb_data);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			menuitem = gtk_menu_item_new_with_mnemonic(
+					"_Properties");
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		}
+		gtk_tree_path_free(path);
+	}
+	else
+	{
+		menuitem = gtk_menu_item_new_with_mnemonic("_Properties");
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
+	gtk_menu_attach_to_widget(GTK_MENU(menu), browser->iconview, NULL);
+	gtk_widget_show_all(menu);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, event->time);
+	return TRUE;
+}
+
+static void _browser_on_icon_edit(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+
+	mime_edit(cb->browser->mime, cb->path);
+}
+
+static void _browser_on_icon_open(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+
+	mime_open(cb->browser->mime, cb->path);
 }
 #endif
 
@@ -542,7 +640,7 @@ static gboolean _browser_on_closex(GtkWidget * widget, GdkEvent * event,
 }
 
 static GList * _copy_selection(Browser * browser);
-static void _browser_on_edit_copy(GtkWidget * widget, gpointer data)
+static void _browser_on_edit_copy(GtkMenuItem * menuitem, gpointer data)
 	/* FIXME */
 {
 	Browser * browser = data;
@@ -586,7 +684,7 @@ static GList * _copy_selection(Browser * browser)
 	}
 }
 
-static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
+static void _browser_on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 	/* FIXME */
 {
 	Browser * browser = data;
@@ -612,7 +710,7 @@ static void _browser_on_edit_cut(GtkWidget * widget, gpointer data)
 }
 
 static void _delete_do(Browser * browser, GList * selection, unsigned long cnt);
-static void _browser_on_edit_delete(GtkWidget * widget, gpointer data)
+static void _browser_on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * dialog;
@@ -682,7 +780,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 	exit(2);
 }
 
-static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data)
+static void _browser_on_edit_select_all(GtkMenuItem * menuitem, gpointer data)
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
@@ -691,7 +789,7 @@ static void _browser_on_edit_select_all(GtkWidget * widget, gpointer data)
 #endif
 }
 
-static void _browser_on_edit_unselect_all(GtkWidget * widget, gpointer data)
+static void _browser_on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data)
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
@@ -708,11 +806,12 @@ static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 static void _preferences_on_show_hidden_files(GtkToggleButton * button,
 		gpointer data);
-static void _browser_on_edit_preferences(GtkWidget * widget, gpointer data)
+static void _browser_on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkWidget * widget;
 	GtkSizeGroup * group;
 
 	if(browser->pr_window != NULL)
@@ -795,7 +894,7 @@ static void _preferences_on_show_hidden_files(GtkToggleButton * button,
 		= gtk_toggle_button_get_active(button);
 }
 
-static void _browser_on_file_new_window(GtkWidget * widget, gpointer data)
+static void _browser_on_file_new_window(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 	pid_t pid;
@@ -812,7 +911,7 @@ static void _browser_on_file_new_window(GtkWidget * widget, gpointer data)
 	exit(2);
 }
 
-static void _browser_on_file_close(GtkWidget * widget, gpointer data)
+static void _browser_on_file_close(GtkMenuItem * menuitem, gpointer data)
 {
 	gtk_main_quit();
 }
@@ -932,7 +1031,6 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 #endif
 
 
-static void _browser_go(Browser * browser, char const * path);
 static void _browser_on_home(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -1049,15 +1147,15 @@ static void _browser_on_view_as(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 
 	if(browser->iconview == NULL)
-		_browser_on_view_icon(widget, data);
+		_browser_on_view_icon(NULL, data);
 	else if(gtk_icon_view_get_orientation(GTK_ICON_VIEW(browser->iconview))
 			== GTK_ORIENTATION_VERTICAL)
-		_browser_on_view_list(widget, data);
+		_browser_on_view_list(NULL, data);
 	else
-		_browser_on_view_detail(widget, data);
+		_browser_on_view_detail(NULL, data);
 }
 
-static void _browser_on_view_detail(GtkWidget * widget, gpointer data)
+static void _browser_on_view_detail(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 
@@ -1071,7 +1169,7 @@ static void _browser_on_view_detail(GtkWidget * widget, gpointer data)
 			browser->detailview);
 }
 
-static void _browser_on_view_icon(GtkWidget * widget, gpointer data)
+static void _browser_on_view_icon(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 
@@ -1091,7 +1189,7 @@ static void _browser_on_view_icon(GtkWidget * widget, gpointer data)
 	gtk_widget_show(browser->iconview);
 }
 
-static void _browser_on_view_list(GtkWidget * widget, gpointer data)
+static void _browser_on_view_list(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 
