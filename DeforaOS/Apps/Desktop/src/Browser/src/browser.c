@@ -534,36 +534,40 @@ static gboolean _browser_on_icon_button(GtkWidget * widget,
 		_icon_cb_data.path = q;
 		if(p == TRUE)
 		{
-			menuitem = gtk_menu_item_new_with_mnemonic("_Open");
+			menuitem = gtk_image_menu_item_new_from_stock(
+					GTK_STOCK_OPEN, NULL);
 			g_signal_connect(G_OBJECT(menuitem), "activate",
 					G_CALLBACK(_browser_on_icon_open),
 					&_icon_cb_data);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-			menuitem = gtk_menu_item_new_with_mnemonic(
-					"_Properties");
+			menuitem = gtk_image_menu_item_new_from_stock(
+					GTK_STOCK_PROPERTIES, NULL);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		else
 		{
-			menuitem = gtk_menu_item_new_with_mnemonic("_Open");
+			menuitem = gtk_image_menu_item_new_from_stock(
+					GTK_STOCK_OPEN, NULL);
 			g_signal_connect(G_OBJECT(menuitem), "activate",
 					G_CALLBACK(_browser_on_icon_open),
 					&_icon_cb_data);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-			menuitem = gtk_menu_item_new_with_mnemonic("_Edit");
+			menuitem = gtk_image_menu_item_new_from_stock(
+					GTK_STOCK_EDIT, NULL);
 			g_signal_connect(G_OBJECT(menuitem), "activate",
 					G_CALLBACK(_browser_on_icon_edit),
 					&_icon_cb_data);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-			menuitem = gtk_menu_item_new_with_mnemonic(
-					"_Properties");
+			menuitem = gtk_image_menu_item_new_from_stock(
+					GTK_STOCK_PROPERTIES, NULL);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_tree_path_free(path);
 	}
 	else
 	{
-		menuitem = gtk_menu_item_new_with_mnemonic("_Properties");
+		menuitem = gtk_image_menu_item_new_from_stock(
+				GTK_STOCK_PROPERTIES, NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	gtk_menu_attach_to_widget(GTK_MENU(menu), browser->iconview, NULL);
