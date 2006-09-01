@@ -474,9 +474,9 @@ static GtkListStore * _create_store(void)
 }
 
 static void _browser_go(Browser * browser, char const * path);
-#if GTK_CHECK_VERSION(2, 6, 0)
-static gboolean _browser_on_icon_button(GtkWidget * widget,
+static gboolean _browser_on_view_popup(GtkWidget * widget,
 		GdkEventButton * event, gpointer data);
+#if GTK_CHECK_VERSION(2, 6, 0)
 static void _new_iconview(Browser * browser)
 {
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
@@ -492,27 +492,30 @@ static void _new_iconview(Browser * browser)
 	g_signal_connect(G_OBJECT(browser->iconview), "item-activated",
 			G_CALLBACK(_browser_on_icon_default), browser);
 	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
-			G_CALLBACK(_browser_on_icon_button), browser);
+			G_CALLBACK(_browser_on_view_popup), browser);
 }
+#endif
 
 /* FIXME rather ugly, maybe could go directly in Browser */
 typedef struct _IconCallback
 {
 	Browser * browser;
+	int isdir;
 	char * path;
 } IconCallback;
 static IconCallback _icon_cb_data;
 static void _browser_on_icon_edit(GtkWidget * widget, gpointer data);
 static void _browser_on_icon_open(GtkWidget * widget, gpointer data);
-static gboolean _browser_on_icon_button(GtkWidget * widget,
+static gboolean _browser_on_view_popup(GtkWidget * widget,
 		GdkEventButton * event, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * menu;
+	int flag;
 	GtkTreePath * path;
 	GtkTreeIter iter;
-	int p;
-	char * q;
+	int isdir;
+	char * p;
 	GtkWidget * menuitem;
 
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
@@ -521,20 +524,29 @@ static gboolean _browser_on_icon_button(GtkWidget * widget,
 	/* FIXME prevents actions to be called but probably leaks memory
 	g_signal_connect(G_OBJECT(menu), "deactivate", G_CALLBACK(
 				gtk_widget_destroy), NULL); */
-	if(gtk_icon_view_get_item_at_pos(GTK_ICON_VIEW(browser->iconview),
-				(int)event->x, (int)event->y, &path, NULL)
-			== TRUE)
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		flag = gtk_icon_view_get_item_at_pos(GTK_ICON_VIEW(
+					browser->iconview), (int)event->x,
+				(int)event->y, &path, NULL);
+	else
+#endif
+		flag = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(
+					browser->detailview), (int)event->x,
+				(int)event->y, &path, NULL, NULL, NULL);
+	if(flag)
 	{
 		/* FIXME error checking + sub-functions */
 		gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
 				path);
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_IS_DIRECTORY, &p, -1);
+				BR_COL_IS_DIRECTORY, &isdir, -1);
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
+				BR_COL_PATH, &p, -1);
 		_icon_cb_data.browser = browser;
-		_icon_cb_data.path = q;
-		if(p == TRUE)
+		_icon_cb_data.isdir = isdir;
+		_icon_cb_data.path = p;
+		if(isdir == TRUE)
 		{
 			menuitem = gtk_image_menu_item_new_from_stock(
 					GTK_STOCK_OPEN, NULL);
@@ -572,7 +584,13 @@ static gboolean _browser_on_icon_button(GtkWidget * widget,
 				GTK_STOCK_PROPERTIES, NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
-	gtk_menu_attach_to_widget(GTK_MENU(menu), browser->iconview, NULL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		gtk_menu_attach_to_widget(GTK_MENU(menu), browser->iconview,
+				NULL);
+	else
+#endif
+	gtk_menu_attach_to_widget(GTK_MENU(menu), browser->detailview, NULL);
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, event->time);
 	return TRUE;
@@ -589,9 +607,11 @@ static void _browser_on_icon_open(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
 
-	mime_open(cb->browser->mime, cb->path);
+	if(cb->isdir)
+		_browser_go(cb->browser, cb->path);
+	else
+		mime_open(cb->browser->mime, cb->path);
 }
-#endif
 
 static void _new_detailview(Browser * browser)
 {
@@ -618,6 +638,8 @@ static void _new_detailview(Browser * browser)
 			TRUE);
 	g_signal_connect(G_OBJECT(browser->detailview), "row-activated",
 			G_CALLBACK(_browser_on_detail_default), browser);
+	g_signal_connect(G_OBJECT(browser->detailview), "button-press-event",
+			G_CALLBACK(_browser_on_view_popup), browser);
 }
 
 /* callbacks */
