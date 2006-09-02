@@ -4,8 +4,8 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi -I .. `pkg-config gtk+-2.0 --cflags`
-CFLAGS	= -g -O2
+CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
+CFLAGS	= -Wall -g -O2 -ansi -D _GNU_SOURCE
 LDFLAGSF= `pkg-config gtk+-2.0 --libs` -l System
 RM	= rm -f
 MKDIR	= mkdir -p
@@ -14,7 +14,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-browser_OBJS = browser.o mime.o main.o
+browser_OBJS = browser.o callbacks.o mime.o main.o
 browser_CFLAGS = $(CFLAGSF) $(CFLAGS)
 browser: $(browser_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o browser $(browser_OBJS)
@@ -24,10 +24,13 @@ delete_CFLAGS = $(CFLAGSF) $(CFLAGS)
 delete: $(delete_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o delete $(delete_OBJS)
 
-browser.o: browser.c mime.h browser.h ../config.h
+browser.o: browser.c mime.h callbacks.h browser.h
 	$(CC) $(browser_CFLAGS) -c browser.c
 
-mime.o: mime.c browser.h mime.h
+callbacks.o: callbacks.c browser.h callbacks.h
+	$(CC) $(browser_CFLAGS) -c callbacks.c
+
+mime.o: mime.c browser.h mime.h ../config.h
 	$(CC) $(browser_CFLAGS) -c mime.c
 
 main.o: main.c browser.h mime.h
