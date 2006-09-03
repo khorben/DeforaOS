@@ -319,6 +319,10 @@ static void _on_about(GtkWidget * widget, gpointer data)
 	free(buf);
 	gtk_widget_show(window);
 #else
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * button;
+
 	if(window != NULL)
 	{
 		gtk_widget_show(window);
@@ -331,36 +335,30 @@ static void _on_about(GtkWidget * widget, gpointer data)
 				gputty->window));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_about_on_closex), NULL);
-	{
-		GtkWidget * vbox;
-		GtkWidget * hbox;
-		GtkWidget * button;
-
-		vbox = gtk_vbox_new(FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " "
-					VERSION), FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(comment),
-				FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright),
-				FALSE, FALSE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(website),
-				FALSE, FALSE, 2);
-		hbox = gtk_hbox_new(TRUE, 0);
-		button = gtk_button_new_with_mnemonic("C_redits");
-		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_on_credits), window);
-		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-		button = gtk_button_new_with_mnemonic("_License");
-		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_on_license), window);
-		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_on_close), window);
-		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
-		gtk_container_add(GTK_CONTAINER(window), vbox);
-	}
+	vbox = gtk_vbox_new(FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
+			FALSE, FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(comment), FALSE, FALSE,
+			2);
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright), FALSE,
+			FALSE, 2);
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(website), FALSE, FALSE,
+			2);
+	hbox = gtk_hbox_new(TRUE, 0);
+	button = gtk_button_new_with_mnemonic("C_redits");
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+				_about_on_credits), window);
+	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
+	button = gtk_button_new_with_mnemonic("_License");
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+				_about_on_license), window);
+	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
+	button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+				_about_on_close), window);
+	gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 #endif
 }
@@ -477,7 +475,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 }
-#endif
+#endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
