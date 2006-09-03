@@ -9,17 +9,31 @@
 #include "../config.h"
 
 
+/* types */
+struct _menu
+{
+	char * name;
+	GtkSignalFunc callback;
+	char * stock;
+};
+
+struct _menubar
+{
+	char * name;
+	struct _menu * menu;
+};
+
+
 /* constants */
 static char const * _authors[] =
 {
 	"Pierre 'khorben' Pronchery",
 	NULL
 };
+
 static char const _license[] = "GPLv2";
 
-/* Editor */
-static GtkWidget * _new_menubar(Editor * editor);
-/* callbacks */
+/* FIXME callbacks should be in a separate file */
 static void _on_close(GtkWidget * widget, gpointer data);
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 static void _on_edit_preferences(GtkWidget * widget, gpointer data);
@@ -31,17 +45,6 @@ static void _on_file_save_as(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 static void _on_new(GtkWidget * widget, gpointer data);
 static void _on_open(GtkWidget * widget, gpointer data);
-struct _menu
-{
-	char * name;
-	GtkSignalFunc callback;
-	char * stock;
-};
-struct _menubar
-{
-	char * name;
-	struct _menu * menu;
-};
 struct _menu _menu_file[] =
 {
 	{ "_New", G_CALLBACK(_on_file_new), GTK_STOCK_NEW },
@@ -53,6 +56,7 @@ struct _menu _menu_file[] =
 	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE },
 	{ NULL, NULL, NULL }
 };
+
 struct _menu _menu_edit[] =
 {
 	{ "_Cut", NULL, GTK_STOCK_CUT },
@@ -63,6 +67,7 @@ struct _menu _menu_edit[] =
 		GTK_STOCK_PREFERENCES },
 	{ NULL, NULL, NULL }
 };
+
 struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -72,6 +77,7 @@ struct _menu _menu_help[] =
 #endif
 	{ NULL, NULL, NULL }
 };
+
 static struct _menubar _menubar[] =
 {
 	{ "_File", _menu_file },
@@ -79,6 +85,11 @@ static struct _menubar _menubar[] =
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
+
+
+/* Editor */
+static void _new_set_title(Editor * editor);
+static GtkWidget * _new_menubar(Editor * editor);
 Editor * editor_new(void)
 {
 	Editor * editor;
@@ -93,7 +104,7 @@ Editor * editor_new(void)
 	/* widgets */
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(editor->window), 512, 384);
-	gtk_window_set_title(GTK_WINDOW(editor->window), "Text editor");
+	_new_set_title(editor);
 	g_signal_connect(G_OBJECT(editor->window), "delete_event", G_CALLBACK(
 			_on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -131,6 +142,15 @@ Editor * editor_new(void)
 	gtk_container_add(GTK_CONTAINER(editor->window), vbox);
 	gtk_widget_show_all(editor->window);
 	return editor;
+}
+
+static void _new_set_title(Editor * editor)
+{
+	char buf[256];
+
+	snprintf(buf, sizeof(buf), "%s%s", "Text editor - ", editor->filename
+		       	== NULL ? "(Untitled)" : editor->filename);
+	gtk_window_set_title(GTK_WINDOW(editor->window), buf);
 }
 
 static GtkWidget * _new_menubar(Editor * editor)
@@ -585,6 +605,7 @@ void editor_open(Editor * editor, char const * filename)
 	gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(gtk_text_view_get_buffer(
 					GTK_TEXT_VIEW(editor->view))), FALSE);
 	editor->filename = g_strdup(filename);
+	_new_set_title(editor);
 }
 
 
@@ -609,7 +630,7 @@ void editor_open_dialog(Editor * editor)
 }
 
 
-void editor_save(Editor * editor)
+gboolean editor_save(Editor * editor)
 {
 	FILE * fp;
 	GtkTextBuffer * tbuf;
@@ -621,29 +642,35 @@ void editor_save(Editor * editor)
 	if(editor->filename == NULL)
 	{
 		editor_save_as_dialog(editor);
-		return;
+		return FALSE;
 	}
 	if((fp = fopen(editor->filename, "w")) == NULL)
 	{
 		_editor_error(editor, "Could not save file", 0);
-		return;
+		return FALSE;
 	}
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	/* FIXME allocating the complete file is not optimal */
 	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
 	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
 	buf = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
 			FALSE);
 	len = strlen(buf);
 	if(fwrite(buf, sizeof(char), len, fp) != len)
+	{
+		g_free(buf);
+		fclose(fp);
 		_editor_error(editor, "Partial write", 0);
-	else
-		gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(tbuf), FALSE);
-	fclose(fp);
+		return FALSE;
+	}
 	g_free(buf);
+	fclose(fp);
+	gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(tbuf), FALSE);
+	return TRUE;
 }
 
 
-void editor_save_as(Editor * editor, char const * filename)
+gboolean editor_save_as(Editor * editor, char const * filename)
 {
 	GtkWidget * dialog;
 	int ret;
@@ -658,18 +685,23 @@ void editor_save_as(Editor * editor, char const * filename)
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 		if(ret == GTK_RESPONSE_NO)
-			return;
+			return FALSE;
 	}
 	g_free(editor->filename);
-	editor->filename = g_strdup(filename);
-	editor_save(editor);
+	if((editor->filename = g_strdup(filename)) == NULL)
+		return _editor_error(editor, "Allocation error", FALSE);
+	if(editor_save(editor) != TRUE)
+		return FALSE;
+	_new_set_title(editor);
+	return TRUE;
 }
 
 
-void editor_save_as_dialog(Editor * editor)
+gboolean editor_save_as_dialog(Editor * editor)
 {
 	GtkWidget * dialog;
 	char * filename = NULL;
+	gboolean ret;
 
 	dialog = gtk_file_chooser_dialog_new("Save as...",
 			GTK_WINDOW(editor->window),
@@ -681,7 +713,8 @@ void editor_save_as_dialog(Editor * editor)
 					dialog));
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
-		return;
-	editor_save_as(editor, filename);
+		return FALSE;
+	ret = editor_save_as(editor, filename);
 	g_free(filename);
+	return ret;
 }
