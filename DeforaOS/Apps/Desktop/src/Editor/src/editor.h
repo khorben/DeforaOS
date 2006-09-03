@@ -12,7 +12,6 @@
 typedef struct _Editor
 {
 	char * filename;
-	int saved;
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * view;

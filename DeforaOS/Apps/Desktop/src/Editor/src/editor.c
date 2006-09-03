@@ -89,7 +89,6 @@ Editor * editor_new(void)
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
 	editor->filename = NULL;
-	editor->saved = 1;
 	/* widgets */
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(editor->window), 512, 384);
@@ -528,13 +527,26 @@ void editor_delete(Editor * editor)
 /* useful */
 gboolean editor_close(Editor * editor)
 {
-	if(editor->saved)
+	GtkWidget * dialog;
+	int ret;
+
+	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
+						editor->view))) == FALSE)
 	{
 		gtk_main_quit();
 		return FALSE;
 	}
-	/* FIXME dialog for confirmation */
-	return TRUE;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+			"Changes are not saved."
+			" Are you sure you want to close?");
+	ret = gtk_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+	if(ret == GTK_RESPONSE_NO)
+		return TRUE;
+	gtk_main_quit();
+	return FALSE;
 }
 
 
@@ -569,15 +581,16 @@ void editor_open_dialog(Editor * editor)
 {
 	GtkWidget * dialog;
 	int ret;
-	char * filename;
+	char * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new("Open file...",
 			GTK_WINDOW(editor->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, 1,
 			GTK_STOCK_OPEN, 0, NULL);
-	if((ret = gtk_dialog_run(GTK_DIALOG(dialog))) == 0)
+	if((ret = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
 	gtk_widget_destroy(dialog);
-	editor_open(editor, filename);
+	if(filename != NULL)
+		editor_open(editor, filename);
 }
