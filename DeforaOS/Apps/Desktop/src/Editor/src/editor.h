@@ -29,5 +29,8 @@ void editor_delete(Editor * editor);
 gboolean editor_close(Editor * editor);
 void editor_open(Editor * editor, char const * filename);
 void editor_open_dialog(Editor * editor);
+void editor_save(Editor * editor);
+void editor_save_as(Editor * editor, char const * filename);
+void editor_save_as_dialog(Editor * editor);
 
 #endif /* !EDITOR_EDITOR_H */

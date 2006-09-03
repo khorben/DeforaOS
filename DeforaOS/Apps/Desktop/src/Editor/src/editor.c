@@ -2,6 +2,7 @@
 
 
 
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
 #include "editor.h"
@@ -119,6 +120,7 @@ Editor * editor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
+	/* FIXME monospace font */
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* statusbar */
@@ -297,10 +299,16 @@ static void _on_file_open(GtkWidget * widget, gpointer data)
 
 static void _on_file_save(GtkWidget * widget, gpointer data)
 {
+	Editor * editor = data;
+
+	editor_save(editor);
 }
 
 static void _on_file_save_as(GtkWidget * widget, gpointer data)
 {
+	Editor * editor = data;
+
+	editor_save_as_dialog(editor);
 }
 
 /* callbacks */
@@ -541,7 +549,7 @@ gboolean editor_close(Editor * editor)
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
 			"Changes are not saved."
 			" Are you sure you want to close?");
-	ret = gtk_dialog_run(dialog);
+	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(ret == GTK_RESPONSE_NO)
 		return TRUE;
@@ -574,23 +582,106 @@ void editor_open(Editor * editor, char const * filename)
 		gtk_text_buffer_insert(tbuf, &iter, buf, len);
 	}
 	fclose(fp);
+	gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(gtk_text_view_get_buffer(
+					GTK_TEXT_VIEW(editor->view))), FALSE);
+	editor->filename = g_strdup(filename);
 }
 
 
 void editor_open_dialog(Editor * editor)
 {
 	GtkWidget * dialog;
-	int ret;
 	char * filename = NULL;
 
 	dialog = gtk_file_chooser_dialog_new("Open file...",
 			GTK_WINDOW(editor->window),
-			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, 1,
-			GTK_STOCK_OPEN, 0, NULL);
-	if((ret = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_ACCEPT)
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
 	gtk_widget_destroy(dialog);
-	if(filename != NULL)
-		editor_open(editor, filename);
+	if(filename == NULL)
+		return;
+	editor_open(editor, filename);
+	g_free(filename);
+}
+
+
+void editor_save(Editor * editor)
+{
+	FILE * fp;
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+	char * buf;
+	size_t len;
+
+	if(editor->filename == NULL)
+	{
+		editor_save_as_dialog(editor);
+		return;
+	}
+	if((fp = fopen(editor->filename, "w")) == NULL)
+	{
+		_editor_error(editor, "Could not save file", 0);
+		return;
+	}
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
+	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
+	buf = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
+			FALSE);
+	len = strlen(buf);
+	if(fwrite(buf, sizeof(char), len, fp) != len)
+		_editor_error(editor, "Partial write", 0);
+	else
+		gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(tbuf), FALSE);
+	fclose(fp);
+	g_free(buf);
+}
+
+
+void editor_save_as(Editor * editor, char const * filename)
+{
+	GtkWidget * dialog;
+	int ret;
+
+	if(stat(filename, NULL) == 0)
+	{
+		dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
+				GTK_DIALOG_MODAL
+				| GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+				"File exists. Overwrite?");
+		ret = gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+		if(ret == GTK_RESPONSE_NO)
+			return;
+	}
+	g_free(editor->filename);
+	editor->filename = g_strdup(filename);
+	editor_save(editor);
+}
+
+
+void editor_save_as_dialog(Editor * editor)
+{
+	GtkWidget * dialog;
+	char * filename = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Save as...",
+			GTK_WINDOW(editor->window),
+			GTK_FILE_CHOOSER_ACTION_SAVE,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	editor_save_as(editor, filename);
+	g_free(filename);
 }
