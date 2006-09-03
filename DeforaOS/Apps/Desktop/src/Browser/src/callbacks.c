@@ -757,8 +757,12 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(_icon_cb_data.isdir != TRUE)
 	{
+#if GTK_CHECK_VERSION(2, 6, 0)
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT,
 				NULL);
+#else
+		menuitem = gtk_menu_item_new_with_mnemonic("_Edit");
+#endif
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 					on_icon_edit), &_icon_cb_data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
