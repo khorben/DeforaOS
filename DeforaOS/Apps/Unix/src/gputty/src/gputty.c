@@ -27,22 +27,30 @@
 #include "../config.h"
 
 
+/* constants */
+static char const * _authors[] =
+{
+	"Pierre 'khorben' Pronchery",
+	NULL
+};
+static char const _license[] = "GPLv2";
+
+
 /* GPuTTY */
 static int _gputty_error(char const * message, int ret);
 static char * _gputty_config_file(void);
 /* callbacks */
-static void gputty_on_about(GtkWidget * widget, gpointer data);
-static void gputty_on_connect(GtkWidget * widget, gpointer data);
-static void gputty_on_delete(GtkWidget * widget, gpointer data);
-static void gputty_on_load(GtkWidget * widget, gpointer data);
-static void gputty_on_exit(GtkWidget * widget, gpointer data);
-static gboolean gputty_on_exitx(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void gputty_on_preferences(GtkWidget * widget, gpointer data);
-static void gputty_on_save(GtkWidget * widget, gpointer data);
-static void gputty_on_session_activate(GtkTreeView * view, GtkTreePath * path,
+static void _on_about(GtkWidget * widget, gpointer data);
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void _on_connect(GtkWidget * widget, gpointer data);
+static void _on_delete(GtkWidget * widget, gpointer data);
+static void _on_load(GtkWidget * widget, gpointer data);
+static void _on_exit(GtkWidget * widget, gpointer data);
+static void _on_preferences(GtkWidget * widget, gpointer data);
+static void _on_save(GtkWidget * widget, gpointer data);
+static void _on_session_activate(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
-static void gputty_on_session_select(GtkTreeView * view, gpointer data);
+static void _on_session_select(GtkTreeView * view, gpointer data);
 GPuTTY * gputty_new(void)
 {
 	GPuTTY * g;
@@ -88,8 +96,8 @@ GPuTTY * gputty_new(void)
 	g->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(g->window), "GPuTTY");
 	gtk_container_set_border_width(GTK_CONTAINER(g->window), 4);
-	g_signal_connect(G_OBJECT(g->window), "delete_event",
-			G_CALLBACK(gputty_on_exitx), g);
+	g_signal_connect(G_OBJECT(g->window), "delete_event", G_CALLBACK(
+				_on_closex), g);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(g->window), vbox);
 	/* hostname */
@@ -109,7 +117,7 @@ GPuTTY * gputty_new(void)
 	if((p = config_get(g->config, "", "hostname")) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_ehostname), p);
 	g_signal_connect(G_OBJECT(g->hn_ehostname), "activate", G_CALLBACK(
-				gputty_on_connect), g);
+				_on_connect), g);
 	gtk_box_pack_start(GTK_BOX(vbox2), g->hn_ehostname, TRUE, TRUE, 0);
 	/* hostname: port */
 	vbox2 = gtk_vbox_new(FALSE, 0);
@@ -157,9 +165,9 @@ GPuTTY * gputty_new(void)
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g->sn_tlsessions),
 			FALSE);
 	g_signal_connect(G_OBJECT(g->sn_tlsessions), "cursor-changed",
-			G_CALLBACK(gputty_on_session_select), g);
+			G_CALLBACK(_on_session_select), g);
 	g_signal_connect(G_OBJECT(g->sn_tlsessions), "row-activated",
-			G_CALLBACK(gputty_on_session_activate), g);
+			G_CALLBACK(_on_session_activate), g);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
 				g->sn_swsessions), g->sn_tlsessions);
 	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_swsessions, TRUE, TRUE, 0);
@@ -167,16 +175,16 @@ GPuTTY * gputty_new(void)
 	/* sessions: buttons */
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	g->sn_load = gtk_button_new_from_stock(GTK_STOCK_OPEN);
-	g_signal_connect(G_OBJECT(g->sn_load), "clicked", G_CALLBACK(
-				gputty_on_load), g);
+	g_signal_connect(G_OBJECT(g->sn_load), "clicked", G_CALLBACK(_on_load),
+			g);
 	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_load, FALSE, FALSE, 4);
 	g->sn_save = gtk_button_new_from_stock(GTK_STOCK_SAVE);
-	g_signal_connect(G_OBJECT(g->sn_save), "clicked", G_CALLBACK(
-				gputty_on_save), g);
+	g_signal_connect(G_OBJECT(g->sn_save), "clicked", G_CALLBACK(_on_save),
+			g);
 	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_save, FALSE, FALSE, 0);
 	g->sn_delete = gtk_button_new_from_stock(GTK_STOCK_DELETE);
 	g_signal_connect(G_OBJECT(g->sn_delete), "clicked", G_CALLBACK(
-				gputty_on_delete), g);
+				_on_delete), g);
 	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_delete, FALSE, FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
 	/* actions */
@@ -188,19 +196,19 @@ GPuTTY * gputty_new(void)
 #endif
 	gtk_box_pack_start(GTK_BOX(hbox), g->ac_about, FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(g->ac_about), "clicked", G_CALLBACK(
-				gputty_on_about), g);
+				_on_about), g);
 	g->ac_prefs = gtk_button_new_from_stock(GTK_STOCK_PREFERENCES);
 	gtk_box_pack_start(GTK_BOX(hbox), g->ac_prefs, FALSE, FALSE, 4);
 	g_signal_connect(G_OBJECT(g->ac_prefs), "clicked", G_CALLBACK(
-				gputty_on_preferences), g);
+				_on_preferences), g);
 	g->ac_connect = gtk_button_new_with_mnemonic("_Connect");
 	g_signal_connect(G_OBJECT(g->ac_connect), "clicked", G_CALLBACK(
-				gputty_on_connect), g);
+				_on_connect), g);
 	gtk_box_pack_end(GTK_BOX(hbox), g->ac_connect, FALSE, FALSE, 0);
 	g->ac_exit = gtk_button_new_from_stock(GTK_STOCK_QUIT);
 	gtk_box_pack_end(GTK_BOX(hbox), g->ac_exit, FALSE, FALSE, 4);
-	g_signal_connect(G_OBJECT(g->ac_exit), "clicked", G_CALLBACK(
-				gputty_on_exit), g);
+	g_signal_connect(G_OBJECT(g->ac_exit), "clicked", G_CALLBACK(_on_exit),
+			g);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	/* preferences */
 	g->pr_window = NULL;
@@ -258,16 +266,17 @@ void gputty_delete(GPuTTY * gputty)
 
 
 /* callbacks */
+static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 #if !GTK_CHECK_VERSION(2, 6, 0)
-static void _about_close(GtkWidget * widget, gpointer data);
-static void _about_credits(GtkWidget * widget, gpointer data);
-static void _about_license(GtkWidget * widget, gpointer data);
+static void _about_on_close(GtkWidget * widget, gpointer data);
+static void _about_on_credits(GtkWidget * widget, gpointer data);
+static void _about_on_license(GtkWidget * widget, gpointer data);
 #endif
-static void gputty_on_about(GtkWidget * widget, gpointer data)
+static void _on_about(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * gputty = data;
 	static GtkWidget * window = NULL;
-	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
 	char const comment[] =
 "GPuTTY is a clone of PuTTY for Open Source desktops.\n"
 "This software mainly relies on:\n"
@@ -293,17 +302,20 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				gputty->window));
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
 	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(window), comment);
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(window), website);
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
 	else
-		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), "GPLv2");
+		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window),
+				_license);
 	free(buf);
 	gtk_widget_show(window);
 #else
@@ -317,6 +329,8 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 	gtk_window_set_title(GTK_WINDOW(window), "About " PACKAGE);
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				gputty->window));
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), NULL);
 	{
 		GtkWidget * vbox;
 		GtkWidget * hbox;
@@ -334,15 +348,15 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 		hbox = gtk_hbox_new(TRUE, 0);
 		button = gtk_button_new_with_mnemonic("C_redits");
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_credits), NULL);
+					_about_on_credits), window);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		button = gtk_button_new_with_mnemonic("_License");
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_license), NULL);
+					_about_on_license), window);
 		gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					_about_close), window);
+					_about_on_close), window);
 		gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 		gtk_container_add(GTK_CONTAINER(window), vbox);
@@ -351,24 +365,127 @@ static void gputty_on_about(GtkWidget * widget, gpointer data)
 #endif
 }
 
+static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
+}
+
 #if !GTK_CHECK_VERSION(2, 6, 0)
-static void _about_close(GtkWidget * widget, gpointer data)
+static void _about_on_close(GtkWidget * widget, gpointer data)
 {
 	GtkWidget * window = data;
 
 	gtk_widget_hide(window);
 }
 
-static void _about_credits(GtkWidget * widget, gpointer data)
+static void _about_on_credits(GtkWidget * widget, gpointer data)
 {
+	static GtkWidget * window = NULL;
+	GtkWidget * about = data;
+	GtkWidget * vbox;
+	GtkWidget * notebook;
+	GtkWidget * textview;
+	GtkTextBuffer * tbuf;
+	GtkTextIter iter;
+	GtkWidget * hbox;
+	size_t i;
+
+	if(window != NULL)
+	{
+		gtk_widget_show(window);
+		return;
+	}
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
+	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), NULL);
+	vbox = gtk_vbox_new(FALSE, 0);
+	textview = gtk_text_view_new();
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+	gtk_text_buffer_set_text(tbuf, "", 0);
+	for(i = 0; _authors[i] != NULL; i++)
+	{
+		gtk_text_buffer_get_end_iter(tbuf, &iter);
+		gtk_text_buffer_insert(tbuf, &iter, _authors[i], strlen(
+					_authors[i]));
+	}
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_container_add(GTK_CONTAINER(widget), textview);
+	notebook = gtk_notebook_new();
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
+			gtk_label_new("Written by"));
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect(G_OBJECT(widget), "clicked",
+			G_CALLBACK(_about_on_close), window);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_widget_show_all(window);
 }
 
-static void _about_license(GtkWidget * widget, gpointer data)
+static void _about_on_license(GtkWidget * widget, gpointer data)
 {
+	static GtkWidget * window = NULL;
+	GtkWidget * about = data;
+	GtkWidget * vbox;
+	GtkWidget * textview;
+	GtkTextBuffer * tbuf;
+	GtkWidget * hbox;
+
+	if(window != NULL)
+	{
+		gtk_widget_show(window);
+		return;
+	}
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
+	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), NULL);
+	vbox = gtk_vbox_new(FALSE, 0);
+	textview = gtk_text_view_new();
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+	gtk_text_buffer_set_text(tbuf, _license, strlen(_license));
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_container_add(GTK_CONTAINER(widget), textview);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect(G_OBJECT(widget), "clicked",
+			G_CALLBACK(_about_on_close), window);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_widget_show_all(window);
 }
 #endif
 
-static void gputty_on_connect(GtkWidget * widget, gpointer data)
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+{
+	_on_exit(widget, data);
+	return FALSE;
+}
+
+static void _on_connect(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	pid_t pid;
@@ -406,7 +523,7 @@ static void gputty_on_connect(GtkWidget * widget, gpointer data)
 	}
 }
 
-static void gputty_on_delete(GtkWidget * widget, gpointer data)
+static void _on_delete(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	int i;
@@ -435,7 +552,7 @@ static void gputty_on_delete(GtkWidget * widget, gpointer data)
 	}
 }
 
-static void gputty_on_load(GtkWidget * widget, gpointer data)
+static void _on_load(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	char buf[11];
@@ -465,7 +582,7 @@ static void gputty_on_load(GtkWidget * widget, gpointer data)
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport), port);
 }
 
-static void gputty_on_exit(GtkWidget * widget, gpointer data)
+static void _on_exit(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	char buf[11];
@@ -495,18 +612,11 @@ static void gputty_on_exit(GtkWidget * widget, gpointer data)
 	gtk_main_quit();
 }
 
-static gboolean gputty_on_exitx(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
-{
-	gputty_on_exit(widget, data);
-	return FALSE;
-}
-
-static void gputty_on_preferences_cancel(GtkWidget * widget, gpointer data);
-static void gputty_on_preferences_closex(GtkWidget * widget, GdkEvent * event,
+static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
+static void _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
-static void gputty_on_preferences_ok(GtkWidget * widget, gpointer data);
-static void gputty_on_preferences(GtkWidget * widget, gpointer data)
+static void _on_preferences_ok(GtkWidget * widget, gpointer data);
+static void _on_preferences(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	GtkWidget * vbox;
@@ -522,9 +632,11 @@ static void gputty_on_preferences(GtkWidget * widget, gpointer data)
 	g->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(g->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(g->pr_window), "GPuTTY preferences");
+	gtk_window_set_transient_for(GTK_WINDOW(g->pr_window), GTK_WINDOW(
+				g->window));
 	gtk_container_set_border_width(GTK_CONTAINER(g->pr_window), 4);
 	g_signal_connect(G_OBJECT(g->pr_window), "delete_event", G_CALLBACK(
-				gputty_on_preferences_closex), g);
+				_on_preferences_closex), g);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* xterm */
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -545,12 +657,12 @@ static void gputty_on_preferences(GtkWidget * widget, gpointer data)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				gputty_on_preferences_ok), g);
+				_on_preferences_ok), g);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				gputty_on_preferences_cancel), g);
+				_on_preferences_cancel), g);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -562,7 +674,7 @@ static void gputty_on_preferences(GtkWidget * widget, gpointer data)
 	gtk_widget_show_all(g->pr_window);
 }
 
-static void gputty_on_preferences_cancel(GtkWidget * widget, gpointer data)
+static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	char const * p;
@@ -575,7 +687,7 @@ static void gputty_on_preferences_cancel(GtkWidget * widget, gpointer data)
 		gtk_entry_set_text(GTK_ENTRY(g->pr_essh), p);
 }
 
-static void gputty_on_preferences_closex(GtkWidget * widget, GdkEvent * event,
+static void _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	GPuTTY * g = data;
@@ -583,7 +695,7 @@ static void gputty_on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 	gtk_widget_hide(g->pr_window);
 }
 
-static void gputty_on_preferences_ok(GtkWidget * widget, gpointer data)
+static void _on_preferences_ok(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 
@@ -594,7 +706,7 @@ static void gputty_on_preferences_ok(GtkWidget * widget, gpointer data)
 					g->pr_essh)));
 }
 
-static void gputty_on_save(GtkWidget * widget, gpointer data)
+static void _on_save(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	char const * session;
@@ -632,7 +744,7 @@ static void gputty_on_save(GtkWidget * widget, gpointer data)
 	config_set(g->config, buf, "port", buf2);
 }
 
-static void gputty_on_session_activate(GtkTreeView * view, GtkTreePath * path,
+static void _on_session_activate(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
 	GPuTTY * g = data;
@@ -641,11 +753,11 @@ static void gputty_on_session_activate(GtkTreeView * view, GtkTreePath * path,
 	if((p = gtk_tree_path_get_indices(path)) == NULL || *p < 0)
 		return;
 	g->selection = *p;
-	gputty_on_load(GTK_WIDGET(view), data);
-	gputty_on_connect(GTK_WIDGET(view), data);
+	_on_load(GTK_WIDGET(view), data);
+	_on_connect(GTK_WIDGET(view), data);
 }
 
-static void gputty_on_session_select(GtkTreeView * view, gpointer data)
+static void _on_session_select(GtkTreeView * view, gpointer data)
 {
 	GPuTTY * g = data;
 	GtkTreeSelection * sel;
