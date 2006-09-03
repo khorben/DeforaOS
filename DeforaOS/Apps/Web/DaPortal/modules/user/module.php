@@ -373,7 +373,7 @@ function user_register($args)
 				$message = USER_ALREADY_ASSIGNED;
 		}
 	}
-	print('<h1 class="user>'._html_safe(USER_REGISTRATION)."</h1>\n");
+	print('<h1 class="user">'._html_safe(USER_REGISTRATION)."</h1>\n");
 	if(strlen($message))
 		_error($message, 1);
 	include('./modules/user/user_register.tpl');
