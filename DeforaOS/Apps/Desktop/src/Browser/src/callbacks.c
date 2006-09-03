@@ -321,9 +321,9 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 
 
 /* help menu */
-#if !GTK_CHECK_VERSION(2, 6, 0)
 static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+#if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
@@ -350,6 +350,8 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), window);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
@@ -363,7 +365,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	free(buf);
 	gtk_widget_show(window);
 }
-#else
+#else /* !GTK_CHECK_VERSION(2, 6, 0) */
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * button;
@@ -402,6 +404,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 }
+#endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
 static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
@@ -410,6 +413,7 @@ static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 	return TRUE;
 }
 
+#if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data)
 {
 	GtkWidget * window = data;
@@ -526,7 +530,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 }
-#endif
+#endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
 
 /* toolbar */
