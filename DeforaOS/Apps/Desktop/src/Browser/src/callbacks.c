@@ -610,12 +610,12 @@ void on_view_as(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 
 	if(browser->iconview == NULL)
-		on_view_icon(NULL, data);
+		browser_set_view(browser, BV_ICONS);
 	else if(gtk_icon_view_get_orientation(GTK_ICON_VIEW(browser->iconview))
 			== GTK_ORIENTATION_VERTICAL)
-		on_view_list(NULL, data);
+		browser_set_view(browser, BV_LIST);
 	else
-		on_view_detail(NULL, data);
+		browser_set_view(browser, BV_DETAILS);
 }
 
 
@@ -623,14 +623,7 @@ void on_view_detail(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 
-	if(browser->detailview != NULL)
-		return;
-	gtk_widget_destroy(browser->iconview);
-	browser->iconview = NULL;
-	_new_detailview(browser);
-	gtk_widget_show(browser->detailview);
-	gtk_container_add(GTK_CONTAINER(browser->scrolled),
-			browser->detailview);
+	browser_set_view(browser, BV_DETAILS);
 }
 
 
@@ -638,20 +631,7 @@ void on_view_icon(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 
-	if(browser->iconview == NULL)
-	{
-		gtk_widget_destroy(browser->detailview);
-		browser->detailview = NULL;
-		_new_iconview(browser);
-		gtk_container_add(GTK_CONTAINER(browser->scrolled),
-				browser->iconview);
-	}
-	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 96);
-	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_PIXBUF_48);
-	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
-			GTK_ORIENTATION_VERTICAL);
-	gtk_widget_show(browser->iconview);
+	browser_set_view(browser, BV_ICONS);
 }
 
 
@@ -659,40 +639,25 @@ void on_view_list(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 
-	if(browser->iconview == NULL)
-	{
-		gtk_widget_destroy(browser->detailview);
-		browser->detailview = NULL;
-		_new_iconview(browser);
-		gtk_container_add(GTK_CONTAINER(browser->scrolled),
-				browser->iconview);
-	}
-	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 146);
-	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_PIXBUF_24);
-	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
-			GTK_ORIENTATION_HORIZONTAL);
-	gtk_widget_show(browser->iconview);
+	browser_set_view(browser, BV_LIST);
 }
 #endif
 
 
 /* view */
-void on_detail_default(GtkTreeView * view,
-		GtkTreePath * tree_path, GtkTreeViewColumn * column,
-		gpointer data)
+void on_detail_default(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
 {
 	Browser * browser = data;
-	char * path;
+	char * location;
 	GtkTreeIter iter;
 	gboolean is_dir;
 
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
-			tree_path);
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
-			&path, BR_COL_IS_DIRECTORY, &is_dir, -1);
-	browser_set_location(browser, path);
-	g_free(path);
+			&location, BR_COL_IS_DIRECTORY, &is_dir, -1);
+	browser_set_location(browser, location);
+	g_free(location);
 }
 
 

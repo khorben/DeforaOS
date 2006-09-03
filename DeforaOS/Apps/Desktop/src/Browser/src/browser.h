@@ -16,14 +16,27 @@ enum
 	BR_COL_PATH = 0,
 	BR_COL_DISPLAY_NAME,
 	BR_COL_PIXBUF_24,
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	BR_COL_PIXBUF_48,
-#endif
+# endif
 	BR_COL_IS_DIRECTORY,
 	BR_COL_MIME_TYPE,
 	BR_NUM_COLS
 };
 # define BR_LAST BR_NUM_COLS
+
+typedef enum _BrowserView
+{
+	BV_DETAILS = 0,
+# if GTK_CHECK_VERSION(2, 6, 0)
+	BV_ICONS,
+	BV_LIST
+} BrowserView;
+#  define BV_LAST BV_LIST
+# else
+} BrowserView;
+#  define BV_LAST BV_DETAILS
+# endif
 
 typedef struct _BrowserPreferences
 {
@@ -77,5 +90,6 @@ void browser_delete(Browser * browser);
 int browser_error(Browser * browser, char const * message, int ret);
 void browser_refresh(Browser * browser);
 void browser_set_location(Browser * browser, char const * path);
+void browser_set_view(Browser * browser, BrowserView view);
 
 #endif /* !BROWSER_BROWSER_H */
