@@ -390,11 +390,11 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	hbox = gtk_hbox_new(TRUE, 4);
 	button = gtk_button_new_with_mnemonic("C_redits");
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-				_about_on_credits), browser);
+				_about_on_credits), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 	button = gtk_button_new_with_mnemonic("_License");
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-				_about_on_license), browser);
+				_about_on_license), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
 	button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
@@ -421,11 +421,10 @@ static void _about_on_close(GtkWidget * widget, gpointer data)
 	gtk_widget_hide(window);
 }
 
-static void _credits_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data)
 {
 	static GtkWidget * window = NULL;
-	Browser * browser = data;
+	GtkWidget * about = data;
 	GtkWidget * vbox;
 	GtkWidget * notebook;
 	GtkWidget * textview;
@@ -443,9 +442,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "Credits");
-	/* FIXME should be the about window */
-	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				browser->window));
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_about_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -472,24 +469,17 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(widget), "clicked",
-			G_CALLBACK(_credits_on_close), window);
+			G_CALLBACK(_about_on_close), window);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 }
 
-static void _credits_on_close(GtkWidget * widget, gpointer data)
-{
-	GtkWidget * window = data;
-
-	gtk_widget_hide(window);
-}
-
 static void _about_on_license(GtkWidget * widget, gpointer data)
 {
 	static GtkWidget * window = NULL;
-	Browser * browser = data;
+	GtkWidget * about = data;
 	GtkWidget * vbox;
 	GtkWidget * textview;
 	GtkTextBuffer * tbuf;
@@ -504,9 +494,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "Credits");
-	/* FIXME should be the about window */
-	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				browser->window));
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_about_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -524,7 +512,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(widget), "clicked",
-			G_CALLBACK(_credits_on_close), window);
+			G_CALLBACK(_about_on_close), window);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
