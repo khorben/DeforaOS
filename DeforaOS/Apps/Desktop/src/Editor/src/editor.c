@@ -10,18 +10,17 @@
 /* Editor */
 static GtkWidget * _new_menubar(Editor * editor);
 /* callbacks */
-static void _editor_on_close(GtkWidget * widget, gpointer data);
-static void _editor_on_edit_preferences(GtkWidget * widget, gpointer data);
-static gboolean _editor_on_exit(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void _editor_on_file_close(GtkWidget * widget, gpointer data);
-static void _editor_on_file_new(GtkWidget * widget, gpointer data);
-static void _editor_on_file_open(GtkWidget * widget, gpointer data);
-static void _editor_on_file_save(GtkWidget * widget, gpointer data);
-static void _editor_on_file_save_as(GtkWidget * widget, gpointer data);
-static void _editor_on_help_about(GtkWidget * widget, gpointer data);
-static void _editor_on_new(GtkWidget * widget, gpointer data);
-static void _editor_on_open(GtkWidget * widget, gpointer data);
+static void _on_close(GtkWidget * widget, gpointer data);
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void _on_edit_preferences(GtkWidget * widget, gpointer data);
+static void _on_file_close(GtkWidget * widget, gpointer data);
+static void _on_file_new(GtkWidget * widget, gpointer data);
+static void _on_file_open(GtkWidget * widget, gpointer data);
+static void _on_file_save(GtkWidget * widget, gpointer data);
+static void _on_file_save_as(GtkWidget * widget, gpointer data);
+static void _on_help_about(GtkWidget * widget, gpointer data);
+static void _on_new(GtkWidget * widget, gpointer data);
+static void _on_open(GtkWidget * widget, gpointer data);
 struct _menu
 {
 	char * name;
@@ -35,14 +34,13 @@ struct _menubar
 };
 struct _menu _menu_file[] =
 {
-	{ "_New", G_CALLBACK(_editor_on_file_new), GTK_STOCK_NEW },
-	{ "_Open", G_CALLBACK(_editor_on_file_open), GTK_STOCK_OPEN },
+	{ "_New", G_CALLBACK(_on_file_new), GTK_STOCK_NEW },
+	{ "_Open", G_CALLBACK(_on_file_open), GTK_STOCK_OPEN },
 	{ "", NULL, NULL },
-	{ "_Save", G_CALLBACK(_editor_on_file_save), GTK_STOCK_SAVE },
-	{ "_Save as...", G_CALLBACK(_editor_on_file_save_as),
-	       	GTK_STOCK_SAVE_AS },
+	{ "_Save", G_CALLBACK(_on_file_save), GTK_STOCK_SAVE },
+	{ "_Save as...", G_CALLBACK(_on_file_save_as), GTK_STOCK_SAVE_AS },
 	{ "", NULL, NULL },
-	{ "_Close", G_CALLBACK(_editor_on_file_close), GTK_STOCK_CLOSE },
+	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE },
 	{ NULL, NULL, NULL }
 };
 struct _menu _menu_edit[] =
@@ -51,16 +49,16 @@ struct _menu _menu_edit[] =
 	{ "_Copy", NULL, GTK_STOCK_COPY },
 	{ "_Paste", NULL, GTK_STOCK_PASTE },
 	{ "", NULL, NULL },
-	{ "_Preferences", G_CALLBACK(_editor_on_edit_preferences),
-	       	GTK_STOCK_PREFERENCES },
+	{ "_Preferences", G_CALLBACK(_on_edit_preferences),
+		GTK_STOCK_PREFERENCES },
 	{ NULL, NULL, NULL }
 };
 struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(_editor_on_help_about), GTK_STOCK_ABOUT },
+	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT },
 #else
-	{ "_About", G_CALLBACK(_editor_on_help_about), NULL },
+	{ "_About", G_CALLBACK(_on_help_about), NULL },
 #endif
 	{ NULL, NULL, NULL }
 };
@@ -88,7 +86,7 @@ Editor * editor_new(void)
 	gtk_window_set_default_size(GTK_WINDOW(editor->window), 512, 384);
 	gtk_window_set_title(GTK_WINDOW(editor->window), "Text editor");
 	g_signal_connect(G_OBJECT(editor->window), "delete_event", G_CALLBACK(
-			_editor_on_exit), editor);
+			_on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	gtk_box_pack_start(GTK_BOX(vbox), _new_menubar(editor), FALSE, FALSE,
@@ -96,16 +94,16 @@ Editor * editor_new(void)
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
-				_editor_on_new), editor);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(_on_new),
+			editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
-				_editor_on_open), editor);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(_on_open),
+			editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
-				_editor_on_close), editor);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(_on_close),
+			editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* view */
@@ -177,7 +175,15 @@ static int _editor_error(Editor * editor, char const * message, int ret)
 	return ret;
 }
 
-static void _editor_on_close(GtkWidget * widget, gpointer data)
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	Editor * editor = data;
+
+	return editor_close(editor);
+}
+
+static void _on_close(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
@@ -190,7 +196,7 @@ static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
-static void _editor_on_edit_preferences(GtkWidget * widget, gpointer data)
+static void _on_edit_preferences(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 	GtkWidget * vbox;
@@ -259,15 +265,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 	/* FIXME apply settings */
 }
 
-static gboolean _editor_on_exit(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
-{
-	Editor * editor = data;
-
-	return editor_close(editor);
-}
-
-static void _editor_on_file_close(GtkWidget * widget, gpointer data)
+static void _on_file_close(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
@@ -275,29 +273,32 @@ static void _editor_on_file_close(GtkWidget * widget, gpointer data)
 	gtk_main_quit();
 }
 
-static void _editor_on_file_new(GtkWidget * widget, gpointer data)
+static void _on_file_new(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
 	editor_open(editor, NULL);
 }
 
-static void _editor_on_file_open(GtkWidget * widget, gpointer data)
+static void _on_file_open(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
 	editor_open_dialog(editor);
 }
 
-static void _editor_on_file_save(GtkWidget * widget, gpointer data)
+static void _on_file_save(GtkWidget * widget, gpointer data)
 {
 }
 
-static void _editor_on_file_save_as(GtkWidget * widget, gpointer data)
+static void _on_file_save_as(GtkWidget * widget, gpointer data)
 {
 }
 
-static void _editor_on_help_about(GtkWidget * widget, gpointer data)
+/* callbacks */
+static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 	static GtkWidget * window = NULL;
@@ -318,6 +319,10 @@ static void _editor_on_help_about(GtkWidget * widget, gpointer data)
 		return;
 	}
 	window = gtk_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				editor->window));
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
@@ -342,15 +347,21 @@ static void _editor_on_help_about(GtkWidget * widget, gpointer data)
 	gtk_widget_show_all(window);
 #endif
 }
+static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
+}
 
-static void _editor_on_new(GtkWidget * widget, gpointer data)
+static void _on_new(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
 	editor_open(editor, NULL);
 }
 
-static void _editor_on_open(GtkWidget * widget, gpointer data)
+static void _on_open(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
