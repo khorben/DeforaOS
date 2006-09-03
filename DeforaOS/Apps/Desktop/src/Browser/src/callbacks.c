@@ -704,8 +704,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 {
 	Browser * browser = data;
 	GtkWidget * menu;
-	int flag;
-	GtkTreePath * path;
+	GtkTreePath * path = NULL;
 	GtkTreeIter iter;
 	GtkWidget * menuitem;
 
@@ -717,15 +716,15 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 				gtk_widget_destroy), NULL); */
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser->iconview != NULL)
-		flag = gtk_icon_view_get_item_at_pos(GTK_ICON_VIEW(
+		path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(
 					browser->iconview), (int)event->x,
-				(int)event->y, &path, NULL);
+				(int)event->y);
 	else
 #endif
-		flag = gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(
+		gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(
 					browser->detailview), (int)event->x,
 				(int)event->y, &path, NULL, NULL, NULL);
-	if(!flag)
+	if(path == NULL)
 	{
 		menuitem = gtk_image_menu_item_new_from_stock(
 				GTK_STOCK_PROPERTIES, NULL);
@@ -760,7 +759,9 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+#if !GTK_CHECK_VERSION(2, 6, 0)
 	gtk_tree_path_free(path);
+#endif
 	return _popup_show(browser, event, menu);
 }
 
