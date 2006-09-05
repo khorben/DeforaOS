@@ -1,4 +1,4 @@
-TARGETS	= calendar fontsel
+TARGETS	= calendar fontsel run
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -24,14 +24,22 @@ fontsel_CFLAGS = $(CFLAGSF) $(CFLAGS)
 fontsel: $(fontsel_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o fontsel $(fontsel_OBJS)
 
+run_OBJS = run.o
+run_CFLAGS = $(CFLAGSF) $(CFLAGS)
+run: $(run_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o run $(run_OBJS)
+
 calendar.o: calendar.c
 	$(CC) $(calendar_CFLAGS) -c calendar.c
 
 fontsel.o: fontsel.c
 	$(CC) $(fontsel_CFLAGS) -c fontsel.c
 
+run.o: run.c
+	$(CC) $(run_CFLAGS) -c run.c
+
 clean:
-	$(RM) $(calendar_OBJS) $(fontsel_OBJS)
+	$(RM) $(calendar_OBJS) $(fontsel_OBJS) $(run_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -40,9 +48,11 @@ install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 calendar $(DESTDIR)$(BINDIR)/calendar
 	$(INSTALL) -m 0755 fontsel $(DESTDIR)$(BINDIR)/fontsel
+	$(INSTALL) -m 0755 run $(DESTDIR)$(BINDIR)/run
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/calendar
 	$(RM) $(DESTDIR)$(BINDIR)/fontsel
+	$(RM) $(DESTDIR)$(BINDIR)/run
 
 .PHONY: all clean distclean install uninstall
