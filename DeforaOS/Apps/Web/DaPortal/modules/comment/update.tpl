@@ -12,7 +12,7 @@
 		</tr>
 		<tr>
 			<td class="field">Content&nbsp;:</td>
-			<td><textarea name="content" cols="50" rows="10"><?php echo _html_safe($comment['content']); ?></textarea></td>
+			<td><textarea name="content" cols="50" rows="10"><?php if(isset($comment['content'])) echo _html_safe($comment['content']); ?></textarea></td>
 		</tr>
 		<tr>
 			<td></td>
