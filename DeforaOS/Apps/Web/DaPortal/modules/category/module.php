@@ -18,6 +18,18 @@ $text['MEMBER_OF'] = 'Member of';
 $text['MODIFICATION_OF_CATEGORY'] = 'Modification of category';
 $text['NEW_CATEGORY'] = 'New category';
 global $lang;
+if($lang == 'fr')
+{
+	$text['ALREADY_LINKED'] = 'Déjà lié';
+	$text['CATEGORIES_ADMINISTRATION'] = 'Administration des catégories';
+	$text['CATEGORIES_LIST'] = 'Liste des catégories';
+	$text['CATEGORY'] = 'Catégorie';
+	$text['CHOOSE_CATEGORIES'] = 'Choisir parmi les catégories';
+	$text['DELETE_LINK'] = 'Effacer le lien';
+	$text['MEMBER_OF'] = 'Membre de';
+	$text['MODIFICATION_OF_CATEGORY'] = 'Modification de la catégorie';
+	$text['NEW_CATEGORY'] = 'Nouvelle catégorie';
+}
 _lang($text);
 
 
@@ -126,7 +138,8 @@ function category_display($args)
 	$category = $category[0];
 	$title = CATEGORY.' '.$category['title'];
 	include('display.tpl');
-	$contents = _sql_array('SELECT category_content_id AS id'
+	$contents = _sql_array('SELECT category_content_id'
+			.', daportal_content.content_id AS id'
 			.', daportal_content.module_id, name AS module'
 			.', user_id, title AS name'
 			.' FROM daportal_category_content, daportal_content'
@@ -146,6 +159,7 @@ function category_display($args)
 			.'/icon.png';
 		$contents[$i]['thumbnail'] = 'modules/'.$contents[$i]['module']
 			.'/icon.png';
+		$contents[$i]['action'] = 'default';
 	}
 	_module('explorer', 'browse', array('entries' => $contents));
 }
@@ -298,6 +312,8 @@ function category_link_insert_new($args)
 
 	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
+	if($args['title'] == '')
+		return _error(INVALID_ARGUMENT);
 	$module = _module_id('category');
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
 			." WHERE module_id='$module'"
