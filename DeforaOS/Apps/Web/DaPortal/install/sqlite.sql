@@ -64,3 +64,13 @@ INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 /* module: news */
 INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
+
+
+/* module: comment */
+CREATE TABLE daportal_comment (
+	comment_id INTEGER PRIMARY KEY,
+	parent INTEGER,
+	FOREIGN KEY (comment_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
