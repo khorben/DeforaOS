@@ -16,8 +16,7 @@ function content_admin($args)
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return content_modify(array('id' => $args['id']));
-	print('<h1><img src="modules/content/icon.png" alt=""/> '
-			.'Contents administration</h1>'."\n");
+	print('<h1 class="content">Content administration</h1>'."\n");
 	$contents = _sql_array('SELECT content_id AS id, timestamp AS date'
 			.', name AS module, username, title AS name'
 			.', daportal_content.enabled AS enabled'
