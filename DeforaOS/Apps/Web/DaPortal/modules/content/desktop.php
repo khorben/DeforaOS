@@ -7,7 +7,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 	exit(header('Location: ../../index.php'));
 
 
-$title = 'Contents';
+$title = 'Content';
 $admin = 1;
 $list = 0;
 
