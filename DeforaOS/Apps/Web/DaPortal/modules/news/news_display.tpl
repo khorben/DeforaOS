@@ -1,5 +1,5 @@
 <div class="news entry">
-	<div class="title"><span><span><span><?php if($long) { ?><img src="modules/news/icon.png" alt=""/> <?php } else { ?><a href="index.php?module=news&amp;id=<?php echo _html_safe_link($news['id']); ?>"><?php } ?><?php echo _html_safe($news['title']); ?><?php if(!$long) { ?></a><?php } ?></span></span></span></div>
+	<div class="title"><span><span><span><?php if(!$long) { ?><a href="index.php?module=news&amp;id=<?php echo _html_safe_link($news['id']); ?>"><?php } ?><?php echo _html_safe($news['title']); ?><?php if(!$long) { ?></a><?php } ?></span></span></span></div>
 	<div class="author"><?php echo _html_safe(NEWS_BY); ?> <a href="index.php?module=user&amp;id=<?php echo _html_safe_link($news['user_id']); ?>"><?php echo _html_safe($news['username']); ?></a></div>
 	<div class="date"><?php echo _html_safe(NEWS_ON); ?> <?php echo _html_safe($news['date']); ?></div>
 	<div class="content"><?php echo _html_pre($news['content']); ?></div>
