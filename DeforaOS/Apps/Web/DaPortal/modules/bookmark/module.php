@@ -20,8 +20,11 @@ global $lang;
 if($lang == 'fr')
 {
 	$text['ADDRESS'] = 'Adresse';
+	$text['BOOKMARK_LIST'] = 'Liste de liens';
 	$text['BOOKMARKS'] = 'Liens';
+	$text['BOOKMARKS_ADMINISTRATION'] = 'Administration des liens';
 	$text['MODIFICATION_OF'] = 'Modification de';
+	$text['PRIVATE'] = 'Privé';
 }
 _lang($text);
 
@@ -37,11 +40,11 @@ function bookmark_admin($args)
 		return bookmark_modify($args);
 	print('<h1><img src="modules/admin/icon.png" alt=""/> '
 			._html_safe(BOOKMARKS_ADMINISTRATION).'</h1>'."\n");
-	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, enabled, url'
+	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name'
+			.', enabled, url'
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
-			.'=daportal_content.content_id'
-			." AND user_id='$user_id';");
+			.'=daportal_content.content_id;');
 	if(!is_array($bookmarks))
 		return _error('Could not list bookmarks');
 	$count = count($bookmarks);
