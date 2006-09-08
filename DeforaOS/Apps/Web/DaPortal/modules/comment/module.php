@@ -169,8 +169,8 @@ function comment_display($args)
 	if(_user_admin($user_id))
 		$where = '';
 	$comment = _sql_array('SELECT daportal_comment.comment_id AS id'
-			.', daportal_content.enabled, timestamp, title'
-			.', content, daportal_content.user_id, username'
+			.', daportal_content.enabled AS enabled, timestamp'
+			.', title, content, daportal_content.user_id, username'
 			.' FROM daportal_comment, daportal_content'
 			.', daportal_user'
 			.' WHERE daportal_comment.comment_id'
