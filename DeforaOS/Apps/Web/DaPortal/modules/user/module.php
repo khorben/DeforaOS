@@ -54,8 +54,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 
 function _password_new()
 {
-	$string = 'abcdefghijklmnopqrstuvwxyz'
-			.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	$string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 			.'0123456789';
 	$password = '';
 	for($i = 0; $i < 8; $i++)
