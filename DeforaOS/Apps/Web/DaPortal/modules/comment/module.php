@@ -46,12 +46,19 @@ function comment_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
 		.COMMENT_ADMINISTRATION.'</h1>'."\n");
+	if(($configs = _config_list('comment')))
+	{
+		print('<h2><img src="modules/admin/icon.png" alt=""/>'
+				.' Configuration</h2>'."\n");
+		$module = 'comment';
+		$action = 'config_update';
+		include('./system/config.tpl');
+	}
 	$comments = _sql_array('SELECT daportal_comment.comment_id AS id'
-			.', title AS name, daportal_user.user_id, username'
-			.', daportal_content.enabled, timestamp'
-			.' FROM daportal_comment, daportal_content'
-			.', daportal_user'
-			.' WHERE daportal_comment.comment_id'
+			.', title AS name, daportal_user.user_id AS user_id'
+			.', username, daportal_content.enabled AS enabled'
+			.', timestamp FROM daportal_comment, daportal_content'
+			.', daportal_user WHERE daportal_comment.comment_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' ORDER BY timestamp DESC;');
@@ -122,6 +129,22 @@ function comment_childs($args)
 		return _error('Could not display comments');
 	foreach($comments as $comment)
 		comment_display(array('id' => $comment['id']));
+}
+
+
+function comment_config_update($args)
+{
+	global $user_id, $module_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$keys = array_keys($args);
+	foreach($keys as $k)
+		if(ereg('^comment_([a-zA-Z_]+)$', $k, $regs))
+			_config_set('comment', $regs[1], $args[$k], 0);
+	header('Location: index.php?module=comment&action=admin');
+	exit(0);
 }
 
 
@@ -317,6 +340,16 @@ function comment_submit($comment)
 	if(!mail($to, '[DaPortal Comment submission] '.$comment['title'],
 				$comment['content'], $headers))
 		_error('Could not send mail to: '.$to, 0);
+}
+
+
+function comment_system($args)
+{
+	global $html;
+
+	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
+			&& $_POST['action'] == 'config_update')
+		$html = 0;
 }
 
 ?>
