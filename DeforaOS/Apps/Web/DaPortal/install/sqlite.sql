@@ -74,3 +74,4 @@ CREATE TABLE daportal_comment (
 	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('7', 'anonymous', '0');
