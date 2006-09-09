@@ -237,6 +237,8 @@ function project_bug_display($args)
 	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
+	$bug['date'] = strftime(DATE_FORMAT, strtotime(substr($bug['timestamp'],
+					0, 19)));
 	$bug['assigned'] = is_numeric($bug['assigned_id'])
 		? _sql_single('SELECT username FROM daportal_user'
 			." WHERE enabled='1'"
@@ -529,6 +531,8 @@ function project_bug_reply($reply)
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
+	$bug['date'] = strftime(DATE_FORMAT, strtotime(substr($bug['timestamp'],
+					0, 19)));
 	$title = REPLY_TO_BUG.' #'.$bug['id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
