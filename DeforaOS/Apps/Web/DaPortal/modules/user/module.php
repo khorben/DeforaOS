@@ -41,8 +41,8 @@ function _password_mail($id, $username, $email, $password = FALSE)
 		return _error('Could not create confirmation key');
 	$message = "Your password is '$password'\n\n"
 			."Please click on the following link to confirm:\n"
-			.'https://'.$_SERVER['SERVER_NAME']
-			.$_SERVER['SCRIPT_NAME']
+			.(isset($_SERVER['HTTPS']) ? 'https' : 'http')
+			.'://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']
 			.'?module=user&action=confirm&key='.$key;
 	$headers = 'From: Administration Team <'.$_SERVER['SERVER_ADMIN'].">\n";
 	_info('Mail sent to: '.$username.' <'.$email.'>');
@@ -405,13 +405,14 @@ function _system_confirm($key)
 	if(!is_array($user) || count($user) != 1)
 		return;
 	$user = $user[0];
-	if(_sql_query('UPDATE daportal_user SET'
-			." enabled='1'"
+	if(_sql_query('UPDATE daportal_user SET enabled='."'1'"
 			." WHERE user_id='".$user['user_id']."';") == FALSE)
 		return _error('Could not enable user');
-	if(_sql_query('DELETE FROM daportal_user_register'
-			." WHERE key='$key';") == FALSE)
+	if(_sql_query('DELETE FROM daportal_user_register WHERE key='."'$key';")
+			== FALSE)
 		_error('Could not remove registration key');
+	if(strlen(session_id()) == 0)
+		session_start();
 	$_SESSION['user_id'] = $user['user_id'];
 	$_SESSION['user_name'] = $user['username'];
 	header('Location: index.php?module=user');
