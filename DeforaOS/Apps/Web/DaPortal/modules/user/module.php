@@ -37,16 +37,14 @@ function _password_mail($id, $username, $email, $password = FALSE)
 		$password = _password_new();
 	$key = md5(_password_new());
 	if(_sql_query('INSERT INTO daportal_user_register (user_id, key)'
-			.' VALUES ('
-			."'$id', '$key');") == FALSE)
+			.' VALUES ('."'$id', '$key');") == FALSE)
 		return _error('Could not create confirmation key');
 	$message = "Your password is '$password'\n\n"
 			."Please click on the following link to confirm:\n"
 			.'https://'.$_SERVER['SERVER_NAME']
 			.$_SERVER['SCRIPT_NAME']
 			.'?module=user&action=confirm&key='.$key;
-	$headers = 'From: DeforaOS Administration Team <'
-			.$_SERVER['SERVER_ADMIN'].">\n";
+	$headers = 'From: Administration Team <'.$_SERVER['SERVER_ADMIN'].">\n";
 	_info('Mail sent to: '.$username.' <'.$email.'>');
 	if(mail($username.' <'.$email.'>', 'User confirmation', $message,
 			$headers) == FALSE)
