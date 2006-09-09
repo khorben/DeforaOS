@@ -9,10 +9,10 @@ CREATE TABLE daportal_module (
 	PRIMARY KEY (module_id),
 	UNIQUE KEY name (name)
 ) TYPE=InnoDB;
-INSERT INTO daportal_module VALUES ('admin', 1);
-INSERT INTO daportal_module VALUES ('explorer', 1);
-INSERT INTO daportal_module VALUES ('menu', 1);
-INSERT INTO daportal_module VALUES ('search', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('admin', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('explorer', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('menu', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('search', 1);
 
 
 CREATE TABLE daportal_config (
@@ -48,7 +48,7 @@ CREATE TABLE daportal_user (
 	PRIMARY KEY (user_id),
 	UNIQUE KEY username (username)
 ) TYPE=InnoDB;
-INSERT INTO daportal_module VALUES ('user', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('user', 1);
 INSERT INTO daportal_config VALUES (5, 'register', '1');
 INSERT INTO daportal_user VALUES (0, 'Anonymous', '', 0, 0, '');
 INSERT INTO daportal_user VALUES (1, 'admin', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 1, 'username@domain.tld');
@@ -79,11 +79,11 @@ CREATE TABLE daportal_content (
 ALTER TABLE daportal_content
 	ADD CONSTRAINT daportal_content_ibfk_1 FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
 	ADD CONSTRAINT daportal_content_ibfk_2 FOREIGN KEY (user_id) REFERENCES daportal_user (user_id);
-INSERT INTO daportal_module VALUES ('content', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('content', 1);
 
 
 /* module: news */
-INSERT INTO daportal_module VALUES ('news', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('news', 1);
 
 
 /* module: comment */
@@ -96,7 +96,8 @@ CREATE TABLE daportal_comment (
 ALTER TABLE daportal_comment
 	ADD CONSTRAINT daportal_comment_ibfk_2 FOREIGN KEY (parent) REFERENCES daportal_content (content_id),
 	ADD CONSTRAINT daportal_comment_ibfk_1 FOREIGN KEY (comment_id) REFERENCES daportal_content (content_id);
-INSERT INTO daportal_module VALUES ('comment', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('comment', 1);
+INSERT INTO daportal_config (module_id, name, value) VALUES ('7', 'anonymous', '0');
 
 
 /* module: top */
@@ -106,14 +107,14 @@ CREATE TABLE daportal_top (
 	link varchar(255) NOT NULL,
 	PRIMARY KEY (top_id)
 ) TYPE=MyISAM;
-INSERT INTO daportal_module VALUES ('top', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('top', 1);
 
 
 /* module: project */
 
 
 /* module: webmail */
-INSERT INTO daportal_module VALUES ('webmail', 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('webmail', 1);
 
 
 /* module: bookmark */
@@ -142,4 +143,4 @@ CREATE TABLE daportal_download (
 	PRIMARY KEY (download_id),
 	KEY content_id (content_id, parent)
 	) TYPE=InnoDB;
-INSERT INTO daportal_module VALUES (download, 1);
+INSERT INTO daportal_module (name, enabled) VALUES (download, 1);
