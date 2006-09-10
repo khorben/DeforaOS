@@ -1,4 +1,4 @@
-TARGETS	= browser delete
+TARGETS	= browser delete open
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -24,6 +24,11 @@ delete_CFLAGS = $(CFLAGSF) $(CFLAGS)
 delete: $(delete_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o delete $(delete_OBJS)
 
+open_OBJS = open.o mime.o
+open_CFLAGS = $(CFLAGSF) $(CFLAGS)
+open: $(open_OBJS)
+	$(CC) $(LDFLAGSF) $(LDFLAGS) -o open $(open_OBJS)
+
 browser.o: browser.c mime.h callbacks.h browser.h
 	$(CC) $(browser_CFLAGS) -c browser.c
 
@@ -39,8 +44,14 @@ main.o: main.c browser.h mime.h
 delete.o: delete.c
 	$(CC) $(delete_CFLAGS) -c delete.c
 
+open.o: open.c
+	$(CC) $(open_CFLAGS) -c open.c
+
+mime.o: mime.c browser.h mime.h ../config.h
+	$(CC) $(open_CFLAGS) -c mime.c
+
 clean:
-	$(RM) $(browser_OBJS) $(delete_OBJS)
+	$(RM) $(browser_OBJS) $(delete_OBJS) $(open_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -49,9 +60,11 @@ install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 browser $(DESTDIR)$(BINDIR)/browser
 	$(INSTALL) -m 0755 delete $(DESTDIR)$(BINDIR)/delete
+	$(INSTALL) -m 0755 open $(DESTDIR)$(BINDIR)/open
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/browser
 	$(RM) $(DESTDIR)$(BINDIR)/delete
+	$(RM) $(DESTDIR)$(BINDIR)/open
 
 .PHONY: all clean distclean install uninstall
