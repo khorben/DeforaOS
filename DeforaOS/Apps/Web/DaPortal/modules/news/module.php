@@ -103,6 +103,9 @@ function news_admin($args)
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable');
+	$toolbar[] = array('title' => DELETE,
+			'icon' => 'icons/16x16/delete.png',
+			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array(
 				'class' => array('username' => AUTHOR,
 					'enabled' => ENABLED, 'date' => DATE),
@@ -119,6 +122,18 @@ function news_default($args)
 	if(isset($args['id']))
 		return news_display(array('id' => $args['id']));
 	news_list($args);
+}
+
+
+function news_delete($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('./system/content.php');
+	_content_delete($args['id']);
 }
 
 
