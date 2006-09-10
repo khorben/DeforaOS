@@ -365,7 +365,8 @@ int browser_error(Browser * browser, char const * message, int ret)
 }
 
 
-static void _store_loop(Browser * browser, char const * name);
+static void _refresh_title(Browser * browser);
+static void _refresh_loop(Browser * browser, char const * name);
 void browser_refresh(Browser * browser)
 {
 	GDir * dir;
@@ -377,6 +378,7 @@ void browser_refresh(Browser * browser)
 	gtk_list_store_clear(browser->store);
 	if((dir = g_dir_open(browser->current->data, 0, NULL)) == NULL)
 		return;
+	_refresh_title(browser);
 	gtk_entry_set_text(GTK_ENTRY(browser->tb_path), browser->current->data);
 	for(cnt = 0, hidden_cnt = 0; (name = g_dir_read_name(dir)) != NULL;
 			cnt++)
@@ -387,7 +389,7 @@ void browser_refresh(Browser * browser)
 			if(!browser->prefs.show_hidden_files)
 				continue;
 		}
-		_store_loop(browser, name);
+		_refresh_loop(browser, name);
 	}
 	if(browser->statusbar_id)
 		gtk_statusbar_remove(GTK_STATUSBAR(browser->statusbar),
@@ -402,7 +404,16 @@ void browser_refresh(Browser * browser)
 					browser->statusbar), ""), status);
 }
 
-static void _store_loop(Browser * browser, char const * name)
+static void _refresh_title(Browser * browser)
+{
+	char buf[256];
+
+	snprintf(buf, sizeof(buf), "%s%s", "File browser - ",
+			(char*)browser->current->data);
+	gtk_window_set_title(GTK_WINDOW(browser->window), buf);
+}
+
+static void _refresh_loop(Browser * browser, char const * name)
 {
 	GtkTreeIter iter;
 	gchar * path;
