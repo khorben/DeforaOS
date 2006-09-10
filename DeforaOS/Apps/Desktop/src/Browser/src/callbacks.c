@@ -487,7 +487,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_title(GTK_WINDOW(window), "License");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_about_on_closex), NULL);
@@ -779,7 +779,7 @@ static void on_icon_edit(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
 
-	mime_edit(cb->browser->mime, cb->path);
+	mime_action(cb->browser->mime, "edit", cb->path);
 }
 
 static void on_icon_open(GtkWidget * widget, gpointer data)
@@ -789,5 +789,5 @@ static void on_icon_open(GtkWidget * widget, gpointer data)
 	if(cb->isdir)
 		browser_set_location(cb->browser, cb->path);
 	else
-		mime_open(cb->browser->mime, cb->path);
+		mime_action(cb->browser->mime, "open", cb->path);
 }
