@@ -47,6 +47,13 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('5', 'register', 't
 INSERT INTO daportal_user (user_id, username, password, email) VALUES ('0', 'Anonymous', '', '');
 INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'username@domain.tld');
 
+CREATE TABLE daportal_user_register (
+	user_id INTEGER,
+	key CHAR(32) UNIQUE NOT NULL,
+	timestamp TIMESTAMP NOT NULL DEFAULT now,
+	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
+);
+
 
 CREATE TABLE daportal_content (
 	content_id INTEGER PRIMARY KEY,
