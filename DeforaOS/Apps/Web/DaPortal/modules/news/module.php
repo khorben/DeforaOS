@@ -345,12 +345,10 @@ function news_submit($news)
 		$to.=$comma.$a['username'].' <'.$a['email'].'>';
 		$comma = ', ';
 	}
-	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-	$news['title'] = stripslashes($news['title']);
-	$news['content'] = stripslashes($news['content']);
-	if(!mail($to, '[DaPortal News submission] '.$news['title'],
-				$news['content'], $headers))
-		_error('Could not send mail to: '.$to, 0);
+	require_once('./system/mail.php');
+	_mail('Administration Team', $to, '[News submission] '
+			.(stripslashes($news['title'])),
+			stripslashes($news['content']));
 }
 
 
