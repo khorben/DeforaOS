@@ -277,7 +277,7 @@ function comment_new($args)
 {
 	global $user_id;
 
-	if(_config_get('comment', 'anonymous') != SQL_TRUE)
+	if($user_id == 0 && _config_get('comment', 'anonymous') != SQL_TRUE)
 		return _error(PERMISSION_DENIED);
 	print('<h1><img src="modules/comment/icon.png" alt=""/> '
 			._html_safe(NEW_COMMENT).'</h1>');
@@ -295,7 +295,7 @@ function comment_submit($comment)
 {
 	global $user_id, $user_name;
 
-	if(_config_get('comment', 'anonymous') != SQL_TRUE)
+	if($user_id == 0 && _config_get('comment', 'anonymous') != SQL_TRUE)
 		return _error(PERMISSION_DENIED);
 	if(isset($comment['preview']))
 	{
