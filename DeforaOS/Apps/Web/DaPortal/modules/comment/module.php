@@ -335,7 +335,7 @@ function comment_submit($comment)
 	$comment['title'] = stripslashes($comment['title']);
 	$comment['content'] = stripslashes($comment['content']);
 	require_once('./system/mail.php');
-	_mail($user_name, $to, '[DaPortal Comment submission] '
+	_mail('Administration Team', $to, '[Comment submission] '
 			.$comment['title'], $comment['content'], $header);
 }
 
