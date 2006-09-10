@@ -123,13 +123,13 @@ function user_admin($args)
 			'icon' => 'modules/user/icon.png',
 			'link' => 'index.php?module=user&action=new');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Disable',
+	$toolbar[] = array('title' => DISABLE,
 			'icon' => 'icons/16x16/disabled.png',
 			'action' => 'disable');
-	$toolbar[] = array('title' => 'Enable',
+	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable');
-	$toolbar[] = array('title' => 'Delete',
+	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('toolbar' => $toolbar,
