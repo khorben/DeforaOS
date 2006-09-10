@@ -44,11 +44,9 @@ function _password_mail($id, $username, $email, $password = FALSE)
 			.(isset($_SERVER['HTTPS']) ? 'https' : 'http')
 			.'://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']
 			.'?module=user&action=confirm&key='.$key;
-	$headers = 'From: Administration Team <'.$_SERVER['SERVER_ADMIN'].">\n";
-	_info('Mail sent to: '.$username.' <'.$email.'>');
-	if(mail($username.' <'.$email.'>', 'User confirmation', $message,
-			$headers) == FALSE)
-		return _error('Could not send mail');
+	require_once('./system/mail.php');
+	_mail('Administration Team', $username.' <'.$email.'>',
+		'User confirmation', $message);
 }
 
 
@@ -58,7 +56,7 @@ function _password_new()
 			.'0123456789';
 	$password = '';
 	for($i = 0; $i < 8; $i++)
-		$password.=$string[rand(0, strlen($string))];
+		$password.=$string[rand(0, strlen($string)-1)];
 	return $password;
 }
 
