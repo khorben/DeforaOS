@@ -80,7 +80,7 @@ static struct _menubar _menubar[] =
 /* Browser */
 static int _new_pixbufs(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
-static GtkListStore * _create_store(void);
+static GtkListStore * _create_store(Browser * browser);
 Browser * browser_new(char const * directory)
 {
 	Browser * browser;
@@ -106,8 +106,8 @@ Browser * browser_new(char const * directory)
 
 	/* config */
 	/* FIXME */
-	memset(&browser->prefs, sizeof(browser->prefs), 0);
-	memset(&browser->prefs_tmp, sizeof(browser->prefs_tmp), 0);
+	browser->prefs.sort_folders_first = TRUE;
+	browser->prefs.show_hidden_files = FALSE;
 
 	/* mime */
 	browser->mime = mime_new();
@@ -213,7 +213,7 @@ Browser * browser_new(char const * directory)
 	browser->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), browser->statusbar, FALSE, FALSE, 0);
 	/* store */
-	browser->store = _create_store();
+	browser->store = _create_store(browser);
 	browser->detailview = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->iconview = NULL;
@@ -296,27 +296,30 @@ static GtkWidget * _new_menubar(Browser * browser)
 static int _sort_func(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b,
 		gpointer data)
 {
+	Browser * browser = data;
 	gboolean is_dir_a, is_dir_b;
 	gchar * name_a, * name_b;
-	int ret;
+	int ret = 0;
 
-	/* FIXME sorts folders before files => optional */
 	gtk_tree_model_get(model, a, BR_COL_IS_DIRECTORY, &is_dir_a,
 			BR_COL_DISPLAY_NAME, &name_a, -1);
 	gtk_tree_model_get(model, b, BR_COL_IS_DIRECTORY, &is_dir_b,
 			BR_COL_DISPLAY_NAME, &name_b, -1);
-	if(!is_dir_a && is_dir_b)
-		ret = 1;
-	else if(is_dir_a && !is_dir_b)
-		ret = -1;
-	else
+	if(browser->prefs.sort_folders_first)
+	{
+		if(!is_dir_a && is_dir_b)
+			ret = 1;
+		else if(is_dir_a && !is_dir_b)
+			ret = -1;
+	}
+	if(ret == 0)
 		ret = g_utf8_collate(name_a, name_b);
 	g_free(name_a);
 	g_free(name_b);
 	return ret;
 }
 
-static GtkListStore * _create_store(void)
+static GtkListStore * _create_store(Browser * browser)
 {
 	GtkListStore * store;
 
@@ -329,7 +332,7 @@ static GtkListStore * _create_store(void)
 			G_TYPE_STRING);
 #endif
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
-			_sort_func, NULL, NULL);
+			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
 			GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID,
 			GTK_SORT_ASCENDING); /* FIXME optional */

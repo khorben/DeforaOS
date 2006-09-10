@@ -40,6 +40,7 @@ typedef enum _BrowserView
 
 typedef struct _BrowserPreferences
 {
+	gboolean sort_folders_first;
 	gboolean show_hidden_files;
 } BrowserPreferences;
 
@@ -48,7 +49,6 @@ typedef struct _Browser
 	/* config */
 /*	Config * config; */
 	BrowserPreferences prefs;
-	BrowserPreferences prefs_tmp;
 
 	/* mime */
 	Mime * mime;
@@ -78,6 +78,7 @@ typedef struct _Browser
 	guint statusbar_id;
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_sort;
 	GtkWidget * pr_hidden;
 } Browser;
 

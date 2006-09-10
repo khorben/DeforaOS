@@ -223,9 +223,9 @@ void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data)
 }
 
 
+static void _preferences_set(Browser * browser);
+/* callbacks */
 static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void _preferences_on_show_hidden_files(GtkToggleButton * button,
 		gpointer data);
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
@@ -251,10 +251,11 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 	g_signal_connect(G_OBJECT(browser->pr_window), "delete_event",
 			G_CALLBACK(_preferences_on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
+	browser->pr_sort = gtk_check_button_new_with_mnemonic(
+			"Sort _folders first");
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_sort, FALSE, FALSE, 4);
 	browser->pr_hidden = gtk_check_button_new_with_mnemonic(
 			"Show _hidden files");
-	g_signal_connect(G_OBJECT(browser->pr_hidden), "toggled", G_CALLBACK(
-				_preferences_on_show_hidden_files), browser);
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 4);
 	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -271,7 +272,16 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
+	_preferences_set(browser);
 	gtk_widget_show_all(browser->pr_window);
+}
+
+static void _preferences_set(Browser * browser)
+{
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_sort),
+			browser->prefs.sort_folders_first);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
+			browser->prefs.show_hidden_files);
 }
 
 static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
@@ -283,31 +293,12 @@ static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 	return TRUE;
 }
 
-static void _preferences_on_show_hidden_files(GtkToggleButton * button,
-		gpointer data)
-	/* FIXME should probably be tested only upon "ok" */
-{
-	Browser * browser = data;
-
-	browser->prefs_tmp.show_hidden_files
-		= gtk_toggle_button_get_active(button);
-}
-
-static void _preferences_set(Browser * browser);
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
 	gtk_widget_hide(browser->pr_window);
-	memcpy(&browser->prefs_tmp, &browser->prefs,
-			sizeof(browser->prefs_tmp));
 	_preferences_set(browser);
-}
-
-static void _preferences_set(Browser * browser)
-{
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
-			browser->prefs_tmp.show_hidden_files);
 }
 
 static void _preferences_on_ok(GtkWidget * widget, gpointer data)
@@ -315,8 +306,11 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 
 	gtk_widget_hide(browser->pr_window);
-	memcpy(&browser->prefs, &browser->prefs_tmp,
-			sizeof(browser->prefs_tmp));
+	browser->prefs.sort_folders_first = gtk_toggle_button_get_active(
+			GTK_TOGGLE_BUTTON(browser->pr_sort));
+	browser->prefs.show_hidden_files = gtk_toggle_button_get_active(
+			GTK_TOGGLE_BUTTON(browser->pr_hidden));
+	browser_refresh(browser);
 }
 
 
