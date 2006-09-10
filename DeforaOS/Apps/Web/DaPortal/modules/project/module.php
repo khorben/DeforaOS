@@ -322,7 +322,7 @@ function project_bug_insert($args)
 		foreach($members as $m)
 			$to.=', '.$m['username'].' <'.$m['email'].'>';
 		$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-		$title = '[DaPortal Bug submission] '.$args['title'];
+		$title = '[Bug submission] '.$args['title'];
 		$content = 'State: New'."\n".'Type: '.$args['type']."\n"
 			.'Priority: '.$args['priority']."\n\n"
 			.stripslashes($args['content']);
@@ -656,7 +656,7 @@ function project_bug_reply_insert($args)
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
 	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
-	$title = '[DaPortal Bug reply] '.$args['title'];
+	$title = '[Bug reply] '.$args['title'];
 	$content = 'State: '.$args['state']."\n".'Type: '.$args['type']."\n"
 		.'Priority: '.$args['priority']."\n\n"
 		.stripslashes($args['content']);
