@@ -57,7 +57,7 @@ INSERT INTO daportal_user (user_id, username, `password`, enabled, admin, email)
 CREATE TABLE daportal_user_register (
 	user_id int(11) NOT NULL default '0',
 	`key` char(32) NOT NULL,
-	timestamp timestamp(14) NOT NULL,
+	timestamp datetime(14) NOT NULL,
 	UNIQUE KEY user_id (user_id, `key`)
 ) TYPE=InnoDB;
 ALTER TABLE daportal_user_register
@@ -66,7 +66,7 @@ ALTER TABLE daportal_user_register
 
 CREATE TABLE daportal_content (
 	content_id int(11) NOT NULL auto_increment,
-	timestamp timestamp(14) NOT NULL,
+	timestamp datetime(14) NOT NULL,
 	module_id int(11) NOT NULL,
 	user_id int(11) NOT NULL,
 	title varchar(255) NOT NULL,
