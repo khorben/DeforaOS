@@ -23,8 +23,8 @@ CREATE TABLE daportal_config (
 ) TYPE=InnoDB;
 ALTER TABLE daportal_config
 	ADD CONSTRAINT daportal_config_ibfk_1 FOREIGN KEY (module_id) REFERENCES daportal_module (module_id);
-INSERT INTO daportal_config VALUES (1, 'lang', 'en');
-INSERT INTO daportal_config VALUES (1, 'title', 'DaPortal');
+INSERT INTO daportal_config (module_id, name, value) VALUES (1, 'lang', 'en');
+INSERT INTO daportal_config (module_id, name, value) VALUES (1, 'title', 'DaPortal');
 
 
 CREATE TABLE daportal_lang (
@@ -33,9 +33,9 @@ CREATE TABLE daportal_lang (
 	enabled tinyint(4) NOT NULL default '0',
 	PRIMARY KEY (lang_id)
 ) TYPE=MyISAM;
-INSERT INTO daportal_lang VALUES ('en', 'English', 1);
-INSERT INTO daportal_lang VALUES ('fr', 'Français', 1);
-INSERT INTO daportal_lang VALUES ('de', 'Deutsch', 1);
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('en', 'English', 1);
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', 1);
+INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', 1);
 
 
 CREATE TABLE daportal_user (
@@ -49,16 +49,16 @@ CREATE TABLE daportal_user (
 	UNIQUE KEY username (username)
 ) TYPE=InnoDB;
 INSERT INTO daportal_module (name, enabled) VALUES ('user', 1);
-INSERT INTO daportal_config VALUES (5, 'register', '1');
-INSERT INTO daportal_user VALUES (0, 'Anonymous', '', 0, 0, '');
-INSERT INTO daportal_user VALUES (1, 'admin', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 1, 'username@domain.tld');
+INSERT INTO daportal_config (module_id, name, value) VALUES (5, 'register', '1');
+INSERT INTO daportal_user (user_id, username, `password`, enabled, admin, email) VALUES (0, 'Anonymous', '', 0, 0, '');
+INSERT INTO daportal_user (user_id, username, `password`, enabled, admin, email) VALUES (1, 'admin', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 1, 'username@domain.tld');
 
 
 CREATE TABLE daportal_user_register (
 	user_id int(11) NOT NULL default '0',
-	key char(32) NOT NULL,
+	`key` char(32) NOT NULL,
 	timestamp timestamp(14) NOT NULL,
-	UNIQUE KEY user_id (user_id, key)
+	UNIQUE KEY user_id (user_id, `key`)
 ) TYPE=InnoDB;
 ALTER TABLE daportal_user_register
 	ADD CONSTRAINT daportal_user_register_ibfk_1 FOREIGN KEY (user_id) REFERENCES daportal_user (user_id);
@@ -143,4 +143,4 @@ CREATE TABLE daportal_download (
 	PRIMARY KEY (download_id),
 	KEY content_id (content_id, parent)
 	) TYPE=InnoDB;
-INSERT INTO daportal_module (name, enabled) VALUES (download, 1);
+INSERT INTO daportal_module (name, enabled) VALUES ('download', 1);
