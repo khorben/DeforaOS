@@ -2,9 +2,12 @@
 
 
 
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
 #include "callbacks.h"
 #include "browser.h"
 
@@ -323,14 +326,14 @@ static GtkListStore * _create_store(Browser * browser)
 {
 	GtkListStore * store;
 
+	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, 
 #if !GTK_CHECK_VERSION(2, 6, 0)
-	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, 
-			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_STRING);
+			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_UINT64,
 #else
-	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, 
 			GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN,
-			G_TYPE_STRING);
+			G_TYPE_UINT64,
 #endif
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -358,8 +361,11 @@ int browser_error(Browser * browser, char const * message, int ret)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
 	if(ret < 0)
+	{
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 					gtk_main_quit), NULL);
+		ret = -ret;
+	}
 	else
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 					gtk_widget_destroy), NULL);
@@ -422,14 +428,19 @@ static void _refresh_loop(Browser * browser, char const * name)
 	gchar * path;
 	gchar * display_name;
 	char const * type = NULL;
+	struct stat st;
 	gboolean is_dir;
 	GdkPixbuf * icon_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * icon_48 = NULL; /* FIXME */
 #endif
+	struct passwd * pw;
+	struct group * gr;
 
 	path = g_build_filename(browser->current->data, name, NULL);
-	is_dir = g_file_test(path, G_FILE_TEST_IS_DIR);
+	if(lstat(path, &st) != 0)
+		return; /* FIXME how to handle? */
+	is_dir = S_ISDIR(st.st_mode);
 	display_name = g_filename_to_utf8(name, -1, NULL, NULL, NULL);
 	gtk_list_store_append(browser->store, &iter);
 #if !GTK_CHECK_VERSION(2, 6, 0)
@@ -473,6 +484,11 @@ static void _refresh_loop(Browser * browser, char const * name)
 #if GTK_CHECK_VERSION(2, 6, 0)
 			BR_COL_PIXBUF_48, icon_48,
 #endif
+			BR_COL_SIZE, st.st_size,
+			BR_COL_OWNER, (pw = getpwuid(st.st_uid)) != NULL
+			? pw->pw_name : "",
+			BR_COL_GROUP, (gr = getgrgid(st.st_gid)) != NULL
+			? gr->gr_name : "",
 			BR_COL_MIME_TYPE, type == NULL ? "" : type,
 			-1);
 	g_free(path);
@@ -483,7 +499,10 @@ static void _refresh_loop(Browser * browser, char const * name)
 void browser_set_location(Browser * browser, char const * path)
 {
 	if(g_file_test(path, G_FILE_TEST_IS_REGULAR))
-		return mime_open(browser->mime, path);
+	{
+		mime_action(browser->mime, "open", path);
+		return;
+	}
 	if(!g_file_test(path, G_FILE_TEST_IS_DIR))
 		return;
 	if(browser->history == NULL)
@@ -576,6 +595,18 @@ static void _view_details(Browser * browser)
 			gtk_tree_view_column_new_with_attributes("Filename",
 				gtk_cell_renderer_text_new(), "text",
 				BR_COL_DISPLAY_NAME, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
+			gtk_tree_view_column_new_with_attributes("Size",
+				gtk_cell_renderer_text_new(), "text",
+				BR_COL_SIZE, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
+			gtk_tree_view_column_new_with_attributes("Owner",
+				gtk_cell_renderer_text_new(), "text",
+				BR_COL_OWNER, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
+			gtk_tree_view_column_new_with_attributes("Group",
+				gtk_cell_renderer_text_new(), "text",
+				BR_COL_GROUP, NULL));
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
 			gtk_tree_view_column_new_with_attributes("MIME type",
 				gtk_cell_renderer_text_new(), "text",
