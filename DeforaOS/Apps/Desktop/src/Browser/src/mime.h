@@ -6,6 +6,7 @@
 # define BROWSER_MIME_H
 
 # include <System.h>
+# include <gtk/gtk.h>
 
 # define MIME_CONFIG_FILE ".mime"
 
@@ -20,8 +21,6 @@ typedef struct _MimeType
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * icon_48;
 #endif
-	char * open;
-	char * edit;
 } MimeType;
 
 typedef struct _Mime
@@ -38,9 +37,8 @@ void mime_delete(Mime * mime);
 
 /* useful */
 char const * mime_type(Mime * mime, char const * path);
-void mime_open(Mime * mime, char const * path);
-/* FIXME have mime_action("open" | "edit" | ...) instead */
-void mime_edit(Mime * mime, char const * path);
+/* FIXME return an enum with error codes? */
+int mime_action(Mime * mime, char const * action, char const * path);
 GdkPixbuf * mime_icons(Mime * mime, GtkIconTheme * theme, char const * type,
 		GdkPixbuf ** icon_48);
 
