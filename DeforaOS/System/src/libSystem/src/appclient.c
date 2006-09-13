@@ -151,7 +151,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 	return appclient;
 }
 
-static uint32_t _connect_addr(char * service);
+static int _connect_addr(char * service, uint32_t * addr);
 static int _new_connect(AppClient * appclient, char * app)
 {
 	struct sockaddr_in sa;
@@ -161,7 +161,8 @@ static int _new_connect(AppClient * appclient, char * app)
 		return 1;
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appinterface_port(appclient->interface));
-	sa.sin_addr.s_addr = _connect_addr("Session");
+	if(_connect_addr("Session", &sa.sin_addr.s_addr) != 0)
+		return 1;
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return 1;
 	if((port = appclient_call(appclient, "port", 1, app)) == -1)
@@ -177,30 +178,36 @@ static int _new_connect(AppClient * appclient, char * app)
 		return 1;
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
-	sa.sin_addr.s_addr = _connect_addr(app);
+	if(_connect_addr(app, &sa.sin_addr.s_addr) != 0)
+		return 1;
 	sa.sin_port = htons(port);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return 1;
 	return 0;
 }
 
-static uint32_t _connect_addr(char * service)
+static int _connect_addr(char * service, uint32_t * addr)
 {
 	char prefix[] = "APPSERVER_";
 	int len = sizeof(prefix);
 	char * env;
-	char * appserver;
+	char * server;
 	struct hostent * he;
 
 	if((env = malloc(len + string_length(service) + 1)) == NULL)
-		return htonl(INADDR_LOOPBACK);
+		return 1;
 	sprintf(env, "%s%s", prefix, service);
-	appserver = getenv(env);
+	server = getenv(env);
 	free(env);
-	if(appserver == NULL || (he = gethostbyname(appserver)) == NULL)
-		/* FIXME this is an error case */
-		return htonl(INADDR_LOOPBACK);
-	return *((uint32_t*)(he->h_addr));
+	if(server == NULL)
+	{
+		*addr = htonl(INADDR_LOOPBACK);
+		return 0;
+	}
+	if((he = gethostbyname(server)) == NULL)
+		return 1;
+	*addr = (uint32_t)he->h_addr;
+	return 0;
 }
 
 
