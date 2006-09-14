@@ -27,6 +27,14 @@ void on_edit_unselect_all(GtkMenuItem * menuitem,
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
 
+/* view menu */
+void on_view_home(GtkWidget * widget, gpointer data);
+#if GTK_CHECK_VERSION(2, 6, 0)
+void on_view_details(GtkWidget * widget, gpointer data);
+void on_view_icons(GtkWidget * widget, gpointer data);
+void on_view_list(GtkWidget * widget, gpointer data);
+#endif
+
 /* toolbar */
 void on_back(GtkWidget * widget, gpointer data);
 void on_forward(GtkWidget * widget, gpointer data);
@@ -36,9 +44,6 @@ void on_refresh(GtkWidget * widget, gpointer data);
 void on_updir(GtkWidget * widget, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
 void on_view_as(GtkWidget * widget, gpointer data);
-void on_view_detail(GtkMenuItem * menuitem, gpointer data);
-void on_view_icon(GtkMenuItem * menuitem, gpointer data);
-void on_view_list(GtkMenuItem * menuitem, gpointer data);
 #endif
 
 /* address bar */

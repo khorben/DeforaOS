@@ -60,6 +60,18 @@ static struct _menu _menu_edit[] =
 	{ NULL, NULL, NULL }
 };
 
+static struct _menu _menu_view[] =
+{
+	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME },
+#if GTK_CHECK_VERSION(2, 6, 0)
+	{ "", NULL, NULL },
+	{ "_Details", G_CALLBACK(on_view_details), NULL },
+	{ "_Icons", G_CALLBACK(on_view_icons), NULL },
+	{ "_List", G_CALLBACK(on_view_list), NULL },
+#endif
+	{ NULL, NULL, NULL }
+};
+
 static struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -74,6 +86,7 @@ static struct _menubar _menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Edit", _menu_edit },
+	{ "_View", _menu_view },
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
@@ -168,11 +181,11 @@ Browser * browser_new(char const * directory)
 	menu = gtk_menu_new();
 	menuitem = gtk_menu_item_new_with_label("Details");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_view_detail), browser);
+				on_view_details), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_menu_item_new_with_label("Icons");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_view_icon), browser);
+				on_view_icons), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_menu_item_new_with_label("List");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(

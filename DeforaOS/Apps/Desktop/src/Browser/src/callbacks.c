@@ -314,6 +314,41 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 }
 
 
+/* view menu */
+void on_view_home(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_set_location(browser, g_get_home_dir());
+}
+
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+void on_view_details(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_set_view(browser, BV_DETAILS);
+}
+
+
+void on_view_icons(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_set_view(browser, BV_ICONS);
+}
+
+
+void on_view_list(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_set_view(browser, BV_LIST);
+}
+#endif /* GTK_CHECK_VERSION(2, 6, 0) */
+
+
 /* help menu */
 static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
@@ -602,30 +637,6 @@ void on_view_as(GtkWidget * widget, gpointer data)
 		browser_set_view(browser, BV_LIST);
 	else
 		browser_set_view(browser, BV_DETAILS);
-}
-
-
-void on_view_detail(GtkMenuItem * menuitem, gpointer data)
-{
-	Browser * browser = data;
-
-	browser_set_view(browser, BV_DETAILS);
-}
-
-
-void on_view_icon(GtkMenuItem * menuitem, gpointer data)
-{
-	Browser * browser = data;
-
-	browser_set_view(browser, BV_ICONS);
-}
-
-
-void on_view_list(GtkMenuItem * menuitem, gpointer data)
-{
-	Browser * browser = data;
-
-	browser_set_view(browser, BV_LIST);
 }
 #endif
 
