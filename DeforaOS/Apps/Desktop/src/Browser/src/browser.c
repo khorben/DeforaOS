@@ -34,8 +34,7 @@ struct _menubar
 /* constants */
 struct _menu _menu_file[] =
 {
-	{ "_New window", G_CALLBACK(on_file_new_window),
-		GTK_STOCK_NEW /* FIXME */ },
+	{ "_New window", G_CALLBACK(on_file_new_window), NULL },
 	{ "", NULL, NULL },
 	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH },
 	{ "_Properties", G_CALLBACK(on_properties),
