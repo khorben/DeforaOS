@@ -15,7 +15,10 @@ $text['MONITORING'] = 'Monitoring';
 $text['MONITORING_ADMINISTRATION'] = 'Monitoring administration';
 global $lang;
 if($lang == 'fr')
+{
 	$text['CONFIGURATION_ERROR'] = 'Erreur de configuration';
+	$text['MONITORING_ADMINISTRATION'] = 'Administration du monitoring';
+}
 _lang($text);
 
 
@@ -224,11 +227,9 @@ function probe_admin($args)
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'host_delete',
 			'confirm' => 'delete');
-	_module('explorer', 'browse', array(
-			'entries' => $hosts,
+	_module('explorer', 'browse', array('entries' => $hosts,
 			'toolbar' => $toolbar,
-			'module' => 'probe',
-			'action' => 'admin'));
+			'module' => 'probe', 'action' => 'admin'));
 }
 
 
@@ -261,7 +262,7 @@ function probe_host_delete($args)
 
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	_sql_query('DELETE FROM daportal_probe_host'
 			." WHERE host_id='".$args['id']."';");
 	_sql_query('DELETE FROM daportal_content'
