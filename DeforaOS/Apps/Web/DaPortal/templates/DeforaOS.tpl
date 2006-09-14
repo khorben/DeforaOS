@@ -31,9 +31,11 @@ _lang($text);
 		<div class="container">
 			<div class="top_search">
 				<form action="index.php" method="get">
-					<input type="hidden" name="module" value="search"/>
-					<input type="text" name="q" value="<?php echo _html_safe(SEARCH); ?>..." size="20" onfocus="if(value == '<?php echo _html_safe(SEARCH); ?>...') value=''"/>
-					<input id="search" type="submit" value="<?php echo _html_safe(SEARCH); ?>"/>
+					<div>
+						<input type="hidden" name="module" value="search"/>
+						<input type="text" name="q" value="<?php echo _html_safe(SEARCH); ?>..." size="20" onfocus="if(value == '<?php echo _html_safe(SEARCH); ?>...') value=''"/>
+						<input id="search" type="submit" value="<?php echo _html_safe(SEARCH); ?>"/>
+					</div>
 				</form>
 				<script type="text/javascript">
 <!--
@@ -42,7 +44,7 @@ document.getElementById('search').style.display='none';
 				</script>
 			</div>
 			<div class="logo"></div>
-			<div class="style1"><a href="index.php">DeforaOS</a> :: <?php echo (strlen($module) ? '<a href="index.php?module='.$module.'">'.ucfirst($module).'</a>' : 'Homepage'); ?></div>
+			<div class="style1"><a href="index.php">DeforaOS</a> :: <?php echo strlen($module) ? '<a href="index.php?module='.(_html_safe_link($module)).'">'.(_html_safe(ucfirst($module))).'</a>' : '<a href="index.php">Homepage</a>'; ?></div>
 <?php if($user_id) { _module('menu'); } else { ?>
 			<ul class="menu">
 				<li><a href="index.php"><?php echo _html_safe(ABOUT); ?></a><ul>
@@ -50,7 +52,7 @@ document.getElementById('search').style.display='none';
 					<li><a href="index.php?module=project"><?php echo _html_safe(PROJECT); ?></a></li>
 					<li><a href="roadmap.html"><?php echo _html_safe(ROADMAP); ?></a></li>
 					</ul></li>
-				<li><a href="development.html"><?php echo _html_safe(DEVELOPMENT); ?></a><ul>
+				<li><a href="index.php?module=project&amp;action=display&amp;id=11"><?php echo _html_safe(DEVELOPMENT); ?></a><ul>
 					<li><a href="policy.html"><?php echo _html_safe(POLICY); ?></a></li>
 					<li><a href="index.php?module=project&amp;action=list"><?php echo _html_safe(PROJECTS); ?></a></li>
 					</ul></li>
@@ -97,15 +99,14 @@ micro-kernel. Les principaux objectifs comprennent:
 			<li>un r&eacute;sultat utilisable.</li>
 		</ul>
 		<p>
-Le projet est toujours en <a href="index.php?module=project">phase de
+Le <a href="index.php?module=project&amp;id=11">projet</a> est toujours en <a href="index.php?module=project">phase de
 conception</a>.
 		</p>
 
 		<h3>Actualit&eacute;s</h3>
 		<p>
 Mises &agrave; jour incluant les <a href="index.php?module=news">&eacute;tapes
-d&eacute;terminantes</a> du projet. Celles-ci seront facilit&eacute;es par
-l'&eacute;volution du d&eacute;veloppement du portail web.
+d&eacute;terminantes</a> du projet.
 		</p>
 <?php break; case 'en': default: ?>
 		<h3>About the project</h3>
@@ -119,20 +120,19 @@ system. The primary goals include:
 			<li>usability.</li>
 		</ul>
 		<p>
-The project is still at its <a href="index.php?module=project">earliest
-stage</a>.
+The <a href="index.php?module=project&amp;id=11">project</a> is still at an <a
+href="index.php?module=project">early stage</a>.
 		</p>
 
 		<h3>Latest news</h3>
 		<p>
-Will hopefully be filled with <a href="index.php?module=news">every significant
-work made</a> for the project. This will be eased with the implementation of
-the site content management system.
+Eventually filled with <a href="index.php?module=news">every significant
+work made</a> for the project.
 		</p>
 <?php } ?>
 <?php } ?>
 <?php _debug(); ?>
 			</div>
 			<div style="clear: left">&nbsp;</div>
-			<div class="style1" style="padding-right: 33px; text-align: right;"><a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt=""/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt=""/></a></div>
+			<div class="style1" style="padding-right: 33px; text-align: right;"><a href="http://validator.w3.org/check/referer"><img src="images/xhtml.png" alt="XHTML"/></a> <a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="images/css.png" alt="CSS"/> <a href="index.php?module=news&amp;action=rss"><img src="images/rss.png" alt="RSS"/></a> </a><a href="Defora-cacert.pem"><img src="images/defora-ca.png" alt="Defora CA"/></a></div>
 		</div>
