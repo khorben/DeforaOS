@@ -24,6 +24,7 @@ void on_help_about(GtkWidget * widget, gpointer data);
 /* compose window */
 gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 void on_compose_file_close(GtkWidget * widget, gpointer data);
+void on_compose_help_about(GtkWidget * widget, gpointer data);
 void on_compose_save(GtkWidget * widget, gpointer data);
 
 #endif /* !MAILER_CALLBACKS_H */

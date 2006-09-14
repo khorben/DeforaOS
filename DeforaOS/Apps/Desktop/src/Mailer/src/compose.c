@@ -17,9 +17,20 @@ static struct _menu _menu_file[] =
 	{ NULL, NULL, NULL }
 };
 
+static struct _menu _menu_help[] =
+{
+#if GTK_CHECK_VERSION(2, 6, 0)
+	{ "_About", G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT },
+#else
+	{ "_About", G_CALLBACK(on_compose_help_about), NULL },
+#endif
+	{ NULL, NULL, NULL }
+};
+
 static struct _menubar _compose_menubar[] =
 {
 	{ "_File", _menu_file },
+	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
 
@@ -31,6 +42,7 @@ Compose * compose_new(Mailer * mailer)
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
+	GtkSizeGroup * group;
 	GtkWidget * widget;
 	GtkWidget * view;
 
@@ -48,12 +60,40 @@ Compose * compose_new(Mailer * mailer)
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = common_new_menubar(_compose_menubar, compose);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
 	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				on_compose_save), compose);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+	/* from */
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	toolbar = gtk_toolbar_new();
+	widget = gtk_label_new(" From: ");
+	gtk_size_group_add_widget(group, widget);
+	toolitem = gtk_tool_item_new();
+	gtk_container_add(GTK_CONTAINER(toolitem), widget);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	compose->from = gtk_combo_new();
+	toolitem = gtk_tool_item_new();
+	gtk_tool_item_set_expand(toolitem, TRUE);
+	gtk_container_add(GTK_CONTAINER(toolitem), compose->from);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+	/* subject */
+	toolbar = gtk_toolbar_new();
+	widget = gtk_label_new(" Subject: ");
+	gtk_size_group_add_widget(group, widget);
+	toolitem = gtk_tool_item_new();
+	gtk_container_add(GTK_CONTAINER(toolitem), widget);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	compose->subject = gtk_entry_new();
+	toolitem = gtk_tool_item_new();
+	gtk_tool_item_set_expand(toolitem, TRUE);
+	gtk_container_add(GTK_CONTAINER(toolitem), compose->subject);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	view = gtk_text_view_new();
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),

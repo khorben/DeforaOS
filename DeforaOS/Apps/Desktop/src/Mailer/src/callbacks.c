@@ -25,6 +25,7 @@ static char const _license[] = "GPLv2";
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	gtk_widget_hide(widget);
+	/* FIXME may be composing */
 	gtk_main_quit();
 	return FALSE;
 }
@@ -40,6 +41,7 @@ void on_file_new_mail(GtkWidget * widget, gpointer data)
 
 void on_file_quit(GtkWidget * widget, gpointer data)
 {
+	/* FIXME may be composing */
 	gtk_main_quit();
 }
 
@@ -108,6 +110,15 @@ void on_compose_file_close(GtkWidget * widget, gpointer data)
 	Compose * c = data;
 
 	compose_delete(c);
+}
+
+
+
+void on_compose_help_about(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	on_help_about(widget, c->mailer);
 }
 
 

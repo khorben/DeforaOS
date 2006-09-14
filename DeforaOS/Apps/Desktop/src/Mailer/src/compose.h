@@ -15,6 +15,8 @@ typedef struct _Compose
 
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * from;
+	GtkWidget * subject;
 	GtkWidget * statusbar;
 	gint statusbar_id;
 } Compose;
