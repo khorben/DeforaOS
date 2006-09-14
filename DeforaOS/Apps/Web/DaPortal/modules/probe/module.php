@@ -150,7 +150,7 @@ function _host_graph($hostname, $graph, $time, $param)
 				mkdir('tmp/'.$hostname);
 			$png = 'tmp/'.$hostname.$param.'_'.$time.'.png';
 			$title = 'volume usage: '.$param;
-			$label = 'blocks';
+			$label = 'MB';
 			$def = array('voltotal', 'volfree');
 			//FIXME block size may not be 4
 			$cdef = array('pvoltotal' => 'voltotal,1024,/',
