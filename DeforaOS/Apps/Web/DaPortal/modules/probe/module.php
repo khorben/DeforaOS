@@ -212,7 +212,7 @@ function probe_admin($args)
 	for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
 	{
 		$hosts[$i]['module'] = 'probe';
-		$hosts[$i]['action'] = 'host_display';
+		$hosts[$i]['action'] = 'host_modify';
 		$hosts[$i]['icon'] = 'modules/probe/icon.png';
 		$hosts[$i]['thumbnail'] = 'modules/probe/icon.png';
 		$hosts[$i]['apply_module'] = 'probe';
