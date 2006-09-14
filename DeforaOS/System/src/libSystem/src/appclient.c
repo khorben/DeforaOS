@@ -215,6 +215,8 @@ static int _connect_addr(char * service, uint32_t * addr)
 void appclient_delete(AppClient * appclient)
 {
 	appinterface_delete(appclient->interface);
+	if(appclient->fd != -1)
+		close(appclient->fd);
 	free(appclient);
 }
 
