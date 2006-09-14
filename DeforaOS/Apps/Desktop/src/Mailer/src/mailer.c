@@ -66,12 +66,12 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	toolbar = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
-/*	gtk_widget_set_sensitive(toolitem, FALSE); */
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
 			-1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
-/*	gtk_widget_set_sensitive(toolitem, FALSE); */
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PRINT);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	hpaned = gtk_hpaned_new();
