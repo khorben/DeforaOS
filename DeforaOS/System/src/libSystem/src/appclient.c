@@ -206,7 +206,7 @@ static int _connect_addr(char * service, uint32_t * addr)
 	}
 	if((he = gethostbyname(server)) == NULL)
 		return 1;
-	*addr = (uint32_t)he->h_addr;
+	*addr = *((uint32_t*)he->h_addr);
 	return 0;
 }
 
