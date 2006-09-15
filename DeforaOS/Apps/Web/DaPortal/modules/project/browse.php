@@ -254,7 +254,7 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	print('<div class="toolbar"><a href="'.$link.'">'
 			.'<img src="icons/16x16/updir.png" alt=""/>'
 			.' Browse revisions</a>'
-			.' · <a href="'.$link."&amp;revision=$revision"
+			.' &middot; <a href="'.$link."&amp;revision=$revision"
 			.'&amp;download=1">'
 			.'<img src="icons/16x16/save.png" alt=""/>'
 			.' Download file</a></div>'."\n");

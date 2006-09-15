@@ -8,5 +8,5 @@
 </table>
 <a href="index.php?module=project&amp;action=bug_reply&amp;id=<?php echo $bug['id']; ?>"><img src="icons/16x16/reply.png" alt=""/> <?php echo _html_safe(REPLY); ?></a>
 <?php if($admin) { ?>
-· <a href="index.php?module=project&amp;action=bug_modify&amp;id=<?php echo _html_safe_link($bug['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a></td></tr>
+&middot; <a href="index.php?module=project&amp;action=bug_modify&amp;id=<?php echo _html_safe_link($bug['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a></td></tr>
 <?php } ?>

@@ -82,7 +82,7 @@ function top_default($args)
 	{
 		print("\t\t\t".$sep.'<a href="'._html_safe_link($l['link']).'">'
 				._html_safe($l['name']).'</a>'."\n");
-		$sep = '· ';
+		$sep = '&middot; ';
 	}
 	print("\t\t".'</div>'."\n");
 }

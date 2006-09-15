@@ -2,7 +2,7 @@
 <div class="toolbar">
 	<a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>">Summary</a>
 <?php foreach($graphs as $g) { ?>
-	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>" title="<?php echo _html_safe($graphs[$k]); ?>"><?php echo _html_safe($g['title']); ?></a>
+	&middot; <a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>" title="<?php echo _html_safe($graphs[$k]); ?>"><?php echo _html_safe($g['title']); ?></a>
 <?php } ?>
 </div>
 <div style="padding: 4px">

@@ -16,6 +16,6 @@
 	<div class="status"><?php echo _html_safe(PRIORITY_CHANGED_TO.' "'.$reply['priority'].'"'); ?></div>
 <?php } ?>
 <?php if($admin && isset($reply['content_id'])) { ?>
-	<div><a href="index.php?module=project&amp;action=bug_reply_modify&amp;id=<?php echo _html_safe_link($reply['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a> · <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe_link($reply['content_id']); ?>"><img src="icons/16x16/disabled.png" alt=""/> <?php echo _html_safe(DISABLE); ?></a></div>
+	<div><a href="index.php?module=project&amp;action=bug_reply_modify&amp;id=<?php echo _html_safe_link($reply['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a> &middot; <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe_link($reply['content_id']); ?>"><img src="icons/16x16/disabled.png" alt=""/> <?php echo _html_safe(DISABLE); ?></a></div>
 <?php } ?>
 </div>
