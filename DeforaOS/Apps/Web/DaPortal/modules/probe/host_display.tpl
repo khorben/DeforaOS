@@ -1,34 +1,52 @@
-<h1><img src="modules/probe/icon.png" alt=""/> <? echo _html_safe($title); ?></h1>
+<h1><img src="modules/probe/icon.png" alt=""/> <?php echo _html_safe($title); ?></h1>
 <div class="toolbar">
-	<a href="index.php?module=probe&amp;action=host_modify&amp;id=<? echo _html_safe($host['id']); ?>">Modify</a>
-	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>">Summary</a>
-<? foreach($graphs as $g) { ?>
-	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($g['graph']); ?>" title="<? echo _html_safe($graphs[$k]); ?>"><? echo _html_safe($g['title']); ?></a>
-<? } ?>
+	<a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>">Summary</a>
+<?php foreach($graphs as $g) { ?>
+	· <a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>" title="<?php echo _html_safe($graphs[$k]); ?>"><?php echo _html_safe($g['title']); ?></a>
+<?php } ?>
 </div>
-<div class="comment"><? echo _html_safe($host['comment']); ?></div>
+<div style="padding: 4px">
+<?php global $user_id; require_once('system/user.php'); if(_user_admin($user_id) == 1) { ?>
+	<a href="index.php?module=probe&amp;action=host_modify&amp;id=<?php echo _html_safe($host['id']); ?>"><input type="button" value="Modify" style="padding-right: 4px"/></a>
+<?php } ?>
+	View last: <form action="index.php" method="get" style="display: inline">
+		<input type="hidden" name="module" value="probe"/>
+		<input type="hidden" name="action" value="host_display"/>
+		<input type="hidden" name="id" value="<?php echo $args['id']; ?>"/>
+		<select name="time" onchange="submit()">
+			<option value="hour"<?php if($args['time'] == 'hour') { ?> selected="selected"<?php } ?>>hour</option>
+			<option value="day"<?php if($args['time'] == 'day') { ?> selected="selected"<?php } ?>>day</option>
+			<option value="week"<?php if($args['time'] == 'week') { ?> selected="selected"<?php } ?>>week</option>
+		</select>
+		<input id="probe_view" type="submit" value="View"/>
+		<script type="text/javascript"><!--
+document.getElementById('probe_view').style.display='none';
+//--></script>
+	</form>
+</div>
+<div class="comment"><?php echo _html_safe($host['comment']); ?></div>
 <center>
 <table>
-<? $i = 0; foreach($graphs as $g) { ?>
-<? if(isset($graph) && $g['graph'] != $graph) continue; ?>
-<? if(isset($graph) || !$i % 2) { ?>
+<?php $i = 0; foreach($graphs as $g) { ?>
+<?php if(isset($graph) && $g['graph'] != $graph) continue; ?>
+<?php if(isset($graph) || !$i % 2) { ?>
 	<tr>
-<? } ?>
-		<td><h3><? echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($g['graph']); ?>"><img src="<? echo _host_graph($host['hostname'], $g['graph'], 'hour', $g['param']); ?>" alt=""/></a></td>
+<?php } ?>
+		<td><h3><?php echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>"><img src="<?php echo _host_graph($host['hostname'], $g['graph'], $g['time'], $g['param']); ?>" alt=""/></a></td>
 		<td></td>
-<? if(isset($graph)) { ?>
+<?php if(isset($graph)) { ?>
 	</tr>
 	<tr>
-		<td><h3><? echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($g['graph']); ?>"><img src="<? echo _host_graph($host['hostname'], $g['graph'], 'day', $g['param']); ?>" alt=""/></a></td>
+		<td><h3><?php echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>"><img src="<?php echo _host_graph($host['hostname'], $g['graph'], 'day', $g['param']); ?>" alt=""/></a></td>
 		<td></td>
 	</tr>
 	<tr>
-		<td><h3><? echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<? echo _html_safe($host['id']); ?>&amp;graph=<? echo _html_safe($g['graph']); ?>"><img src="<? echo _host_graph($host['hostname'], $g['graph'], 'week', $g['param']); ?>" alt=""/></a></td>
+		<td><h3><?php echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>"><img src="<?php echo _host_graph($host['hostname'], $g['graph'], 'week', $g['param']); ?>" alt=""/></a></td>
 		<td></td>
-<? } ?>
-<? if(isset($graph) || $i % 2) { ?>
+<?php } ?>
+<?php if(isset($graph) || $i % 2) { ?>
 	</tr>
-<? } ?>
-<? $i++; } ?>
+<?php } ?>
+<?php $i++; } ?>
 </table>
 </center>

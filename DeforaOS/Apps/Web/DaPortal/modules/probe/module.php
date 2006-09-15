@@ -32,17 +32,11 @@ function _host_graph($hostname, $graph, $time, $param)
 	_info('rrd: '.$rrd);
 	switch($time)
 	{
-		case 'week':
-			$start = '-604800';
-			break;
-		case 'day':
-			$start = '-86400';
-			break;
+		case 'week':	$start = '-604800';	break;
+		case 'day':	$start = '-86400';	break;
 		case 'hour':
-		default:
-			$start = '-3600';
-			$time = 'hour';
-			break;
+		default:	$start = '-3600';
+				$time = 'hour';		break;
 	}
 	//FIXME hardcoded path + not always true (if, vol)
 	$png = 'tmp/'.$hostname.'_'.$graph.'_'.$time.'.png';
@@ -62,8 +56,8 @@ function _host_graph($hostname, $graph, $time, $param)
 			$label = 'hours';
 			$def = array('uptime');
 			$cdef = array('ruptime' => 'uptime,3600,/');
-			$data = ' AREA:ruptime#ff7f7f'
-				.' LINE2:ruptime#ff4f4f:"Uptime"'
+			$data = ' AREA:ruptime#ffc0c0'
+				.' LINE2:ruptime#ef0f0f:"Uptime"'
 				.' GPRINT:ruptime:LAST:" %.2lf h"';
 			break;
 		case 'load':
@@ -73,9 +67,9 @@ function _host_graph($hostname, $graph, $time, $param)
 			$cdef = array('rload1' => 'load1,65536,/',
 				'rload5' => 'load15,65536,/',
 				'rload15' => 'load15,65536,/');
-			$data = ' AREA:rload1#ffef00'
-				.' AREA:rload5#ffbf00'
-				.' AREA:rload15#ff8f00'
+			$data = ' AREA:rload1#ffef5f'
+				.' AREA:rload5#ffbf5f'
+				.' AREA:rload15#ff8f5f'
 				.' LINE2:rload1#ffdf00:"Load 1 min\:\g"'
 				.' GPRINT:rload1:LAST:" %.2lf"'
 				.' LINE2:rload5#ffaf00:"Load 5 min\:\g"'
@@ -118,16 +112,16 @@ function _host_graph($hostname, $graph, $time, $param)
 			$title = 'logged users';
 			$label = 'users';
 			$def = array('users');
-			$data = ' AREA:users#7f7fff'
-				.' LINE2:users#4f4fff:"Logged users\:\g"'
+			$data = ' AREA:users#b0b0ff'
+				.' LINE2:users#0f0fef:"Logged users\:\g"'
 				.' GPRINT:users:LAST:" %.0lf"';
 			break;
 		case 'procs':
 			$title = 'process count';
 			$label = 'process';
 			$def = array('procs');
-			$data = ' AREA:procs#7f7fff'
-				.' LINE2:procs#4f4fff:"Process count\:\g"'
+			$data = ' AREA:procs#b0b0ff'
+				.' LINE2:procs#0f0fef:"Process count\:\g"'
 				.' GPRINT:procs:LAST:" %.0lf"';
 			break;
 		case 'iface':
@@ -137,10 +131,10 @@ function _host_graph($hostname, $graph, $time, $param)
 			$title = 'network traffic';
 			$label = 'bytes';
 			$def = array('ifrxbytes', 'iftxbytes');
-			$data = ' AREA:ifrxbytes#30ff30'
-				.' LINE2:ifrxbytes#00d000:"RX bytes\:\g"'
+			$data = ' AREA:ifrxbytes#b0ffb0'
+				.' LINE2:ifrxbytes#0fef0f:"RX bytes\:\g"'
 				.' GPRINT:ifrxbytes:LAST:" %.0lf"'
-				.' LINE2:iftxbytes#4f4fff:"TX bytes\:\g"'
+				.' LINE2:iftxbytes#0f0fef:"TX bytes\:\g"'
 				.' GPRINT:iftxbytes:LAST:" %.0lf"';
 			break;
 		case 'vol':
@@ -282,21 +276,33 @@ function probe_host_display($args)
 			." AND host_id='".$args['id']."';");
 	if(!is_array($host) || count($host) != 1)
 		return _error('Could not display host');
+	$time = 'hour';
+	switch($args['time'])
+	{
+		case 'day':	$time = 'day';	break;
+		case 'week':	$time = 'week';	break;
+	}
 	$host = $host[0];
 	$title = 'Host: '.$host['hostname'];
 	//FIXME graphs, categories, ...
 	$graphs = array();
-	$graphs[] = array('graph' => 'uptime', 'title' => 'Uptime');
-	$graphs[] = array('graph' => 'load', 'title' => 'Load average');
-	$graphs[] = array('graph' => 'ram', 'title' => 'Memory usage');
-	$graphs[] = array('graph' => 'swap', 'title' => 'Swap usage');
-	$graphs[] = array('graph' => 'users', 'title' => 'Logged users');
-	$graphs[] = array('graph' => 'procs', 'title' => 'Process count');
+	$graphs[] = array('graph' => 'uptime', 'title' => 'Uptime',
+			'time' => $time);
+	$graphs[] = array('graph' => 'load', 'title' => 'Load average',
+			'time' => $time);
+	$graphs[] = array('graph' => 'ram', 'title' => 'Memory usage',
+			'time' => $time);
+	$graphs[] = array('graph' => 'swap', 'title' => 'Swap usage',
+			'time' => $time);
+	$graphs[] = array('graph' => 'users', 'title' => 'Logged users',
+			'time' => $time);
+	$graphs[] = array('graph' => 'procs', 'title' => 'Process count',
+			'time' => $time);
 	//FIXME potential directory traversal
 	if(is_readable($probe.'/'.$host['hostname'].'_eth0.rrd'))
 		$graphs[] = array('graph' => 'iface',
 				'title' => 'Network usage: eth0',
-				'param' => 'eth0');
+				'time' => $time, 'param' => 'eth0');
 	//FIXME directory traversal + hidden rrd (*/.rrd)
 	$vols = glob($probe.'/'.$host['hostname'].'/*.rrd');
 	foreach($vols as $v)
@@ -304,7 +310,7 @@ function probe_host_display($args)
 		$v = substr($v, 15 + strlen($host['hostname']));
 		$v = substr($v, 0, -4);
 		$graphs[] = array('graph' => 'vol',
-				'title' => 'Volume usage: '.$v,
+				'title' => 'Volume usage: '.$v, 'time' => $time,
 				'param' => $v);
 	}
 	if(isset($args['graph']))
