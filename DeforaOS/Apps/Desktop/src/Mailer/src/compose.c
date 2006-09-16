@@ -184,6 +184,7 @@ void compose_save(Compose * compose)
 
 
 /* compose_send */
+char * _send_body(Compose * compose);
 void compose_send(Compose * compose)
 {
 	struct {
@@ -205,9 +206,6 @@ void compose_send(Compose * compose)
 	size_t len;
 	size_t hdr_len;
 	char * q;
-	GtkTextBuffer * tbuf;
-	GtkTextIter start;
-	GtkTextIter end;
 	char * r;
 
 	for(i = 0; widgets[i].hdr != NULL; i++)
@@ -227,12 +225,7 @@ void compose_send(Compose * compose)
 				widgets[i].hdr, p);
 		msg_len+=hdr_len+len+2;
 	}
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
-	/* FIXME allocating the complete message is not optimal */
-	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
-	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
-	r = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
-			FALSE);
+	r = _send_body(compose);
 	len = strlen(r);
 	if((q = realloc(msg, msg_len + len + 3)) == NULL)
 	{
@@ -248,4 +241,18 @@ void compose_send(Compose * compose)
 	free(msg);
 /* FIXME will be useful later
 	execlp("sendmail", "sendmail", "-bs", NULL); */
+}
+
+char * _send_body(Compose * compose)
+{
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	/* FIXME allocating the complete message is not optimal */
+	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
+	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
+	return gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
+			FALSE);
 }
