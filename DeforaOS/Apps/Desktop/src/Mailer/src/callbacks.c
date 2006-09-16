@@ -105,6 +105,23 @@ gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
+void on_compose_save(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	compose_save(c);
+}
+
+
+void on_compose_send(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	compose_send(c);
+}
+
+
+/* compose file menu */
 void on_compose_file_close(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
@@ -113,16 +130,26 @@ void on_compose_file_close(GtkWidget * widget, gpointer data)
 }
 
 
+/* compose view menu */
+void on_compose_view_cc(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	gtk_widget_show(c->cc);
+}
+
+
+void on_compose_view_bcc(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	gtk_widget_show(c->bcc);
+}
+
 
 void on_compose_help_about(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
 
 	on_help_about(widget, c->mailer);
-}
-
-
-void on_compose_save(GtkWidget * widget, gpointer data)
-{
-	/* FIXME */
 }
