@@ -228,16 +228,14 @@ void compose_send(Compose * compose)
 	r = _send_body(compose);
 	len = strlen(r);
 	if((q = realloc(msg, msg_len + len + 3)) == NULL)
-	{
-		g_free(r);
-		free(msg);
 		mailer_error(compose->mailer, "Memory allocation", 0);
-		return;
+	else
+	{
+		msg = q;
+		snprintf(&msg[msg_len], len+3, "\r\n%s", r);
+		msg_len+=len+2;
 	}
-	msg = q;
-	snprintf(&msg[msg_len], len+3, "\r\n%s", r);
 	g_free(r);
-	msg_len+=len+2;
 	free(msg);
 /* FIXME will be useful later
 	execlp("sendmail", "sendmail", "-bs", NULL); */
