@@ -2,6 +2,7 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -189,8 +190,9 @@ void compose_save(Compose * compose)
 
 
 /* compose_send */
-char * _send_headers(Compose * compose);
-char * _send_body(GtkWidget * view);
+static char * _send_headers(Compose * compose);
+static char * _send_body(GtkWidget * view);
+static int _send_mail(Compose * compose, char * msg, size_t msg_len);
 void compose_send(Compose * compose)
 {
 	char * msg;
@@ -208,21 +210,42 @@ void compose_send(Compose * compose)
 	}
 	msg_len = strlen(msg);
 	body_len = strlen(body);
-	if((p = realloc(msg, msg_len + body_len + 3)) == NULL)
+	if((p = realloc(msg, msg_len + body_len + 8)) == NULL)
 		mailer_error(compose->mailer, "Memory allocation", 0);
 	else
 	{
 		msg = p;
-		snprintf(&msg[msg_len], body_len + 3, "\r\n%s", body);
-		msg_len+=body_len+2;
+		snprintf(&msg[msg_len], body_len + 8, "\r\n%s\r\n.\r\n", body);
+		msg_len+=body_len+7;
 	}
 	g_free(body);
+	_send_mail(compose, msg, msg_len);
 	free(msg);
-/* FIXME will be useful later
-	execlp("sendmail", "sendmail", "-bs", NULL); */
 }
 
-char * _send_headers(Compose * compose)
+static int _send_mail(Compose * compose, char * msg, size_t msg_len)
+{
+	int fd[2];
+	pid_t pid;
+
+	if(pipe(fd) != 0)
+		return mailer_error(compose->mailer, strerror(errno), 1);
+	if((pid = fork()) == -1)
+		return mailer_error(compose->mailer, strerror(errno), 1);
+	if(pid == 0)
+	{
+		close(0);
+		dup2(fd[0], 0);
+		execl("sendmail", "/usr/sbin/sendmail", "-bm", NULL);
+		exit(2);
+	}
+	/* FIXME send mail progressively, get sendmail's output */
+	write(1, msg, msg_len);
+	write(fd[1], msg, msg_len);
+	return 0;
+}
+
+static char * _send_headers(Compose * compose)
 {
 	struct {
 		char * hdr;
@@ -268,7 +291,7 @@ char * _send_headers(Compose * compose)
 	return msg;
 }
 
-char * _send_body(GtkWidget * view)
+static char * _send_body(GtkWidget * view)
 {
 	GtkTextBuffer * tbuf;
 	GtkTextIter start;
