@@ -53,6 +53,7 @@ Compose * compose_new(Mailer * mailer)
 	GtkToolItem * toolitem;
 	GtkSizeGroup * group;
 	GtkWidget * widget;
+	PangoFontDescription * desc;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
@@ -148,6 +149,10 @@ Compose * compose_new(Mailer * mailer)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	compose->view = gtk_text_view_new();
+	desc = pango_font_description_new();
+	pango_font_description_set_family(desc, "monospace");
+	gtk_widget_modify_font(compose->view, desc);
+	pango_font_description_free(desc);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
