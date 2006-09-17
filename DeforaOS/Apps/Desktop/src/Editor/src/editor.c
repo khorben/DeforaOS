@@ -45,6 +45,8 @@ static void _on_file_save_as(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 static void _on_new(GtkWidget * widget, gpointer data);
 static void _on_open(GtkWidget * widget, gpointer data);
+static void _on_save(GtkWidget * widget, gpointer data);
+static void _on_save_as(GtkWidget * widget, gpointer data);
 struct _menu _menu_file[] =
 {
 	{ "_New", G_CALLBACK(_on_file_new), GTK_STOCK_NEW },
@@ -97,6 +99,9 @@ Editor * editor_new(void)
 	GtkWidget * toolbar;
 	GtkToolItem * tb_button;
 	GtkWidget * widget;
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
@@ -121,6 +126,18 @@ Editor * editor_new(void)
 	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(_on_open),
 			editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(_on_save),
+			editor);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE_AS);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
+				_on_save_as), editor);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(_on_close),
 			editor);
@@ -131,7 +148,13 @@ Editor * editor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
-	/* FIXME monospace font */
+	/* FIXME monospace font does not work */
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	gtk_text_buffer_create_tag(tbuf, "monospace", "family", "monospace",
+			NULL);
+	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
+	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
+	gtk_text_buffer_apply_tag_by_name(tbuf, "monospace", &start, &end);
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* statusbar */
@@ -299,8 +322,7 @@ static void _on_file_close(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 
-	/* FIXME ask the user whether to save or not */
-	gtk_main_quit();
+	editor_close(editor);
 }
 
 static void _on_file_new(GtkWidget * widget, gpointer data)
@@ -543,6 +565,20 @@ static void _on_open(GtkWidget * widget, gpointer data)
 	Editor * editor = data;
 
 	editor_open_dialog(editor);
+}
+
+static void _on_save(GtkWidget * widget, gpointer data)
+{
+	Editor * editor = data;
+
+	editor_save(editor);
+}
+
+static void _on_save_as(GtkWidget * widget, gpointer data)
+{
+	Editor * editor = data;
+
+	editor_save_as_dialog(editor);
 }
 
 
