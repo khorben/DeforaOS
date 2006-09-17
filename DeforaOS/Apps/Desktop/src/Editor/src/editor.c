@@ -99,9 +99,7 @@ Editor * editor_new(void)
 	GtkWidget * toolbar;
 	GtkToolItem * tb_button;
 	GtkWidget * widget;
-	GtkTextBuffer * tbuf;
-	GtkTextIter start;
-	GtkTextIter end;
+	PangoFontDescription * desc;
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
@@ -148,13 +146,10 @@ Editor * editor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
-	/* FIXME monospace font does not work */
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
-	gtk_text_buffer_create_tag(tbuf, "monospace", "family", "monospace",
-			NULL);
-	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
-	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
-	gtk_text_buffer_apply_tag_by_name(tbuf, "monospace", &start, &end);
+	desc = pango_font_description_new();
+	pango_font_description_set_family(desc, "monospace");
+	gtk_widget_modify_font(editor->view, desc);
+	pango_font_description_free(desc);
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* statusbar */
