@@ -135,7 +135,7 @@ void on_compose_view_cc(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
 
-	gtk_widget_show(c->cc);
+	gtk_widget_show(c->tb_cc);
 }
 
 
@@ -143,7 +143,7 @@ void on_compose_view_bcc(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
 
-	gtk_widget_show(c->bcc);
+	gtk_widget_show(c->tb_bcc);
 }
 
 
