@@ -641,7 +641,30 @@ void on_view_as(GtkWidget * widget, gpointer data)
 #endif
 
 
+/* address bar */
+void on_path_activate(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_set_location(browser, gtk_entry_get_text(GTK_ENTRY(
+					browser->tb_path)));
+}
+
+
 /* view */
+/* types */
+/* FIXME rather ugly, maybe could go directly in Browser */
+typedef struct _IconCallback
+{
+	Browser * browser;
+	int isdir;
+	char * path;
+} IconCallback;
+
+/* variables */
+static IconCallback _icon_cb_data;
+
+
 void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
@@ -677,28 +700,12 @@ void on_icon_default(GtkIconView * view,
 #endif
 
 
-/* address bar */
-void on_path_activate(GtkWidget * widget, gpointer data)
+void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
+		gchar * arg2, gpointer data)
 {
-	Browser * browser = data;
-
-	browser_set_location(browser, gtk_entry_get_text(GTK_ENTRY(
-					browser->tb_path)));
+	/* FIXME implement */
 }
 
-
-/* view */
-/* types */
-/* FIXME rather ugly, maybe could go directly in Browser */
-typedef struct _IconCallback
-{
-	Browser * browser;
-	int isdir;
-	char * path;
-} IconCallback;
-
-/* variables */
-static IconCallback _icon_cb_data;
 
 static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu);

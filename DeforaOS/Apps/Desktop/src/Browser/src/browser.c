@@ -591,6 +591,8 @@ static void _view_details(Browser * browser)
 				BR_COL_PIXBUF_24, NULL));
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				on_filename_edited), browser);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
 			gtk_tree_view_column_new_with_attributes("Filename",
 				renderer, "text", BR_COL_DISPLAY_NAME, NULL));
@@ -638,6 +640,8 @@ static void _view_icons(Browser * browser)
 	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
 			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width", 96,
 			NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				on_filename_edited), browser);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),

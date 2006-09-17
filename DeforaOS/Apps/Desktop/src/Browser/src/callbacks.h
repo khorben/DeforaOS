@@ -57,6 +57,8 @@ void on_detail_default(GtkTreeView * view,
 void on_icon_default(GtkIconView * view, GtkTreePath *tree_path,
 		gpointer data);
 #endif
+void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
+		gchar * arg2, gpointer data);
 gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
 
