@@ -546,6 +546,7 @@ void browser_set_location(Browser * browser, char const * path)
 static void _view_details(Browser * browser);
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _view_icons(Browser * browser);
+static void _view_list(Browser * browser);
 #endif
 void browser_set_view(Browser * browser, BrowserView view)
 {
@@ -557,25 +558,9 @@ void browser_set_view(Browser * browser, BrowserView view)
 #if GTK_CHECK_VERSION(2, 6, 0)
 		case BV_ICONS:
 			_view_icons(browser);
-			gtk_icon_view_set_item_width(GTK_ICON_VIEW(
-						browser->iconview), 96);
-			gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(
-						browser->iconview),
-					BR_COL_PIXBUF_48);
-			gtk_icon_view_set_orientation(GTK_ICON_VIEW(
-						browser->iconview),
-					GTK_ORIENTATION_VERTICAL);
 			break;
 		case BV_LIST:
-			_view_icons(browser);
-			gtk_icon_view_set_item_width(GTK_ICON_VIEW(
-						browser->iconview), 146);
-			gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(
-						browser->iconview),
-					BR_COL_PIXBUF_24);
-			gtk_icon_view_set_orientation(GTK_ICON_VIEW(
-						browser->iconview),
-					GTK_ORIENTATION_HORIZONTAL);
+			_view_list(browser);
 			break;
 #endif
 	}
@@ -584,6 +569,7 @@ void browser_set_view(Browser * browser, BrowserView view)
 static void _view_details(Browser * browser)
 {
 	GtkTreeSelection * treesel;
+	GtkCellRenderer * renderer;
 
 	if(browser->detailview != NULL)
 		return;
@@ -603,10 +589,11 @@ static void _view_details(Browser * browser)
 			gtk_tree_view_column_new_with_attributes("",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
 				BR_COL_PIXBUF_24, NULL));
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "editable", TRUE, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
 			gtk_tree_view_column_new_with_attributes("Filename",
-				gtk_cell_renderer_text_new(), "text",
-				BR_COL_DISPLAY_NAME, NULL));
+				renderer, "text", BR_COL_DISPLAY_NAME, NULL));
 	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
 			gtk_tree_view_column_new_with_attributes("Size",
 				gtk_cell_renderer_text_new(), "text",
@@ -635,10 +622,39 @@ static void _view_details(Browser * browser)
 }
 
 #if GTK_CHECK_VERSION(2, 6, 0)
+static void _view_icon_view(Browser * browser);
 static void _view_icons(Browser * browser)
 {
+	GtkCellRenderer * renderer;
+
+	_view_icon_view(browser);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	g_object_set(renderer, "follow-state", TRUE, NULL);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
+			TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
+			renderer, "pixbuf", BR_COL_PIXBUF_48, NULL);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
+			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width", 96,
+			NULL);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
+			TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
+			renderer, "text", 1, NULL);
+	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 96);
+	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
+			GTK_ORIENTATION_VERTICAL);
+	gtk_widget_show(browser->iconview);
+}
+
+static void _view_icon_view(Browser * browser)
+{
 	if(browser->iconview != NULL)
+	{
+		gtk_cell_layout_clear(GTK_CELL_LAYOUT(browser->iconview));
 		return;
+	}
 	if(browser->detailview != NULL)
 	{
 		gtk_widget_destroy(browser->detailview);
@@ -646,8 +662,6 @@ static void _view_icons(Browser * browser)
 	}
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
-	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
-			BR_COL_DISPLAY_NAME);
 	gtk_icon_view_set_margin(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_column_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_row_spacing(GTK_ICON_VIEW(browser->iconview), 4);
@@ -659,6 +673,30 @@ static void _view_icons(Browser * browser)
 	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
 			G_CALLBACK(on_view_popup), browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
+}
+
+static void _view_list(Browser * browser)
+{
+	GtkCellRenderer * renderer;
+
+	_view_icon_view(browser);
+	renderer = gtk_cell_renderer_pixbuf_new();
+	g_object_set(renderer, "follow-state", TRUE, NULL);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
+			TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
+			renderer, "pixbuf", BR_COL_PIXBUF_24, NULL);
+	renderer = gtk_cell_renderer_text_new();
+	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
+			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width", 118,
+			NULL);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
+			TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
+			renderer, "text", 1, NULL);
+	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 146);
+	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
+			GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_show(browser->iconview);
 }
 #endif
