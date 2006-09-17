@@ -236,7 +236,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	{
 		close(0);
 		dup2(fd[0], 0);
-		execl("sendmail", "/usr/sbin/sendmail", "-bm", NULL);
+		execl("/usr/sbin/sendmail", "sendmail", "-bm", "-t", NULL);
 		exit(2);
 	}
 	/* FIXME send mail progressively, get sendmail's output */
