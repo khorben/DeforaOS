@@ -2,6 +2,7 @@
 
 
 
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -211,7 +212,7 @@ void compose_send(Compose * compose)
 	msg_len = strlen(msg);
 	body_len = strlen(body);
 	if((p = realloc(msg, msg_len + body_len + 8)) == NULL)
-		mailer_error(compose->mailer, "Memory allocation", 0);
+		mailer_error(compose->mailer, strerror(errno), 0);
 	else
 	{
 		msg = p;
@@ -223,25 +224,44 @@ void compose_send(Compose * compose)
 	free(msg);
 }
 
+static int _mail_child(int fdin[2]);
 static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 {
-	int fd[2];
+	int fdin[2];
 	pid_t pid;
+	int status;
+	int ret = 0;
 
-	if(pipe(fd) != 0)
-		return mailer_error(compose->mailer, strerror(errno), 1);
-	if((pid = fork()) == -1)
+	if(pipe(fdin) != 0 || (pid = fork()) == -1)
 		return mailer_error(compose->mailer, strerror(errno), 1);
 	if(pid == 0)
-	{
-		close(0);
-		dup2(fd[0], 0);
-		execl("/usr/sbin/sendmail", "sendmail", "-bm", "-t", NULL);
-		exit(2);
-	}
-	/* FIXME send mail progressively, get sendmail's output */
+		return _mail_child(fdin);
+	if(close(fdin[0]) != 0)
+		mailer_error(compose->mailer, strerror(errno), 0);
+	/* FIXME send mail progressively */
 	write(1, msg, msg_len);
-	write(fd[1], msg, msg_len);
+	if(write(fdin[1], msg, msg_len) != msg_len)
+		ret = mailer_error(compose->mailer, strerror(errno), 1);
+	if(close(fdin[1]) != 0)
+		mailer_error(compose->mailer, strerror(errno), 0);
+	if(waitpid(pid, &status, 0) != pid)
+		ret = mailer_error(compose->mailer, strerror(errno), 1);
+	else if(WIFEXITED(status))
+		fprintf(stderr, "%s%s%d\n", "mailer: sendmail: ",
+				"Exited with error ", WEXITSTATUS(status));
+	return ret;
+}
+
+static int _mail_child(int fdin[2])
+{
+	if(close(fdin[1]) != 0 || close(0) != 0 || dup2(fdin[0], 0) == -1)
+		perror("mailer");
+	else
+	{
+		execl("/usr/sbin/sendmail", "sendmail", "-bm", "-t", NULL);
+		perror("/usr/sbin/sendmail");
+	}
+	exit(2);
 	return 0;
 }
 
@@ -276,7 +296,7 @@ static char * _send_headers(Compose * compose)
 		if((q = realloc(msg, msg_len + hdr_len + len + 3)) == NULL)
 		{
 			free(msg);
-			mailer_error(compose->mailer, "Memory allocation", 0);
+			mailer_error(compose->mailer, strerror(errno), 0);
 			return NULL;
 		}
 		msg = q;
@@ -287,7 +307,7 @@ static char * _send_headers(Compose * compose)
 	if(msg != NULL)
 		return msg;
 	if((msg = strdup("")) == NULL)
-		mailer_error(compose->mailer, "Memory allocation", 0);
+		mailer_error(compose->mailer, strerror(errno), 0);
 	return msg;
 }
 
