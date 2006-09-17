@@ -184,8 +184,40 @@ void compose_save(Compose * compose)
 
 
 /* compose_send */
-char * _send_body(Compose * compose);
+char * _send_headers(Compose * compose);
+char * _send_body(GtkWidget * view);
 void compose_send(Compose * compose)
+{
+	char * msg;
+	size_t msg_len;
+	char * body;
+	size_t body_len;
+	char * p;
+
+	if((msg = _send_headers(compose)) == NULL)
+		return;
+	if((body = _send_body(compose->view)) == NULL)
+	{
+		free(msg);
+		return;
+	}
+	msg_len = strlen(msg);
+	body_len = strlen(body);
+	if((p = realloc(msg, msg_len + body_len + 3)) == NULL)
+		mailer_error(compose->mailer, "Memory allocation", 0);
+	else
+	{
+		msg = p;
+		snprintf(&msg[msg_len], body_len + 3, "\r\n%s", body);
+		msg_len+=body_len+2;
+	}
+	g_free(body);
+	free(msg);
+/* FIXME will be useful later
+	execlp("sendmail", "sendmail", "-bs", NULL); */
+}
+
+char * _send_headers(Compose * compose)
 {
 	struct {
 		char * hdr;
@@ -206,7 +238,6 @@ void compose_send(Compose * compose)
 	size_t len;
 	size_t hdr_len;
 	char * q;
-	char * r;
 
 	for(i = 0; widgets[i].hdr != NULL; i++)
 	{
@@ -218,36 +249,27 @@ void compose_send(Compose * compose)
 		{
 			free(msg);
 			mailer_error(compose->mailer, "Memory allocation", 0);
-			return;
+			return NULL;
 		}
 		msg = q;
 		snprintf(&msg[msg_len], hdr_len + len + 3, "%s%s\r\n",
 				widgets[i].hdr, p);
 		msg_len+=hdr_len+len+2;
 	}
-	r = _send_body(compose);
-	len = strlen(r);
-	if((q = realloc(msg, msg_len + len + 3)) == NULL)
+	if(msg != NULL)
+		return msg;
+	if((msg = strdup("")) == NULL)
 		mailer_error(compose->mailer, "Memory allocation", 0);
-	else
-	{
-		msg = q;
-		snprintf(&msg[msg_len], len+3, "\r\n%s", r);
-		msg_len+=len+2;
-	}
-	g_free(r);
-	free(msg);
-/* FIXME will be useful later
-	execlp("sendmail", "sendmail", "-bs", NULL); */
+	return msg;
 }
 
-char * _send_body(Compose * compose)
+char * _send_body(GtkWidget * view)
 {
 	GtkTextBuffer * tbuf;
 	GtkTextIter start;
 	GtkTextIter end;
 
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(compose->view));
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(view));
 	/* FIXME allocating the complete message is not optimal */
 	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
 	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
