@@ -4,6 +4,7 @@
 
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -221,40 +222,54 @@ void compose_send(Compose * compose)
 		_send_mail(compose, msg, msg_len);
 	}
 	g_free(body);
-	free(msg);
 }
 
-static int _mail_child(int fdin[2]);
+static int _mail_child(int fd[2]);
 static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 {
-	int fdin[2];
-	pid_t pid;
-	int status;
-	int ret = 0;
+	int fd[2];
+	GtkWidget * hbox;
+	GtkWidget * widget;
 
-	if(pipe(fdin) != 0 || (pid = fork()) == -1)
+	if(pipe(fd) != 0 || (compose->pid = fork()) == -1)
 		return mailer_error(compose->mailer, strerror(errno), 1);
-	if(pid == 0)
-		return _mail_child(fdin);
-	if(close(fdin[0]) != 0)
+	if(compose->pid == 0)
+		return _mail_child(fd);
+	if(close(fd[0]) != 0 || fcntl(fd[1], F_SETFL, O_NONBLOCK) == -1)
 		mailer_error(compose->mailer, strerror(errno), 0);
-	/* FIXME send mail progressively */
-	write(1, msg, msg_len);
-	if(write(fdin[1], msg, msg_len) != msg_len)
-		ret = mailer_error(compose->mailer, strerror(errno), 1);
-	if(close(fdin[1]) != 0)
-		mailer_error(compose->mailer, strerror(errno), 0);
-	if(waitpid(pid, &status, 0) != pid)
-		ret = mailer_error(compose->mailer, strerror(errno), 1);
-	else if(WIFEXITED(status))
-		fprintf(stderr, "%s%s%d\n", "mailer: sendmail: ",
-				"Exited with error ", WEXITSTATUS(status));
-	return ret;
+	compose->snd_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_transient_for(GTK_WINDOW(compose->snd_window),
+			GTK_WINDOW(compose->window));
+	gtk_window_set_title(GTK_WINDOW(compose->snd_window),
+			"Sending mail...");
+	g_signal_connect(G_OBJECT(compose->snd_window), "delete_event",
+			G_CALLBACK(on_send_closex), compose);
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Progression: "),
+			FALSE, FALSE, 0);
+	compose->snd_progress = gtk_progress_bar_new();
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(compose->snd_progress),
+			0.0);
+	gtk_box_pack_start(GTK_BOX(hbox), compose->snd_progress, TRUE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_send_cancel), compose);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(compose->snd_window), 4);
+	gtk_container_add(GTK_CONTAINER(compose->snd_window), hbox);
+	gtk_widget_show_all(compose->snd_window);
+	compose->fd = fd[1];
+	compose->buf = msg;
+	compose->buf_len = msg_len;
+	compose->buf_pos = 0;
+	compose->channel = g_io_channel_unix_new(fd[1]);
+	g_io_add_watch(compose->channel, G_IO_OUT, on_send_write, compose);
+	return 0;
 }
 
-static int _mail_child(int fdin[2])
+static int _mail_child(int fd[2])
 {
-	if(close(fdin[1]) != 0 || close(0) != 0 || dup2(fdin[0], 0) == -1)
+	if(close(fd[1]) != 0 || close(0) != 0 || dup2(fd[0], 0) == -1)
 		perror("mailer");
 	else
 	{

@@ -2,7 +2,10 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include "compose.h"
 #include "mailer.h"
 #include "callbacks.h"
@@ -152,4 +155,52 @@ void on_compose_help_about(GtkWidget * widget, gpointer data)
 	Compose * c = data;
 
 	on_help_about(widget, c->mailer);
+}
+
+
+/* send mail */
+gboolean on_send_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+{
+	Compose * c = data;
+
+	on_send_cancel(widget, c);
+	return FALSE;
+}
+
+
+void on_send_cancel(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	g_io_channel_shutdown(c->channel, TRUE, NULL);
+	gtk_widget_destroy(c->snd_window);
+	free(c->buf);
+}
+
+
+gboolean on_send_write(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Compose * c = data;
+	gsize i;
+
+	if((i = (c->buf_len - c->buf_pos) % 512) == 0)
+		i = 512;
+	if(g_io_channel_write_chars(source, &c->buf[c->buf_pos], i, &i, NULL)
+			!= G_IO_STATUS_NORMAL)
+	{
+		mailer_error(c->mailer, strerror(errno), FALSE);
+		on_send_cancel(c->snd_window, c);
+		return FALSE;
+	}
+	c->buf_pos+=i;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(c->snd_progress),
+			c->buf_pos / c->buf_len);
+	if(c->buf_pos >= c->buf_len)
+	{
+		on_send_cancel(c->snd_window, c);
+		compose_delete(c);
+		return FALSE;
+	}
+	return TRUE;
 }

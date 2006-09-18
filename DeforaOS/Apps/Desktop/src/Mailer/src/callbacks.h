@@ -37,4 +37,10 @@ void on_compose_view_bcc(GtkWidget * widget, gpointer data);
 /* help menu */
 void on_compose_help_about(GtkWidget * widget, gpointer data);
 
+/* send mail */
+gboolean on_send_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+void on_send_cancel(GtkWidget * widget, gpointer data);
+gboolean on_send_write(GIOChannel * source, GIOCondition condition,
+		gpointer data);
+
 #endif /* !MAILER_CALLBACKS_H */

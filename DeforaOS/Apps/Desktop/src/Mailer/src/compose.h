@@ -13,6 +13,16 @@ typedef struct _Compose
 {
 	Mailer * mailer;
 
+	/* sending mail */
+	pid_t pid;
+	int fd;
+	char * buf;
+	size_t buf_len;
+	size_t buf_pos;
+	GIOChannel * channel;
+	GtkWidget * snd_window;
+	GtkWidget * snd_progress;
+
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * from;
