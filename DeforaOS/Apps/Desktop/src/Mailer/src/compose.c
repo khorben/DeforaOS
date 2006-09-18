@@ -272,7 +272,6 @@ static char * _send_headers(Compose * compose)
 		GtkWidget * wgt;
 	} widgets[] =
 	{
-/* FIXME	{ "From: ", compose->from }, is not an entry */
 		{ "To: ", compose->to },
 		{ "Cc: ", compose->cc },
 		{ "Bcc: ", compose->bcc },
@@ -287,6 +286,15 @@ static char * _send_headers(Compose * compose)
 	size_t hdr_len;
 	char * q;
 
+	q = gtk_combo_box_get_active_text(GTK_COMBO_BOX(compose->from));
+	if(*q != '\0')
+	{
+		msg_len = strlen(q) + 8;
+		if((msg = malloc(msg_len + 1)) == NULL)
+			return NULL;
+		snprintf(msg, msg_len+1, "%s%s\r\n", "From: ", q);
+	}
+	g_free(q);
 	for(i = 0; widgets[i].hdr != NULL; i++)
 	{
 		p = gtk_entry_get_text(GTK_ENTRY(widgets[i].wgt));
