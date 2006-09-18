@@ -218,9 +218,9 @@ void compose_send(Compose * compose)
 		msg = p;
 		snprintf(&msg[msg_len], body_len + 8, "\r\n%s\r\n.\r\n", body);
 		msg_len+=body_len+7;
+		_send_mail(compose, msg, msg_len);
 	}
 	g_free(body);
-	_send_mail(compose, msg, msg_len);
 	free(msg);
 }
 
