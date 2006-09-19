@@ -44,10 +44,12 @@ static struct _menubar _mailer_menubar[] =
 
 
 /* Mailer */
+static GtkWidget * _new_headers(Mailer * mailer);
 Mailer * mailer_new(void)
 {
 	Mailer * mailer;
 	GtkWidget * vbox;
+	GtkWidget * vbox2;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GtkWidget * hpaned;
@@ -62,8 +64,10 @@ Mailer * mailer_new(void)
 	g_signal_connect(G_OBJECT(mailer->window), "delete_event", G_CALLBACK(
 				on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
+	/* menubar */
 	widget = common_new_menubar(_mailer_menubar, mailer);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
@@ -76,12 +80,16 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	hpaned = gtk_hpaned_new();
 	gtk_paned_set_position(GTK_PANED(hpaned), 160);
+	/* folders */
 	widget = gtk_tree_view_new();
 	gtk_paned_add1(GTK_PANED(hpaned), widget);
 	vpaned = gtk_vpaned_new();
 	gtk_paned_set_position(GTK_PANED(vpaned), 160);
+	/* messages list */
 	widget = gtk_tree_view_new();
 	gtk_paned_add1(GTK_PANED(vpaned), widget);
+	/* messages body */
+	vbox2 = _new_headers(mailer);
 	mailer->view_body = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(mailer->view_body), FALSE);
 	widget = gtk_scrolled_window_new(NULL, NULL);
@@ -90,7 +98,8 @@ Mailer * mailer_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), mailer->view_body);
-	gtk_paned_add2(GTK_PANED(vpaned), widget);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
+	gtk_paned_add2(GTK_PANED(vpaned), vbox2);
 	gtk_paned_add2(GTK_PANED(hpaned), vpaned);
 	gtk_box_pack_start(GTK_BOX(vbox), hpaned, TRUE, TRUE, 0);
 	mailer->statusbar = gtk_statusbar_new();
@@ -99,6 +108,42 @@ Mailer * mailer_new(void)
 	gtk_container_add(GTK_CONTAINER(mailer->window), vbox);
 	gtk_widget_show_all(mailer->window);
 	return mailer;
+}
+
+static GtkWidget * _new_headers(Mailer * mailer)
+{
+	struct {
+		char * hdr;
+		GtkWidget ** widget;
+	} widgets[] =
+	{
+		{ " From: ", &mailer->from },
+		{ " To: ", &mailer->to },
+		{ " Subject: ", &mailer->subject },
+		{ " Date: ", &mailer->date },
+		{ NULL, NULL }
+	};
+	int i;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkSizeGroup * group;
+
+	vbox = gtk_vbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	for(i = 0; widgets[i].hdr != NULL; i++)
+	{
+		hbox = gtk_hbox_new(FALSE, 0);
+		widget = gtk_label_new(widgets[i].hdr);
+		gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.0);
+		gtk_size_group_add_widget(GTK_SIZE_GROUP(group), widget);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		*(widgets[i].widget) = gtk_label_new("");
+		gtk_box_pack_start(GTK_BOX(hbox), *(widgets[i].widget), TRUE,
+				TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	}
+	return vbox;
 }
 
 

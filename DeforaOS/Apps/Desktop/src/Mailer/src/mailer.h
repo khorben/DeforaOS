@@ -14,6 +14,10 @@ typedef struct _Mailer
 {
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * from;
+	GtkWidget * to;
+	GtkWidget * subject;
+	GtkWidget * date;
 	GtkWidget * view_body;
 	GtkWidget * statusbar;
 	gint statusbar_id;
