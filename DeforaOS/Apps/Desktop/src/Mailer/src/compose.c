@@ -238,10 +238,11 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	if(close(fd[0]) != 0 || fcntl(fd[1], F_SETFL, O_NONBLOCK) == -1)
 		mailer_error(compose->mailer, strerror(errno), 0);
 	compose->snd_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_transient_for(GTK_WINDOW(compose->snd_window),
-			GTK_WINDOW(compose->window));
 	gtk_window_set_title(GTK_WINDOW(compose->snd_window),
 			"Sending mail...");
+	gtk_window_set_resizable(GTK_WINDOW(compose->snd_window), FALSE);
+	gtk_window_set_transient_for(GTK_WINDOW(compose->snd_window),
+			GTK_WINDOW(compose->window));
 	g_signal_connect(G_OBJECT(compose->snd_window), "delete_event",
 			G_CALLBACK(on_send_closex), compose);
 	hbox = gtk_hbox_new(FALSE, 0);
