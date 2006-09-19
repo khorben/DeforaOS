@@ -645,9 +645,11 @@ void on_view_as(GtkWidget * widget, gpointer data)
 void on_path_activate(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
+	gchar * p;
 
-	browser_set_location(browser, gtk_entry_get_text(GTK_ENTRY(
-					browser->tb_path)));
+	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(browser->tb_path));
+	browser_set_location(browser, p);
+	g_free(p);
 }
 
 

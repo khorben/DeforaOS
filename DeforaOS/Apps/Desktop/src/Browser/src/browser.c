@@ -205,9 +205,10 @@ Browser * browser_new(char const * directory)
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	browser->tb_path = gtk_entry_new();
-	gtk_entry_set_text(GTK_ENTRY(browser->tb_path), browser->current->data);
-	g_signal_connect(G_OBJECT(browser->tb_path), "activate", G_CALLBACK(
+	browser->tb_path = gtk_combo_box_entry_new_text();
+	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
+	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
+	g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), browser);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
@@ -391,6 +392,7 @@ static void _refresh_loop(Browser * browser, char const * name);
 void browser_refresh(Browser * browser)
 {
 	GDir * dir;
+	GtkWidget * widget;
 	char const * name;
 	unsigned int cnt;
 	unsigned int hidden_cnt;
@@ -400,7 +402,8 @@ void browser_refresh(Browser * browser)
 	if((dir = g_dir_open(browser->current->data, 0, NULL)) == NULL)
 		return;
 	_refresh_title(browser);
-	gtk_entry_set_text(GTK_ENTRY(browser->tb_path), browser->current->data);
+	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
+	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
 	for(cnt = 0, hidden_cnt = 0; (name = g_dir_read_name(dir)) != NULL;
 			cnt++)
 	{
