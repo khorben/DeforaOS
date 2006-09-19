@@ -9,17 +9,24 @@
 
 /* open */
 static int _open(char const * mime, char const * action, int filec,
-		char const * filev[])
+		char * filev[])
 {
 	int i;
 	Mime * m;
+	int ret = 0;
 
 	if((m = mime_new()) == NULL)
 		return 1;
 	for(i = 0; i < filec; i++)
-		mime_action(m, action, filev[i]);
+		if(mime_action(m, action, filev[i]) != 0)
+		{
+			fprintf(stderr, "%s%s%s%s%s", "mime: ", filev[i],
+					": Could not call action \"", action,
+					"\"\n");
+			ret = 1;
+		}
 	mime_delete(m);
-	return 0;
+	return ret;
 }
 
 
