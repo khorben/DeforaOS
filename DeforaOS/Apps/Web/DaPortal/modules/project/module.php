@@ -925,7 +925,8 @@ function project_files($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	print('<h1 class="project">'._html_safe($project['title']).': '
+	_project_toolbar($args['id']);
+	print('<h1 class="project">'._html_safe($project['name']).': '
 		._html_safe(FILES).'</h1>'."\n");
 	require_once('./system/mime.php');
 	/* FIXME factorize code */
@@ -951,7 +952,7 @@ function project_files($args)
 			." AND daportal_user.enabled='1'"
 			." AND daportal_user.admin='1'"
 			." AND dc2.enabled='1' AND dc3.enabled='1';");
-	if(is_array($files) && ($cnt = count($files) > 0))
+	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>Screenshots</h2>'."\n");
 		for($i = 0; $i < $cnt; $i++)
@@ -1007,7 +1008,7 @@ function project_files($args)
 			." AND daportal_user.enabled='1'"
 			." AND daportal_user.admin='1'"
 			." AND dc2.enabled='1' AND dc3.enabled='1';");
-	if(is_array($files) && ($cnt = count($files) > 0))
+	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>Releases</h2>'."\n");
 		for($i = 0; $i < $cnt; $i++)
