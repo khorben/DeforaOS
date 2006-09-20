@@ -581,6 +581,22 @@ h1.download {
 	padding-left:			52px;
 }
 
+h1.category {
+	background-image:		url("../modules/category/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
+
+h1.project {
+	background-image:		url("../modules/project/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
+
 h1.webmail {
 	background-image:		url("../modules/webmail/icon.png");
 	background-position:		top left;
