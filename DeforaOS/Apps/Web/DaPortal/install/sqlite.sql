@@ -82,3 +82,12 @@ CREATE TABLE daportal_comment (
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('7', 'anonymous', '0');
+
+
+/* module: top */
+CREATE TABLE daportal_top (
+	top_id INTEGER PRIMARY KEY,
+	name VARCHAR(255),
+	link VARCHAR(255)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
