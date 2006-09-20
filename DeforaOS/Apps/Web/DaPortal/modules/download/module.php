@@ -15,6 +15,7 @@ $text['DOWNLOADS_CONFIGURATION'] = 'Downloads configuration';
 $text['DOWNLOADS_LIST'] = 'Downloads list';
 $text['MODE'] = 'Permissions';
 $text['NEW_DIRECTORY'] = 'New directory';
+$text['PARENT_DIRECTORY'] = 'Parent directory';
 $text['UPLOAD_FILE'] = 'Upload file';
 global $lang;
 _lang($text);
@@ -58,8 +59,7 @@ function download_admin($args)
 	print('<h2><img src="modules/download/icon.png" alt=""/> '
 			._html_safe(DOWNLOADS_LIST).'</h2>'."\n");
 	$dls = _sql_array('SELECT download_id AS id, title AS name, enabled'
-			.', mode'
-			.' FROM daportal_download, daportal_content'
+			.', mode FROM daportal_download, daportal_content'
 			.' WHERE daportal_download.content_id'
 			.'=daportal_content.content_id ORDER BY id DESC;');
 	if(!is_array($dls))
@@ -85,16 +85,14 @@ function download_admin($args)
 		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
-			'action' => 'enable');
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
-			'action' => 'disable');
+	$toolbar[] = array('title' => ENABLE, 'action' => 'enable',
+			'icon' => 'icons/16x16/enabled.png');
+	$toolbar[] = array('title' => DISABLE, 'action' => 'disable',
+			'icon' => 'icons/16x16/disabled.png');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DELETE,
+	$toolbar[] = array('title' => DELETE, 'action' => 'delete',
 			'icon' => 'icons/16x16/delete.png',
-			'action' => 'delete', 'confirm' => 'delete');
+			'confirm' => 'delete');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => 'Refresh',
 			'icon' => 'icons/16x16/refresh.png',
@@ -133,7 +131,8 @@ function download_default($args)
 	{
 		$file = _sql_array('SELECT download_id AS id, title AS name'
 				.', mode, parent, timestamp AS ctime, content'
-				.', daportal_content.user_id, username AS user'
+				.', daportal_content.user_id AS user_id'
+				.', username AS user'
 				.' FROM daportal_download, daportal_content'
 				.', daportal_user'
 				.' WHERE daportal_download.content_id'
@@ -198,7 +197,7 @@ function download_default($args)
 	$toolbar = array();
 	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
 			'link' => 'javascript:history.back()');
-	$toolbar[] = array('title' => 'Parent directory',
+	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'icon' => 'icons/16x16/updir.png',
 			'link' => 'index.php?module=download&action=default&id='
 			.(isset($file['parent']) ? $file['parent'] : ''));
@@ -207,21 +206,21 @@ function download_default($args)
 			'link' => 'javascript:history.forward()');
 	if(_user_admin($user_id))
 	{
+		if(!isset($file))
+			$file = array('id' => '');
 		$toolbar[] = array();
-		$toolbar[] = array('title' => 'New directory',
+		$toolbar[] = array('title' => NEW_DIRECTORY,
 				'icon' => 'icons/16x16/newdir.png',
 				'link' => 'index.php?module=download'
-				.'&action=directory_new'
-				.'&id='.$file['id']);
-		$toolbar[] = array('title' => 'Upload file',
+				.'&action=directory_new&id='.$file['id']);
+		$toolbar[] = array('title' => UPLOAD_FILE,
 				'icon' => 'icons/16x16/save.png',
 				'link' => 'index.php?module=download'
-				.'&action=file_new'
-				.'&id='.$file['id']);
+				.'&action=file_new&id='.$file['id']);
 		$toolbar[] = array();
-		$toolbar[] = array('title' => DELETE,
+		$toolbar[] = array('title' => DELETE, 'action' => 'delete',
 				'icon' => 'icons/16x16/delete.png',
-				'action' => 'delete', 'confirm' => 'delete');
+				'confirm' => 'delete');
 	}
 	$toolbar[] = array();
 	$toolbar[] = array('title' => 'Refresh',
@@ -305,8 +304,8 @@ function download_directory_insert($args)
 		return _error(PERMISSION_DENIED);
 	if(strlen($args['title']) == 0)
 		return _error(INVALID_ARGUMENT);
-	$parent = is_numeric($args['parent']) ? "'".$args['parent']."'"
-		: 'NULL';
+	$parent = isset($args['parent']) && is_numeric($args['parent'])
+		? "'".$args['parent']."'" : 'NULL';
 	//FIXME not twice the same filename in a directory
 	require_once('./system/content.php');
 	if(!($id = _content_insert($args['title'], '', 1)))
@@ -318,7 +317,9 @@ function download_directory_insert($args)
 		_content_delete($id);
 		return _error('Unable to create directory');
 	}
-	download_default(array('id' => $args['parent']));
+	download_default(array('id' => isset($args['parent'])
+				&& is_numeric($args['parent'])
+				? $args['parent'] : ''));
 }
 
 
@@ -456,6 +457,8 @@ function download_system($args)
 	global $html, $title;
 
 	$title.=' - '.DOWNLOADS;
+	if(!isset($args['action']))
+		return;
 	if($args['action'] == 'config_update' || $args['action'] == 'download'
 			|| $args['action'] == 'file_insert')
 		$html = 0;
