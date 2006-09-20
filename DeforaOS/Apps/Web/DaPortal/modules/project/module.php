@@ -383,15 +383,15 @@ function project_bug_list($args)
 	print('<h1><img src="modules/project/bug.png" alt=""/> '
 			._html_safe($title).'</h1>'."\n");
 	$where = '';
-	if(strlen($args['project']))
+	if(isset($args['project']) && strlen($args['project']))
 		$where.=" AND daportal_project.name='".$args['project']."'";
-	if(strlen($args['username']))
+	if(isset($args['username']) && strlen($args['username']))
 		$where.=" AND daportal_user.username='".$args['username']."'";
-	if(strlen($args['state']))
+	if(isset($args['state']) && strlen($args['state']))
 		$where.=" AND daportal_bug.state='".$args['state']."'";
-	if(strlen($args['type']))
+	if(isset($args['type']) && strlen($args['type']))
 		$where.=" AND daportal_bug.type='".$args['type']."'";
-	if(strlen($args['priority']))
+	if(isset($args['priority']) && strlen($args['priority']))
 		$where.=" AND daportal_bug.priority='".$args['priority']."'";
 	include('./modules/project/bug_list_filter.tpl');
 	$order = ' ORDER BY ';
@@ -418,8 +418,7 @@ function project_bug_list($args)
 			.'=daportal_bug.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' AND daportal_project.project_id'
-			.'=daportal_bug.project_id'
-			.$where.$order);
+			.'=daportal_bug.project_id'.$where.$order);
 	if(!is_array($bugs))
 		return _error('Unable to list bugs', 1);
 	for($i = 0, $count = count($bugs); $i < $count; $i++)
@@ -458,18 +457,13 @@ function project_bug_list($args)
 	$toolbar[] = array('icon' => 'modules/project/bug.png',
 		'title' => REPORT_A_BUG, 'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
-			'class' => array('nb' => '#',
-					'project' => PROJECT,
-					'date' => DATE,
-					'state' => STATE,
-					'type' => TYPE,
-					'priority' => PRIORITY),
-			'module' => 'project',
-			'action' => 'bug_list',
+			'class' => array('nb' => '#', 'project' => PROJECT,
+					'date' => DATE, 'state' => STATE,
+					'type' => TYPE, 'priority' => PRIORITY),
+			'module' => 'project', 'action' => 'bug_list',
 			'sort' => isset($args['sort']) ? $args['sort'] : 'nb',
 			//FIXME should set args according to filters
-			'view' => 'details',
-			'toolbar' => $toolbar));
+			'view' => 'details', 'toolbar' => $toolbar));
 }
 
 
