@@ -91,3 +91,13 @@ CREATE TABLE daportal_top (
 	link VARCHAR(255)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
+
+
+/* module: project */
+CREATE TABLE daportal_project (
+	project_id INTEGER PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+	cvsroot VARCHAR(255) NOT NULL,
+	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
