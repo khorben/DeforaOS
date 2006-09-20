@@ -27,9 +27,9 @@ document.getElementById('probe_view').style.display='none';
 <div class="comment"><?php echo _html_safe($host['comment']); ?></div>
 <center>
 <table>
-<?php $i = 0; foreach($graphs as $g) { ?>
-<?php if(isset($graph) && $g['graph'] != $graph) continue; ?>
-<?php if(isset($graph) || !$i % 2) { ?>
+<?php $i = 0; foreach($graphs as $g) {
+	if(isset($graph) && $g['graph'] != $graph) continue;
+	if(isset($graph) || !$i % 2) { ?>
 	<tr>
 <?php } ?>
 		<td><h3><?php echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>"><img src="<?php echo _host_graph($host['hostname'], $g['graph'], $g['time'], $g['param']); ?>" alt=""/></a></td>
@@ -43,10 +43,10 @@ document.getElementById('probe_view').style.display='none';
 	<tr>
 		<td><h3><?php echo _html_safe($g['title']); ?></h3><a href="index.php?module=probe&amp;action=host_display&amp;id=<?php echo _html_safe($host['id']); ?>&amp;graph=<?php echo _html_safe($g['graph']); ?>"><img src="<?php echo _host_graph($host['hostname'], $g['graph'], 'week', $g['param']); ?>" alt=""/></a></td>
 		<td></td>
-<?php } ?>
-<?php if(isset($graph) || $i % 2) { ?>
+<?php }
+if(isset($graph) || $i % 2) { ?>
 	</tr>
-<?php } ?>
-<?php $i++; } ?>
+<?php }
+$i++; } ?>
 </table>
 </center>
