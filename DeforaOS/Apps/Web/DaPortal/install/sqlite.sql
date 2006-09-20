@@ -100,4 +100,34 @@ CREATE TABLE daportal_project (
 	cvsroot VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
 );
+CREATE TABLE daportal_project_user (
+	project_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
+	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
+);
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
+
+
+/* module: category */
+CREATE TABLE daportal_category_content (
+	category_content_id INTEGER PRIMARY KEY,
+	category_id INTEGER NOT NULL,
+	content_id INTEGER NOT NULL,
+	FOREIGN KEY (category_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
+
+
+/* module: download */
+CREATE TABLE daportal_download (
+	download_id INTEGER PRIMARY_KEY,
+	content_id INTEGER NOT NULL,
+	parent INTEGER,
+	mode SMALLINT DEFAULT '0420',
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (parent) REFERENCES daportal_download (download_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp');
