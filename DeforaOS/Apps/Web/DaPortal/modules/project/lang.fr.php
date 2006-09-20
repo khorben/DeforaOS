@@ -7,6 +7,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text['ASSIGNED_TO'] = 'Affecté à';
 $text['BROWSE_SOURCE'] = 'Parcourir les sources';
 $text['BUG_REPORTS'] = 'Rapports de bugs';
+$text['FILES'] = 'Fichiers';
 $text['INVALID_PROJECT'] = 'Projet non valide';
 $text['MEMBERS'] = 'Membres';
 $text['NEW_PROJECT'] = 'Nouveau projet';
