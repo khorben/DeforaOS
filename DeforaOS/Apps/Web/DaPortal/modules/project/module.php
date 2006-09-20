@@ -14,6 +14,7 @@ $text['ASSIGNED_TO'] = 'Assigned to';
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['CVS_PATH'] = 'CVS path';
+$text['FILES'] = 'Files';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
 $text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
@@ -47,6 +48,7 @@ else if($lang == 'fr')
 	include('./modules/project/lang.fr.php');
 }
 _lang($text);
+define('S_IFDIR', 01000);
 
 
 function _project_toolbar($id)
@@ -819,8 +821,9 @@ function project_display($args)
 
 	require_once('./system/user.php');
 	$project = _sql_array('SELECT project_id AS id, name, title'
-			.', content AS description, daportal_content.enabled'
-			.', daportal_content.user_id, username'
+			.', content AS description'
+			.', daportal_content.enabled AS enabled'
+			.', daportal_content.user_id AS user_id, username'
 			.' FROM daportal_content, daportal_project'
 			.', daportal_user'
 			." WHERE content_id='".$args['id']."'"
@@ -903,6 +906,139 @@ function project_enable($args)
 	_content_enable($id);
 	if($args['display'] != 0)
 		project_display(array('id' => $id));
+}
+
+
+function project_files($args)
+{
+	$category_id = _module_id('category');
+	$download_id = _module_id('download');
+	if($category_id == 0 || $download_id == 0)
+		return _error('Both category and download modules must be'
+				.' installed');
+	$project = _sql_array('SELECT name, title'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND daportal_content.enabled='1'"
+			." AND project_id='".$args['id']."';");
+	if(!is_array($project) || count($project) != 1)
+		return _error(INVALID_PROJECT);
+	$project = $project[0];
+	print('<h1 class="project">'._html_safe($project['title']).': '
+		._html_safe(FILES).'</h1>'."\n");
+	require_once('./system/mime.php');
+	/* FIXME factorize code */
+	/* screenshots */
+	/* FIXME project members should be trusted too */
+	$files = _sql_array('SELECT download_id AS id, mode'
+			.', daportal_content.title AS name'
+			.', daportal_content.user_id AS user_id, username'
+			.' FROM daportal_download, daportal_content'
+			.', daportal_user'
+			.', daportal_category_content cc2, daportal_content dc2'
+			.', daportal_category_content cc3, daportal_content dc3'
+			.' WHERE daportal_download.content_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' AND cc2.content_id=daportal_content.content_id'
+			.' AND cc3.content_id=daportal_content.content_id'
+			.' AND cc2.category_id=dc2.content_id'
+			.' AND cc3.category_id=dc3.content_id'
+			." AND dc2.title='".$project['name']."'"
+			." AND dc3.title='screenshot'"
+			." AND daportal_content.enabled='1'"
+			." AND daportal_user.enabled='1'"
+			." AND daportal_user.admin='1'"
+			." AND dc2.enabled='1' AND dc3.enabled='1';");
+	if(is_array($files) && ($cnt = count($files) > 0))
+	{
+		print('<h2>Screenshots</h2>'."\n");
+		for($i = 0; $i < $cnt; $i++)
+		{
+			$files[$i]['module'] = 'download';
+			$files[$i]['action'] = 'download';
+			$mime = _mime_from_ext($files[$i]['name']);
+			if($files[$i]['mode'] & S_IFDIR)
+			{
+				$files[$i]['icon'] = 'icons/16x16'
+					.'/mime/folder.png';
+				$files[$i]['thumbnail'] = 'icons/48x48'
+					.'/mime/folder.png';
+			}
+			else
+			{
+				if(is_readable('icons/48x48/mime/'.$mime.'.png'))
+					$files[$i]['thumbnail'] = 'icons/48x48'
+						.'/mime/'.$mime.'.png';
+				else
+					$files[$i]['thumbnail'] = 'icons/48x48'
+						.'/mime/default.png';
+				$files[$i]['icon'] = $files[$i]['thumbnail'];
+				if(is_readable('icons/16x16/mime/'.$mime
+							.'.png'))
+					$files[$i]['icon'] = 'icons'
+						.'/16x16/mime/'.$mime.'.png';
+			}
+		}
+		_module('explorer', 'browse', array('entries' => $files,
+					'view' => 'thumbnails',
+					'toolbar' => 0));
+	}
+	/* releases */
+	/* FIXME project members should be trusted too */
+	$files = _sql_array('SELECT download_id AS id, mode'
+			.', daportal_content.title AS name'
+			.', daportal_content.user_id AS user_id, username'
+			.' FROM daportal_download, daportal_content'
+			.', daportal_user'
+			.', daportal_category_content cc2, daportal_content dc2'
+			.', daportal_category_content cc3, daportal_content dc3'
+			.' WHERE daportal_download.content_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' AND cc2.content_id=daportal_content.content_id'
+			.' AND cc3.content_id=daportal_content.content_id'
+			.' AND cc2.category_id=dc2.content_id'
+			.' AND cc3.category_id=dc3.content_id'
+			." AND dc2.title='".$project['name']."'"
+			." AND dc3.title='release'"
+			." AND daportal_content.enabled='1'"
+			." AND daportal_user.enabled='1'"
+			." AND daportal_user.admin='1'"
+			." AND dc2.enabled='1' AND dc3.enabled='1';");
+	if(is_array($files) && ($cnt = count($files) > 0))
+	{
+		print('<h2>Releases</h2>'."\n");
+		for($i = 0; $i < $cnt; $i++)
+		{
+			$files[$i]['module'] = 'download';
+			$files[$i]['action'] = 'default';
+			$mime = _mime_from_ext($files[$i]['name']);
+			if($files[$i]['mode'] & S_IFDIR)
+			{
+				$files[$i]['icon'] = 'icons/16x16'
+					.'/mime/folder.png';
+				$files[$i]['thumbnail'] = 'icons/48x48'
+					.'/mime/folder.png';
+			}
+			else
+			{
+				if(is_readable('icons/48x48/mime/'.$mime.'.png'))
+					$files[$i]['thumbnail'] = 'icons/48x48'
+						.'/mime/'.$mime.'.png';
+				else
+					$files[$i]['thumbnail'] = 'icons/48x48'
+						.'/mime/default.png';
+				$files[$i]['icon'] = $files[$i]['thumbnail'];
+				if(is_readable('icons/16x16/mime/'.$mime
+							.'.png'))
+					$files[$i]['icon'] = 'icons'
+						.'/16x16/mime/'.$mime.'.png';
+			}
+		}
+		_module('explorer', 'browse', array('entries' => $files));
+	}
 }
 
 
@@ -1121,6 +1257,8 @@ function project_system($args)
 	global $title, $html;
 
 	$title.=' - '.PROJECTS;
+	if(!isset($args['action']))
+		return;
 	if($args['action'] == 'browse' && $args['download'] == 1)
 		$html = 0;
 	else if($args['action'] == 'config_update')
