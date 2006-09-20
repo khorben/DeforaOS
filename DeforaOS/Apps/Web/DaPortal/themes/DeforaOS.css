@@ -565,6 +565,14 @@ div.top a {
 	width:				158px;
 }
 
+h1.content {
+	background-image:		url("../modules/content/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
+
 h1.article {
 	background-image:		url("../modules/article/icon.png");
 	background-position:		top left;
