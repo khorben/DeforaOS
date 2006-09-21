@@ -33,7 +33,7 @@ function _module($module = '', $action = '', $args = FALSE)
 		return _error('Invalid module request', 0);
 	if(!strlen($action) || !ereg('^[a-z0-9_]{1,30}$', $action))
 		$action = 'default';
-	if(($id = _module_id($module)) == 0)
+	if(!ereg('^[a-z]{1,10}$', $module) || ($id = _module_id($module)) == 0)
 		return _error('Invalid module', 0);
 	$module_id = $id;
 	$module_name = $module;
