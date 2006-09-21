@@ -883,29 +883,10 @@ function project_display($args)
 
 function project_download($args)
 {
-	include('./modules/project/download.tpl');
-}
-
-
-function project_enable($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	if(($id = _sql_single('SELECT project_id FROM daportal_project'
-			." WHERE project_id='".$args['id']."';")) == FALSE)
-		return _error(INVALID_PROJECT);
-	require_once('./system/content.php');
-	_content_enable($id);
-	if($args['display'] != 0)
-		project_display(array('id' => $id));
-}
-
-
-function project_files($args)
-{
+	if(!isset($args['id']) || !is_numeric($args['id']))
+	{
+		return include('./modules/project/download.tpl');
+	}
 	$category_id = _module_id('category');
 	$download_id = _module_id('download');
 	if($category_id == 0 || $download_id == 0)
@@ -925,28 +906,25 @@ function project_files($args)
 		._html_safe(FILES).'</h1>'."\n");
 	require_once('./system/mime.php');
 	/* FIXME factorize code */
+	$sql = 'SELECT download_id AS id, mode, daportal_content.title AS name'
+		.', daportal_content.user_id AS user_id, username'
+		.' FROM daportal_download, daportal_content, daportal_user'
+		.', daportal_category_content cc2, daportal_content dc2'
+		.', daportal_category_content cc3, daportal_content dc3'
+		.' WHERE daportal_download.content_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' AND cc2.content_id=daportal_content.content_id'
+		.' AND cc3.content_id=daportal_content.content_id'
+		.' AND cc2.category_id=dc2.content_id'
+		.' AND cc3.category_id=dc3.content_id'
+		." AND dc2.title='".$project['name']."'"
+		." AND daportal_content.enabled='1'"
+		." AND daportal_user.enabled='1' AND daportal_user.admin='1'"
+		." AND dc2.enabled='1' AND dc3.enabled='1'";
 	/* screenshots */
 	/* FIXME project members should be trusted too */
-	$files = _sql_array('SELECT download_id AS id, mode'
-			.', daportal_content.title AS name'
-			.', daportal_content.user_id AS user_id, username'
-			.' FROM daportal_download, daportal_content'
-			.', daportal_user'
-			.', daportal_category_content cc2, daportal_content dc2'
-			.', daportal_category_content cc3, daportal_content dc3'
-			.' WHERE daportal_download.content_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' AND cc2.content_id=daportal_content.content_id'
-			.' AND cc3.content_id=daportal_content.content_id'
-			.' AND cc2.category_id=dc2.content_id'
-			.' AND cc3.category_id=dc3.content_id'
-			." AND dc2.title='".$project['name']."'"
-			." AND dc3.title='screenshot'"
-			." AND daportal_content.enabled='1'"
-			." AND daportal_user.enabled='1'"
-			." AND daportal_user.admin='1'"
-			." AND dc2.enabled='1' AND dc3.enabled='1';");
+	$files = _sql_array($sql." AND dc3.title='screenshot';");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>Screenshots</h2>'."\n");
@@ -983,26 +961,7 @@ function project_files($args)
 	}
 	/* releases */
 	/* FIXME project members should be trusted too */
-	$files = _sql_array('SELECT download_id AS id, mode'
-			.', daportal_content.title AS name'
-			.', daportal_content.user_id AS user_id, username'
-			.' FROM daportal_download, daportal_content'
-			.', daportal_user'
-			.', daportal_category_content cc2, daportal_content dc2'
-			.', daportal_category_content cc3, daportal_content dc3'
-			.' WHERE daportal_download.content_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' AND cc2.content_id=daportal_content.content_id'
-			.' AND cc3.content_id=daportal_content.content_id'
-			.' AND cc2.category_id=dc2.content_id'
-			.' AND cc3.category_id=dc3.content_id'
-			." AND dc2.title='".$project['name']."'"
-			." AND dc3.title='release'"
-			." AND daportal_content.enabled='1'"
-			." AND daportal_user.enabled='1'"
-			." AND daportal_user.admin='1'"
-			." AND dc2.enabled='1' AND dc3.enabled='1';");
+	$files = _sql_array($sql." AND dc3.title='release';");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>Releases</h2>'."\n");
@@ -1035,6 +994,23 @@ function project_files($args)
 		}
 		_module('explorer', 'browse', array('entries' => $files));
 	}
+}
+
+
+function project_enable($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if(($id = _sql_single('SELECT project_id FROM daportal_project'
+			." WHERE project_id='".$args['id']."';")) == FALSE)
+		return _error(INVALID_PROJECT);
+	require_once('./system/content.php');
+	_content_enable($id);
+	if($args['display'] != 0)
+		project_display(array('id' => $id));
 }
 
 
