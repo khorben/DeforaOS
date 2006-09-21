@@ -212,6 +212,76 @@ function project_browse($args)
 }
 
 
+function project_bug_assign($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id)) //FIXME projects members too
+		return _error(PERMISSION_DENIED);
+	if(!isset($args['id']) || !isset($args['bug_id']))
+		return _error(INVALID_ARGUMENT);
+	if(isset($args['user_id']))
+	{
+		if(_sql_single('SELECT user_id FROM daportal_project_user'
+					.', daportal_user'
+					.' WHERE daportal_project_user.user_id'
+					.'=daportal_user.user_id'
+					." AND daportal_user.enabled='1'"
+					." AND project_id='".$args['id']."'"
+					." AND user_id='".$args['user_id']."';")
+				!= $args['user_id']
+				&& !_user_admin($args['user_id']))
+			return _error('Invalid user for assignment');
+		if(_sql_query("UPDATE daportal_bug SET assigned='"
+					.$args['user_id']."'"
+					." WHERE bug_id='".$args['bug_id']."';")
+				== FALSE)
+			return _error('Could not assign bug');
+		/* FIXME should insert a bug_reply with corresponding content */
+		return project_bug_display(array('id' => $args['bug_id']));
+	}
+	/* FIXME should be feasible in one SQL query, and factorize */
+	$admin = _sql_array('SELECT daportal_project.project_id AS id, bug_id'
+			.', daportal_user.user_id AS user_id, username AS name'
+			.' FROM daportal_bug, daportal_project'
+			.', daportal_content, daportal_user'
+			.' WHERE daportal_bug.project_id'
+			.'=daportal_project.project_id'
+			.' AND daportal_project.project_id'
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND bug_id='".$args['bug_id']."';");
+	if(!is_array($admin) || count($admin) != 1)
+		return _error('Could not fetch project admin');
+	$members = _sql_array('SELECT daportal_project.project_id AS id, bug_id'
+			.', daportal_user.user_id AS user_id'
+			.', username AS name'
+			.' FROM daportal_bug, daportal_project_user'
+			.', daportal_user'
+			.' WHERE daportal_bug.project_id'
+			.'=daportal_project.project_id'
+			.' AND daportal_project_user.user_id'
+			.'=daportal_user.user_id'
+			." AND daportal_user.enabled='1'"
+			." AND bug_id='".$args['bug_id']."';");
+	if(!is_array($members))
+		return _error('Could not list project members');
+	print('<h1 class="project">Assign bug #'._html_safe($args['bug_id'])
+			.' to user</h1>'."\n");
+	$members = array_merge($admin, $members);
+	for($i = 0, $cnt = count($members); $i < $cnt; $i++)
+	{
+		$members[$i]['module'] = 'project';
+		$members[$i]['action'] = 'bug_assign';
+		$members[$i]['args'] = '&bug_id='.$members[$i]['bug_id'];
+		$members[$i]['args'].='&user_id='.$members[$i]['user_id'];
+		$members[$i]['icon'] = 'modules/user/icon.png';
+		$members[$i]['thumbnail'] = 'modules/user/icon.png';
+	}
+	_module('explorer', 'browse', array('entries' => $members));
+}
+
+
 function project_bug_display($args)
 {
 	global $user_id;
@@ -301,7 +371,7 @@ function project_bug_insert($args)
 				." WHERE content_id='$id';");
 		return _error('Unable to insert bug', 1);
 	}
-	$id = _sql_id('daportal_bug', 'bug_id'); //FIXME race condition
+	$id = _sql_id('daportal_bug', 'bug_id'); //FIXME race condition?
 	//send mail
 	$to = _sql_array('SELECT username, email'
 			.' FROM daportal_project, daportal_content'
@@ -1146,8 +1216,7 @@ function project_member_add($args)
 	$toolbar = array();
 	$toolbar[] = array('title' => 'Add selected users',
 			'icon' => 'modules/user/icon.png',
-			'action' => 'member_insert',
-			'confirm' => 'add');
+			'action' => 'member_insert', 'confirm' => 'add');
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
 				'entries' => $users,
 				'module' => 'project', 'action' => 'display',
