@@ -21,7 +21,7 @@ static int _open(char const * mime, char const * action, int filec,
 		if(mime_action(m, action, filev[i]) != 0)
 		{
 			fprintf(stderr, "%s%s%s%s%s", "mime: ", filev[i],
-					": Could not call action \"", action,
+					": Could not perform action \"", action,
 					"\"\n");
 			ret = 1;
 		}
