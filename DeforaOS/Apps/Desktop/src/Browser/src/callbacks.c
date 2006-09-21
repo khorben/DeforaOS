@@ -711,8 +711,9 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 
 static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu);
-static void on_icon_open(GtkWidget * widget, gpointer data);
+static void on_icon_delete(GtkWidget * widget, gpointer data);
 static void on_icon_edit(GtkWidget * widget, gpointer data);
+static void on_icon_open(GtkWidget * widget, gpointer data);
 gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
@@ -758,6 +759,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(_icon_cb_data.isdir != TRUE)
 	{
+		/* FIXME does not handle multiple selection */
 #if GTK_CHECK_VERSION(2, 6, 0)
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT,
 				NULL);
@@ -766,6 +768,13 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 #endif
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 					on_icon_edit), &_icon_cb_data);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_separator_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
+				NULL);
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					on_icon_delete), &_icon_cb_data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	menuitem = gtk_separator_menu_item_new();
@@ -793,6 +802,26 @@ static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, event->time);
 	return TRUE;
+}
+
+static void on_icon_delete(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+	pid_t pid;
+	char * argv[] = { "delete", "delete", cb->path, NULL };
+
+	/* FIXME factorize this code in browser.c */
+	if((pid = fork()) == -1)
+	{
+		browser_error(cb->browser, "fork", 0);
+		return;
+	}
+	else if(pid != 0)
+		return;
+	execvp(argv[0], argv);
+	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
+			strerror(errno));
+	exit(2);
 }
 
 static void on_icon_edit(GtkWidget * widget, gpointer data)
