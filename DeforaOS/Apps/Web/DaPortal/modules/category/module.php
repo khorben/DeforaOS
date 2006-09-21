@@ -35,13 +35,13 @@ _lang($text);
 
 function category_admin($args)
 {
-	print('<h1><img src="modules/category/icon.png" alt=""/> '
-			.CATEGORIES_ADMINISTRATION.'</h1>'."\n");
+	print('<h1 class="category">'._html_safe(CATEGORIES_ADMINISTRATION)
+			.'</h1>'."\n");
 	$module_id = _module_id('category');
 	$categories = _sql_array('SELECT content_id AS id, title AS name'
 			.', enabled, content AS description'
 			.' FROM daportal_content'
-			." WHERE module_id='$module_id';");
+			." WHERE module_id='$module_id' ORDER BY name ASC;");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$count = count($categories);
@@ -360,7 +360,7 @@ function category_list($args)
 			'icon' => 'modules/category/icon.png',
 			'link' => 'index.php?module=category&action=new');
 	_module('explorer', 'browse', array('entries' => $categories,
-				'toolbar' => $toolbar));
+				'view' => 'list', 'toolbar' => $toolbar));
 }
 
 
