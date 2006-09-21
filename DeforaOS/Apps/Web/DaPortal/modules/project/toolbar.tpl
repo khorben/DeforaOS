@@ -6,7 +6,7 @@
 <?php } ?>
 	&middot; <a href="index.php?module=project&amp;action=bug_list&amp;project_id=<?php echo _html_safe_link($id); ?>"><img src="modules/project/bug.png" alt="" style="height: 16px; width: 16px"/> <?php echo _html_safe_link(BUG_REPORTS); ?></a>
 <?php if(_module_id('category') != 0 && _module_id('download') != 0) { ?>
-	&middot; <a href="index.php?module=project&amp;action=files&amp;id=<?php echo _html_safe_link($id); ?>"><img src="modules/project/files.png" alt="" style="height: 16px; width: 16px"/> <?php echo _html_safe_link(FILES); ?></a>
+	&middot; <a href="index.php?module=project&amp;action=download&amp;id=<?php echo _html_safe_link($id); ?>"><img src="modules/project/files.png" alt="" style="height: 16px; width: 16px"/> <?php echo _html_safe_link(FILES); ?></a>
 <?php }
 if($admin != 0) { ?>
 	&middot; <a href="index.php?module=project&amp;action=admin&amp;id=<?php echo _html_safe_link($id); ?>"><img src="modules/admin/icon.png" alt="" style="height: 16px; width: 16px"/> Administration</a>
