@@ -154,11 +154,15 @@ function category_display($args)
 	{
 		$contents[$i]['icon'] = 'modules/'.$contents[$i]['module']
 			.'/icon.png';
-		$contents[$i]['thumbnail'] = 'modules/'.$contents[$i]['module']
-			.'/icon.png';
+		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
 		$contents[$i]['action'] = 'default';
 	}
-	_module('explorer', 'browse', array('entries' => $contents));
+	$toolbar = array();
+	$toolbar[] = array('title' => NEW_CATEGORY,
+			'icon' => 'modules/category/icon.png',
+			'link' => 'index.php?module=category&action=new');
+	_module('explorer', 'browse', array('entries' => $contents,
+				'toolbar' => $toolbar));
 }
 
 
@@ -335,8 +339,7 @@ function category_link_insert_new($args)
 
 function category_list($args)
 {
-	print('<h1><img src="modules/category/icon.png" alt=""/> '
-			.CATEGORIES_LIST.'</h1>'."\n");
+	print('<h1 class="category">'._html_safe(CATEGORIES_LIST).'</h1>'."\n");
 	$module_id = _module_id('category');
 	$categories = _sql_array('SELECT content_id AS id, title AS name'
 			.', content AS description'
