@@ -105,7 +105,8 @@ function project_admin($args)
 			._html_safe(PROJECT_LIST)
 			.'</h2>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
-			.', username AS admin, daportal_content.enabled'
+			.', username AS admin'
+			.', daportal_content.enabled AS enabled'
 			.', daportal_content.user_id AS user_id, cvsroot'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_project'
@@ -151,7 +152,7 @@ function project_admin($args)
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $projects,
-			'class' => array('enabled' => 'Enabled',
+			'class' => array('enabled' => ENABLED,
 					'admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION,
 					'cvsroot' => CVS_PATH),
