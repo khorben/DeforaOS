@@ -128,7 +128,7 @@ function category_disable($args)
 function category_display($args)
 {
 	$module = _module_id('category');
-	$category = _sql_array('SELECT title'
+	$category = _sql_array('SELECT title, content'
 			.' FROM daportal_content'
 			." WHERE content_id='".$args['id']."'"
 			." AND module_id='$module' AND enabled='1';");
@@ -137,10 +137,8 @@ function category_display($args)
 	$category = $category[0];
 	$title = CATEGORY.' '.$category['title'];
 	include('./modules/category/display.tpl');
-	$contents = _sql_array('SELECT category_content_id'
-			.', daportal_content.content_id AS id'
-			.', daportal_content.module_id, name AS module'
-			.', user_id, title AS name'
+	$contents = _sql_array('SELECT daportal_content.content_id AS id'
+			.', name AS module, user_id, title AS name'
 			.' FROM daportal_category_content, daportal_content'
 			.', daportal_module'
 			.' WHERE daportal_category_content.content_id'
