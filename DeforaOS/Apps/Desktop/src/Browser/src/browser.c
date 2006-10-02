@@ -9,6 +9,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <libgen.h>
+#include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "browser.h"
 
@@ -23,6 +24,7 @@ struct _menu
 	char * name;
 	GtkSignalFunc callback;
 	char * stock;
+	unsigned int accel;
 };
 
 struct _menubar
@@ -35,52 +37,52 @@ struct _menubar
 /* constants */
 struct _menu _menu_file[] =
 {
-	{ "_New window", G_CALLBACK(on_file_new_window), NULL },
-	{ "", NULL, NULL },
-	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH },
+	{ "_New window", G_CALLBACK(on_file_new_window), NULL, GDK_N },
+	{ "", NULL, NULL, 0 },
+	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, GDK_R },
 	{ "_Properties", G_CALLBACK(on_properties),
-		GTK_STOCK_PROPERTIES },
-	{ "", NULL, NULL },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE },
-	{ NULL, NULL, NULL }
+		GTK_STOCK_PROPERTIES, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_edit[] =
 {
-	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT },
-	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY },
-	{ "_Paste", NULL, GTK_STOCK_PASTE },
-	{ "", NULL, NULL },
-	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE },
-	{ "", NULL, NULL },
-	{ "_Select all", G_CALLBACK(on_edit_select_all), NULL },
-	{ "_Unselect all", G_CALLBACK(on_edit_unselect_all), NULL },
-	{ "", NULL, NULL },
+	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_X },
+	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY, GDK_C },
+	{ "_Paste", NULL, GTK_STOCK_PASTE, GDK_V },
+	{ "", NULL, NULL, 0 },
+	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Select all", G_CALLBACK(on_edit_select_all), NULL, GDK_A },
+	{ "_Unselect all", G_CALLBACK(on_edit_unselect_all), NULL, 0 },
+	{ "", NULL, NULL, 0 },
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES },
-	{ NULL, NULL, NULL }
+		GTK_STOCK_PREFERENCES, GDK_P },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_view[] =
 {
-	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME },
+	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME, 0 },
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "", NULL, NULL },
-	{ "_Details", G_CALLBACK(on_view_details), NULL },
-	{ "_Icons", G_CALLBACK(on_view_icons), NULL },
-	{ "_List", G_CALLBACK(on_view_list), NULL },
+	{ "", NULL, NULL, 0 },
+	{ "_Details", G_CALLBACK(on_view_details), NULL, 0 },
+	{ "_Icons", G_CALLBACK(on_view_icons), NULL, 0 },
+	{ "_List", G_CALLBACK(on_view_list), NULL, 0 },
 #endif
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT },
+	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL },
+	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
 #endif
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _menubar[] =
@@ -275,6 +277,7 @@ static int _new_pixbufs(Browser * browser)
 static GtkWidget * _new_menubar(Browser * browser)
 {
 	GtkWidget * tb_menubar;
+	GtkAccelGroup * group;
 	GtkWidget * menu;
 	GtkWidget * menubar;
 	GtkWidget * menuitem;
@@ -283,6 +286,7 @@ static GtkWidget * _new_menubar(Browser * browser)
 	struct _menu * p;
 
 	tb_menubar = gtk_menu_bar_new();
+	group = gtk_accel_group_new();
 	for(i = 0; _menubar[i].name != NULL; i++)
 	{
 		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
@@ -304,11 +308,17 @@ static GtkWidget * _new_menubar(Browser * browser)
 						browser);
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
+			if(p->accel != 0)
+				gtk_widget_add_accelerator(menuitem, "activate",
+						group, p->accel,
+						GDK_CONTROL_MASK,
+						GTK_ACCEL_VISIBLE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
 		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
 	}
+	gtk_window_add_accel_group(GTK_WINDOW(browser->window), group);
 	return tb_menubar;
 }
 
