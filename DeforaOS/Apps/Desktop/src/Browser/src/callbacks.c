@@ -653,6 +653,12 @@ void on_path_activate(GtkWidget * widget, gpointer data)
 }
 
 
+void on_path_change(GtkWidget * widget, gpointer data)
+{
+	on_path_activate(widget, data);
+}
+
+
 /* view */
 /* types */
 /* FIXME rather ugly, maybe could go directly in Browser */
@@ -705,6 +711,14 @@ void on_icon_default(GtkIconView * view,
 void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
+	Browser * browser = data;
+	gint n;
+	char * p;
+
+	n = strtol(arg1, &p, 10);
+	if(*arg1 == '\0' || *p != '\0')
+		/* FIXME warn user */
+		return;
 	/* FIXME implement */
 }
 

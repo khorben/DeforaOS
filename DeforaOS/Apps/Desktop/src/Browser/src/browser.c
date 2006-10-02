@@ -8,6 +8,7 @@
 #include <string.h>
 #include <pwd.h>
 #include <grp.h>
+#include <libgen.h>
 #include "callbacks.h"
 #include "browser.h"
 
@@ -210,6 +211,8 @@ Browser * browser_new(char const * directory)
 	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
 	g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), browser);
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				on_path_change), browser);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), browser->tb_path);
@@ -339,14 +342,15 @@ static GtkListStore * _create_store(Browser * browser)
 {
 	GtkListStore * store;
 
-	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING, 
+	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING,
+			GDK_TYPE_PIXBUF,
 #if !GTK_CHECK_VERSION(2, 6, 0)
-			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN, G_TYPE_UINT64,
+			G_TYPE_BOOLEAN,
 #else
-			GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN,
-			G_TYPE_UINT64,
+			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN,
 #endif
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_UINT64, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -388,22 +392,21 @@ int browser_error(Browser * browser, char const * message, int ret)
 
 
 static void _refresh_title(Browser * browser);
+static void _refresh_path(Browser * browser);
 static void _refresh_loop(Browser * browser, char const * name);
 void browser_refresh(Browser * browser)
 {
 	GDir * dir;
-	GtkWidget * widget;
 	char const * name;
 	unsigned int cnt;
 	unsigned int hidden_cnt;
 	char status[36];
 
-	gtk_list_store_clear(browser->store);
 	if((dir = g_dir_open(browser->current->data, 0, NULL)) == NULL)
 		return;
+	gtk_list_store_clear(browser->store);
 	_refresh_title(browser);
-	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
-	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
+	_refresh_path(browser);
 	for(cnt = 0, hidden_cnt = 0; (name = g_dir_read_name(dir)) != NULL;
 			cnt++)
 	{
@@ -435,6 +438,26 @@ static void _refresh_title(Browser * browser)
 	snprintf(buf, sizeof(buf), "%s%s", "File browser - ",
 			(char*)browser->current->data);
 	gtk_window_set_title(GTK_WINDOW(browser->window), buf);
+}
+
+static void _refresh_path(Browser * browser)
+{
+	static unsigned int cnt = 0;
+	GtkWidget * widget;
+	unsigned int i;
+	char * p;
+
+	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
+	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
+	for(i = 0; i < cnt; i++)
+		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
+	p = dirname(browser->current->data);
+	gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
+	for(cnt = 1; strcmp(p, "/") != 0; cnt++)
+	{
+		p = dirname(p);
+		gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
+	}
 }
 
 static void _refresh_loop(Browser * browser, char const * name)

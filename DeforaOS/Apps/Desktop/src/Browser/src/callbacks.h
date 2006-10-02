@@ -48,6 +48,7 @@ void on_view_as(GtkWidget * widget, gpointer data);
 
 /* address bar */
 void on_path_activate(GtkWidget * widget, gpointer data);
+void on_path_change(GtkWidget * widget, gpointer data);
 
 /* view */
 void on_detail_default(GtkTreeView * view,
