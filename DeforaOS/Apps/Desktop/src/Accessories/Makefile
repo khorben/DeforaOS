@@ -1,6 +1,7 @@
 PACKAGE	= Accessories
 VERSION	= 0.0.0
 SUBDIRS	= src
+RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
 
@@ -17,11 +18,12 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/calendar.c \
 		$(PACKAGE)-$(VERSION)/src/fontsel.c \
+		$(PACKAGE)-$(VERSION)/src/run.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
@@ -32,4 +34,4 @@ install: all
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 
-.PHONY: all subdirs clean distclean install uninstall
+.PHONY: all subdirs clean distclean dist install uninstall
