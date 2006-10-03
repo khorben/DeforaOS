@@ -112,7 +112,7 @@ function _html_start()
 {
 	global $title, $theme;
 
-	readfile('html/doctype.html');
+	readfile('./html/doctype.html');
 	print('	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-15"/>
 		<title>'._html_safe($title).'</title>
