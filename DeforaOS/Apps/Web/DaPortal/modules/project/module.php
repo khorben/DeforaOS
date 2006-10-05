@@ -394,13 +394,12 @@ function project_bug_insert($args)
 		$to = $to[0]['username'].' <'.$to[0]['email'].'>';
 		foreach($members as $m)
 			$to.=', '.$m['username'].' <'.$m['email'].'>';
-		$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
 		$title = '[Bug submission] '.$args['title'];
 		$content = 'State: New'."\n".'Type: '.$args['type']."\n"
 			.'Priority: '.$args['priority']."\n\n"
 			.stripslashes($args['content']);
-		if(!mail($to, $title, $content, $headers))
-			_error('Could not send mail to: '.$to, 0);
+		require_once('./system/mail.php');
+		_mail('Administration Team', $to, $title, $content);
 	}
 	if($enable)
 		return project_bug_display(array('id' => $id));
@@ -722,13 +721,12 @@ function project_bug_reply_insert($args)
 	$cnt = count($keys);
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
-	$headers = 'From: DaPortal <www-data@defora.org>'; //FIXME
 	$title = '[Bug reply] '.$args['title'];
 	$content = 'State: '.$args['state']."\n".'Type: '.$args['type']."\n"
 		.'Priority: '.$args['priority']."\n\n"
 		.stripslashes($args['content']);
-	if(!mail($to, $title, $content, $headers))
-		_error('Could not send mail to: '.$to, 0);
+	require_once('./system/mail.php');
+	_mail('Administration Team', $to, $title, $content);
 }
 
 
