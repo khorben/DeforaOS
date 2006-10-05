@@ -653,12 +653,6 @@ void on_path_activate(GtkWidget * widget, gpointer data)
 }
 
 
-void on_path_change(GtkWidget * widget, gpointer data)
-{
-	on_path_activate(widget, data);
-}
-
-
 /* view */
 /* types */
 /* FIXME rather ugly, maybe could go directly in Browser */

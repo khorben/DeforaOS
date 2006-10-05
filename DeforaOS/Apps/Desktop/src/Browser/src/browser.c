@@ -213,8 +213,6 @@ Browser * browser_new(char const * directory)
 	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
 	g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), browser);
-	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				on_path_change), browser);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	gtk_container_add(GTK_CONTAINER(toolitem), browser->tb_path);
