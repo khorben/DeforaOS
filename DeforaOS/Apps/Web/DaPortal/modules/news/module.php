@@ -18,7 +18,7 @@ if($lang == 'fr')
 {
 	$text['MODIFICATION_OF_NEWS'] = 'Modification de la dépêche';
 	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
-	$text['NEWS_BY'] = 'Actualités par';
+	$text['NEWS_BY'] = 'Nouvelle par';
 	$text['NEWS_ON'] = 'le';
 	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
 }
@@ -183,7 +183,7 @@ function news_enable($args)
 
 function _list_user($user_id, $username)
 {
-	print('<h1 class="news">'._html_safe(NEWS_BY.' '.$username)."</h1>\n");
+	print('<h1 class="news">'._html_safe(NEWS._BY_.' '.$username)."</h1>\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 			.', daportal_content.enabled, daportal_content.user_id'
 			.', username'
