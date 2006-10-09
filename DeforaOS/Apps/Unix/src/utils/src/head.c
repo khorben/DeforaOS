@@ -59,7 +59,7 @@ static int _usage(void)
 
 
 /* main */
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
 	int flgn = 10;
 	int o;
