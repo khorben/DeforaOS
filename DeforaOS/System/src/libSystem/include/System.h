@@ -12,6 +12,7 @@
 # include "System/buffer.h"
 # include "System/config.h"
 # include "System/event.h"
+# include "System/file.h"
 # include "System/string.h"
 
 #endif /* !LIBSYSTEM_SYSTEM_H */
