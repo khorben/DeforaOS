@@ -1,4 +1,5 @@
-/* buffer.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
@@ -7,12 +8,15 @@
 
 
 /* Buffer */
+/* types */
 typedef struct _Buffer
 {
 	unsigned int size;
 	char * data;
 } Buffer;
 
+
+/* functions */
 Buffer * buffer_new(unsigned int size, char * data);
 void buffer_delete(Buffer * buffer);
 
