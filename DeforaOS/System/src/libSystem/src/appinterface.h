@@ -1,9 +1,10 @@
-/* appinterface.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef APP_INTERFACE_H
-# define APP_INTERFACE_H
+#ifndef LIBSYSTEM_APPINTERFACE_H
+# define LIBSYSTEM_APPINTERFACE_H
 
 
 /* AppInterface */
@@ -27,4 +28,4 @@ int appinterface_call_receive(AppInterface * appinterface, int * ret,
 int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
 		char bufw[], int bufwlen, int * bufwpos, int * ret);
 
-#endif /* !APP_INTERFACE_H */
+#endif /* !LIBSYSTEM_APPINTERFACE_H */
