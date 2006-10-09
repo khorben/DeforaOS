@@ -1,4 +1,5 @@
-/* hash.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
@@ -14,14 +15,11 @@ typedef Array Hash;
 
 
 /* functions */
-/* hash */
 Hash * hash_new(void);
 void hash_delete(Hash * h);
-
 
 /* useful */
 void * hash_get(Hash * h, char const * name);
 int hash_set(Hash * h, char const * name, void * data);
-
 
 #endif /* !LIBSYSTEM_HASH_H */
