@@ -9,6 +9,7 @@
 
 /* types */
 typedef struct _File File;
+typedef int FileMode; /* FIXME actually is an enumerated type */
 
 /* functions */
 File * file_new(char const * path, FileMode mode);
