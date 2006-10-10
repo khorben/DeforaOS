@@ -38,8 +38,8 @@ function bookmark_admin($args)
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return bookmark_modify($args);
-	print('<h1><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(BOOKMARKS_ADMINISTRATION).'</h1>'."\n");
+	print('<h1 class="bookmark">'._html_safe(BOOKMARKS_ADMINISTRATION)
+			.'</h1>'."\n");
 	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name'
 			.', enabled, url'
 			.' FROM daportal_bookmark, daportal_content'
@@ -195,8 +195,7 @@ function bookmark_list($args)
 		$args['user_id'] = $user_id;
 	if(!$args['user_id'])
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/bookmark/icon.png" alt=""/> '
-			._html_safe(BOOKMARK_LIST).'</h1>'."\n");
+	print('<h1 class="bookmark">'._html_safe(BOOKMARK_LIST).'</h1>'."\n");
 	$enabled = $args['user_id'] == $user_id ? '' : " AND enabled='1'";
 	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, enabled, url'
 			.' FROM daportal_bookmark, daportal_content'

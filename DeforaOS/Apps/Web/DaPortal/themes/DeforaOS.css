@@ -263,6 +263,7 @@ table.bordered th {
 .explorer .listing_details .header div,
 .explorer .listing_details .entry div {
 	padding-left:			4px;
+	text-align:			left;
 }
 
 .explorer .listing_details .header div.icon,
@@ -575,6 +576,14 @@ h1.content {
 
 h1.article {
 	background-image:		url("../modules/article/icon.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	min-height:			48px;
+	padding-left:			52px;
+}
+
+h1.bookmark {
+	background-image:		url("../modules/bookmark/icon.png");
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;

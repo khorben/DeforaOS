@@ -1,4 +1,4 @@
-<h1><img src="modules/bookmark/icon.png" alt=""/> <?php echo _html_safe($bookmark['title']); ?></h1>
+<h1 class="bookmark"><?php echo _html_safe($bookmark['title']); ?></h1>
 <table>
 	<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><?php echo _html_safe($bookmark['title']); ?></td></tr>
 	<tr><td class="field"><?php echo _html_safe(ADDRESS); ?>:</td><td><a href="<?php echo _html_safe_link($bookmark['url']); ?>"><?php echo _html_safe($bookmark['url']); ?></a></td></tr>
