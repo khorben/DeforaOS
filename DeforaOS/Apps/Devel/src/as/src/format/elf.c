@@ -287,8 +287,16 @@ static int _exit_32_shdr(FILE * fp, Elf32_Off offset)
 	if(fseek(fp, 0, SEEK_END) != 0)
 		return _elf_error(format_plugin.filename, 1);
 	memset(&hdr, 0, sizeof(hdr));
-	hdr.sh_type = SHT_NULL;
-	hdr.sh_link = SHN_UNDEF;
+	if(ea->endian == ELFDATA2MSB)
+	{
+		hdr.sh_type = _htob32(SHT_NULL);
+		hdr.sh_link = _htob32(SHN_UNDEF);
+	}
+	else
+	{
+		hdr.sh_type = _htol32(SHT_NULL);
+		hdr.sh_link = _htol32(SHN_UNDEF);
+	}
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error(format_plugin.filename, 1);
 	for(i = 0; i < es32_cnt; i++)
@@ -298,6 +306,8 @@ static int _exit_32_shdr(FILE * fp, Elf32_Off offset)
 		else
 			es32[i].sh_size = es32[i+1].sh_offset
 				- es32[i].sh_offset;
+		es32[i].sh_size = ea->endian == ELFDATA2MSB
+			? _htob32(es32[i].sh_size) : _htol32(es32[i].sh_size);
 		if(fwrite(&es32[i], sizeof(Elf32_Shdr), 1, fp) != 1)
 			return _elf_error(format_plugin.filename, 1);
 	}
@@ -436,6 +446,8 @@ static int _exit_64_shdr(FILE * fp, Elf64_Off offset)
 		else
 			es64[i].sh_size = es64[i+1].sh_offset
 				- es64[i].sh_offset;
+		es64[i].sh_size = ea->endian == ELFDATA2MSB
+			? _htob64(es64[i].sh_size) : _htol64(es64[i].sh_size);
 		if(fwrite(&es64[i], sizeof(Elf64_Shdr), 1, fp) != 1)
 			return _elf_error(format_plugin.filename, 1);
 	}
