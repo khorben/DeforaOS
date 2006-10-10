@@ -89,6 +89,30 @@ static int _elf_error(char const * message, int ret)
 }
 
 
+/* helpers */
+#if BYTE_ORDER == BIG_ENDIAN 
+# define _htob16(a) (a) 
+# define _htol16(a) ((a) << 8 | (a) >> 8)
+# define _htob32(a) (a) 
+# define _htol32(a) ((a) << 24 | (((a) >> 8) << 24) | (((a) << 8) >> 24) \
+		| (a) >> 24)
+# define _htob64(a) (a)
+# define _htol64(a) ((a) << 56 | (((a) >> 8) << 48) | (((a) >> 16) << 40) \
+		| (((a) >> 24) << 32) | (((a) >> 32) << 24) \
+		| (((a) >> 40) << 16) | (((a) >> 48) << 8) | (a) >> 56)
+#else
+# define _htob16(a) ((a) << 8 | (a) >> 8)
+# define _htol16(a) (a)
+# define _htob32(a) ((a) << 24 | (((a) >> 8) << 24) | (((a) << 8) >> 24) \
+	| (a) >> 24)
+# define _htol32(a) (a) 
+# define _htob64(a) ((a) << 56 | (((a) >> 8) << 48) | (((a) >> 16) << 40) \
+		| (((a) >> 24) << 32) | (((a) >> 32) << 24) \
+		| (((a) >> 40) << 16) | (((a) >> 48) << 8) | (a) >> 56)
+# define _htol64(a) (a)
+#endif
+
+
 /* elf_init */
 static ElfArch * _init_arch(char const * arch);
 static int _init_32(FILE * fp);
@@ -115,6 +139,8 @@ static int _elf_init(FILE * fp, char const * arch)
 		format_plugin.exit = _exit_64;
 		format_plugin.section = _section_64;
 	}
+	else
+		return 1;
 	return 0;
 }
 
@@ -173,12 +199,24 @@ static int _init_32(FILE * fp)
 	hdr.e_ident[EI_CLASS] = ELFCLASS32;
 	hdr.e_ident[EI_DATA] = ea->endian;
 	hdr.e_ident[EI_VERSION] = EV_CURRENT;
-	hdr.e_type = ET_REL;
-	hdr.e_machine = ea->machine;
-	hdr.e_version = EV_CURRENT;
-	hdr.e_ehsize = sizeof(hdr);
-	hdr.e_shentsize = sizeof(Elf32_Shdr);
-	hdr.e_shstrndx = SHN_UNDEF;
+	if(ea->endian == ELFDATA2MSB)
+	{
+		hdr.e_type = _htob16(ET_REL);
+		hdr.e_machine = _htob16(ea->machine);
+		hdr.e_version = _htob32(EV_CURRENT);
+		hdr.e_ehsize = _htob16(sizeof(hdr));
+		hdr.e_shentsize = _htob16(sizeof(Elf32_Shdr));
+		hdr.e_shstrndx = _htob16(SHN_UNDEF);
+	}
+	else
+	{
+		hdr.e_type = _htol16(ET_REL);
+		hdr.e_machine = _htol16(ea->machine);
+		hdr.e_version = _htol32(EV_CURRENT);
+		hdr.e_ehsize = _htol16(sizeof(hdr));
+		hdr.e_shentsize = _htol16(sizeof(Elf32_Shdr));
+		hdr.e_shstrndx = _htol16(SHN_UNDEF);
+	}
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error(format_plugin.filename, 1);
 	return 0;
@@ -222,9 +260,18 @@ static int _exit_32_phdr(FILE * fp, Elf32_Off offset)
 		return _elf_error(format_plugin.filename, 1);
 	if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error(format_plugin.filename, 1);
-	hdr.e_shoff = offset;
-	hdr.e_shnum = es32_cnt+1;
-	hdr.e_shstrndx = es32_cnt;
+	if(ea->endian == ELFDATA2MSB)
+	{
+		hdr.e_shoff = _htob32(offset);
+		hdr.e_shnum = _htob16(es32_cnt+1);
+		hdr.e_shstrndx = _htob16(es32_cnt);
+	}
+	else
+	{
+		hdr.e_shoff = _htol32(offset);
+		hdr.e_shnum = _htol16(es32_cnt+1);
+		hdr.e_shstrndx = _htol16(es32_cnt);
+	}
 	if(fseek(fp, 0, SEEK_SET) != 0)
 		return _elf_error(format_plugin.filename, 1);
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
@@ -297,11 +344,22 @@ static int _init_64(FILE * fp)
 	hdr.e_ident[EI_CLASS] = ELFCLASS64;
 	hdr.e_ident[EI_DATA] = ea->endian;
 	hdr.e_ident[EI_VERSION] = EV_CURRENT;
-	hdr.e_type = ET_REL;
-	hdr.e_machine = ea->machine;
-	hdr.e_version = EV_CURRENT;
-	hdr.e_ehsize = sizeof(hdr);
-	hdr.e_shentsize = sizeof(Elf64_Shdr);
+	if(ea->endian == ELFDATA2MSB)
+	{
+		hdr.e_type = _htob16(ET_REL);
+		hdr.e_machine = _htob16(ea->machine);
+		hdr.e_version = _htob32(EV_CURRENT);
+		hdr.e_ehsize = _htob16(sizeof(hdr));
+		hdr.e_shentsize = _htob16(sizeof(Elf64_Shdr));
+	}
+	else
+	{
+		hdr.e_type = _htol16(ET_REL);
+		hdr.e_machine = _htol16(ea->machine);
+		hdr.e_version = _htol32(EV_CURRENT);
+		hdr.e_ehsize = _htol16(sizeof(hdr));
+		hdr.e_shentsize = _htol16(sizeof(Elf64_Shdr));
+	}
 	hdr.e_shstrndx = SHN_UNDEF;
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error(format_plugin.filename, 1);
@@ -346,9 +404,18 @@ static int _exit_64_phdr(FILE * fp, Elf64_Off offset)
 		return _elf_error(format_plugin.filename, 1);
 	if(fread(&hdr, sizeof(hdr), 1, fp) != 1)
 		return _elf_error(format_plugin.filename, 1);
-	hdr.e_shoff = offset;
-	hdr.e_shnum = es64_cnt;
-	hdr.e_shstrndx = es64_cnt-1;
+	if(ea->endian == ELFDATA2MSB)
+	{
+		hdr.e_shoff = _htob64(offset);
+		hdr.e_shnum = _htob16(es64_cnt);
+		hdr.e_shstrndx = _htob16(es64_cnt-1);
+	}
+	else
+	{
+		hdr.e_shoff = _htol64(offset);
+		hdr.e_shnum = _htol16(es64_cnt);
+		hdr.e_shstrndx = _htol16(es64_cnt-1);
+	}
 	if(fseek(fp, 0, SEEK_SET) != 0)
 		return _elf_error(format_plugin.filename, 1);
 	if(fwrite(&hdr, sizeof(hdr), 1, fp) != 1)
