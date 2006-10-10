@@ -1268,6 +1268,7 @@ function project_modify($args)
 	if(!is_array($project) || count($project) != 1)
 		return error('Unable to update project', 1);
 	$project = $project[0];
+	_project_toolbar($project['id']);
 	$title = 'Modification of '.$project['name'];
 	include('./modules/project/project_update.tpl');
 }
