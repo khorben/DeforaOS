@@ -1,9 +1,10 @@
-/* scanner.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __SCANNER_H
-# define __SCANNER_H
+#ifndef AS_SCANNER_H
+# define AS_SCANNER_H
 
 # include <stdio.h>
 # include "token.h"
@@ -13,4 +14,4 @@
 Token * scan(FILE * fp);
 Token * check(FILE * fp, TokenCode code);
 
-#endif /* !__SCANNER_H */
+#endif /* !AS_SCANNER_H */

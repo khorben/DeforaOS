@@ -1,9 +1,10 @@
-/* arch/arch.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __ARCH_ARCH_H
-# define __ARCH_ARCH_H
+#ifndef AS_ARCH_ARCH_H
+# define AS_ARCH_ARCH_H
 
 # include <stdint.h>
 
@@ -62,4 +63,4 @@ void arch_delete(Arch * arch);
 /* ArchOperands */
 int archoperands_count(int operands);
 
-#endif /* !__ARCH_ARCH_H */
+#endif /* !AS_ARCH_ARCH_H */

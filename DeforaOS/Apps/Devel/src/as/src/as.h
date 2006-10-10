@@ -1,9 +1,10 @@
-/* as.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __AS_H
-# define __AS_H
+#ifndef AS_AS_H
+# define AS_AS_H
 
 # define AS_FILENAME_DEFAULT "a.out"
 
@@ -18,4 +19,4 @@ void * as_plugin_new(char const * type, char const * name,
 void as_plugin_delete(void * plugin);
 void as_plugin_list(char const * type, char const * description);
 
-#endif /* !__AS_H */
+#endif /* !AS_AS_H */

@@ -1,9 +1,10 @@
-/* token.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __TOKEN_H
-# define __TOKEN_H
+#ifndef AS_TOKEN_H
+# define AS_TOKEN_H
 
 
 /* types */
@@ -51,4 +52,4 @@ void token_delete(Token * token);
 
 int token_in_set(Token * token, TokenSet set);
 
-#endif /* !__TOKEN_H */
+#endif /* !AS_TOKEN_H */

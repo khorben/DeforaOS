@@ -1,4 +1,5 @@
-/* i386.c */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
@@ -14,6 +15,7 @@ enum {
 #include "common.reg"
 #include "80386.reg"
 };
+
 
 /* variables */
 #undef REG

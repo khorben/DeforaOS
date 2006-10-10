@@ -1,9 +1,10 @@
-/* code.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __CODE_H
-# define __CODE_H
+#ifndef AS_CODE_H
+# define AS_CODE_H
 
 # include <stdio.h>
 # include "token.h"
@@ -46,4 +47,4 @@ void code_delete(Code * code, int error);
 CodeError code_instruction(Code * code, char * instruction,
 		CodeOperand operands[], int operands_cnt);
 
-#endif /* !__CODE_H */
+#endif /* !AS_CODE_H */
