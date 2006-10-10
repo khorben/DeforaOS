@@ -1,20 +1,35 @@
-/* sparc.c */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#include <stdlib.h>
+#include <stddef.h>
 #include "arch.h"
 
 
+/* types */
+#define REG(name, size, id) AO_ ## name = ((id << 2) | AO_REG), \
+				AO_ ## name ## _ = ((id << 10) | AO_REG_), \
+				AO_ ## name ## __ = ((id << 18) | AO_REG__),
+enum {
+#include "common.reg"
+#include "sparc.reg"
+};
+
+
 /* variables */
+#undef REG
+#define REG(name, size, id) { "" # name, size, id },
 ArchRegister arch_sparc_regs[] =
 {
-	{ NULL,	0,	0 }
+#include "sparc.reg"
+	{ NULL,		0, 0 }
 };
 
 ArchInstruction arch_sparc_set[] =
 {
-	{ NULL,	0x0,	0, 0, 0, 0 }
+#include "sparc.ins"
+	{ NULL,	0x0000,	AO_NONE, 0, 0, 0 }
 };
 
 ArchPlugin arch_plugin =
