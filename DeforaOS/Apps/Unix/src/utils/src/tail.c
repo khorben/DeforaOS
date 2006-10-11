@@ -10,6 +10,7 @@
 /* tail */
 static int _tail(void)
 {
+	/* FIXME implement */
 	return 1;
 }
 
@@ -27,6 +28,7 @@ int main(int argc, char * argv[])
 {
 	int o;
 
+	/* FIXME actually collect arguments */
 	while((o = getopt(argc, argv, "fc:n:")) != -1)
 		switch(o)
 		{
