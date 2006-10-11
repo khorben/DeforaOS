@@ -1,4 +1,5 @@
-/* builtin.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 /* FIXME
  * - implement these each in its own file?
  * - include their .h in this file? */
@@ -7,8 +8,8 @@
 
 
 
-#ifndef __BUILTIN_H
-# define __BUILTIN_H
+#ifndef SH_BUILTIN_H
+# define SH_BUILTIN_H
 
 
 /* functions */
@@ -26,4 +27,4 @@ int builtin_umask(int argc, char * argv[]);
 int builtin_unalias(int argc, char * argv[]);
 int builtin_unset(int argc, char * argv[]);
 
-#endif /* !__BUILTIN_H */
+#endif /* !SH_BUILTIN_H */

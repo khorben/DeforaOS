@@ -1,12 +1,14 @@
-/* token.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __TOKEN_H
-# define __TOKEN_H
+#ifndef SH_TOKEN_H
+# define SH_TOKEN_H
 
 
 /* Token */
+/* types */
 typedef enum _TokenCode
 {
 	TC_EOI = 0,
@@ -86,4 +88,4 @@ void token_delete(Token * token);
 
 int token_in_set(Token * token, TokenSet set);
 
-#endif /* !__TOKEN_H */
+#endif /* !SH_TOKEN_H */

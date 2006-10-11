@@ -1,9 +1,11 @@
-/* sh.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __SH_H
-# define __SH_H
+#ifndef SH_SH_H
+# define SH_SH_H
+
 
 /* types */
 /* Prefs */
@@ -32,4 +34,4 @@ void * dbg_realloc(void * ptr, size_t size, char * file, int line);
 void dbg_free(void * ptr, char * file, int line);
 # endif /* DEBUG */
 
-#endif /* !__SH_H */
+#endif /* !SH_SH_H */

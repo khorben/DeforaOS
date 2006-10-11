@@ -1,9 +1,10 @@
-/* parser.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __PARSER_H
-# define __PARSER_H
+#ifndef SH_PARSER_H
+# define SH_PARSER_H
 
 # include <stdio.h>
 # include "sh.h"
@@ -13,4 +14,4 @@
 int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 		char * argv[]);
 
-#endif /* !__PARSER_H */
+#endif /* !SH_PARSER_H */

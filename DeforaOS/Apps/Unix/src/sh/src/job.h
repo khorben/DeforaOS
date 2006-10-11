@@ -1,9 +1,10 @@
-/* job.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __JOB_H
-# define __JOB_H
+#ifndef SH_JOB_H
+# define SH_JOB_H
 
 
 /* types */
@@ -19,4 +20,4 @@ int job_list(int argc, char * argv[]);
 int job_pgids(int argc, char * argv[]);
 int job_status(int argc, char * argv[]);
 
-#endif /* __JOB_H */
+#endif /* SH_JOB_H */

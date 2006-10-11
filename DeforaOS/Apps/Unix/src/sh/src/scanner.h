@@ -1,9 +1,10 @@
-/* scanner.h */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
-#ifndef __SCANNER_H
-# define __SCANNER_H
+#ifndef SH_SCANNER_H
+# define SH_SCANNER_H
 
 # include <stdio.h>
 # include "token.h"
@@ -25,4 +26,4 @@ void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
 		char const * string);
 Token * scanner_next(Scanner * scanner);
 
-#endif /* !__SCANNER_H */
+#endif /* !SH_SCANNER_H */

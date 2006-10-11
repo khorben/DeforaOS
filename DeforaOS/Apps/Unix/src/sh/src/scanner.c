@@ -1,4 +1,5 @@
-/* scanner.c */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
