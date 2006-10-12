@@ -13,6 +13,7 @@ $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS_BY'] = 'News by';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_PREVIEW'] = 'News preview';
+$text['SUBMIT_NEWS'] = 'Submit news';
 global $lang;
 if($lang == 'fr')
 {
@@ -78,23 +79,21 @@ function news_admin($args)
 		$res[$i]['name'] = $res[$i]['title'];
 		$res[$i]['username'] = '<a href="index.php?module=user&id='
 				.$res[$i]['user_id'].'">'
-				._html_safe_link($res[$i]['username'])
-				.'</a>';
+				._html_safe_link($res[$i]['username']).'</a>';
 		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
 			'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
 				.$res[$i]['enabled'].'.png" alt="'
 				.$res[$i]['enabled'].'" title="'
 				.($res[$i]['enabled'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
+						? ENABLED : DISABLED).'"/>';
 		$res[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
 					strtotime(substr($res[$i]['timestamp'],
 							0, 19))));
 	}
 	$toolbar = array();
 	$toolbar[] = array('icon' => 'modules/news/icon.png',
-			'title' => 'Submit news',
+			'title' => SUBMIT_NEWS,
 			'link' => 'index.php?module=news&action=submit');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE,
