@@ -1126,9 +1126,8 @@ function project_list($args)
 		$title = PROJECTS._BY_.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe($title).'</h1>'."\n");
-	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
+	print('<h1 class="project">'._html_safe($title).'</h1>'."\n");
+	$projects = _sql_array('SELECT content_id AS id, name, title'
 			.', username AS admin'
 			.', daportal_content.user_id AS user_id'
 			.' FROM daportal_content, daportal_user'
@@ -1154,6 +1153,7 @@ function project_list($args)
 		$projects[$i]['admin'] = '<a href="index.php?module=user'
 			.'&amp;id='._html_safe_link($projects[$i]['user_id'])
 			.'">'._html_safe($projects[$i]['admin']).'</a>';
+		$projects[$i]['desc'] = $projects[$i]['title'];
 	}
 	$toolbar = array();
 	require_once('./system/user.php');
