@@ -477,7 +477,7 @@ function project_bug_list($args)
 		case 'id':	$order.='bug_id DESC';	break;
 	}
 	$bugs = _sql_array('SELECT daportal_content.content_id AS content_id'
-			.', bug_id AS id, timestamp AS date, title AS name'
+			.', bug_id AS id, timestamp AS date, title'
 			.', content, daportal_project.name AS project, username'
 			.', daportal_project.project_id'
 			.', state, type, priority'
@@ -510,6 +510,7 @@ function project_bug_list($args)
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['module'] = 'project';
 		$bugs[$i]['action'] = 'bug_display';
+		$bugs[$i]['name'] = $bugs[$i]['title'];
 		$bugs[$i]['nb'] = '<a href="index.php?module=project'
 				.'&amp;action=bug_display'
 				.'&amp;id='.$bugs[$i]['id'].'">#'
@@ -941,8 +942,7 @@ function project_display($args)
 					.'&id='.$project['id']);
 	$toolbar[] = array('title' => 'Delete member(s)',
 			'icon' => 'icons/16x16/delete.png',
-			'action' => 'member_delete',
-			'confirm' => 'delete');
+			'action' => 'member_delete', 'confirm' => DELETE);
 	if($admin)
 		$explorer['toolbar'] = $toolbar;
 	_module('explorer', 'browse_trusted', $explorer);
