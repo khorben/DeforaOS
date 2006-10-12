@@ -54,19 +54,26 @@ function _explorer(&$args)
 function _explorer_link(&$entry)
 {
 	if(isset($entry['link']))
+	{
+		if(isset($entry['title']))
+			return '<a href="'._html_safe_link($entry['link'])
+				.'" title="'._html_safe($entry['title']).'">';
 		return '<a href="'._html_safe_link($entry['link']).'">';
+	}
 	else if(!isset($entry['link']) && isset($entry['module'])
 			&& isset($entry['action']))
 	{
 		$link = '<a href="index.php?module='
-				._html_safe_link($entry['module'])
-				.'&amp;action='
-				._html_safe_link($entry['action']);
+			._html_safe_link($entry['module']).'&amp;action='
+			._html_safe_link($entry['action']);
 		if(isset($entry['id']))
 			$link.='&amp;id='._html_safe_link($entry['id']);
 		if(isset($entry['args']))
 			$link.=_html_safe($entry['args']);
-		return $link.'">';
+		$link.='"';
+		if(isset($entry['title']))
+			$link.=' title="'._html_safe($entry['title']).'"';
+		return $link.'>';
 	}
 	return '';
 }
