@@ -33,6 +33,7 @@ $text['REPLY_ON'] = 'on';
 $text['REPLY_TO_BUG'] = 'Reply to bug';
 $text['REPORT_A_BUG'] = 'Report a bug';
 $text['REPORT_BUG_FOR'] = 'Report bug for';
+$text['SCREENSHOTS'] = 'Screenshots';
 $text['STATE'] = 'State';
 $text['SUBMITTER'] = 'Submitter';
 $text['STATE_CHANGED_TO'] = 'State changed to';
@@ -910,6 +911,7 @@ function project_display($args)
 	$members = array();
 	$members[] = array('id' => $project['user_id'],
 			'name' => _html_safe($project['username']),
+			'title' => _html_safe($project['username']),
 			'icon' => 'modules/user/icon.png',
 			'thumbnail' => 'modules/user/icon.png',
 			'module' => 'user', 'action' => 'default',
@@ -923,6 +925,7 @@ function project_display($args)
 	foreach($m as $n)
 		$members[] = array('id' => $n['id'],
 				'name' => _html_safe($n['name']),
+				'title' => _html_safe($n['name']),
 				'icon' => 'modules/user/icon.png',
 				'thumbnail' => 'modules/user/icon.png',
 				'module' => 'user', 'action' => 'default',
@@ -995,7 +998,7 @@ function project_download($args)
 	$files = _sql_array($sql." AND dc3.title='screenshot';");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
-		print('<h2>Screenshots</h2>'."\n");
+		print('<h2>'._html_safe(SCREENSHOTS).'</h2>'."\n");
 		for($i = 0; $i < $cnt; $i++)
 		{
 			$files[$i]['module'] = 'download';
@@ -1183,16 +1186,15 @@ function project_member_add($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$project = _sql_array('SELECT project_id AS id, name, user_id'
-			.' FROM daportal_project'
-			.', daportal_content'
+			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			." AND project_id='".$args['id']."';");
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	print('<h1><img src="modules/project/icon.png" alt=""/> '
-			.'Add member to project '.$project['name']."</h1>\n");
+	print('<h1 class="project"> Add member to project '.$project['name']
+			."</h1>\n");
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
 			." WHERE project_id='".$project['id']."';");
 	$where = " WHERE user_id <> '".$project['user_id']."'"
