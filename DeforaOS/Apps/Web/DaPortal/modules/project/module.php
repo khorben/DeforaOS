@@ -92,8 +92,8 @@ function project_admin($args)
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return project_modify($args);
-	print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe(PROJECTS_ADMINISTRATION).'</h1>'."\n");
+	print('<h1 class="project">'._html_safe(PROJECTS_ADMINISTRATION).'</h1>'
+			."\n");
 	if(($configs = _config_list('project')))
 	{
 		print('<h2><img src="modules/project/icon.png" alt=""/>'
@@ -178,8 +178,8 @@ function project_browse($args)
 	_project_toolbar($args['id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
-		print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe($project['name']).' CVS</h1>'."\n");
+		print('<h1 class="project">'._html_safe($project['name'])
+				.' CVS</h1>'."\n");
 		return _info(NO_CVS_REPOSITORY, 1);
 	}
 	if(!ereg('^[a-zA-Z0-9. /]+$', $project['cvsroot'])
@@ -1193,7 +1193,7 @@ function project_member_add($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	print('<h1 class="project"> Add member to project '.$project['name']
+	print('<h1 class="project">Add member to project '.$project['name']
 			."</h1>\n");
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
 			." WHERE project_id='".$project['id']."';");
@@ -1324,12 +1324,11 @@ function project_timeline($args)
 	_project_toolbar($project['project_id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
-		print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe($project['name']).' CVS</h1>'."\n");
+		print('<h1 class="project">'._html_safe($project['name'])
+				.' CVS</h1>'."\n");
 		return _info(NO_CVS_REPOSITORY, 1);
 	}
-	print('<h1><img src="modules/project/icon.png" alt=""/> '
-			._html_safe($project['name'])
+	print('<h1 class="project">'._html_safe($project['name'])
 			.' '._html_safe(TIMELINE).'</h1>'."\n");
 	//FIXME one more hard-coded variable
 	if(($fp = @fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
