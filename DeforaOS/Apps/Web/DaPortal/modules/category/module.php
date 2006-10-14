@@ -128,8 +128,7 @@ function category_disable($args)
 function category_display($args)
 {
 	$module = _module_id('category');
-	$category = _sql_array('SELECT title, content'
-			.' FROM daportal_content'
+	$category = _sql_array('SELECT title, content FROM daportal_content'
 			." WHERE content_id='".$args['id']."'"
 			." AND module_id='$module' AND enabled='1';");
 	if(!is_array($category) || count($category) != 1)
@@ -138,7 +137,7 @@ function category_display($args)
 	$title = CATEGORY.' '.$category['title'];
 	include('./modules/category/display.tpl');
 	$contents = _sql_array('SELECT daportal_content.content_id AS id'
-			.', name AS module, user_id, title AS name'
+			.', name AS module, user_id, title'
 			.' FROM daportal_category_content, daportal_content'
 			.', daportal_module'
 			.' WHERE daportal_category_content.content_id'
@@ -156,6 +155,7 @@ function category_display($args)
 			.'/icon.png';
 		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
 		$contents[$i]['action'] = 'default';
+		$contents[$i]['name'] = $contents[$i]['title'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY,
@@ -193,9 +193,8 @@ function category_get($args)
 			.' FROM daportal_category_content, daportal_content'
 			.' WHERE daportal_category_content.category_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1'"
 			." AND daportal_category_content.content_id='"
-			.$args['id']."';");
+			." AND enabled='1'".$args['id']."';");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$count = count($categories);
@@ -341,7 +340,7 @@ function category_list($args)
 {
 	print('<h1 class="category">'._html_safe(CATEGORIES_LIST).'</h1>'."\n");
 	$module_id = _module_id('category');
-	$categories = _sql_array('SELECT content_id AS id, title AS name'
+	$categories = _sql_array('SELECT content_id AS id, title'
 			.', content AS description'
 			.' FROM daportal_content'
 			." WHERE enabled='1' AND module_id='$module_id';");
@@ -354,6 +353,7 @@ function category_list($args)
 		$categories[$i]['action'] = 'default';
 		$categories[$i]['icon'] = 'modules/category/icon.png';
 		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
+		$categories[$i]['name'] = $categories[$i]['title'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY,
