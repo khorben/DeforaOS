@@ -31,6 +31,13 @@ function _sql_array($query)
 }
 
 
+function _sql_enum($query)
+{
+	/* FIXME */
+	return array();
+}
+
+
 function _sql_id($table, $field)
 {
 	global $connection;
