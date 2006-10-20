@@ -31,10 +31,13 @@ function _sql_array($query)
 }
 
 
-function _sql_enum($query)
+function _sql_enum($table, $field)
 {
-	/* FIXME */
-	return array();
+	if(($res = _query('SELECT name FROM '.$table.'_enum_'.$field)) == FALSE)
+		return FALSE;
+	for($array = array(); ($a = sqlite_fetch_array($res)) != FALSE;
+			$array[] = $a['name']);
+	return $array;
 }
 
 
