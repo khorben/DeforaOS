@@ -394,7 +394,8 @@ h1.admin {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.user {
@@ -402,7 +403,8 @@ h1.user {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.news {
@@ -410,7 +412,8 @@ h1.news {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 .news {
@@ -536,7 +539,8 @@ h1.top {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 div.top {
@@ -571,7 +575,8 @@ h1.content {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.article {
@@ -579,7 +584,8 @@ h1.article {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.bookmark {
@@ -587,7 +593,8 @@ h1.bookmark {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.download {
@@ -595,7 +602,8 @@ h1.download {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.category {
@@ -603,7 +611,8 @@ h1.category {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.project {
@@ -611,7 +620,8 @@ h1.project {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
 
 h1.webmail {
@@ -619,5 +629,6 @@ h1.webmail {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
-	padding-left:			52px;
+	padding-left:			56px;
+	padding-top:			4px;
 }
