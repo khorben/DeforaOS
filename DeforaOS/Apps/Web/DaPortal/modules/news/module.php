@@ -178,26 +178,51 @@ function news_enable($args)
 }
 
 
+function news_headline($args)
+{
+	$page = 1;
+	$npp = 10;
+	if(isset($args['npp']) && is_numeric($args['npp']))
+		$npp = $args['npp'];
+	$news = _sql_array('SELECT content_id AS id, title, name AS module'
+			.' FROM daportal_content, daportal_module'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_module.name='news'"
+			." AND daportal_content.enabled='1'"
+			.' ORDER BY timestamp DESC '
+			.(_sql_offset(($page-1) * $npp, $npp)));
+	if(!is_array($news))
+		return _error('Could not list news');
+	for($i = 0, $cnt = count($news); $i < $cnt; $i++)
+	{
+		$news[$i]['action'] = 'display';
+		$news[$i]['icon'] = 'modules/news/icon.png';
+		$news[$i]['thumbnail'] = 'modules/news/icon.png';
+		$news[$i]['name'] = $news[$i]['title'];
+	}
+	_module('explorer', 'browse', array('toolbar' => 0, 'view' => 'details',
+				'header' => 0, 'entries' => $news));
+}
+
+
 function _list_user($user_id, $username)
 {
 	print('<h1 class="news">'._html_safe(NEWS._BY_.' '.$username)."</h1>\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-			.', daportal_content.enabled, daportal_content.user_id'
-			.', username'
-			.' FROM daportal_content, daportal_user'
-			.', daportal_module'
-			.' WHERE daportal_user.user_id=daportal_content.user_id'
-			." AND daportal_content.enabled='1'"
-			." AND daportal_module.name='news'"
-			.' AND daportal_module.module_id'
-			.'=daportal_content.module_id'
-			." AND daportal_content.user_id='$user_id'"
-			.' ORDER BY timestamp DESC;');
+		.', daportal_content.enabled, daportal_content.user_id'
+		.', username, name AS module'
+		.' FROM daportal_content, daportal_user, daportal_module'
+		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_module.name='news'"
+		.' AND daportal_module.module_id=daportal_content.module_id'
+		." AND daportal_content.user_id='$user_id'"
+		.' ORDER BY timestamp DESC;');
 	if(!is_array($res))
 		return _error('Unable to list news');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
-		$res[$i]['module'] = 'news';
 		$res[$i]['action'] = 'default';
 		$res[$i]['icon'] = 'modules/news/icon.png';
 		$res[$i]['thumbnail'] = 'modules/news/icon.png';
@@ -213,7 +238,7 @@ function news_list($args)
 {
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			.' FROM daportal_user'
-			." WHERE user_id='".$args['user_id']."';")))
+			." WHERE user_id='".$args['user_id']."';")) != FALSE)
 		return _list_user($args['user_id'], $username);
 	print('<h1 class="news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
@@ -232,7 +257,7 @@ function news_list($args)
 			.', daportal_content.enabled AS enabled'
 			.', daportal_content.user_id, username'.$sql
 			.' ORDER BY timestamp DESC '
-			.(_sql_offset(($page-1) * $npp, $npp)).';');
+			.(_sql_offset(($page-1) * $npp, $npp)));
 	if(!is_array($res))
 		return _error('Unable to list news');
 	$long = 0;
@@ -257,9 +282,8 @@ function news_modify($args)
 	if(!($module_id = _module_id('news')))
 		return _error('Could not verify module');
 	$news = _sql_array('SELECT content_id AS id, title, content, enabled'
-			.' FROM daportal_content'
-			." WHERE module_id='$module_id'"
-			." AND content_id='".$args['id']."';");
+		.' FROM daportal_content WHERE module_id='."'$module_id'"
+		." AND content_id='".$args['id']."'");
 	if(!is_array($news) || count($news) != 1)
 		return _error('Unable to modify news');
 	$news = $news[0];
@@ -296,8 +320,7 @@ function news_rss($args)
 			.'=daportal_user.user_id'
 			." AND module_id='$module_id'"
 			." AND daportal_content.enabled='".SQL_TRUE."'"
-			.' ORDER BY timestamp DESC '
-			._sql_offset(0, 10).';');
+			.' ORDER BY timestamp DESC '._sql_offset(0, 10));
 	if(is_array($res))
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
