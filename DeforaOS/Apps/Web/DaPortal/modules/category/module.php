@@ -194,7 +194,7 @@ function category_get($args)
 			.' WHERE daportal_category_content.category_id'
 			.'=daportal_content.content_id'
 			." AND daportal_category_content.content_id='"
-			." AND enabled='1'".$args['id']."';");
+			." AND enabled='1'".$args['id']."'");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$count = count($categories);
@@ -339,17 +339,18 @@ function category_link_insert_new($args)
 function category_list($args)
 {
 	print('<h1 class="category">'._html_safe(CATEGORIES_LIST).'</h1>'."\n");
-	$module_id = _module_id('category');
 	$categories = _sql_array('SELECT content_id AS id, title'
-			.', content AS description'
-			.' FROM daportal_content'
-			." WHERE enabled='1' AND module_id='$module_id';");
+			.', content AS description, name AS module'
+			.' FROM daportal_content, daportal_module'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_content.enabled='1'"
+			." AND name='category' ORDER BY title ASC");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$count = count($categories);
 	for($i = 0; $i < $count; $i++)
 	{
-		$categories[$i]['module'] = 'category';
 		$categories[$i]['action'] = 'default';
 		$categories[$i]['icon'] = 'modules/category/icon.png';
 		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
@@ -401,12 +402,11 @@ function category_set($args)
 	global $user_id;
 
 	if($user_id == 0 || _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."';")
-			!= $user_id)
+			." WHERE content_id='".$args['id']."'") != $user_id)
 		return _error(PERMISSION_DENIED);
 	$module = _module_id('category');
 	if(_sql_single('SELECT module_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."';") == $module)
+			." WHERE content_id='".$args['id']."'") == $module)
 		return _error(INVALID_ARGUMENT);
 	require_once('system/content.php');
 	if(!_content_display($args['id']))
@@ -436,10 +436,9 @@ function category_set($args)
 			'action' => 'link_insert');
 	_module('explorer', 'browse', array('entries' => $categories,
 				'view' => 'list', 'toolbar' => $toolbar,
-				'module' => 'category',
-				'action' => 'set',
+				'module' => 'category', 'action' => 'set',
 				'id' => $args['id']));
-	include('choose.tpl');
+	include('./modules/category/choose.tpl');
 }
 
 
