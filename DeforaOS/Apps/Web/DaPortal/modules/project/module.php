@@ -466,6 +466,8 @@ function project_bug_list($args)
 		$where.=" AND daportal_bug.priority='".$args['priority']."'";
 	include('./modules/project/bug_list_filter.tpl');
 	$order = ' ORDER BY ';
+	if(!isset($args['sort']))
+		$args['sort'] = 'id';
 	switch($args['sort'])
 	{
 		case 'name':	$order.='name DESC';	break;
