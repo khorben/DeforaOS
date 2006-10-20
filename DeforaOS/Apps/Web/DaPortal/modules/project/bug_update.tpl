@@ -8,11 +8,11 @@
 	<input type="hidden" name="bug_id" value="<?php echo _html_safe($bug['id']); ?>"/>
 <?php } ?>
 	<table>
-		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php echo _html_safe($bug['title']); ?>" size="50"/></td></tr>
-		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td><textarea name="content" cols="50" rows="10"><?php echo _html_safe($bug['content']); ?></textarea></td></tr>
+		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php if(isset($bug['title'])) echo _html_safe($bug['title']); ?>" size="50"/></td></tr>
+		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td><textarea name="content" cols="50" rows="10"><?php if(isset($bug['content'])) echo _html_safe($bug['content']); ?></textarea></td></tr>
 <?php if(isset($bug)) { ?>
 		<tr><td class="field">State:</td><td><select name="state">
-<?php $states = array('New', 'Assigned', 'Closed', 'Fixed', 'Implemented');
+<?php $states = _sql_enum('daportal_bug', 'state');
 foreach($states as $s) { ?>
 				<option value="<?php echo _html_safe($s); ?>"<?php if($bug['state'] == $s) { ?> selected="selected"<?php } ?>><?php echo _html_safe($s); ?></option>
 <?php } ?>
