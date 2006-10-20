@@ -106,6 +106,42 @@ CREATE TABLE daportal_project_user (
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
+CREATE TABLE daportal_bug_enum_state (
+	name VARCHAR(255)
+);
+INSERT INTO daportal_bug_enum_state (name) VALUES ('New');
+INSERT INTO daportal_bug_enum_state (name) VALUES ('Assigned');
+INSERT INTO daportal_bug_enum_state (name) VALUES ('Closed');
+INSERT INTO daportal_bug_enum_state (name) VALUES ('Fixed');
+INSERT INTO daportal_bug_enum_state (name) VALUES ('Implemented');
+CREATE TABLE daportal_bug_enum_type (
+	name VARCHAR(255)
+);
+INSERT INTO daportal_bug_enum_type (name) VALUES ('Major');
+INSERT INTO daportal_bug_enum_type (name) VALUES ('Minor');
+INSERT INTO daportal_bug_enum_type (name) VALUES ('Functionality');
+INSERT INTO daportal_bug_enum_type (name) VALUES ('Feature');
+CREATE TABLE daportal_bug_enum_priority (
+	name VARCHAR(255)
+);
+INSERT INTO daportal_bug_enum_priority (name) VALUES ('Urgent');
+INSERT INTO daportal_bug_enum_priority (name) VALUES ('High');
+INSERT INTO daportal_bug_enum_priority (name) VALUES ('Medium');
+INSERT INTO daportal_bug_enum_priority (name) VALUES ('Low');
+CREATE TABLE daportal_bug (
+	bug_id INTEGER PRIMARY KEY,
+	content_id INTEGER,
+	project_id INTEGER,
+	state VARCHAR(255) DEFAULT 'New',
+	type VARCHAR(255),
+	priority VARCHAR(255),
+	assigned INTEGER,
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
+	FOREIGN KEY (state) REFERENCES daportal_bug_enum_state (name),
+	FOREIGN KEY (type) REFERENCES daportal_bug_enum_type (name),
+	FOREIGN KEY (priority) REFERENCES daportal_bug_enum_type (name)
+);
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
 
 
