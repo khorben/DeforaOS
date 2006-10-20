@@ -150,6 +150,7 @@ function news_disable($args)
 
 function news_display($args)
 {
+	print('<h1 class="news">'._html_safe(NEWS)."</h1>\n");
 	require_once('./system/content.php');
 	if(($news = _content_select($args['id'], 1)) == FALSE)
 		return _error('Invalid news');
