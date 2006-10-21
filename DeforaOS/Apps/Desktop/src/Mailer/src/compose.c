@@ -1,4 +1,5 @@
-/* compose.c */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
@@ -255,7 +256,7 @@ static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				on_send_cancel), compose);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(compose->snd_window), 4);
 	gtk_container_add(GTK_CONTAINER(compose->snd_window), hbox);
 	gtk_widget_show_all(compose->snd_window);
