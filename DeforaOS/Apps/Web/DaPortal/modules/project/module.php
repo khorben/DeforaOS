@@ -28,6 +28,7 @@ $text['PROJECT_LIST'] = 'Project list';
 $text['PROJECT_NAME'] = 'Project name';
 $text['PROJECTS'] = 'Projects';
 $text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
+$text['RELEASES'] = 'Releases';
 $text['REPLY_BY'] = 'Reply by';
 $text['REPLY_ON'] = 'on';
 $text['REPLY_TO_BUG'] = 'Reply to bug';
@@ -103,8 +104,7 @@ function project_admin($args)
 		include('./system/config.tpl');
 	}
 	print('<h2><img src="modules/project/icon.png" alt=""/> '
-			._html_safe(PROJECT_LIST)
-			.'</h2>'."\n");
+			._html_safe(PROJECT_LIST).'</h2>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
 			.', username AS admin'
 			.', daportal_content.enabled AS enabled'
@@ -1037,7 +1037,7 @@ function project_download($args)
 	$files = _sql_array($sql." AND dc3.title='release';");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
-		print('<h2>Releases</h2>'."\n");
+		print('<h2>'._html_safe(RELEASES).'</h2>'."\n");
 		for($i = 0; $i < $cnt; $i++)
 		{
 			$files[$i]['module'] = 'download';
