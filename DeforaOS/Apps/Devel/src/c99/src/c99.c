@@ -15,6 +15,45 @@ typedef int Prefs;
 #define PREFS_s 0x8
 
 
+/* c99 */
+static int _c99_error(char const * message, int ret);
+static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile);
+static int _c99(Prefs * prefs, char const * outfile, int filec, char * filev[])
+{
+	FILE * fp;
+	int ret = 0;
+	int i;
+
+	if(outfile != NULL && (fp = fopen(outfile, "w")) == NULL)
+		return _c99_error(outfile, 1);
+	for(i = 0; i < filec; i++)
+		ret |= _c99_do(prefs, outfile, fp, filev[i]);
+	if(fp != NULL)
+		fclose(fp);
+	return ret;
+}
+
+static int _c99_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "c99: ");
+	perror(message);
+	return ret;
+}
+
+static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile)
+{
+	FILE * infp;
+
+	if((infp = fopen(infile, "r")) == NULL)
+		return _c99_error(infile, 1);
+	/* FIXME implement */
+	fclose(infp);
+	return 0;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -52,5 +91,9 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return 0;
+	if(optind == argc)
+		return _usage();
+	if(prefs & PREFS_c && outfile != NULL && optind+1 != argc)
+		return _usage();
+	return _c99(&prefs, outfile, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
