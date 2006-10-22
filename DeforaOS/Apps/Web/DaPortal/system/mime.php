@@ -26,7 +26,7 @@ function _mime_from_ext($filename)
 			$globs[] = explode(':', $l);
 	}
 	foreach($globs as $g)
-		if(fnmatch($g[1], $filename))
+		if(isset($g[1]) && fnmatch($g[1], $filename))
 			return $g[0];
 	return 'default';
 }
