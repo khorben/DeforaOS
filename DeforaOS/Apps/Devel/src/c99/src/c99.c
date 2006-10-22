@@ -52,4 +52,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
+	return 0;
 }
