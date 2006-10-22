@@ -4,7 +4,10 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 
 /* types */
@@ -41,16 +44,75 @@ static int _c99_error(char const * message, int ret)
 	return ret;
 }
 
+static int _c99_do_c(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile, FILE * infp);
+static int _c99_do_E(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile, FILE * infp);
+static int _c99_do_o(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile, FILE * infp);
 static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile)
 {
 	FILE * infp;
+	int ret;
 
 	if((infp = fopen(infile, "r")) == NULL)
 		return _c99_error(infile, 1);
+	if(*prefs & PREFS_c)
+		ret = _c99_do_c(prefs, outfile, outfp, infile, infp);
+	else if(*prefs & PREFS_E)
+		ret = _c99_do_E(prefs, outfile, outfp, infile, infp);
+	else
+		ret = _c99_do_o(prefs, outfile, outfp, infile, infp);
 	/* FIXME implement */
 	fclose(infp);
+	return ret;
+}
+
+static int _c99_do_c(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile, FILE * infp)
+{
+	size_t len;
+	char * o = NULL;
+
+	if(outfile == NULL)
+	{
+		if((len = strlen(infile)) < 3 || infile[len-2] != '.'
+				|| infile[len-1] != 'c')
+		{
+			errno = EINVAL;
+			return _c99_error(infile, 1);
+		}
+		if((o = strdup(infile)) == NULL)
+			return _c99_error("strdup", 1);
+		o[len-1] = 'o';
+		if((outfp = fopen(o, "w")) == NULL)
+		{
+			free(o);
+			return _c99_error(o, 1);
+		}
+	}
+	/* FIXME implement */
+	if(o != NULL)
+	{
+		fclose(outfp);
+		free(o);
+	}
 	return 0;
+}
+
+static int _c99_do_E(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile, FILE * infp)
+{
+	/* FIXME implement */
+	return 1;
+}
+
+static int _c99_do_o(Prefs * prefs, char const * outfile, FILE * outfp,
+		char * infile, FILE * infp)
+{
+	/* FIXME implement */
+	return 1;
 }
 
 
