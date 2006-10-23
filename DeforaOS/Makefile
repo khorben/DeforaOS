@@ -1,7 +1,18 @@
 SUBDIRS	= System/src/libSystem Apps/Devel/src/configure
 
 
+
+#operating system detection
+_CMD	= uname -s
+OS	= $(_CMD:sh)
+.if $(OS) == "Linux"
+LDFLAGS+="-l dl"
+.endif
+
+
 all: subdirs
+	@echo DeforaOS compiling on OS="\"$(OS)\""
+	@echo CFLAGS="\"$(CFLAGS)\"" LDFLAGS="\"$(LDFLAGS)\""
 	$(MAKE)
 
 subdirs:
