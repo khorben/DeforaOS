@@ -108,6 +108,7 @@ Mailer * mailer_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->window), vbox);
 	gtk_widget_show_all(mailer->window);
+	gtk_widget_hide(mailer->hdr_vbox);
 	return mailer;
 }
 
@@ -118,10 +119,10 @@ static GtkWidget * _new_headers(Mailer * mailer)
 		GtkWidget ** widget;
 	} widgets[] =
 	{
-		{ " From: ", &mailer->from },
-		{ " To: ", &mailer->to },
-		{ " Subject: ", &mailer->subject },
-		{ " Date: ", &mailer->date },
+		{ " Subject: ", &mailer->hdr_subject },
+		{ " From: ", &mailer->hdr_from },
+		{ " To: ", &mailer->hdr_to },
+		{ " Date: ", &mailer->hdr_date },
 		{ NULL, NULL }
 	};
 	int i;
@@ -131,6 +132,7 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	GtkSizeGroup * group;
 
 	vbox = gtk_vbox_new(FALSE, 0);
+	mailer->hdr_vbox = gtk_vbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	for(i = 0; widgets[i].hdr != NULL; i++)
 	{
@@ -142,8 +144,10 @@ static GtkWidget * _new_headers(Mailer * mailer)
 		*(widgets[i].widget) = gtk_label_new("");
 		gtk_box_pack_start(GTK_BOX(hbox), *(widgets[i].widget), TRUE,
 				TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(mailer->hdr_vbox), hbox, FALSE,
+				FALSE, 0);
 	}
+	gtk_box_pack_start(GTK_BOX(vbox), mailer->hdr_vbox, FALSE, FALSE, 0);
 	return vbox;
 }
 
