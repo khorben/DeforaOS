@@ -3,7 +3,9 @@ SUBDIRS	= System/src/libSystem Apps/Devel/src/configure
 
 
 all: subdirs
-	$(MAKE)
+	$(MAKE) \
+		CFLAGS="$(CFLAGS) -I $(PWD)/System/src/libSystem/include" \
+		LDFLAGS="$(LDFLAGS) -L $(PWD)/System/src/libSystem/src"
 
 subdirs:
 	(cd System/src/libSystem && $(MAKE)) || exit
