@@ -8,8 +8,8 @@ all: subdirs
 subdirs:
 	(cd System/src/libSystem && $(MAKE)) || exit
 	(cd Apps/Devel/src/configure && $(MAKE) \
-		CFLAGS=$(CFLAGS)" -I ../../../../../System/src/libSystem/include" \
-		LDFLAGS=$(LDFLAGS)" -L ../../../../../System/src/libSystem/src") || exit
+		CFLAGS="$(CFLAGS) -I ../../../../../System/src/libSystem/include" \
+		LDFLAGS="$(LDFLAGS) -L ../../../../../System/src/libSystem/src") || exit
 	LD_LIBRARY_PATH=./System/src/libSystem/src \
 		./Apps/Devel/src/configure/src/configure -v
 
