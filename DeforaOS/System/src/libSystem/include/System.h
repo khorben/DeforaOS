@@ -6,6 +6,8 @@
 #ifndef LIBSYSTEM_SYSTEM_H
 # define LIBSYSTEM_SYSTEM_H
 
+# include <sys/types.h>
+
 
 # include "System/appclient.h"
 # include "System/appserver.h"
