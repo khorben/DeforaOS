@@ -99,6 +99,15 @@ void on_help_about(GtkWidget * widget, gpointer data)
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
 
+/* toolbar */
+void on_new_mail(GtkWidget * widget, gpointer data)
+{
+	Mailer * mailer = data;
+
+	compose_new(mailer);
+}
+
+
 /* compose window */
 gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {

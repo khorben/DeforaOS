@@ -22,6 +22,9 @@ void on_edit_preferences(GtkWidget * widget, gpointer data);
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
 
+/* toolbar */
+void on_new_mail(GtkWidget * widget, gpointer data);
+
 
 /* compose window */
 gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data);

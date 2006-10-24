@@ -14,10 +14,13 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-mailer_OBJS = callbacks.o common.o compose.o mailer.o main.o
+mailer_OBJS = account.o callbacks.o common.o compose.o mailer.o main.o
 mailer_CFLAGS = $(CFLAGSF) $(CFLAGS)
 mailer: $(mailer_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mailer $(mailer_OBJS)
+
+account.o: account.c account.h
+	$(CC) $(mailer_CFLAGS) -c account.c
 
 callbacks.o: callbacks.c callbacks.h compose.h mailer.h
 	$(CC) $(mailer_CFLAGS) -c callbacks.c
@@ -28,7 +31,7 @@ common.o: common.c
 compose.o: compose.c callbacks.h mailer.h compose.h
 	$(CC) $(mailer_CFLAGS) -c compose.c
 
-mailer.o: mailer.c callbacks.h compose.h mailer.h
+mailer.o: mailer.c account.h callbacks.h compose.h mailer.h
 	$(CC) $(mailer_CFLAGS) -c mailer.c
 
 main.o: main.c mailer.h
