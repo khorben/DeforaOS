@@ -40,12 +40,12 @@ static int _cat(OutputDelay od, int argc, char * argv[])
 			fp = stdin;
 		else if((fp = fopen(argv[i], "r")) == NULL)
 		{
-			ret = _cat_error(argv[i], 1);
+			ret |= _cat_error(argv[i], 1);
 			continue;
 		}
 		_cat_file(fp, od);
-		if(fp != stdin)
-			fclose(fp);
+		if(fp != stdin && fclose(fp) != 0)
+			ret |= _cat_error(argv[i], 1);
 	}
 	return ret;
 }
