@@ -29,3 +29,5 @@ install: all
 
 uninstall: subdirs
 	$(MAKE) uninstall
+
+.PHONY: all subdirs clean dist distclean install uninstall
