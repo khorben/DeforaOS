@@ -13,7 +13,8 @@
 
 
 /* types */
-typedef enum _wc_flag {
+typedef enum _wc_flag
+{
 	WF_ALL = 0,
 	WF_C = 1,
 	WF_M = 2,
@@ -23,15 +24,16 @@ typedef enum _wc_flag {
 
 
 /* wc */
+static int _wc_error(char const * message, int ret);
 static int _wc_do(int flags,
 		unsigned int * cm, unsigned int * l, unsigned int * w,
-		char * filename);
+		char const * filename);
 static void _wc_print(int flags,
 		unsigned int cm, unsigned int l, unsigned int w,
-		char * filename);
+		char const * filename);
 static int _wc(int flags, int argc, char * argv[])
 {
-	int res = 0;
+	int ret = 0;
 	unsigned int cm = 0, l = 0, w = 0;
 	int i;
 
@@ -40,15 +42,21 @@ static int _wc(int flags, int argc, char * argv[])
 	if(argc == 1)
 		return _wc_do(flags, &cm, &l, &w, argv[0]);
 	for(i = 0; i < argc; i++)
-		if(_wc_do(flags, &cm, &l, &w, argv[i]) != 0)
-			res = 2;
+		ret |= _wc_do(flags, &cm, &l, &w, argv[i]);
 	_wc_print(flags, cm, l, w, "total");
-	return res;
+	return ret;
+}
+
+static int _wc_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "wc: ");
+	perror(message);
+	return ret;
 }
 
 static int _wc_do(int flags,
 		unsigned int * cm, unsigned int * l, unsigned int * w,
-		char * filename)
+		char const * filename)
 {
 	FILE * fp;
 	unsigned int lcm = 0, ll = 0, lw = 0;
@@ -58,11 +66,7 @@ static int _wc_do(int flags,
 	if(filename == NULL)
 		fp = stdin;
 	else if((fp = fopen(filename, "r")) == NULL)
-	{
-		fprintf(stderr, "%s", "wc: ");
-		perror(filename);
-		return 2;
-	}
+		return _wc_error(filename, 1);
 	while((c = fgetc(fp)) != EOF)
 	{
 		if(c == '\n')
@@ -73,8 +77,8 @@ static int _wc_do(int flags,
 		lcm++; /* FIXME */
 	}
 	_wc_print(flags, lcm, ll, lw, filename);
-	if(filename != NULL)
-		fclose(fp);
+	if(filename != NULL && fclose(fp) != 0)
+		return _wc_error(filename, 1);
 	*cm += lcm;
 	*l += ll;
 	*w += lw;
@@ -83,7 +87,7 @@ static int _wc_do(int flags,
 
 static void _wc_print(int flags,
 		unsigned int cm, unsigned int l, unsigned int w,
-		char * filename)
+		char const * filename)
 {
 	if(flags == WF_ALL)
 		printf("%d %d %d", l, w, cm);
@@ -141,5 +145,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _wc(flags, argc - optind, &argv[optind]);
+	return _wc(flags, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
