@@ -12,7 +12,8 @@
 
 
 /* constants */
-static unsigned long crctab[] = {
+static unsigned long crctab[] =
+{
 	0x00000000,
 	0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,
 	0x1a864db2, 0x1e475005, 0x2608edb8, 0x22c9f00f, 0x2f8ad6d6,
@@ -69,9 +70,9 @@ static unsigned long crctab[] = {
 
 
 /* cksum */
-int _cksum_error(char * message, int ret);
-int _cksum_do(FILE * fp, char * filename);
-int _cksum(int argc, char * argv[])
+static int _cksum_error(char * message, int ret);
+static int _cksum_do(FILE * fp, char * filename);
+static int _cksum(int argc, char * argv[])
 {
 	int i;
 	int ret = 0;
@@ -83,16 +84,17 @@ int _cksum(int argc, char * argv[])
 	{
 		if((fp = fopen(argv[i], "r")) == NULL)
 		{
-			ret += _cksum_error(argv[i], 1);
+			ret |= _cksum_error(argv[i], 1);
 			continue;
 		}
-		ret += _cksum_do(fp, argv[i]);
-		fclose(fp);
+		ret |= _cksum_do(fp, argv[i]);
+		if(fclose(fp) != 0)
+			ret |= _cksum_error(argv[i], 1);
 	}
-	return ret == 0 ? 0 : 2;
+	return ret;
 }
 
-int _cksum_error(char * message, int ret)
+static int _cksum_error(char * message, int ret)
 {
 	fprintf(stderr, "%s", "cksum: ");
 	perror(message);
@@ -100,7 +102,7 @@ int _cksum_error(char * message, int ret)
 }
 
 static int _do_is_directory(FILE * fp);
-int _cksum_do(FILE * fp, char * filename)
+static int _cksum_do(FILE * fp, char * filename)
 {
 	unsigned int sum = 0;
 	unsigned int size = 0;
@@ -143,7 +145,7 @@ static int _do_is_directory(FILE * fp)
 
 
 /* usage */
-int _usage(void)
+static int _usage(void)
 {
 	fprintf(stderr, "%s", "Usage: cksum [file...]\n");
 	return 1;
@@ -160,5 +162,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _cksum(argc - optind, &argv[optind]);
+	return _cksum(argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }

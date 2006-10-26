@@ -10,6 +10,7 @@
 
 
 /* strings */
+static int _strings_error(char const * message, int ret);
 static void _strings_do(int flgn, FILE * fp);
 static int _strings(int flgn, int argc, char * argv[])
 {
@@ -24,15 +25,19 @@ static int _strings(int flgn, int argc, char * argv[])
 	for(i = 0; i < argc; i++)
 	{
 		if((fp = fopen(argv[i], "r")) == NULL)
-		{
-			fprintf(stderr, "%s%s", "strings: ", argv[i]);
-			perror("fopen");
-			return 2;
-		}
+			return _strings_error(argv[i], 1);
 		_strings_do(flgn, fp);
-		fclose(fp);
+		if(fclose(fp) != 0)
+			return _strings_error(argv[i], 1);
 	}
 	return 0;
+}
+
+static int _strings_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "strings: ");
+	perror(message);
+	return ret;
 }
 
 static void _strings_do(int flgn, FILE * fp)
@@ -51,9 +56,10 @@ static void _strings_do(int flgn, FILE * fp)
 		{
 			if(i + 1 >= n)
 			{
-				if((p = realloc(str, (i + 2) * sizeof(char))) == NULL)
+				if((p = realloc(str, (i + 2) * sizeof(char)))
+						== NULL)
 				{
-					perror("malloc");
+					_strings_error("malloc", 0);
 					return;
 				}
 				str = p;
@@ -109,5 +115,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _strings(flgn, argc - optind, &argv[optind]);
+	return _strings(flgn, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
