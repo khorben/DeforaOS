@@ -307,7 +307,7 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 	}
 	free(file);
 	if(closedir(dir) != 0)
-		return _ls_error(directory, 1);
+		_ls_error(directory, 0);
 	_ls_do(prefs, 2, directory, files, dirs);
 	return 0;
 }
