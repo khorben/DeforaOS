@@ -8,7 +8,8 @@
 
 
 /* types */
-typedef enum _OutputType {
+typedef enum _OutputType
+{
 	OT_NONE,
 	OT_LONG,
 	OT_DEFAULT
@@ -16,9 +17,10 @@ typedef enum _OutputType {
 
 
 /* cmp */
-static int _cmp_files(OutputType ot, char * file1, char * file2,
+static int _cmp_error(char const * message, int ret);
+static int _cmp_files(OutputType ot, char const * file1, char const * file2,
 		FILE * fp1, FILE * fp2);
-static int _cmp(OutputType ot, char * file1, char * file2)
+static int _cmp(OutputType ot, char const * file1, char const * file2)
 {
 	FILE * fp1;
 	FILE * fp2;
@@ -26,30 +28,34 @@ static int _cmp(OutputType ot, char * file1, char * file2)
 	if(strcmp("-", file1) == 0)
 		fp1 = stdin;
 	else if((fp1 = fopen(file1, "r")) == NULL)
-	{
-		perror("fopen");
-		return 2;
-	}
+		return _cmp_error(file1, 1);
 	if(strcmp("-", file2) == 0)
 		fp2 = stdin;
 	else if((fp2 = fopen(file2, "r")) == NULL)
 	{
-		perror("fopen");
-		if(fp1 != stdin)
-			fclose(fp1);
-		return 2;
+		_cmp_error(file2, 0);
+		if(fp1 != stdin && fclose(fp1) != 0)
+			return _cmp_error(file1, 1);
+		return 1;
 	}
 	return _cmp_files(ot, file1, file2, fp1, fp2);
 }
 
-static int _cmp_files(OutputType ot, char * file1, char * file2,
+static int _cmp_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "cmp: ");
+	perror(message);
+	return ret;
+}
+
+static int _cmp_files(OutputType ot, char const * file1, char const * file2,
 		FILE * fp1, FILE * fp2)
 {
+	int ret = 0;
 	int c1;
 	int c2;
 	unsigned int byte = 1;
 	unsigned int line = 1;
-	int res = 0;
 
 	while(1)
 	{
@@ -63,12 +69,12 @@ static int _cmp_files(OutputType ot, char * file1, char * file2,
 				fprintf(stderr, "%s%s\n",
 						"cmp: EOF on ",
 						c1 == EOF ? file1 : file2);
-			res = 1;
+			ret = 1;
 			break;
 		}
 		if(c1 != c2)
 		{
-			res = 1;
+			ret = 1;
 			if(ot == OT_DEFAULT)
 			{
 				printf("%s %s differ: char %u, line %u\n",
@@ -84,11 +90,11 @@ static int _cmp_files(OutputType ot, char * file1, char * file2,
 			line++;
 		byte++;
 	}
-	if(fp1 != stdin)
-		fclose(fp1);
-	if(fp2 != stdin)
-		fclose(fp2);
-	return res;
+	if(fp1 != stdin && fclose(fp1) != 0)
+		ret |= _cmp_error(file1, 1);
+	if(fp2 != stdin && fclose(fp2) != 0)
+		ret |= _cmp_error(file2, 1);
+	return ret;
 }
 
 
@@ -122,5 +128,5 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind != 2)
 		return _usage();
-	return _cmp(ot, argv[optind], argv[optind+1]);
+	return _cmp(ot, argv[optind], argv[optind+1]) == 0 ? 0 : 2;
 }
