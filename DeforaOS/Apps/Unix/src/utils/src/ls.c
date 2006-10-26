@@ -306,7 +306,8 @@ static int _ls_directory_do(Prefs * prefs, char * directory)
 			slist_insert_sorted(dirs, strdup(file), cmp);
 	}
 	free(file);
-	closedir(dir);
+	if(closedir(dir) != 0)
+		return _ls_error(directory, 1);
 	_ls_do(prefs, 2, directory, files, dirs);
 	return 0;
 }
