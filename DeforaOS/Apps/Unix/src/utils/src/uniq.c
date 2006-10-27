@@ -19,11 +19,11 @@
  * POST
  * 	0	success
  * 	else	error(s) occured */
-static int _uniq_error(char * message, int ret);
-static int _uniq_do(int opts, char * fields, unsigned int skip,
+static int _uniq_error(char const * message, int ret);
+static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		FILE * infp, FILE * outfp);
-static int _uniq(int opts, char * fields, unsigned int skip,
-		char * in, char * out)
+static int _uniq(int opts, char const * fields, unsigned int skip,
+		char const * in, char const * out)
 {
 	FILE * infp = stdin;
 	FILE * outfp = stdout;
@@ -46,7 +46,7 @@ static int _uniq(int opts, char * fields, unsigned int skip,
 	return ret;
 }
 
-static int _uniq_error(char * message, int ret)
+static int _uniq_error(char const * message, int ret)
 {
 	fprintf(stderr, "%s", "uniq: ");
 	perror(message);
@@ -54,7 +54,7 @@ static int _uniq_error(char * message, int ret)
 }
 
 static void _do_count(int opts, unsigned int skip, char * line, FILE * fp);
-static int _uniq_do(int opts, char * fields, unsigned int skip,
+static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		FILE * infp, FILE * outfp)
 {
 #define BUF 80
