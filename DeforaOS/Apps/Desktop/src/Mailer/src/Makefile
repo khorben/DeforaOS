@@ -1,3 +1,4 @@
+SUBDIRS	= account
 TARGETS	= mailer
 PREFIX	= /usr/local
 DESTDIR	= 
@@ -12,14 +13,17 @@ MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 mailer_OBJS = account.o callbacks.o common.o compose.o mailer.o main.o
 mailer_CFLAGS = $(CFLAGSF) $(CFLAGS)
 mailer: $(mailer_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mailer $(mailer_OBJS)
 
-account.o: account.c account.h
+account.o: account.c account/account.h
 	$(CC) $(mailer_CFLAGS) -c account.c
 
 callbacks.o: callbacks.c callbacks.h compose.h mailer.h
@@ -31,23 +35,28 @@ common.o: common.c
 compose.o: compose.c callbacks.h mailer.h compose.h
 	$(CC) $(mailer_CFLAGS) -c compose.c
 
-mailer.o: mailer.c account.h callbacks.h compose.h mailer.h
+mailer.o: mailer.c account/account.h callbacks.h compose.h mailer.h
 	$(CC) $(mailer_CFLAGS) -c mailer.c
 
 main.o: main.c mailer.h
 	$(CC) $(mailer_CFLAGS) -c main.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) $(mailer_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) $(mailer_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 mailer $(DESTDIR)$(BINDIR)/mailer
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/mailer
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

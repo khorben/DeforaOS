@@ -7,20 +7,25 @@
 # define MAILER_MAILER_H
 
 # include <gtk/gtk.h>
-# include "account.h"
+# include "account/account.h"
 
 
 /* Mailer */
 /* types */
 typedef struct _Mailer
 {
+	Account * available;
+	int available_cnt;
+
 	Account ** account;
 	int account_cnt;
+	Account * account_cur;
 
 	/* widgets */
 	GtkWidget * window;
 	GtkIconTheme * theme;
 	GtkWidget * view_folders;
+	GtkWidget * view_headers;
 	GtkWidget * hdr_vbox;
 	GtkWidget * hdr_subject;
 	GtkWidget * hdr_from;
@@ -29,6 +34,9 @@ typedef struct _Mailer
 	GtkWidget * view_body;
 	GtkWidget * statusbar;
 	gint statusbar_id;
+	/* preferences */
+	GtkWidget * pr_window;
+	GtkWidget * pr_accounts;
 } Mailer;
 
 

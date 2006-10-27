@@ -51,9 +51,92 @@ void on_file_quit(GtkWidget * widget, gpointer data)
 
 
 /* edit menu */
+static void _preferences_set(Mailer * mailer);
+static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
+	Mailer * mailer = data;
+	GtkWidget * notebook;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * vbox2;
+	GtkWidget * vbox3;
+	GtkSizeGroup * group;
+
+	if(mailer->pr_window != NULL)
+	{
+		gtk_widget_show(mailer->pr_window);
+		return;
+	}
+	mailer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(mailer->pr_window), FALSE);
+	gtk_window_set_title(GTK_WINDOW(mailer->pr_window),
+			"Mailer preferences");
+	gtk_window_set_transient_for(GTK_WINDOW(mailer->pr_window), GTK_WINDOW(
+				mailer->window));
+	vbox = gtk_vbox_new(FALSE, 0);
+	notebook = gtk_notebook_new();
+	/* accounts */
+	vbox2 = gtk_vbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	mailer->pr_accounts = gtk_tree_view_new();
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(widget),
+			mailer->pr_accounts);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	vbox3 = gtk_vbox_new(FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_NEW);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_EDIT);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_DELETE);
+	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox3, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, TRUE, TRUE, 4);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox2, gtk_label_new(
+				"Accounts"));
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
+	/* dialog */
+	hbox = gtk_hbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_ok), mailer);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_cancel), mailer);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_container_add(GTK_CONTAINER(mailer->pr_window), vbox);
+	_preferences_set(mailer);
+	gtk_widget_show_all(mailer->pr_window);
+}
+
+static void _preferences_set(Mailer * mailer)
+{
 	/* FIXME */
+}
+
+static void _preferences_on_ok(GtkWidget * widget, gpointer data)
+{
+	Mailer * mailer = data;
+
+	/* FIXME */
+	gtk_widget_hide(mailer->pr_window);
+}
+
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
+{
+	Mailer * mailer = data;
+
+	gtk_widget_hide(mailer->pr_window);
+	_preferences_set(mailer);
 }
 
 

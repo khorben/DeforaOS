@@ -8,10 +8,18 @@
 
 
 /* types */
-typedef struct _Account
+typedef enum _AccountConfigType
+{
+	ACT_NONE = 0,
+	ACT_STRING
+} AccountConfigType;
+typedef struct _AccountConfig
 {
 	char * name;
-} Account;
+	char * title;
+	AccountConfigType type;
+	void * value;
+} AccountConfig;
 
 typedef enum _AccountFolderType
 {
@@ -27,12 +35,27 @@ typedef struct _AccountFolder
 	char * name;
 } AccountFolder;
 
+typedef struct _AccountPlugin
+{
+	char const * name;
+	AccountConfig * config;
+	AccountFolder ** (*folders)(void);
+} AccountPlugin;
+typedef struct _Account
+{
+	char * name;
+	char * title;
+	void * handle;
+	AccountPlugin * plugin;
+} Account;
+
 
 /* functions */
 Account * account_new(char const * type, char const * name);
 void account_delete(Account * account);
 
 /* useful */
+/* FIXME wrong we just need receive, then it calls callbacks */
 AccountFolder ** account_folders(Account * account);
 
 #endif /* !MAILER_ACCOUNT_H */

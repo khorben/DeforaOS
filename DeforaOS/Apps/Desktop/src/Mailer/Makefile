@@ -21,6 +21,7 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/account.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/compose.c \
@@ -28,6 +29,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/account/mbox.c \
+		$(PACKAGE)-$(VERSION)/src/account/project.conf \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
