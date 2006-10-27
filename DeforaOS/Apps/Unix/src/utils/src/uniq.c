@@ -58,6 +58,7 @@ static void _do_count(int opts, unsigned int skip, char * line, FILE * fp);
 static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		FILE * infp, FILE * outfp)
 {
+	int ret = 0;
 #define BUF 80
 	char * line = NULL;
 	int len = 0;
@@ -68,13 +69,14 @@ static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		if((p = realloc(line, len + BUF + 1)) == NULL)
 		{
 			free(line);
-			return _uniq_error("malloc", 1);
+			ret = _uniq_error("malloc", 1);
+			break;
 		}
 		line = p;
 		if(fgets(&line[len], BUF + 1, infp) == NULL)
 		{
 			if(!feof(infp))
-				_uniq_error("fread", 0);
+				ret = _uniq_error("fread", 1);
 			break;
 		}
 		for(p = &line[len]; *p != '\0' && *p != '\n'; p++);
@@ -91,8 +93,7 @@ static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		len = 0;
 	}
 	_do_count(opts, skip, NULL, outfp);
-	free(line);
-	return 0;
+	return ret;
 }
 
 static int _count_repeated(char * lastline, char * line, unsigned int skip);
@@ -104,10 +105,12 @@ static void _do_count(int opts, unsigned int skip, char * line, FILE * fp)
 	if(lastline == NULL)
 	{
 		lastline = line;
+		cnt = 1;
 		return;
 	}
 	if(line != NULL && _count_repeated(lastline, line, skip))
 	{
+		free(line);
 		cnt++;
 		return;
 	}
