@@ -91,6 +91,7 @@ static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		len = 0;
 	}
 	_do_count(opts, skip, NULL, outfp);
+	free(line);
 	return 0;
 }
 
