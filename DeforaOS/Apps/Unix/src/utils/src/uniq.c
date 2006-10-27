@@ -30,18 +30,19 @@ static int _uniq(int opts, char const * fields, unsigned int skip,
 	int ret;
 
 	if(in != NULL && (infp = fopen(in, "r")) == NULL)
-		return _uniq_error(in, 2);
+		return _uniq_error(in, 1);
 	if(out != NULL && (outfp = fopen(out, "w")) == NULL)
 	{
 		fclose(infp);
-		return _uniq_error(out, 2);
+		return _uniq_error(out, 1);
 	}
 	ret = _uniq_do(opts, fields, skip, infp, outfp);
-	if(in == NULL)
+	if(in != NULL)
 	{
-		fclose(infp);
-		if(out == NULL)
-			fclose(outfp);
+		if(fclose(infp) != 0)
+			ret = _uniq_error(in, 1);
+		if(out != NULL && fclose(outfp) != 0)
+			return _uniq_error(out, 1);
 	}
 	return ret;
 }
@@ -67,8 +68,7 @@ static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		if((p = realloc(line, len + BUF + 1)) == NULL)
 		{
 			free(line);
-			_uniq_error("malloc", 0);
-			return 2;
+			return _uniq_error("malloc", 1);
 		}
 		line = p;
 		if(fgets(&line[len], BUF + 1, infp) == NULL)
@@ -190,5 +190,5 @@ int main(int argc, char * argv[])
 		else if(argc - optind > 2)
 			return _usage();
 	}
-	return _uniq(opts, fields, skip, in, out);
+	return _uniq(opts, fields, skip, in, out) == 0 ? 0 : 2;
 }
