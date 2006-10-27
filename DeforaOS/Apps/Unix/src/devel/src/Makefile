@@ -1,10 +1,11 @@
 TARGETS	= ar
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall
-CFLAGS	= -g
+CFLAGSF	= -W
+CFLAGS	= -Wall -g -O2 -ansi -D _GNU_SOURCE
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -32,3 +33,5 @@ install: all
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/ar
+
+.PHONY: all clean distclean install uninstall
