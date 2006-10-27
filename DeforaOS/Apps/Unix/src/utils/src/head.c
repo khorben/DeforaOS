@@ -9,20 +9,26 @@
 
 
 /* head */
+static int _head_error(char const * message, int ret);
 static int _head_do(int flgn, char * filename);
 static int _head(int flgn, int argc, char * argv[])
 {
-	int res = 0;
+	int ret = 0;
 	int i;
 
 	if(argc == 0)
 		return _head_do(flgn, NULL);
 	for(i = 0; i < argc; i++)
-	{
 		if(_head_do(flgn, argv[i]) != 0)
-			res = 2;
-	}
-	return res;
+			ret = 1;
+	return ret;
+}
+
+static int _head_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "head: ");
+	perror(message);
+	return ret;
 }
 
 static int _head_do(int flgn, char * filename)
@@ -34,18 +40,15 @@ static int _head_do(int flgn, char * filename)
 	if(filename == NULL)
 		fp = stdin;
 	else if((fp = fopen(filename, "r")) == NULL)
-	{
-		perror(filename);
-		return 1;
-	}
+		return _head_error(filename, 1);
 	while((c = fgetc(fp)) != EOF && n < flgn)
 	{
 		if(c == '\n')
 			n++;
 		fwrite(&c, sizeof(char), 1, stdout);
 	}
-	if(filename != NULL)
-		fclose(fp);
+	if(filename != NULL && fclose(fp) != 0)
+		return _head_error(filename, 1);
 	return 0;
 }
 
@@ -77,5 +80,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _head(flgn, argc - optind, &argv[optind]);
+	return _head(flgn, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
