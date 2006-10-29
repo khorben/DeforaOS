@@ -189,7 +189,7 @@ static char ** _host_comma(char * line)
 			strncpy(values[cnt], l, pos);
 			values[cnt][pos] = '\0';
 #ifdef DEBUG
-	fprintf(stderr, "config: %s\n", values[cnt]);
+			fprintf(stderr, "config: %s\n", values[cnt]);
 #endif
 		}
 		values[++cnt] = NULL;
