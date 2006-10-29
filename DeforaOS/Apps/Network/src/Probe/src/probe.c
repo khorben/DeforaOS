@@ -370,12 +370,12 @@ static int _ifinfo_bsd_append(struct ifinfo ** dev, char * ifname, int fd,
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
 		return _probe_error("realloc", 1);
 	*dev = p;
-	strcpy(p->name, ifname);
+	strcpy(p[nb].name, ifname);
 # if defined(DEBUG)
 	fprintf(stderr, "_ifinfo_append: %s\n", p[nb].name);
 # endif
-	p->ibytes = ifdr.ifdr_data.ifi_ibytes;
-	p->obytes = ifdr.ifdr_data.ifi_obytes;
+	p[nb].ibytes = ifdr.ifdr_data.ifi_ibytes;
+	p[nb].obytes = ifdr.ifdr_data.ifi_obytes;
 	return 0;
 }
 #endif /* defined(_ifinfo_bsd) */
@@ -723,7 +723,7 @@ int voltotal(char * vol)
 	if(i == probe.volinfo_cnt)
 		return -1;
 #if defined(DEBUG)
-	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " total: ",
+	printf("%s%s%s%lu%s", "Volume ", probe.volinfo[i].name, " total: ",
 			probe.volinfo[i].total, "\n");
 #endif
 	return probe.volinfo[i].total * (probe.volinfo[i].block_size / 1024);
@@ -739,7 +739,7 @@ int volfree(char * vol)
 	if(i == probe.volinfo_cnt)
 		return -1;
 #if defined(DEBUG)
-	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " free: ",
+	printf("%s%s%s%lu%s", "Volume ", probe.volinfo[i].name, " free: ",
 			probe.volinfo[i].free, "\n");
 #endif
 	return probe.volinfo[i].free * (probe.volinfo[i].block_size / 1024);
