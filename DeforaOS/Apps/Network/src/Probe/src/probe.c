@@ -356,18 +356,19 @@ static int _ifinfo_bsd(struct ifinfo ** dev)
 	static int fd = -1;
 	struct ifaddrs * ifa;
 	struct ifaddrs * p;
-	int i = 0;
 
 	if(fd < 0 && (fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-		return _probe_error("socket", 1);
+		return _probe_error("socket", -1);
 	if(getifaddrs(&ifa) != 0)
-		return _probe_error("getifaddrs", 1);
+		return _probe_error("getifaddrs", -1);
 	for(p = ifa; p != NULL; p = p->ifa_next)
 	{
 		if(p->ifa_addr->sa_family != AF_LINK)
 			continue;
-		if((ret |= _ifinfo_bsd_append(dev, p->ifa_name, fd, i)) == 0)
-			i++;
+		if(_ifinfo_bsd_append(dev, p->ifa_name, fd, ret++) == 0)
+			continue;
+		ret = -1;
+		break;
 	}
 	freeifaddrs(ifa);
 	return ret;
