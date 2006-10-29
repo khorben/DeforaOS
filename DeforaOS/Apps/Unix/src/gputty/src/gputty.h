@@ -1,4 +1,4 @@
-/* gputty.h */
+/* $Id$ */
 /* Copyright (c) 2004 Pierre Pronchery */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
@@ -50,7 +50,6 @@ typedef struct _GPuTTY
 	/* sessions */
 	GtkWidget * sn_frame;
 	GtkWidget * sn_esessions;
-	GtkWidget * sn_swsessions;
 	GtkTreeIter sn_ilsessions;
 	GtkListStore * sn_lsessions;
 	GtkWidget * sn_tlsessions;

@@ -1,5 +1,5 @@
-/* gputty.c */
-/* Copyright (c) 2004 Pierre Pronchery */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 /* This file is part of GPuTTY. */
 /* GPuTTY is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,6 @@ GPuTTY * gputty_new(void)
 	GtkWidget * vbox2;
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	GtkCellRenderer * cell;
-	GtkTreeViewColumn * column;
 
 	if((g = malloc(sizeof(GPuTTY))) == NULL)
 	{
@@ -111,7 +109,7 @@ GPuTTY * gputty_new(void)
 	/* hostname: hostname */
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
-	widget = gtk_label_new("Host name");
+	widget = gtk_label_new("Hostname");
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
 	g->hn_ehostname = gtk_entry_new();
 	if((p = config_get(g->config, "", "hostname")) != NULL)
@@ -156,21 +154,25 @@ GPuTTY * gputty_new(void)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	g->sn_esessions = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_esessions, FALSE, FALSE, 0);
-	g->sn_swsessions = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(g->sn_swsessions),
-			GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_IN);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	g->sn_lsessions = gtk_list_store_new(1, G_TYPE_STRING);
 	g->sn_tlsessions = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				g->sn_lsessions));
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(
+				g->sn_tlsessions), -1, "Sessions",
+			gtk_cell_renderer_text_new(), "text", 0, NULL);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g->sn_tlsessions),
 			FALSE);
 	g_signal_connect(G_OBJECT(g->sn_tlsessions), "cursor-changed",
 			G_CALLBACK(_on_session_select), g);
 	g_signal_connect(G_OBJECT(g->sn_tlsessions), "row-activated",
 			G_CALLBACK(_on_session_activate), g);
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(
-				g->sn_swsessions), g->sn_tlsessions);
-	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_swsessions, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(widget), g->sn_tlsessions);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
 	/* sessions: buttons */
 	vbox2 = gtk_vbox_new(FALSE, 0);
@@ -225,11 +227,6 @@ GPuTTY * gputty_new(void)
 		gtk_list_store_set(g->sn_lsessions, &g->sn_ilsessions, 0, p,
 				-1);
 	}
-	cell = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Sessions", cell,
-			"text", 0, NULL);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(g->sn_tlsessions),
-			GTK_TREE_VIEW_COLUMN(column));
 
 	/* show window */
 	gtk_widget_show_all(g->window);
@@ -415,7 +412,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	}
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
+			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), textview);
