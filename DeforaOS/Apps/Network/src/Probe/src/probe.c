@@ -335,7 +335,7 @@ static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb)
 				(*dev)[nb].obytes = strtoll(q, &q, 10);
 				break;
 			default:
-				break;
+				continue;
 		}
 		if(*q != '\0')
 			return 1;
