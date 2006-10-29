@@ -14,7 +14,7 @@
 
 
 #if defined(__linux__)
-# define _sysinfo			sysinfo
+# define _sysinfo_linux			_sysinfo
 # define _userinfo_generic		_userinfo
 # define _ifinfo_linux			_ifinfo
 # define _volinfo_linux			_volinfo
@@ -38,6 +38,11 @@ static int _probe_error(char const * message, int ret);
 
 
 /* sysinfo */
+#if defined(_sysinfo_linux)
+# include <sys/sysinfo.h>
+# define _sysinfo sysinfo
+#endif /* defined(_sysinfo_linux) */
+
 #if defined(_sysinfo_generic)
 # if defined(__NetBSD__) /* FIXME Other BSDs not tested */
 #  define _sysinfo_uptime_sysctl	_sysinfo_uptime
@@ -321,7 +326,17 @@ static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb)
 		q = &buf[i];
 		for(; buf[i] >= '0' && buf[i] <= '9'; i++);
 		buf[i] = '\0';
-		(*dev)[nb].stats[j++] = strtoll(q, &q, 10);
+		switch(j++)
+		{
+			case IF_RX_BYTES:
+				(*dev)[nb].ibytes = strtoll(q, &q, 10);
+				break;
+			case IF_TX_BYTES:
+				(*dev)[nb].obytes = strtoll(q, &q, 10);
+				break;
+			default:
+				break;
+		}
 		if(*q != '\0')
 			return 1;
 	}
