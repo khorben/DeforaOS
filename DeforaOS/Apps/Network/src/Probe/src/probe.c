@@ -1,4 +1,5 @@
-/* probe.c */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 /* TODO:
  * - check ifinfo code (and thus volinfo)
  * - free memory allocated
@@ -6,27 +7,49 @@
 
 
 
-#include <System.h>
-#include <utmpx.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef _GNU_SOURCE
-# include <sys/sysinfo.h>
-# include <sys/statvfs.h>
+#include <System.h>
+
+
+#if defined(__linux__)
+# define _sysinfo			sysinfo
+# define _userinfo_generic		_userinfo
+# define _ifinfo_linux			_ifinfo
+# define _volinfo_linux			_volinfo
+#elif defined(__NetBSD__) /* FIXME Other BSDs not tested */
+# define _sysinfo_generic		_sysinfo
+# define _userinfo_generic		_userinfo
+# define _ifinfo_bsd			_ifinfo
+# define _volinfo_generic		_volinfo
 #else
-# include <sys/param.h>
-# include <sys/sysctl.h>
-# include <sys/resource.h>
-# include <sys/mount.h>
+# define _sysinfo_generic		_sysinfo
+# define _userinfo_generic		_userinfo
+# define _ifinfo_generic		_ifinfo
+# define _volinfo_generic		_volinfo
 #endif
 
 #define PROBE_REFRESH 10
 
 
-/* globals */
+/* functions */
+static int _probe_error(char const * message, int ret);
+
+
 /* sysinfo */
-#ifndef _GNU_SOURCE
+#if defined(_sysinfo_generic)
+# if defined(__NetBSD__) /* FIXME Other BSDs not tested */
+#  define _sysinfo_uptime_sysctl	_sysinfo_uptime
+#  define _sysinfo_loads_sysctl		_sysinfo_loads
+#  define _sysinfo_ram_sysctl		_sysinfo_ram
+#  define _sysinfo_procs_sysctl		_sysinfo_procs
+# else
+#  define _sysinfo_uptime_generic	_sysinfo_uptime
+#  define _sysinfo_loads_generic	_sysinfo_loads
+#  define _sysinfo_ram_generic		_sysinfo_ram
+#  define _sysinfo_procs_generic	_sysinfo_procs
+# endif
 struct sysinfo
 {
 	long uptime;
@@ -44,18 +67,25 @@ static int _sysinfo_uptime(struct sysinfo * info);
 static int _sysinfo_loads(struct sysinfo * info);
 static int _sysinfo_ram(struct sysinfo * info);
 static int _sysinfo_procs(struct sysinfo * info);
-static int sysinfo(struct sysinfo * info)
+static int _sysinfo_generic(struct sysinfo * info)
 {
 	int ret = 0;
 
-	ret += _sysinfo_uptime(info);
-	ret += _sysinfo_loads(info);
-	ret += _sysinfo_ram(info);
-	ret += _sysinfo_procs(info);
+	ret |= _sysinfo_uptime(info);
+	ret |= _sysinfo_loads(info);
+	ret |= _sysinfo_ram(info);
+	ret |= _sysinfo_procs(info);
 	return ret;
 }
 
-static int _sysinfo_uptime(struct sysinfo * info)
+/* sysinfo sysctl */
+# if defined(_sysinfo_uptime_sysctl) || defined(_sysinfo_loads_sysctl) \
+	|| defined(_sysinfo_ram_sysctl) || defined(_sysinfo_procs_sysctl)
+#  include <sys/param.h>
+#  include <sys/sysctl.h>
+# endif
+# if defined(_sysinfo_uptime_sysctl)
+static int _sysinfo_uptime_sysctl(struct sysinfo * info)
 {
 	int mib[2];
 	size_t len;
@@ -74,14 +104,16 @@ static int _sysinfo_uptime(struct sysinfo * info)
 	info->uptime = now.tv_sec - tv.tv_sec;
 	return 0;
 }
+# endif
 
+# if defined(_sysinfo_loads_sysctl)
+#  include <sys/resource.h>
 static int _sysinfo_loads(struct sysinfo * info)
 {
 	int mib[2];
 	size_t len;
 	struct loadavg la;
 
-	/* FIXME getloadavg() looks portable */
 	mib[0] = CTL_VM;
 	mib[1] = VM_LOADAVG;
 	len = sizeof(la);
@@ -95,8 +127,10 @@ static int _sysinfo_loads(struct sysinfo * info)
 	info->loads[2] = la.ldavg[2];
 	return 0;
 }
+# endif
 
-static int _sysinfo_ram(struct sysinfo * info)
+# if defined(_sysinfo_ram_sysctl)
+static int _sysinfo_ram_sysctl(struct sysinfo * info)
 {
 	int mib[2];
 	size_t len;
@@ -118,8 +152,10 @@ static int _sysinfo_ram(struct sysinfo * info)
 	info->freeswap = info->totalswap - (ue.pagesize * ue.swpgonly);
 	return 0;
 }
+# endif
 
-static int _sysinfo_procs(struct sysinfo * info)
+# if defined(_sysinfo_procs_sysctl)
+static int _sysinfo_procs_sysctl(struct sysinfo * info)
 {
 	int mib[3];
 	size_t len;
@@ -136,10 +172,86 @@ static int _sysinfo_procs(struct sysinfo * info)
 	info->procs = len / sizeof(struct kinfo_proc);
 	return 0;
 }
-#endif
+# endif
+
+/* sysinfo generic */
+# if defined(_sysinfo_uptime_generic)
+#  warning Generic uptime reporting is not supported
+static int _sysinfo_uptime_generic(struct sysinfo * info)
+{
+	info->uptime = 0;
+	return 0;
+}
+# endif
+
+# if defined(_sysinfo_loads_generic)
+static int _sysinfo_loads_generic(struct sysinfo * info)
+{
+	double la[3];
+
+	if(getloadavg(la, 3) != 3)
+	{
+		memset(info->loads, 0, sizeof(info->loads));
+		return 1;
+	}
+	info->loads[0] = la[0];
+	info->loads[1] = la[1];
+	info->loads[2] = la[2];
+	return 0;
+}
+# endif
+
+# if defined(_sysinfo_ram_generic)
+#  warning Generic RAM reporting is not supported
+static int _sysinfo_ram_generic(struct sysinfo * info)
+{
+	info->totalram = 0;
+	info->freeram = 0;
+	info->sharedram = 0;
+	info->bufferram = 0;
+	info->totalswap = 0;
+	info->freeswap = 0;
+	return 0;
+}
+# endif
+
+# if defined(_sysinfo_procs_generic)
+#  warning Generic process reporting is not supported
+static int _sysinfo_procs_generic(struct sysinfo * info)
+{
+	info->procs = 0;
+	return 0;
+}
+# endif
+#endif /* defined(_sysinfo_generic) */
+
+
+/* userinfo */
+#if defined(_userinfo_generic)
+#  include <utmpx.h>
+static int _userinfo_generic(unsigned int * userinfo)
+{
+	struct utmpx * ut;
+
+	for(*userinfo = 0; (ut = getutxent()) != NULL;)
+		if(ut->ut_type == USER_PROCESS)
+			(*userinfo)++;
+	endutxent();
+	return 0;
+}
+#endif /* defined(_userinfo_generic) */
 
 
 /* ifinfo */
+struct ifinfo
+{
+	char name[6];
+	unsigned int ibytes;
+	unsigned int obytes;
+};
+
+/* ifinfo linux */
+#if defined(_ifinfo_linux)
 enum InterfaceInfo
 {
 	IF_RX_BYTES = 0, IF_RX_PACKETS, IF_RX_ERRS, IF_RX_DROP, IF_RX_FIFO,
@@ -147,20 +259,12 @@ enum InterfaceInfo
 	IF_TX_BYTES, IF_TX_PACKETS, IF_TX_ERRS, IF_TX_DROP, IF_TX_FIFO,
 	IF_TX_FRAME, IF_TX_COMPRESSED
 };
-#define IF_LAST IF_TX_COMPRESSED
-struct ifinfo
-{
-	char name[6];
-	unsigned int stats[IF_LAST+1];
-};
+# define IF_LAST IF_TX_COMPRESSED
 
-#ifdef _GNU_SOURCE
-static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb);
-#endif
-static int _ifinfo(struct ifinfo ** dev)
+static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb);
+static int _ifinfo_linux(struct ifinfo ** dev)
 {
 	int ret = 0;
-#ifdef _GNU_SOURCE
 	FILE * fp;
 	char buf[200];
 	int i;
@@ -178,7 +282,7 @@ static int _ifinfo(struct ifinfo ** dev)
 		}
 		if(i < 2)
 			continue;
-		if(_ifinfo_append(dev, buf, i - 2) != 0)
+		if(_ifinfo_linux_append(dev, buf, i - 2) != 0)
 		{
 			ret = -1;
 			break;
@@ -186,20 +290,18 @@ static int _ifinfo(struct ifinfo ** dev)
 		ret++;
 	}
 	fclose(fp);
-#endif
 	return ret;
 }
 
-#ifdef _GNU_SOURCE
-static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
+static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb)
 {
 	struct ifinfo * p;
 	size_t i;
 	char * q;
 	int j = 0;
 
-	if((p = realloc(*dev, sizeof(struct ifinfo) * (nb + 1))) == NULL)
-		return 1;
+	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
+		return _probe_error("realloc", 1);
 	*dev = p;
 	for(i = 0; i < sizeof(p->name) && buf[i] != '\0'; i++);
 	if(i != sizeof(p->name))
@@ -207,9 +309,9 @@ static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 	buf[sizeof(p->name)] = '\0';
 	for(q = buf; q[0] == ' '; q++);
 	strcpy(p[nb].name, q);
-#ifdef DEBUG
+# if defined(DEBUG)
 	fprintf(stderr, "_ifinfo_append: %s\n", p[nb].name);
-#endif
+# endif
 	for(i++; buf[i] != '\0'; i++)
 	{
 		if(j > IF_LAST)
@@ -225,30 +327,94 @@ static int _ifinfo_append(struct ifinfo ** dev, char * buf, int nb)
 	}
 	return 0;
 }
-#endif
+#endif /* defined(_ifinfo_linux) */
+
+/* ifinfo netbsd */
+#if defined(_ifinfo_bsd)
+# include <net/if.h>
+# include <ifaddrs.h>
+static int _ifinfo_bsd_append(struct ifinfo ** dev, char * ifname, int fd,
+		int nb);
+static int _ifinfo_bsd(struct ifinfo ** dev)
+{
+	int ret = 0;
+	static int fd = -1;
+	struct ifaddrs * ifa;
+	struct ifaddrs * p;
+	int i = 0;
+
+	if(fd < 0 && (fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+		return _probe_error("socket", 1);
+	if(getifaddrs(&ifa) != 0)
+		return _probe_error("getifaddrs", 1);
+	for(p = ifa; p != NULL; p = p->ifa_next)
+	{
+		if(p->ifa_addr->sa_family != AF_LINK)
+			continue;
+		if((ret |= _ifinfo_bsd_append(dev, p->ifa_name, fd, i)) == 0)
+			i++;
+	}
+	freeifaddrs(ifa);
+	return ret;
+}
+
+static int _ifinfo_bsd_append(struct ifinfo ** dev, char * ifname, int fd,
+		int nb)
+{
+	struct ifdatareq ifdr;
+	struct ifinfo * p;
+
+	strcpy(ifdr.ifdr_name, ifname);
+	if(ioctl(fd, SIOCGIFDATA, &ifdr) == -1)
+		return _probe_error("SIOCGIFDATA", 1);
+	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
+		return _probe_error("realloc", 1);
+	*dev = p;
+	strcpy(p->name, ifname);
+# if defined(DEBUG)
+	fprintf(stderr, "_ifinfo_append: %s\n", p[nb].name);
+# endif
+	p->ibytes = ifdr.ifdr_data.ifi_ibytes;
+	p->obytes = ifdr.ifdr_data.ifi_obytes;
+	return 0;
+}
+#endif /* defined(_ifinfo_bsd) */
+
+/* ifinfo generic */
+#if defined(_ifinfo_generic)
+# warning Generic interface reporting is not supported
+static int _ifinfo_generic(struct ifinfo ** dev)
+{
+	*dev = NULL;
+	return 0;
+}
+#endif /* defined(_ifinfo_generic) */
 
 
 /* volinfo */
+struct volinfo
+{
+	char name[256];
+	unsigned long block_size;
+#if defined(__linux__)
+	fsblkcnt_t total;
+	fsblkcnt_t free;
+#else
+	unsigned long total;
+	unsigned long free;
+#endif
+};
+
+/* volinfo linux */
+#if defined(_volinfo_linux)
+# include <sys/statvfs.h>
 enum VolInfo
 {
 	VI_DEVICE = 0, VI_MOUNTPOINT, VI_FS, VI_OPTIONS, VI_DUMP, VI_PASS
 };
 #define VI_LAST VI_PASS
-struct volinfo
-{
-	char name[256];
-	unsigned long block_size;
-#ifdef _GNU_SOURCE
-	fsblkcnt_t total;
-	fsblkcnt_t free;
-#else
-	long total;
-	long free;
-#endif
-};
 
-static int _probe_error(char * message, int ret); /* FIXME re-place */
-static int _volinfo_append(struct volinfo ** dev, char * buf, int nb);
+static int _volinfo_linux_append(struct volinfo ** dev, char * buf, int nb);
 static int _volinfo(struct volinfo ** dev)
 {
 	int ret = 0;
@@ -267,7 +433,7 @@ static int _volinfo(struct volinfo ** dev)
 			ret = -1;
 			break;
 		}
-		if(_volinfo_append(dev, buf, i) != 0)
+		if(_volinfo_linux_append(dev, buf, i) != 0)
 		{
 			ret = -1;
 			break;
@@ -278,16 +444,12 @@ static int _volinfo(struct volinfo ** dev)
 	return ret;
 }
 
-static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
+static int _volinfo_linux_append(struct volinfo ** dev, char * buf, int nb)
 {
 	unsigned int i;
 	unsigned int j;
 	struct volinfo * p;
-#ifdef _GNU_SOURCE
 	struct statvfs sv;
-#else
-	struct statfs sf;
-#endif
 
 	for(i = 0; buf[i] != '\0' && buf[i] != ' '; i++);
 	if(buf[i] == '\0')
@@ -303,24 +465,27 @@ static int _volinfo_append(struct volinfo ** dev, char * buf, int nb)
 		return 1;
 	strncpy(p[nb].name, &buf[i], j-i);
 	p[nb].name[j-i] = '\0';
-#ifdef DEBUG
+# if defined(DEBUG)
 	fprintf(stderr, "_volinfo_append: %s\n", p[nb].name);
-#endif
-#ifdef _GNU_SOURCE
+# endif
 	if(statvfs(p[nb].name, &sv) != 0)
 		return 1;
 	p[nb].block_size = sv.f_bsize;
 	p[nb].total = sv.f_blocks;
 	p[nb].free = sv.f_bavail;
-#else
-	if(statfs(p[nb].name, &sf) != 0)
-		return 1;
-	p[nb].block_size = sf.f_bsize;
-	p[nb].total = sf.f_blocks;
-	p[nb].free = sf.f_bfree;
-#endif
 	return 0;
 }
+#endif /* defined(_volinfo_linux) */
+
+/* volinfo generic */
+#if defined(_volinfo_generic)
+# warning Generic volume information is not supported
+static int _volinfo_generic(struct volinfo ** dev)
+{
+	*dev = NULL;
+	return 0;
+}
+#endif /* defined(_volinfo_generic) */
 
 
 /* Probe */
@@ -335,8 +500,10 @@ typedef struct _Probe
 	unsigned int volinfo_cnt;
 } Probe;
 
+
 /* variables */
 Probe probe;
+
 
 /* functions */
 static int _probe_timeout(Probe * probe);
@@ -381,7 +548,7 @@ static int _probe(void)
 	return 1;
 }
 
-static int _probe_error(char * message, int ret)
+static int _probe_error(char const * message, int ret)
 {
 	fprintf(stderr, "%s", "Probe: ");
 	perror(message);
@@ -390,19 +557,16 @@ static int _probe_error(char * message, int ret)
 
 static int _probe_timeout(Probe * probe)
 {
-	struct utmpx * ut;
 	int i;
-#ifdef DEBUG
+#if defined(DEBUG)
 	static unsigned int count = 0;
 
 	fprintf(stderr, "%s%d%s", "_probe_timeout(", count++, ")\n");
 #endif
-	if(sysinfo(&probe->sysinfo) != 0)
+	if(_sysinfo(&probe->sysinfo) != 0)
 		return _probe_error("sysinfo", 1);
-	for(probe->users = 0; (ut = getutxent()) != NULL;)
-		if(ut->ut_type == USER_PROCESS)
-			probe->users++;
-	endutxent();
+	if(_userinfo(&probe->users) != 0)
+		return _probe_error("userinfo", 1);
 	if((i = _ifinfo(&probe->ifinfo)) < 0)
 		return _probe_error("ifinfo", 1);
 	probe->ifinfo_cnt = i;
@@ -416,7 +580,7 @@ static int _probe_timeout(Probe * probe)
 /* AppInterface */
 int uptime(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%ld%s", "Uptime: ", probe.sysinfo.uptime, "\n");
 #endif
 	return probe.sysinfo.uptime;
@@ -425,7 +589,7 @@ int uptime(void)
 
 int load_1(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Load 1: ", probe.sysinfo.loads[0], "\n");
 #endif
 	return probe.sysinfo.loads[0];
@@ -434,7 +598,7 @@ int load_1(void)
 
 int load_5(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Load 5: ", probe.sysinfo.loads[1], "\n");
 #endif
 	return probe.sysinfo.loads[1];
@@ -443,7 +607,7 @@ int load_5(void)
 
 int load_15(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Load 15: ", probe.sysinfo.loads[2], "\n");
 #endif
 	return probe.sysinfo.loads[2];
@@ -452,7 +616,7 @@ int load_15(void)
 
 int ram_total(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Total RAM: ", probe.sysinfo.totalram, "\n");
 #endif
 	return probe.sysinfo.totalram;
@@ -460,7 +624,7 @@ int ram_total(void)
 
 int ram_free(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Free RAM: ", probe.sysinfo.freeram, "\n");
 #endif
 	return probe.sysinfo.freeram;
@@ -468,7 +632,7 @@ int ram_free(void)
 
 int ram_shared(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Shared RAM: ", probe.sysinfo.sharedram, "\n");
 #endif
 	return probe.sysinfo.sharedram;
@@ -476,7 +640,7 @@ int ram_shared(void)
 
 int ram_buffer(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Buffered RAM: ", probe.sysinfo.bufferram, "\n");
 #endif
 	return probe.sysinfo.bufferram;
@@ -485,7 +649,7 @@ int ram_buffer(void)
 
 int swap_total(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Total swap: ", probe.sysinfo.totalswap, "\n");
 #endif
 	return probe.sysinfo.totalswap;
@@ -493,7 +657,7 @@ int swap_total(void)
 
 int swap_free(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%lu%s", "Free swap: ", probe.sysinfo.freeswap, "\n");
 #endif
 	return probe.sysinfo.freeswap;
@@ -502,7 +666,7 @@ int swap_free(void)
 
 int procs(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%u%s", "Procs: ", probe.sysinfo.procs, "\n");
 #endif
 	return probe.sysinfo.procs;
@@ -511,7 +675,7 @@ int procs(void)
 
 int users(void)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%u%s", "Users: ", probe.users, "\n");
 #endif
 	return probe.users;
@@ -526,11 +690,11 @@ int ifrxbytes(char * dev)
 			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
 	if(i == probe.ifinfo_cnt)
 		return -1;
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " RX: ",
-			probe.ifinfo[i].stats[IF_RX_BYTES], "\n");
+			probe.ifinfo[i].ibytes, "\n");
 #endif
-	return probe.ifinfo[i].stats[IF_RX_BYTES];
+	return probe.ifinfo[i].ibytes;
 }
 
 int iftxbytes(char * dev)
@@ -541,11 +705,11 @@ int iftxbytes(char * dev)
 			&& string_compare(probe.ifinfo[i].name, dev) != 0; i++);
 	if(i == probe.ifinfo_cnt)
 		return -1;
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%s%s%u%s", "Interface ", probe.ifinfo[i].name, " TX: ",
-			probe.ifinfo[i].stats[IF_TX_BYTES], "\n");
+			probe.ifinfo[i].obytes, "\n");
 #endif
-	return probe.ifinfo[i].stats[IF_TX_BYTES];
+	return probe.ifinfo[i].obytes;
 }
 
 
@@ -558,7 +722,7 @@ int voltotal(char * vol)
 			i++);
 	if(i == probe.volinfo_cnt)
 		return -1;
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " total: ",
 			probe.volinfo[i].total, "\n");
 #endif
@@ -574,7 +738,7 @@ int volfree(char * vol)
 			i++);
 	if(i == probe.volinfo_cnt)
 		return -1;
-#ifdef DEBUG
+#if defined(DEBUG)
 	printf("%s%s%s%u%s", "Volume ", probe.volinfo[i].name, " free: ",
 			probe.volinfo[i].free, "\n");
 #endif
