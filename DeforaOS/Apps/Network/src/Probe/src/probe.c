@@ -534,8 +534,8 @@ static int _volinfo_bsd_append(struct volinfo ** dev, struct statvfs * buf,
 	fprintf(stderr, "_volinfo_append: %s\n", p[nb].name);
 # endif
 	p[nb].block_size = buf->f_bsize;
-	p[nb].total = buf->f_blocks;
-	p[nb].free = buf->f_bavail;
+	p[nb].total = buf->f_blocks * 2048 / buf->f_bsize;
+	p[nb].free = buf->f_bavail * 2048 / buf->f_bsize;
 	return 0;
 }
 #endif /* defined(_volinfo_bsd) */
