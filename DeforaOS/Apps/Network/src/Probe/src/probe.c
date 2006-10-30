@@ -22,7 +22,7 @@
 # define _sysinfo_generic		_sysinfo
 # define _userinfo_generic		_userinfo
 # define _ifinfo_bsd			_ifinfo
-# define _volinfo_generic		_volinfo
+# define _volinfo_bsd			_volinfo
 #else
 # define _sysinfo_generic		_sysinfo
 # define _userinfo_generic		_userinfo
@@ -412,13 +412,8 @@ struct volinfo
 {
 	char name[256];
 	unsigned long block_size;
-#if defined(__linux__)
-	fsblkcnt_t total;
-	fsblkcnt_t free;
-#else
 	unsigned long total;
 	unsigned long free;
-#endif
 };
 
 /* volinfo linux */
@@ -431,7 +426,7 @@ enum VolInfo
 #define VI_LAST VI_PASS
 
 static int _volinfo_linux_append(struct volinfo ** dev, char * buf, int nb);
-static int _volinfo(struct volinfo ** dev)
+static int _volinfo_linux(struct volinfo ** dev)
 {
 	int ret = 0;
 	FILE * fp;
@@ -492,6 +487,58 @@ static int _volinfo_linux_append(struct volinfo ** dev, char * buf, int nb)
 	return 0;
 }
 #endif /* defined(_volinfo_linux) */
+
+/* volinfo_bsd */
+#if defined(_volinfo_bsd)
+# include <sys/statvfs.h>
+static int _volinfo_bsd_append(struct volinfo ** dev, struct statvfs * buf,
+		int nb);
+static int _volinfo_bsd(struct volinfo ** dev)
+{
+	int ret;
+	struct statvfs * buf;
+	int cnt;
+	int cnt2;
+
+	if((cnt = getvfsstat(NULL, 0, ST_WAIT)) == -1)
+		return _probe_error("getvfsstat", -1);
+	if((buf = malloc(sizeof(struct statvfs) * cnt)) == NULL)
+		return _probe_error("malloc", -1);
+	if((cnt2 = getvfsstat(buf, sizeof(struct statvfs) * cnt, ST_WAIT))
+			== -1)
+	{
+		free(buf);
+		return _probe_error("getvfsstat", -1);
+	}
+	for(ret = 0; ret < cnt && ret < cnt2; ret++)
+	{
+		if(_volinfo_bsd_append(dev, &buf[ret], ret) == 0)
+			continue;
+		ret = -1;
+		break;
+	}
+	free(buf);
+	return ret;
+}
+
+static int _volinfo_bsd_append(struct volinfo ** dev, struct statvfs * buf,
+		int nb)
+{
+	struct volinfo * p;
+
+	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
+		return _probe_error("realloc", 1);
+	*dev = p;
+	strcpy(p[nb].name, buf->f_mntonname);
+# if defined(DEBUG)
+	fprintf(stderr, "_volinfo_append: %s\n", p[nb].name);
+# endif
+	p[nb].block_size = buf->f_bsize;
+	p[nb].total = buf->f_blocks;
+	p[nb].free = buf->f_bavail;
+	return 0;
+}
+#endif /* defined(_volinfo_bsd) */
 
 /* volinfo generic */
 #if defined(_volinfo_generic)
@@ -587,7 +634,7 @@ static int _probe_timeout(Probe * probe)
 		return _probe_error("ifinfo", 1);
 	probe->ifinfo_cnt = i;
 	if((i = _volinfo(&probe->volinfo)) < 0)
-		return 0;
+		return _probe_error("volinfo", 1);
 	probe->volinfo_cnt = i;
 	return 0;
 }
