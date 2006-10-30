@@ -127,6 +127,8 @@ Mailer * mailer_new(void)
 	gtk_paned_set_position(GTK_PANED(hpaned), 160);
 	/* folders */
 	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	mailer->view_folders = _new_folders_view();
@@ -136,6 +138,8 @@ Mailer * mailer_new(void)
 	gtk_paned_set_position(GTK_PANED(vpaned), 160);
 	/* messages list */
 	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	mailer->view_headers = gtk_tree_view_new();
@@ -262,19 +266,16 @@ static GtkWidget * _new_folders_view(void)
 	GtkWidget * widget;
 	GtkTreeStore * model;
 	GtkCellRenderer * renderer;
-	GtkTreeViewColumn *column;
 
 	model = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(model));
 	g_object_unref(model);
 	renderer = gtk_cell_renderer_pixbuf_new();
-	column = gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(
-				widget), -1, NULL, renderer, "pixbuf", 0,
-			NULL);
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
+			NULL, renderer, "pixbuf", 0, NULL);
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(
-				widget), -1, "Folders", renderer, "text", 1,
-			NULL);
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
+			"Folders", renderer, "text", 1, NULL);
 	return widget;
 }
 
