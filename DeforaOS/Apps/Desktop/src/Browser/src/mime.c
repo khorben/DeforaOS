@@ -78,7 +78,7 @@ Mime * mime_new(void)
 	}
 	if(!feof(fp))
 	{
-		perror("/usr/share/mime/globs");
+		perror(*g);
 		mime_delete(mime);
 		mime = NULL;
 	}
@@ -198,7 +198,8 @@ static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 	GdkPixbuf * icon;
 
 	strncpy(&buf[11], type, sizeof(buf)-11);
-	for(; (p = strchr(&buf[11], '/')) != NULL; *p = '-');
+	for(buf[sizeof(buf)-1] = '\0'; (p = strchr(&buf[11], '/')) != NULL;
+			*p = '-');
 	if((icon = gtk_icon_theme_load_icon(theme, buf, size, 0, NULL)) != NULL)
 		return icon;
 	if((p = strchr(&buf[11], '-')) != NULL)
