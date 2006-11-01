@@ -461,6 +461,8 @@ static void _refresh_path(Browser * browser)
 	for(i = 0; i < cnt; i++)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
 	p = dirname(browser->current->data);
+	if(strcmp(p, ".") == 0)
+		return;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
 	for(cnt = 1; strcmp(p, "/") != 0; cnt++)
 	{
@@ -471,9 +473,9 @@ static void _refresh_path(Browser * browser)
 
 static void _refresh_loop(Browser * browser, char const * name)
 {
-	GtkTreeIter iter;
 	gchar * path;
 	gchar * display_name;
+	GtkTreeIter iter;
 	char const * type = NULL;
 	struct stat st;
 	gboolean is_dir;
