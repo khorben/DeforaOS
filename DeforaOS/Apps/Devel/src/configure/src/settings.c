@@ -119,7 +119,8 @@ static int _do_h(Prefs * prefs, Config * config, FILE * fp,
 			"#define VERSION \"", version, "\"\n");
 	if((p = prefs->prefix) != NULL || (p = config_get(config, "", "prefix"))
 			!= NULL)
-		fprintf(fp, "%s%s%s", "\n#define PREFIX \"", p, "\"\n");
+		fprintf(fp, "%s%s%s", "\n#ifndef PREFIX\n\
+# define PREFIX \"", p, "\"\n#endif\n");
 	return 0;
 }
 
