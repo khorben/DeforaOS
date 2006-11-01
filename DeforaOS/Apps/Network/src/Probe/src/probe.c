@@ -113,7 +113,7 @@ static int _sysinfo_uptime_sysctl(struct sysinfo * info)
 
 # if defined(_sysinfo_loads_sysctl)
 #  include <sys/resource.h>
-static int _sysinfo_loads(struct sysinfo * info)
+static int _sysinfo_loads_sysctl(struct sysinfo * info)
 {
 	int mib[2];
 	size_t len;
