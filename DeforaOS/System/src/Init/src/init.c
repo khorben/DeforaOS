@@ -47,6 +47,7 @@ static int _init_init(void)
 {
 	struct sigaction sa;
 
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = _init_sighandler;
 	sigfillset(&sa.sa_mask);
 	if(sigaction(SIGCHLD, &sa, NULL) == -1
