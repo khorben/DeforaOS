@@ -1,4 +1,5 @@
-/* run.c */
+/* $Id$ */
+/* Copyright (c) 2006 The DeforaOS Project */
 
 
 
@@ -114,6 +115,7 @@ static void _on_run_execute(GtkWidget * widget, gpointer data)
 	path = gtk_entry_get_text(GTK_ENTRY(widget));
 	execlp("/bin/sh", "run", "-c", path, NULL);
 	_run_error(strerror(errno), 0);
+	exit(0);
 }
 
 static void _on_run_path_activate(GtkWidget * widget, gpointer data)
