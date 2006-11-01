@@ -127,9 +127,9 @@ static int _sysinfo_loads_sysctl(struct sysinfo * info)
 		memset(info->loads, 0, sizeof(info->loads));
 		return 1;
 	}
-	info->loads[0] = la.ldavg[0];
-	info->loads[1] = la.ldavg[1];
-	info->loads[2] = la.ldavg[2];
+	info->loads[0] = la.ldavg[0] * 32;
+	info->loads[1] = la.ldavg[1] * 32;
+	info->loads[2] = la.ldavg[2] * 32;
 	return 0;
 }
 # endif
