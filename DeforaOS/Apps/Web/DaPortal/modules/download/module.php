@@ -150,6 +150,8 @@ function download_default($args)
 			$parent = "='".$args['id']."'";
 		}
 	}
+	if(!isset($file) || !is_array($file))
+		$file = array('id' => '');
 	print('<h1 class="download">'._html_safe(DOWNLOADS));
 	if(isset($file['name']))
 		print(': '._html_safe($file['name']));
@@ -206,8 +208,6 @@ function download_default($args)
 			'link' => 'javascript:history.forward()');
 	if(_user_admin($user_id))
 	{
-		if(!isset($file))
-			$file = array('id' => '');
 		$toolbar[] = array();
 		$toolbar[] = array('title' => NEW_DIRECTORY,
 				'icon' => 'icons/16x16/newdir.png',
