@@ -23,6 +23,7 @@ Arch * arch_new(char const * arch)
 	if((plugin = dlsym(handle, "arch_plugin")) == NULL)
 	{
 		/* FIXME factorize dlsym() operation */
+		dlclose(handle);
 		fprintf(stderr, "%s%s%s", "as: ", arch,
 				": Invalid architecture plug-in\n");
 		return NULL;
