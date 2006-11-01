@@ -50,7 +50,7 @@ require_once('./system/sql.php');
 require_once('./system/config.php');
 
 //configuration variables
-if($html && !isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
+if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
 
 require_once('./system/lang.php');
