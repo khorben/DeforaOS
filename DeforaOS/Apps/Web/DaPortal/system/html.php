@@ -141,8 +141,8 @@ function _html_tags($string, $tags = FALSE)
 	foreach($tags as $t)
 		if($t == 'a')
 			$string = preg_replace(
-'/&lt;a href=&quot;([-a-zA-Z0-9:._+%~\/?=&]+)&quot;&gt;([^&]*)&lt;\/a&gt;/',
-					'<a href="\1">\2</a>', $string);
+'/&lt;a href=&quot;([-a-zA-Z0-9:._+%~\/?=&]+)&quot;&gt;/',
+					'<a href="\1">', $string);
 		else if($t == 'img')
 			$string = preg_replace(
 '/&lt;img src=&quot;(.*)&quot; alt=&quot;(.*)&quot;\/&gt;/',
