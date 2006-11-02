@@ -8,20 +8,23 @@
 
 
 /* variables */
-char const mbox_name[] = "Local folder";
+char const imap4_name[] = "IMAP4 server";
 
-AccountConfig mbox_config[] =
+AccountConfig imap4_config[] =
 {
-	{ "mbox",	"Inbox file",		ACT_STRING,	NULL },
-	{ "spool",	"Incoming mails file",	ACT_STRING,	NULL },
-	{ "sent",	"Sent mails file",	ACT_STRING,	NULL },
-	{ "draft",	"Draft mails file",	ACT_STRING,	NULL },
+	{ "username",	"Username",		ACT_STRING,	NULL },
+	{ "password",	"Password",		ACT_PASSWORD,	NULL },
+	{ "hostname",	"Server hostname",	ACT_STRING,	NULL },
+	{ "port",	"Server port",		ACT_UINT16,	NULL },
+	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	NULL },
+	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL },
+	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL },
 	{ NULL,		NULL,			ACT_NONE,	NULL }
 };
 
 
 /* functions */
-AccountFolder ** mbox_folders(void)
+AccountFolder ** imap4_folders(void)
 {
 	/* FIXME implement */
 	static AccountFolder inbox =	{ AF_INBOX,	"Inbox"	};
@@ -39,7 +42,7 @@ AccountFolder ** mbox_folders(void)
 
 AccountPlugin account_plugin =
 {
-	mbox_name,
-	mbox_config,
-	mbox_folders
+	imap4_name,
+	imap4_config,
+	imap4_folders
 };
