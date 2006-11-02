@@ -428,16 +428,16 @@ static GtkWidget * gtk_assistant_new(void)
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_assistant_cancel), assistant);
+				_on_assistant_cancel), assistant);
 	gtk_widget_show(widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_GO_BACK);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_assistant_back), assistant);
+				_on_assistant_back), assistant);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_GO_FORWARD);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				on_assistant_forward), assistant);
+				_on_assistant_forward), assistant);
 	gtk_widget_show(widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_widget_show(hbox);
@@ -499,7 +499,8 @@ static gint gtk_assistant_append_page(GtkWidget * assistant, GtkWidget * widget)
 	if((assistant = g_object_get_data(G_OBJECT(assistant), "assistant"))
 			== NULL)
 		return _assistant_error("data not found", -1);
-	if((p = realloc(assistant->page, sizeof(*p) * (page_cnt+1))) == NULL)
+	if((p = realloc(assistant->page, sizeof(*p) * (assistant->page_cnt+1)))
+			== NULL)
 		return _assistant_error(strerror(errno), -1);
 	assistant->page = p;
 	assistant->page[assistant->page_cnt] = widget;
@@ -510,8 +511,8 @@ static gint gtk_assistant_append_page(GtkWidget * assistant, GtkWidget * widget)
 }
 
 
-static gtk_assistant_set_page_title(GtkWidget * assistant, GtkWidget * page,
-		const gchar * title)
+static void gtk_assistant_set_page_title(GtkWidget * assistant,
+		GtkWidget * page, const gchar * title)
 {
 	/* FIXME implement */
 }
