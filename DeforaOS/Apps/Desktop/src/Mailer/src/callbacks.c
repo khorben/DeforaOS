@@ -4,6 +4,7 @@
 
 
 #include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -411,32 +412,33 @@ static GtkWidget * gtk_assistant_new(void)
 	GtkWidget * widget;
 	GtkWidget * hbox;
 
-	if((assistant = calloc(0, sizeof(*assistant))) == NULL)
+	if((assistant = calloc(1, sizeof(*assistant))) == NULL)
 		_gtkassistant_error("out of memory", 0);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_object_set_data(G_OBJECT(window), "assistant", assistant);
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_on_gtkassistant_closex), assistant);
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 4);
 	/* frame */
 	frame = gtk_frame_new("");
 	gtk_widget_show(frame);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 0);
 	/* navigation buttons */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_GO_FORWARD);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_gtkassistant_cancel), assistant);
+				_on_gtkassistant_forward), assistant);
 	gtk_widget_show(widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_GO_BACK);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_gtkassistant_back), assistant);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_button_new_from_stock(GTK_STOCK_GO_FORWARD);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_gtkassistant_forward), assistant);
+				_on_gtkassistant_cancel), assistant);
 	gtk_widget_show(widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_widget_show(hbox);

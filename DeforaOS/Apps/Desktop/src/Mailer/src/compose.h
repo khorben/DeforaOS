@@ -6,6 +6,7 @@
 #ifndef MAILER_COMPOSE_H
 # define MAILER_COMPOSE_H
 
+# include <sys/types.h>
 # include "mailer.h"
 
 
