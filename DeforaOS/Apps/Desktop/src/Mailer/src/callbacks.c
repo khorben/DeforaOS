@@ -5,6 +5,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include "compose.h"
@@ -103,7 +104,11 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				on_account_new), mailer);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(2, 6, 0)
 	widget = gtk_button_new_from_stock(GTK_STOCK_EDIT);
+#else
+	widget = gtk_button_new_with_mnemonic("_Edit");
+#endif
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				on_account_edit), mailer);
 	gtk_box_pack_start(GTK_BOX(vbox3), widget, FALSE, TRUE, 0);
@@ -276,6 +281,8 @@ typedef struct _AccountData
 static GtkWidget * gtk_assistant_new(void);
 static gint gtk_assistant_append_page(GtkWidget * assistant,
 		GtkWidget * widget);
+static gtk_assistant_set_page_title(GtkWidget * assistant, GtkWidget * page,
+		const gchar * title);
 #endif
 static void _on_assistant_cancel(GtkWidget * widget, gpointer data);
 static void _on_assistant_close(GtkWidget * widget, gpointer data);
@@ -371,6 +378,15 @@ typedef struct _GtkAssistant
 	unsigned int page_cur;
 } GtkAssistant;
 
+typedef enum _GtkAssistantPageType
+{
+	GTK_ASSISTANT_PAGE_CONTENT,
+	GTK_ASSISTANT_PAGE_INTRO,
+	GTK_ASSISTANT_PAGE_CONFIRM,
+	GTK_ASSISTANT_PAGE_SUMMARY,
+	GTK_ASSISTANT_PAGE_PROGRESS
+} GtkAssistantPageType;
+
 /* functions */
 static int _assistant_error(char const * message, int ret);
 static gboolean _on_assistant_closex(GtkWidget * widget, GdkEvent * event,
@@ -418,7 +434,7 @@ static GtkWidget * gtk_assistant_new(void)
 	gtk_widget_show(hbox);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	gtk_widget_show(vbox);
-	gtk_container_add(G_CONTAINER(window), vbox);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
 	if(assistant == NULL)
 		return window;
 	assistant->window = window;
@@ -482,6 +498,13 @@ static gint gtk_assistant_append_page(GtkWidget * assistant, GtkWidget * widget)
 		gtk_container_add(GTK_CONTAINER(assistant->frame), widget);
 	gtk_widget_show(widget);
 	return assistant->page_cnt++;
+}
+
+
+static gtk_assistant_set_page_title(GtkWidget * assistant, GtkWidget * page,
+		const gchar * title)
+{
+	/* FIXME implement */
 }
 #endif
 
