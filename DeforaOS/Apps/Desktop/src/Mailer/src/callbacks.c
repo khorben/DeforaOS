@@ -295,8 +295,10 @@ static GtkWidget * gtk_assistant_new(void);
 static gint gtk_assistant_get_current_page(GtkWidget * assistant);
 static gint gtk_assistant_append_page(GtkWidget * assistant,
 		GtkWidget * widget);
-static gtk_assistant_set_page_title(GtkWidget * assistant, GtkWidget * page,
-		const gchar * title);
+static void gtk_assistant_set_page_type(GtkWidget * assistant, GtkWidget * page,
+		GtkAssistantPageType type);
+static void gtk_assistant_set_page_title(GtkWidget * assistant,
+		GtkWidget * page, const gchar * title);
 static void gtk_assistant_set_page_complete(GtkWidget *assistant,
 		GtkWidget * page, gboolean complete);
 #endif
