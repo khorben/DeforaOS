@@ -277,12 +277,28 @@ typedef struct _AccountData
 	GtkWidget * confirm;
 } AccountData;
 #if !GTK_CHECK_VERSION(2, 10, 0)
+/* macros */
 # define GTK_ASSISTANT(widget) (widget)
+
+/* types */
+typedef enum _GtkAssistantPageType
+{
+	GTK_ASSISTANT_PAGE_CONTENT,
+	GTK_ASSISTANT_PAGE_INTRO,
+	GTK_ASSISTANT_PAGE_CONFIRM,
+	GTK_ASSISTANT_PAGE_SUMMARY,
+	GTK_ASSISTANT_PAGE_PROGRESS
+} GtkAssistantPageType;
+
+/* functions */
 static GtkWidget * gtk_assistant_new(void);
+static gint gtk_assistant_get_current_page(GtkWidget * assistant);
 static gint gtk_assistant_append_page(GtkWidget * assistant,
 		GtkWidget * widget);
 static gtk_assistant_set_page_title(GtkWidget * assistant, GtkWidget * page,
 		const gchar * title);
+static void gtk_assistant_set_page_complete(GtkWidget *assistant,
+		GtkWidget * page, gboolean complete);
 #endif
 static void _on_assistant_cancel(GtkWidget * widget, gpointer data);
 static void _on_assistant_close(GtkWidget * widget, gpointer data);
@@ -377,15 +393,6 @@ typedef struct _GtkAssistant
 	unsigned int page_cnt;
 	unsigned int page_cur;
 } GtkAssistant;
-
-typedef enum _GtkAssistantPageType
-{
-	GTK_ASSISTANT_PAGE_CONTENT,
-	GTK_ASSISTANT_PAGE_INTRO,
-	GTK_ASSISTANT_PAGE_CONFIRM,
-	GTK_ASSISTANT_PAGE_SUMMARY,
-	GTK_ASSISTANT_PAGE_PROGRESS
-} GtkAssistantPageType;
 
 /* functions */
 static int _assistant_error(char const * message, int ret);
