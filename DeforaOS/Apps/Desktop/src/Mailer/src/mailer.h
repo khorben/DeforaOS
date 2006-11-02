@@ -15,10 +15,10 @@
 typedef struct _Mailer
 {
 	Account * available;
-	int available_cnt;
+	unsigned int available_cnt;
 
 	Account ** account;
-	int account_cnt;
+	unsigned int account_cnt;
 	Account * account_cur;
 
 	/* widgets */
@@ -46,5 +46,8 @@ void mailer_delete(Mailer * mailer);
 
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);
+
+/* FIXME */
+int mailer_account_add(Mailer * mailer);
 
 #endif

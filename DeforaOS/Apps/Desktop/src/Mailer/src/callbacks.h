@@ -26,6 +26,17 @@ void on_help_about(GtkWidget * widget, gpointer data);
 void on_new_mail(GtkWidget * widget, gpointer data);
 
 
+/* preferences window */
+void on_preferences_ok(GtkWidget * widget, gpointer data);
+void on_preferences_cancel(GtkWidget * widget, gpointer data);
+
+
+/* accounts */
+void on_account_new(GtkWidget * widget, gpointer data);
+void on_account_edit(GtkWidget * widget, gpointer data);
+void on_account_delete(GtkWidget * widget, gpointer data);
+
+
 /* compose window */
 gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 void on_compose_save(GtkWidget * widget, gpointer data);

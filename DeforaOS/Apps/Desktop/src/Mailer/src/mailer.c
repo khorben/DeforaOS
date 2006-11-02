@@ -127,8 +127,6 @@ Mailer * mailer_new(void)
 	gtk_paned_set_position(GTK_PANED(hpaned), 160);
 	/* folders */
 	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	mailer->view_folders = _new_folders_view();
@@ -138,8 +136,6 @@ Mailer * mailer_new(void)
 	gtk_paned_set_position(GTK_PANED(vpaned), 160);
 	/* messages list */
 	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	mailer->view_headers = gtk_tree_view_new();
@@ -150,8 +146,6 @@ Mailer * mailer_new(void)
 	mailer->view_body = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(mailer->view_body), FALSE);
 	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), mailer->view_body);
@@ -204,7 +198,7 @@ static int _new_plugins(Mailer * mailer)
 	{
 		_mailer_error(dirname, 0);
 		free(dirname);
-		return 1;
+		return 0;
 	}
 	for(de = readdir(dir); de != NULL; de = readdir(dir))
 	{
@@ -249,10 +243,11 @@ static int _new_plugins(Mailer * mailer)
 			continue;
 		}
 		p[mailer->available_cnt].name[len-3] = '\0';
-		p[mailer->available_cnt].handle = NULL;
-		p[mailer->available_cnt++].plugin = NULL;
+		p[mailer->available_cnt].handle = handle;
+		p[mailer->available_cnt++].plugin = plugin;
+#ifdef DEBUG
 		fprintf(stderr, "Plug-in %s: %s\n", filename, plugin->name);
-		dlclose(handle);
+#endif
 		free(filename);
 	}
 	if(closedir(dir) != 0)
@@ -319,9 +314,44 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	return vbox;
 }
 
-/* static gboolean _new_accounts(gpointer data)
+
+void mailer_delete(Mailer * mailer)
 {
-	Mailer * mailer = data;
+	unsigned int i;
+
+	for(i = 0; i < mailer->available_cnt; i++)
+	{
+		free(mailer->available[i].name);
+		free(mailer->available[i].title);
+		dlclose(mailer->available[i].handle);
+	}
+	free(mailer->available);
+	for(i = 0; i < mailer->account_cnt; i++)
+		account_delete(mailer->account[i]);
+	free(mailer->account);
+	free(mailer);
+}
+
+
+/* useful */
+int mailer_error(Mailer * mailer, char const * message, int ret)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+	return ret;
+}
+
+
+int mailer_account_add(Mailer * mailer)
+	/* FIXME */
+{
 	Account ** p;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
@@ -332,7 +362,7 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	char * icons[] = { "stock_inbox", "stock_mail-handling",
 		"stock_sent-mail", "stock_trash_full", "stock_folder" };
 
-	/ * FIXME hard-coded * /
+	/* FIXME hard-coded */
 	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt+1)))
 			== NULL)
 		return mailer_error(mailer, "realloc", FALSE);
@@ -359,30 +389,4 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	}
 	mailer->account_cnt++;
 	return FALSE;
-} */
-
-
-void mailer_delete(Mailer * mailer)
-{
-	int i;
-
-	for(i = 0; i < mailer->account_cnt; i++)
-		account_delete(mailer->account[i]);
-	free(mailer->account);
-	free(mailer);
-}
-
-
-/* useful */
-int mailer_error(Mailer * mailer, char const * message, int ret)
-{
-	GtkWidget * dialog;
-
-	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	gtk_widget_show(dialog);
-	return ret;
 }
