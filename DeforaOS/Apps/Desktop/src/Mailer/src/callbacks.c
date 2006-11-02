@@ -292,14 +292,13 @@ typedef enum _GtkAssistantPageType
 
 /* functions */
 static GtkWidget * gtk_assistant_new(void);
-static gint gtk_assistant_get_current_page(GtkWidget * assistant);
-static gint gtk_assistant_append_page(GtkWidget * assistant,
-		GtkWidget * widget);
-static void gtk_assistant_set_page_type(GtkWidget * assistant, GtkWidget * page,
+static gint gtk_assistant_get_current_page(GtkWidget * widget);
+static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * widget);
+static void gtk_assistant_set_page_type(GtkWidget * widget, GtkWidget * page,
 		GtkAssistantPageType type);
-static void gtk_assistant_set_page_title(GtkWidget * assistant,
-		GtkWidget * page, const gchar * title);
-static void gtk_assistant_set_page_complete(GtkWidget *assistant,
+static void gtk_assistant_set_page_title(GtkWidget * widget, GtkWidget * page,
+		const gchar * title);
+static void gtk_assistant_set_page_complete(GtkWidget * widget,
 		GtkWidget * page, gboolean complete);
 #endif
 static void _on_assistant_cancel(GtkWidget * widget, gpointer data);
@@ -491,47 +490,47 @@ static void _on_gtkassistant_back(GtkWidget * widget, gpointer data)
 }
 
 
-static gint gtk_assistant_get_current_page(GtkWidget * assistant)
+static gint gtk_assistant_get_current_page(GtkWidget * widget)
 {
 	/* FIXME */
 }
 
 
-static gint gtk_assistant_append_page(GtkWidget * assistant, GtkWidget * widget)
+static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * widget)
 {
 	GtkAssistant * assistant;
 	GtkWidget ** p;
 
-	if((assistant = g_object_get_data(G_OBJECT(assistant), "assistant"))
+	if((assistant = g_object_get_data(G_OBJECT(widget), "assistant"))
 			== NULL)
 		return _gtkassistant_error("data not found", -1);
 	if((p = realloc(assistant->page, sizeof(*p) * (assistant->page_cnt+1)))
 			== NULL)
 		return _gtkassistant_error(strerror(errno), -1);
 	assistant->page = p;
-	assistant->page[assistant->page_cnt] = widget;
+	assistant->page[assistant->page_cnt] = page;
 	if(assistant->page_cnt == 0)
-		gtk_container_add(GTK_CONTAINER(assistant->frame), widget);
-	gtk_widget_show(widget);
+		gtk_container_add(GTK_CONTAINER(assistant->frame), page);
+	gtk_widget_show(page);
 	return assistant->page_cnt++;
 }
 
 
-static void gtk_assistant_set_page_type(GtkWidget * assistant, GtkWidget * page,
+static void gtk_assistant_set_page_type(GtkWidget * widget, GtkWidget * page,
 		GtkAssistantPageType type)
 {
 	/* FIXME */
 }
 
 
-static void gtk_assistant_set_page_title(GtkWidget * assistant,
-		GtkWidget * page, const gchar * title)
+static void gtk_assistant_set_page_title(GtkWidget * widget, GtkWidget * page,
+		const gchar * title)
 {
 	/* FIXME */
 }
 
 
-static void gtk_assistant_set_page_complete(GtkWidget *assistant,
+static void gtk_assistant_set_page_complete(GtkWidget * widget,
 		GtkWidget * page, gboolean complete)
 {
 	/* FIXME */
