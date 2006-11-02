@@ -293,7 +293,7 @@ typedef enum _GtkAssistantPageType
 /* functions */
 static GtkWidget * gtk_assistant_new(void);
 static gint gtk_assistant_get_current_page(GtkWidget * widget);
-static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * widget);
+static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * page);
 static void gtk_assistant_set_page_type(GtkWidget * widget, GtkWidget * page,
 		GtkAssistantPageType type);
 static void gtk_assistant_set_page_title(GtkWidget * widget, GtkWidget * page,
@@ -496,7 +496,7 @@ static gint gtk_assistant_get_current_page(GtkWidget * widget)
 }
 
 
-static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * widget)
+static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * page)
 {
 	GtkAssistant * assistant;
 	GtkWidget ** p;
