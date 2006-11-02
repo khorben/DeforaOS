@@ -380,8 +380,6 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_about_on_closex), window);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
@@ -393,6 +391,8 @@ void on_help_about(GtkWidget * widget, gpointer data)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window),
 				_license);
 	free(buf);
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_about_on_closex), window);
 	gtk_widget_show(window);
 }
 #else /* !GTK_CHECK_VERSION(2, 6, 0) */
