@@ -25,6 +25,11 @@ static char const * _authors[] =
 /* FIXME */
 static char const _license[] = "GPLv2";
 
+const char * title[3] =
+{
+	"Account type", "Account settings", "Account confirmation"
+};
+
 
 /* callbacks */
 /* window */
@@ -53,6 +58,14 @@ void on_file_quit(GtkWidget * widget, gpointer data)
 
 
 /* edit menu */
+typedef enum _AccountColumn
+{
+	AC_DATA,
+	AC_ENABLED,
+	AC_TITLE,
+	AC_TYPE
+} AccountColumn;
+#define AC_LAST AC_TYPE
 static void _preferences_set(Mailer * mailer);
 static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
@@ -73,8 +86,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 		return;
 	}
 	mailer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(mailer->pr_window), 300, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(mailer->pr_window), 4);
-	gtk_window_set_resizable(GTK_WINDOW(mailer->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(mailer->pr_window),
 			"Mailer preferences");
 	gtk_window_set_transient_for(GTK_WINDOW(mailer->pr_window), GTK_WINDOW(
@@ -88,16 +101,28 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	store = gtk_list_store_new(1, G_TYPE_STRING);
+	store = gtk_list_store_new(AC_LAST+1, G_TYPE_POINTER, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_STRING);
 	mailer->pr_accounts = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_accounts),
-			FALSE);
+			TRUE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
-			gtk_tree_view_column_new_with_attributes("Account name",
-				gtk_cell_renderer_text_new(), "text", 0, NULL));
+			gtk_tree_view_column_new_with_attributes("Enabled",
+				gtk_cell_renderer_toggle_new(), "active",
+				AC_ENABLED, NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
+			gtk_tree_view_column_new_with_attributes("Name",
+				gtk_cell_renderer_text_new(), "text", AC_TITLE,
+				NULL));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
+			gtk_tree_view_column_new_with_attributes("Type",
+				gtk_cell_renderer_text_new(), "text", AC_TYPE,
+				NULL));
 	gtk_container_add(GTK_CONTAINER(widget), mailer->pr_accounts);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	vbox3 = gtk_vbox_new(FALSE, 4);
@@ -129,7 +154,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Messages font:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_font_button_new();
 	gtk_size_group_add_widget(group, widget);
 	gtk_font_button_set_use_font(GTK_FONT_BUTTON(widget), TRUE);
@@ -274,6 +299,7 @@ typedef struct _AccountData
 {
 	Mailer * mailer;
 	unsigned int available;
+	Account * account;
 	GtkWidget * settings;
 	GtkWidget * confirm;
 } AccountData;
@@ -328,6 +354,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	}
 	ad->mailer = mailer;
 	ad->available = 0;
+	ad->account = NULL;
 	assistant = gtk_assistant_new();
 	g_signal_connect(G_OBJECT(assistant), "cancel", G_CALLBACK(
 				_on_assistant_cancel), ad);
@@ -356,8 +383,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	gtk_widget_show_all(vbox);
 	gtk_assistant_append_page(GTK_ASSISTANT(assistant), vbox);
-	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox,
-			"Account type");
+	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox, title[0]);
 	gtk_assistant_set_page_type(GTK_ASSISTANT(assistant), vbox,
 			GTK_ASSISTANT_PAGE_INTRO);
 	gtk_assistant_set_page_complete(GTK_ASSISTANT(assistant), vbox, TRUE);
@@ -366,8 +392,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	ad->settings = vbox;
 	gtk_widget_show(vbox);
 	gtk_assistant_append_page(GTK_ASSISTANT(assistant), vbox);
-	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox,
-			"Account settings");
+	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox, title[1]);
 	gtk_assistant_set_page_type(GTK_ASSISTANT(assistant), vbox,
 			GTK_ASSISTANT_PAGE_CONTENT);
 	gtk_assistant_set_page_complete(GTK_ASSISTANT(assistant), vbox, TRUE);
@@ -376,8 +401,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	ad->confirm = vbox;
 	gtk_widget_show(vbox);
 	gtk_assistant_append_page(GTK_ASSISTANT(assistant), vbox);
-	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox,
-			"Account confirmation");
+	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox, title[2]);
 	gtk_assistant_set_page_type(GTK_ASSISTANT(assistant), vbox,
 			GTK_ASSISTANT_PAGE_CONFIRM);
 	gtk_assistant_set_page_complete(GTK_ASSISTANT(assistant), vbox, TRUE);
@@ -548,6 +572,8 @@ static void _on_assistant_close(GtkWidget * widget, gpointer data)
 {
 	AccountData * ad = data;
 
+	if(ad->account != NULL)
+		account_delete(ad->account);
 	free(ad);
 	gtk_widget_destroy(widget);
 }
@@ -560,7 +586,16 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(ad->mailer->pr_accounts));
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-	gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, "account", -1);
+#ifdef DEBUG
+	fprintf(stderr, "AC_DATA %p, AC_ENABLED 1, AC_TITLE %s, AC_TYPE %s\n",
+			ad->account, ad->account->title,
+			ad->account->plugin->type);
+#endif
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+			AC_DATA, ad->account, AC_ENABLED, 1,
+			AC_TITLE, ad->account->title,
+			AC_TYPE, ad->account->plugin->type, -1);
+	ad->account = NULL;
 }
 
 static GtkWidget * _account_config_update(AccountConfig * config);
@@ -569,26 +604,33 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data)
 {
 	AccountData * ad = data;
-	/* FIXME should be defined in just one place */
-	const char * title[3] = { "Account type", "Account settings",
-		"Account confirmation" };
 	unsigned int i;
-	AccountConfig * config;
+	Account * ac;
 
 	i = gtk_assistant_get_current_page(GTK_ASSISTANT(widget));
 	gtk_window_set_title(GTK_WINDOW(widget), title[i]);
 	if(i == 1)
 	{
 		gtk_container_remove(GTK_CONTAINER(page), ad->settings);
-		config = ad->mailer->available[ad->available].plugin->config;
-		ad->settings = _account_config_update(config);
+		if(ad->account != NULL)
+			account_delete(ad->account);
+		ac = &ad->mailer->available[ad->available];
+		if((ad->account = account_new("account", ac->name)) == NULL)
+			ad->settings = gtk_label_new("Could not load plug-in");
+		else
+		{
+			ad->settings = _account_config_update(
+					ad->account->plugin->config);
+			/* FIXME implement proper configuration pages */
+			account_set_title(ad->account, ac->title);
+		}
 		gtk_container_add(GTK_CONTAINER(page), ad->settings);
 	}
 	else if(i == 2)
 	{
 		gtk_container_remove(GTK_CONTAINER(page), ad->confirm);
-		config = ad->mailer->available[ad->available].plugin->config;
-		ad->confirm = _account_config_display(config);
+		ad->confirm = _account_config_display(
+				ad->account->plugin->config);
 		gtk_container_add(GTK_CONTAINER(page), ad->confirm);
 	}
 }

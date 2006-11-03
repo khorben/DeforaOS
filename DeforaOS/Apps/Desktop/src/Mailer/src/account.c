@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
+#include "mailer.h"
 #include "account/account.h"
 #include "../config.h"
 
@@ -29,15 +30,14 @@ Account * account_new(char const * type, char const * name)
 
 	if((account = malloc(sizeof(*account))) == NULL)
 		return NULL;
-	memset(account, 0, sizeof(*account));
 	if((account->name = strdup(name)) == NULL
 			|| (filename = malloc(strlen(PLUGINDIR) + strlen(type)
-					+ strlen("/account/.so") + 1)) == NULL)
+					+ strlen(name) + 6)) == NULL)
 	{
 		account_delete(account);
 		return NULL;
 	}
-	sprintf(filename, "%s/account/%s.so", PLUGINDIR, type);
+	sprintf(filename, "%s/%s/%s.so", PLUGINDIR, type, name);
 	if((account->handle = dlopen(filename, RTLD_NOW)) == NULL
 			|| (account->plugin = dlsym(account->handle,
 					"account_plugin")) == NULL)
@@ -48,17 +48,30 @@ Account * account_new(char const * type, char const * name)
 		return NULL;
 	}
 	free(filename);
+	account->title = NULL;
 	return account;
 }
 
 
 void account_delete(Account * account)
 {
+	/* FIXME free config values */
+	free(account->name);
+	free(account->title);
 	if(account->handle != NULL)
 		dlclose(account->handle);
-	if(account->name != NULL)
-		free(account->name);
 	free(account);
+}
+
+
+/* accessors */
+int account_set_title(Account * account, char const * title)
+{
+	if(account->title != NULL)
+		free(account->title);
+	if((account->title = strdup(title != NULL ? title : "")) == NULL)
+		return mailer_error(NULL, "strdup", 1);
+	return 0;
 }
 
 
