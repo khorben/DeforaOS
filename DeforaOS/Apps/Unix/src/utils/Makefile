@@ -29,6 +29,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/cksum.c \
 		$(PACKAGE)-$(VERSION)/src/cmp.c \
 		$(PACKAGE)-$(VERSION)/src/cp.c \
+		$(PACKAGE)-$(VERSION)/src/df.c \
 		$(PACKAGE)-$(VERSION)/src/dirname.c \
 		$(PACKAGE)-$(VERSION)/src/du.c \
 		$(PACKAGE)-$(VERSION)/src/echo.c \
@@ -51,6 +52,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/rmdir.c \
 		$(PACKAGE)-$(VERSION)/src/sleep.c \
 		$(PACKAGE)-$(VERSION)/src/strings.c \
+		$(PACKAGE)-$(VERSION)/src/tail.c \
 		$(PACKAGE)-$(VERSION)/src/test.c \
 		$(PACKAGE)-$(VERSION)/src/time.c \
 		$(PACKAGE)-$(VERSION)/src/touch.c \
@@ -60,6 +62,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/uniq.c \
 		$(PACKAGE)-$(VERSION)/src/unlink.c \
 		$(PACKAGE)-$(VERSION)/src/wc.c \
+		$(PACKAGE)-$(VERSION)/src/who.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \

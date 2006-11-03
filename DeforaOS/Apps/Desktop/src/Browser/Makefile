@@ -28,9 +28,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/delete.c \
 		$(PACKAGE)-$(VERSION)/src/open.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/browser.h \
+		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 

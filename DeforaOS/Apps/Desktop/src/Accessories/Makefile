@@ -24,7 +24,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/calendar.c \
 		$(PACKAGE)-$(VERSION)/src/fontsel.c \
 		$(PACKAGE)-$(VERSION)/src/run.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 

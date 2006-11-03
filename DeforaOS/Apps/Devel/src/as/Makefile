@@ -1,6 +1,7 @@
 PACKAGE	= as
 VERSION	= 0.1.0
 SUBDIRS	= src
+RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
 
@@ -17,7 +18,7 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/as.c \
@@ -33,26 +34,30 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/scanner.h \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/arch/i386.c \
+		$(PACKAGE)-$(VERSION)/src/arch/i386_real.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i486.c \
+		$(PACKAGE)-$(VERSION)/src/arch/i586.c \
+		$(PACKAGE)-$(VERSION)/src/arch/i686.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.c \
 		$(PACKAGE)-$(VERSION)/src/arch/arch.h \
-		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
-		$(PACKAGE)-$(VERSION)/src/arch/80386.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/80386.ins \
-		$(PACKAGE)-$(VERSION)/src/arch/80486.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/80386.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/80486.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/80486.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/80586.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/80586.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/80686.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/80686.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
-		$(PACKAGE)-$(VERSION)/src/arch/Makefile \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
 		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
-		$(PACKAGE)-$(VERSION)/src/format/Makefile \
-		$(PACKAGE)-$(VERSION)/project.conf \
-		$(PACKAGE)-$(VERSION)/Makefile
+		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
 install: all
@@ -60,3 +65,5 @@ install: all
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+
+.PHONY: all subdirs clean distclean dist install uninstall

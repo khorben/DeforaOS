@@ -1,7 +1,8 @@
 TARGETS	= gedi
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W -Wall -ansi `pkg-config --cflags gtk+-2.0` -I /System/Include
 CFLAGS	= -g
@@ -39,3 +40,5 @@ install: all
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/gedi
+
+.PHONY: all clean distclean install uninstall

@@ -7,7 +7,7 @@ INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CFLAGSF	= -W -Wall
 CFLAGS	= -g
-LDFLAGSF= -l dl
+LDFLAGSF= 
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -61,3 +61,5 @@ install: all
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/as
+
+.PHONY: all subdirs clean distclean install uninstall

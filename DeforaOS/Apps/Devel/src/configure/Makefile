@@ -1,6 +1,7 @@
 PACKAGE	= configure
 VERSION	= 0.0.4
 SUBDIRS	= src
+RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
 
@@ -28,12 +29,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/makefile.h \
 		$(PACKAGE)-$(VERSION)/src/settings.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/BUGS \
 		$(PACKAGE)-$(VERSION)/CHANGES \
 		$(PACKAGE)-$(VERSION)/configure.txt \
 		$(PACKAGE)-$(VERSION)/INSTALL \
-		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)

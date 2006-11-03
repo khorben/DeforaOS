@@ -1,6 +1,7 @@
 PACKAGE	= GServer
 VERSION	= 0.0.0
 SUBDIRS	= src
+RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
 
@@ -27,6 +28,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/video/vbe.h \
 		$(PACKAGE)-$(VERSION)/src/video/video.h \
 		$(PACKAGE)-$(VERSION)/src/video/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
