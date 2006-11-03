@@ -79,11 +79,7 @@ Mailer * mailer_new(void)
 		_mailer_error("malloc", 0);
 		return NULL;
 	}
-	if(_new_plugins(mailer) != 0)
-	{
-		free(mailer);
-		return NULL;
-	}
+	_new_plugins(mailer);
 	mailer->account = NULL;
 	mailer->account_cnt = 0;
 	mailer->account_cur = NULL;
@@ -199,13 +195,12 @@ static int _new_plugins(Mailer * mailer)
 	{
 		_mailer_error(dirname, 0);
 		free(dirname);
-		return 0;
+		return 1;
 	}
 	for(de = readdir(dir); de != NULL; de = readdir(dir))
 	{
-		if((len = strlen(de->d_name)) < 4)
-			continue;
-		if(strcmp(".so", &de->d_name[len-3]) != 0)
+		if((len = strlen(de->d_name)) < 4
+				|| strcmp(".so", &de->d_name[len-3]) != 0)
 			continue;
 		if((filename = malloc(strlen(dirname) + len + 2)) == NULL)
 		{
@@ -239,16 +234,18 @@ static int _new_plugins(Mailer * mailer)
 			_mailer_error("strdup", 0);
 			free(p[mailer->available_cnt].name);
 			free(p[mailer->available_cnt].title);
-			free(filename);
-			dlclose(handle);
-			continue;
 		}
-		p[mailer->available_cnt].name[len-3] = '\0';
-		p[mailer->available_cnt].handle = handle;
-		p[mailer->available_cnt++].plugin = plugin;
+		else
+		{
+			p[mailer->available_cnt].name[len-3] = '\0';
+			p[mailer->available_cnt].handle = NULL;
+			p[mailer->available_cnt++].plugin = NULL;
 #ifdef DEBUG
-		fprintf(stderr, "Plug-in %s: %s\n", filename, plugin->name);
+			fprintf(stderr, "Plug-in %s: %s (%s)\n", filename,
+					plugin->name, plugin->type);
 #endif
+		}
+		dlclose(handle);
 		free(filename);
 	}
 	if(closedir(dir) != 0)
@@ -324,7 +321,6 @@ void mailer_delete(Mailer * mailer)
 	{
 		free(mailer->available[i].name);
 		free(mailer->available[i].title);
-		dlclose(mailer->available[i].handle);
 	}
 	free(mailer->available);
 	for(i = 0; i < mailer->account_cnt; i++)
@@ -339,6 +335,8 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
+	if(mailer == NULL)
+		return _mailer_error(message, ret);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
@@ -368,8 +366,8 @@ int mailer_account_add(Mailer * mailer)
 			== NULL)
 		return mailer_error(mailer, "realloc", FALSE);
 	mailer->account = p;
-	if((mailer->account[mailer->account_cnt] = account_new("mbox",
-					"Local folders")) == NULL)
+	if((mailer->account[mailer->account_cnt] = account_new("account",
+					"mbox")) == NULL)
 		return FALSE;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->view_folders));
 	gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);

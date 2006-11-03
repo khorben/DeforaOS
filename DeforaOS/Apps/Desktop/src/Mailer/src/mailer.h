@@ -14,7 +14,7 @@
 /* types */
 typedef struct _Mailer
 {
-	Account * available;
+	Account * available; /* XXX consider using another data type */
 	unsigned int available_cnt;
 
 	Account ** account;
