@@ -40,6 +40,7 @@ typedef struct _AccountFolder
 
 typedef struct _AccountPlugin
 {
+	char const * type;
 	char const * name;
 	AccountConfig * config;
 	AccountFolder ** (*folders)(void);
@@ -54,8 +55,12 @@ typedef struct _Account
 
 
 /* functions */
+/* FIXME type should be automatically "account" and wrap plug-in engine */
 Account * account_new(char const * type, char const * name);
 void account_delete(Account * account);
+
+/* accessors */
+int account_set_title(Account * account, char const * title);
 
 /* useful */
 /* FIXME wrong we just need receive, then it calls callbacks */

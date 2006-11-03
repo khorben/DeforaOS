@@ -8,6 +8,7 @@
 
 
 /* variables */
+char const imap4_type[] = "IMAP4";
 char const imap4_name[] = "IMAP4 server";
 
 AccountConfig imap4_config[] =
@@ -42,6 +43,7 @@ AccountFolder ** imap4_folders(void)
 
 AccountPlugin account_plugin =
 {
+	imap4_type,
 	imap4_name,
 	imap4_config,
 	imap4_folders

@@ -8,6 +8,7 @@
 
 
 /* variables */
+char const pop3_type[] = "POP3";
 char const pop3_name[] = "POP3 server";
 
 AccountConfig pop3_config[] =
@@ -40,6 +41,7 @@ AccountFolder ** pop3_folders(void)
 
 AccountPlugin account_plugin =
 {
+	pop3_type,
 	pop3_name,
 	pop3_config,
 	pop3_folders

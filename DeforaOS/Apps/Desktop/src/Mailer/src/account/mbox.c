@@ -8,6 +8,7 @@
 
 
 /* variables */
+char const mbox_type[] = "MBOX";
 char const mbox_name[] = "Local folder";
 
 AccountConfig mbox_config[] =
@@ -39,6 +40,7 @@ AccountFolder ** mbox_folders(void)
 
 AccountPlugin account_plugin =
 {
+	mbox_type,
 	mbox_name,
 	mbox_config,
 	mbox_folders
