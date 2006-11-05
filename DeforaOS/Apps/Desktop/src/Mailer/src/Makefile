@@ -26,7 +26,7 @@ mailer: $(mailer_OBJS)
 account.o: account.c account/account.h
 	$(CC) $(mailer_CFLAGS) -c account.c
 
-callbacks.o: callbacks.c callbacks.h compose.h mailer.h
+callbacks.o: callbacks.c account/account.h callbacks.h compose.h mailer.h
 	$(CC) $(mailer_CFLAGS) -c callbacks.c
 
 common.o: common.c
