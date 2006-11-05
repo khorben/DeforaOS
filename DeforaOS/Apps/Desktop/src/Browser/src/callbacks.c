@@ -393,6 +393,8 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	free(buf);
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_about_on_closex), window);
+	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
 	gtk_widget_show(window);
 }
 #else /* !GTK_CHECK_VERSION(2, 6, 0) */
