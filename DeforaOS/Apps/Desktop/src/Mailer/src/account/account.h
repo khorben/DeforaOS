@@ -8,6 +8,12 @@
 
 
 /* types */
+typedef struct _AccountIdentity
+{
+	char * from;
+	char * email;
+} AccountIdentity;
+
 typedef enum _AccountConfigType
 {
 	ACT_NONE = 0,
@@ -46,10 +52,12 @@ typedef struct _AccountPlugin
 	AccountConfig * config;
 	AccountFolder ** (*folders)(void);
 } AccountPlugin;
+
 typedef struct _Account
 {
 	char * name;
 	char * title;
+	AccountIdentity * identity;
 	void * handle;
 	AccountPlugin * plugin;
 } Account;

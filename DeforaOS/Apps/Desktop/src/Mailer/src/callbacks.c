@@ -27,7 +27,7 @@ static char const _license[] = "GPLv2";
 
 const char * title[3] =
 {
-	"Account type", "Account settings", "Account confirmation"
+	"New account", "Account settings", "Account confirmation"
 };
 
 
@@ -298,6 +298,8 @@ void on_preferences_cancel(GtkWidget * widget, gpointer data)
 typedef struct _AccountData
 {
 	Mailer * mailer;
+	char * title;
+	AccountIdentity identity;
 	unsigned int available;
 	Account * account;
 	GtkWidget * settings;
@@ -333,13 +335,16 @@ static void _on_assistant_close(GtkWidget * widget, gpointer data);
 static void _on_assistant_apply(GtkWidget * widget, gpointer data);
 static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data);
-static void _on_account_type_change(GtkWidget * widget, gpointer data);
+static void _on_entry_changed(GtkWidget * widget, gpointer data);
+static void _on_account_type_changed(GtkWidget * widget, gpointer data);
 void on_account_new(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
 	AccountData * ad;
 	GtkWidget * assistant;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkSizeGroup * group;
 	unsigned int i;
 
 	if(mailer->available_cnt == 0)
@@ -353,6 +358,8 @@ void on_account_new(GtkWidget * widget, gpointer data)
 		return;
 	}
 	ad->mailer = mailer;
+	ad->title = NULL;
+	memset(&ad->identity, 0, sizeof(ad->identity));
 	ad->available = 0;
 	ad->account = NULL;
 	assistant = gtk_assistant_new();
@@ -367,11 +374,43 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	/* plug-in selection */
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
-	widget = gtk_label_new("Please select the type of account\n"
-			"you want to create now:"),
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Account title:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_entry_new();
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				_on_entry_changed), &ad->title);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Your name:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_entry_new();
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				_on_entry_changed), &(ad->identity.from));
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("e-mail address:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_entry_new();
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				_on_entry_changed), &ad->identity.email);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Type of account:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_combo_box_new_text();
+	gtk_size_group_add_widget(group, widget);
 	/* XXX this works because there is no plug-in list reload
 	 *     would it be implemented this will need validation later */
 	for(i = 0; i < mailer->available_cnt; i++)
@@ -379,8 +418,9 @@ void on_account_new(GtkWidget * widget, gpointer data)
 				mailer->available[i].title);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_on_account_type_change), ad);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+				_on_account_type_changed), ad);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	gtk_widget_show_all(vbox);
 	gtk_assistant_append_page(GTK_ASSISTANT(assistant), vbox);
 	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), vbox, title[0]);
@@ -599,7 +639,7 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 }
 
 static GtkWidget * _account_config_update(AccountConfig * config);
-static GtkWidget * _account_config_display(AccountConfig * config);
+static GtkWidget * _account_display(Account * account);
 static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data)
 {
@@ -619,6 +659,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 				account_delete(ad->account);
 			ac = &ad->mailer->available[ad->available];
 			ad->account = account_new("account", ac->name);
+			account_set_title(ad->account, ad->title);
 		}
 		if(ad->account == NULL)
 			ad->settings = gtk_label_new("Could not load plug-in");
@@ -626,15 +667,13 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		{
 			ad->settings = _account_config_update(
 					ad->account->plugin->config);
-			account_set_title(ad->account, ac->title);
 		}
 		gtk_container_add(GTK_CONTAINER(page), ad->settings);
 	}
 	else if(i == 2)
 	{
 		gtk_container_remove(GTK_CONTAINER(page), ad->confirm);
-		ad->confirm = _account_config_display(
-				ad->account->plugin->config);
+		ad->confirm = _account_display(ad->account);
 		gtk_container_add(GTK_CONTAINER(page), ad->confirm);
 	}
 	old = i;
@@ -648,8 +687,6 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_boolean(AccountConfig * config);
 static GtkWidget * _account_config_update(AccountConfig * config)
 	/* FIXME append ":" to labels */
-	/* FIXME consider working on a temporary plug-in instance instead
-	 *       of the available ones */
 {
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
@@ -680,6 +717,8 @@ static GtkWidget * _account_config_update(AccountConfig * config)
 			case ACT_BOOLEAN:
 				widget = _update_boolean(&config[i]);
 				break;
+			default: /* should not happen */
+				continue;
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
@@ -687,7 +726,6 @@ static GtkWidget * _account_config_update(AccountConfig * config)
 	return vbox;
 }
 
-static void _on_string_changed(GtkWidget * widget, gpointer data);
 static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
@@ -702,25 +740,9 @@ static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 		gtk_entry_set_text(GTK_ENTRY(widget), config->value);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_on_string_changed), &config->value);
+				_on_entry_changed), &config->value);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
-}
-
-static void _on_string_changed(GtkWidget * widget, gpointer data)
-{
-	const char * text;
-	char ** value = data;
-	char * p;
-
-	text = gtk_entry_get_text(GTK_ENTRY(widget));
-	if((p = realloc(*value, strlen(text)+1)) == NULL)
-	{
-		mailer_error(NULL, strerror(errno), 0);
-		return;
-	}
-	*value = p;
-	strcpy(p, text);
 }
 
 static GtkWidget * _update_password(AccountConfig * config,
@@ -739,7 +761,7 @@ static GtkWidget * _update_password(AccountConfig * config,
 		gtk_entry_set_text(GTK_ENTRY(widget), config->value);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_on_string_changed), &config->value);
+				_on_entry_changed), &config->value);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
 }
@@ -757,6 +779,7 @@ static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(widget),
 			config->title);
+	/* FIXME implement signal handler */
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
@@ -816,9 +839,11 @@ static GtkWidget * _display_uint16(AccountConfig * config,
 		GtkSizeGroup * group);
 static GtkWidget * _display_boolean(AccountConfig * config,
 		GtkSizeGroup * group);
-static GtkWidget * _account_config_display(AccountConfig * config)
+static GtkWidget * _account_display(Account * account)
 	/* FIXME append ":" to labels */
 {
+	AccountConfig * config = account->plugin->config;
+	AccountConfig p;
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
 	GtkWidget * widget;
@@ -827,6 +852,11 @@ static GtkWidget * _account_config_display(AccountConfig * config)
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	p.name = NULL;
+	p.title = "Account title";
+	p.value = account->title;
+	widget = _display_string(&p, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	for(i = 0; config[i].name != NULL; i++)
 	{
 		switch(config[i].type)
@@ -848,6 +878,8 @@ static GtkWidget * _account_config_display(AccountConfig * config)
 			case ACT_BOOLEAN:
 				widget = _display_boolean(&config[i], group);
 				break;
+			default: /* should not happen */
+				continue;
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
@@ -931,7 +963,23 @@ static GtkWidget * _display_boolean(AccountConfig * config,
 	return hbox;
 }
 
-static void _on_account_type_change(GtkWidget * widget, gpointer data)
+static void _on_entry_changed(GtkWidget * widget, gpointer data)
+{
+	const char * text;
+	char ** value = data;
+	char * p;
+
+	text = gtk_entry_get_text(GTK_ENTRY(widget));
+	if((p = realloc(*value, strlen(text)+1)) == NULL)
+	{
+		mailer_error(NULL, strerror(errno), 0);
+		return;
+	}
+	*value = p;
+	strcpy(p, text);
+}
+
+static void _on_account_type_changed(GtkWidget * widget, gpointer data)
 {
 	AccountData * ad = data;
 

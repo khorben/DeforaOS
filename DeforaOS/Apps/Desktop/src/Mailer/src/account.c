@@ -49,6 +49,7 @@ Account * account_new(char const * type, char const * name)
 	}
 	free(filename);
 	account->title = NULL;
+	account->identity = NULL;
 	return account;
 }
 
