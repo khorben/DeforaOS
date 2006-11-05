@@ -263,6 +263,7 @@ void on_new_mail(GtkWidget * widget, gpointer data)
 void on_preferences_ok(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
+	Account * account;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 	GtkTreeModel * view_model;
@@ -277,7 +278,8 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 		{
 			/* FIXME check if already present, update if needed */
 			/*       else add account with full information */
-			mailer_account_add(mailer);
+			gtk_tree_model_get(model, &iter, AC_DATA, &account, -1);
+			mailer_account_add(mailer, account);
 		}
 		while(gtk_tree_model_iter_next(model, &iter) == TRUE);
 	/* FIXME remove remaining accounts  */
@@ -636,6 +638,7 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 			AC_TITLE, ad->account->title,
 			AC_TYPE, ad->account->plugin->type, -1);
 	ad->account = NULL;
+	/* _on_assistant_close is then automatically called */
 }
 
 static GtkWidget * _account_config_update(AccountConfig * config);

@@ -47,7 +47,6 @@ void mailer_delete(Mailer * mailer);
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);
 
-/* FIXME */
-int mailer_account_add(Mailer * mailer);
+int mailer_account_add(Mailer * mailer, Account * account);
 
 #endif

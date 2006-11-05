@@ -348,7 +348,7 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 }
 
 
-int mailer_account_add(Mailer * mailer)
+int mailer_account_add(Mailer * mailer, Account * account)
 	/* FIXME */
 {
 	Account ** p;
@@ -366,15 +366,13 @@ int mailer_account_add(Mailer * mailer)
 			== NULL)
 		return mailer_error(mailer, "realloc", FALSE);
 	mailer->account = p;
-	if((mailer->account[mailer->account_cnt] = account_new("account",
-					"mbox")) == NULL)
-		return FALSE;
+	mailer->account[mailer->account_cnt] = account;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->view_folders));
 	gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
 	pixbuf = gtk_icon_theme_load_icon(mailer->theme,
 			"stock_mail-accounts", 16, 0, NULL);
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 0, pixbuf, 1,
-			"Local folders", -1);
+			account->title, -1);
 	for(f = account_folders(mailer->account[mailer->account_cnt]);
 			*f != NULL; f++)
 	{
