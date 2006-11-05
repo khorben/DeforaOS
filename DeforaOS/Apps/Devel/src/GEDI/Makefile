@@ -24,6 +24,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/gedi.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/project.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/gedi.h \
 		$(PACKAGE)-$(VERSION)/src/project.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
