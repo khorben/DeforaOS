@@ -55,11 +55,16 @@ Account * account_new(char const * type, char const * name)
 
 void account_delete(Account * account)
 {
-	/* FIXME free config values */
+	AccountConfig * p;
+
+	if(account->plugin->config != NULL)
+		for(p = account->plugin->config; p->name != NULL; p++)
+			if(p->type == ACT_STRING || p->type == ACT_PASSWORD
+					|| p->type == ACT_FILE)
+				free(p->value);
 	free(account->name);
 	free(account->title);
-	if(account->handle != NULL)
-		dlclose(account->handle);
+	dlclose(account->handle);
 	free(account);
 }
 
