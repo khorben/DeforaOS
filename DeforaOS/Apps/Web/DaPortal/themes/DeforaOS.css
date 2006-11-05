@@ -243,6 +243,11 @@ table.bordered th {
 	width:				100px;
 }
 
+.explorer .entry .thumbnail img {
+	max-height:			100px;
+	max-width:			100px;
+}
+
 .explorer .header {
 	background-color:		#404040;
 }
