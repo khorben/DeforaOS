@@ -13,6 +13,7 @@ typedef enum _AccountConfigType
 	ACT_NONE = 0,
 	ACT_STRING,
 	ACT_PASSWORD,
+	ACT_FILE,
 	ACT_UINT16,
 	ACT_BOOLEAN
 } AccountConfigType;

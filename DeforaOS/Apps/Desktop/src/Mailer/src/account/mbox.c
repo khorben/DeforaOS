@@ -13,10 +13,10 @@ char const mbox_name[] = "Local folder";
 
 AccountConfig mbox_config[] =
 {
-	{ "mbox",	"Inbox file",		ACT_STRING,	NULL },
-	{ "spool",	"Incoming mails file",	ACT_STRING,	NULL },
-	{ "sent",	"Sent mails file",	ACT_STRING,	NULL },
-	{ "draft",	"Draft mails file",	ACT_STRING,	NULL },
+	{ "mbox",	"Inbox file",		ACT_FILE,	NULL },
+	{ "spool",	"Incoming mails file",	ACT_FILE,	NULL },
+	{ "sent",	"Sent mails file",	ACT_FILE,	NULL },
+	{ "draft",	"Draft mails file",	ACT_FILE,	NULL },
 	{ NULL,		NULL,			ACT_NONE,	NULL }
 };
 

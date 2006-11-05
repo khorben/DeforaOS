@@ -638,6 +638,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_password(AccountConfig * config,
 		GtkSizeGroup * group);
+static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_boolean(AccountConfig * config);
 static GtkWidget * _account_config_update(AccountConfig * config)
@@ -647,41 +648,41 @@ static GtkWidget * _account_config_update(AccountConfig * config)
 {
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
+	GtkWidget * widget;
 	unsigned int i;
 
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	for(i = 0; config[i].name != NULL; i++)
+	{
 		switch(config[i].type)
 		{
 			case ACT_NONE:
 				continue;
 			case ACT_STRING:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_update_string(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _update_string(&config[i], group);
 				break;
 			case ACT_PASSWORD:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_update_password(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _update_password(&config[i], group);
+				break;
+			case ACT_FILE:
+				widget = _update_file(&config[i], group);
 				break;
 			case ACT_UINT16:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_update_uint16(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _update_uint16(&config[i], group);
 				break;
 			case ACT_BOOLEAN:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_update_boolean(&config[i]),
-							FALSE, TRUE, 0);
+				widget = _update_boolean(&config[i]);
 				break;
 		}
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	}
 	gtk_widget_show_all(vbox);
 	return vbox;
 }
 
+static void _on_string_changed(GtkWidget * widget, gpointer data);
 static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
@@ -693,8 +694,26 @@ static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
 	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				_on_string_changed), &config->value);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
+}
+
+static void _on_string_changed(GtkWidget * widget, gpointer data)
+{
+	const char * text;
+	char ** value = data;
+	char * p;
+
+	text = gtk_entry_get_text(GTK_ENTRY(widget));
+	if((p = realloc(*value, strlen(text)+1)) == NULL)
+	{
+		mailer_error(NULL, strerror(errno), 0);
+		return;
+	}
+	*value = p;
+	strcpy(p, text);
 }
 
 static GtkWidget * _update_password(AccountConfig * config,
@@ -709,6 +728,24 @@ static GtkWidget * _update_password(AccountConfig * config,
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
+				_on_string_changed), &config->value);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	return hbox;
+}
+
+static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
+{
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new(config->title);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_file_chooser_button_new("Choose file",
+			GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
@@ -738,6 +775,7 @@ static GtkWidget * _display_string(AccountConfig * config,
 		GtkSizeGroup * group);
 static GtkWidget * _display_password(AccountConfig * config,
 		GtkSizeGroup * group);
+static GtkWidget * _display_file(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _display_uint16(AccountConfig * config,
 		GtkSizeGroup * group);
 static GtkWidget * _display_boolean(AccountConfig * config,
@@ -747,37 +785,36 @@ static GtkWidget * _account_config_display(AccountConfig * config)
 {
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
+	GtkWidget * widget;
 	unsigned int i;
 
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	for(i = 0; config[i].name != NULL; i++)
+	{
 		switch(config[i].type)
 		{
 			case ACT_NONE:
 				continue;
 			case ACT_STRING:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_display_string(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _display_string(&config[i], group);
 				break;
 			case ACT_PASSWORD:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_display_password(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _display_password(&config[i], group);
+				break;
+			case ACT_FILE:
+				widget = _display_file(&config[i], group);
 				break;
 			case ACT_UINT16:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_display_uint16(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _display_uint16(&config[i], group);
 				break;
 			case ACT_BOOLEAN:
-				gtk_box_pack_start(GTK_BOX(vbox),
-						_display_boolean(&config[i],
-							group), FALSE, TRUE, 0);
+				widget = _display_boolean(&config[i], group);
 				break;
 		}
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	}
 	gtk_widget_show_all(vbox);
 	return vbox;
 }
@@ -791,10 +828,15 @@ static GtkWidget * _display_string(AccountConfig * config, GtkSizeGroup * group)
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = gtk_label_new("FIXME");
+	widget = gtk_label_new(config->value);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
+}
+
+static GtkWidget * _display_file(AccountConfig * config, GtkSizeGroup * group)
+{
+	return _display_string(config, group);
 }
 
 static GtkWidget * _display_password(AccountConfig * config,
@@ -802,12 +844,16 @@ static GtkWidget * _display_password(AccountConfig * config,
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	PangoFontDescription * desc;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = gtk_label_new("FIXME");
+	widget = gtk_label_new("hidden");
+	desc = pango_font_description_new();
+	pango_font_description_set_style(desc, PANGO_STYLE_ITALIC);
+	gtk_widget_modify_font(widget, desc);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -824,6 +870,7 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	/* FIXME will be malloced? */
 	snprintf(buf, sizeof(buf), "%u", (uint16_t)config->value);
 	widget = gtk_label_new(buf);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -842,6 +889,7 @@ static GtkWidget * _display_boolean(AccountConfig * config,
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	/* FIXME will be malloced? */
 	widget = gtk_label_new(config->value != 0 ? "Yes" : "No");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
