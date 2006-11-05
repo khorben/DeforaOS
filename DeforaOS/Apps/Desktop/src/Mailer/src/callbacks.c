@@ -603,6 +603,7 @@ static GtkWidget * _account_config_display(AccountConfig * config);
 static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data)
 {
+	static int old = 0;
 	AccountData * ad = data;
 	unsigned int i;
 	Account * ac;
@@ -612,16 +613,19 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 	if(i == 1)
 	{
 		gtk_container_remove(GTK_CONTAINER(page), ad->settings);
-		if(ad->account != NULL)
-			account_delete(ad->account);
-		ac = &ad->mailer->available[ad->available];
-		if((ad->account = account_new("account", ac->name)) == NULL)
+		if(old == 0)
+		{
+			if(ad->account != NULL)
+				account_delete(ad->account);
+			ac = &ad->mailer->available[ad->available];
+			ad->account = account_new("account", ac->name);
+		}
+		if(ad->account == NULL)
 			ad->settings = gtk_label_new("Could not load plug-in");
 		else
 		{
 			ad->settings = _account_config_update(
 					ad->account->plugin->config);
-			/* FIXME implement proper configuration pages */
 			account_set_title(ad->account, ac->title);
 		}
 		gtk_container_add(GTK_CONTAINER(page), ad->settings);
@@ -633,6 +637,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 				ad->account->plugin->config);
 		gtk_container_add(GTK_CONTAINER(page), ad->confirm);
 	}
+	old = i;
 }
 
 static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group);
@@ -693,6 +698,8 @@ static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
+	if(config->value != NULL)
+		gtk_entry_set_text(GTK_ENTRY(widget), config->value);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_string_changed), &config->value);
@@ -728,6 +735,8 @@ static GtkWidget * _update_password(AccountConfig * config,
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
+	if(config->value != NULL)
+		gtk_entry_set_text(GTK_ENTRY(widget), config->value);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_string_changed), &config->value);
@@ -746,6 +755,8 @@ static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_file_chooser_button_new("Choose file",
 			GTK_FILE_CHOOSER_ACTION_OPEN);
+	gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(widget),
+			config->title);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
@@ -776,9 +787,24 @@ static void _on_uint16_changed(GtkWidget * widget, gpointer data)
 	*value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
+static void _on_boolean_toggled(GtkWidget * widget, gpointer data);
 static GtkWidget * _update_boolean(AccountConfig * config)
 {
-	return gtk_check_button_new_with_label(config->title);
+	GtkWidget * widget;
+
+	widget = gtk_check_button_new_with_label(config->title);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+			config->value != NULL);
+	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
+				_on_boolean_toggled), &config->value);
+	return widget;
+}
+
+static void _on_boolean_toggled(GtkWidget * widget, gpointer data)
+{
+	int * value = data;
+
+	*value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static GtkWidget * _display_string(AccountConfig * config,
