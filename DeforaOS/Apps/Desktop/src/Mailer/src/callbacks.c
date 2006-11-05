@@ -751,6 +751,7 @@ static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 	return hbox;
 }
 
+static void _on_uint16_changed(GtkWidget * widget, gpointer data);
 static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
@@ -762,8 +763,17 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_spin_button_new_with_range(0, 65535, 1);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
+	g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(
+				_on_uint16_changed), &config->value);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
+}
+
+static void _on_uint16_changed(GtkWidget * widget, gpointer data)
+{
+	uint16_t * value = data;
+
+	*value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static GtkWidget * _update_boolean(AccountConfig * config)
@@ -870,7 +880,6 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	/* FIXME will be malloced? */
 	snprintf(buf, sizeof(buf), "%u", (uint16_t)config->value);
 	widget = gtk_label_new(buf);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -889,7 +898,6 @@ static GtkWidget * _display_boolean(AccountConfig * config,
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	/* FIXME will be malloced? */
 	widget = gtk_label_new(config->value != 0 ? "Yes" : "No");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
