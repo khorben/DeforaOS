@@ -345,18 +345,18 @@ function news_submit($news)
 {
 	global $user_id, $user_name;
 
-	//FIXME tweakable?
-	if(!$user_id)
+	//FIXME make it an option
+	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
+	$news['user_id'] = $user_id;
+	$news['username'] = $user_name;
 	if(isset($news['preview']))
 	{
 		$long = 1;
 		$title = NEWS_PREVIEW;
 		$news['title'] = stripslashes($news['title']);
-		$news['user_id'] = $user_id;
-		$news['username'] = $user_name;
-		$news['date'] = strftime(DATE_FORMAT);
 		$news['content'] = stripslashes($news['content']);
+		$news['date'] = strftime(DATE_FORMAT);
 		include('./modules/news/news_display.tpl');
 		unset($title);
 		return include('./modules/news/news_update.tpl');
@@ -366,7 +366,7 @@ function news_submit($news)
 		$title = 'News submission';
 		return include('./modules/news/news_update.tpl');
 	}
-	if(!_news_insert($news))
+	if(!($news['id'] = _news_insert($news)))
 		return _error('Could not insert news');
 	include('./modules/news/news_posted.tpl');
 	//send mail
@@ -381,10 +381,16 @@ function news_submit($news)
 		$to.=$comma.$a['username'].' <'.$a['email'].'>';
 		$comma = ', ';
 	}
+	$news['title'] = stripslashes($news['title']);
+	$news['content'] = "News is available for moderation at:\n"
+		.'http://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']
+		.'?module=news&action=modify&id='.$news['id']."\n"
+		."News preview:\n\n"
+		."News by ".$news['username']." on ".$news['date']."\n"
+		.stripslashes($news['content']);
 	require_once('./system/mail.php');
-	_mail('Administration Team', $to, '[News submission] '
-			.(stripslashes($news['title'])),
-			stripslashes($news['content']));
+	_mail('Administration Team', $to, '[News submission] '.$news['title'],
+			$news['content']);
 }
 
 
