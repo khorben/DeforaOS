@@ -793,6 +793,7 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	gdouble value = (uint16_t)config->value;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(config->title);
@@ -800,6 +801,7 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_spin_button_new_with_range(0, 65535, 1);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), value);
 	g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(
 				_on_uint16_changed), &config->value);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
