@@ -1006,7 +1006,16 @@ function project_download($args)
 			$files[$i]['module'] = 'download';
 			$files[$i]['action'] = 'download';
 			$mime = _mime_from_ext($files[$i]['name']);
-			if($files[$i]['mode'] & S_IFDIR)
+			if(strncmp($mime, 'image/', 6) == 0)
+			{
+				$files[$i]['icon'] = 'icons/16x16/mime/'
+					.(is_readable('icons/16x16/mime/'
+								.$mime.'.png'))
+						? $mime.'.png' : 'default.png';
+				$files[$i]['thumbnail'] = 'index.php'
+					.'?module=download&action=download&id='.$files[$i]['id'];
+			}
+			else if($files[$i]['mode'] & S_IFDIR)
 			{
 				$files[$i]['icon'] = 'icons/16x16'
 					.'/mime/folder.png';
