@@ -13,14 +13,14 @@ char const imap4_name[] = "IMAP4 server";
 
 AccountConfig imap4_config[] =
 {
-	{ "username",	"Username",		ACT_STRING,	NULL },
-	{ "password",	"Password",		ACT_PASSWORD,	NULL },
-	{ "hostname",	"Server hostname",	ACT_STRING,	NULL },
-	{ "port",	"Server port",		ACT_UINT16,	NULL },
-	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	NULL },
-	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL },
-	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL },
-	{ NULL,		NULL,			ACT_NONE,	NULL }
+	{ "username",	"Username",		ACT_STRING,	NULL	},
+	{ "password",	"Password",		ACT_PASSWORD,	NULL	},
+	{ "hostname",	"Server hostname",	ACT_STRING,	NULL	},
+	{ "port",	"Server port",		ACT_UINT16,	994	},
+	{ "ssl",	"Use SSL",		ACT_BOOLEAN,	1	},
+	{ "sent",	"Sent mails folder",	ACT_NONE,	NULL	},
+	{ "draft",	"Draft mails folder",	ACT_NONE,	NULL	},
+	{ NULL,		NULL,			ACT_NONE,	NULL	}
 };
 
 
