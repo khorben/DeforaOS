@@ -308,7 +308,7 @@ function probe_host_display($args)
 	$vols = glob($probe.'/'.$host['hostname'].'/*.rrd');
 	foreach($vols as $v)
 	{
-		$v = substr($v, 15 + strlen($host['hostname']));
+		$v = substr($v, strlen($probe) + 1 + strlen($host['hostname']));
 		$v = substr($v, 0, -4);
 		$graphs[] = array('graph' => 'vol',
 				'title' => 'Volume usage: '.$v, 'time' => $time,
