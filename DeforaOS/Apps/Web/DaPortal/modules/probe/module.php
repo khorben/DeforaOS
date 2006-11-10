@@ -278,11 +278,12 @@ function probe_host_display($args)
 	if(!is_array($host) || count($host) != 1)
 		return _error('Could not display host');
 	$time = 'hour';
-	switch($args['time'])
-	{
-		case 'day':	$time = 'day';	break;
-		case 'week':	$time = 'week';	break;
-	}
+	if(isset($args['time']))
+		switch($args['time'])
+		{
+			case 'day':	$time = 'day';	break;
+			case 'week':	$time = 'week';	break;
+		}
 	$host = $host[0];
 	$title = 'Host: '.$host['hostname'];
 	//FIXME graphs, categories, ...
