@@ -57,7 +57,7 @@ function _host_graph($hostname, $graph, $time, $param)
 			$def = array('uptime');
 			$cdef = array('ruptime' => 'uptime,3600,/');
 			$data = ' AREA:ruptime#ffc0c0'
-				.' LINE2:ruptime#ef0f0f:"Uptime"'
+				.' LINE1:ruptime#ef0f0f:"Uptime"'
 				.' GPRINT:ruptime:LAST:" %.2lf h"';
 			break;
 		case 'load':
@@ -70,11 +70,11 @@ function _host_graph($hostname, $graph, $time, $param)
 			$data = ' AREA:rload1#ffef5f'
 				.' AREA:rload5#ffbf5f'
 				.' AREA:rload15#ff8f5f'
-				.' LINE2:rload1#ffdf00:"Load 1 min\:\g"'
+				.' LINE1:rload1#ffdf00:"Load 1 min\:\g"'
 				.' GPRINT:rload1:LAST:" %.2lf"'
-				.' LINE2:rload5#ffaf00:"Load 5 min\:\g"'
+				.' LINE1:rload5#ffaf00:"Load 5 min\:\g"'
 				.' GPRINT:rload5:LAST:" %.2lf"'
-				.' LINE2:rload15#ff7f00:"Load 15 min\:\g"'
+				.' LINE1:rload15#ff7f00:"Load 15 min\:\g"'
 				.' GPRINT:rload15:LAST:" %.2lf"';
 			break;
 		case 'ram':
@@ -113,7 +113,7 @@ function _host_graph($hostname, $graph, $time, $param)
 			$label = 'users';
 			$def = array('users');
 			$data = ' AREA:users#b0b0ff'
-				.' LINE2:users#0f0fef:"Logged users\:\g"'
+				.' LINE1:users#0f0fef:"Logged users\:\g"'
 				.' GPRINT:users:LAST:" %.0lf"';
 			break;
 		case 'procs':
@@ -121,7 +121,7 @@ function _host_graph($hostname, $graph, $time, $param)
 			$label = 'process';
 			$def = array('procs');
 			$data = ' AREA:procs#b0b0ff'
-				.' LINE2:procs#0f0fef:"Process count\:\g"'
+				.' LINE1:procs#0f0fef:"Process count\:\g"'
 				.' GPRINT:procs:LAST:" %.0lf"';
 			break;
 		case 'iface':
@@ -132,17 +132,17 @@ function _host_graph($hostname, $graph, $time, $param)
 			$label = 'bytes';
 			$def = array('ifrxbytes', 'iftxbytes');
 			$data = ' AREA:ifrxbytes#b0ffb0'
-				.' LINE2:ifrxbytes#0fef0f:"RX bytes\:\g"'
+				.' LINE1:ifrxbytes#0fef0f:"RX bytes\:\g"'
 				.' GPRINT:ifrxbytes:LAST:" %.0lf"'
-				.' LINE2:iftxbytes#0f0fef:"TX bytes\:\g"'
+				.' LINE1:iftxbytes#0f0fef:"TX bytes\:\g"'
 				.' GPRINT:iftxbytes:LAST:" %.0lf"';
 			break;
 		case 'vol':
-			$rrd = $probe.'/'.$hostname.$param.'.rrd';
+			$rrd = $probe.'/'.$hostname.'/'.$param.'.rrd';
 			//FIXME hardcoded path
 			if(!is_dir('tmp/'.$hostname))
 				mkdir('tmp/'.$hostname);
-			$png = 'tmp/'.$hostname.$param.'_'.$time.'.png';
+			$png = 'tmp/'.$hostname.'/'.$param.'_'.$time.'.png';
 			$title = 'volume usage: '.$param;
 			$label = 'MB';
 			$def = array('voltotal', 'volfree');
@@ -158,7 +158,8 @@ function _host_graph($hostname, $graph, $time, $param)
 			_error('Unknown graph to update');
 			return '';
 	}
-	$cmd = 'rrdtool graph '.$png.' --start '.$start.' --imgformat PNG'
+	$cmd = 'rrdtool graph --slope-mode '.$png
+		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
 	if(strlen($base))
 		$cmd.=' --base '.$base;
