@@ -145,6 +145,15 @@ CREATE TABLE daportal_bug (
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
 
 
+/* module: probe */
+CREATE TABLE daportal_probe_host (
+	host_id INTEGER PRIMARY KEY,
+	FOREIGN KEY (host_id) REFERENCES daportal_content (content_id)
+);
+INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
+INSERT INTO daportal_config (module_id, name, value) VALUES ('10', 'RRD_repository', '/tmp');
+
+
 /* module: category */
 CREATE TABLE daportal_category_content (
 	category_content_id INTEGER PRIMARY KEY,
