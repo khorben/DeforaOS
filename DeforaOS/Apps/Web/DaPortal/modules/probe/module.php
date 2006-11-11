@@ -40,7 +40,7 @@ function _host_graph($hostname, $graph, $time, $param)
 	}
 	//FIXME hardcoded path + not always true (if, vol)
 	$png = 'tmp/'.$hostname.'_'.$graph.'_'.$time.'.png';
-	if(($st = stat($png)) != FALSE && $st['mtime'] + 30 > time())
+	if(($st = @stat($png)) != FALSE && $st['mtime'] + 30 > time())
 		return $png;
 	$title = '';
 	$label = '';
@@ -57,8 +57,10 @@ function _host_graph($hostname, $graph, $time, $param)
 			$def = array('uptime');
 			$cdef = array('ruptime' => 'uptime,3600,/');
 			$data = ' AREA:ruptime#ffc0c0'
-				.' LINE1:ruptime#ef0f0f:"Uptime"'
-				.' GPRINT:ruptime:LAST:" %.2lf h"';
+				.' LINE1:ruptime#ef0f0f:"Uptime\t\g"'
+				.' GPRINT:ruptime:LAST:"Current\: %.0lf h\t\g"'
+				.' GPRINT:ruptime:AVERAGE:"Average\: %.0lf h\t\g"'
+				.' GPRINT:ruptime:MAX:"Maximum\: %.0lf h"';
 			break;
 		case 'load':
 			$title = 'load average';
@@ -70,12 +72,18 @@ function _host_graph($hostname, $graph, $time, $param)
 			$data = ' AREA:rload1#ffef5f'
 				.' AREA:rload5#ffbf5f'
 				.' AREA:rload15#ff8f5f'
-				.' LINE1:rload1#ffdf00:"Load 1 min\:\g"'
-				.' GPRINT:rload1:LAST:" %.2lf"'
-				.' LINE1:rload5#ffaf00:"Load 5 min\:\g"'
-				.' GPRINT:rload5:LAST:" %.2lf"'
-				.' LINE1:rload15#ff7f00:"Load 15 min\:\g"'
-				.' GPRINT:rload15:LAST:" %.2lf"';
+				.' LINE1:rload1#ffdf00:"Load 1 min\t\g"'
+				.' GPRINT:rload1:LAST:"Current\: %.2lf\t\g"'
+				.' GPRINT:rload1:AVERAGE:"Average\: %.2lf\t\g"'
+				.' GPRINT:rload1:MAX:"Maximum\: %.2lf\n"'
+				.' LINE1:rload5#ffaf00:"Load 5 min\t\g"'
+				.' GPRINT:rload5:LAST:"Current\: %.2lf\t\g"'
+				.' GPRINT:rload5:AVERAGE:"Average\: %.2lf\t\g"'
+				.' GPRINT:rload5:MAX:"Maximum\: %.2lf\n"'
+				.' LINE1:rload15#ff7f00:"Load 15 min  "'
+				.' GPRINT:rload15:LAST:"Current\: %.2lf\t\g"'
+				.' GPRINT:rload15:AVERAGE:"Average\: %.2lf\t\g"'
+				.' GPRINT:rload15:MAX:"Maximum\: %.2lf"';
 			break;
 		case 'ram':
 			$title = 'memory usage';
@@ -87,14 +95,22 @@ function _host_graph($hostname, $graph, $time, $param)
 				'pramfree' => 'ramfree,1024,/,1024,/',
 				'pramshared' => 'ramshared,1024,/,1024,/',
 				'prambuffer' => 'rambuffer,1024,/,1024,/');
-			$data = ' AREA:ramtotal#ff0000:"Total\:\g"'
-				.' GPRINT:pramtotal:LAST:" %.0lf MB"'
-				.' AREA:ramfree#0000ff:"Free\:\g"'
-				.' GPRINT:pramfree:LAST:" %.0lf MB"'
-				.' STACK:ramshared#00ffff:"Shared\:\g"'
-				.' GPRINT:pramshared:LAST:" %.0lf MB"'
-				.' STACK:rambuffer#00ff00:"Buffer\:\g"'
-				.' GPRINT:prambuffer:LAST:" %.0lf MB"';
+			$data = ' AREA:ramtotal#ff0000:"Total   "'
+				.' GPRINT:pramtotal:LAST:"Current\: %.0lf MB\t\g"'
+				.' GPRINT:pramtotal:AVERAGE:"Average\: %.0lf MB\t\g"'
+				.' GPRINT:pramtotal:MAX:"Maximum\: %.0lf MB\n"'
+				.' AREA:ramfree#0000ff:"Free    "'
+				.' GPRINT:pramfree:LAST:"Current\: %.0lf MB\t\g"'
+				.' GPRINT:pramfree:AVERAGE:"Average\: %.0lf MB\t\g"'
+				.' GPRINT:pramfree:MAX:"Maximum\: %.0lf MB\n"'
+				.' STACK:ramshared#00ffff:"Shared  "'
+				.' GPRINT:pramshared:LAST:"Current\: %.0lf MB\t\g"'
+				.' GPRINT:pramshared:AVERAGE:"Average\: %.0lf MB\t\g"'
+				.' GPRINT:pramshared:MAX:"Maximum\: %.0lf MB\n"'
+				.' STACK:rambuffer#00ff00:"Buffer  "'
+				.' GPRINT:prambuffer:LAST:"Current\: %.0lf MB\t\g"'
+				.' GPRINT:prambuffer:AVERAGE:"Average\: %.0lf MB\t\g"'
+				.' GPRINT:prambuffer:LAST:"Maximum\: %.0lf MB\g"';
 			break;
 		case 'swap':
 			$title = 'swap usage';
@@ -103,39 +119,53 @@ function _host_graph($hostname, $graph, $time, $param)
 			$def = array('swaptotal', 'swapfree');
 			$cdef = array('pswaptotal' => 'swaptotal,1024,/,1024,/',
 				'pswapfree' => 'swapfree,1024,/,1024,/');
-			$data = ' AREA:swaptotal#ff0000:"Total\:\g"'
-				.' GPRINT:pswaptotal:LAST:" %.0lf MB"'
-				.' AREA:swapfree#0000ff:"Free\:\g"'
-				.' GPRINT:pswapfree:LAST:" %.0lf MB"';
+			$data = ' AREA:swaptotal#ff0000:"Total\t\g"'
+				.' GPRINT:pswaptotal:LAST:"Current\: %.0lf MB\t\g"'
+				.' GPRINT:pswaptotal:AVERAGE:"Average\: %.0lf MB\t\g"'
+				.' GPRINT:pswaptotal:MAX:"Maximum\: %.0lf MB\n"'
+				.' AREA:swapfree#0000ff:"Free\t\g"'
+				.' GPRINT:pswapfree:LAST:"Current\: %.0lf MB\t\g"'
+				.' GPRINT:pswapfree:AVERAGE:"Average\: %.0lf MB\t\g"'
+				.' GPRINT:pswapfree:MAX:"Maximum\: %.0lf MB\g"';
 			break;
 		case 'users':
 			$title = 'logged users';
 			$label = 'users';
 			$def = array('users');
 			$data = ' AREA:users#b0b0ff'
-				.' LINE1:users#0f0fef:"Logged users\:\g"'
-				.' GPRINT:users:LAST:" %.0lf"';
+				.' LINE1:users#0f0fef:"Logged users\t\g"'
+				.' GPRINT:users:LAST:"Current\: %.0lf\t\g"'
+				.' GPRINT:users:AVERAGE:"Average\: %.0lf\t\g"'
+				.' GPRINT:users:MAX:"Maximum\: %.0lf"';
 			break;
 		case 'procs':
 			$title = 'process count';
 			$label = 'process';
 			$def = array('procs');
 			$data = ' AREA:procs#b0b0ff'
-				.' LINE1:procs#0f0fef:"Process count\:\g"'
-				.' GPRINT:procs:LAST:" %.0lf"';
+				.' LINE1:procs#0f0fef:"Process count\t\g"'
+				.' GPRINT:procs:LAST:"Current\: %.0lf \t\g"'
+				.' GPRINT:procs:AVERAGE:"Average\: %.0lf \t\g"'
+				.' GPRINT:procs:MAX:"Maximum\: %.0lf"';
 			break;
 		case 'iface':
 			$rrd = $probe.'/'.$hostname.'_'.$param.'.rrd';
 			//FIXME hardcoded path
 			$png = 'tmp/'.$hostname.'_'.$param.'_'.$time.'.png';
-			$title = 'network traffic';
-			$label = 'bytes';
+			$title = 'network traffic on '.$param;
+			$label = 'Bps';
 			$def = array('ifrxbytes', 'iftxbytes');
+			$cdef = array('ifrxkb' => 'ifrxbytes,1024,/',
+					'iftxkb' => 'iftxbytes,1024,/');
 			$data = ' AREA:ifrxbytes#b0ffb0'
-				.' LINE1:ifrxbytes#0fef0f:"RX bytes\:\g"'
-				.' GPRINT:ifrxbytes:LAST:" %.0lf"'
-				.' LINE1:iftxbytes#0f0fef:"TX bytes\:\g"'
-				.' GPRINT:iftxbytes:LAST:" %.0lf"';
+				.' LINE1:ifrxbytes#0fef0f:"RX\t\g"'
+				.' GPRINT:ifrxkb:LAST:"Current\: %.0lf KBps\t\g"'
+				.' GPRINT:ifrxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
+				.' GPRINT:ifrxkb:MAX:"Maximum\: %.0lf KBps\n"'
+				.' LINE1:iftxbytes#0f0fef:"TX\t\g"'
+				.' GPRINT:iftxkb:LAST:"Current\: %.0lf KBps\t\g"'
+				.' GPRINT:iftxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
+				.' GPRINT:iftxkb:MAX:"Maximum\: %.0lf KBps\g"';
 			break;
 		case 'vol':
 			$rrd = $probe.'/'.$hostname.'/'.$param.'.rrd';
@@ -187,15 +217,15 @@ function probe_admin($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	print('<h1><img src="modules/probe/icon.png" alt=""/> '
-			._html_safe(MONITORING_ADMINISTRATION).'</h1>'."\n");
+	print('<h1 class="probe">'._html_safe(MONITORING_ADMINISTRATION).'</h1>'
+			."\n");
 	if(($configs = _config_list('probe')))
 	{
 		print('<h2><img src="modules/probe/icon.png" alt=""/> '
 				.'Configuration</h2>'."\n");
 		$module = 'probe';
 		$action = 'config_update';
-		include('system/config.tpl');
+		include('./system/config.tpl');
 	}
 	print('<h2><img src="modules/probe/icon.png" alt=""/> '
 			.'Host list</h2>'."\n");
@@ -300,11 +330,13 @@ function probe_host_display($args)
 			'time' => $time);
 	$graphs[] = array('graph' => 'procs', 'title' => 'Process count',
 			'time' => $time);
-	//FIXME potential directory traversal
-	if(is_readable($probe.'/'.$host['hostname'].'_eth0.rrd'))
-		$graphs[] = array('graph' => 'iface',
-				'title' => 'Network usage: eth0',
-				'time' => $time, 'param' => 'eth0');
+	//FIXME potential directory traversal, ugly enumeration workaround
+	foreach(array('eth0', 'eth1', 'eth2', 'eth3', 'ppp0', 'pppoe0', 'sip0',
+				'sip1', 'sip2', 'sip3', 'sip4', 'ex0') as $if)
+		if(is_readable($probe.'/'.$host['hostname']."_$if.rrd"))
+			$graphs[] = array('graph' => 'iface',
+					'title' => 'Network usage: '.$if,
+					'time' => $time, 'param' => $if);
 	//FIXME directory traversal + hidden rrd (*/.rrd)
 	$vols = glob($probe.'/'.$host['hostname'].'/*.rrd');
 	foreach($vols as $v)
@@ -322,7 +354,7 @@ function probe_host_display($args)
 				$graph = $args['graph'];
 				break;
 			}
-	include('host_display.tpl');
+	include('./modules/probe/host_display.tpl');
 }
 
 
@@ -345,13 +377,12 @@ function probe_host_insert($args)
 
 function probe_host_list($args)
 {
-	print('<h1><img src="modules/probe/icon.png" alt=""/>'
-			.' Hosts list</h1>'."\n");
+	print('<h1 class="probe">Host list</h1>'."\n");
 	//FIXME sort and display by category
 	$hosts = _sql_array('SELECT host_id AS id, title AS name'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id'
-			." AND enabled='1';");
+			." AND enabled='1' ORDER BY id ASC;");
 	if(!is_array($hosts))
 		return _error('Could not list hosts');
 	for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
@@ -362,8 +393,7 @@ function probe_host_list($args)
 		$hosts[$i]['thumbnail'] = 'modules/probe/icon.png';
 	}
 	_module('explorer', 'browse', array('entries' => $hosts,
-			'view' => 'thumbnails',
-			'toolbar' => 0));
+			'view' => 'thumbnails', 'toolbar' => 0));
 }
 
 
@@ -385,7 +415,7 @@ function probe_host_modify($args)
 	$host = $host[0];
 	$title = 'Host: '.$host['hostname'];
 	//FIXME graphs, categories, ...
-	include('host_update.tpl');
+	include('./modules/probe/host_update.tpl');
 }
 
 
@@ -397,7 +427,7 @@ function probe_host_new($args)
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
 	$title = 'New host';
-	include('host_update.tpl');
+	include('./modules/probe/host_update.tpl');
 }
 
 
