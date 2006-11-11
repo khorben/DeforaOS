@@ -519,7 +519,7 @@ static int _targets_target(Configure * configure, FILE * fp, String * target)
 			}
 			if(configure->prefs->flags & PREFS_n)
 				return 0;
-			fprintf(fp, "%s%s%s%s", target, ": ", p, "\n");
+			fprintf(fp, "\n%s%s%s%s", target, ": ", p, "\n");
 			/* FIXME */
 			break;
 		case TT_UNKNOWN:
@@ -612,7 +612,7 @@ static int _target_binary(Configure * configure, FILE * fp, String * target)
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	_target_flags(configure, fp, target);
-	fprintf(fp, "%s%s%s%s", target, ": $(", target, "_OBJS)\n");
+	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)\n");
 	fprintf(fp, "%s", "\t$(CC) $(LDFLAGSF)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
@@ -705,11 +705,11 @@ static int _target_library(Configure * configure, FILE * fp, String * target)
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	_target_flags(configure, fp, target);
-	fprintf(fp, "%s%s%s%s", target, ".a: $(", target, "_OBJS)\n");
+	fprintf(fp, "\n%s%s%s%s", target, ".a: $(", target, "_OBJS)\n");
 	fprintf(fp, "%s%s%s%s%s", "\t$(AR) ", target, ".a $(", target,
 			"_OBJS)\n");
 	fprintf(fp, "%s%s%s", "\t$(RANLIB) ", target, ".a\n");
-	fprintf(fp, "%s%s%s%s", target, ".so: $(", target, "_OBJS)\n");
+	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)\n");
 	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
 			"_OBJS)\n");
 	return 0;
