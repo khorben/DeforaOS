@@ -1,4 +1,4 @@
-<h1><img src="modules/user/home.png" alt=""/> <?php echo _html_safe($user_name); ?>'s page</h1>
+<h1><img src="images/home.png" alt=""/> <?php echo _html_safe($user_name); ?>'s page</h1>
 <style type="text/css"><!-- @import url('css/explorer.css'); --></style>
 <div class="explorer">
 	<div class="listing_thumbnails">
