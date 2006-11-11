@@ -44,8 +44,7 @@ function comment_admin($args)
 	require_once('./system/user.php');
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/comment/icon.png" alt=""/> '
-		.COMMENT_ADMINISTRATION.'</h1>'."\n");
+	print('<h1 class="title comment">'.COMMENT_ADMINISTRATION.'</h1>'."\n");
 	if(($configs = _config_list('comment')))
 	{
 		print('<h2><img src="modules/admin/icon.png" alt=""/>'
@@ -243,8 +242,8 @@ function comment_list($args)
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	else
 		return _error('Could not list comments');
-	print('<h1><img src="modules/comment/icon.png" alt=""/> '.COMMENTS_BY
-			.' '._html_safe($username).'</h1>'."\n");
+	print('<h1 class="title comment">'.COMMENTS_BY.' '._html_safe($username)
+		.'</h1>'."\n");
 	$comments = _sql_array('SELECT content_id AS id, timestamp'
 			.', title AS name, content, daportal_content.user_id'
 			.', username, daportal_module.name AS module'
@@ -279,8 +278,7 @@ function comment_new($args)
 
 	if($user_id == 0 && _config_get('comment', 'anonymous') != SQL_TRUE)
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/comment/icon.png" alt=""/> '
-			._html_safe(NEW_COMMENT).'</h1>');
+	print('<h1 class="title comment">'._html_safe(NEW_COMMENT).'</h1>');
 	_module('content', 'default', array('id' => $args['parent']));
 	$parent = $args['parent'];
 	$comment['title'] = 'Re: '._sql_single('SELECT title'
@@ -299,8 +297,8 @@ function comment_submit($comment)
 		return _error(PERMISSION_DENIED);
 	if(isset($comment['preview']))
 	{
-		print('<h1><img src="modules/comment/icon.png" alt=""/> '
-				._html_safe(COMMENT_PREVIEW).'</h1>');
+		print('<h1 class="title comment">'._html_safe(COMMENT_PREVIEW)
+				.'</h1>');
 		_module('content', 'default',
 				array('id' => $comment['parent']));
 		$comment['title'] = stripslashes($comment['title']);
