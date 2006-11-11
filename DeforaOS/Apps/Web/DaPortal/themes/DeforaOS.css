@@ -58,12 +58,18 @@ img {
 button, input, select, textarea {
 	background-color:		#959595;
 	border:				1px solid #636363;
+}
+
+button, input {
+	border:				1px solid #636363;
 	border-left:			1px solid #b0b0b0;
 	border-top:			1px solid #b0b0b0;
 }
 
-input[type="text"], input[type="password"], textarea {
-	border:				1px solid #797979;
+input[type="password"], input[type="text"], select, textarea {
+	border:				1px solid #636363;
+	border-bottom:			1px solid #b0b0b0;
+	border-right:			1px solid #b0b0b0;
 }
 
 p {
