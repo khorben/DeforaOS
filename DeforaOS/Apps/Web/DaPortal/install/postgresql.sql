@@ -82,7 +82,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
 CREATE TABLE daportal_comment (
 	comment_id SERIAL UNIQUE,
 	parent SERIAL,
-	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (comment_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
