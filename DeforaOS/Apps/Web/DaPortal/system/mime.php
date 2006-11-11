@@ -12,7 +12,6 @@ function _mime_from_ext($filename)
 	static $globfile = 0;
 	static $globs;
 
-	_info($filename);
 	if($globfile == 0)
 	{
 		if(($globfile = file_get_contents('/usr/share/mime/globs'))
