@@ -19,14 +19,16 @@ function _module($module = '', $action = '', $args = FALSE)
 	else if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
 		$module = isset($_GET['module']) ? $_GET['module'] : '';
-		$args = strlen($action) && $args ? $args : $_GET;
+		if(!strlen($action) || $args == FALSE)
+			$args =& $_GET;
 		$action = strlen($action) ? $action : (isset($_GET['action'])
 				? $_GET['action'] : '');
 	}
 	else if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		$module = isset($_POST['module']) ? $_POST['module'] : '';
-		$args = strlen($action) && $args ? $args : $_POST;
+		if(!strlen($action) || $args == FALSE)
+			$args =& $_POST;
 		$action = strlen($action) ? $action : $_POST['action'];
 	}
 	else
