@@ -1,3 +1,9 @@
+/* default includes */
+@import url('../css/explorer.css');
+@import url('../css/icons.css');
+
+
+/* DeforaOS theme */
 html {
 	background-color:		#636363;
 }
@@ -394,33 +400,6 @@ ul.menu ul li a:hover {
 	border-top:			1px solid #959595;
 }
 
-h1.admin {
-	background-image:		url("../modules/admin/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.user {
-	background-image:		url("../modules/user/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.news {
-	background-image:		url("../modules/news/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
 .news {
 	margin-top:			20px;
 	margin-bottom:			20px;
@@ -573,67 +552,4 @@ div.top a {
 .top_search input[type="text"] {
 	margin-bottom:			2px;
 	width:				158px;
-}
-
-h1.content {
-	background-image:		url("../modules/content/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.article {
-	background-image:		url("../modules/article/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.bookmark {
-	background-image:		url("../modules/bookmark/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.download {
-	background-image:		url("../modules/download/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.category {
-	background-image:		url("../modules/category/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.project {
-	background-image:		url("../modules/project/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h1.webmail {
-	background-image:		url("../modules/webmail/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }

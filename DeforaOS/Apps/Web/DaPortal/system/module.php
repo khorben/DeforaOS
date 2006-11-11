@@ -46,10 +46,6 @@ function _module($module = '', $action = '', $args = FALSE)
 		return _warning('Unknown action "'.$action.'" for module "'
 				.$module_name.'"');
 	_info('Module "'.$module_name.'", action "'.$action.'"');
-	$css = 'css/'.$module_name.'.css';
-	if($action != 'system' && $html && file_exists($css))
-		print('<style type="text/css"><!-- @import url("'.$css
-					.'"); --></style>'."\n");
 	return call_user_func_array($function, array($args));
 }
 
