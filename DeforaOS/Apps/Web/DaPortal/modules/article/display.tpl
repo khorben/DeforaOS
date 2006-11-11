@@ -1,4 +1,4 @@
-<?php if($long) { ?><h1 class="article"><?php echo _html_safe($article['title']); ?></h1><?php } ?>
+<?php if($long) { ?><h1 class="title article"><?php echo _html_safe($article['title']); ?></h1><?php } ?>
 <div class="article entry">
 <?php if(!$long) { ?>
 	<div class="title"><span><span><span><a href="index.php?module=article&amp;id=<?php echo _html_safe_link($article['id']); ?>"><?php echo _html_safe($article['title']); ?></a></span></span></span></div>

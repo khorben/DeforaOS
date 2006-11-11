@@ -1,4 +1,4 @@
-<h1 class="admin">Administration</h1>
+<h1 class="title admin">Administration</h1>
 <style type="text/css"><!-- @import url('css/explorer.css'); --></style>
 <div class="explorer">
 	<div class="listing_thumbnails">

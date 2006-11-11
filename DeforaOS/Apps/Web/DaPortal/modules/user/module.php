@@ -70,7 +70,7 @@ function user_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="user">'._html_safe(USERS_ADMINISTRATION)."</h1>\n");
+	print('<h1 class="title user">'._html_safe(USERS_ADMINISTRATION)."</h1>\n");
 	if(($configs = _config_list('user')))
 	{
 		print('<h2><img src="modules/admin/icon.png" alt=""/>'
@@ -368,7 +368,7 @@ function user_register($args)
 				$message = USER_ALREADY_ASSIGNED;
 		}
 	}
-	print('<h1 class="user">'._html_safe(USER_REGISTRATION)."</h1>\n");
+	print('<h1 class="title user">'._html_safe(USER_REGISTRATION)."</h1>\n");
 	if(strlen($message))
 		_error($message, 1);
 	include('./modules/user/user_register.tpl');

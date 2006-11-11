@@ -1,4 +1,4 @@
-<h1 class="category"><?php echo _html_safe($title); ?></h1>
+<h1 class="title category"><?php echo _html_safe($title); ?></h1>
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="category"/>
 	<input type="hidden" name="action" value="<?php echo isset($category) ? 'update' : 'insert'; ?>"/>

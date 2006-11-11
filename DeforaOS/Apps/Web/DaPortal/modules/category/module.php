@@ -35,7 +35,7 @@ _lang($text);
 
 function category_admin($args)
 {
-	print('<h1 class="category">'._html_safe(CATEGORIES_ADMINISTRATION)
+	print('<h1 class="title category">'._html_safe(CATEGORIES_ADMINISTRATION)
 			.'</h1>'."\n");
 	$module_id = _module_id('category');
 	$categories = _sql_array('SELECT content_id AS id, title AS name'
@@ -338,7 +338,7 @@ function category_link_insert_new($args)
 
 function category_list($args)
 {
-	print('<h1 class="category">'._html_safe(CATEGORIES_LIST).'</h1>'."\n");
+	print('<h1 class="title category">'._html_safe(CATEGORIES_LIST).'</h1>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
 			.', content AS description, name AS module'
 			.' FROM daportal_content, daportal_module'

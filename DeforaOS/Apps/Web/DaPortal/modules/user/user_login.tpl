@@ -1,4 +1,4 @@
-<h1 class="user"><?php echo _html_safe(USER_LOGIN); ?></h1>
+<h1 class="title user"><?php echo _html_safe(USER_LOGIN); ?></h1>
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="user"/>
 	<input type="hidden" name="action" value="login"/>

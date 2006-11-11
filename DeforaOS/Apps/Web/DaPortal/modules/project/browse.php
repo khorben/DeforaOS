@@ -9,7 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 {
-	print('<h1 class="project">'._html_safe($project).' CVS: '
+	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe($filename).'</h1>'."\n");
 	//FIXME un-hardcode locations (invoke the cvs executable instead?)
 	$path = $cvsrep.$cvsroot.'/'.$filename;
@@ -131,7 +131,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	$path = str_replace('$', '\$', $path);
 	exec('rlog "'.$path.'"', $rcs);
 	_info('rlog "'.$path.'"', 0);
-	print('<h1 class="project">'._html_safe($project).' CVS: '
+	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe(dirname($filename)).'/'
 			._html_safe(substr($rcs[2], 14)).'</h1>'."\n");
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
@@ -226,7 +226,7 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		_info($i.': '.$rcs[$i], 0);
 	if(!$download)
-		print('<h1 class="project">'._html_safe($project).' CVS: '
+		print('<h1 class="title project">'._html_safe($project).' CVS: '
 				._html_safe(dirname($filename)).'/'
 				._html_safe(substr($rcs[2], 14))
 				.' '.$revision.'</h1>'."\n");

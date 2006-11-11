@@ -56,7 +56,7 @@ function webmail_admin($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="webmail">'._html_safe(WEBMAIL_ADMINISTRATION)
+	print('<h1 class="title webmail">'._html_safe(WEBMAIL_ADMINISTRATION)
 			.'</h1>'."\n");
 	if(($configs = _config_list('webmail')))
 	{

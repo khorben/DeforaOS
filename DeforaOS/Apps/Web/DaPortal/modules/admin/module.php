@@ -32,7 +32,7 @@ function admin_admin($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="admin">'._html_safe(PORTAL_ADMINISTRATION)."</h1>\n"
+	print('<h1 class="title admin">'._html_safe(PORTAL_ADMINISTRATION)."</h1>\n"
 			.'<h2><img src="modules/admin/lang.png" alt=""/> '
 			._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'

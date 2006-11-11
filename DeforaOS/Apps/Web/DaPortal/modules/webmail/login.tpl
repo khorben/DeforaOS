@@ -1,4 +1,4 @@
-<h1 class="webmail">Webmail</h1>
+<h1 class="title webmail">Webmail</h1>
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="webmail"/>
 	<input type="hidden" name="action" value="login"/>

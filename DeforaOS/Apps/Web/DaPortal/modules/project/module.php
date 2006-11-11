@@ -93,7 +93,7 @@ function project_admin($args)
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return project_modify($args);
-	print('<h1 class="project">'._html_safe(PROJECTS_ADMINISTRATION).'</h1>'
+	print('<h1 class="title project">'._html_safe(PROJECTS_ADMINISTRATION).'</h1>'
 			."\n");
 	if(($configs = _config_list('project')))
 	{
@@ -178,7 +178,7 @@ function project_browse($args)
 	_project_toolbar($args['id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
-		print('<h1 class="project">'._html_safe($project['name'])
+		print('<h1 class="title project">'._html_safe($project['name'])
 				.' CVS</h1>'."\n");
 		return _info(NO_CVS_REPOSITORY, 1);
 	}
@@ -267,7 +267,7 @@ function project_bug_assign($args)
 			." AND bug_id='".$args['bug_id']."';");
 	if(!is_array($members))
 		return _error('Could not list project members');
-	print('<h1 class="project">Assign bug #'._html_safe($args['bug_id'])
+	print('<h1 class="title project">Assign bug #'._html_safe($args['bug_id'])
 			.' to user</h1>'."\n");
 	$members = array_merge($admin, $members);
 	for($i = 0, $cnt = count($members); $i < $cnt; $i++)
@@ -975,7 +975,7 @@ function project_download($args)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	_project_toolbar($args['id']);
-	print('<h1 class="project">'._html_safe($project['name']).': '
+	print('<h1 class="title project">'._html_safe($project['name']).': '
 		._html_safe(FILES).'</h1>'."\n");
 	require_once('./system/mime.php');
 	/* FIXME factorize code */
@@ -1141,7 +1141,7 @@ function project_list($args)
 		$title = PROJECTS._BY_.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
-	print('<h1 class="project">'._html_safe($title).'</h1>'."\n");
+	print('<h1 class="title project">'._html_safe($title).'</h1>'."\n");
 	$projects = _sql_array('SELECT content_id AS id, name, title'
 			.', username AS admin'
 			.', daportal_content.user_id AS user_id'
@@ -1205,7 +1205,7 @@ function project_member_add($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	print('<h1 class="project">Add member to project '.$project['name']
+	print('<h1 class="title project">Add member to project '.$project['name']
 			."</h1>\n");
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
 			." WHERE project_id='".$project['id']."';");
@@ -1336,11 +1336,11 @@ function project_timeline($args)
 	_project_toolbar($project['project_id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
-		print('<h1 class="project">'._html_safe($project['name'])
+		print('<h1 class="title project">'._html_safe($project['name'])
 				.' CVS</h1>'."\n");
 		return _info(NO_CVS_REPOSITORY, 1);
 	}
-	print('<h1 class="project">'._html_safe($project['name'])
+	print('<h1 class="title project">'._html_safe($project['name'])
 			.' '._html_safe(TIMELINE).'</h1>'."\n");
 	//FIXME one more hard-coded variable
 	if(($fp = @fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
