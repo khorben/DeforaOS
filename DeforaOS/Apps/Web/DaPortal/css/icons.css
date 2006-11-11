@@ -22,6 +22,10 @@ h1.category {
 	background-image:		url("../modules/category/icon.png");
 }
 
+h1.comment {
+	background-image:		url("../modules/comment/icon.png");
+}
+
 h1.content {
 	background-image:		url("../modules/content/icon.png");
 }
@@ -40,6 +44,10 @@ h1.probe {
 
 h1.project {
 	background-image:		url("../modules/project/icon.png");
+}
+
+h1.search {
+	background-image:		url("../modules/search/icon.png");
 }
 
 h1.user {
