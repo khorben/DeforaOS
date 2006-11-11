@@ -220,6 +220,7 @@ ul.menu li {
 
 ul.menu ul {
 	display:		none;
+	margin-top:		2px;
 	padding-top:		2px;
 	padding:		0;
 }
