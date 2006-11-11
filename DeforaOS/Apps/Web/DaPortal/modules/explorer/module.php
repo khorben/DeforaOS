@@ -112,10 +112,10 @@ function explorer_apply($args)
 		$params = array('id' => $id);
 		if(isset($args[$k.'_args']))
 		{
-			$extras = split(';', $args[$k.'_args']);
+			$extras = explode(';', $args[$k.'_args']);
 			foreach($extras as $e)
 			{
-				$extra = split('=', $e);
+				$extra = explode('=', $e);
 				$params[$extra[0]] = $extra[1];
 			}
 		}
@@ -123,7 +123,7 @@ function explorer_apply($args)
 	}
 	$link = 'index.php?module='.$args['link_module']
 			.'&action='.$args['link_action'];
-	if(is_numeric($args['link_id']))
+	if(isset($args['link_id']) && is_numeric($args['link_id']))
 		$link.='&id='.$args['link_id'];
 	header('Location: '.$link);
 	exit(0);
