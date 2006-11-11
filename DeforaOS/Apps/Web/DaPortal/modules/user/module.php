@@ -456,6 +456,8 @@ function user_system($args)
 			_system_login();
 		else if($_POST['action'] == 'config_update')
 			$html = 0;
+		else if($_POST['action'] == 'error')
+			$_POST['action'] = 'default';
 	}
 	else if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['action']))
 	{
@@ -463,6 +465,8 @@ function user_system($args)
 			_system_logout();
 		else if($_GET['action'] == 'confirm')
 			_system_confirm($args['key']);
+		else if($_GET['action'] == 'error')
+			$_GET['action'] = 'default';
 	}
 }
 
