@@ -74,6 +74,7 @@ pre {
 	border:				1px solid #959595;
 	font-family:			bitstream vera sans mono, monospace;
 	margin:				10px;
+	overflow:			auto;
 	padding:			10px;
 }
 
