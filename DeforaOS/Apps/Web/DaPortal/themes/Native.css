@@ -1,3 +1,9 @@
+/* default includes */
+@import url('../css/explorer.css');
+@import url('../css/icons.css');
+
+
+/* Native theme */
 body {
 	background-color:	#dcdad5;
 	color:			#000000;
@@ -13,51 +19,55 @@ a {
 	text-decoration:	none;
 }
 
-button, input[type="button"] {
-	border-width:		1px;
+/* widgets with a border out */
+h1, h2, h3, button, input[type="button"], input[type="submit"] {
+	border-bottom:		solid 1px #000000;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	margin:			0;
+	padding:		2px;
+	padding-left:		4px;
+}
+
+/* widgets with a border in */
+input[type="password"], input[type="text"], pre, select, textarea {
+	border-bottom:		solid 1px #ffffff;
+	border-left:		solid 1px #000000;
+	border-right:		solid 1px #ffffff;
+	border-top:		solid 1px #000000;
+	margin:			0;
+	margin-left:		4px;
+	padding:		0;
+}
+
+/* title corrections */
+h1, h2 {
+	border-left:		0;
+	border-right:		0;
+}
+
+h1.title {
+	background-position:	right;
+	padding-left:		4px;
+}
+
+/* title icons */
+h1 img, h2 img, h3 img {
+	float:			right;
+	padding-right:		2px;
 }
 
 h1 {
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
 	min-height:		48px;
-	margin:			0;
-	padding:		0;
-	padding-left:		4px;
-}
-
-h1 img {
-	float:			right;
-	padding-right:		2px;
 }
 
 h2 {
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
 	min-height:		32px;
-	margin:			0;
-	padding:		0;
-	padding-left:		4px;
 }
 
 h2 img {
-	float:			right;
 	max-height:		32px;
-	padding-right:		2px;
-}
-
-h3 {
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
-	margin:			0;
-	padding:		0;
-	padding-left:		4px;
 }
 
 img {
@@ -71,11 +81,6 @@ p {
 
 pre {
 	background-color:	#ffffff;
-	border-bottom:		solid 1px #ffffff;
-	border-left:		solid 1px #000000;
-	border-right:		solid 1px #ffffff;
-	border-top:		solid 1px #000000;
-	margin:			4px;
 }
 
 
@@ -101,8 +106,6 @@ pre {
 
 .explorer {
 	background-color:	#ffffff;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
 }
 
 .explorer .entry .icon {
@@ -144,8 +147,6 @@ pre {
 .explorer .toolbar {
 	background-color:	#dcdad5;
 	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
 	border-top:		solid 1px #ffffff;
 }
 
@@ -173,8 +174,6 @@ pre {
 
 .main .toolbar {
 	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
 	border-top:		solid 1px #ffffff;
 	padding-bottom:		3px;
 	padding-top:		3px;
@@ -319,7 +318,7 @@ ul.menu li:hover ul li a:hover {
 }
 
 .tree .node {
-	background-image:	url(/DaPortal/icons/tree/vertline.gif);
+	background-image:	url('../icons/tree/vertline.gif');
 	background-position:	top left;
 	background-repeat:	repeat-y;
 }

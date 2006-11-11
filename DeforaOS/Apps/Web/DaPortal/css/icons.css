@@ -1,98 +1,51 @@
-h1.admin {
-	background-image:		url("../modules/admin/icon.png");
+h1.title, h2.title, h3.title {
 	background-position:		top left;
 	background-repeat:		no-repeat;
 	min-height:			48px;
 	padding-left:			56px;
 	padding-top:			4px;
+}
+
+h1.admin {
+	background-image:		url("../modules/admin/icon.png");
 }
 
 h1.article {
 	background-image:		url("../modules/article/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.bookmark {
 	background-image:		url("../modules/bookmark/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.category {
 	background-image:		url("../modules/category/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.content {
 	background-image:		url("../modules/content/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.download {
 	background-image:		url("../modules/download/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.news {
 	background-image:		url("../modules/news/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.probe {
 	background-image:		url("../modules/probe/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.project {
 	background-image:		url("../modules/project/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.user {
 	background-image:		url("../modules/user/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
 
 h1.webmail {
 	background-image:		url("../modules/webmail/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
 }
