@@ -82,6 +82,12 @@ strong {
 }
 
 
+/* title corrections */
+h1.title, h2.title, h3.title {
+	background-color:		#000000;
+}
+
+
 /* classes */
 form.lang {
 	padding-top:			10px;
@@ -132,6 +138,8 @@ table.bordered th {
 	border:				1px solid #959595;
 }
 
+
+/* module project */
 .bug_reply {
 	background-color:		#400000;
 	border:				1px solid #959595;
@@ -160,6 +168,8 @@ table.bordered th {
 	padding-left:			0;
 }
 
+
+/* module comment */
 .comment .author, .comment .date {
 	display:			inline;
 }
@@ -400,6 +410,8 @@ ul.menu ul li a:hover {
 	border-top:			1px solid #959595;
 }
 
+
+/* module news */
 .news {
 	margin-top:			20px;
 	margin-bottom:			20px;
@@ -453,6 +465,8 @@ ul.menu ul li a:hover {
 	padding:			10px;
 }
 
+
+/* module search */
 .search .entry {
 	margin-bottom:			20px;
 }
@@ -514,19 +528,11 @@ ul.menu ul li a:hover {
 
 .title {
 	background-color:		#790000;
-	font-size:			110%;
 	font-weight:			bold;
 }
 
-h1.top {
-	background-image:		url("../modules/top/icon.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	min-height:			48px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
 
+/* module top */
 div.top {
 	background-color:		#959595;
 	color:				#000000;
