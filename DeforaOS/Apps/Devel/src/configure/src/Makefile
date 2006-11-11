@@ -16,6 +16,7 @@ all: $(TARGETS)
 
 configure_OBJS = configure.o makefile.o settings.o
 configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
+
 configure: $(configure_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
 
