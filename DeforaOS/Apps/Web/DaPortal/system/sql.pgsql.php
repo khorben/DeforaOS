@@ -39,7 +39,7 @@ function _sql_enum($table, $field)
 			.', pg_catalog.pg_constraint r'
 			." WHERE c.oid=r.conrelid AND c.relname='".$table."'"
 			." AND conname='".$table.'_'.$field."';");
-	$res = split("'", $res[0]['constraint']);
+	$res = explode("'", $res[0]['constraint']);
 	$str = array();
 	for($i = 1, $cnt = count($res); $i < $cnt; $i+=2)
 		$str[] = $res[$i];
