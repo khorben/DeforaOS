@@ -44,14 +44,11 @@ typedef struct _GPuTTY
 	/* hostname */
 	GtkWidget * hn_frame;
 	GtkWidget * hn_ehostname;
-	GtkAdjustment * hn_sport_adj;
 	GtkWidget * hn_sport;
 	GtkWidget * hn_eusername;
 	/* sessions */
 	GtkWidget * sn_frame;
 	GtkWidget * sn_esessions;
-	GtkTreeIter sn_ilsessions;
-	GtkListStore * sn_lsessions;
 	GtkWidget * sn_tlsessions;
 	GtkWidget * sn_load;
 	GtkWidget * sn_save;

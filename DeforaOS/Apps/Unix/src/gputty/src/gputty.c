@@ -50,18 +50,21 @@ static void _on_preferences(GtkWidget * widget, gpointer data);
 static void _on_save(GtkWidget * widget, gpointer data);
 static void _on_session_activate(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
-static void _on_session_select(GtkTreeView * view, gpointer data);
+static void _on_session_select(GtkTreeSelection * selection, gpointer data);
 GPuTTY * gputty_new(void)
 {
 	GPuTTY * g;
-	char buf[6];
+	char buf[11];
 	char * p;
 	char * q;
-	int i;
+	unsigned int i;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkListStore * model;
+	GtkTreeIter iter;
+	GtkTreeSelection * sel;
 
 	if((g = malloc(sizeof(GPuTTY))) == NULL)
 	{
@@ -121,13 +124,12 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
 	widget = gtk_label_new("Port");
 	gtk_box_pack_start(GTK_BOX(vbox2), widget, TRUE, TRUE, 0);
-	g->hn_sport_adj = (GtkAdjustment*)gtk_adjustment_new(22, 0, 65535, 1, 4,
-			4);
-	g->hn_sport = gtk_spin_button_new(g->hn_sport_adj, 1, 0);
+	g->hn_sport = gtk_spin_button_new_with_range(0, 65535, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport), SSH_PORT);
 	if((p = config_get(g->config, "", "port")) != NULL)
 	{
 		i = strtol(p, &q, 10);
-		if(*q == '\0' && i >= 0 && i <= 65535)
+		if(*q == '\0' && i <= 65535)
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(g->hn_sport),
 					i);
 	}
@@ -158,16 +160,16 @@ GPuTTY * gputty_new(void)
 			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	g->sn_lsessions = gtk_list_store_new(1, G_TYPE_STRING);
-	g->sn_tlsessions = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
-				g->sn_lsessions));
+	model = gtk_list_store_new(1, G_TYPE_STRING);
+	g->sn_tlsessions = gtk_tree_view_new_with_model(GTK_TREE_MODEL(model));
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(
-				g->sn_tlsessions), -1, "Sessions",
+				g->sn_tlsessions), -1, "Session",
 			gtk_cell_renderer_text_new(), "text", 0, NULL);
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g->sn_tlsessions),
 			FALSE);
-	g_signal_connect(G_OBJECT(g->sn_tlsessions), "cursor-changed",
-			G_CALLBACK(_on_session_select), g);
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(g->sn_tlsessions));
+	g_signal_connect(G_OBJECT(sel), "changed", G_CALLBACK(
+				_on_session_select), g);
 	g_signal_connect(G_OBJECT(g->sn_tlsessions), "row-activated",
 			G_CALLBACK(_on_session_activate), g);
 	gtk_container_add(GTK_CONTAINER(widget), g->sn_tlsessions);
@@ -217,14 +219,11 @@ GPuTTY * gputty_new(void)
 	/* load sessions */
 	for(i = 0; i <= 99; i++)
 	{
-		char buf[11];
-
-		sprintf(buf, "session %d", i);
+		snprintf(buf, sizeof(buf), "session %u", i);
 		if((p = config_get(g->config, buf, "name")) == NULL)
 			break;
-		gtk_list_store_append(g->sn_lsessions, &g->sn_ilsessions);
-		gtk_list_store_set(g->sn_lsessions, &g->sn_ilsessions, 0, p,
-				-1);
+		gtk_list_store_append(model, &iter);
+		gtk_list_store_set(model, &iter, 0, p, -1);
 	}
 
 	/* show window */
@@ -234,7 +233,7 @@ GPuTTY * gputty_new(void)
 
 static int _gputty_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "GPuTTY: ");
+	fprintf(stderr, "%s", PACKAGE ": ");
 	perror(message);
 	return ret;
 }
@@ -256,6 +255,7 @@ static char * _gputty_config_file(void)
 
 void gputty_delete(GPuTTY * gputty)
 {
+	gtk_widget_destroy(gputty->window);
 	config_delete(gputty->config);
 	free(gputty);
 }
@@ -478,7 +478,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	_on_exit(widget, data);
-	return FALSE;
+	return TRUE;
 }
 
 static void _on_connect(GtkWidget * widget, gpointer data)
@@ -509,12 +509,8 @@ static void _on_connect(GtkWidget * widget, gpointer data)
 		username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 		if(username[0] != '\0')
 			useropt = "-l";
-		execlp(xterm, xterm, "-e",
-				ssh, hostname,
-				"-p", port,
-				useropt, username,
-				NULL);
-		fprintf(stderr, "%s", "GPuTTY: ");
+		execlp(xterm, xterm, "-e", ssh, hostname, "-p", port,
+				useropt, username, NULL);
 		exit(_gputty_error(xterm, 2));
 	}
 }
@@ -523,18 +519,25 @@ static void _on_delete(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	int i;
+	GtkTreeModel * model;
+	GtkTreePath * path;
+	GtkTreeIter iter;
 	char buf1[11];
 	char buf2[11];
 	char * p;
 
-	if(g->selection == -1)
+	if((i = g->selection) == -1)
 		return;
-	i = g->selection;
-	gtk_list_store_remove(g->sn_lsessions, &g->sn_ilsessions);
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(g->sn_tlsessions));
+	path = gtk_tree_path_new_from_indices(i, -1);
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_path_free(path);
+	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 	for(; i < 100; i++)
 	{
-		sprintf(buf1, "session %d", i);
-		sprintf(buf2, "session %d", i+1);
+		/* XXX store information in the ListStore instead */
+		snprintf(buf1, sizeof(buf1), "session %d", i);
+		snprintf(buf2, sizeof(buf2), "session %d", i+1);
 		if((p = config_get(g->config, buf2, "name")) == NULL)
 		{
 			config_set(g->config, buf1, "name", NULL);
@@ -558,7 +561,7 @@ static void _on_load(GtkWidget * widget, gpointer data)
 
 	if(g->selection < 0 || g->selection >= 100)
 		return;
-	sprintf(buf, "session %d", g->selection);
+	snprintf(buf, sizeof(buf), "session %d", g->selection);
 	if((p = config_get(g->config, buf, "hostname")) == NULL)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_ehostname), "");
 	else
@@ -586,7 +589,7 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 
 	if(g->config == NULL)
 	{
-		fprintf(stderr, "%s", "gputty: not saving configuration\n");
+		fprintf(stderr, "%s", PACKAGE ": not saving configuration\n");
 		gtk_main_quit();
 		return;
 	}
@@ -600,7 +603,7 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 	if((filename = _gputty_config_file()) == NULL
 			|| config_save(g->config, filename) != 0)
 	{
-		fprintf(stderr, "%s%s", "gputty: an error occured while",
+		fprintf(stderr, "%s%s", PACKAGE ": an error occured while",
 				" saving configuration\n");
 		if(filename != NULL)
 			free(filename);
@@ -709,31 +712,41 @@ static void _on_save(GtkWidget * widget, gpointer data)
 	char const * hostname;
 	int port;
 	char const * username;
-	int row = g->selection;
 	char buf[11];
 	char buf2[11];
+	GtkTreeSelection * sel;
+	GtkTreeIter iter;
+	GtkTreeModel * model;
+	int row = g->selection;
+	GtkTreePath * path;
+	int * p;
 
 	session = gtk_entry_get_text(GTK_ENTRY(g->sn_esessions));
-	if(session[0] == '\0')
-		return;
 	hostname = gtk_entry_get_text(GTK_ENTRY(g->hn_ehostname));
-	if(hostname[0] == '\0')
+	if(session[0] == '\0' || hostname[0] == '\0')
 		return;
 	username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 	port = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(g->hn_sport));
-	if(g->selection == -1)
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(g->sn_tlsessions));
+	if(gtk_tree_selection_get_selected(sel, &model, &iter) != TRUE)
+		gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, session, -1);
+	if(row < 0)
 	{
-		gtk_list_store_append(g->sn_lsessions, &g->sn_ilsessions);
-		gtk_list_store_set(g->sn_lsessions, &g->sn_ilsessions, 0,
-				session, -1);
+		path = gtk_tree_model_get_path(model, &iter);
+		if((p = gtk_tree_path_get_indices(path)) != NULL)
+			row = *p;
+		gtk_tree_path_free(path);
 	}
-	else
-		gtk_list_store_set(g->sn_lsessions, &g->sn_ilsessions, 0,
-				session, -1);
-	if(row >= 100 || row < 0)
+	if(row < 0 || row >= 100)
+	{
+		fprintf(stderr, "%s%s%s", "gputty: Can't save session (",
+				row < 0 ? "negative session"
+				: "100 sessions maximum", ")\n");
 		return;
-	sprintf(buf, "session %d", row);
-	sprintf(buf2, "%d", port);
+	}
+	snprintf(buf, sizeof(buf), "session %d", row);
+	snprintf(buf2, sizeof(buf2), "%d", port);
 	config_set(g->config, buf, "name", session);
 	config_set(g->config, buf, "hostname", hostname);
 	config_set(g->config, buf, "username", username);
@@ -753,18 +766,18 @@ static void _on_session_activate(GtkTreeView * view, GtkTreePath * path,
 	_on_connect(GTK_WIDGET(view), data);
 }
 
-static void _on_session_select(GtkTreeView * view, gpointer data)
+static void _on_session_select(GtkTreeSelection * selection, gpointer data)
 {
 	GPuTTY * g = data;
-	GtkTreeSelection * sel;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
 	GList * list;
 	int * p;
 
 	g->selection = -1;
-	sel = gtk_tree_view_get_selection(view);
-	if(!gtk_tree_selection_get_selected(sel, NULL, &g->sn_ilsessions)
-		|| (list = gtk_tree_selection_get_selected_rows(sel, NULL))
-			== NULL)
+	if(!gtk_tree_selection_get_selected(selection, &model, &iter)
+			|| (list = gtk_tree_selection_get_selected_rows(
+					selection, NULL)) == NULL)
 		return;
 	if((p = gtk_tree_path_get_indices(list->data)) != NULL)
 		g->selection = *p;
