@@ -386,6 +386,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	if(ret < 0)
 	{
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
@@ -455,20 +456,26 @@ static void _refresh_path(Browser * browser)
 	GtkWidget * widget;
 	unsigned int i;
 	char * p;
+	char * q;
 
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
 	for(i = 0; i < cnt; i++)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
-	p = dirname(browser->current->data);
-	if(strcmp(p, ".") == 0)
-		return;
-	gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
-	for(cnt = 1; strcmp(p, "/") != 0; cnt++)
+	p = g_path_get_dirname(browser->current->data);
+	if(strcmp(p, ".") != 0)
 	{
-		p = dirname(p);
 		gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
+		for(cnt = 1; strcmp(p, "/") != 0; cnt++)
+		{
+			q = g_path_get_dirname(p);
+			g_free(p);
+			p = q;
+			gtk_combo_box_append_text(GTK_COMBO_BOX(
+						browser->tb_path), p);
+		}
 	}
+	g_free(p);
 }
 
 static void _refresh_loop(Browser * browser, char const * name)
@@ -483,6 +490,7 @@ static void _refresh_loop(Browser * browser, char const * name)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * icon_48 = NULL; /* FIXME */
 #endif
+	uint64_t size;
 	struct passwd * pw;
 	struct group * gr;
 
@@ -490,6 +498,7 @@ static void _refresh_loop(Browser * browser, char const * name)
 	if(lstat(path, &st) != 0)
 		return; /* FIXME how to handle? */
 	is_dir = S_ISDIR(st.st_mode);
+	size = st.st_size;
 	display_name = g_filename_to_utf8(name, -1, NULL, NULL, NULL);
 	gtk_list_store_append(browser->store, &iter);
 #if !GTK_CHECK_VERSION(2, 6, 0)
@@ -533,7 +542,7 @@ static void _refresh_loop(Browser * browser, char const * name)
 #if GTK_CHECK_VERSION(2, 6, 0)
 			BR_COL_PIXBUF_48, icon_48,
 #endif
-			BR_COL_SIZE, st.st_size,
+			BR_COL_SIZE, size,
 			BR_COL_OWNER, (pw = getpwuid(st.st_uid)) != NULL
 			? pw->pw_name : "",
 			BR_COL_GROUP, (gr = getgrgid(st.st_gid)) != NULL
