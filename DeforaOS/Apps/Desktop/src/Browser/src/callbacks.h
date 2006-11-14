@@ -22,8 +22,7 @@ void on_edit_cut(GtkMenuItem * menuitem, gpointer data);
 void on_edit_delete(GtkMenuItem * menuitem, gpointer data);
 void on_edit_preferences(GtkMenuItem * menuitem, gpointer data);
 void on_edit_select_all(GtkMenuItem * menuitem, gpointer data);
-void on_edit_unselect_all(GtkMenuItem * menuitem,
-		gpointer data);
+void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
@@ -51,12 +50,10 @@ void on_view_as(GtkWidget * widget, gpointer data);
 void on_path_activate(GtkWidget * widget, gpointer data);
 
 /* view */
-void on_detail_default(GtkTreeView * view,
-		GtkTreePath * tree_path, GtkTreeViewColumn * column,
-		gpointer data);
+void on_detail_default(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
-void on_icon_default(GtkIconView * view, GtkTreePath *tree_path,
-		gpointer data);
+void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data);
 #endif
 void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data);

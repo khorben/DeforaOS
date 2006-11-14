@@ -76,7 +76,9 @@ typedef struct _Browser
 	GtkWidget * tb_path;
 	GtkWidget * scrolled;
 	GtkWidget * detailview;
+#if GTK_CHECK_VERSION(2, 6, 0)
 	GtkWidget * iconview;
+#endif
 	GtkListStore * store;
 	GtkWidget * statusbar;
 	guint statusbar_id;
