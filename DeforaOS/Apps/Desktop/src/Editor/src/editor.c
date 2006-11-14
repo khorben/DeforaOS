@@ -381,6 +381,8 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 				editor->window));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_about_on_closex), NULL);
+	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
@@ -487,7 +489,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	}
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
+			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), textview);
@@ -533,7 +535,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_text_buffer_set_text(tbuf, _license, strlen(_license));
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-			GTK_SHADOW_ETCHED_IN);
+			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), textview);
