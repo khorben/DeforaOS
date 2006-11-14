@@ -16,16 +16,19 @@ all: $(TARGETS)
 
 browser_OBJS = browser.o callbacks.o mime.o main.o
 browser_CFLAGS = $(CFLAGSF) $(CFLAGS)
+
 browser: $(browser_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o browser $(browser_OBJS)
 
 delete_OBJS = delete.o
 delete_CFLAGS = $(CFLAGSF) $(CFLAGS)
+
 delete: $(delete_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o delete $(delete_OBJS)
 
 open_OBJS = open.o mime.o
 open_CFLAGS = $(CFLAGSF) $(CFLAGS)
+
 open: $(open_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o open $(open_OBJS)
 
