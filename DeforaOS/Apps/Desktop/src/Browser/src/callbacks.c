@@ -72,7 +72,7 @@ void on_edit_copy(GtkMenuItem * menuitem, gpointer data)
 
 	if((sel = _copy_selection(browser)) == NULL)
 		return;
-	for(p = sel; p->next != NULL; p = p->next)
+	for(p = sel; p != NULL; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
 					&iter, p->data))
@@ -117,7 +117,7 @@ void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 
 	if((sel = _copy_selection(browser)) == NULL)
 		return;
-	for(p = sel; p->next != NULL; p = p->next)
+	for(p = sel; p != NULL; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
 					&iter, p->data))
@@ -145,7 +145,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 
 	if((selection = _copy_selection(browser)) == NULL)
 		return;
-	for(p = selection; p->next != NULL; p = p->next)
+	for(p = selection; p != NULL; p = p->next)
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
 					&iter, p->data))
 			continue;
@@ -157,6 +157,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s%lu%s",
 			"Are you sure you want to delete ", cnt, " file(s)?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "Delete file(s)");
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 	if(ret == GTK_RESPONSE_YES)
@@ -186,9 +187,12 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
 		exit(2);
 	}
+#ifdef DEBUG
+	argv[0] = "echo";
+#else
 	argv[0] = "delete";
-	argv[cnt+1] = NULL;
-	for(p = selection; p->next != NULL; p = p->next)
+#endif
+	for(p = selection; p != NULL && i <= cnt; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
 					&iter, p->data))
@@ -197,6 +201,12 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 				BR_COL_PATH, &q, -1);
 		argv[i++] = q;
 	}
+	if(i != cnt+1)
+	{
+		fprintf(stderr, "%s", "browser: Could not delete files\n");
+		exit(2);
+	}
+	argv[i] = NULL;
 	execvp(argv[0], argv);
 	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
 			strerror(errno));
@@ -670,10 +680,17 @@ typedef struct _IconCallback
 static IconCallback _icon_cb_data;
 
 
+static void _default_do(Browser * browser, GtkTreePath * path);
 void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
 	Browser * browser = data;
+
+	_default_do(browser, path);
+}
+
+static void _default_do(Browser * browser, GtkTreePath * path)
+{
 	char * location;
 	GtkTreeIter iter;
 	gboolean is_dir;
@@ -681,26 +698,21 @@ void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&location, BR_COL_IS_DIRECTORY, &is_dir, -1);
-	browser_set_location(browser, location);
+	if(is_dir)
+		browser_set_location(browser, location);
+	else
+		mime_action(browser->mime, "open", location);
 	g_free(location);
 }
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
 void on_icon_default(GtkIconView * view,
-		GtkTreePath * tree_path, gpointer data)
+		GtkTreePath * path, gpointer data)
 {
 	Browser * browser = data;
-	char * path;
-	GtkTreeIter iter;
-	gboolean is_dir;
 
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
-			tree_path);
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
-			&path, BR_COL_IS_DIRECTORY, &is_dir, -1);
-	browser_set_location(browser, path);
-	g_free(path);
+	_default_do(browser, path);
 }
 #endif
 
@@ -709,14 +721,41 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
 	Browser * browser = data;
-	gint n;
-	char * p;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	char * path = NULL;
+	ssize_t len;
+	char * q = NULL;
 
-	n = strtol(arg1, &p, 10);
-	if(*arg1 == '\0' || *p != '\0')
-		/* FIXME warn user */
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		model = gtk_icon_view_get_model(GTK_ICON_VIEW(
+					browser->iconview));
+	else
+#endif
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(browser->detailview));
+	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
+	{
+		gtk_tree_model_get(model, &iter, BR_COL_PATH, &path, -1);
+		if(path != NULL && (len = strrchr(path, '/') - path) > 0
+				&& strcmp(&path[len+1], arg2) != 0)
+			q = malloc(len + strlen(arg2) + 2);
+	}
+	if(q == NULL)
+	{
+		free(path);
 		return;
-	/* FIXME implement */
+	}
+	strncpy(q, path, len);
+	sprintf(&q[len], "/%s", arg2);
+	fprintf(stderr, "%s (%s) -> %s, dirlen %u\n", path, arg1, q, len);
+	if(link(path, q) != 0 || unlink(path) != 0)
+		browser_error(browser, strerror(errno), 0);
+	else
+		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, q,
+				BR_COL_DISPLAY_NAME, arg2, -1);
+	free(q);
+	free(path);
 }
 
 
@@ -760,9 +799,8 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+			BR_COL_PATH, &_icon_cb_data.path,
 			BR_COL_IS_DIRECTORY, &_icon_cb_data.isdir, -1);
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-			BR_COL_PATH, &_icon_cb_data.path, -1);
 	_icon_cb_data.browser = browser;
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
@@ -770,7 +808,6 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(_icon_cb_data.isdir != TRUE)
 	{
-		/* FIXME does not handle multiple selection */
 #if GTK_CHECK_VERSION(2, 6, 0)
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT,
 				NULL);
@@ -818,21 +855,9 @@ static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 static void on_icon_delete(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
-	pid_t pid;
-	char * argv[] = { "delete", "delete", cb->path, NULL };
 
-	/* FIXME factorize this code in browser.c */
-	if((pid = fork()) == -1)
-	{
-		browser_error(cb->browser, "fork", 0);
-		return;
-	}
-	else if(pid != 0)
-		return;
-	execvp(argv[0], argv);
-	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
-			strerror(errno));
-	exit(2);
+	/* FIXME not selected => cursor */
+	on_edit_delete(NULL, cb->browser);
 }
 
 static void on_icon_edit(GtkWidget * widget, gpointer data)
