@@ -759,11 +759,15 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 }
 
 
+static void _popup_mime(Browser * browser, char const * type,
+		char const * action, char const * label,
+		GCallback callback, GtkWidget * menu);
 static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu);
-static void on_icon_delete(GtkWidget * widget, gpointer data);
-static void on_icon_edit(GtkWidget * widget, gpointer data);
-static void on_icon_open(GtkWidget * widget, gpointer data);
+static void _on_icon_delete(GtkWidget * widget, gpointer data);
+static void _on_icon_open(GtkWidget * widget, gpointer data);
+static void _on_icon_edit(GtkWidget * widget, gpointer data);
+static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
@@ -772,6 +776,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	GtkTreePath * path = NULL;
 	GtkTreeIter iter;
 	GtkWidget * menuitem;
+	char * mime = NULL;
 
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
 		return FALSE;
@@ -800,31 +805,41 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
 			BR_COL_PATH, &_icon_cb_data.path,
-			BR_COL_IS_DIRECTORY, &_icon_cb_data.isdir, -1);
+			BR_COL_IS_DIRECTORY, &_icon_cb_data.isdir,
+			BR_COL_MIME_TYPE, &mime, -1);
 	_icon_cb_data.browser = browser;
-	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				on_icon_open), &_icon_cb_data);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	if(_icon_cb_data.isdir != TRUE)
+	if(_icon_cb_data.isdir == TRUE)
 	{
-#if GTK_CHECK_VERSION(2, 6, 0)
-		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EDIT,
+		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN,
 				NULL);
-#else
-		menuitem = gtk_menu_item_new_with_mnemonic("_Edit");
-#endif
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					on_icon_edit), &_icon_cb_data);
+					_on_icon_open), &_icon_cb_data);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
+	else /* not a directory */
+	{
+		_popup_mime(browser, mime, "open", GTK_STOCK_OPEN,
+				G_CALLBACK(_on_icon_open), menu);
+		_popup_mime(browser, mime, "edit",
+#if GTK_CHECK_VERSION(2, 6, 0)
+				GTK_STOCK_EDIT,
+#else
+				"_Edit",
+#endif
+				G_CALLBACK(_on_icon_edit), menu);
+		menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_on_icon_open_with), &_icon_cb_data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		menuitem = gtk_separator_menu_item_new();
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
 				NULL);
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					on_icon_delete), &_icon_cb_data);
+					_on_icon_delete), &_icon_cb_data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
+	g_free(mime);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
@@ -834,6 +849,23 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_tree_path_free(path);
 #endif
 	return _popup_show(browser, event, menu);
+}
+
+static void _popup_mime(Browser * browser, char const * type,
+		char const * action, char const * label,
+		GCallback callback, GtkWidget * menu)
+{
+	GtkWidget * menuitem;
+
+	if(mime_get_handler(browser->mime, type, action) == NULL)
+		return;
+	if(strncmp(label, "gtk-", 4) == 0)
+		menuitem = gtk_image_menu_item_new_from_stock(label, NULL);
+	else
+		menuitem = gtk_menu_item_new_with_mnemonic(label);
+	g_signal_connect(G_OBJECT(menuitem), "activate", callback,
+			&_icon_cb_data);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
 static gboolean _popup_show(Browser * browser, GdkEventButton * event,
@@ -852,7 +884,7 @@ static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 	return TRUE;
 }
 
-static void on_icon_delete(GtkWidget * widget, gpointer data)
+static void _on_icon_delete(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
 
@@ -860,14 +892,7 @@ static void on_icon_delete(GtkWidget * widget, gpointer data)
 	on_edit_delete(NULL, cb->browser);
 }
 
-static void on_icon_edit(GtkWidget * widget, gpointer data)
-{
-	IconCallback * cb = data;
-
-	mime_action(cb->browser->mime, "edit", cb->path);
-}
-
-static void on_icon_open(GtkWidget * widget, gpointer data)
+static void _on_icon_open(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
 
@@ -875,4 +900,39 @@ static void on_icon_open(GtkWidget * widget, gpointer data)
 		browser_set_location(cb->browser, cb->path);
 	else
 		mime_action(cb->browser->mime, "open", cb->path);
+}
+
+static void _on_icon_edit(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+
+	mime_action(cb->browser->mime, "edit", cb->path);
+}
+
+static void _on_icon_open_with(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+	GtkWidget * dialog;
+	char * filename = NULL;
+	pid_t pid;
+
+	dialog = gtk_file_chooser_dialog_new("Open with...",
+			cb->browser->window, GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	if((pid = fork()) == -1)
+		browser_error(cb->browser, "fork", 0);
+	else if(pid == 0)
+	{
+		execlp(filename, filename, cb->path, NULL);
+		browser_error(NULL, filename, 0);
+		exit(2);
+	}
+	g_free(filename);
 }

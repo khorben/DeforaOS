@@ -124,6 +124,16 @@ void mime_delete(Mime * mime)
 }
 
 
+/* accessors */
+char const * mime_get_handler(Mime * mime, char const * type,
+		char const * action)
+{
+	if(type == NULL || action == NULL)
+		return NULL;
+	return config_get(mime->config, type, action);
+}
+
+
 /* useful */
 char const * mime_type(Mime * mime, char const * path)
 {

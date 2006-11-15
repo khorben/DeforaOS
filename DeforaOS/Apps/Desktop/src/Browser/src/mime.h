@@ -35,6 +35,12 @@ typedef struct _Mime
 Mime * mime_new(void);
 void mime_delete(Mime * mime);
 
+/* accessors */
+char const * mime_get_handler(Mime * mime, char const * type,
+		char const * action);
+int mime_set_handler(Mime * mime, char const * type, char const * action,
+		char const * handler);
+
 /* useful */
 char const * mime_type(Mime * mime, char const * path);
 /* FIXME return an enum with error codes? */

@@ -116,6 +116,7 @@ Browser * browser_new(char const * directory)
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
 		return NULL;
+	browser->window = NULL;
 	if(_new_pixbufs(browser) != 0)
 	{
 		browser_error(browser, "Error while loading default icons", -1);
@@ -124,7 +125,7 @@ Browser * browser_new(char const * directory)
 	}
 
 	/* config */
-	/* FIXME */
+	/* FIXME implement */
 	browser->prefs.sort_folders_first = TRUE;
 	browser->prefs.show_hidden_files = FALSE;
 
@@ -364,7 +365,7 @@ static GtkListStore * _create_store(Browser * browser)
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
 			GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID,
-			GTK_SORT_ASCENDING); /* FIXME optional */
+			GTK_SORT_ASCENDING); /* FIXME make it an option */
 	return store;
 }
 
@@ -379,10 +380,13 @@ void browser_delete(Browser * browser)
 
 
 /* useful */
+static int _browser_error(char const * message, int ret);
 int browser_error(Browser * browser, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
+	if(browser == NULL)
+		return _browser_error(message, ret);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
@@ -397,6 +401,13 @@ int browser_error(Browser * browser, char const * message, int ret)
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 					gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
+	return ret;
+}
+
+static int _browser_error(char const * message, int ret)
+{
+	fprintf(stderr, "%s", "browser: ");
+	perror(message);
 	return ret;
 }
 
