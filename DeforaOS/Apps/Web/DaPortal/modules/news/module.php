@@ -18,8 +18,8 @@ global $lang;
 if($lang == 'fr')
 {
 	$text['MODIFICATION_OF_NEWS'] = 'Modification de la dépêche';
-	$text['NEWS_ADMINISTRATION'] = 'Administration des news';
-	$text['NEWS_BY'] = 'Nouvelle par';
+	$text['NEWS_ADMINISTRATION'] = 'Administration des dépêches';
+	$text['NEWS_BY'] = 'Dépêche de';
 	$text['NEWS_ON'] = 'le';
 	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
 }
@@ -382,8 +382,9 @@ function news_submit($news)
 		$comma = ', ';
 	}
 	$news['title'] = stripslashes($news['title']);
+	$news['date'] = strftime(DATE_FORMAT);
 	$news['content'] = "News is available for moderation at:\n"
-		.'http://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']
+		.'https://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']
 		.'?module=news&action=modify&id='.$news['id']."\n"
 		."News preview:\n\n"
 		."News by ".$news['username']." on ".$news['date']."\n"
