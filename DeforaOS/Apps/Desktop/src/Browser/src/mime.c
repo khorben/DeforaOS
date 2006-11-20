@@ -190,12 +190,14 @@ GdkPixbuf * mime_icons(Mime * mime, GtkIconTheme * theme, char const * type,
 #else
 	if(mime->types[i].icon_24 != NULL || mime->types[i].icon_48 != NULL)
 	{
-		*icon_48 = mime->types[i].icon_48;
+		if(icon_48 != NULL)
+			*icon_48 = mime->types[i].icon_48;
 		return mime->types[i].icon_24;
 	}
 	mime->types[i].icon_24 = _icons_size(theme, type, 24);
 	mime->types[i].icon_48 = _icons_size(theme, type, 48);
-	*icon_48 = mime->types[i].icon_48;
+	if(icon_48 != NULL)
+		*icon_48 = mime->types[i].icon_48;
 #endif
 	return mime->types[i].icon_24;
 }
