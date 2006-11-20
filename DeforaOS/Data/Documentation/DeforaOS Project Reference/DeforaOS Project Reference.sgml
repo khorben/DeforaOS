@@ -28,13 +28,13 @@
 <preface>
 	<title>Introduction</title>
 	<para>
-Nowadays mainly two conceptions of computing compete: open source and proprietary software. I believe that most software should be available with its source code, as a proof of quality, interoperability, and security, to only quote the most obvious reasons.
+Nowadays mainly two conceptions of computing compete: open source and proprietary software. I believe that most software should be available with its source code, as a proof of quality, interoperability, and security, to state only the most obvious reasons.
 	</para>
 	<para>
-However, most open source operating systems are based on UNIX. While this can be considered as a mature, stable and portable operating system, its use can be cryptic, and users are often facing technical inner workings of this system. Moreover, most human-computer interfaces, either in text or graphical mode, and even configuration files, are incoherent between each other, and particularly in community open source systems.
+Most open source operating systems are based on UNIX. While this can be considered as a mature, stable and portable operating system, its use can be cryptic, and users often face the technical inner workings of this system. Moreover, most human-computer interfaces, either in textual or graphical mode, and even configuration files, are incoherent with regards to each other, particularly in community-written open source systems.
 	</para>
 	<para>
-It is also certainly worth thinking about a technical re-design of the UNIX system. It has been originally designed along with C, with a monokernel approach, on computers where every single character handling avoided counted. Now the power of even 10 years old computers is far beyond this, and researchers are working on micro-kernels, and safe programming languages for instance.
+It is also certainly worth thinking about a technical re-design of the UNIX system. It was originally designed along with C, with a monokernel approach, on computers where every bit of performance mattered. Now the power of even 10 year old computers are far beyond this, and researchers are working on micro-kernels, and safe programming languages for instance.
 	</para>
 	<para>
 Today I think my ideal operating system should be open source, micro-kernel based, usable on pentium-class computers, coherent, connected, and distributed. This paper explains in detail how I would design and implement it.
