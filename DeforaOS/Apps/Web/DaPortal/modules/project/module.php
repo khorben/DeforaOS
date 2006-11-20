@@ -451,8 +451,7 @@ function project_bug_list($args)
 	}
 	if(isset($username))
 		$title.=_BY_.$username;
-	print('<h1><img src="modules/project/bug.png" alt=""/> '
-			._html_safe($title).'</h1>'."\n");
+	print('<h1 class="title bug">'._html_safe($title).'</h1>'."\n");
 	$where = '';
 	if(isset($args['project']) && strlen($args['project']))
 		$where.=" AND daportal_project.name='".$args['project']."'";
@@ -758,7 +757,7 @@ function project_bug_reply_modify($args)
 	if(!is_array($reply) || count($reply) != 1)
 		return _error('Unable to modify bug feedback');
 	$reply = $reply[0];
-	print('<h1><img src="modules/project/bug.png" alt=""/> '
+	print('<h1 class="title bug">'
 			._html_safe(MODIFICATION_OF_REPLY_TO_BUG_HASH
 				.$reply['bug_id'].': '.$reply['title'])
 			.'</h1>'."\n");

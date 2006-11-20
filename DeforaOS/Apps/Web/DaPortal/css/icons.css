@@ -18,6 +18,10 @@ h1.bookmark {
 	background-image:		url("../modules/bookmark/icon.png");
 }
 
+h1.bug {
+	background-image:		url("../modules/project/bug.png");
+}
+
 h1.category {
 	background-image:		url("../modules/category/icon.png");
 }

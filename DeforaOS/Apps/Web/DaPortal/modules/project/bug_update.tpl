@@ -1,4 +1,4 @@
-<h1><img src="modules/project/bug.png" alt=""/> <?php echo _html_safe($title); ?></h1>
+<h1 class="title bug"><?php echo _html_safe($title); ?></h1>
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="project"/>
 	<input type="hidden" name="action" value="bug_<?php echo isset($bug) ? 'update' : 'insert'; ?>"/>
