@@ -9,6 +9,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 {
+	require_once('./system/html.php');
 	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe($filename).'</h1>'."\n");
 	//FIXME un-hardcode locations (invoke the cvs executable instead?)
@@ -131,6 +132,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	$path = str_replace('$', '\$', $path);
 	exec('rlog "'.$path.'"', $rcs);
 	_info('rlog "'.$path.'"', 0);
+	require_once('./system/html.php');
 	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe(dirname($filename)).'/'
 			._html_safe(substr($rcs[2], 14)).'</h1>'."\n");
@@ -216,6 +218,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 		$revision, $download)
 {
+	require_once('./system/html.php');
 	if(!ereg('^[0-9]+\.[0-9]+$', $revision))
 		return _error('Invalid revision');
 	$path = $cvsrep.$cvsroot.'/'.$filename;
@@ -238,7 +241,6 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 		$mime = 'text/plain';
 	if($download)
 	{
-		require_once('./system/html.php');
 		header('Content-Type: '.$mime);
 		header('Content-Disposition: inline; filename="'
 				._html_safe(basename($basename)).'"');
