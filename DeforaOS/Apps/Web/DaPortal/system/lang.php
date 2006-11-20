@@ -82,6 +82,7 @@ $text['PASSWORD'] = 'Password';
 $text['PERMISSION_DENIED'] = 'Permission denied';
 $text['PREVIEW'] = 'Preview';
 $text['READ'] = 'Read';
+$text['REFRESH'] = 'Refresh';
 $text['REPLY'] = 'Reply';
 $text['SEARCH'] = 'Search';
 $text['SEND'] = 'Send';
