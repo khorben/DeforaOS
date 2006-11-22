@@ -16,6 +16,7 @@ all: $(TARGETS)
 
 gputty_OBJS = gputty.o
 gputty_CFLAGS = $(CFLAGSF) $(CFLAGS)
+
 gputty: $(gputty_OBJS)
 	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gputty $(gputty_OBJS)
 

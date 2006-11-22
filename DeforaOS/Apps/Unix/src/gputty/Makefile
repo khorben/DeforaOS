@@ -1,6 +1,7 @@
 PACKAGE	= gputty
 VERSION	= 0.9.9
 SUBDIRS	= src
+RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
 
@@ -24,6 +25,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/gputty.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/AUTHORS \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/INSTALL \
