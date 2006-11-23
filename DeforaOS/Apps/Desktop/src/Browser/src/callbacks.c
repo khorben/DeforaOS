@@ -748,7 +748,6 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	}
 	strncpy(q, path, len);
 	sprintf(&q[len], "/%s", arg2);
-	fprintf(stderr, "%s (%s) -> %s, dirlen %u\n", path, arg1, q, len);
 	if(link(path, q) != 0 || unlink(path) != 0)
 		browser_error(browser, strerror(errno), 0);
 	else
@@ -917,9 +916,10 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	pid_t pid;
 
 	dialog = gtk_file_chooser_dialog_new("Open with...",
-			cb->browser->window, GTK_FILE_CHOOSER_ACTION_OPEN,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+			GTK_WINDOW(cb->browser->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
