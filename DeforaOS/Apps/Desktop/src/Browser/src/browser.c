@@ -133,9 +133,8 @@ Browser * browser_new(char const * directory)
 	browser->mime = mime_new();
 
 	/* history */
-	browser->history = g_list_append(NULL, strdup(directory == NULL
-				? g_get_home_dir() : directory));
-	browser->current = browser->history;
+	browser->history = NULL;
+	browser->current = NULL;
 
 	browser->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
@@ -154,8 +153,7 @@ Browser * browser_new(char const * directory)
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_back), FALSE);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), browser->tb_back, -1);
 	browser->tb_updir = gtk_tool_button_new_from_stock(GTK_STOCK_GO_UP);
-	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir), strcmp(
-				browser->current->data, "/") != 0);
+	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir), FALSE);
 	g_signal_connect(browser->tb_updir, "clicked", G_CALLBACK(on_updir),
 			browser);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), browser->tb_updir, -1);
@@ -212,7 +210,6 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	browser->tb_path = gtk_combo_box_entry_new_text();
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
-	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
 	g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), browser);
 	toolitem = gtk_tool_item_new();
@@ -244,7 +241,8 @@ Browser * browser_new(char const * directory)
 	browser_set_view(browser, BV_DETAILS);
 	gtk_widget_grab_focus(browser->detailview);
 #endif
-	browser_refresh(browser);
+	browser_set_location(browser, directory != NULL ? directory
+			: g_get_home_dir());
 
 	/* preferences */
 	browser->pr_window = NULL;
@@ -423,6 +421,8 @@ void browser_refresh(Browser * browser)
 	unsigned int hidden_cnt;
 	char status[36];
 
+	if(browser->current == NULL)
+		return;
 	if((dir = g_dir_open(browser->current->data, 0, NULL)) == NULL)
 		return;
 	gtk_list_store_clear(browser->store);
@@ -565,38 +565,62 @@ static void _refresh_loop(Browser * browser, char const * name)
 }
 
 
+static char * _location_real_path(char const * path);
+static int _location_directory(Browser * browser, char * path);
 void browser_set_location(Browser * browser, char const * path)
 {
-	if(g_file_test(path, G_FILE_TEST_IS_REGULAR))
+	char * realpath = NULL;
+
+	if((realpath = _location_real_path(path)) == NULL)
+		return;
+	if(g_file_test(realpath, G_FILE_TEST_IS_REGULAR))
+		mime_action(browser->mime, "open", realpath);
+	else if(g_file_test(realpath, G_FILE_TEST_IS_DIR)
+			&& _location_directory(browser, realpath) == 0)
 	{
-		mime_action(browser->mime, "open", path);
+		gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir),
+				strcmp(browser->current->data, "/") != 0);
+		browser_refresh(browser);
 		return;
 	}
-	if(!g_file_test(path, G_FILE_TEST_IS_DIR))
-		return;
+	free(realpath);
+}
+
+static char * _location_real_path(char const * path)
+{
+	char * p;
+	char * cur;
+
+	if(path == NULL)
+		return NULL;
+	if(path[0] == '/')
+		return strdup(path);
+	cur = g_get_current_dir();
+	p = g_build_filename(cur, path, NULL);
+	g_free(cur);
+	return p;
+}
+
+static int _location_directory(Browser * browser, char * path)
+{
 	if(browser->history == NULL)
 	{
 		if((browser->history = g_list_alloc()) == NULL)
-			return;
-		browser->history->data = strdup(path);
+			return 1;
+		browser->history->data = path;
 		browser->current = browser->history;
+		return 0;
 	}
-	else if(strcmp(browser->current->data, path) != 0)
-	{
-		g_list_foreach(browser->current->next, (GFunc)free, NULL);
-		g_list_free(browser->current->next);
-		browser->current->next = NULL;
-		browser->history = g_list_append(browser->history,
-				strdup(path));
-		browser->current = g_list_last(browser->history);
-		gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_back),
-				TRUE);
-		gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward),
-				FALSE);
-	}
-	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir),
-			strcmp(browser->current->data, "/") != 0);
-	browser_refresh(browser);
+	if(strcmp(browser->current->data, path) == 0)
+		return 1;
+	g_list_foreach(browser->current->next, (GFunc)free, NULL);
+	g_list_free(browser->current->next);
+	browser->current->next = NULL;
+	browser->history = g_list_append(browser->history, path);
+	browser->current = g_list_last(browser->history);
+	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_back), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward), FALSE);
+	return 0;
 }
 
 
@@ -633,6 +657,7 @@ static void _view_details(Browser * browser)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser->iconview != NULL)
 	{
+		/* FIXME keep selection */
 		gtk_widget_destroy(browser->iconview);
 		browser->iconview = NULL;
 	}
