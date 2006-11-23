@@ -97,6 +97,7 @@ static struct _menubar _menubar[] =
 
 
 /* Browser */
+/* browser_new */
 static int _new_pixbufs(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
@@ -372,12 +373,28 @@ static GtkListStore * _create_store(Browser * browser)
 }
 
 
+/* browser_delete */
 void browser_delete(Browser * browser)
 {
 	g_list_foreach(browser->history, (GFunc)free, NULL);
 	g_list_free(browser->history);
 	g_object_unref(browser->store);
 	free(browser);
+}
+
+
+/* private */
+static void _browser_set_status(Browser * browser, char const * status)
+{
+	if(browser->statusbar_id)
+		gtk_statusbar_remove(GTK_STATUSBAR(browser->statusbar),
+				gtk_statusbar_get_context_id(
+					GTK_STATUSBAR(browser->statusbar), ""),
+				browser->statusbar_id);
+	browser->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
+				browser->statusbar),
+			gtk_statusbar_get_context_id(GTK_STATUSBAR(
+					browser->statusbar), ""), status);
 }
 
 
@@ -445,8 +462,11 @@ void browser_refresh(Browser * browser)
 		return;
 	}
 	browser->refresh_dir = dir;
+	browser->refresh_cnt = 0;
+	browser->refresh_hid = 0;
 	_refresh_title(browser);
 	_refresh_path(browser);
+	_browser_set_status(browser, "Refreshing folder...");
 	/* FIXME make sure this check is portable and fully implement it
 	if(st.st_dev != browser->refresh_dev
 			|| st.st_ino != browser->refresh_ino) */
@@ -502,12 +522,14 @@ static void _refresh_new(Browser * browser)
 
 	gtk_list_store_clear(browser->store);
 	for(i = 0; i < 16 && _new_loop(browser) == 0; i++);
-	browser->refresh_id = g_idle_add(_new_idle, browser);
+	if(i == 16)
+		browser->refresh_id = g_idle_add(_new_idle, browser);
 }
 
 static int _new_loop(Browser * browser)
 {
 	struct dirent * de;
+	char status[36];
 	GtkTreeIter iter;
 	char * path;
 	struct stat st;
@@ -522,11 +544,22 @@ static int _new_loop(Browser * browser)
 	struct group * gr = NULL;
 
 	while((de = readdir(browser->refresh_dir)) != NULL)
-		if(browser->prefs.show_hidden_files || de->d_name[0] != '.')
+	{
+		browser->refresh_cnt++;
+		if(de->d_name[0] != '.')
 			break;
+		browser->refresh_hid++;
+		if(browser->prefs.show_hidden_files)
+			break;
+	}
 	if(de == NULL)
+	{
+		snprintf(status, sizeof(status), "%u file%c (%u hidden)",
+				browser->refresh_cnt, browser->refresh_cnt <= 1
+				? '\0' : 's', browser->refresh_hid);
+		_browser_set_status(browser, status);
 		return 1;
-	gtk_list_store_append(browser->store, &iter);
+	}
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			!= NULL && lstat(path, &st) != 0)
 		_browser_error(path, 0);
@@ -553,7 +586,8 @@ static int _new_loop(Browser * browser)
 				&icon_48);
 #endif
 	}
-	gtk_list_store_set(browser->store, &iter, BR_COL_PATH, path,
+	gtk_list_store_insert_with_values(browser->store, &iter, -1,
+			BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, name != NULL ? name : de->d_name,
 			BR_COL_IS_DIRECTORY, (de->d_type & DT_DIR) == DT_DIR,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
