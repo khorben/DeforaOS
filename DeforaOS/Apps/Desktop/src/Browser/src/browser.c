@@ -545,11 +545,15 @@ static int _new_loop(Browser * browser)
 
 	while((de = readdir(browser->refresh_dir)) != NULL)
 	{
+		if(de->d_name[0] == '.')
+		{
+			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0'))
+				continue;
+			browser->refresh_hid++;
+		}
 		browser->refresh_cnt++;
-		if(de->d_name[0] != '.')
-			break;
-		browser->refresh_hid++;
-		if(browser->prefs.show_hidden_files)
+		if(de->d_name[0] != '.' || browser->prefs.show_hidden_files)
 			break;
 	}
 	if(de == NULL)
