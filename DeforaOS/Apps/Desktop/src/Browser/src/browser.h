@@ -6,6 +6,7 @@
 #ifndef BROWSER_BROWSER_H
 # define BROWSER_BROWSER_H
 
+# include <dirent.h>
 # include <gtk/gtk.h>
 # include "mime.h"
 
@@ -60,6 +61,12 @@ typedef struct _Browser
 	/* history */
 	GList * history;
 	GList * current;
+
+	/* refresh */
+	guint refresh_id;
+	DIR * refresh_dir;
+	dev_t refresh_dev;
+	ino_t refresh_ino;
 
 	/* widgets */
 	GtkIconTheme * theme;
