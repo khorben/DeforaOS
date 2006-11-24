@@ -374,6 +374,8 @@ static GtkListStore * _create_store(Browser * browser)
 /* browser_delete */
 void browser_delete(Browser * browser)
 {
+	if(browser->refresh_id)
+		g_source_remove(browser->refresh_id);
 	g_list_foreach(browser->history, (GFunc)free, NULL);
 	g_list_free(browser->history);
 	g_object_unref(browser->store);
