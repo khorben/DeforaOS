@@ -1000,7 +1000,7 @@ static void _view_list(Browser * browser)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "text", 1, NULL);
+			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 146);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_HORIZONTAL);
