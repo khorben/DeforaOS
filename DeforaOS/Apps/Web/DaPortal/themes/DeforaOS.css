@@ -60,6 +60,14 @@ button, input, select, textarea {
 	border:				1px solid #636363;
 }
 
+button, input, option {
+	padding:			2px;
+}
+
+button, input[type="submit"], option {
+	padding-bottom:			0px;
+}
+
 button, input {
 	border:				1px solid #636363;
 	border-left:			1px solid #b0b0b0;
