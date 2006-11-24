@@ -357,13 +357,11 @@ static GtkListStore * _create_store(Browser * browser)
 
 	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING,
 			GDK_TYPE_PIXBUF,
-#if !GTK_CHECK_VERSION(2, 6, 0)
-			G_TYPE_BOOLEAN,
-#else
-			GDK_TYPE_PIXBUF, G_TYPE_BOOLEAN,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			GDK_TYPE_PIXBUF,
 #endif
-			G_TYPE_UINT64, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING);
+			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_UINT64,
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -434,7 +432,7 @@ static int _browser_error(char const * message, int ret)
 static void _refresh_title(Browser * browser);
 static void _refresh_path(Browser * browser);
 static void _refresh_new(Browser * browser);
-/* static void _refresh_current(Browser * browser); */
+static void _refresh_current(Browser * browser);
 void browser_refresh(Browser * browser)
 {
 	DIR * dir;
@@ -467,14 +465,13 @@ void browser_refresh(Browser * browser)
 	_refresh_title(browser);
 	_refresh_path(browser);
 	_browser_set_status(browser, "Refreshing folder...");
-	/* FIXME make sure this check is portable and fully implement it
 	if(st.st_dev != browser->refresh_dev
-			|| st.st_ino != browser->refresh_ino) */
+			|| st.st_ino != browser->refresh_ino)
 		_refresh_new(browser);
-/*	else
+	else
 		_refresh_current(browser);
 	browser->refresh_dev = st.st_dev;
-	browser->refresh_ino = st.st_ino; */
+	browser->refresh_ino = st.st_ino;
 }
 
 static void _refresh_title(Browser * browser)
@@ -526,22 +523,16 @@ static void _refresh_new(Browser * browser)
 		browser->refresh_id = g_idle_add(_new_idle, browser);
 }
 
+static int _loop_status(Browser * browser);
+static void _loop_insert(Browser * browser, GtkTreeIter * iter,
+		char const * path, char const * display, struct stat * st);
 static int _new_loop(Browser * browser)
 {
 	struct dirent * de;
-	char status[36];
 	GtkTreeIter iter;
 	char * path;
 	struct stat st;
-	char * name;
-	GdkPixbuf * icon_24 = NULL;
-#if GTK_CHECK_VERSION(2, 6, 0)
-	GdkPixbuf * icon_48 = NULL;
-#endif
-	char const * type = NULL;
-	uint64_t size = 0;
-	struct passwd * pw = NULL;
-	struct group * gr = NULL;
+	struct stat * p = NULL;
 
 	while((de = readdir(browser->refresh_dir)) != NULL)
 	{
@@ -557,43 +548,70 @@ static int _new_loop(Browser * browser)
 			break;
 	}
 	if(de == NULL)
-	{
-		snprintf(status, sizeof(status), "%u file%c (%u hidden)",
-				browser->refresh_cnt, browser->refresh_cnt <= 1
-				? '\0' : 's', browser->refresh_hid);
-		_browser_set_status(browser, status);
-		return 1;
-	}
+		return _loop_status(browser);
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			!= NULL && lstat(path, &st) != 0)
 		_browser_error(path, 0);
 	else
-	{
-		size = st.st_size;
-		pw = getpwuid(st.st_uid);
-		gr = getgrgid(st.st_gid);
-	}
-	name = g_filename_to_utf8(de->d_name, -1, NULL, NULL, NULL);
-	if((de->d_type & DT_DIR) == DT_DIR)
-	{
-		icon_24 = browser->pb_folder_24;
+		p = &st;
+	_loop_insert(browser, &iter, path, de->d_name, p);
+	g_free(path);
+	return 0;
+}
+
+static int _loop_status(Browser * browser)
+{
+	char status[36];
+
+	snprintf(status, sizeof(status), "%u file%c (%u hidden)",
+			browser->refresh_cnt, browser->refresh_cnt <= 1
+			? '\0' : 's', browser->refresh_hid);
+	_browser_set_status(browser, status);
+	return 1;
+}
+
+static void _loop_insert(Browser * browser, GtkTreeIter * iter,
+		char const * path, char const * display, struct stat * st)
+{
+	char * name;
+	struct passwd * pw = NULL;
+	struct group * gr = NULL;
+	uint64_t inode = 0;
+	uint64_t size = 0;
+	char const * type = NULL;
+	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
-		icon_48 = browser->pb_folder_48;
+	GdkPixbuf * icon_48 = browser->pb_file_48;
 #endif
-	}
-	else if((type = mime_type(browser->mime, de->d_name)) != NULL)
+
+	name = g_filename_to_utf8(display, -1, NULL, NULL, NULL);
+	if(st != NULL)
 	{
-#if !GTK_CHECK_VERSION(2, 6, 0)
-		icon_24 = mime_icons(browser->mime, browser->theme, type, NULL);
+		inode = st->st_ino;
+		size = st->st_size;
+		pw = getpwuid(st->st_uid);
+		gr = getgrgid(st->st_gid);
+		if(S_ISDIR(st->st_mode))
+		{
+			icon_24 = browser->pb_folder_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+			icon_48 = browser->pb_folder_48;
+#endif
+		}
+		else if((type = mime_type(browser->mime, display)) != NULL)
+			icon_24 = mime_icons(browser->mime, browser->theme,
+#if GTK_CHECK_VERSION(2, 6, 0)
+					type, &icon_48);
 #else
-		icon_24 = mime_icons(browser->mime, browser->theme, type,
-				&icon_48);
+					type, NULL);
 #endif
 	}
-	gtk_list_store_insert_with_values(browser->store, &iter, -1,
+	gtk_list_store_insert_with_values(browser->store, iter, -1,
 			BR_COL_PATH, path,
-			BR_COL_DISPLAY_NAME, name != NULL ? name : de->d_name,
-			BR_COL_IS_DIRECTORY, (de->d_type & DT_DIR) == DT_DIR,
+			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
+			BR_COL_INODE, inode,
+			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
+			: 0,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -605,8 +623,6 @@ static int _new_loop(Browser * browser)
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			-1);
-	g_free(path);
-	return 0;
 }
 
 static gboolean _new_idle(gpointer data)
@@ -616,6 +632,140 @@ static gboolean _new_idle(gpointer data)
 
 	for(i = 0; i < 16 && _new_loop(browser) == 0; i++);
 	return i == 16;
+}
+
+static int _current_loop(Browser * browser);
+static gboolean _current_idle(gpointer data);
+static void _refresh_current(Browser * browser)
+{
+	unsigned int i;
+
+	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
+	if(i == 16)
+		browser->refresh_id = g_idle_add(_current_idle, browser);
+}
+
+static void _loop_update(Browser * browser, GtkTreeIter * iter,
+		char const * path, char const * display, struct stat * st);
+static int _current_loop(Browser * browser)
+{
+	struct dirent * de;
+	char * path;
+	struct stat st;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean valid;
+	uint64_t inode;
+
+	while((de = readdir(browser->refresh_dir)) != NULL)
+	{
+		if(de->d_name[0] == '.')
+		{
+			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0'))
+				continue;
+			browser->refresh_hid++;
+		}
+		browser->refresh_cnt++;
+		if(de->d_name[0] != '.' || browser->prefs.show_hidden_files)
+			break;
+	}
+	if(de == NULL)
+		return _loop_status(browser);
+	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
+			== NULL)
+		return 1;
+	if(lstat(path, &st) != 0)
+	{
+		_browser_error(path, 0);
+		g_free(path);
+		return 1;
+	}
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		model = gtk_icon_view_get_model(GTK_ICON_VIEW(
+					browser->iconview));
+	else
+#endif
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(browser->detailview));
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, BR_COL_INODE, &inode, -1);
+		if(inode == st.st_ino)
+			break;
+	}
+	if(valid != TRUE)
+		_loop_insert(browser, &iter, path, de->d_name, &st);
+	else
+		_loop_update(browser, &iter, path, de->d_name, &st);
+	g_free(path);
+	return 0;
+}
+
+static void _loop_update(Browser * browser, GtkTreeIter * iter,
+		char const * path, char const * display, struct stat * st)
+{
+	char * name;
+	struct passwd * pw = NULL;
+	struct group * gr = NULL;
+	uint64_t inode = 0;
+	uint64_t size = 0;
+	char const * type = NULL;
+	GdkPixbuf * icon_24 = browser->pb_file_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	GdkPixbuf * icon_48 = browser->pb_file_48;
+#endif
+
+	/* FIXME code duplication */
+	name = g_filename_to_utf8(display, -1, NULL, NULL, NULL);
+	if(st != NULL)
+	{
+		inode = st->st_ino;
+		size = st->st_size;
+		pw = getpwuid(st->st_uid);
+		gr = getgrgid(st->st_gid);
+		if(S_ISDIR(st->st_mode))
+		{
+			icon_24 = browser->pb_folder_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+			icon_48 = browser->pb_folder_48;
+#endif
+		}
+		else if((type = mime_type(browser->mime, display)) != NULL)
+			icon_24 = mime_icons(browser->mime, browser->theme,
+#if GTK_CHECK_VERSION(2, 6, 0)
+					type, &icon_48);
+#else
+					type, NULL);
+#endif
+	}
+	gtk_list_store_set(browser->store, iter, BR_COL_PATH, path,
+			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
+			BR_COL_INODE, inode,
+			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
+			: 0,
+			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
+			: browser->pb_file_24,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			BR_COL_PIXBUF_48, icon_48 != NULL ? icon_48
+			: browser->pb_file_48,
+#endif
+			BR_COL_MIME_TYPE, type != NULL ? type : "",
+			BR_COL_SIZE, size,
+			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
+			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
+			-1);
+}
+
+static gboolean _current_idle(gpointer data)
+{
+	Browser * browser = data;
+	unsigned int i;
+
+	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
+	return i == 16;
+	/* FIXME remove deleted elements */
 }
 
 
