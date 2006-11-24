@@ -721,19 +721,12 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data)
 {
 	Browser * browser = data;
-	GtkTreeModel * model;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
 	GtkTreeIter iter;
 	char * path = NULL;
 	ssize_t len;
 	char * q = NULL;
 
-#if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
-		model = gtk_icon_view_get_model(GTK_ICON_VIEW(
-					browser->iconview));
-	else
-#endif
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(browser->detailview));
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
 	{
 		gtk_tree_model_get(model, &iter, BR_COL_PATH, &path, -1);

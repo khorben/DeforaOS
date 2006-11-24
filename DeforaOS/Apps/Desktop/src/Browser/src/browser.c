@@ -355,8 +355,8 @@ static GtkListStore * _create_store(Browser * browser)
 {
 	GtkListStore * store;
 
-	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_STRING, G_TYPE_STRING,
-			GDK_TYPE_PIXBUF,
+	store = gtk_list_store_new(BR_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
+			G_TYPE_STRING, GDK_TYPE_PIXBUF,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GDK_TYPE_PIXBUF,
 #endif
@@ -607,7 +607,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #endif
 	}
 	gtk_list_store_insert_with_values(browser->store, iter, -1,
-			BR_COL_PATH, path,
+			BR_COL_UPDATED, 0, BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
 			BR_COL_INODE, inode,
 			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
@@ -652,7 +652,7 @@ static int _current_loop(Browser * browser)
 	struct dirent * de;
 	char * path;
 	struct stat st;
-	GtkTreeModel * model;
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
 	GtkTreeIter iter;
 	gboolean valid;
 	uint64_t inode;
@@ -681,13 +681,6 @@ static int _current_loop(Browser * browser)
 		g_free(path);
 		return 1;
 	}
-#if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
-		model = gtk_icon_view_get_model(GTK_ICON_VIEW(
-					browser->iconview));
-	else
-#endif
-	model = gtk_tree_view_get_model(GTK_TREE_VIEW(browser->detailview));
 	valid = gtk_tree_model_get_iter_first(model, &iter);
 	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
 	{
@@ -740,7 +733,8 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 					type, NULL);
 #endif
 	}
-	gtk_list_store_set(browser->store, iter, BR_COL_PATH, path,
+	gtk_list_store_set(browser->store, iter, BR_COL_UPDATED, 1,
+			BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
 			BR_COL_INODE, inode,
 			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
@@ -758,14 +752,37 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			-1);
 }
 
+static void _current_deleted(Browser * browser);
 static gboolean _current_idle(gpointer data)
 {
 	Browser * browser = data;
 	unsigned int i;
 
 	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
-	return i == 16;
-	/* FIXME remove deleted elements */
+	if(i == 16)
+		return TRUE;
+	_current_deleted(browser);
+	return FALSE;
+}
+
+static void _current_deleted(Browser * browser)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
+	GtkTreeIter iter;
+	gboolean valid;
+	gboolean updated;
+
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	while(valid == TRUE)
+	{
+		gtk_tree_model_get(model, &iter, BR_COL_UPDATED, &updated, -1);
+		gtk_list_store_set(browser->store, &iter, BR_COL_UPDATED, FALSE,
+				-1);
+		if(updated == TRUE)
+			valid = gtk_tree_model_iter_next(model, &iter);
+		else
+			valid = gtk_list_store_remove(browser->store, &iter);
+	}
 }
 
 
@@ -931,7 +948,7 @@ static void _view_icons(Browser * browser)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
-			renderer, "text", 1, NULL);
+			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 96);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);

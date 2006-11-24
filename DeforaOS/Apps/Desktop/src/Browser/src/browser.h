@@ -15,7 +15,8 @@
 /* types */
 enum
 {
-	BR_COL_PATH = 0,
+	BR_COL_UPDATED = 0,
+	BR_COL_PATH,
 	BR_COL_DISPLAY_NAME,
 	BR_COL_PIXBUF_24,
 # if GTK_CHECK_VERSION(2, 6, 0)
