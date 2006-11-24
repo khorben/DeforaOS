@@ -69,6 +69,7 @@ typedef struct _Browser
 	DIR * refresh_dir;
 	dev_t refresh_dev;
 	ino_t refresh_ino;
+	time_t refresh_mti;
 	unsigned int refresh_cnt;
 	unsigned int refresh_hid;
 

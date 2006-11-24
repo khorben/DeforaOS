@@ -462,6 +462,7 @@ void browser_refresh(Browser * browser)
 		return;
 	}
 	browser->refresh_dir = dir;
+	browser->refresh_mti = st.st_mtime;
 	browser->refresh_cnt = 0;
 	browser->refresh_hid = 0;
 	_refresh_title(browser);
@@ -515,6 +516,7 @@ static void _refresh_path(Browser * browser)
 
 static int _new_loop(Browser * browser);
 static gboolean _new_idle(gpointer data);
+static void _refresh_done(Browser * browser);
 static void _refresh_new(Browser * browser)
 {
 	unsigned int i;
@@ -523,11 +525,14 @@ static void _refresh_new(Browser * browser)
 	for(i = 0; i < 16 && _new_loop(browser) == 0; i++);
 	if(i == 16)
 		browser->refresh_id = g_idle_add(_new_idle, browser);
+	else
+		_refresh_done(browser);
 }
 
 static int _loop_status(Browser * browser);
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
-		char const * path, char const * display, struct stat * st);
+		char const * path, char const * display, struct stat * st,
+		gboolean updated);
 static int _new_loop(Browser * browser)
 {
 	struct dirent * de;
@@ -556,7 +561,7 @@ static int _new_loop(Browser * browser)
 		_browser_error(path, 0);
 	else
 		p = &st;
-	_loop_insert(browser, &iter, path, de->d_name, p);
+	_loop_insert(browser, &iter, path, de->d_name, p, 0);
 	g_free(path);
 	return 0;
 }
@@ -573,7 +578,8 @@ static int _loop_status(Browser * browser)
 }
 
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
-		char const * path, char const * display, struct stat * st)
+		char const * path, char const * display, struct stat * st,
+		gboolean updated)
 {
 	char * name;
 	struct passwd * pw = NULL;
@@ -609,7 +615,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #endif
 	}
 	gtk_list_store_insert_with_values(browser->store, iter, -1,
-			BR_COL_UPDATED, 0, BR_COL_PATH, path,
+			BR_COL_UPDATED, updated, BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
 			BR_COL_INODE, inode,
 			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
@@ -633,7 +639,29 @@ static gboolean _new_idle(gpointer data)
 	unsigned int i;
 
 	for(i = 0; i < 16 && _new_loop(browser) == 0; i++);
-	return i == 16;
+	if(i == 16)
+		return TRUE;
+	_refresh_done(browser);
+	return FALSE;
+}
+
+static gboolean _done_timeout(gpointer data);
+static void _refresh_done(Browser * browser)
+{
+	g_timeout_add(1000, _done_timeout, browser);
+}
+
+static gboolean _done_timeout(gpointer data)
+{
+	Browser * browser = data;
+	struct stat st;
+
+	if(stat(browser->current->data, &st) != 0)
+		return _browser_error(browser->current->data, FALSE);
+	if(st.st_mtime == browser->refresh_mti)
+		return TRUE;
+	browser_refresh(browser);
+	return FALSE;
 }
 
 static int _current_loop(Browser * browser);
@@ -645,6 +673,8 @@ static void _refresh_current(Browser * browser)
 	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
 	if(i == 16)
 		browser->refresh_id = g_idle_add(_current_idle, browser);
+	else
+		_refresh_done(browser);
 }
 
 static void _loop_update(Browser * browser, GtkTreeIter * iter,
@@ -691,7 +721,7 @@ static int _current_loop(Browser * browser)
 			break;
 	}
 	if(valid != TRUE)
-		_loop_insert(browser, &iter, path, de->d_name, &st);
+		_loop_insert(browser, &iter, path, de->d_name, &st, 1);
 	else
 		_loop_update(browser, &iter, path, de->d_name, &st);
 	g_free(path);
@@ -764,6 +794,7 @@ static gboolean _current_idle(gpointer data)
 	if(i == 16)
 		return TRUE;
 	_current_deleted(browser);
+	_refresh_done(browser);
 	return FALSE;
 }
 
