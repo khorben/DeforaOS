@@ -9,7 +9,7 @@ fi
 [ "$1" = "--" ] && shift 1
 
 
-function calc_sizeh()
+calc_sizeh()
 {
 	KB=$1
 	if [ $KB -lt 1024 ]; then
@@ -28,7 +28,7 @@ function calc_sizeh()
 }
 
 
-function dirstat()
+dirstat()
 {
 	printf -- "--------------------------------------------------------------------------------\n"
 	printf "|%-33s|%-8s|%-7s|%-27s|\n" "Directory" "Size" "Ratio" " "
