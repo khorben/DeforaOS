@@ -452,7 +452,7 @@ void browser_refresh(Browser * browser)
 	if(browser->current == NULL)
 		return;
 #if defined(__sun__)
-	if((fd = open(browser->current->data)) < 0)
+	if((fd = open(browser->current->data, O_RDONLY)) < 0)
 	{
 		browser_error(browser, strerror(errno), 0);
 		return;
