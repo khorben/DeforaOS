@@ -450,6 +450,19 @@ void browser_refresh(Browser * browser)
 	}
 	if(browser->current == NULL)
 		return;
+#if defined(__solaris__)
+	if((fd = open(browser->current->data)) < 0)
+	{
+		browser_error(browser, strerror(errno), 0);
+		return;
+	}
+	if(fstat(fd, &st) != 0 || (dir = fdopendir(fd)) == NULL)
+	{
+		browser_error(browser, strerror(errno), 0);
+		close(fd);
+		return;
+	}
+#else
 	if((dir = opendir(browser->current->data)) == NULL)
 	{
 		browser_error(browser, strerror(errno), 0);
@@ -461,6 +474,7 @@ void browser_refresh(Browser * browser)
 		closedir(dir);
 		return;
 	}
+#endif
 	browser->refresh_dir = dir;
 	browser->refresh_mti = st.st_mtime;
 	browser->refresh_cnt = 0;
