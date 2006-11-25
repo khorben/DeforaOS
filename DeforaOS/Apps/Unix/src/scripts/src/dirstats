@@ -37,7 +37,7 @@ dirstat()
 		echo "Not readable"
 		return
 	fi
-	echo -n "Reading sub-directories..."
+	echo -n "|Reading sub-directories..."
 	TOTAL=`du -ks "$1" 2> /dev/null | cut -d ' ' -f 1 | cut -f 1`
 	echo -n ""
 	ls -aF1 "$1" | grep '/$' | while read FILE; do
