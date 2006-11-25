@@ -614,7 +614,12 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 					type, NULL);
 #endif
 	}
+#if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_list_store_insert_with_values(browser->store, iter, -1,
+#else
+	gtk_list_store_insert(browser->store, iter, -1);
+	gtk_list_store_set(browser->store, iter,
+#endif
 			BR_COL_UPDATED, updated, BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
 			BR_COL_INODE, inode,
