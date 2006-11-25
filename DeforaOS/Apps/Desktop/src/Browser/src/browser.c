@@ -439,6 +439,7 @@ void browser_refresh(Browser * browser)
 {
 	DIR * dir;
 	struct stat st;
+	int fd;
 
 	if(browser->refresh_id != 0)
 		g_source_remove(browser->refresh_id);
@@ -450,7 +451,7 @@ void browser_refresh(Browser * browser)
 	}
 	if(browser->current == NULL)
 		return;
-#if defined(__solaris__)
+#if defined(__sun__)
 	if((fd = open(browser->current->data)) < 0)
 	{
 		browser_error(browser, strerror(errno), 0);
@@ -468,7 +469,8 @@ void browser_refresh(Browser * browser)
 		browser_error(browser, strerror(errno), 0);
 		return;
 	}
-	if(fstat(dirfd(dir), &st) != 0)
+	fd = dirfd(dir);
+	if(fstat(fd, &st) != 0)
 	{
 		browser_error(browser, strerror(errno), 0);
 		closedir(dir);
@@ -631,7 +633,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_list_store_insert_with_values(browser->store, iter, -1,
 #else
-	gtk_list_store_insert(browser->store, iter, -1);
+	gtk_list_store_insert_after(browser->store, iter, NULL);
 	gtk_list_store_set(browser->store, iter,
 #endif
 			BR_COL_UPDATED, updated, BR_COL_PATH, path,
