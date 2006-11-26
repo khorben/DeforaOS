@@ -1,4 +1,4 @@
-SUBDIRS	= Accessories Browser
+SUBDIRS	= Accessories Browser Editor Mailer Surfer
 
 
 all: subdirs
