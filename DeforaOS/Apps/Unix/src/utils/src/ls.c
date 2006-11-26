@@ -582,14 +582,17 @@ static void _long_date(time_t date, char buf[15])
 {
 	struct tm tm;
 	static time_t sixmonths = -1;
+	size_t len;
 
 	if(sixmonths == -1)
 		sixmonths = time(NULL) - 15552000;
 	localtime_r(&date, &tm);
 	if(date < sixmonths)
-		strftime(buf, 14, "%b %e  %Y", &tm);
+		len = strftime(buf, 14, "%b %e  %Y", &tm);
 	else
-		strftime(buf, 14, "%b %e %H:%M", &tm);
+		len = strftime(buf, 14, "%b %e %H:%M", &tm);
+	if(len == 0)
+		buf[0] = '\0';
 }
 
 static char _file_mode_letter(mode_t mode)

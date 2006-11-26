@@ -50,7 +50,7 @@ static int _uptime_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: uptime\n");
+	fprintf(stderr, "%s", "Usage: uptime\n");
 	return 1;
 }
 
