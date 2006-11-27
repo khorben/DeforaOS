@@ -146,10 +146,8 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 	if((selection = _copy_selection(browser)) == NULL)
 		return;
 	for(p = selection; p != NULL; p = p->next)
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, p->data))
-			continue;
-		else
+		if(gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, p->data) == TRUE)
 			cnt++;
 	if(cnt == 0)
 		return;
