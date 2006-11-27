@@ -665,19 +665,6 @@ void on_path_activate(GtkWidget * widget, gpointer data)
 
 
 /* view */
-/* types */
-/* FIXME rather ugly, maybe could go directly in Browser */
-typedef struct _IconCallback
-{
-	Browser * browser;
-	int isdir;
-	char * path;
-} IconCallback;
-
-/* variables */
-static IconCallback _icon_cb_data;
-
-
 static void _default_do(Browser * browser, GtkTreePath * path);
 void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
@@ -749,9 +736,16 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 }
 
 
+/* types */
+typedef struct _IconCallback
+{
+	Browser * browser;
+	int isdir;
+	char * path;
+} IconCallback;
 static void _popup_mime(Browser * browser, char const * type,
 		char const * action, char const * label,
-		GCallback callback, GtkWidget * menu);
+		GCallback callback, IconCallback * ic, GtkWidget * menu);
 static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu);
 static void _on_icon_delete(GtkWidget * widget, gpointer data);
@@ -761,6 +755,7 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
+	static IconCallback ic;
 	Browser * browser = data;
 	GtkWidget * menu;
 	GtkTreePath * path = NULL;
@@ -793,40 +788,39 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	}
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-			BR_COL_PATH, &_icon_cb_data.path,
-			BR_COL_IS_DIRECTORY, &_icon_cb_data.isdir,
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
+			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
 			BR_COL_MIME_TYPE, &mime, -1);
-	_icon_cb_data.browser = browser;
-	if(_icon_cb_data.isdir == TRUE)
+	ic.browser = browser;
+	if(ic.isdir == TRUE)
 	{
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN,
 				NULL);
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_open), &_icon_cb_data);
+					_on_icon_open), &ic);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	else /* not a directory */
 	{
 		_popup_mime(browser, mime, "open", GTK_STOCK_OPEN,
-				G_CALLBACK(_on_icon_open), menu);
+				G_CALLBACK(_on_icon_open), &ic, menu);
 		_popup_mime(browser, mime, "edit",
 #if GTK_CHECK_VERSION(2, 6, 0)
 				GTK_STOCK_EDIT,
 #else
 				"_Edit",
 #endif
-				G_CALLBACK(_on_icon_edit), menu);
+				G_CALLBACK(_on_icon_edit), &ic, menu);
 		menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_open_with), &_icon_cb_data);
+					_on_icon_open_with), &ic);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		menuitem = gtk_separator_menu_item_new();
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
 				NULL);
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_delete), &_icon_cb_data);
+					_on_icon_delete), &ic);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	g_free(mime);
@@ -843,7 +837,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 
 static void _popup_mime(Browser * browser, char const * type,
 		char const * action, char const * label,
-		GCallback callback, GtkWidget * menu)
+		GCallback callback, IconCallback * ic, GtkWidget * menu)
 {
 	GtkWidget * menuitem;
 
@@ -853,8 +847,7 @@ static void _popup_mime(Browser * browser, char const * type,
 		menuitem = gtk_image_menu_item_new_from_stock(label, NULL);
 	else
 		menuitem = gtk_menu_item_new_with_mnemonic(label);
-	g_signal_connect(G_OBJECT(menuitem), "activate", callback,
-			&_icon_cb_data);
+	g_signal_connect(G_OBJECT(menuitem), "activate", callback, ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
