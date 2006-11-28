@@ -278,7 +278,7 @@ static int _t_print_long(char const * archive, struct ar_hdr * hdr)
 	int mode;
 	unsigned long uid;
 	unsigned long gid;
-	size_t size;
+	unsigned long size;
 	time_t date;
 	struct tm * tm;
 	/* FIXME use libc's functions if possible (locales) */
@@ -294,7 +294,7 @@ static int _t_print_long(char const * archive, struct ar_hdr * hdr)
 	if((tm = gmtime(&date)) == NULL)
 		return fprintf(stderr, "%s%s%s", "ar: ", archive,
 				": Invalid archive\n") ? 1 : 1;
-	printf("%s %lu/%lu %u %s %d %02d:%02d %d %s\n", _long_mode(mode),
+	printf("%s %lu/%lu %lu %s %d %02d:%02d %d %s\n", _long_mode(mode),
 			uid, gid, size, month[tm->tm_mon],
 			tm->tm_mday, tm->tm_hour, tm->tm_min,
 			tm->tm_year + 1900, hdr->ar_name);
