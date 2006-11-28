@@ -253,7 +253,9 @@ static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
 				": Invalid archive\n");
 		return 1;
 	}
-	return fseek(fp, size, SEEK_CUR) == 0 ? 0 : _ar_error(archive, 1);
+	if(fseek(fp, size, SEEK_CUR) != 0)
+		return _ar_error(archive, 1);
+	return 0;
 }
 
 static int _t_print_long(char const * archive, struct ar_hdr * hdr);
@@ -274,8 +276,8 @@ static char const * _long_mode(int mode);
 static int _t_print_long(char const * archive, struct ar_hdr * hdr)
 {
 	int mode;
-	uid_t uid;
-	gid_t gid;
+	unsigned long uid;
+	unsigned long gid;
 	size_t size;
 	time_t date;
 	struct tm * tm;
@@ -292,8 +294,8 @@ static int _t_print_long(char const * archive, struct ar_hdr * hdr)
 	if((tm = gmtime(&date)) == NULL)
 		return fprintf(stderr, "%s%s%s", "ar: ", archive,
 				": Invalid archive\n") ? 1 : 1;
-	printf("%s %u/%u %u %s %d %02d:%02d %d %s\n", _long_mode(mode),
-			(unsigned)uid, (unsigned)gid, size, month[tm->tm_mon],
+	printf("%s %lu/%lu %u %s %d %02d:%02d %d %s\n", _long_mode(mode),
+			uid, gid, size, month[tm->tm_mon],
 			tm->tm_mday, tm->tm_hour, tm->tm_min,
 			tm->tm_year + 1900, hdr->ar_name);
 	return 0;
