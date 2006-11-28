@@ -6,13 +6,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
-#include <libgen.h>
 #include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "browser.h"
