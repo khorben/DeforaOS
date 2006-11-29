@@ -756,6 +756,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	GtkWidget * menu;
 	GtkTreePath * path = NULL;
 	GtkTreeIter iter;
+	GtkTreeSelection * sel;
 	GtkWidget * menuitem;
 	char * mime = NULL;
 
@@ -785,6 +786,29 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	}
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+	{
+		if(gtk_icon_view_path_is_selected(GTK_ICON_VIEW(
+						browser->iconview), path)
+				== FALSE)
+		{
+			browser_unselect_all(browser);
+			gtk_icon_view_select_path(GTK_ICON_VIEW(
+						browser->iconview), path);
+		}
+	}
+	else
+#endif
+	{
+		sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+					browser->detailview));
+		if(!gtk_tree_selection_iter_is_selected(sel, &iter))
+		{
+			browser_unselect_all(browser);
+			gtk_tree_selection_select_iter(sel, &iter);
+		}
+	}
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
 			BR_COL_MIME_TYPE, &mime, -1);
