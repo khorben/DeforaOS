@@ -214,21 +214,17 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 
 void on_edit_select_all(GtkMenuItem * menuitem, gpointer data)
 {
-#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
-	gtk_icon_view_select_all(GTK_ICON_VIEW(browser->iconview));
-#endif
+	browser_select_all(browser);
 }
 
 
 void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data)
 {
-#if GTK_CHECK_VERSION(2, 6, 0)
 	Browser * browser = data;
 
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
-#endif
+	browser_unselect_all(browser);
 }
 
 
@@ -781,6 +777,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 				(int)event->y, &path, NULL, NULL, NULL);
 	if(path == NULL)
 	{
+		browser_unselect_all(browser);
 		menuitem = gtk_image_menu_item_new_from_stock(
 				GTK_STOCK_PROPERTIES, NULL);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);

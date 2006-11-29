@@ -842,6 +842,22 @@ static void _current_deleted(Browser * browser)
 }
 
 
+void browser_select_all(Browser * browser)
+{
+	GtkTreeSelection * sel;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+	{
+		gtk_icon_view_select_all(GTK_ICON_VIEW(browser->iconview));
+		return;
+	}
+#endif
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
+	gtk_tree_selection_select_all(sel);
+}
+
+
 static char * _location_real_path(char const * path);
 static int _location_directory(Browser * browser, char * path);
 void browser_set_location(Browser * browser, char const * path)
@@ -1063,3 +1079,19 @@ static void _view_list(Browser * browser)
 	gtk_widget_show(browser->iconview);
 }
 #endif
+
+
+void browser_unselect_all(Browser * browser)
+{
+	GtkTreeSelection * sel;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+	{
+		gtk_icon_view_unselect_all(GTK_ICON_VIEW(browser->iconview));
+		return;
+	}
+#endif
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
+	gtk_tree_selection_unselect_all(sel);
+}
