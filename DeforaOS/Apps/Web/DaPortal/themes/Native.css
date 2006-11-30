@@ -192,61 +192,68 @@ pre {
 	padding:		2px;
 }
 
-ul.menu {
+ul.menu, ul.menu li, ul.menu ul, ul.menu ul li {
 	margin:			0;
 	padding:		0;
+}
+
+ul.menu, ul.menu li ul {
+	border-top:		solid 1px #ffffff;
+	list-style-type:	none;
+}
+
+ul.menu li {
+	float:			left;
+	margin:			0;
+	padding:		2px;
+	padding-bottom:		4px;
+}
+
+ul.menu li a {
+	padding:		4px;
+	padding-left:		6px;
+	padding-right:		6px;
+	padding-top:		2px;
 }
 
 ul.menu select {
 	float:			left;
 }
 
-ul.menu, ul.menu ul {
+ul.menu li ul {
 	border-left:		solid 1px #ffffff;
-	border-top:		solid 1px #ffffff;
-	list-style-type:	none;
-	margin:			0;
-	padding:		0;
-}
-
-ul.menu li {
-	float:			left;
-	margin:			0;
-	margin-top:		1px;
-	padding:		2px;
-	padding-left:		4px;
-	padding-right:		4px;
-}
-
-ul.menu ul {
 	display:		none;
-	margin-top:		2px;
-	padding-top:		2px;
+	margin-left:		-2px;
+	margin-top:		4px;
 	padding:		0;
+	padding-bottom:		1px;
 }
 
 ul.menu li ul li {
 	float:			none;
 	border-left:		solid 1px #ffffff;
 	margin:			0;
-	padding:		0;
-	padding-bottom:		1px;
-	padding-top:		1px;
 }
 
 ul.menu li ul li a {
 	display:		block;
+	margin-right:		1px;
+	padding-bottom:		2px;
 	padding-left:		20px;
 	padding-right:		10px;
-	padding-top:		1px;
+	padding-top:		2px;
 }
 
 ul.menu li:hover {
 	background-color:	#4b6983;
-	color:			#ffffff;
 }
 
 ul.menu li:hover a {
+	color:			#ffffff;
+}
+
+ul.menu li:hover a:hover {
+	background-color:	#4b6983;
 	color:			#ffffff;
 }
 
@@ -258,7 +265,11 @@ ul.menu li:hover ul {
 	border-top:		solid 1px #ffffff;
 	display:		block;
 	position:		absolute;
-	margin-left:		-4px;
+}
+
+ul.menu li:hover ul li {
+	background-color:	#dcdad5;
+	color:			#7f7f7f;
 }
 
 ul.menu li:hover ul li a {
