@@ -364,14 +364,6 @@ ul.menu {
 	width:				160px;
 }
 
-ul.menu .active ul li {
-	display:			none;
-}
-
-ul.menu .active:hover ul li {
-	display:			block;
-}
-
 ul.menu a {
 	background-color:		#790000;
 	background-image:		url("DeforaOS-rtr.png");
@@ -400,8 +392,8 @@ ul.menu ul {
 	padding:			0px;
 }
 
-ul.menu li.active {
-	margin-bottom:			5px;
+ul.menu ul a:hover {
+	border:				1px solid #000000;
 }
 
 ul.menu ul li a {
@@ -412,17 +404,31 @@ ul.menu ul li a {
 	font-style:			normal;
 	border:				1px solid #000000;
 	letter-spacing:			0pt;
-	padding-left:			10px;
+	padding-left:			16px;
 }
 
 ul.menu ul li a:hover {
 	background-color:		#000000;
 	background-image:		url("DeforaOS-right.png");
-	background-position:		center right;
+	background-position:		center left;
 	background-repeat:		no-repeat;
+}
+
+ul.menu ul li ul {
+	display:			none;
+}
+
+ul.menu ul li:hover ul {
 	border:				1px solid #636363;
-	border-left:			1px solid #959595;
-	border-top:			1px solid #959595;
+	display:			block;
+	margin-left:			140px;
+	margin-top:			-2em;
+	position:			absolute;
+	width:				160px;
+}
+
+ul.menu ul li:hover ul a {
+	padding-left:			16px;
 }
 
 
