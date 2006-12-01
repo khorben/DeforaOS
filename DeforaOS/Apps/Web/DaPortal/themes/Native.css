@@ -198,8 +198,13 @@ ul.menu, ul.menu li, ul.menu ul, ul.menu ul li {
 }
 
 ul.menu, ul.menu li ul {
+	background-color:	#dcdad5;
 	border-top:		solid 1px #ffffff;
 	list-style-type:	none;
+}
+
+ul.menu a {
+	color:			#000000;
 }
 
 ul.menu li {
@@ -252,33 +257,35 @@ ul.menu li:hover a {
 	color:			#ffffff;
 }
 
-ul.menu li:hover a:hover {
-	background-color:	#4b6983;
-	color:			#ffffff;
-}
-
 ul.menu li:hover ul {
-	background-color:	#dcdad5;
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #000000;
-	border-right:		solid 1px #000000;
+	border:			solid 1px #000000;
 	border-top:		solid 1px #ffffff;
 	display:		block;
 	position:		absolute;
-}
-
-ul.menu li:hover ul li {
-	background-color:	#dcdad5;
-	color:			#7f7f7f;
 }
 
 ul.menu li:hover ul li a {
 	color:			#000000;
 }
 
-ul.menu li:hover ul li a:hover {
-	background-color:	#4b6983;
+ul.menu li:hover ul li ul {
+	border-top:		solid 1px #000000;
+	display:		none;
+	margin-left:		99%;
+	margin-top:		-2em;
+	float:			right;
+}
+
+ul.menu li:hover ul li:hover a, ul.menu li:hover ul li:hover ul li:hover a {
 	color:			#ffffff;
+}
+
+ul.menu li:hover ul li:hover ul {
+	display:		block;
+}
+
+ul.menu li:hover ul li:hover ul li a {
+	color:			#000000;
 }
 
 .style1 {
@@ -289,8 +296,9 @@ ul.menu li:hover ul li a:hover {
 	border-top:		solid 1px #000000;
 	bottom:			0;
 	min-height:		18px;
-	padding:		1px;
+	padding:		2px;
 	position:		fixed;
+	width:			100%;
 }
 
 .style1 img {
