@@ -10,7 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $title = 'Monitoring';
 $admin = 1;
 $list = 1;
-$actions = array('host_list' => array('title' => 'Host list',
+$actions = array('host_list' => array('title' => 'Hosts',
 			'args' => '&action=host_list'));
 
 $hosts = _sql_array('SELECT title, host_id AS id'

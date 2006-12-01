@@ -11,13 +11,16 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text['CONFIGURATION_ERROR'] = 'Configuration error';
+$text['HOST_LIST'] = 'Host list';
 $text['MONITORING'] = 'Monitoring';
 $text['MONITORING_ADMINISTRATION'] = 'Monitoring administration';
 global $lang;
 if($lang == 'fr')
 {
 	$text['CONFIGURATION_ERROR'] = 'Erreur de configuration';
-	$text['MONITORING_ADMINISTRATION'] = 'Administration du monitoring';
+	$text['HOST_LIST'] = 'Liste des machines';
+	$text['MONITORING'] = 'Suivi';
+	$text['MONITORING_ADMINISTRATION'] = 'Administration du suivi';
 }
 _lang($text);
 
@@ -217,8 +220,8 @@ function probe_admin($args)
 	require_once('system/user.php');
 	if(!_user_admin($user_id))
 		return _error('Permission denied');
-	print('<h1 class="title probe">'._html_safe(MONITORING_ADMINISTRATION).'</h1>'
-			."\n");
+	print('<h1 class="title probe">'._html_safe(MONITORING_ADMINISTRATION)
+			.'</h1>'."\n");
 	if(($configs = _config_list('probe')))
 	{
 		print('<h2><img src="modules/probe/icon.png" alt=""/> '
@@ -228,7 +231,7 @@ function probe_admin($args)
 		include('./system/config.tpl');
 	}
 	print('<h2><img src="modules/probe/icon.png" alt=""/> '
-			.'Host list</h2>'."\n");
+			._html_safe(HOST_LIST)."</h2>\n");
 	$hosts = _sql_array('SELECT host_id AS id, title AS name, enabled'
 			.' FROM daportal_probe_host, daportal_content'
 			.' WHERE content_id=host_id;');
@@ -250,8 +253,7 @@ function probe_admin($args)
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
-			'action' => 'host_delete',
-			'confirm' => 'delete');
+			'action' => 'host_delete', 'confirm' => 'delete');
 	_module('explorer', 'browse', array('entries' => $hosts,
 			'toolbar' => $toolbar,
 			'module' => 'probe', 'action' => 'admin'));
@@ -277,6 +279,8 @@ function probe_config_update($args)
 
 function probe_default($args)
 {
+	if(isset($args['id']))
+		return probe_host_display(array('id' => $args['id']));
 	return probe_host_list(array());
 }
 
@@ -377,7 +381,7 @@ function probe_host_insert($args)
 
 function probe_host_list($args)
 {
-	print('<h1 class="title probe">Host list</h1>'."\n");
+	print('<h1 class="title probe">'._html_safe(HOST_LIST).'</h1>'."\n");
 	//FIXME sort and display by category
 	$hosts = _sql_array('SELECT host_id AS id, title AS name'
 			.' FROM daportal_probe_host, daportal_content'
