@@ -10,10 +10,13 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text['ALL_HOSTS'] = 'All hosts';
 $text['CONFIGURATION_ERROR'] = 'Configuration error';
+$text['GRAPH_LIST'] = 'Graph list';
 $text['HOST_LIST'] = 'Host list';
 $text['MONITORING'] = 'Monitoring';
 $text['MONITORING_ADMINISTRATION'] = 'Monitoring administration';
+$text['NEW_HOST'] = 'New host';
 global $lang;
 if($lang == 'fr')
 {
@@ -21,18 +24,148 @@ if($lang == 'fr')
 	$text['HOST_LIST'] = 'Liste des machines';
 	$text['MONITORING'] = 'Suivi';
 	$text['MONITORING_ADMINISTRATION'] = 'Administration du suivi';
+	$text['NEW_HOST'] = 'Nouvelle machine';
 }
 _lang($text);
 
 
 //private
-function _host_graph($hostname, $graph, $time, $param)
+//constants
+global $probe_types;
+$probe_types = array();
+
+$probe_types['uptime'] = array('name' => 'uptime',
+		'unit' => 'hours', 'def' => array('uptime'),
+		'cdef' => array('ruptime' => 'uptime,3600,/'),
+		'data' => ' AREA:ruptime#ffc0c0'
+		.' LINE1:ruptime#ef0f0f:"Uptime\t\g"'
+		.' GPRINT:ruptime:LAST:"Current\: %.0lf h\t\g"'
+		.' GPRINT:ruptime:AVERAGE:"Average\: %.0lf h\t\g"'
+		.' GPRINT:ruptime:MAX:"Maximum\: %.0lf h"');
+
+$probe_types['load'] = array('name' => 'load average',
+		'def' => array('load1', 'load5', 'load15'),
+		'cdef' => array('rload1' => 'load1,65536,/',
+			'rload5' => 'load15,65536,/',
+			'rload15' => 'load15,65536,/'),
+		'data' => ' AREA:rload1#ffef5f AREA:rload5#ffbf5f'
+		.' AREA:rload15#ff8f5f LINE1:rload1#ffdf00:"Load 1 min\t\g"'
+		.' GPRINT:rload1:LAST:"Current\: %.2lf\t\g"'
+		.' GPRINT:rload1:AVERAGE:"Average\: %.2lf\t\g"'
+		.' GPRINT:rload1:MAX:"Maximum\: %.2lf\n"'
+		.' LINE1:rload5#ffaf00:"Load 5 min\t\g"'
+		.' GPRINT:rload5:LAST:"Current\: %.2lf\t\g"'
+		.' GPRINT:rload5:AVERAGE:"Average\: %.2lf\t\g"'
+		.' GPRINT:rload5:MAX:"Maximum\: %.2lf\n"'
+		.' LINE1:rload15#ff7f00:"Load 15 min  "'
+		.' GPRINT:rload15:LAST:"Current\: %.2lf\t\g"'
+		.' GPRINT:rload15:AVERAGE:"Average\: %.2lf\t\g"'
+		.' GPRINT:rload15:MAX:"Maximum\: %.2lf"');
+
+$probe_types['ram'] = array('name' => 'memory usage', 'unit' => 'bytes',
+		'base' => '1024',
+		'def' => array('ramtotal', 'ramfree', 'ramshared', 'rambuffer'),
+		'cdef' => array('pramtotal' => 'ramtotal,1024,/,1024,/',
+			'pramfree' => 'ramfree,1024,/,1024,/',
+			'pramshared' => 'ramshared,1024,/,1024,/',
+			'prambuffer' => 'rambuffer,1024,/,1024,/'),
+		'data' => ' AREA:ramtotal#ff0000:"Total   "'
+		.' GPRINT:pramtotal:LAST:"Current\: %.0lf MB\t\g"'
+		.' GPRINT:pramtotal:AVERAGE:"Average\: %.0lf MB\t\g"'
+		.' GPRINT:pramtotal:MAX:"Maximum\: %.0lf MB\n"'
+		.' AREA:ramfree#0000ff:"Free    "'
+		.' GPRINT:pramfree:LAST:"Current\: %.0lf MB\t\g"'
+		.' GPRINT:pramfree:AVERAGE:"Average\: %.0lf MB\t\g"'
+		.' GPRINT:pramfree:MAX:"Maximum\: %.0lf MB\n"'
+		.' STACK:ramshared#00ffff:"Shared  "'
+		.' GPRINT:pramshared:LAST:"Current\: %.0lf MB\t\g"'
+		.' GPRINT:pramshared:AVERAGE:"Average\: %.0lf MB\t\g"'
+		.' GPRINT:pramshared:MAX:"Maximum\: %.0lf MB\n"'
+		.' STACK:rambuffer#00ff00:"Buffer  "'
+		.' GPRINT:prambuffer:LAST:"Current\: %.0lf MB\t\g"'
+		.' GPRINT:prambuffer:AVERAGE:"Average\: %.0lf MB\t\g"'
+		.' GPRINT:prambuffer:LAST:"Maximum\: %.0lf MB\g"');
+
+$probe_types['swap'] = array('name' => 'swap usage', 'unit' => 'bytes',
+		'base' => '1024', 'def' => array('swaptotal', 'swapfree'),
+		'cdef' => array('pswaptotal' => 'swaptotal,1024,/,1024,/',
+				'pswapfree' => 'swapfree,1024,/,1024,/'),
+		$data = ' AREA:swaptotal#ff0000:"Total\t\g"'
+		.' GPRINT:pswaptotal:LAST:"Current\: %.0lf MB\t\g"'
+		.' GPRINT:pswaptotal:AVERAGE:"Average\: %.0lf MB\t\g"'
+		.' GPRINT:pswaptotal:MAX:"Maximum\: %.0lf MB\n"'
+		.' AREA:swapfree#0000ff:"Free\t\g"'
+		.' GPRINT:pswapfree:LAST:"Current\: %.0lf MB\t\g"'
+		.' GPRINT:pswapfree:AVERAGE:"Average\: %.0lf MB\t\g"'
+		.' GPRINT:pswapfree:MAX:"Maximum\: %.0lf MB\g"');
+
+$probe_types['users'] = array('name' => 'logged users',
+		'thumbnail' => 'modules/user/icon.png', 'unit' => 'users',
+		'def' => array('users'), 'data' => ' AREA:users#b0b0ff'
+		.' LINE1:users#0f0fef:"Logged users\t\g"'
+		.' GPRINT:users:LAST:"Current\: %.0lf\t\g"'
+		.' GPRINT:users:AVERAGE:"Average\: %.0lf\t\g"'
+		.' GPRINT:users:MAX:"Maximum\: %.0lf"');
+
+$probe_types['procs'] = array('name' => 'process count', 'unit' => 'process',
+		'def' => array('procs'), 'data' => ' AREA:procs#b0b0ff'
+		.' LINE1:procs#0f0fef:"Process count\t\g"'
+		.' GPRINT:procs:LAST:"Current\: %.0lf \t\g"'
+		.' GPRINT:procs:AVERAGE:"Average\: %.0lf \t\g"'
+		.' GPRINT:procs:MAX:"Maximum\: %.0lf"');
+
+$probe_types['iface'] = array('name' => 'network traffic', 'unit' => 'Bps',
+		'def' => array('ifrxbytes', 'iftxbytes'),
+		'cdef' => array('ifrxkb' => 'ifrxbytes,1024,/',
+			'iftxkb' => 'iftxbytes,1024,/'),
+		'data' => ' AREA:ifrxbytes#b0ffb0'
+		.' LINE1:ifrxbytes#0fef0f:"RX\t\g"'
+		.' GPRINT:ifrxkb:LAST:"Current\: %.0lf KBps\t\g"'
+		.' GPRINT:ifrxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
+		.' GPRINT:ifrxkb:MAX:"Maximum\: %.0lf KBps\n"'
+		.' LINE1:iftxbytes#0f0fef:"TX\t\g"'
+		.' GPRINT:iftxkb:LAST:"Current\: %.0lf KBps\t\g"'
+		.' GPRINT:iftxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
+		.' GPRINT:iftxkb:MAX:"Maximum\: %.0lf KBps\g"',
+		'params' => array('eth0', 'eth1', 'pppoe0', 'sip0', 'sip1',
+			'sip2', 'sip3', 'sip4', 'sip5', 'sip6', 'ex0'));
+
+$probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
+		'def' => array('voltotal', 'volfree'),
+		//FIXME block size may not be 4
+		'cdef' => array('pvoltotal' => 'voltotal,1024,/',
+			'pvolfree' => 'volfree,1024,/'),
+		'data' => ' AREA:pvoltotal#ff0000:"Total\:\g"'
+		.' GPRINT:pvoltotal:LAST:" %.0lf MB"'
+		.' AREA:pvolfree#0000ff:"Free\:\g"'
+		.' GPRINT:pvolfree:LAST:" %.0lf MB"',
+		'params' => array('/home', '/usr', '/var'));
+
+
+//functions
+function _host_list()
 {
+	return _sql_array('SELECT host_id AS id, title AS name'
+.' FROM daportal_probe_host, daportal_content'
+.' WHERE content_id=host_id AND enabled='."'1'".' ORDER BY id ASC');
+}
+
+function _host_graph($id, $type, $time, $param = FALSE)
+{
+	global $probe_types;
+
 	if(!($probe = _config_get('probe', 'RRD_repository')))
 		return _error(CONFIGURATION_ERROR);
-	//FIXME not always true (if, vol)
-	$rrd = $probe.'/'.$hostname.'_'.$graph.'.rrd';
-	_info('rrd: '.$rrd);
+	if(($hostname = _sql_single('SELECT title'
+.' FROM daportal_content, daportal_probe_host'
+.' WHERE daportal_content.content_id=daportal_probe_host.host_id'
+." AND host_id='$id' AND enabled='1'")) == FALSE
+			|| !array_key_exists($type, $probe_types))
+		return _error(INVALID_ARGUMENT);
+	$ret = $probe_types[$type];
+	$ret['id'] = $id;
+	$ret['type'] = $type;
+	$ret['title'] = ucfirst($ret['name']).': '.$hostname;
 	switch($time)
 	{
 		case 'week':	$start = '-604800';	break;
@@ -41,185 +174,85 @@ function _host_graph($hostname, $graph, $time, $param)
 		default:	$start = '-3600';
 				$time = 'hour';		break;
 	}
-	//FIXME hardcoded path + not always true (if, vol)
-	$png = 'tmp/'.$hostname.'_'.$graph.'_'.$time.'.png';
-	if(($st = @stat($png)) != FALSE && $st['mtime'] + 30 > time())
-		return $png;
-	$title = '';
-	$label = '';
-	$base = '';
-	$def = array();
-	$cdef = array();
-	$data = '';
-	$args = '-l 0';
-	switch($graph)
+	if($param != FALSE) //FIXME ugly
 	{
-		case 'uptime':
-			$title = 'uptime';
-			$label = 'hours';
-			$def = array('uptime');
-			$cdef = array('ruptime' => 'uptime,3600,/');
-			$data = ' AREA:ruptime#ffc0c0'
-				.' LINE1:ruptime#ef0f0f:"Uptime\t\g"'
-				.' GPRINT:ruptime:LAST:"Current\: %.0lf h\t\g"'
-				.' GPRINT:ruptime:AVERAGE:"Average\: %.0lf h\t\g"'
-				.' GPRINT:ruptime:MAX:"Maximum\: %.0lf h"';
-			break;
-		case 'load':
-			$title = 'load average';
-			$label = 'load';
-			$def = array('load1', 'load5', 'load15');
-			$cdef = array('rload1' => 'load1,65536,/',
-				'rload5' => 'load15,65536,/',
-				'rload15' => 'load15,65536,/');
-			$data = ' AREA:rload1#ffef5f'
-				.' AREA:rload5#ffbf5f'
-				.' AREA:rload15#ff8f5f'
-				.' LINE1:rload1#ffdf00:"Load 1 min\t\g"'
-				.' GPRINT:rload1:LAST:"Current\: %.2lf\t\g"'
-				.' GPRINT:rload1:AVERAGE:"Average\: %.2lf\t\g"'
-				.' GPRINT:rload1:MAX:"Maximum\: %.2lf\n"'
-				.' LINE1:rload5#ffaf00:"Load 5 min\t\g"'
-				.' GPRINT:rload5:LAST:"Current\: %.2lf\t\g"'
-				.' GPRINT:rload5:AVERAGE:"Average\: %.2lf\t\g"'
-				.' GPRINT:rload5:MAX:"Maximum\: %.2lf\n"'
-				.' LINE1:rload15#ff7f00:"Load 15 min  "'
-				.' GPRINT:rload15:LAST:"Current\: %.2lf\t\g"'
-				.' GPRINT:rload15:AVERAGE:"Average\: %.2lf\t\g"'
-				.' GPRINT:rload15:MAX:"Maximum\: %.2lf"';
-			break;
-		case 'ram':
-			$title = 'memory usage';
-			$label = 'bytes';
-			$base = '1024';
-			$def = array('ramtotal', 'ramfree', 'ramshared',
-					'rambuffer');
-			$cdef = array('pramtotal' => 'ramtotal,1024,/,1024,/',
-				'pramfree' => 'ramfree,1024,/,1024,/',
-				'pramshared' => 'ramshared,1024,/,1024,/',
-				'prambuffer' => 'rambuffer,1024,/,1024,/');
-			$data = ' AREA:ramtotal#ff0000:"Total   "'
-				.' GPRINT:pramtotal:LAST:"Current\: %.0lf MB\t\g"'
-				.' GPRINT:pramtotal:AVERAGE:"Average\: %.0lf MB\t\g"'
-				.' GPRINT:pramtotal:MAX:"Maximum\: %.0lf MB\n"'
-				.' AREA:ramfree#0000ff:"Free    "'
-				.' GPRINT:pramfree:LAST:"Current\: %.0lf MB\t\g"'
-				.' GPRINT:pramfree:AVERAGE:"Average\: %.0lf MB\t\g"'
-				.' GPRINT:pramfree:MAX:"Maximum\: %.0lf MB\n"'
-				.' STACK:ramshared#00ffff:"Shared  "'
-				.' GPRINT:pramshared:LAST:"Current\: %.0lf MB\t\g"'
-				.' GPRINT:pramshared:AVERAGE:"Average\: %.0lf MB\t\g"'
-				.' GPRINT:pramshared:MAX:"Maximum\: %.0lf MB\n"'
-				.' STACK:rambuffer#00ff00:"Buffer  "'
-				.' GPRINT:prambuffer:LAST:"Current\: %.0lf MB\t\g"'
-				.' GPRINT:prambuffer:AVERAGE:"Average\: %.0lf MB\t\g"'
-				.' GPRINT:prambuffer:LAST:"Maximum\: %.0lf MB\g"';
-			break;
-		case 'swap':
-			$title = 'swap usage';
-			$label = 'bytes';
-			$base = '1024';
-			$def = array('swaptotal', 'swapfree');
-			$cdef = array('pswaptotal' => 'swaptotal,1024,/,1024,/',
-				'pswapfree' => 'swapfree,1024,/,1024,/');
-			$data = ' AREA:swaptotal#ff0000:"Total\t\g"'
-				.' GPRINT:pswaptotal:LAST:"Current\: %.0lf MB\t\g"'
-				.' GPRINT:pswaptotal:AVERAGE:"Average\: %.0lf MB\t\g"'
-				.' GPRINT:pswaptotal:MAX:"Maximum\: %.0lf MB\n"'
-				.' AREA:swapfree#0000ff:"Free\t\g"'
-				.' GPRINT:pswapfree:LAST:"Current\: %.0lf MB\t\g"'
-				.' GPRINT:pswapfree:AVERAGE:"Average\: %.0lf MB\t\g"'
-				.' GPRINT:pswapfree:MAX:"Maximum\: %.0lf MB\g"';
-			break;
-		case 'users':
-			$title = 'logged users';
-			$label = 'users';
-			$def = array('users');
-			$data = ' AREA:users#b0b0ff'
-				.' LINE1:users#0f0fef:"Logged users\t\g"'
-				.' GPRINT:users:LAST:"Current\: %.0lf\t\g"'
-				.' GPRINT:users:AVERAGE:"Average\: %.0lf\t\g"'
-				.' GPRINT:users:MAX:"Maximum\: %.0lf"';
-			break;
-		case 'procs':
-			$title = 'process count';
-			$label = 'process';
-			$def = array('procs');
-			$data = ' AREA:procs#b0b0ff'
-				.' LINE1:procs#0f0fef:"Process count\t\g"'
-				.' GPRINT:procs:LAST:"Current\: %.0lf \t\g"'
-				.' GPRINT:procs:AVERAGE:"Average\: %.0lf \t\g"'
-				.' GPRINT:procs:MAX:"Maximum\: %.0lf"';
-			break;
-		case 'iface':
-			$rrd = $probe.'/'.$hostname.'_'.$param.'.rrd';
-			//FIXME hardcoded path
-			$png = 'tmp/'.$hostname.'_'.$param.'_'.$time.'.png';
-			$title = 'network traffic on '.$param;
-			$label = 'Bps';
-			$def = array('ifrxbytes', 'iftxbytes');
-			$cdef = array('ifrxkb' => 'ifrxbytes,1024,/',
-					'iftxkb' => 'iftxbytes,1024,/');
-			$data = ' AREA:ifrxbytes#b0ffb0'
-				.' LINE1:ifrxbytes#0fef0f:"RX\t\g"'
-				.' GPRINT:ifrxkb:LAST:"Current\: %.0lf KBps\t\g"'
-				.' GPRINT:ifrxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
-				.' GPRINT:ifrxkb:MAX:"Maximum\: %.0lf KBps\n"'
-				.' LINE1:iftxbytes#0f0fef:"TX\t\g"'
-				.' GPRINT:iftxkb:LAST:"Current\: %.0lf KBps\t\g"'
-				.' GPRINT:iftxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
-				.' GPRINT:iftxkb:MAX:"Maximum\: %.0lf KBps\g"';
-			break;
-		case 'vol':
-			$rrd = $probe.'/'.$hostname.'/'.$param.'.rrd';
-			//FIXME hardcoded path
-			if(!is_dir('tmp/'.$hostname))
-				mkdir('tmp/'.$hostname);
-			$png = 'tmp/'.$hostname.'/'.$param.'_'.$time.'.png';
-			$title = 'volume usage: '.$param;
-			$label = 'MB';
-			$def = array('voltotal', 'volfree');
-			//FIXME block size may not be 4
-			$cdef = array('pvoltotal' => 'voltotal,1024,/',
-				'pvolfree' => 'volfree,1024,/');
-			$data = ' AREA:pvoltotal#ff0000:"Total\:\g"'
-				.' GPRINT:pvoltotal:LAST:" %.0lf MB"'
-				.' AREA:pvolfree#0000ff:"Free\:\g"'
-				.' GPRINT:pvolfree:LAST:" %.0lf MB"';
-			break;
-		default:
-			_error('Unknown graph to update');
-			return '';
+		//$rrd = $probe.'/'.$hostname.'_'.$type.'/'.$param.'.rrd';
+		$rrd = $probe.'/'.$hostname.'_'.$param.'.rrd';
+		$sep = '_';
+		$rrd2 = $probe.'/'.$hostname.'/'.$param.'.rrd';
+		if(is_readable($rrd2))
+		{
+			$rrd = $rrd2;
+			$sep = '/';
+		}
+		else if(!is_readable($rrd))
+			return;
+		$ret['title'].=' '.$param;
+		$ret['img'] = 'tmp/'.$hostname.$sep.$param.'_'.$time.'.png';
 	}
-	$cmd = 'rrdtool graph --slope-mode '.$png
+	else
+	{
+		$rrd = $probe.'/'.$hostname.'_'.$type.'.rrd';
+		$ret['img'] = 'tmp/'.$hostname.'_'.$type.'_'.$time.'.png';
+	}
+	_info('rrd: '.$rrd);
+	//FIXME hardcoded path + not always true (if, vol)
+	if(($st = @stat($ret['png'])) != FALSE && $st['mtime'] + 30 > time())
+		return $ret;
+	$cmd = '/usr/pkg/bin/rrdtool graph --slope-mode '."'".$ret['img']."'"
 		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
-	if(strlen($base))
-		$cmd.=' --base '.$base;
-	foreach($def as $d)
-		$cmd.=' DEF:'.$d.'='.$rrd.':'.$d.':AVERAGE';
-	$keys = array_keys($cdef);
-	foreach($keys as $k)
-		$cmd.=' CDEF:'.$k.'='.$cdef[$k];
-	$cmd.=$data;
-	if(strlen($args))
+	if(isset($ret['base']))
+		$cmd.=' --base '.$ret['base'];
+	foreach($ret['def'] as $d)
+		$cmd.=" 'DEF:".$d.'='.$rrd.':'.$d.":AVERAGE'";
+	if(isset($ret['cdef']))
+	{
+		$keys = array_keys($ret['cdef']);
+		foreach($keys as $k)
+			$cmd.=" 'CDEF:".$k.'='.$ret['cdef'][$k]."'";
+	}
+	if(isset($ret['data']))
+		$cmd.=$ret['data'];
+	if(isset($args))
 		$cmd.=' '.$args;
-	$cmd.=' --title "'.$hostname.' '.$title.' (last '.$time.')"'
-		.' --vertical-label "'.$label.'"';
+	$cmd.=" --title '".$hostname.' '.$ret['name'].' (last '.$time.")'";
+	$cmd.=" --vertical-label '".(isset($ret['unit']) ? $ret['unit']
+		: ' ')."'";
 	_info('exec: '.$cmd);
 	//FIXME check potential command insertion through hostname/title/etc
+	//	currently vulnerable to single-quote injections
 	exec($cmd);
-	return $png;
+	return $ret;
+}
+
+function _probe_toolbar()
+{
+	global $probe_types;
+
+	$ret = array();
+	$keys = array_keys($probe_types);
+	foreach($keys as $k)
+	{
+		$t = &$probe_types[$k];
+		$entry = array('name' => ucfirst($t['name']), 'type' => $k);
+		$entry['title'] = $entry['name'];
+		if(isset($t['icon']))
+			$entry['icon'] = $t['icon'];
+		$ret[] = $entry;
+	}
+	return $ret;
 }
 
 
+//public
 function probe_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	print('<h1 class="title probe">'._html_safe(MONITORING_ADMINISTRATION)
 			.'</h1>'."\n");
 	if(($configs = _config_list('probe')))
@@ -247,7 +280,7 @@ function probe_admin($args)
 		$hosts[$i]['apply_id'] = $hosts[$i]['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'New host',
+	$toolbar[] = array('title' => NEW_HOST,
 			'icon' => 'modules/probe/icon.png',
 			'link' => 'index.php?module=probe&action=host_new');
 	$toolbar[] = array();
@@ -255,7 +288,7 @@ function probe_admin($args)
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'host_delete', 'confirm' => 'delete');
 	_module('explorer', 'browse', array('entries' => $hosts,
-			'toolbar' => $toolbar,
+			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'probe', 'action' => 'admin'));
 }
 
@@ -264,10 +297,10 @@ function probe_config_update($args)
 {
 	global $user_id, $module_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/config.php');
+	require_once('./system/config.php');
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^probe_([a-zA-Z_]+)$', $k, $regs))
@@ -279,9 +312,98 @@ function probe_config_update($args)
 
 function probe_default($args)
 {
+	global $probe_types;
+
+	if(!isset($args['id']) && !isset($args['type']))
+	{
+		probe_host_list(array());
+		probe_graph_list(array());
+		return;
+	}
+	$hosts = _host_list();
+	if(!is_array($hosts))
+		return _error('Could not list hosts');
+	$title = MONITORING.':';
 	if(isset($args['id']))
-		return probe_host_display(array('id' => $args['id']));
-	return probe_host_list(array());
+		foreach($hosts as $h)
+			if($h['id'] == $args['id'])
+			{
+				$id = $args['id'];
+				$title.=' '.$h['name'];
+				break;
+			}
+	if(isset($args['type'])
+			&& array_key_exists($args['type'], $probe_types))
+	{
+		$type = $args['type'];
+		$title.=' '.$probe_types[$type]['name'];
+	}
+	$times = array('hour', 'day', 'week');
+	$toolbar = _probe_toolbar();
+	$action = 'default';
+	if(isset($args['time']) && in_array($args['time'], $times))
+		$time = $args['time'];
+	include('./modules/probe/top.tpl');
+	$keys = array_keys($probe_types);
+	foreach($keys as $k)
+	{
+		$t = &$probe_types[$k];
+		if(isset($type) && $type != $k)
+			continue;
+		for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
+		{
+			if(isset($id) && $hosts[$i]['id'] != $id)
+				continue;
+			foreach($times as $u)
+			{
+				if(isset($time) && $time != $u)
+					continue;
+				if(!isset($t['params']))
+				{
+					$graph = _host_graph($hosts[$i]['id'],
+							$k, $u);
+					include('./modules/probe/graph.tpl');
+					continue;
+				}
+				foreach($t['params'] as $p)
+				{
+					$graph = _host_graph($hosts[$i]['id'],
+							$k, $u, $p);
+					if(!is_array($graph))
+						continue;
+					include('./modules/probe/graph.tpl');
+				}
+			}
+		}
+	}
+	include('./modules/probe/bottom.tpl');
+}
+
+
+function probe_graph_list($args)
+{
+	global $probe_types;
+
+	$title = GRAPH_LIST;
+	include('./modules/probe/top.tpl');
+	$types = array();
+	$keys = array_keys($probe_types);
+	foreach($keys as $k)
+	{
+		$t = $probe_types[$k];
+		$t['module'] = 'probe';
+		$t['action'] = 'default';
+		$t['name'] = ucfirst($t['name']);
+		$t['title'] = $t['name'];
+		$t['args'] = '&type='.$k;
+		if(!isset($t['thumbnail']))
+			$t['thumbnail'] = 'modules/probe/icon.png';
+		if(!isset($t['icon']))
+			$t['icon'] = $t['thumbnail'];
+		$types[] = $t;
+	}
+	_module('explorer', 'browse', array('entries' => $types));
+	include('./modules/probe/bottom.tpl');
 }
 
 
@@ -289,7 +411,7 @@ function probe_host_delete($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	_sql_query('DELETE FROM daportal_probe_host'
@@ -299,105 +421,40 @@ function probe_host_delete($args)
 }
 
 
-function probe_host_display($args)
-{
-	if(!($probe = _config_get('probe', 'RRD_repository')))
-		return _error(CONFIGURATION_ERROR);
-	$host = _sql_array('SELECT host_id AS id, title AS hostname'
-			.', content AS comment'
-			.' FROM daportal_probe_host, daportal_content'
-			.' WHERE content_id=host_id'
-			." AND enabled='1'"
-			." AND host_id='".$args['id']."';");
-	if(!is_array($host) || count($host) != 1)
-		return _error('Could not display host');
-	$time = 'hour';
-	if(isset($args['time']))
-		switch($args['time'])
-		{
-			case 'day':	$time = 'day';	break;
-			case 'week':	$time = 'week';	break;
-		}
-	$host = $host[0];
-	$title = 'Host: '.$host['hostname'];
-	//FIXME graphs, categories, ...
-	$graphs = array();
-	$graphs[] = array('graph' => 'uptime', 'title' => 'Uptime',
-			'time' => $time);
-	$graphs[] = array('graph' => 'load', 'title' => 'Load average',
-			'time' => $time);
-	$graphs[] = array('graph' => 'ram', 'title' => 'Memory usage',
-			'time' => $time);
-	$graphs[] = array('graph' => 'swap', 'title' => 'Swap usage',
-			'time' => $time);
-	$graphs[] = array('graph' => 'users', 'title' => 'Logged users',
-			'time' => $time);
-	$graphs[] = array('graph' => 'procs', 'title' => 'Process count',
-			'time' => $time);
-	//FIXME potential directory traversal, ugly enumeration workaround
-	foreach(array('eth0', 'eth1', 'eth2', 'eth3', 'ppp0', 'pppoe0', 'sip0',
-				'sip1', 'sip2', 'sip3', 'sip4', 'ex0') as $if)
-		if(is_readable($probe.'/'.$host['hostname']."_$if.rrd"))
-			$graphs[] = array('graph' => 'iface',
-					'title' => 'Network usage: '.$if,
-					'time' => $time, 'param' => $if);
-	//FIXME directory traversal + hidden rrd (*/.rrd)
-	$vols = glob($probe.'/'.$host['hostname'].'/*.rrd');
-	foreach($vols as $v)
-	{
-		$v = substr($v, strlen($probe) + 1 + strlen($host['hostname']));
-		$v = substr($v, 0, -4);
-		$graphs[] = array('graph' => 'vol',
-				'title' => 'Volume usage: '.$v, 'time' => $time,
-				'param' => $v);
-	}
-	if(isset($args['graph']))
-		foreach($graphs as $g)
-			if($g['graph'] == $args['graph'])
-			{
-				$graph = $args['graph'];
-				break;
-			}
-	include('./modules/probe/host_display.tpl');
-}
-
-
 function probe_host_insert($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	require_once('system/content.php');
+		return _error(PERMISSION_DENIED);
+	require_once('./system/content.php');
 	if(($id = _content_insert($args['hostname'], $args['comment'], 1))
 			== FALSE)
 		return _error('Could not insert host');
 	_sql_query('INSERT INTO daportal_probe_host (host_id) VALUES ('
 			."'$id'".');');
-	probe_host_display(array('id' => $id));
+	probe_default(array('id' => $id));
 }
 
 
 function probe_host_list($args)
 {
-	print('<h1 class="title probe">'._html_safe(HOST_LIST).'</h1>'."\n");
-	//FIXME sort and display by category
-	$hosts = _sql_array('SELECT host_id AS id, title AS name'
-			.' FROM daportal_probe_host, daportal_content'
-			.' WHERE content_id=host_id'
-			." AND enabled='1' ORDER BY id ASC;");
+	$title = HOST_LIST;
+	include('./modules/probe/top.tpl');
+	$hosts = _host_list();
 	if(!is_array($hosts))
 		return _error('Could not list hosts');
 	for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
 	{
 		$hosts[$i]['module'] = 'probe';
-		$hosts[$i]['action'] = 'host_display';
+		$hosts[$i]['action'] = 'default';
 		$hosts[$i]['icon'] = 'modules/probe/icon.png';
 		$hosts[$i]['thumbnail'] = 'modules/probe/icon.png';
 	}
 	_module('explorer', 'browse', array('entries' => $hosts,
-			'view' => 'thumbnails', 'toolbar' => 0));
+			'view' => 'list'));
+	include('./modules/probe/bottom.tpl');
 }
 
 
@@ -405,20 +462,18 @@ function probe_host_modify($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	$host = _sql_array('SELECT host_id AS id, title AS hostname'
 			.', content AS comment'
 			.' FROM daportal_probe_host, daportal_content'
-			.' WHERE content_id=host_id'
-			." AND enabled='1'"
+			.' WHERE content_id=host_id'." AND enabled='1'"
 			." AND host_id='".$args['id']."';");
 	if(!is_array($host) || count($host) != 1)
 		return _error('Could not modify host');
 	$host = $host[0];
 	$title = 'Host: '.$host['hostname'];
-	//FIXME graphs, categories, ...
 	include('./modules/probe/host_update.tpl');
 }
 
@@ -427,10 +482,10 @@ function probe_host_new($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	$title = 'New host';
+		return _error(PERMISSION_DENIED);
+	$title = NEW_HOST;
 	include('./modules/probe/host_update.tpl');
 }
 
@@ -439,12 +494,12 @@ function probe_host_update($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	require_once('system/content.php');
+		return _error(PERMISSION_DENIED);
+	require_once('./system/content.php');
 	_content_update($args['id'], $args['hostname'], $args['comment']);
-	probe_host_display(array('id' => $args['id']));
+	probe_default(array('id' => $args['id']));
 }
 
 
@@ -460,8 +515,9 @@ function probe_system($args)
 		case 'config_update':
 			$html = 0;
 			break;
-		case 'host_display':
-			header('refresh: 30');
+		case 'default':
+			if(isset($args['id']) || isset($args['type']))
+				header('refresh: 30');
 			break;
 	}
 }
