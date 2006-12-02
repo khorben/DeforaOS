@@ -104,6 +104,62 @@ pre {
 	display:		none;
 }
 
+.main {
+	border-top:		solid 1px #000000;
+	clear:			both;
+}
+
+.main .toolbar {
+	border-bottom:		solid 1px #000000;
+	border-top:		solid 1px #ffffff;
+	padding-bottom:		3px;
+	padding-top:		3px;
+}
+
+.main .toolbar a {
+	padding:		3px;
+}
+
+.main .toolbar a:hover {
+	background-color:	#eeebe7;
+	border-bottom:		solid 1px #afa699;
+	border-left:		solid 1px #ffffff;
+	border-right:		solid 1px #afa699;
+	border-top:		solid 1px #ffffff;
+	padding:		2px;
+}
+
+.style1 img {
+	float:			right;
+}
+
+.tree {
+	background-color:	#ffffff;
+	border-bottom:		solid 1px #000000;
+	border-right:		solid 1px #000000;
+	overflow:		auto;
+	padding-right:		4px;
+}
+
+.tree img {
+	vertical-align:		text-bottom;
+}
+
+.tree .entry
+{
+	margin-left:		16px;
+	white-space:		nowrap;
+}
+
+.tree .node {
+	background-image:	url('../icons/tree/vertline.gif');
+	background-position:	top left;
+	background-repeat:	repeat-y;
+}
+
+
+/* modules */
+/* explorer */
 .explorer {
 	background-color:	#ffffff;
 }
@@ -167,31 +223,8 @@ pre {
 	border-right:		solid 1px #ffffff;
 }
 
-.main {
-	border-top:		solid 1px #000000;
-	clear:			both;
-}
 
-.main .toolbar {
-	border-bottom:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
-	padding-bottom:		3px;
-	padding-top:		3px;
-}
-
-.main .toolbar a {
-	padding:		3px;
-}
-
-.main .toolbar a:hover {
-	background-color:	#eeebe7;
-	border-bottom:		solid 1px #afa699;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #afa699;
-	border-top:		solid 1px #ffffff;
-	padding:		2px;
-}
-
+/* menu */
 ul.menu, ul.menu li, ul.menu ul, ul.menu ul li {
 	margin:			0;
 	padding:		0;
@@ -301,10 +334,8 @@ ul.menu li:hover ul li:hover ul li a {
 	width:			100%;
 }
 
-.style1 img {
-	float:			right;
-}
 
+/* top */
 .top {
 	border-bottom:		solid 1px #000000;
 	border-left:		solid 1px #ffffff;
@@ -327,29 +358,14 @@ ul.menu li:hover ul li:hover ul li a {
 	padding:		2px;
 }
 
-.tree {
-	background-color:	#ffffff;
-	border-bottom:		solid 1px #000000;
-	border-right:		solid 1px #000000;
-	overflow:		auto;
-	padding-right:		4px;
+
+/* probe */
+div.probe div.graph {
+	float:			left;
+	height:			250px;
+	padding:		4px;
 }
 
-.tree img {
-	vertical-align:		text-bottom;
-}
-
-.tree .entry
-{
-	margin-left:		16px;
-	white-space:		nowrap;
-}
-
-.tree .node {
-	background-image:	url('../icons/tree/vertline.gif');
-	background-position:	top left;
-	background-repeat:	repeat-y;
-}
 
 #folders {
 	float:			left;
