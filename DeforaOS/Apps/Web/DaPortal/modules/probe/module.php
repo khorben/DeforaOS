@@ -508,9 +508,8 @@ function probe_system($args)
 	global $title, $html;
 
 	$title.=' - '.MONITORING;
-	if(!isset($args['action']))
-		return;
-	switch($args['action'])
+	$action = isset($args['action']) ? $args['action'] : 'default';
+	switch($action)
 	{
 		case 'config_update':
 			$html = 0;
