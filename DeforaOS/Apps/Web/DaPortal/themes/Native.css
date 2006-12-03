@@ -245,6 +245,7 @@ ul.menu li {
 	margin:			0;
 	padding:		2px;
 	padding-bottom:		4px;
+	white-space:		nowrap;
 }
 
 ul.menu li a {
