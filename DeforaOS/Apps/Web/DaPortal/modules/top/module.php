@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../../index.php'));
-
-
 function top_admin($args)
 {
 	global $user_id;
@@ -16,12 +11,11 @@ function top_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title top">Top links administration</h1>'."\n");
 	$links = _sql_array('SELECT top_id, name, link AS url FROM daportal_top'
-			.' ORDER BY top_id ASC;');
+			.' ORDER BY top_id ASC');
 	if(!is_array($links))
 		return _error('Unable to get links');
-	$count = count($links);
 	$last_id = 0;
-	for($i = 0; $i < $count; $i++)
+	for($i = 0, $cnt = count($link); $i < $cnt; $i++)
 	{
 		/* $links[$i]['icon'] = ereg('^http://[^/]+/$',
 				$links[$i]['url'])
@@ -38,7 +32,7 @@ function top_admin($args)
 				._html_safe_link($links[$i]['url'])
 				.'">'._html_safe($links[$i]['url']).'</a>';
 		$links[$i]['move'] = '';
-		if($i+1 < $count)
+		if($i+1 < $cnt)
 			$links[$i]['move'].='<a href="index.php?module=top'
 				.'&action=move&id='.$links[$i]['top_id']
 				.'&to='.$links[$i+1]['top_id'].'">'
@@ -73,7 +67,7 @@ function top_admin($args)
 function top_default($args)
 {
 	$links = _sql_array('SELECT name, link FROM daportal_top'
-			.' ORDER BY top_id ASC;');
+			.' ORDER BY top_id ASC');
 	if(!is_array($links))
 		return _error('Unable to get links');
 	print("\t\t".'<div class="top">'."\n");
@@ -95,8 +89,7 @@ function top_delete($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	_sql_query('DELETE FROM daportal_top'
-			." WHERE top_id='".$args['id']."';");
+	_sql_query("DELETE FROM daportal_top WHERE top_id='".$args['id']."'");
 }
 
 
@@ -108,7 +101,7 @@ function top_insert($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(_sql_query('INSERT INTO daportal_top (name, link) VALUES ('
-			."'".$args['name']."', '".$args['link']."');") == FALSE)
+			."'".$args['name']."', '".$args['link']."')") == FALSE)
 		return _error('Unable to insert link');
 	top_admin(array());
 }
@@ -122,7 +115,7 @@ function top_modify($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$top = _sql_array('SELECT top_id, name, link FROM daportal_top'
-			." WHERE top_id='".$args['id']."';");
+			." WHERE top_id='".$args['id']."'");
 	if(!is_array($top) || count($top) != 1)
 		return _error('Invalid link ID');
 	$top = $top[0];
@@ -140,9 +133,9 @@ function top_move($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$from = _sql_array('SELECT name, link FROM daportal_top'
-			." WHERE top_id='".$args['id']."';");
+			." WHERE top_id='".$args['id']."'");
 	$to = _sql_array('SELECT name, link FROM daportal_top'
-			." WHERE top_id='".$args['to']."';");
+			." WHERE top_id='".$args['to']."'");
 	if(!is_array($from) || count($from) != 1 || !is_array($to)
 			|| count($to) != 1)
 		return _error('Unable to move links');
@@ -150,11 +143,11 @@ function top_move($args)
 	$to = $to[0];
 	if(!_sql_query("UPDATE daportal_top SET name='".$from['name']."'"
 			.", link='".$from['link']."'"
-			." WHERE top_id='".$args['to']."';")
+			." WHERE top_id='".$args['to']."'")
 			|| !_sql_query('UPDATE daportal_top'
 					." SET name='".$to['name']."'"
 					.", link='".$to['link']."'"
-					." WHERE top_id='".$args['id']."';"))
+					." WHERE top_id='".$args['id']."'"))
 		_error('Error while moving links');
 	top_admin(array());
 }
@@ -180,10 +173,9 @@ function top_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(!_sql_query('UPDATE daportal_top SET'
-			." name='".$args['name']."'"
+	if(!_sql_query('UPDATE daportal_top SET name='."'".$args['name']."'"
 			.", link='".$args['link']."'"
-			." WHERE top_id='".$args['id']."';"))
+			." WHERE top_id='".$args['id']."'"))
 		return _error('Unable to update link');
 	top_admin(array());
 }

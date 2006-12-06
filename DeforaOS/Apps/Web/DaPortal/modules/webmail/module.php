@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['DRAFTS'] = 'Drafts';
 $text['INBOX'] = 'Inbox';
 $text['MESSAGE_LIST'] = 'Message list';
