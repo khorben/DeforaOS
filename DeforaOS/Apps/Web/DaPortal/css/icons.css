@@ -54,6 +54,10 @@ h1.search {
 	background-image:		url("../modules/search/icon.png");
 }
 
+h1.top {
+	background-image:		url("../modules/top/icon.png");
+}
+
 h1.user {
 	background-image:		url("../modules/user/icon.png");
 }
