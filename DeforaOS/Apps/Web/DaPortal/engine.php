@@ -47,6 +47,7 @@ if(isset($_COOKIE[session_name()]))
 }
 require_once('./system/debug.php');
 require_once('./system/sql.php');
+require_once('./system/module.php');
 require_once('./system/config.php');
 
 //configuration variables
@@ -54,7 +55,9 @@ if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
 
 require_once('./system/lang.php');
-require_once('./system/module.php');
+
+_module('', 'system');
+
 if($html)
 {
 	require_once('./system/html.php');

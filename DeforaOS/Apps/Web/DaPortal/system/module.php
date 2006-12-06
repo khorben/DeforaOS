@@ -74,6 +74,4 @@ function _module_desktop()
 {
 }
 
-_module('', 'system');
-
 ?>
