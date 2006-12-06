@@ -35,6 +35,7 @@ $text['REPLY_ON'] = 'on';
 $text['REPLY_TO_BUG'] = 'Reply to bug';
 $text['REPORT_A_BUG'] = 'Report a bug';
 $text['REPORT_BUG_FOR'] = 'Report bug for';
+$text['REVISION'] = 'Revision';
 $text['SCREENSHOTS'] = 'Screenshots';
 $text['STATE'] = 'State';
 $text['SUBMITTER'] = 'Submitter';
@@ -1397,20 +1398,20 @@ function project_timeline($args)
 				'author' => $author);
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+	$toolbar[] = array('title' => BACK, 'icon' => 'icons/16x16/back.png',
 			'link' => 'javascript:history.back()');
-	$toolbar[] = array('title' => 'Forward',
+	$toolbar[] = array('title' => FORWARD,
 			'icon' => 'icons/16x16/forward.png',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Refresh',
+	$toolbar[] = array('title' => REFRESH,
 			'icon' => 'icons/16x16/refresh.png',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array(
 			'entries' => array_reverse($entries),
 			'class' => array('date' => DATE,
 					'event' => 'Action',
-					'revision' => 'Revision',
+					'revision' => REVISION,
 					'author' => AUTHOR),
 			'toolbar' => $toolbar, 'view' => 'details'));
 	fclose($fp);

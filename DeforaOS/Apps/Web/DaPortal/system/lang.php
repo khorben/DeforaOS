@@ -19,7 +19,7 @@ function _lang($text)
 function _lang_check($lang)
 {
 	return _sql_single('SELECT enabled FROM daportal_lang'
-			." WHERE enabled='1' AND lang_id='$lang';");
+			." WHERE enabled='1' AND lang_id='$lang'");
 }
 
 
@@ -56,6 +56,7 @@ $text['_FOR_'] = ' for ';
 $text['ABOUT'] = 'About';
 $text['ADMINISTRATOR'] = 'Administrator';
 $text['AUTHOR'] = 'Author';
+$text['BACK'] = 'Back';
 $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
@@ -68,6 +69,7 @@ $text['EDIT'] = 'Edit';
 $text['ENABLE'] = 'Enable';
 $text['ENABLED'] = 'Enabled';
 $text['FILTER'] = 'Filter';
+$text['FORWARD'] = 'Forward';
 $text['HOMEPAGE'] = 'Homepage';
 $text['INVALID_ARGUMENT'] = 'Invalid argument';
 $text['LOGIN'] = 'Login';
