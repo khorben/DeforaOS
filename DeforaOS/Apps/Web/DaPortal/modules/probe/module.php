@@ -10,6 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['ALL_HOSTS'] = 'All hosts';
 $text['CONFIGURATION_ERROR'] = 'Configuration error';
 $text['GRAPH_LIST'] = 'Graph list';
