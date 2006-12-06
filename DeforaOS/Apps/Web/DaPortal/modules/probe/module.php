@@ -197,7 +197,7 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	}
 	_info('rrd: '.$rrd);
 	//FIXME hardcoded path + not always true (if, vol)
-	if(($st = @stat($ret['png'])) != FALSE && $st['mtime'] + 30 > time())
+	if(($st = stat($ret['img'])) != FALSE && $st['mtime'] + 30 > time())
 		return $ret;
 	$cmd = '/usr/pkg/bin/rrdtool graph --slope-mode '."'".$ret['img']."'"
 		.' --start '.$start.' --imgformat PNG'
