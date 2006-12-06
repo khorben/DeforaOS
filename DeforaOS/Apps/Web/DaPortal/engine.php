@@ -1,5 +1,5 @@
 <?php //engine.php
-//Copyright 2004, 2005 Pierre Pronchery
+//Copyright (c) 2004, 2005, 2006 The DeforaOS Project
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
