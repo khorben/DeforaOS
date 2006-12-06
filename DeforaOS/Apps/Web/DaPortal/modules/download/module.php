@@ -47,8 +47,8 @@ function download_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title download">'._html_safe(DOWNLOADS_ADMINISTRATION)
-			.'</h1>'."\n");
-	print('<h2><img src="modules/admin/icon.png" alt=""/> '
+			.'</h1>'."\n"
+			.'<h2><img src="modules/admin/icon.png" alt=""/> '
 			._html_safe(DOWNLOADS_CONFIGURATION).'</h2>'."\n");
 	if(($configs = _config_list('download')))
 	{
@@ -58,8 +58,9 @@ function download_admin($args)
 	}
 	print('<h2><img src="modules/download/icon.png" alt=""/> '
 			._html_safe(DOWNLOADS_LIST).'</h2>'."\n");
-	$dls = _sql_array('SELECT download_id AS id, title AS name, enabled'
-			.', mode FROM daportal_download, daportal_content'
+	$dls = _sql_array('SELECT daportal_content.content_id AS id'
+			.', title AS name, enabled, mode'
+			.' FROM daportal_download, daportal_content'
 			.' WHERE daportal_download.content_id'
 			.'=daportal_content.content_id ORDER BY id DESC;');
 	if(!is_array($dls))
@@ -94,7 +95,7 @@ function download_admin($args)
 			'icon' => 'icons/16x16/delete.png',
 			'confirm' => 'delete');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Refresh',
+	$toolbar[] = array('title' => REFRESH,
 			'icon' => 'icons/16x16/refresh.png',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $dls,
@@ -127,27 +128,31 @@ function download_default($args)
 	global $user_id;
 
 	$parent = ' IS NULL';
-	if(isset($args['id']) && is_numeric($args['id']))
+	$sql = 'SELECT daportal_content.content_id AS id, download_id'
+		.', title AS name, mode, parent, timestamp AS ctime, content'
+		.', daportal_content.user_id AS user_id, username AS user'
+		.' FROM daportal_download, daportal_content, daportal_user'
+		.' WHERE daportal_download.content_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_user.enabled='1' AND ";
+	if(isset($args['id']) && is_numeric($args['id'])
+			|| (isset($args['download_id'])
+				&& is_numeric($args['download_id'])))
 	{
-		$file = _sql_array('SELECT download_id AS id, title AS name'
-				.', mode, parent, timestamp AS ctime, content'
-				.', daportal_content.user_id AS user_id'
-				.', username AS user'
-				.' FROM daportal_download, daportal_content'
-				.', daportal_user'
-				.' WHERE daportal_download.content_id'
-				.'=daportal_content.content_id'
-				.' AND daportal_content.user_id'
-				.'=daportal_user.user_id'
-				." AND daportal_content.enabled='1'"
-				." AND daportal_user.enabled='1'"
-				." AND download_id='".$args['id']."';");
+		$file = (isset($args['download_id'])
+				&& is_numeric($args['download_id']))
+			? _sql_array($sql." download_id='".$args['download_id']
+					."'")
+			: _sql_array($sql." daportal_content.content_id='"
+					.$args['id']."'");
 		if(is_array($file) && count($file) == 1)
 		{
 			$file = $file[0];
 			if(!($file['mode'] & S_IFDIR))
 				return _default_download($file);
-			$parent = "='".$args['id']."'";
+			$parent = "='".$file['download_id']."'";
 		}
 	}
 	if(!isset($file) || !is_array($file))
@@ -156,53 +161,47 @@ function download_default($args)
 	if(isset($file['name']))
 		print(': '._html_safe($file['name']));
 	print('</h1>'."\n");
-	$dls = _sql_array('SELECT download_id AS id, title AS name'
-			.', daportal_content.enabled, mode'
-			.', daportal_content.user_id, username'
-			.' FROM daportal_download, daportal_content'
-			.', daportal_user'
-			.' WHERE daportal_download.content_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_content.enabled='1'"
-			." AND parent$parent ORDER BY name;");
+	$sql = 'SELECT daportal_content.content_id AS id, title AS name'
+		.', daportal_content.enabled AS enabled, mode'
+		.', daportal_content.user_id AS user_id, username'
+		.' FROM daportal_download, daportal_content, daportal_user'
+		.' WHERE daportal_download.content_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND parent$parent ORDER BY name";
+	$dls = _sql_array($sql);
 	if(!is_array($dls))
 		return _error('Unable to list downloads');
 	require_once('./system/mime.php');
 	for($cnt = count($dls), $i = 0; $i < $cnt; $i++)
 	{
+		$dls[$i]['module'] = 'download';
+		$dls[$i]['action'] = 'default';
+		$dls[$i]['apply_module'] = 'download';
+		$dls[$i]['apply_id'] = $dls[$i]['id'];
 		$mime = _mime_from_ext($dls[$i]['name']);
 		if($dls[$i]['mode'] & S_IFDIR)
 		{
 			$dls[$i]['icon'] = 'icons/16x16/mime/folder.png';
 			$dls[$i]['thumbnail'] = 'icons/48x48/mime/folder.png';
+			continue;
 		}
-		else
-		{
-			if(is_readable('icons/48x48/mime/'.$mime.'.png'))
-				$dls[$i]['thumbnail'] = 'icons/48x48/mime/'
-					.$mime.'.png';
-			else
-				$dls[$i]['thumbnail'] = 'icons/48x48/mime/'
-					.'default.png';
-			if(is_readable('icons/16x16/mime/'.$mime.'.png'))
-				$dls[$i]['icon'] = 'icons/16x16/mime/'
-					.$mime.'.png';
-			else
-				$dls[$i]['icon'] = $dls[$i]['thumbnail'];
-		}
-		$dls[$i]['module'] = 'download';
-		$dls[$i]['action'] = 'default';
-		$dls[$i]['apply_module'] = 'download';
-		$dls[$i]['apply_id'] = $dls[$i]['id'];
+		$dls[$i]['thumbnail'] = is_readable('icons/48x48/mime/'.$mime
+				.'.png') ? 'icons/48x48/mime/'.$mime.'.png'
+				: 'icons/48x48/mime/default.png';
+		$dls[$i]['icon'] = is_readable('icons/16x16/mime/'.$mime.'.png')
+			? 'icons/16x16/mime/'.$mime.'.png'
+			: $dls[$i]['thumbnail'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
 			'link' => 'javascript:history.back()');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'icon' => 'icons/16x16/updir.png',
-			'link' => 'index.php?module=download&action=default&id='
-			.(isset($file['parent']) ? $file['parent'] : ''));
+			'link' => 'index.php?module=download&action=default'
+			.(isset($file['parent'])
+				? '&download_id='.$file['parent'] : ''));
 	$toolbar[] = array('title' => 'Forward',
 			'icon' => 'icons/16x16/forward.png',
 			'link' => 'javascript:history.forward()');
@@ -211,8 +210,8 @@ function download_default($args)
 		$toolbar[] = array();
 		$toolbar[] = array('title' => NEW_DIRECTORY,
 				'icon' => 'icons/16x16/newdir.png',
-				'link' => 'index.php?module=download'
-				.'&action=directory_new&id='.$file['id']);
+				'link' => 'index.php?module=download&action'
+				.'=directory_new&id='.$file['download_id']);
 		$toolbar[] = array('title' => UPLOAD_FILE,
 				'icon' => 'icons/16x16/save.png',
 				'link' => 'index.php?module=download'
@@ -223,7 +222,7 @@ function download_default($args)
 				'confirm' => 'delete');
 	}
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Refresh',
+	$toolbar[] = array('title' => REFRESH,
 			'icon' => 'icons/16x16/refresh.png',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse', array('entries' => $dls,
@@ -241,7 +240,7 @@ function _default_download($file)
 	require_once('./system/mime.php');
 	if(($file['mime'] = _mime_from_ext($file['name'])) == 'default')
 		$file['mime'] = 'text/plain';
-	$filename = $root.'/'.$file['id'];
+	$filename = $root.'/'.$file['download_id'];
 	$st = stat($filename);
 	$file['mode'] = _permissions($file['mode']);
 	$file['ctime'] = strftime(DATE_FORMAT, $st['ctime']);
@@ -265,19 +264,19 @@ function download_delete($args)
 		return _error('No root directory');
 	if(!is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT);
-	$file = _sql_array('SELECT content_id, mode'
+	$file = _sql_array('SELECT content_id AS id, download_id, mode'
 			.' FROM daportal_download'
-			." WHERE download_id='".$args['id']."';");
+			." WHERE content_id='".$args['id']."'");
 	if(!is_array($file) || count($file) != 1)
 		return _error(INVALID_ARGUMENT);
 	$file = $file[0];
 	//FIXME if directory look for childs
 	require_once('./system/content.php');
 	_sql_query('DELETE FROM daportal_download'
-			." WHERE download_id='".$args['id']."';");
-	_content_delete($file['content_id']);
+			." WHERE download_id='".$file['download_id']."'");
+	_content_delete($file['id']);
 	if(!($file['mode'] & S_IFDIR))
-		unlink($root.'/'.$args['id']);
+		unlink($root.'/'.$file['download_id']);
 }
 
 
@@ -289,7 +288,7 @@ function download_disable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($id = _sql_single('SELECT content_id FROM daportal_download'
-			." WHERE download_id='".$args['id']."';")))
+			." WHERE content_id='".$args['id']."'")))
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	_content_disable($id);
@@ -312,14 +311,12 @@ function download_directory_insert($args)
 		return _error('Unable to create directory');
 	if(!_sql_query('INSERT INTO daportal_download'
 			.' (content_id, parent, mode) VALUES'
-			." ('$id', $parent, '".S_IFDIR."');"))
+			." ('$id', $parent, '".S_IFDIR."')"))
 	{
 		_content_delete($id);
 		return _error('Unable to create directory');
 	}
-	download_default(array('id' => isset($args['parent'])
-				&& is_numeric($args['parent'])
-				? $args['parent'] : ''));
+	download_default(array('id' => $id));
 }
 
 
@@ -342,19 +339,20 @@ function download_download($args)
 		return _error(INVALID_ARGUMENT); //FIXME 404
 	if(!($root = _config_get('download', 'root')))
 		return _error('No root directory'); //FIXME 501
-	$filename = $root.'/'.$args['id'];
-	if(!is_readable($filename))
-		return _error(PERMISSION_DENIED); //FIXME 403
-	$file = _sql_array('SELECT title AS name'
+	$file = _sql_array('SELECT title AS name, download_id'
 			.' FROM daportal_download, daportal_content'
 			.' WHERE daportal_download.content_id'
 			.'=daportal_content.content_id'
-			." AND enabled='1' AND download_id='".$args['id']."';");
+			." AND enabled='1'"
+			." AND daportal_content.content_id='".$args['id']."'");
 	if(!is_array($file) || count($file) != 1)
 		return _error('Unable to download file'); //FIXME 404
 	$file = $file[0];
+	$filename = $root.'/'.$file['download_id'];
+	if(!is_readable($filename))
+		return _error(PERMISSION_DENIED); //FIXME 403
 	if(($fp = fopen($filename, 'r')) == FALSE)
-		return _error('Unable to open file'); //FIXME ???
+		return _error('Unable to open file'); //FIXME 501
 	require_once('./system/mime.php');
 	if(($mime = _mime_from_ext($file['name'])) == 'default')
 		$mime = 'text/plain';
@@ -396,7 +394,7 @@ function download_enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($id = _sql_single('SELECT content_id FROM daportal_download'
-			." WHERE download_id='".$args['id']."';")))
+			." WHERE content_id='".$args['id']."'")))
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	_content_enable($id);
@@ -420,9 +418,8 @@ function download_file_insert($args)
 	require_once('./system/content.php');
 	if(!($content_id = _content_insert($title, '', 1)))
 		return _error('Unable to upload file');
-	if(!_sql_query('INSERT INTO daportal_download'
-				.' (content_id, parent) VALUES'
-				." ('$content_id', $parent);"))
+	if(!_sql_query('INSERT INTO daportal_download (content_id, parent)'
+			." VALUES ('$content_id', $parent)"))
 	{
 		_content_delete($content_id);
 		return _error('Unable to upload file');
@@ -431,11 +428,11 @@ function download_file_insert($args)
 	if(!rename($_FILES['file']['tmp_name'], $root.'/'.$id))
 	{
 		_sql_query('DELETE FROM daportal_download'
-				." WHERE download_id='$id';");
+				." WHERE download_id='$id'");
 		_content_delete($content_id);
 		return _error('Unable to rename file');
 	}
-	header('Location: index.php?module=download&id='
+	header('Location: index.php?module=download&download_id='
 		.(is_numeric($args['parent']) ? $args['parent'] : ''));
 }
 
@@ -447,7 +444,8 @@ function download_file_new($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title download">'._html_safe(UPLOAD_FILE).'</h1>'."\n");
-	$parent = $args['id'];
+	$parent = _sql_single('SELECT download_id FROM daportal_download'
+			." WHERE content_id='".$args['id']."'");
 	include('./modules/download/file_update.tpl');
 }
 

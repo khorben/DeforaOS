@@ -1,7 +1,7 @@
 <h1 class="title download"><?php echo _html_safe(DOWNLOADS.': '.$file['name']); ?></h1>
 <p>
-<a href="index.php?module=download&amp;id=<?php echo _html_safe($file['parent']); ?>"><img src="icons/16x16/updir.png" alt-""/> Browse</a>
-&middot; <a href="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>"><img src="icons/16x16/save.png" alt-""/> Download</a>
+<a href="index.php?module=download&amp;download_id=<?php echo _html_safe($file['parent']); ?>"><img src="icons/16x16/updir.png" alt=""/> Browse</a>
+&middot; <a href="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>"><img src="icons/16x16/save.png" alt=""/> Download</a>
 </p>
 <table>
 	<tr><td class="field">Name:</td><td><?php echo _html_safe($file['name']); ?></td></tr>
@@ -16,5 +16,5 @@
 </table>
 <?php if(strncmp('image/', $file['mime'], 6) == 0) { ?>
 <h2>Image preview</h2>
-<img src="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>" alt="" style="max-height: 100px; max-width: 100px"/>
+<a href="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>" title="<?php echo _html_safe($file['name']); ?>"><img src="index.php?module=download&amp;action=download&amp;id=<?php echo _html_safe($file['id']); ?>" alt="" style="max-height: 100px; max-width: 100px"/></a>
 <?php } ?>

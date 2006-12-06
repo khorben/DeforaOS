@@ -1,7 +1,7 @@
 <form action="index.php" method="post" enctype="multipart/form-data">
 	<input type="hidden" name="module" value="download"/>
 	<input type="hidden" name="action" value="file_insert"/>
-<?php if(is_numeric($parent)) { ?>
+<?php if(isset($parent) && is_numeric($parent)) { ?>
 	<input type="hidden" name="parent" value="<?php echo $parent; ?>"/>
 <?php } ?>
 	<table>
