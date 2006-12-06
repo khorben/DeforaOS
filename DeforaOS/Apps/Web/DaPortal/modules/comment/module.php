@@ -13,6 +13,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['COMMENT_ADMINISTRATION'] = 'Comments administration';
 $text['COMMENT_BY'] = 'Comment by';
 $text['COMMENT_ON'] = 'on';

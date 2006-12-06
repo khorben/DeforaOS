@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['ADDRESS'] = 'Address';
 $text['BOOKMARK_LIST'] = 'Bookmark list';
 $text['BOOKMARKS'] = 'Bookmarks';

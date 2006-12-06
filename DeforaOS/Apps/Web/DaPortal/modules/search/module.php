@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['RESULTS_FOUND'] = 'result(s) found';
 $text['SEARCH_RESULTS'] = 'Search results';
 global $lang;

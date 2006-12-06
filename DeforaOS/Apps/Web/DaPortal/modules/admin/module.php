@@ -9,6 +9,7 @@ require_once('./system/user.php');
 
 
 //lang
+$text = array();
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
 $text['LANGUAGES'] = 'Languages';
 $text['PORTAL_ADMINISTRATION'] = 'Portal administration';

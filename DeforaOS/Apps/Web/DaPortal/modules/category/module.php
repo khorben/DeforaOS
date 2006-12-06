@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['ALREADY_LINKED'] = 'Already linked';
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORY'] = 'Category';

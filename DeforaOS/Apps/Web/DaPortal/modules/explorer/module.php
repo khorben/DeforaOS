@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['LISTING_DETAILS'] = 'Details';
 $text['LISTING_LIST'] = 'List';
 $text['LISTING_THUMBNAILS'] = 'Thumbnails';

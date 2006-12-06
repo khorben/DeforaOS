@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 //lang
+$text = array();
 $text['MODIFICATION_OF_NEWS'] = 'Modification of news';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS_BY'] = 'News by';
