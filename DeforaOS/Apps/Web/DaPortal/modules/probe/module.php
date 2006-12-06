@@ -159,10 +159,7 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	if($probe == FALSE && ($probe = _config_get('probe', 'RRD_repository'))
 			== FALSE)
 		return _error(CONFIGURATION_ERROR);
-	if(($hostname = _sql_single('SELECT title'
-.' FROM daportal_content, daportal_probe_host'
-.' WHERE daportal_content.content_id=daportal_probe_host.host_id'
-." AND host_id='$id' AND enabled='1'")) == FALSE
+	if(($hostname = _host_title($id)) == FALSE
 			|| !array_key_exists($type, $probe_types))
 		return _error(INVALID_ARGUMENT);
 	$ret = $probe_types[$type];
@@ -227,6 +224,19 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	//	currently vulnerable to single-quote injections
 	exec($cmd);
 	return $ret;
+}
+
+function _host_title($id)
+{
+	static $cache = array();
+
+	if(array_key_exists($id, $cache))
+		return $cache[$id];
+	$cache[$id] = _sql_single('SELECT title FROM daportal_content'
+		.', daportal_probe_host WHERE daportal_content.content_id'
+		.'=daportal_probe_host.host_id AND host_id='."'".$id."'"
+		." AND enabled='1'");
+	return $cache[$id];
 }
 
 function _probe_toolbar()
