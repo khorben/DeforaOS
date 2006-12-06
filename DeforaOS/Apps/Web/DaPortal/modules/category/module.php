@@ -10,8 +10,8 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['ALREADY_LINKED'] = 'Already linked';
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
-$text['CATEGORIES_LIST'] = 'Categories list';
 $text['CATEGORY'] = 'Category';
+$text['CATEGORY_LIST'] = 'Category list';
 $text['CHOOSE_CATEGORIES'] = 'Choose categories';
 $text['DELETE_LINK'] = 'Delete link';
 $text['MEMBER_OF'] = 'Member of';
@@ -22,8 +22,8 @@ if($lang == 'fr')
 {
 	$text['ALREADY_LINKED'] = 'Déjà lié';
 	$text['CATEGORIES_ADMINISTRATION'] = 'Administration des catégories';
-	$text['CATEGORIES_LIST'] = 'Liste des catégories';
 	$text['CATEGORY'] = 'Catégorie';
+	$text['CATEGORY_LIST'] = 'Liste des catégories';
 	$text['CHOOSE_CATEGORIES'] = 'Choisir parmi les catégories';
 	$text['DELETE_LINK'] = 'Effacer le lien';
 	$text['MEMBER_OF'] = 'Membre de';
@@ -189,12 +189,12 @@ function category_get($args)
 		return _error(INVALID_ARGUMENT);
 	print('<h2><img src="modules/category/icon.png" alt=""/> '
 			.MEMBER_OF.'</h2>'."\n");
-	$categories = _sql_array('SELECT category_id AS id, title AS name'
+	$categories = _sql_array('SELECT category_id AS id, title'
 			.' FROM daportal_category_content, daportal_content'
 			.' WHERE daportal_category_content.category_id'
 			.'=daportal_content.content_id'
 			." AND daportal_category_content.content_id='"
-			." AND enabled='1'".$args['id']."'");
+			.$args['id']."' AND enabled='1'");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$count = count($categories);
@@ -205,6 +205,7 @@ function category_get($args)
 		$categories[$i]['icon'] = 'modules/category/icon.png';
 		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
 		$categories[$i]['apply_module'] = 'category';
+		$categories[$i]['name'] = $categories[$i]['title'];
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
@@ -338,7 +339,7 @@ function category_link_insert_new($args)
 
 function category_list($args)
 {
-	print('<h1 class="title category">'._html_safe(CATEGORIES_LIST).'</h1>'."\n");
+	print('<h1 class="title category">'._html_safe(CATEGORY_LIST).'</h1>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
 			.', content AS description, name AS module'
 			.' FROM daportal_content, daportal_module'
@@ -413,7 +414,7 @@ function category_set($args)
 		return _error('Could not display content');
 	print('<h2><img src="modules/category/icon.png" alt=""/> '
 			.CHOOSE_CATEGORIES.'</h2>'."\n");
-	$categories = _sql_array('SELECT content_id AS id, title AS name'
+	$categories = _sql_array('SELECT content_id AS id, title'
 			.' FROM daportal_content'
 			." WHERE module_id='$module'"
 			." AND enabled='1'");
@@ -427,6 +428,7 @@ function category_set($args)
 		$categories[$i]['icon'] = 'modules/category/icon.png';
 		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
 		$categories[$i]['apply_module'] = 'category';
+		$categories[$i]['name'] = $categories[$i]['title'];
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
