@@ -95,8 +95,8 @@ function project_admin($args)
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return project_modify($args);
-	print('<h1 class="title project">'._html_safe(PROJECTS_ADMINISTRATION).'</h1>'
-			."\n");
+	print('<h1 class="title project">'._html_safe(PROJECTS_ADMINISTRATION)
+			.'</h1>'."\n");
 	if(($configs = _config_list('project')))
 	{
 		print('<h2><img src="modules/project/icon.png" alt=""/>'
@@ -107,16 +107,14 @@ function project_admin($args)
 	}
 	print('<h2><img src="modules/project/icon.png" alt=""/> '
 			._html_safe(PROJECT_LIST).'</h2>'."\n");
-	$projects = _sql_array('SELECT content_id AS id, name, title AS desc'
-			.', username AS admin'
-			.', daportal_content.enabled AS enabled'
-			.', daportal_content.user_id AS user_id, cvsroot'
-			.' FROM daportal_content, daportal_user'
-			.', daportal_project'
-			.' WHERE daportal_content.user_id=daportal_user.user_id'
-			.' AND daportal_content.content_id'
-			.'=daportal_project.project_id'
-			.' ORDER BY name ASC;');
+	$sql = 'SELECT content_id AS id, name, title AS desc, username AS admin'
+		.', daportal_content.enabled AS enabled'
+		.', daportal_content.user_id AS user_id, cvsroot'
+		.' FROM daportal_content, daportal_user, daportal_project'
+		.' WHERE daportal_content.user_id=daportal_user.user_id'
+		.' AND daportal_content.content_id=daportal_project.project_id'
+		.' ORDER BY name ASC';
+	$projects = _sql_array($sql);
 	if(!is_array($projects))
 		return _error('Could not list projects');
 	$count = count($projects);
@@ -134,8 +132,8 @@ function project_admin($args)
 		$projects[$i]['action'] = 'modify';
 		$projects[$i]['apply_module'] = 'project';
 		$projects[$i]['apply_id'] = $projects[$i]['id'];
-		$projects[$i]['enabled'] = ($projects[$i]['enabled'] == SQL_TRUE)
-			? 'enabled' : 'disabled';
+		$projects[$i]['enabled'] = ($projects[$i]['enabled']
+				== SQL_TRUE) ? 'enabled' : 'disabled';
 		$projects[$i]['enabled'] = '<img src="icons/16x16/'
 			.$projects[$i]['enabled'].'.png" alt="'
 			.$projects[$i]['enabled'].'"/>';
@@ -166,12 +164,11 @@ function project_admin($args)
 
 function project_browse($args)
 {
-	$project = _sql_array('SELECT name, cvsroot'
-			.' FROM daportal_content, daportal_project'
-			." WHERE project_id='".$args['id']."'"
-			.' AND daportal_content.content_id'
-			.'=daportal_project.project_id'
-			." AND enabled='1';");
+	$sql = 'SELECT name, cvsroot FROM daportal_content, daportal_project'
+		." WHERE project_id='".$args['id']."'"
+		.' AND daportal_content.content_id=daportal_project.project_id'
+		." AND enabled='1'";
+	$project = _sql_array($sql);
 	if(!is_array($project) || count($project) != 1
 			|| !($cvsrep = _config_get('project', 'cvsroot')))
 		return _error(INVALID_PROJECT);
@@ -225,19 +222,18 @@ function project_bug_assign($args)
 		return _error(INVALID_ARGUMENT);
 	if(isset($args['user_id']))
 	{
-		if(_sql_single('SELECT user_id FROM daportal_project_user'
-					.', daportal_user'
-					.' WHERE daportal_project_user.user_id'
-					.'=daportal_user.user_id'
-					." AND daportal_user.enabled='1'"
-					." AND project_id='".$args['id']."'"
-					." AND user_id='".$args['user_id']."';")
-				!= $args['user_id']
-				&& !_user_admin($args['user_id']))
+		$sql = 'SELECT user_id FROM daportal_project_user,daportal_user'
+			.' WHERE daportal_project_user.user_id'
+			.'=daportal_user.user_id'
+			." AND daportal_user.enabled='1'"
+			." AND project_id='".$args['id']."'"
+			." AND user_id='".$args['user_id']."'";
+		if(_sql_single($sql) != $args['user_id'] && !_user_admin(
+				$args['user_id']))
 			return _error('Invalid user for assignment');
 		if(_sql_query("UPDATE daportal_bug SET assigned='"
 					.$args['user_id']."'"
-					." WHERE bug_id='".$args['bug_id']."';")
+					." WHERE bug_id='".$args['bug_id']."'")
 				== FALSE)
 			return _error('Could not assign bug');
 		/* FIXME should insert a bug_reply with corresponding content */
@@ -253,7 +249,7 @@ function project_bug_assign($args)
 			.' AND daportal_project.project_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND bug_id='".$args['bug_id']."';");
+			." AND bug_id='".$args['bug_id']."'");
 	if(!is_array($admin) || count($admin) != 1)
 		return _error('Could not fetch project admin');
 	$members = _sql_array('SELECT daportal_project.project_id AS id, bug_id'
@@ -266,11 +262,11 @@ function project_bug_assign($args)
 			.' AND daportal_project_user.user_id'
 			.'=daportal_user.user_id'
 			." AND daportal_user.enabled='1'"
-			." AND bug_id='".$args['bug_id']."';");
+			." AND bug_id='".$args['bug_id']."'");
 	if(!is_array($members))
 		return _error('Could not list project members');
-	print('<h1 class="title project">Assign bug #'._html_safe($args['bug_id'])
-			.' to user</h1>'."\n");
+	print('<h1 class="title project">Assign bug #'
+			._html_safe($args['bug_id']).' to user</h1>'."\n");
 	$members = array_merge($admin, $members);
 	for($i = 0, $cnt = count($members); $i < $cnt; $i++)
 	{
@@ -291,21 +287,18 @@ function project_bug_display($args)
 
 	if(!is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT);
-	$bug = _sql_array('SELECT daportal_content.content_id AS content_id'
-			.', daportal_project.project_id AS project_id'
-			.', daportal_user.user_id AS user_id'
-			.', daportal_bug.bug_id AS id, timestamp, title'
-			.', content, name AS project, username, state, type'
-			.', priority, assigned AS assigned_id'
-			.' FROM daportal_content, daportal_bug, daportal_user'
-			.', daportal_project'
-			." WHERE daportal_content.enabled='1'"
-			.' AND daportal_content.content_id'
-			.'=daportal_bug.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' AND daportal_project.project_id'
-			.'=daportal_bug.project_id'
-			." AND bug_id='".$args['id']."';");
+	$sql = 'SELECT daportal_content.content_id AS content_id'
+		.', daportal_project.project_id AS project_id'
+		.', daportal_user.user_id AS user_id, daportal_bug.bug_id AS id'
+		.', timestamp, title, content, name AS project, username'
+		.', state, type, priority, assigned AS assigned_id'
+		.' FROM daportal_content, daportal_bug, daportal_user'
+		.', daportal_project WHERE daportal_content.enabled='."'1'"
+		.' AND daportal_content.content_id=daportal_bug.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' AND daportal_project.project_id=daportal_bug.project_id'
+		." AND bug_id='".$args['id']."'";
+	$bug = _sql_array($sql);
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug', 1);
 	$bug = $bug[0];
@@ -318,22 +311,22 @@ function project_bug_display($args)
 	$bug['assigned'] = is_numeric($bug['assigned_id'])
 		? _sql_single('SELECT username FROM daportal_user'
 			." WHERE enabled='1'"
-			." AND user_id='".$bug['assigned_id']."';") : '';
+			." AND user_id='".$bug['assigned_id']."'") : '';
 	include('./modules/project/bug_display.tpl');
-	$replies = _sql_array('SELECT bug_reply_id AS id, title, content'
-			.', daportal_content.content_id, timestamp AS date'
-			.', state, type, priority, daportal_user.user_id'
-			.', username, assigned AS assigned_id'
-			.' FROM daportal_bug_reply, daportal_content'
-			.', daportal_user'
-			.' WHERE daportal_bug_reply.content_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_content.enabled='1'"
-			." AND (daportal_user.enabled='1'"
-			." OR daportal_user.user_id='0')"
-			." AND daportal_bug_reply.bug_id='".$bug['id']."'"
-			.' ORDER BY timestamp ASC;');
+	$sql = 'SELECT bug_reply_id AS id, title, content'
+		.', daportal_content.content_id AS content_id'
+		.', timestamp AS date, state, type, priority'
+		.', daportal_user.user_id AS user_id, username'
+		.', assigned AS assigned_id'
+		.' FROM daportal_bug_reply, daportal_content, daportal_user'
+		.' WHERE daportal_bug_reply.content_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND (daportal_user.enabled='1' OR daportal_user.user_id='0')"
+		." AND daportal_bug_reply.bug_id='".$bug['id']."'"
+		.' ORDER BY timestamp ASC';
+	$replies = _sql_array($sql);
 	if(!is_array($replies))
 		return _error('Unable to display bug feedback');
 	$cnt = count($replies);
@@ -345,8 +338,7 @@ function project_bug_display($args)
 		$reply['assigned'] = is_numeric($reply['assigned_id'])
 			? _sql_single('SELECT username FROM daportal_user'
 				." WHERE enabled='1'"
-				." AND user_id='".$reply['assigned_id']."';")
-			: '';
+				." AND user_id='".$reply['assigned_id']."'"):'';
 		include('./modules/project/bug_reply_display.tpl');
 	}
 }
@@ -368,10 +360,10 @@ function project_bug_insert($args)
 			.', state, type, priority) VALUES'
 			." ('$id'".", '".$args['project_id']."'"
 			.", 'New'".", '".$args['type']."'"
-			.", '".$args['priority']."'".");"))
+			.", '".$args['priority']."'".")"))
 	{
 		_sql_query('DELETE FROM daportal_content'
-				." WHERE content_id='$id';");
+				." WHERE content_id='$id'");
 		return _error('Unable to insert bug', 1);
 	}
 	$id = _sql_id('daportal_bug', 'bug_id'); //FIXME race condition?
@@ -389,7 +381,7 @@ function project_bug_insert($args)
 			.' WHERE daportal_project_user.user_id'
 			.'=daportal_user.user_id'
 			." AND project_id='".$args['project_id']."'"
-			." AND enabled='1';");
+			." AND enabled='1'");
 	if(!is_array($to) || !is_array($members))
 		_error('Could not list members', 0);
 	else
@@ -426,7 +418,7 @@ function project_bug_list($args)
 	{
 		if(($project_id = _sql_single('SELECT project_id'
 				.' FROM daportal_project'
-				." WHERE name='".$args['project']."';"))
+				." WHERE name='".$args['project']."'"))
 				!= FALSE)
 			$project = $args['project'];
 	}
@@ -779,10 +771,10 @@ function project_bug_reply_update($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
-			." WHERE bug_reply_id='".$args['id']."';")))
+			." WHERE bug_reply_id='".$args['id']."'")))
 		return _error(INVALID_ARGUMENT);
 	if(!($bug_id = _sql_single('SELECT bug_id FROM daportal_bug_reply'
-			." WHERE bug_reply_id='".$args['id']."';")))
+			." WHERE bug_reply_id='".$args['id']."'")))
 		return _error(INVALID_ARGUMENT);
 	_sql_query('UPDATE daportal_content SET'
 			." title='".$args['title']."'"
@@ -790,12 +782,12 @@ function project_bug_reply_update($args)
 			." WHERE content_id='$id';");
 	$sql = ' state='.(strlen($args['state']) ? "'".$args['state']."'"
 			: 'NULL');
-	$sql .= ', type='.(strlen($args['type']) ? "'".$args['type']."'"
+	$sql.=', type='.(strlen($args['type']) ? "'".$args['type']."'"
 			: 'NULL');
-	$sql .= ', priority='.(strlen($args['priority'])
+	$sql.=', priority='.(strlen($args['priority'])
 			? "'".$args['priority']."'" : 'NULL');
 	_sql_query('UPDATE daportal_bug_reply SET'.$sql
-			." WHERE bug_reply_id='".$args['id']."';");
+			." WHERE bug_reply_id='".$args['id']."'");
 	project_bug_display(array('id' => $bug_id));
 }
 
@@ -810,16 +802,16 @@ function project_bug_update($args)
 		return _error(PERMISSION_DENIED);
 	$id = $args['bug_id'];
 	if(($content_id = _sql_single('SELECT content_id FROM daportal_bug'
-			." WHERE bug_id='".$id."';")) != FALSE)
+			." WHERE bug_id='".$id."'")) != FALSE)
 		_sql_query('UPDATE daportal_content SET'
 				." title='".$args['title']."'"
 				.", content='".$args['content']."'"
-				." WHERE content_id='".$content_id."';");
+				." WHERE content_id='".$content_id."'");
 	_sql_query('UPDATE daportal_bug SET'
 			." state='".$args['state']."'"
 			.", type='".$args['type']."'"
 			.", priority='".$args['priority']."'"
-			." WHERE bug_id='$id';");
+			." WHERE bug_id='$id'");
 	project_bug_display(array('id' => $id));
 }
 
@@ -999,7 +991,7 @@ function project_download($args)
 		." AND dc2.enabled='1' AND dc3.enabled='1'";
 	/* screenshots */
 	/* FIXME project members should be trusted too */
-	$files = _sql_array($sql." AND dc3.title='screenshot';");
+	$files = _sql_array($sql." AND dc3.title='screenshot'");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>'._html_safe(SCREENSHOTS).'</h2>'."\n");
@@ -1045,7 +1037,7 @@ function project_download($args)
 	}
 	/* releases */
 	/* FIXME project members should be trusted too */
-	$files = _sql_array($sql." AND dc3.title='release';");
+	$files = _sql_array($sql." AND dc3.title='release'");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>'._html_safe(RELEASES).'</h2>'."\n");
@@ -1089,7 +1081,7 @@ function project_enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
-			." WHERE project_id='".$args['id']."';")) == FALSE)
+			." WHERE project_id='".$args['id']."'")) == FALSE)
 		return _error(INVALID_PROJECT);
 	require_once('./system/content.php');
 	_content_enable($id);
@@ -1111,7 +1103,7 @@ function project_insert($args)
 	if(!_sql_query('INSERT INTO daportal_project (project_id, name'
 			.', cvsroot) VALUES'
 			." ('$id', '".$args['name']."', '".$args['cvsroot']."'"
-			.');'))
+			.')'))
 		return _error('Unable to insert project', 1);
 	project_display(array('id' => $id));
 }
@@ -1137,7 +1129,7 @@ function project_list($args)
 	else if(isset($args['user_id'])
 			&& ($username = _sql_single('SELECT username'
 			." FROM daportal_user WHERE user_id='".$args['user_id']
-			."';")) != FALSE)
+			."'")) != FALSE)
 	{
 		$title = PROJECTS._BY_.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
@@ -1152,7 +1144,7 @@ function project_list($args)
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			.' AND daportal_content.content_id'
 			.'=daportal_project.project_id'
-			.$where.' ORDER BY name ASC;');
+			.$where.' ORDER BY name ASC');
 	if(!is_array($projects))
 		return _error('Could not list projects');
 	$count = count($projects);
@@ -1176,17 +1168,14 @@ function project_list($args)
 	$toolbar[] = array('title' => NEW_PROJECT,
 			'icon' => 'modules/project/icon.png',
 			'link' => 'index.php?module=project&action=new');
+	$class = array('admin' => ADMINISTRATOR, 'desc' => DESCRIPTION);
 	if(_user_admin($user_id))
 		return _module('explorer', 'browse_trusted', array(
-					'class' => array(
-						'admin' => ADMINISTRATOR,
-						'desc' => DESCRIPTION),
+					'class' => $class,
 					'toolbar' => $toolbar,
 					'view' => 'details',
 					'entries' => $projects));
-	_module('explorer', 'browse_trusted', array(
-			'class' => array('admin' => ADMINISTRATOR,
-					'desc' => DESCRIPTION),
+	_module('explorer', 'browse_trusted', array('class' => $class,
 			'view' => 'details', 'entries' => $projects));
 }
 
@@ -1202,20 +1191,20 @@ function project_member_add($args)
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
-			." AND project_id='".$args['id']."';");
+			." AND project_id='".$args['id']."'");
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	print('<h1 class="title project">Add member to project '.$project['name']
-			."</h1>\n");
+	print('<h1 class="title project">Add member to project '
+			.$project['name']."</h1>\n");
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
-			." WHERE project_id='".$project['id']."';");
+			." WHERE project_id='".$project['id']."'");
 	$where = " WHERE user_id <> '".$project['user_id']."'"
 		." AND user_id <> '0'";
 	foreach($members as $m)
 		$where.=" AND user_id <> '".$m['id']."'";
 	$users = _sql_array('SELECT user_id AS id, username AS name'
-			.' FROM daportal_user'.$where.';');
+			.' FROM daportal_user'.$where);
 	for($i = 0, $cnt = count($users); $i < $cnt; $i++)
 	{
 		$users[$i]['icon'] = 'modules/user/icon.png';
@@ -1231,9 +1220,8 @@ function project_member_add($args)
 			'icon' => 'modules/user/icon.png',
 			'action' => 'member_insert', 'confirm' => 'add');
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
-				'entries' => $users,
-				'module' => 'project', 'action' => 'display',
-				'id' => $project['id']));
+				'entries' => $users, 'module' => 'project',
+				'action' => 'display', 'id' => $project['id']));
 }
 
 
@@ -1246,7 +1234,7 @@ function project_member_delete($args)
 		return _error(PERMISSION_DENIED, 1);
 	_sql_query('DELETE FROM daportal_project_user WHERE '
 			." project_id='".$args['project_id']."'"
-			." AND user_id='".$args['id']."';");
+			." AND user_id='".$args['id']."'");
 }
 
 
@@ -1259,11 +1247,11 @@ function project_member_insert($args)
 		return _error(PERMISSION_DENIED, 1);
 	if(($id = _sql_single('SELECT user_id FROM daportal_project_user'
 			." WHERE project_id='".$args['project_id']."'"
-			." AND user_id='".$args['id']."';")) == $args['id'])
+			." AND user_id='".$args['id']."'")) == $args['id'])
 		return;
 	_sql_query('INSERT INTO daportal_project_user (project_id, user_id)'
 			." VALUES ('".$args['project_id']."'"
-			.", '".$args['id']."');");
+			.", '".$args['id']."')");
 }
 
 
@@ -1279,7 +1267,7 @@ function project_modify($args)
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
-			." AND project_id='".$args['id']."';");
+			." AND project_id='".$args['id']."'");
 	if(!is_array($project) || count($project) != 1)
 		return error('Unable to update project', 1);
 	$project = $project[0];
@@ -1330,7 +1318,7 @@ function project_timeline($args)
 	}
 	$project = _sql_array('SELECT project_id, name, cvsroot'
 			.' FROM daportal_project'
-			." WHERE project_id='".$args['id']."';");
+			." WHERE project_id='".$args['id']."'");
 	if(!is_array($project) || count($project) != 1)
 		return _error('Invalid project ID', 1);
 	$project = $project[0];
@@ -1431,7 +1419,7 @@ function project_update($args)
 		return _error('Could not update project');
 	_sql_query('UPDATE daportal_project SET'
 			." cvsroot='".$args['cvsroot']."'"
-			." WHERE project_id='".$args['id']."';");
+			." WHERE project_id='".$args['id']."'");
 	return project_display(array('id' => $args['id']));
 }
 
