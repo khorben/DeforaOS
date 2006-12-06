@@ -154,8 +154,10 @@ function _host_list()
 function _host_graph($id, $type, $time, $param = FALSE)
 {
 	global $probe_types;
+	static $probe = FALSE;
 
-	if(!($probe = _config_get('probe', 'RRD_repository')))
+	if($probe == FALSE && ($probe = _config_get('probe', 'RRD_repository'))
+			== FALSE)
 		return _error(CONFIGURATION_ERROR);
 	if(($hostname = _sql_single('SELECT title'
 .' FROM daportal_content, daportal_probe_host'
