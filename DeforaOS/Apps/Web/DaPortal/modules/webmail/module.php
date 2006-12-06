@@ -29,7 +29,7 @@ _lang($text);
 //private
 function _webmail_connect($folder = 'INBOX')
 {
-	require_once('system/config.php');
+	require_once('./system/config.php');
 	if(!($server = _config_get('webmail', 'server')))
 		$server = 'localhost';
 	if(!isset($_SESSION['webmail']['username'])
@@ -53,7 +53,7 @@ function webmail_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title webmail">'._html_safe(WEBMAIL_ADMINISTRATION)
@@ -64,7 +64,7 @@ function webmail_admin($args)
 				.'Configuration</h2>'."\n");
 		$module = 'webmail';
 		$action = 'config_update';
-		include('system/config.tpl');
+		include('./system/config.tpl');
 	}
 }
 
@@ -73,10 +73,10 @@ function webmail_config_update($args)
 {
 	global $user_id, $module_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	require_once('system/config.php');
+	require_once('./system/config.php');
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^webmail_([a-zA-Z_]+)$', $k, $regs))
@@ -96,7 +96,7 @@ function webmail_default($args)
 	if(!($mbox = _webmail_connect($folder)))
 	{
 		$message = '';
-		include('login.tpl');
+		include('./modules/webmail/login.tpl');
 		return;
 	}
 	$img = 'inbox';
@@ -106,7 +106,7 @@ function webmail_default($args)
 		$img = 'outbox';
 	else if($folder == 'Trash')
 		$img = 'trash';
-	include('default.tpl');
+	include('./modules/webmail/default.tpl');
 	$messages = array();
 	$mpp = 20; //FIXME
 	$offset = isset($args['page']) && is_numeric($args['page'])
@@ -150,7 +150,7 @@ function webmail_default($args)
 			'class' => array('subject' => SUBJECT, 'date' => DATE),
 			'view' => 'details'));
 	imap_close($mbox);
-	return include('bottom.tpl');
+	return include('./modules/webmail/bottom.tpl');
 }
 
 
@@ -162,7 +162,7 @@ function webmail_folders($args)
 	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
 	if(!($mbox = _webmail_connect()))
-		return include('login.tpl');
+		return include('./modules/webmail/login.tpl');
 	if(!($server = _config_get('webmail', 'server')))
 		$server = 'localhost';
 	$lsub = imap_lsub($mbox, '{'.$server
@@ -264,7 +264,7 @@ function webmail_login($args)
 		$message = 'Wrong password';
 		$username = stripslashes($_POST['username']);
 	}
-	include('login.tpl');
+	include('./modules/webmail/login.tpl');
 }
 
 
@@ -275,7 +275,7 @@ function webmail_logout($args)
 	unset($_SESSION['webmail']);
 	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
-	return include('logout.tpl');
+	return include('./modules/webmail/logout.tpl');
 }
 
 
@@ -328,12 +328,12 @@ function webmail_system($args)
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'login')
 		_system_login();
 	$title.=' - Webmail';
-	if($args['action'] == 'config_update')
+	if(isset($args['action']) && $args['action'] == 'config_update')
 		$html = 0;
 	if(isset($args['ajax']) && $args['ajax'] == 1)
 	{
 		$html = 0;
-		require_once('system/html.php');
+		require_once('./system/html.php');
 		header('Content-type: text/xml');
 	}
 }
