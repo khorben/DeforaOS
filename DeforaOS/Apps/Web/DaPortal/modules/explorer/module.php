@@ -88,8 +88,7 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 		return;
 	}
 	print('<a href="index.php?');
-	$link = 'module='.$module.'&action='.$action.$args
-		.'&sort='.$class;
+	$link = 'module='.$module.'&action='.$action.$args.'&sort='.$class;
 	print(_html_safe($link).'">'._html_safe($name).'</a>');
 }
 
@@ -131,9 +130,9 @@ function explorer_apply($args)
 }
 
 
-function explorer_browse(&$args)
+function explorer_browse($args)
 {
-	for($i = 0, $ic = count($args['entries']); $i < $ic; $i++)
+	for($i = 0, $cnt = count($args['entries']); $i < $cnt; $i++)
 	{
 		$args['entries'][$i]['name'] = _html_safe_link(
 				$args['entries'][$i]['name']);
@@ -148,7 +147,7 @@ function explorer_browse(&$args)
 }
 
 
-function explorer_browse_trusted(&$args)
+function explorer_browse_trusted($args)
 {
 	return _explorer($args);
 }
