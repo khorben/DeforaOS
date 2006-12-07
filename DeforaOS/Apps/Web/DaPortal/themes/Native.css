@@ -19,6 +19,12 @@ a {
 	text-decoration:	none;
 }
 
+/* widgets with padding */
+button, input[type="button"], input[type="password"], input[type="submit"],
+input[type="text"] {
+	padding:		2px;
+}
+
 /* widgets with a border out */
 h1, h2, h3, button, input[type="button"], input[type="submit"] {
 	border-bottom:		solid 1px #000000;
@@ -38,7 +44,6 @@ input[type="password"], input[type="text"], pre, select, textarea {
 	border-top:		solid 1px #000000;
 	margin:			0;
 	margin-left:		4px;
-	padding:		0;
 }
 
 /* title corrections */
@@ -85,6 +90,10 @@ pre {
 
 
 /* classes */
+.container {
+	padding-bottom:		22px;
+}
+
 .debug .system {
 	background-color:	#ffffff;
 	border-bottom:		solid 1px #ffffff;
