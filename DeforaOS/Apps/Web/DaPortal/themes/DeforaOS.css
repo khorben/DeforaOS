@@ -339,12 +339,12 @@ table.bordered th {
 
 .logo {
 	background-image:		url("DeforaOS-logo.png");
+	background-position:		top right;
+	background-repeat:		no-repeat;
 	height:				51px;
 	margin-bottom:			16px;
-	margin-left:			auto;
 	margin-right:			30px;
 	margin-top:			16px;
-	width:				517px;
 }
 
 ul.menu {
