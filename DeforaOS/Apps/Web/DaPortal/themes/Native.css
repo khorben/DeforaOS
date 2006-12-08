@@ -200,6 +200,10 @@ pre {
 	width:			100px;
 }
 
+.explorer .listing_thumbnails .entry .name {
+	overflow:		hidden;
+}
+
 .explorer .selected {
 	background-color:	#4b6983;
 	color:			#ffffff;
