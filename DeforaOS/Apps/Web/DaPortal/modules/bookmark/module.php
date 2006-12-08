@@ -34,7 +34,7 @@ function bookmark_admin($args)
 {
 	global $user_id;
 
-	require_once('system/user.php');
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
@@ -101,7 +101,7 @@ function bookmark_default($args)
 		return bookmark_display($args);
 	if(isset($args['user_id']))
 		return bookmark_list($args);
-	include('default.tpl');
+	include('./modules/bookmark/default.tpl');
 }
 
 
@@ -111,11 +111,11 @@ function bookmark_delete($args)
 
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
 			." WHERE user_id='$user_id'"
-			." AND content_id='".$args['id']."';")) == FALSE)
+			." AND content_id='".$args['id']."'")) == FALSE)
 		return _error(INVALID_BOOKMARK);
 	_sql_query('DELETE FROM daportal_bookmark'
-			." WHERE bookmark_id='".$args['id']."';");
-	require_once('system/content.php');
+			." WHERE bookmark_id='".$args['id']."'");
+	require_once('./system/content.php');
 	_content_delete($id);
 }
 
@@ -126,9 +126,9 @@ function bookmark_disable($args)
 
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(_sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."';") != $user_id)
+			." WHERE content_id='".$args['id']."'") != $user_id)
 		return _error('Could not update bookmark');
 	_content_disable($args['id']);
 }
@@ -145,12 +145,12 @@ function bookmark_display($args)
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
 			." AND (user_id='$user_id' OR enabled='1')"
-			." AND bookmark_id='$id';");
+			." AND bookmark_id='$id'");
 	if(!is_array($bookmark) || count($bookmark) != 1)
 		return _error('Unable to display bookmark');
 	$bookmark = $bookmark[0];
 	$title = $bookmark['title'];
-	include('display.tpl');
+	include('./modules/bookmark/display.tpl');
 }
 
 
@@ -160,9 +160,9 @@ function bookmark_enable($args)
 
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(_sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."';") != $user_id)
+			." WHERE content_id='".$args['id']."'") != $user_id)
 		return _error('Could not update bookmark');
 	_content_enable($args['id']);
 }
@@ -174,13 +174,13 @@ function bookmark_insert($args)
 
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	$enabled = $args['enabled'] == 'on' ? 1 : 0;
 	if(($id = _content_insert($args['title'], $args['content'], $enabled))
 			== FALSE)
 		return _error('Unable to insert bookmark content');
 	if(!_sql_query('INSERT INTO daportal_bookmark (bookmark_id, url)'
-			.' VALUES ('."'$id', '".$args['url']."');"))
+			.' VALUES ('."'$id', '".$args['url']."')"))
 		return _error('Unable to insert bookmark', 1);
 	if(_module_id('category'))
 		_module('category', 'set', array('id' => $id));
@@ -272,12 +272,12 @@ function bookmark_modify($args)
 			.' FROM daportal_bookmark, daportal_content'
 			.' WHERE daportal_bookmark.bookmark_id'
 			.'=daportal_content.content_id'
-			." AND user_id='$user_id' AND bookmark_id='$id';");
+			." AND user_id='$user_id' AND bookmark_id='$id'");
 	if(!is_array($bookmark) || count($bookmark) != 1)
 		return _error('Unable to modify bookmark');
 	$bookmark = $bookmark[0];
 	$title = MODIFICATION_OF.' '.$bookmark['title'];
-	include('update.tpl');
+	include('./modules/bookmark/update.tpl');
 }
 
 
@@ -289,9 +289,13 @@ function bookmark_new($args)
 		return _error(PERMISSION_DENIED);
 	$title = NEW_BOOKMARK;
 	$bookmark = array();
-	$bookmark['url'] = stripslashes($args['url']);
-	$bookmark['title'] = stripslashes($args['title']);
-	include('update.tpl');
+	$bookmark['url'] = isset($args['url'])
+		? stripslashes($args['url']) : '';
+	$bookmark['title'] = isset($args['title'])
+		? stripslashes($args['title']) : '';
+	$bookmark['content'] = '';
+	$bookmark['enabled'] = SQL_FALSE;
+	include('./modules/bookmark/update.tpl');
 }
 
 
@@ -301,11 +305,11 @@ function bookmark_update($args)
 
 	if(!$user_id)
 		return _error(PERMISSION_DENIED);
-	require_once('system/content.php');
+	require_once('./system/content.php');
 	if(!_content_user_update($args['id'], $args['title'], $args['content'])
 			|| !_sql_query('UPDATE daportal_bookmark'
 				." SET url='".$args['url']."'"
-				." WHERE bookmark_id='".$args['id']."';"))
+				." WHERE bookmark_id='".$args['id']."'"))
 		return _error('Could not update bookmark');
 	if($args['enabled'] == 'on')
 		_content_enable($args['id']);
