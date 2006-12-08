@@ -190,6 +190,16 @@ pre {
 	padding-left:		2px;
 }
 
+.explorer .header div a {
+	display:		block;
+}
+
+.explorer .header div.sort a {
+	background-image:	url('../modules/explorer/sort.png');
+	background-position:	center right;
+	background-repeat:	no-repeat;
+}
+
 .explorer .listing_details, .explorer .listing_list,
 	.explorer .listing_thumbnails {
 	border-bottom:		1px solid #ffffff;
