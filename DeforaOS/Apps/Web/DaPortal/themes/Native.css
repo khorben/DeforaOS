@@ -191,8 +191,9 @@ pre {
 }
 
 .explorer .listing_list .entry {
-	height:			1em;
-	min-height:		16px;
+	height:			20px;
+	overflow:		hidden;
+	white-space:		nowrap;
 	width:			200px;
 }
 
