@@ -82,12 +82,8 @@ function _explorer_link(&$entry)
 function _explorer_sort($module, $action, $args, $class, $sort, $name)
 {
 	if($class == $sort)
-	{
-		print(_html_safe($name));
-		print('<img src="modules/explorer/sort.png" alt="sort"/>');
-		return;
-	}
-	print('<a href="index.php?');
+		print(' sort');
+	print('"><a href="index.php?');
 	$link = 'module='.$module.'&action='.$action.$args.'&sort='.$class;
 	print(_html_safe($link).'">'._html_safe($name).'</a>');
 }
