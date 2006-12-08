@@ -19,8 +19,8 @@
 
 
 
-require('config.php');
-require('common.php');
+require('./config.php');
+require('./common.php');
 
 
 function explorer_delete($args)
@@ -44,12 +44,12 @@ function explorer_download($filename)
 
 	$filename = $root.'/'.$filename;
 	if(is_dir($filename) || ($fp = @fopen($filename, 'r')) == FALSE)
-		return include('404.tpl');
+		return include('./404.tpl');
 	if(!$hidden)
 	{
 		$f = basename($filename);
 		if($f[0] == '.')
-			return include('403.tpl');
+			return include('./403.tpl');
 	}
 	$mime = mime_from_ext($filename);
 	$client_mime = explode(',', $_SERVER['HTTP_ACCEPT']);
@@ -245,7 +245,7 @@ function explorer_folder($folder, $dir, $sort, $reverse)
 					: $size.' K';
 			$date = date('Y-m-d h:m:s', $stat['mtime']);
 		}
-		include('entry.tpl');
+		include('./entry.tpl');
 	}
 }
 
@@ -288,4 +288,4 @@ if(($dir = @opendir($root.'/'.$file)) != FALSE
 	header('Last-Modified: '.strftime('%a, %e %b %Y %T GMT', $st['mtime']));
 $sort = isset($_GET['sort']) ? $_GET['sort'] : '';
 $reverse = isset($_GET['reverse']);
-include('explorer.tpl');
+include('./explorer.tpl');
