@@ -27,10 +27,10 @@ input[type="text"] {
 
 /* widgets with a border out */
 h1, h2, h3, button, input[type="button"], input[type="submit"] {
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #000000;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #000000;
+	border-top:		1px solid #ffffff;
 	margin:			0;
 	padding:		2px;
 	padding-left:		4px;
@@ -38,10 +38,10 @@ h1, h2, h3, button, input[type="button"], input[type="submit"] {
 
 /* widgets with a border in */
 input[type="password"], input[type="text"], pre, select, textarea {
-	border-bottom:		solid 1px #ffffff;
-	border-left:		solid 1px #000000;
-	border-right:		solid 1px #ffffff;
-	border-top:		solid 1px #000000;
+	border-bottom:		1px solid #ffffff;
+	border-left:		1px solid #000000;
+	border-right:		1px solid #ffffff;
+	border-top:		1px solid #000000;
 	margin:			0;
 	margin-left:		4px;
 }
@@ -96,10 +96,10 @@ pre {
 
 .debug .system {
 	background-color:	#ffffff;
-	border-bottom:		solid 1px #ffffff;
-	border-left:		solid 1px #000000;
-	border-right:		solid 1px #ffffff;
-	border-top:		solid 1px #000000;
+	border-bottom:		1px solid #ffffff;
+	border-left:		1px solid #000000;
+	border-right:		1px solid #ffffff;
+	border-top:		1px solid #000000;
 	height:			10em;
 	overflow:		auto;
 	margin:			4px;
@@ -114,13 +114,13 @@ pre {
 }
 
 .main {
-	border-top:		solid 1px #000000;
+	border-top:		1px solid #000000;
 	clear:			both;
 }
 
 .main .toolbar {
-	border-bottom:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #000000;
+	border-top:		1px solid #ffffff;
 	padding-bottom:		3px;
 	padding-top:		3px;
 }
@@ -131,10 +131,10 @@ pre {
 
 .main .toolbar a:hover {
 	background-color:	#eeebe7;
-	border-bottom:		solid 1px #afa699;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #afa699;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #afa699;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #afa699;
+	border-top:		1px solid #ffffff;
 	padding:		2px;
 }
 
@@ -144,8 +144,8 @@ pre {
 
 .tree {
 	background-color:	#ffffff;
-	border-bottom:		solid 1px #000000;
-	border-right:		solid 1px #000000;
+	border-bottom:		1px solid #000000;
+	border-right:		1px solid #000000;
 	overflow:		auto;
 	padding-right:		4px;
 }
@@ -183,11 +183,17 @@ pre {
 
 .explorer .header div {
 	background-color:	#dcdad5;
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #000000;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #000000;
+	border-top:		1px solid #ffffff;
 	padding-left:		2px;
+}
+
+.explorer .listing_details, .explorer .listing_list,
+	.explorer .listing_thumbnails {
+	border-bottom:		1px solid #ffffff;
+	width:			100%;
 }
 
 .explorer .listing_list .entry {
@@ -216,25 +222,25 @@ pre {
 
 .explorer .toolbar {
 	background-color:	#dcdad5;
-	border-bottom:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #000000;
+	border-top:		1px solid #ffffff;
 }
 
 .explorer .toolbar img {
-	border:			solid 1px #dcdad5;
+	border:			1px solid #dcdad5;
 }
 
 .explorer .toolbar img:hover {
 	background-color:	#eeebe7;
-	border-bottom:		solid 1px #afa699;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #afa699;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #afa699;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #afa699;
+	border-top:		1px solid #ffffff;
 }
 
 .explorer .toolbar .separator {
-	border-left:		solid 1px #9e9a91;
-	border-right:		solid 1px #ffffff;
+	border-left:		1px solid #9e9a91;
+	border-right:		1px solid #ffffff;
 }
 
 
@@ -246,7 +252,7 @@ ul.menu, ul.menu li, ul.menu ul, ul.menu ul li {
 
 ul.menu, ul.menu li ul {
 	background-color:	#dcdad5;
-	border-top:		solid 1px #ffffff;
+	border-top:		1px solid #ffffff;
 	list-style-type:	none;
 }
 
@@ -274,7 +280,7 @@ ul.menu select {
 }
 
 ul.menu li ul {
-	border-left:		solid 1px #ffffff;
+	border-left:		1px solid #ffffff;
 	display:		none;
 	margin-left:		-2px;
 	margin-top:		4px;
@@ -284,7 +290,7 @@ ul.menu li ul {
 
 ul.menu li ul li {
 	float:			none;
-	border-left:		solid 1px #ffffff;
+	border-left:		1px solid #ffffff;
 	margin:			0;
 }
 
@@ -306,8 +312,8 @@ ul.menu li:hover a {
 }
 
 ul.menu li:hover ul {
-	border:			solid 1px #000000;
-	border-top:		solid 1px #ffffff;
+	border:			1px solid #000000;
+	border-top:		1px solid #ffffff;
 	display:		block;
 	position:		absolute;
 }
@@ -317,7 +323,7 @@ ul.menu li:hover ul li a {
 }
 
 ul.menu li:hover ul li ul {
-	border-top:		solid 1px #000000;
+	border-top:		1px solid #000000;
 	display:		none;
 	margin-left:		99%;
 	margin-top:		-2em;
@@ -338,10 +344,10 @@ ul.menu li:hover ul li:hover ul li a {
 
 .style1 {
 	background-color:	#dcdad5;
-	border-bottom:		solid 1px #ffffff;
-	border-left:		solid 1px #000000;
-	border-right:		solid 1px #ffffff;
-	border-top:		solid 1px #000000;
+	border-bottom:		1px solid #ffffff;
+	border-left:		1px solid #000000;
+	border-right:		1px solid #ffffff;
+	border-top:		1px solid #000000;
 	bottom:			0;
 	min-height:		18px;
 	padding:		2px;
@@ -352,10 +358,10 @@ ul.menu li:hover ul li:hover ul li a {
 
 /* top */
 .top {
-	border-bottom:		solid 1px #000000;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #000000;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #000000;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #000000;
+	border-top:		1px solid #ffffff;
 	padding-bottom:		3px;
 	padding-top:		3px;
 }
@@ -366,10 +372,10 @@ ul.menu li:hover ul li:hover ul li a {
 
 .top a:hover {
 	background-color:	#eeebe7;
-	border-bottom:		solid 1px #afa699;
-	border-left:		solid 1px #ffffff;
-	border-right:		solid 1px #afa699;
-	border-top:		solid 1px #ffffff;
+	border-bottom:		1px solid #afa699;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #afa699;
+	border-top:		1px solid #ffffff;
 	padding:		2px;
 }
 
