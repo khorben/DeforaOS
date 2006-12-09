@@ -40,10 +40,10 @@ function _explorer(&$args)
 		include('./modules/explorer/toolbar.tpl');
 	}
 	$view = isset($args['view']) ? $args['view'] : 'thumbnails';
-	include('./modules/explorer/header.tpl');
-	$i = 0;
 	$class = isset($args['class']) && is_array($args['class'])
 		? array_keys($args['class']) : array();
+	include('./modules/explorer/header.tpl');
+	$i = 0;
 	foreach($args['entries'] as $entry)
 	{
 		$i++;
@@ -84,10 +84,10 @@ function _explorer_link(&$entry)
 function _explorer_sort($module, $action, $args, $class, $sort, $name)
 {
 	if($class == $sort)
-		print(' sort');
-	print('"><a href="index.php?');
+		return print(' sort">'._html_safe($name));
 	$link = 'module='.$module.'&action='.$action.$args.'&sort='.$class;
-	print(_html_safe($link).'">'._html_safe($name).'</a>');
+	print('"><a href="index.php?'._html_safe_link($link).'">'
+			._html_safe($name).'</a>');
 }
 
 
