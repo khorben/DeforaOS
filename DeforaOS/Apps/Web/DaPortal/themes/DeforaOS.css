@@ -279,6 +279,13 @@ table.bordered th {
 	background-color:		#404040;
 }
 
+.explorer .header div.sort {
+	background-image:		url('../modules/explorer/sort.png');
+	background-repeat:		no-repeat;
+	background-position:		center right;
+	padding-right:			16px;
+}
+
 .explorer .selected {
 	background-color:		#400000;
 }
