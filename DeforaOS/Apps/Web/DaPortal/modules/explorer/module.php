@@ -42,6 +42,8 @@ function _explorer(&$args)
 	$view = isset($args['view']) ? $args['view'] : 'thumbnails';
 	include('./modules/explorer/header.tpl');
 	$i = 0;
+	$class = isset($args['class']) && is_array($args['class'])
+		? array_keys($args['class']) : array();
 	foreach($args['entries'] as $entry)
 	{
 		$i++;

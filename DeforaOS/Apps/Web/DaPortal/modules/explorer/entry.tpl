@@ -9,7 +9,7 @@
 			<div class="icon"><?php echo $link; ?><img src="<?php echo $entry['icon']; ?>" alt=""/><?php echo $link_end; ?></div>
 			<div class="thumbnail"><img src="<?php echo _html_safe_link($entry['thumbnail']); ?>" alt=""/></div>
 			<div class="name"><?php echo $link.$entry['name'].$link_end; ?></div>
-<?php if(isset($args['class'])) { $keys = array_keys($args['class']); foreach($keys as $k) { ?>
-			<div class="<?php echo _html_safe($k); ?>"><?php echo $entry[$k]; ?></div>
-<?php } } ?>
+<?php foreach($class as $c) { ?>
+			<div class="<?php echo _html_safe($c); ?>"><?php echo $entry[$c]; ?></div>
+<?php } ?>
 		</div>
