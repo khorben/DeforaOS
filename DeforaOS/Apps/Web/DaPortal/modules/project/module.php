@@ -117,8 +117,7 @@ function project_admin($args)
 	$projects = _sql_array($sql);
 	if(!is_array($projects))
 		return _error('Could not list projects');
-	$count = count($projects);
-	for($i = 0; $i < $count; $i++)
+	for($i = 0, $cnt = count($projects); $i < $cnt; $i++)
 	{
 		$projects[$i]['name'] = _html_safe_link($projects[$i]['name']);
 		$projects[$i]['icon'] = 'modules/project/icon.png';
@@ -460,9 +459,8 @@ function project_bug_list($args)
 		$where.=" AND daportal_bug.priority='".$args['priority']."'";
 	include('./modules/project/bug_list_filter.tpl');
 	$order = ' ORDER BY ';
-	if(!isset($args['sort']))
-		$args['sort'] = 'id';
-	switch($args['sort'])
+	$sort = isset($args['sort']) ? $args['sort'] : 'nb';
+	switch($sort)
 	{
 		case 'name':	$order.='name DESC';	break;
 		case 'project':	$order.='project DESC';	break;
@@ -470,25 +468,23 @@ function project_bug_list($args)
 		case 'state':	$order.='state DESC';	break;
 		case 'type':	$order.='type DESC';	break;
 		case 'priority':$order.='priority DESC';break;
-		default:
-		case 'id':	$order.='bug_id DESC';	break;
+		case 'nb':
+		default:	$sort = 'nb';
+				$order.='bug_id DESC';	break;
 	}
-	$bugs = _sql_array('SELECT daportal_content.content_id AS content_id'
-			.', bug_id AS id, timestamp AS date, title'
-			.', content, daportal_project.name AS project, username'
-			.', daportal_project.project_id'
-			.', state, type, priority'
-			.' FROM daportal_content, daportal_bug, daportal_user'
-			.', daportal_project'
-			." WHERE daportal_content.enabled='1'"
-			.' AND daportal_content.content_id'
-			.'=daportal_bug.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' AND daportal_project.project_id'
-			.'=daportal_bug.project_id'.$where.$order);
+	$sql = 'SELECT daportal_content.content_id AS content_id'
+		.', bug_id AS id, timestamp AS date, title, content'
+		.', daportal_project.name AS project, username'
+		.', daportal_project.project_id AS project_id, state, type'
+		.', priority FROM daportal_content, daportal_bug, daportal_user'
+		.', daportal_project WHERE daportal_content.enabled='."'1'"
+		.' AND daportal_content.content_id=daportal_bug.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' AND daportal_project.project_id=daportal_bug.project_id';
+	$bugs = _sql_array($sql.$where.$order);
 	if(!is_array($bugs))
 		return _error('Unable to list bugs', 1);
-	for($i = 0, $count = count($bugs); $i < $count; $i++)
+	for($i = 0, $cnt = count($bugs); $i < $cnt; $i++)
 	{
 		switch($bugs[$i]['state'])
 		{
@@ -529,7 +525,7 @@ function project_bug_list($args)
 					'date' => DATE, 'state' => STATE,
 					'type' => TYPE, 'priority' => PRIORITY),
 			'module' => 'project', 'action' => 'bug_list',
-			'sort' => isset($args['sort']) ? $args['sort'] : 'nb',
+			'sort' => $sort,
 			//FIXME should set args according to filters
 			'view' => 'details', 'toolbar' => $toolbar));
 }
@@ -1148,8 +1144,7 @@ function project_list($args)
 			.$where.' ORDER BY name ASC');
 	if(!is_array($projects))
 		return _error('Could not list projects');
-	$count = count($projects);
-	for($i = 0; $i < $count; $i++)
+	for($i = 0, $cnt = count($projects); $i < $cnt; $i++)
 	{
 		$projects[$i]['module'] = 'project';
 		$projects[$i]['action'] = 'display';
@@ -1164,20 +1159,15 @@ function project_list($args)
 			.'">'._html_safe($projects[$i]['admin']).'</a>';
 		$projects[$i]['desc'] = $projects[$i]['title'];
 	}
-	$toolbar = array();
+	$args = array('entries' => $projects, 'view' => 'details',
+			'class' => array('admin' => ADMINISTRATOR,
+			'desc' => DESCRIPTION));
 	require_once('./system/user.php');
-	$toolbar[] = array('title' => NEW_PROJECT,
-			'icon' => 'modules/project/icon.png',
-			'link' => 'index.php?module=project&action=new');
-	$class = array('admin' => ADMINISTRATOR, 'desc' => DESCRIPTION);
 	if(_user_admin($user_id))
-		return _module('explorer', 'browse_trusted', array(
-					'class' => $class,
-					'toolbar' => $toolbar,
-					'view' => 'details',
-					'entries' => $projects));
-	_module('explorer', 'browse_trusted', array('class' => $class,
-			'view' => 'details', 'entries' => $projects));
+		$args['toolbar'] = array(array('title' => NEW_PROJECT,
+				'link' => 'index.php?module=project&action=new',
+				'icon' => 'modules/project/icon.png'));
+	return _module('explorer', 'browse_trusted', $args);
 }
 
 

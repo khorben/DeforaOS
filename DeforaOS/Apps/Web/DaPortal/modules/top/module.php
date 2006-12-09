@@ -2,6 +2,17 @@
 
 
 
+//check url
+if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+	exit(header('Location: ../../index.php'));
+
+
+//lang
+$text = array();
+$text['NEW_LINK'] = 'New link';
+_lang($text);
+
+
 function top_admin($args)
 {
 	global $user_id;
@@ -15,7 +26,7 @@ function top_admin($args)
 	if(!is_array($links))
 		return _error('Unable to get links');
 	$last_id = 0;
-	for($i = 0, $cnt = count($link); $i < $cnt; $i++)
+	for($i = 0, $cnt = count($links); $i < $cnt; $i++)
 	{
 		/* $links[$i]['icon'] = ereg('^http://[^/]+/$',
 				$links[$i]['url'])
@@ -46,21 +57,17 @@ function top_admin($args)
 		$last_id = $links[$i]['top_id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'New link',
+	$toolbar[] = array('title' => NEW_LINK,
 			'icon' => 'modules/top/icon.png',
 			'link' => 'index.php?module=top&action=new');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
-			'action' => 'delete',
-			'confirm' => 'delete');
-	_module('explorer', 'browse_trusted', array(
-			'module' => 'top',
-			'action' => 'admin',
-			'view' => 'details',
+			'action' => 'delete', 'confirm' => 'delete');
+	_module('explorer', 'browse_trusted', array('module' => 'top',
+			'action' => 'admin', 'view' => 'details',
 			'class' => array('url' => 'Address', 'move' => 'Move'),
-			'toolbar' => $toolbar,
-			'entries' => $links));
+			'toolbar' => $toolbar, 'entries' => $links));
 }
 
 
