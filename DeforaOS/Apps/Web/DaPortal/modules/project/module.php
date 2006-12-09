@@ -222,7 +222,8 @@ function project_bug_assign($args)
 		return _error(INVALID_ARGUMENT);
 	if(isset($args['user_id']))
 	{
-		$sql = 'SELECT user_id FROM daportal_project_user,daportal_user'
+		$sql = 'SELECT daportal_user.user_id AS user_id'
+			.' FROM daportal_project_user,daportal_user'
 			.' WHERE daportal_project_user.user_id'
 			.'=daportal_user.user_id'
 			." AND daportal_user.enabled='1'"
