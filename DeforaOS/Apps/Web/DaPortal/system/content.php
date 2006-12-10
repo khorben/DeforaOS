@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
-
-
 function _content_delete($id)
 {
 	return _sql_query('DELETE FROM daportal_content'

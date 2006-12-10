@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
-
-
 function _html_paging($link, $page, $count)
 {
 	print('<div class="paging">'."\n");

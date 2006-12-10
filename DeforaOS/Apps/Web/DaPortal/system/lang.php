@@ -3,8 +3,9 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
+if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
+		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
 function _lang($text)

@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
-
-
 function _mime_from_ext($filename)
 {
 	static $globfile = 0;

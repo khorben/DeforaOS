@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
-
-
 function _mail($from, $to, $subject, $content, $headers = array())
 {
 	//FIXME from should be user-defineable

@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
-
-
 $debug_messages = '';
 $debug_time_before = gettimeofday();
 

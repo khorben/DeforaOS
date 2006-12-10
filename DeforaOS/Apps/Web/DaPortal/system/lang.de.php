@@ -1,8 +1,5 @@
 <?php //system/lang.de.php
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
 
 $text['_BY_'] = ' von ';
 $text['_FOR_'] = ' für ';

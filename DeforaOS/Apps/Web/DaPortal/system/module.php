@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../index.php'));
-
-
 function _module($module = '', $action = '', $args = FALSE)
 {
 	global $module_id, $module_name, $html;
