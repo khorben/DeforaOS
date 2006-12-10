@@ -1328,18 +1328,16 @@ function project_timeline($args)
 	$entries = array();
 	$i = 0;
 	$len = strlen('DeforaOS/'.$project['cvsroot']);
-	while(!feof($fp))
+	while(($line = fgets($fp)) != FALSE)
 	{
-		$line = fgets($fp);
 		$fields = explode('|', $line);
-		if(!strlen($fields[4]))
+		if(strcmp('', $fields[4]) == 0)
 			continue;
 		if(strncmp($fields[3], 'DeforaOS/'.$project['cvsroot'], $len)
 				!= 0)
 			continue;
-		_info($line);
 		unset($event);
-		$icon = '';
+		unset($icon);
 		switch($fields[0][0])
 		{
 			case 'A': $event = 'Add'; $icon = 'added'; break;
@@ -1349,8 +1347,7 @@ function project_timeline($args)
 		}
 		if(!isset($event))
 			continue;
-		if(strlen($icon))
-			$icon = 'modules/project/cvs-'.$icon.'.png';
+		$icon = isset($icon) ? 'modules/project/cvs-'.$icon.'.png' : '';
 		$name = substr($fields[3], $len+1).'/'.$fields[5];
 		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
 		$date = date('d/m/Y H:i', $date);
