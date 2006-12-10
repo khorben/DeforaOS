@@ -10,9 +10,9 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 function _mime_from_ext($filename)
 {
 	static $globfile = 0;
-	static $globs;
+	static $globs = array();
 
-	if($globfile == 0)
+	if($globfile == 0 && is_readable('/usr/share/mime/globs'))
 	{
 		if(($globfile = file_get_contents('/usr/share/mime/globs'))
 				== FALSE)
@@ -20,7 +20,6 @@ function _mime_from_ext($filename)
 		$globfile = explode("\n", $globfile);
 		array_shift($globfile);
 		array_shift($globfile);
-		$globs = array();
 		foreach($globfile as $l)
 			$globs[] = explode(':', $l);
 	}
