@@ -43,7 +43,6 @@ input[type="password"], input[type="text"], pre, select, textarea {
 	border-right:		1px solid #ffffff;
 	border-top:		1px solid #000000;
 	margin:			0;
-	margin-left:		4px;
 }
 
 /* title corrections */
@@ -194,7 +193,7 @@ pre {
 	display:		block;
 }
 
-.explorer .header div.sort a {
+.explorer .header div.sort {
 	background-image:	url('../modules/explorer/sort.png');
 	background-position:	center right;
 	background-repeat:	no-repeat;
