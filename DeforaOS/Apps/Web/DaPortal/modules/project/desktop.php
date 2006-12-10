@@ -1,12 +1,6 @@
 <?php //modules/project/desktop.php
 
 
-
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../../index.php'));
-
-
 $title = 'Projects';
 $admin = 1;
 $list = 1;
@@ -29,6 +23,5 @@ else if($lang == 'fr')
 	$actions['list'] = 'Liste';
 	$actions['bug_list'] = 'Rapports';
 }
-
 
 ?>
