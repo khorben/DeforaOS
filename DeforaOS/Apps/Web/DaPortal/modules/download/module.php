@@ -212,7 +212,7 @@ function download_default($args)
 		$toolbar[] = array('title' => NEW_DIRECTORY,
 				'icon' => 'icons/16x16/newdir.png',
 				'link' => 'index.php?module=download&action'
-				.'=directory_new&id='.$file['download_id']);
+				.'=directory_new&id='.$file['id']);
 		$toolbar[] = array('title' => UPLOAD_FILE,
 				'icon' => 'icons/16x16/save.png',
 				'link' => 'index.php?module=download'
@@ -304,8 +304,12 @@ function download_directory_insert($args)
 		return _error(PERMISSION_DENIED);
 	if(strlen($args['title']) == 0)
 		return _error(INVALID_ARGUMENT);
-	$parent = isset($args['parent']) && is_numeric($args['parent'])
-		? "'".$args['parent']."'" : 'NULL';
+	$parent = FALSE;
+	if(isset($args['parent']))
+		$parent = _sql_single('SELECT download_id'
+				.' FROM daportal_download'
+				." WHERE content_id='".$args['parent']."'");
+	$parent = $parent != FALSE ? "'$parent'" : 'NULL';
 	//FIXME not twice the same filename in a directory
 	require_once('./system/content.php');
 	if(!($id = _content_insert($args['title'], '', 1)))
