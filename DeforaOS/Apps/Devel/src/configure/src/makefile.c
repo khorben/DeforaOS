@@ -613,11 +613,11 @@ static int _target_binary(Configure * configure, FILE * fp, String * target)
 		return 0;
 	_target_flags(configure, fp, target);
 	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)\n");
-	fprintf(fp, "%s", "\t$(CC) $(LDFLAGSF)");
+	fprintf(fp, "%s%s%s%s%s", "\t$(CC) -o ", target, " $(", target, "_OBJS)"
+			" $(LDFLAGSF) $(LDFLAGS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
-	fprintf(fp, "%s%s%s%s%s", " $(LDFLAGS) -o ", target, " $(", target,
-			"_OBJS)\n");
+	fputc('\n', fp);
 	return 0;
 }
 
