@@ -150,6 +150,16 @@ table.bordered th {
 }
 
 
+/* module article */
+.article .author, .article .date, .article .edit {
+	display:			inline;
+}
+
+.article .content {
+	padding:			10px;
+}
+
+
 /* module project */
 .bug_reply {
 	background-color:		#400000;
@@ -558,8 +568,10 @@ ul.menu ul li:hover ul a {
 
 /* module top */
 div.top {
-	background-color:		#959595;
+	background-color:		#b0b0b0;
+	border-bottom:			1px solid #959595;
 	color:				#000000;
+	padding:			1px;
 	padding-left:			12px;
 }
 
