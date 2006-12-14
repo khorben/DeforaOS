@@ -15,8 +15,9 @@ all: $(TARGETS)
 
 sh_OBJS = token.o scanner.o parser.o builtin.o job.o sh.o
 sh_CFLAGS = $(CFLAGSF) $(CFLAGS)
+
 sh: $(sh_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o sh $(sh_OBJS)
+	$(CC) -o sh $(sh_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 token.o: token.c
 	$(CC) $(sh_CFLAGS) -c token.c
