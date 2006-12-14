@@ -3,11 +3,13 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../../index.php'));
+if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
+		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
 //lang
+$text = array();
 $text['ARTICLE_BY'] = 'Article by';
 $text['ARTICLE_ON'] = 'on';
 $text['ARTICLE_PREVIEW'] = 'Article preview';
@@ -149,7 +151,7 @@ function article_display($args)
 	$title = $article['title'];
 	$article['date'] = strftime(DATE_FORMAT,
 			strtotime(substr($article['timestamp'], 0, 19)));
-	include('display.tpl');
+	include('./modules/article/display.tpl');
 }
 
 
@@ -198,7 +200,7 @@ function article_list($args)
 			$article['date'] = strftime(DATE_FORMAT,
 					strtotime(substr($article['timestamp'],
 							0, 19)));
-			include('display.tpl');
+			include('./modules/article/display.tpl');
 		}
 		return;
 	}
@@ -236,7 +238,7 @@ function article_modify($args)
 		return _error('Unable to modify article');
 	$article = $article[0];
 	$title = MODIFICATION_OF_ARTICLE.' "'.$article['title'].'"';
-	include('update.tpl');
+	include('./modules/article/update.tpl');
 }
 
 
@@ -256,18 +258,18 @@ function article_submit($article)
 		$article['username'] = $user_name;
 		$article['date'] = strftime(DATE_FORMAT);
 		$article['content'] = stripslashes($article['content']);
-		include('display.tpl');
+		include('./modules/article/display.tpl');
 		unset($title);
-		return include('update.tpl');
+		return include('./modules/article/update.tpl');
 	}
 	if(!isset($article['send']))
 	{
 		$title = ARTICLE_SUBMISSION;
-		return include('update.tpl');
+		return include('./modules/article/update.tpl');
 	}
 	if(!_article_insert($article))
 		return _error('Could not insert article');
-	include('posted.tpl');
+	include('./modules/article/posted.tpl');
 }
 
 
@@ -296,9 +298,9 @@ function article_update($article)
 		$article['username'] = $user_name;
 		$article['date'] = strftime(DATE_FORMAT);
 		$article['content'] = stripslashes($article['content']);
-		include('display.tpl');
+		include('./modules/article/display.tpl');
 		unset($title);
-		return include('update.tpl');
+		return include('./modules/article/update.tpl');
 	}
 	require_once('./system/content.php');
 	if(!_content_update($article['id'], $article['title'],
