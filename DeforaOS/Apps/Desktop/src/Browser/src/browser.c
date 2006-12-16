@@ -1018,6 +1018,7 @@ static void _view_icons(Browser * browser)
 	GtkCellRenderer * renderer;
 
 	_view_icon_view(browser);
+#if GTK_CHECK_VERSION(2, 8, 0)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(renderer, "follow-state", TRUE, NULL);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
@@ -1034,6 +1035,12 @@ static void _view_icons(Browser * browser)
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
+#else
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
+			BR_COL_PIXBUF_48);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
+			BR_COL_DISPLAY_NAME);
+#endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 96);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
@@ -1044,7 +1051,9 @@ static void _view_icon_view(Browser * browser)
 {
 	if(browser->iconview != NULL)
 	{
+#if GTK_CHECK_VERSION(2, 8, 0)
 		gtk_cell_layout_clear(GTK_CELL_LAYOUT(browser->iconview));
+#endif
 		return;
 	}
 	if(browser->detailview != NULL)
@@ -1072,6 +1081,7 @@ static void _view_list(Browser * browser)
 	GtkCellRenderer * renderer;
 
 	_view_icon_view(browser);
+#if GTK_CHECK_VERSION(2, 8, 0)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(renderer, "follow-state", TRUE, NULL);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
@@ -1086,6 +1096,12 @@ static void _view_list(Browser * browser)
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
+#else
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
+			BR_COL_PIXBUF_24);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
+			BR_COL_DISPLAY_NAME);
+#endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 146);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_HORIZONTAL);
