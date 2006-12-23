@@ -25,6 +25,8 @@ function _config_list($module)
 
 function _config_set($module, $name, $value, $overwrite = FALSE)
 {
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return FALSE;
 	if(($module_id = _sql_single('SELECT daportal_config.module_id'
 			.' FROM daportal_config, daportal_module'
 			.' WHERE daportal_config.module_id'

@@ -2,14 +2,12 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../../index.php'));
 require_once('./system/user.php');
 
 
 //lang
 $text = array();
+$text['ADMINISTRATION'] = 'Administration';
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
 $text['LANGUAGES'] = 'Languages';
 $text['PORTAL_ADMINISTRATION'] = 'Portal administration';
@@ -71,7 +69,7 @@ function admin_admin($args)
 			._html_safe(MODULES).'</h2>'."\n");
 	if(($modules = _sql_array('SELECT module_id AS apply_id, name AS module'
 			.', enabled FROM daportal_module'
-			.' ORDER BY module ASC;')) == FALSE)
+			.' ORDER BY module ASC')) == FALSE)
 		return _error('Could not list modules');
 	for($cnt = count($modules), $i = 0; $i < $cnt; $i++)
 	{
@@ -91,7 +89,7 @@ function admin_admin($args)
 			._html_safe_link($module).'">'
 			._html_safe($module).'</a>';
 		$title = '';
-		@include('modules/'.$module.'/desktop.php');
+		include('./modules/'.$module.'/desktop.php');
 		$modules[$i]['name'] = _html_safe_link(strlen($title) ? $title
 				: $modules[$i]['module']);
 	}
@@ -114,10 +112,10 @@ function admin_lang_disable($args)
 {
 	global $user_id;
 
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_lang SET enabled='f'"
-			." WHERE lang_id='".$args['id']."';") == FALSE)
+	if(_sql_query("UPDATE daportal_lang SET enabled='0'"
+			." WHERE lang_id='".$args['id']."'") == FALSE)
 		_error('Unable to update language');
 }
 
@@ -126,10 +124,10 @@ function admin_lang_enable($args)
 {
 	global $user_id;
 
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(_sql_query("UPDATE daportal_lang SET enabled='1'"
-			." WHERE lang_id='".$args['id']."';") == FALSE)
+			." WHERE lang_id='".$args['id']."'") == FALSE)
 		_error('Unable to update language');
 }
 
@@ -138,10 +136,10 @@ function admin_module_disable($args)
 {
 	global $user_id;
 
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_module SET enabled='f'"
-			." WHERE module_id='".$args['id']."';") == FALSE)
+	if(_sql_query("UPDATE daportal_module SET enabled='0'"
+			." WHERE module_id='".$args['id']."'") == FALSE)
 		_error('Unable to update module');
 }
 
@@ -150,10 +148,10 @@ function admin_module_enable($args)
 {
 	global $user_id;
 
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(_sql_query("UPDATE daportal_module SET enabled='1'"
-			." WHERE module_id='".$args['id']."';") == FALSE)
+			." WHERE module_id='".$args['id']."'") == FALSE)
 		_error('Unable to update module');
 }
 
@@ -165,16 +163,16 @@ function admin_default()
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$modules = _sql_array('SELECT module_id, name FROM daportal_module'
-			.' ORDER BY NAME ASC;');
+			.' ORDER BY name ASC');
 	for($i = 0, $cnt = count($modules); $i < $cnt; $i++)
 	{
 		$admin = 0;
 		$title = '';
-		@include('modules/'.$modules[$i]['name'].'/desktop.php');
+		include('./modules/'.$modules[$i]['name'].'/desktop.php');
 		$modules[$i]['admin'] = $admin;
 		$modules[$i]['title'] = $title;
 	}
-	include('default.tpl');
+	include('./modules/admin/default.tpl');
 }
 
 
