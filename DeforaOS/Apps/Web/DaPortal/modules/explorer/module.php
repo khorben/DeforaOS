@@ -2,11 +2,6 @@
 
 
 
-//check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../../index.php'));
-
-
 //lang
 $text = array();
 $text['LISTING_DETAILS'] = 'Details';
@@ -155,7 +150,7 @@ function explorer_system($args)
 {
 	global $html;
 
-	if($args['action'] == 'apply')
+	if(isset($args['action']) && $args['action'] == 'apply')
 		$html = 0;
 }
 
