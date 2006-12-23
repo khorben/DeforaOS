@@ -38,7 +38,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 		$password = _password_new();
 	$key = md5(_password_new());
 	if(_sql_query('INSERT INTO daportal_user_register (user_id, key)'
-			.' VALUES ('."'$id', '$key');") == FALSE)
+			.' VALUES ('."'$id', '$key')") == FALSE)
 		return _error('Could not create confirmation key');
 	$message = "Your password is '$password'\n\n"
 			."Please click on the following link to confirm:\n"
@@ -71,7 +71,8 @@ function user_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title user">'._html_safe(USERS_ADMINISTRATION)."</h1>\n");
+	print('<h1 class="title user">'._html_safe(USERS_ADMINISTRATION)
+			."</h1>\n");
 	if(($configs = _config_list('user')))
 	{
 		print('<h2><img src="modules/admin/icon.png" alt=""/>'
@@ -89,7 +90,7 @@ function user_admin($args)
 		}
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.', enabled, admin, email'
-			.' FROM daportal_user ORDER BY '.$order.';');
+			.' FROM daportal_user ORDER BY '.$order);
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
@@ -177,7 +178,7 @@ function user_default($args)
 		return user_login($args);
 	if(($user = _sql_array('SELECT user_id, username, admin'
 			.' FROM daportal_user'
-			." WHERE user_id='$user_id';")) == FALSE)
+			." WHERE user_id='$user_id'")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
 	include('./modules/user/user_homepage.tpl');
@@ -189,12 +190,12 @@ function user_delete($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error('Permission denied');
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
 	_sql_query('DELETE FROM daportal_user_register'
-			." WHERE user_id='".$args['id']."';");
+			." WHERE user_id='".$args['id']."'");
 	if(!_sql_query('DELETE FROM daportal_user'
-			." WHERE user_id='".$args['id']."';"))
+			." WHERE user_id='".$args['id']."'"))
 		return _error('Could not delete user');
 }
 
@@ -204,11 +205,10 @@ function user_disable($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	if(!_sql_query('UPDATE daportal_user SET'
-			." enabled='f'"
-			." WHERE user_id='".$args['id']."';"))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(!_sql_query('UPDATE daportal_user SET enabled='."'0'"
+			." WHERE user_id='".$args['id']."'"))
 		return _error('Could not disable user');
 }
 
@@ -219,7 +219,7 @@ function user_display($args)
 		return _error('Invalid user ID');
 	if(($user = _sql_array('SELECT user_id, username'
 			.' FROM daportal_user'
-			." WHERE user_id='".$args['id']."';")) == FALSE)
+			." WHERE user_id='".$args['id']."'")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
 	include('./modules/user/user_display.tpl');
@@ -231,11 +231,10 @@ function user_enable($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error('Permission denied');
-	if(!_sql_query('UPDATE daportal_user SET'
-			." enabled='1'"
-			." WHERE user_id='".$args['id']."';"))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(!_sql_query('UPDATE daportal_user SET enabled='."'1'"
+			." WHERE user_id='".$args['id']."'"))
 		return _error('Could not enable user');
 }
 
@@ -246,7 +245,7 @@ function user_insert($args)
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	if(!ereg('^[a-z]{1,9}$', $args['username']))
 		return _error('Username must be lower-case and no longer than 9 characters', 1);
 	if(strlen($args['password1']) < 1
@@ -300,17 +299,17 @@ function user_modify($args)
 	global $user_id;
 
 	if($user_id == 0)
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$id = $args['id'];
 	else if(!isset($args['id']) || $args['id'] == $user_id)
 		$id = $user_id;
 	else
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
-			.' FROM daportal_user WHERE user_id='."'$id';");
+			.' FROM daportal_user WHERE user_id='."'$id'");
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
@@ -325,7 +324,7 @@ function user_new($args)
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	$title = 'New user';
 	$admin = 1;
 	include('./modules/user/user_update.tpl');
@@ -336,7 +335,8 @@ function user_register($args)
 {
 	global $user_id;
 
-	if(_config_get('user', 'register') != SQL_TRUE)
+	if(_config_get('user', 'register') != SQL_TRUE
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if($user_id)
 		return _error(ALREADY_LOGGED_IN);
@@ -358,7 +358,7 @@ function user_register($args)
 					$message = EMAIL_INVALID;
 				else if(_sql_array('SELECT email'
 						.' FROM daportal_user'
-						." WHERE email='".$args['email']."';")
+						." WHERE email='".$args['email']."'")
 						== FALSE)
 					return _register_mail($args['username'],
 							$args['email']);
@@ -382,7 +382,7 @@ function _register_mail($username, $email)
 	if(_sql_query('INSERT INTO daportal_user (username, password, enabled'
 			.', admin, email) VALUES ('
 			."'$username', '".md5($password)."', '0', '0', '"
-			.$email."');") == FALSE)
+			.$email."')") == FALSE)
 		return _error('Could not insert user');
 	$id = _sql_id('daportal_user', 'user_id');
 	include('./modules/user/user_pending.tpl');
@@ -395,18 +395,17 @@ function _system_confirm($key)
 	//FIXME remove expired registration keys
 	//FIXME use a transaction
 	$user = _sql_array('SELECT daportal_user.user_id'
-			.', daportal_user.username'
-			.' FROM daportal_user, daportal_user_register'
-			.' WHERE daportal_user.user_id'
-			.'=daportal_user_register.user_id'
-			." AND key='$key';");
+		.', daportal_user.username'
+		.' FROM daportal_user, daportal_user_register'
+		.' WHERE daportal_user.user_id'
+		.'=daportal_user_register.user_id AND key='."'$key'");
 	if(!is_array($user) || count($user) != 1)
 		return;
 	$user = $user[0];
 	if(_sql_query('UPDATE daportal_user SET enabled='."'1'"
-			." WHERE user_id='".$user['user_id']."';") == FALSE)
+			." WHERE user_id='".$user['user_id']."'") == FALSE)
 		return _error('Could not enable user');
-	if(_sql_query('DELETE FROM daportal_user_register WHERE key='."'$key';")
+	if(_sql_query('DELETE FROM daportal_user_register WHERE key='."'$key'")
 			== FALSE)
 		_error('Could not remove registration key');
 	if(strlen(session_id()) == 0)
@@ -427,7 +426,7 @@ function _system_login()
 	$password = md5($_POST['password']);
 	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
 			.' WHERE username='."'".$_POST['username']."'"
-			.' AND password='."'$password' AND enabled='1';");
+			.' AND password='."'$password' AND enabled='1'");
 	if(!is_array($res) || count($res) != 1)
 		return _error('Unable to login', 0);
 	$res = $res[0];
@@ -476,13 +475,15 @@ function user_update($args)
 {
 	global $user_id;
 
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$id = $args['id'];
 	else if($user_id != 0)
 		$id = $user_id;
 	else
-		return _error('Permission denied');
+		return _error(PERMISSION_DENIED);
 	$password = '';
 	if(strlen($args['password1'])
 			&& $args['password1'] == $args['password2'])
@@ -499,11 +500,11 @@ function user_update($args)
 						? '1' : '0')."'"
 					.", email='".$args['email']."'"
 					.(strlen($password) ? ', '.$password
-					       	: '')." WHERE user_id='$id';"))
+					       	: '')." WHERE user_id='$id'"))
 			return _error('Could not update user');
 	}
 	else if(strlen($password) && !_sql_query('UPDATE daportal_user SET '
-				.$password." WHERE user_id='$id';"))
+				.$password." WHERE user_id='$id'"))
 		return _error('Could not update user');
 	user_display(array('id' => $id));
 }
