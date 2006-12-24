@@ -3,8 +3,9 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: ../../index.php'));
+if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
+		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
 //lang
@@ -32,7 +33,7 @@ function _news_insert($news)
 	global $user_id;
 
 	if(!$user_id)
-		return _error(PERMISSION_DENIED);
+		return FALSE;
 	require_once('./system/content.php');
 	return _content_insert($news['title'], $news['content']);
 }
@@ -372,7 +373,7 @@ function news_submit($news)
 	include('./modules/news/news_posted.tpl');
 	//send mail
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
-			." WHERE enabled='1' AND admin='1';");
+			." WHERE enabled='1' AND admin='1'");
 	if(!is_array($admins))
 		return _error('Could not list moderators', 0);
 	$to = '';
