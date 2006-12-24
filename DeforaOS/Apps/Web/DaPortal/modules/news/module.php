@@ -67,7 +67,7 @@ function news_admin($args)
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_module.name='news'"
 		.' AND daportal_module.module_id=daportal_content.module_id'
-		.' ORDER BY '.$sort.' '.$order.';');
+		.' ORDER BY '.$sort.' '.$order);
 	if(!is_array($res))
 		return _error('Unable to list news');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -107,14 +107,13 @@ function news_admin($args)
 	$toolbar[] = array('title' => DELETE,
 			'icon' => 'icons/16x16/delete.png',
 			'action' => 'delete', 'confirm' => 'delete');
-	_module('explorer', 'browse_trusted', array(
+	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => array('username' => AUTHOR,
 					'enabled' => ENABLED, 'date' => DATE),
 				'module' => 'news', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 						: 'date',
-				'toolbar' => $toolbar, 'view' => 'details',
-				'entries' => $res));
+				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
 
@@ -134,7 +133,8 @@ function news_delete($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	_content_delete($args['id']);
+	if(!_content_delete($args['id']))
+		return _error('Could not delete news');
 }
 
 
@@ -146,7 +146,8 @@ function news_disable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	_content_disable($args['id']);
+	if(!_content_disable($args['id']))
+		return _error('Could not disable news');
 }
 
 
@@ -157,7 +158,7 @@ function news_display($args)
 	if(($news = _content_select($args['id'], 1)) == FALSE)
 		return _error('Invalid news');
 	if(($news['username'] = _sql_single('SELECT username FROM daportal_user'
-			." WHERE user_id='".$news['user_id']."';")) == FALSE)
+			." WHERE user_id='".$news['user_id']."'")) == FALSE)
 		return _error('Invalid user');
 	$long = 1;
 	$title = $news['title'];
@@ -177,7 +178,8 @@ function news_enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	_content_enable($args['id']);
+	if(!_content_enable($args['id']))
+		return _error('Could not enable news');
 }
 
 
@@ -221,7 +223,7 @@ function _list_user($user_id, $username)
 		." AND daportal_module.name='news'"
 		.' AND daportal_module.module_id=daportal_content.module_id'
 		." AND daportal_content.user_id='$user_id'"
-		.' ORDER BY timestamp DESC;');
+		.' ORDER BY timestamp DESC');
 	if(!is_array($res))
 		return _error('Unable to list news');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -252,7 +254,7 @@ function news_list($args)
 		.'=daportal_content.module_id';
 	$npp = 10;
 	$page = isset($args['page']) ? $args['page'] : 1;
-	if(($cnt = _sql_single('SELECT COUNT(*)'.$sql.';')) == 0)
+	if(($cnt = _sql_single('SELECT COUNT(*)'.$sql)) == 0)
 		$cnt = 1;
 	$pages = ceil($cnt / $npp);
 	$page = min($page, $pages);

@@ -18,6 +18,7 @@ $text['ARTICLES'] = 'Articles';
 $text['ARTICLES_ADMINISTRATION'] = 'Articles administration';
 $text['ARTICLES_BY'] = 'Articles by';
 $text['MODIFICATION_OF_ARTICLE'] = 'Modification of article';
+$text['SUBMIT_ARTICLE'] = 'Submit article';
 global $lang;
 if($lang == 'fr')
 {
@@ -35,7 +36,7 @@ function _article_insert($article)
 	global $user_id;
 
 	if(!$user_id)
-		return _error(PERMISSION_DENIED);
+		return FALSE;
 	require_once('./system/content.php');
 	return _content_insert($article['title'], $article['content']);
 }
@@ -50,25 +51,25 @@ function article_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title article">'.ARTICLES_ADMINISTRATION.'</h1>'."\n");
 	$order = 'ASC';
-	switch($args['sort'])
-	{
-		case 'username':$sort = 'username';	break;
-		case 'enabled':	$sort = 'enabled';	break;
-		case 'name':	$sort = 'title';	break;
-		case 'date':
-		default:	$order = 'DESC';
-				$sort = 'timestamp';	break;
-	}
+	$sort = 'timestamp';
+	if(isset($args['sort']))
+		switch($args['sort'])
+		{
+			case 'username':$sort = 'username';	break;
+			case 'enabled':	$sort = 'daportal_content.enabled';
+								break;
+			case 'name':	$sort = 'title';	break;
+			case 'date':
+			default:	$order = 'DESC';	break;
+		}
 	$articles = _sql_array('SELECT content_id AS id, timestamp'
-		.', daportal_content.enabled, title, content'
-		.', daportal_content.user_id, username'
-		.' FROM daportal_content, daportal_user'
-		.', daportal_module'
+		.', daportal_content.enabled AS enabled, title, content'
+		.', daportal_content.user_id AS user_id, username'
+		.' FROM daportal_content, daportal_user, daportal_module'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_module.name='article'"
-		.' AND daportal_module.module_id'
-		.'=daportal_content.module_id'
-		.' ORDER BY '.$sort.' '.$order.';');
+		.' AND daportal_module.module_id=daportal_content.module_id'
+		.' ORDER BY '.$sort.' '.$order);
 	if(!is_array($articles))
 		return _error('Unable to list articles');
 	for($i = 0, $cnt = count($articles); $i < $cnt; $i++)
@@ -97,7 +98,7 @@ function article_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('icon' => 'modules/article/icon.png',
-			'title' => 'Submit article',
+			'title' => SUBMIT_ARTICLE,
 			'link' => 'index.php?module=article&action=submit');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE,
@@ -106,14 +107,13 @@ function article_admin($args)
 	$toolbar[] = array('title' => ENABLE,
 			'icon' => 'icons/16x16/enabled.png',
 			'action' => 'enable');
-	_module('explorer', 'browse_trusted', array(
+	_module('explorer', 'browse_trusted', array('entries' => $articles,
 				'class' => array('username' => AUTHOR,
 					'enabled' => ENABLED, 'date' => DATE),
 				'module' => 'article', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 						: 'date',
-				'toolbar' => $toolbar, 'view' => 'details',
-				'entries' => $articles));
+				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
 
@@ -121,7 +121,7 @@ function article_default($args)
 {
 	if(isset($args['id']))
 		return article_display(array('id' => $args['id']));
-	return article_list($args);
+	article_list($args);
 }
 
 
@@ -133,7 +133,8 @@ function article_disable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	_content_disable($args['id']);
+	if(!_content_disable($args['id']))
+		return _error('Could not disable article');
 }
 
 
@@ -144,8 +145,7 @@ function article_display($args)
 		return _error(INVALID_ARGUMENT);
 	if(($article['username'] = _sql_single('SELECT username'
 			.' FROM daportal_user'
-			." WHERE user_id='".$article['user_id']."';"))
-			== FALSE)
+			." WHERE user_id='".$article['user_id']."'")) == FALSE)
 		return _error('Invalid user');
 	$long = 1;
 	$title = $article['title'];
@@ -163,7 +163,8 @@ function article_enable($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
-	_content_enable($args['id']);
+	if(!_content_enable($args['id']))
+		return _error('Could not enable article');
 }
 
 
@@ -173,14 +174,14 @@ function article_list($args)
 	$where = '';
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			.' FROM daportal_user'
-			." WHERE user_id='".$args['user_id']."';")))
+			." WHERE user_id='".$args['user_id']."'")))
 	{
 		$title = ARTICLES_BY.' '.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1 class="title article">'._html_safe($title).'</h1>'."\n");
 	$articles = _sql_array('SELECT content_id AS id, timestamp, title'
-			.', content, daportal_content.enabled'
+			.', content, daportal_content.enabled AS enabled'
 			.', daportal_content.user_id, username'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_module'
@@ -188,13 +189,13 @@ function article_list($args)
 			." AND daportal_content.enabled='1'"
 			." AND daportal_module.name='article'"
 			.' AND daportal_module.module_id'
-			.'=daportal_content.module_id'
-			.$where
-			.' ORDER BY title ASC;');
+			.'=daportal_content.module_id'.$where
+			.' ORDER BY title ASC');
 	if(!is_array($articles))
 		return _error('Unable to list articles');
 	if(!isset($username))
 	{
+		$long = 0;
 		foreach($articles as $article)
 		{
 			$article['date'] = strftime(DATE_FORMAT,
@@ -216,8 +217,7 @@ function article_list($args)
 						0, 19)));
 	}
 	_module('explorer', 'browse', array('class' => array('date' => 'Date'),
-				'view' => 'details',
-				'entries' => $articles));
+				'view' => 'details', 'entries' => $articles));
 }
 
 
@@ -233,7 +233,7 @@ function article_modify($args)
 	$article = _sql_array('SELECT content_id AS id, title, content'
 			.' FROM daportal_content'
 			." WHERE module_id='$module_id'"
-			." AND content_id='".$args['id']."';");
+			." AND content_id='".$args['id']."'");
 	if(!is_array($article) || count($article) != 1)
 		return _error('Unable to modify article');
 	$article = $article[0];
