@@ -766,7 +766,7 @@ function project_bug_reply_update($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(!($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
 			." WHERE bug_reply_id='".$args['id']."'")))
