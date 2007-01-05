@@ -92,8 +92,8 @@ static int _init_config(DaMon * damon)
 	}
 	if((p = config_get(config, "", "refresh")) != NULL)
 	{
-		damon->refresh = strtol(p, &q, 10);
-		if(*p == '\0' || *q != '\0' || damon->refresh <= 0)
+		damon->refresh = strtoul(p, &q, 10);
+		if(*p == '\0' || *q != '\0' || damon->refresh == 0)
 			damon->refresh = DAMON_DEFAULT_REFRESH;
 #ifdef DEBUG
 		fprintf(stderr, "refresh set to %d\n", damon->refresh);
