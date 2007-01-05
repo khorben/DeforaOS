@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -79,6 +79,7 @@ static int _init_config(DaMon * damon)
 	Config * config;
 	char * p;
 	char * q;
+	int tmp;
 
 	if((config = config_new()) == NULL)
 		return 1;
@@ -92,9 +93,9 @@ static int _init_config(DaMon * damon)
 	}
 	if((p = config_get(config, "", "refresh")) != NULL)
 	{
-		damon->refresh = strtoul(p, &q, 10);
-		if(*p == '\0' || *q != '\0' || damon->refresh == 0)
-			damon->refresh = DAMON_DEFAULT_REFRESH;
+		tmp = strtol(p, &q, 10);
+		damon->refresh = (*p == '\0' || *q != '\0' || tmp <= 0)
+			? DAMON_DEFAULT_REFRESH : tmp;
 #ifdef DEBUG
 		fprintf(stderr, "refresh set to %d\n", damon->refresh);
 #endif
