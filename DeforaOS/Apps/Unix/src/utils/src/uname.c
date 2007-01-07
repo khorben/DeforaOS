@@ -31,7 +31,7 @@ static int _uname(int m, int n, int r, int s, int v)
 		printf("%s%s", spacing++ ? " " : "", buf.machine);
 	if(spacing == 0)
 		printf("%s", buf.sysname);
-	printf("\n");
+	putchar('\n');
 	return 0;
 }
 
