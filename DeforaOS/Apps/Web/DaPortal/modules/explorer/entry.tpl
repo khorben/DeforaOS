@@ -1,4 +1,4 @@
-		<div class="entry" onclick="entry_click(<?php echo $explorer_id; ?>, <?php echo $i; ?>, event)">
+		<div class="entry"<?php if(!isset($args['toolbar']) || is_array($args['toolbar'])) { ?> onclick="entry_click(<?php echo $explorer_id; ?>, <?php echo $i; ?>, event)"<?php } ?>>
 			<input class="hidden" type="checkbox" name="entry_<?php echo $explorer_id; ?>_<?php echo $i; ?>"/>
 <?php if(isset($entry['apply_module']) && isset($entry['apply_id'])) { ?>
 			<input type="hidden" name="entry_<?php echo $explorer_id.'_'.$i; ?>_module" value="<?php echo _html_safe($entry['apply_module']); ?>"/>
