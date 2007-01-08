@@ -3,6 +3,10 @@
 
 
 /* explorer */
+.explorer {
+	overflow:		auto;
+}
+
 .explorer .toolbar img {
 	padding:		2px;
 	max-height:		16px;
