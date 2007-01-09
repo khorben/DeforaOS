@@ -486,6 +486,7 @@ static void _on_connect(GtkWidget * widget, gpointer data)
 	GPuTTY * g = data;
 	pid_t pid;
 	char * xterm = NULL;
+	char * termopt = "-e";
 	char * ssh = NULL;
 	char const * hostname;
 	char port[6];
@@ -509,7 +510,9 @@ static void _on_connect(GtkWidget * widget, gpointer data)
 		username = gtk_entry_get_text(GTK_ENTRY(g->hn_eusername));
 		if(username[0] != '\0')
 			useropt = "-l";
-		execlp(xterm, xterm, "-e", ssh, hostname, "-p", port,
+		if(strcmp(xterm, "gnome-terminal") == 0)
+			termopt = "-x";
+		execlp(xterm, xterm, termopt, ssh, hostname, "-p", port,
 				useropt, username, NULL);
 		exit(_gputty_error(xterm, 2));
 	}
