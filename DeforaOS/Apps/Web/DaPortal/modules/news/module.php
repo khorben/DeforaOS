@@ -319,7 +319,7 @@ function news_rss($args)
 	$content = ''; //FIXME
 	include('./modules/news/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-			.', username, email'
+			.', username'
 			.' FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id'
 			.'=daportal_user.user_id'
@@ -330,8 +330,6 @@ function news_rss($args)
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$news = $res[$i];
-			$news['username'] = $news['username'].' <'
-				.$news['email'].'>';
 			$news['date'] = date('D, j M Y H:i:s O', strtotime(
 						substr($news['timestamp'], 0,
 						       19)));
