@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -14,10 +14,11 @@ static int _uname(int m, int n, int r, int s, int v)
 	struct utsname buf;
 	int spacing = 0;
 
-	if(uname(&buf) == -1)
+	if(uname(&buf) != 0)
 	{
+		fprintf(stderr, "%s", "uname: ");
 		perror("uname");
-		return 2;
+		return 1;
 	}
 	if(s && (spacing = 1))
 		printf("%s", buf.sysname);
@@ -88,5 +89,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _uname(flagm, flagn, flagr, flags, flagv);
+	return _uname(flagm, flagn, flagr, flags, flagv) == 0 ? 0 : 2;
 }
