@@ -89,5 +89,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
+	if(optind != argc)
+		return _usage();
 	return _uname(flagm, flagn, flagr, flags, flagv) == 0 ? 0 : 2;
 }
