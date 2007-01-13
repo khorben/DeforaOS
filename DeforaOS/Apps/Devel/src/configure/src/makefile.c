@@ -320,22 +320,32 @@ static void _variables_binary(Configure * configure, FILE * fp, char * done)
 
 static void _targets_cflags(Configure * configure, FILE * fp)
 {
-	String const * p;
-	String const * q;
+	String const * cff;
+	String const * cf;
+	String const * cpp;
 
-	if((p = config_get(configure->config, "", "cflags_force")) != NULL)
+	cpp = config_get(configure->config, "", "cppflags");
+	if((cff = config_get(configure->config, "", "cflags_force")) != NULL)
 	{
-		fprintf(fp, "%s%s", "CC\t= cc\nCFLAGSF\t= ", p);
-		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
+		fprintf(fp, "%s", "CC\t= cc\nCPPFLAGS=");
+		if(cpp != NULL)
+			fprintf(fp, " %s", cpp);
+		fprintf(fp, "%s%s", "\nCFLAGSF\t= ", cff);
+		if(configure->os == HO_GNU_LINUX && string_find(cff, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE"); /* FIXME undup */
 		fputc('\n', fp);
 	}
-	if((q = config_get(configure->config, "", "cflags")) != NULL)
+	if((cf = config_get(configure->config, "", "cflags")) != NULL)
 	{
-		if(p == NULL)
-			fprintf(fp, "%s", "CC\t= cc\n");
-		fprintf(fp, "%s%s", "CFLAGS\t= ", q);
-		if(configure->os == HO_GNU_LINUX && string_find(q, "-ansi"))
+		if(cff == NULL)
+		{
+			fprintf(fp, "%s", "CC\t= cc\nCPPFLAGS=");
+			if(cpp != NULL)
+				fprintf(fp, " %s", cpp);
+			fputc('\n', fp);
+		}
+		fprintf(fp, "%s%s", "CFLAGS\t= ", cf);
+		if(configure->os == HO_GNU_LINUX && string_find(cf, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
 		fputc('\n', fp);
 	}
@@ -667,7 +677,8 @@ static void _flags_c(Configure * configure, FILE * fp, String * target)
 {
 	String const * p;
 
-	fprintf(fp, "%s%s", target, "_CFLAGS = $(CFLAGSF) $(CFLAGS)");
+	fprintf(fp, "%s%s", target, "_CFLAGS = $(CPPFLAGS) $(CFLAGSF)"
+			" $(CFLAGS)");
 	if((p = config_get(configure->config, target, "cflags")) != NULL)
 	{
 		fprintf(fp, " %s", p);
@@ -717,7 +728,7 @@ static int _target_object(Configure * configure, FILE * fp, String * target)
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ", target, target,
-			"_CFLAGS = $(CFLAGSF) $(CFLAGS)\n");
+			"_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)\n");
 	return 0;
 }
 
