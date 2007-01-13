@@ -490,11 +490,11 @@ static int _targets_subdirs(Configure * configure, FILE * fp)
 static int _target_objs(Configure * configure, FILE * fp, String * target);
 static int _target_binary(Configure * configure, FILE * fp, String * target);
 static int _target_library(Configure * configure, FILE * fp, String * target);
+static int _target_object(Configure * configure, FILE * fp, String * target);
 static int _targets_target(Configure * configure, FILE * fp, String * target)
 {
 	String * type;
 	TargetType tt;
-	String * p;
 
 	if((type = config_get(configure->config, target, "type")) == NULL)
 	{
@@ -510,18 +510,7 @@ static int _targets_target(Configure * configure, FILE * fp, String * target)
 		case TT_LIBRARY:
 			return _target_library(configure, fp, target);
 		case TT_OBJECT:
-			if((p = config_get(configure->config, target,
-						       	"sources")) == NULL)
-			{
-				fprintf(stderr, "%s%s%s", "configure: ", target,
-						" no sources for target\n");
-				return 1;
-			}
-			if(configure->prefs->flags & PREFS_n)
-				return 0;
-			fprintf(fp, "\n%s%s%s%s", target, ": ", p, "\n");
-			/* FIXME */
-			break;
+			return _target_object(configure, fp, target);
 		case TT_UNKNOWN:
 			fprintf(stderr, "%s%s%s", "configure: ", target,
 					": unknown type for target\n");
@@ -712,6 +701,23 @@ static int _target_library(Configure * configure, FILE * fp, String * target)
 	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)\n");
 	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
 			"_OBJS)\n");
+	return 0;
+}
+
+static int _target_object(Configure * configure, FILE * fp, String * target)
+{
+	String * p;
+
+	if((p = config_get(configure->config, target, "sources")) == NULL)
+	{
+		fprintf(stderr, "%s%s%s", "configure: ", target,
+				" no sources for target\n");
+		return 1;
+	}
+	if(configure->prefs->flags & PREFS_n)
+		return 0;
+	fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ", target, target,
+			"_CFLAGS = $(CFLAGSF) $(CFLAGS)\n");
 	return 0;
 }
 
