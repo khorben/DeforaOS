@@ -18,7 +18,7 @@ configure_OBJS = configure.o makefile.o settings.o
 configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
 
 configure: $(configure_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o configure $(configure_OBJS)
+	$(CC) -o configure $(configure_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 configure.o: configure.c configure.h makefile.h
 	$(CC) $(configure_CFLAGS) -c configure.c
