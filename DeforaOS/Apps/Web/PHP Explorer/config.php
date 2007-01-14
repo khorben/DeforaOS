@@ -23,13 +23,13 @@
 $root = '/';
 
 //enable hidden files
-$hidden = 1;
+$hidden = 0;
 
 //enable actual images as thumbnails
-$thumbnails = 1;
+$thumbnails = 0;
 
 //enable upload and delete functions
-$upload = 1;
+$upload = 0;
 
 //maximum uploading file size
 $upload_size_max = 2000000;
