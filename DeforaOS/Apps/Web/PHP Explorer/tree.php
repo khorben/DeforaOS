@@ -19,8 +19,8 @@
 
 
 
-require('common.php');
-require('config.php');
+require('./common.php');
+require('./config.php');
 
 define('TREE_LEVEL', 1);
 
@@ -90,7 +90,7 @@ function _tree_level($level, $curroot)
 		}
 		else
 			$img = 'icons/tree/'.$class.'.gif';
-		include('tree.tpl');
+		include('./tree.tpl');
 		if(!is_link($root.'/'.$path))
 			_tree_level($level+1, $path);
 		print("</div>\n");

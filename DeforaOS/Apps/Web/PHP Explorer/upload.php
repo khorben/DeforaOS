@@ -19,8 +19,8 @@
 
 
 
-require('common.php');
-require('config.php');
+require('./common.php');
+require('./config.php');
 
 
 $folder = filename_safe(stripslashes($_GET['folder']));
