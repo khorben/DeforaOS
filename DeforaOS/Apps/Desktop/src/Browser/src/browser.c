@@ -375,7 +375,7 @@ static GtkListStore * _create_store(Browser * browser)
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GDK_TYPE_PIXBUF,
 #endif
-			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_UINT64,
+			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
@@ -608,6 +608,7 @@ static int _loop_status(Browser * browser)
 	return 1;
 }
 
+static char * _insert_size(off_t size);
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * st,
 		gboolean updated)
@@ -616,7 +617,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	struct passwd * pw = NULL;
 	struct group * gr = NULL;
 	uint64_t inode = 0;
-	uint64_t size = 0;
+	char * size = "";
 	char const * type = NULL;
 	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -627,7 +628,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	if(st != NULL)
 	{
 		inode = st->st_ino;
-		size = st->st_size;
+		size = _insert_size(st->st_size);
 		pw = getpwuid(st->st_uid);
 		gr = getgrgid(st->st_gid);
 		if(S_ISDIR(st->st_mode))
@@ -667,6 +668,29 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			-1);
+}
+
+static char * _insert_size(off_t size)
+{
+	static char buf[11];
+	double sz = size;
+	char * unit;
+
+	if(sz < 1024)
+	{
+		snprintf(buf, sizeof(buf), "%.0f%s", sz, " bytes");
+		return buf;
+	}
+	else if((sz /= 1024) < 1024)
+		unit = "KB";
+	else if((sz /= 1024) < 1024)
+		unit = "MB";
+	else if((sz /= 1024) < 1024)
+		unit = "GB";
+	else
+		unit = "GB";
+	snprintf(buf, sizeof(buf), "%.1f %s", sz, unit);
+	return buf;
 }
 
 static gboolean _new_idle(gpointer data)
@@ -771,7 +795,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	struct passwd * pw = NULL;
 	struct group * gr = NULL;
 	uint64_t inode = 0;
-	uint64_t size = 0;
+	char * size = "";
 	char const * type = NULL;
 	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -783,7 +807,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	if(st != NULL)
 	{
 		inode = st->st_ino;
-		size = st->st_size;
+		size = _insert_size(st->st_size);
 		pw = getpwuid(st->st_uid);
 		gr = getgrgid(st->st_gid);
 		if(S_ISDIR(st->st_mode))
