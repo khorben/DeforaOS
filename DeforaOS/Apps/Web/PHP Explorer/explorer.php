@@ -1,6 +1,6 @@
 <?php
-//Copyright 2005 Pierre Pronchery
-//Some parts Copyright 2005 FPconcept (used with permission)
+//Copyright (c) 2005 Pierre Pronchery
+//Some parts Copyright (c) 2005 FPconcept (used with permission)
 //This file is part of PHP Explorer
 //
 //PHP Explorer is free software; you can redistribute it and/or modify
@@ -289,3 +289,5 @@ if(($dir = @opendir($root.'/'.$file)) != FALSE
 $sort = isset($_GET['sort']) ? $_GET['sort'] : '';
 $reverse = isset($_GET['reverse']);
 include('./explorer.tpl');
+
+?>
