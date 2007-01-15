@@ -61,7 +61,7 @@ function bookmark_admin($args)
 		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled']
 			== SQL_TRUE ? 'enabled' : 'disabled';
 		$bookmarks[$i]['enabled'] = '<img src="icons/16x16/'
-				.$bookmarks[$i]['enabled'].'" alt="'
+				.$bookmarks[$i]['enabled'].'.png" alt="'
 				.$bookmarks[$i]['enabled'].'" title="'
 				.($bookmarks[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
@@ -215,7 +215,7 @@ function bookmark_list($args)
 		$bookmarks[$i]['enabled'] = $bookmarks[$i]['enabled']
 			== SQL_TRUE ? 'enabled' : 'disabled';
 		$bookmarks[$i]['enabled'] = '<img src="icons/16x16/'
-				.$bookmarks[$i]['enabled'].'" alt="'
+				.$bookmarks[$i]['enabled'].'.png" alt="'
 				.$bookmarks[$i]['enabled'].'" title="'
 				.($bookmarks[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
