@@ -56,7 +56,7 @@ function category_admin($args)
 		$categories[$i]['enabled'] = $categories[$i]['enabled']
 			== SQL_TRUE ? 'enabled' : 'disabled';
 		$categories[$i]['enabled'] = '<img src="icons/16x16/'
-				.$categories[$i]['enabled'].'" alt="'
+				.$categories[$i]['enabled'].'.png" alt="'
 				.$categories[$i]['enabled'].'" title="'
 				.($categories[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
