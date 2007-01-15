@@ -54,20 +54,20 @@ else if(isset($_POST['folder']))
 	</head>
 	<body>
 		<h3>File upload</h3>
-<? if(strlen($message)) { ?>
-		<p><? echo html_safe($message); ?></p>
+<?php if(strlen($message)) { ?>
+		<p><?php echo html_safe($message); ?></p>
 		<!-- FIXME this code won't work without javascript -->
 		<!-- FIXME detect if we're in a popup (if not go to explorer.php) -->
 		<input type="button" value="Close" onclick="window.close()"/></a>
-<? } else { ?>
-		<p>The new file will be uploaded in folder:<br/><i><? echo html_safe($folder); ?></i></p>
+<?php } else { ?>
+		<p>The new file will be uploaded in folder:<br/><i><?php echo html_safe($folder); ?></i></p>
 		<form action="upload.php" method="post" enctype="multipart/form-data">
-			<input type="hidden" name="MAX_FILE_SIZE" value="<? echo html_safe($upload_size_max); ?>"/>
-			<input type="hidden" name="folder" value="<? echo html_safe($folder); ?>"/>
+			<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo html_safe($upload_size_max); ?>"/>
+			<input type="hidden" name="folder" value="<?php echo html_safe($folder); ?>"/>
 			Upload file:
 			<input type="file" name="file"/>
 			<input type="submit" value="Upload"/>
 		</form>
-<? } ?>
+<?php } ?>
 	</body>
 </html>

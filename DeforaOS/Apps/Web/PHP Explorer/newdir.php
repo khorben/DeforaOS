@@ -48,20 +48,20 @@ else if(isset($_POST['newdir']))
 		<script type="text/javascript" src="explorer.js"></script>
 	</head>
 	<body style="margin: 0; padding: 5px">
-<? if(strlen($message)) { ?>
+<?php if(strlen($message)) { ?>
 		<h3>Directory creation</h3>
-		<p><? echo html_safe($message); ?></p>
+		<p><?php echo html_safe($message); ?></p>
 		<center><input type="button" value="Close" onclick="window.close()"/></center>
-<? } else { ?>
+<?php } else { ?>
 		<h3>Create directory</h3>
-		<p>The new directory will be created in folder:<br/><i><? echo html_safe($folder); ?></i></p>
+		<p>The new directory will be created in folder:<br/><i><?php echo html_safe($folder); ?></i></p>
 		<form action="newdir.php" method="post">
-			<input type="hidden" name="folder" value="<? echo html_safe($folder); ?>"/>
+			<input type="hidden" name="folder" value="<?php echo html_safe($folder); ?>"/>
 			<table>
 				<tr><td><b>Directory name:</b></td><td><input type="text" name="newdir" size="20"/></td></tr>
 				<tr><td align="center"><input type="button" value="Cancel" onclick="window.close()"/></td><td align="center"><input type="submit" value="Create"/></td></tr>
 			</table>
 		</form>
-<? } ?>
+<?php } ?>
 	</body>
 </html>
