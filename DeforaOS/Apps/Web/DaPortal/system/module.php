@@ -57,7 +57,7 @@ function _module_id($name)
 	if(_user_admin($user_id))
 		$enabled = '';
 	if(($id = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='$name'$enabled;")) == FALSE)
+			." WHERE name='$name'$enabled")) == FALSE)
 		return 0;
 	$cache[$name] = $id;
 	return $id;
