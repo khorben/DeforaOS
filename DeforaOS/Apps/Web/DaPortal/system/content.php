@@ -15,18 +15,17 @@ function _content_disable($id)
 {
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
-	return _sql_query('UPDATE daportal_content SET enabled='."'f'"
+	return _sql_query('UPDATE daportal_content SET enabled='."'0'"
 			." WHERE content_id='$id'");
 }
 
 
 function _content_display($id)
 {
-	if(($module = _sql_single('SELECT name'
-			.' FROM daportal_content, daportal_module'
-			.' WHERE daportal_content.module_id'
-			.'=daportal_module.module_id'
-			." AND content_id='$id'")) == FALSE)
+	$sql = 'SELECT name FROM daportal_content, daportal_module'
+		.' WHERE daportal_content.module_id=daportal_module.module_id'
+		." AND content_id='$id'";
+	if(($module = _sql_single($sql)) == FALSE)
 		return FALSE;
 	_module($module, 'display', array('id' => $id));
 	return TRUE;

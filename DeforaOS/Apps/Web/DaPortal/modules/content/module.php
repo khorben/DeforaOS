@@ -119,8 +119,8 @@ function content_disable($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_content SET enabled='f'"
-			." WHERE content_id='".$args['id']."';") == FALSE)
+	require_once('./system/content.php');
+	if(_content_disable($args['id']) == FALSE)
 		_error('Unable to update content');
 	if(isset($args['show']))
 		content_default(array('id' => $args['id']));
@@ -134,8 +134,8 @@ function content_enable($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(_sql_query("UPDATE daportal_content SET enabled='1'"
-			." WHERE content_id='".$args['id']."';") == FALSE)
+	require_once('./system/content.php');
+	if(_content_enable($args['id']) == FALSE)
 		_error('Unable to update content');
 	if(isset($args['show']))
 		content_default(array('id' => $args['id']));
