@@ -1,6 +1,7 @@
 <?php //modules/probe/module.php
 //TODO:
 //- fix configuration when name has a space
+//- use title as an actual title and store the hostname in a dedicated table?
 
 
 
@@ -146,9 +147,11 @@ $probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
 //functions
 function _host_list()
 {
-	return _sql_array('SELECT host_id AS id, title AS name'
-.' FROM daportal_probe_host, daportal_content'
-.' WHERE content_id=host_id AND enabled='."'1'".' ORDER BY id ASC');
+	$module_id = _module_id('probe');
+	return _sql_array('SELECT content_id AS id, title AS name'
+			.' FROM daportal_content'
+			." WHERE module_id='$module_id' AND enabled='1'"
+			.' ORDER BY id ASC');
 }
 
 function _host_graph($id, $type, $time, $param = FALSE)
@@ -200,7 +203,7 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	if(is_readable($ret['img']) && ($st = stat($ret['img'])) != FALSE
 			&& $st['mtime'] + 30 > time())
 		return $ret;
-	$cmd = '/usr/pkg/bin/rrdtool graph --slope-mode '."'".$ret['img']."'"
+	$cmd = 'rrdtool graph --slope-mode '."'".$ret['img']."'"
 		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
 	if(isset($ret['base']))
@@ -233,9 +236,9 @@ function _host_title($id)
 
 	if(array_key_exists($id, $cache))
 		return $cache[$id];
+	$module_id = _module_id('probe');
 	$cache[$id] = _sql_single('SELECT title FROM daportal_content'
-		.', daportal_probe_host WHERE daportal_content.content_id'
-		.'=daportal_probe_host.host_id AND host_id='."'".$id."'"
+		." WHERE module_id='$module_id' AND content_id='$id'"
 		." AND enabled='1'");
 	return $cache[$id];
 }
@@ -279,9 +282,10 @@ function probe_admin($args)
 	}
 	print('<h2><img src="modules/probe/icon.png" alt=""/> '
 			._html_safe(HOST_LIST)."</h2>\n");
-	$hosts = _sql_array('SELECT host_id AS id, title AS name, enabled'
-			.' FROM daportal_probe_host, daportal_content'
-			.' WHERE content_id=host_id;');
+	$module_id = _module_id('probe');
+	$hosts = _sql_array('SELECT content_id AS id, title AS name, enabled'
+			.' FROM daportal_content'
+			." WHERE module_id='$module_id'");
 	if(!is_array($hosts))
 		return _error('Could not list hosts');
 	for($i = 0, $cnt = count($hosts); $i < $cnt; $i++)
@@ -428,10 +432,8 @@ function probe_host_delete($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	_sql_query('DELETE FROM daportal_probe_host'
-			." WHERE host_id='".$args['id']."';");
-	_sql_query('DELETE FROM daportal_content'
-			." WHERE content_id='".$args['id']."';");
+	require_once('./system/content.php');
+	_content_delete($args['id']);
 }
 
 
@@ -446,8 +448,6 @@ function probe_host_insert($args)
 	if(($id = _content_insert($args['hostname'], $args['comment'], 1))
 			== FALSE)
 		return _error('Could not insert host');
-	_sql_query('INSERT INTO daportal_probe_host (host_id) VALUES ('
-			."'$id'".');');
 	probe_default(array('id' => $id));
 }
 
@@ -479,11 +479,12 @@ function probe_host_modify($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	$host = _sql_array('SELECT host_id AS id, title AS hostname'
-			.', content AS comment'
-			.' FROM daportal_probe_host, daportal_content'
-			.' WHERE content_id=host_id'." AND enabled='1'"
-			." AND host_id='".$args['id']."';");
+	$module_id = _module_id('probe');
+	$host = _sql_array('SELECT content_id AS id, title AS hostname'
+			.', content AS comment'.' FROM daportal_content'
+			." WHERE module_id='$module_id'"
+			." AND content_id='".$args['id']."'"
+			." AND enabled='1'");
 	if(!is_array($host) || count($host) != 1)
 		return _error('Could not modify host');
 	$host = $host[0];
