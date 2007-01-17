@@ -83,9 +83,10 @@ function _desktop_include($name)
 	$list = 0;
 	$title = '';
 	$actions = FALSE;
+	$user = 0;
 	include_once('./modules/'.$name.'/desktop.php');
 	return array('admin' => $admin, 'list' => $list, 'title' => $title,
-			'actions' => $actions);
+			'actions' => $actions, 'user' => $user);
 }
 
 ?>
