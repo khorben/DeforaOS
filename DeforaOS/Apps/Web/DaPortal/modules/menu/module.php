@@ -49,19 +49,21 @@ function _default_submenu($module, $level, $entry)
 
 function menu_default()
 {
-	if(($modules = _sql_array('SELECT name FROM daportal_module'
-			." WHERE enabled='1' ORDER BY name ASC;")) == FALSE)
+	global $user_id;
+
+	$enabled = " WHERE enabled='1'";
+	if(_user_admin($user_id))
+		$enabled = '';
+	if(($modules = _sql_array('SELECT name FROM daportal_module'.$enabled
+			.' ORDER BY name ASC')) == FALSE)
 		return _error('No modules to link to');
 	print('<ul class="menu">'."\n");
 	foreach($modules as $m)
 	{
-		$list = 0;
-		$actions = FALSE;
-		include('./modules/'.$m['name'].'/desktop.php');
-		if(!$list)
+		if(($d = _module_desktop($m['name'])) == FALSE || $d['list'] != 1)
 			continue;
-		_default_submenu($m['name'], 1, array('title' => $title,
-					'args' => '', 'actions' => $actions));
+		$d['args'] = '';
+		_default_submenu($m['name'], 1, $d);
 	}
 	print('</ul>'."\n");
 }

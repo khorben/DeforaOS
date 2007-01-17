@@ -119,6 +119,25 @@ function admin_admin($args)
 }
 
 
+function admin_default()
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$res = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
+	$modules = array();
+	foreach($res as $r)
+	{
+		if(($m = _module_desktop($r['name'])) == FALSE
+				|| $m['admin'] != 1)
+			continue;
+		$modules[] = $m;
+	}
+	include('./modules/admin/default.tpl');
+}
+
+
 function admin_lang_disable($args)
 {
 	global $user_id;
@@ -164,26 +183,6 @@ function admin_module_enable($args)
 	if(_sql_query("UPDATE daportal_module SET enabled='1'"
 			." WHERE module_id='".$args['id']."'") == FALSE)
 		_error('Unable to update module');
-}
-
-
-function admin_default()
-{
-	global $user_id;
-
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$modules = _sql_array('SELECT module_id, name FROM daportal_module'
-			.' ORDER BY name ASC');
-	for($i = 0, $cnt = count($modules); $i < $cnt; $i++)
-	{
-		$admin = 0;
-		$title = '';
-		include('./modules/'.$modules[$i]['name'].'/desktop.php');
-		$modules[$i]['admin'] = $admin;
-		$modules[$i]['title'] = $title;
-	}
-	include('./modules/admin/default.tpl');
 }
 
 
