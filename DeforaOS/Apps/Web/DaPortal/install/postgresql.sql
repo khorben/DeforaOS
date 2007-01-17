@@ -165,12 +165,9 @@ INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
 
 /* module: category */
 CREATE TABLE daportal_category_content (
-	category_content_id SERIAL,
-	category_id SERIAL,
-	content_id SERIAL,
-	PRIMARY KEY (category_content_id),
-	FOREIGN KEY (category_id) REFERENCES daportal_content (content_id),
-	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id)
+	category_content_id SERIAL PRIMARY KEY,
+	category_id SERIAL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	content_id SERIAL REFERENCES daportal_content (content_id) ON DELETE CASCADE
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
 
