@@ -1,5 +1,5 @@
 <?php //engine.php
-//Copyright (c) 2004, 2005, 2006 The DeforaOS Project
+//Copyright (c) 2004, 2005, 2006, 2007 The DeforaOS Project
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -19,12 +19,13 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
-	exit(header('Location: index.php'));
+if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
+		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
 //global variables
-$debug = 1;
+$debug = 0;
 $html = 1;
 $template = 'DaPortal';
 $theme = 'DaPortal';
