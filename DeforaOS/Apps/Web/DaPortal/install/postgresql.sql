@@ -156,3 +156,6 @@ CREATE TABLE daportal_download (
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp');
+
+/* module: article */
+INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
