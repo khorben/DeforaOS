@@ -11,7 +11,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text = array();
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
-$text['MY_CONTENTS'] = 'My contents';
+$text['MY_CONTENT'] = 'My content';
 $text['PREFERENCES'] = 'Preferences';
 $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
@@ -190,7 +190,7 @@ function user_default($args)
 		$modules[] = array('name' => $d['title'],
 				'thumbnail' => 'modules/admin/icon.png',
 				'module' => 'admin', 'action' => 'default');
-	$modules[] = array('name' => MY_CONTENTS,
+	$modules[] = array('name' => MY_CONTENT,
 			'thumbnail' => 'modules/content/icon.png',
 			'module' => 'user', 'action' => 'default',
 			'id' => $user_id);
