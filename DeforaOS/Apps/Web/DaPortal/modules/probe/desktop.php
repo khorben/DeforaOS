@@ -32,11 +32,11 @@ $actions['graph_list']['actions'][] = array('title' => 'Network traffic',
 $actions['graph_list']['actions'][] = array('title' => 'Volume usage',
 		'args' => '&type=vol');
 
-$hosts = _sql_array('SELECT title, host_id AS id'
-		.' FROM daportal_probe_host, daportal_content'
-		." WHERE enabled='1' AND"
-		.' daportal_probe_host.host_id=daportal_content.content_id'
-		.' ORDER BY title ASC');
+$hosts = _sql_array('SELECT title, content_id AS id'
+		.' FROM daportal_content, daportal_module'
+		.' WHERE daportal_content.module_id=daportal_module.module_id'
+		." AND daportal_module.name='probe'"
+		." AND daportal_content.enabled='1' ORDER BY title ASC");
 if(is_array($hosts))
 {
 	$actions['host_list']['actions'] = array();
