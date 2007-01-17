@@ -269,8 +269,7 @@ function category_link_delete($args)
 			== $module)
 		return _error(INVALID_ARGUMENT);
 	if(_sql_single('SELECT user_id FROM daportal_content'
-			." WHERE enabled='1'"
-			." AND content_id='".$args['content_id']."'")
+			." WHERE content_id='".$args['content_id']."'")
 			!= $user_id || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	_sql_query('DELETE FROM daportal_category_content WHERE'
@@ -290,8 +289,7 @@ function category_link_insert($args)
 			." WHERE enabled='1'"
 			." AND content_id='".$args['id']."'") != $module
 			|| _sql_single('SELECT module_id FROM daportal_content'
-				." WHERE enabled='1'"
-				." AND content_id='".$args['content_id']."'")
+				." WHERE content_id='".$args['content_id']."'")
 			== $module)
 		return _error(INVALID_ARGUMENT);
 	if(_sql_single('SELECT user_id FROM daportal_content'
