@@ -11,6 +11,8 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text = array();
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
+$text['MY_CONTENTS'] = 'My contents';
+$text['PREFERENCES'] = 'Preferences';
 $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
@@ -181,7 +183,26 @@ function user_default($args)
 			." WHERE user_id='$user_id'")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
-	include('./modules/user/user_homepage.tpl');
+	print('<h1><img src="images/home.png" alt=""/> '
+			._html_safe($user['username'])."'s page</h1>\n");
+	$modules = array();
+	if(_user_admin($user_id) && ($d = _module_desktop('admin')) != FALSE)
+		$modules[] = array('name' => $d['title'],
+				'thumbnail' => 'modules/admin/icon.png',
+				'module' => 'admin', 'action' => 'default');
+	$modules[] = array('name' => MY_CONTENTS,
+			'thumbnail' => 'modules/content/icon.png',
+			'module' => 'user', 'action' => 'default',
+			'id' => $user_id);
+	$modules[] = array('name' => PREFERENCES,
+			'thumbnail' => 'modules/admin/icon.png',
+			'module' => 'user', 'action' => 'admin',
+			'id' => $user_id);
+	$modules[] = array('name' => LOGOUT,
+			'thumbnail' => 'modules/user/logout.png',
+			'module' => 'user', 'action' => 'logout');
+	_module('explorer', 'browse', array('entries' => $modules,
+				'view' => 'thumbnails', 'toolbar' => 0));
 }
 
 
