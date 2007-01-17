@@ -9,10 +9,11 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 //lang
 $text = array();
+$text['APPEARANCE'] = 'Appearance';
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
 $text['MY_CONTENT'] = 'My content';
-$text['PREFERENCES'] = 'Preferences';
+$text['MY_PROFILE'] = 'My profile';
 $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
@@ -148,6 +149,27 @@ function user_admin($args)
 }
 
 
+function user_appearance($args)
+{
+	global $theme;
+
+	print('<h1><img src="modules/user/appearance.png" alt=""/> '
+			._html_safe(APPEARANCE)."</h1>\n");
+	$themes = array();
+	if(($dir = opendir('themes')) != FALSE)
+	{
+		while(($de = readdir($dir)) != FALSE)
+		{
+			if(($len = strlen($de)) < 5
+					|| substr($de, -4) != '.css')
+				continue;
+			$themes[] = substr($de, 0, -4);
+		}
+	}
+	include('./modules/user/appearance.tpl');
+}
+
+
 function user_config_update($args)
 {
 	global $user_id, $module_id;
@@ -190,11 +212,14 @@ function user_default($args)
 		$modules[] = array('name' => $d['title'],
 				'thumbnail' => 'modules/admin/icon.png',
 				'module' => 'admin', 'action' => 'default');
+	$modules[] = array('name' => APPEARANCE,
+			'thumbnail' => 'modules/user/appearance.png',
+			'module' => 'user', 'action' => 'appearance');
 	$modules[] = array('name' => MY_CONTENT,
 			'thumbnail' => 'modules/content/icon.png',
 			'module' => 'user', 'action' => 'default',
 			'id' => $user_id);
-	$modules[] = array('name' => PREFERENCES,
+	$modules[] = array('name' => MY_PROFILE,
 			'thumbnail' => 'modules/admin/icon.png',
 			'module' => 'user', 'action' => 'admin',
 			'id' => $user_id);
@@ -485,6 +510,8 @@ function _system_logout()
 
 	$_SESSION['user_id'] = 0;
 	$_SESSION['user_name'] = 'Anonymous';
+	unset($_SESSION['debug']);
+	unset($_SESSION['theme']);
 	$user_id = $_SESSION['user_id'];
 	$user_name = $_SESSION['user_name'];
 }
@@ -501,6 +528,8 @@ function user_system($args)
 			$html = 0;
 		else if($_POST['action'] == 'error')
 			$_POST['action'] = 'default';
+		else if($_POST['action'] == 'appearance')
+			return _system_appearance($args);
 	}
 	else if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['action']))
 	{
@@ -511,6 +540,14 @@ function user_system($args)
 		else if($_GET['action'] == 'error')
 			$_GET['action'] = 'default';
 	}
+}
+
+function _system_appearance($args)
+{
+	if(isset($args['theme']) && strchr($args['theme'], '/') == FALSE
+			&& is_readable('themes/'.$args['theme'].'.css'))
+		$_SESSION['theme'] = $args['theme'];
+	header('Location: index.php?module=user&action=appearance');
 }
 
 
