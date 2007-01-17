@@ -112,7 +112,7 @@ function bookmark_delete($args)
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
 			." WHERE user_id='$user_id'"
 			." AND content_id='".$args['id']."'")) == FALSE)
-		return _error(INVALID_BOOKMARK);
+		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	_sql_query('DELETE FROM daportal_bookmark'
 			." WHERE bookmark_id='".$args['id']."'");
