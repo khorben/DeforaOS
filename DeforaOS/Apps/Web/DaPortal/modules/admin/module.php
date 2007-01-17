@@ -99,10 +99,12 @@ function admin_admin($args)
 		$modules[$i]['module_name'] = '<a href="index.php?module='
 			._html_safe_link($module).'">'
 			._html_safe($module).'</a>';
-		$title = '';
-		include('./modules/'.$module.'/desktop.php');
-		$modules[$i]['name'] = _html_safe_link(strlen($title) ? $title
-				: $modules[$i]['module']);
+		if(($d = _module_desktop($module)) != FALSE
+				&& strlen($d['title']))
+			$modules[$i]['name'] = $d['title'];
+		else
+			$modules[$i]['name'] = $modules[$i]['module'];
+		$modules[$i]['name'] = _html_safe_link($modules[$i]['name']);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => DISABLE,

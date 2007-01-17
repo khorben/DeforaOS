@@ -70,21 +70,22 @@ function _module_desktop($name)
 
 	if(isset($cache[$name]))
 		return $cache[$name];
-	$res['admin'] = 0;
-	$res['list'] = 0;
-	$res['title'] = '';
-	$res['actions'] = FALSE;
-	if(_desktop_include($name, $res['admin'], $res['list'], $res['title'],
-			$res['actions']) == FALSE)
+	if(($res = _desktop_include($name)) == FALSE)
 		return FALSE;
 	$res['name'] = $name;
 	$cache[$name] = $res;
 	return $res;
 }
 
-function _desktop_include($name, &$admin, &$list, &$title, &$actions)
+function _desktop_include($name)
 {
-	return include('./modules/'.$name.'/desktop.php');
+	$admin = 0;
+	$list = 0;
+	$title = '';
+	$actions = FALSE;
+	include_once('./modules/'.$name.'/desktop.php');
+	return array('admin' => $admin, 'list' => $list, 'title' => $title,
+			'actions' => $actions);
 }
 
 ?>
