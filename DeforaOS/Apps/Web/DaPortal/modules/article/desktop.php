@@ -9,14 +9,19 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text['ARTICLES'] = 'Articles';
 $text['SUBMIT'] = 'Submit';
-global $lang;
+global $lang, $user_id;
 _lang($text);
 
 $title = ARTICLES;
 $admin = 1;
 $list = 1;
 if($user_id)
+{
 	$actions = array('submit' => SUBMIT);
+	$user = array(array('icon' => 'modules/article/icon.png',
+				'name' => ARTICLES, 'action' => 'list',
+				'args' => '&user_id='.$user_id));
+}
 
 
 ?>

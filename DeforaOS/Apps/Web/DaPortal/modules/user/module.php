@@ -243,7 +243,29 @@ function user_display($args)
 			." WHERE user_id='".$args['id']."'")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
-	include('./modules/user/user_display.tpl');
+	$res = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
+	if(!is_array($res))
+		return _error('Could not list modules');
+	print('<h1><img src="modules/user/user.png" alt=""/> '
+			._html_safe($user['username'])."'s content</h1>\n");
+	$entries = array();
+	foreach($res as $r)
+	{
+		if(($d = _module_desktop($r['name'])) == FALSE
+				|| !is_array($d['user']))
+			continue;
+		foreach($d['user'] as $e)
+		{
+			if(!isset($e['module']))
+				$e['module'] = $r['name'];
+			if(!isset($e['action']))
+				$e['action'] = 'default';
+			$e['thumbnail'] = $e['icon'];
+			$entries[] = $e;
+		}
+	}
+	_module('explorer', 'browse', array('entries' => $entries,
+				'view' => 'thumbnails', 'toolbar' => 0));
 }
 
 

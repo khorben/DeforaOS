@@ -13,7 +13,11 @@ $admin = 1;
 $list = 1;
 global $user_id;
 if($user_id)
+{
 	$actions = array('submit' => SUBMIT);
+	$user = array(array('icon' => 'modules/news/icon.png', 'name' => NEWS,
+				'action' => 'list', 'args' => '&user_id='.$user_id));
+}
 
 
 ?>
