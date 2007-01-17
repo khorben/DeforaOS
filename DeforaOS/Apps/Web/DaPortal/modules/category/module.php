@@ -11,6 +11,7 @@ if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
 //lang
 $text = array();
 $text['ALREADY_LINKED'] = 'Already linked';
+$text['ASSOCIATE_TO_CONTENT'] = 'Associate to content';
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORY'] = 'Category';
 $text['CATEGORY_LIST'] = 'Category list';
@@ -23,6 +24,7 @@ global $lang;
 if($lang == 'fr')
 {
 	$text['ALREADY_LINKED'] = 'Déjà lié';
+	$text['ASSOCIATE_TO_CONTENT'] = 'Lier au contenu';
 	$text['CATEGORIES_ADMINISTRATION'] = 'Administration des catégories';
 	$text['CATEGORY'] = 'Catégorie';
 	$text['CATEGORY_LIST'] = 'Liste des catégories';
@@ -416,8 +418,7 @@ function category_set($args)
 			.CHOOSE_CATEGORIES.'</h2>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
 			.' FROM daportal_content'
-			." WHERE module_id='$module'"
-			." AND enabled='1'");
+			." WHERE module_id='$module'"." AND enabled='1'");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$cnt = count($categories);
@@ -433,7 +434,7 @@ function category_set($args)
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Associate to content',
+	$toolbar[] = array('title' => ASSOCIATE_TO_CONTENT,
 			'icon' => 'modules/category/icon.png',
 			'action' => 'link_insert');
 	_module('explorer', 'browse', array('entries' => $categories,
