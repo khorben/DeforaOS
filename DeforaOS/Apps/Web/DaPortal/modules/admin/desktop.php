@@ -15,9 +15,9 @@ require_once('./system/user.php');
 if(!_user_admin($user_id))
 	return;
 $list = 1;
-$actions = array('default' => array('title' => 'Modules'));
+$actions = array('admin' => array('title' => 'Modules'));
 
-$actions['default']['actions'] = array();
+$actions['admin']['actions'] = array();
 $modules = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
 foreach($modules as $m)
 {
@@ -26,7 +26,7 @@ foreach($modules as $m)
 		continue;
 	unset($d['actions']);
 	$d['args'] = '&module='.$d['name'].'&action=admin';
-	$actions['default']['actions'][] = $d;
+	$actions['admin']['actions'][] = $d;
 }
 
 ?>
