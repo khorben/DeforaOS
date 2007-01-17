@@ -19,6 +19,7 @@ $text['LANGUAGES'] = 'Languages';
 $text['PORTAL_ADMINISTRATION'] = 'Portal administration';
 $text['MODULE_NAME'] = 'Module name';
 $text['MODULES'] = 'Modules';
+$text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'de')
 	$text['LANGUAGES'] = 'Spräche';
@@ -33,15 +34,19 @@ _lang($text);
 
 function admin_admin($args)
 {
-	global $user_id;
+	global $user_id, $debug;
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title admin">'._html_safe(PORTAL_ADMINISTRATION)."</h1>\n"
-			.'<h2><img src="modules/admin/lang.png" alt=""/> '
+	print('<h1 class="title admin">'._html_safe(PORTAL_ADMINISTRATION)
+			."</h1>\n");
+	print('<h2><img src="modules/admin/icon.png" alt=""/> '
+			._html_safe(SETTINGS).'</h2>'."\n");
+	include('./modules/admin/settings.tpl');
+	print('<h2><img src="modules/admin/lang.png" alt=""/> '
 			._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
-			.' FROM daportal_lang;')) == FALSE)
+			.' FROM daportal_lang')) == FALSE)
 		_error('Unable to list languages');
 	else
 	{
@@ -55,7 +60,7 @@ function admin_admin($args)
 					== SQL_TRUE) ? 'enabled' : 'disabled';
 			$lang[$i]['enabled'] = '<img src="icons/16x16/'
 				.$lang[$i]['enabled'].'.png" alt="'
-				.$lang[$i]['enabled'].'.png" title="'
+				.$lang[$i]['enabled'].'" title="'
 				.($lang[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
 		}
@@ -182,11 +187,29 @@ function admin_default()
 }
 
 
+function admin_settings_update($args)
+{
+	global $user_id, $debug;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$debug = 1;
+	if(isset($args['debug']) && $args['debug'] == 'on')
+		$_SESSION['debug'] = 1;
+	else
+		unset($_SESSION['debug']);
+	header('Location: index.php?module=admin&action=admin');
+}
+
+
 function admin_system($args)
 {
-	global $title;
+	global $title, $html;
 
 	$title.=' - Administration';
+	if($_SERVER['REQUEST_METHOD'] == 'POST'
+			&& $args['action'] == 'settings_update')
+		$html = 0;
 }
 
 ?>
