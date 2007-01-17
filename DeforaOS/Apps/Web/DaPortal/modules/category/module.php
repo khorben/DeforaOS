@@ -217,7 +217,7 @@ function category_get($args)
 			." AND daportal_content.enabled='1'"
 			." AND content_id='".$args['id']."'");
 	if($user_id != 0 && _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."';") == $user_id)
+			." WHERE content_id='".$args['id']."'") == $user_id)
 	{
 		$toolbar = array();
 		$toolbar[] = array('title' => NEW_CATEGORY,
