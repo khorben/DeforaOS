@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 RM	= rm -f
@@ -14,19 +15,22 @@ INSTALL	= install
 all: $(TARGETS)
 
 inetd_OBJS = config.o parser.o scanner.o service.o token.o inetd.o
-inetd_CFLAGS = $(CFLAGSF) $(CFLAGS)
+inetd_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 inetd: $(inetd_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o inetd $(inetd_OBJS)
+	$(CC) -o inetd $(inetd_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 discard_OBJS = discard.o
-discard_CFLAGS = $(CFLAGSF) $(CFLAGS)
+discard_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 discard: $(discard_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o discard $(discard_OBJS)
+	$(CC) -o discard $(discard_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 echo_OBJS = echo.o
-echo_CFLAGS = $(CFLAGSF) $(CFLAGS)
+echo_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 echo: $(echo_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o echo $(echo_OBJS)
+	$(CC) -o echo $(echo_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 config.o: config.c
 	$(CC) $(inetd_CFLAGS) -c config.c

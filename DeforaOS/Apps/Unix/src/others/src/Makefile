@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 RM	= rm -f
@@ -14,29 +15,34 @@ INSTALL	= install
 all: $(TARGETS)
 
 hexdump_OBJS = hexdump.o
-hexdump_CFLAGS = $(CFLAGSF) $(CFLAGS)
+hexdump_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 hexdump: $(hexdump_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o hexdump $(hexdump_OBJS)
+	$(CC) -o hexdump $(hexdump_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 mktemp_OBJS = mktemp.o
-mktemp_CFLAGS = $(CFLAGSF) $(CFLAGS)
+mktemp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 mktemp: $(mktemp_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mktemp $(mktemp_OBJS)
+	$(CC) -o mktemp $(mktemp_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 tar_OBJS = tar.o
-tar_CFLAGS = $(CFLAGSF) $(CFLAGS)
+tar_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 tar: $(tar_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o tar $(tar_OBJS)
+	$(CC) -o tar $(tar_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 uptime_OBJS = uptime.o
-uptime_CFLAGS = $(CFLAGSF) $(CFLAGS)
+uptime_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 uptime: $(uptime_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o uptime $(uptime_OBJS)
+	$(CC) -o uptime $(uptime_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 w_OBJS = w.o
-w_CFLAGS = $(CFLAGSF) $(CFLAGS)
+w_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 w: $(w_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o w $(w_OBJS)
+	$(CC) -o w $(w_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 hexdump.o: hexdump.c
 	$(CC) $(hexdump_CFLAGS) -c hexdump.c

@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi -fPIC
 AR	= ar -rc
 RANLIB	= ranlib
@@ -15,58 +16,72 @@ INSTALL	= install
 all: $(TARGETS)
 
 i386_OBJS = i386.o
-i386_CFLAGS = $(CFLAGSF) $(CFLAGS)
+i386_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 i386.a: $(i386_OBJS)
 	$(AR) i386.a $(i386_OBJS)
 	$(RANLIB) i386.a
+
 i386.so: $(i386_OBJS)
 	$(LD) -o i386.so $(i386_OBJS)
 
 i386_real_OBJS = i386_real.o
-i386_real_CFLAGS = $(CFLAGSF) $(CFLAGS)
+i386_real_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 i386_real.a: $(i386_real_OBJS)
 	$(AR) i386_real.a $(i386_real_OBJS)
 	$(RANLIB) i386_real.a
+
 i386_real.so: $(i386_real_OBJS)
 	$(LD) -o i386_real.so $(i386_real_OBJS)
 
 i486_OBJS = i486.o
-i486_CFLAGS = $(CFLAGSF) $(CFLAGS)
+i486_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 i486.a: $(i486_OBJS)
 	$(AR) i486.a $(i486_OBJS)
 	$(RANLIB) i486.a
+
 i486.so: $(i486_OBJS)
 	$(LD) -o i486.so $(i486_OBJS)
 
 i586_OBJS = i586.o
-i586_CFLAGS = $(CFLAGSF) $(CFLAGS)
+i586_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 i586.a: $(i586_OBJS)
 	$(AR) i586.a $(i586_OBJS)
 	$(RANLIB) i586.a
+
 i586.so: $(i586_OBJS)
 	$(LD) -o i586.so $(i586_OBJS)
 
 i686_OBJS = i686.o
-i686_CFLAGS = $(CFLAGSF) $(CFLAGS)
+i686_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 i686.a: $(i686_OBJS)
 	$(AR) i686.a $(i686_OBJS)
 	$(RANLIB) i686.a
+
 i686.so: $(i686_OBJS)
 	$(LD) -o i686.so $(i686_OBJS)
 
 sparc_OBJS = sparc.o
-sparc_CFLAGS = $(CFLAGSF) $(CFLAGS)
+sparc_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 sparc.a: $(sparc_OBJS)
 	$(AR) sparc.a $(sparc_OBJS)
 	$(RANLIB) sparc.a
+
 sparc.so: $(sparc_OBJS)
 	$(LD) -o sparc.so $(sparc_OBJS)
 
 sparc64_OBJS = sparc64.o
-sparc64_CFLAGS = $(CFLAGSF) $(CFLAGS)
+sparc64_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 sparc64.a: $(sparc64_OBJS)
 	$(AR) sparc64.a $(sparc64_OBJS)
 	$(RANLIB) sparc64.a
+
 sparc64.so: $(sparc64_OBJS)
 	$(LD) -o sparc64.so $(sparc64_OBJS)
 

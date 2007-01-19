@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGS	= -lcrypt
@@ -15,9 +16,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 makepasswd_OBJS = makepasswd.o md5.o
-makepasswd_CFLAGS = $(CFLAGSF) $(CFLAGS)
+makepasswd_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 makepasswd: $(makepasswd_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o makepasswd $(makepasswd_OBJS)
+	$(CC) -o makepasswd $(makepasswd_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 makepasswd.o: makepasswd.c
 	$(CC) $(makepasswd_CFLAGS) -c makepasswd.c

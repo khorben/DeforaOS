@@ -27,13 +27,16 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/compose.c \
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/account/mbox.c \
 		$(PACKAGE)-$(VERSION)/src/account/pop3.c \
 		$(PACKAGE)-$(VERSION)/src/account/imap4.c \
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
+		$(PACKAGE)-$(VERSION)/src/account/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 

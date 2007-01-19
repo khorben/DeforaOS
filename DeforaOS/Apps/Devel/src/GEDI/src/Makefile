@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -Wall -g -O2
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -l System
@@ -16,9 +17,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 gedi_OBJS = gedi.o main.o project.o
-gedi_CFLAGS = $(CFLAGSF) $(CFLAGS)
+gedi_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 gedi: $(gedi_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gedi $(gedi_OBJS)
+	$(CC) -o gedi $(gedi_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 gedi.o: gedi.c
 	$(CC) $(gedi_CFLAGS) -c gedi.c

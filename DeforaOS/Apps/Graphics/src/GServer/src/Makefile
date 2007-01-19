@@ -5,6 +5,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGSF= -l System  -l GL
@@ -19,9 +20,10 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 GServer_OBJS = gserver.o
-GServer_CFLAGS = $(CFLAGSF) $(CFLAGS)
+GServer_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 GServer: $(GServer_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o GServer $(GServer_OBJS)
+	$(CC) -o GServer $(GServer_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 gserver.o: gserver.c
 	$(CC) $(GServer_CFLAGS) -c gserver.c

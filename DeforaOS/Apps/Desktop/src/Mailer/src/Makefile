@@ -5,6 +5,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGSF= `pkg-config gtk+-2.0 --libs`
@@ -19,9 +20,10 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 mailer_OBJS = account.o callbacks.o common.o compose.o mailer.o main.o
-mailer_CFLAGS = $(CFLAGSF) $(CFLAGS)
+mailer_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 mailer: $(mailer_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o mailer $(mailer_OBJS)
+	$(CC) -o mailer $(mailer_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 account.o: account.c account/account.h
 	$(CC) $(mailer_CFLAGS) -c account.c

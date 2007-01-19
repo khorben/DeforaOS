@@ -5,6 +5,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall
 CFLAGS	= -g
 LDFLAGSF= 
@@ -19,9 +20,10 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 as_OBJS = as.o code.o parser.o scanner.o token.o arch/arch.o format/format.o
-as_CFLAGS = $(CFLAGSF) $(CFLAGS)
+as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 as: $(as_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o as $(as_OBJS)
+	$(CC) -o as $(as_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 as.o: as.c as.h parser.h
 	$(CC) $(as_CFLAGS) -c as.c

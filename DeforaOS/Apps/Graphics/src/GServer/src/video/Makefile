@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 AR	= ar -rc
@@ -16,10 +17,12 @@ INSTALL	= install
 all: $(TARGETS)
 
 vesa_OBJS = vbe.o vesa.o
-vesa_CFLAGS = $(CFLAGSF) $(CFLAGS)
+vesa_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 vesa.a: $(vesa_OBJS)
 	$(AR) vesa.a $(vesa_OBJS)
 	$(RANLIB) vesa.a
+
 vesa.so: $(vesa_OBJS)
 	$(LD) -o vesa.so $(vesa_OBJS)
 

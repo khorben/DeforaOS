@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -Wall -g -O2
 LDFLAGSF= `pkg-config --libs gtk+-2.0`
@@ -15,9 +16,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 editor_OBJS = editor.o main.o
-editor_CFLAGS = $(CFLAGSF) $(CFLAGS)
+editor_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 editor: $(editor_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o editor $(editor_OBJS)
+	$(CC) -o editor $(editor_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 editor.o: editor.c ../config.h
 	$(CC) $(editor_CFLAGS) -c editor.c

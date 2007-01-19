@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGSF= -l System  -rdynamic
@@ -15,13 +16,13 @@ INSTALL	= install
 all: $(TARGETS)
 
 Probe_OBJS = probe.o
-Probe_CFLAGS = $(CFLAGSF) $(CFLAGS)
+Probe_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 Probe: $(Probe_OBJS)
 	$(CC) -o Probe $(Probe_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 DaMon_OBJS = damon.o
-DaMon_CFLAGS = $(CFLAGSF) $(CFLAGS)
+DaMon_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 DaMon: $(DaMon_OBJS)
 	$(CC) -o DaMon $(DaMon_OBJS) $(LDFLAGSF) $(LDFLAGS)

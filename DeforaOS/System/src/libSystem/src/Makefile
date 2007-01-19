@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi -fPIC -I ../include
 CFLAGS	= -g
 AR	= ar -rc
@@ -16,10 +17,12 @@ INSTALL	= install
 all: $(TARGETS)
 
 libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o event.o hash.o string.o
-libSystem_CFLAGS = $(CFLAGSF) $(CFLAGS)
+libSystem_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
+
 libSystem.so: $(libSystem_OBJS)
 	$(LD) -o libSystem.so $(libSystem_OBJS)
 

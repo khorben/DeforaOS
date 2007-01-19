@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -I ../include
 CFLAGS	= -Wall -fPIC -g -O2 -ansi
 AR	= ar -rc
@@ -18,17 +19,20 @@ INSTALL	= install
 all: $(TARGETS)
 
 libGToolkit_OBJS = common.o gwindow.o gtoolkit.o
-libGToolkit_CFLAGS = $(CFLAGSF) $(CFLAGS)
+libGToolkit_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 libGToolkit.a: $(libGToolkit_OBJS)
 	$(AR) libGToolkit.a $(libGToolkit_OBJS)
 	$(RANLIB) libGToolkit.a
+
 libGToolkit.so: $(libGToolkit_OBJS)
 	$(LD) -o libGToolkit.so $(libGToolkit_OBJS)
 
 test_OBJS = test.o
-test_CFLAGS = $(CFLAGSF) $(CFLAGS)
+test_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 test: $(test_OBJS)
-	$(CC) $(LDFLAGSF) -L . -l GToolkit -l X11 -l GL $(LDFLAGS) -o test $(test_OBJS)
+	$(CC) -o test $(test_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -l GToolkit -l X11 -l GL
 
 common.o: common.c
 	$(CC) $(libGToolkit_CFLAGS) -c common.c

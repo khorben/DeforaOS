@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -fPIC
 CFLAGS	= -Wall -g -O2
 AR	= ar -rc
@@ -16,34 +17,42 @@ INSTALL	= install
 all: $(TARGETS)
 
 mbox_OBJS = mbox.o
-mbox_CFLAGS = $(CFLAGSF) $(CFLAGS)
+mbox_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 mbox.a: $(mbox_OBJS)
 	$(AR) mbox.a $(mbox_OBJS)
 	$(RANLIB) mbox.a
+
 mbox.so: $(mbox_OBJS)
 	$(LD) -o mbox.so $(mbox_OBJS)
 
 pop3_OBJS = pop3.o
-pop3_CFLAGS = $(CFLAGSF) $(CFLAGS)
+pop3_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 pop3.a: $(pop3_OBJS)
 	$(AR) pop3.a $(pop3_OBJS)
 	$(RANLIB) pop3.a
+
 pop3.so: $(pop3_OBJS)
 	$(LD) -o pop3.so $(pop3_OBJS)
 
 imap4_OBJS = imap4.o
-imap4_CFLAGS = $(CFLAGSF) $(CFLAGS)
+imap4_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 imap4.a: $(imap4_OBJS)
 	$(AR) imap4.a $(imap4_OBJS)
 	$(RANLIB) imap4.a
+
 imap4.so: $(imap4_OBJS)
 	$(LD) -o imap4.so $(imap4_OBJS)
 
 rss_OBJS = rss.o
-rss_CFLAGS = $(CFLAGSF) $(CFLAGS)
+rss_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 rss.a: $(rss_OBJS)
 	$(AR) rss.a $(rss_OBJS)
 	$(RANLIB) rss.a
+
 rss.so: $(rss_OBJS)
 	$(LD) -o rss.so $(rss_OBJS)
 

@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 RM	= rm -f
@@ -14,7 +15,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 sh_OBJS = token.o scanner.o parser.o builtin.o job.o sh.o
-sh_CFLAGS = $(CFLAGSF) $(CFLAGS)
+sh_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 sh: $(sh_OBJS)
 	$(CC) -o sh $(sh_OBJS) $(LDFLAGSF) $(LDFLAGS)

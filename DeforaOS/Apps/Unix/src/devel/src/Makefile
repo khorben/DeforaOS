@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 RM	= rm -f
@@ -14,9 +15,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 ar_OBJS = ar.o
-ar_CFLAGS = $(CFLAGSF) $(CFLAGS)
+ar_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 ar: $(ar_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o ar $(ar_OBJS)
+	$(CC) -o ar $(ar_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 ar.o: ar.c
 	$(CC) $(ar_CFLAGS) -c ar.c

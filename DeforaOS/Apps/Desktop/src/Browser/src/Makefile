@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2
 LDFLAGSF= `pkg-config gtk+-2.0 --libs` -l System
@@ -15,22 +16,22 @@ INSTALL	= install
 all: $(TARGETS)
 
 browser_OBJS = browser.o callbacks.o mime.o main.o
-browser_CFLAGS = $(CFLAGSF) $(CFLAGS)
+browser_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 browser: $(browser_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o browser $(browser_OBJS)
+	$(CC) -o browser $(browser_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 delete_OBJS = delete.o
-delete_CFLAGS = $(CFLAGSF) $(CFLAGS)
+delete_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 delete: $(delete_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o delete $(delete_OBJS)
+	$(CC) -o delete $(delete_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 open_OBJS = open.o mime.o
-open_CFLAGS = $(CFLAGSF) $(CFLAGS)
+open_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 open: $(open_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o open $(open_OBJS)
+	$(CC) -o open $(open_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 browser.o: browser.c mime.h callbacks.h browser.h
 	$(CC) $(browser_CFLAGS) -c browser.c
