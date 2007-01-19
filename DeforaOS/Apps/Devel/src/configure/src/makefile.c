@@ -323,32 +323,35 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * cff;
 	String const * cf;
 	String const * cpp;
+	String const * as;
 
 	cpp = config_get(configure->config, "", "cppflags");
 	if((cff = config_get(configure->config, "", "cflags_force")) != NULL)
 	{
-		fprintf(fp, "%s", "CC\t= cc\nCPPFLAGS=");
+		fputs("CC\t= cc\nCPPFLAGS=", fp);
 		if(cpp != NULL)
 			fprintf(fp, " %s", cpp);
 		fprintf(fp, "%s%s", "\nCFLAGSF\t= ", cff);
 		if(configure->os == HO_GNU_LINUX && string_find(cff, "-ansi"))
-			fprintf(fp, "%s", " -D _GNU_SOURCE"); /* FIXME undup */
+			fputs(" -D _GNU_SOURCE", fp); /* FIXME undup */
 		fputc('\n', fp);
 	}
 	if((cf = config_get(configure->config, "", "cflags")) != NULL)
 	{
 		if(cff == NULL)
 		{
-			fprintf(fp, "%s", "CC\t= cc\nCPPFLAGS=");
+			fputs("CC\t= cc\nCPPFLAGS=", fp);
 			if(cpp != NULL)
 				fprintf(fp, " %s", cpp);
 			fputc('\n', fp);
 		}
 		fprintf(fp, "%s%s", "CFLAGS\t= ", cf);
 		if(configure->os == HO_GNU_LINUX && string_find(cf, "-ansi"))
-			fprintf(fp, "%s", " -D _GNU_SOURCE");
+			fputs(" -D _GNU_SOURCE", fp);
 		fputc('\n', fp);
 	}
+	if((as = config_get(configure->config, "", "asflags")) != NULL)
+		fprintf(fp, "%s%s\n", "AS\t= as\nASFLAGS\t= ", as);
 }
 
 static void _targets_cxxflags(Configure * configure, FILE * fp)
@@ -422,10 +425,9 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 static void _variables_library(Configure * configure, FILE * fp, char * done)
 {
 	if(!done[TT_LIBRARY])
-	{
-		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
-		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
-	}
+		fprintf(fp, "%s%s%s%s\n", "PREFIX\t= ",
+				configure->prefs->prefix, "\nDESTDIR\t= ",
+				configure->prefs->destdir);
 	if(configure->prefs->libdir[0] == '/')
 		fprintf(fp, "%s%s\n", "LIBDIR\t= ", configure->prefs->libdir);
 	else
@@ -436,9 +438,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
 	}
-	fprintf(fp, "%s", "AR\t= ar -rc\n");
-	fprintf(fp, "%s", "RANLIB\t= ranlib\n");
-	fprintf(fp, "%s", "LD\t= ld -shared\n");
+	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= ld -shared\n", fp);
 }
 
 static int _targets_all(Configure * configure, FILE * fp);
@@ -620,6 +620,7 @@ static int _target_binary(Configure * configure, FILE * fp, String * target)
 	return 0;
 }
 
+static void _flags_asm(Configure * configure, FILE * fp, String * target);
 static void _flags_c(Configure * configure, FILE * fp, String * target);
 static void _flags_cxx(Configure * configure, FILE * fp, String * target);
 static void _target_flags(Configure * configure, FILE * fp, String * target)
@@ -652,6 +653,7 @@ static void _target_flags(Configure * configure, FILE * fp, String * target)
 			switch(type)
 			{
 				case OT_ASM_SOURCE:
+					_flags_asm(configure, fp, target);
 					break;
 				case OT_C_SOURCE:
 					_flags_c(configure, fp, target);
@@ -671,6 +673,16 @@ static void _target_flags(Configure * configure, FILE * fp, String * target)
 		sources+=i+1;
 		i = 0;
 	}
+}
+
+static void _flags_asm(Configure * configure, FILE * fp, String * target)
+{
+	String const * p;
+
+	fprintf(fp, "%s%s", target, "_ASFLAGS = $(CPPFLAGS) $(ASFLAGS)");
+	if((p = config_get(configure->config, target, "asflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
 }
 
 static void _flags_c(Configure * configure, FILE * fp, String * target)
@@ -727,8 +739,10 @@ static int _target_object(Configure * configure, FILE * fp, String * target)
 	}
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
+	/* FIXME include CFLAGS or ASFLAGS only if necessary */
 	fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ", target, target,
-			"_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)\n");
+			"_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)\n"); /*,
+			target, "_ASFLAGS = $(CPPFLAGS) $(ASFLAGS)\n"); */
 	return 0;
 }
 
@@ -784,7 +798,7 @@ static int _objects_target(Configure * configure, FILE * fp, String * target)
 	return 0;
 }
 
-static void _source_c_depends(Config * config, FILE * fp, String * source);
+static void _source_depends(Config * config, FILE * fp, String * source);
 static int _target_source(Configure * configure, FILE * fp, String * target,
 		String * source)
 {
@@ -801,13 +815,29 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 	switch((ot = enum_string(OT_LAST, sObjectType, extension)))
 	{
 		case OT_ASM_SOURCE:
+			if(configure->prefs->flags & PREFS_n)
+				break;
+			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
+					source, ".", sObjectType[ot]);
+			source[len] = '.'; /* FIXME ugly */
+			_source_depends(configure->config, fp, source);
+			p = config_get(configure->config, source, "asflags");
+			source[len] = '\0';
+			fprintf(fp, "%s%s%s", "\n\t$(AS) $(", target,
+					"_ASFLAGS)");
+			if(p != NULL)
+				fprintf(fp, " %s", p);
+			fprintf(fp, "%s%s%s%s%s%s", " -o ", source, ".o ",
+					source, ".", sObjectType[ot]);
+			fputc('\n', fp);
+			break;
 		case OT_C_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
 			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
 					source, ".", sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
-			_source_c_depends(configure->config, fp, source);
+			_source_depends(configure->config, fp, source);
 			p = config_get(configure->config, source, "cflags");
 			source[len] = '\0';
 			fprintf(fp, "%s%s%s", "\n\t$(CC) $(", target,
@@ -832,7 +862,7 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
 					source, ".", sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
-			_source_c_depends(configure->config, fp, source);
+			_source_depends(configure->config, fp, source);
 			p = config_get(configure->config, source, "cxxflags");
 			source[len] = '\0';
 			fprintf(fp, "%s%s%s", "\n\t$(CXX) $(", target,
@@ -853,7 +883,7 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 	return ret;
 }
 
-static void _source_c_depends(Config * config, FILE * fp, String * source)
+static void _source_depends(Config * config, FILE * fp, String * source)
 {
 	String * depends;
 	int i;
