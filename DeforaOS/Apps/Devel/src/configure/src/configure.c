@@ -309,7 +309,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	_prefs_init(&prefs);
-	while((o = getopt(argc, argv, "d:i:np:v")) != -1)
+	while((o = getopt(argc, argv, "d:i:l:np:v")) != -1)
 		switch(o)
 		{
 			case 'b':
