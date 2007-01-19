@@ -4,6 +4,7 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGSF= -l System 
@@ -15,7 +16,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 configure_OBJS = configure.o makefile.o settings.o
-configure_CFLAGS = $(CFLAGSF) $(CFLAGS)
+configure_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 configure: $(configure_OBJS)
 	$(CC) -o configure $(configure_OBJS) $(LDFLAGSF) $(LDFLAGS)
