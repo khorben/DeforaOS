@@ -15,13 +15,10 @@ _lang($text);
 $title = ARTICLES;
 $admin = 1;
 $list = 1;
+$user = array(array('icon' => 'modules/article/icon.png', 'name' => ARTICLES,
+			'action' => 'list', 'args' => '&user_id='.$user_id));
 if($user_id)
-{
 	$actions = array('submit' => SUBMIT);
-	$user = array(array('icon' => 'modules/article/icon.png',
-				'name' => ARTICLES, 'action' => 'list',
-				'args' => '&user_id='.$user_id));
-}
 
 
 ?>
