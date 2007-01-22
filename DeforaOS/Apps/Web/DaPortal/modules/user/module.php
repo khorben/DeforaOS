@@ -403,8 +403,7 @@ function user_register($args)
 {
 	global $user_id;
 
-	if(_config_get('user', 'register') != SQL_TRUE
-			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+	if(_config_get('user', 'register') != SQL_TRUE)
 		return _error(PERMISSION_DENIED);
 	if($user_id)
 		return _error(ALREADY_LOGGED_IN);
@@ -417,7 +416,7 @@ function user_register($args)
 		else
 		{
 			if(_sql_single('SELECT username FROM daportal_user'
-					." WHERE username='".$args['username']."';")
+					." WHERE username='".$args['username']."'")
 					== FALSE)
 			{
 				if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
