@@ -38,6 +38,10 @@ div.icon.enabled {
 	background-image:		url('../icons/16x16/enabled.png');
 }
 
+h1.title.logout {
+	background-image:		url('../icons/48x48/logout.png');
+}
+
 div.icon.project {
 	background-image:		url('../icons/16x16/project.png');
 }
