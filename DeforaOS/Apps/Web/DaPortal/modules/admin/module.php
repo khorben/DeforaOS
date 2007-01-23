@@ -81,7 +81,6 @@ function admin_admin($args)
 	{
 		$module = $modules[$i]['module'];
 		$modules[$i]['icon'] = '';
-		$modules[$i]['action'] = 'admin';
 		$modules[$i]['apply_module'] = 'admin';
 		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == SQL_TRUE)
 				? 'enabled' : 'disabled';
@@ -90,14 +89,20 @@ function admin_admin($args)
 			.$modules[$i]['enabled'].'" title="'
 			.($modules[$i]['enabled'] == 'enabled'
 					? ENABLED : DISABLED).'"/>';
-		$modules[$i]['module_name'] = '<a href="index.php?module='
-			._html_safe_link($module).'">'
-			._html_safe($module).'</a>';
+		$modules[$i]['module_name'] = _html_safe($module);
 		if(($d = _module_desktop($module)) != FALSE
 				&& strlen($d['title']))
 		{
 			$modules[$i]['name'] = $d['title'];
 			$modules[$i]['icon'] = $d['icon'];
+			if($d['admin'] == 1)
+			{
+				$modules[$i]['action'] = 'admin';
+				$modules[$i]['module_name'] =
+					'<a href="index.php?module='
+					._html_safe_link($module).'">'
+					._html_safe($module).'</a>';
+			}
 		}
 		else
 			$modules[$i]['name'] = $modules[$i]['module'];
