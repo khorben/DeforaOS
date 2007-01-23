@@ -82,11 +82,15 @@ function _desktop_include($name)
 	$admin = 0;
 	$list = 0;
 	$title = '';
+	$icon = 'admin.png';
 	$actions = FALSE;
 	$user = 0;
-	include_once('./modules/'.$name.'/desktop.php');
+	$filename = './modules/'.$name.'/desktop.php';
+	if(is_readable($filename))
+		include_once($filename);
 	return array('admin' => $admin, 'list' => $list, 'title' => $title,
-			'actions' => $actions, 'user' => $user);
+			'icon' => $icon, 'actions' => $actions,
+			'user' => $user);
 }
 
 ?>

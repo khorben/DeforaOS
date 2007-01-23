@@ -2,6 +2,7 @@
 
 
 $title = 'Search';
+$icon = 'search.png';
 $admin = 0;
 $list = 1;
 global $lang;

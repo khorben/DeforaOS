@@ -98,20 +98,18 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				'message' => $message);
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'link' => 'javascript:history.back()');
 	$toolbar[] = array('title' => 'Parent directory',
-			'icon' => 'icons/16x16/updir.png',
+			'class' => 'parent_directory',
 			'link' => 'index.php?module=project&action=browse'
 					.'&id='.$id
 					.(strlen($filename)
 					? '&file='.dirname($filename) : ''));
-	$toolbar[] = array('title' => 'Forward',
-			'icon' => 'icons/16x16/forward.png',
+	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Refresh',
-			'icon' => 'icons/16x16/refresh.png',
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
 			'class' => array('revision' => 'Revision',
@@ -194,10 +192,10 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 				'message' => $message);
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'link' => 'javascript:history.back()');
 	$toolbar[] = array('title' => 'Parent directory',
-			'icon' => 'icons/16x16/updir.png',
+			'class' => 'parent_directory',
 			'link' => 'index.php?module=project&action=browse'
 					.'&id='.$id
 					.'&file='.dirname($filename));

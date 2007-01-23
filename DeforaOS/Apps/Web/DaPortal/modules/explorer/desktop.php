@@ -2,6 +2,7 @@
 
 
 $title = 'Explorer';
+$icon = 'explorer.png';
 $admin = 0;
 $list = 0;
 

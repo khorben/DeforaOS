@@ -3,7 +3,7 @@
 	<div class="listing_thumbnails">
 <?php foreach($modules as $m) { ?>
 		<div class="entry">
-			<div class="thumbnail"><img src="modules/<?php echo _html_safe_link($m['name']); ?>/icon.png" alt=""/></div>
+			<div class="thumbnail"><img src="<?php echo _html_safe($m['thumbnail']); ?>" alt=""/></div>
 			<div class="name"><a href="index.php?module=<?php echo _html_safe_link($m['name']); ?>&action=admin"><?php echo _html_safe_link($m['title']); ?></a></div>
 		</div>
 <?php } ?>

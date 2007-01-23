@@ -97,16 +97,16 @@ function article_admin($args)
 						0, 19))));
 	}
 	$toolbar = array();
-	$toolbar[] = array('icon' => 'modules/article/icon.png',
-			'title' => SUBMIT_ARTICLE,
+	$toolbar[] = array('title' => SUBMIT_ARTICLE, 'class' => 'new',
 			'link' => 'index.php?module=article&action=submit');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $articles,
 				'class' => array('username' => AUTHOR,
 					'enabled' => ENABLED, 'date' => DATE),
@@ -122,6 +122,12 @@ function article_default($args)
 	if(isset($args['id']))
 		return article_display(array('id' => $args['id']));
 	article_list($args);
+}
+
+
+function article_delete($args)
+{
+	//FIXME implement
 }
 
 

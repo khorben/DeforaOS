@@ -22,7 +22,7 @@ else if($lang == 'fr')
 }
 _lang($text);
 _module('top'); ?>
-		<div class="container">
+		<div id="container">
 			<div class="top_search">
 				<form action="/index.php" method="get">
 					<div>
@@ -52,6 +52,6 @@ document.getElementById('lang').style.display='none';
 				//--></script>
 			</div></form>
 <?php } ?>
-			<div class="main">
+			<div id="main">
 <?php if(strlen($module)) _module(); else include('./templates/DeforaOS-default.tpl');
 _debug(); readfile('./templates/DeforaOS-bottom.tpl'); ?>

@@ -2,6 +2,7 @@
 
 
 $title = 'Users';
+$icon = 'users.png';
 $admin = 1;
 $list = 1;
 global $user_id;

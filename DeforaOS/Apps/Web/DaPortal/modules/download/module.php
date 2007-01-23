@@ -12,8 +12,8 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text = array();
 $text['DOWNLOADS_ADMINISTRATION'] = 'Downloads administration';
-$text['DOWNLOADS_CONFIGURATION'] = 'Downloads configuration';
 $text['DOWNLOADS_LIST'] = 'Downloads list';
+$text['DOWNLOADS_SETTINGS'] = 'Downloads settings';
 $text['MODE'] = 'Permissions';
 $text['NEW_DIRECTORY'] = 'New directory';
 $text['PARENT_DIRECTORY'] = 'Parent directory';
@@ -48,17 +48,16 @@ function download_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title download">'._html_safe(DOWNLOADS_ADMINISTRATION)
-			.'</h1>'."\n"
-			.'<h2><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(DOWNLOADS_CONFIGURATION).'</h2>'."\n");
+			.'</h1>'."\n".'<h2 class="title settings">'
+			._html_safe(DOWNLOADS_SETTINGS).'</h2>'."\n");
 	if(($configs = _config_list('download')))
 	{
 		$module = 'download';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	print('<h2><img src="modules/download/icon.png" alt=""/> '
-			._html_safe(DOWNLOADS_LIST).'</h2>'."\n");
+	print('<h2 class="title download">'._html_safe(DOWNLOADS_LIST).'</h2>'
+			."\n");
 	$dls = _sql_array('SELECT daportal_content.content_id AS id'
 			.', title AS name, enabled, mode'
 			.' FROM daportal_download, daportal_content'
@@ -87,17 +86,15 @@ function download_admin($args)
 		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => ENABLE, 'action' => 'enable',
-			'icon' => 'icons/16x16/enabled.png');
-	$toolbar[] = array('title' => DISABLE, 'action' => 'disable',
-			'icon' => 'icons/16x16/disabled.png');
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
+			'action' => 'enable');
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
+			'action' => 'disable');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DELETE, 'action' => 'delete',
-			'icon' => 'icons/16x16/delete.png',
-			'confirm' => 'delete');
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+			'action' => 'delete', 'confirm' => 'delete');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => REFRESH,
-			'icon' => 'icons/16x16/refresh.png',
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $dls,
 				'class' => array('enabled' => ENABLED,
@@ -196,35 +193,32 @@ function download_default($args)
 			: $dls[$i]['thumbnail'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Back', 'icon' => 'icons/16x16/back.png',
+	$toolbar[] = array('title' => 'Back', 'class' => 'back',
 			'link' => 'javascript:history.back()');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
-			'icon' => 'icons/16x16/updir.png',
+			'class' => 'parent_directory',
 			'link' => 'index.php?module=download&action=default'
 			.(isset($file['parent'])
 				? '&download_id='.$file['parent'] : ''));
-	$toolbar[] = array('title' => 'Forward',
-			'icon' => 'icons/16x16/forward.png',
+	$toolbar[] = array('title' => 'Forward', 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	if(_user_admin($user_id))
 	{
 		$toolbar[] = array();
 		$toolbar[] = array('title' => NEW_DIRECTORY,
-				'icon' => 'icons/16x16/newdir.png',
+				'class' => 'new_directory',
 				'link' => 'index.php?module=download&action'
 				.'=directory_new&id='.$file['id']);
 		$toolbar[] = array('title' => UPLOAD_FILE,
-				'icon' => 'icons/16x16/save.png',
+				'class' => 'upload_file',
 				'link' => 'index.php?module=download'
 				.'&action=file_new&id='.$file['id']);
 		$toolbar[] = array();
-		$toolbar[] = array('title' => DELETE, 'action' => 'delete',
-				'icon' => 'icons/16x16/delete.png',
-				'confirm' => 'delete');
+		$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+				'action' => 'delete', 'confirm' => 'delete');
 	}
 	$toolbar[] = array();
-	$toolbar[] = array('title' => REFRESH,
-			'icon' => 'icons/16x16/refresh.png',
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse', array('entries' => $dls,
 				'class' => array('username' => AUTHOR),
@@ -331,8 +325,8 @@ function download_directory_new($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1><img src="modules/download/directory.png" alt=""/> '
-			._html_safe(NEW_DIRECTORY).'</h1>'."\n");
+	print('<h1 class="title directory">'._html_safe(NEW_DIRECTORY).'</h1>'
+			."\n");
 	$parent = $args['id'];
 	include('./modules/download/directory_update.tpl');
 }

@@ -71,20 +71,15 @@ function category_admin($args)
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_CATEGORY,
-			'icon' => 'modules/category/icon.png',
+	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
 			'link' => 'index.php?module=category&action=new');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
-			'action' => 'delete',
-			'confirm' => 'delete');
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $categories,
 				'class' => array('enabled' => ENABLED,
 					'members' => MEMBERS),
@@ -160,8 +155,7 @@ function category_display($args)
 		$contents[$i]['name'] = $contents[$i]['title'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_CATEGORY,
-			'icon' => 'modules/category/icon.png',
+	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
 			'link' => 'index.php?module=category&action=new');
 	_module('explorer', 'browse', array('entries' => $contents,
 				'toolbar' => $toolbar));
@@ -222,13 +216,11 @@ function category_get($args)
 			." WHERE content_id='".$args['id']."'") == $user_id)
 	{
 		$toolbar = array();
-		$toolbar[] = array('title' => NEW_CATEGORY,
-				'icon' => 'modules/category/icon.png',
+		$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'add',
 				'link' => 'index.php?module=category&action=set'
 				.'&id='.$args['id']);
 		$toolbar[] = array();
-		$toolbar[] = array('title' => DELETE_LINK,
-				'icon' => 'icons/16x16/delete.png',
+		$toolbar[] = array('title' => DELETE_LINK, 'class' => 'remove',
 				'action' => 'link_delete',
 				'confirm' => 'delete link');
 	}
@@ -339,7 +331,8 @@ function category_link_insert_new($args)
 
 function category_list($args)
 {
-	print('<h1 class="title category">'._html_safe(CATEGORY_LIST).'</h1>'."\n");
+	print('<h1 class="title category">'._html_safe(CATEGORY_LIST).'</h1>'
+			."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
 			.', content AS description, name AS module'
 			.' FROM daportal_content, daportal_module'
@@ -358,8 +351,7 @@ function category_list($args)
 		$categories[$i]['name'] = $categories[$i]['title'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_CATEGORY,
-			'icon' => 'modules/category/icon.png',
+	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
 			'link' => 'index.php?module=category&action=new');
 	_module('explorer', 'browse', array('entries' => $categories,
 				'view' => 'list', 'toolbar' => $toolbar));
@@ -432,8 +424,7 @@ function category_set($args)
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => ASSOCIATE_TO_CONTENT,
-			'icon' => 'modules/category/icon.png',
+	$toolbar[] = array('title' => ASSOCIATE_TO_CONTENT, 'class' => 'add',
 			'action' => 'link_insert');
 	_module('explorer', 'browse', array('entries' => $categories,
 				'view' => 'list', 'toolbar' => $toolbar,

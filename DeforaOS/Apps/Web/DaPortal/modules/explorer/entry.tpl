@@ -6,8 +6,8 @@
 <?php if(isset($entry['apply_args'])) { ?>
 			<input type="hidden" name="entry_<?php echo $explorer_id.'_'.$i; ?>_args" value="<?php echo _html_safe($entry['apply_args']); ?>"/>
 <?php } } ?>
-			<div class="icon"><?php echo $link; ?><img src="<?php echo $entry['icon']; ?>" alt=""/><?php echo $link_end; ?></div>
-			<div class="thumbnail"><img src="<?php echo _html_safe_link($entry['thumbnail']); ?>" alt=""/></div>
+			<div class="icon"><?php echo $link; ?><img src="<?php if(isset($entry['icon'])) echo $entry['icon']; ?>" alt=""/><?php echo $link_end; ?></div>
+			<div class="thumbnail"><img src="<?php if(isset($entry['thumbnail'])) echo _html_safe_link($entry['thumbnail']); ?>" alt=""/></div>
 			<div class="name"><?php echo $link.$entry['name'].$link_end; ?></div>
 <?php foreach($class as $c) { ?>
 			<div class="<?php echo _html_safe($c); ?>"><?php echo $entry[$c]; ?></div>

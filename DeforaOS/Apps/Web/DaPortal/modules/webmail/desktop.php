@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Webmail';
+$icon = 'webmail.png';
 $admin = 1;
 global $user_id;
 $list = $user_id != 0 ? 1 : 0;
@@ -16,6 +17,7 @@ $actions = array('default' => 'Message list',
 global $lang;
 if($lang == 'de')
 {
+	$actions['logout'] = 'Ausloggen';
 }
 else if($lang == 'fr')
 {

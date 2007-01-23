@@ -102,7 +102,7 @@ $probe_types['swap'] = array('name' => 'swap usage', 'unit' => 'bytes',
 		.' GPRINT:pswapfree:MAX:"Maximum\: %.0lf MB\g"');
 
 $probe_types['users'] = array('name' => 'logged users',
-		'thumbnail' => 'modules/user/icon.png', 'unit' => 'users',
+		'thumbnail' => 'icons/48x48/users.png', 'unit' => 'users',
 		'def' => array('users'), 'data' => ' AREA:users#b0b0ff'
 		.' LINE1:users#0f0fef:"Logged users\t\g"'
 		.' GPRINT:users:LAST:"Current\: %.0lf\t\g"'
@@ -274,14 +274,12 @@ function probe_admin($args)
 			.'</h1>'."\n");
 	if(($configs = _config_list('probe')))
 	{
-		print('<h2><img src="modules/probe/icon.png" alt=""/> '
-				.'Configuration</h2>'."\n");
+		print('<h2 class="title settings">Settings</h2>'."\n");
 		$module = 'probe';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	print('<h2><img src="modules/probe/icon.png" alt=""/> '
-			._html_safe(HOST_LIST)."</h2>\n");
+	print('<h2 class="title host">'._html_safe(HOST_LIST)."</h2>\n");
 	$module_id = _module_id('probe');
 	$hosts = _sql_array('SELECT content_id AS id, title AS name, enabled'
 			.' FROM daportal_content'
@@ -292,18 +290,16 @@ function probe_admin($args)
 	{
 		$hosts[$i]['module'] = 'probe';
 		$hosts[$i]['action'] = 'host_modify';
-		$hosts[$i]['icon'] = 'modules/probe/icon.png';
-		$hosts[$i]['thumbnail'] = 'modules/probe/icon.png';
+		$hosts[$i]['icon'] = 'icons/16x16/host.png';
+		$hosts[$i]['thumbnail'] = 'icons/48x48/host.png';
 		$hosts[$i]['apply_module'] = 'probe';
 		$hosts[$i]['apply_id'] = $hosts[$i]['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_HOST,
-			'icon' => 'modules/probe/icon.png',
+	$toolbar[] = array('title' => NEW_HOST, 'class' => 'new',
 			'link' => 'index.php?module=probe&action=host_new');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'host_delete', 'confirm' => 'delete');
 	_module('explorer', 'browse', array('entries' => $hosts,
 			'toolbar' => $toolbar, 'view' => 'details',
@@ -415,9 +411,9 @@ function probe_graph_list($args)
 		$t['title'] = $t['name'];
 		$t['args'] = '&type='.$k;
 		if(!isset($t['thumbnail']))
-			$t['thumbnail'] = 'modules/probe/icon.png';
+			$t['thumbnail'] = 'icons/48x48/host.png';
 		if(!isset($t['icon']))
-			$t['icon'] = $t['thumbnail'];
+			$t['icon'] = 'icons/16x16/host.png';
 		$types[] = $t;
 	}
 	_module('explorer', 'browse', array('entries' => $types));
@@ -463,8 +459,8 @@ function probe_host_list($args)
 	{
 		$hosts[$i]['module'] = 'probe';
 		$hosts[$i]['action'] = 'default';
-		$hosts[$i]['icon'] = 'modules/probe/icon.png';
-		$hosts[$i]['thumbnail'] = 'modules/probe/icon.png';
+		$hosts[$i]['icon'] = 'icons/16x16/host.png';
+		$hosts[$i]['thumbnail'] = 'icons/48x48/host.png';
 	}
 	_module('explorer', 'browse', array('entries' => $hosts,
 			'view' => 'list'));
@@ -531,7 +527,7 @@ function probe_system($args)
 			break;
 		case 'default':
 			if(isset($args['id']) || isset($args['type']))
-				header('refresh: 30');
+				header('Refresh: 30');
 			break;
 	}
 }

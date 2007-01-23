@@ -2,6 +2,7 @@
 
 
 $title = 'Projects';
+$icon = 'project.png';
 $admin = 1;
 $list = 1;
 $actions = array('download' => 'Downloads',
@@ -26,10 +27,9 @@ else if($lang == 'fr')
 
 global $user_id;
 if($user_id)
-	$user = array(array('icon' => 'modules/project/icon.png',
-				'name' => $title,
+	$user = array(array('icon' => 'project.png', 'name' => $title,
 				'args' => '&user_id='.$user_id),
-			array('icon' => 'modules/project/bug.png',
+			array('icon' => 'bug.png',
 				'name' => $actions['bug_list'],
 				'action' => 'bug_list',
 				'args' => '&user_id='.$user_id));

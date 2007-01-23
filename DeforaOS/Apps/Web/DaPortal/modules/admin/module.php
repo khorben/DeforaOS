@@ -40,11 +40,9 @@ function admin_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title admin">'._html_safe(PORTAL_ADMINISTRATION)
 			."</h1>\n");
-	print('<h2><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(SETTINGS).'</h2>'."\n");
+	print('<h2 class="title settings">'._html_safe(SETTINGS).'</h2>'."\n");
 	include('./modules/admin/settings.tpl');
-	print('<h2><img src="modules/admin/lang.png" alt=""/> '
-			._html_safe(LANGUAGES).'</h2>'."\n");
+	print('<h2 class="title language">'._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
 			.' FROM daportal_lang')) == FALSE)
 		_error('Unable to list languages');
@@ -65,19 +63,16 @@ function admin_admin($args)
 						? ENABLED : DISABLED).'"/>';
 		}
 		$toolbar = array();
-		$toolbar[] = array('title' => DISABLE,
-				'icon' => 'icons/16x16/disabled.png',
+		$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 				'action' => 'lang_disable');
-		$toolbar[] = array('title' => ENABLE,
-				'icon' => 'icons/16x16/enabled.png',
+		$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 				'action' => 'lang_enable');
 		_module('explorer', 'browse_trusted', array('entries' => $lang,
 				'class' => array('enabled' => ENABLED),
 				'toolbar' => $toolbar, 'view' => 'details',
 				'module' => 'admin', 'action' => 'admin'));
 	}
-	print('<h2><img src="modules/admin/icon.png" alt=""/> '
-			._html_safe(MODULES).'</h2>'."\n");
+	print('<h2 class="title modules">'._html_safe(MODULES).'</h2>'."\n");
 	if(($modules = _sql_array('SELECT module_id AS apply_id, name AS module'
 			.', enabled FROM daportal_module'
 			.' ORDER BY module ASC')) == FALSE)
@@ -85,8 +80,7 @@ function admin_admin($args)
 	for($cnt = count($modules), $i = 0; $i < $cnt; $i++)
 	{
 		$module = $modules[$i]['module'];
-		$modules[$i]['icon'] = 'modules/'.$module.'/icon.png';
-		$modules[$i]['thumbnail'] = 'modules/'.$module.'/icon.png';
+		$modules[$i]['icon'] = '';
 		$modules[$i]['action'] = 'admin';
 		$modules[$i]['apply_module'] = 'admin';
 		$modules[$i]['enabled'] = ($modules[$i]['enabled'] == SQL_TRUE)
@@ -101,17 +95,20 @@ function admin_admin($args)
 			._html_safe($module).'</a>';
 		if(($d = _module_desktop($module)) != FALSE
 				&& strlen($d['title']))
+		{
 			$modules[$i]['name'] = $d['title'];
+			$modules[$i]['icon'] = $d['icon'];
+		}
 		else
 			$modules[$i]['name'] = $modules[$i]['module'];
+		$modules[$i]['thumbnail'] = 'icons/48x48/'.$modules[$i]['icon'];
+		$modules[$i]['icon'] = 'icons/16x16/'.$modules[$i]['icon'];
 		$modules[$i]['name'] = _html_safe_link($modules[$i]['name']);
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'module_disable');
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'module_enable');
 	_module('explorer', 'browse_trusted', array('entries' => $modules,
 			'class' => array('enabled' => ENABLED,
@@ -134,6 +131,7 @@ function admin_default()
 		if(($m = _module_desktop($r['name'])) == FALSE
 				|| $m['admin'] != 1)
 			continue;
+		$m['thumbnail'] = 'icons/48x48/'.$m['icon'];
 		$modules[] = $m;
 	}
 	include('./modules/admin/default.tpl');
@@ -207,7 +205,7 @@ function admin_system($args)
 {
 	global $title, $html;
 
-	$title.=' - Administration';
+	$title.=' - '.ADMINISTRATION;
 	if($_SERVER['REQUEST_METHOD'] == 'POST'
 			&& $args['action'] == 'settings_update')
 		$html = 0;

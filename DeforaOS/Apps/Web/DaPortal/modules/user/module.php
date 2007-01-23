@@ -14,22 +14,35 @@ $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
 $text['MY_CONTENT'] = 'My content';
 $text['MY_PROFILE'] = 'My profile';
+$text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
 $text['USER_REGISTRATION'] = 'User registration';
+$text['USERS'] = 'Users';
 $text['USERS_ADMINISTRATION'] = 'Users administration';
 $text['WRONG_PASSWORD'] = 'Wrong password';
+$text['YOUR_PASSWORD_IS'] = 'Your password is ';
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+{
+	$text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail Adresse schon benutzt';
+	$text['MY_CONTENT'] = 'Mein Datei';
+	$text['MY_PROFILE'] = 'Mein Konto';
+	$text['USER_LOGIN'] = 'Benutzer einloggen';
+	$text['WRONG_PASSWORD'] = 'Falsch Passwort';
+}
+else if($lang == 'fr')
 {
 	$text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
 	$text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
+	$text['NEW_USER'] = 'Nouvel utilisateur';
 	$text['REGISTER'] = "S'inscrire";
 	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
 	$text['USER_LOGIN'] = 'Authentification utilisateur';
 	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
 	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
+	$text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est ';
 }
 _lang($text);
 
@@ -43,7 +56,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 	if(_sql_query('INSERT INTO daportal_user_register (user_id, key)'
 			.' VALUES ('."'$id', '$key')") == FALSE)
 		return _error('Could not create confirmation key');
-	$message = "Your password is '$password'\n\n"
+	$message = YOUR_PASSWORD_IS." '$password'\n\n"
 			."Please click on the following link to confirm:\n"
 			.(isset($_SERVER['HTTPS']) ? 'https' : 'http')
 			.'://'.$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']
@@ -74,26 +87,26 @@ function user_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title user">'._html_safe(USERS_ADMINISTRATION)
+	print('<h1 class="title users">'._html_safe(USERS_ADMINISTRATION)
 			."</h1>\n");
 	if(($configs = _config_list('user')))
 	{
-		print('<h2><img src="modules/admin/icon.png" alt=""/>'
-			.' Configuration</h2>'."\n");
+		print('<h2 class="title settings">Settings</h2>'."\n");
 		$module = 'user';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	$order = 'name ASC';
+	print('<h2 class="title users">'._html_safe(USERS).'</h2>'."\n");
+	$order = 'name';
 	if(isset($args['sort']))
 		switch($args['sort'])
 		{
-			case 'admin':	$order = 'admin ASC';	break;
-			case 'email':	$order = 'email ASC';	break;
+			case 'admin':	$order = 'admin';	break;
+			case 'email':	$order = 'email';	break;
 		}
 	$users = _sql_array('SELECT user_id AS id, username AS name'
 			.', enabled, admin, email'
-			.' FROM daportal_user ORDER BY '.$order);
+			.' FROM daportal_user ORDER BY '.$order.' ASC');
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
@@ -101,8 +114,8 @@ function user_admin($args)
 	{
 		$users[$i]['module'] = 'user';
 		$users[$i]['action'] = 'admin';
-		$users[$i]['icon'] = 'modules/user/user.png';
-		$users[$i]['thumbnail'] = 'modules/user/user.png';
+		$users[$i]['icon'] = 'icons/48x48/user.png';
+		$users[$i]['thumbnail'] = 'icons/48x48/user.png';
 		$users[$i]['name'] = _html_safe_link($users[$i]['name']);
 		$users[$i]['apply_module'] = 'user';
 		$users[$i]['apply_id'] = $users[$i]['id'];
@@ -124,28 +137,23 @@ function user_admin($args)
 				.'">'._html_safe($users[$i]['email']).'</a>';
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'New user',
-			'icon' => 'modules/user/icon.png',
+	$toolbar[] = array('title' => NEW_USER, 'class' => 'new',
 			'link' => 'index.php?module=user&action=new');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
-	_module('explorer', 'browse_trusted', array('toolbar' => $toolbar,
-				'entries' => $users,
+	_module('explorer', 'browse_trusted', array('entries' => $users,
+				'toolbar' => $toolbar, 'view' => 'details',
 				'class' => array('enabled' => ENABLED,
 					'admin' => 'Admin',
 					'email' => 'e-mail'),
 				'module' => 'user', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
-				: 'name',
-				'view' => 'details'));
+				: 'name'));
 }
 
 
@@ -153,8 +161,7 @@ function user_appearance($args)
 {
 	global $theme;
 
-	print('<h1><img src="modules/user/appearance.png" alt=""/> '
-			._html_safe(APPEARANCE)."</h1>\n");
+	print('<h1 class="title appearance">'._html_safe(APPEARANCE)."</h1>\n");
 	$themes = array();
 	if(($dir = opendir('themes')) != FALSE)
 	{
@@ -205,26 +212,26 @@ function user_default($args)
 			." WHERE user_id='$user_id'")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
-	print('<h1><img src="images/home.png" alt=""/> '
-			._html_safe($user['username'])."'s page</h1>\n");
+	print('<h1 class="title home">'._html_safe($user['username'])
+			."'s page</h1>\n");
 	$modules = array();
 	if(_user_admin($user_id) && ($d = _module_desktop('admin')) != FALSE)
 		$modules[] = array('name' => $d['title'],
-				'thumbnail' => 'modules/admin/icon.png',
+				'thumbnail' => 'icons/48x48/admin.png',
 				'module' => 'admin', 'action' => 'default');
 	$modules[] = array('name' => APPEARANCE,
-			'thumbnail' => 'modules/user/appearance.png',
+			'thumbnail' => 'icons/48x48/appearance.png',
 			'module' => 'user', 'action' => 'appearance');
 	$modules[] = array('name' => MY_CONTENT,
-			'thumbnail' => 'modules/content/icon.png',
+			'thumbnail' => 'icons/48x48/content.png',
 			'module' => 'user', 'action' => 'default',
 			'id' => $user_id);
 	$modules[] = array('name' => MY_PROFILE,
-			'thumbnail' => 'modules/admin/icon.png',
+			'thumbnail' => 'icons/48x48/admin.png',
 			'module' => 'user', 'action' => 'admin',
 			'id' => $user_id);
 	$modules[] = array('name' => LOGOUT,
-			'thumbnail' => 'modules/user/logout.png',
+			'thumbnail' => 'icons/48x48/logout.png',
 			'module' => 'user', 'action' => 'logout');
 	_module('explorer', 'browse', array('entries' => $modules,
 				'view' => 'thumbnails', 'toolbar' => 0));
@@ -271,8 +278,8 @@ function user_display($args)
 	$res = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
 	if(!is_array($res))
 		return _error('Could not list modules');
-	print('<h1><img src="modules/user/user.png" alt=""/> '
-			._html_safe($user['username'])."'s content</h1>\n");
+	print('<h1 class="title user">'._html_safe($user['username'])
+			."'s content</h1>\n");
 	$entries = array();
 	foreach($res as $r)
 	{
@@ -285,7 +292,10 @@ function user_display($args)
 				$e['module'] = $r['name'];
 			if(!isset($e['action']))
 				$e['action'] = 'default';
-			$e['thumbnail'] = $e['icon'];
+			$e['icon'] = isset($e['icon']) ? $e['icon']
+				: $d['icon'];
+			$e['thumbnail'] = 'icons/48x48/'.$e['icon'];
+			$e['icon'] = 'icons/16x16/'.$e['icon'];
 			$entries[] = $e;
 		}
 	}

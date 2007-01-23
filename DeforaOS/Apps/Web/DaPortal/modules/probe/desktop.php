@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Monitoring';
+$icon = 'host.png';
 $admin = 1;
 $list = 1;
 $actions = array('graph_list' => array('title' => 'Graphs'),

@@ -94,18 +94,14 @@ function news_admin($args)
 							0, 19))));
 	}
 	$toolbar = array();
-	$toolbar[] = array('icon' => 'modules/news/icon.png',
-			'title' => SUBMIT_NEWS,
+	$toolbar[] = array('title' => SUBMIT_NEWS, 'class' => 'new',
 			'link' => 'index.php?module=news&action=submit');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => array('username' => AUTHOR,
@@ -213,7 +209,8 @@ function news_headline($args)
 
 function _list_user($user_id, $username)
 {
-	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)."</h1>\n");
+	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
+			."</h1>\n");
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 		.', daportal_content.enabled, daportal_content.user_id'
 		.', username, name AS module'

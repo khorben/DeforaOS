@@ -1,9 +1,9 @@
 <?php global $title, $module_name; ?>
 <?php _module('top'); ?>
 
-<div class="container">
+<div id="container">
 <?php _module('menu'); ?>
-	<div class="main">
+	<div id="main">
 <?php _module(); ?>
 	</div>
 <div style="clear: both"></div>

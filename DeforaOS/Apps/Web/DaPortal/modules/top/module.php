@@ -33,8 +33,8 @@ function top_admin($args)
 				? _html_safe_link($links[$i]['url'])
 						.'favicon.png'
 				: 'modules/top/icon.png'; */
-		$links[$i]['icon'] = 'modules/top/icon.png';
-		$links[$i]['thumbnail'] = 'modules/top/icon.png';
+		$links[$i]['icon'] = 'icons/16x16/top.png';
+		$links[$i]['thumbnail'] = 'icons/48x48/top.png';
 		$links[$i]['apply_module'] = 'top';
 		$links[$i]['apply_id'] = $links[$i]['top_id'];
 		$links[$i]['link'] = 'index.php?module=top&action=modify&id='
@@ -47,22 +47,20 @@ function top_admin($args)
 			$links[$i]['move'].='<a href="index.php?module=top'
 				.'&action=move&id='.$links[$i]['top_id']
 				.'&to='.$links[$i+1]['top_id'].'">'
-				.'<img src="modules/top/down.png" alt="down"/>'
+				.'<img src="icons/16x16/down.png" alt="down"/>'
 				.'</a>';
 		if($last_id)
 			$links[$i]['move'].= '<a href="index.php?module=top'
 				.'&action=move&id='.$links[$i]['top_id']
 				.'&to='.$last_id.'">'
-				.'<img src="modules/top/up.png" alt="up"/></a>';
+				.'<img src="icons/16x16/up.png" alt="up"/></a>';
 		$last_id = $links[$i]['top_id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_LINK,
-			'icon' => 'modules/top/icon.png',
+	$toolbar[] = array('title' => NEW_LINK, 'class' => 'new',
 			'link' => 'index.php?module=top&action=new');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('module' => 'top',
 			'action' => 'admin', 'view' => 'details',

@@ -48,8 +48,7 @@ function comment_admin($args)
 	print('<h1 class="title comment">'.COMMENT_ADMINISTRATION.'</h1>'."\n");
 	if(($configs = _config_list('comment')))
 	{
-		print('<h2><img src="modules/admin/icon.png" alt=""/>'
-				.' Configuration</h2>'."\n");
+		print('<h2 class="title settings">Settings</h2>'."\n");
 		$module = 'comment';
 		$action = 'config_update';
 		include('./system/config.tpl');
@@ -85,23 +84,18 @@ function comment_admin($args)
 						19))));
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
-	$toolbar[] = array('title' => DELETE, //FIXME does not work
-			'icon' => 'icons/16x16/delete.png',
+	//FIXME does not work
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => DELETE);
-	_module('explorer', 'browse_trusted', array(
+	_module('explorer', 'browse_trusted', array('entries' => $comments,
 			'class' => array('username' => USERNAME,
 				'enabled' => ENABLED, 'date' => DATE),
-			'entries' => $comments,
-			'toolbar' => $toolbar,
-			'view' => 'details',
-			'module' => 'comment',
-			'action' => 'admin'));
+			'toolbar' => $toolbar, 'view' => 'details',
+			'module' => 'comment', 'action' => 'admin'));
 }
 
 

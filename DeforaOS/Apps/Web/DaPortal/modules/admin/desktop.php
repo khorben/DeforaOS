@@ -8,6 +8,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 
 
 $title = 'Administration';
+$icon = 'admin.png';
 $admin = 1;
 $list = 0;
 global $user_id;

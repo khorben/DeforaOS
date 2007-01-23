@@ -2,21 +2,17 @@
 
 
 
-//check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
-	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
-
-
-$title = NEWS;
+$title = 'News';
+$icon = 'news.png';
 $admin = 1;
 $list = 1;
 global $user_id;
 if($user_id)
 {
 	$actions = array('submit' => SUBMIT);
-	$user = array(array('icon' => 'modules/news/icon.png', 'name' => NEWS,
-				'action' => 'list', 'args' => '&user_id='.$user_id));
+	$user = array(array('icon' => 'news.png', 'name' => $title,
+				'action' => 'list',
+				'args' => '&user_id='.$user_id));
 }
 
 

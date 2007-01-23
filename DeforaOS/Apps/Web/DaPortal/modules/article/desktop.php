@@ -13,9 +13,10 @@ global $lang, $user_id;
 _lang($text);
 
 $title = ARTICLES;
+$icon = 'article.png';
 $admin = 1;
 $list = 1;
-$user = array(array('icon' => 'modules/article/icon.png', 'name' => ARTICLES,
+$user = array(array('icon' => 'article.png', 'name' => ARTICLES,
 			'action' => 'list', 'args' => '&user_id='.$user_id));
 if($user_id)
 	$actions = array('submit' => SUBMIT);

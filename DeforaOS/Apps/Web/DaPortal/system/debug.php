@@ -12,7 +12,7 @@ function _debug()
 
 	if(!$debug || !$html)
 		return;
-	print('<div class="debug"><div class="system">'."\n");
+	print('<div class="debug">'."\n");
 	print($debug_messages);
 	$debug_time_after = gettimeofday();
 	$sec = $debug_time_after['sec'] - $debug_time_before['sec'];
@@ -24,7 +24,7 @@ function _debug()
 	}
 	print('<div class="info"><b>Info:</b> Page execution duration: '
 			.$sec.'s and '.ceil($usec/1000).'ms</div>'."\n");
-	print('</div></div>'."\n");
+	print('</div>'."\n");
 }
 
 
@@ -37,10 +37,8 @@ function _debug_message($level, $message, $visible = 0)
 	if(!$html)
 		return;
 	if($visible)
-		print('<div class="debug"><div class="visible error">'
-				.'<img src="images/'.$level.'.png"'
-				.' alt="error"/> '.htmlspecialchars($message)
-				."</div></div>\n");
+		print('<div class="debug"><div class="visible '.$level.'">'
+				.htmlspecialchars($message)."</div></div>\n");
 	if(!$debug)
 		return;
 	$debug_messages.="\t".'<div class="'.$level.'"><b>'.(ucfirst($level))

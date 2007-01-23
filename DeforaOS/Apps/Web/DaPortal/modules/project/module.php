@@ -22,6 +22,7 @@ $text['MEMBERS'] = 'Members';
 $text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
 $text['MODIFICATION_OF_REPLY_TO_BUG_HASH'] = 'Modification of reply to bug #';
 $text['NEW_PROJECT'] = 'New project';
+$text['NEW_REPORT'] = 'New report';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PRIORITY'] = 'Priority';
 $text['PRIORITY_CHANGED_TO'] = 'Priority changed to';
@@ -36,6 +37,7 @@ $text['REPLY_ON'] = 'on';
 $text['REPLY_TO_BUG'] = 'Reply to bug';
 $text['REPORT_A_BUG'] = 'Report a bug';
 $text['REPORT_BUG_FOR'] = 'Report bug for';
+$text['REPORT_LIST'] = 'Report list';
 $text['REVISION'] = 'Revision';
 $text['SCREENSHOTS'] = 'Screenshots';
 $text['STATE'] = 'State';
@@ -100,14 +102,13 @@ function project_admin($args)
 			.'</h1>'."\n");
 	if(($configs = _config_list('project')))
 	{
-		print('<h2><img src="modules/project/icon.png" alt=""/>'
-				.' Configuration</h2>'."\n");
+		print('<h2 class="title settings"/>Settings</h2>'."\n");
 		$module = 'project';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	print('<h2><img src="modules/project/icon.png" alt=""/> '
-			._html_safe(PROJECT_LIST).'</h2>'."\n");
+	print('<h2 class="title project">'._html_safe(PROJECT_LIST).'</h2>'
+			."\n");
 	$sql = 'SELECT content_id AS id, name, title AS desc, username AS admin'
 		.', daportal_content.enabled AS enabled'
 		.', daportal_content.user_id AS user_id, cvsroot'
@@ -121,8 +122,8 @@ function project_admin($args)
 	for($i = 0, $cnt = count($projects); $i < $cnt; $i++)
 	{
 		$projects[$i]['name'] = _html_safe_link($projects[$i]['name']);
-		$projects[$i]['icon'] = 'modules/project/icon.png';
-		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
+		$projects[$i]['icon'] = 'icons/16x16/project.png';
+		$projects[$i]['thumbnail'] = 'icons/48x48/project.png';
 		$projects[$i]['admin'] = '<a href="index.php?module=project'
 				.'&amp;action=list'
 				.'&amp;user_id='.$projects[$i]['user_id'].'">'
@@ -139,18 +140,14 @@ function project_admin($args)
 			.$projects[$i]['enabled'].'"/>';
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_PROJECT,
-			'icon' => 'modules/project/icon.png',
+	$toolbar[] = array('title' => NEW_PROJECT, 'class' => 'new',
 			'link' => 'index.php?module=project&action=new');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => DISABLE,
-			'icon' => 'icons/16x16/disabled.png',
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'disable');
-	$toolbar[] = array('title' => ENABLE,
-			'icon' => 'icons/16x16/enabled.png',
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable', 'confirm' => 'enable');
-	$toolbar[] = array('title' => DELETE,
-			'icon' => 'icons/16x16/delete.png',
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $projects,
 			'class' => array('enabled' => ENABLED,
@@ -159,6 +156,29 @@ function project_admin($args)
 					'cvsroot' => CVS_PATH),
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'project', 'action' => 'admin'));
+	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'
+			."\n");
+	$sql = 'SELECT title AS name, enabled'
+		.' FROM daportal_bug, daportal_content'
+		.' WHERE daportal_bug.content_id=daportal_content.content_id'
+		.' ORDER BY bug_id DESC';
+	$reports = _sql_array($sql);
+	if(!is_array($reports))
+		return _error('Could not list reports');
+	$toolbar = array();
+	$toolbar[] = array('title' => NEW_REPORT, 'class' => 'new',
+			'link' => 'index.php?module=project&action=bug_new');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
+			'action' => 'disable', 'confirm' => 'disable');
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
+			'action' => 'enable', 'confirm' => 'enable');
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+			'action' => 'delete', 'confirm' => 'delete');
+	_module('explorer', 'browse', array('entries' => array(),
+				'view' => 'details', 'toolbar' => $toolbar,
+				'class' => array('enabled' => ENABLED),
+				'module' => 'project', 'action' => 'admin'));
 }
 
 
@@ -519,8 +539,8 @@ function project_bug_list($args)
 	$toolbar = array();
 	$link = 'index.php?module=project&action=bug_new'.(isset($project_id)
 			? '&project_id='.$project_id : '');
-	$toolbar[] = array('icon' => 'modules/project/bug.png',
-		'title' => REPORT_A_BUG, 'link' => $link);
+	$toolbar[] = array('title' => REPORT_A_BUG, 'class' => 'bug',
+			'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
 			'class' => array('nb' => '#', 'project' => PROJECT,
 					'date' => DATE, 'state' => STATE,
@@ -561,7 +581,7 @@ function project_bug_modify($args)
 
 function project_bug_new($args)
 {
-	if(!is_numeric($args['project_id'])
+	if(!isset($args['project_id']) || !is_numeric($args['project_id'])
 			|| !($project = _project_name($args['project_id'])))
 		return project_list(array('action' => 'bug_new'));
 	$title = REPORT_BUG_FOR.' '.$project;
@@ -1083,7 +1103,7 @@ function project_enable($args)
 		return _error(INVALID_PROJECT);
 	require_once('./system/content.php');
 	_content_enable($id);
-	if($args['display'] != 0)
+	if(isset($args['display']) && $args['display'] != 0)
 		project_display(array('id' => $id));
 }
 
@@ -1132,16 +1152,14 @@ function project_list($args)
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1 class="title project">'._html_safe($title).'</h1>'."\n");
-	$projects = _sql_array('SELECT content_id AS id, name, title'
-			.', username AS admin'
-			.', daportal_content.user_id AS user_id'
-			.' FROM daportal_content, daportal_user'
-			.', daportal_project'
-			." WHERE daportal_content.enabled='1'"
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' AND daportal_content.content_id'
-			.'=daportal_project.project_id'
-			.$where.' ORDER BY name ASC');
+	$sql = 'SELECT content_id AS id, name, title, username AS admin'
+		.', daportal_content.user_id AS user_id'
+		.' FROM daportal_content, daportal_user, daportal_project'
+		." WHERE daportal_content.enabled='1'"
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' AND daportal_content.content_id=daportal_project.project_id'
+		.$where.' ORDER BY name ASC';
+	$projects = _sql_array($sql);
 	if(!is_array($projects))
 		return _error('Could not list projects');
 	for($i = 0, $cnt = count($projects); $i < $cnt; $i++)
@@ -1152,8 +1170,8 @@ function project_list($args)
 			$projects[$i]['link'] = 'index.php?module=project'
 				.'&action='.$action
 				.'&project_id='.$projects[$i]['id'];
-		$projects[$i]['icon'] = 'modules/project/icon.png';
-		$projects[$i]['thumbnail'] = 'modules/project/icon.png';
+		$projects[$i]['icon'] = 'icons/16x16/project.png';
+		$projects[$i]['thumbnail'] = 'icons/48x48/project.png';
 		$projects[$i]['admin'] = '<a href="index.php?module=user'
 			.'&amp;id='._html_safe_link($projects[$i]['user_id'])
 			.'">'._html_safe($projects[$i]['admin']).'</a>';
@@ -1166,7 +1184,7 @@ function project_list($args)
 	if(_user_admin($user_id))
 		$args['toolbar'] = array(array('title' => NEW_PROJECT,
 				'link' => 'index.php?module=project&action=new',
-				'icon' => 'modules/project/icon.png'));
+				'class' => 'new'));
 	_module('explorer', 'browse_trusted', $args);
 }
 

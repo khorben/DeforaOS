@@ -6,66 +6,12 @@ h1.title, h2.title, h3.title {
 	padding-top:			4px;
 }
 
-h1.admin {
-	background-image:		url("../modules/admin/icon.png");
+h2.title {
+	min-height:			32px;
+	padding-left:			40px;
 }
 
-h1.article {
-	background-image:		url("../modules/article/icon.png");
-}
-
-h1.bookmark {
-	background-image:		url("../modules/bookmark/icon.png");
-}
-
-h1.browser {
-	background-image:		url("../modules/browser/icon.png");
-}
-
-h1.bug {
-	background-image:		url("../modules/project/bug.png");
-}
-
-h1.category {
-	background-image:		url("../modules/category/icon.png");
-}
-
-h1.comment {
-	background-image:		url("../modules/comment/icon.png");
-}
-
-h1.content {
-	background-image:		url("../modules/content/icon.png");
-}
-
-h1.download {
-	background-image:		url("../modules/download/icon.png");
-}
-
-h1.news {
-	background-image:		url("../modules/news/icon.png");
-}
-
-h1.probe {
-	background-image:		url("../modules/probe/icon.png");
-}
-
-h1.project {
-	background-image:		url("../modules/project/icon.png");
-}
-
-h1.search {
-	background-image:		url("../modules/search/icon.png");
-}
-
-h1.top {
-	background-image:		url("../modules/top/icon.png");
-}
-
-h1.user {
-	background-image:		url("../modules/user/icon.png");
-}
-
-h1.webmail {
-	background-image:		url("../modules/webmail/icon.png");
+h3.title {
+	min-height:			16px;
+	padding-left:			24px;
 }

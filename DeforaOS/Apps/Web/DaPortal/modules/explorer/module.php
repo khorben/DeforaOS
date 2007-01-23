@@ -32,6 +32,7 @@ function _explorer(&$args)
 	include('./modules/explorer/top.tpl');
 	if(!isset($args['toolbar']) || is_array($args['toolbar']))
 	{
+		$toolbar = isset($args['toolbar']) ? $args['toolbar'] : array();
 		include('./modules/explorer/toolbar.tpl');
 	}
 	$view = isset($args['view']) ? $args['view'] : 'thumbnails';
