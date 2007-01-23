@@ -6,14 +6,14 @@
 		<div class="content"><?php echo _html_pre($comment['content']); ?></div>
 <?php if(!isset($comment['preview'])) { ?>
 		<div class="status">
-			<a href="index.php?module=comment&amp;action=new&amp;parent=<?php echo _html_safe($comment['id']); ?>#edit"><img src="icons/16x16/reply.png" alt=""/> Reply</a>
+			<a href="index.php?module=comment&amp;action=new&amp;parent=<?php echo _html_safe($comment['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
 <?php global $user_id; require_once('./system/user.php');
 if($comment['id'] && _user_admin($user_id)) { ?>
-			&middot; <a href="index.php?module=content&amp;action=modify&amp;id=<?php echo _html_safe($comment['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
+			&middot; <a href="index.php?module=content&amp;action=modify&amp;id=<?php echo _html_safe($comment['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
 <?php if($comment['enabled'] == SQL_TRUE) { ?>
-			&middot; <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe($comment['id']); ?>&amp;show"><img src="icons/16x16/disabled.png" alt=""/> <?php echo _html_safe(DISABLE); ?></a>
+			&middot; <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe($comment['id']); ?>&amp;show"><div class="icon disabled"></div> <?php echo _html_safe(DISABLE); ?></a>
 <?php } else { ?>
-			&middot; <a href="index.php?module=content&amp;action=enable&amp;id=<?php echo _html_safe($comment['id']); ?>&amp;show"><img src="icons/16x16/enabled.png" alt=""/> <?php echo _html_safe(ENABLE); ?></a>
+			&middot; <a href="index.php?module=content&amp;action=enable&amp;id=<?php echo _html_safe($comment['id']); ?>&amp;show"><div class="icon enabled"></div> <?php echo _html_safe(ENABLE); ?></a>
 <?php } ?>
 <?php } ?>
 		</div>
