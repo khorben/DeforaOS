@@ -270,9 +270,10 @@ function user_display($args)
 {
 	if(!is_numeric($args['id']))
 		return _error('Invalid user ID');
-	if(($user = _sql_array('SELECT user_id, username'
+	$user = _sql_array('SELECT user_id AS id, username'
 			.' FROM daportal_user'
-			." WHERE user_id='".$args['id']."'")) == FALSE)
+			." WHERE user_id='".$args['id']."'");
+	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
 	$res = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
@@ -296,6 +297,7 @@ function user_display($args)
 				: $d['icon'];
 			$e['thumbnail'] = 'icons/48x48/'.$e['icon'];
 			$e['icon'] = 'icons/16x16/'.$e['icon'];
+			$e['args'] = '&user_id='.$user['id'];
 			$entries[] = $e;
 		}
 	}
