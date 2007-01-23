@@ -15,3 +15,17 @@ h3.title {
 	min-height:			16px;
 	padding-left:			24px;
 }
+
+
+/* existing icons */
+div.icon.admin {
+	background-image:		url('../icons/16x16/admin.png');
+}
+
+div.icon.browse, div.icon.download {
+	background-image:		url('../icons/16x16/download.png');
+}
+
+div.icon.project {
+	background-image:		url('../icons/16x16/project.png');
+}
