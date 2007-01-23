@@ -1,4 +1,5 @@
 <?php global $title, $module_name; ?>
+<?php _module('top'); ?>
 
 <div class="container">
 <?php _module('menu'); ?>
