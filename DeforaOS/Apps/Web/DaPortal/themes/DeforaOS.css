@@ -100,6 +100,24 @@ h1.title, h2.title, h3.title {
 }
 
 
+/* identifiers */
+#container {
+	background-color:		#000000;
+	border:				1px solid #959595;
+	margin:				10px;
+	padding-bottom:			10pt;
+}
+
+#container, #container table {
+	color:				#ffffff;
+}
+
+#main {
+	padding-left:			200px;
+	padding-right:			10px;
+}
+
+
 /* classes */
 form.lang {
 	padding-top:			10px;
@@ -192,6 +210,10 @@ table.bordered th {
 
 
 /* module comment */
+.comment pre {
+	background-color:		#000000;
+}
+
 .comment .author, .comment .date {
 	display:			inline;
 }
@@ -202,6 +224,8 @@ table.bordered th {
 
 .comment .container {
 	background-color:		#400000;
+	border:				1px solid #959595;
+	margin:				10px;
 	padding:			5px;
 }
 
@@ -215,22 +239,6 @@ table.bordered th {
 
 .comment .title {
 	background-color:		#400000;
-}
-
-#container {
-	background-color:		#000000;
-	border:				1px solid #959595;
-	margin:				10px;
-	padding-bottom:			10pt;
-}
-
-#container, #container table {
-	color:				#ffffff;
-}
-
-#main {
-	padding-left:			200px;
-	padding-right:			10px;
 }
 
 .debug, .headline {
