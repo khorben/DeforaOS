@@ -295,8 +295,8 @@ function project_bug_assign($args)
 		$members[$i]['action'] = 'bug_assign';
 		$members[$i]['args'] = '&bug_id='.$members[$i]['bug_id'];
 		$members[$i]['args'].='&user_id='.$members[$i]['user_id'];
-		$members[$i]['icon'] = 'modules/user/icon.png';
-		$members[$i]['thumbnail'] = 'modules/user/icon.png';
+		$members[$i]['icon'] = 'icons/16x16/user.png';
+		$members[$i]['thumbnail'] = 'icons/48x48/user.png';
 	}
 	_module('explorer', 'browse', array('entries' => $members));
 }
@@ -518,7 +518,7 @@ function project_bug_list($args)
 			case 'Fixed': case 'Implemented': $bugs[$i]['thumbnail']
 				 = 'modules/project/bug-fixed.png'; break;
 			default: $bugs[$i]['thumbnail']
-				 = 'modules/project/bug.png'; break;
+				 = 'icons/48x48/bug.png'; break;
 		}
 		$bugs[$i]['icon'] = $bugs[$i]['thumbnail'];
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
@@ -925,8 +925,8 @@ function project_display($args)
 	$members[] = array('id' => $project['user_id'],
 			'name' => _html_safe($project['username']),
 			'title' => _html_safe($project['username']),
-			'icon' => 'modules/user/icon.png',
-			'thumbnail' => 'modules/user/icon.png',
+			'icon' => 'icons/16x16/user.png',
+			'thumbnail' => 'icons/48x48/user.png',
 			'module' => 'user', 'action' => 'default',
 			'admin' => '<img src="icons/16x16/enabled.png" alt="yes"/>');
 	$m = _sql_array('SELECT daportal_user.user_id AS id'
@@ -939,25 +939,23 @@ function project_display($args)
 		$members[] = array('id' => $n['id'],
 				'name' => _html_safe($n['name']),
 				'title' => _html_safe($n['name']),
-				'icon' => 'modules/user/icon.png',
-				'thumbnail' => 'modules/user/icon.png',
+				'icon' => 'icons/16x16/user.png',
+				'thumbnail' => 'icons/48x48/user.png',
 				'module' => 'user', 'action' => 'default',
 				'apply_module' => 'project',
 				'apply_id' => $n['id'],
 				'apply_args' => 'project_id='.$project['id'],
 				'admin' => '<img src="icons/16x16/disabled.png" alt="no"/>');
-	print('<h2><img src="modules/user/icon.png" alt=""/> '.MEMBERS.'</h2>');
+	print('<h2 class="title user">'.MEMBERS.'</h2>'."\n");
 	$explorer = array('view' => 'details', 'entries' => $members,
 			'class' => array('admin' => ADMINISTRATOR),
 			'module' => 'project', 'action' => 'display',
 			'id' => $project['id']);
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Add member(s)',
-			'icon' => 'modules/user/icon.png',
+	$toolbar[] = array('title' => 'Add member(s)', 'class' => 'new',
 			'link' => 'index.php?module=project&action=member_add'
 					.'&id='.$project['id']);
-	$toolbar[] = array('title' => 'Delete member(s)',
-			'icon' => 'icons/16x16/delete.png',
+	$toolbar[] = array('title' => 'Delete member(s)', 'class' => 'remove',
 			'action' => 'member_delete', 'confirm' => DELETE);
 	if($admin)
 		$explorer['toolbar'] = $toolbar;
@@ -1216,8 +1214,8 @@ function project_member_add($args)
 			.' FROM daportal_user'.$where);
 	for($i = 0, $cnt = count($users); $i < $cnt; $i++)
 	{
-		$users[$i]['icon'] = 'modules/user/icon.png';
-		$users[$i]['thumbnail'] = 'modules/user/icon.png';
+		$users[$i]['icon'] = 'icons/16x16/user.png';
+		$users[$i]['thumbnail'] = 'icons/48x48/user.png';
 		$users[$i]['module'] = 'user';
 		$users[$i]['action'] = 'default';
 		$users[$i]['apply_module'] = 'project';
@@ -1225,8 +1223,7 @@ function project_member_add($args)
 		$users[$i]['apply_args'] = 'project_id='.$project['id'];
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => 'Add selected users',
-			'icon' => 'modules/user/icon.png',
+	$toolbar[] = array('title' => 'Add selected users', 'class' => 'add',
 			'action' => 'member_insert', 'confirm' => 'add');
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
 				'entries' => $users, 'module' => 'project',
@@ -1392,14 +1389,12 @@ function project_timeline($args)
 				'author' => $author);
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => BACK, 'icon' => 'icons/16x16/back.png',
+	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'link' => 'javascript:history.back()');
-	$toolbar[] = array('title' => FORWARD,
-			'icon' => 'icons/16x16/forward.png',
+	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => REFRESH,
-			'icon' => 'icons/16x16/refresh.png',
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array(
 			'entries' => array_reverse($entries),
