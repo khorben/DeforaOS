@@ -76,8 +76,8 @@ function news_admin($args)
 		$res[$i]['apply_module'] = 'news';
 		$res[$i]['action'] = 'modify';
 		$res[$i]['apply_id'] = $res[$i]['id'];
-		$res[$i]['icon'] = 'modules/news/icon.png';
-		$res[$i]['thumbnail'] = 'modules/news/icon.png';
+		$res[$i]['icon'] = 'icons/16x16/news.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$res[$i]['name'] = $res[$i]['title'];
 		$res[$i]['username'] = '<a href="index.php?module=user&id='
 				.$res[$i]['user_id'].'">'
@@ -198,8 +198,8 @@ function news_headline($args)
 	for($i = 0, $cnt = count($news); $i < $cnt; $i++)
 	{
 		$news[$i]['action'] = 'display';
-		$news[$i]['icon'] = 'modules/news/icon.png';
-		$news[$i]['thumbnail'] = 'modules/news/icon.png';
+		$news[$i]['icon'] = 'icons/16x16/news.png';
+		$news[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$news[$i]['name'] = $news[$i]['title'];
 	}
 	_module('explorer', 'browse', array('toolbar' => 0, 'view' => 'details',
@@ -226,8 +226,8 @@ function _list_user($user_id, $username)
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['action'] = 'default';
-		$res[$i]['icon'] = 'modules/news/icon.png';
-		$res[$i]['thumbnail'] = 'modules/news/icon.png';
+		$res[$i]['icon'] = 'icons/16x16/news.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$res[$i]['name'] = $res[$i]['title'];
 		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
 						$res[$i]['timestamp'], 0, 19)));
