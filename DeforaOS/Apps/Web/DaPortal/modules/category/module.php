@@ -53,8 +53,8 @@ function category_admin($args)
 	{
 		$categories[$i]['module'] = 'category';
 		$categories[$i]['action'] = 'modify';
-		$categories[$i]['icon'] = 'modules/category/icon.png';
-		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
+		$categories[$i]['icon'] = 'icons/16x16/category.png';
+		$categories[$i]['thumbnail'] = 'icons/48x48/category.png';
 		$categories[$i]['enabled'] = $categories[$i]['enabled']
 			== SQL_TRUE ? 'enabled' : 'disabled';
 		$categories[$i]['enabled'] = '<img src="icons/16x16/'
@@ -148,9 +148,10 @@ function category_display($args)
 	$cnt = count($contents);
 	for($i = 0; $i < $cnt; $i++)
 	{
-		$contents[$i]['icon'] = 'modules/'.$contents[$i]['module']
-			.'/icon.png';
-		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
+		$contents[$i]['icon'] = 'icons/16x16/'.$contents[$i]['module']
+			.'.png';
+		$contents[$i]['thumbnail'] = 'icons/48x48/'
+			.$contents[$i]['module'].'.png';
 		$contents[$i]['action'] = 'default';
 		$contents[$i]['name'] = $contents[$i]['title'];
 	}
@@ -183,8 +184,7 @@ function category_get($args)
 			.'=daportal_module.module_id'
 			." AND content_id='".$args['id']."'") == 'category')
 		return _error(INVALID_ARGUMENT);
-	print('<h2><img src="modules/category/icon.png" alt=""/> '
-			.MEMBER_OF.'</h2>'."\n");
+	print('<h2 class="title category">'.MEMBER_OF.'</h2>'."\n");
 	$categories = _sql_array('SELECT category_id AS id, title'
 			.' FROM daportal_category_content, daportal_content'
 			.' WHERE daportal_category_content.category_id'
@@ -198,8 +198,8 @@ function category_get($args)
 	{
 		$categories[$i]['module'] = 'category';
 		$categories[$i]['action'] = 'default';
-		$categories[$i]['icon'] = 'modules/category/icon.png';
-		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
+		$categories[$i]['icon'] = 'icons/16x16/category.png';
+		$categories[$i]['thumbnail'] = 'icons/48x48/category.png';
 		$categories[$i]['apply_module'] = 'category';
 		$categories[$i]['name'] = $categories[$i]['title'];
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
@@ -346,8 +346,8 @@ function category_list($args)
 	for($i = 0; $i < $count; $i++)
 	{
 		$categories[$i]['action'] = 'default';
-		$categories[$i]['icon'] = 'modules/category/icon.png';
-		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
+		$categories[$i]['icon'] = 'icons/16x16/category.png';
+		$categories[$i]['thumbnail'] = 'icons/48x48/category.png';
 		$categories[$i]['name'] = $categories[$i]['title'];
 	}
 	$toolbar = array();
@@ -404,8 +404,7 @@ function category_set($args)
 	require_once('./system/content.php');
 	if(!_content_display($args['id']))
 		return _error('Could not display content');
-	print('<h2><img src="modules/category/icon.png" alt=""/> '
-			.CHOOSE_CATEGORIES.'</h2>'."\n");
+	print('<h2 class="title category">'.CHOOSE_CATEGORIES.'</h2>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
 			.' FROM daportal_content'
 			." WHERE module_id='$module'"." AND enabled='1'");
@@ -416,8 +415,8 @@ function category_set($args)
 	{
 		$categories[$i]['module'] = 'category';
 		$categories[$i]['action'] = 'display';
-		$categories[$i]['icon'] = 'modules/category/icon.png';
-		$categories[$i]['thumbnail'] = 'modules/category/icon.png';
+		$categories[$i]['icon'] = 'icons/16x16/category.png';
+		$categories[$i]['thumbnail'] = 'icons/48x48/category.png';
 		$categories[$i]['apply_module'] = 'category';
 		$categories[$i]['name'] = $categories[$i]['title'];
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
