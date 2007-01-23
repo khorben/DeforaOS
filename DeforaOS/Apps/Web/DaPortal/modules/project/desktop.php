@@ -25,13 +25,9 @@ else if($lang == 'fr')
 	$actions['bug_list'] = 'Rapports';
 }
 
-global $user_id;
-if($user_id)
-	$user = array(array('icon' => 'project.png', 'name' => $title,
-				'args' => '&user_id='.$user_id),
-			array('icon' => 'bug.png',
-				'name' => $actions['bug_list'],
-				'action' => 'bug_list',
-				'args' => '&user_id='.$user_id));
+$user = array(array('icon' => 'project.png', 'name' => $title),
+		array('icon' => 'bug.png',
+			'name' => $actions['bug_list'],
+			'action' => 'bug_list'));
 
 ?>
