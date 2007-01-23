@@ -7,6 +7,7 @@ CREATE TABLE daportal_module (
 	name VARCHAR(255) UNIQUE NOT NULL,
 	enabled BOOLEAN NOT NULL DEFAULT false
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('admin', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('explorer', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
@@ -14,11 +15,12 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 
 CREATE TABLE daportal_config (
-	module_id SERIAL REFERENCES daportal_module (module_id) ON DELETE CASCADE,
+	module_id INTEGER NOT NULL REFERENCES daportal_module (module_id) ON DELETE CASCADE,
 	name VARCHAR(255) NOT NULL,
 	value VARCHAR(255) NOT NULL,
 	PRIMARY KEY (module_id, name)
 );
+
 INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'lang', 'en');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'title', 'DaPortal');
 
@@ -28,6 +30,7 @@ CREATE TABLE daportal_lang (
 	name VARCHAR(255) NOT NULL,
 	enabled BOOLEAN NOT NULL DEFAULT false
 );
+
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('en', 'English', '1');
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('fr', 'Français', '1');
 INSERT INTO daportal_lang (lang_id, name, enabled) VALUES ('de', 'Deutsch', '1');
@@ -41,6 +44,7 @@ CREATE TABLE daportal_user (
 	admin BOOLEAN DEFAULT FALSE,
 	email VARCHAR(255) NOT NULL
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('5', 'register', 't');
 INSERT INTO daportal_user (user_id, username, password, email) VALUES ('0', 'Anonymous', '', '');
@@ -63,6 +67,7 @@ CREATE TABLE daportal_content (
 	content TEXT,
 	enabled BOOLEAN NOT NULL DEFAULT FALSE
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 
@@ -72,9 +77,10 @@ INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
 
 /* module: comment */
 CREATE TABLE daportal_comment (
-	comment_id SERIAL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
-	parent SERIAL REFERENCES daportal_content (content_id) ON DELETE CASCADE
+	comment_id INTEGER UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	parent INTEGER REFERENCES daportal_content (content_id) ON DELETE CASCADE
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('7', 'anonymous', '0');
 
@@ -85,18 +91,19 @@ CREATE TABLE daportal_top (
 	name VARCHAR(255),
 	link VARCHAR(255)
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
 
 
 /* module: project */
 CREATE TABLE daportal_project (
-	project_id SERIAL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	project_id INTEGER UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
 	name VARCHAR(255) NOT NULL,
 	cvsroot VARCHAR(255) NOT NULL
 );
 CREATE TABLE daportal_project_user (
-	project_id SERIAL NOT NULL REFERENCES daportal_project (project_id) ON DELETE CASCADE,
-	user_id SERIAL NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE
+	project_id INTEGER NOT NULL REFERENCES daportal_project (project_id) ON DELETE CASCADE,
+	user_id INTEGER NOT NULL REFERENCES daportal_user (user_id) ON DELETE CASCADE
 );
 CREATE TABLE daportal_bug (
 	bug_id SERIAL PRIMARY KEY,
@@ -109,13 +116,14 @@ CREATE TABLE daportal_bug (
 );
 CREATE TABLE daportal_bug_reply (
 	bug_reply_id SERIAL PRIMARY KEY,
-	content_id SERIAL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
-	bug_id SERIAL REFERENCES daportal_bug (bug_id) ON DELETE CASCADE,
+	content_id INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	bug_id INTEGER NOT NULL REFERENCES daportal_bug (bug_id) ON DELETE CASCADE,
 	state varchar(11) CHECK (state IN ('New', 'Assigned', 'Closed', 'Fixed', 'Implemented', 'Re-opened')),
 	type varchar(13) CHECK (type IN ('Major', 'Minor', 'Functionality', 'Feature')),
 	priority VARCHAR(6) CHECK (priority IN ('Urgent', 'High', 'Medium', 'Low')),
 	assigned INTEGER DEFAULT NULL REFERENCES daportal_user (user_id) ON DELETE SET NULL
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('10', 'cvsroot', '');
 
@@ -132,30 +140,34 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('12', 'server', '')
 
 /* module: bookmark */
 CREATE TABLE daportal_bookmark (
-	bookmark_id SERIAL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	bookmark_id INTEGER NOT NULL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
 	url VARCHAR(256)
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
 
 
 /* module: category */
 CREATE TABLE daportal_category_content (
 	category_content_id SERIAL PRIMARY KEY,
-	category_id SERIAL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
-	content_id SERIAL REFERENCES daportal_content (content_id) ON DELETE CASCADE
+	category_id INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	content_id INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE CASCADE
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
 
 
 /* module: download */
 CREATE TABLE daportal_download (
 	download_id SERIAL PRIMARY KEY,
-	content_id SERIAL NOT NULL REFERENCES daportal_content (content_id) ON DELETE RESTRICT,
+	content_id INTEGER NOT NULL REFERENCES daportal_content (content_id) ON DELETE RESTRICT, -- not UNIQUE allows hard links
 	parent INTEGER REFERENCES daportal_download (download_id) ON DELETE RESTRICT,
 	mode SMALLINT DEFAULT '0420'
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
 INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp');
+
 
 /* module: article */
 INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
