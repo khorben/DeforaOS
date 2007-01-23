@@ -955,6 +955,7 @@ function project_display($args)
 	$toolbar[] = array('title' => 'Add member(s)', 'class' => 'new',
 			'link' => 'index.php?module=project&action=member_add'
 					.'&id='.$project['id']);
+	$toolbar[] = array();
 	$toolbar[] = array('title' => 'Delete member(s)', 'class' => 'remove',
 			'action' => 'member_delete', 'confirm' => DELETE);
 	if($admin)
