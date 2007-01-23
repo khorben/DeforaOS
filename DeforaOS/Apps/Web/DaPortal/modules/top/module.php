@@ -79,7 +79,8 @@ function top_default($args)
 	$sep = '';
 	foreach($links as $l)
 	{
-		print("\t\t\t".$sep.'<a href="'._html_safe_link($l['link']).'">'
+		print("\t\t\t".$sep.'<a href="'._html_safe_link($l['link']).'"'
+				.' title="'._html_safe_link($l['name']).'">'
 				._html_safe($l['name']).'</a>'."\n");
 		$sep = '&middot; ';
 	}
