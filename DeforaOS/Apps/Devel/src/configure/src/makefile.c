@@ -730,19 +730,59 @@ static int _target_library(Configure * configure, FILE * fp, String * target)
 static int _target_object(Configure * configure, FILE * fp, String * target)
 {
 	String * p;
+	String * extension;
 
 	if((p = config_get(configure->config, target, "sources")) == NULL)
 	{
 		fprintf(stderr, "%s%s%s", "configure: ", target,
-				" no sources for target\n");
+				": No sources for target\n");
+		return 1;
+	}
+	if(strchr(p, ',') != NULL)
+	{
+		fprintf(stderr, "%s%s%s", "configure: ", target,
+				": An object can have only one source file\n");
 		return 1;
 	}
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	/* FIXME include CFLAGS or ASFLAGS only if necessary */
-	fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ", target, target,
-			"_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)\n"); /*,
-			target, "_ASFLAGS = $(CPPFLAGS) $(ASFLAGS)\n"); */
+	if((extension = _source_extension(p)) == NULL)
+		return 1;
+	switch(enum_string(OT_LAST, sObjectType, extension))
+	{
+		case OT_ASM_SOURCE:
+			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
+					target, target, "_ASFLAGS = $(CPPFLAGS)"
+					" $(ASFLAGS)");
+			if((p = config_get(configure->config, p, "asflags"))
+					!= NULL)
+				fprintf(fp, " %s", p);
+			fputc('\n', fp);
+			break;
+		case OT_C_SOURCE:
+			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
+					target, target, "_CFLAGS = $(CPPFLAGS)"
+					" $(CFLAGSF) $(CFLAGS)");
+			if((p = config_get(configure->config, p, "cflags"))
+					!= NULL)
+				fprintf(fp, " %s", p);
+			fputc('\n', fp);
+			break;
+		case OT_CXX_SOURCE:
+		case OT_CPP_SOURCE:
+			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
+					target, target, "_CXXFLAGS ="
+					" $(CPPFLAGS) $(CXXFLAGS)");
+			if((p = config_get(configure->config, p, "cxxflags"))
+					!= NULL)
+				fprintf(fp, " %s", p);
+			fputc('\n', fp);
+			break;
+		case OT_UNKNOWN:
+			fprintf(stderr, "%s%s%s", "configure: ", target,
+					": Unknown source type for object\n");
+			return 1;
+	}
 	return 0;
 }
 
