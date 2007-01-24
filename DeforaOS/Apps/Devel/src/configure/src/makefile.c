@@ -847,7 +847,7 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 				fprintf(fp, " %s", p);
 				if(configure->os == HO_GNU_LINUX
 					       	&& string_find(p, "-ansi"))
-					fprintf(fp, "%s", " -D _GNU_SOURCE");
+					fputs(" -D _GNU_SOURCE", fp);
 			}
 			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
 					sObjectType[ot]);
@@ -911,10 +911,10 @@ static int _write_clean(Configure * configure, FILE * fp)
 {
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	fprintf(fp, "%s", "\nclean:\n");
+	fputs("\nclean:\n", fp);
 	if(config_get(configure->config, "", "subdirs") != NULL)
-		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do"
-				" (cd $$i && $(MAKE) clean) || exit; done\n");
+		fputs("\t@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean)"
+				" || exit; done\n", fp);
 	return _clean_targets(configure->config, fp);
 }
 
@@ -926,7 +926,7 @@ static int _clean_targets(Config * config, FILE * fp)
 
 	if((targets = config_get(config, "", "targets")) == NULL)
 		return 0;
-	fprintf(fp, "%s", "\t$(RM)");
+	fputs("\t$(RM)", fp);
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -950,17 +950,17 @@ static int _write_distclean(Configure * configure, FILE * fp)
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	fprintf(fp, "%s", "\ndistclean:");
+	fputs("\ndistclean:", fp);
 	if((subdirs = config_get(configure->config, "", "subdirs")) == NULL)
-		fprintf(fp, "%s", " clean\n");
+		fputs(" clean\n", fp);
 	else
 	{
-		fprintf(fp, "%s", "\n\t@for i in $(SUBDIRS); do (cd $$i"
-				" && $(MAKE) distclean) || exit; done\n");
+		fputs("\n\t@for i in $(SUBDIRS); do (cd $$i"
+				" && $(MAKE) distclean) || exit; done\n", fp);
 		_clean_targets(configure->config, fp);
 	}
 	if(config_get(configure->config, "", "targets") != NULL)
-		fprintf(fp, "%s", "\t$(RM) $(TARGETS)\n");
+		fputs("\t$(RM) $(TARGETS)\n", fp);
 	return 0;
 }
 
@@ -979,10 +979,9 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 			|| (version = config_get(configure->config, "",
 				       	"version")) == NULL)
 		return 0;
-	fprintf(fp, "%s", "\ndist:\n"
-			"\t$(RM) -r $(PACKAGE)-$(VERSION)\n"
+	fputs("\ndist:\n\t$(RM) -r $(PACKAGE)-$(VERSION)\n"
 			"\t$(LN) . $(PACKAGE)-$(VERSION)\n"
-			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n");
+			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n", fp);
 	for(i = from+1; i < to; i++)
 	{
 		array_get_copy(ca, i, &p);
@@ -995,7 +994,7 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 	}
 	else
 		return 1;
-	fprintf(fp, "%s", "\t$(RM) $(PACKAGE)-$(VERSION)\n");
+	fputs("\t$(RM) $(PACKAGE)-$(VERSION)\n", fp);
 	return 0;
 }
 
@@ -1074,10 +1073,10 @@ static int _write_install(Configure * configure, FILE * fp)
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	fprintf(fp, "%s", "\ninstall: all\n");
+	fputs("\ninstall: all\n", fp);
 	if((subdirs = config_get(configure->config, "", "subdirs")) != NULL)
-		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do"
-				" (cd $$i && $(MAKE) install) || exit; done\n");
+		fputs("\t@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install)"
+				" || exit; done\n", fp);
 	if((targets = config_get(configure->config, "", "targets")) != NULL)
 		for(i = 0; ret == 0; i++)
 		{
@@ -1113,16 +1112,14 @@ static int _install_target(Config * config, FILE * fp, String * target)
 	{
 		case TT_BINARY:
 			if(!done[tt])
-				fprintf(fp, "%s", "\t$(MKDIR) $(DESTDIR)"
-						"$(BINDIR)\n");
+				fputs("\t$(MKDIR) $(DESTDIR)$(BINDIR)\n", fp);
 			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0755 ",
 					target, " $(DESTDIR)$(BINDIR)/",
 					target, "\n");
 			break;
 		case TT_LIBRARY:
 			if(!done[tt])
-				fprintf(fp, "%s", "\t$(MKDIR) $(DESTDIR)"
-						"$(LIBDIR)\n");
+				fputs("\t$(MKDIR) $(DESTDIR)$(LIBDIR)\n", fp);
 			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0644 ",
 					target, ".a $(DESTDIR)$(LIBDIR)/",
 					target, ".a\n");
@@ -1149,10 +1146,10 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	fprintf(fp, "%s", "\nuninstall:\n");
+	fputs("\nuninstall:\n", fp);
 	if((subdirs = config_get(configure->config, "", "subdirs")) != NULL)
-		fprintf(fp, "%s", "\t@for i in $(SUBDIRS); do (cd $$i &&"
-				" $(MAKE) uninstall) || exit; done\n");
+		fputs("\t@for i in $(SUBDIRS); do (cd $$i &&"
+				" $(MAKE) uninstall) || exit; done\n", fp);
 	if((targets = config_get(configure->config, "", "targets")) != NULL)
 		for(i = 0; ret == 0; i++)
 		{
