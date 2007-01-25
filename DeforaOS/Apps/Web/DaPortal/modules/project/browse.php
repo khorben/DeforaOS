@@ -243,12 +243,12 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 		."&amp;file="._html_safe_link($filename);
 	print('<div class="toolbar"><a href="'.$link.'"'
 			.' title="Browse revisions">'
-			.'<img src="icons/16x16/updir.png" alt=""/>'
-			.' Browse revisions</a>'
+			.'<div class="icon parent_directory"></div>'
+			._html_safe(BROWSE_REVISIONS).'</a>'
 			.' &middot; <a href="'.$link."&amp;revision=$revision"
 			.'&amp;download=1" title="Download file">'
-			.'<img src="icons/16x16/save.png" alt=""/>'
-			.' Download file</a></div>'."\n");
+			.'<div class="icon download"></div>'
+			._html_safe(DOWNLOAD_FILE).'</a></div>'."\n");
 	if(strncmp('image/', $mime, 6) == 0)
 		return print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
 	include('syntax.php');

@@ -13,9 +13,11 @@ if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
 //lang
 $text = array();
 $text['ASSIGNED_TO'] = 'Assigned to';
+$text['BROWSE_REVISIONS'] = 'Browse revisions';
 $text['BROWSE_SOURCE'] = 'Browse source';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['CVS_PATH'] = 'CVS path';
+$text['DOWNLOAD_FILE'] = 'Download file';
 $text['FILES'] = 'Files';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
