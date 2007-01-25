@@ -1363,7 +1363,7 @@ function project_timeline($args)
 		}
 		if(!isset($event))
 			continue;
-		$icon = isset($icon) ? 'modules/project/cvs-'.$icon.'.png' : '';
+		$icon = isset($icon) ? 'icons/48x48/cvs-'.$icon.'.png' : '';
 		$name = substr($fields[3], $len+1).'/'.$fields[5];
 		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
 		$date = date('d/m/Y H:i', $date);

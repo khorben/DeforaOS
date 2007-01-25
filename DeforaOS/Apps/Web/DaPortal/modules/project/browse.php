@@ -177,19 +177,14 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 			$message.=$apnd;
 			$message = _html_safe($message);
 		}
-		$icon = (strcmp($name, '1.1') == 0)
-			? 'modules/project/cvs-added.png'
-			: 'modules/project/cvs-modified.png';
+		$icon = 'icons/48x48/cvs-'.((strcmp($name, '1.1') == 0)
+			? 'added' : 'modified').'.png';
 		$revisions[] = array('module' => 'project',
-				'action' => 'browse',
-				'id' => $id,
+				'action' => 'browse', 'id' => $id,
 				'args' => '&file='.$filename.'&revision='.$name,
-				'icon' => $icon,
-				'thumbnail' => $icon,
-				'name' => $name,
-				'date' => $date,
-				'author' => $author,
-				'message' => $message);
+				'icon' => $icon, 'thumbnail' => $icon,
+				'name' => $name, 'date' => $date,
+				'author' => $author, 'message' => $message);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
@@ -199,19 +194,16 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 			'link' => 'index.php?module=project&action=browse'
 					.'&id='.$id
 					.'&file='.dirname($filename));
-	$toolbar[] = array('title' => 'Forward',
-			'icon' => 'icons/16x16/forward.png',
+	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
-	$toolbar[] = array('title' => 'Refresh',
-			'icon' => 'icons/16x16/refresh.png',
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => 'Date',
 					'author' => AUTHOR,
 					'message' => MESSAGE),
-			'toolbar' => $toolbar,
-			'view' => 'details'));
+			'toolbar' => $toolbar, 'view' => 'details'));
 }
 
 function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
