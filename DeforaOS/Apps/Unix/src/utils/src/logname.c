@@ -9,7 +9,7 @@
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: logname\n");
+	fputs("Usage: logname\n", stderr);
 	return 1;
 }
 

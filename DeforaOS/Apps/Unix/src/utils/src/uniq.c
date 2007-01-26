@@ -49,7 +49,7 @@ static int _uniq(int opts, char const * fields, unsigned int skip,
 
 static int _uniq_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "uniq: ");
+	fputs("uniq: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -144,12 +144,12 @@ static int _count_repeated(char * lastline, char * line, unsigned int skip)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: uniq [-c|-d|-u][-f fields][-s char]\
-[input_file [output_file]]\n\
+	fputs("Usage: uniq [-c|-d|-u][-f fields][-s char][input_file\
+ [output_file]]\n\
   -c    precede each output line with a count of the repetitions for the line\n\
   -d    suppress the writing of lines that are not repeated\n\
   -s    ignore the first char characters when doing comparisons\n\
-  -u    suppress the writing of lines that are repeated\n");
+  -u    suppress the writing of lines that are repeated\n", stderr);
 	return 1;
 }
 

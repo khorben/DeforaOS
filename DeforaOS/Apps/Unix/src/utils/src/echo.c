@@ -25,7 +25,7 @@ static int _echo(int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: echo [string...]\n");
+	fputs("Usage: echo [string...]\n", stderr);
 	return 1;
 }
 

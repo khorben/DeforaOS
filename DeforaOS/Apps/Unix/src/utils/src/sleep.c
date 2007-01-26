@@ -19,7 +19,7 @@ static int _sleep(unsigned int time)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: sleep time\n");
+	fputs("Usage: sleep time\n", stderr);
 	return 1;
 }
 

@@ -96,7 +96,7 @@ static int _cksum(int argc, char * argv[])
 
 static int _cksum_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "cksum: ");
+	fputs("cksum: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -147,7 +147,7 @@ static int _do_is_directory(FILE * fp)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: cksum [file...]\n");
+	fputs("Usage: cksum [file...]\n", stderr);
 	return 1;
 }
 

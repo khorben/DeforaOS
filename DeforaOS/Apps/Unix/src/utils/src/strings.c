@@ -35,7 +35,7 @@ static int _strings(int flgn, int argc, char * argv[])
 
 static int _strings_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "strings: ");
+	fputs("strings: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -84,11 +84,10 @@ static void _strings_do(int flgn, FILE * fp)
 static int _usage(void)
 {
 	/* FIXME */
-	fprintf(stderr, "%s", "Usage: strings [-a][-t format][-n number]\
-[file...]\n\
+	fputs("Usage: strings [-a][-t format][-n number][file...]\n\
   -a	\n\
   -t	\n\
-  -n	\n");
+  -n	\n", stderr);
 	return 1;
 }
 

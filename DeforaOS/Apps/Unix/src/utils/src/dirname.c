@@ -18,7 +18,7 @@ static int _dirname(char * arg)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: dirname string\n");
+	fputs("Usage: dirname string\n", stderr);
 	return 1;
 }
 

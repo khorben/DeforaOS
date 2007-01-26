@@ -38,7 +38,7 @@ static int _du(Prefs * prefs, int argc, char * argv[])
 
 static int _du_error(char const * error)
 {
-	fprintf(stderr, "%s", "du: ");
+	fputs("du: ", stderr);
 	perror(error);
 	return 1;
 }
@@ -158,13 +158,13 @@ static void _du_print(Prefs * prefs, off_t size, char const * filename)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: du [-a | -s][-kx][-H | -L][file...]\n\
+	fputs("Usage: du [-a | -s][-kx][-H | -L][file...]\n\
   -a    report the size of every file encountered\n\
   -s    report only the total sum for each of the specified files\n\
   -k    write the file sizes in units of 1024 bytes rather than 512\n\
   -x    evaluate file sizes only on the same device as the file specified\n\
   -H    dereference specified files\n\
-  -L	dereference every file evaluated\n");
+  -L	dereference every file evaluated\n", stderr);
 	return 1;
 }
 

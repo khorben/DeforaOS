@@ -31,7 +31,7 @@ static int _basename(char * arg, char * suf)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: basename string [suffix]\n");
+	fputs("Usage: basename string [suffix]\n", stderr);
 	return 1;
 }
 

@@ -36,7 +36,7 @@ static int _mkdir(int flagp, mode_t mode, int argc, char * argv[])
 
 static int _mkdir_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "mkdir: ");
+	fputs("mkdir: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -70,9 +70,9 @@ static int _mkdir_p(mode_t mode, char * pathname)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: mkdir [-p][-m mode] dir...\n\
+	fputs("Usage: mkdir [-p][-m mode] dir...\n\
   -p    create any missing intermediate pathname components\n\
-  -m    file permission bits of the newly-created directory\n");
+  -m    file permission bits of the newly-created directory\n", stderr);
 	return 1;
 }
 

@@ -18,7 +18,7 @@ static int _tail(void)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: tail [-f][-c number|-n number][file]\n");
+	fputs("Usage: tail [-f][-c number|-n number][file]\n", stderr);
 	return 1;
 }
 

@@ -36,7 +36,7 @@ static int _chmod(int opts, mode_t mode, int filec, char * filev[])
 
 static int _chmod_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "chmod: ");
+	fputs("chmod: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -105,8 +105,8 @@ static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: chmod [-R] mode file\n\
-  -R	recursively change file mode bits\n");
+	fputs("Usage: chmod [-R] mode file\n\
+  -R	recursively change file mode bits\n", stderr);
 	return 1;
 }
 

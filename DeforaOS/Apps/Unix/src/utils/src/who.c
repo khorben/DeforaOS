@@ -51,7 +51,7 @@ static int _who(Prefs * prefs)
 
 static int _who_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "ttyname: ");
+	fputs("ttyname: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -74,7 +74,7 @@ static char * _who_tty(void)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: who\n");
+	fputs("Usage: who\n", stderr);
 	return 1;
 }
 

@@ -231,8 +231,8 @@ static int _is_file_executable(char * pathname)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: test [expression]\n\
-[ [expression] ]\n");
+	fputs("Usage: test [expression]\n\
+       [ [expression] ]\n", stderr);
 	return 1;
 }
 

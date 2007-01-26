@@ -27,7 +27,7 @@ static int _rmdir(int flagp, int argc, char * argv[])
 
 static int _rmdir_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "rmdir: ");
+	fputs("rmdir: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -55,8 +55,8 @@ static int _rmdir_p(char * pathname)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: rmdir [-p] dir...\n\
-  -p    remove all directories in a pathname\n");
+	fputs("Usage: rmdir [-p] dir...\n\
+  -p    remove all directories in a pathname\n", stderr);
 	return 1;
 }
 

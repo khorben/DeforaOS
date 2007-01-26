@@ -33,7 +33,7 @@ static int _df(Prefs * prefs, int filec, char * filev[])
 
 static int _df_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "df: ");
+	fputs("df: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -66,7 +66,7 @@ static int _df_do(Prefs * prefs, char const * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: df [-k][-P][file...]\n");
+	fputs("Usage: df [-k][-P][file...]\n", stderr);
 	return 1;
 }
 

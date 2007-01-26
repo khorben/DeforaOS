@@ -40,10 +40,10 @@ static int _kill(int sig, int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: kill -s signal_name pid...\n\
+	fputs("Usage: kill -s signal_name pid...\n\
        kill -l [exit_status]\n\
   -l    write all signal values supported\n\
-  -s    specify the signal to send\n");
+  -s    specify the signal to send\n", stderr);
 	return 1;
 }
 

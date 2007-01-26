@@ -52,7 +52,7 @@ static int _cat(OutputDelay od, int argc, char * argv[])
 
 static int _cat_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "cat: ");
+	fputs("cat: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -83,8 +83,8 @@ static int _write_nonbuf(int c)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: cat [-u][file ...]\n\
-  -u    write without delay\n");
+	fputs("Usage: cat [-u][file ...]\n\
+  -u    write without delay\n", stderr);
 	return 1;
 }
 

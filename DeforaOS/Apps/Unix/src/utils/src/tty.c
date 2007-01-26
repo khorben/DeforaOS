@@ -26,7 +26,7 @@ static int _tty(void)
 
 static int _tty_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "tty: ");
+	fputs("tty: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -35,7 +35,7 @@ static int _tty_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: tty\n");
+	fputs("Usage: tty\n", stderr);
 	return 1;
 }
 

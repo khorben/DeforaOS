@@ -16,7 +16,6 @@ static int _uname(int m, int n, int r, int s, int v)
 
 	if(uname(&buf) != 0)
 	{
-		fprintf(stderr, "%s", "uname: ");
 		perror("uname");
 		return 1;
 	}
@@ -40,13 +39,13 @@ static int _uname(int m, int n, int r, int s, int v)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: uname [-snrvma]\n\
+	fputs("Usage: uname [-snrvma]\n\
   -s    operating system name\n\
   -n    name of this node on the network\n\
   -r    operating system release name\n\
   -v    operating system version\n\
   -m    hardware type\n\
-  -a    all the options above\n");
+  -a    all the options above\n", stderr);
 	return 1;
 }
 

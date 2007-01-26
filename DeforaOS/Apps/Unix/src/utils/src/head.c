@@ -26,7 +26,7 @@ static int _head(int flgn, int argc, char * argv[])
 
 static int _head_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "head: ");
+	fputs("head: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -56,8 +56,8 @@ static int _head_do(int flgn, char * filename)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: head [-n number][file...]\n\
-  -n    print first number lines on standard output\n");
+	fputs("Usage: head [-n number][file...]\n\
+  -n    print first number lines on standard output\n", stderr);
 	return 1;
 }
 

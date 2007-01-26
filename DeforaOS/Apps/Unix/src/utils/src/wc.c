@@ -49,7 +49,7 @@ static int _wc(int flags, int argc, char * argv[])
 
 static int _wc_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "wc: ");
+	fputs("wc: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -101,18 +101,18 @@ static void _wc_print(int flags,
 		printf("%s%d", flags != WF_W ? " " : "", w);
 	if(filename != NULL)
 		printf(" %s", filename);
-	printf("\n");
+	fputc('\n', stdout);
 }
 
 
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: wc [-c|-m][-lw][file...]\n\
-  -c    write to the standard output the number of bytes\n\
-  -m    write to the standard output the number of characters\n\
-  -l    write to the standard output the number of lines\n\
-  -w    write to the standard output the number of words\n");
+	fputs("Usage: wc [-c|-m][-lw][file...]\n\
+  -c    write the number of bytes\n\
+  -m    write the number of characters\n\
+  -l    write the number of lines\n\
+  -w    write the number of words\n", stderr);
 	return 1;
 }
 

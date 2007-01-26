@@ -37,7 +37,7 @@ static int _renice(int nice, int type, int argc, char * argv[])
 
 static int _renice_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "renice: ");
+	fputs("renice: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -46,12 +46,11 @@ static int _renice_error(char * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: renice -n increment [-g | -p | -u]\
- ID...\n\
+	fputs("Usage: renice -n increment [-g | -p | -u] ID...\n\
   -n	priority to set\n\
   -g	process group IDs\n\
   -p	integer process IDs\n\
-  -u	user IDs\n");
+  -u	user IDs\n", stderr);
 	return 1;
 }
 

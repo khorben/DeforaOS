@@ -58,7 +58,7 @@ static int _pwd(pwd_flag pf)
 	{
 		if(getcwd(buf, 255) == NULL)
 		{
-			fprintf(stderr, "%s", "pwd: ");
+			fputs("pwd: ", stderr);
 			perror("getcwd");
 			return 2;
 		}
@@ -73,9 +73,9 @@ static int _pwd(pwd_flag pf)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: pwd [-L|-P]\n\
+	fputs("Usage: pwd [-L|-P]\n\
   -L    avoid \".\" or \"..\" filenames\n\
-  -P    avoid symbolic links\n");
+  -P    avoid symbolic links\n", stderr);
 	return 1;
 }
 

@@ -22,7 +22,7 @@ static int _nice(int nice, char * argv[])
 
 static int _nice_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "nice: ");
+	fputs("nice: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -31,8 +31,8 @@ static int _nice_error(char * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: nice [-n increment] utility [argument...]\n\
-  -n	priority to set\n");
+	fputs("Usage: nice [-n increment] utility [argument...]\n\
+  -n	priority to set\n", stderr);
 	return 1;
 }
 

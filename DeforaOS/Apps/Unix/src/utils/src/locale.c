@@ -78,8 +78,8 @@ static int _locale_do(Prefs * p, char * locale)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: locale [-a | -m]\n\
-      locale [-ck]\n");
+	fputs("Usage: locale [-a | -m]\n\
+      locale [-ck]\n", stderr);
 	return 1;
 }
 

@@ -58,7 +58,7 @@ static int _chgrp_grp_error(char * group)
 
 static int _chgrp_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "chgrp: ");
+	fputs("chgrp: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -133,10 +133,10 @@ static int _chgrp_do(int opts, gid_t gid, char * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: chgrp [-hR] group file ...\n\
+	fputs("Usage: chgrp [-hR] group file ...\n\
        chgrp -R [-H | -L | -P] group file ...\n\
   -h    Set the group IDs on symbolic links\n\
-  -R    Recursively change file group IDs\n");
+  -R    Recursively change file group IDs\n", stderr);
 	return 1;
 }
 

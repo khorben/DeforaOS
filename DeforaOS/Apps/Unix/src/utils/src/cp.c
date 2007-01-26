@@ -47,7 +47,7 @@ static int _cp(Prefs * prefs, int argc, char * argv[])
 
 static int _cp_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "cp: ");
+	fputs("cp: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -121,7 +121,7 @@ static int _cp_multiple(Prefs * prefs, int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: cp [-fip] source_file target_file\n\
+	fputs("Usage: cp [-fip] source_file target_file\n\
        cp [-fip] source_file ... target\n\
        cp -R [-H | -L | -P][-fip] source_file ... target\n\
        cp -r [-H | -L | -P][-fip] source_file ... target\n\
@@ -129,7 +129,7 @@ static int _usage(void)
   -i    prompt before a copy to an existing file\n\
   -p    duplicate characteristics of the source files\n\
   -R    copy file hierarchies\n\
-  -r    copy file hierarchies\n");
+  -r    copy file hierarchies\n", stderr);
 	return 1;
 }
 

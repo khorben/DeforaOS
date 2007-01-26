@@ -22,7 +22,7 @@ static int _link(char * file1, char * file2)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: link file1 file2\n");
+	fputs("Usage: link file1 file2\n", stderr);
 	return 1;
 }
 

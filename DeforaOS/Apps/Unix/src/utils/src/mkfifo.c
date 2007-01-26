@@ -27,7 +27,7 @@ static int _mkfifo(mode_t mode, int argc, char * argv[])
 
 static int _mkfifo_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "mkfifo: ");
+	fputs("mkfifo: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -36,8 +36,8 @@ static int _mkfifo_error(char * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: mkfifo [-m mode] file...\n\
-  -m	create fifo with the specified mode value\n");
+	fputs("Usage: mkfifo [-m mode] file...\n\
+  -m	create fifo with the specified mode value\n", stderr);
 	return 1;
 }
 

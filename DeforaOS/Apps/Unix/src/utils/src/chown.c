@@ -52,7 +52,7 @@ static int _chown(Prefs * prefs, char * owner, int argc, char * argv[])
 
 static int _chown_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "chown: ");
+	fputs("chown: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -187,10 +187,10 @@ static int _chown_do(Prefs * prefs, uid_t uid, gid_t gid, char * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: chown [-hR] owner[:group] file ...\n\
+	fputs("Usage: chown [-hR] owner[:group] file ...\n\
        chown -R [-H | -L | -P] owner[:group] file ...\n\
   -h	Set the user and group IDs on symbolic links\n\
-  -R	Recursively change file user and group IDs\n");
+  -R	Recursively change file user and group IDs\n", stderr);
 	return 1;
 }
 

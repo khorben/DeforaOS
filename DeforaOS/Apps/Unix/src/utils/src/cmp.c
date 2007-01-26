@@ -43,7 +43,7 @@ static int _cmp(OutputType ot, char const * file1, char const * file2)
 
 static int _cmp_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "cmp: ");
+	fputs("cmp: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -66,8 +66,7 @@ static int _cmp_files(OutputType ot, char const * file1, char const * file2,
 		if(c1 == EOF || c2 == EOF)
 		{
 			if(ot != OT_NONE)
-				fprintf(stderr, "%s%s\n",
-						"cmp: EOF on ",
+				fprintf(stderr, "%s%s\n", "cmp: EOF on ",
 						c1 == EOF ? file1 : file2);
 			ret = 1;
 			break;
@@ -101,9 +100,9 @@ static int _cmp_files(OutputType ot, char const * file1, char const * file2,
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: cmp [-l|-s] file1 file2\n\
+	fputs("Usage: cmp [-l|-s] file1 file2\n\
   -l    write the byte number and the differing byte for each difference\n\
-  -s    write nothing for differing bytes\n");
+  -s    write nothing for differing bytes\n", stderr);
 	return 2;
 }
 

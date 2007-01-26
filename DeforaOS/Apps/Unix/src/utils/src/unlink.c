@@ -12,7 +12,7 @@ static int _unlink(char * file)
 {
 	if(unlink(file) == -1)
 	{
-		fprintf(stderr, "%s", "unlink: ");
+		fputs("unlink: ", stderr);
 		perror(file);
 		return 2;
 	}

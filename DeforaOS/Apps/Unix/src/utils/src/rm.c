@@ -34,7 +34,7 @@ static int _rm(Prefs * prefs, int argc, char * argv[])
 
 static int _rm_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "rm: ");
+	fputs("rm: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -124,11 +124,11 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: rm [-fiRr] file...\n\
+	fputs("Usage: rm [-fiRr] file...\n\
   -f    Do not prompt for confirmation or output error messages\n\
   -i    Prompt for confirmation\n\
   -R    Remove file hierarchies\n\
-  -r    Equivalent to -R\n");
+  -r    Equivalent to -R\n", stderr);
 	return 1;
 }
 

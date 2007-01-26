@@ -44,7 +44,7 @@ static int _time(char * argv[])
 
 static int _time_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "time: ");
+	fputs("time: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -85,8 +85,8 @@ static int _time_print(long real, long user, long sys)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: time [-p] utility [argument...]\n\
-  -p    force the POSIX locale\n");
+	fputs("Usage: time [-p] utility [argument...]\n\
+  -p    force the POSIX locale\n", stderr);
 	return 1;
 }
 

@@ -67,8 +67,8 @@ static int _file_do(Prefs * p, char * filename)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: file [-dh][-M file][-m file] file ...\n\
-       file -i [-h] file ...\n");
+	fputs("Usage: file [-dh][-M file][-m file] file ...\n\
+       file -i [-h] file ...\n", stderr);
 	return 1;
 }
 

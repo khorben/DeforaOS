@@ -58,7 +58,7 @@ static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest)
 	if((lt == LT_HARD ? link(src, dest)
 				: symlink(src, dest)) == -1)
 	{
-		fprintf(stderr, "%s", "ln: ");
+		fputs("ln: ", stderr);
 		perror(src);
 		return 2;
 	}
@@ -92,10 +92,10 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: ln [-fs] source_file target_file\n\
+	fputs("Usage: ln [-fs] source_file target_file\n\
         ln [-fs] source_file ... target_dir\n\
   -f    force existing destination pathnames to be removed\n\
-  -s    create symbolic links instead of hard links\n");
+  -s    create symbolic links instead of hard links\n", stderr);
 	return 1;
 }
 

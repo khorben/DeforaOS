@@ -233,7 +233,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 
 static int _ls_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "ls: ");
+	fputs("ls: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -652,7 +652,7 @@ static int _ls_do_dirs(Prefs * prefs, int argc, SList * dirs)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
+	fputs("Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
   -C	write multi-column output\n\
   -F	write a symbol after files names depending on their type\n\
   -R	recursively list subdirectories encountered\n\
@@ -664,7 +664,7 @@ static int _usage(void)
   -u	use time of last access\n\
   -1	force output to be one entry per line\n\
   -H	dereference symbolic links\n\
-  -L	evaluate symbolic links\n");
+  -L	evaluate symbolic links\n", stderr);
 	return 1;
 }
 

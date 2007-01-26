@@ -223,7 +223,7 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 
 static int _touch_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "touch: ");
+	fputs("touch: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -279,13 +279,12 @@ static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: touch [-acm][-r ref_file|-t time]\
-file...\n\
+	fputs("Usage: touch [-acm][-r ref_file|-t time] file...\n\
   -a	change the access time\n\
   -c	do not create file if it doesn't exist\n\
   -m	change the modification time\n\
   -r	use the time of the given file\n\
-  -t	use the specified time as [[CC]YY]MMDDhhmm[.SS]\n");
+  -t	use the specified time as [[CC]YY]MMDDhhmm[.SS]\n", stderr);
 	return 1;
 }
 
