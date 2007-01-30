@@ -1,4 +1,5 @@
-/* kill.c */
+/* $Id$ */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -12,8 +13,8 @@
 /* kill */
 static int _kill(int sig, int argc, char * argv[])
 {
+	int ret = 0;
 	int i;
-	int res = 0;
 
 	for(i = 0; i < argc; i++)
 	{
@@ -23,17 +24,17 @@ static int _kill(int sig, int argc, char * argv[])
 		pid = strtol(argv[i], &p, 10);
 		if(*(argv[i]) == '\0' || *p != '\0')
 		{
-			fprintf(stderr, "%s%s", argv[i],
+			fprintf(stderr, "%s%s%s", "kill: ", argv[i],
 					": Invalid process number\n");
 			continue;
 		}
 		if(kill(pid, sig) == -1)
 		{
 			perror("kill");
-			res = 2;
+			ret = 2;
 		}
 	}
-	return res;
+	return ret;
 }
 
 

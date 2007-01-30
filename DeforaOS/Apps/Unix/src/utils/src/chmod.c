@@ -1,4 +1,5 @@
-/* chmod.c */
+/* $Id$ */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -23,15 +24,15 @@ static int _chmod_do(mode_t mode, char * file);
 static int _chmod_do_recursive(int opts, mode_t mode, char * file);
 static int _chmod(int opts, mode_t mode, int filec, char * filev[])
 {
+	int ret = 0;
 	int i;
-	int res = 0;
 
 	for(i = 0; i < filec; i++)
 		if(opts & OPT_R)
-			res += _chmod_do_recursive(opts, mode, filev[i]);
+			ret += _chmod_do_recursive(opts, mode, filev[i]);
 		else
-			res += _chmod_do(mode, filev[i]);
-	return res == 0 ? 0 : 2;
+			ret += _chmod_do(mode, filev[i]);
+	return ret == 0 ? 0 : 2;
 }
 
 static int _chmod_error(char * message, int ret)
