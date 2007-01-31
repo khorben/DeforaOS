@@ -78,8 +78,8 @@ function article_admin($args)
 		$articles[$i]['apply_module'] = 'article';
 		$articles[$i]['action'] = 'modify';
 		$articles[$i]['apply_id'] = $articles[$i]['id'];
-		$articles[$i]['icon'] = 'modules/article/icon.png';
-		$articles[$i]['thumbnail'] = 'modules/article/icon.png';
+		$articles[$i]['icon'] = 'icons/16x16/article.png';
+		$articles[$i]['thumbnail'] = 'icons/48x48/article.png';
 		$articles[$i]['name'] = $articles[$i]['title'];
 		$articles[$i]['username'] = '<a href="index.php?module=user&id='
 				.$articles[$i]['user_id'].'">'
@@ -215,8 +215,8 @@ function article_list($args)
 	{
 		$articles[$i]['module'] = 'article';
 		$articles[$i]['action'] = 'default';
-		$articles[$i]['icon'] = 'modules/article/icon.png';
-		$articles[$i]['thumbnail'] = 'modules/article/icon.png';
+		$articles[$i]['icon'] = 'icons/16x16/article.png';
+		$articles[$i]['thumbnail'] = 'icons/48x48/article.png';
 		$articles[$i]['name'] = $articles[$i]['title'];
 		$articles[$i]['date'] = strftime('%d/%m/%y %H:%M',
 				strtotime(substr($articles[$i]['timestamp'],
