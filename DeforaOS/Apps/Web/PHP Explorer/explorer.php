@@ -181,19 +181,19 @@ function explorer_folder($folder, $dir, $sort, $reverse)
 	switch($sort)
 	{
 		case 'permissions':
-			usort($files, _sort_permissions);
+			usort($files, '_sort_permissions');
 			break;
 		case 'owner':
-			usort($files, _sort_owner);
+			usort($files, '_sort_owner');
 			break;
 		case 'group':
-			usort($files, _sort_group);
+			usort($files, '_sort_group');
 			break;
 		case 'size':
-			usort($files, _sort_size);
+			usort($files, '_sort_size');
 			break;
 		case 'date':
-			usort($files, _sort_date);
+			usort($files, '_sort_date');
 			break;
 		case 'name':
 		default:
