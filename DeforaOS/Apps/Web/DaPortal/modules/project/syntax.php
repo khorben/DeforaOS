@@ -8,6 +8,8 @@ function _file_csrc($line)
 {
 	static $comment = 0;
 
+	if(strlen($line) == 0)
+		return $line;
 	$line = preg_replace('/(&quot;[^(&quot;)]+&quot;)/',
 			'<span class="string">\1</span>', $line);
 	$line = preg_replace("/('(\\\\?.|[^'])')/",
