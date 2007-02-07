@@ -98,11 +98,15 @@ static int _recursive_do(Prefs * prefs, off_t * size, char ** filename)
 
 	if((dir = opendir(*filename)) == NULL)
 		return _du_error(*filename);
-	readdir(dir);
-	readdir(dir);
 	len = strlen(*filename);
 	while((de = readdir(dir)) != NULL)
 	{
+		if(de->d_name[0] == '\0')
+			continue;
+		if(de->d_name[0] == '.')
+			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0'))
+				continue;
 		if((p = realloc(*filename, len + strlen(de->d_name) + 2))
 				== NULL)
 		{
