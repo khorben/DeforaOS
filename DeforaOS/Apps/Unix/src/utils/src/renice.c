@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -85,5 +85,5 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 1)
 		return _usage();
-	return _renice(nice, type, argc-optind, &argv[optind]);
+	return _renice(nice, type, argc - optind, &argv[optind]);
 }
