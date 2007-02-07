@@ -4,7 +4,6 @@
 
 
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -237,8 +236,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 			case TC_ASSIGNMENT_WORD:
 				if(skip)
 					break;
-				if((p = realloc(envp, sizeof(char*)
-								* (envp_cnt+2)))
+				if((p = realloc(envp, sizeof(*p)*(envp_cnt+2)))
 						== NULL)
 					/* FIXME should not exit */
 					exit(sh_error("malloc", 125));
@@ -257,8 +255,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 			case TC_WORD:
 				if(skip)
 					break;
-				if((p = realloc(argv, sizeof(char*)
-								* (argv_cnt+2)))
+				if((p = realloc(argv, sizeof(*p)*(argv_cnt+2)))
 						== NULL)
 					/* FIXME should not exit */
 					exit(sh_error("malloc", 125));
@@ -320,21 +317,23 @@ static int _exec_cmd_env(char * envp[])
 
 static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error)
 {
-	struct {
+	struct
+	{
 		char * cmd;
 		int (*func)(int, char**);
-	} builtins[] = {
-		{ "bg",     builtin_bg },
-		{ "cd",     builtin_cd },
-		{ "exit",   builtin_exit },
-		{ "export", builtin_export },
-		{ "fg",     builtin_fg },
-		{ "jobs",   builtin_jobs },
-		{ "read",   builtin_read },
-		{ "set",    builtin_set },
-		{ "umask",  builtin_umask },
-		{ "unset",  builtin_unset },
-		{ NULL,    NULL }
+	} builtins[] =
+	{
+		{ "bg",     builtin_bg		},
+		{ "cd",     builtin_cd		},
+		{ "exit",   builtin_exit	},
+		{ "export", builtin_export	},
+		{ "fg",     builtin_fg		},
+		{ "jobs",   builtin_jobs	},
+		{ "read",   builtin_read	},
+		{ "set",    builtin_set		},
+		{ "umask",  builtin_umask	},
+		{ "unset",  builtin_unset	},
+		{ NULL,	    NULL		}
 	};
 	unsigned int i;
 
@@ -357,7 +356,7 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error)
 	if(pid == 0)
 	{
 		execvp(argv[0], argv);
-		exit(sh_error(argv[0], -1));
+		_exit(sh_error(argv[0], -1));
 	}
 	if(*bg_error != 0)
 		*bg_error = job_add(argv[0], pid, JS_RUNNING);
