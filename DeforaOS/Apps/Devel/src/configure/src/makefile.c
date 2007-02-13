@@ -324,6 +324,7 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * cf;
 	String const * cpp;
 	String const * as;
+	String const * asf;
 
 	cpp = config_get(configure->config, "", "cppflags");
 	if((cff = config_get(configure->config, "", "cflags_force")) != NULL)
@@ -350,8 +351,11 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 			fputs(" -D _GNU_SOURCE", fp);
 		fputc('\n', fp);
 	}
-	if((as = config_get(configure->config, "", "asflags")) != NULL)
-		fprintf(fp, "%s%s\n", "AS\t= as\nASFLAGS\t= ", as);
+	as = config_get(configure->config, "", "as");
+	asf = config_get(configure->config, "", "asflags");
+	if(as != NULL || asf != NULL)
+		fprintf(fp, "%s%s%s%s\n", "AS\t= ", as != NULL ? as : "as",
+				"\nASFLAGS\t= ", asf);
 }
 
 static void _targets_cxxflags(Configure * configure, FILE * fp)
