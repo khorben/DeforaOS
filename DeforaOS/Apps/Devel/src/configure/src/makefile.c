@@ -320,6 +320,7 @@ static void _variables_binary(Configure * configure, FILE * fp, char * done)
 
 static void _targets_cflags(Configure * configure, FILE * fp)
 {
+	String const * cc;
 	String const * cff;
 	String const * cf;
 	String const * cpp;
@@ -327,9 +328,11 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * asf;
 
 	cpp = config_get(configure->config, "", "cppflags");
+	cc = config_get(configure->config, "", "cc");
 	if((cff = config_get(configure->config, "", "cflags_force")) != NULL)
 	{
-		fputs("CC\t= cc\nCPPFLAGS=", fp);
+		fprintf(fp, "%s%s%s", "CC\t= ", cc != NULL ? cc : "cc",
+				"\nCPPFLAGS=");
 		if(cpp != NULL)
 			fprintf(fp, " %s", cpp);
 		fprintf(fp, "%s%s", "\nCFLAGSF\t= ", cff);
@@ -341,7 +344,8 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	{
 		if(cff == NULL)
 		{
-			fputs("CC\t= cc\nCPPFLAGS=", fp);
+			fprintf(fp, "%s%s%s", "CC\t= ", cc != NULL ? cc : "cc",
+					"\nCPPFLAGS=");
 			if(cpp != NULL)
 				fprintf(fp, " %s", cpp);
 			fputc('\n', fp);
