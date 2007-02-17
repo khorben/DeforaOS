@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 /* This file is part of Browser */
 /* Browser is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -90,9 +90,11 @@ typedef struct _Browser
 	GtkIconTheme * theme;
 	GdkPixbuf * pb_file_24;
 	GdkPixbuf * pb_folder_24;
+	GdkPixbuf * pb_executable_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * pb_file_48;
 	GdkPixbuf * pb_folder_48;
+	GdkPixbuf * pb_executable_48;
 #endif
 	GtkWidget * window;
 	GtkToolItem * tb_back;

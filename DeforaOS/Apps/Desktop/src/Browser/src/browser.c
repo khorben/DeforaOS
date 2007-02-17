@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 /* This file is part of Browser */
 /* Browser is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -280,6 +280,8 @@ static int _new_pixbufs(Browser * browser)
 			"gnome-fs-regular", 24, 0, NULL);
 	browser->pb_folder_24 = gtk_icon_theme_load_icon(browser->theme,
 			"gnome-fs-directory", 24, 0, NULL);
+	browser->pb_executable_24 = gtk_icon_theme_load_icon(browser->theme,
+			"gnome-fs-executable", 24, 0, NULL);
 #if !GTK_CHECK_VERSION(2, 6, 0)
 	return browser->pb_file_24 == NULL || browser->pb_folder_24 == NULL;
 #else
@@ -287,6 +289,8 @@ static int _new_pixbufs(Browser * browser)
 			"gnome-fs-regular", 48, 0, NULL);
 	browser->pb_folder_48 = gtk_icon_theme_load_icon(browser->theme,
 			"gnome-fs-directory", 48, 0, NULL);
+	browser->pb_executable_48 = gtk_icon_theme_load_icon(browser->theme,
+			"gnome-fs-executable", 48, 0, NULL);
 	return browser->pb_file_48 == NULL || browser->pb_folder_48 == NULL
 		|| browser->pb_file_48 == NULL || browser->pb_folder_48 == NULL;
 #endif
@@ -638,6 +642,15 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			icon_48 = browser->pb_folder_48;
 #endif
 		}
+		else if(!S_ISLNK(st->st_mode) && st->st_mode & S_IXUSR
+				&& browser->pb_executable_24 != NULL
+				&& browser->pb_executable_48 != NULL)
+		{
+			icon_24 = browser->pb_executable_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+			icon_48 = browser->pb_executable_48;
+#endif
+		}
 		else if((type = mime_type(browser->mime, display)) != NULL)
 			icon_24 = mime_icons(browser->mime, browser->theme,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -688,7 +701,10 @@ static char * _insert_size(off_t size)
 	else if((sz /= 1024) < 1024)
 		unit = "GB";
 	else
-		unit = "GB";
+	{
+		sz /= 1024;
+		unit = "TB";
+	}
 	snprintf(buf, sizeof(buf), "%.1f %s", sz, unit);
 	return buf;
 }
@@ -815,6 +831,15 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			icon_24 = browser->pb_folder_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
 			icon_48 = browser->pb_folder_48;
+#endif
+		}
+		else if(!S_ISLNK(st->st_mode) && st->st_mode & S_IXUSR
+				&& browser->pb_executable_24 != NULL
+				&& browser->pb_executable_48 != NULL)
+		{
+			icon_24 = browser->pb_executable_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+			icon_48 = browser->pb_executable_48;
 #endif
 		}
 		else if((type = mime_type(browser->mime, display)) != NULL)
