@@ -16,6 +16,7 @@
 
 
 
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -745,6 +746,7 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 }
 
 
+/* on_view_popup */
 /* types */
 typedef struct _IconCallback
 {
@@ -752,15 +754,25 @@ typedef struct _IconCallback
 	int isdir;
 	char * path;
 } IconCallback;
+
+/* sub-functions */
+static gboolean _popup_context(Browser * browser, GdkEventButton * event,
+		GtkWidget * menu, IconCallback * ic);
+static void _popup_directory(GtkWidget * menu, IconCallback * ic);
+static void _popup_file(Browser * browser, GtkWidget * menu, char * mime,
+		IconCallback * ic);
 static void _popup_mime(Browser * browser, char const * type,
 		char const * action, char const * label,
 		GCallback callback, IconCallback * ic, GtkWidget * menu);
 static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu);
+
+/* callbacks */
 static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
+
 gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
@@ -789,14 +801,11 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 		gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(
 					browser->detailview), (int)event->x,
 				(int)event->y, &path, NULL, NULL, NULL);
+	ic.browser = browser;
+	ic.isdir = 0;
+	ic.path = NULL;
 	if(path == NULL)
-	{
-		browser_unselect_all(browser);
-		menuitem = gtk_image_menu_item_new_from_stock(
-				GTK_STOCK_PROPERTIES, NULL);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		return _popup_show(browser, event, menu);
-	}
+		return _popup_context(browser, event, menu, &ic);
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -825,38 +834,10 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
 			BR_COL_MIME_TYPE, &mime, -1);
-	ic.browser = browser;
 	if(ic.isdir == TRUE)
-	{
-		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN,
-				NULL);
-		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_open), &ic);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	}
-	else /* not a directory */
-	{
-		_popup_mime(browser, mime, "open", GTK_STOCK_OPEN,
-				G_CALLBACK(_on_icon_open), &ic, menu);
-		_popup_mime(browser, mime, "edit",
-#if GTK_CHECK_VERSION(2, 6, 0)
-				GTK_STOCK_EDIT,
-#else
-				"_Edit",
-#endif
-				G_CALLBACK(_on_icon_edit), &ic, menu);
-		menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
-		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_open_with), &ic);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		menuitem = gtk_separator_menu_item_new();
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
-				NULL);
-		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_delete), &ic);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	}
+		_popup_directory(menu, &ic);
+	else
+		_popup_file(browser, menu, mime, &ic);
 	g_free(mime);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -867,6 +848,85 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	gtk_tree_path_free(path);
 #endif
 	return _popup_show(browser, event, menu);
+}
+
+static void _on_folder_new(GtkWidget * widget, gpointer data);
+static gboolean _popup_context(Browser * browser, GdkEventButton * event,
+		GtkWidget * menu, IconCallback * ic)
+{
+	GtkWidget * menuitem;
+	GtkWidget * submenu;
+
+	browser_unselect_all(browser);
+	menuitem = gtk_menu_item_new_with_label("New");
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	submenu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
+	menuitem = gtk_menu_item_new_with_label("Folder");
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_folder_new), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(
+			GTK_STOCK_PROPERTIES, NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	return _popup_show(browser, event, menu);
+}
+
+static void _on_folder_new(GtkWidget * widget, gpointer data)
+{
+	IconCallback * ic = data;
+	Browser * browser = ic->browser;
+	char * cur = browser->current->data;
+	char const * newfolder = "New folder";
+	char * path;
+
+	if((path = malloc(strlen(cur) + 2 + strlen(newfolder))) == NULL)
+	{
+		browser_error(browser, strerror(errno), 0);
+		return;
+	}
+	sprintf(path, "%s/%s", cur, newfolder);
+	if(mkdir(path, 0777) != 0)
+		browser_error(browser, strerror(errno), 0);
+	free(path);
+}
+
+static void _popup_directory(GtkWidget * menu, IconCallback * ic)
+{
+	GtkWidget * menuitem;
+
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_icon_open), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+}
+
+static void _popup_file(Browser * browser, GtkWidget * menu, char * mime,
+		IconCallback * ic)
+{
+	GtkWidget * menuitem;
+
+	_popup_mime(browser, mime, "open", GTK_STOCK_OPEN, G_CALLBACK(
+				_on_icon_open), ic, menu);
+	_popup_mime(browser, mime, "edit",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			GTK_STOCK_EDIT,
+#else
+			"_Edit",
+#endif
+			G_CALLBACK(_on_icon_edit), ic, menu);
+	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_icon_open_with), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_icon_delete), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
 static void _popup_mime(Browser * browser, char const * type,
