@@ -643,8 +643,10 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #endif
 		}
 		else if(!S_ISLNK(st->st_mode) && st->st_mode & S_IXUSR
-				&& browser->pb_executable_24 != NULL
-				&& browser->pb_executable_48 != NULL)
+#if GTK_CHECK_VERSION(2, 6, 0)
+				&& browser->pb_executable_48 != NULL
+#endif
+				&& browser->pb_executable_24 != NULL)
 		{
 			icon_24 = browser->pb_executable_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -834,8 +836,10 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 #endif
 		}
 		else if(!S_ISLNK(st->st_mode) && st->st_mode & S_IXUSR
-				&& browser->pb_executable_24 != NULL
-				&& browser->pb_executable_48 != NULL)
+#if GTK_CHECK_VERSION(2, 6, 0)
+				&& browser->pb_executable_48 != NULL
+#endif
+				&& browser->pb_executable_24 != NULL)
 		{
 			icon_24 = browser->pb_executable_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
