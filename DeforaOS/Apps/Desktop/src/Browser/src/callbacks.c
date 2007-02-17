@@ -718,13 +718,16 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	Browser * browser = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
 	GtkTreeIter iter;
+	int isdir = 0;
 	char * path = NULL;
 	ssize_t len;
 	char * q = NULL;
+	struct stat st;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
 	{
-		gtk_tree_model_get(model, &iter, BR_COL_PATH, &path, -1);
+		gtk_tree_model_get(model, &iter, BR_COL_IS_DIRECTORY, &isdir,
+				BR_COL_PATH, &path, -1);
 		if(path != NULL && (len = strrchr(path, '/') - path) > 0
 				&& strcmp(&path[len+1], arg2) != 0)
 			q = malloc(len + strlen(arg2) + 2);
@@ -736,7 +739,15 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	}
 	strncpy(q, path, len);
 	sprintf(&q[len], "/%s", arg2);
-	if(link(path, q) != 0 || unlink(path) != 0)
+	if(isdir && lstat(q, &st) == -1 && errno == ENOENT) /* XXX TOCTOU */
+	{
+		if(rename(path, q) != 0)
+			browser_error(browser, strerror(errno), 0);
+		else
+			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
+					q, BR_COL_DISPLAY_NAME, arg2, -1);
+	}
+	else if(link(path, q) != 0 || unlink(path) != 0)
 		browser_error(browser, strerror(errno), 0);
 	else
 		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, q,
