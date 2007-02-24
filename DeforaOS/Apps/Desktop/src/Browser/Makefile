@@ -26,8 +26,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/mime.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/delete.c \
+		$(PACKAGE)-$(VERSION)/src/desktop.c \
 		$(PACKAGE)-$(VERSION)/src/open.c \
-		$(PACKAGE)-$(VERSION)/src/mime.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/browser.h \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
