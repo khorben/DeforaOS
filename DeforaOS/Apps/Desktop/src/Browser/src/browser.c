@@ -116,6 +116,7 @@ static struct _menubar _menubar[] =
 static int _new_pixbufs(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
+
 Browser * browser_new(char const * directory)
 {
 	Browser * browser;
@@ -131,7 +132,10 @@ Browser * browser_new(char const * directory)
 #endif
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
+	{
+		browser_error(NULL, "malloc", 0);
 		return NULL;
+	}
 	browser->window = NULL;
 	if(_new_pixbufs(browser) != 0)
 	{
@@ -942,6 +946,8 @@ void browser_set_location(Browser * browser, char const * path)
 		browser_refresh(browser);
 		return;
 	}
+	else
+		browser_error(browser, realpath, 0); /* XXX call strerror() */
 	free(realpath);
 }
 

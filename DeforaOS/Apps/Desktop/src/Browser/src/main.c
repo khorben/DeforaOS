@@ -34,6 +34,7 @@ static int _usage(void)
 
 /* main */
 static void _main_sigchld(int signum);
+
 int main(int argc, char * argv[])
 {
 	int o;
