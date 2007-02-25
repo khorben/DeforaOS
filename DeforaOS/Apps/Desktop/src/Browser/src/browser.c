@@ -475,15 +475,13 @@ void browser_refresh(Browser * browser)
 	if(browser->current == NULL)
 		return;
 #if defined(__sun__)
-	if((fd = open(browser->current->data, O_RDONLY)) < 0)
+	if((fd = open(browser->current->data, O_RDONLY)) < 0
+			|| fstat(fd, &st) != 0
+			|| (dir = fdopendir(fd)) == NULL)
 	{
 		browser_error(browser, strerror(errno), 0);
-		return;
-	}
-	if(fstat(fd, &st) != 0 || (dir = fdopendir(fd)) == NULL)
-	{
-		browser_error(browser, strerror(errno), 0);
-		close(fd);
+		if(fd >= 0)
+			close(fd);
 		return;
 	}
 #else
@@ -732,6 +730,8 @@ static gboolean _new_idle(gpointer data)
 static gboolean _done_timeout(gpointer data);
 static void _refresh_done(Browser * browser)
 {
+	closedir(browser->refresh_dir);
+	browser->refresh_dir = NULL;
 	g_timeout_add(1000, _done_timeout, browser);
 }
 
