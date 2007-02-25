@@ -1078,10 +1078,10 @@ static void _view_details(Browser * browser)
 static void _view_icon_view(Browser * browser);
 static void _view_icons(Browser * browser)
 {
+#if GTK_CHECK_VERSION(2, 8, 0)
 	GtkCellRenderer * renderer;
 
 	_view_icon_view(browser);
-#if GTK_CHECK_VERSION(2, 8, 0)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(renderer, "follow-state", TRUE, NULL);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
@@ -1099,6 +1099,7 @@ static void _view_icons(Browser * browser)
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 #else
+	_view_icon_view(browser);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_PIXBUF_48);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
@@ -1141,10 +1142,10 @@ static void _view_icon_view(Browser * browser)
 
 static void _view_list(Browser * browser)
 {
+#if GTK_CHECK_VERSION(2, 8, 0)
 	GtkCellRenderer * renderer;
 
 	_view_icon_view(browser);
-#if GTK_CHECK_VERSION(2, 8, 0)
 	renderer = gtk_cell_renderer_pixbuf_new();
 	g_object_set(renderer, "follow-state", TRUE, NULL);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
@@ -1160,6 +1161,7 @@ static void _view_list(Browser * browser)
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 #else
+	_view_icon_view(browser);
 	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_PIXBUF_24);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
