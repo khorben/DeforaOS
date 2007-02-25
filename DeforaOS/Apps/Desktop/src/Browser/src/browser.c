@@ -578,7 +578,6 @@ static int _new_loop(Browser * browser)
 	GtkTreeIter iter;
 	char * path;
 	struct stat st;
-	struct stat * p = NULL;
 
 	while((de = readdir(browser->refresh_dir)) != NULL)
 	{
@@ -596,11 +595,14 @@ static int _new_loop(Browser * browser)
 	if(de == NULL)
 		return _loop_status(browser);
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
-			!= NULL && lstat(path, &st) != 0)
-		_browser_error(path, 0);
-	else
-		p = &st;
-	_loop_insert(browser, &iter, path, de->d_name, p, 0);
+			== NULL || lstat(path, &st) != 0)
+	{
+		_browser_error(de->d_name, 0);
+		if(path != NULL)
+			g_free(path);
+		return 0;
+	}
+	_loop_insert(browser, &iter, path, de->d_name, &st, 0);
 	g_free(path);
 	return 0;
 }
@@ -748,15 +750,19 @@ static gboolean _done_timeout(gpointer data)
 
 static int _current_loop(Browser * browser);
 static gboolean _current_idle(gpointer data);
+static void _current_deleted(Browser * browser);
 static void _refresh_current(Browser * browser)
 {
 	unsigned int i;
 
 	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
 	if(i == 16)
+	{
 		browser->refresh_id = g_idle_add(_current_idle, browser);
-	else
-		_refresh_done(browser);
+		return;
+	}
+	_current_deleted(browser);
+	_refresh_done(browser);
 }
 
 static void _loop_update(Browser * browser, GtkTreeIter * iter,
@@ -787,13 +793,12 @@ static int _current_loop(Browser * browser)
 	if(de == NULL)
 		return _loop_status(browser);
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
-			== NULL)
-		return 1;
-	if(lstat(path, &st) != 0)
+			== NULL || lstat(path, &st) != 0)
 	{
-		_browser_error(path, 0);
-		g_free(path);
-		return 1;
+		_browser_error(de->d_name, 0);
+		if(path != NULL)
+			g_free(path);
+		return 0;
 	}
 	valid = gtk_tree_model_get_iter_first(model, &iter);
 	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
@@ -877,7 +882,6 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			-1);
 }
 
-static void _current_deleted(Browser * browser);
 static gboolean _current_idle(gpointer data)
 {
 	Browser * browser = data;
