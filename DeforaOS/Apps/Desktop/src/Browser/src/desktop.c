@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include "mime.h"
 #include "desktop.h"
@@ -39,6 +40,10 @@ struct _Desktop
 	DesktopIcon ** icon;
 	size_t icon_cnt;
 	Mime * mime;
+	char * path;
+	size_t path_cnt;
+	DIR * refresh_dir;
+	time_t refresh_mti;
 
 	GtkIconTheme * theme;
 };
@@ -49,6 +54,8 @@ struct _DesktopIcon
 	char * path;
 	int isdir;
 	char const * mimetype;
+
+	int updated; /* XXX for desktop refresh */
 
 	GtkWidget * window;
 	GtkWidget * label;
@@ -83,6 +90,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->desktop = desktop;
 	desktopicon->isdir = 0;
 	desktopicon->mimetype = NULL;
+	desktopicon->updated = 1;
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_move(GTK_WINDOW(desktopicon->window), 0, 0);
 	gtk_window_set_type_hint(GTK_WINDOW(desktopicon->window),
@@ -141,6 +149,8 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_widget_show_all(desktopicon->window);
 	return desktopicon;
 }
+/*	mask = gdk_drawable_get_image(GDK_DRAWABLE(pixbuf), 0, 0, 48, 48); */
+/*	gdk_window_shape_combine_mask(GTK_WINDOW(window)->window, mask, 0, 0); */
 
 /* callbacks */
 static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
@@ -331,15 +341,18 @@ void desktopicon_move(DesktopIcon * desktopicon, int x, int y)
 /* functions */
 /* desktop_new */
 /* FIXME implement desktop resizing callback */
+/* callbacks */
 Desktop * desktop_new(void)
 {
 	Desktop * desktop;
 	char * home;
+	struct stat st;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
 	desktop->icon = NULL;
 	desktop->icon_cnt = 0;
+	desktop->path = NULL;
 	if((desktop->mime = mime_new()) == NULL
 			|| (desktop->icon = malloc(sizeof(*(desktop->icon))
 					* desktop->icon_cnt)) == NULL)
@@ -354,12 +367,34 @@ Desktop * desktop_new(void)
 		desktop_error(desktop, "HOME", 0);
 		return desktop;
 	}
+	desktop->path_cnt = strlen(home) + strlen("/" DESKTOP) + 1;
+	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
+	{
+		desktop_error(desktop, "malloc", 0);
+		desktop_delete(desktop);
+		return NULL;
+	}
+	sprintf(desktop->path, "%s%s", home, "/" DESKTOP);
+	if(lstat(desktop->path, &st) == 0)
+	{
+		if(!S_ISDIR(st.st_mode))
+		{
+			errno = ENOTDIR;
+			desktop_error(desktop, desktop->path, 0);
+			desktop_delete(desktop);
+			return NULL;
+		}
+	}
+	else if(mkdir(desktop->path, 0777) != 0)
+	{
+		desktop_error(desktop, desktop->path, 0);
+		desktop_delete(desktop);
+		return NULL;
+	}
 	desktop_icons_add(desktop, desktopicon_new(desktop, "Home", home));
 	desktop_refresh(desktop);
 	return desktop;
 }
-/*	mask = gdk_drawable_get_image(GDK_DRAWABLE(pixbuf), 0, 0, 48, 48); */
-/*	gdk_window_shape_combine_mask(GTK_WINDOW(window)->window, mask, 0, 0); */
 
 
 /* desktop_delete */
@@ -371,6 +406,7 @@ void desktop_delete(Desktop * desktop)
 		desktopicon_delete(desktop->icon[i]);
 	free(desktop->icon);
 	mime_delete(desktop->mime);
+	free(desktop->path);
 	free(desktop);
 }
 
@@ -385,7 +421,7 @@ int desktop_error(Desktop * desktop, char const * message, int ret)
 	if(desktop == NULL)
 		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", message);
+			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	if(ret < 0)
 	{
@@ -408,56 +444,123 @@ static int _error_text(char const * message, int ret)
 }
 
 
+void _refresh_current(Desktop * desktop);
 void desktop_refresh(Desktop * desktop)
 {
-	char * home;
-	size_t off;
-	size_t cnt;
-	char * path;
-	char * p;
-	DIR * dir;
+	int fd;
+	struct stat st;
+
+	desktop->path[desktop->path_cnt - 1] = '\0';
+#ifdef __sun__
+	if((fd = open(desktop->path, O_RDONLY)) < 0
+			|| fstat(fd, &st) != 0
+			|| (dir = fdopendir(fd)) == NULL)
+	{
+		desktop_error(desktop, desktop->path, 0);
+		if(fd >= 0)
+			close(fd);
+		return;
+	}
+#else
+	if((desktop->refresh_dir = opendir(desktop->path)) == NULL)
+	{
+		desktop_error(desktop, desktop->path, 0);
+		return;
+	}
+	fd = dirfd(desktop->refresh_dir);
+	if(fstat(fd, &st) != 0)
+	{
+		desktop_error(desktop, desktop->path, 0);
+		closedir(desktop->refresh_dir);
+		return;
+	}
+#endif
+	desktop->refresh_mti = st.st_mtime;
+	_refresh_current(desktop);
+}
+
+static int _current_loop(Desktop * desktop);
+static gboolean _current_idle(gpointer data);
+static gboolean _current_done(Desktop * desktop);
+void _refresh_current(Desktop * desktop)
+{
+	unsigned int i;
+
+	for(i = 0; i < 16 && _current_loop(desktop) == 0; i++);
+	if(i == 16)
+		g_idle_add(_current_idle, desktop);
+	else
+		_current_done(desktop);
+}
+
+static int _current_loop(Desktop * desktop)
+{
 	struct dirent * de;
+	char * p;
 	DesktopIcon * desktopicon;
 
-	if((home = getenv("HOME")) == NULL)
-	{
-		desktop_error(desktop, "HOME", 0);
-		return;
-	}
-	off = strlen(home) + strlen("/" DESKTOP);
-	cnt = off + 1;
-	if((path = malloc(cnt)) == NULL)
-	{
-		desktop_error(desktop, "malloc", 0);
-		return;
-	}
-	sprintf(path, "%s%s", home, "/" DESKTOP);
-	if((dir = opendir(path)) == NULL && (mkdir(path, 0700) != 0
-				|| (dir = opendir(path)) == NULL))
-	{
-		desktop_error(desktop, path, 0);
-		free(path);
-		return;
-	}
-	while((de = readdir(dir)) != NULL)
+	while((de = readdir(desktop->refresh_dir)) != NULL)
 	{
 		if(de->d_name[0] == '.')
 			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
 						&& de->d_name[2] == '\0'))
 				continue;
-		if((p = realloc(path, cnt + strlen(de->d_name) + 1)) == NULL)
-		{
-			desktop_error(NULL, "realloc", 0);
-			continue;
-		} /* FIXME avoid calling realloc() at every pass */
-		path = p;
-		sprintf(&path[off], "/%s", de->d_name);
-		if((desktopicon = desktopicon_new(desktop, de->d_name, path))
-				!= NULL)
-			desktop_icons_add(desktop, desktopicon);
+		break;
 	}
-	closedir(dir);
-	free(path);
+	if(de == NULL)
+		return 1;
+	if((p = realloc(desktop->path, desktop->path_cnt + strlen(de->d_name)
+					+ 1)) == NULL)
+	{
+		desktop_error(NULL, "realloc", 0);
+		return 1;
+	} /* FIXME avoid calling realloc() at every pass */
+	desktop->path = p;
+	sprintf(&desktop->path[desktop->path_cnt - 1], "/%s", de->d_name);
+	if((desktopicon = desktopicon_new(desktop, de->d_name, desktop->path))
+			!= NULL) /* FIXME test if already exists */
+		desktop_icons_add(desktop, desktopicon);
+	return 0;
+}
+
+static gboolean _current_idle(gpointer data)
+{
+	Desktop * desktop = data;
+	unsigned int i;
+
+	for(i = 0; i < 16 && _current_loop(desktop) == 0; i++);
+	if(i == 16)
+		return TRUE;
+	return _current_done(desktop);
+}
+
+static gboolean _done_timeout(gpointer data);
+static gboolean _current_done(Desktop * desktop)
+{
+	size_t i = 1;
+
+	while(i < desktop->icon_cnt)
+		if(desktop->icon[i]->updated != 1)
+			desktop_icons_remove(desktop, desktop->icon[i]);
+		else
+			desktop->icon[i++]->updated = 0;
+	closedir(desktop->refresh_dir);
+	g_timeout_add(1000, _done_timeout, desktop);
+	return FALSE;
+}
+
+static gboolean _done_timeout(gpointer data)
+{
+	Desktop * desktop = data;
+	struct stat st;
+
+	desktop->path[desktop->path_cnt - 1] = '\0';
+	if(stat(desktop->path, &st) != 0)
+		return desktop_error(NULL, desktop->path, FALSE);
+	if(st.st_mtime == desktop->refresh_mti)
+		return TRUE;
+	desktop_refresh(desktop);
+	return FALSE;
 }
 
 
@@ -493,7 +596,7 @@ void desktop_icons_add(Desktop * desktop, DesktopIcon * icon)
 	if((p = realloc(desktop->icon, sizeof(*p) * (desktop->icon_cnt + 1)))
 			== NULL)
 	{
-		desktop_error(desktop, "Adding an icon failed", 0);
+		desktop_error(desktop, "Adding icon", 0);
 		return;
 	}
 	desktop->icon = p;
@@ -544,7 +647,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind < argc-1)
+	if(optind < argc)
 		return _usage();
 	if((desktop = desktop_new()) == NULL)
 	{
