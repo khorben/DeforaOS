@@ -97,7 +97,6 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_window_set_type_hint(GTK_WINDOW(desktopicon->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	gtk_window_set_resizable(GTK_WINDOW(desktopicon->window), FALSE);
-	gtk_window_set_deletable(GTK_WINDOW(desktopicon->window), FALSE);
 	gtk_window_set_decorated(GTK_WINDOW(desktopicon->window), FALSE);
 	gtk_window_set_keep_below(GTK_WINDOW(desktopicon->window), TRUE);
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete_event",
