@@ -371,7 +371,7 @@ Desktop * desktop_new(void)
 	if((dir = opendir(path)) == NULL && (mkdir(path, 0700) != 0
 				|| (dir = opendir(path)) == NULL))
 	{
-		desktop_error(desktop, "mkdir / opendir", 0); /* XXX */
+		desktop_error(desktop, path, 0);
 		free(path);
 		return desktop;
 	}
