@@ -43,6 +43,8 @@ void desktop_delete(Desktop * desktop);
 /* useful */
 int desktop_error(Desktop * desktop, char const * message, int ret);
 
+void desktop_refresh(Desktop * desktop);
+
 void desktop_icons_align(Desktop * desktop);
 void desktop_icons_sort(Desktop * desktop);
 

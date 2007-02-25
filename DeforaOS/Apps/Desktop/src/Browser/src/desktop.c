@@ -28,6 +28,10 @@
 #include "desktop.h"
 
 
+/* constants */
+#define DESKTOP ".desktop"
+
+
 /* DesktopIcon */
 /* types */
 struct _Desktop
@@ -330,16 +334,7 @@ void desktopicon_move(DesktopIcon * desktopicon, int x, int y)
 Desktop * desktop_new(void)
 {
 	Desktop * desktop;
-	GdkPixbuf * icon;
 	char * home;
-	char * path;
-	size_t off;
-	size_t cnt;
-	char * p;
-	DIR * dir;
-	struct dirent * de;
-	char const * type;
-	DesktopIcon * desktopicon;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -360,43 +355,7 @@ Desktop * desktop_new(void)
 		return desktop;
 	}
 	desktop_icons_add(desktop, desktopicon_new(desktop, "Home", home));
-	off = strlen(home) + strlen("/.desktop");
-	cnt = off + 1;
-	if((path = malloc(cnt)) == NULL)
-	{
-		desktop_error(desktop, "malloc", 0);
-		return desktop;
-	}
-	sprintf(path, "%s%s", home, "/.desktop");
-	if((dir = opendir(path)) == NULL && (mkdir(path, 0700) != 0
-				|| (dir = opendir(path)) == NULL))
-	{
-		desktop_error(desktop, path, 0);
-		free(path);
-		return desktop;
-	}
-	while((de = readdir(dir)) != NULL)
-	{
-		if(de->d_name[0] == '.')
-			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
-						&& de->d_name[2] == '\0'))
-				continue;
-		if((p = realloc(path, cnt + strlen(de->d_name) + 1)) == NULL)
-		{
-			desktop_error(NULL, "realloc", 0);
-			continue;
-		} /* FIXME avoid calling realloc() at every pass */
-		path = p;
-		sprintf(&path[off], "/%s", de->d_name);
-		if((type = mime_type(desktop->mime, path)) == NULL)
-			type = "";
-		mime_icons(desktop->mime, desktop->theme, type, &icon);
-		if((desktopicon = desktopicon_new(desktop, de->d_name, path))
-				!= NULL)
-			desktop_icons_add(desktop, desktopicon);
-	}
-	closedir(dir);
-	free(path);
+	desktop_refresh(desktop);
 	return desktop;
 }
 /*	mask = gdk_drawable_get_image(GDK_DRAWABLE(pixbuf), 0, 0, 48, 48); */
@@ -446,6 +405,59 @@ static int _error_text(char const * message, int ret)
 	fputs("desktop: ", stderr);
 	perror(message);
 	return ret;
+}
+
+
+void desktop_refresh(Desktop * desktop)
+{
+	char * home;
+	size_t off;
+	size_t cnt;
+	char * path;
+	char * p;
+	DIR * dir;
+	struct dirent * de;
+	DesktopIcon * desktopicon;
+
+	if((home = getenv("HOME")) == NULL)
+	{
+		desktop_error(desktop, "HOME", 0);
+		return;
+	}
+	off = strlen(home) + strlen("/" DESKTOP);
+	cnt = off + 1;
+	if((path = malloc(cnt)) == NULL)
+	{
+		desktop_error(desktop, "malloc", 0);
+		return;
+	}
+	sprintf(path, "%s%s", home, "/" DESKTOP);
+	if((dir = opendir(path)) == NULL && (mkdir(path, 0700) != 0
+				|| (dir = opendir(path)) == NULL))
+	{
+		desktop_error(desktop, path, 0);
+		free(path);
+		return;
+	}
+	while((de = readdir(dir)) != NULL)
+	{
+		if(de->d_name[0] == '.')
+			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0'))
+				continue;
+		if((p = realloc(path, cnt + strlen(de->d_name) + 1)) == NULL)
+		{
+			desktop_error(NULL, "realloc", 0);
+			continue;
+		} /* FIXME avoid calling realloc() at every pass */
+		path = p;
+		sprintf(&path[off], "/%s", de->d_name);
+		if((desktopicon = desktopicon_new(desktop, de->d_name, path))
+				!= NULL)
+			desktop_icons_add(desktop, desktopicon);
+	}
+	closedir(dir);
+	free(path);
 }
 
 
