@@ -17,6 +17,7 @@
 
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -459,7 +460,7 @@ void desktop_refresh(Desktop * desktop)
 #ifdef __sun__
 	if((fd = open(desktop->path, O_RDONLY)) < 0
 			|| fstat(fd, &st) != 0
-			|| (dir = fdopendir(fd)) == NULL)
+			|| (desktop->refresh_dir = fdopendir(fd)) == NULL)
 	{
 		desktop_error(desktop, desktop->path, 0);
 		if(fd >= 0)
