@@ -230,8 +230,13 @@ static void _popup_file(DesktopIcon * desktopicon, GtkWidget * menu,
 
 	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "open",
 			GTK_STOCK_OPEN, G_CALLBACK(_on_icon_open), ic, menu);
+#if GTK_CHECK_VERSION(2, 6, 0)
 	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
 			GTK_STOCK_EDIT, G_CALLBACK(_on_icon_edit), ic, menu);
+#else
+	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
+			"_Edit", G_CALLBACK(_on_icon_edit), ic, menu);
+#endif
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), ic);
