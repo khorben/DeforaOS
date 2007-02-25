@@ -138,8 +138,10 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->label = gtk_label_new(name);
 	gtk_label_set_justify(GTK_LABEL(desktopicon->label),
 			GTK_JUSTIFY_CENTER);
+#if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_label_set_line_wrap_mode(GTK_LABEL(desktopicon->label),
 			PANGO_WRAP_WORD_CHAR);
+#endif
 	gtk_label_set_line_wrap(GTK_LABEL(desktopicon->label), TRUE);
 	gtk_widget_set_size_request(desktopicon->label, 100, -1);
 	g_signal_connect(G_OBJECT(desktopicon->label), "button-press-event",
