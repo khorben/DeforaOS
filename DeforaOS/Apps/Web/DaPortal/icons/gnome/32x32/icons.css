@@ -1,0 +1,27 @@
+h2.title.bug {
+	background-image:		url('bug.png');
+}
+
+h2.title.download {
+	background-image:		url('download.png');
+}
+
+h2.title.host {
+	background-image:		url('host.png');
+}
+
+h2.title.language {
+	background-image:		url('language.png');
+}
+
+h2.title.modules, h2.title.settings {
+	background-image:		url('settings.png');
+}
+
+h2.title.project {
+	background-image:		url('project.png');
+}
+
+h2.title.users {
+	background-image:		url('users.png');
+}

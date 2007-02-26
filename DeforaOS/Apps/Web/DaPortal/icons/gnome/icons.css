@@ -1,0 +1,25 @@
+/* size specific */
+@import url('48x48/icons.css');
+@import url('32x32/icons.css');
+@import url('16x16/icons.css');
+
+
+/* classes */
+div.icon, div.thumbnail {
+	background-position:	bottom right;
+	background-repeat:	no-repeat;
+}
+
+div.icon {
+	display:		inline;
+	margin-left:		2px;
+	padding-left:		8px;
+	padding-right:		8px;
+	padding-bottom:		0px;
+	padding-top:		0px;
+}
+
+div.thumbnail {
+	min-height:		48px;
+	min-width:		48px;
+}

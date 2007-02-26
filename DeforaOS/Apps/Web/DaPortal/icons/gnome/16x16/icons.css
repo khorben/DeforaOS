@@ -1,0 +1,77 @@
+div.icon.add {
+	background-image:		url('add.png');
+}
+
+div.icon.back {
+	background-image:		url('back.png');
+}
+
+div.icon.bug {
+	background-image:		url('bug.png');
+}
+
+div.icon.delete {
+	background-image:		url('delete.png');
+}
+
+div.icon.disabled {
+	background-image:		url('disabled.png');
+}
+
+div.icon.enabled {
+	background-image:		url('enabled.png');
+}
+
+div.icon.forward {
+	background-image:		url('forward.png');
+}
+
+div.icon.home {
+	background-image:		url('home.png');
+}
+
+div.icon.listing_details {
+	/* FIXME work-around for explorer */
+	display:			inline;
+	background-image:		url('listing_details.png');
+}
+
+div.icon.listing_list {
+	background-image:		url('listing_list.png');
+}
+
+div.icon.listing_thumbnails {
+	background-image:		url('listing_thumbnails.png');
+}
+
+div.icon.new {
+	background-image:		url('new.png');
+}
+
+div.icon.new_directory {
+	background-image:		url('new_directory.png');
+}
+
+div.icon.parent_directory {
+	background-image:		url('parent_directory.png');
+}
+
+div.icon.refresh {
+	background-image:		url('refresh.png');
+}
+
+div.icon.remove {
+	background-image:		url('remove.png');
+}
+
+div.icon.search, h3.title.search {
+	background-image:		url('search.png');
+}
+
+div.icon.select_all {
+	background-image:		url('select_all.png');
+}
+
+div.icon.upload_file {
+	background-image:		url('upload_file.png');
+}
