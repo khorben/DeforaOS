@@ -16,7 +16,7 @@ Le <a href="index.php?module=project&amp;id=11">projet</a> est toujours en <a hr
 conception</a>.
 		</p>
 
-		<h3 class="title news">Actualit&eacute;s</h3>
+		<h3 class="title news">Actualit&eacute;</h3>
 		<p>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
 <a href="index.php?module=news" title="DeforaOS news">Suite...</a>
