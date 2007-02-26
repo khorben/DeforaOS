@@ -1,7 +1,8 @@
 /* default includes */
-@import url('../css/debug.css');
-@import url('../css/explorer.css');
-@import url('../css/icons.css');
+@import url("../css/debug.css");
+@import url("../css/explorer.css");
+@import url("../css/icons.css");
+@import url("icons/gnome/icons.css");
 
 
 /* DeforaOS theme */
@@ -296,7 +297,7 @@ table.bordered th {
 }
 
 .explorer .header div.sort {
-	background-image:		url('../icons/16x16/down.png');
+	background-image:		url("../icons/16x16/down.png");
 	background-repeat:		no-repeat;
 	background-position:		center right;
 	padding-right:			16px;
