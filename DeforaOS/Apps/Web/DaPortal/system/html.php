@@ -62,7 +62,7 @@ function _html_pre($string)
 		else
 			$line.="<br/>\n";
 		$line = preg_replace('/((ftp|http|https):'
-				.'\/\/([-+a-zA-Z0-9.\/_%?=;~]|&amp;)+)/',
+				.'\/\/([-+a-zA-Z0-9.\/_%?=,;~]|&amp;)+)/',
 				'<a href="\1">\1</a>', $line);
 		$string.=$line;
 	}
@@ -90,9 +90,8 @@ function _start_css_themes($theme)
 		return;
 	while(($de = readdir($dir)))
 	{
-		if(($len = strlen($de)) < 5)
-			continue;
-		if(substr($de, -4) != '.css')
+		if(($len = strlen($de)) < 5
+				|| substr($de, -4) != '.css')
 			continue;
 		$name = substr($de, 0, $len-4);
 		if($name == $theme)
@@ -114,7 +113,7 @@ function _html_start()
 		<link rel="stylesheet" href="themes/'.$theme.'.css" title="'
 .$theme.'"/>'."\n");
 	_start_css_themes($theme);
-	if(is_readable('favicon.ico'))
+	if(is_readable($_SERVER['DOCUMENT_ROOT'].'/favicon.ico'))
 		print('		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>'."\n");
 	print('	</head>
 	<body>'."\n");
