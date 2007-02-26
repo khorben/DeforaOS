@@ -1,7 +1,7 @@
-		<h1>DeforaOS <?php echo _html_safe(HOMEPAGE); ?></h1>
+		<h1 class="title home">DeforaOS <?php echo _html_safe(HOMEPAGE); ?></h1>
 <?php switch($lang) { ?>
 <?php case 'fr': ?>
-		<h3>A propos du projet</h3>
+		<h3 class="title project">A propos du projet</h3>
 		<p>
 Ce projet a pour but d'implémenter un système d'exploitation, basé sur un
 micro-kernel. Les principaux objectifs comprennent:
@@ -16,13 +16,13 @@ Le <a href="index.php?module=project&amp;id=11">projet</a> est toujours en <a hr
 conception</a>.
 		</p>
 
-		<h3>Actualit&eacute;s</h3>
+		<h3 class="title news">Actualit&eacute;s</h3>
 		<p>
-Mises &agrave; jour incluant les <a href="index.php?module=news">&eacute;tapes
-d&eacute;terminantes</a> du projet.
+<?php _module('news', 'headline', array('npp' => 6)); ?>
+<a href="index.php?module=news" title="DeforaOS news">Suite...</a>
 		</p>
 <?php break; case 'en': default: ?>
-		<h3>About the project</h3>
+		<h3 class="title project">About the project</h3>
 		<p>
 This project aims at the implementation of a micro-kernel based operating
 system. The primary goals include:
@@ -37,9 +37,9 @@ The <a href="index.php?module=project&amp;id=11">project</a> is still at an <a
 href="index.php?module=project">early stage</a>.
 		</p>
 
-		<h3>Latest news</h3>
+		<h3 class="title news">Latest news</h3>
 		<p>
-Eventually filled with <a href="index.php?module=news">every significant
-work made</a> for the project.
+<?php _module('news', 'headline', array('npp' => 6)); ?>
+<a href="index.php?module=news" title="DeforaOS news">More news...</a>
 		</p>
 <?php } ?>
