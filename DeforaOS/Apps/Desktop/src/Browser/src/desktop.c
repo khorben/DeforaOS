@@ -59,6 +59,7 @@ struct _DesktopIcon
 	int updated; /* XXX for desktop refresh */
 
 	GtkWidget * window;
+	GtkWidget * image;
 	GtkWidget * label;
 };
 
@@ -79,7 +80,6 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	GtkWidget * vbox;
 	GtkWidget * eventbox;
 	GdkPixbuf * icon = NULL;
-	GtkWidget * image;
 
 	if((desktopicon = malloc(sizeof(*desktopicon))) == NULL)
 		return NULL;
@@ -120,6 +120,9 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 			icon = gtk_icon_theme_load_icon(desktop->theme,
 					"gnome-fs-directory", 48, 0, NULL);
 		}
+		else if(st.st_mode & S_IXUSR)
+			icon = gtk_icon_theme_load_icon(desktop->theme,
+					"gnome-fs-executable", 48, 0, NULL);
 		else if((desktopicon->mimetype = mime_type(desktop->mime, path))
 				!= NULL)
 			mime_icons(desktop->mime, desktop->theme,
@@ -128,10 +131,10 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	if(icon == NULL)
 		icon = gtk_icon_theme_load_icon(desktop->theme,
 				"gnome-fs-regular", 48, 0, NULL);
-	image = gtk_image_new_from_pixbuf(icon);
-	gtk_widget_set_size_request(image, 100, 48);
+	desktopicon->image = gtk_image_new_from_pixbuf(icon);
+	gtk_widget_set_size_request(desktopicon->image, 100, 48);
 	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), image);
+	gtk_container_add(GTK_CONTAINER(eventbox), desktopicon->image);
 	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
 			G_CALLBACK(_on_icon_press), desktopicon);
 	gtk_box_pack_start(GTK_BOX(vbox), eventbox, FALSE, TRUE, 4);
@@ -148,7 +151,6 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 			G_CALLBACK(_on_icon_press), desktopicon);
 	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(desktopicon->window), vbox);
-	gtk_widget_show_all(desktopicon->window);
 	return desktopicon;
 }
 /*	mask = gdk_drawable_get_image(GDK_DRAWABLE(pixbuf), 0, 0, 48, 48); */
@@ -266,7 +268,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data)
 	IconCallback * ic = data;
 
 	/* FIXME actually delete the file, and wait for the refresh */
-	desktop_icons_remove(ic->desktopicon->desktop, ic->desktopicon);
+	desktop_icon_remove(ic->desktopicon->desktop, ic->desktopicon);
 }
 
 static void _on_icon_open(GtkWidget * widget, gpointer data)
@@ -337,10 +339,25 @@ void desktopicon_delete(DesktopIcon * desktopicon)
 }
 
 
+/* accessors */
+void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
+{
+	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
+}
+
+
+/* useful */
 /* desktopicon_move */
 void desktopicon_move(DesktopIcon * desktopicon, int x, int y)
 {
 	gtk_window_move(GTK_WINDOW(desktopicon->window), x, y);
+}
+
+
+/* desktopicon_show */
+void desktopicon_show(DesktopIcon * desktopicon)
+{
+	gtk_widget_show_all(desktopicon->window);
 }
 
 
@@ -354,6 +371,7 @@ Desktop * desktop_new(void)
 	Desktop * desktop;
 	char * home;
 	struct stat st;
+	DesktopIcon * desktopicon;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -398,7 +416,13 @@ Desktop * desktop_new(void)
 		desktop_delete(desktop);
 		return NULL;
 	}
-	desktop_icons_add(desktop, desktopicon_new(desktop, "Home", home));
+	if((desktopicon = desktopicon_new(desktop, "Home", home)) != NULL)
+	{
+		desktop_icon_add(desktop, desktopicon);
+		desktopicon_set_icon(desktopicon, gtk_icon_theme_load_icon(
+					desktop->theme, "gnome-home", 48, 0,
+					NULL));
+	}
 	desktop_refresh(desktop);
 	return desktop;
 }
@@ -451,7 +475,7 @@ static int _error_text(char const * message, int ret)
 }
 
 
-void _refresh_current(Desktop * desktop);
+static void _refresh_current(Desktop * desktop);
 void desktop_refresh(Desktop * desktop)
 {
 	int fd;
@@ -489,7 +513,7 @@ void desktop_refresh(Desktop * desktop)
 static int _current_loop(Desktop * desktop);
 static gboolean _current_idle(gpointer data);
 static gboolean _current_done(Desktop * desktop);
-void _refresh_current(Desktop * desktop)
+static void _refresh_current(Desktop * desktop)
 {
 	unsigned int i;
 
@@ -526,7 +550,7 @@ static int _current_loop(Desktop * desktop)
 	sprintf(&desktop->path[desktop->path_cnt - 1], "/%s", de->d_name);
 	if((desktopicon = desktopicon_new(desktop, de->d_name, desktop->path))
 			!= NULL) /* FIXME test if already exists */
-		desktop_icons_add(desktop, desktopicon);
+		desktop_icon_add(desktop, desktopicon);
 	return 0;
 }
 
@@ -548,7 +572,7 @@ static gboolean _current_done(Desktop * desktop)
 
 	while(i < desktop->icon_cnt)
 		if(desktop->icon[i]->updated != 1)
-			desktop_icons_remove(desktop, desktop->icon[i]);
+			desktop_icon_remove(desktop, desktop->icon[i]);
 		else
 			desktop->icon[i++]->updated = 0;
 	closedir(desktop->refresh_dir);
@@ -571,32 +595,8 @@ static gboolean _done_timeout(gpointer data)
 }
 
 
-/* desktop_icons_align */
-void desktop_icons_align(Desktop * desktop)
-{
-	GdkScreen * screen;
-	int height = INT_MAX;
-	size_t i;
-	int x = 0;
-	int y = 0;
-
-	if((screen = gdk_screen_get_default()) != NULL)
-		height = gdk_screen_get_height(screen);
-	for(i = 0; i < desktop->icon_cnt; i++)
-	{
-		if(y + 100 > height)
-		{
-			x += 100;
-			y = 0;
-		}
-		desktopicon_move(desktop->icon[i], x, y);
-		y += 100;
-	}
-}
-
-
-/* desktop_icons_add */
-void desktop_icons_add(Desktop * desktop, DesktopIcon * icon)
+/* desktop_icon_add */
+void desktop_icon_add(Desktop * desktop, DesktopIcon * icon)
 {
 	DesktopIcon ** p;
 
@@ -609,11 +609,12 @@ void desktop_icons_add(Desktop * desktop, DesktopIcon * icon)
 	desktop->icon = p;
 	desktop->icon[desktop->icon_cnt++] = icon;
 	desktop_icons_align(desktop);
+	desktopicon_show(icon);
 }
 
 
-/* desktop_icons_remove */
-void desktop_icons_remove(Desktop * desktop, DesktopIcon * icon)
+/* desktop_icon_remove */
+void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 {
 	size_t i;
 
@@ -674,4 +675,28 @@ int main(int argc, char * argv[])
 static void _main_sigchld(int signum)
 {
 	wait(NULL);
+}
+
+
+/* desktop_icons_align */
+void desktop_icons_align(Desktop * desktop)
+{
+	GdkScreen * screen;
+	int height = INT_MAX;
+	size_t i;
+	int x = 0;
+	int y = 0;
+
+	if((screen = gdk_screen_get_default()) != NULL)
+		height = gdk_screen_get_height(screen);
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(y + 100 > height)
+		{
+			x += 100;
+			y = 0;
+		}
+		desktopicon_move(desktop->icon[i], x, y);
+		y += 100;
+	}
 }

@@ -31,8 +31,12 @@ DesktopIcon * desktopicon_new(struct _Desktop * desktop, char const * name,
 		char const * url);
 void desktopicon_delete(DesktopIcon * desktopicon);
 
+/* accessors */
+void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
+
 /* useful */
 void desktopicon_move(DesktopIcon * desktopicon, int x, int y);
+void desktopicon_show(DesktopIcon * desktopicon);
 
 
 /* Desktop */
@@ -45,10 +49,10 @@ int desktop_error(Desktop * desktop, char const * message, int ret);
 
 void desktop_refresh(Desktop * desktop);
 
+void desktop_icon_add(Desktop * desktop, DesktopIcon * icon);
+void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
+
 void desktop_icons_align(Desktop * desktop);
 void desktop_icons_sort(Desktop * desktop);
-
-void desktop_icons_add(Desktop * desktop, DesktopIcon * icon);
-void desktop_icons_remove(Desktop * desktop, DesktopIcon * icon);
 
 #endif /* !BROWSER_DESKTOP_H */
