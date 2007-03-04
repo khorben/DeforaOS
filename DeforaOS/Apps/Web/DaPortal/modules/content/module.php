@@ -34,7 +34,9 @@ function content_admin($args)
 		$contents[$i]['icon'] = '';
 		if(($d = _module_desktop($contents[$i]['module'])) != FALSE)
 			$contents[$i]['icon'] = $d['icon'];
-		$contents[$i]['thumbnail'] = $contents[$i]['icon'];
+		$contents[$i]['thumbnail'] = 'icons/48x48/'
+			.$contents[$i]['icon'];
+		$contents[$i]['icon'] = 'icons/16x16/'.$contents[$i]['icon'];
 		$contents[$i]['name'] = _html_safe_link($contents[$i]['name']);
 		$contents[$i]['username'] = _html_safe($contents[$i]['username']);
 		$contents[$i]['module'] = 'content';
@@ -47,8 +49,7 @@ function content_admin($args)
 				.$contents[$i]['enabled'].'.png" alt="'
 				.$contents[$i]['enabled'].'" title="'
 				.($contents[$i]['enabled'] == 'enabled'
-						? ENABLED : DISABLED)
-				.'"/>';
+						? ENABLED : DISABLED).'"/>';
 		$contents[$i]['date'] = substr($contents[$i]['date'], 0, 19);
 		$contents[$i]['date'] = date('d/m/Y H:i',
 				strtotime($contents[$i]['date']));
