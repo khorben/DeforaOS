@@ -294,6 +294,14 @@ function probe_admin($args)
 		$hosts[$i]['thumbnail'] = 'icons/48x48/host.png';
 		$hosts[$i]['apply_module'] = 'probe';
 		$hosts[$i]['apply_id'] = $hosts[$i]['id'];
+		$hosts[$i]['name'] = _html_safe($hosts[$i]['name']);
+		$hosts[$i]['enabled'] = $hosts[$i]['enabled'] == SQL_TRUE ?
+			'enabled' : 'disabled';
+		$hosts[$i]['enabled'] = '<img src="icons/16x16/'
+			.$hosts[$i]['enabled'].'.png" alt="'
+			.$hosts[$i]['enabled'].'" title="'
+			.($hosts[$i]['enabled'] == 'enabled'
+					? ENABLED : DISABLED).'"/>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_HOST, 'class' => 'new',
@@ -301,7 +309,8 @@ function probe_admin($args)
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'host_delete', 'confirm' => 'delete');
-	_module('explorer', 'browse', array('entries' => $hosts,
+	_module('explorer', 'browse_trusted', array('entries' => $hosts,
+			'class' => array('enabled' => ENABLED),
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'probe', 'action' => 'admin'));
 }
