@@ -104,8 +104,8 @@ function news_admin($args)
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
-				'class' => array('username' => AUTHOR,
-					'enabled' => ENABLED, 'date' => DATE),
+				'class' => array('enabled' => ENABLED,
+					'username' => AUTHOR, 'date' => DATE),
 				'module' => 'news', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 						: 'date',
