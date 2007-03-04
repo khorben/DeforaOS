@@ -61,7 +61,7 @@ function news_admin($args)
 		}
 	}
 	$res = _sql_array('SELECT content_id AS id, timestamp'
-		.', daportal_content.enabled AS enabled, title, content'
+		.', daportal_content.enabled AS enabled, title AS name, content'
 		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_content, daportal_user, daportal_module'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
@@ -78,7 +78,7 @@ function news_admin($args)
 		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['icon'] = 'icons/16x16/news.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
-		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['name'] = _html_safe($res[$i]['name']);
 		$res[$i]['username'] = '<a href="index.php?module=user&id='
 				.$res[$i]['user_id'].'">'
 				._html_safe_link($res[$i]['username']).'</a>';
