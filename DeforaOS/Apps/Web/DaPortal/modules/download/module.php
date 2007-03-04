@@ -16,6 +16,7 @@ $text['DOWNLOADS_LIST'] = 'Downloads list';
 $text['DOWNLOADS_SETTINGS'] = 'Downloads settings';
 $text['MODE'] = 'Permissions';
 $text['NEW_DIRECTORY'] = 'New directory';
+$text['OWNER'] = 'Owner';
 $text['PARENT_DIRECTORY'] = 'Parent directory';
 $text['UPLOAD_FILE'] = 'Upload file';
 global $lang;
@@ -59,10 +60,14 @@ function download_admin($args)
 	print('<h2 class="title download">'._html_safe(DOWNLOADS_LIST).'</h2>'
 			."\n");
 	$dls = _sql_array('SELECT daportal_content.content_id AS id'
-			.', title AS name, enabled, mode'
+			.', title AS name, daportal_content.enabled AS enabled'
+			.', username AS owner, mode'
 			.' FROM daportal_download, daportal_content'
+			.', daportal_user'
 			.' WHERE daportal_download.content_id'
-			.'=daportal_content.content_id ORDER BY id DESC;');
+			.'=daportal_content.content_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			.' ORDER BY id DESC;');
 	if(!is_array($dls))
 		return _error('Unable to list downloads');
 	for($cnt = count($dls), $i = 0; $i < $cnt; $i++)
@@ -83,6 +88,7 @@ function download_admin($args)
 			.$dls[$i]['enabled'].'.png" title="'
 			.($dls[$i]['enabled'] == 'enabled' ? ENABLED : DISABLED)
 			.'"/>';
+		$dls[$i]['owner'] = _html_safe($dls[$i]['owner']);
 		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
 	}
 	$toolbar = array();
@@ -98,7 +104,7 @@ function download_admin($args)
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $dls,
 				'class' => array('enabled' => ENABLED,
-					'mode' => MODE),
+					'owner' => OWNER, 'mode' => MODE),
 				'toolbar' => $toolbar, 'view' => 'details',
 				'module' => 'download', 'action' => 'admin'));
 }
