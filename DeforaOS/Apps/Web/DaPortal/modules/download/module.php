@@ -343,7 +343,7 @@ function download_download($args)
 	if(!is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT); //FIXME 404
 	if(!($root = _config_get('download', 'root')))
-		return _error('No root directory'); //FIXME 501
+		return _error('Internal server error'); //FIXME 501
 	$file = _sql_array('SELECT title AS name, download_id'
 			.' FROM daportal_download, daportal_content'
 			.' WHERE daportal_download.content_id'
@@ -351,7 +351,7 @@ function download_download($args)
 			." AND enabled='1'"
 			." AND daportal_content.content_id='".$args['id']."'");
 	if(!is_array($file) || count($file) != 1)
-		return _error('Unable to download file'); //FIXME 404
+		return _error('File not found'); //FIXME 404
 	$file = $file[0];
 	$filename = $root.'/'.$file['download_id'];
 	if(!is_readable($filename))
