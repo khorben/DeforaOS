@@ -16,6 +16,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 $text = array();
 $text['COMMENT_ADMINISTRATION'] = 'Comments administration';
 $text['COMMENT_BY'] = 'Comment by';
+$text['COMMENT_LIST'] = 'Comment list';
 $text['COMMENT_ON'] = 'on';
 $text['COMMENT_PREVIEW'] = 'Comment preview';
 $text['COMMENT_S'] = 'comment(s)';
@@ -53,6 +54,7 @@ function comment_admin($args)
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
+	print('<h2 class="title comment">'.COMMENT_LIST.'</h2>'."\n");
 	$comments = _sql_array('SELECT daportal_comment.comment_id AS id'
 			.', title AS name, daportal_user.user_id AS user_id'
 			.', username, daportal_content.enabled AS enabled'
@@ -69,8 +71,8 @@ function comment_admin($args)
 		$comments[$i]['apply_module'] = 'content';
 		$comments[$i]['action'] = 'modify';
 		$comments[$i]['apply_id'] = $comments[$i]['id'];
-		$comments[$i]['icon'] = 'modules/comment/icon.png';
-		$comments[$i]['thumbnail'] = 'modules/comment/icon.png';
+		$comments[$i]['icon'] = 'icons/16x16/comment.png';
+		$comments[$i]['thumbnail'] = 'icons/48x48/comment.png';
 		$comments[$i]['username'] = '<a href="index.php?module=user'
 			.'&amp;id='.$comments[$i]['user_id'].'">'
 			._html_safe($comments[$i]['username']).'</a>';
@@ -92,8 +94,8 @@ function comment_admin($args)
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => DELETE);
 	_module('explorer', 'browse_trusted', array('entries' => $comments,
-			'class' => array('username' => USERNAME,
-				'enabled' => ENABLED, 'date' => DATE),
+			'class' => array('enabled' => ENABLED,
+				'username' => USERNAME, 'date' => DATE),
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'comment', 'action' => 'admin'));
 }
