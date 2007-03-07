@@ -278,24 +278,45 @@ Browser * browser_new(char const * directory)
 
 static int _new_pixbufs(Browser * browser)
 {
-	browser->theme = gtk_icon_theme_new();
-	gtk_icon_theme_set_custom_theme(browser->theme, "gnome");
-	browser->pb_file_24 = gtk_icon_theme_load_icon(browser->theme,
-			"gnome-fs-regular", 24, 0, NULL);
-	browser->pb_folder_24 = gtk_icon_theme_load_icon(browser->theme,
-			"gnome-fs-directory", 24, 0, NULL);
-	browser->pb_executable_24 = gtk_icon_theme_load_icon(browser->theme,
-			"gnome-fs-executable", 24, 0, NULL);
+	char * file[] = { "gnome-fs-regular", GTK_STOCK_FILE,
+		GTK_STOCK_MISSING_IMAGE, NULL };
+	char * folder[] = { "gnome-fs-directory", GTK_STOCK_DIRECTORY,
+		GTK_STOCK_MISSING_IMAGE, NULL };
+	char * executable[] = { "gnome-fs-executable", "gnome-fs-regular",
+		GTK_STOCK_FILE, GTK_STOCK_MISSING_IMAGE, NULL };
+	char ** p;
+
+	browser->theme = gtk_icon_theme_get_default();
+	browser->pb_file_24 = NULL;
+	for(p = file; *p != NULL && browser->pb_file_24 == NULL; p++)
+		browser->pb_file_24 = gtk_icon_theme_load_icon(browser->theme,
+				*p, 24, 0, NULL);
+	browser->pb_folder_24 = NULL;
+	for(p = folder; *p != NULL && browser->pb_folder_24 == NULL; p++)
+		browser->pb_folder_24 = gtk_icon_theme_load_icon(browser->theme,
+				*p, 24, 0, NULL);
+	browser->pb_executable_24 = NULL;
+	for(p = executable; *p != NULL && browser->pb_executable_24 == NULL;
+			p++)
+		browser->pb_executable_24 = gtk_icon_theme_load_icon(
+				browser->theme, *p, 24, 0, NULL);
 #if !GTK_CHECK_VERSION(2, 6, 0)
 	return browser->pb_file_24 == NULL || browser->pb_folder_24 == NULL;
 #else
-	browser->pb_file_48 = gtk_icon_theme_load_icon(browser->theme,
-			"gnome-fs-regular", 48, 0, NULL);
-	browser->pb_folder_48 = gtk_icon_theme_load_icon(browser->theme,
-			"gnome-fs-directory", 48, 0, NULL);
-	browser->pb_executable_48 = gtk_icon_theme_load_icon(browser->theme,
-			"gnome-fs-executable", 48, 0, NULL);
-	return browser->pb_file_48 == NULL || browser->pb_folder_48 == NULL
+	browser->pb_file_48 = NULL;
+	for(p = file; *p != NULL && browser->pb_file_48 == NULL; p++)
+		browser->pb_file_48 = gtk_icon_theme_load_icon(browser->theme,
+				*p, 48, 0, NULL);
+	browser->pb_folder_48 = NULL;
+	for(p = folder; *p != NULL && browser->pb_folder_48 == NULL; p++)
+		browser->pb_folder_48 = gtk_icon_theme_load_icon(browser->theme,
+				*p, 48, 0, NULL);
+	browser->pb_executable_48 = NULL;
+	for(p = executable; *p != NULL && browser->pb_executable_48 == NULL;
+			p++)
+		browser->pb_executable_48 = gtk_icon_theme_load_icon(
+				browser->theme, *p, 48, 0, NULL);
+	return browser->pb_file_24 == NULL || browser->pb_folder_24 == NULL
 		|| browser->pb_file_48 == NULL || browser->pb_folder_48 == NULL;
 #endif
 }
