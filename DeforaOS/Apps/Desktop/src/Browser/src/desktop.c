@@ -47,6 +47,9 @@ struct _Desktop
 	time_t refresh_mti;
 
 	GtkIconTheme * theme;
+	GdkPixbuf * file;
+	GdkPixbuf * folder;
+	GdkPixbuf * executable;
 };
 
 struct _DesktopIcon
@@ -117,20 +120,17 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		if(S_ISDIR(st.st_mode))
 		{
 			desktopicon->isdir = 1;
-			icon = gtk_icon_theme_load_icon(desktop->theme,
-					"gnome-fs-directory", 48, 0, NULL);
+			icon = desktop->folder;
 		}
 		else if(st.st_mode & S_IXUSR)
-			icon = gtk_icon_theme_load_icon(desktop->theme,
-					"gnome-fs-executable", 48, 0, NULL);
+			icon = desktop->executable;
 		else if((desktopicon->mimetype = mime_type(desktop->mime, path))
 				!= NULL)
 			mime_icons(desktop->mime, desktop->theme,
 					desktopicon->mimetype, &icon);
 	}
 	if(icon == NULL)
-		icon = gtk_icon_theme_load_icon(desktop->theme,
-				"gnome-fs-regular", 48, 0, NULL);
+		icon = desktop->file;
 	desktopicon->image = gtk_image_new_from_pixbuf(icon);
 	gtk_widget_set_size_request(desktopicon->image, 100, 48);
 	eventbox = gtk_event_box_new();
@@ -372,6 +372,13 @@ Desktop * desktop_new(void)
 	char * home;
 	struct stat st;
 	DesktopIcon * desktopicon;
+	char * file[] = { "gnome-fs-regular", GTK_STOCK_FILE,
+		GTK_STOCK_MISSING_IMAGE, NULL };
+	char * folder[] = { "gnome-fs-directory", GTK_STOCK_DIRECTORY,
+		GTK_STOCK_MISSING_IMAGE, NULL };
+	char * executable[] = { "gnome-fs-executable", "gnome-fs-regular",
+		GTK_STOCK_FILE, GTK_STOCK_MISSING_IMAGE, NULL };
+	char ** p;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -385,8 +392,19 @@ Desktop * desktop_new(void)
 		desktop_delete(desktop);
 		return NULL;
 	}
-	desktop->theme = gtk_icon_theme_new();
-	gtk_icon_theme_set_custom_theme(desktop->theme, "gnome");
+	desktop->theme = gtk_icon_theme_get_default();
+	desktop->file = NULL;
+	for(p = file; *p != NULL && desktop->file == NULL; p++)
+		desktop->file = gtk_icon_theme_load_icon(desktop->theme,
+				*p, 48, 0, NULL);
+	desktop->folder = NULL;
+	for(p = folder; *p != NULL && desktop->folder == NULL; p++)
+		desktop->folder = gtk_icon_theme_load_icon(desktop->theme,
+				*p, 48, 0, NULL);
+	desktop->executable = NULL;
+	for(p = executable; *p != NULL && desktop->executable == NULL; p++)
+		desktop->executable = gtk_icon_theme_load_icon(desktop->theme,
+				*p, 48, 0, NULL);
 	if((home = getenv("HOME")) == NULL)
 	{
 		desktop_error(desktop, "HOME", 0);
