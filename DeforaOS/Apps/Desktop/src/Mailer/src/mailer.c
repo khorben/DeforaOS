@@ -92,8 +92,7 @@ Mailer * mailer_new(void)
 				on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* theme */
-	mailer->theme = gtk_icon_theme_new();
-	gtk_icon_theme_set_custom_theme(mailer->theme, "gnome");
+	mailer->theme = gtk_icon_theme_get_default();
 	/* menubar */
 	widget = common_new_menubar(_mailer_menubar, mailer);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
