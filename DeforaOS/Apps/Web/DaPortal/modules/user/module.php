@@ -555,6 +555,7 @@ function user_system($args)
 
 function _system_appearance($args)
 {
+	unset($_SESSION['theme']);
 	if(isset($args['theme']) && strchr($args['theme'], '/') == FALSE
 			&& is_readable('themes/'.$args['theme'].'.css'))
 		$_SESSION['theme'] = $args['theme'];
