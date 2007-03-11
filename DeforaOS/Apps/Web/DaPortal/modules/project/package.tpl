@@ -1,4 +1,4 @@
-<h1><img src="modules/project/package.png" alt=""/> Projects packages</h1>
+<h1 class="title package">Project packages</h1>
 <p>
 Sorry, software packages are not available yet. There will be some as soon as components will reach the targeted versions. However, the package format is not even designed yet.
 </p>
