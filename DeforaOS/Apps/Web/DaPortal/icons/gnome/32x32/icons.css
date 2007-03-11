@@ -2,6 +2,10 @@ h2.title.bug {
 	background-image:		url('bug.png');
 }
 
+h2.title.comment {
+	background-image:		url('comment.png');
+}
+
 h2.title.download {
 	background-image:		url('download.png');
 }
