@@ -14,5 +14,5 @@ href="index.php?module=category&amp;id=264"
 title="DeforaOS source code releases">source code archives</a>, their inclusion
 (if ever) in other open source systems will be encouraged, within the conditions
 of respective license terms. In the latter case, we will be happy to list the
-supporting systems here.
+supported systems here.
 </p>
