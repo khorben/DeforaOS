@@ -5,8 +5,8 @@ complete project is available as well.</p>
 <h4>Anonymous CVS</h4>
 <p>DeforaOS module on the public CVS server <tt><a
 href="index.php?module=project&amp;action=browse&amp;id=11"
-title="DeforaOS Project">cvs.defora.org</a></tt>:</p>
-<pre>cvs -d:pserver:anonymous@cvs.defora.org:/Data/CVS</pre>
+title="DeforaOS project">cvs.defora.org</a></tt>:</p>
+<pre>cvs -d:pserver:anonymous@cvs.defora.org:/Data/CVS co DeforaOS</pre>
 <h4>CVS snapshots</h4>
 <p>
 <a href="download/DeforaOS-20060424.tar.gz">DeforaOS-20060424.tar.gz</a><br/>
