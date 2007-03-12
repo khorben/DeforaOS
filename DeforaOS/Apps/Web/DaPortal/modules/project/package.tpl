@@ -8,7 +8,7 @@ not even designed yet.
 <p>
 The DeforaOS codebase is developped with portability in mind, to the extent of
 the <a href="policy.php" title="DeforaOS development policy">development
-policies</a> in place: you can safely expect some parts of the system to be
+policies</a> in place: you can safely expect some parts of the project to be
 available for other systems too. They will certainly be offered as <a
 href="index.php?module=category&amp;id=264"
 title="DeforaOS source code releases">source code archives</a>, their inclusion
