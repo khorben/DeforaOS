@@ -3,8 +3,10 @@
 
 
 
+#include <sys/types.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -39,27 +41,51 @@ static int _df_error(char const * message, int ret)
 	return ret;
 }
 
+static void _df_print(Prefs * prefs, const struct statvfs * f);
 static int _df_mtab(Prefs * prefs)
 {
+	int cnt;
+	struct statvfs * f;
+	int i;
+
 	/* FIXME not portable code here:
 	 * - Linux: /etc/mtab
 	 * - NetBSD: getvfsstat() */
+	if((cnt = getvfsstat(NULL, 0, ST_WAIT)) < 0)
+		return _df_error("getvfsstat", 1);
+	if((f = malloc(sizeof(*f) * cnt)) == NULL)
+		return _df_error("malloc", 1);
+	if(getvfsstat(f, sizeof(*f) * cnt, ST_WAIT) != cnt)
+	{
+		free(f);
+		return _df_error("getvfsstat", 1);
+	}
+	for(i = 0; i < cnt; i++)
+		_df_print(prefs, &f[i]);
+	free(f);
 	return 0;
+}
+
+static void _df_print(Prefs * prefs, const struct statvfs * f)
+{
+	int mod;
+
+	mod = f->f_bsize / ((*prefs & PREFS_k) ? 1024 : 512);
+	/* FIXME round up "Use%" result */
+	printf("%-11s %10lu %10lu %10lu %7lu%% %s\n", f->f_mntfromname ,
+			f->f_blocks * mod, (f->f_blocks - f->f_bfree) * mod,
+			f->f_bavail * mod, ((f->f_blocks - f->f_bfree) * 100)
+			/ ((f->f_blocks - f->f_bfree) + f->f_bavail),
+			f->f_mntonname);
 }
 
 static int _df_do(Prefs * prefs, char const * file)
 {
 	struct statvfs f;
-	int mod;
 
 	if(statvfs(file, &f) != 0)
 		return _df_error(file, 1);
-	mod = f.f_bsize / ((*prefs & PREFS_k) ? 1024 : 512);
-	/* FIXME round up "Use%" result */
-	printf("%11s %10lu %10lu %10lu %7lu%% %s\n", "", f.f_blocks * mod,
-			(f.f_blocks-f.f_bfree) * mod, f.f_bavail * mod,
-			((f.f_blocks-f.f_bfree)*100)/((f.f_blocks-f.f_bfree)
-						      +f.f_bavail), "");
+	_df_print(prefs, &f);
 	return 0;
 }
 
