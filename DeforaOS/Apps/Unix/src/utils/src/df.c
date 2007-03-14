@@ -68,11 +68,10 @@ static int _df_mtab(Prefs * prefs)
 
 static void _df_print(Prefs * prefs, const struct statvfs * f)
 {
-	int mod;
+	unsigned long long mod;
 
-	mod = f->f_bsize / ((*prefs & PREFS_k) ? 1024 : 512);
-	/* FIXME round up "Use%" result */
-	printf("%-11s %10lu %10lu %10lu %7lu%% %s\n", f->f_mntfromname ,
+	mod = f->f_bsize / ((*prefs & PREFS_k) ? 8192 : 4096);
+	printf("%-11s %10llu %10llu %10llu %7llu%% %s\n", f->f_mntfromname,
 			f->f_blocks * mod, (f->f_blocks - f->f_bfree) * mod,
 			f->f_bavail * mod, ((f->f_blocks - f->f_bfree) * 100)
 			/ ((f->f_blocks - f->f_bfree) + f->f_bavail),
