@@ -28,7 +28,7 @@ typedef int Prefs;
 static int _cp_error(char * message, int ret);
 static int _cp_single(Prefs * prefs, char * src, char * dst);
 static int _cp_multiple(Prefs * prefs, int argc, char * argv[]);
-static int _cp(Prefs * prefs, int argc, char * argv[])
+static int _cp(Prefs * prefs, int filec, char * filev[])
 {
 	/* FIXME
 	 * - cp_multiple already checks if last arg is a dir
@@ -37,13 +37,13 @@ static int _cp(Prefs * prefs, int argc, char * argv[])
 	 * - blah blah */
 	struct stat st;
 
-	if(argc > 2)
-		return _cp_multiple(prefs, argc, argv);
-	if(stat(argv[1], &st) == -1 && errno != ENOENT)
-		_cp_error(argv[1], 0);
+	if(filec > 2)
+		return _cp_multiple(prefs, filec, filev);
+	if(stat(filev[1], &st) == -1 && errno != ENOENT)
+		_cp_error(filev[1], 0);
 	if(S_ISDIR(st.st_mode))
-		return _cp_multiple(prefs, argc, argv);
-	return _cp_single(prefs, argv[0], argv[1]);
+		return _cp_multiple(prefs, filec, filev);
+	return _cp_single(prefs, filev[0], filev[1]);
 }
 
 static int _cp_error(char * message, int ret)
@@ -55,11 +55,11 @@ static int _cp_error(char * message, int ret)
 
 static int _cp_single(Prefs * prefs, char * src, char * dst)
 {
+	int ret = 0;
 	FILE * fsrc;
 	FILE * fdst;
 	char buf[BUFSIZ];
 	size_t size;
-	char * err = src;
 	int fd;
 	struct stat st;
 
@@ -67,41 +67,45 @@ static int _cp_single(Prefs * prefs, char * src, char * dst)
 		return _cp_error(src, 1);
 	if((fd = fileno(fsrc)) == -1 || fstat(fd, &st) != 0)
 	{
+		ret = _cp_error(src, 1);
 		fclose(fsrc);
-		return _cp_error(src, 0);
+		return ret;
 	}
 	if(S_ISDIR(st.st_mode))
 	{
 		fprintf(stderr, "%s%s%s", "cp: ", src,
 				": Omitting directory\n");
-		return 2;
+		return 1;
 	}
 	if((fdst = fopen(dst, "w")) == NULL)
 	{
+		ret = _cp_error(dst, 1);
 		fclose(fsrc);
-		_cp_error(dst, 0);
+		return ret;
 	}
 	while((size = fread(buf, sizeof(char), BUFSIZ, fsrc)) > 0)
-		if(fwrite(buf, sizeof(char), size, fdst) != BUFSIZ)
+		if(fwrite(buf, sizeof(char), size, fdst) != size)
 		{
-			err = dst;
-			break;
+			ret = _cp_error(dst, 1);
+			fclose(fsrc);
+			fclose(fdst);
+			return ret;
 		}
-	fclose(fdst);
 	if(!feof(fsrc))
-	{
-		fclose(fsrc);
-		_cp_error(err, 0);
-	}
-	fclose(fsrc);
-	return 0;
+		ret = _cp_error(src, 1);
+	if(fclose(fsrc) != 0)
+		ret = _cp_error(src, 1);
+	if(fclose(fdst) != 0)
+		return _cp_error(dst, 1);
+	return ret;
 }
 
 static int _cp_multiple(Prefs * prefs, int argc, char * argv[])
 {
 	char * dst = NULL;
 	char * p;
-	int i, len;
+	int i;
+	int len;
 
 	for(i = 0; i < argc - 1; i++)
 	{
@@ -116,7 +120,7 @@ static int _cp_multiple(Prefs * prefs, int argc, char * argv[])
 		_cp_single(prefs, argv[i], dst);
 	}
 	free(dst);
-	return 2;
+	return 1;
 }
 
 /* usage */
@@ -176,5 +180,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind + 1 >= argc)
 		return _usage();
-	return _cp(&prefs, argc - optind, &argv[optind]);
+	return _cp(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
