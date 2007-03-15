@@ -14,20 +14,20 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_f 0x01
-#define PREFS_i 0x02
-#define PREFS_H 0x04
-#define PREFS_L 0x08
+#define PREFS_H 0x00
+#define PREFS_L 0x01
+#define PREFS_P 0x02
+#define PREFS_f 0x04
+#define PREFS_i 0x08
 #define PREFS_p 0x10
-#define PREFS_P 0x20
-#define PREFS_r 0x40
+#define PREFS_r 0x20
 #define PREFS_R PREFS_r
 
 
 /* cp */
 static int _cp_error(char const * message, int ret);
 static int _cp_single(Prefs * prefs, char const * src, char const * dst);
-static int _cp_multiple(Prefs * prefs, int argc, char * const argv[]);
+static int _cp_multiple(Prefs * prefs, int filec, char * const filev[]);
 static int _cp(Prefs * prefs, int filec, char * filev[])
 {
 	/* FIXME
@@ -37,12 +37,17 @@ static int _cp(Prefs * prefs, int filec, char * filev[])
 	 * - blah blah */
 	struct stat st;
 
-	if(filec > 2)
-		return _cp_multiple(prefs, filec, filev);
-	if(stat(filev[1], &st) == -1)
+	if(stat(filev[filec - 1], &st) == -1)
 	{
 		if(errno != ENOENT)
-			_cp_error(filev[1], 0);
+			return _cp_error(filev[filec - 1], 1);
+		if(filec > 2)
+		{
+			fprintf(stderr, "%s%s%s", "cp: ", filev[filec - 1],
+					": Does not exist and more than two"
+					" operands were given\n");
+			return 1;
+		}
 	}
 	else if(S_ISDIR(st.st_mode))
 		return _cp_multiple(prefs, filec, filev);
@@ -103,7 +108,7 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
-static int _cp_multiple(Prefs * prefs, int argc, char * const argv[])
+static int _cp_multiple(Prefs * prefs, int filec, char * const filev[])
 {
 	int ret = 0;
 	char * dst = NULL;
@@ -111,21 +116,22 @@ static int _cp_multiple(Prefs * prefs, int argc, char * const argv[])
 	int i;
 	int len;
 
-	for(i = 0; i < argc - 1; i++)
+	for(i = 0; i < filec - 1; i++)
 	{
-		len = strlen(argv[i]) + strlen(argv[argc-1]) + 2;
+		len = strlen(filev[i]) + strlen(filev[filec - 1]) + 2;
 		if((p = realloc(dst, len * sizeof(char))) == NULL)
 		{
-			free(dst);
-			_cp_error("malloc", 0);
+			_cp_error(filev[filec - 1], 0);
+			continue;
 		}
 		dst = p;
-		sprintf(dst, "%s/%s", argv[argc-1], argv[i]);
-		ret |= _cp_single(prefs, argv[i], dst);
+		sprintf(dst, "%s/%s", filev[filec - 1], filev[i]);
+		ret |= _cp_single(prefs, filev[i], dst);
 	}
 	free(dst);
 	return ret;
 }
+
 
 /* usage */
 static int _usage(void)
@@ -150,7 +156,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(Prefs));
-	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
+	while((o = getopt(argc, argv, "HLPfipRr")) != -1)
 		switch(o)
 		{
 			case 'f':
@@ -163,15 +169,21 @@ int main(int argc, char * argv[])
 				break;
 			case 'H':
 				prefs -= prefs & PREFS_L;
+				prefs -= prefs & PREFS_P;
 				prefs |= PREFS_H;
 				break;
 			case 'L':
 				prefs -= prefs & PREFS_H;
+				prefs -= prefs & PREFS_P;
 				prefs |= PREFS_L;
 				break;
 			case 'P':
+				prefs -= prefs & PREFS_H;
+				prefs -= prefs & PREFS_L;
+				prefs |= PREFS_P;
 				break;
 			case 'p':
+				prefs |= PREFS_p;
 				break;
 			case 'r':
 			case 'R':
