@@ -21,13 +21,13 @@ typedef int Prefs;
 #define PREFS_p 0x10
 #define PREFS_P 0x20
 #define PREFS_r 0x40
-#define PREFS_R 0x80
+#define PREFS_R PREFS_r
 
 
 /* cp */
-static int _cp_error(char * message, int ret);
-static int _cp_single(Prefs * prefs, char * src, char * dst);
-static int _cp_multiple(Prefs * prefs, int argc, char * argv[]);
+static int _cp_error(char const * message, int ret);
+static int _cp_single(Prefs * prefs, char const * src, char const * dst);
+static int _cp_multiple(Prefs * prefs, int argc, char * const argv[]);
 static int _cp(Prefs * prefs, int filec, char * filev[])
 {
 	/* FIXME
@@ -39,21 +39,24 @@ static int _cp(Prefs * prefs, int filec, char * filev[])
 
 	if(filec > 2)
 		return _cp_multiple(prefs, filec, filev);
-	if(stat(filev[1], &st) == -1 && errno != ENOENT)
-		_cp_error(filev[1], 0);
-	if(S_ISDIR(st.st_mode))
+	if(stat(filev[1], &st) == -1)
+	{
+		if(errno != ENOENT)
+			_cp_error(filev[1], 0);
+	}
+	else if(S_ISDIR(st.st_mode))
 		return _cp_multiple(prefs, filec, filev);
 	return _cp_single(prefs, filev[0], filev[1]);
 }
 
-static int _cp_error(char * message, int ret)
+static int _cp_error(char const * message, int ret)
 {
 	fputs("cp: ", stderr);
 	perror(message);
 	return ret;
 }
 
-static int _cp_single(Prefs * prefs, char * src, char * dst)
+static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
 	FILE * fsrc;
@@ -100,8 +103,9 @@ static int _cp_single(Prefs * prefs, char * src, char * dst)
 	return ret;
 }
 
-static int _cp_multiple(Prefs * prefs, int argc, char * argv[])
+static int _cp_multiple(Prefs * prefs, int argc, char * const argv[])
 {
+	int ret = 0;
 	char * dst = NULL;
 	char * p;
 	int i;
@@ -117,10 +121,10 @@ static int _cp_multiple(Prefs * prefs, int argc, char * argv[])
 		}
 		dst = p;
 		sprintf(dst, "%s/%s", argv[argc-1], argv[i]);
-		_cp_single(prefs, argv[i], dst);
+		ret |= _cp_single(prefs, argv[i], dst);
 	}
 	free(dst);
-	return 1;
+	return ret;
 }
 
 /* usage */
@@ -146,7 +150,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(Prefs));
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
 		switch(o)
 		{
 			case 'f':
@@ -169,10 +173,8 @@ int main(int argc, char * argv[])
 				break;
 			case 'p':
 				break;
-			case 'R':
-				prefs -= prefs & PREFS_R;
-				break;
 			case 'r':
+			case 'R':
 				prefs -= prefs & PREFS_r;
 				break;
 			default:
