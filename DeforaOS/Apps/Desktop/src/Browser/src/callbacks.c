@@ -758,6 +758,18 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 
 
 /* on_view_popup */
+gboolean on_view_popup(GtkWidget * widget, gpointer data)
+{
+	GdkEventButton event;
+
+	memset(&event, 0, sizeof(event));
+	event.button = 0;
+	event.time = gtk_get_current_event_time();
+	return on_view_press(widget, &event, data);
+}
+
+
+/* on_view_press */
 /* types */
 typedef struct _IconCallback
 {
@@ -767,15 +779,15 @@ typedef struct _IconCallback
 } IconCallback;
 
 /* sub-functions */
-static gboolean _popup_context(Browser * browser, GdkEventButton * event,
+static gboolean _press_context(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu, IconCallback * ic);
-static void _popup_directory(GtkWidget * menu, IconCallback * ic);
-static void _popup_file(Browser * browser, GtkWidget * menu, char * mimetype,
+static void _press_directory(GtkWidget * menu, IconCallback * ic);
+static void _press_file(Browser * browser, GtkWidget * menu, char * mimetype,
 		IconCallback * ic);
-static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
+static void _press_mime(Mime * mime, char const * mimetype, char const * action,
 		char const * label, GCallback callback, IconCallback * ic,
 		GtkWidget * menu);
-static gboolean _popup_show(Browser * browser, GdkEventButton * event,
+static gboolean _press_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu);
 
 /* callbacks */
@@ -784,7 +796,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 
-gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
+gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
 	static IconCallback ic;
@@ -796,7 +808,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	GtkWidget * menuitem;
 	char * mimetype = NULL;
 
-	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
+	if(event->type == GDK_BUTTON_PRESS && event->button != 3)
 		return FALSE;
 	menu = gtk_menu_new();
 	/* FIXME prevents actions to be called but probably leaks memory
@@ -816,7 +828,7 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 	ic.isdir = 0;
 	ic.path = NULL;
 	if(path == NULL)
-		return _popup_context(browser, event, menu, &ic);
+		return _press_context(browser, event, menu, &ic);
 	/* FIXME error checking + sub-functions */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -846,9 +858,9 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
 			BR_COL_MIME_TYPE, &mimetype, -1);
 	if(ic.isdir == TRUE)
-		_popup_directory(menu, &ic);
+		_press_directory(menu, &ic);
 	else
-		_popup_file(browser, menu, mimetype, &ic);
+		_press_file(browser, menu, mimetype, &ic);
 	g_free(mimetype);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -858,11 +870,11 @@ gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
 #if !GTK_CHECK_VERSION(2, 6, 0)
 	gtk_tree_path_free(path);
 #endif
-	return _popup_show(browser, event, menu);
+	return _press_show(browser, event, menu);
 }
 
 static void _on_folder_new(GtkWidget * widget, gpointer data);
-static gboolean _popup_context(Browser * browser, GdkEventButton * event,
+static gboolean _press_context(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu, IconCallback * ic)
 {
 	GtkWidget * menuitem;
@@ -882,7 +894,7 @@ static gboolean _popup_context(Browser * browser, GdkEventButton * event,
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	return _popup_show(browser, event, menu);
+	return _press_show(browser, event, menu);
 }
 
 static void _on_folder_new(GtkWidget * widget, gpointer data)
@@ -904,7 +916,7 @@ static void _on_folder_new(GtkWidget * widget, gpointer data)
 	free(path);
 }
 
-static void _popup_directory(GtkWidget * menu, IconCallback * ic)
+static void _press_directory(GtkWidget * menu, IconCallback * ic)
 {
 	GtkWidget * menuitem;
 
@@ -914,14 +926,14 @@ static void _popup_directory(GtkWidget * menu, IconCallback * ic)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
-static void _popup_file(Browser * browser, GtkWidget * menu, char * mimetype,
+static void _press_file(Browser * browser, GtkWidget * menu, char * mimetype,
 		IconCallback * ic)
 {
 	GtkWidget * menuitem;
 
-	_popup_mime(browser->mime, mimetype, "open", GTK_STOCK_OPEN, G_CALLBACK(
+	_press_mime(browser->mime, mimetype, "open", GTK_STOCK_OPEN, G_CALLBACK(
 				_on_icon_open), ic, menu);
-	_popup_mime(browser->mime, mimetype, "edit",
+	_press_mime(browser->mime, mimetype, "edit",
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GTK_STOCK_EDIT,
 #else
@@ -940,7 +952,7 @@ static void _popup_file(Browser * browser, GtkWidget * menu, char * mimetype,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
-static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
+static void _press_mime(Mime * mime, char const * mimetype, char const * action,
 		char const * label, GCallback callback, IconCallback * ic,
 		GtkWidget * menu)
 {
@@ -956,7 +968,7 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
-static gboolean _popup_show(Browser * browser, GdkEventButton * event,
+static gboolean _press_show(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu)
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -968,7 +980,8 @@ static gboolean _popup_show(Browser * browser, GdkEventButton * event,
 		gtk_menu_attach_to_widget(GTK_MENU(menu), browser->detailview,
 				NULL);
 	gtk_widget_show_all(menu);
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, event->time);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event->button,
+			event->time);
 	return TRUE;
 }
 

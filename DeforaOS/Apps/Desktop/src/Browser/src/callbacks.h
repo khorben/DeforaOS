@@ -70,7 +70,8 @@ void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data);
 #endif
 void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data);
-gboolean on_view_popup(GtkWidget * widget, GdkEventButton * event,
+gboolean on_view_popup(GtkWidget * widget, gpointer data);
+gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
 
 #endif /* !BROWSER_CALLBACKS_H */

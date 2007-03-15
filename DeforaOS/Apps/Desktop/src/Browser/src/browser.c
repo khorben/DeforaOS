@@ -1089,7 +1089,7 @@ static void _view_details(Browser * browser)
 	g_signal_connect(G_OBJECT(browser->detailview), "row-activated",
 			G_CALLBACK(on_detail_default), browser);
 	g_signal_connect(G_OBJECT(browser->detailview), "button-press-event",
-			G_CALLBACK(on_view_popup), browser);
+			G_CALLBACK(on_view_press), browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled),
 			browser->detailview);
 	gtk_widget_show(browser->detailview);
@@ -1157,6 +1157,8 @@ static void _view_icon_view(Browser * browser)
 	g_signal_connect(G_OBJECT(browser->iconview), "item-activated",
 			G_CALLBACK(on_icon_default), browser);
 	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
+			G_CALLBACK(on_view_press), browser);
+	g_signal_connect(G_OBJECT(browser->iconview), "popup-menu",
 			G_CALLBACK(on_view_popup), browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
 }
