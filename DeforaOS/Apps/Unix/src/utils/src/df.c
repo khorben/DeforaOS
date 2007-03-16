@@ -69,13 +69,19 @@ static int _df_mtab(Prefs * prefs)
 static void _df_print(Prefs * prefs, const struct statvfs * f)
 {
 	unsigned long long mod;
+	unsigned long long cnt;
+	unsigned long long used;
+	unsigned long long avail;
+	unsigned int cap;
 
 	mod = f->f_bsize / ((*prefs & PREFS_k) ? 8192 : 4096);
-	printf("%-11s %10llu %10llu %10llu %7llu%% %s\n", f->f_mntfromname,
-			f->f_blocks * mod, (f->f_blocks - f->f_bfree) * mod,
-			f->f_bavail * mod, ((f->f_blocks - f->f_bfree) * 100)
-			/ ((f->f_blocks - f->f_bfree) + f->f_bavail),
-			f->f_mntonname);
+	cnt = f->f_blocks * mod;
+	used = (f->f_blocks - f->f_bfree) * mod;
+	avail = f->f_bavail * mod;
+	cap = ((f->f_blocks - f->f_bfree) * 100)
+		/ ((f->f_blocks - f->f_bfree) + f->f_bavail);
+	printf("%-11s %10llu %10llu %10llu %7u%% %s\n", f->f_mntfromname,
+			cnt, used, avail, cap, f->f_mntonname);
 }
 
 static int _df_do(Prefs * prefs, char const * file)
