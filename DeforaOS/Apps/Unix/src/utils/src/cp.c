@@ -196,7 +196,7 @@ static int _cp_multiple(Prefs * prefs, int filec, char * const filev[])
 		len = strlen(filev[i]) + strlen(dst) + 2;
 		if((p = realloc(sdst, len * sizeof(char))) == NULL)
 		{
-			_cp_error(filev[filec - 1], 0);
+			ret |= _cp_error(filev[filec - 1], 1);
 			continue;
 		}
 		sdst = p;
