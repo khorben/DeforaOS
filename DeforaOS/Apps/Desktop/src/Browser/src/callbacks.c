@@ -808,7 +808,8 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	GtkWidget * menuitem;
 	char * mimetype = NULL;
 
-	if(event->type == GDK_BUTTON_PRESS && event->button != 3)
+	if(event->type != GDK_BUTTON_PRESS
+			|| (event->button != 3 && event->button != 0))
 		return FALSE;
 	menu = gtk_menu_new();
 	/* FIXME prevents actions to be called but probably leaks memory
