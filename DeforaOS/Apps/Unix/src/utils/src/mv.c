@@ -58,7 +58,7 @@ static int _mv_error(char const * message, int ret)
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
 	if(rename(src, dst) != 0)
-		return _mv_error(dst, 1);
+		return _mv_error(src, 1);
 	return 0;
 }
 
