@@ -653,7 +653,8 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	GdkPixbuf * icon_48 = browser->pb_file_48;
 #endif
 
-	name = g_filename_to_utf8(display, -1, NULL, NULL, NULL);
+	if((name = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) == NULL)
+		name = display;
 	if(st != NULL)
 	{
 		inode = st->st_ino;
@@ -851,7 +852,8 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 #endif
 
 	/* FIXME code duplication */
-	name = g_filename_to_utf8(display, -1, NULL, NULL, NULL);
+	if((name = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) == NULL)
+		name = display;
 	if(st != NULL)
 	{
 		inode = st->st_ino;
