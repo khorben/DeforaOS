@@ -82,7 +82,7 @@ void on_edit_copy(GtkMenuItem * menuitem, gpointer data)
 	GtkTreeIter iter;
 	GList * sel;
 	GList * p;
-	gchar * q;
+	gchar * path;
 
 	if((sel = _copy_selection(browser)) == NULL)
 		return;
@@ -92,9 +92,9 @@ void on_edit_copy(GtkMenuItem * menuitem, gpointer data)
 					&iter, p->data))
 			continue;
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
-		printf("%s\n", q);
-		g_free(q);
+				BR_COL_PATH, &path, -1);
+		printf("%s\n", path);
+		g_free(path);
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
@@ -127,7 +127,7 @@ void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 	GtkTreeIter iter;
 	GList * sel;
 	GList * p;
-	gchar * q;
+	gchar * path;
 
 	if((sel = _copy_selection(browser)) == NULL)
 		return;
@@ -137,9 +137,9 @@ void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 					&iter, p->data))
 			continue;
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
-		printf("%s\n", q);
-		g_free(q);
+				BR_COL_PATH, &path, -1);
+		printf("%s\n", path);
+		g_free(path);
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
