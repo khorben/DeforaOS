@@ -15,23 +15,23 @@ static int _kill(int sig, int argc, char * argv[])
 {
 	int ret = 0;
 	int i;
+	pid_t pid;
+	char * p;
 
 	for(i = 0; i < argc; i++)
 	{
-		int pid;
-		char * p;
-
 		pid = strtol(argv[i], &p, 10);
-		if(*(argv[i]) == '\0' || *p != '\0')
+		if(argv[i][0] == '\0' || *p != '\0')
 		{
 			fprintf(stderr, "%s%s%s", "kill: ", argv[i],
 					": Invalid process number\n");
 			continue;
 		}
-		if(kill(pid, sig) == -1)
+		if(kill(pid, sig) != 0)
 		{
+			fputs("kill: ", stderr);
 			perror("kill");
-			ret = 2;
+			ret |= 1;
 		}
 	}
 	return ret;
@@ -76,5 +76,5 @@ int main(int argc, char * argv[])
 	}
 	if(optind == argc)
 		return _usage();
-	return _kill(sig, argc - optind, &argv[optind]);
+	return _kill(sig, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
