@@ -49,9 +49,6 @@ static int _cp(Prefs * prefs, int filec, char * filev[])
 	}
 	else if(S_ISDIR(st.st_mode))
 		return _cp_multiple(prefs, filec, filev);
-	else if(S_ISLNK(st.st_mode)
-			&& ((*prefs & PREFS_R) && (*prefs & PREFS_P)))
-		return _cp_symlink(filev[0], filev[1]);
 	else if(filec > 2)
 	{
 		errno = ENOTDIR;
@@ -158,8 +155,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 		sprintf(sdst, "%s/%s", dst, de->d_name);
 		if(de->d_type == DT_DIR)
 			ret |= _single_recurse(prefs, ssrc, sdst);
-		else if(de->d_type == DT_LNK
-				&& ((*prefs & PREFS_H) || (*prefs & PREFS_P)))
+		else if(de->d_type == DT_LNK && (*prefs & (PREFS_H | PREFS_P)))
 			ret |= _cp_symlink(ssrc, sdst);
 		else
 			ret |= _cp_single(prefs, ssrc, sdst);
