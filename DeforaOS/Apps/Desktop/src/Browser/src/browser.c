@@ -373,8 +373,10 @@ static int _sort_func(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b,
 		gpointer data)
 {
 	Browser * browser = data;
-	gboolean is_dir_a, is_dir_b;
-	gchar * name_a, * name_b;
+	gboolean is_dir_a;
+	gboolean is_dir_b;
+	gchar * name_a;
+	gchar * name_b;
 	int ret = 0;
 
 	gtk_tree_model_get(model, a, BR_COL_IS_DIRECTORY, &is_dir_a,
@@ -642,7 +644,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * st,
 		gboolean updated)
 {
-	char * name;
+	char const * p;
 	struct passwd * pw = NULL;
 	struct group * gr = NULL;
 	uint64_t inode = 0;
@@ -653,8 +655,8 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	GdkPixbuf * icon_48 = browser->pb_file_48;
 #endif
 
-	if((name = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) == NULL)
-		name = display;
+	if((p = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) != NULL)
+		display = p;
 	if(st != NULL)
 	{
 		inode = st->st_ino;
@@ -694,8 +696,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	gtk_list_store_set(browser->store, iter,
 #endif
 			BR_COL_UPDATED, updated, BR_COL_PATH, path,
-			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
-			BR_COL_INODE, inode,
+			BR_COL_DISPLAY_NAME, display, BR_COL_INODE, inode,
 			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
 			: 0,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
@@ -839,8 +840,9 @@ static int _current_loop(Browser * browser)
 
 static void _loop_update(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * st)
+	/* FIXME code duplication */
 {
-	char * name;
+	char const * p;
 	struct passwd * pw = NULL;
 	struct group * gr = NULL;
 	uint64_t inode = 0;
@@ -851,9 +853,8 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	GdkPixbuf * icon_48 = browser->pb_file_48;
 #endif
 
-	/* FIXME code duplication */
-	if((name = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) == NULL)
-		name = display;
+	if((p = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) != NULL)
+		display = p;
 	if(st != NULL)
 	{
 		inode = st->st_ino;
@@ -887,8 +888,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 #endif
 	}
 	gtk_list_store_set(browser->store, iter, BR_COL_UPDATED, 1,
-			BR_COL_PATH, path,
-			BR_COL_DISPLAY_NAME, name != NULL ? name : display,
+			BR_COL_PATH, path, BR_COL_DISPLAY_NAME, display,
 			BR_COL_INODE, inode,
 			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
 			: 0,
