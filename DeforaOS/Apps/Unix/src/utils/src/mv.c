@@ -2,9 +2,13 @@
 
 
 
+#include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
+#include <errno.h>
 
 
 /* types */
@@ -14,10 +18,73 @@ typedef int Prefs;
 
 
 /* mv */
+static int _mv_error(char const * message, int ret);
+static int _mv_single(Prefs * prefs, char const * src, char const * dst);
+static int _mv_multiple(Prefs * prefs, int filec, char * const filev[]);
 static int _mv(Prefs * prefs, int filec, char * filev[])
 {
-	fputs("mv: Not implemented\n", stderr);
-	return 1;
+	struct stat st;
+
+	if(stat(filev[filec - 1], &st) != 0)
+	{
+		if(errno != ENOENT)
+			return _mv_error(filev[filec - 1], 1);
+		if(filec > 2)
+		{
+			fprintf(stderr, "%s%s%s", "mv: ", filev[filec - 1],
+					": Does not exist and more than two"
+					" operands were given\n");
+			return 1;
+		}
+	}
+	else if(S_ISDIR(st.st_mode))
+		return _mv_multiple(prefs, filec, filev);
+	else if(filec > 2)
+	{
+		errno = ENOTDIR;
+		return _mv_error(filev[filec - 1], 1);
+	}
+	return _mv_single(prefs, filev[0], filev[1]);
+}
+
+static int _mv_error(char const * message, int ret)
+{
+	fputs("mv: ", stderr);
+	perror(message);
+	return ret;
+}
+
+static int _mv_single(Prefs * prefs, char const * src, char const * dst)
+{
+	if(rename(src, dst) != 0)
+		return _mv_error(dst, 1);
+	return 0;
+}
+
+static int _mv_multiple(Prefs * prefs, int filec, char * const filev[])
+{
+	int ret = 0;
+	int i;
+	char * dst;
+	size_t len;
+	char * sdst = NULL;
+	char * p;
+
+	for(i = 0; i < filec - 1; i++)
+	{
+		dst = basename(filev[i]);
+		len = strlen(filev[i]) + strlen(dst) + 2;
+		if((p = realloc(sdst, len * sizeof(char))) == NULL)
+		{
+			ret |= _mv_error(filev[filec - 1], 1);
+			continue;
+		}
+		sdst = p;
+		sprintf(sdst, "%s/%s", filev[filec - 1], dst);
+		ret |= _mv_single(prefs, filev[i], sdst);
+	}
+	free(sdst);
+	return ret;
 }
 
 
