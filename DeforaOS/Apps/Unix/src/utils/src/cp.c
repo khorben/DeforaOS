@@ -119,6 +119,7 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
+	Prefs prefs2 = *prefs;
 	size_t srclen;
 	size_t dstlen;
 	DIR * dir;
@@ -133,6 +134,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	dstlen = strlen(dst);
 	if((dir = opendir(src)) == NULL)
 		return _cp_error(src, 1);
+	prefs2 |= (prefs2 & PREFS_H) ? PREFS_P : 0;
 	while((de = readdir(dir)) != 0)
 	{
 		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
@@ -154,11 +156,11 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 		sdst = p;
 		sprintf(sdst, "%s/%s", dst, de->d_name);
 		if(de->d_type == DT_DIR)
-			ret |= _single_recurse(prefs, ssrc, sdst);
-		else if(de->d_type == DT_LNK && (*prefs & (PREFS_H | PREFS_P)))
+			ret |= _single_recurse(&prefs2, ssrc, sdst);
+		else if(de->d_type == DT_LNK && (*prefs & PREFS_P))
 			ret |= _cp_symlink(ssrc, sdst);
 		else
-			ret |= _cp_single(prefs, ssrc, sdst);
+			ret |= _cp_single(&prefs2, ssrc, sdst);
 	}
 	closedir(dir);
 	free(ssrc);
