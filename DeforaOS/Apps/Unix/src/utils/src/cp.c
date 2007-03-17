@@ -184,11 +184,11 @@ static int _cp_symlink(char const * src, char const * dst)
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[])
 {
 	int ret = 0;
+	int i;
 	char * dst;
+	size_t len;
 	char * sdst = NULL;
 	char * p;
-	int i;
-	int len;
 
 	for(i = 0; i < filec - 1; i++)
 	{
