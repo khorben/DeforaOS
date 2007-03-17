@@ -21,7 +21,6 @@ typedef int Prefs;
 #define PREFS_i 0x02
 #define PREFS_p 0x04
 #define PREFS_R 0x08
-#define PREFS_r PREFS_R
 #define PREFS_H 0x10
 #define PREFS_L 0x20
 #define PREFS_P 0x40
@@ -36,7 +35,7 @@ static int _cp(Prefs * prefs, int filec, char * filev[])
 {
 	struct stat st;
 
-	if(stat(filev[filec - 1], &st) == -1)
+	if(stat(filev[filec - 1], &st) != 0)
 	{
 		if(errno != ENOENT)
 			return _cp_error(filev[filec - 1], 1);
@@ -51,8 +50,13 @@ static int _cp(Prefs * prefs, int filec, char * filev[])
 	else if(S_ISDIR(st.st_mode))
 		return _cp_multiple(prefs, filec, filev);
 	else if(S_ISLNK(st.st_mode)
-			&& ((*prefs & PREFS_r) && (*prefs & PREFS_P)))
+			&& ((*prefs & PREFS_R) && (*prefs & PREFS_P)))
 		return _cp_symlink(filev[0], filev[1]);
+	else if(filec > 2)
+	{
+		errno = ENOTDIR;
+		return _cp_error(filev[filec - 1], 1);
+	}
 	return _cp_single(prefs, filev[0], filev[1]);
 }
 
@@ -84,7 +88,7 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	}
 	if(S_ISDIR(st.st_mode))
 	{
-		if(*prefs & PREFS_r)
+		if(*prefs & PREFS_R)
 			return _single_recurse(prefs, src, dst);
 		fprintf(stderr, "%s%s%s", "cp: ", src,
 				": Omitting directory\n");
@@ -229,6 +233,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(Prefs));
+	prefs |= PREFS_H;
 	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
 		switch(o)
 		{
@@ -245,7 +250,7 @@ int main(int argc, char * argv[])
 				break;
 			case 'R':
 			case 'r':
-				prefs |= PREFS_r;
+				prefs |= PREFS_R;
 				break;
 			case 'H':
 				prefs -= prefs & (PREFS_L | PREFS_P);
@@ -262,7 +267,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind + 1 >= argc)
+	if(argc - optind < 2)
 		return _usage();
 	return _cp(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
