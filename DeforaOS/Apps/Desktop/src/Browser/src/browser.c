@@ -278,12 +278,21 @@ Browser * browser_new(char const * directory)
 
 static int _new_pixbufs(Browser * browser)
 {
-	char * file[] = { "gnome-fs-regular", GTK_STOCK_FILE,
+	char * file[] = { "gnome-fs-regular",
+#if GTK_CHECK_VERSION(2, 6, 0)
+		GTK_STOCK_FILE,
+#endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
-	char * folder[] = { "gnome-fs-directory", GTK_STOCK_DIRECTORY,
+	char * folder[] = { "gnome-fs-directory",
+#if GTK_CHECK_VERSION(2, 6, 0)
+		GTK_STOCK_DIRECTORY,
+#endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
 	char * executable[] = { "gnome-fs-executable", "gnome-fs-regular",
-		GTK_STOCK_FILE, GTK_STOCK_MISSING_IMAGE, NULL };
+#if GTK_CHECK_VERSION(2, 6, 0)
+		GTK_STOCK_FILE,
+#endif
+		GTK_STOCK_MISSING_IMAGE, NULL };
 	char ** p;
 
 	browser->theme = gtk_icon_theme_get_default();
