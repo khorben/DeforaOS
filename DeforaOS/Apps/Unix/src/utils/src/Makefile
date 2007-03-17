@@ -1,4 +1,4 @@
-TARGETS	= basename cat chgrp chmod chown cksum cmp cp df dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo nice pwd renice rm rmdir sleep strings tail test time touch true tty uname uniq unlink wc who
+TARGETS	= basename cat chgrp chmod chown cksum cmp cp df dirname du echo false file head id kill link ln locale logname ls mkdir mkfifo mv nice pwd renice rm rmdir sleep strings tail test time touch true tty uname uniq unlink wc who
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -157,6 +157,12 @@ mkfifo_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 mkfifo: $(mkfifo_OBJS)
 	$(CC) -o mkfifo $(mkfifo_OBJS) $(LDFLAGSF) $(LDFLAGS)
+
+mv_OBJS = mv.o
+mv_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+mv: $(mv_OBJS)
+	$(CC) -o mv $(mv_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 nice_OBJS = nice.o
 nice_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -338,6 +344,9 @@ mkdir.o: mkdir.c
 mkfifo.o: mkfifo.c
 	$(CC) $(mkfifo_CFLAGS) -c mkfifo.c
 
+mv.o: mv.c
+	$(CC) $(mv_CFLAGS) -c mv.c
+
 nice.o: nice.c
 	$(CC) $(nice_CFLAGS) -c nice.c
 
@@ -393,7 +402,7 @@ who.o: who.c
 	$(CC) $(who_CFLAGS) -c who.c
 
 clean:
-	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cksum_OBJS) $(cmp_OBJS) $(cp_OBJS) $(df_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(file_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(locale_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(nice_OBJS) $(pwd_OBJS) $(renice_OBJS) $(rm_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(tail_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS) $(who_OBJS)
+	$(RM) $(basename_OBJS) $(cat_OBJS) $(chgrp_OBJS) $(chmod_OBJS) $(chown_OBJS) $(cksum_OBJS) $(cmp_OBJS) $(cp_OBJS) $(df_OBJS) $(dirname_OBJS) $(du_OBJS) $(echo_OBJS) $(false_OBJS) $(file_OBJS) $(head_OBJS) $(id_OBJS) $(kill_OBJS) $(link_OBJS) $(ln_OBJS) $(locale_OBJS) $(logname_OBJS) $(ls_OBJS) $(mkdir_OBJS) $(mkfifo_OBJS) $(mv_OBJS) $(nice_OBJS) $(pwd_OBJS) $(renice_OBJS) $(rm_OBJS) $(rmdir_OBJS) $(sleep_OBJS) $(strings_OBJS) $(tail_OBJS) $(test_OBJS) $(time_OBJS) $(touch_OBJS) $(true_OBJS) $(tty_OBJS) $(uname_OBJS) $(uniq_OBJS) $(unlink_OBJS) $(wc_OBJS) $(who_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -424,6 +433,7 @@ install: all
 	$(INSTALL) -m 0755 ls $(DESTDIR)$(BINDIR)/ls
 	$(INSTALL) -m 0755 mkdir $(DESTDIR)$(BINDIR)/mkdir
 	$(INSTALL) -m 0755 mkfifo $(DESTDIR)$(BINDIR)/mkfifo
+	$(INSTALL) -m 0755 mv $(DESTDIR)$(BINDIR)/mv
 	$(INSTALL) -m 0755 nice $(DESTDIR)$(BINDIR)/nice
 	$(INSTALL) -m 0755 pwd $(DESTDIR)$(BINDIR)/pwd
 	$(INSTALL) -m 0755 renice $(DESTDIR)$(BINDIR)/renice
@@ -468,6 +478,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/ls
 	$(RM) $(DESTDIR)$(BINDIR)/mkdir
 	$(RM) $(DESTDIR)$(BINDIR)/mkfifo
+	$(RM) $(DESTDIR)$(BINDIR)/mv
 	$(RM) $(DESTDIR)$(BINDIR)/nice
 	$(RM) $(DESTDIR)$(BINDIR)/pwd
 	$(RM) $(DESTDIR)$(BINDIR)/renice
