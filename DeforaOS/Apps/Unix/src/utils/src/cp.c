@@ -6,9 +6,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 #include <errno.h>
 
 
@@ -30,11 +32,6 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst);
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[]);
 static int _cp(Prefs * prefs, int filec, char * filev[])
 {
-	/* FIXME
-	 * - cp_multiple already checks if last arg is a dir
-	 *   => always call cp_multiple
-	 *      if argc == 2 && returns 1, call cp_single
-	 * - blah blah */
 	struct stat st;
 
 	if(stat(filev[filec - 1], &st) == -1)
@@ -61,6 +58,7 @@ static int _cp_error(char const * message, int ret)
 	return ret;
 }
 
+static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
 static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
@@ -81,9 +79,11 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	}
 	if(S_ISDIR(st.st_mode))
 	{
+		if(*prefs & PREFS_r)
+			return _single_recurse(prefs, src, dst);
 		fprintf(stderr, "%s%s%s", "cp: ", src,
 				": Omitting directory\n");
-		return 1;
+		return 0;
 	}
 	if((fdst = fopen(dst, "w")) == NULL)
 	{
@@ -108,27 +108,77 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
+static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
+{
+	int ret = 0;
+	size_t srclen;
+	size_t dstlen;
+	DIR * dir;
+	struct dirent * de;
+	char * ssrc = NULL;
+	char * sdst = NULL;
+	char * p;
+
+	if(mkdir(dst, 0777) != 0)
+		return _cp_error(dst, 1);
+	srclen = strlen(src);
+	dstlen = strlen(dst);
+	if((dir = opendir(src)) == NULL)
+		return _cp_error(src, 1);
+	while((de = readdir(dir)) != 0)
+	{
+		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
+					|| (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0')))
+			continue;
+		if((p = realloc(ssrc, srclen + strlen(de->d_name) + 2)) == NULL)
+		{
+			ret |= _cp_error(src, 1);
+			continue;
+		}
+		ssrc = p;
+		sprintf(ssrc, "%s/%s", src, de->d_name);
+		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
+		{
+			ret |= _cp_error(ssrc, 1);
+			continue;
+		}
+		sdst = p;
+		sprintf(sdst, "%s/%s", dst, de->d_name);
+		if(de->d_type == DT_DIR)
+			ret |= _single_recurse(prefs, ssrc, sdst);
+		else
+			ret |= _cp_single(prefs, ssrc, sdst);
+	}
+	closedir(dir);
+	free(ssrc);
+	free(sdst);
+	return ret;
+}
+
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[])
 {
 	int ret = 0;
-	char * dst = NULL;
+	char * dst;
+	char * sdst = NULL;
 	char * p;
 	int i;
 	int len;
 
 	for(i = 0; i < filec - 1; i++)
 	{
-		len = strlen(filev[i]) + strlen(filev[filec - 1]) + 2;
-		if((p = realloc(dst, len * sizeof(char))) == NULL)
+		dst = basename(filev[i]);
+		len = strlen(filev[i]) + strlen(dst) + 2;
+		if((p = realloc(sdst, len * sizeof(char))) == NULL)
 		{
 			_cp_error(filev[filec - 1], 0);
 			continue;
 		}
-		dst = p;
-		sprintf(dst, "%s/%s", filev[filec - 1], filev[i]);
-		ret |= _cp_single(prefs, filev[i], dst);
+		sdst = p;
+		sprintf(sdst, "%s/%s", filev[filec - 1], dst);
+		ret |= _cp_single(prefs, filev[i], sdst);
 	}
-	free(dst);
+	free(sdst);
 	return ret;
 }
 
@@ -168,18 +218,15 @@ int main(int argc, char * argv[])
 				prefs |= PREFS_i;
 				break;
 			case 'H':
-				prefs -= prefs & PREFS_L;
-				prefs -= prefs & PREFS_P;
+				prefs -= prefs & (PREFS_L | PREFS_P);
 				prefs |= PREFS_H;
 				break;
 			case 'L':
-				prefs -= prefs & PREFS_H;
-				prefs -= prefs & PREFS_P;
+				prefs -= prefs & (PREFS_H | PREFS_P);
 				prefs |= PREFS_L;
 				break;
 			case 'P':
-				prefs -= prefs & PREFS_H;
-				prefs -= prefs & PREFS_L;
+				prefs -= prefs & (PREFS_H | PREFS_L);
 				prefs |= PREFS_P;
 				break;
 			case 'p':
@@ -187,7 +234,7 @@ int main(int argc, char * argv[])
 				break;
 			case 'r':
 			case 'R':
-				prefs -= prefs & PREFS_r;
+				prefs |= PREFS_r;
 				break;
 			default:
 				return _usage();
