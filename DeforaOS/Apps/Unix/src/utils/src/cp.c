@@ -5,6 +5,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <limits.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -16,19 +17,20 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_H 0x00
-#define PREFS_L 0x01
-#define PREFS_P 0x02
-#define PREFS_f 0x04
-#define PREFS_i 0x08
-#define PREFS_p 0x10
-#define PREFS_r 0x20
+#define PREFS_H 0x01
+#define PREFS_L 0x02
+#define PREFS_P 0x04
+#define PREFS_f 0x08
+#define PREFS_i 0x10
+#define PREFS_p 0x20
+#define PREFS_r 0x40
 #define PREFS_R PREFS_r
 
 
 /* cp */
 static int _cp_error(char const * message, int ret);
 static int _cp_single(Prefs * prefs, char const * src, char const * dst);
+static int _cp_symlink(Prefs * prefs, char const * src, char const * dst);
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[]);
 static int _cp(Prefs * prefs, int filec, char * filev[])
 {
@@ -48,6 +50,9 @@ static int _cp(Prefs * prefs, int filec, char * filev[])
 	}
 	else if(S_ISDIR(st.st_mode))
 		return _cp_multiple(prefs, filec, filev);
+	else if(S_ISLNK(st.st_mode)
+			&& ((*prefs & PREFS_r) && (*prefs & PREFS_P)))
+		return _cp_symlink(prefs, filev[0], filev[1]);
 	return _cp_single(prefs, filev[0], filev[1]);
 }
 
@@ -85,6 +90,8 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 				": Omitting directory\n");
 		return 0;
 	}
+	if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
+		return _cp_symlink(prefs, src, dst);
 	if((fdst = fopen(dst, "w")) == NULL)
 	{
 		ret = _cp_error(dst, 1);
@@ -147,6 +154,9 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 		sprintf(sdst, "%s/%s", dst, de->d_name);
 		if(de->d_type == DT_DIR)
 			ret |= _single_recurse(prefs, ssrc, sdst);
+		else if(de->d_type == DT_LNK
+				&& ((*prefs & PREFS_H) || (*prefs & PREFS_P)))
+			ret |= _cp_symlink(prefs, ssrc, sdst);
 		else
 			ret |= _cp_single(prefs, ssrc, sdst);
 	}
@@ -154,6 +164,19 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	free(ssrc);
 	free(sdst);
 	return ret;
+}
+
+static int _cp_symlink(Prefs * prefs, char const * src, char const * dst)
+{
+	char buf[PATH_MAX + 1];
+	ssize_t len;
+
+	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
+		return _cp_error(src, 1);
+	buf[len] = '\0';
+	if(symlink(buf, dst) != 0)
+		return _cp_error(dst, 1);
+	return 0;
 }
 
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[])
