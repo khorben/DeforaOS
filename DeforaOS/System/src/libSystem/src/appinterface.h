@@ -22,10 +22,10 @@ int appinterface_port(AppInterface * appinterface);
 
 /* useful */
 int appinterface_call(AppInterface * appinterface, char * call, char buf[],
-		int buflen, void ** args);
+		size_t buflen, void ** args);
 int appinterface_call_receive(AppInterface * appinterface, int * ret,
-		char * func, void ** args, char buf[], int buflen);
-int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
-		char bufw[], int bufwlen, int * bufwpos, int * ret);
+		char * func, void ** args, char buf[], size_t buflen);
+int appinterface_receive(AppInterface * appinterface, char buf[], size_t buflen,
+		char bufw[], size_t bufwlen, size_t * bufwpos, int * ret);
 
 #endif /* !LIBSYSTEM_APPINTERFACE_H */
