@@ -84,7 +84,7 @@ static int _appserver_read(int fd, AppServer * appserver);
 static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
-	int sa_size = sizeof(struct sockaddr_in);
+	socklen_t sa_size = sizeof(struct sockaddr_in);
 	int newfd;
 	AppServerClient * asc;
 
@@ -185,10 +185,10 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
 	asc->buf_read_cnt-=i;
 	/* FIXME should be done in AppInterface? */
-	if(asc->buf_write_cnt+sizeof(int) > sizeof(asc->buf_write))
+	if(asc->buf_write_cnt + sizeof(int) > sizeof(asc->buf_write))
 		return -1;
 	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(int));
-	asc->buf_write_cnt+=sizeof(int);
+	asc->buf_write_cnt += sizeof(int);
 	event_register_io_write(appserver->event, asc->fd,
 			(EventIOFunc)_appserver_write, appserver);
 	return 0;
