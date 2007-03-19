@@ -331,16 +331,16 @@ int appinterface_port(AppInterface * appinterface)
 /* useful */
 /* appinterface_call */
 static AppInterfaceCall * _call_call(AppInterface * appinterface, char * call);
-static int _send_buffer(char * data, int datalen, char * buf, int buflen,
-		int * pos);
-static int _send_string(char * string, char * buf, int buflen, int * pos);
+static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
+		size_t * pos);
+static int _send_string(char * string, char * buf, size_t buflen, size_t * pos);
 int appinterface_call(AppInterface * appinterface, char * call, char buf[],
-		int buflen, void ** args)
+		size_t buflen, void ** args)
 {
 	AppInterfaceCall * aic;
-	int pos = 0;
+	size_t pos = 0;
 	int i;
-	unsigned int size;
+	size_t size;
 	Buffer * buffer;
 	char * p;
 
@@ -410,8 +410,8 @@ static AppInterfaceCall * _call_call(AppInterface * appinterface, char * call)
 	return &appinterface->calls[i];
 }
 
-static int _send_buffer(char * data, int datalen, char * buf, int buflen,
-		int * pos)
+static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
+		size_t * pos)
 {
 	if(*pos + datalen > buflen)
 		return 1;
@@ -420,7 +420,7 @@ static int _send_buffer(char * data, int datalen, char * buf, int buflen,
 	return 0;
 }
 
-static int _send_string(char * string, char buf[], int buflen, int * pos)
+static int _send_string(char * string, char buf[], size_t buflen, size_t * pos)
 {
 	int i = 0;
 
@@ -440,7 +440,7 @@ static int _send_string(char * string, char buf[], int buflen, int * pos)
 
 /* appinterface_call_receive */
 int appinterface_call_receive(AppInterface * appinterface, int * ret,
-		char * func, void ** args, char buf[], int buflen)
+		char * func, void ** args, char buf[], size_t buflen)
 	/* FIXME
 	 * - this should be in appinterface_call (with an async option)
 	 * - we should avoid copying stuff while not enough data is gathered */
@@ -480,18 +480,18 @@ int appinterface_call_receive(AppInterface * appinterface, int * ret,
 	if(pos - buflen < sizeof(int))
 		return 0;
 	memcpy(ret, &(buf[pos]), sizeof(int));
-	return pos+sizeof(int);
+	return pos + sizeof(int);
 }
 
 
 /* appinterface_receive */
-static char * _read_string(char buf[], int buflen, int * pos);
-static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
-		int * pos, char bufw[], int bufwlen, int * bufwpos);
-int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
-		char bufw[], int bufwlen, int * bufwpos, int * ret)
+static char * _read_string(char buf[], size_t buflen, size_t * pos);
+static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
+		size_t * pos, char bufw[], size_t bufwlen, size_t * bufwpos);
+int appinterface_receive(AppInterface * appinterface, char buf[], size_t buflen,
+		char bufw[], size_t bufwlen, size_t * bufwpos, int * ret)
 {
-	int pos = 0;
+	size_t pos = 0;
 	char * func;
 	int i;
 
@@ -518,7 +518,7 @@ int appinterface_receive(AppInterface * appinterface, char buf[], int buflen,
 	return pos;
 }
 
-static char * _read_string(char buf[], int buflen, int * pos)
+static char * _read_string(char buf[], size_t buflen, size_t * pos)
 {
 	char * str = &buf[*pos];
 
@@ -532,13 +532,13 @@ static char * _read_string(char buf[], int buflen, int * pos)
 	return string_new(str);
 }
 
-static int _args_pre_exec(AppInterfaceCall * calls, char buf[], int buflen,
-		int * pos, char ** args);
+static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
+		size_t * pos, char ** args);
 static int _receive_exec(AppInterfaceCall * calls, char ** args);
-static void _args_post_exec(AppInterfaceCall * calls, char buf[], int buflen,
-		int * pos, char ** args, int i);
-static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
-		int * pos, char bufw[], int bufwlen, int * bufwpos)
+static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
+		size_t * pos, char ** args, int i);
+static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
+		size_t * pos, char bufw[], size_t bufwlen, size_t * bufwpos)
 {
 	int ret = 0;
 	int i;
@@ -555,10 +555,10 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], int buflen,
 	return ret;
 }
 
-static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
-		int * pos);
-static int _args_pre_exec(AppInterfaceCall * calls, char buf[], int buflen,
-		int * pos, char ** args)
+static int _read_buffer(char ** data, size_t datalen, char buf[], size_t buflen,
+		size_t * pos);
+static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
+		size_t * pos, char ** args)
 {
 	int i = 0;
 	size_t size;
@@ -623,8 +623,8 @@ static int _args_pre_exec(AppInterfaceCall * calls, char buf[], int buflen,
 	return i;
 }
 
-static int _read_buffer(char ** data, int datalen, char buf[], int buflen,
-		int * pos)
+static int _read_buffer(char ** data, size_t datalen, char buf[], size_t buflen,
+		size_t * pos)
 {
 	if(datalen > buflen - *pos)
 		return 1;
@@ -670,8 +670,8 @@ static int _receive_exec(AppInterfaceCall * calls, char ** args)
 	return -1;
 }
 
-static void _args_post_exec(AppInterfaceCall * calls, char buf[], int buflen,
-		int * pos, char ** args, int i)
+static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
+		size_t * pos, char ** args, int i)
 {
 	int j;
 	size_t size;
