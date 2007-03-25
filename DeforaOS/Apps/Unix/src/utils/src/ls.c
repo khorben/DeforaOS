@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 /* TODO: use a dynamic array and qsort() instead of lists */
 
 
@@ -91,13 +91,16 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 
 
 /* SList */
+/* types */
 /* SListCell */
-typedef struct _SListCell {
+typedef struct _SListCell
+{
 	void * data;
 	struct _SListCell * next;
 } SListCell;
 typedef SListCell * SList;
 
+/* functions */
 static SListCell * _slistcell_new(void * data, SListCell * next)
 {
 	SListCell * slc;
@@ -153,12 +156,12 @@ static void slist_next(SList * slist)
 	*slist = (*slist)->next;
 }
 
-static void slist_apply(SList * slist, int (*func)(void *, void *), void * user)
+static void slist_apply(SList * slist, int (*func)(void *))
 {
 	SListCell * slc = *slist;
 
 	for(slc = *slist; slc != NULL; slc = slc->next)
-		func(slc->data, user);
+		func(slc->data);
 }
 
 static int slist_insert_sorted(SList * slist, void * data,
@@ -353,7 +356,7 @@ static int _ls_do(Prefs * prefs, int argc, char * directory, SList * files,
 	return res;
 }
 
-static int _ls_free(void * data, void * user);
+static int _ls_free(void * data);
 static int _ls_do_files_short(Prefs * prefs, char * directory, SList * files);
 static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files);
 static int _ls_do_files(Prefs * prefs, char * directory, SList * files)
@@ -364,7 +367,7 @@ static int _ls_do_files(Prefs * prefs, char * directory, SList * files)
 		res = _ls_do_files_long(prefs, directory, files);
 	else
 		res = _ls_do_files_short(prefs, directory, files);
-	slist_apply(files, _ls_free, NULL);
+	slist_apply(files, _ls_free);
 	slist_delete(files);
 	return res;
 }
@@ -622,7 +625,7 @@ static void _print_link(char const * filename)
 	printf("%s%s", " -> ", buf);
 }
 
-static int _ls_free(void * data, void * user)
+static int _ls_free(void * data)
 {
 	free(data);
 	return 0;
@@ -643,7 +646,7 @@ static int _ls_do_dirs(Prefs * prefs, int argc, SList * dirs)
 		eol = "\n";
 		res += _ls_directory_do(prefs, dir);
 	}
-	slist_apply(dirs, _ls_free, NULL);
+	slist_apply(dirs, _ls_free);
 	slist_delete(dirs);
 	return res;
 }
