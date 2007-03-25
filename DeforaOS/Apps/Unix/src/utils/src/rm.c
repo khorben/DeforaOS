@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -46,7 +46,7 @@ static int _rm_confirm(char const * message, char const * type)
 
 	fprintf(stderr, "%s%s%s%s%s", "rm: ", message, ": Remove ", type, "? ");
 	if((c = fgetc(stdin)) == EOF)
-		return _rm_error("stdin", 0);
+		return 0;
 	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
 	return c == 'y';
 }
