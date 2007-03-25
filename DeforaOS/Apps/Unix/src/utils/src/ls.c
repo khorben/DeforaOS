@@ -490,8 +490,8 @@ static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 }
 
 static void _long_mode(char str[11], mode_t mode);
-static char * _long_owner(uid_t uid);
-static char * _long_group(gid_t gid);
+static char const * _long_owner(uid_t uid);
+static char const * _long_group(gid_t gid);
 static void _long_date(time_t date, char buf[15]);
 static char _file_mode_letter(mode_t mode);
 static void _print_link(char const * filename);
@@ -499,8 +499,8 @@ static void _long_print(Prefs * prefs, char const * filename,
 		char const * basename, struct stat * st)
 {
 	char mode[11];
-	char * owner;
-	char * group;
+	char const * owner;
+	char const * group;
 	char date[15];
 
 	_long_mode(mode, st->st_mode);
@@ -512,7 +512,7 @@ static void _long_print(Prefs * prefs, char const * filename,
 		_long_date(st->st_ctime, date);
 	else
 		_long_date(st->st_mtime, date);
-	printf("%s %u %s %s %6u %s %s", mode, (unsigned)st->st_nlink,
+	printf("%s %u %-7s %-7s %6u %s %s", mode, (unsigned)st->st_nlink,
 			owner, group, (unsigned)st->st_size, date, basename);
 	if(S_ISLNK(st->st_mode) && !(*prefs & PREFS_L)) /* FIXME not in POSIX? */
 		_print_link(filename);
@@ -563,22 +563,26 @@ static void _long_mode(char str[11], mode_t mode)
 	str[10] = '\0';
 }
 
-static char * _long_owner(uid_t uid)
+static char const * _long_owner(uid_t uid)
 {
 	struct passwd * pwd;
+	static char buf[12];
 
-	if((pwd = getpwuid(uid)) == NULL)
-		return "unknown";
-	return pwd->pw_name;
+	if((pwd = getpwuid(uid)) != NULL)
+		return pwd->pw_name;
+	snprintf(buf, sizeof(buf), "%u", uid);
+	return buf;
 }
 
-static char * _long_group(gid_t gid)
+static char const * _long_group(gid_t gid)
 {
 	struct group * grp;
+	static char buf[12];
 
-	if((grp = getgrgid(gid)) == NULL)
-		return "unknown";
-	return grp->gr_name;
+	if((grp = getgrgid(gid)) != NULL)
+		return grp->gr_name;
+	snprintf(buf, sizeof(buf), "%u", gid);
+	return buf;
 }
 
 static void _long_date(time_t date, char buf[15])
