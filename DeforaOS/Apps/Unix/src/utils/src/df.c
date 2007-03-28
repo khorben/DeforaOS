@@ -14,6 +14,7 @@
 /* Prefs */
 typedef int Prefs;
 #define PREFS_k 1
+#define PREFS_P 2
 
 
 /* df */
@@ -41,16 +42,14 @@ static int _df_error(char const * message, int ret)
 	return ret;
 }
 
-static void _df_print(Prefs * prefs, const struct statvfs * f);
+static void _df_print(Prefs * prefs, struct statvfs const * f);
 static int _df_mtab(Prefs * prefs)
 {
+#ifdef ST_WAIT
 	int cnt;
 	struct statvfs * f;
 	int i;
 
-	/* FIXME not portable code here:
-	 * - Linux: /etc/mtab
-	 * - NetBSD: getvfsstat() */
 	if((cnt = getvfsstat(NULL, 0, ST_WAIT)) < 0)
 		return _df_error("getvfsstat", 1);
 	if((f = malloc(sizeof(*f) * cnt)) == NULL)
@@ -63,10 +62,17 @@ static int _df_mtab(Prefs * prefs)
 	for(i = 0; i < cnt; i++)
 		_df_print(prefs, &f[i]);
 	free(f);
+#else /* FIXME incomplete workaround when getvfsstat() is missing */
+	struct statvfs f;
+
+	if(statvfs(".", &f) != 0)
+		return _df_error(".", 1);
+	_df_print(prefs, &f);
+#endif
 	return 0;
 }
 
-static void _df_print(Prefs * prefs, const struct statvfs * f)
+static void _df_print(Prefs * prefs, struct statvfs const * f)
 {
 	unsigned long long mod;
 	unsigned long long cnt;
@@ -80,8 +86,13 @@ static void _df_print(Prefs * prefs, const struct statvfs * f)
 	avail = f->f_bavail * mod;
 	cap = ((f->f_blocks - f->f_bfree) * 100)
 		/ ((f->f_blocks - f->f_bfree) + f->f_bavail);
+#ifdef ST_WAIT
 	printf("%-11s %10llu %10llu %10llu %7u%% %s\n", f->f_mntfromname,
 			cnt, used, avail, cap, f->f_mntonname);
+#else
+	printf("%-11s %10llu %10llu %10llu %7u%% %s\n", "", cnt, used, avail,
+			cap, "");
+#endif
 }
 
 static int _df_do(Prefs * prefs, char const * file)
@@ -117,6 +128,7 @@ int main(int argc, char * argv[])
 				prefs |= PREFS_k;
 				break;
 			case 'P':
+				prefs |= PREFS_P;
 				break;
 			default:
 				return _usage();
