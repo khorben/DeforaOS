@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,6 +32,7 @@ static int _cp_error(char const * message, int ret);
 static int _cp_single(Prefs * prefs, char const * src, char const * dst);
 static int _cp_symlink(char const * src, char const * dst);
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[]);
+
 static int _cp(Prefs * prefs, int filec, char * filev[])
 {
 	struct stat st;
@@ -64,7 +66,10 @@ static int _cp_error(char const * message, int ret)
 	return ret;
 }
 
+/* _cp_single */
 static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+static FILE * _single_open_dst(Prefs * prefs, char const * dst);
+
 static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
@@ -79,9 +84,9 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 		return _cp_error(src, 1);
 	if((fd = fileno(fsrc)) == -1 || fstat(fd, &st) != 0)
 	{
-		ret = _cp_error(src, 1);
+		_cp_error(src, 1);
 		fclose(fsrc);
-		return ret;
+		return 1;
 	}
 	if(S_ISDIR(st.st_mode))
 	{
@@ -93,19 +98,18 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	}
 	if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
 		return _cp_symlink(src, dst);
-	if((fdst = fopen(dst, "w")) == NULL)
+	if((fdst = _single_open_dst(prefs, dst)) == NULL)
 	{
-		ret = _cp_error(dst, 1);
 		fclose(fsrc);
-		return ret;
+		return 1;
 	}
 	while((size = fread(buf, sizeof(char), BUFSIZ, fsrc)) > 0)
 		if(fwrite(buf, sizeof(char), size, fdst) != size)
 		{
-			ret = _cp_error(dst, 1);
+			_cp_error(dst, 1);
 			fclose(fsrc);
 			fclose(fdst);
-			return ret;
+			return 1;
 		}
 	if(!feof(fsrc))
 		ret = _cp_error(src, 1);
@@ -128,7 +132,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	char * sdst = NULL;
 	char * p;
 
-	if(mkdir(dst, 0777) != 0)
+	if(mkdir(dst, 0777) != 0 && errno != EEXIST)
 		return _cp_error(dst, 1);
 	srclen = strlen(src);
 	dstlen = strlen(dst);
@@ -168,6 +172,51 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
+static int _single_confirm(char const * message);
+static FILE * _single_open_dst(Prefs * prefs, char const * dst)
+{
+	FILE * fp;
+	int fd;
+
+	if(*prefs & PREFS_f)
+	{
+		if((fp = fopen(dst, "w")) == NULL)
+			_cp_error(dst, 1);
+		return fp;
+	}
+	if((fd = open(dst, O_WRONLY | O_CREAT | O_EXCL, 0666)) < 0)
+	{
+		if(errno != EEXIST)
+		{
+			_cp_error(dst, 1);
+			return NULL;
+		}
+		if(!_single_confirm(dst))
+			return NULL;
+		/* XXX TOCTOU */
+		if((fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0)
+		{
+			_cp_error(dst, 1);
+			return NULL;
+		}
+	}
+	if((fp = fdopen(fd, "w")) == NULL)
+		_cp_error(dst, 1);
+	return fp;
+}
+
+static int _single_confirm(char const * message)
+{
+	int c;
+	int tmp;
+
+	fprintf(stderr, "%s%s%s", "cp: ", message, ": Overwrite? ");
+	if((c = fgetc(stdin)) == EOF)
+		return 0;
+	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
+	return c == 'y';
+}
+
 static int _cp_symlink(char const * src, char const * dst)
 {
 	char buf[PATH_MAX + 1];
@@ -176,7 +225,7 @@ static int _cp_symlink(char const * src, char const * dst)
 	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
 		return _cp_error(src, 1);
 	buf[len] = '\0';
-	if(symlink(buf, dst) != 0)
+	if(symlink(buf, dst) != 0) /* FIXME fails if dst already exists */
 		return _cp_error(dst, 1);
 	return 0;
 }
@@ -231,7 +280,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(Prefs));
-	prefs |= PREFS_H;
+	prefs |= PREFS_i | PREFS_H;
 	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
 		switch(o)
 		{
