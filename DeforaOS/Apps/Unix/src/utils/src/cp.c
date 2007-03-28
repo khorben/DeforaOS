@@ -131,6 +131,9 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	char * ssrc = NULL;
 	char * sdst = NULL;
 	char * p;
+#ifndef DT_DIR
+	struct stat st;
+#endif
 
 	if(mkdir(dst, 0777) != 0 && errno != EEXIST)
 		return _cp_error(dst, 1);
@@ -159,9 +162,20 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 		}
 		sdst = p;
 		sprintf(sdst, "%s/%s", dst, de->d_name);
+#ifdef DT_DIR
 		if(de->d_type == DT_DIR)
 			ret |= _single_recurse(&prefs2, ssrc, sdst);
 		else if(de->d_type == DT_LNK && (*prefs & PREFS_P))
+#else
+		if(lstat(ssrc, &st) != 0) /* XXX TOCTOU */
+		{
+			ret |= _cp_error(ssrc, 1);
+			continue;
+		}
+		if(S_ISDIR(st.st_mode))
+			ret |= _single_recurse(&prefs2, ssrc, sdst);
+		else if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
+#endif
 			ret |= _cp_symlink(ssrc, sdst);
 		else
 			ret |= _cp_single(&prefs2, ssrc, sdst);
