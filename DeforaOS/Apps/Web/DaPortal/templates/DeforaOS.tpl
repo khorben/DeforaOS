@@ -36,7 +36,7 @@ document.getElementById('search').style.display='none';
 //--></script>
 			</div>
 			<div class="logo"></div>
-			<div class="style1"><a href="/" title="DeforaOS Project">DeforaOS</a> :: <?php echo strlen($module) ? '<a href="/'.(_html_safe_link($module)).'">'.(_html_safe(ucfirst($module))).'</a>' : '<a href="/" title="Homepage">Homepage</a>'; ?></div>
+			<div class="style1"><a href="/" title="DeforaOS Project">DeforaOS</a> :: <?php echo strlen($module) ? '<a href="index.php?module='.(_html_safe_link($module)).'">'.(_html_safe(ucfirst($module))).'</a>' : '<a href="/" title="Homepage">Homepage</a>'; ?></div>
 <?php if($user_id) _module('menu'); else include('./templates/DeforaOS-menu.tpl');
 if(is_array(($langs = _sql_array('SELECT lang_id AS id, name FROM '
 		." daportal_lang WHERE enabled='1' ORDER BY name ASC;")))) { ?>
