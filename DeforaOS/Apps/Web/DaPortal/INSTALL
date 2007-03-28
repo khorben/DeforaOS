@@ -1,0 +1,27 @@
+A few notes about the current installation process:
+
+* PHP magic quotes must be enabled for GET and POST (they should be checked at
+  run-time and "work-arounded" and necessary but this is not implemented)
+* "short_open_tags" is not necessary anymore
+* keep the source code in a separate directory
+* move the "css", "icons", "images", "js" and "themes" directory in the desired
+  web server directory
+* create symbolic links to the folders moved above
+* initialize your database with either "install/postgresql.sql",
+  "install/mysql.sql" or "install/sqlite.sql" as necessary
+* at this point you may wish to change the default login and password (table
+  "daportal_user" username and MD5 hash of the password)
+* edit "config.php" accordingly
+* create an "index.php" file there with the following content:
+
+<?php if(chdir('/path/to/daportal')) require('./engine.php'); ?>
+
+At this point if everything went well you should be able to login as specified
+on the page "index.php?module=user", or otherwise with the default "admin"
+account with the password "password".
+
+To assist you in the debugging process don't forget to check your Apache error
+logs. You can also force debugging output in DaPortal itself in "config.php" by
+uncommenting the line:
+
+//$debug = 1;
