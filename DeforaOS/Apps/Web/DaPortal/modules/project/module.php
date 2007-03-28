@@ -186,6 +186,8 @@ function project_admin($args)
 
 function project_browse($args)
 {
+	if(!isset($args['id']))
+		return _error(INVALID_PROJECT);
 	$sql = 'SELECT name, cvsroot FROM daportal_content, daportal_project'
 		." WHERE project_id='".$args['id']."'"
 		.' AND daportal_content.content_id=daportal_project.project_id'
@@ -524,10 +526,9 @@ function project_bug_list($args)
 		}
 		$bugs[$i]['thumbnail'].='.png';
 		$bugs[$i]['icon'] = $bugs[$i]['thumbnail'];
-		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['module'] = 'project';
 		$bugs[$i]['action'] = 'bug_display';
-		$bugs[$i]['name'] = $bugs[$i]['title'];
+		$bugs[$i]['name'] = _html_safe($bugs[$i]['title']);
 		$bugs[$i]['nb'] = '<a href="index.php?module=project'
 				.'&amp;action=bug_display'
 				.'&amp;id='.$bugs[$i]['id'].'">#'
@@ -1312,7 +1313,8 @@ function project_system($args)
 	$title.=' - '.PROJECTS;
 	if(!isset($args['action']))
 		return;
-	if($args['action'] == 'browse' && $args['download'] == 1)
+	if($args['action'] == 'browse' && isset($args['download'])
+			&& $args['download'] == 1)
 		$html = 0;
 	else if($args['action'] == 'config_update')
 		$html = 0;
