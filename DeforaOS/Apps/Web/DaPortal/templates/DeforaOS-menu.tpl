@@ -10,7 +10,8 @@
 					</ul></li>
 				<li><a href="index.php?module=project&amp;action=download"><?php echo _html_safe(DOWNLOAD); ?></a><ul>
 					<li><a href="index.php?module=project&amp;action=installer"><?php echo _html_safe(INSTALLER); ?></a></li>
-					<li><a href="index.php?module=project&amp;action=package">Packages</a></li>
+					<li><a href="index.php?module=project&amp;action=package"><?php echo _html_safe(PACKAGES); ?></a></li>
+					<li><a href="index.php?module=category&amp;id=293"><?php echo _html_safe(SCREENSHOTS); ?></a></li>
 					</ul></li>
 				<li><a href="support.php"><?php echo _html_safe(SUPPORT); ?></a><ul>
 					<li><a href="documentation.php"><?php echo _html_safe(DOCUMENTATION); ?></a></li>
