@@ -361,7 +361,8 @@ function download_download($args)
 	require_once('./system/mime.php');
 	if(($mime = _mime_from_ext($file['name'])) == 'default')
 		$mime = 'text/plain';
-	$client_mime = explode(',', $_SERVER['HTTP_ACCEPT']);
+	$client_mime = isset($_SERVER['HTTP_ACCEPT'])
+		? explode(',', $_SERVER['HTTP_ACCEPT']) : array();
 	for($i = 0; $i < count($client_mime); $i++) //FIXME should glob
 	{
 		if(($pos = strpos($client_mime[$i], ';')) == FALSE)
