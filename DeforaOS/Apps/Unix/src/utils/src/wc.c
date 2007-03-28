@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -25,16 +25,17 @@ typedef enum _wc_flag
 
 /* wc */
 static int _wc_error(char const * message, int ret);
-static int _wc_do(int flags,
-		unsigned int * cm, unsigned int * l, unsigned int * w,
-		char const * filename);
-static void _wc_print(int flags,
-		unsigned int cm, unsigned int l, unsigned int w,
-		char const * filename);
+static int _wc_do(int flags, unsigned int * cm, unsigned int * l,
+		unsigned int * w, char const * filename);
+static void _wc_print(int flags, unsigned int cm, unsigned int l,
+		unsigned int w, char const * filename);
+
 static int _wc(int flags, int argc, char * argv[])
 {
 	int ret = 0;
-	unsigned int cm = 0, l = 0, w = 0;
+	unsigned int cm = 0;
+	unsigned int l = 0;
+	unsigned int w = 0;
 	int i;
 
 	if(argc == 0)
@@ -54,12 +55,13 @@ static int _wc_error(char const * message, int ret)
 	return ret;
 }
 
-static int _wc_do(int flags,
-		unsigned int * cm, unsigned int * l, unsigned int * w,
-		char const * filename)
+static int _wc_do(int flags, unsigned int * cm, unsigned int * l,
+		unsigned int * w, char const * filename)
 {
 	FILE * fp;
-	unsigned int lcm = 0, ll = 0, lw = 0;
+	unsigned int lcm = 0;
+	unsigned int ll = 0;
+	unsigned int lw = 0;
 	int c;
 	int oldc = ' ';
 
@@ -85,9 +87,8 @@ static int _wc_do(int flags,
 	return 0;
 }
 
-static void _wc_print(int flags,
-		unsigned int cm, unsigned int l, unsigned int w,
-		char const * filename)
+static void _wc_print(int flags, unsigned int cm, unsigned int l,
+		unsigned int w, char const * filename)
 {
 	if(flags == WF_ALL)
 		printf("%d %d %d", l, w, cm);
@@ -95,8 +96,7 @@ static void _wc_print(int flags,
 		printf("%d", cm);
 	if(IS_SET(flags, WF_L))
 		printf("%s%d", (IS_SET(flags, WF_C) || IS_SET(flags, WF_M))
-				? " " : "",
-				l);
+				? " " : "", l);
 	if(IS_SET(flags, WF_W))
 		printf("%s%d", flags != WF_W ? " " : "", w);
 	if(filename != NULL)
