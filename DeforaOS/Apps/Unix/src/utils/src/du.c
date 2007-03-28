@@ -24,17 +24,17 @@ typedef int Prefs;
 
 /* du */
 static int _du_do(Prefs * prefs, char const * filename);
-static void _du_print(Prefs * prefs, off_t size, char const * filename);
+
 static int _du(Prefs * prefs, int argc, char * argv[])
 {
-	int res = 0;
+	int ret = 0;
 	int i;
 
 	if(argc == 0)
 		return _du_do(prefs, ".") == 0 ? 0 : 2;
 	for(i = 0; i < argc; i++)
-		res += _du_do(prefs, argv[i]);
-	return res == 0 ? 0 : 2;
+		ret |= _du_do(prefs, argv[i]);
+	return ret;
 }
 
 static int _du_error(char const * error)
@@ -44,8 +44,10 @@ static int _du_error(char const * error)
 	return 1;
 }
 
-static off_t _du_blocks(Prefs * prefs, off_t size);
+/* _du_do */
+static void _du_print(Prefs * prefs, off_t size, char const * filename);
 static int _du_do_recursive(Prefs * prefs, char const * filename);
+
 static int _du_do(Prefs * prefs, char const * filename)
 {
 	int (* _stat)(const char * filename, struct stat * buf) = lstat;
@@ -63,29 +65,24 @@ static int _du_do(Prefs * prefs, char const * filename)
 	return _du_do_recursive(prefs, filename);
 }
 
-static off_t _du_blocks(Prefs * prefs, off_t size)
-{
-	if(*prefs & PREFS_k)
-		return size / 2;
-	return size;
-}
-
+/* _du_do_recursive */
 static int _recursive_do(Prefs * prefs, off_t * size, char ** filename);
+
 static int _du_do_recursive(Prefs * prefs, char const * filename)
 {
-	long long size = 0;
+	int ret;
+	off_t size = 0;
 	char * p;
 	int len;
-	int res;
 
 	len = strlen(filename);
 	if((p = malloc(len + 1)) == NULL)
 		return _du_error("malloc");
 	strcpy(p, filename);
-	res = _recursive_do(prefs, &size, &p);
-	printf("%lld %s\n", size, filename);
+	ret = _recursive_do(prefs, &size, &p);
+	printf("%lld %s\n", (long long)size, filename);
 	free(p);
-	return res;
+	return ret;
 }
 
 static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename);
@@ -93,7 +90,7 @@ static int _recursive_do(Prefs * prefs, off_t * size, char ** filename)
 {
 	DIR * dir;
 	struct dirent * de;
-	int len;
+	size_t len;
 	char * p;
 
 	if((dir = opendir(*filename)) == NULL)
@@ -122,6 +119,7 @@ static int _recursive_do(Prefs * prefs, off_t * size, char ** filename)
 	return closedir(dir) == 0 ? 0 : 1;
 }
 
+static off_t _du_blocks(Prefs * prefs, off_t size);
 static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename)
 {
 	int (* _stat)(const char * filename, struct stat * buf) = lstat;
@@ -154,10 +152,18 @@ static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename)
 		_du_print(prefs, st.st_blocks, *filename);
 }
 
+static off_t _du_blocks(Prefs * prefs, off_t size)
+{
+	if(*prefs & PREFS_k)
+		return size / 2;
+	return size;
+}
+
 static void _du_print(Prefs * prefs, off_t size, char const * filename)
 {
-	long long s = _du_blocks(prefs, size);
-
+	long long s;
+	
+	s = _du_blocks(prefs, size);
 	printf("%lld %s\n", s, filename);
 }
 
@@ -209,5 +215,5 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	return _du(&prefs, argc - optind, &argv[optind]);
+	return _du(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
