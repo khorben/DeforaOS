@@ -21,13 +21,13 @@ foreach($states as $s) { ?>
 		<tr><td class="field"><?php echo _html_safe(TYPE); ?>:</td><td><select name="type">
 <?php $types = _sql_enum('daportal_bug', 'type');
 foreach($types as $t) { ?>
-				<option value="<?php echo _html_safe($t); ?>"<?php if($bug['type'] == $t) { ?> selected="selected"<?php } ?>><?php echo _html_safe($t); ?></option>
+				<option value="<?php echo _html_safe($t); ?>"<?php if(isset($bug) && $bug['type'] == $t) { ?> selected="selected"<?php } ?>><?php echo _html_safe($t); ?></option>
 <?php } ?>
 			</select></td></tr>
 		<tr><td class="field"><?php echo _html_safe(PRIORITY); ?>:</td><td><select name="priority">
 <?php $priorities = _sql_enum('daportal_bug', 'priority');
 foreach($priorities as $p) { ?>
-				<option value="<?php echo _html_safe($p); ?>"<?php if($bug['priority'] == $p) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p); ?></option>
+				<option value="<?php echo _html_safe($p); ?>"<?php if(isset($bug) && $bug['priority'] == $p) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p); ?></option>
 <?php } ?>
 			</select></td></tr>
 		<tr><td></td><td><input type="submit" value="<?php if(!isset($bug)) echo _html_safe(SEND); else echo _html_safe(UPDATE); ?>"/></td></tr>
