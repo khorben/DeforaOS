@@ -365,6 +365,14 @@ void on_view_list(GtkWidget * widget, gpointer data)
 
 	browser_set_view(browser, BV_LIST);
 }
+
+
+void on_view_thumbnails(GtkWidget * widget, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_set_view(browser, BV_THUMBNAILS);
+}
 #endif /* GTK_CHECK_VERSION(2, 6, 0) */
 
 
@@ -654,7 +662,10 @@ void on_view_as(GtkWidget * widget, gpointer data)
 	if(browser->iconview == NULL)
 		browser_set_view(browser, BV_ICONS);
 	else if(gtk_icon_view_get_orientation(GTK_ICON_VIEW(browser->iconview))
-			== GTK_ORIENTATION_VERTICAL)
+			== GTK_ORIENTATION_HORIZONTAL)
+		browser_set_view(browser, BV_THUMBNAILS);
+	else if(gtk_icon_view_get_item_width(GTK_ICON_VIEW(browser->iconview))
+			!= 112)
 		browser_set_view(browser, BV_LIST);
 	else
 		browser_set_view(browser, BV_DETAILS);

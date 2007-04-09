@@ -34,6 +34,7 @@ enum
 	BR_COL_PIXBUF_24,
 # if GTK_CHECK_VERSION(2, 6, 0)
 	BR_COL_PIXBUF_48,
+	BR_COL_PIXBUF_96,
 # endif
 	BR_COL_INODE,
 	BR_COL_IS_DIRECTORY,
@@ -50,9 +51,10 @@ typedef enum _BrowserView
 	BV_DETAILS = 0,
 # if GTK_CHECK_VERSION(2, 6, 0)
 	BV_ICONS,
-	BV_LIST
+	BV_LIST,
+	BV_THUMBNAILS
 } BrowserView;
-#  define BV_LAST BV_LIST
+#  define BV_LAST BV_THUMBNAILS
 # else
 } BrowserView;
 #  define BV_LAST BV_DETAILS
@@ -95,6 +97,9 @@ typedef struct _Browser
 	GdkPixbuf * pb_file_48;
 	GdkPixbuf * pb_folder_48;
 	GdkPixbuf * pb_executable_48;
+	GdkPixbuf * pb_file_96;
+	GdkPixbuf * pb_folder_96;
+	GdkPixbuf * pb_executable_96;
 #endif
 	GtkWidget * window;
 	GtkToolItem * tb_back;

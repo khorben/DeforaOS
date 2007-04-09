@@ -46,6 +46,7 @@ void on_view_home(GtkWidget * widget, gpointer data);
 void on_view_details(GtkWidget * widget, gpointer data);
 void on_view_icons(GtkWidget * widget, gpointer data);
 void on_view_list(GtkWidget * widget, gpointer data);
+void on_view_thumbnails(GtkWidget * widget, gpointer data);
 #endif
 
 /* toolbar */
