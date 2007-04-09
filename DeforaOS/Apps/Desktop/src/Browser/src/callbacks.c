@@ -763,6 +763,7 @@ gboolean on_view_popup(GtkWidget * widget, gpointer data)
 	GdkEventButton event;
 
 	memset(&event, 0, sizeof(event));
+	event.type = GDK_BUTTON_PRESS;
 	event.button = 0;
 	event.time = gtk_get_current_event_time();
 	return on_view_press(widget, &event, data);
