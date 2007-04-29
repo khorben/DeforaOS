@@ -1061,6 +1061,9 @@ static char * _location_real_path(char const * path)
 
 static int _location_directory(Browser * browser, char * path)
 {
+	size_t i;
+
+	for(i = strlen(path); i > 1 && path[--i] == '/'; path[i] = '\0');
 	if(browser->history == NULL)
 	{
 		if((browser->history = g_list_alloc()) == NULL)
@@ -1070,7 +1073,7 @@ static int _location_directory(Browser * browser, char * path)
 		return 0;
 	}
 	if(strcmp(browser->current->data, path) == 0)
-		return 1;
+		return 0;
 	g_list_foreach(browser->current->next, (GFunc)free, NULL);
 	g_list_free(browser->current->next);
 	browser->current->next = NULL;
