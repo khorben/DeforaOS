@@ -44,8 +44,11 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	for(i = optind; i < argc; i++)
-		browser_new(argv[i]);
+	if(optind == argc)
+		browser_new(NULL);
+	else
+		for(i = optind; i < argc; i++)
+			browser_new(argv[i]);
 	gtk_main();
 	return 0;
 }
