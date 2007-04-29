@@ -137,7 +137,7 @@ Browser * browser_new(char const * directory)
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
 	{
-		browser_error(NULL, "malloc", 0);
+		browser_error(NULL, directory != NULL ? directory : ".", 0);
 		return NULL;
 	}
 	browser->window = NULL;
@@ -154,7 +154,7 @@ Browser * browser_new(char const * directory)
 	browser->prefs.show_hidden_files = FALSE;
 
 	/* mime */
-	browser->mime = mime_new();
+	browser->mime = mime_new(); /* FIXME share MIME instances */
 
 	/* history */
 	browser->history = NULL;
@@ -167,7 +167,7 @@ Browser * browser_new(char const * directory)
 	browser->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
 	gtk_window_set_title(GTK_WINDOW(browser->window), "File browser");
-	g_signal_connect(browser->window, "delete_event", G_CALLBACK(on_closex),
+	g_signal_connect(browser->window, "delete-event", G_CALLBACK(on_closex),
 			browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
@@ -1035,7 +1035,8 @@ void browser_set_location(Browser * browser, char const * path)
 
 	if((realpath = _location_real_path(path)) == NULL)
 		return;
-	if(g_file_test(realpath, G_FILE_TEST_IS_REGULAR))
+	/* XXX check browser_cnt to disallow filenames at startup */
+	if(browser_cnt && g_file_test(realpath, G_FILE_TEST_IS_REGULAR))
 	{
 		if(browser->mime != NULL)
 			mime_action(browser->mime, "open", realpath);
