@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 /* This file is part of Browser */
 /* Browser is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -386,7 +386,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 	static GtkWidget * window = NULL;
-	char const copyright[] = "Copyright (c) 2006 khorben";
+	char const copyright[] = "Copyright (c) 2007 The DeforaOS Project";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
