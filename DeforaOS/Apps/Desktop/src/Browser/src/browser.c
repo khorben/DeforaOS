@@ -31,6 +31,10 @@
 #include "browser.h"
 
 
+/* constants */
+#define IDLE_LOOP_ICON_CNT	16	/* number of icons added in a loop */
+
+
 /* macros */
 #define min(a, b) ((a) > (b) ? (b) : (a))
 
@@ -627,8 +631,8 @@ static void _refresh_new(Browser * browser)
 	unsigned int i;
 
 	gtk_list_store_clear(browser->store);
-	for(i = 0; i < 16 && _new_loop(browser) == 0; i++);
-	if(i == 16)
+	for(i = 0; i < IDLE_LOOP_ICON_CNT && _new_loop(browser) == 0; i++);
+	if(i == IDLE_LOOP_ICON_CNT)
 		browser->refresh_id = g_idle_add(_new_idle, browser);
 	else
 		_refresh_done(browser);
@@ -803,8 +807,8 @@ static gboolean _new_idle(gpointer data)
 	Browser * browser = data;
 	unsigned int i;
 
-	for(i = 0; i < 16 && _new_loop(browser) == 0; i++);
-	if(i == 16)
+	for(i = 0; i < IDLE_LOOP_ICON_CNT && _new_loop(browser) == 0; i++);
+	if(i == IDLE_LOOP_ICON_CNT)
 		return TRUE;
 	_refresh_done(browser);
 	return FALSE;
@@ -841,8 +845,8 @@ static void _refresh_current(Browser * browser)
 {
 	unsigned int i;
 
-	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
-	if(i == 16)
+	for(i = 0; i < IDLE_LOOP_ICON_CNT && _current_loop(browser) == 0; i++);
+	if(i == IDLE_LOOP_ICON_CNT)
 	{
 		browser->refresh_id = g_idle_add(_current_idle, browser);
 		return;
@@ -982,8 +986,8 @@ static gboolean _current_idle(gpointer data)
 	Browser * browser = data;
 	unsigned int i;
 
-	for(i = 0; i < 16 && _current_loop(browser) == 0; i++);
-	if(i == 16)
+	for(i = 0; i < IDLE_LOOP_ICON_CNT && _current_loop(browser) == 0; i++);
+	if(i == IDLE_LOOP_ICON_CNT)
 		return TRUE;
 	_current_deleted(browser);
 	_refresh_done(browser);
