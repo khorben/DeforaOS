@@ -80,6 +80,7 @@ Mime * mime_new(void)
 		p[mime->types_cnt].icon_24 = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
 		p[mime->types_cnt].icon_48 = NULL;
+		p[mime->types_cnt].icon_96 = NULL;
 #endif
 /*		p[mime->types_cnt].open = mime->config != NULL
 			? config_get(mime->config, buf, "open") : NULL;
@@ -129,6 +130,7 @@ void mime_delete(Mime * mime)
 		free(mime->types[i].icon_24);
 #if GTK_CHECK_VERSION(2, 6, 0)
 		free(mime->types[i].icon_48);
+		free(mime->types[i].icon_96);
 #endif
 	}
 	free(mime->types);
@@ -218,6 +220,14 @@ void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 				mime->types[i].icon_48 = _icons_size(theme,
 						type, 48);
 			*icon = mime->types[i].icon_48;
+			continue;
+		}
+		if(size == 96)
+		{
+			if(mime->types[i].icon_96 == NULL)
+				mime->types[i].icon_96 = _icons_size(theme,
+						type, 96);
+			*icon = mime->types[i].icon_96;
 			continue;
 		}
 #endif

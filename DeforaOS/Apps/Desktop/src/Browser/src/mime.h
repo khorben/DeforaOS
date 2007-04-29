@@ -34,6 +34,7 @@ typedef struct _MimeType
 	GdkPixbuf * icon_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * icon_48;
+	GdkPixbuf * icon_96;
 #endif
 } MimeType;
 
