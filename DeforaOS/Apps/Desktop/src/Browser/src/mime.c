@@ -181,7 +181,7 @@ int mime_action(Mime * mime, char const * action, char const * path)
 	if(pid != 0)
 		return 0;
 	execlp(program, program, path, NULL);
-	fprintf(stderr, "%s%s%s%s", "browser: ", program, ": ",
+	fprintf(stderr, "%s%s%s%s\n", "browser: ", program, ": ",
 			strerror(errno));
 	exit(2);
 }
