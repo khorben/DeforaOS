@@ -731,7 +731,9 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 				: browser->pb_file_96;
 #endif
 		}
-		else if((type = mime_type(browser->mime, display)) != NULL)
+		else if(browser->mime != NULL
+				&& (type = mime_type(browser->mime, display))
+				!= NULL)
 		{
 			mime_icons(browser->mime, browser->theme, type,
 					24, &icon_24,
@@ -941,7 +943,9 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			icon_48 = browser->pb_executable_48;
 #endif
 		}
-		else if((type = mime_type(browser->mime, display)) != NULL)
+		else if(browser->mime != NULL
+				&& (type = mime_type(browser->mime, display))
+				!= NULL)
 		{
 			mime_icons(browser->mime, browser->theme, type,
 					24, &icon_24,
