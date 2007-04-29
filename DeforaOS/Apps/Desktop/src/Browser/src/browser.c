@@ -113,6 +113,9 @@ static struct _menubar _menubar[] =
 
 
 /* Browser */
+/* variables */
+unsigned int browser_cnt = 0;
+
 /* browser_new */
 static int _new_pixbufs(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
@@ -165,7 +168,7 @@ Browser * browser_new(char const * directory)
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
 	gtk_window_set_title(GTK_WINDOW(browser->window), "File browser");
 	g_signal_connect(browser->window, "delete_event", G_CALLBACK(on_closex),
-			NULL);
+			browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	tb_menubar = _new_menubar(browser);
@@ -278,6 +281,7 @@ Browser * browser_new(char const * directory)
 
 	gtk_container_add(GTK_CONTAINER(browser->window), vbox);
 	gtk_widget_show_all(browser->window);
+	browser_cnt++;
 	return browser;
 }
 
@@ -448,12 +452,15 @@ static GtkListStore * _create_store(Browser * browser)
 /* browser_delete */
 void browser_delete(Browser * browser)
 {
+	gtk_widget_hide(browser->window);
 	if(browser->refresh_id)
 		g_source_remove(browser->refresh_id);
-	g_list_foreach(browser->history, (GFunc)free, NULL);
+	g_list_foreach(browser->history, (GFunc)g_free, NULL);
 	g_list_free(browser->history);
 	g_object_unref(browser->store);
+	gtk_widget_destroy(browser->window);
 	free(browser);
+	browser_cnt--;
 }
 
 
@@ -474,6 +481,7 @@ static void _browser_set_status(Browser * browser, char const * status)
 
 /* useful */
 static int _browser_error(char const * message, int ret);
+static void _error_response(GtkDialog * dialog, gint arg, gpointer data);
 int browser_error(Browser * browser, char const * message, int ret)
 {
 	GtkWidget * dialog;
@@ -487,7 +495,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 	if(ret < 0)
 	{
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-					gtk_main_quit), NULL);
+					_error_response), browser);
 		ret = -ret;
 	}
 	else
@@ -502,6 +510,15 @@ static int _browser_error(char const * message, int ret)
 	fprintf(stderr, "%s", "browser: ");
 	perror(message);
 	return ret;
+}
+
+static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_delete(browser);
+	if(browser_cnt == 0)
+		gtk_main_quit();
 }
 
 
@@ -795,7 +812,7 @@ static void _refresh_done(Browser * browser)
 {
 	closedir(browser->refresh_dir);
 	browser->refresh_dir = NULL;
-	g_timeout_add(1000, _done_timeout, browser);
+	browser->refresh_id = g_timeout_add(1000, _done_timeout, browser);
 }
 
 static gboolean _done_timeout(gpointer data)
@@ -804,7 +821,10 @@ static gboolean _done_timeout(gpointer data)
 	struct stat st;
 
 	if(stat(browser->current->data, &st) != 0)
+	{
+		browser->refresh_id = 0;
 		return _browser_error(browser->current->data, FALSE);
+	}
 	if(st.st_mtime == browser->refresh_mti)
 		return TRUE;
 	browser_refresh(browser);

@@ -121,6 +121,10 @@ typedef struct _Browser
 } Browser;
 
 
+/* variables */
+extern unsigned int browser_cnt;
+
+
 /* functions */
 Browser * browser_new(char const * directory);
 void browser_delete(Browser * browser);

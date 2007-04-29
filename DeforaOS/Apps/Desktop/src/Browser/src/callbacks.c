@@ -42,8 +42,11 @@ static char const _license[] = "GPLv2";
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-	gtk_widget_hide(widget);
-	gtk_main_quit();
+	Browser * browser = data;
+
+	browser_delete(browser);
+	if(browser_cnt == 0)
+		gtk_main_quit();
 	return FALSE;
 }
 
@@ -52,24 +55,18 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 void on_file_new_window(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
-	pid_t pid;
 
-	if((pid = fork()) == -1)
-	{
-		browser_error(browser, strerror(errno), 0);
-		return;
-	}
-	if(pid != 0)
-		return;
-	execlp("browser", "browser", browser->current->data, NULL);
-	fprintf(stderr, "%s%s\n", "browser: browser: ", strerror(errno));
-	exit(2);
+	browser_new(browser->current->data);
 }
 
 
 void on_file_close(GtkMenuItem * menuitem, gpointer data)
 {
-	gtk_main_quit();
+	Browser * browser = data;
+
+	browser_delete(browser);
+	if(browser_cnt == 0)
+		gtk_main_quit();
 }
 
 
@@ -609,7 +606,7 @@ void on_forward(GtkWidget * widget, gpointer data)
 			strcmp(browser->current->data, "/") != 0);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward),
 			browser->current->next != NULL);
-	browser_refresh(browser);
+	browser_refresh(browser); /* FIXME if it fails history is wrong */
 }
 
 
