@@ -177,7 +177,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 
 static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 {
-	unsigned long i = 1;
+	unsigned long i = 2;
 	char ** argv;
 	pid_t pid;
 	GtkTreeIter iter;
@@ -191,7 +191,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 	}
 	else if(pid != 0)
 		return;
-	if((argv = malloc(sizeof(char*) * (cnt+2))) == NULL)
+	if((argv = malloc(sizeof(*argv) * (cnt + 3))) == NULL)
 	{
 		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
 		exit(2);
@@ -201,6 +201,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 #else
 	argv[0] = "delete";
 #endif
+	argv[1] = "--";
 	for(p = selection; p != NULL && i <= cnt; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
@@ -210,7 +211,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 				BR_COL_PATH, &q, -1);
 		argv[i++] = q;
 	}
-	if(i != cnt+1)
+	if(i != cnt + 1)
 	{
 		fprintf(stderr, "%s", "browser: Could not delete files\n");
 		exit(2);
