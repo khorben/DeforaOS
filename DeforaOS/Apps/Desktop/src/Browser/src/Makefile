@@ -60,13 +60,13 @@ main.o: main.c browser.h mime.h
 delete.o: delete.c
 	$(CC) $(delete_CFLAGS) -c delete.c
 
-desktop.o: desktop.c
+desktop.o: desktop.c mime.o
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
-open.o: open.c
+open.o: open.c mime.o
 	$(CC) $(open_CFLAGS) -c open.c
 
-view.o: view.c
+view.o: view.c mime.o
 	$(CC) $(view_CFLAGS) -c view.c
 
 clean:
