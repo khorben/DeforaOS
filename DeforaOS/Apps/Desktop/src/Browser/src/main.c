@@ -26,7 +26,7 @@
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: browser [directory]\n");
+	fprintf(stderr, "%s", "Usage: browser [directory...]\n");
 	return 1;
 }
 
@@ -35,6 +35,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	int i;
 
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
@@ -43,13 +44,8 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind < argc-1)
-		return _usage();
-	if(browser_new(argv[optind]) == NULL)
-	{
-		gtk_main();
-		return 2;
-	}
+	for(i = optind; i < argc; i++)
+		browser_new(argv[i]);
 	gtk_main();
 	return 0;
 }
