@@ -187,33 +187,43 @@ int mime_action(Mime * mime, char const * action, char const * path)
 
 static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 		int size);
-GdkPixbuf * mime_icons(Mime * mime, GtkIconTheme * theme, char const * type,
-		GdkPixbuf ** icon_48)
+void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 {
 	unsigned int i;
+	va_list arg;
+	int size;
+	GdkPixbuf ** icon;
 
 	for(i = 0; i < mime->types_cnt; i++)
 		if(strcmp(type, mime->types[i].type) == 0)
 			break;
 	if(i == mime->types_cnt)
-		return NULL;
-#if !GTK_CHECK_VERSION(2, 6, 0)
-	if(mime->types[i].icon_24 != NULL)
-		return mime->types[i].icon_24;
-	mime->types[i].icon_24 = _icons_size(theme, type, 24);
-#else
-	if(mime->types[i].icon_24 != NULL || mime->types[i].icon_48 != NULL)
+		return;
+	va_start(arg, type);
+	while((size = va_arg(arg, int)) > 0)
 	{
-		if(icon_48 != NULL)
-			*icon_48 = mime->types[i].icon_48;
-		return mime->types[i].icon_24;
-	}
-	mime->types[i].icon_24 = _icons_size(theme, type, 24);
-	mime->types[i].icon_48 = _icons_size(theme, type, 48);
-	if(icon_48 != NULL)
-		*icon_48 = mime->types[i].icon_48;
+		icon = va_arg(arg, GdkPixbuf **);
+		if(size == 24)
+		{
+			if(mime->types[i].icon_24 == NULL)
+				mime->types[i].icon_24 = _icons_size(theme,
+						type, 24);
+			*icon = mime->types[i].icon_24;
+			continue;
+		}
+#if GTK_CHECK_VERSION(2, 6, 0)
+		if(size == 48)
+		{
+			if(mime->types[i].icon_48 == NULL)
+				mime->types[i].icon_48 = _icons_size(theme,
+						type, 48);
+			*icon = mime->types[i].icon_48;
+			continue;
+		}
 #endif
-	return mime->types[i].icon_24;
+		*icon = _icons_size(theme, type, size);
+	}
+	va_end(arg);
 }
 
 static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,

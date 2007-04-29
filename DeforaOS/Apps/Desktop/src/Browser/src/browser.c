@@ -733,14 +733,15 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		}
 		else if((type = mime_type(browser->mime, display)) != NULL)
 		{
-			icon_24 = mime_icons(browser->mime, browser->theme,
-#if GTK_CHECK_VERSION(2, 6, 0)
-					type, &icon_48);
+			mime_icons(browser->mime, browser->theme, type,
+					24, &icon_24,
+#if !GTK_CHECK_VERSION(2, 6, 0)
+					-1);
+#else
+					48, &icon_48, 96, &icon_96, -1);
 			if(strncmp(type, "image/", 6) == 0)
 				icon_96 = gdk_pixbuf_new_from_file_at_size(
 						path, 96, 96, NULL);
-#else
-					type, NULL);
 #endif
 		}
 	}
@@ -942,14 +943,15 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 		}
 		else if((type = mime_type(browser->mime, display)) != NULL)
 		{
-			icon_24 = mime_icons(browser->mime, browser->theme,
-#if GTK_CHECK_VERSION(2, 6, 0)
-					type, &icon_48);
+			mime_icons(browser->mime, browser->theme, type,
+					24, &icon_24,
+#if !GTK_CHECK_VERSION(2, 6, 0)
+					-1);
+#else
+					48, &icon_48, 96, &icon_96, -1);
 			if(strncmp(type, "image/", 6) == 0)
 				icon_96 = gdk_pixbuf_new_from_file_at_size(
 						path, 96, 96, NULL);
-#else
-					type, NULL);
 #endif
 		}
 	}
