@@ -703,7 +703,7 @@ static void _default_do(Browser * browser, GtkTreePath * path)
 			&location, BR_COL_IS_DIRECTORY, &is_dir, -1);
 	if(is_dir)
 		browser_set_location(browser, location);
-	else
+	else if(browser->mime != NULL)
 		mime_action(browser->mime, "open", location);
 	g_free(location);
 }
@@ -968,7 +968,7 @@ static void _press_mime(Mime * mime, char const * mimetype, char const * action,
 {
 	GtkWidget * menuitem;
 
-	if(mime_get_handler(mime, mimetype, action) == NULL)
+	if(mime == NULL || mime_get_handler(mime, mimetype, action) == NULL)
 		return;
 	if(strncmp(label, "gtk-", 4) == 0)
 		menuitem = gtk_image_menu_item_new_from_stock(label, NULL);
@@ -1009,7 +1009,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 
 	if(cb->isdir)
 		browser_set_location(cb->browser, cb->path);
-	else
+	else if(cb->browser->mime != NULL)
 		mime_action(cb->browser->mime, "open", cb->path);
 }
 
@@ -1017,7 +1017,8 @@ static void _on_icon_edit(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
 
-	mime_action(cb->browser->mime, "edit", cb->path);
+	if(cb->browser->mime != NULL)
+		mime_action(cb->browser->mime, "edit", cb->path);
 }
 
 static void _on_icon_open_with(GtkWidget * widget, gpointer data)

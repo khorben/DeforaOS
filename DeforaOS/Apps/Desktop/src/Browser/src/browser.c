@@ -1036,7 +1036,10 @@ void browser_set_location(Browser * browser, char const * path)
 	if((realpath = _location_real_path(path)) == NULL)
 		return;
 	if(g_file_test(realpath, G_FILE_TEST_IS_REGULAR))
-		mime_action(browser->mime, "open", realpath);
+	{
+		if(browser->mime != NULL)
+			mime_action(browser->mime, "open", realpath);
+	}
 	else if(g_file_test(realpath, G_FILE_TEST_IS_DIR)
 			&& _location_directory(browser, realpath) == 0)
 	{
