@@ -455,7 +455,7 @@ void browser_delete(Browser * browser)
 	gtk_widget_hide(browser->window);
 	if(browser->refresh_id)
 		g_source_remove(browser->refresh_id);
-	g_list_foreach(browser->history, (GFunc)g_free, NULL);
+	g_list_foreach(browser->history, (GFunc)free, NULL);
 	g_list_free(browser->history);
 	g_object_unref(browser->store);
 	gtk_widget_destroy(browser->window);
