@@ -127,7 +127,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		else if((desktopicon->mimetype = mime_type(desktop->mime, path))
 				!= NULL)
 			mime_icons(desktop->mime, desktop->theme,
-					desktopicon->mimetype, &icon);
+					desktopicon->mimetype, 48, &icon, -1);
 	}
 	if(icon == NULL)
 		icon = desktop->file;
