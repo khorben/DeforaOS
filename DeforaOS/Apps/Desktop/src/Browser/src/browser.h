@@ -118,6 +118,8 @@ typedef struct _Browser
 	GtkWidget * pr_window;
 	GtkWidget * pr_sort;
 	GtkWidget * pr_hidden;
+	/* about */
+	GtkWidget * ab_window;
 } Browser;
 
 

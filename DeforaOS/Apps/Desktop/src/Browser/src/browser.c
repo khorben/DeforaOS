@@ -283,6 +283,9 @@ Browser * browser_new(char const * directory)
 	/* preferences */
 	browser->pr_window = NULL;
 
+	/* about */
+	browser->ab_window = NULL;
+
 	gtk_container_add(GTK_CONTAINER(browser->window), vbox);
 	gtk_widget_show_all(browser->window);
 	browser_cnt++;

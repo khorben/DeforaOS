@@ -385,15 +385,15 @@ static void _about_on_license(GtkWidget * widget, gpointer data);
 void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
-	static GtkWidget * window = NULL;
+	GtkWidget * window;
 	char const copyright[] = "Copyright (c) 2007 The DeforaOS Project";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
 	
-	if(window != NULL)
+	if(browser->ab_window != NULL)
 	{
-		gtk_widget_show(window);
+		gtk_widget_show(browser->ab_window);
 		return;
 	}
 	if((buf = malloc(sizeof(*buf) * cnt)) == NULL)
@@ -401,7 +401,8 @@ void on_help_about(GtkWidget * widget, gpointer data)
 		browser_error(browser, "malloc", 0);
 		return;
 	}
-	window = gtk_about_dialog_new();
+	browser->ab_window = gtk_about_dialog_new();
+	window = browser->ab_window;
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
@@ -426,12 +427,13 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	GtkWidget * hbox;
 	GtkWidget * button;
 
-	if(window != NULL)
+	if(browser->ab_window != NULL)
 	{
-		gtk_widget_show(window);
+		gtk_widget_show(browser->ab_window);
 		return;
 	}
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	browser->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	window = browser->ab_window;
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "About Browser");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
