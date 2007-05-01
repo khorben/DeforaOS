@@ -177,7 +177,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 
 static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 {
-	unsigned long i = 2;
+	unsigned long i = 1;
 	char ** argv;
 	pid_t pid;
 	GtkTreeIter iter;
@@ -209,14 +209,14 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 			continue;
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
 				BR_COL_PATH, &q, -1);
-		argv[i++] = q;
+		argv[++i] = q;
 	}
 	if(i != cnt + 1)
 	{
-		fprintf(stderr, "%s", "browser: Could not delete files\n");
+		fprintf(stderr, "%s", "browser: Could not delete file(s)\n");
 		exit(2);
 	}
-	argv[i] = NULL;
+	argv[++i] = NULL;
 	execvp(argv[0], argv);
 	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
 			strerror(errno));
