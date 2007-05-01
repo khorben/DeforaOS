@@ -1129,10 +1129,13 @@ void browser_set_view(Browser * browser, BrowserView view)
 	}
 }
 
+static void _details_column_text(GtkTreeView * view, char const * title,
+		int id);
 static void _view_details(Browser * browser)
 {
 	GtkTreeSelection * treesel;
 	GtkCellRenderer * renderer;
+	GtkTreeView * view;
 
 	if(browser->detailview != NULL)
 		return;
@@ -1146,10 +1149,10 @@ static void _view_details(Browser * browser)
 #endif
 	browser->detailview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
-	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						browser->detailview))) != NULL)
+	view = GTK_TREE_VIEW(browser->detailview);
+	if((treesel = gtk_tree_view_get_selection(view)) != NULL)
 		gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
+	gtk_tree_view_append_column(view,
 			gtk_tree_view_column_new_with_attributes("",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
 				BR_COL_PIXBUF_24, NULL));
@@ -1157,34 +1160,29 @@ static void _view_details(Browser * browser)
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
-			gtk_tree_view_column_new_with_attributes("Filename",
-				renderer, "text", BR_COL_DISPLAY_NAME, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
-			gtk_tree_view_column_new_with_attributes("Size",
-				gtk_cell_renderer_text_new(), "text",
-				BR_COL_SIZE, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
-			gtk_tree_view_column_new_with_attributes("Owner",
-				gtk_cell_renderer_text_new(), "text",
-				BR_COL_OWNER, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
-			gtk_tree_view_column_new_with_attributes("Group",
-				gtk_cell_renderer_text_new(), "text",
-				BR_COL_GROUP, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(browser->detailview),
-			gtk_tree_view_column_new_with_attributes("MIME type",
-				gtk_cell_renderer_text_new(), "text",
-				BR_COL_MIME_TYPE, NULL));
-	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(browser->detailview),
-			TRUE);
-	g_signal_connect(G_OBJECT(browser->detailview), "row-activated",
-			G_CALLBACK(on_detail_default), browser);
-	g_signal_connect(G_OBJECT(browser->detailview), "button-press-event",
-			G_CALLBACK(on_view_press), browser);
+	_details_column_text(view, "Filename", BR_COL_DISPLAY_NAME);
+	_details_column_text(view, "Size", BR_COL_SIZE);
+	_details_column_text(view, "Owner", BR_COL_OWNER);
+	_details_column_text(view, "Group", BR_COL_GROUP);
+	_details_column_text(view, "MIME type", BR_COL_MIME_TYPE);
+	gtk_tree_view_set_headers_visible(view, TRUE);
+	g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(
+				on_detail_default), browser);
+	g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(
+				on_view_press), browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled),
 			browser->detailview);
 	gtk_widget_show(browser->detailview);
+}
+
+static void _details_column_text(GtkTreeView * view, char const * title, int id)
+{
+	GtkTreeViewColumn * column;
+
+	column = gtk_tree_view_column_new_with_attributes(title,
+			gtk_cell_renderer_text_new(), "text", id, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, id);
+	gtk_tree_view_append_column(view, column);
 }
 
 #if GTK_CHECK_VERSION(2, 6, 0)
