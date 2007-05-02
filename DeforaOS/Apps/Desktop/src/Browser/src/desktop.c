@@ -141,6 +141,8 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_window_set_resizable(GTK_WINDOW(desktopicon->window), FALSE);
 	gtk_window_set_decorated(GTK_WINDOW(desktopicon->window), FALSE);
 	gtk_window_set_keep_below(GTK_WINDOW(desktopicon->window), TRUE);
+	gtk_window_set_accept_focus(GTK_WINDOW(desktopicon->window), FALSE);
+	gtk_window_set_focus_on_map(GTK_WINDOW(desktopicon->window), FALSE);
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete_event",
 			G_CALLBACK(_on_desktopicon_closex), desktopicon);
 	vbox = gtk_vbox_new(FALSE, 4);
@@ -380,6 +382,12 @@ void desktopicon_delete(DesktopIcon * desktopicon)
 
 
 /* accessors */
+char const * desktopicon_get_path(DesktopIcon * desktopicon)
+{
+	return desktopicon->path;
+}
+
+
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
 	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
@@ -588,6 +596,7 @@ static void _refresh_current(Desktop * desktop)
 		_current_done(desktop);
 }
 
+static int _loop_lookup(Desktop * desktop, char const * name);
 static int _current_loop(Desktop * desktop)
 {
 	struct dirent * de;
@@ -600,6 +609,8 @@ static int _current_loop(Desktop * desktop)
 			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
 						&& de->d_name[2] == '\0'))
 				continue;
+		if(_loop_lookup(desktop, de->d_name) == 1)
+			continue;
 		break;
 	}
 	if(de == NULL)
@@ -613,9 +624,29 @@ static int _current_loop(Desktop * desktop)
 	desktop->path = p;
 	sprintf(&desktop->path[desktop->path_cnt - 1], "/%s", de->d_name);
 	if((desktopicon = desktopicon_new(desktop, de->d_name, desktop->path))
-			!= NULL) /* FIXME test if already exists */
+			!= NULL)
 		desktop_icon_add(desktop, desktopicon);
 	desktop->path[desktop->path_cnt - 1] = '\0';
+	return 0;
+}
+
+static int _loop_lookup(Desktop * desktop, char const * name)
+{
+	size_t i;
+	char const * p;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(desktop->icon[i]->updated == 1) /* XXX internal knowledge */
+			continue;
+		if((p = desktopicon_get_path(desktop->icon[i])) == NULL
+				|| (p = strrchr(p, '/')) == NULL)
+			continue;
+		if(strcmp(name, ++p) != 0)
+			continue;
+		desktop->icon[i]->updated = 1; /* XXX here too */
+		return 1;
+	}
 	return 0;
 }
 

@@ -32,6 +32,7 @@ DesktopIcon * desktopicon_new(struct _Desktop * desktop, char const * name,
 void desktopicon_delete(DesktopIcon * desktopicon);
 
 /* accessors */
+char const * desktopicon_get_path(DesktopIcon * desktopicon);
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
 
 /* useful */
