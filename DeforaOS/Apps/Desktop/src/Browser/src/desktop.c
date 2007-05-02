@@ -406,7 +406,7 @@ void desktopicon_show(DesktopIcon * desktopicon)
 /* functions */
 /* desktop_new */
 /* FIXME implement desktop resizing callback */
-static Desktop * _new_error(char const * message);
+static Desktop * _new_error(Desktop * desktop, char const * message);
 
 /* callbacks */
 
@@ -546,7 +546,6 @@ void desktop_refresh(Desktop * desktop)
 	int fd;
 	struct stat st;
 
-	desktop->path[desktop->path_cnt - 1] = '\0';
 #ifdef __sun__
 	if((fd = open(desktop->path, O_RDONLY)) < 0
 			|| fstat(fd, &st) != 0
@@ -616,6 +615,7 @@ static int _current_loop(Desktop * desktop)
 	if((desktopicon = desktopicon_new(desktop, de->d_name, desktop->path))
 			!= NULL) /* FIXME test if already exists */
 		desktop_icon_add(desktop, desktopicon);
+	desktop->path[desktop->path_cnt - 1] = '\0';
 	return 0;
 }
 
@@ -650,7 +650,6 @@ static gboolean _done_timeout(gpointer data)
 	Desktop * desktop = data;
 	struct stat st;
 
-	desktop->path[desktop->path_cnt - 1] = '\0';
 	if(stat(desktop->path, &st) != 0)
 		return desktop_error(NULL, desktop->path, FALSE);
 	if(st.st_mtime == desktop->refresh_mti)
