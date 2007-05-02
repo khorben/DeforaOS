@@ -406,7 +406,10 @@ void desktopicon_show(DesktopIcon * desktopicon)
 /* functions */
 /* desktop_new */
 /* FIXME implement desktop resizing callback */
+static Desktop * _new_error(char const * message);
+
 /* callbacks */
+
 Desktop * desktop_new(void)
 {
 	Desktop * desktop;
@@ -456,35 +459,21 @@ Desktop * desktop_new(void)
 		desktop->executable = gtk_icon_theme_load_icon(desktop->theme,
 				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
 	if((home = getenv("HOME")) == NULL)
-	{
-		desktop_error(desktop, "HOME", -1);
-		desktop_delete(desktop);
-		return NULL;
-	}
+		return _new_error(desktop, "HOME");
 	desktop->path_cnt = strlen(home) + strlen("/" DESKTOP) + 1;
 	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
-	{
-		desktop_error(desktop, "malloc", -1);
-		desktop_delete(desktop);
-		return NULL;
-	}
+		return _new_error(desktop, "malloc");
 	sprintf(desktop->path, "%s%s", home, "/" DESKTOP);
 	if(lstat(desktop->path, &st) == 0)
 	{
 		if(!S_ISDIR(st.st_mode))
 		{
 			errno = ENOTDIR;
-			desktop_error(desktop, desktop->path, -1);
-			desktop_delete(desktop);
-			return NULL;
+			return _new_error(desktop, desktop->path);
 		}
 	}
 	else if(mkdir(desktop->path, 0777) != 0)
-	{
-		desktop_error(desktop, desktop->path, -1);
-		desktop_delete(desktop);
-		return NULL;
-	}
+		return _new_error(desktop, desktop->path);
 	if((desktopicon = desktopicon_new(desktop, "Home", home)) != NULL)
 	{
 		desktop_icon_add(desktop, desktopicon);
@@ -494,6 +483,13 @@ Desktop * desktop_new(void)
 	}
 	desktop_refresh(desktop);
 	return desktop;
+}
+
+static Desktop * _new_error(Desktop * desktop, char const * message)
+{
+	desktop_error(desktop, message, -1);
+	desktop_delete(desktop);
+	return NULL;
 }
 
 
