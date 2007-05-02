@@ -66,6 +66,14 @@ struct _DesktopIcon
 	GtkWidget * label;
 };
 
+/* constants */
+#define DESKTOPICON_MAX_HEIGHT	100
+#define DESKTOPICON_MAX_WIDTH	100
+#define DESKTOPICON_MIN_HEIGHT	56
+#define DESKTOPICON_MIN_WIDTH	DESKTOPICON_MAX_WIDTH	/* constant width */
+
+#define DESKTOPICON_ICON_SIZE	48
+
 
 /* functions */
 /* desktopicon_new */
@@ -74,6 +82,7 @@ static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
+
 DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		char const * path)
 {
@@ -83,6 +92,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	GtkWidget * vbox;
 	GtkWidget * eventbox;
 	GdkPixbuf * icon = NULL;
+	GtkLabel * label;
 
 	if((desktopicon = malloc(sizeof(*desktopicon))) == NULL)
 		return NULL;
@@ -105,12 +115,12 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete_event",
 			G_CALLBACK(_on_desktopicon_closex), desktopicon);
 	vbox = gtk_vbox_new(FALSE, 4);
-	geometry.min_width = 100;
-	geometry.min_height = 56;
-	geometry.max_width = 100;
-	geometry.max_height = 100;
-	geometry.base_width = 100;
-	geometry.base_height = 56;
+	geometry.min_width = DESKTOPICON_MIN_WIDTH;
+	geometry.min_height = DESKTOPICON_MIN_HEIGHT;
+	geometry.max_width = DESKTOPICON_MAX_WIDTH;
+	geometry.max_height = DESKTOPICON_MAX_HEIGHT;
+	geometry.base_width = DESKTOPICON_MIN_WIDTH;
+	geometry.base_height = DESKTOPICON_MIN_HEIGHT;
 	gtk_window_set_geometry_hints(GTK_WINDOW(desktopicon->window), vbox,
 		&geometry, GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE
 			| GDK_HINT_BASE_SIZE);
@@ -127,26 +137,28 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		else if((desktopicon->mimetype = mime_type(desktop->mime, path))
 				!= NULL)
 			mime_icons(desktop->mime, desktop->theme,
-					desktopicon->mimetype, 48, &icon, -1);
+					desktopicon->mimetype,
+					DESKTOPICON_ICON_SIZE, &icon, -1);
 	}
 	if(icon == NULL)
 		icon = desktop->file;
 	desktopicon->image = gtk_image_new_from_pixbuf(icon);
-	gtk_widget_set_size_request(desktopicon->image, 100, 48);
+	gtk_widget_set_size_request(desktopicon->image, DESKTOPICON_MIN_WIDTH,
+			DESKTOPICON_ICON_SIZE);
 	eventbox = gtk_event_box_new();
 	gtk_container_add(GTK_CONTAINER(eventbox), desktopicon->image);
 	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
 			G_CALLBACK(_on_icon_press), desktopicon);
 	gtk_box_pack_start(GTK_BOX(vbox), eventbox, FALSE, TRUE, 4);
 	desktopicon->label = gtk_label_new(name);
-	gtk_label_set_justify(GTK_LABEL(desktopicon->label),
-			GTK_JUSTIFY_CENTER);
+	label = GTK_LABEL(desktopicon->label);
+	gtk_label_set_justify(label, GTK_JUSTIFY_CENTER);
 #if GTK_CHECK_VERSION(2, 10, 0)
-	gtk_label_set_line_wrap_mode(GTK_LABEL(desktopicon->label),
-			PANGO_WRAP_WORD_CHAR);
+	gtk_label_set_line_wrap_mode(label, PANGO_WRAP_WORD_CHAR);
 #endif
-	gtk_label_set_line_wrap(GTK_LABEL(desktopicon->label), TRUE);
-	gtk_widget_set_size_request(desktopicon->label, 100, -1);
+	gtk_label_set_line_wrap(label, TRUE);
+	gtk_widget_set_size_request(desktopicon->label, DESKTOPICON_MIN_WIDTH,
+			-1);
 	g_signal_connect(G_OBJECT(desktopicon->label), "button-press-event",
 			G_CALLBACK(_on_icon_press), desktopicon);
 	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, TRUE, 4);
@@ -341,9 +353,9 @@ void desktopicon_delete(DesktopIcon * desktopicon)
 /* accessors */
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
-	GdkBitmap * mask;
 	int width;
 	int height;
+	GdkBitmap * mask;
 	GdkBitmap * iconmask;
 	GdkGC * gc;
 	GdkColor black = { 0, 0, 0, 0 };
@@ -738,12 +750,12 @@ void desktop_icons_align(Desktop * desktop)
 		height = gdk_screen_get_height(screen);
 	for(i = 0; i < desktop->icon_cnt; i++)
 	{
-		if(y + 100 > height)
+		if(y + DESKTOPICON_MAX_HEIGHT > height)
 		{
-			x += 100;
+			x += DESKTOPICON_MAX_WIDTH;
 			y = 0;
 		}
 		desktopicon_move(desktop->icon[i], x, y);
-		y += 100;
+		y += DESKTOPICON_MAX_HEIGHT;
 	}
 }
