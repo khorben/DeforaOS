@@ -299,7 +299,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 	}
 	if(pid != 0)
 		return;
-	execlp("browser", "browser", ic->desktopicon->path, NULL);
+	execlp("browser", "browser", "--", ic->desktopicon->path, NULL);
 	fprintf(stderr, "%s%s\n", "desktop: browser: ", strerror(errno));
 	exit(2);
 }
