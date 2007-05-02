@@ -69,13 +69,43 @@ struct _DesktopIcon
 /* constants */
 #define DESKTOPICON_MAX_HEIGHT	100
 #define DESKTOPICON_MAX_WIDTH	100
-#define DESKTOPICON_MIN_HEIGHT	56
+#define DESKTOPICON_MIN_HEIGHT	56			/* image and borders */
 #define DESKTOPICON_MIN_WIDTH	DESKTOPICON_MAX_WIDTH	/* constant width */
 
 #define DESKTOPICON_ICON_SIZE	48
 
 
 /* functions */
+/* private */
+static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
+		GdkPixbuf * icon);
+
+static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
+		GdkPixbuf * icon)
+{
+	int width;
+	int height;
+	GdkBitmap * mask;
+	GdkBitmap * iconmask;
+	GdkGC * gc;
+	GdkColor black = { 0, 0, 0, 0 };
+	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
+
+	gtk_window_get_size(GTK_WINDOW(desktopicon->window), &width, &height);
+	mask = gdk_pixmap_new(NULL, width, height, 1);
+	gdk_pixbuf_render_pixmap_and_mask(icon, NULL, &iconmask, 255);
+	gc = gdk_gc_new(mask);
+	gdk_gc_set_foreground(gc, &black);
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, 56);
+	gdk_draw_drawable(mask, gc, iconmask, 0, 0, 26, 4, -1, -1);
+	gdk_gc_set_foreground(gc, &white);
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 56, width, height - 56);
+	gtk_widget_shape_combine_mask(desktopicon->window, mask, 0, 0);
+	g_object_unref(gc);
+	g_object_unref(iconmask);
+	g_object_unref(mask);
+}
+
 /* desktopicon_new */
 /* callbacks */
 static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
@@ -106,7 +136,6 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->mimetype = NULL;
 	desktopicon->updated = 1;
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_move(GTK_WINDOW(desktopicon->window), 0, 0);
 	gtk_window_set_type_hint(GTK_WINDOW(desktopicon->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	gtk_window_set_resizable(GTK_WINDOW(desktopicon->window), FALSE);
@@ -163,7 +192,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 			G_CALLBACK(_on_icon_press), desktopicon);
 	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(desktopicon->window), vbox);
-	desktopicon_set_icon(desktopicon, icon);
+	_desktopicon_update_transparency(desktopicon, icon);
 	return desktopicon;
 }
 
@@ -353,28 +382,8 @@ void desktopicon_delete(DesktopIcon * desktopicon)
 /* accessors */
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
-	int width;
-	int height;
-	GdkBitmap * mask;
-	GdkBitmap * iconmask;
-	GdkGC * gc;
-	GdkColor black = { 0, 0, 0, 0 };
-	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
-
-	gtk_window_get_size(GTK_WINDOW(desktopicon->window), &width, &height);
-	mask = gdk_pixmap_new(NULL, width, height, 1);
 	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
-	gdk_pixbuf_render_pixmap_and_mask(icon, NULL, &iconmask, 255);
-	gc = gdk_gc_new(mask);
-	gdk_gc_set_foreground(gc, &black);
-	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, 56);
-	gdk_draw_drawable(mask, gc, iconmask, 0, 0, 26, 4, -1, -1);
-	gdk_gc_set_foreground(gc, &white);
-	gdk_draw_rectangle(mask, gc, TRUE, 0, 56, width, height - 56);
-	gtk_widget_shape_combine_mask(desktopicon->window, mask, 0, 0);
-	g_object_unref(gc);
-	g_object_unref(iconmask);
-	g_object_unref(mask);
+	_desktopicon_update_transparency(desktopicon, icon);
 }
 
 
