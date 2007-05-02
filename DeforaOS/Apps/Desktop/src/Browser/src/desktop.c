@@ -122,6 +122,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	GtkWidget * vbox;
 	GtkWidget * eventbox;
 	GdkPixbuf * icon = NULL;
+	char * p;
 	GtkLabel * label;
 
 	if((desktopicon = malloc(sizeof(*desktopicon))) == NULL)
@@ -181,6 +182,8 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
 			G_CALLBACK(_on_icon_press), desktopicon);
 	gtk_box_pack_start(GTK_BOX(vbox), eventbox, FALSE, TRUE, 4);
+	if((p = g_filename_to_utf8(name, -1, NULL, NULL, NULL)) != NULL)
+		name = p;
 	desktopicon->label = gtk_label_new(name);
 	label = GTK_LABEL(desktopicon->label);
 	gtk_label_set_justify(label, GTK_JUSTIFY_CENTER);
