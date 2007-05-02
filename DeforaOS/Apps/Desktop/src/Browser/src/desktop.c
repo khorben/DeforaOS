@@ -446,24 +446,25 @@ Desktop * desktop_new(void)
 	desktop->file = NULL;
 	for(p = file; *p != NULL && desktop->file == NULL; p++)
 		desktop->file = gtk_icon_theme_load_icon(desktop->theme,
-				*p, 48, 0, NULL);
+				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
 	desktop->folder = NULL;
 	for(p = folder; *p != NULL && desktop->folder == NULL; p++)
 		desktop->folder = gtk_icon_theme_load_icon(desktop->theme,
-				*p, 48, 0, NULL);
+				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
 	desktop->executable = NULL;
 	for(p = executable; *p != NULL && desktop->executable == NULL; p++)
 		desktop->executable = gtk_icon_theme_load_icon(desktop->theme,
-				*p, 48, 0, NULL);
+				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
 	if((home = getenv("HOME")) == NULL)
 	{
-		desktop_error(desktop, "HOME", 0);
-		return desktop;
+		desktop_error(desktop, "HOME", -1);
+		desktop_delete(desktop);
+		return NULL;
 	}
 	desktop->path_cnt = strlen(home) + strlen("/" DESKTOP) + 1;
 	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
 	{
-		desktop_error(desktop, "malloc", 0);
+		desktop_error(desktop, "malloc", -1);
 		desktop_delete(desktop);
 		return NULL;
 	}
@@ -473,14 +474,14 @@ Desktop * desktop_new(void)
 		if(!S_ISDIR(st.st_mode))
 		{
 			errno = ENOTDIR;
-			desktop_error(desktop, desktop->path, 0);
+			desktop_error(desktop, desktop->path, -1);
 			desktop_delete(desktop);
 			return NULL;
 		}
 	}
 	else if(mkdir(desktop->path, 0777) != 0)
 	{
-		desktop_error(desktop, desktop->path, 0);
+		desktop_error(desktop, desktop->path, -1);
 		desktop_delete(desktop);
 		return NULL;
 	}
@@ -488,8 +489,8 @@ Desktop * desktop_new(void)
 	{
 		desktop_icon_add(desktop, desktopicon);
 		desktopicon_set_icon(desktopicon, gtk_icon_theme_load_icon(
-					desktop->theme, "gnome-home", 48, 0,
-					NULL));
+					desktop->theme, "gnome-home",
+					DESKTOPICON_ICON_SIZE, 0, NULL));
 	}
 	desktop_refresh(desktop);
 	return desktop;
@@ -699,6 +700,30 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 }
 
 
+/* desktop_icons_align */
+void desktop_icons_align(Desktop * desktop)
+{
+	GdkScreen * screen;
+	int height = INT_MAX;
+	size_t i;
+	int x = 0;
+	int y = 0;
+
+	if((screen = gdk_screen_get_default()) != NULL)
+		height = gdk_screen_get_height(screen);
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(y + DESKTOPICON_MAX_HEIGHT > height)
+		{
+			x += DESKTOPICON_MAX_WIDTH;
+			y = 0;
+		}
+		desktopicon_move(desktop->icon[i], x, y);
+		y += DESKTOPICON_MAX_HEIGHT;
+	}
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -743,28 +768,4 @@ int main(int argc, char * argv[])
 static void _main_sigchld(int signum)
 {
 	wait(NULL);
-}
-
-
-/* desktop_icons_align */
-void desktop_icons_align(Desktop * desktop)
-{
-	GdkScreen * screen;
-	int height = INT_MAX;
-	size_t i;
-	int x = 0;
-	int y = 0;
-
-	if((screen = gdk_screen_get_default()) != NULL)
-		height = gdk_screen_get_height(screen);
-	for(i = 0; i < desktop->icon_cnt; i++)
-	{
-		if(y + DESKTOPICON_MAX_HEIGHT > height)
-		{
-			x += DESKTOPICON_MAX_WIDTH;
-			y = 0;
-		}
-		desktopicon_move(desktop->icon[i], x, y);
-		y += DESKTOPICON_MAX_HEIGHT;
-	}
 }
