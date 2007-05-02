@@ -720,13 +720,14 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 		desktopicon_delete(icon);
 		desktop->icon_cnt--;
 		for(; i < desktop->icon_cnt; i++)
-			desktop->icon[i] = desktop->icon[i+1];
-		desktop_icons_align(desktop);
+			desktop->icon[i] = desktop->icon[i + 1];
 	}
+	desktop_icons_align(desktop);
 }
 
 
 /* desktop_icons_align */
+static int _align_compare(const void * a,  const void * b);
 void desktop_icons_align(Desktop * desktop)
 {
 	GdkScreen * screen;
@@ -735,6 +736,7 @@ void desktop_icons_align(Desktop * desktop)
 	int x = 0;
 	int y = 0;
 
+	qsort(desktop->icon, desktop->icon_cnt, sizeof(void*), _align_compare);
 	if((screen = gdk_screen_get_default()) != NULL)
 		height = gdk_screen_get_height(screen);
 	for(i = 0; i < desktop->icon_cnt; i++)
@@ -747,6 +749,14 @@ void desktop_icons_align(Desktop * desktop)
 		desktopicon_move(desktop->icon[i], x, y);
 		y += DESKTOPICON_MAX_HEIGHT;
 	}
+}
+
+static int _align_compare(const void * a, const void * b)
+{
+	DesktopIcon * icona = *(DesktopIcon**)a;
+	DesktopIcon * iconb = *(DesktopIcon**)b;
+
+	return strcmp(desktopicon_get_path(icona), desktopicon_get_path(iconb));
 }
 
 
