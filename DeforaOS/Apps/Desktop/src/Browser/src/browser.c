@@ -445,8 +445,9 @@ static GtkListStore * _create_store(Browser * browser)
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF,
 #endif
-			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_STRING,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_UINT64,
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -700,7 +701,8 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	struct passwd * pw = NULL;
 	struct group * gr = NULL;
 	uint64_t inode = 0;
-	char * size = "";
+	uint64_t size = 0;
+	char * dsize = "";
 	char const * type = NULL;
 	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -713,7 +715,8 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	if(st != NULL)
 	{
 		inode = st->st_ino;
-		size = _insert_size(st->st_size);
+		size = st->st_size;
+		dsize = _insert_size(st->st_size);
 		pw = getpwuid(st->st_uid);
 		gr = getgrgid(st->st_gid);
 		if(S_ISDIR(st->st_mode))
@@ -786,7 +789,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			: browser->pb_file_96,
 #endif
 			BR_COL_MIME_TYPE, type != NULL ? type : "",
-			BR_COL_SIZE, size,
+			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			-1);
@@ -929,7 +932,8 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	struct passwd * pw = NULL;
 	struct group * gr = NULL;
 	uint64_t inode = 0;
-	char * size = "";
+	uint64_t size = 0;
+	char * dsize = "";
 	char const * type = NULL;
 	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -942,7 +946,8 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	if(st != NULL)
 	{
 		inode = st->st_ino;
-		size = _insert_size(st->st_size);
+		size = st->st_size;
+		dsize = _insert_size(st->st_size);
 		pw = getpwuid(st->st_uid);
 		gr = getgrgid(st->st_gid);
 		if(S_ISDIR(st->st_mode))
@@ -1004,7 +1009,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			: browser->pb_file_48,
 #endif
 			BR_COL_MIME_TYPE, type != NULL ? type : "",
-			BR_COL_SIZE, size,
+			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			-1);
@@ -1156,7 +1161,7 @@ void browser_set_view(Browser * browser, BrowserView view)
 }
 
 static void _details_column_text(GtkTreeView * view, char const * title,
-		int id);
+		int id, int sort);
 static void _view_details(Browser * browser)
 {
 	GtkTreeSelection * treesel;
@@ -1186,11 +1191,13 @@ static void _view_details(Browser * browser)
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
-	_details_column_text(view, "Filename", BR_COL_DISPLAY_NAME);
-	_details_column_text(view, "Size", BR_COL_SIZE);
-	_details_column_text(view, "Owner", BR_COL_OWNER);
-	_details_column_text(view, "Group", BR_COL_GROUP);
-	_details_column_text(view, "MIME type", BR_COL_MIME_TYPE);
+	_details_column_text(view, "Filename", BR_COL_DISPLAY_NAME,
+			BR_COL_DISPLAY_NAME);
+	_details_column_text(view, "Size", BR_COL_DISPLAY_SIZE, BR_COL_SIZE);
+	_details_column_text(view, "Owner", BR_COL_OWNER, BR_COL_OWNER);
+	_details_column_text(view, "Group", BR_COL_GROUP, BR_COL_GROUP);
+	_details_column_text(view, "MIME type", BR_COL_MIME_TYPE,
+			BR_COL_MIME_TYPE);
 	gtk_tree_view_set_headers_visible(view, TRUE);
 	g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(
 				on_detail_default), browser);
@@ -1201,13 +1208,14 @@ static void _view_details(Browser * browser)
 	gtk_widget_show(browser->detailview);
 }
 
-static void _details_column_text(GtkTreeView * view, char const * title, int id)
+static void _details_column_text(GtkTreeView * view, char const * title, int id,
+		int sort)
 {
 	GtkTreeViewColumn * column;
 
 	column = gtk_tree_view_column_new_with_attributes(title,
 			gtk_cell_renderer_text_new(), "text", id, NULL);
-	gtk_tree_view_column_set_sort_column_id(column, id);
+	gtk_tree_view_column_set_sort_column_id(column, sort);
 	gtk_tree_view_append_column(view, column);
 }
 
