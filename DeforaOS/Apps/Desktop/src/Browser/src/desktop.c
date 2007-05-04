@@ -184,7 +184,11 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_box_pack_start(GTK_BOX(vbox), eventbox, FALSE, TRUE, 4);
 	if((p = g_filename_to_utf8(name, -1, NULL, NULL, NULL)) != NULL)
 		name = p;
+	eventbox = gtk_event_box_new();
 	desktopicon->label = gtk_label_new(name);
+	gtk_container_add(GTK_CONTAINER(eventbox), desktopicon->label);
+	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
+			G_CALLBACK(_on_icon_press), desktopicon);
 	label = GTK_LABEL(desktopicon->label);
 	gtk_label_set_justify(label, GTK_JUSTIFY_CENTER);
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -193,9 +197,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_label_set_line_wrap(label, TRUE);
 	gtk_widget_set_size_request(desktopicon->label, DESKTOPICON_MIN_WIDTH,
 			-1);
-	g_signal_connect(G_OBJECT(desktopicon->label), "button-press-event",
-			G_CALLBACK(_on_icon_press), desktopicon);
-	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), eventbox, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(desktopicon->window), vbox);
 	_desktopicon_update_transparency(desktopicon, icon);
 	return desktopicon;
