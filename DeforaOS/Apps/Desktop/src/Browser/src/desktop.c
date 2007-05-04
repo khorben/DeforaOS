@@ -252,6 +252,8 @@ static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_delete), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
