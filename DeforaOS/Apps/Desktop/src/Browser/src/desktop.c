@@ -144,7 +144,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_window_set_keep_below(GTK_WINDOW(desktopicon->window), TRUE);
 	gtk_window_set_accept_focus(GTK_WINDOW(desktopicon->window), FALSE);
 	gtk_window_set_focus_on_map(GTK_WINDOW(desktopicon->window), FALSE);
-	g_signal_connect(G_OBJECT(desktopicon->window), "delete_event",
+	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
 			G_CALLBACK(_on_desktopicon_closex), desktopicon);
 	vbox = gtk_vbox_new(FALSE, 4);
 	geometry.min_width = DESKTOPICON_MIN_WIDTH;
@@ -214,16 +214,10 @@ static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 
 /* FIXME some code is duplicated from callback.c */
 /* types */
-typedef struct _IconCallback
-{
-	DesktopIcon * desktopicon;
-	char * path;
-} IconCallback;
-static void _popup_directory(GtkWidget * menu, IconCallback * ic);
-static void _popup_file(DesktopIcon * desktopicon, GtkWidget * menu,
-		IconCallback * ic);
+static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon);
+static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon);
 static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
-		char const * label, GCallback callback, IconCallback * ic,
+		char const * label, GCallback callback, DesktopIcon * icon,
 		GtkWidget * menu);
 /* callbacks */
 static void _on_icon_delete(GtkWidget * widget, gpointer data);
@@ -234,25 +228,27 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
 {
-	static IconCallback ic;
 	DesktopIcon * desktopicon = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 
+	if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+	{
+		_on_icon_open(widget, desktopicon);
+		return FALSE;
+	}
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
 		return FALSE;
 	menu = gtk_menu_new();
-	ic.desktopicon = desktopicon;
-	ic.path = desktopicon->path;
 	if(desktopicon->isdir)
-		_popup_directory(menu, &ic);
+		_popup_directory(menu, desktopicon);
 	else
-		_popup_file(desktopicon, menu, &ic);
+		_popup_file(menu, desktopicon);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_icon_delete), &ic);
+				_on_icon_delete), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
@@ -262,39 +258,40 @@ static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
 	return TRUE;
 }
 
-static void _popup_directory(GtkWidget * menu, IconCallback * ic)
+static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon)
 {
 	GtkWidget * menuitem;
 
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_icon_open), ic);
+				_on_icon_open), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
-static void _popup_file(DesktopIcon * desktopicon, GtkWidget * menu,
-		IconCallback * ic)
+static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 {
 	GtkWidget * menuitem;
 
 	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "open",
-			GTK_STOCK_OPEN, G_CALLBACK(_on_icon_open), ic, menu);
+			GTK_STOCK_OPEN, G_CALLBACK(_on_icon_open), desktopicon,
+			menu);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
-			GTK_STOCK_EDIT, G_CALLBACK(_on_icon_edit), ic, menu);
+			GTK_STOCK_EDIT, G_CALLBACK(_on_icon_edit), desktopicon,
+			menu);
 #else
 	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
-			"_Edit", G_CALLBACK(_on_icon_edit), ic, menu);
+			"_Edit", G_CALLBACK(_on_icon_edit), desktopicon, menu);
 #endif
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_icon_open_with), ic);
+				_on_icon_open_with), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
 static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
-		char const * label, GCallback callback, IconCallback * ic,
-		GtkWidget * menu)
+		char const * label, GCallback callback,
+		DesktopIcon * desktopicon, GtkWidget * menu)
 {
 	GtkWidget * menuitem;
 
@@ -304,56 +301,58 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		menuitem = gtk_image_menu_item_new_from_stock(label, NULL);
 	else
 		menuitem = gtk_menu_item_new_with_mnemonic(label);
-	g_signal_connect(G_OBJECT(menuitem), "activate", callback, ic);
+	g_signal_connect(G_OBJECT(menuitem), "activate", callback, desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
 static void _on_icon_delete(GtkWidget * widget, gpointer data)
 {
-	IconCallback * ic = data;
+	DesktopIcon * desktopicon = data;
 
 	/* FIXME actually delete the file, and wait for the refresh */
-	desktop_icon_remove(ic->desktopicon->desktop, ic->desktopicon);
+	desktop_icon_remove(desktopicon->desktop, desktopicon);
 }
 
 static void _on_icon_open(GtkWidget * widget, gpointer data)
 {
-	IconCallback * ic = data;
+	DesktopIcon * desktopicon = data;
 	pid_t pid;
 
-	if(ic->desktopicon->isdir == 0)
+	if(desktopicon->isdir == 0)
 	{
-		mime_action(ic->desktopicon->desktop->mime, "open", ic->path);
+		if(desktopicon->desktop->mime != NULL) /* XXX ugly */
+			mime_action(desktopicon->desktop->mime, "open",
+					desktopicon->path);
 		return;
 	}
 	if((pid = fork()) == -1)
 	{
-		desktop_error(ic->desktopicon->desktop, strerror(errno), 0);
+		desktop_error(desktopicon->desktop, strerror(errno), 0);
 		return;
 	}
 	if(pid != 0)
 		return;
-	execlp("browser", "browser", "--", ic->desktopicon->path, NULL);
+	execlp("browser", "browser", "--", desktopicon->path, NULL);
 	fprintf(stderr, "%s%s\n", "desktop: browser: ", strerror(errno));
 	exit(2);
 }
 
 static void _on_icon_edit(GtkWidget * widget, gpointer data)
 {
-	IconCallback * ic = data;
+	DesktopIcon * desktopicon = data;
 
-	mime_action(ic->desktopicon->desktop->mime, "edit", ic->path);
+	mime_action(desktopicon->desktop->mime, "edit", desktopicon->path);
 }
 
 static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 {
-	IconCallback * ic = data;
+	DesktopIcon * desktopicon = data;
 	GtkWidget * dialog;
 	char * filename = NULL;
 	pid_t pid;
 
 	dialog = gtk_file_chooser_dialog_new("Open with...",
-			GTK_WINDOW(ic->desktopicon->window),
+			GTK_WINDOW(desktopicon->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
@@ -364,10 +363,10 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	if(filename == NULL)
 		return;
 	if((pid = fork()) == -1)
-		desktop_error(ic->desktopicon->desktop, "fork", 0);
+		desktop_error(desktopicon->desktop, "fork", 0);
 	else if(pid == 0)
 	{
-		execlp(filename, filename, ic->path, NULL);
+		execlp(filename, filename, desktopicon->path, NULL);
 		desktop_error(NULL, filename, 0);
 		exit(2);
 	}
