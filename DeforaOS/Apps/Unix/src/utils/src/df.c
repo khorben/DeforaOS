@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
 	int o;
 	Prefs prefs;
 
-	memset(&prefs, sizeof(prefs), 0);
+	memset(&prefs, 0, sizeof(prefs));
 	while((o = getopt(argc, argv, "kP")) != -1)
 		switch(o)
 		{

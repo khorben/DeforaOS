@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -23,7 +23,7 @@ static int _unlink(char * file)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: unlink file\n");
+	fputs("Usage: unlink file\n", stderr);
 	return 1;
 }
 

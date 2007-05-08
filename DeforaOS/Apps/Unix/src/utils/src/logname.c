@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
 		return _usage();
 	if((lgnm = getlogin()) == NULL)
 	{
-		fprintf(stderr, "%s", "logname: ");
+		fputs("logname: ", stderr);
 		perror("getlogin");
 		return 2;
 	}
