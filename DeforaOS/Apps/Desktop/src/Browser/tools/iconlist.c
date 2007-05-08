@@ -188,6 +188,7 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 	int o;
 
+	gtk_init(&argc, &argv);
 	memset(&prefs, 0, sizeof(prefs));
 	while((o = getopt(argc, argv, "lt:")) != -1)
 		switch(o)
@@ -203,6 +204,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	gtk_init(&argc, &argv);
 	return _iconlist(&prefs) == 0 ? 0 : 2;
 }
