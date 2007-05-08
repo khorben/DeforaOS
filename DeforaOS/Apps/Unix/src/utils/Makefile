@@ -47,6 +47,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/mkfifo.c \
 		$(PACKAGE)-$(VERSION)/src/mv.c \
 		$(PACKAGE)-$(VERSION)/src/nice.c \
+		$(PACKAGE)-$(VERSION)/src/pr.c \
+		$(PACKAGE)-$(VERSION)/src/printf.c \
 		$(PACKAGE)-$(VERSION)/src/pwd.c \
 		$(PACKAGE)-$(VERSION)/src/renice.c \
 		$(PACKAGE)-$(VERSION)/src/rm.c \
