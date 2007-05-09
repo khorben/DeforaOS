@@ -16,12 +16,14 @@
 typedef struct _Prefs
 {
 	int flags;
+	char * header;
 	int lines;
 	int width;
 	int offset;
 } Prefs;
 #define PREFS_d 1
-#define PREFS_t 2
+#define PREFS_n 2
+#define PREFS_t 4
 
 /* functions */
 static int _pr_error(char const * message, int ret);
@@ -74,6 +76,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	size_t len;
 	int nb = 0;
 	size_t page = 1;
+	size_t line = 1;
 
 	if(fp == stdin)
 		st.st_mtime = time(NULL);
@@ -92,6 +95,8 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 			nb = 10;
 		}
 		_do_offset(prefs->offset); /* FIXME not if truncated line */
+		if(prefs->flags & PREFS_n)
+			printf("%5u ", line++);
 		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n'
 				&& prefs->flags & PREFS_d)
 			buf[len++] = '\n'; /* XXX with offset? */
@@ -135,7 +140,9 @@ static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
 			localtime_r(&mtime, &tm);
 			strftime(buf, sizeof(buf) - 1, "%b %e %H:%M %Y", &tm);
 			buf[sizeof(buf) - 1] = '\0';
-			printf("%s %s%s%u", buf, filename, " Page ", page);
+			printf("%s %s%s%u", buf, prefs->header != NULL
+					? prefs->header : filename, " Page ",
+					page);
 		}
 		fputc('\n', stdout);
 	}
@@ -173,19 +180,27 @@ int main(int argc, char * argv[])
 	char * p;
 
 	memset(&prefs, 0, sizeof(prefs));
+	prefs.header = NULL;
 	prefs.lines = 66;
+	prefs.offset = 0;
 	prefs.width = 72;
-	while((o = getopt(argc, argv, "dl:o:tw:")) != -1)
+	while((o = getopt(argc, argv, "dh:l:no:tw:")) != -1)
 		switch(o)
 		{
 			case 'd':
 				prefs.flags |= PREFS_d;
+				break;
+			case 'h':
+				prefs.header = optarg;
 				break;
 			case 'l':
 				prefs.lines = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0'
 						|| prefs.lines <= 0)
 					return _usage();
+				break;
+			case 'n':
+				prefs.flags |= PREFS_n;
 				break;
 			case 'o':
 				prefs.offset = strtol(optarg, &p, 10);
