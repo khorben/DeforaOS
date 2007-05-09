@@ -378,11 +378,12 @@ static int _ls_do_files_short(Prefs * prefs, char * directory, SList * files)
 {
 	char * cols;
 	char * p;
-	unsigned int len = 0;
-	unsigned int lenmax = 0;
+	long len = 0;
+	size_t lencur;
+	size_t lenmax = 0;
 	unsigned int colnb = 0;
 	unsigned int i = 0;
-	unsigned int j = 0;
+	size_t j = 0;
 	char c;
 	SList cur;
 
@@ -391,8 +392,11 @@ static int _ls_do_files_short(Prefs * prefs, char * directory, SList * files)
 			&& *p == '\0')
 	{
 		for(cur = *files; cur != NULL; slist_next(&cur))
-			lenmax = max(lenmax, strlen(slist_data(&cur)));
-		if(*prefs * PREFS_F)
+		{
+			lencur = strlen(slist_data(&cur));
+			lenmax = max(lenmax, lencur);
+		}
+		if(*prefs & PREFS_F)
 			lenmax++;
 		if(lenmax > 0)
 			colnb = len / ++lenmax;
@@ -489,30 +493,32 @@ static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
 	return 0;
 }
 
+/* _long_print */
 static void _long_mode(char str[11], mode_t mode);
 static char const * _long_owner(uid_t uid);
 static char const * _long_group(gid_t gid);
-static void _long_date(time_t date, char buf[15]);
+static char const * _long_date(time_t date);
 static char _file_mode_letter(mode_t mode);
 static void _print_link(char const * filename);
+
 static void _long_print(Prefs * prefs, char const * filename,
 		char const * basename, struct stat * st)
 {
 	char mode[11];
 	char const * owner;
 	char const * group;
-	char date[15];
+	char const * date;
 
 	_long_mode(mode, st->st_mode);
 	owner = _long_owner(st->st_uid);
 	group = _long_group(st->st_gid);
 	if(*prefs & PREFS_u)
-		_long_date(st->st_atime, date);
+		date = _long_date(st->st_atime);
 	else if(*prefs & PREFS_c)
-		_long_date(st->st_ctime, date);
+		date = _long_date(st->st_ctime);
 	else
-		_long_date(st->st_mtime, date);
-	printf("%s %u %-7s %-7s %6u %s %s", mode, (unsigned)st->st_nlink,
+		date = _long_date(st->st_mtime);
+	printf("%s %2u %-7s %-7s %6u %s %s", mode, (unsigned)st->st_nlink,
 			owner, group, (unsigned)st->st_size, date, basename);
 	if(S_ISLNK(st->st_mode) && !(*prefs & PREFS_L)) /* FIXME not in POSIX? */
 		_print_link(filename);
@@ -585,8 +591,9 @@ static char const * _long_group(gid_t gid)
 	return buf;
 }
 
-static void _long_date(time_t date, char buf[15])
+static char const * _long_date(time_t date)
 {
+	static char buf[15];
 	struct tm tm;
 	static time_t sixmonths = -1;
 	size_t len;
@@ -595,11 +602,11 @@ static void _long_date(time_t date, char buf[15])
 		sixmonths = time(NULL) - 15552000;
 	localtime_r(&date, &tm);
 	if(date < sixmonths)
-		len = strftime(buf, 14, "%b %e  %Y", &tm);
+		len = strftime(buf, sizeof(buf), "%b %e  %Y", &tm);
 	else
-		len = strftime(buf, 14, "%b %e %H:%M", &tm);
-	if(len == 0)
-		buf[0] = '\0';
+		len = strftime(buf, sizeof(buf), "%b %e %H:%M", &tm);
+	buf[len] = '\0';
+	return buf;
 }
 
 static char _file_mode_letter(mode_t mode)

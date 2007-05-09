@@ -67,7 +67,7 @@ static int _pr_error(char const * message, int ret)
 /* _pr_do */
 static void _do_offset(int offset);
 static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
-		size_t page);
+		unsigned long page);
 static void _do_footer(Prefs * prefs);
 
 static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
@@ -76,8 +76,8 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	char * buf;
 	size_t len;
 	int nb = 0;
-	size_t page = 1;
-	size_t line = 1;
+	unsigned long page = 1;
+	unsigned long line = 1;
 
 	if(fp == stdin)
 		st.st_mtime = time(NULL);
@@ -97,7 +97,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 		}
 		_do_offset(prefs->offset); /* FIXME not if truncated line */
 		if(prefs->flags & PREFS_n)
-			printf("%5u ", line++);
+			printf("%5lu ", line++);
 		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n'
 				&& prefs->flags & PREFS_d)
 			buf[len++] = '\n'; /* XXX with offset? */
@@ -127,7 +127,7 @@ static void _do_offset(int offset)
 }
 
 static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
-		size_t page)
+		unsigned long page)
 {
 	struct tm tm;
 	char buf[18];
@@ -141,7 +141,7 @@ static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
 			localtime_r(&mtime, &tm);
 			strftime(buf, sizeof(buf) - 1, "%b %e %H:%M %Y", &tm);
 			buf[sizeof(buf) - 1] = '\0';
-			printf("%s %s%s%u", buf, prefs->header != NULL
+			printf("%s %s%s%lu", buf, prefs->header != NULL
 					? prefs->header : filename, " Page ",
 					page);
 		}
