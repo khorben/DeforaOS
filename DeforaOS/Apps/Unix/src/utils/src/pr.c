@@ -135,7 +135,7 @@ static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
 			localtime_r(&mtime, &tm);
 			strftime(buf, sizeof(buf) - 1, "%b %e %H:%M %Y", &tm);
 			buf[sizeof(buf) - 1] = '\0';
-			printf("%s  %s%s%u", buf, filename, "  Page ", page);
+			printf("%s %s%s%u", buf, filename, " Page ", page);
 		}
 		fputc('\n', stdout);
 	}
