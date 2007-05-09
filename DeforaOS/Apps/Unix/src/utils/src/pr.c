@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 
 /* pr */
@@ -33,12 +34,12 @@ static int _pr(Prefs * prefs, int filec, char * filev[])
 	FILE * fp;
 
 	if(filec == 0)
-		return _pr_do(prefs, stdin, "Standard input");
+		return _pr_do(prefs, stdin, "");
 	for(i = 0; i < filec; i++)
 	{
 		if(strcmp(filev[i], "-") == 0)
 		{
-			ret |= _pr_do(prefs, stdin, "Standard input");
+			ret |= _pr_do(prefs, stdin, "");
 			continue;
 		}
 		if((fp = fopen(filev[i], "r")) == NULL)
@@ -74,7 +75,9 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	int nb = 0;
 	size_t page = 1;
 
-	if(fstat(fileno(fp), &st) != 0)
+	if(fp == stdin)
+		st.st_mtime = time(NULL);
+	else if(fstat(fileno(fp), &st) != 0)
 	{
 		st.st_mtime = 0;
 		_pr_error(filename, 0);
@@ -121,7 +124,7 @@ static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
 		size_t page)
 {
 	struct tm tm;
-	char buf[19];
+	char buf[18];
 	int nb;
 
 	for(nb = 0; nb < 5; nb++)
@@ -130,7 +133,7 @@ static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
 		if(nb == 2)
 		{
 			localtime_r(&mtime, &tm);
-			strftime(buf, sizeof(buf) - 1, "%b %e %Y  %H:%M", &tm);
+			strftime(buf, sizeof(buf) - 1, "%b %e %H:%M %Y", &tm);
 			buf[sizeof(buf) - 1] = '\0';
 			printf("%s  %s%s%u", buf, filename, "  Page ", page);
 		}
