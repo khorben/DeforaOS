@@ -67,7 +67,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 		return _pr_error("malloc", 1);
 	while(fgets(buf, prefs->width, fp) != NULL)
 	{
-		if(nb == 0 && !(prefs->flags & PREFS_t))
+		if(nb == 0 && !(prefs->flags & PREFS_t) && prefs->lines > 10)
 		{
 			printf("\n\n%s\n\n\n", filename);
 			nb = 5;
@@ -76,14 +76,16 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 			buf[len - 1] = '\0';
 		fputs(buf, stdout);
 		fputc('\n', stdout);
-		if(nb++ == prefs->lines && !(prefs->flags & PREFS_t))
+		if(nb++ == prefs->lines && prefs->lines > 10
+				&& !(prefs->flags & PREFS_t))
 		{
 			fputs("\n\n\n\n\n\n", stdout);
 			nb = 0;
 		}
 	}
-	for(; nb != prefs->lines; nb++)
-		fputc('\n', stdout);
+	if(prefs->lines > 10 && !(prefs->flags & PREFS_t))
+		for(; nb != prefs->lines; nb++)
+			fputc('\n', stdout);
 	free(buf);
 	return 0;
 }
