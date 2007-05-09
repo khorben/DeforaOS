@@ -22,8 +22,9 @@ typedef struct _Prefs
 	int offset;
 } Prefs;
 #define PREFS_d 1
-#define PREFS_n 2
-#define PREFS_t 4
+#define PREFS_F 2
+#define PREFS_n 4
+#define PREFS_t 8
 
 /* functions */
 static int _pr_error(char const * message, int ret);
@@ -152,6 +153,12 @@ static void _do_footer(Prefs * prefs)
 {
 	int i;
 
+	if(prefs->flags & PREFS_F)
+	{
+		_do_offset(prefs->offset);
+		fputc('\f', stdout);
+		return;
+	}
 	for(i = 0; i < 5; i++)
 	{
 		_do_offset(prefs->offset);
@@ -184,11 +191,14 @@ int main(int argc, char * argv[])
 	prefs.lines = 66;
 	prefs.offset = 0;
 	prefs.width = 72;
-	while((o = getopt(argc, argv, "dh:l:no:tw:")) != -1)
+	while((o = getopt(argc, argv, "dFh:l:no:tw:")) != -1)
 		switch(o)
 		{
 			case 'd':
 				prefs.flags |= PREFS_d;
+				break;
+			case 'F':
+				prefs.flags |= PREFS_F;
 				break;
 			case 'h':
 				prefs.header = optarg;
