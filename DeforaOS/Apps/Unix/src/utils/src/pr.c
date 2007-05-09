@@ -62,6 +62,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	char * buf;
 	size_t len;
 	int nb = 0;
+	size_t page = 1;
 
 	if((buf = malloc(prefs->width + 1)) == NULL)
 		return _pr_error("malloc", 1);
@@ -69,7 +70,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	{
 		if(nb == 0 && !(prefs->flags & PREFS_t) && prefs->lines > 10)
 		{
-			printf("\n\n%s\n\n\n", filename);
+			printf("\n\n%s%s%u\n\n\n", filename, " Page ", page++);
 			nb = 5;
 		}
 		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n')
