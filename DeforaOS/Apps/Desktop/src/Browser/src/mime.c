@@ -161,8 +161,11 @@ char const * mime_type(Mime * mime, char const * path)
 	if(i < mime->types_cnt)
 		return mime->types[i].type;
 	for(i = 0; i < mime->types_cnt; i++)
-		if(fnmatch(mime->types[i].glob, path,
-					FNM_NOESCAPE | FNM_CASEFOLD) == 0)
+		if(fnmatch(mime->types[i].glob, path, FNM_NOESCAPE
+#ifdef FNM_CASEFOLD
+					| FNM_CASEFOLD
+#endif
+					) == 0)
 			break;
 	return i < mime->types_cnt ? mime->types[i].type : NULL;
 }
