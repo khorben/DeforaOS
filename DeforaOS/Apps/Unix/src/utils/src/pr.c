@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define min(a, b) ((a) < (b)) ? (a) : (b)
-
 
 /* pr */
 /* types */
@@ -61,11 +59,13 @@ static int _pr_error(char const * message, int ret)
 
 static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 {
-	char buf[513];
+	char * buf;
 	size_t len;
 	int nb = 0;
 
-	while(fgets(buf, min(prefs->width, sizeof(buf)), fp) != NULL)
+	if((buf = malloc(prefs->width + 1)) == NULL)
+		return _pr_error("malloc", 1);
+	while(fgets(buf, prefs->width, fp) != NULL)
 	{
 		if(nb == 0 && !(prefs->flags & PREFS_t))
 		{
@@ -84,6 +84,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	}
 	for(; nb != prefs->lines; nb++)
 		fputc('\n', stdout);
+	free(buf);
 	return 0;
 }
 
@@ -125,8 +126,7 @@ int main(int argc, char * argv[])
 			case 'w':
 				prefs.width = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0'
-						|| prefs.width <= 0
-						|| prefs.width > 512)
+						|| prefs.width <= 0)
 					return _usage();
 				break;
 			default:
