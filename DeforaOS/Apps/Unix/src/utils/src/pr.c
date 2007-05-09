@@ -65,42 +65,45 @@ static int _pr_error(char const * message, int ret)
 }
 
 /* _pr_do */
+static char const * _do_mtime(FILE * fp, char const * filename);
 static void _do_offset(int offset);
-static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
+static void _do_header(Prefs * prefs, char const * mtime, char const * filename,
 		unsigned long page);
 static void _do_footer(Prefs * prefs);
 
 static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 {
-	struct stat st;
+	char const * mtime;
 	char * buf;
 	size_t len;
 	int nb = 0;
 	unsigned long page = 1;
 	unsigned long line = 1;
 
-	if(fp == stdin)
-		st.st_mtime = time(NULL);
-	else if(fstat(fileno(fp), &st) != 0)
-	{
-		st.st_mtime = 0;
-		_pr_error(filename, 0);
-	}
+	mtime = _do_mtime(fp, filename);
 	if((buf = malloc(prefs->width + 1)) == NULL)
 		return _pr_error("malloc", 1);
 	while(fgets(buf, prefs->width, fp) != NULL)
 	{
 		if(nb == 0 && !(prefs->flags & PREFS_t) && prefs->lines > 10)
 		{
-			_do_header(prefs, st.st_mtime, filename, page++);
+			_do_header(prefs, mtime, filename, page++);
 			nb = 10;
 		}
 		_do_offset(prefs->offset); /* FIXME not if truncated line */
 		if(prefs->flags & PREFS_n)
-			printf("%5lu ", line++);
-		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n'
-				&& prefs->flags & PREFS_d)
-			buf[len++] = '\n'; /* XXX with offset? */
+			printf("%5lu ", line);
+		if((len = strlen(buf)) > 0)
+		{
+			if(buf[len - 1] != '\n')
+				buf[len++] = '\n';
+			else
+			{
+				line++;
+				if(prefs->flags & PREFS_d)
+					buf[len++] = '\n';
+			}
+		}
 		if(fwrite(buf, sizeof(char), len, stdout) != len)
 		{
 			free(buf);
@@ -120,31 +123,42 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 	return 0;
 }
 
+static char const * _do_mtime(FILE * fp, char const * filename)
+{
+	static char buf[18];
+	struct stat st;
+	struct tm tm;
+
+	if(fp == stdin)
+		st.st_mtime = time(NULL);
+	else if(fstat(fileno(fp), &st) != 0)
+	{
+		st.st_mtime = 0;
+		_pr_error(filename, 0);
+	}
+	localtime_r(&st.st_mtime, &tm);
+	buf[strftime(buf, sizeof(buf), "%b %e %H:%M %Y", &tm)] = '\0';
+	return buf;
+}
+
 static void _do_offset(int offset)
 {
 	while(offset-- > 0)
 		fputc(' ', stdout);
 }
 
-static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
+static void _do_header(Prefs * prefs, char const * mtime, char const * filename,
 		unsigned long page)
 {
-	struct tm tm;
-	char buf[18];
 	int nb;
 
 	for(nb = 0; nb < 5; nb++)
 	{
 		_do_offset(prefs->offset);
 		if(nb == 2)
-		{
-			localtime_r(&mtime, &tm);
-			strftime(buf, sizeof(buf) - 1, "%b %e %H:%M %Y", &tm);
-			buf[sizeof(buf) - 1] = '\0';
-			printf("%s %s%s%lu", buf, prefs->header != NULL
-					? prefs->header : filename, " Page ",
-					page);
-		}
+			printf("%s %s%s%lu", mtime, prefs->header != NULL
+					? prefs->header : filename,
+					" Page ", page);
 		fputc('\n', stdout);
 	}
 }

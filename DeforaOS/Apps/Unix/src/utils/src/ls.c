@@ -378,11 +378,11 @@ static int _ls_do_files_short(Prefs * prefs, char * directory, SList * files)
 {
 	char * cols;
 	char * p;
-	long len = 0;
+	size_t len = 0;
 	size_t lencur;
 	size_t lenmax = 0;
-	unsigned int colnb = 0;
-	unsigned int i = 0;
+	size_t colnb = 0;
+	size_t i = 0;
 	size_t j = 0;
 	char c;
 	SList cur;
