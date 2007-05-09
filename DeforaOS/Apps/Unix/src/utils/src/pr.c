@@ -3,6 +3,7 @@
 
 
 
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,6 +17,7 @@ typedef struct _Prefs
 	int flags;
 	int lines;
 	int width;
+	int offset;
 } Prefs;
 #define PREFS_d 1
 #define PREFS_t 2
@@ -58,25 +60,38 @@ static int _pr_error(char const * message, int ret)
 	return ret;
 }
 
+/* _pr_do */
+static void _do_offset(int offset);
+static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
+		size_t page);
+static void _do_footer(Prefs * prefs);
+
 static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 {
+	struct stat st;
 	char * buf;
 	size_t len;
 	int nb = 0;
 	size_t page = 1;
 
+	if(fstat(fileno(fp), &st) != 0)
+	{
+		st.st_mtime = 0;
+		_pr_error(filename, 0);
+	}
 	if((buf = malloc(prefs->width + 1)) == NULL)
 		return _pr_error("malloc", 1);
 	while(fgets(buf, prefs->width, fp) != NULL)
 	{
 		if(nb == 0 && !(prefs->flags & PREFS_t) && prefs->lines > 10)
 		{
-			printf("\n\n%s%s%u\n\n\n", filename, " Page ", page++);
-			nb = 5;
+			_do_header(prefs, st.st_mtime, filename, page++);
+			nb = 10;
 		}
+		_do_offset(prefs->offset); /* FIXME not if truncated line */
 		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n'
 				&& prefs->flags & PREFS_d)
-			buf[len++] = '\n';
+			buf[len++] = '\n'; /* XXX with offset? */
 		if(fwrite(buf, sizeof(char), len, stdout) != len)
 		{
 			free(buf);
@@ -85,7 +100,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 		if(nb++ == prefs->lines && prefs->lines > 10
 				&& !(prefs->flags & PREFS_t))
 		{
-			fputs("\n\n\n\n\n\n", stdout);
+			_do_footer(prefs);
 			nb = 0;
 		}
 	}
@@ -94,6 +109,44 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 			fputc('\n', stdout);
 	free(buf);
 	return 0;
+}
+
+static void _do_offset(int offset)
+{
+	while(offset-- > 0)
+		fputc(' ', stdout);
+}
+
+static void _do_header(Prefs * prefs, time_t const mtime, char const * filename,
+		size_t page)
+{
+	struct tm tm;
+	char buf[19];
+	int nb;
+
+	for(nb = 0; nb < 5; nb++)
+	{
+		_do_offset(prefs->offset);
+		if(nb == 2)
+		{
+			localtime_r(&mtime, &tm);
+			strftime(buf, sizeof(buf) - 1, "%b %e %Y  %H:%M", &tm);
+			buf[sizeof(buf) - 1] = '\0';
+			printf("%s  %s%s%u", buf, filename, "  Page ", page);
+		}
+		fputc('\n', stdout);
+	}
+}
+
+static void _do_footer(Prefs * prefs)
+{
+	int i;
+
+	for(i = 0; i < 5; i++)
+	{
+		_do_offset(prefs->offset);
+		fputc('\n', stdout);
+	}
 }
 
 
@@ -119,7 +172,7 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.lines = 66;
 	prefs.width = 72;
-	while((o = getopt(argc, argv, "dl:tw:")) != -1)
+	while((o = getopt(argc, argv, "dl:o:tw:")) != -1)
 		switch(o)
 		{
 			case 'd':
@@ -129,6 +182,12 @@ int main(int argc, char * argv[])
 				prefs.lines = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0'
 						|| prefs.lines <= 0)
+					return _usage();
+				break;
+			case 'o':
+				prefs.offset = strtol(optarg, &p, 10);
+				if(optarg[0] == '\0' || *p != '\0'
+						|| prefs.lines < 0)
 					return _usage();
 				break;
 			case 't':
