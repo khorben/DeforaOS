@@ -17,7 +17,8 @@ typedef struct _Prefs
 	int lines;
 	int width;
 } Prefs;
-#define PREFS_t 1
+#define PREFS_d 1
+#define PREFS_t 2
 
 /* functions */
 static int _pr_error(char const * message, int ret);
@@ -73,10 +74,14 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 			printf("\n\n%s%s%u\n\n\n", filename, " Page ", page++);
 			nb = 5;
 		}
-		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n')
-			buf[len - 1] = '\0';
-		fputs(buf, stdout);
-		fputc('\n', stdout);
+		if((len = strlen(buf)) > 0 && buf[len - 1] == '\n'
+				&& prefs->flags & PREFS_d)
+			buf[len++] = '\n';
+		if(fwrite(buf, sizeof(char), len, stdout) != len)
+		{
+			free(buf);
+			return _pr_error("stdout", 1);
+		}
 		if(nb++ == prefs->lines && prefs->lines > 10
 				&& !(prefs->flags & PREFS_t))
 		{
@@ -114,9 +119,12 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.lines = 66;
 	prefs.width = 72;
-	while((o = getopt(argc, argv, "l:tw:")) != -1)
+	while((o = getopt(argc, argv, "dl:tw:")) != -1)
 		switch(o)
 		{
+			case 'd':
+				prefs.flags |= PREFS_d;
+				break;
 			case 'l':
 				prefs.lines = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0'
