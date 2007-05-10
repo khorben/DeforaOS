@@ -1,4 +1,5 @@
-/* init.c */
+/* $Id$ */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -7,6 +8,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 
 
 /* Init */
