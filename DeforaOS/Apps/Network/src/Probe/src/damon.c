@@ -11,8 +11,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "../config.h"
 
 #define DAMON_DEFAULT_REFRESH 10
+
+#ifndef ETCDIR
+# define ETCDIR PREFIX "/etc"
+#endif
 
 
 /* types */
@@ -26,6 +31,7 @@ typedef struct _Host
 
 
 /* DaMon */
+/* types */
 typedef struct _DaMon
 {
 	unsigned int refresh;
@@ -33,10 +39,16 @@ typedef struct _DaMon
 	unsigned int hosts_cnt;
 	Event * event;
 } DaMon;
+
+/* functions */
+/* private */
 static int _damon_error(char * message, int ret);
+
+/* public */
+/* _damon */
 static int _damon_init(DaMon * damon);
 static void _damon_destroy(DaMon * damon);
-static int _damon_refresh(DaMon * damon);
+
 static int _damon(void)
 {
 	DaMon damon;
@@ -56,7 +68,10 @@ static int _damon_error(char * message, int ret)
 	return ret;
 }
 
+/* _damon_init */
 static int _init_config(DaMon * damon);
+static int _damon_refresh(DaMon * damon);
+
 static int _damon_init(DaMon * damon)
 {
 	struct timeval tv;
@@ -73,10 +88,13 @@ static int _damon_init(DaMon * damon)
 	return 0;
 }
 
+/* _init_config */
 static int _config_hosts(DaMon * damon, Config * config, char * hosts);
+
 static int _init_config(DaMon * damon)
 {
 	Config * config;
+	char * filename = ETCDIR "/damon.cfg";
 	char * p;
 	char * q;
 	int tmp;
@@ -86,10 +104,12 @@ static int _init_config(DaMon * damon)
 	damon->refresh = DAMON_DEFAULT_REFRESH;
 	damon->hosts = NULL;
 	damon->hosts_cnt = 0;
-	if(config_load(config, "damon.cfg") != 0) /* FIXME multiple filenames */
+	if(config_load(config, filename) != 0)
 	{
+		fprintf(stderr, "DaMon: %s: Could not load configuration\n",
+				filename);
 		config_delete(config);
-		return 0;
+		return 1;
 	}
 	if((p = config_get(config, "", "refresh")) != NULL)
 	{
