@@ -134,7 +134,7 @@ static int _config_hosts(DaMon * damon, Config * config, char * hosts)
 	unsigned int pos = 0;
 	Host * p;
 
-	for(; h[0] != '\0';)
+	while(h[0] != '\0')
 	{
 		if(h[pos] != '\0' && h[pos] != ',')
 		{
@@ -147,7 +147,7 @@ static int _config_hosts(DaMon * damon, Config * config, char * hosts)
 			continue;
 		}
 		if((p = realloc(damon->hosts, sizeof(Host)
-						* (damon->hosts_cnt+1)))
+						* (damon->hosts_cnt + 1)))
 				== NULL)
 			return _damon_error("malloc", 1);
 		damon->hosts = p;

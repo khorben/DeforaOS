@@ -535,7 +535,7 @@ static char * _read_string(char buf[], size_t buflen, size_t * pos)
 static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char ** args);
 static int _receive_exec(AppInterfaceCall * calls, char ** args);
-static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
+static int _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char ** args, int i);
 static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char bufw[], size_t bufwlen, size_t * bufwpos)
@@ -550,7 +550,7 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
 			== calls->args_cnt)
 		/* FIXME separate error checking from function actual result */
 		ret = _receive_exec(calls, args);
-	_args_post_exec(calls, bufw, bufwlen, bufwpos, args, i);
+	ret |= _args_post_exec(calls, bufw, bufwlen, bufwpos, args, i);
 	free(args);
 	return ret;
 }
@@ -670,7 +670,7 @@ static int _receive_exec(AppInterfaceCall * calls, char ** args)
 	return -1;
 }
 
-static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
+static int _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char ** args, int i)
 {
 	int j;
@@ -681,7 +681,7 @@ static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 	for(j = 0; j < i; j++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "_receive_args() freeing arg ", j+1,
+		fprintf(stderr, "%s%d%s", "_args_post_exec() freeing arg ", j+1,
 				"\n");
 #endif
 		size = calls->args[j].size;
@@ -710,9 +710,10 @@ static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 					break;
 			}
 #ifdef DEBUG
-			fprintf(stderr, "sending %d\n", size);
+			fprintf(stderr, "_args_post_exec() sending %u\n", size);
 #endif
-			_send_buffer(p, size, buf, buflen, pos);
+			if(_send_buffer(p, size, buf, buflen, pos) != 0)
+				break;
 		}
 		switch(calls->args[j].type)
 		{
@@ -736,4 +737,5 @@ static void _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		if(sizeof(char*) < size)
 			free(args[j]);
 	}
+	return j == i ? 0 : 1;
 }
