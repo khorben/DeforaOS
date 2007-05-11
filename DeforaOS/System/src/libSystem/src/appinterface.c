@@ -65,8 +65,8 @@ typedef struct _AppInterfaceCall
 struct _AppInterface
 {
 	AppInterfaceCall * calls;
-	int calls_cnt;
-	int port;
+	size_t calls_cnt;
+	uint16_t port;
 };
 
 
@@ -137,7 +137,7 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 {
 	AppInterfaceCall * p;
 	va_list args;
-	int i;
+	size_t i;
 	int j;
 	int type_direction;
 	int direction;
@@ -282,7 +282,7 @@ AppInterface * appinterface_new_server(char const * app)
 {
 	AppInterface * ai;
 	void * handle;
-	int i;
+	size_t i;
 #ifdef DEBUG
 	char * error;
 #endif
@@ -310,7 +310,7 @@ AppInterface * appinterface_new_server(char const * app)
 /* appinterface_delete */
 void appinterface_delete(AppInterface * appinterface)
 {
-	int i;
+	size_t i;
 
 	for(i = 0; i < appinterface->calls_cnt; i++)
 	{
@@ -401,7 +401,7 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 
 static AppInterfaceCall * _call_call(AppInterface * appinterface, char * call)
 {
-	int i;
+	size_t i;
 
 	for(i = 0; i < appinterface->calls_cnt; i++)
 		if(string_compare(appinterface->calls[i].name, call) == 0)
@@ -447,7 +447,8 @@ int appinterface_call_receive(AppInterface * appinterface, int * ret,
 	 * - we should avoid copying stuff while not enough data is gathered */
 {
 	AppInterfaceCall * aic;
-	int i;
+	size_t i;
+	int j;
 	int pos = 0;
 	size_t size;
 
@@ -457,17 +458,17 @@ int appinterface_call_receive(AppInterface * appinterface, int * ret,
 	if(i == appinterface->calls_cnt)
 		return -1;
 	aic = &appinterface->calls[i];
-	for(i = 0; i < aic->args_cnt; i++)
+	for(j = 0; j < aic->args_cnt; j++)
 	{
-		if(aic->args[i].direction == AICD_IN)
+		if(aic->args[j].direction == AICD_IN)
 			continue;
-		size = aic->args[i].size;
-		switch(aic->args[i].type)
+		size = aic->args[j].size;
+		switch(aic->args[j].type)
 		{
 			case AICT_BUFFER:
 				if(buflen - sizeof(int) < size)
 					return 0;
-				memcpy(buffer_data(args[i]), &buf[pos], size);
+				memcpy(buffer_data(args[j]), &buf[pos], size);
 				pos+=size;
 				break;
 			default:
@@ -494,7 +495,7 @@ int appinterface_receive(AppInterface * appinterface, char buf[], size_t buflen,
 {
 	size_t pos = 0;
 	char * func;
-	int i;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s", "appinterface_receive()\n");
@@ -578,7 +579,7 @@ static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 					buflen, pos);
 			calls->args[i].size = size;
 #ifdef DEBUG
-			fprintf(stderr, "should send %d\n", size);
+			fprintf(stderr, "should send %u\n", size);
 #endif
 			args[i] = malloc(size); /* FIXME free */
 			continue;
