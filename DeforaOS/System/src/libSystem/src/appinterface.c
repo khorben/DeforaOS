@@ -331,7 +331,8 @@ int appinterface_port(AppInterface * appinterface)
 
 /* useful */
 /* appinterface_call */
-static AppInterfaceCall * _call_call(AppInterface * appinterface, char * call);
+static AppInterfaceCall * _call_get_call(AppInterface * appinterface,
+		char const * call);
 static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
 		size_t * pos);
 static int _send_string(char * string, char * buf, size_t buflen, size_t * pos);
@@ -348,7 +349,7 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s", "appinterface_call(", call, ");\n");
 #endif
-	if((aic = _call_call(appinterface, call)) == NULL)
+	if((aic = _call_get_call(appinterface, call)) == NULL)
 		return -1;
 	if(_send_string(call, buf, buflen, &pos) != 0)
 		return -1;
@@ -384,7 +385,7 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 				_send_string(args[i], buf, buflen, &pos);
 				continue;
 			default:
-				if(sizeof(char*) < size)
+				if(sizeof(char*) < size) /* XXX looks ugly */
 					p = args[i];
 				else
 					p = (char*)&args[i];
@@ -399,7 +400,8 @@ int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 	return pos;
 }
 
-static AppInterfaceCall * _call_call(AppInterface * appinterface, char * call)
+static AppInterfaceCall * _call_get_call(AppInterface * appinterface,
+		char const * call)
 {
 	size_t i;
 
@@ -535,11 +537,13 @@ static char * _read_string(char buf[], size_t buflen, size_t * pos)
 	return string_new(str);
 }
 
+/* _receive_args */
 static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char ** args);
 static int _receive_exec(AppInterfaceCall * calls, char ** args);
 static int _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char ** args, int i);
+
 static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char bufw[], size_t bufwlen, size_t * bufwpos)
 {
@@ -558,8 +562,10 @@ static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
 	return ret;
 }
 
+/* _args_pre_exec */
 static int _read_buffer(char ** data, size_t datalen, char buf[], size_t buflen,
 		size_t * pos);
+
 static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char ** args)
 {
