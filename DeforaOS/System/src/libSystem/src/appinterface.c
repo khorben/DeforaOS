@@ -22,12 +22,12 @@
 /* private */
 /* types */
 typedef enum _AppInterfaceCallType {
-	AICT_VOID = 000,	AICT_BOOL = 001,
-	AICT_INT8 = 002,	AICT_UINT8 = 003,
-	AICT_INT16 = 004, 	AICT_UINT16 = 005,
-	AICT_INT32 = 006, 	AICT_UINT32 = 007,
-	AICT_INT64 = 010, 	AICT_UINT64 = 011,
-	AICT_STRING = 012, 	AICT_BUFFER = 013
+	AICT_VOID	= 000,	AICT_BOOL	= 001,
+	AICT_INT8	= 002,	AICT_UINT8	= 003,
+	AICT_INT16	= 004, 	AICT_UINT16	= 005,
+	AICT_INT32	= 006, 	AICT_UINT32	= 007,
+	AICT_INT64	= 010, 	AICT_UINT64	= 011,
+	AICT_STRING	= 012, 	AICT_BUFFER	= 013
 } AppInterfaceCallType;
 #define AICT_LAST AICT_BUFFER
 int _aict_size[AICT_LAST+1] = {
@@ -40,9 +40,9 @@ int _aict_size[AICT_LAST+1] = {
 };
 
 typedef enum _AppInterfaceCallDirection {
-	AICD_IN = 0000,
-	AICD_OUT = 0100,
-	AICD_IN_OUT = 0200
+	AICD_IN		= 0000,
+	AICD_OUT	= 0100,
+	AICD_IN_OUT	= 0200
 } AppInterfaceCallDirection;
 
 typedef struct _AppInterfaceCallArg
