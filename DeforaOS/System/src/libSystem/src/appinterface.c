@@ -1,4 +1,5 @@
-/* appinterface.c */
+/* $Id$ */
+/* Copyright (c) 2007 The DeforaOS Project */
 /* TODO:
  * - isn't there a problem if data is gone through faster than the end of the
  *   call transmission? */
@@ -31,12 +32,12 @@ typedef enum _AppInterfaceCallType {
 } AppInterfaceCallType;
 #define AICT_LAST AICT_BUFFER
 int _aict_size[AICT_LAST+1] = {
-	0,		sizeof(char),
-	sizeof(int8_t),	sizeof(uint8_t),
-	sizeof(int16_t),sizeof(uint16_t),
-	sizeof(int32_t),sizeof(uint32_t),
-	sizeof(int64_t),sizeof(uint64_t),
-	0,		0
+	0,			sizeof(char),
+	sizeof(int8_t),		sizeof(uint8_t),
+	sizeof(int16_t),	sizeof(uint16_t),
+	sizeof(int32_t),	sizeof(uint32_t),
+	sizeof(int64_t),	sizeof(uint64_t),
+	0,			0
 };
 
 typedef enum _AppInterfaceCallDirection {
