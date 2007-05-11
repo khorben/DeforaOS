@@ -87,7 +87,7 @@ AppInterface * appinterface_new(char const * app)
 	struct iface {
 		char * name;
 		int (*func)(AppInterface *);
-		int port;
+		uint16_t port;
 	} ifaces[] = {
 		{ "Session",	_new_session,	4242 },
 		{ "GServer",	_new_gserver,	4246 },
@@ -490,6 +490,7 @@ int appinterface_call_receive(AppInterface * appinterface, int * ret,
 static char * _read_string(char buf[], size_t buflen, size_t * pos);
 static int _receive_args(AppInterfaceCall * calls, char buf[], size_t buflen,
 		size_t * pos, char bufw[], size_t bufwlen, size_t * bufwpos);
+
 int appinterface_receive(AppInterface * appinterface, char buf[], size_t buflen,
 		char bufw[], size_t bufwlen, size_t * bufwpos, int * ret)
 {
@@ -515,7 +516,7 @@ int appinterface_receive(AppInterface * appinterface, char buf[], size_t buflen,
 	*ret = _receive_args(&appinterface->calls[i], buf, buflen, &pos,
 			bufw, bufwlen, bufwpos);
 #ifdef DEBUG
-	fprintf(stderr, "ret = %d\n", *ret);
+	fprintf(stderr, "appinterface_receive(): ret = %d\n", *ret);
 #endif
 	return pos;
 }
