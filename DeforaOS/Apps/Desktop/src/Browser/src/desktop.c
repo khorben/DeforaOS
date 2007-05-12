@@ -446,6 +446,7 @@ Desktop * desktop_new(void)
 #endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
 	char ** p;
+	GdkPixbuf * icon;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -491,9 +492,11 @@ Desktop * desktop_new(void)
 	if((desktopicon = desktopicon_new(desktop, "Home", home)) != NULL)
 	{
 		desktop_icon_add(desktop, desktopicon);
-		desktopicon_set_icon(desktopicon, gtk_icon_theme_load_icon(
-					desktop->theme, "gnome-home",
-					DESKTOPICON_ICON_SIZE, 0, NULL));
+		if((icon = gtk_icon_theme_load_icon(desktop->theme,
+						"gnome-home",
+						DESKTOPICON_ICON_SIZE, 0, NULL))
+				!= NULL)
+			desktopicon_set_icon(desktopicon, icon);
 	}
 	desktop_refresh(desktop);
 	return desktop;
