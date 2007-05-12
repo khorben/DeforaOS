@@ -72,6 +72,7 @@ struct _AppInterface
 
 /* public */
 /* functions */
+/* appinterface_new */
 static int _new_append(AppInterface * appinterface, AppInterfaceCallType type,
 		char const * function, int args_cnt, ...);
 static int _new_session(AppInterface * appinterface);
@@ -79,6 +80,7 @@ static int _new_gserver(AppInterface * appinterface);
 static int _new_probe(AppInterface * appinterface);
 static int _new_hello(AppInterface * appinterface);
 static int _new_vfs(AppInterface * appinterface);
+
 AppInterface * appinterface_new(char const * app)
 {
 	AppInterface * appinterface;
@@ -130,8 +132,10 @@ AppInterface * appinterface_new(char const * app)
 	return appinterface;
 }
 
+/* _new_append */
 static void _append_arg(AppInterfaceCallArg * arg, AppInterfaceCallType type,
 		AppInterfaceCallDirection direction);
+
 static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 		char const * function, int args_cnt, ...)
 {
@@ -151,10 +155,7 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 			return 1;
 	if((p = realloc(ai->calls, sizeof(AppInterfaceCall) * (i + 1)))
 			== NULL)
-	{
-		/* FIXME */
-		return 1;
-	}
+		return 1; /* FIXME report error */
 	ai->calls = p;
 	ai->calls_cnt++;
 	_append_arg(&ai->calls[i].type, type, AICD_OUT);
@@ -189,10 +190,10 @@ static int _new_session(AppInterface * ai)
 {
 	int ret = 0;
 
-	ret += _new_append(ai, AICT_UINT16, "port", 1, AICT_STRING);
-	ret += _new_append(ai, AICT_VOID, "list", 0);
-	ret += _new_append(ai, AICT_BOOL, "start", 1, AICT_STRING);
-	ret += _new_append(ai, AICT_BOOL, "stop", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT16, "port", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_VOID, "list", 0);
+	ret |= _new_append(ai, AICT_BOOL, "start", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_BOOL, "stop", 1, AICT_STRING);
 	return ret;
 }
 
@@ -206,22 +207,22 @@ static int _new_probe(AppInterface * ai)
 	int ret = 0;
 
 	/* FIXME need a way to list capabilities, such as network interfaces */
-	ret += _new_append(ai, AICT_UINT32, "uptime", 0);
-	ret += _new_append(ai, AICT_UINT32, "load_1", 0);
-	ret += _new_append(ai, AICT_UINT32, "load_5", 0);
-	ret += _new_append(ai, AICT_UINT32, "load_15", 0);
-	ret += _new_append(ai, AICT_UINT32, "ram_total", 0);
-	ret += _new_append(ai, AICT_UINT32, "ram_free", 0);
-	ret += _new_append(ai, AICT_UINT32, "ram_shared", 0);
-	ret += _new_append(ai, AICT_UINT32, "ram_buffer", 0);
-	ret += _new_append(ai, AICT_UINT32, "swap_total", 0);
-	ret += _new_append(ai, AICT_UINT32, "swap_free", 0);
-	ret += _new_append(ai, AICT_UINT32, "users", 0);
-	ret += _new_append(ai, AICT_UINT32, "procs", 0);
-	ret += _new_append(ai, AICT_UINT32, "ifrxbytes", 1, AICT_STRING);
-	ret += _new_append(ai, AICT_UINT32, "iftxbytes", 1, AICT_STRING);
-	ret += _new_append(ai, AICT_UINT32, "voltotal", 1, AICT_STRING);
-	ret += _new_append(ai, AICT_UINT32, "volfree", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "uptime", 0);
+	ret |= _new_append(ai, AICT_UINT32, "load_1", 0);
+	ret |= _new_append(ai, AICT_UINT32, "load_5", 0);
+	ret |= _new_append(ai, AICT_UINT32, "load_15", 0);
+	ret |= _new_append(ai, AICT_UINT32, "ram_total", 0);
+	ret |= _new_append(ai, AICT_UINT32, "ram_free", 0);
+	ret |= _new_append(ai, AICT_UINT32, "ram_shared", 0);
+	ret |= _new_append(ai, AICT_UINT32, "ram_buffer", 0);
+	ret |= _new_append(ai, AICT_UINT32, "swap_total", 0);
+	ret |= _new_append(ai, AICT_UINT32, "swap_free", 0);
+	ret |= _new_append(ai, AICT_UINT32, "users", 0);
+	ret |= _new_append(ai, AICT_UINT32, "procs", 0);
+	ret |= _new_append(ai, AICT_UINT32, "ifrxbytes", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "iftxbytes", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "voltotal", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "volfree", 1, AICT_STRING);
 	return ret;
 }
 
@@ -235,43 +236,48 @@ static int _new_vfs(AppInterface * ai)
 {
 	int ret = 0;
 
-	ret+=_new_append(ai, AICT_UINT32, "chmod", 2, AICT_STRING, AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "chown", 3, AICT_STRING, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "chmod", 2, AICT_STRING,
 			AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "close", 1, AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "creat", 2, AICT_STRING, AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "fchmod", 2, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "chown", 3, AICT_STRING,
+			AICT_UINT32, AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "close", 1, AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "creat", 2, AICT_STRING,
 			AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "fchown", 3, AICT_UINT32, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "fchmod", 2, AICT_UINT32,
 			AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "flock", 2, AICT_UINT32, AICT_UINT32);
-/*	ret+=_new_append(ai, AICT_UINT32, "fstat", 2, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "fchown", 3, AICT_UINT32,
+			AICT_UINT32, AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "flock", 2, AICT_UINT32,
+			AICT_UINT32);
+/*	ret |= _new_append(ai, AICT_UINT32, "fstat", 2, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT); */
-	ret+=_new_append(ai, AICT_UINT32, "lchown", 3, AICT_STRING, AICT_UINT32,
-			AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "link", 2, AICT_STRING, AICT_STRING);
-	ret+=_new_append(ai, AICT_UINT32, "lseek", 3, AICT_UINT32, AICT_UINT32,
-			AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "lstat", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_UINT32, "lchown", 3, AICT_STRING,
+			AICT_UINT32, AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "link", 2, AICT_STRING,
+			AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "lseek", 3, AICT_UINT32,
+			AICT_UINT32, AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "lstat", 2, AICT_STRING,
 			AICT_BUFFER | AICD_OUT);
-	ret+=_new_append(ai, AICT_UINT32, "mkdir", 2, AICT_STRING, AICT_UINT32);
-/*	ret+=_new_append(ai, AICT_UINT32, "mknod", 2, AICT_STRING, AICT_UINT32,
-			AICT_UINT32); */
-	ret+=_new_append(ai, AICT_UINT32, "open", 3, AICT_STRING, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "mkdir", 2, AICT_STRING,
 			AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "read", 3, AICT_UINT32,
+/*	ret |= _new_append(ai, AICT_UINT32, "mknod", 2, AICT_STRING,
+			AICT_UINT32, AICT_UINT32); */
+	ret |= _new_append(ai, AICT_UINT32, "open", 3, AICT_STRING, AICT_UINT32,
+			AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "read", 3, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT, AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "rename", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_UINT32, "rename", 2, AICT_STRING,
 			AICT_STRING);
-	ret+=_new_append(ai, AICT_UINT32, "rmdir", 1, AICT_STRING);
-	ret+=_new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_UINT32, "rmdir", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
 			AICT_BUFFER | AICD_OUT);
-	ret+=_new_append(ai, AICT_UINT32, "symlink", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_UINT32, "symlink", 2, AICT_STRING,
 			AICT_STRING);
-	ret+=_new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32);
-	ret+=_new_append(ai, AICT_UINT32, "unlink", 1, AICT_STRING);
-	ret+=_new_append(ai, AICT_UINT32, "write", 3, AICT_UINT32, AICT_BUFFER,
-			AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32);
+	ret |= _new_append(ai, AICT_UINT32, "unlink", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT32, "write", 3, AICT_UINT32,
+			AICT_BUFFER, AICT_UINT32);
 	return ret;
 }
 
@@ -336,6 +342,7 @@ static AppInterfaceCall * _call_get_call(AppInterface * appinterface,
 static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
 		size_t * pos);
 static int _send_string(char * string, char * buf, size_t buflen, size_t * pos);
+
 int appinterface_call(AppInterface * appinterface, char * call, char buf[],
 		size_t buflen, void ** args)
 {
