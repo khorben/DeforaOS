@@ -31,9 +31,9 @@ typedef struct _AppServerClient
 	uint16_t port;
 #define ASC_BUFSIZE 65536 /* FIXME */
 	char buf_read[ASC_BUFSIZE];
-	unsigned int buf_read_cnt;
+	size_t buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
-	unsigned int buf_write_cnt;
+	size_t buf_write_cnt;
 } AppServerClient;
 
 
