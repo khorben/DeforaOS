@@ -26,13 +26,13 @@ libSystem.a: $(libSystem_OBJS)
 libSystem.so: $(libSystem_OBJS)
 	$(LD) -o libSystem.so $(libSystem_OBJS)
 
-appclient.o: appclient.c
+appclient.o: appclient.c appinterface.h
 	$(CC) $(libSystem_CFLAGS) -c appclient.c
 
 appinterface.o: appinterface.c
 	$(CC) $(libSystem_CFLAGS) -c appinterface.c
 
-appserver.o: appserver.c
+appserver.o: appserver.c appinterface.h
 	$(CC) $(libSystem_CFLAGS) -c appserver.c
 
 array.o: array.c
