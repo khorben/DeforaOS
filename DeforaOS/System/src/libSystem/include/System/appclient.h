@@ -20,6 +20,7 @@ AppClient * appclient_new_event(char * service, Event * event);
 void appclient_delete(AppClient * appclient);
 
 /* useful */
-int appclient_call(AppClient * appclient, char * function, int args_cnt, ...);
+int appclient_call(AppClient * appclient, int32_t * ret, char const * function,
+		...);
 
 #endif /* !LIBSYSTEM_APPCLIENT_H */

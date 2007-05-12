@@ -1,12 +1,8 @@
 /* $Id$ */
 /* Copyright (c) 2007 The DeforaOS Project */
-/* TODO:
- * - isn't there a problem if data is gone through faster than the end of the
- *   call transmission? */
 
 
 
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #ifdef DEBUG
@@ -14,7 +10,6 @@
 #endif
 #include <string.h>
 #include <dlfcn.h>
-
 #include "System.h"
 #include "appinterface.h"
 
@@ -22,7 +17,8 @@
 /* AppInterface */
 /* private */
 /* types */
-typedef enum _AppInterfaceCallType {
+typedef enum _AppInterfaceCallType
+{
 	AICT_VOID	= 000,	AICT_BOOL	= 001,
 	AICT_INT8	= 002,	AICT_UINT8	= 003,
 	AICT_INT16	= 004, 	AICT_UINT16	= 005,
@@ -31,7 +27,8 @@ typedef enum _AppInterfaceCallType {
 	AICT_STRING	= 012, 	AICT_BUFFER	= 013
 } AppInterfaceCallType;
 #define AICT_LAST AICT_BUFFER
-int _aict_size[AICT_LAST+1] = {
+static int _aict_size[AICT_LAST+1] =
+{
 	0,			sizeof(char),
 	sizeof(int8_t),		sizeof(uint8_t),
 	sizeof(int16_t),	sizeof(uint16_t),
@@ -40,10 +37,11 @@ int _aict_size[AICT_LAST+1] = {
 	0,			0
 };
 
-typedef enum _AppInterfaceCallDirection {
+typedef enum _AppInterfaceCallDirection
+{
 	AICD_IN		= 0000,
-	AICD_OUT	= 0100,
-	AICD_IN_OUT	= 0200
+	AICD_IN_OUT	= 0100,
+	AICD_OUT	= 0200
 } AppInterfaceCallDirection;
 
 typedef struct _AppInterfaceCallArg
@@ -68,6 +66,25 @@ struct _AppInterface
 	size_t calls_cnt;
 	uint16_t port;
 };
+
+
+/* functions */
+static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
+		char const * call);
+
+/* _appinterface_get_call */
+static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
+		char const * call)
+{
+	size_t i;
+
+	for(i = 0; i < appinterface->calls_cnt; i++)
+		if(string_compare(appinterface->calls[i].name, call) == 0)
+			break;
+	if(i == appinterface->calls_cnt)
+		return NULL;
+	return &appinterface->calls[i];
+}
 
 
 /* public */
@@ -328,96 +345,208 @@ void appinterface_delete(AppInterface * appinterface)
 }
 
 
-/* returns */
-int appinterface_port(AppInterface * appinterface)
+/* accessors */
+/* appinterface_get_port */
+int appinterface_get_port(AppInterface * appinterface)
 {
 	return appinterface->port;
 }
 
 
-/* useful */
-/* appinterface_call */
-static AppInterfaceCall * _call_get_call(AppInterface * appinterface,
+/* appinterface_get_args_count */
+static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
 		char const * call);
+
+int appinterface_get_args_count(AppInterface * appinterface,
+		char const * function)
+{
+	AppInterfaceCall * aic;
+
+	if((aic = _appinterface_get_call(appinterface, function)) == NULL)
+		return -1;
+	return aic->args_cnt;
+}
+
+
+/* useful */
+/* appinterface_call
+ * PRE
+ * POST
+ * 	<= 0	an error occured
+ * 	else	the number of bytes added to the buffer */
 static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
 		size_t * pos);
-static int _send_string(char * string, char * buf, size_t buflen, size_t * pos);
+static int _send_string(char const * string, char * buf, size_t buflen,
+		size_t * pos);
 
-int appinterface_call(AppInterface * appinterface, char * call, char buf[],
-		size_t buflen, void ** args)
+int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
+		char const * function, void ** args, va_list arg)
 {
 	AppInterfaceCall * aic;
 	size_t pos = 0;
 	int i;
+	void * p;
 	size_t size;
-	Buffer * buffer;
-	char * p;
+	int8_t i8;
+	int16_t i16;
+	int32_t i32;
+	int64_t i64;
+	Buffer * b;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "appinterface_call(", call, ");\n");
+	fprintf(stderr, "%s%s%s", "appinterface_call(", function, ");\n");
 #endif
-	if((aic = _call_get_call(appinterface, call)) == NULL)
+	if((aic = _appinterface_get_call(appinterface, function)) == NULL)
 		return -1;
-	if(_send_string(call, buf, buflen, &pos) != 0)
+	if(_send_string(function, buf, buflen, &pos) != 0)
 		return -1;
 	for(i = 0; i < aic->args_cnt; i++)
 	{
-		if(aic->args[i].direction == AICD_OUT)
+		size = 0;
+		if(aic->args[i].direction == AICD_IN)
 		{
-			if(aic->args[i].type != AICT_BUFFER)
-				continue;
-			buffer = args[i];
-			size = buffer_length(buffer);
-			aic->args[i].size = size;
-			if(_send_buffer((char*)&size, sizeof(uint32_t), buf, 
-						buflen, &pos) != 0)
-				return -1;
+			size = aic->args[i].size;
+			switch(aic->args[i].type)
+			{
+				case AICT_VOID:
+					break;
+				case AICT_BOOL:
+				case AICT_INT8:
+				case AICT_UINT8:
+					i8 = va_arg(arg, int8_t);
+					p = &i8;
+					break;
+				case AICT_INT16:
+				case AICT_UINT16:
+					i16 = htons(va_arg(arg, int16_t));
+					p = &i16;
+					break;
+				case AICT_INT32:
+				case AICT_UINT32:
+					i32 = htonl(va_arg(arg, int32_t));
+					p = &i32;
+					break;
+				case AICT_INT64: /* FIXME wrong endian */
+				case AICT_UINT64:
+					i64 = va_arg(arg, int64_t);
+					p = &i64;
+					break;
+				case AICT_STRING: /* FIXME handle NULL? */
+					p = va_arg(arg, String *);
+					size = strlen(p) + 1;
+					break;
+				case AICT_BUFFER:
+					b = va_arg(arg, Buffer *);
+					i32 = htonl(buffer_length(b));
+					p = &i32;
+					if(_send_buffer(p, sizeof(i32), buf,
+								buflen, &pos)
+							!= 0)
+						return -1;
+					size = buffer_length(b);
+					p = buffer_data(b);
+					break;
+			}
+		}
+		else if(aic->args[i].direction == AICD_IN_OUT)
+		{
+			size = aic->args[i].size;
+			switch(aic->args[i].type)
+			{
+				case AICT_VOID:
+					break;
+				case AICT_BOOL:
+				case AICT_INT8:
+				case AICT_UINT8:
+					args[i] = va_arg(arg, int8_t *);
+					i8 = *(int8_t *)args[i];
+					p = &i8;
+					break;
+				case AICT_INT16:
+				case AICT_UINT16:
+					args[i] = va_arg(arg, int16_t *);
+					i16 = htons(*(int16_t *)args[i]);
+					p = &i16;
+					break;
+				case AICT_INT32:
+				case AICT_UINT32:
+					args[i] = va_arg(arg, int32_t *);
+					i32 = htonl(*(int32_t *)args[i]);
+					p = &i32;
+					break;
+				case AICT_INT64: /* FIXME wrong endian */
+				case AICT_UINT64:
+					args[i] = va_arg(arg, int64_t *);
+					i64 = *(int64_t *)args[i];
+					p = &i64;
+					break;
+				case AICT_STRING: /* FIXME handle NULL? */
+					args[i] = va_arg(arg, String **);
+					p = *(char **)args[i];
+					size = strlen(p) + 1;
+					break;
+				case AICT_BUFFER:
+					b = va_arg(arg, Buffer *);
+					args[i] = b;
+					i32 = htonl(buffer_length(b));
+					p = &i32;
+					if(_send_buffer(p, sizeof(i32), buf,
+								buflen, &pos)
+							!= 0)
+						return -1;
+					size = buffer_length(b);
+					p = buffer_data(b);
+					break;
+			}
+		}
+		else if(aic->args[i].direction == AICD_OUT)
+			switch(aic->args[i].type)
+			{
+				case AICT_VOID:
+					break;
+				case AICT_BOOL:
+				case AICT_INT8:
+				case AICT_UINT8:
+					p = va_arg(arg, int8_t *);
+					args[i] = p;
+					break;
+				case AICT_INT16:
+				case AICT_UINT16:
+					p = va_arg(arg, int16_t *);
+					args[i] = p;
+					break;
+				case AICT_INT32:
+				case AICT_UINT32:
+					p = va_arg(arg, int32_t *);
+					args[i] = p;
+					break;
+				case AICT_INT64:
+				case AICT_UINT64:
+					p = va_arg(arg, int64_t *);
+					args[i] = p;
+					break;
+				case AICT_STRING:
+					p = *(va_arg(arg, String **));
+					args[i] = p;
+					break;
+				case AICT_BUFFER:
+					b = va_arg(arg, Buffer *);
+					args[i] = b;
+					i32 = htonl(buffer_length(b));
+					p = &i32;
+					size = sizeof(i32);
+					break;
+			}
+		if(size == 0)
 			continue;
-		}
-		size = aic->args[i].size;
-		switch(aic->args[i].type)
-		{
-			case AICT_VOID:
-				continue;
-			case AICT_BUFFER:
-				buffer = args[i];
-				size = buffer_length(buffer);
-				aic->args[i].size = size;
-				if(_send_buffer((char*)&size, sizeof(uint32_t),
-						buf, buflen, &pos) != 0)
-					return -1;
-				p = buffer_data(buffer);
-				break;
-			case AICT_STRING:
-				_send_string(args[i], buf, buflen, &pos);
-				continue;
-			default:
-				if(sizeof(char*) < size) /* XXX looks ugly */
-					p = args[i];
-				else
-					p = (char*)&args[i];
-				break;
-		}
 #ifdef DEBUG
-		fprintf(stderr, "appinterface_call() sending %d\n", size);
+		fprintf(stderr, "appinterface_call() sending %u\n",
+				(unsigned)size);
 #endif
 		if(_send_buffer(p, size, buf, buflen, &pos) != 0)
 			return -1;
 	}
 	return pos;
-}
-
-static AppInterfaceCall * _call_get_call(AppInterface * appinterface,
-		char const * call)
-{
-	size_t i;
-
-	for(i = 0; i < appinterface->calls_cnt; i++)
-		if(string_compare(appinterface->calls[i].name, call) == 0)
-			break;
-	if(i == appinterface->calls_cnt)
-		return NULL;
-	return &appinterface->calls[i];
 }
 
 static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
@@ -430,7 +559,8 @@ static int _send_buffer(char * data, size_t datalen, char * buf, size_t buflen,
 	return 0;
 }
 
-static int _send_string(char * string, char buf[], size_t buflen, size_t * pos)
+static int _send_string(char const * string, char buf[], size_t buflen,
+		size_t * pos)
 {
 	int i = 0;
 
@@ -448,50 +578,107 @@ static int _send_string(char * string, char buf[], size_t buflen, size_t * pos)
 }
 
 
-/* appinterface_call_receive */
-int appinterface_call_receive(AppInterface * appinterface, int * ret,
-		char * func, void ** args, char buf[], size_t buflen)
-	/* FIXME
-	 * - this should be in appinterface_call (with an async option)
-	 * - we should avoid copying stuff while not enough data is gathered */
+/* appinterface_call_receive
+ * PRE
+ * POST
+ * 	< 0	an error occured
+ * 	0	not enough data ready
+ * 	> 0	the amount of data read */
+int appinterface_call_receive(AppInterface * appinterface, char buf[],
+		size_t buflen, int32_t * ret, char const * function,
+		void ** args)
+	/* FIXME factorize read_int8/read_int16/read_buffer/etc */
 {
 	AppInterfaceCall * aic;
-	size_t i;
-	int j;
-	int pos = 0;
+	int i;
 	size_t size;
+	void * v;
+	Buffer * b;
+	uint32_t bsize;
+	int pos;
+	int16_t * i16;
+	int32_t * i32;
 
-	for(i = 0; i < appinterface->calls_cnt; i++)
-		if(string_compare(appinterface->calls[i].name, func) == 0)
-			break;
-	if(i == appinterface->calls_cnt)
+	if((aic = _appinterface_get_call(appinterface, function)) == NULL)
 		return -1;
-	aic = &appinterface->calls[i];
-	for(j = 0; j < aic->args_cnt; j++)
+	for(i = 0; i < aic->args_cnt; i++)
 	{
-		if(aic->args[j].direction == AICD_IN)
+		if(aic->args[i].direction == AICD_IN)
 			continue;
-		size = aic->args[j].size;
-		switch(aic->args[j].type)
+		v = args[i];
+		size = aic->args[i].size;
+		switch(aic->args[i].type)
 		{
-			case AICT_BUFFER:
-				if(buflen - sizeof(int) < size)
-					return 0;
-				memcpy(buffer_data(args[j]), &buf[pos], size);
-				pos+=size;
+			case AICT_VOID:
+			case AICT_BOOL:
+			case AICT_INT8:
+			case AICT_UINT8:
+			case AICT_INT16:
+			case AICT_UINT16:
+			case AICT_INT32:
+			case AICT_UINT32:
+			case AICT_INT64:
+			case AICT_UINT64:
+				break; /* nothing more to do */
+			case AICT_STRING: /* FIXME implement */
 				break;
-			default:
-#ifdef DEBUG
-				fprintf(stderr, "%s", "Not yet implemented\n");
-#endif
-				/* FIXME */
+			case AICT_BUFFER: /* read the size */
+				b = args[i];
+				v = &bsize;
+				size = sizeof(bsize);
 				break;
 		}
+		if(size == 0)
+			continue;
+		if(pos + size > buflen)
+			return 0;
+		memcpy(v, &buf[pos], size);
+		pos += size;
+		size = 0;
+		switch(aic->args[i].type)
+		{
+			case AICT_VOID:
+			case AICT_BOOL:
+			case AICT_INT8:
+			case AICT_UINT8:
+				break; /* nothing more to do */
+			case AICT_INT16:
+			case AICT_UINT16:
+				i16 = v;
+				*i16 = ntohs(*i16);
+				break;
+			case AICT_INT32:
+			case AICT_UINT32:
+				i32 = v;
+				*i32 = ntohl(*i32);
+				break;
+			case AICT_INT64:
+			case AICT_UINT64:
+				break; /* FIXME wrong endian */
+			case AICT_STRING: /* FIXME implement */
+				break;
+			case AICT_BUFFER:
+				if(bsize > buffer_length(b))
+					return -1; /* not enough space in b */
+				size = bsize;
+				v = buffer_data(b);
+				break;
+		}
+		if(size == 0)
+			continue;
+		if(pos + size > buflen)
+			return 0;
+		memcpy(v, &buf[pos], size);
+		pos += size;
 	}
-	if(pos - buflen < sizeof(int))
+	if(pos + sizeof(*ret) > buflen)
 		return 0;
-	memcpy(ret, &(buf[pos]), sizeof(int));
-	return pos + sizeof(int);
+	if(ret != NULL)
+	{
+		memcpy(ret, &buf[pos], sizeof(*ret));
+		*ret = ntohl(*ret);
+	}
+	return pos + sizeof(*ret);
 }
 
 
@@ -593,7 +780,7 @@ static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 					buflen, pos);
 			calls->args[i].size = size;
 #ifdef DEBUG
-			fprintf(stderr, "should send %u\n", size);
+			fprintf(stderr, "should send %u\n", (unsigned)size);
 #endif
 			args[i] = malloc(size); /* FIXME free */
 			continue;
@@ -618,7 +805,8 @@ static int _args_pre_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 						buf, buflen, pos);
 				calls->args[i].size = size;
 #ifdef DEBUG
-				fprintf(stderr, "should send %d\n", size);
+				fprintf(stderr, "should send %u\n",
+						(unsigned)size);
 #endif
 				break;
 			case AICT_STRING:
@@ -726,7 +914,8 @@ static int _args_post_exec(AppInterfaceCall * calls, char buf[], size_t buflen,
 					break;
 			}
 #ifdef DEBUG
-			fprintf(stderr, "_args_post_exec() sending %u\n", size);
+			fprintf(stderr, "_args_post_exec() sending %u\n",
+					(unsigned)size);
 #endif
 			if(_send_buffer(p, size, buf, buflen, pos) != 0)
 				break;

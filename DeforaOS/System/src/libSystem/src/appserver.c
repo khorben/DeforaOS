@@ -1,4 +1,5 @@
-/* appserver.c */
+/* $Id$ */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -9,13 +10,13 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
-# include <string.h>
-
+#include <string.h>
 #include "System.h"
 #include "appinterface.h"
 
 
 /* AppServerClient */
+/* private */
 /* types */
 typedef enum _AppServerClientState
 {
@@ -38,7 +39,9 @@ typedef struct _AppServerClient
 
 
 /* functions */
-AppServerClient * appserverclient_new(int fd, uint32_t addr, uint16_t port)
+/* _appserverclient_new */
+static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
+		uint16_t port)
 {
 	AppServerClient * asc;
 
@@ -53,7 +56,9 @@ AppServerClient * appserverclient_new(int fd, uint32_t addr, uint16_t port)
 	return asc;
 }
 
-void appserverclient_delete(AppServerClient * appserverclient)
+
+/* _appserverclient_delete */
+static void _appserverclient_delete(AppServerClient * appserverclient)
 {
 	/* FIXME find a way to properly report error */
 #ifdef DEBUG
@@ -80,7 +85,11 @@ struct _AppServer
 
 
 /* functions */
+static int _appserver_accept(int fd, AppServer * appserver);
 static int _appserver_read(int fd, AppServer * appserver);
+static int _appserver_write(int fd, AppServer * appserver);
+
+/* _appserver_accept */
 static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
@@ -94,7 +103,7 @@ static int _appserver_accept(int fd, AppServer * appserver)
 #endif
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return 1;
-	if((asc = appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port))
+	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port))
 			== NULL)
 	{
 		/* FIXME report error */
@@ -108,6 +117,7 @@ static int _appserver_accept(int fd, AppServer * appserver)
 }
 
 
+/* _appserver_read */
 static int _read_process(AppServer * appserver, AppServerClient * asc);
 static int _appserver_read(int fd, AppServer * appserver)
 {
@@ -134,7 +144,7 @@ static int _appserver_read(int fd, AppServer * appserver)
 		if(asc->buf_write_cnt > 0)
 			event_unregister_io_write(appserver->event, fd);
 		event_unregister_io_read(appserver->event, fd);
-		appserverclient_delete(asc);
+		_appserverclient_delete(asc);
 		array_remove_pos(appserver->clients, i);
 		return 1;
 	}
@@ -170,15 +180,15 @@ static int _read_logged(AppServer * appserver, AppServerClient * asc)
 	return 0;
 }
 
-static int _appserver_write(int fd, AppServer * appserver);
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 {
 	int i;
-	int ret;
+	int32_t ret;
 
 	if((i = appinterface_receive(appserver->interface, asc->buf_read,
-			asc->buf_read_cnt, asc->buf_write, ASC_BUFSIZE,
-			&asc->buf_write_cnt, &ret)) == -1)
+			asc->buf_read_cnt, asc->buf_write,
+			sizeof(asc->buf_write), &asc->buf_write_cnt, &ret))
+			== -1)
 		return -1;
 	if(i <= 0 || i > asc->buf_read_cnt)
 		return -1;
@@ -187,6 +197,7 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	/* FIXME should be done in AppInterface? */
 	if(asc->buf_write_cnt + sizeof(int) > sizeof(asc->buf_write))
 		return -1;
+	ret = htonl(ret);
 	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(int));
 	asc->buf_write_cnt += sizeof(int);
 	event_register_io_write(appserver->event, asc->fd,
@@ -194,6 +205,8 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	return 0;
 }
 
+
+/* _appserver_write */
 static int _appserver_write(int fd, AppServer * appserver)
 {
 	AppServerClient * asc;
@@ -212,7 +225,8 @@ static int _appserver_write(int fd, AppServer * appserver)
 	if(asc == NULL)
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "sending result: %d long\n", asc->buf_write_cnt);
+	fprintf(stderr, "sending result: %u long\n",
+			(unsigned)asc->buf_write_cnt);
 #endif
 	if(asc->buf_write_cnt == 0 || (len = write(fd, asc->buf_write,
 					asc->buf_write_cnt)) <= 0)
@@ -220,8 +234,9 @@ static int _appserver_write(int fd, AppServer * appserver)
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%d%s", "_appserver_write_int(", fd,
-			", appserver): ", len, " characters written\n");
+	fprintf(stderr, "%s%d%s%u%s", "_appserver_write_int(", fd,
+			", appserver): ", (unsigned)len,
+			" characters written\n");
 #endif
 	return asc->buf_write_cnt == 0 ? 1 : 0;
 }
@@ -282,7 +297,7 @@ static int _new_server(AppServer * appserver, int options)
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(appinterface_port(appserver->interface));
+	sa.sin_port = htons(appinterface_get_port(appserver->interface));
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
 			: INADDR_ANY);
 	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0

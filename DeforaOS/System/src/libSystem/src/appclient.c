@@ -29,8 +29,9 @@ struct _AppClient
 	char buf_write[ASC_BUFSIZE];
 	int buf_write_cnt;
 	int ret;
-	char * lastfunc;
+	char const * lastfunc;
 	void ** lastargs;
+	int32_t * lastret;
 };
 
 
@@ -60,21 +61,23 @@ static int _appclient_read(int fd, AppClient * ac)
 		close(fd);
 		return 1;
 	}
-	ac->buf_read_cnt+=len;
+	ac->buf_read_cnt += len;
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "appclient_read() ", len, " bytes\n");
 #endif
-	len = appinterface_call_receive(ac->interface, &ac->ret, ac->lastfunc,
-			ac->lastargs, ac->buf_read, ac->buf_read_cnt);
-	if(len < 0)
+	len = appinterface_call_receive(ac->interface, ac->buf_read,
+			ac->buf_read_cnt, ac->lastret, ac->lastfunc,
+			ac->lastargs);
+	if(len < 0 || len > ac->buf_read_cnt)
 	{
-		/* FIXME */
+		/* FIXME report error */
 		close(fd);
 		return 1;
 	}
-	if(len == 0)
+	if(len == 0) /* EAGAIN */
 		return 0;
-	ac->buf_read_cnt-=len;
+	ac->ret = 0;
+	ac->buf_read_cnt -= len;
 	event_unregister_timeout(ac->event,
 			(EventTimeoutFunc)_appclient_timeout);
 	return 1;
@@ -142,7 +145,6 @@ AppClient * appclient_new_event(char * app, Event * event)
 	appclient->fd = -1;
 	appclient->buf_read_cnt = 0;
 	appclient->buf_write_cnt = 0;
-	appclient->ret = -1;
 	if(_new_connect(appclient, app) != 0)
 	{
 		free(appclient);
@@ -155,17 +157,17 @@ static int _connect_addr(char * service, uint32_t * addr);
 static int _new_connect(AppClient * appclient, char * app)
 {
 	struct sockaddr_in sa;
-	int port;
+	int32_t port = -1;
 
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 	sa.sin_family = AF_INET;
-	sa.sin_port = htons(appinterface_port(appclient->interface));
+	sa.sin_port = htons(appinterface_get_port(appclient->interface));
 	if(_connect_addr("Session", &sa.sin_addr.s_addr) != 0)
 		return 1;
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return 1;
-	if((port = appclient_call(appclient, "port", 1, app)) == -1)
+	if(appclient_call(appclient, &port, "port", app) != 0)
 		return 1;
 	if(port == 0)
 		return 0;
@@ -222,35 +224,41 @@ void appclient_delete(AppClient * appclient)
 
 
 /* useful */
+/* appclient_call */
 static int _call_event(AppClient * ac);
-int appclient_call(AppClient * ac, char * function, int args_cnt, ...)
+
+int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 {
-	va_list arg;
-	int i;
+	int _ret;
 	void ** args = NULL;
+	va_list arg;
+	size_t left = sizeof(ac->buf_write) - ac->buf_write_cnt;
+	int i;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s%p%s", "appclient_call(), interface ", ac->interface,
 			"\n");
 #endif
-	if((args = malloc(sizeof(void*) * args_cnt)) == NULL)
+	if((i = appinterface_get_args_count(ac->interface, function)) < 0)
 		return -1;
-	va_start(arg, args_cnt);
-	for(i = 0; i < args_cnt; i++)
-		args[i] = va_arg(arg, void *);
+	if(i > 0 && (args = calloc(sizeof(*args), i)) == NULL)
+		return -1;
+	va_start(arg, function);
+	i = appinterface_call(ac->interface, &ac->buf_write[ac->buf_write_cnt],
+			left, function, args, arg);
 	va_end(arg);
-	i = appinterface_call(ac->interface, function,
-			&ac->buf_write[ac->buf_write_cnt],
-			sizeof(ac->buf_write) - ac->buf_write_cnt, args);
-	if(i <= 0)
+	if(i <= 0 || i > left)
 	{
 		free(args);
 		return -1;
 	}
-	ac->lastfunc = function;
+	ac->lastfunc = function; /* XXX safe for now because synchronous only */
 	ac->lastargs = args;
-	ac->buf_write_cnt+=i;
-	return _call_event(ac);
+	ac->lastret = ret;
+	ac->buf_write_cnt += i;
+	_ret = _call_event(ac);
+	free(ac->lastargs);
+	return _ret;
 }
 
 static int _call_event(AppClient * ac)
