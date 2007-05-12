@@ -307,9 +307,9 @@ static AppClient * _refresh_connect(Host * host, Event * event)
 static int _rrd_update(char * file, int args_cnt, ...);
 static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
 {
-	int res;
+	int32_t res;
 
-	if((res = appclient_call(ac, "uptime", 0)) == -1)
+	if(appclient_call(ac, &res, "uptime") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "uptime.rrd");
 	_rrd_update(rrd, 1, res);
@@ -318,11 +318,11 @@ static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
 
 static int _refresh_load(AppClient * ac, Host * host, char * rrd)
 {
-	int res[3];
+	int32_t res[3];
 
-	if((res[0] = appclient_call(ac, "load_1", 0)) == -1
-			|| (res[1] = appclient_call(ac, "load_5", 0)) == -1
-			|| (res[2] = appclient_call(ac, "load_15", 0)) == -1)
+	if(appclient_call(ac, &res[0], "load_1") != 0
+			|| appclient_call(ac, &res[1], "load_5") != 0
+			|| appclient_call(ac, &res[2], "load_15") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "load.rrd");
 	_rrd_update(rrd, 3, res[0], res[1], res[2]);
@@ -331,9 +331,9 @@ static int _refresh_load(AppClient * ac, Host * host, char * rrd)
 
 static int _refresh_procs(AppClient * ac, Host * host, char * rrd)
 {
-	int res;
+	int32_t res;
 
-	if((res = appclient_call(ac, "procs", 0)) == -1)
+	if(appclient_call(ac, &res, "procs") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "procs.rrd");
 	_rrd_update(rrd, 1, res);
@@ -342,12 +342,12 @@ static int _refresh_procs(AppClient * ac, Host * host, char * rrd)
 
 static int _refresh_ram(AppClient * ac, Host * host, char * rrd)
 {
-	int res[4];
+	int32_t res[4];
 
-	if((res[0] = appclient_call(ac, "ram_total", 0)) == -1
-			|| (res[1] = appclient_call(ac, "ram_free", 0)) == -1
-			|| (res[2] = appclient_call(ac, "ram_shared", 0)) == -1
-			|| (res[3] = appclient_call(ac, "ram_buffer", 0)) == -1)
+	if(appclient_call(ac, &res[0], "ram_total") != 0
+			|| appclient_call(ac, &res[1], "ram_free") != 0
+			|| appclient_call(ac, &res[2], "ram_shared") != 0
+			|| appclient_call(ac, &res[3], "ram_buffer") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "ram.rrd");
 	_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
@@ -356,10 +356,10 @@ static int _refresh_ram(AppClient * ac, Host * host, char * rrd)
 
 static int _refresh_swap(AppClient * ac, Host * host, char * rrd)
 {
-	int res[2];
+	int32_t res[2];
 
-	if((res[0] = appclient_call(ac, "swap_total", 0)) == -1
-			|| (res[1] = appclient_call(ac, "swap_free", 0)) == -1)
+	if(appclient_call(ac, &res[0], "swap_total") != 0
+			|| appclient_call(ac, &res[1], "swap_free") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "swap.rrd");
 	_rrd_update(rrd, 2, res[0], res[1]);
@@ -368,12 +368,12 @@ static int _refresh_swap(AppClient * ac, Host * host, char * rrd)
 
 static int _refresh_users(AppClient * ac, Host * host, char * rrd)
 {
-	int res[2];
+	int32_t res;
 
-	if((res[0] = appclient_call(ac, "users", 0)) == -1)
+	if(appclient_call(ac, &res, "users") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "users.rrd");
-	_rrd_update(rrd, 1, res[0]);
+	_rrd_update(rrd, 1, res);
 	return 0;
 }
 
@@ -386,17 +386,16 @@ static int _refresh_ifaces(AppClient * ac, Host * host, char * rrd)
 	if(p == NULL)
 		return 0;
 	for(; *p != NULL; p++)
-		ret+=_ifaces_if(ac, host, rrd, *p);
+		ret |= _ifaces_if(ac, host, rrd, *p);
 	return ret;
 }
 
 static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface)
 {
-	int res[2];
+	int32_t res[2];
 
-	if((res[0] = appclient_call(ac, "ifrxbytes", 1, iface)) == -1
-			|| (res[1] = appclient_call(ac, "iftxbytes", 1, iface))
-			== -1)
+	if(appclient_call(ac, &res[0], "ifrxbytes", iface) != 0
+			|| appclient_call(ac, &res[1], "iftxbytes", iface) != 0)
 		return 1;
 	sprintf(rrd, "%s_%s%s", host->hostname, iface, ".rrd");
 	_rrd_update(rrd, 2, res[0], res[1]);
@@ -412,17 +411,16 @@ static int _refresh_vols(AppClient * ac, Host * host, char * rrd)
 	if(p == NULL)
 		return 0;
 	for(; *p != NULL; p++)
-		ret+=_vols_vol(ac, host, rrd, *p);
+		ret |= _vols_vol(ac, host, rrd, *p);
 	return ret;
 }
 
 static int _vols_vol(AppClient * ac, Host * host, char * rrd, char * vol)
 {
-	int res[2];
+	int32_t res[2];
 
-	if((res[0] = appclient_call(ac, "voltotal", 1, vol)) == -1
-			|| (res[1] = appclient_call(ac, "volfree", 1, vol))
-			== -1)
+	if(appclient_call(ac, &res[0], "voltotal", vol) != 0
+			|| appclient_call(ac, &res[1], "volfree", vol) != 0)
 		return 1;
 	sprintf(rrd, "%s%s%s", host->hostname, vol, ".rrd"); /* FIXME */
 	_rrd_update(rrd, 2, res[0], res[1]);
@@ -441,12 +439,12 @@ static int _rrd_update(char * file, int args_cnt, ...)
 
 	if(gettimeofday(&tv, NULL) != 0)
 		return _damon_error("gettimeofday", -1);
-	if((argv[3] = malloc((args_cnt+1) * 12)) == NULL)
+	if((argv[3] = malloc((args_cnt + 1) * 12)) == NULL)
 		return _damon_error("malloc", -1);
 	pos = sprintf(argv[3], "%ld", tv.tv_sec);
 	va_start(args, args_cnt);
 	for(i = 0; i < args_cnt; i++)
-		pos+=sprintf(&argv[3][pos], ":%u", va_arg(args, int));
+		pos += sprintf(&argv[3][pos], ":%u", va_arg(args, unsigned));
 	va_end(args);
 	ret = _exec(argv);
 	free(argv[3]);
