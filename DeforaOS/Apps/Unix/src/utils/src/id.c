@@ -3,102 +3,43 @@
 
 
 
-#include <unistd.h>
-#include <pwd.h>
-#include <grp.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
 
 
-/* print_gid */
-static struct group * print_gid(gid_t gid)
+/* id */
+static int _id_error(char const * message, int ret);
+static int _id_G(char * user, int flagn);
+static int _id_g(char const * user, int flagn, int flagr);
+static int _id_u(char const * user, int flagn, int flagr);
+static int _id_all(char * user);
+
+static int _id(char * user, int flag, int flagn, int flagr)
 {
-	struct group * gr;
-
-	if((gr = getgrgid(gid)) == NULL)
-	{
-		printf("\n");
-		perror("getgrgid");
-	}
-	else
-		printf("gid=%u(%s)", gr->gr_gid, gr->gr_name);
-	return gr;
+	if(flag == 'G')
+		return _id_G(user, flagn);
+	if(flag == 'g')
+		return _id_g(user, flagn, flagr);
+	if(flag == 'u')
+		return _id_u(user, flagn, flagr);
+	return _id_all(user);
 }
 
-
-/* id_all */
-static int id_all(char * user)
+/* _id_error */
+static int _id_error(char const * message, int ret)
 {
-	struct passwd * pw;
-	struct group * gr;
-	char ** p;
-
-	if(user == NULL)
-	{
-		if((pw = getpwuid(getuid())) == NULL)
-		{
-			printf("\n");
-			perror("geteuid");
-			return 2;
-		}
-		printf("uid=%u(%s) ", (unsigned)pw->pw_uid, pw->pw_name);
-		if((gr = print_gid(pw->pw_gid)) == NULL)
-			return 2;
-		if((user = strdup(gr->gr_name)) == NULL)
-		{
-			printf("\n");
-			perror("strdup");
-			return 2;
-		}
-		if(geteuid() != getuid())
-		{
-			if((pw = getpwuid(geteuid())) == NULL)
-			{
-				printf("\n");
-				perror("geteuid");
-				return 2;
-			}
-			printf(" euid=%u(%s) e", (unsigned)pw->pw_uid,
-					pw->pw_name);
-			if(print_gid(pw->pw_gid) == NULL)
-				return 2;
-		}
-	}
-	else
-	{
-		if((pw = getpwnam(user)) == NULL)
-		{
-			perror("getpwnam");
-			return 2;
-		}
-		printf("uid=%u(%s) ", (unsigned)pw->pw_uid, pw->pw_name);
-		if((gr = print_gid(pw->pw_gid)) == NULL)
-			return 2;
-		if((user = strdup(gr->gr_name)) == NULL)
-		{
-			printf("\n");
-			perror("strdup");
-			return 2;
-		}
-	}
-	printf("%s%u(%s)", " groups=", (unsigned)pw->pw_gid, user);
-	setgrent();
-	for(gr = getgrent(); gr != NULL; gr = getgrent())
-		for(p = gr->gr_mem; *p != NULL; p++)
-			if(strcmp(user, *p) == 0)
-				printf(",%u(%s)", (unsigned)gr->gr_gid,
-						gr->gr_name);
-	printf("\n");
-	endgrent();
-	free(user);
-	return 0;
+	fputs("id: ", stderr);
+	perror(message);
+	return ret;
 }
 
-
-/* id_G */
-static int id_G(char * user, int flagn)
+/* _id_G */
+static int _id_G(char * user, int flagn)
 {
 	struct group * gr;
 	char ** p;
@@ -106,10 +47,7 @@ static int id_G(char * user, int flagn)
 	if(user == NULL)
 	{
 		if((gr = getgrgid(getegid())) == NULL)
-		{
-			perror("getgrgid");
-			return 2;
-		}
+			return _id_error("getgrgid", 1);
 		if(getegid() != getgid())
 		{
 			if(flagn == 0)
@@ -121,8 +59,7 @@ static int id_G(char * user, int flagn)
 				if((gr = getgrgid(getgid())) == NULL)
 				{
 					printf("\n");
-					perror("getgrgid");
-					return 2;
+					return _id_error("getgrgid", 1);
 				}
 				printf(" %s", gr->gr_name);
 			}
@@ -138,10 +75,7 @@ static int id_G(char * user, int flagn)
 	else
 	{
 		if((gr = getgrnam(user)) == NULL)
-		{
-			perror("getgrnam");
-			return 2;
-		}
+			return _id_error(user, 1);
 		if(flagn == 0)
 			printf("%u", (unsigned)gr->gr_gid);
 		else
@@ -166,15 +100,14 @@ static int id_G(char * user, int flagn)
 			}
 		}
 	}
-	printf("\n");
+	putc('\n', stdout);
 	endgrent();
 	free(user);
 	return 0;
 }
 
-
-/* id_g */
-static int id_g(char * user, int flagn, int flagr)
+/* _id_g */
+static int _id_g(char const * user, int flagn, int flagr)
 {
 	struct group * gr;
 
@@ -206,9 +139,8 @@ static int id_g(char * user, int flagn, int flagr)
 	return 0;
 }
 
-
-/* id_u */
-static int id_u(char * user, int flagn, int flagr)
+/* _id_u */
+static int _id_u(char const * user, int flagn, int flagr)
 {
 	struct passwd * passwd;
 
@@ -239,17 +171,85 @@ static int id_u(char * user, int flagn, int flagr)
 	return 0;
 }
 
+/* _id_all */
+static struct group * _print_gid(gid_t gid);
 
-/* id */
-int id(char * user, int flag, int flagn, int flagr)
+static int _id_all(char * user)
 {
-	if(flag == 'G')
-		return id_G(user, flagn);
-	if(flag == 'g')
-		return id_g(user, flagn, flagr);
-	if(flag == 'u')
-		return id_u(user, flagn, flagr);
-	return id_all(user);
+	struct passwd * pw;
+	struct group * gr;
+	char ** p;
+
+	if(user == NULL)
+	{
+		if((pw = getpwuid(getuid())) == NULL)
+		{
+			putc('\n', stdout);
+			return _id_error("geteuid", 1);
+		}
+		printf("uid=%u(%s) ", (unsigned)pw->pw_uid, pw->pw_name);
+		if((gr = _print_gid(pw->pw_gid)) == NULL)
+			return 2;
+		if((user = strdup(gr->gr_name)) == NULL)
+		{
+			putc('\n', stdout);
+			return _id_error("strdup", 1);
+		}
+		if(geteuid() != getuid())
+		{
+			if((pw = getpwuid(geteuid())) == NULL)
+			{
+				putc('\n', stdout);
+				return _id_error("geteuid", 1);
+			}
+			printf(" euid=%u(%s) e", (unsigned)pw->pw_uid,
+					pw->pw_name);
+			if(_print_gid(pw->pw_gid) == NULL)
+				return 2;
+		}
+	}
+	else
+	{
+		if((pw = getpwnam(user)) == NULL)
+		{
+			perror("getpwnam");
+			return 2;
+		}
+		printf("uid=%u(%s) ", (unsigned)pw->pw_uid, pw->pw_name);
+		if((gr = _print_gid(pw->pw_gid)) == NULL)
+			return 2;
+		if((user = strdup(gr->gr_name)) == NULL)
+		{
+			putc('\n', stdout);
+			return _id_error("strdup", 1);
+		}
+	}
+	printf("%s%u(%s)", " groups=", (unsigned)pw->pw_gid, user);
+	setgrent();
+	for(gr = getgrent(); gr != NULL; gr = getgrent())
+		for(p = gr->gr_mem; *p != NULL; p++)
+			if(strcmp(user, *p) == 0)
+				printf(",%u(%s)", (unsigned)gr->gr_gid,
+						gr->gr_name);
+	putc('\n', stdout);
+	endgrent();
+	free(user);
+	return 0;
+}
+
+/* _print_gid */
+static struct group * _print_gid(gid_t gid)
+{
+	struct group * gr;
+
+	if((gr = getgrgid(gid)) == NULL)
+	{
+		printf("\n");
+		perror("getgrgid");
+	}
+	else
+		printf("gid=%u(%s)", gr->gr_gid, gr->gr_name);
+	return gr;
 }
 
 
@@ -275,7 +275,6 @@ int main(int argc, char * argv[])
 	int flagr = 0;
 
 	while((o = getopt(argc, argv, "Ggunr")) != -1)
-	{
 		switch(o)
 		{
 			case 'G':
@@ -292,10 +291,9 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	}
 	if(optind == argc)
-		return id(NULL, flag, flagn, flagr);
+		return _id(NULL, flag, flagn, flagr) == 0 ? 0 : 2;
 	if(optind + 1 == argc)
-		return id(argv[optind], flag, flagn, flagr);
+		return _id(argv[optind], flag, flagn, flagr) == 0 ? 0 : 2;
 	return _usage();
 }
