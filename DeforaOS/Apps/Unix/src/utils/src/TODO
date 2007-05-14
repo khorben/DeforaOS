@@ -2,7 +2,6 @@ all:
 - factorize code (either need to improve configure or include a .c file)
 
 id:
-- write more readable code
 - check if it's complete
 
 kill:
