@@ -40,7 +40,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				.$name.'">'.$name.'</a>';
 		$entries[] = array('name' => $name,
 				'icon' => 'icons/16x16/mime/folder.png',
-				'thumbnail' => 'icons/48x48/mime/folder.png');
+				'thumbnail' => 'icons/48x48/mime/folder.png',
+				'revision' => '', 'date' => '', 'author' => '',
+				'message' => '');
 	}
 	foreach($files as $f)
 	{
@@ -75,8 +77,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		$author = substr($rcs[$revs+2], 36);
 		$author = substr($author, 0, strspn($author,
 				'abcdefghijklmnopqrstuvwxyz'
-				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-				.'0123456789'));
+				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'));
 		require_once('./system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
 		{
@@ -90,17 +91,14 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		$message = _html_safe($rcs[$revs+3]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
-				'icon' => $icon,
-				'thumbnail' => $thumbnail,
-				'revision' => $revision,
-				'date' => $date,
-				'author' => $author,
-				'message' => $message);
+				'icon' => $icon, 'thumbnail' => $thumbnail,
+				'revision' => $revision, 'date' => $date,
+				'author' => $author, 'message' => $message);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'link' => 'javascript:history.back()');
-	$toolbar[] = array('title' => 'Parent directory',
+	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
 			'link' => 'index.php?module=project&action=browse'
 					.'&id='.$id
@@ -112,8 +110,8 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
-			'class' => array('revision' => 'Revision',
-					'date' => 'Date',
+			'class' => array('revision' => REVISION,
+					'date' => DATE,
 					'author' => AUTHOR,
 					'message' => MESSAGE),
 			'view' => 'details',
