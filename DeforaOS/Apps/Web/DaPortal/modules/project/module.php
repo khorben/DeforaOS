@@ -26,6 +26,7 @@ $text['MODIFICATION_OF_REPLY_TO_BUG_HASH'] = 'Modification of reply to bug #';
 $text['NEW_PROJECT'] = 'New project';
 $text['NEW_REPORT'] = 'New report';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
+$text['PARENT_DIRECTORY'] = 'Parent directory';
 $text['PRIORITY'] = 'Priority';
 $text['PRIORITY_CHANGED_TO'] = 'Priority changed to';
 $text['PROJECT'] = 'Project';
