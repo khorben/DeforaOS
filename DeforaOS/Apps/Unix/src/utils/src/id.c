@@ -55,10 +55,10 @@ static int _id_G(char * user, int flagn)
 						(unsigned)getgid());
 			else
 			{
-				printf("%s", gr->gr_name);
+				puts(gr->gr_name);
 				if((gr = getgrgid(getgid())) == NULL)
 				{
-					printf("\n");
+					putc('\n', stdout);
 					return _id_error("getgrgid", 1);
 				}
 				printf(" %s", gr->gr_name);
@@ -69,7 +69,7 @@ static int _id_G(char * user, int flagn)
 			if(flagn == 0)
 				printf("%u", (unsigned)getgid());
 			else
-				printf("%s", gr->gr_name);
+				puts(gr->gr_name);
 		}
 	}
 	else
@@ -79,7 +79,7 @@ static int _id_G(char * user, int flagn)
 		if(flagn == 0)
 			printf("%u", (unsigned)gr->gr_gid);
 		else
-			printf("%s", gr->gr_name);
+			puts(gr->gr_name);
 	}
 	if((user = strdup(gr->gr_name)) == NULL)
 	{
@@ -244,8 +244,8 @@ static struct group * _print_gid(gid_t gid)
 
 	if((gr = getgrgid(gid)) == NULL)
 	{
-		printf("\n");
-		perror("getgrgid");
+		putc('\n', stdout);
+		_id_error("getgrgid", 0);
 	}
 	else
 		printf("gid=%u(%s)", gr->gr_gid, gr->gr_name);
