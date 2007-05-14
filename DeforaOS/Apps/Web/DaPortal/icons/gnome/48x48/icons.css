@@ -70,6 +70,10 @@ h1.title.news {
 	background-image:		url('news.png');
 }
 
+h1.title.package {
+	background-image:		url('package.png');
+}
+
 h1.title.probe {
 	background-image:		url('probe.png');
 }
