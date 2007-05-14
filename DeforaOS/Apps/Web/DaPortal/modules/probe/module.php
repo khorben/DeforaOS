@@ -92,7 +92,7 @@ $probe_types['swap'] = array('name' => 'swap usage', 'unit' => 'bytes',
 		'base' => '1024', 'def' => array('swaptotal', 'swapfree'),
 		'cdef' => array('pswaptotal' => 'swaptotal,1024,/,1024,/',
 				'pswapfree' => 'swapfree,1024,/,1024,/'),
-		$data = ' AREA:swaptotal#ff0000:"Total\t\g"'
+		'data' => ' AREA:swaptotal#ff0000:"Total\t\g"'
 		.' GPRINT:pswaptotal:LAST:"Current\: %.0lf MB\t\g"'
 		.' GPRINT:pswaptotal:AVERAGE:"Average\: %.0lf MB\t\g"'
 		.' GPRINT:pswaptotal:MAX:"Maximum\: %.0lf MB\n"'
@@ -199,11 +199,12 @@ function _host_graph($id, $type, $time, $param = FALSE)
 		$ret['img'] = 'tmp/'.$hostname.'_'.$type.'_'.$time.'.png';
 	}
 	_info('rrd: '.$rrd);
+	$file = $_SERVER['DOCUMENT_ROOT'].'/'.$ret['img'];
 	//FIXME hardcoded path + not always true (if, vol)
-	if(is_readable($ret['img']) && ($st = stat($ret['img'])) != FALSE
+	if(is_readable($file) && ($st = stat($file)) != FALSE
 			&& $st['mtime'] + 30 > time())
 		return $ret;
-	$cmd = 'rrdtool graph --slope-mode '."'".$ret['img']."'"
+	$cmd = 'rrdtool graph --slope-mode '."'$file'"
 		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
 	if(isset($ret['base']))
