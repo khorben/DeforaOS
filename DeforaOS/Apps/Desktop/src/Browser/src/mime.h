@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 /* This file is part of Browser */
 /* Browser is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
