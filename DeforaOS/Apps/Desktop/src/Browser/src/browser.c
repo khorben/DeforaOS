@@ -1187,7 +1187,19 @@ static void _view_details(Browser * browser)
 				browser->store));
 	view = GTK_TREE_VIEW(browser->detailview);
 	if((treesel = gtk_tree_view_get_selection(view)) != NULL)
+	{
 		gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		if(sel != NULL)
+		{
+			for(p = sel; p != NULL; p = p->next)
+				gtk_tree_selection_select_path(treesel,
+						p->data);
+			g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+			g_list_free(sel);
+		}
+#endif
+	}
 	gtk_tree_view_append_column(view,
 			gtk_tree_view_column_new_with_attributes("",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
@@ -1210,15 +1222,6 @@ static void _view_details(Browser * browser)
 				on_view_press), browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled),
 			browser->detailview);
-#if GTK_CHECK_VERSION(2, 6, 0)
-	if(sel != NULL)
-	{
-		for(p = sel; p != NULL; p = p->next)
-			gtk_tree_selection_select_path(treesel, p->data);
-		g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
-		g_list_free(sel);
-	}
-#endif
 	gtk_widget_show(browser->detailview);
 }
 
@@ -1272,6 +1275,10 @@ static void _view_icons(Browser * browser)
 
 static void _view_icon_view(Browser * browser)
 {
+	GtkTreeSelection * treesel;
+	GList * sel = NULL;
+	GList * p;
+
 	if(browser->iconview != NULL)
 	{
 #if GTK_CHECK_VERSION(2, 8, 0)
@@ -1281,18 +1288,31 @@ static void _view_icon_view(Browser * browser)
 	}
 	if(browser->detailview != NULL)
 	{
-		/* FIXME keep selection */
+		if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+							browser->detailview)))
+				!= NULL)
+			sel = gtk_tree_selection_get_selected_rows(treesel,
+					NULL);
 		gtk_widget_destroy(browser->detailview);
 		browser->detailview = NULL;
 	}
 	browser->iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
 				browser->store));
+	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
+			GTK_SELECTION_MULTIPLE); /* needs to be done now */
+	if(sel != NULL)
+	{
+		for(p = sel; p != NULL; p = p->next)
+			gtk_icon_view_select_path(GTK_ICON_VIEW(
+						browser->iconview), p->data);
+		g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+		g_list_free(sel);
+
+	}
 	gtk_icon_view_set_margin(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_column_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_row_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_spacing(GTK_ICON_VIEW(browser->iconview), 4);
-	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(browser->iconview),
-			GTK_SELECTION_MULTIPLE);
 	g_signal_connect(G_OBJECT(browser->iconview), "item-activated",
 			G_CALLBACK(on_icon_default), browser);
 	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
