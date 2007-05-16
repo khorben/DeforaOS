@@ -1167,13 +1167,18 @@ static void _view_details(Browser * browser)
 	GtkTreeSelection * treesel;
 	GtkCellRenderer * renderer;
 	GtkTreeView * view;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	GList * sel = NULL;
+	GList * p;
+#endif
 
 	if(browser->detailview != NULL)
 		return;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser->iconview != NULL)
 	{
-		/* FIXME keep selection */
+		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+					browser->iconview));
 		gtk_widget_destroy(browser->iconview);
 		browser->iconview = NULL;
 	}
@@ -1205,6 +1210,15 @@ static void _view_details(Browser * browser)
 				on_view_press), browser);
 	gtk_container_add(GTK_CONTAINER(browser->scrolled),
 			browser->detailview);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(sel != NULL)
+	{
+		for(p = sel; p != NULL; p = p->next)
+			gtk_tree_selection_select_path(treesel, p->data);
+		g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+		g_list_free(sel);
+	}
+#endif
 	gtk_widget_show(browser->detailview);
 }
 
@@ -1267,6 +1281,7 @@ static void _view_icon_view(Browser * browser)
 	}
 	if(browser->detailview != NULL)
 	{
+		/* FIXME keep selection */
 		gtk_widget_destroy(browser->detailview);
 		browser->detailview = NULL;
 	}
