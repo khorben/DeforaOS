@@ -419,17 +419,17 @@ void desktopicon_show(DesktopIcon * desktopicon)
 /* Desktop */
 /* functions */
 /* desktop_new */
-/* FIXME implement desktop resizing callback */
 static Desktop * _new_error(Desktop * desktop, char const * message);
+static int _new_create_desktop(Desktop * desktop, char const * home);
+static void _new_add_home(Desktop * desktop, char const * home);
 
 /* callbacks */
+/* FIXME implement desktop resizing callback */
 
 Desktop * desktop_new(void)
 {
 	Desktop * desktop;
 	char * home;
-	struct stat st;
-	DesktopIcon * desktopicon;
 	char * file[] = { "gnome-fs-regular",
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_FILE,
@@ -446,7 +446,6 @@ Desktop * desktop_new(void)
 #endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
 	char ** p;
-	GdkPixbuf * icon;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -475,29 +474,9 @@ Desktop * desktop_new(void)
 				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
 	if((home = getenv("HOME")) == NULL)
 		return _new_error(desktop, "HOME");
-	desktop->path_cnt = strlen(home) + strlen("/" DESKTOP) + 1;
-	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
-		return _new_error(desktop, "malloc");
-	sprintf(desktop->path, "%s%s", home, "/" DESKTOP);
-	if(lstat(desktop->path, &st) == 0)
-	{
-		if(!S_ISDIR(st.st_mode))
-		{
-			errno = ENOTDIR;
-			return _new_error(desktop, desktop->path);
-		}
-	}
-	else if(mkdir(desktop->path, 0777) != 0)
-		return _new_error(desktop, desktop->path);
-	if((desktopicon = desktopicon_new(desktop, "Home", home)) != NULL)
-	{
-		desktop_icon_add(desktop, desktopicon);
-		if((icon = gtk_icon_theme_load_icon(desktop->theme,
-						"gnome-home",
-						DESKTOPICON_ICON_SIZE, 0, NULL))
-				!= NULL)
-			desktopicon_set_icon(desktopicon, icon);
-	}
+	if(_new_create_desktop(desktop, home) != 0)
+		return _new_error(desktop, "Creating desktop");
+	_new_add_home(desktop, home);
 	desktop_refresh(desktop);
 	return desktop;
 }
@@ -507,6 +486,45 @@ static Desktop * _new_error(Desktop * desktop, char const * message)
 	desktop_error(desktop, message, -1);
 	desktop_delete(desktop);
 	return NULL;
+}
+
+static int _new_create_desktop(Desktop * desktop, char const * home)
+{
+	struct stat st;
+
+	desktop->path_cnt = strlen(home) + strlen("/" DESKTOP) + 1;
+	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
+		return 1;
+	sprintf(desktop->path, "%s%s", home, "/" DESKTOP);
+	if(lstat(desktop->path, &st) == 0)
+	{
+		if(!S_ISDIR(st.st_mode))
+		{
+			errno = ENOTDIR;
+			return 1;
+		}
+	}
+	else if(mkdir(desktop->path, 0777) != 0)
+		return 1;
+	return 0;
+}
+
+static void _new_add_home(Desktop * desktop, char const * home)
+{
+	DesktopIcon * desktopicon;
+	GdkPixbuf * icon;
+
+	if((desktopicon = desktopicon_new(desktop, "Home", home)) == NULL)
+		return;
+	desktop_icon_add(desktop, desktopicon);
+	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-home",
+			DESKTOPICON_ICON_SIZE, 0, NULL);
+	if(icon == NULL)
+		icon = gtk_icon_theme_load_icon(desktop->theme,
+				"gnome-fs-home", DESKTOPICON_ICON_SIZE,
+				0, NULL);
+	if(icon != NULL)
+		desktopicon_set_icon(desktopicon, icon);
 }
 
 
