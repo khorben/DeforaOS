@@ -24,7 +24,7 @@ function _config_list($module)
 			.', value_string FROM daportal_config'
 			." WHERE daportal_config.module_id='".$module_id."'"
 			.' ORDER BY name ASC');
-	if(!is_array($res) || count($res) != 1)
+	if(!is_array($res))
 		return FALSE;
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		$res[$i]['value'] = $res[$i]['value_'.$res[$i]['type']];
