@@ -15,6 +15,7 @@ function _query($query)
 {
 	global $connection;
 
+	$query = stripslashes(str_replace("\'", "''", $query));
 	_info($query);
 	if(($res = sqlite_query($connection, $query)) == FALSE)
 		_error(sqlite_error_string(sqlite_last_error($connection)), 0);
