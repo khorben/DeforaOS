@@ -227,7 +227,8 @@ function project_browse($args)
 					$project['name'], $cvsrep,
 					$project['cvsroot'],
 					$file, $args['revision'],
-					$args['download'] == 1);
+					isset($args['download'])
+					&& $args['download'] == 1);
 		return _browse_file($args['id'], $project['name'], $cvsrep,
 				$project['cvsroot'], $file);
 	}
@@ -490,6 +491,7 @@ function project_bug_list($args)
 	{
 		case 'name':	$order.='name DESC';	break;
 		case 'project':	$order.='project DESC';	break;
+		case 'date':	$order.='timestamp DESC';break;
 		case 'username':$order.='username DESC';break;
 		case 'state':	$order.='state DESC';	break;
 		case 'type':	$order.='type DESC';	break;

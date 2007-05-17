@@ -110,12 +110,10 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
-			'class' => array('revision' => REVISION,
-					'date' => DATE,
-					'author' => AUTHOR,
+				'class' => array('revision' => REVISION,
+					'date' => DATE, 'author' => AUTHOR,
 					'message' => MESSAGE),
-			'view' => 'details',
-			'toolbar' => $toolbar));
+				'view' => 'details', 'toolbar' => $toolbar));
 }
 
 function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
