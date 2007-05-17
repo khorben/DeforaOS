@@ -16,13 +16,16 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', '1');
 
 CREATE TABLE daportal_config (
 	module_id INTEGER NOT NULL REFERENCES daportal_module (module_id) ON DELETE CASCADE,
+	type VARCHAR(255) CHECK (type IN ('bool', 'int', 'string')) NOT NULL,
 	name VARCHAR(255) NOT NULL,
-	value VARCHAR(255) NOT NULL,
+	value_bool BOOLEAN DEFAULT NULL,
+	value_int INTEGER DEFAULT NULL,
+	value_string VARCHAR(255) DEFAULT NULL,
 	PRIMARY KEY (module_id, name)
 );
 
-INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'lang', 'en');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('1', 'title', 'DaPortal');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'lang', 'en');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'title', 'DaPortal');
 
 
 CREATE TABLE daportal_lang (
@@ -46,7 +49,8 @@ CREATE TABLE daportal_user (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('5', 'register', 't');
+INSERT INTO daportal_config (module_id, type, name, value_bool) VALUES ('5', 'bool', 'register', '0');
+INSERT INTO daportal_config (module_id, type, name, value_bool) VALUES ('5', 'bool', 'manual', '1');
 INSERT INTO daportal_user (user_id, username, password, email) VALUES ('0', 'Anonymous', '', '');
 INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'username@domain.tld');
 
@@ -82,7 +86,7 @@ CREATE TABLE daportal_comment (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('comment', '1');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('7', 'anonymous', '0');
+INSERT INTO daportal_config (module_id, type, name, value_bool) VALUES ('7', 'bool', 'anonymous', '0');
 
 
 /* module: top */
@@ -125,17 +129,17 @@ CREATE TABLE daportal_bug_reply (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('10', 'cvsroot', '');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('10', 'string', 'cvsroot', '');
 
 
 /* module: probe */
 INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('11', 'RRD_repository', '/var/lib/Probe');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('11', 'string', 'RRD_repository', '/var/lib/Probe');
 
 
 /* module: webmail */
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('12', 'server', '');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('12', 'string', 'server', '');
 
 
 /* module: bookmark */
@@ -166,7 +170,7 @@ CREATE TABLE daportal_download (
 );
 
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
-INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('15', 'string', 'root', '/tmp');
 
 
 /* module: article */
