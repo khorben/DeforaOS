@@ -143,7 +143,9 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_window_set_decorated(GTK_WINDOW(desktopicon->window), FALSE);
 	gtk_window_set_keep_below(GTK_WINDOW(desktopicon->window), TRUE);
 	gtk_window_set_accept_focus(GTK_WINDOW(desktopicon->window), FALSE);
+#if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_focus_on_map(GTK_WINDOW(desktopicon->window), FALSE);
+#endif
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
 			G_CALLBACK(_on_desktopicon_closex), desktopicon);
 	vbox = gtk_vbox_new(FALSE, 4);
