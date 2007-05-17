@@ -75,7 +75,7 @@ function content_default($args)
 
 	if(!isset($args['id']))
 	{
-		return include('default.tpl');
+		return include('./modules/content/default.tpl');
 	}
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
@@ -153,7 +153,7 @@ function content_modify($args)
 	if(!is_array($content) || count($content) != 1)
 		return _error('Invalid content');
 	$content = $content[0];
-	include('update.tpl');
+	include('./modules/content/update.tpl');
 }
 
 
