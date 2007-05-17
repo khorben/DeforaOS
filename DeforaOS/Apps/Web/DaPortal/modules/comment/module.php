@@ -316,7 +316,7 @@ function comment_submit($comment)
 					." AND user_id='$user_id'")) == FALSE)
 		$user_email = 'unknown';
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
-			." WHERE enabled='1' AND admin='1';");
+			." WHERE enabled='1' AND admin='1'");
 	if(!is_array($admins))
 		return _error('Could not list moderators', 0);
 	$to = '';
