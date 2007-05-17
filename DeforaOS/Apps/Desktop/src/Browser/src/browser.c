@@ -447,7 +447,7 @@ static GtkListStore * _create_store(Browser * browser)
 #endif
 			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_UINT64,
 			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_STRING);
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -693,6 +693,7 @@ static int _loop_status(Browser * browser)
 }
 
 static char * _insert_size(off_t size);
+static char * _insert_date(time_t date);
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * st,
 		gboolean updated)
@@ -703,6 +704,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	uint64_t inode = 0;
 	uint64_t size = 0;
 	char * dsize = "";
+	char * ddate = "";
 	char const * type = NULL;
 	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -719,6 +721,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		dsize = _insert_size(st->st_size);
 		pw = getpwuid(st->st_uid);
 		gr = getgrgid(st->st_gid);
+		ddate = _insert_date(st->st_mtime);
 		if(S_ISDIR(st->st_mode))
 		{
 			icon_24 = browser->pb_folder_24;
@@ -792,6 +795,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
+			BR_COL_DATE, st->st_mtime, BR_COL_DISPLAY_DATE, ddate,
 			-1);
 }
 
@@ -818,6 +822,24 @@ static char * _insert_size(off_t size)
 		unit = "TB";
 	}
 	snprintf(buf, sizeof(buf), "%.1f %s", sz, unit);
+	return buf;
+}
+
+static char * _insert_date(time_t date)
+{
+	static char buf[16];
+	static time_t sixmonths = -1;
+	struct tm tm;
+	size_t len;
+
+	if(sixmonths == -1)
+		sixmonths = time(NULL) - 15552000;
+	localtime_r(&date, &tm);
+	if(date < sixmonths)
+		len = strftime(buf, sizeof(buf), "%b %e  %Y", &tm);
+	else
+		len = strftime(buf, sizeof(buf), "%b %e %H:%M", &tm);
+	buf[len] = '\0';
 	return buf;
 }
 
@@ -934,6 +956,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	uint64_t inode = 0;
 	uint64_t size = 0;
 	char * dsize = "";
+	char * ddate = "";
 	char const * type = NULL;
 	GdkPixbuf * icon_24 = browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -950,6 +973,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 		dsize = _insert_size(st->st_size);
 		pw = getpwuid(st->st_uid);
 		gr = getgrgid(st->st_gid);
+		ddate = _insert_date(st->st_mtime);
 		if(S_ISDIR(st->st_mode))
 		{
 			icon_24 = browser->pb_folder_24;
@@ -1012,6 +1036,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
+			BR_COL_DATE, st->st_mtime, BR_COL_DISPLAY_DATE, ddate,
 			-1);
 }
 
@@ -1213,6 +1238,7 @@ static void _view_details(Browser * browser)
 	_details_column_text(view, "Size", BR_COL_DISPLAY_SIZE, BR_COL_SIZE);
 	_details_column_text(view, "Owner", BR_COL_OWNER, BR_COL_OWNER);
 	_details_column_text(view, "Group", BR_COL_GROUP, BR_COL_GROUP);
+	_details_column_text(view, "Date", BR_COL_DISPLAY_DATE, BR_COL_DATE);
 	_details_column_text(view, "MIME type", BR_COL_MIME_TYPE,
 			BR_COL_MIME_TYPE);
 	gtk_tree_view_set_headers_visible(view, TRUE);
