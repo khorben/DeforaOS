@@ -89,7 +89,7 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 
 function explorer_apply($args)
 {
-	if(!strlen($args['link_module']) || !strlen($args['link_action']))
+	if(!isset($args['link_module']) || !isset($args['link_action']))
 		return _error('Need a module and action to link to');
 	if(!ereg('^[a-z0-9_]{1,30}$', $args['apply']))
 		return _error('Invalid action to apply');
