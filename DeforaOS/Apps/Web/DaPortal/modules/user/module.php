@@ -186,11 +186,14 @@ function user_config_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
+	if(!isset($args['user_register'])) /* XXX checkbox is not ticked */
+		$args['user_register'] = SQL_FALSE;
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^user_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('user', $regs[1], $args[$k], 0);
 	header('Location: index.php?module=user&action=admin');
+	_debug();
 	exit(0);
 }
 
@@ -547,7 +550,7 @@ function user_system($args)
 	{
 		if($_GET['action'] == 'logout')
 			_system_logout();
-		else if($_GET['action'] == 'confirm')
+		else if($_GET['action'] == 'confirm' && isset($args['key']))
 			_system_confirm($args['key']);
 		else if($_GET['action'] == 'error')
 			$_GET['action'] = 'default';

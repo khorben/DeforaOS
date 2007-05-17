@@ -133,8 +133,10 @@ function comment_config_update($args)
 	global $user_id, $module_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if($_SERVER['REQUEST_METHOD'] != 'POST' || !_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
+	if(!isset($args['comment_anonymous'])) /* XXX checkbox is not ticked */
+		$args['comment_anonymous'] = SQL_FALSE;
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^comment_([a-zA-Z_]+)$', $k, $regs))
