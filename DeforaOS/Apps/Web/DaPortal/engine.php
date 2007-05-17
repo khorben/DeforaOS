@@ -38,7 +38,9 @@ $module_id = 0;
 $module_name = '';
 
 //mandatory code
-//FIXME force magic quotes
+require_once('./system/debug.php');
+if(!get_magic_quotes_gpc())
+	exit(_error('Magic quotes must be enabled'));
 if(isset($_COOKIE[session_name()]))
 {
 	session_start();
@@ -46,7 +48,6 @@ if(isset($_COOKIE[session_name()]))
 	foreach($vars as $v)
 		$$v = $_SESSION[$v];
 }
-require_once('./system/debug.php');
 require_once('./system/sql.php');
 require_once('./system/module.php');
 require_once('./system/config.php');
