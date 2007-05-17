@@ -50,14 +50,17 @@ INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('a
 CREATE TABLE daportal_user_register (
 	user_id INTEGER,
 	key CHAR(32) UNIQUE NOT NULL,
-	timestamp TIMESTAMP NOT NULL DEFAULT now,
+	timestamp TIMESTAMP DEFAULT NULL,
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
-
+CREATE TRIGGER daportal_user_register_insert_timestamp AFTER INSERT ON daportal_user_register
+BEGIN
+	UPDATE daportal_user_register SET timestamp = datetime('now') WHERE user_id = NEW.user_id;
+END;
 
 CREATE TABLE daportal_content (
 	content_id INTEGER PRIMARY KEY,
-	timestamp TIMESTAMP NOT NULL DEFAULT now,
+	timestamp TIMESTAMP DEFAULT NULL,
 	module_id INTEGER,
 	user_id INTEGER,
 	title VARCHAR(255),
@@ -66,6 +69,10 @@ CREATE TABLE daportal_content (
 	FOREIGN KEY (module_id) REFERENCES daportal_module (module_id),
 	FOREIGN KEY (user_id) REFERENCES daportal_user (user_id)
 );
+CREATE TRIGGER daportal_content_insert_timestamp AFTER INSERT ON daportal_content
+BEGIN
+	UPDATE daportal_content SET timestamp = datetime('now') WHERE content_id = NEW.content_id;
+END;
 INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 
