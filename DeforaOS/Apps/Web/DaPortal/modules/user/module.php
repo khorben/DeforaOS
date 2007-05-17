@@ -10,6 +10,7 @@ if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
 //lang
 $text = array();
 $text['APPEARANCE'] = 'Appearance';
+$text['EMAIL'] = 'e-mail';
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
 $text['MY_CONTENT'] = 'My content';
@@ -18,6 +19,7 @@ $text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
+$text['USER_MODIFICATION'] = 'User modification';
 $text['USER_REGISTRATION'] = 'User registration';
 $text['USERS'] = 'Users';
 $text['USERS_ADMINISTRATION'] = 'Users administration';
@@ -40,6 +42,7 @@ else if($lang == 'fr')
 	$text['REGISTER'] = "S'inscrire";
 	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
 	$text['USER_LOGIN'] = 'Authentification utilisateur';
+	$text['USER_MODIFICATION'] = "Modification d'utilisateur";
 	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
 	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
 	$text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est ';
@@ -104,9 +107,9 @@ function user_admin($args)
 			case 'admin':	$order = 'admin';	break;
 			case 'email':	$order = 'email';	break;
 		}
-	$users = _sql_array('SELECT user_id AS id, username AS name'
-			.', enabled, admin, email'
-			.' FROM daportal_user ORDER BY '.$order.' ASC');
+	$users = _sql_array('SELECT user_id AS id, username AS name, enabled'
+			.', admin, email FROM daportal_user'
+			.' ORDER BY '.$order.' ASC');
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
@@ -149,8 +152,7 @@ function user_admin($args)
 	_module('explorer', 'browse_trusted', array('entries' => $users,
 				'toolbar' => $toolbar, 'view' => 'details',
 				'class' => array('enabled' => ENABLED,
-					'admin' => 'Admin',
-					'email' => 'e-mail'),
+					'admin' => 'Admin', 'email' => EMAIL),
 				'module' => 'user', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
 				: 'name'));
@@ -327,16 +329,15 @@ function user_insert($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(!ereg('^[a-z]{1,9}$', $args['username']))
-		return _error('Username must be lower-case and no longer than 9 characters', 1);
+		return _error('Username must be lower-case and no longer than'
+				.' 9 characters', 1);
 	if(strlen($args['password1']) < 1
 			|| $args['password1'] != $args['password2'])
 		return _error('Passwords must be non-empty and match', 1);
 	$password = md5($args['password1']);
 	if(!_sql_query('INSERT INTO daportal_user (username, password, enabled'
-			.', admin, email'
-			.') VALUES ('
-			."'".$args['username']."'"
-			.", '$password'"
+			.', admin, email) VALUES ('
+			."'".$args['username']."', '$password'"
 			.", '".(isset($args['enabled']) ? '1' : '0')."'"
 			.", '".(isset($args['admin']) ? '1' : '0')."'"
 			.", '".$args['email']."');"))
@@ -393,7 +394,7 @@ function user_modify($args)
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
-	$title = 'User modification';
+	$title = USER_MODIFICATION;
 	include('./modules/user/user_update.tpl');
 }
 
