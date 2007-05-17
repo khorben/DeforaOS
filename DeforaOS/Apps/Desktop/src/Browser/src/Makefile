@@ -51,7 +51,7 @@ browser.o: browser.c mime.h callbacks.h browser.h
 callbacks.o: callbacks.c browser.h callbacks.h
 	$(CC) $(browser_CFLAGS) -c callbacks.c
 
-mime.o: mime.c browser.h mime.h ../config.h
+mime.o: mime.c mime.h ../config.h
 	$(CC) $(browser_CFLAGS) -c mime.c
 
 main.o: main.c browser.h mime.h

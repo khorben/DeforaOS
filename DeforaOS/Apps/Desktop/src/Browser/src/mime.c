@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
-#include "browser.h"
 #include "mime.h"
 #include "../config.h"
 
