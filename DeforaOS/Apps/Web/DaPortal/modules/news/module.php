@@ -247,8 +247,7 @@ function news_list($args)
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		." AND daportal_content.enabled='1'"
 		." AND daportal_module.name='news'"
-		.' AND daportal_module.module_id'
-		.'=daportal_content.module_id';
+		.' AND daportal_module.module_id=daportal_content.module_id';
 	$npp = 10;
 	$page = isset($args['page']) ? $args['page'] : 1;
 	if(($cnt = _sql_single('SELECT COUNT(*)'.$sql)) == 0)
