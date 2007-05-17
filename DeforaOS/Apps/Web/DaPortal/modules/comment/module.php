@@ -313,7 +313,7 @@ function comment_submit($comment)
 	//send mail
 	if(($user_email = _sql_single('SELECT email FROM daportal_user'
 					." WHERE enabled='1'"
-					." AND user_id='$user_id';")) == FALSE)
+					." AND user_id='$user_id'")) == FALSE)
 		$user_email = 'unknown';
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
 			." WHERE enabled='1' AND admin='1';");
