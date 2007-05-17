@@ -52,7 +52,8 @@ CREATE TABLE daportal_user (
 	email VARCHAR(255) NOT NULL
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('user', '1');
-INSERT INTO daportal_config (module_id, type, name, value_bool) VALUES ('5', 'bool', 'register', '1');
+INSERT INTO daportal_config (module_id, type, name, value_bool) VALUES ('5', 'bool', 'register', '0');
+INSERT INTO daportal_config (module_id, type, name, value_bool) VALUES ('5', 'bool', 'manual', '1');
 INSERT INTO daportal_user (user_id, username, password, email) VALUES ('0', 'Anonymous', '', '');
 INSERT INTO daportal_user (username, password, enabled, admin, email) VALUES ('admin', '5f4dcc3b5aa765d61d8327deb882cf99', '1', '1', 'username@domain.tld');
 

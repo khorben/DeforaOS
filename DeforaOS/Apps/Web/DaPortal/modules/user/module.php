@@ -188,6 +188,8 @@ function user_config_update($args)
 		return _error(PERMISSION_DENIED);
 	if(!isset($args['user_register'])) /* XXX checkbox is not ticked */
 		$args['user_register'] = SQL_FALSE;
+	if(!isset($args['user_manual'])) /* XXX checkbox is not ticked */
+		$args['user_manual'] = SQL_FALSE;
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^user_([a-zA-Z_]+)$', $k, $regs))
@@ -200,6 +202,8 @@ function user_config_update($args)
 
 function user_confirm($args)
 {
+	global $error, $info;
+
 	include('./modules/user/user_confirm.tpl');
 }
 
@@ -475,16 +479,26 @@ function _register_mail($username, $email)
 
 function _system_confirm($key)
 {
+	global $error;
+
+	$error = 'Confirmation failed';
 	//FIXME remove expired registration keys
 	//FIXME use a transaction
-	$user = _sql_array('SELECT daportal_user.user_id'
-		.', daportal_user.username'
+	$user = _sql_array('SELECT daportal_user.user_id AS user_id'
+		.', daportal_user.username AS username'
 		.' FROM daportal_user, daportal_user_register'
 		.' WHERE daportal_user.user_id'
 		.'=daportal_user_register.user_id AND key='."'$key'");
 	if(!is_array($user) || count($user) != 1)
 		return;
 	$user = $user[0];
+	if(_config_get('user', 'manual') == SQL_FALSE)
+		return _confirm_auto($key, $user);
+	return _confirm_manual($key, $user);
+}
+
+function _confirm_auto($key, $user)
+{
 	if(_sql_query('UPDATE daportal_user SET enabled='."'1'"
 			." WHERE user_id='".$user['user_id']."'") == FALSE)
 		return _error('Could not enable user');
@@ -497,6 +511,38 @@ function _system_confirm($key)
 	$_SESSION['user_name'] = $user['username'];
 	header('Location: index.php?module=user');
 	exit(0);
+}
+
+function _confirm_manual($key, $user)
+{
+	global $info;
+
+	if(_sql_query('DELETE FROM daportal_user_register WHERE key='."'$key'")
+			== FALSE)
+		_error('Could not remove registration key');
+	if(_sql_query('DELETE FROM daportal_user_register WHERE key='."'$key'")
+			== FALSE)
+		_error('Could not remove registration key');
+	$info = 'Your confirmation was acknowledged by the system. Your account'
+			.' request will be manually enabled shortly. Thanks!';
+	//send mail
+	$admins = _sql_array('SELECT username, email FROM daportal_user'
+			." WHERE enabled='1' AND admin='1'");
+	if(!is_array($admins))
+		return _error('Could not list moderators', 0);
+	$to = '';
+	$comma = '';
+	foreach($admins as $a)
+	{
+		$to.=$comma.$a['username'].' <'.$a['email'].'>';
+		$comma = ', ';
+	}
+	$subject = 'User registration: '.$user['username'];
+	$content = "A new user is awaiting moderation at:\n"
+		.'https://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']
+		.'?module=user&action=admin&id='.$user['user_id']."\n";
+	require_once('./system/mail.php');
+	_mail('Administration Team', $to, $subject, $content);
 }
 
 
