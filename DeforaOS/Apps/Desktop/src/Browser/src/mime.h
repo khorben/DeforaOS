@@ -60,6 +60,8 @@ int mime_set_handler(Mime * mime, char const * type, char const * action,
 char const * mime_type(Mime * mime, char const * path);
 /* FIXME return an enum with error codes? */
 int mime_action(Mime * mime, char const * action, char const * path);
+int mime_action_type(Mime * mime, char const * action, char const * path,
+		char const * type);
 void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...);
 
 #endif /* !BROWSER_MIME_H */

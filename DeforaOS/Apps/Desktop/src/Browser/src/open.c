@@ -22,24 +22,26 @@
 
 
 /* open */
-static int _open(char const * mime, char const * action, int filec,
+static int _open(char const * type, char const * action, int filec,
 		char * filev[])
 {
 	int i;
-	Mime * m;
+	Mime * mime;
 	int ret = 0;
 
-	if((m = mime_new()) == NULL)
+	if((mime = mime_new()) == NULL)
 		return 1;
 	for(i = 0; i < filec; i++)
-		if(mime_action(m, action, filev[i]) != 0)
+		if((type == NULL && mime_action(mime, action, filev[i]) != 0)
+				|| mime_action_type(mime, action, filev[i],
+					type) != 0)
 		{
 			fprintf(stderr, "%s%s%s%s%s", "mime: ", filev[i],
 					": Could not perform action \"", action,
 					"\"\n");
 			ret = 1;
 		}
-	mime_delete(m);
+	mime_delete(mime);
 	return ret;
 }
 
@@ -47,7 +49,7 @@ static int _open(char const * mime, char const * action, int filec,
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: open [-m mime][-a action] file...\n"
+	fprintf(stderr, "%s", "Usage: open [-m mime type][-a action] file...\n"
 "  -m	MIME type to force (default: auto-detected)\n"
 "  -a	action to call (default: \"open\")\n");
 	return 1;
@@ -58,22 +60,22 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	char const * mime = NULL;
 	char const * action = "open";
+	char const * type = NULL;
 
-	while((o = getopt(argc, argv, "m:a:")) != -1)
+	while((o = getopt(argc, argv, "a:m:")) != -1)
 		switch(o)
 		{
-			case 'm':
-				mime = optarg;
-				break;
 			case 'a':
 				action = optarg;
+				break;
+			case 'm':
+				type = optarg;
 				break;
 			default:
 				return _usage();
 		}
 	if(optind == argc)
 		return _usage();
-	return _open(mime, action, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	return _open(type, action, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }

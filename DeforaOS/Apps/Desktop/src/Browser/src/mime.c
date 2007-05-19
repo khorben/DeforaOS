@@ -170,14 +170,22 @@ char const * mime_type(Mime * mime, char const * path)
 
 
 int mime_action(Mime * mime, char const * action, char const * path)
-	/* FIXME report errors */
 {
 	char const * type;
-	char const * program;
-	pid_t pid;
 
 	if((type = mime_type(mime, path)) == NULL)
 		return 1;
+	return mime_action_type(mime, action, path, type);
+}
+
+
+int mime_action_type(Mime * mime, char const * action, char const * path,
+		char const * type)
+	/* FIXME report errors */
+{
+	char const * program;
+	pid_t pid;
+
 	if((program = config_get(mime->config, type, action)) == NULL)
 		return 2;
 	if((pid = fork()) == -1)
