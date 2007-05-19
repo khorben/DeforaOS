@@ -45,7 +45,11 @@ struct _menu _menu_edit[] =
 
 struct _menu _menu_view[] =
 {
+#if GTK_CHECK_VERSION(2, 8, 0)
 	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN },
+#else
+	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), NULL },
+#endif
 	{ NULL, NULL, NULL }
 };
 
@@ -229,7 +233,7 @@ static void _new_mplayer(Player * player)
 		close(0);
 		if(dup2(player->fd[0], 0) == -1)
 			exit(_player_error("dup2", 2));
-		snprintf(buf, sizeof(buf), "%u", player->view_window);
+		snprintf(buf, sizeof(buf), "%u", (unsigned)player->view_window);
 		execlp("mplayer", "mplayer", "-slave", "-wid", buf,
 				"-quiet", "-idle", NULL);
 		exit(_player_error("mplayer", 2));
