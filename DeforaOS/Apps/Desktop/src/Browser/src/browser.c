@@ -488,8 +488,11 @@ static void _browser_set_status(Browser * browser, char const * status)
 
 
 /* useful */
+/* browser_error */
 static int _browser_error(char const * message, int ret);
+/* callbacks */
 static void _error_response(GtkDialog * dialog, gint arg, gpointer data);
+
 int browser_error(Browser * browser, char const * message, int ret)
 {
 	GtkWidget * dialog;
