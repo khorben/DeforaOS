@@ -611,7 +611,8 @@ static void _refresh_path(Browser * browser)
 	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
 	for(i = 0; i < cnt; i++)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
-	p = g_path_get_dirname(browser->current->data);
+	if((p = g_path_get_dirname(browser->current->data)) == NULL)
+		return;
 	if(strcmp(p, ".") != 0)
 	{
 		gtk_combo_box_append_text(GTK_COMBO_BOX(browser->tb_path), p);
@@ -627,9 +628,12 @@ static void _refresh_path(Browser * browser)
 	g_free(p);
 }
 
+
+/* _refresh_new */
 static int _new_loop(Browser * browser);
 static gboolean _new_idle(gpointer data);
 static void _refresh_done(Browser * browser);
+
 static void _refresh_new(Browser * browser)
 {
 	unsigned int i;
@@ -642,15 +646,19 @@ static void _refresh_new(Browser * browser)
 		_refresh_done(browser);
 }
 
+
+/* _new_loop */
 static int _loop_status(Browser * browser);
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
-		char const * path, char const * display, struct stat * st,
-		gboolean updated);
+		char const * path, char const * display, struct stat * lst,
+		struct stat * st, gboolean updated);
+
 static int _new_loop(Browser * browser)
 {
 	struct dirent * de;
 	GtkTreeIter iter;
 	char * path;
+	struct stat lst;
 	struct stat st;
 
 	while((de = readdir(browser->refresh_dir)) != NULL)
@@ -669,14 +677,17 @@ static int _new_loop(Browser * browser)
 	if(de == NULL)
 		return _loop_status(browser);
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
-			== NULL || lstat(path, &st) != 0)
+			== NULL || lstat(path, &lst) != 0)
 	{
 		_browser_error(de->d_name, 0);
 		if(path != NULL)
 			g_free(path);
 		return 0;
 	}
-	_loop_insert(browser, &iter, path, de->d_name, &st, 0);
+	if(S_ISLNK(lst.st_mode) && stat(path, &st) == 0)
+		_loop_insert(browser, &iter, path, de->d_name, &lst, &st, 0);
+	else
+		_loop_insert(browser, &iter, path, de->d_name, &lst, &lst, 0);
 	g_free(path);
 	return 0;
 }
@@ -692,11 +703,14 @@ static int _loop_status(Browser * browser)
 	return 1;
 }
 
+
+/* _loop_insert */
 static char * _insert_size(off_t size);
 static char * _insert_date(time_t date);
+
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
-		char const * path, char const * display, struct stat * st,
-		gboolean updated)
+		char const * path, char const * display, struct stat * lst,
+		struct stat * st, gboolean updated)
 {
 	char const * p;
 	struct passwd * pw = NULL;
@@ -716,12 +730,12 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		display = p;
 	if(st != NULL)
 	{
-		inode = st->st_ino;
-		size = st->st_size;
-		dsize = _insert_size(st->st_size);
-		pw = getpwuid(st->st_uid);
-		gr = getgrgid(st->st_gid);
-		ddate = _insert_date(st->st_mtime);
+		inode = lst->st_ino;
+		size = lst->st_size;
+		dsize = _insert_size(lst->st_size);
+		pw = getpwuid(lst->st_uid);
+		gr = getgrgid(lst->st_gid);
+		ddate = _insert_date(lst->st_mtime);
 		if(S_ISDIR(st->st_mode))
 		{
 			icon_24 = browser->pb_folder_24;
@@ -731,7 +745,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #endif
 			type = "inode/directory";
 		}
-		else if(!S_ISLNK(st->st_mode) && st->st_mode & S_IXUSR)
+		else if(st->st_mode & S_IXUSR)
 		{
 			icon_24 = browser->pb_executable_24
 				? browser->pb_executable_24
@@ -795,7 +809,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
-			BR_COL_DATE, st->st_mtime, BR_COL_DISPLAY_DATE, ddate,
+			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
 			-1);
 }
 
@@ -897,12 +911,15 @@ static void _refresh_current(Browser * browser)
 }
 
 static void _loop_update(Browser * browser, GtkTreeIter * iter,
-		char const * path, char const * display, struct stat * st);
+		char const * path, char const * display, struct stat * lst,
+		struct stat * st);
 static int _current_loop(Browser * browser)
 {
 	struct dirent * de;
 	char * path;
+	struct stat lst;
 	struct stat st;
+	struct stat * p = &lst;
 	GtkTreeModel * model = GTK_TREE_MODEL(browser->store);
 	GtkTreeIter iter;
 	gboolean valid;
@@ -924,7 +941,7 @@ static int _current_loop(Browser * browser)
 	if(de == NULL)
 		return _loop_status(browser);
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
-			== NULL || lstat(path, &st) != 0)
+			== NULL || lstat(path, &lst) != 0)
 	{
 		_browser_error(de->d_name, 0);
 		if(path != NULL)
@@ -938,16 +955,19 @@ static int _current_loop(Browser * browser)
 		if(inode == st.st_ino)
 			break;
 	}
+	if(S_ISLNK(lst.st_mode) && stat(path, &st) == 0)
+		p = &st;
 	if(valid != TRUE)
-		_loop_insert(browser, &iter, path, de->d_name, &st, 1);
+		_loop_insert(browser, &iter, path, de->d_name, &lst, p, 1);
 	else
-		_loop_update(browser, &iter, path, de->d_name, &st);
+		_loop_update(browser, &iter, path, de->d_name, &lst, p);
 	g_free(path);
 	return 0;
 }
 
 static void _loop_update(Browser * browser, GtkTreeIter * iter,
-		char const * path, char const * display, struct stat * st)
+		char const * path, char const * display, struct stat * lst,
+		struct stat * st)
 	/* FIXME code duplication */
 {
 	char const * p;
@@ -968,12 +988,12 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 		display = p;
 	if(st != NULL)
 	{
-		inode = st->st_ino;
-		size = st->st_size;
-		dsize = _insert_size(st->st_size);
-		pw = getpwuid(st->st_uid);
-		gr = getgrgid(st->st_gid);
-		ddate = _insert_date(st->st_mtime);
+		inode = lst->st_ino;
+		size = lst->st_size;
+		dsize = _insert_size(lst->st_size);
+		pw = getpwuid(lst->st_uid);
+		gr = getgrgid(lst->st_gid);
+		ddate = _insert_date(lst->st_mtime);
 		if(S_ISDIR(st->st_mode))
 		{
 			icon_24 = browser->pb_folder_24;
@@ -982,7 +1002,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 #endif
 			type = "inode/directory";
 		}
-		else if(!S_ISLNK(st->st_mode) && st->st_mode & S_IXUSR
+		else if(st->st_mode & S_IXUSR
 #if GTK_CHECK_VERSION(2, 6, 0)
 				&& browser->pb_executable_48 != NULL
 #endif
@@ -1036,7 +1056,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
-			BR_COL_DATE, st->st_mtime, BR_COL_DISPLAY_DATE, ddate,
+			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
 			-1);
 }
 
