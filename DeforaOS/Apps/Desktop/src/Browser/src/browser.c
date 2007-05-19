@@ -728,64 +728,56 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 
 	if((p = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) != NULL)
 		display = p;
-	if(st != NULL)
+	inode = lst->st_ino;
+	size = lst->st_size;
+	dsize = _insert_size(lst->st_size);
+	pw = getpwuid(lst->st_uid);
+	gr = getgrgid(lst->st_gid);
+	ddate = _insert_date(lst->st_mtime);
+	if(S_ISDIR(st->st_mode))
 	{
-		inode = lst->st_ino;
-		size = lst->st_size;
-		dsize = _insert_size(lst->st_size);
-		pw = getpwuid(lst->st_uid);
-		gr = getgrgid(lst->st_gid);
-		ddate = _insert_date(lst->st_mtime);
-		if(S_ISDIR(st->st_mode))
-		{
-			icon_24 = browser->pb_folder_24;
+		icon_24 = browser->pb_folder_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
-			icon_48 = browser->pb_folder_48;
-			icon_96 = browser->pb_folder_96;
+		icon_48 = browser->pb_folder_48;
+		icon_96 = browser->pb_folder_96;
 #endif
-			type = "inode/directory";
-		}
-		else if(st->st_mode & S_IXUSR)
-		{
-			icon_24 = browser->pb_executable_24
-				? browser->pb_executable_24
-				: browser->pb_file_24;
+		type = "inode/directory";
+	}
+	else if(st->st_mode & S_IXUSR)
+	{
+		icon_24 = browser->pb_executable_24 ? browser->pb_executable_24
+			: browser->pb_file_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
-			icon_48 = browser->pb_executable_48
-				? browser->pb_executable_48
-				: browser->pb_file_48;
-			icon_96 = browser->pb_executable_96
-				? browser->pb_executable_96
-				: browser->pb_file_96;
+		icon_48 = browser->pb_executable_48 ? browser->pb_executable_48
+			: browser->pb_file_48;
+		icon_96 = browser->pb_executable_96 ? browser->pb_executable_96
+			: browser->pb_file_96;
 #endif
-		}
-		else if(S_ISBLK(st->st_mode))
-			type = "inode/blockdevice";
-		else if(S_ISCHR(st->st_mode))
-			type = "inode/chardevice";
-		else if(S_ISFIFO(st->st_mode))
-			type = "inode/fifo";
-		else if(S_ISLNK(st->st_mode))
-			type = "inode/symlink";
+	}
+	else if(S_ISBLK(st->st_mode))
+		type = "inode/blockdevice";
+	else if(S_ISCHR(st->st_mode))
+		type = "inode/chardevice";
+	else if(S_ISFIFO(st->st_mode))
+		type = "inode/fifo";
+	else if(S_ISLNK(st->st_mode))
+		type = "inode/symlink";
 #ifdef S_ISSOCK
-		else if(S_ISSOCK(st->st_mode))
-			type = "inode/socket";
+	else if(S_ISSOCK(st->st_mode))
+		type = "inode/socket";
 #endif
-		else if(browser->mime != NULL
-				&& (type = mime_type(browser->mime, display))
-				!= NULL)
-		{
-			mime_icons(browser->mime, browser->theme, type,
-					24, &icon_24,
+	else if(browser->mime != NULL
+			&& (type = mime_type(browser->mime, display)) != NULL)
+	{
+		mime_icons(browser->mime, browser->theme, type, 24, &icon_24,
 #if !GTK_CHECK_VERSION(2, 6, 0)
-					-1);
+				-1);
 #else
-					48, &icon_48, 96, &icon_96, -1);
-			if(strncmp(type, "image/", 6) == 0)
-				icon_96 = gdk_pixbuf_new_from_file_at_size(
-						path, 96, 96, NULL);
+		48, &icon_48, 96, &icon_96, -1);
+		if(strncmp(type, "image/", 6) == 0)
+			icon_96 = gdk_pixbuf_new_from_file_at_size(path, 96, 96,
+					NULL);
 #endif
-		}
 	}
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_list_store_insert_with_values(browser->store, iter, -1,
@@ -795,8 +787,8 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #endif
 			BR_COL_UPDATED, updated, BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, display, BR_COL_INODE, inode,
-			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
-			: 0,
+			BR_COL_IS_DIRECTORY, st != NULL
+			? S_ISDIR(st->st_mode) : 0,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -809,8 +801,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
-			BR_COL_MIME_TYPE, type != NULL ? type : "",
-			-1);
+			BR_COL_MIME_TYPE, type != NULL ? type : "", -1);
 }
 
 static char * _insert_size(off_t size)
@@ -986,66 +977,60 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 
 	if((p = g_filename_to_utf8(display, -1, NULL, NULL, NULL)) != NULL)
 		display = p;
-	if(st != NULL)
+	inode = lst->st_ino;
+	size = lst->st_size;
+	dsize = _insert_size(lst->st_size);
+	pw = getpwuid(lst->st_uid);
+	gr = getgrgid(lst->st_gid);
+	ddate = _insert_date(lst->st_mtime);
+	if(S_ISDIR(st->st_mode))
 	{
-		inode = lst->st_ino;
-		size = lst->st_size;
-		dsize = _insert_size(lst->st_size);
-		pw = getpwuid(lst->st_uid);
-		gr = getgrgid(lst->st_gid);
-		ddate = _insert_date(lst->st_mtime);
-		if(S_ISDIR(st->st_mode))
-		{
-			icon_24 = browser->pb_folder_24;
+		icon_24 = browser->pb_folder_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
-			icon_48 = browser->pb_folder_48;
+		icon_48 = browser->pb_folder_48;
 #endif
-			type = "inode/directory";
-		}
-		else if(st->st_mode & S_IXUSR
+		type = "inode/directory";
+	}
+	else if(st->st_mode & S_IXUSR
 #if GTK_CHECK_VERSION(2, 6, 0)
-				&& browser->pb_executable_48 != NULL
+			&& browser->pb_executable_48 != NULL
 #endif
-				&& browser->pb_executable_24 != NULL)
-		{
-			icon_24 = browser->pb_executable_24;
+			&& browser->pb_executable_24 != NULL)
+	{
+		icon_24 = browser->pb_executable_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
-			icon_48 = browser->pb_executable_48;
+		icon_48 = browser->pb_executable_48;
 #endif
-		}
-		else if(S_ISBLK(st->st_mode))
-			type = "inode/blockdevice";
-		else if(S_ISCHR(st->st_mode))
-			type = "inode/chardevice";
-		else if(S_ISFIFO(st->st_mode))
-			type = "inode/fifo";
-		else if(S_ISLNK(st->st_mode))
-			type = "inode/symlink";
+	}
+	else if(S_ISBLK(st->st_mode))
+		type = "inode/blockdevice";
+	else if(S_ISCHR(st->st_mode))
+		type = "inode/chardevice";
+	else if(S_ISFIFO(st->st_mode))
+		type = "inode/fifo";
+	else if(S_ISLNK(st->st_mode))
+		type = "inode/symlink";
 #ifdef S_ISSOCK
-		else if(S_ISSOCK(st->st_mode))
-			type = "inode/socket";
+	else if(S_ISSOCK(st->st_mode))
+		type = "inode/socket";
 #endif
-		else if(browser->mime != NULL
-				&& (type = mime_type(browser->mime, display))
-				!= NULL)
-		{
-			mime_icons(browser->mime, browser->theme, type,
-					24, &icon_24,
+	else if(browser->mime != NULL
+			&& (type = mime_type(browser->mime, display)) != NULL)
+	{
+		mime_icons(browser->mime, browser->theme, type, 24, &icon_24,
 #if !GTK_CHECK_VERSION(2, 6, 0)
-					-1);
+				-1);
 #else
-					48, &icon_48, 96, &icon_96, -1);
-			if(strncmp(type, "image/", 6) == 0)
-				icon_96 = gdk_pixbuf_new_from_file_at_size(
-						path, 96, 96, NULL);
+		48, &icon_48, 96, &icon_96, -1);
+		if(strncmp(type, "image/", 6) == 0)
+			icon_96 = gdk_pixbuf_new_from_file_at_size(path, 96, 96,
+					NULL);
 #endif
-		}
 	}
 	gtk_list_store_set(browser->store, iter, BR_COL_UPDATED, 1,
 			BR_COL_PATH, path, BR_COL_DISPLAY_NAME, display,
-			BR_COL_INODE, inode,
-			BR_COL_IS_DIRECTORY, st != NULL ? S_ISDIR(st->st_mode)
-			: 0,
+			BR_COL_INODE, inode, BR_COL_IS_DIRECTORY, st != NULL
+			? S_ISDIR(st->st_mode) : 0,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1056,8 +1041,7 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
-			BR_COL_MIME_TYPE, type != NULL ? type : "",
-			-1);
+			BR_COL_MIME_TYPE, type != NULL ? type : "", -1);
 }
 
 static gboolean _current_idle(gpointer data)
