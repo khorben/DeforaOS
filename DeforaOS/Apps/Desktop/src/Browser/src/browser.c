@@ -805,11 +805,11 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 			BR_COL_PIXBUF_96, icon_96 != NULL ? icon_96
 			: browser->pb_file_96,
 #endif
-			BR_COL_MIME_TYPE, type != NULL ? type : "",
 			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
+			BR_COL_MIME_TYPE, type != NULL ? type : "",
 			-1);
 }
 
@@ -1052,11 +1052,11 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 			BR_COL_PIXBUF_48, icon_48 != NULL ? icon_48
 			: browser->pb_file_48,
 #endif
-			BR_COL_MIME_TYPE, type != NULL ? type : "",
 			BR_COL_SIZE, size, BR_COL_DISPLAY_SIZE, dsize,
 			BR_COL_OWNER, pw != NULL ? pw->pw_name : "",
 			BR_COL_GROUP, gr != NULL ? gr->gr_name : "",
 			BR_COL_DATE, lst->st_mtime, BR_COL_DISPLAY_DATE, ddate,
+			BR_COL_MIME_TYPE, type != NULL ? type : "",
 			-1);
 }
 
