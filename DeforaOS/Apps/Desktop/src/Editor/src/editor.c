@@ -107,9 +107,9 @@ Editor * editor_new(void)
 	editor->filename = NULL;
 	/* widgets */
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(editor->window), 512, 384);
+	gtk_window_set_default_size(GTK_WINDOW(editor->window), 600, 400);
 	_new_set_title(editor);
-	g_signal_connect(G_OBJECT(editor->window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(editor->window), "delete-event", G_CALLBACK(
 			_on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
