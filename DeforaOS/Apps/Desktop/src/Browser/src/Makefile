@@ -7,7 +7,7 @@ CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2
-LDFLAGSF= `pkg-config gtk+-2.0 --libs` -l System
+LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -19,7 +19,7 @@ browser_OBJS = browser.o callbacks.o mime.o main.o
 browser_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 browser: $(browser_OBJS)
-	$(CC) -o browser $(browser_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o browser $(browser_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 
 delete_OBJS = delete.o
 delete_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -31,19 +31,19 @@ desktop_OBJS = desktop.o
 desktop_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 desktop: $(desktop_OBJS)
-	$(CC) -o desktop $(desktop_OBJS) $(LDFLAGSF) $(LDFLAGS) mime.o
+	$(CC) -o desktop $(desktop_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 open_OBJS = open.o
 open_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 open: $(open_OBJS)
-	$(CC) -o open $(open_OBJS) $(LDFLAGSF) $(LDFLAGS) mime.o
+	$(CC) -o open $(open_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 view_OBJS = view.o
 view_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 view: $(view_OBJS)
-	$(CC) -o view $(view_OBJS) $(LDFLAGSF) $(LDFLAGS) mime.o
+	$(CC) -o view $(view_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 browser.o: browser.c mime.h callbacks.h browser.h
 	$(CC) $(browser_CFLAGS) -c browser.c
