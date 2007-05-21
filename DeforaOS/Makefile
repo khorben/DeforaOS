@@ -1,19 +1,29 @@
 SUBDIRS	= System/src/libSystem Apps/Devel/src/configure
+PREFIX	= /usr/local
 
 
 
 all: subdirs
-	$(MAKE) \
-		CPPFLAGS="-I $(PWD)/System/src/libSystem/include" \
-		LDFLAGS="$(LDFLAGS) -L $(PWD)/System/src/libSystem/src"
+	@echo
+	@echo ========================================================================
+	@echo 'The base library (libSystem) and the compilation configuration tool'
+	@echo 'compiled correctly. To continue the compilation process you need to run'
+	@echo '"make bootstrap". This will install libSystem in $(PREFIX)/lib, replace'
+	@echo 'this Makefile, and compile the rest of the software.'
+	@echo ========================================================================
+	@echo
 
 subdirs:
-	(cd System/src/libSystem && $(MAKE)) || exit
+	(cd System/src/libSystem && $(MAKE))
 	(cd Apps/Devel/src/configure && $(MAKE) \
 		CPPFLAGS="-I ../../../../../System/src/libSystem/include" \
-		LDFLAGS="$(LDFLAGS) -L ../../../../../System/src/libSystem/src") || exit
-	LD_LIBRARY_PATH=./System/src/libSystem/src \
-		./Apps/Devel/src/configure/src/configure -v
+		LDFLAGS="../../../../../System/src/libSystem/src/libSystem.a")
+
+bootstrap:
+	(cd System/src/libSystem && $(MAKE) install)
+	$(MAKE) clean
+	./Apps/Devel/src/configure/src/configure -v
+	$(MAKE)
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
@@ -30,4 +40,4 @@ install: all
 uninstall: subdirs
 	$(MAKE) uninstall
 
-.PHONY: all subdirs clean dist distclean install uninstall
+.PHONY: all subdirs bootstrap clean dist distclean install uninstall
