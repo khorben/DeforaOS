@@ -571,11 +571,11 @@ static void _long_mode(char str[11], mode_t mode)
 
 static char const * _long_owner(uid_t uid)
 {
-	struct passwd * pwd;
 	static char buf[12];
+	struct passwd * pw;
 
-	if((pwd = getpwuid(uid)) != NULL)
-		return pwd->pw_name;
+	if((pw = getpwuid(uid)) != NULL)
+		return pw->pw_name;
 	snprintf(buf, sizeof(buf), "%u", uid);
 	return buf;
 }
