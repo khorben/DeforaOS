@@ -265,7 +265,7 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 			"File browser preferences");
 	gtk_window_set_transient_for(GTK_WINDOW(browser->pr_window), GTK_WINDOW(
 				browser->window));
-	g_signal_connect(G_OBJECT(browser->pr_window), "delete_event",
+	g_signal_connect(G_OBJECT(browser->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	browser->pr_sort = gtk_check_button_new_with_mnemonic(
