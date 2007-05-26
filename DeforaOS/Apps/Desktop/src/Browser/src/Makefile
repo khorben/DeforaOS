@@ -1,4 +1,4 @@
-TARGETS	= browser delete desktop open view
+TARGETS	= browser delete desktop open properties view
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -39,6 +39,12 @@ open_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 open: $(open_OBJS)
 	$(CC) -o open $(open_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
+properties_OBJS = properties.o
+properties_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+properties: $(properties_OBJS)
+	$(CC) -o properties $(properties_OBJS) $(LDFLAGSF) $(LDFLAGS)
+
 view_OBJS = view.o
 view_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
@@ -66,11 +72,14 @@ desktop.o: desktop.c mime.o
 open.o: open.c mime.o
 	$(CC) $(open_CFLAGS) -c open.c
 
+properties.o: properties.c
+	$(CC) $(properties_CFLAGS) -c properties.c
+
 view.o: view.c mime.o
 	$(CC) $(view_CFLAGS) -c view.c
 
 clean:
-	$(RM) $(browser_OBJS) $(delete_OBJS) $(desktop_OBJS) $(open_OBJS) $(view_OBJS)
+	$(RM) $(browser_OBJS) $(delete_OBJS) $(desktop_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -81,6 +90,7 @@ install: all
 	$(INSTALL) -m 0755 delete $(DESTDIR)$(BINDIR)/delete
 	$(INSTALL) -m 0755 desktop $(DESTDIR)$(BINDIR)/desktop
 	$(INSTALL) -m 0755 open $(DESTDIR)$(BINDIR)/open
+	$(INSTALL) -m 0755 properties $(DESTDIR)$(BINDIR)/properties
 	$(INSTALL) -m 0755 view $(DESTDIR)$(BINDIR)/view
 
 uninstall:
@@ -88,6 +98,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/delete
 	$(RM) $(DESTDIR)$(BINDIR)/desktop
 	$(RM) $(DESTDIR)$(BINDIR)/open
+	$(RM) $(DESTDIR)$(BINDIR)/properties
 	$(RM) $(DESTDIR)$(BINDIR)/view
 
 .PHONY: all clean distclean install uninstall
