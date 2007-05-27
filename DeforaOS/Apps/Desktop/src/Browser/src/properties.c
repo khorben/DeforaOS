@@ -77,6 +77,7 @@ static GtkWidget * _do_mode(char const * name, mode_t mode);
 
 static int _properties_do(char const * filename)
 {
+	char const * gfilename;
 	GtkWidget * window;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -86,8 +87,11 @@ static int _properties_do(char const * filename)
 
 	if(lstat(filename, &st) != 0)
 		return _properties_error(filename, 1);
+	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
+			== NULL)
+		gfilename = filename;
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s%s", "Properties: ", filename);
+	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", gfilename);
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -98,7 +102,7 @@ static int _properties_do(char const * filename)
 			? GTK_STOCK_DIRECTORY : GTK_STOCK_FILE,
 			GTK_ICON_SIZE_DIALOG);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	widget = gtk_label_new(filename);
+	widget = gtk_label_new(gfilename);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(TRUE, 0); /* size */
