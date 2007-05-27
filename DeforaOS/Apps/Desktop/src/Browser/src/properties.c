@@ -73,7 +73,8 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 static char * _do_size(char * buf, size_t buf_cnt, size_t size);
 static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
-static GtkWidget * _do_mode(char const * name, mode_t mode);
+static GtkWidget * _do_mode(PangoFontDescription * bold, char const * name,
+		mode_t mode);
 
 static int _properties_do(char const * filename)
 {
@@ -82,6 +83,7 @@ static int _properties_do(char const * filename)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	PangoFontDescription * bold;
 	struct stat st;
 	char buf[256];
 
@@ -103,10 +105,14 @@ static int _properties_do(char const * filename)
 			GTK_ICON_SIZE_DIALOG);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_label_new(gfilename);
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(TRUE, 0); /* size */
 	widget = gtk_label_new("Size:"); /* XXX justification does not work */
+	gtk_widget_modify_font(widget, bold);
 	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_label_new(_do_size(buf, sizeof(buf), st.st_size));
@@ -114,6 +120,7 @@ static int _properties_do(char const * filename)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(TRUE, 0); /* owner */
 	widget = gtk_label_new("Owner:");
+	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_label_new(_do_owner(buf, sizeof(buf), st.st_uid));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
@@ -121,20 +128,22 @@ static int _properties_do(char const * filename)
 	hbox = gtk_hbox_new(TRUE, 0); /* group */
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	widget = gtk_label_new("Group:");
+	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_label_new(_do_group(buf, sizeof(buf), st.st_gid));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(TRUE, 0); /* permissions */
 	widget = gtk_label_new("Permissions:");
+	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_label_new(""); /* XXX to balance the columns */
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = _do_mode("Owner:", (st.st_mode & 0700) >> 6); /* owner */
+	hbox = _do_mode(bold, "Owner:", (st.st_mode & 0700) >> 6); /* owner */
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = _do_mode("Group:", (st.st_mode & 0070) >> 3); /* group */
+	hbox = _do_mode(bold, "Group:", (st.st_mode & 0070) >> 3); /* group */
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = _do_mode("Others:", st.st_mode & 0007); /* others */
+	hbox = _do_mode(bold, "Others:", st.st_mode & 0007); /* others */
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	widget = gtk_hseparator_new(); /* separator */
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -148,6 +157,7 @@ static int _properties_do(char const * filename)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
+	pango_font_description_free(bold);
 	return 0;
 }
 
@@ -196,7 +206,8 @@ static char * _do_group(char * buf, size_t buf_cnt, gid_t gid)
 	return buf;
 }
 
-static GtkWidget * _do_mode(char const * name, mode_t mode)
+static GtkWidget * _do_mode(PangoFontDescription * bold, char const * name,
+		mode_t mode)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -204,6 +215,7 @@ static GtkWidget * _do_mode(char const * name, mode_t mode)
 
 	hbox = gtk_hbox_new(TRUE, 0);
 	widget = gtk_label_new(name);
+	gtk_widget_modify_font(widget, bold);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	hbox2 = gtk_hbox_new(TRUE, 0);
 	widget = gtk_check_button_new_with_label("read"); /* read */
