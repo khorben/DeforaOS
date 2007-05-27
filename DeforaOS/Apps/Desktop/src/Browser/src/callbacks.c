@@ -213,7 +213,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 	}
 	if(i != cnt + 1)
 	{
-		fprintf(stderr, "%s", "browser: Could not delete file(s)\n");
+		fputs("browser: Could not delete file(s)\n", stderr);
 		exit(2);
 	}
 	argv[++i] = NULL;
@@ -624,13 +624,55 @@ void on_home(GtkWidget * widget, gpointer data)
 void on_properties(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
+	pid_t pid;
 	GList * selection;
+	unsigned int cnt;
+	char ** argv;
+	gchar * q;
+	GList * p;
+	unsigned int i = 1;
+	GtkTreeIter iter;
 
+	if((pid = fork()) == -1)
+	{
+		browser_error(browser, "fork", 0);
+		return;
+	}
+	else if(pid != 0)
+		return;
 	if((selection = _copy_selection(browser)) == NULL)
 		return;
-	/* FIXME */
-	g_list_foreach(selection, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free(selection);
+	cnt = g_list_length(selection);
+	if((argv = malloc(sizeof(*argv) * (cnt + 3))) == NULL)
+	{
+		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
+		exit(2);
+	}
+#ifdef DEBUG
+	argv[0] = "echo";
+#else
+	argv[0] = "properties";
+#endif
+	argv[1] = "--";
+	for(p = selection; p != NULL && i <= cnt; p = p->next)
+	{
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, p->data))
+			continue;
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &q, -1);
+		argv[++i] = q;
+	}
+	if(i != cnt + 1)
+	{
+		fputs("browser: Could not detail file(s)\n", stderr);
+		exit(2);
+	}
+	argv[++i] = NULL;
+	execvp(argv[0], argv);
+	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
+			strerror(errno));
+	exit(2);
 }
 
 
