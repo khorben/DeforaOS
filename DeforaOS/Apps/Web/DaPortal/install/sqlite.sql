@@ -7,6 +7,7 @@ CREATE TABLE daportal_module (
 	name VARCHAR(255) UNIQUE,
 	enabled TINYINT(4) NOT NULL DEFAULT '0'
 );
+
 INSERT INTO daportal_module (name, enabled) VALUES ('admin', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('explorer', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('menu', '1');
