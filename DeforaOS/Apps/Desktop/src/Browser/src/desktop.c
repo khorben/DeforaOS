@@ -224,10 +224,11 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		char const * label, GCallback callback, DesktopIcon * icon,
 		GtkWidget * menu);
 /* callbacks */
-static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
+static void _on_icon_delete(GtkWidget * widget, gpointer data);
+static void _on_icon_properties(GtkWidget * widget, gpointer data);
 
 static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
@@ -258,6 +259,8 @@ static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_icon_properties), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, event->time);
@@ -309,14 +312,6 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		menuitem = gtk_menu_item_new_with_mnemonic(label);
 	g_signal_connect(G_OBJECT(menuitem), "activate", callback, desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-}
-
-static void _on_icon_delete(GtkWidget * widget, gpointer data)
-{
-	DesktopIcon * desktopicon = data;
-
-	/* FIXME actually delete the file, and wait for the refresh */
-	desktop_icon_remove(desktopicon->desktop, desktopicon);
 }
 
 static void _on_icon_open(GtkWidget * widget, gpointer data)
@@ -377,6 +372,31 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 		exit(2);
 	}
 	g_free(filename);
+}
+
+static void _on_icon_delete(GtkWidget * widget, gpointer data)
+{
+	DesktopIcon * desktopicon = data;
+
+	/* FIXME actually delete the file, and wait for the refresh */
+	desktop_icon_remove(desktopicon->desktop, desktopicon);
+}
+
+static void _on_icon_properties(GtkWidget * widget, gpointer data)
+{
+	DesktopIcon * desktopicon = data;
+	pid_t pid;
+
+	if((pid = fork()) == -1)
+	{
+		desktop_error(desktopicon->desktop, "fork", 0);
+		return;
+	}
+	else if(pid != 0)
+		return;
+	execlp("properties", "properties", "--", desktopicon->path, NULL);
+	desktop_error(NULL, "properties", 0);
+	exit(2);
 }
 
 
