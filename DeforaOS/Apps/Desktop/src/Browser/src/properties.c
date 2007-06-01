@@ -136,14 +136,21 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		}
 	}
 	else
-	{
 		type = "Unknown type";
-		image = gtk_image_new_from_stock(GTK_STOCK_FILE,
-				GTK_ICON_SIZE_DIALOG);
-	}
 	if(image == NULL)
-		image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE,
-				GTK_ICON_SIZE_DIALOG);
+	{
+		if(theme != NULL && (pixbuf = gtk_icon_theme_load_icon(theme,
+						"gnome-fs-regular", 48, 0,
+						NULL)) != NULL)
+			image = gtk_image_new_from_pixbuf(pixbuf);
+		if(image == NULL)
+			image = gtk_image_new_from_stock(GTK_STOCK_FILE,
+					GTK_ICON_SIZE_DIALOG);
+		if(image == NULL)
+			image = gtk_image_new_from_stock(
+					GTK_STOCK_MISSING_IMAGE,
+					GTK_ICON_SIZE_DIALOG);
+	}
 	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
 			== NULL)
 		gfilename = filename;
