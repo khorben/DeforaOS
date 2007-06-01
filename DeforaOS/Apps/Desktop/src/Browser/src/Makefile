@@ -43,7 +43,7 @@ properties_OBJS = properties.o
 properties_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 properties: $(properties_OBJS)
-	$(CC) -o properties $(properties_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o properties $(properties_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 view_OBJS = view.o
 view_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
