@@ -197,11 +197,11 @@ static int slist_insert_sorted(SList * slist, void * data,
 static int _ls_error(char const * message, int ret);
 typedef int (*compare_func)(void *, void *);
 static compare_func _ls_compare(Prefs * prefs);
-static int _ls_directory_do(Prefs * prefs, char * directory);
+static int _ls_directory_do(Prefs * prefs, char const * directory);
 static int _ls_args(SList ** files, SList ** dirs);
-static int _is_directory(Prefs * prefs, char * dir);
-static int _ls_do(Prefs * prefs, int argc, char * directory, SList * files,
-		SList * dirs);
+static int _is_directory(Prefs * prefs, char const * filename);
+static int _ls_do(Prefs * prefs, int argc, char const * directory,
+		SList * files, SList * dirs);
 static int _ls(int argc, char * argv[], Prefs * prefs)
 {
 	SList * files;
@@ -276,7 +276,7 @@ static int _modcmp(char * a, char * b)
 	return sta.st_mtime - stb.st_mtime;
 }
 
-static int _ls_directory_do(Prefs * prefs, char * directory)
+static int _ls_directory_do(Prefs * prefs, char const * directory)
 {
 	SList * files;
 	SList * dirs;
@@ -327,22 +327,22 @@ static int _ls_args(SList ** files, SList ** dirs)
 	return 0;
 }
 
-static int _is_directory(Prefs * prefs, char * file)
+static int _is_directory(Prefs * prefs, char const * filename)
 {
 	int (*_stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
 	if(*prefs & PREFS_H || *prefs & PREFS_L)
 		_stat = stat;
-	if((_stat(file, &st)) != 0)
-		return _ls_error(file, 2);
+	if((_stat(filename, &st)) != 0)
+		return _ls_error(filename, 2);
 	return S_ISDIR(st.st_mode) ? 1 : 0;
 }
 
-static int _ls_do_files(Prefs * prefs, char * directory, SList * files);
+static int _ls_do_files(Prefs * prefs, char const * directory, SList * files);
 static int _ls_do_dirs(Prefs * prefs, int argc, SList * dirs);
-static int _ls_do(Prefs * prefs, int argc, char * directory, SList * files,
-		SList * dirs)
+static int _ls_do(Prefs * prefs, int argc, char const * directory,
+		SList * files, SList * dirs)
 {
 	int res = 0;
 	char sep = 0;
@@ -357,9 +357,11 @@ static int _ls_do(Prefs * prefs, int argc, char * directory, SList * files,
 }
 
 static int _ls_free(void * data);
-static int _ls_do_files_short(Prefs * prefs, char * directory, SList * files);
-static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files);
-static int _ls_do_files(Prefs * prefs, char * directory, SList * files)
+static int _ls_do_files_short(Prefs * prefs, char const * directory,
+		SList * files);
+static int _ls_do_files_long(Prefs * prefs, char const * directory,
+		SList * files);
+static int _ls_do_files(Prefs * prefs, char const * directory, SList * files)
 {
 	int res = 0;
 
@@ -374,7 +376,8 @@ static int _ls_do_files(Prefs * prefs, char * directory, SList * files)
 
 static char _short_file_mode(Prefs * prefs, char const * directory,
 		char const * file);
-static int _ls_do_files_short(Prefs * prefs, char * directory, SList * files)
+static int _ls_do_files_short(Prefs * prefs, char const * directory,
+		SList * files)
 {
 	char * cols;
 	char * p;
@@ -459,7 +462,8 @@ static char _short_file_mode(Prefs * prefs, char const * directory,
 
 static void _long_print(Prefs * prefs, char const * filename,
 		char const * basename, struct stat * st);
-static int _ls_do_files_long(Prefs * prefs, char * directory, SList * files)
+static int _ls_do_files_long(Prefs * prefs, char const * directory,
+		SList * files)
 {
 	SList cur;
 	char * file = NULL;
