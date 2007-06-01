@@ -74,8 +74,7 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 static char * _do_size(char * buf, size_t buf_cnt, size_t size);
 static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
-static GtkWidget * _do_mode(PangoFontDescription * bold, char const * name,
-		mode_t mode);
+static GtkWidget * _do_mode(mode_t mode);
 
 static int _properties_do(char const * filename)
 {
@@ -83,6 +82,7 @@ static int _properties_do(char const * filename)
 	GtkWidget * window;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkWidget * table;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
 	struct stat st;
@@ -100,57 +100,63 @@ static int _properties_do(char const * filename)
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_properties_on_closex), &_properties_cnt);
 	vbox = gtk_vbox_new(FALSE, 0);
-	hbox = gtk_hbox_new(TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	table = gtk_table_new(9, 2, FALSE);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
 	widget = gtk_image_new_from_stock(S_ISDIR(st.st_mode)
 			? GTK_STOCK_DIRECTORY : GTK_STOCK_FILE,
 			GTK_ICON_SIZE_DIALOG);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 0, 2);
 	widget = gtk_label_new(gfilename);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = gtk_hbox_new(TRUE, 0); /* size */
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 0, 1);
+	widget = gtk_label_new("MIME type"); /* FIXME implement */
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 1, 2);
 	widget = gtk_label_new("Size:"); /* XXX justification does not work */
 	gtk_widget_modify_font(widget, bold);
 	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
 	widget = gtk_label_new(_do_size(buf, sizeof(buf), st.st_size));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = gtk_hbox_new(TRUE, 0); /* owner */
-	widget = gtk_label_new("Owner:");
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 2, 3);
+	widget = gtk_label_new("Owner:"); /* owner name */
 	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
 	widget = gtk_label_new(_do_owner(buf, sizeof(buf), st.st_uid));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = gtk_hbox_new(TRUE, 0); /* group */
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	widget = gtk_label_new("Group:");
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 3, 4);
+	widget = gtk_label_new("Group:"); /* group name */
 	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 4, 5);
 	widget = gtk_label_new(_do_group(buf, sizeof(buf), st.st_gid));
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	hbox = gtk_hbox_new(TRUE, 0); /* permissions */
-	widget = gtk_label_new("Permissions:");
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 4, 5);
+	widget = gtk_label_new("Permissions:"); /* permissions */
 	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 5, 6);
+	widget = gtk_label_new("Owner:"); /* owner permissions */
+	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 6, 7);
+	widget = _do_mode((st.st_mode & 0700) >> 6);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 6, 7);
+	widget = gtk_label_new("Group:"); /* group permissions */
+	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 7, 8);
+	widget = _do_mode((st.st_mode & 0070) >> 3);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 7, 8);
+	widget = gtk_label_new("Others:"); /* others permissions */
+	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 8, 9);
+	widget = _do_mode(st.st_mode & 0007);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 8, 9);
+	gtk_box_pack_start(GTK_BOX(hbox), table, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	hbox = gtk_hbox_new(FALSE, 4); /* separator */
+	widget = gtk_hseparator_new();
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	widget = gtk_label_new(""); /* XXX to balance the columns */
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = _do_mode(bold, "Owner:", (st.st_mode & 0700) >> 6); /* owner */
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = _do_mode(bold, "Group:", (st.st_mode & 0070) >> 3); /* group */
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = _do_mode(bold, "Others:", st.st_mode & 0007); /* others */
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	widget = gtk_hseparator_new(); /* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	hbox = gtk_hbox_new(FALSE, 0); /* bottom box */
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 4); /* close button */
+	/* FIXME add an "apply" button for permissions */
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_properties_on_close), &_properties_cnt);
@@ -207,31 +213,24 @@ static char * _do_group(char * buf, size_t buf_cnt, gid_t gid)
 	return buf;
 }
 
-static GtkWidget * _do_mode(PangoFontDescription * bold, char const * name,
-		mode_t mode)
+static GtkWidget * _do_mode(mode_t mode)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	GtkWidget * hbox2;
 
 	hbox = gtk_hbox_new(TRUE, 0);
-	widget = gtk_label_new(name);
-	gtk_widget_modify_font(widget, bold);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	hbox2 = gtk_hbox_new(TRUE, 0);
 	widget = gtk_check_button_new_with_label("read"); /* read */
 	gtk_widget_set_sensitive(widget, FALSE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mode & S_IROTH);
-	gtk_box_pack_start(GTK_BOX(hbox2), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_check_button_new_with_label("write"); /* write */
 	gtk_widget_set_sensitive(widget, FALSE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mode & S_IWOTH);
-	gtk_box_pack_start(GTK_BOX(hbox2), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	widget = gtk_check_button_new_with_label("execute"); /* execute */
 	gtk_widget_set_sensitive(widget, FALSE);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mode & S_IXOTH);
-	gtk_box_pack_start(GTK_BOX(hbox2), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(hbox), hbox2, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
 	return hbox;
 }
 
