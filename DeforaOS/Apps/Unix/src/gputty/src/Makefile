@@ -4,9 +4,10 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -g
-LDFLAGSF= `pkg-config --libs gtk+-2.0` -l System
+LDFLAGSF= `pkg-config --libs gtk+-2.0` -l System -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -15,10 +16,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 gputty_OBJS = gputty.o
-gputty_CFLAGS = $(CFLAGSF) $(CFLAGS)
+gputty_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 gputty: $(gputty_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o gputty $(gputty_OBJS)
+	$(CC) -o gputty $(gputty_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 gputty.o: gputty.c ../config.h
 	$(CC) $(gputty_CFLAGS) -c gputty.c
