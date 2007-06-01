@@ -14,6 +14,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <gtk/gtk.h>
+#include "mime.h"
 
 
 /* properties */
@@ -22,7 +23,8 @@ static unsigned int _properties_cnt = 0; /* XXX set as static in _properties */
 
 /* functions */
 static int _properties_error(char const * message, int ret);
-static int _properties_do(char const * filename);
+static int _properties_do(Mime * mime, GtkIconTheme * theme,
+		char const * filename);
 
 /* callbacks */
 static gboolean _properties_on_closex(GtkWidget * widget, GdkEvent * event,
@@ -32,14 +34,20 @@ static void _properties_on_close(GtkWidget * widget, gpointer data);
 static int _properties(int filec, char * const filev[])
 {
 	int ret = 0;
+	Mime * mime;
+	GtkIconTheme * theme = NULL;
 	int i;
 
+	if((mime = mime_new()) != NULL)
+		theme = gtk_icon_theme_get_default();
 	for(i = 0; i < filec; i++)
 	{
 		_properties_cnt++;
 		/* FIXME if relative path get the full path */
-		ret |= _properties_do(filev[i]);
+		ret |= _properties_do(mime, theme, filev[i]);
 	}
+	if(mime != NULL)
+		mime_delete(mime);
 	return ret;
 }
 
@@ -76,20 +84,66 @@ static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
 static GtkWidget * _do_mode(mode_t mode);
 
-static int _properties_do(char const * filename)
+static int _properties_do(Mime * mime, GtkIconTheme * theme,
+		char const * filename)
 {
+	struct stat st;
 	char const * gfilename;
+	char const * type = NULL;
+	GdkPixbuf * pixbuf = NULL;
+	GtkWidget * image = NULL;
 	GtkWidget * window;
+	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * table;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
-	struct stat st;
-	char buf[256];
 
 	if(lstat(filename, &st) != 0)
 		return _properties_error(filename, 1);
+	if(S_ISDIR(st.st_mode))
+	{
+		if(theme != NULL && (pixbuf = gtk_icon_theme_load_icon(theme,
+						"gnome-fs-directory", 48, 0,
+						NULL)) != NULL)
+			image = gtk_image_new_from_pixbuf(pixbuf);
+		if(image == NULL)
+			image = gtk_image_new_from_stock(GTK_STOCK_DIRECTORY,
+					GTK_ICON_SIZE_DIALOG);
+		type = "inode/directory";
+	}
+	else if(S_ISBLK(st.st_mode))
+		type = "inode/blockdevice";
+	else if(S_ISBLK(st.st_mode))
+		type = "inode/chardevice";
+	else if(S_ISFIFO(st.st_mode))
+		type = "inode/fifo";
+	else if(S_ISLNK(st.st_mode))
+		type = "inode/symlink";
+#ifdef S_ISSOCK
+	else if(S_ISSOCK(st.st_mode))
+		type = "inode/socket";
+#endif
+	else if(mime != NULL)
+	{
+		type = mime_type(mime, filename);
+		if(theme != NULL)
+		{
+			mime_icons(mime, theme, type, 48, &pixbuf, -1);
+			if(pixbuf != NULL)
+				image = gtk_image_new_from_pixbuf(pixbuf);
+		}
+	}
+	else
+	{
+		type = "Unknown type";
+		image = gtk_image_new_from_stock(GTK_STOCK_FILE,
+				GTK_ICON_SIZE_DIALOG);
+	}
+	if(image == NULL)
+		image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE,
+				GTK_ICON_SIZE_DIALOG);
 	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
 			== NULL)
 		gfilename = filename;
@@ -104,16 +158,13 @@ static int _properties_do(char const * filename)
 	table = gtk_table_new(9, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
-	widget = gtk_image_new_from_stock(S_ISDIR(st.st_mode)
-			? GTK_STOCK_DIRECTORY : GTK_STOCK_FILE,
-			GTK_ICON_SIZE_DIALOG);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 0, 2);
+	gtk_table_attach_defaults(GTK_TABLE(table), image, 0, 1, 0, 2);
 	widget = gtk_label_new(gfilename);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 0, 1);
-	widget = gtk_label_new("MIME type"); /* FIXME implement */
+	widget = gtk_label_new(type);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 1, 2);
 	widget = gtk_label_new("Size:"); /* XXX justification does not work */
 	gtk_widget_modify_font(widget, bold);
