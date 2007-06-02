@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
+/* Copyright (c) 2007 The DeforaOS Project */
 
 
 
@@ -19,6 +19,7 @@ typedef int Prefs;
 /* who */
 static int _who_error(char const * message, int ret);
 static char * _who_tty(void);
+
 static int _who(Prefs * prefs)
 {
 	struct utmpx * u;
@@ -51,7 +52,7 @@ static int _who(Prefs * prefs)
 
 static int _who_error(char const * message, int ret)
 {
-	fputs("ttyname: ", stderr);
+	fputs("who: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -74,7 +75,7 @@ static char * _who_tty(void)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: who\n", stderr);
+	fputs("Usage: who [-mT]\n", stderr);
 	return 1;
 }
 
