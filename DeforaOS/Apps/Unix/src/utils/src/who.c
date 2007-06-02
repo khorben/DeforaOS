@@ -42,8 +42,9 @@ static int _who(Prefs * prefs)
 			printf(" %c", '?');
 		printf(" %-8s", u->ut_line);
 		t = u->ut_tv.tv_sec;
-		if((tm = localtime(&t)) == NULL || strftime(buf, sizeof(buf),
-					"%b %e %H:%M", tm) == 0)
+		if((tm = localtime(&t)) == NULL
+				|| strftime(buf, sizeof(buf), "%b %e %H:%M", tm)
+				== 0)
 			strcpy(buf, "n/a");
 		printf(" %s\n", buf);
 	}
