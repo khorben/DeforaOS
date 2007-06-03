@@ -4,10 +4,11 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGSF= `pkg-config gtk+-2.0 --libs` -l System
-LDFLAGS	= -L /usr/local/lib
+LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -16,9 +17,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 player_OBJS = callbacks.o player.o main.o
-player_CFLAGS = $(CFLAGSF) $(CFLAGS)
+player_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 player: $(player_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o player $(player_OBJS)
+	$(CC) -o player $(player_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 callbacks.o: callbacks.c callbacks.h player.h
 	$(CC) $(player_CFLAGS) -c callbacks.c
