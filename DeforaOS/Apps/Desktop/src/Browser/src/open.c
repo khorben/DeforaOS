@@ -32,15 +32,18 @@ static int _open(char const * type, char const * action, int filec,
 	if((mime = mime_new()) == NULL)
 		return 1;
 	for(i = 0; i < filec; i++)
-		if((type == NULL && mime_action(mime, action, filev[i]) != 0)
-				|| mime_action_type(mime, action, filev[i],
-					type) != 0)
+	{
+		if(type == NULL)
 		{
-			fprintf(stderr, "%s%s%s%s%s", "mime: ", filev[i],
-					": Could not perform action \"", action,
-					"\"\n");
-			ret = 1;
+			if(mime_action(mime, action, filev[i]) == 0)
+				continue;
 		}
+		else if(mime_action_type(mime, action, filev[i], type) == 0)
+			continue;
+		fprintf(stderr, "%s%s%s%s%s", "mime: ", filev[i], ": Could not"
+				" perform action \"", action, "\"\n");
+		ret = 1;
+	}
 	mime_delete(mime);
 	return ret;
 }
