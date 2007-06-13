@@ -22,6 +22,7 @@ dist:
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/hexdump.c \
+		$(PACKAGE)-$(VERSION)/src/login.c \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
 		$(PACKAGE)-$(VERSION)/src/tar.c \
 		$(PACKAGE)-$(VERSION)/src/uptime.c \
