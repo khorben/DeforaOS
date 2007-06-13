@@ -1,4 +1,4 @@
-SUBDIRS	= Desktop Devel Graphics Network Servers Unix
+SUBDIRS	= Desktop/src Devel/src Graphics/src Network/src Servers/src Unix/src
 
 
 all: subdirs
