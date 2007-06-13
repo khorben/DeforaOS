@@ -1,3 +1,4 @@
+devel		susv3 compliant developer utilities
 gputty		clone of the well-known windows putty program
 others		general-purpose utilities not part of susv3
 scripts		general-purpose shell scripts
