@@ -1,9 +1,22 @@
-/* gedi.h */
+/* $Id$ */
+/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Devel GEDI */
+/* GEDI is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License version 2 as published by the Free
+ * Software Foundation.
+ *
+ * GEDI is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GEDI; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston, MA  02111-1307  USA */
 
 
 
-#ifndef __GEDI_H
-# define __GEDI_H
+#ifndef GEDI_GEDI_H
+# define GEDI_GEDI_H
 
 # include <System.h>
 # include <gtk/gtk.h>
@@ -40,4 +53,4 @@ void gedi_project_open(GEDI * gedi, char const * file);
 void gedi_project_save(GEDI * gedi);
 void gedi_project_save_as(GEDI * gedi, char const * file);
 
-#endif /* !__GEDI_H */
+#endif /* !GEDI_GEDI_H */
