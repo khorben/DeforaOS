@@ -37,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
