@@ -1,10 +1,9 @@
 /* $Id$ */
-/* Copyright (c) 2006 The DeforaOS Project */
-/* This file is part of Browser */
+/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Desktop Browser */
 /* Browser is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
+ * terms of the GNU General Public License version 2 as published by the Free
+ * Software Foundation.
  *
  * Browser is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
