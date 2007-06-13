@@ -1,5 +1,5 @@
-<?php
-//Copyright (c) 2005 Pierre Pronchery
+<?php //$Id$
+//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
 //Some parts Copyright (c) 2005 FPconcept (used with permission)
 //This file is part of PHP Explorer
 //

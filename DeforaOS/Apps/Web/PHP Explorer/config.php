@@ -1,6 +1,6 @@
-<?php
-//Copyright 2005 Pierre Pronchery
-//Some parts Copyright 2005 FPconcept (used with permission)
+<?php //$Id$
+//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Some parts Copyright (c) 2005 FPconcept (used with permission)
 //This file is part of PHP Explorer
 //
 //PHP Explorer is free software; you can redistribute it and/or modify
