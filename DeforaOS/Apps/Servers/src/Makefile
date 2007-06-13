@@ -1,4 +1,4 @@
-SUBDIRS	= FSProxy inetd
+SUBDIRS	= inetd
 
 
 all: subdirs
