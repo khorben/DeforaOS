@@ -21,7 +21,9 @@
 #include <sys/wait.h>
 #include <sys/ptrace.h>
 #include <stdio.h>
-#include "linux.h"
+#ifdef __linux__
+# include "linux.h"
+#endif
 
 
 /* strace */
