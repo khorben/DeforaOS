@@ -1,5 +1,5 @@
-/* makepasswd.c */
-/* Copyright (C) 2003 Pierre Pronchery */
+/* $Id$ */
+/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of Makepasswd.
  *
  * Makepasswd is free software; you can redistribute it and/or modify
@@ -14,8 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Makepasswd; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
 
 
