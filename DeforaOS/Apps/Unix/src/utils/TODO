@@ -26,3 +26,6 @@ kill:
 
 mkdir/rmdir:
 - check recursive algorithms
+
+tail:
+- implement
