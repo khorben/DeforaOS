@@ -3,9 +3,7 @@ configure release notes
 
 configure automatically generates Makefiles from project definition files.
 
-configure is Copyright (c) 2005, 2006 Pierre Pronchery
-It is shipped under the terms of the GPL version 2 license, which you may read
-on the GNU project web site, http://www.gnu.org/ .
+configure is Copyright (c) 2005, 2006, 2007 Pierre Pronchery
 
 configure depends on DeforaOS libSystem library, which is found on the DeforaOS project web site, http://www.defora.org/ .
 
