@@ -1,4 +1,4 @@
-//modules/explorer/explorer.js
+/* js/explorer.js */
 
 
 

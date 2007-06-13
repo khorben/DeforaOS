@@ -1,4 +1,4 @@
-<?php //install.php
+<?php //$Id$
 //Copyright (c) 2004, 2005, 2006, 2007 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
