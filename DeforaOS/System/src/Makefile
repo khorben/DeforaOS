@@ -1,4 +1,4 @@
-SUBDIRS	= libSystem libc
+SUBDIRS	= libSystem libc VFS
 
 
 all: subdirs
