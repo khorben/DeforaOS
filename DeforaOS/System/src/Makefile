@@ -1,4 +1,4 @@
-SUBDIRS	= libSystem libc VFS
+SUBDIRS	= libSystem libc Init VFS
 
 
 all: subdirs
