@@ -1,11 +1,13 @@
 TARGETS	= VFS
 PREFIX	= /usr/local
-DESTDIR	=
+DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 CC	= cc
-CFLAGSF	= -W -Wall -ansi -I /usr/local/include/libSystem
+CPPFLAGS= 
+CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
-LDFLAGSF= -L /System/Libraries -l System -rdynamic -l dl
+LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System -Wl,--export-dynamic 
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -14,9 +16,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 VFS_OBJS = vfs.o
-VFS_CFLAGS = $(CFLAGSF) $(CFLAGS)
+VFS_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 VFS: $(VFS_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o VFS $(VFS_OBJS)
+	$(CC) -o VFS $(VFS_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 vfs.o: vfs.c
 	$(CC) $(VFS_CFLAGS) -c vfs.c
@@ -33,3 +36,5 @@ install: all
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/VFS
+
+.PHONY: all clean distclean install uninstall
