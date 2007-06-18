@@ -87,40 +87,24 @@ static void _delete_refresh(Delete * delete)
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
 }
 
-static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static void _error_on_close(GtkDialog * dialog, gint arg, gpointer data);
+static int _delete_error(Delete * delete, char const * message, int ret)
 {
-	gtk_main_quit();
-}
-
-static void _idle_on_error_close(GtkDialog * dialog, gint arg, gpointer data);
-static gboolean _delete_idle(gpointer data)
-{
-	Delete * delete = (Delete*)data;
 	GtkWidget * dialog;
 
-	if(unlink(delete->filev[delete->cur++]) != 0)
-	{
-		delete->err_cnt++;
-		dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
-				GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-				GTK_BUTTONS_OK, "%s: %s",
-				delete->filev[delete->cur-1], strerror(errno));
-		g_signal_connect(dialog, "response", G_CALLBACK(
-					_idle_on_error_close), delete);
-		gtk_widget_show(dialog);
-	}
-	if(delete->cur == delete->filec)
-	{
-		if(delete->err_cnt == 0)
-			gtk_main_quit();
-		return FALSE;
-	}
-	_delete_refresh(delete);
-	return TRUE;
+	delete->err_cnt++;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_OK, "%s: %s",
+			delete->filev[delete->cur-1], strerror(errno));
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	g_signal_connect(dialog, "response", G_CALLBACK(_error_on_close),
+			delete);
+	gtk_widget_show(dialog);
+	return ret;
 }
 
-static void _idle_on_error_close(GtkDialog * dialog, gint arg, gpointer data)
+static void _error_on_close(GtkDialog * dialog, gint arg, gpointer data)
 {
 	Delete * delete = data;
 
@@ -130,6 +114,28 @@ static void _idle_on_error_close(GtkDialog * dialog, gint arg, gpointer data)
 		return;
 	if(delete->err_cnt == 0)
 		gtk_main_quit();
+}
+
+static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_main_quit();
+}
+
+static gboolean _delete_idle(gpointer data)
+{
+	Delete * delete = (Delete*)data;
+
+	if(unlink(delete->filev[delete->cur++]) != 0)
+		_delete_error(delete, delete->filev[delete->cur-1], 0);
+	if(delete->cur == delete->filec)
+	{
+		if(delete->err_cnt == 0)
+			gtk_main_quit();
+		return FALSE;
+	}
+	_delete_refresh(delete);
+	return TRUE;
 }
 
 
