@@ -97,7 +97,7 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 {
 	DIR * dir;
 	struct dirent * de;
-	int len = strlen(file) + 2;
+	size_t len = strlen(file) + 2;
 	char * path;
 	char * p;
 
@@ -120,7 +120,7 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 			return _rm_error("malloc", 2);
 		}
 		path = p;
-		strcpy(&path[len-1], de->d_name);
+		strcpy(&path[len - 1], de->d_name);
 		if(_rm_do(prefs, path) != 0)
 			return 2;
 	}
