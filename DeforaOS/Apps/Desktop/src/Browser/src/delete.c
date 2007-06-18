@@ -86,7 +86,6 @@ static void _delete_refresh(Delete * delete)
 	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur+1,
 			delete->filec);
 	fraction = (double)(delete->cur + 1) / (double)delete->filec;
-	printf("%u %u %f\n", delete->cur + 1, delete->filec, fraction);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(delete->progress),
 			fraction);
