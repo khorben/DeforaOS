@@ -103,8 +103,6 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 
 	if((dir = opendir(file)) == NULL)
 		return _rm_error(file, 2);
-	readdir(dir);
-	readdir(dir);
 	if((path = malloc(len)) == NULL)
 	{
 		closedir(dir);
@@ -113,6 +111,10 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 	sprintf(path, "%s/", file);
 	while((de = readdir(dir)) != NULL)
 	{
+		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
+					|| (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0')))
+			continue;
 		if((p = realloc(path, len + strlen(de->d_name))) == NULL)
 		{
 			free(path);
