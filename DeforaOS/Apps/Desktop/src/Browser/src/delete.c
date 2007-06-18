@@ -15,23 +15,34 @@
 
 
 
+#include <sys/stat.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 
 
+/* types */
+typedef int Prefs;
+#define PREFS_f 0x1
+#define PREFS_i 0x2
+#define PREFS_R 0x4
+
+
 /* Delete */
 /* types */
 typedef struct _Delete
 {
+	Prefs * prefs;
+	unsigned int filec;
+	char ** filev;
+	unsigned int cur;
 	GtkWidget * window;
 	GtkWidget * label;
 	GtkWidget * progress;
-	int filec;
-	char ** filev;
-	int cur;
 } Delete;
 
 /* functions */
@@ -42,13 +53,14 @@ static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static gboolean _delete_idle(gpointer data);
 
-static int _delete(int filec, char * filev[])
+static int _delete(Prefs * prefs, int filec, char * filev[])
 {
 	static Delete delete;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
+	delete.prefs = prefs;
 	delete.filec = filec;
 	delete.filev = filev;
 	delete.cur = 0;
@@ -81,7 +93,7 @@ static void _delete_refresh(Delete * delete)
 	snprintf(buf, sizeof(buf), "Deleting file: %s",
 			delete->filev[delete->cur]);
 	gtk_label_set_text(GTK_LABEL(delete->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur+1,
+	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur + 1,
 			delete->filec);
 	fraction = (double)(delete->cur + 1) / (double)delete->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
@@ -108,12 +120,13 @@ static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
 	gtk_main_quit();
 }
 
+static int _idle_do(Delete * delete, char const * filename);
 static gboolean _delete_idle(gpointer data)
 {
-	Delete * delete = (Delete*)data;
+	Delete * delete = data;
 
-	if(unlink(delete->filev[delete->cur++]) != 0)
-		_delete_error(delete, delete->filev[delete->cur-1], 0);
+	_idle_do(delete, delete->filev[delete->cur]);
+	delete->cur++;
 	if(delete->cur == delete->filec)
 	{
 		gtk_main_quit();
@@ -123,11 +136,107 @@ static gboolean _delete_idle(gpointer data)
 	return TRUE;
 }
 
+static int _idle_ask_recursive(Delete * delete, char const * filename);
+static int _idle_ask(Delete * delete, char const * filename);
+static int _idle_do_recursive(Delete * delete, char const * filename);
+static int _idle_do(Delete * delete, char const * filename)
+{
+	struct stat st;
+
+	if(lstat(filename, &st) != 0)
+		return _delete_error(delete, filename, 1);
+	else if(S_ISDIR(st.st_mode))
+	{
+		if(!(*(delete->prefs) & PREFS_R))
+		{
+			errno = EISDIR;
+			return _delete_error(delete, filename, 1);
+		}
+		else if((*(delete->prefs) & PREFS_f)
+				|| _idle_ask_recursive(delete, filename) == 0)
+			return _idle_do_recursive(delete, filename);
+	}
+	else if((*(delete->prefs) & PREFS_f)
+			|| _idle_ask(delete, filename) == 0)
+		if(unlink(filename) != 0)
+			return _delete_error(delete, filename, 1);
+	return 0;
+}
+
+static int _idle_ask_recursive(Delete * delete, char const * filename)
+{
+	int ret;
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO, "%s is a directory\n"
+			"Recursively delete?", filename);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret == GTK_RESPONSE_YES ? 0 : 1;
+}
+
+static int _idle_ask(Delete * delete, char const * filename)
+{
+	int ret;
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
+			GTK_BUTTONS_YES_NO, "%s will be permanently deleted\n"
+			"Continue?", filename);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret == GTK_RESPONSE_YES ? 0 : 1;
+}
+
+/* FIXME does not update or redraw the dialog */
+static int _idle_do_recursive(Delete * delete, char const * filename)
+{
+	DIR * dir;
+	struct dirent * de;
+	size_t len = strlen(filename) + 2;
+	char * path;
+	char * p;
+
+	if((dir = opendir(filename)) == NULL)
+		return _delete_error(delete, filename, 1);
+	if((path = malloc(len)) == NULL)
+	{
+		closedir(dir);
+		return _delete_error(delete, filename, 1);
+	}
+	sprintf(path, "%s/", filename);
+	while((de = readdir(dir)) != NULL)
+	{
+		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
+					|| (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0')))
+			continue;
+		if((p = realloc(path, len + strlen(de->d_name))) == NULL)
+			break;
+		path = p;
+		strcpy(&path[len - 1], de->d_name);
+		if(_idle_do(delete, path) != 0)
+			break;
+	}
+	free(path);
+	closedir(dir);
+	if(de != NULL)
+		return _delete_error(delete, filename, 1);
+	if(rmdir(filename) != 0) /* FIXME confirm */
+		return _delete_error(delete, filename, 1);
+	return 0;
+}
+
 
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: delete file...\n");
+	fputs("Usage: delete [-fiRr] file...\n", stderr);
 	return 1;
 }
 
@@ -135,18 +244,32 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Prefs prefs;
 	int o;
 
+	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "fiRr")) != -1)
 		switch(o)
 		{
+			case 'f':
+				prefs -= prefs & PREFS_i;
+				prefs |= PREFS_f;
+				break;
+			case 'i':
+				prefs -= prefs & PREFS_f;
+				prefs |= PREFS_i;
+				break;
+			case 'R':
+			case 'r':
+				prefs |= PREFS_R;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind == argc)
 		return _usage();
-	_delete(argc - optind, &argv[optind]);
+	_delete(&prefs, argc - optind, &argv[optind]);
 	gtk_main();
 	return 0;
 }
