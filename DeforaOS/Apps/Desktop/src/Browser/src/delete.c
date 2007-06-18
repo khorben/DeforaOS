@@ -78,13 +78,18 @@ static int _delete(int filec, char * filev[])
 static void _delete_refresh(Delete * delete)
 {
 	char buf[256];
+	double fraction;
 
 	snprintf(buf, sizeof(buf), "Deleting file: %s",
 			delete->filev[delete->cur]);
 	gtk_label_set_text(GTK_LABEL(delete->label), buf);
 	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur+1,
 			delete->filec);
+	fraction = (double)(delete->cur + 1) / (double)delete->filec;
+	printf("%u %u %f\n", delete->cur + 1, delete->filec, fraction);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(delete->progress),
+			fraction);
 }
 
 static void _error_on_close(GtkDialog * dialog, gint arg, gpointer data);
