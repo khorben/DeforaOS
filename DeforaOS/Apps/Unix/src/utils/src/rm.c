@@ -42,8 +42,8 @@ static int _rm(Prefs * prefs, int argc, char * argv[])
 	int ret = 0;
 
 	for(i = 0; i < argc; i++)
-		ret+=_rm_do(prefs, argv[i]);
-	return ret ? 2 : 0;
+		ret |= _rm_do(prefs, argv[i]);
+	return ret;
 }
 
 static int _rm_error(char * message, int ret)
@@ -81,7 +81,7 @@ static int _rm_do(Prefs * prefs, char * file)
 		if(!(*prefs & PREFS_R))
 		{
 			errno = EISDIR;
-			return _rm_error(file, 0);
+			return _rm_error(file, *prefs & PREFS_f ? 0 : 1);
 		}
 		return _rm_do_recursive(prefs, file);
 	}
@@ -89,7 +89,7 @@ static int _rm_do(Prefs * prefs, char * file)
 	if(*prefs & PREFS_i && !_rm_confirm(file, "file"))
 		return 0;
 	if(unlink(file) != 0)
-		return _rm_error(file, 2);
+		return _rm_error(file, 1);
 	return 0;
 }
 
@@ -102,11 +102,11 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 	char * p;
 
 	if((dir = opendir(file)) == NULL)
-		return _rm_error(file, 2);
+		return _rm_error(file, 1);
 	if((path = malloc(len)) == NULL)
 	{
 		closedir(dir);
-		return _rm_error("malloc", 2);
+		return _rm_error("malloc", 1);
 	}
 	sprintf(path, "%s/", file);
 	while((de = readdir(dir)) != NULL)
@@ -119,19 +119,19 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 		{
 			free(path);
 			closedir(dir);
-			return _rm_error("malloc", 2);
+			return _rm_error("malloc", 1);
 		}
 		path = p;
 		strcpy(&path[len - 1], de->d_name);
 		if(_rm_do(prefs, path) != 0)
-			return 2;
+			return 1;
 	}
 	free(path);
 	closedir(dir);
 	if(*prefs & PREFS_i && !_rm_confirm(file, "directory"))
 		return 0;
 	if(rmdir(file) != 0)
-		return _rm_error(file, 2);
+		return _rm_error(file, 1);
 	return 0;
 }
 
@@ -175,5 +175,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	return _rm(&prefs, argc-optind, &argv[optind]);
+	return _rm(&prefs, argc-optind, &argv[optind]) == 0 ? 0 : 2;
 }
