@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 
 /* types */
@@ -79,9 +80,8 @@ static int _rm_do(Prefs * prefs, char * file)
 	{
 		if(!(*prefs & PREFS_R))
 		{
-			fprintf(stderr, "%s%s%s", "rm: ", file,
-					": Is a directory\n");
-			return 0;
+			errno = EISDIR;
+			return _rm_error(file, 0);
 		}
 		return _rm_do_recursive(prefs, file);
 	}
