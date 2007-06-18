@@ -153,6 +153,7 @@ Browser * browser_new(char const * directory)
 
 	/* config */
 	/* FIXME implement */
+	browser->prefs.confirm_before_delete = TRUE;
 	browser->prefs.sort_folders_first = TRUE;
 	browser->prefs.show_hidden_files = FALSE;
 

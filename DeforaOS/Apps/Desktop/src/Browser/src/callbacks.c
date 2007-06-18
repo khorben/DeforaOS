@@ -148,7 +148,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 	Browser * browser = data;
 	GtkWidget * dialog;
 	unsigned long cnt = 0;
-	int ret;
+	int ret = GTK_RESPONSE_YES;
 	GtkTreeIter iter;
 	GList * selection;
 	GList * p;
@@ -161,13 +161,18 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 			cnt++;
 	if(cnt == 0)
 		return;
-	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s%lu%s",
-			"Are you sure you want to delete ", cnt, " file(s)?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Delete file(s)");
-	ret = gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_destroy(GTK_WIDGET(dialog));
+	if(browser->prefs.confirm_before_delete == TRUE)
+	{
+		dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
+				GTK_DIALOG_MODAL
+				| GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
+				"%s%lu%s", "Are you sure you want to delete ",
+				cnt, " file(s)?");
+		gtk_window_set_title(GTK_WINDOW(dialog), "Delete file(s)");
+		ret = gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+	}
 	if(ret == GTK_RESPONSE_YES)
 		_delete_do(browser, selection, cnt);
 	g_list_foreach(selection, (GFunc)gtk_tree_path_free, NULL);
@@ -176,7 +181,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 
 static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 {
-	unsigned long i = 1;
+	unsigned long i = 2;
 	char ** argv;
 	pid_t pid;
 	GtkTreeIter iter;
@@ -190,7 +195,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 	}
 	else if(pid != 0)
 		return;
-	if((argv = malloc(sizeof(*argv) * (cnt + 3))) == NULL)
+	if((argv = malloc(sizeof(*argv) * (cnt + 4))) == NULL)
 	{
 		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
 		exit(2);
@@ -200,8 +205,9 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 #else
 	argv[0] = "delete";
 #endif
-	argv[1] = "--";
-	for(p = selection; p != NULL && i <= cnt; p = p->next)
+	argv[1] = "-i";
+	argv[2] = "--";
+	for(p = selection; p != NULL && i <= cnt + 1; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
 					&iter, p->data))
@@ -210,7 +216,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 				BR_COL_PATH, &q, -1);
 		argv[++i] = q;
 	}
-	if(i != cnt + 1)
+	if(i != cnt + 2)
 	{
 		fputs("browser: Could not delete file(s)\n", stderr);
 		exit(2);
@@ -267,6 +273,9 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 	g_signal_connect(G_OBJECT(browser->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
+	browser->pr_confirm = gtk_check_button_new_with_mnemonic(
+			"_Confirm before delete");
+	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_confirm, FALSE, FALSE, 4);
 	browser->pr_sort = gtk_check_button_new_with_mnemonic(
 			"Sort _folders first");
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_sort, FALSE, FALSE, 4);
@@ -294,6 +303,8 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 
 static void _preferences_set(Browser * browser)
 {
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_confirm),
+			browser->prefs.confirm_before_delete);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_sort),
 			browser->prefs.sort_folders_first);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_hidden),
@@ -322,6 +333,8 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 
 	gtk_widget_hide(browser->pr_window);
+	browser->prefs.confirm_before_delete = gtk_toggle_button_get_active(
+			GTK_TOGGLE_BUTTON(browser->pr_confirm));
 	browser->prefs.sort_folders_first = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_sort));
 	browser->prefs.show_hidden_files = gtk_toggle_button_get_active(
