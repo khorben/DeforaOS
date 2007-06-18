@@ -32,7 +32,6 @@ typedef struct _Delete
 	int filec;
 	char ** filev;
 	int cur;
-	int err_cnt;
 } Delete;
 
 /* functions */
@@ -53,7 +52,6 @@ static int _delete(int filec, char * filev[])
 	delete.filec = filec;
 	delete.filev = filev;
 	delete.cur = 0;
-	delete.err_cnt = 0;
 	delete.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(delete.window), "Delete file(s)");
 	g_signal_connect(G_OBJECT(delete.window), "delete_event", G_CALLBACK(
@@ -91,33 +89,17 @@ static void _delete_refresh(Delete * delete)
 			fraction);
 }
 
-static void _error_on_close(GtkDialog * dialog, gint arg, gpointer data);
 static int _delete_error(Delete * delete, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
-	delete->err_cnt++;
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_OK, "%s: %s",
-			delete->filev[delete->cur-1], strerror(errno));
+			GTK_BUTTONS_OK, "%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
-	g_signal_connect(dialog, "response", G_CALLBACK(_error_on_close),
-			delete);
-	gtk_widget_show(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
-}
-
-static void _error_on_close(GtkDialog * dialog, gint arg, gpointer data)
-{
-	Delete * delete = data;
-
-	gtk_widget_destroy(GTK_WIDGET(dialog));
-	delete->err_cnt--;
-	if(delete->cur != delete->filec)
-		return;
-	if(delete->err_cnt == 0)
-		gtk_main_quit();
 }
 
 static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
@@ -134,8 +116,7 @@ static gboolean _delete_idle(gpointer data)
 		_delete_error(delete, delete->filev[delete->cur-1], 0);
 	if(delete->cur == delete->filec)
 	{
-		if(delete->err_cnt == 0)
-			gtk_main_quit();
+		gtk_main_quit();
 		return FALSE;
 	}
 	_delete_refresh(delete);
