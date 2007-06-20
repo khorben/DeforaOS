@@ -95,6 +95,7 @@ static int _rm_do(Prefs * prefs, char * file)
 
 static int _rm_do_recursive(Prefs * prefs, char * file)
 {
+	int ret = 0;
 	DIR * dir;
 	struct dirent * de;
 	size_t len = strlen(file) + 2;
@@ -123,16 +124,15 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 		}
 		path = p;
 		strcpy(&path[len - 1], de->d_name);
-		if(_rm_do(prefs, path) != 0)
-			return 1;
+		ret |= _rm_do(prefs, path);
 	}
 	free(path);
 	closedir(dir);
 	if(*prefs & PREFS_i && !_rm_confirm(file, "directory"))
-		return 0;
+		return ret;
 	if(rmdir(file) != 0)
 		return _rm_error(file, 1);
-	return 0;
+	return ret;
 }
 
 
