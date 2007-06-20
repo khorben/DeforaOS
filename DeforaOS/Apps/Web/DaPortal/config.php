@@ -14,6 +14,6 @@ $dbtype = 'pgsql';	//or 'mysql' or 'sqlite'
 $dbname = 'daportal';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
-$friendlylinks = 1;	//force "friendly links" generation
+$friendlylinks = 0;	//force "friendly links" generation
 
 ?>
