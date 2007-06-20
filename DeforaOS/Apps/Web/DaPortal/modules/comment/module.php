@@ -23,7 +23,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -88,9 +88,10 @@ function comment_admin($args)
 		$comments[$i]['apply_id'] = $comments[$i]['id'];
 		$comments[$i]['icon'] = 'icons/16x16/comment.png';
 		$comments[$i]['thumbnail'] = 'icons/48x48/comment.png';
-		$comments[$i]['username'] = '<a href="index.php?module=user'
-			.'&amp;id='.$comments[$i]['user_id'].'">'
-			._html_safe($comments[$i]['username']).'</a>';
+		$comments[$i]['username'] = '<a href="'._html_link('user', '',
+			$comments[$i]['user_id'], $comments[$i]['username'])
+				.'">'._html_safe($comments[$i]['username'])
+				.'</a>';
 		$comments[$i]['enabled'] = $comments[$i]['enabled'] == SQL_TRUE
 			? 'enabled' : 'disabled';
 		$comments[$i]['enabled'] = '<img src="icons/16x16/'

@@ -18,7 +18,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -156,7 +156,7 @@ function user_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_USER, 'class' => 'new',
-			'link' => 'index.php?module=user&action=new');
+			'link' => _html_link('user', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
@@ -321,7 +321,7 @@ function user_display($args)
 				: $d['icon'];
 			$e['thumbnail'] = 'icons/48x48/'.$e['icon'];
 			$e['icon'] = 'icons/16x16/'.$e['icon'];
-			$e['args'] = '&user_id='.$user['id'];
+			$e['args'] = 'user_id='.$user['id'];
 			$entries[] = $e;
 		}
 	}

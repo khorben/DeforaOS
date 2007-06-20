@@ -77,13 +77,10 @@ function _explorer_link(&$entry)
 	else if(!isset($entry['link']) && isset($entry['module'])
 			&& isset($entry['action']))
 	{
-		$link = '<a href="index.php?module='
-			._html_safe_link($entry['module']).'&amp;action='
-			._html_safe_link($entry['action']);
-		if(isset($entry['id']))
-			$link.='&amp;id='._html_safe_link($entry['id']);
-		if(isset($entry['args']))
-			$link.=_html_safe($entry['args']);
+		$link = '<a href="'._html_link($entry['module'],
+			isset($entry['action']) ? $entry['action'] : '',
+			isset($entry['id']) ? $entry['id'] : '', '',
+			isset($entry['args']) ? $entry['args'] : '');
 		$link.='"';
 		if(isset($entry['title']))
 			$link.=' title="'._html_safe($entry['title']).'"';
@@ -130,8 +127,7 @@ function explorer_apply($args)
 		}
 		_module($module, $action, $params);
 	}
-	$link = 'index.php?module='.$args['link_module']
-			.'&action='.$args['link_action'];
+	$link = _html_link($args['link_module'], $args['link_action']);
 	if(isset($args['link_id']) && is_numeric($args['link_id']))
 		$link.='&id='.$args['link_id'];
 	header('Location: '.$link);

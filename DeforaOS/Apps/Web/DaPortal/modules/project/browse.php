@@ -18,9 +18,8 @@
 
 
 //check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
-	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+	exit(header('Location: ../../index.php'));
 
 
 function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
@@ -49,10 +48,10 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	$entries = array();
 	foreach($dirs as $d)
 	{
-		$name = _html_safe_link($d);
-		$name = '<a href="index.php?module=project&amp;action=browse'
-				.'&amp;id='.$id.'&amp;file='.$filename.'/'
-				.$name.'">'.$name.'</a>';
+		$name = _html_safe($d);
+		$name = '<a href="'._html_link('project', 'browse', $id, '',
+			'file='._html_safe($filename).'/'.$name).'">'.$name
+				.'</a>';
 		$entries[] = array('name' => $name,
 				'icon' => 'icons/16x16/mime/folder.png',
 				'thumbnail' => 'icons/48x48/mime/folder.png',
@@ -69,13 +68,12 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		for($revs = 0; $revs < $count; $revs++)
 			if($rcs[$revs] == '----------------------------')
 				break;
-		$file = _html_safe_link($filename.'/'.$f);
+		$file = _html_safe($filename.'/'.$f);
 		$name = _html_safe(substr($rcs[2], 14));
 		require_once('./system/mime.php');
 		$mime = _mime_from_ext($name);
-		$name = '<a href="index.php?module=project&amp;action=browse'
-				.'&amp;id='.$id.'&amp;file='.$file.'">'
-				.$name.'</a>';
+		$name = '<a href="'._html_link('project', 'browse', $id, '',
+			'file='.$file).'">'.$name.'</a>';
 		$thumbnail = is_readable('./icons/48x48/mime/'.$mime
 				.'.png')
 			? 'icons/48x48/mime/'.$mime.'.png'
@@ -84,10 +82,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 			? 'icons/16x16/mime/'.$mime.'.png'
 			: $thumbnail;
 		$revision = _html_safe(substr($rcs[$revs+1], 9));
-		$revision = '<a href="index.php?module=project'
-				.'&amp;action=browse&amp;id='.$id
-				.'&amp;file='.$file.'&amp;revision='.$revision
-				.'">'.$revision.'</a>';
+		$revision = '<a href="'._html_link('project', 'browse', $id, '',
+			'file='.$file.'&amp;revision='.$revision).'">'
+				.$revision.'</a>';
 		$date = _html_safe(substr($rcs[$revs+2], 6, 19));
 		$author = substr($rcs[$revs+2], 36);
 		$author = substr($author, 0, strspn($author,
@@ -95,11 +92,8 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'));
 		require_once('./system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
-		{
-			$author = _html_safe_link($author);
-			$author = '<a href="index.php?module=user&amp;id='
-					.$author_id.'">'.$author.'</a>';
-		}
+			$author = '<a href="'._html_link('user', '', $author_id,
+				$author).'">'._html_safe($author).'</a>';
 		else
 			$author = '';
 		//FIXME this is certainly variable (number of lines)
@@ -115,10 +109,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 			'link' => 'javascript:history.back()');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => 'index.php?module=project&action=browse'
-					.'&id='.$id
+			'link' => _html_link('project', 'browse', $id, '')
 					.(strlen($filename)
-					? '&file='.dirname($filename) : ''));
+					? 'file='.dirname($filename) : ''));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
@@ -163,11 +156,8 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 				.'0123456789'));
 		require_once('./system/user.php');
 		if(($author_id = _user_id($author)) != FALSE)
-		{
-			$author = _html_safe_link($author);
-			$author = '<a href="index.php?module=user&amp;id='
-					.$author_id.'">'.$author.'</a>';
-		}
+			$author = '<a href="'._html_link('user', '', $author_id,
+				$author).'">'._html_safe($author).'</a>';
 		else
 			$author = '';
 		$message = $rcs[$i+2];
@@ -192,7 +182,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 			? 'added' : 'modified').'.png';
 		$revisions[] = array('module' => 'project',
 				'action' => 'browse', 'id' => $id,
-				'args' => '&file='.$filename.'&revision='.$name,
+				'args' => 'file='.$filename.'&revision='.$name,
 				'icon' => $icon, 'thumbnail' => $icon,
 				'name' => $name, 'date' => $date,
 				'author' => $author, 'message' => $message);
@@ -200,19 +190,17 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'link' => 'javascript:history.back()');
-	$toolbar[] = array('title' => 'Parent directory',
+	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => 'index.php?module=project&action=browse'
-					.'&id='.$id
-					.'&file='.dirname($filename));
+			'link' => _html_link('project', 'browse', $id, '',
+				'file='.dirname($filename)));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
-			'class' => array('date' => 'Date',
-					'author' => AUTHOR,
+			'class' => array('date' => DATE, 'author' => AUTHOR,
 					'message' => MESSAGE),
 			'toolbar' => $toolbar, 'view' => 'details'));
 }
@@ -250,19 +238,19 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 			print(fread($fp, 8192));
 		return;
 	}
-	$link = "index.php?module=project&amp;action=browse&amp;id=$id"
-		."&amp;file="._html_safe_link($filename);
+	$link = _html_link('project', 'browse', $id, '', 'file='
+			._html_safe($filename));
 	print('<div class="toolbar"><a href="'.$link.'"'
-			.' title="Browse revisions">'
+			.' title="'._html_safe(BROWSE_REVISIONS).'">'
 			.'<div class="icon parent_directory"></div>'
 			._html_safe(BROWSE_REVISIONS).'</a>'
 			.' &middot; <a href="'.$link."&amp;revision=$revision"
-			.'&amp;download=1" title="Download file">'
-			.'<div class="icon download"></div>'
+			.'&amp;download=1" title="'._html_safe(DOWNLOAD_FILE)
+			.'"><div class="icon download"></div>'
 			._html_safe(DOWNLOAD_FILE).'</a></div>'."\n");
 	if(strncmp('image/', $mime, 6) == 0)
 		return print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
-	include('syntax.php');
+	include('./modules/project/syntax.php');
 	print('<pre>'."\n");
 	switch($mime)
 	{

@@ -18,7 +18,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -135,9 +135,9 @@ function webmail_default($args)
 	{
 		if(!($header = imap_headerinfo($mbox, $i, 80, 80)))
 			continue;
-		$message = array('link' => 'index.php?module=webmail'
-				.'&action=read&folder='.$folder
-				.'&id='.imap_uid($mbox, $i));
+		$message = array('link' => _html_link('webmail', 'read',
+					imap_uid($mbox, $i), '',
+					'folder='._html_safe($folder));
 		$message['icon'] = 'mail_read';
 		if($header->Unseen == 'U' || $header->Unseen == 'N')
 			$message['icon'] = 'mail_unread';

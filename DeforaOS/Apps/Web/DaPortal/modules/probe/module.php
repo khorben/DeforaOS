@@ -21,7 +21,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -321,7 +321,7 @@ function probe_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_HOST, 'class' => 'new',
-			'link' => 'index.php?module=probe&action=host_new');
+			'link' => _html_link('probe', 'host_new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'host_delete', 'confirm' => 'delete');

@@ -20,8 +20,7 @@
 
 
 //check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
@@ -86,13 +85,14 @@ function _project_toolbar($id)
 	$admin = _user_admin($user_id);
 	$cvsroot = '';
 	$enabled = 0;
-	$project = _sql_array('SELECT cvsroot, enabled'
+	$project = _sql_array('SELECT name AS title, cvsroot, enabled'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			." AND project_id='$id'");
 	if(is_array($project) && count($project) == 1)
 	{
+		$title = $project[0]['title'];
 		$cvsroot = $project[0]['cvsroot'];
 		$enabled = $project[0]['enabled'] == SQL_TRUE ? 1 : 0;
 	}
@@ -139,13 +139,12 @@ function project_admin($args)
 		return _error('Could not list projects');
 	for($i = 0, $cnt = count($projects); $i < $cnt; $i++)
 	{
-		$projects[$i]['name'] = _html_safe_link($projects[$i]['name']);
+		$projects[$i]['name'] = _html_safe($projects[$i]['name']);
 		$projects[$i]['icon'] = 'icons/16x16/project.png';
 		$projects[$i]['thumbnail'] = 'icons/48x48/project.png';
-		$projects[$i]['admin'] = '<a href="index.php?module=project'
-				.'&amp;action=list'
-				.'&amp;user_id='.$projects[$i]['user_id'].'">'
-				._html_safe_link($projects[$i]['admin']).'</a>';
+		$projects[$i]['admin'] = '<a href="'._html_link('project',
+			'list', '', '', 'user_id='.$projects[$i]['user_id'])
+				.'">'._html_safe($projects[$i]['admin']).'</a>';
 		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
 		$projects[$i]['module'] = 'project';
 		$projects[$i]['action'] = 'modify';
@@ -159,7 +158,7 @@ function project_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_PROJECT, 'class' => 'new',
-			'link' => 'index.php?module=project&action=new');
+			'link' => _html_link('project', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'disable');
@@ -185,7 +184,7 @@ function project_admin($args)
 		return _error('Could not list reports');
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_REPORT, 'class' => 'new',
-			'link' => 'index.php?module=project&action=bug_new');
+			'link' => _html_link('project', 'bug_new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'disable');
@@ -547,20 +546,19 @@ function project_bug_list($args)
 		$bugs[$i]['module'] = 'project';
 		$bugs[$i]['action'] = 'bug_display';
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['title']);
-		$bugs[$i]['nb'] = '<a href="index.php?module=project'
-				.'&amp;action=bug_display'
-				.'&amp;id='.$bugs[$i]['id'].'">#'
+		$bugs[$i]['nb'] = '<a href="'._html_link('project',
+			'bug_display', $bugs[$i]['id']).'">#'
 				.$bugs[$i]['id'].'</a>';
-		$bugs[$i]['project'] = '<a href="index.php?module=project'
-				.'&amp;action=bug_list'
-				.'&amp;project_id='.$bugs[$i]['project_id'].'">'
+		$bugs[$i]['project'] = '<a href="'._html_link('project',
+			'bug_list', '', '', _html_safe('project_id='
+					.$bugs[$i]['project_id'])).'">'
 				._html_safe($bugs[$i]['project']).'</a>';
 		$bugs[$i]['date'] = date('d/m/Y H:i',
 				strtotime(substr($bugs[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
-	$link = 'index.php?module=project&action=bug_new'.(isset($project_id)
-			? '&project_id='.$project_id : '');
+	$link = _html_link('project', 'bug_new', '', '', (isset($project_id)
+				? 'project_id='.$project_id : ''));
 	$toolbar[] = array('title' => REPORT_A_BUG, 'class' => 'bug',
 			'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
@@ -975,8 +973,8 @@ function project_display($args)
 			'id' => $project['id']);
 	$toolbar = array();
 	$toolbar[] = array('title' => 'Add member(s)', 'class' => 'new',
-			'link' => 'index.php?module=project&action=member_add'
-					.'&id='.$project['id']);
+			'link' => _html_link('project', 'member_add',
+				$project['id']));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => 'Delete member(s)', 'class' => 'remove',
 			'action' => 'member_delete', 'confirm' => DELETE);
@@ -1045,8 +1043,8 @@ function project_download($args)
 					.(is_readable('icons/16x16/mime/'
 								.$mime.'.png'))
 						? $mime.'.png' : 'default.png';
-				$files[$i]['thumbnail'] = 'index.php'
-					.'?module=download&action=download&id='.$files[$i]['id'];
+				$files[$i]['thumbnail'] = _html_link('download',
+						'download', $files[$i]['id']);
 			}
 			else if($files[$i]['mode'] & S_IFDIR)
 			{
@@ -1162,7 +1160,7 @@ function project_list($args)
 	if($args['action'] == 'bug_new')
 	{
 		$title = 'Select project to bug';
-		$action = $args['action'];
+		$action = 'bug_new';
 	}
 	else if(isset($args['user_id'])
 			&& ($username = _sql_single('SELECT username'
@@ -1188,14 +1186,14 @@ function project_list($args)
 		$projects[$i]['module'] = 'project';
 		$projects[$i]['action'] = 'display';
 		if(isset($action))
-			$projects[$i]['link'] = 'index.php?module=project'
-				.'&action='.$action
-				.'&project_id='.$projects[$i]['id'];
+			$projects[$i]['link'] = _html_link('project', $action,
+					'', '',
+					'project_id='.$projects[$i]['id']);
 		$projects[$i]['icon'] = 'icons/16x16/project.png';
 		$projects[$i]['thumbnail'] = 'icons/48x48/project.png';
-		$projects[$i]['admin'] = '<a href="index.php?module=user'
-			.'&amp;id='._html_safe_link($projects[$i]['user_id'])
-			.'">'._html_safe($projects[$i]['admin']).'</a>';
+		$projects[$i]['admin'] = '<a href="'._html_link('user', '',
+			$projects[$i]['user_id'], $projects[$i]['admin']).'">'
+				._html_safe($projects[$i]['admin']).'</a>';
 		$projects[$i]['desc'] = $projects[$i]['title'];
 	}
 	$args = array('entries' => $projects, 'view' => 'details',
@@ -1204,7 +1202,7 @@ function project_list($args)
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$args['toolbar'] = array(array('title' => NEW_PROJECT,
-				'link' => 'index.php?module=project&action=new',
+				'link' => _html_link('project', 'new'),
 				'class' => 'new'));
 	_module('explorer', 'browse_trusted', $args);
 }
@@ -1362,7 +1360,7 @@ function project_timeline($args)
 	print('<h1 class="title project">'._html_safe($project['name'])
 			.' '._html_safe(TIMELINE).'</h1>'."\n");
 	//FIXME one more hard-coded variable
-	if(($fp = @fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
+	if(($fp = fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
 		return _error('Unable to open history file', 1);
 	$entries = array();
 	$i = 0;
@@ -1391,9 +1389,9 @@ function project_timeline($args)
 		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
 		$date = date('d/m/Y H:i', $date);
 		if(($author = _user_id($fields[1])) != 0)
-			$author = '<a href="index.php?module=project'
-				.'&amp;action=list&amp;user_id='
-				.$author.'">'._html_safe($fields[1]).'</a>';
+			$author = '<a href="'._html_link('project', 'list', '',
+				'', 'user_id='._html_safe($author)).'">'
+					._html_safe($fields[1]).'</a>';
 		else
 			$author = _html_safe($fields[1]);
 		$entries[] = array('module' => 'project', 'action' => 'browse',
@@ -1403,13 +1401,10 @@ function project_timeline($args)
 				'icon' => $icon, 'thumbnail' => $icon,
 				'date' => _html_safe($date),
 				'event' => _html_safe($event),
-				'revision' => '<a href="index.php'
-					.'?module=project&amp;action=browse'
-					.'&amp;id='.$args['id']
-					.'&amp;file='._html_safe_link($name)
-					.',v&amp;revision='
-					._html_safe_link($fields[4])
-					.'">'._html_safe($fields[4]).'</a>',
+				'revision' => '<a href="'._html_link('project',
+			'browse', $args['id'], '', 'file='._html_safe($name)
+				.',v&amp;revision='._html_safe($fields[4])).'">'
+				._html_safe($fields[4]).'</a>',
 				'author' => $author);
 	}
 	$toolbar = array();

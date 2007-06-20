@@ -18,8 +18,7 @@
 
 
 //check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
@@ -94,8 +93,8 @@ function news_admin($args)
 		$res[$i]['icon'] = 'icons/16x16/news.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$res[$i]['name'] = _html_safe($res[$i]['name']);
-		$res[$i]['username'] = '<a href="index.php?module=user&id='
-				.$res[$i]['user_id'].'">'
+		$res[$i]['username'] = '<a href="'._html_link('user', '',
+			$res[$i]['user_id'], $res[$i]['username']).'">'
 				._html_safe_link($res[$i]['username']).'</a>';
 		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
 			'enabled' : 'disabled';
@@ -283,8 +282,7 @@ function news_list($args)
 						$news['timestamp'], 0, 19)));
 		include('./modules/news/news_display.tpl');
 	}
-	_html_paging('index.php?module=news&amp;action=list&amp;', $page,
-			$pages);
+	_html_paging(_html_link('news', 'list').'&amp;', $page, $pages);
 }
 
 
@@ -326,7 +324,7 @@ function news_rss($args)
 	if(($module_id = _module_id('news')) == FALSE)
 		return;
 	require_once('./system/html.php');
-	$link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+	$link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME'];
 	$content = ''; //FIXME
 	include('./modules/news/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
@@ -345,7 +343,7 @@ function news_rss($args)
 						substr($news['timestamp'], 0,
 						       19)));
 			$news['link'] = 'http://'.$_SERVER['HTTP_HOST']
-				.$_SERVER['PHP_SELF'].'?module=news&id='
+				.$_SERVER['SCRIPT_NAME'].'?module=news&id='
 				.$news['id'];
 			$news['content'] = _html_pre($news['content']);
 			include('./modules/news/rss_item.tpl');

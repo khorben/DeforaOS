@@ -18,7 +18,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -41,7 +41,7 @@ foreach($modules as $m)
 			|| $d['admin'] != 1)
 		continue;
 	unset($d['actions']);
-	$d['args'] = '&module='.$d['name'].'&action=admin';
+	$d['args'] = 'module='.$d['name'].'&action=admin';
 	$actions['admin']['actions'][] = $d;
 }
 

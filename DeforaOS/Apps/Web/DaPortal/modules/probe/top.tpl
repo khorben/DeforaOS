@@ -2,7 +2,7 @@
 <?php if(isset($toolbar)) { ?>
 <div class="toolbar">
 <?php $middot = ''; foreach($toolbar as $t) { echo $middot; ?>
-<a href="index.php?module=probe&amp;type=<?php echo _html_safe_link($t['type']); if(isset($id)) echo '&amp;id='._html_safe_link($id); if(isset($time)) echo '&amp;time='._html_safe_link($time); ?>" title="<?php echo _html_safe($t['title']); ?>"><?php echo _html_safe($t['name']); ?></a>
+<a href="<?php echo _html_link('probe', '', isset($id) ? $id : '', '', 'type='._html_safe($t['type'])); if(isset($time)) echo '&amp;time='._html_safe_link($time); ?>" title="<?php echo _html_safe($t['title']); ?>"><?php echo _html_safe($t['name']); ?></a>
 <?php $middot = '	&middot; '; } ?>
 </div>
 <?php } if(isset($action)) { ?>

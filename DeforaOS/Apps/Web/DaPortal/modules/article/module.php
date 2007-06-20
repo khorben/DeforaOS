@@ -18,8 +18,7 @@
 
 
 //check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
@@ -96,9 +95,9 @@ function article_admin($args)
 		$articles[$i]['icon'] = 'icons/16x16/article.png';
 		$articles[$i]['thumbnail'] = 'icons/48x48/article.png';
 		$articles[$i]['name'] = $articles[$i]['title'];
-		$articles[$i]['username'] = '<a href="index.php?module=user&id='
-				.$articles[$i]['user_id'].'">'
-				._html_safe_link($articles[$i]['username'])
+		$articles[$i]['username'] = '<a href="'._html_link('user', '',
+			$articles[$i]['user_id'], $articles[$i]['username'])
+				.'">'._html_safe($articles[$i]['username'])
 				.'</a>';
 		$articles[$i]['enabled'] = $articles[$i]['enabled']
 			== SQL_TRUE ? 'enabled' : 'disabled';
@@ -113,7 +112,7 @@ function article_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => SUBMIT_ARTICLE, 'class' => 'new',
-			'link' => 'index.php?module=article&action=submit');
+			'link' => _html_link('article', 'submit'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');

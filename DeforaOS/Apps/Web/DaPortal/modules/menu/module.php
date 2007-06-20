@@ -18,7 +18,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -28,8 +28,8 @@ function _default_submenu($module, $level, $entry)
 		print('	');
 	print('<li>');
 	if(isset($entry['args']))
-		print('<a href="index.php?module='.$module
-				._html_safe_link($entry['args']).'">');
+		print('<a href="'._html_link($module, '', '', '',
+			$entry['args']).'">');
 	print(_html_safe($entry['title']));
 	if(isset($entry['args']))
 		print('</a>');
@@ -44,12 +44,12 @@ function _default_submenu($module, $level, $entry)
 			{
 				_default_submenu($module, $level+1, array(
 						'title' => $actions[$k],
-						'args' => '&action='.$k));
+						'args' => 'action='.$k));
 				continue;
 			}
 			$entry = array('title' => $actions[$k]['title']);
 			$entry['args'] = isset($actions[$k]['args'])
-				? $actions[$k]['args'] : '&action='.$k;
+				? $actions[$k]['args'] : 'action='.$k;
 			if(isset($actions[$k]['actions']))
 				$entry['actions'] = $actions[$k]['actions'];
 			_default_submenu($module, $level+1, $entry);

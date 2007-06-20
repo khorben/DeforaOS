@@ -18,8 +18,7 @@
 
 
 //check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
@@ -87,7 +86,7 @@ function category_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
-			'link' => 'index.php?module=category&action=new');
+			'link' => _html_link('category', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
@@ -172,7 +171,7 @@ function category_display($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
-			'link' => 'index.php?module=category&action=new');
+			'link' => _html_link('category', 'new'));
 	_module('explorer', 'browse', array('entries' => $contents,
 				'toolbar' => $toolbar));
 }
@@ -232,8 +231,8 @@ function category_get($args)
 	{
 		$toolbar = array();
 		$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'add',
-				'link' => 'index.php?module=category&action=set'
-				.'&id='.$args['id']);
+				'link' => _html_link('category', 'set',
+					$args['id']));
 		$toolbar[] = array();
 		$toolbar[] = array('title' => DELETE_LINK, 'class' => 'remove',
 				'action' => 'link_delete',
@@ -367,7 +366,7 @@ function category_list($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
-			'link' => 'index.php?module=category&action=new');
+			'link' => _html_link('category', 'new'));
 	_module('explorer', 'browse', array('entries' => $categories,
 				'view' => 'list', 'toolbar' => $toolbar));
 }
