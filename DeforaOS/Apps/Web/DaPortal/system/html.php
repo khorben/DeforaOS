@@ -38,7 +38,7 @@ function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 			$link .= '/'._html_safe($title);
 		}
 		if($params != FALSE && $params != '')
-			$link .= '?'.$params;
+			$link .= '?'._html_safe_link($params);
 	}
 	else
 	{
@@ -48,7 +48,7 @@ function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 		if($id != FALSE && is_numeric($id))
 			$link .= '&amp;id='.$id;
 		if($params != FALSE && $params != '')
-			$link .= '&amp;'.$params;
+			$link .= '&amp;'._html_safe_link($params);
 	}
 	return $link;
 }

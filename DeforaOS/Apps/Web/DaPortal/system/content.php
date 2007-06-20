@@ -85,13 +85,16 @@ function _content_readable($id)
 
 function _content_select($id, $enabled = '')
 {
+	global $module_id;
+
 	if(!is_numeric($id))
 		return FALSE;
 	$and = is_bool($enabled) ? " AND enabled='".$enabled.'"' : '';
 	if(($content = _sql_array('SELECT content_id AS id, timestamp, user_id'
 			.', title, content, enabled'
 			.' FROM daportal_content'
-			." WHERE content_id='".$id."'".$and)) == FALSE)
+			." WHERE module_id='$module_id'"
+			." AND content_id='$id'".$and)) == FALSE)
 		return FALSE;
 	return $content[0];
 }
@@ -100,6 +103,8 @@ function _content_user_update($id, $title, $content)
 {
 	global $user_id;
 
+	if(_user_admin($user_id))
+		return _content_update($id, $title, $content);
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
 	return _sql_query('UPDATE daportal_content SET'
