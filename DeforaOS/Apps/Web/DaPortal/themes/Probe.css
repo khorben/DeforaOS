@@ -1,5 +1,8 @@
 /* themes/Probe.css */
-
+/* default includes */
+@import url('../css/explorer.css');
+@import url('../css/icons.css');
+@import url('../icons/gnome/icons.css');
 
 
 html body {
