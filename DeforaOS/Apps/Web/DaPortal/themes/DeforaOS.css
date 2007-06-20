@@ -172,6 +172,10 @@ table.bordered th {
 
 
 /* module article */
+.article.entry {
+	padding-bottom:			10px;
+}
+
 .article .author, .article .date, .article .edit {
 	display:			inline;
 }
