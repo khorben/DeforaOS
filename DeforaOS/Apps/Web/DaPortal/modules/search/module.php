@@ -18,7 +18,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
@@ -45,7 +45,8 @@ function search_default($args)
 	include('./modules/search/search.tpl');
 	if(!isset($args['q']) || strlen($args['q']) == 0)
 		return;
-	$q = explode(' ', $args['q']);
+	$q = str_replace(array('%', '_'), array('\\\%', '\\\_'), $args['q']);
+	$q = explode(' ', $q);
 	if(!count($q))
 		return;
 	$sql = ' FROM daportal_content, daportal_module, daportal_user'
@@ -79,8 +80,8 @@ function search_default($args)
 		$i++;
 	}
 	include('./modules/search/search_bottom.tpl');
-	_html_paging('index.php?module=search&amp;q='
-			._html_safe_link($args['q']).'&amp;', $page, $pages);
+	_html_paging(_html_link('search', '', '', '', 'q='
+			._html_safe_link($args['q']).'&amp;'), $page, $pages);
 }
 
 
