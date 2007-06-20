@@ -18,13 +18,13 @@
 
 
 //check url
-if(strcmp($_SERVER['SCRIPT_NAME'], $_SERVER['PHP_SELF']) != 0
-		|| !ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
 //global variables
 $debug = 0;
+$friendlylinks = 0;
 $html = 1;
 $template = 'DaPortal';
 $theme = 'DaPortal';
@@ -56,6 +56,17 @@ if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
 
 require_once('./system/lang.php');
+
+//parse url
+if($friendlylinks == 1 && $_SERVER['REQUEST_METHOD'] == 'GET'
+		&& isset($_SERVER['PATH_INFO'])
+		&& _module_parse_friendly($_SERVER['PATH_INFO']) != TRUE)
+{
+	header('HTTP/1.0 404 Not Found');
+	readfile('./html/doctype.html');
+	readfile('./html/404.html');
+	exit(0);
+}
 
 _module('', 'system');
 

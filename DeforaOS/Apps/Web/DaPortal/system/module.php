@@ -43,7 +43,7 @@ function _module($module = '', $action = '', $args = FALSE)
 	}
 	else
 		return _error('Invalid module request', 0);
-	if(!strlen($action) || !ereg('^[a-z0-9_]{1,30}$', $action))
+	if(!strlen($action) || !ereg('^[a-z0-9_]{1,20}$', $action))
 		$action = 'default';
 	if(!ereg('^[a-z]{1,10}$', $module) || ($id = _module_id($module)) == 0)
 		return _error('Invalid module', 0);
@@ -106,6 +106,54 @@ function _desktop_include($name)
 	return array('admin' => $admin, 'list' => $list, 'title' => $title,
 			'icon' => $icon, 'actions' => $actions,
 			'user' => $user);
+}
+
+
+function _module_id_tag($module, $id, $tag)
+{
+	$tag = str_replace('-', '_', $tag);
+	$sql = 'SELECT content_id FROM daportal_content, daportal_module'
+		.' WHERE daportal_content.module_id=daportal_module.module_id'
+		." AND name='$module' AND content_id='$id'"
+		." AND title LIKE '$tag'";
+	if(_sql_single($sql) == $id)
+		return TRUE;
+	//user module
+	$sql = 'SELECT user_id FROM daportal_user'
+		." WHERE user_id='$id' AND username LIKE '$tag'";
+	if(_sql_single($sql) == $id)
+		return TRUE;
+	//FIXME some modules have long filenames, but it's ugly to do it here
+	return FALSE;
+}
+
+
+function _module_parse_friendly($path)
+{
+	$path = explode('/', $path);
+	if(!is_array($path) || count($path) < 2)
+		return FALSE;
+	array_shift($path);
+	$_GET['module'] = array_shift($path);
+	if(count($path) == 0)
+		return TRUE;
+	$id = array_shift($path);
+	if(!is_numeric($id))
+	{
+		$_GET['action'] = $id;
+		if(count($path) == 0)
+			return TRUE;
+		$id = array_shift($path);
+	}
+	if(!is_numeric($id) || $id == 0)
+		return FALSE;
+	$_GET['id'] = $id;
+	if(count($path) == 0)
+		return TRUE;
+	$tag = array_shift($path);
+	while(count($path))
+		$tag .= '/'.array_shift($path);
+	return _module_id_tag($_GET['module'], $id, $tag);
 }
 
 ?>

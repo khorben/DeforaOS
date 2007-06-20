@@ -17,6 +17,43 @@
 
 
 
+//PRE	module, action and params are trusted
+function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
+		$params = FALSE)
+{
+	global $friendlylinks;
+
+	$link = $_SERVER['SCRIPT_NAME'];
+	if(isset($friendlylinks) && $friendlylinks == 1)
+	{
+		$link .= '/'.$module;
+		if($action != FALSE && $action != '' && $action != 'default')
+			$link .= '/'.$action;
+		if($id != FALSE && is_numeric($id))
+			$link .= '/'.$id;
+		if($title != FALSE && $title != '')
+		{
+			$title = str_replace(array(' ', '/', '?'), '-',
+					htmlentities($title));
+			$link .= '/'._html_safe($title);
+		}
+		if($params != FALSE && $params != '')
+			$link .= '?'.$params;
+	}
+	else
+	{
+		$link .= '?module='.$module;
+		if($action != FALSE && $action != '' && $action != 'default')
+			$link .= '&amp;action='.$action;
+		if($id != FALSE && is_numeric($id))
+			$link .= '&amp;id='.$id;
+		if($params != FALSE && $params != '')
+			$link .= '&amp;'.$params;
+	}
+	return $link;
+}
+
+
 function _html_paging($link, $page, $count)
 {
 	print('<div class="paging">'."\n");
@@ -111,8 +148,10 @@ function _start_css_themes($theme)
 		$name = substr($de, 0, $len-4);
 		if($name == $theme)
 			continue;
-		print("\t\t".'<link rel="alternate stylesheet" href="themes/'
-				.$name.'.css" title="'.$name.'"/>'."\n");
+		print("\t\t".'<link rel="alternate stylesheet" href="'
+				.rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')
+				.'/themes/'.$name.'.css" title="'.$name.'"/>'
+				."\n");
 	}
 	closedir($dir);
 }
@@ -125,12 +164,14 @@ function _html_start()
 	print('	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-15"/>
 		<title>'._html_safe($title).'</title>
-		<link rel="stylesheet" href="themes/'.$theme.'.css" title="'
-.$theme.'"/>'."\n");
+		<link rel="stylesheet" href="'
+		.rtrim(dirname($_SERVER['SCRIPT_NAME']), '/').'/themes/'.$theme
+		.'.css" title="'.$theme.'"/>'."\n");
 	_start_css_themes($theme);
 	if(is_readable($_SERVER['DOCUMENT_ROOT'].'/favicon.ico'))
 		print('		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>'."\n");
-	print('	</head>
+	print('		<base href="'.(isset($_SERVER['HTTPS']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'"/>
+	</head>
 	<body>'."\n");
 }
 
