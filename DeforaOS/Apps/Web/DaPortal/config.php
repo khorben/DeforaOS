@@ -2,7 +2,7 @@
 
 
 //check url
-if(!ereg('/index.php$', $_SERVER['PHP_SELF']))
+if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: index.php'));
 
 
@@ -14,5 +14,6 @@ $dbtype = 'pgsql';	//or 'mysql' or 'sqlite'
 $dbname = 'daportal';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
+$friendlylinks = 1;	//force "friendly links" generation
 
 ?>
