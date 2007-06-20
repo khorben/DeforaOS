@@ -196,6 +196,7 @@ static int _idle_ask(Delete * delete, char const * filename)
 /* FIXME does not update or redraw the dialog */
 static int _idle_do_recursive(Delete * delete, char const * filename)
 {
+	int ret = 0;
 	DIR * dir;
 	struct dirent * de;
 	size_t len = strlen(filename) + 2;
@@ -220,8 +221,7 @@ static int _idle_do_recursive(Delete * delete, char const * filename)
 			break;
 		path = p;
 		strcpy(&path[len - 1], de->d_name);
-		if(_idle_do(delete, path) != 0)
-			break;
+		ret |= _idle_do(delete, path);
 	}
 	free(path);
 	closedir(dir);
@@ -229,7 +229,7 @@ static int _idle_do_recursive(Delete * delete, char const * filename)
 		return _delete_error(delete, filename, 1);
 	if(rmdir(filename) != 0) /* FIXME confirm */
 		return _delete_error(delete, filename, 1);
-	return 0;
+	return ret;
 }
 
 
