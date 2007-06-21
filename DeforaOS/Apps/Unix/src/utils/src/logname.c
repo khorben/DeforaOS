@@ -31,9 +31,16 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
 	char * lgnm;
 
-	if(argc != 1)
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc)
 		return _usage();
 	if((lgnm = getlogin()) == NULL)
 	{
