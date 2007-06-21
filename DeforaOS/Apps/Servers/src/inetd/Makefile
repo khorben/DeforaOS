@@ -29,6 +29,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/inetd.c \
 		$(PACKAGE)-$(VERSION)/src/discard.c \
 		$(PACKAGE)-$(VERSION)/src/echo.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/config.h \
 		$(PACKAGE)-$(VERSION)/src/inetd.h \
 		$(PACKAGE)-$(VERSION)/src/parser.h \
