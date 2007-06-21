@@ -52,6 +52,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/80586.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/80686.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/80686.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/sparc.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/sparc.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
