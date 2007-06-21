@@ -28,6 +28,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/mailer.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/compose.h \
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/account/mbox.c \
@@ -35,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account/imap4.c \
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \
+		$(PACKAGE)-$(VERSION)/src/account/account.h \
 		$(PACKAGE)-$(VERSION)/src/account/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
