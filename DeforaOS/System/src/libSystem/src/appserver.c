@@ -16,14 +16,15 @@
 
 
 
+#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
 #include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
 #include <string.h>
+#include <netinet/in.h>
 #include "System.h"
 #include "appinterface.h"
 
