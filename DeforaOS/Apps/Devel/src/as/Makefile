@@ -28,6 +28,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/token.c \
 		$(PACKAGE)-$(VERSION)/src/arch/arch.c \
 		$(PACKAGE)-$(VERSION)/src/format/format.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/as.h \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/parser.h \
@@ -41,6 +42,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/i686.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.c \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc64.c \
+		$(PACKAGE)-$(VERSION)/src/arch/Makefile \
 		$(PACKAGE)-$(VERSION)/src/arch/arch.h \
 		$(PACKAGE)-$(VERSION)/src/arch/80386.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/80386.reg \
@@ -54,6 +56,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
+		$(PACKAGE)-$(VERSION)/src/format/Makefile \
 		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
