@@ -134,18 +134,21 @@ static int _create_append(char const * archive, FILE * fp, char * filename)
 	FILE * fp2;
 	char buf[BUFSIZ];
 	size_t i;
-	size_t j;
 
 	if((fp2 = fopen(filename, "r")) == NULL)
 		return _ar_error(filename, 1);
 	if(_append_header(archive, fp, filename, fp2) != 0)
-		return fclose(fp2) ? 1 : 1;
-	for(; (i = fread(buf, sizeof(char), sizeof(buf), fp2)) > 0
-			&& (j = fwrite(buf, sizeof(char), i, fp)) == i;);
+	{
+		fclose(fp2);
+		return 1;
+	}
+	while((i = fread(buf, sizeof(char), sizeof(buf), fp2)) > 0
+			&& fwrite(buf, sizeof(char), i, fp) == i);
 	if(!feof(fp2) || i > 0)
 	{
 		_ar_error(i > 0 ? archive : filename, 0);
-		return fclose(fp2) ? 1 : 1;
+		fclose(fp2);
+		return 1;
 	}
 	return fclose(fp2) == 0 ? 0 : _ar_error(filename, 1);
 }
@@ -421,6 +424,9 @@ int main(int argc, char * argv[])
 	while((o = getopt(argc, argv, "dprtcuvx")) != -1)
 		switch(o)
 		{
+			case 'c':
+				p |= PREFS_c;
+				break;
 			case 'd':
 				p -= p & (PREFS_p|PREFS_r|PREFS_t|PREFS_x);
 				p |= PREFS_d;
