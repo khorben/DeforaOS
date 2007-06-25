@@ -23,7 +23,7 @@
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: surfer [url]\n");
+	fputs("Usage: surfer [url]\n", stderr);
 	return 1;
 }
 
