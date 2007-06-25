@@ -26,6 +26,8 @@
 #include <errno.h>
 #include <ar.h>
 
+
+/* macros */
 #define min(a, b) (a) < (b) ? (a) : (b)
 
 
@@ -43,12 +45,17 @@ typedef int Prefs;
 
 
 /* functions */
+/* private */
 static int _ar_error(char const * message, int ret);
 static int _do_sig_check(char const * archive, FILE * fp);
+static int _do_hdr_check(char const * archive, struct ar_hdr * hdr);
+static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr);
 static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
 		char * filev[]);
 static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[]);
+
+/* public */
 static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 {
 	int ret = 0;
@@ -86,9 +93,10 @@ static int _do_replace(Prefs * prefs, char const * archive, FILE * fp,
 static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
 		char * filev[])
 {
+	int ret;
 	FILE * fp;
 
-	if((fp = fopen(archive, "r")) == NULL)
+	if((fp = fopen(archive, "r+")) == NULL)
 	{
 		if(errno != ENOENT)
 			return _ar_error(archive, 1);
@@ -97,10 +105,14 @@ static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
 					": Creating archive\n");
 		return _do_create(prefs, archive, filec, filev);
 	}
-	return _do_replace(prefs, archive, fp, filec, filev);
+	ret = _do_replace(prefs, archive, fp, filec, filev);
+	if(fclose(fp) != 0)
+		return _ar_error(archive, 1);
+	return ret;
 }
 
-static int _create_append(char const * archive, FILE * fp, char * filename);
+static int _create_append(Prefs * prefs, char const * archive, FILE * fp,
+	       	char * filename);
 static int _do_create(Prefs * prefs, char const * archive, int filec,
 		char * filev[])
 {
@@ -115,26 +127,25 @@ static int _do_create(Prefs * prefs, char const * archive, int filec,
 		return _ar_error(archive, 1);
 	}
 	for(i = 0; i < filec; i++)
-	{
-		if(*prefs & PREFS_v)
-			printf("a - %s\n", filev[i]);
-		if(_create_append(archive, fp, filev[i]) != 0)
+		if(_create_append(prefs, archive, fp, filev[i]) != 0)
 			break;
-	}
 	if(fclose(fp) != 0)
-		_ar_error(archive, 0);
+		return _ar_error(archive, 1);
 	return i != filec;
 }
 
 static int _append_header(char const * archive, FILE * fp, char * filename,
 		FILE * fp2);
-static int _create_append(char const * archive, FILE * fp, char * filename)
+static int _create_append(Prefs * prefs, char const * archive, FILE * fp,
+	       	char * filename)
 	/* FIXME filename may get truncated by basename() */
 {
 	FILE * fp2;
 	char buf[BUFSIZ];
 	size_t i;
 
+	if(*prefs & PREFS_v)
+		printf("a - %s\n", filename);
 	if((fp2 = fopen(filename, "r")) == NULL)
 		return _ar_error(filename, 1);
 	if(_append_header(archive, fp, filename, fp2) != 0)
@@ -150,7 +161,9 @@ static int _create_append(char const * archive, FILE * fp, char * filename)
 		fclose(fp2);
 		return 1;
 	}
-	return fclose(fp2) == 0 ? 0 : _ar_error(filename, 1);
+	if(fclose(fp2) != 0)
+		return _ar_error(filename, 1);
+	return 0;
 }
 
 static int _append_header(char const * archive, FILE * fp, char * filename,
@@ -177,14 +190,77 @@ static int _append_header(char const * archive, FILE * fp, char * filename,
 static int _do_replace(Prefs * prefs, char const * archive, FILE * fp,
 		int filec, char * filev[])
 {
-	/* FIXME */
-	if(fclose(fp) != 0)
+	struct ar_hdr hdr;
+	int i;
+	size_t h;
+
+	if(_do_sig_check(archive, fp) != 0)
+		return 1;
+	while(fread(&hdr, sizeof(hdr), 1, fp) == 1)
+	{
+		if(_do_hdr_check(archive, &hdr) != 0)
+			return 1;
+		for(h = 0; h < sizeof(hdr.ar_name); h++)
+			if(hdr.ar_name[h] == '/')
+			{
+				hdr.ar_name[h] = '\0';
+				break;
+			}
+		for(i = 0; i < filec; i++)
+		{
+			if(strlen(filev[i]) > sizeof(hdr.ar_name))
+				continue;
+			/* XXX test against basename(filev[i]) instead? */
+			if(strncmp(hdr.ar_name, filev[i], sizeof(hdr.ar_name))
+					!= 0)
+				continue;
+			/* FIXME implement */
+			fprintf(stderr, "%s%s%s", "ar: ", filev[i],
+				       	": replacing not implemented yet\n");
+			filev[i] = ""; /* XXX ugly hack */
+		}
+		if(_do_seek_next(archive, fp, &hdr) != 0)
+			return 1;
+	}
+	for(i = 0; i < filec; i++)
+	{
+		if(strlen(filev[i]) == 0) /* XXX ugly hack */
+			continue;
+		if(_create_append(prefs, archive, fp, filev[i]) != 0)
+			return 1;
+	}
+	return 0;
+}
+
+static int _do_hdr_check(char const * archive, struct ar_hdr * hdr)
+{
+	if(strncmp(ARFMAG, hdr->ar_fmag, sizeof(hdr->ar_fmag)) != 0)
+	{
+		fprintf(stderr, "%s%s%s", "ar: ", archive,
+			       	": Invalid archive\n");
+		return 1;
+	}
+	return 0;
+}
+
+static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
+{
+	int size;
+	char * p;
+
+	size = strtol(hdr->ar_size, &p, 10);
+	if(hdr->ar_size[0] == '\0')
+	{
+		fprintf(stderr, "%s%s%s", "ar: ", archive,
+				": Invalid archive\n");
+		return 1;
+	}
+	if(fseek(fp, size, SEEK_CUR) != 0)
 		return _ar_error(archive, 1);
-	return 1;
+	return 0;
 }
 
 
-static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr);
 static int _do_t(Prefs * prefs, char const * archive, FILE * fp,
 		struct ar_hdr * hdr);
 static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
@@ -199,12 +275,8 @@ static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 
 	while(fread(&hdr, sizeof(hdr), 1, fp) == 1)
 	{
-		if(strncmp(ARFMAG, hdr.ar_fmag, sizeof(hdr.ar_fmag)) != 0)
-		{
-			fprintf(stderr, "%s%s%s", "ar: ", archive,
-					": Invalid archive\n");
+		if(_do_hdr_check(archive, &hdr) != 0)
 			return 1;
-		}
 		for(h = 0, p = hdr.ar_name; h < sizeof(hdr.ar_name); h++)
 			if(p[h] == '/')
 			{
@@ -240,7 +312,7 @@ static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 			continue;
 		}
 		/* FIXME clean up this so it won't have to appear */
-		fprintf(stderr, "%s", "ar: Not implemented yet\n");
+		fputs("ar: Not implemented yet\n", stderr);
 		return 1;
 	}
 	return 0;
@@ -250,29 +322,13 @@ static int _do_sig_check(char const * archive, FILE * fp)
 {
 	char sig[SARMAG];
 
-	if(fread(sig, sizeof(sig), 1, fp) != 1 && !feof(fp))
+	if(fread(sig, sizeof(sig), 1, fp) != 1
+			&& !feof(fp))
 		return _ar_error(archive, 1);
 	if(strncmp(ARMAG, sig, SARMAG) == 0)
 		return 0;
 	fprintf(stderr, "%s%s%s", "ar: ", archive, ": Invalid archive\n");
 	return 1;
-}
-
-static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
-{
-	int size;
-	char * p;
-
-	size = strtol(hdr->ar_size, &p, 10);
-	if(hdr->ar_size[0] == '\0')
-	{
-		fprintf(stderr, "%s%s%s", "ar: ", archive,
-				": Invalid archive\n");
-		return 1;
-	}
-	if(fseek(fp, size, SEEK_CUR) != 0)
-		return _ar_error(archive, 1);
-	return 0;
 }
 
 static int _t_print_long(char const * archive, struct ar_hdr * hdr);
@@ -353,11 +409,11 @@ static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 {
 	FILE * fp2;
 	int fd2;
-	int mode;
-	int uid;
-	int gid;
+	mode_t mode;
+	uid_t uid;
+	gid_t gid;
 	size_t size;
-	int date;
+	long date;
 	char buf[BUFSIZ];
 	size_t i;
 
@@ -378,8 +434,8 @@ static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 	size = strtol(hdr->ar_size, NULL, 10);
 	while(size > 0)
 	{
-		i = fread(buf, sizeof(char), min(sizeof(buf), size), fp);
-		if(i == 0)
+		if((i = fread(buf, sizeof(char), min(sizeof(buf), size), fp))
+				== 0)
 		{
 			fclose(fp2);
 			return _ar_error(archive, 1);
@@ -389,7 +445,7 @@ static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 			fclose(fp2);
 			return _ar_error(hdr->ar_name, 1);
 		}
-		size-=i;
+		size -= i;
 	}
 	if(fclose(fp2) != 0)
 		return _ar_error(hdr->ar_name, 1);
