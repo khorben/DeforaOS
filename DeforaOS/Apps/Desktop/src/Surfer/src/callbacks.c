@@ -27,16 +27,21 @@
 /* constants */
 static char const * _authors[] =
 {
-	"Pierre 'khorben' Pronchery",
+	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-static char const _license[] = "GPLv2";
+static char const _copyright[] = "Copyright (c) 2007 Pierre Pronchery";
+static char const _license[] = "GPL version 2";
 
 
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-	gtk_main_quit();
+	Surfer * surfer = data;
+
+	surfer_delete(surfer);
+	if(surfer_cnt == 0)
+		gtk_main_quit();
 	return FALSE;
 }
 
@@ -44,34 +49,22 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 /* file menu */
 void on_file_close(GtkWidget * widget, gpointer data)
 {
-	gtk_main_quit();
+	Surfer * surfer = data;
+
+	surfer_delete(surfer);
+	if(surfer_cnt == 0)
+		gtk_main_quit();
 }
 
 
-static void _surfer_fork(Surfer * surfer, char const * url);
 void on_file_new_window(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
-	char * url = gtk_moz_embed_get_location(GTK_MOZ_EMBED(surfer->view));
-
-	_surfer_fork(surfer, url);
+	char * url;
+	
+	url = gtk_moz_embed_get_location(GTK_MOZ_EMBED(surfer->view));
+	surfer_new(url);
 	free(url);
-}
-
-static void _surfer_fork(Surfer * surfer, char const * url)
-{
-	pid_t pid;
-
-	if((pid = fork()) == -1)
-	{
-		surfer_error(surfer, strerror(errno), 0);
-		return;
-	}
-	if(pid != 0)
-		return;
-	execlp("surfer", "surfer", url, NULL);
-	fprintf(stderr, "%s%s\n", "surfer: surfer: ", strerror(errno));
-	exit(2);
 }
 
 
@@ -112,7 +105,6 @@ void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 	static GtkWidget * window = NULL;
-	char const copyright[] = "Copyright (c) 2006 khorben";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
@@ -132,8 +124,8 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				surfer->window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
@@ -167,7 +159,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	vbox = gtk_vbox_new(FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
 			FALSE, FALSE, 2);
-	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright), FALSE,
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
 	button = gtk_button_new_with_mnemonic("C_redits");

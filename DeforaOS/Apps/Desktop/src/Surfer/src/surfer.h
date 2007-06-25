@@ -36,6 +36,7 @@
 
 # define SURFER_GTKMOZEMBED_COMPPATH		"/usr/pkg/lib/firefox"
 
+
 /* types */
 typedef struct _Surfer
 {
@@ -52,6 +53,10 @@ typedef struct _Surfer
 	GtkWidget * statusbar;
 	guint statusbar_id;
 } Surfer;
+
+
+/* variables */
+extern unsigned int surfer_cnt;
 
 
 /* functions */

@@ -23,19 +23,22 @@
 
 
 /* Surfer */
-static GtkWidget * _new_menubar(Surfer * surfer);
+/* types */
 struct _menu
 {
 	char * name;
 	GtkSignalFunc callback;
 	char * stock;
-	unsigned int accel; /* FIXME don't work */
+	unsigned int accel; /* FIXME doesn't work */
 };
+
 struct _menubar
 {
 	char * name;
 	struct _menu * menu;
 };
+
+/* variables */
 static struct _menu _menu_file[] =
 {
 	{ "_New window",	G_CALLBACK(on_file_new_window), NULL, GDK_N },
@@ -48,12 +51,14 @@ static struct _menu _menu_file[] =
 		GDK_W },
 	{ NULL,			NULL, NULL, 0 }
 };
+
 static struct _menu _menu_edit[] =
 {
 	{ "_Preferences",	G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_P },
 	{ NULL,			NULL, NULL, 0 }
 };
+
 static struct _menu _menu_help[] =
 {
 	{ "_About",		G_CALLBACK(on_help_about),
@@ -64,6 +69,7 @@ static struct _menu _menu_help[] =
 #endif
 	{ NULL,			NULL, NULL, 0 }
 };
+
 static struct _menubar _menubar[] =
 {
 	{ "_File", _menu_file },
@@ -71,6 +77,12 @@ static struct _menubar _menubar[] =
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
+
+unsigned int surfer_cnt = 0;
+
+/* functions */
+static GtkWidget * _new_menubar(Surfer * surfer);
+
 Surfer * surfer_new(char const * url)
 {
 	Surfer * surfer;
@@ -192,6 +204,7 @@ Surfer * surfer_new(char const * url)
 	gtk_container_add(GTK_CONTAINER(surfer->window), vbox);
 	gtk_widget_grab_focus(GTK_WIDGET(surfer->tb_path));
 	gtk_widget_show_all(surfer->window);
+	surfer_cnt++;
 	return surfer;
 }
 
@@ -248,6 +261,7 @@ void surfer_delete(Surfer * surfer)
 {
 	/* config_delete(surfer->config); */
 	free(surfer);
+	surfer_cnt--;
 }
 
 
