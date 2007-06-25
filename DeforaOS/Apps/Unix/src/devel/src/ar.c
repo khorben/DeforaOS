@@ -73,7 +73,7 @@ static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 
 static int _ar_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "ar: ");
+	fputs("ar: ", stderr);
 	perror(message);
 	return ret;
 }
