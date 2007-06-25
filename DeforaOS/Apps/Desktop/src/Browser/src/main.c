@@ -25,7 +25,7 @@
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: browser [directory...]\n");
+	fputs("Usage: browser [directory...]\n", stderr);
 	return 1;
 }
 
