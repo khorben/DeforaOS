@@ -397,7 +397,7 @@ static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: ar -d[-v] archive file...\n\
+	fputs("Usage: ar -d[-v] archive file...\n\
        ar -p[-v] archive file...\n\
        ar -r[-cuv] archive file...\n\
        ar -t[-v] archive [file...]\n\
@@ -407,7 +407,7 @@ static int _usage(void)
   -t	write a table of contents of archive\n\
   -u	update older files in the archive\n\
   -v	give verbose output\n\
-  -x	extract all or given files from the archive\n");
+  -x	extract all or given files from the archive\n", stderr);
 	return 1;
 }
 
