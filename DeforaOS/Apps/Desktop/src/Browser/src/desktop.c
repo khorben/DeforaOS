@@ -558,7 +558,8 @@ void desktop_delete(Desktop * desktop)
 	for(i = 0; i < desktop->icon_cnt; i++)
 		desktopicon_delete(desktop->icon[i]);
 	free(desktop->icon);
-	mime_delete(desktop->mime);
+	if(desktop->mime != NULL)
+		mime_delete(desktop->mime);
 	free(desktop->path);
 	free(desktop);
 }
