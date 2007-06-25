@@ -140,7 +140,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	else if(mime != NULL)
 	{
 		type = mime_type(mime, filename);
-		if(theme != NULL)
+		if(theme != NULL && type != NULL)
 		{
 			mime_icons(mime, theme, type, 48, &pixbuf, -1);
 			if(pixbuf != NULL)
