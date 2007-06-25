@@ -32,7 +32,7 @@ static int _uptime(void)
 	struct tm * tm;
 	char time[9];
 	unsigned int nusers;
-	struct utmpx * u;
+	struct utmpx * ut;
 	double loadavg[3];
 
 	if((gettimeofday(&tv, NULL)) != 0)
@@ -42,10 +42,10 @@ static int _uptime(void)
 	if(strftime(time, sizeof(time), "%X", tm) == 0)
 		return _uptime_error("strftime", 1);
 	/* FIXME uptime is not portable afaik */
-	for(nusers = 0; (u = getutxent()) != NULL;)
-		if(u->ut_type == USER_PROCESS)
+	for(nusers = 0; (ut = getutxent()) != NULL;)
+		if(ut->ut_type == USER_PROCESS)
 			nusers++;
-	if(getloadavg(&loadavg, 3) != 3)
+	if(getloadavg(loadavg, 3) != 3)
 		return _uptime_error("getloadavg", 1);
 	printf(" %s up %3d%s%.2f, %.2f, %.2f\n", time, nusers,
 			" users, load average: ", loadavg[0], loadavg[1],
