@@ -117,14 +117,14 @@ static int _prefs_ttime(char * string, time_t * time)
 	return 0;
 }
 
-static int _ttime_number(char ** p, unsigned int * res);
+static int _ttime_number(char ** p, time_t * res);
 static int _ttime_century(char ** p, time_t * time)
 {
 	/* FIXME */
 	return 1;
 }
 
-static int _ttime_number(char ** p, unsigned int * res)
+static int _ttime_number(char ** p, time_t * res)
 {
 	if(**p >= '0' && **p <= '9')
 	{
@@ -145,7 +145,7 @@ static int _ttime_number(char ** p, unsigned int * res)
 
 static int _ttime_year(char ** p, time_t * time)
 {
-	int res;
+	time_t res;
 
 	if(_ttime_number(p, &res) != 0)
 		return 1;
@@ -155,7 +155,7 @@ static int _ttime_year(char ** p, time_t * time)
 
 static int _ttime_month(char ** p, time_t * time)
 {
-	int res;
+	time_t res;
 
 	if(_ttime_number(p, &res) != 0)
 		return 1;
@@ -165,7 +165,7 @@ static int _ttime_month(char ** p, time_t * time)
 
 static int _ttime_day(char ** p, time_t * time)
 {
-	int res;
+	time_t res;
 
 	if(_ttime_number(p, &res) != 0)
 		return 1;
@@ -175,7 +175,7 @@ static int _ttime_day(char ** p, time_t * time)
 
 static int _ttime_hour(char ** p, time_t * time)
 {
-	int res;
+	time_t res;
 
 	if(_ttime_number(p, &res) != 0)
 		return 1;
@@ -185,7 +185,7 @@ static int _ttime_hour(char ** p, time_t * time)
 
 static int _ttime_minut(char ** p, time_t * time)
 {
-	unsigned int res;
+	time_t res;
 
 	if(_ttime_number(p, &res) != 0 || res >= 60)
 		return 1;
@@ -195,7 +195,7 @@ static int _ttime_minut(char ** p, time_t * time)
 
 static int _ttime_second(char ** p, time_t * time)
 {
-	unsigned int res;
+	time_t res;
 
 	if(**p != '.')
 		return 1;
