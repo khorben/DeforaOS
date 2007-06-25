@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include "gedi.h"
+#include "../config.h"
 
 
 /* GEDI */
@@ -267,8 +268,10 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	GEDI * gedi = data;
 	static GtkWidget * window = NULL;
-	char const * authors[] = { "Pierre 'khorben' Pronchery", NULL };
-	char const copyright[] = "Copyright (c) 2005 khorben";
+	char const * authors[] = { "Pierre Pronchery <khorben@defora.org>",
+		NULL };
+	char const copyright[] = "Copyright (c) 2007 Pierre Pronchery";
+	char const license[] = "GPL version 2";
 
 	if(window != NULL)
 	{
@@ -280,8 +283,11 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 				gedi->tb_window));
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_on_about_xkill), NULL);
+	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
 	gtk_widget_show(window);
 }
 
