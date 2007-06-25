@@ -204,7 +204,7 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 #else
 	argv[0] = "delete";
 #endif
-	argv[1] = "-i";
+	argv[1] = "-ir";
 	argv[2] = "--";
 	for(p = selection; p != NULL && i <= cnt + 1; p = p->next)
 	{
