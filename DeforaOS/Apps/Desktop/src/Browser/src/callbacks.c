@@ -29,12 +29,11 @@
 /* constants */
 static char const * _authors[] =
 {
-	"Pierre 'khorben' Pronchery",
+	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-
-/* FIXME */
-static char const _license[] = "GPLv2";
+static char const _copyright[] = "Copyright (c) 2007 Pierre Pronchery";
+static char const _license[] = "GPL version 2"; /* FIXME complete */
 
 
 /* callbacks */
@@ -398,7 +397,6 @@ void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * window;
-	char const copyright[] = "Copyright (c) 2007 The DeforaOS Project";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
@@ -419,7 +417,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				browser->window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
@@ -455,7 +453,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	vbox = gtk_vbox_new(FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
 			FALSE, FALSE, 2);
-	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright), FALSE,
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
 	button = gtk_button_new_with_mnemonic("C_redits");
@@ -994,6 +992,12 @@ static void _press_directory(GtkWidget * menu, IconCallback * ic)
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_icon_delete), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
