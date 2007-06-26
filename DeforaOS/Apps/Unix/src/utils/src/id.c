@@ -187,7 +187,7 @@ static int _id_all(char * user)
 		}
 		printf("uid=%u(%s) ", (unsigned)pw->pw_uid, pw->pw_name);
 		if((gr = _print_gid(pw->pw_gid)) == NULL)
-			return 2;
+			return 1;
 		if((user = strdup(gr->gr_name)) == NULL)
 		{
 			putc('\n', stdout);
