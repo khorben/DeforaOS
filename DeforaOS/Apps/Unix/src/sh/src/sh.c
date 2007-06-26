@@ -65,9 +65,7 @@ static int _sh(Prefs * prefs, int argc, char * argv[])
 
 	export = sh_export();
 	if(*prefs & PREFS_c)
-		ret = parser(prefs, *argv, NULL, argc-1, &argv[1]);
-	else if(!(*prefs & PREFS_s) && argc != 0)
-		ret = parser(prefs, NULL, stdin, argc-1, &argv[1]);
+		ret = parser(prefs, *argv, NULL, argc - 1, &argv[1]);
 	/* *prefs |= PREFS_s; FIXME necessary? */
 	else if(argc == 0)
 	{
@@ -81,7 +79,7 @@ static int _sh(Prefs * prefs, int argc, char * argv[])
 			ret = sh_error(argv[0], 127);
 		else
 		{
-			ret = parser(prefs, NULL, fp, argc-1, &argv[1]);
+			ret = parser(prefs, NULL, fp, argc - 1, &argv[1]);
 			fclose(fp);
 		}
 	}
@@ -92,7 +90,7 @@ static int _sh(Prefs * prefs, int argc, char * argv[])
 
 int sh_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "sh: ");
+	fputs("sh: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -121,9 +119,9 @@ char ** sh_export(void)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: sh [i][command_file [argument...]]\n\
+	fputs("Usage: sh [i][command_file [argument...]]\n\
        sh -c[i]command_string[command_name [argument]]\n\
-       sh -s[i][argument]\n");
+       sh -s[i][argument]\n", stderr);
 	return 1;
 }
 
@@ -137,7 +135,7 @@ int main(int argc, char * argv[])
 		return _usage();
 	if(prefs & PREFS_c && optind == argc)
 		return _usage();
-	return _sh(&prefs, argc-optind, &argv[optind]);
+	return _sh(&prefs, argc - optind, &argv[optind]);
 }
 
 
