@@ -34,7 +34,8 @@ typedef struct _Prefs
 #define PREFS_f	0x1
 
 static int _tail_error(char const * message, int ret);
-static int _tail_do(Prefs * prefs, FILE * fp, char const * filename);
+static int _tail_do_bytes(Prefs * prefs, FILE * fp, char const * filename);
+static int _tail_do_lines(Prefs * prefs, FILE * fp, char const * filename);
 
 static int _tail(Prefs * prefs, char const * filename)
 {
@@ -43,7 +44,12 @@ static int _tail(Prefs * prefs, char const * filename)
 
 	if(filename != NULL && (fp = fopen(filename, "r")) == NULL)
 		return _tail_error(filename, 1);
-	ret = _tail_do(prefs, fp, filename != NULL ? filename : "stdin");
+	if(prefs->bytes != 0)
+		ret = _tail_do_bytes(prefs, fp, filename != NULL
+				? filename : "stdin");
+	else
+		ret = _tail_do_lines(prefs, fp, filename != NULL
+				? filename : "stdin");
 	if(filename != NULL && fclose(fp) != 0)
 		return _tail_error(filename, 1);
 	return ret;
@@ -56,9 +62,29 @@ static int _tail_error(char const * message, int ret)
 	return ret;
 }
 
-static int _tail_do(Prefs * prefs, FILE * fp, char const * filename)
+static int _tail_do_bytes(Prefs * prefs, FILE * fp, char const * filename)
+{
+	char buf[256];
+	size_t i;
+	long c = prefs->bytes;
+
+	if(fseek(fp, c > 0 ? c - 1 : c, c > 0 ? SEEK_SET : SEEK_END) != 0)
+	{
+		fputs("tail: Not implemented yet\n", stderr);
+		return 1;
+	}
+	while((i = fread(buf, 1, sizeof(buf), fp)) > 0)
+		if(fwrite(buf, 1, i, stdout) != i)
+			return _tail_error("stdout", 1);
+	if(!feof(fp))
+		return _tail_error(filename, 1);
+	return 0;
+}
+
+static int _tail_do_lines(Prefs * prefs, FILE * fp, char const * filename)
 {
 	/* FIXME implement */
+	fputs("tail: Not implemented yet\n", stderr);
 	return 1;
 }
 
@@ -79,6 +105,7 @@ int main(int argc, char * argv[])
 	char * p;
 
 	memset(&prefs, 0, sizeof(prefs));
+	prefs.lines = 10;
 	while((o = getopt(argc, argv, "fc:n:")) != -1)
 		switch(o)
 		{
@@ -86,11 +113,13 @@ int main(int argc, char * argv[])
 				prefs.flags |= PREFS_f;
 				break;
 			case 'c':
+				prefs.lines = 0;
 				prefs.bytes = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
 				break;
 			case 'n':
+				prefs.bytes = 0;
 				prefs.lines = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
