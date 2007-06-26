@@ -17,11 +17,46 @@
 
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <limits.h>
 
 
 /* tail */
-static int _tail(void)
+/* types */
+typedef struct _Prefs
+{
+	int flags;
+	int bytes;
+	int lines;
+} Prefs;
+#define PREFS_f	0x1
+
+static int _tail_error(char const * message, int ret);
+static int _tail_do(Prefs * prefs, FILE * fp, char const * filename);
+
+static int _tail(Prefs * prefs, char const * filename)
+{
+	int ret;
+	FILE * fp = stdin;
+
+	if(filename != NULL && (fp = fopen(filename, "r")) == NULL)
+		return _tail_error(filename, 1);
+	ret = _tail_do(prefs, fp, filename != NULL ? filename : "stdin");
+	if(filename != NULL && fclose(fp) != 0)
+		return _tail_error(filename, 1);
+	return ret;
+}
+
+static int _tail_error(char const * message, int ret)
+{
+	fputs("tail: ", stderr);
+	perror(message);
+	return ret;
+}
+
+static int _tail_do(Prefs * prefs, FILE * fp, char const * filename)
 {
 	/* FIXME implement */
 	return 1;
@@ -40,19 +75,30 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	Prefs prefs;
+	char * p;
 
-	/* FIXME actually collect arguments */
+	memset(&prefs, 0, sizeof(prefs));
 	while((o = getopt(argc, argv, "fc:n:")) != -1)
 		switch(o)
 		{
 			case 'f':
+				prefs.flags |= PREFS_f;
 				break;
 			case 'c':
+				prefs.bytes = strtol(optarg, &p, 10);
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
 				break;
 			case 'n':
+				prefs.lines = strtol(optarg, &p, 10);
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
 				break;
 			default:
 				return _usage();
 		}
-	return _tail() ? 0 : 2;
+	if(optind != argc && optind + 1 != argc)
+		return _usage();
+	return _tail(&prefs, argv[optind]) ? 0 : 2;
 }
