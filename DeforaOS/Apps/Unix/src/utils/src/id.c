@@ -95,10 +95,7 @@ static int _id_G(char * user, int flagn)
 			puts(gr->gr_name);
 	}
 	if((user = strdup(gr->gr_name)) == NULL)
-	{
-		perror("strdup");
-		return 2;
-	}
+		return _id_error("strdup", 1);
 	setgrent();
 	for(gr = getgrent(); gr != NULL; gr = getgrent())
 	{
@@ -133,18 +130,12 @@ static int _id_g(char const * user, int flagn, int flagr)
 			return 0;
 		}
 		if((gr = getgrgid(flagr ? getegid() : getgid())) == NULL)
-		{
-			perror("getgrgid");
-			return 2;
-		}
+			return _id_error("getgrgid", 1);
 		printf("%s\n", gr->gr_name);
 		return 0;
 	}
 	if((gr = getgrnam(user)) == NULL)
-	{
-		perror("getgrnam");
-		return 2;
-	}
+		return _id_error("getgrnam", 1);
 	if(flagn == 0)
 		printf("%u\n", (unsigned)gr->gr_gid);
 	else
@@ -165,18 +156,12 @@ static int _id_u(char const * user, int flagn, int flagr)
 			return 0;
 		}
 		if((passwd = getpwuid(flagr ? geteuid() : getuid())) == NULL)
-		{
-			perror("getpwuid");
-			return 2;
-		}
+			return _id_error("getpwuid", 1);
 		printf("%s\n", passwd->pw_name);
 		return 0;
 	}
 	if((passwd = getpwnam(user)) == NULL)
-	{
-		perror("getpwnam");
-		return 2;
-	}
+		return _id_error("getpwnam", 1);
 	if(flagn == 0)
 		printf("%u\n", passwd->pw_uid);
 	else
@@ -218,19 +203,16 @@ static int _id_all(char * user)
 			printf(" euid=%u(%s) e", (unsigned)pw->pw_uid,
 					pw->pw_name);
 			if(_print_gid(pw->pw_gid) == NULL)
-				return 2;
+				return 1;
 		}
 	}
 	else
 	{
 		if((pw = getpwnam(user)) == NULL)
-		{
-			perror("getpwnam");
-			return 2;
-		}
+			return _id_error("getpwnam", 1);
 		printf("uid=%u(%s) ", (unsigned)pw->pw_uid, pw->pw_name);
 		if((gr = _print_gid(pw->pw_gid)) == NULL)
-			return 2;
+			return 1;
 		if((user = strdup(gr->gr_name)) == NULL)
 		{
 			putc('\n', stdout);
