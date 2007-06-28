@@ -1,9 +1,10 @@
 <h1 class="title probe"><?php echo _html_safe($title); ?></h1>
 <?php if(isset($toolbar)) { ?>
 <div class="toolbar">
-<?php $middot = ''; foreach($toolbar as $t) { echo $middot; ?>
-<a href="<?php echo _html_link('probe', '', isset($id) ? $id : '', '', 'type='._html_safe($t['type'])); if(isset($time)) echo '&amp;time='._html_safe_link($time); ?>" title="<?php echo _html_safe($t['title']); ?>"><?php echo _html_safe($t['name']); ?></a>
-<?php $middot = '	&middot; '; } ?>
+<a href="<?php echo _html_link('probe', '', isset($id) ? $id : '', '', ''); if(isset($time)) echo '?time='._html_safe_link($time); ?>" title="All">All</a>
+<?php foreach($toolbar as $t) { ?>
+&middot; <a href="<?php echo _html_link('probe', '', isset($id) ? $id : '', '', 'type='._html_safe($t['type'])); if(isset($time)) echo '&amp;time='._html_safe_link($time); ?>" title="<?php echo _html_safe($t['title']); ?>"><?php echo _html_safe($t['name']); ?></a>
+<?php } ?>
 </div>
 <?php } if(isset($action)) { ?>
 <div style="padding: 4px">
