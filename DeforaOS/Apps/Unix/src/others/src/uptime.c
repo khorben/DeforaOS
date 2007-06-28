@@ -49,7 +49,7 @@ static int _uptime(void)
 			nusers++;
 	if(getloadavg(loadavg, 3) != 3)
 		return _uptime_error("getloadavg", 1);
-	printf(" %s up %3d%s%.2f, %.2f, %.2f\n", time, nusers,
+	printf(" %s up %s, %2d%s%.2f, %.2f, %.2f\n", time, "unknown", nusers,
 			" users, load average: ", loadavg[0], loadavg[1],
 			loadavg[2]);
 	return 0;
