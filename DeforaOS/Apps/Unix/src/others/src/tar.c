@@ -55,6 +55,7 @@ static int _tar_extract(Prefs * prefs, char const * archive, int filec,
 		char const * filev[]);
 static int _tar_list(Prefs * prefs, char const * archive, int filec,
 		char const * filev[]);
+
 static int _tar(Prefs * prefs, char const * archive, int filec,
 		char const * filev[])
 {
@@ -69,7 +70,7 @@ static int _tar(Prefs * prefs, char const * archive, int filec,
 
 static int _tar_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "tar: ");
+	fputs("tar: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -99,7 +100,7 @@ static int _tar_from_buffer(TarFileHeaderBuffer * tfhb, TarFileHeader * tfh)
 	return 0;
 }
 
-static int _tar_mkdir_parent(char const * filename)
+static int _tar_mkdir_parent(char * filename)
 {
 	char * p;
 	struct stat st;
@@ -534,5 +535,5 @@ int main(int argc, char * argv[])
 		}
 	if(prefs == 0)
 		return _usage();
-	return _tar(&prefs, archive, argc-optind, &argv[optind]) == 0 ? 0 : 2;
+	return _tar(&prefs, archive, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
