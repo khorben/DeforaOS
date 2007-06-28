@@ -29,6 +29,7 @@ static int _uptime_error(char const * message, int ret);
 static int _uptime(void)
 {
 	struct timeval tv;
+	time_t sec;
 	struct tm * tm;
 	char time[9];
 	unsigned int nusers;
@@ -37,7 +38,8 @@ static int _uptime(void)
 
 	if((gettimeofday(&tv, NULL)) != 0)
 		return _uptime_error("gettimeofday", 1);
-	if((tm = gmtime(&tv.tv_sec)) == NULL)
+	sec = tv.tv_sec;
+	if((tm = gmtime(&sec)) == NULL)
 		return _uptime_error("gmtime", 1);
 	if(strftime(time, sizeof(time), "%X", tm) == 0)
 		return _uptime_error("strftime", 1);
