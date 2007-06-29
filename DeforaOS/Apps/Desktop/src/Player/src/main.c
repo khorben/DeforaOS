@@ -30,7 +30,7 @@ Player * player;
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: Player [file...]\n");
+	fputs("Usage: Player [file...]\n", stderr);
 	return 1;
 }
 
@@ -72,7 +72,7 @@ static void _main_signals(void)
 	sa.sa_handler = _signals_handler;
 	sigfillset(&sa.sa_mask);
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		fprintf(stderr, "%s", "Player: SIGCHLD: Not handled\n");
+		fputs("Player: SIGCHLD: Not handled\n", stderr);
 }
 
 static void _signals_handler(int signum)

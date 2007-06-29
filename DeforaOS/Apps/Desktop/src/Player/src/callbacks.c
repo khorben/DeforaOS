@@ -29,12 +29,11 @@
 /* constants */
 static char const * _authors[] =
 {
-	"Pierre 'khorben' Pronchery",
+	"Pierre Pronchery",
 	NULL
 };
-
-/* FIXME */
-static char const _license[] = "GPLv2";
+static char const _copyright[] = "Copyright (c) 2007 Pierre Pronchery";
+static char const _license[] = "GPL version 2"; /* FIXME complete */
 
 
 /* callbacks */
@@ -104,7 +103,6 @@ void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Player * player = data;
 	static GtkWidget * window = NULL;
-	char const copyright[] = "Copyright (c) 2006 khorben";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
@@ -126,7 +124,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)

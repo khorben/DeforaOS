@@ -185,7 +185,7 @@ Player * player_new(void)
 
 static int _player_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "Player: ");
+	fputs("Player: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -242,7 +242,8 @@ static void _new_mplayer(Player * player)
 	}
 	if(player->pid == 0)
 	{
-		close(0);
+		if(close(0) != 0)
+			_player_error("stdin", 0);
 		if(dup2(player->fd[0], 0) == -1)
 			exit(_player_error("dup2", 2));
 		snprintf(buf, sizeof(buf), "%u", (unsigned)player->view_window);
@@ -257,26 +258,8 @@ void player_delete(Player * player)
 {
 	char cmd[] = "quit\n";
 
-	_player_command(player, cmd, sizeof(cmd)-1);
+	_player_command(player, cmd, sizeof(cmd) - 1);
 	free(player);
-}
-
-
-/* private */
-void _player_command(Player * player, char const * cmd, size_t cmd_len)
-{
-	if(player->pid == -1)
-	{
-		fprintf(stderr, "%s", "Player: mplayer not running\n");
-		return;
-	}
-	player->atstart = 0;
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s%s\n", "Player: mplayer ", player->pid,
-			": Sending command:\n", cmd);
-#endif
-	if(write(player->fd[1], cmd, cmd_len) != cmd_len)
-		_player_error("write", 0);
 }
 
 
@@ -296,6 +279,24 @@ int player_error(Player * player, char const * message, int ret)
 }
 
 
+/* private */
+void _player_command(Player * player, char const * cmd, size_t cmd_len)
+{
+	if(player->pid == -1)
+	{
+		fputs("Player: mplayer not running\n", stderr);
+		return;
+	}
+	player->atstart = 0;
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%s\n", "Player: mplayer ", player->pid,
+			": Sending command:\n", cmd);
+#endif
+	if(write(player->fd[1], cmd, cmd_len) != cmd_len)
+		_player_error("write", 0);
+}
+
+
 int player_sigchld(Player * player)
 {
 	pid_t pid;
@@ -307,7 +308,7 @@ int player_sigchld(Player * player)
 		return player_error(player, "waitpid", 1);
 	if(pid == 0)
 		return 1;
-	fprintf(stderr, "%s", "Player: mplayer ");
+	fputs("Player: mplayer ", stderr);
 	if(WIFEXITED(status))
 		fprintf(stderr, "%d%s%u\n", pid, ": exited with code ",
 				WEXITSTATUS(status));
@@ -352,7 +353,7 @@ void player_open(Player * player, char const * filename)
 	len = snprintf(buf, sizeof(buf), "%s%s%s", "pausing loadfile \"",
 			player->filename, "\" 0\nframe_step\n");
 	if(len >= sizeof(buf))
-		fprintf(stderr, "%s", "Player: String too long\n");
+		fputs("Player: String too long\n", stderr);
 	else
 	{
 		_player_command(player, buf, len);
@@ -390,7 +391,7 @@ void player_queue_add(Player * player, char const * filename)
 	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"", filename,
 			"\" 1\n");
 	if(len >= sizeof(cmd))
-		fprintf(stderr, "%s", "Player: String too long\n");
+		fputs("Player: String too long\n", stderr);
 	else
 		_player_command(player, cmd, len);
 }
@@ -410,7 +411,7 @@ void player_play(Player * player)
 		len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"",
 				player->filename, "\" 0\n");
 	if(len >= sizeof(cmd))
-		fprintf(stderr, "%s", "Player: String too long\n");
+		fputs("Player: String too long\n", stderr);
 	else
 		_player_command(player, cmd, len);
 }

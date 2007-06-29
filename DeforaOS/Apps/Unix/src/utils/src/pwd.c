@@ -22,17 +22,24 @@
 
 
 /* types */
-typedef enum _pwd_flag {
+typedef enum _pwd_flag
+{
 	PWD_P = 1,
 	PWD_LP = 2
 } pwd_flag;
 
 
 /* pwd */
+static int _pwd_error(char const * message, int ret);
+
 static int _pwd(pwd_flag pf)
 {
 	char * pwd;
-	char buf[256];
+#ifdef MAXPATHLEN
+	char buf[MAXPATHLEN];
+#else
+	char buf[1024];
+#endif
 	char * p;
 
 	pwd = getenv("PWD");
@@ -69,17 +76,20 @@ static int _pwd(pwd_flag pf)
 	}
 	else
 	{
-		if(getcwd(buf, 255) == NULL)
-		{
-			fputs("pwd: ", stderr);
-			perror("getcwd");
-			return 2;
-		}
-		buf[255] = '\0';
+		if(getcwd(buf, sizeof(buf) - 1) == NULL)
+			return _pwd_error("getcwd", 1);
+		buf[sizeof(buf) - 1] = '\0';
 		pwd = buf;
 	}
 	printf("%s\n", pwd);
 	return 0;
+}
+
+static int _pwd_error(char const * message, int ret)
+{
+	fputs("pwd: ", stderr);
+	perror(message);
+	return ret;
 }
 
 
@@ -113,5 +123,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	return _pwd(pf);
+	return _pwd(pf) == 0 ? 0 : 2;
 }
