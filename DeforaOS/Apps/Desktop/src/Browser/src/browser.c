@@ -533,6 +533,37 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 }
 
 
+void browser_open_with(Browser * browser, char const * path)
+{
+	GtkWidget * dialog;
+	char * filename = NULL;
+	pid_t pid;
+
+	dialog = gtk_file_chooser_dialog_new("Open with...",
+			GTK_WINDOW(browser->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	if((pid = fork()) == -1)
+		browser_error(browser, "fork", 0);
+	else if(pid == 0)
+	{
+		if(close(0) != 0)
+			browser_error(NULL, "stdin", 0);
+		execlp(filename, filename, path, NULL);
+		browser_error(NULL, filename, 0);
+		exit(2);
+	}
+	g_free(filename);
+}
+
+
 static void _refresh_title(Browser * browser);
 static void _refresh_path(Browser * browser);
 static void _refresh_new(Browser * browser);
@@ -682,7 +713,7 @@ static int _new_loop(Browser * browser)
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			== NULL || lstat(path, &lst) != 0)
 	{
-		_browser_error(de->d_name, 0);
+		browser_error(NULL, de->d_name, 0);
 		if(path != NULL)
 			g_free(path);
 		return 0;
@@ -887,7 +918,7 @@ static gboolean _done_timeout(gpointer data)
 	if(stat(browser->current->data, &st) != 0)
 	{
 		browser->refresh_id = 0;
-		return _browser_error(browser->current->data, FALSE);
+		return browser_error(NULL, browser->current->data, FALSE);
 	}
 	if(st.st_mtime == browser->refresh_mti)
 		return TRUE;
@@ -945,7 +976,7 @@ static int _current_loop(Browser * browser)
 	if((path = g_build_filename(browser->current->data, de->d_name, NULL))
 			== NULL || lstat(path, &lst) != 0)
 	{
-		_browser_error(de->d_name, 0);
+		browser_error(NULL, de->d_name, 0);
 		if(path != NULL)
 			g_free(path);
 		return 0;

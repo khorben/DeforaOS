@@ -137,6 +137,7 @@ void browser_delete(Browser * browser);
 
 /* useful */
 int browser_error(Browser * browser, char const * message, int ret);
+void browser_open_with(Browser * browser, char const * path);
 void browser_refresh(Browser * browser);
 void browser_select_all(Browser * browser);
 void browser_set_location(Browser * browser, char const * path);
