@@ -70,7 +70,7 @@ Mime * mime_new(void)
 		glob = strchr(buf, ':');
 		*(glob++) = '\0';
 		if((p = realloc(mime->types, sizeof(*(mime->types))
-						* (mime->types_cnt+1))) == NULL)
+						*(mime->types_cnt+1))) == NULL)
 			break;
 		mime->types = p;
 		p[mime->types_cnt].type = strdup(buf);

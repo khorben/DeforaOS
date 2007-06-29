@@ -747,6 +747,7 @@ void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 	_default_do(browser, path);
 }
 
+static void _do_open_with(Browser * browser, char const * location);
 static void _default_do(Browser * browser, GtkTreePath * path)
 {
 	char * location;
@@ -758,8 +759,9 @@ static void _default_do(Browser * browser, GtkTreePath * path)
 			&location, BR_COL_IS_DIRECTORY, &is_dir, -1);
 	if(is_dir)
 		browser_set_location(browser, location);
-	else if(browser->mime != NULL)
-		mime_action(browser->mime, "open", location);
+	else if(browser->mime == NULL
+			|| mime_action(browser->mime, "open", location) != 0)
+		_do_open_with(browser, location);
 	g_free(location);
 }
 
@@ -1089,12 +1091,18 @@ static void _on_icon_edit(GtkWidget * widget, gpointer data)
 static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 {
 	IconCallback * cb = data;
+
+	_do_open_with(cb->browser, cb->path);
+}
+
+static void _do_open_with(Browser * browser, char const * location)
+{
 	GtkWidget * dialog;
 	char * filename = NULL;
 	pid_t pid;
 
 	dialog = gtk_file_chooser_dialog_new("Open with...",
-			GTK_WINDOW(cb->browser->window),
+			GTK_WINDOW(browser->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
@@ -1105,10 +1113,10 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	if(filename == NULL)
 		return;
 	if((pid = fork()) == -1)
-		browser_error(cb->browser, "fork", 0);
+		browser_error(browser, "fork", 0);
 	else if(pid == 0)
 	{
-		execlp(filename, filename, cb->path, NULL);
+		execlp(filename, filename, location, NULL);
 		browser_error(NULL, filename, 0);
 		exit(2);
 	}
