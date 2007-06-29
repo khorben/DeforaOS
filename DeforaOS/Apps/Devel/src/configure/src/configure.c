@@ -35,6 +35,7 @@ const String * sHostArch[HA_LAST+1] =
 	"i386", "i486", "i586", "i686",
 	"sparc", "sparc64",
 	"sun4u",
+	"zaurus",
 	"unknown"
 };
 const String * sHostOS[HO_LAST+1] =
@@ -52,6 +53,8 @@ const struct HostKernel sHostKernel[] =
 	{ HO_GNU_LINUX,	"2.6"		},
 	{ HO_NETBSD,	"2.0"		},
 	{ HO_NETBSD,	"3.0"		},
+	{ HO_OPENBSD,	"4.0"		},
+	{ HO_OPENBSD,	"4.1"		},
 	{ HO_SUNOS,	"5.7",		},
 	{ HO_SUNOS,	"5.8",		},
 	{ HO_SUNOS,	"5.9",		},
