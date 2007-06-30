@@ -236,7 +236,10 @@ function _host_graph($id, $type, $time, $param = FALSE)
 		$cmd.=$ret['data'];
 	if(isset($args))
 		$cmd.=' '.$args;
-	$cmd.=" --title '".$hostname.' '.$ret['name'].' (last '.$time.")'";
+	$cmd.=" --title '".$hostname;
+	if($param != FALSE)
+		$cmd.=' '.$param;
+	$cmd.=' '.$ret['name'].' (last '.$time.")'";
 	$cmd.=" --vertical-label '".(isset($ret['unit']) ? $ret['unit']
 		: ' ')."'";
 	_info('exec: '.$cmd);
