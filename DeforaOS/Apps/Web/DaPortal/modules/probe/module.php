@@ -163,7 +163,7 @@ $probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
 function _host_list()
 {
 	$module_id = _module_id('probe');
-	return _sql_array('SELECT content_id AS id, title AS name'
+	return _sql_array('SELECT content_id AS id, title AS name, title'
 			.' FROM daportal_content'
 			." WHERE module_id='$module_id' AND enabled='1'"
 			.' ORDER BY id ASC');
