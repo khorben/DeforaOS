@@ -159,7 +159,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		&geometry, GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE
 			| GDK_HINT_BASE_SIZE);
 	/* icon */
-	if(lstat(path, &st) == 0)
+	if(stat(path, &st) == 0)
 	{
 		if(S_ISDIR(st.st_mode))
 		{
