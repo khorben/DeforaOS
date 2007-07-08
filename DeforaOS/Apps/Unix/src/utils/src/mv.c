@@ -35,6 +35,7 @@ typedef int Prefs;
 static int _mv_error(char const * message, int ret);
 static int _mv_single(Prefs * prefs, char const * src, char const * dst);
 static int _mv_multiple(Prefs * prefs, int filec, char * const filev[]);
+
 static int _mv(Prefs * prefs, int filec, char * filev[])
 {
 	struct stat st;
@@ -45,10 +46,8 @@ static int _mv(Prefs * prefs, int filec, char * filev[])
 			return _mv_error(filev[filec - 1], 1);
 		if(filec > 2)
 		{
-			fprintf(stderr, "%s%s%s", "mv: ", filev[filec - 1],
-					": Does not exist and more than two"
-					" operands were given\n");
-			return 1;
+			errno = ENOTDIR;
+			return _mv_error(filev[filec - 1], 1);
 		}
 	}
 	else if(S_ISDIR(st.st_mode))
@@ -70,8 +69,25 @@ static int _mv_error(char const * message, int ret)
 
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
-	if(rename(src, dst) != 0)
+	FILE * fp;
+	char buf[BUFSIZ];
+	size_t i;
+
+	if(rename(src, dst) == 0)
+		return 0;
+	if(errno != EXDEV)
 		return _mv_error(src, 1);
+	if(unlink(dst) != 0
+			&& errno != ENOENT)
+		return _mv_error(dst, 1);
+	if((fp = fopen(dst, "w+")) == NULL)
+		return _mv_error(dst, 1);
+	while((i = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
+		if(fwrite(buf, sizeof(char), i, fp) != i)
+			break;
+	if(fclose(fp) != 0
+			|| i != 0)
+		return _mv_error(dst, 1);
 	return 0;
 }
 
