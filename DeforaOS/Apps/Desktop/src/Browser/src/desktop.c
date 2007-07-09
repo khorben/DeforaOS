@@ -322,8 +322,9 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 	if(desktopicon->isdir == 0)
 	{
 		if(desktopicon->desktop->mime != NULL) /* XXX ugly */
-			mime_action(desktopicon->desktop->mime, "open",
-					desktopicon->path);
+			if(mime_action(desktopicon->desktop->mime, "open",
+					desktopicon->path) != 0)
+				_on_icon_open_with(widget, desktopicon);
 		return;
 	}
 	if((pid = fork()) == -1)
