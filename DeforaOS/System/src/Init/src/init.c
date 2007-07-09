@@ -52,7 +52,7 @@ static int _init(void)
 static int _init_error(char * message, int ret)
 	/* FIXME should use other means to report errors */
 {
-	fprintf(stderr, "%s", "Init: ");
+	fputs("Init: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -122,7 +122,7 @@ int stop(char * app)
 /* usage */
 static int _init_usage(void)
 {
-	fprintf(stderr, "%s", "Usage: Init\n");
+	fputs("Usage: Init\n", stderr);
 	return 1;
 }
 
