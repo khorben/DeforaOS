@@ -46,11 +46,11 @@ static void _prompt(Scanner * scanner)
 {
 	char * prompt;
 	char * env[SP_LAST+1] = { "PS1", "PS2", "PS4" };
-	char * dflt[SP_LAST+1] = { "$ ", "> ", "+ " };
+	char * dflt[SP_LAST+1] = { getuid() ? "$ " : "# ", "> ", "+ " };
 
 	if((prompt = getenv(env[scanner->prompt])) == NULL)
 		prompt = dflt[scanner->prompt];
-	fprintf(stderr, "%s", prompt);
+	fputs(prompt, stderr);
 }
 
 static void _lineno(void)
