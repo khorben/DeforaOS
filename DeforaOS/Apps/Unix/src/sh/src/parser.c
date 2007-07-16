@@ -147,7 +147,7 @@ static int parser_check(Parser * parser, TokenCode code)
 }
 
 
-static int parser_check_word(Parser * parser, char * word)
+static int parser_check_word(Parser * parser, char const * word)
 {
 	if(parser->token == NULL || parser->token->code != TC_TOKEN
 			|| parser->token->string == NULL
@@ -164,6 +164,7 @@ static int parser_check_word(Parser * parser, char * word)
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
 static int _exec_for(Parser * parser, unsigned int * pos, int skip);
 static int _exec_if(Parser * parser, unsigned int * pos, int skip);
+static int _exec_case(Parser * parser, unsigned int * pos, int skip);
 static int _exec_until(Parser * parser, unsigned int * pos, int skip);
 static int _exec_while(Parser * parser, unsigned int * pos, int skip);
 static int parser_exec(Parser * parser, unsigned int * pos, int skip)
@@ -172,10 +173,10 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 	int skiplocal = skip;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%s", "parser_exec(", *pos, ")",
+	fprintf(stderr, "%s%u%s%s", "parser_exec(", *pos, ")",
 			skip ? " skip\n" : "\n");
 #endif
-	for(; *pos < parser->tokens_cnt;)
+	while(*pos < parser->tokens_cnt)
 		switch(parser->tokens[*pos]->code)
 		{
 			case TC_OP_AND_IF:
@@ -203,7 +204,7 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 				ret = _exec_if(parser, pos, skiplocal);
 				break;
 			case TC_RW_CASE:
-				/* FIXME */
+				ret = _exec_case(parser, pos, skiplocal);
 				break;
 			case TC_RW_WHILE:
 				ret = _exec_while(parser, pos, skiplocal);
@@ -222,6 +223,12 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 				(*pos)++;
 				break;
 			default:
+#ifdef DEBUG
+				fprintf(stderr, "%s%u%s%s", "parser_exec(",
+						*pos, ")",
+						skip ? " skip\n" : "\n");
+#endif
+				assert(0);
 				return ret;
 		}
 	return ret;
@@ -263,7 +270,7 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 			case TC_OP_LESS:
 			case TC_OP_LESSAND:
 			case TC_OP_LESSGREAT:
-				/* FIXME */
+				/* FIXME implement */
 				break;
 			case TC_WORD:
 				if(skip)
@@ -321,8 +328,8 @@ static int _exec_cmd_env(char * envp[])
 		if(*p == '\0')
 			continue;
 		*p = '\0';
-		if(setenv(*e, p+1, 1) != 0)
-			ret+=sh_error("setenv", 1);
+		if(setenv(*e, p + 1, 1) != 0)
+			ret |= sh_error("setenv", 1);
 		*p = '=';
 	}
 	return ret;
@@ -364,6 +371,7 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error)
 {
 	pid_t pid;
 
+	assert(argv[argc] == NULL);
 	if((pid = fork()) == -1)
 		return sh_error("fork", -1);
 	if(pid == 0)
@@ -411,7 +419,7 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 {
 	int execd = 0;
 
-	for(; *pos < parser->tokens_cnt;)
+	while(*pos < parser->tokens_cnt)
 	{
 		switch(parser->tokens[*pos]->code)
 		{
@@ -441,6 +449,13 @@ static int _exec_if(Parser * parser, unsigned int * pos, int skip)
 		}
 		(*pos)++;
 	}
+	return skip;
+}
+
+static int _exec_case(Parser * parser, unsigned int * pos, int skip)
+{
+	/* FIXME actually implement */
+	for((*pos)++; parser->tokens[(*pos)++]->code != TC_RW_ESAC;);
 	return skip;
 }
 
@@ -485,7 +500,7 @@ static void parser_rule1(Parser * parser)
 	unsigned int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 1\n");
+	fputs("rule 1\n", stderr);
 #endif
 	if(parser->token == NULL || parser->token->string == NULL)
 		return;
@@ -499,17 +514,29 @@ static void parser_rule1(Parser * parser)
 }
 
 
+static void parser_rule4(Parser * parser)
+{
+	if(parser->token == NULL || parser->token->string == NULL)
+		return;
+	if(strcmp(parser->token->string, sTokenCode[TC_RW_ESAC]) == 0)
+		parser->token->code = TC_RW_ESAC;
+	else
+		parser->token->code = TC_WORD;
+}
+
+
 static void parser_rule5(Parser * parser)
 {
 	unsigned int i;
-	char c;
+	int c;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 5\n");
+	fputs("rule 5\n", stderr);
 #endif
 	if(parser->token == NULL || parser->token->string == NULL)
 		return;
-	if(isdigit(parser->token->string[0]))
+	c = parser->token->string[0];
+	if(isdigit(c))
 	{
 		parser->token->code = TC_WORD;
 		return;
@@ -527,7 +554,7 @@ static void parser_rule5(Parser * parser)
 static void parser_rule6_for(Parser * parser)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 6 (for)\n");
+	fputs("rule 6 (for)\n", stderr);
 #endif
 	if(parser->token == NULL || parser->token->string == NULL)
 		return;
@@ -546,7 +573,7 @@ static void parser_rule7a(Parser * parser)
 	unsigned int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 7a\n");
+	fputs("rule 7a\n", stderr);
 #endif
 	if(parser->token == NULL || parser->token->string == NULL)
 		return;
@@ -562,7 +589,7 @@ static void parser_rule7b(Parser * parser)
 	unsigned int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 7b\n");
+	fputs("rule 7b\n", stderr);
 #endif
 	if(parser->token == NULL || parser->token->string == NULL)
 		return;
@@ -588,7 +615,7 @@ static void parser_rule7b(Parser * parser)
 static void parser_rule8(Parser * parser)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "rule 8\n");
+	fputs("rule 8\n", stderr);
 #endif
 	if(parser->token == NULL)
 		return;
@@ -841,6 +868,9 @@ static void for_clause(Parser * p)
 static void name(Parser * p)
 	/* NAME  (rule 5) */
 {
+#ifdef DEBUG
+	fprintf(stderr, "%s", "name()\n");
+#endif
 	parser_rule5(p);
 	parser_check(p, TC_NAME);
 }
@@ -869,36 +899,71 @@ static void wordlist(Parser * p)
 
 
 /* case_clause */
+static void case_list(Parser * p);
 static void case_clause(Parser * p)
-	/* Case WORD linebreak in linebreak [(case_list | case_list_ns)] Esac */
+	/* Case WORD linebreak in linebreak case_list Esac */
 {
 #ifdef DEBUG
 	fprintf(stderr, "%s", "case_clause()\n");
 #endif
 	parser_scan(p);
-	if(!parser_check(p, TC_WORD))
+	if(!parser_check(p, TC_TOKEN))
 		return;
 	linebreak(p);
 	in(p);
 	linebreak(p);
-	/* FIXME */
+	parser_rule4(p);
+	case_list(p);
 	parser_check(p, TC_RW_ESAC);
 }
 
 
-/* case_list_ns */
-
-
 /* case_list */
-
-
-/* case_item_ns */
+static void case_item(Parser * p);
+static void case_list(Parser * p)
+	/* { case_item } */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "case_list()\n");
+#endif
+	while(p->token != NULL && p->token->code != TC_RW_ESAC)
+		case_item(p);
+}
 
 
 /* case_item */
+static void pattern(Parser * p);
+static void case_item(Parser * p)
+	/* ["("] pattern ")" (linebreak | compound_list) [DSEMI] linebreak */
+{
+	if(p->token != NULL && p->token->code == TC_TOKEN
+			&& p->token->string != NULL
+			&& strcmp(p->token->string, "(") == 0)
+		parser_scan(p); /* FIXME also check for the code? */
+	pattern(p);
+	parser_check_word(p, ")"); /* FIXME not detected yet */
+	linebreak(p);
+	compound_list(p);
+	if(p->token != NULL && p->token->code == TC_OP_DSEMI)
+		parser_scan(p);
+	linebreak(p);
+}
 
 
 /* pattern */
+static void pattern(Parser * p)
+	/* WORD  (rule 4) { '|' WORD } */
+{
+#ifdef DEBUG
+	fprintf(stderr, "%s", "pattern()\n");
+#endif
+	parser_scan(p);
+	while(p->token != NULL && p->token->code == TC_OP_BAR)
+	{
+		parser_scan(p); /* '|' */
+		parser_scan(p); /* WORD */
+	}
+}
 
 
 /* if_clause */
@@ -1001,6 +1066,7 @@ static void function_body(Parser * p)
 static void fname(Parser * p)
 	/* NAME  (rule 8) */
 {
+	parser_rule8(p); /* FIXME untested */
 	parser_scan(p);
 }
 
