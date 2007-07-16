@@ -26,6 +26,7 @@
 typedef enum _HostArch
 {
 	HA_I386 = 0, HA_I486, HA_I586, HA_I686,
+	HA_AMD64,
 	HA_SPARC, HA_SPARC64,
 	HA_SUN4U,
 	HA_ZAURUS,

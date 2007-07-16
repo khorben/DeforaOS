@@ -33,6 +33,7 @@
 const String * sHostArch[HA_LAST+1] =
 {
 	"i386", "i486", "i586", "i686",
+	"amd64",
 	"sparc", "sparc64",
 	"sun4u",
 	"zaurus",
