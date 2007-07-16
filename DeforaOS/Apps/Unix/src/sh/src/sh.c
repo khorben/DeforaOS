@@ -137,34 +137,3 @@ int main(int argc, char * argv[])
 		return _usage();
 	return _sh(&prefs, argc - optind, &argv[optind]);
 }
-
-
-#ifdef DEBUG
-# undef malloc
-# undef realloc
-# undef free
-void * dbg_malloc(size_t size, char * file, int line)
-{
-	void * p;
-
-	p = malloc(size);
-	fprintf(stderr, "%p = malloc(%u) %s:%d\n", p, size, file, line);
-	return p;
-}
-
-void * dbg_realloc(void * ptr, size_t size, char * file, int line)
-{
-	void * p;
-
-	p = realloc(ptr, size);
-	fprintf(stderr, "%p = realloc(%p, %u) %s:%d\n", p, ptr, size, file,
-			line);
-	return p;
-}
-
-void dbg_free(void * ptr, char * file, int line)
-{
-	fprintf(stderr, "free(%p) %s:%d\n", ptr, file, line);
-	free(ptr);
-}
-#endif
