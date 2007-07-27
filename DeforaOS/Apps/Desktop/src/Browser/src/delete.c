@@ -93,9 +93,8 @@ static void _delete_refresh(Delete * delete)
 	snprintf(buf, sizeof(buf), "Deleting file: %s",
 			delete->filev[delete->cur]);
 	gtk_label_set_text(GTK_LABEL(delete->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur + 1,
-			delete->filec);
-	fraction = (double)(delete->cur + 1) / (double)delete->filec;
+	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur, delete->filec);
+	fraction = (double)(delete->cur) / (double)delete->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(delete->progress),
 			fraction);
