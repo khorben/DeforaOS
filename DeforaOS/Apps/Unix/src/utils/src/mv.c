@@ -124,7 +124,7 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 		ret = _single_regular(src, dst);
 	if(ret != 0)
 		return ret;
-	if(lchown(dst, st.st_uid, st.st_gid) != 0) /* XXX race condition */
+	if(lchown(dst, st.st_uid, st.st_gid) != 0) /* XXX TOCTOU */
 	{
 		_mv_error(dst, 0);
 		if(chmod(dst, st.st_mode & ~(S_ISUID | S_ISGID)) != 0)
@@ -174,7 +174,7 @@ static int _single_symlink(char const * src, char const * dst)
 	char buf[PATH_MAX];
 	ssize_t i;
 
-	if((i = readlink(src, buf, sizeof(buf))) == -1)
+	if((i = readlink(src, buf, sizeof(buf) - 1)) == -1)
 		return _mv_error(src, 1);
 	buf[i] = '\0';
 	if(symlink(buf, dst) != 0)

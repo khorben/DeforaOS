@@ -249,7 +249,7 @@ static FILE * _single_open_dst(Prefs * prefs, char const * dst)
 
 static int _cp_symlink(char const * src, char const * dst)
 {
-	char buf[PATH_MAX + 1];
+	char buf[PATH_MAX];
 	ssize_t len;
 
 	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
