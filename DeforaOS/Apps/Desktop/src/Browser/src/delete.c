@@ -142,9 +142,13 @@ static int _idle_do(Delete * delete, char const * filename)
 {
 	struct stat st;
 
-	if(lstat(filename, &st) != 0)
-		return _delete_error(delete, filename, 1);
-	else if(S_ISDIR(st.st_mode))
+	if(lstat(filename, &st) != 0 && errno == ENOENT)
+	{
+		if(!(*(delete->prefs) & PREFS_f))
+			return _delete_error(delete, filename, 1);
+		return 0;
+	}
+	if(S_ISDIR(st.st_mode))
 	{
 		if(!(*(delete->prefs) & PREFS_R))
 		{
