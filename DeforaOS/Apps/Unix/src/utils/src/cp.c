@@ -94,17 +94,24 @@ static int _cp_confirm(char const * message)
 static int _single_dir(Prefs * prefs, char const * src, char const * dst);
 static int _single_fifo(char const * dst);
 static int _single_symlink(char const * src, char const * dst);
-static int _single_regular(Prefs * prefs, char const * src, char const * dst);
+static int _single_regular(char const * src, char const * dst);
 static int _single_p(char const * dst, struct stat * st);
 
 static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret;
 	struct stat st;
+	struct stat st2;
 
-	if(lstat(src, &st) != 0) /* XXX TOCTOU */
+	if(lstat(src, &st) != 0 && errno == ENOENT) /* XXX TOCTOU */
 		return _cp_error(src, 1);
-	/* FIXME ask for confirmation here instead? */
+	if(lstat(dst, &st2) == 0)
+	{
+		if(*prefs & PREFS_i && _cp_confirm(dst) != 1)
+			return 0;
+		if(unlink(dst) != 0)
+			return _cp_error(dst, 1);
+	}
 	if(S_ISDIR(st.st_mode))
 		ret = _single_dir(prefs, src, dst);
 	else if(S_ISFIFO(st.st_mode))
@@ -112,7 +119,7 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	else if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
 		return _single_symlink(src, dst);
 	else
-		ret = _single_regular(prefs, src, dst);
+		ret = _single_regular(src, dst);
 	if(ret != 0)
 		return ret;
 	if(*prefs & PREFS_p) /* XXX TOCTOU */
@@ -217,8 +224,7 @@ static int _single_symlink(char const * src, char const * dst)
 	return 0;
 }
 
-static FILE * _regular_open_dst(Prefs * prefs, char const * dst);
-static int _single_regular(Prefs * prefs, char const * src, char const * dst)
+static int _single_regular(char const * src, char const * dst)
 {
 	int ret = 0;
 	FILE * fsrc;
@@ -228,7 +234,7 @@ static int _single_regular(Prefs * prefs, char const * src, char const * dst)
 
 	if((fsrc = fopen(src, "r")) == NULL)
 		return _cp_error(src, 1);
-	if((fdst = _regular_open_dst(prefs, dst)) == NULL)
+	if((fdst = fopen(dst, "w")) == NULL)
 	{
 		ret = _cp_error(dst, 1);
 		fclose(fsrc);
@@ -249,38 +255,6 @@ static int _single_regular(Prefs * prefs, char const * src, char const * dst)
 	if(fclose(fdst) != 0)
 		return _cp_error(dst, 1);
 	return ret;
-}
-
-static FILE * _regular_open_dst(Prefs * prefs, char const * dst)
-{
-	FILE * fp;
-	int fd;
-
-	if(*prefs & PREFS_f)
-	{
-		if((fp = fopen(dst, "w")) == NULL)
-			_cp_error(dst, 1);
-		return fp;
-	}
-	if((fd = open(dst, O_WRONLY | O_CREAT | O_EXCL, 0666)) < 0)
-	{
-		if(errno != EEXIST)
-		{
-			_cp_error(dst, 1);
-			return NULL;
-		}
-		if(!_cp_confirm(dst))
-			return NULL;
-		/* XXX TOCTOU */
-		if((fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0)
-		{
-			_cp_error(dst, 1);
-			return NULL;
-		}
-	}
-	if((fp = fdopen(fd, "w")) == NULL)
-		_cp_error(dst, 1);
-	return fp;
 }
 
 static int _single_p(char const * dst, struct stat * st)
