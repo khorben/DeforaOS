@@ -127,16 +127,16 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	if(lchown(dst, st.st_uid, st.st_gid) != 0) /* XXX race condition */
 	{
 		_mv_error(dst, 0);
-		if(lchmod(dst, st.st_mode & ~(S_ISUID | S_ISGID)) != 0)
+		if(chmod(dst, st.st_mode & ~(S_ISUID | S_ISGID)) != 0)
 			_mv_error(dst, 0);
 	}
-	else if(lchmod(dst, st.st_mode) != 0)
+	else if(chmod(dst, st.st_mode) != 0)
 		_mv_error(dst, 0);
 	tv[0].tv_sec = st.st_atime;
 	tv[0].tv_usec = 0;
 	tv[1].tv_sec = st.st_mtime;
 	tv[1].tv_usec = 0;
-	if(lutimes(dst, tv) != 0)
+	if(utimes(dst, tv) != 0)
 		_mv_error(dst, 0);
 	return 0;
 }
