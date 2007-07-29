@@ -167,6 +167,7 @@ Browser * browser_new(char const * directory)
 	/* refresh */
 	browser->refresh_id = 0;
 	browser->refresh_dir = NULL;
+	browser->refresh_dev = 0;
 
 	browser->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
