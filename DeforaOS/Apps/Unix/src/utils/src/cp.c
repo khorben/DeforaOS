@@ -18,6 +18,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <limits.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -155,9 +156,6 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	char * ssrc = NULL;
 	char * sdst = NULL;
 	char * p;
-#ifndef DT_DIR
-	struct stat st;
-#endif
 
 	if(mkdir(dst, 0777) != 0 && errno != EEXIST)
 		return _cp_error(dst, 1);
