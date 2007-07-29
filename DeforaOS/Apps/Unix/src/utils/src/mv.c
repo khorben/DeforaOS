@@ -88,12 +88,12 @@ static int _single_nod(char const * src, char const * dst, mode_t mode,
 		dev_t rdev);
 static int _single_symlink(char const * src, char const * dst);
 static int _single_regular(char const * src, char const * dst);
+static int _single_p(char const * dst, struct stat * st);
 
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret;
 	struct stat st;
-	struct timeval tv[2];
 
 	if(*prefs & PREFS_i
 			&& _mv_confirm(src, dst) != 1)
@@ -124,20 +124,7 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 		ret = _single_regular(src, dst);
 	if(ret != 0)
 		return ret;
-	if(lchown(dst, st.st_uid, st.st_gid) != 0) /* XXX TOCTOU */
-	{
-		_mv_error(dst, 0);
-		if(chmod(dst, st.st_mode & ~(S_ISUID | S_ISGID)) != 0)
-			_mv_error(dst, 0);
-	}
-	else if(chmod(dst, st.st_mode) != 0)
-		_mv_error(dst, 0);
-	tv[0].tv_sec = st.st_atime;
-	tv[0].tv_usec = 0;
-	tv[1].tv_sec = st.st_mtime;
-	tv[1].tv_usec = 0;
-	if(utimes(dst, tv) != 0)
-		_mv_error(dst, 0);
+	_single_p(dst, &st);
 	return 0;
 }
 
@@ -202,6 +189,28 @@ static int _single_regular(char const * src, char const * dst)
 		_mv_error(src, 0);
 	return 0;
 }
+
+static int _single_p(char const * dst, struct stat * st)
+{
+	struct timeval tv[2];
+
+	if(lchown(dst, st->st_uid, st->st_gid) != 0) /* XXX TOCTOU */
+	{
+		_mv_error(dst, 0);
+		if(chmod(dst, st->st_mode & ~(S_ISUID | S_ISGID)) != 0)
+			_mv_error(dst, 0);
+	}
+	else if(chmod(dst, st->st_mode) != 0)
+		_mv_error(dst, 0);
+	tv[0].tv_sec = st->st_atime;
+	tv[0].tv_usec = 0;
+	tv[1].tv_sec = st->st_mtime;
+	tv[1].tv_usec = 0;
+	if(utimes(dst, tv) != 0)
+		_mv_error(dst, 0);
+	return 0;
+}
+
 
 /* mv_multiple */
 static int _mv_multiple(Prefs * prefs, int filec, char * const filev[])
