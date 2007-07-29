@@ -17,6 +17,7 @@
 
 
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -90,8 +91,9 @@ static int _single_regular(char const * src, char const * dst);
 
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
-	struct stat st;
 	int ret;
+	struct stat st;
+	struct timeval tv[2];
 
 	if(*prefs & PREFS_i
 			&& _mv_confirm(src, dst) != 1)
@@ -130,7 +132,12 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	}
 	else if(lchmod(dst, st.st_mode) != 0)
 		_mv_error(dst, 0);
-	/* FIXME restore original times */
+	tv[0].tv_sec = st.st_atime;
+	tv[0].tv_usec = 0;
+	tv[1].tv_sec = st.st_mtime;
+	tv[1].tv_usec = 0;
+	if(lutimes(dst, tv) != 0)
+		_mv_error(dst, 0);
 	return 0;
 }
 
