@@ -43,7 +43,6 @@ typedef int Prefs;
 /* cp */
 static int _cp_error(char const * message, int ret);
 static int _cp_single(Prefs * prefs, char const * src, char const * dst);
-static int _cp_symlink(char const * src, char const * dst);
 static int _cp_multiple(Prefs * prefs, int filec, char * const filev[]);
 
 static int _cp(Prefs * prefs, int filec, char * filev[])
@@ -79,7 +78,7 @@ static int _cp_error(char const * message, int ret)
 	return ret;
 }
 
-static int _single_confirm(char const * message)
+static int _cp_confirm(char const * message)
 {
 	int c;
 	int tmp;
@@ -93,54 +92,37 @@ static int _single_confirm(char const * message)
 
 /* _cp_single */
 static int _single_dir(Prefs * prefs, char const * src, char const * dst);
-static FILE * _single_open_dst(Prefs * prefs, char const * dst);
+static int _single_fifo(char const * dst);
+static int _single_symlink(char const * src, char const * dst);
+static int _single_regular(Prefs * prefs, char const * src, char const * dst);
+static int _single_p(char const * dst, struct stat * st);
 
 static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 {
-	int ret = 0;
-	FILE * fsrc;
-	FILE * fdst;
-	char buf[BUFSIZ];
-	size_t size;
-	int fd;
+	int ret;
 	struct stat st;
 
-	if((fsrc = fopen(src, "r")) == NULL)
+	if(lstat(src, &st) != 0) /* XXX TOCTOU */
 		return _cp_error(src, 1);
-	if((fd = fileno(fsrc)) == -1
-			|| fstat(fd, &st) != 0)
-	{
-		_cp_error(src, 1);
-		fclose(fsrc);
-		return 1;
-	}
+	/* FIXME ask for confirmation here instead? */
 	if(S_ISDIR(st.st_mode))
-		return _single_dir(prefs, src, dst);
-	if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
-		return _cp_symlink(src, dst);
-	if((fdst = _single_open_dst(prefs, dst)) == NULL)
-	{
-		fclose(fsrc);
-		return 1;
-	}
-	while((size = fread(buf, sizeof(char), BUFSIZ, fsrc)) > 0)
-		if(fwrite(buf, sizeof(char), size, fdst) != size)
-		{
-			_cp_error(dst, 1);
-			fclose(fsrc);
-			fclose(fdst);
-			return 1;
-		}
-	if(!feof(fsrc))
-		ret = _cp_error(src, 1);
-	if(fclose(fsrc) != 0)
-		ret = _cp_error(src, 1);
-	if(fclose(fdst) != 0)
-		return _cp_error(dst, 1);
-	return ret;
+		ret = _single_dir(prefs, src, dst);
+	else if(S_ISFIFO(st.st_mode))
+		ret = _single_fifo(dst);
+	else if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
+		return _single_symlink(src, dst);
+	else
+		ret = _single_regular(prefs, src, dst);
+	if(ret != 0)
+		return ret;
+	if(*prefs & PREFS_p) /* XXX TOCTOU */
+		_single_p(dst, &st);
+	return 0;
 }
 
+/* single_dir */
 static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+
 static int _single_dir(Prefs * prefs, char const * src, char const * dst)
 {
 	if(*prefs & PREFS_R)
@@ -205,7 +187,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 			ret |= _single_recurse(&prefs2, ssrc, sdst);
 		else if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
 #endif
-			ret |= _cp_symlink(ssrc, sdst);
+			ret |= _single_symlink(ssrc, sdst); /* XXX incomplete */
 		else
 			ret |= _cp_single(&prefs2, ssrc, sdst);
 	}
@@ -215,7 +197,61 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
-static FILE * _single_open_dst(Prefs * prefs, char const * dst)
+static int _single_fifo(char const * dst)
+{
+	if(mkfifo(dst, 0666) != 0)
+		return _cp_error(dst, 1);
+	return 0;
+}
+
+static int _single_symlink(char const * src, char const * dst)
+{
+	char buf[PATH_MAX];
+	ssize_t len;
+
+	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
+		return _cp_error(src, 1);
+	buf[len] = '\0';
+	if(symlink(buf, dst) != 0) /* FIXME fails if dst already exists */
+		return _cp_error(dst, 1);
+	return 0;
+}
+
+static FILE * _regular_open_dst(Prefs * prefs, char const * dst);
+static int _single_regular(Prefs * prefs, char const * src, char const * dst)
+{
+	int ret = 0;
+	FILE * fsrc;
+	FILE * fdst;
+	char buf[BUFSIZ];
+	size_t size;
+
+	if((fsrc = fopen(src, "r")) == NULL)
+		return _cp_error(src, 1);
+	if((fdst = _regular_open_dst(prefs, dst)) == NULL)
+	{
+		ret = _cp_error(dst, 1);
+		fclose(fsrc);
+		return ret;
+	}
+	while((size = fread(buf, sizeof(char), sizeof(buf), fsrc)) > 0)
+		if(fwrite(buf, sizeof(char), size, fdst) != size)
+		{
+			ret = _cp_error(dst, 1);
+			fclose(fsrc);
+			fclose(fdst);
+			return 1;
+		}
+	if(!feof(fsrc))
+		ret = _cp_error(src, 1);
+	if(fclose(fsrc) != 0)
+		ret = _cp_error(src, 1);
+	if(fclose(fdst) != 0)
+		return _cp_error(dst, 1);
+	return ret;
+}
+
+static FILE * _regular_open_dst(Prefs * prefs, char const * dst)
 {
 	FILE * fp;
 	int fd;
@@ -233,7 +269,7 @@ static FILE * _single_open_dst(Prefs * prefs, char const * dst)
 			_cp_error(dst, 1);
 			return NULL;
 		}
-		if(!_single_confirm(dst))
+		if(!_cp_confirm(dst))
 			return NULL;
 		/* XXX TOCTOU */
 		if((fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0666)) < 0)
@@ -247,16 +283,24 @@ static FILE * _single_open_dst(Prefs * prefs, char const * dst)
 	return fp;
 }
 
-static int _cp_symlink(char const * src, char const * dst)
+static int _single_p(char const * dst, struct stat * st)
 {
-	char buf[PATH_MAX];
-	ssize_t len;
+	struct timeval tv[2];
 
-	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
-		return _cp_error(src, 1);
-	buf[len] = '\0';
-	if(symlink(buf, dst) != 0) /* FIXME fails if dst already exists */
-		return _cp_error(dst, 1);
+	if(chown(dst, st->st_uid, st->st_gid) != 0)
+	{
+		_cp_error(dst, 0);
+		if(chmod(dst, st->st_mode & ~(S_ISUID | S_ISGID)) != 0)
+			_cp_error(dst, 0);
+	}
+	else if(chmod(dst, st->st_mode) != 0)
+		_cp_error(dst, 0);
+	tv[0].tv_sec = st->st_atime;
+	tv[0].tv_usec = 0;
+	tv[1].tv_sec = st->st_mtime;
+	tv[1].tv_usec = 0;
+	if(utimes(dst, tv) != 0)
+		_cp_error(dst, 0);
 	return 0;
 }
 
