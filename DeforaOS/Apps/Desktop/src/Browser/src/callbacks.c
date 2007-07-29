@@ -97,21 +97,17 @@ void on_edit_copy(GtkMenuItem * menuitem, gpointer data)
 
 static GList * _copy_selection(Browser * browser)
 {
+	GtkTreeSelection * treesel;
+
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser->iconview != NULL)
 		return gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
 				browser->iconview));
-	else
 #endif
-	{
-		GtkTreeSelection * treesel;
-
-		if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-							browser->detailview)))
-				== NULL)
-			return NULL;
-		return gtk_tree_selection_get_selected_rows(treesel, NULL);
-	}
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						browser->detailview))) == NULL)
+		return NULL;
+	return gtk_tree_selection_get_selected_rows(treesel, NULL);
 }
 
 
@@ -640,7 +636,7 @@ void on_properties(GtkWidget * widget, gpointer data)
 	char ** argv;
 	gchar * q;
 	GList * p;
-	unsigned int i = 1;
+	unsigned int i = 2;
 	GtkTreeIter iter;
 
 	if((pid = fork()) == -1)
@@ -651,11 +647,12 @@ void on_properties(GtkWidget * widget, gpointer data)
 	else if(pid != 0)
 		return;
 	if((selection = _copy_selection(browser)) == NULL)
-		return;
-	cnt = g_list_length(selection);
+		cnt = 1;
+	else
+		cnt = g_list_length(selection);
 	if((argv = malloc(sizeof(*argv) * (cnt + 3))) == NULL)
 	{
-		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
+		browser_error(NULL, "malloc", 0);
 		exit(2);
 	}
 #ifdef DEBUG
@@ -664,21 +661,23 @@ void on_properties(GtkWidget * widget, gpointer data)
 	argv[0] = "properties";
 #endif
 	argv[1] = "--";
-	for(p = selection; p != NULL && i <= cnt; p = p->next)
+	if(selection == NULL)
+		argv[i++] = browser->current->data;
+	for(p = selection; p != NULL && i < cnt + 2; p = p->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
 					&iter, p->data))
 			continue;
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
 				BR_COL_PATH, &q, -1);
-		argv[++i] = q;
+		argv[i++] = q;
 	}
-	if(i != cnt + 1)
+	if(i != cnt + 2)
 	{
 		fputs("browser: Could not detail file(s)\n", stderr);
 		exit(2);
 	}
-	argv[++i] = NULL;
+	argv[i] = NULL;
 	execvp(argv[0], argv);
 	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
 			strerror(errno));
