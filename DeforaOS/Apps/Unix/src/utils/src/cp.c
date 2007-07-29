@@ -180,23 +180,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 		}
 		sdst = p;
 		sprintf(sdst, "%s/%s", dst, de->d_name);
-#ifdef DT_DIR
-		if(de->d_type == DT_DIR)
-			ret |= _single_recurse(&prefs2, ssrc, sdst);
-		else if(de->d_type == DT_LNK && (*prefs & PREFS_P))
-#else
-		if(lstat(ssrc, &st) != 0) /* XXX TOCTOU */
-		{
-			ret |= _cp_error(ssrc, 1);
-			continue;
-		}
-		if(S_ISDIR(st.st_mode))
-			ret |= _single_recurse(&prefs2, ssrc, sdst);
-		else if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
-#endif
-			ret |= _single_symlink(ssrc, sdst); /* XXX incomplete */
-		else
-			ret |= _cp_single(&prefs2, ssrc, sdst);
+		ret |= _cp_single(&prefs2, ssrc, sdst);
 	}
 	closedir(dir);
 	free(ssrc);
