@@ -95,7 +95,10 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	int ret;
 	struct stat st;
 
+	if(lstat(src, &st) != 0 && errno == ENOENT)
+		return _mv_error(src, 1);
 	if(*prefs & PREFS_i
+			&& (lstat(dst, &st) == 0 || errno != ENOENT)
 			&& _mv_confirm(src, dst) != 1)
 		return 0;
 	if(rename(src, dst) == 0)
