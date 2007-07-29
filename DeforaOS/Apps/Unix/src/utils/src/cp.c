@@ -90,7 +90,8 @@ static int _cp_confirm(char const * message)
 	return c == 'y';
 }
 
-/* _cp_single */
+/* _cp_single
+ * XXX TOCTOU all over the place (*stat) but seem impossible to avoid */
 static int _single_dir(Prefs * prefs, char const * src, char const * dst);
 static int _single_fifo(char const * dst);
 static int _single_symlink(char const * src, char const * dst);
@@ -103,7 +104,12 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	struct stat st;
 	struct stat st2;
 
-	if(lstat(src, &st) != 0 && errno == ENOENT) /* XXX TOCTOU */
+	if(*prefs & PREFS_P) /* don't follow symlinks */
+	{
+		if(lstat(src, &st) != 0 && errno == ENOENT)
+			return _cp_error(src, 1);
+	}
+	else if(stat(src, &st) != 0 && errno == ENOENT) /* follow symlinks */
 		return _cp_error(src, 1);
 	if(lstat(dst, &st2) == 0)
 	{
@@ -116,8 +122,8 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 		ret = _single_dir(prefs, src, dst);
 	else if(S_ISFIFO(st.st_mode))
 		ret = _single_fifo(dst);
-	else if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
-		return _single_symlink(src, dst);
+	else if(S_ISLNK(st.st_mode))
+		ret = _single_symlink(src, dst);
 	else
 		ret = _single_regular(src, dst);
 	if(ret != 0)
@@ -203,7 +209,7 @@ static int _single_symlink(char const * src, char const * dst)
 	if((len = readlink(src, buf, sizeof(buf) - 1)) == -1)
 		return _cp_error(src, 1);
 	buf[len] = '\0';
-	if(symlink(buf, dst) != 0) /* FIXME fails if dst already exists */
+	if(symlink(buf, dst) != 0)
 		return _cp_error(dst, 1);
 	return 0;
 }
