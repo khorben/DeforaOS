@@ -82,6 +82,7 @@ static int _mv_confirm(char const * src, char const * dst)
 
 /* mv_single */
 static int _single_dir(char const * src, char const * dst);
+static int _single_fifo(char const * src, char const * dst);
 static int _single_symlink(char const * src, char const * dst);
 static int _single_regular(char const * src, char const * dst);
 
@@ -104,6 +105,8 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 		return _mv_error(dst, 1);
 	if(S_ISDIR(st.st_mode))
 		ret = _single_dir(src, dst);
+	else if(S_ISFIFO(st.st_mode))
+		ret = _single_fifo(src, dst);
 	else if(S_ISLNK(st.st_mode))
 		ret = _single_symlink(src, dst);
 	else if(!S_ISREG(st.st_mode)) /* FIXME not implemented */
@@ -132,6 +135,15 @@ static int _single_dir(char const * src, char const * dst)
 	if(mkdir(dst, 0777) != 0)
 		return _mv_error(dst, 1);
 	if(rmdir(src) != 0)
+		_mv_error(src, 0);
+	return 0;
+}
+
+static int _single_fifo(char const * src, char const * dst)
+{
+	if(mkfifo(dst, 0666) != 0)
+		return _mv_error(dst, 1);
+	if(unlink(src) != 0)
 		_mv_error(src, 0);
 	return 0;
 }
