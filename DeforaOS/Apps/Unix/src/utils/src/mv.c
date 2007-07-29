@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
+#include <limits.h>
 #include <errno.h>
 
 
@@ -67,12 +68,31 @@ static int _mv_error(char const * message, int ret)
 	return ret;
 }
 
+static int _mv_confirm(char const * src, char const * dst)
+{
+	int c;
+	int tmp;
+
+	fprintf(stderr, "%s%s%s%s%s", "mv: ", src, ": Move to \"", dst, "\"? ");
+	if((c = fgetc(stdin)) == EOF)
+		return 0;
+	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
+	return c == 'y';
+}
+
+/* mv_single */
+static int _single_dir(char const * src, char const * dst);
+static int _single_symlink(char const * src, char const * dst);
+static int _single_regular(char const * src, char const * dst);
+
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
-	FILE * fp;
-	char buf[BUFSIZ];
-	size_t i;
+	struct stat st;
+	int ret;
 
+	if(*prefs & PREFS_i
+			&& _mv_confirm(src, dst) != 1)
+		return 0;
 	if(rename(src, dst) == 0)
 		return 0;
 	if(errno != EXDEV)
@@ -80,6 +100,55 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	if(unlink(dst) != 0
 			&& errno != ENOENT)
 		return _mv_error(dst, 1);
+	if(lstat(src, &st) != 0)
+		return _mv_error(dst, 1);
+	if(S_ISDIR(st.st_mode))
+		ret = _single_dir(src, dst);
+	else if(S_ISLNK(st.st_mode))
+		ret = _single_symlink(src, dst);
+	else if(!S_ISREG(st.st_mode)) /* FIXME not implemented */
+	{
+		errno = ENOSYS;
+		return _mv_error(src, 1);
+	}
+	else
+		ret = _single_regular(src, dst);
+	if(ret != 0)
+		return ret;
+	/* FIXME restore original mode and times */
+	return 0;
+}
+
+static int _single_dir(char const * src, char const * dst)
+{
+	if(mkdir(dst, 0777) != 0)
+		return _mv_error(dst, 1);
+	if(rmdir(src) != 0)
+		_mv_error(src, 0);
+	return 0;
+}
+
+static int _single_symlink(char const * src, char const * dst)
+{
+	char buf[PATH_MAX];
+	ssize_t i;
+
+	if((i = readlink(src, buf, sizeof(buf))) == -1)
+		return _mv_error(src, 1);
+	buf[i] = '\0';
+	if(symlink(buf, dst) != 0)
+		return _mv_error(dst, 1);
+	if(unlink(src) != 0)
+		_mv_error(src, 0);
+	return 0;
+}
+
+static int _single_regular(char const * src, char const * dst)
+{
+	FILE * fp;
+	char buf[BUFSIZ];
+	size_t i;
+
 	if((fp = fopen(dst, "w+")) == NULL)
 		return _mv_error(dst, 1);
 	while((i = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
@@ -88,9 +157,12 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	if(fclose(fp) != 0
 			|| i != 0)
 		return _mv_error(dst, 1);
+	if(unlink(src) != 0)
+		_mv_error(src, 0);
 	return 0;
 }
 
+/* mv_multiple */
 static int _mv_multiple(Prefs * prefs, int filec, char * const filev[])
 {
 	int ret = 0;
