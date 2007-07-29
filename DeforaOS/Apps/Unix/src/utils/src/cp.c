@@ -80,7 +80,7 @@ static int _cp_error(char const * message, int ret)
 }
 
 /* _cp_single */
-static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+static int _single_dir(Prefs * prefs, char const * src, char const * dst);
 static FILE * _single_open_dst(Prefs * prefs, char const * dst);
 
 static int _cp_single(Prefs * prefs, char const * src, char const * dst)
@@ -95,20 +95,15 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 
 	if((fsrc = fopen(src, "r")) == NULL)
 		return _cp_error(src, 1);
-	if((fd = fileno(fsrc)) == -1 || fstat(fd, &st) != 0)
+	if((fd = fileno(fsrc)) == -1
+			|| fstat(fd, &st) != 0)
 	{
 		_cp_error(src, 1);
 		fclose(fsrc);
 		return 1;
 	}
 	if(S_ISDIR(st.st_mode))
-	{
-		if(*prefs & PREFS_R)
-			return _single_recurse(prefs, src, dst);
-		fprintf(stderr, "%s%s%s", "cp: ", src,
-				": Omitting directory\n");
-		return 0;
-	}
+		return _single_dir(prefs, src, dst);
 	if(S_ISLNK(st.st_mode) && (*prefs & PREFS_P))
 		return _cp_symlink(src, dst);
 	if((fdst = _single_open_dst(prefs, dst)) == NULL)
@@ -133,6 +128,15 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
+static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+static int _single_dir(Prefs * prefs, char const * src, char const * dst)
+{
+	if(*prefs & PREFS_R)
+		return _single_recurse(prefs, src, dst);
+	fprintf(stderr, "%s%s%s", "cp: ", src, ": Omitting directory\n");
+	return 0;
+}
+
 static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
@@ -155,7 +159,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	if((dir = opendir(src)) == NULL)
 		return _cp_error(src, 1);
 	prefs2 |= (prefs2 & PREFS_H) ? PREFS_P : 0;
-	while((de = readdir(dir)) != 0)
+	while((de = readdir(dir)) != NULL)
 	{
 		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
 					|| (de->d_name[1] == '.'
