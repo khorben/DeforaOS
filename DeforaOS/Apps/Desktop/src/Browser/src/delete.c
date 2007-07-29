@@ -239,7 +239,11 @@ static int _idle_do_recursive(Delete * delete, char const * filename)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: delete [-fiRr] file...\n", stderr);
+	fputs("Usage: delete [-fiRr] file...\n\
+  -f	Do not prompt for confirmation or output error messages\n\
+  -i	Prompt for confirmation\n\
+  -R	Remove file hierarchies\n\
+  -r	Equivalent to -R\n", stderr);
 	return 1;
 }
 
