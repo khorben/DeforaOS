@@ -95,7 +95,7 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	int ret;
 	struct stat st;
 
-	if(lstat(src, &st) != 0 && errno == ENOENT)
+	if(lstat(src, &st) != 0 && errno == ENOENT) /* XXX TOCTOU */
 		return _mv_error(src, 1);
 	if(*prefs & PREFS_i
 			&& (lstat(dst, &st) == 0 || errno != ENOENT)
