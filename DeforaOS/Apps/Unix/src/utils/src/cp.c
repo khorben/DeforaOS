@@ -79,6 +79,18 @@ static int _cp_error(char const * message, int ret)
 	return ret;
 }
 
+static int _single_confirm(char const * message)
+{
+	int c;
+	int tmp;
+
+	fprintf(stderr, "%s%s%s", "cp: ", message, ": Overwrite? ");
+	if((c = fgetc(stdin)) == EOF)
+		return 0;
+	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
+	return c == 'y';
+}
+
 /* _cp_single */
 static int _single_dir(Prefs * prefs, char const * src, char const * dst);
 static FILE * _single_open_dst(Prefs * prefs, char const * dst);
@@ -203,7 +215,6 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
-static int _single_confirm(char const * message);
 static FILE * _single_open_dst(Prefs * prefs, char const * dst)
 {
 	FILE * fp;
@@ -234,18 +245,6 @@ static FILE * _single_open_dst(Prefs * prefs, char const * dst)
 	if((fp = fdopen(fd, "w")) == NULL)
 		_cp_error(dst, 1);
 	return fp;
-}
-
-static int _single_confirm(char const * message)
-{
-	int c;
-	int tmp;
-
-	fprintf(stderr, "%s%s%s", "cp: ", message, ": Overwrite? ");
-	if((c = fgetc(stdin)) == EOF)
-		return 0;
-	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
-	return c == 'y';
 }
 
 static int _cp_symlink(char const * src, char const * dst)
