@@ -83,6 +83,8 @@ static int _mv_confirm(char const * src, char const * dst)
 /* mv_single */
 static int _single_dir(char const * src, char const * dst);
 static int _single_fifo(char const * src, char const * dst);
+static int _single_nod(char const * src, char const * dst, mode_t mode,
+		dev_t rdev);
 static int _single_symlink(char const * src, char const * dst);
 static int _single_regular(char const * src, char const * dst);
 
@@ -107,6 +109,8 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 		ret = _single_dir(src, dst);
 	else if(S_ISFIFO(st.st_mode))
 		ret = _single_fifo(src, dst);
+	else if(S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode))
+		ret = _single_nod(src, dst, st.st_mode, st.st_rdev);
 	else if(S_ISLNK(st.st_mode))
 		ret = _single_symlink(src, dst);
 	else if(!S_ISREG(st.st_mode)) /* FIXME not implemented */
@@ -142,6 +146,16 @@ static int _single_dir(char const * src, char const * dst)
 static int _single_fifo(char const * src, char const * dst)
 {
 	if(mkfifo(dst, 0666) != 0)
+		return _mv_error(dst, 1);
+	if(unlink(src) != 0)
+		_mv_error(src, 0);
+	return 0;
+}
+
+static int _single_nod(char const * src, char const * dst, mode_t mode,
+		dev_t rdev)
+{
+	if(mknod(dst, mode, rdev) != 0)
 		return _mv_error(dst, 1);
 	if(unlink(src) != 0)
 		_mv_error(src, 0);
