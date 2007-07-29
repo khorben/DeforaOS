@@ -115,7 +115,15 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 		ret = _single_regular(src, dst);
 	if(ret != 0)
 		return ret;
-	/* FIXME restore original mode and times */
+	if(lchown(dst, st.st_uid, st.st_gid) != 0) /* XXX race condition */
+	{
+		_mv_error(dst, 0);
+		if(lchmod(dst, st.st_mode & ~(S_ISUID | S_ISGID)) != 0)
+			_mv_error(dst, 0);
+	}
+	else if(lchmod(dst, st.st_mode) != 0)
+		_mv_error(dst, 0);
+	/* FIXME restore original times */
 	return 0;
 }
 
