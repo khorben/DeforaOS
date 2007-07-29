@@ -70,7 +70,7 @@ static int _rm_do(Prefs * prefs, char * file)
 {
 	struct stat st;
 
-	if(lstat(file, &st) != 0)
+	if(lstat(file, &st) != 0 && errno == ENOENT)
 	{
 		if(!(*prefs & PREFS_f))
 			return _rm_error(file, 1);
@@ -93,23 +93,23 @@ static int _rm_do(Prefs * prefs, char * file)
 	return 0;
 }
 
-static int _rm_do_recursive(Prefs * prefs, char * file)
+static int _rm_do_recursive(Prefs * prefs, char * filename)
 {
 	int ret = 0;
 	DIR * dir;
 	struct dirent * de;
-	size_t len = strlen(file) + 2;
+	size_t len = strlen(filename) + 2;
 	char * path;
 	char * p;
 
-	if((dir = opendir(file)) == NULL)
-		return _rm_error(file, 1);
+	if((dir = opendir(filename)) == NULL)
+		return _rm_error(filename, 1);
 	if((path = malloc(len)) == NULL)
 	{
 		closedir(dir);
 		return _rm_error("malloc", 1);
 	}
-	sprintf(path, "%s/", file);
+	sprintf(path, "%s/", filename);
 	while((de = readdir(dir)) != NULL)
 	{
 		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
@@ -117,21 +117,19 @@ static int _rm_do_recursive(Prefs * prefs, char * file)
 						&& de->d_name[2] == '\0')))
 			continue;
 		if((p = realloc(path, len + strlen(de->d_name))) == NULL)
-		{
-			free(path);
-			closedir(dir);
-			return _rm_error("malloc", 1);
-		}
+			break;
 		path = p;
 		strcpy(&path[len - 1], de->d_name);
 		ret |= _rm_do(prefs, path);
 	}
 	free(path);
 	closedir(dir);
-	if(*prefs & PREFS_i && !_rm_confirm(file, "directory"))
+	if(de != NULL)
+		return _rm_error(filename, 1);
+	if(*prefs & PREFS_i && !_rm_confirm(filename, "directory"))
 		return ret;
-	if(rmdir(file) != 0)
-		return _rm_error(file, 1);
+	if(rmdir(filename) != 0)
+		return _rm_error(filename, 1);
 	return ret;
 }
 
