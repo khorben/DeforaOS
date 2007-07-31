@@ -16,6 +16,9 @@
 
 
 #include <sys/mount.h>
+#ifdef __linux__ /* XXX linux portability */
+# define unmount(a, b) umount(a)
+#endif
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
