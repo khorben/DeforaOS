@@ -446,9 +446,10 @@ static GtkListStore * _create_store(Browser * browser)
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GDK_TYPE_PIXBUF, GDK_TYPE_PIXBUF,
 #endif
-			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_UINT64,
-			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+			G_TYPE_UINT64, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN,
+			G_TYPE_UINT64, G_TYPE_STRING, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+			G_TYPE_STRING);
 	gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(store),
 			_sort_func, browser, NULL);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store),
@@ -618,11 +619,13 @@ void browser_refresh(Browser * browser)
 	_browser_set_status(browser, "Refreshing folder...");
 	if(st.st_dev != browser->refresh_dev
 			|| st.st_ino != browser->refresh_ino)
+	{
+		browser->refresh_dev = st.st_dev;
+		browser->refresh_ino = st.st_ino;
 		_refresh_new(browser);
+	}
 	else
 		_refresh_current(browser);
-	browser->refresh_dev = st.st_dev;
-	browser->refresh_ino = st.st_ino;
 }
 
 static void _refresh_title(Browser * browser)
@@ -811,8 +814,9 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 #endif
 			BR_COL_UPDATED, updated, BR_COL_PATH, path,
 			BR_COL_DISPLAY_NAME, display, BR_COL_INODE, inode,
-			BR_COL_IS_DIRECTORY, st != NULL
-			? S_ISDIR(st->st_mode) : 0,
+			BR_COL_IS_DIRECTORY, S_ISDIR(st->st_mode),
+			BR_COL_IS_MOUNT_POINT,
+			st->st_dev != browser->refresh_dev,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1063,8 +1067,9 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	}
 	gtk_list_store_set(browser->store, iter, BR_COL_UPDATED, 1,
 			BR_COL_PATH, path, BR_COL_DISPLAY_NAME, display,
-			BR_COL_INODE, inode, BR_COL_IS_DIRECTORY, st != NULL
-			? S_ISDIR(st->st_mode) : 0,
+			BR_COL_INODE, inode, BR_COL_IS_DIRECTORY,
+			S_ISDIR(st->st_mode), BR_COL_IS_MOUNT_POINT,
+			st->st_dev != browser->refresh_dev,
 			BR_COL_PIXBUF_24, icon_24 != NULL ? icon_24
 			: browser->pb_file_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
