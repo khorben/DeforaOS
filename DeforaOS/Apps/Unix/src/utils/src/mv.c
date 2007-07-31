@@ -99,7 +99,7 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 		return _mv_error(src, 1);
 	if(*prefs & PREFS_i
 			&& (lstat(dst, &st) == 0 || errno != ENOENT)
-			&& _mv_confirm(src, dst) != 1)
+			&& _mv_confirm(dst) != 1)
 		return 0;
 	if(rename(src, dst) == 0)
 		return 0;
