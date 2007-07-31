@@ -69,12 +69,12 @@ static int _mv_error(char const * message, int ret)
 	return ret;
 }
 
-static int _mv_confirm(char const * src, char const * dst)
+static int _mv_confirm(char const * dst)
 {
 	int c;
 	int tmp;
 
-	fprintf(stderr, "%s%s%s%s%s", "mv: ", src, ": Move to \"", dst, "\"? ");
+	fprintf(stderr, "%s%s%s", "mv: ", dst, ": Overwrite? ");
 	if((c = fgetc(stdin)) == EOF)
 		return 0;
 	while(c != '\n' && (tmp = fgetc(stdin)) != EOF && tmp != '\n');
@@ -88,7 +88,7 @@ static int _single_nod(char const * src, char const * dst, mode_t mode,
 		dev_t rdev);
 static int _single_symlink(char const * src, char const * dst);
 static int _single_regular(char const * src, char const * dst);
-static int _single_p(char const * dst, struct stat * st);
+static int _single_p(char const * dst, struct stat const * st);
 
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
@@ -135,7 +135,7 @@ static int _single_dir(char const * src, char const * dst)
 {
 	if(mkdir(dst, 0777) != 0)
 		return _mv_error(dst, 1);
-	if(rmdir(src) != 0)
+	if(rmdir(src) != 0) /* FIXME probably gonna fail, recurse before */
 		_mv_error(src, 0);
 	return 0;
 }
@@ -193,7 +193,7 @@ static int _single_regular(char const * src, char const * dst)
 	return 0;
 }
 
-static int _single_p(char const * dst, struct stat * st)
+static int _single_p(char const * dst, struct stat const * st)
 {
 	struct timeval tv[2];
 
@@ -246,7 +246,9 @@ static int _mv_multiple(Prefs * prefs, int filec, char * const filev[])
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: mv [-fi] source_file... target_file\n", stderr);
+	fputs("Usage: mv [-fi] source_file... target_file\n\
+  -f	Do not prompt for confirmation if the destination path exists\n\
+  -i	Prompt for confirmation if the destination path exists\n", stderr);
 	return 1;
 }
 
