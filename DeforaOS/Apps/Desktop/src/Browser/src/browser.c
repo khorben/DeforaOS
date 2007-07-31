@@ -746,6 +746,11 @@ static int _loop_status(Browser * browser)
 static char const * _insert_size(off_t size);
 static char const * _insert_date(time_t date);
 static char const * _insert_mode(mode_t mode);
+static void _insert_dir(Browser * browser, GdkPixbuf ** icon_24,
+#if GTK_CHECK_VERSION(2, 6, 0)
+		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96,
+#endif
+		dev_t dev);
 
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * lst,
@@ -775,13 +780,11 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	ddate = _insert_date(lst->st_mtime);
 	type = _insert_mode(lst->st_mode);
 	if(S_ISDIR(st->st_mode))
-	{
-		icon_24 = browser->pb_folder_24;
+		_insert_dir(browser, &icon_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
-		icon_48 = browser->pb_folder_48;
-		icon_96 = browser->pb_folder_96;
+				&icon_48, &icon_96,
 #endif
-	}
+				st->st_dev);
 	else if(st->st_mode & S_IXUSR)
 	{
 		icon_24 = browser->pb_executable_24 ? browser->pb_executable_24
@@ -893,6 +896,36 @@ static char const * _insert_mode(mode_t mode)
 		return "inode/socket";
 #endif
 	return NULL;
+}
+
+static void _insert_dir(Browser * browser, GdkPixbuf ** icon_24,
+#if GTK_CHECK_VERSION(2, 6, 0)
+		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96,
+#endif
+		dev_t dev)
+{
+	char * rmt = "folder-remote";
+
+	if(browser->refresh_dev == dev)
+	{
+		*icon_24 = browser->pb_folder_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+		*icon_48 = browser->pb_folder_48;
+		*icon_96 = browser->pb_folder_96;
+#endif
+		return;
+	}
+	if((*icon_24 = gtk_icon_theme_load_icon(browser->theme, rmt, 24, 0,
+					NULL)) == NULL)
+		*icon_24 = browser->pb_folder_24;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if((*icon_48 = gtk_icon_theme_load_icon(browser->theme, rmt, 48, 0,
+					NULL)) == NULL)
+		*icon_48 = browser->pb_folder_48;
+	if((*icon_96 = gtk_icon_theme_load_icon(browser->theme, rmt, 96, 0,
+					NULL)) == NULL)
+		*icon_96 = browser->pb_folder_96;
+#endif
 }
 
 static gboolean _new_idle(gpointer data)
@@ -1032,13 +1065,11 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	ddate = _insert_date(lst->st_mtime);
 	type = _insert_mode(lst->st_mode);
 	if(S_ISDIR(st->st_mode))
-	{
-		icon_24 = browser->pb_folder_24;
+		_insert_dir(browser, &icon_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
-		icon_48 = browser->pb_folder_48;
-		icon_96 = browser->pb_folder_96;
+				&icon_48, &icon_96,
 #endif
-	}
+				st->st_dev);
 	else if(st->st_mode & S_IXUSR
 #if GTK_CHECK_VERSION(2, 6, 0)
 			&& browser->pb_executable_48 != NULL
