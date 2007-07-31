@@ -15,6 +15,8 @@
 
 
 
+#include <sys/mount.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -839,6 +841,7 @@ typedef struct _IconCallback
 {
 	Browser * browser;
 	int isdir;
+	int ismnt;
 	char * path;
 } IconCallback;
 
@@ -859,6 +862,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
+static void _on_icon_unmount(GtkWidget * widget, gpointer data);
 
 gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data)
@@ -921,7 +925,8 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	}
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
-			BR_COL_MIME_TYPE, &mimetype, -1);
+			BR_COL_IS_MOUNT_POINT, &ic.ismnt, BR_COL_MIME_TYPE,
+			&mimetype, -1);
 	if(ic.isdir == TRUE)
 		_press_directory(menu, &ic);
 	else
@@ -995,6 +1000,15 @@ static void _press_directory(GtkWidget * menu, IconCallback * ic)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(ic->ismnt)
+	{
+		menuitem = gtk_menu_item_new_with_mnemonic("_Unmount");
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_on_icon_unmount), ic);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_separator_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_delete), ic);
@@ -1091,4 +1105,12 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	IconCallback * cb = data;
 
 	browser_open_with(cb->browser, cb->path);
+}
+
+static void _on_icon_unmount(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+
+	if(unmount(cb->path, 0) != 0)
+		browser_error(cb->browser, strerror(errno), 0);
 }
