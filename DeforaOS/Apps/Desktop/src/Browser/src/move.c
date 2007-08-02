@@ -172,8 +172,8 @@ static gboolean _move_idle_first(gpointer data)
 /* move_single */
 static int _single_dir(Move * move, char const * src, char const * dst);
 static int _single_fifo(Move * move, char const * src, char const * dst);
-static int _single_nod(Move * move, char const * src, char const * dst, mode_t mode,
-		dev_t rdev);
+static int _single_nod(Move * move, char const * src, char const * dst,
+		mode_t mode, dev_t rdev);
 static int _single_symlink(Move * move, char const * src, char const * dst);
 static int _single_regular(Move * move, char const * src, char const * dst);
 static int _single_p(Move * move, char const * dst, struct stat const * st);
