@@ -230,16 +230,11 @@ static int _single_regular(char const * src, char const * dst)
 	}
 	while((size = fread(buf, sizeof(char), sizeof(buf), fsrc)) > 0)
 		if(fwrite(buf, sizeof(char), size, fdst) != size)
-		{
-			ret = _cp_error(dst, 1);
-			fclose(fsrc);
-			fclose(fdst);
-			return 1;
-		}
+			break;
 	if(!feof(fsrc))
-		ret = _cp_error(src, 1);
+		ret |= _cp_error(size == 0 ? src : dst, 1);
 	if(fclose(fsrc) != 0)
-		ret = _cp_error(src, 1);
+		ret |= _cp_error(src, 1);
 	if(fclose(fdst) != 0)
 		return _cp_error(dst, 1);
 	return ret;
@@ -300,11 +295,11 @@ static int _usage(void)
        cp [-fip] source_file ... target\n\
        cp -R [-H | -L | -P][-fip] source_file ... target\n\
        cp -r [-H | -L | -P][-fip] source_file ... target\n\
-  -f    attempt to remove destination file before a copy if necessary\n\
-  -i    prompt before a copy to an existing file\n\
-  -p    duplicate characteristics of the source files\n\
-  -R    copy file hierarchies\n\
-  -r    copy file hierarchies\n", stderr);
+  -f	Attempt to remove destination file before a copy if necessary\n\
+  -i	Prompt before a copy to an existing file\n\
+  -p	Duplicate characteristics of the source files\n\
+  -R	Copy file hierarchies\n\
+  -r	Copy file hierarchies\n", stderr);
 	return 1;
 }
 
