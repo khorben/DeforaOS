@@ -18,6 +18,8 @@
 
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -82,7 +84,7 @@ static int _mv_confirm(char const * dst)
 }
 
 /* mv_single */
-static int _single_dir(char const * src, char const * dst);
+static int _single_dir(Prefs * prefs, char const * src, char const * dst);
 static int _single_fifo(char const * src, char const * dst);
 static int _single_nod(char const * src, char const * dst, mode_t mode,
 		dev_t rdev);
@@ -111,7 +113,7 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	if(lstat(src, &st) != 0)
 		return _mv_error(dst, 1);
 	if(S_ISDIR(st.st_mode))
-		ret = _single_dir(src, dst);
+		ret = _single_dir(prefs, src, dst);
 	else if(S_ISFIFO(st.st_mode))
 		ret = _single_fifo(src, dst);
 	else if(S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode))
@@ -131,13 +133,61 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	return 0;
 }
 
-static int _single_dir(char const * src, char const * dst)
+/* single_dir */
+static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+
+static int _single_dir(Prefs * prefs, char const * src, char const * dst)
 {
-	if(mkdir(dst, 0777) != 0)
-		return _mv_error(dst, 1);
+	if(_single_recurse(prefs, src, dst) != 0)
+		return 1;
 	if(rmdir(src) != 0) /* FIXME probably gonna fail, recurse before */
 		_mv_error(src, 0);
 	return 0;
+}
+
+static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
+{
+	int ret = 0;
+	size_t srclen;
+	size_t dstlen;
+	DIR * dir;
+	struct dirent * de;
+	char * ssrc = NULL;
+	char * sdst = NULL;
+	char * p;
+
+	if(mkdir(dst, 0777) != 0)
+		return _mv_error(dst, 1);
+	srclen = strlen(src);
+	dstlen = strlen(dst);
+	if((dir = opendir(src)) == NULL)
+		return _mv_error(src, 1);
+	while((de = readdir(dir)) != NULL)
+	{
+		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
+					|| (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0')))
+			continue;
+		if((p = realloc(ssrc, srclen + strlen(de->d_name) + 2)) == NULL)
+		{
+			ret |= _mv_error(src, 1);
+			continue;
+		}
+		ssrc = p;
+		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
+		{
+			ret |= _mv_error(ssrc, 1);
+			continue;
+		}
+		sdst = p;
+		sprintf(ssrc, "%s/%s", src, de->d_name);
+		sprintf(sdst, "%s/%s", dst, de->d_name);
+		ret |= _mv_single(prefs, ssrc, sdst);
+	}
+	closedir(dir);
+	free(ssrc);
+	free(sdst);
+	return ret;
 }
 
 static int _single_fifo(char const * src, char const * dst)
