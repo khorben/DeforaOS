@@ -936,6 +936,15 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
+	if(browser->selection != NULL)
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					on_edit_paste), browser);
+	else
+		gtk_widget_set_sensitive(menuitem, FALSE);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
@@ -1005,6 +1014,16 @@ static void _press_file(Browser * browser, GtkWidget * menu, char * mimetype,
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_edit_cut), browser);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_edit_copy), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
