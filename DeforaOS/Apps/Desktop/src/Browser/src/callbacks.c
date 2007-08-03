@@ -835,6 +835,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
+static void _on_icon_paste(GtkWidget * widget, gpointer data);
 static void _on_icon_unmount(GtkWidget * widget, gpointer data);
 
 gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
@@ -982,6 +983,23 @@ static void _press_directory(GtkWidget * menu, IconCallback * ic)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_edit_cut), ic->browser);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				on_edit_copy), ic->browser);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
+	if(ic->browser->selection == NULL)
+		gtk_widget_set_sensitive(menuitem, FALSE);
+	else /* FIXME only if just this one is selected */
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_on_icon_paste), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(ic->ismnt)
 	{
 		menuitem = gtk_menu_item_new_with_mnemonic("_Unmount");
@@ -1071,7 +1089,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data)
 	IconCallback * cb = data;
 
 	/* FIXME not selected => cursor */
-	on_edit_delete(NULL, cb->browser);
+	on_edit_delete(GTK_MENU_ITEM(widget), cb->browser);
 }
 
 static void _on_icon_open(GtkWidget * widget, gpointer data)
@@ -1097,6 +1115,16 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	IconCallback * cb = data;
 
 	browser_open_with(cb->browser, cb->path);
+}
+
+static void _on_icon_paste(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+	char * p = cb->browser->current->data;
+
+	cb->browser->current->data = cb->path; /* XXX this is totally ugly */
+	on_edit_paste(GTK_MENU_ITEM(widget), cb->browser);
+	cb->browser->current->data = p;
 }
 
 static void _on_icon_unmount(GtkWidget * widget, gpointer data)
