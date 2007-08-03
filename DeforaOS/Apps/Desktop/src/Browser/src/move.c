@@ -264,21 +264,32 @@ static int _single_symlink(Move * move, char const * src, char const * dst)
 
 static int _single_regular(Move * move, char const * src, char const * dst)
 {
-	FILE * fp;
+	int ret = 0;
+	FILE * fsrc;
+	FILE * fdst;
 	char buf[BUFSIZ];
-	size_t i;
+	size_t size;
 
-	if((fp = fopen(dst, "w+")) == NULL)
+	if((fsrc = fopen(src, "r")) == NULL)
 		return _move_error(move, dst, 1);
-	while((i = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
-		if(fwrite(buf, sizeof(char), i, fp) != i)
+	if((fdst = fopen(dst, "w")) == NULL)
+	{
+		ret |= _move_error(move, dst, 1);
+		fclose(fsrc);
+		return ret;
+	}
+	while((size = fread(buf, sizeof(char), sizeof(buf), fsrc)) > 0)
+		if(fwrite(buf, sizeof(char), size, fdst) != size)
 			break;
-	if(fclose(fp) != 0
-			|| i != 0)
-		return _move_error(move, dst, 1);
+	if(!feof(fsrc))
+		ret |= _move_error(move, size == 0 ? src : dst, 1);
+	if(fclose(fsrc) != 0)
+		ret |= _move_error(move, src, 1);
+	if(fclose(fdst) != 0)
+		ret |= _move_error(move, dst, 1);
 	if(unlink(src) != 0)
 		_move_error(move, src, 0);
-	return 0;
+	return ret;
 }
 
 static int _single_p(Move * move, char const * dst, struct stat const * st)
