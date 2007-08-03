@@ -246,7 +246,8 @@ static int _mv_multiple(Prefs * prefs, int filec, char * const filev[])
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: mv [-fi] source_file... target_file\n\
+	fputs("Usage: mv [-fi] source_file target_file\n\
+       mv [-fi] source_file... target_file\n\
   -f	Do not prompt for confirmation if the destination path exists\n\
   -i	Prompt for confirmation if the destination path exists\n", stderr);
 	return 1;
