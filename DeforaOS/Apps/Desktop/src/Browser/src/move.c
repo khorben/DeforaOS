@@ -17,6 +17,8 @@
 
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -219,13 +221,61 @@ static int _move_single(Move * move, char const * src, char const * dst)
 	return 0;
 }
 
+/* single_dir */
+static int _single_recurse(Move * move, char const * src, char const * dst);
+
 static int _single_dir(Move * move, char const * src, char const * dst)
 {
-	if(mkdir(dst, 0777) != 0)
-		return _move_error(move, dst, 1);
+	if(_single_recurse(move, src, dst) != 0)
+		return 1;
 	if(rmdir(src) != 0) /* FIXME probably gonna fail, recurse before */
 		_move_error(move, src, 0);
 	return 0;
+}
+
+static int _single_recurse(Move * move, char const * src, char const * dst)
+{
+	int ret = 0;
+	size_t srclen;
+	size_t dstlen;
+	DIR * dir;
+	struct dirent * de;
+	char * ssrc = NULL;
+	char * sdst = NULL;
+	char * p;
+
+	if(mkdir(dst, 0777) != 0)
+		return _move_error(move, dst, 1);
+	srclen = strlen(src);
+	dstlen = strlen(dst);
+	if((dir = opendir(src)) == NULL)
+		return _move_error(move, src, 1);
+	while((de = readdir(dir)) != NULL)
+	{
+		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
+					|| (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0')))
+			continue;
+		if((p = realloc(ssrc, srclen + strlen(de->d_name) + 2)) == NULL)
+		{
+			ret |= _move_error(move, src, 1);
+			continue;
+		}
+		ssrc = p;
+		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
+		{
+			ret |= _move_error(move, src, 1);
+			continue;
+		}
+		sdst = p;
+		sprintf(ssrc, "%s/%s", src, de->d_name);
+		sprintf(sdst, "%s/%s", dst, de->d_name);
+		ret |= _move_single(move, ssrc, sdst);
+	}
+	closedir(dir);
+	free(ssrc);
+	free(sdst);
+	return ret;
 }
 
 static int _single_fifo(Move * move, char const * src, char const * dst)
@@ -313,7 +363,9 @@ static int _single_p(Move * move, char const * dst, struct stat const * st)
 	return 0;
 }
 
+/* move_idle_multiple */
 static int _move_multiple(Move * move, char const * src, char const * dst);
+
 static gboolean _move_idle_multiple(gpointer data)
 {
 	Move * move = data;
