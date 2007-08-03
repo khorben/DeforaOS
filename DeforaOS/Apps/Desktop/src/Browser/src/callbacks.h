@@ -32,6 +32,7 @@ void on_file_close(GtkMenuItem * menuitem, gpointer data);
 void on_edit_copy(GtkMenuItem * menuitem, gpointer data);
 void on_edit_cut(GtkMenuItem * menuitem, gpointer data);
 void on_edit_delete(GtkMenuItem * menuitem, gpointer data);
+void on_edit_paste(GtkMenuItem * menuitem, gpointer data);
 void on_edit_preferences(GtkMenuItem * menuitem, gpointer data);
 void on_edit_select_all(GtkMenuItem * menuitem, gpointer data);
 void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data);

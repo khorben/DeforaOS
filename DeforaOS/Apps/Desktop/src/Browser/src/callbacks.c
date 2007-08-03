@@ -74,90 +74,83 @@ void on_file_close(GtkMenuItem * menuitem, gpointer data)
 
 
 /* edit menu */
+/* on_edit_copy */
 static GList * _copy_selection(Browser * browser);
+
 void on_edit_copy(GtkMenuItem * menuitem, gpointer data)
-	/* FIXME */
 {
 	Browser * browser = data;
-	GtkTreeIter iter;
-	GList * sel;
-	GList * p;
-	gchar * path;
 
-	if((sel = _copy_selection(browser)) == NULL)
-		return;
-	for(p = sel; p != NULL; p = p->next)
-	{
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, p->data))
-			continue;
-		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &path, -1);
-		printf("%s\n", path);
-		g_free(path);
-	}
-	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free(sel);
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = _copy_selection(browser);
+	browser->selection_cut = 0;
 }
 
 static GList * _copy_selection(Browser * browser)
 {
 	GtkTreeSelection * treesel;
+	GList * sel;
+	GList * p;
+	GtkTreeIter iter;
+	char * q;
 
 #if GTK_CHECK_VERSION(2, 6, 0)
 	if(browser->iconview != NULL)
-		return gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-				browser->iconview));
+		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+					browser->iconview));
+	else
 #endif
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 						browser->detailview))) == NULL)
 		return NULL;
-	return gtk_tree_selection_get_selected_rows(treesel, NULL);
-}
-
-
-void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
-	/* FIXME */
-{
-	Browser * browser = data;
-	GtkTreeIter iter;
-	GList * sel;
-	GList * p;
-	gchar * path;
-
-	if((sel = _copy_selection(browser)) == NULL)
-		return;
-	for(p = sel; p != NULL; p = p->next)
+	else
+		sel = gtk_tree_selection_get_selected_rows(treesel, NULL);
+	for(p = NULL; sel != NULL; sel = sel->next)
 	{
 		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, p->data))
+					&iter, sel->data))
 			continue;
 		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &path, -1);
-		printf("%s\n", path);
-		g_free(path);
+				BR_COL_PATH, &q, -1);
+		p = g_list_append(p, q);
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
+	return p;
 }
 
 
-static void _delete_do(Browser * browser, GList * selection, unsigned long cnt);
+/* on_edit_cut */
+void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
+{
+	Browser * browser = data;
+	GList * p;
+
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = _copy_selection(browser);
+	browser->selection_cut = 1;
+}
+
+
+/* on_edit_delete */
+static void _exec(Browser * browser, char * program, char * flags,
+		GList * selection);
+
 void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * dialog;
 	unsigned long cnt = 0;
 	int ret = GTK_RESPONSE_YES;
-	GtkTreeIter iter;
 	GList * selection;
 	GList * p;
 
 	if((selection = _copy_selection(browser)) == NULL)
 		return;
 	for(p = selection; p != NULL; p = p->next)
-		if(gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, p->data) == TRUE)
+		if(p->data != NULL)
 			cnt++;
 	if(cnt == 0)
 		return;
@@ -169,25 +162,27 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
 				"%s%lu%s", "Are you sure you want to delete ",
 				cnt, " file(s)?");
-		gtk_window_set_title(GTK_WINDOW(dialog), "Delete file(s)");
+		gtk_window_set_title(GTK_WINDOW(dialog), "Question");
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(GTK_WIDGET(dialog));
 	}
 	if(ret == GTK_RESPONSE_YES)
-		_delete_do(browser, selection, cnt);
-	g_list_foreach(selection, (GFunc)gtk_tree_path_free, NULL);
+		_exec(browser, "delete", "-ir", selection);
+	g_list_foreach(selection, (GFunc)free, NULL);
 	g_list_free(selection);
 }
 
-static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
+static void _exec(Browser * browser, char * program, char * flags,
+		GList * selection)
 {
-	unsigned long i = 2;
-	char ** argv;
+	unsigned long i = flags != NULL ? 3 : 2;
+	char ** argv = NULL;
 	pid_t pid;
-	GtkTreeIter iter;
 	GList * p;
-	gchar * q;
+	char ** q;
 
+	if(selection == NULL)
+		return;
 	if((pid = fork()) == -1)
 	{
 		browser_error(browser, "fork", 0);
@@ -195,37 +190,57 @@ static void _delete_do(Browser * browser, GList * selection, unsigned long cnt)
 	}
 	else if(pid != 0)
 		return;
-	if((argv = malloc(sizeof(*argv) * (cnt + 4))) == NULL)
+	for(p = selection; p != NULL; p = p->next)
 	{
-		fprintf(stderr, "%s%s\n", "browser: malloc: ", strerror(errno));
-		exit(2);
+		if(p->data == NULL)
+			continue;
+		if((q = realloc(argv, sizeof(*argv) * (i + 2))) == NULL)
+		{
+			fprintf(stderr, "%s%s%s%s%s", "browser: ", program,
+					": ", strerror(errno), "\n");
+			exit(2);
+		}
+		argv = q;
+		argv[i++] = p->data;
 	}
+	if(argv == NULL)
+		exit(0);
 #ifdef DEBUG
 	argv[0] = "echo";
 #else
-	argv[0] = "delete";
+	argv[0] = program;
 #endif
-	argv[1] = "-ir";
-	argv[2] = "--";
-	for(p = selection; p != NULL && i <= cnt + 1; p = p->next)
-	{
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, p->data))
-			continue;
-		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
-		argv[++i] = q;
-	}
-	if(i != cnt + 2)
-	{
-		fputs("browser: Could not delete file(s)\n", stderr);
-		exit(2);
-	}
-	argv[++i] = NULL;
+	argv[i] = NULL;
+	i = 1;
+	if(flags != NULL)
+		argv[i++] = flags;
+	argv[i] = "--";
 	execvp(argv[0], argv);
 	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
 			strerror(errno));
 	exit(2);
+}
+
+
+void on_edit_paste(GtkMenuItem * menuitem, gpointer data)
+{
+	Browser * browser = data;
+	char * p = browser->current->data;
+
+	if(browser->selection == NULL)
+		return;
+	browser->selection = g_list_append(browser->selection, p);
+	if(browser->selection_cut != 1)
+	{
+		_exec(browser, "copy", "-ir", browser->selection);
+		browser->selection = g_list_remove(browser->selection, p);
+		return;
+	}
+	_exec(browser, "move", "-i", browser->selection);
+	browser->selection = g_list_remove(browser->selection, p);
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = NULL;
 }
 
 
@@ -635,58 +650,13 @@ void on_home(GtkWidget * widget, gpointer data)
 void on_properties(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
-	pid_t pid;
 	GList * selection;
-	unsigned int cnt;
-	char ** argv;
-	gchar * q;
-	GList * p;
-	unsigned int i = 2;
-	GtkTreeIter iter;
 
-	if((pid = fork()) == -1)
-	{
-		browser_error(browser, "fork", 0);
-		return;
-	}
-	else if(pid != 0)
-		return;
 	if((selection = _copy_selection(browser)) == NULL)
-		cnt = 1;
-	else
-		cnt = g_list_length(selection);
-	if((argv = malloc(sizeof(*argv) * (cnt + 3))) == NULL)
-	{
-		browser_error(NULL, "malloc", 0);
-		exit(2);
-	}
-#ifdef DEBUG
-	argv[0] = "echo";
-#else
-	argv[0] = "properties";
-#endif
-	argv[1] = "--";
-	if(selection == NULL)
-		argv[i++] = browser->current->data;
-	for(p = selection; p != NULL && i < cnt + 2; p = p->next)
-	{
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, p->data))
-			continue;
-		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
-		argv[i++] = q;
-	}
-	if(i != cnt + 2)
-	{
-		fputs("browser: Could not detail file(s)\n", stderr);
-		exit(2);
-	}
-	argv[i] = NULL;
-	execvp(argv[0], argv);
-	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
-			strerror(errno));
-	exit(2);
+		selection = g_list_append(NULL, strdup(browser->current->data));
+	_exec(browser, "properties", NULL, selection);
+	g_list_foreach(selection, (GFunc)free, NULL);
+	g_list_free(selection);
 }
 
 

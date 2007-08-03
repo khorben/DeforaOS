@@ -70,7 +70,7 @@ static struct _menu _menu_edit[] =
 {
 	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_X },
 	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY, GDK_C },
-	{ "_Paste", NULL, GTK_STOCK_PASTE, GDK_V },
+	{ "_Paste", G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE, GDK_V },
 	{ "", NULL, NULL, 0 },
 	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
 	{ "", NULL, NULL, 0 },
@@ -169,6 +169,11 @@ Browser * browser_new(char const * directory)
 	browser->refresh_dir = NULL;
 	browser->refresh_dev = 0;
 
+	/* selection */
+	browser->selection = NULL;
+	browser->selection_cut = 0;
+
+	/* widgets */
 	browser->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
 	gtk_window_set_title(GTK_WINDOW(browser->window), "File browser");
@@ -467,6 +472,8 @@ void browser_delete(Browser * browser)
 		g_source_remove(browser->refresh_id);
 	g_list_foreach(browser->history, (GFunc)free, NULL);
 	g_list_free(browser->history);
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
 	g_object_unref(browser->store);
 	gtk_widget_destroy(browser->window);
 	free(browser);

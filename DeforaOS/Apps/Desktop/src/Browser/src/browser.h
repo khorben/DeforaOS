@@ -92,6 +92,10 @@ typedef struct _Browser
 	unsigned int refresh_cnt;
 	unsigned int refresh_hid;
 
+	/* selection */
+	GList * selection;
+	gboolean selection_cut;
+
 	/* widgets */
 	GtkIconTheme * theme;
 	GdkPixbuf * pb_file_24;
