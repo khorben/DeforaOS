@@ -277,13 +277,13 @@ static int _single_recurse(Copy * copy, char const * src, char const * dst)
 			continue;
 		}
 		ssrc = p;
-		sprintf(ssrc, "%s/%s", src, de->d_name);
 		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
 		{
 			ret |= _copy_error(copy, ssrc, 1);
 			continue;
 		}
 		sdst = p;
+		sprintf(ssrc, "%s/%s", src, de->d_name);
 		sprintf(sdst, "%s/%s", dst, de->d_name);
 		ret |= _copy_single(&copy2, ssrc, sdst);
 	}
