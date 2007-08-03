@@ -333,12 +333,7 @@ static int _single_regular(Copy * copy, char const * src, char const * dst)
 		if(fwrite(buf, sizeof(char), size, fdst) != size)
 			break;
 	if(!feof(fsrc))
-	{
-		ret = _copy_error(copy, size == 0 ? src : dst, 1);
-		fclose(fsrc);
-		fclose(fdst);
-		return 1;
-	}
+		ret |= _copy_error(copy, size == 0 ? src : dst, 1);
 	if(fclose(fsrc) != 0)
 		ret |= _copy_error(copy, src, 1);
 	if(fclose(fdst) != 0)
