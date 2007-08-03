@@ -25,8 +25,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/copy.c \
 		$(PACKAGE)-$(VERSION)/src/delete.c \
 		$(PACKAGE)-$(VERSION)/src/desktop.c \
+		$(PACKAGE)-$(VERSION)/src/move.c \
 		$(PACKAGE)-$(VERSION)/src/open.c \
 		$(PACKAGE)-$(VERSION)/src/properties.c \
 		$(PACKAGE)-$(VERSION)/src/view.c \
