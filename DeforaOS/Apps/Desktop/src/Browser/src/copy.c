@@ -96,7 +96,7 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 
 static void _copy_refresh(Copy * copy)
 {
-	char buf[256];
+	char buf[256]; /* FIXME convert to UTF-8 */
 	double fraction;
 
 	snprintf(buf, sizeof(buf), "Copying file: %s", copy->filev[copy->cur]);

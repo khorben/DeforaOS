@@ -90,7 +90,7 @@ static int _move(Prefs * prefs, int filec, char * filev[])
 
 static void _move_refresh(Move * move)
 {
-	char buf[256];
+	char buf[256]; /* FIXME convert to UTF-8 */
 	double fraction;
 
 	snprintf(buf, sizeof(buf), "Moving file: %s", move->filev[move->cur]);
