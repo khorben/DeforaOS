@@ -95,7 +95,7 @@ static void _move_refresh(Move * move)
 
 	snprintf(buf, sizeof(buf), "Moving file: %s", move->filev[move->cur]);
 	gtk_label_set_text(GTK_LABEL(move->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", move->cur, move->filec);
+	snprintf(buf, sizeof(buf), "File %u of %u", move->cur, move->filec - 1);
 	fraction = (double)(move->cur) / (double)move->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(move->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(move->progress),

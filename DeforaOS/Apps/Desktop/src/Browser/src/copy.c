@@ -101,7 +101,7 @@ static void _copy_refresh(Copy * copy)
 
 	snprintf(buf, sizeof(buf), "Copying file: %s", copy->filev[copy->cur]);
 	gtk_label_set_text(GTK_LABEL(copy->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur, copy->filec);
+	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur, copy->filec - 1);
 	fraction = (double)(copy->cur) / (double)copy->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->progress),
