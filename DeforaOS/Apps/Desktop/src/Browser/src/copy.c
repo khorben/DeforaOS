@@ -279,7 +279,7 @@ static int _single_recurse(Copy * copy, char const * src, char const * dst)
 		ssrc = p;
 		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
 		{
-			ret |= _copy_error(copy, ssrc, 1);
+			ret |= _copy_error(copy, src, 1);
 			continue;
 		}
 		sdst = p;

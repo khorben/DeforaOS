@@ -176,7 +176,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 		ssrc = p;
 		if((p = realloc(sdst, dstlen + strlen(de->d_name) + 2)) == NULL)
 		{
-			ret |= _mv_error(ssrc, 1);
+			ret |= _mv_error(src, 1);
 			continue;
 		}
 		sdst = p;
