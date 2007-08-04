@@ -55,7 +55,7 @@ struct _menubar
 
 
 /* constants */
-struct _menu _menu_file[] =
+static struct _menu _menu_file[] =
 {
 	{ "_New window", G_CALLBACK(on_file_new_window), NULL, GDK_N },
 	{ "", NULL, NULL, 0 },

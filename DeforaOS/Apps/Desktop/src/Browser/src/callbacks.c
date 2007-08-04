@@ -116,7 +116,7 @@ static GList * _copy_selection(Browser * browser)
 		p = g_list_append(p, q);
 	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free(sel);
+	g_list_free(sel); /* XXX can probably be optimized for re-use */
 	return p;
 }
 
@@ -409,6 +409,7 @@ static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
 #endif
+
 void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -442,7 +443,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window),
 				_license);
 	free(buf);
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
 				gtk_widget_hide), NULL);
@@ -464,7 +465,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	gtk_window_set_title(GTK_WINDOW(window), "About Browser");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
@@ -507,7 +508,7 @@ static void _about_on_close(GtkWidget * widget, gpointer data)
 
 static void _about_on_credits(GtkWidget * widget, gpointer data)
 {
-	static GtkWidget * window = NULL;
+	static GtkWidget * window = NULL; /* XXX probably no longer adapted */
 	GtkWidget * about = data;
 	GtkWidget * vbox;
 	GtkWidget * notebook;
@@ -527,7 +528,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "Credits");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
@@ -579,7 +580,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "License");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
@@ -937,6 +938,12 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, NULL);
+	gtk_widget_set_sensitive(menuitem, FALSE);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, NULL);
+	gtk_widget_set_sensitive(menuitem, FALSE);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
 	if(browser->selection != NULL)
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
@@ -1042,6 +1049,9 @@ static void _press_file(Browser * browser, GtkWidget * menu, char * mimetype,
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, NULL);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_edit_copy), browser);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
+	gtk_widget_set_sensitive(menuitem, FALSE);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
