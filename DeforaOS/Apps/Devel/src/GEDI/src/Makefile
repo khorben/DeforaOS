@@ -22,7 +22,7 @@ gedi_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gedi: $(gedi_OBJS)
 	$(CC) -o gedi $(gedi_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-gedi.o: gedi.c
+gedi.o: gedi.c ../config.h gedi.h
 	$(CC) $(gedi_CFLAGS) -c gedi.c
 
 main.o: main.c
