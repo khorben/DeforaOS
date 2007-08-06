@@ -109,9 +109,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 			'link' => 'javascript:history.back()');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => _html_link('project', 'browse', $id, '')
-					.(strlen($filename)
-					? 'file='.dirname($filename) : ''));
+			'link' => _html_link('project', 'browse', $id, '',
+				strlen($filename) ? 'file='.dirname($filename)
+				: ''));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()');
 	$toolbar[] = array();
