@@ -50,8 +50,8 @@ static int _mktemp_error(char * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: mktemp [-d] [template]\n\
-  -d	make a directory instead of a file\n");
+	fputs("Usage: mktemp [-d] [template]\n\
+  -d	make a directory instead of a file\n", stderr);
 	return 1;
 }
 
