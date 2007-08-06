@@ -83,8 +83,8 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 			: $thumbnail;
 		$revision = _html_safe(substr($rcs[$revs+1], 9));
 		$revision = '<a href="'._html_link('project', 'browse', $id, '',
-			'file='.$file.'&amp;revision='.$revision).'">'
-				.$revision.'</a>';
+			'file='.$file.'&revision='.$revision).'">'.$revision
+				.'</a>';
 		$date = _html_safe(substr($rcs[$revs+2], 6, 19));
 		$author = substr($rcs[$revs+2], 36);
 		$author = substr($author, 0, strspn($author,
