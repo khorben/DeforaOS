@@ -626,7 +626,7 @@ static int _probe(void)
 
 static int _probe_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "Probe: ");
+	fputs("Probe: ", stderr);
 	perror(message);
 	return ret;
 }
