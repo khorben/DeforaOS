@@ -100,7 +100,7 @@ i586.o: i586.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg
 i686.o: i686.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
 	$(CC) $(i686_CFLAGS) -c i686.c
 
-sparc.o: sparc.c
+sparc.o: sparc.c sparc.ins sparc.reg
 	$(CC) $(sparc_CFLAGS) -c sparc.c
 
 sparc64.o: sparc64.c
