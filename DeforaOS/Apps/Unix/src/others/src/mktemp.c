@@ -16,6 +16,7 @@
 
 
 
+#include <sys/time.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,9 +28,14 @@ static int _mktemp_error(char * message, int ret);
 static int _mktemp(char * template)
 {
 	int fd;
+	struct timeval tv;
 
 	if((template = strdup(template)) == NULL)
 		return _mktemp_error("strdup", 1);
+	if(gettimeofday(&tv, NULL) == 0)
+		srand(getpid() * tv.tv_sec * tv.tv_usec);
+	else
+		srand(getpid());
 	if((fd = mkstemp(template)) == -1)
 		return _mktemp_error(template, 1);
 	if(close(fd) != 0)
