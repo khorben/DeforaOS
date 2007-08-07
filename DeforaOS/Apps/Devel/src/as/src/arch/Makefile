@@ -103,7 +103,7 @@ i686.o: i686.c 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686
 sparc.o: sparc.c sparc.ins sparc.reg
 	$(CC) $(sparc_CFLAGS) -c sparc.c
 
-sparc64.o: sparc64.c
+sparc64.o: sparc64.c sparc.ins sparc.reg sparc64.ins sparc64.reg
 	$(CC) $(sparc64_CFLAGS) -c sparc64.c
 
 clean:
