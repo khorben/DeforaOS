@@ -17,6 +17,7 @@
 
 
 #include <sys/types.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -108,7 +109,7 @@ static void parser_error(Parser * parser, char * format, ...)
 {
 	va_list vl;
 
-	fprintf(stderr, "%s", "sh: ");
+	fputs("sh: ", stderr);
 	va_start(vl, format);
 	vfprintf(stderr, format, vl);
 	va_end(vl);
@@ -234,18 +235,24 @@ static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 	return ret;
 }
 
+
+/* exec_cmd */
 static int _exec_cmd_env(char * envp[]);
 static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error);
-static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error);
+static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error,
+		char * inf, char * outf); /* XXX group args in a struct? */
+
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 {
+	int ret = 1;
 	char ** argv = NULL;
 	unsigned int argv_cnt = 0;
 	char ** envp = NULL;
 	unsigned int envp_cnt = 0;
 	char ** p;
-	int ret = 1;
 	uint8_t bg_error = 0;
+	char * inf = NULL;
+	char * outf = NULL;
 
 	if(!skip && (envp = sh_export()) != NULL)
 		for(envp_cnt = 0; envp[envp_cnt] != NULL; envp_cnt++);
@@ -264,13 +271,18 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 				envp[envp_cnt++] = parser->tokens[*pos]->string;
 				break;
 			case TC_IO_NUMBER:
+			case TC_OP_BAR:
 			case TC_OP_CLOBBER:
-			case TC_OP_GREAT:
 			case TC_OP_GREATAND:
-			case TC_OP_LESS:
 			case TC_OP_LESSAND:
 			case TC_OP_LESSGREAT:
 				/* FIXME implement */
+				break;
+			case TC_OP_GREAT:
+				outf = parser->tokens[++(*pos)]->string;
+				break;
+			case TC_OP_LESS:
+				inf = parser->tokens[++(*pos)]->string;
 				break;
 			case TC_WORD:
 				if(skip)
@@ -304,7 +316,8 @@ static int _exec_cmd(Parser * parser, unsigned int * pos, int skip)
 		/* FIXME look for builtins utilities (should be none) */
 		/* FIXME look for functions */
 		if(_exec_cmd_builtin(argv_cnt, argv, &bg_error) != 0)
-			if(_exec_cmd_child(argv_cnt, argv, &bg_error) != 0)
+			if(_exec_cmd_child(argv_cnt, argv, &bg_error, inf, outf)
+					!= 0)
 				ret = 1;
 		if(ret == 0)
 			ret = bg_error;
@@ -336,6 +349,7 @@ static int _exec_cmd_env(char * envp[])
 }
 
 static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error)
+	/* FIXME should handle redirection */
 {
 	struct
 	{
@@ -367,23 +381,45 @@ static int _exec_cmd_builtin(int argc, char ** argv, uint8_t * bg_error)
 	return -1;
 }
 
-static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error)
+static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error,
+		char * inf, char * outf)
 {
 	pid_t pid;
+	int infd = -1;
+	int outfd = -1;
 
 	assert(argv[argc] == NULL);
+	if(inf != NULL && (infd = open(inf, O_RDONLY)) < 0)
+		return sh_error(inf, 1);
+	if(outf != NULL && (outfd = open(outf, O_WRONLY | O_CREAT | O_TRUNC,
+					0666)) < 0)
+		return sh_error(outf, 1);
 	if((pid = fork()) == -1)
-		return sh_error("fork", -1);
-	if(pid == 0)
 	{
-		execvp(argv[0], argv);
-		_exit(sh_error(argv[0], -1));
+		if(infd != -1)
+			close(infd);
+		if(outfd != -1)
+			close(outfd);
+		return sh_error("fork", 1);
 	}
-	if(*bg_error != 0)
-		*bg_error = job_add(argv[0], pid, JS_RUNNING);
-	else
-		*bg_error = job_add(argv[0], pid, JS_WAIT);
-	return 0;
+	if(pid != 0)
+	{
+		if(infd != -1)
+			close(infd);
+		if(outfd != -1)
+			close(outfd);
+		if(*bg_error != 0)
+			*bg_error = job_add(argv[0], pid, JS_RUNNING);
+		else
+			*bg_error = job_add(argv[0], pid, JS_WAIT);
+		return 0;
+	}
+	if(infd != -1 && dup2(infd, 0) == -1)
+		_exit(sh_error(inf, -1));
+	if(outfd != -1 && dup2(outfd, 1) == -1)
+		_exit(sh_error(outf, -1));
+	execvp(argv[0], argv);
+	_exit(sh_error(argv[0], -1));
 }
 
 static int _exec_for(Parser * parser, unsigned int * pos, int skip)
@@ -1097,6 +1133,7 @@ static void cmd_prefix(Parser * p);
 static void cmd_word(Parser * p);
 static void cmd_suffix(Parser * p);
 static void cmd_name(Parser * p);
+
 static void simple_command(Parser * p)
 	/* cmd_prefix [cmd_word [cmd_suffix]]
 	 * | cmd_name [cmd_suffix] */
@@ -1201,6 +1238,9 @@ static void io_here(Parser * p);
 static void io_redirect(Parser * p)
 	/* [IO_NUMBER] (io_file | io_here) */
 {
+#ifdef DEBUG
+	fputs("cmd_suffix()\n", stderr);
+#endif
 	if(p->token == NULL)
 		return;
 	if(p->token->code == TC_IO_NUMBER)
@@ -1216,14 +1256,18 @@ static void io_redirect(Parser * p)
 
 /* io_file */
 static void filename(Parser * p);
+
 static void io_file(Parser * p)
 	/* '<' filename
 	 * | LESSAND filename
 	 * | '>' filename
 	 * | GREATAND filename */
 {
-	/* FIXME */
+#ifdef DEBUG
+	fputs("io_file()\n", stderr);
+#endif
 	parser_scan(p);
+	/* FIXME check if it's an appropriate token for filename */
 	filename(p);
 }
 
@@ -1233,9 +1277,8 @@ static void filename(Parser * p)
 	/* WORD  (rule 2) */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "filename()\n");
+	fputs("filename()\n", stderr);
 #endif
-	/* FIXME */
 	parser_scan(p);
 }
 
@@ -1266,7 +1309,7 @@ static void linebreak(Parser * p)
 	 * | */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "linebreak()\n");
+	fputs("linebreak()\n", stderr);
 #endif
 	if(p->token != NULL && token_in_set(p->token, TS_NEWLINE_LIST))
 		newline_list(p);
@@ -1278,7 +1321,7 @@ static void newline_list(Parser * p)
 	/* NEWLINE { NEWLINE } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "newline_list()\n");
+	fputs("newline_list()\n", stderr);
 #endif
 	if(p->token != NULL && p->token->code != TC_NEWLINE)
 		return parser_error(p, "%s", "newline expected");
