@@ -86,7 +86,7 @@ static void parser_free(Parser * parser)
 	unsigned int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "parser_free()\n");
+	fputs("parser_free()\n", stderr);
 #endif
 	if(parser->token == NULL && parser->tokens_cnt > 0)
 		/* FIXME ugly workaround for newlines */
@@ -162,12 +162,14 @@ static int parser_check_word(Parser * parser, char const * word)
 }
 
 
+/* parser_exec */
 static int _exec_cmd(Parser * parser, unsigned int * pos, int skip);
 static int _exec_for(Parser * parser, unsigned int * pos, int skip);
 static int _exec_if(Parser * parser, unsigned int * pos, int skip);
 static int _exec_case(Parser * parser, unsigned int * pos, int skip);
 static int _exec_until(Parser * parser, unsigned int * pos, int skip);
 static int _exec_while(Parser * parser, unsigned int * pos, int skip);
+
 static int parser_exec(Parser * parser, unsigned int * pos, int skip)
 {
 	int ret = skip;

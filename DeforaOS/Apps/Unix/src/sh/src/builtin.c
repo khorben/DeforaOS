@@ -300,7 +300,7 @@ int builtin_jobs(int argc, char * argv[])
 			default:
 				return _jobs_usage();
 		}
-	return func(argc-optind, &argv[optind]);
+	return func(argc - optind, &argv[optind]);
 }
 
 static int _jobs_usage(void)
