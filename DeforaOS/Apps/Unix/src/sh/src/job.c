@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include "sh.h"
 #include "job.h"
 
@@ -43,10 +44,11 @@ static unsigned int jobs_cnt = 0;
 /* job_add */
 static int _add_wait(unsigned int id);
 static void _add_wait_all(void);
+
 int job_add(char * command, pid_t pid, JobStatus status)
 {
-	Job * p;
 	int ret = 0;
+	Job * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s%u%s", "job_add(", jobs_cnt+1, ")\n");
@@ -77,7 +79,7 @@ static int _add_wait(unsigned int id)
 	int ret;
 
 	while((ret = waitpid(jobs[id-1].pid, &status, 0)) != -1)
-		if(WIFEXITED(status))
+		if(WIFEXITED(status) || WIFSIGNALED(status))
 			break;
 	if(ret == -1)
 		return sh_error("waitpid", -1);
@@ -97,11 +99,24 @@ static void _add_wait_all(void)
 		for(i = 0; i < jobs_cnt && jobs[i].pid != pid; i++);
 		if(i == jobs_cnt)
 			continue;
-		_job_print(i+1, 'X', "FIXME");
-		_job_remove(i+1);
+		_job_print(i + 1, 'X', "FIXME");
+		_job_remove(i + 1);
 	}
 	if(pid == -1)
 		sh_error("waitpid", 0);
+}
+
+
+/* job_kill_status */
+int job_kill_status(int signum, JobStatus status)
+{
+	int ret = 0;
+	unsigned int i;
+
+	for(i = 0; i < jobs_cnt; i++)
+		if(jobs[i].status == status)
+			ret |= kill(jobs[i].pid, signum);
+	return ret == 0 ? 0 : 1;
 }
 
 

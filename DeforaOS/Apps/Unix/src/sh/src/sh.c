@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 #include "parser.h"
 #include "job.h"
 #include "sh.h"
@@ -116,6 +117,25 @@ char ** sh_export(void)
 }
 
 
+/* sh_handler */
+static void _handler_sigint(void);
+
+void sh_handler(int signum)
+{
+	switch(signum)
+	{
+		case SIGINT:
+			_handler_sigint();
+			break;
+	}
+}
+
+static void _handler_sigint(void)
+{
+	job_kill_status(SIGINT, JS_WAIT);
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -135,5 +155,6 @@ int main(int argc, char * argv[])
 		return _usage();
 	if(prefs & PREFS_c && optind == argc)
 		return _usage();
+	signal(SIGINT, sh_handler);
 	return _sh(&prefs, argc - optind, &argv[optind]);
 }

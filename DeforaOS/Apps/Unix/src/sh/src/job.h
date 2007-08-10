@@ -26,6 +26,7 @@ typedef enum _JobStatus { JS_RUNNING, JS_WAIT } JobStatus;
 
 /* functions */
 int job_add(char * command, pid_t pid, JobStatus status);
+int job_kill_status(int signum, JobStatus status);
 /* TODO
 switch to job X
 send job Y to background */

@@ -35,5 +35,6 @@ extern char ** export;
 /* functions */
 int sh_error(char * message, int ret);
 char ** sh_export(void);
+void sh_handler(int signum);
 
 #endif /* !SH_SH_H */
