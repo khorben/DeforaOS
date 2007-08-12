@@ -401,9 +401,9 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 static int _usage(void)
 {
 	fputs("Usage: copy [-fip] source_file target_file\n\
-       cp [-fip] source_file ... target\n\
-       cp -R [-H | -L | -P][-fip] source_file ... target\n\
-       cp -r [-H | -L | -P][-fip] source_file ... target\n\
+       copy [-fip] source_file ... target\n\
+       copy -R [-H | -L | -P][-fip] source_file ... target\n\
+       copy -r [-H | -L | -P][-fip] source_file ... target\n\
   -f	Do not prompt for confirmation if the destination path exists\n\
   -i	Prompt for confirmation if the destination path exists\n\
   -p	Duplicate characteristics of the source files\n\
