@@ -426,12 +426,12 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 				case AICT_BOOL:
 				case AICT_INT8:
 				case AICT_UINT8:
-					i8 = va_arg(arg, int8_t);
+					i8 = va_arg(arg, int);
 					p = &i8;
 					break;
 				case AICT_INT16:
 				case AICT_UINT16:
-					i16 = htons(va_arg(arg, int16_t));
+					i16 = htons(va_arg(arg, int));
 					p = &i16;
 					break;
 				case AICT_INT32:
