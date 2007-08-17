@@ -69,7 +69,7 @@ static int _rmdir_p(char * pathname)
 static int _usage(void)
 {
 	fputs("Usage: rmdir [-p] dir...\n\
-  -p    remove all directories in a pathname\n", stderr);
+  -p	Remove all directories in a pathname\n", stderr);
 	return 1;
 }
 

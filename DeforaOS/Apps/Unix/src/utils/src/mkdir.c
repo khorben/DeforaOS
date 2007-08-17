@@ -84,8 +84,8 @@ static int _mkdir_p(mode_t mode, char * pathname)
 static int _usage(void)
 {
 	fputs("Usage: mkdir [-p][-m mode] dir...\n\
-  -p    create any missing intermediate pathname components\n\
-  -m    file permission bits of the newly-created directory\n", stderr);
+  -p	Create any missing intermediate pathname components\n\
+  -m	File permission bits of the newly-created directory\n", stderr);
 	return 1;
 }
 

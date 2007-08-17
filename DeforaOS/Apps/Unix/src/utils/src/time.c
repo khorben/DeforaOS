@@ -99,7 +99,7 @@ static int _time_print(long real, long user, long sys)
 static int _usage(void)
 {
 	fputs("Usage: time [-p] utility [argument...]\n\
-  -p    force the POSIX locale\n", stderr);
+  -p	Force the POSIX locale\n", stderr);
 	return 1;
 }
 

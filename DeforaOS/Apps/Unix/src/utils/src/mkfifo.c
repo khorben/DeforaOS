@@ -51,7 +51,7 @@ static int _mkfifo_error(char * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: mkfifo [-m mode] file...\n\
-  -m	create fifo with the specified mode value\n", stderr);
+  -m	Create fifo with the specified mode value\n", stderr);
 	return 1;
 }
 

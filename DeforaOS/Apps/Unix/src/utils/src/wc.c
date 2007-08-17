@@ -122,10 +122,10 @@ static void _wc_print(int flags, unsigned int cm, unsigned int l,
 static int _usage(void)
 {
 	fputs("Usage: wc [-c|-m][-lw][file...]\n\
-  -c    write the number of bytes\n\
-  -m    write the number of characters\n\
-  -l    write the number of lines\n\
-  -w    write the number of words\n", stderr);
+  -c	Write the number of bytes\n\
+  -m	Write the number of characters\n\
+  -l	Write the number of lines\n\
+  -w	Write the number of words\n", stderr);
 	return 1;
 }
 

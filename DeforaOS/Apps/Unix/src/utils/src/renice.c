@@ -60,10 +60,10 @@ static int _renice_error(char * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: renice -n increment [-g | -p | -u] ID...\n\
-  -n	priority to set\n\
-  -g	process group IDs\n\
-  -p	integer process IDs\n\
-  -u	user IDs\n", stderr);
+  -n	Priority to set\n\
+  -g	Process group IDs\n\
+  -p	Integer process IDs\n\
+  -u	User IDs\n", stderr);
 	return 1;
 }
 

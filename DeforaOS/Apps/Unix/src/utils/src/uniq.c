@@ -159,10 +159,10 @@ static int _usage(void)
 {
 	fputs("Usage: uniq [-c|-d|-u][-f fields][-s char][input_file\
  [output_file]]\n\
-  -c    precede each output line with a count of the repetitions for the line\n\
-  -d    suppress the writing of lines that are not repeated\n\
-  -s    ignore the first char characters when doing comparisons\n\
-  -u    suppress the writing of lines that are repeated\n", stderr);
+  -c	Precede each output line with a count of the repetitions for the line\n\
+  -d	Suppress the writing of lines that are not repeated\n\
+  -s	Ignore the first char characters when doing comparisons\n\
+  -u	Suppress the writing of lines that are repeated\n", stderr);
 	return 1;
 }
 

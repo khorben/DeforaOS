@@ -53,12 +53,12 @@ static int _uname(int m, int n, int r, int s, int v)
 static int _usage(void)
 {
 	fputs("Usage: uname [-snrvma]\n\
-  -s    operating system name\n\
-  -n    name of this node on the network\n\
-  -r    operating system release name\n\
-  -v    operating system version\n\
-  -m    hardware type\n\
-  -a    all the options above\n", stderr);
+  -s	Operating system name\n\
+  -n	Name of this node on the network\n\
+  -r	Operating system release name\n\
+  -v	Operating system version\n\
+  -m	Hardware type\n\
+  -a	All the options above\n", stderr);
 	return 1;
 }
 

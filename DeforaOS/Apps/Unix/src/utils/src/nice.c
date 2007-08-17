@@ -45,7 +45,7 @@ static int _nice_error(char * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: nice [-n increment] utility [argument...]\n\
-  -n	priority to set\n", stderr);
+  -n	Priority to set\n", stderr);
 	return 1;
 }
 

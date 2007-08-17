@@ -115,8 +115,8 @@ static int _cmp_files(OutputType ot, char const * file1, char const * file2,
 static int _usage(void)
 {
 	fputs("Usage: cmp [-l|-s] file1 file2\n\
-  -l    write the byte number and the differing byte for each difference\n\
-  -s    write nothing for differing bytes\n", stderr);
+  -l	Write the byte number and the differing byte for each difference\n\
+  -s	Write nothing for differing bytes\n", stderr);
 	return 2;
 }
 

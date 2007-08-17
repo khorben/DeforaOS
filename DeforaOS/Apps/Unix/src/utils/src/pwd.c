@@ -97,8 +97,8 @@ static int _pwd_error(char const * message, int ret)
 static int _usage(void)
 {
 	fputs("Usage: pwd [-L|-P]\n\
-  -L    avoid \".\" or \"..\" filenames\n\
-  -P    avoid symbolic links\n", stderr);
+  -L	Avoid \".\" or \"..\" filenames\n\
+  -P	Avoid symbolic links\n", stderr);
 	return 1;
 }
 

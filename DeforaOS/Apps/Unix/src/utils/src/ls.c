@@ -684,18 +684,18 @@ static int _ls_do_dirs(Prefs * prefs, int argc, SList * dirs)
 static int _usage(void)
 {
 	fputs("Usage: ls [-CFRacdilqrtu1][-H | -L]\n\
-  -C	write multi-column output\n\
-  -F	write a symbol after files names depending on their type\n\
-  -R	recursively list subdirectories encountered\n\
-  -a	write out all hidden directory entries\n\
-  -c	use time of last modification of file status\n\
-  -d	treat directories like files\n\
-  -l	write out in long format\n\
-  -t	sort with the last modified file first\n\
-  -u	use time of last access\n\
-  -1	force output to be one entry per line\n\
-  -H	dereference symbolic links\n\
-  -L	evaluate symbolic links\n", stderr);
+  -C	Write multi-column output\n\
+  -F	Write a symbol after files names depending on their type\n\
+  -R	Recursively list subdirectories encountered\n\
+  -a	Write out all hidden directory entries\n\
+  -c	Use time of last modification of file status\n\
+  -d	Treat directories like files\n\
+  -l	Write out in long format\n\
+  -t	Sort with the last modified file first\n\
+  -u	Use time of last access\n\
+  -1	Force output to be one entry per line\n\
+  -H	Dereference symbolic links\n\
+  -L	Evaluate symbolic links\n", stderr);
 	return 1;
 }
 

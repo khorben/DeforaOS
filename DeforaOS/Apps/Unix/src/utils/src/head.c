@@ -70,7 +70,7 @@ static int _head_do(int flgn, char * filename)
 static int _usage(void)
 {
 	fputs("Usage: head [-n number][file...]\n\
-  -n    print first number lines on standard output\n", stderr);
+  -n	Print first number lines on standard output\n", stderr);
 	return 1;
 }
 

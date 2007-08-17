@@ -120,7 +120,7 @@ static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
 static int _usage(void)
 {
 	fputs("Usage: chmod [-R] mode file\n\
-  -R	recursively change file mode bits\n", stderr);
+  -R	Recursively change file mode bits\n", stderr);
 	return 1;
 }
 

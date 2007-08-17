@@ -56,8 +56,8 @@ static int _usage(void)
 {
 	fputs("Usage: kill -s signal_name pid...\n\
        kill -l [exit_status]\n\
-  -l    write all signal values supported\n\
-  -s    specify the signal to send\n", stderr);
+  -l	Write all signal values supported\n\
+  -s	Specify the signal to send\n", stderr);
 	return 1;
 }
 

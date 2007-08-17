@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with utils; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* TODO
+ * - implement and use _ln_error() */
 
 
 
@@ -106,9 +108,9 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 static int _usage(void)
 {
 	fputs("Usage: ln [-fs] source_file target_file\n\
-        ln [-fs] source_file ... target_dir\n\
-  -f    force existing destination pathnames to be removed\n\
-  -s    create symbolic links instead of hard links\n", stderr);
+       ln [-fs] source_file ... target_dir\n\
+  -f	Force existing destination pathnames to be removed\n\
+  -s	Create symbolic links instead of hard links\n", stderr);
 	return 1;
 }
 

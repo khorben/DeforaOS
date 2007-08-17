@@ -97,7 +97,7 @@ static int _write_nonbuf(int c)
 static int _usage(void)
 {
 	fputs("Usage: cat [-u][file ...]\n\
-  -u    write without delay\n", stderr);
+  -u	Write without delay\n", stderr);
 	return 1;
 }
 

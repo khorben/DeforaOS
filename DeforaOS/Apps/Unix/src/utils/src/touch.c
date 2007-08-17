@@ -293,11 +293,11 @@ static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
 static int _usage(void)
 {
 	fputs("Usage: touch [-acm][-r ref_file|-t time] file...\n\
-  -a	change the access time\n\
-  -c	do not create file if it doesn't exist\n\
-  -m	change the modification time\n\
-  -r	use the time of the given file\n\
-  -t	use the specified time as [[CC]YY]MMDDhhmm[.SS]\n", stderr);
+  -a	Change the access time\n\
+  -c	Do not create file if it doesn't exist\n\
+  -m	Change the modification time\n\
+  -r	Use the time of the given file\n\
+  -t	Use the specified time as [[CC]YY]MMDDhhmm[.SS]\n", stderr);
 	return 1;
 }
 

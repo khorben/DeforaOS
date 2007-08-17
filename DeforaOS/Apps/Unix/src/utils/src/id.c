@@ -252,11 +252,11 @@ static struct group * _print_gid(gid_t gid)
 static int _usage(void)
 {
 	fputs("Usage: id [-Ggu][-nr] [user]\n\
-  -G    output all different group IDs\n\
-  -g    output only the effective group ID\n\
-  -u    output only the effective user ID\n\
-  -n    output the name as a string\n\
-  -r    output the real ID instead of the effective ID\n", stderr);
+  -G	Output all different group IDs\n\
+  -g	Output only the effective group ID\n\
+  -u	Output only the effective user ID\n\
+  -n	Output the name as a string\n\
+  -r	Output the real ID instead of the effective ID\n", stderr);
 	return 1;
 }
 
