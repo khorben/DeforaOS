@@ -1,5 +1,5 @@
 PACKAGE	= configure
-VERSION	= 0.0.4
+VERSION	= 0.0.5
 SUBDIRS	= src
 RM	= rm -f
 LN	= ln -sf
