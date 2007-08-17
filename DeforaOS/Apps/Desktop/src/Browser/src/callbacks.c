@@ -1,18 +1,20 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
-/* Browser is not free software; you can redistribute it and/or modify it
- * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
- * 3.0 Unported as published by the Creative Commons organization.
- *
- * Browser is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the Creative Commons Attribution-NonCommercial-
- * ShareAlike 3.0 Unported license for more details.
- *
- * You should have received a copy of the Creative Commons Attribution-
- * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
- * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+static char const _license[] =
+"Browser is not free software; you can redistribute it and/or modify it\n"
+"under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike\n"
+"3.0 Unported as published by the Creative Commons organization.\n"
+"\n"
+"Browser is distributed in the hope that it will be useful, but WITHOUT ANY\n"
+"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
+"FOR A PARTICULAR PURPOSE. See the Creative Commons Attribution-\n"
+"NonCommercial-ShareAlike 3.0 Unported license for more details.\n"
+"\n"
+"You should have received a copy of the Creative Commons Attribution-\n"
+"NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to\n"
+"http://creativecommons.org/licenses/by-nc-sa/3.0/";
 
 
 
@@ -38,8 +40,6 @@ static char const * _authors[] =
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-static char const _copyright[] = "Copyright (c) 2007 Pierre Pronchery";
-static char const _license[] = "GPL version 2"; /* FIXME complete */
 
 
 /* callbacks */
@@ -416,17 +416,10 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 	GtkWidget * window;
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gsize cnt = 65536;
-	gchar * buf;
-	
+
 	if(browser->ab_window != NULL)
 	{
 		gtk_widget_show(browser->ab_window);
-		return;
-	}
-	if((buf = malloc(sizeof(*buf) * cnt)) == NULL)
-	{
-		browser_error(browser, "malloc", 0);
 		return;
 	}
 	browser->ab_window = gtk_about_dialog_new();
@@ -437,13 +430,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
-	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
-				NULL) == TRUE)
-		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
-	else
-		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window),
-				_license);
-	free(buf);
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), _license);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
