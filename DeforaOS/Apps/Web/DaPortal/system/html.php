@@ -21,35 +21,9 @@
 function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 		$params = FALSE)
 {
-	global $friendlylinks;
-
-	$link = $_SERVER['SCRIPT_NAME'];
-	if(isset($friendlylinks) && $friendlylinks == 1)
-	{
-		$link .= '/'.$module;
-		if($action != FALSE && $action != '' && $action != 'default')
-			$link .= '/'.$action;
-		if($id != FALSE && is_numeric($id))
-			$link .= '/'.$id;
-		if($title != FALSE && $title != '')
-		{
-			$title = str_replace(array(' ', '/', '?'), '-',
-					htmlentities($title));
-			$link .= '/'._html_safe($title);
-		}
-		if($params != FALSE && $params != '')
-			$link .= '?'._html_safe_link($params);
-	}
-	else
-	{
-		$link .= '?module='.$module;
-		if($action != FALSE && $action != '' && $action != 'default')
-			$link .= '&amp;action='.$action;
-		if($id != FALSE && is_numeric($id))
-			$link .= '&amp;id='.$id;
-		if($params != FALSE && $params != '')
-			$link .= '&amp;'._html_safe_link($params);
-	}
+	$link = _module_link($module, $action, $id, $title, $params);
+	$link = htmlentities($link);
+	$link = str_replace('&amp;amp;', '%26', $link);
 	return $link;
 }
 
@@ -130,12 +104,6 @@ function _html_safe($string)
 }
 
 
-function _html_safe_link($string)
-{
-	return str_replace('&amp;amp;', '%26', htmlentities($string));
-}
-
-
 function _start_css_themes($theme)
 {
 	if(($dir = @opendir('themes')) == FALSE)
@@ -170,7 +138,12 @@ function _html_start()
 	_start_css_themes($theme);
 	if(is_readable($_SERVER['DOCUMENT_ROOT'].'/favicon.ico'))
 		print('		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>'."\n");
-	print('		<base href="'.(isset($_SERVER['HTTPS']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'"/>
+	print('		<base href="');
+	if(isset($_SERVER['HTTPS']))
+		print('https://'.$_SERVER['SERVER_NAME']);
+	else
+		print('http://'.$_SERVER['SERVER_NAME']);
+	print(dirname($_SERVER['SCRIPT_NAME']).'"/>
 	</head>
 	<body>'."\n");
 }
