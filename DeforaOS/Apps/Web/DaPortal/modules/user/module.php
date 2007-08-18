@@ -32,6 +32,7 @@ $text['MY_CONTENT'] = 'My content';
 $text['MY_PROFILE'] = 'My profile';
 $text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
+$text['THEME'] = 'Theme';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
 $text['USER_MODIFICATION'] = 'User modification';
@@ -615,11 +616,19 @@ function user_system($args)
 
 function _system_appearance($args)
 {
+	global $debug, $user_id;
+
 	unset($_SESSION['theme']);
 	if(isset($args['theme']) && strchr($args['theme'], '/') == FALSE
 			&& is_readable('themes/'.$args['theme'].'.css'))
 		$_SESSION['theme'] = $args['theme'];
-	header('Location: index.php?module=user&action=appearance');
+	if(_user_admin($user_id))
+	{
+		unset($_SESSION['debug']);
+		if(isset($args['debug']))
+			$_SESSION['debug'] = 1;
+	}
+	header('Location: '._module_link('user', 'appearance'));
 }
 
 
