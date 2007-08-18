@@ -22,6 +22,17 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
+//lang
+$text = array();
+$text['CONTENT_ADMINISTRATION'] = 'Content administration';
+global $lang;
+if($lang == 'fr')
+{
+	$text['CONTENT_ADMINISTRATION'] = 'Gestion des contenus';
+}
+_lang($text);
+
+
 function content_admin($args)
 {
 	global $user_id;
@@ -31,20 +42,20 @@ function content_admin($args)
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
 		return content_modify(array('id' => $args['id']));
-	print('<h1 class="title content">Content administration</h1>'."\n");
-	$contents = _sql_array('SELECT content_id AS id, timestamp AS date'
-			.', name AS module, username, title AS name'
-			.', daportal_content.enabled AS enabled'
-			.' FROM daportal_content, daportal_module'
-			.', daportal_user'
-			.' WHERE daportal_content.module_id'
-			.'=daportal_module.module_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' ORDER BY timestamp DESC;');
+	print('<h1 class="title content">'._html_safe(CONTENT_ADMINISTRATION)
+			."</h1>\n");
+	$sql = 'SELECT content_id AS id, timestamp AS date, name AS module'
+		.', daportal_user.user_id AS user_id, username, title AS name'
+		.', daportal_content.enabled AS enabled FROM daportal_content'
+		.', daportal_module, daportal_user WHERE'
+		.' daportal_content.module_id=daportal_module.module_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' ORDER BY timestamp DESC';
+	$contents = _sql_array($sql);
 	if(!is_array($contents))
 		return _error('Could not list contents');
-	$count = count($contents);
-	for($i = 0; $i < $count; $i++)
+	$cnt = count($contents);
+	for($i = 0; $i < $cnt; $i++)
 	{
 		$contents[$i]['icon'] = '';
 		if(($d = _module_desktop($contents[$i]['module'])) != FALSE)
@@ -52,8 +63,10 @@ function content_admin($args)
 		$contents[$i]['thumbnail'] = 'icons/48x48/'
 			.$contents[$i]['icon'];
 		$contents[$i]['icon'] = 'icons/16x16/'.$contents[$i]['icon'];
-		$contents[$i]['name'] = _html_safe_link($contents[$i]['name']);
-		$contents[$i]['username'] = _html_safe($contents[$i]['username']);
+		$contents[$i]['name'] = _html_safe($contents[$i]['name']);
+		$contents[$i]['username'] = '<a href="'._html_link('user',
+			FALSE, $contents[$i]['user_id']).'">'
+				._html_safe($contents[$i]['username']).'</a>';
 		$contents[$i]['module'] = 'content';
 		$contents[$i]['apply_module'] = 'content';
 		$contents[$i]['action'] = 'admin';
