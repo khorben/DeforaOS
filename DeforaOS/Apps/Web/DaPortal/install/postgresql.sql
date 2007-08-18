@@ -24,6 +24,7 @@ CREATE TABLE daportal_config (
 	PRIMARY KEY (module_id, name)
 );
 
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'globs', '/usr/share/mime/globs');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'lang', 'en');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'title', 'DaPortal');
 

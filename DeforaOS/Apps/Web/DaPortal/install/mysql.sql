@@ -23,6 +23,8 @@ CREATE TABLE daportal_config (
 ) TYPE=InnoDB;
 ALTER TABLE daportal_config
 	ADD CONSTRAINT daportal_config_ibfk_1 FOREIGN KEY (module_id) REFERENCES daportal_module (module_id);
+
+INSERT INTO daportal_config (module_id, name, value) VALUES (1, 'globs', '/usr/share/mime/globs');
 INSERT INTO daportal_config (module_id, name, value) VALUES (1, 'lang', 'en');
 INSERT INTO daportal_config (module_id, name, value) VALUES (1, 'title', 'DaPortal');
 
@@ -144,3 +146,5 @@ CREATE TABLE daportal_download (
 	KEY content_id (content_id, parent)
 	) TYPE=InnoDB;
 INSERT INTO daportal_module (name, enabled) VALUES ('download', 1);
+INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp');
+
