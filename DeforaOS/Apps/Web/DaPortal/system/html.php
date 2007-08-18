@@ -140,9 +140,13 @@ function _html_start()
 		print('		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>'."\n");
 	print('		<base href="');
 	if(isset($_SERVER['HTTPS']))
-		print('https://'.$_SERVER['SERVER_NAME']);
+		print('https://'.$_SERVER['SERVER_NAME']
+				.($_SERVER['SERVER_PORT'] != '443')
+				? ':'.$_SERVER['SERVER_PORT'] : '');
 	else
-		print('http://'.$_SERVER['SERVER_NAME']);
+		print('http://'.$_SERVER['SERVER_NAME']
+				.($_SERVER['SERVER_PORT'] != '80')
+				? ':'.$_SERVER['SERVER_PORT'] : '');
 	print(dirname($_SERVER['SCRIPT_NAME']).'"/>
 	</head>
 	<body>'."\n");
