@@ -199,16 +199,14 @@ function user_config_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(!isset($args['user_register'])) /* XXX checkbox is not ticked */
-		$args['user_register'] = SQL_FALSE;
-	if(!isset($args['user_manual'])) /* XXX checkbox is not ticked */
-		$args['user_manual'] = SQL_FALSE;
+	$args['user_register'] = isset($args['user_register']) ? TRUE : FALSE;
+	$args['user_manual'] = isset($args['user_manual']) ? TRUE : FALSE;
 	$keys = array_keys($args);
-	foreach($keys as $k)
+	foreach($keys as $k) /* FIXME read values from configuration instead */
 		if(ereg('^user_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('user', $regs[1], $args[$k], 0);
-	header('Location: index.php?module=user&action=admin');
-	_debug();
+	require_once('./system/html.php');
+	header('Location: '._html_link('user', 'admin'));
 	exit(0);
 }
 
