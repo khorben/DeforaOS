@@ -40,6 +40,7 @@ $text['REPORT_A_BUG'] = 'Rapporter un bug';
 $text['REPORT_BUG_FOR'] = 'Rapporter un bug pour';
 $text['REVISION'] = 'Révision';
 $text['SCREENSHOTS'] = "Captures d'écran";
+$text['SETTINGS'] = 'Configuration';
 $text['STATE'] = 'Etat';
 $text['STATE_CHANGED_TO'] = 'Etat changé à';
 $text['SUBMITTER'] = 'Envoyé par';

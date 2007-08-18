@@ -57,6 +57,7 @@ $text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['REPORT_LIST'] = 'Report list';
 $text['REVISION'] = 'Revision';
 $text['SCREENSHOTS'] = 'Screenshots';
+$text['SETTINGS'] = 'Settings';
 $text['STATE'] = 'State';
 $text['SUBMITTER'] = 'Submitter';
 $text['STATE_CHANGED_TO'] = 'State changed to';
@@ -120,7 +121,7 @@ function project_admin($args)
 			.'</h1>'."\n");
 	if(($configs = _config_list('project')))
 	{
-		print('<h2 class="title settings"/>Settings</h2>'."\n");
+		print('<h2 class="title settings"/>'.SETTINGS.'</h2>'."\n");
 		$module = 'project';
 		$action = 'config_update';
 		include('./system/config.tpl');
