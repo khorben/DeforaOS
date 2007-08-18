@@ -126,7 +126,7 @@ function _start_css_themes($theme)
 
 function _html_start()
 {
-	global $title, $theme;
+	global $title, $theme, $friendlylinks;
 
 	readfile('./html/doctype.html');
 	print('	<head>
@@ -138,18 +138,20 @@ function _html_start()
 	_start_css_themes($theme);
 	if(is_readable($_SERVER['DOCUMENT_ROOT'].'/favicon.ico'))
 		print('		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>'."\n");
-	print('		<base href="');
-	if(isset($_SERVER['HTTPS']))
-		print('https://'.$_SERVER['SERVER_NAME']
-				.($_SERVER['SERVER_PORT'] != '443')
-				? ':'.$_SERVER['SERVER_PORT'] : '');
-	else
-		print('http://'.$_SERVER['SERVER_NAME']
-				.($_SERVER['SERVER_PORT'] != '80')
-				? ':'.$_SERVER['SERVER_PORT'] : '');
-	print(dirname($_SERVER['SCRIPT_NAME']).'"/>
-	</head>
-	<body>'."\n");
+	if($friendlylinks == 1)
+	{
+		print("\t\t<base href=\"");
+		if(isset($_SERVER['HTTPS']))
+			print('https://'.$_SERVER['SERVER_NAME']
+					.($_SERVER['SERVER_PORT'] != '443')
+					? ':'.$_SERVER['SERVER_PORT'] : '');
+		else
+			print('http://'.$_SERVER['SERVER_NAME']
+					.($_SERVER['SERVER_PORT'] != '80')
+					? ':'.$_SERVER['SERVER_PORT'] : '');
+		print(dirname($_SERVER['SCRIPT_NAME']).'"'."/>\n");
+	}
+	print("\t</head>\n\t<body>\n");
 }
 
 
