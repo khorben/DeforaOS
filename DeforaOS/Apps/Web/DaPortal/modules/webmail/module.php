@@ -135,7 +135,7 @@ function webmail_default($args)
 	{
 		if(!($header = imap_headerinfo($mbox, $i, 80, 80)))
 			continue;
-		$message = array('link' => _html_link('webmail', 'read',
+		$message = array('link' => _module_link('webmail', 'read',
 					imap_uid($mbox, $i), '',
 					'folder='._html_safe($folder));
 		$message['icon'] = 'mail_read';
