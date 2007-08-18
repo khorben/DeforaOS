@@ -30,6 +30,7 @@ CREATE TABLE daportal_config_enum_type (
 INSERT INTO daportal_config_enum_type (name) VALUES ('bool');
 INSERT INTO daportal_config_enum_type (name) VALUES ('int');
 INSERT INTO daportal_config_enum_type (name) VALUES ('string');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'globs', '/usr/share/mime/globs');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'lang', 'en');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('1', 'string', 'title', 'DaPortal');
 
@@ -193,4 +194,8 @@ CREATE TABLE daportal_download (
 	FOREIGN KEY (parent) REFERENCES daportal_download (download_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('download', '1');
-INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('15', 'string', 'root', '/tmp');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('13', 'string', 'root', '/tmp');
+
+
+/* module: article */
+INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
