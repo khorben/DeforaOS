@@ -19,21 +19,27 @@
 
 function _mime_from_ext($filename)
 {
-	static $globfile = 0;
-	static $globs = array();
+	static $types = array();
 
-	if($globfile == 0 && is_readable('/usr/share/mime/globs'))
+	if(count($types) == 0)
 	{
-		if(($globfile = file_get_contents('/usr/share/mime/globs'))
-				== FALSE)
+		if(($globs = _config_get('admin', 'globs')) == FALSE)
+		{
+			_error('MIME globs file is not defined');
 			return 'default';
-		$globfile = explode("\n", $globfile);
-		array_shift($globfile);
-		array_shift($globfile);
-		foreach($globfile as $l)
-			$globs[] = explode(':', $l);
+		}
+		if(($globs = file_get_contents($globs)) == FALSE)
+		{
+			_error('Could not read MIME globs file');
+			return 'default';
+		}
+		$globs = explode("\n", $globs);
+		array_shift($globs);
+		array_shift($globs);
+		foreach($globs as $l)
+			$types[] = explode(':', $l);
 	}
-	foreach($globs as $g)
+	foreach($types as $g)
 		if(isset($g[1]) && fnmatch($g[1], $filename))
 			return $g[0];
 	return 'default';
