@@ -142,13 +142,17 @@ function _html_start()
 	{
 		print("\t\t<base href=\"");
 		if(isset($_SERVER['HTTPS']))
-			print('https://'.$_SERVER['SERVER_NAME']
-					.($_SERVER['SERVER_PORT'] != '443')
-					? ':'.$_SERVER['SERVER_PORT'] : '');
+		{
+			print('https://'.$_SERVER['SERVER_NAME']);
+			if($_SERVER['SERVER_PORT'] != '443')
+				print(':'.$_SERVER['SERVER_PORT']);
+		}
 		else
-			print('http://'.$_SERVER['SERVER_NAME']
-					.($_SERVER['SERVER_PORT'] != '80')
-					? ':'.$_SERVER['SERVER_PORT'] : '');
+		{
+			print('http://'.$_SERVER['SERVER_NAME']);
+			if($_SERVER['SERVER_PORT'] != '80')
+				print(':'.$_SERVER['SERVER_PORT']);
+		}
 		print(dirname($_SERVER['SCRIPT_NAME']).'"'."/>\n");
 	}
 	print("\t</head>\n\t<body>\n");
