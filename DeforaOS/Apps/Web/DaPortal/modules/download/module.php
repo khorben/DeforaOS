@@ -136,7 +136,7 @@ function download_config_update($args)
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^download_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('download', $regs[1], $args[$k], 0);
+			_config_set('download', $regs[1], $args[$k]);
 	require_once('./system/html.php');
 	header('Location: '._html_link('download', 'admin'));
 	exit(0);

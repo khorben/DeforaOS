@@ -181,7 +181,6 @@ function user_appearance($args)
 	print('<h1 class="title appearance">'._html_safe(APPEARANCE)."</h1>\n");
 	$themes = array();
 	if(($dir = opendir('themes')) != FALSE)
-	{
 		while(($de = readdir($dir)) != FALSE)
 		{
 			if(($len = strlen($de)) < 5
@@ -189,7 +188,6 @@ function user_appearance($args)
 				continue;
 			$themes[] = substr($de, 0, -4);
 		}
-	}
 	include('./modules/user/appearance.tpl');
 }
 

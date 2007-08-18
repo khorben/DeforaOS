@@ -154,8 +154,8 @@ function comment_config_update($args)
 	require_once('./system/user.php');
 	if($_SERVER['REQUEST_METHOD'] != 'POST' || !_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	$args['comment_anonymous'] = isset($args['comment_anonymous'])
-		? SQL_TRUE : SQL_FALSE;
+	$args['comment_anonymous'] = isset($args['comment_anonymous']) ? TRUE
+		: FALSE;
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^comment_([a-zA-Z_]+)$', $k, $regs))
