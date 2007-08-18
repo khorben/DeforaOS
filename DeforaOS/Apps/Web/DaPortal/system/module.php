@@ -19,7 +19,7 @@
 
 function _module($module = '', $action = '', $args = FALSE)
 {
-	global $module_id, $module_name, $html;
+	global $module_id, $module_name;
 
 	if(strlen($module))
 	{
@@ -125,6 +125,43 @@ function _module_id_tag($module, $id, $tag)
 		return TRUE;
 	//FIXME some modules have long filenames, but it's ugly to do it here
 	return FALSE;
+}
+
+
+//PRE	$module, $action and $params are trusted
+function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
+		$params = FALSE)
+{
+	global $friendlylinks;
+
+	$link = $_SERVER['SCRIPT_NAME'];
+	if($friendlylinks == 1)
+	{
+		$link .= '/'.$module;
+		if($action != FALSE && $action != '' && $action != 'default')
+			$link .= '/'.$action;
+		if($id != FALSE && is_numeric($id))
+			$link .= '/'.$id;
+		if($title != FALSE && $title != '')
+		{
+			$title = str_replace(array(' ', '/', '?', '&', '%'),
+					'-', $title);
+			$link .= '/'.$title;
+		}
+		if($params != FALSE && $params != '')
+			$link .= '?'.$params;
+	}
+	else
+	{
+		$link .= '?module='.$module;
+		if($action != FALSE && $action != '' && $action != 'default')
+			$link .= '&action='.$action;
+		if($id != FALSE && is_numeric($id))
+			$link .= '&id='.$id;
+		if($params != FALSE && $params != '')
+			$link .= '&'.$params;
+	}
+	return $link;
 }
 
 
