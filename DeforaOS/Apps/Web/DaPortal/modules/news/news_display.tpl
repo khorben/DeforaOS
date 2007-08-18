@@ -1,6 +1,6 @@
 <div class="news entry">
 	<div class="title"><span><span><span><?php if(!$long) { ?><a href="<?php echo _html_link('news', '', $news['id'], $news['title']); ?>"><?php } ?><?php echo _html_safe($news['title']); ?><?php if(!$long) { ?></a><?php } ?></span></span></span></div>
-	<div class="author"><?php echo _html_safe(NEWS_BY); ?> <a href="<?php echo _html_link('user', '', $news['user_id'], $news['username']); ?>"><?php echo _html_safe($news['username']); ?></a></div>
+	<div class="author"><?php echo _html_safe(NEWS._BY_); ?> <a href="<?php echo _html_link('user', '', $news['user_id'], $news['username']); ?>"><?php echo _html_safe($news['username']); ?></a></div>
 	<div class="date"><?php echo _html_safe(NEWS_ON); ?> <?php echo _html_safe($news['date']); ?></div>
 	<div class="content"><?php echo _html_pre($news['content']); ?></div>
 	<div class="status">
