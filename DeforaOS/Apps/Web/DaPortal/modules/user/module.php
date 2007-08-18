@@ -134,7 +134,7 @@ function user_admin($args)
 		$users[$i]['action'] = 'admin';
 		$users[$i]['icon'] = 'icons/48x48/user.png';
 		$users[$i]['thumbnail'] = 'icons/48x48/user.png';
-		$users[$i]['name'] = _html_safe_link($users[$i]['name']);
+		$users[$i]['name'] = _html_safe($users[$i]['name']);
 		$users[$i]['apply_module'] = 'user';
 		$users[$i]['apply_id'] = $users[$i]['id'];
 		$users[$i]['enabled'] = $users[$i]['enabled'] == SQL_TRUE
@@ -156,7 +156,7 @@ function user_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_USER, 'class' => 'new',
-			'link' => _html_link('user', 'new'));
+			'link' => _module_link('user', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
@@ -205,8 +205,7 @@ function user_config_update($args)
 	foreach($keys as $k) /* FIXME read values from configuration instead */
 		if(ereg('^user_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('user', $regs[1], $args[$k], 0);
-	require_once('./system/html.php');
-	header('Location: '._html_link('user', 'admin'));
+	header('Location: '._module_link('user', 'admin'));
 	exit(0);
 }
 

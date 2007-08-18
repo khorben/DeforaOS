@@ -38,7 +38,7 @@ function _debug()
 		$sec++;
 	}
 	print('<div class="info"><b>Info:</b> Page execution duration: '
-			.$sec.'s and '.ceil($usec/1000).'ms</div>'."\n");
+			.$sec.'s and '.ceil($usec / 1000).'ms</div>'."\n");
 	print('</div>'."\n");
 }
 
