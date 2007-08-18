@@ -70,7 +70,7 @@ function _config_set($module, $name, $value, $overwrite = FALSE)
 		return FALSE;
 	$res = $res[0];
 	if($res['type'] == 'bool')
-		$value = ($value === SQL_FALSE) ? SQL_FALSE : SQL_TRUE;
+		$value = ($value == FALSE) ? SQL_FALSE : SQL_TRUE;
 	return _sql_query('UPDATE daportal_config SET value_'.$res['type']
 			."='$value' WHERE module_id='".$res['module_id']."'"
 			." AND name='$name'");
