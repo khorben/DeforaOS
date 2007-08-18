@@ -37,6 +37,7 @@ $text['COMMENT_PREVIEW'] = 'Comment preview';
 $text['COMMENT_S'] = 'comment(s)';
 $text['COMMENTS_BY'] = 'Comments by';
 $text['NEW_COMMENT'] = 'New comment';
+$text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'de')
 {
@@ -50,6 +51,7 @@ else if($lang == 'fr')
 	$text['COMMENT_ON'] = 'le';
 	$text['COMMENT_S'] = 'commentaire(s)';
 	$text['NEW_COMMENT'] = 'Nouveau commentaire';
+	$text['SETTINGS'] = 'Configuration';
 }
 _lang($text);
 
@@ -64,20 +66,21 @@ function comment_admin($args)
 	print('<h1 class="title comment">'.COMMENT_ADMINISTRATION.'</h1>'."\n");
 	if(($configs = _config_list('comment')))
 	{
-		print('<h2 class="title settings">Settings</h2>'."\n");
+		print('<h2 class="title settings">'.SETTINGS.'</h2>'."\n");
 		$module = 'comment';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
 	print('<h2 class="title comment">'.COMMENT_LIST.'</h2>'."\n");
-	$comments = _sql_array('SELECT daportal_comment.comment_id AS id'
-			.', title AS name, daportal_user.user_id AS user_id'
-			.', username, daportal_content.enabled AS enabled'
-			.', timestamp FROM daportal_comment, daportal_content'
-			.', daportal_user WHERE daportal_comment.comment_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			.' ORDER BY timestamp DESC;');
+	$sql = 'SELECT daportal_comment.comment_id AS id, title AS name'
+		.', daportal_user.user_id AS user_id, username'
+		.', daportal_content.enabled AS enabled, timestamp'
+		.' FROM daportal_comment, daportal_content, daportal_user'
+		.' WHERE daportal_comment.comment_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' ORDER BY timestamp DESC';
+	$comments = _sql_array($sql);
 	if(!is_array($comments))
 		return _error('Could not list comments');
 	for($i = 0, $cnt = count($comments); $i < $cnt; $i++)
@@ -151,13 +154,14 @@ function comment_config_update($args)
 	require_once('./system/user.php');
 	if($_SERVER['REQUEST_METHOD'] != 'POST' || !_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(!isset($args['comment_anonymous'])) /* XXX checkbox is not ticked */
-		$args['comment_anonymous'] = SQL_FALSE;
+	$args['comment_anonymous'] = isset($args['comment_anonymous'])
+		? SQL_TRUE : SQL_FALSE;
 	$keys = array_keys($args);
 	foreach($keys as $k)
 		if(ereg('^comment_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('comment', $regs[1], $args[$k], 0);
-	header('Location: index.php?module=comment&action=admin');
+	require_once('./system/html.php');
+	header('Location: '._html_link('comment', 'admin'));
 	exit(0);
 }
 
