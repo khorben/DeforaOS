@@ -57,6 +57,7 @@ $text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['REPORT_LIST'] = 'Report list';
 $text['REVISION'] = 'Revision';
 $text['SCREENSHOTS'] = 'Screenshots';
+$text['SELECT_PROJECT_TO_BUG'] = 'Select project to bug';
 $text['SETTINGS'] = 'Settings';
 $text['STATE'] = 'State';
 $text['SUBMITTER'] = 'Submitter';
@@ -121,7 +122,8 @@ function project_admin($args)
 			.'</h1>'."\n");
 	if(($configs = _config_list('project')))
 	{
-		print('<h2 class="title settings"/>'.SETTINGS.'</h2>'."\n");
+		print('<h2 class="title settings"/>'._html_safe(SETTINGS)
+				.'</h2>'."\n");
 		$module = 'project';
 		$action = 'config_update';
 		include('./system/config.tpl');
@@ -159,7 +161,7 @@ function project_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_PROJECT, 'class' => 'new',
-			'link' => _html_link('project', 'new'));
+			'link' => _module_link('project', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'disable');
@@ -174,8 +176,7 @@ function project_admin($args)
 					'cvsroot' => CVS_PATH),
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'project', 'action' => 'admin'));
-	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'
-			."\n");
+	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'."\n");
 	$sql = 'SELECT title AS name, enabled'
 		.' FROM daportal_bug, daportal_content'
 		.' WHERE daportal_bug.content_id=daportal_content.content_id'
@@ -185,7 +186,7 @@ function project_admin($args)
 		return _error('Could not list reports');
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_REPORT, 'class' => 'new',
-			'link' => _html_link('project', 'bug_new'));
+			'link' => _module_link('project', 'bug_new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'disable');
@@ -558,7 +559,7 @@ function project_bug_list($args)
 				strtotime(substr($bugs[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
-	$link = _html_link('project', 'bug_new', '', '', (isset($project_id)
+	$link = _module_link('project', 'bug_new', '', '', (isset($project_id)
 				? 'project_id='.$project_id : ''));
 	$toolbar[] = array('title' => REPORT_A_BUG, 'class' => 'bug',
 			'link' => $link);
@@ -866,7 +867,7 @@ function project_config_update($args)
 	foreach($keys as $k)
 		if(ereg('^project_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('project', $regs[1], $args[$k], 0);
-	header('Location: index.php?module=project&action=admin');
+	header('Location: '._module_link('project', 'admin'));
 	exit(0);
 }
 
@@ -875,6 +876,8 @@ function project_default($args)
 {
 	if(isset($args['id']))
 		return project_display($args);
+	if(isset($args['user_id']))
+		return project_list($args);
 	include('./modules/project/default.tpl');
 }
 
@@ -974,7 +977,7 @@ function project_display($args)
 			'id' => $project['id']);
 	$toolbar = array();
 	$toolbar[] = array('title' => 'Add member(s)', 'class' => 'new',
-			'link' => _html_link('project', 'member_add',
+			'link' => _module_link('project', 'member_add',
 				$project['id']));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => 'Delete member(s)', 'class' => 'remove',
@@ -1158,15 +1161,15 @@ function project_list($args)
 
 	$title = PROJECT_LIST;
 	$where = '';
-	if($args['action'] == 'bug_new')
+	if(isset($args['action']) && $args['action'] == 'bug_new')
 	{
-		$title = 'Select project to bug';
+		$title = SELECT_PROJECT_TO_BUG;
 		$action = 'bug_new';
 	}
 	else if(isset($args['user_id'])
-			&& ($username = _sql_single('SELECT username'
-			." FROM daportal_user WHERE user_id='".$args['user_id']
-			."'")) != FALSE)
+			&& ($username = _sql_single('SELECT username FROM'
+			." daportal_user WHERE user_id='".$args['user_id']."'"))
+			!= FALSE)
 	{
 		$title = PROJECTS._BY_.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
@@ -1203,7 +1206,7 @@ function project_list($args)
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$args['toolbar'] = array(array('title' => NEW_PROJECT,
-				'link' => _html_link('project', 'new'),
+				'link' => _module_link('project', 'new'),
 				'class' => 'new'));
 	_module('explorer', 'browse_trusted', $args);
 }
@@ -1397,7 +1400,7 @@ function project_timeline($args)
 			$author = _html_safe($fields[1]);
 		$entries[] = array('module' => 'project', 'action' => 'browse',
 				'id' => $args['id'],
-				'args' => '&file='._html_safe_link($name).',v',
+				'args' => 'file='._html_safe($name).',v',
 				'name' => _html_safe($name),
 				'icon' => $icon, 'thumbnail' => $icon,
 				'date' => _html_safe($date),
