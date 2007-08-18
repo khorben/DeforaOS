@@ -80,14 +80,14 @@ function bookmark_admin($args)
 				.($bookmarks[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
 		$bookmarks[$i]['url'] = '<a href="'
-			._html_safe_link($bookmarks[$i]['url']).'">'
+			._html_safe($bookmarks[$i]['url']).'">'
 			._html_safe($bookmarks[$i]['url'])."</a>";
 		$bookmarks[$i]['apply_module'] = 'bookmark';
 		$bookmarks[$i]['apply_id'] = $bookmarks[$i]['id'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_BOOKMARK, 'class' => 'new',
-			'link' => 'index.php?module=bookmark&action=new');
+			'link' => _module_link('bookmark', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => PRIVATE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'private');
@@ -206,13 +206,14 @@ function bookmark_list($args)
 		$args['user_id'] = $user_id;
 	if(!$args['user_id'])
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title bookmark">'._html_safe(BOOKMARK_LIST).'</h1>'."\n");
-	$enabled = $args['user_id'] == $user_id ? '' : " AND enabled='1'";
-	$bookmarks = _sql_array('SELECT bookmark_id AS id, title AS name, enabled, url'
-			.' FROM daportal_bookmark, daportal_content'
-			.' WHERE daportal_bookmark.bookmark_id'
-			.'=daportal_content.content_id'
-			." AND user_id='".$args['user_id']."'".$enabled);
+	print('<h1 class="title bookmark">'._html_safe(BOOKMARK_LIST)
+		."</h1>\n");
+	$enabled = ($args['user_id'] == $user_id) ? '' : " AND enabled='1'";
+	$sql = 'SELECT bookmark_id AS id, title AS name, enabled, url'
+		.' FROM daportal_bookmark, daportal_content WHERE'
+		.'daportal_bookmark.bookmark_id=daportal_content.content_id'
+		." AND user_id='".$args['user_id']."'".$enabled;
+	$bookmarks = _sql_array($sql);
 	if(!is_array($bookmarks))
 		return _error('Could not list bookmarks');
 	$count = count($bookmarks);
@@ -230,14 +231,14 @@ function bookmark_list($args)
 				.($bookmarks[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
 		$bookmarks[$i]['url'] = '<a href="'
-			._html_safe_link($bookmarks[$i]['url']).'">'
+			._html_safe($bookmarks[$i]['url']).'">'
 			._html_safe($bookmarks[$i]['url'])."</a>";
 		$bookmarks[$i]['apply_module'] = 'bookmark';
 		$bookmarks[$i]['apply_id'] = $bookmarks[$i]['id'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_BOOKMARK, 'class' => 'new',
-			'link' => 'index.php?module=bookmark&action=new');
+			'link' => _module_link('bookmark', 'new'));
 	if($user_id == $args['user_id'])
 	{
 		$toolbar[] = array();

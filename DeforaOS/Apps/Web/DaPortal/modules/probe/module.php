@@ -324,7 +324,7 @@ function probe_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_HOST, 'class' => 'new',
-			'link' => _html_link('probe', 'host_new'));
+			'link' => _module_link('probe', 'host_new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'host_delete', 'confirm' => 'delete');

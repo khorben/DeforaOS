@@ -4,7 +4,7 @@
 <?php foreach($modules as $m) { ?>
 		<div class="entry">
 			<div class="thumbnail"><img src="<?php echo _html_safe($m['thumbnail']); ?>" alt=""/></div>
-			<div class="name"><a href="<?php echo _html_link(_html_safe_link($m['name']), 'admin'); ?>"><?php echo _html_safe_link($m['title']); ?></a></div>
+			<div class="name"><a href="<?php echo _html_link($m['name'], 'admin'); ?>"><?php echo _html_safe($m['title']); ?></a></div>
 		</div>
 <?php } ?>
 	</div>

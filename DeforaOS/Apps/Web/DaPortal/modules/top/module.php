@@ -52,10 +52,11 @@ function top_admin($args)
 		$links[$i]['thumbnail'] = 'icons/48x48/top.png';
 		$links[$i]['apply_module'] = 'top';
 		$links[$i]['apply_id'] = $links[$i]['top_id'];
-		$links[$i]['link'] = 'index.php?module=top&action=modify&id='
-				.$links[$i]['top_id'];
+		$links[$i]['link'] = _module_link('top', 'modify',
+				$links[$i]['top_id']);
+		/* FIXME use _html_link() */
 		$links[$i]['url'] = '<a href="'
-				._html_safe_link($links[$i]['url'])
+				._html_safe($links[$i]['url'])
 				.'">'._html_safe($links[$i]['url']).'</a>';
 		$links[$i]['move'] = '';
 		if($i+1 < $cnt)
@@ -73,7 +74,7 @@ function top_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_LINK, 'class' => 'new',
-			'link' => 'index.php?module=top&action=new');
+			'link' => _module_link('top', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
@@ -94,8 +95,8 @@ function top_default($args)
 	$sep = '';
 	foreach($links as $l)
 	{
-		print("\t\t\t".$sep.'<a href="'._html_safe_link($l['link']).'"'
-				.' title="'._html_safe_link($l['name']).'">'
+		print("\t\t\t".$sep.'<a href="'._html_safe($l['link']).'"'
+				.' title="'._html_safe($l['name']).'">'
 				._html_safe($l['name']).'</a>'."\n");
 		$sep = '&middot; ';
 	}

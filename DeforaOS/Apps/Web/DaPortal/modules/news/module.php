@@ -26,7 +26,6 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['MODIFICATION_OF_NEWS'] = 'Modification of news';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
-$text['NEWS_BY'] = 'News by';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_PREVIEW'] = 'News preview';
 $text['SUBMIT_NEWS'] = 'Submit news';
@@ -35,7 +34,6 @@ if($lang == 'fr')
 {
 	$text['MODIFICATION_OF_NEWS'] = 'Modification de la dépêche';
 	$text['NEWS_ADMINISTRATION'] = 'Administration des dépêches';
-	$text['NEWS_BY'] = 'Dépêche de';
 	$text['NEWS_ON'] = 'le';
 	$text['NEWS_PREVIEW'] = 'Aperçu de la dépêche';
 }
@@ -69,7 +67,8 @@ function news_admin($args)
 		switch($args['sort'])
 		{
 			case 'username':$sort = 'username';	break;
-			case 'enabled':	$sort = 'enabled';	break;
+			case 'enabled':	$sort = 'daportal_content.enabled';
+								break;
 			case 'name':	$sort = 'title';	break;
 			default:	$order = 'DESC';	break;
 		}
@@ -95,7 +94,7 @@ function news_admin($args)
 		$res[$i]['name'] = _html_safe($res[$i]['name']);
 		$res[$i]['username'] = '<a href="'._html_link('user', '',
 			$res[$i]['user_id'], $res[$i]['username']).'">'
-				._html_safe_link($res[$i]['username']).'</a>';
+				._html_safe($res[$i]['username']).'</a>';
 		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
 			'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
@@ -109,7 +108,7 @@ function news_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => SUBMIT_NEWS, 'class' => 'new',
-			'link' => 'index.php?module=news&action=submit');
+			'link' => _module_link('news', 'submit'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
@@ -254,7 +253,7 @@ function news_list($args)
 {
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
 			.' FROM daportal_user'
-			." WHERE user_id='".$args['user_id']."';")) != FALSE)
+			." WHERE user_id='".$args['user_id']."'")) != FALSE)
 		return _list_user($args['user_id'], $username);
 	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
@@ -270,7 +269,7 @@ function news_list($args)
 	$page = min($page, $pages);
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
 			.', daportal_content.enabled AS enabled'
-			.', daportal_content.user_id, username'.$sql
+			.', daportal_content.user_id AS user_id, username'.$sql
 			.' ORDER BY timestamp DESC '
 			.(_sql_offset(($page-1) * $npp, $npp)));
 	if(!is_array($res))

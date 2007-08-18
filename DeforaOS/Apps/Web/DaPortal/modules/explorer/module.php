@@ -70,9 +70,9 @@ function _explorer_link(&$entry)
 	if(isset($entry['link']))
 	{
 		if(isset($entry['title']))
-			return '<a href="'._html_safe_link($entry['link'])
+			return '<a href="'._html_safe($entry['link'])
 				.'" title="'._html_safe($entry['title']).'">';
-		return '<a href="'._html_safe_link($entry['link']).'">';
+		return '<a href="'._html_safe($entry['link']).'">';
 	}
 	else if(!isset($entry['link']) && isset($entry['module'])
 			&& isset($entry['action']))
@@ -93,9 +93,9 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 {
 	if($class == $sort)
 		return print(' sort">'._html_safe($name));
-	$link = 'module='.$module.'&action='.$action.$args.'&sort='.$class;
-	print('"><a href="index.php?'._html_safe_link($link).'">'
-			._html_safe($name).'</a>');
+	$link = _html_link($module, $action, FALSE, FALSE, $args);
+	$link .= '&sort='.$class; /* XXX quite ugly */
+	print('"><a href="'.$link.'">'._html_safe($name).'</a>');
 }
 
 
@@ -127,10 +127,9 @@ function explorer_apply($args)
 		}
 		_module($module, $action, $params);
 	}
-	require_once('./system/html.php');
-	$link = _html_link($args['link_module'], $args['link_action']);
-	if(isset($args['link_id']) && is_numeric($args['link_id']))
-		$link.='&id='.$args['link_id'];
+	$link = _module_link($args['link_module'], $args['link_action'],
+			isset($args['link_id']) && is_numeric($args['link_id'])
+			? $args['link_id'] : FALSE);
 	header('Location: '.$link);
 	exit(0);
 }
@@ -140,7 +139,7 @@ function explorer_browse($args)
 {
 	for($i = 0, $cnt = count($args['entries']); $i < $cnt; $i++)
 	{
-		$args['entries'][$i]['name'] = _html_safe_link(
+		$args['entries'][$i]['name'] = _html_safe(
 				$args['entries'][$i]['name']);
 		if(!isset($args['class']) || !is_array($args['class']))
 			continue;

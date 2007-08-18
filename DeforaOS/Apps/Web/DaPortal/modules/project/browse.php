@@ -106,17 +106,17 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()');
+			'link' => 'javascript:history.back()'); /* XXX */
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => _html_link('project', 'browse', $id, '',
+			'link' => _module_link('project', 'browse', $id, '',
 				strlen($filename) ? 'file='.dirname($filename)
 				: ''));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()');
+			'link' => 'javascript:history.forward()'); /* XXX */
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()');
+			'link' => 'javascript:location.reload()'); /* XXX */
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
 				'class' => array('revision' => REVISION,
 					'date' => DATE, 'author' => AUTHOR,
@@ -189,16 +189,16 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()');
+			'link' => 'javascript:history.back()'); /* XXX */
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => _html_link('project', 'browse', $id, '',
+			'link' => _module_link('project', 'browse', $id, '',
 				'file='.dirname($filename)));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()');
+			'link' => 'javascript:history.forward()'); /* XXX */
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()');
+			'link' => 'javascript:location.reload()'); /* XXX */
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => DATE, 'author' => AUTHOR,
 					'message' => MESSAGE),

@@ -86,7 +86,7 @@ function category_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
-			'link' => _html_link('category', 'new'));
+			'link' => _module_link('category', 'new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
@@ -171,7 +171,7 @@ function category_display($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
-			'link' => _html_link('category', 'new'));
+			'link' => _module_link('category', 'new'));
 	_module('explorer', 'browse', array('entries' => $contents,
 				'toolbar' => $toolbar));
 }
@@ -231,7 +231,7 @@ function category_get($args)
 	{
 		$toolbar = array();
 		$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'add',
-				'link' => _html_link('category', 'set',
+				'link' => _module_link('category', 'set',
 					$args['id']));
 		$toolbar[] = array();
 		$toolbar[] = array('title' => DELETE_LINK, 'class' => 'remove',
@@ -366,7 +366,7 @@ function category_list($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
-			'link' => _html_link('category', 'new'));
+			'link' => _module_link('category', 'new'));
 	_module('explorer', 'browse', array('entries' => $categories,
 				'view' => 'list', 'toolbar' => $toolbar));
 }

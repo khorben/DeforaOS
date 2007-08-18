@@ -63,7 +63,7 @@ function article_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title article">'.ARTICLES_ADMINISTRATION.'</h1>'."\n");
+	print('<h1 class="title article">'.ARTICLES_ADMINISTRATION."</h1>\n");
 	$order = 'ASC';
 	$sort = 'timestamp';
 	if(isset($args['sort']))
@@ -112,7 +112,7 @@ function article_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => SUBMIT_ARTICLE, 'class' => 'new',
-			'link' => _html_link('article', 'submit'));
+			'link' => _module_link('article', 'submit'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
@@ -202,7 +202,7 @@ function article_list($args)
 	print('<h1 class="title article">'._html_safe($title).'</h1>'."\n");
 	$articles = _sql_array('SELECT content_id AS id, timestamp, title'
 			.', content, daportal_content.enabled AS enabled'
-			.', daportal_content.user_id, username'
+			.', daportal_content.user_id AS user_id, username'
 			.' FROM daportal_content, daportal_user'
 			.', daportal_module'
 			.' WHERE daportal_user.user_id=daportal_content.user_id'
