@@ -211,7 +211,7 @@ function bookmark_list($args)
 	$enabled = ($args['user_id'] == $user_id) ? '' : " AND enabled='1'";
 	$sql = 'SELECT bookmark_id AS id, title AS name, enabled, url'
 		.' FROM daportal_bookmark, daportal_content WHERE'
-		.'daportal_bookmark.bookmark_id=daportal_content.content_id'
+		.' daportal_bookmark.bookmark_id=daportal_content.content_id'
 		." AND user_id='".$args['user_id']."'".$enabled;
 	$bookmarks = _sql_array($sql);
 	if(!is_array($bookmarks))
