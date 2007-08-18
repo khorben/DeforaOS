@@ -127,6 +127,7 @@ function explorer_apply($args)
 		}
 		_module($module, $action, $params);
 	}
+	require_once('./system/html.php');
 	$link = _html_link($args['link_module'], $args['link_action']);
 	if(isset($args['link_id']) && is_numeric($args['link_id']))
 		$link.='&id='.$args['link_id'];
