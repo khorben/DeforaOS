@@ -53,9 +53,14 @@ function admin_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title admin">'._html_safe(PORTAL_ADMINISTRATION)
-			."</h1>\n");
-	print('<h2 class="title settings">'._html_safe(SETTINGS).'</h2>'."\n");
-	include('./modules/admin/settings.tpl');
+			."</h1>\n".'<h2 class="title settings">'
+			._html_safe(SETTINGS)."</h2>\n");
+	if(($configs = _config_list('admin')))
+	{
+		$module = 'admin';
+		$action = 'config_update';
+		include('./system/config.tpl');
+	}
 	print('<h2 class="title language">'._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
 			.' FROM daportal_lang')) == FALSE)
@@ -113,8 +118,7 @@ function admin_admin($args)
 			{
 				$modules[$i]['action'] = 'admin';
 				$modules[$i]['module_name'] =
-					'<a href="index.php?module='
-					._html_safe_link($module).'">'
+					'<a href="'._html_link($module).'">'
 					._html_safe($module).'</a>';
 			}
 		}
@@ -122,7 +126,7 @@ function admin_admin($args)
 			$modules[$i]['name'] = $modules[$i]['module'];
 		$modules[$i]['thumbnail'] = 'icons/48x48/'.$modules[$i]['icon'];
 		$modules[$i]['icon'] = 'icons/16x16/'.$modules[$i]['icon'];
-		$modules[$i]['name'] = _html_safe_link($modules[$i]['name']);
+		$modules[$i]['name'] = _html_safe($modules[$i]['name']);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
@@ -134,6 +138,21 @@ function admin_admin($args)
 					'module_name' => MODULE_NAME),
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'admin', 'action' => 'admin'));
+}
+
+
+function admin_config_update($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	$keys = array_keys($args);
+	foreach($keys as $k)
+		if(ereg('^admin_([a-zA-Z_]+)$', $k, $regs))
+			_config_set('admin', $regs[1], $args[$k]);
+	header('Location: '._module_link('admin', 'admin'));
+	exit(0);
 }
 
 
@@ -205,28 +224,13 @@ function admin_module_enable($args)
 }
 
 
-function admin_settings_update($args)
-{
-	global $user_id, $debug;
-
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$debug = 1;
-	if(isset($args['debug']) && $args['debug'] == 'on')
-		$_SESSION['debug'] = 1;
-	else
-		unset($_SESSION['debug']);
-	header('Location: index.php?module=admin&action=admin');
-}
-
-
 function admin_system($args)
 {
 	global $title, $html;
 
 	$title.=' - '.ADMINISTRATION;
 	if($_SERVER['REQUEST_METHOD'] == 'POST'
-			&& $args['action'] == 'settings_update')
+			&& $args['action'] == 'config_update')
 		$html = 0;
 }
 
