@@ -64,11 +64,12 @@ function search_default($args)
 	include('./modules/search/search_top.tpl');
 	$pages = ceil($count / $spp);
 	$page = min($page, $pages);
-	$res = $count == 0 ? array() :_sql_array('SELECT content_id AS id'
+	$res = $count == 0 ? array() : _sql_array('SELECT content_id AS id'
 			.', timestamp, daportal_content.module_id'
-			.', name AS module, daportal_content.user_id, title'
-			.', content, username'.$sql.' ORDER by timestamp DESC'
-			." OFFSET ".(($page-1) * $spp)." LIMIT $spp;");
+			.', name AS module, daportal_content.user_id AS user_id'
+			.', title, content, username'.$sql
+			.' ORDER by timestamp DESC '
+			._sql_offset(($page-1) * $spp, $spp));
 	if(!is_array($res))
 		return _error('Unable to search');
 	$i = 1 + (($page-1) * $spp);
@@ -81,7 +82,7 @@ function search_default($args)
 	}
 	include('./modules/search/search_bottom.tpl');
 	_html_paging(_html_link('search', '', '', '', 'q='
-			._html_safe_link($args['q']).'&amp;'), $page, $pages);
+			._html_safe($args['q']).'&amp;'), $page, $pages);
 }
 
 
