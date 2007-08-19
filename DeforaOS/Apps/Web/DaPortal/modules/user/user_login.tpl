@@ -7,7 +7,7 @@
 		<tr><td class="field"><?php echo _html_safe(PASSWORD); ?>:</td><td><input type="password" name="password"/></td></tr>
 	<tr><td></td><td><input type="submit" name="submit" value="<?php echo _html_safe(LOGIN); ?>"/></td></tr>
 <?php if($register) { ?>
-	<tr><td></td><td><a href="index.php?module=user&amp;action=register"><?php echo _html_safe(REGISTER); ?>...</a></td></tr>
+	<tr><td></td><td><a href="<?php echo _html_link('user', 'register'); ?>"><?php echo _html_safe(REGISTER); ?>...</a></td></tr>
 <?php } ?>
 	</table>
 </form>
