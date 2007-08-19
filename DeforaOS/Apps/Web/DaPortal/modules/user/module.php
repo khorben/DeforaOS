@@ -40,7 +40,7 @@ $text['USER_REGISTRATION'] = 'User registration';
 $text['USERS'] = 'Users';
 $text['USERS_ADMINISTRATION'] = 'Users administration';
 $text['WRONG_PASSWORD'] = 'Wrong password';
-$text['YOUR_PASSWORD_IS'] = 'Your password is ';
+$text['YOUR_PASSWORD_IS'] = 'Your password is';
 global $lang;
 if($lang == 'de')
 {
@@ -61,7 +61,7 @@ else if($lang == 'fr')
 	$text['USER_MODIFICATION'] = "Modification d'utilisateur";
 	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
 	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
-	$text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est ';
+	$text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est';
 }
 _lang($text);
 
