@@ -41,7 +41,7 @@ function _file_csrc($line)
 				.')($|[^a-zA-Z0-9_])/',
 			'\1<span class="keyword">\2</span>\3', $line);
 	$line = preg_replace('/(^|[^a-zA-Z0-9_])('
-				.'char|DIR|double|FILE|float|int'
+				.'char|DIR|double|enum|FILE|float|int'
 				.'|int8_t|int16_t|int32_t|int64_t'
 				.'|long|short|size_t|ssize_t|signed|static'
 				.'|struct|typedef|union|unsigned|va_list|void'
