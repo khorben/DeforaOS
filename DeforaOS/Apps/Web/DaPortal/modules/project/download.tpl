@@ -26,4 +26,4 @@ href="index.php?module=project&amp;action=package">as of today</a>.</p>
 <p>Some parallel projects, documentation, and older content can also be found on
 <a href="http://people.defora.org/~khorben/projects/">khorben's page</a>, and on
 the <a href="ftp://ftp.defora.org/">FTP server</a>, which can be accessed <a
-href="http://www.defora.org/">through HTTP</a> too.</p>
+href="http://ftp.defora.org/">through HTTP</a> too.</p>
