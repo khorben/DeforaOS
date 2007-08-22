@@ -27,9 +27,14 @@
 #include <dlfcn.h>
 #include "parser.h"
 #include "as.h"
+#include "../config.h"
 
 #ifndef PREFIX
 # define PREFIX "."
+#endif
+
+#ifndef LIBDIR
+# define LIBDIR PREFIX "/lib/as"
 #endif
 
 
@@ -74,7 +79,7 @@ static char * _as_guess(void)
 /* as_error */
 int as_error(char const * msg, int ret)
 {
-	fprintf(stderr, "%s", "as: ");
+	fputs("as: ", stderr);
 	perror(msg);
 	return ret;
 }
@@ -87,14 +92,14 @@ void * as_plugin_new(char const * type, char const * name,
 	char * filename;
 	void * handle;
 
-	if((filename = malloc(strlen(PREFIX) + 1 + strlen(type) + 1
+	if((filename = malloc(strlen(LIBDIR) + 1 + strlen(type) + 1
 					+ strlen(name) + strlen(".so") + 1))
 				== NULL)
 	{
 		as_error("malloc", 0);
 		return NULL;
 	}
-	sprintf(filename, "%s/%s/%s%s", PREFIX, type, name, ".so");
+	sprintf(filename, "%s/%s/%s%s", LIBDIR, type, name, ".so");
 	if((handle = dlopen(filename, RTLD_NOW)) == NULL)
 		fprintf(stderr, "%s%s%s%s%s", "as: ", name, ": No such ",
 				description, " plug-in\n");
