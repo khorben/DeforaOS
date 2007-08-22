@@ -81,11 +81,79 @@ static int _tail_do_bytes(Prefs * prefs, FILE * fp, char const * filename)
 	return 0;
 }
 
+/* tail_do_lines */
+static void _lines_rotate(char ** lines, int pos);
+static int _lines_realloc(char ** lines, int pos, size_t column);
+static void _lines_print(char ** lines, int pos);
+
 static int _tail_do_lines(Prefs * prefs, FILE * fp, char const * filename)
 {
-	/* FIXME implement */
-	fputs("tail: Not implemented yet\n", stderr);
-	return 1;
+	int ret = 0;
+	char ** lines;
+	int c;
+	int pos = 0;
+	size_t column = 0;
+
+	if(prefs->lines == 0)
+		return 0;
+	if((lines = calloc(sizeof(*lines), prefs->lines)) == NULL)
+		return _tail_error(filename, 1);
+	while((c = fgetc(fp)) != EOF)
+	{
+		if(column == 0 && lines[pos] != NULL)
+		{
+			if(pos + 1 < prefs->lines)
+				pos++;
+			else
+				_lines_rotate(lines, pos);
+		}
+		if(_lines_realloc(lines, pos, column) != 0)
+			break;
+		if(c != '\n')
+		{
+			lines[pos][column++] = c;
+			continue;
+		}
+		lines[pos][column] = '\0';
+		column = 0;
+	}
+	_lines_print(lines, pos);
+	if(c != EOF || !feof(fp))
+		ret = _tail_error(filename, 1);
+	free(lines);
+	return ret;
+}
+
+static void _lines_rotate(char ** lines, int pos)
+{
+	int i;
+
+	free(lines[0]);
+	for(i = 1; i <= pos; i++)
+		lines[i - 1] = lines[i];
+	lines[pos] = NULL;
+}
+
+static int _lines_realloc(char ** lines, int pos, size_t column)
+{
+	char * p;
+
+	if((p = realloc(lines[pos], column + 1)) == NULL)
+		return 1;
+	lines[pos] = p;
+	return 0;
+}
+
+static void _lines_print(char ** lines, int pos)
+{
+	int i;
+
+	for(i = 0; i <= pos; i++)
+	{
+		fputs(lines[i], stdout);
+		free(lines[i]);
+		fputc('\n', stdout);
+	}
 }
 
 
