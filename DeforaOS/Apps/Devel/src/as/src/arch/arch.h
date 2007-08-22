@@ -50,6 +50,7 @@ typedef struct _ArchInstruction
 	uint8_t size;
 	uint8_t op1size;
 	uint8_t op2size;
+	uint8_t op3size;
 } ArchInstruction;
 
 typedef struct _ArchPlugin

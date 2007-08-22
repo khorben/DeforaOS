@@ -43,7 +43,7 @@ ArchRegister arch_i586_regs[] =
 ArchInstruction arch_i586_set[] =
 {
 #include "80586.ins"
-	{ NULL,		0x0000, AO_NONE, 0, 0, 0 }
+#include "null.ins"
 };
 
 ArchPlugin arch_plugin =

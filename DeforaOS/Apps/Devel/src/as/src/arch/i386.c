@@ -42,7 +42,7 @@ ArchRegister arch_i386_regs[] =
 ArchInstruction arch_i386_set[] =
 {
 #include "80386.ins"
-	{ NULL,		0x0000, AO_NONE, 0, 0, 0 }
+#include "null.ins"
 };
 
 ArchPlugin arch_plugin =

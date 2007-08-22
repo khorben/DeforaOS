@@ -43,7 +43,7 @@ ArchRegister arch_sparc64_regs[] =
 ArchInstruction arch_sparc64_set[] =
 {
 #include "sparc64.ins"
-	{ NULL,	0x0,	0, 0, 0, 0 }
+#include "null.ins"
 };
 
 ArchPlugin arch_plugin =
