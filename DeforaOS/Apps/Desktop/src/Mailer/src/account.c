@@ -129,7 +129,7 @@ int account_config_load(Account * account, Config * config)
 			case ACT_UINT16:
 				l = strtol(value, &q, 0);
 				if(value[0] != '\0' && *q == '\0')
-					(long)p->value = l;
+					p->value = (void*)l;
 				break;
 				/* FIXME implement the rest */
 			case ACT_BOOLEAN:
