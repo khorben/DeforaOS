@@ -359,6 +359,7 @@ void on_preferences_cancel(GtkWidget * widget, gpointer data)
 
 
 /* accounts */
+/* on_account_new */
 /* types */
 typedef struct _AccountData
 {
@@ -402,6 +403,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data);
 static void _on_entry_changed(GtkWidget * widget, gpointer data);
 static void _on_account_type_changed(GtkWidget * widget, gpointer data);
+
 void on_account_new(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
@@ -424,7 +426,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	}
 	ad->mailer = mailer;
 	ad->title = NULL;
-	memset(&ad->identity, 0, sizeof(ad->identity));
+	memset(&(ad->identity), 0, sizeof(ad->identity));
 	ad->available = 0;
 	ad->account = NULL;
 	assistant = gtk_assistant_new();
@@ -446,7 +448,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_on_entry_changed), &ad->title);
+				_on_entry_changed), &(ad->title));
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -466,7 +468,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_on_entry_changed), &ad->identity.email);
+				_on_entry_changed), &(ad->identity.email));
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -692,13 +694,14 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(ad->mailer->pr_accounts));
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter);
 #ifdef DEBUG
-	fprintf(stderr, "AC_DATA %p, AC_ENABLED 1, AC_TITLE %s, AC_TYPE %s\n",
-			ad->account, ad->account->title,
+	fprintf(stderr, "%s%p%s%s%s%s\n", "AC_DATA ", ad->account,
+			", AC_ACTIVE FALSE, AC_ENABLED TRUE, AC_TITLE ",
+			ad->account->title, ", AC_TYPE ",
 			ad->account->plugin->type);
 #endif
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-			AC_DATA, ad->account, AC_ENABLED, 1,
-			AC_TITLE, ad->account->title,
+			AC_DATA, ad->account, AC_ACTIVE, FALSE,
+			AC_ENABLED, TRUE, AC_TITLE, ad->account->title,
 			AC_TYPE, ad->account->plugin->type, -1);
 	ad->account = NULL;
 	/* _on_assistant_close is then automatically called */
@@ -724,7 +727,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		{
 			if(ad->account != NULL)
 				account_delete(ad->account);
-			ac = &ad->mailer->available[ad->available];
+			ac = &(ad->mailer->available[ad->available]);
 			ad->account = account_new(ac->name, ad->title);
 		}
 		if(ad->account == NULL)
@@ -1039,7 +1042,7 @@ static void _on_entry_changed(GtkWidget * widget, gpointer data)
 	char * p;
 
 	text = gtk_entry_get_text(GTK_ENTRY(widget));
-	if((p = realloc(*value, strlen(text)+1)) == NULL)
+	if((p = realloc(*value, strlen(text) + 1)) == NULL)
 	{
 		mailer_error(NULL, strerror(errno), 0);
 		return;
