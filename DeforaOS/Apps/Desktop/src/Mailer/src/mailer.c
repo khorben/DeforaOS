@@ -85,13 +85,27 @@ static struct _toolbar _mailer_toolbar[] =
 
 /* Mailer */
 /* private */
+/* functions */
+static int _mailer_error(char const * message, int ret);
+static int _mailer_dlerror(char const * message, int ret);
+
+static int _mailer_error(char const * message, int ret)
+{
+	fputs("Mailer: ", stderr);
+	perror(message);
+	return ret;
+}
+
+static int _mailer_dlerror(char const * message, int ret)
+{
+	fprintf(stderr, "%s%s: %s\n", "Mailer: ", message, dlerror());
+	return ret;
+}
 
 
 /* public */
 /* functions */
 /* mailer_new */
-static int _mailer_error(char const * message, int ret);
-static int _mailer_dlerror(char const * message, int ret);
 static int _new_plugins(Mailer * mailer);
 static GtkWidget * _new_folders_view(void);
 static GtkWidget * _new_headers(Mailer * mailer);
@@ -167,19 +181,6 @@ Mailer * mailer_new(void)
 	gtk_widget_hide(mailer->hdr_vbox);
 	mailer->pr_window = NULL;
 	return mailer;
-}
-
-static int _mailer_error(char const * message, int ret)
-{
-	fputs("Mailer: ", stderr);
-	perror(message);
-	return ret;
-}
-
-static int _mailer_dlerror(char const * message, int ret)
-{
-	fprintf(stderr, "%s%s: %s\n", "Mailer: ", message, dlerror());
-	return ret;
 }
 
 static int _new_plugins(Mailer * mailer)
