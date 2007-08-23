@@ -32,6 +32,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/compose.h \
 		$(PACKAGE)-$(VERSION)/src/mailer.h \
+		$(PACKAGE)-$(VERSION)/src/gtkassistant.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/account/mbox.c \
 		$(PACKAGE)-$(VERSION)/src/account/pop3.c \
