@@ -62,6 +62,7 @@ Account * account_new(char const * type, char const * name)
 	}
 	free(filename);
 	account->title = strdup(name);
+	account->enabled = 1;
 	account->identity = NULL;
 	return account;
 }
@@ -95,6 +96,23 @@ int account_set_title(Account * account, char const * title)
 
 
 /* useful */
+/* account_disable */
+int account_disable(Account * account)
+{
+	account->enabled = 0;
+	return 0;
+}
+
+
+/* account_enable */
+int account_enable(Account * account)
+{
+	account->enabled = 1;
+	return 0;
+}
+
+
+/* account_folders */
 AccountFolder ** account_folders(Account * account)
 {
 	return account->plugin->folders();

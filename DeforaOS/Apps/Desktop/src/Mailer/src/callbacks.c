@@ -28,6 +28,8 @@ static char const _copyright[] =
 #include "callbacks.h"
 #include "../config.h"
 
+#define DEBUG
+
 
 /* constants */
 static char const * _authors[] =
@@ -82,6 +84,7 @@ void on_file_quit(GtkWidget * widget, gpointer data)
 typedef enum _AccountColumn
 {
 	AC_DATA,
+	AC_ACTIVE,
 	AC_ENABLED,
 	AC_TITLE,
 	AC_TYPE
@@ -100,6 +103,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	GtkWidget * vbox3;
 	GtkSizeGroup * group;
 	GtkListStore * store;
+	unsigned int i;
+	GtkTreeIter iter;
 
 	if(mailer->pr_window != NULL)
 	{
@@ -126,8 +131,15 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	store = gtk_list_store_new(AC_LAST+1, G_TYPE_POINTER, G_TYPE_BOOLEAN,
-			G_TYPE_STRING, G_TYPE_STRING);
+	store = gtk_list_store_new(AC_LAST + 1, G_TYPE_POINTER, G_TYPE_BOOLEAN,
+			G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
+	for(i = 0; i < mailer->account_cnt; i++)
+		gtk_list_store_insert_with_values(store, &iter, -1,
+				AC_DATA, mailer->account[i],
+				AC_ACTIVE, TRUE,
+				AC_ENABLED, mailer->account[i]->enabled,
+				AC_TITLE, mailer->account[i]->title,
+				AC_TYPE, mailer->account[i]->plugin->type, -1);
 	mailer->pr_accounts = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_accounts),
@@ -301,26 +313,39 @@ void on_print(GtkWidget * widget, gpointer data)
 void on_preferences_ok(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
-	Account * account;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 	GtkTreeModel * view_model;
-	GtkTreeIter view_iter;
+	Account * account;
+	gboolean active;
+	gboolean enabled;
 
 	gtk_widget_hide(mailer->pr_window);
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->pr_accounts));
 	view_model = gtk_tree_view_get_model(GTK_TREE_VIEW(
 				mailer->view_folders));
-	if(gtk_tree_model_get_iter_first(model, &iter) != FALSE)
-		do
+	if(gtk_tree_model_get_iter_first(model, &iter) == FALSE)
+		return;
+	do
+	{
+		gtk_tree_model_get(model, &iter, AC_DATA, &account,
+				AC_ACTIVE, &active, AC_ENABLED, &enabled, -1);
+		if(active)
 		{
-			/* FIXME check if already present, update if needed */
-			/*       else add account with full information */
-			gtk_tree_model_get(model, &iter, AC_DATA, &account, -1);
-			mailer_account_add(mailer, account);
+			if(enabled)
+				continue;
+			if(mailer_account_disable(mailer, account) == 0)
+				gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+						AC_ACTIVE, FALSE, -1);
 		}
-		while(gtk_tree_model_iter_next(model, &iter) == TRUE);
-	/* FIXME remove remaining accounts  */
+		else if(enabled)
+		{
+			if(mailer_account_add(mailer, account) == 0)
+				gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+						AC_ACTIVE, TRUE, -1);
+		}
+	}
+	while(gtk_tree_model_iter_next(model, &iter) == TRUE);
 }
 
 

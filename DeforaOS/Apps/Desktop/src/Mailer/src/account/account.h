@@ -69,6 +69,7 @@ typedef struct _Account
 {
 	char * name;
 	char * title;
+	int enabled;
 	AccountIdentity * identity;
 	void * handle;
 	AccountPlugin * plugin;
@@ -83,6 +84,8 @@ void account_delete(Account * account);
 int account_set_title(Account * account, char const * title);
 
 /* useful */
+int account_disable(Account * account);
+int account_enable(Account * account);
 /* FIXME wrong we just need receive, then it calls callbacks */
 AccountFolder ** account_folders(Account * account);
 

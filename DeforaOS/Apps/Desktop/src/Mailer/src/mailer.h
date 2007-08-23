@@ -66,5 +66,9 @@ void mailer_delete(Mailer * mailer);
 int mailer_error(Mailer * mailer, char const * message, int ret);
 
 int mailer_account_add(Mailer * mailer, Account * account);
+int mailer_account_disable(Mailer * mailer, Account * account);
+int mailer_account_enable(Mailer * mailer, Account * account);
+/* FIXME implement
+int mailer_account_remove(Mailer * mailer, Account * account); */
 
 #endif
