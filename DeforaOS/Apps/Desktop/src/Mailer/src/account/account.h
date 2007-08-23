@@ -76,7 +76,6 @@ typedef struct _Account
 
 
 /* functions */
-/* FIXME type should be automatically "account" and wrap plug-in engine */
 Account * account_new(char const * type, char const * name);
 void account_delete(Account * account);
 

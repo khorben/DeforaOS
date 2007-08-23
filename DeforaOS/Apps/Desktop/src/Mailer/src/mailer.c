@@ -88,6 +88,8 @@ static struct _toolbar _mailer_toolbar[] =
 /* functions */
 static int _mailer_error(char const * message, int ret);
 static int _mailer_dlerror(char const * message, int ret);
+static char * _mailer_config_filename(void);
+static int _mailer_config_load_account(Mailer * mailer, char const * name);
 
 static int _mailer_error(char const * message, int ret)
 {
@@ -102,6 +104,33 @@ static int _mailer_dlerror(char const * message, int ret)
 	return ret;
 }
 
+static char * _mailer_config_filename(void)
+{
+	char * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		return NULL;
+	if((filename = malloc(strlen(homedir) + strlen(MAILER_CONFIG_FILE) + 2))
+			== NULL)
+		return NULL;
+	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
+	return filename;
+}
+
+static int _mailer_config_load_account(Mailer * mailer, char const * name)
+{
+	Account * account;
+	char * type;
+
+	if((type = config_get(mailer->config, name, "type")) == NULL)
+		return 1;
+	if((account = account_new(type, name)) == NULL)
+		return 1;
+	mailer_account_add(mailer, account);
+	return 0;
+}
+
 
 /* public */
 /* functions */
@@ -109,7 +138,7 @@ static int _mailer_dlerror(char const * message, int ret)
 static int _new_plugins(Mailer * mailer);
 static GtkWidget * _new_folders_view(void);
 static GtkWidget * _new_headers(Mailer * mailer);
-/* static gboolean _new_accounts(gpointer data); */
+static void _new_config_load(Mailer * mailer);
 
 Mailer * mailer_new(void)
 {
@@ -129,7 +158,6 @@ Mailer * mailer_new(void)
 	mailer->account = NULL;
 	mailer->account_cnt = 0;
 	mailer->account_cur = NULL;
-/*	g_idle_add(_new_accounts, mailer); */
 	/* widgets */
 	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 640, 480);
@@ -177,6 +205,9 @@ Mailer * mailer_new(void)
 	mailer->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->statusbar, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(mailer->window), vbox);
+	/* load configuration */
+	_new_config_load(mailer);
+	/* show window */
 	gtk_widget_show_all(mailer->window);
 	gtk_widget_hide(mailer->hdr_vbox);
 	mailer->pr_window = NULL;
@@ -322,6 +353,33 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	return vbox;
 }
 
+static void _new_config_load(Mailer * mailer)
+{
+	char * filename;
+	char * accounts;
+	char * p;
+
+	if((mailer->config = config_new()) == NULL)
+		return;
+	if((filename = _mailer_config_filename()) == NULL)
+		return;
+	config_load(mailer->config, filename);
+	free(filename);
+	if((accounts = config_get(mailer->config, "", "accounts")) == NULL
+			|| accounts[0] == '\0')
+		return;
+	for(p = accounts; *p != '\0'; p++)
+	{
+		if(*p != ',')
+			continue;
+		*p = '\0';
+		_mailer_config_load_account(mailer, accounts);
+		*p = ',';
+		accounts = p + 1;
+	}
+	if(accounts[0] != '\0')
+		_mailer_config_load_account(mailer, accounts);
+}
 
 void mailer_delete(Mailer * mailer)
 {

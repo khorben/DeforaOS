@@ -32,6 +32,7 @@
 #ifndef PLUGINDIR
 # define PLUGINDIR LIBDIR "Mailer"
 #endif
+#define ACCOUNT "account"
 
 
 /* Account */
@@ -42,14 +43,15 @@ Account * account_new(char const * type, char const * name)
 
 	if((account = malloc(sizeof(*account))) == NULL)
 		return NULL;
+	memset(account, 0, sizeof(*account));
 	if((account->name = strdup(name)) == NULL
-			|| (filename = malloc(strlen(PLUGINDIR) + strlen(type)
+			|| (filename = malloc(strlen(PLUGINDIR ACCOUNT)
 					+ strlen(name) + 6)) == NULL)
 	{
 		account_delete(account);
 		return NULL;
 	}
-	sprintf(filename, "%s/%s/%s.so", PLUGINDIR, type, name);
+	sprintf(filename, "%s/%s/%s.so", PLUGINDIR, ACCOUNT, type);
 	if((account->handle = dlopen(filename, RTLD_LAZY)) == NULL
 			|| (account->plugin = dlsym(account->handle,
 					"account_plugin")) == NULL)
@@ -60,7 +62,7 @@ Account * account_new(char const * type, char const * name)
 		return NULL;
 	}
 	free(filename);
-	account->title = NULL;
+	account->title = strdup(name);
 	account->identity = NULL;
 	return account;
 }

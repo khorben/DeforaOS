@@ -700,8 +700,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 			if(ad->account != NULL)
 				account_delete(ad->account);
 			ac = &ad->mailer->available[ad->available];
-			ad->account = account_new("account", ac->name);
-			account_set_title(ad->account, ad->title);
+			ad->account = account_new(ac->name, ad->title);
 		}
 		if(ad->account == NULL)
 			ad->settings = gtk_label_new("Could not load plug-in");

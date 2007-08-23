@@ -18,11 +18,15 @@
 #ifndef MAILER_MAILER_H
 # define MAILER_MAILER_H
 
+# include <System.h>
 # include <gtk/gtk.h>
 # include "account/account.h"
 
 
 /* Mailer */
+/* defaults */
+# define MAILER_CONFIG_FILE ".mailer"
+
 /* types */
 typedef struct _Mailer
 {
@@ -32,6 +36,9 @@ typedef struct _Mailer
 	Account ** account;
 	unsigned int account_cnt;
 	Account * account_cur;
+
+	/* configuration */
+	Config * config;
 
 	/* widgets */
 	GtkWidget * window;
