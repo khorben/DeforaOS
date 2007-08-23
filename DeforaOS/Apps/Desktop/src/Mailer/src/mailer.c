@@ -38,6 +38,8 @@ struct _menu _menu_file[] =
 {
 	{ "_New mail", G_CALLBACK(on_file_new_mail), NULL },
 	{ "", NULL, NULL },
+	{ "Send / Receive", G_CALLBACK(on_file_send_receive), NULL },
+	{ "", NULL, NULL },
 	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT },
 	{ NULL, NULL, NULL }
 };
@@ -67,21 +69,39 @@ static struct _menubar _mailer_menubar[] =
 	{ NULL, NULL }
 };
 
+static struct _toolbar _mailer_toolbar[] =
+{
+	{ "New mail", G_CALLBACK(on_file_new_mail), "stock_mail" },
+	{ "", NULL, NULL },
+	{ "Send / Receive", G_CALLBACK(on_file_send_receive),
+		"stock_mail-send-receive" },
+	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP },
+	{ "", NULL, NULL },
+	{ "Delete", G_CALLBACK(on_delete), GTK_STOCK_DELETE },
+	{ "Print", G_CALLBACK(on_print), GTK_STOCK_PRINT },
+	{ NULL, NULL, NULL }
+};
+
 
 /* Mailer */
+/* private */
+
+
+/* public */
+/* functions */
+/* mailer_new */
 static int _mailer_error(char const * message, int ret);
 static int _mailer_dlerror(char const * message, int ret);
 static int _new_plugins(Mailer * mailer);
 static GtkWidget * _new_folders_view(void);
 static GtkWidget * _new_headers(Mailer * mailer);
 /* static gboolean _new_accounts(gpointer data); */
+
 Mailer * mailer_new(void)
 {
 	Mailer * mailer;
 	GtkWidget * vbox;
 	GtkWidget * vbox2;
-	GtkWidget * toolbar;
-	GtkToolItem * toolitem;
 	GtkWidget * hpaned;
 	GtkWidget * vpaned;
 	GtkWidget * widget;
@@ -103,34 +123,12 @@ Mailer * mailer_new(void)
 	g_signal_connect(G_OBJECT(mailer->window), "delete_event", G_CALLBACK(
 				on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* theme */
-	mailer->theme = gtk_icon_theme_get_default();
 	/* menubar */
 	widget = common_new_menubar(_mailer_menubar, mailer);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* toolbar */
-	toolbar = gtk_toolbar_new();
-	widget = gtk_image_new_from_pixbuf(gtk_icon_theme_load_icon(
-				mailer->theme, "stock_mail", 32, 0, NULL));
-	toolitem = gtk_tool_button_new(widget, "New mail");
-	g_signal_connect(toolitem, "clicked", G_CALLBACK(on_new_mail), mailer);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
-			-1);
-	widget = gtk_image_new_from_pixbuf(gtk_icon_theme_load_icon(
-				mailer->theme, "stock_mail-send-receive", 32, 0,
-				NULL));
-	toolitem = gtk_tool_button_new(widget, "Send / Receive");
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
-			-1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PRINT);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
+	widget = common_new_toolbar(_mailer_toolbar, mailer);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	hpaned = gtk_hpaned_new();
 	gtk_paned_set_position(GTK_PANED(hpaned), 160);
 	/* folders */
@@ -173,7 +171,7 @@ Mailer * mailer_new(void)
 
 static int _mailer_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "Mailer: ");
+	fputs("Mailer: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -342,6 +340,7 @@ void mailer_delete(Mailer * mailer)
 
 
 /* useful */
+/* mailer_error */
 int mailer_error(Mailer * mailer, char const * message, int ret)
 {
 	GtkWidget * dialog;
@@ -359,12 +358,14 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 }
 
 
+/* mailer_account_add */
 int mailer_account_add(Mailer * mailer, Account * account)
 	/* FIXME */
 {
 	Account ** p;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
+	GtkIconTheme * theme;
 	GdkPixbuf * pixbuf;
 	GtkTreeIter child_iter;
 	AccountFolder ** f;
@@ -380,8 +381,9 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	mailer->account[mailer->account_cnt] = account;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->view_folders));
 	gtk_tree_store_append(GTK_TREE_STORE(model), &iter, NULL);
-	pixbuf = gtk_icon_theme_load_icon(mailer->theme,
-			"stock_mail-accounts", 16, 0, NULL);
+	theme = gtk_icon_theme_get_default();
+	pixbuf = gtk_icon_theme_load_icon(theme, "stock_mail-accounts", 16, 0,
+			NULL);
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 0, pixbuf, 1,
 			account->title, -1);
 	for(f = account_folders(mailer->account[mailer->account_cnt]);
@@ -390,8 +392,7 @@ int mailer_account_add(Mailer * mailer, Account * account)
 		gtk_tree_store_append(GTK_TREE_STORE(model), &child_iter,
 				&iter);
 		icon = icons[(*f)->type];
-		pixbuf = gtk_icon_theme_load_icon(mailer->theme, icon, 16, 0,
-				NULL);
+		pixbuf = gtk_icon_theme_load_icon(theme, icon, 16, 0, NULL);
 		gtk_tree_store_set(GTK_TREE_STORE(model), &child_iter, 0,
 				pixbuf, 1, (*f)->name, -1);
 	}

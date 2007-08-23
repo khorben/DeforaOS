@@ -57,3 +57,32 @@ GtkWidget * common_new_menubar(struct _menubar * mb, gpointer data)
 	}
 	return tb_menubar;
 }
+
+
+/* common_new_toolbar */
+GtkWidget * common_new_toolbar(struct _toolbar * tb, gpointer data)
+{
+	GtkWidget * toolbar;
+	GtkIconTheme * theme;
+	unsigned int i;
+	GtkWidget * widget;
+	GtkToolItem * toolitem;
+
+	toolbar = gtk_toolbar_new();
+	theme = gtk_icon_theme_get_default();
+	for(i = 0; tb[i].name != NULL; i++)
+	{
+		if(tb[i].name[0] == '\0')
+		{
+			toolitem = gtk_separator_tool_item_new();
+			gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+			continue;
+		}
+		widget = gtk_image_new_from_pixbuf(gtk_icon_theme_load_icon(
+					theme, tb[i].stock, 32, 0, NULL));
+		toolitem = gtk_tool_button_new(widget, tb[i].name);
+		g_signal_connect(toolitem, "clicked", tb[i].callback, data);
+		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	}
+	return toolbar;
+}

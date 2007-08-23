@@ -1,5 +1,6 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -21,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 #include "compose.h"
 #include "mailer.h"
 #include "callbacks.h"
@@ -61,6 +63,13 @@ void on_file_new_mail(GtkWidget * widget, gpointer data)
 
 	compose_new(mailer);
 }
+
+
+void on_file_send_receive(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
 
 void on_file_quit(GtkWidget * widget, gpointer data)
 {
@@ -214,7 +223,6 @@ void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
 	static GtkWidget * window = NULL;
-	char const copyright[] = "Copyright (c) 2006 khorben";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
@@ -234,7 +242,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				mailer->window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
@@ -268,6 +276,24 @@ void on_new_mail(GtkWidget * widget, gpointer data)
 	Mailer * mailer = data;
 
 	compose_new(mailer);
+}
+
+
+void on_stop(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_delete(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_print(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
 }
 
 
@@ -667,6 +693,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 	gtk_window_set_title(GTK_WINDOW(widget), title[i]);
 	if(i == 1)
 	{
+		/* XXX something wrong with gtk_container_remove */
 		gtk_container_remove(GTK_CONTAINER(page), ad->settings);
 		if(old == 0)
 		{
@@ -896,6 +923,7 @@ static GtkWidget * _account_display(Account * account)
 				widget = _display_boolean(&config[i], group);
 				break;
 			default: /* should not happen */
+				assert(0);
 				continue;
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -1019,7 +1047,8 @@ void on_account_delete(GtkWidget * widget, gpointer data)
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 
-	gtk_tree_view_get_cursor(GTK_TREE_VIEW(mailer->pr_accounts), &path, NULL);
+	gtk_tree_view_get_cursor(GTK_TREE_VIEW(mailer->pr_accounts), &path,
+			NULL);
 	if(path == NULL)
 		return;
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->pr_accounts));

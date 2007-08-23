@@ -26,6 +26,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 /* file menu */
 void on_file_new_mail(GtkWidget * widget, gpointer data);
+void on_file_send_receive(GtkWidget * widget, gpointer data);
 void on_file_quit(GtkWidget * widget, gpointer data);
 
 /* edit menu */
@@ -36,6 +37,9 @@ void on_help_about(GtkWidget * widget, gpointer data);
 
 /* toolbar */
 void on_new_mail(GtkWidget * widget, gpointer data);
+void on_stop(GtkWidget * widget, gpointer data);
+void on_delete(GtkWidget * widget, gpointer data);
+void on_print(GtkWidget * widget, gpointer data);
 
 
 /* preferences window */

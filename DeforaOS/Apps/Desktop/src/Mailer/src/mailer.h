@@ -35,7 +35,6 @@ typedef struct _Mailer
 
 	/* widgets */
 	GtkWidget * window;
-	GtkIconTheme * theme;
 	GtkWidget * view_folders;
 	GtkWidget * view_headers;
 	GtkWidget * hdr_vbox;
