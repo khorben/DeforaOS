@@ -707,8 +707,10 @@ static void _on_assistant_apply(GtkWidget * widget, gpointer data)
 	/* _on_assistant_close is then automatically called */
 }
 
+/* on_assistant_prepare */
 static GtkWidget * _account_config_update(AccountConfig * config);
 static GtkWidget * _account_display(Account * account);
+
 static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 		gpointer data)
 {
@@ -738,6 +740,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 					ad->account->plugin->config);
 		}
 		gtk_container_add(GTK_CONTAINER(page), ad->settings);
+		gtk_widget_show_all(ad->settings);
 	}
 	else if(i == 2)
 	{
@@ -748,12 +751,14 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 	old = i;
 }
 
+/* _account_config_update */
 static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_password(AccountConfig * config,
 		GtkSizeGroup * group);
 static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_boolean(AccountConfig * config);
+
 static GtkWidget * _account_config_update(AccountConfig * config)
 	/* FIXME append ":" to labels */
 {
@@ -791,7 +796,6 @@ static GtkWidget * _account_config_update(AccountConfig * config)
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
-	gtk_widget_show_all(vbox);
 	return vbox;
 }
 
