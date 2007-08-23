@@ -165,6 +165,7 @@ static void _on_gtkassistant_back(GtkWidget * widget, gpointer data)
 static gint gtk_assistant_get_current_page(GtkWidget * widget)
 {
 	/* FIXME */
+	return -1;
 }
 
 
