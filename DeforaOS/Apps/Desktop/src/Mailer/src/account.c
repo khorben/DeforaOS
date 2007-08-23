@@ -41,6 +41,8 @@ Account * account_new(char const * type, char const * name)
 	Account * account;
 	char * filename;
 
+	if(type == NULL || name == NULL || strlen(name) == 0)
+		return NULL;
 	if((account = calloc(1, sizeof(*account))) == NULL)
 		return NULL;
 	if((account->name = strdup(name)) == NULL
@@ -74,9 +76,16 @@ void account_delete(Account * account)
 
 	if(account->plugin->config != NULL)
 		for(p = account->plugin->config; p->name != NULL; p++)
-			if(p->type == ACT_STRING || p->type == ACT_PASSWORD
-					|| p->type == ACT_FILE)
-				free(p->value);
+			switch(p->type)
+			{
+				case ACT_STRING:
+				case ACT_PASSWORD:
+				case ACT_FILE:
+					free(p->value);
+					break;
+				default:
+					break;
+			}
 	free(account->name);
 	free(account->title);
 	dlclose(account->handle);
