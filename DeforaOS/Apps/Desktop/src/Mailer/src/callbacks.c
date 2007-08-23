@@ -28,8 +28,6 @@ static char const _copyright[] =
 #include "callbacks.h"
 #include "../config.h"
 
-#define DEBUG
-
 
 /* constants */
 static char const * _authors[] =
