@@ -96,6 +96,42 @@ int account_set_title(Account * account, char const * title)
 
 
 /* useful */
+/* account_config_load */
+int account_config_load(Account * account, Config * config)
+{
+	AccountConfig * p;
+	char * value;
+	char * q;
+	long l;
+
+	for(p = account->plugin->config; p->name != NULL; p++)
+	{
+		if((value = config_get(config, account->title, p->name))
+				== NULL)
+			continue;
+		switch(p->type)
+		{
+			case ACT_FILE:
+			case ACT_STRING:
+			case ACT_PASSWORD: /* FIXME unscramble */
+				free(p->value);
+				p->value = strdup(value);
+				break;
+			case ACT_UINT16:
+				l = strtol(value, &q, 0);
+				if(value[0] != '\0' && *q == '\0')
+					(long)p->value = l;
+				break;
+				/* FIXME implement the rest */
+			case ACT_BOOLEAN:
+			case ACT_NONE:
+				break;
+		}
+	}
+	return 0;
+}
+
+
 /* account_disable */
 int account_disable(Account * account)
 {

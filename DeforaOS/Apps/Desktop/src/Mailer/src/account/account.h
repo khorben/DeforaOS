@@ -18,6 +18,8 @@
 #ifndef MAILER_ACCOUNT_H
 # define MAILER_ACCOUNT_H
 
+# include <System.h>
+
 
 /* types */
 typedef struct _AccountIdentity
@@ -84,6 +86,8 @@ void account_delete(Account * account);
 int account_set_title(Account * account, char const * title);
 
 /* useful */
+int account_config_load(Account * account, Config * config);
+
 int account_disable(Account * account);
 int account_enable(Account * account);
 /* FIXME wrong we just need receive, then it calls callbacks */

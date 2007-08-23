@@ -127,6 +127,7 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 		return 1;
 	if((account = account_new(type, name)) == NULL)
 		return 1;
+	account_config_load(account, mailer->config);
 	mailer_account_add(mailer, account);
 	return 0;
 }
@@ -457,4 +458,32 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	}
 	mailer->account_cnt++;
 	return FALSE;
+}
+
+
+/* mailer_account_disable */
+int mailer_account_disable(Mailer * mailer, Account * account)
+{
+	unsigned int i;
+
+	for(i = 0; i < mailer->account_cnt; i++)
+		if(mailer->account[i] == account)
+			break;
+	if(i == mailer->account_cnt)
+		return 1;
+	return account_disable(account);
+}
+
+
+/* mailer_account_enable */
+int mailer_account_enable(Mailer * mailer, Account * account)
+{
+	unsigned int i;
+
+	for(i = 0; i < mailer->account_cnt; i++)
+		if(mailer->account[i] == account)
+			break;
+	if(i == mailer->account_cnt)
+		return 1;
+	return account_enable(account);
 }
