@@ -41,9 +41,8 @@ Account * account_new(char const * type, char const * name)
 	Account * account;
 	char * filename;
 
-	if((account = malloc(sizeof(*account))) == NULL)
+	if((account = calloc(1, sizeof(*account))) == NULL)
 		return NULL;
-	memset(account, 0, sizeof(*account));
 	if((account->name = strdup(name)) == NULL
 			|| (filename = malloc(strlen(PLUGINDIR ACCOUNT)
 					+ strlen(name) + 6)) == NULL)
