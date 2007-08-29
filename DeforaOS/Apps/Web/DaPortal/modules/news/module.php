@@ -117,6 +117,7 @@ function news_admin($args)
 			'action' => 'disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
+	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
