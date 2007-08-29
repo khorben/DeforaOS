@@ -92,7 +92,7 @@ function _content_select($id, $enabled = '')
 	$and = is_bool($enabled) ? " AND enabled='".$enabled.'"' : '';
 	if(($content = _sql_array('SELECT content_id AS id, timestamp'
 			.', daportal_content.user_id AS user_id, username'
-			.', title, content, enabled'
+			.', title, content, daportal_content.enabled AS enabled'
 			.' FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id=daportal_user.user_id'
 			." AND module_id='$module_id'"
