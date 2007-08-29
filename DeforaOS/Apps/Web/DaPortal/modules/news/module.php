@@ -26,6 +26,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['MODIFICATION_OF_NEWS'] = 'Modification of news';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
+$text['NEWS'] = 'News';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_PREVIEW'] = 'News preview';
 $text['SUBMIT_NEWS'] = 'Submit news';
@@ -409,7 +410,7 @@ function news_system($args)
 {
 	global $html, $title;
 
-	$title.=' - News';
+	$title.=' - '.NEWS;
 	if(isset($args['action']) && $args['action'] == 'rss')
 	{
 		$html = 0;
