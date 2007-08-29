@@ -10,11 +10,6 @@
 <?php global $user_id; require_once('./system/user.php');
 if($comment['id'] && _user_admin($user_id)) { ?>
 			&middot; <a href="index.php?module=content&amp;action=modify&amp;id=<?php echo _html_safe($comment['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
-<?php if($comment['enabled'] == SQL_TRUE) { ?>
-			&middot; <a href="index.php?module=content&amp;action=disable&amp;id=<?php echo _html_safe($comment['id']); ?>&amp;show"><div class="icon disabled"></div> <?php echo _html_safe(DISABLE); ?></a>
-<?php } else { ?>
-			&middot; <a href="index.php?module=content&amp;action=enable&amp;id=<?php echo _html_safe($comment['id']); ?>&amp;show"><div class="icon enabled"></div> <?php echo _html_safe(ENABLE); ?></a>
-<?php } ?>
 <?php } ?>
 		</div>
 <?php } ?>
