@@ -144,8 +144,8 @@ function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 			$link .= '/'.$id;
 		if($title != FALSE && $title != '')
 		{
-			$title = str_replace(array(' ', '/', '?', '&', '%'),
-					'-', $title);
+			$title = str_replace(array(' ', '/', '?', '&', '%',
+						'#'), '-', $title);
 			$link .= '/'.$title;
 		}
 		if($params != FALSE && $params != '')
