@@ -29,6 +29,7 @@ $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS'] = 'News';
 $text['NEWS_ON'] = 'on';
 $text['NEWS_PREVIEW'] = 'News preview';
+$text['NEWS_SUBMISSION'] = 'News submission';
 $text['SUBMIT_NEWS'] = 'Submit news';
 global $lang;
 if($lang == 'fr')
@@ -45,7 +46,7 @@ function _news_insert($news)
 {
 	global $user_id;
 
-	if(!$user_id)
+	if($user_id == 0) //FIXME make it an option
 		return FALSE;
 	require_once('./system/content.php');
 	return _content_insert($news['title'], $news['content']);
@@ -59,7 +60,8 @@ function news_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title news">'._html_safe(NEWS_ADMINISTRATION)."</h1>\n");
+	print('<h1 class="title news">'._html_safe(NEWS_ADMINISTRATION)
+			."</h1>\n");
 	$order = 'DESC';
 	$sort = 'timestamp';
 	if(isset($args['sort']))
@@ -328,8 +330,7 @@ function news_rss($args)
 	$content = ''; //FIXME
 	include('./modules/news/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-			.', username'
-			.' FROM daportal_content, daportal_user'
+			.', username FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id'
 			.'=daportal_user.user_id'
 			." AND module_id='$module_id'"
@@ -352,34 +353,87 @@ function news_rss($args)
 }
 
 
-function news_submit($news)
+function news_submit($args)
 {
-	global $user_id, $user_name;
+	global $error, $user_id, $user_name;
 
-	//FIXME make it an option
-	if($user_id == 0)
-		return _error(PERMISSION_DENIED);
-	$news['user_id'] = $user_id;
-	$news['username'] = $user_name;
-	if(isset($news['preview']))
+	if(isset($error) && strlen($error))
+		_error($error);
+	else if(isset($args['send']))
+	{
+		return include('./modules/news/news_posted.tpl');
+	}
+	else if(isset($args['preview']))
 	{
 		$long = 1;
 		$title = NEWS_PREVIEW;
-		$news['title'] = stripslashes($news['title']);
-		$news['content'] = stripslashes($news['content']);
-		$news['date'] = strftime(DATE_FORMAT);
+		$news = array('user_id' => $user_id, 'username' => $user_name,
+				'title' => stripslashes($args['title']),
+				'content' => stripslashes($args['content']),
+				'date' => strftime(DATE_FORMAT),
+				'preview' => 1);
 		include('./modules/news/news_display.tpl');
 		unset($title);
 		return include('./modules/news/news_update.tpl');
 	}
-	if(!isset($news['send']))
+	$title = NEWS_SUBMISSION;
+	return include('./modules/news/news_update.tpl');
+}
+
+
+function news_system($args)
+{
+	global $html, $title;
+
+	$title.=' - '.NEWS;
+	if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
-		$title = 'News submission';
-		return include('./modules/news/news_update.tpl');
+		if(isset($args['action']) && $args['action'] == 'rss')
+		{
+			$html = 0;
+			header('Content-Type: text/xml');
+		}
+		return;
 	}
+	else if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return;
+	switch($args['action'])
+	{
+		case 'submit':
+			return _system_news_submit($args);
+		case 'update':
+			return _system_news_update($args);
+	}
+}
+
+function _system_news_submit($args)
+{
+	global $error, $user_id, $user_name;
+
+	//FIXME make it an option
+	if($user_id == 0)
+	{
+		$error = PERMISSION_DENIED;
+		return;
+	}
+	if(isset($args['preview']) || !isset($args['send']))
+		return;
+	$news = array('user_id' => $user_id, 'username' => $user_name,
+			'title' => $args['title'],
+			'content' => $args['content']);
 	if(!($news['id'] = _news_insert($news)))
-		return _error('Could not insert news');
-	include('./modules/news/news_posted.tpl');
+	{
+		$error = 'Could not insert news';
+		return;
+	}
+	_submit_send_mail($news);
+	header('Location: '._module_link('news', 'submit', FALSE, FALSE,
+				'send='));
+	exit(0);
+}
+
+function _submit_send_mail($news)
+{
 	//send mail
 	$admins = _sql_array('SELECT username, email FROM daportal_user'
 			." WHERE enabled='1' AND admin='1'");
@@ -395,8 +449,7 @@ function news_submit($news)
 	$news['title'] = stripslashes($news['title']);
 	$news['date'] = strftime(DATE_FORMAT);
 	$news['content'] = "News is available for moderation at:\n"
-		.'https://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']
-		.'?module=news&action=modify&id='.$news['id']."\n"
+		._module_link('news', 'modify', $news['id'])."\n"
 		."News preview:\n\n"
 		."News by ".$news['username']." on ".$news['date']."\n"
 		.stripslashes($news['content']);
@@ -405,45 +458,59 @@ function news_submit($news)
 			$news['content']);
 }
 
-
-function news_system($args)
+function _system_news_update($args)
 {
-	global $html, $title;
+	global $error, $user_id;
 
-	$title.=' - '.NEWS;
-	if(isset($args['action']) && $args['action'] == 'rss')
+	if(isset($args['preview']))
+		return;
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
 	{
-		$html = 0;
-		header('Content-Type: text/xml');
+		$error = PERMISSION_DENIED;
+		return;
 	}
+	if(!is_numeric($args['id']))
+	{
+		$error = INVALID_ARGUMENT;
+		return;
+	}
+	require_once('./system/content.php');
+	if(!_content_update($args['id'], $args['title'], $args['content']))
+	{
+		$error = 'Could not update news';
+		return;
+	}
+	header('Location: '._module_link('news', FALSE, $args['id'],
+				$args['title']));
+	exit(0);
 }
 
 
-function news_update($news)
+function news_update($args)
 {
-	global $user_id, $user_name;
+	global $error, $user_id, $user_name;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	if(isset($news['preview']))
+	if(isset($error) && strlen($error))
+		_error($error);
+	else if(!is_numeric($args['id']))
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	if(($news = _content_select($args['id'])) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	if(isset($args['preview']))
 	{
 		$long = 1;
 		$title = NEWS_PREVIEW;
-		$news['id'] = stripslashes($news['id']);
-		$news['title'] = stripslashes($news['title']);
-		$news['user_id'] = $user_id;
-		$news['username'] = $user_name;
-		$news['date'] = strftime(DATE_FORMAT);
-		$news['content'] = stripslashes($news['content']);
+		$news['title'] = stripslashes($args['title']);
+		$news['date'] = strftime(DATE_FORMAT,
+				strtotime(substr($news['timestamp'], 0, 19)));
+		$news['content'] = stripslashes($args['content']);
 		include('./modules/news/news_display.tpl');
 		unset($title);
 		return include('./modules/news/news_update.tpl');
 	}
-	require_once('./system/content.php');
-	if(!_content_update($news['id'], $news['title'], $news['content']))
-		return _error('Could not update news');
-	news_display(array('id' => $news['id']));
+	include('./modules/news/news_update.tpl');
 }
 
 ?>
