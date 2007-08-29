@@ -90,10 +90,12 @@ function _content_select($id, $enabled = '')
 	if(!is_numeric($id))
 		return FALSE;
 	$and = is_bool($enabled) ? " AND enabled='".$enabled.'"' : '';
-	if(($content = _sql_array('SELECT content_id AS id, timestamp, user_id'
+	if(($content = _sql_array('SELECT content_id AS id, timestamp'
+			.', daportal_content.user_id AS user_id, username'
 			.', title, content, enabled'
-			.' FROM daportal_content'
-			." WHERE module_id='$module_id'"
+			.' FROM daportal_content, daportal_user'
+			.' WHERE daportal_content.user_id=daportal_user.user_id'
+			." AND module_id='$module_id'"
 			." AND content_id='$id'".$and)) == FALSE)
 		return FALSE;
 	return $content[0];
