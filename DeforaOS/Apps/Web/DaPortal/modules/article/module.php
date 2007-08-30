@@ -24,6 +24,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ARTICLE'] = 'Article';
 $text['ARTICLE_ON'] = 'on';
 $text['ARTICLE_PREVIEW'] = 'Article preview';
 $text['ARTICLE_SUBMISSION'] = 'Article submission';
