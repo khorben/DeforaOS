@@ -30,7 +30,6 @@ $text['ARTICLE_PREVIEW'] = 'Article preview';
 $text['ARTICLE_SUBMISSION'] = 'Article submission';
 $text['ARTICLES'] = 'Articles';
 $text['ARTICLES_ADMINISTRATION'] = 'Articles administration';
-$text['ARTICLES_BY'] = 'Articles by';
 $text['MODIFICATION_OF_ARTICLE'] = 'Modification of article';
 $text['SUBMIT_ARTICLE'] = 'Submit article';
 global $lang;
@@ -39,7 +38,7 @@ if($lang == 'fr')
 	$text['ARTICLE_ON'] = 'le';
 	$text['ARTICLE_PREVIEW'] = "Aperçu de l'article";
 	$text['ARTICLES_ADMINISTRATION'] = 'Administration des articles';
-	$text['ARTICLES_BY'] = 'Articles par';
+	$text['MODIFICATION_OF_ARTICLE'] = "Modification de l\'article";
 }
 _lang($text);
 
@@ -195,7 +194,7 @@ function article_list($args)
 			.' FROM daportal_user'
 			." WHERE user_id='".$args['user_id']."'")))
 	{
-		$title = ARTICLES_BY.' '.$username;
+		$title = ARTICLES._BY_.' '.$username;
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1 class="title article">'._html_safe($title).'</h1>'."\n");
