@@ -116,11 +116,13 @@ function _content_user_update($id, $title, $content)
 
 function _content_update($id, $title, $content)
 {
+	global $module_id;
+
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
 	return _sql_query('UPDATE daportal_content SET'
 			." title='$title', content='$content'"
-			." WHERE content_id='$id'");
+			." WHERE module_id='$module_id' AND content_id='$id'");
 }
 
 ?>
