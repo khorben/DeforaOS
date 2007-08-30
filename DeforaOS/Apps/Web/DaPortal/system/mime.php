@@ -19,10 +19,11 @@
 
 function _mime_from_ext($filename)
 {
-	static $types = array();
+	static $types = FALSE;
 
-	if(count($types) == 0)
+	if(!is_array($types))
 	{
+		$types = array();
 		if(($globs = _config_get('admin', 'globs')) == FALSE)
 		{
 			_error('MIME globs file is not defined');
