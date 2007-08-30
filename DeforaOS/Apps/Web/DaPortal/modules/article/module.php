@@ -24,7 +24,6 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
-$text['ARTICLE_BY'] = 'Article by';
 $text['ARTICLE_ON'] = 'on';
 $text['ARTICLE_PREVIEW'] = 'Article preview';
 $text['ARTICLE_SUBMISSION'] = 'Article submission';
@@ -36,7 +35,6 @@ $text['SUBMIT_ARTICLE'] = 'Submit article';
 global $lang;
 if($lang == 'fr')
 {
-	$text['ARTICLE_BY'] = 'Article par';
 	$text['ARTICLE_ON'] = 'le';
 	$text['ARTICLE_PREVIEW'] = "Aperçu de l'article";
 	$text['ARTICLES_ADMINISTRATION'] = 'Administration des articles';
@@ -49,7 +47,7 @@ function _article_insert($article)
 {
 	global $user_id;
 
-	if(!$user_id)
+	if($user_id == 0) //FIXME make it an option
 		return FALSE;
 	require_once('./system/content.php');
 	return _content_insert($article['title'], $article['content']);
@@ -63,7 +61,8 @@ function article_admin($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title article">'.ARTICLES_ADMINISTRATION."</h1>\n");
+	print('<h1 class="title article">'._html_safe(ARTICLES_ADMINISTRATION)
+			."</h1>\n");
 	$order = 'ASC';
 	$sort = 'timestamp';
 	if(isset($args['sort']))
@@ -76,7 +75,7 @@ function article_admin($args)
 			case 'date':
 			default:	$order = 'DESC';	break;
 		}
-	$articles = _sql_array('SELECT content_id AS id, timestamp'
+	$res = _sql_array('SELECT content_id AS id, timestamp'
 		.', daportal_content.enabled AS enabled, title, content'
 		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_content, daportal_user, daportal_module'
@@ -84,31 +83,30 @@ function article_admin($args)
 		." AND daportal_module.name='article'"
 		.' AND daportal_module.module_id=daportal_content.module_id'
 		.' ORDER BY '.$sort.' '.$order);
-	if(!is_array($articles))
+	if(!is_array($res))
 		return _error('Unable to list articles');
-	for($i = 0, $cnt = count($articles); $i < $cnt; $i++)
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
-		$articles[$i]['module'] = 'article';
-		$articles[$i]['apply_module'] = 'article';
-		$articles[$i]['action'] = 'modify';
-		$articles[$i]['apply_id'] = $articles[$i]['id'];
-		$articles[$i]['icon'] = 'icons/16x16/article.png';
-		$articles[$i]['thumbnail'] = 'icons/48x48/article.png';
-		$articles[$i]['name'] = $articles[$i]['title'];
-		$articles[$i]['username'] = '<a href="'._html_link('user', '',
-			$articles[$i]['user_id'], $articles[$i]['username'])
-				.'">'._html_safe($articles[$i]['username'])
-				.'</a>';
-		$articles[$i]['enabled'] = $articles[$i]['enabled']
-			== SQL_TRUE ? 'enabled' : 'disabled';
-		$articles[$i]['enabled'] = '<img src="icons/16x16/'
-				.$articles[$i]['enabled'].'.png" alt="'
-				.$articles[$i]['enabled'].'" title="'
-				.($articles[$i]['enabled'] == 'enabled'
+		$res[$i]['module'] = 'article';
+		$res[$i]['apply_module'] = 'article';
+		$res[$i]['action'] = 'modify';
+		$res[$i]['apply_id'] = $res[$i]['id'];
+		$res[$i]['icon'] = 'icons/16x16/article.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/article.png';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['username'] = '<a href="'._html_link('user', '',
+			$res[$i]['user_id'], $res[$i]['username']).'">'
+				._html_safe($res[$i]['username']).'</a>';
+		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
+			'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+				.$res[$i]['enabled'].'.png" alt="'
+				.$res[$i]['enabled'].'" title="'
+				.($res[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
-		$articles[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
-				strtotime(substr($articles[$i]['timestamp'],
-						0, 19))));
+		$res[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
+					strtotime(substr($res[$i]['timestamp'],
+							0, 19))));
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => SUBMIT_ARTICLE, 'class' => 'new',
@@ -121,7 +119,7 @@ function article_admin($args)
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
-	_module('explorer', 'browse_trusted', array('entries' => $articles,
+	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => array('enabled' => ENABLED,
 					'username' => AUTHOR, 'date' => DATE),
 				'module' => 'article', 'action' => 'admin',

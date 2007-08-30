@@ -3,7 +3,7 @@
 <?php if(!$long) { ?>
 	<div class="title"><span><span><span><a href="<?php echo _html_link('article', '', $article['id'], $article['title']); ?>"><?php echo _html_safe($article['title']); ?></a></span></span></span></div>
 <?php } ?>
-	<div class="author"><?php echo _html_safe(ARTICLE_BY); ?> <a href="<?php echo _html_link('user', '', $article['user_id'], $article['username']); ?>"><?php echo _html_safe($article['username']); ?></a></div>
+	<div class="author"><?php echo _html_safe(ARTICLE._BY_); ?> <a href="<?php echo _html_link('user', '', $article['user_id'], $article['username']); ?>"><?php echo _html_safe($article['username']); ?></a></div>
 	<div class="date"><?php echo _html_safe(ARTICLE_ON); ?> <?php echo _html_safe($article['date']); ?></div>
 <?php if($long) { ?>
 	<div class="content"><?php echo _html_pre($article['content']); ?></div>
