@@ -169,10 +169,7 @@ function news_display($args)
 	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
 	require_once('./system/content.php');
 	if(($news = _content_select($args['id'], 1)) == FALSE)
-		return _error('Invalid news');
-	if(($news['username'] = _sql_single('SELECT username FROM daportal_user'
-			." WHERE user_id='".$news['user_id']."'")) == FALSE)
-		return _error('Invalid user');
+		return _error(INVALID_ARGUMENT);
 	$long = 1;
 	$title = $news['title'];
 	$news['date'] = strftime(DATE_FORMAT,
@@ -224,35 +221,6 @@ function news_headline($args)
 }
 
 
-function _list_user($user_id, $username)
-{
-	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
-			."</h1>\n");
-	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-		.', daportal_content.enabled, daportal_content.user_id'
-		.', username, name AS module'
-		.' FROM daportal_content, daportal_user, daportal_module'
-		.' WHERE daportal_user.user_id=daportal_content.user_id'
-		." AND daportal_content.enabled='1'"
-		." AND daportal_module.name='news'"
-		.' AND daportal_module.module_id=daportal_content.module_id'
-		." AND daportal_content.user_id='$user_id'"
-		.' ORDER BY timestamp DESC');
-	if(!is_array($res))
-		return _error('Unable to list news');
-	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-	{
-		$res[$i]['action'] = 'default';
-		$res[$i]['icon'] = 'icons/16x16/news.png';
-		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
-		$res[$i]['name'] = $res[$i]['title'];
-		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
-						$res[$i]['timestamp'], 0, 19)));
-	}
-	_module('explorer', 'browse', array('class' => array('date' => 'Date'),
-				'view' => 'details', 'entries' => $res));
-}
-
 function news_list($args)
 {
 	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
@@ -288,6 +256,40 @@ function news_list($args)
 	_html_paging(_html_link('news', 'list').'&amp;', $page, $pages);
 }
 
+function _list_user($user_id, $username)
+{
+	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
+			."</h1>\n");
+	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
+		.', daportal_content.enabled AS enabled'
+		.', daportal_content.user_id AS user_id'
+		.', username, name AS module'
+		.' FROM daportal_content, daportal_user, daportal_module'
+		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_module.name='news'"
+		.' AND daportal_module.module_id=daportal_content.module_id'
+		." AND daportal_content.user_id='$user_id'"
+		.' ORDER BY timestamp DESC');
+	if(!is_array($res))
+		return _error('Unable to list news');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['action'] = 'default';
+		$res[$i]['icon'] = 'icons/16x16/news.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
+						$res[$i]['timestamp'], 0, 19)));
+	}
+	$toolbar = array();
+	$toolbar[] = array('title' => SUBMIT_NEWS, 'class' => 'new',
+			'link' => _module_link('news', 'submit'));
+	_module('explorer', 'browse', array('class' => array('date' => DATE),
+				'view' => 'details', 'entries' => $res,
+				'toolbar' => $toolbar));
+}
+
 
 function news_modify($args)
 {
@@ -296,7 +298,7 @@ function news_modify($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(!($module_id = _module_id('news')))
+	if(($module_id = _module_id('news')) == FALSE)
 		return _error('Could not verify module');
 	$news = _sql_array('SELECT content_id AS id, title, content, enabled'
 		.' FROM daportal_content WHERE module_id='."'$module_id'"
@@ -359,26 +361,27 @@ function news_submit($args)
 	global $error, $user_id, $user_name;
 
 	if(isset($error) && strlen($error))
-		_error($error);
-	else if(isset($args['send']))
+		return _error($error);
+	if(isset($args['send']))
 	{
 		return include('./modules/news/news_posted.tpl');
 	}
-	else if(isset($args['preview']))
+	if(isset($args['preview']))
 	{
 		$long = 1;
 		$title = NEWS_PREVIEW;
-		$news = array('user_id' => $user_id, 'username' => $user_name,
+		$news = array('user_id' => $user_id,
+				'username' => $user_name,
 				'title' => stripslashes($args['title']),
 				'content' => stripslashes($args['content']),
 				'date' => strftime(DATE_FORMAT),
 				'preview' => 1);
 		include('./modules/news/news_display.tpl');
 		unset($title);
-		return include('./modules/news/news_update.tpl');
 	}
-	$title = NEWS_SUBMISSION;
-	return include('./modules/news/news_update.tpl');
+	else
+		$title = NEWS_SUBMISSION;
+	include('./modules/news/news_update.tpl');
 }
 
 
@@ -411,8 +414,7 @@ function _system_news_submit($args)
 {
 	global $error, $user_id, $user_name;
 
-	//FIXME make it an option
-	if($user_id == 0)
+	if($user_id == 0) //FIXME make it an option
 	{
 		$error = PERMISSION_DENIED;
 		return;
@@ -463,14 +465,14 @@ function _system_news_update($args)
 {
 	global $error, $user_id;
 
-	if(isset($args['preview']))
-		return;
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 	{
 		$error = PERMISSION_DENIED;
 		return;
 	}
+	if(isset($args['preview']))
+		return;
 	if(!is_numeric($args['id']))
 	{
 		$error = INVALID_ARGUMENT;
@@ -493,8 +495,8 @@ function news_update($args)
 	global $error, $user_id, $user_name;
 
 	if(isset($error) && strlen($error))
-		_error($error);
-	else if(!is_numeric($args['id']))
+		return _error($error);
+	if(!is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	if(($news = _content_select($args['id'])) == FALSE)
@@ -504,12 +506,11 @@ function news_update($args)
 		$long = 1;
 		$title = NEWS_PREVIEW;
 		$news['title'] = stripslashes($args['title']);
-		$news['date'] = strftime(DATE_FORMAT,
-				strtotime(substr($news['timestamp'], 0, 19)));
+		$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
+						$news['timestamp'], 0, 19)));
 		$news['content'] = stripslashes($args['content']);
 		include('./modules/news/news_display.tpl');
 		unset($title);
-		return include('./modules/news/news_update.tpl');
 	}
 	include('./modules/news/news_update.tpl');
 }
