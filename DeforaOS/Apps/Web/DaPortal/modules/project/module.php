@@ -598,13 +598,16 @@ function project_bug_modify($args)
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED, 1);
+		return _error(PERMISSION_DENIED);
+	if(!isset($args['bug_id']))
+		return _error(INVALID_ARGUMENT);
 	$bug = _sql_array('SELECT bug_id AS id, title, content, state, type'
 			.', priority'
 			.' FROM daportal_bug, daportal_content'
 			.' WHERE daportal_bug.content_id'
 			.'=daportal_content.content_id'
-			." AND bug_id='".$args['id']."'");
+			." AND daportal_bug.content_id='".$args['id']."'"
+			." AND bug_id='".$args['bug_id']."'");
 	if(!is_array($bug) || count($bug) != 1)
 		return _error(INVALID_ARGUMENT);
 	$bug = $bug[0];
@@ -849,8 +852,7 @@ function project_bug_update($args)
 	global $user_id, $module_id;
 
 	require_once('./system/user.php');
-	//FIXME could be the project admin
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id)) //FIXME could be the project admin
 		return _error(PERMISSION_DENIED);
 	$id = $args['bug_id'];
 	if(($content_id = _sql_single('SELECT content_id FROM daportal_bug'
