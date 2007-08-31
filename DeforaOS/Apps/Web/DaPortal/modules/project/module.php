@@ -1363,8 +1363,9 @@ function project_timeline($args)
 	}
 	print('<h1 class="title project">'._html_safe($project['name'])
 			.' '._html_safe(TIMELINE).'</h1>'."\n");
-	//FIXME one more hard-coded variable
-	if(($fp = fopen('/Apps/CVS/CVSROOT/history', 'r')) == FALSE)
+	if(($cvsrep = _config_get('project', 'cvsroot')) == FALSE
+			|| ($fp = fopen($cvsrep.'/CVSROOT/history', 'r'))
+			== FALSE)
 		return _error('Unable to open history file', 1);
 	$entries = array();
 	$i = 0;
