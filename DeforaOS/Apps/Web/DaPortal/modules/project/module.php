@@ -137,27 +137,27 @@ function project_admin($args)
 		.' WHERE daportal_content.user_id=daportal_user.user_id'
 		.' AND daportal_content.content_id=daportal_project.project_id'
 		.' ORDER BY name ASC';
-	$projects = _sql_array($sql);
-	if(!is_array($projects))
+	$res = _sql_array($sql);
+	if(!is_array($res))
 		return _error('Could not list projects');
-	for($i = 0, $cnt = count($projects); $i < $cnt; $i++)
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
-		$projects[$i]['name'] = _html_safe($projects[$i]['name']);
-		$projects[$i]['icon'] = 'icons/16x16/project.png';
-		$projects[$i]['thumbnail'] = 'icons/48x48/project.png';
-		$projects[$i]['admin'] = '<a href="'._html_link('project',
-			'list', '', '', 'user_id='.$projects[$i]['user_id'])
-				.'">'._html_safe($projects[$i]['admin']).'</a>';
-		$projects[$i]['desc'] = _html_safe($projects[$i]['desc']);
-		$projects[$i]['module'] = 'project';
-		$projects[$i]['action'] = 'modify';
-		$projects[$i]['apply_module'] = 'project';
-		$projects[$i]['apply_id'] = $projects[$i]['id'];
-		$projects[$i]['enabled'] = ($projects[$i]['enabled']
-				== SQL_TRUE) ? 'enabled' : 'disabled';
-		$projects[$i]['enabled'] = '<img src="icons/16x16/'
-			.$projects[$i]['enabled'].'.png" alt="'
-			.$projects[$i]['enabled'].'"/>';
+		$res[$i]['name'] = _html_safe($res[$i]['name']);
+		$res[$i]['icon'] = 'icons/16x16/project.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/project.png';
+		$res[$i]['admin'] = '<a href="'._html_link('project', 'list',
+			'', '', 'user_id='.$res[$i]['user_id']).'">'
+				._html_safe($res[$i]['admin']).'</a>';
+		$res[$i]['desc'] = _html_safe($res[$i]['desc']);
+		$res[$i]['module'] = 'project';
+		$res[$i]['action'] = 'modify';
+		$res[$i]['apply_module'] = 'project';
+		$res[$i]['apply_id'] = $res[$i]['id'];
+		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
+			? 'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+			.$res[$i]['enabled'].'.png" alt="'
+			.$res[$i]['enabled'].'"/>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_PROJECT, 'class' => 'new',
@@ -169,7 +169,7 @@ function project_admin($args)
 			'action' => 'enable', 'confirm' => 'enable');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
-	_module('explorer', 'browse_trusted', array('entries' => $projects,
+	_module('explorer', 'browse_trusted', array('entries' => $res,
 			'class' => array('enabled' => ENABLED,
 					'admin' => ADMINISTRATOR,
 					'desc' => DESCRIPTION,
@@ -177,13 +177,23 @@ function project_admin($args)
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'project', 'action' => 'admin'));
 	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'."\n");
-	$sql = 'SELECT title AS name, enabled'
-		.' FROM daportal_bug, daportal_content'
+	$sql = 'SELECT daportal_bug.content_id AS id, bug_id, title AS name'
+		.', daportal_content.enabled AS enabled, name AS module'
+		.', project_id'
+		.' FROM daportal_bug, daportal_content, daportal_module'
 		.' WHERE daportal_bug.content_id=daportal_content.content_id'
+		.' AND daportal_content.module_id=daportal_module.module_id'
 		.' ORDER BY bug_id DESC';
-	$reports = _sql_array($sql);
-	if(!is_array($reports))
+	$res = _sql_array($sql);
+	if(!is_array($res))
 		return _error('Could not list reports');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['action'] = 'bug_modify';
+		$res[$i]['title'] = $res[$i]['name'];
+		$res[$i]['args'] = 'bug_id='.$res[$i]['bug_id'];
+		$res[$i]['project'] = _project_name($res[$i]['project_id']);
+	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_REPORT, 'class' => 'new',
 			'link' => _module_link('project', 'bug_new'));
@@ -194,9 +204,11 @@ function project_admin($args)
 			'action' => 'enable', 'confirm' => 'enable');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
-	_module('explorer', 'browse', array('entries' => array(),
+	_module('explorer', 'browse', array('entries' => $res,
 				'view' => 'details', 'toolbar' => $toolbar,
-				'class' => array('enabled' => ENABLED),
+				'class' => array('enabled' => ENABLED,
+					'bug_id' => 'Bug #',
+					'project' => PROJECT),
 				'module' => 'project', 'action' => 'admin'));
 }
 
@@ -527,7 +539,7 @@ function project_bug_list($args)
 		.' AND daportal_project.project_id=daportal_bug.project_id';
 	$bugs = _sql_array($sql.$where.$order);
 	if(!is_array($bugs))
-		return _error('Unable to list bugs', 1);
+		return _error('Unable to list bugs');
 	for($i = 0, $cnt = count($bugs); $i < $cnt; $i++)
 	{
 		$bugs[$i]['thumbnail'] = 'icons/48x48/bug';
@@ -875,7 +887,13 @@ function project_config_update($args)
 function project_default($args)
 {
 	if(isset($args['id']))
+	{
+		$id = $args['id'];
+		if(_sql_single('SELECT content_id FROM daportal_bug WHERE'
+					." content_id='$id'") == $id)
+			return project_bug_display($args);
 		return project_display($args);
+	}
 	if(isset($args['user_id']))
 		return project_list($args);
 	include('./modules/project/default.tpl');
