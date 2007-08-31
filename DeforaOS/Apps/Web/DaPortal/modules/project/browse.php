@@ -30,7 +30,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	//FIXME un-hardcode locations (invoke the cvs executable instead?)
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	if(($dir = opendir($path)) == FALSE)
-		return _error('Could not open CVS repository', 1);
+		return _error('Could not open CVS repository');
 	$dirs = array();
 	$files = array();
 	while($de = readdir($dir))
@@ -61,8 +61,10 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	foreach($files as $f)
 	{
 		unset($rcs);
-		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
 		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
+		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
+		if(count($rcs) == 0)
+			return _error('Could not list files');
 		for($i = 0, $count = count($rcs); $i < $count; $i++)
 			_info($i.': '.$rcs[$i], 0);
 		for($revs = 0; $revs < $count; $revs++)
@@ -133,8 +135,8 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);
 	$path = str_replace('$', '\$', $path);
-	exec('rlog "'.$path.'"', $rcs);
 	_info('rlog "'.$path.'"', 0);
+	exec('rlog "'.$path.'"', $rcs);
 	require_once('./system/html.php');
 	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe(dirname($filename)).'/'
@@ -214,8 +216,8 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	$path = str_replace('"', '\"', $path);
 	$path = str_replace('$', '\$', $path);
-	exec('rlog -h "'.$path.'"', $rcs);
 	_info('rlog -h "'.$path.'"', 0);
+	exec('rlog -h "'.$path.'"', $rcs);
 	for($i = 0, $count = count($rcs); $i < $count; $i++)
 		_info($i.': '.$rcs[$i], 0);
 	if(!$download)
