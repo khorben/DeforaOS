@@ -1369,14 +1369,13 @@ function project_timeline($args)
 		return _error('Unable to open history file', 1);
 	$entries = array();
 	$i = 0;
-	$len = strlen('DeforaOS/'.$project['cvsroot']);
+	$len = strlen($project['cvsroot']);
 	while(($line = fgets($fp)) != FALSE)
 	{
 		$fields = explode('|', $line);
 		if(strcmp('', $fields[4]) == 0)
 			continue;
-		if(strncmp($fields[3], 'DeforaOS/'.$project['cvsroot'], $len)
-				!= 0)
+		if(strncmp($fields[3], $project['cvsroot'], $len) != 0)
 			continue;
 		unset($event);
 		unset($icon);
