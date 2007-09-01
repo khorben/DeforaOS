@@ -340,25 +340,29 @@ function project_bug_display($args)
 {
 	global $user_id;
 
-	if(!is_numeric($args['id']))
+	if(!isset($args['id']) || !is_numeric($args['id'])
+			|| !isset($args['bug_id'])
+			|| !is_numeric($args['bug_id']))
 		return _error(INVALID_ARGUMENT);
-	$sql = 'SELECT daportal_content.content_id AS content_id'
+	$sql = 'SELECT daportal_content.content_id AS id'
 		.', daportal_project.project_id AS project_id'
-		.', daportal_user.user_id AS user_id, daportal_bug.bug_id AS id'
-		.', timestamp, title, content, name AS project, username'
-		.', state, type, priority, assigned AS assigned_id'
+		.', daportal_user.user_id AS user_id'
+		.', daportal_bug.bug_id AS bug_id, timestamp, title, content'
+		.', name AS project, username, state, type, priority'
+		.', assigned AS assigned_id'
 		.' FROM daportal_content, daportal_bug, daportal_user'
 		.', daportal_project WHERE daportal_content.enabled='."'1'"
 		.' AND daportal_content.content_id=daportal_bug.content_id'
 		.' AND daportal_content.user_id=daportal_user.user_id'
 		.' AND daportal_project.project_id=daportal_bug.project_id'
-		." AND bug_id='".$args['id']."'";
+		." AND daportal_bug.content_id='".$args['id']."'"
+		." AND bug_id='".$args['bug_id']."'";
 	$bug = _sql_array($sql);
 	if(!is_array($bug) || count($bug) != 1)
-		return _error('Unable to display bug', 1);
+		return _error('Unable to display bug');
 	$bug = $bug[0];
 	_project_toolbar($bug['project_id']);
-	$title = 'Bug #'.$bug['id'].': '.$bug['title'];
+	$title = 'Bug #'.$bug['bug_id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$bug['date'] = strftime(DATE_FORMAT, strtotime(substr($bug['timestamp'],
@@ -379,13 +383,12 @@ function project_bug_display($args)
 		.' AND daportal_content.user_id=daportal_user.user_id'
 		." AND daportal_content.enabled='1'"
 		." AND (daportal_user.enabled='1' OR daportal_user.user_id='0')"
-		." AND daportal_bug_reply.bug_id='".$bug['id']."'"
+		." AND daportal_bug_reply.bug_id='".$bug['bug_id']."'"
 		.' ORDER BY timestamp ASC';
 	$replies = _sql_array($sql);
 	if(!is_array($replies))
 		return _error('Unable to display bug feedback');
-	$cnt = count($replies);
-	for($i = 0; $i < $cnt; $i++)
+	for($i = 0, $cnt = count($replies); $i < $cnt; $i++)
 	{
 		$replies[$i]['date'] = strftime(DATE_FORMAT,
 				strtotime(substr($replies[$i]['date'], 0, 19)));
@@ -460,7 +463,15 @@ function project_bug_insert($args)
 function project_bug_list($args)
 {
 	$title = BUG_REPORTS;
-	if(isset($args['project_id']))
+	if(isset($args['id']))
+	{
+		if(($args['project'] = _project_name($args['id'])) != FALSE)
+		{
+			$project_id = $args['id'];
+			$project = $args['project'];
+		}
+	}
+	else if(isset($args['project_id']))
 	{
 		if(($args['project'] = _project_name($args['project_id']))
 				!= FALSE)
@@ -528,8 +539,8 @@ function project_bug_list($args)
 		default:	$sort = 'nb';
 				$order.='bug_id DESC';	break;
 	}
-	$sql = 'SELECT daportal_content.content_id AS content_id'
-		.', bug_id AS id, timestamp AS date, title, content'
+	$sql = 'SELECT daportal_content.content_id AS id, bug_id'
+		.', timestamp AS date, title, content'
 		.', daportal_project.name AS project, username'
 		.', daportal_project.project_id AS project_id, state, type'
 		.', priority FROM daportal_content, daportal_bug, daportal_user'
@@ -560,15 +571,15 @@ function project_bug_list($args)
 		$bugs[$i]['module'] = 'project';
 		$bugs[$i]['action'] = 'bug_display';
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['title']);
+		$bugs[$i]['args'] = 'bug_id='.$bugs[$i]['bug_id'];
 		$bugs[$i]['nb'] = '<a href="'._html_link('project',
-			'bug_display', $bugs[$i]['id']).'">#'
-				.$bugs[$i]['id'].'</a>';
+			'bug_display', $bugs[$i]['id'], $bugs[$i]['title'])
+				.'">#'.$bugs[$i]['bug_id'].'</a>';
 		$bugs[$i]['project'] = '<a href="'._html_link('project',
-			'bug_list', '', '', _html_safe('project_id='
-					.$bugs[$i]['project_id'])).'">'
+			'bug_list', $bugs[$i]['project_id']).'">'
 				._html_safe($bugs[$i]['project']).'</a>';
-		$bugs[$i]['date'] = date('d/m/Y H:i',
-				strtotime(substr($bugs[$i]['date'], 0, 19)));
+		$bugs[$i]['date'] = date('d/m/Y H:i', strtotime(substr(
+						$bugs[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
 	$link = _module_link('project', 'bug_new', '', '', (isset($project_id)
@@ -852,7 +863,7 @@ function project_bug_update($args)
 	global $user_id, $module_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id)) //FIXME could be the project admin
+	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$id = $args['bug_id'];
 	if(($content_id = _sql_single('SELECT content_id FROM daportal_bug'
