@@ -27,7 +27,6 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	require_once('./system/html.php');
 	print('<h1 class="title project">'._html_safe($project).' CVS: '
 			._html_safe($filename).'</h1>'."\n");
-	//FIXME un-hardcode locations (invoke the cvs executable instead?)
 	$path = $cvsrep.$cvsroot.'/'.$filename;
 	if(($dir = opendir($path)) == FALSE)
 		return _error('Could not open CVS repository');
