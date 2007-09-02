@@ -78,9 +78,10 @@ function _explorer_link(&$entry)
 			&& isset($entry['action']))
 	{
 		$link = '<a href="'._html_link($entry['module'],
-			isset($entry['action']) ? $entry['action'] : '',
-			isset($entry['id']) ? $entry['id'] : '', '',
-			isset($entry['args']) ? $entry['args'] : '');
+			isset($entry['action']) ? $entry['action'] : FALSE,
+			isset($entry['id']) ? $entry['id'] : FALSE,
+			isset($entry['title']) ? $entry['title'] : FALSE,
+			isset($entry['args']) ? $entry['args'] : FALSE);
 		$link.='"';
 		if(isset($entry['title']))
 			$link.=' title="'._html_safe($entry['title']).'"';
@@ -94,7 +95,7 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 	if($class == $sort)
 		return print(' sort">'._html_safe($name));
 	$link = _html_link($module, $action, FALSE, FALSE, $args);
-	$link .= '&sort='.$class; /* XXX quite ugly */
+	$link .= (strlen($args) ? '&' : '?').'sort='.$class; /* XXX ugly */
 	print('"><a href="'.$link.'">'._html_safe($name).'</a>');
 }
 
