@@ -20,6 +20,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 $text['BROWSE_SOURCE'] = 'Quellcode betrachten';
+$text['DESCRIPTION'] = 'Beschreibung';
 $text['NEW_PROJECT'] = 'Neues projekt';
 $text['PRIORITY'] = 'Priorität';
 $text['PROJECT'] = 'Projekt';
