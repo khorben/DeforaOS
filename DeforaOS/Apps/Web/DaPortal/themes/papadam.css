@@ -211,6 +211,10 @@ div.search div.entry div.title {
 	margin-right:		-4px;
 }
 
+div.bug_reply div.status {
+	margin-bottom:		-4px;
+}
+
 div.bug_reply div.title, div.search div.entry div.title {
 	background-color:	#d0d080;
 	border-bottom:		1px solid #808080;
