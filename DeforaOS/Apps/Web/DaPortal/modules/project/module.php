@@ -550,8 +550,8 @@ function project_bug_list($args)
 		$bugs[$i]['icon'] = $bugs[$i]['thumbnail'];
 		$bugs[$i]['module'] = 'project';
 		$bugs[$i]['action'] = 'bug_display';
-		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['title'] = $bugs[$i]['name'];
+		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['args'] = 'bug_id='.$bugs[$i]['bug_id'];
 		$bugs[$i]['nb'] = '<a href="'._html_link('project',
 			'bug_display', $bugs[$i]['id'], $bugs[$i]['title'])
@@ -1060,7 +1060,7 @@ function project_download($args)
 	if($category_id == 0 || $download_id == 0)
 		return _error('Both category and download modules must be'
 				.' installed');
-	$project = _sql_array('SELECT name, title'
+	$project = _sql_array('SELECT title AS name, synopsis'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
@@ -1413,11 +1413,13 @@ function project_timeline($args)
 	{
 		return include('./modules/project/project_submitted.tpl');
 	}
-	$project = _sql_array('SELECT project_id, name, cvsroot'
-			.' FROM daportal_project'
-			." WHERE project_id='".$args['id']."'");
+	$project = _sql_array('SELECT project_id, title AS name, cvsroot'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND project_id='".$args['id']."'");
 	if(!is_array($project) || count($project) != 1)
-		return _error('Invalid project ID', 1);
+		return _error(INVALID_ARGUMENT);
 	$project = $project[0];
 	_project_toolbar($project['project_id']);
 	if(strlen($project['cvsroot']) == 0)
@@ -1499,15 +1501,16 @@ function project_update($args)
 {
 	global $user_id;
 
-	require_once('./system/content.php');
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	//FIXME allow project's admin to update
+	require_once('./system/content.php');
+	//FIXME allow project's admin to update? XXX check if is a project
 	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return _error('Could not update project');
 	_sql_query('UPDATE daportal_project SET'
-			." cvsroot='".$args['cvsroot']."'"
+			." synopsis='".$args['synopsis']."'"
+			.", cvsroot='".$args['cvsroot']."'"
 			." WHERE project_id='".$args['id']."'");
 	project_display(array('id' => $args['id']));
 }
