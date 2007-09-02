@@ -21,7 +21,6 @@ $text['_FOR_'] = ' für ';
 $text['AUTHOR'] = 'Autor';
 $text['CONTENT'] = 'Inhalt';
 $text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
-$text['DESCRIPTION'] = 'Beschreibung';
 $text['EDIT'] = 'Andern';
 $text['LOGIN'] = 'Einloggen';
 $text['LOGOUT'] = 'Ausloggen';

@@ -76,7 +76,6 @@ $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';
 $text['DELETE'] = 'Delete';
-$text['DESCRIPTION'] = 'Description';
 $text['DISABLE'] = 'Disable';
 $text['DISABLED'] = 'Disabled';
 $text['DOWNLOADS'] = 'Downloads';
