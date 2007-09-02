@@ -115,11 +115,12 @@ INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
 /* module: project */
 CREATE TABLE daportal_project (
 	project_id INTEGER PRIMARY KEY,
-	name VARCHAR(255) NOT NULL,
+	synopsis VARCHAR(255) NOT NULL,
 	cvsroot VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
 );
 CREATE TABLE daportal_project_user (
+	project_user_id INTEGER PRIMARY KEY,
 	project_id INTEGER NOT NULL,
 	user_id INTEGER NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
@@ -133,6 +134,7 @@ INSERT INTO daportal_bug_enum_state (name) VALUES ('Assigned');
 INSERT INTO daportal_bug_enum_state (name) VALUES ('Closed');
 INSERT INTO daportal_bug_enum_state (name) VALUES ('Fixed');
 INSERT INTO daportal_bug_enum_state (name) VALUES ('Implemented');
+INSERT INTO daportal_bug_enum_state (name) VALUES ('Re-opened');
 CREATE TABLE daportal_bug_enum_type (
 	name VARCHAR(255)
 );
@@ -153,7 +155,7 @@ CREATE TABLE daportal_bug (
 	project_id INTEGER,
 	state VARCHAR(255) DEFAULT 'New',
 	type VARCHAR(255),
-	priority VARCHAR(255),
+	priority VARCHAR(255) DEFAULT 'Medium',
 	assigned INTEGER,
 	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (project_id) REFERENCES daportal_project (project_id),
@@ -161,7 +163,47 @@ CREATE TABLE daportal_bug (
 	FOREIGN KEY (type) REFERENCES daportal_bug_enum_type (name),
 	FOREIGN KEY (priority) REFERENCES daportal_bug_enum_type (name)
 );
+
+CREATE TABLE daportal_bug_reply_enum_state (
+	name VARCHAR(255)
+);
+INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('New');
+INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Assigned');
+INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Closed');
+INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Fixed');
+INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Implemented');
+INSERT INTO daportal_bug_reply_enum_state (name) VALUES ('Re-opened');
+CREATE TABLE daportal_bug_reply_enum_type (
+	name VARCHAR(255)
+);
+INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Major');
+INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Minor');
+INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Functionality');
+INSERT INTO daportal_bug_reply_enum_type (name) VALUES ('Feature');
+CREATE TABLE daportal_bug_reply_enum_priority (
+	name VARCHAR(255)
+);
+INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Urgent');
+INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('High');
+INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Medium');
+INSERT INTO daportal_bug_reply_enum_priority (name) VALUES ('Low');
+CREATE TABLE daportal_bug_reply (
+	bug_reply_id INTEGER PRIMARY KEY,
+	content_id INTEGER,
+	bug_id INTEGER,
+	state VARCHAR(255),
+	type VARCHAR(255),
+	priority VARCHAR(255),
+	assigned INTEGER,
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (bug_id) REFERENCES daportal_bug (bug_id)
+	FOREIGN KEY (state) REFERENCES daportal_bug_reply_enum_state (name),
+	FOREIGN KEY (type) REFERENCES daportal_bug_reply_enum_type (name),
+	FOREIGN KEY (priority) REFERENCES daportal_bug_reply_enum_type (name)
+);
+
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('10', 'string', 'cvsroot', '');
 
 
 /* module: probe */
