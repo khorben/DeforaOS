@@ -29,7 +29,12 @@ foreach($types as $t) { ?>
 foreach($priorities as $p) { ?>
 				<option value="<?php echo _html_safe($p); ?>"<?php if(isset($bug) && $bug['priority'] == $p) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p); ?></option>
 <?php } ?>
-			</select></td></tr>
+			</select></td><?php if(isset($members)) { ?><td class="field"><?php echo _html_safe(ASSIGNED_TO); ?>:</td><td><select name="assigned_id">
+			<option value=""<?php if(!isset($bug['assigned_id']) || !is_numeric($bug['assigned_id'])) { ?> selected="selected"<?php } ?>></option>
+<?php foreach($members as $m){ ?>
+			<option value="<?php echo _html_safe($m['id']); ?>"<?php if($bug['assigned_id'] == $m['id']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($m['username']); ?></option>
+<?php } ?>
+			</select></td><?php } ?></tr>
 		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><?php if(isset($bug['content'])) echo _html_safe($bug['content']); ?></textarea></td></tr>
 		<tr><td></td><td><input type="submit" value="<?php if(!isset($bug)) echo _html_safe(SEND); else echo _html_safe(UPDATE); ?>"/></td></tr>
 	</table>

@@ -594,7 +594,8 @@ function project_bug_modify($args)
 	if(!isset($args['bug_id']))
 		return _error(INVALID_ARGUMENT);
 	$bug = _sql_array('SELECT daportal_bug.content_id AS id, bug_id, title'
-			.', content, state, type, priority'
+			.', project_id, content, state, type, priority'
+			.', assigned AS assigned_id'
 			.' FROM daportal_bug, daportal_content'
 			.' WHERE daportal_bug.content_id'
 			.'=daportal_content.content_id'
@@ -604,6 +605,7 @@ function project_bug_modify($args)
 		return _error(INVALID_ARGUMENT);
 	$bug = $bug[0];
 	$title = MODIFICATION_OF_BUG_HASH.$bug['bug_id'].': '.$bug['title'];
+	$members = _project_members($bug['project_id']);
 	include('./modules/project/bug_update.tpl');
 }
 
@@ -803,18 +805,23 @@ function project_bug_reply_modify($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$admin = 1;
-	$reply = _sql_array('SELECT bug_reply_id AS id, bug_id, title, content'
-			.', timestamp AS date, state, type, priority'
-			.', daportal_user.user_id, username'
-			.', assigned AS assigned_id FROM daportal_bug_reply'
-			.', daportal_content, daportal_user'
-			.' WHERE daportal_bug_reply.content_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_content.enabled='1'"
-			." AND (daportal_user.enabled='1'"
-			." OR daportal_user.user_id='0')"
-			." AND bug_reply_id='".$args['id']."'");
+	$sql = 'SELECT bug_reply_id AS id, daportal_bug.bug_id AS bug_id'
+		.', title, content, daportal_bug_reply.state AS state'
+		.', daportal_bug_reply.type AS type'
+		.', daportal_bug_reply.priority AS priority'
+		.', daportal_user.user_id AS user_id, username'
+		.', daportal_bug_reply.assigned AS assigned_id, project_id'
+		.' FROM daportal_bug_reply, daportal_content'
+		.', daportal_user, daportal_bug'
+		.' WHERE daportal_bug_reply.content_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		.' AND daportal_bug_reply.bug_id=daportal_bug.bug_id'
+		." AND daportal_content.enabled='1'"
+		." AND (daportal_user.enabled='1'"
+		." OR daportal_user.user_id='0')"
+		." AND bug_reply_id='".$args['id']."'";
+	$reply = _sql_array($sql);
 	if(!is_array($reply) || count($reply) != 1)
 		return _error('Unable to modify bug feedback');
 	$reply = $reply[0];
@@ -825,6 +832,7 @@ function project_bug_reply_modify($args)
 	$reply['assigned'] = _sql_single('SELECT username FROM daportal_user'
 			." WHERE enabled='1'"
 			." AND user_id='".$reply['assigned_id']."'");
+	$members = _project_members($reply['project_id']);
 	include('./modules/project/bug_reply_update.tpl');
 }
 
@@ -836,24 +844,36 @@ function project_bug_reply_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
-	if(!($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
-			." WHERE bug_reply_id='".$args['id']."'")))
+	if(($id = _sql_single('SELECT content_id FROM daportal_bug_reply'
+			." WHERE bug_reply_id='".$args['id']."'")) == FALSE)
 		return _error(INVALID_ARGUMENT);
-	if(!($bug_id = _sql_single('SELECT bug_id FROM daportal_bug_reply'
-			." WHERE bug_reply_id='".$args['id']."'")))
+	if(($bug_id = _sql_single('SELECT bug_id FROM daportal_bug_reply'
+			." WHERE bug_reply_id='".$args['id']."'")) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	if(($content_id = _sql_single('SELECT content_id FROM daportal_bug'
+			." WHERE bug_id='$bug_id'")) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
+			." WHERE bug_id='$bug_id'")) == FALSE)
 		return _error(INVALID_ARGUMENT);
 	_sql_query('UPDATE daportal_content SET title='."'".$args['title']."'"
 			.", content='".$args['content']."'"
 			." WHERE content_id='$id'");
-	$sql = ' state='.(strlen($args['state']) ? "'".$args['state']."'"
+	$sql = ' state='.(isset($args['state']) && strlen($args['state'])
+			? "'".$args['state']."'" : 'NULL');
+	$sql.=', type='.(isset($args['type']) && strlen($args['type'])
+			? "'".$args['type']."'" : 'NULL');
+	$sql.=', priority='.(isset($args['priority'])
+			&& strlen($args['priority']) ? "'".$args['priority']."'"
 			: 'NULL');
-	$sql.=', type='.(strlen($args['type']) ? "'".$args['type']."'"
-			: 'NULL');
-	$sql.=', priority='.(strlen($args['priority'])
-			? "'".$args['priority']."'" : 'NULL');
+	$sql.=', assigned='.(isset($args['assigned_id'])
+			&& is_numeric($args['assigned_id'])
+			&& _project_is_member($project_id, FALSE,
+				$args['assigned_id']) ? "'".$args['assigned_id']
+			."'" : 'NULL');
 	_sql_query('UPDATE daportal_bug_reply SET'.$sql
 			." WHERE bug_reply_id='".$args['id']."'");
-	project_bug_display(array('id' => $bug_id));
+	project_bug_display(array('id' => $content_id, 'bug_id' => $bug_id));
 }
 
 
@@ -866,16 +886,23 @@ function project_bug_update($args)
 		return _error(PERMISSION_DENIED);
 	$id = $args['id'];
 	$bug_id = $args['bug_id'];
+	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
+					." WHERE bug_id='$bug_id'")) == FALSE)
+		return _error(INVALID_ARGUMENT);
 	if(_sql_single('SELECT content_id FROM daportal_bug'
 				." WHERE content_id='$id'"
 				." AND bug_id='$bug_id'") != $id)
 		return _error(INVALID_ARGUMENT);
-	_sql_query('UPDATE daportal_content SET title='."'".$args['title']."'"
-			.", content='".$args['content']."'"
-			." WHERE content_id='$id'");
+	require_once('./system/content.php');
+	_content_update($id, $args['title'], $args['content']);
+	$assigned = ', assigned='.(isset($args['assigned_id'])
+			&& is_numeric($args['assigned_id'])
+			&& _project_is_member($project_id, FALSE,
+				$args['assigned_id']) ? "'".$args['assigned_id']
+			."'" : 'NULL');
 	_sql_query('UPDATE daportal_bug SET state='."'".$args['state']."'"
 			.", type='".$args['type']."'"
-			.", priority='".$args['priority']."'"
+			.", priority='".$args['priority']."'".$assigned
 			." WHERE content_id='$id' AND  bug_id='$bug_id'");
 	project_bug_display(array('id' => $id, 'bug_id' => $bug_id));
 }
