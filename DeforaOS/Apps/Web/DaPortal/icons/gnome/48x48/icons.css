@@ -94,7 +94,7 @@ h1.title.user {
 	background-image:		url('user.png');
 }
 
-h1.title.users {
+h1.title.users, h1.title.members {
 	background-image:		url('users.png');
 }
 
