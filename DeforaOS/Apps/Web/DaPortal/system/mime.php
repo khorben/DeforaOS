@@ -26,12 +26,12 @@ function _mime_from_ext($filename)
 		$types = array();
 		if(($globs = _config_get('admin', 'globs')) == FALSE)
 		{
-			_error('MIME globs file is not defined');
+			_error('MIME globs file is not defined', 0);
 			return 'default';
 		}
 		if(($globs = file_get_contents($globs)) == FALSE)
 		{
-			_error('Could not read MIME globs file');
+			_error('Could not read MIME globs file', 0);
 			return 'default';
 		}
 		$globs = explode("\n", $globs);
