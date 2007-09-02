@@ -2,6 +2,7 @@
 @import url("../css/debug.css");
 @import url("../css/explorer.css");
 @import url("../css/icons.css");
+@import url("../css/syntax.css");
 @import url("../icons/gnome/icons.css");
 
 
@@ -9,6 +10,7 @@
 * {
 	border-width:		0;
 	font-family:		sans-serif;
+	font-size:		13px;
 	margin:			0;
 	padding:		0;
 	text-align:		justify;
@@ -18,6 +20,7 @@
 /* background and color */
 html {
 	background-color:	#d0d080;
+	background-image:	url('papadam-bg.png');
 	color:			#000000;
 }
 
@@ -27,7 +30,31 @@ body {
 }
 
 a {
-	color:			#707040;
+	color:			#606030;
+}
+
+h1 {
+	color:			#606030;
+	font-size:		24px;
+}
+
+h2, h3 {
+	color:			#404020;
+}
+
+h2 {
+	font-size:		20px;
+}
+
+h3 {
+	font-size:		16px;
+}
+
+pre {
+	border:			1px solid #808080;
+	font-family:		monospace;
+	margin:			4px;
+	padding:		4px;
 }
 
 ul li {
@@ -55,6 +82,14 @@ body {
 	width:			80%;
 }
 
+table {
+	margin-top:		4px;
+}
+
+h1, h2, h3, p {
+	padding-top:		4px;
+}
+
 
 /* position */
 h1 {
@@ -66,6 +101,22 @@ h1 {
 body {
 	border:			1px solid #000000;
 }
+
+input[type="password"], input[type="submit"], input[type="text"], select,
+textarea {
+	border-width:		1px;
+}
+
+
+/* for DaPortal */
+.debug {
+	clear:			left;
+}
+
+.hidden {
+	display:		none;
+}
+
 
 
 /* forms */
@@ -125,9 +176,73 @@ ul.menu * li:hover ul {
 }
 
 
+/* project, search */
+div.bug div.reply, div.bug div.edit {
+	display:		inline;
+}
+
+div.bug_reply, div.search div.entry {
+	border:			1px solid #000000;
+	margin:			4px;
+	padding:		4px;
+}
+
+div.bug_reply div.author, div.bug_reply div.date,
+div.search div.entry div.author, div.search div.entry div.date {
+	float:			left;
+	padding-bottom:		4px;
+	padding-left:		4px;
+	padding-top:		4px;
+}
+
+div.bug_reply div.content, div.search div.entry div.content {
+	clear:			left;
+	border-top:		1px solid #d0d0d0;
+	margin-left:		-4px;
+	margin-right:		-4px;
+	padding:		4px;
+}
+
+div.bug_reply div.status, div.bug_reply div.title,
+div.search div.entry div.title {
+	background-color:	#d0d0d0;
+	padding:		4px;
+	margin-left:		-4px;
+	margin-right:		-4px;
+}
+
+div.bug_reply div.title, div.search div.entry div.title {
+	background-color:	#d0d080;
+	border-bottom:		1px solid #808080;
+	margin-top:		-4px;
+}
+
+
+/* tables */
+table.bordered {
+	border:			1px solid #808080;
+	border-spacing:		0 0;
+}
+
+table.bordered td, table.bordered th {
+	border-bottom:		1px solid #d0d080;
+	border-right:		1px solid #d0d080;
+	padding:		4px;
+}
+
+table.bordered th {
+	color:			#404020;
+	border-bottom:		1px solid #808080;
+}
+
+
 /* toolbar */
 div.toolbar {
+	background-color:	#ffffa0;
 	clear:			left;
+	margin-left:		-4px;
+	margin-right:		-4px;
+	padding:		4px;
 }
 
 
@@ -148,20 +263,6 @@ div.top a {
 	color:			#000000;
 }
 
-
-/* for DaPortal */
-input[type="password"], input[type="submit"], input[type="text"], select,
-textarea {
-	border-width:		1px;
-}
-
-.debug {
-	clear:			left;
-}
-
-.hidden {
-	display:		none;
-}
 
 /* from DeforaOS */
 .explorer .entry {
