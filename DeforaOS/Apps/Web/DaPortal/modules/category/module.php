@@ -31,11 +31,14 @@ $text['CATEGORY'] = 'Category';
 $text['CATEGORY_LIST'] = 'Category list';
 $text['CHOOSE_CATEGORIES'] = 'Choose categories';
 $text['DELETE_LINK'] = 'Delete link';
+$text['DESCRIPTION'] = 'Description';
 $text['MEMBER_OF'] = 'Member of';
 $text['MODIFICATION_OF_CATEGORY'] = 'Modification of category';
 $text['NEW_CATEGORY'] = 'New category';
 global $lang;
-if($lang == 'fr')
+if($lang == 'de')
+	$text['DESCRIPTION'] = 'Beschreibung';
+else if($lang == 'fr')
 {
 	$text['ALREADY_LINKED'] = 'Déjà lié';
 	$text['ASSOCIATE_TO_CONTENT'] = 'Lier au contenu';
