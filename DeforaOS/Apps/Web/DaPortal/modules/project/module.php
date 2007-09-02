@@ -631,7 +631,7 @@ function project_bug_reply($args)
 		.', daportal_bug.bug_id AS bug_id'
 		.', bug.timestamp AS timestamp, bug.title AS title'
 		.', bug.content AS content, prj.title AS project, username'
-		.', state, type, priority'
+		.', state, type, priority, assigned AS assigned_id'
 		.' FROM daportal_content bug, daportal_bug, daportal_user'
 		.', daportal_content prj, daportal_project'
 		.' WHERE bug.content_id=daportal_bug.content_id'
@@ -647,6 +647,7 @@ function project_bug_reply($args)
 	$bug = $bug[0];
 	$bug['date'] = strftime(DATE_FORMAT, strtotime(substr($bug['timestamp'],
 					0, 19)));
+	$bug['assigned'] = _user_name($bug['assigned_id']);
 	$title = REPLY_TO_BUG.' #'.$bug['bug_id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
