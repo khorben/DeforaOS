@@ -1,0 +1,33 @@
+/* css/syntax.css */
+
+
+
+pre span.character {
+	color:				#ff0000;
+	font-weight:			bold;
+}
+
+pre span.comment, pre span.variable {
+	color:				#00ffff;
+	font-weight:			bold;
+}
+
+pre span.keyword {
+	color:				#ffff00;
+	font-weight:			bold;
+}
+
+pre span.preprocessed {
+	color:				#0000ff;
+	font-weight:			bold;
+}
+
+pre span.string {
+	color:				#ff00ff;
+	font-weight:			bold;
+}
+
+pre span.type {
+	color:				#00ff00;
+	font-weight:			bold;
+}

@@ -3,6 +3,7 @@
 @import url("../css/debug.css");
 @import url("../css/explorer.css");
 @import url("../css/icons.css");
+@import url("../css/syntax.css");
 @import url("../icons/gnome/icons.css");
 
 
@@ -124,36 +125,6 @@ h1.title, h2.title, h3.title {
 form.lang {
 	padding-top:			10px;
 	margin-left:			10px;
-}
-
-pre span.character {
-	color:				#ff0000;
-	font-weight:			bold;
-}
-
-pre span.comment, pre span.variable {
-	color:				#00ffff;
-	font-weight:			bold;
-}
-
-pre span.keyword {
-	color:				#ffff00;
-	font-weight:			bold;
-}
-
-pre span.preprocessed {
-	color:				#0000ff;
-	font-weight:			bold;
-}
-
-pre span.string {
-	color:				#ff00ff;
-	font-weight:			bold;
-}
-
-pre span.type {
-	color:				#00ff00;
-	font-weight:			bold;
 }
 
 table.bordered {
