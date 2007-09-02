@@ -1,29 +1,32 @@
-<h1 class="title project">The project</h1>
-<h3>State of the project</h3>
-<p>
-The DeforaOS project is currently looking for feedback about the in-progress
-documentation, particularly the <a href="/docs/defora/"
-title="DeforaOS Project Reference">project reference</a>.
-</p>
-<p>
-Mature <a href="index.php?module=project&amp;action=browse&amp;id=11"
-title="DeforaOS source code">source code</a> is available, including an ongoing
-implementation of a POSIX-compliant environment. This is for many reasons:
-</p>
-<ul>
-	<li>wish to provide this environment in DeforaOS;</li>
-	<li>need to understand the necessary parts of the system, through a proven one;</li>
-	<li>availability of supported utilities for the early development steps;</li>
-
-	<li>personal desire to create my own portable and coherent development environment for the project;</li>
-	<li>learn OS-related C development through practice.</li>
-</ul>
-<p>
-The <a href="index.php?module=project&amp;module=download"
-title="DeforaOS downloads">download</a> section is still under work. Projects
-deliverables are being uploaded.
-</p>
-<h3>Project list</h3>
-<p><a href="index.php?module=project&action=list" title="DeforaOS Projects">List
-of the registered projects</a>.</p>
-<!-- FIXME move the top of this page to the DeforaOS project record -->
+<h1 class="title project"><?php echo _html_safe(PROJECTS); ?></h1>
+<h2>Statistics</h2>
+<p>There are <?php echo $project_cnt; ?> <a href="<?php echo _html_link('project', 'list'); ?>">projects registered</a>.</p>
+<?php $keys = array_keys($cols); foreach($keys as $k) { ?>
+<a name="<?php echo _html_safe($k); ?>"></a><h3>Bugs by <?php echo _html_safe($cols[$k]); ?></h3>
+<table class="bordered">
+	<tr>
+		<th class="field" colspan="2"></th>
+<?php $enums = _sql_enum('daportal_bug', $k); foreach($enums as $e) { ?>
+		<th class="field" style="width: <?php echo ceil(100 / (count($enums) + 1)); ?>%"><?php echo _html_safe($e); ?></th>
+<?php } ?>
+	</tr>
+	<tr>
+		<th class="field" colspan="2">All</th>
+<?php foreach($enums as $e) { ?>
+		<td><a href="<?php echo _html_link('project', 'bug_list', FALSE, FALSE, $k.'='.$e); ?>"><?php $cnt = _sql_single('SELECT COUNT(*) FROM daportal_bug WHERE '.$k."='$e'"); echo _html_safe($cnt); ?></a></td>
+<?php } ?>
+	</tr>
+<?php foreach($keys as $l) { if($l == $k) continue; $by = _sql_enum('daportal_bug', $l); $idx = 1; foreach($by as $f) { ?>
+	<tr>
+<?php if($idx) { $idx = 0; ?>
+		<th rowspan="<?php echo count($by); ?>"><?php echo _html_safe($cols[$l]); ?></th>
+<?php } ?>
+		<th><?php echo _html_safe($f); ?></th>
+<?php foreach($enums as $e) { ?>
+		<td><a href="<?php echo _html_link('project', 'bug_list', FALSE, FALSE, $k.'='.$e.'&'.$l.'='.$f); ?>"><?php $cnt = _sql_single('SELECT COUNT(*) FROM daportal_bug WHERE '.$k."='$e' AND ".$l."='$f'"); echo _html_safe($cnt); ?></a></td>
+<?php } ?>
+	</tr>
+<?php } ?>
+<?php } ?>
+</table>
+<?php } ?>

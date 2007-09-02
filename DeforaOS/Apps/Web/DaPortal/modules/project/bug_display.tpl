@@ -1,12 +1,14 @@
 <h1 class="title bug"><?php echo _html_safe($title); ?></h1>
+<div class="bug">
 <table>
-	<tr><td class="field"><?php echo _html_safe(PROJECT); ?>:</td><td><a href="index.php?module=project&amp;action=bug_list&amp;project_id=<?php echo _html_safe($bug['project_id']); ?>"><?php echo _html_safe($bug['project']); ?></a></td><td class="field"><?php echo _html_safe(SUBMITTER); ?>:</td><td><a href="index.php?module=user&amp;id=<?php echo _html_safe($bug['user_id']); ?>"><?php echo _html_safe($bug['username']); ?></a></td></tr>
+	<tr><td class="field"><?php echo _html_safe(PROJECT); ?>:</td><td><a href="<?php echo _html_link('project', 'bug_list', $bug['project_id']); ?>"><?php echo _html_safe($bug['project']); ?></a></td><td class="field"><?php echo _html_safe(SUBMITTER); ?>:</td><td><a href="<?php echo _html_link('user', FALSE, $bug['user_id'], $bug['username']); ?>"><?php echo _html_safe($bug['username']); ?></a></td></tr>
 	<tr><td class="field"><?php echo _html_safe(DATE); ?>:</td><td colspan="3"><?php echo _html_safe($bug['date']); ?></td></tr>
 	<tr><td class="field"><?php echo _html_safe(STATE); ?>:</td><td><?php echo _html_safe($bug['state']); ?></td><td class="field"><?php echo _html_safe(TYPE); ?>:</td><td><?php echo _html_safe($bug['type']); ?></td></tr>
-	<tr><td class="field"><?php echo _html_safe(PRIORITY); ?>:</td><td><?php echo _html_safe($bug['priority']); ?></td><td class="field"><?php echo _html_safe(ASSIGNED_TO); ?>:</td><td><?php if(isset($bug['assigned_id'])) { ?><a href="index.php?module=user&amp;id=<?php echo _html_safe($bug['assigned_id']); ?>"><?php echo _html_safe($bug['assigned']); ?></a><?php if($admin == 1) { ?> <a href="index.php?module=project&amp;action=bug_assign&amp;id=<?php echo _html_safe($bug['project_id']); ?>&amp;bug_id=<?php echo _html_safe($bug['id']); ?>"><button>Assign</button></a><?php } } ?></td></tr>
+	<tr><td class="field"><?php echo _html_safe(PRIORITY); ?>:</td><td><?php echo _html_safe($bug['priority']); ?></td><td class="field"><?php echo _html_safe(ASSIGNED_TO); ?>:</td><td><?php if(isset($bug['assigned_id']) && isset($bug['assigned'])) { ?><a href="<?php echo _html_link('user', FALSE, $bug['assigned_id'], $bug['assigned']); ?>"><?php echo _html_safe($bug['assigned']); ?></a><?php } ?></td></tr>
 	<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><?php echo str_replace("\r\n", "<br/>\n",_html_pre($bug['content'])); ?></td>
 </table>
-<a href="index.php?module=project&amp;action=bug_reply&amp;id=<?php echo $bug['id']; ?>"><div class="reply"><?php echo _html_safe(REPLY); ?></a>
+<a href="<?php echo _html_link('project', 'bug_reply', $bug['id']); ?>"><div class="icon reply"></div><?php echo _html_safe(REPLY); ?></a>
 <?php if($admin == 1) { ?>
-&middot; <a href="index.php?module=project&amp;action=bug_modify&amp;id=<?php echo _html_safe($bug['id']); ?>"><div class="edit"></div><?php echo _html_safe(EDIT); ?></a></td></tr>
+&middot; <a href="<?php echo _html_link('project', 'bug_modify', $bug['id'], $bug['title'], 'bug_id='.$bug['bug_id']); ?>"><div class="icon edit"></div><?php echo _html_safe(EDIT); ?></a></td></tr>
 <?php } ?>
+</div>
