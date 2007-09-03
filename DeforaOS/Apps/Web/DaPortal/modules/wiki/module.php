@@ -126,7 +126,7 @@ function wiki_display($args)
 		return;
 	$title = WIKI.': '.$wiki['title'];
 	include('./modules/wiki/display.tpl');
-	print('<h2 class="title members">'._html_safe(REVISIONS)."</h2");
+	print('<h2 class="title users">'._html_safe(REVISIONS)."</h2");
 	exec('rlog '.escapeshellcmd(_root().'/'.$wiki['title']), $rcs);
 	for($i = 0, $cnt = count($rcs); $i < $cnt;)
 		if($rcs[$i++] == '----------------------------')
