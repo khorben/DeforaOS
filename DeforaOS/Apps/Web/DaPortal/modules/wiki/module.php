@@ -29,6 +29,7 @@ $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['WIKI'] = 'Wiki';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
 $text['WIKI_LIST'] = 'Wiki list';
+$text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 global $lang;
 if($lang == 'fr')
 	$text['WIKI_ADMINISTRATION'] = 'Administration du wiki';
@@ -36,34 +37,44 @@ _lang($text);
 
 
 //private
-function _get($id)
+function _exec($cmd)
 {
-	global $module_id; //XXX
-
-	$sql = 'SELECT content_id AS id, title FROM daportal_content'
-		." WHERE module_id='$module_id'"
-		." AND enabled='1' AND content_id='$id'";
-	$wiki = _sql_array($sql);
-	if(!is_array($wiki) || count($wiki) != 1
-			|| strpos('/', $wiki[0]['title']) != FALSE)
-		return _error(INVALID_ARGUMENT);
-	$wiki = $wiki[0];
-	if(($root = _config_get('wiki', 'root')) == FALSE
-			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
-		return _error('Internal server error');
-	$cmd = 'co '.escapeshellcmd($root.'/'.$wiki['title']);
 	$output = array();
 	$ret = 1;
 	_info($cmd);
 	exec($cmd, $output, $ret);
-	if($ret != 0)
+	return $ret == 0 ? TRUE : FALSE;
+}
+
+function _get($id)
+{
+	require_once('./system/content.php');
+	$wiki = _content_select($id);
+	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
+		return _error(INVALID_ARGUMENT);
+	if(($root = _root()) == FALSE
+			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
+		return _error('Internal server error');
+	if(_exec('co -l '.escapeshellcmd($root.'/'.$wiki['title'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
 			== FALSE)
 		return _error('Could not read page');
+	unlink($root.'/'.$wiki['title']);
 	if(!_validate($wiki['content']))
 		return _error('Document not valid');
 	return $wiki;
+}
+
+function _root()
+{
+	if(($root = _config_get('wiki', 'root')) == FALSE)
+		return FALSE;
+	if(is_link($root.'/RCS'))
+		return FALSE;
+	if(!is_dir($root.'/RCS') && mkdir($root.'/RCS') != TRUE)
+		return FALSE;
+	return $root;
 }
 
 function _validate($content)
@@ -92,6 +103,8 @@ function wiki_admin($args)
 
 function wiki_default($args)
 {
+	//FIXME implement user_id
+
 	if(isset($args['id']))
 		return wiki_display($args);
 	return wiki_list($args);
@@ -193,10 +206,7 @@ function _system_insert($args)
 	}
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
-	if(($root = _config_get('wiki', 'root')) == FALSE
-			|| is_link($root.'/RCS')
-			|| (!is_dir($root.'/RCS')
-				&& mkdir($root.'/RCS') != TRUE))
+	if(($root = _root()) == FALSE)
 	{
 		$error = 'Internal server error';
 		return;
@@ -208,7 +218,7 @@ function _system_insert($args)
 		return;
 	}
 	$content = stripslashes($args['content']);
-	if(_validate(stripslashes($content)) == FALSE)
+	if(_validate($content) == FALSE)
 	{
 		$error = 'Document not valid';
 		return;
@@ -245,12 +255,7 @@ function _system_insert($args)
 		return;
 	}
 	fclose($fp);
-	$cmd = 'ci '.escapeshellcmd($filename);
-	$output = array();
-	$ret = 1;
-	_info($cmd);
-	exec($cmd, $output, $ret);
-	if($ret != 0)
+	if(_exec('ci -l '.escapeshellcmd($filename)) == FALSE)
 	{
 		_content_delete($id);
 		$error = 'An error occured while checking in';
@@ -262,6 +267,85 @@ function _system_insert($args)
 
 function _system_update($args)
 {
+	global $error, $user_id;
+
+	if($user_id == 0)
+	{
+		$error = PERMISSION_DENIED;
+		return;
+	}
+	if(isset($args['preview']) || !isset($args['send']))
+		return;
+	if(($root = _root()) == FALSE)
+	{
+		$error = 'Internal server error';
+		return;
+	}
+	$wiki = _get($args['id']);
+	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
+	{
+		$error = INVALID_ARGUMENT;
+		return;
+	}
+	$id = $wiki['id'];
+	$title = $wiki['title'];
+	$content = stripslashes($args['content']);
+	if(_validate($content) == FALSE)
+	{
+		$error = 'Document not valid';
+		return;
+	}
+	if(!file_exists($root.'/RCS/'.$title.',v'))
+	{
+		$error = 'Internal server error';
+		return;
+	}
+	$filename = $root.'/'.$title;
+	if(file_exists($filename) && unlink($filename) != TRUE)
+	{
+		$error = PERMISSION_DENIED;
+		return;
+	}
+	if(($fp = fopen($filename, 'w')) == FALSE)
+	{
+		$error = 'Could not write to page';
+		return;
+	}
+	if(fwrite($fp, $content) == FALSE)
+	{
+		fclose($fp);
+		$error = 'An error occured while writing';
+		return;
+	}
+	fclose($fp);
+	if(_exec('ci -l '.escapeshellcmd($filename)) == FALSE)
+	{
+		$error = 'An error occured while checking in';
+		return;
+	}
+	unlink($filename);
+	header('Location: '._module_link('wiki', 'display', $id, $title));
+	exit(0);
+}
+
+
+function wiki_update($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		return _error($error);
+	$wiki = _get($args['id']);
+	if(!is_array($wiki))
+		return _error(INVALID_ARGUMENT);
+	$wiki['content'] = stripslashes($args['content']);
+	if(!_validate($wiki['content']))
+		return _error('Document not valid');
+	$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
+	if(isset($args['preview']))
+		include('./modules/wiki/display.tpl');
+	$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
+	include('./modules/wiki/update.tpl');
 }
 
 
