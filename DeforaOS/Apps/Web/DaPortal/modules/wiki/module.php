@@ -24,8 +24,10 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['MESSAGE'] = 'Message';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
+$text['REVISIONS'] = 'Revisions';
 $text['WIKI'] = 'Wiki';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
 $text['WIKI_LIST'] = 'Wiki list';
@@ -113,11 +115,50 @@ function wiki_default($args)
 
 function wiki_display($args)
 {
+	//FIXME implement revision
+
 	$wiki = _get($args['id']);
 	if(!is_array($wiki))
 		return;
 	$title = WIKI.': '.$wiki['title'];
 	include('./modules/wiki/display.tpl');
+	print('<h2 class="title">'._html_safe(REVISIONS)."</h2");
+	exec('rlog '.escapeshellcmd(_root().'/'.$wiki['title']), $rcs);
+	for($i = 0, $cnt = count($rcs); $i < $cnt;)
+		if($rcs[$i++] == '----------------------------')
+			break;
+	$revisions = array();
+	for(; $i < $cnt; $i+=3)
+	{
+		$name = _html_safe(substr($rcs[$i], 9));
+		$date = _html_safe(substr($rcs[$i+1], 6, 19));
+		$message = $rcs[$i+2];
+		if($message == '----------------------------'
+				|| $message ==
+'=============================================================================')
+			$message = '';
+		else
+		{
+			$apnd = '';
+			for($i++; $i < $cnt && $rcs[$i+2] !=
+					'----------------------------'
+					&& $rcs[$i+2] !=
+'=============================================================================';
+					$i++)
+				$apnd = '...';
+			$message.=$apnd;
+			$message = _html_safe($message);
+		}
+		$revisions[] = array('module' => 'wiki', 'action' => 'display',
+				'id' => $wiki['id'], 'name' => $name,
+				'title' => $wiki['title'], 'date' => $date,
+				'message' => $message,
+				'args' => 'revision='.$name);
+	}
+	_module('explorer', 'browse', array('entries' => $revisions,
+				'class' => array('date' => DATE,
+					'message' => MESSAGE),
+				'view' => 'details'));
 }
 
 
