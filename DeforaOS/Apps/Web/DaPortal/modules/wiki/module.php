@@ -178,8 +178,8 @@ function wiki_insert($args)
 	if(isset($args['preview']) && isset($args['content']))
 	{
 		$title = WIKI_PAGE_PREVIEW;
-		$wiki = array('title' => $args['title'],
-				'content' => $args['content']);
+		$wiki = array('title' => stripslashes($args['title']),
+				'content' => stripslashes($args['content']));
 		include('./modules/wiki/display.tpl');
 	}
 	$title = NEW_WIKI_PAGE;
