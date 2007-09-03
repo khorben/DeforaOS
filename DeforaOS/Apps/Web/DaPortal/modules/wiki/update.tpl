@@ -73,9 +73,9 @@ function wikiSubmit()
 <?php } ?>
 		<table width="100%">
 <?php if(!isset($wiki['id'])) { ?>
-		<tr><td class="field">Title:</td><td><input type="text" name="title" value=""/></td></tr>
+		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php if(isset($wiki['title'])) echo _html_safe($wiki['title']); ?>"/></td></tr>
 <?php } ?>
-		<tr><td class="field hidden">Content:</td><td><textarea id="wikitext" class="hidden" name="content"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
+		<tr><td class="field hidden"><?php echo _html_safe(CONTENT); ?>:</td><td><textarea id="wikitext" class="hidden" name="content"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
 		<tr><td colspan="2"><iframe id="wiki" width="100%" height="260px" onLoad="wikiStart()"></iframe></td></tr>
 		<tr><td></td><td><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
 		</table>
