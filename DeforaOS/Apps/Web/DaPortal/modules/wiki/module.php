@@ -260,7 +260,8 @@ function _system_insert($args)
 		return;
 	}
 	$title = stripslashes($args['title']);
-	if(strpos('/', $title) != FALSE || $title == 'RCS')
+	if(strlen($title) == 0 || strpos('/', $title) != FALSE
+			|| $title == 'RCS')
 	{
 		$error = INVALID_ARGUMENT;
 		return;
