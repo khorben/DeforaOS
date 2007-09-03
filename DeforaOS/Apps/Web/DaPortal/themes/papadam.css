@@ -50,8 +50,11 @@ h3 {
 	font-size:		16px;
 }
 
-pre {
+iframe, pre {
 	border:			1px solid #808080;
+}
+
+pre {
 	font-family:		monospace;
 	margin:			4px;
 	padding:		4px;
