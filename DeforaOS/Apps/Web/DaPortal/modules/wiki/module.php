@@ -24,7 +24,6 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
-$text['MESSAGE'] = 'Message';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['REVISIONS'] = 'Revisions';
@@ -61,7 +60,10 @@ function _get($id)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
 			== FALSE)
+	{
+		unlink($root.'/'.$wiki['title']);
 		return _error('Could not read page');
+	}
 	unlink($root.'/'.$wiki['title']);
 	if(!_validate($wiki['content']))
 		return _error('Document not valid');
@@ -147,17 +149,17 @@ function wiki_display($args)
 					$i++)
 				$apnd = '...';
 			$message.=$apnd;
-			$message = _html_safe($message);
+			$username = _user_id($message) != FALSE ? $message : '';
 		}
 		$revisions[] = array('module' => 'wiki', 'action' => 'display',
 				'id' => $wiki['id'], 'name' => $name,
 				'title' => $wiki['title'], 'date' => $date,
-				'message' => $message,
+				'username' => $username,
 				'args' => 'revision='.$name);
 	}
 	_module('explorer', 'browse', array('entries' => $revisions,
 				'class' => array('date' => DATE,
-					'message' => MESSAGE),
+					'username' => USERNAME),
 				'view' => 'details'));
 }
 
@@ -238,7 +240,7 @@ function wiki_system($args)
 
 function _system_insert($args)
 {
-	global $error, $user_id;
+	global $error, $user_id, $user_name;
 
 	if($user_id == 0)
 	{
@@ -296,7 +298,8 @@ function _system_insert($args)
 		return;
 	}
 	fclose($fp);
-	if(_exec('ci -l '.escapeshellcmd($filename)) == FALSE)
+	if(_exec('ci -u -m"'.escapeshellcmd($user_name).'" '
+				.escapeshellcmd($filename)) == FALSE)
 	{
 		_content_delete($id);
 		$error = 'An error occured while checking in';
@@ -308,7 +311,7 @@ function _system_insert($args)
 
 function _system_update($args)
 {
-	global $error, $user_id;
+	global $error, $user_id, $user_name;
 
 	if($user_id == 0)
 	{
@@ -359,8 +362,10 @@ function _system_update($args)
 		return;
 	}
 	fclose($fp);
-	if(_exec('ci -l '.escapeshellcmd($filename)) == FALSE)
+	if(_exec('ci -u -m"'.escapeshellcmd($user_name)
+				.'" '.escapeshellcmd($filename)) == FALSE)
 	{
+		unlink($filename);
 		$error = 'An error occured while checking in';
 		return;
 	}
