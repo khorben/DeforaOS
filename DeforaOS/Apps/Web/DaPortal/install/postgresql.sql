@@ -177,3 +177,8 @@ INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('15', 
 
 /* module: article */
 INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
+
+
+/* module: wiki */
+INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('17', 'string', 'root', '');
