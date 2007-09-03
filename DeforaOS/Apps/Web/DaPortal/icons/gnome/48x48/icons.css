@@ -66,7 +66,7 @@ h1.title.home {
 	background-image:		url('home.png');
 }
 
-h1.title.news {
+h1.title.news, h1.title.wiki {
 	background-image:		url('news.png');
 }
 
