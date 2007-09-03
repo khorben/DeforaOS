@@ -47,7 +47,7 @@ function _exec($cmd)
 	return $ret == 0 ? TRUE : FALSE;
 }
 
-function _get($id)
+function _get($id, $lock = FALSE)
 {
 	require_once('./system/content.php');
 	$wiki = _content_select($id);
@@ -56,7 +56,8 @@ function _get($id)
 	if(($root = _root()) == FALSE
 			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
 		return _error('Internal server error');
-	if(_exec('co -l '.escapeshellcmd($root.'/'.$wiki['title'])) == FALSE)
+	$cmd = $lock ? 'co -l' : 'co';
+	if(_exec($cmd.' '.escapeshellcmd($root.'/'.$wiki['title'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
 			== FALSE)
@@ -325,7 +326,7 @@ function _system_update($args)
 		$error = 'Internal server error';
 		return;
 	}
-	$wiki = _get($args['id']);
+	$wiki = _get($args['id'], TRUE);
 	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
 	{
 		$error = INVALID_ARGUMENT;
