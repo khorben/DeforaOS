@@ -47,7 +47,7 @@ function _exec($cmd)
 	return $ret == 0 ? TRUE : FALSE;
 }
 
-function _get($id, $lock = FALSE)
+function _get($id, $lock = FALSE, $revision = FALSE)
 {
 	require_once('./system/content.php');
 	$wiki = _content_select($id);
@@ -57,6 +57,8 @@ function _get($id, $lock = FALSE)
 			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
 		return _error('Internal server error');
 	$cmd = $lock ? 'co -l' : 'co';
+	if($revision != FALSE)
+		$cmd.=' -r"'.escapeshellcmd($revision).'"';
 	if(_exec($cmd.' '.escapeshellcmd($root.'/'.$wiki['title'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
@@ -118,9 +120,8 @@ function wiki_default($args)
 
 function wiki_display($args)
 {
-	//FIXME implement revision
-
-	$wiki = _get($args['id']);
+	$wiki = _get($args['id'], FALSE, isset($args['revision'])
+			? $args['revision'] : FALSE);
 	if(!is_array($wiki))
 		return;
 	$title = WIKI.': '.$wiki['title'];
@@ -150,7 +151,10 @@ function wiki_display($args)
 					$i++)
 				$apnd = '...';
 			$message.=$apnd;
-			$username = _user_id($message) != FALSE ? $message : '';
+			$username = ($user_id =_user_id($message)) != FALSE
+				? '<a href="'._html_link('user', FALSE,
+				$user_id, $message).'">'._html_safe($message)
+					.'</a>' : '';
 		}
 		$revisions[] = array('module' => 'wiki', 'action' => 'display',
 				'id' => $wiki['id'], 'name' => $name,
@@ -158,7 +162,7 @@ function wiki_display($args)
 				'username' => $username,
 				'args' => 'revision='.$name);
 	}
-	_module('explorer', 'browse', array('entries' => $revisions,
+	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 				'class' => array('date' => DATE,
 					'username' => USERNAME),
 				'view' => 'details'));
