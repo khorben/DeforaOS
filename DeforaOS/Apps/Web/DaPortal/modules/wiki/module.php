@@ -288,16 +288,19 @@ function _system_insert($args)
 	$filename = $root.'/'.$title;
 	if(file_exists($filename) || file_exists($root.'/RCS/'.$title.',v'))
 	{
+		_content_delete($id);
 		$error = 'Page already exists';
 		return;
 	}
 	if(($fp = fopen($filename, 'w')) == FALSE)
 	{
+		_content_delete($id);
 		$error = 'Could not write to page';
 		return;
 	}
 	if(fwrite($fp, $content) == FALSE)
 	{
+		_content_delete($id);
 		fclose($fp);
 		$error = 'An error occured while writing';
 		return;
