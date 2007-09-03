@@ -175,9 +175,14 @@ function wiki_insert($args)
 
 	if(isset($error) && strlen($error))
 		return _error($error);
-	$title = NEW_WIKI_PAGE;
 	if(isset($args['preview']) && isset($args['content']))
-		$wiki = array('content' => $args['content']);
+	{
+		$title = WIKI_PAGE_PREVIEW;
+		$wiki = array('title' => $args['title'],
+				'content' => $args['content']);
+		include('./modules/wiki/display.tpl');
+	}
+	$title = NEW_WIKI_PAGE;
 	include('./modules/wiki/update.tpl');
 }
 
