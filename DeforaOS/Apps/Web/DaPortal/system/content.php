@@ -85,18 +85,19 @@ function _content_readable($id)
 
 function _content_select($id, $enabled = '')
 {
-	global $module_id;
+	global $module_id; /* XXX */
 
 	if(!is_numeric($id))
 		return FALSE;
 	$and = is_bool($enabled) ? " AND enabled='".$enabled.'"' : '';
-	if(($content = _sql_array('SELECT content_id AS id, timestamp'
+	$content = _sql_array('SELECT content_id AS id, timestamp'
 			.', daportal_content.user_id AS user_id, username'
 			.', title, content, daportal_content.enabled AS enabled'
 			.' FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id=daportal_user.user_id'
 			." AND module_id='$module_id'"
-			." AND content_id='$id'".$and)) == FALSE)
+			." AND content_id='$id'".$and);
+	if(!is_array($content) || count($content) != 1)
 		return FALSE;
 	return $content[0];
 }
