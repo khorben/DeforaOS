@@ -56,7 +56,7 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 	if(($root = _root()) == FALSE
 			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
 		return _error('Internal server error');
-	$cmd = $lock ? 'co -l' : 'co';
+	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
 		$cmd.=' -r"'.escapeshellcmd($revision).'"';
 	if(_exec($cmd.' '.escapeshellcmd($root.'/'.$wiki['title'])) == FALSE)
@@ -126,7 +126,7 @@ function wiki_display($args)
 		return;
 	$title = WIKI.': '.$wiki['title'];
 	include('./modules/wiki/display.tpl');
-	print('<h2 class="title">'._html_safe(REVISIONS)."</h2");
+	print('<h2 class="title members">'._html_safe(REVISIONS)."</h2");
 	exec('rlog '.escapeshellcmd(_root().'/'.$wiki['title']), $rcs);
 	for($i = 0, $cnt = count($rcs); $i < $cnt;)
 		if($rcs[$i++] == '----------------------------')
