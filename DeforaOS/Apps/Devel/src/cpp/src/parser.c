@@ -16,78 +16,56 @@
 
 
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 #include "parser.h"
-#include "cpp.h"
 
 
-/* Cpp */
+/* Parser */
 /* private */
 /* types */
-struct _Cpp
+struct _Parser
 {
-	Parser ** parser;
-	size_t parser_cnt;
-	char error[PATH_MAX];
+	char * pathname;
+	FILE * fp;
+	unsigned long line;
+	unsigned long col;
 };
 
 
 /* public */
-/* cpp_new */
-Cpp * cpp_new(void)
+/* parser_new */
+Parser * parser_new(char const * pathname)
 {
-	Cpp * cpp;
+	Parser * parser;
 
-	if((cpp = malloc(sizeof(*cpp))) == NULL)
+	if((parser = malloc(sizeof(*parser))) == NULL)
 		return NULL;
-	memset(cpp, sizeof(*cpp), 0);
-	return cpp;
+	parser->pathname = strdup(pathname);
+	parser->fp = fopen(pathname, "r");
+	if(parser->pathname == NULL || parser->fp == NULL)
+	{
+		parser_delete(parser);
+		return NULL;
+	}
+	parser->line = 0;
+	parser->col = 0;
+	return parser;
 }
 
 
-/* cpp_delete */
-void cpp_delete(Cpp * cpp)
+/* parser_delete */
+void parser_delete(Parser * parser)
 {
-	size_t i;
-
-	for(i = 0; i < cpp->parser_cnt; i++)
-		parser_delete(cpp->parser[i]);
-	free(cpp->parser);
-	free(cpp);
+	fclose(parser->fp);
+	free(parser->pathname);
+	free(parser);
 }
 
 
 /* accessors */
-/* cpp_get_error */
-char const * cpp_get_error(Cpp * cpp)
+char const * parser_get_filename(Parser * parser)
 {
-	return cpp->error;
-}
-
-
-/* useful */
-int cpp_parse(Cpp * cpp, char const * pathname)
-{
-	Parser ** p;
-
-	if((p = realloc(cpp->parser, (cpp->parser_cnt + 1)
-					* sizeof(*p))) == NULL)
-		return 1; /* FIXME get error */
-	cpp->parser = p;
-	if((cpp->parser[cpp->parser_cnt] = parser_new(pathname)) == NULL)
-		return 1; /* FIXME get error */
-	cpp->parser_cnt++;
-	return 0;
-}
-
-
-/* cpp_read */
-ssize_t cpp_read(Cpp * cpp, char * buf, size_t cnt)
-{
-	/* FIXME implement */
-	return -1;
+	return parser->pathname;
 }

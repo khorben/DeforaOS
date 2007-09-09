@@ -1,11 +1,16 @@
-TARGETS	= cpp
+TARGETS	= libcpp.a libcpp.so cpp
 PREFIX	= /usr/local
 DESTDIR	= 
-BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
+LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W -Wall
 CFLAGS	= -g
+AR	= ar -rc
+RANLIB	= ranlib
+LD	= ld -shared
+BINDIR	= $(PREFIX)/bin
+INCLUDEDIR= $(PREFIX)/include
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -13,25 +18,47 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-cpp_OBJS = cpp.o
-cpp_CFLAGS = $(CFLAGSF) $(CFLAGS)
-cpp: $(cpp_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o cpp $(cpp_OBJS)
+libcpp_OBJS = parser.o cpp.o
+libcpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 
-cpp.o: cpp.c
-	$(CC) $(cpp_CFLAGS) -c cpp.c
+libcpp.a: $(libcpp_OBJS)
+	$(AR) libcpp.a $(libcpp_OBJS)
+	$(RANLIB) libcpp.a
+
+libcpp.so: $(libcpp_OBJS)
+	$(LD) -o libcpp.so $(libcpp_OBJS)
+
+cpp_OBJS = main.o
+cpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+cpp: $(cpp_OBJS)
+	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -l cpp -L .
+
+parser.o: parser.c parser.h
+	$(CC) $(libcpp_CFLAGS) -c parser.c
+
+cpp.o: cpp.c parser.h cpp.h
+	$(CC) $(libcpp_CFLAGS) -c cpp.c
+
+main.o: main.c cpp.h
+	$(CC) $(cpp_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(cpp_OBJS)
+	$(RM) $(libcpp_OBJS) $(cpp_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
+	$(MKDIR) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0644 libcpp.a $(DESTDIR)$(LIBDIR)/libcpp.a
+	$(INSTALL) -m 0755 libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 cpp $(DESTDIR)$(BINDIR)/cpp
 
 uninstall:
+	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.a
+	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so
 	$(RM) $(DESTDIR)$(BINDIR)/cpp
 
 .PHONY: all clean distclean install uninstall
