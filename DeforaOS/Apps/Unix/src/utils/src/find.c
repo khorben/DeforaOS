@@ -114,7 +114,9 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 					errno = EINVAL;
 					return _find_error(cmdv[i], 1);
 				}
-				return fnmatch(cmdv[i], filename, 0);
+				if(fnmatch(cmdv[i], filename, 0) != 0)
+					return 1;
+				break;
 			case FC_NOGROUP:
 				return getgrgid(st->st_gid) == NULL ? 0 : 1;
 			case FC_NOUSER:
