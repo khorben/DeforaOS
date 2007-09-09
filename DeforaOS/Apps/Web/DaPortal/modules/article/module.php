@@ -349,7 +349,7 @@ function _submit_send_mail($article)
 	}
 	$article['title'] = stripslashes($article['title']);
 	$article['date'] = strftime(DATE_FORMAT);
-	$article['content'] = "News is available for moderation at:\n"
+	$article['content'] = "An article is available for moderation at:\n"
 		._module_link('article', 'modify', $article['id'])."\n"
 		."Article preview:\n\n"
 		."Article by ".$article['username']." on ".$article['date']."\n"
