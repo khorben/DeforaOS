@@ -35,6 +35,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/echo.c \
 		$(PACKAGE)-$(VERSION)/src/false.c \
 		$(PACKAGE)-$(VERSION)/src/file.c \
+		$(PACKAGE)-$(VERSION)/src/find.c \
 		$(PACKAGE)-$(VERSION)/src/head.c \
 		$(PACKAGE)-$(VERSION)/src/id.c \
 		$(PACKAGE)-$(VERSION)/src/kill.c \
