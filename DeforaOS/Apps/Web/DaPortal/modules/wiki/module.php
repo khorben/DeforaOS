@@ -180,7 +180,10 @@ function wiki_insert($args)
 		$title = WIKI_PAGE_PREVIEW;
 		$wiki = array('title' => stripslashes($args['title']),
 				'content' => stripslashes($args['content']));
-		include('./modules/wiki/display.tpl');
+		if(!_validate($wiki['content']))
+			_error('Document not valid');
+		else
+			include('./modules/wiki/display.tpl');
 	}
 	$title = NEW_WIKI_PAGE;
 	include('./modules/wiki/update.tpl');
