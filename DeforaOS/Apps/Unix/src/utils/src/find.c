@@ -32,11 +32,12 @@ typedef int Prefs;
 
 /* find */
 static int _find_error(char const * message, int ret);
-static int _find_do(Prefs * prefs, int filec, char * filev[], int cmdc,
+static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 		char * cmdv[]);
 
 static int _find(Prefs * prefs, int argc, char * argv[])
 {
+	int ret = 0;
 	int i;
 	int filec;
 
@@ -44,7 +45,9 @@ static int _find(Prefs * prefs, int argc, char * argv[])
 		if(argv[i][0] == '-' || argv[i][0] == '!' || argv[i][0] == '(')
 			break;
 	filec = i;
-	return _find_do(prefs, filec, argv, argc - filec, &argv[filec]);
+	for(i = 0; i < filec; i++)
+		ret |= _find_do(prefs, argv[i], argc - filec, &argv[filec]);
+	return ret;
 }
 
 static int _find_error(char const * message, int ret)
@@ -57,23 +60,18 @@ static int _find_error(char const * message, int ret)
 /* find_do */
 static int _do_dir(Prefs * prefs, char const * pathname);
 
-static int _find_do(Prefs * prefs, int filec, char * filev[], int cmdc,
+static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 		char * cmdv[])
 {
-	int ret = 0;
-	int i;
 	struct stat st;
 
-	for(i = 0; i < filec; i++)
-	{
-		if(lstat(filev[i], &st) != 0) /* XXX TOCTOU */
-			ret |= _find_error(filev[i], 1);
-		if(S_ISDIR(st.st_mode))
-			ret |= _do_dir(prefs, filev[i]);
-		else
-			printf("%s\n", filev[i]);
-	}
-	return ret;
+	if(lstat(pathname, &st) != 0) /* XXX TOCTOU */
+		return _find_error(pathname, 1);
+	if(S_ISDIR(st.st_mode))
+		return _do_dir(prefs, pathname);
+	else
+		printf("%s\n", pathname);
+	return 0;
 }
 
 static int _do_dir(Prefs * prefs, char const * pathname)
@@ -103,7 +101,7 @@ static int _do_dir(Prefs * prefs, char const * pathname)
 			break;
 		path = p;
 		strcpy(&path[len - 1], de->d_name);
-		ret |= _find_do(prefs, 1, &path, 0, NULL);
+		ret |= _find_do(prefs, path, 0, NULL); /* FIXME commands */
 	}
 	free(path);
 	if(de != NULL)
