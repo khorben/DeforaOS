@@ -355,8 +355,7 @@ function project_bug_display($args)
 	require_once('./system/user.php');
 	$bug['assigned'] = _user_name($bug['assigned_id']); /* XXX */
 	$admin = _user_admin($user_id) ? 1 : 0;
-	$bug['date'] = strftime(DATE_FORMAT, strtotime(substr($bug['timestamp'],
-					0, 19)));
+	$bug['date'] = _sql_date($bug['timestamp']);
 	include('./modules/project/bug_display.tpl');
 	$sql = 'SELECT bug_reply_id AS id, title, content'
 		.', daportal_content.content_id AS content_id'
@@ -376,8 +375,7 @@ function project_bug_display($args)
 		return _error('Unable to display bug feedback');
 	foreach($replies as $reply)
 	{
-		$reply['date'] = strftime(DATE_FORMAT, strtotime(substr(
-						$reply['date'], 0, 19)));
+		$reply['date'] = _sql_date($reply['date']);
 		if(is_numeric($reply['assigned_id'])) /* XXX */
 			$reply['assigned'] = _user_name($reply['assigned_id']);
 		include('./modules/project/bug_reply_display.tpl');
@@ -645,8 +643,7 @@ function project_bug_reply($args)
 	if(!is_array($bug) || count($bug) != 1)
 		return _error('Unable to display bug');
 	$bug = $bug[0];
-	$bug['date'] = strftime(DATE_FORMAT, strtotime(substr($bug['timestamp'],
-					0, 19)));
+	$bug['date'] = _sql_date($bug['timestamp']);
 	$bug['assigned'] = _user_name($bug['assigned_id']);
 	$title = REPLY_TO_BUG.' #'.$bug['bug_id'].': '.$bug['title'];
 	require_once('./system/user.php');
