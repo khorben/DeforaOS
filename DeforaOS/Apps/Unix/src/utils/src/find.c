@@ -22,6 +22,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <fnmatch.h>
+#include <pwd.h>
+#include <grp.h>
+#include <errno.h>
 
 
 /* types */
@@ -31,6 +35,15 @@ typedef int Prefs;
 
 
 /* find */
+/* types */
+typedef enum _FindCmd
+{
+	FC_NAME = 0, FC_NOGROUP, FC_NOUSER, FC_XDEV, FC_PRUNE, FC_PERM, FC_TYPE,
+	FC_LINKS, FC_USER, FC_GROUP, FC_SIZE, FC_ATIME, FC_CTIME, FC_MTIME,
+	FC_EXEC, FC_OK, FC_PRINT, FC_NEWER, FC_DEPTH
+} FindCmd;
+#define FC_LAST FC_DEPTH
+
 static int _find_error(char const * message, int ret);
 static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 		char * cmdv[]);
@@ -58,23 +71,98 @@ static int _find_error(char const * message, int ret)
 }
 
 /* find_do */
-static int _do_dir(Prefs * prefs, char const * pathname);
+static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
+		int cmdc, char * cmdv[]);
+static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
+		char * cmdv[]);
 
 static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 		char * cmdv[])
 {
+	int ret;
 	struct stat st;
 
 	if(lstat(pathname, &st) != 0) /* XXX TOCTOU */
 		return _find_error(pathname, 1);
+	ret = _do_cmd(prefs, pathname, &st, cmdc, cmdv);
 	if(S_ISDIR(st.st_mode))
-		return _do_dir(prefs, pathname);
-	else
+		return _do_dir(prefs, pathname, cmdc, cmdv);
+	else if(ret == 0)
 		printf("%s\n", pathname);
+	return ret;
+}
+
+/* do_cmd */
+static FindCmd _cmd_enum(char const * cmd);
+
+static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
+		int cmdc, char * cmdv[])
+{
+	int i;
+	char const * filename;
+
+	if((filename = strrchr(pathname, '/')) == NULL)
+		filename = pathname;
+	else
+		filename++;
+	for(i = 0; i < cmdc; i++)
+		switch(_cmd_enum(cmdv[i]))
+		{
+			case FC_NAME:
+				if(++i == cmdc)
+				{
+					errno = EINVAL;
+					return _find_error(cmdv[i], 1);
+				}
+				return fnmatch(cmdv[i], filename, 0);
+			case FC_NOGROUP:
+				return getgrgid(st->st_gid) == NULL ? 0 : 1;
+			case FC_NOUSER:
+				return getpwuid(st->st_uid) == NULL ? 0 : 1;
+			case -1:
+				errno = EINVAL;
+				return _find_error(cmdv[i], 1);
+			default: /* FIXME not implemented */
+				errno = ENOSYS;
+				return _find_error(cmdv[i], 1);
+		}
 	return 0;
 }
 
-static int _do_dir(Prefs * prefs, char const * pathname)
+static FindCmd _cmd_enum(char const * cmd)
+{
+	const char * cmds[FC_LAST + 1] =
+	{
+		"-name",
+		"-nouser",
+		"-nogroup",
+		"-xdev",
+		"-prune",
+		"-perm",
+		"-type",
+		"-links",
+		"-user",
+		"-group",
+		"-size",
+		"-atime",
+		"-ctime",
+		"-mtime",
+		"-exec",
+		"-ok",
+		"-print",
+		"-newer",
+		"-depth"
+	};
+	int i;
+
+	for(i = 0; i < FC_LAST + 1; i++)
+		if(strcmp(cmd, cmds[i]) == 0)
+			return i;
+	return -1;
+}
+
+static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
+		char * cmdv[])
 {
 	int ret = 0;
 	DIR * dir;
@@ -101,7 +189,7 @@ static int _do_dir(Prefs * prefs, char const * pathname)
 			break;
 		path = p;
 		strcpy(&path[len - 1], de->d_name);
-		ret |= _find_do(prefs, path, 0, NULL); /* FIXME commands */
+		ret |= _find_do(prefs, path, cmdc, cmdv);
 	}
 	free(path);
 	if(de != NULL)
