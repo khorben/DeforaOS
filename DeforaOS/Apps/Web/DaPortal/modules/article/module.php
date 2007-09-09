@@ -170,8 +170,7 @@ function article_display($args)
 		return _error(INVALID_ARGUMENT);
 	$long = 1;
 	$title = $article['title'];
-	$article['date'] = strftime(DATE_FORMAT,
-			strtotime(substr($article['timestamp'], 0, 19)));
+	$article['date'] = _sql_date($article['timestamp']);
 	include('./modules/article/display.tpl');
 }
 
@@ -220,9 +219,7 @@ function article_list($args)
 		$long = 0;
 		foreach($res as $article)
 		{
-			$article['date'] = strftime(DATE_FORMAT,
-					strtotime(substr($article['timestamp'],
-							0, 19)));
+			$article['date'] = _sql_date($article['timestamp']);
 			include('./modules/article/display.tpl');
 		}
 		return;
@@ -407,8 +404,7 @@ function article_update($args)
 		$long = 1;
 		$title = ARTICLE_PREVIEW;
 		$article['title'] = stripslashes($args['title']);
-		$article['date'] = strftime(DATE_FORMAT, strtotime(substr(
-						$article['timestamp'], 0, 19)));
+		$article['date'] = _sql_date($article['timestamp']);
 		$article['content'] = stripslashes($args['content']);
 		include('./modules/article/display.tpl');
 		unset($title);

@@ -172,8 +172,7 @@ function news_display($args)
 		return _error(INVALID_ARGUMENT);
 	$long = 1;
 	$title = $news['title'];
-	$news['date'] = strftime(DATE_FORMAT,
-			strtotime(substr($news['timestamp'], 0, 19)));
+	$news['date'] = _sql_date($news['timestamp']);
 	include('./modules/news/news_display.tpl');
 	if(_module_id('comment'))
 		_module('comment', 'childs', array('id' => $news['id']));
@@ -249,8 +248,7 @@ function news_list($args)
 	$long = 0;
 	foreach($res as $news)
 	{
-		$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
-						$news['timestamp'], 0, 19)));
+		$news['date'] = _sql_date($news['timestamp']);
 		include('./modules/news/news_display.tpl');
 	}
 	_html_paging(_html_link('news', 'list').'&amp;', $page, $pages);
@@ -506,8 +504,7 @@ function news_update($args)
 		$long = 1;
 		$title = NEWS_PREVIEW;
 		$news['title'] = stripslashes($args['title']);
-		$news['date'] = strftime(DATE_FORMAT, strtotime(substr(
-						$news['timestamp'], 0, 19)));
+		$news['date'] = _sql_date($news['timestamp']);
 		$news['content'] = stripslashes($args['content']);
 		include('./modules/news/news_display.tpl');
 		unset($title);
