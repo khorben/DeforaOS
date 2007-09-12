@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with utils; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* TODO:
+ * - check commands validity before starting? */
 
 
 
@@ -79,17 +81,17 @@ static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
 static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 		char * cmdv[])
 {
-	int ret;
 	struct stat st;
 
 	if(lstat(pathname, &st) != 0) /* XXX TOCTOU */
 		return _find_error(pathname, 1);
-	ret = _do_cmd(prefs, pathname, &st, cmdc, cmdv);
+	if(cmdc == 0)
+		printf("%s\n", pathname);
+	else if(_do_cmd(prefs, pathname, &st, cmdc, cmdv) != 0)
+		return 0;
 	if(S_ISDIR(st.st_mode))
 		return _do_dir(prefs, pathname, cmdc, cmdv);
-	else if(ret == 0)
-		printf("%s\n", pathname);
-	return ret;
+	return 0;
 }
 
 /* do_cmd */
@@ -124,6 +126,9 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 			case FC_INVALID:
 				errno = EINVAL;
 				return _find_error(cmdv[i], 1);
+			case FC_PRINT:
+				printf("%s\n", pathname);
+				break;
 			case FC_ATIME:
 			case FC_CTIME:
 			case FC_DEPTH:
@@ -134,8 +139,10 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 			case FC_NEWER:
 			case FC_OK:
 			case FC_PERM:
-			case FC_PRINT:
 			case FC_PRUNE:
+				if(S_ISDIR(st->st_mode))
+					return 1;
+				break;
 			case FC_SIZE:
 			case FC_TYPE:
 			case FC_USER:
