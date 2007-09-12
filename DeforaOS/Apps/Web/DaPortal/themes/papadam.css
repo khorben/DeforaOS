@@ -121,6 +121,14 @@ textarea {
 }
 
 
+/* debug, headline */
+.debug, .headline {
+	background-color:	#ffffa0;
+	border:			1px solid #d0d0d0;
+	margin:			4px;
+	padding:		4px;
+}
+
 
 /* forms */
 td.field {
