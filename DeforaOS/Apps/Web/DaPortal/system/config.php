@@ -42,7 +42,12 @@ function _config_list($module)
 	if(!is_array($res))
 		return FALSE;
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-		$res[$i]['value'] = $res[$i]['value_'.$res[$i]['type']];
+	{
+		if($res[$i]['type'] == 'bool')
+			$res[$i]['value'] = $res[$i]['value_bool'] == SQL_TRUE;
+		else
+			$res[$i]['value'] = $res[$i]['value_'.$res[$i]['type']];
+	}
 	return $res;
 }
 
