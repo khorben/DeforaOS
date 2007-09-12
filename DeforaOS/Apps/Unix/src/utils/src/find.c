@@ -38,9 +38,9 @@ typedef int Prefs;
 /* types */
 typedef enum _FindCmd
 {
-	FC_NAME = 0, FC_NOGROUP, FC_NOUSER, FC_XDEV, FC_PRUNE, FC_PERM, FC_TYPE,
-	FC_LINKS, FC_USER, FC_GROUP, FC_SIZE, FC_ATIME, FC_CTIME, FC_MTIME,
-	FC_EXEC, FC_OK, FC_PRINT, FC_NEWER, FC_DEPTH
+	FC_INVALID = -1, FC_NAME = 0, FC_NOGROUP, FC_NOUSER, FC_XDEV, FC_PRUNE,
+	FC_PERM, FC_TYPE, FC_LINKS, FC_USER, FC_GROUP, FC_SIZE, FC_ATIME,
+	FC_CTIME, FC_MTIME, FC_EXEC, FC_OK, FC_PRINT, FC_NEWER, FC_DEPTH
 } FindCmd;
 #define FC_LAST FC_DEPTH
 
@@ -121,11 +121,26 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 				return getgrgid(st->st_gid) == NULL ? 0 : 1;
 			case FC_NOUSER:
 				return getpwuid(st->st_uid) == NULL ? 0 : 1;
-			case -1:
+			case FC_INVALID:
 				errno = EINVAL;
 				return _find_error(cmdv[i], 1);
-			default: /* FIXME not implemented */
-				errno = ENOSYS;
+			case FC_ATIME:
+			case FC_CTIME:
+			case FC_DEPTH:
+			case FC_EXEC:
+			case FC_GROUP:
+			case FC_LINKS:
+			case FC_MTIME:
+			case FC_NEWER:
+			case FC_OK:
+			case FC_PERM:
+			case FC_PRINT:
+			case FC_PRUNE:
+			case FC_SIZE:
+			case FC_TYPE:
+			case FC_USER:
+			case FC_XDEV:
+				errno = ENOSYS; /* FIXME not implemented */
 				return _find_error(cmdv[i], 1);
 		}
 	return 0;
@@ -160,7 +175,7 @@ static FindCmd _cmd_enum(char const * cmd)
 	for(i = 0; i < FC_LAST + 1; i++)
 		if(strcmp(cmd, cmds[i]) == 0)
 			return i;
-	return -1;
+	return FC_INVALID;
 }
 
 static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
