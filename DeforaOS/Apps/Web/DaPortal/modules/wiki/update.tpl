@@ -8,6 +8,9 @@ function wikiStart()
 	var wiki = document.getElementById('wiki');
 	var wikitext = document.getElementById('wikitext');
 
+	wikitext.style.visibility = 'hidden';
+	wikitext.className = 'hidden';
+	wiki.className = '';
 	wiki.contentWindow.document.designMode = "on";
 	try {
 		wiki.contentWindow.document.execCommand("undo", false, null);
@@ -108,9 +111,9 @@ function wikiSubmit()
 <?php if(!isset($wiki['id'])) { ?>
 		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php if(isset($wiki['title'])) echo _html_safe($wiki['title']); ?>"/></td></tr>
 <?php } ?>
-		<tr><td class="field hidden"><?php echo _html_safe(CONTENT); ?>:</td><td><textarea id="wikitext" class="hidden" name="content"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
-		<tr><td colspan="2"><iframe id="wiki" width="100%" height="260px" onload="wikiStart()"></iframe></td></tr>
-		<tr><td></td><td><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
+		<tr><td colspan="2"><textarea id="wikitext" name="content" cols="80" rows="20"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
+		<tr><td colspan="2"><iframe id="wiki" class="hidden" width="100%" height="260px" onload="wikiStart()"></iframe></td></tr>
+		<tr><td colspan="2"><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
 		</table>
 	</form>
 </div>
