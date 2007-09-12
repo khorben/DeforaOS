@@ -24,9 +24,12 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['FONT'] = 'Font';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['REVISIONS'] = 'Revisions';
+$text['SIZE'] = 'Size';
+$text['STYLE'] = 'Style';
 $text['WIKI'] = 'Wiki';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
 $text['WIKI_LIST'] = 'Wiki list';

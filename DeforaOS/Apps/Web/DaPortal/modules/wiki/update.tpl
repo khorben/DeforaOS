@@ -64,18 +64,28 @@ function wikiSubmit()
 		<div class="icon redo" title="Redo" onclick="wikiExec('redo')"></div>
 	</div>
 	<div class="toolbar">
-		Style: <select id="formatblock" onchange="wikiSelect(this.id)">
+		<select id="formatblock" onchange="wikiSelect(this.id)">
+			<option value="Style"><?php echo _html_safe(STYLE); ?></option>
 			<option value="<h1>">Heading 1</option>
 			<option value="<h2>">Heading 2</option>
 			<option value="<h3>">Heading 3</option>
 			<option value="<h4>">Heading 4</option>
 			<option value="<h5>">Heading 5</option>
 			<option value="<h6>">Heading 6</option>
-			<option value="<p>" selected="selected">Normal</option>
-			<option value="<Pre>">Preformatted</option>
+			<option value="<p>">Normal</option>
+			<option value="<pre>">Preformatted</option>
 		</select>
-		Font size: <select id="fontsize" unselectable="on" onchange="wikiSelect(this.id)">
-			<option value="Size">Size</option>
+		<select id="fontname" unselectable="on" onchange="wikiSelect(this.id)">
+			<option value="Font"><?php echo _html_safe(FONT); ?></option>
+			<option value="cursive">Cursive</option></option>
+			<option value="cursive">Cursive</option>
+			<option value="fantasy">Fantasy</option>
+			<option value="monospace">Monospace</option>
+			<option value="sans-serif">Sans serif</option>
+			<option value="serif">Serif</option>
+		</select>
+		<select id="fontsize" unselectable="on" onchange="wikiSelect(this.id)">
+			<option value="Size"><?php echo _html_safe(SIZE); ?></option>
 			<option value="1">1</option>
 			<option value="2">2</option>
 			<option value="3">3</option>
