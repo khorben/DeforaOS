@@ -2,12 +2,44 @@ div.icon.add {
 	background-image:		url('add.png');
 }
 
+div.icon.align_center {
+	background-image:		url('align_center.png');
+}
+
+div.icon.align_justify {
+	background-image:		url('align_justify.png');
+}
+
+div.icon.align_left {
+	background-image:		url('align_left.png');
+}
+
+div.icon.align_right {
+	background-image:		url('align_right.png');
+}
+
 div.icon.back {
 	background-image:		url('back.png');
 }
 
+div.icon.bold {
+	background-image:		url('bold.png');
+}
+
 div.icon.bug {
 	background-image:		url('bug.png');
+}
+
+div.icon.bullet {
+	background-image:		url('bullet.png');
+}
+
+div.icon.copy {
+	background-image:		url('copy.png');
+}
+
+div.icon.cut {
+	background-image:		url('cut.png');
 }
 
 div.icon.delete {
@@ -22,12 +54,24 @@ div.icon.enabled {
 	background-image:		url('enabled.png');
 }
 
+div.icon.enum {
+	background-image:		url('enum.png');
+}
+
 div.icon.forward {
 	background-image:		url('forward.png');
 }
 
 div.icon.home {
 	background-image:		url('home.png');
+}
+
+div.icon.indent {
+	background-image:		url('indent.png');
+}
+
+div.icon.italic {
+	background-image:		url('italic.png');
 }
 
 div.icon.listing_details {
@@ -56,6 +100,14 @@ div.icon.parent_directory {
 	background-image:		url('parent_directory.png');
 }
 
+div.icon.paste {
+	background-image:		url('paste.png');
+}
+
+div.icon.redo {
+	background-image:		url('redo.png');
+}
+
 div.icon.refresh {
 	background-image:		url('refresh.png');
 }
@@ -70,6 +122,22 @@ div.icon.search, h3.title.search {
 
 div.icon.select_all {
 	background-image:		url('select_all.png');
+}
+
+div.icon.strikethrough {
+	background-image:		url('strikethrough.png');
+}
+
+div.icon.underline {
+	background-image:		url('underline.png');
+}
+
+div.icon.undo {
+	background-image:		url('undo.png');
+}
+
+div.icon.unindent {
+	background-image:		url('unindent.png');
 }
 
 div.icon.upload_file {
