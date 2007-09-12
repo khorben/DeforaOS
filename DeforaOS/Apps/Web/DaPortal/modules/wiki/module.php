@@ -175,6 +175,7 @@ function wiki_insert($args)
 
 	if(isset($error) && strlen($error))
 		return _error($error);
+	$title = NEW_WIKI_PAGE;
 	if(isset($args['preview']) && isset($args['content']))
 	{
 		$title = WIKI_PAGE_PREVIEW;
@@ -183,9 +184,11 @@ function wiki_insert($args)
 		if(!_validate($wiki['content']))
 			_error('Document not valid');
 		else
+		{
 			include('./modules/wiki/display.tpl');
+			unset($title);
+		}
 	}
-	$title = NEW_WIKI_PAGE;
 	include('./modules/wiki/update.tpl');
 }
 
