@@ -60,6 +60,7 @@ static int _progress_exec(Progress * progress, char * argv[]);
 /* callbacks */
 static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+static void _progress_cancel(GtkWidget * widget, gpointer data);
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 
@@ -70,6 +71,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	GIOChannel * channel;
 	GtkWidget * window = NULL;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * widget;
   
 	p.prefs = prefs;
@@ -105,6 +107,12 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
 	p.progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_progress_cancel), NULL);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_widget_show_all(window);
@@ -192,6 +200,11 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		return FALSE;
 	}
 	return TRUE;
+}
+
+static void _progress_cancel(GtkWidget * widget, gpointer data)
+{
+	gtk_main_quit();
 }
 
 
