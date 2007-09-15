@@ -20,6 +20,8 @@
 
 
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -45,11 +47,14 @@ typedef struct _Progress
 {
 	Prefs * prefs;			/* preferences		*/
 
+	struct timeval tv;		/* start time		*/
 	int fd;				/* read descriptor	*/
 	int fds[2];			/* for the pipe		*/
 	pid_t pid;			/* child's pid		*/
+	size_t cnt;			/* bytes written	*/
 
 	/* widgets */
+	GtkWidget * speed;
 	GtkWidget * progress;
 } Progress;
 
@@ -63,6 +68,7 @@ static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
 static void _progress_cancel(GtkWidget * widget, gpointer data);
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _progress_timeout(gpointer data);
 
 static int _progress(Prefs * prefs, char * argv[])
 {
@@ -72,9 +78,14 @@ static int _progress(Prefs * prefs, char * argv[])
 	GtkWidget * window = NULL;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkSizeGroup * left;
+	GtkSizeGroup * right;
 	GtkWidget * widget;
   
 	p.prefs = prefs;
+	p.cnt = 0;
+	if(gettimeofday(&p.tv, NULL) != 0)
+		return _progress_error("gettimeofday", 1);
 	if(prefs->filename == NULL)
 		prefs->filename = "Standard input";
 	else if((p.fd = open(prefs->filename, O_RDONLY)) < 0)
@@ -105,10 +116,23 @@ static int _progress(Prefs * prefs, char * argv[])
 				_progress_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
+	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_label_new("File: ");
+	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_label_new(prefs->filename);
+	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Speed: ");
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	p.speed = gtk_label_new("0.0 kB/s");
+	g_timeout_add(1000, _progress_timeout, &p);
+	gtk_size_group_add_widget(right, p.speed);
+	gtk_box_pack_start(GTK_BOX(hbox), p.speed, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	p.progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
@@ -117,7 +141,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_progress_cancel), NULL);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_widget_show_all(window);
@@ -160,10 +184,14 @@ static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
 	return FALSE;
 }
 
+static void _progress_cancel(GtkWidget * widget, gpointer data)
+{
+	gtk_main_quit();
+}
+
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
-	static size_t cnt = 0;
 	Progress * p = data;
 	char buf[BUFSIZ];
 	ssize_t len;
@@ -187,12 +215,12 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
-	cnt += len;
-	if(p->prefs->length == 0 || cnt == 0)
+	p->cnt += len;
+	if(p->prefs->length == 0 || p->cnt == 0)
 		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(p->progress));
 	else
 	{
-		fraction = cnt;
+		fraction = p->cnt;
 		fraction /= p->prefs->length;
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->progress),
 				fraction);
@@ -207,9 +235,32 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 	return TRUE;
 }
 
-static void _progress_cancel(GtkWidget * widget, gpointer data)
+static gboolean _progress_timeout(gpointer data)
 {
-	gtk_main_quit();
+	Progress * progress = data;
+	struct timeval tv;
+	double rate;
+	char buf[16];
+
+	if(progress->cnt == 0)
+	{
+		gtk_label_set_text(GTK_LABEL(progress->speed), "0.0 kB/s");
+		return TRUE;
+	}
+	if(gettimeofday(&tv, NULL) != 0)
+		return _progress_error("gettimeofday", FALSE);
+	if((tv.tv_sec = tv.tv_sec - progress->tv.tv_sec) < 0)
+		tv.tv_sec = 0;
+	if((tv.tv_usec = tv.tv_usec - progress->tv.tv_usec) < 0)
+	{
+		tv.tv_sec--;
+		tv.tv_usec = progress->tv.tv_usec - tv.tv_usec;
+	}
+	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	rate = progress->cnt / rate;
+	snprintf(buf, sizeof(buf), "%.1f kB/s", rate);
+	gtk_label_set_text(GTK_LABEL(progress->speed), buf);
+	return TRUE;
 }
 
 
