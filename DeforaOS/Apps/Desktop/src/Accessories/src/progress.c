@@ -98,13 +98,18 @@ static int _progress(Prefs * prefs, char * argv[])
 	if(p.pid != 0)
 		return _progress_exec(&p, argv);
 	close(p.fds[0]);
+	/* graphical interface */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Progress");
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_progress_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("File: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_label_new(prefs->filename);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	p.progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
