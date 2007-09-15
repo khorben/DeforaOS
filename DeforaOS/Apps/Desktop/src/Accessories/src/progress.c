@@ -201,7 +201,7 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "f:z")) != -1)
+	while((o = getopt(argc, argv, "f:l:z")) != -1)
 		switch(o)
 		{
 			case 'f':
@@ -209,7 +209,8 @@ int main(int argc, char * argv[])
 				break;
 			case 'l':
 				prefs.length = strtol(optarg, &p, 0);
-				/* FIXME check input validation */
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
 				break;
 			case 'z':
 				prefs.flags |= PREFS_z; /* FIXME implement */
