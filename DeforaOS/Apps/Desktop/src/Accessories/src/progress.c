@@ -15,8 +15,7 @@
  * Place, Suite 330, Boston, MA  02111-1307  USA */
 /* TODO:
  * - speed estimation
- * - implement -z
- * - separate preferences from internal data */
+ * - implement -z */
 
 
 
@@ -36,19 +35,27 @@ typedef struct _Prefs
 	int flags;
 	char * filename;
 	size_t length;
-	/* XXX internal data */
-	int fd;
-	int fds[2];
-	pid_t pid;
-	GtkWidget * progress;
 } Prefs;
 #define PREFS_z 0x1
 
 
 /* progress */
+/* types */
+typedef struct _Progress
+{
+	Prefs * prefs;			/* preferences		*/
+
+	int fd;				/* read descriptor	*/
+	int fds[2];			/* for the pipe		*/
+	pid_t pid;			/* child's pid		*/
+
+	/* widgets */
+	GtkWidget * progress;
+} Progress;
+
 /* functions */
 static int _progress_error(char const * message, int ret);
-static int _progress_exec(Prefs * prefs, char * argv[]);
+static int _progress_exec(Progress * progress, char * argv[]);
 
 /* callbacks */
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
@@ -56,48 +63,50 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 
 static int _progress(Prefs * prefs, char * argv[])
 {
+	Progress p;
 	struct stat st;
 	GIOChannel * channel;
 	GtkWidget * window = NULL;
 	GtkWidget * vbox;
 	GtkWidget * widget;
   
+	p.prefs = prefs;
 	if(prefs->filename == NULL)
 		prefs->filename = "Standard input";
-	else if((prefs->fd = open(prefs->filename, O_RDONLY)) < 0)
+	else if((p.fd = open(prefs->filename, O_RDONLY)) < 0)
 		return _progress_error(prefs->filename, 1);
-	else if(fstat(prefs->fd, &st) == 0)
+	else if(fstat(p.fd, &st) == 0)
 		prefs->length = st.st_size;
-	if(pipe(prefs->fds) != 0)
+	if(pipe(p.fds) != 0)
 	{
-		close(prefs->fd);
+		close(p.fd);
 		return _progress_error("pipe", 1);
 	}
-	channel = g_io_channel_unix_new(prefs->fds[1]);
-	g_io_add_watch(channel, G_IO_OUT, _progress_out, prefs);
-	if((prefs->pid = fork()) == -1)
+	channel = g_io_channel_unix_new(p.fds[1]);
+	g_io_add_watch(channel, G_IO_OUT, _progress_out, &p);
+	if((p.pid = fork()) == -1)
 	{
-		close(prefs->fd);
-		close(prefs->fds[0]);
-		close(prefs->fds[1]);
+		close(p.fd);
+		close(p.fds[0]);
+		close(p.fds[1]);
 		return _progress_error("fork", 1);
 	}
-	if(prefs->pid != 0)
-		return _progress_exec(prefs, argv);
-	close(prefs->fds[0]);
+	if(p.pid != 0)
+		return _progress_exec(&p, argv);
+	close(p.fds[0]);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Progress");
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_label_new(prefs->filename);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
-	prefs->progress = gtk_progress_bar_new();
-	gtk_box_pack_start(GTK_BOX(vbox), prefs->progress, TRUE, TRUE, 4);
+	p.progress = gtk_progress_bar_new();
+	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_widget_show_all(window);
 	gtk_main();
-	close(prefs->fd);
-	close(prefs->fds[1]);
+	close(p.fd);
+	close(p.fds[1]);
 	return 0;
 }
 
@@ -114,10 +123,10 @@ static int _progress_error(char const * message, int ret)
 }
 
 
-static int _progress_exec(Prefs * prefs, char * argv[])
+static int _progress_exec(Progress * progress, char * argv[])
 {
-	close(prefs->fds[1]);
-	if(dup2(prefs->fds[0], 0) == -1)
+	close(progress->fds[1]);
+	if(dup2(progress->fds[0], 0) == -1)
 		exit(1); /* FIXME warn user */
 	execvp(argv[0], argv);
 	/* FIXME warn user */
@@ -130,7 +139,7 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	static size_t cnt = 0;
-	Prefs * prefs = data;
+	Progress * p = data;
 	char buf[BUFSIZ];
 	ssize_t len;
 	gsize written;
@@ -138,10 +147,10 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 
 	/* FIXME use g_io_channel_read too? */
 	if(condition != G_IO_OUT
-			|| (len = read(prefs->fd, buf, sizeof(buf))) < 0)
+			|| (len = read(p->fd, buf, sizeof(buf))) < 0)
 	{
 		gtk_main_quit();
-		_progress_error(prefs->filename, 0);
+		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
 	if(g_io_channel_write(source, buf, len, &written) != G_IO_ERROR_NONE
@@ -150,21 +159,20 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		/* FIXME it may just be that everything was not written
 		 * => put buffer and position in Prefs/Progress */
 		gtk_main_quit();
-		_progress_error(prefs->filename, 0);
+		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
 	cnt += len;
-	if(prefs->length == 0 || cnt == 0)
-		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(prefs->progress));
+	if(p->prefs->length == 0 || cnt == 0)
+		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(p->progress));
 	else
 	{
 		fraction = cnt;
-		fraction /= prefs->length;
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(prefs->progress),
+		fraction /= p->prefs->length;
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->progress),
 				fraction);
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
-		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(prefs->progress),
-				buf);
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(p->progress), buf);
 	}
 	if(len == 0)
 	{
