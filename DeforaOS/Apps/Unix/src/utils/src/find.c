@@ -14,7 +14,8 @@
  * NonCommercial-ShareAlike 3.0 along with utils; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 /* TODO:
- * - check commands validity before starting? */
+ * - check commands validity before starting?
+ * - do all primaries apply to folders? (eg links) */
 
 
 
@@ -47,6 +48,7 @@ typedef enum _FindCmd
 #define FC_LAST FC_DEPTH
 
 static int _find_error(char const * message, int ret);
+static int _find_error_user(char const * message, char const * error, int ret);
 static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 		char * cmdv[]);
 
@@ -72,6 +74,12 @@ static int _find_error(char const * message, int ret)
 	return ret;
 }
 
+static int _find_error_user(char const * message, char const * error, int ret)
+{
+	fprintf(stderr, "%s%s: %s\n", "find: ", message, error);
+	return ret;
+}
+
 /* find_do */
 static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 		int cmdc, char * cmdv[]);
@@ -85,9 +93,7 @@ static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 
 	if(lstat(pathname, &st) != 0) /* XXX TOCTOU */
 		return _find_error(pathname, 1);
-	if(cmdc == 0)
-		printf("%s\n", pathname);
-	else if(_do_cmd(prefs, pathname, &st, cmdc, cmdv) != 0)
+	if(_do_cmd(prefs, pathname, &st, cmdc, cmdv) != 0)
 		return 0;
 	if(S_ISDIR(st.st_mode))
 		return _do_dir(prefs, pathname, cmdc, cmdv);
@@ -96,12 +102,18 @@ static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 
 /* do_cmd */
 static FindCmd _cmd_enum(char const * cmd);
+static int _cmd_check_arg(int * i, int cmdc, char const * cmd);
 
 static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 		int cmdc, char * cmdv[])
 {
+	int ret = 0;
 	int i;
 	char const * filename;
+	struct group * grp;
+	struct passwd * pw;
+	long int l;
+	char * p;
 
 	if((filename = strrchr(pathname, '/')) == NULL)
 		filename = pathname;
@@ -110,51 +122,85 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 	for(i = 0; i < cmdc; i++)
 		switch(_cmd_enum(cmdv[i]))
 		{
-			case FC_NAME:
-				if(++i == cmdc)
-				{
-					errno = EINVAL;
-					return _find_error(cmdv[i], 1);
-				}
-				if(fnmatch(cmdv[i], filename, 0) != 0)
+			case FC_GROUP:
+				if(_cmd_check_arg(&i, cmdc, cmdv[i]) != 0)
 					return 1;
+				if((grp = getgrnam(cmdv[i])) == NULL)
+					/* FIXME handle numeric id */
+					return _find_error_user(cmdv[i],
+							"No such group", 1);
+				if(st->st_gid != grp->gr_gid)
+					ret = 1;
+				break;
+			case FC_NAME:
+				if(_cmd_check_arg(&i, cmdc, cmdv[i]) != 0)
+					return 1;
+				if(fnmatch(cmdv[i], filename, 0) != 0)
+					ret = 1;
+				break;
+			case FC_LINKS:
+				if(_cmd_check_arg(&i, cmdc, cmdv[i]) != 0)
+					return 1;
+				l = strtol(cmdv[i], &p, 0);
+				/* FIXME input validation */
+				if(st->st_nlink != l)
+					ret = 1;
 				break;
 			case FC_NOGROUP:
 				if(getgrgid(st->st_gid) != NULL)
-					return 1;
+					ret = 1;
 				break;
 			case FC_NOUSER:
 				if(getpwuid(st->st_uid) != NULL)
-					return 1;
+					ret = 1;
 				break;
-			case FC_INVALID:
-				errno = EINVAL;
-				return _find_error(cmdv[i], 1);
+			case FC_PERM:
+				if(_cmd_check_arg(&i, cmdc, cmdv[i]) != 0)
+					return 1;
+				/* FIXME handle "minus" prefix? */
+				l = strtol(cmdv[i], &p, 0);
+				/* FIXME input validation, mode as expression */
+				if(((st->st_mode & 07777) & l) != l)
+					ret = 1;
+				break;
 			case FC_PRINT:
 				printf("%s\n", pathname);
+				break;
+			case FC_PRUNE:
+				if(S_ISDIR(st->st_mode))
+					ret = 1;
+				break;
+			case FC_USER:
+				if(_cmd_check_arg(&i, cmdc, cmdv[i]) != 0)
+					return 1;
+				if((pw = getpwnam(cmdv[i])) == NULL)
+					/* FIXME handle numeric id */
+					return _find_error_user(cmdv[i],
+							"No such user", 1);
+				if(st->st_uid != pw->pw_uid)
+					return 1;
 				break;
 			case FC_ATIME:
 			case FC_CTIME:
 			case FC_DEPTH:
 			case FC_EXEC:
-			case FC_GROUP:
-			case FC_LINKS:
 			case FC_MTIME:
 			case FC_NEWER:
 			case FC_OK:
-			case FC_PERM:
-			case FC_PRUNE:
-				if(S_ISDIR(st->st_mode))
-					return 1;
-				break;
 			case FC_SIZE:
 			case FC_TYPE:
-			case FC_USER:
 			case FC_XDEV:
 				errno = ENOSYS; /* FIXME not implemented */
 				return _find_error(cmdv[i], 1);
+			case FC_INVALID:
+				errno = EINVAL;
+				return _find_error(cmdv[i], 1);
 		}
-	return 0;
+	if(ret == 0 && i == cmdc)
+		printf("%s\n", pathname);
+	if(S_ISDIR(st->st_mode))
+		return 0;
+	return ret;
 }
 
 static FindCmd _cmd_enum(char const * cmd)
@@ -187,6 +233,16 @@ static FindCmd _cmd_enum(char const * cmd)
 		if(strcmp(cmd, cmds[i]) == 0)
 			return i;
 	return FC_INVALID;
+}
+
+static int _cmd_check_arg(int * i, int cmdc, char const * cmd)
+{
+	if(++(*i) == cmdc)
+	{
+		errno = EINVAL; /* XXX */
+		return _find_error(cmd, 1);
+	}
+	return 0;
 }
 
 static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
