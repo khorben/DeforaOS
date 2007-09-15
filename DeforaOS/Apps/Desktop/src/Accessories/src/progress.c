@@ -56,6 +56,7 @@ typedef struct _Progress
 	/* widgets */
 	GtkWidget * speed;
 	GtkWidget * progress;
+	int pulse;			/* tells when to pulse	*/
 } Progress;
 
 /* functions */
@@ -83,6 +84,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	GtkWidget * widget;
   
 	p.prefs = prefs;
+	p.fd = 0;
 	p.cnt = 0;
 	if(gettimeofday(&p.tv, NULL) != 0)
 		return _progress_error("gettimeofday", 1);
@@ -130,11 +132,12 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	p.speed = gtk_label_new("0.0 kB/s");
-	g_timeout_add(1000, _progress_timeout, &p);
+	g_timeout_add(250, _progress_timeout, &p);
 	gtk_size_group_add_widget(right, p.speed);
 	gtk_box_pack_start(GTK_BOX(hbox), p.speed, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	p.progress = gtk_progress_bar_new();
+	p.pulse = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -217,7 +220,7 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 	}
 	p->cnt += len;
 	if(p->prefs->length == 0 || p->cnt == 0)
-		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(p->progress));
+		p->pulse = 1;
 	else
 	{
 		fraction = p->cnt;
@@ -242,6 +245,11 @@ static gboolean _progress_timeout(gpointer data)
 	double rate;
 	char buf[16];
 
+	if(progress->pulse == 1)
+	{
+		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress->progress));
+		progress->pulse = 0;
+	}
 	if(progress->cnt == 0)
 	{
 		gtk_label_set_text(GTK_LABEL(progress->speed), "0.0 kB/s");
