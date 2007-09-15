@@ -58,6 +58,8 @@ static int _progress_error(char const * message, int ret);
 static int _progress_exec(Progress * progress, char * argv[]);
 
 /* callbacks */
+static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 
@@ -96,6 +98,8 @@ static int _progress(Prefs * prefs, char * argv[])
 	close(p.fds[0]);
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Progress");
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_progress_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	widget = gtk_label_new(prefs->filename);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
@@ -135,6 +139,14 @@ static int _progress_exec(Progress * progress, char * argv[])
 
 
 /* callbacks */
+static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	gtk_main_quit();
+	return FALSE;
+}
+
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
