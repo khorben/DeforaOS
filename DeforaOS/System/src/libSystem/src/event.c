@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 #include <limits.h>
 #ifdef DEBUG
 # include <stdio.h>
