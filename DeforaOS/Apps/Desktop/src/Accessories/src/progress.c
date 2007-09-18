@@ -13,8 +13,6 @@
  * You should have received a copy of the GNU General Public License along with
  * Accessories; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA  02111-1307  USA */
-/* TODO:
- * - implement -z */
 
 
 
@@ -168,6 +166,12 @@ static int _progress_error(char const * message, int ret)
 {
 	GtkWidget * dialog;
 
+	if(ret < 0)
+	{
+		fputs("progress: ", stderr);
+		perror(message);
+		return -ret;
+	}
 	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s: %s",
 			message, strerror(errno));
@@ -177,14 +181,43 @@ static int _progress_error(char const * message, int ret)
 }
 
 
+/* progress_exec */
+static int _exec_gunzip(Progress * progress, char * argv[]);
+
 static int _progress_exec(Progress * progress, char * argv[])
 {
 	close(progress->fds[1]);
 	if(dup2(progress->fds[0], 0) == -1)
+	{
+		perror("dup2");
 		exit(1); /* FIXME warn user */
-	execvp(argv[0], argv);
-	/* FIXME warn user */
-	exit(0);
+	}
+	if(progress->prefs->flags & PREFS_z)
+		_exec_gunzip(progress, argv);
+	else
+		execvp(argv[0], argv);
+	exit(_progress_error(argv[0], -1));
+	return 1;
+}
+
+static int _exec_gunzip(Progress * progress, char * argv[])
+{
+	static Progress tmp;
+
+	tmp.prefs = progress->prefs;
+	tmp.prefs->flags -= PREFS_z;
+	if(pipe(tmp.fds) != 0)
+		exit(_progress_error("pipe", -1));
+	if((tmp.pid = fork()) == -1)
+		exit(_progress_error("fork", -1));
+	if(tmp.pid == 0)
+		return _progress_exec(&tmp, argv);
+	close(tmp.fds[0]);
+	if(dup2(tmp.fds[1], 1) == -1)
+		exit(_progress_error("dup2", -1));
+	execlp("gunzip", "gunzip", NULL);
+	exit(_progress_error("gunzip", -1));
+	return 1;
 }
 
 
@@ -284,7 +317,7 @@ static gboolean _progress_timeout(gpointer data)
 	if((tv.tv_usec = tv.tv_usec - progress->tv.tv_usec) < 0)
 	{
 		tv.tv_sec--;
-		tv.tv_usec = 1000000 - tv.tv_usec;
+		tv.tv_usec += 1000000;
 	}
 	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 	rate = progress->cnt / rate;
