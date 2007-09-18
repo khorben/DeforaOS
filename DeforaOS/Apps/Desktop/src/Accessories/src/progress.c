@@ -81,6 +81,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	GtkSizeGroup * left;
 	GtkSizeGroup * right;
 	GtkWidget * widget;
+	PangoFontDescription * bold;
   
 	p.prefs = prefs;
 	p.fd = 0;
@@ -120,6 +121,9 @@ static int _progress(Prefs * prefs, char * argv[])
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_label_new("File: ");
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -130,6 +134,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new("Speed: ");
+	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
