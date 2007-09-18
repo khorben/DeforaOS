@@ -51,6 +51,8 @@ typedef struct _Progress
 	int fds[2];			/* for the pipe		*/
 	pid_t pid;			/* child's pid		*/
 	size_t cnt;			/* bytes written	*/
+	char buf[BUFSIZ];
+	size_t buf_cnt;
 
 	/* widgets */
 	GtkWidget * speed;
@@ -200,24 +202,26 @@ static void _progress_cancel(GtkWidget * widget, gpointer data)
 	gtk_main_quit();
 }
 
+
+/* progress_out */
+static void _out_rate(Progress * p);
+
 static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	Progress * p = data;
-	char buf[BUFSIZ];
 	ssize_t len;
 	gsize written;
-	gdouble fraction;
 
 	/* FIXME use g_io_channel_read too? */
 	if(condition != G_IO_OUT
-			|| (len = read(p->fd, buf, sizeof(buf))) < 0)
+			|| (len = read(p->fd, p->buf, sizeof(p->buf))) < 0)
 	{
 		gtk_main_quit();
 		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
-	if(g_io_channel_write(source, buf, len, &written) != G_IO_ERROR_NONE
+	if(g_io_channel_write(source, p->buf, len, &written) != G_IO_ERROR_NONE
 			|| written != (gsize)len)
 	{
 		/* FIXME it may just be that everything was not written
@@ -227,17 +231,7 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 		return FALSE;
 	}
 	p->cnt += len;
-	if(p->prefs->length == 0 || p->cnt == 0)
-		p->pulse = 1;
-	else
-	{
-		fraction = p->cnt;
-		fraction /= p->prefs->length;
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->progress),
-				fraction);
-		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
-		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(p->progress), buf);
-	}
+	_out_rate(p);
 	if(len == 0)
 	{
 		gtk_main_quit();
@@ -246,6 +240,26 @@ static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
 	return TRUE;
 }
 
+static void _out_rate(Progress * p)
+{
+	gdouble fraction;
+	char buf[16];
+
+	if(p->prefs->length == 0 || p->cnt == 0)
+	{
+		p->pulse = 1;
+		return;
+	}
+	fraction = p->cnt;
+	fraction /= p->prefs->length;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->progress),
+			fraction);
+	snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(p->progress), buf);
+}
+
+
+/* progress_timeout */
 static gboolean _progress_timeout(gpointer data)
 {
 	Progress * progress = data;

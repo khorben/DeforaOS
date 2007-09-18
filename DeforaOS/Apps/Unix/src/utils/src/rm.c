@@ -107,7 +107,7 @@ static int _rm_do_recursive(Prefs * prefs, char * filename)
 	if((path = malloc(len)) == NULL)
 	{
 		closedir(dir);
-		return _rm_error("malloc", 1);
+		return _rm_error(filename, 1);
 	}
 	sprintf(path, "%s/", filename);
 	while((de = readdir(dir)) != NULL)
