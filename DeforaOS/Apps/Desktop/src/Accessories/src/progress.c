@@ -284,7 +284,7 @@ static gboolean _progress_timeout(gpointer data)
 	if((tv.tv_usec = tv.tv_usec - progress->tv.tv_usec) < 0)
 	{
 		tv.tv_sec--;
-		tv.tv_usec = progress->tv.tv_usec - tv.tv_usec;
+		tv.tv_usec = 1000000 - tv.tv_usec;
 	}
 	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 	rate = progress->cnt / rate;
