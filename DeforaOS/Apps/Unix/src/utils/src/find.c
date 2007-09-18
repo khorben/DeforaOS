@@ -91,8 +91,12 @@ static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 {
 	struct stat st;
 
-	if(lstat(pathname, &st) != 0) /* XXX TOCTOU */
-		return _find_error(pathname, 1);
+	if(stat(pathname, &st) != 0) /* XXX TOCTOU, danger of infinite loop */
+	{
+		if(errno != ENOENT || *prefs & PREFS_L
+				|| stat(pathname, &st) != 0)
+			return _find_error(pathname, 1);
+	}
 	if(_do_cmd(prefs, pathname, &st, cmdc, cmdv) != 0)
 		return 0;
 	if(S_ISDIR(st.st_mode))
@@ -287,7 +291,9 @@ static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: find\n", stderr);
+	fputs("Usage: find [-H|-L] path... [expression...]\n"
+"  -H	De-reference links unless dangling or in the command line\n"
+"  -L	De-reference links always\n", stderr);
 	return 1;
 }
 
