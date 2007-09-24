@@ -46,6 +46,7 @@ typedef struct _Progress
 
 	struct timeval tv;		/* start time		*/
 	int fd;				/* read descriptor	*/
+	int eof;			/* end of file 		*/
 	int fds[2];			/* for the pipe		*/
 	pid_t pid;			/* child's pid		*/
 	size_t cnt;			/* bytes written	*/
@@ -66,7 +67,7 @@ static int _progress_exec(Progress * progress, char * argv[]);
 static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _progress_cancel(GtkWidget * widget, gpointer data);
-static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
+static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _progress_timeout(gpointer data);
 
@@ -85,6 +86,8 @@ static int _progress(Prefs * prefs, char * argv[])
   
 	p.prefs = prefs;
 	p.fd = 0;
+	p.eof = 0;
+	p.buf_cnt = 0;
 	p.cnt = 0;
 	if(gettimeofday(&p.tv, NULL) != 0)
 		return _progress_error("gettimeofday", 1);
@@ -99,8 +102,10 @@ static int _progress(Prefs * prefs, char * argv[])
 		close(p.fd);
 		return _progress_error("pipe", 1);
 	}
+	channel = g_io_channel_unix_new(p.fd);
+	g_io_add_watch(channel, G_IO_IN, _progress_channel, &p);
 	channel = g_io_channel_unix_new(p.fds[1]);
-	g_io_add_watch(channel, G_IO_OUT, _progress_out, &p);
+	g_io_add_watch(channel, G_IO_OUT, _progress_channel, &p);
 	if((p.pid = fork()) == -1)
 	{
 		close(p.fd);
@@ -237,39 +242,74 @@ static void _progress_cancel(GtkWidget * widget, gpointer data)
 
 
 /* progress_out */
-static void _out_rate(Progress * p);
+static gboolean _channel_in(Progress * p, GIOChannel * source);
+static gboolean _channel_out(Progress * p, GIOChannel * source);
 
-static gboolean _progress_out(GIOChannel * source, GIOCondition condition,
+static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	Progress * p = data;
-	ssize_t len;
+
+	if(condition == G_IO_IN)
+		return _channel_in(p, source);
+	if(condition != G_IO_OUT)
+	{
+		_progress_error(p->prefs->filename, 0);
+		gtk_main_quit();
+		return FALSE;
+	}
+	return _channel_out(p, source);
+}
+
+static gboolean _channel_in(Progress * p, GIOChannel * source)
+{
+	gsize read;
+
+	if(g_io_channel_read(source, &p->buf[p->buf_cnt],
+				sizeof(p->buf) - p->buf_cnt, &read)
+			!= G_IO_ERROR_NONE)
+	{
+		_progress_error(p->prefs->filename, 0);
+		gtk_main_quit();
+		return FALSE;
+	}
+	p->buf_cnt += read;
+	if(p->buf_cnt == sizeof(p->buf))
+		return FALSE; /* pause reading for now */
+	if(read != 0)
+		return TRUE;
+	p->eof = 1; /* reached end of input file */
+	return FALSE;
+}
+
+static void _out_rate(Progress * p);
+static gboolean _channel_out(Progress * p, GIOChannel * source)
+{
+	GIOChannel * channel;
 	gsize written;
 
-	/* FIXME use g_io_channel_read too? */
-	if(condition != G_IO_OUT
-			|| (len = read(p->fd, p->buf, sizeof(p->buf))) < 0)
+	if(p->buf_cnt == 0)
+	{
+		if(p->eof == 1) /* reached end of output */
+		{
+			gtk_main_quit();
+			return FALSE;
+		}
+		channel = g_io_channel_unix_new(p->fd); /* read some more */
+		g_io_add_watch(channel, G_IO_IN, _progress_channel, p);
+		return TRUE;
+	}
+	if(g_io_channel_write(source, p->buf, p->buf_cnt, &written)
+			!= G_IO_ERROR_NONE)
 	{
 		gtk_main_quit();
 		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
-	if(g_io_channel_write(source, p->buf, len, &written) != G_IO_ERROR_NONE
-			|| written != (gsize)len)
-	{
-		/* FIXME it may just be that everything was not written
-		 * => put buffer and position in Prefs/Progress */
-		gtk_main_quit();
-		_progress_error(p->prefs->filename, 0);
-		return FALSE;
-	}
-	p->cnt += len;
+	memmove(p->buf, &p->buf[written], p->buf_cnt - written);
+	p->buf_cnt -= written;
+	p->cnt += written;
 	_out_rate(p);
-	if(len == 0)
-	{
-		gtk_main_quit();
-		return FALSE;
-	}
 	return TRUE;
 }
 
