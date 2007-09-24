@@ -33,6 +33,7 @@ typedef struct _Prefs
 {
 	int flags;
 	char * filename;
+	char * title;
 	size_t length;
 } Prefs;
 #define PREFS_z 0x1
@@ -118,7 +119,8 @@ static int _progress(Prefs * prefs, char * argv[])
 	close(p.fds[0]);
 	/* graphical interface */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), "Progress");
+	gtk_window_set_title(GTK_WINDOW(window), prefs->title != NULL
+			? prefs->title : "Progress");
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_progress_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -370,7 +372,7 @@ static gboolean _progress_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: progress [-z][-f file][-l length][-p prefix]"
+	fputs("Usage: progress [-z][-f file][-l length][-p prefix][-t title]"
 			" cmd [args...]\n", stderr);
 	return 1;
 }
@@ -385,7 +387,7 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "f:l:z")) != -1)
+	while((o = getopt(argc, argv, "f:l:t:z")) != -1)
 		switch(o)
 		{
 			case 'f':
@@ -395,6 +397,9 @@ int main(int argc, char * argv[])
 				prefs.length = strtol(optarg, &p, 0);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
+				break;
+			case 't':
+				prefs.title = optarg;
 				break;
 			case 'z':
 				prefs.flags |= PREFS_z; /* FIXME implement */
