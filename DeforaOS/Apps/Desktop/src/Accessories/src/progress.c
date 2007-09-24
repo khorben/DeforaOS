@@ -402,7 +402,7 @@ int main(int argc, char * argv[])
 				prefs.title = optarg;
 				break;
 			case 'z':
-				prefs.flags |= PREFS_z; /* FIXME implement */
+				prefs.flags |= PREFS_z;
 				break;
 			default:
 				return _usage();
