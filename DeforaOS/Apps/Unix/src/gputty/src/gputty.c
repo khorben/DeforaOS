@@ -745,6 +745,8 @@ GPuTTY * gputty_new(void)
 				g->sn_tlsessions), -1, "Session",
 			gtk_cell_renderer_text_new(), "text", GC_COL_NAME,
 			NULL);
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g->sn_tlsessions),
+			FALSE);
 	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(g->sn_tlsessions));
 	g_signal_connect(G_OBJECT(sel), "changed", G_CALLBACK(
 				_on_session_select), g);
