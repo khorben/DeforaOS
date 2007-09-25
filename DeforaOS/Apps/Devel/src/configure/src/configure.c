@@ -54,6 +54,7 @@ const struct HostKernel sHostKernel[] =
 	{ HO_GNU_LINUX,	"2.6"		},
 	{ HO_NETBSD,	"2.0"		},
 	{ HO_NETBSD,	"3.0"		},
+	{ HO_NETBSD,	"4.0"		},
 	{ HO_OPENBSD,	"4.0"		},
 	{ HO_OPENBSD,	"4.1"		},
 	{ HO_SUNOS,	"5.7",		},
@@ -80,7 +81,7 @@ String * _source_extension(String * source)
 /* functions */
 int configure_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "configure: ");
+	fputs("configure: ", stderr);
 	perror(message);
 	return ret;
 }

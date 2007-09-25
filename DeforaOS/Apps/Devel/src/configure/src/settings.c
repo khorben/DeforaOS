@@ -116,9 +116,6 @@ static int _settings_do(Prefs * prefs, Config * config,
 		case ST_SH:
 			ret |= _do_sh(prefs, config, fp, package, version);
 			break;
-		default:
-			/* FIXME warn user? */
-			break;
 	}
 	fclose(fp);
 	return ret;
