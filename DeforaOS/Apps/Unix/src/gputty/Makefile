@@ -1,5 +1,5 @@
 PACKAGE	= gputty
-VERSION	= 0.9.9
+VERSION	= 0.9.10
 SUBDIRS	= src
 RM	= rm -f
 LN	= ln -sf
