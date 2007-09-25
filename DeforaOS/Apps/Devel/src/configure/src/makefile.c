@@ -97,6 +97,7 @@ static int _variables_print(Configure * configure, FILE * fp,
 	       	char const * input, char const * output);
 static int _variables_targets(Configure * configure, FILE * fp);
 static int _variables_executables(Configure * configure, FILE * fp);
+static int _variables_includes(Configure * configure, FILE * fp);
 static int _write_variables(Configure * configure, FILE * fp)
 {
 	String const * directory = config_get(configure->config, "",
@@ -107,6 +108,7 @@ static int _write_variables(Configure * configure, FILE * fp)
 	ret |= _variables_print(configure, fp, "subdirs", "SUBDIRS");
 	ret |= _variables_targets(configure, fp);
 	ret |= _variables_executables(configure, fp);
+	ret |= _variables_includes(configure, fp);
 	if(!(configure->prefs->flags & PREFS_n))
 		fputc('\n', fp);
 	return ret;
@@ -220,12 +222,15 @@ static int _executables_variables(Configure * configure, FILE * fp,
 static int _variables_executables(Configure * configure, FILE * fp)
 {
 	String * targets;
+	String * includes;
 	int i;
 	char c;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	if((targets = config_get(configure->config, "", "targets")) != NULL)
+	targets = config_get(configure->config, "", "targets");
+	includes = config_get(configure->config, "", "includes");
+	if(targets != NULL)
 	{
 		for(i = 0;; i++)
 		{
@@ -240,15 +245,16 @@ static int _variables_executables(Configure * configure, FILE * fp)
 			targets+=i+1;
 			i = 0;
 		}
-		fprintf(fp, "%s", "RM\t= rm -f\n");
 	}
+	if(targets != NULL || includes != NULL)
+		fprintf(fp, "%s", "RM\t= rm -f\n");
 	if(config_get(configure->config, "", "package"))
 	{
-		if(targets == NULL)
+		if(targets == NULL && includes == NULL)
 			fprintf(fp, "%s", "RM\t= rm -f\n");
 		fprintf(fp, "%s", "LN\t= ln -sf\nTAR\t= tar -czvf\n");
 	}
-	if(targets != NULL)
+	if(targets != NULL || includes != NULL)
 	{
 		fprintf(fp, "%s", "MKDIR\t= mkdir -p\n");
 		fprintf(fp, "%s", "INSTALL\t= install\n");
@@ -309,12 +315,6 @@ static void _variables_binary(Configure * configure, FILE * fp, char * done)
 	else
 		fprintf(fp, "%s%s\n", "BINDIR\t= $(PREFIX)/",
 				configure->prefs->bindir);
-	if(configure->prefs->includedir[0] == '/')
-		fprintf(fp, "%s%s\n", "INCLUDEDIR= ",
-				configure->prefs->includedir);
-	else
-		fprintf(fp, "%s%s\n", "INCLUDEDIR= $(PREFIX)/",
-				configure->prefs->includedir);
 	if(!done[TT_LIBRARY])
 	{
 		_targets_cflags(configure, fp);
@@ -461,6 +461,23 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_cxxflags(configure, fp);
 	}
 	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= ld -shared\n", fp);
+}
+
+static int _variables_includes(Configure * configure, FILE * fp)
+{
+	String const * includes;
+
+	if((includes = config_get(configure->config, "", "includes")) == NULL)
+		return 0;
+	if(fp == NULL)
+		return 0;
+	if(configure->prefs->includedir[0] == '/')
+		fprintf(fp, "%s%s\n", "INCLUDEDIR= ",
+				configure->prefs->includedir);
+	else
+		fprintf(fp, "%s%s\n", "INCLUDEDIR= $(PREFIX)/",
+				configure->prefs->includedir);
+	return 0;
 }
 
 static int _targets_all(Configure * configure, FILE * fp);
@@ -1037,14 +1054,14 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	if((package = config_get(configure->config, "", "package")) == NULL
-			|| (version = config_get(configure->config, "",
-				       	"version")) == NULL)
+	package = config_get(configure->config, "", "package");
+	version = config_get(configure->config, "", "version");
+	if(package == NULL || version == NULL)
 		return 0;
 	fputs("\ndist:\n\t$(RM) -r $(PACKAGE)-$(VERSION)\n"
 			"\t$(LN) . $(PACKAGE)-$(VERSION)\n"
 			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n", fp);
-	for(i = from+1; i < to; i++)
+	for(i = from + 1; i < to; i++)
 	{
 		array_get_copy(ca, i, &p);
 		_dist_subdir(configure->config, fp, p);
@@ -1066,6 +1083,7 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	String * path;
 	int len;
 	String * targets;
+	String * includes;
 	String * dist;
 	int i;
 	char c;
@@ -1093,6 +1111,8 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 			targets+=i+1;
 			i = 0;
 		}
+	if((includes = config_get(subdir, "", "includes")) != NULL)
+		_dist_subdir_dist(fp, path, includes);
 	if((dist = config_get(subdir, "", "dist")) != NULL)
 		_dist_subdir_dist(fp, path, dist);
 	fprintf(fp, "%s%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/", path,
@@ -1125,11 +1145,13 @@ static int _dist_subdir_dist(FILE * fp, String * path, String * dist)
 }
 
 static int _install_target(Config * config, FILE * fp, String * target);
+static int _install_include(Config * config, FILE * fp, String * include);
 static int _write_install(Configure * configure, FILE * fp)
 {
 	int ret = 0;
 	String * subdirs;
 	String * targets;
+	String * includes;
 	int i;
 	char c;
 
@@ -1146,11 +1168,26 @@ static int _write_install(Configure * configure, FILE * fp)
 				continue;
 			c = targets[i];
 			targets[i] = '\0';
-			ret = _install_target(configure->config, fp, targets);
+			ret |= _install_target(configure->config, fp, targets);
 			if(c == '\0')
 				break;
 			targets[i] = c;
-			targets+=i+1;
+			targets += i + 1;
+			i = 0;
+		}
+	if((includes = config_get(configure->config, "", "includes")) != NULL)
+		for(i = 0; ret == 0; i++)
+		{
+			if(includes[i] != ',' && includes[i] != '\0')
+				continue;
+			c = includes[i];
+			includes[i] = '\0';
+			ret |= _install_include(configure->config, fp,
+					includes);
+			if(c == '\0')
+				break;
+			includes[i] = c;
+			includes += i + 1;
 			i = 0;
 		}
 	return ret;
@@ -1197,12 +1234,32 @@ static int _install_target(Config * config, FILE * fp, String * target)
 	return 0;
 }
 
+static int _install_include(Config * config, FILE * fp, String * include)
+{
+	static Config * flag = NULL;
+	static int done;
+
+	if(flag != config)
+	{
+		flag = config;
+		done = 0;
+	}
+	if(!done)
+		fputs("\t$(MKDIR) $(DESTDIR)$(INCLUDEDIR)\n", fp);
+	fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0644 ", include,
+			" $(DESTDIR)$(INCLUDEDIR)/", include, "\n");
+	done = 1;
+	return 0;
+}
+
 static int _uninstall_target(Config * config, FILE * fp, String * target);
+static int _uninstall_include(FILE * fp, String * include);
 static int _write_uninstall(Configure * configure, FILE * fp)
 {
 	int ret = 0;
 	String * subdirs;
 	String * targets;
+	String * includes;
 	int i;
 	char c;
 
@@ -1224,6 +1281,20 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 				break;
 			targets[i] = c;
 			targets+=i+1;
+			i = 0;
+		}
+	if((includes = config_get(configure->config, "", "includes")) != NULL)
+		for(i = 0; ret == 0; i++)
+		{
+			if(includes[i] != ',' && includes[i] != '\0')
+				continue;
+			c = includes[i];
+			includes[i] = '\0';
+			ret = _uninstall_include(fp, includes);
+			if(c == '\0')
+				break;
+			includes[i] = c;
+			includes+=i+1;
 			i = 0;
 		}
 	return ret;
@@ -1251,5 +1322,12 @@ static int _uninstall_target(Config * config, FILE * fp, String * target)
 		case TT_UNKNOWN:
 			break;
 	}
+	return 0;
+}
+
+static int _uninstall_include(FILE * fp, String * include)
+{
+	fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(INCLUDEDIR)/", include,
+			"\n");
 	return 0;
 }
