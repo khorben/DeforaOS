@@ -462,6 +462,7 @@ static void _on_move_down(GtkWidget * widget, gpointer data)
 }
 
 static void _move_switch(GPuTTY * g, int a, int b)
+	/* FIXME this code is ugly the ListStore should store everything */
 {
 	GtkTreeModel * model;
 	GtkTreePath * path;
