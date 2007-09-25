@@ -50,9 +50,6 @@ typedef struct _GPuTTY
 	GtkWidget * sn_frame;
 	GtkWidget * sn_esessions;
 	GtkWidget * sn_tlsessions;
-	GtkWidget * sn_load;
-	GtkWidget * sn_save;
-	GtkWidget * sn_delete;
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_exterm;

@@ -61,6 +61,8 @@ static void _on_connect(GtkWidget * widget, gpointer data);
 static void _on_delete(GtkWidget * widget, gpointer data);
 static void _on_load(GtkWidget * widget, gpointer data);
 static void _on_exit(GtkWidget * widget, gpointer data);
+static void _on_move_down(GtkWidget * widget, gpointer data);
+static void _on_move_up(GtkWidget * widget, gpointer data);
 static void _on_preferences(GtkWidget * widget, gpointer data);
 static void _on_save(GtkWidget * widget, gpointer data);
 static void _on_session_activate(GtkTreeView * view, GtkTreePath * path,
@@ -382,6 +384,8 @@ static void _on_delete(GtkWidget * widget, gpointer data)
 		config_set(g->config, buf1, "name", p);
 		config_set(g->config, buf1, "hostname",
 				config_get(g->config, buf2, "hostname"));
+		config_set(g->config, buf1, "port",
+				config_get(g->config, buf2, "port"));
 		config_set(g->config, buf1, "username",
 				config_get(g->config, buf2, "username"));
 	}
@@ -442,6 +446,87 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 				stderr);
 	gtk_main_quit();
 }
+
+
+/* on_move_down */
+static void _move_switch(GPuTTY * g, int a, int b);
+
+static void _on_move_down(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+	int i;
+
+	if((i = g->selection) == -1)
+		return;
+	_move_switch(g, i, i + 1);
+}
+
+static void _move_switch(GPuTTY * g, int a, int b)
+{
+	GtkTreeModel * model;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	char buf1[11];
+	char buf2[11];
+	char * p;
+	char * name = NULL;
+	char * hostname = NULL;
+	char * port = NULL;
+	char * username = NULL;
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(g->sn_tlsessions));
+	snprintf(buf1, sizeof(buf1), "session %d", a);
+	snprintf(buf2, sizeof(buf2), "session %d", b);
+	if((p = config_get(g->config, buf2, "name")) == NULL)
+		return;
+	if((p = config_get(g->config, buf1, "name")) == NULL)
+		return;
+	name = strdup(p);
+	if((p = config_get(g->config, buf1, "hostname")) != NULL)
+		hostname = strdup(p);
+	if((p = config_get(g->config, buf1, "port")) != NULL)
+		port = strdup(p);
+	if((p = config_get(g->config, buf1, "username")) != NULL)
+		username = strdup(p);
+	path = gtk_tree_path_new_from_indices(b, -1);
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, GC_COL_NAME, name, -1);
+	gtk_tree_path_free(path);
+	config_set(g->config, buf1, "name", config_get(g->config, buf2,
+				"name"));
+	config_set(g->config, buf1, "hostname", config_get(g->config, buf2,
+				"hostname"));
+	config_set(g->config, buf1, "port", config_get(g->config, buf2,
+				"port"));
+	config_set(g->config, buf1, "username", config_get(g->config, buf2,
+				"username"));
+	config_set(g->config, buf2, "name", name);
+	config_set(g->config, buf2, "hostname", hostname);
+	config_set(g->config, buf2, "port", port);
+	config_set(g->config, buf2, "username", username);
+	path = gtk_tree_path_new_from_indices(a, -1);
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, GC_COL_NAME,
+			config_get(g->config, buf1, "name"), -1);
+	gtk_tree_path_free(path);
+	free(name);
+	free(hostname);
+	free(port);
+	free(username);
+}
+
+
+/* on_move_up */
+static void _on_move_up(GtkWidget * widget, gpointer data)
+{
+	GPuTTY * g = data;
+	int i;
+
+	if((i = g->selection) == -1)
+		return;
+	_move_switch(g, i - 1, i);
+}
+
 
 /* on_preferences */
 static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
@@ -757,18 +842,24 @@ GPuTTY * gputty_new(void)
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, TRUE, TRUE, 0);
 	/* sessions: buttons */
 	vbox2 = gtk_vbox_new(FALSE, 4);
-	g->sn_load = gtk_button_new_from_stock(GTK_STOCK_OPEN);
-	g_signal_connect(G_OBJECT(g->sn_load), "clicked", G_CALLBACK(_on_load),
+	widget = gtk_button_new_from_stock(GTK_STOCK_OPEN);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_load), g);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_save), g);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_DELETE);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_delete),
 			g);
-	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_load, FALSE, FALSE, 0);
-	g->sn_save = gtk_button_new_from_stock(GTK_STOCK_SAVE);
-	g_signal_connect(G_OBJECT(g->sn_save), "clicked", G_CALLBACK(_on_save),
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_GO_UP);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_move_up),
 			g);
-	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_save, FALSE, FALSE, 0);
-	g->sn_delete = gtk_button_new_from_stock(GTK_STOCK_DELETE);
-	g_signal_connect(G_OBJECT(g->sn_delete), "clicked", G_CALLBACK(
-				_on_delete), g);
-	gtk_box_pack_start(GTK_BOX(vbox2), g->sn_delete, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_GO_DOWN);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_move_down),
+			g);
+	gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 0);
 	/* actions */
 	hbox = gtk_hbox_new(FALSE, 4);
