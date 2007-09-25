@@ -1,4 +1,8 @@
 SUBDIRS	= System
+RM	= rm -f
+MKDIR	= mkdir -p
+INSTALL	= install
+INCLUDEDIR= $(PREFIX)/include
 
 
 all: subdirs
@@ -14,8 +18,29 @@ distclean:
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
+	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
+	$(INSTALL) -m 0644 System.h $(DESTDIR)$(INCLUDEDIR)/System.h
+	$(INSTALL) -m 0644 System/appclient.h $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
+	$(INSTALL) -m 0644 System/appserver.h $(DESTDIR)$(INCLUDEDIR)/System/appserver.h
+	$(INSTALL) -m 0644 System/array.h $(DESTDIR)$(INCLUDEDIR)/System/array.h
+	$(INSTALL) -m 0644 System/buffer.h $(DESTDIR)$(INCLUDEDIR)/System/buffer.h
+	$(INSTALL) -m 0644 System/config.h $(DESTDIR)$(INCLUDEDIR)/System/config.h
+	$(INSTALL) -m 0644 System/event.h $(DESTDIR)$(INCLUDEDIR)/System/event.h
+	$(INSTALL) -m 0644 System/file.h $(DESTDIR)$(INCLUDEDIR)/System/file.h
+	$(INSTALL) -m 0644 System/hash.h $(DESTDIR)$(INCLUDEDIR)/System/hash.h
+	$(INSTALL) -m 0644 System/string.h $(DESTDIR)$(INCLUDEDIR)/System/string.h
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/appclient.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/appserver.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/array.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/buffer.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/config.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/event.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/file.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/hash.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/string.h
 
 .PHONY: all subdirs clean distclean install uninstall

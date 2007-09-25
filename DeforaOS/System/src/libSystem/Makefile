@@ -33,10 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/appinterface.h  \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System.h \
-		$(PACKAGE)-$(VERSION)/include/project.conf \
-		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/appclient.h \
 		$(PACKAGE)-$(VERSION)/include/System/appserver.h \
 		$(PACKAGE)-$(VERSION)/include/System/array.h \
@@ -46,6 +43,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/file.h \
 		$(PACKAGE)-$(VERSION)/include/System/hash.h \
 		$(PACKAGE)-$(VERSION)/include/System/string.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
