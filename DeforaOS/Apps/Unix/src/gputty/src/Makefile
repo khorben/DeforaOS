@@ -21,7 +21,7 @@ gputty_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gputty: $(gputty_OBJS)
 	$(CC) -o gputty $(gputty_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-gputty.o: gputty.c ../config.h
+gputty.o: gputty.c gputty.h ../config.h
 	$(CC) $(gputty_CFLAGS) -c gputty.c
 
 clean:
