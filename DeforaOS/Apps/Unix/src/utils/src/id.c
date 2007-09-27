@@ -99,7 +99,7 @@ static int _id_G(char * user, int flagn)
 	setgrent();
 	for(gr = getgrent(); gr != NULL; gr = getgrent())
 	{
-		for(p = gr->gr_mem; *p != NULL; p++)
+		for(p = gr->gr_mem; p != NULL && *p != NULL; p++)
 		{
 			if(strcmp(user, *p) == 0)
 			{
@@ -222,7 +222,7 @@ static int _id_all(char * user)
 	printf("%s%u(%s)", " groups=", (unsigned)pw->pw_gid, user);
 	setgrent();
 	for(gr = getgrent(); gr != NULL; gr = getgrent())
-		for(p = gr->gr_mem; *p != NULL; p++)
+		for(p = gr->gr_mem; p != NULL && *p != NULL; p++)
 			if(strcmp(user, *p) == 0)
 				printf(",%u(%s)", (unsigned)gr->gr_gid,
 						gr->gr_name);
