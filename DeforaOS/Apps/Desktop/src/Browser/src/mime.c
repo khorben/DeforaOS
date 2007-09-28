@@ -28,7 +28,9 @@
 
 
 /* Mime */
+/* mime_new */
 static void _new_config(Mime * mime);
+
 Mime * mime_new(void)
 {
 	Mime * mime;
@@ -118,6 +120,7 @@ static void _new_config(Mime * mime)
 }
 
 
+/* mime_delete */
 void mime_delete(Mime * mime)
 {
 	unsigned int i;
@@ -140,16 +143,32 @@ void mime_delete(Mime * mime)
 
 
 /* accessors */
+/* mime_get_handler */
 char const * mime_get_handler(Mime * mime, char const * type,
 		char const * action)
 {
+	char const * program;
+	char * p;
+	char * q;
+
 	if(type == NULL || action == NULL)
 		return NULL;
-	return config_get(mime->config, type, action);
+	if((program = config_get(mime->config, type, action)) != NULL)
+		return program;
+	if((p = strchr(type, '/')) == NULL || *(++p) == '\0'
+			|| (p = strdup(type)) == NULL)
+		return NULL;
+	q = strchr(p, '/');
+	q[1] = '*';
+	q[2] = '\0';
+	program = config_get(mime->config, p, action);
+	free(p);
+	return program;
 }
 
 
 /* useful */
+/* mime_type */
 char const * mime_type(Mime * mime, char const * path)
 {
 	unsigned int i;
@@ -169,6 +188,7 @@ char const * mime_type(Mime * mime, char const * path)
 }
 
 
+/* mime_action */
 int mime_action(Mime * mime, char const * action, char const * path)
 {
 	char const * type;
@@ -179,6 +199,7 @@ int mime_action(Mime * mime, char const * action, char const * path)
 }
 
 
+/* mime_action_type */
 int mime_action_type(Mime * mime, char const * action, char const * path,
 		char const * type)
 	/* FIXME report errors */
@@ -186,7 +207,7 @@ int mime_action_type(Mime * mime, char const * action, char const * path,
 	char const * program;
 	pid_t pid;
 
-	if((program = config_get(mime->config, type, action)) == NULL)
+	if((program = mime_get_handler(mime, type, action)) == NULL)
 		return 2;
 	if((pid = fork()) == -1)
 	{
@@ -202,8 +223,10 @@ int mime_action_type(Mime * mime, char const * action, char const * path,
 }
 
 
+/* mime_icons */
 static GdkPixbuf * _icons_size(GtkIconTheme * theme, char const * type,
 		int size);
+
 void mime_icons(Mime * mime, GtkIconTheme * theme, char const * type, ...)
 {
 	unsigned int i;
