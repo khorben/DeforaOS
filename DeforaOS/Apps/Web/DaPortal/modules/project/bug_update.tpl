@@ -2,10 +2,10 @@
 <form action="index.php" method="post">
 	<input type="hidden" name="module" value="project"/>
 	<input type="hidden" name="action" value="bug_<?php echo isset($bug) ? 'update' : 'insert'; ?>"/>
-	<input type="hidden" name="id" value="<?php echo _html_safe($bug['id']); ?>"/>
 <?php if(!isset($bug)) { ?>
 	<input type="hidden" name="project_id" value="<?php echo _html_safe($project_id); ?>"/>
 <?php } else { ?>
+	<input type="hidden" name="id" value="<?php echo _html_safe($bug['id']); ?>"/>
 	<input type="hidden" name="bug_id" value="<?php echo _html_safe($bug['bug_id']); ?>"/>
 <?php } ?>
 	<table>
