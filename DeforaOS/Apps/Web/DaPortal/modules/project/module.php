@@ -353,7 +353,8 @@ function project_bug_display($args)
 	_project_toolbar($bug['project_id']);
 	$title = 'Bug #'.$bug['bug_id'].': '.$bug['title'];
 	require_once('./system/user.php');
-	$bug['assigned'] = _user_name($bug['assigned_id']); /* XXX */
+	$bug['assigned'] = isset($bug['assigned_id']) 
+		? _user_name($bug['assigned_id']) : '';
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$bug['date'] = _sql_date($bug['timestamp']);
 	include('./modules/project/bug_display.tpl');
@@ -361,7 +362,6 @@ function project_bug_display($args)
 		.', daportal_content.content_id AS content_id'
 		.', timestamp AS date, state, type, priority'
 		.', daportal_user.user_id AS user_id, username'
-		.', assigned AS assigned_id'
 		.' FROM daportal_bug_reply, daportal_content, daportal_user'
 		.' WHERE daportal_bug_reply.content_id'
 		.'=daportal_content.content_id'
@@ -376,8 +376,8 @@ function project_bug_display($args)
 	foreach($replies as $reply)
 	{
 		$reply['date'] = _sql_date($reply['date']);
-		if(is_numeric($reply['assigned_id'])) /* XXX */
-			$reply['assigned'] = _user_name($reply['assigned_id']);
+		$reply['assigned_id'] = $bug['assigned_id'];
+		$reply['assigned'] = $bug['assigned'];
 		include('./modules/project/bug_reply_display.tpl');
 	}
 }
@@ -405,6 +405,8 @@ function project_bug_insert($args)
 				." WHERE content_id='$id'");
 		return _error('Unable to insert bug');
 	}
+	$bugid = _sql_single('SELECT bug_id FROM daportal_bug WHERE content_id='
+			."'$id'");
 	//send mail
 	$to = _sql_array('SELECT username, email'
 			.' FROM daportal_project, daportal_content'
@@ -435,7 +437,8 @@ function project_bug_insert($args)
 		_mail('Administration Team', $to, $title, $content);
 	}
 	if($enable)
-		return project_bug_display(array('id' => $id));
+		return project_bug_display(array('id' => $id,
+					'bug_id' => $bugid));
 	include('./modules/project/bug_posted.tpl');
 }
 
