@@ -104,15 +104,19 @@ function explorer_apply($args)
 {
 	if(!isset($args['link_module']) || !isset($args['link_action']))
 		return _error('Need a module and action to link to');
-	if(!ereg('^[a-z0-9_]{1,30}$', $args['apply']))
+	if(!isset($args['apply']))
+		return _error('Need an action to apply');
+	$action = $args['apply'];
+	if(!ereg('^[a-z0-9_]{1,30}$', $action))
 		return _error('Invalid action to apply');
 	$keys = array_keys($args);
 	foreach($keys as $k)
 	{
-		if(!ereg('^entry_[0-9]+_[0-9]+$', $k))
+		if(!ereg('^entry_[0-9]+_[0-9]+$', $k)
+				|| !isset($args[$k.'_module'])
+				|| !isset($args[$k.'_id']))
 			continue;
 		$module = $args[$k.'_module'];
-		$action = $args['apply'];
 		$id = $args[$k.'_id'];
 		if(!strlen($module) || !strlen($action) || !strlen($id))
 			continue;
