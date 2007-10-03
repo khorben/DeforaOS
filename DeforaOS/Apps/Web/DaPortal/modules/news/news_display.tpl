@@ -10,11 +10,13 @@
 		<a href="<?php echo _html_link('news', '', $news['id'], $news['title']); ?>"><div class="icon read"></div> <?php echo _html_safe(READ); ?></a>
 <?php if(_module_id('comment')) { ?>
 		(<?php echo _html_safe(_module('comment', 'count', array('id' => $news['id'])).' '.COMMENT_S); ?>)
-		&middot; <a href="<?php echo _html_link('comment', 'new', '', '', 'parent='.$news['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
+		<span class="middot">&middot;</span>
+		<a href="<?php echo _html_link('comment', 'new', '', '', 'parent='.$news['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
 <?php } } ?>
 <?php global $user_id; require_once('./system/user.php');
 if(isset($news['id']) && _user_admin($user_id)) { ?>
-		&middot; <a href="<?php echo _html_link('news', 'modify', $news['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
+		<span class="middot">&middot;</span>
+		<a href="<?php echo _html_link('news', 'modify', $news['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
 <?php } ?>
 	</div>
 </div>

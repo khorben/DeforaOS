@@ -9,7 +9,8 @@
 			<a href="<?php echo _html_link('comment', 'new', $comment['id'], FALSE, 'parent='.$comment['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
 <?php global $user_id; require_once('./system/user.php');
 if($comment['id'] && _user_admin($user_id)) { ?>
-			&middot; <a href="index.php?module=content&amp;action=modify&amp;id=<?php echo _html_safe($comment['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
+			<span class="middot">&middot;</span>
+			<a href="<?php echo _html_link('comment', 'modify', $comment['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
 <?php } ?>
 		</div>
 <?php } ?>

@@ -1,7 +1,8 @@
 <h1 class="title download"><?php echo _html_safe(DOWNLOADS.': '.$file['name']); ?></h1>
 <p>
-<a href="<?php echo _html_link('download', FALSE, FALSE, FALSE, 'download_id='.$file['parent']); ?>"><div class="icon parent_directory"></div>Browse</a>
-&middot; <a href="<?php echo _html_link('download', 'download', $file['id']); ?>"><div class="icon download"></div>Download</a>
+	<a href="<?php echo _html_link('download', FALSE, FALSE, FALSE, 'download_id='.$file['parent']); ?>"><div class="icon parent_directory"></div>Browse</a>
+	<span class="middot">&middot;</span>
+	<a href="<?php echo _html_link('download', 'download', $file['id']); ?>"><div class="icon download"></div>Download</a>
 </p>
 <table>
 	<tr><td class="field">Name:</td><td><?php echo _html_safe($file['name']); ?></td></tr>

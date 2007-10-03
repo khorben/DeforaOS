@@ -219,7 +219,7 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	if(is_readable($file) && ($st = stat($file)) != FALSE
 			&& $st['mtime'] + 30 > time())
 		return $ret;
-	$cmd = 'rrdtool graph --slope-mode '."'$file'"
+	$cmd = '/usr/pkg/bin/rrdtool graph --slope-mode '."'$file'"
 		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
 	if(isset($ret['base']))

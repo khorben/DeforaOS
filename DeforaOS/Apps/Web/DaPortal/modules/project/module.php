@@ -27,6 +27,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ADMINISTRATION'] = 'Administration';
 $text['ASSIGNED_TO'] = 'Assigned to';
 $text['BROWSE_REVISIONS'] = 'Browse revisions';
 $text['BROWSE_SOURCE'] = 'Browse source';
@@ -703,7 +704,8 @@ function project_bug_reply($args)
 		return _error('Unable to display bug');
 	$bug = $bug[0];
 	$bug['date'] = _sql_date($bug['timestamp']);
-	$bug['assigned'] = _user_name($bug['assigned_id']);
+	if(isset($bug['assigned_id']))
+		$bug['assigned'] = _user_name($bug['assigned_id']);
 	$title = REPLY_TO_BUG.' #'.$bug['bug_id'].': '.$bug['title'];
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;

@@ -13,7 +13,8 @@
 		<a href="<?php echo _html_link('article', '', $article['id'], $article['title']); ?>"><img src="icons/16x16/read.png" alt=""/> Read</a>
 <?php global $user_id; require_once('./system/user.php');
 if($article['id'] && _user_admin($user_id)) { ?>
-		&middot; <a href="<?php echo _html_link('article', 'modify', $article['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
+		<span class="middot">&middot;</span>
+		<a href="<?php echo _html_link('article', 'modify', $article['id']); ?>"><img src="icons/16x16/edit.png" alt=""/> <?php echo _html_safe(EDIT); ?></a>
 <?php } } ?>
 	</div>
 </div>
