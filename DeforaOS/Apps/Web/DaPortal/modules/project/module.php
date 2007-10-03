@@ -401,6 +401,7 @@ function project_bug_display($args)
 		.', daportal_content.content_id AS content_id'
 		.', timestamp AS date, state, type, priority'
 		.', daportal_user.user_id AS user_id, username'
+		.', daportal_bug_reply.assigned AS assigned_id'
 		.' FROM daportal_bug_reply, daportal_content, daportal_user'
 		.' WHERE daportal_bug_reply.content_id'
 		.'=daportal_content.content_id'
@@ -415,8 +416,8 @@ function project_bug_display($args)
 	foreach($replies as $reply)
 	{
 		$reply['date'] = _sql_date($reply['date']);
-		$reply['assigned_id'] = $bug['assigned_id'];
-		$reply['assigned'] = $bug['assigned'];
+		if(isset($reply['assigned_id']))
+			$reply['assigned'] = _user_name($reply['assigned_id']);
 		include('./modules/project/bug_reply_display.tpl');
 	}
 }
@@ -815,7 +816,7 @@ function project_bug_reply_insert($args)
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id'
 			.'=daportal_user.user_id'
-			." AND bug_id='".$args['id']."'");
+			." AND bug_id='$bug_id'");
 	$pa = _sql_array('SELECT username, email' //project admin
 			.' FROM daportal_project, daportal_content'
 			.', daportal_user'
@@ -826,7 +827,7 @@ function project_bug_reply_insert($args)
 	$assigned = _sql_array('SELECT username, email' //assigned member
 			.' FROM daportal_bug, daportal_user'
 			.' WHERE daportal_bug.assigned=daportal_user.user_id'
-			." AND bug_id='".$args['id']."'");
+			." AND bug_id='$bug_id'");
 	$members = _sql_array('SELECT username, email' //all members
 			.' FROM daportal_project_user, daportal_user'
 			.' WHERE daportal_project_user.user_id'
@@ -888,9 +889,10 @@ function project_bug_reply_modify($args)
 			._html_safe(MODIFICATION_OF_REPLY_TO_BUG_HASH
 				.$reply['bug_id'].': '.$reply['title'])
 			.'</h1>'."\n");
-	$reply['assigned'] = _sql_single('SELECT username FROM daportal_user'
-			." WHERE enabled='1'"
-			." AND user_id='".$reply['assigned_id']."'");
+	if(isset($reply['assigned_id']))
+		$reply['assigned'] = _sql_single('SELECT username'
+				.' FROM daportal_user WHERE enabled='."'1'"
+				." AND user_id='".$reply['assigned_id']."'");
 	$members = _project_members($reply['project_id']);
 	include('./modules/project/bug_reply_update.tpl');
 }
