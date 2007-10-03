@@ -245,6 +245,8 @@ function project_admin($args)
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['action'] = 'bug_modify';
+		$res[$i]['apply_module'] = 'project';
+		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['title'] = $res[$i]['name'];
 		$res[$i]['args'] = 'bug_id='.$res[$i]['bug_id'];
 		$res[$i]['project'] = _project_name($res[$i]['project_id']);
@@ -254,11 +256,11 @@ function project_admin($args)
 			'link' => _module_link('project', 'bug_new'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
-			'action' => 'disable', 'confirm' => 'disable');
+			'action' => 'bug_disable', 'confirm' => 'disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
-			'action' => 'enable', 'confirm' => 'enable');
+			'action' => 'bug_enable', 'confirm' => 'enable');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
-			'action' => 'delete', 'confirm' => 'delete');
+			'action' => 'bug_delete', 'confirm' => 'delete');
 	_module('explorer', 'browse', array('entries' => $res,
 				'view' => 'details', 'toolbar' => $toolbar,
 				'class' => array('enabled' => ENABLED,
@@ -321,6 +323,42 @@ function project_browse($args)
 }
 
 
+function project_bug_delete($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	$id = $args['id'];
+	if(($bugid = _sql_single('SELECT bug_id FROM daportal_bug'
+					." WHERE content_id='$id'")) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	_sql_single('DELETE FROM daportal_bug_reply WHERE bug_id='."'$bugid'");
+	_sql_single('DELETE FROM daportal_bug WHERE content_id='."'$id'");
+}
+
+
+function project_bug_disable($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	$id = $args['id'];
+	if(($bugid = _sql_single('SELECT bug_id FROM daportal_bug'
+					." WHERE content_id='$id'")) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	_content_disable($id);
+}
+
+
 function project_bug_display($args)
 {
 	global $user_id;
@@ -380,6 +418,24 @@ function project_bug_display($args)
 		$reply['assigned'] = $bug['assigned'];
 		include('./modules/project/bug_reply_display.tpl');
 	}
+}
+
+
+function project_bug_enable($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	$id = $args['id'];
+	if(($bugid = _sql_single('SELECT bug_id FROM daportal_bug'
+					." WHERE content_id='$id'")) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	_content_enable($id);
 }
 
 
@@ -946,6 +1002,7 @@ function project_default($args)
 
 
 function project_delete($args)
+	/* FIXME should determine if it's a project/bug/bug_reply... */
 {
 	global $user_id;
 
