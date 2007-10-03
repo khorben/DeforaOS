@@ -3,7 +3,7 @@
 	<div class="author"><?php echo _html_safe(REPLY_BY); ?> <a href="index.php?module=user&amp;id=<?php echo _html_safe($reply['user_id']); ?>"><?php echo _html_safe($reply['username']); ?></a></div>
 	<div class="date"><?php echo _html_safe(REPLY_ON.' '.$reply['date']); ?></div>
 	<div class="content"><?php echo _html_pre($reply['content']); ?></div>
-<?php if(isset($reply['assigned'])) { ?>
+<?php if(isset($reply['assigned_id']) && isset($reply['assigned'])) { ?>
 	<div class="status"><?php echo _html_safe(ASSIGNED_TO); ?> <a href="<?php echo _html_link('user', FALSE, $reply['assigned_id'], $reply['assigned']); ?>"><?php echo _html_safe($reply['assigned']); ?></a></div>
 <?php } ?>
 <?php if(isset($reply['state'])) { ?>
