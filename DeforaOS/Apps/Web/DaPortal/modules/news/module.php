@@ -251,7 +251,7 @@ function news_list($args)
 		$news['date'] = _sql_date($news['timestamp']);
 		include('./modules/news/news_display.tpl');
 	}
-	_html_paging(_html_link('news', 'list', FALSE, FALSE, '&page='), $page,
+	_html_paging(_html_link('news', 'list', FALSE, FALSE, 'page='), $page,
 			$pages);
 }
 
