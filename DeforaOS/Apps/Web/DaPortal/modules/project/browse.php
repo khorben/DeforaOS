@@ -59,7 +59,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	}
 	foreach($files as $f)
 	{
-		unset($rcs);
+		unset($rcs); //FIXME use escapeshellcmd()?
 		_info('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', 0);
 		exec('rlog "'.str_replace('"', '\"', $path.'/'.$f).'"', $rcs);
 		if(count($rcs) == 0)
