@@ -26,6 +26,14 @@ h2.title.modules, h2.title.settings {
 	background-image:		url('settings.png');
 }
 
+h2.title.news, h2.title.wiki {
+	background-image:		url('news.png');
+}
+
 h2.title.project {
 	background-image:		url('project.png');
+}
+
+h2.title.stats {
+	background-image:		url('stats.png');
 }
