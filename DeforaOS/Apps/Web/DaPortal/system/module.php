@@ -57,6 +57,7 @@ function _module($module = '', $action = '', $args = FALSE)
 				.$module_name.'"');
 	_info('Module "'.$module_name.'", action "'.$action.'"');
 	return call_user_func_array($function, array($args));
+	//FIXME restore old module_id?
 }
 
 
@@ -145,7 +146,8 @@ function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 		if($title != FALSE && $title != '')
 		{
 			$title = str_replace(array(' ', '/', '?', '&', '%', '#',
-						'<', '>'), '-', $title);
+						'<', '>', "'", '"'), '-',
+					$title);
 			$link .= '/'.$title;
 		}
 		if($params != FALSE && $params != '')
