@@ -27,6 +27,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
 $text['ADMINISTRATION'] = 'Administration';
 $text['ASSIGNED_TO'] = 'Assigned to';
 $text['BROWSE_REVISIONS'] = 'Browse revisions';
@@ -1345,7 +1346,7 @@ function project_member_add($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	$project = _sql_array('SELECT project_id AS id, name, user_id'
+	$project = _sql_array('SELECT project_id AS id, title AS name, user_id'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
@@ -1353,8 +1354,8 @@ function project_member_add($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	print('<h1 class="title project">Add member to project '
-			.$project['name']."</h1>\n");
+	print('<h1 class="title project"> '._html_safe(ADD_MEMBER_TO_PROJECT)
+			.' '.$project['name']."</h1>\n");
 	$members = _sql_array('SELECT user_id AS id FROM daportal_project_user'
 			." WHERE project_id='".$project['id']."'");
 	$where = " WHERE user_id <> '".$project['user_id']."'"
