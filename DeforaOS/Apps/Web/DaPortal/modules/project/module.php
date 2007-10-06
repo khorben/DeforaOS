@@ -771,6 +771,7 @@ function project_bug_reply_insert($args)
 		return _error('Could not insert bug reply');
 	$fields = '';
 	$values = '';
+	$update = '';
 	$status = '';
 	$from = 'From: '._user_name($user_id)."\n";
 	$to = "\n";
@@ -815,7 +816,7 @@ function project_bug_reply_insert($args)
 			.' (content_id, bug_id'.$fields.') VALUES '
 			." ('$id', '".$args['bug_id']."'".$values.')') == FALSE)
 		return _error(INVALID_ARGUMENT);
-	if(isset($update) && strlen($update)) //should not fail
+	if(strlen($update)) //should not fail
 		_sql_query('UPDATE daportal_bug SET'
 				." bug_id='".$args['bug_id']."'".$update
 				." WHERE bug_id='".$args['bug_id']."'");
