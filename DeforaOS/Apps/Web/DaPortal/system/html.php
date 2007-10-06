@@ -39,7 +39,7 @@ function _html_paging($link, $page, $count)
 		if($i == $page)
 			print($page."\n");
 		else
-			print('<a href="'.$link.'page='.$i.'">'.$i."</a>\n");
+			print('<a href="'.$link.$i.'">'.$i."</a>\n");
 	}
 	print("</div>\n");
 }

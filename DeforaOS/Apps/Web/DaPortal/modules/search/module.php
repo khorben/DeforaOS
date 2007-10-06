@@ -75,14 +75,13 @@ function search_default($args)
 	$i = 1 + (($page-1) * $spp);
 	foreach($res as $q)
 	{
-		$q['date'] = strftime(DATE_FORMAT, strtotime(substr(
-						$q['timestamp'], 0, 19)));
+		$q['date'] = _sql_date($q['timestamp']);
 		include('./modules/search/search_entry.tpl');
 		$i++;
 	}
 	include('./modules/search/search_bottom.tpl');
 	_html_paging(_html_link('search', '', '', '', 'q='
-			._html_safe($args['q']).'&amp;'), $page, $pages);
+			._html_safe($args['q']).'&page='), $page, $pages);
 }
 
 
