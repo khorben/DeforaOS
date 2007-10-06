@@ -770,41 +770,51 @@ function project_bug_reply_insert($args)
 		return _error('Could not insert bug reply');
 	$fields = '';
 	$values = '';
-	$update = '';
+	$status = '';
+	$from = 'From: '._user_name($user_id)."\n";
+	$to = "\n";
 	if($admin || _project_is_member($args['project_id']))
 	{
+		if(isset($args['assigned_id'])
+				&& is_numeric($args['assigned_id'])
+				&& _project_is_member($project_id, FALSE,
+					$args['assigned_id']))
+		{
+			if(!isset($args['state']) || $args['state'] == '')
+				$args['state'] = 'Assigned';
+			$fields.=', assigned';
+			$values.=", '".$args['assigned_id']."'";
+			$update.=", assigned='".$args['assigned_id']."'";
+			$to = ' (to '._user_name($args['assigned_id']).")\n";
+		}
 		if(isset($args['state']) && strlen($args['state']))
 		{
 			$fields.=', state';
 			$values.=", '".$args['state']."'";
 			$update.=", state='".$args['state']."'";
+			$status.='State: '.stripslashes($args['state']).$to;
 		}
 		if(isset($args['type']) && strlen($args['type']))
 		{
 			$fields.=', type';
 			$values.=", '".$args['type']."'";
 			$update.=", type='".$args['type']."'";
+			$status.='Type: '.stripslashes($args['type'])."\n";
 		}
 		if(isset($args['priority']) && strlen($args['priority']))
 		{
 			$fields.=', priority';
 			$values.=", '".$args['priority']."'";
 			$update.=", priority='".$args['priority']."'";
-		}
-		if(isset($args['assigned_id'])
-				&& is_numeric($args['assigned_id'])
-				&& _project_is_member($project_id, FALSE,
-					$args['assigned_id']))
-		{
-			$fields.=', assigned';
-			$values.=", '".$args['assigned_id']."'";
-			$update.=", assigned='".$args['assigned_id']."'";
+			$status.='Priority: '.stripslashes($args['priority'])
+				."\n";
 		}
 	}
-	_sql_query('INSERT INTO daportal_bug_reply'
+	if(_sql_query('INSERT INTO daportal_bug_reply'
 			.' (content_id, bug_id'.$fields.') VALUES '
-			." ('$id', '".$args['bug_id']."'".$values.')');
-	if(strlen($update))
+			." ('$id', '".$args['bug_id']."'".$values.')') == FALSE)
+		return _error(INVALID_ARGUMENT);
+	if(strlen($update)) //should not fail
 		_sql_query('UPDATE daportal_bug SET'
 				." bug_id='".$args['bug_id']."'".$update
 				." WHERE bug_id='".$args['bug_id']."'");
@@ -850,9 +860,7 @@ function project_bug_reply_insert($args)
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
 	$title = '[Bug reply] '.$args['title'];
-	$content = 'State: '.$args['state']."\n".'Type: '.$args['type']."\n"
-		.'Priority: '.$args['priority']."\n\n"
-		.stripslashes($args['content']);
+	$content = $from.$status."\n".stripslashes($args['content']);
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, $title, $content);
 }
