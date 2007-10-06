@@ -1,5 +1,5 @@
 <h1 class="title project"><?php echo _html_safe(PROJECTS); ?></h1>
-<h2>Statistics</h2>
+<h2 class="title stats"><?php echo _html_safe(STATISTICS); ?></h2>
 <p>There are <?php echo $project_cnt; ?> <a href="<?php echo _html_link('project', 'list'); ?>">projects registered</a>.</p>
 <?php $keys = array_keys($cols); foreach($keys as $k) { ?>
 <a name="<?php echo _html_safe($k); ?>"></a><h3>Bugs by <?php echo _html_safe($cols[$k]); ?></h3>

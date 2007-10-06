@@ -65,6 +65,7 @@ $text['SYNOPSIS'] = 'Synopsis';
 $text['SELECT_PROJECT_TO_BUG'] = 'Select project to bug';
 $text['SETTINGS'] = 'Settings';
 $text['STATE'] = 'State';
+$text['STATISTICS'] = 'Statistics';
 $text['SUBMITTER'] = 'Submitter';
 $text['STATE_CHANGED_TO'] = 'State changed to';
 $text['TYPE_CHANGED_TO'] = 'Type changed to';
