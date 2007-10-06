@@ -43,6 +43,7 @@ $text['SCREENSHOTS'] = "Captures d'écran";
 $text['SETTINGS'] = 'Configuration';
 $text['STATE'] = 'Etat';
 $text['STATE_CHANGED_TO'] = 'Etat changé à';
+$text['STATISTICS'] = 'Statistiques';
 $text['SUBMITTER'] = 'Envoyé par';
 $text['TIMELINE'] = 'Progression';
 
