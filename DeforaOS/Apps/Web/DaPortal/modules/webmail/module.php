@@ -130,14 +130,13 @@ function webmail_default($args)
 	$offset = $offset * $mpp;
 	$cnt = imap_num_msg($mbox);
 	$max = min($cnt, $offset + $mpp);
-	//_info("mpp=$mpp, offset=$offset, cnt=$cnt", 0);
 	for($i = $offset; $i < $max; $i++)
 	{
 		if(!($header = imap_headerinfo($mbox, $i, 80, 80)))
 			continue;
 		$message = array('link' => _module_link('webmail', 'read',
 					imap_uid($mbox, $i), '',
-					'folder='._html_safe($folder));
+					'folder='._html_safe($folder)));
 		$message['icon'] = 'mail_read';
 		if($header->Unseen == 'U' || $header->Unseen == 'N')
 			$message['icon'] = 'mail_unread';
