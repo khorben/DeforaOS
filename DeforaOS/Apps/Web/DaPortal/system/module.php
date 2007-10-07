@@ -61,25 +61,6 @@ function _module($module = '', $action = '', $args = FALSE)
 }
 
 
-function _module_id($name)
-{
-	static $cache = array();
-	global $user_id;
-
-	if(isset($cache[$name]))
-		return $cache[$name];
-	require_once('./system/user.php');
-	$enabled = " AND enabled='1'";
-	if(_user_admin($user_id))
-		$enabled = '';
-	if(($id = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='$name'$enabled")) == FALSE)
-		return 0;
-	$cache[$name] = $id;
-	return $id;
-}
-
-
 function _module_desktop($name)
 {
 	static $cache = array();
@@ -107,6 +88,25 @@ function _desktop_include($name)
 	return array('admin' => $admin, 'list' => $list, 'title' => $title,
 			'icon' => $icon, 'actions' => $actions,
 			'user' => $user);
+}
+
+
+function _module_id($name)
+{
+	static $cache = array();
+	global $user_id;
+
+	if(isset($cache[$name]))
+		return $cache[$name];
+	require_once('./system/user.php');
+	$enabled = " AND enabled='1'";
+	if(_user_admin($user_id))
+		$enabled = '';
+	if(($id = _sql_single('SELECT module_id FROM daportal_module'
+			." WHERE name='$name'$enabled")) == FALSE)
+		return 0;
+	$cache[$name] = $id;
+	return $id;
 }
 
 
