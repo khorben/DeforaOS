@@ -75,7 +75,8 @@ function menu_default()
 	print('<ul class="menu">'."\n");
 	foreach($modules as $m)
 	{
-		if(($d = _module_desktop($m['name'])) == FALSE || $d['list'] != 1)
+		if(($d = _module_desktop($m['name'])) == FALSE
+				|| $d['list'] != 1)
 			continue;
 		$d['args'] = '';
 		_default_submenu($m['name'], 1, $d);
