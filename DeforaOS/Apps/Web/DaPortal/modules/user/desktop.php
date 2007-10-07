@@ -23,7 +23,8 @@ $list = 1;
 global $user_id;
 if($user_id != 0)
 {
-	$actions = array('appearance' => 'Appearance', 'admin' => 'My Profile',
+	$actions = array('appearance' => 'Appearance',
+			'display' => 'My Content', 'admin' => 'My Profile',
 			'logout' => 'Logout');
 	require_once('./system/user.php');
 	$title = _user_admin($user_id) ? 'Users' : "User's page";

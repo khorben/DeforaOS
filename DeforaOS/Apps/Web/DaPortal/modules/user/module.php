@@ -289,7 +289,11 @@ function user_disable($args)
 
 function user_display($args)
 {
-	if(!is_numeric($args['id']))
+	global $user_id;
+
+	if(!isset($args['id']))
+		$args['id'] = $user_id;
+	else if(!is_numeric($args['id']))
 		return _error('Invalid user ID');
 	$user = _sql_array('SELECT user_id AS id, username'
 			.' FROM daportal_user'
