@@ -24,10 +24,10 @@ global $user_id;
 if($user_id != 0)
 {
 	$actions = array('appearance' => 'Appearance',
-			'display' => 'My Content', 'admin' => 'My Profile',
+			'display' => 'Content', 'admin' => 'Profile',
 			'logout' => 'Logout');
 	require_once('./system/user.php');
-	$title = _user_admin($user_id) ? 'Users' : "User's page";
+	$title = 'User';
 }
 else
 	$actions = array('login' => 'Login');
@@ -43,7 +43,11 @@ if($lang == 'de')
 }
 else if($lang == 'fr')
 {
-	$title = 'Utilisateurs';
+	$title = $user_id != 0 ? 'Utilisateur' : 'Utilisateurs';
+	if(isset($actions['admin']))
+		$actions['admin'] = 'Profil';
+	if(isset($actions['display']))
+		$actions['display'] = 'Contenus';
 	if(isset($actions['login']))
 		$actions['login'] = 'Authentification';
 	if(isset($actions['logout']))
