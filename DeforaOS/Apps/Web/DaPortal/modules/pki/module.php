@@ -28,8 +28,10 @@ $text['CA_LIST'] = 'CA list';
 $text['CN'] = 'CN';
 $text['COUNTRY'] = 'Country';
 $text['EMAIL'] = 'e-mail';
+$text['_FOR_'] = ' for ';
 $text['LOCALITY'] = 'Locality';
 $text['NEW_CA'] = 'New CA';
+$text['NEW_CACLIENT'] = 'New client';
 $text['ORGANIZATION'] = 'Organization';
 $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
@@ -225,6 +227,30 @@ function pki_ca_new($args)
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 			." AND enabled='1'");
 	include('./modules/pki/ca_update.tpl');
+}
+
+
+//caclient_new
+function pki_caclient_new($args)
+{
+	$title = NEW_CACLIENT;
+	if(isset($args['ca_id']) && is_numeric($args['ca_id']))
+	{
+		$parent = _sql_array('SELECT ca_id AS id, title'
+				.' FROM daportal_ca, daportal_content'
+				.' WHERE daportal_ca.ca_id'
+				.'=daportal_content.content_id'
+				." AND enabled='1'"
+				." AND ca_id='".$args['ca_id']."'");
+		if(!is_array($parent) || count($parent) != 1)
+			unset($parent);
+		else
+		{
+			$parent = $parent[0];
+			$title.=_FOR_.$parent['title'];
+		}
+	}
+	include('./modules/pki/caclient_update.tpl');
 }
 
 
