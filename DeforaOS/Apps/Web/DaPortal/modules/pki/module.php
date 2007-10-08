@@ -282,6 +282,10 @@ function pki_display($args)
 	if(_sql_single('SELECT ca_id FROM daportal_ca WHERE '
 				."ca_id='".$args['id']."'") == $args['id'])
 		return _display_ca($args);
+	if(_sql_single('SELECT caclient_id FROM daportal_ca WHERE '
+				."caclient_id='".$args['id']."'")
+			== $args['id'])
+		return _display_caclient($args);
 	return _error(INVALID_ARGUMENT);
 }
 
@@ -302,6 +306,25 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
+}
+
+function _display_caclient($args)
+{
+	global $user_id;
+
+	$enabled = " AND enabled='1'";
+	require_once('./system/user.php');
+	if(_user_admin($user_id))
+		$enabled = '';
+	$caclient = _sql_array('SELECT caclient_id AS id, title, country, state'
+			.', locality, organization, section, cn, email'
+			.' FROM daportal_caclient, daportal_content'
+			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+			.$enabled." AND caclient_id='".$args['id']."'");
+	if(!is_array($caclient) || count($caclient) != 1)
+		return _error(INVALID_ARGUMENT);
+	$caclient = $caclient[0];
+	include('./modules/pki/caclient_display.tpl');
 }
 
 
