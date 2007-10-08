@@ -258,7 +258,6 @@ CREATE TABLE daportal_ca (
 	state VARCHAR(255),
 	locality VARCHAR(255),
 	organization VARCHAR(255),
-	unit VARCHAR(255),
 	section VARCHAR(255),
 	cn VARCHAR(255),
 	email VARCHAR(255),

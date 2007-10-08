@@ -5,8 +5,7 @@
 		<tr><td class="field">State:</td><td><?php echo _html_safe($ca['state']); ?></td></tr>
 		<tr><td class="field">Locality:</td><td><?php echo _html_safe($ca['locality']); ?></td></tr>
 		<tr><td class="field">Organization:</td><td><?php echo _html_safe($ca['organization']); ?></td></tr>
-		<tr><td class="field">Organizational Unit (OU):</td><td><?php echo _html_safe($ca['unit']); ?></td></tr>
-		<tr><td class="field">Section:</td><td><?php echo _html_safe($ca['section']); ?></td></tr>
+		<tr><td class="field">Section (OU):</td><td><?php echo _html_safe($ca['section']); ?></td></tr>
 		<tr><td class="field">Common Name (CN):</td><td><?php echo _html_safe($ca['cn']); ?></td></tr>
 		<tr><td class="field">e-mail:</td><td><?php echo _html_safe($ca['email']); ?></td></tr>
 	</table>

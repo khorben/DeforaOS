@@ -24,8 +24,7 @@
 			<tr><td class="field">State:</td><td><input type="text" name="state" value="<?php if(isset($ca['state'])) echo _html_safe($ca['state']); ?>"/></td></tr>
 			<tr><td class="field">Locality:</td><td><input type="text" name="locality" value="<?php if(isset($ca['locality'])) echo _html_safe($ca['locality']); ?>"/></td></tr>
 			<tr><td class="field">Organization:</td><td><input type="text" name="organization" value="<?php if(isset($ca['organization'])) echo _html_safe($ca['organization']); ?>"/></td></tr>
-			<tr><td class="field">Organizational Unit (OU):</td><td><input type="text" name="unit" value="<?php if(isset($ca['unit'])) echo _html_safe($ca['unit']); ?>"/></td></tr>
-			<tr><td class="field">Section:</td><td><input type="text" name="section" value="<?php if(isset($ca['section'])) echo _html_safe($ca['section']); ?>"/></td></tr>
+			<tr><td class="field">Section (OU):</td><td><input type="text" name="section" value="<?php if(isset($ca['section'])) echo _html_safe($ca['section']); ?>"/></td></tr>
 			<tr><td class="field">Common Name (CN):</td><td><input type="text" name="cn" value="<?php if(isset($ca['cn'])) echo _html_safe($ca['cn']); ?>"/></td></tr>
 			<tr><td class="field">e-mail address:</td><td><input type="text" name="email" value="<?php if(isset($ca['email'])) echo _html_safe($ca['email']); ?>"/></td></tr>
 			<tr><td></td><td><input type="submit" value="<?php echo isset($ca['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/></td></tr>

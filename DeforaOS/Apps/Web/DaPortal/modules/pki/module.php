@@ -104,7 +104,7 @@ function _subject_from_ca($ca)
 		.'/ST='.escapeshellarg($ca['state'])
 		.'/L='.escapeshellarg($ca['locality'])
 		.'/O='.escapeshellarg($ca['organization'])
-		.'/OU='.escapeshellarg($ca['unit'])
+		.'/OU='.escapeshellarg($ca['section'])
 		.'/CN='.escapeshellarg($ca['title'])
 		.'/emailAddress='.escapeshellarg($ca['email']);
 }
@@ -131,14 +131,14 @@ function pki_admin($args)
 	}
 	print('<h2 class="title pki"> '._html_safe(CA_LIST)."</h2>\n");
 	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
-		.', organization, unit, section, cn, email'
+		.', organization, section, cn, email'
 		.' FROM daportal_ca, daportal_content'
 		.' WHERE daportal_ca.ca_id=daportal_content.content_id';
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list CAs');
-	$cols = array('country', 'state', 'locality', 'organization', 'unit',
-			'section', 'cn', 'email');
+	$cols = array('country', 'state', 'locality', 'organization', 'section',
+			'cn', 'email');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
@@ -170,8 +170,8 @@ function pki_admin($args)
 					'country' => COUNTRY, 'state' => STATE,
 					'locality' => LOCALITY,
 					'organization' => ORGANIZATION,
-					'unit' => UNIT, 'section' => SECTION,
-					'cn' => CN, 'email' => EMAIL),
+					'section' => SECTION, 'cn' => CN,
+					'email' => EMAIL),
 				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
@@ -208,7 +208,7 @@ function pki_ca_insert($args)
 	$title = NEW_CA;
 	$ca = array();
 	$fields = array('title', 'country', 'state', 'locality', 'organization',
-			'unit', 'section', 'cn', 'email');
+			'section', 'cn', 'email');
 	foreach($fields as $f)
 		if(isset($args[$f]))
 			$ca[$f] = stripslashes($args[$f]);
@@ -250,7 +250,7 @@ function pki_default($args)
 			."</h1>\n");
 	print('<h2 class="title pki">'._html_safe(CA_LIST)."</h2>\n");
 	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
-		.', organization, unit, section, cn, email'
+		.', organization, section, cn, email'
 		.' FROM daportal_ca, daportal_content'
 		.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 		." AND enabled='1'";
@@ -268,8 +268,8 @@ function pki_default($args)
 					'state' => STATE,
 					'locality' => LOCALITY,
 					'organization' => ORGANIZATION,
-					'unit' => UNIT, 'section' => SECTION,
-					'cn' => CN, 'email' => EMAIL),
+					'section' => SECTION, 'cn' => CN,
+					'email' => EMAIL),
 				'view' => 'details'));
 }
 
@@ -298,7 +298,7 @@ function _display_ca($args)
 	if(_user_admin($user_id))
 		$enabled = '';
 	$ca = _sql_array('SELECT ca_id AS id, title, country, state, locality'
-			.', organization, unit, section, cn, email'
+			.', organization, section, cn, email'
 			.' FROM daportal_ca, daportal_content'
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 			.$enabled." AND ca_id='".$args['id']."'");
@@ -438,7 +438,7 @@ function _system_ca_insert($args)
 
 	//validate rest of input
 	$cols = array('title', 'country', 'state', 'locality', 'organization',
-			'unit', 'section', 'cn', 'email');
+			'section', 'cn', 'email');
 	foreach($cols as $c)
 	{
 		if(!isset($args[$c]))
@@ -500,12 +500,11 @@ function _system_ca_insert($args)
 		return 'Could not insert content';
 	}
 	if(_sql_query('INSERT INTO daportal_ca (ca_id, country'
-			.', state, locality, organization, unit, section, cn'
+			.', state, locality, organization, section, cn'
 			.', email)'." VALUES ('$id', '".$args['country']."'"
 			.", '".$args['state']."', '".$args['locality']."'"
-			.", '".$args['organization']."', '".$args['unit']."'"
-			.", '".$args['section']."', '".$args['cn']."'"
-			.", '".$args['email']."')") == FALSE)
+			.", '".$args['organization']."', '".$args['section']."'"
+			.", '".$args['cn']."', '".$args['email']."')") == FALSE)
 	{
 		_content_delete($id);
 		_ca_insert_cleanup($cadir, $dirs, $files);
