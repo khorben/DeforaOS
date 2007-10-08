@@ -14,6 +14,8 @@
 //You should have received a copy of the GNU General Public License
 //along with DaPortal; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//TODO:
+//- use the browser capability to generate PKCS#12 itself
 
 
 
@@ -279,15 +281,13 @@ function pki_config_update($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	//FIXME what to do here?
+	return pki_admin(array());
 }
 
 
 //default
 function pki_default($args)
 {
-	//FIXME implement user_id
-
 	if(isset($args['id']))
 		return pki_display($args);
 	print('<h1 class="title pki">'._html_safe(PUBLIC_KEY_INFRASTRUCTURE)
