@@ -176,28 +176,6 @@ function pki_admin($args)
 }
 
 
-//ca_display
-function pki_ca_display($args)
-	//FIXME make it private
-{
-	global $user_id;
-
-	$enabled = " AND enabled='1'";
-	require_once('./system/user.php');
-	if(_user_admin($user_id))
-		$enabled = '';
-	$ca = _sql_array('SELECT ca_id AS id, title, country, state, locality'
-			.', organization, unit, section, cn, email'
-			.' FROM daportal_ca, daportal_content'
-			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
-			.$enabled." AND ca_id='".$args['id']."'");
-	if(!is_array($ca) || count($ca) != 1)
-		return _error(INVALID_ARGUMENT);
-	$ca = $ca[0];
-	include('./modules/pki/ca_display.tpl');
-}
-
-
 //ca_export
 function pki_ca_export($args)
 {
@@ -268,8 +246,8 @@ function pki_default($args)
 
 	if(isset($args['id']))
 		return pki_display($args);
-	$title = PUBLIC_KEY_INFRASTRUCTURE;
-	include('./modules/pki/default.tpl');
+	print('<h1 class="title pki">'._html_safe(PUBLIC_KEY_INFRASTRUCTURE)
+			."</h1>\n");
 	print('<h2 class="title pki"> '._html_safe(CA_LIST)."</h2>\n");
 	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
 		.', organization, unit, section, cn, email'
@@ -306,8 +284,31 @@ function pki_default($args)
 //display
 function pki_display($args)
 {
-	//FIXME implement
-	return pki_ca_display($args);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	if(_sql_single('SELECT ca_id FROM daportal_ca WHERE '
+				."ca_id='".$args['id']."'") == $args['id'])
+		return _display_ca($args);
+	return _error(INVALID_ARGUMENT);
+}
+
+function _display_ca($args)
+{
+	global $user_id;
+
+	$enabled = " AND enabled='1'";
+	require_once('./system/user.php');
+	if(_user_admin($user_id))
+		$enabled = '';
+	$ca = _sql_array('SELECT ca_id AS id, title, country, state, locality'
+			.', organization, unit, section, cn, email'
+			.' FROM daportal_ca, daportal_content'
+			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+			.$enabled." AND ca_id='".$args['id']."'");
+	if(!is_array($ca) || count($ca) != 1)
+		return _error(INVALID_ARGUMENT);
+	$ca = $ca[0];
+	include('./modules/pki/ca_display.tpl');
 }
 
 
