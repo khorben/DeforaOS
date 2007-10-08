@@ -200,7 +200,7 @@ function pki_ca_export($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return pki_ca_display($args);
+	return _display_ca($args);
 }
 
 
@@ -242,6 +242,17 @@ function pki_ca_new($args)
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 			." AND enabled='1'");
 	include('./modules/pki/ca_update.tpl');
+}
+
+
+//caclient_export
+function pki_caclient_export($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return _display_caclient($args);
 }
 
 
@@ -396,6 +407,9 @@ function pki_system($args)
 		{
 			case 'ca_insert':
 				$error = _system_ca_insert($args);
+				break;
+			case 'caclient_export':
+				$error = _system_caclient_export($args);
 				break;
 			case 'caclient_insert':
 				$error = _system_caclient_insert($args);
@@ -562,6 +576,11 @@ function _system_ca_insert($args)
 	//display the CA
 	header('Location: '._module_link('pki', 'display', $id));
 	exit(0);
+}
+
+function _system_caclient_export($args)
+{
+	return 'Not yet implemented';
 }
 
 function _system_caclient_insert($args)
