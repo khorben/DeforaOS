@@ -28,10 +28,9 @@ $text['CA_LIST'] = 'CA list';
 $text['CN'] = 'CN';
 $text['COUNTRY'] = 'Country';
 $text['EMAIL'] = 'e-mail';
-$text['_FOR_'] = ' for ';
 $text['LOCALITY'] = 'Locality';
 $text['NEW_CA'] = 'New CA';
-$text['NEW_CACLIENT'] = 'New client';
+$text['NEW_CACLIENT_FOR'] = 'New client for';
 $text['ORGANIZATION'] = 'Organization';
 $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
@@ -53,6 +52,20 @@ function _exec($cmd, &$output)
 	_info($cmd);
 	exec($cmd, $output, $ret);
 	return $ret;
+}
+
+
+//insert_cleanup
+//cleanup a CA or client files when an error occurs
+function _insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
+{
+	if(is_array($files))
+		foreach($files as $f)
+			@unlink($cadir.'/'.$f);
+	if(is_array($dirs))
+		foreach($dirs as $d)
+			@rmdir($cadir.'/'.$d);
+	@rmdir($cadir);
 }
 
 
@@ -139,8 +152,8 @@ function pki_admin($args)
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list CAs');
-	$cols = array('country', 'state', 'locality', 'organization', 'section',
-			'cn', 'email');
+	$fields = array('country', 'state', 'locality', 'organization',
+			'section', 'cn', 'email');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
@@ -153,8 +166,8 @@ function pki_admin($args)
 			.$res[$i]['enabled'].'" title="'
 			.($res[$i]['enabled'] == 'enabled'
 					? ENABLED : DISABLED).'"/>';
-		foreach($cols as $c)
-			$res[$i][$c] = _html_safe($res[$i][$c]);
+		foreach($fields as $f)
+			$res[$i][$f] = _html_safe($res[$i][$f]);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CA, 'class' => 'new',
@@ -196,7 +209,7 @@ function pki_ca_import($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return pki_ca_display($args);
+	return _display_ca($args);
 }
 
 
@@ -230,26 +243,31 @@ function pki_ca_new($args)
 }
 
 
-//caclient_new
-function pki_caclient_new($args)
+//caclient_insert
+function pki_caclient_insert($args)
 {
-	$title = NEW_CACLIENT;
-	if(isset($args['ca_id']) && is_numeric($args['ca_id']))
-	{
-		$parent = _sql_array('SELECT ca_id AS id, title'
-				.' FROM daportal_ca, daportal_content'
-				.' WHERE daportal_ca.ca_id'
-				.'=daportal_content.content_id'
-				." AND enabled='1'"
-				." AND ca_id='".$args['ca_id']."'");
-		if(!is_array($parent) || count($parent) != 1)
-			unset($parent);
-		else
-		{
-			$parent = $parent[0];
-			$title.=_FOR_.$parent['title'];
-		}
-	}
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	if(!isset($args['parent']) || !is_numeric($args['parent']))
+		return _error(INVALID_ARGUMENT);
+	$parent = _sql_array('SELECT ca_id AS id, title'
+			.' FROM daportal_ca, daportal_content'
+			.' WHERE daportal_ca.ca_id'
+			.'=daportal_content.content_id'
+			." AND enabled='1'"
+			." AND ca_id='".$args['parent']."'");
+	if(!is_array($parent) || count($parent) != 1)
+		return _error(INVALID_ARGUMENT);
+	$parent = $parent[0];
+	$title = NEW_CACLIENT_FOR.' '.$parent['title'];
+	$caclient = array();
+	$fields = array('title', 'country', 'state', 'locality', 'organization',
+			'section', 'cn', 'email');
+	foreach($fields as $f)
+		if(isset($args[$f]))
+			$caclient[$f] = stripslashes($args[$f]);
 	include('./modules/pki/caclient_update.tpl');
 }
 
@@ -308,7 +326,7 @@ function pki_display($args)
 	if(_sql_single('SELECT ca_id FROM daportal_ca WHERE '
 				."ca_id='".$args['id']."'") == $args['id'])
 		return _display_ca($args);
-	if(_sql_single('SELECT caclient_id FROM daportal_ca WHERE '
+	if(_sql_single('SELECT caclient_id FROM daportal_caclient WHERE '
 				."caclient_id='".$args['id']."'")
 			== $args['id'])
 		return _display_caclient($args);
@@ -345,7 +363,8 @@ function _display_caclient($args)
 	$caclient = _sql_array('SELECT caclient_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
 			.' FROM daportal_caclient, daportal_content'
-			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+			.' WHERE daportal_caclient.caclient_id'
+			.'=daportal_content.content_id'
 			.$enabled." AND caclient_id='".$args['id']."'");
 	if(!is_array($caclient) || count($caclient) != 1)
 		return _error(INVALID_ARGUMENT);
@@ -377,6 +396,9 @@ function pki_system($args)
 		{
 			case 'ca_insert':
 				$error = _system_ca_insert($args);
+				break;
+			case 'caclient_insert':
+				$error = _system_caclient_insert($args);
 				break;
 			case 'config_update':
 				$error = _system_config_update($args);
@@ -458,18 +480,18 @@ function _system_ca_insert($args)
 	foreach($dirs as $d)
 		if(_mkdir($cadir.'/'.$d, 0700, TRUE) != TRUE)
 		{
-			_ca_insert_cleanup($cadir, $dirs);
+			_insert_cleanup($cadir, $dirs);
 			return 'Could not create directories';
 		}
 
 	//validate rest of input
-	$cols = array('title', 'country', 'state', 'locality', 'organization',
+	$fields = array('title', 'country', 'state', 'locality', 'organization',
 			'section', 'cn', 'email');
-	foreach($cols as $c)
+	foreach($fields as $f)
 	{
-		if(!isset($args[$c]))
-			$args[$c] = '';
-		$ca[$c] = stripslashes($args[$c]);
+		if(!isset($args[$f]))
+			$args[$f] = '';
+		$ca[$f] = stripslashes($args[$f]);
 	}
 
 	//create files
@@ -480,7 +502,7 @@ function _system_ca_insert($args)
 			|| fwrite($fp, "01\n") == FALSE
 			|| fclose($fp) == FALSE)
 	{
-		_ca_insert_cleanup($cadir, $dirs, $files);
+		_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not create files';
 	}
 
@@ -497,7 +519,7 @@ function _system_ca_insert($args)
 				.' -keyout '.$ecadir.'/private/cacert.key'
 				.' -subj '.$subject, $output) != 0)
 	{
-		_ca_insert_cleanup($cadir, $dirs, $files);
+		_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not create certificate';
 	}
 
@@ -513,7 +535,7 @@ function _system_ca_insert($args)
 					.' -infiles '.$ecadir.'/cacert.csr',
 					$output) != 0)
 		{
-			_ca_insert_cleanup($cadir, $dirs, $files);
+			_insert_cleanup($cadir, $dirs, $files);
 			return 'Could not sign certificate';
 		}
 	}
@@ -522,7 +544,7 @@ function _system_ca_insert($args)
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], '', 1)) == FALSE)
 	{
-		_ca_insert_cleanup($cadir, $dirs, $files);
+		_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert content';
 	}
 	if(_sql_query('INSERT INTO daportal_ca (ca_id, country'
@@ -533,7 +555,7 @@ function _system_ca_insert($args)
 			.", '".$args['cn']."', '".$args['email']."')") == FALSE)
 	{
 		_content_delete($id);
-		_ca_insert_cleanup($cadir, $dirs, $files);
+		_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert CA';
 	}
 
@@ -542,17 +564,116 @@ function _system_ca_insert($args)
 	exit(0);
 }
 
-function _ca_insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
+function _system_caclient_insert($args)
 {
-	if(is_array($files))
-		foreach($files as $f)
-			@unlink($cadir.'/'.$f);
-	if(is_array($dirs))
-		foreach($dirs as $d)
-			@rmdir($cadir.'/'.$d);
-	@rmdir($cadir);
-}
+	global $user_id;
 
+	//check permissions
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+
+	//validate title and parent
+	if(!isset($args['title'])
+			|| strchr($args['title'], '/') != FALSE
+			|| $args['title'] == '..'
+			|| !isset($args['parent'])
+			|| !is_numeric($args['parent']))
+		return INVALID_ARGUMENT;
+	$caclient = array('title' => stripslashes($args['title']));
+
+	//fetch configuration
+	if(($root = _config_get('pki', 'root')) == FALSE)
+		return 'Could not fetch the root directory';
+
+	//validate parent
+	$sql = 'SELECT ca_id AS id, title FROM daportal_ca, daportal_content'
+		.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+		." AND enabled='1' AND ca_id='".$args['parent']."'";
+	if(!is_array(($res = _sql_array($sql))) || count($res) != 1)
+		return INVALID_ARGUMENT;
+	$parent = $res[0];
+	$cadir = $root.'/'.$parent['title'];
+	if(!is_dir($cadir))
+		return 'Parent infrastructure not found';
+
+	//validate unicity
+	$csr = '/newreqs/'.$caclient['title'].'.csr';
+	$crt = '/newcerts/'.$caclient['title'].'.crt';
+	$out = '/certs/'.$caclient['title'].'.crt';
+	$files = array($csr, $crt, $out);
+	$csr = $cadir.$csr;
+	$crt = $cadir.$crt;
+	$out = $cadir.$out;
+	if(file_exists($csr) || file_exists($crt) || file_exists($out))
+		return 'A client by that name already exists';
+
+	//validate rest of input
+	$fields = array('country', 'state', 'locality', 'organization',
+			'section', 'cn', 'email');
+	foreach($fields as $f)
+	{
+		if(!isset($args[$f]))
+			$args[$f] = '';
+		$caclient[$f] = stripslashes($args[$f]);
+	}
+
+	//create certificate request
+	$ecadir = escapeshellarg($cadir);
+	$ecrt = escapeshellarg($crt);
+	$output = array();
+	if(_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes -new -x509'
+				.' -days 365 -keyout '.$ecrt.' -out '.$ecrt
+				.' -subj '._subject_from_ca($caclient),
+				$output) != 0)
+	{
+		_insert_cleanup($cadir, FALSE, $files);
+		return 'Could not generate certificate';
+	}
+
+	//create signing request
+	$ecsr = escapeshellarg($csr);
+	if(_exec('openssl x509 -x509toreq -in '.$ecrt.' -out '.$ecsr
+				.' -signkey '.$ecrt, $output) != 0)
+	{
+		_insert_cleanup($cadir, FALSE, $files);
+		return 'Could not generate signing request';
+	}
+
+	//create signed certificate
+	$eout = escapeshellarg($out);
+	if(_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
+				.' -policy policy_anything -out '.$eout
+				.' -batch -infiles '.$ecsr, $output) != 0)
+	{
+		_insert_cleanup($cadir, FALSE, $files);
+		return 'Could not generate signed certificate';
+	}
+
+	//insert in database
+	require_once('./system/content.php');
+	if(($id = _content_insert($args['title'], '', 1)) == FALSE)
+	{
+		_insert_cleanup($cadir, FALSE, $files);
+		return 'Could not insert content';
+	}
+	if(_sql_query('INSERT INTO daportal_caclient (caclient_id, ca_id'
+			.', country, state, locality, organization, section, cn'
+			.', email)'." VALUES ('$id', '".$parent['id']."'"
+			.", '".$args['country']."', '".$args['state']."'"
+			.", '".$args['locality']."'"
+			.", '".$args['organization']."', '".$args['section']."'"
+			.", '".$args['cn']."', '".$args['email']."')") == FALSE)
+	{
+		_content_delete($id);
+		_insert_cleanup($cadir, $dirs, $files);
+		return 'Could not insert CA';
+	}
+
+	//display the client
+	header('Location: '._module_link('pki', 'display', $id));
+	exit(0);
+}
 
 function _system_config_update($args)
 {

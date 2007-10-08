@@ -1,6 +1,6 @@
 <div class="pki">
 <?php if(isset($title)) { ?>
-	<h1 class="title pki"><?php echo _html_safe($title); ?></h1>
+	<h1 class="title ca"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
 	<form action="index.php" method="post">
 		<input type="hidden" name="module" value="pki"/>

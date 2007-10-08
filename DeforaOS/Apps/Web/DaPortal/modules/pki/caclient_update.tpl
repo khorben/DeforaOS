@@ -1,6 +1,6 @@
 <div class="pki">
 <?php if(isset($title)) { ?>
-	<h1 class="title pki"><?php echo _html_safe($title); ?></h1>
+	<h1 class="title caclient"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
 	<form action="index.php" method="post">
 		<input type="hidden" name="module" value="pki"/>
@@ -9,7 +9,9 @@
 		<input type="hidden" name="id" value="<?php echo _html_safe($caclient['id']); ?>"/>
 <?php } else { ?>
 		<input type="hidden" name="action" value="caclient_insert"/>
-<?php } ?>
+<?php if(isset($parent['id'])) { ?>
+		<input type="hidden" name="parent" value="<?php echo _html_safe($parent['id']); ?>"/>
+<?php } } ?>
 		<table>
 			<tr><td class="field">Name:</td><td><input type="text" name="title" value="<?php if(isset($caclient['title'])) echo _html_safe($caclient['title']); ?>"/></td></tr>
 			<tr><td class="field">Country:</td><td><input type="text" name="country" value="<?php if(isset($caclient['country'])) echo _html_safe($caclient['country']); ?>" size="2"/></td></tr>
