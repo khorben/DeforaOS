@@ -32,6 +32,7 @@ $text['MY_CONTENT'] = 'My content';
 $text['MY_PROFILE'] = 'My profile';
 $text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
+$text['SETTINGS'] = 'Settings';
 $text['THEME'] = 'Theme';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
@@ -111,7 +112,8 @@ function user_admin($args)
 			."</h1>\n");
 	if(($configs = _config_list('user')))
 	{
-		print('<h2 class="title settings">Settings</h2>'."\n");
+		print('<h2 class="title settings">'._html_safe(SETTINGS)
+				."</h2>\n");
 		$module = 'user';
 		$action = 'config_update';
 		include('./system/config.tpl');
