@@ -270,6 +270,36 @@ function pki_default($args)
 		return pki_display($args);
 	$title = PUBLIC_KEY_INFRASTRUCTURE;
 	include('./modules/pki/default.tpl');
+	print('<h2 class="title pki"> '._html_safe(CA_LIST)."</h2>\n");
+	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
+		.', organization, unit, section, cn, email'
+		.' FROM daportal_ca, daportal_content'
+		.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+		." AND enabled='1'";
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		return _error('Could not list CAs');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['module'] = 'pki';
+		$res[$i]['action'] = 'display';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE
+			? 'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+			.$res[$i]['enabled'].'.png" alt="'
+			.$res[$i]['enabled'].'" title="'
+			.($res[$i]['enabled'] == 'enabled'
+					? ENABLED : DISABLED).'"/>';
+	}
+	_module('explorer', 'browse', array('entries' => $res,
+				'class' => array('country' => COUNTRY,
+					'state' => STATE,
+					'locality' => LOCALITY,
+					'organization' => ORGANIZATION,
+					'unit' => UNIT, 'section' => SECTION,
+					'cn' => CN, 'email' => EMAIL),
+				'view' => 'details'));
 }
 
 
