@@ -248,7 +248,7 @@ function pki_default($args)
 		return pki_display($args);
 	print('<h1 class="title pki">'._html_safe(PUBLIC_KEY_INFRASTRUCTURE)
 			."</h1>\n");
-	print('<h2 class="title pki"> '._html_safe(CA_LIST)."</h2>\n");
+	print('<h2 class="title pki">'._html_safe(CA_LIST)."</h2>\n");
 	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
 		.', organization, unit, section, cn, email'
 		.' FROM daportal_ca, daportal_content'
@@ -262,13 +262,6 @@ function pki_default($args)
 		$res[$i]['module'] = 'pki';
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = $res[$i]['title'];
-		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE
-			? 'enabled' : 'disabled';
-		$res[$i]['enabled'] = '<img src="icons/16x16/'
-			.$res[$i]['enabled'].'.png" alt="'
-			.$res[$i]['enabled'].'" title="'
-			.($res[$i]['enabled'] == 'enabled'
-					? ENABLED : DISABLED).'"/>';
 	}
 	_module('explorer', 'browse', array('entries' => $res,
 				'class' => array('country' => COUNTRY,
