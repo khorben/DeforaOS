@@ -177,17 +177,17 @@ function project_admin($args)
 	if(isset($args['id']))
 		return project_modify($args);
 	print('<h1 class="title project">'._html_safe(PROJECTS_ADMINISTRATION)
-			.'</h1>'."\n");
+			."</h1>\n");
 	if(($configs = _config_list('project')))
 	{
 		print('<h2 class="title settings"/>'._html_safe(SETTINGS)
-				.'</h2>'."\n");
+				."</h2>\n");
 		$module = 'project';
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	print('<h2 class="title project">'._html_safe(PROJECT_LIST).'</h2>'
-			."\n");
+	print('<h2 class="title project">'._html_safe(PROJECT_LIST)
+			."</h2>\n");
 	$sql = 'SELECT content_id AS id, title AS name, username AS admin'
 		.', daportal_content.enabled AS enabled'
 		.', daportal_content.user_id AS user_id, synopsis, cvsroot'
