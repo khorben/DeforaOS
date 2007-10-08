@@ -265,4 +265,18 @@ CREATE TABLE daportal_ca (
 	FOREIGN KEY (ca_id) REFERENCES daportal_content (content_id)
 );
 
+CREATE TABLE daportal_caclient (
+	caclient_id INTEGER PRIMARY KEY,
+	ca_id INTEGER,
+	country VARCHAR(2),
+	state VARCHAR(255),
+	locality VARCHAR(255),
+	organization VARCHAR(255),
+	section VARCHAR(255),
+	cn VARCHAR(255),
+	email VARCHAR(255),
+	FOREIGN KEY (caclient_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (ca_id) REFERENCES daportal_ca (ca_id)
+);
+
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('16', 'string', 'root', '');
