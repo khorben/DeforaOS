@@ -15,7 +15,8 @@
 //along with DaPortal; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //TODO:
-//- use the browser capability to generate PKCS#12 itself
+//- use the browser capability to generate PKCS#12 itself?
+//- secure key when exporting PKCS#12
 
 
 
@@ -422,13 +423,13 @@ function pki_system($args)
 
 function _system_ca_export($args, $disposition = 'attachment')
 {
-	global $user_id, $html;
+	global $user_id;
 
 	$enabled = " AND enabled='1'";
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$enabled = '';
-	if(!isset($args['id']))
+	if(!isset($args['id']) || !is_numeric($args['id']))
 		return INVALID_ARGUMENT;
 	$sql = 'SELECT title FROM daportal_ca, daportal_content'
 		.' WHERE daportal_ca.ca_id=daportal_content.content_id'
@@ -443,7 +444,6 @@ function _system_ca_export($args, $disposition = 'attachment')
 	if(_exec('openssl x509 -in '.$ecadir.'/cacert.crt', $output) != 0)
 		return 'Could not export certificate';
 	$crt = implode("\n", $output);
-	$html = 0;
 	header('Content-Type: application/x-x509-ca-cert');
 	header('Content-Length: '.strlen($crt));
 	header('Content-Disposition: '.$disposition.'; filename=cacert.crt');
@@ -578,9 +578,47 @@ function _system_ca_insert($args)
 	exit(0);
 }
 
-function _system_caclient_export($args)
+function _system_caclient_export($args, $disposition = 'attachment')
 {
-	return 'Not yet implemented';
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	if(!isset($args['id']) || !is_numeric($args['id'])
+			|| !isset($args['key']))
+		return INVALID_ARGUMENT;
+	$caclient = _sql_array('SELECT caclient_id AS id, ccl.title AS title'
+			.', daportal_ca.ca_id AS ca_id, cca.title AS ca'
+			.' FROM daportal_caclient, daportal_content ccl'
+			.', daportal_ca, daportal_content cca'
+			.' WHERE daportal_caclient.caclient_id=ccl.content_id'
+			.' AND daportal_caclient.ca_id=daportal_ca.ca_id'
+			.' AND daportal_ca.ca_id=cca.content_id'
+			." AND caclient_id='".$args['id']."'");
+	if(!is_array($caclient) || count($caclient) != 1)
+		return INVALID_ARGUMENT;
+	$caclient = $caclient[0];
+	if(($root = _config_get('pki', 'root')) == FALSE)
+		return 'Could not fetch the root directory';
+	$cadir = $root.'/'.$caclient['ca'];
+	$ecadir = escapeshellarg($cadir);
+	$crt = $cadir.'/newcerts/'.$caclient['title'].'.crt';
+	$ecrt = escapeshellarg($crt);
+	$out = $cadir.'/certs/'.$caclient['title'].'.crt';
+	$eout = escapeshellarg($out);
+	$output = array();
+	$ekey = escapeshellarg(stripslashes($args['key']));
+	if(($fp = popen('openssl pkcs12 -export -in '.$eout.' -inkey '.$ecrt
+				.' -passout pass:'.$ekey //FIXME secure this
+				.' -certfile '.$ecadir.'/cacert.crt', 'r'))
+			== FALSE) //FIXME actually detect errors
+		return 'Could not export certificate';
+	header('Content-Type: application/x-pkcs12');
+	header('Content-Disposition: '.$disposition.'; filename=cert.p12');
+	fpassthru($fp);
+	fclose($fp);
+	exit(0);
 }
 
 function _system_caclient_insert($args)

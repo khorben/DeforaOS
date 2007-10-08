@@ -9,5 +9,5 @@
 		<tr><td class="field">Common Name (CN):</td><td><?php echo _html_safe($caclient['cn']); ?></td></tr>
 		<tr><td class="field">e-mail:</td><td><?php echo _html_safe($caclient['email']); ?></td></tr>
 	</table>
-	<div class="toolbar"><form action="index.php" method="post"><input type="hidden" name="module" value="pki"/><input type="hidden" name="action" value="caclient_export"/><input type="hidden" name="id" value="<?php echo _html_safe($caclient['id']); ?>"/><input type="submit" value="Export"/></form></div>
+	<div class="toolbar"><form action="index.php" method="post"><input type="hidden" name="module" value="pki"/><input type="hidden" name="action" value="caclient_export"/><input type="hidden" name="id" value="<?php echo _html_safe($caclient['id']); ?>"/>Key: <input type="password" name="key" value=""/> <input type="submit" value="Export"/></form></div>
 </div>
