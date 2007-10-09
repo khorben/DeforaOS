@@ -29,9 +29,12 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['CA_LIST'] = 'CA list';
 $text['CACLIENT_LIST'] = 'Client list';
+$text['COMMON_NAME'] = 'Common Name';
 $text['CN'] = 'CN';
 $text['COUNTRY'] = 'Country';
 $text['EMAIL'] = 'e-mail';
+$text['EXPORT'] = 'Export';
+$text['IMPORT'] = 'Import';
 $text['LOCALITY'] = 'Locality';
 $text['NEW_CA'] = 'New CA';
 $text['NEW_CACLIENT_FOR'] = 'New client for';
