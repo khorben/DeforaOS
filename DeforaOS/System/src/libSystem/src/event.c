@@ -130,7 +130,7 @@ int event_loop(Event * event)
 	int ret = 0;
 
 	while(!(timeout == NULL && event->fdmax == -1)
-			&& (ret = select(event->fdmax+1, &rfds, &wfds, NULL,
+			&& (ret = select(event->fdmax + 1, &rfds, &wfds, NULL,
 					timeout)) != -1)
 	{
 		_loop_timeout(event);
@@ -331,6 +331,7 @@ int event_register_timeout(Event * event, struct timeval timeout,
 
 /* event_unregister_io_read */
 static int _unregister_io(eventioArray * eios, fd_set * fds, int fd);
+
 int event_unregister_io_read(Event * event, int fd)
 {
 	event->fdmax = _unregister_io(event->reads, &event->rfds, fd);

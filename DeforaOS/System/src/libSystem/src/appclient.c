@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
 
@@ -54,9 +55,11 @@ struct _AppClient
 static int _appclient_timeout(AppClient * appclient)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "appclient_timeout()\n");
+	fprintf(stderr, "%s%d%s", "appclient_timeout(", appclient->fd, ")\n");
 #endif
-	close(appclient->fd);
+	errno = ETIMEDOUT;
+	event_unregister_io_read(appclient->event, appclient->fd);
+	event_unregister_io_write(appclient->event, appclient->fd);
 	return 1;
 }
 
@@ -78,7 +81,7 @@ static int _appclient_read(int fd, AppClient * ac)
 	}
 	ac->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_read() ", len, " bytes\n");
+	fprintf(stderr, "%s%zd%s", "appclient_read() ", len, " bytes\n");
 #endif
 	len = appinterface_call_receive(ac->interface, ac->buf_read,
 			ac->buf_read_cnt, ac->lastret, ac->lastfunc,
@@ -157,7 +160,6 @@ AppClient * appclient_new_event(char * app, Event * event)
 		return NULL;
 	}
 	appclient->event = event;
-	appclient->fd = -1;
 	appclient->buf_read_cnt = 0;
 	appclient->buf_write_cnt = 0;
 	if(_new_connect(appclient, app) != 0)
@@ -277,6 +279,7 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 }
 
 static int _call_event(AppClient * ac)
+	/* FIXME don't block processing of other events */
 {
 	Event * eventtmp;
 	struct timeval tv = { 10, 0 };
