@@ -28,6 +28,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['CA_LIST'] = 'CA list';
+$text['CACLIENT_LIST'] = 'Client list';
 $text['CN'] = 'CN';
 $text['COUNTRY'] = 'Country';
 $text['EMAIL'] = 'e-mail';
@@ -362,6 +363,29 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
+	print('<h2 class="title caclient">'._html_safe(CACLIENT_LIST)
+			."</h2>\n");
+	$res = _sql_array('SELECT caclient_id AS id, title, country, state'
+			.', locality, organization, section, cn, email'
+			.' FROM daportal_caclient, daportal_content'
+			.' WHERE daportal_caclient.caclient_id'
+			.'=daportal_content.content_id'.$enabled);
+	if(!is_array($res))
+		return _error('Could not list clients');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['module'] = 'pki';
+		$res[$i]['action'] = 'display';
+		$res[$i]['name'] = $res[$i]['title'];
+	}
+	_module('explorer', 'browse', array('entries' => $res,
+				'class' => array('country' => COUNTRY,
+					'state' => STATE,
+					'locality' => LOCALITY,
+					'organization' => ORGANIZATION,
+					'section' => SECTION, 'cn' => CN,
+					'email' => EMAIL),
+				'view' => 'details'));
 }
 
 function _display_caclient($args)
