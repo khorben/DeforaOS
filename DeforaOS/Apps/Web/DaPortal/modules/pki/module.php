@@ -378,6 +378,10 @@ function _display_ca($args)
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = $res[$i]['title'];
 	}
+	$toolbar = array();
+	$toolbar[] = array('class' => 'new', 'link' => _module_link('pki',
+				'caclient_insert', FALSE, FALSE,
+				'parent='.$ca['id']));
 	_module('explorer', 'browse', array('entries' => $res,
 				'class' => array('country' => COUNTRY,
 					'state' => STATE,
@@ -385,7 +389,7 @@ function _display_ca($args)
 					'organization' => ORGANIZATION,
 					'section' => SECTION, 'cn' => CN,
 					'email' => EMAIL),
-				'view' => 'details'));
+				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
 function _display_caclient($args)

@@ -9,5 +9,5 @@
 		<tr><td class="field">Common Name (CN):</td><td><?php echo _html_safe($ca['cn']); ?></td></tr>
 		<tr><td class="field">e-mail:</td><td><?php echo _html_safe($ca['email']); ?></td></tr>
 	</table>
-	<div class="toolbar"><a href="<?php echo _html_link('pki', 'ca_import', $ca['id']); ?>"><button>Import</button></a><span class="middot"> &middot; </span><a href="<?php echo _html_link('pki', 'ca_export', $ca['id']); ?>"><button>Export</button></a><span class="middot"> &middot; </span><a href="<?php echo _html_link('pki', 'caclient_new', FALSE, FALSE, 'ca_id='.$ca['id']); ?>"><button>New client</button></a></div>
+	<div class="toolbar"><a href="<?php echo _html_link('pki', 'ca_import', $ca['id']); ?>"><button>Import</button></a><span class="middot"> &middot; </span><a href="<?php echo _html_link('pki', 'ca_export', $ca['id']); ?>"><button>Export</button></a></div>
 </div>
