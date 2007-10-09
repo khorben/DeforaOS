@@ -246,6 +246,11 @@ static int _variables_executables(Configure * configure, FILE * fp)
 			i = 0;
 		}
 	}
+	else if(includes != NULL)
+	{
+		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
+		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+	}
 	if(targets != NULL || includes != NULL)
 		fprintf(fp, "%s", "RM\t= rm -f\n");
 	if(config_get(configure->config, "", "package"))
@@ -447,9 +452,10 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 static void _variables_library(Configure * configure, FILE * fp, char * done)
 {
 	if(!done[TT_LIBRARY])
-		fprintf(fp, "%s%s%s%s\n", "PREFIX\t= ",
-				configure->prefs->prefix, "\nDESTDIR\t= ",
-				configure->prefs->destdir);
+	{
+		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
+		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+	}
 	if(configure->prefs->libdir[0] == '/')
 		fprintf(fp, "%s%s\n", "LIBDIR\t= ", configure->prefs->libdir);
 	else
