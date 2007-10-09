@@ -162,7 +162,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 	appclient->buf_write_cnt = 0;
 	if(_new_connect(appclient, app) != 0)
 	{
-		free(appclient);
+		appclient_delete(appclient);
 		return NULL;
 	}
 	return appclient;
