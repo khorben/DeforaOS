@@ -372,7 +372,8 @@ function _display_ca($args)
 			.', locality, organization, section, cn, email'
 			.' FROM daportal_caclient, daportal_content'
 			.' WHERE daportal_caclient.caclient_id'
-			.'=daportal_content.content_id'.$enabled);
+			.'=daportal_content.content_id'.$enabled
+			." AND ca_id='".$ca['id']."'");
 	if(!is_array($res))
 		return _error('Could not list clients');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
