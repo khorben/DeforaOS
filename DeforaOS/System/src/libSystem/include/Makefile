@@ -1,4 +1,6 @@
 SUBDIRS	= System
+PREFIX	= /usr/local
+DESTDIR	= 
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
