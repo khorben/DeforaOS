@@ -80,7 +80,7 @@ $probe_types['load'] = array('name' => 'load average',
 		.' GPRINT:rload15:MAX:"Maximum\: %.2lf"');
 
 $probe_types['ram'] = array('name' => 'memory usage', 'unit' => 'bytes',
-		'base' => '1024',
+		'base' => '1024', 'args' => '-l 0',
 		'def' => array('ramtotal', 'ramfree', 'ramshared', 'rambuffer'),
 		'cdef' => array('pramtotal' => 'ramtotal,1024,/,1024,/',
 			'pramfree' => 'ramfree,1024,/,1024,/',
@@ -104,7 +104,8 @@ $probe_types['ram'] = array('name' => 'memory usage', 'unit' => 'bytes',
 		.' GPRINT:prambuffer:LAST:"Maximum\: %.0lf MB\g"');
 
 $probe_types['swap'] = array('name' => 'swap usage', 'unit' => 'bytes',
-		'base' => '1024', 'def' => array('swaptotal', 'swapfree'),
+		'base' => '1024', 'args' => '-l 0',
+		'def' => array('swaptotal', 'swapfree'),
 		'cdef' => array('pswaptotal' => 'swaptotal,1024,/,1024,/',
 				'pswapfree' => 'swapfree,1024,/,1024,/'),
 		'data' => ' AREA:swaptotal#ff0000:"Total\t\g"'
@@ -148,7 +149,7 @@ $probe_types['iface'] = array('name' => 'network traffic', 'unit' => 'Bps',
 			'sip2', 'sip3', 'sip4', 'sip5', 'sip6', 'ex0'));
 
 $probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
-		'def' => array('voltotal', 'volfree'),
+		'args' => '-l 0', 'def' => array('voltotal', 'volfree'),
 		//FIXME block size may not be 4
 		'cdef' => array('pvoltotal' => 'voltotal,1024,/',
 			'pvolfree' => 'volfree,1024,/'),
@@ -219,7 +220,7 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	if(is_readable($file) && ($st = stat($file)) != FALSE
 			&& $st['mtime'] + 30 > time())
 		return $ret;
-	$cmd = '/usr/pkg/bin/rrdtool graph --slope-mode '."'$file'"
+	$cmd = 'rrdtool graph --slope-mode '.escapeshellarg($file)
 		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
 	if(isset($ret['base']))
@@ -234,8 +235,8 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	}
 	if(isset($ret['data']))
 		$cmd.=$ret['data'];
-	if(isset($args))
-		$cmd.=' '.$args;
+	if(isset($ret['args']))
+		$cmd.=' '.$ret['args'];
 	$cmd.=" --title '".$hostname;
 	if($param != FALSE)
 		$cmd.=' '.$param;
