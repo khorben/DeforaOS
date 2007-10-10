@@ -199,21 +199,20 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	int i;
 	int32_t ret;
 
-	if((i = appinterface_receive(appserver->interface, asc->buf_read,
+	if((i = appinterface_receive(appserver->interface, &ret, asc->buf_read,
 			asc->buf_read_cnt, asc->buf_write,
-			sizeof(asc->buf_write), &asc->buf_write_cnt, &ret))
-			== -1)
+			sizeof(asc->buf_write), &asc->buf_write_cnt)) == -1)
 		return -1;
 	if(i <= 0 || i > asc->buf_read_cnt)
 		return -1;
 	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
 	asc->buf_read_cnt-=i;
 	/* FIXME should be done in AppInterface? */
-	if(asc->buf_write_cnt + sizeof(int) > sizeof(asc->buf_write))
+	if(asc->buf_write_cnt + sizeof(ret) > sizeof(asc->buf_write))
 		return -1;
 	ret = htonl(ret);
-	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(int));
-	asc->buf_write_cnt += sizeof(int);
+	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(ret));
+	asc->buf_write_cnt += sizeof(ret);
 	event_register_io_write(appserver->event, asc->fd,
 			(EventIOFunc)_appserver_write, appserver);
 	return 0;

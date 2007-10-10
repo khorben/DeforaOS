@@ -40,10 +40,9 @@ int appinterface_get_args_count(AppInterface * appinterface,
 /* useful */
 int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 		char const * function, void ** args, va_list arg);
-int appinterface_call_receive(AppInterface * appinterface, char buf[],
-		size_t buflen, int32_t * ret, char const * function,
-		void ** args);
-int appinterface_receive(AppInterface * appinterface, char buf[], size_t buflen,
-		char bufw[], size_t bufwlen, size_t * bufwpos, int * ret);
+int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
+		char buf[], size_t buflen, char const * function, void ** args);
+int appinterface_receive(AppInterface * appinterface, int * ret, char buf[],
+		size_t buflen, char bufw[], size_t bufwlen, size_t * bufwpos);
 
 #endif /* !LIBSYSTEM_APPINTERFACE_H */

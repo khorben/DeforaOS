@@ -44,7 +44,6 @@ struct _AppClient
 	int buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	int buf_write_cnt;
-	int ret;
 	char const * lastfunc;
 	void ** lastargs;
 	int32_t * lastret;
@@ -68,9 +67,6 @@ static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_read(", fd, ")\n");
-#endif
 	if((len = (sizeof(ac->buf_read) - ac->buf_read_cnt)) < 0
 			|| (len = read(fd, &ac->buf_read[ac->buf_read_cnt],
 					len)) <= 0)
@@ -81,10 +77,11 @@ static int _appclient_read(int fd, AppClient * ac)
 	}
 	ac->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%zd%s", "appclient_read() ", len, " bytes\n");
+	fprintf(stderr, "%s%d%s%zd%s", "appclient_read(", fd, ") ", len,
+			" bytes\n");
 #endif
-	len = appinterface_call_receive(ac->interface, ac->buf_read,
-			ac->buf_read_cnt, ac->lastret, ac->lastfunc,
+	len = appinterface_call_receive(ac->interface, ac->lastret,
+			ac->buf_read, ac->buf_read_cnt, ac->lastfunc,
 			ac->lastargs);
 	if(len < 0 || len > ac->buf_read_cnt)
 	{
@@ -94,7 +91,6 @@ static int _appclient_read(int fd, AppClient * ac)
 	}
 	if(len == 0) /* EAGAIN */
 		return 0;
-	ac->ret = 0;
 	ac->buf_read_cnt -= len;
 	event_unregister_timeout(ac->event,
 			(EventTimeoutFunc)_appclient_timeout);
@@ -106,10 +102,11 @@ static int _appclient_write(int fd, AppClient * ac)
 {
 	ssize_t len;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_write(", fd, ")\n");
-#endif
 	len = ac->buf_write_cnt;
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%zd%s", "appclient_write(", fd, ") ", len,
+			" bytes\n");
+#endif
 	if((len = write(fd, ac->buf_write, len)) <= 0)
 	{
 		/* FIXME */
@@ -246,7 +243,6 @@ static int _call_event(AppClient * ac);
 
 int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 {
-	int _ret;
 	void ** args = NULL;
 	va_list arg;
 	size_t left = sizeof(ac->buf_write) - ac->buf_write_cnt;
@@ -273,9 +269,13 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	ac->lastargs = args;
 	ac->lastret = ret;
 	ac->buf_write_cnt += i;
-	_ret = _call_event(ac);
+	if(_call_event(ac) != 0)
+	{
+		free(ac->lastargs);
+		return -1;
+	}
 	free(ac->lastargs);
-	return _ret;
+	return 0;
 }
 
 static int _call_event(AppClient * ac)
@@ -286,16 +286,15 @@ static int _call_event(AppClient * ac)
 
 	eventtmp = ac->event;
 	ac->event = event_new();
-	ac->ret = -1;
 	event_register_timeout(ac->event, tv,
 			(EventTimeoutFunc)_appclient_timeout, ac);
 	event_register_io_write(ac->event, ac->fd,
 			(EventIOFunc)_appclient_write, ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "AppClient looping in wait for answer()\n");
+	fprintf(stderr, "%s", "AppClient looping in wait for answer\n");
 #endif
 	event_loop(ac->event);
 	event_delete(ac->event);
 	ac->event = eventtmp;
-	return ac->ret;
+	return 0; /* FIXME catch errors */
 }
