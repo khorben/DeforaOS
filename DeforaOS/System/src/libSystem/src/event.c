@@ -160,9 +160,6 @@ static void _loop_timeout(Event * event)
 	unsigned int i = 0;
 	EventTimeout * et;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s", "_loop_timeout()\n");
-#endif
 	if(gettimeofday(&now, NULL) != 0)
 #ifdef DEBUG
 		return perror("gettimeofday");
@@ -232,9 +229,6 @@ static void _loop_io(Event * event, eventioArray * eios, fd_set * fds)
 	EventIO * eio;
 	int fd;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s", "_loop_io()\n");
-#endif
 	while(i < array_count(eios))
 	{
 		array_get_copy(eios, i, &eio);
