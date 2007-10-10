@@ -23,6 +23,7 @@
 #endif
 #include <string.h>
 #include <dlfcn.h>
+#include <netinet/in.h>
 #include "System.h"
 #include "appinterface.h"
 
