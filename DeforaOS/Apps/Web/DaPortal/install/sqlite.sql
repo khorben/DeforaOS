@@ -248,6 +248,7 @@ INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('15', 
 
 /* module: webmail */
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('17', 'string', 'server', '');
 
 /* module: pki */
 INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
