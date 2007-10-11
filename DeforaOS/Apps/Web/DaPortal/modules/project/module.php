@@ -455,14 +455,13 @@ function project_bug_insert($args)
 	if(($id = _content_insert($args['title'], $args['content'], $enable))
 			== FALSE)
 		return _error('Unable to insert bug content');
-	if(!_sql_query('INSERT INTO daportal_bug (content_id, project_id'
+	if(_sql_query('INSERT INTO daportal_bug (content_id, project_id'
 			.', state, type, priority) VALUES'
 			." ('$id'".", '".$args['project_id']."'"
 			.", 'New'".", '".$args['type']."'"
-			.", '".$args['priority']."'".")"))
+			.", '".$args['priority']."'".")") == FALSE)
 	{
-		_sql_query('DELETE FROM daportal_content'
-				." WHERE content_id='$id'");
+		_content_delete($id);
 		return _error('Unable to insert bug');
 	}
 	$bugid = _sql_single('SELECT bug_id FROM daportal_bug WHERE content_id='
