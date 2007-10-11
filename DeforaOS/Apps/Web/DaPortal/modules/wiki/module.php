@@ -106,7 +106,7 @@ function _validate($content)
 //public
 function wiki_admin($args)
 {
-	global $user_id;
+	global $user_id, $module_id;
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
@@ -121,6 +121,23 @@ function wiki_admin($args)
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
+	print('<h2 class="title settings">'._html_safe(WIKI_LIST)."</h2>\n");
+	$res = _sql_array('SELECT content_id AS id, title, enabled'
+			.' FROM daportal_content'
+			." WHERE module_id='$module_id'");
+	if(!is_array($res))
+		return _error('Could not list wiki pages');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['module'] = 'wiki';
+		$res[$i]['action'] = 'display';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
+			? YES : NO;
+	}
+	_module('explorer', 'browse', array('entries' => $res,
+				'class' => array('enabled' => ENABLED),
+				'view' => 'details'));
 }
 
 
