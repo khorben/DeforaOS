@@ -275,7 +275,7 @@ function pki_caclient_export($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	return _display_caclient($args);
+	return _display_type($args, 'caclient');
 }
 
 
@@ -296,6 +296,17 @@ function pki_caclient_insert($args)
 		if(isset($args[$f]))
 			$caclient[$f] = stripslashes($args[$f]);
 	include('./modules/pki/caclient_update.tpl');
+}
+
+
+//caserver_export
+function pki_caserver_export($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return _display_type($args, 'caserver');
 }
 
 
