@@ -31,6 +31,7 @@ $text['SENT'] = 'Sent';
 $text['SETTINGS'] = 'Settings';
 $text['SUBJECT'] = 'Subject';
 $text['TRASH'] = 'Trash';
+$text['WEBMAIL'] = 'Webmail';
 $text['WEBMAIL_ADMINISTRATION'] = 'Webmail administration';
 $text['WRONG_PASSWORD'] = 'Wrong password';
 global $lang;
@@ -93,18 +94,11 @@ function webmail_admin($args)
 //webmail_config_update
 function webmail_config_update($args)
 {
-	global $user_id, $module_id;
+	global $error;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	require_once('./system/config.php');
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^webmail_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('webmail', $regs[1], $args[$k], 0);
-	header('Location: '._module_link('webmail', 'admin'));
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return webmail_admin(array());
 }
 
 
@@ -348,19 +342,36 @@ function _system_login()
 
 function webmail_system($args)
 {
-	global $title, $html;
+	global $title, $html, $error;
 
 	if($_SERVER['REQUEST_METHOD'] == 'POST' && $_POST['action'] == 'login')
 		_system_login();
-	$title.=' - Webmail';
-	if(isset($args['action']) && $args['action'] == 'config_update')
-		$html = 0;
+	$title.=' - '.WEBMAIL;
+	if(isset($args['action']) && $_SERVER['REQUEST_METHOD'] == 'POST'
+			&& $args['action'] == 'config_update')
+	{
+		$error = _system_config_update($args);
+		return;
+	}
 	if(isset($args['ajax']) && $args['ajax'] == 1)
 	{
 		$html = 0;
 		require_once('./system/html.php');
 		header('Content-type: text/xml');
 	}
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	require_once('./system/config.php');
+	_config_update('webmail', $args);
+	header('Location: '._module_link('webmail', 'admin'));
+	exit(0);
 }
 
 ?>
