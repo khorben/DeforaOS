@@ -97,7 +97,7 @@ function webmail_config_update($args)
 	foreach($keys as $k)
 		if(ereg('^webmail_([a-zA-Z_]+)$', $k, $regs))
 			_config_set('webmail', $regs[1], $args[$k], 0);
-	header('Location: index.php?module=webmail&action=admin');
+	header('Location: '._module_link('webmail', 'admin'));
 	exit(0);
 }
 
@@ -302,7 +302,7 @@ function webmail_read($args)
 		return _error(PERMISSION_DENIED);
 	$folder = strlen($args['folder']) ? $args['folder'] : 'INBOX';
 	if(!($mbox = _webmail_connect($folder)))
-		return include('login.tpl');
+		return include('./modules/webmail/login.tpl');
 	$headers = imap_fetchheader($mbox, $args['id'],
 			FT_UID | FT_PREFETCHTEXT);
 	$headers = explode("\n", $headers);
@@ -321,7 +321,7 @@ function webmail_read($args)
 	}
 	$body = imap_body($mbox, stripslashes($args['id']), FT_UID | FT_PEEK);
 	imap_close($mbox);
-	return include('read.tpl');
+	return include('./modules/webmail/read.tpl');
 }
 
 
