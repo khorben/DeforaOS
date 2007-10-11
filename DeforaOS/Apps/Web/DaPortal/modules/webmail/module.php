@@ -32,12 +32,14 @@ $text['SETTINGS'] = 'Settings';
 $text['SUBJECT'] = 'Subject';
 $text['TRASH'] = 'Trash';
 $text['WEBMAIL_ADMINISTRATION'] = 'Webmail administration';
+$text['WRONG_PASSWORD'] = 'Wrong password';
 global $lang;
 if($lang == 'fr')
 {
 	$text['DRAFTS'] = 'Brouillons';
 	$text['SUBJECT'] = 'Sujet';
 	$text['TRASH'] = 'Corbeille';
+	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
 }
 _lang($text);
 
@@ -66,6 +68,8 @@ function _webmail_connect($folder = 'INBOX')
 }
 
 
+//public
+//webmail_admin
 function webmail_admin($args)
 {
 	global $user_id;
@@ -77,7 +81,7 @@ function webmail_admin($args)
 			."</h1>\n");
 	if(($configs = _config_list('webmail')))
 	{
-		print('<h2 class="title settings">'_html_safe(SETTINGS)
+		print('<h2 class="title settings">'._html_safe(SETTINGS)
 				."</h2>\n");
 		$module = 'webmail';
 		$action = 'config_update';
@@ -86,6 +90,7 @@ function webmail_admin($args)
 }
 
 
+//webmail_config_update
 function webmail_config_update($args)
 {
 	global $user_id, $module_id;
@@ -103,6 +108,7 @@ function webmail_config_update($args)
 }
 
 
+//webmail_default
 function webmail_default($args)
 {
 	global $user_id;
@@ -170,6 +176,7 @@ function webmail_default($args)
 }
 
 
+//webmail_folders
 function webmail_folders($args)
 	//FIXME cache
 {
@@ -268,6 +275,7 @@ function webmail_folders($args)
 }
 
 
+//webmail_login
 function webmail_login($args)
 {
 	global $user_id;
@@ -277,13 +285,14 @@ function webmail_login($args)
 	$message = '';
 	if(isset($_POST['username']))
 	{
-		$message = 'Wrong password';
+		$message = WRONG_PASSWORD;
 		$username = stripslashes($_POST['username']);
 	}
 	include('./modules/webmail/login.tpl');
 }
 
 
+//webmail_logout
 function webmail_logout($args)
 {
 	global $user_id;

@@ -3,8 +3,8 @@
 	<input type="hidden" name="module" value="webmail"/>
 	<input type="hidden" name="action" value="login"/>
 	<table>
-<?php if(strlen($message)) { ?>
-	<tr><td></td><td><strong><?php echo $message; ?></strong></td></tr>
+<?php if(isset($message)) { ?>
+	<tr><td></td><td><strong><?php echo _html_safe($message); ?></strong></td></tr>
 <?php } ?>
 	<tr><td class="field"><?php echo _html_safe(USERNAME); ?>:</td><td><input type="text" name="username"<?php if(isset($username)) echo ' value="'._html_safe($username).'"'; ?>/></td></tr>
 	<tr><td class="field"><?php echo _html_safe(PASSWORD); ?>:</td><td><input type="password" name="password"/></td></tr>
