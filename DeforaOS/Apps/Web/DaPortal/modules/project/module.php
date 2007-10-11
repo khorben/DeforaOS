@@ -981,17 +981,11 @@ function project_bug_update($args)
 
 function project_config_update($args)
 {
-	global $user_id, $module_id;
+	global $error;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^project_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('project', $regs[1], $args[$k], 0);
-	header('Location: '._module_link('project', 'admin'));
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return project_admin(array());
 }
 
 
@@ -1464,7 +1458,7 @@ function project_package($args)
 
 function project_system($args)
 {
-	global $title, $html;
+	global $title, $html, $error;
 
 	$title.=' - '.PROJECTS;
 	if(!isset($args['action']))
@@ -1473,7 +1467,19 @@ function project_system($args)
 			&& $args['download'] == 1)
 		$html = 0;
 	else if($args['action'] == 'config_update')
-		$html = 0;
+		$error = _system_config_update($args);
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	_config_update('project', $args);
+	header('Location: '._module_link('project', 'admin'));
+	exit(0);
 }
 
 
@@ -1496,7 +1502,7 @@ function project_timeline($args)
 	if(strlen($project['cvsroot']) == 0)
 	{
 		print('<h1 class="title project">'._html_safe($project['name'])
-				.' CVS</h1>'."\n");
+				." CVS</h1>\n");
 		return _info(NO_CVS_REPOSITORY, 1);
 	}
 	print('<h1 class="title project">'._html_safe($project['name'])
@@ -1504,7 +1510,7 @@ function project_timeline($args)
 	if(($cvsrep = _config_get('project', 'cvsroot')) == FALSE
 			|| ($fp = fopen($cvsrep.'/CVSROOT/history', 'r'))
 			== FALSE)
-		return _error('Unable to open history file', 1);
+		return _error('Unable to open history file');
 	$entries = array();
 	$i = 0;
 	$len = strlen($project['cvsroot']);
