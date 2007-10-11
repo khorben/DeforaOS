@@ -179,7 +179,9 @@ function pki_admin($args)
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
+		$res[$i]['apply_module'] = 'pki';
 		$res[$i]['action'] = 'update';
+		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
 		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE
 			? 'enabled' : 'disabled';
@@ -209,6 +211,7 @@ function pki_admin($args)
 					'organization' => ORGANIZATION,
 					'section' => SECTION, 'cn' => CN,
 					'email' => EMAIL),
+				'module' => 'pki', 'action' => 'admin',
 				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
@@ -357,6 +360,20 @@ function pki_default($args)
 					'section' => SECTION, 'cn' => CN,
 					'email' => EMAIL),
 				'view' => 'details'));
+}
+
+
+//delete
+function pki_delete($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('./system/content.php');
+	if(isset($args['id'])) //FIXME actually implement
+		_content_delete($args['id']);
 }
 
 
@@ -739,11 +756,12 @@ function _system_insert($args, $type)
 	$ecadir = escapeshellarg($cadir);
 	$ecrt = escapeshellarg($crt);
 	$output = array();
+	$ext = ($type == 'caclient') ? 'usr_cert' : 'srv_cert';
 	if(_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes -new -x509'
-				.' -days 365 -keyout '.$ecrt.' -out '.$ecrt
+				.' -extensions '.$ext.' -days 365'
+				.' -keyout '.$ecrt.' -out '.$ecrt
 				.' -subj '._subject_from_ca($caclient),
 				$output) != 0)
-		/* FIXME differentiate from client */
 	{
 		_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate certificate';
