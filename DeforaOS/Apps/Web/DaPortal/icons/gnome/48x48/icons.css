@@ -30,6 +30,10 @@ h1.title.caclient {
 	background-image:		url('user.png');
 }
 
+h1.title.caserver {
+	background-image:		url('probe.png');
+}
+
 h1.title.category {
 	background-image:		url('category.png');
 }

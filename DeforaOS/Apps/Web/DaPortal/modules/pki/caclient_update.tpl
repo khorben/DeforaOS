@@ -13,14 +13,14 @@
 		<input type="hidden" name="parent" value="<?php echo _html_safe($parent['id']); ?>"/>
 <?php } } ?>
 		<table>
-			<tr><td class="field">Name:</td><td><input type="text" name="title" value="<?php if(isset($caclient['title'])) echo _html_safe($caclient['title']); ?>"/></td></tr>
-			<tr><td class="field">Country:</td><td><input type="text" name="country" value="<?php if(isset($caclient['country'])) echo _html_safe($caclient['country']); ?>" size="2"/></td></tr>
-			<tr><td class="field">State:</td><td><input type="text" name="state" value="<?php if(isset($caclient['state'])) echo _html_safe($caclient['state']); ?>"/></td></tr>
-			<tr><td class="field">Locality:</td><td><input type="text" name="locality" value="<?php if(isset($caclient['locality'])) echo _html_safe($caclient['locality']); ?>"/></td></tr>
-			<tr><td class="field">Organization:</td><td><input type="text" name="organization" value="<?php if(isset($caclient['organization'])) echo _html_safe($caclient['organization']); ?>"/></td></tr>
-			<tr><td class="field">Section (OU):</td><td><input type="text" name="section" value="<?php if(isset($caclient['section'])) echo _html_safe($caclient['section']); ?>"/></td></tr>
-			<tr><td class="field">Common Name (CN):</td><td><input type="text" name="cn" value="<?php if(isset($caclient['cn'])) echo _html_safe($caclient['cn']); ?>"/></td></tr>
-			<tr><td class="field">e-mail address:</td><td><input type="text" name="email" value="<?php if(isset($caclient['email'])) echo _html_safe($caclient['email']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><input type="text" name="title" value="<?php if(isset($caclient['title'])) echo _html_safe($caclient['title']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(COUNTRY); ?>:</td><td><input type="text" name="country" value="<?php if(isset($caclient['country'])) echo _html_safe($caclient['country']); ?>" size="2"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(STATE); ?>:</td><td><input type="text" name="state" value="<?php if(isset($caclient['state'])) echo _html_safe($caclient['state']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(LOCALITY); ?>:</td><td><input type="text" name="locality" value="<?php if(isset($caclient['locality'])) echo _html_safe($caclient['locality']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(ORGANIZATION); ?>:</td><td><input type="text" name="organization" value="<?php if(isset($caclient['organization'])) echo _html_safe($caclient['organization']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(SECTION); ?> (OU):</td><td><input type="text" name="section" value="<?php if(isset($caclient['section'])) echo _html_safe($caclient['section']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(COMMON_NAME); ?> (CN):</td><td><input type="text" name="cn" value="<?php if(isset($caclient['cn'])) echo _html_safe($caclient['cn']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(EMAIL); ?>:</td><td><input type="text" name="email" value="<?php if(isset($caclient['email'])) echo _html_safe($caclient['email']); ?>"/></td></tr>
 			<tr><td></td><td><input type="submit" value="<?php echo isset($caclient['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/></td></tr>
 		</table>
 	</form>

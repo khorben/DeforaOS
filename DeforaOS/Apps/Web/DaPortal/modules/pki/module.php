@@ -29,15 +29,18 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['CA_LIST'] = 'CA list';
 $text['CACLIENT_LIST'] = 'Client list';
+$text['CASERVER_LIST'] = 'Server list';
 $text['COMMON_NAME'] = 'Common Name';
 $text['CN'] = 'CN';
 $text['COUNTRY'] = 'Country';
 $text['EMAIL'] = 'e-mail';
 $text['EXPORT'] = 'Export';
+$text['KEY'] = 'Key';
 $text['IMPORT'] = 'Import';
 $text['LOCALITY'] = 'Locality';
 $text['NEW_CA'] = 'New CA';
 $text['NEW_CACLIENT_FOR'] = 'New client for';
+$text['NEW_CASERVER_FOR'] = 'New server for';
 $text['ORGANIZATION'] = 'Organization';
 $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
@@ -51,6 +54,18 @@ _lang($text);
 
 
 //private
+//get a CA
+function _ca_get($id)
+{
+	$parent = _sql_array('SELECT ca_id AS id, title'
+			.' FROM daportal_ca, daportal_content'
+			.' WHERE daportal_ca.ca_id'
+			.'=daportal_content.content_id'
+			." AND enabled='1' AND ca_id='$id'");
+	if(!is_array($parent) || count($parent) != 1)
+		return FALSE;
+	return $parent[0];
+}
 //exec
 //helper function for exec()
 function _exec($cmd, &$output)
@@ -268,17 +283,8 @@ function pki_caclient_insert($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	if(!isset($args['parent']) || !is_numeric($args['parent']))
+	if(!isset($args['parent']) || !($parent = _ca_get($args['parent'])))
 		return _error(INVALID_ARGUMENT);
-	$parent = _sql_array('SELECT ca_id AS id, title'
-			.' FROM daportal_ca, daportal_content'
-			.' WHERE daportal_ca.ca_id'
-			.'=daportal_content.content_id'
-			." AND enabled='1'"
-			." AND ca_id='".$args['parent']."'");
-	if(!is_array($parent) || count($parent) != 1)
-		return _error(INVALID_ARGUMENT);
-	$parent = $parent[0];
 	$title = NEW_CACLIENT_FOR.' '.$parent['title'];
 	$caclient = array();
 	$fields = array('title', 'country', 'state', 'locality', 'organization',
@@ -287,6 +293,26 @@ function pki_caclient_insert($args)
 		if(isset($args[$f]))
 			$caclient[$f] = stripslashes($args[$f]);
 	include('./modules/pki/caclient_update.tpl');
+}
+
+
+//caserver_insert
+function pki_caserver_insert($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	if(!isset($args['parent']) || !($parent = _ca_get($args['parent'])))
+		return _error(INVALID_ARGUMENT);
+	$title = NEW_CASERVER_FOR.' '.$parent['title'];
+	$caclient = array();
+	$fields = array('title', 'country', 'state', 'locality', 'organization',
+			'section', 'cn', 'email');
+	foreach($fields as $f)
+		if(isset($args[$f]))
+			$caserver[$f] = stripslashes($args[$f]);
+	include('./modules/pki/caserver_update.tpl');
 }
 
 
@@ -342,10 +368,12 @@ function pki_display($args)
 	if(_sql_single('SELECT ca_id FROM daportal_ca WHERE '
 				."ca_id='".$args['id']."'") == $args['id'])
 		return _display_ca($args);
-	if(_sql_single('SELECT caclient_id FROM daportal_caclient WHERE '
-				."caclient_id='".$args['id']."'")
-			== $args['id'])
-		return _display_caclient($args);
+	$types = array('caclient', 'caserver');
+	foreach($types as $t)
+		if(_sql_single('SELECT '.$t.'_id FROM daportal_'.$t.' WHERE '
+					.$t."_id='".$args['id']."'")
+				== $args['id'])
+			return _display_type($args, $t);
 	return _error(INVALID_ARGUMENT);
 }
 
@@ -366,16 +394,21 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
-	print('<h2 class="title caclient">'._html_safe(CACLIENT_LIST)
-			."</h2>\n");
-	$res = _sql_array('SELECT caclient_id AS id, title, country, state'
+	_display_ca_list_type($ca, 'caserver', CASERVER_LIST, $enabled);
+	_display_ca_list_type($ca, 'caclient', CACLIENT_LIST, $enabled);
+}
+
+function _display_ca_list_type($ca, $type, $title, $enabled)
+{
+	print("<h2 class=\"title $type\">"._html_safe($title)."</h2>\n");
+	$res = _sql_array('SELECT '.$type.'_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
-			.' FROM daportal_caclient, daportal_content'
-			.' WHERE daportal_caclient.caclient_id'
+			.' FROM daportal_'.$type.', daportal_content'
+			.' WHERE daportal_'.$type.'.'.$type.'_id'
 			.'=daportal_content.content_id'.$enabled
 			." AND ca_id='".$ca['id']."'");
 	if(!is_array($res))
-		return _error('Could not list clients');
+		return _error('Could not list certificates');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
@@ -384,7 +417,7 @@ function _display_ca($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('class' => 'new', 'link' => _module_link('pki',
-				'caclient_insert', FALSE, FALSE,
+				$type.'_insert', FALSE, FALSE,
 				'parent='.$ca['id']));
 	_module('explorer', 'browse', array('entries' => $res,
 				'class' => array('country' => COUNTRY,
@@ -396,7 +429,7 @@ function _display_ca($args)
 				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
-function _display_caclient($args)
+function _display_type($args, $type)
 {
 	global $user_id;
 
@@ -404,16 +437,16 @@ function _display_caclient($args)
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$enabled = '';
-	$caclient = _sql_array('SELECT caclient_id AS id, title, country, state'
-			.', locality, organization, section, cn, email'
-			.' FROM daportal_caclient, daportal_content'
-			.' WHERE daportal_caclient.caclient_id'
+	$caclient = _sql_array('SELECT '.$type.'_id AS id, title, country'
+			.', state, locality, organization, section, cn, email'
+			.' FROM daportal_'.$type.', daportal_content'
+			." WHERE daportal_$type.$type"."_id"
 			.'=daportal_content.content_id'
-			.$enabled." AND caclient_id='".$args['id']."'");
+			.$enabled." AND $type"."_id='".$args['id']."'");
 	if(!is_array($caclient) || count($caclient) != 1)
 		return _error(INVALID_ARGUMENT);
-	$caclient = $caclient[0];
-	include('./modules/pki/caclient_display.tpl');
+	$$type = $caclient[0];
+	include('./modules/pki/'.$type.'_display.tpl');
 }
 
 
@@ -445,7 +478,10 @@ function pki_system($args)
 				$error = _system_caclient_export($args);
 				break;
 			case 'caclient_insert':
-				$error = _system_caclient_insert($args);
+				$error = _system_insert($args, 'caclient');
+				break;
+			case 'caserver_insert':
+				$error = _system_insert($args, 'caserver');
 				break;
 			case 'config_update':
 				$error = _system_config_update($args);
@@ -505,12 +541,8 @@ function _system_ca_insert($args)
 	//validate parent
 	if(isset($args['parent']) && is_numeric($args['parent']))
 	{
-		$sql = 'SELECT ca_id, title FROM daportal_ca, daportal_content'
-			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
-			." AND enabled='1' AND ca_id='".$args['parent']."'";
-		if(!is_array(($res = _sql_array($sql))) || count($res) != 1)
+		if(($parent = _ca_get($args['parent'])) == FALSE)
 			return INVALID_ARGUMENT;
-		$parent = $res[0];
 		$pcadir = $root.'/'.$parent['title'];
 		if(!is_dir($pcadir))
 			return 'Parent infrastructure not found';
@@ -653,7 +685,7 @@ function _system_caclient_export($args, $disposition = 'attachment')
 	exit(0);
 }
 
-function _system_caclient_insert($args)
+function _system_insert($args, $type)
 {
 	global $user_id;
 
@@ -675,13 +707,9 @@ function _system_caclient_insert($args)
 	if(($root = _config_get('pki', 'root')) == FALSE)
 		return 'Could not fetch the root directory';
 
-	//validate parent
-	$sql = 'SELECT ca_id AS id, title FROM daportal_ca, daportal_content'
-		.' WHERE daportal_ca.ca_id=daportal_content.content_id'
-		." AND enabled='1' AND ca_id='".$args['parent']."'";
-	if(!is_array(($res = _sql_array($sql))) || count($res) != 1)
+	//get parent
+	if(($parent = _ca_get($args['parent'])) == FALSE)
 		return INVALID_ARGUMENT;
-	$parent = $res[0];
 	$cadir = $root.'/'.$parent['title'];
 	if(!is_dir($cadir))
 		return 'Parent infrastructure not found';
@@ -715,6 +743,7 @@ function _system_caclient_insert($args)
 				.' -days 365 -keyout '.$ecrt.' -out '.$ecrt
 				.' -subj '._subject_from_ca($caclient),
 				$output) != 0)
+		/* FIXME differentiate from client */
 	{
 		_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate certificate';
@@ -746,7 +775,7 @@ function _system_caclient_insert($args)
 		_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not insert content';
 	}
-	if(_sql_query('INSERT INTO daportal_caclient (caclient_id, ca_id'
+	if(_sql_query('INSERT INTO daportal_'.$type.' ('.$type.'_id, ca_id'
 			.', country, state, locality, organization, section, cn'
 			.', email)'." VALUES ('$id', '".$parent['id']."'"
 			.", '".$args['country']."', '".$args['state']."'"
