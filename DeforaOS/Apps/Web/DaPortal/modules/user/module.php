@@ -476,7 +476,7 @@ function user_register($args)
 	}
 	print('<h1 class="title user">'._html_safe(USER_REGISTRATION)."</h1>\n");
 	if(strlen($message))
-		_error($message, 1);
+		_error($message);
 	include('./modules/user/user_register.tpl');
 }
 
@@ -527,7 +527,7 @@ function _confirm_auto($key, $user)
 		session_start();
 	$_SESSION['user_id'] = $user['user_id'];
 	$_SESSION['user_name'] = $user['username'];
-	header('Location: index.php?module=user');
+	header('Location: '._module_link('user'));
 	exit(0);
 }
 
@@ -557,8 +557,8 @@ function _confirm_manual($key, $user)
 	}
 	$subject = 'User registration: '.$user['username'];
 	$content = "A new user is awaiting moderation at:\n"
-		.'https://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']
-		.'?module=user&action=admin&id='.$user['user_id']."\n";
+		.'https://'.$_SERVER['HTTP_HOST']
+		._module_link('user', 'admin', $user['user_id'])."\n";
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, $subject, $content);
 }
@@ -579,7 +579,7 @@ function _system_login()
 	$res = $res[0];
 	$_SESSION['user_id'] = $res['user_id'];
 	$_SESSION['user_name'] = $res['username'];
-	header('Location: index.php?module=user');
+	header('Location: '._module_link('user'));
 	exit(0);
 }
 
