@@ -29,6 +29,7 @@ $text['FONT'] = 'Font';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['REVISIONS'] = 'Revisions';
+$text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
 $text['STYLE'] = 'Style';
 $text['WIKI'] = 'Wiki';
@@ -112,6 +113,14 @@ function wiki_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title wiki">'._html_safe(WIKI_ADMINISTRATION)
 			."</h1>\n");
+	if(($configs = _config_list('wiki')))
+	{
+		print('<h2 class="title settings">'._html_safe(SETTINGS)
+				."</h2>\n");
+		$module = 'wiki';
+		$action = 'config_update';
+		include('./system/config.tpl');
+	}
 }
 
 
