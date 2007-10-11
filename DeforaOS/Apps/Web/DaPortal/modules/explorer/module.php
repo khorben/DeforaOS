@@ -102,41 +102,15 @@ function _explorer_sort($module, $action, $args, $class, $sort, $name)
 
 function explorer_apply($args)
 {
-	if(!isset($args['link_module']) || !isset($args['link_action']))
-		return _error('Need a module and action to link to');
-	if(!isset($args['apply']))
-		return _error('Need an action to apply');
-	$action = $args['apply'];
-	if(!ereg('^[a-z0-9_]{1,30}$', $action))
-		return _error('Invalid action to apply');
-	$keys = array_keys($args);
-	foreach($keys as $k)
-	{
-		if(!ereg('^entry_[0-9]+_[0-9]+$', $k)
-				|| !isset($args[$k.'_module'])
-				|| !isset($args[$k.'_id']))
-			continue;
-		$module = $args[$k.'_module'];
-		$id = $args[$k.'_id'];
-		if(!strlen($module) || !strlen($action) || !strlen($id))
-			continue;
-		$params = array('id' => $id);
-		if(isset($args[$k.'_args']))
-		{
-			$extras = explode(';', $args[$k.'_args']);
-			foreach($extras as $e)
-			{
-				$extra = explode('=', $e);
-				$params[$extra[0]] = $extra[1];
-			}
-		}
-		_module($module, $action, $params);
-	}
-	$link = _module_link($args['link_module'], $args['link_action'],
-			isset($args['link_id']) && is_numeric($args['link_id'])
-			? $args['link_id'] : FALSE);
-	header('Location: '.$link);
-	exit(0);
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	if(!isset($args['link_module']))
+		return;
+	_module($args['link_module'], isset($args['link_action'])
+			? $args['link_action'] : 'default',
+			isset($args['link_id']) ? $args['link_id'] : FALSE);
 }
 
 
@@ -165,10 +139,56 @@ function explorer_browse_trusted($args)
 
 function explorer_system($args)
 {
-	global $html;
+	global $error;
 
-	if(isset($args['action']) && $args['action'] == 'apply')
-		$html = 0;
+	if(!isset($args['action'])
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+		return;
+	switch($args['action'])
+	{
+		case 'apply':
+			$error = _system_apply($args);
+			break;
+	}
+}
+
+function _system_apply($args)
+{
+	if(!isset($args['link_module']) || !isset($args['link_action']))
+		return 'Need a module and action to link to';
+	if(!isset($args['apply']))
+		return 'Need an action to apply';
+	$action = $args['apply'];
+	if(!ereg('^[a-z0-9_]{1,30}$', $action))
+		return 'Invalid action to apply';
+	$keys = array_keys($args);
+	foreach($keys as $k)
+	{
+		if(!ereg('^entry_[0-9]+_[0-9]+$', $k)
+				|| !isset($args[$k.'_module'])
+				|| !isset($args[$k.'_id']))
+			continue;
+		$module = $args[$k.'_module'];
+		$id = $args[$k.'_id'];
+		if(!strlen($module) || !strlen($action) || !strlen($id))
+			continue;
+		$params = array('id' => $id);
+		if(isset($args[$k.'_args']))
+		{
+			$extras = explode(';', $args[$k.'_args']);
+			foreach($extras as $e)
+			{
+				$extra = explode('=', $e);
+				$params[$extra[0]] = $extra[1];
+			}
+		}
+		_module($module, $action, $params);
+	}
+	$link = _module_link($args['link_module'], $args['link_action'],
+			isset($args['link_id']) && is_numeric($args['link_id'])
+			? $args['link_id'] : FALSE);
+	header('Location: '.$link);
+	exit(0);
 }
 
 ?>
