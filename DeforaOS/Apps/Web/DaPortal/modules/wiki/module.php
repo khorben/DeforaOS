@@ -61,8 +61,8 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 		return _error('Internal server error');
 	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
-		$cmd.=' -r"'.escapeshellcmd($revision).'"';
-	if(_exec($cmd.' '.escapeshellcmd($root.'/'.$wiki['title'])) == FALSE)
+		$cmd.=' -r"'.escapeshellarg($revision).'"';
+	if(_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['title'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
 			== FALSE)
@@ -130,7 +130,7 @@ function wiki_display($args)
 	$title = WIKI.': '.$wiki['title'];
 	include('./modules/wiki/display.tpl');
 	print('<h2 class="title users">'._html_safe(REVISIONS)."</h2");
-	exec('rlog '.escapeshellcmd(_root().'/'.$wiki['title']), $rcs);
+	exec('rlog '.escapeshellarg(_root().'/'.$wiki['title']), $rcs);
 	for($i = 0, $cnt = count($rcs); $i < $cnt;)
 		if($rcs[$i++] == '----------------------------')
 			break;
@@ -321,8 +321,8 @@ function _system_insert($args)
 		return;
 	}
 	fclose($fp);
-	if(_exec('ci -u -m"'.escapeshellcmd($user_name).'" '
-				.escapeshellcmd($filename)) == FALSE)
+	if(_exec('ci -u -m"'.escapeshellarg($user_name).'" '
+				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
 		$error = 'An error occured while checking in';
@@ -385,8 +385,8 @@ function _system_update($args)
 		return;
 	}
 	fclose($fp);
-	if(_exec('ci -u -m"'.escapeshellcmd($user_name)
-				.'" '.escapeshellcmd($filename)) == FALSE)
+	if(_exec('ci -u -m"'.escapeshellarg($user_name)
+				.'" '.escapeshellarg($filename)) == FALSE)
 	{
 		unlink($filename);
 		$error = 'An error occured while checking in';
