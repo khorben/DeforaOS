@@ -195,7 +195,7 @@ function pki_admin($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CA, 'class' => 'new',
-			'link' => _module_link('pki', 'ca_new'));
+			'link' => _module_link('pki', 'ca_insert'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
@@ -252,18 +252,12 @@ function pki_ca_insert($args)
 	foreach($fields as $f)
 		if(isset($args[$f]))
 			$ca[$f] = stripslashes($args[$f]);
-	include('./modules/pki/ca_update.tpl');
-}
-
-
-//ca_new
-function pki_ca_new($args)
-{
-	$title = NEW_CA;
 	$parent = _sql_array('SELECT ca_id AS id, title'
 			.' FROM daportal_ca, daportal_content'
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 			." AND enabled='1'");
+	if(isset($args['parent']) && _ca_get($args['parent']) != FALSE)
+		$parent_id = $args['parent'];
 	include('./modules/pki/ca_update.tpl');
 }
 
@@ -363,6 +357,9 @@ function pki_default($args)
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = $res[$i]['title'];
 	}
+	$toolbar = array();
+	$toolbar[] = array('title' => NEW_CA, 'class' => 'new',
+			'link' => _module_link('pki', 'ca_insert'));
 	_module('explorer', 'browse', array('entries' => $res,
 				'class' => array('country' => COUNTRY,
 					'state' => STATE,
@@ -370,7 +367,7 @@ function pki_default($args)
 					'organization' => ORGANIZATION,
 					'section' => SECTION, 'cn' => CN,
 					'email' => EMAIL),
-				'view' => 'details'));
+				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
 
@@ -422,6 +419,7 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
+	_display_ca_list_type($ca, 'ca', CA_LIST, $enabled);
 	_display_ca_list_type($ca, 'caserver', CASERVER_LIST, $enabled);
 	_display_ca_list_type($ca, 'caclient', CACLIENT_LIST, $enabled);
 }
@@ -434,7 +432,7 @@ function _display_ca_list_type($ca, $type, $title, $enabled)
 			.' FROM daportal_'.$type.', daportal_content'
 			.' WHERE daportal_'.$type.'.'.$type.'_id'
 			.'=daportal_content.content_id'.$enabled
-			." AND ca_id='".$ca['id']."'");
+			." AND parent='".$ca['id']."'");
 	if(!is_array($res))
 		return _error('Could not list certificates');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -656,12 +654,18 @@ function _system_ca_insert($args)
 		_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert content';
 	}
-	if(_sql_query('INSERT INTO daportal_ca (ca_id, country'
-			.', state, locality, organization, section, cn'
-			.', email)'." VALUES ('$id', '".$args['country']."'"
-			.", '".$args['state']."', '".$args['locality']."'"
-			.", '".$args['organization']."', '".$args['section']."'"
-			.", '".$args['cn']."', '".$args['email']."')") == FALSE)
+	$sql = 'INSERT INTO daportal_ca (ca_id';
+	if(isset($parent))
+		$sql.=', parent';
+	$sql.=', country, state, locality, organization, section, cn, email)'
+		." VALUES ('$id'";
+	if(isset($parent))
+		$sql.=", '".$parent['id']."'";
+	$sql.=", '".$args['country']."'"
+		.", '".$args['state']."', '".$args['locality']."'"
+		.", '".$args['organization']."', '".$args['section']."'"
+		.", '".$args['cn']."', '".$args['email']."')";
+	if(_sql_query($sql) == FALSE)
 	{
 		_content_delete($id);
 		_insert_cleanup($cadir, $dirs, $files);
@@ -808,7 +812,7 @@ function _system_insert($args, $type)
 		_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not insert content';
 	}
-	if(_sql_query('INSERT INTO daportal_'.$type.' ('.$type.'_id, ca_id'
+	if(_sql_query('INSERT INTO daportal_'.$type.' ('.$type.'_id, parent'
 			.', country, state, locality, organization, section, cn'
 			.', email)'." VALUES ('$id', '".$parent['id']."'"
 			.", '".$args['country']."', '".$args['state']."'"

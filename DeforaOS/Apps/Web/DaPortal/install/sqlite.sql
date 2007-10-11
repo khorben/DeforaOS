@@ -255,6 +255,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
 
 CREATE TABLE daportal_ca (
 	ca_id INTEGER,
+	parent INTEGER DEFAULT NULL,
 	country VARCHAR(2),
 	state VARCHAR(255),
 	locality VARCHAR(255),
@@ -262,12 +263,13 @@ CREATE TABLE daportal_ca (
 	section VARCHAR(255),
 	cn VARCHAR(255),
 	email VARCHAR(255),
-	FOREIGN KEY (ca_id) REFERENCES daportal_content (content_id)
+	FOREIGN KEY (ca_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (parent) REFERENCES daportal_ca (ca_id)
 );
 
 CREATE TABLE daportal_caclient (
 	caclient_id INTEGER,
-	ca_id INTEGER,
+	parent INTEGER,
 	country VARCHAR(2),
 	state VARCHAR(255),
 	locality VARCHAR(255),
@@ -276,12 +278,12 @@ CREATE TABLE daportal_caclient (
 	cn VARCHAR(255),
 	email VARCHAR(255),
 	FOREIGN KEY (caclient_id) REFERENCES daportal_content (content_id),
-	FOREIGN KEY (ca_id) REFERENCES daportal_ca (ca_id)
+	FOREIGN KEY (parent) REFERENCES daportal_ca (ca_id)
 );
 
 CREATE TABLE daportal_caserver (
 	caserver_id INTEGER,
-	ca_id INTEGER,
+	parent INTEGER,
 	country VARCHAR(2),
 	state VARCHAR(255),
 	locality VARCHAR(255),
@@ -290,7 +292,7 @@ CREATE TABLE daportal_caserver (
 	cn VARCHAR(255),
 	email VARCHAR(255),
 	FOREIGN KEY (caserver_id) REFERENCES daportal_content (content_id),
-	FOREIGN KEY (ca_id) REFERENCES daportal_ca (ca_id)
+	FOREIGN KEY (parent) REFERENCES daportal_ca (ca_id)
 );
 
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('16', 'string', 'root', '');

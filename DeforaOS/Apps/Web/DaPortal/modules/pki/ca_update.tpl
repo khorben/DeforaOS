@@ -13,20 +13,20 @@
 		<table>
 <?php if(isset($parent) && is_array($parent)) { ?>
 			<tr><td class="field">Parent:</td><td><select name="parent">
-					<option value="" selected="selected">Self-signed</option>
+					<option value="">Self-signed</option>
 <?php foreach($parent as $p) { ?>
-					<option value="<?php echo _html_safe($p['id']); ?>"><?php echo _html_safe($p['title']); ?></option>
+					<option value="<?php echo _html_safe($p['id']); ?>"<?php if(isset($parent_id) && $parent_id == $p['id']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p['title']); ?></option>
 <?php } ?>
 				</select></td></tr>
 <?php } ?>
-			<tr><td class="field">Name:</td><td><input type="text" name="title" value="<?php if(isset($ca['title'])) echo _html_safe($ca['title']); ?>"/></td></tr>
-			<tr><td class="field">Country:</td><td><input type="text" name="country" value="<?php if(isset($ca['country'])) echo _html_safe($ca['country']); ?>" size="2"/></td></tr>
-			<tr><td class="field">State:</td><td><input type="text" name="state" value="<?php if(isset($ca['state'])) echo _html_safe($ca['state']); ?>"/></td></tr>
-			<tr><td class="field">Locality:</td><td><input type="text" name="locality" value="<?php if(isset($ca['locality'])) echo _html_safe($ca['locality']); ?>"/></td></tr>
-			<tr><td class="field">Organization:</td><td><input type="text" name="organization" value="<?php if(isset($ca['organization'])) echo _html_safe($ca['organization']); ?>"/></td></tr>
-			<tr><td class="field">Section (OU):</td><td><input type="text" name="section" value="<?php if(isset($ca['section'])) echo _html_safe($ca['section']); ?>"/></td></tr>
-			<tr><td class="field">Common Name (CN):</td><td><input type="text" name="cn" value="<?php if(isset($ca['cn'])) echo _html_safe($ca['cn']); ?>"/></td></tr>
-			<tr><td class="field">e-mail address:</td><td><input type="text" name="email" value="<?php if(isset($ca['email'])) echo _html_safe($ca['email']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><input type="text" name="title" value="<?php if(isset($ca['title'])) echo _html_safe($ca['title']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(COUNTRY); ?>:</td><td><input type="text" name="country" value="<?php if(isset($ca['country'])) echo _html_safe($ca['country']); ?>" size="2"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(STATE); ?>:</td><td><input type="text" name="state" value="<?php if(isset($ca['state'])) echo _html_safe($ca['state']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(LOCALITY); ?>:</td><td><input type="text" name="locality" value="<?php if(isset($ca['locality'])) echo _html_safe($ca['locality']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(ORGANIZATION); ?>:</td><td><input type="text" name="organization" value="<?php if(isset($ca['organization'])) echo _html_safe($ca['organization']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(SECTION); ?> (OU):</td><td><input type="text" name="section" value="<?php if(isset($ca['section'])) echo _html_safe($ca['section']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(COMMON_NAME); ?> (CN):</td><td><input type="text" name="cn" value="<?php if(isset($ca['cn'])) echo _html_safe($ca['cn']); ?>"/></td></tr>
+			<tr><td class="field"><?php echo _html_safe(EMAIL); ?>:</td><td><input type="text" name="email" value="<?php if(isset($ca['email'])) echo _html_safe($ca['email']); ?>"/></td></tr>
 			<tr><td></td><td><input type="submit" value="<?php echo isset($ca['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/></td></tr>
 		</table>
 	</form>
