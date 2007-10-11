@@ -198,19 +198,11 @@ function user_appearance($args)
 
 function user_config_update($args)
 {
-	global $user_id, $module_id;
+	global $error;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$args['user_register'] = isset($args['user_register']) ? TRUE : FALSE;
-	$args['user_manual'] = isset($args['user_manual']) ? TRUE : FALSE;
-	$keys = array_keys($args);
-	foreach($keys as $k) /* FIXME read values from configuration instead */
-		if(ereg('^user_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('user', $regs[1], $args[$k], 0);
-	header('Location: '._module_link('user', 'admin'));
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return user_admin(array());
 }
 
 
@@ -597,20 +589,22 @@ function _system_logout()
 
 function user_system($args)
 {
-	global $html;
+	global $html, $error;
 
-	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']))
+	if(!isset($args['action']))
+		return;
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		if($_POST['action'] == 'login')
 			_system_login();
 		else if($_POST['action'] == 'config_update')
-			$html = 0;
+			$error = _system_config_update($args);
 		else if($_POST['action'] == 'error')
 			$_POST['action'] = 'default';
 		else if($_POST['action'] == 'appearance')
 			return _system_appearance($args);
 	}
-	else if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['action']))
+	else if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
 		if($_GET['action'] == 'logout')
 			_system_logout();
@@ -636,6 +630,20 @@ function _system_appearance($args)
 			$_SESSION['debug'] = 1;
 	}
 	header('Location: '._module_link('user', 'appearance'));
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	$args['user_register'] = isset($args['user_register']) ? TRUE : FALSE;
+	$args['user_manual'] = isset($args['user_manual']) ? TRUE : FALSE;
+	_config_update('user', $args);
+	header('Location: '._module_link('user', 'admin'));
+	exit(0);
 }
 
 
