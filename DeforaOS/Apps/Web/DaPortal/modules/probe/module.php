@@ -338,18 +338,11 @@ function probe_admin($args)
 
 function probe_config_update($args)
 {
-	global $user_id, $module_id;
+	global $error;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	require_once('./system/config.php');
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^probe_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('probe', $regs[1], $args[$k], 0);
-	header('Location: index.php?module=probe&action=admin');
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return probe_admin(array());
 }
 
 
@@ -545,20 +538,33 @@ function probe_host_update($args)
 
 function probe_system($args)
 {
-	global $title, $html;
+	global $title, $error;
 
 	$title.=' - '.MONITORING;
 	$action = isset($args['action']) ? $args['action'] : 'default';
 	switch($action)
 	{
 		case 'config_update':
-			$html = 0;
+			$error = _system_config_update($args);
 			break;
 		case 'default':
 			if(isset($args['id']) || isset($args['type']))
 				header('Refresh: 30');
 			break;
 	}
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	require_once('./system/config.php');
+	_config_update('probe', $args);
+	header('Location: '._module_link('probe', 'admin'));
+	exit(0);
 }
 
 ?>
