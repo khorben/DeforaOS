@@ -28,6 +28,7 @@ $text['DRAFTS'] = 'Drafts';
 $text['INBOX'] = 'Inbox';
 $text['MESSAGE_LIST'] = 'Message list';
 $text['SENT'] = 'Sent';
+$text['SETTINGS'] = 'Settings';
 $text['SUBJECT'] = 'Subject';
 $text['TRASH'] = 'Trash';
 $text['WEBMAIL_ADMINISTRATION'] = 'Webmail administration';
@@ -73,11 +74,11 @@ function webmail_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title webmail">'._html_safe(WEBMAIL_ADMINISTRATION)
-			.'</h1>'."\n");
+			."</h1>\n");
 	if(($configs = _config_list('webmail')))
 	{
-		print('<h2><img src="modules/webmail/icon.png" alt=""/> '
-				.'Configuration</h2>'."\n");
+		print('<h2 class="title settings">'_html_safe(SETTINGS)
+				."</h2>\n");
 		$module = 'webmail';
 		$action = 'config_update';
 		include('./system/config.tpl');
