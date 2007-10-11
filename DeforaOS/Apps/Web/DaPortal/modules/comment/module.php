@@ -35,6 +35,7 @@ $text['COMMENT_LIST'] = 'Comment list';
 $text['COMMENT_ON'] = 'on';
 $text['COMMENT_PREVIEW'] = 'Comment preview';
 $text['COMMENT_S'] = 'comment(s)';
+$text['COMMENTS'] = 'Comments';
 $text['COMMENTS_BY'] = 'Comments by';
 $text['NEW_COMMENT'] = 'New comment';
 $text['SETTINGS'] = 'Settings';
@@ -50,6 +51,7 @@ else if($lang == 'fr')
 	$text['COMMENT_BY'] = 'Commentaire de';
 	$text['COMMENT_ON'] = 'le';
 	$text['COMMENT_S'] = 'commentaire(s)';
+	$text['COMMENTS'] = 'Commentaires';
 	$text['NEW_COMMENT'] = 'Nouveau commentaire';
 	$text['SETTINGS'] = 'Configuration';
 }
@@ -149,19 +151,11 @@ function comment_childs($args)
 
 function comment_config_update($args)
 {
-	global $user_id, $module_id;
+	global $error;
 
-	require_once('./system/user.php');
-	if($_SERVER['REQUEST_METHOD'] != 'POST' || !_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$args['comment_anonymous'] = isset($args['comment_anonymous']) ? TRUE
-		: FALSE;
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^comment_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('comment', $regs[1], $args[$k], 0);
-	header('Location: '._module_link('comment', 'admin'));
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return comment_admin(array());
 }
 
 
@@ -357,11 +351,32 @@ function comment_submit($comment)
 
 function comment_system($args)
 {
-	global $html;
+	global $title, $error;
 
-	if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])
-			&& $_POST['action'] == 'config_update')
-		$html = 0;
+	$title.=' - '.COMMENTS;
+	if(!isset($args['action'])
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+		return;
+	switch($args['action'])
+	{
+		case 'config_update':
+			$error = _system_config_update($args);
+			break;
+	}
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	$args['comment_anonymous'] = isset($args['comment_anonymous']) ? TRUE
+		: FALSE;
+	_config_update('comment', $args);
+	header('Location: '._module_link('comment', 'admin'));
+	exit(0);
 }
 
 ?>
