@@ -234,7 +234,7 @@ function wiki_list($args)
 	global $module_id;
 
 	print('<h1 class="title wiki">'._html_safe(WIKI_LIST)."</h1>\n");
-	$sql = 'SELECT content_id AS id, title AS name'
+	$sql = 'SELECT content_id AS id, title, username'
 		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_content, daportal_user'
 		.' WHERE daportal_content.user_id=daportal_user.user_id'
@@ -248,11 +248,13 @@ function wiki_list($args)
 	{
 		$wiki[$i]['module'] = 'wiki';
 		$wiki[$i]['action'] = 'display';
+		$wiki[$i]['name'] = $wiki[$i]['title'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_WIKI_PAGE, 'class' => 'new',
 			'link' => _module_link('wiki', 'new'));
 	_module('explorer', 'browse', array('entries' => $wiki,
+				'class' => array('username' => AUTHOR),
 				'toolbar' => $toolbar));
 }
 
