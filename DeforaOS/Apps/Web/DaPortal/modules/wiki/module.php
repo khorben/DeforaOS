@@ -24,6 +24,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['DOCUMENT_NOT_VALID'] = 'Document not valid';
 $text['FONT'] = 'Font';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
@@ -36,7 +37,10 @@ $text['WIKI_LIST'] = 'Wiki list';
 $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 global $lang;
 if($lang == 'fr')
+{
+	$text['DOCUMENT_NOT_VALID'] = 'Document non valide';
 	$text['WIKI_ADMINISTRATION'] = 'Administration du wiki';
+}
 _lang($text);
 
 
@@ -72,7 +76,7 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 	}
 	unlink($root.'/'.$wiki['title']);
 	if(!_validate($wiki['content']))
-		return _error('Document not valid');
+		return _error(DOCUMENT_NOT_VALID);
 	return $wiki;
 }
 
@@ -185,7 +189,7 @@ function wiki_insert($args)
 		$wiki = array('title' => stripslashes($args['title']),
 				'content' => stripslashes($args['content']));
 		if(!_validate($wiki['content']))
-			_error('Document not valid');
+			_error(DOCUMENT_NOT_VALID);
 		else
 		{
 			include('./modules/wiki/display.tpl');
@@ -283,7 +287,7 @@ function _system_insert($args)
 	$content = stripslashes($args['content']);
 	if(_validate($content) == FALSE)
 	{
-		$error = 'Document not valid';
+		$error = DOCUMENT_NOT_VALID;
 		return;
 	}
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
@@ -359,7 +363,7 @@ function _system_update($args)
 	$content = stripslashes($args['content']);
 	if(_validate($content) == FALSE)
 	{
-		$error = 'Document not valid';
+		$error = DOCUMENT_NOT_VALID;
 		return;
 	}
 	if(!file_exists($root.'/RCS/'.$title.',v'))
@@ -409,7 +413,7 @@ function wiki_update($args)
 		return _error(INVALID_ARGUMENT);
 	$wiki['content'] = stripslashes($args['content']);
 	if(!_validate($wiki['content']))
-		return _error('Document not valid');
+		return _error(DOCUMENT_NOT_VALID);
 	$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
 	if(isset($args['preview']))
 		include('./modules/wiki/display.tpl');
