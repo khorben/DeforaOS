@@ -143,16 +143,11 @@ function admin_admin($args)
 
 function admin_config_update($args)
 {
-	global $user_id;
+	global $error;
 
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^admin_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('admin', $regs[1], $args[$k]);
-	header('Location: '._module_link('admin', 'admin'));
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return admin_admin(array());
 }
 
 
@@ -226,12 +221,30 @@ function admin_module_enable($args)
 
 function admin_system($args)
 {
-	global $title, $html;
+	global $title, $error;
 
 	$title.=' - '.ADMINISTRATION;
-	if($_SERVER['REQUEST_METHOD'] == 'POST'
-			&& $args['action'] == 'config_update')
-		$html = 0;
+	if(!isset($args['action'])
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+		return;
+	switch($args['action'])
+	{
+		case 'config_update':
+			$error = _system_config_update($args);
+			break;
+	}
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	_config_update('admin', $args);
+	header('Location: '._module_link('admin', 'admin'));
+	exit(0);
 }
 
 ?>

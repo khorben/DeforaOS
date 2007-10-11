@@ -81,4 +81,13 @@ function _config_set($module, $name, $value, $overwrite = FALSE)
 			." AND name='$name'");
 }
 
+
+function _config_update($module, $args)
+{
+	$keys = array_keys($args);
+	foreach($keys as $k)
+		if(ereg('^'.$module.'_([a-zA-Z_]+)$', $k, $regs))
+			_config_set($module, $regs[1], $args[$k], 0);
+}
+
 ?>

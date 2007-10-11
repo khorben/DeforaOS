@@ -144,6 +144,16 @@ function wiki_admin($args)
 }
 
 
+function wiki_config_update($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return wiki_admin(array());
+}
+
+
 function wiki_default($args)
 {
 	//FIXME implement user_id
@@ -285,11 +295,25 @@ function wiki_system($args)
 		return;
 	switch($args['action'])
 	{
+		case 'config_update':
+			return _system_config_update($args);
 		case 'insert':
 			return _system_insert($args);
 		case 'update':
 			return _system_update($args);
 	}
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	_config_update('wiki', $args);
+	header('Location: '._module_link('wiki', 'admin'));
+	exit(0);
 }
 
 function _system_insert($args)

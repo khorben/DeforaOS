@@ -771,10 +771,7 @@ function _system_config_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return PERMISSION_DENIED;
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^pki_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('pki', $regs[1], $args[$k], 0);
+	_config_update('pki', $args);
 	header('Location: '._module_link('pki', 'admin'));
 	exit(0);
 }
