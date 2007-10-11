@@ -94,7 +94,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('news', '1');
 
 /* module: comment */
 CREATE TABLE daportal_comment (
-	comment_id INTEGER PRIMARY KEY,
+	comment_id INTEGER,
 	parent INTEGER,
 	FOREIGN KEY (comment_id) REFERENCES daportal_content (content_id),
 	FOREIGN KEY (parent) REFERENCES daportal_content (content_id)
@@ -114,7 +114,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('top', '1');
 
 /* module: project */
 CREATE TABLE daportal_project (
-	project_id INTEGER PRIMARY KEY,
+	project_id INTEGER,
 	synopsis VARCHAR(255) NOT NULL,
 	cvsroot VARCHAR(255) NOT NULL,
 	FOREIGN KEY (project_id) REFERENCES daportal_content (content_id)
@@ -208,7 +208,7 @@ INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('10', 
 
 /* module: probe */
 CREATE TABLE daportal_probe_host (
-	host_id INTEGER PRIMARY KEY,
+	host_id INTEGER,
 	FOREIGN KEY (host_id) REFERENCES daportal_content (content_id)
 );
 INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
@@ -228,7 +228,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('category', '1');
 
 /* module: download */
 CREATE TABLE daportal_download (
-	download_id INTEGER PRIMARY_KEY,
+	download_id INTEGER PRIMARY KEY,
 	content_id INTEGER NOT NULL,
 	parent INTEGER,
 	mode SMALLINT DEFAULT '0420',
@@ -253,7 +253,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
 INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
 
 CREATE TABLE daportal_ca (
-	ca_id INTEGER PRIMARY KEY,
+	ca_id INTEGER,
 	country VARCHAR(2),
 	state VARCHAR(255),
 	locality VARCHAR(255),
@@ -265,7 +265,7 @@ CREATE TABLE daportal_ca (
 );
 
 CREATE TABLE daportal_caclient (
-	caclient_id INTEGER PRIMARY KEY,
+	caclient_id INTEGER,
 	ca_id INTEGER,
 	country VARCHAR(2),
 	state VARCHAR(255),
