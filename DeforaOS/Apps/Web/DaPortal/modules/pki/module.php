@@ -503,10 +503,13 @@ function pki_system($args)
 				$error = _system_ca_insert($args);
 				break;
 			case 'caclient_export':
-				$error = _system_caclient_export($args);
+				$error = _system_export($args, 'caclient');
 				break;
 			case 'caclient_insert':
 				$error = _system_insert($args, 'caclient');
+				break;
+			case 'caserver_export':
+				$error = _system_export($args, 'caserver');
 				break;
 			case 'caserver_insert':
 				$error = _system_insert($args, 'caserver');
@@ -670,7 +673,7 @@ function _system_ca_insert($args)
 	exit(0);
 }
 
-function _system_caclient_export($args, $disposition = 'attachment')
+function _system_export($args, $type, $disposition = 'attachment')
 {
 	global $user_id;
 
@@ -680,14 +683,14 @@ function _system_caclient_export($args, $disposition = 'attachment')
 	if(!isset($args['id']) || !is_numeric($args['id'])
 			|| !isset($args['key']))
 		return INVALID_ARGUMENT;
-	$caclient = _sql_array('SELECT caclient_id AS id, ccl.title AS title'
+	$caclient = _sql_array('SELECT '.$type.'_id AS id, ccl.title AS title'
 			.', daportal_ca.ca_id AS ca_id, cca.title AS ca'
-			.' FROM daportal_caclient, daportal_content ccl'
+			.' FROM daportal_'.$type.', daportal_content ccl'
 			.', daportal_ca, daportal_content cca'
-			.' WHERE daportal_caclient.caclient_id=ccl.content_id'
-			.' AND daportal_caclient.ca_id=daportal_ca.ca_id'
+			.' WHERE daportal_'.$type.'.'.$type.'_id=ccl.content_id'
+			.' AND daportal_'.$type.'.ca_id=daportal_ca.ca_id'
 			.' AND daportal_ca.ca_id=cca.content_id'
-			." AND caclient_id='".$args['id']."'");
+			.' AND '.$type."_id='".$args['id']."'");
 	if(!is_array($caclient) || count($caclient) != 1)
 		return INVALID_ARGUMENT;
 	$caclient = $caclient[0];
@@ -790,8 +793,9 @@ function _system_insert($args, $type)
 	//create signed certificate
 	$eout = escapeshellarg($out);
 	if(_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
-				.' -policy policy_anything -out '.$eout
-				.' -batch -infiles '.$ecsr, $output) != 0)
+				.' -extensions '.$ext.' -policy policy_anything'
+				.' -out '.$eout.' -batch -infiles '.$ecsr,
+				$output) != 0)
 	{
 		_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate signed certificate';
