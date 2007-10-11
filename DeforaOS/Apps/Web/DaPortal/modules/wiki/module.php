@@ -122,9 +122,11 @@ function wiki_admin($args)
 		include('./system/config.tpl');
 	}
 	print('<h2 class="title settings">'._html_safe(WIKI_LIST)."</h2>\n");
-	$res = _sql_array('SELECT content_id AS id, title, enabled'
-			.' FROM daportal_content'
-			." WHERE module_id='$module_id'");
+	$res = _sql_array('SELECT content_id AS id, title'
+			.', daportal_content.enabled AS enabled, username'
+			.' FROM daportal_content, daportal_user'
+			.' WHERE daportal_content.user_id=daportal_user.user_id'
+			." AND module_id='$module_id'");
 	if(!is_array($res))
 		return _error('Could not list wiki pages');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -136,7 +138,8 @@ function wiki_admin($args)
 			? YES : NO;
 	}
 	_module('explorer', 'browse', array('entries' => $res,
-				'class' => array('enabled' => ENABLED),
+				'class' => array('enabled' => ENABLED,
+					'username' => AUTHOR),
 				'view' => 'details'));
 }
 
