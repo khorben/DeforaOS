@@ -24,6 +24,7 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <netinet/in.h>
+#include <openssl/ssl.h>
 #include "System.h"
 #include "appinterface.h"
 
@@ -114,6 +115,7 @@ static int _new_vfs(AppInterface * appinterface);
 
 AppInterface * appinterface_new(char const * app)
 {
+	static int ssl_init = 0;
 	AppInterface * appinterface;
 	/* FIXME read this from available Servers configuration, or imagine a
 	 * solution to negociate it directly */
@@ -130,6 +132,12 @@ AppInterface * appinterface_new(char const * app)
 	};
 	size_t i;
 
+	if(ssl_init == 0)
+	{
+		SSL_library_init();
+		SSL_load_error_strings();
+		ssl_init = 1;
+	}
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s", "appinterface_new(", app, ");\n");
 #endif
@@ -796,7 +804,7 @@ static int _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 			size = ntohl(size);
 			call->args[i].size = size;
 #ifdef DEBUG
-			fprintf(stderr, "should send %zu\n", size);
+			fprintf(stderr, "should send %u\n", size);
 #endif
 			args[i] = malloc(size); /* FIXME free */
 			continue;
@@ -822,7 +830,7 @@ static int _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 				size = ntohl(size);
 				call->args[i].size = size;
 #ifdef DEBUG
-				fprintf(stderr, "should send %zu\n", size);
+				fprintf(stderr, "should send %u\n", size);
 #endif
 				break;
 			case AICT_STRING:
