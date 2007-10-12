@@ -24,7 +24,9 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <netinet/in.h>
-#include <openssl/ssl.h>
+#ifdef WITH_SSL
+# include <openssl/ssl.h>
+#endif
 #include "System.h"
 #include "appinterface.h"
 
@@ -115,7 +117,9 @@ static int _new_vfs(AppInterface * appinterface);
 
 AppInterface * appinterface_new(char const * app)
 {
+#ifdef WITH_SSL
 	static int ssl_init = 0;
+#endif
 	AppInterface * appinterface;
 	/* FIXME read this from available Servers configuration, or imagine a
 	 * solution to negociate it directly */
@@ -132,12 +136,14 @@ AppInterface * appinterface_new(char const * app)
 	};
 	size_t i;
 
+#ifdef WITH_SSL
 	if(ssl_init == 0)
 	{
 		SSL_library_init();
 		SSL_load_error_strings();
 		ssl_init = 1;
 	}
+#endif
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s", "appinterface_new(", app, ");\n");
 #endif

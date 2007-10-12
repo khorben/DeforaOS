@@ -32,7 +32,7 @@ appclient.o: appclient.c appinterface.h
 appinterface.o: appinterface.c
 	$(CC) $(libSystem_CFLAGS) -c appinterface.c
 
-appserver.o: appserver.c appinterface.h
+appserver.o: appserver.c appinterface.h ../config.h
 	$(CC) $(libSystem_CFLAGS) -c appserver.c
 
 array.o: array.c

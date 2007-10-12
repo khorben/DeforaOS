@@ -25,10 +25,12 @@
 #endif
 #include <string.h>
 #include <netinet/in.h>
-#include <openssl/ssl.h>
+#ifdef WITH_SSL
+# include <openssl/ssl.h>
+#endif
+
 #include "System.h"
 #include "appinterface.h"
-
 #include "../config.h"
 
 
@@ -52,7 +54,9 @@ typedef struct _AppServerClient
 	size_t buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
 	size_t buf_write_cnt;
+#ifdef WITH_SSL
 	SSL * ssl;
+#endif
 } AppServerClient;
 
 
@@ -61,7 +65,11 @@ typedef struct _AppServerClient
 static void _appserverclient_delete(AppServerClient * appserverclient);
 
 static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
-		uint16_t port, SSL_CTX * ssl_ctx)
+		uint16_t port
+#ifdef WITH_SSL
+		, SSL_CTX * ssl_ctx
+#endif
+		)
 {
 	AppServerClient * asc;
 
@@ -73,6 +81,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	asc->port = port;
 	asc->buf_read_cnt = 0;
 	asc->buf_write_cnt = 0;
+#ifdef WITH_SSL
 	if((asc->ssl = SSL_new(ssl_ctx)) == NULL
 			|| SSL_set_fd(asc->ssl, fd) != 1)
 	{
@@ -80,6 +89,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 		return NULL;
 	}
 	SSL_set_accept_state(asc->ssl);
+#endif
 	asc->fd = fd;
 	return asc;
 }
@@ -89,8 +99,10 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 static void _appserverclient_delete(AppServerClient * appserverclient)
 {
 	/* FIXME find a way to properly report error */
+#ifdef WITH_SSL
 	if(appserverclient->ssl != NULL)
 		SSL_free(appserverclient->ssl);
+#endif
 	if(appserverclient->fd != -1)
 		close(appserverclient->fd);
 	free(appserverclient);
@@ -106,7 +118,9 @@ struct _AppServer
 	AppInterface * interface;
 	Event * event;
 	int event_free;
+#ifdef WITH_SSL
 	SSL_CTX * ssl_ctx;
+#endif
 	AppServerClientArray * clients;
 };
 
@@ -116,7 +130,7 @@ static int _appserver_accept(int fd, AppServer * appserver);
 static int _appserver_read(int fd, AppServer * appserver);
 static int _appserver_write(int fd, AppServer * appserver);
 
-/* _appserver_accept */
+/* appserver_accept */
 static int _appserver_accept(int fd, AppServer * appserver)
 {
 	struct sockaddr_in sa;
@@ -130,8 +144,11 @@ static int _appserver_accept(int fd, AppServer * appserver)
 #endif
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return 1;
-	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port,
-					appserver->ssl_ctx)) == NULL)
+	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port
+#ifdef WITH_SSL
+					, appserver->ssl_ctx
+#endif
+					)) == NULL)
 	{
 		/* FIXME report error */
 		close(newfd);
@@ -144,8 +161,15 @@ static int _appserver_accept(int fd, AppServer * appserver)
 }
 
 
-/* _appserver_read */
+/* appserver_read */
+#ifdef WITH_SSL
+# define READ(fd, asc, len) SSL_read(asc->ssl, \
+		&asc->buf_read[asc->buf_read_cnt], len)
+#else
+# define READ(fd, asc, len) read(fd, &asc->buf_read[asc->buf_read_cnt], len)
+#endif
 static int _read_process(AppServer * appserver, AppServerClient * asc);
+
 static int _appserver_read(int fd, AppServer * appserver)
 {
 	AppServerClient * asc = NULL;
@@ -163,11 +187,11 @@ static int _appserver_read(int fd, AppServer * appserver)
 	if(asc == NULL)
 		return 1;
 	if((len = sizeof(asc->buf_read) - asc->buf_read_cnt) <= 0
-			|| (len = SSL_read(asc->ssl,
-					&asc->buf_read[asc->buf_read_cnt],
-					len)) <= 0)
+			|| (len = READ(fd, asc, len)) <= 0)
 	{
+#ifdef WITH_SSL
 		SSL_shutdown(asc->ssl);
+#endif
 		/* FIXME do all this in appserverclient_delete() or something
 		 * like appserver_remove_client() */
 		if(asc->buf_write_cnt > 0)
@@ -199,6 +223,7 @@ static int _read_process(AppServer * appserver, AppServerClient * asc)
 }
 
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc);
+
 static int _read_logged(AppServer * appserver, AppServerClient * asc)
 {
 	if(_appserver_receive(appserver, asc) != 0)
@@ -234,7 +259,13 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 }
 
 
-/* _appserver_write */
+/* appserver_write */
+#ifdef WITH_SSL
+# define WRITE(fd, asc) SSL_write(asc->ssl, asc->buf_write, asc->buf_write_cnt)
+#else
+# define WRITE(fd, asc) write(fd, asc->buf_write, asc->buf_write_cnt)
+#endif
+
 static int _appserver_write(int fd, AppServer * appserver)
 {
 	AppServerClient * asc;
@@ -255,9 +286,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 #ifdef DEBUG
 	fprintf(stderr, "sending result: %zu long\n", asc->buf_write_cnt);
 #endif
-	if(asc->buf_write_cnt == 0
-			|| (len = SSL_write(asc->ssl, asc->buf_write,
-					asc->buf_write_cnt)) <= 0)
+	if(asc->buf_write_cnt == 0 || (len = WRITE(fd, asc)) <= 0)
 		return 1; /* FIXME what here?!? */
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
@@ -295,21 +324,26 @@ static int _new_server(AppServer * appserver, int options);
 AppServer * appserver_new_event(char const * app, int options, Event * event)
 {
 	AppServer * appserver;
+#ifdef WITH_SSL
 	char crt[256];
 
 	if(snprintf(crt, sizeof(crt), "%s%s%s", PREFIX "/etc/AppServer/", app,
 				".crt") >= sizeof(crt))
 		return NULL;
+#endif
 	if((appserver = malloc(sizeof(AppServer))) == NULL)
 		return NULL;
 	appserver->interface = NULL;
 	appserver->event = event;
 	appserver->event_free = 0;
+#ifdef WITH_SSL
 	appserver->ssl_ctx = NULL;
+#endif
 	if((appserver->clients = AppServerClientarray_new()) == NULL
 			|| (appserver->interface = appinterface_new_server(app))
 			== NULL
 			|| _new_server(appserver, options) != 0
+#ifdef WITH_SSL
 			|| (appserver->ssl_ctx = SSL_CTX_new(
 					SSLv3_server_method())) == NULL
 			|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
@@ -317,7 +351,9 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 			|| SSL_CTX_use_certificate_file(appserver->ssl_ctx, crt,
 				SSL_FILETYPE_PEM) == 0
 			|| SSL_CTX_use_PrivateKey_file(appserver->ssl_ctx, crt,
-				SSL_FILETYPE_PEM) == 0)
+				SSL_FILETYPE_PEM) == 0
+#endif
+			)
 	{
 		appserver_delete(appserver);
 		return NULL;
@@ -356,8 +392,10 @@ void appserver_delete(AppServer * appserver)
 	if(appserver->event_free)
 		event_delete(appserver->event);
 	array_delete(appserver->clients);
+#ifdef WITH_SSL
 	if(appserver->ssl_ctx != NULL)
 		SSL_CTX_free(appserver->ssl_ctx);
+#endif
 	free(appserver);
 }
 

@@ -26,7 +26,9 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <openssl/ssl.h>
+#ifdef WITH_SSL
+# include <openssl/ssl.h>
+#endif
 
 #include "System.h"
 #include "appinterface.h"
@@ -48,8 +50,10 @@ struct _AppClient
 	char const * lastfunc;
 	void ** lastargs;
 	int32_t * lastret;
+#ifdef WITH_SSL
 	SSL_CTX * ssl_ctx;
 	SSL * ssl;
+#endif
 };
 
 
@@ -66,20 +70,22 @@ static int _appclient_timeout(AppClient * appclient)
 }
 
 
+/* appclient_read */
+#ifdef WITH_SSL
+# define READ(fd, ac, len) SSL_read(ac->ssl, &ac->buf_read[ac->buf_read_cnt], \
+		len)
+#else
+# define READ(fd, ac, len) read(fd, &ac->buf_read[ac->buf_read_cnt], len)
+#endif
+static int _read_error();
+
 static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len;
 
 	if((len = (sizeof(ac->buf_read) - ac->buf_read_cnt)) < 0
-			|| (len = SSL_read(ac->ssl,
-					&ac->buf_read[ac->buf_read_cnt],
-					len)) <= 0)
-	{
-		/* FIXME */
-		SSL_shutdown(ac->ssl);
-		close(fd);
-		return 1;
-	}
+			|| (len = READ(fd, ac, len)) <= 0)
+		return _read_error(fd, ac);
 	ac->buf_read_cnt += len;
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%zd%s", "appclient_read(", fd, ") ", len,
@@ -89,13 +95,8 @@ static int _appclient_read(int fd, AppClient * ac)
 			ac->buf_read, ac->buf_read_cnt, ac->lastfunc,
 			ac->lastargs);
 	if(len < 0 || len > ac->buf_read_cnt)
-	{
-		/* FIXME report error */
-		SSL_shutdown(ac->ssl);
-		close(fd);
-		return 1;
-	}
-	if(len == 0) /* EAGAIN */
+		return _read_error(fd, ac);
+	if(len == 0) /* try again */
 		return 0;
 	ac->buf_read_cnt -= len;
 	event_unregister_timeout(ac->event,
@@ -103,7 +104,23 @@ static int _appclient_read(int fd, AppClient * ac)
 	return 1;
 }
 
+static int _read_error(int fd, AppClient * ac)
+{
+	/* FIXME catch error */
+#ifdef WITH_SSL
+	SSL_shutdown(ac->ssl);
+#endif
+	close(fd);
+	return 1;
+}
 
+
+/* appclient_write */
+#ifdef WITH_SSL
+# define WRITE(fd, ac, len) SSL_write(ac->ssl, ac->buf_write, len)
+#else
+# define WRITE(fd, ac, len) write(fd, ac->buf_write, len)
+#endif
 static int _appclient_write(int fd, AppClient * ac)
 {
 	ssize_t len;
@@ -113,16 +130,18 @@ static int _appclient_write(int fd, AppClient * ac)
 	fprintf(stderr, "%s%d%s%zd%s", "appclient_write(", fd, ") ", len,
 			" bytes\n");
 #endif
-	if((len = SSL_write(ac->ssl, ac->buf_write, len)) <= 0)
+	if((len = WRITE(fd, ac, len)) <= 0)
 	{
+#ifdef WITH_SSL
 		SSL_shutdown(ac->ssl);
+#endif
 		return 1;
 	}
 	memmove(ac->buf_write, &ac->buf_write[len], len);
 	ac->buf_write_cnt-=len;
 	if(ac->buf_write_cnt > 0)
-		return 0;
-	event_register_io_read(ac->event, fd,
+		return 0; /* there is more to write */
+	event_register_io_read(ac->event, fd, /* read the answer */
 			(EventIOFunc)_appclient_read, ac);
 	return 1;
 }
@@ -167,11 +186,15 @@ AppClient * appclient_new_event(char * app, Event * event)
 	appclient->event = event;
 	appclient->buf_read_cnt = 0;
 	appclient->buf_write_cnt = 0;
+#ifdef WITH_SSL
 	appclient->ssl = NULL;
 	if((appclient->ssl_ctx = SSL_CTX_new(SSLv3_client_method())) == NULL
 			|| SSL_CTX_set_cipher_list(appclient->ssl_ctx,
 				SSL_DEFAULT_CIPHER_LIST) != 1
 			|| _new_connect(appclient, app) != 0)
+#else
+	if(_new_connect(appclient, app) != 0)
+#endif
 	{
 		appclient_delete(appclient);
 		return NULL;
@@ -192,19 +215,26 @@ static int _new_connect(AppClient * appclient, char * app)
 	if(_connect_addr("Session", &sa.sin_addr.s_addr) != 0)
 		return 1;
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
+#ifdef WITH_SSL
 			|| (appclient->ssl = SSL_new(appclient->ssl_ctx))
 			== NULL
-			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
+			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1
+#endif
+			)
 		return 1;
+#ifdef WITH_SSL
 	SSL_set_connect_state(appclient->ssl);
+#endif
 	if(appclient_call(appclient, &port, "port", app) != 0
 			|| port < 0)
 		return 1;
 	if(port == 0)
 		return 0;
+#ifdef WITH_SSL
 	SSL_shutdown(appclient->ssl);
 	SSL_free(appclient->ssl);
 	appclient->ssl = NULL;
+#endif
 	close(appclient->fd);
 	appclient->fd = -1;
 #ifdef DEBUG
@@ -219,11 +249,16 @@ static int _new_connect(AppClient * appclient, char * app)
 		return 1;
 	sa.sin_port = htons(port);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
+#ifdef WITH_SSL
 			|| (appclient->ssl = SSL_new(appclient->ssl_ctx))
 			== NULL
-			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
+			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1
+#endif
+			)
 		return 1;
+#ifdef WITH_SSL
 	SSL_set_connect_state(appclient->ssl);
+#endif
 	return 0;
 }
 
@@ -258,10 +293,12 @@ void appclient_delete(AppClient * appclient)
 	appinterface_delete(appclient->interface);
 	if(appclient->fd != -1)
 		close(appclient->fd);
+#ifdef WITH_SSL
 	if(appclient->ssl != NULL)
 		SSL_free(appclient->ssl);
 	if(appclient->ssl_ctx != NULL)
 		SSL_CTX_free(appclient->ssl_ctx);
+#endif
 	free(appclient);
 }
 
