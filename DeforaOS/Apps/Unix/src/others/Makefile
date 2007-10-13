@@ -25,6 +25,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/login.c \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
 		$(PACKAGE)-$(VERSION)/src/tar.c \
+		$(PACKAGE)-$(VERSION)/src/umount.c \
 		$(PACKAGE)-$(VERSION)/src/uptime.c \
 		$(PACKAGE)-$(VERSION)/src/w.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
