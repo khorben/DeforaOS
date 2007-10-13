@@ -20,8 +20,17 @@ html, button, input, select, table, textarea {
 }
 
 body {
-	margin:				0;
-	padding:			0;
+	background-color:		#000000;
+	border:				1px solid #959595;
+	margin:				10px;
+	margin-top:			2.5em;
+	padding-bottom:			10pt;
+	padding-left:			200px;
+	padding-right:			10px;
+}
+
+body, table {
+	color:				#ffffff;
 }
 
 a {
@@ -100,24 +109,6 @@ strong {
 /* title corrections */
 h1.title, h2.title, h3.title {
 	background-color:		#000000;
-}
-
-
-/* identifiers */
-#container {
-	background-color:		#000000;
-	border:				1px solid #959595;
-	margin:				10px;
-	padding-bottom:			10pt;
-}
-
-#container, #container table {
-	color:				#ffffff;
-}
-
-#main {
-	padding-left:			200px;
-	padding-right:			10px;
 }
 
 
@@ -351,12 +342,14 @@ ul.menu {
 	background-image:		url("DeforaOS-menusep.png");
 	background-position:		bottom center;
 	background-repeat:		no-repeat;
-	float:				left;
+	left:				20px;
 	list-style-type:		none;
 	margin-left:			10px;
+	margin-right:			10px;
 	margin-top:			10px;
 	padding:			0px;
 	padding-bottom:			30px;
+	position:			absolute;
 	width:				160px;
 }
 
@@ -531,6 +524,8 @@ ul.menu ul li:hover ul a {
 .style1 {
 	background-color:		#790000;
 	font-weight:			bold;
+	margin-left:			-200px;
+	margin-right:			-10px;
 	padding-left:			200px;
 }
 
@@ -554,8 +549,13 @@ div.top {
 	background-color:		#b0b0b0;
 	border-bottom:			1px solid #959595;
 	color:				#000000;
-	padding:			1px;
-	padding-left:			12px;
+	left:				0;
+	padding-bottom:			2px;
+	padding-top:			2px;
+	position:			absolute;
+	text-align:			center;
+	top:				0;
+	width:				100%;
 }
 
 div.top a {
@@ -564,9 +564,8 @@ div.top a {
 
 .top_search {
 	float:				left;
-	margin-left:			10px;
+	margin-left:			-180px;
 	margin-top:			19px;
-	text-align:			right;
 	width:				160px;
 }
 
