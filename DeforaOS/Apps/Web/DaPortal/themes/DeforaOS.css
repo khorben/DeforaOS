@@ -342,14 +342,13 @@ ul.menu {
 	background-image:		url("DeforaOS-menusep.png");
 	background-position:		bottom center;
 	background-repeat:		no-repeat;
-	left:				20px;
+	float:				left;
 	list-style-type:		none;
-	margin-left:			10px;
+	margin-left:			-180px;
 	margin-right:			10px;
 	margin-top:			10px;
 	padding:			0px;
 	padding-bottom:			30px;
-	position:			absolute;
 	width:				160px;
 }
 
