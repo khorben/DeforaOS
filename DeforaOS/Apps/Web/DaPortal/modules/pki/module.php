@@ -142,7 +142,7 @@ function _subject_from_ca($ca)
 		.'/L='.escapeshellarg($ca['locality'])
 		.'/O='.escapeshellarg($ca['organization'])
 		.'/OU='.escapeshellarg($ca['section'])
-		.'/CN='.escapeshellarg($ca['title'])
+		.'/CN='.escapeshellarg($ca['cn'])
 		.'/emailAddress='.escapeshellarg($ca['email']);
 }
 
@@ -692,7 +692,7 @@ function _system_export($args, $type, $disposition = 'attachment')
 			.' FROM daportal_'.$type.', daportal_content ccl'
 			.', daportal_ca, daportal_content cca'
 			.' WHERE daportal_'.$type.'.'.$type.'_id=ccl.content_id'
-			.' AND daportal_'.$type.'.ca_id=daportal_ca.ca_id'
+			.' AND daportal_'.$type.'.parent=daportal_ca.ca_id'
 			.' AND daportal_ca.ca_id=cca.content_id'
 			.' AND '.$type."_id='".$args['id']."'");
 	if(!is_array($caclient) || count($caclient) != 1)
