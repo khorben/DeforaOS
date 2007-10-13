@@ -874,7 +874,7 @@ static int _args_exec(AppInterfaceCall * call, int * ret, char ** args)
 	int (*func3)(char *, char *, char *);
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_receive_exec()\n");
+	fprintf(stderr, "%s", "_args_exec()\n");
 #endif
 	/* FIXME */
 	switch(call->args_cnt)
@@ -882,19 +882,19 @@ static int _args_exec(AppInterfaceCall * call, int * ret, char ** args)
 		case 0:
 			func0 = call->func;
 			*ret = func0();
-			return 0;
+			break;
 		case 1:
 			func1 = call->func;
 			*ret = func1(args[0]);
-			return 0;
+			break;
 		case 2:
 			func2 = call->func;
 			*ret = func2(args[0], args[1]);
-			return 0;
+			break;
 		case 3:
 			func3 = call->func;
 			*ret = func3(args[0], args[1], args[2]);
-			return 0;
+			break;
 		default:
 #ifdef DEBUG
 			fprintf(stderr, "%s%d%s", "AppInterface: functions with"
@@ -903,7 +903,9 @@ static int _args_exec(AppInterfaceCall * call, int * ret, char ** args)
 #endif
 			return -1;
 	}
-	return -1;
+	if(call->type.type == AICT_VOID) /* avoid information leak */
+		*ret = 0;
+	return 0;
 }
 
 static int _args_post_exec(AppInterfaceCall * call, char buf[], size_t buflen,
