@@ -95,8 +95,10 @@ static int _mount_print(void)
 
 static int _mount_do(Prefs * prefs, char const * special, char const * node)
 {
-	errno = ENOSYS;
-	return _mount_error(special, 1);
+	/* FIXME handle flags */
+	if(mount(prefs->type, node, 0, NULL, 0) == 0)
+		return 0;
+	return _mount_error(node, 1);
 }
 
 
