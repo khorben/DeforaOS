@@ -1,4 +1,4 @@
-TARGETS	= hexdump login mktemp mount reboot tar umount uptime w
+TARGETS	= halt hexdump login mktemp mount reboot tar umount uptime w
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -12,6 +12,12 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+halt_OBJS = halt.o
+halt_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+halt: $(halt_OBJS)
+	$(CC) -o halt $(halt_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 hexdump_OBJS = hexdump.o
 hexdump_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -67,6 +73,9 @@ w_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 w: $(w_OBJS)
 	$(CC) -o w $(w_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
+halt.o: halt.c
+	$(CC) $(halt_CFLAGS) -c halt.c
+
 hexdump.o: hexdump.c
 	$(CC) $(hexdump_CFLAGS) -c hexdump.c
 
@@ -95,13 +104,14 @@ w.o: w.c
 	$(CC) $(w_CFLAGS) -c w.c
 
 clean:
-	$(RM) $(hexdump_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
+	$(RM) $(halt_OBJS) $(hexdump_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 halt $(DESTDIR)$(BINDIR)/halt
 	$(INSTALL) -m 0755 hexdump $(DESTDIR)$(BINDIR)/hexdump
 	$(INSTALL) -m 0755 login $(DESTDIR)$(BINDIR)/login
 	$(INSTALL) -m 0755 mktemp $(DESTDIR)$(BINDIR)/mktemp
@@ -113,6 +123,7 @@ install: all
 	$(INSTALL) -m 0755 w $(DESTDIR)$(BINDIR)/w
 
 uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/halt
 	$(RM) $(DESTDIR)$(BINDIR)/hexdump
 	$(RM) $(DESTDIR)$(BINDIR)/login
 	$(RM) $(DESTDIR)$(BINDIR)/mktemp

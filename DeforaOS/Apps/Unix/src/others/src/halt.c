@@ -22,22 +22,22 @@
 #include <errno.h>
 
 
-/* reboot */
+/* halt */
 /* functions */
-/* reboot */
-static int _reboot(void)
+/* halt */
+static int _halt(void)
 {
 	sync();
-#if defined(RF_REBOOT)
-	if(reboot(RF_REBOOT) != 0)
+#if defined(RF_HALT)
+	if(reboot(RF_HALT) != 0)
 #elif defined(RB_AUTOBOOT) /* NetBSD */
-	if(reboot(RB_AUTOBOOT, NULL) != 0)
+	if(reboot(RB_HALT, NULL) != 0)
 #else
 # warning Unsupported platform
 	errno = ENOSYS;
 #endif
 	{
-		perror("reboot");
+		perror("halt");
 		return 1;
 	}
 	return 0;
@@ -47,7 +47,7 @@ static int _reboot(void)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: reboot\n", stderr);
+	fputs("Usage: halt\n", stderr);
 	return 1;
 }
 
@@ -61,5 +61,5 @@ int main(int argc, char * argv[])
 		return _usage();
 	if(optind != argc)
 		return _usage();
-	return _reboot() ? 0 : 2;
+	return _halt() ? 0 : 2;
 }
