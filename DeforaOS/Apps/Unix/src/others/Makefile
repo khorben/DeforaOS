@@ -21,9 +21,13 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/halt.c \
 		$(PACKAGE)-$(VERSION)/src/hexdump.c \
 		$(PACKAGE)-$(VERSION)/src/login.c \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
+		$(PACKAGE)-$(VERSION)/src/mount.c \
+		$(PACKAGE)-$(VERSION)/src/poweroff.c \
+		$(PACKAGE)-$(VERSION)/src/reboot.c \
 		$(PACKAGE)-$(VERSION)/src/tar.c \
 		$(PACKAGE)-$(VERSION)/src/umount.c \
 		$(PACKAGE)-$(VERSION)/src/uptime.c \
