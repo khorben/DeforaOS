@@ -2,7 +2,6 @@ TARGETS	= browser copy delete desktop move open properties view
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`

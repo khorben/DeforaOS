@@ -2,7 +2,6 @@ TARGETS	= basename cat chgrp chmod chown cksum cmp cp df dirname du echo false f
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W

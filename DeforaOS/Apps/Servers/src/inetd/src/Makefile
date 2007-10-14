@@ -2,7 +2,6 @@ TARGETS	= inetd discard echo
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
