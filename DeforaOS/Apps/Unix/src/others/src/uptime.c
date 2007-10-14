@@ -57,7 +57,7 @@ static int _uptime(void)
 
 static int _uptime_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "uptime: ");
+	fputs("uptime: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -66,7 +66,7 @@ static int _uptime_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: uptime\n");
+	fputs("Usage: uptime\n", stderr);
 	return 1;
 }
 
