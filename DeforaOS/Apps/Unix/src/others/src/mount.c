@@ -16,6 +16,9 @@
 
 
 
+#ifdef __NetBSD__
+# include <sys/param.h>
+#endif
 #include <sys/mount.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
@@ -94,9 +97,15 @@ static int _mount_print(void)
 }
 
 static int _mount_do(Prefs * prefs, char const * special, char const * node)
-{
 	/* FIXME handle flags */
+{
+#ifdef __NetBSD_Version__ /* NetBSD */
+# if __NetBSD_Version__ >= 499000000
 	if(mount(prefs->type, node, 0, NULL, 0) == 0)
+# else
+	if(mount(prefs->type, node, 0, NULL) == 0)
+# endif
+#endif
 		return 0;
 	return _mount_error(node, 1);
 }

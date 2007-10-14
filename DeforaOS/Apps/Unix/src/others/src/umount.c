@@ -16,6 +16,9 @@
 
 
 
+#ifdef __NetBSD__
+# include <sys/param.h>
+#endif
 #include <sys/mount.h>
 #include <sys/statvfs.h>
 #include <unistd.h>
