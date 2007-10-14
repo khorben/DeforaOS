@@ -32,6 +32,8 @@ static int _halt(void)
 	if(reboot(RF_HALT) != 0)
 #elif defined(RB_HALT) /* NetBSD */
 	if(reboot(RB_HALT, NULL) != 0)
+#elif defined(RB_HALT_SYSTEM) /* Linux */
+	if(reboot(RB_HALT_SYSTEM) != 0)
 #else
 # warning Unsupported platform
 	errno = ENOSYS;
