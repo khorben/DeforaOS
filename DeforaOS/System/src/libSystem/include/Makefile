@@ -27,6 +27,7 @@ install: all
 	$(INSTALL) -m 0644 System/array.h $(DESTDIR)$(INCLUDEDIR)/System/array.h
 	$(INSTALL) -m 0644 System/buffer.h $(DESTDIR)$(INCLUDEDIR)/System/buffer.h
 	$(INSTALL) -m 0644 System/config.h $(DESTDIR)$(INCLUDEDIR)/System/config.h
+	$(INSTALL) -m 0644 System/error.h $(DESTDIR)$(INCLUDEDIR)/System/error.h
 	$(INSTALL) -m 0644 System/event.h $(DESTDIR)$(INCLUDEDIR)/System/event.h
 	$(INSTALL) -m 0644 System/file.h $(DESTDIR)$(INCLUDEDIR)/System/file.h
 	$(INSTALL) -m 0644 System/hash.h $(DESTDIR)$(INCLUDEDIR)/System/hash.h
@@ -40,6 +41,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/array.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/buffer.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/config.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/error.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/event.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/file.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/hash.h

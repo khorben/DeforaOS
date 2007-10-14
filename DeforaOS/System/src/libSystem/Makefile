@@ -27,6 +27,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/array.c \
 		$(PACKAGE)-$(VERSION)/src/buffer.c \
 		$(PACKAGE)-$(VERSION)/src/config.c \
+		$(PACKAGE)-$(VERSION)/src/error.c \
 		$(PACKAGE)-$(VERSION)/src/event.c \
 		$(PACKAGE)-$(VERSION)/src/hash.c \
 		$(PACKAGE)-$(VERSION)/src/string.c \
@@ -39,6 +40,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/array.h \
 		$(PACKAGE)-$(VERSION)/include/System/buffer.h \
 		$(PACKAGE)-$(VERSION)/include/System/config.h \
+		$(PACKAGE)-$(VERSION)/include/System/error.h \
 		$(PACKAGE)-$(VERSION)/include/System/event.h \
 		$(PACKAGE)-$(VERSION)/include/System/file.h \
 		$(PACKAGE)-$(VERSION)/include/System/hash.h \

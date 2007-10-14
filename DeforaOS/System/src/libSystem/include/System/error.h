@@ -16,19 +16,20 @@
 
 
 
-#ifndef LIBSYSTEM_SYSTEM_H
-# define LIBSYSTEM_SYSTEM_H
-
-# include <sys/types.h>
+#ifndef LIBSYSTEM_ERROR_H
+# define LIBSYSTEM_ERROR_H
 
 
-# include "System/appclient.h"
-# include "System/appserver.h"
-# include "System/buffer.h"
-# include "System/config.h"
-# include "System/error.h"
-# include "System/event.h"
-# include "System/file.h"
-# include "System/string.h"
+/* functions */
+/* accessors */
+char const * error_get(void);
+char const * error_get_code(int * code);
 
-#endif /* !LIBSYSTEM_SYSTEM_H */
+void error_set(char const * message);
+int error_set_code(char const * message, int code);
+int error_set_print(char const * prefix, char const * message, int code);
+
+/* useful */
+int error_print(char const * prefix);
+
+#endif /* !LIBSYSTEM_ERROR_H */
