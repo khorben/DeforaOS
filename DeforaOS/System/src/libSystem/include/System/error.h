@@ -25,11 +25,11 @@
 char const * error_get(void);
 char const * error_get_code(int * code);
 
-void error_set(char const * message);
-int error_set_code(char const * message, int code);
-int error_set_print(char const * prefix, char const * message, int code);
+void error_set(char const * format, ...);
+int error_set_code(int code, char const * format, ...);
+int error_set_print(char const * program, int code, char const * message, ...);
 
 /* useful */
-int error_print(char const * prefix);
+int error_print(char const * program);
 
 #endif /* !LIBSYSTEM_ERROR_H */

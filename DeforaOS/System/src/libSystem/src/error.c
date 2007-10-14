@@ -16,21 +16,21 @@
 
 
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include "System.h"
 
 
 /* private */
-static char const * _error_do(char const * message, int * codeptr)
+static char const * _error_do(int * codeptr, char const * format, va_list args)
 {
 	static char buf[256] = "";
 	static int code = 0;
 
-	if(message != NULL) /* setting the error */
+	if(format != NULL) /* setting the error */
 	{
-		strncpy(buf, message, sizeof(buf) - 1);
-		buf[sizeof(buf) - 1] = '\0';
+		vsnprintf(buf, sizeof(buf), format, args);
 		if(codeptr != NULL)
 			code = *codeptr;
 		return buf;
@@ -46,47 +46,63 @@ static char const * _error_do(char const * message, int * codeptr)
 /* error_get */
 char const * error_get(void)
 {
-	return _error_do(NULL, NULL);
+	return _error_do(NULL, NULL, NULL);
 }
 
 
 /* error_get_code */
 char const * error_get_code(int * code)
 {
-	return _error_do(NULL, code);
+	return _error_do(code, NULL, NULL);
 }
 
 
 /* error_set */
-void error_set(char const * message)
+void error_set(char const * format, ...)
 {
-	_error_do(message, NULL);
+	va_list args;
+
+	va_start(args, format);
+	_error_do(NULL, format, args);
+	va_end(args);
 }
 
 
 /* error_set_code */
-int error_set_code(char const * message, int code)
+int error_set_code(int code, char const * format, ...)
 {
-	_error_do(message, &code);
+	va_list args;
+
+	va_start(args, format);
+	_error_do(&code, format, args);
+	va_end(args);
 	return code;
 }
 
 
 /* error_set_print */
-int error_set_print(char const * prefix, char const * message, int code)
+int error_set_print(char const * program, int code, char const * format, ...)
 {
-	_error_do(message, &code);
-	return error_print(prefix);
+	va_list args;
+
+	va_start(args, format);
+	_error_do(&code, format, args);
+	va_end(args);
+	return error_print(program);
 }
 
 
 /* useful */
-int error_print(char const * prefix)
+int error_print(char const * program)
 {
 	int code = 0;
 
-	if(prefix != NULL)
-		fputs(prefix, stderr);
-	fputs(_error_do(NULL, &code), stderr);
+	if(program != NULL)
+	{
+		fputs(program, stderr);
+		fputs(": ", stderr);
+	}
+	fputs(_error_do(&code, NULL, NULL), stderr);
+	fputc('\n', stderr);
 	return code;
 }
