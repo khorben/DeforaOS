@@ -90,7 +90,11 @@ static int _umount_all(void)
 
 static int _umount_do(char const * pathname)
 {
+#ifdef MS_RDONLY /* Linux */
+	if(umount(pathname) == 0)
+#else
 	if(unmount(pathname, 0) == 0)
+#endif
 		return 0;
 	return _umount_error(pathname, 1);
 }
