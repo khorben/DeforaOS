@@ -16,11 +16,11 @@
 
 
 
-#ifdef __NetBSD__
+#include <sys/statvfs.h>
+#ifdef ST_WAIT /* NetBSD */
 # include <sys/param.h>
 #endif
 #include <sys/mount.h>
-#include <sys/statvfs.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
