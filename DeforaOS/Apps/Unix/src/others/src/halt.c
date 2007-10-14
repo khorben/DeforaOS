@@ -28,7 +28,7 @@
 static int _halt(void)
 {
 	sync();
-#if defined(RF_HALT)
+#if defined(RF_HALT) /* DeforaOS */
 	if(reboot(RF_HALT) != 0)
 #elif defined(RB_AUTOBOOT) /* NetBSD */
 	if(reboot(RB_HALT, NULL) != 0)

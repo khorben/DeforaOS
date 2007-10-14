@@ -28,7 +28,7 @@
 static int _reboot(void)
 {
 	sync();
-#if defined(RF_REBOOT)
+#if defined(RF_REBOOT) /* DeforaOS */
 	if(reboot(RF_REBOOT) != 0)
 #elif defined(RB_AUTOBOOT) /* NetBSD */
 	if(reboot(RB_AUTOBOOT, NULL) != 0)
