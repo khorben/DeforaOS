@@ -40,7 +40,7 @@ static int _open(char const * type, char const * action, int filec,
 		}
 		else if(mime_action_type(mime, action, filev[i], type) == 0)
 			continue;
-		fprintf(stderr, "%s%s%s%s%s", "mime: ", filev[i], ": Could not"
+		fprintf(stderr, "%s%s%s%s%s", "open: ", filev[i], ": Could not"
 				" perform action \"", action, "\"\n");
 		ret = 1;
 	}
