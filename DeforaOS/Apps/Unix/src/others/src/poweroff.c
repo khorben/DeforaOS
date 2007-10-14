@@ -30,7 +30,7 @@ static int _poweroff(void)
 	sync();
 #if defined(RF_HALT) /* DeforaOS */
 	if(reboot(RF_POWEROFF) != 0)
-#elif defined(RB_AUTOBOOT) /* NetBSD */
+#elif defined(RB_POWERDOWN) /* NetBSD */
 	if(reboot(RB_POWERDOWN, NULL) != 0)
 #else
 # warning Unsupported platform

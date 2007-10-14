@@ -30,7 +30,7 @@ static int _halt(void)
 	sync();
 #if defined(RF_HALT) /* DeforaOS */
 	if(reboot(RF_HALT) != 0)
-#elif defined(RB_AUTOBOOT) /* NetBSD */
+#elif defined(RB_HALT) /* NetBSD */
 	if(reboot(RB_HALT, NULL) != 0)
 #else
 # warning Unsupported platform

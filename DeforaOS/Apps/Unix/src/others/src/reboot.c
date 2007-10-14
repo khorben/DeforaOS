@@ -30,6 +30,8 @@ static int _reboot(void)
 	sync();
 #if defined(RF_REBOOT) /* DeforaOS */
 	if(reboot(RF_REBOOT) != 0)
+#elif defined(RB_HALT_SYSTEM) /* Linux */
+	if(reboot(RB_AUTOBOOT) != 0) /* not a typo */
 #elif defined(RB_AUTOBOOT) /* NetBSD */
 	if(reboot(RB_AUTOBOOT, NULL) != 0)
 #else
