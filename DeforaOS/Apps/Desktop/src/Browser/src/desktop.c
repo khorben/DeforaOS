@@ -118,6 +118,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		char const * path)
 {
 	DesktopIcon * desktopicon;
+	GtkWindow * window;
 	struct stat st;
 	GdkGeometry geometry;
 	GtkWidget * vbox;
@@ -138,14 +139,13 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->mimetype = NULL;
 	desktopicon->updated = 1;
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_type_hint(GTK_WINDOW(desktopicon->window),
-			GDK_WINDOW_TYPE_HINT_DOCK);
-	gtk_window_set_resizable(GTK_WINDOW(desktopicon->window), FALSE);
-	gtk_window_set_decorated(GTK_WINDOW(desktopicon->window), FALSE);
-	gtk_window_set_keep_below(GTK_WINDOW(desktopicon->window), TRUE);
-	gtk_window_set_accept_focus(GTK_WINDOW(desktopicon->window), FALSE);
+	window = GTK_WINDOW(desktopicon->window);
+	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
+	gtk_window_set_resizable(window, FALSE);
+	gtk_window_set_decorated(window, FALSE);
+	gtk_window_set_keep_below(window, TRUE);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_focus_on_map(GTK_WINDOW(desktopicon->window), FALSE);
+	gtk_window_set_focus_on_map(window, FALSE);
 #endif
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
 			G_CALLBACK(_on_desktopicon_closex), desktopicon);
@@ -156,8 +156,8 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	geometry.max_height = DESKTOPICON_MAX_HEIGHT;
 	geometry.base_width = DESKTOPICON_MIN_WIDTH;
 	geometry.base_height = DESKTOPICON_MIN_HEIGHT;
-	gtk_window_set_geometry_hints(GTK_WINDOW(desktopicon->window), vbox,
-		&geometry, GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE
+	gtk_window_set_geometry_hints(window, vbox, &geometry,
+			GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE
 			| GDK_HINT_BASE_SIZE);
 	/* icon */
 	if(stat(path, &st) == 0)
