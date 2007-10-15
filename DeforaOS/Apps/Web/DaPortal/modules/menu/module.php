@@ -28,8 +28,14 @@ function _default_submenu($module, $level, $entry)
 		print('	');
 	print('<li>');
 	if(isset($entry['args']))
-		print('<a href="'._html_link($module, '', '', '',
-			$entry['args']).'">');
+	{
+		$args = array();
+		parse_str($entry['args'], $args);
+		print('<a href="'._html_link(isset($args['module'])
+			? $args['module'] : $module, isset($args['action'])
+			? $args['action'] : FALSE, isset($args['id'])
+			? $args['id'] : FALSE, FALSE, $entry['args']).'">');
+	}
 	print(_html_safe($entry['title']));
 	if(isset($entry['args']))
 		print('</a>');
