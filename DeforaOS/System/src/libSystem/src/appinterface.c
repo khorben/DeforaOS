@@ -114,6 +114,7 @@ static int _new_gserver(AppInterface * appinterface);
 static int _new_probe(AppInterface * appinterface);
 static int _new_hello(AppInterface * appinterface);
 static int _new_vfs(AppInterface * appinterface);
+static int _new_directory(AppInterface * appinterface);
 
 AppInterface * appinterface_new(char const * app)
 {
@@ -123,17 +124,21 @@ AppInterface * appinterface_new(char const * app)
 	AppInterface * appinterface;
 	/* FIXME read this from available Servers configuration, or imagine a
 	 * solution to negociate it directly */
-	struct iface {
+	struct iface
+	{
 		char * name;
 		int (*func)(AppInterface *);
 		uint16_t port;
-	} ifaces[] = {
+	} ifaces[] =
+	{
 		{ "Session",	_new_session,	4242 },
 		{ "GServer",	_new_gserver,	4246 },
 		{ "Probe",	_new_probe,	4243 },
 		{ "Hello",	_new_hello,	4244 },
-		{ "VFS",	_new_vfs,	4245 }
+		{ "VFS",	_new_vfs,	4245 },
+		{ "Directory",	_new_directory,	4247 }
 	};
+	size_t const ifaces_cnt = sizeof(ifaces) / sizeof(struct iface);
 	size_t i;
 
 #ifdef WITH_SSL
@@ -144,35 +149,33 @@ AppInterface * appinterface_new(char const * app)
 		ssl_init = 1;
 	}
 #endif
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "appinterface_new(", app, ");\n");
-#endif
 	if((appinterface = malloc(sizeof(AppInterface))) == NULL)
 		return NULL;
 	appinterface->calls = NULL;
 	appinterface->calls_cnt = 0;
-	for(i = 0; i < sizeof(ifaces) / sizeof(struct iface); i++)
+	error_set_code(1, "%s", "Unknown interface");
+	for(i = 0; i < ifaces_cnt; i++)
 	{
 		if(string_compare(app, ifaces[i].name) != 0)
 			continue;
-#ifdef DEBUG
-		fprintf(stderr, "%s%s%s", "AppInterface \"", app, "\"\n");
-#endif
 		if(ifaces[i].func(appinterface) != 0)
-			i = sizeof(ifaces) / sizeof(struct iface);
+			i = ifaces_cnt;
+		else
+			error_set_code(0, "");
 		break;
 	}
-	if(i == sizeof(ifaces) / sizeof(struct iface))
+	if(i == ifaces_cnt)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s", "AppInterface creation error\n");
+		fprintf(stderr, "DEBUG: AppInterface creation failed\n");
 #endif
 		free(appinterface);
 		return NULL;
 	}
 	appinterface->port = ifaces[i].port;
 #ifdef DEBUG
-	fprintf(stderr, "%s%p%s", "AppInterface: ", appinterface, "\n");
+	fprintf(stderr, "%s%s%s%d\n", "DEBUG: AppInterface ", app, " on port ",
+			appinterface->port);
 #endif
 	return appinterface;
 }
@@ -242,7 +245,7 @@ static int _new_session(AppInterface * ai)
 	return ret;
 }
 
-static int _new_gserver(AppInterface * ai)
+static int _new_gserver(AppInterface * appinterface)
 {
 	return 0;
 }
@@ -271,9 +274,9 @@ static int _new_probe(AppInterface * ai)
 	return ret;
 }
 
-static int _new_hello(AppInterface * ai)
+static int _new_hello(AppInterface * appinterface)
 {
-	return _new_append(ai, AICT_VOID, "hello", 0);
+	return _new_append(appinterface, AICT_VOID, "hello", 0);
 }
 
 static int _new_vfs(AppInterface * ai)
@@ -326,33 +329,35 @@ static int _new_vfs(AppInterface * ai)
 	return ret;
 }
 
+static int _new_directory(AppInterface * appinterface)
+{
+	return 0;
+}
+
 
 /* appinterface_new_server */
-/* FIXME */
 AppInterface * appinterface_new_server(char const * app)
 {
 	AppInterface * ai;
 	void * handle;
 	size_t i;
-#ifdef DEBUG
-	char * error;
-#endif
 
 	if((handle = dlopen(NULL, RTLD_LAZY)) == NULL)
+	{
+		error_set_code(1, "%s", dlerror());
 		return NULL;
+	}
 	if((ai = appinterface_new(app)) == NULL)
 		return NULL;
 	for(i = 0; i < ai->calls_cnt; i++)
-	{
-#ifdef DEBUG
-		dlerror();
-#endif
-		ai->calls[i].func = dlsym(handle, ai->calls[i].name);
-#ifdef DEBUG
-		if((error = dlerror()) != NULL)
-			fprintf(stderr, "%s%s\n", "AppServer: ", error);
-#endif
-	}
+		if((ai->calls[i].func = dlsym(handle, ai->calls[i].name))
+				== NULL)
+		{
+			error_set_code(1, "%s", dlerror());
+			appinterface_delete(ai);
+			dlclose(handle);
+			return NULL;
+		}
 	dlclose(handle);
 	return ai;
 }

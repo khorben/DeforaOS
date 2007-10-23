@@ -77,7 +77,7 @@ static int _appclient_timeout(AppClient * appclient)
 #else
 # define READ(fd, ac, len) read(fd, &ac->buf_read[ac->buf_read_cnt], len)
 #endif
-static int _read_error();
+static int _read_error(AppClient * ac);
 
 static int _appclient_read(int fd, AppClient * ac)
 {
@@ -85,7 +85,7 @@ static int _appclient_read(int fd, AppClient * ac)
 
 	if((len = (sizeof(ac->buf_read) - ac->buf_read_cnt)) < 0
 			|| (len = READ(fd, ac, len)) <= 0)
-		return _read_error(fd, ac);
+		return _read_error(ac);
 	ac->buf_read_cnt += len;
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%zd%s", "appclient_read(", fd, ") ", len,
@@ -95,7 +95,7 @@ static int _appclient_read(int fd, AppClient * ac)
 			ac->buf_read, ac->buf_read_cnt, ac->lastfunc,
 			ac->lastargs);
 	if(len < 0 || len > ac->buf_read_cnt)
-		return _read_error(fd, ac);
+		return _read_error(ac);
 	if(len == 0) /* try again */
 		return 0;
 	ac->buf_read_cnt -= len;
@@ -104,13 +104,14 @@ static int _appclient_read(int fd, AppClient * ac)
 	return 1;
 }
 
-static int _read_error(int fd, AppClient * ac)
+static int _read_error(AppClient * ac)
 {
 	/* FIXME catch error */
 #ifdef WITH_SSL
 	SSL_shutdown(ac->ssl);
 #endif
-	close(fd);
+	close(ac->fd); /* FIXME is it really critical already? */
+	ac->fd = -1;
 	return 1;
 }
 
@@ -214,15 +215,13 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_port = htons(appinterface_get_port(appclient->interface));
 	if(_connect_addr("Session", &sa.sin_addr.s_addr) != 0)
 		return 1;
-	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
+	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+		return error_set_code(1, strerror(errno));
 #ifdef WITH_SSL
-			|| (appclient->ssl = SSL_new(appclient->ssl_ctx))
-			== NULL
-			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1
-#endif
-			)
-		return 1;
-#ifdef WITH_SSL
+	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
+			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
+		return error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+					NULL));
 	SSL_set_connect_state(appclient->ssl);
 #endif
 	if(appclient_call(appclient, &port, "port", app) != 0
@@ -244,19 +243,17 @@ static int _new_connect(AppClient * appclient, char * app)
 	if((appclient->interface = appinterface_new(app)) == NULL)
 		return 1;
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		return 1;
+		return error_set_code(1, "%s%s", "socket: ", strerror(errno));
 	if(_connect_addr(app, &sa.sin_addr.s_addr) != 0)
 		return 1;
 	sa.sin_port = htons(port);
-	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
+	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
+		return error_set_code(1, "%s%s", "connect: ", strerror(errno));
 #ifdef WITH_SSL
-			|| (appclient->ssl = SSL_new(appclient->ssl_ctx))
-			== NULL
-			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1
-#endif
-			)
-		return 1;
-#ifdef WITH_SSL
+	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
+			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
+		return error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+					NULL));
 	SSL_set_connect_state(appclient->ssl);
 #endif
 	return 0;
@@ -321,7 +318,7 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	if((i = appinterface_get_args_count(ac->interface, function)) < 0)
 		return -1;
 	if(i > 0 && (args = calloc(sizeof(*args), i)) == NULL)
-		return -1;
+		return error_set_code(-1, "%s", strerror(errno));
 	va_start(arg, function);
 	i = appinterface_call(ac->interface, &ac->buf_write[ac->buf_write_cnt],
 			left, function, args, arg);
@@ -360,7 +357,7 @@ static int _call_event(AppClient * ac)
 	fprintf(stderr, "%s", "AppClient looping in wait for answer\n");
 #endif
 	event_loop(ac->event);
-	event_delete(ac->event);
+	event_delete(ac->event); /* FIXME may already be free'd */
 	ac->event = eventtmp;
 	return 0; /* FIXME catch errors */
 }

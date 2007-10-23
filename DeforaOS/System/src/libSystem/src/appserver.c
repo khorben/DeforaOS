@@ -24,6 +24,7 @@
 # include <stdio.h>
 #endif
 #include <string.h>
+#include <errno.h>
 #include <netinet/in.h>
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
@@ -74,7 +75,10 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	AppServerClient * asc;
 
 	if((asc = malloc(sizeof(AppServerClient))) == NULL)
+	{
+		error_set_code(1, "%s", strerror(errno));
 		return NULL;
+	}
 	asc->state = ASCS_NEW;
 	asc->fd = -1;
 	asc->addr = addr;
@@ -85,6 +89,8 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	if((asc->ssl = SSL_new(ssl_ctx)) == NULL
 			|| SSL_set_fd(asc->ssl, fd) != 1)
 	{
+		return error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+					NULL));
 		_appserverclient_delete(asc);
 		return NULL;
 	}
@@ -98,7 +104,6 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 /* _appserverclient_delete */
 static void _appserverclient_delete(AppServerClient * appserverclient)
 {
-	/* FIXME find a way to properly report error */
 #ifdef WITH_SSL
 	if(appserverclient->ssl != NULL)
 		SSL_free(appserverclient->ssl);
@@ -143,14 +148,13 @@ static int _appserver_accept(int fd, AppServer * appserver)
 			")\n");
 #endif
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
-		return 1;
+		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
 	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port
 #ifdef WITH_SSL
 					, appserver->ssl_ctx
 #endif
 					)) == NULL)
 	{
-		/* FIXME report error */
 		close(newfd);
 		return 0;
 	}
@@ -188,9 +192,14 @@ static int _appserver_read(int fd, AppServer * appserver)
 		return 1;
 	if((len = sizeof(asc->buf_read) - asc->buf_read_cnt) <= 0
 			|| (len = READ(fd, asc, len)) <= 0)
+		/* FIXME the error is not necessarily because of READ */
 	{
 #ifdef WITH_SSL
+		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+					NULL));
 		SSL_shutdown(asc->ssl);
+#else
+		error_set_code(1, "%s%s", "read: ", strerror(errno));
 #endif
 		/* FIXME do all this in appserverclient_delete() or something
 		 * like appserver_remove_client() */
@@ -287,7 +296,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 	fprintf(stderr, "sending result: %zu long\n", asc->buf_write_cnt);
 #endif
 	if(asc->buf_write_cnt == 0 || (len = WRITE(fd, asc)) <= 0)
-		return 1; /* FIXME what here?!? */
+		return 1; /* FIXME catch and handle error */
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
 #ifdef DEBUG
@@ -332,7 +341,10 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 		return NULL;
 #endif
 	if((appserver = malloc(sizeof(AppServer))) == NULL)
+	{
+		error_set_code(1, "%s", strerror(errno));
 		return NULL;
+	}
 	appserver->interface = NULL;
 	appserver->event = event;
 	appserver->event_free = 0;
@@ -342,22 +354,26 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 	if((appserver->clients = AppServerClientarray_new()) == NULL
 			|| (appserver->interface = appinterface_new_server(app))
 			== NULL
-			|| _new_server(appserver, options) != 0
+			|| _new_server(appserver, options) != 0)
+	{
+		appserver_delete(appserver);
+		return NULL;
+	}
 #ifdef WITH_SSL
-			|| (appserver->ssl_ctx = SSL_CTX_new(
-					SSLv3_server_method())) == NULL
+	if((appserver->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
 			|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
 				SSL_DEFAULT_CIPHER_LIST) != 1
 			|| SSL_CTX_use_certificate_file(appserver->ssl_ctx, crt,
 				SSL_FILETYPE_PEM) == 0
 			|| SSL_CTX_use_PrivateKey_file(appserver->ssl_ctx, crt,
-				SSL_FILETYPE_PEM) == 0
-#endif
-			)
+				SSL_FILETYPE_PEM) == 0)
 	{
+		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+					NULL));
 		appserver_delete(appserver);
 		return NULL;
 	}
+#endif
 	return appserver;
 }
 
@@ -367,7 +383,7 @@ static int _new_server(AppServer * appserver, int options)
 	struct sockaddr_in sa;
 
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		return 1;
+		return error_set_code(1, "%s%s", "socket: ", strerror(errno));
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appinterface_get_port(appserver->interface));
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
@@ -375,7 +391,7 @@ static int _new_server(AppServer * appserver, int options)
 	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
 			|| listen(fd, 5) != 0)
 	{
-		/* FIXME report error */
+		error_set_code(1, "%s%s", "bind: ", strerror(errno));
 		close(fd);
 		return 1;
 	}
@@ -388,8 +404,9 @@ static int _new_server(AppServer * appserver, int options)
 /* appserver_delete */
 void appserver_delete(AppServer * appserver)
 {
-	appinterface_delete(appserver->interface);
-	if(appserver->event_free)
+	if(appserver->interface != NULL)
+		appinterface_delete(appserver->interface);
+	if(appserver->event_free != 0)
 		event_delete(appserver->event);
 	array_delete(appserver->clients);
 #ifdef WITH_SSL
