@@ -30,7 +30,7 @@ typedef struct _Buffer
 
 
 /* functions */
-Buffer * buffer_new(unsigned int size, char * data);
+Buffer * buffer_new(unsigned int size, char const * data);
 void buffer_delete(Buffer * buffer);
 
 /* returns */

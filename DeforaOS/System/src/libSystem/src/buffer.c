@@ -22,7 +22,7 @@
 
 
 /* Buffer */
-Buffer * buffer_new(unsigned int size, char * data)
+Buffer * buffer_new(unsigned int size, char const * data)
 {
 	Buffer * buffer;
 
