@@ -109,7 +109,13 @@ static void _appserverclient_delete(AppServerClient * appserverclient)
 		SSL_free(appserverclient->ssl);
 #endif
 	if(appserverclient->fd != -1)
+	{
 		close(appserverclient->fd);
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "DEBUG: close(", appserverclient->fd,
+				")\n");
+#endif
+	}
 	free(appserverclient);
 }
 
@@ -155,6 +161,9 @@ static int _appserver_accept(int fd, AppServer * appserver)
 					)) == NULL)
 	{
 		close(newfd);
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "DEBUG: close(", newfd, ")\n");
+#endif
 		return 0;
 	}
 	array_append(appserver->clients, &asc);
@@ -236,6 +245,9 @@ static int _read_logged(AppServer * appserver, AppServerClient * asc)
 	if(_appserver_receive(appserver, asc) != 0)
 	{
 		close(asc->fd);
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "DEBUG: close(", asc->fd, ")\n");
+#endif
 		return 1;
 	}
 	return 0;

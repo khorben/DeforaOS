@@ -109,6 +109,9 @@ static int _read_error(AppClient * ac)
 	SSL_shutdown(ac->ssl);
 #endif
 	close(ac->fd); /* FIXME is it really critical already? */
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s", "DEBUG: close(", ac->fd, ")\n");
+#endif
 	ac->fd = -1;
 	return 1;
 }
@@ -286,7 +289,13 @@ void appclient_delete(AppClient * appclient)
 {
 	appinterface_delete(appclient->interface);
 	if(appclient->fd != -1)
+	{
 		close(appclient->fd);
+#ifdef DEBUG
+		fprintf(stderr, "%s%d%s", "DEBUG: close(", appclient->fd,
+				")\n");
+#endif
+	}
 #ifdef WITH_SSL
 	if(appclient->ssl != NULL)
 		SSL_free(appclient->ssl);
