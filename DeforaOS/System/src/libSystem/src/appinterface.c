@@ -45,6 +45,15 @@ typedef enum _AppInterfaceCallType
 	AICT_STRING	= 012, 	AICT_BUFFER	= 013
 } AppInterfaceCallType;
 #define AICT_LAST AICT_BUFFER
+
+#ifdef DEBUG
+static const String * AICTString[AICT_LAST + 1] =
+{
+	"void", "bool", "int8", "uint8", "int16", "uint16", "int32", "uint32",
+	"int64", "uint64", "String", "Buffer"
+};
+#endif
+
 static int _aict_size[AICT_LAST+1] =
 {
 	0,			sizeof(char),
@@ -206,8 +215,7 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 	for(i = 0; i < ai->calls_cnt; i++)
 		if(string_compare(ai->calls[i].name, function) == 0)
 			return 1;
-	if((p = realloc(ai->calls, sizeof(AppInterfaceCall) * (i + 1)))
-			== NULL)
+	if((p = realloc(ai->calls, sizeof(AppInterfaceCall) * (i + 1))) == NULL)
 		return 1; /* FIXME report error */
 	ai->calls = p;
 	ai->calls_cnt++;
@@ -234,8 +242,8 @@ static void _append_arg(AppInterfaceCallArg * arg, AppInterfaceCallType type,
 	arg->direction = direction;
 	arg->size = _aict_size[type];
 #ifdef DEBUG
-	fprintf(stderr, "type: %d, direction: %d, size: %d\n", type, direction,
-			arg->size);
+	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %d\n",
+			AICTString[type], direction, arg->size);
 #endif
 }
 
@@ -565,7 +573,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					p = va_arg(arg, int64_t *);
 					args[i] = p;
 					break;
-				case AICT_STRING:
+				case AICT_STRING: /* FIXME check this */
 					p = *(va_arg(arg, String **));
 					args[i] = p;
 					break;
@@ -926,6 +934,7 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			if(_read_bytes(&size, sizeof(size), buf, buflen, pos)
 					!= 0)
 				return -1;
+			size = ntohl(size);
 			b = arg;
 			if((*b = buffer_new(size, NULL)) == NULL)
 				return -1;
