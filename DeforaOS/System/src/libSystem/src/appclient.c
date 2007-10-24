@@ -44,9 +44,9 @@ struct _AppClient
 	int fd;
 #define ASC_BUFSIZE 65536 /* FIXME */
 	char buf_read[ASC_BUFSIZE];
-	int buf_read_cnt;
+	size_t buf_read_cnt;
 	char buf_write[ASC_BUFSIZE];
-	int buf_write_cnt;
+	size_t buf_write_cnt;
 	char const * lastfunc;
 	void ** lastargs;
 	int32_t * lastret;
@@ -61,7 +61,7 @@ struct _AppClient
 static int _appclient_timeout(AppClient * appclient)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "appclient_timeout(", appclient->fd, ")\n");
+	fprintf(stderr, "%s%d%s", "DEBUG: timeout (", appclient->fd, ")\n");
 #endif
 	errno = ETIMEDOUT;
 	event_unregister_io_read(appclient->event, appclient->fd);
@@ -81,20 +81,18 @@ static int _read_error(AppClient * ac);
 
 static int _appclient_read(int fd, AppClient * ac)
 {
-	ssize_t len;
+	ssize_t len = sizeof(ac->buf_read) - ac->buf_read_cnt;
 
-	if((len = (sizeof(ac->buf_read) - ac->buf_read_cnt)) < 0
-			|| (len = READ(fd, ac, len)) <= 0)
+	if(len < 0 || (len = READ(fd, ac, len)) <= 0)
 		return _read_error(ac);
 	ac->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "appclient_read(", fd, ") ", len,
-			" bytes\n");
+	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") ", len, "\n");
 #endif
 	len = appinterface_call_receive(ac->interface, ac->lastret,
 			ac->buf_read, ac->buf_read_cnt, ac->lastfunc,
 			ac->lastargs);
-	if(len < 0 || len > ac->buf_read_cnt)
+	if(len < 0 || (size_t)len > ac->buf_read_cnt)
 		return _read_error(ac);
 	if(len == 0) /* try again */
 		return 0;
@@ -126,18 +124,17 @@ static int _appclient_write(int fd, AppClient * ac)
 {
 	ssize_t len;
 
-	len = ac->buf_write_cnt;
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "appclient_write(", fd, ") ", len,
-			" bytes\n");
-#endif
-	if((len = WRITE(fd, ac, len)) <= 0)
+	if((len = WRITE(fd, ac, ac->buf_write_cnt)) <= 0)
 	{
 #ifdef WITH_SSL
 		SSL_shutdown(ac->ssl);
 #endif
 		return 1;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%zu%s%zd%s", "DEBUG: WRITE(", fd, ", ",
+			ac->buf_write_cnt, ") ", len, "\n");
+#endif
 	memmove(ac->buf_write, &ac->buf_write[len], len);
 	ac->buf_write_cnt-=len;
 	if(ac->buf_write_cnt > 0)
@@ -309,21 +306,18 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	void ** args = NULL;
 	va_list arg;
 	size_t left = sizeof(ac->buf_write) - ac->buf_write_cnt;
-	int i;
+	size_t cnt;
+	ssize_t i;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%p%s", "appclient_call(), interface ", ac->interface,
-			"\n");
-#endif
-	if((i = appinterface_get_args_count(ac->interface, function)) < 0)
+	if(appinterface_get_args_count(ac->interface, &cnt, function) != 0)
 		return -1;
-	if(i > 0 && (args = calloc(sizeof(*args), i)) == NULL)
+	if((args = calloc(sizeof(*args), cnt)) == NULL)
 		return error_set_code(-1, "%s", strerror(errno));
 	va_start(arg, function);
 	i = appinterface_call(ac->interface, &ac->buf_write[ac->buf_write_cnt],
 			left, function, args, arg);
 	va_end(arg);
-	if(i <= 0 || i > left)
+	if(i <= 0 || (size_t)i > left)
 	{
 		free(args);
 		return -1;
@@ -332,13 +326,9 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	ac->lastargs = args;
 	ac->lastret = ret;
 	ac->buf_write_cnt += i;
-	if(_call_event(ac) != 0)
-	{
-		free(ac->lastargs);
-		return -1;
-	}
-	free(ac->lastargs);
-	return 0;
+	i = _call_event(ac);
+	free(args);
+	return i == 0 ? 0 : -1;
 }
 
 static int _call_event(AppClient * ac)
@@ -354,7 +344,7 @@ static int _call_event(AppClient * ac)
 	event_register_io_write(ac->event, ac->fd,
 			(EventIOFunc)_appclient_write, ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "AppClient looping in wait for answer\n");
+	fprintf(stderr, "%s", "DEBUG: waiting for answer\n");
 #endif
 	event_loop(ac->event);
 	event_delete(ac->event); /* FIXME may already be free'd */

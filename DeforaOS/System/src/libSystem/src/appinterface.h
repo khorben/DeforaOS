@@ -34,7 +34,7 @@ void appinterface_delete(AppInterface * appinterface);
 
 /* accessors */
 int appinterface_get_port(AppInterface * appinterface);
-int appinterface_get_args_count(AppInterface * appinterface,
+int appinterface_get_args_count(AppInterface * appinterface, size_t * count,
 		char const * function);
 
 /* useful */

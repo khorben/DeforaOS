@@ -143,12 +143,11 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	int newfd;
 	AppServerClient * asc;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s%p%s", "_appserver_accept(", fd, ", ", appserver,
-			")\n");
-#endif
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s%d%s", "DEBUG: accept(", fd, ") ", newfd, "\n");
+#endif
 	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port
 #ifdef WITH_SSL
 					, appserver->ssl_ctx
@@ -210,10 +209,9 @@ static int _appserver_read(int fd, AppServer * appserver)
 		array_remove_pos(appserver->clients, i);
 		return 1;
 	}
-	asc->buf_read_cnt+=len;
+	asc->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "_appserver_read(", fd,
-			", appserver): ", len, " characters read\n");
+	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") ", len, "\n");
 #endif
 	return _read_process(appserver, asc);
 }
@@ -245,18 +243,21 @@ static int _read_logged(AppServer * appserver, AppServerClient * asc)
 
 static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 {
-	int i;
+	ssize_t i;
 	int32_t ret;
 
 	if((i = appinterface_receive(appserver->interface, &ret, asc->buf_read,
 			asc->buf_read_cnt, asc->buf_write,
 			sizeof(asc->buf_write), &asc->buf_write_cnt)) == -1)
 		return -1;
-	if(i <= 0 || i > asc->buf_read_cnt)
+	if(i <= 0 || (size_t)i > asc->buf_read_cnt)
 		return -1;
 	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
-	asc->buf_read_cnt-=i;
+	asc->buf_read_cnt -= i;
 	/* FIXME should be done in AppInterface? */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: => %d\n", ret);
+#endif
 	if(asc->buf_write_cnt + sizeof(ret) > sizeof(asc->buf_write))
 		return -1;
 	ret = htonl(ret);
@@ -278,7 +279,7 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 static int _appserver_write(int fd, AppServer * appserver)
 {
 	AppServerClient * asc;
-	size_t len;
+	ssize_t len;
 	unsigned int i;
 
 	/* FIXME factorize this code */
@@ -292,17 +293,14 @@ static int _appserver_write(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "sending result: %zu long\n", asc->buf_write_cnt);
-#endif
 	if(asc->buf_write_cnt == 0 || (len = WRITE(fd, asc)) <= 0)
 		return 1; /* FIXME catch and handle error */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: WRITE(%d, %zu) %zd\n", fd, asc->buf_write_cnt,
+			len);
+#endif
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zu%s", "_appserver_write_int(", fd,
-			", appserver): ", len, " characters written\n");
-#endif
 	return asc->buf_write_cnt == 0 ? 1 : 0;
 }
 
