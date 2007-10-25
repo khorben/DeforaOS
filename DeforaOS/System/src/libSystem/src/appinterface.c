@@ -344,8 +344,9 @@ static int _new_vfs(AppInterface * ai)
 
 static int _new_directory(AppInterface * appinterface)
 {
-	return _new_append(appinterface, AICT_UINT32, "_register", 2,
-			AICT_BUFFER | AICD_IN, AICT_BUFFER | AICD_OUT);
+	return _new_append(appinterface, AICT_UINT32, "_register", 3,
+			AICT_STRING | AICD_IN, AICT_BUFFER | AICD_IN,
+			AICT_BUFFER | AICD_OUT);
 }
 
 
@@ -485,14 +486,14 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					break;
 				case AICT_BUFFER: /* FIXME handle NULL? */
 					b = va_arg(arg, Buffer *);
-					i32 = htonl(buffer_length(b));
+					i32 = htonl(buffer_get_size(b));
 					p = &i32;
 					if(_send_bytes(p, sizeof(i32), buf,
 								buflen, &pos)
 							!= 0)
 						return -1;
-					size = buffer_length(b);
-					p = buffer_data(b);
+					size = buffer_get_size(b);
+					p = buffer_get_data(b);
 					break;
 			}
 		}
@@ -536,14 +537,14 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 				case AICT_BUFFER:
 					b = va_arg(arg, Buffer *);
 					args[i] = b;
-					i32 = htonl(buffer_length(b));
+					i32 = htonl(buffer_get_size(b));
 					p = &i32;
 					if(_send_bytes(p, sizeof(i32), buf,
 								buflen, &pos)
 							!= 0)
 						return -1;
-					size = buffer_length(b);
-					p = buffer_data(b);
+					size = buffer_get_size(b);
+					p = buffer_get_data(b);
 					break;
 			}
 		}
@@ -580,7 +581,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 				case AICT_BUFFER:
 					b = va_arg(arg, Buffer *);
 					args[i] = b;
-					i32 = htonl(buffer_length(b));
+					i32 = htonl(buffer_get_size(b));
 					p = &i32;
 					size = sizeof(i32);
 					break;
@@ -727,10 +728,10 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 				break;
 			case AICT_BUFFER:
 				bsize = ntohl(bsize);
-				if(bsize > buffer_length(b))
+				if(buffer_set_size(b, bsize) != 0)
 					return -1; /* not enough space in b */
 				size = bsize;
-				v = buffer_data(b);
+				v = buffer_get_data(b);
 #ifdef DEBUG
 				fprintf(stderr, "%s%zu%s", "DEBUG: <= Buffer"
 						" size ", size, "\n");
@@ -938,8 +939,8 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			b = arg;
 			if((*b = buffer_new(size, NULL)) == NULL)
 				return -1;
-			if(_read_bytes(buffer_data(*b), size, buf, buflen, pos)
-					!= 0)
+			if(_read_bytes(buffer_get_data(*b), size, buf, buflen,
+						pos) != 0)
 			{
 				buffer_delete(*b);
 				return -1;
@@ -1134,11 +1135,11 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			return -1;
 		case AICT_BUFFER:
 			b = arg;
-			size = htonl(buffer_length(b)); /* size of buffer */
+			size = htonl(buffer_get_size(b)); /* size of buffer */
 			if(_send_bytes((char*)&size, sizeof(size), buf, buflen,
 						pos) != 0)
 				return -1;
-			if(_send_bytes(buffer_data(b), buffer_length(b),
+			if(_send_bytes(buffer_get_data(b), buffer_get_size(b),
 					buf, buflen, pos) != 0)
 				return -1;
 			break;
