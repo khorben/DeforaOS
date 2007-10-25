@@ -22,19 +22,17 @@
 
 /* Buffer */
 /* types */
-typedef struct _Buffer
-{
-	unsigned int size;
-	char * data;
-} Buffer;
+typedef struct _Buffer Buffer;
 
 
 /* functions */
-Buffer * buffer_new(unsigned int size, char const * data);
+Buffer * buffer_new(size_t size, char const * data);
 void buffer_delete(Buffer * buffer);
 
-/* returns */
-char * buffer_data(Buffer const * buffer);
-unsigned int buffer_length(Buffer const * buffer);
+/* accessors */
+char * buffer_get_data(Buffer const * buffer);
+size_t buffer_get_size(Buffer const * buffer);
+int buffer_set_data(Buffer * buffer, size_t offset, char * data, size_t size);
+int buffer_set_size(Buffer * buffer, size_t size);
 
 #endif /* !LIBSYSTEM_BUFFER_H */
