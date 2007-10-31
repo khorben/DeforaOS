@@ -1,0 +1,30 @@
+	<head>
+		<title>DaPortal configuration</title>
+		<link rel="stylesheet" href="themes/DaPortal.css" title="DaPortal"/>
+	</head>
+	<body>
+		<h1>DaPortal configuration</h1>
+		<form action="install.php" method="post">
+			<table>
+				<tr><td colspan="2"><h3>Database parameters</h3></td></tr>
+				<tr><td class="field">Type:</td><td><select name="dbtype">
+						<option value="mysql">MySQL</option>
+						<option value="pgsql">PostgreSQL</option>
+						<option value="sqlite">SQLite</option>
+					</select></td></tr>
+				<tr><td class="field">Hostname:</td><td><input name="dbhost" type="text" size="20"/></td></tr>
+				<tr><td class="field">Port:</td><td><input name="dbport" type="text" size="20"/></td></tr>
+				<tr><td class="field">Name:</td><td><input name="dbname" type="text" size="20"/> (or filename for SQLite)</td></tr>
+				<tr><td class="field">Username:</td><td><input name="dbuser" type="text" size="20"/></td></tr>
+				<tr><td class="field">Password:</td><td><input name="dbpassword" type="password" size="20"/></td></tr>
+				<tr><td colspan="2"><h3>Default settings</h3></td></tr>
+				<tr><td class="field">Template:</td><td><select name="template">
+						<option name="DaPortal">DaPortal</option>
+					</select></td></tr>
+				<tr><td class="field">Theme:</td><td><select name="theme">
+						<option name="DaPortal">DaPortal</option>
+					</select></td></tr>
+				<tr><td></td><td><input type="submit" value="Install"/></td></tr>
+			</table>
+		</form>
+	</body>
