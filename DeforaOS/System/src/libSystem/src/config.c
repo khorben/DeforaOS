@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with libSystem; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* TODO:
+ * - use the error reporting framework */
 
 
 
@@ -115,7 +117,8 @@ int config_load(Config * config, char const * filename)
 			|| (fp = fopen(filename, "r")) == NULL)
 	{
 		free(section);
-		return 1;
+		return error_set_code(1, "%s%s%s", filename, ": ",
+				strerror(errno));
 	}
 	while((c = fgetc(fp)) != EOF)
 	{
