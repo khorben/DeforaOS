@@ -104,23 +104,12 @@ function install_index()
 {
 	if(($fp = fopen('index.php', 'w')) == FALSE)
 		return 1;
-	fwrite($fp, "<?php
-
-
-
-//check url
-if(!ereg('/index.php$', \$_SERVER['SCRIPT_NAME']))
-{
-	header('Location: index.php');
-	exit(0);
-}
-
-include('./engine.php');
-
-
-?>\n");
-	fclose($fp);
-	return 0;
+	if(fwrite($fp, "<?php require_once('./engine.php'); ?>\n") == FALSE)
+	{
+		fclose($fp);
+		return 1;
+	}
+	return fclose($fp) == TRUE ? 0 : 1;
 }
 
 //
