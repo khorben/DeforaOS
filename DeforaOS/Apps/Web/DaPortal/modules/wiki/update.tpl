@@ -56,12 +56,12 @@ function wikiSubmit()
 }
 	//--></script>
 	<div class="toolbar">
-		<div class="icon cut" title="Cut" onclick="wikiExec('cut')"></div>
-		<div class="icon copy" title="Copy" onclick="wikiExec('copy')"></div>
-		<div class="icon paste" title="Paste" onclick="wikiExec('paste')"></div>
+		<div class="icon cut" title="<?php echo _html_safe(CUT); ?>" onclick="wikiExec('cut')"></div>
+		<div class="icon copy" title="<?php echo _html_safe(COPY); ?>" onclick="wikiExec('copy')"></div>
+		<div class="icon paste" title="<?php echo _html_safe(PASTE); ?>" onclick="wikiExec('paste')"></div>
 		<div class="icon separator"></div>
-		<div class="icon undo" title="Undo" onclick="wikiExec('undo')"></div>
-		<div class="icon redo" title="Redo" onclick="wikiExec('redo')"></div>
+		<div class="icon undo" title="<?php echo _html_safe(UNDO); ?>" onclick="wikiExec('undo')"></div>
+		<div class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="wikiExec('redo')"></div>
 	</div>
 	<div class="toolbar">
 		<select id="formatblock" onchange="wikiSelect(this.id)">
@@ -94,10 +94,10 @@ function wikiSubmit()
 			<option value="6">6</option>
 		</select>
 		<div class="icon separator"></div>
-		<div class="icon bold" title="Bold" onclick="wikiExec('bold')"></div>
-		<div class="icon italic" title="Italic" onclick="wikiExec('italic')"></div>
-		<div class="icon underline" title="Underline" onclick="wikiExec('underline')"></div>
-		<div class="icon strikethrough" title="Strike" onclick="wikiExec('strikethrough')"></div>
+		<div class="icon bold" title="<?php echo _html_safe(BOLD); ?>" onclick="wikiExec('bold')"></div>
+		<div class="icon italic" title="<?php echo _html_safe(ITALIC); ?>" onclick="wikiExec('italic')"></div>
+		<div class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="wikiExec('underline')"></div>
+		<div class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="wikiExec('strikethrough')"></div>
 		<div class="icon separator"></div>
 		<div class="icon align_left" title="Align left" onclick="wikiExec('justifyleft')"></div>
 		<div class="icon align_center" title="Align center" onclick="wikiExec('justifycenter')"></div>

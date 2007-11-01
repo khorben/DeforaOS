@@ -40,6 +40,7 @@ $text['DOWNLOAD_FILE'] = 'Download file';
 $text['FILES'] = 'Files';
 $text['INVALID_PROJECT'] = 'Invalid project';
 $text['MEMBERS'] = 'Members';
+$text['MODIFICATION_OF'] = 'Modification of';
 $text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
 $text['MODIFICATION_OF_REPLY_TO_BUG_HASH'] = 'Modification of reply to bug #';
 $text['NEW_PROJECT'] = 'New project';
@@ -1437,7 +1438,7 @@ function project_modify($args)
 		return _error('Unable to update project');
 	$project = $project[0];
 	_project_toolbar($project['id']);
-	$title = 'Modification of '.$project['name'];
+	$title = MODIFICATION_OF.' '.$project['name'];
 	include('./modules/project/project_update.tpl');
 }
 

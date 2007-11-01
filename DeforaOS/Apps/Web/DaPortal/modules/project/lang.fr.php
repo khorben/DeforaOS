@@ -27,6 +27,7 @@ $text['CVS_PATH'] = 'Chemin CVS';
 $text['FILES'] = 'Fichiers';
 $text['INVALID_PROJECT'] = 'Projet non valide';
 $text['MEMBERS'] = 'Membres';
+$text['MODIFICATION_OF'] = 'Modification de';
 $text['NEW_PROJECT'] = 'Nouveau projet';
 $text['NO_CVS_REPOSITORY'] = "Ce projet n'est pas géré par CVS";
 $text['PRIORITY'] = 'Priorité';

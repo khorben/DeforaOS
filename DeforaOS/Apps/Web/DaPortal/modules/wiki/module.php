@@ -24,14 +24,23 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['BOLD'] = 'Bold';
+$text['COPY'] = 'Copy';
+$text['CUT'] = 'Cut';
 $text['DOCUMENT_NOT_VALID'] = 'Document not valid';
 $text['FONT'] = 'Font';
+$text['ITALIC'] = 'Italic';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
+$text['PASTE'] = 'Paste';
+$text['REDO'] = 'Redo';
 $text['REVISIONS'] = 'Revisions';
 $text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
+$text['STRIKE'] = 'Strike';
 $text['STYLE'] = 'Style';
+$text['UNDERLINE'] = 'Underline';
+$text['UNDO'] = 'Undo';
 $text['WIKI'] = 'Wiki';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
 $text['WIKI_LIST'] = 'Wiki list';
@@ -39,8 +48,22 @@ $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 global $lang;
 if($lang == 'fr')
 {
+	$text['BOLD'] = 'Gras';
+	$text['COPY'] = 'Copier';
+	$text['CUT'] = 'Couper';
 	$text['DOCUMENT_NOT_VALID'] = 'Document non valide';
+	$text['FONT'] = 'Fonte';
+	$text['ITALIC'] = 'Italique';
+	$text['NEW_WIKI_PAGE'] = 'Nouvelle page Wiki';
+	$text['PASTE'] = 'Coller';
+	$text['REDO'] = 'Refaire';
+	$text['STRIKE'] = 'Barré';
+	$text['SIZE'] = 'Taille';
+	$text['UNDERLINE'] = 'Souligné';
+	$text['UNDO'] = 'Annuler';
 	$text['WIKI_ADMINISTRATION'] = 'Administration du wiki';
+	$text['WIKI_LIST'] = 'Liste des pages Wiki';
+	$text['WIKI_PAGE_PREVIEW'] = 'Prévisualisation de page Wiki';
 }
 _lang($text);
 
