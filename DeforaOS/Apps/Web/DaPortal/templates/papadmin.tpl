@@ -9,5 +9,5 @@
 	</div>
 <?php } ?>
 <div style="clear: both"></div>
-<? _debug(); ?>
+<?php _debug(); ?>
 </div>
