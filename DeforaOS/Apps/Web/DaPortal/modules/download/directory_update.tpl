@@ -5,7 +5,7 @@
 	<input type="hidden" name="parent" value="<?php echo $parent; ?>"/>
 <?php } ?>
 	<table>
-		<tr><td class="field">Name:</td><td><input type="text" name="title" value=""/></td></tr>
-		<tr><td></td><td><input type="submit" value="Create"/></td></tr>
+		<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><input type="text" name="title" value=""/></td></tr>
+		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(CREATE); ?>"/></td></tr>
 	</table>
 </form>

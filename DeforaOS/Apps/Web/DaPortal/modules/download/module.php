@@ -27,6 +27,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['BACK'] = 'Back';
+$text['CREATE'] = 'Create';
 $text['DOWNLOADS_ADMINISTRATION'] = 'Downloads administration';
 $text['DOWNLOADS_LIST'] = 'Downloads list';
 $text['FORWARD'] = 'Forward';
@@ -41,10 +42,14 @@ global $lang;
 if($lang == 'fr')
 {
 	$text['BACK'] = 'Précédent';
+	$text['CREATE'] = 'Créer';
+	$text['DOWNLOADS_ADMINISTRATION'] = 'Administration des downloads';
+	$text['DOWNLOADS_LIST'] = 'Liste des downloads';
 	$text['FORWARD'] = 'Suivant';
 	$text['NEW_DIRECTORY'] = 'Nouveau répertoire';
+	$text['OWNER'] = 'Propriétaire';
 	$text['PARENT_DIRECTORY'] = 'Répertoire parent';
-	$text['SETTINGS'] = 'Configuration';
+	$text['SETTINGS'] = 'Paramètres';
 }
 _lang($text);
 define('S_IFDIR', 01000);
@@ -358,7 +363,7 @@ function download_directory_new($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title directory">'._html_safe(NEW_DIRECTORY).'</h1>'
 			."\n");
-	$parent = $args['id'];
+	$parent = isset($args['id']) ? $args['id'] : FALSE;
 	include('./modules/download/directory_update.tpl');
 }
 

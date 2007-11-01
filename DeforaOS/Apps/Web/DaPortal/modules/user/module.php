@@ -25,6 +25,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['APPEARANCE'] = 'Appearance';
+$text['CREATE'] = 'Create';
 $text['EMAIL'] = 'e-mail';
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
@@ -54,16 +55,20 @@ if($lang == 'de')
 else if($lang == 'fr')
 {
 	$text['APPEARANCE'] = 'Apparence';
+	$text['CREATE'] = 'Créer';
 	$text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
 	$text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
 	$text['MY_CONTENT'] = 'Mes contenus';
 	$text['MY_PROFILE'] = 'Mon profil';
 	$text['NEW_USER'] = 'Nouvel utilisateur';
 	$text['REGISTER'] = "S'inscrire";
+	$text['SETTINGS'] = 'Paramètres';
 	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
 	$text['USER_LOGIN'] = 'Authentification utilisateur';
 	$text['USER_MODIFICATION'] = "Modification d'utilisateur";
 	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
+	$text['USERS'] = 'Utilisateurs';
+	$text['USERS_ADMINISTRATION'] = 'Administration des utilisateurs';
 	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
 	$text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est';
 }
@@ -426,7 +431,7 @@ function user_new($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	$title = 'New user';
+	$title = NEW_USER;
 	$admin = 1;
 	include('./modules/user/user_update.tpl');
 }
