@@ -136,6 +136,14 @@ function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 	global $friendlylinks;
 
 	$link = $_SERVER['SCRIPT_NAME'];
+	if(is_array($params))
+	{
+		$keys = array_keys($params);
+		$p = $params;
+		$params = '';
+		foreach($keys as $k)
+			$params .= $k.'='.$p[$k];
+	}
 	if($friendlylinks == 1)
 	{
 		$link .= '/'.$module;
