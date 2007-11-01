@@ -1,8 +1,8 @@
 <h1 class="title project"><?php echo _html_safe(PROJECTS); ?></h1>
 <h2 class="title stats"><?php echo _html_safe(STATISTICS); ?></h2>
-<p>There are <?php echo $project_cnt; ?> <a href="<?php echo _html_link('project', 'list'); ?>">projects registered</a>.</p>
+<p><?php echo _html_safe(THERE_ARE).' '.$project_cnt; ?> <a href="<?php echo _html_link('project', 'list'); ?>"><?php echo _html_safe(PROJECTS_REGISTERED); ?></a>.</p>
 <?php $keys = array_keys($cols); foreach($keys as $k) { ?>
-<a name="<?php echo _html_safe($k); ?>"></a><h3>Bugs by <?php echo _html_safe($cols[$k]); ?></h3>
+<a name="<?php echo _html_safe($k); ?>"></a><h3><?php echo _html_safe(BUGS_BY.' '.$cols[$k]); ?></h3>
 <table class="bordered">
 	<tr>
 		<th class="field" colspan="2"></th>

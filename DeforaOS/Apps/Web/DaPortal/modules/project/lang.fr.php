@@ -22,6 +22,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text['ASSIGNED_TO'] = 'Affecté à';
 $text['BROWSE_SOURCE'] = 'Parcourir les sources';
 $text['BUG_REPORTS'] = 'Rapports de bugs';
+$text['BUGS_BY'] = 'Bugs par';
 $text['CVS_PATH'] = 'Chemin CVS';
 $text['FILES'] = 'Fichiers';
 $text['INVALID_PROJECT'] = 'Projet non valide';
@@ -34,6 +35,7 @@ $text['PROJECT_LIST'] = 'Liste des projets';
 $text['PROJECT_NAME'] = 'Nom du projet';
 $text['PROJECTS'] = 'Projets';
 $text['PROJECTS_ADMINISTRATION'] = 'Administration des projets';
+$text['PROJECTS_REGISTERED'] = 'projects enregistrés';
 $text['RELEASES'] = 'Versions';
 $text['REPLY_BY'] = 'Réponse par';
 $text['REPLY_ON'] = 'le';
@@ -46,6 +48,7 @@ $text['STATE'] = 'Etat';
 $text['STATE_CHANGED_TO'] = 'Etat changé à';
 $text['STATISTICS'] = 'Statistiques';
 $text['SUBMITTER'] = 'Envoyé par';
+$text['THERE_ARE'] = 'Il y a';
 $text['TIMELINE'] = 'Progression';
 
 ?>
