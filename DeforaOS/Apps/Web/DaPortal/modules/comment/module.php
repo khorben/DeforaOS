@@ -50,10 +50,12 @@ else if($lang == 'fr')
 	$text['COMMENT_ADMINISTRATION'] = 'Administration des commentaires';
 	$text['COMMENT_BY'] = 'Commentaire de';
 	$text['COMMENT_ON'] = 'le';
+	$text['COMMENT_PREVIEW'] = 'Aperçu du commentaire';
 	$text['COMMENT_S'] = 'commentaire(s)';
 	$text['COMMENTS'] = 'Commentaires';
+	$text['COMMENTS_BY'] = 'Commentaires par';
 	$text['NEW_COMMENT'] = 'Nouveau commentaire';
-	$text['SETTINGS'] = 'Configuration';
+	$text['SETTINGS'] = 'Paramètres';
 }
 _lang($text);
 
@@ -309,7 +311,7 @@ function comment_submit($comment)
 	if(isset($comment['preview']))
 	{
 		print('<h1 class="title comment">'._html_safe(COMMENT_PREVIEW)
-				.'</h1>');
+				."</h1>\n");
 		_module('content', 'default',
 				array('id' => $comment['parent']));
 		$comment['title'] = stripslashes($comment['title']);
