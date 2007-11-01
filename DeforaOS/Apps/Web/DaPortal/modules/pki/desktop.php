@@ -20,6 +20,5 @@ $title = 'PKI';
 $icon = 'pki.png';
 $admin = 1;
 $list = 1;
-$user = array(array('icon' => 'pki.png', 'name' => $title));
 
 ?>
