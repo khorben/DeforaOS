@@ -141,19 +141,12 @@ function download_admin($args)
 
 
 function download_config_update($args)
-	//FIXME would benefit of a global design
 {
-	global $user_id;
+	global $error;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	$keys = array_keys($args);
-	foreach($keys as $k)
-		if(ereg('^download_([a-zA-Z_]+)$', $k, $regs))
-			_config_set('download', $regs[1], $args[$k]);
-	header('Location: '._module_link('download', 'admin'));
-	exit(0);
+	if(isset($error) && strlen($error))
+		_error($error);
+	return download_admin(array());
 }
 
 
@@ -492,7 +485,7 @@ function download_file_new($args)
 
 function download_system($args)
 {
-	global $html, $title;
+	global $html, $title, $error;
 
 	$title.=' - '.DOWNLOADS;
 	if(!isset($args['action']))
@@ -505,9 +498,22 @@ function download_system($args)
 	}
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
-	if($args['action'] == 'config_update'
-			|| $args['action'] == 'file_insert')
+	if($args['action'] == 'config_update')
+		$error = _system_config_update($args);
+	else if($args['action'] == 'file_insert')
 		$html = 0;
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	_config_update('download', $args);
+	header('Location: '._module_link('download', 'admin'));
+	exit(0);
 }
 
 ?>
