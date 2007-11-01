@@ -42,6 +42,7 @@ else if($lang == 'fr')
 	$text['LANGUAGES'] = 'Langages';
 	$text['MODULE_NAME'] = 'Nom du module';
 	$text['PORTAL_ADMINISTRATION'] = 'Administration du portail';
+	$text['SETTINGS'] = 'Paramètres';
 }
 _lang($text);
 

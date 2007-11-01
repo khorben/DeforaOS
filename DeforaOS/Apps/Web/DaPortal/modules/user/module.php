@@ -53,8 +53,11 @@ if($lang == 'de')
 }
 else if($lang == 'fr')
 {
+	$text['APPEARANCE'] = 'Apparence';
 	$text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
 	$text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
+	$text['MY_CONTENT'] = 'Mes contenus';
+	$text['MY_PROFILE'] = 'Mon profil';
 	$text['NEW_USER'] = 'Nouvel utilisateur';
 	$text['REGISTER'] = "S'inscrire";
 	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';

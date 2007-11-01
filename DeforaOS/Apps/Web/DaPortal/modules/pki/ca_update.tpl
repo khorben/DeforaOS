@@ -13,7 +13,7 @@
 		<table>
 <?php if(isset($parent) && is_array($parent)) { ?>
 			<tr><td class="field">Parent:</td><td><select name="parent">
-					<option value="">Self-signed</option>
+					<option value=""><?php echo _html_safe(SELF_SIGNED); ?></option>
 <?php foreach($parent as $p) { ?>
 					<option value="<?php echo _html_safe($p['id']); ?>"<?php if(isset($parent_id) && $parent_id == $p['id']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p['title']); ?></option>
 <?php } ?>

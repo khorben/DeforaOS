@@ -28,20 +28,25 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['ALL_HOSTS'] = 'All hosts';
+$text['COMMENT'] = 'Comment';
 $text['CONFIGURATION_ERROR'] = 'Configuration error';
 $text['GRAPH_LIST'] = 'Graph list';
 $text['HOST_LIST'] = 'Host list';
 $text['MONITORING'] = 'Monitoring';
 $text['MONITORING_ADMINISTRATION'] = 'Monitoring administration';
 $text['NEW_HOST'] = 'New host';
+$text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'fr')
 {
+	$text['COMMENT'] = 'Commentaire';
 	$text['CONFIGURATION_ERROR'] = 'Erreur de configuration';
+	$text['GRAPH_LIST'] = 'Liste des graphes';
 	$text['HOST_LIST'] = 'Liste des machines';
 	$text['MONITORING'] = 'Suivi';
 	$text['MONITORING_ADMINISTRATION'] = 'Administration du suivi';
 	$text['NEW_HOST'] = 'Nouvelle machine';
+	$text['SETTINGS'] = 'Paramètres';
 }
 _lang($text);
 
@@ -294,7 +299,8 @@ function probe_admin($args)
 			.'</h1>'."\n");
 	if(($configs = _config_list('probe')))
 	{
-		print('<h2 class="title settings">Settings</h2>'."\n");
+		print('<h2 class="title settings">'._html_safe(SETTINGS)
+				."</h2>\n");
 		$module = 'probe';
 		$action = 'config_update';
 		include('./system/config.tpl');

@@ -46,10 +46,22 @@ $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
 $text['PUBLIC_KEY_INFRASTRUCTURE'] = 'Public key infrastructure';
 $text['SECTION'] = 'Section';
+$text['SELF_SIGNED'] = 'Self-signed';
 $text['SETTINGS'] = 'Settings';
 $text['STATE'] = 'State';
 $text['UNIT'] = 'Unit';
 global $lang;
+if($lang == 'fr')
+{
+	$text['CA_LIST'] = 'Liste des CA';
+	$text['CACLIENT_LIST'] = 'Liste des clients';
+	$text['CASERVER_LIST'] = 'Liste des serveurs';
+	$text['COMMON_NAME'] = 'Nom usuel';
+	$text['COUNTRY'] = 'Pays';
+	$text['NEW_CA'] = 'Nouveau CA';
+	$text['ORGANIZATION'] = 'Organisation';
+	$text['SELF_SIGNED'] = 'Auto-signé';
+}
 _lang($text);
 
 
