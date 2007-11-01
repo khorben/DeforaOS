@@ -58,9 +58,13 @@ if($lang == 'fr')
 	$text['CASERVER_LIST'] = 'Liste des serveurs';
 	$text['COMMON_NAME'] = 'Nom usuel';
 	$text['COUNTRY'] = 'Pays';
+	$text['LOCALITY'] = 'Ville';
 	$text['NEW_CA'] = 'Nouveau CA';
 	$text['ORGANIZATION'] = 'Organisation';
+	$text['PKI_ADMINISTRATION'] = 'Administration du PKI';
 	$text['SELF_SIGNED'] = 'Auto-signé';
+	$text['SETTINGS'] = 'Paramètres';
+	$text['STATE'] = 'Région';
 }
 _lang($text);
 
