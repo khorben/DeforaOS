@@ -347,7 +347,8 @@ function comment_submit($comment)
 	$comment['content'] = stripslashes($comment['content']);
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, '[Comment submission] '
-			.$comment['title'], $comment['content'], $header);
+			.$comment['title'], wordwrap($comment['content'], 72),
+			$header);
 }
 
 

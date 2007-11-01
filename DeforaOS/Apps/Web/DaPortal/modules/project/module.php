@@ -493,7 +493,8 @@ function project_bug_insert($args)
 			.'Priority: '.$args['priority']."\n\n"
 			.stripslashes($args['content']);
 		require_once('./system/mail.php');
-		_mail('Administration Team', $to, $title, $content);
+		_mail('Administration Team', $to, $title, wordwrap($content,
+					72));
 	}
 	if($enable)
 		return project_bug_display(array('id' => $id,
@@ -863,7 +864,7 @@ function project_bug_reply_insert($args)
 	$title = '[Bug reply] '.$args['title'];
 	$content = $from.$status."\n".stripslashes($args['content']);
 	require_once('./system/mail.php');
-	_mail('Administration Team', $to, $title, $content);
+	_mail('Administration Team', $to, $title, wordwrap($content, 72));
 }
 
 

@@ -457,7 +457,7 @@ function _submit_send_mail($news)
 		.stripslashes($news['content']);
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, '[News submission] '.$news['title'],
-			$news['content']);
+			wordwrap($news['content'], 72));
 }
 
 function _system_news_update($args)
