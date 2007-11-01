@@ -43,6 +43,7 @@ $text['NEWS'] = 'Actualités';
 $text['NO'] = 'Non';
 $text['PASSWORD'] = 'Mot de passe';
 $text['PERMISSION_DENIED'] = 'Permission non accordée';
+$text['PREVIEW'] = 'Prévisualiser';
 $text['READ'] = 'Lire';
 $text['REPLY'] = 'Répondre';
 $text['SEARCH'] = 'Recherche';
