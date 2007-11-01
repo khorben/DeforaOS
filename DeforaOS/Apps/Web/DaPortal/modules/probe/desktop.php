@@ -53,7 +53,7 @@ $hosts = _sql_array('SELECT title, content_id AS id'
 		.' WHERE daportal_content.module_id=daportal_module.module_id'
 		." AND daportal_module.name='probe'"
 		." AND daportal_content.enabled='1' ORDER BY title ASC");
-if(is_array($hosts))
+if(is_array($hosts) && count($hosts))
 {
 	$actions['host_list']['actions'] = array();
 	foreach($hosts as $h)
