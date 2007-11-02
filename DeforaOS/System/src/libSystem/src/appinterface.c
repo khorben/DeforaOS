@@ -135,10 +135,9 @@ AppInterface * appinterface_new(char const * app)
 #ifdef WITH_SSL
 	static int ssl_init = 0;
 #endif
-	AppInterface * appinterface;
 	/* FIXME read this from available Servers configuration, or imagine a
 	 * solution to negociate it directly */
-	struct iface
+	static const struct iface
 	{
 		char * name;
 		int (*func)(AppInterface *);
@@ -152,7 +151,8 @@ AppInterface * appinterface_new(char const * app)
 		{ "VFS",	_new_vfs,	4245 },
 		{ "Directory",	_new_directory,	4247 }
 	};
-	size_t const ifaces_cnt = sizeof(ifaces) / sizeof(struct iface);
+	static const size_t ifaces_cnt = sizeof(ifaces) / sizeof(struct iface);
+	AppInterface * appinterface;
 	size_t i;
 
 #ifdef WITH_SSL
@@ -167,22 +167,18 @@ AppInterface * appinterface_new(char const * app)
 		return NULL;
 	appinterface->calls = NULL;
 	appinterface->calls_cnt = 0;
-	error_set_code(1, "%s", "Unknown interface");
 	for(i = 0; i < ifaces_cnt; i++)
 	{
 		if(string_compare(app, ifaces[i].name) != 0)
 			continue;
-		if(ifaces[i].func(appinterface) != 0)
-			i = ifaces_cnt;
-		else
-			error_set_code(0, "");
-		break;
+		if(ifaces[i].func(appinterface) == 0)
+			break;
+		free(appinterface);
+		return NULL;
 	}
 	if(i == ifaces_cnt)
 	{
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: AppInterface creation failed\n");
-#endif
+		error_set_code(1, "%s", "Unknown interface");
 		free(appinterface);
 		return NULL;
 	}
@@ -216,7 +212,7 @@ static int _new_append(AppInterface * ai, AppInterfaceCallType type,
 		if(string_compare(ai->calls[i].name, function) == 0)
 			return 1;
 	if((p = realloc(ai->calls, sizeof(AppInterfaceCall) * (i + 1))) == NULL)
-		return 1; /* FIXME report error */
+		return error_set_code(1, "%s", strerror(errno));
 	ai->calls = p;
 	ai->calls_cnt++;
 	_append_arg(&ai->calls[i].type, type, AICD_OUT);
@@ -344,7 +340,8 @@ static int _new_vfs(AppInterface * ai)
 
 static int _new_directory(AppInterface * appinterface)
 {
-	return _new_append(appinterface, AICT_UINT32, "_register", 3,
+	/* uint32_t directory_register(in String, in Buffer, out Buffer); */
+	return _new_append(appinterface, AICT_UINT32, "directory_register", 3,
 			AICT_STRING | AICD_IN, AICT_BUFFER | AICD_IN,
 			AICT_BUFFER | AICD_OUT);
 }

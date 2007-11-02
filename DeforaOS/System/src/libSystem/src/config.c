@@ -27,6 +27,19 @@
 
 
 /* Config */
+/* private */
+/* types */
+/* FIXME should be an API to avoid this */
+typedef struct _HashEntry
+{
+	char * name;
+	void * data;
+} HashEntry;
+
+
+/* public */
+/* functions */
+/* config_new */
 Config * config_new(void)
 {
 	Config * config;
@@ -36,15 +49,11 @@ Config * config_new(void)
 	return config;
 }
 
-/* FIXME should be an API to avoid this */
-typedef struct _HashEntry
-{
-	char * name;
-	void * data;
-} HashEntry;
+
+/* config_delete */
 void config_delete(Config * config)
 {
-	unsigned int i;
+	size_t i;
 	HashEntry * hi;
 	int j;
 	HashEntry * hj;
@@ -63,17 +72,19 @@ void config_delete(Config * config)
 }
 
 
-/* useful */
+/* accessors */
+/* config_get */
 char * config_get(Config * config, char const * section, char const * variable)
 {
-	void * p;
+	Hash * h;
 
-	if((p = hash_get(config, section)) == NULL)
+	if((h = hash_get(config, section)) == NULL)
 		return NULL;
-	return hash_get(p, variable);
+	return hash_get(h, variable);
 }
 
 
+/* config_set */
 int config_set(Config * config, char const * section, char const * variable,
 		char const * value)
 {
@@ -101,9 +112,12 @@ int config_set(Config * config, char const * section, char const * variable,
 }
 
 
+/* useful */
+/* config_load */
 static char * _load_section(FILE * fp);
 static char * _load_variable(FILE * fp, int c);
 static char * _load_value(FILE * fp);
+
 int config_load(Config * config, char const * filename)
 {
 	FILE * fp;
@@ -239,13 +253,15 @@ static char * _load_value(FILE * fp)
 }
 
 
-static int _save_section(Hash * h, unsigned int i, FILE * fp);
+/* config_save */
+static int _save_section(Hash * h, size_t i, FILE * fp);
 static int _save_variables(Hash * h, FILE * fp);
+
 int config_save(Config * config, char const * filename)
 {
 	FILE * fp;
-	unsigned int i;
-	unsigned int j;
+	size_t i;
+	size_t j;
 	int ret = 0;
 
 	if((i = array_count(config)) == 0)
@@ -263,7 +279,7 @@ int config_save(Config * config, char const * filename)
 	return ret;
 }
 
-static int _save_section(Hash * h, unsigned int i, FILE * fp)
+static int _save_section(Hash * h, size_t i, FILE * fp)
 {
 	HashEntry * he;
 
@@ -283,8 +299,8 @@ static int _save_section(Hash * h, unsigned int i, FILE * fp)
 
 static int _save_variables(Hash * h, FILE * fp)
 {
-	unsigned int i;
-	unsigned int j;
+	size_t i;
+	size_t j;
 	HashEntry * he;
 
 	i = array_count(h);
