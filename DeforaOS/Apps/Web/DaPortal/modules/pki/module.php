@@ -190,8 +190,11 @@ function pki_admin($args)
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list CAs');
-	$fields = array('country', 'state', 'locality', 'organization',
-			'section', 'cn', 'email');
+	$classes = array('enabled' => ENABLED, 'country' => COUNTRY,
+			'state' => STATE, 'locality' => LOCALITY,
+			'organization' => ORGANIZATION, 'section' => SECTION,
+			'cn' => CN, 'email' => EMAIL);
+	$keys = array_keys($classes);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
@@ -199,6 +202,8 @@ function pki_admin($args)
 		$res[$i]['action'] = 'update';
 		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
+		foreach($keys as $k)
+			$res[$i][$k] = _html_safe($res[$i][$k]);
 		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE
 			? 'enabled' : 'disabled';
 		$res[$i]['enabled'] = '<img src="icons/16x16/'
@@ -206,8 +211,6 @@ function pki_admin($args)
 			.$res[$i]['enabled'].'" title="'
 			.($res[$i]['enabled'] == 'enabled'
 					? ENABLED : DISABLED).'"/>';
-		foreach($fields as $f)
-			$res[$i][$f] = _html_safe($res[$i][$f]);
 		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
 			.$res[$i]['email'].'</a>';
 	}
@@ -223,14 +226,9 @@ function pki_admin($args)
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
-				'class' => array('enabled' => ENABLED,
-					'country' => COUNTRY, 'state' => STATE,
-					'locality' => LOCALITY,
-					'organization' => ORGANIZATION,
-					'section' => SECTION, 'cn' => CN,
-					'email' => EMAIL),
-				'module' => 'pki', 'action' => 'admin',
-				'toolbar' => $toolbar, 'view' => 'details'));
+				'class' => $classes, 'module' => 'pki',
+				'action' => 'admin', 'toolbar' => $toolbar,
+				'view' => 'details'));
 }
 
 
