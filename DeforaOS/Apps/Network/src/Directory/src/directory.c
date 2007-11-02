@@ -16,13 +16,24 @@
 #include "../config.h"
 
 
+/* constants */
+#ifndef ETCDIR
+# define ETCDIR		PREFIX "/etc"
+#endif
+
+
 /* Directory */
 /* private */
 /* types */
 struct _Directory
 {
+	Config * config;
 	AppServer * appserver;
 };
+
+
+/* constants */
+#define DIRECTORY_CONF	ETCDIR "/Directory.conf"
 
 
 /* functions */
@@ -33,6 +44,8 @@ static int _x509_from_request(char const * filename, Buffer * csr,
 /* public */
 /* functions */
 /* directory_new */
+static void _new_config(Directory * directory);
+
 Directory * directory_new(Event * event)
 {
 	Directory * directory;
@@ -42,8 +55,10 @@ Directory * directory_new(Event * event)
 		error_set_code(1, "%s", strerror(errno));
 		return NULL;
 	}
+	_new_config(directory);
 	directory->appserver = appserver_new_event(PACKAGE, ASO_REMOTE, event);
-	if(directory->appserver == NULL)
+	if(directory->config == NULL
+			|| directory->appserver == NULL)
 	{
 		directory_delete(directory);
 		return NULL;
@@ -51,19 +66,42 @@ Directory * directory_new(Event * event)
 	return directory;
 }
 
+static void _new_config(Directory * directory)
+{
+	char * root = NULL;
+
+	if((directory->config = config_new()) == NULL)
+		return;
+	if(config_load(directory->config, DIRECTORY_CONF) != 0)
+	{
+		config_delete(directory->config);
+		directory->config = NULL;
+		return;
+	}
+	if((root = config_get(directory->config, "", "root")) != NULL
+			&& chdir(root) == 0)
+		return; /* succeeded */
+	if(root != NULL)
+		error_set_code(1, "%s%s%s", root, ": ", strerror(errno));
+	config_delete(directory->config);
+	directory->config = NULL;
+}
+
 
 /* directory_delete */
 void directory_delete(Directory * directory)
 {
-	/* FIXME implement */
-	appserver_delete(directory->appserver);
+	if(directory->config != NULL)
+		config_delete(directory->config);
+	if(directory->appserver != NULL)
+		appserver_delete(directory->appserver);
 	free(directory);
 }
 
 
 /* interface */
 /* register */
-uint32_t _register(char const * title, Buffer * csr, Buffer * x509)
+uint32_t directory_register(char const * title, Buffer * csr, Buffer * x509)
 {
 	static const char cacert_csr[] = "/cacert.csr";
 	static const char begin[] = "-----BEGIN CERTIFICATE REQUEST-----\n";
@@ -71,8 +109,6 @@ uint32_t _register(char const * title, Buffer * csr, Buffer * x509)
 	struct stat st;
 	size_t len;
 	char * filename;
-
-	printf("=== REGISTER ===\n");
 
 	/* validate title */
 	if(*title == '\0' || *title == '.' || strchr(title, '/') != NULL)
@@ -143,9 +179,11 @@ static int _x509_from_request(char const * filename, Buffer * csr,
 static void _request_child(char const * filename, int fd)
 {
 	static const char openssl_cnf[] = "/openssl.cnf";
-	char const * title = "Defora Signing"; /* FIXME hard-coded */
+	char const * title;
 	char * cnf;
 
+	if((title = config_get(config, "", "authority")) == NULL)
+		exit(error_print(PACKAGE));
 	if((cnf = malloc(strlen(title) + sizeof(openssl_cnf))) == NULL)
 		exit(error_set_print(PACKAGE, 1, "%s", strerror(errno)));
 	if(dup2(fd, 1) == -1)
