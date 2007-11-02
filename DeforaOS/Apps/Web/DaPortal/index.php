@@ -1,1 +1,1 @@
-<?php require('./install.php'); ?>
+<?php require_once('./install.php'); ?>
