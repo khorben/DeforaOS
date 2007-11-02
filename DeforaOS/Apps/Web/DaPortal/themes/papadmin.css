@@ -1,5 +1,6 @@
 /* themes/Papadmin.css */
 /* default includes */
+@import url("../css/debug.css");
 @import url("../css/explorer.css");
 @import url("../css/icons.css");
 @import url("../icons/gnome/icons.css");
@@ -24,13 +25,13 @@ div#container {
 	background-image:		url('../themes/papadam-bg.png');
 	background-position:		0 -24px;
 	background-repeat:		repeat-x;
-	height:				600px;
+	height:				536px;
 	margin-left:			auto;
 	margin-right:			auto;
-	margin-top:			48px;
+	margin-top:			32px;
 	overflow:			auto;
 	padding-left:			100px;
-	padding-top:			32px;
+	padding-top:			40px;
 	width:				800px;
 }
 
@@ -66,6 +67,10 @@ textarea {
 	border-width:			1px;
 }
 
+table {
+	border-collapse:		collapse;
+}
+
 th {
 	background-color:		#cfcfcf;
 }
@@ -80,6 +85,18 @@ th {
 	display:			none;
 }
 
+h1.title {
+	padding-top:			8px;
+}
+
+h2.title {
+	padding-top:			6px;
+}
+
+h3.title {
+	padding-top:			4px;
+}
+
 .toolbar {
 	background-color:		#dfdfdf;
 	padding:			2px;
@@ -88,39 +105,41 @@ th {
 
 /* modules */
 /* debug */
-.debug {
-	border:				1px solid black;
-	max-height:			65px;
-	margin:				4px;
-	overflow:			auto;
-}
-
-.debug div {
-	padding:			2px;
-}
-
-.debug div.visible {
-	background-repeat:		no-repeat;
+.debug .visible {
+	font-size:			13px;
 	font-weight:			bold;
-	min-height:			48px;
-	padding-left:			48px;
+	padding-top:			12px;
 }
 
-.debug .error {
+.debug.system {
+	border:				1px solid black;
+	font-family:			monospace;
+	max-height:			128px;
+	overflow:			auto;
+	position:			fixed;
+	top:				616px;
+	width:				800px;
+}
+
+.debug.system .error {
 	background-color:		#ff7f7f;
 }
 
-.debug .info {
+.debug.system .info {
 	background-color:		#7fff7f;
 }
 
-.debug .warning {
+.debug.system .warning {
 	background-color:		#ffff7f;
 }
 
 /* explorer */
 .explorer .entry {
 	overflow:			hidden;
+}
+
+.explorer .listing_list .entry {
+	width:				150px;
 }
 
 .explorer .entry .thumbnail {
@@ -130,8 +149,7 @@ th {
 }
 
 .explorer .selected, .explorer .selected a {
-	background-color:		#0000ff;
-	color:				#ffffff;
+	background-color:		#d0d080;
 }
 
 /* menu */

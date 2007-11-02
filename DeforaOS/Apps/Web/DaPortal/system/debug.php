@@ -27,7 +27,7 @@ function _debug()
 
 	if(!$debug || !$html)
 		return;
-	print('<div class="debug">'."\n");
+	print('<div class="debug system">'."\n");
 	print($debug_messages);
 	$debug_time_after = gettimeofday();
 	$sec = $debug_time_after['sec'] - $debug_time_before['sec'];
