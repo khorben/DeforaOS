@@ -11,4 +11,3 @@
 <?php } ?>
 	</table>
 </form>
-<?php if($message) { _error($message, 1); } ?>

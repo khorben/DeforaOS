@@ -374,19 +374,16 @@ function user_insert($args)
 
 function user_login($args)
 {
-	global $user_id;
+	global $user_id, $error;
 
 	if($user_id != 0)
 		return user_default($args);
 	$register = _config_get('user', 'register') == SQL_TRUE ? 1 : 0;
-	$message = '';
-	$username = '';
-	if(isset($_POST['username']))
-	{
-		$message = WRONG_PASSWORD;
-		$username = stripslashes($_POST['username']);
-	}
+	$username = isset($_POST['username']) ? stripslashes($_POST['username'])
+			: '';
 	include('./modules/user/user_login.tpl');
+	if(isset($error) && strlen($error))
+		_error($error);
 }
 
 
@@ -564,18 +561,20 @@ function _confirm_manual($key, $user)
 }
 
 
-function _system_login()
+function _system_login($args)
 {
 	global $user_id; 
 
 	if(strlen(session_id()) == 0)
 		session_start();
-	$password = md5($_POST['password']);
+	if(!isset($args['username']) || !isset($args['password']))
+		return INVALID_ARGUMENT;
+	$password = md5($args['password']);
 	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
-			.' WHERE username='."'".$_POST['username']."'"
+			.' WHERE username='."'".$args['username']."'"
 			.' AND password='."'$password' AND enabled='1'");
 	if(!is_array($res) || count($res) != 1)
-		return _error('Unable to login', 0);
+		return WRONG_PASSWORD;
 	$res = $res[0];
 	$_SESSION['user_id'] = $res['user_id'];
 	$_SESSION['user_name'] = $res['username'];
@@ -604,7 +603,7 @@ function user_system($args)
 	if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		if($_POST['action'] == 'login')
-			_system_login();
+			$error = _system_login($args);
 		else if($_POST['action'] == 'config_update')
 			$error = _system_config_update($args);
 		else if($_POST['action'] == 'error')
