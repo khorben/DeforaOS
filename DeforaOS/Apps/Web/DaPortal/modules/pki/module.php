@@ -208,6 +208,8 @@ function pki_admin($args)
 					? ENABLED : DISABLED).'"/>';
 		foreach($fields as $f)
 			$res[$i][$f] = _html_safe($res[$i][$f]);
+		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
+			.$res[$i]['email'].'</a>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CA, 'class' => 'new',
