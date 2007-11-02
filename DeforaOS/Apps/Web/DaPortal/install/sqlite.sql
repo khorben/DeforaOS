@@ -248,7 +248,7 @@ INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('15', 
 
 /* module: webmail */
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
-INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('17', 'string', 'server', '');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('16', 'string', 'server', '');
 
 /* module: pki */
 INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
@@ -295,4 +295,4 @@ CREATE TABLE daportal_caserver (
 	FOREIGN KEY (parent) REFERENCES daportal_ca (ca_id)
 );
 
-INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('16', 'string', 'root', '');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('17', 'string', 'root', '');
