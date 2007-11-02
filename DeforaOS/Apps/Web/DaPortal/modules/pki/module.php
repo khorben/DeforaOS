@@ -411,15 +411,15 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
-	_display_ca_list_type($ca, 'ca', CA_LIST, $enabled);
-	_display_ca_list_type($ca, 'caserver', CASERVER_LIST, $enabled);
-	_display_ca_list_type($ca, 'caclient', CACLIENT_LIST, $enabled);
+	_display_ca_list_type($ca['id'], 'ca', CA_LIST, $enabled);
+	_display_ca_list_type($ca['id'], 'caserver', CASERVER_LIST, $enabled);
+	_display_ca_list_type($ca['id'], 'caclient', CACLIENT_LIST, $enabled);
 }
 
-function _display_ca_list_type($ca, $type, $title, $enabled)
+function _display_ca_list_type($id, $type, $title, $enabled)
 {
 	print("<h2 class=\"title $type\">"._html_safe($title)."</h2>\n");
-	$parent = isset($ca['id']) ? " AND parent='".$ca['id']."'" : '';
+	$parent = $id ? " AND parent='".$id."'" : '';
 	$res = _sql_array('SELECT '.$type.'_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
 			.' FROM daportal_'.$type.', daportal_content'
@@ -443,8 +443,8 @@ function _display_ca_list_type($ca, $type, $title, $enabled)
 	}
 	$toolbar = array();
 	$toolbar[] = array('class' => 'new', 'link' => _module_link('pki',
-				$type.'_insert', FALSE, FALSE, isset($ca['id'])
-				? 'parent='.$ca['id'] : ''));
+				$type.'_insert', FALSE, FALSE, isset($id)
+				? 'parent='.$id : ''));
 	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => $classes, 'toolbar' => $toolbar,
 				'view' => 'details'));
