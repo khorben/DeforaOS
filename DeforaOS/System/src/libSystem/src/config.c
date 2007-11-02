@@ -77,10 +77,21 @@ void config_delete(Config * config)
 char * config_get(Config * config, char const * section, char const * variable)
 {
 	Hash * h;
+	char * value;
 
-	if((h = hash_get(config, section)) == NULL)
+	if((h = hash_get(config, section)) != NULL) /* found section */
+	{
+		if((value = hash_get(h, variable)) != NULL) /* found value */
+			return value;
+		error_set_code(1, "%s%s%s", variable, ": Not found in section ",
+				section);
 		return NULL;
-	return hash_get(h, variable);
+	}
+	if(section[0] == '\0')
+		error_set_code(1, "%s", "default section: Not found");
+	else
+		error_set_code(1, "%s%s%s", "section ", section, ": Not found");
+	return NULL;
 }
 
 
@@ -174,12 +185,12 @@ static char * _load_section(FILE * fp)
 {
 	int c;
 	char * str = NULL;
-	int len = 0;
+	size_t len = 0;
 	char * p;
 
 	while((c = fgetc(fp)) != EOF && c != ']' && isprint(c))
 	{
-		if((p = realloc(str, sizeof(char) * (len+2))) == NULL)
+		if((p = realloc(str, sizeof(char) * (len + 2))) == NULL)
 		{
 			free(str);
 			return NULL;
@@ -192,6 +203,8 @@ static char * _load_section(FILE * fp)
 		free(str);
 		return NULL;
 	}
+	if(str == NULL)
+		return strdup("");
 	str[len] = '\0';
 	return str;
 }
