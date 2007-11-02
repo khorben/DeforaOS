@@ -22,7 +22,7 @@
 
 
 /* Array */
-Array * array_new(unsigned int size)
+Array * array_new(size_t size)
 {
 	Array * array;
 
@@ -57,20 +57,20 @@ int array_append(Array * array, void * data)
 
 void array_apply(Array * array, ArrayApplyFunc func, void * userdata)
 {
-	unsigned int i;
+	size_t i;
 
 	for(i = 0; i < array->count; i++)
 		func(&array->data + (i * array->size), userdata);
 }
 
 
-unsigned int array_count(Array * array)
+size_t array_count(Array * array)
 {
 	return array->count;
 }
 
 
-void * array_get(Array * array, unsigned int pos)
+void * array_get(Array * array, size_t pos)
 {
 	if(pos >= array->count)
 		return NULL;
@@ -78,7 +78,7 @@ void * array_get(Array * array, unsigned int pos)
 }
 
 
-int array_get_copy(Array * array, unsigned int pos, void * data)
+int array_get_copy(Array * array, size_t pos, void * data)
 {
 	if(pos >= array->count)
 		return 1;
@@ -87,7 +87,7 @@ int array_get_copy(Array * array, unsigned int pos, void * data)
 }
 
 
-int array_remove_pos(Array * array, unsigned int pos)
+int array_remove_pos(Array * array, size_t pos)
 {
 	if(pos >= array->count)
 		return 1;

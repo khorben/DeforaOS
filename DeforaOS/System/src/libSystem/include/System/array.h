@@ -31,27 +31,27 @@
 typedef struct _Array
 {
 	char * data;
-	unsigned int count;
-	unsigned int size;
+	size_t count;
+	size_t size;
 } Array;
 
 typedef void (*ArrayApplyFunc)(void * data, void * userdata);
 
 
 /* functions */
-Array * array_new(unsigned int size);
+Array * array_new(size_t size);
 void array_delete(Array * array);
 
 /* returns */
-unsigned int array_count(Array * array);
+size_t array_count(Array * array);
 
 /* useful */
-void * array_get(Array * array, unsigned int pos);
-int array_get_copy(Array * array, unsigned int pos, void * data);
-int array_set(Array * array, unsigned int pos, void * data);
+void * array_get(Array * array, size_t pos);
+int array_get_copy(Array * array, size_t pos, void * data);
+int array_set(Array * array, size_t pos, void * data);
 
 int array_append(Array * array, void * data);
-int array_remove_pos(Array * array, unsigned int pos);
+int array_remove_pos(Array * array, size_t pos);
 
 void array_apply(Array * array, ArrayApplyFunc func, void * userdata);
 

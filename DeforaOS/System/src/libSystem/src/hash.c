@@ -64,7 +64,7 @@ Hash * hash_new(void)
 
 void hash_delete(Hash * hash)
 {
-	unsigned int i;
+	size_t i;
 	HashEntry * he;
 
 	for(i = array_count(hash); i > 0; i--)
@@ -77,7 +77,7 @@ void hash_delete(Hash * hash)
 /* useful */
 void * hash_get(Hash * hash, char const * name)
 {
-	unsigned int i;
+	size_t i;
 	HashEntry * he;
 
 	for(i = array_count(hash); i > 0; i--)
@@ -87,13 +87,14 @@ void * hash_get(Hash * hash, char const * name)
 		if(string_compare(he->name, name) == 0)
 			return he->data;
 	}
+	error_set_code(1, "%s%s", name, ": Not found");
 	return NULL;
 }
 
 
 int hash_set(Hash * hash, char const * name, void * data)
 {
-	unsigned int i;
+	size_t i;
 	HashEntry he;
 	HashEntry * p;
 
