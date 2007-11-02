@@ -56,14 +56,14 @@ img {
 	border-width:			0;
 }
 
-input[type='submit'] {
+button, input[type='submit'] {
 	background-color:		#cfcfcf;
 	margin:				0;
 	padding:			2px;
 }
 
-input[type='submit'], input[type='password'], input[type='text'], select,
-textarea {
+button, input[type='submit'], input[type='password'], input[type='text'],
+	select, textarea {
 	border-width:			1px;
 }
 
