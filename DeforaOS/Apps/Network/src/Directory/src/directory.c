@@ -22,6 +22,10 @@
 #endif
 
 
+/* variables */
+Config * config = NULL; /* FIXME avoid global variables */
+
+
 /* Directory */
 /* private */
 /* types */
@@ -63,6 +67,7 @@ Directory * directory_new(Event * event)
 		directory_delete(directory);
 		return NULL;
 	}
+	config = directory->config; /* FIXME ugly work-around */
 	return directory;
 }
 
