@@ -358,35 +358,8 @@ function pki_default($args)
 		return pki_display($args);
 	print('<h1 class="title pki">'._html_safe(PUBLIC_KEY_INFRASTRUCTURE)
 			."</h1>\n");
-	print('<h2 class="title pki">'._html_safe(CA_LIST)."</h2>\n");
-	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
-		.', organization, section, cn, email'
-		.' FROM daportal_ca, daportal_content'
-		.' WHERE daportal_ca.ca_id=daportal_content.content_id'
-		." AND enabled='1'";
-	$res = _sql_array($sql);
-	if(!is_array($res))
-		return _error('Could not list CAs');
-	$classes = array('country' => COUNTRY, 'state' => STATE,
-			'locality' => LOCALITY, 'organization' => ORGANIZATION,
-			'section' => SECTION, 'cn' => CN, 'email' => EMAIL);
-	$keys = array_keys($classes);
-	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-	{
-		$res[$i]['module'] = 'pki';
-		$res[$i]['action'] = 'display';
-		$res[$i]['name'] = _html_safe($res[$i]['title']);
-		foreach($keys as $k)
-			$res[$i][$k] = _html_safe($res[$i][$k]);
-		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
-			.$res[$i]['email'].'</a>';
-	}
-	$toolbar = array();
-	$toolbar[] = array('title' => NEW_CA, 'class' => 'new',
-			'link' => _module_link('pki', 'ca_insert'));
-	_module('explorer', 'browse_trusted', array('entries' => $res,
-				'class' => $classes, 'toolbar' => $toolbar,
-				'view' => 'details'));
+	$enabled = " AND enabled='1'";
+	_display_ca_list_type(FALSE, 'ca', CA_LIST, $enabled);
 }
 
 
@@ -446,32 +419,35 @@ function _display_ca($args)
 function _display_ca_list_type($ca, $type, $title, $enabled)
 {
 	print("<h2 class=\"title $type\">"._html_safe($title)."</h2>\n");
+	$parent = isset($ca['id']) ? " AND parent='".$ca['id']."'" : '';
 	$res = _sql_array('SELECT '.$type.'_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
 			.' FROM daportal_'.$type.', daportal_content'
 			.' WHERE daportal_'.$type.'.'.$type.'_id'
-			.'=daportal_content.content_id'.$enabled
-			." AND parent='".$ca['id']."'");
+			.'=daportal_content.content_id'.$enabled.$parent);
 	if(!is_array($res))
 		return _error('Could not list certificates');
+	$classes = array('country' => COUNTRY, 'state' => STATE,
+			'locality' => LOCALITY, 'organization' => ORGANIZATION,
+			'section' => SECTION, 'cn' => CN, 'email' => EMAIL);
+	$keys = array_keys($classes);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
 		$res[$i]['action'] = 'display';
-		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['name'] = _html_safe($res[$i]['title']);
+		foreach($keys as $k)
+			$res[$i][$k] = _html_safe($res[$i][$k]);
+		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
+			.$res[$i]['email'].'</a>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('class' => 'new', 'link' => _module_link('pki',
-				$type.'_insert', FALSE, FALSE,
-				'parent='.$ca['id']));
-	_module('explorer', 'browse', array('entries' => $res,
-				'class' => array('country' => COUNTRY,
-					'state' => STATE,
-					'locality' => LOCALITY,
-					'organization' => ORGANIZATION,
-					'section' => SECTION, 'cn' => CN,
-					'email' => EMAIL),
-				'toolbar' => $toolbar, 'view' => 'details'));
+				$type.'_insert', FALSE, FALSE, isset($ca['id'])
+				? 'parent='.$ca['id'] : ''));
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+				'class' => $classes, 'toolbar' => $toolbar,
+				'view' => 'details'));
 }
 
 function _display_type($args, $type)
