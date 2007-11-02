@@ -369,23 +369,26 @@ function pki_default($args)
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list CAs');
+	$classes = array('country' => COUNTRY, 'state' => STATE,
+			'locality' => LOCALITY, 'organization' => ORGANIZATION,
+			'section' => SECTION, 'cn' => CN, 'email' => EMAIL);
+	$keys = array_keys($classes);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'pki';
 		$res[$i]['action'] = 'display';
-		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['name'] = _html_safe($res[$i]['title']);
+		foreach($keys as $k)
+			$res[$i][$k] = _html_safe($res[$i][$k]);
+		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
+			.$res[$i]['email'].'</a>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CA, 'class' => 'new',
 			'link' => _module_link('pki', 'ca_insert'));
-	_module('explorer', 'browse', array('entries' => $res,
-				'class' => array('country' => COUNTRY,
-					'state' => STATE,
-					'locality' => LOCALITY,
-					'organization' => ORGANIZATION,
-					'section' => SECTION, 'cn' => CN,
-					'email' => EMAIL),
-				'toolbar' => $toolbar, 'view' => 'details'));
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+				'class' => $classes, 'toolbar' => $toolbar,
+				'view' => 'details'));
 }
 
 
