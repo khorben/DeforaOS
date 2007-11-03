@@ -42,14 +42,9 @@ _lang($text);
 
 
 //private
-function _get_user($id)
+function _get_date($time)
 {
-	static $cache = array();
-
-	if(isset($cache[$id]))
-		return $cache[$id];
-	$cache[$id] = posix_getpwuid($id);
-	return $cache[$id];
+	return date('Y-m-d h:m:s', $time);
 }
 
 function _get_group($id)
@@ -58,7 +53,10 @@ function _get_group($id)
 
 	if(isset($cache[$id]))
 		return $cache[$id];
-	$cache[$id] = posix_getgrgid($id);
+	if(($gr = posix_getgrgid($id)) == FALSE)
+		$cache[$id] = $id;
+	else
+		$cache[$id] = $gr['name'];
 	return $cache[$id];
 }
 
@@ -74,6 +72,19 @@ function _get_size($size)
 		return $size.' GB';
 	$size = round($size / 1024);
 	return $size.' TB';
+}
+
+function _get_user($id)
+{
+	static $cache = array();
+
+	if(isset($cache[$id]))
+		return $cache[$id];
+	if(($pw = posix_getpwuid($id)) == FALSE)
+		$cache[$id] = $id;
+	else
+		$cache[$id] = $pw['name'];
+	return $cache[$id];
 }
 
 
@@ -97,7 +108,8 @@ function browser_default($args)
 	if(($st = stat($root.'/'.$file)) == FALSE)
 		return _error('Could not open file');
 	if($st['mode'] & 040000 == 040000)
-		return _default_dir($root, $file);
+		return _default_dir($root, $file, isset($args['sort'])
+				? $args['sort'] : FALSE);
 	return _default_display($root, $file);
 }
 
@@ -114,7 +126,7 @@ function _default_file($file)
 	return '/'.trim($file, '/');
 }
 
-function _default_dir(&$root, &$file)
+function _default_dir(&$root, &$file, $sort)
 {
 	if(($dir = opendir($root.'/'.$file)) == FALSE)
 		return _error('Could not open directory');
@@ -136,13 +148,10 @@ function _default_dir(&$root, &$file)
 			$entries[] = $entry;
 			continue;
 		}
-		$user = _get_user($st['uid']);
-		$entry['uid'] = isset($user['name']) ? $user['name']
-			: $st['uid'];
-		$group = _get_group($st['gid']);
-		$entry['gid'] = isset($group['name']) ? $group['name']
-			: $st['gid'];
+		$entry['uid'] = _get_user($st['uid']);
+		$entry['gid'] = _get_group($st['gid']);
 		$entry['size'] = _get_size($st['size']);
+		$entry['mtime'] = _get_date($st['mtime']);
 		if(($st['mode'] & 040000) == 040000)
 		{
 			$entry['icon'] = 'icons/16x16/mime/folder.png';
@@ -161,14 +170,26 @@ function _default_dir(&$root, &$file)
 		}
 		$entries[] = $entry;
 	}
-	usort($entries, '_entries_sort');
+	switch($sort)
+	{
+		case 'gid':			break;
+		case 'mtime':			break;
+		case 'uid':			break;
+		case 'name':			break;
+		default:	$sort = 'name';	break;
+	}
+	$func = '_entries_sort_'.$sort;
+	usort($entries, $func);
 	$toolbar = array();
 	$toolbar[] = array('class' => 'parent_directory',
 			'link' => _html_link('browser', '', dirname($file)),
 			'title' => UP_ONE_DIRECTORY);
-	$class = array('uid' => OWNER, 'gid' => GROUP, 'size' => SIZE);
+	$class = array('size' => SIZE, 'uid' => OWNER, 'gid' => GROUP,
+			'mtime' => DATE);
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
-				'entries' => $entries, 'class' => $class));
+				'view' => 'details', 'entries' => $entries,
+				'class' => $class, 'module' => 'browser',
+				'sort' => $sort));
 }
 
 function _default_display(&$root, &$file)
@@ -176,9 +197,29 @@ function _default_display(&$root, &$file)
 	include('./modules/browser/display.tpl');
 }
 
-function _entries_sort(&$a, &$b)
+function _entries_sort_gid(&$a, &$b)
+{
+	return strcmp($a['gid'], $b['gid']);
+}
+
+function _entries_sort_mtime(&$a, &$b)
+{
+	return strcmp($a['mtime'], $b['mtime']);
+}
+
+function _entries_sort_name(&$a, &$b)
 {
 	return strcmp($a['id'], $b['id']);
+}
+
+function _entries_sort_size(&$a, &$b)
+{
+	return strcmp($a['size'], $b['size']);
+}
+
+function _entries_sort_uid(&$a, &$b)
+{
+	return strcmp($a['uid'], $b['uid']);
 }
 
 
