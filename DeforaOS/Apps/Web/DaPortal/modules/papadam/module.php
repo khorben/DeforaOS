@@ -24,6 +24,9 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ADD_A_USER'] = 'Add a user';
+$text['ADMINISTRATION'] = 'Administration';
+$text['BROWSE_FILES'] = 'Browse files';
 $text['CA_LIST'] = 'CA list';
 $text['CACLIENT_LIST'] = 'Client list';
 $text['CASERVER_LIST'] = 'Server list';
@@ -38,6 +41,7 @@ $text['NEW_CA'] = 'New CA';
 $text['ORGANIZATION'] = 'Organization';
 $text['PAPADAM'] = 'Papadam';
 $text['PAPADAM_ADMINISTRATION'] = 'Papadam administration';
+$text['REVOKE_A_USER'] = 'Revoke a user';
 $text['SECTION'] = 'Section';
 $text['SELF_SIGNED'] = 'Self-signed';
 $text['SETTINGS'] = 'Settings';
@@ -45,6 +49,9 @@ $text['STATE'] = 'State';
 global $lang;
 if($lang == 'fr')
 {
+	$text['ADD_A_USER'] = 'Ajouter un utilisateur';
+	$text['BROWSE_FILES'] = 'Explorateur de fichiers';
+	$text['REVOKE_A_USER'] = 'Révoquer un utilisateur';
 }
 _lang($text);
 
@@ -232,7 +239,20 @@ function papadam_default($args)
 	if(isset($args['id']))
 		return papadam_display($args);
 	print('<h1 class="title papadam">'._html_safe(PAPADAM)."</h1>\n");
-	//FIXME display convivial page about what's possible to do
+	$entries = array();
+	$entries[] = array('name' => ADMINISTRATION,
+			'thumbnail' => 'icons/48x48/admin.png',
+			'module' => 'admin', 'action' => 'default');
+	$entries[] = array('name' => ADD_A_USER,
+			'thumbnail' => 'icons/48x48/users.png',
+			'module' => 'pki', 'action' => 'caclient_insert');
+	$entries[] = array('name' => BROWSE_FILES,
+			'thumbnail' => 'icons/48x48/download.png',
+			'module' => 'browser', 'action' => 'default');
+	$entries[] = array('name' => REVOKE_A_USER,
+			'thumbnail' => 'icons/48x48/user.png');
+	_module('explorer', 'browse', array('entries' => $entries,
+			'view' => 'thumbnails', 'toolbar' => 0));
 }
 
 

@@ -17,7 +17,7 @@
 
 
 $title = 'Papadam';
-$icon = 'pki.png';
+$icon = 'papadam.png';
 $admin = 1;
 $list = 1;
 
