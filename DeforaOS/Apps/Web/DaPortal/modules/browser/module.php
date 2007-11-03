@@ -21,10 +21,60 @@
 if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 $text = array();
+$text['BROWSER'] = 'Browser';
 $text['BROWSER_ADMINISTRATION'] = 'Browser administration';
+$text['GROUP'] = 'Group';
 $text['INDEX_OF'] = 'Index of';
+$text['OWNER'] = 'Owner';
+$text['SIZE'] = 'Size';
 $text['UP_ONE_DIRECTORY'] = 'Up one directory';
+global $lang;
+if($lang == 'fr')
+{
+	$text['BROWSER'] = 'Explorateur';
+	$text['GROUP'] = 'Groupe';
+	$text['INDEX_OF'] = 'Fichiers de';
+	$text['OWNER'] = 'Propriétaire';
+	$text['SIZE'] = 'Taille';
+	$text['UP_ONE_DIRECTORY'] = 'Répertoire parent';
+}
 _lang($text);
+
+
+//private
+function _get_user($id)
+{
+	static $cache = array();
+
+	if(isset($cache[$id]))
+		return $cache[$id];
+	$cache[$id] = posix_getpwuid($id);
+	return $cache[$id];
+}
+
+function _get_group($id)
+{
+	static $cache = array();
+
+	if(isset($cache[$id]))
+		return $cache[$id];
+	$cache[$id] = posix_getgrgid($id);
+	return $cache[$id];
+}
+
+function _get_size($size)
+{
+	if($size < 1024)
+		return $size.' bytes';
+	if(($size = round($size / 1024)) < 1024)
+		return $size.' KB';
+	if(($size = round($size / 1024)) < 1024)
+		return $size.' MB';
+	if(($size = round($size / 1024)) < 1024)
+		return $size.' GB';
+	$size = round($size / 1024);
+	return $size.' TB';
+}
 
 
 //public
@@ -86,9 +136,13 @@ function _default_dir(&$root, &$file)
 			$entries[] = $entry;
 			continue;
 		}
-		$entry['uid'] = $st['uid'];
-		$entry['gid'] = $st['gid'];
-		$entry['size'] = $st['size'];
+		$user = _get_user($st['uid']);
+		$entry['uid'] = isset($user['name']) ? $user['name']
+			: $st['uid'];
+		$group = _get_group($st['gid']);
+		$entry['gid'] = isset($group['name']) ? $group['name']
+			: $st['gid'];
+		$entry['size'] = _get_size($st['size']);
 		if(($st['mode'] & 040000) == 040000)
 		{
 			$entry['icon'] = 'icons/16x16/mime/folder.png';
@@ -109,10 +163,10 @@ function _default_dir(&$root, &$file)
 	}
 	usort($entries, '_entries_sort');
 	$toolbar = array();
-	$toolbar[] = array('icon' => 'icons/16x16/updir.png',
+	$toolbar[] = array('class' => 'parent_directory',
 			'link' => _html_link('browser', '', dirname($file)),
 			'title' => UP_ONE_DIRECTORY);
-	$class = array('uid' => 'Owner', 'gid' => 'Group', 'size' => 'Size');
+	$class = array('uid' => OWNER, 'gid' => GROUP, 'size' => SIZE);
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
 				'entries' => $entries, 'class' => $class));
 }
@@ -133,12 +187,12 @@ function browser_system($args)
 {
 	global $title;
 
+	$title.=' - '.BROWSER;
 	if(!isset($args['action']))
 		$args['action'] = 'default';
 	switch($args['action'])
 	{
 		case 'admin':
-			$title.=' - Browsing administration';
 			break;
 		case 'default':
 			if(isset($args['download']) && $args['download'] == 1
