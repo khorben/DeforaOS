@@ -42,10 +42,6 @@ div.icon.enabled {
 	background-image:		url('../icons/16x16/enabled.png');
 }
 
-h1.title.logout {
-	background-image:		url('../icons/48x48/logout.png');
-}
-
 div.icon.project {
 	background-image:		url('../icons/16x16/project.png');
 }
@@ -56,4 +52,12 @@ div.icon.read {
 
 div.icon.reply {
 	background-image:		url('../icons/16x16/reply.png');
+}
+
+h1.title.logout {
+	background-image:		url('../icons/48x48/logout.png');
+}
+
+h1.title.papadam {
+	background-image:		url('../icons/48x48/papadam.png');
 }
