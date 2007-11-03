@@ -26,15 +26,18 @@ $text['BROWSER_ADMINISTRATION'] = 'Browser administration';
 $text['GROUP'] = 'Group';
 $text['INDEX_OF'] = 'Index of';
 $text['OWNER'] = 'Owner';
+$text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
 $text['UP_ONE_DIRECTORY'] = 'Up one directory';
 global $lang;
 if($lang == 'fr')
 {
 	$text['BROWSER'] = 'Explorateur';
+	$text['BROWSER_ADMINISTRATION'] = "Administration de l'explorateur";
 	$text['GROUP'] = 'Groupe';
 	$text['INDEX_OF'] = 'Fichiers de';
 	$text['OWNER'] = 'Propriétaire';
+	$text['SETTINGS'] = 'Paramètres';
 	$text['SIZE'] = 'Taille';
 	$text['UP_ONE_DIRECTORY'] = 'Répertoire parent';
 }
@@ -96,7 +99,26 @@ function browser_admin($args)
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	print('<h1 class="title browser">'.BROWSER_ADMINISTRATION.'</h1>'."\n");
+	print('<h1 class="title browser">'._html_safe(BROWSER_ADMINISTRATION)
+			."</h1>\n");
+	print('<h2 class="title settings">'._html_safe(SETTINGS)."</h2>\n");
+	if(($configs = _config_list('browser')))
+	{
+		$module = 'browser';
+		$action = 'config_update';
+		include('./system/config.tpl');
+	}
+}
+
+
+//browser_config_update
+function browser_config_update($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return browser_admin(array());
 }
 
 
@@ -226,21 +248,45 @@ function _entries_sort_uid(&$a, &$b)
 //browser_system
 function browser_system($args)
 {
-	global $title;
+	global $title, $error;
 
 	$title.=' - '.BROWSER;
-	if(!isset($args['action']))
-		$args['action'] = 'default';
-	switch($args['action'])
+	if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
-		case 'admin':
-			break;
-		case 'default':
-			if(isset($args['download']) && $args['download'] == 1
-					&& isset($args['id']))
-				_system_download($args['id']);
-			break;
+		if(!isset($args['action']))
+			$args['action'] = 'default';
+		switch($args['action'])
+		{
+			case 'admin':
+				break;
+			case 'default':
+				if(isset($args['download']) && $args['download']
+						== 1 && isset($args['id']))
+					_system_download($args['id']);
+				break;
+		}
 	}
+	else if($_SERVER['REQUEST_METHOD'] == 'POST')
+	{
+		switch($args['action'])
+		{
+			case 'config_update':
+				$error = _system_config_update($args);
+				break;
+		}
+	}
+}
+
+function _system_config_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	_config_update('browser', $args);
+	header('Location: '._module_link('browser', 'admin'));
+	exit(0);
 }
 
 function _system_download($id)
