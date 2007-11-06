@@ -248,7 +248,7 @@ static int _new_connect(AppClient * appclient, char * app)
 		return 1;
 	sa.sin_port = htons(port);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
-		return error_set_code(1, "%s%s", "connect: ", strerror(errno));
+		return error_set_code(1, "%s%s%s", app, ": ", strerror(errno));
 #ifdef WITH_SSL
 	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
@@ -268,7 +268,7 @@ static int _connect_addr(char * service, uint32_t * addr)
 	struct hostent * he;
 
 	if((env = malloc(len + string_length(service) + 1)) == NULL)
-		return 1;
+		return error_set_code(1, "%s", strerror(errno));
 	sprintf(env, "%s%s", prefix, service);
 	server = getenv(env);
 	free(env);
@@ -278,7 +278,7 @@ static int _connect_addr(char * service, uint32_t * addr)
 		return 0;
 	}
 	if((he = gethostbyname(server)) == NULL)
-		return 1;
+		return error_set_code(1, "%s", hstrerror(h_errno));
 	*addr = *((uint32_t*)he->h_addr);
 	return 0;
 }
