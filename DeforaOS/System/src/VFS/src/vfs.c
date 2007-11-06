@@ -17,7 +17,9 @@
 
 
 #include <stdlib.h>
-#include <stdio.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
 #include <dlfcn.h>
 #include <System.h>
@@ -76,7 +78,9 @@ int32_t close(int32_t fd)
 	/* FIXME actually check if fd is valid for this connection */
 	if(fd < VFS_OFF)
 		return old_close(fd);
+#ifdef DEBUG
 	fprintf(stderr, "VFS: close(%d)\n", fd - VFS_OFF);
+#endif
 	return old_close(fd - VFS_OFF);
 }
 
@@ -89,8 +93,10 @@ int32_t open(char const * filename, uint32_t flags, uint32_t mode)
 	if((ret = old_open(filename, flags, mode)) < 0)
 		return -1;
 	/* FIXME actually register this fd as for this connection */
+#ifdef DEBUG
 	fprintf(stderr, "VFS: open(%s, %u, %u) %d\n", filename, flags, mode,
 			ret);
+#endif
 	return ret + VFS_OFF;
 }
 
@@ -106,8 +112,10 @@ int32_t read(int fd, Buffer * b, uint32_t count)
 	if(buffer_set_size(b, count) != 0)
 		return -1;
 	ret = old_read(fd - VFS_OFF, buffer_get_data(b), count);
+#ifdef DEBUG
 	fprintf(stderr, "VFS: read(%d, buf, %u) %zd\n", fd - VFS_OFF, count,
 			ret);
+#endif
 	if(buffer_set_size(b, ret < 0 ? 0 : ret) != 0)
 	{
 		memset(buffer_get_data(b), 0, count);
@@ -123,7 +131,9 @@ int32_t write(int fd, Buffer * b, uint32_t count)
 	/* FIXME actually check if fd is valid for this connection */
 	if(fd < VFS_OFF)
 		return old_write(fd, b, count);
+#ifdef DEBUG
 	fprintf(stderr, "VFS: write(%d, buf, %u)\n", fd, count);
+#endif
 	if(buffer_get_size(b) != count)
 		return -1;
 	return old_write(fd - VFS_OFF, buffer_get_data(b), count);
