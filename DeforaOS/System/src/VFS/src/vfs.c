@@ -16,10 +16,14 @@
 
 
 
+/* XXX ugly work-around to compile */
+#define read VFS_read
+#define write VFS_write
+#include <unistd.h>
+#undef read
+#undef write
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
 #include <System.h>
@@ -140,8 +144,30 @@ int32_t write(int fd, Buffer * b, uint32_t count)
 }
 
 
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: VFS [-r root]\n", stderr);
+	return 1;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
-	return _vfs("/") == 0 ? 0 : 2;
+	int o;
+	char * root = "/";
+
+	while(getopt(argc, argv, "r:") != -1)
+		switch(o)
+		{
+			case 'r':
+				root = optarg;
+				break;
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
+	return _vfs(root) == 0 ? 0 : 2;
 }
