@@ -16,22 +16,50 @@
 
 
 
-#include <System.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <dlfcn.h>
+#include <System.h>
+#include "../config.h"
 
 
 /* VFS */
-static int _vfs_error(char * message, int ret);
-static int _vfs(char * root)
+/* private */
+/* constants */
+#define VFS_OFF		1024
+
+/* variables */
+static int (*old_close)(int fd);
+static int (*old_open)(char const * path, int flags, mode_t mode);
+static ssize_t (*old_read)(int fd, void * buf, size_t count);
+static ssize_t (*old_write)(int fd, void const * buf, size_t count);
+
+/* public */
+/* functions */
+static int _vfs(char const * root)
+	/* FIXME implement root */
 {
+	static const char libc[] = "/lib/libc.so";
+	void * hdl;
 	Event * event;
 	AppServer * appserver;
 
+	if((hdl = dlopen(libc, RTLD_LAZY)) == NULL)
+		exit(1);
+	old_close = dlsym(hdl, "close");
+	old_open = dlsym(hdl, "open");
+	old_read = dlsym(hdl, "read");
+	old_write = dlsym(hdl, "write");
+	dlclose(hdl);
+	if(old_close == NULL || old_open == NULL || old_read == NULL
+			|| old_write == NULL)
+		exit(1);
 	if((event = event_new()) == NULL)
-		return _vfs_error("Event", 1);
+		return error_print(PACKAGE);
 	if((appserver = appserver_new_event("VFS", ASO_LOCAL, event)) == NULL)
 	{
-		_vfs_error("AppServer", 1);
+		error_print(PACKAGE);
 		event_delete(event);
 		return 1;
 	}
@@ -41,28 +69,65 @@ static int _vfs(char * root)
 	return 0;
 }
 
-static int _vfs_error(char * message, int ret)
+
+/* close */
+int32_t close(int32_t fd)
 {
-	fprintf(stderr, "%s", "VFS: ");
-	perror(message);
+	/* FIXME actually check if fd is valid for this connection */
+	if(fd < VFS_OFF)
+		return old_close(fd);
+	fprintf(stderr, "VFS: close(%d)\n", fd - VFS_OFF);
+	return old_close(fd - VFS_OFF);
+}
+
+
+/* open */
+int32_t open(char const * filename, uint32_t flags, uint32_t mode)
+{
+	int ret;
+
+	if((ret = old_open(filename, flags, mode)) < 0)
+		return -1;
+	/* FIXME actually register this fd as for this connection */
+	fprintf(stderr, "VFS: open(%s, %u, %u) %d\n", filename, flags, mode,
+			ret);
+	return ret + VFS_OFF;
+}
+
+
+/* read */
+int32_t read(int fd, Buffer * b, uint32_t count)
+{
+	ssize_t ret;
+
+	/* FIXME actually check if fd is valid for this connection */
+	if(fd < VFS_OFF)
+		return old_read(fd, b, count);
+	if(buffer_set_size(b, count) != 0)
+		return -1;
+	ret = old_read(fd - VFS_OFF, buffer_get_data(b), count);
+	fprintf(stderr, "VFS: read(%d, buf, %u) %zd\n", fd - VFS_OFF, count,
+			ret);
+	if(buffer_set_size(b, ret < 0 ? 0 : ret) != 0)
+	{
+		memset(buffer_get_data(b), 0, count);
+		return -1;
+	}
 	return ret;
 }
 
 
-/* close */
-/* int close(int fildes)
+/* write */
+int32_t write(int fd, Buffer * b, uint32_t count)
 {
-	fprintf(stderr, "VFS: close(%d)\n", fildes);
-	return 0;
-} */
-
-
-/* open */
-/* int open(const char * filename, int flags)
-{
-	fprintf(stderr, "VFS: open(%s, %d)\n", filename, flags);
-	return 0;
-} */
+	/* FIXME actually check if fd is valid for this connection */
+	if(fd < VFS_OFF)
+		return old_write(fd, b, count);
+	fprintf(stderr, "VFS: write(%d, buf, %u)\n", fd, count);
+	if(buffer_get_size(b) != count)
+		return -1;
+	return old_write(fd - VFS_OFF, buffer_get_data(b), count);
+}
 
 
 /* main */
