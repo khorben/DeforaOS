@@ -83,8 +83,12 @@ char * config_get(Config * config, char const * section, char const * variable)
 	{
 		if((value = hash_get(h, variable)) != NULL) /* found value */
 			return value;
-		error_set_code(1, "%s%s%s", variable, ": Not found in section ",
-				section);
+		if(section[0] == '\0')
+			error_set_code(1, "%s%s%s", variable, ": Not found in"
+					" default section");
+		else
+			error_set_code(1, "%s%s%s", variable, ": Not found in"
+					" section ", section);
 		return NULL;
 	}
 	if(section[0] == '\0')
