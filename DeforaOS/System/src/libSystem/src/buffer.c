@@ -99,6 +99,8 @@ int buffer_set_size(Buffer * buffer, size_t size)
 {
 	char * p;
 
+	if(size == 0) /* XXX workaround to avoid freeing the data */
+		size++;
 	if((p = realloc(buffer->data, size)) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
 	buffer->data = p;
