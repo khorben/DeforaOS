@@ -107,6 +107,7 @@ static int _run_error(char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, "%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
