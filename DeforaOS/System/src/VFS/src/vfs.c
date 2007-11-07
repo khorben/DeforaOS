@@ -37,9 +37,12 @@
 
 /* variables */
 static int (*old_close)(int fd);
+static int (*old_fchmod)(int fd, mode_t mode);
+static int (*old_fchown)(int fd, uid_t owner, gid_t group);
 static int (*old_open)(char const * path, int flags, mode_t mode);
 static ssize_t (*old_read)(int fd, void * buf, size_t count);
 static ssize_t (*old_write)(int fd, void const * buf, size_t count);
+
 
 /* public */
 /* functions */
@@ -54,11 +57,14 @@ static int _vfs(char const * root)
 	if((hdl = dlopen(libc, RTLD_LAZY)) == NULL)
 		exit(1);
 	old_close = dlsym(hdl, "close");
+	old_fchmod = dlsym(hdl, "fchmod");
+	old_fchown = dlsym(hdl, "fchown");
 	old_open = dlsym(hdl, "open");
 	old_read = dlsym(hdl, "read");
 	old_write = dlsym(hdl, "write");
 	dlclose(hdl);
-	if(old_close == NULL || old_open == NULL || old_read == NULL
+	if(old_close == NULL || old_fchmod == NULL || old_fchown == NULL
+			|| old_open == NULL || old_read == NULL
 			|| old_write == NULL)
 		exit(1);
 	if((event = event_new()) == NULL)
@@ -86,6 +92,24 @@ int32_t close(int32_t fd)
 	fprintf(stderr, "VFS: close(%d)\n", fd - VFS_OFF);
 #endif
 	return old_close(fd - VFS_OFF);
+}
+
+
+/* fchmod */
+int32_t fchmod(int32_t fd, uint32_t mode)
+{
+	if(fd < VFS_OFF)
+		return old_fchmod(fd, mode);
+	return old_fchmod(fd - VFS_OFF, mode);
+}
+
+
+/* fchown */
+int32_t fchown(int32_t fd, uint32_t owner, uint32_t group)
+{
+	if(fd < VFS_OFF)
+		return old_fchown(fd, owner, group);
+	return old_fchown(fd - VFS_OFF, owner, group);
 }
 
 
