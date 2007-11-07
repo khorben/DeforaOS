@@ -297,8 +297,6 @@ static int _new_vfs(AppInterface * ai)
 	ret |= _new_append(ai, AICT_INT32, "chown", 3, AICT_STRING,
 			AICT_UINT32, AICT_UINT32);
 	ret |= _new_append(ai, AICT_INT32, "close", 1, AICT_UINT32);
-	/* ret |= _new_append(ai, AICT_UINT32, "creat", 2, AICT_STRING,
-			AICT_UINT32); */
 	ret |= _new_append(ai, AICT_INT32, "fchmod", 2, AICT_INT32,
 			AICT_UINT32);
 	ret |= _new_append(ai, AICT_INT32, "fchown", 3, AICT_INT32,
@@ -307,8 +305,8 @@ static int _new_vfs(AppInterface * ai)
 			AICT_UINT32); */
 /*	ret |= _new_append(ai, AICT_UINT32, "fstat", 2, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT); */
-	/* ret |= _new_append(ai, AICT_UINT32, "lchown", 3, AICT_STRING,
-			AICT_UINT32, AICT_UINT32); */
+	ret |= _new_append(ai, AICT_INT32, "lchown", 3, AICT_STRING,
+			AICT_UINT32, AICT_UINT32);
 	ret |= _new_append(ai, AICT_INT32, "link", 2, AICT_STRING,
 			AICT_STRING);
 	ret |= _new_append(ai, AICT_INT32, "lseek", 3, AICT_INT32, AICT_INT32,
