@@ -26,6 +26,9 @@
 #include <string.h>
 #include <errno.h>
 #include <netinet/in.h>
+#ifdef DEBUG
+# include <arpa/inet.h>
+#endif
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
 # include <openssl/err.h>
@@ -153,7 +156,8 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%d%s", "DEBUG: accept(", fd, ") ", newfd, "\n");
+	fprintf(stderr, "%s%d%s%d %s:%u\n", "DEBUG: accept(", fd, ") ", newfd,
+			inet_ntoa(sa.sin_addr), sa.sin_port);
 #endif
 	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port
 #ifdef WITH_SSL
