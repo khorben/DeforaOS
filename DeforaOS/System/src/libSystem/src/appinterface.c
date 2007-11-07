@@ -324,9 +324,9 @@ static int _new_vfs(AppInterface * ai)
 	ret |= _new_append(ai, AICT_INT32, "read", 3, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT, AICT_UINT32);
 	/* ret |= _new_append(ai, AICT_UINT32, "rename", 2, AICT_STRING,
-			AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "rmdir", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
+			AICT_STRING); */
+	ret |= _new_append(ai, AICT_INT32, "rmdir", 1, AICT_STRING);
+/*	ret |= _new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
 			AICT_BUFFER | AICD_OUT);
 	ret |= _new_append(ai, AICT_UINT32, "symlink", 2, AICT_STRING,
 			AICT_STRING);
@@ -488,7 +488,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 								buflen, &pos)
 							!= 0)
 						return -1;
-					size = buffer_get_size(b);
+					size = (uint32_t)buffer_get_size(b);
 					p = buffer_get_data(b);
 					break;
 			}
