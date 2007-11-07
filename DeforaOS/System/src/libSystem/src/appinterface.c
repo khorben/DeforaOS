@@ -314,9 +314,9 @@ static int _new_vfs(AppInterface * ai)
 	ret |= _new_append(ai, AICT_INT32, "lseek", 3, AICT_INT32, AICT_INT32,
 			AICT_INT32);
 /*	ret |= _new_append(ai, AICT_UINT32, "lstat", 2, AICT_STRING,
-			AICT_BUFFER | AICD_OUT);
-	ret |= _new_append(ai, AICT_UINT32, "mkdir", 2, AICT_STRING,
-			AICT_UINT32); */
+			AICT_BUFFER | AICD_OUT); */
+	ret |= _new_append(ai, AICT_INT32, "mkdir", 2, AICT_STRING,
+			AICT_UINT32);
 /*	ret |= _new_append(ai, AICT_UINT32, "mknod", 2, AICT_STRING,
 			AICT_UINT32, AICT_UINT32); */
 	ret |= _new_append(ai, AICT_UINT32, "open", 3, AICT_STRING, AICT_UINT32,
