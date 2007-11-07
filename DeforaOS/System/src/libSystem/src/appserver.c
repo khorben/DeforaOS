@@ -28,6 +28,7 @@
 #include <netinet/in.h>
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
+# include <openssl/err.h>
 #endif
 
 #include "System.h"
