@@ -17,9 +17,12 @@
 
 
 /* XXX ugly work-around to compile */
+#define lseek VFS_lseek
 #define read VFS_read
 #define write VFS_write
+#include <sys/types.h>
 #include <unistd.h>
+#undef lseek
 #undef read
 #undef write
 #include <stdlib.h>
@@ -39,6 +42,7 @@
 static int (*old_close)(int fd);
 static int (*old_fchmod)(int fd, mode_t mode);
 static int (*old_fchown)(int fd, uid_t owner, gid_t group);
+static off_t (*old_lseek)(int fd, off_t offset, int whence);
 static int (*old_open)(char const * path, int flags, mode_t mode);
 static ssize_t (*old_read)(int fd, void * buf, size_t count);
 static ssize_t (*old_write)(int fd, void const * buf, size_t count);
@@ -59,6 +63,7 @@ static int _vfs(char const * root)
 	old_close = dlsym(hdl, "close");
 	old_fchmod = dlsym(hdl, "fchmod");
 	old_fchown = dlsym(hdl, "fchown");
+	old_lseek = dlsym(hdl, "lseek");
 	old_open = dlsym(hdl, "open");
 	old_read = dlsym(hdl, "read");
 	old_write = dlsym(hdl, "write");
@@ -110,6 +115,16 @@ int32_t fchown(int32_t fd, uint32_t owner, uint32_t group)
 	if(fd < VFS_OFF)
 		return old_fchown(fd, owner, group);
 	return old_fchown(fd - VFS_OFF, owner, group);
+}
+
+
+/* lseek */
+int32_t lseek(int32_t fd, int32_t offset, int32_t whence)
+	/* FIXME unify whence, check types sizes */
+{
+	if(fd < VFS_OFF)
+		return old_lseek(fd, offset, whence);
+	return old_lseek(fd - VFS_OFF, offset, whence);
 }
 
 
