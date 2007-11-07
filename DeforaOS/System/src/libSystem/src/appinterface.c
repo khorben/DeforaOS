@@ -308,9 +308,9 @@ static int _new_vfs(AppInterface * ai)
 /*	ret |= _new_append(ai, AICT_UINT32, "fstat", 2, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT); */
 	/* ret |= _new_append(ai, AICT_UINT32, "lchown", 3, AICT_STRING,
-			AICT_UINT32, AICT_UINT32);
-	ret |= _new_append(ai, AICT_UINT32, "link", 2, AICT_STRING,
-			AICT_STRING); */
+			AICT_UINT32, AICT_UINT32); */
+	ret |= _new_append(ai, AICT_INT32, "link", 2, AICT_STRING,
+			AICT_STRING);
 	ret |= _new_append(ai, AICT_INT32, "lseek", 3, AICT_INT32, AICT_INT32,
 			AICT_INT32);
 /*	ret |= _new_append(ai, AICT_UINT32, "lstat", 2, AICT_STRING,
@@ -323,14 +323,14 @@ static int _new_vfs(AppInterface * ai)
 			AICT_UINT32);
 	ret |= _new_append(ai, AICT_INT32, "read", 3, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT, AICT_UINT32);
-	/* ret |= _new_append(ai, AICT_UINT32, "rename", 2, AICT_STRING,
-			AICT_STRING); */
+	ret |= _new_append(ai, AICT_INT32, "rename", 2, AICT_STRING,
+			AICT_STRING);
 	ret |= _new_append(ai, AICT_INT32, "rmdir", 1, AICT_STRING);
 /*	ret |= _new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
-			AICT_BUFFER | AICD_OUT);
-	ret |= _new_append(ai, AICT_UINT32, "symlink", 2, AICT_STRING,
+			AICT_BUFFER | AICD_OUT); */
+	ret |= _new_append(ai, AICT_INT32, "symlink", 2, AICT_STRING,
 			AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32); */
+	/* ret |= _new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32); */
 	ret |= _new_append(ai, AICT_INT32, "unlink", 1, AICT_STRING);
 	ret |= _new_append(ai, AICT_INT32, "write", 3, AICT_UINT32,
 			AICT_BUFFER, AICT_UINT32);
