@@ -28,6 +28,7 @@
 #include <netdb.h>
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
+# include <openssl/err.h>
 #endif
 
 #include "System.h"
@@ -216,7 +217,7 @@ static int _new_connect(AppClient * appclient, char * app)
 	if(_connect_addr("Session", &sa.sin_addr.s_addr) != 0)
 		return 1;
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
-		return error_set_code(1, strerror(errno));
+		return error_set_code(1, "%s%s", "Session: ", strerror(errno));
 #ifdef WITH_SSL
 	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
