@@ -292,10 +292,10 @@ static int _new_vfs(AppInterface * ai)
 {
 	int ret = 0;
 
-	/* ret |= _new_append(ai, AICT_INT32, "chmod", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "chmod", 2, AICT_STRING,
 			AICT_UINT32);
 	ret |= _new_append(ai, AICT_INT32, "chown", 3, AICT_STRING,
-			AICT_UINT32, AICT_UINT32); */
+			AICT_UINT32, AICT_UINT32);
 	ret |= _new_append(ai, AICT_INT32, "close", 1, AICT_UINT32);
 	/* ret |= _new_append(ai, AICT_UINT32, "creat", 2, AICT_STRING,
 			AICT_UINT32); */
