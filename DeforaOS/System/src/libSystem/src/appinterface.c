@@ -330,8 +330,8 @@ static int _new_vfs(AppInterface * ai)
 			AICT_BUFFER | AICD_OUT);
 	ret |= _new_append(ai, AICT_UINT32, "symlink", 2, AICT_STRING,
 			AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32);
-	ret |= _new_append(ai, AICT_UINT32, "unlink", 1, AICT_STRING); */
+	ret |= _new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32); */
+	ret |= _new_append(ai, AICT_INT32, "unlink", 1, AICT_STRING);
 	ret |= _new_append(ai, AICT_INT32, "write", 3, AICT_UINT32,
 			AICT_BUFFER, AICT_UINT32);
 	return ret;
