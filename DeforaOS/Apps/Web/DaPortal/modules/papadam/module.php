@@ -53,12 +53,14 @@ global $lang;
 if($lang == 'fr')
 {
 	$text['ADD_A_USER'] = 'Ajouter un utilisateur';
+	$text['ADDRESS'] = 'Adresse';
 	$text['BROWSE_FILES'] = 'Explorateur de fichiers';
 	$text['CA_LIST'] = 'Liste des CA';
 	$text['CACLIENT_LIST'] = 'Liste des clients';
 	$text['CASERVER_LIST'] = 'Liste des serveurs';
 	$text['COMMON_NAME'] = 'Nom usuel (CN)';
 	$text['COUNTRY'] = 'Pays';
+	$text['DOWNLOAD'] = 'Télécharger';
 	$text['DOWNLOAD_REMOTE_FILE'] = 'Télécharger un fichier distant';
 	$text['EXPORT'] = 'Exporter';
 	$text['IMPORT'] = 'Importer';
@@ -392,14 +394,7 @@ function papadam_system($args)
 	$title.=' - '.PAPADAM;
 	if(!isset($args['action']))
 		return;
-	if($_SERVER['REQUEST_METHOD'] == 'GET')
-		switch($args['action'])
-		{
-			case 'download':
-				$error = _system_download($args);
-				break;
-		}
-	else if($_SERVER['REQUEST_METHOD'] == 'POST')
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
 		switch($args['action'])
 		{
 			case 'ca_insert':
@@ -407,6 +402,9 @@ function papadam_system($args)
 				break;
 			case 'config_update':
 				$error = _system_config_update($args);
+				break;
+			case 'download':
+				$error = _system_download($args);
 				break;
 		}
 }

@@ -1,4 +1,4 @@
-<form action="index.php" method="get">
+<form action="index.php" method="post">
 	<input type="hidden" name="module" value="papadam"/>
 	<input type="hidden" name="action" value="download"/>
 	<table>
