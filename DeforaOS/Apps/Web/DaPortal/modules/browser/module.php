@@ -125,8 +125,9 @@ function browser_config_update($args)
 //browser_default
 function browser_default($args)
 {
-	$file = _default_file(isset($args['id']) ? $args['id'] : '');
-	$root = _config_get('browser', 'root');
+	$file = _default_file(isset($args['file']) ? $args['file'] : '');
+	if(($root = _config_get('browser', 'root')) == FALSE)
+		return _error('Internal error');
 	if(($st = stat($root.'/'.$file)) == FALSE)
 		return _error('Could not open file');
 	if($st['mode'] & 040000 == 040000)
@@ -170,6 +171,7 @@ function _default_dir(&$root, &$file, $sort)
 			$entries[] = $entry;
 			continue;
 		}
+		$entry['args'] = 'file='.$entry['id'];
 		$entry['uid'] = _get_user($st['uid']);
 		$entry['gid'] = _get_group($st['gid']);
 		$entry['size'] = _get_size($st['size']);
@@ -245,6 +247,17 @@ function _entries_sort_uid(&$a, &$b)
 }
 
 
+//browser_download
+function browser_download($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return browser_default($args);
+}
+
+
 //browser_system
 function browser_system($args)
 {
@@ -259,10 +272,10 @@ function browser_system($args)
 		{
 			case 'admin':
 				break;
-			case 'default':
-				if(isset($args['download']) && $args['download']
-						== 1 && isset($args['id']))
-					_system_download($args['id']);
+			case 'download':
+				if(!isset($args['file']))
+					break;
+				$error = _system_download($args['file']);
 				break;
 		}
 	}
@@ -289,17 +302,17 @@ function _system_config_update($args)
 	exit(0);
 }
 
-function _system_download($id)
+function _system_download($file)
 {
-	$file = _default_file($id);
+	$file = _default_file($file);
 	if(($root = _config_get('browser', 'root')) == FALSE)
-		return 1;
+		return 'Internal error';
 	if(($fp = fopen($root.'/'.$file, 'rb')) == FALSE)
-		return 1;
+		return 'Could not open file';
 	if(($st = fstat($fp)) == FALSE || $st['mode'] & 040000 == 040000)
 	{
 		fclose($fp);
-		return 1;
+		return 'Is a directory';
 	}
 	header('Content-Length: '.$st['size']);
 	require_once('./system/mime.php');
