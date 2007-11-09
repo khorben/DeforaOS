@@ -13,6 +13,10 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with VFS; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* TODO:
+ * - implement root
+ * - check fd is valid for respective connections
+ * - unify whence values */
 
 
 
@@ -53,25 +57,26 @@ static ssize_t (*old_write)(int fd, void const * buf, size_t count);
 static int _vfs(char const * root)
 	/* FIXME implement root */
 {
+#ifdef __Linux__
+	static const char libc[] = "/lib/libc.so.6";
+#else
 	static const char libc[] = "/lib/libc.so";
+#endif
 	void * hdl;
 	Event * event;
 	AppServer * appserver;
 
 	if((hdl = dlopen(libc, RTLD_LAZY)) == NULL)
 		exit(1);
-	old_close = dlsym(hdl, "close");
-	old_fchmod = dlsym(hdl, "fchmod");
-	old_fchown = dlsym(hdl, "fchown");
-	old_lseek = dlsym(hdl, "lseek");
-	old_open = dlsym(hdl, "open");
-	old_read = dlsym(hdl, "read");
-	old_write = dlsym(hdl, "write");
-	dlclose(hdl);
-	if(old_close == NULL || old_fchmod == NULL || old_fchown == NULL
-			|| old_open == NULL || old_read == NULL
-			|| old_write == NULL)
+	if((old_close = dlsym(hdl, "close")) == NULL
+			|| (old_fchmod = dlsym(hdl, "fchmod")) == NULL
+			|| (old_fchown = dlsym(hdl, "fchown")) == NULL
+			|| (old_lseek = dlsym(hdl, "lseek")) == NULL
+			|| (old_open = dlsym(hdl, "open")) == NULL
+			|| (old_read = dlsym(hdl, "read")) == NULL
+			|| (old_write = dlsym(hdl, "write")) == NULL)
 		exit(1);
+	dlclose(hdl);
 	if((event = event_new()) == NULL)
 		return error_print(PACKAGE);
 	if((appserver = appserver_new_event("VFS", ASO_LOCAL, event)) == NULL)
@@ -133,13 +138,14 @@ int32_t open(char const * filename, uint32_t flags, uint32_t mode)
 {
 	int ret;
 
-	if((ret = old_open(filename, flags, mode)) < 0)
-		return -1;
+	ret = old_open(filename, flags, mode);
 	/* FIXME actually register this fd as for this connection */
 #ifdef DEBUG
 	fprintf(stderr, "VFS: open(%s, %u, %u) %d\n", filename, flags, mode,
 			ret);
 #endif
+	if(ret < 0)
+		return -1;
 	return ret + VFS_OFF;
 }
 
