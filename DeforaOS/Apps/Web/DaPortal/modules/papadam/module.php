@@ -25,6 +25,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['ADD_A_USER'] = 'Add a user';
+$text['ADDRESS'] = 'Address';
 $text['ADMINISTRATION'] = 'Administration';
 $text['BROWSE_FILES'] = 'Browse files';
 $text['CA_LIST'] = 'CA list';
@@ -33,6 +34,8 @@ $text['CASERVER_LIST'] = 'Server list';
 $text['CN'] = 'CN';
 $text['COMMON_NAME'] = 'Common name';
 $text['COUNTRY'] = 'Country';
+$text['DOWNLOAD'] = 'Download';
+$text['DOWNLOAD_REMOTE_FILE'] = 'Download remote file';
 $text['EMAIL'] = 'e-mail';
 $text['EXPORT'] = 'Export';
 $text['IMPORT'] = 'Import';
@@ -56,6 +59,7 @@ if($lang == 'fr')
 	$text['CASERVER_LIST'] = 'Liste des serveurs';
 	$text['COMMON_NAME'] = 'Nom usuel (CN)';
 	$text['COUNTRY'] = 'Pays';
+	$text['DOWNLOAD_REMOTE_FILE'] = 'Télécharger un fichier distant';
 	$text['EXPORT'] = 'Exporter';
 	$text['IMPORT'] = 'Importer';
 	$text['LOCALITY'] = 'Ville';
@@ -261,6 +265,9 @@ function papadam_default($args)
 	$entries[] = array('name' => BROWSE_FILES,
 			'thumbnail' => 'icons/48x48/download.png',
 			'module' => 'browser', 'action' => 'default');
+	$entries[] = array('name' => DOWNLOAD_REMOTE_FILE,
+			'thumbnail' => 'icons/48x48/download.png',
+			'module' => 'papadam', 'action' => 'download');
 	$entries[] = array('name' => REVOKE_A_USER,
 			'thumbnail' => 'icons/48x48/user.png');
 	_module('explorer', 'browse', array('entries' => $entries,
@@ -362,7 +369,22 @@ function _display_type($args, $type)
 }
 
 
-//system
+//papadam_download
+function papadam_download($args)
+{
+	global $error;
+
+	print('<h1 class="title papadam">'._html_safe(DOWNLOAD_REMOTE_FILE)
+			."</h1>\n");
+	if(isset($error) && strlen($error))
+		_error($error);
+	$address = isset($args['address']) ? stripslashes($args['address'])
+		: '';
+	include('./modules/papadam/download.tpl');
+}
+
+
+//papadam_system
 function papadam_system($args)
 {
 	global $title, $error;
@@ -370,7 +392,14 @@ function papadam_system($args)
 	$title.=' - '.PAPADAM;
 	if(!isset($args['action']))
 		return;
-	if($_SERVER['REQUEST_METHOD'] == 'POST')
+	if($_SERVER['REQUEST_METHOD'] == 'GET')
+		switch($args['action'])
+		{
+			case 'download':
+				$error = _system_download($args);
+				break;
+		}
+	else if($_SERVER['REQUEST_METHOD'] == 'POST')
 		switch($args['action'])
 		{
 			case 'ca_insert':
@@ -509,6 +538,32 @@ function _system_config_update($args)
 		return PERMISSION_DENIED;
 	_config_update('pki', $args);
 	header('Location: '._module_link('papadam', 'admin'));
+	exit(0);
+}
+
+function _system_download($args)
+{
+	if(!isset($args['address']) || strlen($args['address']) == 0
+			|| strchr($args['address'], ':') == FALSE)
+		return INVALID_ARGUMENT;
+	$address = stripslashes($args['address']);
+	$address = explode(':', $address);
+	$host = array_shift($address);
+	$file = implode($address, ':');
+	$cmd = 'APPSERVER_VFS='.escapeshellarg($host)
+		." LD_PRELOAD='/var/httpd/libexec/libvfs.so'"
+		.' cat '.escapeshellarg($file);
+	$output = array();
+	if(_exec($cmd, $output) != 0)
+		return 'An error occured';
+	require_once('./system/mime.php');
+	$mime = _mime_from_ext($file);
+	header('Content-Type: '.$mime);
+	header('Content-Disposition: attachment; filename="'.addslashes($file)
+			.'"');
+	$file = basename($file);
+	for($i = 0, $cnt = count($output); $i < $cnt; $i++)
+		print($output[$i]); //FIXME newlines
 	exit(0);
 }
 
