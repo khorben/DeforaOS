@@ -51,7 +51,19 @@ if($lang == 'fr')
 {
 	$text['ADD_A_USER'] = 'Ajouter un utilisateur';
 	$text['BROWSE_FILES'] = 'Explorateur de fichiers';
+	$text['CA_LIST'] = 'Liste des CA';
+	$text['CACLIENT_LIST'] = 'Liste des clients';
+	$text['CASERVER_LIST'] = 'Liste des serveurs';
+	$text['COMMON_NAME'] = 'Nom usuel (CN)';
+	$text['COUNTRY'] = 'Pays';
+	$text['EXPORT'] = 'Exporter';
+	$text['IMPORT'] = 'Importer';
+	$text['LOCALITY'] = 'Ville';
+	$text['NEW_CA'] = 'Nouveau CA';
+	$text['ORGANIZATION'] = 'Organisme';
 	$text['REVOKE_A_USER'] = 'Révoquer un utilisateur';
+	$text['SELF_SIGNED'] = 'Auto-signé';
+	$text['STATE'] = 'Région';
 }
 _lang($text);
 
