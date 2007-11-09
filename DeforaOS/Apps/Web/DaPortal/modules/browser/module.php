@@ -23,22 +23,32 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['BROWSER'] = 'Browser';
 $text['BROWSER_ADMINISTRATION'] = 'Browser administration';
+$text['BYTES'] = 'bytes';
+$text['GB'] = 'GB';
 $text['GROUP'] = 'Group';
 $text['INDEX_OF'] = 'Index of';
+$text['KB'] = 'KB';
+$text['MB'] = 'MB';
 $text['OWNER'] = 'Owner';
 $text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
+$text['TB'] = 'TB';
 $text['UP_ONE_DIRECTORY'] = 'Up one directory';
 global $lang;
 if($lang == 'fr')
 {
 	$text['BROWSER'] = 'Explorateur';
 	$text['BROWSER_ADMINISTRATION'] = "Administration de l'explorateur";
+	$text['BYTES'] = 'octets';
+	$text['GB'] = 'Go';
 	$text['GROUP'] = 'Groupe';
 	$text['INDEX_OF'] = 'Fichiers de';
+	$text['KB'] = 'Ko';
+	$text['MB'] = 'Mo';
 	$text['OWNER'] = 'Propriétaire';
 	$text['SETTINGS'] = 'Paramètres';
 	$text['SIZE'] = 'Taille';
+	$text['TB'] = 'To';
 	$text['UP_ONE_DIRECTORY'] = 'Répertoire parent';
 }
 _lang($text);
@@ -66,15 +76,15 @@ function _get_group($id)
 function _get_size($size)
 {
 	if($size < 1024)
-		return $size.' bytes';
+		return $size.' '.BYTES;
 	if(($size = round($size / 1024)) < 1024)
-		return $size.' KB';
+		return $size.' '.KB;
 	if(($size = round($size / 1024)) < 1024)
-		return $size.' MB';
+		return $size.' '.MB;
 	if(($size = round($size / 1024)) < 1024)
-		return $size.' GB';
+		return $size.' '.GB;
 	$size = round($size / 1024);
-	return $size.' TB';
+	return $size.' '.TB;
 }
 
 function _get_user($id)
