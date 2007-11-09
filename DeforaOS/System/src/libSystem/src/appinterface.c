@@ -486,7 +486,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 								buflen, &pos)
 							!= 0)
 						return -1;
-					size = (uint32_t)buffer_get_size(b);
+					size = i32;
 					p = buffer_get_data(b);
 					break;
 			}
