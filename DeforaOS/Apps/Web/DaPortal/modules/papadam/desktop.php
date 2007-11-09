@@ -18,7 +18,7 @@
 
 $title = 'Papadam';
 $icon = 'papadam.png';
-$admin = 1;
+$admin = 0;
 $list = 1;
 
 ?>
