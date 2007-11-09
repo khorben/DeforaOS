@@ -56,7 +56,7 @@ if($lang == 'fr')
 	$text['CA_LIST'] = 'Liste des CA';
 	$text['CACLIENT_LIST'] = 'Liste des clients';
 	$text['CASERVER_LIST'] = 'Liste des serveurs';
-	$text['COMMON_NAME'] = 'Nom usuel';
+	$text['COMMON_NAME'] = 'Nom usuel (CN)';
 	$text['COUNTRY'] = 'Pays';
 	$text['LOCALITY'] = 'Ville';
 	$text['NEW_CA'] = 'Nouveau CA';
