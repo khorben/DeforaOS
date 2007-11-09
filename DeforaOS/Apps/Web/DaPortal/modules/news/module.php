@@ -451,7 +451,7 @@ function _submit_send_mail($news)
 	$news['title'] = stripslashes($news['title']);
 	$news['date'] = strftime(DATE_FORMAT);
 	$news['content'] = "News is available for moderation at:\n"
-		._module_link('news', 'modify', $news['id'])."\n"
+		._module_link_full('news', 'modify', $news['id'])."\n"
 		."News preview:\n\n"
 		."News by ".$news['username']." on ".$news['date']."\n"
 		.stripslashes($news['content']);

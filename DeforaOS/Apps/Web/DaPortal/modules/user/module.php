@@ -86,9 +86,7 @@ function _password_mail($id, $username, $email, $password = FALSE)
 		return _error('Could not create confirmation key');
 	$message = YOUR_PASSWORD_IS." '$password'\n\n"
 			."Please click on the following link to confirm:\n"
-			.(isset($_SERVER['HTTPS']) ? 'https' : 'http')
-			.'://'.$_SERVER['SERVER_NAME'].'/'
-			._module_link('user', 'confirm', FALSE, FALSE,
+			._module_link_full('user', 'confirm', FALSE, FALSE,
 			'key='.$key);
 	require_once('./system/mail.php');
 	_mail('Administration Team', $username.' <'.$email.'>',
