@@ -1,5 +1,7 @@
 /* $Id$ */
 /* Copyright (c) 2007 Pierre Pronchery <pierre.pronchery@duekin.com> */
+/* FIXME
+ * - maintain database of issued certificates */
 
 
 
