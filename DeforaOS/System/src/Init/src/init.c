@@ -19,8 +19,9 @@
 #include <System.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <signal.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 #include <string.h>
 
 
@@ -35,11 +36,11 @@ static int _init(void)
 	if(_init_init() != 0)
 		return 1;
 	if((event = event_new()) == NULL)
-		return _init_error("Event", 1);
+		return error_print("Init");
 	if((appserver = appserver_new_event("Session", ASO_LOCAL, event))
 			== NULL)
 	{
-		_init_error("AppServer", 1);
+		error_print("Init");
 		event_delete(event);
 		return 1;
 	}
@@ -90,10 +91,13 @@ static void _init_sighandler(int signum)
 int port(char * app)
 {
 	/* FIXME */
+	fprintf(stderr, "=== PORT %s ===\n", app);
 	if(strcmp(app, "Probe") == 0)
 		return 4243;
 	if(strcmp(app, "VFS") == 0)
 		return 4245;
+	if(strcmp(app, "Directory") == 0)
+		return 4247;
 	return -1;
 }
 
@@ -120,7 +124,7 @@ int stop(char * app)
 
 
 /* usage */
-static int _init_usage(void)
+static int _usage(void)
 {
 	fputs("Usage: Init\n", stderr);
 	return 1;
@@ -130,7 +134,15 @@ static int _init_usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	if(argc != 1)
-		return _init_usage();
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
 	return _init() == 0 ? 0 : 2;
 }
