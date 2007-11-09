@@ -99,11 +99,8 @@ function _module_id($name)
 	if(isset($cache[$name]))
 		return $cache[$name];
 	require_once('./system/user.php');
-	$enabled = " AND enabled='1'";
-	if(_user_admin($user_id))
-		$enabled = '';
 	if(($id = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='$name'$enabled")) == FALSE)
+			." WHERE name='$name' AND enabled='1'")) == FALSE)
 		return 0;
 	$cache[$name] = $id;
 	return $id;
@@ -172,6 +169,26 @@ function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 			$link .= '&'.$params;
 	}
 	return $link;
+}
+
+
+function _module_link_full($module, $action = FALSE, $id = FALSE,
+		$title = FALSE, $params = FALSE)
+{
+	$link = $_SERVER['SERVER_NAME'];
+	if(isset($_SERVER['HTTPS']))
+	{
+		$link = 'https://'.$link;
+		if($_SERVER['SERVER_PORT'] != '443')
+			$link .= ':'.$_SERVER['SERVER_PORT'];
+	}
+	else
+	{
+		$link = 'http://'.$link;
+		if($_SERVER['SERVER_PORT'] != '80')
+			$link .= ':'.$_SERVER['SERVER_PORT'];
+	}
+	return $link._module_link($module, $action, $id, $title, $params);
 }
 
 
