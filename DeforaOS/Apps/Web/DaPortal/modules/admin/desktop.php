@@ -34,7 +34,8 @@ $list = 1;
 $actions = array('admin' => array('title' => 'Modules'));
 
 $actions['admin']['actions'] = array();
-$modules = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
+$modules = _sql_array('SELECT name FROM daportal_module'
+		." WHERE enabled='1' ORDER BY name ASC");
 foreach($modules as $m)
 {
 	if(($d = _module_desktop($m['name'])) == FALSE
