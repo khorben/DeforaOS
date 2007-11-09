@@ -158,7 +158,8 @@ function admin_default()
 
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	$res = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
+	$res = _sql_array('SELECT name FROM daportal_module'
+			." WHERE enabled='1' ORDER BY name ASC");
 	$modules = array();
 	foreach($res as $r)
 	{
