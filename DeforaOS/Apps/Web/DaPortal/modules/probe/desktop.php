@@ -22,38 +22,24 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: ../../index.php'));
 
 
-$title = 'Monitoring';
-$icon = 'host.png';
-$admin = 1;
-$list = 1;
-$actions = array('graph_list' => array('title' => 'Graphs'),
-		'host_list' => array('title' => 'Hosts',
-			'args' => 'action=host_list'));
+//lang
+$text = array();
+include('./modules/probe/lang.php');
 global $lang;
 if($lang == 'fr')
 {
-	$actions['graph_list']['title'] = 'Graphes';
-	$actions['host_list']['title'] = 'Machines';
-}
-$text['UPTIME'] = 'Uptime';
-$text['LOAD_AVERAGE'] = 'Load average';
-$text['LOGGED_USERS'] = 'Logged users';
-$text['MEMORY_USAGE'] = 'Memory usage';
-$text['NETWORK_TRAFFIC'] = 'Network traffic';
-$text['PROCESS_COUNT'] = 'Process count';
-$text['SWAP_USAGE'] = 'Swap usage';
-$text['VOLUME_USAGE'] = 'Volume usage';
-if($lang == 'fr')
-{
-	$text['LOAD_AVERAGE'] = 'Charge moyenne';
-	$text['LOGGED_USERS'] = 'Utilisateurs connectés';
-	$text['MEMORY_USAGE'] = 'Utilisation mémoire';
-	$text['NETWORK_TRAFFIC'] = 'Activité réseau';
-	$text['PROCESS_COUNT'] = 'Nombre de processus';
-	$text['SWAP_USAGE'] = 'Utilisation échange';
-	$text['VOLUME_USAGE'] = 'Utilisation des volumes';
+	include('./modules/probe/lang.fr.php');
 }
 _lang($text);
+
+
+$title = MONITORING;
+$icon = 'host.png';
+$admin = 1;
+$list = 1;
+$actions = array('graph_list' => array('title' => GRAPH_LIST),
+		'host_list' => array('title' => HOST_LIST,
+			'args' => 'action=host_list'));
 
 $actions['graph_list']['actions'] = array();
 $actions['graph_list']['actions'][] = array('title' => UPTIME,

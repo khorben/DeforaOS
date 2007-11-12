@@ -27,26 +27,11 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
-$text['ALL_HOSTS'] = 'All hosts';
-$text['COMMENT'] = 'Comment';
-$text['CONFIGURATION_ERROR'] = 'Configuration error';
-$text['GRAPH_LIST'] = 'Graph list';
-$text['HOST_LIST'] = 'Host list';
-$text['MONITORING'] = 'Monitoring';
-$text['MONITORING_ADMINISTRATION'] = 'Monitoring administration';
-$text['NEW_HOST'] = 'New host';
-$text['SETTINGS'] = 'Settings';
+include('./modules/probe/lang.php');
 global $lang;
 if($lang == 'fr')
 {
-	$text['COMMENT'] = 'Commentaire';
-	$text['CONFIGURATION_ERROR'] = 'Erreur de configuration';
-	$text['GRAPH_LIST'] = 'Liste des graphes';
-	$text['HOST_LIST'] = 'Liste des machines';
-	$text['MONITORING'] = 'Suivi';
-	$text['MONITORING_ADMINISTRATION'] = 'Administration du suivi';
-	$text['NEW_HOST'] = 'Nouvelle machine';
-	$text['SETTINGS'] = 'Paramètres';
+	include('./modules/probe/lang.fr.php');
 }
 _lang($text);
 
