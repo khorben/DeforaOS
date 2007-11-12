@@ -89,7 +89,7 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 		return _error('Internal server error');
 	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
-		$cmd.=' -r"'.escapeshellarg($revision).'"';
+		$cmd.=' -r'.escapeshellarg($revision);
 	if(_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['title'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
@@ -369,8 +369,8 @@ function _system_insert($args)
 		return;
 	}
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
-					." WHERE title='".$args['title']
-					."'")) != FALSE)
+					." WHERE title='".$args['title']."'"))
+			!= FALSE)
 	{
 		$error = 'Title already exists';
 		return;
@@ -467,8 +467,8 @@ function _system_update($args)
 		return;
 	}
 	fclose($fp);
-	if(_exec('ci -u -m"'.escapeshellarg($user_name)
-				.'" '.escapeshellarg($filename)) == FALSE)
+	if(_exec('ci -u -m'.escapeshellarg($user_name).' '
+				.escapeshellarg($filename)) == FALSE)
 	{
 		unlink($filename);
 		$error = 'An error occured while checking in';
