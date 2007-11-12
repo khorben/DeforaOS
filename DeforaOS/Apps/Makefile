@@ -1,4 +1,4 @@
-SUBDIRS	= Desktop/src Devel/src Network/src Servers/src Unix/src
+SUBDIRS	= Desktop/src Devel/src Network/src Servers/src Unix/src Web/DaPortal
 
 
 all: subdirs
