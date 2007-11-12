@@ -50,7 +50,7 @@ $probe_types['uptime'] = array('name' => 'uptime',
 		.' GPRINT:ruptime:AVERAGE:"Average\: %.0lf h\t\g"'
 		.' GPRINT:ruptime:MAX:"Maximum\: %.0lf h"');
 
-$probe_types['load'] = array('name' => 'load average',
+$probe_types['load'] = array('name' => 'load average', 'args' => '-l 0',
 		'def' => array('load1', 'load5', 'load15'),
 		'cdef' => array('rload1' => 'load1,65536,/',
 			'rload5' => 'load15,65536,/',
