@@ -197,6 +197,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/probe/graph.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/host_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/index.php \
+		$(PACKAGE)-$(VERSION)/modules/probe/lang.php \
+		$(PACKAGE)-$(VERSION)/modules/probe/lang.fr.php \
 		$(PACKAGE)-$(VERSION)/modules/probe/module.php \
 		$(PACKAGE)-$(VERSION)/modules/probe/top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/project.conf \
