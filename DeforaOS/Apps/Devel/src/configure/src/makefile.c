@@ -734,8 +734,10 @@ static void _flags_c(Configure * configure, FILE * fp, String * target)
 {
 	String const * p;
 
-	fprintf(fp, "%s%s", target, "_CFLAGS = $(CPPFLAGS) $(CFLAGSF)"
-			" $(CFLAGS)");
+	fprintf(fp, "%s%s", target, "_CFLAGS = $(CPPFLAGS)");
+	if((p = config_get(configure->config, target, "cppflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fprintf(fp, "%s", " $(CFLAGSF) $(CFLAGS)");
 	if((p = config_get(configure->config, target, "cflags")) != NULL)
 	{
 		fprintf(fp, " %s", p);
