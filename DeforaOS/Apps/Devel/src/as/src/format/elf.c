@@ -97,7 +97,7 @@ FormatPlugin format_plugin =
 /* elf_error */
 static int _elf_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "as ELF: ");
+	fputs("as ELF: ", stderr);
 	perror(message);
 	return ret;
 }
