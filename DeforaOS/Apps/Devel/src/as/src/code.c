@@ -27,7 +27,7 @@
 
 /* Code */
 /* variables */
-char const * code_error[CE_LAST+1] =
+char const * code_error[CE_COUNT] =
 {
 	"Success",
 	"Invalid arguments",
