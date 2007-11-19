@@ -35,6 +35,7 @@ typedef struct _ElfArch
 
 static ElfArch elf_arch[] =
 {
+	{ "amd64",	EM_X86_64,	ELFCLASS64,	ELFDATA2LSB	},
 	{ "i386",	EM_386,		ELFCLASS32,	ELFDATA2LSB	},
 	{ "i486",	EM_386,		ELFCLASS32,	ELFDATA2LSB	},
 	{ "i586",	EM_386,		ELFCLASS32,	ELFDATA2LSB	},
