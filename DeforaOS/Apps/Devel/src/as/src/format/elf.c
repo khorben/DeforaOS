@@ -21,6 +21,7 @@
 #include <string.h>
 #include <elf.h>
 #include "format.h"
+#include "../../config.h"
 
 
 /* variables */
@@ -165,6 +166,8 @@ static ElfArch * _init_arch(char const * arch)
 	for(ea = elf_arch; ea->arch != NULL; ea++)
 		if(strcmp(ea->arch, arch) == 0)
 			return ea;
+	fprintf(stderr, "%s: %s: Unsupported ELF architecture\n",
+			PACKAGE, arch);
 	return NULL;
 }
 
