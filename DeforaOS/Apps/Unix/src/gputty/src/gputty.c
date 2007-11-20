@@ -807,6 +807,8 @@ GPuTTY * gputty_new(void)
 	g->hn_eusername = gtk_entry_new();
 	if((p = config_get(g->config, "", "username")) != NULL)
 		gtk_entry_set_text(GTK_ENTRY(g->hn_eusername), p);
+	g_signal_connect(G_OBJECT(g->hn_eusername), "activate", G_CALLBACK(
+				_on_connect), g);
 	gtk_box_pack_start(GTK_BOX(vbox2), g->hn_eusername, TRUE, TRUE, 0);
 	/* sessions */
 	g->sn_frame = gtk_frame_new("Manage sessions");
