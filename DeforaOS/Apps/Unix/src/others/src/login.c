@@ -72,6 +72,8 @@ static int _login_do(char const * user)
 		sleep(3);
 		return 0;
 	}
+	if(setgid(pw->pw_gid) != 0)
+		return _login_error("setgid", 1);
 	if(setuid(pw->pw_uid) != 0)
 		return _login_error("setuid", 1);
 	/* FIXME sanitize environment */
@@ -89,7 +91,8 @@ static char const * _do_ask_username(void)
 	fputs("login: ", stderr);
 	if(fgets(buf, sizeof(buf), stdin) == NULL)
 	{
-		_login_error("fgets", 1);
+		if(!feof(stdin))
+			_login_error("fgets", 1);
 		return NULL;
 	}
 	if((len = strlen(buf)) == 0
