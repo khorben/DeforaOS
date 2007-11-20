@@ -72,7 +72,7 @@ static int _time_exec(char * argv[])
 
 static int _time_print(long real, long user, long sys)
 {
-	char * args[3] = { "real", "user", "sys" };
+	static const char * args[3] = { "real", "user", "sys" };
 	long * argl[3] = { &real, &user, &sys };
 	int i;
 	long l;
