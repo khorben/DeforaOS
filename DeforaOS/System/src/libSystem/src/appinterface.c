@@ -481,12 +481,11 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 				case AICT_BUFFER: /* FIXME handle NULL? */
 					b = va_arg(arg, Buffer *);
 					i32 = htonl(buffer_get_size(b));
-					p = &i32;
-					if(_send_bytes(p, sizeof(i32), buf,
+					if(_send_bytes(&i32, sizeof(i32), buf,
 								buflen, &pos)
 							!= 0)
 						return -1;
-					size = i32;
+					size = buffer_get_size(b);
 					p = buffer_get_data(b);
 					break;
 			}
@@ -532,8 +531,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					b = va_arg(arg, Buffer *);
 					args[i] = b;
 					i32 = htonl(buffer_get_size(b));
-					p = &i32;
-					if(_send_bytes(p, sizeof(i32), buf,
+					if(_send_bytes(&i32, sizeof(i32), buf,
 								buflen, &pos)
 							!= 0)
 						return -1;
