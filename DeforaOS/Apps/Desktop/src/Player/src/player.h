@@ -25,11 +25,24 @@
 /* Player */
 typedef struct _Player
 {
-	char * filename;
+	/* view */
 	int paused;
+	int fullscreen;
+
+	/* current file */
+	char * filename;
 	int width;
 	int height;
-	int fullscreen;
+	int audio_bitrate;
+	int audio_channels;
+	char * audio_codec;
+	int audio_rate;
+	gdouble length;
+	gdouble video_aspect;
+	int video_bitrate;
+	char * video_codec;
+	gdouble video_fps;
+	int video_rate;
 
 	/* mplayer */
 	pid_t pid;

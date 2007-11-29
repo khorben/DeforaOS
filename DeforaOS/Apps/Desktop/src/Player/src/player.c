@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 #include <errno.h>
 #include "callbacks.h"
 #include "player.h"
@@ -90,8 +91,12 @@ static struct _menubar _menubar[] =
 /* Player */
 /* private */
 /* prototypes */
+/* accessors */
+static void _player_set_progress(Player * player, unsigned int progress);
+
 /* useful */
 static int _player_error(char const * message, int ret);
+static void _player_reset(Player * player);
 
 /* callbacks */
 static gboolean _command_read(GIOChannel * source, GIOCondition condition,
@@ -127,6 +132,31 @@ static int _player_error(char const * message, int ret)
 }
 
 
+/* player_reset */
+static void _player_reset(Player * player)
+{
+	if(player->filename != NULL)
+		free(player->filename);
+	player->filename = NULL;
+	player->width = 0;
+	player->height = 0;
+	player->audio_bitrate = 0;
+	player->audio_channels = 0;
+	if(player->audio_codec != NULL)
+		free(player->audio_codec);
+	player->audio_codec = NULL;
+	player->audio_rate = 0;
+	player->video_aspect = 0.0;
+	player->video_bitrate = 0;
+	if(player->video_codec != NULL)
+		free(player->video_codec);
+	player->video_codec = NULL;
+	player->video_fps = 0.0;
+	player->video_rate = 0;
+	_player_set_progress(player, 0);
+}
+
+
 /* player_command */
 static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 {
@@ -153,6 +183,8 @@ static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 
 /* callbacks */
 /* command_read */
+static void _read_parse(Player * player, char const * buf);
+
 static gboolean _command_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
@@ -162,7 +194,6 @@ static gboolean _command_read(GIOChannel * source, GIOCondition condition,
 	gsize read;
 	size_t i;
 	size_t j;
-	unsigned int u32;
 
 	if(condition != G_IO_IN)
 	{
@@ -189,22 +220,58 @@ static gboolean _command_read(GIOChannel * source, GIOCondition condition,
 		if(buf[i] != '\n')
 			continue;
 		buf[i] = '\0';
-		if(sscanf(&buf[j], "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
-			_player_set_progress(player, u32);
-		else if(sscanf(&buf[j], "ID_VIDEO_WIDTH=%u\n", &u32) == 1)
-			player_set_size(player, u32, -1);
-		else if(sscanf(&buf[j], "ID_VIDEO_HEIGHT=%u\n", &u32) == 1)
-			player_set_size(player, -1, u32);
-#ifdef DEBUG
-		else
-			fprintf(stderr, "DEBUG: unknown output \"%s\"\n",
-					&buf[j]);
-#endif
+		_read_parse(player, &buf[j]);
 		j = i + 1;
 	}
 	buf_len -= j;
 	memmove(buf, &buf[j], buf_len);
 	return TRUE;
+}
+
+static void _read_parse(Player * player, char const * buf)
+{
+	unsigned int u32;
+	gdouble db;
+	char str[256];
+
+	if(sscanf(buf, "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
+		_player_set_progress(player, u32);
+	else if(sscanf(buf, "ID_AUDIO_BITRATE=%u\n", &u32) == 1)
+		player->audio_bitrate = u32;
+	else if(sscanf(buf, "ID_AUDIO_CODEC=%255s", str) == 1)
+	{
+		if(player->audio_codec != NULL)
+			free(player->audio_codec);
+		player->audio_codec = strdup(str);
+	}
+	else if(sscanf(buf, "ID_AUDIO_NCH=%u\n", &u32) == 1)
+		player->audio_channels = u32;
+	else if(sscanf(buf, "ID_AUDIO_RATE=%u\n", &u32) == 1)
+		player->audio_rate = u32;
+	else if(sscanf(buf, "ID_LENGTH=%lf\n", &db) == 1)
+		player->length = db;
+	else if(sscanf(buf, "ID_VIDEO_ASPECT=%lf\n", &db) == 1)
+		player->video_aspect = db;
+	else if(sscanf(buf, "ID_VIDEO_BITRATE=%u\n", &u32) == 1)
+		player->video_bitrate = u32;
+	else if(sscanf(buf, "ID_VIDEO_CODEC=%255s", str) == 1)
+	{
+		if(player->video_codec != NULL)
+			free(player->video_codec);
+		player->video_codec = strdup(str);
+	}
+	else if(sscanf(buf, "ID_VIDEO_FPS=%lf\n", &db) == 1)
+		player->video_fps = db;
+	else if(sscanf(buf, "ID_VIDEO_HEIGHT=%u\n", &u32) == 1)
+		player_set_size(player, -1, u32);
+	else if(sscanf(buf, "ID_VIDEO_RATE=%u\n", &u32) == 1)
+		player->video_rate = u32;
+	else if(sscanf(buf, "ID_VIDEO_WIDTH=%u\n", &u32) == 1)
+		player_set_size(player, u32, -1);
+#ifdef DEBUG
+	else
+		fprintf(stderr, "DEBUG: unknown output \"%s\"\n", buf);
+#endif
 }
 
 
@@ -271,12 +338,15 @@ Player * player_new(void)
 
 	if((player = malloc(sizeof(*player))) == NULL)
 		return NULL;
-	player->filename = NULL;
+	/* view */
 	player->paused = 0;
-	player->width = 400;
-	player->height = 300;
+	player->fullscreen = 0;
+	/* current file */
+	player->filename = NULL;
+	player->audio_codec = NULL;
+	player->video_codec = NULL;
+	/* mplayer */
 	player->pid = -1;
-	player->window = NULL;
 	if(pipe(player->fd[0]) != 0
 			|| pipe(player->fd[1]) != 0)
 	{
@@ -291,8 +361,7 @@ Player * player_new(void)
 	player->timeout_id = 0;
 	/* widgets */
 	player->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(player->window), player->width,
-			player->height);
+	gtk_window_set_default_size(GTK_WINDOW(player->window), 512, 384);
 	gtk_window_set_title(GTK_WINDOW(player->window), "Player");
 	gtk_widget_realize(player->window);
 	g_signal_connect(G_OBJECT(player->window), "delete-event", G_CALLBACK(
@@ -417,6 +486,7 @@ static void _new_mplayer(Player * player)
 	char buf[] = "pausing loadfile splash.png 0\nframe_step\n";
 	char wid[16];
 
+	_player_reset(player);
 	snprintf(wid, sizeof(wid), "%u", gtk_socket_get_id(GTK_SOCKET(
 					player->view_window)));
 	if((player->pid = fork()) == -1)
@@ -575,9 +645,9 @@ int player_open(Player * player, char const * filename)
 {
 	char cmd[512];
 	size_t len;
+	char * p;
 
-	if(player->filename != NULL)
-		free(player->filename);
+	_player_reset(player);
 	if((player->filename = strdup(filename)) == NULL)
 		return player_error(player, strerror(errno), 1);
 	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "pausing loadfile \"",
@@ -590,7 +660,10 @@ int player_open(Player * player, char const * filename)
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 1;
-	snprintf(cmd, sizeof(cmd), "%s%s", "Player - ", filename);
+	p = strdup(filename);
+	snprintf(cmd, sizeof(cmd), "%s%s", "Player - ", p != NULL ? basename(p)
+			: filename);
+	free(p);
 	gtk_window_set_title(GTK_WINDOW(player->window), cmd);
 	return 0;
 }
@@ -655,7 +728,7 @@ int player_play(Player * player)
 		return 1;
 	}
 	else
-		_player_set_progress(player, 0);
+		_player_reset(player);
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 0;
