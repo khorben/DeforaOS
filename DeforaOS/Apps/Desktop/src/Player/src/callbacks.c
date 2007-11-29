@@ -45,26 +45,28 @@ gboolean on_player_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
-gboolean on_player_configure(GtkWidget * window, GdkEventConfigure * event,
-		gpointer data)
-{
-	Player * player = data;
-	int width;
-	int height;
-
-	width = max(1, event->width);
-	height = max(1, event->height - player->view_iheight);
-	XResizeWindow(GDK_DISPLAY(), player->view_window, width, height);
-	return FALSE;
-}
-
-
 /* file menu */
 void on_file_open(GtkWidget * widget, gpointer data)
 {
 	Player * player = data;
 
 	player_open_dialog(player);
+}
+
+
+void on_file_properties(GtkWidget * widget, gpointer data)
+{
+	Player * player = data;
+	GtkWidget * window;
+	char buf[256];
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", player->filename);
+	gtk_window_set_title(GTK_WINDOW(window), buf);
+	/* FIXME implement */
+	gtk_widget_show_all(window);
 }
 
 
@@ -80,7 +82,23 @@ void on_file_close(GtkWidget * widget, gpointer data)
 /* edit menu */
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
-	/* FIXME */
+	Player * player = data;
+	static GtkWidget * window = NULL;
+
+
+	if(window != NULL)
+	{
+		gtk_widget_show(window);
+		return;
+	}
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(window), "Preferences");
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				player->window));
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				gtk_widget_hide), NULL); /* FIXME cancel */
+	/* FIXME implement */
+	gtk_widget_show_all(window);
 }
 
 
@@ -88,13 +106,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 void on_view_fullscreen(GtkWidget * widget, gpointer data)
 {
 	Player * player = data;
-	static int full = 0;
 
-	if(!full)
-		gtk_window_fullscreen(GTK_WINDOW(player->window));
-	else
-		gtk_window_unfullscreen(GTK_WINDOW(player->window));
-	full = !full;
+	player_set_fullscreen(player, !player_get_fullscreen(player));
 }
 
 
@@ -195,4 +208,12 @@ void on_next(GtkWidget * widget, gpointer data)
 	Player * player = data;
 
 	player_next(player);
+}
+
+
+void on_fullscreen(GtkWidget * widget, gpointer data)
+{
+	Player * player = data;
+
+	player_set_fullscreen(player, !player_get_fullscreen(player));
 }

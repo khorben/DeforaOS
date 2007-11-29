@@ -36,7 +36,7 @@ static int _usage(void)
 
 
 /* main */
-static void _main_signals(void);
+static void _main_signal(void);
 int main(int argc, char * argv[])
 {
 	int o;
@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	_main_signals();
+	_main_signal();
 	if((player = player_new()) == NULL)
 		return 2;
 	if(optind < argc)
@@ -61,21 +61,22 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
-static void _signals_handler(int signum);
-static void _main_signals(void)
+static void _signal_handler(int signum);
+
+static void _main_signal(void)
 	/* handle mplayer death; should be done in Player as a callback but
 	 * would potentially conflict with other Player instances */
 {
 	struct sigaction sa;
 
 	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = _signals_handler;
+	sa.sa_handler = _signal_handler;
 	sigfillset(&sa.sa_mask);
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
 		fputs("Player: SIGCHLD: Not handled\n", stderr);
 }
 
-static void _signals_handler(int signum)
+static void _signal_handler(int signum)
 {
 	pid_t pid;
 	int status;

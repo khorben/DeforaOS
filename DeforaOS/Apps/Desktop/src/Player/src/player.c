@@ -44,6 +44,8 @@ struct _menu _menu_file[] =
 {
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN },
 	{ "", NULL, NULL },
+	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES },
+	{ "", NULL, NULL },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE },
 	{ NULL, NULL, NULL }
 };
@@ -86,42 +88,227 @@ static struct _menubar _menubar[] =
 
 
 /* Player */
+/* private */
+/* prototypes */
+/* useful */
+static int _player_error(char const * message, int ret);
+
+/* callbacks */
+static gboolean _command_read(GIOChannel * source, GIOCondition condition,
+		gpointer data);
+static gboolean _command_timeout(gpointer data);
+static gboolean _command_write(GIOChannel * source, GIOCondition condition,
+		gpointer data);
+
+
+/* functions */
+/* accessors */
+static void _player_set_progress(Player * player, unsigned int progress)
+{
+	gdouble fraction;
+	static char buf[16];
+
+	fraction = progress <= 100 ? progress : 100;
+	fraction /= 100;
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(player->progress),
+			fraction);
+	snprintf(buf, sizeof(buf), "%d%%", progress);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), buf);
+}
+
+
+/* useful */
+/* player_error */
+static int _player_error(char const * message, int ret)
+{
+	fputs("Player: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
+/* player_command */
+static int _player_command(Player * player, char const * cmd, size_t cmd_len)
+{
+	char * p;
+
+	if(player->pid == -1)
+	{
+		fputs("Player: mplayer not running\n", stderr);
+		return 1;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s%d%s\"%s\"\n", "DEBUG: pid ", player->pid,
+			": write ", cmd);
+#endif
+	if((p = realloc(player->buf, player->buf_len + cmd_len)) == NULL)
+		return _player_error("malloc", 1);
+	player->buf = p;
+	memcpy(&p[player->buf_len], cmd, cmd_len);
+	player->buf_len += cmd_len;
+	g_io_add_watch(player->channel[1], G_IO_OUT, _command_write, player);
+	return 0;
+}
+
+
+/* callbacks */
+/* command_read */
+static gboolean _command_read(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Player * player = data;
+	static char buf[512];
+	static size_t buf_len = 0;
+	gsize read;
+	size_t i;
+	size_t j;
+	unsigned int u32;
+
+	if(condition != G_IO_IN)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: buf_len=%zu\n", buf_len);
+#endif
+	if(g_io_channel_read(source, &buf[buf_len], sizeof(buf) - buf_len,
+				&read) != G_IO_ERROR_NONE)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+	if(read == 0)
+	{
+		player->read_id = 0;
+		return FALSE; /* FIXME end of file? */
+	}
+	buf_len += read;
+	j = 0;
+	for(i = 0; i < buf_len; i++)
+	{
+		if(buf[i] != '\n')
+			continue;
+		buf[i] = '\0';
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: read: \"%s\"\n", &buf[j]);
+#endif
+		if(sscanf(&buf[j], "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
+			_player_set_progress(player, u32);
+		else if(sscanf(&buf[j], "ID_VIDEO_WIDTH=%u\n", &u32) == 1)
+			player_set_size(player, u32, -1);
+		else if(sscanf(&buf[j], "ID_VIDEO_HEIGHT=%u\n", &u32) == 1)
+			player_set_size(player, -1, u32);
+#ifdef DEBUG
+		else
+			fprintf(stderr, "DEBUG: NOT parsed\n");
+#endif
+		j = i + 1;
+	}
+	buf_len -= j;
+	memmove(buf, &buf[j], buf_len);
+	return TRUE;
+}
+
+
+/* command_timeout */
+static gboolean _command_timeout(gpointer data)
+{
+	Player * player = data;
+	static const char cmd[] = "pausing_keep get_percent_pos\n";
+
+	_player_command(player, cmd, sizeof(cmd) - 1);
+	return TRUE;
+}
+
+
+/* command_write */
+static gboolean _command_write(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Player * player = data;
+	gsize written;
+	char * p;
+
+	if(condition != G_IO_OUT)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+	if(g_io_channel_write(source, player->buf, player->buf_len, &written)
+			!= G_IO_ERROR_NONE)
+	{
+		player_error(player, "", 0); /* FIXME */
+		gtk_main_quit();
+		return FALSE; /* FIXME report error */
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: wrote %zu bytes\n", written);
+#endif
+	player->buf_len -= written;
+	memmove(player->buf, &player->buf[written], player->buf_len);
+	if(player->buf_len == 0)
+		return FALSE;
+	if((p = realloc(player->buf, player->buf_len)) != NULL)
+		player->buf = p;
+	return TRUE;
+}
+
+
+/* public */
+/* player_new */
 static int _player_error(char const * message, int ret);
 static GtkWidget * _new_menubar(Player * player);
 static void _new_mplayer(Player * player);
+#if !GTK_CHECK_VERSION(2, 12, 0)
+static void gtk_widget_set_tooltip_text(GtkWidget * widget, const char * text);
+#endif
+
 Player * player_new(void)
 {
 	Player * player;
 	GtkWidget * vbox;
-	GtkWidget * tb_menubar;
 	GtkWidget * toolbar;
-	GtkRequisition req;
-	unsigned long black;
+	GtkToolItem * toolitem;
 
 	if((player = malloc(sizeof(*player))) == NULL)
 		return NULL;
 	player->filename = NULL;
-	player->atstart = 0;
+	player->paused = 0;
+	player->width = 400;
+	player->height = 300;
 	player->pid = -1;
 	player->window = NULL;
-	if(pipe(player->fd) != 0)
+	if(pipe(player->fd[0]) != 0
+			|| pipe(player->fd[1]) != 0)
 	{
 		player_error(player, strerror(errno), 0);
 		free(player);
 		return NULL;
 	}
+	player->buf = NULL;
+	player->buf_len = 0;
+	/* callbacks */
+	player->read_id = 0;
+	player->timeout_id = 0;
+	/* widgets */
 	player->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(player->window), 300, 300);
+	gtk_window_set_default_size(GTK_WINDOW(player->window), player->width,
+			player->height);
 	gtk_window_set_title(GTK_WINDOW(player->window), "Player");
 	gtk_widget_realize(player->window);
-	g_signal_connect(G_OBJECT(player->window), "configure_event",
-			G_CALLBACK(on_player_configure), player);
-	g_signal_connect(G_OBJECT(player->window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(player->window), "delete-event", G_CALLBACK(
 				on_player_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(player->window), vbox);
-	tb_menubar = _new_menubar(player);
-	gtk_box_pack_start(GTK_BOX(vbox), tb_menubar, FALSE, FALSE, 0);
+	player->menubar = _new_menubar(player);
+	gtk_box_pack_start(GTK_BOX(vbox), player->menubar, FALSE, FALSE, 0);
+	/* view */
+	player->view_window = gtk_socket_new();
+	gtk_box_pack_start(GTK_BOX(vbox), player->view_window, TRUE, TRUE, 0);
 	/* statusbar */
 	player->statusbar = gtk_statusbar_new();
 	player->statusbar_id = 0;
@@ -133,61 +320,60 @@ Player * player_new(void)
 			GTK_STOCK_MEDIA_PREVIOUS);
 	g_signal_connect(player->tb_previous, "clicked", G_CALLBACK(
 				on_previous), player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_previous),
+			"Previous");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_previous, -1);
 	player->tb_rewind = gtk_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_REWIND);
 	g_signal_connect(player->tb_rewind, "clicked", G_CALLBACK(
 				on_rewind), player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_rewind),
+			"Rewind");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_rewind, -1);
 	player->tb_play = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PLAY);
 	g_signal_connect(player->tb_play, "clicked", G_CALLBACK(on_play),
 			player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_play), "Play");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_play, -1);
 	player->tb_pause = gtk_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_PAUSE);
 	g_signal_connect(player->tb_pause, "clicked", G_CALLBACK(on_pause),
 			player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_pause), "Pause");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_pause, -1);
 	player->tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
 	g_signal_connect(player->tb_stop, "clicked", G_CALLBACK(on_stop),
 			player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_stop), "Stop");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_stop, -1);
 	player->tb_forward = gtk_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_FORWARD);
 	g_signal_connect(player->tb_forward, "clicked", G_CALLBACK(
 				on_forward), player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_forward), "Forward");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_forward, -1);
 	player->tb_next = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_NEXT);
 	g_signal_connect(player->tb_next, "clicked", G_CALLBACK(
 				on_next), player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_next), "Next");
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_next, -1);
+	toolitem = gtk_tool_item_new();
+	gtk_tool_item_set_expand(toolitem, TRUE);
+	player->progress = gtk_progress_bar_new();
+	gtk_container_add(GTK_CONTAINER(toolitem), player->progress);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	player->tb_fullscreen = gtk_tool_button_new_from_stock(
+			GTK_STOCK_FULLSCREEN);
+	g_signal_connect(player->tb_fullscreen, "clicked", G_CALLBACK(
+				on_fullscreen), player);
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_fullscreen),
+			"Fullscreen");
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_fullscreen, -1);
 	gtk_box_pack_end(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	gtk_widget_show_all(player->window);
-	/* view */
-	player->view_iheight = 0;
-	gtk_widget_size_request(tb_menubar, &req);
-	player->view_yoffset = req.height;
-	player->view_iheight+=req.height;
-	gtk_widget_size_request(toolbar, &req);
-	player->view_iheight+=req.height;
-	gtk_widget_size_request(player->statusbar, &req);
-	player->view_iheight+=req.height;
-	black = BlackPixel(GDK_DISPLAY(), DefaultScreen(GDK_DISPLAY()));
-	player->view_window = XCreateSimpleWindow(GDK_DISPLAY(),
-			GDK_WINDOW_XWINDOW(player->window->window), 0,
-			player->view_yoffset, 400, 300 - player->view_iheight,
-			0, 0, black);
-	XMapWindow(GDK_DISPLAY(), player->view_window);
 	/* mplayer */
 	_new_mplayer(player);
 	return player;
-}
-
-static int _player_error(char const * message, int ret)
-{
-	fputs("Player: ", stderr);
-	perror(message);
-	return ret;
 }
 
 static GtkWidget * _new_menubar(Player * player)
@@ -230,36 +416,107 @@ static GtkWidget * _new_menubar(Player * player)
 	return tb_menubar;
 }
 
-void _player_command(Player * player, char const * cmd, size_t cmd_len);
 static void _new_mplayer(Player * player)
 {
 	char buf[] = "pausing loadfile splash.png 0\nframe_step\n";
+	char wid[16];
 
+	snprintf(wid, sizeof(wid), "%u", gtk_socket_get_id(GTK_SOCKET(
+					player->view_window)));
 	if((player->pid = fork()) == -1)
 	{
 		player_error(player, strerror(errno), 0);
 		return;
 	}
-	if(player->pid == 0)
+	if(player->pid == 0) /* child */
 	{
-		if(close(0) != 0)
-			_player_error("stdin", 0);
-		if(dup2(player->fd[0], 0) == -1)
+		close(player->fd[0][0]);
+		close(player->fd[1][1]);
+		if(dup2(player->fd[1][0], 0) == -1)
 			exit(_player_error("dup2", 2));
-		snprintf(buf, sizeof(buf), "%u", (unsigned)player->view_window);
-		execlp("mplayer", "mplayer", "-slave", "-wid", buf,
-				"-quiet", "-idle", NULL);
+		if(dup2(player->fd[0][1], 1) == -1)
+			exit(_player_error("dup2", 2));
+		execlp("mplayer", "mplayer", "-slave", "-wid", wid, "-quiet",
+				"-idle", "-softvol", "-identify",
+				"-noconsolecontrols", NULL);
 		exit(_player_error("mplayer", 2));
 	}
+	close(player->fd[0][1]);
+	close(player->fd[1][0]);
+	player->channel[0] = g_io_channel_unix_new(player->fd[0][0]);
+	player->read_id = g_io_add_watch(player->channel[0], G_IO_IN,
+			_command_read, player);
+	player->channel[1] = g_io_channel_unix_new(player->fd[1][1]);
 	_player_command(player, buf, strlen(buf));
+	player->paused = 1;
 }
 
+#if !GTK_CHECK_VERSION(2, 12, 0)
+static void gtk_widget_set_tooltip_text(GtkWidget * widget, const char * text)
+{
+	static GtkTooltips * tooltips = NULL;
+
+	if(tooltips == NULL)
+	{
+		tooltips = gtk_tooltips_new();
+		gtk_tooltips_enable(tooltips);
+	}
+	gtk_tooltips_set_tip(tooltips, widget, text, NULL);
+}
+#endif
+
+
+/* player_delete */
 void player_delete(Player * player)
 {
 	char cmd[] = "quit\n";
 
+	if(player->read_id != 0)
+		g_source_remove(player->read_id);
+	if(player->timeout_id != 0)
+		g_source_remove(player->timeout_id);
 	_player_command(player, cmd, sizeof(cmd) - 1);
 	free(player);
+}
+
+
+/* accessors */
+int player_get_fullscreen(Player * player)
+{
+	return player->fullscreen ? 1 : 0;
+}
+
+
+void player_set_fullscreen(Player * player, int fullscreen)
+{
+	if(fullscreen)
+	{
+		if(player->fullscreen)
+			return;
+		gtk_widget_hide(player->menubar);
+		gtk_widget_hide(player->statusbar);
+		gtk_window_fullscreen(GTK_WINDOW(player->window));
+		player->fullscreen = !player->fullscreen;
+		return;
+	}
+	if(!player->fullscreen)
+		return;
+	gtk_window_unfullscreen(GTK_WINDOW(player->window));
+	gtk_widget_show(player->menubar);
+	gtk_widget_show(player->statusbar);
+	player->fullscreen = !player->fullscreen;
+}
+
+
+void player_set_size(Player * player, int width, int height)
+{
+	if(width < 0)
+		width = player->width;
+	if(height < 0)
+		height = player->height;
+	gtk_widget_set_size_request(player->view_window, width, height);
+	player->width = width;
+	player->height = height;
 }
 
 
@@ -276,24 +533,6 @@ int player_error(Player * player, char const * message, int ret)
 				gtk_widget_destroy), NULL);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	return ret;
-}
-
-
-/* private */
-void _player_command(Player * player, char const * cmd, size_t cmd_len)
-{
-	if(player->pid == -1)
-	{
-		fputs("Player: mplayer not running\n", stderr);
-		return;
-	}
-	player->atstart = 0;
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s%s\n", "Player: mplayer ", player->pid,
-			": Sending command:\n", cmd);
-#endif
-	if(write(player->fd[1], cmd, cmd_len) != cmd_len)
-		_player_error("write", 0);
 }
 
 
@@ -336,34 +575,34 @@ void player_previous(Player * player)
 }
 
 
-void player_open(Player * player, char const * filename)
+int player_open(Player * player, char const * filename)
 {
-	char buf[512];
+	char cmd[512];
 	size_t len;
 
 	if(player->filename != NULL)
 		free(player->filename);
 	if((player->filename = strdup(filename)) == NULL)
-	{
-		player_error(player, strerror(errno), 0);
-		return;
-	}
-	snprintf(buf, sizeof(buf), "%s%s", "Player - ", filename);
-	gtk_window_set_title(GTK_WINDOW(player->window), buf);
-	len = snprintf(buf, sizeof(buf), "%s%s%s", "pausing loadfile \"",
+		return player_error(player, strerror(errno), 1);
+	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "pausing loadfile \"",
 			player->filename, "\" 0\nframe_step\n");
-	if(len >= sizeof(buf))
-		fputs("Player: String too long\n", stderr);
-	else
+	if(len >= sizeof(cmd))
 	{
-		_player_command(player, buf, len);
-		player->atstart = 1;
+		fputs("Player: String too long\n", stderr);
+		return 1;
 	}
+	if(_player_command(player, cmd, len) != 0)
+		return 1;
+	player->paused = 1;
+	snprintf(cmd, sizeof(cmd), "%s%s", "Player - ", filename);
+	gtk_window_set_title(GTK_WINDOW(player->window), cmd);
+	return 0;
 }
 
 
-void player_open_dialog(Player * player)
+int player_open_dialog(Player * player)
 {
+	int ret;
 	GtkWidget * dialog;
 	char * filename = NULL;
 
@@ -377,9 +616,10 @@ void player_open_dialog(Player * player)
 					dialog));
 	gtk_widget_destroy(dialog);
 	if(filename == NULL)
-		return;
-	player_open(player, filename);
+		return 1;
+	ret = player_open(player, filename);
 	g_free(filename);
+	return ret;
 }
 
 
@@ -397,23 +637,37 @@ void player_queue_add(Player * player, char const * filename)
 }
 
 
-void player_play(Player * player)
+/* player_play */
+int player_play(Player * player)
 {
 	char cmd[512];
 	size_t len;
 
 	if(player->filename == NULL)
-		return;
-	if(player->atstart)
-		len = snprintf(cmd, sizeof(cmd), "pause\n");
-	else
-		/* FIXME escape double quotes in filename? */
-		len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"",
-				player->filename, "\" 0\n");
-	if(len >= sizeof(cmd))
+		return 0;
+	/* FIXME escape double quotes in filename? */
+	if(player->paused == 1)
+	{
+		strcpy(cmd, "pause\n");
+		len = 6;
+	}
+	else if((len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"",
+					player->filename, "\" 0\n"))
+			>= sizeof(cmd))
+	{
 		fputs("Player: String too long\n", stderr);
-	else
-		_player_command(player, cmd, len);
+		return 1;
+	}
+	if(_player_command(player, cmd, len) != 0)
+		return 1;
+	player->paused = 0;
+	if(player->read_id == 0)
+		player->read_id = g_io_add_watch(player->channel[0], G_IO_IN,
+				_command_read, player);
+	if(player->timeout_id == 0)
+		player->timeout_id = g_timeout_add(500, _command_timeout,
+				player);
+	return 0;
 }
 
 
@@ -421,7 +675,21 @@ void player_pause(Player * player)
 {
 	char cmd[] = "pause\n";
 
-	_player_command(player, cmd, sizeof(cmd)-1);
+	if(player->filename == NULL)
+		return;
+	if(player->paused != 0)
+	{
+		if(player->timeout_id == 0)
+			player->timeout_id = g_timeout_add(500,
+					_command_timeout, player);
+	}
+	else if(player->timeout_id != 0)
+	{
+		g_source_remove(player->timeout_id);
+		player->timeout_id = 0;
+	}
+	_player_command(player, cmd, sizeof(cmd) - 1);
+	player->paused = player->paused == 1 ? 0 : 1;
 }
 
 
@@ -430,6 +698,17 @@ void player_stop(Player * player)
 	char cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
 
 	_player_command(player, cmd, sizeof(cmd)-1);
+	player->paused = 0; /* FIXME also needs a stopped state */
+	if(player->read_id != 0)
+	{
+		g_source_remove(player->read_id);
+		player->read_id = 0;
+	}
+	if(player->timeout_id != 0)
+	{
+		g_source_remove(player->timeout_id);
+		player->timeout_id = 0;
+	}
 }
 
 
@@ -437,6 +716,8 @@ void player_rewind(Player * player)
 {
 	char cmd[] = "speed_incr -0.5\n";
 
+	if(player->filename == NULL)
+		return;
 	_player_command(player, cmd, sizeof(cmd)-1);
 }
 
@@ -445,5 +726,7 @@ void player_forward(Player * player)
 {
 	char cmd[] = "speed_incr 0.5\n";
 
+	if(player->filename == NULL)
+		return;
 	_player_command(player, cmd, sizeof(cmd)-1);
 }

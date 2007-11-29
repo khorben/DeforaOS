@@ -26,18 +26,27 @@
 typedef struct _Player
 {
 	char * filename;
-	int atstart;
+	int paused;
+	int width;
+	int height;
+	int fullscreen;
 
 	/* mplayer */
 	pid_t pid;
-	int fd[2];
+	int fd[2][2];				/* mplayer pipes	*/
+	GIOChannel * channel[2];
+	char * buf;				/* pipe write buffer	*/
+	size_t buf_len;
+
+	/* callbacks */
+	guint read_id;				/* pipe read source id	*/
+	guint timeout_id;			/* timeout source id	*/
 
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * menubar;
 	GtkWidget * view;
-	Window view_window;
-	guint view_yoffset;
-	guint view_iheight;
+	GtkWidget * view_window;
 	GtkToolItem * tb_previous;
 	GtkToolItem * tb_rewind;
 	GtkToolItem * tb_play;
@@ -45,12 +54,19 @@ typedef struct _Player
 	GtkToolItem * tb_stop;
 	GtkToolItem * tb_forward;
 	GtkToolItem * tb_next;
+	GtkWidget * progress;
+	GtkToolItem * tb_fullscreen;
 	GtkWidget * statusbar;
 	gint statusbar_id;
 } Player;
 
 Player * player_new(void);
 void player_delete(Player * player);
+
+/* accessors */
+int player_get_fullscreen(Player * player);
+void player_set_fullscreen(Player * player, int fullscreen);
+void player_set_size(Player * player, int width, int height);
 
 /* useful */
 int player_error(Player * player, char const * message, int ret);
@@ -59,14 +75,14 @@ int player_sigchld(Player * player);
 /* playlist management */
 void player_next(Player * player);
 void player_previous(Player * player);
-void player_open(Player * player, char const * filename);
-void player_open_dialog(Player * player);
+int player_open(Player * player, char const * filename);
+int player_open_dialog(Player * player);
 void player_queue_add(Player * player, char const * filename);
-void player_queue_remove(Player * player, char const * filename);
+/* void player_queue_remove(Player * player, char const * filename);
 void player_queue_save(Player * player, char const * filename);
-void player_queue_save_dialog(Player * player);
+void player_queue_save_dialog(Player * player); */
 
-void player_play(Player * player);
+int player_play(Player * player);
 void player_pause(Player * player);
 void player_stop(Player * player);
 void player_rewind(Player * player);
