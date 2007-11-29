@@ -1,17 +1,20 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Player */
-/* Player is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License version 2 as published by the Free
- * Software Foundation.
- *
- * Player is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Player; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA  02111-1307  USA */
+static char const _license[] =
+"Player is free software; you can redistribute it and/or modify it\n"
+"under the terms of the GNU General Public License version 2 as\n"
+"published by the Free Software Foundation.\n"
+"\n"
+"Player is distributed in the hope that it will be useful, but WITHOUT\n"
+"ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n"
+"FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License\n"
+"for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with Player; if not, write to the Free Software Foundation, Inc.,\n"
+"59 Temple Place, Suite 330, Boston, MA  02111-1307  USA";
 
 
 
@@ -29,11 +32,9 @@
 /* constants */
 static char const * _authors[] =
 {
-	"Pierre Pronchery",
+	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-static char const _copyright[] = "Copyright (c) 2007 Pierre Pronchery";
-static char const _license[] = "GPL version 2"; /* FIXME complete */
 
 
 /* callbacks */

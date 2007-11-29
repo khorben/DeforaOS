@@ -170,9 +170,6 @@ static gboolean _command_read(GIOChannel * source, GIOCondition condition,
 		gtk_main_quit();
 		return FALSE; /* FIXME report error */
 	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: buf_len=%zu\n", buf_len);
-#endif
 	if(g_io_channel_read(source, &buf[buf_len], sizeof(buf) - buf_len,
 				&read) != G_IO_ERROR_NONE)
 	{
@@ -192,9 +189,6 @@ static gboolean _command_read(GIOChannel * source, GIOCondition condition,
 		if(buf[i] != '\n')
 			continue;
 		buf[i] = '\0';
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: read: \"%s\"\n", &buf[j]);
-#endif
 		if(sscanf(&buf[j], "ANS_PERCENT_POSITION=%u\n", &u32) == 1)
 			_player_set_progress(player, u32);
 		else if(sscanf(&buf[j], "ID_VIDEO_WIDTH=%u\n", &u32) == 1)
@@ -203,7 +197,8 @@ static gboolean _command_read(GIOChannel * source, GIOCondition condition,
 			player_set_size(player, -1, u32);
 #ifdef DEBUG
 		else
-			fprintf(stderr, "DEBUG: NOT parsed\n");
+			fprintf(stderr, "DEBUG: unknown output \"%s\"\n",
+					&buf[j]);
 #endif
 		j = i + 1;
 	}
@@ -360,7 +355,7 @@ Player * player_new(void)
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	player->progress = gtk_progress_bar_new();
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), "0%");
+	_player_set_progress(player, 0);
 	gtk_container_add(GTK_CONTAINER(toolitem), player->progress);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	player->tb_fullscreen = gtk_tool_button_new_from_stock(
@@ -660,12 +655,7 @@ int player_play(Player * player)
 		return 1;
 	}
 	else
-	{
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
-					player->progress), 0.0);
-		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress),
-				"0%");
-	}
+		_player_set_progress(player, 0);
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 0;
@@ -706,8 +696,7 @@ void player_stop(Player * player)
 	char cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
 
 	_player_command(player, cmd, sizeof(cmd)-1);
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(player->progress), 0.0);
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), "0%");
+	_player_set_progress(player, 0);
 	player->paused = 0; /* FIXME also needs a stopped state */
 	if(player->read_id != 0)
 	{
