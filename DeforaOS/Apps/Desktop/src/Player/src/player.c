@@ -360,6 +360,7 @@ Player * player_new(void)
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
 	player->progress = gtk_progress_bar_new();
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), "0%");
 	gtk_container_add(GTK_CONTAINER(toolitem), player->progress);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	player->tb_fullscreen = gtk_tool_button_new_from_stock(
@@ -698,6 +699,7 @@ void player_stop(Player * player)
 	char cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
 
 	_player_command(player, cmd, sizeof(cmd)-1);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), "0%");
 	player->paused = 0; /* FIXME also needs a stopped state */
 	if(player->read_id != 0)
 	{
