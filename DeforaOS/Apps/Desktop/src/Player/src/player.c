@@ -659,6 +659,13 @@ int player_play(Player * player)
 		fputs("Player: String too long\n", stderr);
 		return 1;
 	}
+	else
+	{
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
+					player->progress), 0.0);
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress),
+				"0%");
+	}
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 0;
@@ -699,6 +706,7 @@ void player_stop(Player * player)
 	char cmd[] = "pausing loadfile splash.png 0\nframe_step\n";
 
 	_player_command(player, cmd, sizeof(cmd)-1);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(player->progress), 0.0);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(player->progress), "0%");
 	player->paused = 0; /* FIXME also needs a stopped state */
 	if(player->read_id != 0)
