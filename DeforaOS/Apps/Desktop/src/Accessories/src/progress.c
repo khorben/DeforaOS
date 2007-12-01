@@ -13,6 +13,9 @@
  * You should have received a copy of the GNU General Public License along with
  * Accessories; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA  02111-1307  USA */
+/* TODO:
+ * - use g_io_channel_get_flags() (instead of eof?)
+ * - g_io_channel_read() is deprecated */
 
 
 
@@ -308,8 +311,8 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
-	memmove(p->buf, &p->buf[written], p->buf_cnt - written);
 	p->buf_cnt -= written;
+	memmove(p->buf, &p->buf[written], p->buf_cnt);
 	p->cnt += written;
 	_out_rate(p);
 	return TRUE;
