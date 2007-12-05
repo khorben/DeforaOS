@@ -245,7 +245,7 @@ function project_admin($args)
 	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'."\n");
 	$sql = 'SELECT daportal_bug.content_id AS id, bug_id, title'
 		.', daportal_content.enabled AS enabled, name AS module'
-		.', project_id'
+		.', project_id, state'
 		.' FROM daportal_bug, daportal_content, daportal_module'
 		.' WHERE daportal_bug.content_id=daportal_content.content_id'
 		.' AND daportal_content.module_id=daportal_module.module_id'
@@ -255,6 +255,21 @@ function project_admin($args)
 		return _error('Could not list reports');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
+		$res[$i]['thumbnail'] = 'icons/48x48/bug';
+		switch($res[$i]['state'])
+		{
+			case 'New': $res[$i]['thumbnail'].='-new'; break;
+			case 'Assigned': $res[$i]['thumbnail'].='-assigned';
+				 break;
+			case 'Closed': $res[$i]['thumbnail'].='-closed';
+				break;
+			case 'Fixed': case 'Implemented':
+			       $res[$i]['thumbnail'].='-fixed'; break;
+			default:
+				break;
+		}
+		$res[$i]['thumbnail'].='.png';
+		$res[$i]['icon'] = $res[$i]['thumbnail'];
 		$res[$i]['action'] = 'bug_modify';
 		$res[$i]['apply_module'] = 'project';
 		$res[$i]['apply_id'] = $res[$i]['id'];
