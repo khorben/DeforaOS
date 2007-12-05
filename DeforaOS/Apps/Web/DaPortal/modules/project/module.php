@@ -243,7 +243,7 @@ function project_admin($args)
 			'toolbar' => $toolbar, 'view' => 'details',
 			'module' => 'project', 'action' => 'admin'));
 	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'."\n");
-	$sql = 'SELECT daportal_bug.content_id AS id, bug_id, title AS name'
+	$sql = 'SELECT daportal_bug.content_id AS id, bug_id, title'
 		.', daportal_content.enabled AS enabled, name AS module'
 		.', project_id'
 		.' FROM daportal_bug, daportal_content, daportal_module'
@@ -258,9 +258,20 @@ function project_admin($args)
 		$res[$i]['action'] = 'bug_modify';
 		$res[$i]['apply_module'] = 'project';
 		$res[$i]['apply_id'] = $res[$i]['id'];
-		$res[$i]['title'] = $res[$i]['name'];
+		$res[$i]['name'] = _html_safe($res[$i]['title']);
 		$res[$i]['args'] = 'bug_id='.$res[$i]['bug_id'];
+		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
+			? 'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+			.$res[$i]['enabled'].'.png" alt="'
+			.$res[$i]['enabled'].'"/>';
+		$res[$i]['bug_id'] = '<a href="'._html_link('project',
+			'bug_display', $res[$i]['id'], $res[$i]['title'])
+				.'">#'._html_safe($res[$i]['bug_id']).'</a>';
 		$res[$i]['project'] = _project_name($res[$i]['project_id']);
+		$res[$i]['project'] = '<a href="'._html_link('module',
+			'project', $res[$i]['project_id'], $res[$i]['project'])
+				.'">'._html_safe($res[$i]['project']).'</a>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_REPORT, 'class' => 'new',
@@ -272,7 +283,7 @@ function project_admin($args)
 			'action' => 'bug_enable', 'confirm' => 'enable');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'bug_delete', 'confirm' => 'delete');
-	_module('explorer', 'browse', array('entries' => $res,
+	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'view' => 'details', 'toolbar' => $toolbar,
 				'class' => array('enabled' => ENABLED,
 					'bug_id' => 'Bug #',
