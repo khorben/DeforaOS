@@ -62,6 +62,7 @@ if($lang == 'fr')
 	$text['LOCALITY'] = 'Ville';
 	$text['NEW_CA'] = 'Nouveau CA';
 	$text['ORGANIZATION'] = 'Organisation';
+	$text['PARENT_CA'] = 'CA parent';
 	$text['PKI_ADMINISTRATION'] = 'Administration du PKI';
 	$text['SELF_SIGNED'] = 'Auto-signé';
 	$text['SETTINGS'] = 'Paramètres';
@@ -406,7 +407,7 @@ function _display_ca($args)
 	if(_user_admin($user_id))
 		$enabled = '';
 	$ca = _sql_array('SELECT ca_id AS id, title, country, state, locality'
-			.', organization, section, cn, email'
+			.', organization, section, cn, email, parent'
 			.' FROM daportal_ca, daportal_content'
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 			.$enabled." AND ca_id='".$args['id']."'");
@@ -414,6 +415,7 @@ function _display_ca($args)
 		return _error(INVALID_ARGUMENT);
 	$ca = $ca[0];
 	include('./modules/pki/ca_display.tpl');
+	_display_ca_single($ca['parent'], PARENT_CA);
 	_display_ca_list_type($ca['id'], 'ca', CA_LIST, $enabled);
 	_display_ca_list_type($ca['id'], 'caserver', CASERVER_LIST, $enabled);
 	_display_ca_list_type($ca['id'], 'caclient', CACLIENT_LIST, $enabled);
@@ -421,7 +423,7 @@ function _display_ca($args)
 
 function _display_ca_list_type($id, $type, $title, $enabled)
 {
-	print("<h2 class=\"title $type\">"._html_safe($title)."</h2>\n");
+	print('<h2 class="title '.$type.'">'._html_safe($title)."</h2>\n");
 	$parent = $id ? " AND parent='".$id."'" : '';
 	$res = _sql_array('SELECT '.$type.'_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
@@ -453,30 +455,14 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 				'view' => 'details'));
 }
 
-function _display_type($args, $type)
+function _display_ca_single($id, $title)
 {
-	global $user_id;
-
-	$enabled = " AND enabled='1'";
-	require_once('./system/user.php');
-	if(_user_admin($user_id))
-		$enabled = '';
-	$res = _sql_array('SELECT '.$type.'_id AS id, title, country'
-			.', state, locality, organization, section, cn, email'
-			.', parent FROM daportal_'.$type.', daportal_content'
-			." WHERE daportal_$type.$type"."_id"
-			.'=daportal_content.content_id'
-			.$enabled." AND $type"."_id='".$args['id']."'");
-	if(!is_array($res) || count($res) != 1)
-		return _error(INVALID_ARGUMENT);
-	$$type = $res[0];
-	include('./modules/pki/'.$type.'_display.tpl');
-	print('<h3 class="title ca">'._html_safe(PARENT_CA)."</h3>\n");
+	print('<h2 class="title ca">'._html_safe($title)."</h2>\n");
 	$res = _sql_array('SELECT ca_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
 			.' FROM daportal_ca, daportal_content'
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
-			." AND enabled='1' AND ca_id='".$res[0]['parent']."'");
+			." AND enabled='1' AND ca_id='$id'");
 	$classes = array('country' => COUNTRY, 'state' => STATE,
 			'locality' => LOCALITY, 'organization' => ORGANIZATION,
 			'section' => SECTION, 'cn' => CN, 'email' => EMAIL);
@@ -495,6 +481,27 @@ function _display_type($args, $type)
 	}
 	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => $classes, 'view' => 'details'));
+}
+
+function _display_type($args, $type)
+{
+	global $user_id;
+
+	$enabled = " AND enabled='1'";
+	require_once('./system/user.php');
+	if(_user_admin($user_id))
+		$enabled = '';
+	$res = _sql_array('SELECT '.$type.'_id AS id, title, country'
+			.', state, locality, organization, section, cn, email'
+			.', parent FROM daportal_'.$type.', daportal_content'
+			." WHERE daportal_$type.$type"."_id"
+			.'=daportal_content.content_id'
+			.$enabled." AND $type"."_id='".$args['id']."'");
+	if(!is_array($res) || count($res) != 1)
+		return _error(INVALID_ARGUMENT);
+	$$type = $res[0];
+	include('./modules/pki/'.$type.'_display.tpl');
+	_display_ca_single($res[0]['parent'], PARENT_CA);
 }
 
 
