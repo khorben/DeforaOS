@@ -451,10 +451,13 @@ function project_bug_insert($args)
 {
 	global $user_id;
 
+	if(!isset($args['project_id']) || !isset($args['type'])
+			|| !isset($args['priority']))
+		return _error(INVALID_ARGUMENT); //FIXME return to form
 	require_once('./system/content.php');
 	require_once('./system/user.php');
 	$enable = 0;
-	if(_user_admin($user_id)) //FIXME also for project members
+	if(_user_admin($user_id) || _project_is_member($args['project_id']))
 		$enable = 1;
 	if(($id = _content_insert($args['title'], $args['content'], $enable))
 			== FALSE)
