@@ -414,8 +414,8 @@ int appinterface_get_args_count(AppInterface * appinterface, size_t * count,
  * POST
  * 	<= 0	an error occured
  * 	else	the number of bytes added to the buffer */
-static int _send_bytes(char * data, size_t datalen, char * buf, size_t buflen,
-		size_t * pos);
+static int _send_bytes(char const * data, size_t datalen, char * buf,
+		size_t buflen, size_t * pos);
 static int _send_string(char const * string, char * buf, size_t buflen,
 		size_t * pos);
 
@@ -586,8 +586,8 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 	return pos;
 }
 
-static int _send_bytes(char * data, size_t datalen, char * buf, size_t buflen,
-		size_t * pos)
+static int _send_bytes(char const * data, size_t datalen, char * buf,
+		size_t buflen, size_t * pos)
 {
 	if(*pos + datalen > buflen)
 		return 1;
