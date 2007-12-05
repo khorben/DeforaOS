@@ -50,6 +50,7 @@ $text['STATE'] = 'Etat';
 $text['STATE_CHANGED_TO'] = 'Etat changé à';
 $text['STATISTICS'] = 'Statistiques';
 $text['SUBMITTER'] = 'Envoyé par';
+$text['THANK_YOU'] = 'Merci';
 $text['THERE_ARE'] = 'Il y a';
 $text['TIMELINE'] = 'Progression';
 
