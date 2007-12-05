@@ -122,7 +122,7 @@ function wikiSubmit()
 		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php if(isset($wiki['title'])) echo _html_safe($wiki['title']); ?>"/></td></tr>
 <?php } ?>
 		<tr><td colspan="2"><textarea id="wikitext" name="content" cols="80" rows="20"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
-		<tr><td colspan="2"><iframe id="wiki" class="hidden" width="100%" height="260px" onload="wikiStart()"></iframe></td></tr>
+		<tr><td colspan="2"><iframe id="wiki" class="hidden" width="100%" height="400px" onload="wikiStart()"></iframe></td></tr>
 		<tr><td colspan="2"><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
 		</table>
 	</form>
