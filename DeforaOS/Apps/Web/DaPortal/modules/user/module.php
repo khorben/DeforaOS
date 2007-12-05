@@ -46,31 +46,11 @@ $text['YOUR_PASSWORD_IS'] = 'Your password is';
 global $lang;
 if($lang == 'de')
 {
-	$text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail Adresse schon benutzt';
-	$text['MY_CONTENT'] = 'Mein Datei';
-	$text['MY_PROFILE'] = 'Mein Konto';
-	$text['USER_LOGIN'] = 'Benutzer einloggen';
-	$text['WRONG_PASSWORD'] = 'Falsch Passwort';
+	include('./modules/user/lang.de.php');
 }
 else if($lang == 'fr')
 {
-	$text['APPEARANCE'] = 'Apparence';
-	$text['CREATE'] = 'Créer';
-	$text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
-	$text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
-	$text['MY_CONTENT'] = 'Mes contenus';
-	$text['MY_PROFILE'] = 'Mon profil';
-	$text['NEW_USER'] = 'Nouvel utilisateur';
-	$text['REGISTER'] = "S'inscrire";
-	$text['SETTINGS'] = 'Paramètres';
-	$text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
-	$text['USER_LOGIN'] = 'Authentification utilisateur';
-	$text['USER_MODIFICATION'] = "Modification d'utilisateur";
-	$text['USER_REGISTRATION'] = 'Inscription utilisateur';
-	$text['USERS'] = 'Utilisateurs';
-	$text['USERS_ADMINISTRATION'] = 'Administration des utilisateurs';
-	$text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
-	$text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est';
+	include('./modules/user/lang.fr.php');
 }
 _lang($text);
 
