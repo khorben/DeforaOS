@@ -106,7 +106,7 @@ body {
 }
 
 input[type="password"], input[type="submit"], input[type="text"], select,
-textarea {
+	textarea {
 	border-width:		1px;
 }
 
