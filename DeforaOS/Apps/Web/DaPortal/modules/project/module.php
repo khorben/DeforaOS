@@ -29,9 +29,11 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
 $text['ADMINISTRATION'] = 'Administration';
+$text['AND_AWAITS_MODERATION'] = 'and awaits moderation';
 $text['ASSIGNED_TO'] = 'Assigned to';
 $text['BROWSE_REVISIONS'] = 'Browse revisions';
 $text['BROWSE_SOURCE'] = 'Browse source';
+$text['BUG_REPORT'] = 'Bug report';
 $text['BUG_REPORTS'] = 'Bug reports';
 $text['BUGS_BY'] = 'Bugs by';
 $text['CVS_PATH'] = 'CVS path';
@@ -71,9 +73,11 @@ $text['STATE'] = 'State';
 $text['STATISTICS'] = 'Statistics';
 $text['SUBMITTER'] = 'Submitter';
 $text['STATE_CHANGED_TO'] = 'State changed to';
+$text['THANK_YOU'] = 'Thank you';
 $text['THERE_ARE'] = 'There are';
 $text['TYPE_CHANGED_TO'] = 'Type changed to';
 $text['TIMELINE'] = 'Timeline';
+$text['YOUR_BUG_IS_SUBMITTED'] = 'Your bug is submitted';
 global $lang;
 if($lang == 'de')
 {
