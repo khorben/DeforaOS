@@ -93,7 +93,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	if((asc->ssl = SSL_new(ssl_ctx)) == NULL
 			|| SSL_set_fd(asc->ssl, fd) != 1)
 	{
-		return error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
 					NULL));
 		_appserverclient_delete(asc);
 		return NULL;
@@ -375,6 +375,9 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 		return NULL;
 	}
 #ifdef WITH_SSL
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: AppServer using certificate \"%s\"\n", crt);
+# endif
 	if((appserver->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
 			|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
 				SSL_DEFAULT_CIPHER_LIST) != 1
