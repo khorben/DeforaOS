@@ -26,21 +26,26 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['APPEARANCE'] = 'Appearance';
 $text['CREATE'] = 'Create';
+$text['DEFAULT_THEME'] = 'Default theme';
+$text['DEFAULT_VIEW'] = 'Default view';
 $text['EMAIL'] = 'e-mail';
 $text['EMAIL_ALREADY_ASSIGNED'] = 'e-mail already assigned';
 $text['EMAIL_INVALID'] = 'e-mail is not valid';
 $text['MY_CONTENT'] = 'My content';
 $text['MY_PROFILE'] = 'My profile';
+$text['NONE'] = 'None';
 $text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
 $text['SETTINGS'] = 'Settings';
-$text['THEME'] = 'Theme';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
 $text['USER_MODIFICATION'] = 'User modification';
 $text['USER_REGISTRATION'] = 'User registration';
 $text['USERS'] = 'Users';
 $text['USERS_ADMINISTRATION'] = 'Users administration';
+$text['VIEW_DETAILS'] = 'Details';
+$text['VIEW_LIST'] = 'List';
+$text['VIEW_THUMBNAILS'] = 'Thumbnails';
 $text['WRONG_PASSWORD'] = 'Wrong password';
 $text['YOUR_PASSWORD_IS'] = 'Your password is';
 global $lang;
@@ -178,6 +183,10 @@ function user_appearance($args)
 				continue;
 			$themes[] = substr($de, 0, -4);
 		}
+	$views = array('details' => VIEW_DETAILS, 'list' => VIEW_LIST,
+			'thumbnails' => VIEW_THUMBNAILS);
+	if(isset($_SESSION['view']))
+		$view = $_SESSION['view'];
 	include('./modules/user/appearance.tpl');
 }
 
@@ -425,12 +434,13 @@ function user_register($args)
 			&& isset($args['email']))
 	{
 		if(!ereg('^[a-z]{1,9}$', $args['username']))
-			$message = 'Username must be lower-case and no longer than 9 characters';
+			$message = 'Username must be lower-case and no longer'
+				.' than 9 characters';
 		else
 		{
 			if(_sql_single('SELECT username FROM daportal_user'
-					." WHERE username='".$args['username']."'")
-					== FALSE)
+					." WHERE username='".$args['username']
+					."'") == FALSE)
 			{
 				if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
 						.'[a-zA-Z]{1,4}$',
@@ -438,8 +448,8 @@ function user_register($args)
 					$message = EMAIL_INVALID;
 				else if(_sql_array('SELECT email'
 						.' FROM daportal_user'
-						." WHERE email='".$args['email']."'")
-						== FALSE)
+						." WHERE email='".$args['email']
+						."'") == FALSE)
 					return _register_mail($args['username'],
 							$args['email']);
 				else
@@ -449,7 +459,8 @@ function user_register($args)
 				$message = USER_ALREADY_ASSIGNED;
 		}
 	}
-	print('<h1 class="title user">'._html_safe(USER_REGISTRATION)."</h1>\n");
+	print('<h1 class="title user">'._html_safe(USER_REGISTRATION)
+			."</h1>\n");
 	if(strlen($message))
 		_error($message);
 	include('./modules/user/user_register.tpl');
@@ -608,6 +619,10 @@ function _system_appearance($args)
 	if(isset($args['theme']) && strchr($args['theme'], '/') == FALSE
 			&& is_readable('themes/'.$args['theme'].'.css'))
 		$_SESSION['theme'] = $args['theme'];
+	unset($_SESSION['view']);
+	$views = array('details', 'list', 'thumbnails');
+	if(isset($args['view']) && in_array($args['view'], $views))
+		$_SESSION['view'] = $args['view'];
 	if(_user_admin($user_id))
 	{
 		unset($_SESSION['debug']);

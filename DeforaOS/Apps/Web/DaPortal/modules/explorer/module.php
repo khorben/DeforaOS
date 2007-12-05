@@ -50,7 +50,8 @@ function _explorer(&$args)
 		$toolbar = isset($args['toolbar']) ? $args['toolbar'] : array();
 		include('./modules/explorer/toolbar.tpl');
 	}
-	$view = isset($args['view']) ? $args['view'] : 'thumbnails';
+	$view = isset($args['view']) ? $args['view'] : isset($_SESSION['view'])
+		? $_SESSION['view'] : 'thumbnails';
 	$class = isset($args['class']) && is_array($args['class'])
 		? array_keys($args['class']) : array();
 	include('./modules/explorer/header.tpl');

@@ -21,20 +21,25 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 $text['APPEARANCE'] = 'Apparence';
 $text['CREATE'] = 'Créer';
+$text['DEFAULT_THEME'] = 'Thème par défaut';
+$text['DEFAULT_VIEW'] = 'Vue par défaut';
 $text['EMAIL_ALREADY_ASSIGNED'] = 'Cet e-mail est déjà utilisé';
 $text['EMAIL_INVALID'] = "Cet e-mail n'est pas valide";
 $text['MY_CONTENT'] = 'Mes contenus';
 $text['MY_PROFILE'] = 'Mon profil';
 $text['NEW_USER'] = 'Nouvel utilisateur';
+$text['NONE'] = 'Aucune';
 $text['REGISTER'] = "S'inscrire";
 $text['SETTINGS'] = 'Paramètres';
-$text['THEME'] = 'Thème';
 $text['USER_ALREADY_ASSIGNED'] = 'Cet utilisateur existe déjà';
 $text['USER_LOGIN'] = 'Authentification utilisateur';
 $text['USER_MODIFICATION'] = "Modification d'utilisateur";
 $text['USER_REGISTRATION'] = 'Inscription utilisateur';
 $text['USERS'] = 'Utilisateurs';
 $text['USERS_ADMINISTRATION'] = 'Administration des utilisateurs';
+$text['VIEW_DETAILS'] = 'Détails';
+$text['VIEW_LIST'] = 'Liste';
+$text['VIEW_THUMBNAILS'] = 'Icônes';
 $text['WRONG_PASSWORD'] = 'Mot de passe incorrect';
 $text['YOUR_PASSWORD_IS'] = 'Votre mot de passe est';
 

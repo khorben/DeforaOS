@@ -9,10 +9,19 @@
 		</tr>
 	<?php } ?>
 		<tr>
-			<td class="field"><?php echo _html_safe(THEME); ?>:</td>
+			<td class="field"><?php echo _html_safe(DEFAULT_THEME); ?>:</td>
 			<td><select name="theme">
 	<?php foreach($themes as $t) { ?>
-				<option<?php if($theme == $t) { ?> selected="selected"<?php } ?>><?php echo $t; ?></option>
+				<option<?php if($theme == $t) { ?> selected="selected"<?php } ?>><?php echo _html_safe($t); ?></option>
+	<?php } ?>
+			</select></td>
+		</tr>
+		<tr>
+			<td class="field"><?php echo _html_safe(DEFAULT_VIEW); ?>:</td>
+			<td><select name="view">
+				<option><?php echo _html_safe(NONE); ?></option>
+	<?php $keys = array_keys($views); foreach($keys as $k) { ?>
+				<option value="<?php echo _html_safe($k); ?>"<?php if(isset($view) && $view == $k) { ?> selected="selected"<?php } ?>><?php echo _html_safe($views[$k]); ?></option>
 	<?php } ?>
 			</select></td>
 		</tr>
