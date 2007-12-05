@@ -42,6 +42,7 @@ $text['NEW_CA'] = 'New CA';
 $text['NEW_CACLIENT_FOR'] = 'New client for';
 $text['NEW_CASERVER_FOR'] = 'New server for';
 $text['ORGANIZATION'] = 'Organization';
+$text['PARENT_CA'] = 'Parent CA';
 $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
 $text['PUBLIC_KEY_INFRASTRUCTURE'] = 'Public key infrastructure';
@@ -460,16 +461,40 @@ function _display_type($args, $type)
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$enabled = '';
-	$caclient = _sql_array('SELECT '.$type.'_id AS id, title, country'
+	$res = _sql_array('SELECT '.$type.'_id AS id, title, country'
 			.', state, locality, organization, section, cn, email'
-			.' FROM daportal_'.$type.', daportal_content'
+			.', parent FROM daportal_'.$type.', daportal_content'
 			." WHERE daportal_$type.$type"."_id"
 			.'=daportal_content.content_id'
 			.$enabled." AND $type"."_id='".$args['id']."'");
-	if(!is_array($caclient) || count($caclient) != 1)
+	if(!is_array($res) || count($res) != 1)
 		return _error(INVALID_ARGUMENT);
-	$$type = $caclient[0];
+	$$type = $res[0];
 	include('./modules/pki/'.$type.'_display.tpl');
+	print('<h3 class="title ca">'._html_safe(PARENT_CA)."</h3>\n");
+	$res = _sql_array('SELECT ca_id AS id, title, country, state'
+			.', locality, organization, section, cn, email'
+			.' FROM daportal_ca, daportal_content'
+			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
+			." AND enabled='1' AND ca_id='".$res[0]['parent']."'");
+	$classes = array('country' => COUNTRY, 'state' => STATE,
+			'locality' => LOCALITY, 'organization' => ORGANIZATION,
+			'section' => SECTION, 'cn' => CN, 'email' => EMAIL);
+	if(!is_array($res) || count($res) != 1)
+		$res = array();
+	else
+	{
+		$keys = array_keys($classes);
+		$res[0]['module'] = 'pki';
+		$res[0]['action'] = 'display';
+		$res[0]['name'] = _html_safe($res[0]['title']);
+		foreach($keys as $k)
+			$res[0][$k] = _html_safe($res[0][$k]);
+		$res[0]['email'] = '<a href="mailto:'.$res[0]['email'].'">'
+			.$res[0]['email'].'</a>';
+	}
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+				'class' => $classes, 'view' => 'details'));
 }
 
 
