@@ -2,6 +2,10 @@ h2.title.bug {
 	background-image:		url('bug.png');
 }
 
+h2.title.ca {
+	background-image:		url('ca.png');
+}
+
 h2.title.caclient {
 	background-image:		url('users.png');
 }
