@@ -184,7 +184,8 @@ function _default_dir(&$root, &$file, $sort)
 		$entry['args'] = 'file='.$entry['id'];
 		$entry['uid'] = _get_user($st['uid']);
 		$entry['gid'] = _get_group($st['gid']);
-		$entry['size'] = _get_size($st['size']);
+		$entry['size'] = $st['size'];
+		$entry['dsize'] = _get_size($st['size']);
 		$entry['mtime'] = _get_date($st['mtime']);
 		if(($st['mode'] & 040000) == 040000)
 		{
@@ -204,26 +205,29 @@ function _default_dir(&$root, &$file, $sort)
 		}
 		$entries[] = $entry;
 	}
+	$fsort = $sort;
 	switch($sort)
 	{
-		case 'gid':			break;
-		case 'mtime':			break;
-		case 'uid':			break;
-		case 'name':			break;
-		default:	$sort = 'name';	break;
+		case 'dsize':	$fsort = 'size';	break;
+		case 'gid':				break;
+		case 'mtime':				break;
+		case 'uid':				break;
+		case 'name':				break;
+		default:	$fsort = 'name';
+				$sort = 'name';		break;
 	}
-	$func = '_entries_sort_'.$sort;
+	$func = '_entries_sort_'.$fsort;
 	usort($entries, $func);
 	$toolbar = array();
 	$toolbar[] = array('class' => 'parent_directory',
 			'link' => _html_link('browser', '', dirname($file)),
 			'title' => UP_ONE_DIRECTORY);
-	$class = array('size' => SIZE, 'uid' => OWNER, 'gid' => GROUP,
+	$class = array('dsize' => SIZE, 'uid' => OWNER, 'gid' => GROUP,
 			'mtime' => DATE);
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
 				'view' => 'details', 'entries' => $entries,
 				'class' => $class, 'module' => 'browser',
-				'sort' => $sort));
+				'action' => 'default', 'sort' => $sort));
 }
 
 function _default_display(&$root, &$file)
@@ -248,7 +252,7 @@ function _entries_sort_name(&$a, &$b)
 
 function _entries_sort_size(&$a, &$b)
 {
-	return strcmp($a['size'], $b['size']);
+	return $a['size'] - $b['size'];
 }
 
 function _entries_sort_uid(&$a, &$b)
