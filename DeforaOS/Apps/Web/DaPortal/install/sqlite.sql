@@ -242,13 +242,16 @@ INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('13', 
 /* module: article */
 INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
 
+
 /* module: wiki */
 INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('15', 'string', 'root', '');
 
+
 /* module: webmail */
 INSERT INTO daportal_module (name, enabled) VALUES ('webmail', '1');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('16', 'string', 'server', '');
+
 
 /* module: pki */
 INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
@@ -296,3 +299,10 @@ CREATE TABLE daportal_caserver (
 );
 
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('17', 'string', 'root', '');
+
+
+/* module: browser */
+INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
+
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('18',
+		'string', 'root', '/');
