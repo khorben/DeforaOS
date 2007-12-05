@@ -21,6 +21,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 $text['ASSIGNED_TO'] = 'Affecté à';
 $text['BROWSE_SOURCE'] = 'Parcourir les sources';
+$text['BUG_REPORT'] = 'Rapport de bug';
 $text['BUG_REPORTS'] = 'Rapports de bugs';
 $text['BUGS_BY'] = 'Bugs par';
 $text['CVS_PATH'] = 'Chemin CVS';
