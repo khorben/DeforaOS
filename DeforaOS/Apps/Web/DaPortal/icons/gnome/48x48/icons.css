@@ -50,15 +50,15 @@ h1.title.content {
 	background-image:		url('content.png');
 }
 
-div.debug div.visible.info {
+div.debug .visible.info {
 	background-image:		url('info.png');
 }
 
-div.debug div.visible.error {
+div.debug .visible.error {
 	background-image:		url('error.png');
 }
 
-div.debug div.visible.warning {
+div.debug .visible.warning {
 	background-image:		url('warning.png');
 }
 
@@ -80,6 +80,10 @@ h1.title.news, h1.title.wiki {
 
 h1.title.package {
 	background-image:		url('package.png');
+}
+
+h1.title.pki {
+	background-image:		url('pki.png');
 }
 
 h1.title.probe {
