@@ -31,6 +31,18 @@ function wikiExec(cmd)
 }
 
 
+function wikiImage()
+{
+	var wiki = document.getElementById('wiki');
+	var url;
+
+	url = prompt('Enter URL:', 'http://');
+	if(url != null && url != '')
+		wiki.contentWindow.document.execCommand('insertimage', false,
+				url);
+}
+
+
 function wikiInsert(str)
 {
 	var wiki = document.getElementById('wiki');
@@ -85,6 +97,7 @@ function wikiSubmit()
 		<div class="icon separator"></div>
 		<div class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="wikiInsert('<hr>')"></div>
 		<div class="icon link" title="<?php echo _html_safe(INSERT_LINK); ?>" onclick="wikiLink()"></div>
+		<div class="icon insert-image" title="<?php echo _html_safe(INSERT_IMAGE); ?>" onclick="wikiImage()"></div>
 	</div>
 	<div class="toolbar">
 		<select id="formatblock" onchange="wikiSelect(this.id)">

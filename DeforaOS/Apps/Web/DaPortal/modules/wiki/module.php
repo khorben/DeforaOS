@@ -34,6 +34,7 @@ $text['CUT'] = 'Cut';
 $text['DOCUMENT_NOT_VALID'] = 'Document not valid';
 $text['FONT'] = 'Font';
 $text['INSERT_HORIZONTAL_RULE'] = 'Insert horizontal rule';
+$text['INSERT_IMAGE'] = 'Insert image';
 $text['INSERT_LINK'] = 'Insert link';
 $text['ITALIC'] = 'Italic';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
@@ -131,6 +132,7 @@ function _validate($content)
 {
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
+	$content = preg_replace('/(<img src="[^"]*")>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
 	$ret = xml_parse($parser, $content);

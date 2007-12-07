@@ -74,6 +74,10 @@ div.icon.indent {
 	background-image:		url('indent.png');
 }
 
+div.icon.insert-image {
+	background-image:		url('insert-image.png');
+}
+
 div.icon.italic {
 	background-image:		url('italic.png');
 }
