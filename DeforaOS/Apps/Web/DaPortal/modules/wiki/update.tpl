@@ -99,6 +99,9 @@ function wikiSubmit()
 		<div class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="wikiExec('underline')"></div>
 		<div class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="wikiExec('strikethrough')"></div>
 		<div class="icon separator"></div>
+		<div class="icon subscript" title="<?php echo _html_safe(SUBSCRIPT); ?>" onclick="wikiExec('subscript')"></div>
+		<div class="icon superscript" title="<?php echo _html_safe(SUPERSCRIPT); ?>" onclick="wikiExec('superscript')"></div>
+		<div class="icon separator"></div>
 		<div class="icon align_left" title="<?php echo _html_safe(ALIGN_LEFT); ?>" onclick="wikiExec('justifyleft')"></div>
 		<div class="icon align_center" title="<?php echo _html_safe(ALIGN_CENTER); ?>" onclick="wikiExec('justifycenter')"></div>
 		<div class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="wikiExec('justifyright')"></div>

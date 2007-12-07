@@ -128,6 +128,14 @@ div.icon.strikethrough {
 	background-image:		url('strikethrough.png');
 }
 
+div.icon.subscript {
+	background-image:		url('subscript.png');
+}
+
+div.icon.superscript {
+	background-image:		url('superscript.png');
+}
+
 div.icon.underline {
 	background-image:		url('underline.png');
 }
