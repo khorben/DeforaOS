@@ -34,6 +34,7 @@ $text['CUT'] = 'Cut';
 $text['DOCUMENT_NOT_VALID'] = 'Document not valid';
 $text['FONT'] = 'Font';
 $text['INSERT_HORIZONTAL_RULE'] = 'Insert horizontal rule';
+$text['INSERT_LINK'] = 'Insert link';
 $text['ITALIC'] = 'Italic';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';

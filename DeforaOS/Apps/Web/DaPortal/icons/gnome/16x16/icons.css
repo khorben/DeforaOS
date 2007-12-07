@@ -78,6 +78,10 @@ div.icon.italic {
 	background-image:		url('italic.png');
 }
 
+div.icon.link {
+	background-image:		url('news.png');
+}
+
 div.icon.listing_details {
 	/* FIXME work-around for explorer */
 	display:			inline;

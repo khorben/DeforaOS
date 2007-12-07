@@ -39,6 +39,18 @@ function wikiInsert(str)
 }
 
 
+function wikiLink()
+{
+	var wiki = document.getElementById('wiki');
+	var url;
+
+	url = prompt('Enter URL:', 'http://');
+	if(url != null && url != '')
+		wiki.contentWindow.document.execCommand('createlink', false,
+				url);
+}
+
+
 function wikiSelect(id)
 {
 	var wiki = document.getElementById('wiki');
@@ -72,6 +84,7 @@ function wikiSubmit()
 		<div class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="wikiExec('redo')"></div>
 		<div class="icon separator"></div>
 		<div class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="wikiInsert('<hr>')"></div>
+		<div class="icon link" title="<?php echo _html_safe(INSERT_LINK); ?>" onclick="wikiLink()"></div>
 	</div>
 	<div class="toolbar">
 		<select id="formatblock" onchange="wikiSelect(this.id)">
