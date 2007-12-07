@@ -24,6 +24,10 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ALIGN_CENTER'] = 'Align center';
+$text['ALIGN_JUSTIFY'] = 'Align justify';
+$text['ALIGN_LEFT'] = 'Align left';
+$text['ALIGN_RIGHT'] = 'Align right';
 $text['BOLD'] = 'Bold';
 $text['COPY'] = 'Copy';
 $text['CUT'] = 'Cut';
@@ -48,6 +52,10 @@ $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 global $lang;
 if($lang == 'fr')
 {
+	$text['ALIGN_CENTER'] = 'Aligner au centre';
+	$text['ALIGN_JUSTIFY'] = 'Aligner justifié';
+	$text['ALIGN_LEFT'] = 'Aligner à gauche';
+	$text['ALIGN_RIGHT'] = 'Aligner à droite';
 	$text['BOLD'] = 'Gras';
 	$text['COPY'] = 'Copier';
 	$text['CUT'] = 'Couper';

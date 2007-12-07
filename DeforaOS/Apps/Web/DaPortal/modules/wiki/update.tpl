@@ -99,10 +99,10 @@ function wikiSubmit()
 		<div class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="wikiExec('underline')"></div>
 		<div class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="wikiExec('strikethrough')"></div>
 		<div class="icon separator"></div>
-		<div class="icon align_left" title="Align left" onclick="wikiExec('justifyleft')"></div>
-		<div class="icon align_center" title="Align center" onclick="wikiExec('justifycenter')"></div>
-		<div class="icon align_right" title="Align right" onclick="wikiExec('justifyright')"></div>
-		<div class="icon align_justify" title="Align justify" onclick="wikiExec('justifyfull')"></div>
+		<div class="icon align_left" title="<?php echo _html_safe(ALIGN_LEFT); ?>" onclick="wikiExec('justifyleft')"></div>
+		<div class="icon align_center" title="<?php echo _html_safe(ALIGN_CENTER); ?>" onclick="wikiExec('justifycenter')"></div>
+		<div class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="wikiExec('justifyright')"></div>
+		<div class="icon align_justify" title="<?php echo _html_safe(ALIGN_JUSTIFY); ?>" onclick="wikiExec('justifyfull')"></div>
 		<div class="icon separator"></div>
 		<div class="icon bullet" title="Bullets" onclick="wikiExec('insertunorderedlist')"></div>
 		<div class="icon enum" title="Enumerated" onclick="wikiExec('insertorderedlist')"></div>
