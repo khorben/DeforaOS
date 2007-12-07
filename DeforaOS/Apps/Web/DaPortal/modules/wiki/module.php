@@ -33,6 +33,7 @@ $text['COPY'] = 'Copy';
 $text['CUT'] = 'Cut';
 $text['DOCUMENT_NOT_VALID'] = 'Document not valid';
 $text['FONT'] = 'Font';
+$text['INSERT_HORIZONTAL_RULE'] = 'Insert horizontal rule';
 $text['ITALIC'] = 'Italic';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
@@ -127,7 +128,8 @@ function _root()
 
 function _validate($content)
 {
-	$content = str_replace('<br>', '<br/>', $content);
+	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
+			$content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
 	$ret = xml_parse($parser, $content);

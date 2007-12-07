@@ -31,6 +31,14 @@ function wikiExec(cmd)
 }
 
 
+function wikiInsert(str)
+{
+	var wiki = document.getElementById('wiki');
+
+	wiki.contentWindow.document.execCommand('inserthtml', false, str);
+}
+
+
 function wikiSelect(id)
 {
 	var wiki = document.getElementById('wiki');
@@ -62,6 +70,8 @@ function wikiSubmit()
 		<div class="icon separator"></div>
 		<div class="icon undo" title="<?php echo _html_safe(UNDO); ?>" onclick="wikiExec('undo')"></div>
 		<div class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="wikiExec('redo')"></div>
+		<div class="icon separator"></div>
+		<div class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="wikiInsert('<hr>')"></div>
 	</div>
 	<div class="toolbar">
 		<select id="formatblock" onchange="wikiSelect(this.id)">

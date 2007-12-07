@@ -66,6 +66,10 @@ div.icon.home {
 	background-image:		url('home.png');
 }
 
+div.icon.hrule {
+	background-image:		url('hrule.png');
+}
+
 div.icon.indent {
 	background-image:		url('indent.png');
 }
