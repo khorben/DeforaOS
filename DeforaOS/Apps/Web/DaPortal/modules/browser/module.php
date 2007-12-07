@@ -52,6 +52,7 @@ if($lang == 'fr')
 	$text['UP_ONE_DIRECTORY'] = 'Répertoire parent';
 }
 _lang($text);
+define('S_IFDIR', 040000);
 
 
 //private
@@ -140,7 +141,7 @@ function browser_default($args)
 		return _error('Internal error');
 	if(($st = stat($root.'/'.$file)) == FALSE)
 		return _error('Could not open file');
-	if($st['mode'] & 040000 == 040000)
+	if($st['mode'] & S_IFDIR == S_IFDIR)
 		return _default_dir($root, $file, isset($args['sort'])
 				? $args['sort'] : FALSE);
 	return _default_display($root, $file);

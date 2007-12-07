@@ -88,7 +88,7 @@ else if($lang == 'fr')
 	include('./modules/project/lang.fr.php');
 }
 _lang($text);
-define('S_IFDIR', 01000);
+define('S_IFDIR', 040000);
 
 
 function _project_toolbar($id)
@@ -1214,7 +1214,7 @@ function project_download($args)
 				$files[$i]['thumbnail'] = _html_link('download',
 						'download', $files[$i]['id']);
 			}
-			else if($files[$i]['mode'] & S_IFDIR)
+			else if($files[$i]['mode'] & S_IFDIR == S_IFDIR)
 			{
 				$files[$i]['icon'] = 'icons/16x16'
 					.'/mime/folder.png';
@@ -1251,7 +1251,7 @@ function project_download($args)
 			$files[$i]['module'] = 'download';
 			$files[$i]['action'] = 'default';
 			$mime = _mime_from_ext($files[$i]['name']);
-			if($files[$i]['mode'] & S_IFDIR)
+			if($files[$i]['mode'] & S_IFDIR == S_IFDIR)
 			{
 				$files[$i]['icon'] = 'icons/16x16'
 					.'/mime/folder.png';
