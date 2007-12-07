@@ -8,7 +8,7 @@
 
 
 /* DeforaOS theme */
-html {
+html, iframe {
 	background-color:		#636363;
 }
 
@@ -130,6 +130,15 @@ table.bordered td {
 table.bordered th {
 	background-color:		#790000;
 	border:				1px solid #959595;
+}
+
+.toolbar {
+	background-color:		#790000;
+}
+
+.toolbar .separator {
+	background-color:		#404040;
+	padding-left:			1px;
 }
 
 
@@ -272,15 +281,6 @@ table.bordered th {
 
 .explorer .selected {
 	background-color:		#400000;
-}
-
-.explorer .toolbar {
-	background-color:		#790000;
-}
-
-.explorer .toolbar .separator {
-	background-color:		#404040;
-	padding-left:			1px;
 }
 
 .explorer .listing_details .header div,
