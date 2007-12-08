@@ -61,6 +61,8 @@ static char const * _authors[] =
 /* types */
 typedef struct _View
 {
+	char * pathname;
+
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * ab_window;
@@ -76,6 +78,7 @@ static int _view_error(View * view, char const * message, int ret);
 
 /* callbacks */
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void _on_file_open_with(GtkWidget * widget, gpointer data);
 static void _on_file_close(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 
@@ -83,6 +86,7 @@ static void _on_help_about(GtkWidget * widget, gpointer data);
 /* constants */
 static const struct _menu _menu_file[] =
 {
+	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
 	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
@@ -116,7 +120,7 @@ static GtkWidget * _new_menubar(View * view);
 static GtkWidget * _new_image(View * view, char const * path);
 static GtkWidget * _new_text(View * view, char const * path);
 
-static View * _view_new(char const * path)
+static View * _view_new(char const * pathname)
 {
 	View * view;
 	struct stat st;
@@ -127,22 +131,24 @@ static View * _view_new(char const * path)
 
 	if((view = malloc(sizeof(*view))) == NULL)
 		return NULL; /* FIXME handle error */
-	if(lstat(path, &st) != 0)
+	view->pathname = strdup(pathname);
+	view->window = NULL;
+	view->ab_window = NULL;
+	_view_cnt++;
+	if(lstat(pathname, &st) != 0)
 	{
-		_view_error(NULL, strerror(errno), 0);
-		free(view);
+		_view_error(view, strerror(errno), 2);
 		return NULL;
 	}
 	if(_mime == NULL)
 		_mime = mime_new();
-	if((type = mime_type(_mime, path)) == NULL)
+	if((type = mime_type(_mime, pathname)) == NULL)
 	{
-		_view_error(NULL, "Unknown file type", 0);
-		free(view);
+		_view_error(view, "Unknown file type", 2);
 		return NULL;
 	}
 	view->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s%s", "View - ", path);
+	snprintf(buf, sizeof(buf), "%s%s", "View - ", pathname);
 	gtk_window_set_title(GTK_WINDOW(view->window), buf);
 	g_signal_connect(view->window, "delete-event", G_CALLBACK(_on_closex),
 			view);
@@ -150,23 +156,20 @@ static View * _view_new(char const * path)
 	widget = _new_menubar(view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	if(strncmp(type, "image/", 6) == 0)
-		widget = _new_image(view, path);
+		widget = _new_image(view, pathname);
 	else if(strncmp(type, "text/", 5) == 0)
 	{
-		widget = _new_text(view, path);
+		widget = _new_text(view, pathname);
 		gtk_window_set_default_size(GTK_WINDOW(view->window), 600, 400);
 	}
 	else
 	{
-		_view_error(NULL, "Unable to view file type", 0);
-		gtk_widget_destroy(view->window);
-		free(view);
+		_view_error(view, "Unable to view file type", 2);
 		return NULL;
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(view->window), vbox);
 	gtk_widget_show_all(view->window);
-	_view_cnt++;
 	return view;
 }
 
@@ -285,15 +288,20 @@ static GtkWidget * _new_text(View * view, char const * path)
 /* view_delete */
 static void _view_delete(View * view)
 {
-	gtk_widget_destroy(view->window);
+	free(view->pathname);
+	if(view->ab_window != NULL)
+		gtk_widget_destroy(view->ab_window);
+	if(view->window != NULL)
+		gtk_widget_destroy(view->window);
 	free(view);
-	_view_cnt--;
+	if(--_view_cnt == 0)
+		gtk_main_quit();
 }
 
 
 /* useful */
 /* view_error */
-static void _error_response(GtkDialog * dialog, gint arg, gpointer data);
+static void _error_response(GtkWidget * widget, gint arg, gpointer data);
 
 static int _view_error(View * view, char const * message, int ret)
 {
@@ -304,19 +312,18 @@ static int _view_error(View * view, char const * message, int ret)
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				_error_response), NULL);
+				_error_response), ret != 0 ? view : NULL);
 	gtk_widget_show(dialog);
 	return ret;
 }
 
-static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
+static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 {
 	View * view = data;
 
 	if(view != NULL)
 		_view_delete(view);
-	if(_view_cnt == 0)
-		gtk_main_quit();
+	gtk_widget_destroy(widget);
 }
 
 
@@ -329,6 +336,38 @@ static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 	if(_view_cnt == 0)
 		gtk_main_quit();
 	return FALSE;
+}
+
+
+static void _on_file_open_with(GtkWidget * widget, gpointer data)
+{
+	View * view = data;
+	GtkWidget * dialog;
+	char * filename = NULL;
+	pid_t pid;
+
+	dialog = gtk_file_chooser_dialog_new("Open with...",
+			GTK_WINDOW(view->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	if((pid = fork()) == -1)
+		_view_error(view, "fork", 0);
+	else if(pid == 0)
+	{
+		if(close(0) != 0)
+			_view_error(NULL, "stdin", 0);
+		execlp(filename, filename, view->pathname, NULL);
+		_view_error(NULL, filename, 0);
+		exit(2);
+	}
+	g_free(filename);
 }
 
 
