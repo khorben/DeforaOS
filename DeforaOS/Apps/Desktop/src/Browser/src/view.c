@@ -33,7 +33,7 @@ static char const _license[] =
 
 
 /* types */
-struct _menu
+struct _menuitem
 {
 	char * name;
 	GtkSignalFunc callback;
@@ -41,10 +41,12 @@ struct _menu
 	unsigned int accel;
 };
 
+typedef struct _menuitem const * _menu;
+
 struct _menubar
 {
 	const char * name;
-	const struct _menu * menu;
+	const _menu * menu;
 };
 
 
@@ -78,30 +80,49 @@ static int _view_error(View * view, char const * message, int ret);
 
 /* callbacks */
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static void _on_file_edit(GtkWidget * widget, gpointer data);
 static void _on_file_open_with(GtkWidget * widget, gpointer data);
 static void _on_file_close(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
 
 
 /* constants */
-static const struct _menu _menu_file[] =
+static const struct _menuitem _menuitem_separator =
+{ "", NULL, NULL, 0 };
+static const struct _menuitem _menuitem_file_edit =
+{ "Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, 0 };
+static const struct _menuitem _menuitem_file_open_with =
+{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 };
+static const struct _menuitem _menuitem_file_close =
+{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W };
+static const struct _menuitem _menuitem_file_end =
+{ NULL, NULL, NULL, 0 };
+
+static const _menu _menu_file[] =
 {
-	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
-	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+	&_menuitem_file_open_with, &_menuitem_separator,
+	&_menuitem_file_close, &_menuitem_file_end
 };
 
-static const struct _menu _menu_help[] =
+static const _menu _menu_file_edit[] =
 {
+	&_menuitem_file_edit, &_menuitem_file_open_with, &_menuitem_separator,
+	&_menuitem_file_close, &_menuitem_file_end
+};
+
+static const struct _menuitem _menuitem_help_about =
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 };
 #else
-	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 },
+	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 };
 #endif
-	{ NULL, NULL, NULL, 0 }
+
+static const _menu _menu_help[] =
+{
+	&_menuitem_help_about, &_menuitem_file_end
 };
 
-static const struct _menubar _menubar[] =
+static struct _menubar _menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Help", _menu_help },
@@ -147,6 +168,8 @@ static View * _view_new(char const * pathname)
 		_view_error(view, "Unknown file type", 2);
 		return NULL;
 	}
+	if(mime_get_handler(_mime, type, "edit") != NULL)
+		_menubar[0].menu = _menu_file_edit;
 	view->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	snprintf(buf, sizeof(buf), "%s%s", "View - ", pathname);
 	gtk_window_set_title(GTK_WINDOW(view->window), buf);
@@ -182,7 +205,7 @@ static GtkWidget * _new_menubar(View * view)
 	GtkWidget * menuitem;
 	unsigned int i;
 	unsigned int j;
-	struct _menu const * p;
+	struct _menuitem const * p;
 
 	tb_menubar = gtk_menu_bar_new();
 	group = gtk_accel_group_new();
@@ -190,9 +213,9 @@ static GtkWidget * _new_menubar(View * view)
 	{
 		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
 		menu = gtk_menu_new();
-		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
+		for(j = 0; _menubar[i].menu[j]->name != NULL; j++)
 		{
-			p = &_menubar[i].menu[j];
+			p = _menubar[i].menu[j];
 			if(p->name[0] == '\0')
 				menuitem = gtk_separator_menu_item_new();
 			else if(p->stock == NULL)
@@ -336,6 +359,15 @@ static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 	if(_view_cnt == 0)
 		gtk_main_quit();
 	return FALSE;
+}
+
+
+static void _on_file_edit(GtkWidget * widget, gpointer data)
+{
+	View * view = data;
+
+	if(mime_action(_mime, "edit", view->pathname) != 0)
+		_view_error(view, "Could not edit file", 0);
 }
 
 
