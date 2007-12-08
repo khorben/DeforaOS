@@ -26,6 +26,10 @@ h1.title.bug {
 	background-image:		url('bug.png');
 }
 
+h1.title.ca {
+	background-image:		url('ca.png');
+}
+
 h1.title.caclient {
 	background-image:		url('user.png');
 }
