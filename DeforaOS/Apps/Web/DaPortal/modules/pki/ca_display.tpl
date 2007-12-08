@@ -1,5 +1,5 @@
 <div class="pki ca">
-	<h1 class="title pki"><?php echo _html_safe($ca['title']); ?></h1>
+	<h1 class="title ca"><?php echo _html_safe($ca['title']); ?></h1>
 	<table>
 		<tr><td class="field"><?php echo _html_safe(COUNTRY); ?>:</td><td><?php echo _html_safe($ca['country']); ?></td></tr>
 		<tr><td class="field"><?php echo _html_safe(STATE); ?>:</td><td><?php echo _html_safe($ca['state']); ?></td></tr>
