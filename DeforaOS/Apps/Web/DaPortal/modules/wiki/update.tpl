@@ -2,105 +2,21 @@
 <?php if(isset($title)) { ?>
 	<h1 class="title wiki"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
-	<script type="text/javascript"><!-- //FIXME put in a separate js file
-function wikiStart()
-{
-	var wiki = document.getElementById('wiki');
-	var wikitext = document.getElementById('wikitext');
-
-	wikitext.style.visibility = 'hidden';
-	wikitext.className = 'hidden';
-	wiki.className = '';
-	wiki.contentWindow.document.designMode = "on";
-	try {
-		wiki.contentWindow.document.execCommand("undo", false, null);
-	}
-	catch (e) {
-		alert("This editor is not supported in your browser");
-		return;
-	}
-	wiki.contentWindow.document.body.innerHTML = wikitext.value;
-}
-
-
-function wikiExec(cmd)
-{
-	var wiki = document.getElementById('wiki');
-
-	wiki.contentWindow.document.execCommand(cmd, false, null);
-}
-
-
-function wikiImage()
-{
-	var wiki = document.getElementById('wiki');
-	var url;
-
-	url = prompt('Enter URL:', 'http://');
-	if(url != null && url != '')
-		wiki.contentWindow.document.execCommand('insertimage', false,
-				url);
-}
-
-
-function wikiInsert(str)
-{
-	var wiki = document.getElementById('wiki');
-
-	wiki.contentWindow.document.execCommand('inserthtml', false, str);
-}
-
-
-function wikiLink()
-{
-	var wiki = document.getElementById('wiki');
-	var url;
-
-	url = prompt('Enter URL:', 'http://');
-	if(url != null && url != '')
-		wiki.contentWindow.document.execCommand('createlink', false,
-				url);
-}
-
-
-function wikiSelect(id)
-{
-	var wiki = document.getElementById('wiki');
-	var e = document.getElementById(id);
-	var sel = e.selectedIndex;
-
-	if(sel != 0)
-	{
-		wiki.contentWindow.document.execCommand(id, false,
-				e.options[sel].value);
-		e.selectedIndex = 0;
-	}
-	wiki.contentWindow.focus();
-}
-
-
-function wikiSubmit()
-{
-	var wiki = document.getElementById('wiki');
-	var wikitext = document.getElementById('wikitext');
-
-	wikitext.value = wiki.contentWindow.document.body.innerHTML;
-}
-	//--></script>
+	<script type="text/javascript" src="js/editor.js"></script>
 	<div class="toolbar">
-		<div class="icon cut" title="<?php echo _html_safe(CUT); ?>" onclick="wikiExec('cut')"></div>
-		<div class="icon copy" title="<?php echo _html_safe(COPY); ?>" onclick="wikiExec('copy')"></div>
-		<div class="icon paste" title="<?php echo _html_safe(PASTE); ?>" onclick="wikiExec('paste')"></div>
+		<div class="icon cut" title="<?php echo _html_safe(CUT); ?>" onclick="editorExec('cut')"></div>
+		<div class="icon copy" title="<?php echo _html_safe(COPY); ?>" onclick="editorExec('copy')"></div>
+		<div class="icon paste" title="<?php echo _html_safe(PASTE); ?>" onclick="editorExec('paste')"></div>
 		<div class="icon separator"></div>
-		<div class="icon undo" title="<?php echo _html_safe(UNDO); ?>" onclick="wikiExec('undo')"></div>
-		<div class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="wikiExec('redo')"></div>
+		<div class="icon undo" title="<?php echo _html_safe(UNDO); ?>" onclick="editorExec('undo')"></div>
+		<div class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="editorExec('redo')"></div>
 		<div class="icon separator"></div>
-		<div class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="wikiInsert('<hr>')"></div>
-		<div class="icon link" title="<?php echo _html_safe(INSERT_LINK); ?>" onclick="wikiLink()"></div>
-		<div class="icon insert-image" title="<?php echo _html_safe(INSERT_IMAGE); ?>" onclick="wikiImage()"></div>
+		<div class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="editorInsert('<hr>')"></div>
+		<div class="icon link" title="<?php echo _html_safe(INSERT_LINK); ?>" onclick="editorLink()"></div>
+		<div class="icon insert-image" title="<?php echo _html_safe(INSERT_IMAGE); ?>" onclick="editorImage()"></div>
 	</div>
 	<div class="toolbar">
-		<select id="formatblock" onchange="wikiSelect(this.id)">
+		<select id="formatblock" onchange="editorSelect(this.id)">
 			<option value="Style"><?php echo _html_safe(STYLE); ?></option>
 			<option value="<h1>">Heading 1</option>
 			<option value="<h2>">Heading 2</option>
@@ -111,16 +27,15 @@ function wikiSubmit()
 			<option value="<p>">Normal</option>
 			<option value="<pre>">Preformatted</option>
 		</select>
-		<select id="fontname" unselectable="on" onchange="wikiSelect(this.id)">
+		<select id="fontname" unselectable="on" onchange="editorSelect(this.id)">
 			<option value="Font"><?php echo _html_safe(FONT); ?></option>
-			<option value="cursive">Cursive</option></option>
 			<option value="cursive">Cursive</option>
 			<option value="fantasy">Fantasy</option>
 			<option value="monospace">Monospace</option>
 			<option value="sans-serif">Sans serif</option>
 			<option value="serif">Serif</option>
 		</select>
-		<select id="fontsize" unselectable="on" onchange="wikiSelect(this.id)">
+		<select id="fontsize" unselectable="on" onchange="editorSelect(this.id)">
 			<option value="Size"><?php echo _html_safe(SIZE); ?></option>
 			<option value="1">1</option>
 			<option value="2">2</option>
@@ -130,25 +45,25 @@ function wikiSubmit()
 			<option value="6">6</option>
 		</select>
 		<div class="icon separator"></div>
-		<div class="icon bold" title="<?php echo _html_safe(BOLD); ?>" onclick="wikiExec('bold')"></div>
-		<div class="icon italic" title="<?php echo _html_safe(ITALIC); ?>" onclick="wikiExec('italic')"></div>
-		<div class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="wikiExec('underline')"></div>
-		<div class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="wikiExec('strikethrough')"></div>
+		<div class="icon bold" title="<?php echo _html_safe(BOLD); ?>" onclick="editorExec('bold')"></div>
+		<div class="icon italic" title="<?php echo _html_safe(ITALIC); ?>" onclick="editorExec('italic')"></div>
+		<div class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="editorExec('underline')"></div>
+		<div class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="editorExec('strikethrough')"></div>
 		<div class="icon separator"></div>
-		<div class="icon subscript" title="<?php echo _html_safe(SUBSCRIPT); ?>" onclick="wikiExec('subscript')"></div>
-		<div class="icon superscript" title="<?php echo _html_safe(SUPERSCRIPT); ?>" onclick="wikiExec('superscript')"></div>
+		<div class="icon subscript" title="<?php echo _html_safe(SUBSCRIPT); ?>" onclick="editorExec('subscript')"></div>
+		<div class="icon superscript" title="<?php echo _html_safe(SUPERSCRIPT); ?>" onclick="editorExec('superscript')"></div>
 		<div class="icon separator"></div>
-		<div class="icon align_left" title="<?php echo _html_safe(ALIGN_LEFT); ?>" onclick="wikiExec('justifyleft')"></div>
-		<div class="icon align_center" title="<?php echo _html_safe(ALIGN_CENTER); ?>" onclick="wikiExec('justifycenter')"></div>
-		<div class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="wikiExec('justifyright')"></div>
-		<div class="icon align_justify" title="<?php echo _html_safe(ALIGN_JUSTIFY); ?>" onclick="wikiExec('justifyfull')"></div>
+		<div class="icon align_left" title="<?php echo _html_safe(ALIGN_LEFT); ?>" onclick="editorExec('justifyleft')"></div>
+		<div class="icon align_center" title="<?php echo _html_safe(ALIGN_CENTER); ?>" onclick="editorExec('justifycenter')"></div>
+		<div class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="editorExec('justifyright')"></div>
+		<div class="icon align_justify" title="<?php echo _html_safe(ALIGN_JUSTIFY); ?>" onclick="editorExec('justifyfull')"></div>
 		<div class="icon separator"></div>
-		<div class="icon bullet" title="Bullets" onclick="wikiExec('insertunorderedlist')"></div>
-		<div class="icon enum" title="Enumerated" onclick="wikiExec('insertorderedlist')"></div>
-		<div class="icon unindent" title="Unindent" onclick="wikiExec('outdent')"></div>
-		<div class="icon indent" title="Indent" onclick="wikiExec('indent')"></div>
+		<div class="icon bullet" title="Bullets" onclick="editorExec('insertunorderedlist')"></div>
+		<div class="icon enum" title="Enumerated" onclick="editorExec('insertorderedlist')"></div>
+		<div class="icon unindent" title="Unindent" onclick="editorExec('outdent')"></div>
+		<div class="icon indent" title="Indent" onclick="editorExec('indent')"></div>
 	</div>
-	<form action="index.php" method="post" onsubmit="wikiSubmit()">
+	<form action="index.php" method="post" onsubmit="editorSubmit()">
 		<input type="hidden" name="module" value="wiki"/>
 <?php if(!isset($wiki['id'])) { ?>
 		<input type="hidden" name="action" value="insert"/>
@@ -160,8 +75,8 @@ function wikiSubmit()
 <?php if(!isset($wiki['id'])) { ?>
 		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php if(isset($wiki['title'])) echo _html_safe($wiki['title']); ?>"/></td></tr>
 <?php } ?>
-		<tr><td colspan="2"><textarea id="wikitext" name="content" cols="80" rows="20"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
-		<tr><td colspan="2"><iframe id="wiki" class="hidden" width="100%" height="400px" onload="wikiStart()"></iframe></td></tr>
+		<tr><td colspan="2"><textarea id="editortext" name="content" cols="80" rows="20"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
+		<tr><td colspan="2"><iframe id="editor" class="hidden" width="100%" height="400px" onload="editorStart()"></iframe></td></tr>
 		<tr><td colspan="2"><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
 		</table>
 	</form>
