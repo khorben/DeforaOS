@@ -201,6 +201,8 @@ function pki_admin($args)
 	$keys = array_keys($classes);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
+		$res[$i]['icon'] = 'icons/16x16/ca.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/ca.png';
 		$res[$i]['module'] = 'pki';
 		$res[$i]['apply_module'] = 'pki';
 		$res[$i]['action'] = 'update';
@@ -438,6 +440,8 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 	$keys = array_keys($classes);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
+		$res[$i]['icon'] = 'icons/16x16/'.$type.'.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/'.$type.'.png';
 		$res[$i]['module'] = 'pki';
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
@@ -471,6 +475,8 @@ function _display_ca_single($id, $title)
 	else
 	{
 		$keys = array_keys($classes);
+		$res[0]['icon'] = 'icons/16x16/ca.png';
+		$res[0]['thumbnail'] = 'icons/48x48/ca.png';
 		$res[0]['module'] = 'pki';
 		$res[0]['action'] = 'display';
 		$res[0]['name'] = _html_safe($res[0]['title']);
