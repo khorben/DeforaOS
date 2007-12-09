@@ -77,7 +77,7 @@
 <?php } ?>
 		<tr><td colspan="2"><textarea id="editortext" name="content" cols="80" rows="20"><?php if(isset($wiki['content'])) echo _html_safe($wiki['content']); ?></textarea></td></tr>
 		<tr><td colspan="2"><iframe id="editor" class="hidden" width="100%" height="400px" onload="editorStart()"></iframe></td></tr>
-		<tr><td colspan="2"><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
+		<tr><td colspan="2"><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" onclick="return editorPreview('wikicontent')"/> <input type="submit" name="send" value="<?php echo _html_safe(SUBMIT); ?>"/></td></tr>
 		</table>
 	</form>
 </div>

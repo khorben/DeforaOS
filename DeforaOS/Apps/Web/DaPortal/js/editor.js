@@ -3,26 +3,6 @@
 
 
 //editor
-function editorStart()
-{
-	var editor = document.getElementById('editor');
-	var editortext = document.getElementById('editortext');
-
-	editortext.style.visibility = 'hidden';
-	editortext.className = 'hidden';
-	editor.className = '';
-	editor.contentWindow.document.designMode = "on";
-	try {
-		editor.contentWindow.document.execCommand("undo", false, null);
-	}
-	catch (e) {
-		alert("This editor is not supported in your browser");
-		return;
-	}
-	editor.contentWindow.document.body.innerHTML = editortext.value;
-}
-
-
 function editorExec(cmd)
 {
 	var editor = document.getElementById('editor');
@@ -63,6 +43,18 @@ function editorLink()
 }
 
 
+function editorPreview(id)
+{
+	var editor = document.getElementById('editor');
+	var preview = document.getElementById(id);
+
+	if(editor == null || preview == null)
+		return true;
+	preview.innerHTML = editor.contentWindow.document.body.innerHTML;
+	return false;
+}
+
+
 function editorSelect(id)
 {
 	var editor = document.getElementById('editor');
@@ -76,6 +68,26 @@ function editorSelect(id)
 		e.selectedIndex = 0;
 	}
 	editor.contentWindow.focus();
+}
+
+
+function editorStart()
+{
+	var editor = document.getElementById('editor');
+	var editortext = document.getElementById('editortext');
+
+	editortext.style.visibility = 'hidden';
+	editortext.className = 'hidden';
+	editor.className = '';
+	editor.contentWindow.document.designMode = "on";
+	try {
+		editor.contentWindow.document.execCommand("undo", false, null);
+	}
+	catch (e) {
+		alert("This editor is not supported in your browser");
+		return;
+	}
+	editor.contentWindow.document.body.innerHTML = editortext.value;
 }
 
 
