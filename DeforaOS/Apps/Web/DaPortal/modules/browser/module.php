@@ -30,10 +30,10 @@ $text['INDEX_OF'] = 'Index of';
 $text['KB'] = 'KB';
 $text['MB'] = 'MB';
 $text['OWNER'] = 'Owner';
+$text['PARENT_DIRECTORY'] = 'Parent directory';
 $text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
 $text['TB'] = 'TB';
-$text['UP_ONE_DIRECTORY'] = 'Up one directory';
 global $lang;
 if($lang == 'fr')
 {
@@ -46,10 +46,10 @@ if($lang == 'fr')
 	$text['KB'] = 'Ko';
 	$text['MB'] = 'Mo';
 	$text['OWNER'] = 'Propriétaire';
+	$text['PARENT_DIRECTORY'] = 'Répertoire parent';
 	$text['SETTINGS'] = 'Paramètres';
 	$text['SIZE'] = 'Taille';
 	$text['TB'] = 'To';
-	$text['UP_ONE_DIRECTORY'] = 'Répertoire parent';
 }
 _lang($text);
 define('S_IFDIR', 040000);
@@ -220,9 +220,13 @@ function _default_dir(&$root, &$file, $sort)
 	$func = '_entries_sort_'.$fsort;
 	usort($entries, $func);
 	$toolbar = array();
+	$toolbar[] = array('title' => BACK, 'class' => 'back',
+			'link' => 'javascript:history.back()'); /* XXX */
 	$toolbar[] = array('class' => 'parent_directory',
 			'link' => _html_link('browser', '', dirname($file)),
-			'title' => UP_ONE_DIRECTORY);
+			'title' => PARENT_DIRECTORY);
+	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
+			'link' => 'javascript:history.forward()'); /* XXX */
 	$class = array('dsize' => SIZE, 'uid' => OWNER, 'gid' => GROUP,
 			'mtime' => DATE);
 	_module('explorer', 'browse', array('toolbar' => $toolbar,
