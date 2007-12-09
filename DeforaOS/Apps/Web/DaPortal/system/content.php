@@ -115,15 +115,23 @@ function _content_user_update($id, $title, $content)
 			." WHERE user_id='$user_id' AND content_id='$id'");
 }
 
-function _content_update($id, $title, $content)
+function _content_update($id, $title, $content = FALSE)
 {
 	global $module_id;
 
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
-	return _sql_query('UPDATE daportal_content SET'
-			." title='$title', content='$content'"
-			." WHERE module_id='$module_id' AND content_id='$id'");
+	$sql = 'UPDATE daportal_content SET';
+	$sep = '';
+	if($title != FALSE)
+	{
+		$sql.=" title='$title'";
+		$sep = ',';
+	}
+	if($content != FALSE)
+		$sql.=$sep." content='$content'";
+	$sql.=" WHERE module_id='$module_id' AND content_id='$id'";
+	return _sql_query($sql);
 }
 
 ?>
