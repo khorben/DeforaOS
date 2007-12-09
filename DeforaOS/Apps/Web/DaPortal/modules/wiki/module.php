@@ -57,26 +57,7 @@ $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 global $lang;
 if($lang == 'fr')
 {
-	$text['ALIGN_CENTER'] = 'Aligner au centre';
-	$text['ALIGN_JUSTIFY'] = 'Aligner justifié';
-	$text['ALIGN_LEFT'] = 'Aligner à gauche';
-	$text['ALIGN_RIGHT'] = 'Aligner à droite';
-	$text['BOLD'] = 'Gras';
-	$text['COPY'] = 'Copier';
-	$text['CUT'] = 'Couper';
-	$text['DOCUMENT_NOT_VALID'] = 'Document non valide';
-	$text['FONT'] = 'Fonte';
-	$text['ITALIC'] = 'Italique';
-	$text['NEW_WIKI_PAGE'] = 'Nouvelle page Wiki';
-	$text['PASTE'] = 'Coller';
-	$text['REDO'] = 'Refaire';
-	$text['STRIKE'] = 'Barré';
-	$text['SIZE'] = 'Taille';
-	$text['UNDERLINE'] = 'Souligné';
-	$text['UNDO'] = 'Annuler';
-	$text['WIKI_ADMINISTRATION'] = 'Administration du wiki';
-	$text['WIKI_LIST'] = 'Liste des pages Wiki';
-	$text['WIKI_PAGE_PREVIEW'] = 'Prévisualisation de page Wiki';
+	include('./modules/wiki/lang.fr.php');
 }
 _lang($text);
 
