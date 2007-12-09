@@ -113,7 +113,7 @@ function _validate($content)
 {
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
-	$content = preg_replace('/(<img src="[^"]*")>/', '\1/>', $content);
+	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
 	$ret = xml_parse($parser, $content);
@@ -275,6 +275,8 @@ function wiki_list($args)
 		return _error('Could not list wiki pages');
 	for($i = 0, $cnt = count($wiki); $i < $cnt; $i++)
 	{
+		$wiki[$i]['icon'] = 'icons/16x16/wiki.png';
+		$wiki[$i]['thumbnail'] = 'icons/48x48/wiki.png';
 		$wiki[$i]['module'] = 'wiki';
 		$wiki[$i]['action'] = 'display';
 		$wiki[$i]['name'] = $wiki[$i]['title'];
@@ -471,8 +473,25 @@ function _system_update($args)
 		return;
 	}
 	unlink($filename);
+	//insert plain text into database
+	//FIXME factorize code and validation
+	$_SESSION['wiki_content'] = '';
+	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
+			$content);
+	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
+	$parser = xml_parser_create();
+	xml_set_character_data_handler($parser, '_update_data');
+	if(xml_parse($parser, '<div>'.$content.'</div>') == 1)
+		_content_update($id, FALSE, $_SESSION['wiki_content']);
+	xml_parser_free($parser);
+	unset($_SESSION['wiki_content']);
 	header('Location: '._module_link('wiki', 'display', $id, $title));
 	exit(0);
+}
+
+function _update_data($parser, $data)
+{
+	$_SESSION['wiki_content'].="\n".$data;
 }
 
 
