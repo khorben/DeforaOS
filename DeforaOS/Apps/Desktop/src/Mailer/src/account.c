@@ -21,26 +21,23 @@
 #include <dlfcn.h>
 #include "mailer.h"
 #include "account/account.h"
-#include "../config.h"
-
 
 
 /* constants */
-#ifndef LIBDIR
-# define LIBDIR PREFIX "/Libraries/"
-#endif
-#ifndef PLUGINDIR
-# define PLUGINDIR LIBDIR "Mailer"
-#endif
 #define ACCOUNT "account"
 
 
 /* Account */
+/* public */
+/* functions */
 Account * account_new(char const * type, char const * name)
 {
 	Account * account;
 	char * filename;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: account_new(\"%s\", \"%s\")\n", type, name);
+#endif
 	if(type == NULL || name == NULL || strlen(name) == 0)
 		return NULL;
 	if((account = calloc(1, sizeof(*account))) == NULL)
@@ -74,7 +71,7 @@ void account_delete(Account * account)
 {
 	AccountConfig * p;
 
-	if(account->plugin->config != NULL)
+	if(account->plugin != NULL && account->plugin->config != NULL)
 		for(p = account->plugin->config; p->name != NULL; p++)
 			switch(p->type)
 			{
@@ -88,12 +85,24 @@ void account_delete(Account * account)
 			}
 	free(account->name);
 	free(account->title);
-	dlclose(account->handle);
+	if(account->handle != NULL)
+		dlclose(account->handle);
 	free(account);
 }
 
 
 /* accessors */
+/* account_get_store */
+GtkListStore * account_get_store(Account * account, AccountFolder * folder)
+{
+	/* FIXME implement */
+	if(folder == NULL)
+		return NULL;
+	return folder->store;
+}
+
+
+/* account_set_title */
 int account_set_title(Account * account, char const * title)
 {
 	if(account->title != NULL)
@@ -113,6 +122,9 @@ int account_config_load(Account * account, Config * config)
 	char * q;
 	long l;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: account_config_load(%p)\n", config);
+#endif
 	for(p = account->plugin->config; p->name != NULL; p++)
 	{
 		if((value = config_get(config, account->title, p->name))
@@ -141,6 +153,18 @@ int account_config_load(Account * account, Config * config)
 }
 
 
+/* account_init */
+int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: account_init(%p, %p)\n", store, parent);
+#endif
+	if(account->plugin->init == NULL)
+		return 0;
+	return account->plugin->init(store, parent);
+}
+
+
 /* account_disable */
 int account_disable(Account * account)
 {
@@ -155,15 +179,3 @@ int account_enable(Account * account)
 	account->enabled = 1;
 	return 0;
 }
-
-
-/* account_folders */
-AccountFolder ** account_folders(Account * account)
-{
-	return account->plugin->folders();
-}
-
-
-/* MailHeader ** account_folder_headers(Account * account, char const * folder)
-{
-} */

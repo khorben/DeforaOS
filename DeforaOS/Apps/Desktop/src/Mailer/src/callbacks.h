@@ -41,6 +41,9 @@ void on_stop(GtkWidget * widget, gpointer data);
 void on_delete(GtkWidget * widget, gpointer data);
 void on_print(GtkWidget * widget, gpointer data);
 
+/* folder view */
+void on_folder_change(GtkTreeSelection * selection, gpointer data);
+
 
 /* preferences window */
 void on_preferences_ok(GtkWidget * widget, gpointer data);

@@ -18,16 +18,19 @@
 #ifndef MAILER_ACCOUNT_H
 # define MAILER_ACCOUNT_H
 
+# include <gtk/gtk.h>
 # include <System.h>
 
 
-/* types */
+/* AccountIdentity */
 typedef struct _AccountIdentity
 {
 	char * from;
 	char * email;
 } AccountIdentity;
 
+
+/* AccountConfig */
 typedef enum _AccountConfigType
 {
 	ACT_NONE = 0,
@@ -37,6 +40,7 @@ typedef enum _AccountConfigType
 	ACT_UINT16,
 	ACT_BOOLEAN
 } AccountConfigType;
+
 typedef struct _AccountConfig
 {
 	char * name;
@@ -45,28 +49,41 @@ typedef struct _AccountConfig
 	void * value;
 } AccountConfig;
 
+
+/* AccountFolderType */
 typedef enum _AccountFolderType
 {
-	AF_INBOX = 0,
-	AF_DRAFTS,
-	AF_SENT,
-	AF_TRASH,
-	AF_FOLDER
+	AFT_INBOX = 0,
+	AFT_DRAFTS,
+	AFT_SENT,
+	AFT_TRASH,
+	AFT_FOLDER
 } AccountFolderType;
+# define AFT_LAST AFT_FOLDER
+# define AFT_COUNT (AFT_LAST + 1)
+
 typedef struct _AccountFolder
 {
 	AccountFolderType type;
 	char * name;
+	GtkListStore * store;
+	void * data;
 } AccountFolder;
 
+
+/* AccountPlugin */
 typedef struct _AccountPlugin
 {
 	char const * type;
 	char const * name;
 	AccountConfig * config;
-	AccountFolder ** (*folders)(void);
+	int (*init)(GtkTreeStore * store, GtkTreeIter * parent);
+	int (*quit)(void);
 } AccountPlugin;
 
+
+/* Account */
+/* types */
 typedef struct _Account
 {
 	char * name;
@@ -83,14 +100,15 @@ Account * account_new(char const * type, char const * name);
 void account_delete(Account * account);
 
 /* accessors */
+GtkListStore * account_get_store(Account * account, AccountFolder * folder);
 int account_set_title(Account * account, char const * title);
 
 /* useful */
 int account_config_load(Account * account, Config * config);
+int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent);
+int account_quit(Account * account);
 
 int account_disable(Account * account);
 int account_enable(Account * account);
-/* FIXME wrong we just need receive, then it calls callbacks */
-AccountFolder ** account_folders(Account * account);
 
 #endif /* !MAILER_ACCOUNT_H */

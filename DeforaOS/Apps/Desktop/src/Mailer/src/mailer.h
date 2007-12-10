@@ -21,13 +21,39 @@
 # include <System.h>
 # include <gtk/gtk.h>
 # include "account/account.h"
+# include "../config.h"
 
 
 /* Mailer */
 /* defaults */
+# ifndef PREFIX
+#  define PREFIX "/usr/local"
+# endif
+# ifndef LIBDIR
+#  define LIBDIR PREFIX "/lib"
+# endif
+# ifndef PLUGINDIR
+#  define PLUGINDIR LIBDIR "/Mailer"
+# endif
+
 # define MAILER_CONFIG_FILE ".mailer"
 
 /* types */
+enum
+{
+	MF_COL_ACCOUNT = 0, MF_COL_FOLDER, MF_COL_ICON, MF_COL_NAME
+};
+# define MF_COL_LAST MF_COL_NAME
+# define MF_COL_COUNT (MF_COL_LAST + 1)
+
+enum
+{
+	MH_COL_ACCOUNT = 0, MH_COL_FOLDER, MH_COL_MESSAGE, MH_COL_SUBJECT,
+	MH_COL_FROM, MH_COL_TO, MH_COL_DATE
+};
+# define MH_COL_LAST MH_COL_DATE
+# define MH_COL_COUNT (MH_COL_LAST + 1)
+
 typedef struct _Mailer
 {
 	Account * available; /* XXX consider using another data type */

@@ -37,20 +37,6 @@ AccountConfig imap4_config[] =
 
 
 /* functions */
-AccountFolder ** imap4_folders(void)
-{
-	/* FIXME implement */
-	static AccountFolder inbox =	{ AF_INBOX,	"Inbox"	};
-	static AccountFolder drafts =	{ AF_DRAFTS,	"Drafts"};
-	static AccountFolder sent =	{ AF_SENT,	"Sent"	};
-	static AccountFolder trash =	{ AF_TRASH,	"Trash"	};
-	static AccountFolder * folders[] =
-	{
-		&inbox, &drafts, &sent, &trash, NULL
-	};
-
-	return folders;
-}
 
 
 AccountPlugin account_plugin =
@@ -58,5 +44,6 @@ AccountPlugin account_plugin =
 	imap4_type,
 	imap4_name,
 	imap4_config,
-	imap4_folders
+	NULL,
+	NULL
 };

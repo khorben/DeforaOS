@@ -23,17 +23,9 @@
 #include "callbacks.h"
 #include "common.h"
 #include "mailer.h"
-#include "../config.h"
 
 
 /* constants */
-#ifndef LIBDIR
-# define LIBDIR PREFIX "/Libraries/"
-#endif
-#ifndef PLUGINDIR
-# define PLUGINDIR LIBDIR "Mailer"
-#endif
-
 struct _menu _menu_file[] =
 {
 	{ "_New mail", G_CALLBACK(on_file_new_mail), NULL },
@@ -85,12 +77,14 @@ static struct _toolbar _mailer_toolbar[] =
 
 /* Mailer */
 /* private */
-/* functions */
+/* prototypes */
 static int _mailer_error(char const * message, int ret);
 static int _mailer_dlerror(char const * message, int ret);
 static char * _mailer_config_filename(void);
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 
+
+/* functions */
 static int _mailer_error(char const * message, int ret)
 {
 	fputs("Mailer: ", stderr);
@@ -123,6 +117,9 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 	Account * account;
 	char * type;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: mailer_config_load_account(\"%s\")\n", name);
+#endif
 	if((type = config_get(mailer->config, name, "type")) == NULL)
 		return 1;
 	if((account = account_new(type, name)) == NULL)
@@ -137,7 +134,8 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 /* functions */
 /* mailer_new */
 static int _new_plugins(Mailer * mailer);
-static GtkWidget * _new_folders_view(void);
+static GtkWidget * _new_folders_view(Mailer * mailer);
+static GtkWidget * _new_headers_view(void);
 static GtkWidget * _new_headers(Mailer * mailer);
 static void _new_config_load(Mailer * mailer);
 
@@ -178,7 +176,7 @@ Mailer * mailer_new(void)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	mailer->view_folders = _new_folders_view();
+	mailer->view_folders = _new_folders_view(mailer);
 	gtk_container_add(GTK_CONTAINER(widget), mailer->view_folders);
 	gtk_paned_add1(GTK_PANED(hpaned), widget);
 	vpaned = gtk_vpaned_new();
@@ -187,7 +185,7 @@ Mailer * mailer_new(void)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	mailer->view_headers = gtk_tree_view_new();
+	mailer->view_headers = _new_headers_view();
 	gtk_container_add(GTK_CONTAINER(widget), mailer->view_headers);
 	gtk_paned_add1(GTK_PANED(vpaned), widget);
 	/* messages body */
@@ -283,7 +281,7 @@ static int _new_plugins(Mailer * mailer)
 			p[mailer->available_cnt].handle = NULL;
 			p[mailer->available_cnt++].plugin = NULL;
 #ifdef DEBUG
-			fprintf(stderr, "Plug-in %s: %s (%s)\n", filename,
+			fprintf(stderr, "DEBUG: loaded %s: %s (%s)\n", filename,
 					plugin->name, plugin->type);
 #endif
 		}
@@ -296,21 +294,44 @@ static int _new_plugins(Mailer * mailer)
 	return ret;
 }
 
-static GtkWidget * _new_folders_view(void)
+static GtkWidget * _new_folders_view(Mailer * mailer)
 {
 	GtkWidget * widget;
 	GtkTreeStore * model;
 	GtkCellRenderer * renderer;
+	GtkTreeSelection * treesel;
 
-	model = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	model = gtk_tree_store_new(MF_COL_COUNT, G_TYPE_POINTER, G_TYPE_POINTER,
+			GDK_TYPE_PIXBUF, G_TYPE_STRING);
 	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(model));
 	g_object_unref(model);
 	renderer = gtk_cell_renderer_pixbuf_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			NULL, renderer, "pixbuf", 0, NULL);
+			NULL, renderer, "pixbuf", MF_COL_ICON, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			"Folders", renderer, "text", 1, NULL);
+			"Folders", renderer, "text", MF_COL_NAME, NULL);
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
+				on_folder_change), mailer);
+	return widget;
+}
+
+static GtkWidget * _new_headers_view(void)
+{
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+
+	widget = gtk_tree_view_new();
+	renderer = gtk_cell_renderer_text_new();
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
+			"Subject", renderer, "text", MH_COL_SUBJECT, NULL);
+	renderer = gtk_cell_renderer_text_new();
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
+			"From", renderer, "text", MH_COL_FROM, NULL);
+	renderer = gtk_cell_renderer_text_new();
+	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
+			"Date", renderer, "text", MH_COL_DATE, NULL);
 	return widget;
 }
 
@@ -382,6 +403,8 @@ static void _new_config_load(Mailer * mailer)
 		_mailer_config_load_account(mailer, accounts);
 }
 
+
+/* mailer_delete */
 void mailer_delete(Mailer * mailer)
 {
 	unsigned int i;
@@ -427,14 +450,11 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	GtkTreeIter iter;
 	GtkIconTheme * theme;
 	GdkPixbuf * pixbuf;
-	GtkTreeIter child_iter;
-	AccountFolder ** f;
-	char * icon;
-	char * icons[] = { "stock_inbox", "stock_mail-handling",
-		"stock_sent-mail", "stock_trash_full", "stock_folder" };
 
-	/* FIXME hard-coded */
-	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt+1)))
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: mailer_account_add(%p)\n", account);
+#endif
+	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt + 1)))
 			== NULL)
 		return mailer_error(mailer, "realloc", FALSE);
 	mailer->account = p;
@@ -444,18 +464,10 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	theme = gtk_icon_theme_get_default();
 	pixbuf = gtk_icon_theme_load_icon(theme, "stock_mail-accounts", 16, 0,
 			NULL);
-	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 0, pixbuf, 1,
-			account->title, -1);
-	for(f = account_folders(mailer->account[mailer->account_cnt]);
-			*f != NULL; f++)
-	{
-		gtk_tree_store_append(GTK_TREE_STORE(model), &child_iter,
-				&iter);
-		icon = icons[(*f)->type];
-		pixbuf = gtk_icon_theme_load_icon(theme, icon, 16, 0, NULL);
-		gtk_tree_store_set(GTK_TREE_STORE(model), &child_iter, 0,
-				pixbuf, 1, (*f)->name, -1);
-	}
+	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, MF_COL_ACCOUNT,
+			account, MF_COL_FOLDER, NULL, MF_COL_ICON, pixbuf,
+			MF_COL_NAME, account->title, -1);
+	account_init(account, GTK_TREE_STORE(model), &iter);
 	mailer->account_cnt++;
 	return FALSE;
 }

@@ -37,18 +37,6 @@ AccountConfig pop3_config[] =
 
 
 /* functions */
-AccountFolder ** pop3_folders(void)
-{
-	/* FIXME implement */
-	static AccountFolder inbox =	{ AF_INBOX,	"Inbox"	};
-	static AccountFolder trash =	{ AF_TRASH,	"Trash"	};
-	static AccountFolder * folders[] =
-	{
-		&inbox, &trash, NULL
-	};
-
-	return folders;
-}
 
 
 AccountPlugin account_plugin =
@@ -56,5 +44,6 @@ AccountPlugin account_plugin =
 	pop3_type,
 	pop3_name,
 	pop3_config,
-	pop3_folders
+	NULL,
+	NULL
 };

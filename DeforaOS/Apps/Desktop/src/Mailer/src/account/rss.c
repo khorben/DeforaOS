@@ -31,14 +31,6 @@ AccountConfig rss_config[] =
 
 
 /* functions */
-AccountFolder ** rss_folders(void)
-{
-	/* FIXME implement */
-	static AccountFolder feed = { AF_INBOX, "Feed" };
-	static AccountFolder * folders[] = { &feed, NULL };
-
-	return folders;
-}
 
 
 AccountPlugin account_plugin =
@@ -46,5 +38,6 @@ AccountPlugin account_plugin =
 	rss_type,
 	rss_name,
 	rss_config,
-	rss_folders
+	NULL,
+	NULL
 };

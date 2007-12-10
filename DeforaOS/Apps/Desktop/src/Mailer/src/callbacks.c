@@ -2,17 +2,19 @@
 static char const _copyright[] =
 "Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Mailer */
-/* Mailer is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License version 2 as published by the Free
- * Software Foundation.
- *
- * Mailer is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Mailer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA  02111-1307  USA */
+static char const _license[] =
+"Mailer is free software; you can redistribute it and/or modify it under the\n"
+"terms of the GNU General Public License version 2 as published by the Free\n"
+"Software Foundation.\n"
+"\n"
+"Mailer is distributed in the hope that it will be useful, but WITHOUT ANY\n"
+"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
+"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more\n"
+"details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License along with\n"
+"Mailer; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
+"Place, Suite 330, Boston, MA  02111-1307  USA\n";
 
 
 
@@ -26,18 +28,14 @@ static char const _copyright[] =
 #include "compose.h"
 #include "mailer.h"
 #include "callbacks.h"
-#include "../config.h"
 
 
 /* constants */
 static char const * _authors[] =
 {
-	"Pierre 'khorben' Pronchery",
+	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-
-/* FIXME */
-static char const _license[] = "GPLv2";
 
 const char * title[3] =
 {
@@ -268,7 +266,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	gtk_widget_show(window);
 }
 #else /* !GTK_CHECK_VERSION(2, 6, 0) */
-	/* FIXME */
+	/* FIXME implement */
 }
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
@@ -304,6 +302,29 @@ void on_delete(GtkWidget * widget, gpointer data)
 void on_print(GtkWidget * widget, gpointer data)
 {
 	/* FIXME implement */
+}
+
+
+/* folder view */
+void on_folder_change(GtkTreeSelection * selection, gpointer data)
+{
+	Mailer * mailer = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	GtkListStore * store;
+	Account * a;
+	AccountFolder * af;
+
+#ifdef DEBUG
+	fputs("DEBUG: on_folder_change()\n", stderr);
+#endif
+	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+		return;
+	gtk_tree_model_get(model, &iter, MF_COL_ACCOUNT, &a, MF_COL_FOLDER, &af,
+			-1);
+	store = account_get_store(a, af);
+	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
+			GTK_TREE_MODEL(store));
 }
 
 
@@ -700,11 +721,13 @@ static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 }
 
 static void _on_uint16_changed(GtkWidget * widget, gpointer data);
+
 static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	gdouble value = (uint16_t)config->value;
+	uint16_t u16 = (uint16_t)(config->value);
+	gdouble value = u16;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(config->title);
@@ -850,12 +873,13 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	char buf[6];
+	uint16_t u16 = (uint16_t)config->value;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(config->title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	snprintf(buf, sizeof(buf), "%u", (uint16_t)config->value);
+	snprintf(buf, sizeof(buf), "%u", u16);
 	widget = gtk_label_new(buf);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
