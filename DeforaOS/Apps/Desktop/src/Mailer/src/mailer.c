@@ -29,9 +29,11 @@
 /* constants */
 struct _menu _menu_file[] =
 {
-	{ "_New mail", G_CALLBACK(on_file_new_mail), NULL, GDK_N },
+	{ "_New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose",
+		GDK_N },
 	{ "", NULL, NULL, 0 },
-	{ "Send / Receive", G_CALLBACK(on_file_send_receive), NULL, GDK_R },
+	{ "Send / Receive", G_CALLBACK(on_file_send_receive),
+		"stock_mail-send-receive", GDK_R },
 	{ "", NULL, NULL, 0 },
 	{ "_Print", G_CALLBACK(on_file_print), GTK_STOCK_PRINT, GDK_P },
 	{ "Print pre_view", G_CALLBACK(on_file_print_preview),
@@ -78,7 +80,7 @@ static struct _menubar _mailer_menubar[] =
 
 static struct _toolbar _mailer_toolbar[] =
 {
-	{ "New mail", G_CALLBACK(on_file_new_mail), "stock_mail" },
+	{ "New mail", G_CALLBACK(on_file_new_mail), "stock_mail-compose" },
 	{ "", NULL, NULL },
 	{ "Send / Receive", G_CALLBACK(on_file_send_receive),
 		"stock_mail-send-receive" },
