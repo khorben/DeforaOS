@@ -430,7 +430,7 @@ static void _parse_body(AccountFolder * folder, char const buf[], size_t read,
 /* private */
 /* variables */
 static char const _mbox_type[] = "MBOX";
-static char const _mbox_name[] = "Local folder";
+static char const _mbox_name[] = "Local folders";
 
 
 /* functions */
