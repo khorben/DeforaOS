@@ -27,8 +27,9 @@ GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
 	GtkWidget * menu;
 	GtkWidget * menubar;
 	GtkWidget * menuitem;
-	unsigned int i;
-	unsigned int j;
+	GtkWidget * image;
+	size_t i;
+	size_t j;
 	struct _menu * p;
 
 	tb_menubar = gtk_menu_bar_new();
@@ -46,8 +47,16 @@ GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
 				menuitem = gtk_menu_item_new_with_mnemonic(
 						p->name);
 			else
-				menuitem = gtk_image_menu_item_new_from_stock(
-						p->stock, NULL);
+			{
+				image = gtk_image_new_from_icon_name(p->stock,
+						GTK_ICON_SIZE_MENU);
+				menuitem
+					= gtk_image_menu_item_new_with_mnemonic(
+						p->name);
+				gtk_image_menu_item_set_image(
+						GTK_IMAGE_MENU_ITEM(menuitem),
+						image);
+			}
 			if(p->callback != NULL)
 				g_signal_connect(G_OBJECT(menuitem), "activate",
 						G_CALLBACK(p->callback), data);
@@ -72,13 +81,11 @@ GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
 GtkWidget * common_new_toolbar(struct _toolbar * tb, gpointer data)
 {
 	GtkWidget * toolbar;
-	GtkIconTheme * theme;
-	unsigned int i;
+	size_t i;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
 
 	toolbar = gtk_toolbar_new();
-	theme = gtk_icon_theme_get_default();
 	for(i = 0; tb[i].name != NULL; i++)
 	{
 		if(tb[i].name[0] == '\0')
@@ -87,8 +94,8 @@ GtkWidget * common_new_toolbar(struct _toolbar * tb, gpointer data)
 			gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 			continue;
 		}
-		widget = gtk_image_new_from_pixbuf(gtk_icon_theme_load_icon(
-					theme, tb[i].stock, 32, 0, NULL));
+		widget = gtk_image_new_from_icon_name(tb[i].stock,
+				GTK_ICON_SIZE_LARGE_TOOLBAR);
 		toolitem = gtk_tool_button_new(widget, tb[i].name);
 		g_signal_connect(toolitem, "clicked", tb[i].callback, data);
 		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);

@@ -27,10 +27,17 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 /* file menu */
 void on_file_new_mail(GtkWidget * widget, gpointer data);
 void on_file_send_receive(GtkWidget * widget, gpointer data);
+void on_file_print(GtkWidget * widget, gpointer data);
+void on_file_print_preview(GtkWidget * widget, gpointer data);
 void on_file_quit(GtkWidget * widget, gpointer data);
 
 /* edit menu */
 void on_edit_preferences(GtkWidget * widget, gpointer data);
+
+/* message menu */
+void on_message_reply(GtkWidget * widget, gpointer data);
+void on_message_reply_to_all(GtkWidget * widget, gpointer data);
+void on_message_forward(GtkWidget * widget, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
@@ -40,6 +47,7 @@ void on_new_mail(GtkWidget * widget, gpointer data);
 void on_stop(GtkWidget * widget, gpointer data);
 void on_reply(GtkWidget * widget, gpointer data);
 void on_reply_to_all(GtkWidget * widget, gpointer data);
+void on_forward(GtkWidget * widget, gpointer data);
 void on_delete(GtkWidget * widget, gpointer data);
 void on_print(GtkWidget * widget, gpointer data);
 

@@ -33,6 +33,10 @@ struct _menu _menu_file[] =
 	{ "", NULL, NULL, 0 },
 	{ "Send / Receive", G_CALLBACK(on_file_send_receive), NULL, GDK_R },
 	{ "", NULL, NULL, 0 },
+	{ "_Print", G_CALLBACK(on_file_print), GTK_STOCK_PRINT, GDK_P },
+	{ "Print pre_view", G_CALLBACK(on_file_print_preview),
+		GTK_STOCK_PRINT_PREVIEW, 0 },
+	{ "", NULL, NULL, 0 },
 	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT, GDK_Q },
 	{ NULL, NULL, NULL, 0 }
 };
@@ -40,7 +44,16 @@ struct _menu _menu_file[] =
 struct _menu _menu_edit[] =
 {
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
+		GTK_STOCK_PREFERENCES, 0 },
+	{ NULL, NULL, NULL, 0 }
+};
+
+static struct _menu _menu_message[] =
+{
+	{ "_Reply", G_CALLBACK(on_message_reply), "stock_mail-reply", 0 },
+	{ "Reply to _all", G_CALLBACK(on_message_reply_to_all),
+		"stock_mail-reply-to-all", 0 },
+	{ "_Forward", G_CALLBACK(on_message_forward), "stock_mail-forward", 0 },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -58,6 +71,7 @@ static struct _menubar _mailer_menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Edit", _menu_edit },
+	{ "_Message", _menu_message },
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
@@ -73,6 +87,7 @@ static struct _toolbar _mailer_toolbar[] =
 	{ "Reply", G_CALLBACK(on_reply), "stock_mail-reply" },
 	{ "Reply to all", G_CALLBACK(on_reply_to_all),
 		"stock_mail-reply-to-all" },
+	{ "Forward", G_CALLBACK(on_forward), "stock_mail-forward" },
 	{ "Delete", G_CALLBACK(on_delete), GTK_STOCK_DELETE },
 	{ "Print", G_CALLBACK(on_print), GTK_STOCK_PRINT },
 	{ NULL, NULL, NULL }
@@ -163,7 +178,7 @@ Mailer * mailer_new(void)
 	mailer->account_cur = NULL;
 	/* widgets */
 	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 640, 480);
+	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 800, 600);
 	gtk_window_set_title(GTK_WINDOW(mailer->window), "Mailer");
 	g_signal_connect(G_OBJECT(mailer->window), "delete-event", G_CALLBACK(
 				on_closex), NULL);

@@ -69,10 +69,41 @@ void on_file_send_receive(GtkWidget * widget, gpointer data)
 }
 
 
+void on_file_print(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_file_print_preview(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
 void on_file_quit(GtkWidget * widget, gpointer data)
 {
 	/* FIXME may be composing */
 	gtk_main_quit();
+}
+
+
+/* message menu */
+void on_message_reply(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_message_reply_to_all(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_message_forward(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
 }
 
 
@@ -300,6 +331,12 @@ void on_reply(GtkWidget * widget, gpointer data)
 
 
 void on_reply_to_all(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_forward(GtkWidget * widget, gpointer data)
 {
 	/* FIXME implement */
 }
