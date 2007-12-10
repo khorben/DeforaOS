@@ -27,6 +27,7 @@ struct _menu
 	char * name;
 	GtkSignalFunc callback;
 	char * stock;
+	unsigned int accel;
 };
 
 struct _menubar
@@ -44,7 +45,8 @@ struct _toolbar
 
 
 /* functions */
-GtkWidget * common_new_menubar(struct _menubar * mb, gpointer data);
+GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
+		gpointer data);
 GtkWidget * common_new_toolbar(struct _toolbar * tb, gpointer data);
 
 #endif /* !MAILER_COMMON_H */

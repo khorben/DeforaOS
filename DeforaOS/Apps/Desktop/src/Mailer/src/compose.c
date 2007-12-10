@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "common.h"
 #include "compose.h"
@@ -30,26 +31,26 @@
 /* constants */
 static struct _menu _menu_file[] =
 {
-	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE },
-	{ NULL, NULL, NULL }
+	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_view[] =
 {
 	/* FIXME CC and BCC should be toggle menu entries */
-	{ "_CC field", G_CALLBACK(on_compose_view_cc), NULL },
-	{ "_BCC field", G_CALLBACK(on_compose_view_bcc), NULL },
-	{ NULL, NULL, NULL }
+	{ "_CC field", G_CALLBACK(on_compose_view_cc), NULL, 0 },
+	{ "_BCC field", G_CALLBACK(on_compose_view_bcc), NULL, 0 },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT },
+	{ "_About", G_CALLBACK(on_compose_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_compose_help_about), NULL },
+	{ "_About", G_CALLBACK(on_compose_help_about), NULL, 0 },
 #endif
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _compose_menubar[] =
@@ -84,7 +85,8 @@ Compose * compose_new(Mailer * mailer)
 	g_signal_connect(G_OBJECT(compose->window), "delete_event", G_CALLBACK(
 				on_compose_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
-	widget = common_new_menubar(_compose_menubar, compose);
+	widget = common_new_menubar(GTK_WINDOW(compose->window),
+			_compose_menubar, compose);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();

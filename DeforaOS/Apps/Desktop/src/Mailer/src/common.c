@@ -19,9 +19,11 @@
 
 
 /* common_new_menubar */
-GtkWidget * common_new_menubar(struct _menubar * mb, gpointer data)
+GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
+		gpointer data)
 {
 	GtkWidget * tb_menubar;
+	GtkAccelGroup * group;
 	GtkWidget * menu;
 	GtkWidget * menubar;
 	GtkWidget * menuitem;
@@ -30,6 +32,7 @@ GtkWidget * common_new_menubar(struct _menubar * mb, gpointer data)
 	struct _menu * p;
 
 	tb_menubar = gtk_menu_bar_new();
+	group = gtk_accel_group_new();
 	for(i = 0; mb[i].name != NULL; i++)
 	{
 		menubar = gtk_menu_item_new_with_mnemonic(mb[i].name);
@@ -50,11 +53,17 @@ GtkWidget * common_new_menubar(struct _menubar * mb, gpointer data)
 						G_CALLBACK(p->callback), data);
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
+			if(p->accel != 0)
+				gtk_widget_add_accelerator(menuitem, "activate",
+						group, p->accel,
+						GDK_CONTROL_MASK,
+						GTK_ACCEL_VISIBLE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
 		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
 	}
+	gtk_window_add_accel_group(window, group);
 	return tb_menubar;
 }
 

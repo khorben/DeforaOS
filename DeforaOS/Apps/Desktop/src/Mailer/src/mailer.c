@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
+#include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "common.h"
 #include "mailer.h"
@@ -28,29 +29,29 @@
 /* constants */
 struct _menu _menu_file[] =
 {
-	{ "_New mail", G_CALLBACK(on_file_new_mail), NULL },
-	{ "", NULL, NULL },
-	{ "Send / Receive", G_CALLBACK(on_file_send_receive), NULL },
-	{ "", NULL, NULL },
-	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT },
-	{ NULL, NULL, NULL }
+	{ "_New mail", G_CALLBACK(on_file_new_mail), NULL, GDK_N },
+	{ "", NULL, NULL, 0 },
+	{ "Send / Receive", G_CALLBACK(on_file_send_receive), NULL, GDK_R },
+	{ "", NULL, NULL, 0 },
+	{ "_Quit", G_CALLBACK(on_file_quit), GTK_STOCK_QUIT, GDK_Q },
+	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_edit[] =
 {
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES },
-	{ NULL, NULL, NULL }
+		GTK_STOCK_PREFERENCES, GDK_P },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT },
+	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL },
+	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
 #endif
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _mailer_menubar[] =
@@ -165,7 +166,8 @@ Mailer * mailer_new(void)
 				on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-	widget = common_new_menubar(_mailer_menubar, mailer);
+	widget = common_new_menubar(GTK_WINDOW(mailer->window), _mailer_menubar,
+			mailer);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* toolbar */
 	widget = common_new_toolbar(_mailer_toolbar, mailer);
