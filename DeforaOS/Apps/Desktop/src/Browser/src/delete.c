@@ -173,12 +173,18 @@ static int _idle_ask_recursive(Delete * delete, char const * filename)
 	GtkWidget * dialog;
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO, "%s is a directory\n"
-			"Recursively delete?", filename);
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+			"%s is a directory\nRecursively delete?", filename);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes to all", 1);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	if(ret == 1)
+	{
+		*(delete->prefs) = (*(delete->prefs) & ~PREFS_i) | PREFS_f;
+		return 0;
+	}
 	return ret == GTK_RESPONSE_YES ? 0 : 1;
 }
 
@@ -188,12 +194,18 @@ static int _idle_ask(Delete * delete, char const * filename)
 	GtkWidget * dialog;
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
-			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO, "%s will be permanently deleted\n"
-			"Continue?", filename);
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+			"%s will be permanently deleted\nContinue?", filename);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes to all", 1);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	if(ret == 1)
+	{
+		*(delete->prefs) = (*(delete->prefs) & ~PREFS_i) | PREFS_f;
+		return 0;
+	}
 	return ret == GTK_RESPONSE_YES ? 0 : 1;
 }
 
