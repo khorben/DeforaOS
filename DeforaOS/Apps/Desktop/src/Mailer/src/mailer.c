@@ -70,6 +70,9 @@ static struct _toolbar _mailer_toolbar[] =
 		"stock_mail-send-receive" },
 	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP },
 	{ "", NULL, NULL },
+	{ "Reply", G_CALLBACK(on_reply), "stock_mail-reply" },
+	{ "Reply to all", G_CALLBACK(on_reply_to_all),
+		"stock_mail-reply-to-all" },
 	{ "Delete", G_CALLBACK(on_delete), GTK_STOCK_DELETE },
 	{ "Print", G_CALLBACK(on_print), GTK_STOCK_PRINT },
 	{ NULL, NULL, NULL }
@@ -162,7 +165,7 @@ Mailer * mailer_new(void)
 	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 640, 480);
 	gtk_window_set_title(GTK_WINDOW(mailer->window), "Mailer");
-	g_signal_connect(G_OBJECT(mailer->window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(mailer->window), "delete-event", G_CALLBACK(
 				on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */

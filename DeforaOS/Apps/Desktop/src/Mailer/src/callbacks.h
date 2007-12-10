@@ -38,6 +38,8 @@ void on_help_about(GtkWidget * widget, gpointer data);
 /* toolbar */
 void on_new_mail(GtkWidget * widget, gpointer data);
 void on_stop(GtkWidget * widget, gpointer data);
+void on_reply(GtkWidget * widget, gpointer data);
+void on_reply_to_all(GtkWidget * widget, gpointer data);
 void on_delete(GtkWidget * widget, gpointer data);
 void on_print(GtkWidget * widget, gpointer data);
 

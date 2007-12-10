@@ -114,7 +114,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 			"Mailer preferences");
 	gtk_window_set_transient_for(GTK_WINDOW(mailer->pr_window), GTK_WINDOW(
 				mailer->window));
-	g_signal_connect(G_OBJECT(mailer->pr_window), "delete_event",
+	g_signal_connect(G_OBJECT(mailer->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	notebook = gtk_notebook_new();
@@ -288,6 +288,18 @@ void on_new_mail(GtkWidget * widget, gpointer data)
 
 
 void on_stop(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_reply(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_reply_to_all(GtkWidget * widget, gpointer data)
 {
 	/* FIXME implement */
 }
