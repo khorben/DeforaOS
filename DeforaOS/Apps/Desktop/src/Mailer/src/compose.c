@@ -31,6 +31,10 @@
 /* constants */
 static struct _menu _menu_file[] =
 {
+	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send", 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Save", G_CALLBACK(on_compose_file_save), GTK_STOCK_SAVE, GDK_S },
+	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
@@ -61,6 +65,14 @@ static struct _menubar _compose_menubar[] =
 	{ NULL, NULL }
 };
 
+static struct _toolbar _compose_toolbar[] =
+{
+	{ "Send", G_CALLBACK(on_compose_send), "stock_mail-send" },
+	{ "", NULL, NULL },
+	{ "Save", G_CALLBACK(on_compose_save), GTK_STOCK_SAVE },
+	{ NULL, NULL, NULL }
+};
+
 
 /* compose_new */
 Compose * compose_new(Mailer * mailer)
@@ -89,17 +101,7 @@ Compose * compose_new(Mailer * mailer)
 			_compose_menubar, compose);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* toolbar */
-	toolbar = gtk_toolbar_new();
-	toolitem = gtk_tool_button_new(NULL, "Send");
-	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				on_compose_send), compose);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
-			-1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
-	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
-				on_compose_save), compose);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	toolbar = common_new_toolbar(_compose_toolbar, compose);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* from */
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);

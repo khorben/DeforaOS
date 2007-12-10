@@ -1031,6 +1031,18 @@ void on_compose_send(GtkWidget * widget, gpointer data)
 
 
 /* compose file menu */
+void on_compose_file_send(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_compose_file_save(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
 void on_compose_file_close(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;

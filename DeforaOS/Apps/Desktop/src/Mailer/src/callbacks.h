@@ -72,6 +72,8 @@ void on_compose_save(GtkWidget * widget, gpointer data);
 void on_compose_send(GtkWidget * widget, gpointer data);
 
 /* file menu */
+void on_compose_file_send(GtkWidget * widget, gpointer data);
+void on_compose_file_save(GtkWidget * widget, gpointer data);
 void on_compose_file_close(GtkWidget * widget, gpointer data);
 
 /* view menu */
