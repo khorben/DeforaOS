@@ -66,10 +66,12 @@ void message_delete(Message * message)
 	for(i = 0; i < message->headers_cnt; i++)
 		free(message->headers[i]);
 	free(message->headers);
+	free(message);
 }
 
 /* FIXME factorize code? */
-int _message_set_header(Message * message, char * header, GtkListStore * store)
+int _message_set_header(Message * message, char const * header,
+		GtkListStore * store)
 {
 	char ** p;
 	struct { int col; char * name; } abc[] = {
@@ -91,7 +93,9 @@ int _message_set_header(Message * message, char * header, GtkListStore * store)
 		if(strncmp(header, abc[i].name, strlen(abc[i].name)) == 0)
 			gtk_list_store_set(store, &message->iter, abc[i].col,
 					&header[strlen(abc[i].name)], -1);
-	message->headers[message->headers_cnt++] = header;
+	if((message->headers[message->headers_cnt] = strdup(header)) == NULL)
+		return 1;
+	message->headers_cnt++;
 	return 0;
 }
 
@@ -473,6 +477,19 @@ int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent)
 
 int _mbox_quit(void)
 {
+	size_t i;
+	MboxFolder * mf;
+	size_t j;
+
+	for(i = 0; i < _FOLDER_CNT; i++)
+	{
+		mf = _config_folder[i].data;
+		for(j = 0; j < mf->messages_cnt; j++)
+			message_delete(mf->messages[j]);
+		free(mf->messages);
+		mf->messages = NULL;
+		mf->messages_cnt = 0;
+	}
 	return 0;
 }
 
