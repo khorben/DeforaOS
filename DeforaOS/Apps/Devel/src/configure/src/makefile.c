@@ -759,6 +759,8 @@ static void _flags_cxx(Configure * configure, FILE * fp, String * target)
 
 static int _target_library(Configure * configure, FILE * fp, String * target)
 {
+	String const * p;
+
 	if(_target_objs(configure, fp, target) != 0)
 		return 1;
 	if(configure->prefs->flags & PREFS_n)
@@ -770,7 +772,10 @@ static int _target_library(Configure * configure, FILE * fp, String * target)
 	fprintf(fp, "%s%s%s", "\t$(RANLIB) ", target, ".a\n");
 	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)\n");
 	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
-			"_OBJS)\n");
+			"_OBJS)");
+	if((p = config_get(configure->config, target, "ldflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
 	return 0;
 }
 
