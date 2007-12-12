@@ -253,8 +253,14 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 
-	desktop_unselect_all(desktopicon->desktop);
-	desktopicon_set_selected(desktopicon, TRUE);
+	if(event->state & GDK_CONTROL_MASK)
+		desktopicon_set_selected(desktopicon, !desktopicon_get_selected(
+					desktopicon));
+	else
+	{
+		desktop_unselect_all(desktopicon->desktop);
+		desktopicon_set_selected(desktopicon, TRUE);
+	}
 	if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
 	{
 		_on_icon_open(widget, desktopicon);
