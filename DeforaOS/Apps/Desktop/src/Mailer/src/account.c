@@ -71,18 +71,23 @@ void account_delete(Account * account)
 {
 	AccountConfig * p;
 
-	if(account->plugin != NULL && account->plugin->config != NULL)
-		for(p = account->plugin->config; p->name != NULL; p++)
-			switch(p->type)
-			{
-				case ACT_STRING:
-				case ACT_PASSWORD:
-				case ACT_FILE:
-					free(p->value);
-					break;
-				default:
-					break;
-			}
+	if(account->plugin != NULL)
+	{
+		if(account->plugin->quit != NULL)
+			account->plugin->quit();
+		if(account->plugin->config != NULL)
+			for(p = account->plugin->config; p->name != NULL; p++)
+				switch(p->type)
+				{
+					case ACT_STRING:
+					case ACT_PASSWORD:
+					case ACT_FILE:
+						free(p->value);
+						break;
+					default:
+						break;
+				}
+	}
 	free(account->name);
 	free(account->title);
 	if(account->handle != NULL)
