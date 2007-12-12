@@ -20,6 +20,7 @@
 
 
 
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -108,6 +109,18 @@ int32_t fchown(int32_t fd, uint32_t owner, uint32_t group)
 }
 
 
+/* ioctl */
+int32_t vfs_ioctl(int32_t fd, uint32_t request, Buffer * buffer)
+{
+	void * data;
+
+	if(fd < VFS_OFF)
+		return -1;
+	data = buffer_get_data(buffer);
+	return ioctl(fd, request, data);
+}
+
+
 /* lseek */
 int32_t vfs_lseek(int32_t fd, int32_t offset, int32_t whence)
 	/* FIXME unify whence, check types sizes */
@@ -140,6 +153,10 @@ int32_t vfs_read(int fd, Buffer * b, uint32_t count)
 {
 	ssize_t ret;
 
+	/* FIXME count is normally 64 bits */
+#ifdef DEBUG
+	fprintf(stderr, "VFS: read(%d, %p, %u)\n", fd, b, count);
+#endif
 	/* FIXME actually check if fd is valid for this connection */
 	if(fd < VFS_OFF)
 		return -1;
@@ -155,6 +172,9 @@ int32_t vfs_read(int fd, Buffer * b, uint32_t count)
 		memset(buffer_get_data(b), 0, count);
 		return -1;
 	}
+#ifdef DEBUG
+	fprintf(stderr, "VFS: read() %zd\n", ret);
+#endif
 	return ret;
 }
 
