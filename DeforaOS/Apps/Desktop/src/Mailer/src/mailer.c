@@ -381,24 +381,31 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkSizeGroup * group;
+	PangoFontDescription * bold;
 
 	vbox = gtk_vbox_new(FALSE, 0);
 	mailer->hdr_vbox = gtk_vbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	for(i = 0; widgets[i].hdr != NULL; i++)
 	{
 		hbox = gtk_hbox_new(FALSE, 0);
 		widget = gtk_label_new(widgets[i].hdr);
+		gtk_widget_modify_font(widget, bold);
 		gtk_misc_set_alignment(GTK_MISC(widget), 1.0, 0.0);
 		gtk_size_group_add_widget(GTK_SIZE_GROUP(group), widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		*(widgets[i].widget) = gtk_label_new("");
+		gtk_misc_set_alignment(GTK_MISC(*(widgets[i].widget)), 0.0,
+				0.0);
 		gtk_box_pack_start(GTK_BOX(hbox), *(widgets[i].widget), TRUE,
 				TRUE, 0);
 		gtk_box_pack_start(GTK_BOX(mailer->hdr_vbox), hbox, FALSE,
 				FALSE, 0);
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), mailer->hdr_vbox, FALSE, FALSE, 0);
+	pango_font_description_free(bold);
 	return vbox;
 }
 
