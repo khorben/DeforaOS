@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGS=
+CPPFLAGS= -D WITH_SSL
 CFLAGSF	= -W -Wall -ansi -fPIC -I ../include
 CFLAGS	= -g -O2
 AR	= ar -rc
@@ -24,7 +24,7 @@ libSystem.a: $(libSystem_OBJS)
 	$(RANLIB) libSystem.a
 
 libSystem.so: $(libSystem_OBJS)
-	$(LD) -o libSystem.so $(libSystem_OBJS)
+	$(LD) -o libSystem.so $(libSystem_OBJS) -l ssl
 
 appclient.o: appclient.c appinterface.h
 	$(CC) $(libSystem_CFLAGS) -c appclient.c
