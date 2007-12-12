@@ -383,8 +383,29 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data)
 void on_header_change(GtkTreeSelection * selection, gpointer data)
 {
 	Mailer * mailer = data;
+	GtkTreeModel * model;
+	GList * sel;
+	GtkTreeIter iter;
+	char * p;
 
-	/* FIXME implement */
+	sel = gtk_tree_selection_get_selected_rows(selection, &model);
+	if(sel == NULL || sel->next != NULL) /* empty or multiple */
+	{
+		gtk_widget_hide(mailer->hdr_vbox);
+		return;
+	}
+	gtk_tree_model_get_iter(model, &iter, sel->data);
+	gtk_tree_model_get(model, &iter, MH_COL_SUBJECT, &p, -1);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_subject), p);
+	gtk_tree_model_get(model, &iter, MH_COL_FROM, &p, -1);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_from), p);
+	gtk_tree_model_get(model, &iter, MH_COL_TO, &p, -1);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_to), p);
+	gtk_tree_model_get(model, &iter, MH_COL_DATE, &p, -1);
+	gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
+	gtk_widget_show(mailer->hdr_vbox);
+	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(sel);
 }
 
 
