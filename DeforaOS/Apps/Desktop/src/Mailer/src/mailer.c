@@ -339,27 +339,36 @@ static GtkWidget * _new_folders_view(Mailer * mailer)
 	return widget;
 }
 
+static void _headers_view_column_text(GtkTreeView * view, char const * title,
+		int id);
+
 static GtkWidget * _new_headers_view(Mailer * mailer)
 {
 	GtkWidget * widget;
-	GtkCellRenderer * renderer;
+	GtkTreeView * treeview;
 	GtkTreeSelection * treesel;
 
 	widget = gtk_tree_view_new();
-	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			"Subject", renderer, "text", MH_COL_SUBJECT, NULL);
-	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			"From", renderer, "text", MH_COL_FROM, NULL);
-	renderer = gtk_cell_renderer_text_new();
-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
-			"Date", renderer, "text", MH_COL_DATE, NULL);
-	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	treeview = GTK_TREE_VIEW(widget);
+	_headers_view_column_text(treeview, "Subject", MH_COL_SUBJECT);
+	_headers_view_column_text(treeview, "From", MH_COL_FROM);
+	_headers_view_column_text(treeview, "Date", MH_COL_DATE);
+	treesel = gtk_tree_view_get_selection(treeview);
 	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
 	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
 				on_header_change), mailer);
 	return widget;
+}
+
+static void _headers_view_column_text(GtkTreeView * view, char const * title,
+		int id)
+{
+	GtkTreeViewColumn * column;
+
+	column = gtk_tree_view_column_new_with_attributes(title,
+			gtk_cell_renderer_text_new(), "text", id, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, id);
+	gtk_tree_view_append_column(view, column);
 }
 
 static GtkWidget * _new_headers(Mailer * mailer)
