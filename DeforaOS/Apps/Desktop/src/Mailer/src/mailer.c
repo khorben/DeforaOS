@@ -262,7 +262,7 @@ static int _new_plugins(Mailer * mailer)
 	for(de = readdir(dir); de != NULL; de = readdir(dir))
 	{
 		if((len = strlen(de->d_name)) < 4
-				|| strcmp(".so", &de->d_name[len-3]) != 0)
+				|| strcmp(".so", &de->d_name[len - 3]) != 0)
 			continue;
 		if((filename = malloc(strlen(dirname) + len + 2)) == NULL)
 		{
@@ -279,7 +279,7 @@ static int _new_plugins(Mailer * mailer)
 			continue;
 		}
 		if((p = realloc(mailer->available, sizeof(*p)
-						* (mailer->available_cnt+1)))
+						* (mailer->available_cnt + 1)))
 				== NULL)
 		{
 			_mailer_error("realloc", 0);
@@ -299,7 +299,7 @@ static int _new_plugins(Mailer * mailer)
 		}
 		else
 		{
-			p[mailer->available_cnt].name[len-3] = '\0';
+			p[mailer->available_cnt].name[len - 3] = '\0';
 			p[mailer->available_cnt].handle = NULL;
 			p[mailer->available_cnt++].plugin = NULL;
 #ifdef DEBUG

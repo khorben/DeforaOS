@@ -130,7 +130,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	GtkWidget * vbox3;
 	GtkSizeGroup * group;
 	GtkListStore * store;
-	unsigned int i;
+	size_t i;
+	Account * ac;
 	GtkTreeIter iter;
 
 	if(mailer->pr_window != NULL)
@@ -161,12 +162,13 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	store = gtk_list_store_new(AC_LAST + 1, G_TYPE_POINTER, G_TYPE_BOOLEAN,
 			G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
 	for(i = 0; i < mailer->account_cnt; i++)
+	{
+		ac = mailer->account[i];
 		gtk_list_store_insert_with_values(store, &iter, -1,
-				AC_DATA, mailer->account[i],
-				AC_ACTIVE, TRUE,
-				AC_ENABLED, mailer->account[i]->enabled,
-				AC_TITLE, mailer->account[i]->title,
-				AC_TYPE, mailer->account[i]->plugin->type, -1);
+				AC_DATA, ac, AC_ACTIVE, TRUE,
+				AC_ENABLED, ac->enabled, AC_TITLE, ac->title,
+				AC_TYPE, ac->plugin->type, -1);
+	}
 	mailer->pr_accounts = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_accounts),
@@ -622,7 +624,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Account title:");
+	widget = gtk_label_new("Account name:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	widget = gtk_entry_new();
@@ -850,7 +852,7 @@ static GtkWidget * _account_display(Account * account)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	p.name = NULL;
-	p.title = "Account title";
+	p.title = "Account name";
 	p.value = account->title;
 	widget = _display_string(&p, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
