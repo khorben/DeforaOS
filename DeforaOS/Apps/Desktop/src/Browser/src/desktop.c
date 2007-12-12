@@ -68,12 +68,11 @@ struct _DesktopIcon
 };
 
 /* constants */
+#define DESKTOPICON_ICON_SIZE	48
 #define DESKTOPICON_MAX_HEIGHT	100
 #define DESKTOPICON_MAX_WIDTH	100
-#define DESKTOPICON_MIN_HEIGHT	56			/* image and borders */
-#define DESKTOPICON_MIN_WIDTH	DESKTOPICON_MAX_WIDTH	/* constant width */
-
-#define DESKTOPICON_ICON_SIZE	48
+#define DESKTOPICON_MIN_HEIGHT	(DESKTOPICON_ICON_SIZE << 1)
+#define DESKTOPICON_MIN_WIDTH	DESKTOPICON_MAX_WIDTH
 
 
 /* functions */
@@ -91,16 +90,29 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 	GdkGC * gc;
 	GdkColor black = { 0, 0, 0, 0 };
 	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
+	GtkRequisition req;
+	int offset;
 
 	gtk_window_get_size(GTK_WINDOW(desktopicon->window), &width, &height);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: window is %dx%d\n", width, height);
+#endif
 	mask = gdk_pixmap_new(NULL, width, height, 1);
 	gdk_pixbuf_render_pixmap_and_mask(icon, NULL, &iconmask, 255);
 	gc = gdk_gc_new(mask);
 	gdk_gc_set_foreground(gc, &black);
-	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, 56);
-	gdk_draw_drawable(mask, gc, iconmask, 0, 0, 26, 4, -1, -1);
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, height);
+	gdk_draw_drawable(mask, gc, iconmask, 0, 0,
+			(width - DESKTOPICON_ICON_SIZE) / 2, 4, -1, -1);
 	gdk_gc_set_foreground(gc, &white);
-	gdk_draw_rectangle(mask, gc, TRUE, 0, 56, width, height - 56);
+	gtk_widget_size_request(desktopicon->label, &req);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: label is %dx%d\n", req.width, req.height);
+#endif
+	offset = DESKTOPICON_ICON_SIZE + 8;
+	gdk_draw_rectangle(mask, gc, TRUE, (width - req.width - 8) / 2,
+			offset + ((height - offset - req.height - 8)
+				/ 2), req.width + 8, req.height + 8);
 	gtk_widget_shape_combine_mask(desktopicon->window, mask, 0, 0);
 	g_object_unref(gc);
 	g_object_unref(iconmask);
@@ -198,9 +210,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	gtk_label_set_line_wrap_mode(label, PANGO_WRAP_WORD_CHAR);
 #endif
 	gtk_label_set_line_wrap(label, TRUE);
-	gtk_widget_set_size_request(desktopicon->label, DESKTOPICON_MIN_WIDTH,
-			-1);
-	gtk_box_pack_start(GTK_BOX(vbox), eventbox, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), eventbox, TRUE, FALSE, 4);
 	gtk_container_add(GTK_CONTAINER(desktopicon->window), vbox);
 	_desktopicon_update_transparency(desktopicon, icon);
 	return desktopicon;
