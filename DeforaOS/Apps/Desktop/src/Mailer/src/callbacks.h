@@ -54,6 +54,8 @@ void on_print(GtkWidget * widget, gpointer data);
 /* folder view */
 void on_folder_change(GtkTreeSelection * selection, gpointer data);
 
+/* header view */
+void on_header_change(GtkTreeSelection * selection, gpointer data);
 
 /* preferences window */
 void on_preferences_ok(GtkWidget * widget, gpointer data);

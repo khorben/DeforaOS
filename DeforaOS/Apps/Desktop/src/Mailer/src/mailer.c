@@ -156,7 +156,7 @@ static int _mailer_config_load_account(Mailer * mailer, char const * name)
 /* mailer_new */
 static int _new_plugins(Mailer * mailer);
 static GtkWidget * _new_folders_view(Mailer * mailer);
-static GtkWidget * _new_headers_view(void);
+static GtkWidget * _new_headers_view(Mailer * mailer);
 static GtkWidget * _new_headers(Mailer * mailer);
 static void _new_config_load(Mailer * mailer);
 
@@ -207,7 +207,7 @@ Mailer * mailer_new(void)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	mailer->view_headers = _new_headers_view();
+	mailer->view_headers = _new_headers_view(mailer);
 	gtk_container_add(GTK_CONTAINER(widget), mailer->view_headers);
 	gtk_paned_add1(GTK_PANED(vpaned), widget);
 	/* messages body */
@@ -339,10 +339,11 @@ static GtkWidget * _new_folders_view(Mailer * mailer)
 	return widget;
 }
 
-static GtkWidget * _new_headers_view(void)
+static GtkWidget * _new_headers_view(Mailer * mailer)
 {
 	GtkWidget * widget;
 	GtkCellRenderer * renderer;
+	GtkTreeSelection * treesel;
 
 	widget = gtk_tree_view_new();
 	renderer = gtk_cell_renderer_text_new();
@@ -354,6 +355,10 @@ static GtkWidget * _new_headers_view(void)
 	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widget), -1,
 			"Date", renderer, "text", MH_COL_DATE, NULL);
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(widget));
+	gtk_tree_selection_set_mode(treesel, GTK_SELECTION_MULTIPLE);
+	g_signal_connect(G_OBJECT(treesel), "changed", G_CALLBACK(
+				on_header_change), mailer);
 	return widget;
 }
 

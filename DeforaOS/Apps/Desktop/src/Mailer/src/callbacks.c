@@ -377,6 +377,15 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data)
 }
 
 
+/* header view */
+void on_header_change(GtkTreeSelection * selection, gpointer data)
+{
+	Mailer * mailer = data;
+
+	/* FIXME implement */
+}
+
+
 /* preferences window */
 void on_preferences_ok(GtkWidget * widget, gpointer data)
 {
