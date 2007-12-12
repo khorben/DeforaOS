@@ -34,7 +34,9 @@ void desktopicon_delete(DesktopIcon * desktopicon);
 
 /* accessors */
 char const * desktopicon_get_path(DesktopIcon * desktopicon);
+gboolean desktopicon_get_selected(DesktopIcon * desktopicon);
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
+void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected);
 
 /* useful */
 void desktopicon_move(DesktopIcon * desktopicon, int x, int y);
@@ -56,5 +58,10 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon);
 
 void desktop_icons_align(Desktop * desktop);
 void desktop_icons_sort(Desktop * desktop);
+
+void desktop_select_all(Desktop * desktop);
+void desktop_select_above(Desktop * desktop, DesktopIcon * icon);
+void desktop_select_under(Desktop * desktop, DesktopIcon * icon);
+void desktop_unselect_all(Desktop * desktop);
 
 #endif /* !BROWSER_DESKTOP_H */
