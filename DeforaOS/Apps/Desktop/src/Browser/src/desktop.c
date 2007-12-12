@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include "mime.h"
 #include "desktop.h"
 
@@ -60,10 +61,12 @@ struct _DesktopIcon
 	int isdir;
 	char const * mimetype;
 
-	int updated; /* XXX for desktop refresh */
+	gboolean selected;
+	gboolean updated; /* XXX for desktop refresh */
 
 	GtkWidget * window;
 	GtkWidget * image;
+	GtkWidget * event;
 	GtkWidget * label;
 };
 
@@ -123,7 +126,9 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 /* callbacks */
 static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
-static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
+static gboolean _on_icon_button_press(GtkWidget * widget,
+		GdkEventButton * event, gpointer data);
+static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
 		gpointer data);
 
 DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
@@ -149,6 +154,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->desktop = desktop;
 	desktopicon->isdir = 0;
 	desktopicon->mimetype = NULL;
+	desktopicon->selected = 0;
 	desktopicon->updated = 1;
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(desktopicon->window);
@@ -189,29 +195,28 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	}
 	if(icon == NULL)
 		icon = desktop->file;
+	eventbox = gtk_event_box_new();
+	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
+			G_CALLBACK(_on_icon_button_press), desktopicon);
+	g_signal_connect(G_OBJECT(eventbox), "key-press-event",
+			G_CALLBACK(_on_icon_key_press), desktopicon);
+	desktopicon->event = eventbox;
 	desktopicon->image = gtk_image_new_from_pixbuf(icon);
 	gtk_widget_set_size_request(desktopicon->image, DESKTOPICON_MIN_WIDTH,
 			DESKTOPICON_ICON_SIZE);
-	eventbox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(eventbox), desktopicon->image);
-	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
-			G_CALLBACK(_on_icon_press), desktopicon);
-	gtk_box_pack_start(GTK_BOX(vbox), eventbox, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->image, FALSE, TRUE, 4);
 	if((p = g_filename_to_utf8(name, -1, NULL, NULL, NULL)) != NULL)
 		name = p;
-	eventbox = gtk_event_box_new();
 	desktopicon->label = gtk_label_new(name);
-	gtk_container_add(GTK_CONTAINER(eventbox), desktopicon->label);
-	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
-			G_CALLBACK(_on_icon_press), desktopicon);
 	label = GTK_LABEL(desktopicon->label);
 	gtk_label_set_justify(label, GTK_JUSTIFY_CENTER);
 #if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_label_set_line_wrap_mode(label, PANGO_WRAP_WORD_CHAR);
 #endif
 	gtk_label_set_line_wrap(label, TRUE);
-	gtk_box_pack_start(GTK_BOX(vbox), eventbox, TRUE, FALSE, 4);
-	gtk_container_add(GTK_CONTAINER(desktopicon->window), vbox);
+	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, FALSE, 4);
+	gtk_container_add(GTK_CONTAINER(eventbox), vbox);
+	gtk_container_add(GTK_CONTAINER(desktopicon->window), eventbox);
 	_desktopicon_update_transparency(desktopicon, icon);
 	return desktopicon;
 }
@@ -241,13 +246,15 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_properties(GtkWidget * widget, gpointer data);
 
-static gboolean _on_icon_press(GtkWidget * widget, GdkEventButton * event,
-		gpointer data)
+static gboolean _on_icon_button_press(GtkWidget * widget,
+		GdkEventButton * event, gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 
+	desktop_unselect_all(desktopicon->desktop);
+	desktopicon_set_selected(desktopicon, TRUE);
 	if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
 	{
 		_on_icon_open(widget, desktopicon);
@@ -295,14 +302,13 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "open",
 			GTK_STOCK_OPEN, G_CALLBACK(_on_icon_open), desktopicon,
 			menu);
+	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
 #if GTK_CHECK_VERSION(2, 6, 0)
-	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
-			GTK_STOCK_EDIT, G_CALLBACK(_on_icon_edit), desktopicon,
-			menu);
+			GTK_STOCK_EDIT,
 #else
-	_popup_mime(desktopicon->desktop->mime, desktopicon->mimetype, "edit",
-			"_Edit", G_CALLBACK(_on_icon_edit), desktopicon, menu);
+			"_Edit",
 #endif
+			G_CALLBACK(_on_icon_edit), desktopicon, menu);
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), desktopicon);
@@ -411,6 +417,29 @@ static void _on_icon_properties(GtkWidget * widget, gpointer data)
 	exit(2);
 }
 
+static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
+		gpointer data)
+	/* FIXME handle shift and control */
+{
+	DesktopIcon * desktopicon = data;
+
+	if(event->type != GDK_KEY_PRESS)
+		return FALSE;
+	if(event->keyval == GDK_uparrow)
+	{
+		desktop_unselect_all(desktopicon->desktop);
+		desktop_select_above(desktopicon->desktop, desktopicon);
+	}
+	else if(event->keyval == GDK_downarrow)
+	{
+		desktop_unselect_all(desktopicon->desktop);
+		desktop_select_under(desktopicon->desktop, desktopicon);
+	}
+	else /* not handling it */
+		return FALSE;
+	return TRUE;
+}
+
 
 /* desktopicon_delete */
 void desktopicon_delete(DesktopIcon * desktopicon)
@@ -428,10 +457,28 @@ char const * desktopicon_get_path(DesktopIcon * desktopicon)
 }
 
 
+gboolean desktopicon_get_selected(DesktopIcon * desktopicon)
+{
+	return desktopicon->selected;
+}
+
+
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
 	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
 	_desktopicon_update_transparency(desktopicon, icon);
+}
+
+
+void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %p is %s\n", desktopicon, selected ? "selected"
+			: "deselected");
+#endif
+	desktopicon->selected = selected;
+	gtk_widget_set_state(desktopicon->event, selected
+			? GTK_STATE_SELECTED : GTK_STATE_NORMAL);
 }
 
 
@@ -819,6 +866,56 @@ static int _align_compare(const void * a, const void * b)
 	DesktopIcon * iconb = *(DesktopIcon**)b;
 
 	return strcmp(desktopicon_get_path(icona), desktopicon_get_path(iconb));
+}
+
+
+/* desktop_select_all */
+void desktop_select_all(Desktop * desktop)
+{
+	size_t i;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+		desktopicon_set_selected(desktop->icon[i], TRUE);
+}
+
+
+/* desktop_select_above */
+void desktop_select_above(Desktop * desktop, DesktopIcon * icon)
+	/* FIXME icons may be wrapped */
+{
+	size_t i;
+
+	for(i = 1; i < desktop->icon_cnt; i++)
+		if(desktop->icon[i] == icon)
+		{
+			desktopicon_set_selected(desktop->icon[i], TRUE);
+			return;
+		}
+}
+
+
+/* desktop_select_under */
+void desktop_select_under(Desktop * desktop, DesktopIcon * icon)
+	/* FIXME icons may be wrapped */
+{
+	size_t i;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+		if(desktop->icon[i] == icon && i + 1 < desktop->icon_cnt)
+		{
+			desktopicon_set_selected(desktop->icon[i], TRUE);
+			return;
+		}
+}
+
+
+/* desktop_unselect_all */
+void desktop_unselect_all(Desktop * desktop)
+{
+	size_t i;
+
+	for(i = 0; i < desktop->icon_cnt; i++)
+		desktopicon_set_selected(desktop->icon[i], FALSE);
 }
 
 
