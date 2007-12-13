@@ -703,6 +703,8 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 }
 
 /* _assistant_account_select */
+static void _account_add_label(GtkWidget * box, char const * text);
+
 static GtkWidget * _assistant_account_select(AccountData * ad)
 {
 	GtkWidget * vbox;
@@ -715,9 +717,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Account name:");
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, "Account name");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->title));
@@ -725,9 +725,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Your name:");
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, "Your name");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.from));
@@ -735,9 +733,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("e-mail address:");
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, "e-mail address");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.email));
@@ -745,9 +741,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Type of account:");
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, "Type of account");
 	widget = gtk_combo_box_new_text();
 	gtk_size_group_add_widget(group, widget);
 	/* XXX this works because there is no plug-in list reload
@@ -764,6 +758,17 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	return vbox;
 }
 
+static void _account_add_label(GtkWidget * box, char const * text)
+{
+	static char buf[80]; /* XXX hard-coded size */
+	GtkWidget * label;
+
+	snprintf(buf, sizeof(buf), "%s:", text);
+	label = gtk_label_new(buf);
+	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+}
+
 /* _assistant_account_config */
 static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_password(AccountConfig * config,
@@ -773,7 +778,6 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group);
 static GtkWidget * _update_boolean(AccountConfig * config);
 
 static GtkWidget * _assistant_account_config(AccountConfig * config)
-	/* FIXME append ":" to labels */
 {
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
@@ -818,9 +822,7 @@ static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_entry_new();
 	if(config->value != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), config->value);
@@ -838,9 +840,7 @@ static GtkWidget * _update_password(AccountConfig * config,
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(config->value != NULL)
@@ -858,9 +858,7 @@ static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_file_chooser_button_new("Choose file",
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(widget),
@@ -881,9 +879,7 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 	gdouble value = u16;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_spin_button_new_with_range(0, 65535, 1);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), value);
