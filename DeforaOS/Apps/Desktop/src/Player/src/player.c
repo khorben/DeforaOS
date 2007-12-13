@@ -332,6 +332,7 @@ static void gtk_widget_set_tooltip_text(GtkWidget * widget, const char * text);
 Player * player_new(void)
 {
 	Player * player;
+	GtkWidget * widget;
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
@@ -427,8 +428,9 @@ Player * player_new(void)
 	_player_set_progress(player, 0);
 	gtk_container_add(GTK_CONTAINER(toolitem), player->progress);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	player->tb_fullscreen = gtk_tool_button_new_from_stock(
-			GTK_STOCK_FULLSCREEN);
+	widget = gtk_image_new_from_icon_name("stock_fullscreen",
+			GTK_ICON_SIZE_SMALL_TOOLBAR);
+	player->tb_fullscreen = gtk_tool_button_new(widget, "Fullscreen");
 	g_signal_connect(player->tb_fullscreen, "clicked", G_CALLBACK(
 				on_fullscreen), player);
 	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_fullscreen),
