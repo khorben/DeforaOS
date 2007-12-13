@@ -433,6 +433,9 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 	Account * account;
 	gboolean active;
 	gboolean enabled;
+	char * title;
+	char * accounts = NULL;
+	size_t accounts_len = 0;
 	char const * p;
 	char * q;
 
@@ -441,11 +444,26 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 	view_model = gtk_tree_view_get_model(GTK_TREE_VIEW(
 				mailer->view_folders));
 	if(gtk_tree_model_get_iter_first(model, &iter) == FALSE)
-		return;
+		return; /* FIXME can no longer return here */
 	do
 	{
 		gtk_tree_model_get(model, &iter, AC_DATA, &account,
-				AC_ACTIVE, &active, AC_ENABLED, &enabled, -1);
+				AC_ACTIVE, &active, AC_ENABLED, &enabled,
+				AC_TITLE, &title, -1);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: title=\"%s\"\n", title);
+#endif
+		if((q = realloc(accounts, accounts_len + strlen(title) + 2))
+				!= NULL) /* FIXME catch error */
+		{
+			accounts = q;
+			sprintf(&accounts[accounts_len], "%s%s", accounts_len
+					? "," : "", title);
+			accounts_len += strlen(title) + (accounts_len ? 1 : 0);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: accounts=\"%s\"\n", accounts);
+#endif
+		}
 		account_config_save(account, mailer->config);
 		if(active)
 		{
@@ -460,6 +478,11 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 					AC_ACTIVE, TRUE, -1);
 	}
 	while(gtk_tree_model_iter_next(model, &iter) == TRUE);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: saved accounts \"%s\"\n", accounts);
+#endif
+	config_set(mailer->config, "", "accounts", accounts);
+	free(accounts);
 	p = gtk_font_button_get_font_name(GTK_FONT_BUTTON(
 				mailer->pr_messages_font));
 	config_set(mailer->config, "", "messages_font", p);

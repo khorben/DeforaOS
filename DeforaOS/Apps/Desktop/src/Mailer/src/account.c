@@ -187,6 +187,9 @@ int account_config_save(Account * account, Config * config)
 			case ACT_UINT16:
 				u16 = (uint16_t)p->value;
 				snprintf(buf, sizeof(buf), "%d", u16);
+				if(config_set(config, account->title, p->name,
+							buf) != 0)
+					return 1;
 				break;
 			case ACT_BOOLEAN: /* FIXME implement the rest */
 			case ACT_NONE:
