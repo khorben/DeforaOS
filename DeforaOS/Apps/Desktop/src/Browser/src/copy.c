@@ -386,14 +386,21 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 	char * to;
 	size_t len;
 	char * p;
+	char * q;
 
-	to = basename(src); /* XXX src is const */
+	if((p = strdup(src)) == NULL)
+		return 1;
+	to = basename(p);
 	len = strlen(src + strlen(to) + 2);
-	if((p = malloc(len * sizeof(char))) == NULL)
+	if((q = malloc(len * sizeof(char))) == NULL)
+	{
+		free(p);
 		return _copy_error(copy, src, 1);
-	sprintf(p, "%s/%s", dst, to);
-	ret = _copy_single(copy, src, p);
+	}
+	sprintf(q, "%s/%s", dst, to);
+	ret = _copy_single(copy, src, q);
 	free(p);
+	free(q);
 	return ret;
 }
 
