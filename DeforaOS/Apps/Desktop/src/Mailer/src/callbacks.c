@@ -116,16 +116,19 @@ void on_message_delete(GtkWidget * widget, gpointer data)
 /* edit menu */
 typedef enum _AccountColumn
 {
-	AC_DATA,
+	AC_DATA = 0,
 	AC_ACTIVE,
 	AC_ENABLED,
 	AC_TITLE,
 	AC_TYPE
 } AccountColumn;
 #define AC_LAST AC_TYPE
+#define AC_COUNT (AC_LAST + 1)
 static void _preferences_set(Mailer * mailer);
 static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+static void _on_preferences_account_toggle(GtkCellRendererToggle * renderer,
+		char * path, gpointer data);
 
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
@@ -140,6 +143,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	size_t i;
 	Account * ac;
 	GtkTreeIter iter;
+	GtkCellRenderer * renderer;
 
 	if(mailer->pr_window != NULL)
 	{
@@ -166,7 +170,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 			GTK_SHADOW_IN);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	store = gtk_list_store_new(AC_LAST + 1, G_TYPE_POINTER, G_TYPE_BOOLEAN,
+	store = gtk_list_store_new(AC_COUNT, G_TYPE_POINTER, G_TYPE_BOOLEAN,
 			G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING);
 	for(i = 0; i < mailer->account_cnt; i++)
 	{
@@ -180,18 +184,20 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 				store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(mailer->pr_accounts),
 			TRUE);
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
+				_on_preferences_account_toggle), store);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
 			gtk_tree_view_column_new_with_attributes("Enabled",
-				gtk_cell_renderer_toggle_new(), "active",
-				AC_ENABLED, NULL));
+				renderer, "active", AC_ENABLED, NULL));
+	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
 			gtk_tree_view_column_new_with_attributes("Name",
-				gtk_cell_renderer_text_new(), "text", AC_TITLE,
-				NULL));
+				renderer, "text", AC_TITLE, NULL));
+	renderer = gtk_cell_renderer_text_new();
 	gtk_tree_view_append_column(GTK_TREE_VIEW(mailer->pr_accounts),
 			gtk_tree_view_column_new_with_attributes("Type",
-				gtk_cell_renderer_text_new(), "text", AC_TYPE,
-				NULL));
+				renderer, "text", AC_TYPE, NULL));
 	gtk_container_add(GTK_CONTAINER(widget), mailer->pr_accounts);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	vbox3 = gtk_vbox_new(FALSE, 4);
@@ -267,6 +273,17 @@ static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 {
 	gtk_widget_hide(widget);
 	return TRUE;
+}
+
+static void _on_preferences_account_toggle(GtkCellRendererToggle * renderer,
+		char * path, gpointer data)
+{
+	GtkListStore * store = data;
+	GtkTreeIter iter;
+
+	gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(store), &iter, path);
+	gtk_list_store_set(store, &iter, AC_ENABLED, 
+			!gtk_cell_renderer_toggle_get_active(renderer), -1);
 }
 
 
