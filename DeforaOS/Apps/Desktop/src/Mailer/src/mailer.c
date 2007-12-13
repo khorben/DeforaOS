@@ -102,7 +102,6 @@ static struct _toolbar _mailer_toolbar[] =
 /* prototypes */
 static int _mailer_error(char const * message, int ret);
 static int _mailer_dlerror(char const * message, int ret);
-static char * _mailer_config_filename(void);
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 
 
@@ -118,20 +117,6 @@ static int _mailer_dlerror(char const * message, int ret)
 {
 	fprintf(stderr, "%s%s: %s\n", "Mailer: ", message, dlerror());
 	return ret;
-}
-
-static char * _mailer_config_filename(void)
-{
-	char * homedir;
-	char * filename;
-
-	if((homedir = getenv("HOME")) == NULL)
-		return NULL;
-	if((filename = malloc(strlen(homedir) + strlen(MAILER_CONFIG_FILE) + 2))
-			== NULL)
-		return NULL;
-	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
-	return filename;
 }
 
 static int _mailer_config_load_account(Mailer * mailer, char const * name)
@@ -427,7 +412,7 @@ static void _new_config_load(Mailer * mailer)
 
 	if((mailer->config = config_new()) == NULL)
 		return;
-	if((filename = _mailer_config_filename()) == NULL)
+	if((filename = mailer_get_config_filename(mailer)) == NULL)
 		return;
 	config_load(mailer->config, filename);
 	free(filename);
@@ -463,6 +448,24 @@ void mailer_delete(Mailer * mailer)
 		account_delete(mailer->account[i]);
 	free(mailer->account);
 	free(mailer);
+}
+
+
+/* accessors */
+/* mailer_get_config_filename */
+char * mailer_get_config_filename(Mailer * mailer)
+	/* FIXME consider replacing with mailer_save_config() */
+{
+	char * homedir;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		return NULL;
+	if((filename = malloc(strlen(homedir) + strlen(MAILER_CONFIG_FILE) + 2))
+			== NULL)
+		return NULL;
+	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
+	return filename;
 }
 
 

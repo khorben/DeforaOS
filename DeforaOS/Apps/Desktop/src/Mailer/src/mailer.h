@@ -38,6 +38,8 @@
 
 # define MAILER_CONFIG_FILE ".mailer"
 
+# define MAILER_MESSAGES_FONT "Monospace 8"
+
 /* types */
 enum
 {
@@ -81,12 +83,16 @@ typedef struct _Mailer
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_accounts;
+	GtkWidget * pr_messages_font;
 } Mailer;
 
 
 /* functions */
 Mailer * mailer_new(void);
 void mailer_delete(Mailer * mailer);
+
+/* accessors */
+char * mailer_get_config_filename(Mailer * mailer);
 
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);

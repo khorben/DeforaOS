@@ -126,6 +126,7 @@ typedef enum _AccountColumn
 static void _preferences_set(Mailer * mailer);
 static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
@@ -223,7 +224,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	widget = gtk_label_new("Messages font:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	widget = gtk_font_button_new();
+	mailer->pr_messages_font = gtk_font_button_new();
+	widget = mailer->pr_messages_font;
 	gtk_size_group_add_widget(group, widget);
 	gtk_font_button_set_use_font(GTK_FONT_BUTTON(widget), TRUE);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -252,7 +254,12 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 static void _preferences_set(Mailer * mailer)
 {
-	/* FIXME */
+	char * p;
+
+	if((p = config_get(mailer->config, "", "message_font")) == NULL)
+		p = MAILER_MESSAGES_FONT;
+	gtk_font_button_set_font_name(GTK_FONT_BUTTON(mailer->pr_messages_font),
+			p);
 }
 
 static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
@@ -266,6 +273,7 @@ static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 /* help menu */
 static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+
 void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
@@ -425,6 +433,8 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 	Account * account;
 	gboolean active;
 	gboolean enabled;
+	char const * p;
+	char * q;
 
 	gtk_widget_hide(mailer->pr_window);
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->pr_accounts));
@@ -444,14 +454,17 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 				gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 						AC_ACTIVE, FALSE, -1);
 		}
-		else if(enabled)
-		{
-			if(mailer_account_add(mailer, account) == 0)
-				gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-						AC_ACTIVE, TRUE, -1);
-		}
+		else if(enabled && mailer_account_add(mailer, account) == 0)
+			gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+					AC_ACTIVE, TRUE, -1);
 	}
 	while(gtk_tree_model_iter_next(model, &iter) == TRUE);
+	p = gtk_font_button_get_font_name(GTK_FONT_BUTTON(
+				mailer->pr_messages_font));
+	config_set(mailer->config, "", "messages_font", p);
+	q = mailer_get_config_filename(mailer);
+	config_save(mailer->config, q);
+	free(q);
 }
 
 
