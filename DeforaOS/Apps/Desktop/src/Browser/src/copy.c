@@ -389,7 +389,7 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 	char * q;
 
 	if((p = strdup(src)) == NULL)
-		return 1;
+		return _copy_error(copy, src, 1);
 	to = basename(p);
 	len = strlen(src + strlen(to) + 2);
 	if((q = malloc(len * sizeof(char))) == NULL)

@@ -389,14 +389,21 @@ static int _move_multiple(Move * move, char const * src, char const * dst)
 	char * to;
 	size_t len;
 	char * p;
+	char * q;
 
-	to = basename(src); /* XXX src is const */
-	len = strlen(src + strlen(to) + 2);
-	if((p = malloc(len * sizeof(char))) == NULL)
+	if((p = strdup(src)) == NULL)
 		return _move_error(move, src, 1);
-	sprintf(p, "%s/%s", dst, to);
-	ret = _move_single(move, src, p);
+	to = basename(p);
+	len = strlen(src + strlen(to) + 2);
+	if((q = malloc(len * sizeof(char))) == NULL)
+	{
+		free(p);
+		return _move_error(move, src, 1);
+	}
+	sprintf(q, "%s/%s", dst, to);
+	ret = _move_single(move, src, q);
 	free(p);
+	free(q);
 	return ret;
 }
 
