@@ -169,7 +169,7 @@ int account_config_save(Account * account, Config * config)
 	char buf[6];
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: account_config_load(%p)\n", config);
+	fprintf(stderr, "DEBUG: account_config_save(%p)\n", config);
 #endif
 	if(p == NULL)
 		return 0;
