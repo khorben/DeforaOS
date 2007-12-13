@@ -30,6 +30,7 @@
 /* Account */
 /* public */
 /* functions */
+/* account_new */
 Account * account_new(char const * type, char const * name)
 {
 	Account * account;
@@ -67,6 +68,7 @@ Account * account_new(char const * type, char const * name)
 }
 
 
+/* account_delete */
 void account_delete(Account * account)
 {
 	AccountConfig * p;
@@ -122,7 +124,7 @@ int account_set_title(Account * account, char const * title)
 /* account_config_load */
 int account_config_load(Account * account, Config * config)
 {
-	AccountConfig * p;
+	AccountConfig * p = account->plugin->config;
 	char * value;
 	char * q;
 	long l;
@@ -130,7 +132,9 @@ int account_config_load(Account * account, Config * config)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: account_config_load(%p)\n", config);
 #endif
-	for(p = account->plugin->config; p->name != NULL; p++)
+	if(p == NULL)
+		return 0;
+	for(; p->name != NULL; p++)
 	{
 		if((value = config_get(config, account->title, p->name))
 				== NULL)
@@ -148,8 +152,43 @@ int account_config_load(Account * account, Config * config)
 				if(value[0] != '\0' && *q == '\0')
 					p->value = (void*)l;
 				break;
-				/* FIXME implement the rest */
-			case ACT_BOOLEAN:
+			case ACT_BOOLEAN: /* FIXME implement the rest */
+			case ACT_NONE:
+				break;
+		}
+	}
+	return 0;
+}
+
+
+/* account_config_save */
+int account_config_save(Account * account, Config * config)
+{
+	AccountConfig * p = account->plugin->config;
+	uint16_t u16;
+	char buf[6];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: account_config_load(%p)\n", config);
+#endif
+	if(p == NULL)
+		return 0;
+	for(; p->name != NULL; p++)
+	{
+		switch(p->type)
+		{
+			case ACT_FILE:
+			case ACT_STRING:
+			case ACT_PASSWORD: /* FIXME scramble */
+				if(config_set(config, account->title, p->name,
+							p->value) != 0)
+					return 1;
+				break;
+			case ACT_UINT16:
+				u16 = (uint16_t)p->value;
+				snprintf(buf, sizeof(buf), "%d", u16);
+				break;
+			case ACT_BOOLEAN: /* FIXME implement the rest */
 			case ACT_NONE:
 				break;
 		}

@@ -446,6 +446,7 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 	{
 		gtk_tree_model_get(model, &iter, AC_DATA, &account,
 				AC_ACTIVE, &active, AC_ENABLED, &enabled, -1);
+		account_config_save(account, mailer->config);
 		if(active)
 		{
 			if(enabled)

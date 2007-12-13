@@ -105,6 +105,7 @@ int account_set_title(Account * account, char const * title);
 
 /* useful */
 int account_config_load(Account * account, Config * config);
+int account_config_save(Account * account, Config * config);
 int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent);
 int account_quit(Account * account);
 
