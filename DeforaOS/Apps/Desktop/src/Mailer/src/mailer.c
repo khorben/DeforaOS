@@ -268,7 +268,7 @@ static int _new_plugins(Mailer * mailer)
 						* (mailer->available_cnt + 1)))
 				== NULL)
 		{
-			_mailer_error("realloc", 0);
+			_mailer_error(filename, 0);
 			free(filename);
 			dlclose(handle);
 			continue;
@@ -279,7 +279,7 @@ static int _new_plugins(Mailer * mailer)
 		if(p[mailer->available_cnt].name == NULL
 				|| p[mailer->available_cnt].title == NULL)
 		{
-			_mailer_error("strdup", 0);
+			_mailer_error(filename, 0);
 			free(p[mailer->available_cnt].name);
 			free(p[mailer->available_cnt].title);
 		}
@@ -348,6 +348,7 @@ static GtkWidget * _new_headers_view(Mailer * mailer)
 
 static void _headers_view_column_text(GtkTreeView * view, char const * title,
 		int id)
+	/* FIXME ellipsize text */
 {
 	GtkTreeViewColumn * column;
 
