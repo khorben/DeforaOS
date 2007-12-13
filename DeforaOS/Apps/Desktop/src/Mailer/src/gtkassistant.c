@@ -44,6 +44,7 @@ typedef enum _GtkAssistantPageType
 /* functions */
 static GtkWidget * gtk_assistant_new(void);
 static gint gtk_assistant_get_current_page(GtkWidget * widget);
+static GtkWidget * gtk_assistant_get_nth_page(GtkWidget * widget, gint page);
 static void gtk_assistant_set_current_page(GtkWidget * widget, gint page);
 static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * page);
 static void gtk_assistant_set_page_type(GtkWidget * widget, GtkWidget * page,
@@ -166,6 +167,16 @@ static gint gtk_assistant_get_current_page(GtkWidget * widget)
 {
 	/* FIXME */
 	return -1;
+}
+
+
+static GtkWidget * gtk_assistant_get_nth_page(GtkWidget * widget, gint page)
+{
+	GtkAssistant * assistant = widget;
+
+	if(page < 0 || page >= assistant->page_cnt)
+		return NULL;
+	return assistant->page[page];
 }
 
 
