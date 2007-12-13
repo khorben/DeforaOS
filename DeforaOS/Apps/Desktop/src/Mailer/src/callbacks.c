@@ -538,6 +538,7 @@ typedef struct _AccountData
 	AccountIdentity identity;
 	unsigned int available;
 	Account * account;
+	GtkWidget * assistant;
 	GtkWidget * settings;
 	GtkWidget * confirm;
 } AccountData;
@@ -561,7 +562,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
 	AccountData * ad;
-	GtkWidget * assistant;
+	GtkAssistant * assistant;
 	GtkWidget * page;
 
 	if(mailer->available_cnt == 0)
@@ -575,47 +576,45 @@ void on_account_new(GtkWidget * widget, gpointer data)
 		return;
 	}
 	ad->mailer = mailer;
-	ad->title = NULL;
+	ad->title = strdup("");
 	memset(&(ad->identity), 0, sizeof(ad->identity));
 	ad->available = 0;
 	ad->account = NULL;
-	assistant = gtk_assistant_new();
-	g_signal_connect(G_OBJECT(assistant), "cancel", G_CALLBACK(
+	ad->assistant = gtk_assistant_new();
+	assistant = GTK_ASSISTANT(ad->assistant);
+	g_signal_connect(G_OBJECT(ad->assistant), "cancel", G_CALLBACK(
 				_on_assistant_cancel), ad);
-	g_signal_connect(G_OBJECT(assistant), "close", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ad->assistant), "close", G_CALLBACK(
 				_on_assistant_close), ad);
-	g_signal_connect(G_OBJECT(assistant), "apply", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ad->assistant), "apply", G_CALLBACK(
 				_on_assistant_apply), ad);
-	g_signal_connect(G_OBJECT(assistant), "prepare", G_CALLBACK(
+	g_signal_connect(G_OBJECT(ad->assistant), "prepare", G_CALLBACK(
 				_on_assistant_prepare), ad);
 	/* plug-in selection */
 	page = _assistant_account_select(ad);
-	gtk_assistant_append_page(GTK_ASSISTANT(assistant), page);
-	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), page,
-			title[0]);
-	gtk_assistant_set_page_type(GTK_ASSISTANT(assistant), page,
-			GTK_ASSISTANT_PAGE_INTRO);
-	gtk_assistant_set_page_complete(GTK_ASSISTANT(assistant), page, TRUE);
+	gtk_assistant_append_page(assistant, page);
+	gtk_assistant_set_page_title(assistant, page, title[0]);
+	gtk_assistant_set_page_type(assistant, page, GTK_ASSISTANT_PAGE_INTRO);
+	gtk_assistant_set_page_complete(assistant, page, FALSE);
 	/* plug-in preferences */
 	page = gtk_vbox_new(FALSE, 0);
 	ad->settings = page;
 	gtk_widget_show(page);
-	gtk_assistant_append_page(GTK_ASSISTANT(assistant), page);
-	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), page,
-			title[1]);
-	gtk_assistant_set_page_type(GTK_ASSISTANT(assistant), page,
+	gtk_assistant_append_page(assistant, page);
+	gtk_assistant_set_page_title(assistant, page, title[1]);
+	gtk_assistant_set_page_type(assistant, page,
 			GTK_ASSISTANT_PAGE_CONTENT);
-	gtk_assistant_set_page_complete(GTK_ASSISTANT(assistant), page, TRUE);
+	gtk_assistant_set_page_complete(assistant, page, TRUE);
 	/* confirmation page */
 	page = gtk_vbox_new(FALSE, 0);
 	ad->confirm = page;
 	gtk_widget_show(page);
-	gtk_assistant_append_page(GTK_ASSISTANT(assistant), page);
-	gtk_assistant_set_page_title(GTK_ASSISTANT(assistant), page, title[2]);
-	gtk_assistant_set_page_type(GTK_ASSISTANT(assistant), page,
+	gtk_assistant_append_page(assistant, page);
+	gtk_assistant_set_page_title(assistant, page, title[2]);
+	gtk_assistant_set_page_type(assistant, page,
 			GTK_ASSISTANT_PAGE_CONFIRM);
-	gtk_assistant_set_page_complete(GTK_ASSISTANT(assistant), page, TRUE);
-	gtk_widget_show(assistant);
+	gtk_assistant_set_page_complete(assistant, page, TRUE);
+	gtk_widget_show(ad->assistant);
 }
 
 
@@ -703,6 +702,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 }
 
 /* _assistant_account_select */
+static void _on_account_name_changed(GtkWidget * widget, gpointer data);
 static void _account_add_label(GtkWidget * box, char const * text);
 
 static GtkWidget * _assistant_account_select(AccountData * ad)
@@ -720,7 +720,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	_account_add_label(hbox, "Account name");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
-				_on_entry_changed), &(ad->title));
+				_on_account_name_changed), ad);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
@@ -758,6 +758,20 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	return vbox;
 }
 
+static void _on_account_name_changed(GtkWidget * widget, gpointer data)
+{
+	AccountData * ad = data;
+	int current;
+	GtkWidget * page;
+
+	_on_entry_changed(widget, &ad->title);
+	current = gtk_assistant_get_current_page(GTK_ASSISTANT(ad->assistant));
+	page = gtk_assistant_get_nth_page(GTK_ASSISTANT(ad->assistant),
+			current);
+	gtk_assistant_set_page_complete(GTK_ASSISTANT(ad->assistant), page,
+			strlen(ad->title) ? TRUE : FALSE);
+}
+
 static void _account_add_label(GtkWidget * box, char const * text)
 {
 	static char buf[80]; /* XXX hard-coded size */
@@ -782,7 +796,7 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
 	GtkWidget * widget;
-	unsigned int i;
+	size_t i;
 
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
@@ -852,6 +866,8 @@ static GtkWidget * _update_password(AccountConfig * config,
 	return hbox;
 }
 
+static void _on_file_activated(GtkWidget * widget, gpointer data);
+
 static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
@@ -863,10 +879,30 @@ static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(widget),
 			config->title);
-	/* FIXME implement signal handler */
+	g_signal_connect(G_OBJECT(widget), "file-set", G_CALLBACK(
+				_on_file_activated), &config->value);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
+}
+
+static void _on_file_activated(GtkWidget * widget, gpointer data)
+{
+	char * filename;
+	char ** value = data;
+	char * p;
+
+	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: on_file_activated(%s)\n", filename);
+#endif
+	if((p = realloc(*value, strlen(filename) + 1)) == NULL)
+	{
+		mailer_error(NULL, strerror(errno), 0);
+		return;
+	}
+	*value = p;
+	strcpy(p, filename);
 }
 
 static void _on_uint16_changed(GtkWidget * widget, gpointer data);
@@ -891,9 +927,12 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 
 static void _on_uint16_changed(GtkWidget * widget, gpointer data)
 {
-	uint16_t * value = data;
+	int * value = data;
 
 	*value = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: new value is %d\n", *value);
+#endif
 }
 
 static void _on_boolean_toggled(GtkWidget * widget, gpointer data);
@@ -926,7 +965,6 @@ static GtkWidget * _display_uint16(AccountConfig * config,
 static GtkWidget * _display_boolean(AccountConfig * config,
 		GtkSizeGroup * group);
 static GtkWidget * _account_display(Account * account)
-	/* FIXME append ":" to labels */
 {
 	AccountConfig * config = account->plugin->config;
 	AccountConfig p;
@@ -980,9 +1018,7 @@ static GtkWidget * _display_string(AccountConfig * config, GtkSizeGroup * group)
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_label_new(config->value);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -1002,9 +1038,7 @@ static GtkWidget * _display_password(AccountConfig * config,
 	PangoFontDescription * desc;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_label_new("hidden");
 	desc = pango_font_description_new();
 	pango_font_description_set_style(desc, PANGO_STYLE_ITALIC);
@@ -1023,10 +1057,8 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 	uint16_t u16 = (uint16_t)config->value;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	snprintf(buf, sizeof(buf), "%u", u16);
+	_account_add_label(hbox, config->title);
+	snprintf(buf, sizeof(buf), "%hu", u16);
 	widget = gtk_label_new(buf);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -1041,9 +1073,7 @@ static GtkWidget * _display_boolean(AccountConfig * config,
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new(config->title);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	_account_add_label(hbox, config->title);
 	widget = gtk_label_new(config->value != 0 ? "Yes" : "No");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);

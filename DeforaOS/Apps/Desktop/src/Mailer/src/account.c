@@ -31,21 +31,22 @@
 /* public */
 /* functions */
 /* account_new */
-Account * account_new(char const * type, char const * name)
+Account * account_new(char const * type, char const * title)
 {
 	Account * account;
 	char * filename;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: account_new(\"%s\", \"%s\")\n", type, name);
+	fprintf(stderr, "DEBUG: account_new(\"%s\", \"%s\")\n", type, title);
 #endif
-	if(type == NULL || name == NULL || strlen(name) == 0)
+	if(type == NULL || title == NULL || strlen(title) == 0)
 		return NULL;
 	if((account = calloc(1, sizeof(*account))) == NULL)
 		return NULL;
-	if((account->name = strdup(name)) == NULL
+	if((account->name = strdup(type)) == NULL
+			|| (account->title = strdup(title)) == NULL
 			|| (filename = malloc(strlen(PLUGINDIR ACCOUNT)
-					+ strlen(name) + 6)) == NULL)
+					+ strlen(title) + 6)) == NULL)
 	{
 		account_delete(account);
 		return NULL;
@@ -61,7 +62,6 @@ Account * account_new(char const * type, char const * name)
 		return NULL;
 	}
 	free(filename);
-	account->title = strdup(name);
 	account->enabled = 1;
 	account->identity = NULL;
 	return account;
@@ -171,6 +171,8 @@ int account_config_save(Account * account, Config * config)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: account_config_save(%p)\n", config);
 #endif
+	if(config_set(config, account->title, "type", account->name) != 0)
+		return 1;
 	if(p == NULL)
 		return 0;
 	for(; p->name != NULL; p++)
@@ -186,7 +188,7 @@ int account_config_save(Account * account, Config * config)
 				break;
 			case ACT_UINT16:
 				u16 = (uint16_t)p->value;
-				snprintf(buf, sizeof(buf), "%d", u16);
+				snprintf(buf, sizeof(buf), "%hu", u16);
 				if(config_set(config, account->title, p->name,
 							buf) != 0)
 					return 1;
