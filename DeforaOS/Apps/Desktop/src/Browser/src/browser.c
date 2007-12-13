@@ -810,7 +810,7 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 /* insert_all */
 static char const * _insert_size(off_t size);
 static char const * _insert_date(time_t date);
-static char const * _insert_mode(mode_t mode);
+static char const * _insert_mode(mode_t mode, dev_t parent, dev_t dev);
 static void _insert_dir(Browser * browser, GdkPixbuf ** icon_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96,
@@ -836,7 +836,7 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 	*pw = getpwuid(lst->st_uid);
 	*gr = getgrgid(lst->st_gid);
 	*ddate = _insert_date(lst->st_mtime);
-	*type = _insert_mode(lst->st_mode);
+	*type = _insert_mode(lst->st_mode, browser->refresh_dev, lst->st_dev);
 	if(S_ISDIR(st->st_mode))
 		_insert_dir(browser, icon_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -913,10 +913,14 @@ static char const * _insert_date(time_t date)
 	return buf;
 }
 
-static char const * _insert_mode(mode_t mode)
+static char const * _insert_mode(mode_t mode, dev_t parent, dev_t dev)
 {
 	if(S_ISDIR(mode))
+	{
+		if(parent != dev)
+			return "inode/mountpoint";
 		return "inode/directory";
+	}
 	else if(S_ISBLK(mode))
 		return "inode/blockdevice";
 	else if(S_ISCHR(mode))
