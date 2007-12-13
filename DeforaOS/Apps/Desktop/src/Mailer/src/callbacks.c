@@ -424,47 +424,58 @@ void on_header_change(GtkTreeSelection * selection, gpointer data)
 
 
 /* preferences window */
+/* on_preferences_ok */
+static int _preferences_ok_accounts(Mailer * mailer);
+static int _preferences_ok_display(Mailer * mailer);
+static int _preferences_ok_save(Mailer * mailer);
+
 void on_preferences_ok(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
+
+	gtk_widget_hide(mailer->pr_window);
+	if(_preferences_ok_accounts(mailer) != 0
+			|| _preferences_ok_display(mailer) != 0
+			|| _preferences_ok_save(mailer) != 0)
+		mailer_error(mailer, "An error occured while saving"
+				" preferences", 0);
+}
+
+static int _preferences_ok_accounts(Mailer * mailer)
+{
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 	GtkTreeModel * view_model;
+	gboolean loop;
 	Account * account;
 	gboolean active;
 	gboolean enabled;
 	char * title;
 	char * accounts = NULL;
 	size_t accounts_len = 0;
-	char const * p;
-	char * q;
+	char * p;
 
-	gtk_widget_hide(mailer->pr_window);
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(mailer->pr_accounts));
 	view_model = gtk_tree_view_get_model(GTK_TREE_VIEW(
 				mailer->view_folders));
-	if(gtk_tree_model_get_iter_first(model, &iter) == FALSE)
-		return; /* FIXME can no longer return here */
-	do
+	for(loop = gtk_tree_model_get_iter_first(model, &iter); loop == TRUE;
+			loop = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, AC_DATA, &account,
 				AC_ACTIVE, &active, AC_ENABLED, &enabled,
 				AC_TITLE, &title, -1);
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: title=\"%s\"\n", title);
-#endif
-		if((q = realloc(accounts, accounts_len + strlen(title) + 2))
-				!= NULL) /* FIXME catch error */
+		if(account_config_save(account, mailer->config) != 0)
+			return 1;
+		if((p = realloc(accounts, accounts_len + strlen(title) + 2))
+				== NULL)
 		{
-			accounts = q;
-			sprintf(&accounts[accounts_len], "%s%s", accounts_len
-					? "," : "", title);
-			accounts_len += strlen(title) + (accounts_len ? 1 : 0);
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: accounts=\"%s\"\n", accounts);
-#endif
+			free(accounts);
+			return 1;
 		}
-		account_config_save(account, mailer->config);
+		accounts = p;
+		sprintf(&accounts[accounts_len], "%s%s", accounts_len ? ","
+				: "", title);
+		accounts_len += strlen(title) + (accounts_len ? 1 : 0);
 		if(active)
 		{
 			if(enabled)
@@ -477,18 +488,34 @@ void on_preferences_ok(GtkWidget * widget, gpointer data)
 			gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 					AC_ACTIVE, TRUE, -1);
 	}
-	while(gtk_tree_model_iter_next(model, &iter) == TRUE);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: saved accounts \"%s\"\n", accounts);
 #endif
 	config_set(mailer->config, "", "accounts", accounts);
 	free(accounts);
+	return 0;
+}
+
+static int _preferences_ok_display(Mailer * mailer)
+{
+	char const * p;
+
 	p = gtk_font_button_get_font_name(GTK_FONT_BUTTON(
 				mailer->pr_messages_font));
 	config_set(mailer->config, "", "messages_font", p);
-	q = mailer_get_config_filename(mailer);
-	config_save(mailer->config, q);
-	free(q);
+	return 0;
+}
+
+static int _preferences_ok_save(Mailer * mailer)
+{
+	int ret;
+	char * p;
+
+	if((p = mailer_get_config_filename(mailer)) == NULL)
+		return 1;
+	ret = config_save(mailer->config, p);
+	free(p);
+	return ret;
 }
 
 
