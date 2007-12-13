@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#include <libgen.h>
 #include <gtk/gtk.h>
 #include "mime.h"
 
@@ -168,7 +169,8 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 			== NULL)
 		gfilename = filename;
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", gfilename);
+	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", basename(
+				gfilename));
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
