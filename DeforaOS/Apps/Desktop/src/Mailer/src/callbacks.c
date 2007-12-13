@@ -107,6 +107,12 @@ void on_message_forward(GtkWidget * widget, gpointer data)
 }
 
 
+void on_message_delete(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
 /* edit menu */
 typedef enum _AccountColumn
 {
