@@ -16,42 +16,47 @@
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
-$title = 'Users';
+global $lang;
+$text = array();
+$text['APPEARANCE'] = 'Appearance';
+$text['CONTENT'] = 'Content';
+$text['LOGIN'] = 'Login';
+$text['LOGOUT'] = 'Logout';
+$text['PROFILE'] = 'Profile';
+$text['USER'] = 'User';
+$text['USERS'] = 'Users';
+if($lang == 'de')
+{
+	$text['LOGIN'] = 'Einloggen';
+	$text['LOGOUT'] = 'Ausloggen';
+	$text['USER'] = 'Benutzer';
+	$text['USERS'] = 'Benutzer';
+}
+else if($lang == 'fr')
+{
+	$text['APPEARANCE'] = 'Apparence';
+	$text['CONTENT'] = 'Contenus';
+	$text['LOGIN'] = 'Authentification';
+	$text['LOGOUT'] = 'Déconnexion';
+	$text['PROFILE'] = 'Profil';
+	$text['USER'] = 'Utilisateur';
+	$text['USERS'] = 'Utilisateurs';
+}
+_lang($text);
+
+$title = USERS;
 $icon = 'users.png';
 $admin = 1;
 $list = 1;
 global $user_id;
 if($user_id != 0)
 {
-	$actions = array('appearance' => 'Appearance',
-			'display' => 'Content', 'admin' => 'Profile',
-			'logout' => 'Logout');
-	require_once('./system/user.php');
-	$title = 'User';
+	$actions = array('appearance' => APPEARANCE,
+			'display' => CONTENT, 'admin' => PROFILE,
+			'logout' => LOGOUT);
+	$title = USER;
 }
 else
-	$actions = array('login' => 'Login');
-
-global $lang;
-if($lang == 'de')
-{
-	$title = 'Benutzer';
-	if(isset($actions['login']))
-		$actions['login'] = 'Einloggen';
-	if(isset($actions['logout']))
-		$actions['logout'] = 'Ausloggen';
-}
-else if($lang == 'fr')
-{
-	$title = $user_id != 0 ? 'Utilisateur' : 'Utilisateurs';
-	if(isset($actions['admin']))
-		$actions['admin'] = 'Profil';
-	if(isset($actions['display']))
-		$actions['display'] = 'Contenus';
-	if(isset($actions['login']))
-		$actions['login'] = 'Authentification';
-	if(isset($actions['logout']))
-		$actions['logout'] = 'Déconnexion';
-}
+	$actions = array('login' => LOGIN);
 
 ?>
