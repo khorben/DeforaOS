@@ -231,6 +231,9 @@ function download_default($args)
 				 ? 'download_id='.$file['parent'] : ''));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'link' => 'javascript:history.forward()'); /* XXX */
+	$toolbar[] = array();
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
+			'link' => 'javascript:location.reload()'); /* XXX */
 	if(_user_admin($user_id))
 	{
 		$toolbar[] = array();
@@ -242,13 +245,9 @@ function download_default($args)
 				'class' => 'upload_file',
 				'link' => _module_link('download', 'file_new',
 					$file['id']));
-		$toolbar[] = array();
 		$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 				'action' => 'delete', 'confirm' => 'delete');
 	}
-	$toolbar[] = array();
-	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()'); /* XXX */
 	_module('explorer', 'browse', array('entries' => $dls,
 				'class' => array('username' => AUTHOR),
 				'toolbar' => $toolbar, 'view' => 'thumbnails',
