@@ -17,9 +17,9 @@ subdirs:
 	(cd System/src/libSystem && $(MAKE))
 	(cd Apps/Devel/src/configure && $(MAKE) \
 		CPPFLAGS="-I ../../../../../System/src/libSystem/include" \
-		LDFLAGS="../../../../../System/src/libSystem/src/libSystem.a")
+		LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a")
 
-bootstrap:
+bootstrap: all
 	(cd System/src/libSystem && $(MAKE) install)
 	$(MAKE) clean
 	./Apps/Devel/src/configure/src/configure -v
