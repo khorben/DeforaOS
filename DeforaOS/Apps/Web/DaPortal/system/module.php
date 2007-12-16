@@ -100,7 +100,6 @@ function _module_id($name)
 		return $cache[$name];
 	$cache[$name] = _sql_single('SELECT module_id FROM daportal_module'
 			." WHERE name='$name' AND enabled='1'");
-		return 0;
 	return $cache[$name];
 }
 
