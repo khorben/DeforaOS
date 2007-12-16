@@ -1164,11 +1164,18 @@ static void _account_edit(Mailer * mailer, Account * account)
 	widget = _assistant_account_config(account->plugin->config);
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	hbox = gtk_hbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_size_group_add_widget(group, widget);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	/* FIXME implement properly */
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				gtk_widget_destroy), window);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
