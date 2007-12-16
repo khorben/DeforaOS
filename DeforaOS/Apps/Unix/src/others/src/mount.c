@@ -17,7 +17,7 @@
 
 
 #include <sys/statvfs.h>
-#ifdef ST_WAIT /* NetBSD */
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 # include <sys/param.h>
 #endif
 #include <sys/mount.h>
