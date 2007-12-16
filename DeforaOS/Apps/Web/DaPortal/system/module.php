@@ -98,12 +98,10 @@ function _module_id($name)
 
 	if(isset($cache[$name]))
 		return $cache[$name];
-	require_once('./system/user.php');
-	if(($id = _sql_single('SELECT module_id FROM daportal_module'
-			." WHERE name='$name' AND enabled='1'")) == FALSE)
+	$cache[$name] = _sql_single('SELECT module_id FROM daportal_module'
+			." WHERE name='$name' AND enabled='1'");
 		return 0;
-	$cache[$name] = $id;
-	return $id;
+	return $cache[$name];
 }
 
 
