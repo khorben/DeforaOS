@@ -199,7 +199,7 @@ function content_update($args)
 			.", enabled='".$args['enabled']."'"
 			." WHERE content_id='".$args['id']."'") == FALSE)
 		_error('Unable to update content');
-	content_modify(array('id' => $args['id']));
+	content_admin(array());
 }
 
 ?>
