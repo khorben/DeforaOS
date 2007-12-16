@@ -50,6 +50,10 @@ div.icon.disabled {
 	background-image:		url('disabled.png');
 }
 
+div.icon.edit {
+	background-image:		url('edit.png');
+}
+
 div.icon.enabled {
 	background-image:		url('enabled.png');
 }
@@ -114,6 +118,10 @@ div.icon.parent_directory {
 
 div.icon.paste {
 	background-image:		url('paste.png');
+}
+
+div.icon.read {
+	background-image:		url('read.png');
 }
 
 div.icon.redo {
