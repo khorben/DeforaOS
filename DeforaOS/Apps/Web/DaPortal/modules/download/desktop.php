@@ -15,8 +15,12 @@
 //along with DaPortal; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+global $lang;
+$text = array();
+$text['DOWNLOADS'] = 'Downloads';
+_lang($text);
 
-$title = 'Downloads';
+$title = DOWNLOADS;
 $icon = 'download.png';
 $admin = 1;
 $list = 1;
