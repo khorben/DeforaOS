@@ -225,6 +225,7 @@ function user_default($args)
 	print('<h1 class="title home">'._html_safe($user['username'])
 			."'s page</h1>\n");
 	$modules = array();
+	require_once('./system/user.php');
 	if(_user_admin($user_id) && ($d = _module_desktop('admin')) != FALSE)
 		$modules[] = array('name' => $d['title'],
 				'thumbnail' => 'icons/48x48/admin.png',
@@ -594,7 +595,7 @@ function user_system($args)
 		if($_POST['action'] == 'login')
 			$error = _system_login($args);
 		else if($_POST['action'] == 'config_update')
-			$error = _system_config_update($args);
+			$error = _user_system_config_update($args);
 		else if($_POST['action'] == 'error')
 			$_POST['action'] = 'default';
 		else if($_POST['action'] == 'appearance')
@@ -623,6 +624,7 @@ function _system_appearance($args)
 	$views = array('details', 'list', 'thumbnails');
 	if(isset($args['view']) && in_array($args['view'], $views))
 		$_SESSION['view'] = $args['view'];
+	require_once('./system/user.php');
 	if(_user_admin($user_id))
 	{
 		unset($_SESSION['debug']);
@@ -632,7 +634,7 @@ function _system_appearance($args)
 	header('Location: '._module_link('user', 'appearance'));
 }
 
-function _system_config_update($args)
+function _user_system_config_update($args)
 {
 	global $user_id;
 
