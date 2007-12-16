@@ -1124,9 +1124,52 @@ static void _on_account_type_changed(GtkWidget * widget, gpointer data)
 #endif
 }
 
+
+/* on_account_edit */
+static void _account_edit(Mailer * mailer, Account * account);
+
 void on_account_edit(GtkWidget * widget, gpointer data)
 {
-	/* FIXME */
+	Mailer * mailer = data;
+	GtkTreeSelection * selection;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	Account * account;
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+				mailer->pr_accounts));
+	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+		return;
+	gtk_tree_model_get(model, &iter, AC_DATA, &account, -1);
+	_account_edit(mailer, account);
+}
+
+static void _account_edit(Mailer * mailer, Account * account)
+{
+	GtkWidget * window;
+	char buf[80];
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	snprintf(buf, sizeof(buf), "%s%s", "Edit account: ", account_get_title(
+				account));
+	gtk_window_set_title(GTK_WINDOW(window), buf);
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				mailer->window));
+	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
+	vbox = gtk_vbox_new(FALSE, 4);
+	hbox = gtk_hbox_new(TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				gtk_widget_destroy), window);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_widget_show_all(window);
 }
 
 
@@ -1145,7 +1188,7 @@ void on_account_delete(GtkWidget * widget, gpointer data)
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_path_free(path);
 	gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
-	/* FIXME non-interface code */
+	/* FIXME non-interface code (flag account as deleted and on ok apply) */
 }
 
 

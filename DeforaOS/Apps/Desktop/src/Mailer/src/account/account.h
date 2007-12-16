@@ -101,6 +101,7 @@ void account_delete(Account * account);
 
 /* accessors */
 GtkListStore * account_get_store(Account * account, AccountFolder * folder);
+char const * account_get_title(Account * account);
 int account_set_title(Account * account, char const * title);
 
 /* useful */

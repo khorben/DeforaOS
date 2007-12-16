@@ -110,6 +110,13 @@ GtkListStore * account_get_store(Account * account, AccountFolder * folder)
 }
 
 
+/* account_get_title */
+char const * account_get_title(Account * account)
+{
+	return account->title;
+}
+
+
 /* account_set_title */
 int account_set_title(Account * account, char const * title)
 {
