@@ -33,7 +33,7 @@ static int _halt(void)
 #elif defined(RB_HALT_SYSTEM) /* Linux */
 	if(reboot(RB_HALT_SYSTEM) != 0)
 #elif defined(RB_POWEROFF) /* FreeBSD */
-	if(reboot(RB_HALT, NULL) != 0)
+	if(reboot(RB_HALT) != 0)
 #elif defined(RB_HALT) /* NetBSD */
 	if(reboot(RB_HALT, NULL) != 0)
 #else
