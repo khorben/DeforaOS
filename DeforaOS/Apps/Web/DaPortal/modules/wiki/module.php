@@ -111,8 +111,8 @@ function _root()
 
 function _validate($content)
 {
-	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
-			$content);
+	$content = str_replace(array('<br>', '<hr>', '&nbsp;'),
+			array('<br/>', '<hr/>', '&amp;nbsp;'), $content);
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
@@ -437,7 +437,7 @@ function _system_update($args)
 	$id = $wiki['id'];
 	$title = $wiki['title'];
 	$content = stripslashes($args['content']);
-	if(_validate($content) == FALSE)
+	if(!_validate($content))
 	{
 		$error = DOCUMENT_NOT_VALID;
 		return;
