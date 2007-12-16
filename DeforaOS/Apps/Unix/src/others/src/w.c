@@ -21,8 +21,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
-#include <utmpx.h>
 #include <stdio.h>
+
+#include "utmpx.c"
 
 
 /* w */
@@ -55,7 +56,7 @@ static int _w(void)
 
 static int _w_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "w: ");
+	fputs("w: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -85,6 +86,8 @@ static int _print_what(pid_t pid)
 	FILE * fp;
 	int len;
 
+	if(pid < 0)
+		return putchar('\n');
 	if(snprintf(proc, sizeof(proc), "%s%d%s", "/proc/", pid, "/cmdline")
 			> (int)sizeof(proc))
 		return printf(" %d\n", pid);

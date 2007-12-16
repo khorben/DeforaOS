@@ -34,6 +34,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/w.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/tar.h \
+		$(PACKAGE)-$(VERSION)/src/utmpx.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \

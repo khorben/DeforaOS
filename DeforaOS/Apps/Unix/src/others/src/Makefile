@@ -106,10 +106,10 @@ tar.o: tar.c tar.h
 umount.o: umount.c
 	$(CC) $(umount_CFLAGS) -c umount.c
 
-uptime.o: uptime.c
+uptime.o: uptime.c utmpx.c
 	$(CC) $(uptime_CFLAGS) -c uptime.c
 
-w.o: w.c
+w.o: w.c utmpx.c
 	$(CC) $(w_CFLAGS) -c w.c
 
 clean:
