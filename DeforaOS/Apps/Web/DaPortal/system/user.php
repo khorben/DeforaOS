@@ -54,8 +54,7 @@ function _user_name($id)
 	if(array_key_exists($id, $cache))
 		return $cache[$id];
 	if(($username = _sql_single('SELECT username FROM daportal_user'
-			." WHERE user_id='".addslashes($id)."'"))
-			== FALSE)
+			." WHERE user_id='".addslashes($id)."'")) == FALSE)
 		return FALSE;
 	$cache[$id] = $username;
 	return $username;
