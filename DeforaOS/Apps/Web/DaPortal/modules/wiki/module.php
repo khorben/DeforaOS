@@ -491,7 +491,7 @@ function _system_update($args)
 
 function _update_data($parser, $data)
 {
-	$_SESSION['wiki_content'].="\n".$data;
+	$_SESSION['wiki_content'].="\n".addslashes($data);
 }
 
 
