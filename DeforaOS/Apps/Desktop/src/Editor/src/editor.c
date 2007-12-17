@@ -2,17 +2,19 @@
 static char const _copyright[] =
 "Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
-/* Editor is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License version 2 as published by the Free
- * Software Foundation.
- *
- * Editor is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Editor; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA  02111-1307  USA */
+static char const _license[] =
+"Editor is free software; you can redistribute it and/or modify it under the\n"
+"terms of the GNU General Public License version 2 as published by the Free\n"
+"Software Foundation.\n"
+"\n"
+"Editor is distributed in the hope that it will be useful, but WITHOUT ANY\n"
+"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
+"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more\n"
+"details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License along with\n"
+"Editor; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
+"Place, Suite 330, Boston, MA  02111-1307  USA\n";
 
 
 
@@ -45,8 +47,6 @@ static char const * _authors[] =
 	NULL
 };
 
-static char const _license[] = "GPLv2";
-
 /* FIXME callbacks should be in a separate file */
 static void _on_close(GtkWidget * widget, gpointer data);
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
@@ -75,9 +75,12 @@ struct _menu _menu_file[] =
 
 struct _menu _menu_edit[] =
 {
-	{ "_Cut", NULL, GTK_STOCK_CUT },
-	{ "_Copy", NULL, GTK_STOCK_COPY },
-	{ "_Paste", NULL, GTK_STOCK_PASTE },
+	{ "_Undo", NULL, GTK_STOCK_UNDO }, /* FIXME implement */
+	{ "_Redo", NULL, GTK_STOCK_REDO }, /* FIXME implement */
+	{ "", NULL, NULL },
+	{ "_Cut", NULL, GTK_STOCK_CUT }, /* FIXME implement */
+	{ "_Copy", NULL, GTK_STOCK_COPY }, /* FIXME implement */
+	{ "_Paste", NULL, GTK_STOCK_PASTE }, /* FIXME implement */
 	{ "", NULL, NULL },
 	{ "_Preferences", G_CALLBACK(_on_edit_preferences),
 		GTK_STOCK_PREFERENCES },
