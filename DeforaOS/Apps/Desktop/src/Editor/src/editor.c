@@ -1,5 +1,6 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
 /* Editor is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -40,7 +41,7 @@ struct _menubar
 /* constants */
 static char const * _authors[] =
 {
-	"Pierre 'khorben' Pronchery",
+	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
 
@@ -373,7 +374,6 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
 	static GtkWidget * window = NULL;
-	char const copyright[] = "Copyright (c) 2006 khorben";
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
@@ -397,7 +397,7 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
@@ -428,7 +428,7 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	vbox = gtk_vbox_new(FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
 			FALSE, FALSE, 2); 
-	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(copyright), FALSE,
+	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
 	button = gtk_button_new_with_mnemonic("C_redits");
