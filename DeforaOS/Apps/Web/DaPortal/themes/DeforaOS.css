@@ -83,7 +83,7 @@ button, input {
 	border-top:			1px solid #b0b0b0;
 }
 
-input[type="password"], input[type="text"], select, textarea {
+iframe, input[type="password"], input[type="text"], select, textarea {
 	border:				1px solid #636363;
 	border-bottom:			1px solid #b0b0b0;
 	border-right:			1px solid #b0b0b0;
