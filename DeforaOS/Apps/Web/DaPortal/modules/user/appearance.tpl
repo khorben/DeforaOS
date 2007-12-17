@@ -2,7 +2,8 @@
 	<input type="hidden" name="module" value="user"/>
 	<input type="hidden" name="action" value="appearance"/>
 	<table>
-	<?php global $debug, $user_id; if(_user_admin($user_id)) { ?>
+<?php global $debug, $user_id;
+require_once('./system/user.php'); if(_user_admin($user_id)) { ?>
 		<tr>
 			<td class="field">Debug:</td>
 			<td><input type="checkbox" name="debug"<?php if($debug == 1) { ?> checked="checked"<?php } ?>/></td>
