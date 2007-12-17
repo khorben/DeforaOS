@@ -47,8 +47,8 @@ static struct _menu _menu_file[] =
 
 static struct _menu _menu_edit[] =
 {
-	{ "_Undo", G_CALLBACK(on_compose_edit_undo), "stock_undo", GDK_Z },
-	{ "_Redo", G_CALLBACK(on_compose_edit_redo), "stock_redo", GDK_Y },
+	{ "_Undo", G_CALLBACK(on_compose_edit_undo), GTK_STOCK_UNDO, GDK_Z },
+	{ "_Redo", G_CALLBACK(on_compose_edit_redo), GTK_STOCK_REDO, GDK_Y },
 	{ "", NULL, NULL, 0 },
 	{ "_Cut", G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT, GDK_X },
 	{ "_Copy", G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY, GDK_C },

@@ -15,6 +15,7 @@
 
 
 
+#include <string.h>
 #include "common.h"
 
 
@@ -46,6 +47,9 @@ GtkWidget * common_new_menubar(GtkWindow * window, struct _menubar * mb,
 			else if(p->stock == NULL)
 				menuitem = gtk_menu_item_new_with_mnemonic(
 						p->name);
+			else if(strncmp(p->stock, "gtk-", 4) == 0)
+				menuitem = gtk_image_menu_item_new_from_stock(
+						p->stock, NULL);
 			else
 			{
 				image = gtk_image_new_from_icon_name(p->stock,
