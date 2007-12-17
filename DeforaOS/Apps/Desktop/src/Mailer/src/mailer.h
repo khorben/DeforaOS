@@ -43,7 +43,8 @@
 /* types */
 enum
 {
-	MF_COL_ACCOUNT = 0, MF_COL_FOLDER, MF_COL_ICON, MF_COL_NAME
+	MF_COL_ACCOUNT = 0, MF_COL_ENABLED, MF_COL_DELETE, MF_COL_FOLDER,
+	MF_COL_ICON, MF_COL_NAME
 };
 # define MF_COL_LAST MF_COL_NAME
 # define MF_COL_COUNT (MF_COL_LAST + 1)
@@ -92,14 +93,17 @@ Mailer * mailer_new(void);
 void mailer_delete(Mailer * mailer);
 
 /* accessors */
+char const * mailer_get_config(Mailer * mailer, char const * variable);
 char * mailer_get_config_filename(Mailer * mailer);
 
 /* useful */
 int mailer_error(Mailer * mailer, char const * message, int ret);
 
 int mailer_account_add(Mailer * mailer, Account * account);
+#if 0 /* FIXME deprecate? */
 int mailer_account_disable(Mailer * mailer, Account * account);
 int mailer_account_enable(Mailer * mailer, Account * account);
+#endif
 /* FIXME implement
 int mailer_account_remove(Mailer * mailer, Account * account); */
 

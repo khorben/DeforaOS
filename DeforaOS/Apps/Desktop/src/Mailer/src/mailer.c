@@ -309,8 +309,9 @@ static GtkWidget * _new_folders_view(Mailer * mailer)
 	GtkCellRenderer * renderer;
 	GtkTreeSelection * treesel;
 
-	model = gtk_tree_store_new(MF_COL_COUNT, G_TYPE_POINTER, G_TYPE_POINTER,
-			GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	model = gtk_tree_store_new(MF_COL_COUNT, G_TYPE_POINTER, G_TYPE_BOOLEAN,
+			G_TYPE_BOOLEAN, G_TYPE_POINTER, GDK_TYPE_PIXBUF,
+			G_TYPE_STRING);
 	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(model));
 	g_object_unref(model);
 	renderer = gtk_cell_renderer_pixbuf_new();
@@ -453,16 +454,23 @@ void mailer_delete(Mailer * mailer)
 
 
 /* accessors */
+/* mailer_get_config */
+char const * mailer_get_config(Mailer * mailer, char const * variable)
+{
+	return config_get(mailer->config, "", variable);
+}
+
+
 /* mailer_get_config_filename */
 char * mailer_get_config_filename(Mailer * mailer)
 	/* FIXME consider replacing with mailer_save_config() */
 {
-	char * homedir;
+	char const * homedir;
 	char * filename;
 
 	if((homedir = getenv("HOME")) == NULL)
 		return NULL;
-	if((filename = malloc(strlen(homedir) + strlen(MAILER_CONFIG_FILE) + 2))
+	if((filename = malloc(strlen(homedir) + sizeof(MAILER_CONFIG_FILE) + 1))
 			== NULL)
 		return NULL;
 	sprintf(filename, "%s/%s", homedir, MAILER_CONFIG_FILE);
@@ -502,8 +510,8 @@ int mailer_account_add(Mailer * mailer, Account * account)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: mailer_account_add(%p)\n", account);
 #endif
-	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt + 1)))
-			== NULL)
+	if((p = realloc(mailer->account, sizeof(*p) * (mailer->account_cnt
+						+ 1))) == NULL)
 		return mailer_error(mailer, "realloc", FALSE);
 	mailer->account = p;
 	mailer->account[mailer->account_cnt] = account;
@@ -513,14 +521,16 @@ int mailer_account_add(Mailer * mailer, Account * account)
 	pixbuf = gtk_icon_theme_load_icon(theme, "stock_mail-accounts", 16, 0,
 			NULL);
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, MF_COL_ACCOUNT,
-			account, MF_COL_FOLDER, NULL, MF_COL_ICON, pixbuf,
-			MF_COL_NAME, account->title, -1);
+			account, MF_COL_ENABLED, account_get_enabled(account),
+			MF_COL_DELETE, FALSE, MF_COL_FOLDER, NULL, MF_COL_ICON,
+			pixbuf, MF_COL_NAME, account->title, -1);
 	account_init(account, GTK_TREE_STORE(model), &iter);
 	mailer->account_cnt++;
 	return FALSE;
 }
 
 
+#if 0 /* FIXME deprecate? */
 /* mailer_account_disable */
 int mailer_account_disable(Mailer * mailer, Account * account)
 {
@@ -531,7 +541,8 @@ int mailer_account_disable(Mailer * mailer, Account * account)
 			break;
 	if(i == mailer->account_cnt)
 		return 1;
-	return account_disable(account);
+	account_set_enabled(account, 0);
+	return 0;
 }
 
 
@@ -545,5 +556,7 @@ int mailer_account_enable(Mailer * mailer, Account * account)
 			break;
 	if(i == mailer->account_cnt)
 		return 1;
-	return account_enable(account);
+	account_set_enabled(account, 1);
+	return 0;
 }
+#endif

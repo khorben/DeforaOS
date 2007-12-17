@@ -28,14 +28,31 @@
 #include "compose.h"
 
 
+/* private */
 /* constants */
 static struct _menu _menu_file[] =
 {
-	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send", 0 },
+	{ "_New message", G_CALLBACK(on_compose_file_new), "stock_mail-compose",
+		GDK_N },
 	{ "", NULL, NULL, 0 },
 	{ "_Save", G_CALLBACK(on_compose_file_save), GTK_STOCK_SAVE, GDK_S },
+	{ "Save _as...", G_CALLBACK(on_compose_file_save_as), GTK_STOCK_SAVE_AS,
+		0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Send", G_CALLBACK(on_compose_file_send), "stock_mail-send", 0 },
 	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(on_compose_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ NULL, NULL, NULL, 0 }
+};
+
+static struct _menu _menu_edit[] =
+{
+	{ "_Undo", G_CALLBACK(on_compose_edit_undo), "stock_undo", GDK_Z },
+	{ "_Redo", G_CALLBACK(on_compose_edit_redo), "stock_redo", GDK_Y },
+	{ "", NULL, NULL, 0 },
+	{ "_Cut", G_CALLBACK(on_compose_edit_cut), GTK_STOCK_CUT, GDK_X },
+	{ "_Copy", G_CALLBACK(on_compose_edit_copy), GTK_STOCK_COPY, GDK_C },
+	{ "_Paste", G_CALLBACK(on_compose_edit_paste), GTK_STOCK_PASTE, GDK_P },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -60,6 +77,7 @@ static struct _menu _menu_help[] =
 static struct _menubar _compose_menubar[] =
 {
 	{ "_File", _menu_file },
+	{ "_Edit", _menu_edit },
 	{ "_View", _menu_view },
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
@@ -70,11 +88,16 @@ static struct _toolbar _compose_toolbar[] =
 	{ "Send", G_CALLBACK(on_compose_send), "stock_mail-send" },
 	{ "", NULL, NULL },
 	{ "Save", G_CALLBACK(on_compose_save), GTK_STOCK_SAVE },
+	{ "", NULL, NULL },
+	{ "Attach", G_CALLBACK(on_compose_attach), "stock_attach" },
 	{ NULL, NULL, NULL }
 };
 
 
+/* public */
 /* compose_new */
+static GtkWidget * _new_text_view(Mailer * mailer);
+
 Compose * compose_new(Mailer * mailer)
 {
 	Compose * compose;
@@ -83,7 +106,6 @@ Compose * compose_new(Mailer * mailer)
 	GtkToolItem * toolitem;
 	GtkSizeGroup * group;
 	GtkWidget * widget;
-	PangoFontDescription * desc;
 
 	if((compose = malloc(sizeof(*compose))) == NULL)
 	{
@@ -169,11 +191,8 @@ Compose * compose_new(Mailer * mailer)
 	gtk_container_add(GTK_CONTAINER(toolitem), compose->subject);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
-	compose->view = gtk_text_view_new();
-	desc = pango_font_description_new();
-	pango_font_description_set_family(desc, "monospace");
-	gtk_widget_modify_font(compose->view, desc);
-	pango_font_description_free(desc);
+	/* view */
+	compose->view = _new_text_view(mailer);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
 			GTK_SHADOW_ETCHED_IN);
@@ -192,12 +211,55 @@ Compose * compose_new(Mailer * mailer)
 	return compose;
 }
 
+static GtkWidget * _new_text_view(Mailer * mailer)
+{
+	GtkWidget * textview;
+	PangoFontDescription * desc;
+	char const * homedir;
+	char * filename;
+	gchar * buf;
+	size_t cnt;
+	GtkTextBuffer * buffer;
+	static char const signature[] = "/.signature";
+	static char const prefix[] = "\n-- \n";
+
+	textview = gtk_text_view_new();
+	/* font */
+	desc = pango_font_description_from_string(mailer_get_config(mailer,
+				"messages_font"));
+	gtk_widget_modify_font(textview, desc);
+	pango_font_description_free(desc);
+	/* signature */
+	if((homedir = getenv("HOME")) == NULL)
+		return textview;
+	if((filename = malloc(strlen(homedir) + sizeof(signature))) == NULL)
+		return textview;
+	sprintf(filename, "%s%s", homedir, signature);
+	if(g_file_get_contents(filename, &buf, &cnt, NULL) != TRUE)
+	{
+		free(filename);
+		return textview;
+	}
+	free(filename);
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
+	gtk_text_buffer_set_text(buffer, prefix, sizeof(prefix) - 1);
+	gtk_text_buffer_insert_at_cursor(buffer, buf, cnt);
+	return textview;
+}
+
 
 /* compose_delete */
 void compose_delete(Compose * compose)
 {
 	gtk_widget_hide(compose->window);
 	free(compose);
+}
+
+
+/* accessors */
+Mailer * compose_get_mailer(Compose * compose)
+{
+	return compose->mailer;
 }
 
 

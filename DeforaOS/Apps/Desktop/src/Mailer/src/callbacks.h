@@ -73,11 +73,21 @@ void on_account_delete(GtkWidget * widget, gpointer data);
 gboolean on_compose_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 void on_compose_save(GtkWidget * widget, gpointer data);
 void on_compose_send(GtkWidget * widget, gpointer data);
+void on_compose_attach(GtkWidget * widget, gpointer data);
 
 /* file menu */
-void on_compose_file_send(GtkWidget * widget, gpointer data);
+void on_compose_file_new(GtkWidget * widget, gpointer data);
 void on_compose_file_save(GtkWidget * widget, gpointer data);
+void on_compose_file_save_as(GtkWidget * widget, gpointer data);
+void on_compose_file_send(GtkWidget * widget, gpointer data);
 void on_compose_file_close(GtkWidget * widget, gpointer data);
+
+/* edit menu */
+void on_compose_edit_undo(GtkWidget * widget, gpointer data);
+void on_compose_edit_redo(GtkWidget * widget, gpointer data);
+void on_compose_edit_cut(GtkWidget * widget, gpointer data);
+void on_compose_edit_copy(GtkWidget * widget, gpointer data);
+void on_compose_edit_paste(GtkWidget * widget, gpointer data);
 
 /* view menu */
 void on_compose_view_cc(GtkWidget * widget, gpointer data);

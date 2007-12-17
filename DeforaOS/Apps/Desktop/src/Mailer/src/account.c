@@ -100,6 +100,20 @@ void account_delete(Account * account)
 
 
 /* accessors */
+/* account_get_enabled */
+int account_get_enabled(Account * account)
+{
+	return account->enabled;
+}
+
+
+/* account_set_disabled */
+void account_set_enabled(Account * account, int enabled)
+{
+	account->enabled = enabled ? 1 : 0;
+}
+
+
 /* account_get_store */
 GtkListStore * account_get_store(Account * account, AccountFolder * folder)
 {
@@ -219,20 +233,4 @@ int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 	if(account->plugin->init == NULL)
 		return 0;
 	return account->plugin->init(store, parent);
-}
-
-
-/* account_disable */
-int account_disable(Account * account)
-{
-	account->enabled = 0;
-	return 0;
-}
-
-
-/* account_enable */
-int account_enable(Account * account)
-{
-	account->enabled = 1;
-	return 0;
 }

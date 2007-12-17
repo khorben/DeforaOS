@@ -55,6 +55,9 @@ typedef struct _Compose
 Compose * compose_new(Mailer * mailer);
 void compose_delete(Compose * compose);
 
+/* accessors */
+Mailer * compose_get_mailer(Compose * compose); /* XXX ugly */
+
 /* useful */
 void compose_save(Compose * compose);
 void compose_send(Compose * compose);

@@ -262,7 +262,7 @@ static void _preferences_set(Mailer * mailer)
 {
 	char * p;
 
-	if((p = config_get(mailer->config, "", "message_font")) == NULL)
+	if((p = mailer_get_config(mailer, "messages_font")) == NULL)
 		p = MAILER_MESSAGES_FONT;
 	gtk_font_button_set_font_name(GTK_FONT_BUTTON(mailer->pr_messages_font),
 			p);
@@ -497,9 +497,11 @@ static int _preferences_ok_accounts(Mailer * mailer)
 		{
 			if(enabled)
 				continue;
+#if 0 /* FIXME API+behaviour change here */
 			if(mailer_account_disable(mailer, account) == 0)
 				gtk_list_store_set(GTK_LIST_STORE(model), &iter,
 						AC_ACTIVE, FALSE, -1);
+#endif
 		}
 		else if(enabled && mailer_account_add(mailer, account) == 0)
 			gtk_list_store_set(GTK_LIST_STORE(model), &iter,
@@ -1232,14 +1234,36 @@ void on_compose_send(GtkWidget * widget, gpointer data)
 }
 
 
-/* compose file menu */
-void on_compose_file_send(GtkWidget * widget, gpointer data)
+void on_compose_attach(GtkWidget * widget, gpointer data)
 {
 	/* FIXME implement */
 }
 
 
+/* compose file menu */
+void on_compose_file_new(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	compose_new(c->mailer);
+}
+
+
+void on_compose_file_send(GtkWidget * widget, gpointer data)
+{
+	Compose * c = data;
+
+	compose_send(c);
+}
+
+
 void on_compose_file_save(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_compose_file_save_as(GtkWidget * widget, gpointer data)
 {
 	/* FIXME implement */
 }
@@ -1250,6 +1274,37 @@ void on_compose_file_close(GtkWidget * widget, gpointer data)
 	Compose * c = data;
 
 	compose_delete(c);
+}
+
+
+/* compose_edit_menu */
+void on_compose_edit_undo(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_compose_edit_redo(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_compose_edit_cut(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_compose_edit_copy(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+void on_compose_edit_paste(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
 }
 
 
