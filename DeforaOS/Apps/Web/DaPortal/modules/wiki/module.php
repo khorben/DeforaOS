@@ -116,9 +116,29 @@ function _validate($content)
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
+	if(xml_set_element_handler($parser, '_validate_element',
+				'_validate_element') != TRUE)
+	{
+		xml_parser_free($parser);
+		return FALSE;
+	}
+	$_SESSION['wiki_script'] = 0;
 	$ret = xml_parse($parser, $content);
 	xml_parser_free($parser);
+	if($_SESSION['wiki_script'] != 0)
+	{
+		unset($_SESSION['wiki_script']);
+		return FALSE;
+	}
+	unset($_SESSION['wiki_script']);
 	return $ret == 1 ? TRUE : FALSE;
+}
+
+function _validate_element($parser, $name, $attribs = FALSE)
+{
+	_info($name);
+	if(strcasecmp($name, 'script') == 0)
+		$_SESSION['wiki_script'] = 1;
 }
 
 
@@ -476,6 +496,7 @@ function _system_update($args)
 	//insert plain text into database
 	//FIXME factorize code and validation
 	$_SESSION['wiki_content'] = '';
+	$_SESSION['wiki_script'] = 0;
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
