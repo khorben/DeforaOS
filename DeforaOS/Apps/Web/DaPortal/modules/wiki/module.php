@@ -169,6 +169,8 @@ function wiki_admin($args)
 		return _error('Could not list wiki pages');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
+		$res[$i]['icon'] = 'icons/16x16/wiki.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/wiki.png';
 		$res[$i]['module'] = 'wiki';
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = $res[$i]['title'];
@@ -327,7 +329,7 @@ function wiki_new($args)
 
 function wiki_system($args)
 {
-	global $title;
+	global $title, $error;
 
 	$title.=' - '.WIKI;
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
@@ -335,15 +337,18 @@ function wiki_system($args)
 	switch($args['action'])
 	{
 		case 'config_update':
-			return _system_config_update($args);
+			$error = _wiki_system_config_update($args);
+			break;
 		case 'insert':
-			return _system_insert($args);
+			$error = _wiki_system_insert($args);
+			break;
 		case 'update':
-			return _system_update($args);
+			$error = _wiki_system_update($args);
+			break;
 	}
 }
 
-function _system_config_update($args)
+function _wiki_system_config_update($args)
 {
 	global $user_id;
 
@@ -355,140 +360,99 @@ function _system_config_update($args)
 	exit(0);
 }
 
-function _system_insert($args)
+function _wiki_system_insert($args)
 {
-	global $error, $user_id, $user_name;
+	global $user_id, $user_name;
 
 	if($user_id == 0)
-	{
-		$error = PERMISSION_DENIED;
-		return;
-	}
+		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
 	if(($root = _root()) == FALSE)
-	{
-		$error = 'Internal server error';
-		return;
-	}
+		return 'Internal server error';
 	$title = stripslashes($args['title']);
 	if(strlen($title) == 0 || strpos('/', $title) != FALSE
 			|| $title == 'RCS')
-	{
-		$error = INVALID_ARGUMENT;
-		return;
-	}
+		return INVALID_ARGUMENT;
 	$content = stripslashes($args['content']);
 	if(_validate($content) == FALSE)
-	{
-		$error = DOCUMENT_NOT_VALID;
-		return;
-	}
+		return DOCUMENT_NOT_VALID;
 	if(($id = _sql_single('SELECT content_id FROM daportal_content'
-					." WHERE title='".$args['title']."'"))
+					.', daportal_module'
+					.' WHERE daportal_content.module_id'
+					.'=daportal_module.module_id'
+					." AND daportal_module.name='wiki'"
+					." AND title='".$args['title']."'"))
 			!= FALSE)
-	{
-		$error = 'Title already exists';
-		return;
-	}
+		return 'Title already exists';
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], 'HTML content', 1))
 			== FALSE) //FIXME content should have a type
-	{
-		$error = 'Could not insert content';
-		return;
-	}
+		return 'Could not insert content';
 	$filename = $root.'/'.$title;
 	if(file_exists($filename) || file_exists($root.'/RCS/'.$title.',v'))
 	{
 		_content_delete($id);
-		$error = 'Page already exists';
-		return;
+		return 'Page already exists';
 	}
 	if(($fp = fopen($filename, 'w')) == FALSE)
 	{
 		_content_delete($id);
-		$error = 'Could not write to page';
-		return;
+		return 'Could not write to page';
 	}
 	if(fwrite($fp, $content) == FALSE)
 	{
 		_content_delete($id);
 		fclose($fp);
-		$error = 'An error occured while writing';
-		return;
+		return 'An error occured while writing';
 	}
 	fclose($fp);
 	if(_exec('ci -u -m'.escapeshellarg($user_name).' '
 				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
-		$error = 'An error occured while checking in';
-		return;
+		return 'An error occured while checking in';
 	}
 	header('Location: '._module_link('wiki', 'display', $id, $title));
 	exit(0);
 }
 
-function _system_update($args)
+function _wiki_system_update($args)
 {
-	global $error, $user_id, $user_name;
+	global $user_id, $user_name;
 
 	if($user_id == 0)
-	{
-		$error = PERMISSION_DENIED;
-		return;
-	}
+		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
 	if(($root = _root()) == FALSE)
-	{
-		$error = 'Internal server error';
-		return;
-	}
+		return 'Internal server error';
 	$wiki = _get($args['id'], TRUE);
 	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
-	{
-		$error = INVALID_ARGUMENT;
-		return;
-	}
+		return INVALID_ARGUMENT;
 	$id = $wiki['id'];
 	$title = $wiki['title'];
 	$content = stripslashes($args['content']);
 	if(!_validate($content))
-	{
-		$error = DOCUMENT_NOT_VALID;
-		return;
-	}
+		return DOCUMENT_NOT_VALID;
 	if(!file_exists($root.'/RCS/'.$title.',v'))
-	{
-		$error = 'Internal server error';
-		return;
-	}
+		return 'Internal server error';
 	$filename = $root.'/'.$title;
 	if(file_exists($filename) && unlink($filename) != TRUE)
-	{
-		$error = PERMISSION_DENIED;
-		return;
-	}
+		return PERMISSION_DENIED;
 	if(($fp = fopen($filename, 'w')) == FALSE)
-	{
-		$error = 'Could not write to page';
-		return;
-	}
+		return 'Could not write to page';
 	if(fwrite($fp, $content) == FALSE)
 	{
 		fclose($fp);
-		$error = 'An error occured while writing';
-		return;
+		return 'An error occured while writing';
 	}
 	fclose($fp);
 	if(_exec('ci -u -m'.escapeshellarg($user_name).' '
 				.escapeshellarg($filename)) == FALSE)
 	{
 		unlink($filename);
-		$error = 'An error occured while checking in';
-		return;
+		return 'An error occured while checking in';
 	}
 	unlink($filename);
 	//insert plain text into database
