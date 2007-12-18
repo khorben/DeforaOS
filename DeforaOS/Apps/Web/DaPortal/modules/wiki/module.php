@@ -216,23 +216,22 @@ function wiki_display($args)
 		if($rcs[$i++] == '----------------------------')
 			break;
 	$revisions = array();
-	for(; $i < $cnt; $i+=3)
+	for(; $i < $cnt - 2; $i+=3)
 	{
 		$name = _html_safe(substr($rcs[$i], 9));
 		$date = _html_safe(substr($rcs[$i+1], 6, 19));
+		$sep = '======================================================';
 		$message = $rcs[$i+2];
 		if($message == '----------------------------'
-				|| $message ==
-'=============================================================================')
+				|| strncmp($message, $sep, strlen($sep)) == 0)
 			$message = '';
 		else
 		{
 			$apnd = '';
 			for($i++; $i < $cnt && $rcs[$i+2] !=
 					'----------------------------'
-					&& $rcs[$i+2] !=
-'=============================================================================';
-					$i++)
+					&& strncmp($rcs[$i+2], $sep,
+						strlen($sep)) != 0; $i++)
 				$apnd = '...';
 			$message.=$apnd;
 			$username = ($user_id =_user_id($message)) != FALSE
@@ -420,7 +419,7 @@ function _system_insert($args)
 		return;
 	}
 	fclose($fp);
-	if(_exec('ci -u -m"'.escapeshellarg($user_name).'" '
+	if(_exec('ci -u -m'.escapeshellarg($user_name).' '
 				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
