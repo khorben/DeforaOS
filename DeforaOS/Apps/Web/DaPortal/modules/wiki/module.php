@@ -136,7 +136,8 @@ function _validate($content)
 
 function _validate_element_blacklist_start($parser, $name, $attribs)
 {
-	$blacklist = array('iframe', 'script'); //FIXME to be completed
+	//FIXME to be completed
+	$blacklist = array('embed', 'iframe', 'object', 'script');
 
 	foreach($blacklist as $b)
 		if(strcasecmp($name, $b) == 0)
