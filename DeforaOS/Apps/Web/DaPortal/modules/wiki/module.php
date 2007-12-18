@@ -52,8 +52,8 @@ $text['UNDERLINE'] = 'Underline';
 $text['UNDO'] = 'Undo';
 $text['WIKI'] = 'Wiki';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
-$text['WIKI_LIST'] = 'Wiki list';
 $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
+$text['WIKI_PAGES_LIST'] = 'Wiki pages list';
 global $lang;
 if($lang == 'fr')
 {
@@ -159,7 +159,7 @@ function wiki_admin($args)
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	print('<h2 class="title settings">'._html_safe(WIKI_LIST)."</h2>\n");
+	print('<h2 class="title wiki">'._html_safe(WIKI_PAGES_LIST)."</h2>\n");
 	$res = _sql_array('SELECT content_id AS id, title'
 			.', daportal_content.enabled AS enabled, username'
 			.' FROM daportal_content, daportal_user'
@@ -281,7 +281,7 @@ function wiki_list($args)
 {
 	global $module_id;
 
-	print('<h1 class="title wiki">'._html_safe(WIKI_LIST)."</h1>\n");
+	print('<h1 class="title wiki">'._html_safe(WIKI_PAGES_LIST)."</h1>\n");
 	$sql = 'SELECT content_id AS id, title, username'
 		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_content, daportal_user'

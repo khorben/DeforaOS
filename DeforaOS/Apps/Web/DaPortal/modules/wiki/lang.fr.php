@@ -42,7 +42,7 @@ $text['SUPERSCRIPT'] = 'Exposant';
 $text['UNDERLINE'] = 'Souligné';
 $text['UNDO'] = 'Annuler';
 $text['WIKI_ADMINISTRATION'] = 'Administration du wiki';
-$text['WIKI_LIST'] = 'Liste des pages Wiki';
 $text['WIKI_PAGE_PREVIEW'] = 'Prévisualisation de page Wiki';
+$text['WIKI_PAGES_LIST'] = 'Liste des pages Wiki';
 
 ?>
