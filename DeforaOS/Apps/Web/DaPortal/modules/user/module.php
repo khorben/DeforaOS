@@ -36,6 +36,7 @@ $text['MY_PROFILE'] = 'My profile';
 $text['NONE'] = 'None';
 $text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
+$text['S_PAGE'] = "'s page";
 $text['SETTINGS'] = 'Settings';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
 $text['USER_LOGIN'] = 'User login';
@@ -187,7 +188,7 @@ function user_appearance($args)
 			'thumbnails' => VIEW_THUMBNAILS);
 	if(isset($_SESSION['view']))
 		$view = $_SESSION['view'];
-	include('./modules/user/appearance.tpl');
+	include('./modules/user/appearance.tpl'); //FIXME go to the users' page
 }
 
 
@@ -222,26 +223,31 @@ function user_default($args)
 			." WHERE user_id='$user_id'")) == FALSE)
 		return _error('Invalid user');
 	$user = $user[0];
-	print('<h1 class="title home">'._html_safe($user['username'])
-			."'s page</h1>\n");
+	print('<h1 class="title home">'._html_safe($user['username'].S_PAGE)
+			."</h1>\n");
 	$modules = array();
 	require_once('./system/user.php');
 	if(_user_admin($user_id) && ($d = _module_desktop('admin')) != FALSE)
 		$modules[] = array('name' => $d['title'],
+				'icon' => 'icons/16x16/admin.png',
 				'thumbnail' => 'icons/48x48/admin.png',
 				'module' => 'admin', 'action' => 'default');
 	$modules[] = array('name' => APPEARANCE,
+			'icon' => 'icons/16x16/appearance.png',
 			'thumbnail' => 'icons/48x48/appearance.png',
 			'module' => 'user', 'action' => 'appearance');
 	$modules[] = array('name' => MY_CONTENT,
+			'icon' => 'icons/16x16/content.png',
 			'thumbnail' => 'icons/48x48/content.png',
 			'module' => 'user', 'action' => 'default',
 			'id' => $user_id);
 	$modules[] = array('name' => MY_PROFILE,
+			'icon' => 'icons/16x16/admin.png',
 			'thumbnail' => 'icons/48x48/admin.png',
 			'module' => 'user', 'action' => 'admin',
 			'id' => $user_id);
 	$modules[] = array('name' => LOGOUT,
+			'icon' => 'icons/16x16/logout.png',
 			'thumbnail' => 'icons/48x48/logout.png',
 			'module' => 'user', 'action' => 'logout');
 	_module('explorer', 'browse', array('entries' => $modules,
