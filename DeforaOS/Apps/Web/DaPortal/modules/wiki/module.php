@@ -136,7 +136,6 @@ function _validate($content)
 
 function _validate_element($parser, $name, $attribs = FALSE)
 {
-	_info($name);
 	if(strcasecmp($name, 'script') == 0)
 		$_SESSION['wiki_script'] = 1;
 }
