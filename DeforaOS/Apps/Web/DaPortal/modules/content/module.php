@@ -25,10 +25,14 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['CONTENT_ADMINISTRATION'] = 'Content administration';
+$text['CONTENT_UPDATE'] = 'Content update';
+$text['CONTENTS'] = 'Content';
 global $lang;
 if($lang == 'fr')
 {
 	$text['CONTENT_ADMINISTRATION'] = 'Gestion des contenus';
+	$text['CONTENT_UPDATE'] = "Mise à jour d'un contenu";
+	$text['CONTENTS'] = 'Contenus';
 }
 _lang($text);
 
@@ -41,7 +45,7 @@ function content_admin($args)
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	if(isset($args['id']))
-		return content_modify(array('id' => $args['id']));
+		return content_update(array('id' => $args['id']));
 	print('<h1 class="title content">'._html_safe(CONTENT_ADMINISTRATION)
 			."</h1>\n");
 	$sql = 'SELECT content_id AS id, timestamp AS date, name AS module'
@@ -69,7 +73,7 @@ function content_admin($args)
 				._html_safe($contents[$i]['username']).'</a>';
 		$contents[$i]['module'] = 'content';
 		$contents[$i]['apply_module'] = 'content';
-		$contents[$i]['action'] = 'admin';
+		$contents[$i]['action'] = 'update';
 		$contents[$i]['apply_id'] = $contents[$i]['id'];
 		$contents[$i]['enabled'] = ($contents[$i]['enabled']
 				== SQL_TRUE) ? 'enabled' : 'disabled';
@@ -110,9 +114,8 @@ function content_default($args)
 		$where = '';
 	else
 		$where = " AND daportal_content.enabled='1'";
-	$content = _sql_array('SELECT name'
-			.' FROM daportal_content, daportal_module'
-			.' WHERE daportal_content'
+	$content = _sql_array('SELECT name FROM daportal_content'
+			.', daportal_module WHERE daportal_content'
 			.'.module_id=daportal_module.module_id'
 			.$where." AND content_id='".$args['id']."'");
 	if(!is_array($content) || count($content) != 1)
@@ -165,41 +168,57 @@ function content_enable($args)
 }
 
 
-function content_modify($args)
+function content_system($args)
+{
+	global $title, $error;
+
+	$title.=' - '.CONTENTS;
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return;
+	if($args['action'] == 'update')
+		$error = _content_system_update($args);
+}
+
+function _content_system_update($args)
 {
 	global $user_id;
 
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	if(_sql_query('UPDATE daportal_content SET '
+			." title='".$args['title']."'"
+			.", timestamp='".$args['timestamp']."'"
+			.", user_id='".$args['user_id']."'"
+			.", content='".$args['content']."'"
+			.", enabled='".$args['enabled']."'"
+			." WHERE content_id='".$args['id']."'") == FALSE)
+		return 'Unable to update content';
+	header('Location: '._module_link('content', 'admin'));
+}
+
+
+function content_update($args)
+{
+	global $error, $user_id;
+
+	if(isset($error) && strlen($error))
+		_error($error);
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	$id = $args['id'];
 	if(!is_numeric($id))
 		return _error('Invalid content');
-	$content = _sql_array('SELECT timestamp, title, content, enabled'
-			.' FROM daportal_content'
+	$content = _sql_array('SELECT timestamp, user_id, title, content'
+			.', enabled FROM daportal_content'
 			." WHERE content_id='$id'");
 	if(!is_array($content) || count($content) != 1)
-		return _error('Invalid content');
+		return _error(INVALID_ARGUMENT);
+	$users = _sql_array('SELECT user_id, username FROM daportal_user');
+	$title = CONTENT_UPDATE;
 	$content = $content[0];
 	include('./modules/content/update.tpl');
-}
-
-
-function content_update($args)
-{
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		return _error(PERMISSION_DENIED);
-	if(_sql_query('UPDATE daportal_content SET '
-			." title='".$args['title']."'"
-			.", timestamp='".$args['timestamp']."'"
-			.", content='".$args['content']."'"
-			.", enabled='".$args['enabled']."'"
-			." WHERE content_id='".$args['id']."'") == FALSE)
-		_error('Unable to update content');
-	content_admin(array());
 }
 
 ?>
