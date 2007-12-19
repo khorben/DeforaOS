@@ -132,10 +132,6 @@ table.bordered th {
 	border:				1px solid #959595;
 }
 
-.toolbar {
-	background-color:		#790000;
-}
-
 .toolbar .separator {
 	background-color:		#404040;
 	padding-left:			1px;
@@ -317,6 +313,10 @@ table.bordered th {
 	margin-right:			4px;
 	margin-top:			4px;
 	width:				100px;
+}
+
+.explorer .toolbar {
+	background-color:		#790000;
 }
 
 .field {
