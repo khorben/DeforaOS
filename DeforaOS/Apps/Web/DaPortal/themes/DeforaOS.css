@@ -134,6 +134,8 @@ table.bordered th {
 
 .toolbar .separator {
 	background-color:		#404040;
+	margin:				0;
+	padding:			0;
 	padding-left:			1px;
 }
 
