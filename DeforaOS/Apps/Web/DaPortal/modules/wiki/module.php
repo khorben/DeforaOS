@@ -63,6 +63,17 @@ _lang($text);
 
 
 //private
+//variables
+global $wiki_blacklisted, $wiki_tag_whitelist, $wiki_content;
+$wiki_blacklisted = 1;
+$wiki_tag_whitelist = array('a', 'b', 'big', 'br', 'center', 'div', 'font',
+		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+		'hr', 'i', 'img', 'li', 'ol', 'p', 'span',
+		'sub', 'sup', 'tt', 'u', 'ul');
+$wiki_content = '';
+
+
+//functions
 function _exec($cmd)
 {
 	$output = array();
@@ -111,40 +122,41 @@ function _root()
 
 function _validate($content)
 {
+	global $wiki_blacklisted;
+
 	$content = str_replace(array('<br>', '<hr>', '&nbsp;'),
 			array('<br/>', '<hr/>', '&amp;nbsp;'), $content);
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
-	if(xml_set_element_handler($parser, '_validate_element_blacklist_start',
-				'_validate_element_blacklist_end') != TRUE)
+	if(xml_set_element_handler($parser, '_validate_element_start',
+				'_validate_element_end') != TRUE)
 	{
 		xml_parser_free($parser);
 		return FALSE;
 	}
-	$_SESSION['wiki_blacklisted'] = 0;
+	$wiki_blacklisted = 0;
 	$ret = xml_parse($parser, $content);
 	xml_parser_free($parser);
-	if($_SESSION['wiki_blacklisted'] != 0)
-	{
-		unset($_SESSION['wiki_blacklisted']);
+	if($wiki_blacklisted != 0)
 		return FALSE;
-	}
-	unset($_SESSION['wiki_blacklisted']);
+	$wiki_blacklisted = 1;
 	return $ret == 1 ? TRUE : FALSE;
 }
 
-function _validate_element_blacklist_start($parser, $name, $attribs)
+function _validate_element_start($parser, $name, $attribs)
 {
-	//FIXME to be completed
-	$blacklist = array('embed', 'iframe', 'object', 'script');
+	global $wiki_blacklisted, $wiki_tag_whitelist;
 
-	foreach($blacklist as $b)
-		if(strcasecmp($name, $b) == 0)
-			$_SESSION['wiki_blacklisted'] = 1;
+	if($wiki_blacklisted != 0)
+		return;
+	foreach($wiki_tag_whitelist as $w)
+		if(strcasecmp($name, $w) == 0)
+			return;
+	$wiki_blacklisted = 1;
 }
 
-function _validate_element_blacklist_end($parser, $name)
+function _validate_element_end($parser, $name)
 {
 }
 
@@ -395,7 +407,7 @@ function _wiki_system_insert($args)
 		return 'Title already exists';
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], 'HTML content', 1))
-			== FALSE) //FIXME content should have a type
+			== FALSE) //FIXME insert plain text into database
 		return 'Could not insert content';
 	$filename = $root.'/'.$title;
 	if(file_exists($filename) || file_exists($root.'/RCS/'.$title.',v'))
@@ -427,7 +439,7 @@ function _wiki_system_insert($args)
 
 function _wiki_system_update($args)
 {
-	global $user_id, $user_name;
+	global $user_id, $user_name, $wiki_content;
 
 	if($user_id == 0)
 		return PERMISSION_DENIED;
@@ -465,23 +477,25 @@ function _wiki_system_update($args)
 	unlink($filename);
 	//insert plain text into database
 	//FIXME factorize code and validation
-	$_SESSION['wiki_content'] = '';
+	$wiki_content = '';
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$parser = xml_parser_create();
 	xml_set_character_data_handler($parser, '_update_data');
 	if(xml_parse($parser, '<div>'.$content.'</div>') == 1)
-		_content_update($id, FALSE, $_SESSION['wiki_content']);
+		_content_update($id, FALSE, $wiki_content);
 	xml_parser_free($parser);
-	unset($_SESSION['wiki_content']);
+	$wiki_content = '';
 	header('Location: '._module_link('wiki', 'display', $id, $title));
 	exit(0);
 }
 
 function _update_data($parser, $data)
 {
-	$_SESSION['wiki_content'].="\n".addslashes($data);
+	global $wiki_content;
+
+	$wiki_content.="\n".addslashes($data);
 }
 
 
