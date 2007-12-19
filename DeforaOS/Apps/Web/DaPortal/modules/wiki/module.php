@@ -40,6 +40,7 @@ $text['ITALIC'] = 'Italic';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['PASTE'] = 'Paste';
+$text['RECENT_CHANGES'] = 'Recent changes';
 $text['REDO'] = 'Redo';
 $text['REVISIONS'] = 'Revisions';
 $text['SETTINGS'] = 'Settings';
@@ -255,12 +256,39 @@ function wiki_config_update($args)
 function wiki_default($args)
 {
 	//FIXME implement user_id
+	//FIXME factorize code
 
 	if(isset($args['id']))
 		return wiki_display($args);
 	print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
-	if(!isset($args['title']))
-		return include('./modules/wiki/default.tpl');
+	if(!isset($args['title']) || strlen($args['title']) == 0)
+	{
+		include('./modules/wiki/default.tpl');
+		print('<h2 class="title wiki">'._html_safe(RECENT_CHANGES)
+				."</h2>\n");
+		$sql = 'SELECT content_id AS id, name AS module, title'
+			.', daportal_user.user_id, username'
+			.' FROM daportal_content, daportal_module'
+			.', daportal_user WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			.' AND daportal_content.user_id=daportal_user.user_id'
+			." AND daportal_module.name='wiki'"
+			." AND daportal_content.enabled='1'"
+			.' ORDER BY timestamp DESC '._sql_offset(0, 10);
+		$res = _sql_array($sql);
+		if(!is_array($res))
+			return _error('Could not list recent changes');
+		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+		{
+			$res[$i]['icon'] = 'icons/16x16/icons.png';
+			$res[$i]['action'] = 'display';
+			$res[$i]['name'] = $res[$i]['title'];
+		}
+		_module('explorer', 'browse', array('entries' => $res,
+					'class' => array('username' => AUTHOR),
+					'view' => 'details', 'toolbar' => 0));
+		return;
+	}
 	$title = stripslashes($args['title']);
 	$sql = 'SELECT content_id AS id, name AS module, title, content'
 		.' FROM daportal_content, daportal_module'
