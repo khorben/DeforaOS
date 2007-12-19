@@ -127,8 +127,9 @@ function _validate($content)
 {
 	global $wiki_blacklisted;
 
-	$content = str_replace(array('<br>', '<hr>', '&nbsp;'),
-			array('<br/>', '<hr/>', '&amp;nbsp;'), $content);
+	$content = str_replace(array('<br>', '<hr>', '&copy;','&nbsp;'),
+			array('<br/>', '<hr/>', '&amp;copy;', '&amp;nbsp;'),
+			$content);
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //FIXME check encoding
@@ -139,12 +140,16 @@ function _validate($content)
 		return FALSE;
 	}
 	$wiki_blacklisted = 0;
-	$ret = xml_parse($parser, $content);
+	if(($ret = xml_parse($parser, $content)) != 1)
+		$error = xml_error_string(xml_get_error_code($parser));
 	xml_parser_free($parser);
 	if($wiki_blacklisted != 0)
 		return FALSE;
 	$wiki_blacklisted = 1;
-	return $ret == 1 ? TRUE : FALSE;
+	if($ret == 1)
+		return TRUE;
+	_error('XML error: '.$error, 0);
+	return FALSE;
 }
 
 function _validate_element_start($parser, $name, $attribs)
