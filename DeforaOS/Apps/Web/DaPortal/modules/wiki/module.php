@@ -67,12 +67,12 @@ _lang($text);
 global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist,
        $wiki_content;
 $wiki_blacklisted = 1;
-$wiki_attrib_whitelist = array('alt', 'height', 'src', 'style', 'title',
-		'width');
+$wiki_attrib_whitelist = array('alt', 'border', 'height', 'src', 'style',
+		'title', 'width');
 $wiki_tag_whitelist = array('a', 'b', 'big', 'br', 'center', 'div', 'font',
 		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 		'hr', 'i', 'img', 'li', 'ol', 'p', 'span',
-		'sub', 'sup', 'tt', 'u', 'ul');
+		'sub', 'sup', 'table', 'td', 'th', 'tr', 'tt', 'u', 'ul');
 $wiki_content = '';
 
 
@@ -163,6 +163,7 @@ function _validate_element_start($parser, $name, $attribs)
 	if($i == $wcnt) //tag not found
 	{
 		$wiki_blacklisted = 1;
+		_error('The tag "'.$name.'" is forbidden', 0);
 		return;
 	}
 	//check every attribute
@@ -182,8 +183,10 @@ function _validate_element_start($parser, $name, $attribs)
 		if($j == $wcnt) //attrib not found
 			break;
 	}
-	if($i != $acnt)
-		$wiki_blacklisted = 1;
+	if($i == $acnt)
+		return;
+	_error('The attribute "'.$a.'" is forbidden', 0);
+	$wiki_blacklisted = 1;
 }
 
 function _validate_element_end($parser, $name)
@@ -250,7 +253,39 @@ function wiki_default($args)
 
 	if(isset($args['id']))
 		return wiki_display($args);
-	return wiki_list($args);
+	print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
+	if(!isset($args['title']))
+		return include('./modules/wiki/default.tpl');
+	$title = stripslashes($args['title']);
+	$sql = 'SELECT content_id AS id, name AS module, title, content'
+		.' FROM daportal_content, daportal_module'
+		.' WHERE daportal_content.module_id=daportal_module.module_id'
+		." AND daportal_module.name='wiki'"
+		." AND daportal_content.enabled='1'"
+		." AND daportal_content.title LIKE '%".$args['title']."%'";
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		_error(INVALID_ARGUMENT);
+	else if(count($res) == 0)
+	{
+		print('<p>There was no match, but you can <a href="'
+				._html_link('wiki', 'insert', FALSE,
+					FALSE, array('title' => $title))
+				.'">create the page</a>.</p>');
+		return include('./modules/wiki/default.tpl');
+	}
+	if(count($res) == 1)
+		return wiki_display(array('id' => $res[0]['id']));
+	include('./modules/wiki/default.tpl');
+	_info('More than one page matched:', 1);
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['icon'] = 'icons/16x16/wiki.png';
+		$res[$i]['action'] = 'display';
+		$res[$i]['name'] = $res[$i]['title'];
+	}
+	_module('explorer', 'browse', array('entries' => $res,
+				'view' => 'details', 'toolbar' => 0));
 }
 
 
@@ -311,11 +346,13 @@ function wiki_insert($args)
 	if(isset($error) && strlen($error))
 		return _error($error);
 	$title = NEW_WIKI_PAGE;
+	$wiki = array();
+	if(isset($args['title']))
+		$wiki['title'] = stripslashes($args['title']);
 	if(isset($args['preview']) && isset($args['content']))
 	{
 		$title = WIKI_PAGE_PREVIEW;
-		$wiki = array('title' => stripslashes($args['title']),
-				'content' => stripslashes($args['content']));
+		$wiki['content'] = stripslashes($args['content']);
 		if(!_validate($wiki['content']))
 			_error(DOCUMENT_NOT_VALID);
 		else
@@ -427,13 +464,11 @@ function _wiki_system_insert($args)
 	$content = stripslashes($args['content']);
 	if(_validate($content) == FALSE)
 		return DOCUMENT_NOT_VALID;
-	if(($id = _sql_single('SELECT content_id FROM daportal_content'
-					.', daportal_module'
-					.' WHERE daportal_content.module_id'
-					.'=daportal_module.module_id'
-					." AND daportal_module.name='wiki'"
-					." AND title='".$args['title']."'"))
-			!= FALSE)
+	$sql = 'SELECT content_id FROM daportal_content, daportal_module'
+		.' WHERE daportal_content.module_id=daportal_module.module_id'
+		." AND daportal_module.name='wiki'"
+		." AND title='".$args['title']."'";
+	if(($id = _sql_single($sql)) != FALSE)
 		return 'Title already exists';
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], 'HTML content', 1))
