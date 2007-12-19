@@ -64,8 +64,11 @@ _lang($text);
 
 //private
 //variables
-global $wiki_blacklisted, $wiki_tag_whitelist, $wiki_content;
+global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist,
+       $wiki_content;
 $wiki_blacklisted = 1;
+$wiki_attrib_whitelist = array('alt', 'height', 'src', 'style', 'title',
+		'width');
 $wiki_tag_whitelist = array('a', 'b', 'big', 'br', 'center', 'div', 'font',
 		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 		'hr', 'i', 'img', 'li', 'ol', 'p', 'span',
@@ -146,14 +149,41 @@ function _validate($content)
 
 function _validate_element_start($parser, $name, $attribs)
 {
-	global $wiki_blacklisted, $wiki_tag_whitelist;
+	global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist;
 
+	//return immediately if already detected as invalid
+	//FIXME disable check in parser instead if possible
 	if($wiki_blacklisted != 0)
 		return;
-	foreach($wiki_tag_whitelist as $w)
-		if(strcasecmp($name, $w) == 0)
-			return;
-	$wiki_blacklisted = 1;
+	//check the element name
+	$wcnt = count($wiki_tag_whitelist);
+	for($i = 0; $i < $wcnt; $i++)
+		if(strcasecmp($name, $wiki_tag_whitelist[$i]) == 0)
+			break;
+	if($i == $wcnt) //tag not found
+	{
+		$wiki_blacklisted = 1;
+		return;
+	}
+	//check every attribute
+	$keys = array_keys($attribs);
+	$attr = array();
+	$i = 0;
+	foreach($keys as $k)
+		$attr[$i++] = $k;
+	$acnt = count($attr);
+	$wcnt = count($wiki_attrib_whitelist);
+	for($i = 0; $i < $acnt; $i++)
+	{
+		$a = $attr[$i];
+		for($j = 0; $j < $wcnt; $j++)
+			if(strcasecmp($a, $wiki_attrib_whitelist[$j]) == 0)
+				break;
+		if($j == $wcnt) //attrib not found
+			break;
+	}
+	if($i != $acnt)
+		$wiki_blacklisted = 1;
 }
 
 function _validate_element_end($parser, $name)
