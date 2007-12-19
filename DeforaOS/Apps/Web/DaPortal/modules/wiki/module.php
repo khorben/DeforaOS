@@ -67,8 +67,8 @@ _lang($text);
 global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist,
        $wiki_content;
 $wiki_blacklisted = 1;
-$wiki_attrib_whitelist = array('alt', 'border', 'height', 'src', 'style',
-		'title', 'width');
+$wiki_attrib_whitelist = array('alt', 'border', 'height', 'size', 'src',
+		'style', 'title', 'width');
 $wiki_tag_whitelist = array('a', 'b', 'big', 'br', 'center', 'div', 'font',
 		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 		'hr', 'i', 'img', 'li', 'ol', 'p', 'span',
