@@ -40,6 +40,7 @@ $text['ITALIC'] = 'Italic';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['PASTE'] = 'Paste';
+$text['PREVIEW'] = 'Preview';
 $text['RECENT_CHANGES'] = 'Recent changes';
 $text['REDO'] = 'Redo';
 $text['REVISIONS'] = 'Revisions';
@@ -72,7 +73,7 @@ $wiki_attrib_whitelist = array('alt', 'border', 'height', 'size', 'src',
 		'style', 'title', 'width');
 $wiki_tag_whitelist = array('a', 'b', 'big', 'br', 'center', 'div', 'font',
 		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-		'hr', 'i', 'img', 'li', 'ol', 'p', 'span',
+		'hr', 'i', 'img', 'li', 'ol', 'p', 'pre', 'span',
 		'sub', 'sup', 'table', 'td', 'th', 'tr', 'tt', 'u', 'ul');
 $wiki_content = '';
 
@@ -266,10 +267,11 @@ function wiki_default($args)
 		include('./modules/wiki/default.tpl');
 		print('<h2 class="title wiki">'._html_safe(RECENT_CHANGES)
 				."</h2>\n");
-		$sql = 'SELECT content_id AS id, name AS module, title'
-			.', daportal_user.user_id, username'
-			.' FROM daportal_content, daportal_module'
-			.', daportal_user WHERE daportal_content.module_id'
+		$sql = 'SELECT content_id AS id, timestamp AS date'
+			.', name AS module, title, daportal_user.user_id'
+			.', username, content FROM daportal_content'
+			.', daportal_module, daportal_user'
+			.' WHERE daportal_content.module_id'
 			.'=daportal_module.module_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			." AND daportal_module.name='wiki'"
@@ -283,9 +285,15 @@ function wiki_default($args)
 			$res[$i]['icon'] = 'icons/16x16/icons.png';
 			$res[$i]['action'] = 'display';
 			$res[$i]['name'] = $res[$i]['title'];
+			$res[$i]['date'] = substr($res[$i]['date'], 0, 19);
+			$res[$i]['content'] = str_replace("\n", ' ',
+					substr($res[$i]['content'], 0, 40))
+				.'...';
 		}
 		_module('explorer', 'browse', array('entries' => $res,
-					'class' => array('username' => AUTHOR),
+					'class' => array('date' => DATE,
+						'username' => AUTHOR,
+						'content' => PREVIEW),
 					'view' => 'details', 'toolbar' => 0));
 		return;
 	}
@@ -367,7 +375,7 @@ function wiki_display($args)
 	}
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 				'class' => array('date' => DATE,
-					'username' => USERNAME),
+					'username' => AUTHOR),
 				'view' => 'details'));
 }
 
