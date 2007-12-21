@@ -37,7 +37,7 @@
 /* types */
 typedef struct _Properties
 {
-	char * filename;
+	char const * filename;
 	uid_t uid;
 	gid_t gid;
 	mode_t mode;
