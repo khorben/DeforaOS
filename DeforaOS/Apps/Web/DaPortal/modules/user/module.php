@@ -36,6 +36,7 @@ $text['MY_PROFILE'] = 'My profile';
 $text['NONE'] = 'None';
 $text['NEW_USER'] = 'New user';
 $text['REGISTER'] = 'Register';
+$text['S_CONTENT'] = "'s content";
 $text['S_PAGE'] = "'s page";
 $text['SETTINGS'] = 'Settings';
 $text['USER_ALREADY_ASSIGNED'] = 'Username already assigned';
@@ -297,11 +298,12 @@ function user_display($args)
 	if(!is_array($user) || count($user) != 1)
 		return _error('Invalid user');
 	$user = $user[0];
-	$res = _sql_array('SELECT name FROM daportal_module ORDER BY name ASC');
+	$res = _sql_array("SELECT name FROM daportal_module WHERE enabled='1'"
+			.' ORDER BY name ASC');
 	if(!is_array($res))
 		return _error('Could not list modules');
-	print('<h1 class="title user">'._html_safe($user['username'])
-			."'s content</h1>\n");
+	print('<h1 class="title user">'._html_safe($user['username'].S_CONTENT)
+			."</h1>\n");
 	$entries = array();
 	foreach($res as $r)
 	{
