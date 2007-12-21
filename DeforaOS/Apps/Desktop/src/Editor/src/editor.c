@@ -721,10 +721,11 @@ gboolean editor_save(Editor * editor)
 
 gboolean editor_save_as(Editor * editor, char const * filename)
 {
+	struct stat st;
 	GtkWidget * dialog;
 	int ret;
 
-	if(stat(filename, NULL) == 0)
+	if(stat(filename, &st) == 0)
 	{
 		dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
 				GTK_DIALOG_MODAL
