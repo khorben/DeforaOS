@@ -93,6 +93,9 @@ function content_admin($args)
 			'action' => 'enable');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
+			'link' => 'javascript:location.reload()'); /* XXX */
 	_module('explorer', 'browse_trusted', array('entries' => $contents,
 			'class' => array('enabled' => ENABLED,
 				'username' => AUTHOR, 'date' => DATE),
