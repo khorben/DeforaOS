@@ -756,7 +756,7 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gtk_tree_model_get(model, &iter, BR_COL_IS_DIRECTORY, &isdir,
 				BR_COL_PATH, &path, -1);
 		if(path != NULL && (len = strrchr(path, '/') - path) > 0
-				&& strcmp(&path[len+1], arg2) != 0)
+				&& strcmp(&path[len + 1], arg2) != 0)
 			q = malloc(len + strlen(arg2) + 2);
 	}
 	if(q == NULL)
@@ -914,13 +914,22 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 {
 	GtkWidget * menuitem;
 	GtkWidget * submenu;
+#if GTK_CHECK_VERSION(2, 8, 0)
+	GtkWidget * image;
+#endif
 
 	browser_unselect_all(browser);
 	menuitem = gtk_menu_item_new_with_label("New");
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
+#if GTK_CHECK_VERSION(2, 8, 0) /* XXX actually depends on the icon theme */
+	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
+	menuitem = gtk_image_menu_item_new_with_label("Folder");
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+#else
 	menuitem = gtk_menu_item_new_with_label("Folder");
+#endif
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_folder_new), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
