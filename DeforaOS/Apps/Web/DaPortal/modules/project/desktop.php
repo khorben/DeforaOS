@@ -21,7 +21,6 @@ $icon = 'project.png';
 $admin = 1;
 $list = 1;
 $actions = array('download' => 'Downloads',
-		'installer' => 'Installer',
 		'list' => 'List',
 		'package' => 'Packages',
 		'bug_list' => 'Reports');
@@ -35,7 +34,6 @@ else if($lang == 'fr')
 {
 	$title = 'Projets';
 	$actions['download'] = 'Téléchargement';
-	$actions['installer'] = 'Installeur';
 	$actions['list'] = 'Liste';
 	$actions['bug_list'] = 'Rapports';
 }

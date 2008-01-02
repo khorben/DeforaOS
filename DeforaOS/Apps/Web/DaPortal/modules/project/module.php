@@ -1317,12 +1317,6 @@ function project_insert($args)
 }
 
 
-function project_installer($args)
-{
-	include('./modules/project/installer.tpl');
-}
-
-
 function project_list($args)
 {
 	global $user_id;
