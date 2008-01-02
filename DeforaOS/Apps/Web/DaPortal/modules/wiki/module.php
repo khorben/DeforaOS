@@ -282,7 +282,7 @@ function wiki_default($args)
 			return _error('Could not list recent changes');
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$res[$i]['icon'] = 'icons/16x16/icons.png';
+			$res[$i]['icon'] = 'icons/16x16/wiki.png';
 			$res[$i]['action'] = 'display';
 			$res[$i]['name'] = $res[$i]['title'];
 			$res[$i]['date'] = substr($res[$i]['date'], 0, 19);
