@@ -256,11 +256,12 @@ function wiki_config_update($args)
 
 function wiki_default($args)
 {
-	//FIXME implement user_id
 	//FIXME factorize code
 
 	if(isset($args['id']))
 		return wiki_display($args);
+	if(isset($args['user_id']))
+		return wiki_list($args);
 	print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
 	if(!isset($args['title']) || strlen($args['title']) == 0)
 	{
@@ -410,14 +411,26 @@ function wiki_list($args)
 {
 	global $module_id;
 
-	print('<h1 class="title wiki">'._html_safe(WIKI_PAGES_LIST)."</h1>\n");
-	$sql = 'SELECT content_id AS id, title, username'
+	$title = WIKI_PAGES_LIST;
+	$classes = array('date' => DATE);
+	$sql = 'SELECT content_id AS id, title, timestamp AS date'
 		.', daportal_content.user_id AS user_id, username'
 		.' FROM daportal_content, daportal_user'
 		.' WHERE daportal_content.user_id=daportal_user.user_id'
 		." AND module_id='$module_id'"
 		." AND daportal_content.enabled='1'"
 		." AND daportal_user.enabled='1'";
+	if(isset($args['user_id']))
+	{
+		require_once('./system/user.php');
+		if(($username = _user_name($args['user_id'])) == FALSE)
+			return _error(INVALID_ARGUMENT);
+		$title.=_BY_.$username;
+		$sql.=" AND daportal_content.user_id='".$args['user_id']."'";
+	}
+	else
+		$classes['username'] = AUTHOR;
+	print('<h1 class="title wiki">'._html_safe($title)."</h1>\n");
 	$wiki = _sql_array($sql);
 	if(!is_array($wiki))
 		return _error('Could not list wiki pages');
@@ -428,13 +441,15 @@ function wiki_list($args)
 		$wiki[$i]['module'] = 'wiki';
 		$wiki[$i]['action'] = 'display';
 		$wiki[$i]['name'] = $wiki[$i]['title'];
+		$wiki[$i]['date'] = strftime('%d/%m/%y %H:%M:%S',
+				strtotime(substr($wiki[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_WIKI_PAGE, 'class' => 'new',
 			'link' => _module_link('wiki', 'new'));
 	_module('explorer', 'browse', array('entries' => $wiki,
-				'class' => array('username' => AUTHOR),
-				'toolbar' => $toolbar));
+				'class' => $classes, 'toolbar' => $toolbar,
+				'view' => 'details'));
 }
 
 
