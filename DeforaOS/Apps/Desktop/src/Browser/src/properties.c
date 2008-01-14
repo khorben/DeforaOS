@@ -15,7 +15,9 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 /* FIXME:
  * - add dates
- * - resolve relative paths */
+ * - resolve relative paths
+ * - add an option to count files altogether
+ * - update permissions and group */
 
 
 
@@ -127,7 +129,9 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	struct stat st;
 	Properties * properties = NULL;
 	char const * gfilename;
+	char * p;
 	char const * type = NULL;
+	struct stat dirst;
 	GdkPixbuf * pixbuf = NULL;
 	GtkWidget * image = NULL;
 	GtkWidget * window;
@@ -149,6 +153,10 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		properties->mode = st.st_mode;
 		properties->combo = NULL;
 	}
+	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
+			== NULL)
+		gfilename = filename;
+	p = strdup(gfilename);
 	if(S_ISDIR(st.st_mode))
 	{
 		if(theme != NULL && (pixbuf = gtk_icon_theme_load_icon(theme,
@@ -159,6 +167,9 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 			image = gtk_image_new_from_stock(GTK_STOCK_DIRECTORY,
 					GTK_ICON_SIZE_DIALOG);
 		type = "inode/directory";
+		if(p != NULL && lstat(dirname(p), &dirst) == 0
+				&& st.st_dev != dirst.st_dev)
+			type = "inode/mountpoint";
 	}
 	else if(S_ISBLK(st.st_mode))
 		type = "inode/blockdevice";
@@ -198,14 +209,10 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 					GTK_STOCK_MISSING_IMAGE,
 					GTK_ICON_SIZE_DIALOG);
 	}
-	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
-			== NULL)
-		gfilename = filename;
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	if(properties != NULL)
 		properties->window = window;
-	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", basename(
-				gfilename));
+	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", basename(p));
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -282,6 +289,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 	pango_font_description_free(bold);
+	free(p);
 	return 0;
 }
 
