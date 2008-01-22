@@ -788,14 +788,6 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	GtkTreePath * path;
 	GtkTreeIter iter;
 	char * p;
-	size_t len;
-	size_t i;
-	GList * selection = NULL;
-#ifdef DEBUG
-	GList * s;
-#else
-	int ret = 0;
-#endif
 
 	if(seldata->length <= 0 || seldata->data == NULL)
 		return;
@@ -806,25 +798,8 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&p, -1);
-	len = seldata->length;
-	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
-		selection = g_list_append(selection, &seldata->data[i]);
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
-			context->suggested_action == GDK_ACTION_COPY ? "copying"
-			: "moving", " to \"", p, "\":\n");
-	for(s = selection; s != NULL; s = s->next)
-		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
-#else
-	selection = g_list_append(selection, p);
-	if(context->suggested_action == GDK_ACTION_COPY)
-		ret = _common_exec("copy", "-ir", selection);
-	else if(context->suggested_action == GDK_ACTION_MOVE)
-		ret = _common_exec("move", "-i", selection);
-	if(ret != 0)
+	if(_common_drag_data_received(context, seldata, p) != 0)
 		browser_error(browser, "fork", 0);
-#endif
-	g_list_free(selection);
 }
 #endif
 

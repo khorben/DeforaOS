@@ -15,6 +15,45 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 
 
+/* prototypes */
+static int _common_drag_data_received(GdkDragContext * context,
+		GtkSelectionData * seldata, char * dest);
+static int _common_exec(char * program, char * flags, GList * args);
+
+
+/* functions */
+/* common_drag_data_received */
+static int _common_drag_data_received(GdkDragContext * context,
+		GtkSelectionData * seldata, char * dest)
+{
+	int ret = 0;
+	size_t len;
+	size_t i;
+	GList * selection = NULL;
+#ifdef DEBUG
+	GList * s;
+#endif
+
+	len = seldata->length;
+	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
+		selection = g_list_append(selection, &seldata->data[i]);
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
+			context->suggested_action == GDK_ACTION_COPY ? "copying"
+			: "moving", " to \"", dest, "\":\n");
+	for(s = selection; s != NULL; s = s->next)
+		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
+#else
+	selection = g_list_append(selection, dest);
+	if(context->suggested_action == GDK_ACTION_COPY)
+		ret = _common_exec("copy", "-ir", selection);
+	else if(context->suggested_action == GDK_ACTION_MOVE)
+		ret = _common_exec("move", "-i", selection);
+#endif
+	g_list_free(selection);
+	return ret;
+}
+
 
 /* common_exec */
 static int _common_exec(char * program, char * flags, GList * args)
