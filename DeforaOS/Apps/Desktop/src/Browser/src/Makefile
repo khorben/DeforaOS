@@ -65,7 +65,7 @@ view: $(view_OBJS)
 browser.o: browser.c mime.h callbacks.h browser.h
 	$(CC) $(browser_CFLAGS) -c browser.c
 
-callbacks.o: callbacks.c browser.h callbacks.h
+callbacks.o: callbacks.c browser.h callbacks.h common.c
 	$(CC) $(browser_CFLAGS) -c callbacks.c
 
 mime.o: mime.c mime.h ../config.h
@@ -80,7 +80,7 @@ copy.o: copy.c
 delete.o: delete.c
 	$(CC) $(delete_CFLAGS) -c delete.c
 
-desktop.o: desktop.c mime.o
+desktop.o: desktop.c common.c mime.o
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
 move.o: move.c
