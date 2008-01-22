@@ -126,7 +126,6 @@ static GList * _copy_selection(Browser * browser)
 void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
-	GList * p;
 
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);
@@ -782,6 +781,83 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	free(q);
 	free(path);
 }
+
+
+#if GTK_CHECK_VERSION(2, 8, 0)
+/* on_view_drag_data_get */
+void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * dc,
+		GtkSelectionData * seldata, guint info, guint time,
+		gpointer data)
+	/* XXX could be more optimal */
+{
+	Browser * browser = data;
+	GList * selection;
+	GList * s;
+	size_t len;
+	unsigned char * p;
+
+	selection = _copy_selection(browser);
+	seldata->data = NULL;
+	seldata->length = 0;
+	for(s = selection; s != NULL; s = s->next)
+	{
+		len = strlen(s->data) + 1;
+		if((p = realloc(seldata->data, seldata->length + len)) == NULL)
+			continue;
+		seldata->data = p;
+		memcpy(&p[seldata->length], s->data, len);
+		seldata->length += len;
+	}
+	g_list_foreach(selection, (GFunc)free, NULL);
+	g_list_free(selection);
+}
+
+
+/* on_view_drag_data_received */
+void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
+		gint x, gint y, GtkSelectionData * seldata, guint info,
+		guint time, gpointer data)
+	/* FIXME - may not be an icon view
+	 *       - icon view may not be supported (< 2.6)
+	 *       - not fully checking if the source matches */
+{
+	Browser * browser = data;
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	char * p;
+	size_t i;
+	GList * selection = NULL;
+#ifdef DEBUG
+	GList * s;
+#endif
+
+	if(seldata->data == NULL || seldata->length == 0)
+		return;
+	path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(browser->iconview),
+			x, y);
+	if(path == NULL)
+		return; /* FIXME then use the current directory */
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
+	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
+			&p, -1);
+	for(i = 0; i < seldata->length; i += strlen(&seldata->data[i]) + 1)
+		selection = g_list_append(selection, &seldata->data[i]);
+	selection = g_list_append(selection, p);
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
+			context->suggested_action == GDK_ACTION_COPY ? "copying"
+			: "moving", " to \"", p, "\":\n");
+	for(s = selection; s != NULL; s = s->next)
+		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
+#else
+	if(context->suggested_action == GDK_ACTION_COPY)
+		_exec(browser, "copy", "-ir", selection);
+	else if(context->suggested_action == GDK_ACTION_MOVE)
+		_exec(browser, "move", "-i", selection);
+#endif
+	g_list_free(selection);
+}
+#endif
 
 
 /* on_view_popup */

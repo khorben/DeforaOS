@@ -1165,8 +1165,10 @@ void browser_select_all(Browser * browser)
 }
 
 
+/* browser_set_location */
 static char * _location_real_path(char const * path);
 static int _location_directory(Browser * browser, char * path);
+
 void browser_set_location(Browser * browser, char const * path)
 {
 	char * realpath = NULL;
@@ -1233,12 +1235,14 @@ static int _location_directory(Browser * browser, char * path)
 }
 
 
+/* browser_set_view */
 static void _view_details(Browser * browser);
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _view_icons(Browser * browser);
 static void _view_list(Browser * browser);
 static void _view_thumbnails(Browser * browser);
 #endif
+
 void browser_set_view(Browser * browser, BrowserView view)
 {
 	switch(view)
@@ -1262,6 +1266,7 @@ void browser_set_view(Browser * browser, BrowserView view)
 
 static void _details_column_text(GtkTreeView * view, char const * title,
 		int id, int sort);
+
 static void _view_details(Browser * browser)
 {
 	GtkTreeSelection * treesel;
@@ -1339,6 +1344,7 @@ static void _details_column_text(GtkTreeView * view, char const * title, int id,
 
 #if GTK_CHECK_VERSION(2, 6, 0)
 static void _view_icon_view(Browser * browser);
+
 static void _view_icons(Browser * browser)
 {
 #if GTK_CHECK_VERSION(2, 8, 0)
@@ -1379,6 +1385,13 @@ static void _view_icon_view(Browser * browser)
 	GtkTreeSelection * treesel;
 	GList * sel = NULL;
 	GList * p;
+#if GTK_CHECK_VERSION(2, 8, 0)
+	GtkTargetEntry targets[] =
+	{
+		{ "deforaos_browser_dnd", GTK_TARGET_SAME_APP, 0 }
+	};
+	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
+#endif
 
 	if(browser->iconview != NULL)
 	{
@@ -1414,12 +1427,26 @@ static void _view_icon_view(Browser * browser)
 	gtk_icon_view_set_column_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_row_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 	gtk_icon_view_set_spacing(GTK_ICON_VIEW(browser->iconview), 4);
+#if GTK_CHECK_VERSION(2, 8, 0)
+	gtk_icon_view_enable_model_drag_source(GTK_ICON_VIEW(browser->iconview),
+			GDK_BUTTON1_MASK, targets, targets_cnt,
+			GDK_ACTION_COPY | GDK_ACTION_MOVE);
+	gtk_icon_view_enable_model_drag_dest(GTK_ICON_VIEW(browser->iconview),
+			targets, targets_cnt,
+			GDK_ACTION_COPY | GDK_ACTION_MOVE);
+#endif
 	g_signal_connect(G_OBJECT(browser->iconview), "item-activated",
 			G_CALLBACK(on_icon_default), browser);
 	g_signal_connect(G_OBJECT(browser->iconview), "button-press-event",
 			G_CALLBACK(on_view_press), browser);
 	g_signal_connect(G_OBJECT(browser->iconview), "popup-menu",
 			G_CALLBACK(on_view_popup), browser);
+#if GTK_CHECK_VERSION(2, 8, 0)
+	g_signal_connect(G_OBJECT(browser->iconview), "drag-data-get",
+			G_CALLBACK(on_view_drag_data_get), browser);
+	g_signal_connect(G_OBJECT(browser->iconview), "drag-data-received",
+			G_CALLBACK(on_view_drag_data_received), browser);
+#endif
 	gtk_container_add(GTK_CONTAINER(browser->scrolled), browser->iconview);
 }
 

@@ -72,6 +72,14 @@ void on_icon_default(GtkIconView * view, GtkTreePath * path, gpointer data);
 #endif
 void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 		gchar * arg2, gpointer data);
+#if GTK_CHECK_VERSION(2, 8, 0)
+void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * dc,
+		GtkSelectionData * seldata, guint info, guint time,
+		gpointer data);
+void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
+		gint x, gint y, GtkSelectionData * seldata, guint info,
+		guint time, gpointer data);
+#endif
 gboolean on_view_popup(GtkWidget * widget, gpointer data);
 gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
