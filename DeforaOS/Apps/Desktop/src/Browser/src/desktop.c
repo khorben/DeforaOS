@@ -136,6 +136,9 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data);
 static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
 		gpointer data);
+static void _on_icon_drag_data_get(GtkWidget * widget, GdkDragContext * context,
+		GtkSelectionData * seldata, guint info, guint time,
+		gpointer data);
 static void _on_icon_drag_data_received(GtkWidget * widget,
 		GdkDragContext * context, gint x, gint y,
 		GtkSelectionData * seldata, guint info, guint time,
@@ -208,12 +211,16 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	if(icon == NULL)
 		icon = desktop->file;
 	eventbox = gtk_event_box_new();
+	gtk_drag_source_set(eventbox, GDK_BUTTON1_MASK, targets, targets_cnt,
+			GDK_ACTION_COPY | GDK_ACTION_MOVE);
 	gtk_drag_dest_set(eventbox, GTK_DEST_DEFAULT_ALL, targets, targets_cnt,
 			GDK_ACTION_COPY | GDK_ACTION_MOVE);
 	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
 			G_CALLBACK(_on_icon_button_press), desktopicon);
 	g_signal_connect(G_OBJECT(eventbox), "key-press-event",
 			G_CALLBACK(_on_icon_key_press), desktopicon);
+	g_signal_connect(G_OBJECT(eventbox), "drag-data-get",
+			G_CALLBACK(_on_icon_drag_data_get), desktopicon);
 	g_signal_connect(G_OBJECT(eventbox), "drag-data-received",
 			G_CALLBACK(_on_icon_drag_data_received), desktopicon);
 	desktopicon->event = eventbox;
@@ -460,6 +467,32 @@ static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
 	else /* not handling it */
 		return FALSE;
 	return TRUE;
+}
+
+static void _on_icon_drag_data_get(GtkWidget * widget, GdkDragContext * context,
+		GtkSelectionData * seldata, guint info, guint time,
+		gpointer data)
+{
+	DesktopIcon * desktopicon = data;
+	Desktop * desktop = desktopicon->desktop;
+	size_t i;
+	size_t len;
+	unsigned char * p;
+
+	seldata->format = 8;
+	seldata->data = NULL;
+	seldata->length = 0;
+	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		if(desktop->icon[i]->selected != TRUE)
+			continue;
+		len = strlen(desktop->icon[i]->path) + 1;
+		if((p = realloc(seldata->data, seldata->length + len)) == NULL)
+			continue; /* XXX report error */
+		seldata->data = p;
+		memcpy(&p[seldata->length], desktop->icon[i]->path, len);
+		seldata->length += len;
+	}
 }
 
 static void _on_icon_drag_data_received(GtkWidget * widget,
