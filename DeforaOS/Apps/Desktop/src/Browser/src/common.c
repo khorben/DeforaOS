@@ -48,7 +48,7 @@ static int _common_drag_data_received(GdkDragContext * context,
 #else
 	selection = g_list_append(selection, dest);
 	if(context->suggested_action == GDK_ACTION_COPY)
-		ret = _common_exec("copy", "-ir", selection);
+		ret = _common_exec("copy", "-iR", selection);
 	else if(context->suggested_action == GDK_ACTION_MOVE)
 		ret = _common_exec("move", "-i", selection);
 #endif
