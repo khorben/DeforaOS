@@ -394,7 +394,7 @@ static int _move_multiple(Move * move, char const * src, char const * dst)
 	if((p = strdup(src)) == NULL)
 		return _move_error(move, src, 1);
 	to = basename(p);
-	len = strlen(src + strlen(to) + 2);
+	len = strlen(src) + strlen(to) + 2;
 	if((q = malloc(len * sizeof(char))) == NULL)
 	{
 		free(p);
