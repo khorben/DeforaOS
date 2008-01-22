@@ -833,13 +833,14 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	GtkTreePath * path;
 	GtkTreeIter iter;
 	char * p;
+	size_t len;
 	size_t i;
 	GList * selection = NULL;
 #ifdef DEBUG
 	GList * s;
 #endif
 
-	if(seldata->length == 0 || seldata->data == NULL)
+	if(seldata->length <= 0 || seldata->data == NULL)
 		return;
 	path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(browser->iconview),
 			x, y);
@@ -848,7 +849,8 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&p, -1);
-	for(i = 0; i < seldata->length; i += strlen(&seldata->data[i]) + 1)
+	len = seldata->length;
+	for(i = 0; i < len; i += strlen(&seldata->data[i]) + 1)
 		selection = g_list_append(selection, &seldata->data[i]);
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
