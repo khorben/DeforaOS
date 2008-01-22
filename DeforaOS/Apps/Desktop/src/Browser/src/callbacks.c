@@ -787,18 +787,16 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	Browser * browser = data;
 	GtkTreePath * path;
 	GtkTreeIter iter;
-	char * p;
+	char * dest;
 
-	if(seldata->length <= 0 || seldata->data == NULL)
-		return;
 	path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(browser->iconview),
 			x, y);
 	if(path == NULL)
 		return; /* FIXME then use the current directory */
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
-			&p, -1);
-	if(_common_drag_data_received(context, seldata, p) != 0)
+			&dest, -1);
+	if(_common_drag_data_received(context, seldata, dest) != 0)
 		browser_error(browser, "fork", 0);
 }
 #endif

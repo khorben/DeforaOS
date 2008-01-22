@@ -34,6 +34,8 @@ static int _common_drag_data_received(GdkDragContext * context,
 	GList * s;
 #endif
 
+	if(seldata->length <= 0 || seldata->data == NULL)
+		return;
 	len = seldata->length;
 	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
 		selection = g_list_append(selection, &seldata->data[i]);

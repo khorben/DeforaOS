@@ -14,8 +14,7 @@
  * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 /* FIXME:
- * - enable drag and drop as a source
- * - factorize code with browser (drag and drop, exec) */
+ * - enable drag and drop as a source */
 
 
 
@@ -469,37 +468,9 @@ static void _on_icon_drag_data_received(GtkWidget * widget,
 		gpointer data)
 {
 	DesktopIcon * desktopicon = data;
-	size_t len;
-	size_t i;
-	GList * selection = NULL;
-#ifdef DEBUG
-	GList * s;
-#else
-	int ret = 0;
-#endif
 
-	if(seldata->length <= 0 || seldata->data == NULL)
-		return;
-	len = seldata->length;
-	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
-		selection = g_list_append(selection, &seldata->data[i]);
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
-			context->suggested_action == GDK_ACTION_COPY ? "copying"
-			: "moving", " to \"", desktopicon->path, "\":\n");
-	for(s = selection; s != NULL; s = s->next)
-		fprintf(stderr, "DEBUG: \"%s\" to \"%s\"\n", seldata->data,
-				desktopicon->path);
-#else
-	selection = g_list_append(selection, desktopicon->path);
-	if(context->suggested_action == GDK_ACTION_COPY)
-		ret = _common_exec("copy", "-ir", selection);
-	else if(context->suggested_action == GDK_ACTION_MOVE)
-		ret = _common_exec("move", "-i", selection);
-	if(ret != 0)
+	if(_common_drag_data_received(context, seldata, desktopicon->path) != 0)
 		desktop_error(desktopicon->desktop, "fork", 0);
-#endif
-	g_list_free(selection);
 }
 
 
