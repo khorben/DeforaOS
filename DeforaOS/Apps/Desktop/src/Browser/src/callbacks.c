@@ -747,7 +747,7 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 
 #if GTK_CHECK_VERSION(2, 8, 0)
 /* on_view_drag_data_get */
-void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * dc,
+void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * context,
 		GtkSelectionData * seldata, guint info, guint time,
 		gpointer data)
 	/* XXX could be more optimal */
@@ -766,7 +766,7 @@ void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * dc,
 	{
 		len = strlen(s->data) + 1;
 		if((p = realloc(seldata->data, seldata->length + len)) == NULL)
-			continue;
+			continue; /* XXX report error */
 		seldata->data = p;
 		memcpy(&p[seldata->length], s->data, len);
 		seldata->length += len;
@@ -792,10 +792,14 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(browser->iconview),
 			x, y);
 	if(path == NULL)
-		return; /* FIXME then use the current directory */
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter, path);
-	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
-			&dest, -1);
+		dest = browser->current->data;
+	else
+	{
+		gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store), &iter,
+				path);
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &dest, -1);
+	}
 	if(_common_drag_data_received(context, seldata, dest) != 0)
 		browser_error(browser, "fork", 0);
 }
