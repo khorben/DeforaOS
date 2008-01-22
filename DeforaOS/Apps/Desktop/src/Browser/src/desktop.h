@@ -28,7 +28,7 @@ typedef struct _DesktopIcon DesktopIcon;
 typedef struct _Desktop Desktop; /* XXX forward declaration */
 
 /* functions */
-DesktopIcon * desktopicon_new(struct _Desktop * desktop, char const * name,
+DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		char const * url);
 void desktopicon_delete(DesktopIcon * desktopicon);
 
