@@ -14,6 +14,7 @@
  * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 /* FIXME:
+ * - enable drag and drop as a source
  * - factorize code with browser (drag and drop, exec) */
 
 
@@ -32,6 +33,8 @@
 #include <gdk/gdkkeysyms.h>
 #include "mime.h"
 #include "desktop.h"
+#define PACKAGE "desktop"
+#include "common.c"
 
 
 /* constants */
@@ -82,61 +85,8 @@ struct _DesktopIcon
 
 /* functions */
 /* private */
-static void _desktopicon_exec(DesktopIcon * desktopicon, char * program,
-		char * flags, GList * selection);
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 		GdkPixbuf * icon);
-
-
-/* desktopicon_exec */
-static void _desktopicon_exec(DesktopIcon * desktopicon, char * program,
-		char * flags, GList * selection)
-{
-	unsigned long i = flags != NULL ? 3 : 2;
-	char ** argv = NULL;
-	pid_t pid;
-	GList * p;
-	char ** q;
-
-	if(selection == NULL)
-		return;
-	if((pid = fork()) == -1)
-	{
-		desktop_error(desktopicon->desktop, "fork", 0);
-		return;
-	}
-	else if(pid != 0)
-		return;
-	for(p = selection; p != NULL; p = p->next)
-	{
-		if(p->data == NULL)
-			continue;
-		if((q = realloc(argv, sizeof(*argv) * (i + 2))) == NULL)
-		{
-			fprintf(stderr, "%s%s%s%s%s", "desktop: ", program,
-					": ", strerror(errno), "\n");
-			exit(2);
-		}
-		argv = q;
-		argv[i++] = p->data;
-	}
-	if(argv == NULL)
-		exit(0);
-#ifdef DEBUG
-	argv[0] = "echo";
-#else
-	argv[0] = program;
-#endif
-	argv[i] = NULL;
-	i = 1;
-	if(flags != NULL)
-		argv[i++] = flags;
-	argv[i] = "--";
-	execvp(argv[0], argv);
-	fprintf(stderr, "%s%s%s%s", "desktop: ", argv[0], ": ", strerror(
-				errno));
-	exit(2);
-}
 
 
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
@@ -524,6 +474,8 @@ static void _on_icon_drag_data_received(GtkWidget * widget,
 	GList * selection = NULL;
 #ifdef DEBUG
 	GList * s;
+#else
+	int ret = 0;
 #endif
 
 	if(seldata->length <= 0 || seldata->data == NULL)
@@ -541,9 +493,11 @@ static void _on_icon_drag_data_received(GtkWidget * widget,
 #else
 	selection = g_list_append(selection, desktopicon->path);
 	if(context->suggested_action == GDK_ACTION_COPY)
-		_desktopicon_exec(desktopicon, "copy", "-ir", selection);
+		ret = _common_exec("copy", "-ir", selection);
 	else if(context->suggested_action == GDK_ACTION_MOVE)
-		_desktopicon_exec(desktopicon, "move", "-i", selection);
+		ret = _common_exec("move", "-i", selection);
+	if(ret != 0)
+		desktop_error(desktopicon->desktop, "fork", 0);
 #endif
 	g_list_free(selection);
 }
