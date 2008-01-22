@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME:
+ * - factorize code with browser (drag and drop, exec) */
 
 
 
@@ -80,8 +82,62 @@ struct _DesktopIcon
 
 /* functions */
 /* private */
+static void _desktopicon_exec(DesktopIcon * desktopicon, char * program,
+		char * flags, GList * selection);
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 		GdkPixbuf * icon);
+
+
+/* desktopicon_exec */
+static void _desktopicon_exec(DesktopIcon * desktopicon, char * program,
+		char * flags, GList * selection)
+{
+	unsigned long i = flags != NULL ? 3 : 2;
+	char ** argv = NULL;
+	pid_t pid;
+	GList * p;
+	char ** q;
+
+	if(selection == NULL)
+		return;
+	if((pid = fork()) == -1)
+	{
+		desktop_error(desktopicon->desktop, "fork", 0);
+		return;
+	}
+	else if(pid != 0)
+		return;
+	for(p = selection; p != NULL; p = p->next)
+	{
+		if(p->data == NULL)
+			continue;
+		if((q = realloc(argv, sizeof(*argv) * (i + 2))) == NULL)
+		{
+			fprintf(stderr, "%s%s%s%s%s", "desktop: ", program,
+					": ", strerror(errno), "\n");
+			exit(2);
+		}
+		argv = q;
+		argv[i++] = p->data;
+	}
+	if(argv == NULL)
+		exit(0);
+#ifdef DEBUG
+	argv[0] = "echo";
+#else
+	argv[0] = program;
+#endif
+	argv[i] = NULL;
+	i = 1;
+	if(flags != NULL)
+		argv[i++] = flags;
+	argv[i] = "--";
+	execvp(argv[0], argv);
+	fprintf(stderr, "%s%s%s%s", "desktop: ", argv[0], ": ", strerror(
+				errno));
+	exit(2);
+}
+
 
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 		GdkPixbuf * icon)
@@ -122,6 +178,7 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 	g_object_unref(mask);
 }
 
+
 /* desktopicon_new */
 /* callbacks */
 static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
@@ -129,6 +186,10 @@ static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 static gboolean _on_icon_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data);
 static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
+		gpointer data);
+static void _on_icon_drag_data_received(GtkWidget * widget,
+		GdkDragContext * context, gint x, gint y,
+		GtkSelectionData * seldata, guint info, guint time,
 		gpointer data);
 
 DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
@@ -140,6 +201,8 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	GdkGeometry geometry;
 	GtkWidget * vbox;
 	GtkWidget * eventbox;
+	GtkTargetEntry targets[] = { { "deforaos_browser_dnd", 0, 0 } };
+	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
 	GdkPixbuf * icon = NULL;
 	char * p;
 	GtkLabel * label;
@@ -196,10 +259,14 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	if(icon == NULL)
 		icon = desktop->file;
 	eventbox = gtk_event_box_new();
+	gtk_drag_dest_set(eventbox, GTK_DEST_DEFAULT_ALL, targets, targets_cnt,
+			GDK_ACTION_COPY | GDK_ACTION_MOVE);
 	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
 			G_CALLBACK(_on_icon_button_press), desktopicon);
 	g_signal_connect(G_OBJECT(eventbox), "key-press-event",
 			G_CALLBACK(_on_icon_key_press), desktopicon);
+	g_signal_connect(G_OBJECT(eventbox), "drag-data-received",
+			G_CALLBACK(_on_icon_drag_data_received), desktopicon);
 	desktopicon->event = eventbox;
 	desktopicon->image = gtk_image_new_from_pixbuf(icon);
 	gtk_widget_set_size_request(desktopicon->image, DESKTOPICON_MIN_WIDTH,
@@ -444,6 +511,41 @@ static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
 	else /* not handling it */
 		return FALSE;
 	return TRUE;
+}
+
+static void _on_icon_drag_data_received(GtkWidget * widget,
+		GdkDragContext * context, gint x, gint y,
+		GtkSelectionData * seldata, guint info, guint time,
+		gpointer data)
+{
+	DesktopIcon * desktopicon = data;
+	size_t len;
+	size_t i;
+	GList * selection = NULL;
+#ifdef DEBUG
+	GList * s;
+#endif
+
+	if(seldata->length <= 0 || seldata->data == NULL)
+		return;
+	len = seldata->length;
+	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
+		selection = g_list_append(selection, &seldata->data[i]);
+#ifdef DEBUG
+	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
+			context->suggested_action == GDK_ACTION_COPY ? "copying"
+			: "moving", " to \"", desktopicon->path, "\":\n");
+	for(s = selection; s != NULL; s = s->next)
+		fprintf(stderr, "DEBUG: \"%s\" to \"%s\"\n", seldata->data,
+				desktopicon->path);
+#else
+	selection = g_list_append(selection, desktopicon->path);
+	if(context->suggested_action == GDK_ACTION_COPY)
+		_desktopicon_exec(desktopicon, "copy", "-ir", selection);
+	else if(context->suggested_action == GDK_ACTION_MOVE)
+		_desktopicon_exec(desktopicon, "move", "-i", selection);
+#endif
+	g_list_free(selection);
 }
 
 
