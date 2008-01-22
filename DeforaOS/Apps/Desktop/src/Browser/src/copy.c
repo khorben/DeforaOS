@@ -13,6 +13,9 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* TODO:
+ * - browse sub-directories when idle
+ * - copy files when data is available */
 
 
 
@@ -157,6 +160,7 @@ static void _copy_on_closex(GtkWidget * widget, GdkEvent * event,
 
 static int _copy_single(Copy * copy, char const * src, char const * dst);
 static gboolean _copy_idle_multiple(gpointer data);
+
 static gboolean _copy_idle_first(gpointer data)
 {
 	Copy * copy = data;
@@ -391,7 +395,7 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 	if((p = strdup(src)) == NULL)
 		return _copy_error(copy, src, 1);
 	to = basename(p);
-	len = strlen(src + strlen(to) + 2);
+	len = strlen(dst) + strlen(to) + 2;
 	if((q = malloc(len * sizeof(char))) == NULL)
 	{
 		free(p);
