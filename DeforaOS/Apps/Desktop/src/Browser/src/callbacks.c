@@ -32,6 +32,7 @@ static char const _license[] =
 #include "callbacks.h"
 #include "browser.h"
 #include "../config.h"
+#include "common.c"
 
 
 /* constants */
@@ -135,9 +136,6 @@ void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 
 
 /* on_edit_delete */
-static void _exec(Browser * browser, char * program, char * flags,
-		GList * selection);
-
 void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
@@ -166,62 +164,15 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(GTK_WIDGET(dialog));
 	}
-	if(ret == GTK_RESPONSE_YES)
-		_exec(browser, "delete", "-ir", selection);
+	if(ret == GTK_RESPONSE_YES
+			&& _common_exec("delete", "-ir", selection) != 0)
+		browser_error(browser, "fork", 0);
 	g_list_foreach(selection, (GFunc)free, NULL);
 	g_list_free(selection);
 }
 
-static void _exec(Browser * browser, char * program, char * flags,
-		GList * selection)
-{
-	unsigned long i = flags != NULL ? 3 : 2;
-	char ** argv = NULL;
-	pid_t pid;
-	GList * p;
-	char ** q;
 
-	if(selection == NULL)
-		return;
-	if((pid = fork()) == -1)
-	{
-		browser_error(browser, "fork", 0);
-		return;
-	}
-	else if(pid != 0)
-		return;
-	for(p = selection; p != NULL; p = p->next)
-	{
-		if(p->data == NULL)
-			continue;
-		if((q = realloc(argv, sizeof(*argv) * (i + 2))) == NULL)
-		{
-			fprintf(stderr, "%s%s%s%s%s", "browser: ", program,
-					": ", strerror(errno), "\n");
-			exit(2);
-		}
-		argv = q;
-		argv[i++] = p->data;
-	}
-	if(argv == NULL)
-		exit(0);
-#ifdef DEBUG
-	argv[0] = "echo";
-#else
-	argv[0] = program;
-#endif
-	argv[i] = NULL;
-	i = 1;
-	if(flags != NULL)
-		argv[i++] = flags;
-	argv[i] = "--";
-	execvp(argv[0], argv);
-	fprintf(stderr, "%s%s%s%s\n", "browser: ", argv[0], ": ",
-			strerror(errno));
-	exit(2);
-}
-
-
+/* on_edit_paste */
 void on_edit_paste(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
@@ -232,11 +183,13 @@ void on_edit_paste(GtkMenuItem * menuitem, gpointer data)
 	browser->selection = g_list_append(browser->selection, p);
 	if(browser->selection_cut != 1)
 	{
-		_exec(browser, "copy", "-ir", browser->selection);
+		if(_common_exec("copy", "-ir", browser->selection) != 0)
+			browser_error(browser, "fork", 0);
 		browser->selection = g_list_remove(browser->selection, p);
 		return;
 	}
-	_exec(browser, "move", "-i", browser->selection);
+	if(_common_exec("move", "-i", browser->selection) != 0)
+		browser_error(browser, "fork", 0);
 	browser->selection = g_list_remove(browser->selection, p);
 	g_list_foreach(browser->selection, (GFunc)free, NULL);
 	g_list_free(browser->selection);
@@ -244,6 +197,7 @@ void on_edit_paste(GtkMenuItem * menuitem, gpointer data)
 }
 
 
+/* on_edit_select_all */
 void on_edit_select_all(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
@@ -649,7 +603,8 @@ void on_properties(GtkWidget * widget, gpointer data)
 
 	if((selection = _copy_selection(browser)) == NULL)
 		selection = g_list_append(NULL, strdup(browser->current->data));
-	_exec(browser, "properties", NULL, selection);
+	if(_common_exec("properties", NULL, selection) != 0)
+		browser_error(browser, "fork", 0);
 	g_list_foreach(selection, (GFunc)free, NULL);
 	g_list_free(selection);
 }
@@ -838,6 +793,8 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	GList * selection = NULL;
 #ifdef DEBUG
 	GList * s;
+#else
+	int ret = 0;
 #endif
 
 	if(seldata->length <= 0 || seldata->data == NULL)
@@ -850,7 +807,7 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&p, -1);
 	len = seldata->length;
-	for(i = 0; i < len; i += strlen(&seldata->data[i]) + 1)
+	for(i = 0; i < len; i += strlen((char*)&seldata->data[i]) + 1)
 		selection = g_list_append(selection, &seldata->data[i]);
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
@@ -861,9 +818,11 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 #else
 	selection = g_list_append(selection, p);
 	if(context->suggested_action == GDK_ACTION_COPY)
-		_exec(browser, "copy", "-ir", selection);
+		ret = _common_exec("copy", "-ir", selection);
 	else if(context->suggested_action == GDK_ACTION_MOVE)
-		_exec(browser, "move", "-i", selection);
+		ret = _common_exec("move", "-i", selection);
+	if(ret != 0)
+		browser_error(browser, "fork", 0);
 #endif
 	g_list_free(selection);
 }
