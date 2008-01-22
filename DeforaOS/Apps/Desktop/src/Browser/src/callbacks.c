@@ -260,12 +260,14 @@ void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data)
 }
 
 
+/* on_edit_preferences */
 static void _preferences_set(Browser * browser);
 /* callbacks */
 static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+
 void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 {
 	Browser * browser = data;
@@ -368,6 +370,7 @@ void on_view_home(GtkWidget * widget, gpointer data)
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
+/* on_view_details */
 void on_view_details(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -376,6 +379,7 @@ void on_view_details(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_view_icons */
 void on_view_icons(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -384,6 +388,7 @@ void on_view_icons(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_view_list */
 void on_view_list(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -392,6 +397,7 @@ void on_view_list(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_view_thumbnails */
 void on_view_thumbnails(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
@@ -402,6 +408,7 @@ void on_view_thumbnails(GtkWidget * widget, gpointer data)
 
 
 /* help menu */
+/* on_help_about */
 static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 #if !GTK_CHECK_VERSION(2, 6, 0)
@@ -797,6 +804,7 @@ void on_view_drag_data_get(GtkWidget * widget, GdkDragContext * dc,
 	unsigned char * p;
 
 	selection = _copy_selection(browser);
+	seldata->format = 8;
 	seldata->data = NULL;
 	seldata->length = 0;
 	for(s = selection; s != NULL; s = s->next)
@@ -831,7 +839,7 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	GList * s;
 #endif
 
-	if(seldata->data == NULL || seldata->length == 0)
+	if(seldata->length == 0 || seldata->data == NULL)
 		return;
 	path = gtk_icon_view_get_path_at_pos(GTK_ICON_VIEW(browser->iconview),
 			x, y);
@@ -842,7 +850,6 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 			&p, -1);
 	for(i = 0; i < seldata->length; i += strlen(&seldata->data[i]) + 1)
 		selection = g_list_append(selection, &seldata->data[i]);
-	selection = g_list_append(selection, p);
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
 			context->suggested_action == GDK_ACTION_COPY ? "copying"
@@ -850,6 +857,7 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	for(s = selection; s != NULL; s = s->next)
 		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
 #else
+	selection = g_list_append(selection, p);
 	if(context->suggested_action == GDK_ACTION_COPY)
 		_exec(browser, "copy", "-ir", selection);
 	else if(context->suggested_action == GDK_ACTION_MOVE)

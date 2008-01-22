@@ -1386,10 +1386,7 @@ static void _view_icon_view(Browser * browser)
 	GList * sel = NULL;
 	GList * p;
 #if GTK_CHECK_VERSION(2, 8, 0)
-	GtkTargetEntry targets[] =
-	{
-		{ "deforaos_browser_dnd", GTK_TARGET_SAME_APP, 0 }
-	};
+	GtkTargetEntry targets[] = { { "deforaos_browser_dnd", 0, 0 } };
 	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
 #endif
 
