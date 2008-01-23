@@ -13,6 +13,12 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME:
+ * - conform to http://www.freedesktop.org/wiki/Specifications/XDND
+ *   * the target should be "text/uri-list"
+ *   * filenames should be prepended with "file:///"
+ *   * how is this supposed to handle multiple filenames then? "\r\n"?
+ * - implement XDS: http://www.newplanetsoftware.com/xds/ */
 
 
 /* prototypes */
