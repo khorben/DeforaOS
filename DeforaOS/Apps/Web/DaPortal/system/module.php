@@ -189,6 +189,19 @@ function _module_link_full($module, $action = FALSE, $id = FALSE,
 }
 
 
+function _module_name($id)
+{
+	static $cache = array();
+	global $user_id;
+
+	if(isset($cache[$id]))
+		return $cache[$id];
+	$cache[$id] = _sql_single('SELECT name FROM daportal_module'
+			." WHERE module_id='$id' AND enabled='1'");
+	return $cache[$id];
+}
+
+
 function _module_parse_friendly($path)
 {
 	$path = explode('/', $path);
