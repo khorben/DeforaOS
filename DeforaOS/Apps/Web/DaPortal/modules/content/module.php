@@ -117,14 +117,13 @@ function content_default($args)
 		$where = '';
 	else
 		$where = " AND daportal_content.enabled='1'";
-	$content = _sql_array('SELECT name FROM daportal_content'
+	$module = _sql_single('SELECT name FROM daportal_content'
 			.', daportal_module WHERE daportal_content'
 			.'.module_id=daportal_module.module_id'
 			.$where." AND content_id='".$args['id']."'");
-	if(!is_array($content) || count($content) != 1)
+	if($module == FALSE)
 		return _error('Could not display content');
-	$content = $content[0];
-	_module($content['name'], 'default', array('id' => $args['id']));
+	_module($module, FALSE, array('id' => $args['id']));
 }
 
 
