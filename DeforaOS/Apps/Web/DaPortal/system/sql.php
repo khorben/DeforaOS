@@ -22,8 +22,10 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: '.dirname($_SERVER['SCRIPT_NAME'])));
 
 
-function _sql_date($timestamp)
+function _sql_date($timestamp = FALSE)
 {
+	if($timestamp == FALSE)
+		return strftime(DATE_FORMAT);
 	return strftime(DATE_FORMAT, strtotime(substr($timestamp, 0, 19)));
 }
 
