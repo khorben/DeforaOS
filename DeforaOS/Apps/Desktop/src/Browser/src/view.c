@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "Browser is not free software; you can redistribute it and/or modify it\n"
@@ -179,7 +179,10 @@ static View * _view_new(char const * pathname)
 	widget = _new_menubar(view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	if(strncmp(type, "image/", 6) == 0)
-		widget = _new_image(view, pathname);
+	{
+		if((widget = _new_image(view, pathname)) == NULL)
+			return NULL;
+	}
 	else if(strncmp(type, "text/", 5) == 0)
 	{
 		widget = _new_text(view, pathname);
@@ -246,6 +249,7 @@ static GtkWidget * _new_menubar(View * view)
 static GtkWidget * _new_image(View * view, char const * path)
 {
 	GtkWidget * window;
+	GError * error = NULL;
 	GdkPixbuf * pixbuf;
 	GtkWidget * widget;
 	int pw;
@@ -257,7 +261,12 @@ static GtkWidget * _new_image(View * view, char const * path)
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	pixbuf = gdk_pixbuf_new_from_file_at_size(path, -1, -1, NULL);
+	if((pixbuf = gdk_pixbuf_new_from_file_at_size(path, -1, -1, &error))
+			== NULL)
+	{
+		_view_error(view, error->message, 1);
+		return NULL;
+	}
 	widget = gtk_image_new_from_pixbuf(pixbuf);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(window),
 			widget);
@@ -323,7 +332,8 @@ static void _view_delete(View * view)
 
 
 /* useful */
-/* view_error */
+/* view_error
+ * POST	view is deleted if ret != 0 */
 static void _error_response(GtkWidget * widget, gint arg, gpointer data);
 
 static int _view_error(View * view, char const * message, int ret)
