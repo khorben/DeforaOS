@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* Browser is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* TODO:
+ * - C-c C-x C-v shortcuts break copy/cut/paste in the location bar */
 
 
 
@@ -639,9 +641,12 @@ void browser_refresh(Browser * browser)
 static void _refresh_title(Browser * browser)
 {
 	char buf[256];
+	char * p;
 
-	snprintf(buf, sizeof(buf), "%s%s", "File browser - ",
-			(char*)browser->current->data);
+	p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL, NULL);
+	snprintf(buf, sizeof(buf), "%s%s", "File browser - ", p != NULL ? p
+			: (char*)browser->current->data);
+	free(p);
 	gtk_window_set_title(GTK_WINDOW(browser->window), buf);
 }
 
@@ -654,7 +659,10 @@ static void _refresh_path(Browser * browser)
 	char * q;
 
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
-	gtk_entry_set_text(GTK_ENTRY(widget), browser->current->data);
+	p = g_filename_to_utf8(browser->current->data, -1, NULL, NULL, NULL);
+	gtk_entry_set_text(GTK_ENTRY(widget), p != NULL ? p
+			: browser->current->data);
+	free(p);
 	for(i = 0; i < cnt; i++)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(browser->tb_path), 0);
 	if((p = g_path_get_dirname(browser->current->data)) == NULL)

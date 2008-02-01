@@ -709,7 +709,8 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	int isdir = 0;
 	char * path = NULL;
 	ssize_t len;
-	char * q = NULL;
+	char * p = NULL;
+	char * q;
 	struct stat st;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
@@ -718,29 +719,31 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 				BR_COL_PATH, &path, -1);
 		if(path != NULL && (len = strrchr(path, '/') - path) > 0
 				&& strcmp(&path[len + 1], arg2) != 0)
-			q = malloc(len + strlen(arg2) + 2);
+			p = malloc(len + strlen(arg2) + 2);
 	}
-	if(q == NULL)
+	if(p == NULL)
 	{
 		free(path);
 		return;
 	}
-	strncpy(q, path, len);
-	sprintf(&q[len], "/%s", arg2);
-	if(isdir && lstat(q, &st) == -1 && errno == ENOENT) /* XXX TOCTOU */
+	strncpy(p, path, len);
+	sprintf(&p[len], "/%s", arg2);
+	if(isdir && lstat(p, &st) == -1 && errno == ENOENT) /* XXX TOCTOU */
 	{
-		if(rename(path, q) != 0)
+		q = g_filename_from_utf8(p, -1, NULL, NULL, NULL);
+		if(rename(path, q != NULL ? q : p) != 0)
 			browser_error(browser, strerror(errno), 0);
 		else
 			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
-					q, BR_COL_DISPLAY_NAME, arg2, -1);
+					p, BR_COL_DISPLAY_NAME, arg2, -1);
+		free(q);
 	}
-	else if(link(path, q) != 0 || unlink(path) != 0)
+	else if(link(path, p) != 0 || unlink(path) != 0)
 		browser_error(browser, strerror(errno), 0);
 	else
-		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, q,
+		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, p,
 				BR_COL_DISPLAY_NAME, arg2, -1);
-	free(q);
+	free(p);
 	free(path);
 }
 
