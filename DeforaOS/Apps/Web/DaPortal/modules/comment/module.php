@@ -33,33 +33,78 @@ $text['COMMENT_ADMINISTRATION'] = 'Comments administration';
 $text['COMMENT_BY'] = 'Comment by';
 $text['COMMENT_LIST'] = 'Comment list';
 $text['COMMENT_ON'] = 'on';
-$text['COMMENT_PREVIEW'] = 'Comment preview';
-$text['COMMENT_S'] = 'comment(s)';
-$text['COMMENTS'] = 'Comments';
-$text['COMMENTS_BY'] = 'Comments by';
-$text['NEW_COMMENT'] = 'New comment';
+$text['COMMENT_RE'] = 'Re: ';
 $text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'de')
 {
-	$text['COMMENT_S'] = 'Kommentar';
-	$text['NEW_COMMENT'] = 'Neu Kommentar';
+	$text['COMMENT_BY'] = 'Kommentar von';
+	$text['COMMENT_ON'] = 'am';
 }
 else if($lang == 'fr')
 {
-	$text['COMMENT_ADMINISTRATION'] = 'Administration des commentaires';
 	$text['COMMENT_BY'] = 'Commentaire de';
 	$text['COMMENT_ON'] = 'le';
-	$text['COMMENT_PREVIEW'] = 'Aperçu du commentaire';
-	$text['COMMENT_S'] = 'commentaire(s)';
-	$text['COMMENTS'] = 'Commentaires';
-	$text['COMMENTS_BY'] = 'Commentaires par';
-	$text['NEW_COMMENT'] = 'Nouveau commentaire';
 	$text['SETTINGS'] = 'Paramètres';
 }
 _lang($text);
 
 
+//private
+//comment_display
+function _comment_display($module, $parent, $id)
+{
+	global $user_id;
+
+	$where = '';
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		$where = " AND enabled='1'";
+	$comment = _sql_array('SELECT comment_id AS id, title, user_id'
+			.', timestamp AS date, content'
+			.' FROM daportal_comment, daportal_content'
+			.' WHERE daportal_comment.comment_id'
+			.'=daportal_content.content_id'.$where
+			." AND comment_id='$id'");
+	if(!is_array($comment) || count($comment) != 1)
+		return 'Could not display comment';
+	$comment = $comment[0];
+	$comment['module'] = $module;
+	$comment['parent'] = $parent;
+	$comment['username'] = _user_name($comment['user_id']);
+	$comment['date'] = _sql_date($comment['date']);
+	include('./modules/comment/display.tpl');
+}
+
+
+//comment_parents
+function _comment_parents($module, $id)
+{
+	$ids = array();
+	$module = '';
+	for($child = $id;; $child = $parent)
+	{
+		$res = _sql_array('SELECT parent.content_id AS id'
+				.', parent.module_id AS module_id'
+				.' FROM daportal_content parent'
+				.', daportal_comment child'
+				." WHERE parent.enabled='1'"
+				.' AND child.parent=parent.content_id'
+				." AND child.comment_id='$child'");
+		if(!is_array($res) || count($res) != 1
+				|| in_array($res[0]['id'], $ids))
+			break;
+		$parent = $res[0]['id'];
+		$ids[] = $child;
+	}
+	while($id = array_pop($ids))
+		_comment_display($module, $child, $id);
+	return TRUE;
+}
+
+
+//public
+//comment_admin
 function comment_admin($args)
 {
 	global $user_id;
@@ -92,7 +137,7 @@ function comment_admin($args)
 	{
 		$comments[$i]['module'] = 'content';
 		$comments[$i]['apply_module'] = 'content';
-		$comments[$i]['action'] = 'modify';
+		$comments[$i]['action'] = 'update';
 		$comments[$i]['apply_id'] = $comments[$i]['id'];
 		$comments[$i]['icon'] = 'icons/16x16/comment.png';
 		$comments[$i]['thumbnail'] = 'icons/48x48/comment.png';
@@ -114,7 +159,7 @@ function comment_admin($args)
 			'action' => 'disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
-	//FIXME does not work
+	//FIXME still does not work?
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => DELETE);
 	_module('explorer', 'browse_trusted', array('entries' => $comments,
@@ -125,32 +170,7 @@ function comment_admin($args)
 }
 
 
-function comment_childs($args)
-{
-	global $user_id;
-
-	$where = '';
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
-		$where = " AND daportal_content.enabled='1'"
-			." AND child.enabled='1'";
-	$parent = $args['id'];
-	//FIXME
-	$comments = _sql_array('SELECT child.content_id AS id'
-			.' FROM daportal_comment, daportal_content'
-			.', daportal_content AS child'
-			.' WHERE daportal_comment.parent'
-			.'=daportal_content.content_id'
-			.' AND daportal_comment.comment_id=child.content_id'
-			." AND daportal_content.content_id='$parent'".$where
-			.' ORDER BY child.timestamp ASC');
-	if(!is_array($comments))
-		return _error('Could not display comments');
-	foreach($comments as $c)
-		comment_display(array('id' => $c['id']));
-}
-
-
+//comment_config_update
 function comment_config_update($args)
 {
 	global $error;
@@ -161,171 +181,123 @@ function comment_config_update($args)
 }
 
 
+//comment_count
 function comment_count($args)
+	//FIXME return a string instead (to keep the translations here)
 {
 	$cnt = 0;
-	$ids = array();
 	$parents = array();
+	$ids = array();
 
+	if(!isset($args['id']))
+		return 0;
 	for($parents[] = $args['id']; $parent = array_shift($parents);)
 	{
 		$ids[] = $parent;
-		$comments = _sql_array('SELECT comment_id FROM daportal_comment'
-				.', daportal_content'
+		$comments = _sql_array('SELECT comment_id AS id'
+				.' FROM daportal_comment, daportal_content'
 				.' WHERE daportal_comment.comment_id'
 				.'=daportal_content.content_id'
-				." AND enabled='1'"
-				." AND parent='$parent'");
+				." AND enabled='1' AND parent='$parent'");
+		if(!is_array($comments))
+			return 0;
 		foreach($comments as $c)
 		{
-			if(in_array($c['comment_id'], $ids))
+			if(in_array($c['id'], $ids))
 				continue;
 			$cnt++;
-			$parents[] = $c['comment_id'];
+			$parents[] = $c['id'];
 		}
 	}
 	return $cnt;
 }
 
 
+//comment_childs
+function comment_childs($args)
+{
+	global $user_id;
+
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	$parent = $args['id'];
+	$module = _sql_single('SELECT name FROM daportal_content'
+			.', daportal_module WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_module.enabled='1'"
+			." AND content_id='$parent'");
+	$where = '';
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		$where = " AND daportal_content.enabled='1'";
+	$ids = array();
+	$parents = array();
+	for($parents[] = $args['id']; $parent = array_shift($parents);)
+	{
+		$ids[] = $parent;
+		$comments = _sql_array('SELECT comment_id AS id'
+				.' FROM daportal_comment, daportal_content'
+				.' WHERE daportal_comment.comment_id'
+				.'=daportal_content.content_id'
+				." AND daportal_comment.parent='$parent'"
+				.$where);
+		if(!is_array($comments))
+			return _error('Could not display comments');
+		foreach($comments as $c)
+		{
+			if(in_array($c['id'], $ids))
+				continue;
+			_comment_display($module, $args['id'], $c['id']);
+			$parents[] = $c['id'];
+		}
+	}
+}
+
+
+//comment_default
 function comment_default($args)
 {
 	if(isset($args['id']))
-		return comment_display(array('id' => $args['id']));
-	return comment_list($args);
+	{
+		_comment_display(array('id' => $args['id']));
+		comment_childs(array('id' => $args['id']));
+	}
+	_error(INVALID_ARGUMENT);
 }
 
 
-function comment_display($args)
+//comment_insert
+function comment_insert($comment)
 {
-	global $user_id;
+	global $user_id, $user_name, $error;
 
-	require_once('./system/user.php');
-	$where = " AND daportal_content.enabled='1'";
-	if(_user_admin($user_id))
-		$where = '';
-	$comment = _sql_array('SELECT daportal_comment.comment_id AS id'
-			.', daportal_content.enabled AS enabled, timestamp'
-			.', title, content, daportal_content.user_id AS user_id'
-			.', username FROM daportal_comment, daportal_content'
-			.', daportal_user WHERE daportal_comment.comment_id'
-			.'=daportal_content.content_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_comment.comment_id='".$args['id']."'"
-			.$where.' ORDER BY timestamp ASC');
-	if(!is_array($comment) || count($comment) != 1)
-		return _error('Could not display comment');
-	$comment = $comment[0];
-	$comment['date'] = strftime(DATE_FORMAT, strtotime(
-				substr($comment['timestamp'], 0, 19)));
-	include('./modules/comment/display.tpl');
-}
-
-
-function _comment_insert($comment)
-{
+	if($user_id == 0 && _config_get('comment', 'anonymous') != TRUE)
+	{
+		$error = PERMISSION_DENIED;
+		return;
+	}
+	if(!isset($comment['title']) || !isset($comment['content'])
+			|| !isset($comment['parent'])
+			|| !_sql_single('SELECT content_id'
+				.' FROM daportal_content'." WHERE enabled='1'"
+				." AND content_id='".$comment['parent']."'"))
+	{
+		$error = INVALID_ARGUMENT;
+		return;
+	}
 	require_once('./system/content.php');
 	if(!($id = _content_insert($comment['title'], $comment['content'], 1)))
 	{
-		_error('Could not insert comment');
-		return 0;
-	}
-	if($comment['parent'] == $id)
-	{
-		_error('Could not insert comment');
-		return 0;
-	}
-	//FIXME endless recursion may happen here
-	if(!_sql_query('INSERT INTO daportal_comment (comment_id, parent)'
-			.' VALUES ('."'$id', '".$comment['parent']."')"))
-	{
-		_error('Could not reference comment');
-		return 0;
-	}
-	return $comment['parent'];
-}
-
-
-function comment_list($args)
-{
-	//FIXME cleanup
-	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
-			.' FROM daportal_user'
-			." WHERE user_id='".$args['user_id']."'")))
-		$where = " AND daportal_content.user_id='".$args['user_id']."'";
-	else
-		return _error('Could not list comments');
-	print('<h1 class="title comment">'.COMMENTS_BY.' '._html_safe($username)
-		.'</h1>'."\n");
-	$comments = _sql_array('SELECT content_id AS id, timestamp'
-			.', title AS name, content, daportal_content.user_id'
-			.', username, daportal_module.name AS module'
-			.' FROM daportal_content, daportal_user'
-			.', daportal_module'
-			.' WHERE daportal_user.user_id=daportal_content.user_id'
-			." AND daportal_content.enabled='1'"
-			." AND daportal_module.name='comment'"
-			.' AND daportal_module.module_id'
-			.'=daportal_content.module_id'
-			.$where.' ORDER BY timestamp DESC');
-	if(!is_array($comments))
-		return _error('Could not list comments');
-	for($i = 0, $cnt = count($comments); $i < $cnt; $i++)
-	{
-		$comments[$i]['icon'] = 'modules/comment/icon.png';
-		$comments[$i]['thumbnail'] = 'modules/comment/icon.png';
-		$comments[$i]['action'] = 'display';
-		$comments[$i]['date'] = strftime('%d/%m/%y %H:%M',
-				strtotime(substr($comments[$i]['timestamp'], 0,
-						19)));
-	}
-	_module('explorer', 'browse', array('view' => 'details',
-			'class' => array('date' => DATE),
-			'entries' => $comments));
-}
-
-
-function comment_new($args)
-{
-	global $user_id;
-
-	if($user_id == 0 && _config_get('comment', 'anonymous') != SQL_TRUE)
-		return _error(PERMISSION_DENIED);
-	print('<h1 class="title comment">'._html_safe(NEW_COMMENT).'</h1>');
-	_module('content', 'default', array('id' => $args['parent']));
-	$parent = $args['parent'];
-	$comment['title'] = 'Re: '._sql_single('SELECT title'
-			.' FROM daportal_content'
-			." WHERE enabled='1'"
-			." AND content_id='$parent'");
-	include('./modules/comment/update.tpl');
-}
-
-
-function comment_submit($comment)
-{
-	global $user_id, $user_name;
-
-	if($user_id == 0 && _config_get('comment', 'anonymous') != SQL_TRUE)
-		return _error(PERMISSION_DENIED);
-	if(isset($comment['preview']))
-	{
-		print('<h1 class="title comment">'._html_safe(COMMENT_PREVIEW)
-				."</h1>\n");
-		_module('content', 'default',
-				array('id' => $comment['parent']));
-		$comment['title'] = stripslashes($comment['title']);
-		$comment['user_id'] = $user_id;
-		$comment['username'] = stripslashes($user_name);
-		$comment['date'] = strftime('%d/%m/%y %H:%M');
-		$comment['content'] = stripslashes($comment['content']);
-		include('./modules/comment/display.tpl');
-		$parent = $comment['parent'];
-		return include('./modules/comment/update.tpl');
-	}
-	if(!_comment_insert($comment))
+		$error = 'Could not insert comment';
 		return;
-	_module('content', 'default', array('id' => $comment['parent']));
+	}
+	if(!_sql_query('INSERT INTO daportal_comment (comment_id, parent)'
+				." VALUES ('$id', '".$comment['parent']."')"))
+	{
+		$error = 'Could not reference comment';
+		_content_delete($id);
+		return;
+	}
 	//send mail
 	if(($user_email = _sql_single('SELECT email FROM daportal_user'
 					." WHERE enabled='1'"
@@ -352,23 +324,68 @@ function comment_submit($comment)
 }
 
 
+//comment_reply
+function comment_reply($args)
+{
+	global $user_id, $user_name;
+
+	if(!isset($args['module']) || !isset($args['id'])
+			|| !isset($args['parent']))
+		return _error(INVALID_ARGUMENT);
+	//display parents
+	$comment = array();
+	$comment['module'] = $args['module'];
+	$comment['parent'] = $args['parent'];
+	if(_comment_parents($comment['module'], $comment['parent']) == FALSE)
+		return;
+	//populate comment
+	$comment['title'] = isset($args['title']) ? stripslashes($args['title'])
+		: '';
+	$comment['date'] = _sql_date();
+	$comment['user_id'] = $user_id;
+	$comment['username'] = $user_name;
+	$comment['content'] = isset($args['content'])
+		? stripslashes($args['content']) : '';
+	//check if there is a preview
+	if(isset($args['preview']) && $args['preview'] == TRUE)
+	{
+		if(isset($args['title']))
+			$comment['title'] = stripslashes($args['title']);
+		if(isset($args['content']))
+			$comment['content'] = stripslashes($args['content']);
+		$comment['preview'] = 1;
+		include('./modules/comment/display.tpl');
+		unset($comment['preview']);
+	}
+	$comment['id'] = $args['id'];
+	//generate title if not provided
+	if(!isset($args['title']) && ($res = _sql_single('SELECT title'
+					.' FROM daportal_content'
+					." WHERE content_id='$parent'")))
+		$comment['title'] = COMMENT_RE.': '.$res;
+	include('./modules/comment/update.tpl');
+}
+
+
+//comment_system
 function comment_system($args)
 {
-	global $title, $error;
+	global $user_id, $error;
 
-	$title.=' - '.COMMENTS;
-	if(!isset($args['action'])
-			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		exit(0);
+	if(!isset($args['action']) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
 	switch($args['action'])
 	{
 		case 'config_update':
-			$error = _system_config_update($args);
+			$error = _system_comment_config_update($args);
 			break;
 	}
 }
 
-function _system_config_update($args)
+function _system_comment_config_update($args)
 {
 	global $user_id;
 

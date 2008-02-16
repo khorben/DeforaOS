@@ -24,12 +24,15 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['COMMENT_S'] = 'comment(s)';
 $text['MODIFICATION_OF_NEWS'] = 'Modification of news';
 $text['NEWS_ADMINISTRATION'] = 'News administration';
 $text['NEWS'] = 'News';
 $text['NEWS_ON'] = 'on';
+$text['NEWS_RE'] = 'Re';
 $text['NEWS_PREVIEW'] = 'News preview';
 $text['NEWS_SUBMISSION'] = 'News submission';
+$text['REPLY_TO_NEWS'] = 'Reply to news';
 $text['SUBMIT_NEWS'] = 'Submit news';
 global $lang;
 if($lang == 'fr')
@@ -42,6 +45,24 @@ if($lang == 'fr')
 _lang($text);
 
 
+//private
+//news_display
+function _news_display($id, $title = NEWS)
+{
+	require_once('./system/content.php');
+	if(($news = _content_select($id, 1)) == FALSE)
+	{
+		_error(INVALID_ARGUMENT);
+		return FALSE;
+	}
+	$long = 1;
+	$news['date'] = _sql_date($news['timestamp']);
+	include('./modules/news/news_display.tpl');
+	return TRUE;
+}
+
+
+//news_insert
 function _news_insert($news)
 {
 	global $user_id;
@@ -90,7 +111,7 @@ function news_admin($args)
 	{
 		$res[$i]['module'] = 'news';
 		$res[$i]['apply_module'] = 'news';
-		$res[$i]['action'] = 'modify';
+		$res[$i]['action'] = 'update';
 		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['icon'] = 'icons/16x16/news.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
@@ -133,8 +154,14 @@ function news_admin($args)
 function news_default($args)
 {
 	if(isset($args['id']))
-		return news_display(array('id' => $args['id']));
-	news_list($args);
+	{
+		_news_display($args['id']);
+		if(_module_id('comment'))
+			_module('comment', 'childs',
+					array('id' => $args['id']));
+	}
+	else
+		news_list($args);
 }
 
 
@@ -161,21 +188,6 @@ function news_disable($args)
 	require_once('./system/content.php');
 	if(!_content_disable($args['id']))
 		return _error('Could not disable news');
-}
-
-
-function news_display($args)
-{
-	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
-	require_once('./system/content.php');
-	if(($news = _content_select($args['id'], 1)) == FALSE)
-		return _error(INVALID_ARGUMENT);
-	$long = 1;
-	$title = $news['title'];
-	$news['date'] = _sql_date($news['timestamp']);
-	include('./modules/news/news_display.tpl');
-	if(_module_id('comment'))
-		_module('comment', 'childs', array('id' => $news['id']));
 }
 
 
@@ -290,34 +302,37 @@ function _list_user($user_id, $username)
 }
 
 
-function news_modify($args)
+//news_reply
+function news_reply($args)
 {
-	global $user_id, $user_name;
+	global $error;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(isset($error) && strlen($error))
+		return _error($error);
+	if(!_module_id('comment'))
 		return _error(PERMISSION_DENIED);
-	if(($module_id = _module_id('news')) == FALSE)
-		return _error('Could not verify module');
-	$news = _sql_array('SELECT content_id AS id, title, content, enabled'
-		.' FROM daportal_content WHERE module_id='."'$module_id'"
-		." AND content_id='".$args['id']."'");
-	if(!is_array($news) || count($news) != 1)
-		return _error('Unable to modify news');
-	$news = $news[0];
-	print('<h1 class="title news">'._html_safe(MODIFICATION_OF_NEWS.' "'
-				.$news['title'])."\"</h1>\n");
-	$long = 1;
-	$title = NEWS_PREVIEW;
-	$news['id'] = stripslashes($news['id']);
-	$news['title'] = stripslashes($news['title']);
-	$news['user_id'] = $user_id; //FIXME keep original user
-	$news['username'] = $user_name;
-	$news['date'] = strftime(DATE_FORMAT);
-	$news['content'] = stripslashes($news['content']);
-	include('./modules/news/news_display.tpl');
-	unset($title);
-	include('./modules/news/news_update.tpl');
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	$id = $args['id'];
+	if(!($title = _sql_single('SELECT title FROM daportal_content'
+					." WHERE content_id='$id'")))
+		return _error(INVALID_ARGUMENT);
+	$title = NEWS_RE.': '.$title;
+	$content = '';
+	//display news
+	_news_display($id, REPLY_TO_NEWS);
+	//check if there is a preview
+	$parent = isset($args['parent']) ? $args['parent'] : $args['id'];
+	if(($preview = isset($args['preview'])))
+	{
+		$title = isset($args['title']) ? $args['title'] : $title;
+		$content = isset($args['content']) ? $args['content']
+			: $content;
+	}
+	//present form
+	_module('comment', 'reply', array('module' => 'news', 'id' => $id,
+				'parent' => $parent, 'preview' => $preview,
+				'title' => $title, 'content' => $content));
 }
 
 
@@ -365,6 +380,7 @@ function news_submit($args)
 	{
 		return include('./modules/news/news_posted.tpl');
 	}
+	$title = NEWS_SUBMISSION;
 	if(isset($args['preview']))
 	{
 		$long = 1;
@@ -378,15 +394,13 @@ function news_submit($args)
 		include('./modules/news/news_display.tpl');
 		unset($title);
 	}
-	else
-		$title = NEWS_SUBMISSION;
 	include('./modules/news/news_update.tpl');
 }
 
 
 function news_system($args)
 {
-	global $html, $title;
+	global $html, $title, $error;
 
 	$title.=' - '.NEWS;
 	if($_SERVER['REQUEST_METHOD'] == 'GET')
@@ -398,36 +412,54 @@ function news_system($args)
 		}
 		return;
 	}
-	else if($_SERVER['REQUEST_METHOD'] != 'POST')
+	else if($_SERVER['REQUEST_METHOD'] == 'POST')
+		switch($args['action'])
+		{
+			case 'reply':
+				$error = _system_news_reply($args);
+				return;
+			case 'submit':
+				$error = _system_news_submit($args);
+				return;
+			case 'update':
+				$error = _system_news_update($args);
+				return;
+		}
+}
+
+function _system_news_reply($args)
+{
+	global $error;
+
+	if(!_module_id('comment'))
+		return PERMISSION_DENIED;
+	if(!isset($args['id']))
+		return INVALID_ARGUMENT;
+	if(isset($args['preview']))
 		return;
-	switch($args['action'])
-	{
-		case 'submit':
-			return _system_news_submit($args);
-		case 'update':
-			return _system_news_update($args);
-	}
+	$args['parent'] = isset($args['parent']) ? $args['parent']
+		: $args['id'];
+	_module('comment', 'insert', $args);
+	if(strlen($error) != 0)
+		return $error;
+	header('Location: '._module_link('news', FALSE, $args['id'],
+				FALSE));
+	exit(0);
 }
 
 function _system_news_submit($args)
 {
-	global $error, $user_id, $user_name;
+	global $user_id, $user_name;
 
 	if($user_id == 0) //FIXME make it an option
-	{
-		$error = PERMISSION_DENIED;
-		return;
-	}
+		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
 	$news = array('user_id' => $user_id, 'username' => $user_name,
 			'title' => $args['title'],
 			'content' => $args['content']);
 	if(!($news['id'] = _news_insert($news)))
-	{
-		$error = 'Could not insert news';
-		return;
-	}
+		return 'Could not insert news';
 	_submit_send_mail($news);
 	header('Location: '._module_link('news', 'submit', FALSE, FALSE,
 				'send='));
@@ -451,7 +483,7 @@ function _submit_send_mail($news)
 	$news['title'] = stripslashes($news['title']);
 	$news['date'] = strftime(DATE_FORMAT);
 	$news['content'] = "News is available for moderation at:\n"
-		._module_link_full('news', 'modify', $news['id'])."\n"
+		._module_link_full('news', 'update', $news['id'])."\n"
 		."News preview:\n\n"
 		."News by ".$news['username']." on ".$news['date']."\n"
 		.stripslashes($news['content']);
@@ -462,27 +494,18 @@ function _submit_send_mail($news)
 
 function _system_news_update($args)
 {
-	global $error, $user_id;
+	global $user_id;
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
-	{
-		$error = PERMISSION_DENIED;
-		return;
-	}
+		return PERMISSION_DENIED;
 	if(isset($args['preview']))
 		return;
 	if(!is_numeric($args['id']))
-	{
-		$error = INVALID_ARGUMENT;
-		return;
-	}
+		return INVALID_ARGUMENT;
 	require_once('./system/content.php');
 	if(!_content_update($args['id'], $args['title'], $args['content']))
-	{
-		$error = 'Could not update news';
-		return;
-	}
+		return 'Could not update news';
 	header('Location: '._module_link('news', FALSE, $args['id'],
 				$args['title']));
 	exit(0);
@@ -494,21 +517,21 @@ function news_update($args)
 	global $error, $user_id, $user_name;
 
 	if(isset($error) && strlen($error))
-		return _error($error);
-	if(!is_numeric($args['id']))
+		_error($error);
+	if(!isset($args['id']) || !is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	if(($news = _content_select($args['id'])) == FALSE)
 		return _error(INVALID_ARGUMENT);
+	print('<h1 class="title news">'._html_safe(MODIFICATION_OF_NEWS.' "'
+				.$news['title'])."\"</h1>\n");
 	if(isset($args['preview']))
 	{
 		$long = 1;
-		$title = NEWS_PREVIEW;
 		$news['title'] = stripslashes($args['title']);
 		$news['date'] = _sql_date($news['timestamp']);
 		$news['content'] = stripslashes($args['content']);
 		include('./modules/news/news_display.tpl');
-		unset($title);
 	}
 	include('./modules/news/news_update.tpl');
 }
