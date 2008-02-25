@@ -30,9 +30,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/error.c \
 		$(PACKAGE)-$(VERSION)/src/event.c \
 		$(PACKAGE)-$(VERSION)/src/hash.c \
+		$(PACKAGE)-$(VERSION)/src/object.c \
+		$(PACKAGE)-$(VERSION)/src/parser.c \
 		$(PACKAGE)-$(VERSION)/src/string.c \
+		$(PACKAGE)-$(VERSION)/src/token.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/appinterface.h  \
+		$(PACKAGE)-$(VERSION)/src/appinterface.h \
+		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System.h \
 		$(PACKAGE)-$(VERSION)/include/System/appclient.h \
@@ -44,7 +48,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/event.h \
 		$(PACKAGE)-$(VERSION)/include/System/file.h \
 		$(PACKAGE)-$(VERSION)/include/System/hash.h \
+		$(PACKAGE)-$(VERSION)/include/System/object.h \
+		$(PACKAGE)-$(VERSION)/include/System/parser.h \
 		$(PACKAGE)-$(VERSION)/include/System/string.h \
+		$(PACKAGE)-$(VERSION)/include/System/token.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \

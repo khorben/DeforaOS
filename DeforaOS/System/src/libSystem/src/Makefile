@@ -3,9 +3,9 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGS= -D WITH_SSL
-CFLAGSF	= -W -Wall -ansi -fPIC -I ../include
-CFLAGS	= -g -O2
+CPPFLAGS= -D WITH_SSL -I ../include
+CFLAGSF	= -W -Wall -ansi -fPIC
+CFLAGS	= -g
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= ld -shared
@@ -16,7 +16,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o error.o event.o hash.o string.o
+libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o error.o event.o hash.o object.o parser.o string.o token.o
 libSystem_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 libSystem.a: $(libSystem_OBJS)
@@ -53,8 +53,17 @@ event.o: event.c
 hash.o: hash.c
 	$(CC) $(libSystem_CFLAGS) -c hash.c
 
+object.o: object.c
+	$(CC) $(libSystem_CFLAGS) -c object.c
+
+parser.o: parser.c token.h
+	$(CC) $(libSystem_CFLAGS) -c parser.c
+
 string.o: string.c
 	$(CC) $(libSystem_CFLAGS) -c string.c
+
+token.o: token.c token.h
+	$(CC) $(libSystem_CFLAGS) -c token.c
 
 clean:
 	$(RM) $(libSystem_OBJS)

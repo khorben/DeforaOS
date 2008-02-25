@@ -31,7 +31,10 @@ install: all
 	$(INSTALL) -m 0644 System/event.h $(DESTDIR)$(INCLUDEDIR)/System/event.h
 	$(INSTALL) -m 0644 System/file.h $(DESTDIR)$(INCLUDEDIR)/System/file.h
 	$(INSTALL) -m 0644 System/hash.h $(DESTDIR)$(INCLUDEDIR)/System/hash.h
+	$(INSTALL) -m 0644 System/object.h $(DESTDIR)$(INCLUDEDIR)/System/object.h
+	$(INSTALL) -m 0644 System/parser.h $(DESTDIR)$(INCLUDEDIR)/System/parser.h
 	$(INSTALL) -m 0644 System/string.h $(DESTDIR)$(INCLUDEDIR)/System/string.h
+	$(INSTALL) -m 0644 System/token.h $(DESTDIR)$(INCLUDEDIR)/System/token.h
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
@@ -45,6 +48,9 @@ uninstall:
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/event.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/file.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/hash.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/object.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/parser.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/string.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/token.h
 
 .PHONY: all subdirs clean distclean install uninstall
