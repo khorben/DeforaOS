@@ -22,16 +22,19 @@
 
 
 /* HashEntry */
+/* private */
 /* types */
-typedef struct _HashEntry {
+typedef struct _HashEntry
+{
 	char * name;
 	void * data;
 } HashEntry;
-ARRAY(HashEntry, hashentry);
+ARRAY(HashEntry, _hashentry);
 
 
 /* functions */
-static int hashentry_init(HashEntry * he, char const * name, void * data)
+/* hashentry_init */
+static int _hashentry_init(HashEntry * he, char const * name, void * data)
 {
 	if((he->name = string_new(name)) == NULL)
 		return 1;
@@ -39,29 +42,34 @@ static int hashentry_init(HashEntry * he, char const * name, void * data)
 	return 0;
 }
 
-static void hashentry_destroy(HashEntry * he)
+static void _hashentry_destroy(HashEntry * he)
 {
 	free(he->name);
 }
 
 
 /* useful */
-static void hashentry_set_data(HashEntry * he, void * data)
+static void _hashentry_set_data(HashEntry * he, void * data)
 {
 	he->data = data;
 }
 
 
 /* Hash */
+/* public */
+/* functions */
+/* hash_new */
 Hash * hash_new(void)
 {
 	Hash * hash;
 
-	if((hash = hashentryarray_new()) == NULL)
+	if((hash = _hashentryarray_new()) == NULL)
 		return NULL;
 	return hash;
 }
 
+
+/* hash_delete */
 void hash_delete(Hash * hash)
 {
 	size_t i;
@@ -69,12 +77,13 @@ void hash_delete(Hash * hash)
 
 	for(i = array_count(hash); i > 0; i--)
 		if((he = array_get(hash, i - 1)) != NULL)
-			hashentry_destroy(he);
+			_hashentry_destroy(he);
 	array_delete(hash);
 }
 
 
-/* useful */
+/* accessors */
+/* hash_get */
 void * hash_get(Hash * hash, char const * name)
 {
 	size_t i;
@@ -92,6 +101,7 @@ void * hash_get(Hash * hash, char const * name)
 }
 
 
+/* hash_set */
 int hash_set(Hash * hash, char const * name, void * data)
 {
 	size_t i;
@@ -104,14 +114,14 @@ int hash_set(Hash * hash, char const * name, void * data)
 			return 1;
 		if(string_compare(p->name, name) == 0)
 		{
-			hashentry_set_data(p, data);
+			_hashentry_set_data(p, data);
 			return 0;
 		}
 	}
-	if(hashentry_init(&he, name, data) != 0)
+	if(_hashentry_init(&he, name, data) != 0)
 		return 1;
 	if(array_append(hash, &he) == 0)
 		return 0;
-	hashentry_destroy(&he);
+	_hashentry_destroy(&he);
 	return 1;
 }
