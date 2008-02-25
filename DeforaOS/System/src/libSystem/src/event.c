@@ -71,11 +71,11 @@ Event * event_new(void)
 {
 	Event * event;
 
-	if((event = malloc(sizeof(Event))) == NULL)
+	if((event = object_new(sizeof(*event))) == NULL)
 		return NULL;
 	if((event->timeouts = eventtimeoutarray_new()) == NULL)
 	{
-		free(event);
+		object_delete(event);
 		return NULL;
 	}
 	event->fdmax = -1;
@@ -114,7 +114,7 @@ void event_delete(Event * event)
 		free(eio);
 	}
 	array_delete(event->writes);
-	free(event);
+	object_delete(event);
 }
 
 

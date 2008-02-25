@@ -41,14 +41,12 @@ Buffer * buffer_new(size_t size, char const * data)
 {
 	Buffer * buffer;
 
-	if((buffer = malloc(sizeof(Buffer))) == NULL)
-	{
-		error_set_code(1, "%s", strerror(errno));
+	if((buffer = object_new(sizeof(*buffer))) == NULL)
 		return NULL;
-	}
 	if((buffer->data = malloc(size * sizeof(char))) == NULL)
 	{
-		free(buffer);
+		error_set_code(1, "%s", strerror(errno));
+		object_delete(buffer);
 		return NULL;
 	}
 	if(data == NULL)
@@ -64,7 +62,7 @@ Buffer * buffer_new(size_t size, char const * data)
 void buffer_delete(Buffer * buffer)
 {
 	free(buffer->data);
-	free(buffer);
+	object_delete(buffer);
 }
 
 

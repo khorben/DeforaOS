@@ -26,7 +26,7 @@ Array * array_new(size_t size)
 {
 	Array * array;
 
-	if((array = malloc(sizeof(Array))) == NULL)
+	if((array = object_new(sizeof(*array))) == NULL)
 		return NULL;
 	array->data = NULL;
 	array->count = 0;
@@ -37,7 +37,7 @@ Array * array_new(size_t size)
 
 void array_delete(Array * array)
 {
-	free(array);
+	object_delete(array);
 }
 
 
