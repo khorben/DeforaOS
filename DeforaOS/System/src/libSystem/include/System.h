@@ -29,6 +29,8 @@
 # include "System/error.h"
 # include "System/event.h"
 # include "System/file.h"
+# include "System/object.h"
+# include "System/parser.h"
 # include "System/string.h"
 
 #endif /* !LIBSYSTEM_SYSTEM_H */
