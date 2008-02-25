@@ -31,7 +31,7 @@ typedef Array Hash;
 Hash * hash_new(void);
 void hash_delete(Hash * h);
 
-/* useful */
+/* accessors */
 void * hash_get(Hash * h, char const * name);
 int hash_set(Hash * h, char const * name, void * data);
 
