@@ -3,14 +3,13 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGS=
+CPPFLAGS= -I ../include
 CFLAGSF	= -W -Wall
 CFLAGS	= -g
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= ld -shared
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -18,7 +17,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libcpp_OBJS = parser.o cpp.o
+libcpp_OBJS = cpp.o
 libcpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 
 libcpp.a: $(libcpp_OBJS)
@@ -32,15 +31,12 @@ cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 cpp: $(cpp_OBJS)
-	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -l cpp -L .
+	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -Wl,-rpath,$(LIBDIR) -L $(LIBDIR) -L . -l cpp -l System -l ssl
 
-parser.o: parser.c parser.h
-	$(CC) $(libcpp_CFLAGS) -c parser.c
-
-cpp.o: cpp.c parser.h cpp.h
+cpp.o: cpp.c ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c cpp.c
 
-main.o: main.c cpp.h
+main.o: main.c ../include/cpp.h
 	$(CC) $(cpp_CFLAGS) -c main.c
 
 clean:
