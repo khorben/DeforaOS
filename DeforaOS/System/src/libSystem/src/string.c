@@ -22,10 +22,12 @@
 
 
 /* String */
+/* public */
+/* string_new */
 String * string_new(String const * string)
 {
 	String * str;
-	int length = string_length(string);
+	size_t length = string_length(string);
 
 	if((str = malloc(length + 1)) == NULL)
 		return NULL;
@@ -34,6 +36,7 @@ String * string_new(String const * string)
 }
 
 
+/* string_delete */
 void string_delete(String * string)
 {
 	free(string);
@@ -45,7 +48,7 @@ void string_delete(String * string)
 int string_append(String ** string, String const * append)
 {
 	char * p;
-	int length = string_length(*string);
+	size_t length = string_length(*string);
 
 	if((p = realloc(*string, length + string_length(append) + 1)) == NULL)
 		return 1;
@@ -74,7 +77,7 @@ int string_compare(String const * string, String const * string2)
 
 /* string_compare_length */
 int string_compare_length(String const * string, String const * string2,
-		unsigned int length)
+		size_t length)
 {
 	unsigned char const * u1;
 	unsigned char const * u2;
@@ -93,9 +96,10 @@ int string_compare_length(String const * string, String const * string2,
 /* string_find */
 String * string_find(String const * string, String const * key)
 {
-	unsigned int len = string_length(key);
-	unsigned char const * p;
+	size_t len;
+	char const * p;
 
+	len = string_length(key);
 	for(p = string; *p != '\0' && string_compare_length(key, p, len) != 0;
 			p++);
 	if(*p == '\0')
@@ -105,9 +109,9 @@ String * string_find(String const * string, String const * key)
 
 
 /* string_length */
-int string_length(String const * string)
+size_t string_length(String const * string)
 {
-	int length;
+	size_t length;
 
 	for(length = 0; *string != '\0'; string++)
 		length++;
