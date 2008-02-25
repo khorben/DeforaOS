@@ -78,11 +78,8 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 {
 	AppServerClient * asc;
 
-	if((asc = malloc(sizeof(AppServerClient))) == NULL)
-	{
-		error_set_code(1, "%s", strerror(errno));
+	if((asc = object_new(sizeof(AppServerClient))) == NULL)
 		return NULL;
-	}
 	asc->state = ASCS_NEW;
 	asc->fd = -1;
 	asc->addr = addr;
@@ -120,7 +117,7 @@ static void _appserverclient_delete(AppServerClient * appserverclient)
 				")\n");
 #endif
 	}
-	free(appserverclient);
+	object_delete(appserverclient);
 }
 
 
@@ -156,8 +153,8 @@ static int _appserver_accept(int fd, AppServer * appserver)
 	if((newfd = accept(fd, (struct sockaddr *)&sa, &sa_size)) == -1)
 		return error_set_code(1, "%s%s", "accept: ", strerror(errno));
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%d %s:%u\n", "DEBUG: accept(", fd, ") ", newfd,
-			inet_ntoa(sa.sin_addr), sa.sin_port);
+	fprintf(stderr, "%s%d%s%d %s:%u\n", "DEBUG: accept(", fd, ") => ",
+			newfd, inet_ntoa(sa.sin_addr), sa.sin_port);
 #endif
 	if((asc = _appserverclient_new(newfd, sa.sin_addr.s_addr, sa.sin_port
 #ifdef WITH_SSL
@@ -352,14 +349,11 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 	char crt[256];
 
 	if(snprintf(crt, sizeof(crt), "%s%s%s", PREFIX "/etc/AppServer/", app,
-				".crt") >= sizeof(crt))
+				".crt") >= (int)sizeof(crt))
 		return NULL;
 #endif
-	if((appserver = malloc(sizeof(AppServer))) == NULL)
-	{
-		error_set_code(1, "%s", strerror(errno));
+	if((appserver = object_new(sizeof(AppServer))) == NULL)
 		return NULL;
-	}
 	appserver->interface = NULL;
 	appserver->event = event;
 	appserver->event_free = 0;
@@ -431,7 +425,7 @@ void appserver_delete(AppServer * appserver)
 	if(appserver->ssl_ctx != NULL)
 		SSL_CTX_free(appserver->ssl_ctx);
 #endif
-	free(appserver);
+	object_delete(appserver);
 }
 
 

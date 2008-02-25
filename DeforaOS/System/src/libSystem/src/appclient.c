@@ -26,6 +26,9 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#ifdef DEBUG
+# include <arpa/inet.h>
+#endif
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
 # include <openssl/err.h>
@@ -131,6 +134,8 @@ static int _appclient_write(int fd, AppClient * ac)
 	if((len = WRITE(fd, ac, ac->buf_write_cnt)) <= 0)
 	{
 #ifdef WITH_SSL
+		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
+					NULL));
 		SSL_shutdown(ac->ssl);
 #endif
 		return 1;
@@ -178,11 +183,11 @@ AppClient * appclient_new_event(char * app, Event * event)
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s", "appclient_new(\"", app, "\")\n");
 #endif
-	if((appclient = malloc(sizeof(AppClient))) == NULL)
+	if((appclient = object_new(sizeof(AppClient))) == NULL)
 		return NULL;
 	if((appclient->interface = appinterface_new("Session")) == NULL)
 	{
-		free(appclient);
+		object_delete(appclient);
 		return NULL;
 	}
 	appclient->event = event;
@@ -204,7 +209,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 	return appclient;
 }
 
-static int _connect_addr(char * service, uint32_t * addr);
+static int _connect_addr(String const * service, uint32_t * addr);
 static int _new_connect(AppClient * appclient, char * app)
 {
 	struct sockaddr_in sa;
@@ -218,6 +223,10 @@ static int _new_connect(AppClient * appclient, char * app)
 		return 1;
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s", "Session: ", strerror(errno));
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: connect(%d, %s:%d) => 0\n", appclient->fd,
+			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
+#endif
 #ifdef WITH_SSL
 	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
@@ -228,7 +237,7 @@ static int _new_connect(AppClient * appclient, char * app)
 	if(appclient_call(appclient, &port, "port", app) != 0
 			|| port < 0)
 		return 1;
-	if(port == 0)
+	if(port == 0) /* the connection is good already or being forwarded */
 		return 0;
 #ifdef WITH_SSL
 	SSL_shutdown(appclient->ssl);
@@ -250,6 +259,10 @@ static int _new_connect(AppClient * appclient, char * app)
 	sa.sin_port = htons(port);
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
 		return error_set_code(1, "%s%s%s", app, ": ", strerror(errno));
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: connect(%d, %s:%d) => 0\n", appclient->fd,
+			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
+#endif
 #ifdef WITH_SSL
 	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
@@ -260,10 +273,10 @@ static int _new_connect(AppClient * appclient, char * app)
 	return 0;
 }
 
-static int _connect_addr(char * service, uint32_t * addr)
+static int _connect_addr(String const * service, uint32_t * addr)
 {
 	char prefix[] = "APPSERVER_";
-	int len = sizeof(prefix);
+	size_t len = sizeof(prefix);
 	char * env;
 	char * server;
 	struct hostent * he;
@@ -303,7 +316,7 @@ void appclient_delete(AppClient * appclient)
 	if(appclient->ssl_ctx != NULL)
 		SSL_CTX_free(appclient->ssl_ctx);
 #endif
-	free(appclient);
+	object_delete(appclient);
 }
 
 
