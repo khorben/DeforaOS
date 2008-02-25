@@ -23,6 +23,7 @@
 
 
 /* private */
+/* error_do */
 static char const * _error_do(int * codeptr, char const * format, va_list args)
 {
 	static char buf[256] = "";
@@ -93,6 +94,7 @@ int error_set_print(char const * program, int code, char const * format, ...)
 
 
 /* useful */
+/* error_print */
 int error_print(char const * program)
 {
 	int code = 0;
