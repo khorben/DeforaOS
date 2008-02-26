@@ -30,7 +30,8 @@ typedef enum _CppFilter { CPP_FILTER_TRIGRAPH = 1 } CppFilter;
 
 typedef enum _CppCode
 {
-	CPP_CODE_DQUOTE = 0,
+	CPP_CODE_COMMA = 0,
+	CPP_CODE_DQUOTE,
 	CPP_CODE_OPERATOR_AEQUALS,
 	CPP_CODE_OPERATOR_AMPERSAND,
 	CPP_CODE_OPERATOR_BAR,
@@ -71,7 +72,6 @@ typedef enum _CppCode
 	CPP_CODE_SQUOTE,
 	CPP_CODE_WHITESPACE,
 	CPP_CODE_WORD,			/* FIXME numbers and keywords? */
-					/* FIXME comma? */
 	CPP_CODE_UNKNOWN
 } CppCode;
 

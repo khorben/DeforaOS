@@ -114,6 +114,8 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 /* FIXME handle directives */
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data);
+static int _cpp_callback_comma(Parser * parser, Token * token, int c,
+		void * data);
 static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_quote(Parser * parser, Token * token, int c,
@@ -324,7 +326,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 	if(c != '/')
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: cpp_callback_comment()\n");
+	fprintf(stderr, "%s", "DEBUG: cpp_callback_comment()\n");
 #endif
 	if((c = parser_scan_filter(parser)) != '*')
 	{
@@ -346,6 +348,22 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		return -1;
 	token_set_code(token, CPP_CODE_WHITESPACE);
 	token_set_string(token, "");
+	parser_scan_filter(parser);
+	return 0;
+}
+
+
+/* cpp_callback_comma */
+static int _cpp_callback_comma(Parser * parser, Token * token, int c,
+		void * data)
+{
+	if(c != ',')
+		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: cpp_callback_comma()\n");
+#endif
+	token_set_code(token, CPP_CODE_COMMA);
+	token_set_string(token, ",");
 	parser_scan_filter(parser);
 	return 0;
 }
