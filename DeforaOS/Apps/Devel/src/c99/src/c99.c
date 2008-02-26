@@ -142,7 +142,8 @@ static int _c99_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: c99 [-c][-D name[=value]]...[-E][-g][-I directory][-L directory][-o outfile][-Ooptlevel][-s][-U name]... operand ...\n");
+	fputs("Usage: c99 [-c][-D name[=value]]...[-E][-g][-I directory]"
+"[-L directory][-o outfile][-Ooptlevel][-s][-U name]... operand ...\n", stderr);
 	return 1;
 }
 
