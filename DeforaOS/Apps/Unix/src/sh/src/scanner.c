@@ -25,10 +25,12 @@
 
 
 /* Scanner */
+/* scanner_init */
 static void _prompt(Scanner * scanner);
 static int _next_file_prompt(Scanner * scanner);
 static int _next_file(Scanner * scanner);
 static int _next_string(Scanner * scanner);
+
 void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
 		char const * string)
 {
@@ -45,8 +47,8 @@ void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
 static void _prompt(Scanner * scanner)
 {
 	char * prompt;
-	char * env[SP_LAST+1] = { "PS1", "PS2", "PS4" };
-	char * dflt[SP_LAST+1] = { getuid() ? "$ " : "# ", "> ", "+ " };
+	char * env[SP_COUNT] = { "PS1", "PS2", "PS4" };
+	char * dflt[SP_COUNT] = { (getuid() == 0) ? "# " : "$ ", "> ", "+ " };
 
 	if((prompt = getenv(env[scanner->prompt])) == NULL)
 		prompt = dflt[scanner->prompt];
@@ -57,7 +59,7 @@ static void _lineno(void)
 {
 	static unsigned int i = 1;
 	char lineno[11];
-	int len = sizeof(lineno)-1;
+	const int len = sizeof(lineno) - 1;
 
 	if(snprintf(lineno, len, "%u", i++) >= len)
 		lineno[len] = '\0';
@@ -90,7 +92,7 @@ static int _next_file(Scanner * scanner)
 
 static int _next_string(Scanner * scanner)
 {
-	static int pos = 0;
+	static unsigned int pos = 0;
 
 	if(scanner->string[pos] == '\0')
 		return EOF;
@@ -98,11 +100,13 @@ static int _next_string(Scanner * scanner)
 }
 
 
+/* scanner_next */
 static Token * _next_operator(Scanner * scanner, int * c);
 static Token * _next_blank(Scanner * scanner, int * c);
 static Token * _next_comment(Scanner * scanner, int * c);
-static Token * _next_newline(Scanner * scanner, int * c);
+static Token * _next_newline(int * c);
 static Token * _next_word(Scanner * scanner, int * c);
+
 Token * scanner_next(Scanner * scanner)
 {
 	Token * t;
@@ -118,7 +122,7 @@ Token * scanner_next(Scanner * scanner)
 	_next_blank(scanner, &c);
 	_next_comment(scanner, &c);
 	if((t = _next_operator(scanner, &c)) != NULL
-			|| (t = _next_newline(scanner, &c)) != NULL
+			|| (t = _next_newline(&c)) != NULL
 			|| (t = _next_word(scanner, &c)) != NULL)
 		return t;
 	return NULL;
@@ -161,7 +165,7 @@ static Token * _next_comment(Scanner * scanner, int * c)
 	return NULL;
 }
 
-static Token * _next_newline(Scanner * scanner, int * c)
+static Token * _next_newline(int * c)
 {
 	if(*c != '\r' && *c != '\n')
 		return NULL;
@@ -170,8 +174,10 @@ static Token * _next_newline(Scanner * scanner, int * c)
 }
 
 static char _word_escape(Scanner * scanner, int * c);
-static char * _word_dquote(Scanner * scanner, int * c, char * str, int * len);
-static char * _word_quote(Scanner * scanner, int * c, char * str, int * len);
+static char * _word_dquote(Scanner * scanner, int * c, char * str,
+		unsigned int * len);
+static char * _word_quote(Scanner * scanner, int * c, char * str,
+		unsigned int * len);
 static Token * _next_word(Scanner * scanner, int * c)
 {
 	char eow[] = "\t \r\n&|;<>";
@@ -193,7 +199,7 @@ static Token * _next_word(Scanner * scanner, int * c)
 		{
 			if(*c == '\\' && (*c = _word_escape(scanner, c)) == EOF)
 				break;
-			if((p = realloc(str, len+2)) != NULL)
+			if((p = realloc(str, len + 2)) != NULL)
 			{
 				str = p;
 				str[len++] = *c;
@@ -227,7 +233,8 @@ static char _word_escape(Scanner * scanner, int * c)
 }
 
 static char const * _read_variable(Scanner * scanner, int * c);
-static char * _word_dquote(Scanner * scanner, int * c, char * str, int * len)
+static char * _word_dquote(Scanner * scanner, int * c, char * str,
+		unsigned int * len)
 {
 	char * p;
 	char const * var;
@@ -294,7 +301,8 @@ static char const * _read_variable(Scanner * scanner, int * c)
 	return p;
 }
 
-static char * _word_quote(Scanner * scanner, int * c, char * str, int * len)
+static char * _word_quote(Scanner * scanner, int * c, char * str,
+		unsigned int * len)
 {
 	char * p;
 
