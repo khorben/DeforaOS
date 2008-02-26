@@ -25,8 +25,11 @@
 
 
 /* Scanner */
+/* types */
 typedef enum _ScannerPrompt { SP_PS1 = 0, SP_PS2, SP_PS4 } ScannerPrompt;
 # define SP_LAST SP_PS4
+# define SP_COUNT (SP_LAST + 1)
+
 typedef struct _Scanner
 {
 	FILE * fp;
@@ -35,8 +38,11 @@ typedef struct _Scanner
 	int (*next)(struct _Scanner *);
 } Scanner;
 
+
+/* functions */
 void scanner_init(Scanner * scanner, Prefs * prefs, FILE * fp,
 		char const * string);
+
 Token * scanner_next(Scanner * scanner);
 
 #endif /* !SH_SCANNER_H */

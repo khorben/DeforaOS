@@ -65,7 +65,8 @@ typedef enum _TokenCode
 	TC_NULL
 } TokenCode;
 # define TC_LAST TC_RW_IN
-extern char const * sTokenCode[TC_LAST+1];
+# define TC_COUNT (TC_LAST + 1)
+extern char const * sTokenCode[TC_COUNT];
 
 typedef struct _Token
 {

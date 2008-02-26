@@ -124,8 +124,8 @@ static void parser_scan(Parser * parser)
 
 	if((parser->token = scanner_next(&parser->scanner)) == NULL)
 		return;
-	if((p = realloc(parser->tokens, (parser->tokens_cnt+1)
-					* sizeof(Token *))) == NULL)
+	if((p = realloc(parser->tokens, (parser->tokens_cnt + 1)
+					* sizeof(*p))) == NULL)
 	{
 		sh_error("malloc", 0);
 		return;
