@@ -34,6 +34,8 @@
 
 
 /* Parser */
+/* private */
+/* types */
 typedef struct _Parser
 {
 	Prefs * prefs;
@@ -45,10 +47,14 @@ typedef struct _Parser
 	Token * token;
 } Parser;
 
+/* public */
+/* functions */
+/* parser */
 static void parser_free(Parser * parser);
 static void parser_scan(Parser * parser);
 static int parser_exec(Parser * parser, unsigned int * pos, int skip);
 static int complete_command(Parser * parser);
+
 int parser(Prefs * prefs, char const * string, FILE * fp, int argc,
 		char * argv[])
 {
