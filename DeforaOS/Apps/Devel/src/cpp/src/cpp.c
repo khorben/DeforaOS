@@ -47,10 +47,11 @@ typedef struct _CppParser
 /* variables */
 static const CppOperator _cpp_operators[] =
 {
-	/* FIXME "&=" */
+	{ CPP_CODE_OPERATOR_AEQUALS,	"&="	},
 	{ CPP_CODE_OPERATOR_DAMPERSAND,	"&&"	},
 	{ CPP_CODE_OPERATOR_AMPERSAND,	"&"	},
 	{ CPP_CODE_OPERATOR_COLON,	":"	},
+	{ CPP_CODE_OPERATOR_BEQUALS,	"|="	},
 	{ CPP_CODE_OPERATOR_DBAR,	"||"	},
 	{ CPP_CODE_OPERATOR_BAR,	"|"	},
 	{ CPP_CODE_OPERATOR_DIVIDE,	"/"	},
@@ -65,16 +66,15 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_DLESS,	"<<"	},
 	{ CPP_CODE_OPERATOR_LESS,	"<"	},
 	{ CPP_CODE_OPERATOR_LPAREN,	"("	},
-	/* FIXME "|=" */
-	/* FIXME "->" */
-	/* FIXME "-=" */
+	{ CPP_CODE_OPERATOR_MGREATER,	"->"	},
 	{ CPP_CODE_OPERATOR_DMINUS,	"--"	},
+	{ CPP_CODE_OPERATOR_MEQUALS,	"-="	},
 	{ CPP_CODE_OPERATOR_MINUS,	"-"	},
 	{ CPP_CODE_OPERATOR_MODULO,	"%"	},
 	{ CPP_CODE_OPERATOR_MULTIPLY,	"*"	},
 	{ CPP_CODE_OPERATOR_NOT,	"!"	},
-	/* FIXME "+=" */
 	{ CPP_CODE_OPERATOR_DPLUS,	"++"	},
+	{ CPP_CODE_OPERATOR_PEQUALS,	"+="	},
 	{ CPP_CODE_OPERATOR_PLUS,	"+"	},
 	{ CPP_CODE_OPERATOR_RBRACE,	"}"	},
 	{ CPP_CODE_OPERATOR_RBRACKET,	"]"	},
@@ -320,7 +320,6 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 /* cpp_callback_comment */
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data)
-	/* FIXME implement properly (and fallback on division) */
 {
 	if(c != '/')
 		return 1;
