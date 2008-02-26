@@ -390,12 +390,10 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_quote */
-static int _quote_escape(int c);
-
 static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 		void * data)
 {
-	const int d = c;
+	int escape = 0;
 	char * str = NULL;
 	size_t len = 0;
 	char * p;
@@ -407,61 +405,35 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 	else
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: cpp_callback_quote('%c')\n", c);
+	fprintf(stderr, "%s%c%s", "DEBUG: cpp_callback_quote('", c, "')\n");
 #endif
 	while((p = realloc(str, len + 3)) != NULL)
 	{
 		str = p;
 		str[len++] = c;
-		if((c = parser_scan_filter(parser)) == EOF
-				|| c == '\n' || c == d)
-			break; /* unexpected end of line, file or of string */
-		if(c != '\\')
-			continue; /* character is not escaped */
-		if((c = parser_scan_filter(parser)) == EOF)
+		if((c = parser_scan_filter(parser)) == EOF || c == '\n')
 			break;
-		c = _quote_escape(c);
+		if(escape)
+		{
+			escape = 0;
+			continue;
+		}
+		if(c == str[0])
+			break;
+		if(c == '\\')
+			escape = 1;
 	}
-	if(str == NULL || c != d)
+	if(str == NULL || c != str[0])
 	{
 		free(str);
 		return -1;
 	}
-	str[len++] = d;
+	str[len++] = str[0];
 	str[len] = '\0';
 	token_set_string(token, str);
 	free(str);
 	parser_scan_filter(parser);
 	return 0;
-}
-
-static int _quote_escape(int c)
-	/* FIXME - handle octal and hexadecimal input
-	 *       - seems to break further interpretation (eg '\0') */
-{
-	switch(c)
-	{
-		case '0':
-			return '\0';
-		case 'a':
-			return '\a';
-		case 'b':
-			return '\b';
-		case 'e':
-			return '\e';
-		case 'f':
-			return '\f';
-		case 'n':
-			return '\n';
-		case 'r':
-			return '\r';
-		case 't':
-			return '\t';
-		case 'v':
-			return '\v';
-		default:
-			return c;
-	}
 }
 
 
