@@ -282,21 +282,37 @@ static int _trigraph_get(int last, int * c)
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data)
 {
-	char * str = " ";
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
 
 	if(!isspace(c))
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: cpp_callback_whitespace()\n");
+	fprintf(stderr, "%s", "DEBUG: cpp_callback_whitespace()\n");
 #endif
 	do
 	{
-		if(c == '\n')
-			str = "\n";
+		if(c != '\n')
+			continue;
+		if((p = realloc(str, len + 1)) == NULL)
+		{
+			free(str);
+			return -1;
+		}
+		str = p;
+		str[len++] = '\n';
 	}
 	while(isspace((c = parser_scan_filter(parser))));
 	token_set_code(token, CPP_CODE_WHITESPACE);
-	token_set_string(token, str);
+	if(str != NULL)
+	{
+		str[len] = '\0';
+		token_set_string(token, str);
+		free(str);
+	}
+	else
+		token_set_string(token, " ");
 	return 0;
 }
 
