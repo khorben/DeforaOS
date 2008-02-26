@@ -109,7 +109,6 @@ struct _Cpp
 static int _cpp_filter_newlines(int * c, void * data);
 static int _cpp_filter_trigraphs(int * c, void * data);
 
-/* FIXME the callbacks do not set a token code yet */
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data);
 /* FIXME handle directives */
@@ -170,6 +169,7 @@ static void _cppparser_delete(CppParser * cppparser)
 
 /* Cpp */
 /* private */
+/* cpp_filter_newlines */
 static int _cpp_filter_newlines(int * c, void * data)
 {
 	Parser * parser = data;
@@ -197,6 +197,9 @@ static int _cpp_filter_newlines(int * c, void * data)
 }
 
 
+/* cpp_filter_trigraphs */
+static int _trigraph_get(int last, int * c);
+
 static int _cpp_filter_trigraphs(int * c, void * data)
 {
 	Parser * parser = data;
@@ -222,7 +225,24 @@ static int _cpp_filter_trigraphs(int * c, void * data)
 		last_cnt = 1;
 		return 1;
 	}
-	switch((last = parser_scan(parser)))
+	last = parser_scan(parser);
+	if(_trigraph_get(last, c) != 0)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: last=%c\n", last);
+#endif
+		last_cnt = 2;
+		return 2;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: filtered \"??%c\" into \"%c\"\n", last, *c);
+#endif
+	return 0;
+}
+
+static int _trigraph_get(int last, int * c)
+{
+	switch(last)
 	{
 		case '=':
 			*c = '#';
@@ -252,15 +272,8 @@ static int _cpp_filter_trigraphs(int * c, void * data)
 			*c = '~';
 			break;
 		default:
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: last=%c\n", last);
-#endif
-			last_cnt = 2;
-			return 2;
+			return 1;
 	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: filtered \"??%c\" into \"%c\"\n", last, *c);
-#endif
 	return 0;
 }
 
@@ -384,8 +397,9 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 	{
 		str = p;
 		str[len++] = c;
-		if((c = parser_scan_filter(parser)) == EOF || c == d)
-			break; /* unexpected end of file or end of string */
+		if((c = parser_scan_filter(parser)) == EOF
+				|| c == '\n' || c == d)
+			break; /* unexpected end of line, file or of string */
 		if(c != '\\')
 			continue; /* character is not escaped */
 		if((c = parser_scan_filter(parser)) == EOF)
