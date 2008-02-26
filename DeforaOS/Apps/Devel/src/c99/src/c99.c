@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel c99 */
 /* c99 is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -23,6 +23,7 @@
 #include <errno.h>
 
 
+/* private */
 /* types */
 typedef int Prefs;
 #define PREFS_c 0x1
@@ -31,10 +32,16 @@ typedef int Prefs;
 #define PREFS_s 0x8
 
 
-/* c99 */
+/* prototypes */
+static int _c99(Prefs * prefs, char const * outfile, int filec, char * filev[]);
 static int _c99_error(char const * message, int ret);
+
+
+/* functions */
+/* c99 */
 static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile);
+
 static int _c99(Prefs * prefs, char const * outfile, int filec, char * filev[])
 {
 	FILE * fp;
@@ -50,19 +57,13 @@ static int _c99(Prefs * prefs, char const * outfile, int filec, char * filev[])
 	return ret;
 }
 
-static int _c99_error(char const * message, int ret)
-{
-	fprintf(stderr, "%s", "c99: ");
-	perror(message);
-	return ret;
-}
-
 static int _c99_do_c(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile, FILE * infp);
 static int _c99_do_E(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile, FILE * infp);
 static int _c99_do_o(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile, FILE * infp);
+
 static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile)
 {
@@ -129,6 +130,15 @@ static int _c99_do_o(Prefs * prefs, char const * outfile, FILE * outfp,
 }
 
 
+/* c99_error */
+static int _c99_error(char const * message, int ret)
+{
+	fputs("c99: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -137,15 +147,16 @@ static int _usage(void)
 }
 
 
+/* public */
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs prefs = 0;
+	Prefs prefs;
 	char * outfile = NULL;
 	int o;
-	char oldo = '\0';
 
-	for(; (o = getopt(argc, argv, "cD:EgI:L:o:O123sU:")) != -1; oldo = o)
+	memset(&prefs, 0, sizeof(prefs));
+	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:")) != -1)
 		switch(o)
 		{
 			case 'c':
@@ -168,7 +179,7 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	if(prefs & PREFS_c && outfile != NULL && optind+1 != argc)
+	if(prefs & PREFS_c && outfile != NULL && optind + 1 != argc)
 		return _usage();
 	return _c99(&prefs, outfile, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 }
