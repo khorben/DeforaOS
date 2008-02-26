@@ -151,6 +151,7 @@ static CppParser * _cppparser_new(char const * filename, int filters,
 				cppparser->parser);
 	parser_add_callback(cppparser->parser, _cpp_callback_whitespace, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_comment, NULL);
+	parser_add_callback(cppparser->parser, _cpp_callback_comma, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_operator,
 			cppparser);
 	parser_add_callback(cppparser->parser, _cpp_callback_quote, NULL);
@@ -335,7 +336,6 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		return 0;
 	}
 	for(c = parser_scan_filter(parser); c != EOF;)
-	{
 		if(c == '*')
 		{
 			if((c = parser_scan_filter(parser)) == '/')
@@ -343,7 +343,6 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		}
 		else
 			c = parser_scan_filter(parser);
-	}
 	if(c == EOF)
 		return -1;
 	token_set_code(token, CPP_CODE_WHITESPACE);
