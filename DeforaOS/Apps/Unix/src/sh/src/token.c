@@ -25,7 +25,9 @@
 
 
 /* Token */
-char const * sTokenCode[TC_LAST+1] =
+/* public */
+/* variables */
+char const * sTokenCode[TC_COUNT] =
 {
 	NULL,
 	NULL,
@@ -67,6 +69,9 @@ char const * sTokenCode[TC_LAST+1] =
 	"in"
 };
 
+
+/* functions */
+/* token_new */
 Token * token_new(TokenCode code, char * string)
 {
 	Token * t;
@@ -86,6 +91,7 @@ Token * token_new(TokenCode code, char * string)
 }
 
 
+/* token_delete */
 void token_delete(Token * token)
 {
 #ifdef DEBUG
@@ -97,6 +103,8 @@ void token_delete(Token * token)
 }
 
 
+/* useful */
+/* token_in_set */
 int token_in_set(Token * token, TokenSet set)
 {
 	static TokenCode set_and_or[] = {
