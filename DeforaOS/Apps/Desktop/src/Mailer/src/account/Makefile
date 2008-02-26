@@ -1,4 +1,4 @@
-TARGETS	= mbox.a mbox.so pop3.a pop3.so imap4.a imap4.so rss.a rss.so
+TARGETS	= mbox.a mbox.so pop3.a pop3.so imap4.a imap4.so nntp.a nntp.so rss.a rss.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -46,6 +46,16 @@ imap4.a: $(imap4_OBJS)
 imap4.so: $(imap4_OBJS)
 	$(LD) -o imap4.so $(imap4_OBJS)
 
+nntp_OBJS = nntp.o
+nntp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+nntp.a: $(nntp_OBJS)
+	$(AR) nntp.a $(nntp_OBJS)
+	$(RANLIB) nntp.a
+
+nntp.so: $(nntp_OBJS)
+	$(LD) -o nntp.so $(nntp_OBJS)
+
 rss_OBJS = rss.o
 rss_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
@@ -65,11 +75,14 @@ pop3.o: pop3.c account.h
 imap4.o: imap4.c account.h
 	$(CC) $(imap4_CFLAGS) -c imap4.c
 
+nntp.o: nntp.c account.h
+	$(CC) $(nntp_CFLAGS) -c nntp.c
+
 rss.o: rss.c account.h
 	$(CC) $(rss_CFLAGS) -c rss.c
 
 clean:
-	$(RM) $(mbox_OBJS) $(pop3_OBJS) $(imap4_OBJS) $(rss_OBJS)
+	$(RM) $(mbox_OBJS) $(pop3_OBJS) $(imap4_OBJS) $(nntp_OBJS) $(rss_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -82,6 +95,8 @@ install: all
 	$(INSTALL) -m 0755 pop3.so $(DESTDIR)$(LIBDIR)/pop3.so
 	$(INSTALL) -m 0644 imap4.a $(DESTDIR)$(LIBDIR)/imap4.a
 	$(INSTALL) -m 0755 imap4.so $(DESTDIR)$(LIBDIR)/imap4.so
+	$(INSTALL) -m 0644 nntp.a $(DESTDIR)$(LIBDIR)/nntp.a
+	$(INSTALL) -m 0755 nntp.so $(DESTDIR)$(LIBDIR)/nntp.so
 	$(INSTALL) -m 0644 rss.a $(DESTDIR)$(LIBDIR)/rss.a
 	$(INSTALL) -m 0755 rss.so $(DESTDIR)$(LIBDIR)/rss.so
 
@@ -92,6 +107,8 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/pop3.so
 	$(RM) $(DESTDIR)$(LIBDIR)/imap4.a
 	$(RM) $(DESTDIR)$(LIBDIR)/imap4.so
+	$(RM) $(DESTDIR)$(LIBDIR)/nntp.a
+	$(RM) $(DESTDIR)$(LIBDIR)/nntp.so
 	$(RM) $(DESTDIR)$(LIBDIR)/rss.a
 	$(RM) $(DESTDIR)$(LIBDIR)/rss.so
 
