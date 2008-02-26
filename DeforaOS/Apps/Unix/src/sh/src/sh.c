@@ -99,13 +99,13 @@ int sh_error(char * message, int ret)
 
 char ** sh_export(void)
 {
-	int cnt;
+	size_t cnt;
 	char ** export;
 	char ** e;
-	int i;
+	size_t i;
 
 	for(cnt = 0, e = environ; *e != NULL; cnt++, e++);
-	if((export = malloc((cnt+1) * sizeof(char*))) == NULL)
+	if((export = malloc((cnt + 1) * sizeof(char*))) == NULL)
 	{
 		sh_error("malloc", 0);
 		return NULL;
@@ -120,7 +120,7 @@ char ** sh_export(void)
 /* sh_handler */
 static void _handler_sigint(void);
 
-void sh_handler(int signum)
+static void _sh_handler(int signum)
 {
 	switch(signum)
 	{
@@ -155,6 +155,6 @@ int main(int argc, char * argv[])
 		return _usage();
 	if(prefs & PREFS_c && optind == argc)
 		return _usage();
-	signal(SIGINT, sh_handler);
+	signal(SIGINT, _sh_handler);
 	return _sh(&prefs, argc - optind, &argv[optind]);
 }
