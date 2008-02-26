@@ -365,11 +365,10 @@ static int _quote_escape(int c);
 
 static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 		void * data)
-	/* FIXME bug with "" => " */
 {
 	const int d = c;
 	char * str = NULL;
-	size_t len = 1;
+	size_t len = 0;
 	char * p;
 
 	if(c == '\'')
@@ -381,26 +380,23 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: cpp_callback_quote('%c')\n", c);
 #endif
-	while((c = parser_scan_filter(parser)) != EOF && c != d)
+	while((p = realloc(str, len + 3)) != NULL)
 	{
-		if((p = realloc(str, len + 3)) == NULL)
-			break;
 		str = p;
-		if(c == '\\')
-		{
-			if((c = parser_scan_filter(parser)) == EOF)
-				break;
-			else
-				c = _quote_escape(c);
-		}
 		str[len++] = c;
+		if((c = parser_scan_filter(parser)) == EOF || c == d)
+			break; /* unexpected end of file or end of string */
+		if(c != '\\')
+			continue; /* character is not escaped */
+		if((c = parser_scan_filter(parser)) == EOF)
+			break;
+		c = _quote_escape(c);
 	}
-	if(str == NULL || c != d) /* an error occured */
+	if(str == NULL || c != d)
 	{
 		free(str);
 		return -1;
 	}
-	str[0] = d;
 	str[len++] = d;
 	str[len] = '\0';
 	token_set_string(token, str);
