@@ -75,21 +75,18 @@ typedef enum _CppCode
 	CPP_CODE_WORD,			/* FIXME numbers and keywords? */
 	CPP_CODE_UNKNOWN
 } CppCode;
+# define CPP_CODE_LAST CPP_CODE_UNKNOWN
+# define CPP_CODE_COUNT (CPP_CODE_LAST + 1)
 
 
 /* functions */
-Cpp * cpp_new(void);
+Cpp * cpp_new(char const * filename, int filters);
 void cpp_delete(Cpp * cpp);
 
 /* accessors */
 char const * cpp_get_filename(Cpp * cpp);
 
 /* useful */
-void cpp_filter_disable(Cpp * cpp, CppFilter filter);
-void cpp_filter_enable(Cpp * cpp, CppFilter filter);
-
-int cpp_parse(Cpp * cpp, char const * pathname);
-
 int cpp_scan(Cpp * cpp, Token ** token);
 
 #endif /* !CPP_CPP_H */

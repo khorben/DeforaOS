@@ -27,7 +27,7 @@
 #include "cpp.h"
 
 
-/* CppParser */
+/* Cpp */
 /* private */
 /* types */
 typedef struct _CppOperator
@@ -38,15 +38,14 @@ typedef struct _CppOperator
 
 typedef struct _CppInclude
 {
-	char const * filename;
+	char * filename;
 	FILE * fp;
 } CppInclude;
 
-typedef struct _CppParser
+struct _Cpp
 {
+	int filters;
 	Parser * parser;
-	const CppOperator * operators;
-	size_t operators_cnt;
 	/* for cpp_filter_includes */
 	CppInclude * includes;
 	size_t includes_cnt;
@@ -58,7 +57,7 @@ typedef struct _CppParser
 	int trigraphs_last_cnt;
 	/* for cpp_callback_directive */
 	int directive_newline;
-} CppParser;
+};
 
 
 /* variables */
@@ -104,29 +103,13 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 
 
 /* prototypes */
-static CppParser * _cppparser_new(char const * filename, int filters,
-		const CppOperator * operators, size_t operators_cnt);
-static void _cppparser_delete(CppParser * cppparser);
-
-
-
-/* Cpp */
-/* private */
-/* types */
-struct _Cpp
-{
-	CppParser ** parsers;
-	size_t parsers_cnt;
-	int filters;
-};
-
-
-/* prototypes */
 /* useful */
+/* filters */
 static int _cpp_filter_includes(int * c, void * data);
 static int _cpp_filter_newlines(int * c, void * data);
 static int _cpp_filter_trigraphs(int * c, void * data);
 
+/* callbacks */
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
@@ -146,70 +129,19 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 
 
 
-/* CppParser */
-/* private */
-/* functions */
-static CppParser * _cppparser_new(char const * filename, int filters,
-		const CppOperator * operators, size_t operators_cnt)
-{
-	CppParser * cppparser;
-
-	if((cppparser = object_new(sizeof(*cppparser))) == NULL)
-		return NULL;
-	cppparser->operators = operators;
-	cppparser->operators_cnt = operators_cnt;
-	cppparser->includes = NULL;
-	cppparser->includes_cnt = 0;
-	cppparser->newlines_last_cnt = 0;
-	cppparser->trigraphs_last_cnt = 0;
-	cppparser->directive_newline = 1;
-	if((cppparser->parser = parser_new(filename)) == NULL)
-	{
-		_cppparser_delete(cppparser);
-		return NULL;
-	}
-	parser_add_filter(cppparser->parser, _cpp_filter_includes, cppparser);
-	parser_add_filter(cppparser->parser, _cpp_filter_newlines, cppparser);
-	if(filters & CPP_FILTER_TRIGRAPH)
-		parser_add_filter(cppparser->parser, _cpp_filter_trigraphs,
-				cppparser);
-	parser_add_callback(cppparser->parser, _cpp_callback_whitespace,
-			cppparser);
-	parser_add_callback(cppparser->parser, _cpp_callback_comment, NULL);
-	parser_add_callback(cppparser->parser, _cpp_callback_directive,
-			cppparser);
-	parser_add_callback(cppparser->parser, _cpp_callback_comma, NULL);
-	parser_add_callback(cppparser->parser, _cpp_callback_operator,
-			cppparser);
-	parser_add_callback(cppparser->parser, _cpp_callback_quote, NULL);
-	parser_add_callback(cppparser->parser, _cpp_callback_word, NULL);
-	parser_add_callback(cppparser->parser, _cpp_callback_unknown, NULL);
-	return cppparser;
-}
-
-
-/* cppparser_delete */
-static void _cppparser_delete(CppParser * cppparser)
-{
-	parser_delete(cppparser->parser);
-	object_delete(cppparser);
-}
-
-
-
 /* Cpp */
 /* private */
 /* cpp_filter_includes */
 static int _cpp_filter_includes(int * c, void * data)
 	/* FIXME should be a wrapper around parser_scan() instead */
 {
-	CppParser * cp = data;
+	Cpp * cpp = data;
 	CppInclude * include;
 	CppInclude * p;
 
-	while(cp->includes_cnt > 0)
+	while(cpp->includes_cnt > 0)
 	{
-		include = &cp->includes[cp->includes_cnt - 1];
+		include = &cpp->includes[cpp->includes_cnt - 1];
 		if((*c = fgetc(include->fp)) != EOF)
 			return 1;
 		if(!feof(include->fp)) /* an error occured */
@@ -219,8 +151,8 @@ static int _cpp_filter_includes(int * c, void * data)
 			fclose(include->fp);
 			return -1;
 		}
-		if((p = realloc(cp->includes, sizeof(*p) * cp->includes_cnt--))
-				== NULL)
+		if((p = realloc(cpp->includes, sizeof(*p)
+						* cpp->includes_cnt--)) == NULL)
 		{
 			error_set_code(1, "%s: %s", include->filename, strerror(
 						errno));
@@ -234,23 +166,23 @@ static int _cpp_filter_includes(int * c, void * data)
 /* cpp_filter_newlines */
 static int _cpp_filter_newlines(int * c, void * data)
 {
-	CppParser * cp = data;
+	Cpp * cpp = data;
 
-	if(cp->newlines_last_cnt != 0)
+	if(cpp->newlines_last_cnt != 0)
 	{
-		cp->newlines_last_cnt--;
-		*c = cp->newlines_last;
+		cpp->newlines_last_cnt--;
+		*c = cpp->newlines_last;
 		return 0;
 	}
 	if(*c != '\\')
 		return 0;
-	if((*c = parser_scan(cp->parser)) == '\n')
+	if((*c = parser_scan(cpp->parser)) == '\n')
 	{
-		*c = parser_scan(cp->parser); /* skip the newline */
+		*c = parser_scan(cpp->parser); /* skip the newline */
 		return 0;
 	}
-	cp->newlines_last = *c;
-	cp->newlines_last_cnt = 1;
+	cpp->newlines_last = *c;
+	cpp->newlines_last_cnt = 1;
 	*c = '\\';
 	return 1;
 }
@@ -261,39 +193,39 @@ static int _trigraphs_get(int last, int * c);
 
 static int _cpp_filter_trigraphs(int * c, void * data)
 {
-	CppParser * cp = data;
+	Cpp * cpp = data;
 
-	if(cp->trigraphs_last_cnt == 2)
+	if(cpp->trigraphs_last_cnt == 2)
 	{
-		cp->trigraphs_last_cnt--;
+		cpp->trigraphs_last_cnt--;
 		*c = '?';
 		return 0;
 	}
-	else if(cp->trigraphs_last_cnt == 1)
+	else if(cpp->trigraphs_last_cnt == 1)
 	{
-		cp->trigraphs_last_cnt--;
-		*c = cp->trigraphs_last;
+		cpp->trigraphs_last_cnt--;
+		*c = cpp->trigraphs_last;
 		return 0;
 	}
 	if(*c != '?')
 		return 0;
-	if((cp->trigraphs_last = parser_scan(cp->parser)) != '?')
+	if((cpp->trigraphs_last = parser_scan(cpp->parser)) != '?')
 	{
-		cp->trigraphs_last_cnt = 1;
+		cpp->trigraphs_last_cnt = 1;
 		return 1;
 	}
-	cp->trigraphs_last = parser_scan(cp->parser);
-	if(_trigraphs_get(cp->trigraphs_last, c) != 0)
+	cpp->trigraphs_last = parser_scan(cpp->parser);
+	if(_trigraphs_get(cpp->trigraphs_last, c) != 0)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: last=%c\n", cp->trigraphs_last);
+		fprintf(stderr, "DEBUG: last=%c\n", cpp->trigraphs_last);
 #endif
-		cp->trigraphs_last_cnt = 2;
+		cpp->trigraphs_last_cnt = 2;
 		return 2;
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: filtered \"??%c\" into \"%c\"\n",
-			cp->trigraphs_last, *c);
+			cpp->trigraphs_last, *c);
 #endif
 	return 0;
 }
@@ -340,7 +272,7 @@ static int _trigraphs_get(int last, int * c)
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cp = data;
+	Cpp * cpp = data;
 	char * str = NULL;
 	size_t len = 0;
 	char * p;
@@ -369,7 +301,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		str[len] = '\0';
 		token_set_string(token, str);
 		free(str);
-		cp->directive_newline = 1;
+		cpp->directive_newline = 1;
 	}
 	else
 		token_set_string(token, " ");
@@ -414,14 +346,14 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
 	/* FIXME actually parse and implement, careful with comments */
 {
-	CppParser * cp = data;
+	Cpp * cpp = data;
 	char * str = NULL;
 	size_t len = 0;
 	char * p;
 
-	if(cp->directive_newline != 1 || c != '#')
+	if(cpp->directive_newline != 1 || c != '#')
 	{
-		cp->directive_newline = 0;
+		cpp->directive_newline = 0;
 		return 1;
 	}
 #ifdef DEBUG
@@ -467,24 +399,23 @@ static int _cpp_callback_comma(Parser * parser, Token * token, int c,
 static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cp = data;
 	size_t i;
 	const size_t j = sizeof(_cpp_operators) / sizeof(*_cpp_operators);
 	size_t pos;
 
-	for(i = 0; i < cp->operators_cnt; i++)
-		if(cp->operators[i].string[0] == c)
+	for(i = 0; i < _cpp_operators_cnt; i++)
+		if(_cpp_operators[i].string[0] == c)
 			break;
-	if(i == cp->operators_cnt) /* nothing found */
+	if(i == _cpp_operators_cnt) /* nothing found */
 		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "%s%c%s", "DEBUG: cpp_callback_operator('", c, "')\n");
 #endif
 	for(pos = 0; i < j;)
 	{
-		if(cp->operators[i].string[pos] == '\0')
+		if(_cpp_operators[i].string[pos] == '\0')
 			break;
-		if(c == cp->operators[i].string[pos])
+		if(c == _cpp_operators[i].string[pos])
 		{
 			c = parser_scan_filter(parser);
 			pos++;
@@ -494,8 +425,8 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 	}
 	if(i == j) /* should not happen */
 		return -1;
-	token_set_code(token, cp->operators[i].code);
-	token_set_string(token, cp->operators[i].string);
+	token_set_code(token, _cpp_operators[i].code);
+	token_set_string(token, _cpp_operators[i].string);
 	return 0;
 }
 
@@ -610,15 +541,36 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 /* public */
 /* functions */
 /* cpp_new */
-Cpp * cpp_new(void)
+Cpp * cpp_new(char const * filename, int filters)
 {
 	Cpp * cpp;
 
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
-	cpp->parsers = NULL;
-	cpp->parsers_cnt = 0;
 	cpp->filters = 0;
+	cpp->parser = parser_new(filename);
+	cpp->includes = NULL;
+	cpp->includes_cnt = 0;
+	cpp->newlines_last_cnt = 0;
+	cpp->trigraphs_last_cnt = 0;
+	cpp->directive_newline = 1;
+	if(cpp->parser == NULL)
+	{
+		cpp_delete(cpp);
+		return NULL;
+	}
+	parser_add_filter(cpp->parser, _cpp_filter_includes, cpp);
+	parser_add_filter(cpp->parser, _cpp_filter_newlines, cpp);
+	if(filters & CPP_FILTER_TRIGRAPH)
+		parser_add_filter(cpp->parser, _cpp_filter_trigraphs, cpp);
+	parser_add_callback(cpp->parser, _cpp_callback_whitespace, cpp);
+	parser_add_callback(cpp->parser, _cpp_callback_comment, NULL);
+	parser_add_callback(cpp->parser, _cpp_callback_directive, cpp);
+	parser_add_callback(cpp->parser, _cpp_callback_comma, NULL);
+	parser_add_callback(cpp->parser, _cpp_callback_operator, NULL);
+	parser_add_callback(cpp->parser, _cpp_callback_quote, NULL);
+	parser_add_callback(cpp->parser, _cpp_callback_word, NULL);
+	parser_add_callback(cpp->parser, _cpp_callback_unknown, NULL);
 	return cpp;
 }
 
@@ -626,10 +578,13 @@ Cpp * cpp_new(void)
 /* cpp_delete */
 void cpp_delete(Cpp * cpp)
 {
-	size_t i;
-
-	for(i = 0; i < cpp->parsers_cnt; i++)
-		parser_delete(cpp->parsers[i]->parser);
+	while(cpp->includes_cnt-- > 0)
+	{
+		fclose(cpp->includes[cpp->includes_cnt].fp);
+		free(cpp->includes[cpp->includes_cnt].filename);
+	}
+	free(cpp->includes);
+	parser_delete(cpp->parser);
 	object_delete(cpp);
 }
 
@@ -638,49 +593,15 @@ void cpp_delete(Cpp * cpp)
 /* cpp_get_filename */
 char const * cpp_get_filename(Cpp * cpp)
 {
-	if(cpp->parsers_cnt > 0)
-		return parser_get_filename(
-				cpp->parsers[cpp->parsers_cnt - 1]->parser);
-	return NULL;
+	if(cpp->includes_cnt > 0)
+		return cpp->includes[cpp->includes_cnt - 1].filename;
+	return parser_get_filename(cpp->parser);
 }
 
 
 /* useful */
-/* cpp_filter_disable */
-void cpp_filter_disable(Cpp * cpp, CppFilter filter)
-{
-	cpp->filters -= (cpp->filters & filter);
-}
-
-
-/* cpp_filter_enable */
-void cpp_filter_enable(Cpp * cpp, CppFilter filter)
-{
-	cpp->filters |= filter;
-}
-
-
-/* cpp_parse */
-int cpp_parse(Cpp * cpp, char const * pathname)
-{
-	if(cpp->parsers_cnt != 0)
-		return error_set_code(1, "%s", "Already parsing");
-	if((cpp->parsers = malloc(sizeof(*cpp->parsers))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
-	if((cpp->parsers[0] = _cppparser_new(pathname, cpp->filters,
-					_cpp_operators, _cpp_operators_cnt))
-			== NULL)
-		return 1;
-	cpp->parsers_cnt = 1;
-	return 0;
-}
-
-
 /* cpp_scan */
 int cpp_scan(Cpp * cpp, Token ** token)
 {
-	if(cpp->parsers_cnt == 0)
-		return error_set_code(1, "%s", "No file to parse");
-	return parser_get_token(cpp->parsers[cpp->parsers_cnt - 1]->parser,
-			token);
+	return parser_get_token(cpp->parser, token);
 }

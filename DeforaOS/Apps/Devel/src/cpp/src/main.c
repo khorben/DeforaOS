@@ -69,15 +69,9 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	Cpp * cpp;
 	Token * token;
 
-	if((cpp = cpp_new()) == NULL)
+	if((cpp = cpp_new(filename, prefs->flags & PREFS_t
+					? CPP_FILTER_TRIGRAPH : 0)) == NULL)
 		return _cpp_error();
-	if(prefs->flags & PREFS_t)
-		cpp_filter_enable(cpp, CPP_FILTER_TRIGRAPH);
-	if((ret = cpp_parse(cpp, filename)) != 0)
-	{
-		cpp_delete(cpp);
-		return _cpp_error();
-	}
 	while((ret = cpp_scan(cpp, &token)) == 0)
 	{
 		if(token == NULL) /* end of file */
