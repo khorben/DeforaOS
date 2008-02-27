@@ -16,6 +16,7 @@
 
 
 
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,8 +60,25 @@ struct _Cpp
 	int directive_newline;
 };
 
+/* FIXME use CPP_CODE_META_* in a structure with strings and pointers to
+ *       functions instead? */
+typedef enum _CppDirective
+{
+	CPP_DIRECTIVE_DEFINE = 0,
+	CPP_DIRECTIVE_ENDIF,
+	CPP_DIRECTIVE_ERROR,
+	CPP_DIRECTIVE_IF,
+	CPP_DIRECTIVE_IFDEF,
+	CPP_DIRECTIVE_INCLUDE,
+	CPP_DIRECTIVE_PRAGMA,
+	CPP_DIRECTIVE_WARNING
+} CppDirective;
+#define CPP_DIRECTIVE_LAST CPP_DIRECTIVE_WARNING
+#define CPP_DIRECTIVE_COUNT (CPP_DIRECTIVE_LAST + 1)
+
 
 /* variables */
+/* operators */
 static const CppOperator _cpp_operators[] =
 {
 	{ CPP_CODE_OPERATOR_AEQUALS,	"&="	},
@@ -101,10 +119,20 @@ static const CppOperator _cpp_operators[] =
 static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 	/ sizeof(*_cpp_operators);
 
+/* directives */
+static const size_t _cpp_directives_cnt = CPP_DIRECTIVE_COUNT;
+static const char * _cpp_directives[CPP_DIRECTIVE_COUNT] =
+{
+	"define", "endif", "error", "if", "ifdef", "include", "pragma",
+	"warning"
+};
+
 
 /* prototypes */
 /* useful */
 static int _cpp_isword(int c);
+static char * _cpp_parse_line(Parser * parser, int c);
+static char * _cpp_parse_word(Parser * parser, int c);
 
 /* filters */
 static int _cpp_filter_includes(int * c, void * data);
@@ -137,6 +165,54 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 static int _cpp_isword(int c)
 {
 	return isalnum(c) || c == '_';
+}
+
+
+/* cpp_parse_line */
+static char * _cpp_parse_line(Parser * parser, int c)
+{
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
+
+	do
+	{
+		if((p = realloc(str, len + 1)) == NULL)
+		{
+			error_set_code(1, "%s", strerror(errno));
+			free(str);
+			return NULL;
+		}
+		str = p;
+		str[len++] = c;
+	}
+	while((c = parser_scan_filter(parser)) != EOF && c != '\n');
+	str[len] = '\0';
+	return str;
+}
+
+
+/* cpp_parse_word */
+static char * _cpp_parse_word(Parser * parser, int c)
+{
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
+
+	do
+	{
+		if((p = realloc(str, len + 1)) == NULL)
+		{
+			error_set_code(1, "%s", strerror(errno));
+			free(str);
+			return NULL;
+		}
+		str = p;
+		str[len++] = c;
+	}
+	while(_cpp_isword((c = parser_scan_filter(parser))));
+	str[len] = '\0';
+	return str;
 }
 
 
@@ -351,14 +427,19 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_directive */
-static char * _directive_word(Parser * parser, int c);
+static int _directive_error(Cpp * cpp, Token * token, char const * str);
+static int _directive_include(Cpp * cpp, Token * token, char const * str);
+static int _directive_warning(Cpp * cpp, Token * token, char const * str);
 
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
 	/* FIXME actually parse and implement, careful with comments */
 {
 	Cpp * cpp = data;
-	char * str = NULL;
+	char * str;
+	char * pos;
+	size_t n;
+	size_t i;
 
 	if(cpp->directive_newline != 1 || c != '#')
 	{
@@ -368,39 +449,128 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 #ifdef DEBUG
 	fprintf(stderr, "%s", "DEBUG: cpp_callback_directive()\n");
 #endif
-	while(isspace((c = parser_scan_filter(parser))) && c != '\n');
-	if(!_cpp_isword(c))
+	if((str = _cpp_parse_line(parser, c)) == NULL)
 		return -1;
-	if((str = _directive_word(parser, c)) == NULL)
-		return -1;
-	token_set_code(token, CPP_CODE_META);
 	token_set_string(token, str);
+	for(pos = &str[1]; isspace(*pos); pos++); /* skip whitespaces */
+	for(n = 0; pos[n] != '\0' && _cpp_isword(pos[n]); n++);
+	for(i = 0; i < _cpp_directives_cnt; i++)
+		if(strncmp(pos, _cpp_directives[i], n) == 0
+				&& _cpp_directives[i][n] == '\0')
+			break;
+	for(pos = &pos[n]; isspace(*pos); pos++); /* skip whitespaces */
+	switch(i)
+	{
+		case CPP_DIRECTIVE_DEFINE:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_DEFINE);
+			break;
+		case CPP_DIRECTIVE_ENDIF:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_ENDIF);
+			break;
+		case CPP_DIRECTIVE_ERROR:
+			_directive_error(cpp, token, str);
+			break;
+		case CPP_DIRECTIVE_IF:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_IF);
+			break;
+		case CPP_DIRECTIVE_IFDEF:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_IFDEF);
+			break;
+		case CPP_DIRECTIVE_INCLUDE:
+			_directive_include(cpp, token, pos);
+			break;
+		case CPP_DIRECTIVE_PRAGMA:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_PRAGMA);
+			break;
+		case CPP_DIRECTIVE_WARNING:
+			_directive_warning(cpp, token, str);
+			break;
+		default:
+			/* FIXME implement */
+			_directive_error(cpp, token, str);
+			break;
+	}
 	free(str);
-	while((c = parser_scan_filter(parser)) != EOF && c != '\n');
 	return 0;
 }
 
-static char * _directive_word(Parser * parser, int c)
-	/* FIXME this code is probably useful in other places too */
+static int _directive_error(Cpp * cpp, Token * token, char const * str)
+	/* FIXME line and column will probably be wrong for included content
+	 *       use a parser to keep track of it? */
 {
-	char * str = NULL;
-	size_t len = 0;
-	char * p;
+	char buf[256];
 
-	do
+	token_set_code(token, CPP_CODE_META_ERROR);
+	snprintf(buf, sizeof(buf), "in %s:%u, %u: %s: %s",
+			cpp_get_filename(cpp), token_get_line(token),
+			token_get_col(token), "Unknown or invalid directive",
+			str);
+	token_set_string(token, buf);
+	return 0;
+}
+
+static char * _include_path(Cpp * cpp, Token * token, char const * str);
+static int _directive_include(Cpp * cpp, Token * token, char const * str)
+{
+	char * path;
+
+	if((path = _include_path(cpp, token, str)) == NULL)
+		return 0;
+	token_set_code(token, CPP_CODE_META_INCLUDE);
+	fprintf(stderr, "DEBUG: path is %s\n", path);
+	/* FIXME implement */
+	return 0;
+}
+
+static char * _include_path(Cpp * cpp, Token * token, char const * str)
+	/* FIXME use presets for path discovery */
+{
+	int d;
+	size_t len;
+	char * path = NULL;
+	struct stat st;
+	char buf[256]; /* XXX use a dynamic buffer */
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: _include_path(%p, %s)\n", cpp, str);
+#endif
+	if(str[0] == '"')
+		d = str[0];
+	else if(str[0] == '<')
+		d = '>';
+	else
+		return NULL;
+	len = strlen(str);
+	if(len < 3 || str[len - 1] != d)
+		return NULL;
+	if((path = strdup(&str[1])) == NULL)
+		return NULL;
+	path[len - 2] = '\0';
+	if(stat(path, &st) != 0)
 	{
-		if((p = realloc(str, len + 1)) == NULL)
-		{
-			error_set_code(1, "%s", strerror(errno));
-			free(str);
-			return NULL;
-		}
-		str = p;
-		str[len++] = c;
+		token_set_code(token, CPP_CODE_META_ERROR);
+		snprintf(buf, sizeof(buf), "%s%c%s%c: %s", "Cannot include ",
+				str[0], path, d, strerror(errno));
+		token_set_string(token, buf);
+		free(path);
+		return NULL;
 	}
-	while(_cpp_isword((c = parser_scan_filter(parser))));
-	str[len] = '\0';
-	return str;
+	return path;
+}
+
+static int _directive_warning(Cpp * cpp, Token * token, char const * str)
+{
+	int ret;
+
+	/* FIXME implement */
+	ret = _directive_error(cpp, token, str);
+	token_set_code(token, CPP_CODE_META_WARNING);
+	return ret;
 }
 
 
@@ -508,28 +678,15 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 static int _cpp_callback_word(Parser * parser, Token * token, int c,
 		void * data)
 {
-	char * str = NULL;
-	size_t len = 0;
-	char * p;
+	char * str;
 
 	if(!_cpp_isword(c))
 		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: cpp_callback_word('%c')\n", c);
 #endif
-	do
-	{
-		if((p = realloc(str, len + 2)) == NULL)
-		{
-			error_set_code(1, "%s", strerror(errno));
-			free(str);
-			return 0;
-		}
-		str = p;
-		str[len++] = c;
-	}
-	while(_cpp_isword((c = parser_scan_filter(parser))));
-	str[len] = '\0';
+	if((str = _cpp_parse_word(parser, c)) == NULL)
+		return -1;
 	token_set_code(token, CPP_CODE_WORD);
 	token_set_string(token, str);
 	free(str);

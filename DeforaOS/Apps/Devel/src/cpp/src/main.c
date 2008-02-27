@@ -68,6 +68,7 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	int ret;
 	Cpp * cpp;
 	Token * token;
+	int code;
 
 	if((cpp = cpp_new(filename, prefs->flags & PREFS_t
 					? CPP_FILTER_TRIGRAPH : 0)) == NULL)
@@ -80,7 +81,23 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 		fprintf(stderr, "DEBUG: %s (%d)\n", token_get_string(token),
 				token_get_code(token));
 #else
-		fputs(token_get_string(token), fp);
+		if((code = token_get_code(token)) == CPP_CODE_META_ERROR)
+		{
+			fprintf(stderr, "%s%s\n", "Error: ",
+					token_get_string(token));
+		}
+		else if(code == CPP_CODE_META_WARNING)
+			fprintf(stderr, "%s%s\n", "Warning: ",
+					token_get_string(token));
+		else if(code >= CPP_CODE_META_FIRST
+			&& code <= CPP_CODE_META_LAST)
+		{
+			if(fp == stdout)
+				fprintf(stderr, "%s\n", token_get_string(
+							token));
+		}
+		else
+			fputs(token_get_string(token), fp);
 #endif
 		token_delete(token);
 	}
