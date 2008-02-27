@@ -2,10 +2,11 @@ TARGETS	= c99
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
+LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath $(PREFIX)/lib -l System
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -14,9 +15,10 @@ INSTALL	= install
 all: $(TARGETS)
 
 c99_OBJS = c99.o
-c99_CFLAGS = $(CFLAGSF) $(CFLAGS)
+c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
 c99: $(c99_OBJS)
-	$(CC) $(LDFLAGSF) $(LDFLAGS) -o c99 $(c99_OBJS)
+	$(CC) -o c99 $(c99_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 c99.o: c99.c
 	$(CC) $(c99_CFLAGS) -c c99.c

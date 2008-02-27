@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <System.h>
+#include "../config.h"
 
 
 /* private */
@@ -34,7 +36,6 @@ typedef int Prefs;
 
 /* prototypes */
 static int _c99(Prefs * prefs, char const * outfile, int filec, char * filev[]);
-static int _c99_error(char const * message, int ret);
 
 
 /* functions */
@@ -49,11 +50,15 @@ static int _c99(Prefs * prefs, char const * outfile, int filec, char * filev[])
 	int i;
 
 	if(outfile != NULL && (fp = fopen(outfile, "w")) == NULL)
-		return _c99_error(outfile, 1);
+		return error_set_print(PACKAGE, 1, "%s: %s", outfile,
+				strerror(errno));
 	for(i = 0; i < filec; i++)
 		ret |= _c99_do(prefs, outfile, fp, filev[i]);
-	if(fp != NULL)
-		fclose(fp);
+	if(fp != NULL && fclose(fp) != 0)
+		return error_set_print(PACKAGE, 1, "%s: %s", outfile,
+				strerror(errno));
+	if(ret != 0)
+		error_print(PACKAGE);
 	return ret;
 }
 
@@ -71,7 +76,7 @@ static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
 	int ret;
 
 	if((infp = fopen(infile, "r")) == NULL)
-		return _c99_error(infile, 1);
+		return error_set_code(1, "%s: %s", infile, strerror(errno));
 	if(*prefs & PREFS_c)
 		ret = _c99_do_c(prefs, outfile, outfp, infile, infp);
 	else if(*prefs & PREFS_E)
@@ -79,63 +84,56 @@ static int _c99_do(Prefs * prefs, char const * outfile, FILE * outfp,
 	else
 		ret = _c99_do_o(prefs, outfile, outfp, infile, infp);
 	/* FIXME implement */
-	fclose(infp);
+	if(fclose(infp) != 0 && ret == 0)
+		return error_set_code(1, "%s: %s", infile, strerror(errno));
 	return ret;
 }
 
 static int _c99_do_c(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile, FILE * infp)
+	/* FIXME outfp should probably be opened only here */
 {
+	int ret = 0;
 	size_t len;
 	char * o = NULL;
 
 	if(outfile == NULL)
 	{
-		if((len = strlen(infile)) < 3 || infile[len-2] != '.'
-				|| infile[len-1] != 'c')
-		{
-			errno = EINVAL;
-			return _c99_error(infile, 1);
-		}
+		if((len = strlen(infile)) < 3 || infile[len - 2] != '.'
+				|| infile[len - 1] != 'c')
+			return error_set_code(1, "%s", strerror(EINVAL));
 		if((o = strdup(infile)) == NULL)
-			return _c99_error("strdup", 1);
-		o[len-1] = 'o';
+			return error_set_code(1, "%s", strerror(errno));
+		o[len - 1] = 'o';
 		if((outfp = fopen(o, "w")) == NULL)
 		{
+			error_set_code(1, "%s: %s", o, strerror(errno));
 			free(o);
-			return _c99_error(o, 1);
+			return 1;
 		}
 	}
 	/* FIXME implement */
 	if(o != NULL)
 	{
-		fclose(outfp);
+		if(fclose(outfp) != 0)
+			ret = error_set_code(1, "%s: %s", o, strerror(errno));
 		free(o);
 	}
-	return 0;
+	return ret;
 }
 
 static int _c99_do_E(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile, FILE * infp)
 {
 	/* FIXME implement */
-	return 1;
+	return error_set_code(1, "%s", strerror(ENOSYS));
 }
 
 static int _c99_do_o(Prefs * prefs, char const * outfile, FILE * outfp,
 		char * infile, FILE * infp)
 {
 	/* FIXME implement */
-	return 1;
-}
-
-
-/* c99_error */
-static int _c99_error(char const * message, int ret)
-{
-	fputs("c99: ", stderr);
-	perror(message);
-	return ret;
+	return error_set_code(1, "%s", strerror(ENOSYS));
 }
 
 
