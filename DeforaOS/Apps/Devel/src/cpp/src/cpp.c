@@ -518,12 +518,29 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
+	CppInclude * p;
 
 	if((path = _include_path(cpp, token, str)) == NULL)
 		return 0;
 	token_set_code(token, CPP_CODE_META_INCLUDE);
-	fprintf(stderr, "DEBUG: path is %s\n", path);
-	/* FIXME implement */
+	if((p = realloc(cpp->includes, sizeof(*p) * (cpp->includes_cnt + 1)))
+			== NULL)
+	{
+		free(path);
+		return error_set_code(-1, "%s", strerror(errno));
+	}
+	cpp->includes = p;
+	cpp->includes[cpp->includes_cnt].filename = path;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: fopen(\"%s\", \"r\")\n", path);
+#endif
+	if((cpp->includes[cpp->includes_cnt].fp = fopen(path, "r")) == NULL)
+	{
+		error_set_code(-1, "%s: %s", path, strerror(errno));
+		free(path);
+		return -1;
+	}
+	cpp->includes_cnt++;
 	return 0;
 }
 
