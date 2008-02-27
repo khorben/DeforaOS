@@ -162,7 +162,7 @@ static CppParser * _cppparser_new(char const * filename, int filters,
 	cppparser->includes_cnt = 0;
 	cppparser->newlines_last_cnt = 0;
 	cppparser->trigraphs_last_cnt = 0;
-	cppparser->directive_newline = 0;
+	cppparser->directive_newline = 1;
 	if((cppparser->parser = parser_new(filename)) == NULL)
 	{
 		_cppparser_delete(cppparser);
@@ -173,11 +173,11 @@ static CppParser * _cppparser_new(char const * filename, int filters,
 	if(filters & CPP_FILTER_TRIGRAPH)
 		parser_add_filter(cppparser->parser, _cpp_filter_trigraphs,
 				cppparser);
-	parser_add_callback(cppparser->parser, _cpp_callback_directive,
-			cppparser);
 	parser_add_callback(cppparser->parser, _cpp_callback_whitespace,
 			cppparser);
 	parser_add_callback(cppparser->parser, _cpp_callback_comment, NULL);
+	parser_add_callback(cppparser->parser, _cpp_callback_directive,
+			cppparser);
 	parser_add_callback(cppparser->parser, _cpp_callback_comma, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_operator,
 			cppparser);
@@ -336,43 +336,6 @@ static int _trigraphs_get(int last, int * c)
 }
 
 
-/* cpp_callback_directive */
-static int _cpp_callback_directive(Parser * parser, Token * token, int c,
-		void * data)
-	/* FIXME actually parse and implement */
-{
-	CppParser * cp = data;
-	char * str = NULL;
-	size_t len = 0;
-	char * p;
-
-	if(cp->directive_newline != 1 || c != '#')
-	{
-		cp->directive_newline = 0;
-		return 1;
-	}
-#ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: cpp_callback_directive()\n");
-#endif
-	do
-	{
-		if((p = realloc(str, len + 1)) == NULL)
-		{
-			error_set_code(1, "%s", strerror(errno));
-			free(str);
-			return -1;
-		}
-		str = p;
-		str[len++] = c;
-	}
-	while((c = parser_scan_filter(parser)) != '\n');
-	str[len] = '\0';
-	token_set_string(token, str);
-	free(str);
-	return 0;
-}
-
-
 /* cpp_callback_whitespace */
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data)
@@ -442,6 +405,43 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 	token_set_code(token, CPP_CODE_WHITESPACE);
 	token_set_string(token, "");
 	parser_scan_filter(parser);
+	return 0;
+}
+
+
+/* cpp_callback_directive */
+static int _cpp_callback_directive(Parser * parser, Token * token, int c,
+		void * data)
+	/* FIXME actually parse and implement */
+{
+	CppParser * cp = data;
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
+
+	if(cp->directive_newline != 1 || c != '#')
+	{
+		cp->directive_newline = 0;
+		return 1;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: cpp_callback_directive()\n");
+#endif
+	do
+	{
+		if((p = realloc(str, len + 1)) == NULL)
+		{
+			error_set_code(1, "%s", strerror(errno));
+			free(str);
+			return -1;
+		}
+		str = p;
+		str[len++] = c;
+	}
+	while((c = parser_scan_filter(parser)) != '\n');
+	str[len] = '\0';
+	token_set_string(token, str);
+	free(str);
 	return 0;
 }
 
