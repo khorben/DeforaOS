@@ -104,6 +104,8 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 
 /* prototypes */
 /* useful */
+static int _cpp_isword(int c);
+
 /* filters */
 static int _cpp_filter_includes(int * c, void * data);
 static int _cpp_filter_newlines(int * c, void * data);
@@ -131,6 +133,13 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 
 /* Cpp */
 /* private */
+/* cpp_isword */
+static int _cpp_isword(int c)
+{
+	return isalnum(c) || c == '_';
+}
+
+
 /* cpp_filter_includes */
 static int _cpp_filter_includes(int * c, void * data)
 	/* FIXME should be a wrapper around parser_scan() instead */
@@ -342,14 +351,14 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_directive */
+static char * _directive_word(Parser * parser, int c);
+
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
 	/* FIXME actually parse and implement, careful with comments */
 {
 	Cpp * cpp = data;
 	char * str = NULL;
-	size_t len = 0;
-	char * p;
 
 	if(cpp->directive_newline != 1 || c != '#')
 	{
@@ -359,23 +368,39 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 #ifdef DEBUG
 	fprintf(stderr, "%s", "DEBUG: cpp_callback_directive()\n");
 #endif
+	while(isspace((c = parser_scan_filter(parser))) && c != '\n');
+	if(!_cpp_isword(c))
+		return -1;
+	if((str = _directive_word(parser, c)) == NULL)
+		return -1;
+	token_set_code(token, CPP_CODE_META);
+	token_set_string(token, str);
+	free(str);
+	while((c = parser_scan_filter(parser)) != EOF && c != '\n');
+	return 0;
+}
+
+static char * _directive_word(Parser * parser, int c)
+	/* FIXME this code is probably useful in other places too */
+{
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
+
 	do
 	{
 		if((p = realloc(str, len + 1)) == NULL)
 		{
 			error_set_code(1, "%s", strerror(errno));
 			free(str);
-			return -1;
+			return NULL;
 		}
 		str = p;
 		str[len++] = c;
 	}
-	while((c = parser_scan_filter(parser)) != '\n');
+	while(_cpp_isword((c = parser_scan_filter(parser))));
 	str[len] = '\0';
-	token_set_code(token, CPP_CODE_META);
-	token_set_string(token, str);
-	free(str);
-	return 0;
+	return str;
 }
 
 
@@ -480,8 +505,6 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_word */
-static int _isword(int c);
-
 static int _cpp_callback_word(Parser * parser, Token * token, int c,
 		void * data)
 {
@@ -489,7 +512,7 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 	size_t len = 0;
 	char * p;
 
-	if(!_isword(c))
+	if(!_cpp_isword(c))
 		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: cpp_callback_word('%c')\n", c);
@@ -505,17 +528,12 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 		str = p;
 		str[len++] = c;
 	}
-	while(_isword((c = parser_scan_filter(parser))));
+	while(_cpp_isword((c = parser_scan_filter(parser))));
 	str[len] = '\0';
 	token_set_code(token, CPP_CODE_WORD);
 	token_set_string(token, str);
 	free(str);
 	return 0;
-}
-
-static int _isword(int c)
-{
-	return isalnum(c) || c == '_';
 }
 
 
