@@ -234,13 +234,14 @@ static int _cpp_filter_trigraphs(int * c, void * data)
 	if(_trigraphs_get(cp->trigraphs_last, c) != 0)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: last=%c\n", last);
+		fprintf(stderr, "DEBUG: last=%c\n", cp->trigraphs_last);
 #endif
 		cp->trigraphs_last_cnt = 2;
 		return 2;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: filtered \"??%c\" into \"%c\"\n", last, *c);
+	fprintf(stderr, "DEBUG: filtered \"??%c\" into \"%c\"\n",
+			cp->trigraphs_last, *c);
 #endif
 	return 0;
 }
@@ -385,7 +386,7 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 	if(i == cp->operators_cnt) /* nothing found */
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: cpp_callback_operator('%c')\n", c);
+	fprintf(stderr, "%s%c%s", "DEBUG: cpp_callback_operator('", c, "')\n");
 #endif
 	for(pos = 0; i < j;)
 	{
