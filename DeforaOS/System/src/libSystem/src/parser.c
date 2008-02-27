@@ -188,8 +188,10 @@ int parser_get_token(Parser * parser, Token ** token)
 	size_t i;
 	ParserCallbackData * pcd;
 	int c;
+	int ret;
 
-	if((*token = token_new(parser->line, parser->col)) == NULL)
+	if((*token = token_new(parser->filename, parser->line, parser->col))
+			== NULL)
 		return 1;
 	c = (parser->last == EOF) ? parser_scan_filter(parser) : parser->last;
 #ifdef DEBUG
@@ -198,11 +200,11 @@ int parser_get_token(Parser * parser, Token ** token)
 	for(i = 0; i < parser->callbacks_cnt; i++)
 	{
 		pcd = &parser->callbacks[i];
-		if(pcd->callback(parser, *token, c, pcd->data) == 0)
+		if((ret = pcd->callback(parser, *token, c, pcd->data)) <= 0)
 			break;
 	}
-	if(i != parser->callbacks_cnt)
-		return 0;
+	if(ret == 0 && i != parser->callbacks_cnt)
+		return 0; /* there is a token and no error */
 	token_delete(*token);
 	*token = NULL;
 	return c == EOF ? 0 : 1;
