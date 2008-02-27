@@ -36,17 +36,28 @@ typedef struct _CppOperator
 	char const * string;
 } CppOperator;
 
+typedef struct _CppInclude
+{
+	char const * filename;
+	FILE * fp;
+} CppInclude;
+
 typedef struct _CppParser
 {
 	Parser * parser;
 	const CppOperator * operators;
 	size_t operators_cnt;
+	/* for cpp_filter_includes */
+	CppInclude * includes;
+	size_t includes_cnt;
 	/* for cpp_filter_newlines */
 	int newlines_last;
 	int newlines_last_cnt;
 	/* for cpp_filter_trigraphs */
 	int trigraphs_last;
 	int trigraphs_last_cnt;
+	/* for cpp_callback_directive */
+	int directive_newline;
 } CppParser;
 
 
@@ -112,12 +123,14 @@ struct _Cpp
 
 /* prototypes */
 /* useful */
+static int _cpp_filter_includes(int * c, void * data);
 static int _cpp_filter_newlines(int * c, void * data);
 static int _cpp_filter_trigraphs(int * c, void * data);
 
+static int _cpp_callback_directive(Parser * parser, Token * token, int c,
+		void * data);
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data);
-/* FIXME handle directives */
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_comma(Parser * parser, Token * token, int c,
@@ -145,18 +158,25 @@ static CppParser * _cppparser_new(char const * filename, int filters,
 		return NULL;
 	cppparser->operators = operators;
 	cppparser->operators_cnt = operators_cnt;
+	cppparser->includes = NULL;
+	cppparser->includes_cnt = 0;
 	cppparser->newlines_last_cnt = 0;
 	cppparser->trigraphs_last_cnt = 0;
+	cppparser->directive_newline = 0;
 	if((cppparser->parser = parser_new(filename)) == NULL)
 	{
 		_cppparser_delete(cppparser);
 		return NULL;
 	}
+	parser_add_filter(cppparser->parser, _cpp_filter_includes, cppparser);
 	parser_add_filter(cppparser->parser, _cpp_filter_newlines, cppparser);
 	if(filters & CPP_FILTER_TRIGRAPH)
 		parser_add_filter(cppparser->parser, _cpp_filter_trigraphs,
 				cppparser);
-	parser_add_callback(cppparser->parser, _cpp_callback_whitespace, NULL);
+	parser_add_callback(cppparser->parser, _cpp_callback_directive,
+			cppparser);
+	parser_add_callback(cppparser->parser, _cpp_callback_whitespace,
+			cppparser);
 	parser_add_callback(cppparser->parser, _cpp_callback_comment, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_comma, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_operator,
@@ -179,6 +199,38 @@ static void _cppparser_delete(CppParser * cppparser)
 
 /* Cpp */
 /* private */
+/* cpp_filter_includes */
+static int _cpp_filter_includes(int * c, void * data)
+	/* FIXME should be a wrapper around parser_scan() instead */
+{
+	CppParser * cp = data;
+	CppInclude * include;
+	CppInclude * p;
+
+	while(cp->includes_cnt > 0)
+	{
+		include = &cp->includes[cp->includes_cnt - 1];
+		if((*c = fgetc(include->fp)) != EOF)
+			return 1;
+		if(!feof(include->fp)) /* an error occured */
+		{
+			error_set_code(1, "%s: %s", include->filename, strerror(
+						errno));
+			fclose(include->fp);
+			return -1;
+		}
+		if((p = realloc(cp->includes, sizeof(*p) * cp->includes_cnt--))
+				== NULL)
+		{
+			error_set_code(1, "%s: %s", include->filename, strerror(
+						errno));
+			return -1;
+		}
+	}
+	return 0;
+}
+
+
 /* cpp_filter_newlines */
 static int _cpp_filter_newlines(int * c, void * data)
 {
@@ -284,10 +336,48 @@ static int _trigraphs_get(int last, int * c)
 }
 
 
+/* cpp_callback_directive */
+static int _cpp_callback_directive(Parser * parser, Token * token, int c,
+		void * data)
+	/* FIXME actually parse and implement */
+{
+	CppParser * cp = data;
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
+
+	if(cp->directive_newline != 1 || c != '#')
+	{
+		cp->directive_newline = 0;
+		return 1;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", "DEBUG: cpp_callback_directive()\n");
+#endif
+	do
+	{
+		if((p = realloc(str, len + 1)) == NULL)
+		{
+			error_set_code(1, "%s", strerror(errno));
+			free(str);
+			return -1;
+		}
+		str = p;
+		str[len++] = c;
+	}
+	while((c = parser_scan_filter(parser)) != '\n');
+	str[len] = '\0';
+	token_set_string(token, str);
+	free(str);
+	return 0;
+}
+
+
 /* cpp_callback_whitespace */
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data)
 {
+	CppParser * cp = data;
 	char * str = NULL;
 	size_t len = 0;
 	char * p;
@@ -316,6 +406,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		str[len] = '\0';
 		token_set_string(token, str);
 		free(str);
+		cp->directive_newline = 1;
 	}
 	else
 		token_set_string(token, " ");
