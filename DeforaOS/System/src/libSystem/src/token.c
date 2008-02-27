@@ -33,6 +33,7 @@ struct _Token
 {
 	TokenCode code;
 	char * string;
+	char * filename;
 	unsigned int line;
 	unsigned int col;
 };
@@ -40,8 +41,9 @@ struct _Token
 
 /* protected */
 /* functions */
-/* token_new */
-Token * token_new(unsigned int line, unsigned int col)
+/* token_new
+ * PRE	filename must be non-NULL */
+Token * token_new(char const * filename, unsigned int line, unsigned int col)
 {
 	Token * token;
 
@@ -51,9 +53,16 @@ Token * token_new(unsigned int line, unsigned int col)
 	if((token = object_new(sizeof(*token))) == NULL)
 		return NULL;
 	token->code = 0;
+	token->string = NULL;
+	token->filename = strdup(filename);
 	token->line = line;
 	token->col = col;
-	token->string = NULL;
+	if(token->filename == NULL)
+	{
+		error_set_code(1, "%s", strerror(errno));
+		object_delete(token);
+		return NULL;
+	}
 	return token;
 }
 
