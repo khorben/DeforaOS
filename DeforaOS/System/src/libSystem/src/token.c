@@ -91,6 +91,13 @@ unsigned int token_get_col(Token * token)
 }
 
 
+/* token_get_filename */
+char const * token_get_filename(Token * token)
+{
+	return token->filename;
+}
+
+
 /* token_get_line */
 unsigned int token_get_line(Token * token)
 {
@@ -116,6 +123,16 @@ void token_set_code(Token * token, int code)
 void token_set_col(Token * token, unsigned int col)
 {
 	token->col = col;
+}
+
+
+/* token_set_filename */
+int token_set_filename(Token * token, char const * filename)
+{
+	free(token->filename);
+	if((token->filename = strdup(filename)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	return 0;
 }
 
 

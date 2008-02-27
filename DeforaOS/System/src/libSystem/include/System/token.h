@@ -33,6 +33,9 @@ void token_delete(Token * token);
 
 
 /* accessors */
+char const * token_get_filename(Token * token);
+int token_set_filename(Token * token, char const * filename);
+
 unsigned int token_get_col(Token * token);
 void token_set_col(Token * token, unsigned int col);
 
