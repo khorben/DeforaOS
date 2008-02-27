@@ -403,7 +403,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 	if(c == EOF)
 		return -1;
 	token_set_code(token, CPP_CODE_WHITESPACE);
-	token_set_string(token, "");
+	token_set_string(token, " ");
 	parser_scan_filter(parser);
 	return 0;
 }
