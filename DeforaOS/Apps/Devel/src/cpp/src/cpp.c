@@ -412,7 +412,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 /* cpp_callback_directive */
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
-	/* FIXME actually parse and implement */
+	/* FIXME actually parse and implement, careful with comments */
 {
 	CppParser * cp = data;
 	char * str = NULL;
@@ -440,6 +440,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 	}
 	while((c = parser_scan_filter(parser)) != '\n');
 	str[len] = '\0';
+	token_set_code(token, CPP_CODE_META);
 	token_set_string(token, str);
 	free(str);
 	return 0;
