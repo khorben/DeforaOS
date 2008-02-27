@@ -41,6 +41,12 @@ typedef struct _CppParser
 	Parser * parser;
 	const CppOperator * operators;
 	size_t operators_cnt;
+	/* for cpp_filter_newlines */
+	int newlines_last;
+	int newlines_last_cnt;
+	/* for cpp_filter_trigraphs */
+	int trigraphs_last;
+	int trigraphs_last_cnt;
 } CppParser;
 
 
@@ -139,16 +145,17 @@ static CppParser * _cppparser_new(char const * filename, int filters,
 		return NULL;
 	cppparser->operators = operators;
 	cppparser->operators_cnt = operators_cnt;
+	cppparser->newlines_last_cnt = 0;
+	cppparser->trigraphs_last_cnt = 0;
 	if((cppparser->parser = parser_new(filename)) == NULL)
 	{
 		_cppparser_delete(cppparser);
 		return NULL;
 	}
-	parser_add_filter(cppparser->parser, _cpp_filter_newlines,
-			cppparser->parser);
+	parser_add_filter(cppparser->parser, _cpp_filter_newlines, cppparser);
 	if(filters & CPP_FILTER_TRIGRAPH)
 		parser_add_filter(cppparser->parser, _cpp_filter_trigraphs,
-				cppparser->parser);
+				cppparser);
 	parser_add_callback(cppparser->parser, _cpp_callback_whitespace, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_comment, NULL);
 	parser_add_callback(cppparser->parser, _cpp_callback_comma, NULL);
@@ -175,66 +182,61 @@ static void _cppparser_delete(CppParser * cppparser)
 /* cpp_filter_newlines */
 static int _cpp_filter_newlines(int * c, void * data)
 {
-	Parser * parser = data;
-	/* FIXME obtain from data */
-	static int last;
-	static int last_cnt = 0;
+	CppParser * cp = data;
 
-	if(last_cnt)
+	if(cp->newlines_last_cnt != 0)
 	{
-		last_cnt--;
-		*c = last;
+		cp->newlines_last_cnt--;
+		*c = cp->newlines_last;
 		return 0;
 	}
 	if(*c != '\\')
 		return 0;
-	if((*c = parser_scan(parser)) == '\n')
+	if((*c = parser_scan(cp->parser)) == '\n')
 	{
-		*c = parser_scan(parser); /* skip the newline */
+		*c = parser_scan(cp->parser); /* skip the newline */
 		return 0;
 	}
-	last = *c;
-	last_cnt = 1;
+	cp->newlines_last = *c;
+	cp->newlines_last_cnt = 1;
 	*c = '\\';
 	return 1;
 }
 
 
 /* cpp_filter_trigraphs */
-static int _trigraph_get(int last, int * c);
+static int _trigraphs_get(int last, int * c);
 
 static int _cpp_filter_trigraphs(int * c, void * data)
 {
-	Parser * parser = data;
-	static int last;
-	static int last_cnt = 0;
+	CppParser * cp = data;
 
-	if(last_cnt == 2)
+	if(cp->trigraphs_last_cnt == 2)
 	{
-		last_cnt--;
+		cp->trigraphs_last_cnt--;
 		*c = '?';
 		return 0;
 	}
-	else if(last_cnt == 1)
+	else if(cp->trigraphs_last_cnt == 1)
 	{
-		last_cnt--;
-		*c = last;
+		cp->trigraphs_last_cnt--;
+		*c = cp->trigraphs_last;
 		return 0;
 	}
 	if(*c != '?')
 		return 0;
-	if((last = parser_scan(parser)) != '?')
+	if((cp->trigraphs_last = parser_scan(cp->parser)) != '?')
 	{
-		last_cnt = 1;
+		cp->trigraphs_last_cnt = 1;
 		return 1;
 	}
-	last = parser_scan(parser);
-	if(_trigraph_get(last, c) != 0)
+	cp->trigraphs_last = parser_scan(cp->parser);
+	if(_trigraphs_get(cp->trigraphs_last, c) != 0)
 	{
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: last=%c\n", last);
 #endif
-		last_cnt = 2;
+		cp->trigraphs_last_cnt = 2;
 		return 2;
 	}
 #ifdef DEBUG
@@ -243,7 +245,7 @@ static int _cpp_filter_trigraphs(int * c, void * data)
 	return 0;
 }
 
-static int _trigraph_get(int last, int * c)
+static int _trigraphs_get(int last, int * c)
 {
 	switch(last)
 	{
