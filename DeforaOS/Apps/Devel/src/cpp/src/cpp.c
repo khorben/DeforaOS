@@ -37,18 +37,12 @@ typedef struct _CppOperator
 	char const * string;
 } CppOperator;
 
-typedef struct _CppInclude
-{
-	char * filename;
-	FILE * fp;
-} CppInclude;
-
 struct _Cpp
 {
 	int filters;
 	Parser * parser;
 	/* for cpp_filter_includes */
-	CppInclude * includes;
+	Cpp ** includes;
 	size_t includes_cnt;
 	/* for cpp_filter_newlines */
 	int newlines_last;
@@ -135,7 +129,6 @@ static char * _cpp_parse_line(Parser * parser, int c);
 static char * _cpp_parse_word(Parser * parser, int c);
 
 /* filters */
-static int _cpp_filter_includes(int * c, void * data);
 static int _cpp_filter_newlines(int * c, void * data);
 static int _cpp_filter_trigraphs(int * c, void * data);
 
@@ -213,38 +206,6 @@ static char * _cpp_parse_word(Parser * parser, int c)
 	while(_cpp_isword((c = parser_scan_filter(parser))));
 	str[len] = '\0';
 	return str;
-}
-
-
-/* cpp_filter_includes */
-static int _cpp_filter_includes(int * c, void * data)
-	/* FIXME should be a wrapper around parser_scan() instead */
-{
-	Cpp * cpp = data;
-	CppInclude * include;
-	CppInclude * p;
-
-	while(cpp->includes_cnt > 0)
-	{
-		include = &cpp->includes[cpp->includes_cnt - 1];
-		if((*c = fgetc(include->fp)) != EOF)
-			return 1;
-		if(!feof(include->fp)) /* an error occured */
-		{
-			error_set_code(1, "%s: %s", include->filename, strerror(
-						errno));
-			fclose(include->fp);
-			return -1;
-		}
-		if((p = realloc(cpp->includes, sizeof(*p)
-						* cpp->includes_cnt--)) == NULL)
-		{
-			error_set_code(1, "%s: %s", include->filename, strerror(
-						errno));
-			return -1;
-		}
-	}
-	return 0;
 }
 
 
@@ -427,6 +388,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_directive */
+/* these functions should return 0 (or -1 on errors) */
 static int _directive_error(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str);
 static int _directive_warning(Cpp * cpp, Token * token, char const * str);
@@ -435,6 +397,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
 	/* FIXME actually parse and implement, careful with comments */
 {
+	int ret = 0;
 	Cpp * cpp = data;
 	char * str;
 	char * pos;
@@ -481,7 +444,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_IFDEF);
 			break;
 		case CPP_DIRECTIVE_INCLUDE:
-			_directive_include(cpp, token, pos);
+			ret = _directive_include(cpp, token, pos);
 			break;
 		case CPP_DIRECTIVE_PRAGMA:
 			/* FIXME implement */
@@ -496,7 +459,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			break;
 	}
 	free(str);
-	return 0;
+	return ret;
 }
 
 static int _directive_error(Cpp * cpp, Token * token, char const * str)
@@ -518,7 +481,7 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
-	CppInclude * p;
+	Cpp ** p;
 
 	if((path = _include_path(cpp, token, str)) == NULL)
 		return 0;
@@ -530,11 +493,7 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 		return error_set_code(-1, "%s", strerror(errno));
 	}
 	cpp->includes = p;
-	cpp->includes[cpp->includes_cnt].filename = path;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: fopen(\"%s\", \"r\")\n", path);
-#endif
-	if((cpp->includes[cpp->includes_cnt].fp = fopen(path, "r")) == NULL)
+	if((p[cpp->includes_cnt] = cpp_new(path, cpp->filters)) == NULL)
 	{
 		error_set_code(-1, "%s: %s", path, strerror(errno));
 		free(path);
@@ -545,7 +504,7 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 }
 
 static char * _include_path(Cpp * cpp, Token * token, char const * str)
-	/* FIXME use presets for path discovery */
+	/* FIXME use presets for path discovery and then dirname(filename) */
 {
 	int d;
 	size_t len;
@@ -739,7 +698,7 @@ Cpp * cpp_new(char const * filename, int filters)
 
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
-	cpp->filters = 0;
+	cpp->filters = filters;
 	cpp->parser = parser_new(filename);
 	cpp->includes = NULL;
 	cpp->includes_cnt = 0;
@@ -751,9 +710,8 @@ Cpp * cpp_new(char const * filename, int filters)
 		cpp_delete(cpp);
 		return NULL;
 	}
-	parser_add_filter(cpp->parser, _cpp_filter_includes, cpp);
 	parser_add_filter(cpp->parser, _cpp_filter_newlines, cpp);
-	if(filters & CPP_FILTER_TRIGRAPH)
+	if(cpp->filters & CPP_FILTER_TRIGRAPH)
 		parser_add_filter(cpp->parser, _cpp_filter_trigraphs, cpp);
 	parser_add_callback(cpp->parser, _cpp_callback_whitespace, cpp);
 	parser_add_callback(cpp->parser, _cpp_callback_comment, NULL);
@@ -771,12 +729,10 @@ Cpp * cpp_new(char const * filename, int filters)
 void cpp_delete(Cpp * cpp)
 {
 	while(cpp->includes_cnt-- > 0)
-	{
-		fclose(cpp->includes[cpp->includes_cnt].fp);
-		free(cpp->includes[cpp->includes_cnt].filename);
-	}
+		cpp_delete(cpp->includes[cpp->includes_cnt]);
 	free(cpp->includes);
-	parser_delete(cpp->parser);
+	if(cpp->parser != NULL)
+		parser_delete(cpp->parser);
 	object_delete(cpp);
 }
 
@@ -786,7 +742,8 @@ void cpp_delete(Cpp * cpp)
 char const * cpp_get_filename(Cpp * cpp)
 {
 	if(cpp->includes_cnt > 0)
-		return cpp->includes[cpp->includes_cnt - 1].filename;
+		return cpp_get_filename(
+				cpp->includes[cpp->includes_cnt - 1]);
 	return parser_get_filename(cpp->parser);
 }
 
@@ -795,5 +752,8 @@ char const * cpp_get_filename(Cpp * cpp)
 /* cpp_scan */
 int cpp_scan(Cpp * cpp, Token ** token)
 {
+	if(cpp->includes_cnt > 0)
+		return cpp_scan(cpp->includes[cpp->includes_cnt - 1],
+				token);
 	return parser_get_token(cpp->parser, token);
 }
