@@ -85,6 +85,15 @@ CREATE TRIGGER daportal_content_insert_timestamp AFTER INSERT ON daportal_conten
 BEGIN
 	UPDATE daportal_content SET timestamp = datetime('now') WHERE content_id = NEW.content_id;
 END;
+CREATE TABLE daportal_content_lang (
+	content_lang_id INTEGER PRIMARY KEY,
+	content_id INTEGER,
+	lang_id VARCHAR(2),
+	title VARCHAR(255),
+	content TEXT,
+	FOREIGN KEY (content_id) REFERENCES daportal_content (content_id),
+	FOREIGN KEY (lang_id) REFERENCES daportal_lang (lang_id)
+);
 INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 

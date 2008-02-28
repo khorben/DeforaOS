@@ -99,8 +99,24 @@ function _content_select($id, $enabled = '')
 			." AND content_id='$id'".$and);
 	if(!is_array($content) || count($content) != 1)
 		return FALSE;
-	return $content[0];
+	$content = $content[0];
+	_content_select_lang($id, $content['title'], $content['content']);
+	return $content;
 }
+
+
+function _content_select_lang($id, &$title, &$content)
+{
+	global $lang;
+
+	$res = _sql_array('SELECT title, content FROM daportal_content_lang'
+			." WHERE content_id='$id' AND lang_id='$lang'");
+	if(!is_array($res) || count($res) != 1)
+		return;
+	$title = $res[0]['title'];
+	$content = $res[0]['content'];
+}
+
 
 function _content_user_update($id, $title, $content)
 {
