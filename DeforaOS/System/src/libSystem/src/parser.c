@@ -185,10 +185,10 @@ char const * parser_get_filename(Parser * parser)
 /* parser_get_token */
 int parser_get_token(Parser * parser, Token ** token)
 {
+	int ret = 0; /* XXX not sure */
 	size_t i;
 	ParserCallbackData * pcd;
 	int c;
-	int ret;
 
 	if((*token = token_new(parser->filename, parser->line, parser->col))
 			== NULL)
@@ -207,7 +207,7 @@ int parser_get_token(Parser * parser, Token ** token)
 		return 0; /* there is a token and no error */
 	token_delete(*token);
 	*token = NULL;
-	return c == EOF ? 0 : 1;
+	return (ret >= 0 && c == EOF) ? 0 : 1;
 }
 
 
