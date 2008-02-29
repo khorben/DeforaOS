@@ -27,7 +27,7 @@ char const * error_get_code(int * code);
 
 void error_set(char const * format, ...);
 int error_set_code(int code, char const * format, ...);
-int error_set_print(char const * program, int code, char const * message, ...);
+int error_set_print(char const * program, int code, char const * format, ...);
 
 /* useful */
 int error_print(char const * program);
