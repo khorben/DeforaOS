@@ -62,6 +62,7 @@ struct _Cpp
 typedef enum _CppDirective
 {
 	CPP_DIRECTIVE_DEFINE = 0,
+	CPP_DIRECTIVE_ELSE,
 	CPP_DIRECTIVE_ENDIF,
 	CPP_DIRECTIVE_ERROR,
 	CPP_DIRECTIVE_IF,
@@ -121,7 +122,7 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 static const size_t _cpp_directives_cnt = CPP_DIRECTIVE_COUNT;
 static const char * _cpp_directives[CPP_DIRECTIVE_COUNT] =
 {
-	"define", "endif", "error", "if", "ifdef", "ifndef", "include",
+	"define", "else", "endif", "error", "if", "ifdef", "ifndef", "include",
 	"pragma", "warning"
 };
 
@@ -431,6 +432,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		case CPP_DIRECTIVE_DEFINE:
 			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_DEFINE);
+			break;
+		case CPP_DIRECTIVE_ELSE:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_ELSE);
 			break;
 		case CPP_DIRECTIVE_ENDIF:
 			/* FIXME implement */
