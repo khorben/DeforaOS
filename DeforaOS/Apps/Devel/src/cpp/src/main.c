@@ -30,10 +30,10 @@
 /* types */
 typedef struct _Prefs
 {
+	int flags;
 	const char ** paths;
 	size_t paths_cnt;
-	char * output;
-	int flags;
+	char const * output;
 } Prefs;
 #define PREFS_t		0x1
 
