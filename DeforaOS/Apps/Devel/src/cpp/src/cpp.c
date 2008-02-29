@@ -52,9 +52,7 @@ struct _Cpp
 	/* for cpp_callback_directive */
 	int directive_newline;
 	/* for include directives */
-	/* XXX is there ever more than 1? */
-	Cpp ** includes;
-	size_t includes_cnt;
+	Cpp * subparser;
 	char ** paths;
 	size_t paths_cnt;
 };
@@ -496,20 +494,12 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 	if((path = _include_path(cpp, token, str)) == NULL)
 		return 0;
 	token_set_code(token, CPP_CODE_META_INCLUDE);
-	if((p = realloc(cpp->includes, sizeof(*p) * (cpp->includes_cnt + 1)))
-			== NULL)
-	{
-		free(path);
-		return error_set_code(-1, "%s", strerror(errno));
-	}
-	cpp->includes = p;
-	if((p[cpp->includes_cnt] = cpp_new(path, cpp->filters)) == NULL)
+	if((cpp->subparser = cpp_new(path, cpp->filters)) == NULL)
 	{
 		error_set_code(-1, "%s: %s", path, strerror(errno));
 		free(path);
 		return -1;
 	}
-	cpp->includes_cnt++;
 	return 0;
 }
 
@@ -749,8 +739,7 @@ Cpp * cpp_new(char const * filename, int filters)
 	cpp->newlines_last_cnt = 0;
 	cpp->trigraphs_last_cnt = 0;
 	cpp->directive_newline = 1;
-	cpp->includes = NULL;
-	cpp->includes_cnt = 0;
+	cpp->subparser = NULL;
 	cpp->paths = NULL;
 	cpp->paths_cnt = 0;
 	if((p = strdup(filename)) != NULL)
@@ -781,9 +770,8 @@ Cpp * cpp_new(char const * filename, int filters)
 /* cpp_delete */
 void cpp_delete(Cpp * cpp)
 {
-	while(cpp->includes_cnt-- > 0)
-		cpp_delete(cpp->includes[cpp->includes_cnt]);
-	free(cpp->includes);
+	if(cpp->subparser != NULL)
+		cpp_delete(cpp->subparser);
 	if(cpp->parser != NULL)
 		parser_delete(cpp->parser);
 	object_delete(cpp);
@@ -794,8 +782,8 @@ void cpp_delete(Cpp * cpp)
 /* cpp_get_filename */
 char const * cpp_get_filename(Cpp * cpp)
 {
-	if(cpp->includes_cnt > 0)
-		return cpp_get_filename(cpp->includes[cpp->includes_cnt - 1]);
+	if(cpp->subparser != NULL)
+		return cpp_get_filename(cpp->subparser);
 	return parser_get_filename(cpp->parser);
 }
 
@@ -819,14 +807,14 @@ int cpp_add_path(Cpp * cpp, char const * path)
 /* cpp_scan */
 int cpp_scan(Cpp * cpp, Token ** token)
 {
-	if(cpp->includes_cnt > 0)
+	if(cpp->subparser != NULL)
 	{
-		if(cpp_scan(cpp->includes[cpp->includes_cnt - 1], token) != 0)
+		if(cpp_scan(cpp->subparser, token) != 0)
 			return 1;
 		if(*token != NULL)
 			return 0;
-		cpp->includes_cnt--; /* end of file */
-		cpp_delete(cpp->includes[cpp->includes_cnt]);
+		cpp_delete(cpp->subparser); /* end of file */
+		cpp->subparser = NULL;
 	}
 	return parser_get_token(cpp->parser, token);
 }

@@ -101,6 +101,9 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 		else if(code == CPP_CODE_META_WARNING)
 			fprintf(stderr, "%s%s\n", "Warning: ",
 					token_get_string(token));
+		else if(code >= CPP_CODE_META_FIRST
+			&& code <= CPP_CODE_META_LAST)
+			fprintf(fp, "%s\n", token_get_string(token));
 		else
 			fputs(token_get_string(token), fp);
 #endif
