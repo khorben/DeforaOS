@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <System.h>
+#include <cpp.h>
 #include "../config.h"
 
 
@@ -48,7 +48,7 @@ static int _c99_do(Prefs * prefs, FILE * outfp, char const * infile);
 
 static int _c99(Prefs * prefs, int filec, char * filev[])
 {
-	FILE * fp;
+	FILE * fp = stdout;
 	int ret = 0;
 	int i;
 
@@ -125,9 +125,30 @@ static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile,
 
 static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile,
 		FILE * infp)
+	/* FIXME infp is useless here */
 {
-	/* FIXME implement */
-	return error_set_code(1, "%s", strerror(ENOSYS));
+	int ret;
+	Cpp * cpp;
+	Token * token;
+	int code;
+
+	if((cpp = cpp_new(infile, CPP_FILTER_TRIGRAPH)) == NULL)
+		return 1;
+	while((ret = cpp_scan(cpp, &token)) == 0
+			&& token != NULL)
+	{
+		if((code = token_get_code(token)) == CPP_CODE_META_ERROR
+				|| code == CPP_CODE_META_WARNING)
+			fprintf(stderr, "%s%s\n", code == CPP_CODE_META_ERROR
+					? "Error: " : "Warning: ",
+					token_get_string(token));
+		else if(code >= CPP_CODE_META_FIRST && code <= CPP_CODE_META_LAST)
+			fprintf(outfp, "%s\n", token_get_string(token));
+		else
+			fputs(token_get_string(token), outfp);
+	}
+	cpp_delete(cpp);
+	return ret;
 }
 
 static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile,
