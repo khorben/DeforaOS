@@ -23,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <libgen.h>
 #include <errno.h>
 #include <System.h>
 #include "cpp.h"
@@ -41,9 +42,6 @@ struct _Cpp
 {
 	int filters;
 	Parser * parser;
-	/* for cpp_filter_includes */
-	Cpp ** includes;
-	size_t includes_cnt;
 	/* for cpp_filter_newlines */
 	int newlines_last;
 	int newlines_last_cnt;
@@ -52,6 +50,9 @@ struct _Cpp
 	int trigraphs_last_cnt;
 	/* for cpp_callback_directive */
 	int directive_newline;
+	/* for include directives */
+	Cpp ** includes;
+	size_t includes_cnt;
 };
 
 /* FIXME use CPP_CODE_META_* in a structure with strings and pointers to
@@ -503,14 +504,15 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 	return 0;
 }
 
+static char * _path_lookup(Cpp * cpp, Token * token, char const * path,
+		int system);
 static char * _include_path(Cpp * cpp, Token * token, char const * str)
 	/* FIXME use presets for path discovery and then dirname(filename) */
 {
 	int d;
 	size_t len;
 	char * path = NULL;
-	struct stat st;
-	char buf[256]; /* XXX use a dynamic buffer */
+	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: _include_path(%p, %s)\n", cpp, str);
@@ -527,16 +529,43 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str)
 	if((path = strdup(&str[1])) == NULL)
 		return NULL;
 	path[len - 2] = '\0';
-	if(stat(path, &st) != 0)
-	{
-		token_set_code(token, CPP_CODE_META_ERROR);
-		snprintf(buf, sizeof(buf), "%s%c%s%c: %s", "Cannot include ",
-				str[0], path, d, strerror(errno));
-		token_set_string(token, buf);
-		free(path);
-		return NULL;
-	}
-	return path;
+	p = _path_lookup(cpp, token, path, d == '>');
+	free(path);
+	return p;
+}
+
+static char * _lookup_error(Token * token, char const * path, int system);
+static char * _path_lookup(Cpp * cpp, Token * token, char const * path,
+		int system)
+{
+	char * p;
+	char * dir;
+	char * buf;
+	struct stat st;
+
+	if((p = strdup(parser_get_filename(cpp->parser))) == NULL)
+		return _lookup_error(token, path, system);
+	dir = dirname(p);
+	free(p);
+	if((buf = malloc(strlen(dir) + strlen(path) + 2)) == NULL)
+		return _lookup_error(token, path, system);
+	sprintf(buf, "%s/%s", dir, path);
+	if(stat(buf, &st) == 0)
+		return buf;
+	free(buf);
+	return _lookup_error(token, path, system);
+}
+
+static char * _lookup_error(Token * token, char const * path, int system)
+{
+	char buf[256];
+
+	token_set_code(token, CPP_CODE_META_ERROR);
+	snprintf(buf, sizeof(buf), "%s%c%s%c: %s", "Cannot include ",
+			system ? '<' : '"', path, system ? '>' : '"',
+			strerror(errno));
+	token_set_string(token, buf);
+	return NULL;
 }
 
 static int _directive_warning(Cpp * cpp, Token * token, char const * str)
