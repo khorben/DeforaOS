@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with cpp; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME
+ * - comments are not handled in directives */
 
 
 
@@ -25,7 +27,6 @@
 #include <limits.h>
 #include <libgen.h>
 #include <errno.h>
-#include <System.h>
 #include "cpp.h"
 
 
@@ -51,8 +52,11 @@ struct _Cpp
 	/* for cpp_callback_directive */
 	int directive_newline;
 	/* for include directives */
+	/* XXX is there ever more than 1? */
 	Cpp ** includes;
 	size_t includes_cnt;
+	char ** paths;
+	size_t paths_cnt;
 };
 
 /* FIXME use CPP_CODE_META_* in a structure with strings and pointers to
@@ -64,6 +68,7 @@ typedef enum _CppDirective
 	CPP_DIRECTIVE_ERROR,
 	CPP_DIRECTIVE_IF,
 	CPP_DIRECTIVE_IFDEF,
+	CPP_DIRECTIVE_IFNDEF,
 	CPP_DIRECTIVE_INCLUDE,
 	CPP_DIRECTIVE_PRAGMA,
 	CPP_DIRECTIVE_WARNING
@@ -118,8 +123,8 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 static const size_t _cpp_directives_cnt = CPP_DIRECTIVE_COUNT;
 static const char * _cpp_directives[CPP_DIRECTIVE_COUNT] =
 {
-	"define", "endif", "error", "if", "ifdef", "include", "pragma",
-	"warning"
+	"define", "endif", "error", "if", "ifdef", "ifndef", "include",
+	"pragma", "warning"
 };
 
 
@@ -444,6 +449,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_IFDEF);
 			break;
+		case CPP_DIRECTIVE_IFNDEF:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_IFNDEF);
+			break;
 		case CPP_DIRECTIVE_INCLUDE:
 			ret = _directive_include(cpp, token, pos);
 			break;
@@ -538,20 +547,27 @@ static char * _lookup_error(Token * token, char const * path, int system);
 static char * _path_lookup(Cpp * cpp, Token * token, char const * path,
 		int system)
 {
+	size_t i;
+	char * buf = NULL;
 	char * p;
-	char * dir;
-	char * buf;
 	struct stat st;
 
-	if((p = strdup(parser_get_filename(cpp->parser))) == NULL)
-		return _lookup_error(token, path, system);
-	dir = dirname(p);
-	free(p);
-	if((buf = malloc(strlen(dir) + strlen(path) + 2)) == NULL)
-		return _lookup_error(token, path, system);
-	sprintf(buf, "%s/%s", dir, path);
-	if(stat(buf, &st) == 0)
-		return buf;
+	for(i = 0; i < cpp->paths_cnt; i++)
+	{
+		if((p = realloc(buf, strlen(cpp->paths[i]) + strlen(path) + 2))
+				== NULL)
+		{
+			free(buf);
+			return _lookup_error(token, path, system);
+		}
+		buf = p;
+		sprintf(buf, "%s/%s", cpp->paths[i], path);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: stat(\"%s\", %p)\n", buf, &st);
+#endif
+		if(stat(buf, &st) == 0)
+			return buf;
+	}
 	free(buf);
 	return _lookup_error(token, path, system);
 }
@@ -724,17 +740,25 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 Cpp * cpp_new(char const * filename, int filters)
 {
 	Cpp * cpp;
+	char * p;
 
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
 	cpp->filters = filters;
 	cpp->parser = parser_new(filename);
-	cpp->includes = NULL;
-	cpp->includes_cnt = 0;
 	cpp->newlines_last_cnt = 0;
 	cpp->trigraphs_last_cnt = 0;
 	cpp->directive_newline = 1;
-	if(cpp->parser == NULL)
+	cpp->includes = NULL;
+	cpp->includes_cnt = 0;
+	cpp->paths = NULL;
+	cpp->paths_cnt = 0;
+	if((p = strdup(filename)) != NULL)
+	{
+		cpp_add_path(cpp, dirname(p)); /* FIXME inclusion order */
+		free(p);
+	}
+	if(cpp->parser == NULL || cpp->paths_cnt != 1)
 	{
 		cpp_delete(cpp);
 		return NULL;
@@ -771,18 +795,38 @@ void cpp_delete(Cpp * cpp)
 char const * cpp_get_filename(Cpp * cpp)
 {
 	if(cpp->includes_cnt > 0)
-		return cpp_get_filename(
-				cpp->includes[cpp->includes_cnt - 1]);
+		return cpp_get_filename(cpp->includes[cpp->includes_cnt - 1]);
 	return parser_get_filename(cpp->parser);
 }
 
 
 /* useful */
+/* cpp_add_path */
+int cpp_add_path(Cpp * cpp, char const * path)
+{
+	char ** p;
+
+	if((p = realloc(cpp->paths, sizeof(*p) * (cpp->paths_cnt + 1))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	cpp->paths = p;
+	if((p[cpp->paths_cnt] = strdup(path)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	cpp->paths_cnt++;
+	return 0;
+}
+
+
 /* cpp_scan */
 int cpp_scan(Cpp * cpp, Token ** token)
 {
 	if(cpp->includes_cnt > 0)
-		return cpp_scan(cpp->includes[cpp->includes_cnt - 1],
-				token);
+	{
+		if(cpp_scan(cpp->includes[cpp->includes_cnt - 1], token) != 0)
+			return 1;
+		if(*token != NULL)
+			return 0;
+		cpp->includes_cnt--; /* end of file */
+		cpp_delete(cpp->includes[cpp->includes_cnt]);
+	}
 	return parser_get_token(cpp->parser, token);
 }
