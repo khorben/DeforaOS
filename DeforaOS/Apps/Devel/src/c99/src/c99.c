@@ -31,6 +31,8 @@ typedef struct _Prefs
 {
 	int flags;
 	char const * outfile;
+	const char ** paths;
+	size_t paths_cnt;
 } Prefs;
 #define PREFS_c 0x1
 #define PREFS_E 0x2
@@ -129,11 +131,20 @@ static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile,
 {
 	int ret;
 	Cpp * cpp;
+	size_t i;
 	Token * token;
 	int code;
 
 	if((cpp = cpp_new(infile, CPP_FILTER_TRIGRAPH)) == NULL)
 		return 1;
+	for(i = 0; i < prefs->paths_cnt; i++)
+		if(cpp_add_path(cpp, prefs->paths[i]) != 0)
+			break;
+	if(i != prefs->paths_cnt)
+	{
+		cpp_delete(cpp);
+		return 1;
+	}
 	while((ret = cpp_scan(cpp, &token)) == 0
 			&& token != NULL)
 	{
@@ -173,6 +184,8 @@ static int _usage(void)
 
 /* public */
 /* main */
+static int _main_add_path(Prefs * prefs, char const * path);
+
 int main(int argc, char * argv[])
 {
 	Prefs prefs;
@@ -187,6 +200,10 @@ int main(int argc, char * argv[])
 				break;
 			case 'E':
 				prefs.flags |= PREFS_E;
+				break;
+			case 'I':
+				if(_main_add_path(&prefs, optarg) != 0)
+					return 2;
 				break;
 			case 'g':
 				prefs.flags |= PREFS_g;
@@ -205,4 +222,16 @@ int main(int argc, char * argv[])
 	if(prefs.flags & PREFS_c && prefs.outfile != NULL && optind + 1 != argc)
 		return _usage();
 	return _c99(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+}
+
+static int _main_add_path(Prefs * prefs, char const * path)
+{
+	const char ** p;
+
+	if((p = realloc(prefs->paths, sizeof(*p) * (prefs->paths_cnt + 1)))
+			== NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->paths = p;
+	prefs->paths[prefs->paths_cnt++] = path;
+	return 0;
 }
