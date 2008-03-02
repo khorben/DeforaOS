@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with cpp; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME:
+ * - remove -t? (parse trigraphs by default) */
 
 
 
@@ -36,6 +38,8 @@ typedef struct _Prefs
 	size_t paths_cnt;
 	const char ** defines;
 	size_t defines_cnt;
+	const char ** undefines;
+	size_t undefines_cnt;
 } Prefs;
 #define PREFS_t		0x1
 
@@ -74,6 +78,7 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	Cpp * cpp;
 	size_t i;
 	size_t j;
+	size_t k;
 	Token * token;
 	int code;
 
@@ -86,7 +91,11 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	for(j = 0; j < prefs->defines_cnt; j++)
 		if(cpp_define_add(cpp, prefs->defines[j], NULL) != 0)
 			break;
-	if(i != prefs->paths_cnt || j != prefs->defines_cnt)
+	for(k = 0; k < prefs->undefines_cnt; k++)
+		if(cpp_define_remove(cpp, prefs->undefines[k]) != 0)
+			break;
+	if(i != prefs->paths_cnt || j != prefs->defines_cnt
+			|| k != prefs->undefines_cnt)
 	{
 		cpp_delete(cpp);
 		return 1;
@@ -133,11 +142,12 @@ static int _cpp_error(void)
 /* FIXME -E prints metadata? */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-D name[=value]]...[-I directory][-o outfile][-t] input...\n"
+	fputs("Usage: " PACKAGE " [-D name[=value]]...[-I directory][-o outfile][-t][-U name]... input...\n"
 "  -D	Add a substitution\n"
 "  -I	Add a directory to the search path\n"
 "  -o	Write output to a file\n"
-"  -t	Convert trigraphs\n", stderr);
+"  -t	Convert trigraphs\n"
+"  -U	Remove a substitution\n", stderr);
 	return 1;
 }
 
@@ -145,6 +155,7 @@ static int _usage(void)
 /* main */
 static int _main_add_define(Prefs * name, char * define);
 static int _main_add_path(Prefs * prefs, char const * path);
+static int _main_add_undefine(Prefs * prefs, char const * undefine);
 
 int main(int argc, char * argv[])
 {
@@ -153,7 +164,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "D:I:o:t")) != -1)
+	while((o = getopt(argc, argv, "D:I:o:tU:")) != -1)
 		switch(o)
 		{
 			case 'D':
@@ -169,6 +180,10 @@ int main(int argc, char * argv[])
 				break;
 			case 't':
 				prefs.flags |= PREFS_t;
+				break;
+			case 'U':
+				if(_main_add_undefine(&prefs, optarg) != 0)
+					return 2;
 				break;
 			default:
 				return _usage();
@@ -205,5 +220,19 @@ static int _main_add_path(Prefs * prefs, char const * path)
 		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
 	prefs->paths = p;
 	prefs->paths[prefs->paths_cnt++] = path;
+	return 0;
+}
+
+static int _main_add_undefine(Prefs * prefs, char const * undefine)
+{
+	const char ** p;
+
+	if(strlen(undefine) == 0)
+		return 1;
+	if((p = realloc(prefs->undefines, sizeof(*p)
+					* (prefs->undefines_cnt + 1))) == NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->undefines = p;
+	prefs->undefines[prefs->undefines_cnt++] = undefine;
 	return 0;
 }
