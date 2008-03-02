@@ -108,13 +108,13 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 		fprintf(stderr, "DEBUG: %s (%d)\n", token_get_string(token),
 				token_get_code(token));
 #else
-		if((code = token_get_code(token)) == CPP_CODE_META_ERROR)
-		{
-			fprintf(stderr, "%s%s\n", "Error: ",
-					token_get_string(token));
-		}
-		else if(code == CPP_CODE_META_WARNING)
-			fprintf(stderr, "%s%s\n", "Warning: ",
+		if((code = token_get_code(token)) == CPP_CODE_META_ERROR
+				|| code == CPP_CODE_META_WARNING)
+			fprintf(stderr, "%s%s%s%s%u%s%s\n",
+					code == CPP_CODE_META_ERROR
+					? "Error" : "Warning", " in ",
+					token_get_filename(token), ":",
+					token_get_line(token), ": ",
 					token_get_string(token));
 		else if(code >= CPP_CODE_META_FIRST
 			&& code <= CPP_CODE_META_LAST)

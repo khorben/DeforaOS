@@ -59,7 +59,7 @@ struct _Cpp
 	char ** paths;
 	size_t paths_cnt;
 	/* substitutions */
-	char ** defines; /* FIXME also store the value */
+	char ** defines; /* FIXME also store the value, directly in tokens? */
 	size_t defines_cnt;
 };
 
@@ -405,7 +405,6 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 static int _directive_error(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str);
 static int _directive_undef(Cpp * cpp, Token * token, char const * str);
-static int _directive_warning(Cpp * cpp, Token * token, char const * str);
 
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
@@ -455,7 +454,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_ENDIF);
 			break;
 		case CPP_DIRECTIVE_ERROR:
-			_directive_error(cpp, token, str);
+			token_set_code(token, CPP_CODE_META_ERROR);
 			break;
 		case CPP_DIRECTIVE_IF:
 			/* FIXME implement */
@@ -480,7 +479,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			_directive_undef(cpp, token, str);
 			break;
 		case CPP_DIRECTIVE_WARNING:
-			_directive_warning(cpp, token, str);
+			token_set_code(token, CPP_CODE_META_WARNING);
 			break;
 		default:
 			/* FIXME implement */
@@ -495,14 +494,8 @@ static int _directive_error(Cpp * cpp, Token * token, char const * str)
 	/* FIXME line and column will probably be wrong for included content
 	 *       use a parser to keep track of it? */
 {
-	char buf[256];
-
 	token_set_code(token, CPP_CODE_META_ERROR);
-	snprintf(buf, sizeof(buf), "in %s:%u, %u: %s: %s",
-			cpp_get_filename(cpp), token_get_line(token),
-			token_get_col(token), "Unknown or invalid directive",
-			str);
-	token_set_string(token, buf);
+	token_set_string(token, str);
 	return 0;
 }
 
@@ -609,16 +602,6 @@ static int _directive_undef(Cpp * cpp, Token * token, char const * str)
 	cpp_define_remove(cpp, str); /* FIXME may not be just a word */
 	token_set_code(token, CPP_CODE_META_UNDEF);
 	return 0;
-}
-
-static int _directive_warning(Cpp * cpp, Token * token, char const * str)
-{
-	int ret;
-
-	/* FIXME implement */
-	ret = _directive_error(cpp, token, str);
-	token_set_code(token, CPP_CODE_META_WARNING);
-	return ret;
 }
 
 
