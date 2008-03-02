@@ -96,14 +96,17 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_DBAR,	"||"	},
 	{ CPP_CODE_OPERATOR_BAR,	"|"	},
 	{ CPP_CODE_OPERATOR_DIVIDE,	"/"	},
+	{ CPP_CODE_OPERATOR_DOTDOTDOT,	"..."	},
 	{ CPP_CODE_OPERATOR_DOT,	"."	},
 	{ CPP_CODE_OPERATOR_DEQUALS,	"=="	},
 	{ CPP_CODE_OPERATOR_EQUALS,	"="	},
+	{ CPP_CODE_OPERATOR_DGEQUALS,	">>="	},
 	{ CPP_CODE_OPERATOR_DGREATER,	">>"	},
 	{ CPP_CODE_OPERATOR_GREATER,	">"	},
 	{ CPP_CODE_OPERATOR_INVERSE,	"~"	},
 	{ CPP_CODE_OPERATOR_LBRACE,	"{"	},
 	{ CPP_CODE_OPERATOR_LBRACKET,	"["	},
+	{ CPP_CODE_OPERATOR_DLEQUALS,	"<<="	},
 	{ CPP_CODE_OPERATOR_DLESS,	"<<"	},
 	{ CPP_CODE_OPERATOR_LESS,	"<"	},
 	{ CPP_CODE_OPERATOR_LPAREN,	"("	},
@@ -112,7 +115,6 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_MEQUALS,	"-="	},
 	{ CPP_CODE_OPERATOR_MINUS,	"-"	},
 	{ CPP_CODE_OPERATOR_MODULO,	"%"	},
-	{ CPP_CODE_OPERATOR_MULTIPLY,	"*"	},
 	{ CPP_CODE_OPERATOR_NOT,	"!"	},
 	{ CPP_CODE_OPERATOR_DPLUS,	"++"	},
 	{ CPP_CODE_OPERATOR_PEQUALS,	"+="	},
@@ -122,6 +124,9 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_RBRACKET,	"]"	},
 	{ CPP_CODE_OPERATOR_RPAREN,	")"	},
 	{ CPP_CODE_OPERATOR_SEMICOLON,	";"	},
+	{ CPP_CODE_OPERATOR_TEQUALS,	"*="	},
+	{ CPP_CODE_OPERATOR_TIMES,	"*"	},
+	{ CPP_CODE_OPERATOR_XEQUALS,	"^="	},
 	{ CPP_CODE_OPERATOR_XOR,	"^"	}
 };
 static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
@@ -628,6 +633,7 @@ static int _cpp_callback_comma(Parser * parser, Token * token, int c,
 /* cpp_callback_operator */
 static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 		void * data)
+	/* FIXME probably fails for ".." and similar cases */
 {
 	size_t i;
 	const size_t j = sizeof(_cpp_operators) / sizeof(*_cpp_operators);
