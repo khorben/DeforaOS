@@ -941,10 +941,10 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 					       	&& string_find(p, "-ansi"))
 					fputs(" -D _GNU_SOURCE", fp);
 			}
-			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
-					sObjectType[ot]);
 			if(string_find(source, "/"))
 				fprintf(fp, "%s%s%s", " -o ", source, ".o");
+			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
+					sObjectType[ot]);
 			fputc('\n', fp);
 			break;
 		case OT_CXX_SOURCE:
@@ -961,10 +961,10 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 					"_CXXFLAGS)");
 			if(p != NULL)
 				fprintf(fp, " %s", p);
-			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
-				       	sObjectType[ot]);
 			if(string_find(source, "/"))
 				fprintf(fp, "%s%s%s", " -o ", source, ".o");
+			fprintf(fp, "%s%s%s%s", " -c ", source, ".",
+				       	sObjectType[ot]);
 			fputc('\n', fp);
 			break;
 		case OT_UNKNOWN:
