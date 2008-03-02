@@ -133,7 +133,8 @@ Parser * parser_new(char const * pathname)
 	if((parser = object_new(sizeof(*parser))) == NULL)
 		return NULL;
 	parser->filename = strdup(pathname);
-	parser->fp = fopen(pathname, "r");
+	if((parser->fp = fopen(pathname, "r")) == NULL)
+		error_set_code(1, "%s: %s", pathname, strerror(errno));
 	parser->line = 1;
 	parser->col = 1;
 	parser->last = EOF;
