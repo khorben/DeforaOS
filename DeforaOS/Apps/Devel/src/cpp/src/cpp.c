@@ -14,7 +14,10 @@
  * NonCommercial-ShareAlike 3.0 along with cpp; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 /* FIXME
- * - comments are not handled in directives */
+ * - comments are not handled in directives
+ * - fix includes (system vs regular, inclusion order)
+ * - implement define and undef
+ * - implement ifdef and ifndef */
 
 
 
@@ -55,6 +58,9 @@ struct _Cpp
 	Cpp * subparser;
 	char ** paths;
 	size_t paths_cnt;
+	/* substitutions */
+	char ** defines; /* FIXME also store the value */
+	size_t defines_cnt;
 };
 
 /* FIXME use CPP_CODE_META_* in a structure with strings and pointers to
@@ -398,6 +404,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 /* these functions should return 0 (or -1 on errors) */
 static int _directive_error(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str);
+static int _directive_undef(Cpp * cpp, Token * token, char const * str);
 static int _directive_warning(Cpp * cpp, Token * token, char const * str);
 
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
@@ -470,8 +477,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_PRAGMA);
 			break;
 		case CPP_DIRECTIVE_UNDEF:
-			/* FIXME implement */
-			token_set_code(token, CPP_CODE_META_UNDEF);
+			_directive_undef(cpp, token, str);
 			break;
 		case CPP_DIRECTIVE_WARNING:
 			_directive_warning(cpp, token, str);
@@ -504,7 +510,6 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
-	Cpp ** p;
 	size_t i;
 
 	if((path = _include_path(cpp, token, str)) == NULL)
@@ -597,6 +602,13 @@ static char * _lookup_error(Token * token, char const * path, int system)
 			strerror(errno));
 	token_set_string(token, buf);
 	return NULL;
+}
+
+static int _directive_undef(Cpp * cpp, Token * token, char const * str)
+{
+	cpp_define_remove(cpp, str); /* FIXME may not be just a word */
+	token_set_code(token, CPP_CODE_META_UNDEF);
+	return 0;
 }
 
 static int _directive_warning(Cpp * cpp, Token * token, char const * str)
@@ -767,6 +779,8 @@ Cpp * cpp_new(char const * filename, int filters)
 	cpp->subparser = NULL;
 	cpp->paths = NULL;
 	cpp->paths_cnt = 0;
+	cpp->defines = NULL;
+	cpp->defines_cnt = 0;
 	if((p = strdup(filename)) != NULL)
 	{
 		cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
@@ -814,6 +828,40 @@ char const * cpp_get_filename(Cpp * cpp)
 
 
 /* useful */
+/* cpp_define_add */
+int cpp_define_add(Cpp * cpp, char const * name, char const * value)
+{
+	char ** p;
+
+	if((p = realloc(cpp->defines, sizeof(*p) * (cpp->defines_cnt + 1)))
+			== NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	cpp->defines = p;
+	if((p[cpp->defines_cnt] = strdup(name)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	cpp->defines_cnt++;
+	return 0;
+}
+
+
+/* cpp_define_remove */
+int cpp_define_remove(Cpp * cpp, char const * name)
+{
+	size_t i;
+
+	for(i = 0; i < cpp->defines_cnt; i++)
+		if(strcmp(cpp->defines[i], name) == 0)
+			break;
+	if(i == cpp->defines_cnt)
+		return 1;
+	free(cpp->defines[i]);
+	cpp->defines_cnt--;
+	for(; i < cpp->defines_cnt; i++)
+		cpp->defines[i] = cpp->defines[i + 1];
+	return 0;
+}
+
+
 /* cpp_path_add */
 int cpp_path_add(Cpp * cpp, char const * path)
 {

@@ -31,9 +31,11 @@
 typedef struct _Prefs
 {
 	int flags;
+	char const * outfile;
 	const char ** paths;
 	size_t paths_cnt;
-	char const * output;
+	const char ** defines;
+	size_t defines_cnt;
 } Prefs;
 #define PREFS_t		0x1
 
@@ -53,15 +55,15 @@ static int _cpp(Prefs * prefs, int filec, char * filev[])
 	FILE * fp;
 	int i;
 
-	if(prefs->output == NULL)
+	if(prefs->outfile == NULL)
 		fp = stdout;
-	else if((fp = fopen(prefs->output, "w")) == NULL)
-		return error_set_print("cpp", 1, "%s: %s", prefs->output,
+	else if((fp = fopen(prefs->outfile, "w")) == NULL)
+		return error_set_print("cpp", 1, "%s: %s", prefs->outfile,
 				strerror(errno));
 	for(i = 0; i < filec; i++)
 		ret |= _cpp_do(prefs, fp, filev[i]);
 	if(fclose(fp) != 0)
-		return error_set_print("cpp", 1, "%s: %s", prefs->output,
+		return error_set_print("cpp", 1, "%s: %s", prefs->outfile,
 				strerror(errno));
 	return ret;
 }
@@ -71,6 +73,7 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	int ret;
 	Cpp * cpp;
 	size_t i;
+	size_t j;
 	Token * token;
 	int code;
 
@@ -80,7 +83,10 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	for(i = 0; i < prefs->paths_cnt; i++)
 		if(cpp_path_add(cpp, prefs->paths[i]) != 0)
 			break;
-	if(i != prefs->paths_cnt)
+	for(j = 0; j < prefs->defines_cnt; j++)
+		if(cpp_define_add(cpp, prefs->defines[j], NULL) != 0)
+			break;
+	if(i != prefs->paths_cnt || j != prefs->defines_cnt)
 	{
 		cpp_delete(cpp);
 		return 1;
@@ -127,7 +133,8 @@ static int _cpp_error(void)
 /* FIXME -E prints metadata? */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-I directory][-o outfile][-t] input...\n"
+	fputs("Usage: " PACKAGE " [-D name[=value]]...[-I directory][-o outfile][-t] input...\n"
+"  -D	Add a substitution\n"
 "  -I	Add a directory to the search path\n"
 "  -o	Write output to a file\n"
 "  -t	Convert trigraphs\n", stderr);
@@ -136,6 +143,7 @@ static int _usage(void)
 
 
 /* main */
+static int _main_add_define(Prefs * name, char * define);
 static int _main_add_path(Prefs * prefs, char const * path);
 
 int main(int argc, char * argv[])
@@ -145,15 +153,19 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "I:o:t")) != -1)
+	while((o = getopt(argc, argv, "D:I:o:t")) != -1)
 		switch(o)
 		{
+			case 'D':
+				if(_main_add_define(&prefs, optarg) != 0)
+					return 2;
+				break;
 			case 'I':
 				if(_main_add_path(&prefs, optarg) != 0)
 					return 2;
 				break;
 			case 'o':
-				prefs.output = optarg;
+				prefs.outfile = optarg;
 				break;
 			case 't':
 				prefs.flags |= PREFS_t;
@@ -166,6 +178,22 @@ int main(int argc, char * argv[])
 	ret = _cpp(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
 	free(prefs.paths);
 	return ret;
+}
+
+static int _main_add_define(Prefs * prefs, char * define)
+{
+	const char ** p;
+	char * value;
+
+	if(strlen(define) == 0)
+		return 1;
+	value = strtok(define, "=");
+	if((p = realloc(prefs->defines, sizeof(*p) * (prefs->defines_cnt + 1)))
+			== NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->defines = p;
+	prefs->defines[prefs->defines_cnt++] = define;
+	return 0;
 }
 
 static int _main_add_path(Prefs * prefs, char const * path)

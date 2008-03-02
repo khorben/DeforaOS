@@ -100,6 +100,9 @@ void cpp_delete(Cpp * cpp);
 char const * cpp_get_filename(Cpp * cpp);
 
 /* useful */
+int cpp_define_add(Cpp * cpp, char const * name, char const * value);
+int cpp_define_remove(Cpp * cpp, char const * name);
+
 int cpp_path_add(Cpp * cpp, char const * path);
 
 int cpp_scan(Cpp * cpp, Token ** token);
