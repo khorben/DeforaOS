@@ -33,6 +33,7 @@ typedef enum _CppCode
 	CPP_CODE_COMMA = 0,
 	CPP_CODE_DQUOTE,
 	CPP_CODE_META_DEFINE,
+	CPP_CODE_META_ELIF,
 	CPP_CODE_META_ELSE,
 	CPP_CODE_META_ENDIF,
 	CPP_CODE_META_ERROR,
@@ -41,6 +42,7 @@ typedef enum _CppCode
 	CPP_CODE_META_IFNDEF,
 	CPP_CODE_META_INCLUDE,
 	CPP_CODE_META_PRAGMA,
+	CPP_CODE_META_UNDEF,
 	CPP_CODE_META_WARNING,
 	CPP_CODE_OPERATOR_AEQUALS,
 	CPP_CODE_OPERATOR_AMPERSAND,
@@ -98,7 +100,7 @@ void cpp_delete(Cpp * cpp);
 char const * cpp_get_filename(Cpp * cpp);
 
 /* useful */
-int cpp_add_path(Cpp * cpp, char const * path);
+int cpp_path_add(Cpp * cpp, char const * path);
 
 int cpp_scan(Cpp * cpp, Token ** token);
 

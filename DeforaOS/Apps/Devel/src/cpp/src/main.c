@@ -78,7 +78,7 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 					? CPP_FILTER_TRIGRAPH : 0)) == NULL)
 		return _cpp_error();
 	for(i = 0; i < prefs->paths_cnt; i++)
-		if(cpp_add_path(cpp, prefs->paths[i]) != 0)
+		if(cpp_path_add(cpp, prefs->paths[i]) != 0)
 			break;
 	if(i != prefs->paths_cnt)
 	{

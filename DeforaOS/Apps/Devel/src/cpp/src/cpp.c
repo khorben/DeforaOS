@@ -62,6 +62,7 @@ struct _Cpp
 typedef enum _CppDirective
 {
 	CPP_DIRECTIVE_DEFINE = 0,
+	CPP_DIRECTIVE_ELIF,
 	CPP_DIRECTIVE_ELSE,
 	CPP_DIRECTIVE_ENDIF,
 	CPP_DIRECTIVE_ERROR,
@@ -70,6 +71,7 @@ typedef enum _CppDirective
 	CPP_DIRECTIVE_IFNDEF,
 	CPP_DIRECTIVE_INCLUDE,
 	CPP_DIRECTIVE_PRAGMA,
+	CPP_DIRECTIVE_UNDEF,
 	CPP_DIRECTIVE_WARNING
 } CppDirective;
 #define CPP_DIRECTIVE_LAST CPP_DIRECTIVE_WARNING
@@ -122,8 +124,8 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 static const size_t _cpp_directives_cnt = CPP_DIRECTIVE_COUNT;
 static const char * _cpp_directives[CPP_DIRECTIVE_COUNT] =
 {
-	"define", "else", "endif", "error", "if", "ifdef", "ifndef", "include",
-	"pragma", "warning"
+	"define", "elif", "else", "endif", "error", "if", "ifdef", "ifndef",
+	"include", "pragma", "undef", "warning"
 };
 
 
@@ -433,6 +435,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_DEFINE);
 			break;
+		case CPP_DIRECTIVE_ELIF:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_ELIF);
+			break;
 		case CPP_DIRECTIVE_ELSE:
 			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_ELSE);
@@ -462,6 +468,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		case CPP_DIRECTIVE_PRAGMA:
 			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_PRAGMA);
+			break;
+		case CPP_DIRECTIVE_UNDEF:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_UNDEF);
 			break;
 		case CPP_DIRECTIVE_WARNING:
 			_directive_warning(cpp, token, str);
@@ -495,6 +505,7 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
 	Cpp ** p;
+	size_t i;
 
 	if((path = _include_path(cpp, token, str)) == NULL)
 		return 0;
@@ -504,6 +515,15 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 		error_set_code(-1, "%s: %s", path, strerror(errno));
 		free(path);
 		return -1;
+	}
+	for(i = 0; i < cpp->paths_cnt; i++)
+		if(cpp_path_add(cpp->subparser, cpp->paths[i]) != 0)
+			break;
+	if(i != cpp->paths_cnt)
+	{
+		cpp_delete(cpp->subparser);
+		cpp->subparser = NULL;
+		return 1;
 	}
 	return 0;
 }
@@ -749,7 +769,7 @@ Cpp * cpp_new(char const * filename, int filters)
 	cpp->paths_cnt = 0;
 	if((p = strdup(filename)) != NULL)
 	{
-		cpp_add_path(cpp, dirname(p)); /* FIXME inclusion order */
+		cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
 		free(p);
 	}
 	if(cpp->parser == NULL || cpp->paths_cnt != 1)
@@ -794,8 +814,8 @@ char const * cpp_get_filename(Cpp * cpp)
 
 
 /* useful */
-/* cpp_add_path */
-int cpp_add_path(Cpp * cpp, char const * path)
+/* cpp_path_add */
+int cpp_path_add(Cpp * cpp, char const * path)
 {
 	char ** p;
 
