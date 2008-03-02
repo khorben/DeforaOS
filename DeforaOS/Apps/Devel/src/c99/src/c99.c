@@ -37,6 +37,7 @@ typedef struct _Prefs
 	size_t defines_cnt;
 	const char ** undefines;
 	size_t undefines_cnt;
+	int optlevel;
 } Prefs;
 #define PREFS_c 0x1
 #define PREFS_E 0x2
@@ -230,12 +231,20 @@ int main(int argc, char * argv[])
 			case 'o':
 				prefs.outfile = optarg;
 				break;
+			case 'O':
+				prefs.optlevel++;
+				break;
 			case 's':
 				prefs.flags |= PREFS_s;
 				break;
 			case 'U':
 				if(_main_add_undefine(&prefs, optarg) != 0)
 					return 2;
+			case '1':
+			case '2':
+			case '3':
+				prefs.optlevel = o - '0';
+				break;
 			default:
 				return _usage();
 		}
