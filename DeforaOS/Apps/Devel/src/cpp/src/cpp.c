@@ -482,7 +482,6 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_WARNING);
 			break;
 		default:
-			/* FIXME implement */
 			_directive_error(cpp, token, str);
 			break;
 	}
@@ -494,8 +493,12 @@ static int _directive_error(Cpp * cpp, Token * token, char const * str)
 	/* FIXME line and column will probably be wrong for included content
 	 *       use a parser to keep track of it? */
 {
+	char buf[256];
+
 	token_set_code(token, CPP_CODE_META_ERROR);
-	token_set_string(token, str);
+	snprintf(buf, sizeof(buf), "%s%s", "Unknown or invalid directive: ",
+			str);
+	token_set_string(token, buf);
 	return 0;
 }
 
