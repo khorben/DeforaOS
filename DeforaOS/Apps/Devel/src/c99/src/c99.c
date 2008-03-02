@@ -35,7 +35,7 @@ typedef struct _Prefs
 	size_t paths_cnt;
 	char ** defines;
 	size_t defines_cnt;
-	char ** undefines;
+	const char ** undefines;
 	size_t undefines_cnt;
 } Prefs;
 #define PREFS_c 0x1
@@ -199,7 +199,7 @@ static int _usage(void)
 /* main */
 static int _main_add_define(Prefs * prefs, char * define);
 static int _main_add_path(Prefs * prefs, char const * path);
-static int _main_add_undefine(Prefs * prefs, char * undefine);
+static int _main_add_undefine(Prefs * prefs, char const * undefine);
 
 int main(int argc, char * argv[])
 {
@@ -274,9 +274,9 @@ static int _main_add_path(Prefs * prefs, char const * path)
 	return 0;
 }
 
-static int _main_add_undefine(Prefs * prefs, char * undefine)
+static int _main_add_undefine(Prefs * prefs, char const * undefine)
 {
-	char ** p;
+	const char ** p;
 
 	if(strlen(undefine) == 0)
 		return 1;
