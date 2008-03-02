@@ -117,6 +117,7 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_DPLUS,	"++"	},
 	{ CPP_CODE_OPERATOR_PEQUALS,	"+="	},
 	{ CPP_CODE_OPERATOR_PLUS,	"+"	},
+	{ CPP_CODE_OPERATOR_QUESTION,	"?"	},
 	{ CPP_CODE_OPERATOR_RBRACE,	"}"	},
 	{ CPP_CODE_OPERATOR_RBRACKET,	"]"	},
 	{ CPP_CODE_OPERATOR_RPAREN,	")"	},
