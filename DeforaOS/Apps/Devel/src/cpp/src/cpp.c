@@ -74,6 +74,7 @@ typedef enum _CppDirective
 	CPP_DIRECTIVE_ERROR,
 	CPP_DIRECTIVE_IF,
 	CPP_DIRECTIVE_IFDEF,
+	CPP_DIRECTIVE_LINE,
 	CPP_DIRECTIVE_IFNDEF,
 	CPP_DIRECTIVE_INCLUDE,
 	CPP_DIRECTIVE_PRAGMA,
@@ -145,7 +146,7 @@ static const size_t _cpp_directives_cnt = CPP_DIRECTIVE_COUNT;
 static const char * _cpp_directives[CPP_DIRECTIVE_COUNT] =
 {
 	"define", "elif", "else", "endif", "error", "if", "ifdef", "ifndef",
-	"include", "pragma", "undef", "warning"
+	"include", "line", "pragma", "undef", "warning"
 };
 
 
@@ -484,6 +485,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			break;
 		case CPP_DIRECTIVE_INCLUDE:
 			ret = _directive_include(cpp, token, pos);
+			break;
+		case CPP_DIRECTIVE_LINE:
+			/* FIXME implement */
+			token_set_code(token, CPP_CODE_META_LINE);
 			break;
 		case CPP_DIRECTIVE_PRAGMA:
 			/* FIXME implement */
