@@ -125,10 +125,8 @@ static int _c99(Prefs * prefs, int filec, char * filev[])
 	return ret;
 }
 
-static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile,
-		FILE * infp);
-static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile,
-		FILE * infp);
+static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile);
+static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile);
 static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile,
 		FILE * infp);
 static int _c99_do(Prefs * prefs, FILE * outfp, char const * infile)
@@ -136,12 +134,12 @@ static int _c99_do(Prefs * prefs, FILE * outfp, char const * infile)
 	FILE * infp;
 	int ret;
 
+	if(prefs->flags & PREFS_c)
+		return _c99_do_c(prefs, outfp, infile);
+	else if(prefs->flags & PREFS_E)
+		return _c99_do_E(prefs, outfp, infile);
 	if((infp = fopen(infile, "r")) == NULL)
 		return error_set_code(1, "%s: %s", infile, strerror(errno));
-	if(prefs->flags & PREFS_c)
-		ret = _c99_do_c(prefs, outfp, infile, infp);
-	else if(prefs->flags & PREFS_E)
-		ret = _c99_do_E(prefs, outfp, infile, infp);
 	else
 		ret = _c99_do_o(prefs, outfp, infile, infp);
 	/* FIXME implement */
@@ -150,9 +148,7 @@ static int _c99_do(Prefs * prefs, FILE * outfp, char const * infile)
 	return ret;
 }
 
-static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile,
-		FILE * infp)
-	/* FIXME outfp should probably be opened only here */
+static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile)
 {
 	int ret = 0;
 	size_t len;
@@ -183,9 +179,7 @@ static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile,
 	return ret;
 }
 
-static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile,
-		FILE * infp)
-	/* FIXME infp is useless here */
+static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile)
 {
 	int ret;
 	Cpp * cpp;
