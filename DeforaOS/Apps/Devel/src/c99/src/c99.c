@@ -127,25 +127,15 @@ static int _c99(Prefs * prefs, int filec, char * filev[])
 
 static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile);
 static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile);
-static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile,
-		FILE * infp);
+static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile);
 static int _c99_do(Prefs * prefs, FILE * outfp, char const * infile)
 {
-	FILE * infp;
-	int ret;
-
 	if(prefs->flags & PREFS_c)
 		return _c99_do_c(prefs, outfp, infile);
 	else if(prefs->flags & PREFS_E)
 		return _c99_do_E(prefs, outfp, infile);
-	if((infp = fopen(infile, "r")) == NULL)
-		return error_set_code(1, "%s: %s", infile, strerror(errno));
 	else
-		ret = _c99_do_o(prefs, outfp, infile, infp);
-	/* FIXME implement */
-	if(fclose(infp) != 0 && ret == 0)
-		return error_set_code(1, "%s: %s", infile, strerror(errno));
-	return ret;
+		return _c99_do_o(prefs, outfp, infile);
 }
 
 static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile)
@@ -226,11 +216,18 @@ static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile)
 	return ret;
 }
 
-static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile,
-		FILE * infp)
+static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile)
 {
+	int ret;
+	FILE * infp;
+
+	if((infp = fopen(infile, "r")) == NULL)
+		return error_set_code(1, "%s: %s", infile, strerror(errno));
 	/* FIXME implement */
-	return error_set_code(1, "%s", strerror(ENOSYS));
+	ret = error_set_code(1, "%s", strerror(ENOSYS));
+	if(fclose(infp) != 0 && ret == 0)
+		return error_set_code(1, "%s: %s", infile, strerror(errno));
+	return ret;
 }
 
 
@@ -313,6 +310,7 @@ int main(int argc, char * argv[])
 			case 'U':
 				if(_main_add_undefine(&prefs, optarg) != 0)
 					return 2;
+				break;
 			case '1':
 			case '2':
 			case '3':
