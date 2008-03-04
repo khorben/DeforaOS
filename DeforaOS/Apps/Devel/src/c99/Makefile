@@ -1,6 +1,6 @@
 PACKAGE	= c99
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= include src
 RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
@@ -21,12 +21,20 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/include/c99.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/c99.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/parser.c \
+		$(PACKAGE)-$(VERSION)/src/scanner.c \
 		$(PACKAGE)-$(VERSION)/src/tokenset.c \
-		$(PACKAGE)-$(VERSION)/src/c99.h \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/tokenset.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 

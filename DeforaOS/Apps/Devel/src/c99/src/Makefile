@@ -3,7 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGS=
+CPPFLAGS= -I ../include
 CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath $(PREFIX)/lib -l cpp
@@ -14,19 +14,25 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-c99_OBJS = c99.o main.o tokenset.o
+c99_OBJS = c99.o main.o parser.o scanner.o tokenset.o
 c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 c99: $(c99_OBJS)
 	$(CC) -o c99 $(c99_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-c99.o: c99.c c99.h tokenset.h
+c99.o: c99.c ../include/c99.h common.h
 	$(CC) $(c99_CFLAGS) -c c99.c
 
-main.o: main.c c99.h
+main.o: main.c ../include/c99.h
 	$(CC) $(c99_CFLAGS) -c main.c
 
-tokenset.o: tokenset.c c99.h tokenset.h
+parser.o: parser.c tokenset.h common.h
+	$(CC) $(c99_CFLAGS) -c parser.c
+
+scanner.o: scanner.c
+	$(CC) $(c99_CFLAGS) -c scanner.c
+
+tokenset.o: tokenset.c ../include/c99.h common.h tokenset.h
 	$(CC) $(c99_CFLAGS) -c tokenset.c
 
 clean:
