@@ -22,6 +22,9 @@ dist:
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/c99.c \
+		$(PACKAGE)-$(VERSION)/src/tokenset.c \
+		$(PACKAGE)-$(VERSION)/src/c99.h \
+		$(PACKAGE)-$(VERSION)/src/tokenset.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)

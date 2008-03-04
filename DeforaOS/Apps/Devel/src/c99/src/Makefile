@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
-LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath $(PREFIX)/lib -l System
+LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath $(PREFIX)/lib -l cpp
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -14,14 +14,17 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-c99_OBJS = c99.o
+c99_OBJS = c99.o tokenset.o
 c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 c99: $(c99_OBJS)
 	$(CC) -o c99 $(c99_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-c99.o: c99.c
+c99.o: c99.c c99.h tokenset.h
 	$(CC) $(c99_CFLAGS) -c c99.c
+
+tokenset.o: tokenset.c c99.h tokenset.h
+	$(CC) $(c99_CFLAGS) -c tokenset.c
 
 clean:
 	$(RM) $(c99_OBJS)
