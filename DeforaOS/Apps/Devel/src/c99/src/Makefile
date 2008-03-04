@@ -14,7 +14,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-c99_OBJS = c99.o tokenset.o
+c99_OBJS = c99.o main.o tokenset.o
 c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 c99: $(c99_OBJS)
@@ -22,6 +22,9 @@ c99: $(c99_OBJS)
 
 c99.o: c99.c c99.h tokenset.h
 	$(CC) $(c99_CFLAGS) -c c99.c
+
+main.o: main.c c99.h
+	$(CC) $(c99_CFLAGS) -c main.c
 
 tokenset.o: tokenset.c c99.h tokenset.h
 	$(CC) $(c99_CFLAGS) -c tokenset.c

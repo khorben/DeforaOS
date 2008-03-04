@@ -19,13 +19,14 @@
 #ifndef C99_C99_H
 # define C99_C99_H
 
+# include <stdio.h>
 # include <cpp.h>
 
 
 /* C99 */
 /* protected */
 /* types */
-typedef Cpp C99;
+typedef struct _C99 C99;
 
 typedef enum _C99Code
 {
@@ -137,14 +138,30 @@ typedef enum _C99Code
 	C99_CODE_KEYWORD__IMAGINARY
 } C99Code;
 
-typedef enum _C99ParserMode {
-	C99_PARSER_MODE_OBJECT, C99_PARSER_MODE_EXECUTABLE
-} C99ParserMode;
+typedef struct _C99Prefs
+{
+	int flags;
+	char const * outfile;
+	const char ** paths;
+	size_t paths_cnt;
+	char ** defines;
+	size_t defines_cnt;
+	const char ** undefines;
+	size_t undefines_cnt;
+	int optlevel;
+} C99Prefs;
+# define C99PREFS_c 0x1
+# define C99PREFS_E 0x2
+# define C99PREFS_g 0x4
+# define C99PREFS_s 0x8
 
 
 /* functions */
+C99 * c99_new(C99Prefs * prefs, char const * pathname);
+int c99_delete(C99 * c99);
+
 /* useful */
-int c99_parse(C99 * c99, C99ParserMode mode);
+int c99_parse(C99 * c99);
 
 int c99_scan(C99 * c99, Token ** token);
 

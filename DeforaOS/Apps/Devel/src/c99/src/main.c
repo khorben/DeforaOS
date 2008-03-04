@@ -1,0 +1,162 @@
+/* $Id$ */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Devel c99 */
+/* c99 is not free software; you can redistribute it and/or modify it under the
+ * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
+ * Unported as published by the Creative Commons organization.
+ *
+ * c99 is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the Creative Commons Attribution-NonCommercial-
+ * ShareAlike 3.0 Unported license for more details.
+ *
+ * You should have received a copy of the Creative Commons Attribution-
+ * NonCommercial-ShareAlike 3.0 along with c99; if not, browse to
+ * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+
+
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include "c99.h"
+#include "../config.h"
+
+
+/* c99 */
+static int _c99(C99Prefs * prefs, int filec, char * filev[])
+{
+	int ret = 0;
+	int i;
+	C99 * c99;
+
+	if(filec == 1)
+	{
+		if((c99 = c99_new(prefs, filev[0])) == NULL)
+			return error_print(PACKAGE);
+		ret = c99_parse(c99);
+		c99_delete(c99);
+		return ret;
+	}
+	for(i = 0; i < filec; i++)
+	{
+		/* FIXME implement (link edition) */
+	}
+	return ret;
+}
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: c99 [-c][-D name[=value]]...[-E][-g][-I directory]"
+"[-L directory][-o outfile][-Ooptlevel][-s][-U name]... operand ...\n", stderr);
+	return 1;
+}
+
+
+/* public */
+/* main */
+static int _main_add_define(C99Prefs * prefs, char * define);
+static int _main_add_path(C99Prefs * prefs, char const * path);
+static int _main_add_undefine(C99Prefs * prefs, char const * undefine);
+
+int main(int argc, char * argv[])
+{
+	C99Prefs prefs;
+	int o;
+
+	memset(&prefs, 0, sizeof(prefs));
+	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:")) != -1)
+		switch(o)
+		{
+			case 'c':
+				prefs.flags |= C99PREFS_c;
+				break;
+			case 'D':
+				if(_main_add_define(&prefs, optarg) != 0)
+					return 2;
+				break;
+			case 'E':
+				prefs.flags |= C99PREFS_E;
+				break;
+			case 'I':
+				if(_main_add_path(&prefs, optarg) != 0)
+					return 2;
+				break;
+			case 'g':
+				prefs.flags |= C99PREFS_g;
+				break;
+			case 'o':
+				prefs.outfile = optarg;
+				break;
+			case 'O':
+				prefs.optlevel++;
+				break;
+			case 's':
+				prefs.flags |= C99PREFS_s;
+				break;
+			case 'U':
+				if(_main_add_undefine(&prefs, optarg) != 0)
+					return 2;
+				break;
+			case '1':
+			case '2':
+			case '3':
+				prefs.optlevel = o - '0';
+				break;
+			default:
+				return _usage();
+		}
+	if(optind == argc)
+		return _usage();
+	if(prefs.flags & C99PREFS_c
+			&& prefs.outfile != NULL
+			&& optind + 1 != argc)
+		return _usage();
+	return _c99(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+}
+
+static int _main_add_define(C99Prefs * prefs, char * define)
+{
+	char ** p;
+	char * value;
+
+	if(strlen(define) == 0)
+		return 1;
+	value = strtok(define, "=");
+	if((p = realloc(prefs->defines, sizeof(*p) * (prefs->defines_cnt + 1)))
+			== NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->defines = p;
+	prefs->defines[prefs->defines_cnt++] = define;
+	return 0;
+}
+
+static int _main_add_path(C99Prefs * prefs, char const * path)
+{
+	const char ** p;
+
+	if((p = realloc(prefs->paths, sizeof(*p) * (prefs->paths_cnt + 1)))
+			== NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->paths = p;
+	prefs->paths[prefs->paths_cnt++] = path;
+	return 0;
+}
+
+static int _main_add_undefine(C99Prefs * prefs, char const * undefine)
+{
+	const char ** p;
+
+	if(strlen(undefine) == 0)
+		return 1;
+	if((p = realloc(prefs->undefines, sizeof(*p)
+					* (prefs->undefines_cnt + 1))) == NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->undefines = p;
+	prefs->undefines[prefs->undefines_cnt++] = undefine;
+	return 0;
+}
