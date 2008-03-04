@@ -137,9 +137,15 @@ typedef enum _C99Code
 	C99_CODE_KEYWORD__IMAGINARY
 } C99Code;
 
+typedef enum _C99ParserMode {
+	C99_PARSER_MODE_OBJECT, C99_PARSER_MODE_EXECUTABLE
+} C99ParserMode;
+
 
 /* functions */
 /* useful */
+int c99_parse(C99 * c99, C99ParserMode mode);
+
 int c99_scan(C99 * c99, Token ** token);
 
 #endif /* !C99_C99_H */

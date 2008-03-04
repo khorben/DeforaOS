@@ -143,6 +143,7 @@ static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile)
 	int ret = 0;
 	size_t len;
 	char * o = NULL;
+	Cpp * cpp;
 
 	if(prefs->outfile == NULL)
 	{
@@ -159,7 +160,10 @@ static int _c99_do_c(Prefs * prefs, FILE * outfp, char const * infile)
 			return 1;
 		}
 	}
-	/* FIXME implement */
+	if((cpp = cpp_new(infile, CPP_FILTER_TRIGRAPH)) == NULL)
+		ret = 1;
+	else
+		ret = c99_parse(cpp, C99_PARSER_MODE_OBJECT);
 	if(o != NULL)
 	{
 		if(fclose(outfp) != 0)
@@ -207,7 +211,8 @@ static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile)
 					token_get_filename(token), ":",
 					token_get_line(token), ": ",
 					token_get_string(token));
-		else if(code >= CPP_CODE_META_FIRST && code <= CPP_CODE_META_LAST)
+		else if(code >= CPP_CODE_META_FIRST
+				&& code <= CPP_CODE_META_LAST)
 			fprintf(outfp, "%s\n", token_get_string(token));
 		else
 			fputs(token_get_string(token), outfp);
@@ -219,19 +224,24 @@ static int _c99_do_E(Prefs * prefs, FILE * outfp, char const * infile)
 static int _c99_do_o(Prefs * prefs, FILE * outfp, char const * infile)
 {
 	int ret;
-	FILE * infp;
+	Cpp * cpp;
 
-	if((infp = fopen(infile, "r")) == NULL)
-		return error_set_code(1, "%s: %s", infile, strerror(errno));
-	/* FIXME implement */
-	ret = error_set_code(1, "%s", strerror(ENOSYS));
-	if(fclose(infp) != 0 && ret == 0)
-		return error_set_code(1, "%s: %s", infile, strerror(errno));
+	if((cpp = cpp_new(infile, CPP_FILTER_TRIGRAPH)) == NULL)
+		ret = 1;
+	else
+		ret = c99_parse(cpp, C99_PARSER_MODE_OBJECT);
 	return ret;
 }
 
 
 /* useful */
+/* c99_parse */
+int c99_parse(C99 * c99, C99ParserMode mode)
+{
+	return error_set_code(1, "%s", strerror(ENOSYS));
+}
+
+
 /* c99_scan */
 int c99_scan(C99 * c99, Token ** token)
 {
