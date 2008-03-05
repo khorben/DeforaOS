@@ -100,6 +100,7 @@ function _content_select($id, $enabled = '')
 	if(!is_array($content) || count($content) != 1)
 		return FALSE;
 	$content = $content[0];
+	$content['tag'] = $content['title'];
 	_content_select_lang($id, $content['title'], $content['content']);
 	return $content;
 }
