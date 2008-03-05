@@ -38,7 +38,8 @@ function _lang_check($lang)
 }
 
 
-if(isset($_POST['lang']) && _lang_check($_POST['lang']))
+if(!isset($_POST['module']) && isset($_POST['lang'])
+		&& _lang_check($_POST['lang']))
 {
 	if(!isset($_SESSION))
 		session_start();
