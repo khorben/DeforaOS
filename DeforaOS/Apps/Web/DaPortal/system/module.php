@@ -124,7 +124,7 @@ function _module_id_tag($module, $id, $tag)
 
 
 //PRE	$module, $action and $params are trusted
-function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
+function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		$params = FALSE)
 {
 	global $friendlylinks;
@@ -145,12 +145,11 @@ function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 			$link .= '/'.$action;
 		if($id != FALSE && is_numeric($id))
 			$link .= '/'.$id;
-		if($title != FALSE && $title != '')
+		if($tag != FALSE && $tag != '')
 		{
-			$title = str_replace(array(' ', '/', '?', '&', '%', '#',
-						'<', '>', "'", '"'), '-',
-					$title);
-			$link .= '/'.$title;
+			$tag = str_replace(array(' ', '/', '?', '&', '%', '#',
+						'<', '>', "'", '"'), '-', $tag);
+			$link .= '/'.$tag;
 		}
 		if($params != FALSE && $params != '')
 			$link .= '?'.$params;
@@ -169,8 +168,8 @@ function _module_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 }
 
 
-function _module_link_full($module, $action = FALSE, $id = FALSE,
-		$title = FALSE, $params = FALSE)
+function _module_link_full($module, $action = FALSE, $id = FALSE, $tag = FALSE,
+		$params = FALSE)
 {
 	$link = $_SERVER['SERVER_NAME'];
 	if(isset($_SERVER['HTTPS']))
@@ -185,7 +184,7 @@ function _module_link_full($module, $action = FALSE, $id = FALSE,
 		if($_SERVER['SERVER_PORT'] != '80')
 			$link .= ':'.$_SERVER['SERVER_PORT'];
 	}
-	return $link._module_link($module, $action, $id, $title, $params);
+	return $link._module_link($module, $action, $id, $tag, $params);
 }
 
 
