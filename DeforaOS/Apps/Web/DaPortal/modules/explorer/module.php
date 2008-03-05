@@ -81,7 +81,7 @@ function _explorer_link(&$entry)
 		$link = '<a href="'._html_link($entry['module'],
 			isset($entry['action']) ? $entry['action'] : FALSE,
 			isset($entry['id']) ? $entry['id'] : FALSE,
-			isset($entry['title']) ? $entry['title'] : FALSE,
+			isset($entry['tag']) ? $entry['tag'] : FALSE,
 			isset($entry['args']) ? $entry['args'] : FALSE);
 		$link.='"';
 		if(isset($entry['title']))
