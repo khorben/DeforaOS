@@ -143,7 +143,7 @@ function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		$link .= '/'.$module;
 		if($action != FALSE && $action != '' && $action != 'default')
 			$link .= '/'.$action;
-		if($id != FALSE && is_numeric($id))
+		if($id !== FALSE && is_numeric($id))
 			$link .= '/'.$id;
 		if($tag != FALSE && $tag != '')
 		{
@@ -218,7 +218,7 @@ function _module_parse_friendly($path)
 			return TRUE;
 		$id = array_shift($path);
 	}
-	if(!is_numeric($id) || $id == 0)
+	if(!is_numeric($id))
 		return FALSE;
 	$_GET['id'] = $id;
 	if(count($path) == 0)
