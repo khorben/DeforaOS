@@ -37,6 +37,7 @@ if($lang == 'fr')
 _lang($text);
 
 
+//content_admin
 function content_admin($args)
 {
 	global $user_id;
@@ -217,9 +218,9 @@ function content_update($args)
 			." WHERE content_id='$id'");
 	if(!is_array($content) || count($content) != 1)
 		return _error(INVALID_ARGUMENT);
+	$content = $content[0];
 	$users = _sql_array('SELECT user_id, username FROM daportal_user');
 	$title = CONTENT_UPDATE;
-	$content = $content[0];
 	include('./modules/content/update.tpl');
 }
 
