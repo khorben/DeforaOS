@@ -92,6 +92,7 @@ function _password_new()
 }
 
 
+//user_admin
 function user_admin($args)
 {
 	global $user_id;
@@ -434,7 +435,7 @@ function user_register($args)
 {
 	global $user_id;
 
-	if(_config_get('user', 'register') != SQL_TRUE)
+	if(_config_get('user', 'register') != TRUE)
 		return _error(PERMISSION_DENIED);
 	if($user_id)
 		return _error(ALREADY_LOGGED_IN);
@@ -568,7 +569,7 @@ function _system_login($args)
 	if(!isset($args['username']) || !isset($args['password']))
 		return INVALID_ARGUMENT;
 	$password = md5($args['password']);
-	$res = _sql_array('SELECT user_id, username, admin FROM daportal_user'
+	$res = _sql_array('SELECT user_id, username FROM daportal_user'
 			.' WHERE username='."'".$args['username']."'"
 			.' AND password='."'$password' AND enabled='1'");
 	if(!is_array($res) || count($res) != 1)
