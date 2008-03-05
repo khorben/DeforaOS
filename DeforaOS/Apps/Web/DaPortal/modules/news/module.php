@@ -222,7 +222,7 @@ function news_headline($args)
 		return _error('Could not list news');
 	for($i = 0, $cnt = count($news); $i < $cnt; $i++)
 	{
-		$news[$i]['action'] = 'display';
+		$news[$i]['action'] = 'default';
 		$news[$i]['icon'] = 'icons/16x16/news.png';
 		$news[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$news[$i]['name'] = $news[$i]['title'];
@@ -258,8 +258,12 @@ function news_list($args)
 	if(!is_array($res))
 		return _error('Unable to list news');
 	$long = 0;
+	require_once('./system/content.php');
 	foreach($res as $news)
 	{
+		$news['tag'] = $news['title'];
+		_content_select_lang($news['id'], $news['title'],
+				$news['content']);
 		$news['date'] = _sql_date($news['timestamp']);
 		include('./modules/news/news_display.tpl');
 	}
