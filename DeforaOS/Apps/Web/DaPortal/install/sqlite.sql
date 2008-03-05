@@ -315,3 +315,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('browser', '1');
 
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('18',
 		'string', 'root', '/');
+
+
+/* module: translate */
+INSERT INTO daportal_module (name, enabled) VALUES ('translate', '1');
