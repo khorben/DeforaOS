@@ -19,7 +19,7 @@ conception</a>.
 		<h3 class="title news">Actualit&eacute;</h3>
 		<p>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
-<a href="index.php?module=news" title="DeforaOS news">Suite...</a>
+<a href="<?php echo _html_link('news'); ?>" title="DeforaOS news">Suite...</a>
 		</p>
 <?php break; case 'en': default: ?>
 		<h3 class="title project">About the project</h3>
@@ -40,6 +40,6 @@ href="index.php?module=project">early stage</a>.
 		<h3 class="title news">Latest news</h3>
 		<p>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
-<a href="index.php?module=news" title="DeforaOS news">More news...</a>
+<a href="<?php echo _html_link('news'); ?>" title="DeforaOS news">More news...</a>
 		</p>
 <?php } ?>
