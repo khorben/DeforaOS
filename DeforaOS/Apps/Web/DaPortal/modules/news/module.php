@@ -37,6 +37,7 @@ $text['SUBMIT_NEWS'] = 'Submit news';
 global $lang;
 if($lang == 'fr')
 {
+	$text['COMMENT_S'] = 'commentaire(s)';
 	$text['MODIFICATION_OF_NEWS'] = 'Modification de la dépêche';
 	$text['NEWS_ADMINISTRATION'] = 'Administration des dépêches';
 	$text['NEWS_ON'] = 'le';
