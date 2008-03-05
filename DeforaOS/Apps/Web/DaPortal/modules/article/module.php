@@ -38,7 +38,7 @@ if($lang == 'fr')
 	$text['ARTICLE_ON'] = 'le';
 	$text['ARTICLE_PREVIEW'] = "Aperçu de l'article";
 	$text['ARTICLES_ADMINISTRATION'] = 'Administration des articles';
-	$text['MODIFICATION_OF_ARTICLE'] = "Modification de l\'article";
+	$text['MODIFICATION_OF_ARTICLE'] = "Modification de l'article";
 }
 _lang($text);
 
@@ -214,12 +214,16 @@ function article_list($args)
 		.' ORDER BY title ASC');
 	if(!is_array($res))
 		return _error('Unable to list articles');
+	require_once('./system/content.php');
 	if(!isset($username))
 	{
 		$long = 0;
 		foreach($res as $article)
 		{
 			$article['date'] = _sql_date($article['timestamp']);
+			$article['tag'] = $article['title'];
+			_content_select_lang($article['id'], $article['title'],
+					$article['content']);
 			include('./modules/article/display.tpl');
 		}
 		return;
@@ -230,8 +234,11 @@ function article_list($args)
 		$res[$i]['icon'] = 'icons/16x16/article.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/article.png';
 		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['tag'] = $res[$i]['title'];
 		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
 						$res[$i]['timestamp'], 0, 19)));
+		_content_select_lang($res[$i]['id'], $res[$i]['title'],
+				$res[$i]['content']);
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => SUBMIT_ARTICLE, 'class' => 'new',
