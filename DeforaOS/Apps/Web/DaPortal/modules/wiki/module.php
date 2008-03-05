@@ -92,23 +92,23 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 {
 	require_once('./system/content.php');
 	$wiki = _content_select($id);
-	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
+	if(!is_array($wiki) || strpos('/', $wiki['tag']) != FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(($root = _root()) == FALSE
-			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
+			|| !is_readable($root.'/RCS/'.$wiki['tag'].',v'))
 		return _error('Internal server error');
 	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
 		$cmd.=' -r'.escapeshellarg($revision);
-	if(_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['title'])) == FALSE)
+	if(_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['tag'])) == FALSE)
 		return _error('Could not checkout page');
-	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['title']))
+	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['tag']))
 			== FALSE)
 	{
-		unlink($root.'/'.$wiki['title']);
+		unlink($root.'/'.$wiki['tag']);
 		return _error('Could not read page');
 	}
-	unlink($root.'/'.$wiki['title']);
+	unlink($root.'/'.$wiki['tag']);
 	if(!_validate($wiki['content']))
 		return _error(DOCUMENT_NOT_VALID);
 	return $wiki;
@@ -441,6 +441,7 @@ function wiki_list($args)
 		$wiki[$i]['module'] = 'wiki';
 		$wiki[$i]['action'] = 'display';
 		$wiki[$i]['name'] = $wiki[$i]['title'];
+		$wiki[$i]['tag'] = $wiki[$i]['title'];
 		$wiki[$i]['date'] = strftime('%d/%m/%y %H:%M:%S',
 				strtotime(substr($wiki[$i]['date'], 0, 19)));
 	}
