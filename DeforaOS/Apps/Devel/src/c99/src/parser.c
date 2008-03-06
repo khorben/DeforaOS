@@ -66,6 +66,7 @@ static int _block_item_list(C99 * c99);
 static int _block_item(C99 * c99);
 static int _statement(C99 * c99);
 static int _labeled_statement(C99 * c99);
+static int _constant_expr(C99 * c99);
 static int _expression_statement(C99 * c99);
 static int _expression(C99 * c99);
 static int _selection_statement(C99 * c99);
@@ -501,6 +502,8 @@ static int _parameter_declaration(C99 * c99)
 
 /* abstract-declarator */
 static int _abstract_declarator(C99 * c99)
+	/* pointer
+	 * [ pointer ] direct-abstract-declarator */
 {
 	/* FIXME implement */
 #ifdef DEBUG
@@ -549,12 +552,14 @@ static int _unary_expr(C99 * c99)
 
 /* assignment-operator */
 static int _assignment_operator(C99 * c99)
+	/* "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^="
+	 * | "|=" */
 {
 	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	return c99_scan(c99);
 }
 
 
@@ -647,6 +652,33 @@ static int _statement(C99 * c99)
 
 /* labeled-statement */
 static int _labeled_statement(C99 * c99)
+	/* identifier ":" statement
+	 * case constant-expr ":" statement
+	 * default ":" statement */
+{
+	int ret;
+	int code;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
+		ret = _identifier(c99);
+	else if(code == C99_CODE_KEYWORD_CASE)
+	{
+		ret = c99_scan(c99);
+		ret |= _constant_expr(c99);
+	}
+	else /* default */
+		ret = c99_scan(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
+	ret |= _statement(c99);
+	return ret;
+}
+
+
+/* constant_expr */
+static int _constant_expr(C99 * c99)
 {
 	/* FIXME implement */
 #ifdef DEBUG
@@ -693,12 +725,28 @@ static int _expression(C99 * c99)
 
 /* selection-statement */
 static int _selection_statement(C99 * c99)
+	/* if "(" expression ")" statement [ else statement ]
+	 * switch "(" expression ")" statement */
 {
-	/* FIXME implement */
+	int ret;
+	int code;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	code = token_get_code(c99->token);
+	ret = c99_scan(c99);
+	_parse_check(c99, C99_CODE_OPERATOR_LPAREN);
+	ret |= _expression(c99);
+	_parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+	ret |= _statement(c99);
+	if(code == C99_CODE_KEYWORD_IF
+			&& token_get_code(c99->token) == C99_CODE_KEYWORD_ELSE)
+	{
+		ret |= c99_scan(c99);
+		ret |= _statement(c99);
+	}
+	return ret;
 }
 
 
