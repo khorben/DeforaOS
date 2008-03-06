@@ -33,6 +33,9 @@ struct _C99
 	Cpp * cpp;
 	char * outfile;
 	int optlevel;
+
+	/* parsing */
+	Token * token;
 };
 
 #endif /* !C99_C99_H */

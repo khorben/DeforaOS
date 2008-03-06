@@ -62,7 +62,8 @@ C99 * c99_new(C99Prefs * prefs, char const * pathname)
 	else
 		c99->outfp = NULL;
 	c99->optlevel = prefs->optlevel;
-	if(c99->outfile == NULL
+	c99->token = NULL;
+	if(c99->outfile == NULL /* abort if there was an error */
 			|| c99->outfp == NULL
 			|| i != prefs->paths_cnt
 			|| j != prefs->defines_cnt
@@ -117,6 +118,8 @@ int c99_delete(C99 * c99)
 		ret = error_set_code(1, "%s: %s", c99->outfile,
 				strerror(errno));
 	free(c99->outfile);
+	if(c99->token != NULL)
+		token_delete(c99->token);
 	object_delete(c99);
 	return ret;
 }

@@ -23,8 +23,11 @@
 
 
 /* protected */
+extern TokenSet c99set_declaration;
 extern TokenSet c99set_keyword;
 extern TokenSet c99set_punctuator;
 extern TokenSet c99set_storage_class_specifier;
+extern TokenSet c99set_type_qualifier;
+extern TokenSet c99set_type_specifier;
 
 #endif /* !C99_TOKENSET_H */

@@ -22,6 +22,15 @@
 
 /* protected */
 /* variables */
+/* declaration */
+static TokenCode _c99set_declaration[] =
+{
+	/* FIXME implement */
+	C99_CODE_NULL
+};
+TokenSet c99set_declaration = _c99set_declaration;
+
+
 /* keyword */
 static TokenCode _c99set_keyword[] =
 {
@@ -137,3 +146,40 @@ static TokenCode _c99set_storage_class_specifier[] =
 };
 
 TokenSet c99set_storage_class_specifier = _c99set_storage_class_specifier;
+
+
+/* type qualifier */
+static TokenCode _c99set_type_qualifier[] =
+{
+	C99_CODE_KEYWORD_CONST,
+	C99_CODE_KEYWORD_RESTRICT,
+	C99_CODE_KEYWORD_VOLATILE,
+	C99_CODE_NULL
+};
+
+TokenSet c99set_type_qualifier = _c99set_type_qualifier;
+
+
+/* type specifier */
+static TokenCode _c99set_type_specifier[] =
+{
+	C99_CODE_KEYWORD_VOID,
+	C99_CODE_KEYWORD_CHAR,
+	C99_CODE_KEYWORD_SHORT,
+	C99_CODE_KEYWORD_INT,
+	C99_CODE_KEYWORD_LONG,
+	C99_CODE_KEYWORD_FLOAT,
+	C99_CODE_KEYWORD_DOUBLE,
+	C99_CODE_KEYWORD_SIGNED,
+	C99_CODE_KEYWORD_UNSIGNED,
+	C99_CODE_KEYWORD__BOOL,
+	C99_CODE_KEYWORD__COMPLEX,
+	C99_CODE_KEYWORD__IMAGINARY,
+	C99_CODE_KEYWORD_STRUCT,
+	C99_CODE_KEYWORD_UNION,
+	C99_CODE_KEYWORD_ENUM,
+	C99_CODE_KEYWORD_TYPEDEF,
+	C99_CODE_NULL
+};
+
+TokenSet c99set_type_specifier = _c99set_type_specifier;

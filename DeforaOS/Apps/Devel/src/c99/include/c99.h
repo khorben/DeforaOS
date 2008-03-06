@@ -166,6 +166,6 @@ int c99_delete(C99 * c99);
 /* useful */
 int c99_parse(C99 * c99);
 
-int c99_scan(C99 * c99, Token ** token);
+int c99_scan(C99 * c99);
 
 #endif /* !C99_C99_H */

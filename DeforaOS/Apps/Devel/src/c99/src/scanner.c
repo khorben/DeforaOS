@@ -78,24 +78,27 @@ static size_t _operators_cnt = sizeof(_operators) / sizeof(*_operators);
 /* functions */
 /* useful */
 /* c99_scan */
-int c99_scan(C99 * c99, Token ** token)
+int c99_scan(C99 * c99)
+	/* FIXME handle numbers too */
 {
 	int ret;
 	char const * string;
 	size_t i;
 
-	if((ret = cpp_scan(c99->cpp, token)) != 0)
+	if(c99->token != NULL)
+		token_delete(c99->token);
+	if((ret = cpp_scan(c99->cpp, &c99->token)) != 0)
 		return ret;
-	if(token == NULL)
+	if(c99->token == NULL)
 		return 0;
-	if(token_get_code(*token) != C99_CODE_WORD)
+	if(token_get_code(c99->token) != C99_CODE_WORD)
 		return 0;
-	if((string = token_get_string(*token)) == NULL)
+	if((string = token_get_string(c99->token)) == NULL)
 		return 0;
 	for(i = 0; i < _operators_cnt; i++)
 		if(strcmp(_operators[i].string, string) == 0)
 		{
-			token_set_code(*token, _operators[i].code);
+			token_set_code(c99->token, _operators[i].code);
 			return 0;
 		}
 	return 0;
