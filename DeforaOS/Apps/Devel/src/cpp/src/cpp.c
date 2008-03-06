@@ -97,6 +97,7 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_BEQUALS,	"|="	},
 	{ CPP_CODE_OPERATOR_DBAR,	"||"	},
 	{ CPP_CODE_OPERATOR_BAR,	"|"	},
+	{ CPP_CODE_OPERATOR_DIVEQUALS,	"/="	},
 	{ CPP_CODE_OPERATOR_DIVIDE,	"/"	},
 	{ CPP_CODE_OPERATOR_DOTDOTDOT,	"..."	},
 	{ CPP_CODE_OPERATOR_DOT,	"."	},
