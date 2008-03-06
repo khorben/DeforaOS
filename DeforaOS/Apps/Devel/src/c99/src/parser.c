@@ -217,13 +217,13 @@ static int _declaration_specifiers(C99 * c99)
 
 /* storage-class-specifier */
 static int _storage_class_specifier(C99 * c99)
+	/* typedef | extern | static | auto | register */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	return 0;
+	return c99_scan(c99);
 }
 
 
@@ -522,7 +522,8 @@ static int _assignment_expr(C99 * c99)
 	int ret = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
 	while(token_in_set(c99->token, c99set_unary_expr))
 	{
@@ -541,7 +542,7 @@ static int _unary_expr(C99 * c99)
 	 * -- unary-expr
 	 * unary-operator cast-expr
 	 * sizeof unary-expr
-	 * sizeof ( type-name ) */
+	 * sizeof "(" type-name ")" */
 {
 	/* FIXME implement */
 #ifdef DEBUG
@@ -754,16 +755,38 @@ static int _selection_statement(C99 * c99)
 
 /* iteration-statement */
 static int _iteration_statement(C99 * c99)
-	/* while ( expression ) statement
-	 * do statement while ( expression ) ;
+	/* while "(" expression ")" statement
+	 * do statement while "(" expression ")" ;
 	 * for ( expr-opt ; expr-opt ; expr-opt ) statement
 	 * for ( declaration ; expr-opt ; expr-opt ) statement */
 {
-	/* FIXME implement */
+	int ret;
+	int code;
+
+	/* FIXME complete */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_WHILE)
+	{
+		ret = c99_scan(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
+		ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		ret |= _statement(c99);
+	}
+	else if(code == C99_CODE_KEYWORD_DO)
+	{
+		ret = c99_scan(c99);
+		ret |= _statement(c99);
+		ret |= _parse_check(c99, C99_CODE_KEYWORD_WHILE);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
+		ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+	}
+	else /* FIXME implement for */
+		ret = c99_scan(c99);
+	return ret;
 }
 
 
@@ -836,12 +859,18 @@ static int _init_declarator(C99 * c99)
 
 /* initializer */
 static int _initializer(C99 * c99)
+	/* assignment-expr
+	 * { initializer-list [ "," ] } */
 {
-	/* FIXME implement */
+	int ret = 0;
+
+	/* FIXME complete */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	if(token_in_set(c99->token, c99set_assignment_expr))
+		ret = _assignment_expr(c99);
+	return ret;
 }
 
 
