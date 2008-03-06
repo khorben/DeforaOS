@@ -16,7 +16,6 @@
 
 
 
-#define DEBUG
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -206,7 +205,7 @@ static int _declaration_specifiers(C99 * c99)
 			return _parse_error(c99, "Expected"
 					" storage class specifier"
 					", type specifier, type qualifier"
-					" or function specifier\n");
+					" or function specifier");
 		else
 			break;
 		looped = 1;
@@ -507,11 +506,15 @@ static int _abstract_declarator(C99 * c99)
 	/* pointer
 	 * [ pointer ] direct-abstract-declarator */
 {
-	/* FIXME implement */
+	int ret = 0;
+
+	/* FIXME complete */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	if(token_in_set(c99->token, c99set_pointer))
+		ret = _pointer(c99);
+	return ret;
 }
 
 
