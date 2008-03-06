@@ -418,12 +418,20 @@ static int _identifier(C99 * c99)
 
 /* identifier-list */
 static int _identifier_list(C99 * c99)
+	/* identifier { "," identifier } */
 {
-	/* FIXME implement */
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	ret = _identifier(c99);
+	while(token_get_code(c99->token) == C99_CODE_COMMA)
+	{
+		c99_scan(c99);
+		ret |= _identifier(c99);
+	}
+	return ret;
 }
 
 
