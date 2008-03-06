@@ -22,6 +22,16 @@
 
 /* protected */
 /* variables */
+/* abstract_declarator */
+static TokenCode _c99set_abstract_declarator[] =
+{
+#include "sets/abstract_declarator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_abstract_declarator = _c99set_abstract_declarator;
+
+
 /* assignment-expr */
 static TokenCode _c99set_assignment_expr[] =
 {
@@ -90,6 +100,16 @@ static TokenCode _c99set_declaration_specifiers[] =
 };
 
 TokenSet c99set_declaration_specifiers = _c99set_declaration_specifiers;
+
+
+/* declarator */
+static TokenCode _c99set_declarator[] =
+{
+#include "sets/declarator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_declarator = _c99set_declarator;
 
 
 /* enum-specifier */

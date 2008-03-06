@@ -23,6 +23,7 @@
 
 
 /* protected */
+extern TokenSet c99set_abstract_declarator;
 extern TokenSet c99set_assignment_expr;
 extern TokenSet c99set_block_item;
 extern TokenSet c99set_block_item_list;
@@ -30,6 +31,7 @@ extern TokenSet c99set_compound_statement;
 extern TokenSet c99set_declaration;
 extern TokenSet c99set_declaration_list;
 extern TokenSet c99set_declaration_specifiers;
+extern TokenSet c99set_declarator;
 extern TokenSet c99set_enum_specifier;
 extern TokenSet c99set_expression;
 extern TokenSet c99set_expression_statement;

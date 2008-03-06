@@ -52,6 +52,9 @@ static int _direct_declarator(C99 * c99);
 static int _identifier(C99 * c99);
 static int _identifier_list(C99 * c99);
 static int _parameter_type_list(C99 * c99);
+static int _parameter_list(C99 * c99);
+static int _parameter_declaration(C99 * c99);
+static int _abstract_declarator(C99 * c99);
 static int _assignment_expr(C99 * c99);
 static int _unary_expr(C99 * c99);
 static int _assignment_operator(C99 * c99);
@@ -437,6 +440,67 @@ static int _identifier_list(C99 * c99)
 
 /* parameter-type-list */
 static int _parameter_type_list(C99 * c99)
+	/* FIXME can that really work?
+	 * parameter-list [ "," "..." ] */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _parameter_list(c99);
+	if(token_get_code(c99->token) == C99_CODE_COMMA)
+	{
+		ret |= c99_scan(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_DOTDOTDOT);
+	}
+	return ret;
+}
+
+
+/* parameter-list */
+static int _parameter_list(C99 * c99)
+	/* parameter-declaration { "," parameter-declaration } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _parameter_declaration(c99);
+	while(token_get_code(c99->token) == C99_CODE_COMMA)
+	{
+		ret |= c99_scan(c99);
+		ret |= _parameter_declaration(c99);
+	}
+	return ret;
+}
+
+
+/* parameter-declaration */
+static int _parameter_declaration(C99 * c99)
+	/* declaration-specifiers declarator
+	 * declaration-specifiers [ abstract-declarator ] */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _declaration_specifiers(c99);
+	if(token_in_set(c99->token, c99set_abstract_declarator))
+		ret |= _abstract_declarator(c99);
+	else if(token_in_set(c99->token, c99set_declarator))
+		ret |= _declarator(c99);
+	else
+		ret |= _parse_error(c99, "Expected declarator"
+				" or abstract declarator");
+	return ret;
+}
+
+
+/* abstract-declarator */
+static int _abstract_declarator(C99 * c99)
 {
 	/* FIXME implement */
 #ifdef DEBUG
