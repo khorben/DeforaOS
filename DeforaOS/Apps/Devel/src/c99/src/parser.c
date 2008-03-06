@@ -73,6 +73,8 @@ static int _selection_statement(C99 * c99);
 static int _iteration_statement(C99 * c99);
 static int _jump_statement(C99 * c99);
 static int _init_declarator_list(C99 * c99);
+static int _init_declarator(C99 * c99);
+static int _initializer(C99 * c99);
 
 
 /* functions */
@@ -752,6 +754,10 @@ static int _selection_statement(C99 * c99)
 
 /* iteration-statement */
 static int _iteration_statement(C99 * c99)
+	/* while ( expression ) statement
+	 * do statement while ( expression ) ;
+	 * for ( expr-opt ; expr-opt ; expr-opt ) statement
+	 * for ( declaration ; expr-opt ; expr-opt ) statement */
 {
 	/* FIXME implement */
 #ifdef DEBUG
@@ -795,6 +801,41 @@ static int _jump_statement(C99 * c99)
 
 /* init-declarator-list-opt */
 static int _init_declarator_list(C99 * c99)
+	/* init-declarator { init-declarator } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _init_declarator(c99);
+	while(token_in_set(c99->token, c99set_init_declarator))
+		ret |= _init_declarator(c99);
+	return ret;
+}
+
+
+/* init-declarator */
+static int _init_declarator(C99 * c99)
+	/* declarator [ "=" initializer ] */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _declarator(c99);
+	if(token_get_code(c99->token) == C99_CODE_OPERATOR_EQUALS)
+	{
+		ret |= c99_scan(c99);
+		ret |= _initializer(c99);
+	}
+	return ret;
+}
+
+
+/* initializer */
+static int _initializer(C99 * c99)
 {
 	/* FIXME implement */
 #ifdef DEBUG

@@ -36,6 +36,7 @@ extern TokenSet c99set_enum_specifier;
 extern TokenSet c99set_expression;
 extern TokenSet c99set_expression_statement;
 extern TokenSet c99set_function_specifier;
+extern TokenSet c99set_init_declarator;
 extern TokenSet c99set_iteration_statement;
 extern TokenSet c99set_jump_statement;
 extern TokenSet c99set_keyword;

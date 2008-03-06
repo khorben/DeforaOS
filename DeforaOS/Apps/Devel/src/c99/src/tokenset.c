@@ -162,6 +162,16 @@ static TokenCode _c99set_identifier_list[] =
 TokenSet c99set_identifier_list = _c99set_identifier_list;
 
 
+/* init-declarator */
+static TokenCode _c99set_init_declarator[] =
+{
+#include "sets/init_declarator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_init_declarator = _c99set_init_declarator;
+
+
 /* iteration-statement */
 static TokenCode _c99set_iteration_statement[] =
 {
