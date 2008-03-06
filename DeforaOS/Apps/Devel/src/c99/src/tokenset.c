@@ -22,164 +22,273 @@
 
 /* protected */
 /* variables */
+/* assignment-expr */
+static TokenCode _c99set_assignment_expr[] =
+{
+#include "sets/assignment_expr.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_assignment_expr = _c99set_assignment_expr;
+
+
+/* block-item */
+static TokenCode _c99set_block_item[] =
+{
+#include "sets/block_item.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_block_item = _c99set_block_item;
+
+
+/* block-item-list */
+static TokenCode _c99set_block_item_list[] =
+{
+#include "sets/block_item_list.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_block_item_list = _c99set_block_item_list;
+
+
+/* compound-statement */
+static TokenCode _c99set_compound_statement[] =
+{
+#include "sets/compound_statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_compound_statement = _c99set_compound_statement;
+
+
 /* declaration */
 static TokenCode _c99set_declaration[] =
 {
-	/* FIXME implement */
+#include "sets/declaration.set"
 	C99_CODE_NULL
 };
+
 TokenSet c99set_declaration = _c99set_declaration;
+
+
+/* declaration-list */
+static TokenCode _c99set_declaration_list[] =
+{
+#include "sets/declaration_list.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_declaration_list = _c99set_declaration_list;
+
+
+/* declaration-specifiers */
+static TokenCode _c99set_declaration_specifiers[] =
+{
+#include "sets/declaration_specifiers.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_declaration_specifiers = _c99set_declaration_specifiers;
+
+
+/* enum-specifier */
+static TokenCode _c99set_enum_specifier[] =
+{
+#include "sets/enum_specifier.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_enum_specifier = _c99set_enum_specifier;
+
+
+/* expression */
+static TokenCode _c99set_expression[] =
+{
+#include "sets/expression.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_expression = _c99set_expression;
+
+
+/* expression-statement */
+static TokenCode _c99set_expression_statement[] =
+{
+#include "sets/expression_statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_expression_statement = _c99set_expression_statement;
+
+
+/* function-specifier */
+static TokenCode _c99set_function_specifier[] =
+{
+#include "sets/function_specifier.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_function_specifier = _c99set_function_specifier;
+
+
+/* identifier-list */
+static TokenCode _c99set_identifier_list[] =
+{
+#include "sets/identifier_list.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_identifier_list = _c99set_identifier_list;
+
+
+/* iteration-statement */
+static TokenCode _c99set_iteration_statement[] =
+{
+#include "sets/iteration_statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_iteration_statement = _c99set_iteration_statement;
+
+
+/* jump-statement */
+static TokenCode _c99set_jump_statement[] =
+{
+#include "sets/jump_statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_jump_statement = _c99set_jump_statement;
 
 
 /* keyword */
 static TokenCode _c99set_keyword[] =
 {
-	C99_CODE_KEYWORD_AUTO,
-	C99_CODE_KEYWORD_BREAK,
-	C99_CODE_KEYWORD_CASE,
-	C99_CODE_KEYWORD_CHAR,
-	C99_CODE_KEYWORD_CONST,
-	C99_CODE_KEYWORD_CONTINUE,
-	C99_CODE_KEYWORD_DEFAULT,
-	C99_CODE_KEYWORD_DO,
-	C99_CODE_KEYWORD_DOUBLE,
-	C99_CODE_KEYWORD_ELSE,
-	C99_CODE_KEYWORD_ENUM,
-	C99_CODE_KEYWORD_EXTERN,
-	C99_CODE_KEYWORD_FLOAT,
-	C99_CODE_KEYWORD_FOR,
-	C99_CODE_KEYWORD_GOTO,
-	C99_CODE_KEYWORD_IF,
-	C99_CODE_KEYWORD_INLINE,
-	C99_CODE_KEYWORD_INT,
-	C99_CODE_KEYWORD_LONG,
-	C99_CODE_KEYWORD_REGISTER,
-	C99_CODE_KEYWORD_RESTRICT,
-	C99_CODE_KEYWORD_RETURN,
-	C99_CODE_KEYWORD_SHORT,
-	C99_CODE_KEYWORD_SIGNED,
-	C99_CODE_KEYWORD_SIZEOF,
-	C99_CODE_KEYWORD_STATIC,
-	C99_CODE_KEYWORD_STRUCT,
-	C99_CODE_KEYWORD_SWITCH,
-	C99_CODE_KEYWORD_TYPEDEF,
-	C99_CODE_KEYWORD_UNION,
-	C99_CODE_KEYWORD_UNSIGNED,
-	C99_CODE_KEYWORD_VOID,
-	C99_CODE_KEYWORD_VOLATILE,
-	C99_CODE_KEYWORD_WHILE,
-	C99_CODE_KEYWORD__BOOL,
-	C99_CODE_KEYWORD__COMPLEX,
-	C99_CODE_KEYWORD__IMAGINARY,
+#include "sets/keyword.set"
 	C99_CODE_NULL
 };
 
 TokenSet c99set_keyword = _c99set_keyword;
 
 
+/* labeled-statement */
+static TokenCode _c99set_labeled_statement[] =
+{
+#include "sets/labeled_statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_labeled_statement = _c99set_labeled_statement;
+
+
+/* parameter-type-list */
+static TokenCode _c99set_parameter_type_list[] =
+{
+#include "sets/parameter_type_list.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_parameter_type_list = _c99set_parameter_type_list;
+
+
+/* pointer */
+static TokenCode _c99set_pointer[] =
+{
+#include "sets/pointer.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_pointer = _c99set_pointer;
+
+
 /* punctuator */
 static TokenCode _c99set_punctuator[] =
 {
-	C99_CODE_OPERATOR_LBRACKET,
-	C99_CODE_OPERATOR_RBRACKET,
-	C99_CODE_OPERATOR_LPAREN,
-	C99_CODE_OPERATOR_RPAREN,
-	C99_CODE_OPERATOR_LBRACE,
-	C99_CODE_OPERATOR_RBRACE,
-	C99_CODE_OPERATOR_DOT,
-	C99_CODE_OPERATOR_MGREATER,
-	C99_CODE_OPERATOR_DPLUS,
-	C99_CODE_OPERATOR_DMINUS,
-	C99_CODE_OPERATOR_AMPERSAND,
-	C99_CODE_OPERATOR_TIMES,
-	C99_CODE_OPERATOR_PLUS,
-	C99_CODE_OPERATOR_MINUS,
-	C99_CODE_OPERATOR_TILDE,
-	C99_CODE_OPERATOR_NOT,
-	C99_CODE_OPERATOR_DIVIDE,
-	C99_CODE_OPERATOR_MODULO,
-	C99_CODE_OPERATOR_DLESS,
-	C99_CODE_OPERATOR_DGREATER,
-	C99_CODE_OPERATOR_LESS,
-	C99_CODE_OPERATOR_GREATER,
-	C99_CODE_OPERATOR_LEQUALS,
-	C99_CODE_OPERATOR_GEQUALS,
-	C99_CODE_OPERATOR_DEQUALS,
-	C99_CODE_OPERATOR_NEQUALS,
-	C99_CODE_OPERATOR_XOR,
-	C99_CODE_OPERATOR_BAR,
-	C99_CODE_OPERATOR_DAMPERSAND,
-	C99_CODE_OPERATOR_DBAR,
-	C99_CODE_OPERATOR_QUESTION,
-	C99_CODE_OPERATOR_COLON,
-	C99_CODE_OPERATOR_SEMICOLON,
-	C99_CODE_OPERATOR_DOTDOTDOT,
-	C99_CODE_OPERATOR_EQUALS,
-	C99_CODE_OPERATOR_TEQUALS,
-	C99_CODE_OPERATOR_DEQUALS, /* FIXME "/=" ambiguity with "==" */
-	C99_CODE_OPERATOR_MODEQUALS,
-	C99_CODE_OPERATOR_PEQUALS,
-	C99_CODE_OPERATOR_MEQUALS,
-	C99_CODE_OPERATOR_DLEQUALS,
-	C99_CODE_OPERATOR_DGEQUALS,
-	C99_CODE_OPERATOR_AEQUALS,
-	C99_CODE_OPERATOR_XEQUALS,
-	C99_CODE_OPERATOR_BEQUALS,
-	C99_CODE_COMMA,
-	C99_CODE_OPERATOR_HASH,
-	C99_CODE_OPERATOR_DHASH,
+#include "sets/punctuator.set"
 	C99_CODE_NULL
 };
 
 TokenSet c99set_punctuator = _c99set_punctuator;
 
 
-/* storage class specifier */
+/* selection-statement */
+static TokenCode _c99set_selection_statement[] =
+{
+#include "sets/selection_statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_selection_statement = _c99set_selection_statement;
+
+
+/* statement */
+static TokenCode _c99set_statement[] =
+{
+#include "sets/statement.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_statement = _c99set_statement;
+
+
+/* storage-class-specifier */
 static TokenCode _c99set_storage_class_specifier[] =
 {
-	C99_CODE_KEYWORD_TYPEDEF,
-	C99_CODE_KEYWORD_EXTERN,
-	C99_CODE_KEYWORD_STATIC,
-	C99_CODE_KEYWORD_AUTO,
-	C99_CODE_KEYWORD_REGISTER,
+#include "sets/storage_class_specifier.set"
 	C99_CODE_NULL
 };
 
 TokenSet c99set_storage_class_specifier = _c99set_storage_class_specifier;
 
 
-/* type qualifier */
+/* struct-or-union-specifier */
+static TokenCode _c99set_struct_or_union_specifier[] =
+{
+#include "sets/struct_or_union_specifier.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_struct_or_union_specifier = _c99set_struct_or_union_specifier;
+
+
+/* type-qualifier */
 static TokenCode _c99set_type_qualifier[] =
 {
-	C99_CODE_KEYWORD_CONST,
-	C99_CODE_KEYWORD_RESTRICT,
-	C99_CODE_KEYWORD_VOLATILE,
+#include "sets/type_qualifier.set"
 	C99_CODE_NULL
 };
 
 TokenSet c99set_type_qualifier = _c99set_type_qualifier;
 
 
-/* type specifier */
+/* type-qualifier-list */
+TokenSet c99set_type_qualifier_list = _c99set_type_qualifier;
+
+
+/* type-specifier */
 static TokenCode _c99set_type_specifier[] =
 {
-	C99_CODE_KEYWORD_VOID,
-	C99_CODE_KEYWORD_CHAR,
-	C99_CODE_KEYWORD_SHORT,
-	C99_CODE_KEYWORD_INT,
-	C99_CODE_KEYWORD_LONG,
-	C99_CODE_KEYWORD_FLOAT,
-	C99_CODE_KEYWORD_DOUBLE,
-	C99_CODE_KEYWORD_SIGNED,
-	C99_CODE_KEYWORD_UNSIGNED,
-	C99_CODE_KEYWORD__BOOL,
-	C99_CODE_KEYWORD__COMPLEX,
-	C99_CODE_KEYWORD__IMAGINARY,
-	C99_CODE_KEYWORD_STRUCT,
-	C99_CODE_KEYWORD_UNION,
-	C99_CODE_KEYWORD_ENUM,
-	C99_CODE_KEYWORD_TYPEDEF,
-	C99_CODE_NULL
+#include "sets/type_specifier.set"
 };
 
 TokenSet c99set_type_specifier = _c99set_type_specifier;
+
+
+/* typedef-name */
+static TokenCode _c99set_typedef_name[] =
+{
+#include "sets/typedef_name.set"
+};
+
+TokenSet c99set_typedef_name = _c99set_typedef_name;
+
+
+/* unary-expr */
+static TokenCode _c99set_unary_expr[] =
+{
+#include "sets/unary_expr.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_unary_expr = _c99set_unary_expr;

@@ -23,11 +23,33 @@
 
 
 /* protected */
+extern TokenSet c99set_assignment_expr;
+extern TokenSet c99set_block_item;
+extern TokenSet c99set_block_item_list;
+extern TokenSet c99set_compound_statement;
 extern TokenSet c99set_declaration;
+extern TokenSet c99set_declaration_list;
+extern TokenSet c99set_declaration_specifiers;
+extern TokenSet c99set_enum_specifier;
+extern TokenSet c99set_expression;
+extern TokenSet c99set_expression_statement;
+extern TokenSet c99set_function_specifier;
+extern TokenSet c99set_iteration_statement;
+extern TokenSet c99set_jump_statement;
 extern TokenSet c99set_keyword;
+extern TokenSet c99set_identifier_list;
+extern TokenSet c99set_labeled_statement;
+extern TokenSet c99set_parameter_type_list;
+extern TokenSet c99set_pointer;
 extern TokenSet c99set_punctuator;
+extern TokenSet c99set_selection_statement;
+extern TokenSet c99set_statement;
 extern TokenSet c99set_storage_class_specifier;
+extern TokenSet c99set_struct_or_union_specifier;
 extern TokenSet c99set_type_qualifier;
+extern TokenSet c99set_type_qualifier_list;
 extern TokenSet c99set_type_specifier;
+extern TokenSet c99set_typedef_name;
+extern TokenSet c99set_unary_expr;
 
 #endif /* !C99_TOKENSET_H */

@@ -17,6 +17,7 @@
 
 
 #include <string.h>
+#include <ctype.h>
 #include "common.h"
 #include "c99.h"
 
@@ -87,7 +88,10 @@ int c99_scan(C99 * c99)
 
 	if(c99->token != NULL)
 		token_delete(c99->token);
-	if((ret = cpp_scan(c99->cpp, &c99->token)) != 0)
+	/* skip white-space tokens */
+	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0
+			&& token_get_code(c99->token) == C99_CODE_WHITESPACE);
+	if(ret != 0)
 		return ret;
 	if(c99->token == NULL)
 		return 0;
@@ -101,5 +105,8 @@ int c99_scan(C99 * c99)
 			token_set_code(c99->token, _operators[i].code);
 			return 0;
 		}
+	/* FIXME complete farther distinctions */
+	if(isalpha(string[0]))
+		token_set_code(c99->token, C99_CODE_IDENTIFIER);
 	return 0;
 }

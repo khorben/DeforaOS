@@ -1,0 +1,4 @@
+	C99_CODE_IDENTIFIER,
+#include "constant.set"
+	C99_CODE_DQUOTE,
+	C99_CODE_OPERATOR_LBRACE,

@@ -1,0 +1,3 @@
+#include "identifier.set"
+	C99_CODE_KEYWORD_CASE,
+	C99_CODE_KEYWORD_DEFAULT,

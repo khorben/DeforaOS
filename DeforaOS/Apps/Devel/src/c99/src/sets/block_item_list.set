@@ -1,0 +1,5 @@
+#ifndef SET_BLOCK_ITEM_LIST
+# define SET_BLOCK_ITEM_LIST
+# include "block_item.set"
+# undef SET_BLOCK_ITEM_LIST
+#endif
