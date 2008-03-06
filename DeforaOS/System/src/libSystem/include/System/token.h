@@ -42,7 +42,7 @@ void token_set_col(Token * token, unsigned int col);
 unsigned int token_get_line(Token * token);
 void token_set_line(Token * token, unsigned int line);
 
-int token_get_code(Token * token);
+TokenCode token_get_code(Token * token);
 void token_set_code(Token * token, int code);
 
 char const * token_get_string(Token * token);
