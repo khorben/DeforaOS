@@ -83,14 +83,21 @@ int c99_scan(C99 * c99)
 	/* FIXME handle numbers too */
 {
 	int ret;
+	int code;
 	char const * string;
 	size_t i;
 
 	if(c99->token != NULL)
 		token_delete(c99->token);
-	/* skip white-space tokens */
-	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0
-			&& token_get_code(c99->token) == C99_CODE_WHITESPACE);
+	/* skip white-space and meta tokens */
+	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0)
+	{
+		if((code = token_get_code(c99->token)) == C99_CODE_WHITESPACE
+				|| (code >= C99_CODE_META_FIRST
+					&& code <= C99_CODE_META_LAST))
+			continue;
+		break;
+	}
 	if(ret != 0)
 		return ret;
 	if(c99->token == NULL)
