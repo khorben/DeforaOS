@@ -1,4 +1,4 @@
-SUBDIRS	= as configure cpp GEDI
+SUBDIRS	= as configure cpp c99 GEDI
 
 
 all: subdirs
