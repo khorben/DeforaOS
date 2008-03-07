@@ -17,6 +17,7 @@
 
 
 #include <unistd.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,6 +57,10 @@ static int _parameter_declaration(C99 * c99);
 static int _abstract_declarator(C99 * c99);
 static int _assignment_expr(C99 * c99);
 static int _unary_expr(C99 * c99);
+static int _postfix_expr(C99 * c99);
+static int _primary_expr(C99 * c99);
+static int _type_name(C99 * c99);
+static int _specifier_qualifier_list(C99 * c99);
 static int _assignment_operator(C99 * c99);
 static int _conditional_expr(C99 * c99);
 static int _logical_or_expr(C99 * c99);
@@ -67,6 +72,8 @@ static int _equality_expr(C99 * c99);
 static int _relational_expr(C99 * c99);
 static int _shift_expr(C99 * c99);
 static int _additive_expr(C99 * c99);
+static int _multiplicative_expr(C99 * c99);
+static int _cast_expr(C99 * c99);
 static int _declaration_list(C99 * c99);
 static int _declaration(C99 * c99);
 static int _compound_statement(C99 * c99);
@@ -83,6 +90,7 @@ static int _jump_statement(C99 * c99);
 static int _init_declarator_list(C99 * c99);
 static int _init_declarator(C99 * c99);
 static int _initializer(C99 * c99);
+static int _initializer_list(C99 * c99);
 
 
 /* functions */
@@ -90,9 +98,9 @@ static int _parse_check(C99 * c99, TokenCode code)
 {
 	int ret;
 
-	/* FIXME complete */
+	/* FIXME use a string for the code */
 	if((ret = (token_get_code(c99->token) != code)))
-		_parse_error(c99, "Expected something else");
+		_parse_error(c99, "%s%x", "Expected code 0x", code);
 	c99_scan(c99);
 	return ret;
 }
@@ -101,11 +109,15 @@ static int _parse_check(C99 * c99, TokenCode code)
 static int _parse_error(C99 * c99, char const * format, ...)
 {
 	Token * token = c99->token;
+	va_list ap;
 
-	/* FIXME complete */
-	fprintf(stderr, "%s%s:%u, near \"%s\": %s\n", PACKAGE ": ",
+	fprintf(stderr, "%s%s:%u, near \"%s\": ", PACKAGE ": ",
 			token_get_filename(token), token_get_line(token),
-			token_get_string(token), format);
+			token_get_string(token));
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	va_end(ap);
+	fputc('\n', stderr);
 	return 1;
 }
 
@@ -129,11 +141,14 @@ static int _translation_unit(C99 * c99)
 static int _external_declaration(C99 * c99)
 	/* function-definition | declaration */
 {
-	/* FIXME implement correctly */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return _function_definition(c99);
+	if(token_in_set(c99->token, c99set_function_definition))
+		return _function_definition(c99);
+	else if(token_in_set(c99->token, c99set_declaration))
+		return _declaration(c99);
+	return _parse_error(c99, "Expected function definition or declaration");
 }
 
 
@@ -549,19 +564,165 @@ static int _assignment_expr(C99 * c99)
 
 /* unary-expr */
 static int _unary_expr(C99 * c99)
-	/* postfix-expr
+	/* FIXME still recursive
+	 * postfix-expr
 	 * ++ unary-expr
 	 * -- unary-expr
 	 * unary-operator cast-expr
 	 * sizeof unary-expr
 	 * sizeof "(" type-name ")" */
 {
+	int ret;
+	int code;
+
+	/* FIXME complete */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(token_in_set(c99->token, c99set_postfix_expr))
+		return _postfix_expr(c99);
+	else if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DPLUS
+			|| code == C99_CODE_OPERATOR_DMINUS)
+	{
+		ret = c99_scan(c99);
+		ret |= _unary_expr(c99);
+	}
+	/* FIXME unary-operator */
+	else if(code == C99_CODE_KEYWORD_SIZEOF)
+	{
+		ret = c99_scan(c99);
+		if(token_get_code(c99->token) == C99_CODE_OPERATOR_LPAREN)
+		{
+			ret |= c99_scan(c99);
+			ret |= _type_name(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		}
+		else
+			ret |= _unary_expr(c99);
+	}
+	return ret;
+}
+
+
+/* postfix-expr */
+static int _postfix_expr(C99 * c99)
+	/* primary-expr
+	 * postfix-expr "[" expression "]"
+	 * postfix-expr "(" argument-expression-list-opt ")"
+	 * postfix-expr "." identifier
+	 * postfix-expr "->" identifier
+	 * postfix-expr "++"
+	 * postfix-expr "--"
+	 * "(" type-name ")" "{" initializer-list "}"
+	 * "(" type-name ")" "{" initializer-list "," "}" */
+{
+	int ret = 0;
+	int code;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(token_in_set(c99->token, c99set_primary_expr))
+		ret |= _primary_expr(c99);
+	else if(token_get_code(c99->token) == C99_CODE_OPERATOR_LPAREN)
+	{
+		ret |= c99_scan(c99);
+		ret |= _type_name(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
+		ret |= _initializer_list(c99);
+		if(token_get_code(c99->token) == C99_CODE_COMMA)
+			ret |= c99_scan(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	}
+	for(;;)
+	{
+		code = token_get_code(c99->token);
+		if(code == C99_CODE_OPERATOR_LBRACKET)
+		{
+			ret |= c99_scan(c99);
+			ret |= _expression(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
+		}
+		else if(code == C99_CODE_OPERATOR_LPAREN)
+		{
+			ret |= c99_scan(c99);
+#if 0 /* FIXME optional and implement */
+			ret |= _argument_expression_list(c99);
+#endif
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		}
+		else if(code == C99_CODE_OPERATOR_DOT
+				|| code == C99_CODE_OPERATOR_MGREATER)
+		{
+			ret |= c99_scan(c99);
+			ret |= _identifier(c99);
+		}
+		else if(code == C99_CODE_OPERATOR_DPLUS
+				|| code == C99_CODE_OPERATOR_DMINUS)
+			ret |= c99_scan(c99);
+		else
+			break;
+	}
+	return ret;
+}
+
+
+/* primary-expr */
+static int _primary_expr(C99 * c99)
+	/* identifier
+	 * constant
+	 * string-literal
+	 * "(" expression ")" */
+{
 	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	c99_scan(c99); /* FIXME wrong */
 	return 0;
+}
+
+
+/* type-name */
+static int _type_name(C99 * c99)
+	/* specifier-qualifier-list [ abstract-declarator ] */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _specifier_qualifier_list(c99);
+	if(token_in_set(c99->token, c99set_abstract_declarator))
+		ret |= _abstract_declarator(c99);
+	return ret;
+}
+
+
+/* specifier-qualifier-list */
+static int _specifier_qualifier_list(C99 * c99)
+	/* (type-specifier | type-qualifier) { (type-specifier | type-qualifier) } */
+{
+	int ret = 0;
+	int looped = 0;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	for(;;)
+	{
+		if(token_in_set(c99->token, c99set_type_specifier))
+			ret |= _type_specifier(c99);
+		else if(token_in_set(c99->token, c99set_type_qualifier))
+			ret |= _type_qualifier(c99);
+		else if(looped == 0)
+			ret |= _parse_error(c99, "Expected type specifier"
+					" or type qualifier");
+		else
+			break;
+		looped = 1;
+	}
+	return ret;
 }
 
 
@@ -762,11 +923,65 @@ static int _shift_expr(C99 * c99)
 
 /* additive-expr */
 static int _additive_expr(C99 * c99)
+	/* multiplicative-expr { ("+" | "-") multiplicative-expr } */
 {
+	int ret;
+	int code;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	ret = _multiplicative_expr(c99);
+	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_PLUS
+			|| code == C99_CODE_OPERATOR_MINUS)
+	{
+		ret |= c99_scan(c99);
+		ret |= _multiplicative_expr(c99);
+	}
+	return ret;
+}
+
+
+/* multiplicative-expr */
+static int _multiplicative_expr(C99 * c99)
+	/* cast-expr { ("*" | "/" | "%") cast-expr } */
+{
+	int ret;
+	int code;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _cast_expr(c99);
+	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_TIMES
+			|| code == C99_CODE_OPERATOR_DIVIDE
+			|| code == C99_CODE_OPERATOR_MODULO)
+	{
+		ret |= c99_scan(c99);
+		ret |= _cast_expr(c99);
+	}
+	return ret;
+}
+
+
+/* cast-expr */
+static int _cast_expr(C99 * c99)
+	/* { "(" type-name ")" } unary-expr */
+{
+	int ret = 0;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
+#endif
+	while(token_get_code(c99->token) == C99_CODE_OPERATOR_LPAREN)
+	{
+		ret |= c99_scan(c99);
+		ret |= _type_name(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+	}
+	ret |= _unary_expr(c99);
+	return ret;
 }
 
 
@@ -774,7 +989,6 @@ static int _additive_expr(C99 * c99)
 static int _compound_statement(C99 * c99)
 	/* "{" [ block-item-list ] "}" */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"{\" got \"%s\"\n", __func__,
 			token_get_string(c99->token));
@@ -891,7 +1105,8 @@ static int _expression_statement(C99 * c99)
 	int ret = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
 	if(token_in_set(c99->token, c99set_expression))
 		ret = _expression(c99);
@@ -950,8 +1165,7 @@ static int _selection_statement(C99 * c99)
 static int _iteration_statement(C99 * c99)
 	/* while "(" expression ")" statement
 	 * do statement while "(" expression ")" ;
-	 * for ( expr-opt ; expr-opt ; expr-opt ) statement
-	 * for ( declaration ; expr-opt ; expr-opt ) statement */
+	 * for ( [ (expr | declaration) ] ; [ expr ] ; [ expr ] ) statement */
 {
 	int ret;
 	int code;
@@ -1015,7 +1229,7 @@ static int _jump_statement(C99 * c99)
 }
 
 
-/* init-declarator-list-opt */
+/* init-declarator-list */
 static int _init_declarator_list(C99 * c99)
 	/* init-declarator { init-declarator } */
 {
@@ -1059,11 +1273,24 @@ static int _initializer(C99 * c99)
 
 	/* FIXME complete */
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() NOT COMPLETE\n", __func__);
 #endif
 	if(token_in_set(c99->token, c99set_assignment_expr))
 		ret = _assignment_expr(c99);
 	return ret;
+}
+
+
+/* initializer-list */
+static int _initializer_list(C99 * c99)
+	/* [ designation ] initializer
+	 * initializer-list "," [ designation ] initializer */
+{
+	/* FIXME implement */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() NOT IMPLEMENTED\n", __func__);
+#endif
+	return 0;
 }
 
 

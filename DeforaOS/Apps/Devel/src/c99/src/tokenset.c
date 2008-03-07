@@ -142,6 +142,16 @@ static TokenCode _c99set_expression_statement[] =
 TokenSet c99set_expression_statement = _c99set_expression_statement;
 
 
+/* function-definition */
+static TokenCode _c99set_function_definition[] =
+{
+#include "sets/function_definition.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_function_definition = _c99set_function_definition;
+
+
 /* function-specifier */
 static TokenCode _c99set_function_specifier[] =
 {
@@ -230,6 +240,26 @@ static TokenCode _c99set_pointer[] =
 };
 
 TokenSet c99set_pointer = _c99set_pointer;
+
+
+/* postfix-expr */
+static TokenCode _c99set_postfix_expr[] =
+{
+#include "sets/postfix_expr.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_postfix_expr = _c99set_postfix_expr;
+
+
+/* primary-expr */
+static TokenCode _c99set_primary_expr[] =
+{
+#include "sets/primary_expr.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_primary_expr = _c99set_primary_expr;
 
 
 /* punctuator */

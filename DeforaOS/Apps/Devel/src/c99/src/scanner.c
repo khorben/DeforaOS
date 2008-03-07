@@ -87,6 +87,9 @@ int c99_scan(C99 * c99)
 	char const * string;
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(c99->token != NULL)
 		token_delete(c99->token);
 	/* skip white-space and meta tokens */
