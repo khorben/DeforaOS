@@ -675,11 +675,24 @@ static int _primary_expr(C99 * c99)
 	 * string-literal
 	 * "(" expression ")" */
 {
-	/* FIXME implement */
+	int ret;
+	int code;
+
+	/* FIXME complete */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
+		return c99_scan(c99);
+	else if(code == C99_CODE_OPERATOR_LPAREN)
+	{
+		ret = c99_scan(c99);
+		ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		return ret;
+	}
+	else
+		return c99_scan(c99);
 }
 
 
@@ -1040,7 +1053,7 @@ static int _statement(C99 * c99)
 	 * iteration-statement
 	 * jump-statement */
 {
-	/* FIXME implement */
+	/* FIXME labeled and expression statements conflict */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
