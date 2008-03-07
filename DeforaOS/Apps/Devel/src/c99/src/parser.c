@@ -58,6 +58,15 @@ static int _assignment_expr(C99 * c99);
 static int _unary_expr(C99 * c99);
 static int _assignment_operator(C99 * c99);
 static int _conditional_expr(C99 * c99);
+static int _logical_or_expr(C99 * c99);
+static int _logical_and_expr(C99 * c99);
+static int _inclusive_or_expr(C99 * c99);
+static int _exclusive_or_expr(C99 * c99);
+static int _and_expr(C99 * c99);
+static int _equality_expr(C99 * c99);
+static int _relational_expr(C99 * c99);
+static int _shift_expr(C99 * c99);
+static int _additive_expr(C99 * c99);
 static int _declaration_list(C99 * c99);
 static int _declaration(C99 * c99);
 static int _compound_statement(C99 * c99);
@@ -571,8 +580,189 @@ static int _assignment_operator(C99 * c99)
 
 /* conditional-expr */
 static int _conditional_expr(C99 * c99)
+	/* logical-OR-expr [ "?" expr ":" conditional-expr ] */
 {
-	/* FIXME implement */
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _logical_or_expr(c99);
+	if(token_get_code(c99->token) == C99_CODE_OPERATOR_QUESTION)
+	{
+		ret |= c99_scan(c99);
+		ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
+		ret |= _conditional_expr(c99);
+	}
+	return ret;
+}
+
+
+/* logical-OR-expr */
+static int _logical_or_expr(C99 * c99)
+	/* logical-AND-expr { "||" logical-AND-expr } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _logical_and_expr(c99);
+	while(token_get_code(c99->token) == C99_CODE_OPERATOR_DBAR)
+	{
+		ret |= c99_scan(c99);
+		ret |= _logical_and_expr(c99);
+	}
+	return ret;
+}
+
+
+
+/* logical-AND-expr */
+static int _logical_and_expr(C99 * c99)
+	/* inclusive-OR-expr { "&&" inclusive-OR-expr } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _inclusive_or_expr(c99);
+	while(token_get_code(c99->token) == C99_CODE_OPERATOR_DAMPERSAND)
+	{
+		ret |= c99_scan(c99);
+		ret |= _inclusive_or_expr(c99);
+	}
+	return ret;
+}
+
+
+/* inclusive-OR-expr */
+static int _inclusive_or_expr(C99 * c99)
+	/* exclusive-OR-expr { "|" exclusive-OR-expr } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _exclusive_or_expr(c99);
+	while(token_get_code(c99->token) == C99_CODE_OPERATOR_BAR)
+	{
+		ret |= c99_scan(c99);
+		ret |= _exclusive_or_expr(c99);
+	}
+	return ret;
+}
+
+
+/* exclusive-OR-expr */
+static int _exclusive_or_expr(C99 * c99)
+	/* AND-expr { "^" AND-expr } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _and_expr(c99);
+	while(token_get_code(c99->token) == C99_CODE_OPERATOR_XOR)
+	{
+		ret |= c99_scan(c99);
+		ret |= _and_expr(c99);
+	}
+	return ret;
+}
+
+
+/* AND-expr */
+static int _and_expr(C99 * c99)
+	/* equality-expr { "&" equality-expr } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _equality_expr(c99);
+	while(token_get_code(c99->token) == C99_CODE_OPERATOR_AMPERSAND)
+	{
+		ret |= c99_scan(c99);
+		ret |= _equality_expr(c99);
+	}
+	return ret;
+}
+
+
+/* equality-expr */
+static int _equality_expr(C99 * c99)
+	/* relational-expr { ("==" | "!=") relational-expr } */
+{
+	int ret;
+	int code;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _relational_expr(c99);
+	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DEQUALS
+			|| code == C99_CODE_OPERATOR_NEQUALS)
+	{
+		ret |= c99_scan(c99);
+		ret |= _relational_expr(c99);
+	}
+	return ret;
+}
+
+
+/* relational-expr */
+static int _relational_expr(C99 * c99)
+	/* shift-expr { ("<" | ">" | "<=" | ">=") shift-expr } */
+{
+	int ret;
+	int code;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _shift_expr(c99);
+	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LESS
+			|| code == C99_CODE_OPERATOR_GREATER
+			|| code == C99_CODE_OPERATOR_LEQUALS
+			|| code == C99_CODE_OPERATOR_GEQUALS)
+	{
+		ret |= c99_scan(c99);
+		ret |= _shift_expr(c99);
+	}
+	return ret;
+}
+
+
+/* shift-expr */
+static int _shift_expr(C99 * c99)
+	/* additive-expr { ("<<" | ">>") additive-expr } */
+{
+	int ret;
+	int code;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _additive_expr(c99);
+	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DLESS
+			|| code == C99_CODE_OPERATOR_DGREATER)
+	{
+		ret |= c99_scan(c99);
+		ret |= _additive_expr(c99);
+	}
+	return ret;
+}
+
+
+/* additive-expr */
+static int _additive_expr(C99 * c99)
+{
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
@@ -685,12 +875,12 @@ static int _labeled_statement(C99 * c99)
 
 /* constant_expr */
 static int _constant_expr(C99 * c99)
+	/* conditional-expr */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	return _conditional_expr(c99);
 }
 
 
