@@ -40,6 +40,7 @@ C99 * c99_new(C99Prefs * prefs, char const * pathname)
 
 	if((c99 = object_new(sizeof(*c99))) == NULL)
 		return NULL;
+	memset(c99, 0, sizeof(*c99));
 	c99->flags = prefs->flags;
 	if((c99->cpp = cpp_new(pathname, CPP_FILTER_TRIGRAPH)) == NULL)
 	{
@@ -62,7 +63,6 @@ C99 * c99_new(C99Prefs * prefs, char const * pathname)
 	else
 		c99->outfp = NULL;
 	c99->optlevel = prefs->optlevel;
-	c99->token = NULL;
 	if(c99->outfile == NULL /* abort if there was an error */
 			|| c99->outfp == NULL
 			|| i != prefs->paths_cnt

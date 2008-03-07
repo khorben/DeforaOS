@@ -36,6 +36,7 @@ struct _C99
 
 	/* parsing */
 	Token * token;
+	int in_switch;
 };
 
 #endif /* !C99_C99_H */
