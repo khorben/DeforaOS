@@ -95,6 +95,8 @@ int c99_scan(C99 * c99)
 	/* skip white-space and meta tokens */
 	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0)
 	{
+		if(c99->token == NULL)
+			return 0;
 		if((code = token_get_code(c99->token)) == C99_CODE_WHITESPACE
 				|| (code >= C99_CODE_META_FIRST
 					&& code <= C99_CODE_META_LAST))
@@ -103,8 +105,6 @@ int c99_scan(C99 * c99)
 	}
 	if(ret != 0)
 		return ret;
-	if(c99->token == NULL)
-		return 0;
 	if(token_get_code(c99->token) != C99_CODE_WORD)
 		return 0;
 	if((string = token_get_string(c99->token)) == NULL)
