@@ -78,7 +78,7 @@ void token_delete(Token * token)
 
 /* accessors */
 /* token_get_code */
-int token_get_code(Token * token)
+TokenCode token_get_code(Token * token)
 {
 	return token->code;
 }
