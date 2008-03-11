@@ -1,2 +1,2 @@
 #include "constant_expression.set"
-	C99_CODE_KEYWORD_DOT,
+	C99_CODE_OPERATOR_DOT,
