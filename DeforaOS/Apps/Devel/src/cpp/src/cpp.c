@@ -109,7 +109,6 @@ static const CppOperator _cpp_operators[] =
 	{ CPP_CODE_OPERATOR_GREATER,	">"	},
 	{ CPP_CODE_OPERATOR_DHASH,	"##"	},
 	{ CPP_CODE_OPERATOR_HASH,	"#"	},
-	{ CPP_CODE_OPERATOR_INVERSE,	"~"	},
 	{ CPP_CODE_OPERATOR_LBRACE,	"{"	},
 	{ CPP_CODE_OPERATOR_LBRACKET,	"["	},
 	{ CPP_CODE_OPERATOR_DLEQUALS,	"<<="	},
