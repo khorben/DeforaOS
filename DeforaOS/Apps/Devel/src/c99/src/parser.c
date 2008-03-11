@@ -100,8 +100,7 @@ static int _parse_check(C99 * c99, TokenCode code)
 	int ret;
 
 	if((ret = (token_get_code(c99->token) != code)))
-		/* FIXME use a string for the code */
-		_parse_error(c99, "%s%x", "Expected code 0x", code);
+		_parse_error(c99, "Expected \"%s\"", code_get_string(code));
 	c99_scan(c99);
 	return ret;
 }

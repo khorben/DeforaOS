@@ -39,4 +39,9 @@ struct _C99
 	int in_switch;
 };
 
+
+/* functions */
+/* accessors */
+char const * code_get_string(TokenCode code);
+
 #endif /* !C99_C99_H */

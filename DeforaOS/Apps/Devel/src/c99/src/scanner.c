@@ -47,6 +47,15 @@ static char * _tokens[] =
 };
 
 
+/* protected */
+/* functions */
+/* accessors */
+char const * code_get_string(TokenCode code)
+{
+	return _tokens[code];
+}
+
+
 /* public */
 /* functions */
 /* useful */
