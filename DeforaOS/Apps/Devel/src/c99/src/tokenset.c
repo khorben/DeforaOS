@@ -119,6 +119,8 @@ static TokenCode _c99set_designation[] =
 	C99_CODE_NULL
 };
 
+TokenSet c99set_designation = _c99set_designation;
+
 
 /* enum-specifier */
 static TokenCode _c99set_enum_specifier[] =

@@ -92,6 +92,7 @@ static int _init_declarator_list(C99 * c99);
 static int _init_declarator(C99 * c99);
 static int _initializer(C99 * c99);
 static int _initializer_list(C99 * c99);
+static int _designation(C99 * c99);
 
 
 /* functions */
@@ -1329,8 +1330,29 @@ static int _initializer(C99 * c99)
 
 /* initializer-list */
 static int _initializer_list(C99 * c99)
-	/* [ designation ] initializer
-	 * initializer-list "," [ designation ] initializer */
+	/* [ designation ] initializer { "," [ designation] initializer } */
+{
+	int ret = 0;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() NOT IMPLEMENTED\n", __func__);
+#endif
+	if(token_in_set(c99->token, c99set_designation))
+		ret |= _designation(c99);
+	ret |= _initializer(c99);
+	while(token_get_code(c99->token) == C99_CODE_COMMA)
+	{
+		ret |= c99_scan(c99);
+		if(token_in_set(c99->token, c99set_designation))
+			ret |= _designation(c99);
+		ret |= _initializer(c99);
+	}
+	return ret;
+}
+
+
+/* designation */
+static int _designation(C99 * c99)
 {
 	/* FIXME implement */
 #ifdef DEBUG
