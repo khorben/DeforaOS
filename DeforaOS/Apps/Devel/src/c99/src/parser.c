@@ -114,7 +114,7 @@ static int _parse_error(C99 * c99, char const * format, ...)
 	Token * token = c99->token;
 	va_list ap;
 
-	fprintf(stderr, "%s%s:%u, near \"%s\": ", PACKAGE ": ",
+	fprintf(stderr, "%s%s:%u, near \"%s\": error: ", PACKAGE ": ",
 			token_get_filename(token), token_get_line(token),
 			token_get_string(token));
 	va_start(ap, format);

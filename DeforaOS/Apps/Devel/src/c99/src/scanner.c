@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include "common.h"
 #include "c99.h"
+#include "../config.h"
 
 
 /* private */
@@ -108,6 +109,13 @@ static int _scan_skip_meta(C99 * c99)
 				&& (code < C99_CODE_META_FIRST
 					|| code > C99_CODE_META_LAST))
 			break;
+		if(code == C99_CODE_META_ERROR || code == C99_CODE_META_WARNING)
+			fprintf(stderr, "%s%s%s%u%s%s%s%s\n", PACKAGE ": ",
+					token_get_filename(c99->token), ":",
+					token_get_line(c99->token), ": ",
+					(code == C99_CODE_META_ERROR)
+					? "error" : "warning", ": ",
+					token_get_string(c99->token));
 		token_delete(c99->token);
 	}
 	return ret;
