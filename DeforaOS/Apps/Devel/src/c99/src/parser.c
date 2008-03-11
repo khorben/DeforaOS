@@ -93,6 +93,8 @@ static int _init_declarator(C99 * c99);
 static int _initializer(C99 * c99);
 static int _initializer_list(C99 * c99);
 static int _designation(C99 * c99);
+static int _designator_list(C99 * c99);
+static int _designator(C99 * c99);
 
 
 /* functions */
@@ -1314,15 +1316,22 @@ static int _init_declarator(C99 * c99)
 /* initializer */
 static int _initializer(C99 * c99)
 	/* assignment-expr
-	 * { initializer-list [ "," ] } */
+	 * "{" initializer-list [ "," ] "}" */
 {
-	int ret = 0;
+	int ret;
 
-	/* FIXME complete */
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() NOT COMPLETE\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_assignment_expr))
+	if(token_get_code(c99->token) == C99_CODE_OPERATOR_LBRACE)
+	{
+		ret = c99_scan(c99);
+		ret |= _initializer_list(c99);
+		if(token_get_code(c99->token) == C99_CODE_COMMA)
+			ret |= c99_scan(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	}
+	else
 		ret = _assignment_expr(c99);
 	return ret;
 }
@@ -1335,7 +1344,7 @@ static int _initializer_list(C99 * c99)
 	int ret = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() NOT IMPLEMENTED\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(token_in_set(c99->token, c99set_designation))
 		ret |= _designation(c99);
@@ -1353,12 +1362,54 @@ static int _initializer_list(C99 * c99)
 
 /* designation */
 static int _designation(C99 * c99)
+	/* designator-list "=" */
 {
-	/* FIXME implement */
+	int ret;
+
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() NOT IMPLEMENTED\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	ret = _designator_list(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_EQUALS);
+	return ret;
+}
+
+
+/* designator-list */
+static int _designator_list(C99 * c99)
+	/* designator { designator } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _designator(c99);
+	while(token_in_set(c99->token, c99set_designator))
+		ret |= _designator(c99);
+	return ret;
+}
+
+
+/* designator */
+static int _designator(C99 * c99)
+	/* "[" constant-expression "]"
+	 * identifier */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(token_get_code(c99->token) == C99_CODE_OPERATOR_LBRACKET)
+	{
+		ret = c99_scan(c99);
+		ret |= _constant_expr(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
+	}
+	else
+		ret = _identifier(c99);
+	return ret;
 }
 
 

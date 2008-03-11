@@ -33,6 +33,7 @@ extern TokenSet c99set_declaration_list;
 extern TokenSet c99set_declaration_specifiers;
 extern TokenSet c99set_declarator;
 extern TokenSet c99set_designation;
+extern TokenSet c99set_designator;
 extern TokenSet c99set_enum_specifier;
 extern TokenSet c99set_expression;
 extern TokenSet c99set_expression_statement;
