@@ -23,56 +23,28 @@
 
 
 /* private */
-/* types */
-typedef struct _C99Operator
-{
-	C99Code code;
-	char const * string;
-} C99Operator;
-
-
 /* variables */
-static C99Operator _operators[] =
+static char * _tokens[] =
 {
-	{ C99_CODE_KEYWORD_AUTO,	"auto"		},
-	{ C99_CODE_KEYWORD_BREAK,	"break"		},
-	{ C99_CODE_KEYWORD_CASE,	"case"		},
-	{ C99_CODE_KEYWORD_CHAR,	"char"		},
-	{ C99_CODE_KEYWORD_CONST,	"const"		},
-	{ C99_CODE_KEYWORD_CONTINUE,	"continue"	},
-	{ C99_CODE_KEYWORD_DEFAULT,	"default"	},
-	{ C99_CODE_KEYWORD_DO,		"do"		},
-	{ C99_CODE_KEYWORD_DOUBLE,	"double"	},
-	{ C99_CODE_KEYWORD_ELSE,	"else"		},
-	{ C99_CODE_KEYWORD_ENUM,	"enum"		},
-	{ C99_CODE_KEYWORD_EXTERN,	"extern"	},
-	{ C99_CODE_KEYWORD_FLOAT,	"float"		},
-	{ C99_CODE_KEYWORD_FOR,		"for"		},
-	{ C99_CODE_KEYWORD_GOTO,	"goto"		},
-	{ C99_CODE_KEYWORD_IF,		"if"		},
-	{ C99_CODE_KEYWORD_INLINE,	"inline"	},
-	{ C99_CODE_KEYWORD_INT,		"int"		},
-	{ C99_CODE_KEYWORD_LONG,	"long"		},
-	{ C99_CODE_KEYWORD_REGISTER,	"register"	},
-	{ C99_CODE_KEYWORD_RESTRICT,	"restrict"	},
-	{ C99_CODE_KEYWORD_RETURN,	"return"	},
-	{ C99_CODE_KEYWORD_SHORT,	"short"		},
-	{ C99_CODE_KEYWORD_SIGNED,	"signed"	},
-	{ C99_CODE_KEYWORD_SIZEOF,	"sizeof"	},
-	{ C99_CODE_KEYWORD_STATIC,	"static"	},
-	{ C99_CODE_KEYWORD_STRUCT,	"struct"	},
-	{ C99_CODE_KEYWORD_SWITCH,	"switch"	},
-	{ C99_CODE_KEYWORD_TYPEDEF,	"typedef"	},
-	{ C99_CODE_KEYWORD_UNION,	"union"		},
-	{ C99_CODE_KEYWORD_UNSIGNED,	"unsigned"	},
-	{ C99_CODE_KEYWORD_VOID,	"void"		},
-	{ C99_CODE_KEYWORD_VOLATILE,	"volatile"	},
-	{ C99_CODE_KEYWORD_WHILE,	"while"		},
-	{ C99_CODE_KEYWORD__BOOL,	"_Bool"		},
-	{ C99_CODE_KEYWORD__COMPLEX,	"_Complex"	},
-	{ C99_CODE_KEYWORD__IMAGINARY,	"_Imaginary"	}
+	NULL, ",", "\"",
+	/* directives */
+	"#define", "#elif", "#else", "#endif", "#error", "#if", "#ifdef",
+	"#ifndef", "#include", "#line", "#pragma", "#undef", "#warning",
+	/* operators */
+	"&=", "&", "|", "|=", ":", "&&", "||", "==", ">>=", ">>", "##", "/=",
+	"/", "<<=", "<<", "--", ".", "...", "++", "=", ">=", ">", "#", "{",
+	"[", "<=", "<", "(", "-=", "->", "-", "%=", "%", "!=", "!", "+=", "+",
+	"?", "}", "]", ")", ";", "*=", "~", "*", "^=", "^",
+	/* more codes */
+	"'", "whitespace", "word", "constant", "identifier",
+	/* keywords */
+	"auto", "break", "case", "char", "const", "continue", "default", "do",
+	"double", "else", "enum", "extern", "float", "for", "goto", "if",
+	"inline", "int", "long", "register", "restrict", "return", "short",
+	"signed", "sizeof", "static", "struct", "switch", "typedef", "union",
+	"unsigned", "void", "volatile", "while", "_Bool", "_Complex",
+	"_Imaginary"
 };
-static size_t _operators_cnt = sizeof(_operators) / sizeof(*_operators);
 
 
 /* public */
@@ -100,10 +72,10 @@ int c99_scan(C99 * c99)
 		return 0;
 	if((string = token_get_string(c99->token)) == NULL)
 		return 0;
-	for(i = 0; i < _operators_cnt; i++)
-		if(strcmp(_operators[i].string, string) == 0)
+	for(i = C99_CODE_KEYWORD_FIRST; i <= C99_CODE_KEYWORD_LAST; i++)
+		if(strcmp(_tokens[i], string) == 0)
 		{
-			token_set_code(c99->token, _operators[i].code);
+			token_set_code(c99->token, i);
 			return 0;
 		}
 	c = string[0];
