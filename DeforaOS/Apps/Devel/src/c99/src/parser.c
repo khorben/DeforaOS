@@ -552,11 +552,14 @@ static int _assignment_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
+	/* FIXME heavily suspect conflict between unary and conditional */
+#if 0
 	while(token_in_set(c99->token, c99set_unary_expr))
 	{
 		ret |= _unary_expr(c99);
 		ret |= _assignment_operator(c99);
 	}
+#endif
 	ret |= _conditional_expr(c99);
 	return ret;
 }
@@ -577,7 +580,8 @@ static int _unary_expr(C99 * c99)
 
 	/* FIXME complete */
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
 	if(token_in_set(c99->token, c99set_postfix_expr))
 		return _postfix_expr(c99);
@@ -673,14 +677,20 @@ static int _argument_expression_list(C99 * c99)
 	/* assignment-expr { "," assignment-expr } */
 {
 	int ret;
-
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	unsigned int cnt = 1;
+
+	fprintf(stderr, "DEBUG: %s() arg 1 \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
 	ret = _assignment_expr(c99);
 	while(token_get_code(c99->token) == C99_CODE_COMMA)
 	{
 		ret |= c99_scan(c99);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() arg %u \"%s\"\n", __func__, ++cnt,
+				token_get_string(c99->token));
+#endif
 		ret |= _assignment_expr(c99);
 	}
 	return ret;
@@ -779,7 +789,8 @@ static int _conditional_expr(C99 * c99)
 	int ret;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
 	ret = _logical_or_expr(c99);
 	if(token_get_code(c99->token) == C99_CODE_OPERATOR_QUESTION)

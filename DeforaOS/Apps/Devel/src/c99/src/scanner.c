@@ -79,11 +79,11 @@ static size_t _operators_cnt = sizeof(_operators) / sizeof(*_operators);
 /* functions */
 /* useful */
 /* c99_scan */
+static int _scan_skip_meta(C99 * c99);
+
 int c99_scan(C99 * c99)
-	/* FIXME handle numbers too */
 {
 	int ret;
-	int code;
 	char const * string;
 	size_t i;
 
@@ -92,18 +92,8 @@ int c99_scan(C99 * c99)
 #endif
 	if(c99->token != NULL)
 		token_delete(c99->token);
-	/* skip white-space and meta tokens */
-	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0)
-	{
-		if(c99->token == NULL)
-			return 0;
-		if((code = token_get_code(c99->token)) == C99_CODE_WHITESPACE
-				|| (code >= C99_CODE_META_FIRST
-					&& code <= C99_CODE_META_LAST))
-			continue;
-		break;
-	}
-	if(ret != 0)
+	if((ret = _scan_skip_meta(c99)) != 0
+			|| c99->token == NULL)
 		return ret;
 	if(token_get_code(c99->token) != C99_CODE_WORD)
 		return 0;
@@ -115,8 +105,27 @@ int c99_scan(C99 * c99)
 			token_set_code(c99->token, _operators[i].code);
 			return 0;
 		}
-	/* FIXME complete farther distinctions */
 	if(isalpha(string[0]))
 		token_set_code(c99->token, C99_CODE_IDENTIFIER);
+	else if(isdigit(string[0])) /* FIXME make a stricter check? */
+		token_set_code(c99->token, C99_CODE_CONSTANT);
 	return 0;
+}
+
+static int _scan_skip_meta(C99 * c99)
+{
+	int ret;
+	int code;
+
+	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0)
+	{
+		if(c99->token == NULL)
+			return 0;
+		if((code = token_get_code(c99->token)) != C99_CODE_WHITESPACE
+				&& (code < C99_CODE_META_FIRST
+					|| code > C99_CODE_META_LAST))
+			break;
+		token_delete(c99->token);
+	}
+	return ret;
 }
