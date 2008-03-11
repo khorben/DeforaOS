@@ -86,6 +86,7 @@ int c99_scan(C99 * c99)
 	int ret;
 	char const * string;
 	size_t i;
+	int c;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -105,9 +106,10 @@ int c99_scan(C99 * c99)
 			token_set_code(c99->token, _operators[i].code);
 			return 0;
 		}
-	if(isalpha(string[0]))
+	c = string[0];
+	if(isalpha(c))
 		token_set_code(c99->token, C99_CODE_IDENTIFIER);
-	else if(isdigit(string[0])) /* FIXME make a stricter check? */
+	else if(isdigit(c)) /* FIXME make a stricter check? */
 		token_set_code(c99->token, C99_CODE_CONSTANT);
 	return 0;
 }
