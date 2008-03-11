@@ -1,2 +1,2 @@
-#include "constant_expression.set"
+	C99_CODE_OPERATOR_LBRACKET,
 	C99_CODE_OPERATOR_DOT,
