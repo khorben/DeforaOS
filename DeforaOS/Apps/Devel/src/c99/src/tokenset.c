@@ -112,6 +112,14 @@ static TokenCode _c99set_declarator[] =
 TokenSet c99set_declarator = _c99set_declarator;
 
 
+/* designation */
+static TokenCode _c99set_designation[] =
+{
+#include "sets/designation.set"
+	C99_CODE_NULL
+};
+
+
 /* enum-specifier */
 static TokenCode _c99set_enum_specifier[] =
 {
