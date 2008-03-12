@@ -273,21 +273,22 @@ static int _new_plugins(Mailer * mailer)
 			dlclose(handle);
 			continue;
 		}
-		p[mailer->available_cnt].name = strdup(de->d_name);
-		p[mailer->available_cnt].title = strdup(plugin->name);
 		mailer->available = p;
-		if(p[mailer->available_cnt].name == NULL
-				|| p[mailer->available_cnt].title == NULL)
+		p = &p[mailer->available_cnt];
+		p->name = strdup(de->d_name);
+		p->title = strdup(plugin->name);
+		if(p->name == NULL || p->title == NULL)
 		{
 			_mailer_error(filename, 0);
-			free(p[mailer->available_cnt].name);
-			free(p[mailer->available_cnt].title);
+			free(p->name);
+			free(p->title);
 		}
 		else
 		{
-			p[mailer->available_cnt].name[len - 3] = '\0';
-			p[mailer->available_cnt].handle = NULL;
-			p[mailer->available_cnt++].plugin = NULL;
+			p->name[len - 3] = '\0';
+			p->handle = NULL;
+			p->plugin = NULL;
+			mailer->available_cnt++;
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: loaded %s: %s (%s)\n", filename,
 					plugin->name, plugin->type);

@@ -341,7 +341,7 @@ static int _section_32(FILE * fp, char const * name)
 
 	if(_section_string(name) != 0)
 		return 1;
-	if((p = realloc(es32, sizeof(*es32) * (es32_cnt+1))) == NULL)
+	if((p = realloc(es32, sizeof(*es32) * (es32_cnt + 1))) == NULL)
 		return _elf_error("malloc", 1);
 	es32 = p;
 	p = &es32[es32_cnt++];
@@ -481,7 +481,7 @@ static int _section_64(FILE * fp, char const * name)
 
 	if(_section_string(name) != 0)
 		return 1;
-	if((p = realloc(es64, sizeof(*es64) * (es64_cnt+1))) == NULL)
+	if((p = realloc(es64, sizeof(*es64) * (es64_cnt + 1))) == NULL)
 		return _elf_error("malloc", 1);
 	es64 = p;
 	p = &es64[es64_cnt++];

@@ -54,7 +54,7 @@ Mime * mime_new(void)
 			break;
 	if(fp == NULL)
 	{
-		perror("Error while loading MIME globs");
+		perror("Could not load MIME globs");
 		free(mime);
 		return NULL;
 	}
@@ -72,25 +72,29 @@ Mime * mime_new(void)
 		buf[len] = '\0';
 		glob = strchr(buf, ':');
 		*(glob++) = '\0';
-		if((p = realloc(mime->types, sizeof(*(mime->types))
-						*(mime->types_cnt+1))) == NULL)
+		if((p = realloc(mime->types, sizeof(*p) * (mime->types_cnt
+							+ 1))) == NULL)
 			break;
 		mime->types = p;
-		p[mime->types_cnt].type = strdup(buf);
-		p[mime->types_cnt].glob = strdup(glob);
-		p[mime->types_cnt].icon_24 = NULL;
+		p = &p[mime->types_cnt];
+		p->type = strdup(buf);
+		p->glob = strdup(glob);
+		if(p->type == NULL || p->glob == NULL)
+		{
+			free(p->type);
+			free(p->glob);
+			break;
+		}
+		p->icon_24 = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
-		p[mime->types_cnt].icon_48 = NULL;
-		p[mime->types_cnt].icon_96 = NULL;
+		p->icon_48 = NULL;
+		p->icon_96 = NULL;
 #endif
-/*		p[mime->types_cnt].open = mime->config != NULL
+/*		p->open = mime->config != NULL
 			? config_get(mime->config, buf, "open") : NULL;
-		p[mime->types_cnt].edit = mime->config != NULL
+		p->edit = mime->config != NULL
 			? config_get(mime->config, buf, "edit") : NULL; */
 		mime->types_cnt++;
-		if(p[mime->types_cnt-1].type == NULL
-				|| p[mime->types_cnt-1].glob == NULL)
-			break;
 	}
 	if(!feof(fp))
 	{
@@ -217,8 +221,7 @@ int mime_action_type(Mime * mime, char const * action, char const * path,
 	if(pid != 0)
 		return 0;
 	execlp(program, program, path, NULL);
-	fprintf(stderr, "%s%s%s%s\n", "browser: ", program, ": ",
-			strerror(errno));
+	perror(program);
 	exit(2);
 }
 

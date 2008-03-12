@@ -30,6 +30,8 @@
 
 /* private */
 /* constants */
+#define SENDMAIL "/usr/sbin/sendmail"
+
 static struct _menu _menu_file[] =
 {
 	{ "_New message", G_CALLBACK(on_compose_file_new), "stock_mail-compose",
@@ -275,6 +277,8 @@ void compose_save(Compose * compose)
 static char * _send_headers(Compose * compose);
 static char * _send_body(GtkWidget * view);
 static int _send_mail(Compose * compose, char * msg, size_t msg_len);
+static int _mail_child(int fd[2]);
+
 void compose_send(Compose * compose)
 {
 	char * msg;
@@ -298,13 +302,12 @@ void compose_send(Compose * compose)
 	{
 		msg = p;
 		snprintf(&msg[msg_len], body_len + 8, "\r\n%s\r\n.\r\n", body);
-		msg_len+=body_len+7;
+		msg_len += body_len + 7;
 		_send_mail(compose, msg, msg_len);
 	}
 	g_free(body);
 }
 
-static int _mail_child(int fd[2]);
 static int _send_mail(Compose * compose, char * msg, size_t msg_len)
 {
 	int fd[2];
@@ -354,8 +357,8 @@ static int _mail_child(int fd[2])
 		perror("mailer");
 	else
 	{
-		execl("/usr/sbin/sendmail", "sendmail", "-bm", "-t", NULL);
-		perror("/usr/sbin/sendmail");
+		execl(SENDMAIL, "sendmail", "-bm", "-t", NULL);
+		perror(SENDMAIL);
 	}
 	exit(2);
 	return 0;
@@ -388,7 +391,7 @@ static char * _send_headers(Compose * compose)
 		msg_len = strlen(q) + 8;
 		if((msg = malloc(msg_len + 1)) == NULL)
 			return NULL;
-		snprintf(msg, msg_len+1, "%s%s\r\n", "From: ", q);
+		snprintf(msg, msg_len + 1, "%s%s\r\n", "From: ", q);
 	}
 	g_free(q);
 	for(i = 0; widgets[i].hdr != NULL; i++)
@@ -406,7 +409,7 @@ static char * _send_headers(Compose * compose)
 		msg = q;
 		snprintf(&msg[msg_len], hdr_len + len + 3, "%s%s\r\n",
 				widgets[i].hdr, p);
-		msg_len+=hdr_len+len+2;
+		msg_len += hdr_len + len + 2;
 	}
 	if(msg != NULL)
 		return msg;

@@ -126,7 +126,7 @@ static void _as(State * state)
 	/* { newline } section_list { newline } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_as()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	while(token_in_set(state->token, TS_NEWLINE))
 		_newline(state);
@@ -142,7 +142,7 @@ static void _newline(State * state)
 	/* [ space ] NEWLINE */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_newline()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(token_in_set(state->token, TS_SPACE))
 		_space(state);
@@ -156,7 +156,7 @@ static void _space(State * state)
 	/* SPACE { SPACE } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_space()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	_parser_check(state, TC_SPACE);
 	while(state->token != NULL && state->token->code == TC_SPACE)
@@ -171,7 +171,7 @@ static void _section_list(State * state)
 	/* { section instruction_list } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_section_list()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	while(token_in_set(state->token, TS_SECTION))
 	{
@@ -188,7 +188,7 @@ static void _section(State * state)
 	char * section = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_section()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	_parser_check(state, TC_DOT);
 	if(state->token == NULL)
@@ -214,7 +214,7 @@ static void _instruction_list(State * state)
 	/* { (function | space instruction | [space] newline) } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_instruction_list()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	while(token_in_set(state->token, TS_INSTRUCTION_LIST))
 	{
@@ -239,7 +239,7 @@ static void _function(State * state)
 	char * function = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_instruction_list()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(state->token == NULL)
 		return;
@@ -267,7 +267,7 @@ static void _instruction(State * state)
 	int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_instruction()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	_operator(state);
 	if(token_in_set(state->token, TS_SPACE))
@@ -305,7 +305,7 @@ static void _operator(State * state)
 	char * instruction = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_operator()\n");
+	fprintf(stderr, "%s()\n", __func__);
 #endif
 	if(state->token == NULL)
 		return;
@@ -327,7 +327,7 @@ static void _operand_list(State * state)
 	/* operand [ space ] { "," [ space ] operand [ space ] } */
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_operand_list()\n");
+	fprintf(stderr, "%s()\n", __func__);
 #endif
 	_operand(state);
 	if(token_in_set(state->token, TS_SPACE))
@@ -353,12 +353,12 @@ static void _operand(State * state)
 	if(state->token == NULL)
 		return;
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_operand()\n");
+	fprintf(stderr, "%s()\n", __func__);
 	fprintf(stderr, "%s%s\"\n", "New operand: \"", state->token->string);
 #endif
 	if(state->token->string != NULL)
 	{
-		if((p = realloc(state->operands, (state->operands_cnt+1)
+		if((p = realloc(state->operands, (state->operands_cnt + 1)
 						* sizeof(CodeOperand))) == NULL)
 			_parser_error(state, "%s", "Internal error");
 		else

@@ -368,6 +368,7 @@ static int _single_p(Copy * copy, char const * dst, struct stat const * st)
 }
 
 static int _copy_multiple(Copy * copy, char const * src, char const * dst);
+
 static gboolean _copy_idle_multiple(gpointer data)
 {
 	Copy * copy = data;

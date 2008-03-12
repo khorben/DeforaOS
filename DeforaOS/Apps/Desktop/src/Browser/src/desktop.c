@@ -790,18 +790,15 @@ static int _current_loop(Desktop * desktop)
 	}
 	if(de == NULL)
 		return 1;
-	if((p = realloc(desktop->path, desktop->path_cnt + strlen(de->d_name)
-					+ 1)) == NULL)
+	if((p = malloc(desktop->path_cnt + strlen(de->d_name) + 1)) == NULL)
 	{
 		desktop_error(NULL, "realloc", 0);
 		return 1;
-	} /* FIXME avoid calling realloc() at every pass */
-	desktop->path = p;
-	sprintf(&desktop->path[desktop->path_cnt - 1], "/%s", de->d_name);
-	if((desktopicon = desktopicon_new(desktop, de->d_name, desktop->path))
-			!= NULL)
+	}
+	sprintf(p, "%s/%s", desktop->path, de->d_name);
+	if((desktopicon = desktopicon_new(desktop, de->d_name, p)) != NULL)
 		desktop_icon_add(desktop, desktopicon);
-	desktop->path[desktop->path_cnt - 1] = '\0';
+	free(p);
 	return 0;
 }
 
@@ -887,22 +884,27 @@ void desktop_icon_add(Desktop * desktop, DesktopIcon * icon)
 void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 {
 	size_t i;
+	DesktopIcon ** p;
 
 	for(i = 0; i < desktop->icon_cnt; i++)
 	{
 		if(desktop->icon[i] != icon)
 			continue;
 		desktopicon_delete(icon);
-		desktop->icon_cnt--;
-		for(; i < desktop->icon_cnt; i++)
+		for(desktop->icon_cnt--; i < desktop->icon_cnt; i++)
 			desktop->icon[i] = desktop->icon[i + 1];
+		if((p = realloc(desktop->icon, sizeof(*p)
+						* (desktop->icon_cnt))) != NULL)
+			desktop->icon = p;
+		desktop_icons_align(desktop);
+		break;
 	}
-	desktop_icons_align(desktop);
 }
 
 
 /* desktop_icons_align */
 static int _align_compare(const void * a,  const void * b);
+
 void desktop_icons_align(Desktop * desktop)
 {
 	GdkScreen * screen;

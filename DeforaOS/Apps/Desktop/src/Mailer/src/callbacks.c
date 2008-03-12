@@ -15,6 +15,8 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License along with\n"
 "Mailer; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
 "Place, Suite 330, Boston, MA  02111-1307  USA\n";
+/* TODO:
+ * - check that the messages font button is initialized correctly */
 
 
 
@@ -260,7 +262,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 static void _preferences_set(Mailer * mailer)
 {
-	char * p;
+	char const * p;
 
 	if((p = mailer_get_config(mailer, "messages_font")) == NULL)
 		p = MAILER_MESSAGES_FONT;
@@ -398,7 +400,7 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data)
 	AccountFolder * af;
 
 #ifdef DEBUG
-	fputs("DEBUG: on_folder_change()\n", stderr);
+	fputs("DEBUG: " __func__ "()\n", stderr);
 #endif
 	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
 		return;
@@ -468,6 +470,7 @@ static int _preferences_ok_accounts(Mailer * mailer)
 	gboolean active;
 	gboolean enabled;
 	char * title;
+	size_t title_len;
 	char * accounts = NULL;
 	size_t accounts_len = 0;
 	char * p;
@@ -481,9 +484,10 @@ static int _preferences_ok_accounts(Mailer * mailer)
 		gtk_tree_model_get(model, &iter, AC_DATA, &account,
 				AC_ACTIVE, &active, AC_ENABLED, &enabled,
 				AC_TITLE, &title, -1);
+		title_len = strlen(title);
 		if(account_config_save(account, mailer->config) != 0)
 			return 1;
-		if((p = realloc(accounts, accounts_len + strlen(title) + 2))
+		if((p = realloc(accounts, accounts_len + title_len + 2))
 				== NULL)
 		{
 			free(accounts);
@@ -492,7 +496,7 @@ static int _preferences_ok_accounts(Mailer * mailer)
 		accounts = p;
 		sprintf(&accounts[accounts_len], "%s%s", accounts_len ? ","
 				: "", title);
-		accounts_len += strlen(title) + (accounts_len ? 1 : 0);
+		accounts_len += title_len + (accounts_len ? 1 : 0);
 		if(active)
 		{
 			if(enabled)
@@ -913,7 +917,7 @@ static void _on_file_activated(GtkWidget * widget, gpointer data)
 
 	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: on_file_activated(%s)\n", filename);
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, filename);
 #endif
 	if((p = realloc(*value, strlen(filename) + 1)) == NULL)
 	{
@@ -930,7 +934,7 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	uint16_t u16 = (uint16_t)(config->value);
+	uint16_t u16 = (intptr_t)(config->value);
 	gdouble value = u16;
 
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -1073,7 +1077,7 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	char buf[6];
-	uint16_t u16 = (uint16_t)config->value;
+	uint16_t u16 = (intptr_t)config->value;
 
 	hbox = gtk_hbox_new(FALSE, 0);
 	_account_add_label(hbox, config->title);

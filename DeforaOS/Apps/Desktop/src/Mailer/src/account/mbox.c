@@ -249,6 +249,7 @@ static gboolean _folder_idle(gpointer data)
 		mbox->source = g_timeout_add(1000, _folder_idle, folder);
 		return FALSE;
 	}
+	g_io_channel_set_encoding(mbox->channel, NULL, NULL);
 	mbox->source = g_io_add_watch(mbox->channel, G_IO_IN, _folder_watch,
 			folder);
 	return FALSE;

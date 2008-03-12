@@ -132,7 +132,7 @@ static Token * _scan_immediate(FILE * fp, int * la)
 	str[0] = '$';
 	do
 	{
-		if((p = realloc(str, len+2)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			as_error("malloc", 0);
 			free(str);
@@ -173,7 +173,7 @@ static Token * _scan_number(FILE * fp, int * la)
 		return NULL;
 	do
 	{
-		if((p = realloc(str, len+2)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			as_error("malloc", 0);
 			free(str);
@@ -202,7 +202,7 @@ static Token * _scan_register(FILE * fp, int * la)
 	str[0] = '%';
 	do
 	{
-		if((p = realloc(str, len+2)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			free(str);
 			return NULL; /* FIXME report error */
@@ -240,7 +240,7 @@ static Token * _scan_word(FILE * fp, int * la)
 		return NULL;
 	do
 	{
-		if((p = realloc(str, len+2)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			free(str);
 			return NULL; /* FIXME report error */
