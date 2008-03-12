@@ -99,7 +99,9 @@ static char * _new_outfile(int flags, char const * outfile,
 	}
 	if(flags & C99PREFS_E && outfile == NULL)
 		outfile = "";
-	if((ret = strdup(outfile != NULL ? outfile : "a.out")) == NULL)
+	else if(outfile == NULL)
+		outfile = "a.out";
+	if((ret = strdup(outfile)) == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
 		return NULL;
