@@ -30,11 +30,11 @@
 #include "../config.h"
 
 #ifndef PREFIX
-# define PREFIX "."
+# define PREFIX		"."
 #endif
 
 #ifndef LIBDIR
-# define LIBDIR PREFIX "/lib/as"
+# define LIBDIR		PREFIX "/lib/as"
 #endif
 
 
@@ -124,13 +124,13 @@ void as_plugin_list(char const * type, char const * description)
 	unsigned int len;
 
 	fprintf(stderr, "%s%s%s", "Available ", description, " plug-ins:");
-	if((path = malloc(strlen(PREFIX) + 1 + strlen(type) + 1)) == NULL)
+	if((path = malloc(strlen(LIBDIR) + 1 + strlen(type) + 1)) == NULL)
 	{
 		fputc('\n', stderr);
 		as_error("malloc", 0);
 		return;
 	}
-	sprintf(path, "%s/%s", PREFIX, type);
+	sprintf(path, "%s/%s", LIBDIR, type);
 	if((dir = opendir(path)) == NULL)
 	{
 		fputc('\n', stderr);
