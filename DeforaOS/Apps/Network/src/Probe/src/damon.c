@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "../config.h"
 
 #define DAMON_DEFAULT_REFRESH 10
@@ -54,11 +55,8 @@ typedef struct _DaMon
 } DaMon;
 
 /* functions */
-/* private */
-static int _damon_error(char * message, int ret);
-
 /* public */
-/* _damon */
+/* damon */
 static int _damon_init(DaMon * damon);
 static void _damon_destroy(DaMon * damon);
 
@@ -69,17 +67,11 @@ static int _damon(void)
 	if(_damon_init(&damon) != 0)
 		return 1;
 	if(event_loop(damon.event) != 0)
-		_damon_error("AppClient", 0);
+		error_print("DaMon");
 	_damon_destroy(&damon);
 	return 1;
 }
 
-static int _damon_error(char * message, int ret)
-{
-	fprintf(stderr, "%s", "DaMon: ");
-	perror(message);
-	return ret;
-}
 
 /* _damon_init */
 static int _init_config(DaMon * damon);
@@ -92,7 +84,7 @@ static int _damon_init(DaMon * damon)
 	if(_init_config(damon) != 0)
 		return 1;
 	if((damon->event = event_new()) == NULL)
-		return _damon_error("Event", 1);
+		return error_print("DaMon");
 	_damon_refresh(damon);
 	tv.tv_sec = damon->refresh;
 	tv.tv_usec = 0;
@@ -162,7 +154,8 @@ static int _config_hosts(DaMon * damon, Config * config, char * hosts)
 		if((p = realloc(damon->hosts, sizeof(Host)
 						* (damon->hosts_cnt + 1)))
 				== NULL)
-			return _damon_error("malloc", 1);
+			return error_set_print("DaMon", 1, "%s",
+					strerror(errno));
 		damon->hosts = p;
 		if(_hosts_host(config, &damon->hosts[damon->hosts_cnt++], h,
 					pos) != 0)
@@ -181,8 +174,8 @@ static int _hosts_host(Config * config, Host * host, char * h, unsigned int pos)
 	host->appclient = NULL;
 	host->ifaces = NULL;
 	host->vols = NULL;
-	if((host->hostname = malloc(pos+1)) == NULL)
-		return _damon_error("malloc", 1);
+	if((host->hostname = malloc(pos + 1)) == NULL)
+		return error_set_print("DaMon", 1, "%s", strerror(errno));
 	strncpy(host->hostname, h, pos);
 	host->hostname[pos] = '\0';
 #ifdef DEBUG
@@ -313,32 +306,32 @@ static AppClient * _refresh_connect(Host * host, Event * event)
 		return NULL;
 	if((host->appclient = appclient_new_event("Probe", event))
 			== NULL)
-		_damon_error(host->hostname, 0);
+		error_print("DaMon");
 	return host->appclient;
 }
 
 static int _rrd_update(char * file, int args_cnt, ...);
 static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
 {
-	int32_t res;
+	int32_t ret;
 
-	if(appclient_call(ac, &res, "uptime") != 0)
-		return 1;
+	if(appclient_call(ac, &ret, "uptime") != 0)
+		return error_print("DaMon");
 	sprintf(rrd, "%s_%s", host->hostname, "uptime.rrd");
-	_rrd_update(rrd, 1, res);
+	_rrd_update(rrd, 1, ret);
 	return 0;
 }
 
 static int _refresh_load(AppClient * ac, Host * host, char * rrd)
 {
-	int32_t res[3];
+	int32_t ret[3];
 
-	if(appclient_call(ac, &res[0], "load_1") != 0
-			|| appclient_call(ac, &res[1], "load_5") != 0
-			|| appclient_call(ac, &res[2], "load_15") != 0)
-		return 1;
+	if(appclient_call(ac, &ret[0], "load_1") != 0
+			|| appclient_call(ac, &ret[1], "load_5") != 0
+			|| appclient_call(ac, &ret[2], "load_15") != 0)
+		return error_print("DaMon");
 	sprintf(rrd, "%s_%s", host->hostname, "load.rrd");
-	_rrd_update(rrd, 3, res[0], res[1], res[2]);
+	_rrd_update(rrd, 3, ret[0], ret[1], ret[2]);
 	return 0;
 }
 
@@ -451,9 +444,10 @@ static int _rrd_update(char * file, int args_cnt, ...)
 	int ret;
 
 	if(gettimeofday(&tv, NULL) != 0)
-		return _damon_error("gettimeofday", -1);
+		return error_set_print("DaMon", 1, "%s%s", "gettimeofday: ",
+				strerror(errno));
 	if((argv[3] = malloc((args_cnt + 1) * 12)) == NULL)
-		return _damon_error("malloc", -1);
+		return error_set_print("DaMon", 1, "%s", strerror(errno));
 	pos = sprintf(argv[3], "%ld", tv.tv_sec);
 	va_start(args, args_cnt);
 	for(i = 0; i < args_cnt; i++)
@@ -471,11 +465,14 @@ static int _exec(char * argv[])
 	int ret;
 
 	if((pid = fork()) == -1)
-		return _damon_error("fork", -1);
+		return error_set_print("DaMon", 1, "%s%s", "fork: ",
+				strerror(errno));
 	if(pid == 0)
 	{
 		execvp(argv[0], argv);
-		exit(_damon_error(argv[0], 2));
+		error_set_print("DaMon", 1, "%s%s%s", argv[0], ": ",
+				strerror(errno));
+		exit(2);
 	}
 	while(*argv != NULL)
 		fprintf(stderr, "%s ", *argv++);
@@ -484,7 +481,8 @@ static int _exec(char * argv[])
 		if(WIFEXITED(status))
 			break;
 	if(ret == -1)
-		return _damon_error("waitpid", -1);
+		return error_set_print("DaMon", -1, "%s%s", "waitpid: ",
+				strerror(errno));
 	return WEXITSTATUS(status);
 }
 
