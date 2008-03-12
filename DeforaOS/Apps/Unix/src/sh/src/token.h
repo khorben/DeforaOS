@@ -94,6 +94,7 @@ typedef enum _TokenSet
 	TS_WORDLIST
 } TokenSet;
 # define TS_LAST TS_WORDLIST
+# define TS_COUNT (TS_LAST + 1)
 
 
 /* functions */

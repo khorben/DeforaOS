@@ -51,20 +51,20 @@ int job_add(char * command, pid_t pid, JobStatus status)
 	Job * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%u%s", "job_add(", jobs_cnt+1, ")\n");
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, jobs_cnt + 1);
 #endif
 	if((command = strdup(command)) == NULL)
 		return sh_error("malloc", 1);
-	if((p = realloc(jobs, sizeof(Job) * (jobs_cnt+1))) == NULL)
+	if((p = realloc(jobs, sizeof(*p) * (jobs_cnt + 1))) == NULL)
 	{
 		free(command);
 		return sh_error("malloc", 1);
 	}
 	jobs = p;
-	jobs[jobs_cnt].command = command;
-	jobs[jobs_cnt].pid = pid;
-	jobs[jobs_cnt].status = status;
-	jobs_cnt++;
+	p = &jobs[jobs_cnt++];
+	p->command = command;
+	p->pid = pid;
+	p->status = status;
 	/* FIXME depending on further C-z handling we could do this earlier */
 	if(status == JS_WAIT)
 		ret = _add_wait(jobs_cnt);
@@ -126,19 +126,20 @@ static int _job_remove(unsigned int id)
 	Job * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%u%s", "job_remove(", id, ")\n");
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, id);
 #endif
 	if(id > jobs_cnt)
 		return 1;
 	if(id > 1)
 	{
-		free(jobs[id-1].command);
-		memmove(&jobs[id-1], &jobs[id], (jobs_cnt-id) * sizeof(Job));
-		if((p = realloc(jobs, sizeof(Job) * (jobs_cnt-1))) == NULL)
+		free(jobs[id - 1].command);
+		memmove(&jobs[id - 1], &jobs[id], (jobs_cnt - id) * sizeof(*p));
+		if((p = realloc(jobs, sizeof(*p) * --jobs_cnt)) == NULL)
 			return sh_error("malloc", 1);
 		jobs = p;
 	}
-	jobs_cnt--;
+	else /* FIXME check this code */
+		jobs_cnt--;
 	return 0;
 }
 
@@ -171,7 +172,7 @@ int job_list(int argc, char * argv[])
 /* job_pgids */
 int job_pgids(int argc, char * argv[])
 {
-	/* FIXME */
+	/* FIXME implement */
 	return 1;
 }
 
@@ -186,7 +187,7 @@ static void _job_print(unsigned int id, char c, char * state)
 /* job_status */
 int job_status(int argc, char * argv[])
 {
-	/* FIXME */
+	/* FIXME ? */
 	job_list(1, NULL);
 	return 1;
 }

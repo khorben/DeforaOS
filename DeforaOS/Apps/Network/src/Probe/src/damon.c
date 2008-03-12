@@ -151,9 +151,8 @@ static int _config_hosts(DaMon * damon, Config * config, char * hosts)
 			h++;
 			continue;
 		}
-		if((p = realloc(damon->hosts, sizeof(Host)
-						* (damon->hosts_cnt + 1)))
-				== NULL)
+		if((p = realloc(damon->hosts, sizeof(*p) * (damon->hosts_cnt
+							+ 1))) == NULL)
 			return error_set_print("DaMon", 1, "%s",
 					strerror(errno));
 		damon->hosts = p;

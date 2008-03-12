@@ -146,7 +146,7 @@ int token_in_set(Token * token, TokenSet set)
 		TC_OP_AMPERSAND, TC_OP_SEMICOLON, TC_NULL
 	};
 	static TokenCode set_wordlist[] = { TC_WORD, TC_NULL };
-	static TokenCode * sets[TS_LAST+1] = {
+	static TokenCode * sets[TS_COUNT] = {
 		set_and_or,
 		set_cmd_name,
 		set_cmd_prefix,

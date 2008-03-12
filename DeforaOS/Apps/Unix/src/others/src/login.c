@@ -24,7 +24,6 @@
 #include <errno.h>
 
 
-
 /* login */
 static int _login_error(char const * message, int ret);
 static int _login_do(char const * user);
