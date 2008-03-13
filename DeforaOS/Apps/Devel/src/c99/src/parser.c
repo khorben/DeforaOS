@@ -609,7 +609,6 @@ static int _direct_declarator(C99 * c99)
 static int _identifier(C99 * c99)
 	/* identifier-nondigit { (identifier-nondigit | identifier-digit) } */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
@@ -950,7 +949,6 @@ static int _specifier_qualifier_list(C99 * c99)
 static int _unary_operator(C99 * c99)
 	/* "&" | "*" | "+" | "-" | "~" | "!" */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
 			token_get_string(c99->token));
@@ -964,7 +962,6 @@ static int _assignment_operator(C99 * c99)
 	/* "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^="
 	 * | "|=" */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
