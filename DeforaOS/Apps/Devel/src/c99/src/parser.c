@@ -379,6 +379,7 @@ static int _struct_declaration(C99 * c99)
 #endif
 	ret = _specifier_qualifier_list(c99);
 	ret |= _struct_declarator_list(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	return ret;
 }
 
@@ -405,20 +406,20 @@ static int _struct_declarator_list(C99 * c99)
 /* struct-declarator */
 static int _struct_declarator(C99 * c99)
 	/* declarator
-	 * [ declarator ] : constant-expr */
+	 * [ declarator ] ":" constant-expr */
 {
-	int ret;
+	int ret = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(!_parse_is_code(c99, C99_CODE_OPERATOR_COLON))
+		ret |= _declarator(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_COLON))
 	{
 		ret |= c99_scan(c99);
 		ret |= _constant_expr(c99);
 	}
-	else
-		ret = _declarator(c99);
 	return ret;
 }
 
@@ -1280,7 +1281,7 @@ static int _block_item_list(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _block_item(c99);
-	while(token_in_set(c99->token, c99set_block_item))
+	while(_parse_in_set(c99, c99set_block_item))
 		ret |= _block_item(c99);
 	return ret;
 }
