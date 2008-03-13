@@ -53,6 +53,7 @@ extern TokenSet c99set_punctuator;
 extern TokenSet c99set_selection_statement;
 extern TokenSet c99set_statement;
 extern TokenSet c99set_storage_class_specifier;
+extern TokenSet c99set_struct_declaration;
 extern TokenSet c99set_struct_or_union_specifier;
 extern TokenSet c99set_type_qualifier;
 extern TokenSet c99set_type_qualifier_list;

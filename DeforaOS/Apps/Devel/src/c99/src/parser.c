@@ -41,6 +41,11 @@ static int _declaration_specifiers(C99 * c99);
 static int _storage_class_specifier(C99 * c99);
 static int _type_specifier(C99 * c99);
 static int _struct_or_union_specifier(C99 * c99);
+static int _struct_or_union(C99 * c99);
+static int _struct_declaration_list(C99 * c99);
+static int _struct_declaration(C99 * c99);
+static int _struct_declarator_list(C99 * c99);
+static int _struct_declarator(C99 * c99);
 static int _enum_specifier(C99 * c99);
 static int _enumerator_list(C99 * c99);
 static int _enumerator(C99 * c99);
@@ -285,14 +290,107 @@ static int _type_specifier(C99 * c99)
 
 /* struct-or-union-specifier */
 static int _struct_or_union_specifier(C99 * c99)
+	/* struct-or-union [ identifier ] "{" struct-declaration-list "}"
+	 * | struct-or-union identifier */
 {
-	/* FIXME implement */
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+#endif
+	ret = _struct_or_union(c99);
+	if(token_get_code(c99->token) == C99_CODE_IDENTIFIER)
+	{
+		ret |= _identifier(c99);
+		if(token_get_code(c99->token) != C99_CODE_OPERATOR_LBRACE)
+			return ret;
+	}
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
+	ret |= _struct_declaration_list(c99);
+	if(token_get_code(c99->token) == C99_CODE_COMMA)
+		ret |= c99_scan(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	return ret;
+}
+
+
+/* struct-or-union */
+static int _struct_or_union(C99 * c99)
+	/* "struct" | "union" */
+{
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	c99_scan(c99);
-	return 0;
+	return c99_scan(c99);
+}
+
+
+/* struct-declaration-list */
+static int _struct_declaration_list(C99 * c99)
+	/* struct-declaration { struct-declaration } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+#endif
+	ret = _struct_declaration(c99);
+	while(token_in_set(c99->token, c99set_struct_declaration))
+		ret |= _struct_declaration(c99);
+	return ret;
+}
+
+
+/* struct-declaration */
+static int _struct_declaration(C99 * c99)
+	/* specifier-qualifier-list struct-declarator-list ";" */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+#endif
+	ret = _specifier_qualifier_list(c99);
+	ret |= _struct_declarator_list(c99);
+	return ret;
+}
+
+
+/* struct-declarator-list */
+static int _struct_declarator_list(C99 * c99)
+	/* struct-declarator { "," struct-declarator } */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+#endif
+	ret = _struct_declarator(c99);
+	while(token_get_code(c99->token) == C99_CODE_COMMA)
+		ret |= _struct_declarator(c99);
+	return ret;
+}
+
+
+/* struct-declarator */
+static int _struct_declarator(C99 * c99)
+	/* declarator
+	 * [ declarator ] : constant-expr */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+#endif
+	if(token_get_code(c99->token) == C99_CODE_OPERATOR_COLON)
+	{
+		ret |= c99_scan(c99);
+		ret |= _constant_expr(c99);
+	}
+	else
+		ret = _declarator(c99);
+	return ret;
 }
 
 

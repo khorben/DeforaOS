@@ -322,6 +322,16 @@ static TokenCode _c99set_storage_class_specifier[] =
 TokenSet c99set_storage_class_specifier = _c99set_storage_class_specifier;
 
 
+/* struct-declaration */
+static TokenCode _c99set_struct_declaration[] =
+{
+#include "sets/struct_declaration.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_struct_declaration = _c99set_struct_declaration;
+
+
 /* struct-or-union-specifier */
 static TokenCode _c99set_struct_or_union_specifier[] =
 {
