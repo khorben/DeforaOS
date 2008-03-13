@@ -42,6 +42,7 @@ static int _storage_class_specifier(C99 * c99);
 static int _type_specifier(C99 * c99);
 static int _struct_or_union_specifier(C99 * c99);
 static int _enum_specifier(C99 * c99);
+static int _enumerator_list(C99 * c99);
 static int _typedef_name(C99 * c99);
 static int _type_qualifier(C99 * c99);
 static int _function_specifier(C99 * c99);
@@ -295,13 +296,38 @@ static int _struct_or_union_specifier(C99 * c99)
 
 /* enum-specifier */
 static int _enum_specifier(C99 * c99)
+	/* enum [ identifier ] "{" enumerator-list [ ","] "}"
+	 * enum identifier */
 {
-	/* FIXME implement */
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	c99_scan(c99);
+	ret = c99_scan(c99);
+	if(token_get_code(c99->token) == C99_CODE_IDENTIFIER)
+	{
+		ret |= _identifier(c99);
+		if(token_get_code(c99->token) != C99_CODE_OPERATOR_LBRACE)
+			return ret;
+	}
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
+	ret |= _enumerator_list(c99);
+	if(token_get_code(c99->token) == C99_CODE_COMMA)
+		ret |= c99_scan(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	return ret;
+}
+
+
+/* enumerator-list */
+static int _enumerator_list(C99 * c99)
+{
+	/* FIXME implement */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	return 0;
 }
 
