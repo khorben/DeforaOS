@@ -62,7 +62,6 @@ static int _direct_declarator(C99 * c99);
 static int _identifier(C99 * c99);
 static int _identifier_list(C99 * c99);
 static int _parameter_type_list(C99 * c99);
-static int _parameter_list(C99 * c99);
 static int _parameter_declaration(C99 * c99);
 static int _abstract_declarator(C99 * c99);
 static int _assignment_expr(C99 * c99);
@@ -676,27 +675,7 @@ static int _identifier_list(C99 * c99)
 
 /* parameter-type-list */
 static int _parameter_type_list(C99 * c99)
-	/* FIXME merge with parameter_list
-	 * parameter-list [ "," "..." ] */
-{
-	int ret;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	ret = _parameter_list(c99);
-	if(_parse_is_code(c99, C99_CODE_COMMA))
-	{
-		ret |= c99_scan(c99);
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_DOTDOTDOT);
-	}
-	return ret;
-}
-
-
-/* parameter-list */
-static int _parameter_list(C99 * c99)
-	/* parameter-declaration { "," parameter-declaration } */
+	/* parameter-declaration { "," parameter-declaration } [ "," "..." ] */
 {
 	int ret;
 
@@ -707,6 +686,8 @@ static int _parameter_list(C99 * c99)
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
 		ret |= c99_scan(c99);
+		if(_parse_is_code(c99, C99_CODE_OPERATOR_DOTDOTDOT))
+			return ret | c99_scan(c99);
 		ret |= _parameter_declaration(c99);
 	}
 	return ret;
