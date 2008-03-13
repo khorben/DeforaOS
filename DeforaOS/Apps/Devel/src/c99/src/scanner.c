@@ -62,6 +62,7 @@ char const * code_get_string(TokenCode code)
 /* useful */
 /* c99_scan */
 static int _scan_skip_meta(C99 * c99);
+static void _meta_error(C99 * c99, TokenCode code);
 
 int c99_scan(C99 * c99)
 {
@@ -104,7 +105,7 @@ int c99_scan(C99 * c99)
 static int _scan_skip_meta(C99 * c99)
 {
 	int ret;
-	int code;
+	TokenCode code;
 
 	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0)
 	{
@@ -115,13 +116,21 @@ static int _scan_skip_meta(C99 * c99)
 					|| code > C99_CODE_META_LAST))
 			break;
 		if(code == C99_CODE_META_ERROR || code == C99_CODE_META_WARNING)
-			fprintf(stderr, "%s%s%s%u%s%s%s%s\n", PACKAGE ": ",
-					token_get_filename(c99->token), ":",
-					token_get_line(c99->token), ": ",
-					(code == C99_CODE_META_ERROR)
-					? "error" : "warning", ": ",
-					token_get_string(c99->token));
+			_meta_error(c99, code);
 		token_delete(c99->token);
 	}
 	return ret;
+}
+
+static void _meta_error(C99 * c99, TokenCode code)
+{
+	if(code == C99_CODE_META_ERROR)
+		c99->error_cnt++;
+	else
+		c99->warning_cnt++;
+	fprintf(stderr, "%s%s%s%u%s%s%s%s\n", PACKAGE ": ",
+			token_get_filename(c99->token), ":",
+			token_get_line(c99->token), ": ",
+			(code == C99_CODE_META_ERROR) ? "error" : "warning",
+			": ", token_get_string(c99->token));
 }

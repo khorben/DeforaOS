@@ -115,8 +115,13 @@ static int _parse_check(C99 * c99, TokenCode code)
 	int ret = 0;
 
 	if(!_parse_is_code(c99, code))
+	{
 		ret = _parse_error(c99, "Expected \"%s\"",
 				code_get_string(code));
+		while(c99_scan(c99) == 0
+				&& c99->token != NULL
+				&& !_parse_is_code(c99, code));
+	}
 	ret |= c99_scan(c99);
 	return ret;
 }
@@ -128,6 +133,7 @@ static int _parse_error(C99 * c99, char const * format, ...)
 	Token * token = c99->token;
 	va_list ap;
 
+	c99->error_cnt++;
 	if(token == NULL) /* XXX not very elegant */
 		fputs(PACKAGE ": near end of file: error: ", stderr);
 	else
@@ -705,6 +711,7 @@ static int _parameter_declaration(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _declaration_specifiers(c99);
+	/* FIXME ambiguity between declarator and abstract declarator */
 	if(token_in_set(c99->token, c99set_abstract_declarator))
 		ret |= _abstract_declarator(c99);
 	else if(token_in_set(c99->token, c99set_declarator))
@@ -1669,7 +1676,14 @@ int c99_parse(C99 * c99)
 	if(c99->flags & C99PREFS_E)
 		return _parse_E(c99);
 	if((ret = _translation_unit(c99)) != 0)
+	{
 		unlink(c99->outfile);
+		fprintf(stderr, "%s%s%s%u%s%u%s", PACKAGE ": ",
+				cpp_get_filename(c99->cpp),
+				": Compilation failed with ", c99->error_cnt,
+				" error(s) and ", c99->warning_cnt,
+				" warning(s)\n");
+	}
 	return ret;
 }
 

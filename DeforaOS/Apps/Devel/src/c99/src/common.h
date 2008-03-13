@@ -37,6 +37,8 @@ struct _C99
 	/* parsing */
 	Token * token;
 	int in_switch;
+	unsigned int error_cnt;
+	unsigned int warning_cnt;
 };
 
 
