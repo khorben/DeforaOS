@@ -123,14 +123,16 @@ static int _parse_check(C99 * c99, TokenCode code)
 
 /* parse_error */
 static int _parse_error(C99 * c99, char const * format, ...)
-	/* FIXME segfaults when EOF (c99->token is NULL) */
 {
 	Token * token = c99->token;
 	va_list ap;
 
-	fprintf(stderr, "%s%s:%u, near \"%s\": error: ", PACKAGE ": ",
-			token_get_filename(token), token_get_line(token),
-			token_get_string(token));
+	if(token == NULL) /* XXX not very elegant */
+		fputs(PACKAGE ": near end of file: error: ", stderr);
+	else
+		fprintf(stderr, "%s%s:%u, near \"%s\": error: ", PACKAGE ": ",
+				token_get_filename(token),
+				token_get_line(token), token_get_string(token));
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
 	va_end(ap);
