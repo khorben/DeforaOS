@@ -715,8 +715,7 @@ static int _parameter_list(C99 * c99)
 
 /* parameter-declaration */
 static int _parameter_declaration(C99 * c99)
-	/* declaration-specifiers declarator
-	 * declaration-specifiers [ abstract-declarator ] */
+	/* declaration-specifiers [ (declarator | abstract-declarator) ] */
 {
 	int ret;
 
@@ -728,9 +727,6 @@ static int _parameter_declaration(C99 * c99)
 		ret |= _abstract_declarator(c99);
 	else if(token_in_set(c99->token, c99set_declarator))
 		ret |= _declarator(c99);
-	else
-		ret |= _parse_error(c99, "Expected declarator"
-				" or abstract declarator");
 	return ret;
 }
 
