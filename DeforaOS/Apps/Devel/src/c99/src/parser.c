@@ -44,6 +44,7 @@ static int _struct_or_union_specifier(C99 * c99);
 static int _enum_specifier(C99 * c99);
 static int _enumerator_list(C99 * c99);
 static int _enumerator(C99 * c99);
+static int _enumeration_constant(C99 * c99);
 static int _typedef_name(C99 * c99);
 static int _type_qualifier(C99 * c99);
 static int _function_specifier(C99 * c99);
@@ -343,11 +344,31 @@ static int _enumerator_list(C99 * c99)
 
 /* enumerator */
 static int _enumerator(C99 * c99)
+	/* enumeration-constant [ "=" constant-expression ] */
+{
+	int ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	ret = _enumeration_constant(c99);
+	if(token_get_code(c99->token) == C99_CODE_OPERATOR_EQUALS)
+	{
+		ret |= c99_scan(c99);
+		ret |= _constant_expr(c99);
+	}
+	return ret;
+}
+
+
+/* enumeration-constant */
+static int _enumeration_constant(C99 * c99)
+	/* identifier */
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return c99_scan(c99);
+	return _identifier(c99);
 }
 
 
@@ -368,9 +389,8 @@ static int _typedef_name(C99 * c99)
 
 /* type-qualifier */
 static int _type_qualifier(C99 * c99)
-	/* const | restrict | volatile */
+	/* "const" | "restrict" | "volatile" */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
@@ -381,9 +401,8 @@ static int _type_qualifier(C99 * c99)
 
 /* function-specifier */
 static int _function_specifier(C99 * c99)
-	/* inline */
+	/* "inline" */
 {
-	/* FIXME implement */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
