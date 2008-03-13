@@ -64,6 +64,7 @@ static int _identifier_list(C99 * c99);
 static int _parameter_type_list(C99 * c99);
 static int _parameter_declaration(C99 * c99);
 static int _abstract_declarator(C99 * c99);
+static int _direct_abstract_declarator(C99 * c99);
 static int _assignment_expr(C99 * c99);
 static int _unary_expr(C99 * c99);
 static int _postfix_expr(C99 * c99);
@@ -719,12 +720,34 @@ static int _abstract_declarator(C99 * c99)
 {
 	int ret = 0;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(_parse_in_set(c99, c99set_pointer))
+		ret = _pointer(c99);
+	if(_parse_in_set(c99, c99set_direct_abstract_declarator))
+		ret |= _direct_abstract_declarator(c99);
+	return ret;
+}
+
+
+/* direct-abstract-declarator */
+static int _direct_abstract_declarator(C99 * c99)
+	/* "(" abstract-declarator ")"
+	 * [ direct-abstract-declarator ] "[" [ assignment-expr ] "]"
+	 * direct-abstract-declarator "[" "*" "]"
+	 * [ direct-abstract-declarator ] "(" [ parameter-type-list ] ")" */
+
+{
+	int ret;
+
 	/* FIXME complete */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_pointer))
-		ret = _pointer(c99);
+	ret = c99_scan(c99);
+	ret |= _abstract_declarator(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	return ret;
 }
 

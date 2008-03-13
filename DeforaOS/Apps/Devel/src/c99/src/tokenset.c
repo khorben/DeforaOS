@@ -132,6 +132,16 @@ static TokenCode _c99set_designator[] =
 TokenSet c99set_designator = _c99set_designator;
 
 
+/* direct-abstract-declarator */
+static TokenCode _c99set_direct_abstract_declarator[] =
+{
+#include "sets/direct_abstract_declarator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_direct_abstract_declarator = _c99set_direct_abstract_declarator;
+
+
 /* enum-specifier */
 static TokenCode _c99set_enum_specifier[] =
 {
