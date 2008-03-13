@@ -59,5 +59,6 @@ extern TokenSet c99set_type_qualifier_list;
 extern TokenSet c99set_type_specifier;
 extern TokenSet c99set_typedef_name;
 extern TokenSet c99set_unary_expr;
+extern TokenSet c99set_unary_operator;
 
 #endif /* !C99_TOKENSET_H */

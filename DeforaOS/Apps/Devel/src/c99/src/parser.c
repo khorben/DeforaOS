@@ -62,6 +62,7 @@ static int _argument_expression_list(C99 * c99);
 static int _primary_expr(C99 * c99);
 static int _type_name(C99 * c99);
 static int _specifier_qualifier_list(C99 * c99);
+static int _unary_operator(C99 * c99);
 static int _assignment_operator(C99 * c99);
 static int _conditional_expr(C99 * c99);
 static int _logical_or_expr(C99 * c99);
@@ -144,6 +145,7 @@ static int _translation_unit(C99 * c99)
 static int _external_declaration(C99 * c99)
 	/* function-definition | declaration */
 {
+	/* FIXME ambiguity between function definition and declaration */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
@@ -200,7 +202,8 @@ static int _declaration(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret |= _declaration_specifiers(c99);
-	ret |= _init_declarator_list(c99); /* FIXME optional */
+	if(token_in_set(c99->token, c99set_init_declarator))
+		ret |= _init_declarator_list(c99);
 	return ret;
 }
 
@@ -255,6 +258,9 @@ static int _storage_class_specifier(C99 * c99)
 
 /* type-specifier */
 static int _type_specifier(C99 * c99)
+	/* void | char | short | int | long | float | double | signed | unsigned
+	 * | _Bool | _Complex | _Imaginary | struct-or-union-specifier
+	 * | enum-specifier | typedef-name */
 {
 	int ret;
 
@@ -302,19 +308,22 @@ static int _enum_specifier(C99 * c99)
 
 /* typedef-name */
 static int _typedef_name(C99 * c99)
+	/* identifier */
 {
-	/* FIXME implement */
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	c99_scan(c99);
-	return 0;
+	ret = c99_scan(c99);
+	return ret;
 }
 
 
 /* type-qualifier */
 static int _type_qualifier(C99 * c99)
+	/* const | restrict | volatile */
 {
 	/* FIXME implement */
 #ifdef DEBUG
@@ -413,7 +422,7 @@ static int _direct_declarator(C99 * c99)
 	{
 		c99_scan(c99);
 		ret = _declarator(c99);
-		_parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else
 		ret = _identifier(c99);
@@ -424,7 +433,7 @@ static int _direct_declarator(C99 * c99)
 			ret |= _parameter_type_list(c99);
 		else if(token_in_set(c99->token, c99set_identifier_list))
 			ret |= _identifier_list(c99);
-		_parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else if(code == C99_CODE_OPERATOR_TIMES)
 		c99_scan(c99);
@@ -468,7 +477,7 @@ static int _identifier_list(C99 * c99)
 
 /* parameter-type-list */
 static int _parameter_type_list(C99 * c99)
-	/* FIXME can that really work?
+	/* FIXME merge with parameter_list
 	 * parameter-list [ "," "..." ] */
 {
 	int ret;
@@ -593,7 +602,11 @@ static int _unary_expr(C99 * c99)
 		ret = c99_scan(c99);
 		ret |= _unary_expr(c99);
 	}
-	/* FIXME unary-operator */
+	else if(token_in_set(c99->token, c99set_unary_operator))
+	{
+		ret = _unary_operator(c99);
+		ret |= _cast_expr(c99);
+	}
 	else if(code == C99_CODE_KEYWORD_SIZEOF)
 	{
 		ret = c99_scan(c99);
@@ -768,6 +781,19 @@ static int _specifier_qualifier_list(C99 * c99)
 		looped = 1;
 	}
 	return ret;
+}
+
+
+/* unary-operator */
+static int _unary_operator(C99 * c99)
+	/* "&" | "*" | "+" | "-" | "~" | "!" */
+{
+	/* FIXME implement */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
+			token_get_string(c99->token));
+#endif
+	return c99_scan(c99);
 }
 
 
@@ -1116,7 +1142,8 @@ static int _labeled_statement(C99 * c99)
 	int code;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
+			token_get_string(c99->token));
 #endif
 	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
 		ret = _identifier(c99);
@@ -1194,9 +1221,9 @@ static int _selection_statement(C99 * c99)
 	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_SWITCH)
 		c99->in_switch++;
 	ret = c99_scan(c99);
-	_parse_check(c99, C99_CODE_OPERATOR_LPAREN);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
 	ret |= _expression(c99);
-	_parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	ret |= _statement(c99);
 	if(code == C99_CODE_KEYWORD_SWITCH)
 		c99->in_switch--;
@@ -1214,9 +1241,9 @@ static int _selection_statement(C99 * c99)
 static int _iteration_statement(C99 * c99)
 	/* while "(" expression ")" statement
 	 * do statement while "(" expression ")" ;
-	 * for ( [ (expr | declaration) ] ; [ expr ] ; [ expr ] ) statement */
+	 * for "(" [ (expr | declaration) ] ; [ expr ] ; [ expr ] ")" statement */
 {
-	int ret;
+	int ret = 0;
 	int code;
 
 	/* FIXME complete */
@@ -1240,8 +1267,22 @@ static int _iteration_statement(C99 * c99)
 		ret |= _expression(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
-	else /* FIXME implement for */
+	else if(code == C99_CODE_KEYWORD_FOR)
+	{
 		ret = c99_scan(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
+		/* FIXME or declaration */
+		if(token_get_code(c99->token) != C99_CODE_OPERATOR_SEMICOLON)
+			ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
+		if(token_get_code(c99->token) != C99_CODE_OPERATOR_SEMICOLON)
+			ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
+		if(token_get_code(c99->token) != C99_CODE_OPERATOR_SEMICOLON)
+			ret |= _expression(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		ret |= _statement(c99);
+	}
 	return ret;
 }
 
@@ -1273,7 +1314,7 @@ static int _jump_statement(C99 * c99)
 	}
 	else /* continue or break */
 		ret = c99_scan(c99);
-	_parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	return ret;
 }
 
@@ -1421,9 +1462,13 @@ static int _parse_E(C99 * c99);
 
 int c99_parse(C99 * c99)
 {
+	int ret;
+
 	if(c99->flags & C99PREFS_E)
 		return _parse_E(c99);
-	return _translation_unit(c99);
+	if((ret = _translation_unit(c99)) != 0)
+		unlink(c99->outfile);
+	return ret;
 }
 
 static int _parse_E(C99 * c99)

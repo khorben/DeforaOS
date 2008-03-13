@@ -372,3 +372,13 @@ static TokenCode _c99set_unary_expr[] =
 };
 
 TokenSet c99set_unary_expr = _c99set_unary_expr;
+
+
+/* unary-operator */
+static TokenCode _c99set_unary_operator[] =
+{
+#include "sets/unary_operator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_unary_operator = _c99set_unary_operator;

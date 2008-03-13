@@ -78,6 +78,11 @@ int c99_scan(C99 * c99)
 	if((ret = _scan_skip_meta(c99)) != 0
 			|| c99->token == NULL)
 		return ret;
+	if(token_get_code(c99->token) == C99_CODE_SQUOTE)
+	{
+		token_set_code(c99->token, C99_CODE_CONSTANT);
+		return 0;
+	}
 	if(token_get_code(c99->token) != C99_CODE_WORD)
 		return 0;
 	if((string = token_get_string(c99->token)) == NULL)
