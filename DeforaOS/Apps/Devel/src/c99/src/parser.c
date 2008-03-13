@@ -112,11 +112,12 @@ static int _designator(C99 * c99);
 /* parse_check */
 static int _parse_check(C99 * c99, TokenCode code)
 {
-	int ret;
+	int ret = 0;
 
 	if(!_parse_is_code(c99, code))
-		_parse_error(c99, "Expected \"%s\"", code_get_string(code));
-	c99_scan(c99);
+		ret = _parse_error(c99, "Expected \"%s\"",
+				code_get_string(code));
+	ret |= c99_scan(c99);
 	return ret;
 }
 
@@ -279,7 +280,7 @@ static int _declaration_specifiers(C99 * c99)
 
 /* storage-class-specifier */
 static int _storage_class_specifier(C99 * c99)
-	/* typedef | extern | static | auto | register */
+	/* "typedef" | "extern" | "static" | "auto" | "register" */
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
@@ -597,12 +598,11 @@ static int _direct_declarator(C99 * c99)
 	/* FIXME still recursive
 	 * identifier
 	 * "(" declarator ")"
-	 * direct-declarator [ assignment-expression ]
-	 * direct-declarator [ * ]
+	 * direct-declarator "[" (assignment-expression | "*") "]"
 	 * direct-declarator "(" parameter-type-list ")"
-	 * direct-declarator "(" identifier-list ")" */
+	 * direct-declarator "(" [ identifier-list ] ")" */
 {
-	int ret = 0;
+	int ret;
 	int code;
 
 #ifdef DEBUG
@@ -616,21 +616,28 @@ static int _direct_declarator(C99 * c99)
 	}
 	else
 		ret = _identifier(c99);
-	if(c99->token == NULL)
-		return ret;
-	if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LPAREN)
+	while(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN)
+			|| _parse_is_code(c99, C99_CODE_OPERATOR_LBRACKET))
 	{
-		c99_scan(c99);
-		if(token_in_set(c99->token, c99set_parameter_type_list))
-			ret |= _parameter_type_list(c99);
-		else if(token_in_set(c99->token, c99set_identifier_list))
-			ret |= _identifier_list(c99);
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		code = token_get_code(c99->token);
+		ret |= c99_scan(c99);
+		if(code == C99_CODE_OPERATOR_LBRACKET)
+		{
+			if(_parse_is_code(c99, C99_CODE_OPERATOR_TIMES))
+				ret |= c99_scan(c99);
+			else
+				ret |= _assignment_expr(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
+		}
+		else /* C99_CODE_OPERATOR_LPAREN */
+		{
+			if(token_in_set(c99->token, c99set_parameter_type_list))
+				ret |= _parameter_type_list(c99);
+			else if(token_in_set(c99->token, c99set_identifier_list))
+				ret |= _identifier_list(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		}
 	}
-	else if(code == C99_CODE_OPERATOR_TIMES)
-		c99_scan(c99);
-	else if(token_in_set(c99->token, c99set_assignment_expr))
-		ret |= _assignment_expr(c99);
 	return ret;
 }
 
