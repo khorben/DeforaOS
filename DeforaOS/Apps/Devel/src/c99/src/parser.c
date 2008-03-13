@@ -43,6 +43,7 @@ static int _type_specifier(C99 * c99);
 static int _struct_or_union_specifier(C99 * c99);
 static int _enum_specifier(C99 * c99);
 static int _enumerator_list(C99 * c99);
+static int _enumerator(C99 * c99);
 static int _typedef_name(C99 * c99);
 static int _type_qualifier(C99 * c99);
 static int _function_specifier(C99 * c99);
@@ -323,12 +324,30 @@ static int _enum_specifier(C99 * c99)
 
 /* enumerator-list */
 static int _enumerator_list(C99 * c99)
+	/* enumerator { "," enumerator } */
 {
-	/* FIXME implement */
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return 0;
+	ret = _enumerator(c99);
+	while(token_get_code(c99->token) == C99_CODE_COMMA)
+	{
+		ret |= c99_scan(c99);
+		ret |= _enumerator(c99);
+	}
+	return ret;
+}
+
+
+/* enumerator */
+static int _enumerator(C99 * c99)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return c99_scan(c99);
 }
 
 
