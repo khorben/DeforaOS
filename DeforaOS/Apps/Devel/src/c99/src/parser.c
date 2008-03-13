@@ -319,7 +319,7 @@ static int _struct_or_union_specifier(C99 * c99)
 	int ret;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _struct_or_union(c99);
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
@@ -356,7 +356,7 @@ static int _struct_declaration_list(C99 * c99)
 	int ret;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _struct_declaration(c99);
 	while(token_in_set(c99->token, c99set_struct_declaration))
@@ -372,7 +372,7 @@ static int _struct_declaration(C99 * c99)
 	int ret;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _specifier_qualifier_list(c99);
 	ret |= _struct_declarator_list(c99);
@@ -387,7 +387,7 @@ static int _struct_declarator_list(C99 * c99)
 	int ret;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _struct_declarator(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
@@ -407,7 +407,7 @@ static int _struct_declarator(C99 * c99)
 	int ret;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_COLON))
 	{
