@@ -1502,8 +1502,9 @@ static int _iteration_statement(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME may segfault upon EOF (c99->token is NULL) */
-	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_WHILE)
+	if(c99->token == NULL)
+		return 1;
+	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_WHILE)
 	{
 		ret = c99_scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
@@ -1554,8 +1555,9 @@ static int _jump_statement(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	/* FIXME may segfault upon EOF (c99->token is NULL) */
-	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
+	if(c99->token == NULL)
+		return 1;
+	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
 	{
 		ret = c99_scan(c99);
 		ret |= _identifier(c99);
