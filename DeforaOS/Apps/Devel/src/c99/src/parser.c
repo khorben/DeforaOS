@@ -32,6 +32,7 @@
 /* prototypes */
 static int _parse_check(C99 * c99, TokenCode code);
 static int _parse_error(C99 * c99, char const * format, ...);
+static char const * _parse_get_string(C99 * c99);
 static int _parse_in_set(C99 * c99, TokenSet set);
 static int _parse_is_code(C99 * c99, TokenCode code);
 
@@ -144,6 +145,15 @@ static int _parse_error(C99 * c99, char const * format, ...)
 	va_end(ap);
 	fputc('\n', stderr);
 	return 1;
+}
+
+
+/* parse_get_string */
+static char const * _parse_get_string(C99 * c99)
+{
+	if(c99->token == NULL)
+		return "EOF";
+	return token_get_string(c99->token);
 }
 
 
@@ -289,7 +299,7 @@ static int _storage_class_specifier(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
 }
@@ -305,7 +315,7 @@ static int _type_specifier(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(_parse_in_set(c99, c99set_struct_or_union_specifier))
 		ret = _struct_or_union_specifier(c99);
@@ -351,7 +361,7 @@ static int _struct_or_union(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
 }
@@ -438,7 +448,7 @@ static int _enum_specifier(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	ret = c99_scan(c99);
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
@@ -496,14 +506,11 @@ static int _enumeration_constant(C99 * c99)
 static int _typedef_name(C99 * c99)
 	/* identifier */
 {
-	int ret;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
-	ret = c99_scan(c99);
-	return ret;
+	return c99_scan(c99);
 }
 
 
@@ -513,7 +520,7 @@ static int _type_qualifier(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
 }
@@ -525,7 +532,7 @@ static int _function_specifier(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
 }
@@ -555,7 +562,7 @@ static int _pointer(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"*\" got \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	ret = c99_scan(c99);
 	if(_parse_in_set(c99, c99set_type_qualifier_list))
@@ -641,7 +648,7 @@ static int _identifier(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
 }
@@ -787,7 +794,7 @@ static int _assignment_expr(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	/* FIXME heavily suspect conflict between unary and conditional */
 	while(_parse_in_set(c99, c99set_unary_expr))
@@ -815,7 +822,7 @@ static int _unary_expr(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(_parse_in_set(c99, c99set_postfix_expr))
 		return _postfix_expr(c99);
@@ -920,7 +927,7 @@ static int _argument_expression_list(C99 * c99)
 	unsigned int cnt = 1;
 
 	fprintf(stderr, "DEBUG: %s() arg 1 \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	ret = _assignment_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
@@ -928,7 +935,7 @@ static int _argument_expression_list(C99 * c99)
 		ret |= c99_scan(c99);
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() arg %u \"%s\"\n", __func__, ++cnt,
-				token_get_string(c99->token));
+				_parse_get_string(c99));
 #endif
 		ret |= _assignment_expr(c99);
 	}
@@ -949,7 +956,7 @@ static int _primary_expr(C99 * c99)
 	/* FIXME complete */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
@@ -992,7 +999,7 @@ static int _specifier_qualifier_list(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	for(;;)
 	{
@@ -1017,7 +1024,7 @@ static int _unary_operator(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
 }
@@ -1043,7 +1050,7 @@ static int _conditional_expr(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	ret = _logical_or_expr(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_QUESTION))
@@ -1279,7 +1286,7 @@ static int _cast_expr(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
@@ -1298,7 +1305,7 @@ static int _compound_statement(C99 * c99)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"{\" got \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	c99_scan(c99);
 	if(_parse_in_set(c99, c99set_block_item_list))
@@ -1378,7 +1385,7 @@ static int _labeled_statement(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
@@ -1416,7 +1423,7 @@ static int _expression_statement(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(_parse_in_set(c99, c99set_expression))
 		ret = _expression(c99);
@@ -1454,7 +1461,7 @@ static int _selection_statement(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
@@ -1540,7 +1547,7 @@ static int _jump_statement(C99 * c99)
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			token_get_string(c99->token));
+			_parse_get_string(c99));
 #endif
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
