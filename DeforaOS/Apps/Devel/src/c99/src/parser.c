@@ -189,9 +189,9 @@ static int _external_declaration(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_function_definition))
+	if(_parse_in_set(c99, c99set_function_definition))
 		return _function_definition(c99);
-	else if(token_in_set(c99->token, c99set_declaration))
+	else if(_parse_in_set(c99, c99set_declaration))
 		return _declaration(c99);
 	return _parse_error(c99, "Expected function definition or declaration");
 }
@@ -226,7 +226,7 @@ static int _declaration_list(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _declaration(c99);
-	while(token_in_set(c99->token, c99set_declaration))
+	while(_parse_in_set(c99, c99set_declaration))
 		ret |= _declaration(c99);
 	return ret;
 }
@@ -242,7 +242,7 @@ static int _declaration(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret |= _declaration_specifiers(c99);
-	if(token_in_set(c99->token, c99set_init_declarator))
+	if(_parse_in_set(c99, c99set_init_declarator))
 		ret |= _init_declarator_list(c99);
 	return ret;
 }
@@ -263,13 +263,13 @@ static int _declaration_specifiers(C99 * c99)
 #endif
 	for(;;)
 	{
-		if(token_in_set(c99->token, c99set_storage_class_specifier))
+		if(_parse_in_set(c99, c99set_storage_class_specifier))
 			ret |= _storage_class_specifier(c99);
-		else if(token_in_set(c99->token, c99set_type_specifier))
+		else if(_parse_in_set(c99, c99set_type_specifier))
 			ret |= _type_specifier(c99);
-		else if(token_in_set(c99->token, c99set_type_qualifier))
+		else if(_parse_in_set(c99, c99set_type_qualifier))
 			ret |= _type_qualifier(c99);
-		else if(token_in_set(c99->token, c99set_function_specifier))
+		else if(_parse_in_set(c99, c99set_function_specifier))
 			ret |= _function_specifier(c99);
 		else if(looped == 0)
 			return _parse_error(c99, "Expected"
@@ -308,11 +308,11 @@ static int _type_specifier(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	if(token_in_set(c99->token, c99set_struct_or_union_specifier))
+	if(_parse_in_set(c99, c99set_struct_or_union_specifier))
 		ret = _struct_or_union_specifier(c99);
-	else if(token_in_set(c99->token, c99set_enum_specifier))
+	else if(_parse_in_set(c99, c99set_enum_specifier))
 		ret = _enum_specifier(c99);
-	else if(token_in_set(c99->token, c99set_typedef_name))
+	else if(_parse_in_set(c99, c99set_typedef_name))
 		ret = _typedef_name(c99);
 	else
 		ret = c99_scan(c99);
@@ -368,7 +368,7 @@ static int _struct_declaration_list(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _struct_declaration(c99);
-	while(token_in_set(c99->token, c99set_struct_declaration))
+	while(_parse_in_set(c99, c99set_struct_declaration))
 		ret |= _struct_declaration(c99);
 	return ret;
 }
@@ -554,7 +554,7 @@ static int _declarator(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_pointer))
+	if(_parse_in_set(c99, c99set_pointer))
 		ret |= _pointer(c99);
 	ret |= _direct_declarator(c99);
 	return ret;
@@ -572,12 +572,12 @@ static int _pointer(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	ret = c99_scan(c99);
-	if(token_in_set(c99->token, c99set_type_qualifier_list))
+	if(_parse_in_set(c99, c99set_type_qualifier_list))
 		ret |= _type_qualifier_list(c99);
-	while(token_in_set(c99->token, c99set_pointer))
+	while(_parse_in_set(c99, c99set_pointer))
 	{
 		ret |= c99_scan(c99);
-		if(token_in_set(c99->token, c99set_type_qualifier_list))
+		if(_parse_in_set(c99, c99set_type_qualifier_list))
 			ret |= _type_qualifier_list(c99);
 	}
 	return ret;
@@ -594,7 +594,7 @@ static int _type_qualifier_list(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _type_qualifier(c99);
-	while(token_in_set(c99->token, c99set_type_qualifier))
+	while(_parse_in_set(c99, c99set_type_qualifier))
 		ret |= _type_qualifier(c99);
 	return ret;
 }
@@ -638,9 +638,9 @@ static int _direct_declarator(C99 * c99)
 		}
 		else /* C99_CODE_OPERATOR_LPAREN */
 		{
-			if(token_in_set(c99->token, c99set_parameter_type_list))
+			if(_parse_in_set(c99, c99set_parameter_type_list))
 				ret |= _parameter_type_list(c99);
-			else if(token_in_set(c99->token, c99set_identifier_list))
+			else if(_parse_in_set(c99, c99set_identifier_list))
 				ret |= _identifier_list(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		}
@@ -712,9 +712,9 @@ static int _parameter_declaration(C99 * c99)
 #endif
 	ret = _declaration_specifiers(c99);
 	/* FIXME ambiguity between declarator and abstract declarator */
-	if(token_in_set(c99->token, c99set_abstract_declarator))
+	if(_parse_in_set(c99, c99set_abstract_declarator))
 		ret |= _abstract_declarator(c99);
-	else if(token_in_set(c99->token, c99set_declarator))
+	else if(_parse_in_set(c99, c99set_declarator))
 		ret |= _declarator(c99);
 	return ret;
 }
@@ -804,7 +804,7 @@ static int _assignment_expr(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	/* FIXME heavily suspect conflict between unary and conditional */
-	while(token_in_set(c99->token, c99set_unary_expr))
+	while(_parse_in_set(c99, c99set_unary_expr))
 	{
 		ret |= _unary_expr(c99);
 		ret |= _assignment_operator(c99);
@@ -832,7 +832,7 @@ static int _unary_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	if(token_in_set(c99->token, c99set_postfix_expr))
+	if(_parse_in_set(c99, c99set_postfix_expr))
 		return _postfix_expr(c99);
 	else if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DPLUS
 			|| code == C99_CODE_OPERATOR_DMINUS)
@@ -840,7 +840,7 @@ static int _unary_expr(C99 * c99)
 		ret = c99_scan(c99);
 		ret |= _unary_expr(c99);
 	}
-	else if(token_in_set(c99->token, c99set_unary_operator))
+	else if(_parse_in_set(c99, c99set_unary_operator))
 	{
 		ret = _unary_operator(c99);
 		ret |= _cast_expr(c99);
@@ -879,7 +879,7 @@ static int _postfix_expr(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_primary_expr))
+	if(_parse_in_set(c99, c99set_primary_expr))
 		ret |= _primary_expr(c99);
 	else if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
@@ -1009,9 +1009,9 @@ static int _specifier_qualifier_list(C99 * c99)
 #endif
 	for(;;)
 	{
-		if(token_in_set(c99->token, c99set_type_specifier))
+		if(_parse_in_set(c99, c99set_type_specifier))
 			ret |= _type_specifier(c99);
-		else if(token_in_set(c99->token, c99set_type_qualifier))
+		else if(_parse_in_set(c99, c99set_type_qualifier))
 			ret |= _type_qualifier(c99);
 		else if(looped == 0)
 			ret |= _parse_error(c99, "Expected type specifier"
@@ -1343,9 +1343,9 @@ static int _block_item(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_declaration))
+	if(_parse_in_set(c99, c99set_declaration))
 		return _declaration(c99);
-	else if(token_in_set(c99->token, c99set_statement))
+	else if(_parse_in_set(c99, c99set_statement))
 		return _statement(c99);
 	return _parse_error(c99, "Expected declaration or statement");
 }
@@ -1431,7 +1431,7 @@ static int _expression_statement(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
-	if(token_in_set(c99->token, c99set_expression))
+	if(_parse_in_set(c99, c99set_expression))
 		ret = _expression(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	return ret;
@@ -1563,7 +1563,7 @@ static int _jump_statement(C99 * c99)
 	else if(code == C99_CODE_KEYWORD_RETURN)
 	{
 		ret = c99_scan(c99);
-		if(token_in_set(c99->token, c99set_expression))
+		if(_parse_in_set(c99, c99set_expression))
 			ret = _expression(c99);
 	}
 	else /* continue or break */
@@ -1583,7 +1583,7 @@ static int _init_declarator_list(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _init_declarator(c99);
-	while(token_in_set(c99->token, c99set_init_declarator))
+	while(_parse_in_set(c99, c99set_init_declarator))
 		ret |= _init_declarator(c99);
 	return ret;
 }
@@ -1641,7 +1641,7 @@ static int _initializer_list(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(token_in_set(c99->token, c99set_designation))
+	if(_parse_in_set(c99, c99set_designation))
 		ret |= _designation(c99);
 	ret |= _initializer(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
@@ -1680,7 +1680,7 @@ static int _designator_list(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _designator(c99);
-	while(token_in_set(c99->token, c99set_designator))
+	while(_parse_in_set(c99, c99set_designator))
 		ret |= _designator(c99);
 	return ret;
 }
