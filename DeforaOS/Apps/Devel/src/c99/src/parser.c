@@ -32,7 +32,9 @@
 /* prototypes */
 static int _parse_check(C99 * c99, TokenCode code);
 static int _parse_error(C99 * c99, char const * format, ...);
+#ifdef DEBUG
 static char const * _parse_get_string(C99 * c99);
+#endif
 static int _parse_in_set(C99 * c99, TokenSet set);
 static int _parse_is_code(C99 * c99, TokenCode code);
 
@@ -119,7 +121,7 @@ static int _parse_check(C99 * c99, TokenCode code)
 		ret = _parse_error(c99, "Expected \"%s\"",
 				code_get_string(code));
 		while(c99_scan(c99) == 0
-				&& c99->token != NULL
+				&& c99->token != NULL /* actual token */
 				&& !_parse_is_code(c99, code));
 	}
 	ret |= c99_scan(c99);
@@ -149,12 +151,14 @@ static int _parse_error(C99 * c99, char const * format, ...)
 
 
 /* parse_get_string */
+#ifdef DEBUG
 static char const * _parse_get_string(C99 * c99)
 {
 	if(c99->token == NULL)
 		return "EOF";
 	return token_get_string(c99->token);
 }
+#endif
 
 
 /* parse_in_set */
@@ -176,6 +180,7 @@ static int _parse_is_code(C99 * c99, TokenCode code)
 
 
 /* grammar */
+/* translation-unit */
 static int _translation_unit(C99 * c99)
 	/* external-declaration { external-declaration } */
 {
@@ -184,7 +189,7 @@ static int _translation_unit(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while((ret = c99_scan(c99)) == 0
+	while((ret |= c99_scan(c99)) == 0
 			&& c99->token != NULL) /* end of file */
 		ret |= _external_declaration(c99);
 	return ret;
