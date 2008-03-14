@@ -286,13 +286,13 @@ static int _declaration_specifiers(C99 * c99)
 			ret |= _type_qualifier(c99);
 		else if(_parse_in_set(c99, c99set_function_specifier))
 			ret |= _function_specifier(c99);
-		else if(looped == 0)
-			return _parse_error(c99, "Expected"
-					" storage class specifier"
-					", type specifier, type qualifier"
-					" or function specifier");
 		else
+		{
+			if(looped == 0)
+				ret |= _parse_error(c99, "Expected declaration"
+					" specifier");
 			break;
+		}
 		looped = 1;
 	}
 	return ret;
@@ -551,7 +551,8 @@ static int _declarator(C99 * c99)
 	int ret = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			_parse_get_string(c99));
 #endif
 	if(_parse_in_set(c99, c99set_pointer))
 		ret |= _pointer(c99);
@@ -612,12 +613,13 @@ static int _direct_declarator(C99 * c99)
 	int code;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			_parse_get_string(c99));
 #endif
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
-		c99_scan(c99);
-		ret = _declarator(c99);
+		ret = c99_scan(c99);
+		ret |= _declarator(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else
@@ -803,11 +805,13 @@ static int _assignment_expr(C99 * c99)
 			_parse_get_string(c99));
 #endif
 	/* FIXME heavily suspect conflict between unary and conditional */
+#if 0
 	while(_parse_in_set(c99, c99set_unary_expr))
 	{
 		ret |= _unary_expr(c99);
 		ret |= _assignment_operator(c99);
 	}
+#endif
 	ret |= _conditional_expr(c99);
 	return ret;
 }
@@ -1309,14 +1313,17 @@ static int _cast_expr(C99 * c99)
 static int _compound_statement(C99 * c99)
 	/* "{" [ block-item-list ] "}" */
 {
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"{\" got \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	c99_scan(c99);
+	ret = c99_scan(c99);
 	if(_parse_in_set(c99, c99set_block_item_list))
-		_block_item_list(c99);
-	return c99_scan(c99);
+		ret |= _block_item_list(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	return ret;
 }
 
 
