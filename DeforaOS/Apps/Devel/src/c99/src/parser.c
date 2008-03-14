@@ -747,14 +747,48 @@ static int _direct_abstract_declarator(C99 * c99)
 
 {
 	int ret;
+	TokenCode code;
 
-	/* FIXME complete */
+	/* FIXME verify if correct */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	ret = c99_scan(c99);
-	ret |= _abstract_declarator(c99);
-	ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+	if(c99->token == NULL)
+		return 1;
+	if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LPAREN)
+	{
+		ret = c99_scan(c99);
+		ret |= _abstract_declarator(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+	}
+	else if(code == C99_CODE_OPERATOR_LBRACKET)
+	{
+		ret = c99_scan(c99);
+		if(!_parse_is_code(c99, C99_CODE_OPERATOR_RBRACKET))
+			ret |= _assignment_expr(c99);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
+	}
+	while(c99->token != NULL)
+	{
+		if((code = token_get_code(c99->token))
+				== C99_CODE_OPERATOR_LPAREN)
+		{
+			ret |= c99_scan(c99);
+			if(_parse_in_set(c99, c99set_parameter_type_list))
+				ret |= _parameter_type_list(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		}
+		else if(code == C99_CODE_OPERATOR_LBRACKET)
+		{
+			if(_parse_is_code(c99, C99_CODE_OPERATOR_TIMES))
+				ret |= c99_scan(c99);
+			else if(_parse_in_set(c99, c99set_assignment_expr))
+				ret |= _assignment_expr(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
+		}
+		else
+			break;
+	}
 	return ret;
 }
 
