@@ -370,6 +370,7 @@ TokenSet c99set_type_qualifier_list = _c99set_type_qualifier;
 static TokenCode _c99set_type_specifier[] =
 {
 #include "sets/type_specifier.set"
+	C99_CODE_NULL
 };
 
 TokenSet c99set_type_specifier = _c99set_type_specifier;
@@ -379,6 +380,7 @@ TokenSet c99set_type_specifier = _c99set_type_specifier;
 static TokenCode _c99set_typedef_name[] =
 {
 #include "sets/typedef_name.set"
+	C99_CODE_NULL
 };
 
 TokenSet c99set_typedef_name = _c99set_typedef_name;
