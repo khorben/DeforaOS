@@ -804,13 +804,11 @@ static int _assignment_expr(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	/* FIXME heavily suspect conflict between unary and conditional */
-#if 0
 	while(token_in_set(c99->token, c99set_unary_expr))
 	{
 		ret |= _unary_expr(c99);
 		ret |= _assignment_operator(c99);
 	}
-#endif
 	ret |= _conditional_expr(c99);
 	return ret;
 }
@@ -1179,9 +1177,10 @@ static int _equality_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _relational_expr(c99);
-	/* FIXME may segfault upon EOF (c99->token is NULL) */
-	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DEQUALS
-			|| code == C99_CODE_OPERATOR_NEQUALS)
+	while(c99->token != NULL
+			&& ((code = token_get_code(c99->token))
+				== C99_CODE_OPERATOR_DEQUALS
+				|| code == C99_CODE_OPERATOR_NEQUALS))
 	{
 		ret |= c99_scan(c99);
 		ret |= _relational_expr(c99);
@@ -1201,10 +1200,12 @@ static int _relational_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _shift_expr(c99);
-	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LESS
-			|| code == C99_CODE_OPERATOR_GREATER
-			|| code == C99_CODE_OPERATOR_LEQUALS
-			|| code == C99_CODE_OPERATOR_GEQUALS)
+	while(c99->token != NULL
+			&& ((code = token_get_code(c99->token))
+				== C99_CODE_OPERATOR_LESS
+				|| code == C99_CODE_OPERATOR_GREATER
+				|| code == C99_CODE_OPERATOR_LEQUALS
+				|| code == C99_CODE_OPERATOR_GEQUALS))
 	{
 		ret |= c99_scan(c99);
 		ret |= _shift_expr(c99);
@@ -1224,8 +1225,10 @@ static int _shift_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _additive_expr(c99);
-	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DLESS
-			|| code == C99_CODE_OPERATOR_DGREATER)
+	while(c99->token != NULL
+			&& ((code = token_get_code(c99->token))
+				== C99_CODE_OPERATOR_DLESS
+				|| code == C99_CODE_OPERATOR_DGREATER))
 	{
 		ret |= c99_scan(c99);
 		ret |= _additive_expr(c99);
@@ -1245,8 +1248,10 @@ static int _additive_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _multiplicative_expr(c99);
-	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_PLUS
-			|| code == C99_CODE_OPERATOR_MINUS)
+	while(c99->token != NULL
+			&& ((code = token_get_code(c99->token))
+				== C99_CODE_OPERATOR_PLUS
+				|| code == C99_CODE_OPERATOR_MINUS))
 	{
 		ret |= c99_scan(c99);
 		ret |= _multiplicative_expr(c99);
@@ -1266,9 +1271,11 @@ static int _multiplicative_expr(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _cast_expr(c99);
-	while((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_TIMES
-			|| code == C99_CODE_OPERATOR_DIVIDE
-			|| code == C99_CODE_OPERATOR_MODULO)
+	while(c99->token != NULL
+			&& ((code = token_get_code(c99->token))
+				== C99_CODE_OPERATOR_TIMES
+				|| code == C99_CODE_OPERATOR_DIVIDE
+				|| code == C99_CODE_OPERATOR_MODULO))
 	{
 		ret |= c99_scan(c99);
 		ret |= _cast_expr(c99);
@@ -1357,17 +1364,17 @@ static int _statement(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	/* FIXME labeled and expression statements conflict */
-	if(c99->in_switch && token_in_set(c99->token, c99set_labeled_statement))
+	if(c99->in_switch && _parse_in_set(c99, c99set_labeled_statement))
 		return _labeled_statement(c99);
-	else if(token_in_set(c99->token, c99set_compound_statement))
+	else if(_parse_in_set(c99, c99set_compound_statement))
 		return _compound_statement(c99);
-	else if(token_in_set(c99->token, c99set_expression_statement))
+	else if(_parse_in_set(c99, c99set_expression_statement))
 		return _expression_statement(c99);
-	else if(token_in_set(c99->token, c99set_selection_statement))
+	else if(_parse_in_set(c99, c99set_selection_statement))
 		return _selection_statement(c99);
-	else if(token_in_set(c99->token, c99set_iteration_statement))
+	else if(_parse_in_set(c99, c99set_iteration_statement))
 		return _iteration_statement(c99);
-	else if(token_in_set(c99->token, c99set_jump_statement))
+	else if(_parse_in_set(c99, c99set_jump_statement))
 		return _jump_statement(c99);
 	return _parse_error(c99, "Expected statement");
 }
