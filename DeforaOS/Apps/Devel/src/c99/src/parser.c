@@ -49,7 +49,6 @@ static int _struct_declaration(C99 * c99);
 static int _struct_declarator_list(C99 * c99);
 static int _struct_declarator(C99 * c99);
 static int _enum_specifier(C99 * c99);
-static int _enumerator_list(C99 * c99);
 static int _enumerator(C99 * c99);
 static int _enumeration_constant(C99 * c99);
 static int _typedef_name(C99 * c99);
@@ -432,7 +431,7 @@ static int _struct_declarator(C99 * c99)
 
 /* enum-specifier */
 static int _enum_specifier(C99 * c99)
-	/* enum [ identifier ] "{" enumerator-list [ ","] "}"
+	/* enum [ identifier ] "{" enumerator { "," enumerator } [ ","] "}"
 	 * enum identifier */
 {
 	int ret;
@@ -449,29 +448,16 @@ static int _enum_specifier(C99 * c99)
 			return ret;
 	}
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
-	ret |= _enumerator_list(c99);
-	if(_parse_is_code(c99, C99_CODE_COMMA))
-		ret |= c99_scan(c99);
-	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
-	return ret;
-}
-
-
-/* enumerator-list */
-static int _enumerator_list(C99 * c99)
-	/* enumerator { "," enumerator } */
-{
-	int ret;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	ret = _enumerator(c99);
+	ret |= _enumerator(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
 		ret |= c99_scan(c99);
-		ret |= _enumerator(c99);
+		if(!_parse_is_code(c99, C99_CODE_OPERATOR_RBRACE))
+			ret |= _enumerator(c99);
+		else
+			break;
 	}
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
 	return ret;
 }
 
@@ -754,8 +740,8 @@ static int _direct_abstract_declarator(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(c99->token == NULL)
-		return 1;
-	if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LPAREN)
+		return _parse_error(c99, "Unexpected end of file");
+	else if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LPAREN)
 	{
 		ret = c99_scan(c99);
 		ret |= _abstract_declarator(c99);
@@ -827,13 +813,14 @@ static int _unary_expr(C99 * c99)
 	int ret;
 	int code;
 
-	/* FIXME may segfault upon EOF (c99->token is NULL) */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			token_get_string(c99->token));
 #endif
 	if(_parse_in_set(c99, c99set_postfix_expr))
 		return _postfix_expr(c99);
+	else if(c99->token == NULL)
+		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DPLUS
 			|| code == C99_CODE_OPERATOR_DMINUS)
 	{
@@ -965,7 +952,7 @@ static int _primary_expr(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	if(c99->token == NULL)
-		return 1;
+		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
 		return _identifier(c99);
 	else if(code == C99_CODE_OPERATOR_LPAREN)
@@ -1394,7 +1381,7 @@ static int _labeled_statement(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	if(c99->token == NULL)
-		return 1;
+		return _parse_error(c99, "Unexpected end of file");
 	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
 		ret = _identifier(c99);
 	else if(code == C99_CODE_KEYWORD_CASE)
@@ -1470,8 +1457,8 @@ static int _selection_statement(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	if(c99->token == NULL)
-		return 1;
-	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_SWITCH)
+		return _parse_error(c99, "Unexpected end of file");
+	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_SWITCH)
 		c99->in_switch++;
 	ret = c99_scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
@@ -1503,7 +1490,7 @@ static int _iteration_statement(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(c99->token == NULL)
-		return 1;
+		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_WHILE)
 	{
 		ret = c99_scan(c99);
@@ -1556,7 +1543,7 @@ static int _jump_statement(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	if(c99->token == NULL)
-		return 1;
+		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
 	{
 		ret = c99_scan(c99);
