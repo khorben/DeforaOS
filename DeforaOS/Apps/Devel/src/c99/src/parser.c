@@ -967,9 +967,9 @@ static int _primary_expr(C99 * c99)
 			token_get_string(c99->token));
 #endif
 	if(c99->token == NULL)
-		return 0;
+		return 1;
 	else if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
-		return c99_scan(c99);
+		return _identifier(c99);
 	else if(code == C99_CODE_OPERATOR_LPAREN)
 	{
 		ret = c99_scan(c99);
@@ -977,7 +977,7 @@ static int _primary_expr(C99 * c99)
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		return ret;
 	}
-	else
+	else /* constant or string-litteral */
 		return c99_scan(c99);
 }
 
@@ -992,7 +992,7 @@ static int _type_name(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _specifier_qualifier_list(c99);
-	if(token_in_set(c99->token, c99set_abstract_declarator))
+	if(_parse_in_set(c99, c99set_abstract_declarator))
 		ret |= _abstract_declarator(c99);
 	return ret;
 }
@@ -1006,7 +1006,8 @@ static int _specifier_qualifier_list(C99 * c99)
 	int looped = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
 	for(;;)
 	{
@@ -1339,7 +1340,7 @@ static int _block_item(C99 * c99)
 		return _declaration(c99);
 	else if(token_in_set(c99->token, c99set_statement))
 		return _statement(c99);
-	return 1; /* FIXME report error */
+	return _parse_error(c99, "Expected declaration or statement");
 }
 
 
@@ -1385,7 +1386,8 @@ static int _labeled_statement(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
 			token_get_string(c99->token));
 #endif
-	/* FIXME may segfault upon EOF (c99->token is NULL) */
+	if(c99->token == NULL)
+		return 1;
 	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
 		ret = _identifier(c99);
 	else if(code == C99_CODE_KEYWORD_CASE)
@@ -1450,16 +1452,18 @@ static int _expression(C99 * c99)
 
 /* selection-statement */
 static int _selection_statement(C99 * c99)
-	/* if "(" expression ")" statement [ else statement ]
-	 * switch "(" expression ")" statement */
+	/* "if" "(" expression ")" statement [ "else" statement ]
+	 * "switch" "(" expression ")" statement */
 {
 	int ret;
 	int code;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+			token_get_string(c99->token));
 #endif
-	/* FIXME may segfault upon EOF (c99->token is NULL) */
+	if(c99->token == NULL)
+		return 1;
 	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_SWITCH)
 		c99->in_switch++;
 	ret = c99_scan(c99);
@@ -1546,8 +1550,8 @@ static int _jump_statement(C99 * c99)
 	/* FIXME may segfault upon EOF (c99->token is NULL) */
 	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
 	{
-		c99_scan(c99);
-		ret = _identifier(c99);
+		ret = c99_scan(c99);
+		ret |= _identifier(c99);
 	}
 	else if(code == C99_CODE_KEYWORD_RETURN)
 	{
