@@ -184,7 +184,8 @@ static int _translation_unit(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while(c99_scan(c99) == 0 && c99->token != NULL)
+	while((ret = c99_scan(c99)) == 0
+			&& c99->token != NULL) /* end of file */
 		ret |= _external_declaration(c99);
 	return ret;
 }
@@ -211,12 +212,12 @@ static int _function_definition(C99 * c99)
 	/* declaration-specifiers declarator [ declaration-list ]
 	 * compound-statement */
 {
-	int ret = 0;
+	int ret;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	ret |= _declaration_specifiers(c99);
+	ret = _declaration_specifiers(c99);
 	ret |= _declarator(c99);
 	if(_parse_in_set(c99, c99set_declaration_list))
 		ret |= _declaration_list(c99);
@@ -739,7 +740,7 @@ static int _direct_abstract_declarator(C99 * c99)
 	 * [ direct-abstract-declarator ] "(" [ parameter-type-list ] ")" */
 
 {
-	int ret;
+	int ret = 0;
 	TokenCode code;
 
 	/* FIXME verify if correct */
@@ -817,7 +818,7 @@ static int _unary_expr(C99 * c99)
 	 * sizeof unary-expr
 	 * sizeof "(" type-name ")" */
 {
-	int ret;
+	int ret = 0;
 	int code;
 
 #ifdef DEBUG
