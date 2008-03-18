@@ -65,6 +65,7 @@ static int _identifier(C99 * c99);
 static int _identifier_list(C99 * c99);
 static int _parameter_type_list(C99 * c99);
 static int _parameter_declaration(C99 * c99);
+static int _abstract_or_declarator(C99 * c99);
 static int _abstract_declarator(C99 * c99);
 static int _direct_abstract_declarator(C99 * c99);
 static int _assignment_expr(C99 * c99);
@@ -604,8 +605,7 @@ static int _type_qualifier_list(C99 * c99)
 
 /* direct-declarator */
 static int _direct_declarator(C99 * c99)
-	/* FIXME still recursive
-	 * identifier
+	/* identifier
 	 * "(" declarator ")"
 	 * direct-declarator "[" (assignment-expression | "*") "]"
 	 * direct-declarator "(" parameter-type-list ")"
@@ -714,12 +714,25 @@ static int _parameter_declaration(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _declaration_specifiers(c99);
-	/* FIXME ambiguity between declarator and abstract declarator */
-	if(_parse_in_set(c99, c99set_abstract_declarator))
-		ret |= _abstract_declarator(c99);
-	else if(_parse_in_set(c99, c99set_declarator))
-		ret |= _declarator(c99);
+	if(_parse_in_set(c99, c99set_abstract_or_declarator))
+		ret |= _abstract_or_declarator(c99);
 	return ret;
+}
+
+
+/* abstract-or-declarator */
+static int _abstract_or_declarator(C99 * c99)
+	/* pointer
+	 * [ pointer ] (direct-declarator | abstract-direct-declarator) */
+{
+	int ret = 0;
+
+	if(_parse_in_set(c99, c99set_pointer))
+		ret |= _pointer(c99);
+	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
+		return ret | _direct_declarator(c99);
+	/* FIXME there is still an ambiguity with "(" */
+	return ret | _direct_abstract_declarator(c99);
 }
 
 
