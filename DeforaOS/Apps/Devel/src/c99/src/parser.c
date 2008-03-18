@@ -189,9 +189,11 @@ static int _translation_unit(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while((ret |= c99_scan(c99)) == 0
+	while(c99_scan(c99) == 0
 			&& c99->token != NULL) /* end of file */
 		ret |= _external_declaration(c99);
+	if(c99->token != NULL)
+		ret |= 1;
 	return ret;
 }
 
