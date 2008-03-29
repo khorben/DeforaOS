@@ -1,5 +1,5 @@
 PACKAGE	= DaPortal
-VERSION	= 20071110
+VERSION	= 20080329
 SUBDIRS	= css html icons js images install modules system templates themes
 RM	= rm -f
 LN	= ln -sf
@@ -42,12 +42,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/disabled.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/down.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/download.png \
-		$(PACKAGE)-$(VERSION)/icons/16x16/edit.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/enabled.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/host.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/language.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/news.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/pki.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/project.png \
-		$(PACKAGE)-$(VERSION)/icons/16x16/read.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/reply.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/save.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/search.png \
@@ -56,7 +56,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/user.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/users.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/webmail.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/wiki.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/16x16/mime/default.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/mime/folder.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/mime/index.php \
+		$(PACKAGE)-$(VERSION)/icons/16x16/mime/project.conf \
 		$(PACKAGE)-$(VERSION)/icons/48x48/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/appearance.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/article.png \
@@ -78,19 +83,101 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/explorer.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/files.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/host.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/language.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/logout.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/menu.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/news.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/papadam.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/pki.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/project.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/search.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/top.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/user.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/users.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/webmail.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/wiki.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/48x48/mime/default.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/mime/folder.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/mime/index.php \
+		$(PACKAGE)-$(VERSION)/icons/48x48/mime/project.conf \
 		$(PACKAGE)-$(VERSION)/icons/gnome/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/add.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_center.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_justify.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_left.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_right.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/back.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/bold.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/bug.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/bullet.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/copy.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/cut.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/delete.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/disabled.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enabled.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enum.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/forward.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/home.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/indent.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/italic.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_details.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_list.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_thumbnails.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/new.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/new_directory.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/parent_directory.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/paste.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/redo.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/refresh.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/remove.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/select_all.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/strikethrough.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/underline.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/undo.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/unindent.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/upload_file.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/bug.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/comment.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/download.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/host.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/icons.css \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/language.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/project.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/settings.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/stats.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/users.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/addressbook.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/admin.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/appearance.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/article.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/bookmark.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/browser.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/bug.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/category.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/comment.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/contact.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/content.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/directory.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/download.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/error.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/home.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/icons.css \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/info.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/news.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/package.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/probe.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/project.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/search.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/top.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/user.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/users.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/warning.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/webmail.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/js/explorer.js \
 		$(PACKAGE)-$(VERSION)/js/project.conf \
 		$(PACKAGE)-$(VERSION)/images/css.png \
@@ -213,7 +300,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/project/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/project/download.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/index.php \
-		$(PACKAGE)-$(VERSION)/modules/project/installer.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/lang.de.php \
 		$(PACKAGE)-$(VERSION)/modules/project/lang.fr.php \
 		$(PACKAGE)-$(VERSION)/modules/project/module.php \
@@ -237,6 +323,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/top/module.php \
 		$(PACKAGE)-$(VERSION)/modules/top/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/top/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/translate/desktop.php \
+		$(PACKAGE)-$(VERSION)/modules/translate/index.php \
+		$(PACKAGE)-$(VERSION)/modules/translate/module.php \
+		$(PACKAGE)-$(VERSION)/modules/translate/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/user/appearance.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/user/index.php \
@@ -271,6 +361,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/webmail/tree.js \
 		$(PACKAGE)-$(VERSION)/modules/webmail/tree.tpl \
 		$(PACKAGE)-$(VERSION)/modules/webmail/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/wiki/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/wiki/display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/index.php \

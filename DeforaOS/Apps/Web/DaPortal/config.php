@@ -6,14 +6,14 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: index.php'));
 
 
-$template = 'DaPortal';
-$theme = 'DaPortal';
+$template = 'DeforaOS';
+$theme = 'DeforaOS';
 //$debug = 1;		//force debugging on
-$dbtype = 'pgsql';	//or 'mysql' or 'sqlite'
+$dbtype = 'sqlite';	//or 'mysql' or 'sqlite'
 //$dbhostname = '';	//defaults to local connections
-$dbname = 'daportal';
+$dbname = '/var/httpd/sqlite/daportal.db';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
-$friendlylinks = 0;	//force "friendly links" generation
+$friendlylinks = 1;	//force "friendly links" generation
 
 ?>

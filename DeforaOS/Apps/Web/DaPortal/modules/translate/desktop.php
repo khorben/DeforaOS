@@ -17,7 +17,7 @@
 
 
 $title = 'Translate';
-$icon = 'lang.png';
+$icon = 'language.png';
 $admin = 1;
 $list = 0;
 global $lang;

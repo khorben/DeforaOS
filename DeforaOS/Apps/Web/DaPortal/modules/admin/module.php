@@ -70,6 +70,7 @@ function admin_admin($args)
 	{
 		for($cnt = count($lang), $i = 0; $i < $cnt; $i++)
 		{
+			$lang[$i]['icon'] = 'icons/16x16/language.png';
 			$lang[$i]['name'] = _html_safe($lang[$i]['name']);
 			$lang[$i]['apply_module'] = 'admin';
 			$lang[$i]['apply_id']
