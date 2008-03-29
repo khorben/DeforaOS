@@ -374,7 +374,10 @@ function comment_system($args)
 
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
+	{
+		header('Location: '._module_link('user', 'login'));
 		exit(0);
+	}
 	if(!isset($args['action']) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
 	switch($args['action'])
