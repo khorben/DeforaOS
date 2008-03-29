@@ -20,7 +20,7 @@
 
 
 //check url
-if(!ereg('/install.php$', $_SERVER['SCRIPT_NAME']))
+if(!ereg('/in(stall|dex).php$', $_SERVER['SCRIPT_NAME']))
 	exit(header('Location: index.php'));
 
 
