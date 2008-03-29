@@ -31,7 +31,7 @@ foreach($priorities as $p) { ?>
 				<option value="<?php echo _html_safe($p); ?>"<?php if(isset($reply['priority']) && $reply['priority'] == $p) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p); ?></option>
 <?php } ?>
 			</select></td><td class="field"><?php echo _html_safe(ASSIGNED_TO); ?>:</td><td><select name="assigned_id">
-				<option value=""<?php if(!isset($reply['assigned_id']) || !is_numeric($reply['assigned_id']) == '') { ?> selected="selected"<?php } ?></option>
+				<option value=""<?php if(!isset($reply['assigned_id']) || !is_numeric($reply['assigned_id']) == '') { ?> selected="selected"<?php } ?>></option>
 <?php foreach($members as $m) { ?>
 				<option value="<?php echo _html_safe($m['id']); ?>"<?php if(isset($reply['assigned_id']) && $reply['assigned_id'] == $m['id']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($m['username']); ?></option>
 <?php } ?>
