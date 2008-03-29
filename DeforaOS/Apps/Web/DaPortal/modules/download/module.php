@@ -234,6 +234,7 @@ function download_default($args)
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => 'javascript:location.reload()'); /* XXX */
+	require_once('./system/user.php');
 	if(_user_admin($user_id))
 	{
 		$toolbar[] = array();
