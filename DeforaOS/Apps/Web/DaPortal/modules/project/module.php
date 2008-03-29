@@ -652,7 +652,8 @@ function project_bug_list($args)
 		$bugs[$i]['name'] = _html_safe($bugs[$i]['name']);
 		$bugs[$i]['args'] = 'bug_id='.$bugs[$i]['bug_id'];
 		$bugs[$i]['nb'] = '<a href="'._html_link('project',
-			'bug_display', $bugs[$i]['id'], $bugs[$i]['title'])
+			'bug_display', $bugs[$i]['id'], $bugs[$i]['title'],
+			'bug_id='.$bugs[$i]['bug_id'])
 				.'">#'.$bugs[$i]['bug_id'].'</a>';
 		$bugs[$i]['project'] = '<a href="'._html_link('project',
 			'bug_list', $bugs[$i]['project_id']).'">'
@@ -744,10 +745,10 @@ function project_bug_reply($args)
 		return _error('Unable to display bug');
 	$bug = $bug[0];
 	$bug['date'] = _sql_date($bug['timestamp']);
+	require_once('./system/user.php');
 	if(isset($bug['assigned_id']))
 		$bug['assigned'] = _user_name($bug['assigned_id']);
 	$title = REPLY_TO_BUG.' #'.$bug['bug_id'].': '.$bug['title'];
-	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? 1 : 0;
 	$members = _project_members($bug['project_id']);
 	$member = _project_is_member($bug['project_id'], $members, $user_id);
@@ -812,7 +813,7 @@ function project_bug_reply_insert($args)
 	$status = '';
 	$from = 'From: '._user_name($user_id)."\n";
 	$to = "\n";
-	if($admin || _project_is_member($args['project_id']))
+	if($admin || _project_is_member($project_id))
 	{
 		if(isset($args['assigned_id'])
 				&& is_numeric($args['assigned_id'])
