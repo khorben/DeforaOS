@@ -73,6 +73,14 @@ CREATE TABLE daportal_content (
 	enabled BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE daportal_content_lang (
+	content_lang_id SERIAL PRIMARY KEY,
+	content_id INTEGER REFERENCES daportal_content (content_id),
+	lang_id VARCHAR(2) REFERENCES daportal_lang (lang_id),
+	title VARCHAR(255),
+	content TEXT
+);
+
 INSERT INTO daportal_module (name, enabled) VALUES ('content', '1');
 
 
