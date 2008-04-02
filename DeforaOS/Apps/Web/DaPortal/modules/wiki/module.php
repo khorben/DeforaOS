@@ -129,8 +129,10 @@ function _validate($content)
 {
 	global $wiki_blacklisted;
 
-	$content = str_replace(array('<br>', '<hr>', '&copy;','&nbsp;'),
-			array('<br/>', '<hr/>', '&amp;copy;', '&amp;nbsp;'),
+	$content = str_replace(array('<br>', '<hr>', '&copy;',  '&laquo;',
+				'&nbsp;', '&raquo;'),
+			array('<br/>', '<hr/>', '&amp;copy;', '&amp;laquo;',
+				'&amp;nbsp;', '&amp;raquo;'),
 			$content);
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
