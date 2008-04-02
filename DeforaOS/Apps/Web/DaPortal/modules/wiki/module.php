@@ -365,6 +365,7 @@ function wiki_display($args)
 						strlen($sep)) != 0; $i++)
 				$apnd = '...';
 			$message.=$apnd;
+			require_once('./system/user.php');
 			$username = ($user_id =_user_id($message)) != FALSE
 				? '<a href="'._html_link('user', FALSE,
 				$user_id, $message).'">'._html_safe($message)
