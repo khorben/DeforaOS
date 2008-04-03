@@ -1069,7 +1069,7 @@ static int _current_loop(Browser * browser)
 	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
 	{
 		gtk_tree_model_get(model, &iter, BR_COL_INODE, &inode, -1);
-		if(inode == st.st_ino)
+		if(inode == lst.st_ino)
 			break;
 	}
 	if(S_ISLNK(lst.st_mode) && stat(path, &st) == 0)
