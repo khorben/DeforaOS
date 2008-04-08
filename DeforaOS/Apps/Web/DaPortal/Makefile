@@ -1,5 +1,5 @@
 PACKAGE	= DaPortal
-VERSION	= 20080329
+VERSION	= 20080408
 SUBDIRS	= css html icons js images install modules system templates themes
 RM	= rm -f
 LN	= ln -sf
@@ -120,6 +120,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enum.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/forward.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/home.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/indent.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/italic.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/listing_details.png \
