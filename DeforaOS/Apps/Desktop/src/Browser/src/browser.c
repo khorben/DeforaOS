@@ -576,10 +576,12 @@ void browser_open_with(Browser * browser, char const * path)
 }
 
 
+/* browser_refresh */
 static void _refresh_title(Browser * browser);
 static void _refresh_path(Browser * browser);
 static void _refresh_new(Browser * browser);
 static void _refresh_current(Browser * browser);
+
 void browser_refresh(Browser * browser)
 {
 	DIR * dir;
@@ -785,6 +787,9 @@ static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 	GdkPixbuf * icon_96 = browser->pb_file_96;
 #endif
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s(\"%s\")\n", "DEBUG: ", __func__, display);
+#endif
 	_insert_all(browser, lst, st, &display, &inode, &size, &dsize, &pw, &gr,
 			&ddate, &type, path, &icon_24
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -837,7 +842,7 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 	char const * p;
 
 	if((p = g_filename_to_utf8(*display, -1, NULL, NULL, NULL)) != NULL)
-		*display = p;
+		*display = p; /* XXX should display be free'd? */
 	*inode = lst->st_ino;
 	*size = lst->st_size;
 	*dsize = _insert_size(lst->st_size);
@@ -1010,9 +1015,11 @@ static gboolean _done_timeout(gpointer data)
 	return FALSE;
 }
 
+/* refresh_current */
 static int _current_loop(Browser * browser);
 static gboolean _current_idle(gpointer data);
 static void _current_deleted(Browser * browser);
+
 static void _refresh_current(Browser * browser)
 {
 	unsigned int i;
@@ -1099,6 +1106,9 @@ static void _loop_update(Browser * browser, GtkTreeIter * iter,
 	GdkPixbuf * icon_96 = browser->pb_file_96;
 #endif
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s(\"%s\")\n", "DEBUG: ", __func__, display);
+#endif
 	_insert_all(browser, lst, st, &display, &inode, &size, &dsize, &pw, &gr,
 			&ddate, &type, path, &icon_24
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1272,8 +1282,8 @@ void browser_set_view(Browser * browser, BrowserView view)
 	}
 }
 
-static void _details_column_text(GtkTreeView * view, char const * title,
-		int id, int sort);
+static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
+		char const * title, int id, int sort);
 
 static void _view_details(Browser * browser)
 {
@@ -1321,13 +1331,15 @@ static void _view_details(Browser * browser)
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
-	_details_column_text(view, "Filename", BR_COL_DISPLAY_NAME,
+	_details_column_text(view, renderer, "Filename", BR_COL_DISPLAY_NAME,
 			BR_COL_DISPLAY_NAME);
-	_details_column_text(view, "Size", BR_COL_DISPLAY_SIZE, BR_COL_SIZE);
-	_details_column_text(view, "Owner", BR_COL_OWNER, BR_COL_OWNER);
-	_details_column_text(view, "Group", BR_COL_GROUP, BR_COL_GROUP);
-	_details_column_text(view, "Date", BR_COL_DISPLAY_DATE, BR_COL_DATE);
-	_details_column_text(view, "MIME type", BR_COL_MIME_TYPE,
+	_details_column_text(view, NULL, "Size", BR_COL_DISPLAY_SIZE,
+			BR_COL_SIZE);
+	_details_column_text(view, NULL, "Owner", BR_COL_OWNER, BR_COL_OWNER);
+	_details_column_text(view, NULL, "Group", BR_COL_GROUP, BR_COL_GROUP);
+	_details_column_text(view, NULL, "Date", BR_COL_DISPLAY_DATE,
+			BR_COL_DATE);
+	_details_column_text(view, NULL, "MIME type", BR_COL_MIME_TYPE,
 			BR_COL_MIME_TYPE);
 	gtk_tree_view_set_headers_visible(view, TRUE);
 	g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(
@@ -1339,13 +1351,15 @@ static void _view_details(Browser * browser)
 	gtk_widget_show(browser->detailview);
 }
 
-static void _details_column_text(GtkTreeView * view, char const * title, int id,
-		int sort)
+static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
+		char const * title, int id, int sort)
 {
 	GtkTreeViewColumn * column;
 
-	column = gtk_tree_view_column_new_with_attributes(title,
-			gtk_cell_renderer_text_new(), "text", id, NULL);
+	if(renderer == NULL)
+		renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(title, renderer,
+			"text", id, NULL);
 	gtk_tree_view_column_set_sort_column_id(column, sort);
 	gtk_tree_view_append_column(view, column);
 }
