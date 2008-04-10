@@ -159,7 +159,6 @@ function comment_admin($args)
 			'action' => 'disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
-	//FIXME still does not work?
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => DELETE);
 	_module('explorer', 'browse_trusted', array('entries' => $comments,
