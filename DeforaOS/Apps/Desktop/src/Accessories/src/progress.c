@@ -14,8 +14,7 @@
  * Accessories; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA  02111-1307  USA */
 /* TODO:
- * - use g_io_channel_get_flags() (instead of eof?)
- * - g_io_channel_read() is deprecated */
+ * - use g_io_channel_get_flags() (instead of eof?) */
 
 
 
@@ -65,6 +64,7 @@ typedef struct _Progress
 
 /* functions */
 static int _progress_error(char const * message, int ret);
+static int _progress_gerror(char const * message, GError * error, int ret);
 static int _progress_exec(Progress * progress, char * argv[]);
 
 /* callbacks */
@@ -87,12 +87,21 @@ static int _progress(Prefs * prefs, char * argv[])
 	GtkSizeGroup * right;
 	GtkWidget * widget;
 	PangoFontDescription * bold;
+	char * q;
   
+	memset(&p, 0, sizeof(p));
 	p.prefs = prefs;
-	p.fd = 0;
-	p.eof = 0;
-	p.buf_cnt = 0;
-	p.cnt = 0;
+	if(pipe(p.fds) != 0)
+		return _progress_error("pipe", 1);
+	if((p.pid = fork()) == -1)
+	{
+		close(p.fds[0]);
+		close(p.fds[1]);
+		return _progress_error("fork", 1);
+	}
+	if(p.pid != 0)
+		return _progress_exec(&p, argv);
+	close(p.fds[0]);
 	if(gettimeofday(&p.tv, NULL) != 0)
 		return _progress_error("gettimeofday", 1);
 	if(prefs->filename == NULL)
@@ -101,25 +110,12 @@ static int _progress(Prefs * prefs, char * argv[])
 		return _progress_error(prefs->filename, 1);
 	else if(fstat(p.fd, &st) == 0)
 		prefs->length = st.st_size;
-	if(pipe(p.fds) != 0)
-	{
-		close(p.fd);
-		return _progress_error("pipe", 1);
-	}
 	channel = g_io_channel_unix_new(p.fd);
 	g_io_add_watch(channel, G_IO_IN, _progress_channel, &p);
+	g_io_channel_set_encoding(channel, NULL, NULL);
 	channel = g_io_channel_unix_new(p.fds[1]);
 	g_io_add_watch(channel, G_IO_OUT, _progress_channel, &p);
-	if((p.pid = fork()) == -1)
-	{
-		close(p.fd);
-		close(p.fds[0]);
-		close(p.fds[1]);
-		return _progress_error("fork", 1);
-	}
-	if(p.pid != 0)
-		return _progress_exec(&p, argv);
-	close(p.fds[0]);
+	g_io_channel_set_encoding(channel, NULL, NULL);
 	/* graphical interface */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), prefs->title != NULL
@@ -137,7 +133,10 @@ static int _progress(Prefs * prefs, char * argv[])
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	widget = gtk_label_new(prefs->filename);
+	if((q = g_filename_to_utf8(prefs->filename, -1, NULL, NULL, NULL))
+			== NULL)
+		q = prefs->filename;
+	widget = gtk_label_new(q);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -172,7 +171,19 @@ static int _progress(Prefs * prefs, char * argv[])
 	return 0;
 }
 
+static int _error_do(char const * message, char const * error, int ret);
+
 static int _progress_error(char const * message, int ret)
+{
+	return _error_do(message, strerror(errno), ret);
+}
+
+static int _progress_gerror(char const * message, GError * error, int ret)
+{
+	return _error_do(message, error->message, ret);
+}
+
+static int _error_do(char const * message, char const * error, int ret)
 {
 	GtkWidget * dialog;
 
@@ -226,6 +237,7 @@ static int _exec_gunzip(Progress * progress, char * argv[])
 	if(dup2(tmp.fds[1], 1) == -1)
 		exit(_progress_error("dup2", -1));
 	execlp("gunzip", "gunzip", NULL);
+	execlp("gzip", "gzip", "-d", NULL);
 	exit(_progress_error("gunzip", -1));
 	return 1;
 }
@@ -270,11 +282,13 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 {
 	gsize read;
 
+	/* I would use g_io_channel_read_chars but it doesn't work */
 	if(g_io_channel_read(source, &p->buf[p->buf_cnt],
 				sizeof(p->buf) - p->buf_cnt, &read)
 			!= G_IO_ERROR_NONE)
 	{
 		_progress_error(p->prefs->filename, 0);
+		g_io_channel_unref(source);
 		gtk_main_quit();
 		return FALSE;
 	}
@@ -288,10 +302,12 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 }
 
 static void _out_rate(Progress * p);
+
 static gboolean _channel_out(Progress * p, GIOChannel * source)
 {
 	GIOChannel * channel;
 	gsize written;
+	GError * error = NULL;
 
 	if(p->buf_cnt == 0)
 	{
@@ -304,11 +320,11 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 		g_io_add_watch(channel, G_IO_IN, _progress_channel, p);
 		return TRUE;
 	}
-	if(g_io_channel_write(source, p->buf, p->buf_cnt, &written)
-			!= G_IO_ERROR_NONE)
+	if(g_io_channel_write_chars(source, p->buf, p->buf_cnt, &written,
+				&error) == G_IO_STATUS_ERROR)
 	{
+		_progress_gerror(p->prefs->filename, error, 0);
 		gtk_main_quit();
-		_progress_error(p->prefs->filename, 0);
 		return FALSE;
 	}
 	p->buf_cnt -= written;

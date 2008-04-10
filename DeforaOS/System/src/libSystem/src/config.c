@@ -194,7 +194,7 @@ static char * _load_section(FILE * fp)
 
 	while((c = fgetc(fp)) != EOF && c != ']' && isprint(c))
 	{
-		if((p = realloc(str, sizeof(char) * (len + 2))) == NULL)
+		if((p = realloc(str, sizeof(*str) * (len + 2))) == NULL)
 		{
 			free(str);
 			return NULL;
@@ -224,7 +224,7 @@ static char * _load_variable(FILE * fp, int c)
 	str[0] = c;
 	while((c = fgetc(fp)) != EOF && c != '=' && isprint(c))
 	{
-		if((p = realloc(str, sizeof(char) * (len+2))) == NULL)
+		if((p = realloc(str, sizeof(*str) * (len + 2))) == NULL)
 		{
 			free(str);
 			return NULL;
@@ -250,7 +250,7 @@ static char * _load_value(FILE * fp)
 
 	while((c = fgetc(fp)) != EOF && isprint(c))
 	{
-		if((p = realloc(str, sizeof(char) * (len+2))) == NULL)
+		if((p = realloc(str, sizeof(*str) * (len + 2))) == NULL)
 		{
 			free(str);
 			return NULL;
