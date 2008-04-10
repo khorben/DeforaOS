@@ -123,6 +123,7 @@ function _content_user_update($id, $title, $content)
 {
 	global $user_id;
 
+	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		return _content_update($id, $title, $content);
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
