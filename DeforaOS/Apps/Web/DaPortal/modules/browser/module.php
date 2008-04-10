@@ -221,12 +221,12 @@ function _default_dir(&$root, &$file, $sort)
 	usort($entries, $func);
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()'); /* XXX */
+			'onclick' => 'history.back(); return false');
 	$toolbar[] = array('class' => 'parent_directory',
 			'link' => _html_link('browser', '', dirname($file)),
 			'title' => PARENT_DIRECTORY);
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()'); /* XXX */
+			'onclick' => 'history.forward(); return false');
 	$class = array('dsize' => SIZE, 'uid' => OWNER, 'gid' => GROUP,
 			'mtime' => DATE);
 	_module('explorer', 'browse', array('toolbar' => $toolbar,

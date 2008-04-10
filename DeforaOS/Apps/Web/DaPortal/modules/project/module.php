@@ -1523,7 +1523,7 @@ function project_timeline($args)
 	{
 		return include('./modules/project/project_submitted.tpl');
 	}
-	$project = _sql_array('SELECT project_id, title AS name, cvsroot'
+	$project = _sql_array('SELECT project_id AS id, title AS name, cvsroot'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
@@ -1531,7 +1531,7 @@ function project_timeline($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_ARGUMENT);
 	$project = $project[0];
-	_project_toolbar($project['project_id']);
+	_project_toolbar($project['id']);
 	if(strlen($project['cvsroot']) == 0)
 	{
 		print('<h1 class="title project">'._html_safe($project['name'])
@@ -1590,12 +1590,14 @@ function project_timeline($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()');
+			'onclick' => 'history.back(); return false');
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()');
+			'onclick' => 'history.forward(); return false');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()');
+			'link' => _module_link('project', 'timeline',
+				$project['id'], $project['name']),
+			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', array(
 			'entries' => array_reverse($entries),
 			'class' => array('date' => DATE,
