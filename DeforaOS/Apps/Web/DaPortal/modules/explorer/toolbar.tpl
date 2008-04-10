@@ -1,7 +1,7 @@
 	<div class="toolbar">
 <?php if(isset($args['toolbar'])) { ?>
 <?php foreach($toolbar as $t) { if(isset($t['class'])) { ?>
-		<a<?php if(isset($t['link'])) { ?> href="<?php echo _html_safe($t['link']); ?>"<?php } if(isset($t['action'])) { ?> onclick="selection_apply(<?php echo $explorer_id; ?>, '<?php echo _html_safe($t['action']); ?>', <?php echo isset($t['confirm']) ? "'"._html_safe($t['confirm'])."'" : '0'; ?>); return false"<?php } if(isset($t['title'])) { ?> title="<?php echo _html_safe($t['title']); ?>"<?php } ?>><div class="icon <?php echo _html_safe($t['class']); ?>"></div></a>
+		<a<?php if(isset($t['link'])) { ?> href="<?php echo _html_safe($t['link']); ?>"<?php } if(isset($t['action'])) { ?> onclick="selection_apply(<?php echo $explorer_id; ?>, '<?php echo _html_safe($t['action']); ?>', <?php echo isset($t['confirm']) ? "'"._html_safe($t['confirm'])."'" : '0'; ?>); return false"<?php } if(isset($t['title'])) { ?> title="<?php echo _html_safe($t['title']); ?>"<?php } if(isset($t['onclick'])) { ?> onclick="<?php echo _html_safe($t['onclick']); ?>"<?php } ?>><div class="icon <?php echo _html_safe($t['class']); ?>"></div></a>
 <?php } else { ?>
 		<div class="separator"></div>
 <?php } } ?>
