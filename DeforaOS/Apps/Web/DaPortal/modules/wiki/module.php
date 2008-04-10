@@ -271,10 +271,10 @@ function wiki_default($args)
 		print('<h2 class="title wiki">'._html_safe(RECENT_CHANGES)
 				."</h2>\n");
 		$sql = 'SELECT content_id AS id, timestamp AS date'
-			.', name AS module, title, daportal_user.user_id'
-			.', username, content FROM daportal_content'
-			.', daportal_module, daportal_user'
-			.' WHERE daportal_content.module_id'
+			.', name AS module, title'
+			.', daportal_user.user_id AS user_id, username'
+			.', content FROM daportal_content, daportal_module'
+			.', daportal_user WHERE daportal_content.module_id'
 			.'=daportal_module.module_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			." AND daportal_module.name='wiki'"
@@ -292,8 +292,14 @@ function wiki_default($args)
 			$res[$i]['content'] = str_replace("\n", ' ',
 					substr($res[$i]['content'], 0, 40))
 				.'...';
+			$res[$i]['date'] = _html_safe($res[$i]['date']);
+			$res[$i]['username'] = '<a href="'
+				._html_link('user', FALSE, $res[$i]['user_id'],
+						$res[$i]['username']).'">'
+				._html_safe($res[$i]['username']).'</a>';
+			$res[$i]['content'] = _html_safe($res[$i]['content']);
 		}
-		_module('explorer', 'browse', array('entries' => $res,
+		_module('explorer', 'browse_trusted', array('entries' => $res,
 					'class' => array('date' => DATE,
 						'username' => AUTHOR,
 						'content' => PREVIEW),
