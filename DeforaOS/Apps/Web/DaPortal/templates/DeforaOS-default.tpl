@@ -32,8 +32,7 @@ system. The primary goals include:
 			<li>usability.</li>
 		</ul>
 		<p>
-The <a href="index.php?module=project&amp;id=11">project</a> is still at an <a
-href="index.php?module=project">early stage</a>.
+The <a href="<?php echo _html_link('project', FALSE, 11, 'DeforaOS'); ?>">project</a> is still at an <a href="<?php echo _html_link('project'); ?>">early stage</a>.
 		</p>
 
 		<h3 class="title news">Latest news</h3>
