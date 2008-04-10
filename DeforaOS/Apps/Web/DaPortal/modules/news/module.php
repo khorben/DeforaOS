@@ -227,6 +227,7 @@ function news_headline($args)
 		$news[$i]['icon'] = 'icons/16x16/news.png';
 		$news[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$news[$i]['name'] = $news[$i]['title'];
+		$news[$i]['tag'] = $news[$i]['title'];
 	}
 	_module('explorer', 'browse', array('toolbar' => 0, 'view' => 'details',
 				'header' => 0, 'entries' => $news));
