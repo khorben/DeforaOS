@@ -27,7 +27,10 @@ function _config_get($module, $name)
 			.' AND daportal_config.name='."'$name'");
 	if(!is_array($res) || count($res) != 1)
 		return FALSE;
-	return $res[0]['value_'.$res[0]['type']];
+	$res = $res[0];
+	if($res['type'] == 'bool')
+		return ($res['value_bool'] == SQL_TRUE);
+	return $res['value_'.$res['type']];
 }
 
 
