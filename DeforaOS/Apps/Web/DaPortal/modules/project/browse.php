@@ -98,7 +98,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		else
 			$author = '';
 		//FIXME this is certainly variable (number of lines)
-		$message = _html_safe($rcs[$revs+3]);
+		$message = _html_safe($rcs[$revs + 3]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
 				'icon' => $icon, 'thumbnail' => $thumbnail,
@@ -107,17 +107,19 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()'); /* XXX */
+			'onclick' => 'history.back(); return false');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => _module_link('project', 'browse', $id, '',
-				strlen($filename) ? 'file='.dirname($filename)
-				: ''));
+			'link' => _module_link('project', 'browse', $id,
+				$project, strlen($filename)
+				? 'file='.dirname($filename) : ''));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()'); /* XXX */
+			'onclick' => 'history.forward(); return false');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()'); /* XXX */
+			'link' => _module_link('project', 'browse', $id,
+				$project, 'file='.$filename),
+			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', array('entries' => $entries,
 				'class' => array('revision' => REVISION,
 					'date' => DATE, 'author' => AUTHOR,
@@ -190,16 +192,18 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()'); /* XXX */
+			'onclick' => 'history.back(); return false');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
-			'link' => _module_link('project', 'browse', $id, '',
-				'file='.dirname($filename)));
+			'link' => _module_link('project', 'browse', $id,
+				$project, 'file='.dirname($filename)));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()'); /* XXX */
+			'onclick' => 'history.forward(); return false');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()'); /* XXX */
+			'link' => _module_link('project', 'browse', $id,
+				$project, 'file='.$filename),
+			'onclick' => 'location.reload()');
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 			'class' => array('date' => DATE, 'author' => AUTHOR,
 					'message' => MESSAGE),
