@@ -126,12 +126,12 @@ function download_admin($args)
 			'action' => 'enable');
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
-	$toolbar[] = array();
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()'); /* XXX */
+			'link' => _module_link('download', 'admin'),
+			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', array('entries' => $dls,
 				'class' => array('enabled' => ENABLED,
 					'owner' => OWNER, 'mode' => MODE),
@@ -223,17 +223,18 @@ function download_default($args)
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
-			'link' => 'javascript:history.back()'); /* XXX */
+			'onclick' => 'history.back(); return false');
 	$toolbar[] = array('title' => PARENT_DIRECTORY,
 			'class' => 'parent_directory',
 			'link' => _module_link('download', FALSE, FALSE, FALSE,
 				isset($file['parent'])
 				 ? 'download_id='.$file['parent'] : ''));
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
-			'link' => 'javascript:history.forward()'); /* XXX */
+			'onclick' => 'history.forward(); return false');
 	$toolbar[] = array();
 	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
-			'link' => 'javascript:location.reload()'); /* XXX */
+			'link' => _module_link('download', FALSE, $file['id']),
+			'onclick' => 'location.reload(); return false');
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 	{
