@@ -161,6 +161,10 @@ function comment_admin($args)
 			'action' => 'enable');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => DELETE);
+	$toolbar[] = array();
+	$toolbar[] = array('title' => REFRESH, 'class' => 'refresh',
+			'link' => _html_link('comment', 'admin'),
+			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', array('entries' => $comments,
 			'class' => array('enabled' => ENABLED,
 				'username' => USERNAME, 'date' => DATE),
