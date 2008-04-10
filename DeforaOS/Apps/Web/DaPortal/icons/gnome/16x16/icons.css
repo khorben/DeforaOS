@@ -50,7 +50,7 @@ div.icon.disabled {
 	background-image:		url('disabled.png');
 }
 
-div.icon.download {
+div.icon.browse, div.icon.download {
 	background-image:		url('download.png');
 }
 

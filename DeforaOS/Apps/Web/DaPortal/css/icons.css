@@ -26,10 +26,6 @@ div.icon.admin {
 	background-image:		url('../icons/16x16/admin.png');
 }
 
-div.icon.browse, div.icon.download {
-	background-image:		url('../icons/16x16/download.png');
-}
-
 div.icon.disabled {
 	background-image:		url('../icons/16x16/disabled.png');
 }
