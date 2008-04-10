@@ -25,6 +25,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['APPEARANCE'] = 'Appearance';
+$text['CONFIRMATION_FAILED'] = 'Confirmation failed';
 $text['CREATE'] = 'Create';
 $text['DEFAULT_THEME'] = 'Default theme';
 $text['DEFAULT_VIEW'] = 'Default view';
@@ -452,16 +453,16 @@ function user_register($args)
 					." WHERE username='".$args['username']
 					."'") == FALSE)
 			{
-				if(!ereg('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9_.-]+\.'
-						.'[a-zA-Z]{1,4}$',
-						$args['email']))
+				$email = $args['email'];
+				if(!eregi('^[a-z0-9_.-]+@[a-z0-9_.-]+\.'
+							.'[a-z]{1,4}$', $email))
 					$message = EMAIL_INVALID;
 				else if(_sql_array('SELECT email'
 						.' FROM daportal_user'
-						." WHERE email='".$args['email']
-						."'") == FALSE)
+						." WHERE email='$email'")
+						== FALSE)
 					return _register_mail($args['username'],
-							$args['email']);
+							$email);
 				else
 					$message = EMAIL_ALREADY_ASSIGNED;
 			}
@@ -495,7 +496,7 @@ function _system_confirm($key)
 {
 	global $error;
 
-	$error = 'Confirmation failed';
+	$error = CONFIRMATION_FAILED;
 	//FIXME remove expired registration keys
 	//FIXME use a transaction
 	$user = _sql_array('SELECT daportal_user.user_id AS user_id'
