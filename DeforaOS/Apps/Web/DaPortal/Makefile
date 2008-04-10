@@ -116,6 +116,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/cut.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/delete.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/disabled.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/download.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enabled.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/enum.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/forward.png \
