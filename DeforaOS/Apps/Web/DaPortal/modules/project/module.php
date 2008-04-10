@@ -1087,6 +1087,8 @@ function project_display($args)
 {
 	global $user_id;
 
+	if(!isset($args['id']))
+		return project_default($args);
 	require_once('./system/user.php');
 	$project = _sql_array('SELECT project_id AS id, title'
 			.', content AS description, synopsis'

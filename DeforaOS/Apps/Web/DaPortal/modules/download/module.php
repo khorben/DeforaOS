@@ -182,7 +182,7 @@ function download_default($args)
 			$parent = "='".$file['download_id']."'";
 		}
 	}
-	if(!isset($file) || !is_array($file))
+	if(!isset($file) || !is_array($file) || count($file) == 0)
 		$file = array('id' => '');
 	print('<h1 class="title download">'._html_safe(DOWNLOADS));
 	if(isset($file['name']))
