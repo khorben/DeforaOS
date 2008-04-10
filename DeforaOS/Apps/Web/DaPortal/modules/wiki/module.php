@@ -129,7 +129,7 @@ function _validate($content)
 {
 	global $wiki_blacklisted;
 
-	$content = str_replace(array('<br>', '<hr>', '&copy;',  '&laquo;',
+	$content = str_replace(array('<br>', '<hr>', '&copy;', '&laquo;',
 				'&nbsp;', '&raquo;'),
 			array('<br/>', '<hr/>', '&amp;copy;', '&amp;laquo;',
 				'&amp;nbsp;', '&amp;raquo;'),
