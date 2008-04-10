@@ -1,7 +1,7 @@
 		<h1 class="title home">DeforaOS <?php echo _html_safe(HOMEPAGE); ?></h1>
 <?php switch($lang) { ?>
 <?php case 'fr': ?>
-		<h3 class="title project">A propos du projet</h3>
+		<h3 class="title project">&Agrave; propos du projet</h3>
 		<p>
 Ce projet a pour but d'implémenter un système d'exploitation, basé sur un
 micro-kernel. Les principaux objectifs comprennent:
@@ -12,11 +12,10 @@ micro-kernel. Les principaux objectifs comprennent:
 			<li>un r&eacute;sultat utilisable.</li>
 		</ul>
 		<p>
-Le <a href="index.php?module=project&amp;id=11">projet</a> est toujours en <a href="index.php?module=project">phase de
-conception</a>.
+Le <a href="<?php echo _html_link('project', FALSE, 11, 'DeforaOS'); ?>">projet</a> est toujours en <a href="<?php echo _html_link('project'); ?>">phase de conception</a>.
 		</p>
 
-		<h3 class="title news">Actualit&eacute;</h3>
+		<h3 class="title news">Actualit&eacute;s</h3>
 		<p>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
 <a href="<?php echo _html_link('news'); ?>" title="DeforaOS news">Suite...</a>
