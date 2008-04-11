@@ -51,7 +51,7 @@ static char * _tokens[] =
 /* protected */
 /* functions */
 /* accessors */
-char const * code_get_string(TokenCode code)
+char const * tokencode_get_string(TokenCode code)
 {
 	return _tokens[code];
 }
@@ -96,7 +96,8 @@ int c99_scan(C99 * c99)
 		}
 	c = string[0];
 	if(isalpha(c))
-		token_set_code(c99->token, C99_CODE_IDENTIFIER);
+		token_set_code(c99->token, code_is_type(c99->code, string)
+				? C99_CODE_TYPEDEF_NAME : C99_CODE_IDENTIFIER);
 	else if(isdigit(c)) /* FIXME make a stricter check? */
 		token_set_code(c99->token, C99_CODE_CONSTANT);
 	return 0;

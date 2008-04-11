@@ -25,6 +25,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/c99.c \
+		$(PACKAGE)-$(VERSION)/src/code.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/parser.c \
 		$(PACKAGE)-$(VERSION)/src/scanner.c \
@@ -33,6 +34,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/tokenset.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/target/graph.c \
+		$(PACKAGE)-$(VERSION)/src/target/sparc64.c \
+		$(PACKAGE)-$(VERSION)/src/target/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf

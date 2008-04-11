@@ -16,36 +16,31 @@
 
 
 
-#ifndef _C99_COMMON_H
-# define _C99_COMMON_H
-
-# include <stdio.h>
-# include <cpp.h>
-# include "code.h"
+#ifndef _C99_CODE_H
+# define _C99_CODE_H
 
 
-/* C99 */
+/* Code */
 /* protected */
-/* types */
-struct _C99
+typedef struct _Code Code;
+
+typedef enum _CodeContext
 {
-	int flags;                      /* FIXME get rid of it */
-	FILE * outfp;
-	Cpp * cpp;
-	char * outfile;
-	int optlevel;
-
-	/* parsing */
-	Token * token;
-	int in_switch;
-	unsigned int error_cnt;
-	unsigned int warning_cnt;
-	Code * code;
-};
+	CODE_CONTEXT_UNDEFINED = 0,
+	CODE_CONTEXT_FUNCTION_NAME
+} CodeContext;
 
 
+/* public */
 /* functions */
-/* accessors */
-char const * tokencode_get_string(TokenCode code);
+Code * code_new(char const * target);
+void code_delete(Code * code);
 
-#endif /* !_C99_COMMON_H */
+/* accessors */
+int code_set_context(Code * code, CodeContext context);
+int code_set_identifier(Code * code, char const * name);
+
+/* useful */
+int code_is_type(Code * code, char const * name);
+
+#endif /* !_C99_CODE_H */

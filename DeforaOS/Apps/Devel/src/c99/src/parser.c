@@ -32,9 +32,7 @@
 /* prototypes */
 static int _parse_check(C99 * c99, TokenCode code);
 static int _parse_error(C99 * c99, char const * format, ...);
-#ifdef DEBUG
 static char const * _parse_get_string(C99 * c99);
-#endif
 static int _parse_in_set(C99 * c99, TokenSet set);
 static int _parse_is_code(C99 * c99, TokenCode code);
 
@@ -120,7 +118,7 @@ static int _parse_check(C99 * c99, TokenCode code)
 	if(!_parse_is_code(c99, code))
 	{
 		ret = _parse_error(c99, "Expected \"%s\"",
-				code_get_string(code));
+				tokencode_get_string(code));
 		while(c99_scan(c99) == 0
 				&& c99->token != NULL /* actual token */
 				&& !_parse_is_code(c99, code));
@@ -152,14 +150,12 @@ static int _parse_error(C99 * c99, char const * format, ...)
 
 
 /* parse_get_string */
-#ifdef DEBUG
 static char const * _parse_get_string(C99 * c99)
 {
 	if(c99->token == NULL)
 		return "EOF";
 	return token_get_string(c99->token);
 }
-#endif
 
 
 /* parse_in_set */
@@ -226,6 +222,7 @@ static int _function_definition(C99 * c99)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	ret = _declaration_specifiers(c99);
+	ret |= code_set_context(c99->code, CODE_CONTEXT_FUNCTION_NAME);
 	ret |= _declarator(c99);
 	if(_parse_in_set(c99, c99set_declaration_list))
 		ret |= _declaration_list(c99);
@@ -252,7 +249,7 @@ static int _declaration_list(C99 * c99)
 
 /* declaration */
 static int _declaration(C99 * c99)
-	/* declaration-specifiers [ init-declarator-list ] */
+	/* declaration-specifiers [ init-declarator-list ] ";" */
 {
 	int ret = 0;
 
@@ -262,6 +259,7 @@ static int _declaration(C99 * c99)
 	ret |= _declaration_specifiers(c99);
 	if(_parse_in_set(c99, c99set_init_declarator))
 		ret |= _init_declarator_list(c99);
+	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	return ret;
 }
 
@@ -540,7 +538,7 @@ static int _function_specifier(C99 * c99)
 	/* "inline" */
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
+	fprintf(stderr, "DEBUG: %s() \"inline\" got \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
 	return c99_scan(c99);
@@ -656,11 +654,16 @@ static int _direct_declarator(C99 * c99)
 static int _identifier(C99 * c99)
 	/* identifier-nondigit { (identifier-nondigit | identifier-digit) } */
 {
+	int ret;
+	char const * str;
+
+	str = _parse_get_string(c99);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, str);
 #endif
-	return c99_scan(c99);
+	ret = code_set_identifier(c99->code, str);
+	ret |= c99_scan(c99);
+	return ret;
 }
 
 
@@ -679,6 +682,7 @@ static int _identifier_list(C99 * c99)
 		ret |= c99_scan(c99);
 		ret |= _identifier(c99);
 	}
+	ret |= code_set_context(c99->code, CODE_CONTEXT_UNDEFINED);
 	return ret;
 }
 

@@ -25,6 +25,11 @@
 #include "c99.h"
 
 
+/* private */
+/* constants */
+#define DEFAULT_OBJECT_FILENAME "a.out"
+
+
 /* public */
 /* functions */
 /* c99_new */
@@ -52,7 +57,7 @@ C99 * c99_new(C99Prefs * prefs, char const * pathname)
 	else
 		c99->outfp = NULL;
 	c99->optlevel = prefs->optlevel;
-	c99->code = code_new();
+	c99->code = code_new(prefs->target);
 	/* abort if there was an error */
 	if(c99->outfile == NULL || c99->outfp == NULL || c99->code == NULL)
 	{
@@ -114,7 +119,7 @@ static char * _new_outfile(int flags, char const * outfile,
 	if(flags & C99PREFS_E && outfile == NULL)
 		outfile = "";
 	else if(outfile == NULL)
-		outfile = "a.out";
+		outfile = DEFAULT_OBJECT_FILENAME;
 	if((ret = strdup(outfile)) == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
@@ -136,7 +141,8 @@ int c99_delete(C99 * c99)
 	free(c99->outfile);
 	if(c99->token != NULL)
 		token_delete(c99->token);
-	code_delete(c99->code);
+	if(c99->code != NULL)
+		code_delete(c99->code);
 	object_delete(c99);
 	return ret;
 }

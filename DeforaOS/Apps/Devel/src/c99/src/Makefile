@@ -1,3 +1,4 @@
+SUBDIRS	= target
 TARGETS	= c99
 PREFIX	= /usr/local
 DESTDIR	= 
@@ -12,9 +13,12 @@ MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
 
-c99_OBJS = c99.o main.o parser.o scanner.o tokenset.o
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
+
+c99_OBJS = c99.o code.o main.o parser.o scanner.o tokenset.o
 c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 c99: $(c99_OBJS)
@@ -22,6 +26,9 @@ c99: $(c99_OBJS)
 
 c99.o: c99.c ../include/c99.h common.h
 	$(CC) $(c99_CFLAGS) -c c99.c
+
+code.o: code.c
+	$(CC) $(c99_CFLAGS) -c code.c
 
 main.o: main.c ../include/c99.h
 	$(CC) $(c99_CFLAGS) -c main.c
@@ -36,16 +43,21 @@ tokenset.o: tokenset.c ../include/c99.h common.h tokenset.h
 	$(CC) $(c99_CFLAGS) -c tokenset.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) $(c99_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) $(c99_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 c99 $(DESTDIR)$(BINDIR)/c99
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/c99
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

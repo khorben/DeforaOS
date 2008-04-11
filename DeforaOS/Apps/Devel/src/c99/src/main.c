@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	if(_main_default_paths(&prefs) != 0)
 		return 2;
-	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:")) != -1)
+	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:m:")) != -1)
 		switch(o)
 		{
 			case 'c':
@@ -109,6 +109,9 @@ int main(int argc, char * argv[])
 			case '2':
 			case '3':
 				prefs.optlevel = o - '0';
+				break;
+			case 'm':
+				prefs.target = optarg;
 				break;
 			default:
 				return _usage();
