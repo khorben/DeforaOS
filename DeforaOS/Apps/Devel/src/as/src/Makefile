@@ -40,10 +40,10 @@ token.o: token.c token.h
 	$(CC) $(as_CFLAGS) -c token.c
 
 arch/arch.o: arch/arch.c
-	$(CC) $(as_CFLAGS) -c arch/arch.c -o arch/arch.o
+	$(CC) $(as_CFLAGS) -o arch/arch.o -c arch/arch.c
 
 format/format.o: format/format.c format/format.h
-	$(CC) $(as_CFLAGS) -c format/format.c -o format/format.o
+	$(CC) $(as_CFLAGS) -o format/format.o -c format/format.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
