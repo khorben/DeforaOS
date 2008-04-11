@@ -93,6 +93,7 @@ int parser_scan_filter(Parser * parser)
 			return EOF;
 		parser->lookahead += l;
 	}
+	parser->last = c;
 	return c;
 }
 
@@ -196,7 +197,7 @@ int parser_get_token(Parser * parser, Token ** token)
 		return 1;
 	c = (parser->last == EOF) ? parser_scan_filter(parser) : parser->last;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: parser_get_token() %c\n", c);
+	fprintf(stderr, "DEBUG: %s() %c\n", __func__, c);
 #endif
 	for(i = 0; i < parser->callbacks_cnt; i++)
 	{
