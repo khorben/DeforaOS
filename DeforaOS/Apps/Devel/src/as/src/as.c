@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -29,12 +29,16 @@
 #include "as.h"
 #include "../config.h"
 
+#ifndef PACKAGE
+# define PACKAGE "as"
+#endif
+
 #ifndef PREFIX
 # define PREFIX		"."
 #endif
 
 #ifndef LIBDIR
-# define LIBDIR		PREFIX "/lib/as"
+# define LIBDIR		PREFIX "/lib/" PACKAGE
 #endif
 
 
