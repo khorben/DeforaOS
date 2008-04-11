@@ -69,6 +69,9 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(prefs));
+	/* default path */
+	if(_main_add_path(&prefs, "/usr/include") != 0)
+		return 2;
 	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:")) != -1)
 		switch(o)
 		{
