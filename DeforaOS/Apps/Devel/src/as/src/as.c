@@ -30,7 +30,7 @@
 #include "../config.h"
 
 #ifndef PACKAGE
-# define PACKAGE "as"
+# define PACKAGE	"as"
 #endif
 
 #ifndef PREFIX
