@@ -59,6 +59,7 @@ static int _usage(void)
 
 /* public */
 /* main */
+static int _main_default_paths(C99Prefs * prefs);
 static int _main_add_define(C99Prefs * prefs, char * define);
 static int _main_add_path(C99Prefs * prefs, char const * path);
 static int _main_add_undefine(C99Prefs * prefs, char const * undefine);
@@ -69,8 +70,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(prefs));
-	/* default path */
-	if(_main_add_path(&prefs, "/usr/include") != 0)
+	if(_main_default_paths(&prefs) != 0)
 		return 2;
 	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:")) != -1)
 		switch(o)
@@ -120,6 +120,25 @@ int main(int argc, char * argv[])
 			&& optind + 1 != argc)
 		return _usage();
 	return _c99(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+}
+
+static int _main_default_paths(C99Prefs * prefs)
+{
+	char * paths[] = { "/usr/include" };
+	size_t i;
+	char * cpath;
+
+	for(i = 0; i < (sizeof(paths) / sizeof(*paths)); i++)
+		if(_main_add_path(prefs, paths[i]) != 0)
+			return 2;
+	if((cpath = getenv("CPATH")) == NULL)
+		return 0;
+	while((cpath = strtok(cpath, ":")) != NULL)
+		if(_main_add_path(prefs, cpath) != 0)
+			return 2;
+		else
+			cpath = NULL;
+	return 0;
 }
 
 static int _main_add_define(C99Prefs * prefs, char * define)
