@@ -17,7 +17,8 @@
  * - comments are not handled in directives
  * - fix includes (system vs regular, inclusion order)
  * - implement define and undef
- * - implement ifdef and ifndef */
+ * - implement ifdef and ifndef
+ * - add a way to tokenize input from a string (and handle "#" and "##") */
 
 
 
@@ -36,6 +37,12 @@
 /* Cpp */
 /* private */
 /* types */
+typedef struct _CppDefine /* FIXME use a hash table */
+{
+	char * name;
+	char * value;
+} CppDefine;
+
 typedef struct _CppOperator
 {
 	CppCode code;
@@ -59,7 +66,7 @@ struct _Cpp
 	char ** paths;
 	size_t paths_cnt;
 	/* substitutions */
-	char ** defines; /* FIXME also store the value, directly in tokens? */
+	CppDefine * defines;
 	size_t defines_cnt;
 };
 
@@ -182,7 +189,6 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 		void * data);
-
 
 
 /* Cpp */
@@ -359,7 +365,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 	if(!isspace(c))
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: cpp_callback_whitespace()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	do
 	{
@@ -395,7 +401,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 	if(c != '/')
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: cpp_callback_comment()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((c = parser_scan_filter(parser)) != '*')
 	{
@@ -422,6 +428,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 /* cpp_callback_directive */
 /* these functions should return 0 (or -1 on errors) */
+static int _directive_define(Cpp * cpp, Token * token, char const * str);
 static int _directive_error(Cpp * cpp, Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str);
 static int _directive_undef(Cpp * cpp, Token * token, char const * str);
@@ -434,6 +441,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 	Cpp * cpp = data;
 	char * str;
 	char * pos;
+	int tmp;
 	size_t n;
 	size_t i;
 
@@ -443,23 +451,22 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		return 1;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: cpp_callback_directive()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if((str = _cpp_parse_line(parser, c)) == NULL)
 		return -1;
 	token_set_string(token, str);
-	for(pos = &str[1]; isspace(*pos); pos++); /* skip whitespaces */
+	for(pos = &str[1]; isspace((tmp = *pos)); pos++); /* skip whitespaces */
 	for(n = 0; pos[n] != '\0' && _cpp_isword(pos[n]); n++);
 	for(i = 0; i < _cpp_directives_cnt; i++)
 		if(strncmp(pos, _cpp_directives[i], n) == 0
 				&& _cpp_directives[i][n] == '\0')
 			break;
-	for(pos = &pos[n]; isspace(*pos); pos++); /* skip whitespaces */
+	for(pos = &pos[n]; isspace((tmp = *pos)); pos++); /* skip whitespaces */
 	switch(i)
 	{
 		case CPP_DIRECTIVE_DEFINE:
-			/* FIXME implement */
-			token_set_code(token, CPP_CODE_META_DEFINE);
+			ret = _directive_define(cpp, token, pos);
 			break;
 		case CPP_DIRECTIVE_ELIF:
 			/* FIXME implement */
@@ -500,7 +507,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_PRAGMA);
 			break;
 		case CPP_DIRECTIVE_UNDEF:
-			_directive_undef(cpp, token, str);
+			ret = _directive_undef(cpp, token, str);
 			break;
 		case CPP_DIRECTIVE_WARNING:
 			token_set_code(token, CPP_CODE_META_WARNING);
@@ -511,6 +518,34 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 	}
 	free(str);
 	return ret;
+}
+
+static int _directive_define(Cpp * cpp, Token * token, char const * str)
+{
+	size_t i;
+	size_t j;
+	int tmp;
+	char * var;
+	char const * val;
+
+	token_set_code(token, CPP_CODE_META_DEFINE);
+	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++);
+	for(j = i; (tmp = str[j]) != '\0' && isspace(tmp); j++);
+	val = (str[j] != '\0') ? &str[j] : NULL;
+	/* FIXME inject an error token instead */
+	if((var = strndup(str, i)) == NULL)
+	{
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, strerror(errno));
+		return 0;
+	}
+	if(cpp_define_add(cpp, var, val) != 0)
+	{
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, error_get());
+	}
+	free(var);
+	return 0;
 }
 
 static int _directive_error(Cpp * cpp, Token * token, char const * str)
@@ -527,6 +562,7 @@ static int _directive_error(Cpp * cpp, Token * token, char const * str)
 }
 
 static char * _include_path(Cpp * cpp, Token * token, char const * str);
+
 static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
@@ -564,7 +600,7 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str)
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: _include_path(%p, %s)\n", cpp, str);
+	fprintf(stderr, "DEBUG: %s(%p, %s)\n", __func__, cpp, str);
 #endif
 	if(str[0] == '"')
 		d = str[0];
@@ -626,7 +662,7 @@ static char * _lookup_error(Token * token, char const * path, int system)
 
 static int _directive_undef(Cpp * cpp, Token * token, char const * str)
 {
-	cpp_define_remove(cpp, str); /* FIXME may not be just a word */
+	cpp_define_remove(cpp, str);
 	token_set_code(token, CPP_CODE_META_UNDEF);
 	return 0;
 }
@@ -639,7 +675,7 @@ static int _cpp_callback_comma(Parser * parser, Token * token, int c,
 	if(c != ',')
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: cpp_callback_comma()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	token_set_code(token, CPP_CODE_COMMA);
 	token_set_string(token, ",");
@@ -663,7 +699,7 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 	if(i == _cpp_operators_cnt) /* nothing found */
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "%s%c%s", "DEBUG: cpp_callback_operator('", c, "')\n");
+	fprintf(stderr, "DEBUG: %s('%c')\n", __func__, c);
 #endif
 	for(pos = 0; i < j;)
 	{
@@ -701,7 +737,7 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 	else
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "%s%c%s", "DEBUG: cpp_callback_quote('", c, "')\n");
+	fprintf(stderr, "DEBUG: %s('%c')\n", __func__, c);
 #endif
 	while((p = realloc(str, len + 3)) != NULL)
 	{
@@ -742,7 +778,7 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 	if(!_cpp_isword(c))
 		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: cpp_callback_word('%c')\n", c);
+	fprintf(stderr, "DEBUG: %s('%c')\n", __func__, c);
 #endif
 	if((str = _cpp_parse_word(parser, c)) == NULL)
 		return -1;
@@ -761,11 +797,11 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 
 	if(c == EOF)
 		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s('%c' 0x%x)\n", __func__, c, c);
+#endif
 	buf[0] = c;
 	parser_scan(parser);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: cpp_callback_unknown('%c' 0x%x)\n", c, c);
-#endif
 	token_set_code(token, CPP_CODE_UNKNOWN);
 	token_set_string(token, buf);
 	return 0;
@@ -841,15 +877,33 @@ char const * cpp_get_filename(Cpp * cpp)
 /* useful */
 /* cpp_define_add */
 int cpp_define_add(Cpp * cpp, char const * name, char const * value)
+	/* FIXME should verify validity of name and interpret value */
 {
-	char ** p;
+	size_t i;
+	CppDefine * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(cpp, \"%s\", \"%s\")\n", __func__, name,
+			value);
+#endif
+	for(i = 0; i < cpp->defines_cnt; i++)
+		if(strcmp(cpp->defines[i].name, name) == 0)
+			break;
+	if(i != cpp->defines_cnt)
+		return error_set_code(1, "%s is already defined", name);
 	if((p = realloc(cpp->defines, sizeof(*p) * (cpp->defines_cnt + 1)))
 			== NULL)
 		return error_set_code(1, "%s", strerror(errno));
 	cpp->defines = p;
-	if((p[cpp->defines_cnt] = strdup(name)) == NULL)
+	p = &p[cpp->defines_cnt];
+	p->name = strdup(name);
+	p->value = (value != NULL) ? strdup(value) : NULL;
+	if(p->name == NULL || (value != NULL && p->value == NULL))
+	{
+		free(p->name);
+		free(p->value);
 		return error_set_code(1, "%s", strerror(errno));
+	}
 	cpp->defines_cnt++;
 	return 0;
 }
@@ -857,18 +911,26 @@ int cpp_define_add(Cpp * cpp, char const * name, char const * value)
 
 /* cpp_define_remove */
 int cpp_define_remove(Cpp * cpp, char const * name)
+	/* FIXME should verify validity of name */
 {
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(cpp, \"%s\")\n", __func__, name);
+#endif
 	for(i = 0; i < cpp->defines_cnt; i++)
-		if(strcmp(cpp->defines[i], name) == 0)
+		if(strcmp(cpp->defines[i].name, name) == 0)
 			break;
 	if(i == cpp->defines_cnt)
-		return 1;
-	free(cpp->defines[i]);
+		return 1; /* was not found */
+	free(cpp->defines[i].name);
+	free(cpp->defines[i].value);
 	cpp->defines_cnt--;
 	for(; i < cpp->defines_cnt; i++)
-		cpp->defines[i] = cpp->defines[i + 1];
+	{
+		cpp->defines[i].name = cpp->defines[i + 1].name;
+		cpp->defines[i].value = cpp->defines[i + 1].value;
+	}
 	return 0;
 }
 
@@ -878,6 +940,9 @@ int cpp_path_add(Cpp * cpp, char const * path)
 {
 	char ** p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(cpp, \"%s\")\n", __func__, path);
+#endif
 	if((p = realloc(cpp->paths, sizeof(*p) * (cpp->paths_cnt + 1))) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
 	cpp->paths = p;
