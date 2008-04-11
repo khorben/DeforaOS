@@ -104,7 +104,7 @@ void * as_plugin_new(char const * type, char const * name,
 		return NULL;
 	}
 	sprintf(filename, "%s/%s/%s%s", LIBDIR, type, name, ".so");
-	if((handle = dlopen(filename, RTLD_NOW)) == NULL)
+	if((handle = dlopen(filename, RTLD_LAZY)) == NULL)
 		fprintf(stderr, "%s%s%s%s%s", "as: ", name, ": No such ",
 				description, " plug-in\n");
 	free(filename);
