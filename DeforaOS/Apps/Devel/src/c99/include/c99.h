@@ -156,6 +156,7 @@ typedef struct _C99Prefs
 	const char ** undefines;
 	size_t undefines_cnt;
 	int optlevel;
+	char const * target;
 } C99Prefs;
 # define C99PREFS_c 0x1
 # define C99PREFS_E 0x2
