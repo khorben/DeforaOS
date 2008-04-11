@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* libSystem is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -16,22 +16,17 @@
 
 
 
-#ifndef LIBSYSTEM_SYSTEM_H
-# define LIBSYSTEM_SYSTEM_H
-
-# include <sys/types.h>
+#ifndef LIBSYSTEM_PLUGIN_H
+# define LIBSYSTEM_PLUGIN_H
 
 
-# include "System/appclient.h"
-# include "System/appserver.h"
-# include "System/buffer.h"
-# include "System/config.h"
-# include "System/error.h"
-# include "System/event.h"
-# include "System/file.h"
-# include "System/object.h"
-# include "System/parser.h"
-# include "System/plugin.h"
-# include "System/string.h"
+/* Object */
+typedef void Plugin;
 
-#endif /* !LIBSYSTEM_SYSTEM_H */
+
+/* functions */
+Plugin * plugin_new(char const * libdir, char const * package,
+		char const * type, char const * name);
+void plugin_delete(Plugin * plugin);
+
+#endif /* !LIBSYSTEM_PLUGIN_H */

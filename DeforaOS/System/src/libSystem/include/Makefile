@@ -33,6 +33,7 @@ install: all
 	$(INSTALL) -m 0644 System/hash.h $(DESTDIR)$(INCLUDEDIR)/System/hash.h
 	$(INSTALL) -m 0644 System/object.h $(DESTDIR)$(INCLUDEDIR)/System/object.h
 	$(INSTALL) -m 0644 System/parser.h $(DESTDIR)$(INCLUDEDIR)/System/parser.h
+	$(INSTALL) -m 0644 System/plugin.h $(DESTDIR)$(INCLUDEDIR)/System/plugin.h
 	$(INSTALL) -m 0644 System/string.h $(DESTDIR)$(INCLUDEDIR)/System/string.h
 	$(INSTALL) -m 0644 System/token.h $(DESTDIR)$(INCLUDEDIR)/System/token.h
 
@@ -50,6 +51,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/hash.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/object.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/parser.h
+	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/plugin.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/string.h
 	$(RM) $(DESTDIR)$(INCLUDEDIR)/System/token.h
 

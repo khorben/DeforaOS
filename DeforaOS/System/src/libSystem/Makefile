@@ -32,6 +32,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/hash.c \
 		$(PACKAGE)-$(VERSION)/src/object.c \
 		$(PACKAGE)-$(VERSION)/src/parser.c \
+		$(PACKAGE)-$(VERSION)/src/plugin.c \
 		$(PACKAGE)-$(VERSION)/src/string.c \
 		$(PACKAGE)-$(VERSION)/src/token.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
@@ -50,6 +51,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/hash.h \
 		$(PACKAGE)-$(VERSION)/include/System/object.h \
 		$(PACKAGE)-$(VERSION)/include/System/parser.h \
+		$(PACKAGE)-$(VERSION)/include/System/plugin.h \
 		$(PACKAGE)-$(VERSION)/include/System/string.h \
 		$(PACKAGE)-$(VERSION)/include/System/token.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
