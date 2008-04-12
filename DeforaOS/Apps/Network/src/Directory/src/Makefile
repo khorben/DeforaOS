@@ -7,7 +7,6 @@ CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System -Wl,--export-dynamic 
-LDFLAGS	=
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
