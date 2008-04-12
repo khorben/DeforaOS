@@ -515,7 +515,7 @@ static void _new_mplayer(Player * player)
 	player->read_id = g_io_add_watch(player->channel[0], G_IO_IN,
 			_command_read, player);
 	player->channel[1] = g_io_channel_unix_new(player->fd[1][1]);
-	_player_command(player, buf, strlen(buf));
+	_player_command(player, buf, sizeof(buf) - 1);
 	player->paused = 1;
 }
 
