@@ -428,6 +428,7 @@ static int _exec_cmd_child(int argc, char ** argv, uint8_t * bg_error,
 		_exit(sh_error(outf, -1));
 	execvp(argv[0], argv);
 	_exit(sh_error(argv[0], -1));
+	return 1;
 }
 
 static int _exec_for(Parser * parser, unsigned int * pos, int skip)
