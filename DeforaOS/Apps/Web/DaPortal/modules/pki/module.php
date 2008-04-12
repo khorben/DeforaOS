@@ -461,6 +461,8 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 
 function _display_ca_single($id, $title)
 {
+	if(!is_numeric($id))
+		return;
 	print('<h2 class="title ca">'._html_safe($title)."</h2>\n");
 	$res = _sql_array('SELECT ca_id AS id, title, country, state'
 			.', locality, organization, section, cn, email'
