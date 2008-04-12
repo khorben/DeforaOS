@@ -1,5 +1,21 @@
 /* $Id$ */
 /* Copyright (c) 2007 Pierre Pronchery <pierre.pronchery@duekin.com> */
+/* Copyright (c) 2007 faberNovel <info@fabernovel.com> */
+/* Copyright (c) 2008 The DeforaOS Project <contact@defora.org> */
+/* This file is part of Directory */
+/* Directory is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Directory is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Directory; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 /* FIXME
  * - maintain database of issued certificates */
 
@@ -56,11 +72,8 @@ Directory * directory_new(Event * event)
 {
 	Directory * directory;
 
-	if((directory = malloc(sizeof(*directory))) == NULL)
-	{
-		error_set_code(1, "%s", strerror(errno));
+	if((directory = object_new(sizeof(*directory))) == NULL)
 		return NULL;
-	}
 	_new_config(directory);
 	directory->appserver = appserver_new_event(PACKAGE, ASO_REMOTE, event);
 	if(directory->config == NULL
@@ -102,7 +115,7 @@ void directory_delete(Directory * directory)
 		config_delete(directory->config);
 	if(directory->appserver != NULL)
 		appserver_delete(directory->appserver);
-	free(directory);
+	object_delete(directory);
 }
 
 
