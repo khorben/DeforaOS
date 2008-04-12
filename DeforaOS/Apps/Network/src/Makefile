@@ -1,4 +1,4 @@
-SUBDIRS	= Probe
+SUBDIRS	= Directory Probe
 
 
 all: subdirs
