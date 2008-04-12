@@ -134,6 +134,7 @@ struct _AppServer
 	SSL_CTX * ssl_ctx;
 #endif
 	AppServerClientArray * clients;
+	AppServerClient * current;
 };
 
 
@@ -260,10 +261,11 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 	ssize_t i;
 	int32_t ret;
 
-	if((i = appinterface_receive(appserver->interface, &ret, asc->buf_read,
+	appserver->current = asc;
+	i = appinterface_receive(appserver->interface, &ret, asc->buf_read,
 			asc->buf_read_cnt, asc->buf_write,
-			sizeof(asc->buf_write), &asc->buf_write_cnt)) == -1)
-		return -1;
+			sizeof(asc->buf_write), &asc->buf_write_cnt);
+	appserver->current = NULL;
 	if(i <= 0 || (size_t)i > asc->buf_read_cnt)
 		return -1;
 	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
@@ -386,6 +388,7 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 		return NULL;
 	}
 #endif
+	appserver->current = NULL;
 	return appserver;
 }
 
@@ -426,6 +429,13 @@ void appserver_delete(AppServer * appserver)
 		SSL_CTX_free(appserver->ssl_ctx);
 #endif
 	object_delete(appserver);
+}
+
+
+/* accessors */
+void * appserver_get_client_id(AppServer * appserver)
+{
+	return appserver->current;
 }
 
 

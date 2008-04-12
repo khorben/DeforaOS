@@ -37,6 +37,9 @@ AppServer * appserver_new(char const * app, int options);
 AppServer * appserver_new_event(char const * app, int options, Event * event);
 void appserver_delete(AppServer * appserver);
 
+/* accessors */
+void * appserver_get_client_id(AppServer * appserver);
+
 /* useful */
 int appserver_loop(AppServer * appserver);
 
