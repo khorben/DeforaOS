@@ -738,7 +738,6 @@ function _system_export($args, $type, $disposition = 'attachment')
 	if(($root = _config_get('pki', 'root')) == FALSE)
 		return 'Could not fetch the root directory';
 	$cadir = $root.'/'.$caclient['ca'];
-	$ecadir = escapeshellarg($cadir);
 	$crt = $cadir.'/newcerts/'.$caclient['title'].'.crt';
 	$ecrt = escapeshellarg($crt);
 	$out = $cadir.'/certs/'.$caclient['title'].'.crt';
@@ -747,10 +746,7 @@ function _system_export($args, $type, $disposition = 'attachment')
 	//FIXME detect errors with popen(), secure password
 	if($type == 'caserver')
 	{
-		$cmd = 'openssl x509 -in '.$ecadir.'/cacert.crt';
-		if(($fp1 = popen($cmd, 'r')) == FALSE)
-			return 'Could not export root certificate';
-		$cmd = 'openssl x509 -in '.$ecrt;
+		$cmd = 'openssl x509 -in '.$eout;
 		if(($fp2 = popen($cmd, 'r')) == FALSE)
 			return 'Could not export certificate';
 		$cmd = 'openssl rsa -in '.$ecrt.' -des3'
@@ -760,13 +756,12 @@ function _system_export($args, $type, $disposition = 'attachment')
 		header('Content-Type: application/x-x509-ca-cert');
 		header('Content-Disposition: '.$disposition
 				.'; filename=cert.crt');
-		fpassthru($fp1);
-		fclose($fp1);
 		fpassthru($fp2);
 		fclose($fp2);
 	}
 	else
 	{
+		$ecadir = escapeshellarg($cadir);
 		$cmd = 'openssl pkcs12 -export -in '.$eout.' -inkey '.$ecrt
 			.' -passout pass:'.$ekey
 			.' -certfile '.$ecadir.'/cacert.crt';
