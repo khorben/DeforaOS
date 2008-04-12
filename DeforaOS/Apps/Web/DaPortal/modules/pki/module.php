@@ -484,6 +484,7 @@ function _display_ca_single($id, $title)
 		$res[0]['module'] = 'pki';
 		$res[0]['action'] = 'display';
 		$res[0]['name'] = _html_safe($res[0]['title']);
+		$res[0]['tag'] = $res[0]['title'];
 		foreach($keys as $k)
 			$res[0][$k] = _html_safe($res[0][$k]);
 		$res[0]['email'] = '<a href="mailto:'.$res[0]['email'].'">'
