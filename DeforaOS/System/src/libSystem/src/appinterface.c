@@ -292,45 +292,45 @@ static int _new_vfs(AppInterface * ai)
 {
 	int ret = 0;
 
-	ret |= _new_append(ai, AICT_INT32, "chmod", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_chmod", 2, AICT_STRING,
 			AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "chown", 3, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_chown", 3, AICT_STRING,
 			AICT_UINT32, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "close", 1, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "fchmod", 2, AICT_INT32,
+	ret |= _new_append(ai, AICT_INT32, "vfs_close", 1, AICT_UINT32);
+	ret |= _new_append(ai, AICT_INT32, "vfs_fchmod", 2, AICT_INT32,
 			AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "fchown", 3, AICT_INT32,
+	ret |= _new_append(ai, AICT_INT32, "vfs_fchown", 3, AICT_INT32,
 			AICT_UINT32, AICT_UINT32);
-	/* ret |= _new_append(ai, AICT_UINT32, "flock", 2, AICT_UINT32,
+	/* ret |= _new_append(ai, AICT_UINT32, "vfs_flock", 2, AICT_UINT32,
 			AICT_UINT32); */
-/*	ret |= _new_append(ai, AICT_UINT32, "fstat", 2, AICT_UINT32,
+/*	ret |= _new_append(ai, AICT_UINT32, "vfs_fstat", 2, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT); */
-	ret |= _new_append(ai, AICT_INT32, "lchown", 3, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_lchown", 3, AICT_STRING,
 			AICT_UINT32, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "link", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_link", 2, AICT_STRING,
 			AICT_STRING);
-	ret |= _new_append(ai, AICT_INT32, "lseek", 3, AICT_INT32, AICT_INT32,
-			AICT_INT32);
-/*	ret |= _new_append(ai, AICT_UINT32, "lstat", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_lseek", 3, AICT_INT32,
+			AICT_INT32, AICT_INT32);
+/*	ret |= _new_append(ai, AICT_UINT32, "vfs_lstat", 2, AICT_STRING,
 			AICT_BUFFER | AICD_OUT); */
-	ret |= _new_append(ai, AICT_INT32, "mkdir", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_mkdir", 2, AICT_STRING,
 			AICT_UINT32);
-/*	ret |= _new_append(ai, AICT_UINT32, "mknod", 2, AICT_STRING,
+/*	ret |= _new_append(ai, AICT_UINT32, "vfs_mknod", 2, AICT_STRING,
 			AICT_UINT32, AICT_UINT32); */
-	ret |= _new_append(ai, AICT_UINT32, "open", 3, AICT_STRING, AICT_UINT32,
-			AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "read", 3, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "vfs_open", 3, AICT_STRING,
+			AICT_UINT32, AICT_UINT32);
+	ret |= _new_append(ai, AICT_INT32, "vfs_read", 3, AICT_UINT32,
 			AICT_BUFFER | AICD_OUT, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "rename", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_rename", 2, AICT_STRING,
 			AICT_STRING);
-	ret |= _new_append(ai, AICT_INT32, "rmdir", 1, AICT_STRING);
-/*	ret |= _new_append(ai, AICT_UINT32, "stat", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_rmdir", 1, AICT_STRING);
+/*	ret |= _new_append(ai, AICT_UINT32, "vfs_stat", 2, AICT_STRING,
 			AICT_BUFFER | AICD_OUT); */
-	ret |= _new_append(ai, AICT_INT32, "symlink", 2, AICT_STRING,
+	ret |= _new_append(ai, AICT_INT32, "vfs_symlink", 2, AICT_STRING,
 			AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "umask", 1, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "unlink", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_INT32, "write", 3, AICT_UINT32,
+	ret |= _new_append(ai, AICT_UINT32, "vfs_umask", 1, AICT_UINT32);
+	ret |= _new_append(ai, AICT_INT32, "vfs_unlink", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_INT32, "vfs_write", 3, AICT_UINT32,
 			AICT_BUFFER, AICT_UINT32);
 	return ret;
 }
@@ -434,7 +434,7 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 	Buffer * b = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "DEBUG: call ", function, "()\n");
+	fprintf(stderr, "%s%s%s", "DEBUG: call \"", function, "\"\n");
 #endif
 	if((aic = _appinterface_get_call(appinterface, function)) == NULL)
 		return -1;
@@ -639,7 +639,7 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 	if((aic = _appinterface_get_call(appinterface, function)) == NULL)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "DEBUG: call ", function, "() receive\n");
+	fprintf(stderr, "%s%s%s", "DEBUG: call \"", function, "\" receive\n");
 #endif
 	for(i = 0; i < aic->args_cnt; i++)
 	{
@@ -789,17 +789,17 @@ static String * _read_string(char buf[], size_t buflen, size_t * pos)
 
 /* _receive_args */
 static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
-		size_t * pos, char ** args);
-static int _args_exec(AppInterfaceCall * call, int * ret, char ** args);
+		size_t * pos, void ** args);
+static int _args_exec(AppInterfaceCall * call, int * ret, void ** args);
 static size_t _args_post_exec(AppInterfaceCall * call, char buf[],
-		size_t buflen, size_t * pos, char ** args, size_t i);
+		size_t buflen, size_t * pos, void ** args, size_t i);
 
 static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 		size_t buflen, size_t * pos, char bufw[], size_t bufwlen,
 		size_t * bufwpos)
 	/* FIXME args_post_exec() sends data even upon errors in args_exec */
 {
-	char ** args;
+	void ** args;
 	size_t i;
 	int j = -1;
 
@@ -836,7 +836,7 @@ static int _read_bytes(void * data, size_t datalen, char buf[], size_t buflen,
 		size_t * pos);
 
 static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
-		size_t * pos, char ** args)
+		size_t * pos, void ** args)
 	/* FIXME check calls to _read_bytes and _read_string */
 {
 	size_t i;
@@ -882,14 +882,14 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 		size_t * pos, void * arg)
 {
-	char ** p;
-	int8_t * i8;
-	int16_t * i16;
-	int32_t * i32;
+	char ** p = arg;
+	int8_t i8;
+	int16_t i16;
+	int32_t i32;
+	long * l = arg;
 	uint32_t size;
 	Buffer ** b;
 
-	p = arg;
 	*p = NULL;
 	switch(aica->type)
 	{
@@ -898,25 +898,25 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 		case AICT_BOOL:
 		case AICT_INT8:
 		case AICT_UINT8:
-			i8 = arg;
-			if(_read_bytes(i8, sizeof(*i8), buf, buflen, pos) != 0)
+			if(_read_bytes(&i8, sizeof(i8), buf, buflen, pos) != 0)
 				return -1;
+			*l = i8;
 			break;
 		case AICT_INT16:
 		case AICT_UINT16:
-			i16 = arg;
-			if(_read_bytes(i16, sizeof(*i16), buf, buflen, pos)
+			if(_read_bytes(&i16, sizeof(i16), buf, buflen, pos)
 					!= 0)
 				return -1;
-			*i16 = ntohs(*i16);
+			i16 = ntohs(i16);
+			*l = i16;
 			break;
 		case AICT_INT32:
 		case AICT_UINT32:
-			i32 = arg;
-			if(_read_bytes(i32, sizeof(*i32), buf, buflen, pos)
+			if(_read_bytes(&i32, sizeof(i32), buf, buflen, pos)
 					!= 0)
 				return -1;
-			*i32 = ntohl(*i32);
+			i32 = ntohl(i32);
+			*l = i32;
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
@@ -989,16 +989,16 @@ static int _read_bytes(void * data, size_t datalen, char buf[], size_t buflen,
 	return 0;
 }
 
-static int _args_exec(AppInterfaceCall * call, int * ret, char ** args)
+static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
 {
 	int (*func0)(void);
-	int (*func1)(char *);
-	int (*func2)(char *, char *);
-	int (*func3)(char *, char *, char *);
+	int (*func1)(void *);
+	int (*func2)(void *, void *);
+	int (*func3)(void *, void *, void *);
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s%zu%s", "DEBUG: calling ", call->name,
-			"() with ", call->args_cnt, " argument(s)\n");
+	fprintf(stderr, "%s%s%s%zu%s", "DEBUG: calling \"", call->name,
+			"\" with ", call->args_cnt, " argument(s)\n");
 #endif
 	switch(call->args_cnt) /* FIXME not flexible */
 	{
@@ -1036,7 +1036,7 @@ static int _post_exec_free_in(AppInterfaceCallArg * aica, void * arg);
 static int _post_exec_free_out(AppInterfaceCallArg * aica, void * arg);
 
 static size_t _args_post_exec(AppInterfaceCall * call, char buf[],
-		size_t buflen, size_t * pos, char ** args, size_t i)
+		size_t buflen, size_t * pos, void ** args, size_t i)
 {
 	size_t ret = i;
 	size_t j;
