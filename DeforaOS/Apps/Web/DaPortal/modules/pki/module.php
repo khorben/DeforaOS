@@ -431,7 +431,8 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 			.', locality, organization, section, cn, email'
 			.' FROM daportal_'.$type.', daportal_content'
 			.' WHERE daportal_'.$type.'.'.$type.'_id'
-			.'=daportal_content.content_id'.$enabled.$parent);
+			.'=daportal_content.content_id'.$enabled.$parent
+			.' ORDER BY title ASC');
 	if(!is_array($res))
 		return _error('Could not list certificates');
 	$classes = array('country' => COUNTRY, 'state' => STATE,
@@ -445,6 +446,7 @@ function _display_ca_list_type($id, $type, $title, $enabled)
 		$res[$i]['module'] = 'pki';
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
+		$res[$i]['tag'] = $res[$i]['title'];
 		foreach($keys as $k)
 			$res[$i][$k] = _html_safe($res[$i][$k]);
 		$res[$i]['email'] = '<a href="mailto:'.$res[$i]['email'].'">'
