@@ -190,3 +190,44 @@ INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
 /* module: wiki */
 INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('17', 'string', 'root', '');
+
+
+/* module: pki */
+CREATE TABLE daportal_ca (
+	ca_id INTEGER NOT NULL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	parent INTEGER DEFAULT NULL REFERENCES daportal_ca (ca_id),
+	country VARCHAR(2),
+	state VARCHAR(255),
+	locality VARCHAR(255),
+	organization VARCHAR(255),
+	section VARCHAR(255),
+	cn VARCHAR(255),
+	email VARCHAR(255)
+);
+
+CREATE TABLE daportal_caclient (
+	caclient_id INTEGER NOT NULL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	parent INTEGER DEFAULT NULL REFERENCES daportal_ca (ca_id),
+	country VARCHAR(2),
+	state VARCHAR(255),
+	locality VARCHAR(255),
+	organization VARCHAR(255),
+	section VARCHAR(255),
+	cn VARCHAR(255),
+	email VARCHAR(255)
+);
+
+CREATE TABLE daportal_caserver (
+	caserver_id INTEGER NOT NULL UNIQUE REFERENCES daportal_content (content_id) ON DELETE CASCADE,
+	parent INTEGER DEFAULT NULL REFERENCES daportal_ca (ca_id),
+	country VARCHAR(2),
+	state VARCHAR(255),
+	locality VARCHAR(255),
+	organization VARCHAR(255),
+	section VARCHAR(255),
+	cn VARCHAR(255),
+	email VARCHAR(255)
+);
+
+INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
+INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('18', 'string', 'root', '');
