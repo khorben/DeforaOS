@@ -37,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/account/mbox.c \
 		$(PACKAGE)-$(VERSION)/src/account/pop3.c \
 		$(PACKAGE)-$(VERSION)/src/account/imap4.c \
+		$(PACKAGE)-$(VERSION)/src/account/nntp.c \
 		$(PACKAGE)-$(VERSION)/src/account/rss.c \
 		$(PACKAGE)-$(VERSION)/src/account/Makefile \
 		$(PACKAGE)-$(VERSION)/src/account/account.h \
