@@ -7,7 +7,7 @@ CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGSF= -l System 
-LDFLAGS	= -rdynamic -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
+LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -19,7 +19,7 @@ Probe_OBJS = probe.o
 Probe_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 Probe: $(Probe_OBJS)
-	$(CC) -o Probe $(Probe_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o Probe $(Probe_OBJS) $(LDFLAGSF) $(LDFLAGS) -Wl,--export-dynamic
 
 DaMon_OBJS = damon.o
 DaMon_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
