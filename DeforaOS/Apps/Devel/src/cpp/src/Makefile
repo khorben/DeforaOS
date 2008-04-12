@@ -25,7 +25,7 @@ libcpp.a: $(libcpp_OBJS)
 	$(RANLIB) libcpp.a
 
 libcpp.so: $(libcpp_OBJS)
-	$(LD) -o libcpp.so $(libcpp_OBJS)
+	$(LD) -o libcpp.so $(libcpp_OBJS) -L $(LIBDIR) -rpath $(LIBDIR) -l System
 
 cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
