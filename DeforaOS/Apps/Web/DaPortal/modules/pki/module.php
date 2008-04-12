@@ -744,13 +744,38 @@ function _system_export($args, $type, $disposition = 'attachment')
 	$out = $cadir.'/certs/'.$caclient['title'].'.crt';
 	$eout = escapeshellarg($out);
 	$ekey = escapeshellarg(stripslashes($args['key']));
-	if(($fp = popen('openssl pkcs12 -export -in '.$eout.' -inkey '.$ecrt
-				.' -passout pass:'.$ekey //FIXME secure this
-				.' -certfile '.$ecadir.'/cacert.crt', 'r'))
-			== FALSE) //FIXME actually detect errors
-		return 'Could not export certificate';
-	header('Content-Type: application/x-pkcs12');
-	header('Content-Disposition: '.$disposition.'; filename=cert.p12');
+	//FIXME detect errors with popen(), secure password
+	if($type == 'caserver')
+	{
+		$cmd = 'openssl x509 -in '.$ecadir.'/cacert.crt';
+		if(($fp1 = popen($cmd, 'r')) == FALSE)
+			return 'Could not export root certificate';
+		$cmd = 'openssl x509 -in '.$ecrt;
+		if(($fp2 = popen($cmd, 'r')) == FALSE)
+			return 'Could not export certificate';
+		$cmd = 'openssl rsa -in '.$ecrt.' -des3'
+			.' -passout pass:'.$ekey;
+		if(($fp = popen($cmd, 'r')) == FALSE)
+			return 'Could not export certificate';
+		header('Content-Type: application/x-x509-ca-cert');
+		header('Content-Disposition: '.$disposition
+				.'; filename=cert.crt');
+		fpassthru($fp1);
+		fclose($fp1);
+		fpassthru($fp2);
+		fclose($fp2);
+	}
+	else
+	{
+		$cmd = 'openssl pkcs12 -export -in '.$eout.' -inkey '.$ecrt
+			.' -passout pass:'.$ekey
+			.' -certfile '.$ecadir.'/cacert.crt';
+		if(($fp = popen($cmd, 'r')) == FALSE)
+			return 'Could not export certificate';
+		header('Content-Type: application/x-pkcs12');
+		header('Content-Disposition: '.$disposition
+				.'; filename=cert.p12');
+	}
 	fpassthru($fp);
 	fclose($fp);
 	exit(0);
