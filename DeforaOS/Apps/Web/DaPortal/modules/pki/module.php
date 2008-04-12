@@ -743,7 +743,6 @@ function _system_export($args, $type, $disposition = 'attachment')
 	$ecrt = escapeshellarg($crt);
 	$out = $cadir.'/certs/'.$caclient['title'].'.crt';
 	$eout = escapeshellarg($out);
-	$output = array();
 	$ekey = escapeshellarg(stripslashes($args['key']));
 	if(($fp = popen('openssl pkcs12 -export -in '.$eout.' -inkey '.$ecrt
 				.' -passout pass:'.$ekey //FIXME secure this
