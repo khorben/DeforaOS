@@ -890,7 +890,6 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 	uint32_t size;
 	Buffer ** b;
 
-	*p = NULL;
 	switch(aica->type)
 	{
 		case AICT_VOID:
@@ -907,16 +906,14 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			if(_read_bytes(&i16, sizeof(i16), buf, buflen, pos)
 					!= 0)
 				return -1;
-			i16 = ntohs(i16);
-			*l = i16;
+			*l = ntohs(i16);
 			break;
 		case AICT_INT32:
 		case AICT_UINT32:
 			if(_read_bytes(&i32, sizeof(i32), buf, buflen, pos)
 					!= 0)
 				return -1;
-			i32 = ntohl(i32);
-			*l = i32;
+			*l = ntohl(i32);
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
@@ -938,7 +935,6 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			}
 			break;
 		case AICT_STRING:
-			p = arg;
 			if((*p = _read_string(buf, buflen, pos)) == NULL)
 				return -1;
 			break;
