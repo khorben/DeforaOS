@@ -276,6 +276,9 @@ int32_t vfs_lseek(int32_t fd, int32_t offset, int32_t whence)
 {
 	if(!_client_check(fd))
 		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "VFS: lseek(%d, %d, %d)\n", fd, offset, whence);
+#endif
 	return lseek(fd, offset, whence);
 }
 
