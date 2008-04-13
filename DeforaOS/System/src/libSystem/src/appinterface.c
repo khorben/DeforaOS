@@ -810,7 +810,7 @@ static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 		free(args);
 		return 1;
 	}
-	*ret = _args_exec(call, ret, args);
+	*ret = _args_exec(call, args);
 	if(_args_post_exec(call, bufw, bufwlen, bufwpos, args, i) != i)
 	{
 		free(args);
