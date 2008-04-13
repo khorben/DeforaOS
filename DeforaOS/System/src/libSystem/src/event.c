@@ -16,6 +16,7 @@
 
 
 
+#include <assert.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -252,8 +253,9 @@ int event_register_io_read(Event * event, int fd, EventIOFunc func,
 {
 	EventIO * eventio;
 
-	if((eventio = malloc(sizeof(EventIO))) == NULL)
-		return 1;
+	assert(fd >= 0);
+	if((eventio = malloc(sizeof(*eventio))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
 	eventio->fd = fd;
 	eventio->func = func;
 	eventio->data = userdata;
@@ -270,8 +272,9 @@ int event_register_io_write(Event * event, int fd, EventIOFunc func,
 {
 	EventIO * eventio;
 
-	if((eventio = malloc(sizeof(EventIO))) == NULL)
-		return 1;
+	assert(fd >= 0);
+	if((eventio = malloc(sizeof(*eventio))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
 	eventio->fd = fd;
 	eventio->func = func;
 	eventio->data = userdata;
