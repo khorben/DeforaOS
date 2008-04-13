@@ -790,7 +790,7 @@ static String * _read_string(char buf[], size_t buflen, size_t * pos)
 /* _receive_args */
 static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 		size_t * pos, void ** args);
-static int _args_exec(AppInterfaceCall * call, int * ret, void ** args);
+static int _args_exec(AppInterfaceCall * call, void ** args);
 static size_t _args_post_exec(AppInterfaceCall * call, char buf[],
 		size_t buflen, size_t * pos, void ** args, size_t i);
 
@@ -801,27 +801,26 @@ static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 {
 	void ** args;
 	size_t i;
-	int j = -1;
 
 	if((args = malloc(sizeof(*args) * call->args_cnt)) == NULL)
-		return -1;
+		return error_set_code(1, "%s", strerror(errno));
 	if((i = _args_pre_exec(call, buf, buflen, pos, args)) != call->args_cnt)
 	{
 		_args_post_exec(call, bufw, bufwlen, bufwpos, args, i);
 		free(args);
-		return -1;
+		return 1;
 	}
-	j = _args_exec(call, ret, args);
+	*ret = _args_exec(call, ret, args);
 	if(_args_post_exec(call, bufw, bufwlen, bufwpos, args, i) != i)
 	{
 		free(args);
-		return -1;
+		return 1;
 	}
 	free(args);
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "DEBUG: => return ", *ret, "\n");
 #endif
-	return j;
+	return 0;
 }
 
 /* _args_pre_exec
@@ -985,34 +984,31 @@ static int _read_bytes(void * data, size_t datalen, char buf[], size_t buflen,
 	return 0;
 }
 
-static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
+static int _args_exec(AppInterfaceCall * call, void ** args)
 {
+	int ret;
 	int (*func0)(void);
 	int (*func1)(void *);
 	int (*func2)(void *, void *);
 	int (*func3)(void *, void *, void *);
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s%zu%s", "DEBUG: calling \"", call->name,
-			"\" with ", call->args_cnt, " argument(s)\n");
-#endif
 	switch(call->args_cnt) /* FIXME not flexible */
 	{
 		case 0:
 			func0 = call->func;
-			*ret = func0();
+			ret = func0();
 			break;
 		case 1:
 			func1 = call->func;
-			*ret = func1(args[0]);
+			ret = func1(args[0]);
 			break;
 		case 2:
 			func2 = call->func;
-			*ret = func2(args[0], args[1]);
+			ret = func2(args[0], args[1]);
 			break;
 		case 3:
 			func3 = call->func;
-			*ret = func3(args[0], args[1], args[2]);
+			ret = func3(args[0], args[1], args[2]);
 			break;
 		default:
 			return error_set_code(-1, "%s%zu%s", "AppInterface: "
@@ -1020,8 +1016,8 @@ static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
 					"arguments are not supported");
 	}
 	if(call->type.type == AICT_VOID) /* avoid information leak */
-		*ret = 0;
-	return 0;
+		return 0;
+	return ret;
 }
 
 /* args_post_exec
