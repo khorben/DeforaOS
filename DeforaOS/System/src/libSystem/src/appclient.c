@@ -16,6 +16,7 @@
 
 
 
+#include <assert.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -33,7 +34,6 @@
 # include <openssl/ssl.h>
 # include <openssl/err.h>
 #endif
-
 #include "System.h"
 #include "appinterface.h"
 
@@ -62,94 +62,126 @@ struct _AppClient
 
 
 /* private */
+/* macros */
+#ifdef WITH_SSL
+# define READ(fd, ac, len) SSL_read(ac->ssl, &ac->buf_read[ac->buf_read_cnt], \
+		len)
+# define WRITE(fd, ac, len) SSL_write(ac->ssl, ac->buf_write, len)
+#else
+# define READ(fd, ac, len) read(fd, &ac->buf_read[ac->buf_read_cnt], len)
+# define WRITE(fd, ac, len) write(fd, ac->buf_write, len)
+#endif
+
+
+/* prototypes */
+static int _appclient_timeout(AppClient * appclient);
+static int _appclient_read(int fd, AppClient * ac);
+static int _appclient_write(int fd, AppClient * ac);
+
+
+/* functions */
+/* appclient_timeout */
 static int _appclient_timeout(AppClient * appclient)
 {
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s", "DEBUG: timeout (", appclient->fd, ")\n");
 #endif
-	errno = ETIMEDOUT;
 	event_unregister_io_read(appclient->event, appclient->fd);
 	event_unregister_io_write(appclient->event, appclient->fd);
-	return 1;
+	errno = ETIMEDOUT;
+	return error_set_code(1, "%s", strerror(errno));
 }
 
 
 /* appclient_read */
-#ifdef WITH_SSL
-# define READ(fd, ac, len) SSL_read(ac->ssl, &ac->buf_read[ac->buf_read_cnt], \
-		len)
-#else
-# define READ(fd, ac, len) read(fd, &ac->buf_read[ac->buf_read_cnt], len)
-#endif
 static int _read_error(AppClient * ac);
+static int _read_unregister(AppClient * appclient);
 
 static int _appclient_read(int fd, AppClient * ac)
 {
 	ssize_t len = sizeof(ac->buf_read) - ac->buf_read_cnt;
 
-	if(len < 0 || (len = READ(fd, ac, len)) <= 0)
+	assert(len >= 0);
+	if((len = READ(fd, ac, len)) <= 0)
 		return _read_error(ac);
 	ac->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") ", len, "\n");
+	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") => ", len, "\n");
 #endif
 	len = appinterface_call_receive(ac->interface, ac->lastret,
 			ac->buf_read, ac->buf_read_cnt, ac->lastfunc,
 			ac->lastargs);
-	if(len < 0 || (size_t)len > ac->buf_read_cnt)
-		return _read_error(ac);
-	if(len == 0) /* try again */
+	assert((size_t)len <= ac->buf_read_cnt);
+	if(len < 0)
+	{
+#ifdef WITH_SSL
+		SSL_shutdown(ac->ssl);
+#endif
+		close(ac->fd);
+		ac->fd = -1;
+		return _read_unregister(ac);
+	}
+	else if(len == 0) /* try again */
 		return 0;
 	ac->buf_read_cnt -= len;
-	event_unregister_timeout(ac->event,
-			(EventTimeoutFunc)_appclient_timeout);
-	return 1;
+	return _read_unregister(ac);
 }
 
 static int _read_error(AppClient * ac)
 {
-	/* FIXME catch error */
 #ifdef WITH_SSL
+	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
 	SSL_shutdown(ac->ssl);
+#else
+	error_set_code(1, "%s", strerror(errno));
 #endif
-	close(ac->fd); /* FIXME is it really critical already? */
-#ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "DEBUG: close(", ac->fd, ")\n");
-#endif
+	close(ac->fd);
 	ac->fd = -1;
+	return _read_unregister(ac);
+}
+
+static int _read_unregister(AppClient * appclient)
+{
+	event_unregister_timeout(appclient->event,
+			(EventTimeoutFunc)_appclient_timeout);
 	return 1;
 }
 
 
 /* appclient_write */
-#ifdef WITH_SSL
-# define WRITE(fd, ac, len) SSL_write(ac->ssl, ac->buf_write, len)
-#else
-# define WRITE(fd, ac, len) write(fd, ac->buf_write, len)
-#endif
+static int _write_error(AppClient * ac);
+
 static int _appclient_write(int fd, AppClient * ac)
 {
 	ssize_t len;
 
+	/* FIXME is EOF an error? */
 	if((len = WRITE(fd, ac, ac->buf_write_cnt)) <= 0)
-	{
-#ifdef WITH_SSL
-		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
-					NULL));
-		SSL_shutdown(ac->ssl);
-#endif
-		return 1;
-	}
+		return _write_error(ac);
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%zu%s%zd%s", "DEBUG: WRITE(", fd, ", ",
 			ac->buf_write_cnt, ") ", len, "\n");
 #endif
 	memmove(ac->buf_write, &ac->buf_write[len], len);
-	ac->buf_write_cnt-=len;
+	ac->buf_write_cnt -= len;
 	if(ac->buf_write_cnt > 0)
 		return 0; /* there is more to write */
-	event_register_io_read(ac->event, fd, /* read the answer */
+	/* read the answer */
+	event_register_io_read(ac->event, fd,
 			(EventIOFunc)_appclient_read, ac);
+	return 1;
+}
+
+static int _write_error(AppClient * ac)
+{
+#ifdef WITH_SSL
+	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+	SSL_shutdown(ac->ssl);
+#else
+	error_set_code(1, "%s", strerror(errno));
+#endif
+	close(ac->fd);
+	ac->fd = -1;
 	return 1;
 }
 
@@ -181,7 +213,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 	AppClient * appclient;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "appclient_new(\"", app, "\")\n");
+	fprintf(stderr, "%s%s%s", __func__ "(\"", app, "\")\n");
 #endif
 	if((appclient = object_new(sizeof(AppClient))) == NULL)
 		return NULL;
@@ -303,13 +335,7 @@ void appclient_delete(AppClient * appclient)
 {
 	appinterface_delete(appclient->interface);
 	if(appclient->fd != -1)
-	{
 		close(appclient->fd);
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "DEBUG: close(", appclient->fd,
-				")\n");
-#endif
-	}
 #ifdef WITH_SSL
 	if(appclient->ssl != NULL)
 		SSL_free(appclient->ssl);
@@ -333,9 +359,9 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	ssize_t i;
 
 	if(appinterface_get_args_count(ac->interface, &cnt, function) != 0)
-		return -1;
+		return 1;
 	if((args = calloc(sizeof(*args), cnt)) == NULL)
-		return error_set_code(-1, "%s", strerror(errno));
+		return error_set_code(1, "%s", strerror(errno));
 	va_start(arg, function);
 	i = appinterface_call(ac->interface, &ac->buf_write[ac->buf_write_cnt],
 			left, function, args, arg);
@@ -343,7 +369,7 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	if(i <= 0 || (size_t)i > left)
 	{
 		free(args);
-		return -1;
+		return 1;
 	}
 	ac->lastfunc = function; /* XXX safe for now because synchronous only */
 	ac->lastargs = args;
@@ -351,7 +377,7 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 	ac->buf_write_cnt += i;
 	i = _call_event(ac);
 	free(args);
-	return i == 0 ? 0 : -1;
+	return (i == 0) ? 0 : 1;
 }
 
 static int _call_event(AppClient * ac)
@@ -372,5 +398,5 @@ static int _call_event(AppClient * ac)
 	event_loop(ac->event);
 	event_delete(ac->event); /* FIXME may already be free'd */
 	ac->event = eventtmp;
-	return 0; /* FIXME catch errors */
+	return (ac->fd >= 0) ? 0 : 1;
 }
