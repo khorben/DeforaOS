@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* libSystem is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -16,6 +16,7 @@
 
 
 
+#include <assert.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -33,7 +34,6 @@
 # include <openssl/ssl.h>
 # include <openssl/err.h>
 #endif
-
 #include "System.h"
 #include "appinterface.h"
 #include "../config.h"
@@ -65,10 +65,29 @@ typedef struct _AppServerClient
 } AppServerClient;
 
 
-/* functions */
-/* _appserverclient_new */
+/* macros */
+#ifdef WITH_SSL
+# define READ(fd, asc, len) SSL_read(asc->ssl, \
+		&asc->buf_read[asc->buf_read_cnt], len)
+# define WRITE(fd, asc) SSL_write(asc->ssl, asc->buf_write, asc->buf_write_cnt)
+#else
+# define READ(fd, asc, len) read(fd, &asc->buf_read[asc->buf_read_cnt], len)
+# define WRITE(fd, asc) write(fd, asc->buf_write, asc->buf_write_cnt)
+#endif
+
+
+/* prototypes */
+static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
+		uint16_t port
+#ifdef WITH_SSL
+		, SSL_CTX * ssl_ctx
+#endif
+		);
 static void _appserverclient_delete(AppServerClient * appserverclient);
 
+
+/* functions */
+/* appserverclient_new */
 static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 		uint16_t port
 #ifdef WITH_SSL
@@ -81,7 +100,6 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	if((asc = object_new(sizeof(AppServerClient))) == NULL)
 		return NULL;
 	asc->state = ASCS_NEW;
-	asc->fd = -1;
 	asc->addr = addr;
 	asc->port = port;
 	asc->buf_read_cnt = 0;
@@ -102,21 +120,18 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 }
 
 
-/* _appserverclient_delete */
+/* appserverclient_delete */
 static void _appserverclient_delete(AppServerClient * appserverclient)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, appserverclient);
+#endif
 #ifdef WITH_SSL
 	if(appserverclient->ssl != NULL)
 		SSL_free(appserverclient->ssl);
 #endif
 	if(appserverclient->fd != -1)
-	{
 		close(appserverclient->fd);
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "DEBUG: close(", appserverclient->fd,
-				")\n");
-#endif
-	}
 	object_delete(appserverclient);
 }
 
@@ -138,10 +153,51 @@ struct _AppServer
 };
 
 
-/* functions */
+/* prototypes */
+static int _appserver_client_add(AppServer * appserver, AppServerClient * asc);
+static int _appserver_client_remove(AppServer * appserver,
+		AppServerClient * asc);
+
 static int _appserver_accept(int fd, AppServer * appserver);
 static int _appserver_read(int fd, AppServer * appserver);
 static int _appserver_write(int fd, AppServer * appserver);
+
+
+/* functions */
+/* appserver_client_add */
+static int _appserver_client_add(AppServer * appserver, AppServerClient * asc)
+	/* FIXME check for errors */
+{
+	array_append(appserver->clients, &asc);
+	event_register_io_read(appserver->event, asc->fd,
+			(EventIOFunc)_appserver_read, appserver);
+	return 0;
+}
+
+
+/* appserver_client_remove */
+static int _appserver_client_remove(AppServer * appserver,
+		AppServerClient * asc)
+	/* FIXME check for errors */
+{
+	AppServerClient * p;
+	unsigned int i;
+
+	for(i = 0; i < array_count(appserver->clients); i++)
+	{
+		if(array_get_copy(appserver->clients, i, &p) != 0)
+			break;
+		if(p == asc)
+			break;
+	}
+	if(asc->buf_write_cnt > 0)
+		event_unregister_io_write(appserver->event, asc->fd);
+	event_unregister_io_read(appserver->event, asc->fd);
+	_appserverclient_delete(asc);
+	array_remove_pos(appserver->clients, i);
+	return 0;
+}
+
 
 /* appserver_accept */
 static int _appserver_accept(int fd, AppServer * appserver)
@@ -164,25 +220,15 @@ static int _appserver_accept(int fd, AppServer * appserver)
 					)) == NULL)
 	{
 		close(newfd);
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "DEBUG: close(", newfd, ")\n");
-#endif
 		return 0;
 	}
-	array_append(appserver->clients, &asc);
-	event_register_io_read(appserver->event, newfd,
-			(EventIOFunc)_appserver_read, appserver);
-	return 0;
+	return _appserver_client_add(appserver, asc);
 }
 
 
 /* appserver_read */
-#ifdef WITH_SSL
-# define READ(fd, asc, len) SSL_read(asc->ssl, \
-		&asc->buf_read[asc->buf_read_cnt], len)
-#else
-# define READ(fd, asc, len) read(fd, &asc->buf_read[asc->buf_read_cnt], len)
-#endif
+static int _read_error(AppServer * appserver, AppServerClient * asc);
+static int _read_eof(AppServer * appserver, AppServerClient * asc);
 static int _read_process(AppServer * appserver, AppServerClient * asc);
 
 static int _appserver_read(int fd, AppServer * appserver)
@@ -201,31 +247,39 @@ static int _appserver_read(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
-	if((len = sizeof(asc->buf_read) - asc->buf_read_cnt) <= 0
-			|| (len = READ(fd, asc, len)) <= 0)
-		/* FIXME the error is not necessarily because of READ */
-	{
-#ifdef WITH_SSL
-		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
-					NULL));
-		SSL_shutdown(asc->ssl);
-#else
-		error_set_code(1, "%s%s", "read: ", strerror(errno));
-#endif
-		/* FIXME do all this in appserverclient_delete() or something
-		 * like appserver_remove_client() */
-		if(asc->buf_write_cnt > 0)
-			event_unregister_io_write(appserver->event, fd);
-		event_unregister_io_read(appserver->event, fd);
-		_appserverclient_delete(asc);
-		array_remove_pos(appserver->clients, i);
-		return 1;
-	}
+	assert((len = sizeof(asc->buf_read) - asc->buf_read_cnt) > 0);
+	if((len = READ(fd, asc, len)) < 0)
+		return _read_error(appserver, asc);
+	else if(len == 0)
+		return _read_eof(appserver, asc);
 	asc->buf_read_cnt += len;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") ", len, "\n");
+	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") => ", len, "\n");
 #endif
-	return _read_process(appserver, asc);
+	if(_read_process(appserver, asc) != 0)
+	{
+		_appserver_client_remove(appserver, asc);
+		return 1;
+	}
+	return 0;
+}
+
+static int _read_error(AppServer * appserver, AppServerClient * asc)
+{
+#ifdef WITH_SSL
+	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+	SSL_shutdown(asc->ssl);
+#else
+	error_set_code(1, "%s", strerror(errno));
+#endif
+	_appserver_client_remove(appserver, asc);
+	return 1;
+}
+
+static int _read_eof(AppServer * appserver, AppServerClient * asc)
+{
+	_appserver_client_remove(appserver, asc);
+	return 1;
 }
 
 static int _read_logged(AppServer * appserver, AppServerClient * asc);
@@ -235,28 +289,14 @@ static int _read_process(AppServer * appserver, AppServerClient * asc)
 	{
 		case ASCS_NEW:
 			/* FIXME authenticate */
+			asc->state = ASCS_LOGGED;
 		case ASCS_LOGGED:
 			return _read_logged(appserver, asc);
 	}
 	return 1;
 }
 
-static int _appserver_receive(AppServer * appserver, AppServerClient * asc);
-
 static int _read_logged(AppServer * appserver, AppServerClient * asc)
-{
-	if(_appserver_receive(appserver, asc) != 0)
-	{
-		close(asc->fd);
-#ifdef DEBUG
-		fprintf(stderr, "%s%d%s", "DEBUG: close(", asc->fd, ")\n");
-#endif
-		return 1;
-	}
-	return 0;
-}
-
-static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 {
 	ssize_t i;
 	int32_t ret;
@@ -267,30 +307,23 @@ static int _appserver_receive(AppServer * appserver, AppServerClient * asc)
 			sizeof(asc->buf_write), &asc->buf_write_cnt);
 	appserver->current = NULL;
 	if(i <= 0 || (size_t)i > asc->buf_read_cnt)
-		return -1;
-	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt-i);
+		return 1;
 	asc->buf_read_cnt -= i;
-	/* FIXME should be done in AppInterface? */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: => %d\n", ret);
-#endif
+	memmove(asc->buf_read, &asc->buf_read[i], asc->buf_read_cnt);
+	/* FIXME should it be done in AppInterface? */
 	if(asc->buf_write_cnt + sizeof(ret) > sizeof(asc->buf_write))
-		return -1;
+		return error_set_code(1, "%s", strerror(ENOBUFS));
 	ret = htonl(ret);
 	memcpy(&(asc->buf_write[asc->buf_write_cnt]), &ret, sizeof(ret));
 	asc->buf_write_cnt += sizeof(ret);
 	event_register_io_write(appserver->event, asc->fd,
 			(EventIOFunc)_appserver_write, appserver);
-	return 0;
+	return (asc->fd != -1) ? 0 : 1;
 }
 
 
 /* appserver_write */
-#ifdef WITH_SSL
-# define WRITE(fd, asc) SSL_write(asc->ssl, asc->buf_write, asc->buf_write_cnt)
-#else
-# define WRITE(fd, asc) write(fd, asc->buf_write, asc->buf_write_cnt)
-#endif
+static int _write_error(AppServerClient * asc);
 
 static int _appserver_write(int fd, AppServer * appserver)
 {
@@ -309,15 +342,27 @@ static int _appserver_write(int fd, AppServer * appserver)
 	}
 	if(asc == NULL)
 		return 1;
-	if(asc->buf_write_cnt == 0 || (len = WRITE(fd, asc)) <= 0)
-		return 1; /* FIXME catch and handle error */
+	if((len = WRITE(fd, asc)) <= 0)
+		return _write_error(asc);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: WRITE(%d, %zu) %zd\n", fd, asc->buf_write_cnt,
-			len);
+	fprintf(stderr, "DEBUG: WRITE(%d, %zu) => %zd\n", fd,
+			asc->buf_write_cnt, len);
 #endif
 	memmove(asc->buf_write, &asc->buf_write[len], len);
 	asc->buf_write_cnt-=len;
-	return asc->buf_write_cnt == 0 ? 1 : 0;
+	return (asc->buf_write_cnt) == 0 ? 1 : 0;
+}
+
+static int _write_error(AppServerClient * asc)
+{
+#ifdef WITH_SSL
+	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+#else
+	error_set_code(1, "%s", strerror(errno));
+#endif
+	close(asc->fd);
+	asc->fd = -1;
+	return 1;
 }
 
 
