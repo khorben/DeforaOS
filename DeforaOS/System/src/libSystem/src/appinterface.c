@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* libSystem is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -590,9 +590,10 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 
 static int _send_bytes(char const * data, size_t datalen, char * buf,
 		size_t buflen, size_t * pos)
+	/* FIXME the buffer is sometimes too short */
 {
 	if(*pos + datalen > buflen)
-		return 1;
+		return error_set_code(1, "%s", strerror(ENOBUFS));
 	memcpy(&buf[*pos], data, datalen);
 	*pos += datalen;
 	return 0;
@@ -644,7 +645,7 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 	for(i = 0; i < aic->args_cnt; i++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%zu%s", "DEBUG: argument ", i, "\n");
+		fprintf(stderr, "%s%zu%s", "DEBUG: argument ", i + 1, "\n");
 #endif
 		if(aic->args[i].direction == AICD_IN)
 			continue;
@@ -755,6 +756,7 @@ static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 
 int appinterface_receive(AppInterface * appinterface, int * ret, char buf[],
 		size_t buflen, char bufw[], size_t bufwlen, size_t * bufwpos)
+	/* FIXME should work like appinterface_call_receive */
 {
 	size_t pos = 0;
 	String * func;
@@ -781,23 +783,20 @@ static String * _read_string(char buf[], size_t buflen, size_t * pos)
 	if(*pos == buflen)
 		return NULL;
 	(*pos)++;
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "DEBUG: <= string \"", str, "\"\n");
-#endif
 	return string_new(str);
 }
 
 /* _receive_args */
 static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 		size_t * pos, void ** args);
-static int _args_exec(AppInterfaceCall * call, void ** args);
+static int _args_exec(AppInterfaceCall * call, int * ret, void ** args);
 static size_t _args_post_exec(AppInterfaceCall * call, char buf[],
 		size_t buflen, size_t * pos, void ** args, size_t i);
 
 static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 		size_t buflen, size_t * pos, char bufw[], size_t bufwlen,
 		size_t * bufwpos)
-	/* FIXME args_post_exec() sends data even upon errors in args_exec */
+	/* FIXME _args_post_exec() sends data even when _args_exec() fails */
 {
 	void ** args;
 	size_t i;
@@ -808,17 +807,23 @@ static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 	{
 		_args_post_exec(call, bufw, bufwlen, bufwpos, args, i);
 		free(args);
+#ifdef DEBUG
+		fprintf(stderr, "%s%s\n", "DEBUG: call: ", error_get());
+#endif
 		return 1;
 	}
-	*ret = _args_exec(call, args);
+	_args_exec(call, ret, args);
 	if(_args_post_exec(call, bufw, bufwlen, bufwpos, args, i) != i)
 	{
 		free(args);
+#ifdef DEBUG
+		fprintf(stderr, "%s%s\n", "DEBUG: ", error_get());
+#endif
 		return 1;
 	}
 	free(args);
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "DEBUG: => return ", *ret, "\n");
+	fprintf(stderr, "%s%d%s", "DEBUG: => ", *ret, "\n");
 #endif
 	return 0;
 }
@@ -841,17 +846,20 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 	size_t i;
 	AppInterfaceCallArg * aica;
 
+#ifdef DEBUG
+	fprintf(stderr, "%s%s(", "DEBUG: ", call->name);
+#endif
 	for(i = 0; i < call->args_cnt; i++)
 	{
 #ifdef DEBUG
-		fprintf(stderr, "%s%zu", "DEBUG: argument ", i + 1);
+		fprintf(stderr, "%s", i > 0 ? ", " : "");
 #endif
 		aica = &call->args[i];
 		switch(aica->direction)
 		{
 			case AICD_IN:
 #ifdef DEBUG
-				fprintf(stderr, "%s", " in\n");
+				fprintf(stderr, "%s", "in ");
 #endif
 				if(_pre_exec_in(aica, buf, buflen, pos,
 							&args[i]) != 0)
@@ -860,7 +868,7 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 			case AICD_IN_OUT:
 #warning IMPLEMENT THIS
 #ifdef DEBUG
-				fprintf(stderr, "%s", " in out\n");
+				fprintf(stderr, "%s", "in out ");
 #endif
 /*				if(_pre_exec_in_out(aica, buf, buflen, pos,
 							&args[i]) != 0) */
@@ -868,13 +876,16 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 				break;
 			case AICD_OUT:
 #ifdef DEBUG
-				fprintf(stderr, "%s", " out\n");
+				fprintf(stderr, "%s", "out ");
 #endif
 				if(_pre_exec_out(aica, &args[i]) != 0)
 					return i;
 				break;
 		}
 	}
+#ifdef DEBUG
+	fprintf(stderr, "%s", ")\n");
+#endif
 	return i;
 }
 
@@ -899,6 +910,9 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			if(_read_bytes(&i8, sizeof(i8), buf, buflen, pos) != 0)
 				return -1;
 			*l = i8;
+#ifdef DEBUG
+			fprintf(stderr, "%ld", *l);
+#endif
 			break;
 		case AICT_INT16:
 		case AICT_UINT16:
@@ -906,6 +920,9 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 					!= 0)
 				return -1;
 			*l = ntohs(i16);
+#ifdef DEBUG
+			fprintf(stderr, "%ld", *l);
+#endif
 			break;
 		case AICT_INT32:
 		case AICT_UINT32:
@@ -913,6 +930,9 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 					!= 0)
 				return -1;
 			*l = ntohl(i32);
+#ifdef DEBUG
+			fprintf(stderr, "%ld", *l);
+#endif
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
@@ -932,10 +952,16 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 				buffer_delete(*b);
 				return -1;
 			}
+#ifdef DEBUG
+			fprintf(stderr, "%s", "Buffer");
+#endif
 			break;
 		case AICT_STRING:
 			if((*p = _read_string(buf, buflen, pos)) == NULL)
 				return -1;
+#ifdef DEBUG
+			fprintf(stderr, "\"%s\"", *p);
+#endif
 			break;
 	}
 	return 0;
@@ -958,11 +984,17 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 			p = arg;
 			if((*p = malloc(aica->size)) == NULL)
 				return -1;
+#ifdef DEBUG
+			fprintf(stderr, "%s", " integer");
+#endif
 			break;
 		case AICT_BUFFER:
 			b = arg;
 			if((*b = buffer_new(0, NULL)) == NULL)
 				return -1;
+#ifdef DEBUG
+			fprintf(stderr, "%s", "Buffer");
+#endif
 			break;
 		case AICT_STRING: /* FIXME not supported */
 			error_set_code(-1, "%s", strerror(ENOSYS));
@@ -976,17 +1008,13 @@ static int _read_bytes(void * data, size_t datalen, char buf[], size_t buflen,
 {
 	if(datalen > buflen - *pos)
 		return error_set_code(-1, "%s", "Not enough data yet");
-#ifdef DEBUG
-	fprintf(stderr, "%s%zu%s", "DEBUG: <= bytes ", datalen, "\n");
-#endif
 	memcpy(data, &buf[*pos], datalen);
 	(*pos) += datalen;
 	return 0;
 }
 
-static int _args_exec(AppInterfaceCall * call, void ** args)
+static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
 {
-	int ret;
 	int (*func0)(void);
 	int (*func1)(void *);
 	int (*func2)(void *, void *);
@@ -996,28 +1024,28 @@ static int _args_exec(AppInterfaceCall * call, void ** args)
 	{
 		case 0:
 			func0 = call->func;
-			ret = func0();
+			*ret = func0();
 			break;
 		case 1:
 			func1 = call->func;
-			ret = func1(args[0]);
+			*ret = func1(args[0]);
 			break;
 		case 2:
 			func2 = call->func;
-			ret = func2(args[0], args[1]);
+			*ret = func2(args[0], args[1]);
 			break;
 		case 3:
 			func3 = call->func;
-			ret = func3(args[0], args[1], args[2]);
+			*ret = func3(args[0], args[1], args[2]);
 			break;
 		default:
-			return error_set_code(-1, "%s%zu%s", "AppInterface: "
+			return error_set_code(1, "%s%zu%s", "AppInterface: "
 					"functions with ", call->args_cnt,
 					"arguments are not supported");
 	}
 	if(call->type.type == AICT_VOID) /* avoid information leak */
-		return 0;
-	return ret;
+		*ret = 0;
+	return 0;
 }
 
 /* args_post_exec
@@ -1038,9 +1066,6 @@ static size_t _args_post_exec(AppInterfaceCall * call, char buf[],
 	{
 		for(j = 0; j < i; j++)
 		{
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: argument %zu\n", j);
-#endif
 			aica = &call->args[j];
 			switch(aica->direction)
 			{
