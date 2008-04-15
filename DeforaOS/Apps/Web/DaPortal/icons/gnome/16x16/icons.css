@@ -2,6 +2,10 @@ div.icon.add {
 	background-image:		url('add.png');
 }
 
+div.icon.admin {
+	background-image:		url('admin.png');
+}
+
 div.icon.align_center {
 	background-image:		url('align_center.png');
 }
@@ -138,6 +142,10 @@ div.icon.refresh {
 
 div.icon.remove {
 	background-image:		url('remove.png');
+}
+
+div.icon.reply {
+	background-image:		url('reply.png');
 }
 
 div.icon.search, h3.title.search {
