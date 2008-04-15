@@ -533,12 +533,13 @@ static int _directive_define(Cpp * cpp, Token * token, char const * str)
 	for(j = i; (tmp = str[j]) != '\0' && isspace(tmp); j++);
 	val = (str[j] != '\0') ? &str[j] : NULL;
 	/* FIXME inject an error token instead */
-	if((var = strndup(str, i)) == NULL)
+	if((var = strdup(str)) == NULL)
 	{
 		token_set_code(token, CPP_CODE_META_ERROR);
 		token_set_string(token, strerror(errno));
 		return 0;
 	}
+	var[i] = '\0';
 	if(cpp_define_add(cpp, var, val) != 0)
 	{
 		token_set_code(token, CPP_CODE_META_ERROR);
