@@ -26,26 +26,35 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ACCESS_TIME'] = 'Access time';
 $text['BACK'] = 'Back';
+$text['COMMENT'] = 'Comment';
 $text['CREATE'] = 'Create';
+$text['DOWNLOAD'] = 'Download';
 $text['DOWNLOADS_ADMINISTRATION'] = 'Downloads administration';
 $text['DOWNLOADS_LIST'] = 'Downloads list';
 $text['FORWARD'] = 'Forward';
 $text['IMAGE_PREVIEW'] = 'Image preview';
 $text['MODE'] = 'Permissions';
+$text['MODIFICATION_TIME'] = 'Modification time';
+$text['NAME'] = 'Name';
 $text['NEW_DIRECTORY'] = 'New directory';
 $text['OWNER'] = 'Owner';
 $text['PARENT_DIRECTORY'] = 'Parent directory';
 $text['SETTINGS'] = 'Settings';
+$text['SIZE'] = 'Size';
+$text['TYPE'] = 'Type';
 $text['UPLOAD_FILE'] = 'Upload file';
 global $lang;
 if($lang == 'fr')
 {
 	$text['BACK'] = 'Précédent';
+	$text['COMMENT'] = 'Commentaire';
 	$text['CREATE'] = 'Créer';
 	$text['DOWNLOADS_ADMINISTRATION'] = 'Administration des downloads';
 	$text['DOWNLOADS_LIST'] = 'Liste des downloads';
 	$text['FORWARD'] = 'Suivant';
+	$text['IMAGE_PREVIEW'] = "Aperçu de l'image";
 	$text['NEW_DIRECTORY'] = 'Nouveau répertoire';
 	$text['OWNER'] = 'Propriétaire';
 	$text['PARENT_DIRECTORY'] = 'Répertoire parent';
