@@ -7,7 +7,7 @@
 <table>
 	<tr><td class="field">Name:</td><td><?php echo _html_safe($file['name']); ?></td></tr>
 	<tr><td class="field">Type:</td><td><?php echo _html_safe($file['mime']); ?></td></tr>
-	<tr><td class="field">Owner:</td><td><a href="index.php?module=user&amp;id=<?php echo _html_safe($file['user_id']); ?>"><?php echo _html_safe($file['user']); ?></a></td></tr>
+	<tr><td class="field">Owner:</td><td><a href="<?php echo _html_link('user', FALSE, $file['user_id'], $file['user']); ?>"><?php echo _html_safe($file['user']); ?></a></td></tr>
 	<tr><td class="field">Permissions:</td><td style="font-family: monospace"><?php echo _html_safe($file['mode']); ?></td></tr>
 	<tr><td class="field">Creation time:</td><td><?php echo _html_safe($file['ctime']); ?></td></tr>
 	<tr><td class="field">Modification time:</td><td><?php echo _html_safe($file['mtime']); ?></td></tr>
