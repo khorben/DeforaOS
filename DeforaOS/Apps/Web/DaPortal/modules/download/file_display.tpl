@@ -2,7 +2,7 @@
 <p>
 	<a href="<?php echo _html_link('download', FALSE, FALSE, FALSE, 'download_id='.$file['parent']); ?>"><div class="icon parent_directory"></div>Browse</a>
 	<span class="middot">&middot;</span>
-	<a href="<?php echo _html_link('download', 'download', $file['id']); ?>"><div class="icon download"></div><?php echo _html_safe(DOWNLOAD); ?></a>
+	<a href="<?php echo _html_link('download', 'download', $file['id'], $file['name']); ?>"><div class="icon download"></div><?php echo _html_safe(DOWNLOAD); ?></a>
 </p>
 <table>
 	<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><?php echo _html_safe($file['name']); ?></td></tr>
