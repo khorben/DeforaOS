@@ -32,6 +32,8 @@ static int _reboot(void)
 	if(reboot(RF_REBOOT) != 0)
 #elif defined(RB_HALT_SYSTEM) /* Linux */
 	if(reboot(RB_AUTOBOOT) != 0) /* not a typo */
+#elif defined(RB_POWEROFF) /* FreeBSD */
+	if(reboot(RB_AUTOBOOT) != 0)
 #elif defined(RB_AUTOBOOT) /* NetBSD */
 	if(reboot(RB_AUTOBOOT, NULL) != 0)
 #else
