@@ -223,7 +223,8 @@ function _default_dir(&$root, &$file, $sort)
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'onclick' => 'history.back(); return false');
 	$toolbar[] = array('class' => 'parent_directory',
-			'link' => _html_link('browser', '', dirname($file)),
+			'link' => _html_link('browser', FALSE, FALSE, FALSE,
+				'file='.dirname($file)),
 			'title' => PARENT_DIRECTORY);
 	$toolbar[] = array('title' => FORWARD, 'class' => 'forward',
 			'onclick' => 'history.forward(); return false');
