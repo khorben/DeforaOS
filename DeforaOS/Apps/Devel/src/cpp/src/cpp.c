@@ -747,25 +747,26 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 		if((c = parser_scan_filter(parser)) == EOF || c == '\n')
 			break;
 		if(escape)
-		{
 			escape = 0;
-			continue;
-		}
-		if(c == str[0])
+		else if(c == str[0])
 			break;
-		if(c == '\\')
+		else if(c == '\\')
 			escape = 1;
 	}
-	if(str == NULL || c != str[0])
+	if(p == NULL) /* there was an error with realloc() */
 	{
+		error_set_code(1, "%s", strerror(errno));
 		free(str);
 		return -1;
 	}
-	str[len++] = str[0];
+	else if(c == str[0]) /* the quoted string is properly closed */
+	{
+		str[len++] = str[0];
+		parser_scan_filter(parser);
+	} /* XXX else we should probably issue a warning */
 	str[len] = '\0';
 	token_set_string(token, str);
 	free(str);
-	parser_scan_filter(parser);
 	return 0;
 }
 
