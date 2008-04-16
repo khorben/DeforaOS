@@ -1,0 +1,6 @@
+#undef ndef
+#define a b
+#define def123
+#define df2 some text
+#define df2
+#undef def123
