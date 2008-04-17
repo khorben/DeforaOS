@@ -385,7 +385,7 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 		free(args);
 		return 1;
 	}
-	assert(i <= left);
+	assert((size_t)i <= left);
 	ac->lastfunc = function; /* XXX safe for now because synchronous only */
 	ac->lastargs = args;
 	ac->lastret = ret;
