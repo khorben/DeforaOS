@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* libSystem is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -84,7 +84,7 @@ static int _appclient_write(int fd, AppClient * ac);
 static int _appclient_timeout(AppClient * appclient)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "DEBUG: timeout (", appclient->fd, ")\n");
+	fprintf(stderr, "%s%d%s", "DEBUG: timeout(", appclient->fd, ")\n");
 #endif
 	event_unregister_io_read(appclient->event, appclient->fd);
 	event_unregister_io_write(appclient->event, appclient->fd);
@@ -104,14 +104,13 @@ static int _appclient_read(int fd, AppClient * ac)
 	assert(len >= 0);
 	if((len = READ(fd, ac, len)) <= 0)
 		return _read_error(ac);
-	ac->buf_read_cnt += len;
 #ifdef DEBUG
 	fprintf(stderr, "%s%d%s%zd%s", "DEBUG: READ(", fd, ") => ", len, "\n");
 #endif
+	ac->buf_read_cnt += len;
 	len = appinterface_call_receive(ac->interface, ac->lastret,
 			ac->buf_read, ac->buf_read_cnt, ac->lastfunc,
 			ac->lastargs);
-	assert((size_t)len <= ac->buf_read_cnt);
 	if(len < 0)
 	{
 #ifdef WITH_SSL
@@ -121,8 +120,9 @@ static int _appclient_read(int fd, AppClient * ac)
 		ac->fd = -1;
 		return _read_unregister(ac);
 	}
-	else if(len == 0) /* try again */
+	else if(len == 0) /* FIXME the buffer may actually be too small */
 		return 0;
+	assert((size_t)len <= ac->buf_read_cnt);
 	ac->buf_read_cnt -= len;
 	return _read_unregister(ac);
 }
