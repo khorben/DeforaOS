@@ -245,7 +245,8 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 	char c;
 	String * subdir;
 	
-	subdir = subdirs;
+	if((subdir = string_new(subdirs)) == NULL)
+		return 1;
 	for(i = 0; ret == 0; i++)
 	{
 		if(subdir[i] != ',' && subdir[i] != '\0')
@@ -256,9 +257,10 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 		if(c == '\0')
 			break;
 		subdir[i] = c;
-		subdir+=i+1;
+		subdir += i + 1;
 		i = 0;
 	}
+	string_delete(subdir);
 	return ret;
 }
 

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "settings.h"
 #include "configure.h"
 
@@ -491,16 +492,19 @@ static int _targets_subdirs(Configure * configure, FILE * fp);
 static int _targets_target(Configure * configure, FILE * fp, String * target);
 static int _write_targets(Configure * configure, FILE * fp)
 {
-	char * targets = config_get(configure->config, "", "targets");
+	int ret = 0;
+	char const * p;
+	char * targets;
 	char c;
 	int i;
-	int ret = 0;
 
 	if(_targets_all(configure, fp) != 0
 			|| _targets_subdirs(configure, fp) != 0)
 		return 1;
-	if(targets == NULL)
+	if((p = config_get(configure->config, "", "targets")) == NULL)
 		return 0;
+	if((targets = strdup(p)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -511,9 +515,10 @@ static int _write_targets(Configure * configure, FILE * fp)
 		if(c == '\0')
 			break;
 		targets[i] = c;
-		targets+=i+1;
+		targets += i+1;
 		i = 0;
 	}
+	free(targets);
 	return ret;
 }
 
