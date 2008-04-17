@@ -628,7 +628,7 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 {
 	int ret = 0;
 	String * extension;
-	int len;
+	size_t len;
 
 	if((extension = _source_extension(source)) == NULL)
 	{
@@ -920,7 +920,7 @@ static int _target_source(Configure * configure, FILE * fp,
 	int ret = 0;
 	String * extension;
 	ObjectType ot;
-	int len;
+	size_t len;
 	String const * p;
 
 	if((extension = _source_extension(source)) == NULL)
@@ -1117,7 +1117,7 @@ static int _dist_subdir_dist(FILE * fp, String * path, String * dist);
 static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 {
 	String * path;
-	int len;
+	size_t len;
 	String * targets;
 	String * includes;
 	String * dist;
@@ -1185,7 +1185,7 @@ static int _install_include(Config * config, FILE * fp, String * include);
 static int _write_install(Configure * configure, FILE * fp)
 {
 	int ret = 0;
-	String * subdirs;
+	String const * subdirs;
 	String * targets;
 	String * includes;
 	int i;
@@ -1231,9 +1231,9 @@ static int _write_install(Configure * configure, FILE * fp)
 
 static int _install_target(Config * config, FILE * fp, String * target)
 {
-	String * type;
 	static Config * flag = NULL;
 	static int done[TT_LAST];
+	String const * type;
 	TargetType tt;
 
 	if((type = config_get(config, target, "type")) == NULL)
