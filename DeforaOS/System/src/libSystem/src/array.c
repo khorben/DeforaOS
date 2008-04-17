@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with libSystem; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME:
+ * - integer overflows when resizing array */
 
 
 
