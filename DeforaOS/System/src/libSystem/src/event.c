@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* libSystem is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -156,7 +156,7 @@ static void _loop_timeout(Event * event)
 	unsigned int i = 0;
 	EventTimeout * et;
 
-	if(gettimeofday(&now, NULL) != 0)
+	if(gettimeofday(&now, NULL) != 0) /* FIXME catch error */
 #ifdef DEBUG
 		return perror("gettimeofday");
 # else
