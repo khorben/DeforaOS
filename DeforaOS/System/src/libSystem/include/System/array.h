@@ -42,14 +42,14 @@ typedef void (*ArrayApplyFunc)(void * data, void * userdata);
 Array * array_new(size_t size);
 void array_delete(Array * array);
 
-/* returns */
+/* accessors */
 size_t array_count(Array * array);
 
-/* useful */
 void * array_get(Array * array, size_t pos);
 int array_get_copy(Array * array, size_t pos, void * data);
 int array_set(Array * array, size_t pos, void * data);
 
+/* useful */
 int array_append(Array * array, void * data);
 int array_remove_pos(Array * array, size_t pos);
 
