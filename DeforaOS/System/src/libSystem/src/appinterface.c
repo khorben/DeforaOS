@@ -163,7 +163,7 @@ AppInterface * appinterface_new(char const * app)
 		ssl_init = 1;
 	}
 #endif
-	if((appinterface = malloc(sizeof(AppInterface))) == NULL)
+	if((appinterface = object_new(sizeof(*appinterface))) == NULL)
 		return NULL;
 	appinterface->calls = NULL;
 	appinterface->calls_cnt = 0;
@@ -173,13 +173,13 @@ AppInterface * appinterface_new(char const * app)
 			continue;
 		if(ifaces[i].func(appinterface) == 0)
 			break;
-		free(appinterface);
+		object_delete(appinterface);
 		return NULL;
 	}
 	if(i == ifaces_cnt)
 	{
 		error_set_code(1, "%s", "Unknown interface");
-		free(appinterface);
+		object_delete(appinterface);
 		return NULL;
 	}
 	appinterface->port = ifaces[i].port;
@@ -383,7 +383,7 @@ void appinterface_delete(AppInterface * appinterface)
 		free(appinterface->calls[i].args);
 	}
 	free(appinterface->calls);
-	free(appinterface);
+	object_delete(appinterface);
 }
 
 
