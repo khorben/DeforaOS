@@ -74,10 +74,11 @@ void config_delete(Config * config)
 
 /* accessors */
 /* config_get */
-char * config_get(Config * config, char const * section, char const * variable)
+char const * config_get(Config * config, char const * section,
+		char const * variable)
 {
 	Hash * h;
-	char * value;
+	char const * value;
 
 	if((h = hash_get(config, section)) != NULL) /* found section */
 	{
