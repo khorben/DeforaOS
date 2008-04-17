@@ -26,6 +26,11 @@
 #include <string.h>
 #include "makefile.h"
 #include "configure.h"
+#include "../config.h"
+
+#ifndef PACKAGE
+# define PACKAGE	"configure"
+#endif
 
 
 /* configure */
@@ -81,7 +86,7 @@ String * _source_extension(String * source)
 /* functions */
 int configure_error(char const * message, int ret)
 {
-	fputs("configure: ", stderr);
+	fputs(PACKAGE ": ", stderr);
 	perror(message);
 	return ret;
 }
