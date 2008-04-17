@@ -75,7 +75,7 @@ typedef struct _AppInterfaceCallArg
 {
 	AppInterfaceCallType type;
 	AppInterfaceCallDirection direction;
-	int size;
+	size_t size;
 } AppInterfaceCallArg;
 
 typedef struct _AppInterfaceCall
@@ -937,6 +937,7 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
+			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
 			if(_read_bytes(&size, sizeof(size), buf, buflen, pos)
@@ -997,8 +998,8 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 #endif
 			break;
 		case AICT_STRING: /* FIXME not supported */
-			error_set_code(1, "%s", strerror(ENOSYS));
-			return -1;
+			errno = ENOSYS;
+			return -error_set_code(1, "%s", strerror(ENOSYS));
 	}
 	return 0;
 }
@@ -1147,6 +1148,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
+			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
 			b = arg;
@@ -1159,6 +1161,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 				return -1;
 			break;
 		case AICT_STRING: /* FIXME not supported */
+			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 	}
 	return 0;
@@ -1178,6 +1181,7 @@ static int _post_exec_free_in(AppInterfaceCallArg * aica, void * arg)
 			break;
 		case AICT_INT64:	case AICT_UINT64:
 			/* FIXME not supported */
+			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
 			b = arg;
@@ -1210,6 +1214,7 @@ static int _post_exec_free_out(AppInterfaceCallArg * aica, void * arg)
 			buffer_delete(b);
 			break;
 		case AICT_STRING: /* FIXME not supported */
+			errno = ENOSYS;
 			return -error_set_code(1, "%s", strerror(ENOSYS));
 	}
 	return 0;
