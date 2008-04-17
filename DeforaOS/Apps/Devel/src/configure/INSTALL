@@ -5,5 +5,7 @@ To install configure in /usr/local, just proceed this way:
 $ make
 $ make install
 
-To install it in another path, use the DESTDIR variable:
-$ make install DESTDIR=<destination_path>
+To install it in another path, use the PREFIX variable:
+$ make install PREFIX=<destination_path>
+
+The DESTDIR variable is also supported for package maintainers.
