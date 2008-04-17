@@ -21,7 +21,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
-#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 #ifdef DEBUG
@@ -102,19 +101,19 @@ void event_delete(Event * event)
 	for(i = 0; i < array_count(event->timeouts); i++)
 	{
 		array_get_copy(event->writes, i, &et);
-		free(et);
+		object_delete(et);
 	}
 	array_delete(event->timeouts);
 	for(i = 0; i < array_count(event->reads); i++)
 	{
 		array_get_copy(event->reads, i, &eio);
-		free(eio);
+		object_delete(eio);
 	}
 	array_delete(event->reads);
 	for(i = 0; i < array_count(event->writes); i++)
 	{
 		array_get_copy(event->writes, i, &eio);
-		free(eio);
+		object_delete(eio);
 	}
 	array_delete(event->writes);
 	object_delete(event);
@@ -176,7 +175,7 @@ static void _loop_timeout(Event * event)
 			if(et->func(et->data) != 0)
 			{
 				array_remove_pos(event->timeouts, i);
-				free(et);
+				object_delete(et);
 				continue;
 			}
 			et->timeout.tv_sec = et->initial.tv_sec + now.tv_sec;
@@ -256,8 +255,8 @@ int event_register_io_read(Event * event, int fd, EventIOFunc func,
 	EventIO * eventio;
 
 	assert(fd >= 0);
-	if((eventio = malloc(sizeof(*eventio))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((eventio = object_new(sizeof(*eventio))) == NULL)
+		return 1;
 	eventio->fd = fd;
 	eventio->func = func;
 	eventio->data = userdata;
@@ -275,8 +274,8 @@ int event_register_io_write(Event * event, int fd, EventIOFunc func,
 	EventIO * eventio;
 
 	assert(fd >= 0);
-	if((eventio = malloc(sizeof(*eventio))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((eventio = object_new(sizeof(*eventio))) == NULL)
+		return 1;
 	eventio->fd = fd;
 	eventio->func = func;
 	eventio->data = userdata;
@@ -296,8 +295,8 @@ int event_register_timeout(Event * event, struct timeval timeout,
 
 	if(gettimeofday(&now, NULL) != 0)
 		return error_set_code(1, "%s", strerror(errno));
-	if((eventtimeout = malloc(sizeof(*eventtimeout))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((eventtimeout = object_new(sizeof(*eventtimeout))) == NULL)
+		return 1;
 	eventtimeout->initial.tv_sec = timeout.tv_sec;
 	eventtimeout->initial.tv_usec = timeout.tv_usec;
 	eventtimeout->timeout.tv_sec = now.tv_sec + timeout.tv_sec;
@@ -359,7 +358,7 @@ static int _unregister_io(eventioArray * eios, fd_set * fds, int fd)
 		}
 		FD_CLR(fd, fds);
 		array_remove_pos(eios, i);
-		free(eio);
+		object_delete(eio);
 	}
 	return fdmax;
 }
@@ -381,7 +380,7 @@ int event_unregister_timeout(Event * event, EventTimeoutFunc func)
 			continue;
 		}
 		array_remove_pos(event->timeouts, i);
-		free(et);
+		object_delete(et);
 	}
 	if(gettimeofday(&now, NULL) != 0)
 		return error_set_code(1, "%s", strerror(errno));
