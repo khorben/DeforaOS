@@ -29,7 +29,7 @@ ARRAY(Config *, config);
 /* functions */
 static int _makefile_write(Configure * configure, FILE * fp, configArray * ca,
 	       	int from, int to);
-int makefile(Configure * configure, String * directory, configArray * ca,
+int makefile(Configure * configure, String const * directory, configArray * ca,
 	       	int from, int to)
 		
 {

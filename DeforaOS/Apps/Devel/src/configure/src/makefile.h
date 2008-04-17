@@ -32,7 +32,7 @@ extern configArray * configarray_new(void);
 
 
 /* functions */
-int makefile(Configure * configure, String * directory, configArray * ca,
+int makefile(Configure * configure, String const * directory, configArray * ca,
 	       	int from, int to);
 		
 

@@ -201,14 +201,14 @@ static HostKernel _detect_kernel(HostOS os, char const * release)
 
 
 static int _load_subdirs(Prefs * prefs, char const * directory,
-		configArray * ca, String * subdirs);
+		configArray * ca, String const * subdirs);
 static int _configure_load(Prefs * prefs, String const * directory,
 		configArray * ca)
 {
 	int ret = 0;
 	Config * config;
 	String * path;
-	String * subdirs = NULL;
+	String const * subdirs = NULL;
 
 	if((path = string_new(directory)) == NULL)
 		return configure_error(directory, 1);
@@ -238,7 +238,7 @@ static int _configure_load(Prefs * prefs, String const * directory,
 static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 		configArray * ca, char const * subdir);
 static int _load_subdirs(Prefs * prefs, char const * directory,
-		configArray * ca, String * subdirs)
+		configArray * ca, String const * subdirs)
 {
 	int ret = 0;
 	int i;
@@ -302,7 +302,7 @@ static int _configure_do(Configure * configure, configArray * ca)
 		if(makefile(configure, di, ca, i, j) != 0)
 			break;
 	}
-	return i == cnt ? 0 : 1;
+	return (i == cnt) ? 0 : 1;
 }
 
 
