@@ -593,7 +593,10 @@ static int _send_bytes(char const * data, size_t datalen, char * buf,
 	/* FIXME the buffer is sometimes too short */
 {
 	if(*pos + datalen > buflen)
+	{
+		errno = ENOBUFS;
 		return error_set_code(1, "%s", strerror(ENOBUFS));
+	}
 	memcpy(&buf[*pos], data, datalen);
 	*pos += datalen;
 	return 0;
@@ -602,19 +605,17 @@ static int _send_bytes(char const * data, size_t datalen, char * buf,
 static int _send_string(char const * string, char buf[], size_t buflen,
 		size_t * pos)
 {
-	int i = 0;
+	size_t i;
 
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s", "DEBUG: => string \"", string, "\"\n");
-#endif
-	while(*pos < buflen)
+	for(i = 0; *pos < buflen; i++)
 	{
 		buf[*pos] = string[i];
 		(*pos)++;
-		if(string[i++] == '\0')
+		if(string[i] == '\0')
 			return 0;
 	}
-	return 1;
+	errno = ENOBUFS;
+	return error_set_code(1, "%s", strerror(ENOBUFS));
 }
 
 
