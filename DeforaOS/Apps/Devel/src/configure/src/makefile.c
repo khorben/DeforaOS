@@ -1047,7 +1047,7 @@ static int _clean_targets(Config * config, FILE * fp)
 {
 	String const * p;
 	String * targets;
-	int i;
+	size_t i;
 	char c;
 
 	if((p = config_get(config, "", "targets")) == NULL)
@@ -1126,15 +1126,16 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 	return 0;
 }
 
-static int _dist_subdir_dist(FILE * fp, String * path, String * dist);
+static int _dist_subdir_dist(FILE * fp, String const * path,
+		String const * dist);
 static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 {
-	String * path;
+	String const * path;
 	size_t len;
 	String * targets;
-	String * includes;
+	String const * includes;
 	String * dist;
-	int i;
+	size_t i;
 	char c;
 
 	path = config_get(config, "", "directory");
@@ -1170,26 +1171,31 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	return 0;
 }
 
-static int _dist_subdir_dist(FILE * fp, String * path, String * dist)
+static int _dist_subdir_dist(FILE * fp, String const * path,
+		String const * dist)
 {
-	int i;
+	String * d;
+	size_t i;
 	char c;
 
+	if((d = string_new(dist)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
-		if(dist[i] != ',' && dist[i] != '\0')
+		if(d[i] != ',' && d[i] != '\0')
 			continue;
-		c = dist[i];
-		dist[i] = '\0';
+		c = d[i];
+		d[i] = '\0';
 		fprintf(fp, "%s%s%s%s%s", "\t\t$(PACKAGE)-$(VERSION)/",
 				path[0] == '\0' ? "" : path,
-				path[0] == '\0' ? "" : "/", dist, " \\\n");
+				path[0] == '\0' ? "" : "/", d, " \\\n");
 		if(c == '\0')
 			break;
-		dist[i] = c;
-		dist+=i+1;
+		d[i] = c;
+		d += i + 1;
 		i = 0;
 	}
+	string_delete(d);
 	return 0;
 }
 
