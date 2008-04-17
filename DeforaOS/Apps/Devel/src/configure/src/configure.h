@@ -33,7 +33,8 @@ typedef enum _HostArch
 	HA_UNKNOWN
 } HostArch;
 # define HA_LAST HA_UNKNOWN
-extern const String * sHostArch[HA_LAST+1];
+# define HA_COUNT (HA_LAST + 1)
+extern const String * sHostArch[HA_COUNT];
 
 typedef enum _HostOS
 {
@@ -43,7 +44,8 @@ typedef enum _HostOS
 	HO_UNKNOWN
 } HostOS;
 # define HO_LAST HO_UNKNOWN
-extern const String * sHostOS[HO_LAST+1];
+# define HO_COUNT (HO_LAST + 1)
+extern const String * sHostOS[HO_COUNT];
 
 typedef enum _HostKernel
 {
@@ -54,19 +56,21 @@ typedef enum _HostKernel
 	HK_UNKNOWN
 } HostKernel;
 # define HK_LAST HK_UNKNOWN
+# define HK_COUNT (HK_LAST + 1)
 struct HostKernel
 {
 	HostOS os;
 	const char * version;
 };
-extern const struct HostKernel sHostKernel[HK_LAST+1];
+extern const struct HostKernel sHostKernel[HK_COUNT];
 
 typedef enum _TargetType
 {
 	TT_BINARY = 0, TT_LIBRARY, TT_OBJECT, TT_UNKNOWN
 } TargetType;
 # define TT_LAST TT_UNKNOWN
-extern const String * sTargetType[TT_LAST];
+# define TT_COUNT (TT_LAST + 1)
+extern const String * sTargetType[TT_COUNT];
 
 typedef enum _ObjectType
 {
@@ -76,7 +80,8 @@ typedef enum _ObjectType
        	OT_UNKNOWN
 } ObjectType;
 # define OT_LAST OT_UNKNOWN
-extern const String * sObjectType[OT_LAST];
+# define OT_COUNT (OT_LAST + 1)
+extern const String * sObjectType[OT_COUNT];
 String * _source_extension(String * source);
 
 
@@ -111,7 +116,7 @@ typedef struct _Configure
 /* functions */
 int configure_error(char const * message, int ret);
 
-int enum_string(int last, const String * strings[], String * str);
-int enum_string_short(int last, const String * strings[], String * str);
+int enum_string(int last, const String * strings[], String const * str);
+int enum_string_short(int last, const String * strings[], String const * str);
 
 #endif /* !CONFIGURE_CONFIGURE_H */

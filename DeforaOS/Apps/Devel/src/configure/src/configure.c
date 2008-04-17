@@ -286,7 +286,7 @@ static int _configure_do(Configure * configure, configArray * ca)
 	String * di;
 	int j;
 	Config * cj;
-	String * dj;
+	String const * dj;
 
 	for(i = 0; i < cnt; i++)
 	{
