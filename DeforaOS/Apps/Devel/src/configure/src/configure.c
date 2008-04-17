@@ -35,7 +35,7 @@
 
 /* configure */
 /* variables */
-const String * sHostArch[HA_LAST+1] =
+const String * sHostArch[HA_COUNT] =
 {
 	"i386", "i486", "i586", "i686",
 	"amd64",
@@ -44,7 +44,7 @@ const String * sHostArch[HA_LAST+1] =
 	"zaurus",
 	"unknown"
 };
-const String * sHostOS[HO_LAST+1] =
+const String * sHostOS[HO_COUNT] =
 {
 	"Linux",
 	"FreeBSD", "NetBSD", "OpenBSD",
@@ -69,8 +69,8 @@ const struct HostKernel sHostKernel[] =
 	{ HO_UNKNOWN,	"unknown"	}
 };
 
-const String * sTargetType[TT_LAST] = { "binary", "library", "object" };
-const String * sObjectType[OT_LAST] = { "c", "cc", "cpp", "S" };
+const String * sTargetType[TT_COUNT] = { "binary", "library", "object", NULL };
+const String * sObjectType[OT_COUNT] = { "c", "cc", "cpp", "S", NULL };
 
 String * _source_extension(String * source)
 {
@@ -92,7 +92,7 @@ int configure_error(char const * message, int ret)
 }
 
 
-int enum_string(int last, const String * strings[], String * str)
+int enum_string(int last, const String * strings[], String const * str)
 {
 	int i;
 
@@ -103,7 +103,7 @@ int enum_string(int last, const String * strings[], String * str)
 }
 
 
-int enum_string_short(int last, const String * strings[], String * str)
+int enum_string_short(int last, const String * strings[], String const * str)
 {
 	int i;
 
