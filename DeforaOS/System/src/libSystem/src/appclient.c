@@ -78,6 +78,10 @@ static int _appclient_timeout(AppClient * appclient);
 static int _appclient_read(int fd, AppClient * ac);
 static int _appclient_write(int fd, AppClient * ac);
 
+#ifdef WITH_SSL
+static char * _appclient_error_ssl(void);
+#endif
+
 
 /* functions */
 /* appclient_timeout */
@@ -130,7 +134,7 @@ static int _appclient_read(int fd, AppClient * ac)
 static int _read_error(AppClient * ac)
 {
 #ifdef WITH_SSL
-	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+	error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_shutdown(ac->ssl);
 #else
 	error_set_code(1, "%s", strerror(errno));
@@ -175,7 +179,7 @@ static int _appclient_write(int fd, AppClient * ac)
 static int _write_error(AppClient * ac)
 {
 #ifdef WITH_SSL
-	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+	error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_shutdown(ac->ssl);
 #else
 	error_set_code(1, "%s", strerror(errno));
@@ -184,6 +188,15 @@ static int _write_error(AppClient * ac)
 	ac->fd = -1;
 	return 1;
 }
+
+
+#ifdef WITH_SSL
+/* appclient_error_ssl */
+static char * _appclient_error_ssl(void)
+{
+	return ERR_error_string(ERR_get_error(), NULL);
+}
+#endif
 
 
 /* public */
@@ -262,13 +275,13 @@ static int _new_connect(AppClient * appclient, char * app)
 #ifdef WITH_SSL
 	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
-		return error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
-					NULL));
+		return error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_set_connect_state(appclient->ssl);
 #endif
-	if(appclient_call(appclient, &port, "port", app) != 0
-			|| port < 0)
+	if(appclient_call(appclient, &port, "port", app) != 0)
 		return 1;
+	if(port < 0)
+		return error_set_code(1, "%s", "Could not obtain remote port");
 	if(port == 0) /* the connection is good already or being forwarded */
 		return 0;
 #ifdef WITH_SSL
@@ -276,14 +289,13 @@ static int _new_connect(AppClient * appclient, char * app)
 	SSL_free(appclient->ssl);
 	appclient->ssl = NULL;
 #endif
-	close(appclient->fd);
-	appclient->fd = -1;
 #ifdef DEBUG
-	fprintf(stderr, "%s%d%s", "AppClient bouncing to port ", port, "\n");
+	fprintf(stderr, "%s%d%s", "DEBUG: Bouncing to port ", port, "\n");
 #endif
 	appinterface_delete(appclient->interface);
 	if((appclient->interface = appinterface_new(app)) == NULL)
 		return 1;
+	close(appclient->fd);
 	if((appclient->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return error_set_code(1, "%s%s", "socket: ", strerror(errno));
 	if(_connect_addr(app, &sa.sin_addr.s_addr) != 0)
@@ -298,8 +310,7 @@ static int _new_connect(AppClient * appclient, char * app)
 #ifdef WITH_SSL
 	if((appclient->ssl = SSL_new(appclient->ssl_ctx)) == NULL
 			|| SSL_set_fd(appclient->ssl, appclient->fd) != 1)
-		return error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
-					NULL));
+		return error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_set_connect_state(appclient->ssl);
 #endif
 	return 0;
@@ -308,14 +319,15 @@ static int _new_connect(AppClient * appclient, char * app)
 static int _connect_addr(String const * service, uint32_t * addr)
 {
 	char prefix[] = "APPSERVER_";
-	size_t len = sizeof(prefix);
+	size_t len;
 	char * env;
-	char * server;
+	char const * server;
 	struct hostent * he;
 
-	if((env = malloc(len + string_length(service) + 1)) == NULL)
+	len = sizeof(prefix) + string_length(service) + 1;
+	if((env = malloc(len)) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
-	sprintf(env, "%s%s", prefix, service);
+	snprintf(env, len, "%s%s", prefix, service);
 	server = getenv(env);
 	free(env);
 	if(server == NULL)
@@ -354,7 +366,7 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 {
 	void ** args = NULL;
 	va_list arg;
-	size_t left = sizeof(ac->buf_write) - ac->buf_write_cnt;
+	size_t left;
 	size_t cnt;
 	ssize_t i;
 
@@ -362,15 +374,18 @@ int appclient_call(AppClient * ac, int32_t * ret, char const * function, ...)
 		return 1;
 	if((args = calloc(sizeof(*args), cnt)) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
+	assert(sizeof(ac->buf_write) >= ac->buf_write_cnt);
+	left = sizeof(ac->buf_write) - ac->buf_write_cnt;
 	va_start(arg, function);
 	i = appinterface_call(ac->interface, &ac->buf_write[ac->buf_write_cnt],
 			left, function, args, arg);
 	va_end(arg);
-	if(i <= 0 || (size_t)i > left)
+	if(i <= 0)
 	{
 		free(args);
 		return 1;
 	}
+	assert(i <= left);
 	ac->lastfunc = function; /* XXX safe for now because synchronous only */
 	ac->lastargs = args;
 	ac->lastret = ret;
@@ -393,7 +408,7 @@ static int _call_event(AppClient * ac)
 	event_register_io_write(ac->event, ac->fd,
 			(EventIOFunc)_appclient_write, ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: waiting for answer\n");
+	fprintf(stderr, "%s", "DEBUG: Waiting for answer\n");
 #endif
 	event_loop(ac->event);
 	event_delete(ac->event); /* FIXME may already be free'd */
