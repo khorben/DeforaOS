@@ -74,18 +74,20 @@ Event * event_new(void)
 
 	if((event = object_new(sizeof(*event))) == NULL)
 		return NULL;
-	if((event->timeouts = eventtimeoutarray_new()) == NULL)
-	{
-		object_delete(event);
-		return NULL;
-	}
+	event->timeouts = eventtimeoutarray_new();
 	event->fdmax = -1;
 	FD_ZERO(&event->rfds);
 	FD_ZERO(&event->wfds);
-	event->reads = eventioarray_new(); /* FIXME */
-	event->writes = eventioarray_new(); /* FIXME */
+	event->reads = eventioarray_new();
+	event->writes = eventioarray_new();
 	event->timeout.tv_sec = LONG_MAX;
 	event->timeout.tv_usec = LONG_MAX;
+	if(event->timeouts == NULL || event->reads == NULL
+			|| event->writes == NULL)
+	{
+		event_delete(event);
+		return NULL;
+	}
 	return event;
 }
 
