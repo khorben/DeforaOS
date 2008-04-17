@@ -19,6 +19,7 @@
 #ifndef LIBSYSTEM_APPCLIENT_H
 # define LIBSYSTEM_APPCLIENT_H
 
+# include <stdint.h>
 # include "event.h"
 
 
