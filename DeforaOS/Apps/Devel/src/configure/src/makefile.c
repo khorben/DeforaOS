@@ -120,7 +120,7 @@ static int _variables_package(Configure * configure, FILE * fp,
 {
 	String const * package;
 	String const * version;
-	String * p;
+	String const * p;
 
 	if((package = config_get(configure->config, "", "package")) == NULL)
 		return 0;
@@ -169,7 +169,6 @@ static int _variables_print(Configure * configure, FILE * fp,
 		fprintf(fp, " %s", prints);
 		if(c == '\0')
 			break;
-		prints[i] = c;
 		prints += i + 1;
 		i = 0;
 	}
@@ -180,15 +179,18 @@ static int _variables_print(Configure * configure, FILE * fp,
 
 static int _variables_targets(Configure * configure, FILE * fp)
 {
+	String const * p;
 	String * prints;
-	unsigned long i;
+	size_t i;
 	char c;
 	String const * type;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	if((prints = config_get(configure->config, "", "targets")) == NULL)
+	if((p = config_get(configure->config, "", "targets")) == NULL)
 		return 0;
+	if((prints = strdup(p)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
 	fprintf(fp, "%s%s", "TARGETS", "\t=");
 	for(i = 0;; i++)
 	{
@@ -214,11 +216,11 @@ static int _variables_targets(Configure * configure, FILE * fp)
 			}
 		if(c == '\0')
 			break;
-		prints[i] = c;
-		prints+=i+1;
+		prints += i + 1;
 		i = 0;
 	}
 	fputc('\n', fp);
+	free(prints);
 	return 0;
 }
 
@@ -227,7 +229,7 @@ static int _executables_variables(Configure * configure, FILE * fp,
 static int _variables_executables(Configure * configure, FILE * fp)
 {
 	String * targets;
-	String * includes;
+	String const * includes;
 	int i;
 	char c;
 
@@ -247,7 +249,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 			if(c == '\0')
 				break;
 			targets[i] = c;
-			targets+=i+1;
+			targets += i + 1;
 			i = 0;
 		}
 	}
