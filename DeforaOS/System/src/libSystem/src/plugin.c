@@ -30,6 +30,21 @@
 #define PLUGIN_EXTENSION ".so"
 
 
+/* prototypes */
+static Plugin * _plugin_open(char const * filename);
+
+
+/* functions */
+static Plugin * _plugin_open(char const * filename)
+{
+	Plugin * plugin;
+
+	if((plugin = dlopen(filename, RTLD_LAZY)) == NULL)
+		error_set_code(1, "%s", dlerror());
+	return plugin;
+}
+
+
 /* public */
 /* functions */
 /* plugin_new */
@@ -49,10 +64,16 @@ Plugin * plugin_new(char const * libdir, char const * package,
 	}
 	snprintf(filename, len, "%s/%s/%s/%s%s", libdir, package, type, name,
 			PLUGIN_EXTENSION);
-	if((plugin = dlopen(filename, RTLD_LAZY)) == NULL)
-		error_set_code(1, "%s: %s", filename, dlerror());
+	plugin = _plugin_open(filename);
 	free(filename);
 	return plugin;
+}
+
+
+/* plugin_new_self */
+Plugin * plugin_new_self(void)
+{
+	return _plugin_open(NULL);
 }
 
 
@@ -60,4 +81,16 @@ Plugin * plugin_new(char const * libdir, char const * package,
 void plugin_delete(Plugin * plugin)
 {
 	dlclose(plugin);
+}
+
+
+/* useful */
+/* plugin_lookup */
+void * plugin_lookup(Plugin * plugin, char const * symbol)
+{
+	void * ret;
+
+	if((ret = dlsym(plugin, symbol)) == NULL)
+		error_set_code(1, "%s", dlerror());
+	return ret;
 }

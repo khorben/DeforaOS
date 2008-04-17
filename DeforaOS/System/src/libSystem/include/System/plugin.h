@@ -27,6 +27,11 @@ typedef void Plugin;
 /* functions */
 Plugin * plugin_new(char const * libdir, char const * package,
 		char const * type, char const * name);
+Plugin * plugin_new_self(void);
 void plugin_delete(Plugin * plugin);
+
+
+/* useful */
+void * plugin_lookup(Plugin * plugin, char const * symbol);
 
 #endif /* !LIBSYSTEM_PLUGIN_H */
