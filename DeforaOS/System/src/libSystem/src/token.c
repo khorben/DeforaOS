@@ -48,7 +48,7 @@ Token * token_new(char const * filename, unsigned int line, unsigned int col)
 	Token * token;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: token_new(%u, %u)\n", line, col);
+	fprintf(stderr, "DEBUG: %s(%u, %u)\n", __func__, line, col);
 #endif
 	if((token = object_new(sizeof(*token))) == NULL)
 		return NULL;
@@ -147,7 +147,7 @@ void token_set_line(Token * token, unsigned int line)
 int token_set_string(Token * token, char const * string)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: token_set_string(%p, \"%s\")\n", token, string);
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, token, string);
 #endif
 	free(token->string);
 	if((token->string = strdup(string)) == NULL)
