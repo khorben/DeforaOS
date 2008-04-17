@@ -256,7 +256,6 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 		ret = _load_subdirs_subdir(prefs, directory, ca, subdir);
 		if(c == '\0')
 			break;
-		subdir[i] = c;
 		subdir += i + 1;
 		i = 0;
 	}
@@ -267,7 +266,7 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 
 static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 		configArray * ca, char const * subdir)
-/* FIXME error checking */
+	/* FIXME error checking */
 {
 	int ret;
 	String * p;
