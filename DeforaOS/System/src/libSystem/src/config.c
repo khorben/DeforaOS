@@ -13,8 +13,6 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with libSystem; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
-/* TODO:
- * - use the error reporting framework */
 
 
 
@@ -143,15 +141,14 @@ int config_load(Config * config, char const * filename)
 	char * str;
 	int ret = 0;
 
-	if((section = string_new("")) == NULL
-			|| (fp = fopen(filename, "r")) == NULL)
+	if((section = string_new("")) == NULL)
+		return 1;
+	if((fp = fopen(filename, "r")) == NULL)
 	{
 		free(section);
-		return error_set_code(1, "%s%s%s", filename, ": ",
-				strerror(errno));
+		return error_set_code(1, "%s: %s", filename, strerror(errno));
 	}
 	while((c = fgetc(fp)) != EOF)
-	{
 		if(c == '#')
 			while((c = fgetc(fp)) != EOF && c != '\n');
 		else if(c == '[')
@@ -174,14 +171,10 @@ int config_load(Config * config, char const * filename)
 		}
 		else if(c != '\n')
 			break;
-	}
 	free(section);
 	free(variable);
 	if(!feof(fp))
-	{
-		errno = EINVAL;
-		ret = 1;
-	}
+		ret = error_set_code(1, "%s: %s", filename, "Syntax error");
 	fclose(fp);
 	return ret;
 }
@@ -272,8 +265,8 @@ static char * _load_value(FILE * fp)
 
 
 /* config_save */
-static int _save_section(Hash * h, size_t i, FILE * fp);
-static int _save_variables(Hash * h, FILE * fp);
+static int _save_section(Hash * h, size_t i, FILE * fp, char const * filename);
+static int _save_variables(Hash * h, FILE * fp, char const * filename);
 
 int config_save(Config * config, char const * filename)
 {
@@ -285,19 +278,15 @@ int config_save(Config * config, char const * filename)
 	if((i = array_count(config)) == 0)
 		return 1;
 	if((fp = fopen(filename, "w")) == NULL)
-	{
-		fprintf(stderr, "%s", "libutils: ");
-		perror(filename);
-		return 1;
-	}
+		return error_set_code(1, "%s: %s", filename, strerror(errno));
 	for(j = 0; j < i; j++)
-		if((ret = _save_section(config, j, fp)) != 0)
+		if((ret = _save_section(config, j, fp, filename)) != 0)
 			break;
 	fclose(fp);
 	return ret;
 }
 
-static int _save_section(Hash * h, size_t i, FILE * fp)
+static int _save_section(Hash * h, size_t i, FILE * fp, char const * filename)
 {
 	HashEntry * he;
 
@@ -305,17 +294,19 @@ static int _save_section(Hash * h, size_t i, FILE * fp)
 	if(he->name[0] != '\0')
 	{
 		if(fprintf(fp, "[%s]\n", he->name) < 0)
-			return 1;
+			return error_set_code(1, "%s: %s", filename,
+					strerror(errno));
 	}
-	else if(i != 0)
-		if(fwrite("[]\n", sizeof(char), 3, fp) != 3)
-			return 1;
-	if(_save_variables(he->data, fp) != 0)
+	else if(i != 0 && fwrite("[]\n", sizeof(char), 3, fp) != 3)
+		return error_set_code(1, "%s: %s", filename, strerror(errno));
+	if(_save_variables(he->data, fp, filename) != 0)
 		return 1;
-	return fputc('\n', fp) == '\n' ? 0 : 1;
+	if(fputc('\n', fp) == '\n')
+		return 0;
+	return error_set_code(1, "%s: %s", filename, strerror(errno));
 }
 
-static int _save_variables(Hash * h, FILE * fp)
+static int _save_variables(Hash * h, FILE * fp, char const * filename)
 {
 	size_t i;
 	size_t j;
@@ -328,7 +319,8 @@ static int _save_variables(Hash * h, FILE * fp)
 		if(he->name == NULL || he->data == NULL)
 			continue;
 		if(fprintf(fp, "%s=%s\n", he->name, (char*)he->data) < 0)
-			return 1;
+			return error_set_code(1, "%s: %s", filename,
+					strerror(errno));
 	}
 	return 0;
 }
