@@ -110,7 +110,7 @@ static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
 			break;
 	if(i == appinterface->calls_cnt)
 	{
-		error_set_code(-1, "%s%s%s", "Unknown call ", call,
+		error_set_code(1, "%s%s%s", "Unknown call ", call,
 				" for interface");
 		return NULL;
 	}
@@ -764,7 +764,7 @@ int appinterface_receive(AppInterface * appinterface, int * ret, char buf[],
 	AppInterfaceCall * aic;
 
 	if((func = _read_string(buf, buflen, &pos)) == NULL)
-		return error_set_code(-1, "%s", "Could not read the name of the"
+		return -error_set_code(1, "%s", "Could not read the name of the"
 				" call");
 	aic = _appinterface_get_call(appinterface, func);
 	string_delete(func);
@@ -937,8 +937,7 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
-			error_set_code(-1, "%s", strerror(ENOSYS));
-			return -1;
+			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
 			if(_read_bytes(&size, sizeof(size), buf, buflen, pos)
 					!= 0)
@@ -998,7 +997,7 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 #endif
 			break;
 		case AICT_STRING: /* FIXME not supported */
-			error_set_code(-1, "%s", strerror(ENOSYS));
+			error_set_code(1, "%s", strerror(ENOSYS));
 			return -1;
 	}
 	return 0;
@@ -1008,7 +1007,10 @@ static int _read_bytes(void * data, size_t datalen, char buf[], size_t buflen,
 		size_t * pos)
 {
 	if(datalen > buflen - *pos)
-		return error_set_code(-1, "%s", "Not enough data yet");
+	{
+		errno = EAGAIN;
+		return -error_set_code(1, "%s", strerror(EAGAIN));
+	}
 	memcpy(data, &buf[*pos], datalen);
 	(*pos) += datalen;
 	return 0;
@@ -1140,8 +1142,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_INT64: /* FIXME not supported */
 		case AICT_UINT64:
-			error_set_code(-1, "%s", strerror(ENOSYS));
-			return -1;
+			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
 			b = arg;
 			size = htonl(buffer_get_size(b)); /* size of buffer */
@@ -1153,8 +1154,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 				return -1;
 			break;
 		case AICT_STRING: /* FIXME not supported */
-			error_set_code(-1, "%s", strerror(ENOSYS));
-			break;
+			return -error_set_code(1, "%s", strerror(ENOSYS));
 	}
 	return 0;
 }
@@ -1173,8 +1173,7 @@ static int _post_exec_free_in(AppInterfaceCallArg * aica, void * arg)
 			break;
 		case AICT_INT64:	case AICT_UINT64:
 			/* FIXME not supported */
-			error_set_code(-1, "%s", strerror(ENOSYS));
-			return -1;
+			return -error_set_code(1, "%s", strerror(ENOSYS));
 		case AICT_BUFFER:
 			b = arg;
 			buffer_delete(b);
@@ -1206,8 +1205,7 @@ static int _post_exec_free_out(AppInterfaceCallArg * aica, void * arg)
 			buffer_delete(b);
 			break;
 		case AICT_STRING: /* FIXME not supported */
-			error_set_code(-1, "%s", strerror(ENOSYS));
-			return -1;
+			return -error_set_code(1, "%s", strerror(ENOSYS));
 	}
 	return 0;
 }
