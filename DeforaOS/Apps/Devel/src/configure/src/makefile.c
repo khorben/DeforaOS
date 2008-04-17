@@ -101,10 +101,10 @@ static int _variables_executables(Configure * configure, FILE * fp);
 static int _variables_includes(Configure * configure, FILE * fp);
 static int _write_variables(Configure * configure, FILE * fp)
 {
-	String const * directory = config_get(configure->config, "",
-		       	"directory");
 	int ret = 0;
-
+	String const * directory;
+	
+	directory = config_get(configure->config, "", "directory");
 	ret |= _variables_package(configure, fp, directory);
 	ret |= _variables_print(configure, fp, "subdirs", "SUBDIRS");
 	ret |= _variables_targets(configure, fp);
@@ -118,8 +118,8 @@ static int _write_variables(Configure * configure, FILE * fp)
 static int _variables_package(Configure * configure, FILE * fp,
 		String const * directory)
 {
-	String * package;
-	String * version;
+	String const * package;
+	String const * version;
 	String * p;
 
 	if((package = config_get(configure->config, "", "package")) == NULL)
@@ -135,7 +135,7 @@ static int _variables_package(Configure * configure, FILE * fp,
 		return 1;
 	}
 	if(configure->prefs->flags & PREFS_v)
-		printf("%s%s%s", " ", version, "\n");
+		printf(" %s\n", version);
 	if(fp != NULL)
 		fprintf(fp, "%s%s%s%s%s", "PACKAGE\t= ", package,
 				"\nVERSION\t= ", version, "\n");
@@ -148,14 +148,17 @@ static int _variables_package(Configure * configure, FILE * fp,
 static int _variables_print(Configure * configure, FILE * fp,
 		char const * input, char const * output)
 {
+	String const * p;
 	String * prints;
 	unsigned long i;
 	char c;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
-	if((prints = config_get(configure->config, "", input)) == NULL)
+	if((p = config_get(configure->config, "", input)) == NULL)
 		return 0;
+	if((prints = strdup(p)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
 	fprintf(fp, "%s%s", output, "\t=");
 	for(i = 0;; i++)
 	{
@@ -167,10 +170,11 @@ static int _variables_print(Configure * configure, FILE * fp,
 		if(c == '\0')
 			break;
 		prints[i] = c;
-		prints+=i+1;
+		prints += i + 1;
 		i = 0;
 	}
 	fputc('\n', fp);
+	free(prints);
 	return 0;
 }
 
@@ -179,7 +183,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 	String * prints;
 	unsigned long i;
 	char c;
-	String * type;
+	String const * type;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
@@ -219,7 +223,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 }
 
 static int _executables_variables(Configure * configure, FILE * fp,
-	       	String * target);
+	       	String const * target);
 static int _variables_executables(Configure * configure, FILE * fp)
 {
 	String * targets;
@@ -271,10 +275,10 @@ static int _variables_executables(Configure * configure, FILE * fp)
 static void _variables_binary(Configure * configure, FILE * fp, char * done);
 static void _variables_library(Configure * configure, FILE * fp, char * done);
 static int _executables_variables(Configure * configure, FILE * fp,
-	       	String * target)
+	       	String const * target)
 {
 	static Config * flag = NULL;
-	String * type;
+	String const * type;
 	char done[TT_LAST]; /* FIXME even better if'd be variable by variable */
 	TargetType tt;
 
@@ -489,7 +493,8 @@ static int _variables_includes(Configure * configure, FILE * fp)
 
 static int _targets_all(Configure * configure, FILE * fp);
 static int _targets_subdirs(Configure * configure, FILE * fp);
-static int _targets_target(Configure * configure, FILE * fp, String * target);
+static int _targets_target(Configure * configure, FILE * fp,
+		String const * target);
 static int _write_targets(Configure * configure, FILE * fp)
 {
 	int ret = 0;
@@ -547,13 +552,18 @@ static int _targets_subdirs(Configure * configure, FILE * fp)
 	return 0;
 }
 
-static int _target_objs(Configure * configure, FILE * fp, String * target);
-static int _target_binary(Configure * configure, FILE * fp, String * target);
-static int _target_library(Configure * configure, FILE * fp, String * target);
-static int _target_object(Configure * configure, FILE * fp, String * target);
-static int _targets_target(Configure * configure, FILE * fp, String * target)
+static int _target_objs(Configure * configure, FILE * fp,
+		String const * target);
+static int _target_binary(Configure * configure, FILE * fp,
+		String const * target);
+static int _target_library(Configure * configure, FILE * fp,
+		String const * target);
+static int _target_object(Configure * configure, FILE * fp,
+		String const * target);
+static int _targets_target(Configure * configure, FILE * fp,
+		String const * target)
 {
-	String * type;
+	String const * type;
 	TargetType tt;
 
 	if((type = config_get(configure->config, target, "type")) == NULL)
@@ -580,7 +590,8 @@ static int _targets_target(Configure * configure, FILE * fp, String * target)
 }
 
 static int _objs_source(Prefs * prefs, FILE * fp, String * source);
-static int _target_objs(Configure * configure, FILE * fp, String * target)
+static int _target_objs(Configure * configure, FILE * fp,
+		String const * target)
 {
 	int ret = 0;
 	String * sources;
@@ -651,8 +662,10 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 	return ret;
 }
 
-static void _target_flags(Configure * configure, FILE * fp, String * target);
-static int _target_binary(Configure * configure, FILE * fp, String * target)
+static void _target_flags(Configure * configure, FILE * fp,
+		String const * target);
+static int _target_binary(Configure * configure, FILE * fp,
+		String const * target)
 {
 	String * p;
 
@@ -670,10 +683,11 @@ static int _target_binary(Configure * configure, FILE * fp, String * target)
 	return 0;
 }
 
-static void _flags_asm(Configure * configure, FILE * fp, String * target);
-static void _flags_c(Configure * configure, FILE * fp, String * target);
-static void _flags_cxx(Configure * configure, FILE * fp, String * target);
-static void _target_flags(Configure * configure, FILE * fp, String * target)
+static void _flags_asm(Configure * configure, FILE * fp, String const * target);
+static void _flags_c(Configure * configure, FILE * fp, String const * target);
+static void _flags_cxx(Configure * configure, FILE * fp, String const * target);
+static void _target_flags(Configure * configure, FILE * fp,
+		String const * target)
 {
 	char done[OT_LAST+1];
 	String * sources;
@@ -725,7 +739,7 @@ static void _target_flags(Configure * configure, FILE * fp, String * target)
 	}
 }
 
-static void _flags_asm(Configure * configure, FILE * fp, String * target)
+static void _flags_asm(Configure * configure, FILE * fp, String const * target)
 {
 	String const * p;
 
@@ -735,7 +749,7 @@ static void _flags_asm(Configure * configure, FILE * fp, String * target)
 	fputc('\n', fp);
 }
 
-static void _flags_c(Configure * configure, FILE * fp, String * target)
+static void _flags_c(Configure * configure, FILE * fp, String const * target)
 {
 	String const * p;
 
@@ -752,7 +766,7 @@ static void _flags_c(Configure * configure, FILE * fp, String * target)
 	fputc('\n', fp);
 }
 
-static void _flags_cxx(Configure * configure, FILE * fp, String * target)
+static void _flags_cxx(Configure * configure, FILE * fp, String const * target)
 {
 	String const * p;
 
@@ -762,7 +776,8 @@ static void _flags_cxx(Configure * configure, FILE * fp, String * target)
 	fputc('\n', fp);
 }
 
-static int _target_library(Configure * configure, FILE * fp, String * target)
+static int _target_library(Configure * configure, FILE * fp,
+		String const * target)
 {
 	String const * p;
 
@@ -784,7 +799,8 @@ static int _target_library(Configure * configure, FILE * fp, String * target)
 	return 0;
 }
 
-static int _target_object(Configure * configure, FILE * fp, String * target)
+static int _target_object(Configure * configure, FILE * fp,
+		String const * target)
 {
 	String * p;
 	String * extension;
@@ -843,7 +859,8 @@ static int _target_object(Configure * configure, FILE * fp, String * target)
 	return 0;
 }
 
-static int _objects_target(Configure * configure, FILE * fp, String * target);
+static int _objects_target(Configure * configure, FILE * fp,
+		String const * target);
 static int _write_objects(Configure * configure, FILE * fp)
 {
 	char * targets = config_get(configure->config, "", "targets");
@@ -869,9 +886,10 @@ static int _write_objects(Configure * configure, FILE * fp)
 	return ret;
 }
 
-static int _target_source(Configure * configure, FILE * fp, String * target,
-		String * source);
-static int _objects_target(Configure * configure, FILE * fp, String * target)
+static int _target_source(Configure * configure, FILE * fp,
+		String const * target, String * source);
+static int _objects_target(Configure * configure, FILE * fp,
+		String const * target)
 {
 	String * sources;
 	int i;
@@ -895,9 +913,9 @@ static int _objects_target(Configure * configure, FILE * fp, String * target)
 	return 0;
 }
 
-static void _source_depends(Config * config, FILE * fp, String * source);
-static int _target_source(Configure * configure, FILE * fp, String * target,
-		String * source)
+static void _source_depends(Config * config, FILE * fp, String const * source);
+static int _target_source(Configure * configure, FILE * fp,
+		String const * target, String * source)
 {
 	int ret = 0;
 	String * extension;
@@ -980,7 +998,7 @@ static int _target_source(Configure * configure, FILE * fp, String * target,
 	return ret;
 }
 
-static void _source_depends(Config * config, FILE * fp, String * source)
+static void _source_depends(Config * config, FILE * fp, String const * source)
 {
 	String * depends;
 	int i;
@@ -1275,7 +1293,7 @@ static int _uninstall_include(FILE * fp, String * include);
 static int _write_uninstall(Configure * configure, FILE * fp)
 {
 	int ret = 0;
-	String * subdirs;
+	String const * subdirs;
 	String * targets;
 	String * includes;
 	int i;
@@ -1298,7 +1316,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			if(c == '\0')
 				break;
 			targets[i] = c;
-			targets+=i+1;
+			targets += i + 1;
 			i = 0;
 		}
 	if((includes = config_get(configure->config, "", "includes")) != NULL)
@@ -1312,7 +1330,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			if(c == '\0')
 				break;
 			includes[i] = c;
-			includes+=i+1;
+			includes += i + 1;
 			i = 0;
 		}
 	return ret;
@@ -1320,7 +1338,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 
 static int _uninstall_target(Config * config, FILE * fp, String * target)
 {
-	String * type;
+	String const * type;
 
 	if((type = config_get(config, target, "type")) == NULL)
 		return 1;
