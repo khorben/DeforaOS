@@ -82,7 +82,7 @@ typedef enum _ObjectType
 # define OT_LAST OT_UNKNOWN
 # define OT_COUNT (OT_LAST + 1)
 extern const String * sObjectType[OT_COUNT];
-String * _source_extension(String * source);
+String const * _source_extension(String const * source);
 
 
 /* constants */

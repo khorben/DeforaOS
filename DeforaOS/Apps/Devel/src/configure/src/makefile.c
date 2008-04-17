@@ -630,7 +630,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 {
 	int ret = 0;
-	String * extension;
+	String const * extension;
 	size_t len;
 
 	if((extension = _source_extension(source)) == NULL)
@@ -809,8 +809,8 @@ static int _target_library(Configure * configure, FILE * fp,
 static int _target_object(Configure * configure, FILE * fp,
 		String const * target)
 {
-	String * p;
-	String * extension;
+	String const * p;
+	String const * extension;
 
 	if((p = config_get(configure->config, target, "sources")) == NULL)
 	{
@@ -870,13 +870,16 @@ static int _objects_target(Configure * configure, FILE * fp,
 		String const * target);
 static int _write_objects(Configure * configure, FILE * fp)
 {
-	char * targets = config_get(configure->config, "", "targets");
+	String const * p;
+	String * targets;
 	char c;
-	int i;
+	size_t i;
 	int ret = 0;
 
-	if(targets == NULL)
+	if((p = config_get(configure->config, "", "targets")) == NULL)
 		return 0;
+	if((targets = string_new(p)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -886,10 +889,10 @@ static int _write_objects(Configure * configure, FILE * fp)
 		ret += _objects_target(configure, fp, targets);
 		if(c == '\0')
 			break;
-		targets[i] = c;
-		targets+=i+1;
+		targets += i + 1;
 		i = 0;
 	}
+	string_delete(targets);
 	return ret;
 }
 
@@ -899,7 +902,7 @@ static int _objects_target(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String * sources;
-	int i;
+	size_t i;
 	char c;
 
 	if((sources = config_get(configure->config, target, "sources")) == NULL)
@@ -1008,7 +1011,7 @@ static int _target_source(Configure * configure, FILE * fp,
 static void _source_depends(Config * config, FILE * fp, String const * source)
 {
 	String * depends;
-	int i;
+	size_t i;
 	char c;
 
 	if((depends = config_get(config, source, "depends")) == NULL)
@@ -1042,12 +1045,15 @@ static int _write_clean(Configure * configure, FILE * fp)
 
 static int _clean_targets(Config * config, FILE * fp)
 {
+	String const * p;
 	String * targets;
 	int i;
 	char c;
 
-	if((targets = config_get(config, "", "targets")) == NULL)
+	if((p = config_get(config, "", "targets")) == NULL)
 		return 0;
+	if((targets = string_new(p)) == NULL)
+		return 1;
 	fputs("\t$(RM)", fp);
 	for(i = 0;; i++)
 	{
@@ -1058,17 +1064,17 @@ static int _clean_targets(Config * config, FILE * fp)
 		fprintf(fp, "%s%s%s", " $(", targets, "_OBJS)");
 		if(c == '\0')
 			break;
-		targets[i] = c;
-		targets+=i+1;
+		targets += i+1;
 		i = 0;
 	}
 	fputc('\n', fp);
+	string_delete(targets);
 	return 0;
 }
 
 static int _write_distclean(Configure * configure, FILE * fp)
 {
-	String * subdirs;
+	String const * subdirs;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;

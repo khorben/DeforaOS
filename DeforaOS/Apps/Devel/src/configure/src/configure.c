@@ -72,13 +72,13 @@ const struct HostKernel sHostKernel[] =
 const String * sTargetType[TT_COUNT] = { "binary", "library", "object", NULL };
 const String * sObjectType[OT_COUNT] = { "c", "cc", "cpp", "S", NULL };
 
-String * _source_extension(String * source)
+String const * _source_extension(String const * source)
 {
-	int len;
+	size_t len;
 
-	for(len = string_length(source)-1; len >= 0; len--)
-		if(source[len] == '.')
-			return &source[len+1];
+	for(len = string_length(source); len > 0; len--)
+		if(source[len - 1] == '.')
+			return &source[len];
 	return NULL;
 }
 
