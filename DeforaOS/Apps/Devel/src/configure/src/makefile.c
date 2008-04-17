@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include "settings.h"
 #include "configure.h"
 
@@ -39,7 +38,7 @@ int makefile(Configure * configure, String const * directory, configArray * ca,
 	int ret = 0;
 
 	makefile = string_new(directory);
-	string_append(&makefile, "/");
+	string_append(&makefile, "/"); /* FIXME check for errors */
 	string_append(&makefile, MAKEFILE);
 	if(!(configure->prefs->flags & PREFS_n)
 			&& (fp = fopen(makefile, "w")) == NULL)
@@ -157,8 +156,8 @@ static int _variables_print(Configure * configure, FILE * fp,
 		return 0;
 	if((p = config_get(configure->config, "", input)) == NULL)
 		return 0;
-	if((prints = strdup(p)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((prints = string_new(p)) == NULL)
+		return 1;
 	fprintf(fp, "%s%s", output, "\t=");
 	for(i = 0;; i++)
 	{
@@ -173,7 +172,7 @@ static int _variables_print(Configure * configure, FILE * fp,
 		i = 0;
 	}
 	fputc('\n', fp);
-	free(prints);
+	string_delete(prints);
 	return 0;
 }
 
@@ -189,8 +188,8 @@ static int _variables_targets(Configure * configure, FILE * fp)
 		return 0;
 	if((p = config_get(configure->config, "", "targets")) == NULL)
 		return 0;
-	if((prints = strdup(p)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((prints = string_new(p)) == NULL)
+		return 1;
 	fprintf(fp, "%s%s", "TARGETS", "\t=");
 	for(i = 0;; i++)
 	{
@@ -220,7 +219,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 		i = 0;
 	}
 	fputc('\n', fp);
-	free(prints);
+	string_delete(prints);
 	return 0;
 }
 
@@ -453,7 +452,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		memmove(q, q + strlen(buf), strlen(q) - strlen(buf) + 1);
 	}
 	fprintf(fp, "%s\n", p);
-	free(p);
+	string_delete(p);
 }
 
 static void _variables_library(Configure * configure, FILE * fp, char * done)
@@ -500,8 +499,8 @@ static int _targets_target(Configure * configure, FILE * fp,
 static int _write_targets(Configure * configure, FILE * fp)
 {
 	int ret = 0;
-	char const * p;
-	char * targets;
+	String const * p;
+	String * targets;
 	char c;
 	int i;
 
@@ -510,8 +509,8 @@ static int _write_targets(Configure * configure, FILE * fp)
 		return 1;
 	if((p = config_get(configure->config, "", "targets")) == NULL)
 		return 0;
-	if((targets = strdup(p)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((targets = string_new(p)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -521,11 +520,10 @@ static int _write_targets(Configure * configure, FILE * fp)
 		ret += _targets_target(configure, fp, targets);
 		if(c == '\0')
 			break;
-		targets[i] = c;
-		targets += i+1;
+		targets += i + 1;
 		i = 0;
 	}
-	free(targets);
+	string_delete(targets);
 	return ret;
 }
 
@@ -544,7 +542,7 @@ static int _targets_all(Configure * configure, FILE * fp)
 
 static int _targets_subdirs(Configure * configure, FILE * fp)
 {
-	String * subdirs;
+	String const * subdirs;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
@@ -596,16 +594,19 @@ static int _target_objs(Configure * configure, FILE * fp,
 		String const * target)
 {
 	int ret = 0;
+	String const * p;
 	String * sources;
 	int i;
 	char c;
 
-	if((sources = config_get(configure->config, target, "sources")) == NULL)
+	if((p = config_get(configure->config, target, "sources")) == NULL)
 	{
 		fprintf(stderr, "%s%s%s", "configure: ", target,
 				": no sources defined for target\n");
 		return 1;
 	}
+	if((sources = string_new(p)) == NULL)
+		return 1;
 	if(!(configure->prefs->flags & PREFS_n))
 		fprintf(fp, "%s%s%s", "\n", target, "_OBJS =");
 	for(i = 0; ret == 0; i++)
@@ -617,12 +618,12 @@ static int _target_objs(Configure * configure, FILE * fp,
 		ret = _objs_source(configure->prefs, fp, sources);
 		if(c == '\0')
 			break;
-		sources[i] = c;
-		sources+=i+1;
+		sources += i + 1;
 		i = 0;
 	}
 	if(!(configure->prefs->flags & PREFS_n))
 		fputc('\n', fp);
+	string_delete(sources);
 	return ret;
 }
 
@@ -664,12 +665,12 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 	return ret;
 }
 
-static void _target_flags(Configure * configure, FILE * fp,
+static int _target_flags(Configure * configure, FILE * fp,
 		String const * target);
 static int _target_binary(Configure * configure, FILE * fp,
 		String const * target)
 {
-	String * p;
+	String const * p;
 
 	if(_target_objs(configure, fp, target) != 0)
 		return 1;
@@ -688,19 +689,22 @@ static int _target_binary(Configure * configure, FILE * fp,
 static void _flags_asm(Configure * configure, FILE * fp, String const * target);
 static void _flags_c(Configure * configure, FILE * fp, String const * target);
 static void _flags_cxx(Configure * configure, FILE * fp, String const * target);
-static void _target_flags(Configure * configure, FILE * fp,
+static int _target_flags(Configure * configure, FILE * fp,
 		String const * target)
 {
-	char done[OT_LAST+1];
+	char done[OT_COUNT];
+	String const * p;
 	String * sources;
-	String * extension;
+	String const * extension;
 	ObjectType type;
 	char c;
-	unsigned int i;
+	size_t i;
 
 	memset(done, 0, sizeof(done));
-	if((sources = config_get(configure->config, target, "sources")) == NULL)
-		return;
+	if((p = config_get(configure->config, target, "sources")) == NULL)
+		return 0;
+	if((sources = string_new(p)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
 		if(sources[i] != ',' && sources[i] != '\0')
@@ -714,7 +718,6 @@ static void _target_flags(Configure * configure, FILE * fp,
 			continue;
 		}
 		type = enum_string(OT_LAST, sObjectType, extension);
-		sources[i] = c;
 		if(!done[type])
 			switch(type)
 			{
@@ -736,9 +739,11 @@ static void _target_flags(Configure * configure, FILE * fp,
 		done[type] = 1;
 		if(c == '\0')
 			break;
-		sources+=i+1;
+		sources += i + 1;
 		i = 0;
 	}
+	string_delete(sources);
+	return 1;
 }
 
 static void _flags_asm(Configure * configure, FILE * fp, String const * target)
