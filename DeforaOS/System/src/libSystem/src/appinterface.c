@@ -1116,6 +1116,11 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 	Buffer * b;
 	uint32_t size;
 
+	if(aica->size > buflen)
+	{
+		errno = ENOBUFS;
+		return -error_set_code(1, "%s", strerror(ENOBUFS));
+	}
 	switch(aica->type)
 	{
 		case AICT_VOID:
