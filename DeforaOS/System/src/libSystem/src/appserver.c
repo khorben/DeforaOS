@@ -86,6 +86,39 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 static void _appserverclient_delete(AppServerClient * appserverclient);
 
 
+/* AppServer */
+/* private */
+/* types */
+ARRAY(AppServerClient *, AppServerClient);
+struct _AppServer
+{
+	AppInterface * interface;
+	Event * event;
+	int event_free;
+#ifdef WITH_SSL
+	SSL_CTX * ssl_ctx;
+#endif
+	AppServerClientArray * clients;
+	AppServerClient * current;
+};
+
+
+/* prototypes */
+static int _appserver_client_add(AppServer * appserver, AppServerClient * asc);
+static int _appserver_client_remove(AppServer * appserver,
+		AppServerClient * asc);
+
+static int _appserver_accept(int fd, AppServer * appserver);
+static int _appserver_read(int fd, AppServer * appserver);
+static int _appserver_write(int fd, AppServer * appserver);
+
+#ifdef WITH_SSL
+static char const * _appserver_error_ssl(void);
+#endif
+
+
+/* AppServerClient */
+/* private */
 /* functions */
 /* appserverclient_new */
 static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
@@ -108,8 +141,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 	if((asc->ssl = SSL_new(ssl_ctx)) == NULL
 			|| SSL_set_fd(asc->ssl, fd) != 1)
 	{
-		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
-					NULL));
+		error_set_code(1, "%s", _appserver_error_ssl());
 		_appserverclient_delete(asc);
 		return NULL;
 	}
@@ -138,31 +170,6 @@ static void _appserverclient_delete(AppServerClient * appserverclient)
 
 /* AppServer */
 /* private */
-/* types */
-ARRAY(AppServerClient *, AppServerClient);
-struct _AppServer
-{
-	AppInterface * interface;
-	Event * event;
-	int event_free;
-#ifdef WITH_SSL
-	SSL_CTX * ssl_ctx;
-#endif
-	AppServerClientArray * clients;
-	AppServerClient * current;
-};
-
-
-/* prototypes */
-static int _appserver_client_add(AppServer * appserver, AppServerClient * asc);
-static int _appserver_client_remove(AppServer * appserver,
-		AppServerClient * asc);
-
-static int _appserver_accept(int fd, AppServer * appserver);
-static int _appserver_read(int fd, AppServer * appserver);
-static int _appserver_write(int fd, AppServer * appserver);
-
-
 /* functions */
 /* appserver_client_add */
 static int _appserver_client_add(AppServer * appserver, AppServerClient * asc)
@@ -230,6 +237,7 @@ static int _appserver_accept(int fd, AppServer * appserver)
 static int _read_error(AppServer * appserver, AppServerClient * asc);
 static int _read_eof(AppServer * appserver, AppServerClient * asc);
 static int _read_process(AppServer * appserver, AppServerClient * asc);
+static int _read_logged(AppServer * appserver, AppServerClient * asc);
 
 static int _appserver_read(int fd, AppServer * appserver)
 {
@@ -267,7 +275,7 @@ static int _appserver_read(int fd, AppServer * appserver)
 static int _read_error(AppServer * appserver, AppServerClient * asc)
 {
 #ifdef WITH_SSL
-	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+	error_set_code(1, "%s", _appserver_error_ssl());
 	SSL_shutdown(asc->ssl);
 #else
 	error_set_code(1, "%s", strerror(errno));
@@ -282,7 +290,6 @@ static int _read_eof(AppServer * appserver, AppServerClient * asc)
 	return 1;
 }
 
-static int _read_logged(AppServer * appserver, AppServerClient * asc);
 static int _read_process(AppServer * appserver, AppServerClient * asc)
 {
 	switch(asc->state)
@@ -356,7 +363,7 @@ static int _appserver_write(int fd, AppServer * appserver)
 static int _write_error(AppServerClient * asc)
 {
 #ifdef WITH_SSL
-	error_set_code(1, "%s", ERR_error_string(ERR_get_error(), NULL));
+	error_set_code(1, "%s", _appserver_error_ssl());
 #else
 	error_set_code(1, "%s", strerror(errno));
 #endif
@@ -364,6 +371,15 @@ static int _write_error(AppServerClient * asc)
 	asc->fd = -1;
 	return 1;
 }
+
+
+#ifdef WITH_SSL
+/* appserver_error_ssl */
+static char const * _appserver_error_ssl(void)
+{
+	return ERR_error_string(ERR_get_error(), NULL);
+}
+#endif
 
 
 /* public */
@@ -387,7 +403,7 @@ AppServer * appserver_new(const char * app, int options)
 
 
 /* appserver_new_event */
-static int _new_server(AppServer * appserver, int options);
+static int _new_server(AppServer * appserver, char const * app, int options);
 
 AppServer * appserver_new_event(char const * app, int options, Event * event)
 {
@@ -408,16 +424,14 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 	appserver->ssl_ctx = NULL;
 #endif
 	if((appserver->clients = AppServerClientarray_new()) == NULL
-			|| (appserver->interface = appinterface_new_server(app))
-			== NULL
-			|| _new_server(appserver, options) != 0)
+			|| _new_server(appserver, app, options) != 0)
 	{
 		appserver_delete(appserver);
 		return NULL;
 	}
 #ifdef WITH_SSL
 # ifdef DEBUG
-	fprintf(stderr, "DEBUG: AppServer using certificate \"%s\"\n", crt);
+	fprintf(stderr, "DEBUG: Using certificate \"%s\"\n", crt);
 # endif
 	if((appserver->ssl_ctx = SSL_CTX_new(SSLv3_server_method())) == NULL
 			|| SSL_CTX_set_cipher_list(appserver->ssl_ctx,
@@ -427,8 +441,7 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 			|| SSL_CTX_use_PrivateKey_file(appserver->ssl_ctx, crt,
 				SSL_FILETYPE_PEM) == 0)
 	{
-		error_set_code(1, "%s", ERR_error_string(ERR_get_error(),
-					NULL));
+		error_set_code(1, "%s", _appserver_error_ssl());
 		appserver_delete(appserver);
 		return NULL;
 	}
@@ -437,27 +450,34 @@ AppServer * appserver_new_event(char const * app, int options, Event * event)
 	return appserver;
 }
 
-static int _new_server(AppServer * appserver, int options)
+static int _new_server(AppServer * appserver, char const * app, int options)
 {
 	int fd;
 	struct sockaddr_in sa;
 
+	if((appserver->interface = appinterface_new_server(app)) == NULL)
+		return 1;
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return error_set_code(1, "%s%s", "socket: ", strerror(errno));
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appinterface_get_port(appserver->interface));
 	sa.sin_addr.s_addr = htonl(options & ASO_LOCAL ? INADDR_LOOPBACK
 			: INADDR_ANY);
-	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0
-			|| listen(fd, 5) != 0)
+	if(bind(fd, (struct sockaddr *)&sa, sizeof(sa)) == 0)
 	{
-		error_set_code(1, "%s%s", "bind: ", strerror(errno));
-		close(fd);
-		return 1;
+		if(listen(fd, 5) == 0)
+		{
+			event_register_io_read(appserver->event, fd,
+					(EventIOFunc)_appserver_accept,
+					appserver);
+			return 0;
+		}
+		error_set_code(1, "%s%s", "listen: ", strerror(errno));
 	}
-	event_register_io_read(appserver->event, fd,
-			(EventIOFunc)_appserver_accept, appserver);
-	return 0;
+	else
+		error_set_code(1, "%s%s", "bind: ", strerror(errno));
+	close(fd);
+	return 1;
 }
 
 
@@ -478,6 +498,7 @@ void appserver_delete(AppServer * appserver)
 
 
 /* accessors */
+/* appserver_get_client_id */
 void * appserver_get_client_id(AppServer * appserver)
 {
 	return appserver->current;
@@ -485,6 +506,7 @@ void * appserver_get_client_id(AppServer * appserver)
 
 
 /* useful */
+/* appserver_loop */
 int appserver_loop(AppServer * appserver)
 {
 	return event_loop(appserver->event);
