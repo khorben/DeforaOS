@@ -281,10 +281,10 @@ static int _load_subdirs_subdir(Prefs * prefs, char const * directory,
 
 static int _configure_do(Configure * configure, configArray * ca)
 {
-	int i;
-	int cnt = array_count(ca);
-	String * di;
-	int j;
+	size_t i;
+	size_t cnt = array_count(ca);
+	String const * di;
+	size_t j;
 	Config * cj;
 	String const * dj;
 
