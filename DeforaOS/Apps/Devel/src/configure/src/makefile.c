@@ -1132,6 +1132,7 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 {
 	String const * path;
 	size_t len;
+	String const * p;
 	String * targets;
 	String const * includes;
 	String const * dist;
@@ -1144,8 +1145,11 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	path = &path[len];
 	if(path[0] == '/')
 		path++;
-	if((targets = config_get(subdir, "", "targets")) != NULL)
+	if((p = config_get(subdir, "", "targets")) != NULL)
+	{
 		/* FIXME unique SOURCES */
+		if((targets = string_new(p)) == NULL)
+			return 1;
 		for(i = 0;; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
@@ -1157,10 +1161,11 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 				_dist_subdir_dist(fp, path, dist);
 			if(c == '\0')
 				break;
-			targets[i] = c;
-			targets+=i+1;
+			targets += i + 1;
 			i = 0;
 		}
+		string_delete(targets);
+	}
 	if((includes = config_get(subdir, "", "includes")) != NULL)
 		_dist_subdir_dist(fp, path, includes);
 	if((dist = config_get(subdir, "", "dist")) != NULL)
