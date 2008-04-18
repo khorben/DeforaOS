@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* configure is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -244,9 +244,11 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 	int i;
 	char c;
 	String * subdir;
+	String * p;
 	
 	if((subdir = string_new(subdirs)) == NULL)
 		return 1;
+	p = subdir;
 	for(i = 0; ret == 0; i++)
 	{
 		if(subdir[i] != ',' && subdir[i] != '\0')
@@ -259,7 +261,7 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 		subdir += i + 1;
 		i = 0;
 	}
-	string_delete(subdir);
+	string_delete(p);
 	return ret;
 }
 
