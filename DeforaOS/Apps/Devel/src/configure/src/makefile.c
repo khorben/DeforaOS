@@ -929,9 +929,10 @@ static int _objects_target(Configure * configure, FILE * fp,
 	return 0;
 }
 
-static void _source_depends(Config * config, FILE * fp, String const * source);
+static int _source_depends(Config * config, FILE * fp, String const * source);
 static int _target_source(Configure * configure, FILE * fp,
 		String const * target, String * source)
+	/* FIXME check calls to _source_depends() */
 {
 	int ret = 0;
 	String * extension;
@@ -1014,14 +1015,17 @@ static int _target_source(Configure * configure, FILE * fp,
 	return ret;
 }
 
-static void _source_depends(Config * config, FILE * fp, String const * source)
+static int _source_depends(Config * config, FILE * fp, String const * source)
 {
+	String const * p;
 	String * depends;
 	size_t i;
 	char c;
 
-	if((depends = config_get(config, source, "depends")) == NULL)
-		return;
+	if((p = config_get(config, source, "depends")) == NULL)
+		return 0;
+	if((depends = string_new(p)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
 		if(depends[i] != ',' && depends[i] != '\0')
@@ -1031,10 +1035,11 @@ static void _source_depends(Config * config, FILE * fp, String const * source)
 		fprintf(fp, " %s", depends);
 		if(c == '\0')
 			break;
-		depends[i] = c;
-		depends+=i+1;
+		depends += i + 1;
 		i = 0;
 	}
+	string_delete(depends);
+	return 0;
 }
 
 static int _clean_targets(Config * config, FILE * fp);
