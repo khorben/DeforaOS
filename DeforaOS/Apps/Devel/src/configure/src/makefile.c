@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* configure is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -1134,7 +1134,7 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	size_t len;
 	String * targets;
 	String const * includes;
-	String * dist;
+	String const * dist;
 	size_t i;
 	char c;
 
@@ -1199,24 +1199,27 @@ static int _dist_subdir_dist(FILE * fp, String const * path,
 	return 0;
 }
 
-static int _install_target(Config * config, FILE * fp, String * target);
-static int _install_include(Config * config, FILE * fp, String * include);
+static int _install_target(Config * config, FILE * fp, String const * target);
+static int _install_include(Config * config, FILE * fp, String const * include);
 static int _write_install(Configure * configure, FILE * fp)
 {
 	int ret = 0;
-	String const * subdirs;
+	String const * p;
 	String * targets;
 	String * includes;
-	int i;
+	size_t i;
 	char c;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	fputs("\ninstall: all\n", fp);
-	if((subdirs = config_get(configure->config, "", "subdirs")) != NULL)
+	if(config_get(configure->config, "", "subdirs") != NULL)
 		fputs("\t@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install)"
 				" || exit; done\n", fp);
-	if((targets = config_get(configure->config, "", "targets")) != NULL)
+	if((p = config_get(configure->config, "", "targets")) != NULL)
+	{
+		if((targets = string_new(p)) == NULL)
+			return 1;
 		for(i = 0; ret == 0; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
@@ -1226,11 +1229,15 @@ static int _write_install(Configure * configure, FILE * fp)
 			ret |= _install_target(configure->config, fp, targets);
 			if(c == '\0')
 				break;
-			targets[i] = c;
 			targets += i + 1;
 			i = 0;
 		}
-	if((includes = config_get(configure->config, "", "includes")) != NULL)
+		string_delete(targets);
+	}
+	if((p = config_get(configure->config, "", "includes")) != NULL)
+	{
+		if((includes = string_new(p)) == NULL)
+			return 1;
 		for(i = 0; ret == 0; i++)
 		{
 			if(includes[i] != ',' && includes[i] != '\0')
@@ -1241,14 +1248,15 @@ static int _write_install(Configure * configure, FILE * fp)
 					includes);
 			if(c == '\0')
 				break;
-			includes[i] = c;
 			includes += i + 1;
 			i = 0;
 		}
+		string_delete(includes);
+	}
 	return ret;
 }
 
-static int _install_target(Config * config, FILE * fp, String * target)
+static int _install_target(Config * config, FILE * fp, String const * target)
 {
 	static Config * flag = NULL;
 	static int done[TT_LAST];
@@ -1289,7 +1297,7 @@ static int _install_target(Config * config, FILE * fp, String * target)
 	return 0;
 }
 
-static int _install_include(Config * config, FILE * fp, String * include)
+static int _install_include(Config * config, FILE * fp, String const * include)
 {
 	static Config * flag = NULL;
 	static int done;
@@ -1307,12 +1315,12 @@ static int _install_include(Config * config, FILE * fp, String * include)
 	return 0;
 }
 
-static int _uninstall_target(Config * config, FILE * fp, String * target);
-static int _uninstall_include(FILE * fp, String * include);
+static int _uninstall_target(Config * config, FILE * fp, String const * target);
+static int _uninstall_include(FILE * fp, String const * include);
 static int _write_uninstall(Configure * configure, FILE * fp)
 {
 	int ret = 0;
-	String const * subdirs;
+	String const * p;
 	String * targets;
 	String * includes;
 	int i;
@@ -1321,10 +1329,13 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	fputs("\nuninstall:\n", fp);
-	if((subdirs = config_get(configure->config, "", "subdirs")) != NULL)
+	if(config_get(configure->config, "", "subdirs") != NULL)
 		fputs("\t@for i in $(SUBDIRS); do (cd $$i &&"
 				" $(MAKE) uninstall) || exit; done\n", fp);
-	if((targets = config_get(configure->config, "", "targets")) != NULL)
+	if((p = config_get(configure->config, "", "targets")) != NULL)
+	{
+		if((targets = string_new(p)) == NULL)
+			return 1;
 		for(i = 0; ret == 0; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
@@ -1334,11 +1345,15 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			ret = _uninstall_target(configure->config, fp, targets);
 			if(c == '\0')
 				break;
-			targets[i] = c;
 			targets += i + 1;
 			i = 0;
 		}
-	if((includes = config_get(configure->config, "", "includes")) != NULL)
+		string_delete(targets);
+	}
+	if((p = config_get(configure->config, "", "includes")) != NULL)
+	{
+		if((includes = string_new(p)) == NULL)
+			return 1;
 		for(i = 0; ret == 0; i++)
 		{
 			if(includes[i] != ',' && includes[i] != '\0')
@@ -1348,14 +1363,15 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			ret = _uninstall_include(fp, includes);
 			if(c == '\0')
 				break;
-			includes[i] = c;
 			includes += i + 1;
 			i = 0;
 		}
+		string_delete(includes);
+	}
 	return ret;
 }
 
-static int _uninstall_target(Config * config, FILE * fp, String * target)
+static int _uninstall_target(Config * config, FILE * fp, String const * target)
 {
 	String const * type;
 
@@ -1380,7 +1396,7 @@ static int _uninstall_target(Config * config, FILE * fp, String * target)
 	return 0;
 }
 
-static int _uninstall_include(FILE * fp, String * include)
+static int _uninstall_include(FILE * fp, String const * include)
 {
 	fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(INCLUDEDIR)/", include,
 			"\n");
