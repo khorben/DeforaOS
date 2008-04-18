@@ -223,13 +223,14 @@ static int _variables_targets(Configure * configure, FILE * fp)
 	return 0;
 }
 
-static int _executables_variables(Configure * configure, FILE * fp,
+static void _executables_variables(Configure * configure, FILE * fp,
 	       	String const * target);
 static int _variables_executables(Configure * configure, FILE * fp)
 {
-	String * targets;
+	String const * targets;
 	String const * includes;
-	int i;
+	String * p;
+	size_t i;
 	char c;
 
 	if(configure->prefs->flags & PREFS_n)
@@ -238,19 +239,21 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	includes = config_get(configure->config, "", "includes");
 	if(targets != NULL)
 	{
+		if((p = string_new(targets)) == NULL)
+			return 1;
 		for(i = 0;; i++)
 		{
-			if(targets[i] != ',' && targets[i] != '\0')
+			if(p[i] != ',' && p[i] != '\0')
 				continue;
-			c = targets[i];
-			targets[i] = '\0';
-			_executables_variables(configure, fp, targets);
+			c = p[i];
+			p[i] = '\0';
+			_executables_variables(configure, fp, p);
 			if(c == '\0')
 				break;
-			targets[i] = c;
-			targets += i + 1;
+			p += i + 1;
 			i = 0;
 		}
+		string_delete(p);
 	}
 	else if(includes != NULL)
 	{
@@ -275,7 +278,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 
 static void _variables_binary(Configure * configure, FILE * fp, char * done);
 static void _variables_library(Configure * configure, FILE * fp, char * done);
-static int _executables_variables(Configure * configure, FILE * fp,
+static void _executables_variables(Configure * configure, FILE * fp,
 	       	String const * target)
 {
 	static Config * flag = NULL;
@@ -289,9 +292,9 @@ static int _executables_variables(Configure * configure, FILE * fp,
 		memset(done, 0, sizeof(done));
 	}
 	if((type = config_get(configure->config, target, "type")) == NULL)
-		return 0;
+		return;
 	if(done[(tt = enum_string(TT_LAST, sTargetType, type))])
-		return 0;
+		return;
 	switch(tt)
 	{
 		case TT_BINARY:
@@ -305,7 +308,7 @@ static int _executables_variables(Configure * configure, FILE * fp,
 			break;
 	}
 	done[tt] = 1;
-	return 0;
+	return;
 }
 
 static void _targets_cflags(Configure * configure, FILE * fp);
@@ -901,12 +904,15 @@ static int _target_source(Configure * configure, FILE * fp,
 static int _objects_target(Configure * configure, FILE * fp,
 		String const * target)
 {
+	String const * p;
 	String * sources;
 	size_t i;
 	char c;
 
-	if((sources = config_get(configure->config, target, "sources")) == NULL)
+	if((p = config_get(configure->config, target, "sources")) == NULL)
 		return 0;
+	if((sources = string_new(p)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
 		if(sources[i] != ',' && sources[i] != '\0')
@@ -916,10 +922,10 @@ static int _objects_target(Configure * configure, FILE * fp,
 		_target_source(configure, fp, target, sources);
 		if(c == '\0')
 			break;
-		sources[i] = c;
-		sources+=i+1;
+		sources += i + 1;
 		i = 0;
 	}
+	string_delete(sources);
 	return 0;
 }
 
