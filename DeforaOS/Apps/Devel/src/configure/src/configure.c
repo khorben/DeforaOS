@@ -122,15 +122,15 @@ static int _configure_load(Prefs * prefs, char const * directory,
 static int _configure_do(Configure * configure, configArray * ca);
 static int _configure(Prefs * prefs, char const * directory)
 {
+	int ret;
 	Configure cfgr;
 	configArray * ca;
-	int ret;
 	int flags = prefs->flags;
 	int i;
 	Config * p;
 
 	if((ca = configarray_new()) == NULL)
-		return configure_error("libSystem", 2);
+		return error_print(PACKAGE);
 	cfgr.prefs = prefs;
 	_configure_detect(&cfgr);
 	ret = _configure_load(prefs, directory, ca);
