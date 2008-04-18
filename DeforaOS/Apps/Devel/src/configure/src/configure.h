@@ -32,8 +32,8 @@ typedef enum _HostArch
 	HA_ZAURUS,
 	HA_UNKNOWN
 } HostArch;
-# define HA_LAST HA_UNKNOWN
-# define HA_COUNT (HA_LAST + 1)
+# define HA_LAST	HA_UNKNOWN
+# define HA_COUNT	(HA_LAST + 1)
 extern const String * sHostArch[HA_COUNT];
 
 typedef enum _HostOS
@@ -43,8 +43,8 @@ typedef enum _HostOS
 	HO_SUNOS,
 	HO_UNKNOWN
 } HostOS;
-# define HO_LAST HO_UNKNOWN
-# define HO_COUNT (HO_LAST + 1)
+# define HO_LAST	HO_UNKNOWN
+# define HO_COUNT	(HO_LAST + 1)
 extern const String * sHostOS[HO_COUNT];
 
 typedef enum _HostKernel
@@ -55,8 +55,8 @@ typedef enum _HostKernel
 	HK_SUNOS57, HK_SUNOS58, HK_SUNOS59, HK_SUNOS510,
 	HK_UNKNOWN
 } HostKernel;
-# define HK_LAST HK_UNKNOWN
-# define HK_COUNT (HK_LAST + 1)
+# define HK_LAST	HK_UNKNOWN
+# define HK_COUNT	(HK_LAST + 1)
 struct HostKernel
 {
 	HostOS os;
@@ -68,8 +68,8 @@ typedef enum _TargetType
 {
 	TT_BINARY = 0, TT_LIBRARY, TT_OBJECT, TT_UNKNOWN
 } TargetType;
-# define TT_LAST TT_UNKNOWN
-# define TT_COUNT (TT_LAST + 1)
+# define TT_LAST	TT_UNKNOWN
+# define TT_COUNT	(TT_LAST + 1)
 extern const String * sTargetType[TT_COUNT];
 
 typedef enum _ObjectType
@@ -79,15 +79,15 @@ typedef enum _ObjectType
        	OT_ASM_SOURCE,
        	OT_UNKNOWN
 } ObjectType;
-# define OT_LAST OT_UNKNOWN
-# define OT_COUNT (OT_LAST + 1)
+# define OT_LAST	OT_UNKNOWN
+# define OT_COUNT	(OT_LAST + 1)
 extern const String * sObjectType[OT_COUNT];
 String const * _source_extension(String const * source);
 
 
 /* constants */
-# define PROJECT_CONF "project.conf"
-# define MAKEFILE "Makefile"
+# define PROJECT_CONF	"project.conf"
+# define MAKEFILE	"Makefile"
 
 
 /* configure */
