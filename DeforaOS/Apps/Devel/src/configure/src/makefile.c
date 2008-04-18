@@ -149,6 +149,7 @@ static int _variables_print(Configure * configure, FILE * fp,
 {
 	String const * p;
 	String * prints;
+	String * q;
 	unsigned long i;
 	char c;
 
@@ -158,6 +159,7 @@ static int _variables_print(Configure * configure, FILE * fp,
 		return 0;
 	if((prints = string_new(p)) == NULL)
 		return 1;
+	q = prints;
 	fprintf(fp, "%s%s", output, "\t=");
 	for(i = 0;; i++)
 	{
@@ -172,7 +174,7 @@ static int _variables_print(Configure * configure, FILE * fp,
 		i = 0;
 	}
 	fputc('\n', fp);
-	string_delete(prints);
+	string_delete(q);
 	return 0;
 }
 
@@ -180,6 +182,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 {
 	String const * p;
 	String * prints;
+	String * q;
 	size_t i;
 	char c;
 	String const * type;
@@ -190,6 +193,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 		return 0;
 	if((prints = string_new(p)) == NULL)
 		return 1;
+	q = prints;
 	fprintf(fp, "%s%s", "TARGETS", "\t=");
 	for(i = 0;; i++)
 	{
@@ -219,7 +223,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 		i = 0;
 	}
 	fputc('\n', fp);
-	string_delete(prints);
+	string_delete(q);
 	return 0;
 }
 
@@ -230,6 +234,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	String const * targets;
 	String const * includes;
 	String * p;
+	String * q;
 	size_t i;
 	char c;
 
@@ -241,6 +246,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	{
 		if((p = string_new(targets)) == NULL)
 			return 1;
+		q = p;
 		for(i = 0;; i++)
 		{
 			if(p[i] != ',' && p[i] != '\0')
@@ -253,7 +259,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 			p += i + 1;
 			i = 0;
 		}
-		string_delete(p);
+		string_delete(q);
 	}
 	else if(includes != NULL)
 	{
@@ -504,6 +510,7 @@ static int _write_targets(Configure * configure, FILE * fp)
 	int ret = 0;
 	String const * p;
 	String * targets;
+	String * q;
 	char c;
 	int i;
 
@@ -514,6 +521,7 @@ static int _write_targets(Configure * configure, FILE * fp)
 		return 0;
 	if((targets = string_new(p)) == NULL)
 		return 1;
+	q = targets;
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -526,7 +534,7 @@ static int _write_targets(Configure * configure, FILE * fp)
 		targets += i + 1;
 		i = 0;
 	}
-	string_delete(targets);
+	string_delete(q);
 	return ret;
 }
 
@@ -599,6 +607,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 	int ret = 0;
 	String const * p;
 	String * sources;
+	String * q;
 	int i;
 	char c;
 
@@ -610,6 +619,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 	}
 	if((sources = string_new(p)) == NULL)
 		return 1;
+	q = sources;
 	if(!(configure->prefs->flags & PREFS_n))
 		fprintf(fp, "%s%s%s", "\n", target, "_OBJS =");
 	for(i = 0; ret == 0; i++)
@@ -626,7 +636,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 	}
 	if(!(configure->prefs->flags & PREFS_n))
 		fputc('\n', fp);
-	string_delete(sources);
+	string_delete(q);
 	return ret;
 }
 
@@ -698,6 +708,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 	char done[OT_COUNT];
 	String const * p;
 	String * sources;
+	String * q;
 	String const * extension;
 	ObjectType type;
 	char c;
@@ -708,6 +719,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 		return 0;
 	if((sources = string_new(p)) == NULL)
 		return 1;
+	q = sources;
 	for(i = 0;; i++)
 	{
 		if(sources[i] != ',' && sources[i] != '\0')
@@ -745,7 +757,7 @@ static int _target_flags(Configure * configure, FILE * fp,
 		sources += i + 1;
 		i = 0;
 	}
-	string_delete(sources);
+	string_delete(q);
 	return 1;
 }
 
@@ -875,6 +887,7 @@ static int _write_objects(Configure * configure, FILE * fp)
 {
 	String const * p;
 	String * targets;
+	String * q;
 	char c;
 	size_t i;
 	int ret = 0;
@@ -883,6 +896,7 @@ static int _write_objects(Configure * configure, FILE * fp)
 		return 0;
 	if((targets = string_new(p)) == NULL)
 		return 1;
+	q = targets;
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -895,7 +909,7 @@ static int _write_objects(Configure * configure, FILE * fp)
 		targets += i + 1;
 		i = 0;
 	}
-	string_delete(targets);
+	string_delete(q);
 	return ret;
 }
 
@@ -906,6 +920,7 @@ static int _objects_target(Configure * configure, FILE * fp,
 {
 	String const * p;
 	String * sources;
+	String * q;
 	size_t i;
 	char c;
 
@@ -913,6 +928,7 @@ static int _objects_target(Configure * configure, FILE * fp,
 		return 0;
 	if((sources = string_new(p)) == NULL)
 		return 1;
+	q = sources;
 	for(i = 0;; i++)
 	{
 		if(sources[i] != ',' && sources[i] != '\0')
@@ -925,7 +941,7 @@ static int _objects_target(Configure * configure, FILE * fp,
 		sources += i + 1;
 		i = 0;
 	}
-	string_delete(sources);
+	string_delete(q);
 	return 0;
 }
 
@@ -1019,6 +1035,7 @@ static int _source_depends(Config * config, FILE * fp, String const * source)
 {
 	String const * p;
 	String * depends;
+	String * q;
 	size_t i;
 	char c;
 
@@ -1026,6 +1043,7 @@ static int _source_depends(Config * config, FILE * fp, String const * source)
 		return 0;
 	if((depends = string_new(p)) == NULL)
 		return 1;
+	q = depends;
 	for(i = 0;; i++)
 	{
 		if(depends[i] != ',' && depends[i] != '\0')
@@ -1038,7 +1056,7 @@ static int _source_depends(Config * config, FILE * fp, String const * source)
 		depends += i + 1;
 		i = 0;
 	}
-	string_delete(depends);
+	string_delete(q);
 	return 0;
 }
 
@@ -1058,6 +1076,7 @@ static int _clean_targets(Config * config, FILE * fp)
 {
 	String const * p;
 	String * targets;
+	String * q;
 	size_t i;
 	char c;
 
@@ -1065,6 +1084,7 @@ static int _clean_targets(Config * config, FILE * fp)
 		return 0;
 	if((targets = string_new(p)) == NULL)
 		return 1;
+	q = targets;
 	fputs("\t$(RM)", fp);
 	for(i = 0;; i++)
 	{
@@ -1079,7 +1099,7 @@ static int _clean_targets(Config * config, FILE * fp)
 		i = 0;
 	}
 	fputc('\n', fp);
-	string_delete(targets);
+	string_delete(q);
 	return 0;
 }
 
@@ -1145,6 +1165,7 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 	size_t len;
 	String const * p;
 	String * targets;
+	String * q;
 	String const * includes;
 	String const * dist;
 	size_t i;
@@ -1161,6 +1182,7 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 		/* FIXME unique SOURCES */
 		if((targets = string_new(p)) == NULL)
 			return 1;
+		q = targets;
 		for(i = 0;; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
@@ -1175,7 +1197,7 @@ static int _dist_subdir(Config * config, FILE * fp, Config * subdir)
 			targets += i + 1;
 			i = 0;
 		}
-		string_delete(targets);
+		string_delete(q);
 	}
 	if((includes = config_get(subdir, "", "includes")) != NULL)
 		_dist_subdir_dist(fp, path, includes);
@@ -1191,11 +1213,13 @@ static int _dist_subdir_dist(FILE * fp, String const * path,
 		String const * dist)
 {
 	String * d;
+	String * p;
 	size_t i;
 	char c;
 
 	if((d = string_new(dist)) == NULL)
 		return 1;
+	p = d;
 	for(i = 0;; i++)
 	{
 		if(d[i] != ',' && d[i] != '\0')
@@ -1211,7 +1235,7 @@ static int _dist_subdir_dist(FILE * fp, String const * path,
 		d += i + 1;
 		i = 0;
 	}
-	string_delete(d);
+	string_delete(p);
 	return 0;
 }
 
@@ -1222,6 +1246,7 @@ static int _write_install(Configure * configure, FILE * fp)
 	int ret = 0;
 	String const * p;
 	String * targets;
+	String * q;
 	String * includes;
 	size_t i;
 	char c;
@@ -1236,6 +1261,7 @@ static int _write_install(Configure * configure, FILE * fp)
 	{
 		if((targets = string_new(p)) == NULL)
 			return 1;
+		q = targets;
 		for(i = 0; ret == 0; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
@@ -1248,12 +1274,13 @@ static int _write_install(Configure * configure, FILE * fp)
 			targets += i + 1;
 			i = 0;
 		}
-		string_delete(targets);
+		string_delete(q);
 	}
 	if((p = config_get(configure->config, "", "includes")) != NULL)
 	{
 		if((includes = string_new(p)) == NULL)
 			return 1;
+		q = includes;
 		for(i = 0; ret == 0; i++)
 		{
 			if(includes[i] != ',' && includes[i] != '\0')
@@ -1267,7 +1294,7 @@ static int _write_install(Configure * configure, FILE * fp)
 			includes += i + 1;
 			i = 0;
 		}
-		string_delete(includes);
+		string_delete(q);
 	}
 	return ret;
 }
@@ -1338,6 +1365,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 	int ret = 0;
 	String const * p;
 	String * targets;
+	String * q;
 	String * includes;
 	int i;
 	char c;
@@ -1352,6 +1380,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 	{
 		if((targets = string_new(p)) == NULL)
 			return 1;
+		q = targets;
 		for(i = 0; ret == 0; i++)
 		{
 			if(targets[i] != ',' && targets[i] != '\0')
@@ -1364,12 +1393,13 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			targets += i + 1;
 			i = 0;
 		}
-		string_delete(targets);
+		string_delete(q);
 	}
 	if((p = config_get(configure->config, "", "includes")) != NULL)
 	{
 		if((includes = string_new(p)) == NULL)
 			return 1;
+		q = includes;
 		for(i = 0; ret == 0; i++)
 		{
 			if(includes[i] != ',' && includes[i] != '\0')
@@ -1382,7 +1412,7 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			includes += i + 1;
 			i = 0;
 		}
-		string_delete(includes);
+		string_delete(q);
 	}
 	return ret;
 }
