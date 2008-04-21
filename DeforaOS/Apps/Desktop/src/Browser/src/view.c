@@ -15,6 +15,8 @@ static char const _license[] =
 "You should have received a copy of the Creative Commons Attribution-\n"
 "NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to\n"
 "http://creativecommons.org/licenses/by-nc-sa/3.0/";
+/* TODO:
+ * - load text files progressively */
 
 
 
