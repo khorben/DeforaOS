@@ -32,44 +32,29 @@
 #include "callbacks.h"
 #include "browser.h"
 
+#define COMMON_MENU
+#include "common.c"
+
 
 /* constants */
 #define IDLE_LOOP_ICON_CNT	16	/* number of icons added in a loop */
 
 
-/* macros */
-#define min(a, b) ((a) > (b) ? (b) : (a))
-
-
-/* types */
-struct _menu
-{
-	char * name;
-	GtkSignalFunc callback;
-	char * stock;
-	unsigned int accel;
-};
-
-struct _menubar
-{
-	char * name;
-	struct _menu * menu;
-};
-
-
+/* Browser */
+/* private */
 /* constants */
-static struct _menu _menu_file[] =
+static struct _menu _browser_menu_file[] =
 {
-	{ "_New window", G_CALLBACK(on_file_new_window), NULL, GDK_N },
+	{ "_New window", G_CALLBACK(on_file_new_window), "window-new", GDK_N },
+	{ "New _folder", G_CALLBACK(on_file_new_folder), "folder-new", 0 },
 	{ "", NULL, NULL, 0 },
-	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, GDK_R },
 	{ "_Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0 },
 	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _menu_edit[] =
+static struct _menu _browser_menu_edit[] =
 {
 	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_X },
 	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY, GDK_C },
@@ -77,7 +62,13 @@ static struct _menu _menu_edit[] =
 	{ "", NULL, NULL, 0 },
 	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
 	{ "", NULL, NULL, 0 },
-	{ "_Select all", G_CALLBACK(on_edit_select_all), NULL, GDK_A },
+#if GTK_CHECK_VERSION(2, 10, 0)
+	{ "_Select all", G_CALLBACK(on_edit_select_all), GTK_STOCK_SELECT_ALL,
+		GDK_A },
+#else
+	{ "_Select all", G_CALLBACK(on_edit_select_all), "edit-select-all",
+		GDK_A },
+#endif
 	{ "_Unselect all", G_CALLBACK(on_edit_unselect_all), NULL, 0 },
 	{ "", NULL, NULL, 0 },
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
@@ -85,8 +76,10 @@ static struct _menu _menu_edit[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _menu_view[] =
+static struct _menu _browser_menu_view[] =
 {
+	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, GDK_R },
+	{ "", NULL, NULL, 0 },
 	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME, 0 },
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "", NULL, NULL, 0 },
@@ -98,7 +91,7 @@ static struct _menu _menu_view[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _menu_help[] =
+static struct _menu _browser_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
@@ -108,18 +101,16 @@ static struct _menu _menu_help[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menubar _menubar[] =
+static struct _menubar _browser_menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_Edit", _menu_edit },
-	{ "_View", _menu_view },
-	{ "_Help", _menu_help },
+	{ "_File", _browser_menu_file },
+	{ "_Edit", _browser_menu_edit },
+	{ "_View", _browser_menu_view },
+	{ "_Help", _browser_menu_help },
 	{ NULL, NULL }
 };
 
 
-/* Browser */
-/* private */
 /* prototypes */
 static char * _browser_get_config_filename(void);
 
@@ -152,7 +143,6 @@ static char * _browser_get_config_filename(void)
 /* browser_new */
 static int _new_pixbufs(Browser * browser);
 static int _new_config(Browser * browser);
-static GtkWidget * _new_menubar(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
 
 Browser * browser_new(char const * directory)
@@ -216,7 +206,8 @@ Browser * browser_new(char const * directory)
 			browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-	tb_menubar = _new_menubar(browser);
+	tb_menubar = _common_new_menubar(GTK_WINDOW(browser->window),
+			_browser_menubar, browser);
 	gtk_box_pack_start(GTK_BOX(vbox), tb_menubar, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
@@ -412,54 +403,6 @@ static int _new_config(Browser * browser)
 	config_load(browser->config, filename); /* XXX ignore errors */
 	free(filename);
 	return 0;
-}
-
-static GtkWidget * _new_menubar(Browser * browser)
-{
-	GtkWidget * tb_menubar;
-	GtkAccelGroup * group;
-	GtkWidget * menu;
-	GtkWidget * menubar;
-	GtkWidget * menuitem;
-	unsigned int i;
-	unsigned int j;
-	struct _menu * p;
-
-	tb_menubar = gtk_menu_bar_new();
-	group = gtk_accel_group_new();
-	for(i = 0; _menubar[i].name != NULL; i++)
-	{
-		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
-		menu = gtk_menu_new();
-		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
-		{
-			p = &_menubar[i].menu[j];
-			if(p->name[0] == '\0')
-				menuitem = gtk_separator_menu_item_new();
-			else if(p->stock == NULL)
-				menuitem = gtk_menu_item_new_with_mnemonic(
-						p->name);
-			else
-				menuitem = gtk_image_menu_item_new_from_stock(
-						p->stock, NULL);
-			if(p->callback != NULL)
-				g_signal_connect(G_OBJECT(menuitem), "activate",
-						G_CALLBACK(p->callback),
-						browser);
-			else
-				gtk_widget_set_sensitive(menuitem, FALSE);
-			if(p->accel != 0)
-				gtk_widget_add_accelerator(menuitem, "activate",
-						group, p->accel,
-						GDK_CONTROL_MASK,
-						GTK_ACCEL_VISIBLE);
-			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		}
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
-		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
-	}
-	gtk_window_add_accel_group(GTK_WINDOW(browser->window), group);
-	return tb_menubar;
 }
 
 static int _sort_func(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b,

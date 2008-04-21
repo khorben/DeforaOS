@@ -62,7 +62,7 @@ view_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
-browser.o: browser.c mime.h callbacks.h browser.h
+browser.o: browser.c mime.h callbacks.h browser.h common.c
 	$(CC) $(browser_CFLAGS) -c browser.c
 
 callbacks.o: callbacks.c browser.h callbacks.h common.c

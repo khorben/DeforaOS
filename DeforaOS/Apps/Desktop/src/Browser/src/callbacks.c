@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "Browser is not free software; you can redistribute it and/or modify it\n"
@@ -32,6 +32,9 @@ static char const _license[] =
 #include "callbacks.h"
 #include "browser.h"
 #include "../config.h"
+
+#define COMMON_DND
+#define COMMON_EXEC
 #include "common.c"
 
 
@@ -62,6 +65,25 @@ void on_file_new_window(GtkMenuItem * menuitem, gpointer data)
 	Browser * browser = data;
 
 	browser_new(browser->current->data);
+}
+
+
+void on_file_new_folder(GtkMenuItem * menuitem, gpointer data)
+{
+	static char const * newfolder = "New folder";
+	Browser * browser = data;
+	char const * cur = browser->current->data;
+	char * path;
+
+	if((path = malloc(strlen(cur) + 2 + strlen(newfolder))) == NULL)
+	{
+		browser_error(browser, strerror(errno), 0);
+		return;
+	}
+	sprintf(path, "%s/%s", cur, newfolder);
+	if(mkdir(path, 0777) != 0)
+		browser_error(browser, strerror(errno), 0);
+	free(path);
 }
 
 
@@ -988,19 +1010,8 @@ static void _on_folder_new(GtkWidget * widget, gpointer data)
 {
 	IconCallback * ic = data;
 	Browser * browser = ic->browser;
-	char * cur = browser->current->data;
-	char const * newfolder = "New folder";
-	char * path;
 
-	if((path = malloc(strlen(cur) + 2 + strlen(newfolder))) == NULL)
-	{
-		browser_error(browser, strerror(errno), 0);
-		return;
-	}
-	sprintf(path, "%s/%s", cur, newfolder);
-	if(mkdir(path, 0777) != 0)
-		browser_error(browser, strerror(errno), 0);
-	free(path);
+	on_file_new_folder(NULL, browser); /* XXX ugly */
 }
 
 static void _press_directory(GtkWidget * menu, IconCallback * ic)

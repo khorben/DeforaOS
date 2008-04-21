@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* Browser is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -27,6 +27,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 /* file menu */
 void on_file_new_window(GtkMenuItem * menuitem, gpointer data);
+void on_file_new_folder(GtkMenuItem * menuitem, gpointer data);
 void on_file_close(GtkMenuItem * menuitem, gpointer data);
 
 /* edit menu */

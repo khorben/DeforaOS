@@ -33,6 +33,9 @@
 #include "mime.h"
 #include "desktop.h"
 #define PACKAGE "desktop"
+
+#define COMMON_DND
+#define COMMON_EXEC
 #include "common.c"
 
 

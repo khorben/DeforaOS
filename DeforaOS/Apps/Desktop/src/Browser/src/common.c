@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* Browser is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -21,13 +21,46 @@
  * - implement XDS: http://www.newplanetsoftware.com/xds/ */
 
 
+/* macros */
+#define min(a, b) ((a) < (b)) ? (a) : (b)
+
+
+/* types */
+#ifdef COMMON_MENU
+struct _menu
+{
+	const char * name;
+	GtkSignalFunc callback;
+	const char * stock;
+	unsigned int accel;
+};
+
+struct _menubar
+{
+	const char * name;
+	struct _menu * menu;
+};
+#endif
+
+
 /* prototypes */
+#ifdef COMMON_DND
 static int _common_drag_data_received(GdkDragContext * context,
 		GtkSelectionData * seldata, char * dest);
+#endif
+
+#ifdef COMMON_EXEC
 static int _common_exec(char * program, char * flags, GList * args);
+#endif
+
+#ifdef COMMON_MENU
+static GtkWidget * _common_new_menubar(GtkWindow * window, struct _menubar * mb,
+		gpointer data);
+#endif
 
 
 /* functions */
+#ifdef COMMON_DND
 /* common_drag_data_received */
 static int _common_drag_data_received(GdkDragContext * context,
 		GtkSelectionData * seldata, char * dest)
@@ -61,8 +94,10 @@ static int _common_drag_data_received(GdkDragContext * context,
 	g_list_free(selection);
 	return ret;
 }
+#endif /* COMMON_DND */
 
 
+#ifdef COMMON_EXEC
 /* common_exec */
 static int _common_exec(char * program, char * flags, GList * args)
 {
@@ -108,3 +143,67 @@ static int _common_exec(char * program, char * flags, GList * args)
 				errno));
 	exit(2);
 }
+#endif /* COMMON_EXEC */
+
+
+#ifdef COMMON_MENU
+static GtkWidget * _common_new_menubar(GtkWindow * window, struct _menubar * mb,
+		gpointer data)
+{
+	GtkWidget * tb_menubar;
+	GtkAccelGroup * group;
+	GtkWidget * menu;
+	GtkWidget * menubar;
+	GtkWidget * menuitem;
+	GtkWidget * image;
+	unsigned int i;
+	unsigned int j;
+	struct _menu * p;
+
+	tb_menubar = gtk_menu_bar_new();
+	group = gtk_accel_group_new();
+	for(i = 0; mb[i].name != NULL; i++)
+	{
+		menubar = gtk_menu_item_new_with_mnemonic(mb[i].name);
+		menu = gtk_menu_new();
+		for(j = 0; mb[i].menu[j].name != NULL; j++)
+		{
+			p = &mb[i].menu[j];
+			if(p->name[0] == '\0')
+				menuitem = gtk_separator_menu_item_new();
+			else if(p->stock == NULL)
+				menuitem = gtk_menu_item_new_with_mnemonic(
+						p->name);
+			else if(strncmp(p->stock, "gtk-", 4) == 0)
+				menuitem = gtk_image_menu_item_new_from_stock(
+						p->stock, NULL);
+			else
+			{
+				image = gtk_image_new_from_icon_name(p->stock,
+						GTK_ICON_SIZE_MENU);
+				menuitem
+					= gtk_image_menu_item_new_with_mnemonic(
+							p->name);
+				gtk_image_menu_item_set_image(
+						GTK_IMAGE_MENU_ITEM(menuitem),
+						image);
+			}
+			if(p->callback != NULL)
+				g_signal_connect(G_OBJECT(menuitem), "activate",
+						G_CALLBACK(p->callback), data);
+			else
+				gtk_widget_set_sensitive(menuitem, FALSE);
+			if(p->accel != 0)
+				gtk_widget_add_accelerator(menuitem, "activate",
+						group, p->accel,
+						GDK_CONTROL_MASK,
+						GTK_ACCEL_VISIBLE);
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		}
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
+		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
+	}
+	gtk_window_add_accel_group(GTK_WINDOW(window), group);
+	return tb_menubar;
+}
+#endif /* COMMON_MENU */
