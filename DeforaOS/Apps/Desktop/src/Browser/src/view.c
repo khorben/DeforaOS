@@ -70,45 +70,43 @@ static void _on_help_about(GtkWidget * widget, gpointer data);
 
 
 /* constants */
-static struct _menu _view_menuitem_separator =
-{ "", NULL, NULL, 0 };
-static struct _menu _view_menuitem_file_edit =
-{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, 0 };
-static struct _menu _view_menuitem_file_open_with =
-{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 };
-static struct _menu _view_menuitem_file_close =
-{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W };
-static struct _menu _view_menuitem_file_end =
-{ NULL, NULL, NULL, 0 };
-
-static struct _menu * _view_menu_file[] =
+static struct _menu _view_menu_file[] =
 {
-	&_view_menuitem_file_open_with, &_view_menuitem_separator,
-	&_view_menuitem_file_close, &_view_menuitem_file_end
+	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu * _view_menu_file_edit[] =
+static struct _menu _view_menu_file_edit[] =
 {
-	&_view_menuitem_file_edit, &_view_menuitem_file_open_with,
-	&_view_menuitem_separator, &_view_menuitem_file_close,
-	&_view_menuitem_file_end
+	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, 0 },
+	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _view_menuitem_help_about =
+static struct _menu _view_menu_help[] =
+{
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 };
+	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 };
+	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 },
 #endif
-
-static struct _menu * _view_menu_help[] =
-{
-	&_view_menuitem_help_about, &_view_menuitem_file_end
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _view_menubar[] =
 {
 	{ "_File", _view_menu_file },
+	{ "_Help", _view_menu_help },
+	{ NULL, NULL }
+};
+
+static struct _menubar _view_menubar_edit[] =
+{
+	{ "_File", _view_menu_file_edit },
 	{ "_Help", _view_menu_help },
 	{ NULL, NULL }
 };
@@ -151,16 +149,15 @@ static View * _view_new(char const * pathname)
 		_view_error(view, "Unknown file type", 2);
 		return NULL;
 	}
-	if(mime_get_handler(_mime, type, "edit") != NULL)
-		_view_menubar[0].menu = _view_menu_file_edit;
 	view->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	snprintf(buf, sizeof(buf), "%s%s", "View - ", pathname);
 	gtk_window_set_title(GTK_WINDOW(view->window), buf);
 	g_signal_connect(view->window, "delete-event", G_CALLBACK(_on_closex),
 			view);
 	vbox = gtk_vbox_new(FALSE, 0);
-	widget = _common_new_menubar(GTK_WINDOW(view->window), _view_menubar,
-			view);
+	widget = _common_new_menubar(GTK_WINDOW(view->window),
+			mime_get_handler(_mime, type, "edit") != NULL
+			? _view_menubar_edit : _view_menubar, view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	if(strncmp(type, "image/", 6) == 0)
 	{
