@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* Browser is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -25,6 +25,10 @@
 
 
 /* Browser */
+/* defaults */
+# define BROWSER_CONFIG_FILE	".browser"
+
+
 /* types */
 enum
 {
@@ -74,6 +78,7 @@ typedef struct _BrowserPrefs
 typedef struct _Browser
 {
 	/* config */
+	Config * config;
 	BrowserPrefs prefs;
 
 	/* mime */
@@ -140,13 +145,21 @@ extern unsigned int browser_cnt;
 Browser * browser_new(char const * directory);
 void browser_delete(Browser * browser);
 
-/* useful */
-int browser_error(Browser * browser, char const * message, int ret);
-void browser_open_with(Browser * browser, char const * path);
-void browser_refresh(Browser * browser);
-void browser_select_all(Browser * browser);
+/* accessors */
 void browser_set_location(Browser * browser, char const * path);
 void browser_set_view(Browser * browser, BrowserView view);
+
+/* useful */
+int browser_error(Browser * browser, char const * message, int ret);
+
+int browser_config_load(Browser * browser);
+int browser_config_save(Browser * browser);
+
+void browser_open_with(Browser * browser, char const * path);
+
+void browser_refresh(Browser * browser);
+
+void browser_select_all(Browser * browser);
 void browser_unselect_all(Browser * browser);
 
 #endif /* !BROWSER_BROWSER_H */

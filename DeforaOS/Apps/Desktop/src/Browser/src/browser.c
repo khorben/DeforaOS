@@ -119,11 +119,39 @@ static struct _menubar _menubar[] =
 
 
 /* Browser */
+/* private */
+/* prototypes */
+static char * _browser_get_config_filename(void);
+
+
+/* protected */
 /* variables */
 unsigned int browser_cnt = 0;
 
+
+/* private */
+/* functions */
+static char * _browser_get_config_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		return NULL;
+	len = strlen(homedir) + 1 + sizeof(BROWSER_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, BROWSER_CONFIG_FILE);
+	return filename;
+}
+
+
+/* public */
+/* functions */
 /* browser_new */
 static int _new_pixbufs(Browser * browser);
+static int _new_config(Browser * browser);
 static GtkWidget * _new_menubar(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
 
@@ -155,10 +183,14 @@ Browser * browser_new(char const * directory)
 	}
 
 	/* config */
-	/* FIXME implement */
+	/* set defaults */
 	browser->prefs.confirm_before_delete = TRUE;
 	browser->prefs.sort_folders_first = TRUE;
 	browser->prefs.show_hidden_files = FALSE;
+	browser->config = config_new();
+	if(_new_config(browser) != 0
+			|| browser_config_load(browser) != 0)
+		browser_error(browser, "Error while loading configuration", 0);
 
 	/* mime */
 	browser->mime = mime_new(); /* FIXME share MIME instances */
@@ -369,6 +401,19 @@ static int _new_pixbufs(Browser * browser)
 #endif
 }
 
+static int _new_config(Browser * browser)
+{
+	char * filename;
+
+	if((browser->config = config_new()) == NULL)
+		return 1;
+	if((filename = _browser_get_config_filename()) == NULL)
+		return 1;
+	config_load(browser->config, filename); /* XXX ignore errors */
+	free(filename);
+	return 0;
+}
+
 static GtkWidget * _new_menubar(Browser * browser)
 {
 	GtkWidget * tb_menubar;
@@ -470,6 +515,8 @@ static GtkListStore * _create_store(Browser * browser)
 /* browser_delete */
 void browser_delete(Browser * browser)
 {
+	if(browser->config != NULL)
+		config_delete(browser->config);
 	gtk_widget_hide(browser->window);
 	if(browser->refresh_id)
 		g_source_remove(browser->refresh_id);
@@ -545,6 +592,69 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 }
 
 
+/* browser_config_load */
+static void _config_load_boolean(Config * config, char const * variable,
+		gboolean * value);
+
+int browser_config_load(Browser * browser)
+{
+	if(browser->config == NULL)
+		return 0; /* XXX ignore error */
+	_config_load_boolean(browser->config, "confirm_before_delete",
+			&browser->prefs.confirm_before_delete);
+	_config_load_boolean(browser->config, "sort_folders_first",
+			&browser->prefs.sort_folders_first);
+	_config_load_boolean(browser->config, "show_hidden_files",
+			&browser->prefs.show_hidden_files);
+	return 0;
+}
+
+static void _config_load_boolean(Config * config, char const * variable,
+		gboolean * value)
+{
+	char const * str;
+
+	if((str = config_get(config, "", variable)) == NULL)
+		return;
+	if(strcmp(str, "0") == 0)
+		*value = FALSE;
+	else if(strcmp(str, "1") == 0)
+		*value = TRUE;
+}
+
+
+/* browser_config_save */
+static int _config_save_boolean(Config * config, char const * variable,
+		gboolean value);
+
+int browser_config_save(Browser * browser)
+{
+	int ret = 0;
+	char * filename;
+
+	if(browser->config == NULL)
+		return 0; /* XXX ignore error */
+	if((filename = _browser_get_config_filename()) == NULL)
+		return 1;
+	ret |= _config_save_boolean(browser->config, "confirm_before_delete",
+			browser->prefs.confirm_before_delete);
+	ret |= _config_save_boolean(browser->config, "sort_folders_first",
+			browser->prefs.sort_folders_first);
+	ret |= _config_save_boolean(browser->config, "show_hidden_files",
+			browser->prefs.show_hidden_files);
+	ret |= config_save(browser->config, filename);
+	free(filename);
+	return ret;
+}
+
+static int _config_save_boolean(Config * config, char const * variable,
+		gboolean value)
+{
+	return config_set(config, "", variable, value ? "1" : "0");
+}
+
+
+/* browser_open_with */
 void browser_open_with(Browser * browser, char const * path)
 {
 	GtkWidget * dialog;
@@ -1167,6 +1277,7 @@ static void _current_deleted(Browser * browser)
 }
 
 
+/* browser_select_all */
 void browser_select_all(Browser * browser)
 {
 	GtkTreeSelection * sel;

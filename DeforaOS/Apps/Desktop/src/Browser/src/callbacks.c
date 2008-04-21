@@ -310,6 +310,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 			GTK_TOGGLE_BUTTON(browser->pr_sort));
 	browser->prefs.show_hidden_files = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_hidden));
+	browser_config_save(browser);
 	browser_refresh(browser);
 }
 
