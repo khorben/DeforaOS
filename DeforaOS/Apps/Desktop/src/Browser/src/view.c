@@ -133,11 +133,11 @@ static View * _view_new(char const * pathname)
 
 	if((view = malloc(sizeof(*view))) == NULL)
 		return NULL; /* FIXME handle error */
-	view->pathname = strdup(pathname);
 	view->window = NULL;
 	view->ab_window = NULL;
 	_view_cnt++;
-	if(lstat(pathname, &st) != 0)
+	if((view->pathname = strdup(pathname)) == NULL
+			|| lstat(pathname, &st) != 0)
 	{
 		_view_error(view, strerror(errno), 2);
 		return NULL;
