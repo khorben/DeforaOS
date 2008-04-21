@@ -64,18 +64,17 @@ typedef enum _BrowserView
 #  define BV_LAST BV_DETAILS
 # endif
 
-typedef struct _BrowserPreferences
+typedef struct _BrowserPrefs
 {
 	gboolean confirm_before_delete;
 	gboolean sort_folders_first;
 	gboolean show_hidden_files;
-} BrowserPreferences;
+} BrowserPrefs;
 
 typedef struct _Browser
 {
 	/* config */
-/*	Config * config; */
-	BrowserPreferences prefs;
+	BrowserPrefs prefs;
 
 	/* mime */
 	Mime * mime;
