@@ -75,17 +75,17 @@ static int _iconlist_list(char * theme)
 		putc('\n', stdout);
 		g_free(sizes);
 	}
-	g_list_foreach(list, g_free, NULL);
+	g_list_foreach(list, (GFunc)g_free, NULL);
 	g_free(list);
 	return 0;
 }
 
 /* iconlist_do */
+static void _do_iconview(GtkWidget * iconview, char const * theme);
 /* callbacks */
 static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 static void _on_theme_activate(GtkWidget * widget, gpointer data);
 
-static void _do_iconview(GtkWidget * iconview, char * theme);
 static int _iconlist_do(void)
 {
 	GtkWidget * window;
@@ -153,7 +153,7 @@ static void _on_theme_activate(GtkWidget * widget, gpointer data)
 	_do_iconview(iconview, gtk_entry_get_text(GTK_ENTRY(widget)));
 }
 
-static void _do_iconview(GtkWidget * iconview, char * theme)
+static void _do_iconview(GtkWidget * iconview, char const * theme)
 {
 	GtkIconTheme * icontheme;
 	GList * list;
