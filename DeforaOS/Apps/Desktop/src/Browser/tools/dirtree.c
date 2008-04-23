@@ -16,10 +16,12 @@
 
 
 
+#include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 #include <gtk/gtk.h>
 
 
@@ -35,7 +37,7 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter);
 static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 
-static int _dirtree_new(void)
+static int _dirtree_new(char * pathname)
 {
 	GtkIconTheme * theme;
 	GtkWidget * scrolled;
@@ -62,7 +64,8 @@ static int _dirtree_new(void)
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), 2,
 			GTK_SORT_ASCENDING);
 	gtk_tree_store_append(store, &iter, NULL);
-	gtk_tree_store_set(store, &iter, 0, _folder, 1, "/", 2, "/", -1);
+	gtk_tree_store_set(store, &iter, 0, _folder, 1, pathname, 2, basename(
+				pathname), -1);
 	_dirtree_add(store, &iter);
 	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
@@ -132,11 +135,32 @@ static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 }
 
 
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: dirtree [pathname]\n", stderr);
+	return 1;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
+	char * root = "/";
+
 	gtk_init(&argc, &argv);
-	_dirtree_new();
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind + 1 == argc)
+		root = argv[optind];
+	else if(optind != argc)
+		return _usage();
+	_dirtree_new(root);
 	gtk_main();
 	return 0;
 }
