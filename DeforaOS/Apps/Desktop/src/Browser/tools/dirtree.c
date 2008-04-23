@@ -117,8 +117,10 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter)
 		str = q;
 		snprintf(&str[len], de->d_namlen + 1, "%s", de->d_name);
 		gtk_tree_store_append(store, &iter2, iter);
-		gtk_tree_store_set(store, &iter2, 0, _folder, 1, str,
-				2, de->d_name, -1);
+		if((q = g_filename_to_utf8(de->d_name, de->d_namlen, NULL, NULL,
+						NULL)) == NULL)
+			q = de->d_name;
+		gtk_tree_store_set(store, &iter2, 0, _folder, 1, str, 2, q, -1);
 		_dirtree_add(store, &iter2);
 	}
 	closedir(dir);
