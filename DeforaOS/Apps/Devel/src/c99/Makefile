@@ -34,6 +34,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/tokenset.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/target/amd64.c \
 		$(PACKAGE)-$(VERSION)/src/target/graph.c \
 		$(PACKAGE)-$(VERSION)/src/target/sparc64.c \
 		$(PACKAGE)-$(VERSION)/src/target/project.conf \
