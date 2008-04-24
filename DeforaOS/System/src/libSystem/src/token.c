@@ -36,6 +36,7 @@ struct _Token
 	char * filename;
 	unsigned int line;
 	unsigned int col;
+	void * data;
 };
 
 
@@ -57,6 +58,7 @@ Token * token_new(char const * filename, unsigned int line, unsigned int col)
 	token->filename = strdup(filename);
 	token->line = line;
 	token->col = col;
+	token->data = NULL;
 	if(token->filename == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
@@ -88,6 +90,13 @@ TokenCode token_get_code(Token * token)
 unsigned int token_get_col(Token * token)
 {
 	return token->col;
+}
+
+
+/* token_get_data */
+void * token_get_data(Token * token)
+{
+	return token->data;
 }
 
 
@@ -123,6 +132,13 @@ void token_set_code(Token * token, int code)
 void token_set_col(Token * token, unsigned int col)
 {
 	token->col = col;
+}
+
+
+/* token_set_data */
+void token_set_data(Token * token, void * data)
+{
+	token->data = data;
 }
 
 

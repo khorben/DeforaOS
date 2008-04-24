@@ -48,6 +48,9 @@ void token_set_code(Token * token, int code);
 char const * token_get_string(Token * token);
 int token_set_string(Token * token, char const * string);
 
+void * token_get_data(Token * token);
+void token_set_data(Token * token, void * data);
+
 
 /* useful */
 int token_in_set(Token * token, TokenSet set);
