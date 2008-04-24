@@ -98,10 +98,10 @@ typedef enum _CppCode
 	CPP_CODE_WORD,			/* FIXME numbers and keywords? */
 	CPP_CODE_UNKNOWN
 } CppCode;
-# define CPP_CODE_LAST CPP_CODE_UNKNOWN
-# define CPP_CODE_COUNT (CPP_CODE_LAST + 1)
-# define CPP_CODE_META_FIRST CPP_CODE_META_DEFINE
-# define CPP_CODE_META_LAST CPP_CODE_META_WARNING
+# define CPP_CODE_LAST		CPP_CODE_UNKNOWN
+# define CPP_CODE_COUNT		(CPP_CODE_LAST + 1)
+# define CPP_CODE_META_FIRST	CPP_CODE_META_DEFINE
+# define CPP_CODE_META_LAST	CPP_CODE_META_WARNING
 
 
 /* functions */
@@ -110,6 +110,8 @@ void cpp_delete(Cpp * cpp);
 
 /* accessors */
 char const * cpp_get_filename(Cpp * cpp);
+
+int cpp_is_defined(Cpp * cpp, char const * name);
 
 /* useful */
 int cpp_define_add(Cpp * cpp, char const * name, char const * value);

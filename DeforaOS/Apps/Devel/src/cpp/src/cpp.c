@@ -16,12 +16,12 @@
 /* FIXME
  * - comments are not handled in directives
  * - fix includes (system vs regular, inclusion order)
- * - implement define and undef
- * - implement ifdef and ifndef
+ * - potential memory leak with tokens' data
  * - add a way to tokenize input from a string (and handle "#" and "##") */
 
 
 
+#include <assert.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -49,6 +49,13 @@ typedef struct _CppOperator
 	char const * string;
 } CppOperator;
 
+typedef enum _CppScope
+{
+	CPP_SCOPE_NOTYET = 0,
+	CPP_SCOPE_TAKING,
+	CPP_SCOPE_TAKEN
+} CppScope;
+
 struct _Cpp
 {
 	int filters;
@@ -65,9 +72,12 @@ struct _Cpp
 	Cpp * subparser;
 	char ** paths;
 	size_t paths_cnt;
-	/* substitutions */
+	/* for substitutions */
 	CppDefine * defines;
 	size_t defines_cnt;
+	/* for context */
+	CppScope * scopes;
+	size_t scopes_cnt;
 };
 
 /* FIXME use CPP_CODE_META_* in a structure with strings and pointers to
@@ -172,6 +182,12 @@ static char * _cpp_parse_word(Parser * parser, int c);
 static int _cpp_filter_newlines(int * c, void * data);
 static int _cpp_filter_trigraphs(int * c, void * data);
 
+/* scope */
+static int _cpp_scope_push(Cpp * cpp, CppScope scope);
+static CppScope _cpp_scope_get(Cpp * cpp);
+static void _cpp_scope_set(Cpp * cpp, CppScope scope);
+static int _cpp_scope_pop(Cpp * cpp);
+
 /* callbacks */
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data);
@@ -248,6 +264,7 @@ static char * _cpp_parse_word(Parser * parser, int c)
 }
 
 
+/* filters */
 /* cpp_filter_newlines */
 static int _cpp_filter_newlines(int * c, void * data)
 {
@@ -353,9 +370,57 @@ static int _trigraphs_get(int last, int * c)
 }
 
 
+/* scope */
+/* cpp_scope_push */
+static int _cpp_scope_push(Cpp * cpp, CppScope scope)
+{
+	CppScope * p;
+
+	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt + 1)))
+			== NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	cpp->scopes = p;
+	p[cpp->scopes_cnt++] = scope;
+	return 0;
+}
+
+
+/* cpp_scope_get */
+static CppScope _cpp_scope_get(Cpp * cpp)
+{
+	return (cpp->scopes_cnt == 0) ? CPP_SCOPE_TAKING
+		: cpp->scopes[cpp->scopes_cnt - 1];
+}
+
+
+/* cpp_scope_set */
+static void _cpp_scope_set(Cpp * cpp, CppScope scope)
+{
+	assert(cpp->scopes_cnt > 0);
+	cpp->scopes[cpp->scopes_cnt - 1] = scope;
+}
+
+
+/* cpp_scope_pop */
+static int _cpp_scope_pop(Cpp * cpp)
+{
+	CppScope * p;
+
+	assert(cpp->scopes_cnt > 0);
+	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt - 1)))
+			== NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	cpp->scopes = p;
+	cpp->scopes_cnt--;
+	return 0;
+}
+
+
+/* callbacks */
 /* cpp_callback_whitespace */
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data)
+	/* TODO implement a flag to actually keep the content */
 {
 	Cpp * cpp = data;
 	char * str = NULL;
@@ -397,6 +462,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 /* cpp_callback_comment */
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data)
+	/* TODO implement a flag to actually keep the content */
 {
 	if(c != '/')
 		return 1;
@@ -427,11 +493,13 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_directive */
-/* these functions should return 0 (or -1 on errors) */
+/* directives: these functions should return 0 (or -1 on errors) */
 static int _directive_define(Cpp * cpp, Token * token, char const * str);
-static int _directive_error(Cpp * cpp, Token * token, char const * str);
+static int _directive_ifdef(Token * token, char const * str);
+static int _directive_ifndef(Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str);
 static int _directive_undef(Cpp * cpp, Token * token, char const * str);
+static int _directive_unknown(Token * token, char const * str);
 
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data)
@@ -473,11 +541,9 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_ELIF);
 			break;
 		case CPP_DIRECTIVE_ELSE:
-			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_ELSE);
 			break;
 		case CPP_DIRECTIVE_ENDIF:
-			/* FIXME implement */
 			token_set_code(token, CPP_CODE_META_ENDIF);
 			break;
 		case CPP_DIRECTIVE_ERROR:
@@ -488,12 +554,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_IF);
 			break;
 		case CPP_DIRECTIVE_IFDEF:
-			/* FIXME implement */
-			token_set_code(token, CPP_CODE_META_IFDEF);
+			ret = _directive_ifdef(token, pos);
 			break;
 		case CPP_DIRECTIVE_IFNDEF:
-			/* FIXME implement */
-			token_set_code(token, CPP_CODE_META_IFNDEF);
+			ret = _directive_ifndef(token, pos);
 			break;
 		case CPP_DIRECTIVE_INCLUDE:
 			ret = _directive_include(cpp, token, pos);
@@ -513,13 +577,25 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_WARNING);
 			break;
 		default:
-			_directive_error(cpp, token, str);
+			_directive_unknown(token, str);
 			break;
 	}
 	free(str);
 	return ret;
 }
 
+static int _directive_unknown(Token * token, char const * str)
+{
+	char buf[256];
+
+	token_set_code(token, CPP_CODE_META_ERROR);
+	snprintf(buf, sizeof(buf), "%s%s", "Unknown directive: ", str);
+	token_set_string(token, buf);
+	return 0;
+}
+
+/* directives */
+/* directive_define */
 static int _directive_define(Cpp * cpp, Token * token, char const * str)
 {
 	size_t i;
@@ -549,25 +625,41 @@ static int _directive_define(Cpp * cpp, Token * token, char const * str)
 	return 0;
 }
 
-static int _directive_error(Cpp * cpp, Token * token, char const * str)
-	/* FIXME line and column will probably be wrong for included content
-	 *       use a parser to keep track of it? */
+/* directive_ifdef */
+static int _directive_ifdef(Token * token, char const * str)
 {
-	char buf[256];
+	char * p;
 
-	token_set_code(token, CPP_CODE_META_ERROR);
-	snprintf(buf, sizeof(buf), "%s%s", "Unknown or invalid directive: ",
-			str);
-	token_set_string(token, buf);
+	if((p = strdup(str)) == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	token_set_code(token, CPP_CODE_META_IFDEF);
+	token_set_data(token, p);
 	return 0;
 }
 
+/* directive_ifndef */
+static int _directive_ifndef(Token * token, char const * str)
+{
+	char * p;
+
+	if((p = strdup(str)) == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	token_set_code(token, CPP_CODE_META_IFNDEF);
+	token_set_data(token, p);
+	return 0;
+}
+
+/* directive_include */
 static char * _include_path(Cpp * cpp, Token * token, char const * str);
+static char * _path_lookup(Cpp * cpp, Token * token, char const * path,
+		int system);
+static char * _lookup_error(Token * token, char const * path, int system);
 
 static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
 	size_t i;
+	size_t j;
 
 	if((path = _include_path(cpp, token, str)) == NULL)
 		return 0;
@@ -581,7 +673,11 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 	for(i = 0; i < cpp->paths_cnt; i++)
 		if(cpp_path_add(cpp->subparser, cpp->paths[i]) != 0)
 			break;
-	if(i != cpp->paths_cnt)
+	for(j = 0; j < cpp->defines_cnt; j++)
+		if(cpp_define_add(cpp->subparser, cpp->defines[j].name,
+					cpp->defines[j].value) != 0)
+			break;
+	if(i != cpp->paths_cnt || j != cpp->defines_cnt)
 	{
 		cpp_delete(cpp->subparser);
 		cpp->subparser = NULL;
@@ -590,8 +686,6 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 	return 0;
 }
 
-static char * _path_lookup(Cpp * cpp, Token * token, char const * path,
-		int system);
 static char * _include_path(Cpp * cpp, Token * token, char const * str)
 	/* FIXME use presets for path discovery and then dirname(filename) */
 {
@@ -620,7 +714,6 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str)
 	return p;
 }
 
-static char * _lookup_error(Token * token, char const * path, int system);
 static char * _path_lookup(Cpp * cpp, Token * token, char const * path,
 		int system)
 {
@@ -661,6 +754,7 @@ static char * _lookup_error(Token * token, char const * path, int system)
 	return NULL;
 }
 
+/* directive_undef */
 static int _directive_undef(Cpp * cpp, Token * token, char const * str)
 {
 	cpp_define_remove(cpp, str);
@@ -820,16 +914,10 @@ Cpp * cpp_new(char const * filename, int filters)
 
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
+	memset(cpp, 0, sizeof(*cpp));
 	cpp->filters = filters;
 	cpp->parser = parser_new(filename);
-	cpp->newlines_last_cnt = 0;
-	cpp->trigraphs_last_cnt = 0;
 	cpp->directive_newline = 1;
-	cpp->subparser = NULL;
-	cpp->paths = NULL;
-	cpp->paths_cnt = 0;
-	cpp->defines = NULL;
-	cpp->defines_cnt = 0;
 	if((p = strdup(filename)) != NULL)
 	{
 		cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
@@ -862,6 +950,8 @@ void cpp_delete(Cpp * cpp)
 		cpp_delete(cpp->subparser);
 	if(cpp->parser != NULL)
 		parser_delete(cpp->parser);
+	if(cpp->scopes != NULL)
+		free(cpp->scopes);
 	object_delete(cpp);
 }
 
@@ -873,6 +963,18 @@ char const * cpp_get_filename(Cpp * cpp)
 	if(cpp->subparser != NULL)
 		return cpp_get_filename(cpp->subparser);
 	return parser_get_filename(cpp->parser);
+}
+
+
+/* cpp_is_defined */
+int cpp_is_defined(Cpp * cpp, char const * name)
+{
+	size_t i;
+
+	for(i = 0; i < cpp->defines_cnt; i++)
+		if(strcmp(cpp->defines[i].name, name) == 0)
+			return 1;
+	return 0;
 }
 
 
@@ -956,11 +1058,93 @@ int cpp_path_add(Cpp * cpp, char const * path)
 
 
 /* cpp_scan */
+static int _scan_get_next(Cpp * cpp, Token ** token);
+
 int cpp_scan(Cpp * cpp, Token ** token)
+{
+	int ret;
+	TokenCode code;
+	char * name;
+	int take;
+	CppScope scope;
+
+	if((ret = _scan_get_next(cpp, token)) != 0)
+		return ret;
+	if(*token == NULL)
+		return 0;
+	if((code = token_get_code(*token)) == CPP_CODE_META_IFDEF
+			|| code == CPP_CODE_META_IFNDEF)
+	{
+		name = token_get_data(*token);
+		take = cpp_is_defined(cpp, name);
+		token_set_data(*token, NULL);
+		free(name);
+		take = (code == CPP_CODE_META_IFDEF) ? take : !take;
+		_cpp_scope_push(cpp, take ? CPP_SCOPE_TAKING
+				: CPP_SCOPE_NOTYET);
+		return 0;
+	}
+	if(code == CPP_CODE_META_IF)
+	{
+		/* FIXME check the condition */
+		_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
+		return 0;
+	}
+	if(code == CPP_CODE_META_ELIF)
+	{
+		if(cpp->scopes_cnt == 0)
+		{
+			token_set_code(*token, CPP_CODE_META_ERROR);
+			token_set_string(*token, "#elif without #if or #ifdef"
+					" or #ifndef");
+			return 0;
+		}
+		/* FIXME check the condition */
+		scope = _cpp_scope_get(cpp);
+		if(scope == CPP_SCOPE_TAKING)
+			_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
+		else if(scope == CPP_SCOPE_NOTYET)
+			_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
+		return 0;
+	}
+	if(code == CPP_CODE_META_ELSE)
+	{
+		if(cpp->scopes_cnt == 0)
+		{
+			token_set_code(*token, CPP_CODE_META_ERROR);
+			token_set_string(*token, "#else without #if or #ifdef"
+					" or #ifndef");
+			return 0;
+		}
+		scope = _cpp_scope_get(cpp);
+		if(scope == CPP_SCOPE_TAKING)
+			_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
+		else if(scope == CPP_SCOPE_NOTYET)
+			_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
+		return 0;
+	}
+	if(code == CPP_CODE_META_ENDIF)
+	{
+		if(cpp->scopes_cnt == 0)
+		{
+			token_set_code(*token, CPP_CODE_META_ERROR);
+			token_set_string(*token, "#endif without #if or #ifdef"
+					" or #ifndef");
+		}
+		_cpp_scope_pop(cpp);
+		return 0;
+	}
+	if(_cpp_scope_get(cpp) == CPP_SCOPE_TAKING)
+		return 0;
+	token_delete(*token);
+	return cpp_scan(cpp, token); /* FIXME do this in a loop */
+}
+
+static int _scan_get_next(Cpp * cpp, Token ** token)
 {
 	if(cpp->subparser != NULL)
 	{
-		if(cpp_scan(cpp->subparser, token) != 0)
+		if(_scan_get_next(cpp->subparser, token) != 0)
 			return 1;
 		if(*token != NULL)
 			return 0;
