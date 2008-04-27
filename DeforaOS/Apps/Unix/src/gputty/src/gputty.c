@@ -319,9 +319,9 @@ static void _on_connect(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	pid_t pid;
-	char * xterm = NULL;
+	char const * xterm = NULL;
 	char * termopt = "-e";
-	char * ssh = NULL;
+	char const * ssh = NULL;
 	char const * hostname;
 	char port[6];
 	char * useropt = NULL;
@@ -362,7 +362,7 @@ static void _on_delete(GtkWidget * widget, gpointer data)
 	GtkTreeIter iter;
 	char buf1[11];
 	char buf2[11];
-	char * p;
+	char const * p;
 
 	if((i = g->selection) == -1)
 		return;
@@ -395,7 +395,7 @@ static void _on_load(GtkWidget * widget, gpointer data)
 {
 	GPuTTY * g = data;
 	char buf[11];
-	char * p;
+	char const * p;
 	char * q;
 	int port;
 
@@ -469,7 +469,7 @@ static void _move_switch(GPuTTY * g, int a, int b)
 	GtkTreeIter iter;
 	char buf1[11];
 	char buf2[11];
-	char * p;
+	char const * p;
 	char * name = NULL;
 	char * hostname = NULL;
 	char * port = NULL;
@@ -721,7 +721,7 @@ GPuTTY * gputty_new(void)
 {
 	GPuTTY * g;
 	char buf[11];
-	char * p;
+	char const * p;
 	char * q;
 	unsigned int i;
 	GtkWidget * vbox;
