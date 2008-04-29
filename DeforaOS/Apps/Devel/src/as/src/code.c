@@ -26,6 +26,15 @@
 
 
 /* Code */
+/* types */
+struct _Code
+{
+	Arch * arch;
+	Format * format;
+	char const * filename;
+	FILE * fp;
+};
+
 /* variables */
 char const * code_error[CE_COUNT] =
 {
@@ -90,14 +99,15 @@ void code_delete(Code * code, int error)
 /* useful */
 /* code_instruction */
 static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
-		char * instruction, CodeOperand operands[], int operands_cnt);
-CodeError code_instruction(Code * code, char * instruction,
-		CodeOperand operands[], int operands_cnt)
+		char const * instruction, CodeOperand operands[],
+		size_t operands_cnt);
+CodeError code_instruction(Code * code, char const * instruction,
+		CodeOperand operands[], size_t operands_cnt)
 /* FIXME being rewritten */
 {
 	ArchInstruction * ai;
 	int ret;
-	int i;
+	size_t i;
 	long long buf;
 	unsigned long opcode;
 	size_t size;
@@ -159,7 +169,8 @@ CodeError code_instruction(Code * code, char * instruction,
 static int _instruction_operands(Code * code, ArchInstruction * ai,
 		CodeOperand operands[], int operands_cnt);
 static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
-		char * instruction, CodeOperand operands[], int operands_cnt)
+		char const * instruction, CodeOperand operands[],
+		size_t operands_cnt)
 {
 	int i;
 	int cmp;
@@ -231,4 +242,12 @@ static ArchRegister * _operands_register(ArchRegister * registers, char * name)
 		if(strcmp(registers[i].name, name) == 0)
 			return &registers[i];
 	return NULL;
+}
+
+
+/* code_section */
+CodeError code_section(Code * code, char const * section)
+{
+	return format_section(code->format, code->fp, section) == 0
+		? CE_SUCCESS : CE_WRITE_ERROR;
 }

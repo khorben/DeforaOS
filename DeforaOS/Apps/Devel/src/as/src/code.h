@@ -26,13 +26,7 @@
 
 
 /* types */
-typedef struct _Code
-{
-	Arch * arch;
-	Format * format;
-	char const * filename;
-	FILE * fp;
-} Code;
+typedef struct _Code Code;
 
 typedef enum _CodeError
 {
@@ -58,7 +52,8 @@ Code * code_new(char const * arch, char const * format, char const * filename);
 void code_delete(Code * code, int error);
 
 /* useful */
-CodeError code_instruction(Code * code, char * instruction,
-		CodeOperand operands[], int operands_cnt);
+CodeError code_instruction(Code * code, char const * instruction,
+		CodeOperand operands[], size_t operands_cnt);
+CodeError code_section(Code * code, char const * section);
 
 #endif /* !AS_CODE_H */

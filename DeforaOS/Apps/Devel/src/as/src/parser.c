@@ -202,7 +202,7 @@ static void _section(State * state)
 		fprintf(stderr, "%s%s%s", "Entering section \"", section,
 				"\"\n");
 #endif
-	format_section(state->code->format, state->code->fp, section);
+	code_section(state->code, section);
 	free(section);
 }
 
