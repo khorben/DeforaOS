@@ -36,7 +36,7 @@ typedef struct _State
 	Code * code;
 	char * instruction;
 	CodeOperand * operands;
-	int operands_cnt;
+	size_t operands_cnt;
 } State;
 
 
@@ -266,7 +266,7 @@ static void _instruction(State * state)
 	/* operator [ space [ operand_list ] ] newline */
 {
 	CodeError error;
-	int i;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);

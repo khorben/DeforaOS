@@ -16,9 +16,11 @@
 
 
 
+#include <System.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <elf.h>
 #include "format.h"
 #include "../../config.h"
@@ -99,8 +101,7 @@ FormatPlugin format_plugin =
 /* elf_error */
 static int _elf_error(char const * message, int ret)
 {
-	fputs("as ELF: ", stderr);
-	perror(message);
+	error_set_code(ret, "%s: %s", message, strerror(errno));
 	return ret;
 }
 
@@ -137,6 +138,7 @@ static int _section_32(FILE * fp, char const * name);
 static int _init_64(FILE * fp);
 static int _exit_64(FILE * fp);
 static int _section_64(FILE * fp, char const * name);
+
 static int _elf_init(FILE * fp, char const * arch)
 {
 	if((ea = _init_arch(arch)) == NULL)
@@ -194,11 +196,15 @@ static int _section_string(char const * name)
 	char * p;
 
 	len = strlen(name);
+	if(ess == NULL)
+		len++;
 	if((p = realloc(ess, sizeof(char) * (ess_cnt + len + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
+	if(ess == NULL)
+		p[ess_cnt++] = '\0';
 	ess = p;
 	memcpy(&ess[ess_cnt], name, len + 1);
-	ess_cnt = ess_cnt + len + 1;
+	ess_cnt += len + 1;
 	return 0;
 }
 
@@ -250,8 +256,6 @@ static int _exit_32(FILE * fp)
 
 	if(_section_32(fp, "shstrtab") != 0)
 		ret = 1;
-	else if(fputc('\0', fp) != '\0') /* FIXME try to handle this in ess */
-		ret = _elf_error(format_plugin.filename, 1);
 	else if(fwrite(ess, sizeof(char), ess_cnt, fp) != ess_cnt)
 		ret = _elf_error(format_plugin.filename, 1);
 	else if((offset = ftell(fp)) == -1)
@@ -281,13 +285,13 @@ static int _exit_32_phdr(FILE * fp, Elf32_Off offset)
 	if(ea->endian == ELFDATA2MSB)
 	{
 		hdr.e_shoff = _htob32(offset);
-		hdr.e_shnum = _htob16(es32_cnt+1);
+		hdr.e_shnum = _htob16(es32_cnt + 1);
 		hdr.e_shstrndx = _htob16(es32_cnt);
 	}
 	else
 	{
 		hdr.e_shoff = _htol32(offset);
-		hdr.e_shnum = _htol16(es32_cnt+1);
+		hdr.e_shnum = _htol16(es32_cnt + 1);
 		hdr.e_shstrndx = _htol16(es32_cnt);
 	}
 	if(fseek(fp, 0, SEEK_SET) != 0)
@@ -342,7 +346,7 @@ static int _section_32(FILE * fp, char const * name)
 	if(_section_string(name) != 0)
 		return 1;
 	if((p = realloc(es32, sizeof(*es32) * (es32_cnt + 1))) == NULL)
-		return _elf_error("malloc", 1);
+		return _elf_error(format_plugin.filename, 1);
 	es32 = p;
 	p = &es32[es32_cnt++];
 	memset(p, 0, sizeof(*p));
@@ -404,8 +408,6 @@ static int _exit_64(FILE * fp)
 
 	if(_section_64(fp, "shstrtab") != 0)
 		ret = 1;
-	else if(fputc('\0', fp) != '\0') /* FIXME try to handle this in ess */
-		ret = _elf_error(format_plugin.filename, 1);
 	else if(fwrite(ess, sizeof(char), ess_cnt, fp) != ess_cnt)
 		ret = _elf_error(format_plugin.filename, 1);
 	else if((offset = ftell(fp)) == -1)
@@ -482,7 +484,7 @@ static int _section_64(FILE * fp, char const * name)
 	if(_section_string(name) != 0)
 		return 1;
 	if((p = realloc(es64, sizeof(*es64) * (es64_cnt + 1))) == NULL)
-		return _elf_error("malloc", 1);
+		return _elf_error(format_plugin.filename, 1);
 	es64 = p;
 	p = &es64[es64_cnt++];
 	memset(p, 0, sizeof(*p));
