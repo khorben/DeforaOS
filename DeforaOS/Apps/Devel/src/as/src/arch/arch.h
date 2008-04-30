@@ -62,7 +62,7 @@ typedef struct _ArchPlugin
 
 /* Arch */
 /* types */
-typedef struct _Arch
+typedef struct _Arch /* FIXME make it private */
 {
 	ArchRegister * registers;
 	ArchInstruction * instructions;

@@ -32,12 +32,7 @@ typedef struct _FormatPlugin
 	int (*section)(FILE * fp, char const * section);
 } FormatPlugin;
 
-typedef struct _Format
-{
-	char * arch;
-	FormatPlugin * plugin;
-	void * handle;
-} Format;
+typedef struct _Format Format;
 
 
 /* functions */

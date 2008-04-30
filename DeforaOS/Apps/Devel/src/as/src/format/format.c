@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -16,39 +16,52 @@
 
 
 
+#include <System.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
-#include "../as.h"
+#include <errno.h>
+#include "as.h"
 #include "format.h"
+#include "../../config.h"
 
 
 /* Format */
+/* private */
+/* types */
+struct _Format
+{
+	char * arch;
+	FormatPlugin * plugin;
+	Plugin * handle;
+};
+
+
+/* public */
+/* functions */
+/* format_new */
 Format * format_new(char const * format, char const * arch,
 		char const * filename)
 {
 	Format * f;
-	void * handle;
+	Plugin * handle;
 	FormatPlugin * plugin;
 
 	if(format == NULL)
 		format = "elf";
-	if((handle = as_plugin_new("format", format, "output")) == NULL)
+	if((handle = plugin_new(LIBDIR, PACKAGE, "format", format)) == NULL)
 		return NULL;
-	if((plugin = dlsym(handle, "format_plugin")) == NULL)
+	if((plugin = plugin_lookup(handle, "format_plugin")) == NULL)
 	{
-		/* FIXME factorize dlsym() operation */
-		fprintf(stderr, "%s%s%s", "as: ", format,
-				": Invalid format plug-in\n");
+		plugin_delete(handle);
 		return NULL;
 	}
 	if((f = malloc(sizeof(*f))) == NULL || (f->arch = strdup(arch)) == NULL)
 	{
 		if(f != NULL)
 			free(f);
-		as_error("malloc", 0);
-		as_plugin_delete(handle);
+		error_set_code(1, "%s", strerror(errno));
+		plugin_delete(handle);
 		return NULL;
 	}
 	f->plugin = plugin;
@@ -65,7 +78,7 @@ int format_delete(Format * format, FILE * fp)
 
 	if(format->plugin->exit != NULL)
 		ret = format->plugin->exit(fp);
-	as_plugin_delete(format->handle);
+	plugin_delete(format->handle);
 	free(format->arch);
 	free(format);
 	return ret;

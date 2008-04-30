@@ -1,12 +1,16 @@
 SUBDIRS	= arch format
-TARGETS	= as
+TARGETS	= libas.a libas.so as
 PREFIX	= /usr/local
 DESTDIR	= 
-BINDIR	= $(PREFIX)/bin
+LIBDIR	= $(PREFIX)/lib
 CC	= cc
-CPPFLAGS=
-CFLAGSF	= -W -Wall
-CFLAGS	= -g
+CPPFLAGS= -I ../include
+CFLAGSF	= -W
+CFLAGS	= -Wall -g -O2
+AR	= ar -rc
+RANLIB	= ranlib
+LD	= ld -shared
+BINDIR	= $(PREFIX)/bin
 LDFLAGSF= 
 RM	= rm -f
 MKDIR	= mkdir -p
@@ -18,49 +22,67 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-as_OBJS = as.o code.o parser.o scanner.o token.o arch/arch.o format/format.o
+libas_OBJS = as.o code.o parser.o scanner.o token.o arch/arch.o format/format.o
+libas_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
+
+libas.a: $(libas_OBJS)
+	$(AR) libas.a $(libas_OBJS)
+	$(RANLIB) libas.a
+
+libas.so: $(libas_OBJS)
+	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -rpath $(LIBDIR) -l System
+
+as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 as: $(as_OBJS)
-	$(CC) -o as $(as_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o as $(as_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -l as
 
-as.o: as.c as.h parser.h
-	$(CC) $(as_CFLAGS) -c as.c
+as.o: as.c ../include/as.h ../config.h
+	$(CC) $(libas_CFLAGS) -c as.c
 
-code.o: code.c as.h arch/arch.h code.h
-	$(CC) $(as_CFLAGS) -c code.c
+code.o: code.c ../include/as.h arch/arch.h code.h
+	$(CC) $(libas_CFLAGS) -c code.c
 
 parser.o: parser.c parser.h scanner.h
-	$(CC) $(as_CFLAGS) -c parser.c
+	$(CC) $(libas_CFLAGS) -c parser.c
 
-scanner.o: scanner.c as.h token.h
-	$(CC) $(as_CFLAGS) -c scanner.c
+scanner.o: scanner.c ../include/as.h token.h
+	$(CC) $(libas_CFLAGS) -c scanner.c
 
 token.o: token.c token.h
-	$(CC) $(as_CFLAGS) -c token.c
+	$(CC) $(libas_CFLAGS) -c token.c
 
 arch/arch.o: arch/arch.c
-	$(CC) $(as_CFLAGS) -o arch/arch.o -c arch/arch.c
+	$(CC) $(libas_CFLAGS) -o arch/arch.o -c arch/arch.c
 
 format/format.o: format/format.c format/format.h
-	$(CC) $(as_CFLAGS) -o format/format.o -c format/format.c
+	$(CC) $(libas_CFLAGS) -o format/format.o -c format/format.c
+
+main.o: main.c ../include/as.h
+	$(CC) $(as_CFLAGS) -c main.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(as_OBJS)
+	$(RM) $(libas_OBJS) $(as_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(as_OBJS)
+	$(RM) $(libas_OBJS) $(as_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
+	$(MKDIR) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0644 libas.a $(DESTDIR)$(LIBDIR)/libas.a
+	$(INSTALL) -m 0755 libas.so $(DESTDIR)$(LIBDIR)/libas.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 as $(DESTDIR)$(BINDIR)/as
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+	$(RM) $(DESTDIR)$(LIBDIR)/libas.a
+	$(RM) $(DESTDIR)$(LIBDIR)/libas.so
 	$(RM) $(DESTDIR)$(BINDIR)/as
 
 .PHONY: all subdirs clean distclean install uninstall

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -16,16 +16,19 @@
 
 
 
+#include <System.h>
+#include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <errno.h>
 #include <arpa/inet.h>
 #include "as.h"
 #include "code.h"
 
 
 /* Code */
+/* private */
 /* types */
 struct _Code
 {
@@ -50,11 +53,8 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 {
 	Code * code;
 
-	if((code = malloc(sizeof(Code))) == NULL)
-	{
-		as_error("malloc", 0);
+	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
-	}
 	code->format = NULL;
 	code->fp = NULL;
 	if((code->arch = arch_new(arch)) == NULL
@@ -67,7 +67,9 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 		{
 			fclose(code->fp);
 			if(unlink(filename) != 0)
-				as_error(filename, 0);
+				/* FIXME error should be simply printed? */
+				error_set_code(1, "%s: %s", filename, strerror(
+							errno));
 		}
 		if(code->format != NULL)
 			format_delete(code->format, code->fp);
@@ -90,9 +92,10 @@ void code_delete(Code * code, int error)
 	{
 		fclose(code->fp);
 		if(error != 0 && unlink(code->filename) != 0)
-			as_error(code->filename, 0);
+			error_set_code(1, "%s: %s", code->filename, strerror(
+						errno));
 	}
-	free(code);
+	object_delete(code);
 }
 
 
@@ -103,63 +106,67 @@ static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
 		size_t operands_cnt);
 CodeError code_instruction(Code * code, char const * instruction,
 		CodeOperand operands[], size_t operands_cnt)
-/* FIXME being rewritten */
+	/* FIXME being rewritten */
 {
-	ArchInstruction * ai;
 	int ret;
+	ArchInstruction * ai;
 	size_t i;
-	long long buf;
-	unsigned long opcode;
+	void * buf;
 	size_t size;
+	uint8_t u8;
+	uint16_t u16;
+	uint32_t u32;
 
 	if((ret = _instruction_instruction(code, &ai, instruction, operands,
 					operands_cnt)) != CE_SUCCESS)
 		return ret;
 #ifdef DEBUG
-	fprintf(stderr, "instruction %s, opcode 0x%lx, operands: 0x%x\n",
+	fprintf(stderr, "DEBUG: instruction %s, opcode 0x%lx, operands: 0x%x\n",
 			instruction, ai->opcode, ai->operands);
 #endif
 	switch(ai->size)
 	{
-		case sizeof(short):
-			opcode = htons(ai->opcode); /* FIXME provide this */
+		case sizeof(u8):
+			u8 = ai->opcode;
+			buf = &u8;
 			break;
-		case 3:
-			/* FIXME not even portable */
-			opcode = htonl(ai->opcode << 8);
+		case sizeof(u16):
+			u16 = htons(ai->opcode);
+			buf = &u16;
 			break;
-		case sizeof(long):
-			opcode = htonl(ai->opcode); /* FIXME provide this */
-			break;
+		case sizeof(u32):
 		default:
-			opcode = ai->opcode;
+			u32 = htonl(ai->opcode);
+			buf = &u32;
 			break;
 	}
-	if(fwrite(&opcode, ai->size, 1, code->fp) != 1)
-		return CE_WRITE_ERROR;
+#if 0
 	if(ai->size == 0) /* FIXME bad definition? */
 		return CE_SUCCESS;
+#endif
+	if(fwrite(buf, ai->size, 1, code->fp) != 1)
+		return CE_WRITE_ERROR;
 	for(i = 0; i < operands_cnt; i++)
 	{
 		if(i >= 2)
-			break;
-		size = i == 0 ? ai->op1size : ai->op2size;
+			break; /* FIXME looks ugly */
+		size = (i == 0) ? ai->op1size : ai->op2size;
 		if(size == 0)
 			continue;
-		memset(&buf, 0, sizeof(buf));
 		switch(operands[i].type)
 		{
-			case TC_IMMEDIATE:
+			case ATC_IMMEDIATE:
 				/* FIXME only valid if size == 4 */
-				buf = strtoll(operands[i].value+1, NULL, 0);
+				u32 = strtoll(operands[i].value + 1, NULL, 0);
+				buf = &u32;
 				break;
-			case TC_REGISTER:
+			case ATC_REGISTER:
 				continue;
 			default:
 				/* FIXME */
 				continue;
 		}
-		if(fwrite(&buf, size, 1, code->fp) == 1)
+		if(fwrite(buf, size, 1, code->fp) == 1)
 			continue;
 		return CE_WRITE_ERROR;
 	}
@@ -207,20 +214,22 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 		op = op << 8;
 		switch(operands[i].type)
 		{
-			case TC_IMMEDIATE:
+			case ATC_IMMEDIATE:
+			case ATC_NUMBER:
 				op |= _AO_IMM;
 #ifdef DEBUG
-				fprintf(stderr, "op %d: imm; ", i);
+				fprintf(stderr, "DEBUG: op %d: imm; ", i);
 #endif
 				break;
-			case TC_REGISTER:
+			case ATC_REGISTER:
 				reg = operands[i].value + 1; /* "%rg" => "rg" */
 				ar = code->arch->registers;
 				if((ar = _operands_register(ar, reg)) == NULL)
 					return 1;
 				op |= (_AO_REG | (ar->id << 2));
 #ifdef DEBUG
-				fprintf(stderr, "op %d: reg %s; ", i, reg);
+				fprintf(stderr, "DEBUG: op %d: reg %s; ", i,
+						reg);
 #endif
 				break;
 			default:
@@ -228,10 +237,10 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 		}
 	}
 #ifdef DEBUG
-	fprintf(stderr, "0x%lx & 0x%x => 0x%lx\n", op, ai->operands,
+	fprintf(stderr, "DEBUG: 0x%lx & 0x%x => 0x%lx\n", op, ai->operands,
 			op & ai->operands);
 #endif
-	return op == ai->operands ? 0 : 1;
+	return (op == ai->operands) ? 0 : 1;
 }
 
 static ArchRegister * _operands_register(ArchRegister * registers, char * name)

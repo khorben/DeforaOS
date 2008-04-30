@@ -16,37 +16,35 @@
 
 
 
+#include <System.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dlfcn.h>
 #include <assert.h>
-#include "../as.h"
+#include "as.h"
 #include "arch.h"
+#include "../../config.h"
 
 
 /* Arch */
+/* public */
+/* functions */
+/* arch_new */
 Arch * arch_new(char const * arch)
 {
 	Arch * a;
-	void * handle;
+	Plugin * handle;
 	Arch * plugin;
 
-	if((handle = as_plugin_new("arch", arch, "architecture")) == NULL)
+	if((handle = plugin_new(LIBDIR, PACKAGE, "arch", arch)) == NULL)
 		return NULL;
-	if((plugin = dlsym(handle, "arch_plugin")) == NULL)
+	if((plugin = plugin_lookup(handle, "arch_plugin")) == NULL)
 	{
-		/* FIXME factorize dlsym() operation */
-		dlclose(handle);
-		fprintf(stderr, "%s%s%s", "as: ", arch,
-				": Invalid architecture plug-in\n");
+		plugin_delete(handle);
 		return NULL;
 	}
-	/* if((handle = as_plugin_new("arch", arch, "architecture", &plugin)) == NULL)
-	 * 	... */
-	if((a = malloc(sizeof(Arch))) == NULL)
+	if((a = object_new(sizeof(*a))) == NULL)
 	{
-		as_error("malloc", 0);
-		dlclose(handle);
+		plugin_delete(handle);
 		return NULL;
 	}
 	a->instructions = plugin->instructions;
@@ -59,8 +57,8 @@ Arch * arch_new(char const * arch)
 /* arch_delete */
 void arch_delete(Arch * arch)
 {
-	as_plugin_delete(arch->handle);
-	free(arch);
+	plugin_delete(arch->handle);
+	object_delete(arch);
 }
 
 

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -19,17 +19,32 @@
 #ifndef AS_AS_H
 # define AS_AS_H
 
+
+/* As */
+/* types */
+typedef struct _As As;
+
+typedef enum _AsPluginType { ASPT_ARCH = 0, ASPT_FORMAT } AsPluginType;
+
+
+/* constants */
 # define AS_FILENAME_DEFAULT "a.out"
 
 
 /* functions */
+As * as_new(char const * arch, char const * format);
+void as_delete(As * as);
+
+
+/* accessors */
+char const * as_get_arch(As * as);
+char const * as_get_format(As * as);
+
+
 /* useful */
-int as_error(char const * msg, int ret);
+int as_do(As * as, char const * infile, char const * outfile);
 
 /* plugins helpers */
-void * as_plugin_new(char const * type, char const * name,
-		char const * description);
-void as_plugin_delete(void * plugin);
-void as_plugin_list(char const * type, char const * description);
+int as_plugin_list(AsPluginType type);
 
 #endif /* !AS_AS_H */

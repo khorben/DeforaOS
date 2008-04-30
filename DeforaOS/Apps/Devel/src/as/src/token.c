@@ -25,42 +25,42 @@
 #include "token.h"
 
 
-/* Token */
+/* AToken */
 /* variables */
 #ifdef DEBUG
-char * sTokenCode[TC_NULL] = {
-	"TC_COLON",
-	"TC_COMMA",
-	"TC_DOT",
-	"TC_EOF",
-	"TC_IMMEDIATE",
-	"TC_NEWLINE",
-	"TC_NUMBER",
-	"TC_REGISTER",
-	"TC_SPACE",
-	"TC_TAB",
-	"TC_WORD"
+char * sATokenCode[ATC_NULL] = {
+	"ATC_COLON",
+	"ATC_COMMA",
+	"ATC_DOT",
+	"ATC_EOF",
+	"ATC_IMMEDIATE",
+	"ATC_NEWLINE",
+	"ATC_NUMBER",
+	"ATC_REGISTER",
+	"ATC_SPACE",
+	"ATC_TAB",
+	"ATC_WORD"
 };
 #endif
-TokenCode TS_FUNCTION[] = { TC_WORD, TC_NULL };
-TokenCode TS_INSTRUCTION[] = { TC_WORD, TC_NULL };
-TokenCode TS_INSTRUCTION_LIST[] = { TC_WORD, TC_NEWLINE, TC_SPACE, TC_NULL };
-TokenCode TS_NEWLINE[] = { TC_SPACE, TC_TAB, TC_NEWLINE, TC_NULL };
-TokenCode TS_NEWLINE_LIST[] = { TC_SPACE, TC_TAB, TC_NEWLINE, TC_NULL };
-TokenCode TS_OPERAND_LIST[] = { TC_WORD, TC_NUMBER, TC_IMMEDIATE, TC_REGISTER, TC_NULL };
-TokenCode TS_OPERATOR[] = { TC_WORD, TC_NULL };
-TokenCode TS_SECTION[] = { TC_DOT, TC_NULL };
-TokenCode TS_SECTION_LIST[] = { TC_DOT, TC_NULL };
-TokenCode TS_SPACE[] = { TC_SPACE, TC_TAB, TC_NULL };
+ATokenCode TS_FUNCTION[] = { ATC_WORD, ATC_NULL };
+ATokenCode TS_INSTRUCTION[] = { ATC_WORD, ATC_NULL };
+ATokenCode TS_INSTRUCTION_LIST[] = { ATC_WORD, ATC_NEWLINE, ATC_SPACE, ATC_NULL };
+ATokenCode TS_NEWLINE[] = { ATC_SPACE, ATC_TAB, ATC_NEWLINE, ATC_NULL };
+ATokenCode TS_NEWLINE_LIST[] = { ATC_SPACE, ATC_TAB, ATC_NEWLINE, ATC_NULL };
+ATokenCode TS_OPERAND_LIST[] = { ATC_WORD, ATC_NUMBER, ATC_IMMEDIATE, ATC_REGISTER, ATC_NULL };
+ATokenCode TS_OPERATOR[] = { ATC_WORD, ATC_NULL };
+ATokenCode TS_SECTION[] = { ATC_DOT, ATC_NULL };
+ATokenCode TS_SECTION_LIST[] = { ATC_DOT, ATC_NULL };
+ATokenCode TS_SPACE[] = { ATC_SPACE, ATC_TAB, ATC_NULL };
 
 
 /* functions */
-/* token_new */
-Token * token_new(TokenCode code, char * string)
+/* atoken_new */
+AToken * atoken_new(ATokenCode code, char * string)
 {
-	Token * t;
+	AToken * t;
 
-	if((t = malloc(sizeof(Token))) == NULL)
+	if((t = malloc(sizeof(*t))) == NULL)
 		return NULL;
 	t->code = code;
 	t->string = NULL;
@@ -71,13 +71,13 @@ Token * token_new(TokenCode code, char * string)
 			return NULL;
 		}
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s%s%s", "token_new(", sTokenCode[code],
+	fprintf(stderr, "%s%s%s%s%s", "atoken_new(", sATokenCode[code],
 			", \"", string == NULL ? "NULL" : string, "\")\n");
 #endif
 	return t;
 }
 
-void token_delete(Token * t)
+void atoken_delete(AToken * t)
 {
 	assert(t != NULL);
 	free(t->string);
@@ -85,10 +85,10 @@ void token_delete(Token * t)
 }
 
 
-int token_in_set(Token * t, TokenSet ts)
+int atoken_in_set(AToken * t, ATokenSet ts)
 {
 	if(t == NULL)
 		return 0;
-	for(; *ts != TC_NULL && t->code != *ts; ts++);
-	return *ts != TC_NULL;
+	for(; *ts != ATC_NULL && t->code != *ts; ts++);
+	return *ts != ATC_NULL;
 }

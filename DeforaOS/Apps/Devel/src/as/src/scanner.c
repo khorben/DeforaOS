@@ -16,28 +16,31 @@
 
 
 
+#include <System.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include "as.h"
 #include "token.h"
 
 
 /* scan */
-static Token * _scan_colon(FILE * fp, int * la);
-static Token * _scan_comma(FILE * fp, int * la);
-static Token * _scan_comment(FILE * fp, int * la);
-static Token * _scan_dot(FILE * fp, int * la);
-static Token * _scan_eof(int * la);
-static Token * _scan_immediate(FILE * fp, int * la);
-static Token * _scan_newline(FILE * fp, int * la);
-static Token * _scan_number(FILE * fp, int * la);
-static Token * _scan_register(FILE * fp, int * la);
-static Token * _scan_space(FILE * fp, int * la);
-static Token * _scan_word(FILE * fp, int * la);
-Token * scan(FILE * fp)
+static AToken * _scan_colon(FILE * fp, int * la);
+static AToken * _scan_comma(FILE * fp, int * la);
+static AToken * _scan_comment(FILE * fp, int * la);
+static AToken * _scan_dot(FILE * fp, int * la);
+static AToken * _scan_eof(int * la);
+static AToken * _scan_immediate(FILE * fp, int * la);
+static AToken * _scan_newline(FILE * fp, int * la);
+static AToken * _scan_number(FILE * fp, int * la);
+static AToken * _scan_register(FILE * fp, int * la);
+static AToken * _scan_space(FILE * fp, int * la);
+static AToken * _scan_word(FILE * fp, int * la);
+AToken * scan(FILE * fp)
 {
-	Token * t;
+	AToken * t;
 	static int la = EOF;
 
 	if(la == EOF)
@@ -57,27 +60,27 @@ Token * scan(FILE * fp)
 	return NULL;
 }
 
-static Token * _scan_colon(FILE * fp, int * la)
+static AToken * _scan_colon(FILE * fp, int * la)
 {
 	if(*la == ':')
 	{
 		*la = fgetc(fp);
-		return token_new(TC_COLON, ":");
+		return atoken_new(ATC_COLON, ":");
 	}
 	return NULL;
 }
 
-static Token * _scan_comma(FILE * fp, int * la)
+static AToken * _scan_comma(FILE * fp, int * la)
 {
 	if(*la == ',')
 	{
 		*la = fgetc(fp);
-		return token_new(TC_COMMA, ",");
+		return atoken_new(ATC_COMMA, ",");
 	}
 	return NULL;
 }
 
-static Token * _scan_comment(FILE * fp, int * la)
+static AToken * _scan_comment(FILE * fp, int * la)
 {
 	int c;
 
@@ -97,34 +100,34 @@ static Token * _scan_comment(FILE * fp, int * la)
 			case '\n':
 			case EOF:
 				*la = c;
-				return token_new(TC_SPACE, "//");
+				return atoken_new(ATC_SPACE, "//");
 		}
 	}
 }
 
-static Token * _scan_dot(FILE * fp, int * la)
+static AToken * _scan_dot(FILE * fp, int * la)
 {
 	if(*la == '.')
 	{
 		*la = fgetc(fp);
-		return token_new(TC_DOT, ".");
+		return atoken_new(ATC_DOT, ".");
 	}
 	return NULL;
 }
 
-static Token * _scan_eof(int * la)
+static AToken * _scan_eof(int * la)
 {
 	if(*la == EOF)
-		return token_new(TC_EOF, "EOF");
+		return atoken_new(ATC_EOF, "EOF");
 	return NULL;
 }
 
-static Token * _scan_immediate(FILE * fp, int * la)
+static AToken * _scan_immediate(FILE * fp, int * la)
 {
 	char * str = NULL;
 	int len = 1;
 	char * p;
-	Token * t;
+	AToken * t;
 	int hex = 0;
 
 	if(*la != '$' || !isdigit(*la = fgetc(fp)) || (str = malloc(1)) == NULL)
@@ -134,7 +137,7 @@ static Token * _scan_immediate(FILE * fp, int * la)
 	{
 		if((p = realloc(str, len + 2)) == NULL)
 		{
-			as_error("malloc", 0);
+			error_set_code(1, "%s", strerror(errno));
 			free(str);
 			return NULL;
 		}
@@ -147,27 +150,27 @@ static Token * _scan_immediate(FILE * fp, int * la)
 	while(isdigit(*la) || (len == 2 && hex) || (hex && (tolower(*la) >= 'a'
 					&& tolower(*la) <= 'f')));
 	str[len] = '\0';
-	t = token_new(TC_IMMEDIATE, str);
+	t = atoken_new(ATC_IMMEDIATE, str);
 	free(str);
 	return t;
 }
 
-static Token * _scan_newline(FILE * fp, int * la)
+static AToken * _scan_newline(FILE * fp, int * la)
 {
 	if(*la == '\n' || *la == '\r') /* FIXME '\r\n' */
 	{
 		*la = fgetc(fp);
-		return token_new(TC_NEWLINE, "\n");
+		return atoken_new(ATC_NEWLINE, "\n");
 	}
 	return NULL;
 }
 
-static Token * _scan_number(FILE * fp, int * la)
+static AToken * _scan_number(FILE * fp, int * la)
 {
 	char * str = NULL;
 	int len = 0;
 	char * p;
-	Token * t;
+	AToken * t;
 
 	if(!isdigit(*la))
 		return NULL;
@@ -175,7 +178,7 @@ static Token * _scan_number(FILE * fp, int * la)
 	{
 		if((p = realloc(str, len + 2)) == NULL)
 		{
-			as_error("malloc", 0);
+			error_set_code(1, "%s", strerror(errno));
 			free(str);
 			return NULL;
 		}
@@ -185,17 +188,17 @@ static Token * _scan_number(FILE * fp, int * la)
 	}
 	while(isdigit(*la));
 	str[len] = '\0';
-	t = token_new(TC_NUMBER, str);
+	t = atoken_new(ATC_NUMBER, str);
 	free(str);
 	return t;
 }
 
-static Token * _scan_register(FILE * fp, int * la)
+static AToken * _scan_register(FILE * fp, int * la)
 {
 	char * str = NULL;
 	int len = 1;
 	char * p;
-	Token * t;
+	AToken * t;
 
 	if(*la != '%' || !islower(*la = fgetc(fp)) || (str = malloc(1)) == NULL)
 		return NULL;
@@ -213,28 +216,28 @@ static Token * _scan_register(FILE * fp, int * la)
 	}
 	while(islower(*la));
 	str[len] = '\0';
-	t = token_new(TC_REGISTER, str);
+	t = atoken_new(ATC_REGISTER, str);
 	free(str);
 	return t;
 }
 
-static Token * _scan_space(FILE * fp, int * la)
+static AToken * _scan_space(FILE * fp, int * la)
 {
 	if(isspace(*la))
 	{
 		for(; isspace(*la); *la = fgetc(fp));
-		return token_new(TC_SPACE, " ");
+		return atoken_new(ATC_SPACE, " ");
 	}
 	return NULL;
 }
 
-static Token * _scan_word(FILE * fp, int * la)
+static AToken * _scan_word(FILE * fp, int * la)
 	/* FIXME */
 {
 	char * str = NULL;
 	int len = 0;
 	char * p;
-	Token * t;
+	AToken * t;
 
 	if(!islower(*la))
 		return NULL;
@@ -251,20 +254,20 @@ static Token * _scan_word(FILE * fp, int * la)
 	}
 	while(islower(*la) || isdigit(*la));
 	str[len] = '\0';
-	t = token_new(TC_WORD, str);
+	t = atoken_new(ATC_WORD, str);
 	free(str);
 	return t;
 }
 
 
-Token * check(FILE * fp, TokenCode code)
+AToken * check(FILE * fp, ATokenCode code)
 {
-	Token * t;
+	AToken * t;
 
 	if((t = scan(fp)) == NULL)
 		return 0;
 	if(t->code == code)
 		return t;
-	token_delete(t);
+	atoken_delete(t);
 	return NULL;
 }

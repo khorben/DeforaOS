@@ -24,7 +24,7 @@
 
 
 /* functions */
-Token * scan(FILE * fp);
-Token * check(FILE * fp, TokenCode code);
+AToken * scan(FILE * fp);
+AToken * check(FILE * fp, ATokenCode code);
 
 #endif /* !AS_SCANNER_H */

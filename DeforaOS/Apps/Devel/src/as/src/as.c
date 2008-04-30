@@ -16,47 +16,121 @@
 
 
 
-#include <sys/types.h>
+#include <System.h>
 #include <sys/utsname.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
+#include <errno.h>
 #include "parser.h"
 #include "as.h"
 #include "../config.h"
 
-#ifndef PACKAGE
-# define PACKAGE	"as"
-#endif
-
-#ifndef PREFIX
-# define PREFIX		"."
-#endif
-
-#ifndef LIBDIR
-# define LIBDIR		PREFIX "/lib/" PACKAGE
-#endif
-
 
 /* as */
-static char * _as_guess(void);
-static int as(char const * arch, char const * format,
-		char * infile, char * outfile)
+/* private */
+/* types */
+struct _As
+{
+	char const * arch;
+	char const * format;
+};
+
+typedef struct _AsPluginDescription
+{
+	char const * name;
+	char const * description;
+} AsPluginDescription;
+
+
+/* constants */
+#define ASPT_LAST	ASPT_FORMAT
+#define ASPT_COUNT	(ASPT_LAST + 1)
+
+
+/* variables */
+static const AsPluginDescription _as_plugin_description[ASPT_COUNT] =
+{
+	{ "arch",	"architecture"	},
+	{ "format",	"file format"	}
+};
+
+
+/* prototypes */
+static char const * _as_guess_arch(void);
+static char const * _as_guess_format(void);
+
+
+/* functions */
+/* as_guess_arch */
+static char const * _as_guess_arch(void)
+{
+	static struct utsname uts;
+	static int cached = 0;
+
+	if(cached == 0)
+	{
+		if(uname(&uts) != 0)
+		{
+			error_set_code(1, "%s", strerror(errno));
+			return NULL;
+		}
+		cached = 1;
+	}
+	return uts.machine;
+}
+
+
+/* as_guess_format */
+static char const * _as_guess_format(void)
+{
+	/* XXX may be dependent from the architecture used */
+	return "elf";
+}
+
+
+/* public */
+/* functions */
+/* as_new */
+As * as_new(char const * arch, char const * format)
+{
+	As * as;
+
+	if((as = object_new(sizeof(*as))) == NULL)
+		return NULL;
+	if((as->arch = arch) == NULL)
+		as->arch = _as_guess_arch();
+	if((as->format = format) == NULL)
+		as->format = _as_guess_format();
+	if(as->arch == NULL || as->format == NULL)
+	{
+		as_delete(as);
+		return NULL;
+	}
+	return as;
+}
+
+
+/* as_delete */
+void as_delete(As * as)
+{
+	object_delete(as);
+}
+
+
+/* useful */
+/* as_do */
+int as_do(As * as, char const * infile, char const * outfile)
 {
 	FILE * infp;
 	Code * code;
 	int ret;
 
-	if(arch == NULL && (arch = _as_guess()) == NULL)
-		return 2;
 	if((infp = fopen(infile, "r")) == NULL)
-		return as_error(infile, 2);
-	if((code = code_new(arch, format, outfile)) == NULL)
-		ret = 2;
+		return error_set_code(1, "%s: %s", infile, strerror(errno));
+	if((code = code_new(as->arch, as->format, outfile)) == NULL)
+		ret = 1;
 	else
 	{
 		ret = parser(code, infile, infp);
@@ -66,80 +140,49 @@ static int as(char const * arch, char const * format,
 	return ret;
 }
 
-static char * _as_guess(void)
-{
-	static struct utsname uts;
 
-	if(uname(&uts) != 0)
-	{
-		as_error("architecture guess", 0);
-		return NULL;
-	}
-	return uts.machine;
+/* accessors */
+/* as_get_arch */
+char const * as_get_arch(As * as)
+{
+	return as->arch;
+}
+
+
+/* as_get_format */
+char const * as_get_format(As * as)
+{
+	return as->format;
 }
 
 
 /* useful */
-/* as_error */
-int as_error(char const * msg, int ret)
-{
-	fputs("as: ", stderr);
-	perror(msg);
-	return ret;
-}
-
-
-/* plugins helpers */
-void * as_plugin_new(char const * type, char const * name,
-		char const * description)
-{
-	char * filename;
-	void * handle;
-
-	if((filename = malloc(strlen(LIBDIR) + 1 + strlen(type) + 1
-					+ strlen(name) + strlen(".so") + 1))
-				== NULL)
-	{
-		as_error("malloc", 0);
-		return NULL;
-	}
-	sprintf(filename, "%s/%s/%s%s", LIBDIR, type, name, ".so");
-	if((handle = dlopen(filename, RTLD_LAZY)) == NULL)
-		fprintf(stderr, "%s%s%s%s%s", "as: ", name, ": No such ",
-				description, " plug-in\n");
-	free(filename);
-	return handle;
-}
-
-
-/* as_plugin_delete */
-void as_plugin_delete(void * handle)
-{
-	dlclose(handle);
-}
-
-
 /* as_plugin_list */
-void as_plugin_list(char const * type, char const * description)
+int as_plugin_list(AsPluginType type)
 {
+	AsPluginDescription const * aspd;
 	char * path;
 	DIR * dir;
 	struct dirent * de;
-	unsigned int len;
+	size_t len;
 
-	fprintf(stderr, "%s%s%s", "Available ", description, " plug-ins:");
-	if((path = malloc(strlen(LIBDIR) + 1 + strlen(type) + 1)) == NULL)
+	aspd = &_as_plugin_description[type];
+	fprintf(stderr, "%s%s%s", "Available ", aspd->description,
+			" plug-ins:");
+	len = strlen(LIBDIR) + 1 + strlen(PACKAGE) + 1 + strlen(aspd->name) + 1;
+	if((path = malloc(len)) == NULL)
 	{
+		error_set_code(1, "%s", strerror(errno));
 		fputc('\n', stderr);
-		as_error("malloc", 0);
-		return;
+		return 1;
 	}
-	sprintf(path, "%s/%s", LIBDIR, type);
+	snprintf(path, len, "%s/%s/%s", LIBDIR, PACKAGE, aspd->name);
 	if((dir = opendir(path)) == NULL)
 	{
+		error_set_code(1, "%s: %s", path, strerror(errno));
 		fputc('\n', stderr);
-		as_error(path, 0);
-		return;
+		free(path);
+		return 1;
 	}
 	while((de = readdir(dir)) != NULL)
 	{
@@ -147,61 +190,11 @@ void as_plugin_list(char const * type, char const * description)
 			continue;
 		if(strcmp(".so", &de->d_name[len-3]) != 0)
 			continue;
-		de->d_name[len-3] = '\0';
+		de->d_name[len - 3] = '\0';
 		fprintf(stderr, " %s", de->d_name);
 	}
 	free(path);
 	closedir(dir);
 	fputc('\n', stderr);
-}
-
-
-/* usage */
-static unsigned int _usage(void)
-{
-	char * arch = _as_guess();
-
-	fprintf(stderr, "%s%s%s",
-"Usage: as [-a arch][-f format][-o file] file\n"
-"       as -l\n"
-"  -a	target architecture (default: ", arch != NULL ? arch : "guessed", ")\n"
-"  -f	target file format (default: elf)\n"
-"  -o	filename to use for output (default: \"" AS_FILENAME_DEFAULT "\")\n"
-"  -l	list available architectures and formats\n");
-	return 1;
-}
-
-
-/* main */
-int main(int argc, char * argv[])
-{
-	int o;
-	char * outfile = AS_FILENAME_DEFAULT;
-	char * arch = NULL;
-	char * format = NULL;
-
-	while((o = getopt(argc, argv, "a:f:o:l")) != -1)
-	{
-		switch(o)
-		{
-			case 'a':
-				arch = optarg;
-				break;
-			case 'f':
-				format = optarg;
-				break;
-			case 'o':
-				outfile = optarg;
-				break;
-			case 'l':
-				as_plugin_list("arch", "architecture");
-				as_plugin_list("format", "file format");
-				return 0;
-			default:
-				return _usage();
-		}
-	}
-	if(argc - optind != 1)
-		return _usage();
-	return as(arch, format, argv[optind], outfile) ? 2 : 0;
+	return 0;
 }

@@ -21,48 +21,48 @@
 
 
 /* types */
-typedef enum _TokenCode
+typedef enum _ATokenCode
 {
-	TC_COLON = 0,
-	TC_COMMA,
-	TC_DOT,
-	TC_EOF,
-	TC_IMMEDIATE,
-	TC_NEWLINE,
-	TC_NUMBER,
-	TC_REGISTER,
-	TC_SPACE,
-	TC_TAB,
-	TC_WORD,
-	TC_NULL
-} TokenCode;
+	ATC_COLON = 0,
+	ATC_COMMA,
+	ATC_DOT,
+	ATC_EOF,
+	ATC_IMMEDIATE,
+	ATC_NEWLINE,
+	ATC_NUMBER,
+	ATC_REGISTER,
+	ATC_SPACE,
+	ATC_TAB,
+	ATC_WORD,
+	ATC_NULL
+} ATokenCode;
 #ifdef DEBUG
-extern char * sTokenCode[TC_NULL];
+extern char * sATokenCode[ATC_NULL];
 #endif
 
-typedef TokenCode * TokenSet;
-extern TokenCode TS_FUNCTION[];
-extern TokenCode TS_INSTRUCTION[];
-extern TokenCode TS_INSTRUCTION_LIST[];
-extern TokenCode TS_NEWLINE[];
-extern TokenCode TS_OPERAND[];
-extern TokenCode TS_OPERAND_LIST[];
-extern TokenCode TS_OPERATOR[];
-extern TokenCode TS_SECTION[];
-extern TokenCode TS_SECTION_LIST[];
-extern TokenCode TS_SPACE[];
+typedef ATokenCode * ATokenSet;
+extern ATokenCode TS_FUNCTION[];
+extern ATokenCode TS_INSTRUCTION[];
+extern ATokenCode TS_INSTRUCTION_LIST[];
+extern ATokenCode TS_NEWLINE[];
+extern ATokenCode TS_OPERAND[];
+extern ATokenCode TS_OPERAND_LIST[];
+extern ATokenCode TS_OPERATOR[];
+extern ATokenCode TS_SECTION[];
+extern ATokenCode TS_SECTION_LIST[];
+extern ATokenCode TS_SPACE[];
 
-typedef struct _Token
+typedef struct _AToken
 {
 	char * string;
-	TokenCode code;
-} Token;
+	ATokenCode code;
+} AToken;
 
 
-/* Token */
-Token * token_new(TokenCode code, char * string);
-void token_delete(Token * token);
+/* AToken */
+AToken * atoken_new(ATokenCode code, char * string);
+void atoken_delete(AToken * token);
 
-int token_in_set(Token * token, TokenSet set);
+int atoken_in_set(AToken * token, ATokenSet set);
 
 #endif /* !AS_TOKEN_H */
