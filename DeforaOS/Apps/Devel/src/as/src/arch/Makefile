@@ -113,36 +113,42 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 i386.a $(DESTDIR)$(LIBDIR)/i386.a
-	$(INSTALL) -m 0755 i386.so $(DESTDIR)$(LIBDIR)/i386.so
-	$(INSTALL) -m 0644 i386_real.a $(DESTDIR)$(LIBDIR)/i386_real.a
-	$(INSTALL) -m 0755 i386_real.so $(DESTDIR)$(LIBDIR)/i386_real.so
-	$(INSTALL) -m 0644 i486.a $(DESTDIR)$(LIBDIR)/i486.a
-	$(INSTALL) -m 0755 i486.so $(DESTDIR)$(LIBDIR)/i486.so
-	$(INSTALL) -m 0644 i586.a $(DESTDIR)$(LIBDIR)/i586.a
-	$(INSTALL) -m 0755 i586.so $(DESTDIR)$(LIBDIR)/i586.so
-	$(INSTALL) -m 0644 i686.a $(DESTDIR)$(LIBDIR)/i686.a
-	$(INSTALL) -m 0755 i686.so $(DESTDIR)$(LIBDIR)/i686.so
-	$(INSTALL) -m 0644 sparc.a $(DESTDIR)$(LIBDIR)/sparc.a
-	$(INSTALL) -m 0755 sparc.so $(DESTDIR)$(LIBDIR)/sparc.so
-	$(INSTALL) -m 0644 sparc64.a $(DESTDIR)$(LIBDIR)/sparc64.a
-	$(INSTALL) -m 0755 sparc64.so $(DESTDIR)$(LIBDIR)/sparc64.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 i386.a $(DESTDIR)$(LIBDIR)/as/arch/i386.a
+	$(INSTALL) -m 0755 i386.so $(DESTDIR)$(LIBDIR)/as/arch/i386.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 i386_real.a $(DESTDIR)$(LIBDIR)/as/arch/i386_real.a
+	$(INSTALL) -m 0755 i386_real.so $(DESTDIR)$(LIBDIR)/as/arch/i386_real.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 i486.a $(DESTDIR)$(LIBDIR)/as/arch/i486.a
+	$(INSTALL) -m 0755 i486.so $(DESTDIR)$(LIBDIR)/as/arch/i486.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 i586.a $(DESTDIR)$(LIBDIR)/as/arch/i586.a
+	$(INSTALL) -m 0755 i586.so $(DESTDIR)$(LIBDIR)/as/arch/i586.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 i686.a $(DESTDIR)$(LIBDIR)/as/arch/i686.a
+	$(INSTALL) -m 0755 i686.so $(DESTDIR)$(LIBDIR)/as/arch/i686.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 sparc.a $(DESTDIR)$(LIBDIR)/as/arch/sparc.a
+	$(INSTALL) -m 0755 sparc.so $(DESTDIR)$(LIBDIR)/as/arch/sparc.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 sparc64.a $(DESTDIR)$(LIBDIR)/as/arch/sparc64.a
+	$(INSTALL) -m 0755 sparc64.so $(DESTDIR)$(LIBDIR)/as/arch/sparc64.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/i386.a
-	$(RM) $(DESTDIR)$(LIBDIR)/i386.so
-	$(RM) $(DESTDIR)$(LIBDIR)/i386_real.a
-	$(RM) $(DESTDIR)$(LIBDIR)/i386_real.so
-	$(RM) $(DESTDIR)$(LIBDIR)/i486.a
-	$(RM) $(DESTDIR)$(LIBDIR)/i486.so
-	$(RM) $(DESTDIR)$(LIBDIR)/i586.a
-	$(RM) $(DESTDIR)$(LIBDIR)/i586.so
-	$(RM) $(DESTDIR)$(LIBDIR)/i686.a
-	$(RM) $(DESTDIR)$(LIBDIR)/i686.so
-	$(RM) $(DESTDIR)$(LIBDIR)/sparc.a
-	$(RM) $(DESTDIR)$(LIBDIR)/sparc.so
-	$(RM) $(DESTDIR)$(LIBDIR)/sparc64.a
-	$(RM) $(DESTDIR)$(LIBDIR)/sparc64.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386_real.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386_real.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i486.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i486.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i586.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i586.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i686.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i686.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/sparc.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/sparc.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/sparc64.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/sparc64.so
 
 .PHONY: all clean distclean install uninstall

@@ -1,6 +1,6 @@
 PACKAGE	= as
 VERSION	= 0.1.0
-SUBDIRS	= src
+SUBDIRS	= src include
 RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
@@ -28,8 +28,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/token.c \
 		$(PACKAGE)-$(VERSION)/src/arch/arch.c \
 		$(PACKAGE)-$(VERSION)/src/format/format.c \
+		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/as.h \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/parser.h \
 		$(PACKAGE)-$(VERSION)/src/scanner.h \
@@ -61,6 +61,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/format/Makefile \
 		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
+		$(PACKAGE)-$(VERSION)/include/as.h \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf

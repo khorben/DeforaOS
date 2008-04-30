@@ -49,16 +49,17 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 elf.a $(DESTDIR)$(LIBDIR)/elf.a
-	$(INSTALL) -m 0755 elf.so $(DESTDIR)$(LIBDIR)/elf.so
-	$(INSTALL) -m 0644 flat.a $(DESTDIR)$(LIBDIR)/flat.a
-	$(INSTALL) -m 0755 flat.so $(DESTDIR)$(LIBDIR)/flat.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
+	$(INSTALL) -m 0644 elf.a $(DESTDIR)$(LIBDIR)/as/format/elf.a
+	$(INSTALL) -m 0755 elf.so $(DESTDIR)$(LIBDIR)/as/format/elf.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
+	$(INSTALL) -m 0644 flat.a $(DESTDIR)$(LIBDIR)/as/format/flat.a
+	$(INSTALL) -m 0755 flat.so $(DESTDIR)$(LIBDIR)/as/format/flat.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/elf.a
-	$(RM) $(DESTDIR)$(LIBDIR)/elf.so
-	$(RM) $(DESTDIR)$(LIBDIR)/flat.a
-	$(RM) $(DESTDIR)$(LIBDIR)/flat.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.so
+	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.so
 
 .PHONY: all clean distclean install uninstall
