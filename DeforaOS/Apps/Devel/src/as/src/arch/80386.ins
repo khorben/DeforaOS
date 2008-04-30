@@ -11,24 +11,32 @@
 	{ "aas",	0x3f,	AO_NONE,		1, 0, 0, 0 },
 	{ "adc",	0x14,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "adc",	0x15,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
-/*	{ "adc",	0x10,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
+#if 0
+	{ "adc",	0x10,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x11,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x11,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x12,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x13,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
-	{ "adc",	0x13,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 }, */
+	{ "adc",	0x13,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
+#endif
 	{ "add",	0x04,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "add",	0x05,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
-/*	{ "and",	0x20,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#if 0
+	{ "and",	0x20,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "and",	0x21,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "and",	0x22,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "and",	0x23,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+	{ "and",	0x23,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "and",	0x24,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "and",	0x25,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
-/*	{ "bswap",	0x0fc8,	AO_REG,			1, 4, 0, 0 }, */
+#if 0
+	{ "bswap",	0x0fc8,	AO_REG,			1, 4, 0, 0 },
+#endif
 	{ "call",	0xe8,	AO_IMM,			1, 4, 0, 0 },
-/*	{ "cbw",	0x98,	AO_NONE,		1, 0, 0, 0 }, */
-/*	{ "cdq",	0x99,	AO_NONE,		1, 0, 0, 0 }, */
+#if 0
+	{ "cbw",	0x98,	AO_NONE,		1, 0, 0, 0 },
+	{ "cdq",	0x99,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "clc",	0xf8,	AO_NONE,		1, 0, 0, 0 },
 	{ "cld",	0xfc,	AO_NONE,		1, 0, 0, 0 },
 	{ "cli",	0xfa,	AO_NONE,		1, 0, 0, 0 },
@@ -43,18 +51,22 @@
 	{ "cmpsw",	0xa7,	AO_NONE,		1, 0, 0, 0 },
 #endif /* !I386_REAL */
 	{ "cpuid",	0x0fa2,	AO_NONE,		2, 0, 0, 0 },
-/*	{ "cwd",	0x99,	AO_NONE,		1, 0, 0, 0 }, */
-/*	{ "cwde",	0x98,	AO_NONE,		1, 0, 0, 0 }, */
+#if 0
+	{ "cwd",	0x99,	AO_NONE,		1, 0, 0, 0 },
+	{ "cwde",	0x98,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "daa",	0x27,	AO_NONE,		1, 0, 0, 0 },
 	{ "das",	0x2f,	AO_NONE,		1, 0, 0, 0 },
-/*	{ "dec",	0x48,	AO_IMM,			1, 0, 0, 0 },
+#if 0
+	{ "dec",	0x48,	AO_IMM,			1, 0, 0, 0 },
 	{ "dec",	0x49,	AO_IMM,			1, 0, 0, 0 },
 	{ "dec",	0x4a,	AO_IMM,			1, 0, 0, 0 },
 	{ "dec",	0x4b,	AO_IMM,			1, 0, 0, 0 },
 	{ "dec",	0x4c,	AO_IMM,			1, 0, 0, 0 },
 	{ "dec",	0x4d,	AO_IMM,			1, 0, 0, 0 },
 	{ "dec",	0x4e,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4f,	AO_IMM,			1, 0, 0, 0 }, */
+	{ "dec",	0x4f,	AO_IMM,			1, 0, 0, 0 },
+#endif
 	{ "emms",	0x0f77,	AO_NONE,		2, 0, 0, 0 },
 	{ "enter",	0xc8,	AO_IMM_ | AO_IMM,	1, 2, 1, 0 },
 	{ "f2xm1",	0xd9f0,	AO_NONE,		2, 0, 0, 0 },
@@ -110,14 +122,16 @@
 	{ "in",		0xe5,	AO_IMM_ | AO_ax,	1, 1, 0, 0 },
 	{ "in",		0xec,	AO_dx_ | AO_al,		1, 0, 0, 0 },
 	{ "in",		0xed,	AO_dx_ | AO_ax,		1, 0, 0, 0 },
-/*	{ "inc",	0x40,	AO_IMM,			1, 0, 0, 0 },
+#if 0
+	{ "inc",	0x40,	AO_IMM,			1, 0, 0, 0 },
 	{ "inc",	0x41,	AO_IMM,			1, 0, 0, 0 },
 	{ "inc",	0x42,	AO_IMM,			1, 0, 0, 0 },
 	{ "inc",	0x43,	AO_IMM,			1, 0, 0, 0 },
 	{ "inc",	0x44,	AO_IMM,			1, 0, 0, 0 },
 	{ "inc",	0x45,	AO_IMM,			1, 0, 0, 0 },
 	{ "inc",	0x46,	AO_IMM,			1, 0, 0, 0 },
-	{ "inc",	0x47,	AO_IMM,			1, 0, 0, 0 }, */
+	{ "inc",	0x47,	AO_IMM,			1, 0, 0, 0 },
+#endif
 	{ "insb",	0x6c,	AO_NONE,		1, 0, 0, 0 },
 #ifndef I386_REAL
 	{ "insd",	0x6d,	AO_NONE,		1, 0, 0, 0 },
@@ -181,18 +195,22 @@
 	{ "loope",	0xe1,	AO_IMM,			1, 1, 0, 0 },
 	{ "loopne",	0xe0,	AO_IMM,			1, 1, 0, 0 },
 	{ "monitor",	0x0f01c8,AO_NONE,		3, 0, 0, 0 },
-/*	{ "mov",	0x88,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#if 0
+	{ "mov",	0x88,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0x89,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0x8a,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "mov",	0x8b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+	{ "mov",	0x8b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "mov",	0xb8,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
-/*	{ "mov",	0xb9,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#if 0
+	{ "mov",	0xb9,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0xba,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0xbb,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0xbc,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0xbd,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0xbe,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "mov",	0xbf,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+	{ "mov",	0xbf,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "mwait",	0x0f01c9,AO_NONE,		3, 0, 0, 0 },
 	{ "nop",	0x90,	AO_NONE,		1, 0, 0, 0 },
 	{ "or",		0x0c,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
@@ -209,13 +227,15 @@
 #endif /* I386_REAL */
 	{ "pause",	0xf390,	AO_NONE,		2, 0, 0, 0 },
 	{ "pop",	0x58,	AO_ax,			1, 0, 0, 0 },
-/*	{ "pop",	0x59,	AO_IMM,			1, 0, 0, 0 },
+#if 0
+	{ "pop",	0x59,	AO_IMM,			1, 0, 0, 0 },
 	{ "pop",	0x5a,	AO_IMM,			1, 0, 0, 0 },
 	{ "pop",	0x5b,	AO_IMM,			1, 0, 0, 0 },
 	{ "pop",	0x5c,	AO_IMM,			1, 0, 0, 0 },
 	{ "pop",	0x5d,	AO_IMM,			1, 0, 0, 0 },
 	{ "pop",	0x5e,	AO_IMM,			1, 0, 0, 0 },
-	{ "pop",	0x5f,	AO_IMM,			1, 0, 0, 0 }, */
+	{ "pop",	0x5f,	AO_IMM,			1, 0, 0, 0 },
+#endif
 	{ "pop",	0x1f,	AO_ds,			1, 0, 0, 0 },
 	{ "pop",	0x07,	AO_es,			1, 0, 0, 0 },
 	{ "pop",	0x17,	AO_ss,			1, 0, 0, 0 },
@@ -237,16 +257,20 @@
 	{ "push",	0x1e,	AO_ds,			1, 0, 0, 0 },
 	{ "push",	0x0fa0,	AO_fs,			2, 0, 0, 0 },
 	{ "push",	0x0fa8,	AO_gs,			2, 0, 0, 0 },
-/*	{ "push",	0x50,	AO_IMM,			1, 0, 0, 0 },
+#if 0
+	{ "push",	0x50,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x51,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x52,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x53,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x54,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x55,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x56,	AO_IMM,			1, 0, 0, 0 },
-	{ "push",	0x57,	AO_IMM,			1, 0, 0, 0 }, */
+	{ "push",	0x57,	AO_IMM,			1, 0, 0, 0 },
+#endif
 	{ "push",	0x68,	AO_IMM,			1, W, 0, 0 },
-/*	{ "push",	0x6a,	AO_IMM,			1, 1, 0, 0 }, */
+#if 0
+	{ "push",	0x6a,	AO_IMM,			1, 1, 0, 0 },
+#endif
 #ifdef I386_REAL
 	{ "pusha",	0x60,	AO_NONE,		1, 0, 0, 0 },
 #else
@@ -260,16 +284,22 @@
 	{ "rdmsr",	0x0f32,	AO_NONE,		2, 0, 0, 0 },
 	{ "rdpmc",	0x0f33,	AO_NONE,		2, 0, 0, 0 },
 	{ "rdtsc",	0x0f31,	AO_NONE,		2, 0, 0, 0 },
-/*	{ "ret",	0xc3,	AO_NONE,		1, 0, 0, 0 }, */
+#if 0
+	{ "ret",	0xc3,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "ret",	0xcb,	AO_NONE,		1, 0, 0, 0 },
-/*	{ "ret",	0xc2,	AO_IMM,			1, 2, 0, 0 }, */
+#if 0
+	{ "ret",	0xc2,	AO_IMM,			1, 2, 0, 0 },
+#endif
 	{ "ret",	0xca,	AO_IMM,			1, 2, 0, 0 },
 	{ "rsm",	0x0faa,	AO_NONE,		2, 0, 0, 0 },
 	{ "sahf",	0x9e,	AO_NONE,		1, 0, 0, 0 },
-/*	{ "sbb",	0x18,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#if 0
+	{ "sbb",	0x18,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "sbb",	0x19,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "sbb",	0x1a,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "sbb",	0x1b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+	{ "sbb",	0x1b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "sbb",	0x1c,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "sbb",	0x1d,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
 	{ "scasb",	0xae,	AO_NONE,		1, 0, 0, 0 },
@@ -278,7 +308,9 @@
 #else
 	{ "scasw",	0xaf,	AO_NONE,		1, 0, 0, 0 },
 #endif /* !I386_REAL */
-/*	{ "sfence",	0x0fae,	AO_NONE,		2, 0, 0, 0 }, */
+#if 0
+	{ "sfence",	0x0fae,	AO_NONE,		2, 0, 0, 0 },
+#endif
 	{ "stc",	0xf9,	AO_NONE,		1, 0, 0, 0 },
 	{ "std",	0xfd,	AO_NONE,		1, 0, 0, 0 },
 	{ "sti",	0xfb,	AO_NONE,		1, 0, 0, 0 },
@@ -288,13 +320,17 @@
 #else
 	{ "stosw",	0xab,	AO_NONE,		1, 0, 0, 0 },
 #endif /* !I386_REAL */
-/*	{ "sub",	0x28,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#if 0
+	{ "sub",	0x28,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "sub",	0x29,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "sub",	0x2a,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "sub",	0x2b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+	{ "sub",	0x2b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "sub",	0x2c,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "sub",	0x2d,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
-/*	{ "swapgs",	0x0f01,	AO_NONE,		2, 0, 0, 0 }, */
+#if 0
+	{ "swapgs",	0x0f01,	AO_NONE,		2, 0, 0, 0 },
+#endif
 	{ "syscall",	0x0f05,	AO_NONE,		2, 0, 0, 0 },
 	{ "sysenter",	0x0f34,	AO_NONE,		2, 0, 0, 0 },
 	{ "sysleave",	0x0f35,	AO_NONE,		2, 0, 0, 0 },
@@ -306,9 +342,11 @@
 	{ "wbinvd",	0x0f09,	AO_NONE,		2, 0, 0, 0 },
 	{ "wrmsr",	0x0f30,	AO_NONE,		2, 0, 0, 0 },
 	{ "xlatb",	0xd7,	AO_NONE,		1, 0, 0, 0 },
-/*	{ "xor",	0x30,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#if 0
+	{ "xor",	0x30,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "xor",	0x31,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "xor",	0x32,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+	{ "xor",	0x32,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "xor",	0x34,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "xor",	0x35,	AO_IMM_ | AO_ax,	1, W, 0, 0 },
 #ifndef I386_REAL
