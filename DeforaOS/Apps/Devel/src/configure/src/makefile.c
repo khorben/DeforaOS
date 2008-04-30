@@ -46,8 +46,8 @@ int makefile(Configure * configure, String const * directory, configArray * ca,
 	else
 	{
 		if(configure->prefs->flags & PREFS_v)
-			printf("%s%s%s%s%s", "Creating ", MAKEFILE, " in ",
-					directory, "\n");
+			printf("%s%s/%s", "Creating ", directory,
+					MAKEFILE "\n");
 		ret |= _makefile_write(configure, fp, ca, from, to);
 		if(fp != NULL)
 			fclose(fp);
@@ -1299,45 +1299,56 @@ static int _write_install(Configure * configure, FILE * fp)
 	return ret;
 }
 
+static void _install_target_binary(Config * config, FILE * fp,
+		String const * target);
+static void _install_target_library(Config * config, FILE * fp,
+		String const * target);
 static int _install_target(Config * config, FILE * fp, String const * target)
 {
-	static Config * flag = NULL;
-	static int done[TT_LAST];
 	String const * type;
 	TargetType tt;
 
 	if((type = config_get(config, target, "type")) == NULL)
 		return 1;
-	if(flag != config)
-	{
-		flag = config;
-		memset(done, 0, sizeof(done));
-	}
 	switch((tt = enum_string(TT_LAST, sTargetType, type)))
 	{
 		case TT_BINARY:
-			if(!done[tt])
-				fputs("\t$(MKDIR) $(DESTDIR)$(BINDIR)\n", fp);
-			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0755 ",
-					target, " $(DESTDIR)$(BINDIR)/",
-					target, "\n");
+			_install_target_binary(config, fp, target);
 			break;
 		case TT_LIBRARY:
-			if(!done[tt])
-				fputs("\t$(MKDIR) $(DESTDIR)$(LIBDIR)\n", fp);
-			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0644 ",
-					target, ".a $(DESTDIR)$(LIBDIR)/",
-					target, ".a\n");
-			fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0755 ",
-					target, ".so $(DESTDIR)$(LIBDIR)/",
-					target, ".so\n");
+			_install_target_library(config, fp, target);
 			break;
 		case TT_OBJECT:
 		case TT_UNKNOWN:
 			break;
 	}
-	done[tt] = 1;
 	return 0;
+}
+
+static void _install_target_binary(Config * config, FILE * fp,
+		String const * target)
+{
+	String const * path;
+
+	if((path = config_get(config, target, "install")) == NULL)
+		return;
+	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
+	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0755 ", target,
+			" $(DESTDIR)", path, target);
+}
+
+static void _install_target_library(Config * config, FILE * fp,
+		String const * target)
+{
+	String const * path;
+
+	if((path = config_get(config, target, "install")) == NULL)
+		return;
+	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 ", target,
+			".a $(DESTDIR)", path, target, ".a\n");
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 ", target,
+			".so $(DESTDIR)", path, target, ".so\n");
 }
 
 static int _install_include(Config * config, FILE * fp, String const * include)
@@ -1420,19 +1431,22 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 static int _uninstall_target(Config * config, FILE * fp, String const * target)
 {
 	String const * type;
+	String const * path;
 
 	if((type = config_get(config, target, "type")) == NULL)
 		return 1;
+	if((path = config_get(config, target, "install")) == NULL)
+		return 0;
 	switch(enum_string(TT_LAST, sTargetType, type))
 	{
 		case TT_BINARY:
-			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(BINDIR)/",
-					target, "\n");
+			fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", path,
+					target);
 			break;
 		case TT_LIBRARY:
-			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/",
+			fprintf(fp, "%s%s/%s%s", "\t$(RM) $(DESTDIR)", path,
 					target, ".a\n");
-			fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(LIBDIR)/",
+			fprintf(fp, "%s%s/%s%s", "\t$(RM) $(DESTDIR)", path,
 					target, ".so\n");
 			break;
 		case TT_OBJECT:
@@ -1444,7 +1458,6 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 
 static int _uninstall_include(FILE * fp, String const * include)
 {
-	fprintf(fp, "%s%s%s", "\t$(RM) $(DESTDIR)$(INCLUDEDIR)/", include,
-			"\n");
+	fprintf(fp, "%s%s\n", "\t$(RM) $(DESTDIR)$(INCLUDEDIR)/", include);
 	return 0;
 }
