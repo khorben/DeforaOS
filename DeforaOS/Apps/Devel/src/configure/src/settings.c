@@ -106,8 +106,8 @@ static int _settings_do(Prefs * prefs, Config * config,
 	if(fp == NULL)
 		return 1;
 	if(prefs->flags & PREFS_v)
-		printf("%s%s%s%s\n", "Creating config.", extension, " in ",
-				directory);
+		printf("%s%s/%s%s\n", "Creating ", directory, "config.",
+				extension);
 	switch(i)
 	{
 		case ST_H:
@@ -128,10 +128,17 @@ static int _do_h(Prefs * prefs, Config * config, FILE * fp,
 
 	fprintf(fp, "%s%s%s%s%s%s", "#define PACKAGE \"", package, "\"\n",
 			"#define VERSION \"", version, "\"\n");
-	if((p = prefs->prefix) != NULL || (p = config_get(config, "", "prefix"))
-			!= NULL)
+	if((p = prefs->prefix) != NULL
+			|| (p = config_get(config, "", "prefix")) != NULL)
 		fprintf(fp, "%s%s%s", "\n#ifndef PREFIX\n\
 # define PREFIX \"", p, "\"\n#endif\n");
+	if((p = prefs->libdir) != NULL
+			|| (p = config_get(config, "", "libdir")) != NULL)
+	{
+		fprintf(fp, "%s", "\n#ifndef LIBDIR\n# define LIBDIR ");
+		fprintf(fp, "%s%s", p[0] == '/' ? "\"" : "PREFIX \"", p);
+		fprintf(fp, "%s", "\"\n#endif\n");
+	}
 	return 0;
 }
 
@@ -142,8 +149,12 @@ static int _do_sh(Prefs * prefs, Config * config, FILE * fp,
 
 	fprintf(fp, "%s%s%s%s%s%s", "PACKAGE=\"", package, "\"\n",
 			"VERSION=\"", version, "\"\n");
-	if((p = prefs->prefix) != NULL || (p = config_get(config, "", "prefix"))
-			!= NULL)
+	if((p = prefs->prefix) != NULL
+			|| (p = config_get(config, "", "prefix")) != NULL)
 		fprintf(fp, "%s%s%s", "\nPREFIX=\"", p, "\"\n");
+	if((p = prefs->libdir) != NULL
+			|| (p = config_get(config, "", "libdir")) != NULL)
+		fprintf(fp, "%s%s%s%s", "LIBDIR=\"", p[0] == '/' ? ""
+				: "${PREFIX}/", p, "\"\n");
 	return 0;
 }
