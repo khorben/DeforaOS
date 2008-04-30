@@ -136,7 +136,7 @@ static int _do_h(Prefs * prefs, Config * config, FILE * fp,
 			|| (p = config_get(config, "", "libdir")) != NULL)
 	{
 		fprintf(fp, "%s", "\n#ifndef LIBDIR\n# define LIBDIR ");
-		fprintf(fp, "%s%s", p[0] == '/' ? "\"" : "PREFIX \"", p);
+		fprintf(fp, "%s%s", p[0] == '/' ? "\"" : "PREFIX \"/", p);
 		fprintf(fp, "%s", "\"\n#endif\n");
 	}
 	return 0;
