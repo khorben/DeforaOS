@@ -26,6 +26,18 @@
 
 
 /* Arch */
+/* private */
+/* types */
+struct _Arch
+{
+	ArchRegister * registers;
+	size_t registers_cnt;
+	ArchInstruction * instructions;
+	size_t instructions_cnt;
+	Plugin * handle;
+};
+
+
 /* public */
 /* functions */
 /* arch_new */
@@ -33,7 +45,7 @@ Arch * arch_new(char const * arch)
 {
 	Arch * a;
 	Plugin * handle;
-	Arch * plugin;
+	ArchPlugin * plugin;
 
 	if((handle = plugin_new(LIBDIR, PACKAGE, "arch", arch)) == NULL)
 		return NULL;
@@ -47,8 +59,14 @@ Arch * arch_new(char const * arch)
 		plugin_delete(handle);
 		return NULL;
 	}
-	a->instructions = plugin->instructions;
-	a->registers = plugin->registers;
+	a->instructions_cnt = 0;
+	if((a->instructions = plugin->instructions) != NULL)
+		for(; a->instructions[a->instructions_cnt].name != NULL;
+				a->instructions_cnt++);
+	a->registers_cnt = 0;
+	if((a->registers = plugin->registers) != NULL)
+		for(; a->registers[a->registers_cnt].name != NULL;
+				a->registers_cnt++);
 	a->handle = handle;
 	return a;
 }
@@ -59,6 +77,25 @@ void arch_delete(Arch * arch)
 {
 	plugin_delete(arch->handle);
 	object_delete(arch);
+}
+
+
+/* accessors */
+/* arch_instruction_get */
+ArchInstruction * arch_instruction_get(Arch * arch, size_t index)
+{
+	if(index >= arch->instructions_cnt)
+		return NULL;
+	return &arch->instructions[index];
+}
+
+
+/* arch_register_get */
+ArchRegister * arch_register_get(Arch * arch, size_t index)
+{
+	if(index >= arch->registers_cnt)
+		return NULL;
+	return &arch->registers[index];
 }
 
 

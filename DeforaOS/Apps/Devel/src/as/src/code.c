@@ -179,13 +179,16 @@ static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
 		size_t operands_cnt)
 {
-	int i;
+	size_t i;
 	int cmp;
 	int found = 0;
 
 	/* FIXME check */
+#if 0
 	for(i = 0; ((*ai) = &(code->arch->instructions[i]))
 			&& (*ai)->name != NULL; i++)
+#endif
+	for(i = 0; ((*ai) = arch_instruction_get(code->arch, i)) != NULL; i++)
 	{
 		if((cmp = strcmp(instruction, (*ai)->name)) > 0)
 			continue;
@@ -200,7 +203,7 @@ static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
 	return found ? CE_INVALID_ARGUMENTS : CE_UNKNOWN_INSTRUCTION;
 }
 
-static ArchRegister * _operands_register(ArchRegister * registers, char * name);
+static ArchRegister * _operands_register(Arch * arch, char * name);
 static int _instruction_operands(Code * code, ArchInstruction * ai,
 		CodeOperand operands[], int operands_cnt)
 {
@@ -223,8 +226,8 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 				break;
 			case ATC_REGISTER:
 				reg = operands[i].value + 1; /* "%rg" => "rg" */
-				ar = code->arch->registers;
-				if((ar = _operands_register(ar, reg)) == NULL)
+				if((ar = _operands_register(code->arch, reg))
+						== NULL)
 					return 1;
 				op |= (_AO_REG | (ar->id << 2));
 #ifdef DEBUG
@@ -243,14 +246,15 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 	return (op == ai->operands) ? 0 : 1;
 }
 
-static ArchRegister * _operands_register(ArchRegister * registers, char * name)
+static ArchRegister * _operands_register(Arch * arch, char * name)
 {
-	int i;
+	ArchRegister * ret;
+	size_t i;
 
-	for(i = 0; registers[i].name != NULL; i++)
-		if(strcmp(registers[i].name, name) == 0)
-			return &registers[i];
-	return NULL;
+	for(i = 0; (ret = arch_register_get(arch, i)) != NULL; i++)
+		if(strcmp(ret->name, name) == 0)
+			break;
+	return ret;
 }
 
 

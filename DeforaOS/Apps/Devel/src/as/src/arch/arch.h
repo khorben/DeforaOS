@@ -62,16 +62,16 @@ typedef struct _ArchPlugin
 
 /* Arch */
 /* types */
-typedef struct _Arch /* FIXME make it private */
-{
-	ArchRegister * registers;
-	ArchInstruction * instructions;
-	void * handle;
-} Arch;
+typedef struct _Arch Arch;
 
 /* functions */
 Arch * arch_new(char const * arch);
 void arch_delete(Arch * arch);
+
+
+/* accessors */
+ArchInstruction * arch_instruction_get(Arch * arch, size_t index);
+ArchRegister * arch_register_get(Arch * arch, size_t index);
 
 
 /* ArchOperands */
