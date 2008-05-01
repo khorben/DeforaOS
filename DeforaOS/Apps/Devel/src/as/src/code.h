@@ -28,14 +28,6 @@
 /* types */
 typedef struct _Code Code;
 
-typedef enum _CodeError
-{
-	CE_SUCCESS = 0, CE_INVALID_ARGUMENTS,
-	CE_UNKNOWN_INSTRUCTION, CE_WRITE_ERROR
-} CodeError;
-# define CE_LAST CE_WRITE_ERROR
-# define CE_COUNT (CE_LAST + 1)
-
 typedef struct _CodeOperand
 {
 	ATokenCode type;
@@ -43,17 +35,13 @@ typedef struct _CodeOperand
 } CodeOperand;
 
 
-/* variables */
-extern char const * code_error[CE_COUNT];
-
-
 /* functions */
 Code * code_new(char const * arch, char const * format, char const * filename);
 void code_delete(Code * code, int error);
 
 /* useful */
-CodeError code_instruction(Code * code, char const * instruction,
+int code_instruction(Code * code, char const * instruction,
 		CodeOperand operands[], size_t operands_cnt);
-CodeError code_section(Code * code, char const * section);
+int code_section(Code * code, char const * section);
 
 #endif /* !AS_CODE_H */

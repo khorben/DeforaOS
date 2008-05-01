@@ -265,7 +265,6 @@ static void _operand_list(State * state);
 static void _instruction(State * state)
 	/* operator [ space [ operand_list ] ] newline */
 {
-	CodeError error;
 	size_t i;
 
 #ifdef DEBUG
@@ -280,17 +279,10 @@ static void _instruction(State * state)
 	}
 	if(state->instruction != NULL)
 	{
-		if((error = code_instruction(state->code, state->instruction,
-				state->operands, state->operands_cnt))
-				!= CE_SUCCESS)
-		{
-			if(error == CE_UNKNOWN_INSTRUCTION)
-				_parser_error(state, "%s \"%s\"",
-						code_error[error],
-						state->instruction);
-			else
-				_parser_error(state, "%s", code_error[error]);
-		}
+		if(code_instruction(state->code, state->instruction,
+					state->operands, state->operands_cnt)
+				!= 0)
+			_parser_error(state, "%s", error_get());
 		free(state->instruction);
 		for(i = 0; i < state->operands_cnt; i++)
 			free(state->operands[i].value);

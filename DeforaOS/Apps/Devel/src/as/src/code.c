@@ -38,15 +38,6 @@ struct _Code
 	FILE * fp;
 };
 
-/* variables */
-char const * code_error[CE_COUNT] =
-{
-	"Success",
-	"Invalid arguments",
-	"Unknown instruction",
-	"Write error"
-};
-
 
 /* functions */
 Code * code_new(char const * arch, char const * format, char const * filename)
@@ -101,10 +92,10 @@ void code_delete(Code * code, int error)
 
 /* useful */
 /* code_instruction */
-static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
+static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
 		size_t operands_cnt);
-CodeError code_instruction(Code * code, char const * instruction,
+int code_instruction(Code * code, char const * instruction,
 		CodeOperand operands[], size_t operands_cnt)
 	/* FIXME being rewritten */
 {
@@ -118,7 +109,7 @@ CodeError code_instruction(Code * code, char const * instruction,
 	uint32_t u32;
 
 	if((ret = _instruction_instruction(code, &ai, instruction, operands,
-					operands_cnt)) != CE_SUCCESS)
+					operands_cnt)) != 0)
 		return ret;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: instruction %s, opcode 0x%lx, operands: 0x%x\n",
@@ -145,7 +136,8 @@ CodeError code_instruction(Code * code, char const * instruction,
 		return CE_SUCCESS;
 #endif
 	if(fwrite(buf, ai->size, 1, code->fp) != 1)
-		return CE_WRITE_ERROR;
+		return error_set_code(1, "%s: %s", code->filename, strerror(
+					errno));
 	for(i = 0; i < operands_cnt; i++)
 	{
 		if(i >= 2)
@@ -168,14 +160,15 @@ CodeError code_instruction(Code * code, char const * instruction,
 		}
 		if(fwrite(buf, size, 1, code->fp) == 1)
 			continue;
-		return CE_WRITE_ERROR;
+		return error_set_code(1, "%s: %s", code->filename, strerror(
+					errno));
 	}
-	return CE_SUCCESS;
+	return 0;
 }
 
 static int _instruction_operands(Code * code, ArchInstruction * ai,
 		CodeOperand operands[], int operands_cnt);
-static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
+static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
 		size_t operands_cnt)
 {
@@ -184,10 +177,6 @@ static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
 	int found = 0;
 
 	/* FIXME check */
-#if 0
-	for(i = 0; ((*ai) = &(code->arch->instructions[i]))
-			&& (*ai)->name != NULL; i++)
-#endif
 	for(i = 0; ((*ai) = arch_instruction_get(code->arch, i)) != NULL; i++)
 	{
 		if((cmp = strcmp(instruction, (*ai)->name)) > 0)
@@ -198,9 +187,10 @@ static CodeError _instruction_instruction(Code * code, ArchInstruction ** ai,
 		if(_instruction_operands(code, *ai, operands, operands_cnt)
 				!= 0)
 			continue;
-		return CE_SUCCESS;
+		return 0;
 	}
-	return found ? CE_INVALID_ARGUMENTS : CE_UNKNOWN_INSTRUCTION;
+	return error_set_code(1, "%s \"%s\"", found ? "Invalid arguments to"
+		: "Unknown instruction", instruction);
 }
 
 static ArchRegister * _operands_register(Arch * arch, char * name);
@@ -259,8 +249,7 @@ static ArchRegister * _operands_register(Arch * arch, char * name)
 
 
 /* code_section */
-CodeError code_section(Code * code, char const * section)
+int code_section(Code * code, char const * section)
 {
-	return format_section(code->format, code->fp, section) == 0
-		? CE_SUCCESS : CE_WRITE_ERROR;
+	return format_section(code->format, code->fp, section);
 }
