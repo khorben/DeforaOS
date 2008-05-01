@@ -18,6 +18,7 @@
 
 #include <System.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,6 +36,7 @@ struct _As
 {
 	char const * arch;
 	char const * format;
+	Code * code;
 };
 
 typedef struct _AsPluginDescription
@@ -103,6 +105,7 @@ As * as_new(char const * arch, char const * format)
 		as->arch = _as_guess_arch();
 	if((as->format = format) == NULL)
 		as->format = _as_guess_format();
+	as->code = NULL;
 	if(as->arch == NULL || as->format == NULL)
 	{
 		as_delete(as);
@@ -116,28 +119,6 @@ As * as_new(char const * arch, char const * format)
 void as_delete(As * as)
 {
 	object_delete(as);
-}
-
-
-/* useful */
-/* as_do */
-int as_do(As * as, char const * infile, char const * outfile)
-{
-	FILE * infp;
-	Code * code;
-	int ret;
-
-	if((infp = fopen(infile, "r")) == NULL)
-		return error_set_code(1, "%s: %s", infile, strerror(errno));
-	if((code = code_new(as->arch, as->format, outfile)) == NULL)
-		ret = 1;
-	else
-	{
-		ret = parser(code, infile, infp);
-		code_delete(code, ret);
-	}
-	fclose(infp);
-	return ret;
 }
 
 
@@ -157,6 +138,57 @@ char const * as_get_format(As * as)
 
 
 /* useful */
+/* as_parse */
+int as_parse(As * as, char const * infile, char const * outfile)
+{
+	FILE * infp;
+	Code * code;
+	int ret;
+
+	if((ret = as_close(as)) != 0)
+		return ret;
+	if((infp = fopen(infile, "r")) == NULL)
+		return error_set_code(1, "%s: %s", infile, strerror(errno));
+	if((code = code_new(as->arch, as->format, outfile)) == NULL)
+		ret = 1;
+	else
+	{
+		ret = parser(code, infile, infp);
+		ret |= code_delete(code);
+		if(ret != 0 && unlink(outfile) != 0)
+			ret |= error_set_code(3, "%s: %s", outfile, strerror(
+						errno));
+	}
+	ret |= as_close(as);
+	return ret;
+}
+
+
+/* as_open */
+int as_open(As * as, char const * outfile)
+{
+	if(as_close(as) != 0)
+		return 1;
+	if((as->code = code_new(as->arch, as->format, outfile)) == NULL)
+		return 1;
+	return 0;
+}
+
+
+/* as_close */
+int as_close(As * as)
+{
+	int ret = 0;
+
+	if(as->code != NULL)
+	{
+		ret = code_delete(as->code);
+		as->code = NULL;
+	}
+	return ret;
+}
+
+
 /* as_plugin_list */
 int as_plugin_list(AsPluginType type)
 {

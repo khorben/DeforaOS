@@ -75,18 +75,17 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 
 
 /* code_delete */
-void code_delete(Code * code, int error)
+int code_delete(Code * code)
 {
+	int ret;
+
 	arch_delete(code->arch);
-	error |= format_delete(code->format, code->fp);
-	if(code->fp != NULL)
-	{
-		fclose(code->fp);
-		if(error != 0 && unlink(code->filename) != 0)
-			error_set_code(1, "%s: %s", code->filename, strerror(
-						errno));
-	}
+	ret = format_delete(code->format, code->fp);
+	if(code->fp != NULL && fclose(code->fp) != 0)
+		ret |= error_set_code(2, "%s: %s", code->filename, strerror(
+					errno));
 	object_delete(code);
+	return ret;
 }
 
 

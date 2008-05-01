@@ -42,7 +42,11 @@ char const * as_get_format(As * as);
 
 
 /* useful */
-int as_do(As * as, char const * infile, char const * outfile);
+int as_parse(As * as, char const * infile, char const * outfile);
+
+int as_open(As * as, char const * outfile);
+int as_close(As * as);
+
 
 /* plugins helpers */
 int as_plugin_list(AsPluginType type);

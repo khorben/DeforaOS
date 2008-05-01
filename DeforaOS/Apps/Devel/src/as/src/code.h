@@ -37,7 +37,7 @@ typedef struct _CodeOperand
 
 /* functions */
 Code * code_new(char const * arch, char const * format, char const * filename);
-void code_delete(Code * code, int error);
+int code_delete(Code * code);
 
 /* useful */
 int code_instruction(Code * code, char const * instruction,
