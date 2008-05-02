@@ -16,7 +16,46 @@
 
 
 
+#include <as.h>
+#include <stdlib.h>
 #include "target.h"
 
 
 /* sparc64 */
+/* private */
+/* variables */
+As * as;
+
+
+/* protected */
+/* prototypes */
+static int _sparc64_init(char const * arch, char const * format);
+static int _sparc64_exit(void);
+
+
+/* public */
+/* variables */
+TargetPlugin target_plugin =
+{
+	_sparc64_init,
+	_sparc64_exit
+};
+
+
+/* protected */
+/* functions */
+/* sparc64_init */
+static int _sparc64_init(char const * arch, char const * format)
+{
+	if((as = as_new(arch, format)) == NULL)
+		return 1;
+	return 0;
+}
+
+
+/* sparc64_exit */
+static int _sparc64_exit(void)
+{
+	as_delete(as);
+	return 0;
+}

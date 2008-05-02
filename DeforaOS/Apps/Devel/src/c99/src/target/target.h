@@ -22,6 +22,16 @@
 
 /* Target */
 /* protected */
+/* types */
 typedef struct _Target Target;
+
+
+/* public */
+/* types */
+typedef struct _TargetPlugin
+{
+	int (*init)(char const *, char const *);
+	int (*exit)(void);
+} TargetPlugin;
 
 #endif /* !_C99_TARGET_TARGET_H */
