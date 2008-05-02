@@ -149,6 +149,7 @@ static int _parser_check(State * state, ATokenCode code)
 }
 
 
+/* grammar */
 /* program */
 static void _program(State * state)
 	/* { newline } section_list { newline } */
