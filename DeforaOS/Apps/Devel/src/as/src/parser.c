@@ -25,6 +25,7 @@
 #include "parser.h"
 
 
+/* private */
 /* types */
 typedef struct _State
 {
@@ -40,13 +41,69 @@ typedef struct _State
 } State;
 
 
-/* parser */
+/* prototypes */
 static int _parser_fatal(State * state, char const * message);
 static void _parser_error(State * state, char const * format, ...);
-static void _parser_warning(State * state, char const * message);
+static void _parser_warning(State * state, char const * format, ...);
+
+/* grammar */
+static void _program(State * state);
+static void _newline(State * state);
+static void _space(State * state);
+static void _section_list(State * state);
+static void _section(State * state);
+static void _instruction_list(State * state);
+static void _function(State * state);
+static void _instruction(State * state);
+static void _operator(State * state);
+static void _operand_list(State * state);
+static void _operand(State * state);
+
+
+/* functions */
+/* parser_fatal */
+static int _parser_fatal(State * state, char const * message)
+{
+	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
+			state->line, ": ", message, "\n");
+	return 1;
+}
+
+
+/* parser_error */
+static void _parser_error(State * state, char const * format, ...)
+{
+	va_list ap;
+
+	fprintf(stderr, "%s%s%s%u: ", "as: ", state->infile, ", line ",
+			state->line);
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	va_end(ap);
+	fputc('\n', stderr);
+	state->errors++;
+}
+
+
+/* parser_warning */
+static void _parser_warning(State * state, char const * format, ...)
+{
+	va_list ap;
+
+	fprintf(stderr, "%s%s%s%u: ", "as: ", state->infile, ", line ",
+			state->line);
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	va_end(ap);
+	fputc('\n', stderr);
+}
+
+
+/* protected */
+/* functions */
+/* parser */
 static void _parser_scan(State * state);
 static int _parser_check(State * state, ATokenCode code);
-static void _program(State * state);
 
 int parser(Code * code, char const * infile, FILE * infp)
 {
@@ -59,10 +116,9 @@ int parser(Code * code, char const * infile, FILE * infp)
 	if(state.token->code != ATC_EOF)
 	{
 		if(state.token->string != NULL)
-		{
-			_parser_warning(&state, "Parse error near token:");
-			_parser_warning(&state, state.token->string);
-		}
+			_parser_warning(&state, "%s \"%s\"",
+					"Parse error near token:",
+					state.token->string);
 		_parser_error(&state, "%s", "Unhandled syntax error, exiting");
 	}
 	if(state.errors)
@@ -72,33 +128,6 @@ int parser(Code * code, char const * infile, FILE * infp)
 	atoken_delete(state.token);
 	free(state.operands);
 	return state.errors;
-}
-
-static int _parser_fatal(State * state, char const * message)
-{
-	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
-			state->line, ": ", message, "\n");
-	return 2;
-}
-
-/* static void _parser_error(State * state, char const * message) */
-static void _parser_error(State * state, char const * format, ...)
-{
-	va_list ap;
-
-	fprintf(stderr, "%s%s%s%u%s", "as: ", state->infile, ", line ",
-			state->line, ": ");
-	va_start(ap, format);
-	vfprintf(stderr, format, ap);
-	va_end(ap);
-	fputc('\n', stderr);
-	state->errors++;
-}
-
-static void _parser_warning(State * state, char const * message)
-{
-	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
-			state->line, ": ", message, "\n");
 }
 
 static void _parser_scan(State * state)
@@ -121,9 +150,6 @@ static int _parser_check(State * state, ATokenCode code)
 
 
 /* program */
-static void _newline(State * state);
-static void _section_list(State * state);
-
 static void _program(State * state)
 	/* { newline } section_list { newline } */
 {
@@ -139,7 +165,6 @@ static void _program(State * state)
 
 
 /* newline */
-static void _space(State * state);
 static void _newline(State * state)
 	/* [ space ] NEWLINE */
 {
@@ -167,9 +192,6 @@ static void _space(State * state)
 
 
 /* section_list */
-static void _section(State * state);
-static void _instruction_list(State * state);
-
 static void _section_list(State * state)
 	/* { section instruction_list } */
 {
@@ -210,8 +232,6 @@ static void _section(State * state)
 
 
 /* instruction_list */
-static void _function(State * state);
-static void _instruction(State * state);
 static void _instruction_list(State * state)
 	/* { (function | space instruction | [space] newline) } */
 {
@@ -259,9 +279,6 @@ static void _function(State * state)
 
 
 /* instruction */
-static void _operator(State * state);
-static void _operand_list(State * state);
-
 static void _instruction(State * state)
 	/* operator [ space [ operand_list ] ] newline */
 {
@@ -316,8 +333,6 @@ static void _operator(State * state)
 
 
 /* operand_list */
-static void _operand(State * state);
-
 static void _operand_list(State * state)
 	/* operand [ space ] { "," [ space ] operand [ space ] } */
 {
