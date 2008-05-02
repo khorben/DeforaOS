@@ -105,22 +105,21 @@ int c99_scan(C99 * c99)
 
 static int _scan_skip_meta(C99 * c99)
 {
-	int ret;
 	TokenCode code;
 
-	while((ret = cpp_scan(c99->cpp, &c99->token)) == 0)
+	while(cpp_scan(c99->cpp, &c99->token) == 0)
 	{
 		if(c99->token == NULL)
 			return 0;
 		if((code = token_get_code(c99->token)) != C99_CODE_WHITESPACE
 				&& (code < C99_CODE_META_FIRST
 					|| code > C99_CODE_META_LAST))
-			break;
+			return 0;
 		if(code == C99_CODE_META_ERROR || code == C99_CODE_META_WARNING)
 			_meta_error(c99, code);
 		token_delete(c99->token);
 	}
-	return ret;
+	return 1;
 }
 
 static void _meta_error(C99 * c99, TokenCode code)
