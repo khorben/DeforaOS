@@ -159,6 +159,8 @@ int as_parse(As * as, char const * infile, char const * outfile)
 			ret |= error_set_code(3, "%s: %s", outfile, strerror(
 						errno));
 	}
+	if(fclose(infp) != 0)
+		ret |= error_set_code(1, "%s: %s", infile, strerror(errno));
 	ret |= as_close(as);
 	return ret;
 }
