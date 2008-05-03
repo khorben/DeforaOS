@@ -26,7 +26,11 @@
 /* types */
 typedef struct _Cpp Cpp;
 
-typedef enum _CppFilter { CPP_FILTER_TRIGRAPH = 1 } CppFilter;
+typedef enum _CppFilter
+{
+	CPP_FILTER_TRIGRAPH	= 1,
+	CPP_FILTER_WHITESPACE	= 2
+} CppFilter;
 
 typedef enum _CppCode
 {

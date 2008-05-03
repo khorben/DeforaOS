@@ -420,7 +420,6 @@ static int _cpp_scope_pop(Cpp * cpp)
 /* cpp_callback_whitespace */
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data)
-	/* TODO implement a flag to actually keep the content */
 {
 	Cpp * cpp = data;
 	char * str = NULL;
@@ -434,7 +433,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 #endif
 	do
 	{
-		if(c != '\n')
+		if(cpp->filters & CPP_FILTER_WHITESPACE && c != '\n')
 			continue;
 		if((p = realloc(str, len + 1)) == NULL)
 		{
@@ -442,7 +441,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 			return -1;
 		}
 		str = p;
-		str[len++] = '\n';
+		str[len++] = c;
 	}
 	while(isspace((c = parser_scan_filter(parser))));
 	token_set_code(token, CPP_CODE_WHITESPACE);
