@@ -24,22 +24,22 @@ c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 c99: $(c99_OBJS)
 	$(CC) -o c99 $(c99_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-c99.o: c99.c ../include/c99.h common.h
+c99.o: c99.c common.h ../include/c99.h
 	$(CC) $(c99_CFLAGS) -c c99.c
 
-code.o: code.c
+code.o: code.c target/target.h code.h ../config.h
 	$(CC) $(c99_CFLAGS) -c code.c
 
-main.o: main.c ../include/c99.h
+main.o: main.c ../include/c99.h ../config.h
 	$(CC) $(c99_CFLAGS) -c main.c
 
-parser.o: parser.c tokenset.h common.h
+parser.o: parser.c tokenset.h scanner.h common.h ../include/c99.h ../config.h
 	$(CC) $(c99_CFLAGS) -c parser.c
 
-scanner.o: scanner.c
+scanner.o: scanner.c ../include/c99.h ../config.h
 	$(CC) $(c99_CFLAGS) -c scanner.c
 
-tokenset.o: tokenset.c ../include/c99.h common.h tokenset.h
+tokenset.o: tokenset.c common.h ../include/c99.h tokenset.h
 	$(CC) $(c99_CFLAGS) -c tokenset.c
 
 clean:
