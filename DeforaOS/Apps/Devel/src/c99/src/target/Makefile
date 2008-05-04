@@ -62,20 +62,22 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 amd64.a $(DESTDIR)$(LIBDIR)/amd64.a
-	$(INSTALL) -m 0755 amd64.so $(DESTDIR)$(LIBDIR)/amd64.so
-	$(INSTALL) -m 0644 graph.a $(DESTDIR)$(LIBDIR)/graph.a
-	$(INSTALL) -m 0755 graph.so $(DESTDIR)$(LIBDIR)/graph.so
-	$(INSTALL) -m 0644 sparc64.a $(DESTDIR)$(LIBDIR)/sparc64.a
-	$(INSTALL) -m 0755 sparc64.so $(DESTDIR)$(LIBDIR)/sparc64.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
+	$(INSTALL) -m 0644 amd64.a $(DESTDIR)$(LIBDIR)/c99/target/amd64.a
+	$(INSTALL) -m 0755 amd64.so $(DESTDIR)$(LIBDIR)/c99/target/amd64.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
+	$(INSTALL) -m 0644 graph.a $(DESTDIR)$(LIBDIR)/c99/target/graph.a
+	$(INSTALL) -m 0755 graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
+	$(INSTALL) -m 0644 sparc64.a $(DESTDIR)$(LIBDIR)/c99/target/sparc64.a
+	$(INSTALL) -m 0755 sparc64.so $(DESTDIR)$(LIBDIR)/c99/target/sparc64.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/amd64.a
-	$(RM) $(DESTDIR)$(LIBDIR)/amd64.so
-	$(RM) $(DESTDIR)$(LIBDIR)/graph.a
-	$(RM) $(DESTDIR)$(LIBDIR)/graph.so
-	$(RM) $(DESTDIR)$(LIBDIR)/sparc64.a
-	$(RM) $(DESTDIR)$(LIBDIR)/sparc64.so
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/amd64.a
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/amd64.so
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.a
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/sparc64.a
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/sparc64.so
 
 .PHONY: all clean distclean install uninstall
