@@ -30,18 +30,6 @@
 #include "code.h"
 #include "../config.h"
 
-#ifndef PACKAGE
-# define PACKAGE	"c99"
-#endif
-
-#ifndef PREFIX
-# define PREFIX         "."
-#endif
-
-#ifndef LIBDIR
-# define LIBDIR         PREFIX "/lib"
-#endif
-
 
 /* private */
 /* types */
