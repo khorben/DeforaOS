@@ -30,7 +30,7 @@ typedef struct _Code Code;
 
 typedef struct _CodeOperand
 {
-	ATokenCode type;
+	TokenCode type;
 	void * value;
 } CodeOperand;
 
@@ -40,6 +40,7 @@ Code * code_new(char const * arch, char const * format, char const * filename);
 int code_delete(Code * code);
 
 /* useful */
+int code_function(Code * code, char const * function);
 int code_instruction(Code * code, char const * instruction,
 		CodeOperand operands[], size_t operands_cnt);
 int code_section(Code * code, char const * section);

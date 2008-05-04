@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include "as.h"
+#include "common.h"
 #include "code.h"
 
 
@@ -47,12 +48,10 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
 	code->format = NULL;
-	code->fp = NULL;
-	if((code->arch = arch_new(arch)) == NULL
-			|| (code->format = format_new(format, arch, filename))
-			== NULL
-			|| (code->fp = fopen(filename, "w+")) == NULL
-			|| format_init(code->format, code->fp) != 0)
+	code->fp = fopen(filename, "w+");
+	if((code->arch = arch_new(arch)) == NULL || code->fp == NULL
+			|| (code->format = format_new(format, arch, filename,
+					code->fp)) == NULL)
 	{
 		if(code->fp != NULL)
 		{
@@ -63,7 +62,7 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 							errno));
 		}
 		if(code->format != NULL)
-			format_delete(code->format, code->fp);
+			format_delete(code->format);
 		if(code->arch != NULL)
 			arch_delete(code->arch);
 		free(code);
@@ -80,7 +79,7 @@ int code_delete(Code * code)
 	int ret;
 
 	arch_delete(code->arch);
-	ret = format_delete(code->format, code->fp);
+	ret = format_delete(code->format);
 	if(code->fp != NULL && fclose(code->fp) != 0)
 		ret |= error_set_code(2, "%s: %s", code->filename, strerror(
 					errno));
@@ -90,6 +89,13 @@ int code_delete(Code * code)
 
 
 /* useful */
+/* code_function */
+int code_function(Code * code, char const * function)
+{
+	return format_function(code->format, function);
+}
+
+
 /* code_instruction */
 static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
@@ -146,12 +152,12 @@ int code_instruction(Code * code, char const * instruction,
 			continue;
 		switch(operands[i].type)
 		{
-			case ATC_IMMEDIATE:
+			case AS_CODE_IMMEDIATE:
 				/* FIXME only valid if size == 4 */
 				u32 = strtoll(operands[i].value + 1, NULL, 0);
 				buf = &u32;
 				break;
-			case ATC_REGISTER:
+			case AS_CODE_REGISTER:
 				continue;
 			default:
 				/* FIXME */
@@ -206,15 +212,18 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 		op = op << 8;
 		switch(operands[i].type)
 		{
-			case ATC_IMMEDIATE:
-			case ATC_NUMBER:
+			case AS_CODE_IMMEDIATE:
+			case AS_CODE_NUMBER:
 				op |= _AO_IMM;
 #ifdef DEBUG
 				fprintf(stderr, "DEBUG: op %d: imm; ", i);
 #endif
 				break;
-			case ATC_REGISTER:
+			case AS_CODE_REGISTER:
+#if 0
 				reg = operands[i].value + 1; /* "%rg" => "rg" */
+#endif
+				reg = operands[i].value;
 				if((ar = _operands_register(code->arch, reg))
 						== NULL)
 					return 1;
@@ -250,5 +259,5 @@ static ArchRegister * _operands_register(Arch * arch, char * name)
 /* code_section */
 int code_section(Code * code, char const * section)
 {
-	return format_section(code->format, code->fp, section);
+	return format_section(code->format, section);
 }

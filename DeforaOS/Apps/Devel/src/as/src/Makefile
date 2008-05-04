@@ -22,7 +22,7 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
-libas_OBJS = as.o code.o parser.o scanner.o token.o arch/arch.o format/format.o
+libas_OBJS = as.o code.o parser.o token.o arch/arch.o format/format.o
 libas_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 
 libas.a: $(libas_OBJS)
@@ -30,7 +30,7 @@ libas.a: $(libas_OBJS)
 	$(RANLIB) libas.a
 
 libas.so: $(libas_OBJS)
-	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -rpath $(LIBDIR) -l System
+	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -rpath $(LIBDIR) -l cpp
 
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -44,11 +44,8 @@ as.o: as.c ../include/as.h ../config.h
 code.o: code.c ../include/as.h arch/arch.h code.h
 	$(CC) $(libas_CFLAGS) -c code.c
 
-parser.o: parser.c parser.h scanner.h
+parser.o: parser.c parser.h
 	$(CC) $(libas_CFLAGS) -c parser.c
-
-scanner.o: scanner.c ../include/as.h token.h
-	$(CC) $(libas_CFLAGS) -c scanner.c
 
 token.o: token.c token.h
 	$(CC) $(libas_CFLAGS) -c token.c

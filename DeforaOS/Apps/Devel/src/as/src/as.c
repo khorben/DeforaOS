@@ -141,26 +141,21 @@ char const * as_get_format(As * as)
 /* as_parse */
 int as_parse(As * as, char const * infile, char const * outfile)
 {
-	FILE * infp;
 	Code * code;
 	int ret;
 
 	if((ret = as_close(as)) != 0)
 		return ret;
-	if((infp = fopen(infile, "r")) == NULL)
-		return error_set_code(1, "%s: %s", infile, strerror(errno));
 	if((code = code_new(as->arch, as->format, outfile)) == NULL)
 		ret = 1;
 	else
 	{
-		ret = parser(code, infile, infp);
+		ret = parser(code, infile);
 		ret |= code_delete(code);
 		if(ret != 0 && unlink(outfile) != 0)
 			ret |= error_set_code(3, "%s: %s", outfile, strerror(
 						errno));
 	}
-	if(fclose(infp) != 0)
-		ret |= error_set_code(1, "%s: %s", infile, strerror(errno));
 	ret |= as_close(as);
 	return ret;
 }

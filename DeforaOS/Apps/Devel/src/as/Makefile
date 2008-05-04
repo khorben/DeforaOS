@@ -24,7 +24,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/as.c \
 		$(PACKAGE)-$(VERSION)/src/code.c \
 		$(PACKAGE)-$(VERSION)/src/parser.c \
-		$(PACKAGE)-$(VERSION)/src/scanner.c \
 		$(PACKAGE)-$(VERSION)/src/token.c \
 		$(PACKAGE)-$(VERSION)/src/arch/arch.c \
 		$(PACKAGE)-$(VERSION)/src/format/format.c \
@@ -32,9 +31,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/parser.h \
-		$(PACKAGE)-$(VERSION)/src/scanner.h \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/arch/amd64.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i386.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i386_real.c \
 		$(PACKAGE)-$(VERSION)/src/arch/i486.c \

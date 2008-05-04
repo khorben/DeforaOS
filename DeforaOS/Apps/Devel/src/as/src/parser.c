@@ -21,7 +21,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <errno.h>
 #include "scanner.h"
+#include "common.h"
 #include "parser.h"
 
 
@@ -29,359 +31,471 @@
 /* types */
 typedef struct _State
 {
-	char const * infile;
-	FILE * infp;
-	AToken * token;
-	unsigned int line;
-	unsigned int errors;
+	Cpp * cpp;
+	Token * token;
+	unsigned int error_cnt;
+	unsigned int warning_cnt;
 	Code * code;
-	char * instruction;
+	char * operator;
 	CodeOperand * operands;
 	size_t operands_cnt;
 } State;
 
 
 /* prototypes */
-static int _parser_fatal(State * state, char const * message);
-static void _parser_error(State * state, char const * format, ...);
-static void _parser_warning(State * state, char const * format, ...);
+static int _parser_scan(State * state);
+static int _parser_check(State * state, TokenCode code);
+static int _parser_is_code(State * state, TokenCode code);
+static int _parser_in_set(State * state, TokenSet set);
+
+static int _parser_error(State * state, char const * format, ...);
+static int _parser_warning(State * state, char const * format, ...);
 
 /* grammar */
-static void _program(State * state);
-static void _newline(State * state);
-static void _space(State * state);
-static void _section_list(State * state);
-static void _section(State * state);
-static void _instruction_list(State * state);
-static void _function(State * state);
-static void _instruction(State * state);
-static void _operator(State * state);
-static void _operand_list(State * state);
-static void _operand(State * state);
+static int _program(State * state);
+static int _newline(State * state);
+static int _space(State * state);
+static int _section_list(State * state);
+static int _section(State * state);
+static int _instruction_list(State * state);
+static int _function(State * state);
+static int _instruction(State * state);
+static int _operator(State * state);
+static int _operand_list(State * state);
+static int _operand(State * state);
 
 
 /* functions */
-/* parser_fatal */
-static int _parser_fatal(State * state, char const * message)
+/* parser_scan */
+static int _scan_skip_meta(State * state);
+static void _meta_error(State * state, TokenCode code);
+
+static int _parser_scan(State * state)
 {
-	fprintf(stderr, "%s%s%s%u%s%s%s", "as: ", state->infile, ", line ",
-			state->line, ": ", message, "\n");
+	int ret;
+	TokenCode code;
+	char const * string;
+
+	if(state->token != NULL)
+		token_delete(state->token);
+	if((ret = _scan_skip_meta(state)) != 0
+			|| state->token == NULL)
+		return ret;
+	code = token_get_code(state->token);
+	string = token_get_string(state->token);
+	if(code == AS_CODE_WORD)
+	{
+		if(string != NULL && string[0] == '$')
+			token_set_code(state->token, AS_CODE_IMMEDIATE);
+	}
+	else if(code == AS_CODE_OPERATOR_MODULO)
+	{
+		/* FIXME ugly workaround */
+		if((ret = _scan_skip_meta(state)) != 0)
+			return ret;
+		if(_parser_is_code(state, AS_CODE_WORD))
+			token_set_code(state->token, AS_CODE_REGISTER);
+	}
+	return 0;
+}
+
+static int _scan_skip_meta(State * state)
+{
+	TokenCode code;
+
+	while(cpp_scan(state->cpp, &state->token) == 0)
+	{
+		if(state->token == NULL)
+			return 0;
+		if((code = token_get_code(state->token)) < AS_CODE_META_FIRST
+				|| code > AS_CODE_META_LAST)
+			return 0;
+		if(code == AS_CODE_META_ERROR || code == AS_CODE_META_WARNING)
+			_meta_error(state, code);
+		token_delete(state->token);
+	}
 	return 1;
+}
+
+static void _meta_error(State * state, TokenCode code)
+{
+	if(code == AS_CODE_META_ERROR)
+		_parser_error(state, "%s", token_get_string(state->token));
+	else
+		_parser_warning(state, "%s", token_get_string(state->token));
+}
+
+
+/* parser_check */
+static int _parser_check(State * state, TokenCode code)
+{
+	int ret;
+
+	if(!_parser_is_code(state, code))
+		ret = _parser_error(state, "%s%u", "Parse error: expected ",
+				code);
+	else
+		ret = 0;
+	_parser_scan(state);
+	return ret;
+}
+
+
+/* parser_is_code */
+static int _parser_is_code(State * state, TokenCode code)
+{
+	if(state->token == NULL)
+		return 0;
+	return token_get_code(state->token) == code;
+}
+
+
+/* parser_in_set */
+static int _parser_in_set(State * state, TokenSet set)
+{
+	if(state->token == NULL)
+		return 0;
+	return token_in_set(state->token, set);
 }
 
 
 /* parser_error */
-static void _parser_error(State * state, char const * format, ...)
+static int _parser_error(State * state, char const * format, ...)
 {
 	va_list ap;
 
-	fprintf(stderr, "%s%s%s%u: ", "as: ", state->infile, ", line ",
-			state->line);
+	fputs("as: ", stderr);
+	if(state->cpp != NULL && state->token != NULL)
+		fprintf(stderr, "%s%s%u: ", cpp_get_filename(state->cpp),
+				", line ", token_get_line(state->token));
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
 	va_end(ap);
 	fputc('\n', stderr);
-	state->errors++;
+	return ++state->error_cnt;
 }
 
 
 /* parser_warning */
-static void _parser_warning(State * state, char const * format, ...)
+static int _parser_warning(State * state, char const * format, ...)
 {
 	va_list ap;
 
-	fprintf(stderr, "%s%s%s%u: ", "as: ", state->infile, ", line ",
-			state->line);
+	fputs("as: ", stderr);
+	if(state->cpp != NULL && state->token != NULL)
+		fprintf(stderr, "%s%s%u: ", cpp_get_filename(state->cpp),
+				", line ", token_get_line(state->token));
 	va_start(ap, format);
 	vfprintf(stderr, format, ap);
 	va_end(ap);
 	fputc('\n', stderr);
+	return ++state->warning_cnt;
 }
 
 
 /* protected */
 /* functions */
 /* parser */
-static void _parser_scan(State * state);
-static int _parser_check(State * state, ATokenCode code);
-
-int parser(Code * code, char const * infile, FILE * infp)
+int parser(Code * code, char const * infile)
 {
-	State state = { infile, infp, scan(infp), 1, 0, code, NULL, NULL, 0 };
+	State state;
 
+	memset(&state, 0, sizeof(state));
+	state.code = code;
+	if((state.cpp = cpp_new(infile, CPP_FILTER_NONE)) == NULL)
+		return _parser_error(&state, "%s", error_get());
+	if(_parser_scan(&state) != 0)
+		return _parser_error(&state, "%s", error_get());
+	if(_program(&state) != 0)
+		error_set_code(1, "%s%s%u%s%u%s", infile,
+				": Compilation failed with ", state.error_cnt,
+				" error(s) and ", state.warning_cnt,
+				" warning(s)");
 	if(state.token != NULL)
-		_program(&state);
-	if(state.token == NULL)
-		return _parser_fatal(&state, "Could not initialize scanner");
-	if(state.token->code != ATC_EOF)
-	{
-		if(state.token->string != NULL)
-			_parser_warning(&state, "%s \"%s\"",
-					"Parse error near token:",
-					state.token->string);
-		_parser_error(&state, "%s", "Unhandled syntax error, exiting");
-	}
-	if(state.errors)
-		error_set_code(1, "%s%s%d%s", infile,
-				": Compilation failed with ", state.errors,
-				" error(s)");
-	atoken_delete(state.token);
+		token_delete(state.token);
 	free(state.operands);
-	return state.errors;
-}
-
-static void _parser_scan(State * state)
-{
-	atoken_delete(state->token);
-	state->token = scan(state->infp);
-}
-
-static int _parser_check(State * state, ATokenCode code)
-{
-	int ret = 0;
-
-	if(state->token == NULL || state->token->code != code)
-		_parser_error(state, "%s", "Parse error");
-	else
-		ret = 1;
-	_parser_scan(state);
-	return ret;
+	return state.error_cnt;
 }
 
 
 /* grammar */
 /* program */
-static void _program(State * state)
+static int _program(State * state)
 	/* { newline } section_list { newline } */
 {
+	int ret = 0;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while(atoken_in_set(state->token, TS_NEWLINE))
-		_newline(state);
-	_section_list(state);
-	while(atoken_in_set(state->token, TS_NEWLINE))
-		_newline(state);
+	while(_parser_in_set(state, TS_NEWLINE))
+		ret |= _newline(state);
+	ret |= _section_list(state);
+	while(_parser_in_set(state, TS_NEWLINE))
+		ret |= _newline(state);
+	return ret;
 }
 
 
 /* newline */
-static void _newline(State * state)
+static int _newline(State * state)
 	/* [ space ] NEWLINE */
 {
+	int ret = 0;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(atoken_in_set(state->token, TS_SPACE))
-		_space(state);
-	if(_parser_check(state, ATC_NEWLINE))
-		state->line++;
+	if(_parser_in_set(state, TS_SPACE))
+		ret |= _space(state);
+	if(_parser_check(state, AS_CODE_NEWLINE) != 0)
+		ret |= 1;
+	return ret;
 }
 
 
 /* space */
-static void _space(State * state)
+static int _space(State * state)
 	/* SPACE { SPACE } */
 {
+	int ret;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_parser_check(state, ATC_SPACE);
-	while(state->token != NULL && state->token->code == ATC_SPACE)
-		_parser_scan(state);
+	ret = _parser_check(state, AS_CODE_WHITESPACE);
+	while(_parser_is_code(state, AS_CODE_WHITESPACE))
+		ret |= _parser_scan(state);
+	return ret;
 }
 
 
 /* section_list */
-static void _section_list(State * state)
+static int _section_list(State * state)
 	/* { section instruction_list } */
 {
+	int ret = 0;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while(atoken_in_set(state->token, TS_SECTION))
+	while(_parser_in_set(state, TS_SECTION))
 	{
-		_section(state);
-		_instruction_list(state);
+		ret |= _section(state);
+		ret |= _instruction_list(state);
 	}
+	return ret;
 }
 
 
 /* section */
-static void _section(State * state)
+static int _section(State * state)
 	/* "." WORD newline */
 {
+	int ret;
+	char const * string;
 	char * section = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_parser_check(state, ATC_DOT);
-	if(state->token == NULL)
-		return;
-	if(state->token->code == ATC_WORD && state->token->string != NULL)
-		section = strdup(state->token->string);
-	_parser_check(state, ATC_WORD);
-	_newline(state);
+	ret = _parser_check(state, AS_CODE_OPERATOR_DOT);
+	string = (state->token != NULL) ? token_get_string(state->token) : NULL;
+	if(string != NULL && _parser_is_code(state, AS_CODE_WORD))
+	{
+		if((section = strdup(token_get_string(state->token))) == NULL)
+			return ret | error_set_code(1, "%s", strerror(errno));
+		ret |= _parser_scan(state);
+	}
+	else
+		/* XXX what if code is AS_CODE_WORD but string is NULL? */
+		ret |= _parser_check(state, AS_CODE_WORD);
+	ret |= _newline(state);
+	if(section != NULL)
+	{
 #ifdef DEBUG
-	if(section)
-		fprintf(stderr, "%s\"%s\"\n", "DEBUG: In section ", section);
+		fprintf(stderr, "%s\"%s\"\n", "DEBUG: section ", section);
 #endif
-	code_section(state->code, section);
-	free(section);
+		if(code_section(state->code, section) != 0)
+			ret |= _parser_error(state, "%s", error_get());
+		free(section);
+	}
+	return ret;
 }
 
 
 /* instruction_list */
-static void _instruction_list(State * state)
+static int _instruction_list(State * state)
 	/* { (function | space instruction | [space] newline) } */
 {
+	int ret = 0;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while(atoken_in_set(state->token, TS_INSTRUCTION_LIST))
-	{
-		if(atoken_in_set(state->token, TS_FUNCTION))
-			_function(state);
-		else if(atoken_in_set(state->token, TS_SPACE))
+	while(_parser_in_set(state, TS_INSTRUCTION_LIST))
+		if(_parser_in_set(state, TS_FUNCTION))
+			ret |= _function(state);
+		else if(_parser_in_set(state, TS_SPACE))
 		{
-			_space(state);
-			if(atoken_in_set(state->token, TS_INSTRUCTION))
-				_instruction(state);
+			ret |= _space(state);
+			if(_parser_in_set(state, TS_INSTRUCTION))
+				ret |= _instruction(state);
 		}
+		else if(_parser_in_set(state, TS_NEWLINE))
+			ret |= _newline(state);
 		else
-			_newline(state);
-	}
+			ret |= _parser_error(state, "%s", "Expected function"
+					", instruction or linefeed");
+	return ret;
 }
 
 
 /* function */
-static void _function(State * state)
+static int _function(State * state)
 	/* WORD ":" newline */
 {
+	int ret;
+	char const * string;
 	char * function = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(state->token == NULL)
-		return;
-	if(state->token->code == ATC_WORD && state->token->string != NULL)
-		function = strdup(state->token->string);
-	_parser_check(state, ATC_WORD);
-	_parser_check(state, ATC_COLON);
-	_newline(state);
+	string = token_get_string(state->token);
+	if(_parser_is_code(state, AS_CODE_WORD) && string != NULL)
+		if((function = strdup(string)) == NULL)
+			return error_set_code(1, "%s", strerror(errno));
+	ret = _parser_check(state, AS_CODE_WORD);
+	ret |= _parser_check(state, AS_CODE_OPERATOR_COLON);
+	ret |= _newline(state);
+	if(function != NULL)
+	{
 #ifdef DEBUG
-	if(function)
-		fprintf(stderr, "%s\"%s\"\n", "In function: \"", function);
+		fprintf(stderr, "DEBUG: %s \"%s\"\n", "function", function);
 #endif
-	free(function);
+		if(code_function(state->code, function) != 0)
+			ret |= _parser_error(state, "%s", error_get());
+		free(function);
+	}
+	return ret;
 }
 
 
 /* instruction */
-static void _instruction(State * state)
+static int _instruction(State * state)
 	/* operator [ space [ operand_list ] ] newline */
 {
+	int ret;
 	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_operator(state);
-	if(atoken_in_set(state->token, TS_SPACE))
+	ret = _operator(state);
+	if(_parser_in_set(state, TS_SPACE))
 	{
-		_space(state);
-		if(atoken_in_set(state->token, TS_OPERAND_LIST))
-			_operand_list(state);
+		ret |= _space(state);
+		if(_parser_in_set(state, TS_OPERAND_LIST))
+			ret |= _operand_list(state);
 	}
-	if(state->instruction != NULL)
-	{
-		if(code_instruction(state->code, state->instruction,
-					state->operands, state->operands_cnt)
-				!= 0)
-			_parser_error(state, "%s", error_get());
-		free(state->instruction);
-		for(i = 0; i < state->operands_cnt; i++)
-			free(state->operands[i].value);
-		state->operands_cnt = 0;
-	}
-	_newline(state);
+	if(state->operator == NULL)
+		return ret | _newline(state);
+	if(code_instruction(state->code, state->operator, state->operands,
+				state->operands_cnt) != 0)
+		ret |= _parser_error(state, "%s", error_get());
+	free(state->operator);
+	state->operator = NULL;
+	for(i = 0; i < state->operands_cnt; i++)
+		free(state->operands[i].value);
+	/* optimized free(state->operands); out */
+	state->operands_cnt = 0;
+	return ret | _newline(state);
 }
 
 
 /* operator */
-static void _operator(State * state)
+static int _operator(State * state)
 	/* WORD */
 {
-	char * instruction = NULL;
+	char const * string;
+	char * operator = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(state->token == NULL)
-		return;
-	if(state->token->string != NULL)
-		instruction = strdup(state->token->string);
-	if(_parser_check(state, ATC_WORD) && instruction)
+	if((string = token_get_string(state->token)) == NULL)
 	{
-		state->instruction = instruction;
-#ifdef DEBUG
-		fprintf(stderr, "%s%s%s", "Operator \"", instruction, "\"\n");
-#endif
+		_parser_scan(state);
+		return 1;
 	}
+	if((operator = strdup(string)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	/* optimized free(state->operator); out */
+	state->operator = operator;
+#ifdef DEBUG
+	fprintf(stderr, "%s \"%s\"\n", "DEBUG: operator", operator);
+#endif
+	return _parser_scan(state);
 }
 
 
 /* operand_list */
-static void _operand_list(State * state)
-	/* operand [ space ] { "," [ space ] operand [ space ] } */
+static int _operand_list(State * state)
+	/* operand [ space ] { comma [ space ] operand [ space ] } */
 {
+	int ret;
+
 #ifdef DEBUG
-	fprintf(stderr, "%s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_operand(state);
-	if(atoken_in_set(state->token, TS_SPACE))
-		_space(state);
-	while(state->token != NULL && state->token->code == ATC_COMMA)
+	ret = _operand(state);
+	if(_parser_in_set(state, TS_SPACE))
+		ret |= _space(state);
+	while(_parser_is_code(state, AS_CODE_COMMA))
 	{
-		_parser_scan(state);
-		if(atoken_in_set(state->token, TS_SPACE))
-			_space(state);
-		_operand(state);
-		if(atoken_in_set(state->token, TS_SPACE))
-			_space(state);
+		ret |= _parser_scan(state);
+		if(_parser_in_set(state, TS_SPACE))
+			ret |= _space(state);
+		ret |= _operand(state);
+		if(_parser_in_set(state, TS_SPACE))
+			ret |= _space(state);
 	}
+	return ret;
 }
 
 
 /* operand */
-static void _operand(State * state)
+static int _operand(State * state)
 	/* WORD | NUMBER | IMMEDIATE | REGISTER */
 {
+	int ret = 0;
+	char const * string;
 	CodeOperand * p;
 
 	if(state->token == NULL)
-		return;
+		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "%s()\n", __func__);
-	fprintf(stderr, "%s%s\"\n", "New operand: \"", state->token->string);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "%s%s\"\n", "DEBUG: new operand: \"", token_get_string(
+				state->token));
 #endif
-	if(state->token->string != NULL)
+	string = token_get_string(state->token);
+	if(string != NULL)
 	{
 		if((p = realloc(state->operands, (state->operands_cnt + 1)
 						* sizeof(CodeOperand))) == NULL)
-			_parser_error(state, "%s", "Internal error");
+			ret |= _parser_error(state, "%s", strerror(errno));
 		else
 		{
 			state->operands = p;
-			state->operands[state->operands_cnt].type
-				= state->token->code;
+			p = &state->operands[state->operands_cnt];
+			p->type = token_get_code(state->token);
 			/* FIXME necessary already here? */
-			state->operands[state->operands_cnt].value
-				= strdup(state->token->string);
+			p->value = strdup(string);
 			state->operands_cnt++;
 		}
 	}
-	_parser_scan(state);
+	ret |= _parser_scan(state);
+	return ret;
 }
