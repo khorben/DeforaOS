@@ -25,7 +25,7 @@
 
 /* private */
 /* variables */
-static char * _tokens[] =
+static char * _tokens[C99_CODE_COUNT] =
 {
 	NULL, ",", "\"",
 	/* directives */
@@ -37,7 +37,7 @@ static char * _tokens[] =
 	"[", "<=", "<", "(", "-=", "->", "-", "%=", "%", "!=", "!", "+=", "+",
 	"?", "}", "]", ")", ";", "*=", "~", "*", "^=", "^",
 	/* more codes */
-	"'", "whitespace", "word", "constant", "identifier",
+	"'", "whitespace", "newline", "word", "constant", "identifier",
 	/* keywords */
 	"auto", "break", "case", "char", "const", "continue", "default", "do",
 	"double", "else", "enum", "extern", "float", "for", "goto", "if",
@@ -50,21 +50,12 @@ static char * _tokens[] =
 
 /* protected */
 /* functions */
-/* accessors */
-char const * tokencode_get_string(TokenCode code)
-{
-	return _tokens[code];
-}
-
-
-/* public */
-/* functions */
 /* useful */
-/* c99_scan */
+/* scan */
 static int _scan_skip_meta(C99 * c99);
 static void _meta_error(C99 * c99, TokenCode code);
 
-int c99_scan(C99 * c99)
+int scan(C99 * c99)
 {
 	int ret;
 	char const * string;
@@ -133,4 +124,11 @@ static void _meta_error(C99 * c99, TokenCode code)
 			token_get_line(c99->token), ": ",
 			(code == C99_CODE_META_ERROR) ? "error" : "warning",
 			": ", token_get_string(c99->token));
+}
+
+
+/* accessors */
+char const * tokencode_get_string(TokenCode code)
+{
+	return _tokens[code];
 }

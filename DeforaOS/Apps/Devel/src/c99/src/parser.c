@@ -22,8 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "common.h"
 #include "tokenset.h"
+#include "scanner.h"
+#include "common.h"
 #include "c99.h"
 #include "../config.h"
 
@@ -119,11 +120,10 @@ static int _parse_check(C99 * c99, TokenCode code)
 	{
 		ret = _parse_error(c99, "Expected \"%s\"",
 				tokencode_get_string(code));
-		while(c99_scan(c99) == 0
-				&& c99->token != NULL /* actual token */
+		while(scan(c99) == 0 && c99->token != NULL /* actual token */
 				&& !_parse_is_code(c99, code));
 	}
-	ret |= c99_scan(c99);
+	ret |= scan(c99);
 	return ret;
 }
 
@@ -186,8 +186,7 @@ static int _translation_unit(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	while(c99_scan(c99) == 0
-			&& c99->token != NULL) /* end of file */
+	while(scan(c99) == 0 && c99->token != NULL) /* end of file */
 		ret |= _external_declaration(c99);
 	if(c99->token != NULL)
 		ret |= 1;
@@ -308,7 +307,7 @@ static int _storage_class_specifier(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -331,7 +330,7 @@ static int _type_specifier(C99 * c99)
 	else if(_parse_in_set(c99, c99set_typedef_name))
 		ret = _typedef_name(c99);
 	else
-		ret = c99_scan(c99);
+		ret = scan(c99);
 	return ret;
 }
 
@@ -356,7 +355,7 @@ static int _struct_or_union_specifier(C99 * c99)
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
 	ret |= _struct_declaration_list(c99);
 	if(_parse_is_code(c99, C99_CODE_COMMA))
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
 	return ret;
 }
@@ -370,7 +369,7 @@ static int _struct_or_union(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -418,7 +417,7 @@ static int _struct_declarator_list(C99 * c99)
 	ret = _struct_declarator(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _struct_declarator(c99);
 	}
 	return ret;
@@ -439,7 +438,7 @@ static int _struct_declarator(C99 * c99)
 		ret |= _declarator(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_COLON))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _constant_expr(c99);
 	}
 	return ret;
@@ -457,7 +456,7 @@ static int _enum_specifier(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	ret = c99_scan(c99);
+	ret = scan(c99);
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
 	{
 		ret |= _identifier(c99);
@@ -468,7 +467,7 @@ static int _enum_specifier(C99 * c99)
 	ret |= _enumerator(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_RBRACE))
 			ret |= _enumerator(c99);
 		else
@@ -491,7 +490,7 @@ static int _enumerator(C99 * c99)
 	ret = _enumeration_constant(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_EQUALS))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _constant_expr(c99);
 	}
 	return ret;
@@ -517,7 +516,7 @@ static int _typedef_name(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -529,7 +528,7 @@ static int _type_qualifier(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -541,7 +540,7 @@ static int _function_specifier(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"inline\" got \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -572,12 +571,12 @@ static int _pointer(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"*\" got \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	ret = c99_scan(c99);
+	ret = scan(c99);
 	if(_parse_in_set(c99, c99set_type_qualifier_list))
 		ret |= _type_qualifier_list(c99);
 	while(_parse_in_set(c99, c99set_pointer))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		if(_parse_in_set(c99, c99set_type_qualifier_list))
 			ret |= _type_qualifier_list(c99);
 	}
@@ -618,7 +617,7 @@ static int _direct_declarator(C99 * c99)
 #endif
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _declarator(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
@@ -628,11 +627,11 @@ static int _direct_declarator(C99 * c99)
 			|| _parse_is_code(c99, C99_CODE_OPERATOR_LBRACKET))
 	{
 		code = token_get_code(c99->token);
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		if(code == C99_CODE_OPERATOR_LBRACKET)
 		{
 			if(_parse_is_code(c99, C99_CODE_OPERATOR_TIMES))
-				ret |= c99_scan(c99);
+				ret |= scan(c99);
 			else
 				ret |= _assignment_expr(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
@@ -662,7 +661,7 @@ static int _identifier(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, str);
 #endif
 	ret = code_set_identifier(c99->code, str);
-	ret |= c99_scan(c99);
+	ret |= scan(c99);
 	return ret;
 }
 
@@ -679,7 +678,7 @@ static int _identifier_list(C99 * c99)
 	ret = _identifier(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _identifier(c99);
 	}
 	ret |= code_set_context(c99->code, CODE_CONTEXT_UNDEFINED);
@@ -699,9 +698,9 @@ static int _parameter_type_list(C99 * c99)
 	ret = _parameter_declaration(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		if(_parse_is_code(c99, C99_CODE_OPERATOR_DOTDOTDOT))
-			return ret | c99_scan(c99);
+			return ret | scan(c99);
 		ret |= _parameter_declaration(c99);
 	}
 	return ret;
@@ -777,13 +776,13 @@ static int _direct_abstract_declarator(C99 * c99)
 		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_LPAREN)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _abstract_declarator(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else if(code == C99_CODE_OPERATOR_LBRACKET)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_RBRACKET))
 			ret |= _assignment_expr(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
@@ -793,7 +792,7 @@ static int _direct_abstract_declarator(C99 * c99)
 		if((code = token_get_code(c99->token))
 				== C99_CODE_OPERATOR_LPAREN)
 		{
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 			if(_parse_in_set(c99, c99set_parameter_type_list))
 				ret |= _parameter_type_list(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
@@ -801,7 +800,7 @@ static int _direct_abstract_declarator(C99 * c99)
 		else if(code == C99_CODE_OPERATOR_LBRACKET)
 		{
 			if(_parse_is_code(c99, C99_CODE_OPERATOR_TIMES))
-				ret |= c99_scan(c99);
+				ret |= scan(c99);
 			else if(_parse_in_set(c99, c99set_assignment_expr))
 				ret |= _assignment_expr(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
@@ -860,7 +859,7 @@ static int _unary_expr(C99 * c99)
 	else if((code = token_get_code(c99->token)) == C99_CODE_OPERATOR_DPLUS
 			|| code == C99_CODE_OPERATOR_DMINUS)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _unary_expr(c99);
 	}
 	else if(_parse_in_set(c99, c99set_unary_operator))
@@ -870,10 +869,10 @@ static int _unary_expr(C99 * c99)
 	}
 	else if(code == C99_CODE_KEYWORD_SIZEOF)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 		{
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 			ret |= _type_name(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		}
@@ -906,13 +905,13 @@ static int _postfix_expr(C99 * c99)
 		ret |= _primary_expr(c99);
 	else if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _type_name(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
 		ret |= _initializer_list(c99);
 		if(_parse_is_code(c99, C99_CODE_COMMA))
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
 	}
 	while(c99->token != NULL)
@@ -920,13 +919,13 @@ static int _postfix_expr(C99 * c99)
 		code = token_get_code(c99->token);
 		if(code == C99_CODE_OPERATOR_LBRACKET)
 		{
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 			ret |= _expression(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
 		}
 		else if(code == C99_CODE_OPERATOR_LPAREN)
 		{
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 			if(!_parse_is_code(c99, C99_CODE_OPERATOR_RPAREN))
 				ret |= _argument_expression_list(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
@@ -934,12 +933,12 @@ static int _postfix_expr(C99 * c99)
 		else if(code == C99_CODE_OPERATOR_DOT
 				|| code == C99_CODE_OPERATOR_MGREATER)
 		{
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 			ret |= _identifier(c99);
 		}
 		else if(code == C99_CODE_OPERATOR_DPLUS
 				|| code == C99_CODE_OPERATOR_DMINUS)
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 		else
 			break;
 	}
@@ -961,7 +960,7 @@ static int _argument_expression_list(C99 * c99)
 	ret = _assignment_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() arg %u \"%s\"\n", __func__, ++cnt,
 				_parse_get_string(c99));
@@ -993,13 +992,13 @@ static int _primary_expr(C99 * c99)
 		return _identifier(c99);
 	else if(code == C99_CODE_OPERATOR_LPAREN)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _expression(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		return ret;
 	}
 	else /* constant or string-litteral */
-		return c99_scan(c99);
+		return scan(c99);
 }
 
 
@@ -1055,7 +1054,7 @@ static int _unary_operator(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
 			_parse_get_string(c99));
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -1067,7 +1066,7 @@ static int _assignment_operator(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return c99_scan(c99);
+	return scan(c99);
 }
 
 
@@ -1084,7 +1083,7 @@ static int _conditional_expr(C99 * c99)
 	ret = _logical_or_expr(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_QUESTION))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _expression(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
 		ret |= _conditional_expr(c99);
@@ -1105,7 +1104,7 @@ static int _logical_or_expr(C99 * c99)
 	ret = _logical_and_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_DBAR))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _logical_and_expr(c99);
 	}
 	return ret;
@@ -1125,7 +1124,7 @@ static int _logical_and_expr(C99 * c99)
 	ret = _inclusive_or_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_DAMPERSAND))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _inclusive_or_expr(c99);
 	}
 	return ret;
@@ -1144,7 +1143,7 @@ static int _inclusive_or_expr(C99 * c99)
 	ret = _exclusive_or_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_BAR))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _exclusive_or_expr(c99);
 	}
 	return ret;
@@ -1163,7 +1162,7 @@ static int _exclusive_or_expr(C99 * c99)
 	ret = _and_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_XOR))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _and_expr(c99);
 	}
 	return ret;
@@ -1182,7 +1181,7 @@ static int _and_expr(C99 * c99)
 	ret = _equality_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_AMPERSAND))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _equality_expr(c99);
 	}
 	return ret;
@@ -1205,7 +1204,7 @@ static int _equality_expr(C99 * c99)
 				== C99_CODE_OPERATOR_DEQUALS
 				|| code == C99_CODE_OPERATOR_NEQUALS))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _relational_expr(c99);
 	}
 	return ret;
@@ -1230,7 +1229,7 @@ static int _relational_expr(C99 * c99)
 				|| code == C99_CODE_OPERATOR_LEQUALS
 				|| code == C99_CODE_OPERATOR_GEQUALS))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _shift_expr(c99);
 	}
 	return ret;
@@ -1253,7 +1252,7 @@ static int _shift_expr(C99 * c99)
 				== C99_CODE_OPERATOR_DLESS
 				|| code == C99_CODE_OPERATOR_DGREATER))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _additive_expr(c99);
 	}
 	return ret;
@@ -1276,7 +1275,7 @@ static int _additive_expr(C99 * c99)
 				== C99_CODE_OPERATOR_PLUS
 				|| code == C99_CODE_OPERATOR_MINUS))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _multiplicative_expr(c99);
 	}
 	return ret;
@@ -1300,7 +1299,7 @@ static int _multiplicative_expr(C99 * c99)
 				|| code == C99_CODE_OPERATOR_DIVIDE
 				|| code == C99_CODE_OPERATOR_MODULO))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _cast_expr(c99);
 	}
 	return ret;
@@ -1319,7 +1318,7 @@ static int _cast_expr(C99 * c99)
 #endif
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _type_name(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
@@ -1338,7 +1337,7 @@ static int _compound_statement(C99 * c99)
 	fprintf(stderr, "DEBUG: %s() \"{\" got \"%s\"\n", __func__,
 			_parse_get_string(c99));
 #endif
-	ret = c99_scan(c99);
+	ret = scan(c99);
 	if(_parse_in_set(c99, c99set_block_item_list))
 		ret |= _block_item_list(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
@@ -1425,11 +1424,11 @@ static int _labeled_statement(C99 * c99)
 		ret = _identifier(c99);
 	else if(code == C99_CODE_KEYWORD_CASE)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _constant_expr(c99);
 	}
 	else /* default */
-		ret = c99_scan(c99);
+		ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
 	ret |= _statement(c99);
 	return ret;
@@ -1476,7 +1475,7 @@ static int _expression(C99 * c99)
 	ret = _assignment_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		c99_scan(c99);
+		scan(c99);
 		ret |= _assignment_expr(c99);
 	}
 	return ret;
@@ -1499,7 +1498,7 @@ static int _selection_statement(C99 * c99)
 		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_SWITCH)
 		c99->in_switch++;
-	ret = c99_scan(c99);
+	ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
 	ret |= _expression(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
@@ -1509,7 +1508,7 @@ static int _selection_statement(C99 * c99)
 	else if(code == C99_CODE_KEYWORD_IF
 			&& _parse_is_code(c99, C99_CODE_KEYWORD_ELSE))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _statement(c99);
 	}
 	return ret;
@@ -1532,7 +1531,7 @@ static int _iteration_statement(C99 * c99)
 		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_WHILE)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
 		ret |= _expression(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
@@ -1540,7 +1539,7 @@ static int _iteration_statement(C99 * c99)
 	}
 	else if(code == C99_CODE_KEYWORD_DO)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _statement(c99);
 		ret |= _parse_check(c99, C99_CODE_KEYWORD_WHILE);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
@@ -1549,7 +1548,7 @@ static int _iteration_statement(C99 * c99)
 	}
 	else if(code == C99_CODE_KEYWORD_FOR)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
 		/* FIXME or declaration */
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
@@ -1585,17 +1584,17 @@ static int _jump_statement(C99 * c99)
 		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _identifier(c99);
 	}
 	else if(code == C99_CODE_KEYWORD_RETURN)
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		if(_parse_in_set(c99, c99set_expression))
 			ret = _expression(c99);
 	}
 	else /* continue or break */
-		ret = c99_scan(c99);
+		ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	return ret;
 }
@@ -1629,7 +1628,7 @@ static int _init_declarator(C99 * c99)
 	ret = _declarator(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_EQUALS))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		ret |= _initializer(c99);
 	}
 	return ret;
@@ -1648,10 +1647,10 @@ static int _initializer(C99 * c99)
 #endif
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LBRACE))
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _initializer_list(c99);
 		if(_parse_is_code(c99, C99_CODE_COMMA))
-			ret |= c99_scan(c99);
+			ret |= scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
 	}
 	else
@@ -1674,7 +1673,7 @@ static int _initializer_list(C99 * c99)
 	ret |= _initializer(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
-		ret |= c99_scan(c99);
+		ret |= scan(c99);
 		if(_parse_in_set(c99, c99set_designation))
 			ret |= _designation(c99);
 		ret |= _initializer(c99);
@@ -1726,7 +1725,7 @@ static int _designator(C99 * c99)
 #endif
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LBRACKET))
 	{
-		ret = c99_scan(c99);
+		ret = scan(c99);
 		ret |= _constant_expr(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
 	}
@@ -1766,8 +1765,7 @@ static int _parse_E(C99 * c99)
 	Token * token;
 	int code;
 
-	while((ret = cpp_scan(c99->cpp, &token)) == 0
-			&& token != NULL)
+	while((ret = cpp_scan(c99->cpp, &token)) == 0 && token != NULL)
 	{
 		if((code = token_get_code(token)) == CPP_CODE_META_ERROR
 				|| code == CPP_CODE_META_WARNING)
