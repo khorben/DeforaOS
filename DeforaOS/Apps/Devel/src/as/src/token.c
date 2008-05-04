@@ -16,79 +16,19 @@
 
 
 
-#include <assert.h>
-#include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
-#include <string.h>
+#include "common.h"
 #include "token.h"
 
 
-/* AToken */
+/* protected */
 /* variables */
-#ifdef DEBUG
-char * sATokenCode[ATC_NULL] = {
-	"ATC_COLON",
-	"ATC_COMMA",
-	"ATC_DOT",
-	"ATC_EOF",
-	"ATC_IMMEDIATE",
-	"ATC_NEWLINE",
-	"ATC_NUMBER",
-	"ATC_REGISTER",
-	"ATC_SPACE",
-	"ATC_TAB",
-	"ATC_WORD"
-};
-#endif
-ATokenCode TS_FUNCTION[] = { ATC_WORD, ATC_NULL };
-ATokenCode TS_INSTRUCTION[] = { ATC_WORD, ATC_NULL };
-ATokenCode TS_INSTRUCTION_LIST[] = { ATC_WORD, ATC_NEWLINE, ATC_SPACE, ATC_NULL };
-ATokenCode TS_NEWLINE[] = { ATC_SPACE, ATC_TAB, ATC_NEWLINE, ATC_NULL };
-ATokenCode TS_NEWLINE_LIST[] = { ATC_SPACE, ATC_TAB, ATC_NEWLINE, ATC_NULL };
-ATokenCode TS_OPERAND_LIST[] = { ATC_WORD, ATC_NUMBER, ATC_IMMEDIATE, ATC_REGISTER, ATC_NULL };
-ATokenCode TS_OPERATOR[] = { ATC_WORD, ATC_NULL };
-ATokenCode TS_SECTION[] = { ATC_DOT, ATC_NULL };
-ATokenCode TS_SECTION_LIST[] = { ATC_DOT, ATC_NULL };
-ATokenCode TS_SPACE[] = { ATC_SPACE, ATC_TAB, ATC_NULL };
-
-
-/* functions */
-/* atoken_new */
-AToken * atoken_new(ATokenCode code, char * string)
-{
-	AToken * t;
-
-	if((t = malloc(sizeof(*t))) == NULL)
-		return NULL;
-	t->code = code;
-	t->string = NULL;
-	if(string != NULL)
-		if((t->string = strdup(string)) == NULL)
-		{
-			free(t);
-			return NULL;
-		}
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s%s%s", "atoken_new(", sATokenCode[code],
-			", \"", string == NULL ? "NULL" : string, "\")\n");
-#endif
-	return t;
-}
-
-void atoken_delete(AToken * t)
-{
-	assert(t != NULL);
-	free(t->string);
-	free(t);
-}
-
-
-int atoken_in_set(AToken * t, ATokenSet ts)
-{
-	if(t == NULL)
-		return 0;
-	for(; *ts != ATC_NULL && t->code != *ts; ts++);
-	return *ts != ATC_NULL;
-}
+TokenCode TS_FUNCTION[] = { AS_CODE_WORD, TC_NULL };
+TokenCode TS_INSTRUCTION[] = { AS_CODE_WORD, TC_NULL };
+TokenCode TS_INSTRUCTION_LIST[] = { AS_CODE_WORD, AS_CODE_NEWLINE, AS_CODE_WHITESPACE, TC_NULL };
+TokenCode TS_NEWLINE[] = { AS_CODE_WHITESPACE, AS_CODE_NEWLINE, TC_NULL };
+TokenCode TS_NEWLINE_LIST[] = { AS_CODE_WHITESPACE, AS_CODE_NEWLINE, TC_NULL };
+TokenCode TS_OPERAND_LIST[] = { AS_CODE_WORD, AS_CODE_NUMBER, AS_CODE_IMMEDIATE, AS_CODE_REGISTER, TC_NULL };
+TokenCode TS_OPERATOR[] = { AS_CODE_WORD, TC_NULL };
+TokenCode TS_SECTION[] = { AS_CODE_OPERATOR_DOT, TC_NULL };
+TokenCode TS_SECTION_LIST[] = { AS_CODE_OPERATOR_DOT, TC_NULL };
+TokenCode TS_SPACE[] = { AS_CODE_WHITESPACE, TC_NULL };

@@ -16,15 +16,37 @@
 
 
 
-#ifndef AS_SCANNER_H
-# define AS_SCANNER_H
-
-# include <stdio.h>
-# include "token.h"
+#include <stddef.h>
+#include "arch.h"
 
 
-/* functions */
-AToken * scan(FILE * fp);
-AToken * check(FILE * fp, ATokenCode code);
+/* types */
+#define REG(name, size, id) AO_ ## name = ((id << 2) | AO_REG), \
+				AO_ ## name ## _ = ((id << 10) | AO_REG_), \
+				AO_ ## name ## __ = ((id << 18) | AO_REG__),
+enum {
+#include "common.reg"
+#include "amd64.reg"
+};
 
-#endif /* !AS_SCANNER_H */
+
+/* variables */
+#undef REG
+#define REG(name, size, id) { "" # name, size, id },
+ArchRegister arch_amd64_regs[] =
+{
+#include "amd64.reg"
+	{ NULL,		0, 0 }
+};
+
+ArchInstruction arch_amd64_set[] =
+{
+#include "amd64.ins"
+#include "null.ins"
+};
+
+ArchPlugin arch_plugin =
+{
+	arch_amd64_regs,
+	arch_amd64_set
+};

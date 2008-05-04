@@ -22,7 +22,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include "scanner.h"
 #include "common.h"
 #include "parser.h"
 

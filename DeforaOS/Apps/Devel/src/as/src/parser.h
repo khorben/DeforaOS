@@ -23,6 +23,6 @@
 # include "code.h"
 
 
-int parser(Code * code, char const * infile, FILE * infp);
+int parser(Code * code, char const * infile);
 
 #endif /* !AS_PARSER_H */

@@ -94,6 +94,7 @@ FormatPlugin format_plugin =
 	NULL,
 	_elf_init,
 	NULL,
+	NULL,
 	NULL
 };
 

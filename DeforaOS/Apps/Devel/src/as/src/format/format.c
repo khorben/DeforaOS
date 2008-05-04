@@ -32,73 +32,101 @@
 struct _Format
 {
 	char * arch;
+	char * filename;
+	FILE * fp;
 	FormatPlugin * plugin;
 	Plugin * handle;
 };
+
+
+/* private */
+/* prototypes */
+static int _format_init(Format * format);
+static int _format_exit(Format * format);
+
+
+/* functions */
+/* format_init */
+static int _format_init(Format * format)
+{
+	if(format->plugin->init == NULL)
+		return 0;
+	return format->plugin->init(format->fp, format->arch);
+}
+
+
+/* format_exit */
+static int _format_exit(Format * format)
+{
+	if(format->plugin->exit == NULL)
+		return 0;
+	return format->plugin->exit(format->fp);
+}
 
 
 /* public */
 /* functions */
 /* format_new */
 Format * format_new(char const * format, char const * arch,
-		char const * filename)
+		char const * filename, FILE * fp)
 {
 	Format * f;
 	Plugin * handle;
 	FormatPlugin * plugin;
 
 	if(format == NULL)
-		format = "elf";
+		format = "elf"; /* XXX ask the arch plugin? */
 	if((handle = plugin_new(LIBDIR, PACKAGE, "format", format)) == NULL)
 		return NULL;
-	if((plugin = plugin_lookup(handle, "format_plugin")) == NULL)
+	if((plugin = plugin_lookup(handle, "format_plugin")) == NULL
+			|| (f = object_new(sizeof(*f))) == NULL)
 	{
 		plugin_delete(handle);
 		return NULL;
 	}
-	if((f = malloc(sizeof(*f))) == NULL || (f->arch = strdup(arch)) == NULL)
-	{
-		if(f != NULL)
-			free(f);
-		error_set_code(1, "%s", strerror(errno));
-		plugin_delete(handle);
-		return NULL;
-	}
+	f->arch = string_new(arch);
+	f->fp = fp;
 	f->plugin = plugin;
-	plugin->filename = filename;
+	f->filename = string_new(filename);
+	plugin->filename = f->filename;
 	f->handle = handle;
+	if(f->arch == NULL || f->filename == NULL || _format_init(f) != 0)
+	{
+		format_delete(f);
+		return NULL;
+	}
 	return f;
 }
 
 
 /* format_delete */
-int format_delete(Format * format, FILE * fp)
+int format_delete(Format * format)
 {
-	int ret = 0;
+	int ret;
 
-	if(format->plugin->exit != NULL)
-		ret = format->plugin->exit(fp);
+	ret = _format_exit(format);
 	plugin_delete(format->handle);
+	free(format->filename);
 	free(format->arch);
-	free(format);
+	object_delete(format);
 	return ret;
 }
 
 
 /* useful */
-/* format_init */
-int format_init(Format * format, FILE * fp)
+/* format_function */
+int format_function(Format * format, char const * function)
 {
-	if(format->plugin->init == NULL)
+	if(format->plugin->function == NULL)
 		return 0;
-	return format->plugin->init(fp, format->arch);
+	return format->plugin->function(format->fp, function);
 }
 
 
 /* format_section */
-int format_section(Format * format, FILE * fp, char const * section)
+int format_section(Format * format, char const * section)
 {
 	if(format->plugin->section == NULL)
 		return 0;
-	return format->plugin->section(fp, section);
+	return format->plugin->section(format->fp, section);
 }

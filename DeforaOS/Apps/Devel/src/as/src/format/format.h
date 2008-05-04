@@ -29,6 +29,7 @@ typedef struct _FormatPlugin
 
 	int (*init)(FILE * fp, char const * arch);
 	int (*exit)(FILE * fp);
+	int (*function)(FILE * fp, char const * function);
 	int (*section)(FILE * fp, char const * section);
 } FormatPlugin;
 
@@ -37,12 +38,11 @@ typedef struct _Format Format;
 
 /* functions */
 Format * format_new(char const * format, char const * arch,
-		char const * filename);
-int format_delete(Format * format, FILE * fp);
+		char const * filename, FILE * fp);
+int format_delete(Format * format);
 
 /* useful */
-int format_init(Format * format, FILE * fp);
-int format_exit(Format * format, FILE * fp);
-int format_section(Format * format, FILE * fp, char const * section);
+int format_function(Format * format, char const * function);
+int format_section(Format * format, char const * section);
 
 #endif /* !AS_FORMAT_FORMAT_H */

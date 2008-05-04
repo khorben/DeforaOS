@@ -1,4 +1,4 @@
-TARGETS	= i386.a i386.so i386_real.a i386_real.so i486.a i486.so i586.a i586.so i686.a i686.so sparc.a sparc.so sparc64.a sparc64.so
+TARGETS	= amd64.a amd64.so i386.a i386.so i386_real.a i386_real.so i486.a i486.so i586.a i586.so i686.a i686.so sparc.a sparc.so sparc64.a sparc64.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -14,6 +14,16 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+amd64_OBJS = amd64.o
+amd64_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+amd64.a: $(amd64_OBJS)
+	$(AR) amd64.a $(amd64_OBJS)
+	$(RANLIB) amd64.a
+
+amd64.so: $(amd64_OBJS)
+	$(LD) -o amd64.so $(amd64_OBJS)
 
 i386_OBJS = i386.o
 i386_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -85,6 +95,9 @@ sparc64.a: $(sparc64_OBJS)
 sparc64.so: $(sparc64_OBJS)
 	$(LD) -o sparc64.so $(sparc64_OBJS)
 
+amd64.o: amd64.c
+	$(CC) $(amd64_CFLAGS) -c amd64.c
+
 i386.o: i386.c 80386.ins 80386.reg
 	$(CC) $(i386_CFLAGS) -c i386.c
 
@@ -107,7 +120,7 @@ sparc64.o: sparc64.c sparc.ins sparc.reg sparc64.ins sparc64.reg
 	$(CC) $(sparc64_CFLAGS) -c sparc64.c
 
 clean:
-	$(RM) $(i386_OBJS) $(i386_real_OBJS) $(i486_OBJS) $(i586_OBJS) $(i686_OBJS) $(sparc_OBJS) $(sparc64_OBJS)
+	$(RM) $(amd64_OBJS) $(i386_OBJS) $(i386_real_OBJS) $(i486_OBJS) $(i586_OBJS) $(i686_OBJS) $(sparc_OBJS) $(sparc64_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
