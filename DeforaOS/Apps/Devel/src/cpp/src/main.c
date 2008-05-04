@@ -75,6 +75,7 @@ static int _cpp(Prefs * prefs, int filec, char * filev[])
 static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 {
 	int ret;
+	int filter = CPP_FILTER_WHITESPACE;
 	Cpp * cpp;
 	size_t i;
 	size_t j;
@@ -82,8 +83,9 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	Token * token;
 	int code;
 
-	if((cpp = cpp_new(filename, prefs->flags & PREFS_t
-					? CPP_FILTER_TRIGRAPH : 0)) == NULL)
+	if(prefs->flags & PREFS_t)
+		filter |= CPP_FILTER_TRIGRAPH;
+	if((cpp = cpp_new(filename, filter)) == NULL)
 		return _cpp_error();
 	for(i = 0; i < prefs->paths_cnt; i++)
 		if(cpp_path_add(cpp, prefs->paths[i]) != 0)

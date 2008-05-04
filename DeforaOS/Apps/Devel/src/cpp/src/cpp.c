@@ -193,6 +193,10 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		void * data);
+static int _cpp_callback_newline(Parser * parser, Token * token, int c,
+		void * data);
+static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
+		void * data);
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_comma(Parser * parser, Token * token, int c,
@@ -212,7 +216,7 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 /* cpp_isword */
 static int _cpp_isword(int c)
 {
-	return isalnum(c) || c == '_';
+	return isalnum(c) || c == '_' || c == '$';
 }
 
 
@@ -433,7 +437,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 #endif
 	do
 	{
-		if(cpp->filters & CPP_FILTER_WHITESPACE && c != '\n')
+		if(c != '\n')
 			continue;
 		if((p = realloc(str, len + 1)) == NULL)
 		{
@@ -444,6 +448,61 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		str[len++] = c;
 	}
 	while(isspace((c = parser_scan_filter(parser))));
+	token_set_code(token, CPP_CODE_WHITESPACE);
+	if(str != NULL)
+	{
+		str[len] = '\0';
+		token_set_string(token, str);
+		free(str);
+		cpp->directive_newline = 1;
+	}
+	else
+		token_set_string(token, " ");
+	return 0;
+}
+
+
+/* cpp_callback_newline */
+static int _cpp_callback_newline(Parser * parser, Token * token, int c,
+		void * data)
+{
+	if(c != '\n')
+		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	parser_scan_filter(parser);
+	token_set_code(token, CPP_CODE_NEWLINE);
+	token_set_string(token, "\n");
+	return 0;
+}
+
+
+/* cpp_callback_otherspace */
+static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
+		void * data)
+{
+	Cpp * cpp = data;
+	char * str = NULL;
+	size_t len = 0;
+	char * p;
+
+	if(!isspace(c) || c == '\n')
+		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	do
+	{
+		if((p = realloc(str, len + 1)) == NULL)
+		{
+			free(str);
+			return -1;
+		}
+		str = p;
+		str[len++] = c;
+	}
+	while(isspace((c = parser_scan_filter(parser))) && c != '\n');
 	token_set_code(token, CPP_CODE_WHITESPACE);
 	if(str != NULL)
 	{
@@ -930,7 +989,13 @@ Cpp * cpp_new(char const * filename, int filters)
 	parser_add_filter(cpp->parser, _cpp_filter_newlines, cpp);
 	if(cpp->filters & CPP_FILTER_TRIGRAPH)
 		parser_add_filter(cpp->parser, _cpp_filter_trigraphs, cpp);
-	parser_add_callback(cpp->parser, _cpp_callback_whitespace, cpp);
+	if(cpp->filters & CPP_FILTER_WHITESPACE)
+		parser_add_callback(cpp->parser, _cpp_callback_whitespace, cpp);
+	else
+	{
+		parser_add_callback(cpp->parser, _cpp_callback_newline, cpp);
+		parser_add_callback(cpp->parser, _cpp_callback_otherspace, cpp);
+	}
 	parser_add_callback(cpp->parser, _cpp_callback_comment, NULL);
 	parser_add_callback(cpp->parser, _cpp_callback_directive, cpp);
 	parser_add_callback(cpp->parser, _cpp_callback_comma, NULL);
