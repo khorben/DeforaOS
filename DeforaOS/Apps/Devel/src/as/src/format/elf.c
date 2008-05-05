@@ -193,6 +193,7 @@ static ElfSectionValues * _section_values(char const * name)
 
 static int _section_string(char const * name)
 {
+	int ret;
 	size_t len;
 	char * p;
 
@@ -200,13 +201,14 @@ static int _section_string(char const * name)
 	if(ess == NULL)
 		len++;
 	if((p = realloc(ess, sizeof(char) * (ess_cnt + len + 1))) == NULL)
-		return _elf_error(format_plugin.filename, 1);
+		return -_elf_error(format_plugin.filename, 1);
 	if(ess == NULL)
 		p[ess_cnt++] = '\0';
 	ess = p;
 	memcpy(&ess[ess_cnt], name, len + 1);
+	ret = ess_cnt;
 	ess_cnt += len + 1;
-	return 0;
+	return ret;
 }
 
 
@@ -340,11 +342,12 @@ static int _exit_32_shdr(FILE * fp, Elf32_Off offset)
 
 static int _section_32(FILE * fp, char const * name)
 {
+	int ss;
 	Elf32_Shdr * p;
 	ElfSectionValues * esv;
 	long offset;
 
-	if(_section_string(name) != 0)
+	if((ss = _section_string(name)) < 0)
 		return 1;
 	if((p = realloc(es32, sizeof(*es32) * (es32_cnt + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
@@ -352,7 +355,7 @@ static int _section_32(FILE * fp, char const * name)
 	p = &es32[es32_cnt++];
 	memset(p, 0, sizeof(*p));
 	esv = _section_values(name);
-	p->sh_name = ess_cnt - strlen(name); /* FIXME not so clean */
+	p->sh_name = ss;
 	p->sh_type = esv->type;
 	p->sh_flags = esv->flags;
 	if((offset = ftell(fp)) == -1)
@@ -478,11 +481,12 @@ static int _exit_64_shdr(FILE * fp, Elf64_Off offset)
 
 static int _section_64(FILE * fp, char const * name)
 {
+	int ss;
 	Elf64_Shdr * p;
 	ElfSectionValues * esv;
 	long offset;
 
-	if(_section_string(name) != 0)
+	if((ss = _section_string(name)) < 0)
 		return 1;
 	if((p = realloc(es64, sizeof(*es64) * (es64_cnt + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
@@ -490,7 +494,7 @@ static int _section_64(FILE * fp, char const * name)
 	p = &es64[es64_cnt++];
 	memset(p, 0, sizeof(*p));
 	esv = _section_values(name);
-	p->sh_name = ess_cnt - strlen(name); /* FIXME not so clean */
+	p->sh_name = ss;
 	p->sh_type = esv->type;
 	p->sh_flags = esv->flags;
 	if((offset = ftell(fp)) == -1)

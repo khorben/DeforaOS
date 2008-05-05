@@ -186,6 +186,28 @@ int as_close(As * as)
 }
 
 
+/* as_section */
+int as_section(As * as, char const * name)
+{
+	return code_section(as->code, name);
+}
+
+
+/* as_function */
+int as_function(As * as, char const * name)
+{
+	return code_function(as->code, name);
+}
+
+
+/* as_instruction */
+int as_instruction(As * as, char const * name)
+{
+	/* FIXME design a way to pass arguments */
+	return code_instruction(as->code, name, NULL, 0);
+}
+
+
 /* as_plugin_list */
 int as_plugin_list(AsPluginType type)
 {
