@@ -55,6 +55,8 @@ static C99Option _as_options[ASO_COUNT + 1] =
 /* prototypes */
 static int _as_init(char const * outfile, int optlevel);
 static int _as_exit(void);
+static int _as_section(char const * name);
+static int _as_function(char const * name);
 
 
 /* public */
@@ -63,7 +65,9 @@ TargetPlugin target_plugin =
 {
 	_as_options,
 	_as_init,
-	_as_exit
+	_as_exit,
+	_as_section,
+	_as_function
 };
 
 
@@ -86,7 +90,7 @@ static int _as_init(char const * outfile, int optlevel)
 	fprintf(stderr, "DEBUG: %s: architecture \"%s\", format \"%s\"\n",
 			PACKAGE, as_get_arch(_as_as), as_get_format(_as_as));
 #endif
-	if(as_open(_as_as, outfile) != 0)
+	if(as_open(_as_as, outfile) != 0 || _as_section("text") != 0)
 	{
 		as_delete(_as_as);
 		return 1;
@@ -103,4 +107,18 @@ static int _as_exit(void)
 	ret = as_close(_as_as);
 	as_delete(_as_as);
 	return ret;
+}
+
+
+/* as_section */
+static int _as_section(char const * name)
+{
+	return as_section(_as_as, name);
+}
+
+
+/* as_function */
+static int _as_function(char const * name)
+{
+	return as_function(_as_as, name);
 }

@@ -48,10 +48,11 @@ typedef struct _CodeVariable
 /* prototypes */
 static int _code_target_init(Code * code, char const * outfile, int optlevel);
 static int _code_target_exit(Code * code);
+static int _code_target_function(Code * code, char const * name);
 
 static int _variable_add(Code * code, char const * name);
 
-static int _code_add_function(Code * code, char const * name);
+static int _code_function(Code * code, char const * name);
 
 
 /* protected */
@@ -96,10 +97,26 @@ static int _code_target_exit(Code * code)
 }
 
 
-/* code_add_function */
-static int _code_add_function(Code * code, char const * name)
+/* code_target_function */
+static int _code_target_function(Code * code, char const * name)
 {
-	return _variable_add(code, name);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(code->target->function == NULL)
+		return 0;
+	return code->target->function(name);
+}
+
+
+/* code_function */
+static int _code_function(Code * code, char const * name)
+{
+	int ret;
+
+	if((ret = _variable_add(code, name)) != 0)
+		return ret;
+	return _code_target_function(code, name);
 }
 
 
@@ -233,7 +250,7 @@ int code_set_identifier(Code * code, char const * name)
 	switch(code->context)
 	{
 		case CODE_CONTEXT_FUNCTION_NAME:
-			return _code_add_function(code, name);
+			return _code_function(code, name);
 		case CODE_CONTEXT_UNDEFINED:
 		default:
 			break;

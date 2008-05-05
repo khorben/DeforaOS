@@ -30,6 +30,8 @@ typedef struct _TargetPlugin
 	C99Option * options;
 	int (*init)(char const * outfile, int optlevel);
 	int (*exit)(void);
+	int (*section)(char const * name);
+	int (*function)(char const * name);
 } TargetPlugin;
 
 #endif /* !_C99_TARGET_TARGET_H */
