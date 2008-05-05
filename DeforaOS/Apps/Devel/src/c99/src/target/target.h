@@ -19,18 +19,16 @@
 #ifndef _C99_TARGET_TARGET_H
 # define _C99_TARGET_TARGET_H
 
+# include "c99.h"
+
 
 /* Target */
-/* protected */
-/* types */
-typedef struct _Target Target;
-
-
 /* public */
 /* types */
 typedef struct _TargetPlugin
 {
-	int (*init)(char const *, char const *);
+	C99Option * options;
+	int (*init)(char const * outfile, int optlevel);
 	int (*exit)(void);
 } TargetPlugin;
 

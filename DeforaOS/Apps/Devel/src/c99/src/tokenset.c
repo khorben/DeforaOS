@@ -16,7 +16,7 @@
 
 
 
-#include "c99.h"
+#include "common.h"
 #include "tokenset.h"
 
 

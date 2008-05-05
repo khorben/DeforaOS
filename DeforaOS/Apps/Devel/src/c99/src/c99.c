@@ -22,6 +22,8 @@
 #include <string.h>
 #include <errno.h>
 #include "common.h"
+#include "code.h"
+#include "parser.h"
 #include "c99.h"
 
 
@@ -33,41 +35,48 @@
 /* public */
 /* functions */
 /* c99_new */
-static Cpp * _new_cpp(C99Prefs * prefs, char const * pathname);
+static Cpp * _new_cpp(C99Prefs const * prefs, char const * pathname);
 static char * _new_outfile(int flags, char const * outfile,
 		char const * pathname);
 
-C99 * c99_new(C99Prefs * prefs, char const * pathname)
+C99 * c99_new(C99Prefs const * prefs, char const * pathname)
 {
 	C99 * c99;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((c99 = object_new(sizeof(*c99))) == NULL)
 		return NULL;
 	memset(c99, 0, sizeof(*c99));
-	c99->flags = prefs->flags;
 	if((c99->cpp = _new_cpp(prefs, pathname)) == NULL)
 	{
 		object_delete(c99);
 		return NULL;
 	}
-	c99->outfile = _new_outfile(prefs->flags, prefs->outfile, pathname);
-	if(c99->outfile != NULL)
-		c99->outfp = (c99->outfile[0] == '\0') ? stdout
-			: fopen(c99->outfile, "w");
-	else
-		c99->outfp = NULL;
-	c99->optlevel = prefs->optlevel;
-	c99->code = code_new(prefs->target);
-	/* abort if there was an error */
-	if(c99->outfile == NULL || c99->outfp == NULL || c99->code == NULL)
+	if((c99->outfile = _new_outfile(prefs->flags, prefs->outfile, pathname))
+			== NULL
+			|| (c99->code = code_new(prefs, c99->outfile)) == NULL)
 	{
 		c99_delete(c99);
 		return NULL;
 	}
-	return c99;
+	/* if not pre-processing we can already return */
+	if(!(prefs->flags & C99PREFS_E))
+		return c99;
+	if(c99->outfile[0] == '\0')
+	{
+		c99->outfp = stdout;
+		return c99;
+	}
+	if((c99->outfp = fopen(c99->outfile, "w")) != NULL)
+		return c99;
+	error_set_code(1, "%s: %s", c99->outfile, strerror(errno));
+	c99_delete(c99);
+	return NULL;
 }
 
-static Cpp * _new_cpp(C99Prefs * prefs, char const * pathname)
+static Cpp * _new_cpp(C99Prefs const * prefs, char const * pathname)
 {
 	Cpp * cpp;
 	size_t i;
@@ -118,7 +127,7 @@ static char * _new_outfile(int flags, char const * outfile,
 		return ret;
 	}
 	if(flags & C99PREFS_E && outfile == NULL)
-		outfile = "";
+		outfile = ""; /* XXX a bit ugly */
 	else if(outfile == NULL)
 		outfile = DEFAULT_OBJECT_FILENAME;
 	if((ret = strdup(outfile)) == NULL)
@@ -135,6 +144,9 @@ int c99_delete(C99 * c99)
 {
 	int ret = 0;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	cpp_delete(c99->cpp);
 	if(c99->outfp != NULL && fclose(c99->outfp) != 0)
 		ret = error_set_code(1, "%s: %s", c99->outfile,
@@ -143,7 +155,15 @@ int c99_delete(C99 * c99)
 	if(c99->token != NULL)
 		token_delete(c99->token);
 	if(c99->code != NULL)
-		code_delete(c99->code);
+		ret |= code_delete(c99->code);
 	object_delete(c99);
 	return ret;
+}
+
+
+/* useful */
+/* c99_parse */
+int c99_parse(C99 * c99)
+{
+	return parse(c99);
 }

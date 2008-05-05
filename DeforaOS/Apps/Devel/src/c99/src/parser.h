@@ -16,46 +16,14 @@
 
 
 
-#include <as.h>
-#include <stdlib.h>
-#include "target.h"
+#ifndef C99_PARSER_H
+# define C99_PARSER_H
 
-
-/* sparc64 */
-/* private */
-/* variables */
-As * as;
-
-
-/* protected */
-/* prototypes */
-static int _sparc64_init(char const * arch, char const * format);
-static int _sparc64_exit(void);
-
-
-/* public */
-/* variables */
-TargetPlugin target_plugin =
-{
-	_sparc64_init,
-	_sparc64_exit
-};
+# include "c99.h"
 
 
 /* protected */
 /* functions */
-/* sparc64_init */
-static int _sparc64_init(char const * arch, char const * format)
-{
-	if((as = as_new(arch, format)) == NULL)
-		return 1;
-	return 0;
-}
+int parse(C99 * c99);
 
-
-/* sparc64_exit */
-static int _sparc64_exit(void)
-{
-	as_delete(as);
-	return 0;
-}
+#endif /* !C99_PARSER_H */

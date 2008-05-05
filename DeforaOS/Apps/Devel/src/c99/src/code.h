@@ -19,6 +19,8 @@
 #ifndef _C99_CODE_H
 # define _C99_CODE_H
 
+# include "c99.h"
+
 
 /* Code */
 /* protected */
@@ -33,8 +35,8 @@ typedef enum _CodeContext
 
 /* public */
 /* functions */
-Code * code_new(char const * target);
-void code_delete(Code * code);
+Code * code_new(C99Prefs const * prefs, char const * outfile);
+int code_delete(Code * code);
 
 /* accessors */
 int code_set_context(Code * code, CodeContext context);

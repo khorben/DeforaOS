@@ -46,6 +46,9 @@ typedef struct _CodeVariable
 
 
 /* prototypes */
+static int _code_target_init(Code * code, char const * outfile, int optlevel);
+static int _code_target_exit(Code * code);
+
 static int _variable_add(Code * code, char const * name);
 
 static int _code_add_function(Code * code, char const * name);
@@ -62,12 +65,37 @@ struct _Code
 	CodeVariable * variables;
 	unsigned int variables_cnt;
 	/* target */
-	Target * target;
+	Plugin * plugin;
+	TargetPlugin * target;
 };
 
 
 /* private */
 /* functions */
+/* code_target_init */
+static int _code_target_init(Code * code, char const * outfile, int optlevel)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(code->target->init == NULL)
+		return 0;
+	return code->target->init(outfile, optlevel);
+}
+
+
+/* code_target_exit */
+static int _code_target_exit(Code * code)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(code->target->exit == NULL)
+		return 0;
+	return code->target->exit();
+}
+
+
 /* code_add_function */
 static int _code_add_function(Code * code, char const * name)
 {
@@ -97,20 +125,24 @@ static int _variable_add(Code * code, char const * name)
 /* public */
 /* functions */
 /* code_new */
-static Target * _new_target(char const * target);
+static int _new_target(Code * code, char const * target,
+		C99Option const * options, size_t options_cnt);
 
-Code * code_new(char const * target)
+Code * code_new(C99Prefs const * prefs, char const * outfile)
 {
 	Code * code;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, prefs, outfile);
+#endif
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
+	memset(code, 0, sizeof(*code));
 	code->context = CODE_CONTEXT_UNDEFINED;
-	code->types = NULL;
-	code->types_cnt = 0;
-	code->variables = NULL;
-	code->variables_cnt = 0;
-	if((code->target = _new_target(target)) == NULL)
+	if(_new_target(code, prefs->target, prefs->options, prefs->options_cnt)
+			!= 0
+			|| _code_target_init(code, outfile, prefs->optlevel)
+			!= 0)
 	{
 		code_delete(code);
 		return NULL;
@@ -118,31 +150,68 @@ Code * code_new(char const * target)
 	return code;
 }
 
-static Target * _new_target(char const * target)
+static int _new_target(Code * code, char const * target,
+		C99Option const * options, size_t options_cnt)
 {
-	struct utsname * uts;
+	C99Option const * p;
+	size_t i;
+	size_t j;
 
-	if(target == NULL)
-	{
-		if(uname(uts) != 0)
-		{
-			error_set_code(1, "%s", strerror(errno));
-			return NULL;
-		}
-		target = uts->machine;
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, target);
+	fprintf(stderr, "DEBUG: %s(%zu)\n", __func__, options_cnt);
 #endif
+	if(target == NULL)
+		target = "as";
+	if((code->plugin = plugin_new(LIBDIR, PACKAGE, "target", target))
+			== NULL
+			|| (code->target = plugin_lookup(code->plugin,
+					"target_plugin")) == NULL)
+		return 1;
+	if(code->target->options == NULL)
+	{
+		if(options_cnt == 0)
+			return 0;
+		return error_set_code(1, "%s", "Target supports no options");
 	}
-	return plugin_new(LIBDIR, PACKAGE, "target", target);
+	for(i = 0; i < options_cnt; i++)
+	{
+		p = &options[i];
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: option \"%s\"\n", p->name);
+#endif
+		for(j = 0; code->target->options[j].name != NULL; j++)
+			if(strcmp(p->name, code->target->options[j].name) == 0)
+				break;
+		if(code->target->options[j].name == NULL)
+			break;
+		code->target->options[j].value = p->value;
+	}
+	if(i == options_cnt)
+		return 0;
+	code->target = NULL;
+	return error_set_code(1, "%s: %s%s%s", target, "Unknown option \"",
+			p->name, "\" for target");
 }
 
 
 /* code_delete */
-void code_delete(Code * code)
+int code_delete(Code * code)
 {
+	int ret = 0;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(code->plugin != NULL)
+	{
+		if(code->target != NULL)
+			ret = _code_target_exit(code);
+		plugin_delete(code->plugin);
+	}
+	free(code->variables);
 	free(code->types);
 	object_delete(code);
+	return ret;
 }
 
 

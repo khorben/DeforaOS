@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include "common.h"
 #include "tokenset.h"
 #include "scanner.h"
-#include "common.h"
 #include "c99.h"
 #include "../config.h"
 
@@ -1738,14 +1738,14 @@ static int _designator(C99 * c99)
 /* public */
 /* functions */
 /* useful */
-/* c99_parse */
+/* parse */
 static int _parse_E(C99 * c99);
 
-int c99_parse(C99 * c99)
+int parse(C99 * c99)
 {
 	int ret;
 
-	if(c99->flags & C99PREFS_E)
+	if(c99->outfp != NULL) /* acting like a pre-processor */
 		return _parse_E(c99);
 	if((ret = _translation_unit(c99)) != 0)
 	{

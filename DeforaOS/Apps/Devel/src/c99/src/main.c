@@ -52,7 +52,8 @@ static int _c99(C99Prefs * prefs, int filec, char * filev[])
 static int _usage(void)
 {
 	fputs("Usage: c99 [-c][-D name[=value]]...[-E][-g][-I directory]"
-"[-L directory][-o outfile][-Ooptlevel][-s][-U name]... operand ...\n", stderr);
+"[-L directory][-m name[=value]]...[-o outfile][-Ooptlevel][-s][-U name]..."
+" operand ...\n", stderr);
 	return 1;
 }
 
@@ -63,6 +64,7 @@ static int _main_default_paths(C99Prefs * prefs);
 static int _main_add_define(C99Prefs * prefs, char * define);
 static int _main_add_path(C99Prefs * prefs, char const * path);
 static int _main_add_undefine(C99Prefs * prefs, char const * undefine);
+static int _main_add_option(C99Prefs * prefs, char const * option);
 
 int main(int argc, char * argv[])
 {
@@ -72,7 +74,7 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	if(_main_default_paths(&prefs) != 0)
 		return 2;
-	while((o = getopt(argc, argv, "cD:EgI:L:o:O123sU:m:")) != -1)
+	while((o = getopt(argc, argv, "cD:EgI:L:m:M:o:O123sU:")) != -1)
 		switch(o)
 		{
 			case 'c':
@@ -92,6 +94,13 @@ int main(int argc, char * argv[])
 			case 'g':
 				prefs.flags |= C99PREFS_g;
 				break;
+			case 'm':
+				if(_main_add_option(&prefs, optarg) != 0)
+					return 2;
+				break;
+			case 'M':
+				prefs.target = optarg;
+				break;
 			case 'o':
 				prefs.outfile = optarg;
 				break;
@@ -109,9 +118,6 @@ int main(int argc, char * argv[])
 			case '2':
 			case '3':
 				prefs.optlevel = o - '0';
-				break;
-			case 'm':
-				prefs.target = optarg;
 				break;
 			default:
 				return _usage();
@@ -183,5 +189,29 @@ static int _main_add_undefine(C99Prefs * prefs, char const * undefine)
 		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
 	prefs->undefines = p;
 	prefs->undefines[prefs->undefines_cnt++] = undefine;
+	return 0;
+}
+
+static int _main_add_option(C99Prefs * prefs, char const * option)
+{
+	C99Option * p;
+	char * q;
+
+	if(strlen(option) == 0)
+		return 1;
+	if((p = realloc(prefs->options, sizeof(*p)
+					* (prefs->options_cnt + 1))) == NULL)
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
+	prefs->options = p;
+	p = &prefs->options[prefs->options_cnt];
+	if((p->name = string_new(option)) == NULL)
+		return 1;
+	p->value = NULL;
+	if((q = strstr(p->name, "=")) != NULL)
+	{
+		*q = '\0';
+		p->value = q + 1;
+	}
+	prefs->options_cnt++;
 	return 0;
 }

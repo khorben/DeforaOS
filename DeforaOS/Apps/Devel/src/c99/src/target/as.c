@@ -1,0 +1,106 @@
+/* $Id$ */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Devel c99 */
+/* c99 is not free software; you can redistribute it and/or modify it under the
+ * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
+ * Unported as published by the Creative Commons organization.
+ *
+ * c99 is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE.  See the Creative Commons Attribution-NonCommercial-
+ * ShareAlike 3.0 Unported license for more details.
+ *
+ * You should have received a copy of the Creative Commons Attribution-
+ * NonCommercial-ShareAlike 3.0 along with c99; if not, browse to
+ * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+
+
+
+#include <as.h>
+#include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
+#include "target.h"
+#ifdef DEBUG
+# include "../../config.h"
+#endif
+
+
+/* as */
+/* private */
+/* types */
+typedef enum _AsOption
+{
+	ASO_ARCH	= 0,
+	ASO_FORMAT
+} AsOption;
+# define ASO_LAST	ASO_FORMAT
+# define ASO_COUNT	(ASO_LAST + 1)
+
+
+/* variables */
+static As * _as_as;
+static int _as_optlevel;
+
+static C99Option _as_options[ASO_COUNT + 1] =
+{
+	{ "arch",	NULL	},
+	{ "format",	NULL	},
+	{ NULL,		NULL	}
+};
+
+
+/* protected */
+/* prototypes */
+static int _as_init(char const * outfile, int optlevel);
+static int _as_exit(void);
+
+
+/* public */
+/* variables */
+TargetPlugin target_plugin =
+{
+	_as_options,
+	_as_init,
+	_as_exit
+};
+
+
+/* protected */
+/* functions */
+/* as_init */
+static int _as_init(char const * outfile, int optlevel)
+{
+	char const * arch = _as_options[ASO_ARCH].value;
+	char const * format = _as_options[ASO_FORMAT].value;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	_as_optlevel = optlevel;
+	/* FIXME verify if we know how to handle to architecture */
+	if((_as_as = as_new(arch, format)) == NULL)
+		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s: architecture \"%s\", format \"%s\"\n",
+			PACKAGE, as_get_arch(_as_as), as_get_format(_as_as));
+#endif
+	if(as_open(_as_as, outfile) != 0)
+	{
+		as_delete(_as_as);
+		return 1;
+	}
+	return 0;
+}
+
+
+/* as_exit */
+static int _as_exit(void)
+{
+	int ret;
+
+	ret = as_close(_as_as);
+	as_delete(_as_as);
+	return ret;
+}
