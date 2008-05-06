@@ -67,6 +67,14 @@
 	fsub	%st0, %st5, %st0
 	fsub	%st0, %st6, %st0
 	fsub	%st0, %st7, %st0
+	fsubr	%st0, %st0
+	fsubr	%st1, %st0
+	fsubr	%st2, %st0
+	fsubr	%st3, %st0
+	fsubr	%st4, %st0
+	fsubr	%st5, %st0
+	fsubr	%st6, %st0
+	fsubr	%st7, %st0
 	/* 0xd8f0 */
 	fdiv	%st0, %st0, %st0
 	fdiv	%st0, %st1, %st0
@@ -207,6 +215,14 @@
 	fadd	%st0, %st6
 	fadd	%st0, %st7
 	/* 0xdce0 */
+	fsubr	%st0, %st0
+	fsubr	%st0, %st1
+	fsubr	%st0, %st2
+	fsubr	%st0, %st3
+	fsubr	%st0, %st4
+	fsubr	%st0, %st5
+	fsubr	%st0, %st6
+	fsubr	%st0, %st7
 	fsub	%st0, %st0, %st0
 	fsub	%st1, %st0, %st1
 	fsub	%st2, %st0, %st2
@@ -245,7 +261,6 @@
 	fucomp
 	/* 0xde */
 	fcompp	%st0, %st1
-	fsubrp
 	/* 0xdec0 */
 	faddp	%st0, %st0
 	faddp	%st0, %st1
@@ -256,6 +271,14 @@
 	faddp	%st0, %st6
 	faddp	%st0, %st7
 	/* 0xdee0 */
+	fsubrp	%st0, %st0
+	fsubrp	%st0, %st1
+	fsubrp	%st0, %st2
+	fsubrp	%st0, %st3
+	fsubrp	%st0, %st4
+	fsubrp	%st0, %st5
+	fsubrp	%st0, %st6
+	fsubrp	%st0, %st7
 	fsubp	%st0, %st0, %st0
 	fsubp	%st1, %st0, %st1
 	fsubp	%st2, %st0, %st2
