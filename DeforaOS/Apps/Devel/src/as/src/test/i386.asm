@@ -104,7 +104,7 @@
 	fcmovbe	%st0, %st4
 	fcmovbe	%st0, %st5
 	fcmovbe	%st0, %st6
-	fcmovu	%st0, %st7
+	fcmovbe	%st0, %st7
 	fcmovu	%st0, %st0
 	fcmovu	%st0, %st1
 	fcmovu	%st0, %st2
@@ -116,6 +116,40 @@
 	fucompp
 	/* 0xdb */
 	fnclex
+	/* 0xdbc0 */
+	fcmovnb	%st0, %st0
+	fcmovnb	%st0, %st1
+	fcmovnb	%st0, %st2
+	fcmovnb	%st0, %st3
+	fcmovnb	%st0, %st4
+	fcmovnb	%st0, %st5
+	fcmovnb	%st0, %st6
+	fcmovnb	%st0, %st7
+	fcmovne	%st0, %st0
+	fcmovne	%st0, %st1
+	fcmovne	%st0, %st2
+	fcmovne	%st0, %st3
+	fcmovne	%st0, %st4
+	fcmovne	%st0, %st5
+	fcmovne	%st0, %st6
+	fcmovne	%st0, %st7
+	/* 0xdbd0 */
+	fcmovnbe	%st0, %st0
+	fcmovnbe	%st0, %st1
+	fcmovnbe	%st0, %st2
+	fcmovnbe	%st0, %st3
+	fcmovnbe	%st0, %st4
+	fcmovnbe	%st0, %st5
+	fcmovnbe	%st0, %st6
+	fcmovnbe	%st0, %st7
+	fcmovnu	%st0, %st0
+	fcmovnu	%st0, %st1
+	fcmovnu	%st0, %st2
+	fcmovnu	%st0, %st3
+	fcmovnu	%st0, %st4
+	fcmovnu	%st0, %st5
+	fcmovnu	%st0, %st6
+	fcmovnu	%st0, %st7
 	/* 0xdbe8 */
 	fucomi	%st0, %st0
 	fucomi	%st0, %st1
