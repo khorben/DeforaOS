@@ -65,7 +65,7 @@ view: $(view_OBJS)
 browser.o: browser.c mime.h callbacks.h browser.h common.c
 	$(CC) $(browser_CFLAGS) -c browser.c
 
-callbacks.o: callbacks.c browser.h callbacks.h common.c
+callbacks.o: callbacks.c browser.h callbacks.h ../config.h common.c
 	$(CC) $(browser_CFLAGS) -c callbacks.c
 
 mime.o: mime.c mime.h ../config.h
