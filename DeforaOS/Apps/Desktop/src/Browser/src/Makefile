@@ -5,7 +5,7 @@ BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
-CFLAGS	= -Wall -g -O2
+CFLAGS	= -Wall -g -O2 -Wno-unused-parameter
 LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
 MKDIR	= mkdir -p
@@ -104,12 +104,19 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 browser $(DESTDIR)$(BINDIR)/browser
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 copy $(DESTDIR)$(BINDIR)/copy
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 delete $(DESTDIR)$(BINDIR)/delete
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 desktop $(DESTDIR)$(BINDIR)/desktop
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 move $(DESTDIR)$(BINDIR)/move
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 open $(DESTDIR)$(BINDIR)/open
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 properties $(DESTDIR)$(BINDIR)/properties
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 view $(DESTDIR)$(BINDIR)/view
 
 uninstall:
