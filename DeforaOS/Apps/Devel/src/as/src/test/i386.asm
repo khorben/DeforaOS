@@ -85,7 +85,18 @@
 	fdiv	%st0, %st6, %st0
 	fdiv	%st0, %st7, %st0
 	/* 0xd9 */
+	/* 0xd9c0 */
+	fxch	%st0, %st0
+	fxch	%st0, %st1
+	fxch	%st0, %st2
+	fxch	%st0, %st3
+	fxch	%st0, %st4
+	fxch	%st0, %st5
+	fxch	%st0, %st6
+	fxch	%st0, %st7
+	/* 0xd9d0 */
 	fnop
+	/* 0xd9e0 */
 	fchs
 	fabs
 	ftst
@@ -97,6 +108,7 @@
 	fldz
 	f2xm1
 	fptan
+	fxtract	%st0
 	fprem1
 	fdecstp
 	fprem
