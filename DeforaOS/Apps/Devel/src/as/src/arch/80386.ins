@@ -73,7 +73,9 @@
 	{ "fabs",	0xd9e1,	AO_NONE,		2, 0, 0, 0 },
 	{ "faddp",	0xdec1,	AO_NONE,		2, 0, 0, 0 },
 	{ "fchs",	0xd9e0,	AO_NONE,		2, 0, 0, 0 },
+#if 0
 	{ "fclex",	0x9bdbe2,AO_NONE,		3, 0, 0, 0 },
+#endif
 	{ "fcom",	0xd8d1,	AO_NONE,		2, 0, 0, 0 },
 	{ "fcomp",	0xd8d9,	AO_NONE,		2, 0, 0, 0 },
 	{ "fcompp",	0xded9,	AO_NONE,		2, 0, 0, 0 },
@@ -82,19 +84,23 @@
 	{ "fdivp",	0xdef9,	AO_NONE,		2, 0, 0, 0 },
 	{ "fdivrp",	0xdef1,	AO_NONE,		2, 0, 0, 0 },
 	{ "fincstp",	0xd9f7,	AO_NONE,		2, 0, 0, 0 },
+#if 0
 	{ "finit",	0x9bdbe3,AO_NONE,		3, 0, 0, 0 },
+#endif
 	{ "fld1",	0xd9e8,	AO_NONE,		2, 0, 0, 0 },
-	{ "fldl2t",	0xd9e9,	AO_NONE,		2, 0, 0, 0 },
 	{ "fldl2e",	0xd9ea,	AO_NONE,		2, 0, 0, 0 },
-	{ "fldpi",	0xd9eb,	AO_NONE,		2, 0, 0, 0 },
+	{ "fldl2t",	0xd9e9,	AO_NONE,		2, 0, 0, 0 },
 	{ "fldlg2",	0xd9ec,	AO_NONE,		2, 0, 0, 0 },
 	{ "fldln2",	0xd9ed,	AO_NONE,		2, 0, 0, 0 },
+	{ "fldpi",	0xd9eb,	AO_NONE,		2, 0, 0, 0 },
 	{ "fldz",	0xd9ee,	AO_NONE,		2, 0, 0, 0 },
 	{ "fmulp",	0xdec9,	AO_NONE,		2, 0, 0, 0 },
 	{ "fnclex",	0xdbe2,	AO_NONE,		2, 0, 0, 0 },
 	{ "fninit",	0xdbe3,	AO_NONE,		2, 0, 0, 0 },
 	{ "fnop",	0xd9d0,	AO_NONE,		2, 0, 0, 0 },
+#if 0
 	{ "fnstsw",	0xdfe0,	AO_ax,			2, 0, 0, 0 },
+#endif
 	{ "fpatan",	0xd9f3,	AO_NONE,		2, 0, 0, 0 },
 	{ "fprem",	0xd9f8,	AO_NONE,		2, 0, 0, 0 },
 	{ "fprem1",	0xd9f5,	AO_NONE,		2, 0, 0, 0 },
@@ -111,6 +117,7 @@
 	{ "fucom",	0xdde1,	AO_NONE,		2, 0, 0, 0 },
 	{ "fucomp",	0xdde9,	AO_NONE,		2, 0, 0, 0 },
 	{ "fucompp",	0xdae9,	AO_NONE,		2, 0, 0, 0 },
+	/* XXX duplicate of wait? */
 	{ "fwait",	0x9b,	AO_NONE,		1, 0, 0, 0 },
 	{ "fxam",	0xd9e5,	AO_NONE,		2, 0, 0, 0 },
 	{ "fxch",	0xd9c9,	AO_NONE,		2, 0, 0, 0 },
@@ -185,9 +192,13 @@
 	{ "js",		0x78,	AO_IMM,			1, 1, 0, 0 },
 	{ "jz",		0x74,	AO_IMM,			1, 1, 0, 0 },
 	{ "lahf",	0x9f,	AO_NONE,		1, 0, 0, 0 },
-/*	{ "lea",	0x8d,	AO_IMM_ | AO_REG,	1, 0, 0, 0 }, */
+#if 0
+	{ "lea",	0x8d,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
 	{ "leave",	0xc9,	AO_NONE,		1, 0, 0, 0 },
-/*	{ "lfence",	0x0fae,	AO_NONE,		2, 0, 0, 0 }, */
+#if 0
+	{ "lfence",	0x0fae,	AO_NONE,		2, 0, 0, 0 },
+#endif
 	{ "lock",	0xf0,	AO_NONE,		1, 0, 0, 0 },
 	{ "lodsd",	0xad,	AO_NONE,		1, 0, 0, 0 },
 	{ "lodsw",	0xad,	AO_NONE,		1, 0, 0, 0 },
@@ -251,6 +262,21 @@
 #else
 	{ "popfd",	0x9d,	AO_NONE,		1, 0, 0, 0 },
 #endif /* I386_REAL */
+#ifdef I386_REAL
+	{ "push",	0x50,	AO_ax,			1, 0, 0, 0 },
+	{ "push",	0x51,	AO_cx,			1, 0, 0, 0 },
+	{ "push",	0x52,	AO_dx,			1, 0, 0, 0 },
+	{ "push",	0x53,	AO_bx,			1, 0, 0, 0 },
+	{ "push",	0x54,	AO_sp,			1, 0, 0, 0 },
+	{ "push",	0x55,	AO_bp,			1, 0, 0, 0 },
+#else
+	{ "push",	0x50,	AO_eax,			1, 0, 0, 0 },
+	{ "push",	0x51,	AO_ecx,			1, 0, 0, 0 },
+	{ "push",	0x52,	AO_edx,			1, 0, 0, 0 },
+	{ "push",	0x53,	AO_ebx,			1, 0, 0, 0 },
+	{ "push",	0x54,	AO_esp,			1, 0, 0, 0 },
+	{ "push",	0x55,	AO_ebp,			1, 0, 0, 0 },
+#endif /* I386_REAL */
 	{ "push",	0x06,	AO_es,			1, 0, 0, 0 },
 	{ "push",	0x0e,	AO_cs,			1, 0, 0, 0 },
 	{ "push",	0x16,	AO_ss,			1, 0, 0, 0 },
@@ -258,10 +284,6 @@
 	{ "push",	0x0fa0,	AO_fs,			2, 0, 0, 0 },
 	{ "push",	0x0fa8,	AO_gs,			2, 0, 0, 0 },
 #if 0
-	{ "push",	0x50,	AO_IMM,			1, 0, 0, 0 },
-	{ "push",	0x51,	AO_IMM,			1, 0, 0, 0 },
-	{ "push",	0x52,	AO_IMM,			1, 0, 0, 0 },
-	{ "push",	0x53,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x54,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x55,	AO_IMM,			1, 0, 0, 0 },
 	{ "push",	0x56,	AO_IMM,			1, 0, 0, 0 },
@@ -274,12 +296,12 @@
 #ifdef I386_REAL
 	{ "pusha",	0x60,	AO_NONE,		1, 0, 0, 0 },
 #else
-	{ "pushad",	0x60,	AO_NONE,		1, 0, 0, 0 },
+	{ "pusha",	0x60,	AO_NONE,		1, 0, 0, 0 },
 #endif /* I386_REAL */
 #ifdef I386_REAL
 	{ "pushf",	0x9c,	AO_NONE,		1, 0, 0, 0 },
 #else
-	{ "pushfd",	0x9c,	AO_NONE,		1, 0, 0, 0 },
+	{ "pushf",	0x9c,	AO_NONE,		1, 0, 0, 0 },
 #endif /* I386_REAL */
 	{ "rdmsr",	0x0f32,	AO_NONE,		2, 0, 0, 0 },
 	{ "rdpmc",	0x0f33,	AO_NONE,		2, 0, 0, 0 },
