@@ -33,22 +33,22 @@
 	/* 0xc0 */
 	ret
 	/* 0xd8 */
-	fcom	%st0
-	fcom	%st1
-	fcom	%st2
-	fcom	%st3
-	fcom	%st4
-	fcom	%st5
-	fcom	%st6
-	fcom	%st7
-	fcomp	%st0
-	fcomp	%st1
-	fcomp	%st2
-	fcomp	%st3
-	fcomp	%st4
-	fcomp	%st5
-	fcomp	%st6
-	fcomp	%st7
+	fcom	%st0, %st0
+	fcom	%st0, %st1
+	fcom	%st0, %st2
+	fcom	%st0, %st3
+	fcom	%st0, %st4
+	fcom	%st0, %st5
+	fcom	%st0, %st6
+	fcom	%st0, %st7
+	fcomp	%st0, %st0
+	fcomp	%st0, %st1
+	fcomp	%st0, %st2
+	fcomp	%st0, %st3
+	fcomp	%st0, %st4
+	fcomp	%st0, %st5
+	fcomp	%st0, %st6
+	fcomp	%st0, %st7
 	/* 0xd8f0 */
 	fdiv	%st0, %st0, %st0
 	fdiv	%st0, %st1, %st0
@@ -103,7 +103,7 @@
 	fucomp
 	/* 0xde */
 	faddp
-	fcompp
+	fcompp	%st0, %st1
 	fsubrp
 	ftst
 	fsubp
