@@ -83,7 +83,7 @@ static struct _menu _browser_menu_view[] =
 	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME, 0 },
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "", NULL, NULL, 0 },
-	{ "_Details", G_CALLBACK(on_view_details), NULL, 0 },
+	{ "_Details", G_CALLBACK(on_view_details), "stock_view-details", 0 },
 	{ "_Icons", G_CALLBACK(on_view_icons), NULL, 0 },
 	{ "_List", G_CALLBACK(on_view_list), NULL, 0 },
 	{ "_Thumbnails", G_CALLBACK(on_view_thumbnails), NULL, 0 },
@@ -246,7 +246,10 @@ Browser * browser_new(char const * directory)
 	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(on_view_as),
 			browser);
 	menu = gtk_menu_new();
-	menuitem = gtk_menu_item_new_with_label("Details");
+	menuitem = gtk_image_menu_item_new_with_label("Details");
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
+			gtk_image_new_from_icon_name("stock_view-details",
+				GTK_ICON_SIZE_MENU));
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_details), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
