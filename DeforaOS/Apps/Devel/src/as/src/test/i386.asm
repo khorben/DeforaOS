@@ -33,8 +33,31 @@
 	/* 0xc0 */
 	ret
 	/* 0xd8 */
-	fcom
-	fcomp
+	fcom	%st0
+	fcom	%st1
+	fcom	%st2
+	fcom	%st3
+	fcom	%st4
+	fcom	%st5
+	fcom	%st6
+	fcom	%st7
+	fcomp	%st0
+	fcomp	%st1
+	fcomp	%st2
+	fcomp	%st3
+	fcomp	%st4
+	fcomp	%st5
+	fcomp	%st6
+	fcomp	%st7
+	/* 0xd8f0 */
+	fdiv	%st0, %st0, %st0
+	fdiv	%st0, %st1, %st0
+	fdiv	%st0, %st2, %st0
+	fdiv	%st0, %st3, %st0
+	fdiv	%st0, %st4, %st0
+	fdiv	%st0, %st5, %st0
+	fdiv	%st0, %st6, %st0
+	fdiv	%st0, %st7, %st0
 	/* 0xd9 */
 	fnop
 	fchs
@@ -59,8 +82,24 @@
 	fucompp
 	/* 0xdb */
 	fnclex
+	/* 0xdc */
+	fdiv	%st0, %st0, %st0
+	fdiv	%st1, %st0, %st1
+	fdiv	%st2, %st0, %st2
+	fdiv	%st3, %st0, %st3
+	fdiv	%st4, %st0, %st4
+	fdiv	%st5, %st0, %st5
+	fdiv	%st6, %st0, %st6
+	fdiv	%st7, %st0, %st7
 	/* 0xdd */
-	fucom
+	fucom	%st0
+	fucom	%st1
+	fucom	%st2
+	fucom	%st3
+	fucom	%st4
+	fucom	%st5
+	fucom	%st6
+	fucom	%st7
 	fucomp
 	/* 0xde */
 	faddp
@@ -68,7 +107,14 @@
 	fsubrp
 	ftst
 	fsubp
-	fdivp
+	fdivp	%st0, %st0, %st0
+	fdivp	%st1, %st0, %st1
+	fdivp	%st2, %st0, %st2
+	fdivp	%st3, %st0, %st3
+	fdivp	%st4, %st0, %st4
+	fdivp	%st5, %st0, %st5
+	fdivp	%st6, %st0, %st6
+	fdivp	%st7, %st0, %st7
 	/* 0xf0 */
 	cmc
 	clc
