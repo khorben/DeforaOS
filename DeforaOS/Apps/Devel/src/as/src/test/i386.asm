@@ -89,6 +89,7 @@
 	fchs
 	fabs
 	ftst
+	fxam	%st0
 	fldl2e
 	fldpi
 	fldlg2
@@ -141,7 +142,7 @@
 	fcmovu	%st0, %st6
 	fcmovu	%st0, %st7
 	/* 0xdae0 */
-	fucompp
+	fucompp	%st0, %st1
 	/* 0xdb */
 	fnclex
 	/* 0xdbc0 */
@@ -250,15 +251,22 @@
 	fstp	%st0, %st6
 	fstp	%st0, %st7
 	/* 0xdde0 */
-	fucom	%st0
-	fucom	%st1
-	fucom	%st2
-	fucom	%st3
-	fucom	%st4
-	fucom	%st5
-	fucom	%st6
-	fucom	%st7
-	fucomp
+	fucom	%st0, %st0
+	fucom	%st0, %st1
+	fucom	%st0, %st2
+	fucom	%st0, %st3
+	fucom	%st0, %st4
+	fucom	%st0, %st5
+	fucom	%st0, %st6
+	fucom	%st0, %st7
+	fucomp	%st0, %st0
+	fucomp	%st0, %st1
+	fucomp	%st0, %st2
+	fucomp	%st0, %st3
+	fucomp	%st0, %st4
+	fucomp	%st0, %st5
+	fucomp	%st0, %st6
+	fucomp	%st0, %st7
 	/* 0xde */
 	fcompp	%st0, %st1
 	/* 0xdec0 */
