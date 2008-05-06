@@ -47,25 +47,17 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
-	code->format = NULL;
-	code->fp = fopen(filename, "w+");
-	if((code->arch = arch_new(arch)) == NULL || code->fp == NULL
+	memset(code, 0, sizeof(*code));
+	if((code->fp = fopen(filename, "w+")) == NULL
+			|| (code->arch = arch_new(arch)) == NULL
 			|| (code->format = format_new(format, arch, filename,
 					code->fp)) == NULL)
 	{
-		if(code->fp != NULL)
-		{
-			fclose(code->fp);
-			if(unlink(filename) != 0)
-				/* FIXME error should be simply printed? */
-				error_set_code(1, "%s: %s", filename, strerror(
-							errno));
-		}
-		if(code->format != NULL)
-			format_delete(code->format);
-		if(code->arch != NULL)
-			arch_delete(code->arch);
-		free(code);
+		if(code->fp == NULL)
+			error_set_code(1, "%s: %s", filename, strerror(errno));
+		else if(unlink(filename) != 0)
+			perror(filename);
+		code_delete(code);
 		return NULL;
 	}
 	code->filename = filename;
@@ -76,10 +68,12 @@ Code * code_new(char const * arch, char const * format, char const * filename)
 /* code_delete */
 int code_delete(Code * code)
 {
-	int ret;
+	int ret = 0;
 
-	arch_delete(code->arch);
-	ret = format_delete(code->format);
+	if(code->format != NULL)
+		ret = format_delete(code->format);
+	if(code->arch != NULL)
+		arch_delete(code->arch);
 	if(code->fp != NULL && fclose(code->fp) != 0)
 		ret |= error_set_code(2, "%s: %s", code->filename, strerror(
 					errno));
