@@ -9,6 +9,40 @@
 	/* 0x10 */
 	push	%ss
 	push	%ds
+	/* 0x10c0 */
+	adc	%al, %al
+	adc	%al, %cl
+	adc	%al, %dl
+	adc	%al, %bl
+	adc	%al, %ah
+	adc	%al, %ch
+	adc	%al, %dh
+	adc	%al, %bh
+	adc	%cl, %al
+	adc	%cl, %cl
+	adc	%cl, %dl
+	adc	%cl, %bl
+	adc	%cl, %ah
+	adc	%cl, %ch
+	adc	%cl, %dh
+	adc	%cl, %bh
+	/* 0x10d0 */
+	adc	%dl, %al
+	adc	%dl, %cl
+	adc	%dl, %dl
+	adc	%dl, %bl
+	adc	%dl, %ah
+	adc	%dl, %ch
+	adc	%dl, %dh
+	adc	%dl, %bh
+	adc	%bl, %al
+	adc	%bl, %cl
+	adc	%bl, %dl
+	adc	%bl, %bl
+	adc	%bl, %ah
+	adc	%bl, %ch
+	adc	%bl, %dh
+	adc	%bl, %bh
 	/* 0x20 */
 	daa
 	das
@@ -23,6 +57,15 @@
 	push	%ebp
 	/* 0x60 */
 	pusha
+	/* 0x80 */
+	adc	$0x90, %al
+	adc	$0x90, %cl
+	adc	$0x90, %dl
+	adc	$0x90, %bl
+	adc	$0x90, %ah
+	adc	$0x90, %ch
+	adc	$0x90, %dh
+	adc	$0x90, %bh
 	/* 0x90 */
 	wait
 	fwait
@@ -32,6 +75,10 @@
 	cmpsb
 	/* 0xc0 */
 	ret
+	/* 0xd4 */
+	aam
+	/* 0xd5 */
+	aad
 	/* 0xd8 */
 	fcom	%st0, %st0
 	fcom	%st0, %st1
@@ -107,11 +154,13 @@
 	fldln2
 	fldz
 	f2xm1
+	fyl2x	%st0, %st1, %st0
 	fptan
 	fxtract	%st0
 	fprem1
 	fdecstp
 	fprem
+	fyl2xp1	%st0, %st1, %st0
 	fsqrt
 	fsincos
 	frndint
