@@ -43,6 +43,41 @@
 	adc	%bl, %ch
 	adc	%bl, %dh
 	adc	%bl, %bh
+	/* 0x11 */
+	/* 0x11c0 */
+	adc	%eax, %eax
+	adc	%eax, %ecx
+	adc	%eax, %edx
+	adc	%eax, %ebx
+	adc	%eax, %esp
+	adc	%eax, %ebp
+	adc	%eax, %esi
+	adc	%eax, %edi
+	adc	%ecx, %eax
+	adc	%ecx, %ecx
+	adc	%ecx, %edx
+	adc	%ecx, %ebx
+	adc	%ecx, %esp
+	adc	%ecx, %ebp
+	adc	%ecx, %esi
+	adc	%ecx, %edi
+	/* 0x11d0 */
+	adc	%edx, %eax
+	adc	%edx, %ecx
+	adc	%edx, %edx
+	adc	%edx, %ebx
+	adc	%edx, %esp
+	adc	%edx, %ebp
+	adc	%edx, %esi
+	adc	%edx, %edi
+	adc	%ebx, %eax
+	adc	%ebx, %ecx
+	adc	%ebx, %edx
+	adc	%ebx, %ebx
+	adc	%ebx, %esp
+	adc	%ebx, %ebp
+	adc	%ebx, %esi
+	adc	%ebx, %edi
 	/* 0x20 */
 	daa
 	das

@@ -1,10 +1,30 @@
 #ifndef I386_REAL
 # define AO_AX_ AO_eax_
+# define AO_BX_ AO_ebx_
+# define AO_CX_ AO_ecx_
+# define AO_DX_ AO_edx_
 # define AO_AX AO_eax
+# define AO_BX AO_ebx
+# define AO_CX AO_ecx
+# define AO_DX AO_edx
+# define AO_SP AO_esp
+# define AO_BP AO_ebp
+# define AO_SI AO_esi
+# define AO_DI AO_edi
 # define W 4
 #else
 # define AO_AX_ AO_ax_
+# define AO_BX_ AO_bx_
+# define AO_CX_ AO_cx_
+# define AO_DX_ AO_dx_
 # define AO_AX AO_ax
+# define AO_BX AO_bx
+# define AO_CX AO_cx
+# define AO_DX AO_dx
+# define AO_SP AO_sp
+# define AO_BP AO_bp
+# define AO_SI AO_si
+# define AO_DI AO_di
 # define W 2
 #endif /* !I386_REAL */
 	{ "aaa",	0x37,	AO_NONE,		1, 0, 0, 0 },
@@ -56,9 +76,39 @@
 	{ "adc",	0x10dd,	AO_bl_|AO_ch,		2, 0, 0, 0 },
 	{ "adc",	0x10de,	AO_bl_|AO_dh,		2, 0, 0, 0 },
 	{ "adc",	0x10df,	AO_bl_|AO_bh,		2, 0, 0, 0 },
+	{ "adc",	0x11c0,	AO_AX_|AO_AX,		2, 0, 0, 0 },
+	{ "adc",	0x11c1,	AO_AX_|AO_CX,		2, 0, 0, 0 },
+	{ "adc",	0x11c2,	AO_AX_|AO_DX,		2, 0, 0, 0 },
+	{ "adc",	0x11c3,	AO_AX_|AO_BX,		2, 0, 0, 0 },
+	{ "adc",	0x11c4,	AO_AX_|AO_SP,		2, 0, 0, 0 },
+	{ "adc",	0x11c5,	AO_AX_|AO_BP,		2, 0, 0, 0 },
+	{ "adc",	0x11c6,	AO_AX_|AO_SI,		2, 0, 0, 0 },
+	{ "adc",	0x11c7,	AO_AX_|AO_DI,		2, 0, 0, 0 },
+	{ "adc",	0x11c8,	AO_CX_|AO_AX,		2, 0, 0, 0 },
+	{ "adc",	0x11c9,	AO_CX_|AO_CX,		2, 0, 0, 0 },
+	{ "adc",	0x11ca,	AO_CX_|AO_DX,		2, 0, 0, 0 },
+	{ "adc",	0x11cb,	AO_CX_|AO_BX,		2, 0, 0, 0 },
+	{ "adc",	0x11cc,	AO_CX_|AO_SP,		2, 0, 0, 0 },
+	{ "adc",	0x11cd,	AO_CX_|AO_BP,		2, 0, 0, 0 },
+	{ "adc",	0x11ce,	AO_CX_|AO_SI,		2, 0, 0, 0 },
+	{ "adc",	0x11cf,	AO_CX_|AO_DI,		2, 0, 0, 0 },
+	{ "adc",	0x11d0,	AO_DX_|AO_AX,		2, 0, 0, 0 },
+	{ "adc",	0x11d1,	AO_DX_|AO_CX,		2, 0, 0, 0 },
+	{ "adc",	0x11d2,	AO_DX_|AO_DX,		2, 0, 0, 0 },
+	{ "adc",	0x11d3,	AO_DX_|AO_BX,		2, 0, 0, 0 },
+	{ "adc",	0x11d4,	AO_DX_|AO_SP,		2, 0, 0, 0 },
+	{ "adc",	0x11d5,	AO_DX_|AO_BP,		2, 0, 0, 0 },
+	{ "adc",	0x11d6,	AO_DX_|AO_SI,		2, 0, 0, 0 },
+	{ "adc",	0x11d7,	AO_DX_|AO_DI,		2, 0, 0, 0 },
+	{ "adc",	0x11d8,	AO_BX_|AO_AX,		2, 0, 0, 0 },
+	{ "adc",	0x11d9,	AO_BX_|AO_CX,		2, 0, 0, 0 },
+	{ "adc",	0x11da,	AO_BX_|AO_DX,		2, 0, 0, 0 },
+	{ "adc",	0x11db,	AO_BX_|AO_BX,		2, 0, 0, 0 },
+	{ "adc",	0x11dc,	AO_BX_|AO_SP,		2, 0, 0, 0 },
+	{ "adc",	0x11dd,	AO_BX_|AO_BP,		2, 0, 0, 0 },
+	{ "adc",	0x11de,	AO_BX_|AO_SI,		2, 0, 0, 0 },
+	{ "adc",	0x11df,	AO_BX_|AO_DI,		2, 0, 0, 0 },
 #if 0
-	{ "adc",	0x11,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
-	{ "adc",	0x11,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x12,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x13,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
 	{ "adc",	0x13,	AO_IMM_ | AO_IMM,	1, 0, 0, 0 },
