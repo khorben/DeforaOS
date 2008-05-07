@@ -147,9 +147,26 @@ int code_instruction(Code * code, char const * instruction,
 		switch(operands[i].type)
 		{
 			case AS_CODE_IMMEDIATE:
-				/* FIXME only valid if size == 4 */
-				u32 = strtoll(operands[i].value + 1, NULL, 0);
-				buf = &u32;
+				/* FIXME there still is an endian problem */
+				switch(size)
+				{
+					case 1:
+						u8 = strtol(operands[i].value
+								+ 1, NULL, 0);
+						buf = &u8;
+						break;
+					case 2:
+						u16 = strtol(operands[i].value
+								+ 1, NULL, 0);
+						buf = &u16;
+						break;
+					default: /* FIXME not always so */
+					case 4:
+						u32 = strtol(operands[i].value
+								+ 1, NULL, 0);
+						buf = &u32;
+						break;
+				}
 				break;
 			case AS_CODE_REGISTER:
 				continue;
