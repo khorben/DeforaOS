@@ -1,6 +1,82 @@
 .main
 	/* 0x00 */
+	add	%al, %al
+	add	%al, %cl
+	add	%al, %dl
+	add	%al, %bl
+	add	%al, %ah
+	add	%al, %ch
+	add	%al, %dh
+	add	%al, %bh
+	add	%cl, %al
+	add	%cl, %cl
+	add	%cl, %dl
+	add	%cl, %bl
+	add	%cl, %ah
+	add	%cl, %ch
+	add	%cl, %dh
+	add	%cl, %bh
+	add	%dl, %al
+	add	%dl, %cl
+	add	%dl, %dl
+	add	%dl, %bl
+	add	%dl, %ah
+	add	%dl, %ch
+	add	%dl, %dh
+	add	%dl, %bh
+	add	%bl, %al
+	add	%bl, %cl
+	add	%bl, %dl
+	add	%bl, %bl
+	add	%bl, %ah
+	add	%bl, %ch
+	add	%bl, %dh
+	add	%bl, %bh
+	/* 0x00e0 */
+	add	%ah, %al
+	add	%ah, %cl
+	add	%ah, %dl
+	add	%ah, %bl
+	add	%ah, %ah
+	add	%ah, %ch
+	add	%ah, %dh
+	add	%ah, %bh
+	add	%ch, %al
+	add	%ch, %cl
+	add	%ch, %dl
+	add	%ch, %bl
+	add	%ch, %ah
+	add	%ch, %ch
+	add	%ch, %dh
+	add	%ch, %bh
+	add	%dh, %al
+	add	%dh, %cl
+	add	%dh, %dl
+	add	%dh, %bl
+	add	%dh, %ah
+	add	%dh, %ch
+	add	%dh, %dh
+	add	%dh, %bh
+	add	%bh, %al
+	add	%bh, %cl
+	add	%bh, %dl
+	add	%bh, %bl
+	add	%bh, %ah
+	add	%bh, %ch
+	add	%bh, %dh
+	add	%bh, %bh
+	/* 0x01 */
+	add	%ax, %ax
+	add	%ax, %cx
+	add	%ax, %dx
+	add	%ax, %bx
+	add	%ax, %sp
+	add	%ax, %bp
+	add	%ax, %si
+	add	%ax, %di
+	/* 0x04 */
 	add	$0x90, %al
+	/* 0x05 */
 	add	$0x90, %ax
 	push	%es
 	push	%cs
@@ -8,9 +84,74 @@
 	push	%fs
 	cpuid
 	push	%gs
+	/* 0x0f */
+	/* 0x0fbc */
+	bsf	%ax, %ax
+	bsf	%ax, %cx
+	bsf	%ax, %dx
+	bsf	%ax, %bx
+	bsf	%ax, %sp
+	bsf	%ax, %bp
+	bsf	%ax, %si
+	bsf	%ax, %di
+	bsf	%cx, %ax
+	bsf	%cx, %cx
+	bsf	%cx, %dx
+	bsf	%cx, %bx
+	bsf	%cx, %sp
+	bsf	%cx, %bp
+	bsf	%cx, %si
+	bsf	%cx, %di
+	bsf	%dx, %ax
+	bsf	%dx, %cx
+	bsf	%dx, %dx
+	bsf	%dx, %bx
+	bsf	%dx, %sp
+	bsf	%dx, %bp
+	bsf	%dx, %si
+	bsf	%dx, %di
+	bsf	%bx, %ax
+	bsf	%bx, %cx
+	bsf	%bx, %dx
+	bsf	%bx, %bx
+	bsf	%bx, %sp
+	bsf	%bx, %bp
+	bsf	%bx, %si
+	bsf	%bx, %di
+	/* 0x0fbd */
+	bsr	%ax, %ax
+	bsr	%ax, %cx
+	bsr	%ax, %dx
+	bsr	%ax, %bx
+	bsr	%ax, %sp
+	bsr	%ax, %bp
+	bsr	%ax, %si
+	bsr	%ax, %di
+	bsr	%cx, %ax
+	bsr	%cx, %cx
+	bsr	%cx, %dx
+	bsr	%cx, %bx
+	bsr	%cx, %sp
+	bsr	%cx, %bp
+	bsr	%cx, %si
+	bsr	%cx, %di
+	bsr	%dx, %ax
+	bsr	%dx, %cx
+	bsr	%dx, %dx
+	bsr	%dx, %bx
+	bsr	%dx, %sp
+	bsr	%dx, %bp
+	bsr	%dx, %si
+	bsr	%dx, %di
+	bsr	%bx, %ax
+	bsr	%bx, %cx
+	bsr	%bx, %dx
+	bsr	%bx, %bx
+	bsr	%bx, %sp
+	bsr	%bx, %bp
+	bsr	%bx, %si
+	bsr	%bx, %di
 	/* 0x10 */
-	push	%ss
-	push	%ds
 	/* 0x10c0 */
 	adc	%al, %al
 	adc	%al, %cl
@@ -45,6 +186,10 @@
 	adc	%bl, %ch
 	adc	%bl, %dh
 	adc	%bl, %bh
+	/* 0x16 */
+	push	%ss
+	/* 0x1e */
+	push	%ds
 	/* 0x11 */
 	/* 0x11c0 */
 	adc	%ax, %ax
@@ -94,6 +239,19 @@
 	push	%bp
 	/* 0x60 */
 	pusha
+	/* 0x62 */
+	/* 0x62c0 */
+	bound	%ax, %ax
+	/* 0x63 */
+	/* 0x63c0 */
+	arpl	%ax, %ax
+	arpl	%ax, %cx
+	arpl	%ax, %dx
+	arpl	%ax, %bx
+	arpl	%ax, %sp
+	arpl	%ax, %bp
+	arpl	%ax, %si
+	arpl	%ax, %di
 	/* 0x80 */
 	add	$0x90, %al
 	add	$0x90, %cl
@@ -111,6 +269,15 @@
 	adc	$0x90, %ch
 	adc	$0x90, %dh
 	adc	$0x90, %bh
+	/* 0x80e0 */
+	and	$0x90, %al
+	and	$0x90, %cl
+	and	$0x90, %dl
+	and	$0x90, %bl
+	and	$0x90, %ah
+	and	$0x90, %ch
+	and	$0x90, %dh
+	and	$0x90, %bh
 	/* 0x81 */
 	add	$0x90, %ax
 	add	$0x90, %cx
@@ -128,6 +295,15 @@
 	adc	$0x90, %bp
 	adc	$0x90, %si
 	adc	$0x90, %di
+	/* 0x81e0 */
+	and	$0x90, %ax
+	and	$0x90, %cx
+	and	$0x90, %dx
+	and	$0x90, %bx
+	and	$0x90, %sp
+	and	$0x90, %bp
+	and	$0x90, %si
+	and	$0x90, %di
 	/* 0x83 */
 	addb	$0x90, %ax
 	addb	$0x90, %cx
@@ -137,6 +313,15 @@
 	addb	$0x90, %bp
 	addb	$0x90, %si
 	addb	$0x90, %di
+	/* 0x83e0 */
+	andb	$0x90, %ax
+	andb	$0x90, %cx
+	andb	$0x90, %dx
+	andb	$0x90, %bx
+	andb	$0x90, %sp
+	andb	$0x90, %bp
+	andb	$0x90, %si
+	andb	$0x90, %di
 	/* 0x90 */
 	wait
 	fwait
