@@ -1,5 +1,7 @@
 .main
 	/* 0x00 */
+	add	$0x90, %al
+	add	$0x90, %eax
 	push	%es
 	push	%cs
 	emms
@@ -93,6 +95,14 @@
 	/* 0x60 */
 	pusha
 	/* 0x80 */
+	add	$0x90, %al
+	add	$0x90, %cl
+	add	$0x90, %dl
+	add	$0x90, %bl
+	add	$0x90, %ah
+	add	$0x90, %ch
+	add	$0x90, %dh
+	add	$0x90, %bh
 	adc	$0x90, %al
 	adc	$0x90, %cl
 	adc	$0x90, %dl
@@ -102,6 +112,14 @@
 	adc	$0x90, %dh
 	adc	$0x90, %bh
 	/* 0x81 */
+	add	$0x90, %eax
+	add	$0x90, %ecx
+	add	$0x90, %edx
+	add	$0x90, %ebx
+	add	$0x90, %esp
+	add	$0x90, %ebp
+	add	$0x90, %esi
+	add	$0x90, %edi
 	adc	$0x90, %eax
 	adc	$0x90, %ecx
 	adc	$0x90, %edx
@@ -110,6 +128,15 @@
 	adc	$0x90, %ebp
 	adc	$0x90, %esi
 	adc	$0x90, %edi
+	/* 0x83 */
+	addb	$0x90, %eax
+	addb	$0x90, %ecx
+	addb	$0x90, %edx
+	addb	$0x90, %ebx
+	addb	$0x90, %esp
+	addb	$0x90, %ebp
+	addb	$0x90, %esi
+	addb	$0x90, %edi
 	/* 0x90 */
 	wait
 	fwait
