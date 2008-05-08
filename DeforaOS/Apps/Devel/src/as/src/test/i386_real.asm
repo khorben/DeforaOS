@@ -85,6 +85,23 @@
 	cpuid
 	push	%gs
 	/* 0x0f */
+	/* 0x0fba */
+	bt	$0x90, %ax
+	bt	$0x90, %cx
+	bt	$0x90, %dx
+	bt	$0x90, %bx
+	bt	$0x90, %sp
+	bt	$0x90, %bp
+	bt	$0x90, %si
+	bt	$0x90, %di
+	bts	$0x90, %ax
+	bts	$0x90, %cx
+	bts	$0x90, %dx
+	bts	$0x90, %bx
+	bts	$0x90, %sp
+	bts	$0x90, %bp
+	bts	$0x90, %si
+	bts	$0x90, %di
 	/* 0x0fbc */
 	bsf	%ax, %ax
 	bsf	%ax, %cx
@@ -151,6 +168,23 @@
 	bsr	%bx, %bp
 	bsr	%bx, %si
 	bsr	%bx, %di
+	/* 0x0ff0 */
+	btr	$0x90, %ax
+	btr	$0x90, %cx
+	btr	$0x90, %dx
+	btr	$0x90, %bx
+	btr	$0x90, %sp
+	btr	$0x90, %bp
+	btr	$0x90, %si
+	btr	$0x90, %di
+	btc	$0x90, %ax
+	btc	$0x90, %cx
+	btc	$0x90, %dx
+	btc	$0x90, %bx
+	btc	$0x90, %sp
+	btc	$0x90, %bp
+	btc	$0x90, %si
+	btc	$0x90, %di
 	/* 0x10 */
 	/* 0x10c0 */
 	adc	%al, %al
