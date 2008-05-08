@@ -357,6 +357,7 @@
 	andb	$0x90, %si
 	andb	$0x90, %di
 	/* 0x90 */
+	cbw	%ax
 	wait
 	fwait
 	/* 0xa0 */
