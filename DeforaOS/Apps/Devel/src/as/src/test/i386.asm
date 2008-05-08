@@ -76,6 +76,7 @@
 	add	%eax, %edi
 	/* 0x04 */
 	add	$0x90, %al
+	/* 0x05 */
 	add	$0x90, %eax
 	push	%es
 	push	%cs
@@ -185,8 +186,6 @@
 	btc	$0x90, %esi
 	btc	$0x90, %edi
 	/* 0x10 */
-	push	%ss
-	push	%ds
 	/* 0x10c0 */
 	adc	%al, %al
 	adc	%al, %cl
@@ -221,6 +220,10 @@
 	adc	%bl, %ch
 	adc	%bl, %dh
 	adc	%bl, %bh
+	/* 0x16 */
+	push	%ss
+	/* 0x1e */
+	push	%ds
 	/* 0x11 */
 	/* 0x11c0 */
 	adc	%eax, %eax
