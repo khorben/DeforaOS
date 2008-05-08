@@ -8,6 +8,25 @@
 	push	%fs
 	cpuid
 	push	%gs
+	/* 0x0f */
+	/* 0x0fba */
+	bt	$0x90, %eax
+	bt	$0x90, %ecx
+	bt	$0x90, %edx
+	bt	$0x90, %ebx
+	bt	$0x90, %esp
+	bt	$0x90, %ebp
+	bt	$0x90, %esi
+	bt	$0x90, %edi
+	/* 0x0ff0 */
+	btc	$0x90, %eax
+	btc	$0x90, %ecx
+	btc	$0x90, %edx
+	btc	$0x90, %ebx
+	btc	$0x90, %esp
+	btc	$0x90, %ebp
+	btc	$0x90, %esi
+	btc	$0x90, %edi
 	/* 0x10 */
 	push	%ss
 	push	%ds

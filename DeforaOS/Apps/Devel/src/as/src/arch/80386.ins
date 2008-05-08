@@ -332,6 +332,28 @@
 	{ "bsr",	0x0fbddd,AO_BX_|AO_BP,		3, 0, 0, 0 },
 	{ "bsr",	0x0fbdde,AO_BX_|AO_SI,		3, 0, 0, 0 },
 	{ "bsr",	0x0fbddf,AO_BX_|AO_DI,		3, 0, 0, 0 },
+#if 0
+	{ "bt",		0x0fa3,	AO_IMM_|AO_IMM,		2, W, W, 0 },
+#endif
+	{ "bt",		0x0fbae0,AO_IMM_|AO_AX,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae1,AO_IMM_|AO_CX,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae2,AO_IMM_|AO_DX,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae3,AO_IMM_|AO_BX,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae4,AO_IMM_|AO_SP,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae5,AO_IMM_|AO_BP,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae6,AO_IMM_|AO_SI,		3, 1, 0, 0 },
+	{ "bt",		0x0fbae7,AO_IMM_|AO_DI,		3, 1, 0, 0 },
+#if 0
+	{ "btc",	0x0fbb,	AO_IMM_|AO_IMM,		2, W, W, 0 },
+#endif
+	{ "btc",	0x0fbaf8,AO_IMM_|AO_AX,		3, 1, 0, 0 },
+	{ "btc",	0x0fbaf9,AO_IMM_|AO_CX,		3, 1, 0, 0 },
+	{ "btc",	0x0fbafa,AO_IMM_|AO_DX,		3, 1, 0, 0 },
+	{ "btc",	0x0fbafb,AO_IMM_|AO_BX,		3, 1, 0, 0 },
+	{ "btc",	0x0fbafc,AO_IMM_|AO_SP,		3, 1, 0, 0 },
+	{ "btc",	0x0fbafd,AO_IMM_|AO_BP,		3, 1, 0, 0 },
+	{ "btc",	0x0fbafe,AO_IMM_|AO_SI,		3, 1, 0, 0 },
+	{ "btc",	0x0fbaff,AO_IMM_|AO_DI,		3, 1, 0, 0 },
 	{ "call",	0xe8,	AO_IMM,			1, 4, 0, 0 },
 #if 0
 	{ "cbw",	0x98,	AO_NONE,		1, 0, 0, 0 },
