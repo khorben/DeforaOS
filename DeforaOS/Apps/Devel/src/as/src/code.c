@@ -128,6 +128,8 @@ int code_instruction(Code * code, char const * instruction,
 		default:
 			u32 = htonl(ai->opcode);
 			buf = &u32;
+			if(ai->size == 3) /* XXX make this generic */
+				u32 <<= 8;
 			break;
 	}
 #if 0
