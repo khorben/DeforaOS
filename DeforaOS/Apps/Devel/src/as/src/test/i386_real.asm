@@ -673,6 +673,8 @@
 	fcomip	%st0, %st5
 	fcomip	%st0, %st6
 	fcomip	%st0, %st7
+	/* 0xe0 */
+	call	$0x90
 	/* 0xf0 */
 	cmc
 	clc
