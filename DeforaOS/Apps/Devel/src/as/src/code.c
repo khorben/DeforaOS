@@ -197,10 +197,9 @@ static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 	/* FIXME check */
 	for(i = 0; ((*ai) = arch_instruction_get(code->arch, i)) != NULL; i++)
 	{
-		if((cmp = strcmp(instruction, (*ai)->name)) > 0)
+		/* FIXME alphabetical order assumption disabled for 80x86 */
+		if((cmp = strcmp(instruction, (*ai)->name)) != 0)
 			continue;
-		if(cmp < 0)
-			break;
 		found = 1;
 		if(_instruction_operands(code, *ai, operands, operands_cnt)
 				!= 0)
