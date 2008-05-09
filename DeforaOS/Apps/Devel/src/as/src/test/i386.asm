@@ -800,7 +800,13 @@
 	fcomip	%st0, %st6
 	fcomip	%st0, %st7
 	/* 0xe0 */
+	/* 0xe4 */
+	in	$0x90, %al
+	in	$0x90, %eax
+	/* 0xe8 */
 	call	$0x90
+	in	%dx, %al
+	in	%dx, %eax
 	/* 0xf0 */
 	cmc
 	/* 0xf6 */
