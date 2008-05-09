@@ -80,7 +80,6 @@
 	add	$0x90, %eax
 	push	%es
 	push	%cs
-	emms
 	push	%fs
 	cpuid
 	push	%gs
@@ -742,8 +741,29 @@
 	call	$0x90
 	/* 0xf0 */
 	cmc
+	/* 0xf6 */
+	div	%ax, %al, %al
+	div	%ax, %cl, %al
+	div	%ax, %dl, %al
+	div	%ax, %bl, %al
+	div	%ax, %ah, %al
+	div	%ax, %ch, %al
+	div	%ax, %dh, %al
+	div	%ax, %bh, %al
+	/* 0xf7 */
+	div	%eax
+	div	%ecx
+	div	%edx
+	div	%ebx
+	div	%esp
+	div	%ebp
+	div	%esi
+	div	%edi
+	/* 0xf8 */
 	clc
+	/* 0xf9 */
 	stc
+	/* 0xfa */
 	cli
 	sti
 	cld
