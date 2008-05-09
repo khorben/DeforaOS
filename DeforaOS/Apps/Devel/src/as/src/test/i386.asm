@@ -264,6 +264,24 @@
 	das
 	/* 0x30 */
 	aaa
+	/* 0x38 */
+	cmp	%al, %al
+	cmp	%al, %cl
+	cmp	%al, %dl
+	cmp	%al, %bl
+	cmp	%al, %ah
+	cmp	%al, %ch
+	cmp	%al, %dh
+	cmp	%al, %bh
+	/* 0x39 */
+	cmp	%eax, %eax
+	cmp	%eax, %ecx
+	cmp	%eax, %edx
+	cmp	%eax, %ebx
+	cmp	%eax, %esp
+	cmp	%eax, %ebp
+	cmp	%eax, %esi
+	cmp	%eax, %edi
 	/* 0x50 */
 	push	%eax
 	push	%ecx
@@ -312,6 +330,15 @@
 	and	$0x90, %ch
 	and	$0x90, %dh
 	and	$0x90, %bh
+	/* 0x80f0 */
+	cmp	$0x90, %al
+	cmp	$0x90, %cl
+	cmp	$0x90, %dl
+	cmp	$0x90, %bl
+	cmp	$0x90, %ah
+	cmp	$0x90, %ch
+	cmp	$0x90, %dh
+	cmp	$0x90, %bh
 	/* 0x81 */
 	add	$0x90, %eax
 	add	$0x90, %ecx
@@ -330,14 +357,23 @@
 	adc	$0x90, %esi
 	adc	$0x90, %edi
 	/* 0x81e0 */
-	and	$0x90, %ax
-	and	$0x90, %cx
-	and	$0x90, %dx
-	and	$0x90, %bx
-	and	$0x90, %sp
-	and	$0x90, %bp
-	and	$0x90, %si
-	and	$0x90, %di
+	and	$0x90, %eax
+	and	$0x90, %ecx
+	and	$0x90, %edx
+	and	$0x90, %ebx
+	and	$0x90, %esp
+	and	$0x90, %ebp
+	and	$0x90, %esi
+	and	$0x90, %edi
+	/* 0x81f0 */
+	cmp	$0x90, %eax
+	cmp	$0x90, %ecx
+	cmp	$0x90, %edx
+	cmp	$0x90, %ebx
+	cmp	$0x90, %esp
+	cmp	$0x90, %ebp
+	cmp	$0x90, %esi
+	cmp	$0x90, %edi
 	/* 0x83 */
 	addb	$0x90, %eax
 	addb	$0x90, %ecx
