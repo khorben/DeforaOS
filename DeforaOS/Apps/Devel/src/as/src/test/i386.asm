@@ -537,7 +537,7 @@
 	fsqrt
 	fsincos
 	frndint
-	fscale
+	fscale	%st0, %st1, %st0
 	fsin
 	fcos
 	/* 0xda */
