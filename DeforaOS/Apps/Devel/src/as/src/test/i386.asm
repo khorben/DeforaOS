@@ -538,8 +538,8 @@
 	fsincos
 	frndint
 	fscale	%st0, %st1, %st0
-	fsin
-	fcos
+	fsin	%st0
+	fcos	%st0
 	/* 0xda */
 	/* 0xdac0 */
 	fcmovb	%st0, %st0
