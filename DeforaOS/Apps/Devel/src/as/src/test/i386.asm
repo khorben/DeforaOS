@@ -526,14 +526,14 @@
 	fldln2
 	fldz
 	f2xm1
-	fyl2x	%st0, %st1, %st0
+	fyl2x	%st1, %st0, %st1
 	fptan
 	fpatan
 	fxtract	%st0
 	fprem1
 	fdecstp
 	fprem
-	fyl2xp1	%st0, %st1, %st0
+	fyl2xp1	%st1, %st0, %st1
 	fsqrt	%st0
 	fsincos	%st0
 	frndint
