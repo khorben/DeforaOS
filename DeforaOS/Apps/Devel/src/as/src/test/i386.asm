@@ -812,6 +812,15 @@
 	div	%ax, %ch, %al
 	div	%ax, %dh, %al
 	div	%ax, %bh, %al
+	/* 0xf6f0 */
+	idiv	%ax, %al, %al
+	idiv	%ax, %cl, %al
+	idiv	%ax, %dl, %al
+	idiv	%ax, %bl, %al
+	idiv	%ax, %ah, %al
+	idiv	%ax, %ch, %al
+	idiv	%ax, %dh, %al
+	idiv	%ax, %bh, %al
 	/* 0xf7 */
 	div	%eax
 	div	%ecx
@@ -821,6 +830,15 @@
 	div	%ebp
 	div	%esi
 	div	%edi
+	/* 0xf7f0 */
+	idiv	%eax, %eax, %eax
+	idiv	%eax, %ecx, %eax
+	idiv	%eax, %edx, %eax
+	idiv	%eax, %ebx, %eax
+	idiv	%eax, %esp, %eax
+	idiv	%eax, %ebp, %eax
+	idiv	%eax, %esi, %eax
+	idiv	%eax, %edi, %eax
 	/* 0xf8 */
 	clc
 	/* 0xf9 */
