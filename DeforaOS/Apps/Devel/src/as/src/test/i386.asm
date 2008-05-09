@@ -429,6 +429,8 @@
 	cmpsb
 	/* 0xc0 */
 	ret
+	/* 0xc8 */
+	enter	$0x90, $0x90
 	/* 0xd4 */
 	aam
 	/* 0xd5 */
@@ -648,6 +650,15 @@
 	fsub	%st6, %st0, %st6
 	fsub	%st7, %st0, %st7
 	/* 0xdd */
+	/* 0xddc0 */
+	ffree	%st0
+	ffree	%st1
+	ffree	%st2
+	ffree	%st3
+	ffree	%st4
+	ffree	%st5
+	ffree	%st6
+	ffree	%st7
 	/* 0xddd0 */
 	fst	%st0, %st0
 	fst	%st0, %st1
