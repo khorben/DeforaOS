@@ -300,6 +300,14 @@
 	cmp	%eax, %esi
 	cmp	%eax, %edi
 	/* 0x40 */
+	inc	%eax
+	inc	%ecx
+	inc	%edx
+	inc	%ebx
+	inc	%esp
+	inc	%ebp
+	inc	%esi
+	inc	%edi
 	dec	%eax
 	dec	%ecx
 	dec	%edx
@@ -855,6 +863,15 @@
 	cld
 	std
 	/* 0xfe */
+	/* 0xfec0 */
+	inc	%al
+	inc	%cl
+	inc	%dl
+	inc	%bl
+	inc	%ah
+	inc	%ch
+	inc	%dh
+	inc	%bh
 	dec	%al
 	dec	%cl
 	dec	%dl
@@ -864,6 +881,15 @@
 	dec	%dh
 	dec	%bh
 	/* 0xff */
+	/* 0xffc0 */
+	inc	%eax
+	inc	%ecx
+	inc	%edx
+	inc	%ebx
+	inc	%esp
+	inc	%ebp
+	inc	%esi
+	inc	%edi
 	dec	%eax
 	dec	%ecx
 	dec	%edx
