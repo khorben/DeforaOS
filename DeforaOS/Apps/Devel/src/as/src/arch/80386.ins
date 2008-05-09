@@ -371,12 +371,10 @@
 	{ "bts",	0x0fbaee,AO_IMM_|AO_SI,		3, 1, 0, 0 },
 	{ "bts",	0x0fbaef,AO_IMM_|AO_DI,		3, 1, 0, 0 },
 	{ "call",	0xe8,	AO_IMM,			1, W, 0, 0 },
-#ifndef I386_REAL
-	{ "cwde",	0x98,	AO_eax,			1, 0, 0, 0 },
-#else
+#ifdef I386_REAL
 	{ "cbw",	0x98,	AO_ax,			1, 0, 0, 0 },
 #endif
-#if 0
+#ifndef I386_REAL
 	{ "cdq",	0x99,	AO_NONE,		1, 0, 0, 0 },
 #endif
 	{ "clc",	0xf8,	AO_NONE,		1, 0, 0, 0 },
@@ -436,23 +434,55 @@
 #else
 	{ "cmpsw",	0xa7,	AO_NONE,		1, 0, 0, 0 },
 #endif /* !I386_REAL */
+	{ "cmpxchg",	0x0fb0c0,AO_al_|AO_al,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c1,AO_al_|AO_cl,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c2,AO_al_|AO_dl,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c3,AO_al_|AO_bl,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c4,AO_al_|AO_ah,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c5,AO_al_|AO_ch,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c6,AO_al_|AO_dh,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb0c7,AO_al_|AO_bh,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c0,AO_AX_|AO_AX,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c1,AO_AX_|AO_CX,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c2,AO_AX_|AO_DX,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c3,AO_AX_|AO_BX,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c4,AO_AX_|AO_SP,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c5,AO_AX_|AO_BP,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c6,AO_AX_|AO_SI,		3, 0, 0, 0 },
+	{ "cmpxchg",	0x0fb1c7,AO_AX_|AO_DI,		3, 0, 0, 0 },
 	{ "cpuid",	0x0fa2,	AO_NONE,		2, 0, 0, 0 },
-#if 0
+#ifdef I386_REAL
 	{ "cwd",	0x99,	AO_NONE,		1, 0, 0, 0 },
-	{ "cwde",	0x98,	AO_NONE,		1, 0, 0, 0 },
+#endif
+#ifndef I386_REAL
+	{ "cwde",	0x98,	AO_eax,			1, 0, 0, 0 },
 #endif
 	{ "daa",	0x27,	AO_NONE,		1, 0, 0, 0 },
 	{ "das",	0x2f,	AO_NONE,		1, 0, 0, 0 },
-#if 0
-	{ "dec",	0x48,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x49,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4a,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4b,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4c,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4d,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4e,	AO_IMM,			1, 0, 0, 0 },
-	{ "dec",	0x4f,	AO_IMM,			1, 0, 0, 0 },
-#endif
+	{ "dec",	0xfec8,	AO_al,			2, 0, 0, 0 },
+	{ "dec",	0xfec9,	AO_cl,			2, 0, 0, 0 },
+	{ "dec",	0xfeca,	AO_dl,			2, 0, 0, 0 },
+	{ "dec",	0xfecb,	AO_bl,			2, 0, 0, 0 },
+	{ "dec",	0xfecc,	AO_ah,			2, 0, 0, 0 },
+	{ "dec",	0xfecd,	AO_ch,			2, 0, 0, 0 },
+	{ "dec",	0xfece,	AO_dh,			2, 0, 0, 0 },
+	{ "dec",	0xfecf,	AO_bh,			2, 0, 0, 0 },
+	{ "dec",	0x48,	AO_AX,			1, 0, 0, 0 },
+	{ "dec",	0x49,	AO_CX,			1, 0, 0, 0 },
+	{ "dec",	0x4a,	AO_DX,			1, 0, 0, 0 },
+	{ "dec",	0x4b,	AO_BX,			1, 0, 0, 0 },
+	{ "dec",	0x4c,	AO_SP,			1, 0, 0, 0 },
+	{ "dec",	0x4d,	AO_BP,			1, 0, 0, 0 },
+	{ "dec",	0x4e,	AO_SI,			1, 0, 0, 0 },
+	{ "dec",	0x4f,	AO_DI,			1, 0, 0, 0 },
+	{ "dec",	0xffc8,	AO_AX,			2, 0, 0, 0 },
+	{ "dec",	0xffc9,	AO_CX,			2, 0, 0, 0 },
+	{ "dec",	0xffca,	AO_DX,			2, 0, 0, 0 },
+	{ "dec",	0xffcb,	AO_BX,			2, 0, 0, 0 },
+	{ "dec",	0xffcc,	AO_SP,			2, 0, 0, 0 },
+	{ "dec",	0xffcd,	AO_BP,			2, 0, 0, 0 },
+	{ "dec",	0xffce,	AO_SI,			2, 0, 0, 0 },
+	{ "dec",	0xffcf,	AO_DI,			2, 0, 0, 0 },
 	{ "emms",	0x0f77,	AO_NONE,		2, 0, 0, 0 },
 	{ "enter",	0xc8,	AO_IMM_ | AO_IMM,	1, 2, 1, 0 },
 	{ "f2xm1",	0xd9f0,	AO_NONE,		2, 0, 0, 0 },

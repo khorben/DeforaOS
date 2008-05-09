@@ -85,6 +85,24 @@
 	cpuid
 	push	%gs
 	/* 0x0f */
+	/* 0x0fb0 */
+	cmpxchg	%al, %al
+	cmpxchg	%al, %cl
+	cmpxchg	%al, %dl
+	cmpxchg	%al, %bl
+	cmpxchg	%al, %ah
+	cmpxchg	%al, %ch
+	cmpxchg	%al, %dh
+	cmpxchg	%al, %bh
+	/* 0x0fb1 */
+	cmpxchg	%eax, %eax
+	cmpxchg	%eax, %ecx
+	cmpxchg	%eax, %edx
+	cmpxchg	%eax, %ebx
+	cmpxchg	%eax, %esp
+	cmpxchg	%eax, %ebp
+	cmpxchg	%eax, %esi
+	cmpxchg	%eax, %edi
 	/* 0x0fba */
 	bt	$0x90, %eax
 	bt	$0x90, %ecx
@@ -282,6 +300,15 @@
 	cmp	%eax, %ebp
 	cmp	%eax, %esi
 	cmp	%eax, %edi
+	/* 0x40 */
+	dec	%eax
+	dec	%ecx
+	dec	%edx
+	dec	%ebx
+	dec	%esp
+	dec	%ebp
+	dec	%esi
+	dec	%edi
 	/* 0x50 */
 	push	%eax
 	push	%ecx
@@ -394,6 +421,7 @@
 	andb	$0x90, %edi
 	/* 0x90 */
 	cwde	%eax
+	cdq
 	wait
 	fwait
 	/* 0xa0 */
@@ -720,3 +748,21 @@
 	sti
 	cld
 	std
+	/* 0xfe */
+	dec	%al
+	dec	%cl
+	dec	%dl
+	dec	%bl
+	dec	%ah
+	dec	%ch
+	dec	%dh
+	dec	%bh
+	/* 0xff */
+	dec	%eax
+	dec	%ecx
+	dec	%edx
+	dec	%ebx
+	dec	%esp
+	dec	%ebp
+	dec	%esi
+	dec	%edi
