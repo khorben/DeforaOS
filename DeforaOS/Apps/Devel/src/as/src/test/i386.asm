@@ -534,8 +534,8 @@
 	fdecstp
 	fprem
 	fyl2xp1	%st0, %st1, %st0
-	fsqrt
-	fsincos
+	fsqrt	%st0
+	fsincos	%st0
 	frndint
 	fscale	%st0, %st1, %st0
 	fsin	%st0
