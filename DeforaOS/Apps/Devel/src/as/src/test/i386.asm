@@ -528,6 +528,7 @@
 	f2xm1
 	fyl2x	%st0, %st1, %st0
 	fptan
+	fpatan
 	fxtract	%st0
 	fprem1
 	fdecstp
