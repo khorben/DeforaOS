@@ -34,13 +34,13 @@ enum
 /* variables */
 #undef REG
 #define REG(name, size, id) { "" # name, size, id },
-ArchRegister arch_i386_regs[] =
+static ArchRegister _i386_regs[] =
 {
 #include "80386.reg"
 	{ NULL,		0, 0 }
 };
 
-ArchInstruction arch_i386_set[] =
+static ArchInstruction _i386_set[] =
 {
 #include "80386.ins"
 #include "null.ins"
@@ -48,6 +48,6 @@ ArchInstruction arch_i386_set[] =
 
 ArchPlugin arch_plugin =
 {
-	arch_i386_regs,
-	arch_i386_set
+	_i386_regs,
+	_i386_set
 };

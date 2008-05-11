@@ -34,13 +34,13 @@ enum
 /* variables */
 #undef REG
 #define REG(name, size, id) { "" # name, size, id },
-ArchRegister arch_sparc64_regs[] =
+static ArchRegister _sparc64_regs[] =
 {
 #include "sparc64.reg"
 	{ NULL,	0,	0 }
 };
 
-ArchInstruction arch_sparc64_set[] =
+static ArchInstruction _sparc64_set[] =
 {
 #include "sparc64.ins"
 #include "null.ins"
@@ -48,6 +48,6 @@ ArchInstruction arch_sparc64_set[] =
 
 ArchPlugin arch_plugin =
 {
-	arch_sparc64_regs,
-	arch_sparc64_set
+	_sparc64_regs,
+	_sparc64_set
 };
