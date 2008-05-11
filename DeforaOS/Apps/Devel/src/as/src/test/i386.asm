@@ -84,15 +84,6 @@
 	cpuid
 	push	%gs
 	/* 0x0f */
-	/* 0x0fb0 */
-	cmpxchg	%al, %al
-	cmpxchg	%al, %cl
-	cmpxchg	%al, %dl
-	cmpxchg	%al, %bl
-	cmpxchg	%al, %ah
-	cmpxchg	%al, %ch
-	cmpxchg	%al, %dh
-	cmpxchg	%al, %bh
 	/* 0x0fb1 */
 	cmpxchg	%eax, %eax
 	cmpxchg	%eax, %ecx
@@ -439,6 +430,9 @@
 	ret
 	/* 0xc8 */
 	enter	$0x90, $0x90
+	int3
+	int	$0x90
+	into
 	/* 0xd4 */
 	aam
 	/* 0xd5 */
@@ -898,3 +892,12 @@
 	dec	%ebp
 	dec	%esi
 	dec	%edi
+	/* 0xffe0 */
+	jmp	%eax
+	jmp	%ecx
+	jmp	%edx
+	jmp	%ebx
+	jmp	%esp
+	jmp	%ebp
+	jmp	%esi
+	jmp	%edi
