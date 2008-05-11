@@ -94,6 +94,10 @@ int code_function(Code * code, char const * function)
 static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
 		size_t operands_cnt);
+static int _instruction_operands(Code * code, ArchInstruction * ai,
+		CodeOperand operands[], int operands_cnt);
+static ArchRegister * _operands_register(Arch * arch, char const * name);
+
 int code_instruction(Code * code, char const * instruction,
 		CodeOperand operands[], size_t operands_cnt)
 	/* FIXME being rewritten */
@@ -184,8 +188,6 @@ int code_instruction(Code * code, char const * instruction,
 	return 0;
 }
 
-static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], int operands_cnt);
 static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
 		size_t operands_cnt)
@@ -210,7 +212,6 @@ static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		: "Unknown instruction", instruction);
 }
 
-static ArchRegister * _operands_register(Arch * arch, char * name);
 static int _instruction_operands(Code * code, ArchInstruction * ai,
 		CodeOperand operands[], int operands_cnt)
 {
@@ -226,6 +227,7 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 		{
 			case AS_CODE_IMMEDIATE:
 			case AS_CODE_NUMBER:
+				/* FIXME also check the operand size */
 				op |= _AO_IMM;
 #ifdef DEBUG
 				fprintf(stderr, "DEBUG: op %d: imm; ", i);
@@ -256,7 +258,7 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 	return (op == ai->operands) ? 0 : 1;
 }
 
-static ArchRegister * _operands_register(Arch * arch, char * name)
+static ArchRegister * _operands_register(Arch * arch, char const * name)
 {
 	ArchRegister * ret;
 	size_t i;
