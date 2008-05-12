@@ -32,15 +32,18 @@ typedef struct _ArchRegister
 
 typedef unsigned int ArchOperands;
 # define _AO_NONE	(00)
-# define _AO_OP		(01)
-# define _AO_IMM	(01 | _AO_OP)
-# define _AO_REG	(02 | _AO_OP)
-# define _AO_OP_	(_AO_OP  << 8)
+# define _AO_IMM	(01)
+# define _AO_REG	(02)
+# define _AO_DREG	(03)
+# define _AO_OP		(03)
 # define _AO_IMM_	(_AO_IMM << 8)
 # define _AO_REG_	(_AO_REG << 8)
-# define _AO_OP__	(_AO_OP_  << 8)
+# define _AO_DREG_	(_AO_DREG << 8)
+# define _AO_OP_	(_AO_OP  << 8)
 # define _AO_IMM__	(_AO_IMM_ << 8)
 # define _AO_REG__	(_AO_REG_ << 8)
+# define _AO_DREG__	(_AO_DREG_ << 8)
+# define _AO_OP__	(_AO_OP_  << 8)
 
 typedef struct _ArchInstruction
 {

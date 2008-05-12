@@ -19,6 +19,14 @@
 # define AO_BP AO_ebp
 # define AO_SI AO_esi
 # define AO_DI AO_edi
+# define AO_D_AX AO_D_eax
+# define AO_D_BX AO_D_ebx
+# define AO_D_CX AO_D_ecx
+# define AO_D_DX AO_D_edx
+# define AO_D_SP AO_D_esp
+# define AO_D_BP AO_D_ebp
+# define AO_D_SI AO_D_esi
+# define AO_D_DI AO_D_edi
 # define W 4
 #else
 # define AO_AX__ AO_ax__
@@ -41,6 +49,14 @@
 # define AO_BP AO_bp
 # define AO_SI AO_si
 # define AO_DI AO_di
+# define AO_D_AX AO_D_ax
+# define AO_D_BX AO_D_bx
+# define AO_D_CX AO_D_cx
+# define AO_D_DX AO_D_dx
+# define AO_D_SP AO_D_sp
+# define AO_D_BP AO_D_bp
+# define AO_D_SI AO_D_si
+# define AO_D_DI AO_D_di
 # define W 2
 #endif /* !I386_REAL */
 	{ "aaa",	0x37,	AO_NONE,		1, 0, 0, 0 },
@@ -985,6 +1001,16 @@
 	{ "jle",	0x0f8e,	AO_IMM,			2, W, 0, 0 },
 	{ "jmp",	0xeb,	AO_IMM,			1, 1, 0, 0 },
 	{ "jmp",	0xe9,	AO_IMM,			1, W, 0, 0 },
+	{ "jmp",	0xff20,	AO_D_AX,		2, 0, 0, 0 },
+	{ "jmp",	0xff21,	AO_D_CX,		2, 0, 0, 0 },
+	{ "jmp",	0xff22,	AO_D_DX,		2, 0, 0, 0 },
+	{ "jmp",	0xff23,	AO_D_BX,		2, 0, 0, 0 },
+#if 0 /* FIXME implement */
+	{ "jmp",	0xff24,	AO_D_AX,		2, 0, 0, 0 },
+	{ "jmp",	0xff25,	AO_D_AX,		2, 0, 0, 0 },
+#endif
+	{ "jmp",	0xff26,	AO_D_SI,		2, 0, 0, 0 },
+	{ "jmp",	0xff27,	AO_D_DI,		2, 0, 0, 0 },
 	{ "jmp",	0xffe0,	AO_AX,			2, 0, 0, 0 },
 	{ "jmp",	0xffe1,	AO_CX,			2, 0, 0, 0 },
 	{ "jmp",	0xffe2,	AO_DX,			2, 0, 0, 0 },

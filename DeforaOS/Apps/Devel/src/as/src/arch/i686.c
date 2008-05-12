@@ -23,7 +23,10 @@
 /* types */
 #define REG(name, size, id) AO_ ## name = ((id << 2) | AO_REG), \
 				AO_ ## name ## _ = ((id << 10) | AO_REG_), \
-				AO_ ## name ## __ = ((id << 18) | AO_REG__),
+				AO_ ## name ## __ = ((id << 18) | AO_REG__), \
+				AO_D_ ## name = ((id << 2) | AO_DREG), \
+				AO_D_ ## name ## _ = ((id << 10) | AO_DREG_), \
+				AO_D_ ## name ## __ = ((id << 18) | AO_DREG__),
 enum
 {
 #include "common.reg"

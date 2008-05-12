@@ -875,6 +875,13 @@
 	dec	%dh
 	dec	%bh
 	/* 0xff */
+	/* 0xff20 */
+	jmp	[%eax]
+	jmp	[%ecx]
+	jmp	[%edx]
+	jmp	[%ebx]
+	jmp	[%esi]
+	jmp	[%edi]
 	/* 0xffc0 */
 	inc	%eax
 	inc	%ecx

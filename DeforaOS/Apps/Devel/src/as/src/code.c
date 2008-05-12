@@ -95,7 +95,7 @@ static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 		char const * instruction, CodeOperand operands[],
 		size_t operands_cnt);
 static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], int operands_cnt);
+		CodeOperand operands[], size_t operands_cnt);
 static ArchRegister * _operands_register(Arch * arch, char const * name);
 
 int code_instruction(Code * code, char const * instruction,
@@ -213,11 +213,11 @@ static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 }
 
 static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], int operands_cnt)
+		CodeOperand operands[], size_t operands_cnt)
 {
 	unsigned long op = 0;
-	char * reg;
-	int i;
+	char const * reg;
+	size_t i;
 	ArchRegister * ar;
 
 	for(i = 0; i < operands_cnt; i++)
@@ -230,20 +230,24 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 				/* FIXME also check the operand size */
 				op |= _AO_IMM;
 #ifdef DEBUG
-				fprintf(stderr, "DEBUG: op %d: imm; ", i);
+				fprintf(stderr, "DEBUG: op %zu: imm; ", i);
 #endif
 				break;
 			case AS_CODE_REGISTER:
-#if 0
+#if 0 /* XXX this looked maybe better */
 				reg = operands[i].value + 1; /* "%rg" => "rg" */
-#endif
+#else
 				reg = operands[i].value;
+#endif
 				if((ar = _operands_register(code->arch, reg))
 						== NULL)
 					return 1;
-				op |= (_AO_REG | (ar->id << 2));
+				if(operands[i].dereference)
+					op |= (_AO_DREG | (ar->id << 2));
+				else
+					op |= (_AO_REG | (ar->id << 2));
 #ifdef DEBUG
-				fprintf(stderr, "DEBUG: op %d: reg %s; ", i,
+				fprintf(stderr, "DEBUG: op %zu: reg %s; ", i,
 						reg);
 #endif
 				break;
