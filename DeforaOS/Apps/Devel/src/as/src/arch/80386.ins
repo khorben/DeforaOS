@@ -67,6 +67,18 @@
 	{ "aas",	0x3f,	AO_NONE,		1, 0, 0, 0 },
 	{ "adc",	0x14,	AO_IMM_|AO_al,		1, 1, 0, 0 },
 	{ "adc",	0x15,	AO_IMM_|AO_AX,		1, W, 0, 0 },
+#ifndef I386_REAL
+	{ "adc",	0x8010,	AO_IMM_|AO_D_eax,	2, 1, 0, 0 },
+	{ "adc",	0x8011,	AO_IMM_|AO_D_ecx,	2, 1, 0, 0 },
+	{ "adc",	0x8012,	AO_IMM_|AO_D_edx,	2, 1, 0, 0 },
+	{ "adc",	0x8013,	AO_IMM_|AO_D_ebx,	2, 1, 0, 0 },
+	{ "adc",	0x8016,	AO_IMM_|AO_D_esi,	2, 1, 0, 0 },
+	{ "adc",	0x8017,	AO_IMM_|AO_D_edi,	2, 1, 0, 0 },
+#else
+	{ "adc",	0x8014,	AO_IMM_|AO_D_si,	2, 1, 0, 0 },
+	{ "adc",	0x8015,	AO_IMM_|AO_D_di,	2, 1, 0, 0 },
+	{ "adc",	0x8017,	AO_IMM_|AO_D_bx,	2, 1, 0, 0 },
+#endif
 	/* XXX this one will not be used because it already matched */
 	{ "adc",	0x80d0,	AO_IMM_|AO_al,		2, 1, 0, 0 },
 	{ "adc",	0x80d1,	AO_IMM_|AO_cl,		2, 1, 0, 0 },
@@ -405,10 +417,10 @@
 	{ "call",	0xe8,	AO_IMM,			1, W, 0, 0 },
 #ifdef I386_REAL
 	{ "cbw",	0x98,	AO_ax,			1, 0, 0, 0 },
-#endif
+#endif /* I386_REAL */
 #ifndef I386_REAL
 	{ "cdq",	0x99,	AO_NONE,		1, 0, 0, 0 },
-#endif
+#endif /* !I386_REAL */
 	{ "clc",	0xf8,	AO_NONE,		1, 0, 0, 0 },
 	{ "cld",	0xfc,	AO_NONE,		1, 0, 0, 0 },
 	{ "cli",	0xfa,	AO_NONE,		1, 0, 0, 0 },
@@ -485,10 +497,10 @@
 	{ "cpuid",	0x0fa2,	AO_NONE,		2, 0, 0, 0 },
 #ifdef I386_REAL
 	{ "cwd",	0x99,	AO_NONE,		1, 0, 0, 0 },
-#endif
+#endif /* I386_REAL */
 #ifndef I386_REAL
 	{ "cwde",	0x98,	AO_eax,			1, 0, 0, 0 },
-#endif
+#endif /* !I386_REAL */
 	{ "daa",	0x27,	AO_NONE,		1, 0, 0, 0 },
 	{ "das",	0x2f,	AO_NONE,		1, 0, 0, 0 },
 	{ "dec",	0xfec8,	AO_al,			2, 0, 0, 0 },
@@ -1060,6 +1072,14 @@
 	{ "jz",		0x74,	AO_IMM,			1, 1, 0, 0 },
 	{ "jz",		0x0f84,	AO_IMM,			2, W, 0, 0 },
 	{ "lahf",	0x9f,	AO_NONE,		1, 0, 0, 0 },
+#ifndef I386_REAL
+	{ "lea",	0x8d00,	AO_D_eax_|AO_eax,	2, 0, 0, 0 },
+	{ "lea",	0x8d01,	AO_D_ecx_|AO_eax,	2, 0, 0, 0 },
+	{ "lea",	0x8d02,	AO_D_edx_|AO_eax,	2, 0, 0, 0 },
+	{ "lea",	0x8d03,	AO_D_ebx_|AO_eax,	2, 0, 0, 0 },
+	{ "lea",	0x8d06,	AO_D_esi_|AO_eax,	2, 0, 0, 0 },
+	{ "lea",	0x8d07,	AO_D_edi_|AO_eax,	2, 0, 0, 0 },
+#endif
 #if 0
 	{ "lea",	0x8d,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 #endif

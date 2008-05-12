@@ -355,6 +355,12 @@
 	add	$0x90, %ch
 	add	$0x90, %dh
 	add	$0x90, %bh
+	adc	$0x90, [%eax]
+	adc	$0x90, [%ecx]
+	adc	$0x90, [%edx]
+	adc	$0x90, [%ebx]
+	adc	$0x90, [%esi]
+	adc	$0x90, [%edi]
 	adc	$0x90, %al
 	adc	$0x90, %cl
 	adc	$0x90, %dl
@@ -434,6 +440,13 @@
 	andb	$0x90, %ebp
 	andb	$0x90, %esi
 	andb	$0x90, %edi
+	/* 0x8d */
+	lea	[%eax], %eax
+	lea	[%ecx], %eax
+	lea	[%edx], %eax
+	lea	[%ebx], %eax
+	lea	[%esi], %eax
+	lea	[%edi], %eax
 	/* 0x90 */
 	cwde	%eax
 	cdq
