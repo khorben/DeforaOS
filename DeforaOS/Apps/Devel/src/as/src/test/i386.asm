@@ -83,7 +83,24 @@
 	push	%fs
 	cpuid
 	push	%gs
+	/* 0x09 */
+	lahf
 	/* 0x0f */
+	/* 0x0f00 */
+	lldt	[%eax]
+	lldt	[%ecx]
+	lldt	[%edx]
+	lldt	[%ebx]
+	lldt	[%esi]
+	lldt	[%edi]
+	lldt	%eax
+	lldt	%ecx
+	lldt	%edx
+	lldt	%ebx
+	lldt	%esp
+	lldt	%ebp
+	lldt	%esi
+	lldt	%edi
 	/* 0x0fb1 */
 	cmpxchg	%eax, %eax
 	cmpxchg	%eax, %ecx
