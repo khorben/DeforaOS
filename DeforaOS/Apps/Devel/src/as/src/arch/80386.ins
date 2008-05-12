@@ -1079,10 +1079,11 @@
 	{ "lea",	0x8d03,	AO_D_ebx_|AO_eax,	2, 0, 0, 0 },
 	{ "lea",	0x8d06,	AO_D_esi_|AO_eax,	2, 0, 0, 0 },
 	{ "lea",	0x8d07,	AO_D_edi_|AO_eax,	2, 0, 0, 0 },
-#endif
-#if 0
-	{ "lea",	0x8d,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-#endif
+#else
+	{ "lea",	0x8d04,	AO_D_si_|AO_ax,		2, 0, 0, 0 },
+	{ "lea",	0x8d05,	AO_D_di_|AO_ax,		2, 0, 0, 0 },
+	{ "lea",	0x8d07,	AO_D_bx_|AO_ax,		2, 0, 0, 0 },
+#endif /* !I386_REAL */
 	{ "leave",	0xc9,	AO_NONE,		1, 0, 0, 0 },
 #if 0
 	{ "lfence",	0x0fae,	AO_NONE,		2, 0, 0, 0 },
