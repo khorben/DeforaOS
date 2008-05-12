@@ -80,7 +80,6 @@
 	add	$0x90, %ax
 	push	%es
 	push	%cs
-	emms
 	push	%fs
 	cpuid
 	push	%gs
@@ -356,6 +355,10 @@
 	andb	$0x90, %bp
 	andb	$0x90, %si
 	andb	$0x90, %di
+	/* 0x8d */
+	lea	[%si], %ax
+	lea	[%di], %ax
+	lea	[%bx], %ax
 	/* 0x90 */
 	cbw	%ax
 	wait
@@ -445,19 +448,19 @@
 	fldln2
 	fldz
 	f2xm1
-	fyl2x	%st0, %st1, %st0
+	fyl2x	%st1, %st0, %st1
 	fptan
 	fxtract	%st0
 	fprem1
 	fdecstp
 	fprem
-	fyl2xp1	%st0, %st1, %st0
-	fsqrt
-	fsincos
+	fyl2xp1	%st1, %st0, %st1
+	fsqrt	%st0
+	fsincos	%st0
 	frndint
-	fscale
-	fsin
-	fcos
+	fscale	%st0, %st1, %st0
+	fsin	%st0
+	fcos	%st0
 	/* 0xda */
 	/* 0xdac0 */
 	fcmovb	%st0, %st0
