@@ -67,7 +67,6 @@ static int _operand(State * state);
 /* functions */
 /* parser_scan */
 static int _scan_skip_meta(State * state);
-static void _meta_error(State * state, TokenCode code);
 
 static int _parser_scan(State * state)
 {
@@ -109,33 +108,27 @@ static int _scan_skip_meta(State * state)
 		if((code = token_get_code(state->token)) < AS_CODE_META_FIRST
 				|| code > AS_CODE_META_LAST)
 			return 0;
-		if(code == AS_CODE_META_ERROR || code == AS_CODE_META_WARNING)
-			_meta_error(state, code);
+		if(code == AS_CODE_META_ERROR)
+			_parser_error(state, "%s", token_get_string(
+						state->token));
+		else if(code == AS_CODE_META_WARNING)
+			_parser_warning(state, "%s", token_get_string(
+						state->token));
 		token_delete(state->token);
 	}
 	return 1;
-}
-
-static void _meta_error(State * state, TokenCode code)
-{
-	if(code == AS_CODE_META_ERROR)
-		_parser_error(state, "%s", token_get_string(state->token));
-	else
-		_parser_warning(state, "%s", token_get_string(state->token));
 }
 
 
 /* parser_check */
 static int _parser_check(State * state, TokenCode code)
 {
-	int ret;
+	int ret = 0;
 
 	if(!_parser_is_code(state, code))
 		ret = _parser_error(state, "%s%u", "Parse error: expected ",
 				code);
-	else
-		ret = 0;
-	_parser_scan(state);
+	ret |= _parser_scan(state);
 	return ret;
 }
 
@@ -441,7 +434,7 @@ static int _operator(State * state)
 
 /* operand_list */
 static int _operand_list(State * state)
-	/* operand [ space ] { comma [ space ] operand [ space ] } */
+	/* operand [ space ] { "," [ space ] operand [ space ] } */
 {
 	int ret;
 
@@ -466,9 +459,11 @@ static int _operand_list(State * state)
 
 /* operand */
 static int _operand(State * state)
-	/* WORD | NUMBER | IMMEDIATE | REGISTER */
+	/* WORD | NUMBER | IMMEDIATE | REGISTER
+	 * | ( "[" [space] WORD [space] "]" ) */
 {
 	int ret = 0;
+	TokenCode code;
 	char const * string;
 	CodeOperand * p;
 
@@ -476,12 +471,19 @@ static int _operand(State * state)
 		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-	fprintf(stderr, "%s%s\"\n", "DEBUG: new operand: \"", token_get_string(
-				state->token));
 #endif
-	string = token_get_string(state->token);
-	if(string != NULL)
+	if((code = token_get_code(state->token)) == AS_CODE_OPERATOR_LBRACKET)
 	{
+		ret = _parser_scan(state);
+		if(_parser_in_set(state, TS_SPACE))
+			ret |= _space(state);
+	}
+	if((string = token_get_string(state->token)) != NULL)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "%s%s\"\n", "DEBUG: new operand: \"",
+				token_get_string(state->token));
+#endif
 		if((p = realloc(state->operands, (state->operands_cnt + 1)
 						* sizeof(CodeOperand))) == NULL)
 			ret |= _parser_error(state, "%s", strerror(errno));
@@ -490,11 +492,19 @@ static int _operand(State * state)
 			state->operands = p;
 			p = &state->operands[state->operands_cnt];
 			p->type = token_get_code(state->token);
+			p->dereference = (code == AS_CODE_OPERATOR_LBRACKET);
 			/* FIXME necessary already here? */
 			p->value = strdup(string);
 			state->operands_cnt++;
 		}
 	}
 	ret |= _parser_scan(state);
+	if(code == AS_CODE_OPERATOR_LBRACKET)
+	{
+
+		if(_parser_in_set(state, TS_SPACE))
+			ret |= _space(state);
+		ret |= _parser_check(state, AS_CODE_OPERATOR_RBRACKET);
+	}
 	return ret;
 }
