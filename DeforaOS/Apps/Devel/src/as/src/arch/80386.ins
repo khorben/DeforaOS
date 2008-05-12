@@ -1087,9 +1087,22 @@
 	{ "lldt",	0x0f00d5,AO_BP,			3, 0, 0, 0 },
 	{ "lldt",	0x0f00d6,AO_SI,			3, 0, 0, 0 },
 	{ "lldt",	0x0f00d7,AO_DI,			3, 0, 0, 0 },
+#ifdef I386_REAL
+	{ "lmsw",	0x0f01f0,AO_ax,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f1,AO_cx,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f2,AO_dx,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f3,AO_bx,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f4,AO_sp,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f5,AO_bp,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f6,AO_si,			3, 0, 0, 0 },
+	{ "lmsw",	0x0f01f7,AO_di,			3, 0, 0, 0 },
+#endif /* !I386_REAL */
 	{ "lock",	0xf0,	AO_NONE,		1, 0, 0, 0 },
+#ifndef I386_REAL
 	{ "lodsd",	0xad,	AO_NONE,		1, 0, 0, 0 },
+#else
 	{ "lodsw",	0xad,	AO_NONE,		1, 0, 0, 0 },
+#endif
 	{ "loop",	0xe2,	AO_IMM,			1, 1, 0, 0 },
 	{ "loope",	0xe1,	AO_IMM,			1, 1, 0, 0 },
 	{ "loopne",	0xe0,	AO_IMM,			1, 1, 0, 0 },

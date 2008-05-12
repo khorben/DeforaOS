@@ -440,9 +440,11 @@
 	wait
 	fwait
 	/* 0xa0 */
-	stosd
-	scasd
 	cmpsb
+	stosd
+	/* 0xad */
+	lodsd
+	scasd
 	/* 0xc0 */
 	ret
 	/* 0xc8 */
