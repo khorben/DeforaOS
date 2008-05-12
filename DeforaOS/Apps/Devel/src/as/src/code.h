@@ -31,6 +31,7 @@ typedef struct _Code Code;
 typedef struct _CodeOperand
 {
 	TokenCode type;
+	int dereference;
 	void * value;
 } CodeOperand;
 
