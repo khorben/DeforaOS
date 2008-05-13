@@ -95,7 +95,7 @@ sparc64.a: $(sparc64_OBJS)
 sparc64.so: $(sparc64_OBJS)
 	$(LD) -o sparc64.so $(sparc64_OBJS)
 
-amd64.o: amd64.c
+amd64.o: amd64.c arch.h 80386.ins 80386.reg 80486.ins 80486.reg 80586.ins 80586.reg 80686.ins 80686.reg
 	$(CC) $(amd64_CFLAGS) -c amd64.c
 
 i386.o: i386.c arch.h 80386.ins 80386.reg
