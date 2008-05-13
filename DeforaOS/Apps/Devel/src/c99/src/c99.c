@@ -79,12 +79,13 @@ C99 * c99_new(C99Prefs const * prefs, char const * pathname)
 static Cpp * _new_cpp(C99Prefs const * prefs, char const * pathname)
 {
 	Cpp * cpp;
+	int filters = CPP_FILTER_TRIGRAPH | CPP_FILTER_WHITESPACE
+		| CPP_FILTER_COMMENT;
 	size_t i;
 	size_t j;
 	size_t k;
 
-	if((cpp = cpp_new(pathname, CPP_FILTER_TRIGRAPH
-					| CPP_FILTER_WHITESPACE)) == NULL)
+	if((cpp = cpp_new(pathname, filters)) == NULL)
 		return NULL;
 	for(i = 0; i < prefs->paths_cnt; i++)
 		if(cpp_path_add(cpp, prefs->paths[i]) != 0)

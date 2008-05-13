@@ -37,7 +37,8 @@ static char * _tokens[C99_CODE_COUNT] =
 	"[", "<=", "<", "(", "-=", "->", "-", "%=", "%", "!=", "!", "+=", "+",
 	"?", "}", "]", ")", ";", "*=", "~", "*", "^=", "^",
 	/* more codes */
-	"'", "whitespace", "newline", "word", "constant", "identifier",
+	"'", "whitespace", "newline", "comment", "word", "constant",
+	"identifier",
 	/* keywords */
 	"auto", "break", "case", "char", "const", "continue", "default", "do",
 	"double", "else", "enum", "extern", "float", "for", "goto", "if",
