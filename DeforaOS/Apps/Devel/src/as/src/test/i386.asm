@@ -1,4 +1,4 @@
-.main
+.text
 	/* 0x00 */
 	add	%al, %al
 	add	%al, %cl
