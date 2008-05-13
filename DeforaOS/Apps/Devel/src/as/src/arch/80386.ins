@@ -1264,14 +1264,14 @@
 #else
 	{ "stosw",	0xab,	AO_NONE,		1, 0, 0, 0 },
 #endif /* !I386_REAL */
+	{ "sub",	0x2c,	AO_IMM_|AO_al,		1, 1, 0, 0 },
+	{ "sub",	0x2d,	AO_IMM_|AO_AX,		1, W, 0, 0 },
+	{ "sub",	0x28c0,	AO_al_|AO_al,		2, 0, 0, 0 },
+	{ "sub",	0x29c0,	AO_AX_|AO_AX,		2, 0, 0, 0 },
 #if 0
-	{ "sub",	0x28,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "sub",	0x29,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "sub",	0x2a,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "sub",	0x2b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+	{ "sub",	0x2a,	AO_REG_|AO_REG,		1, 0, 0, 0 },
+	{ "sub",	0x2b,	AO_REG_|AO_REG,		1, 0, 0, 0 },
 #endif
-	{ "sub",	0x2c,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
-	{ "sub",	0x2d,	AO_IMM_ | AO_AX,	1, W, 0, 0 },
 #if 0
 	{ "swapgs",	0x0f01,	AO_NONE,		2, 0, 0, 0 },
 #endif

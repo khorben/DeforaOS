@@ -291,6 +291,13 @@
 	adc	%ebx, %edi
 	/* 0x20 */
 	daa
+	/* 0x28 */
+	sub	%al, %al
+	sub	%eax, %eax
+	/* 0x2c */
+	sub	$0x90, %al
+	sub	$0x90, %eax
+	/* 0x2f */
 	das
 	/* 0x30 */
 	xor	%al, %al
