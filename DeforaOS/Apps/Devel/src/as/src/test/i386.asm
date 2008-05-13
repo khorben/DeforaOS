@@ -103,6 +103,7 @@
 	lldt	%edi
 	/* 0x0f09 */
 	wbinvd
+	ud2
 	/* 0x0f30 */
 	wrmsr
 	/* 0x0fb1 */
@@ -514,6 +515,9 @@
 	/* 0xa0 */
 	cmpsb
 	stosd
+	/* 0xa8 */
+	test	$0x90, %al
+	test	$0x90, %eax
 	/* 0xad */
 	lodsd
 	scasd

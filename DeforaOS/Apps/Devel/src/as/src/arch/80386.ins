@@ -1279,8 +1279,14 @@
 	{ "sysenter",	0x0f34,	AO_NONE,		2, 0, 0, 0 },
 	{ "sysleave",	0x0f35,	AO_NONE,		2, 0, 0, 0 },
 	{ "sysret",	0x0f07,	AO_NONE,		2, 0, 0, 0 },
-	{ "test",	0xa8,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
-	{ "test",	0xa9,	AO_IMM_ | AO_AX,	1, W, 0, 0 },
+	{ "test",	0xa8,	AO_IMM_|AO_al,		1, 1, 0, 0 },
+	{ "test",	0xa9,	AO_IMM_|AO_AX,		1, W, 0, 0 },
+#if 0 /* FIXME implement */
+	{ "test",	0xf6,	AO_IMM_|AO_REG,		2, 1, 0, 0 },
+	{ "test",	0xf7,	AO_IMM_|AO_REG,		2, W, 0, 0 },
+	{ "test",	0x84,	AO_REG_|AO_REG,		2, 0, 0, 0 },
+	{ "test",	0x85,	AO_REG_|AO_REG,		2, 0, 0, 0 },
+#endif
 	{ "ud2",	0x0f0b,	AO_NONE,		2, 0, 0, 0 },
 	{ "wait",	0x9b,	AO_NONE,		1, 0, 0, 0 },
 	{ "wbinvd",	0x0f09,	AO_NONE,		2, 0, 0, 0 },
