@@ -90,7 +90,7 @@ static int _as_init(char const * outfile, int optlevel)
 	fprintf(stderr, "DEBUG: %s: architecture \"%s\", format \"%s\"\n",
 			PACKAGE, as_get_arch(_as_as), as_get_format(_as_as));
 #endif
-	if(as_open(_as_as, outfile) != 0 || _as_section("text") != 0)
+	if(as_open(_as_as, outfile) != 0 || _as_section(".text") != 0)
 	{
 		as_delete(_as_as);
 		return 1;
