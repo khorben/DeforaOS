@@ -101,6 +101,8 @@
 	lldt	%ebp
 	lldt	%esi
 	lldt	%edi
+	/* 0x0f30 */
+	wrmsr
 	/* 0x0fb1 */
 	cmpxchg	%eax, %eax
 	cmpxchg	%eax, %ecx
