@@ -101,6 +101,8 @@
 	lldt	%ebp
 	lldt	%esi
 	lldt	%edi
+	/* 0x0f09 */
+	wbinvd
 	/* 0x0f30 */
 	wrmsr
 	/* 0x0fb1 */
