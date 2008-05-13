@@ -130,10 +130,11 @@ int code_instruction(Code * code, char const * instruction,
 			break;
 		case sizeof(u32):
 		default:
-			u32 = htonl(ai->opcode);
-			buf = &u32;
 			if(ai->size == 3) /* XXX make this generic */
-				u32 <<= 8;
+				u32 = htonl(ai->opcode << 8);
+			else
+				u32 = htonl(ai->opcode);
+			buf = &u32;
 			break;
 	}
 #if 0
