@@ -476,6 +476,16 @@
 	andb	$0x90, %ebp
 	andb	$0x90, %esi
 	andb	$0x90, %edi
+	/* 0x86 */
+	xchg	%al, %al
+	xchg	%al, %cl
+	xchg	%al, %dl
+	xchg	%al, %bl
+	xchg	%al, %ah
+	xchg	%al, %ch
+	xchg	%al, %dh
+	xchg	%al, %bh
+	/* 0x87 */
 	/* 0x8d */
 	lea	[%eax], %eax
 	lea	[%ecx], %eax
@@ -484,6 +494,15 @@
 	lea	[%esi], %eax
 	lea	[%edi], %eax
 	/* 0x90 */
+	nop
+	xchg	%eax, %eax
+	xchg	%eax, %ecx
+	xchg	%eax, %edx
+	xchg	%eax, %ebx
+	xchg	%eax, %esp
+	xchg	%eax, %ebp
+	xchg	%eax, %esi
+	xchg	%eax, %edi
 	cwde	%eax
 	cdq
 	wait
