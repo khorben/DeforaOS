@@ -13,6 +13,9 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with as; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME:
+ * - strings in string sections are separated with two null characters instead
+ *   of one */
 
 
 
@@ -58,28 +61,28 @@ typedef struct _ElfSectionValues
 
 static ElfSectionValues elf_section_values[] =
 {
-	{ "bss",	SHT_NOBITS,	SHF_ALLOC | SHF_WRITE		},
-	{ "comment",	SHT_PROGBITS,	0				},
-	{ "data",	SHT_PROGBITS,	SHF_ALLOC | SHF_WRITE		},
-	{ "data1",	SHT_PROGBITS,	SHF_ALLOC | SHF_WRITE		},
-	{ "debug",	SHT_PROGBITS,	0				},
-	{ "dynamic",	SHT_DYNAMIC,	0				},
-	{ "dynstr",	SHT_STRTAB,	SHF_ALLOC			},
-	{ "dynsym",	SHT_DYNSYM,	SHF_ALLOC			},
-	{ "fini",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
-	{ "got",	SHT_PROGBITS,	0				},
-	{ "hash",	SHT_HASH,	SHF_ALLOC			},
-	{ "init",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
-	{ "interp",	SHT_PROGBITS,	0				},
-	{ "line",	SHT_PROGBITS,	0				},
-	{ "note",	SHT_NOTE,	0				},
-	{ "plt",	SHT_PROGBITS,	0				},
-	{ "rodata",	SHT_PROGBITS,	SHF_ALLOC			},
-	{ "rodata1",	SHT_PROGBITS,	SHF_ALLOC			},
-	{ "shstrtab",	SHT_STRTAB,	0				},
-	{ "strtab",	SHT_STRTAB,	0				},
-	{ "symtab",	SHT_SYMTAB,	0				},
-	{ "text",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
+	{ ".bss",	SHT_NOBITS,	SHF_ALLOC | SHF_WRITE		},
+	{ ".comment",	SHT_PROGBITS,	0				},
+	{ ".data",	SHT_PROGBITS,	SHF_ALLOC | SHF_WRITE		},
+	{ ".data1",	SHT_PROGBITS,	SHF_ALLOC | SHF_WRITE		},
+	{ ".debug",	SHT_PROGBITS,	0				},
+	{ ".dynamic",	SHT_DYNAMIC,	0				},
+	{ ".dynstr",	SHT_STRTAB,	SHF_ALLOC			},
+	{ ".dynsym",	SHT_DYNSYM,	SHF_ALLOC			},
+	{ ".fini",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
+	{ ".got",	SHT_PROGBITS,	0				},
+	{ ".hash",	SHT_HASH,	SHF_ALLOC			},
+	{ ".init",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
+	{ ".interp",	SHT_PROGBITS,	0				},
+	{ ".line",	SHT_PROGBITS,	0				},
+	{ ".note",	SHT_NOTE,	0				},
+	{ ".plt",	SHT_PROGBITS,	0				},
+	{ ".rodata",	SHT_PROGBITS,	SHF_ALLOC			},
+	{ ".rodata1",	SHT_PROGBITS,	SHF_ALLOC			},
+	{ ".shstrtab",	SHT_STRTAB,	0				},
+	{ ".strtab",	SHT_STRTAB,	0				},
+	{ ".symtab",	SHT_SYMTAB,	0				},
+	{ ".text",	SHT_PROGBITS,	SHF_ALLOC | SHF_EXECINSTR	},
 	{ NULL,		0,		0				}
 };
 
@@ -257,7 +260,7 @@ static int _exit_32(FILE * fp)
 	int ret = 0;
 	long offset;
 
-	if(_section_32(fp, "shstrtab") != 0)
+	if(_section_32(fp, ".shstrtab") != 0)
 		ret = 1;
 	else if(fwrite(ess, sizeof(char), ess_cnt, fp) != ess_cnt)
 		ret = _elf_error(format_plugin.filename, 1);
@@ -410,7 +413,7 @@ static int _exit_64(FILE * fp)
 	int ret = 0;
 	long offset;
 
-	if(_section_64(fp, "shstrtab") != 0)
+	if(_section_64(fp, ".shstrtab") != 0)
 		ret = 1;
 	else if(fwrite(ess, sizeof(char), ess_cnt, fp) != ess_cnt)
 		ret = _elf_error(format_plugin.filename, 1);
