@@ -288,6 +288,42 @@
 	daa
 	das
 	/* 0x30 */
+	xor	%al, %al
+	xor	%al, %cl
+	xor	%al, %dl
+	xor	%al, %bl
+	xor	%al, %ah
+	xor	%al, %ch
+	xor	%al, %dh
+	xor	%al, %bh
+	/* 0x31 */
+	xor	%eax, %eax
+	xor	%eax, %ecx
+	xor	%eax, %edx
+	xor	%eax, %ebx
+	xor	%eax, %esp
+	xor	%eax, %ebp
+	xor	%eax, %esi
+	xor	%eax, %edi
+	/* 0x32 */
+	xor	%al, %al
+	xor	%cl, %al
+	xor	%dl, %al
+	xor	%bl, %al
+	xor	%ah, %al
+	xor	%ch, %al
+	xor	%dh, %al
+	xor	%bh, %al
+	/* 0x33 */
+	xor	%eax, %eax
+	xor	%ecx, %eax
+	xor	%edx, %eax
+	xor	%ebx, %eax
+	xor	%esp, %eax
+	xor	%ebp, %eax
+	xor	%esi, %eax
+	xor	%edi, %eax
+	/* 0x37 */
 	aaa
 	/* 0x38 */
 	cmp	%al, %al
