@@ -41,10 +41,10 @@ int parser_get_token(Parser * parser, Token ** token);
 /* useful */
 int parser_add_callback(Parser * parser, ParserCallback callback,
 		void * data);
-int parser_delete_callback(Parser * parser, ParserCallback callback);
+int parser_remove_callback(Parser * parser, ParserCallback callback);
 
 int parser_add_filter(Parser * parser, ParserFilter filter, void * data);
-int parser_delete_filter(Parser * parser, ParserFilter filter);
+int parser_remove_filter(Parser * parser, ParserFilter filter);
 
 int parser_scan(Parser * parser);
 int parser_scan_filter(Parser * parser);

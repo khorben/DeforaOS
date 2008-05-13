@@ -248,8 +248,8 @@ int parser_add_filter(Parser * parser, ParserFilter filter, void * data)
 }
 
 
-/* parser_delete_callback */
-int parser_delete_callback(Parser * parser, ParserCallback callback)
+/* parser_remove_callback */
+int parser_remove_callback(Parser * parser, ParserCallback callback)
 	/* FIXME untested */
 {
 	size_t i;
@@ -271,8 +271,8 @@ int parser_delete_callback(Parser * parser, ParserCallback callback)
 }
 
 
-/* parser_delete_filter */
-int parser_delete_filter(Parser * parser, ParserFilter filter)
+/* parser_remove_filter */
+int parser_remove_filter(Parser * parser, ParserFilter filter)
 	/* FIXME untested */
 {
 	size_t i;
