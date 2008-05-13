@@ -127,6 +127,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
+	$(INSTALL) -m 0644 amd64.a $(DESTDIR)$(LIBDIR)/as/arch/amd64.a
+	$(INSTALL) -m 0755 amd64.so $(DESTDIR)$(LIBDIR)/as/arch/amd64.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
 	$(INSTALL) -m 0644 i386.a $(DESTDIR)$(LIBDIR)/as/arch/i386.a
 	$(INSTALL) -m 0755 i386.so $(DESTDIR)$(LIBDIR)/as/arch/i386.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/arch
@@ -149,6 +152,8 @@ install: all
 	$(INSTALL) -m 0755 sparc64.so $(DESTDIR)$(LIBDIR)/as/arch/sparc64.so
 
 uninstall:
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/amd64.a
+	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/amd64.so
 	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386.a
 	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386.so
 	$(RM) $(DESTDIR)$(LIBDIR)/as/arch/i386_real.a
