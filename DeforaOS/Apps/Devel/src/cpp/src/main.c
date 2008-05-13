@@ -75,7 +75,7 @@ static int _cpp(Prefs * prefs, int filec, char * filev[])
 static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 {
 	int ret;
-	int filter = CPP_FILTER_WHITESPACE;
+	int filter = CPP_FILTER_WHITESPACE | CPP_FILTER_COMMENT;
 	Cpp * cpp;
 	size_t i;
 	size_t j;

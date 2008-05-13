@@ -487,7 +487,8 @@ static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
 	size_t len = 0;
 	char * p;
 
-	if(!isspace(c) || c == '\n')
+	assert(c != '\n');
+	if(!isspace(c))
 		return 1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -520,8 +521,12 @@ static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
 /* cpp_callback_comment */
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data)
-	/* TODO implement a flag to actually keep the content */
 {
+	Cpp * cpp = data;
+	char * str = NULL;
+	size_t len = 2;
+	char * p;
+
 	if(c != '/')
 		return 1;
 #ifdef DEBUG
@@ -534,6 +539,15 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		return 0;
 	}
 	for(c = parser_scan_filter(parser); c != EOF;)
+	{
+		if(!(cpp->filters & CPP_FILTER_COMMENT))
+		{
+			if((p = realloc(str, len + 3)) == NULL)
+				return -error_set_code(1, "%s", strerror(
+							errno));
+			str = p;
+			str[len++] = c;
+		}
 		if(c == '*')
 		{
 			if((c = parser_scan_filter(parser)) == '/')
@@ -541,10 +555,24 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		}
 		else
 			c = parser_scan_filter(parser);
+	}
 	if(c == EOF)
-		return -1;
-	token_set_code(token, CPP_CODE_WHITESPACE);
-	token_set_string(token, " ");
+		return -error_set_code(1, "%s", "End of file within a comment");
+	if(str != NULL)
+	{
+		str[0] = '/';
+		str[1] = '*';
+		str[len++] = '/';
+		str[len] = '\0';
+		token_set_code(token, CPP_CODE_COMMENT);
+		token_set_string(token, str);
+		free(str);
+	}
+	else
+	{
+		token_set_code(token, CPP_CODE_WHITESPACE);
+		token_set_string(token, " ");
+	}
 	parser_scan_filter(parser);
 	return 0;
 }
@@ -996,7 +1024,7 @@ Cpp * cpp_new(char const * filename, int filters)
 		parser_add_callback(cpp->parser, _cpp_callback_newline, cpp);
 		parser_add_callback(cpp->parser, _cpp_callback_otherspace, cpp);
 	}
-	parser_add_callback(cpp->parser, _cpp_callback_comment, NULL);
+	parser_add_callback(cpp->parser, _cpp_callback_comment, cpp);
 	parser_add_callback(cpp->parser, _cpp_callback_directive, cpp);
 	parser_add_callback(cpp->parser, _cpp_callback_comma, NULL);
 	parser_add_callback(cpp->parser, _cpp_callback_operator, NULL);
