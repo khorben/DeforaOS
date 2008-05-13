@@ -1293,8 +1293,4 @@
 #endif
 	{ "xor",	0x34,	AO_IMM_ | AO_al,	1, 1, 0, 0 },
 	{ "xor",	0x35,	AO_IMM_ | AO_AX,	1, W, 0, 0 },
-#ifndef I386_REAL
-# undef AO_ax_
-# undef AO_ax
-#endif /* !I386_REAL */
 #undef W
