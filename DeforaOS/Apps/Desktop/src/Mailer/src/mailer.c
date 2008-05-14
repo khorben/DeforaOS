@@ -410,8 +410,9 @@ static GtkWidget * _new_headers(Mailer * mailer)
 static void _new_config_load(Mailer * mailer)
 {
 	char * filename;
-	char * accounts;
+	char const * accounts;
 	char * p;
+	char * q;
 
 	if((mailer->config = config_new()) == NULL)
 		return;
@@ -422,17 +423,20 @@ static void _new_config_load(Mailer * mailer)
 	if((accounts = config_get(mailer->config, "", "accounts")) == NULL
 			|| accounts[0] == '\0')
 		return;
-	for(p = accounts; *p != '\0'; p++)
+	if((p = strdup(accounts)) == NULL)
+		return;
+	accounts = p;
+	for(q = p; *q != '\0'; q++)
 	{
-		if(*p != ',')
+		if(*q != ',')
 			continue;
-		*p = '\0';
+		*q = '\0';
 		_mailer_config_load_account(mailer, accounts);
-		*p = ',';
-		accounts = p + 1;
+		accounts = q + 1;
 	}
 	if(accounts[0] != '\0')
 		_mailer_config_load_account(mailer, accounts);
+	free(p);
 }
 
 
