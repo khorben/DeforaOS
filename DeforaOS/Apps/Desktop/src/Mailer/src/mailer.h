@@ -26,19 +26,14 @@
 
 /* Mailer */
 /* defaults */
-# ifndef PREFIX
-#  define PREFIX "/usr/local"
-# endif
-# ifndef LIBDIR
-#  define LIBDIR PREFIX "/lib"
-# endif
 # ifndef PLUGINDIR
-#  define PLUGINDIR LIBDIR "/Mailer"
+#  define PLUGINDIR LIBDIR	"/Mailer"
 # endif
 
-# define MAILER_CONFIG_FILE ".mailer"
+# define MAILER_CONFIG_FILE	".mailer"
 
-# define MAILER_MESSAGES_FONT "Monospace 8"
+# define MAILER_MESSAGES_FONT	"Monospace 8"
+
 
 /* types */
 enum

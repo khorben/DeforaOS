@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
+#include <errno.h>
 #include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "common.h"
@@ -100,25 +100,10 @@ static struct _toolbar _mailer_toolbar[] =
 /* Mailer */
 /* private */
 /* prototypes */
-static int _mailer_error(char const * message, int ret);
-static int _mailer_dlerror(char const * message, int ret);
 static int _mailer_config_load_account(Mailer * mailer, char const * name);
 
 
 /* functions */
-static int _mailer_error(char const * message, int ret)
-{
-	fputs("Mailer: ", stderr);
-	perror(message);
-	return ret;
-}
-
-static int _mailer_dlerror(char const * message, int ret)
-{
-	fprintf(stderr, "%s%s: %s\n", "Mailer: ", message, dlerror());
-	return ret;
-}
-
 static int _mailer_config_load_account(Mailer * mailer, char const * name)
 {
 	Account * account;
@@ -155,9 +140,9 @@ Mailer * mailer_new(void)
 	GtkWidget * vpaned;
 	GtkWidget * widget;
 
-	if((mailer = malloc(sizeof(*mailer))) == NULL)
+	if((mailer = object_new(sizeof(*mailer))) == NULL)
 	{
-		_mailer_error("malloc", 0);
+		error_print(PACKAGE);
 		return NULL;
 	}
 	_new_plugins(mailer);
@@ -229,7 +214,7 @@ static int _new_plugins(Mailer * mailer)
 	struct dirent * de;
 	size_t len;
 	char * filename;
-	void * handle;
+	Plugin * handle;
 	AccountPlugin * plugin;
 	Account * p;
 
@@ -237,40 +222,43 @@ static int _new_plugins(Mailer * mailer)
 	mailer->available_cnt = 0;
 	if((dirname = malloc(sizeof(PLUGINDIR) + strlen("/account")))
 			== NULL)
-		return _mailer_error("malloc", 1);
+		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
 	sprintf(dirname, "%s%s", PLUGINDIR, "/account");
 	if((dir = opendir(dirname)) == NULL)
 	{
-		_mailer_error(dirname, 0);
+		error_set_code(1, "%s: %s", dirname, strerror(errno));
 		free(dirname);
-		return 1;
+		return error_print(PACKAGE);
 	}
 	for(de = readdir(dir); de != NULL; de = readdir(dir))
 	{
 		if((len = strlen(de->d_name)) < 4
 				|| strcmp(".so", &de->d_name[len - 3]) != 0)
 			continue;
-		if((filename = malloc(strlen(dirname) + len + 2)) == NULL)
+		if((filename = malloc(len - 2)) == NULL)
 		{
-			_mailer_error(dirname, 0);
+			error_set_print(PACKAGE, 1, "%s", strerror(errno));
 			continue;
 		}
-		sprintf(filename, "%s/%s", dirname, de->d_name);
-		if((handle = dlopen(filename, RTLD_LAZY)) == NULL
-				|| (plugin = dlsym(handle, "account_plugin"))
-				== NULL)
+		snprintf(filename, len - 2, "%s", de->d_name);
+		if((handle = plugin_new(LIBDIR, PACKAGE, "account", filename))
+				== NULL
+				|| (plugin = plugin_lookup(handle,
+						"account_plugin")) == NULL)
 		{
-			_mailer_dlerror(filename, 0);
+			error_print(PACKAGE);
+			if(handle != NULL)
+				plugin_delete(handle);
 			free(filename);
 			continue;
 		}
+		free(filename);
 		if((p = realloc(mailer->available, sizeof(*p)
 						* (mailer->available_cnt + 1)))
 				== NULL)
 		{
-			_mailer_error(filename, 0);
-			free(filename);
-			dlclose(handle);
+			error_set_print(PACKAGE, 1, "%s", strerror(errno));
+			plugin_delete(handle);
 			continue;
 		}
 		mailer->available = p;
@@ -279,7 +267,7 @@ static int _new_plugins(Mailer * mailer)
 		p->title = strdup(plugin->name);
 		if(p->name == NULL || p->title == NULL)
 		{
-			_mailer_error(filename, 0);
+			error_set_print(PACKAGE, 1, "%s", strerror(errno));
 			free(p->name);
 			free(p->title);
 		}
@@ -294,11 +282,11 @@ static int _new_plugins(Mailer * mailer)
 					plugin->name, plugin->type);
 #endif
 		}
-		dlclose(handle);
-		free(filename);
+		plugin_delete(handle);
 	}
 	if(closedir(dir) != 0)
-		ret = _mailer_error(dirname, 1);
+		ret = error_set_print(PACKAGE, 1, "%s: %s", dirname, strerror(
+					errno));
 	free(dirname);
 	return ret;
 }
@@ -454,7 +442,7 @@ void mailer_delete(Mailer * mailer)
 	for(i = 0; i < mailer->account_cnt; i++)
 		account_delete(mailer->account[i]);
 	free(mailer->account);
-	free(mailer);
+	object_delete(mailer);
 }
 
 
@@ -490,7 +478,7 @@ int mailer_error(Mailer * mailer, char const * message, int ret)
 	GtkWidget * dialog;
 
 	if(mailer == NULL)
-		return _mailer_error(message, ret);
+		return error_set_print(PACKAGE, ret, "%s", message);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(mailer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
