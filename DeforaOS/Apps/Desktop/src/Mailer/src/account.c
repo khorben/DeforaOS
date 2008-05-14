@@ -147,7 +147,7 @@ int account_set_title(Account * account, char const * title)
 int account_config_load(Account * account, Config * config)
 {
 	AccountConfig * p = account->plugin->config;
-	char * value;
+	char const * value;
 	char * q;
 	long l;
 

@@ -122,7 +122,7 @@ static int _mailer_dlerror(char const * message, int ret)
 static int _mailer_config_load_account(Mailer * mailer, char const * name)
 {
 	Account * account;
-	char * type;
+	char const * type;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: mailer_config_load_account(\"%s\")\n", name);
