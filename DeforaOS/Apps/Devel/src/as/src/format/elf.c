@@ -83,8 +83,8 @@ static ElfSectionValues elf_section_values[] =
 	{ NULL,		0,		0				}
 };
 
-static char * ess = NULL; /* string section */
-static size_t ess_cnt = 0;
+static char * shstrtab; /* string section */
+static size_t shstrtab_cnt;
 
 
 /* format_plugin */
@@ -160,6 +160,9 @@ static int _elf_init(FILE * fp, char const * arch)
 	}
 	else
 		return 1;
+	if((shstrtab = malloc(sizeof(char))) == NULL)
+		return _elf_error(format_plugin.filename, 1);
+	shstrtab_cnt = 1;
 	return 0;
 }
 
@@ -197,17 +200,17 @@ static int _section_string(char const * name)
 	size_t cnt;
 	char * p;
 
-	if((len = strlen(name)) == 0 && ess != NULL)
+	if((len = strlen(name)) == 0 && shstrtab != NULL)
 		return 0;
-	if((cnt = ess_cnt) == 0)
+	if((cnt = shstrtab_cnt) == 0)
 		cnt++;
-	if((p = realloc(ess, sizeof(char) * (cnt + len + 1))) == NULL)
+	if((p = realloc(shstrtab, sizeof(char) * (cnt + len + 1))) == NULL)
 		return -_elf_error(format_plugin.filename, 1);
-	else if(ess == NULL)
+	else if(shstrtab == NULL)
 		p[0] = '\0';
-	ess = p;
-	ess_cnt = cnt + len + 1;
-	memcpy(&ess[cnt], name, len + 1);
+	shstrtab = p;
+	shstrtab_cnt = cnt + len + 1;
+	memcpy(&shstrtab[cnt], name, len + 1);
 	return cnt;
 }
 
@@ -259,7 +262,8 @@ static int _exit_32(FILE * fp)
 
 	if(_section_32(fp, ".shstrtab") != 0)
 		ret = 1;
-	else if(fwrite(ess, sizeof(char), ess_cnt, fp) != ess_cnt)
+	else if(fwrite(shstrtab, sizeof(char), shstrtab_cnt, fp)
+			!= shstrtab_cnt)
 		ret = _elf_error(format_plugin.filename, 1);
 	else if((offset = ftell(fp)) == -1)
 		ret = _elf_error(format_plugin.filename, 1);
@@ -269,9 +273,9 @@ static int _exit_32(FILE * fp)
 	free(es32);
 	es32 = NULL;
 	es32_cnt = 0;
-	free(ess);
-	ess = NULL;
-	ess_cnt = 0;
+	free(shstrtab);
+	shstrtab = NULL;
+	shstrtab_cnt = 0;
 	return ret;
 }
 
@@ -412,7 +416,8 @@ static int _exit_64(FILE * fp)
 
 	if(_section_64(fp, ".shstrtab") != 0)
 		ret = 1;
-	else if(fwrite(ess, sizeof(char), ess_cnt, fp) != ess_cnt)
+	else if(fwrite(shstrtab, sizeof(char), shstrtab_cnt, fp)
+			!= shstrtab_cnt)
 		ret = _elf_error(format_plugin.filename, 1);
 	else if((offset = ftell(fp)) == -1)
 		ret = _elf_error(format_plugin.filename, 1);
@@ -422,9 +427,9 @@ static int _exit_64(FILE * fp)
 	free(es64);
 	es64 = NULL;
 	es64_cnt = 0;
-	free(ess);
-	ess = NULL;
-	ess_cnt = 0;
+	free(shstrtab);
+	shstrtab = NULL;
+	shstrtab_cnt = 0;
 	return ret;
 }
 
