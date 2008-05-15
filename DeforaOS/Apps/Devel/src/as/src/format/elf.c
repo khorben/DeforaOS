@@ -197,7 +197,8 @@ static int _section_string(char const * name)
 	size_t cnt;
 	char * p;
 
-	len = strlen(name);
+	if((len = strlen(name)) == 0 && ess != NULL)
+		return 0;
 	if((cnt = ess_cnt) == 0)
 		cnt++;
 	if((p = realloc(ess, sizeof(char) * (cnt + len + 1))) == NULL)
