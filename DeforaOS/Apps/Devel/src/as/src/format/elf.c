@@ -26,7 +26,9 @@
 #include "../../config.h"
 
 
-/* variables */
+/* ELF */
+/* private */
+/* types */
 typedef struct _ElfArch
 {
 	char const * arch;
@@ -35,6 +37,39 @@ typedef struct _ElfArch
 	unsigned char endian;
 } ElfArch;
 
+typedef struct _ElfSectionValues
+{
+	char const * name;
+	Elf32_Word type;	/* works for 64-bit too */
+	Elf32_Word flags;
+} ElfSectionValues;
+
+typedef struct _ElfStrtab
+{
+	char * buf;
+	size_t cnt;
+} ElfStrtab;
+
+
+/* prototypes */
+/* ELF */
+static int _elf_init(FILE * fp, char const * arch);
+
+/* ELF32 */
+static int _init_32(FILE * fp);
+static int _exit_32(FILE * fp);
+static int _section_32(FILE * fp, char const * name);
+
+/* ELF64 */
+static int _init_64(FILE * fp);
+static int _exit_64(FILE * fp);
+static int _section_64(FILE * fp, char const * name);
+
+/* ElfStrtab */
+static int _elfstrtab_set(ElfStrtab * strtab, char const * name);
+
+
+/* variables */
 static ElfArch elf_arch[] =
 {
 	{ "amd64",	EM_X86_64,	ELFCLASS64,	ELFDATA2LSB	},
@@ -47,14 +82,6 @@ static ElfArch elf_arch[] =
 	{ NULL,		'\0',		'\0',		'\0'		}
 };
 static ElfArch * ea;
-
-
-typedef struct _ElfSectionValues
-{
-	char const * name;
-	Elf32_Word type;	/* works for 64-bit too */
-	Elf32_Word flags;
-} ElfSectionValues;
 
 static ElfSectionValues elf_section_values[] =
 {
@@ -83,12 +110,12 @@ static ElfSectionValues elf_section_values[] =
 	{ NULL,		0,		0				}
 };
 
-static char * shstrtab = NULL;	/* section string table */
-static size_t shstrtab_cnt = 0;
+static ElfStrtab shstrtab = { NULL, 0 };	/* section string table */
 
 
+/* public */
+/* variables */
 /* format_plugin */
-static int _elf_init(FILE * fp, char const * arch);
 FormatPlugin format_plugin =
 {
 	NULL,
@@ -99,14 +126,7 @@ FormatPlugin format_plugin =
 };
 
 
-/* elf_error */
-static int _elf_error(char const * message, int ret)
-{
-	error_set_code(ret, "%s: %s", message, strerror(errno));
-	return ret;
-}
-
-
+/* private */
 /* helpers */
 #if BYTE_ORDER == BIG_ENDIAN 
 # define _htob16(a) (a) 
@@ -131,14 +151,17 @@ static int _elf_error(char const * message, int ret)
 #endif
 
 
+/* functions */
+/* elf_error */
+static int _elf_error(char const * message, int ret)
+{
+	error_set_code(ret, "%s: %s", message, strerror(errno));
+	return ret;
+}
+
+
 /* elf_init */
 static ElfArch * _init_arch(char const * arch);
-static int _init_32(FILE * fp);
-static int _exit_32(FILE * fp);
-static int _section_32(FILE * fp, char const * name);
-static int _init_64(FILE * fp);
-static int _exit_64(FILE * fp);
-static int _section_64(FILE * fp, char const * name);
 
 static int _elf_init(FILE * fp, char const * arch)
 {
@@ -170,13 +193,12 @@ static ElfArch * _init_arch(char const * arch)
 	for(ea = elf_arch; ea->arch != NULL; ea++)
 		if(strcmp(ea->arch, arch) == 0)
 			return ea;
-	fprintf(stderr, "%s: %s: Unsupported ELF architecture\n",
-			PACKAGE, arch);
+	error_set_code(1, "%s: %s", arch, "Unsupported ELF architecture");
 	return NULL;
 }
 
 
-/* elf_section */
+/* section_values */
 static ElfSectionValues * _section_values(char const * name)
 {
 	ElfSectionValues * esv;
@@ -191,38 +213,14 @@ static ElfSectionValues * _section_values(char const * name)
 	return esv;
 }
 
-static int _section_string(char ** strtab, size_t * strtab_cnt,
-		char const * name)
-{
-	size_t len;
-	size_t cnt;
-	char * p;
 
-	if((len = strlen(name)) == 0 && *strtab != NULL)
-		return 0;
-	if((cnt = *strtab_cnt) == 0)
-		cnt++;
-	if((p = realloc(*strtab, sizeof(char) * (cnt + len + 1))) == NULL)
-		return -_elf_error(format_plugin.filename, 1);
-	else if(*strtab == NULL)
-		p[0] = '\0';
-	*strtab = p;
-	if(len == 0)
-	{
-		*strtab_cnt = cnt;
-		return 0;
-	}
-	*strtab_cnt = cnt + len + 1;
-	memcpy(&(*strtab)[cnt], name, len + 1);
-	return cnt;
-}
-
-
-/* elf 32 */
+/* ELF32 */
 /* variables */
 static Elf32_Shdr * es32 = NULL;
 static int es32_cnt = 0;
 
+
+/* init_32 */
 static int _init_32(FILE * fp)
 {
 	Elf32_Ehdr hdr;
@@ -256,8 +254,10 @@ static int _init_32(FILE * fp)
 }
 
 
+/* exit_32 */
 static int _exit_32_phdr(FILE * fp, Elf32_Off offset);
 static int _exit_32_shdr(FILE * fp, Elf32_Off offset);
+
 static int _exit_32(FILE * fp)
 {
 	int ret = 0;
@@ -265,8 +265,8 @@ static int _exit_32(FILE * fp)
 
 	if(_section_32(fp, ".shstrtab") != 0)
 		ret = 1;
-	else if(fwrite(shstrtab, sizeof(char), shstrtab_cnt, fp)
-			!= shstrtab_cnt)
+	else if(fwrite(shstrtab.buf, sizeof(char), shstrtab.cnt, fp)
+			!= shstrtab.cnt)
 		ret = _elf_error(format_plugin.filename, 1);
 	else if((offset = ftell(fp)) == -1)
 		ret = _elf_error(format_plugin.filename, 1);
@@ -276,9 +276,9 @@ static int _exit_32(FILE * fp)
 	free(es32);
 	es32 = NULL;
 	es32_cnt = 0;
-	free(shstrtab);
-	shstrtab = NULL;
-	shstrtab_cnt = 0;
+	free(shstrtab.buf);
+	shstrtab.buf = NULL;
+	shstrtab.cnt = 0;
 	return ret;
 }
 
@@ -347,6 +347,7 @@ static int _exit_32_shdr(FILE * fp, Elf32_Off offset)
 }
 
 
+/* section_32 */
 static int _section_32(FILE * fp, char const * name)
 {
 	int ss;
@@ -354,7 +355,7 @@ static int _section_32(FILE * fp, char const * name)
 	ElfSectionValues * esv;
 	long offset;
 
-	if((ss = _section_string(&shstrtab, &shstrtab_cnt, name)) < 0)
+	if((ss = _elfstrtab_set(&shstrtab, name)) < 0)
 		return 1;
 	if((p = realloc(es32, sizeof(*es32) * (es32_cnt + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
@@ -373,11 +374,13 @@ static int _section_32(FILE * fp, char const * name)
 }
 
 
-/* elf 64 */
+/* ELF64 */
 /* variables */
 static Elf64_Shdr * es64 = NULL;
 static int es64_cnt = 0;
 
+
+/* init_64 */
 static int _init_64(FILE * fp)
 {
 	Elf64_Ehdr hdr;
@@ -410,8 +413,10 @@ static int _init_64(FILE * fp)
 }
 
 
+/* exit_64 */
 static int _exit_64_phdr(FILE * fp, Elf64_Off offset);
 static int _exit_64_shdr(FILE * fp, Elf64_Off offset);
+
 static int _exit_64(FILE * fp)
 {
 	int ret = 0;
@@ -419,8 +424,8 @@ static int _exit_64(FILE * fp)
 
 	if(_section_64(fp, ".shstrtab") != 0)
 		ret = 1;
-	else if(fwrite(shstrtab, sizeof(char), shstrtab_cnt, fp)
-			!= shstrtab_cnt)
+	else if(fwrite(shstrtab.buf, sizeof(char), shstrtab.cnt, fp)
+			!= shstrtab.cnt)
 		ret = _elf_error(format_plugin.filename, 1);
 	else if((offset = ftell(fp)) == -1)
 		ret = _elf_error(format_plugin.filename, 1);
@@ -430,9 +435,9 @@ static int _exit_64(FILE * fp)
 	free(es64);
 	es64 = NULL;
 	es64_cnt = 0;
-	free(shstrtab);
-	shstrtab = NULL;
-	shstrtab_cnt = 0;
+	free(shstrtab.buf);
+	shstrtab.buf = NULL;
+	shstrtab.cnt = 0;
 	return ret;
 }
 
@@ -487,6 +492,7 @@ static int _exit_64_shdr(FILE * fp, Elf64_Off offset)
 }
 
 
+/* section_64 */
 static int _section_64(FILE * fp, char const * name)
 {
 	int ss;
@@ -494,7 +500,7 @@ static int _section_64(FILE * fp, char const * name)
 	ElfSectionValues * esv;
 	long offset;
 
-	if((ss = _section_string(&shstrtab, &shstrtab_cnt, name)) < 0)
+	if((ss = _elfstrtab_set(&shstrtab, name)) < 0)
 		return 1;
 	if((p = realloc(es64, sizeof(*es64) * (es64_cnt + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
@@ -510,4 +516,34 @@ static int _section_64(FILE * fp, char const * name)
 	p->sh_offset = offset;
 	p->sh_link = SHN_UNDEF; /* FIXME */
 	return 0;
+}
+
+
+/* ElfStrtab */
+/* private */
+/* functions */
+/* elfstrtab_get */
+static int _elfstrtab_set(ElfStrtab * strtab, char const * name)
+{
+	size_t len;
+	size_t cnt;
+	char * p;
+
+	if((len = strlen(name)) == 0 && strtab->cnt != 0)
+		return 0;
+	if((cnt = strtab->cnt) == 0)
+		cnt++;
+	if((p = realloc(strtab->buf, sizeof(char) * (cnt + len + 1))) == NULL)
+		return -_elf_error(format_plugin.filename, 1);
+	else if(strtab->buf == NULL)
+		p[0] = '\0';
+	strtab->buf = p;
+	if(len == 0)
+	{
+		strtab->cnt = cnt;
+		return 0;
+	}
+	strtab->cnt = cnt + len + 1;
+	memcpy(&strtab->buf[cnt], name, len + 1);
+	return cnt;
 }
