@@ -194,23 +194,24 @@ static ElfSectionValues * _section_values(char const * name)
 	return esv;
 }
 
-static int _section_string(char const * name)
+static int _section_string(char ** shstrtab, size_t * shstrtab_cnt,
+		char const * name)
 {
 	size_t len;
 	size_t cnt;
 	char * p;
 
-	if((len = strlen(name)) == 0 && shstrtab != NULL)
+	if((len = strlen(name)) == 0 && *shstrtab != NULL)
 		return 0;
-	if((cnt = shstrtab_cnt) == 0)
+	if((cnt = *shstrtab_cnt) == 0)
 		cnt++;
-	if((p = realloc(shstrtab, sizeof(char) * (cnt + len + 1))) == NULL)
+	if((p = realloc(*shstrtab, sizeof(char) * (cnt + len + 1))) == NULL)
 		return -_elf_error(format_plugin.filename, 1);
-	else if(shstrtab == NULL)
+	else if(*shstrtab == NULL)
 		p[0] = '\0';
-	shstrtab = p;
-	shstrtab_cnt = cnt + len + 1;
-	memcpy(&shstrtab[cnt], name, len + 1);
+	*shstrtab = p;
+	*shstrtab_cnt = cnt + len + 1;
+	memcpy(&(*shstrtab)[cnt], name, len + 1);
 	return cnt;
 }
 
@@ -351,7 +352,7 @@ static int _section_32(FILE * fp, char const * name)
 	ElfSectionValues * esv;
 	long offset;
 
-	if((ss = _section_string(name)) < 0)
+	if((ss = _section_string(&shstrtab, &shstrtab_cnt, name)) < 0)
 		return 1;
 	if((p = realloc(es32, sizeof(*es32) * (es32_cnt + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
@@ -491,7 +492,7 @@ static int _section_64(FILE * fp, char const * name)
 	ElfSectionValues * esv;
 	long offset;
 
-	if((ss = _section_string(name)) < 0)
+	if((ss = _section_string(&shstrtab, &shstrtab_cnt, name)) < 0)
 		return 1;
 	if((p = realloc(es64, sizeof(*es64) * (es64_cnt + 1))) == NULL)
 		return _elf_error(format_plugin.filename, 1);
