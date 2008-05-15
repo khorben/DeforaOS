@@ -13,9 +13,6 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with as; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
-/* FIXME:
- * - strings in string sections are separated with two null characters instead
- *   of one */
 
 
 
@@ -196,22 +193,21 @@ static ElfSectionValues * _section_values(char const * name)
 
 static int _section_string(char const * name)
 {
-	int ret;
 	size_t len;
+	size_t cnt;
 	char * p;
 
 	len = strlen(name);
-	if(ess == NULL)
-		len++;
-	if((p = realloc(ess, sizeof(char) * (ess_cnt + len + 1))) == NULL)
+	if((cnt = ess_cnt) == 0)
+		cnt++;
+	if((p = realloc(ess, sizeof(char) * (cnt + len + 1))) == NULL)
 		return -_elf_error(format_plugin.filename, 1);
-	if(ess == NULL)
-		p[ess_cnt++] = '\0';
+	else if(ess == NULL)
+		p[0] = '\0';
 	ess = p;
-	memcpy(&ess[ess_cnt], name, len + 1);
-	ret = ess_cnt;
-	ess_cnt += len + 1;
-	return ret;
+	ess_cnt = cnt + len + 1;
+	memcpy(&ess[cnt], name, len + 1);
+	return cnt;
 }
 
 
