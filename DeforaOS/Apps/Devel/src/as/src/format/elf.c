@@ -83,8 +83,8 @@ static ElfSectionValues elf_section_values[] =
 	{ NULL,		0,		0				}
 };
 
-static char * shstrtab; /* string section */
-static size_t shstrtab_cnt;
+static char * shstrtab = NULL;	/* section string table */
+static size_t shstrtab_cnt = 0;
 
 
 /* format_plugin */
@@ -160,9 +160,6 @@ static int _elf_init(FILE * fp, char const * arch)
 	}
 	else
 		return 1;
-	if((shstrtab = malloc(sizeof(char))) == NULL)
-		return _elf_error(format_plugin.filename, 1);
-	shstrtab_cnt = 1;
 	return 0;
 }
 
@@ -194,24 +191,29 @@ static ElfSectionValues * _section_values(char const * name)
 	return esv;
 }
 
-static int _section_string(char ** shstrtab, size_t * shstrtab_cnt,
+static int _section_string(char ** strtab, size_t * strtab_cnt,
 		char const * name)
 {
 	size_t len;
 	size_t cnt;
 	char * p;
 
-	if((len = strlen(name)) == 0 && *shstrtab != NULL)
+	if((len = strlen(name)) == 0 && *strtab != NULL)
 		return 0;
-	if((cnt = *shstrtab_cnt) == 0)
+	if((cnt = *strtab_cnt) == 0)
 		cnt++;
-	if((p = realloc(*shstrtab, sizeof(char) * (cnt + len + 1))) == NULL)
+	if((p = realloc(*strtab, sizeof(char) * (cnt + len + 1))) == NULL)
 		return -_elf_error(format_plugin.filename, 1);
-	else if(*shstrtab == NULL)
+	else if(*strtab == NULL)
 		p[0] = '\0';
-	*shstrtab = p;
-	*shstrtab_cnt = cnt + len + 1;
-	memcpy(&(*shstrtab)[cnt], name, len + 1);
+	*strtab = p;
+	if(len == 0)
+	{
+		*strtab_cnt = cnt;
+		return 0;
+	}
+	*strtab_cnt = cnt + len + 1;
+	memcpy(&(*strtab)[cnt], name, len + 1);
 	return cnt;
 }
 
