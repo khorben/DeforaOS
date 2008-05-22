@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Network Probe */
 /* Probe is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -94,13 +94,13 @@ static int _damon_init(DaMon * damon)
 }
 
 /* _init_config */
-static int _config_hosts(DaMon * damon, Config * config, char * hosts);
+static int _config_hosts(DaMon * damon, Config * config, char const * hosts);
 
 static int _init_config(DaMon * damon)
 {
 	Config * config;
 	char * filename = ETCDIR "/damon.cfg";
-	char * p;
+	char const * p;
 	char * q;
 	int tmp;
 
@@ -131,11 +131,11 @@ static int _init_config(DaMon * damon)
 	return 0;
 }
 
-static int _hosts_host(Config * config, Host * host, char * h,
+static int _hosts_host(Config * config, Host * host, char const * h,
 		unsigned int pos);
-static int _config_hosts(DaMon * damon, Config * config, char * hosts)
+static int _config_hosts(DaMon * damon, Config * config, char const * hosts)
 {
-	char * h = hosts;
+	char const * h = hosts;
 	unsigned int pos = 0;
 	Host * p;
 
@@ -159,16 +159,17 @@ static int _config_hosts(DaMon * damon, Config * config, char * hosts)
 		if(_hosts_host(config, &damon->hosts[damon->hosts_cnt++], h,
 					pos) != 0)
 			return 1;
-		h+=pos;
+		h += pos;
 		pos = 0;
 	}
 	return 0;
 }
 
-static char ** _host_comma(char * line);
-static int _hosts_host(Config * config, Host * host, char * h, unsigned int pos)
+static char ** _host_comma(char const * line);
+static int _hosts_host(Config * config, Host * host, char const * h,
+		unsigned int pos)
 {
-	char * p;
+	char const * p;
 
 	host->appclient = NULL;
 	host->ifaces = NULL;
@@ -187,15 +188,15 @@ static int _hosts_host(Config * config, Host * host, char * h, unsigned int pos)
 	return 0;
 }
 
-static char ** _host_comma(char * line)
+static char ** _host_comma(char const * line)
 {
-	char * l = line;
+	char const * l = line;
 	unsigned int pos = 0;
 	char ** values = NULL;
 	char ** p;
 	unsigned int cnt = 0;
 
-	for(; l[0] != '\0';)
+	while(l[0] != '\0')
 	{
 		if(l[pos] != '\0' && l[pos] != ',')
 		{
@@ -207,10 +208,10 @@ static char ** _host_comma(char * line)
 			l++;
 			continue;
 		}
-		if((p = realloc(values, sizeof(char*) * (cnt+2))) == NULL)
+		if((p = realloc(values, sizeof(char*) * (cnt + 2))) == NULL)
 			break;
 		values = p;
-		if((values[cnt] = malloc(pos+1)) != NULL)
+		if((values[cnt] = malloc(pos + 1)) != NULL)
 		{
 			strncpy(values[cnt], l, pos);
 			values[cnt][pos] = '\0';
@@ -219,9 +220,9 @@ static char ** _host_comma(char * line)
 #endif
 		}
 		values[++cnt] = NULL;
-		if(values[cnt-1] == NULL)
+		if(values[cnt - 1] == NULL)
 			break;
-		l+=pos;
+		l += pos;
 		pos = 0;
 	}
 	if(l[0] == '\0')
