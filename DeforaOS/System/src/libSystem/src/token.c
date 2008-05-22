@@ -73,6 +73,7 @@ Token * token_new(char const * filename, unsigned int line, unsigned int col)
 /* functions */
 void token_delete(Token * token)
 {
+	free(token->filename);
 	free(token->string);
 	object_delete(token);
 }
