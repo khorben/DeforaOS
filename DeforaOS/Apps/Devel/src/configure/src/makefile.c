@@ -29,6 +29,7 @@ ARRAY(Config *, config);
 /* functions */
 static int _makefile_write(Configure * configure, FILE * fp, configArray * ca,
 	       	int from, int to);
+
 int makefile(Configure * configure, String const * directory, configArray * ca,
 	       	int from, int to)
 		
@@ -690,9 +691,12 @@ static int _target_binary(Configure * configure, FILE * fp,
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	_target_flags(configure, fp, target);
-	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)\n");
-	fprintf(fp, "%s%s%s%s%s", "\t$(CC) -o ", target, " $(", target, "_OBJS)"
-			" $(LDFLAGSF) $(LDFLAGS)");
+	fprintf(fp, "\n%s%s%s%s", target, ": $(", target, "_OBJS)");
+	/* FIXME change commas to spaces */
+	if((p = config_get(configure->config, target, "depends")) != NULL)
+		fprintf(fp, " %s", p);
+	fprintf(fp, "%s%s%s%s%s", "\n\t$(CC) -o ", target, " $(", target,
+			"_OBJS) $(LDFLAGSF) $(LDFLAGS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
