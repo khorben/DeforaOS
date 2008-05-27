@@ -686,12 +686,22 @@ static int _directive_define(Cpp * cpp, Token * token, char const * str)
 {
 	size_t i;
 	size_t j;
+	size_t k = 0;
 	int tmp;
 	char * var;
 	char const * val;
 
 	token_set_code(token, CPP_CODE_META_DEFINE);
-	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++);
+	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++)
+	{
+		/* FIXME actually implement macros */
+		if(str[i] != '(')
+			continue;
+		for(k = i; str[i] != '\0' && str[i] != ')'; i++);
+		if(str[i] == ')')
+			i++;
+		break;
+	}
 	for(j = i; (tmp = str[j]) != '\0' && isspace(tmp); j++);
 	val = (str[j] != '\0') ? &str[j] : NULL;
 	/* FIXME inject an error token instead */
@@ -701,7 +711,7 @@ static int _directive_define(Cpp * cpp, Token * token, char const * str)
 		token_set_string(token, strerror(errno));
 		return 0;
 	}
-	var[i] = '\0';
+	var[k != 0 ? k : i] = '\0';
 	if(cpp_define_add(cpp, var, val) != 0)
 	{
 		token_set_code(token, CPP_CODE_META_ERROR);
