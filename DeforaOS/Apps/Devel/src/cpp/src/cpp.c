@@ -771,6 +771,7 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 		free(path);
 		return -1;
 	}
+	free(path);
 	for(i = 0; i < cpp->paths_cnt; i++)
 		if(cpp_path_add(cpp->subparser, cpp->paths[i]) != 0)
 			break;
@@ -1053,6 +1054,17 @@ Cpp * cpp_new(char const * filename, int filters)
 /* cpp_delete */
 void cpp_delete(Cpp * cpp)
 {
+	size_t i;
+
+	for(i = 0; i < cpp->defines_cnt; i++)
+	{
+		free(cpp->defines[i].name);
+		free(cpp->defines[i].value);
+	}
+	free(cpp->defines);
+	for(i = 0; i < cpp->paths_cnt; i++)
+		free(cpp->paths[i]);
+	free(cpp->paths);
 	if(cpp->subparser != NULL)
 		cpp_delete(cpp->subparser);
 	if(cpp->parser != NULL)
