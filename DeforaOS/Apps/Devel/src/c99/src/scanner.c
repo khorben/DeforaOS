@@ -87,7 +87,7 @@ int scan(C99 * c99)
 			return 0;
 		}
 	c = string[0];
-	if(isalpha(c))
+	if(isalpha(c) || c == '_')
 		token_set_code(c99->token, code_is_type(c99->code, string)
 				? C99_CODE_TYPEDEF_NAME : C99_CODE_IDENTIFIER);
 	else if(isdigit(c)) /* FIXME make a stricter check? */
