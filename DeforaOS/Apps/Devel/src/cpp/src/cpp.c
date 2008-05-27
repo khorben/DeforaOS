@@ -229,7 +229,7 @@ static char * _cpp_parse_line(Parser * parser, int c)
 
 	do
 	{
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			error_set_code(1, "%s", strerror(errno));
 			free(str);
@@ -253,7 +253,7 @@ static char * _cpp_parse_word(Parser * parser, int c)
 
 	do
 	{
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			error_set_code(1, "%s", strerror(errno));
 			free(str);
@@ -439,7 +439,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 	{
 		if(c != '\n')
 			continue;
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			free(str);
 			return -1;
@@ -495,7 +495,7 @@ static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
 #endif
 	do
 	{
-		if((p = realloc(str, len + 1)) == NULL)
+		if((p = realloc(str, len + 2)) == NULL)
 		{
 			free(str);
 			return -1;
