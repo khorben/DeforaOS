@@ -411,7 +411,12 @@ static int _cpp_scope_pop(Cpp * cpp)
 	CppScope * p;
 
 	assert(cpp->scopes_cnt > 0);
-	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt - 1)))
+	if(cpp->scopes_cnt == 1)
+	{
+		free(cpp->scopes);
+		p = NULL;
+	}
+	else if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt - 1)))
 			== NULL)
 		return error_set_code(1, "%s", strerror(errno));
 	cpp->scopes = p;
