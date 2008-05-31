@@ -28,6 +28,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/md5.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
