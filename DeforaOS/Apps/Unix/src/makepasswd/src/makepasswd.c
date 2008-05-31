@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of Makepasswd.
  *
  * Makepasswd is free software; you can redistribute it and/or modify
@@ -15,14 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with Makepasswd; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
+/* TODO:
+ * - I wrote this code a while ago, needs review */
 
 
 
+#include <sys/time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
+#include "../config.h"
 
 /* md5 */
 #include "global.h"
@@ -45,7 +48,7 @@ char md5out[33];			/* MD5 output buffer */
 /* common to des and shmd5 */
 char salt_string[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./";
 int salt_stringn;				/* length of salt_string */
-char* salt;
+char * salt;
 
 
 /* options */
@@ -58,16 +61,16 @@ struct options
 	char* description;
 };
 struct options args[] = {
-	{ 'c', "chars", -1, "string of allowed characters (A..Za..z0..9)" },
-	{ 'e', "encrypt", -1, "encryption algorithm {none,base64,des,md5,shmd5} (none)" },
-	{ 'l', "length", -1, "password length" },
-	{ 'M', "max", 8, "password maximum length" },
-	{ 'm', "min", 8, "password minimum length" },
-	{ 'n', "number", 1, "number of passwords to generate" },
-	{ 'p', "password", -1, "password to use" },
-	{ 's', "salt", -1, "salt to use (random)" },
-	{ 'h', "help", -1, "display this help screen" },
-	{ 'V', "version", -1, "display program version" }
+	{ 'c', "chars",    -1, "string of allowed characters (A..Za..z0..9)" },
+	{ 'e', "encrypt",  -1, "encryption algorithm {none,base64,des,md5,shmd5} (none)" },
+	{ 'l', "length",   -1, "password length"			},
+	{ 'M', "max",       8, "password maximum length"		},
+	{ 'm', "min",       8, "password minimum length"		},
+	{ 'n', "number",    1, "number of passwords to generate"	},
+	{ 'p', "password", -1, "password to use"			},
+	{ 's', "salt",     -1, "salt to use (random)"			},
+	{ 'h', "help",     -1, "display this help screen"		},
+	{ 'V', "version",  -1, "display program version"		}
 };
 enum { EB64 = 0, EMD5, EDES, ESHMD5, ENONE };
 char* options_encryption[] = { "base64", "md5", "des", "shmd5", "none", NULL };
@@ -85,15 +88,15 @@ char* desin(char buffer[], char salt[]);
 char* shmd5in(char buffer[], char salt[]);
 /* help */
 static int _usage(void);
-void version(void);
+static void _version(void);
 
 
 /* main */
 int main(int argc, char* argv[])
 {
-	/* temporary variables */
 	int i, j, l;
 	char * str;
+	struct timeval tv;
 
 	/* initializations */
 	encryption = ENONE;
@@ -116,7 +119,7 @@ int main(int argc, char* argv[])
 			/* version */
 			if(strcmp(argv[i], "-V") == 0 ||
 					strcmp(argv[i], "--version") == 0)
-				version();
+				_version();
 			else /* error */
 				_usage();
 			return 1;
@@ -125,12 +128,10 @@ int main(int argc, char* argv[])
 		/* detect argument */
 		if(argv[i][1] != '-' && argv[i][2] == '\0') /* short */
 			for(j = 0; j < NONE &&
-					argv[i][1] != args[j].shortarg; j++)
-			{}
+					argv[i][1] != args[j].shortarg; j++);
 		else if(argv[i][1] == '-') /* long */
 			for(j = 0; j < NONE &&
-					strcmp(&argv[i][2], args[j].longarg) != 0; j++)
-			{}
+					strcmp(&argv[i][2], args[j].longarg) != 0; j++);
 		else /* error e.g. -hn 1 */
 			return _usage();
 
@@ -230,8 +231,7 @@ int main(int argc, char* argv[])
 		for(i = 0; i < n; i++)
 		{
 			int j;
-			for(j = 0; j < salt_stringn && salt[i] != salt_string[j]; j++)
-			{}
+			for(j = 0; j < salt_stringn && salt[i] != salt_string[j]; j++);
 			if(j == salt_stringn)
 			{
 				_usage();
@@ -242,7 +242,12 @@ int main(int argc, char* argv[])
 	}
 
 	/* initialize random seed */
-	srand(time(NULL) + getpid());
+	if(gettimeofday(&tv, NULL) != 0)
+	{
+		perror("gettimeofday");
+		exit(2);
+	}
+	srand(tv.tv_sec ^ tv.tv_usec ^ getuid() ^ (getpid() << 16));
 
 	/* go for it */
 	if(password != NULL)
@@ -441,7 +446,7 @@ static int _usage(void)
 }
 
 /* version */
-void version(void)
+static void _version(void)
 {
-	printf("makepasswd CVS\n");
+	printf("%s %s\n", PACKAGE, VERSION);
 }
