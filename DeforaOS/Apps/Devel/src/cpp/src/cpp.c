@@ -33,6 +33,13 @@
 #include <errno.h>
 #include "cpp.h"
 
+#ifdef DEBUG
+# define DEBUG_SCOPE() fprintf(stderr, "DEBUG: %s(%p) %zu %d\n", __func__, \
+		cpp, _cpp_scope_get_count(cpp), _cpp_scope_get(cpp))
+#else
+# define DEBUG_SCOPE()
+#endif
+
 
 /* Cpp */
 /* private */
@@ -56,6 +63,7 @@ typedef enum _CppScope
 	CPP_SCOPE_TAKEN
 } CppScope;
 
+/* FIXME make a subtype for the actual parser instead of the "parent" hack */
 struct _Cpp
 {
 	int filters;
@@ -69,6 +77,7 @@ struct _Cpp
 	/* for cpp_callback_directive */
 	int directive_newline;
 	/* for include directives */
+	Cpp * parent;
 	Cpp * subparser;
 	char ** paths;
 	size_t paths_cnt;
@@ -185,6 +194,7 @@ static int _cpp_filter_trigraphs(int * c, void * data);
 /* scope */
 static int _cpp_scope_push(Cpp * cpp, CppScope scope);
 static CppScope _cpp_scope_get(Cpp * cpp);
+static size_t _cpp_scope_get_count(Cpp * cpp);
 static void _cpp_scope_set(Cpp * cpp, CppScope scope);
 static int _cpp_scope_pop(Cpp * cpp);
 
@@ -380,6 +390,9 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 {
 	CppScope * p;
 
+	cpp = cpp->parent;
+	if(_cpp_scope_get(cpp) != CPP_SCOPE_TAKING)
+		scope = _cpp_scope_get(cpp);
 	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt + 1)))
 			== NULL)
 		return error_set_code(1, "%s", strerror(errno));
@@ -392,14 +405,24 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 /* cpp_scope_get */
 static CppScope _cpp_scope_get(Cpp * cpp)
 {
+	cpp = cpp->parent;
 	return (cpp->scopes_cnt == 0) ? CPP_SCOPE_TAKING
 		: cpp->scopes[cpp->scopes_cnt - 1];
+}
+
+
+/* cpp_scope_get_count */
+static size_t _cpp_scope_get_count(Cpp * cpp)
+{
+	cpp = cpp->parent;
+	return cpp->scopes_cnt;
 }
 
 
 /* cpp_scope_set */
 static void _cpp_scope_set(Cpp * cpp, CppScope scope)
 {
+	cpp = cpp->parent;
 	assert(cpp->scopes_cnt > 0);
 	cpp->scopes[cpp->scopes_cnt - 1] = scope;
 }
@@ -410,6 +433,7 @@ static int _cpp_scope_pop(Cpp * cpp)
 {
 	CppScope * p;
 
+	cpp = cpp->parent;
 	assert(cpp->scopes_cnt > 0);
 	if(cpp->scopes_cnt == 1)
 	{
@@ -759,10 +783,10 @@ static char * _lookup_error(Token * token, char const * path, int system);
 static int _directive_include(Cpp * cpp, Token * token, char const * str)
 {
 	char * path;
-	size_t i;
-	size_t j;
 
-	if((path = _include_path(cpp, token, str)) == NULL)
+	if((path = _include_path(cpp, token, str)) == NULL
+			&& (path = _include_path(cpp->parent, token, str))
+			== NULL)
 		return 0;
 	token_set_code(token, CPP_CODE_META_INCLUDE);
 	if((cpp->subparser = cpp_new(path, cpp->filters)) == NULL)
@@ -772,19 +796,7 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 		return -1;
 	}
 	free(path);
-	for(i = 0; i < cpp->paths_cnt; i++)
-		if(cpp_path_add(cpp->subparser, cpp->paths[i]) != 0)
-			break;
-	for(j = 0; j < cpp->defines_cnt; j++)
-		if(cpp_define_add(cpp->subparser, cpp->defines[j].name,
-					cpp->defines[j].value) != 0)
-			break;
-	if(i != cpp->paths_cnt || j != cpp->defines_cnt)
-	{
-		cpp_delete(cpp->subparser);
-		cpp->subparser = NULL;
-		return 1;
-	}
+	cpp->subparser->parent = cpp->parent;
 	return 0;
 }
 
@@ -1020,6 +1032,7 @@ Cpp * cpp_new(char const * filename, int filters)
 	cpp->filters = filters;
 	cpp->parser = parser_new(filename);
 	cpp->directive_newline = 1;
+	cpp->parent = cpp;
 	if((p = strdup(filename)) != NULL)
 	{
 		cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
@@ -1056,15 +1069,26 @@ void cpp_delete(Cpp * cpp)
 {
 	size_t i;
 
-	for(i = 0; i < cpp->defines_cnt; i++)
+	if(cpp->parent == cpp)
 	{
-		free(cpp->defines[i].name);
-		free(cpp->defines[i].value);
+		for(i = 0; i < cpp->defines_cnt; i++)
+		{
+			free(cpp->defines[i].name);
+			free(cpp->defines[i].value);
+		}
+		free(cpp->defines);
+		for(i = 0; i < cpp->paths_cnt; i++)
+			free(cpp->paths[i]);
+		free(cpp->paths);
 	}
-	free(cpp->defines);
-	for(i = 0; i < cpp->paths_cnt; i++)
-		free(cpp->paths[i]);
-	free(cpp->paths);
+	else
+	{
+		assert(cpp->defines_cnt == 0);
+		assert(cpp->paths_cnt == 1);
+		free(cpp->paths[0]);
+		free(cpp->paths);
+		assert(cpp->scopes_cnt == 0);
+	}
 	if(cpp->subparser != NULL)
 		cpp_delete(cpp->subparser);
 	if(cpp->parser != NULL)
@@ -1090,6 +1114,7 @@ int cpp_is_defined(Cpp * cpp, char const * name)
 {
 	size_t i;
 
+	cpp = cpp->parent;
 	for(i = 0; i < cpp->defines_cnt; i++)
 		if(strcmp(cpp->defines[i].name, name) == 0)
 			return 1;
@@ -1109,6 +1134,7 @@ int cpp_define_add(Cpp * cpp, char const * name, char const * value)
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\", \"%s\")\n", __func__, name,
 			value);
 #endif
+	cpp = cpp->parent;
 	for(i = 0; i < cpp->defines_cnt; i++)
 		if(strcmp(cpp->defines[i].name, name) == 0)
 			break;
@@ -1138,6 +1164,7 @@ int cpp_define_remove(Cpp * cpp, char const * name)
 {
 	size_t i;
 
+	cpp = cpp->parent;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\")\n", __func__, name);
 #endif
@@ -1163,6 +1190,7 @@ int cpp_path_add(Cpp * cpp, char const * path)
 {
 	char ** p;
 
+	cpp = cpp->parent;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\")\n", __func__, path);
 #endif
@@ -1178,81 +1206,34 @@ int cpp_path_add(Cpp * cpp, char const * path)
 
 /* cpp_scan */
 static int _scan_get_next(Cpp * cpp, Token ** token);
+static int _scan_ifdef(Cpp * cpp, Token ** token);
+static int _scan_ifndef(Cpp * cpp, Token ** token);
+static int _scan_if(Cpp * cpp);
+static int _scan_elif(Cpp * cpp, Token ** token);
+static int _scan_else(Cpp * cpp, Token ** token);
+static int _scan_endif(Cpp * cpp, Token ** token);
 
 int cpp_scan(Cpp * cpp, Token ** token)
 {
 	int ret;
 	TokenCode code;
-	char * name;
-	int take;
-	CppScope scope;
 
 	if((ret = _scan_get_next(cpp, token)) != 0)
 		return ret;
 	if(*token == NULL)
 		return 0;
-	if((code = token_get_code(*token)) == CPP_CODE_META_IFDEF
-			|| code == CPP_CODE_META_IFNDEF)
-	{
-		name = token_get_data(*token);
-		take = cpp_is_defined(cpp, name);
-		token_set_data(*token, NULL);
-		free(name);
-		take = (code == CPP_CODE_META_IFDEF) ? take : !take;
-		_cpp_scope_push(cpp, take ? CPP_SCOPE_TAKING
-				: CPP_SCOPE_NOTYET);
-		return 0;
-	}
+	if((code = token_get_code(*token)) == CPP_CODE_META_IFDEF)
+		return _scan_ifdef(cpp, token);
+	if(code == CPP_CODE_META_IFNDEF)
+		return _scan_ifndef(cpp, token);
 	if(code == CPP_CODE_META_IF)
-	{
-		/* FIXME check the condition */
-		_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
-		return 0;
-	}
+		return _scan_if(cpp);
 	if(code == CPP_CODE_META_ELIF)
-	{
-		if(cpp->scopes_cnt == 0)
-		{
-			token_set_code(*token, CPP_CODE_META_ERROR);
-			token_set_string(*token, "#elif without #if or #ifdef"
-					" or #ifndef");
-			return 0;
-		}
-		/* FIXME check the condition */
-		scope = _cpp_scope_get(cpp);
-		if(scope == CPP_SCOPE_TAKING)
-			_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
-		else if(scope == CPP_SCOPE_NOTYET)
-			_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
-		return 0;
-	}
+		return _scan_elif(cpp, token);
 	if(code == CPP_CODE_META_ELSE)
-	{
-		if(cpp->scopes_cnt == 0)
-		{
-			token_set_code(*token, CPP_CODE_META_ERROR);
-			token_set_string(*token, "#else without #if or #ifdef"
-					" or #ifndef");
-			return 0;
-		}
-		scope = _cpp_scope_get(cpp);
-		if(scope == CPP_SCOPE_TAKING)
-			_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
-		else if(scope == CPP_SCOPE_NOTYET)
-			_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
-		return 0;
-	}
+		return _scan_else(cpp, token);
 	if(code == CPP_CODE_META_ENDIF)
-	{
-		if(cpp->scopes_cnt == 0)
-		{
-			token_set_code(*token, CPP_CODE_META_ERROR);
-			token_set_string(*token, "#endif without #if or #ifdef"
-					" or #ifndef");
-		}
-		_cpp_scope_pop(cpp);
-		return 0;
-	}
+		return _scan_endif(cpp, token);
 	if(_cpp_scope_get(cpp) == CPP_SCOPE_TAKING)
 		return 0;
 	token_delete(*token);
@@ -1271,4 +1252,94 @@ static int _scan_get_next(Cpp * cpp, Token ** token)
 		cpp->subparser = NULL;
 	}
 	return parser_get_token(cpp->parser, token);
+}
+
+static int _scan_ifdef(Cpp * cpp, Token ** token)
+{
+	char * name;
+	int take;
+
+	DEBUG_SCOPE();
+	name = token_get_data(*token);
+	take = cpp_is_defined(cpp, name);
+	token_set_data(*token, NULL);
+	free(name);
+	_cpp_scope_push(cpp, take ? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);
+	return 0;
+}
+
+static int _scan_ifndef(Cpp * cpp, Token ** token)
+{
+	char * name;
+	int take;
+
+	DEBUG_SCOPE();
+	name = token_get_data(*token);
+	take = !cpp_is_defined(cpp, name);
+	token_set_data(*token, NULL);
+	free(name);
+	_cpp_scope_push(cpp, take ? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);
+	return 0;
+}
+
+static int _scan_if(Cpp * cpp)
+{
+	DEBUG_SCOPE();
+	/* FIXME check the condition */
+	_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
+	return 0;
+}
+
+static int _scan_elif(Cpp * cpp, Token ** token)
+{
+	CppScope scope;
+
+	DEBUG_SCOPE();
+	if(_cpp_scope_get_count(cpp) == 0)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, "#elif without #if or #ifdef"
+				" or #ifndef");
+		return 0;
+	}
+	/* FIXME check the condition */
+	scope = _cpp_scope_get(cpp);
+	if(scope == CPP_SCOPE_TAKING)
+		_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
+	else if(scope == CPP_SCOPE_NOTYET)
+		_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
+	return 0;
+}
+
+static int _scan_else(Cpp * cpp, Token ** token)
+{
+	CppScope scope;
+
+	DEBUG_SCOPE();
+	if(_cpp_scope_get_count(cpp) == 0)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, "#else without #if or #ifdef"
+				" or #ifndef");
+		return 0;
+	}
+	scope = _cpp_scope_get(cpp);
+	if(scope == CPP_SCOPE_TAKING)
+		_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
+	else if(scope == CPP_SCOPE_NOTYET)
+		_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
+	return 0;
+}
+
+static int _scan_endif(Cpp * cpp, Token ** token)
+{
+	DEBUG_SCOPE();
+	if(_cpp_scope_get_count(cpp) == 0)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, "#endif without #if or #ifdef"
+				" or #ifndef");
+	}
+	_cpp_scope_pop(cpp);
+	return 0;
 }
