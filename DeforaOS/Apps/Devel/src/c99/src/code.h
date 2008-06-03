@@ -26,23 +26,24 @@
 /* protected */
 typedef struct _Code Code;
 
-typedef enum _CodeContext
-{
-	CODE_CONTEXT_UNDEFINED = 0,
-	CODE_CONTEXT_FUNCTION_NAME
-} CodeContext;
-
 
 /* public */
 /* functions */
 Code * code_new(C99Prefs const * prefs, char const * outfile);
 int code_delete(Code * code);
 
-/* accessors */
-int code_set_context(Code * code, CodeContext context);
-int code_set_identifier(Code * code, char const * name);
-
 /* useful */
-int code_is_type(Code * code, char const * name);
+/* functions */
+int code_function_begin(Code * code, char const * name);
+int code_function_call(Code * code, char const * name);
+int code_function_end(Code * code);
+
+/* types */
+int code_type_add(Code * code, char const * name);
+int code_type_get(Code * code, char const * name);
+
+/* variables */
+int code_variable_add(Code * code, char const * name);
+int code_variable_get(Code * code, char const * name);
 
 #endif /* !_C99_CODE_H */
