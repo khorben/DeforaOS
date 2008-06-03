@@ -56,7 +56,9 @@ static C99Option _as_options[ASO_COUNT + 1] =
 static int _as_init(char const * outfile, int optlevel);
 static int _as_exit(void);
 static int _as_section(char const * name);
-static int _as_function(char const * name);
+static int _as_function_begin(char const * name);
+static int _as_function_call(char const * name);
+static int _as_function_end(void);
 
 
 /* public */
@@ -67,7 +69,9 @@ TargetPlugin target_plugin =
 	_as_init,
 	_as_exit,
 	_as_section,
-	_as_function
+	_as_function_begin,
+	_as_function_call,
+	_as_function_end
 };
 
 
@@ -118,7 +122,23 @@ static int _as_section(char const * name)
 
 
 /* as_function */
-static int _as_function(char const * name)
+static int _as_function_begin(char const * name)
 {
 	return as_function(_as_as, name);
+}
+
+
+/* as_function_call */
+static int _as_function_call(char const * name)
+{
+	/* FIXME implement */
+	return 0;
+}
+
+
+/* as_function_end */
+static int _as_function_end(void)
+{
+	/* FIXME implement */
+	return 0;
 }
