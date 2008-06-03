@@ -112,7 +112,7 @@ static int _graph_function_call(char const * name)
 #ifdef DEBUG
 	fprintf(stderr, "%s(\"%s\")\n", __func__, name);
 #endif
-	fprintf(_fp, "\t%s%s%s%s", _function, " => ", name, ";\n");
+	fprintf(_fp, "\t%s%s%s%s", _function, " -> ", name, ";\n");
 	return 0;
 }
 
