@@ -68,6 +68,7 @@ static int _main_add_option(C99Prefs * prefs, char const * option);
 
 int main(int argc, char * argv[])
 {
+	int ret;
 	C99Prefs prefs;
 	int o;
 
@@ -128,7 +129,11 @@ int main(int argc, char * argv[])
 			&& prefs.outfile != NULL
 			&& optind + 1 != argc)
 		return _usage();
-	return _c99(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	ret = _c99(&prefs, argc - optind, &argv[optind]);
+	free(prefs.paths);
+	free(prefs.defines);
+	free(prefs.undefines);
+	return (ret == 0) ? 0 : 2;
 }
 
 static int _main_default_paths(C99Prefs * prefs)

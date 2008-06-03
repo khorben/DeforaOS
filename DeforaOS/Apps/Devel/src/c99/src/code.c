@@ -207,6 +207,7 @@ static int _new_target(Code * code, char const * target,
 int code_delete(Code * code)
 {
 	int ret = 0;
+	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -217,7 +218,11 @@ int code_delete(Code * code)
 			ret = _code_target_exit(code);
 		plugin_delete(code->plugin);
 	}
+	for(i = 0; i < code->variables_cnt; i++)
+		free(code->variables[i].name);
 	free(code->variables);
+	for(i = 0; i < code->types_cnt; i++)
+		free(code->types[i].name);
 	free(code->types);
 	object_delete(code);
 	return ret;
