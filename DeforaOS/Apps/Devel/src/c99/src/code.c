@@ -48,23 +48,20 @@ typedef struct _CodeVariable
 /* prototypes */
 static int _code_target_init(Code * code, char const * outfile, int optlevel);
 static int _code_target_exit(Code * code);
-static int _code_target_function(Code * code, char const * name);
-
-static int _variable_add(Code * code, char const * name);
-
-static int _code_function(Code * code, char const * name);
+static int _code_target_function_begin(Code * code, char const * name);
+static int _code_target_function_call(Code * code, char const * name);
+static int _code_target_function_end(Code * code);
 
 
 /* protected */
 /* types */
 struct _Code
 {
-	CodeContext context;
 	/* types */
 	CodeType * types;
-	unsigned int types_cnt;
+	size_t types_cnt;
 	CodeVariable * variables;
-	unsigned int variables_cnt;
+	size_t variables_cnt;
 	/* target */
 	Plugin * plugin;
 	TargetPlugin * target;
@@ -97,45 +94,39 @@ static int _code_target_exit(Code * code)
 }
 
 
-/* code_target_function */
-static int _code_target_function(Code * code, char const * name)
+/* code_target_function_begin */
+static int _code_target_function_begin(Code * code, char const * name)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
+#endif
+	if(code->target->function_begin == NULL)
+		return 0;
+	return code->target->function_begin(name);
+}
+
+
+/* code_target_function_call */
+static int _code_target_function_call(Code * code, char const * name)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
+#endif
+	if(code->target->function_call == NULL)
+		return 0;
+	return code->target->function_call(name);
+}
+
+
+/* code_target_function_end */
+static int _code_target_function_end(Code * code)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(code->target->function == NULL)
+	if(code->target->function_end == NULL)
 		return 0;
-	return code->target->function(name);
-}
-
-
-/* code_function */
-static int _code_function(Code * code, char const * name)
-{
-	int ret;
-
-	if((ret = _variable_add(code, name)) != 0)
-		return ret;
-	return _code_target_function(code, name);
-}
-
-
-/* variable_add */
-static int _variable_add(Code * code, char const * name)
-{
-	CodeVariable * p;
-
-	if((p = realloc(code->variables, sizeof(*p)
-					* (code->variables_cnt + 1))) == NULL)
-		return 1; /* FIXME report error */
-	code->variables = p;
-	p = &code->variables[code->variables_cnt];
-	p->name = strdup(name);
-	p->type = NULL; /* FIXME implement */
-	if(p->name == NULL)
-		return 1; /* FIXME report error */
-	code->variables_cnt++;
-	return 0;
+	return code->target->function_end();
 }
 
 
@@ -155,7 +146,6 @@ Code * code_new(C99Prefs const * prefs, char const * outfile)
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
 	memset(code, 0, sizeof(*code));
-	code->context = CODE_CONTEXT_UNDEFINED;
 	if(_new_target(code, prefs->target, prefs->options, prefs->options_cnt)
 			!= 0
 			|| _code_target_init(code, outfile, prefs->optlevel)
@@ -175,7 +165,8 @@ static int _new_target(Code * code, char const * target,
 	size_t j;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%zu)\n", __func__, options_cnt);
+	fprintf(stderr, "DEBUG: %s(%s, %zu)\n", __func__, target ? target
+			: "NULL", options_cnt);
 #endif
 	if(target == NULL)
 		target = "as";
@@ -194,7 +185,8 @@ static int _new_target(Code * code, char const * target,
 	{
 		p = &options[i];
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: option \"%s\"\n", p->name);
+		fprintf(stderr, "DEBUG: %s() option \"%s\"\n", __func__,
+				p->name);
 #endif
 		for(j = 0; code->target->options[j].name != NULL; j++)
 			if(strcmp(p->name, code->target->options[j].name) == 0)
@@ -232,42 +224,103 @@ int code_delete(Code * code)
 }
 
 
-/* accessors */
-/* code_set_context */
-int code_set_context(Code * code, CodeContext context)
+/* useful */
+/* functions */
+/* code_function_begin */
+int code_function_begin(Code * code, char const * name)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(0x%x)\n", __func__, context);
+	int ret;
+
+	if((ret = code_variable_add(code, name)) != 0)
+		return ret;
+	return _code_target_function_begin(code, name);
+}
+
+
+/* code_function_call */
+int code_function_call(Code * code, char const * name)
+{
+#if 0 /* FIXME disabled for now */
+	int ret;
+
+	if((ret = _variable_get(code, name)) < 0)
+		return -ret;
 #endif
-	code->context = context;
+	return _code_target_function_call(code, name);
+}
+
+
+/* code_function_end */
+int code_function_end(Code * code)
+{
+	return _code_target_function_end(code);
+}
+
+
+/* types */
+/* code_type_add */
+int code_type_add(Code * code, char const * name)
+{
+	CodeType * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, name);
+#endif
+	if(name == NULL || name[0] == '\0')
+		return error_set_code(1, "%s", "Invalid name for a type");
+	if((p = realloc(code->types, sizeof(*p) * (code->types_cnt + 1)))
+			== NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	code->types = p;
+	if((code->types[code->types_cnt].name = strdup(name)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	code->types_cnt++;
 	return 0;
 }
 
 
-/* code_set_identifier */
-int code_set_identifier(Code * code, char const * name)
+/* code_type_get */
+int code_type_get(Code * code, char const * name)
 {
-	switch(code->context)
-	{
-		case CODE_CONTEXT_FUNCTION_NAME:
-			return _code_function(code, name);
-		case CODE_CONTEXT_UNDEFINED:
-		default:
-			break;
-	}
-	return 1;
-}
-
-
-/* useful */
-/* code_is_type */
-int code_is_type(Code * code, char const * name)
-{
-	unsigned int i;
+	size_t i;
 
 	/* XXX use a hash table if it gets too slow */
 	for(i = 0; i < code->types_cnt; i++)
 		if(strcmp(code->types[i].name, name) == 0)
-			return 1;
+			return i;
+	return -error_set_code(1, "%s%s", "Unknown type ", name);
+}
+
+
+/* variables */
+/* code_variable_add */
+int code_variable_add(Code * code, char const * name)
+{
+	CodeVariable * p;
+
+	if(name == NULL || name[0] == '\0')
+		return error_set_code(1, "%s", "Invalid name for a variable");
+	if((p = realloc(code->variables, sizeof(*p)
+					* (code->variables_cnt + 1))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	code->variables = p;
+	p = &code->variables[code->variables_cnt];
+	p->name = strdup(name);
+	p->type = NULL; /* FIXME implement */
+	if(p->name == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	code->variables_cnt++;
 	return 0;
+}
+
+
+/* code_variable_get */
+int code_variable_get(Code * code, char const * name)
+{
+	size_t i;
+
+	for(i = 0; i < code->variables_cnt; i++)
+		if(strcmp(code->variables[i].name, name) == 0)
+			return i;
+	return -error_set_code(1, "%s%s", "Unknown variable ", name);
 }
