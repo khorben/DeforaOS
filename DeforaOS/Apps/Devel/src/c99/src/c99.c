@@ -157,6 +157,7 @@ int c99_delete(C99 * c99)
 		token_delete(c99->token);
 	if(c99->code != NULL)
 		ret |= code_delete(c99->code);
+	free(c99->identifier);
 	object_delete(c99);
 	return ret;
 }
