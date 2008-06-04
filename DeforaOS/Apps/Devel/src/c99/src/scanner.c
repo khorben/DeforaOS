@@ -37,7 +37,7 @@ static char * _tokens[C99_CODE_COUNT] =
 	"[", "<=", "<", "(", "-=", "->", "-", "%=", "%", "!=", "!", "+=", "+",
 	"?", "}", "]", ")", ";", "*=", "~", "*", "^=", "^",
 	/* more codes */
-	"'", "whitespace", "newline", "comment", "word", "constant",
+	"'", "whitespace", "newline", "comment", "word", "unknown", "constant",
 	"identifier",
 	/* keywords */
 	"auto", "break", "case", "char", "const", "continue", "default", "do",
@@ -45,7 +45,7 @@ static char * _tokens[C99_CODE_COUNT] =
 	"inline", "int", "long", "register", "restrict", "return", "short",
 	"signed", "sizeof", "static", "struct", "switch", "typedef", "union",
 	"unsigned", "void", "volatile", "while", "_Bool", "_Complex",
-	"_Imaginary"
+	"_Imaginary", "name"
 };
 
 
