@@ -35,8 +35,8 @@
 #include "cpp.h"
 
 #ifdef DEBUG
-# define DEBUG_SCOPE() fprintf(stderr, "DEBUG: %s(%p) %zu %d\n", __func__, \
-		cpp, _cpp_scope_get_count(cpp), _cpp_scope_get(cpp))
+# define DEBUG_SCOPE() fprintf(stderr, "DEBUG: %s(%p) %zu scope=%d\n", \
+		__func__, cpp, _cpp_scope_get_count(cpp), _cpp_scope_get(cpp))
 #else
 # define DEBUG_SCOPE()
 #endif
@@ -393,7 +393,7 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 
 	cpp = cpp->parent;
 	if(_cpp_scope_get(cpp) != CPP_SCOPE_TAKING)
-		scope = _cpp_scope_get(cpp);
+		scope = CPP_SCOPE_TAKEN;
 	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt + 1)))
 			== NULL)
 		return error_set_code(1, "%s", strerror(errno));
