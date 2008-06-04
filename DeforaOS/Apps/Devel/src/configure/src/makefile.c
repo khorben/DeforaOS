@@ -485,7 +485,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
 	}
-	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= ld -shared\n", fp);
+	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= $(CC) -shared\n", fp);
 }
 
 static int _variables_includes(Configure * configure, FILE * fp)
