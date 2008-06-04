@@ -1,4 +1,4 @@
-TARGETS	= configure
+TARGETS	= configure makedepend
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -21,6 +21,12 @@ configure_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 configure: $(configure_OBJS)
 	$(CC) -o configure $(configure_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
+makedepend_OBJS = makedepend.o
+makedepend_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+makedepend: $(makedepend_OBJS)
+	$(CC) -o makedepend $(makedepend_OBJS) $(LDFLAGSF) $(LDFLAGS)
+
 configure.o: configure.c configure.h makefile.h
 	$(CC) $(configure_CFLAGS) -c configure.c
 
@@ -30,8 +36,11 @@ makefile.o: makefile.c configure.h settings.h
 settings.o: settings.c settings.h
 	$(CC) $(configure_CFLAGS) -c settings.c
 
+makedepend.o: makedepend.c
+	$(CC) $(makedepend_CFLAGS) -c makedepend.c
+
 clean:
-	$(RM) $(configure_OBJS)
+	$(RM) $(configure_OBJS) $(makedepend_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
