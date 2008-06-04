@@ -467,16 +467,19 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 
 static void _variables_library(Configure * configure, FILE * fp, char * done)
 {
+	String const * libdir;
+
 	if(!done[TT_LIBRARY])
 	{
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
 		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
 	}
-	if(configure->prefs->libdir[0] == '/')
-		fprintf(fp, "%s%s\n", "LIBDIR\t= ", configure->prefs->libdir);
+	if((libdir = config_get(configure->config, "", "libdir")) == NULL)
+		libdir = configure->prefs->libdir;
+	if(libdir[0] == '/')
+		fprintf(fp, "%s%s\n", "LIBDIR\t= ", libdir);
 	else
-		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/",
-				configure->prefs->libdir);
+		fprintf(fp, "%s%s\n", "LIBDIR\t= $(PREFIX)/", libdir);
 	if(!done[TT_BINARY])
 	{
 		_targets_cflags(configure, fp);
