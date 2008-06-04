@@ -17,6 +17,7 @@
  * - comments are not handled in directives
  * - fix includes (system vs regular, inclusion order)
  * - potential memory leak with tokens' data
+ * - add a filter for the "%" operator
  * - add a way to tokenize input from a string (and handle "#" and "##") */
 
 
@@ -609,11 +610,9 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 /* cpp_callback_directive */
 /* directives: these functions should return 0 (or -1 on errors) */
-static int _directive_define(Cpp * cpp, Token * token, char const * str);
 static int _directive_ifdef(Token * token, char const * str);
 static int _directive_ifndef(Token * token, char const * str);
 static int _directive_include(Cpp * cpp, Token * token, char const * str);
-static int _directive_undef(Cpp * cpp, Token * token, char const * str);
 static int _directive_unknown(Token * token, char const * str);
 
 static int _cpp_callback_directive(Parser * parser, Token * token, int c,
@@ -649,7 +648,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 	switch(i)
 	{
 		case CPP_DIRECTIVE_DEFINE:
-			ret = _directive_define(cpp, token, pos);
+			token_set_code(token, CPP_CODE_META_DEFINE);
 			break;
 		case CPP_DIRECTIVE_ELIF:
 			/* FIXME implement */
@@ -686,7 +685,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 			token_set_code(token, CPP_CODE_META_PRAGMA);
 			break;
 		case CPP_DIRECTIVE_UNDEF:
-			ret = _directive_undef(cpp, token, str);
+			token_set_code(token, CPP_CODE_META_UNDEF);
 			break;
 		case CPP_DIRECTIVE_WARNING:
 			token_set_code(token, CPP_CODE_META_WARNING);
@@ -710,46 +709,6 @@ static int _directive_unknown(Token * token, char const * str)
 }
 
 /* directives */
-/* directive_define */
-static int _directive_define(Cpp * cpp, Token * token, char const * str)
-{
-	size_t i;
-	size_t j;
-	size_t k = 0;
-	int tmp;
-	char * var;
-	char const * val;
-
-	token_set_code(token, CPP_CODE_META_DEFINE);
-	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++)
-	{
-		/* FIXME actually implement macros */
-		if(str[i] != '(')
-			continue;
-		for(k = i; str[i] != '\0' && str[i] != ')'; i++);
-		if(str[i] == ')')
-			i++;
-		break;
-	}
-	for(j = i; (tmp = str[j]) != '\0' && isspace(tmp); j++);
-	val = (str[j] != '\0') ? &str[j] : NULL;
-	/* FIXME inject an error token instead */
-	if((var = strdup(str)) == NULL)
-	{
-		token_set_code(token, CPP_CODE_META_ERROR);
-		token_set_string(token, strerror(errno));
-		return 0;
-	}
-	var[k != 0 ? k : i] = '\0';
-	if(cpp_define_add(cpp, var, val) != 0)
-	{
-		token_set_code(token, CPP_CODE_META_ERROR);
-		token_set_string(token, error_get());
-	}
-	free(var);
-	return 0;
-}
-
 /* directive_ifdef */
 static int _directive_ifdef(Token * token, char const * str)
 {
@@ -866,14 +825,6 @@ static char * _lookup_error(Token * token, char const * path, int system)
 			strerror(errno));
 	token_set_string(token, buf);
 	return NULL;
-}
-
-/* directive_undef */
-static int _directive_undef(Cpp * cpp, Token * token, char const * str)
-{
-	cpp_define_remove(cpp, str);
-	token_set_code(token, CPP_CODE_META_UNDEF);
-	return 0;
 }
 
 
@@ -1164,15 +1115,15 @@ int cpp_define_remove(Cpp * cpp, char const * name)
 {
 	size_t i;
 
-	cpp = cpp->parent;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\")\n", __func__, name);
 #endif
+	cpp = cpp->parent;
 	for(i = 0; i < cpp->defines_cnt; i++)
 		if(strcmp(cpp->defines[i].name, name) == 0)
 			break;
 	if(i == cpp->defines_cnt)
-		return 1; /* was not found */
+		return error_set_code(1, "%s is not defined", name);
 	free(cpp->defines[i].name);
 	free(cpp->defines[i].value);
 	cpp->defines_cnt--;
@@ -1212,32 +1163,48 @@ static int _scan_if(Cpp * cpp);
 static int _scan_elif(Cpp * cpp, Token ** token);
 static int _scan_else(Cpp * cpp, Token ** token);
 static int _scan_endif(Cpp * cpp, Token ** token);
+static int _scan_define(Cpp * cpp, Token ** token);
+static int _scan_undef(Cpp * cpp, Token ** token);
 
 int cpp_scan(Cpp * cpp, Token ** token)
 {
 	int ret;
 	TokenCode code;
 
-	if((ret = _scan_get_next(cpp, token)) != 0)
-		return ret;
-	if(*token == NULL)
-		return 0;
-	if((code = token_get_code(*token)) == CPP_CODE_META_IFDEF)
-		return _scan_ifdef(cpp, token);
-	if(code == CPP_CODE_META_IFNDEF)
-		return _scan_ifndef(cpp, token);
-	if(code == CPP_CODE_META_IF)
-		return _scan_if(cpp);
-	if(code == CPP_CODE_META_ELIF)
-		return _scan_elif(cpp, token);
-	if(code == CPP_CODE_META_ELSE)
-		return _scan_else(cpp, token);
-	if(code == CPP_CODE_META_ENDIF)
-		return _scan_endif(cpp, token);
-	if(_cpp_scope_get(cpp) == CPP_SCOPE_TAKING)
-		return 0;
-	token_delete(*token);
-	return cpp_scan(cpp, token); /* FIXME do this in a loop */
+	for(; (ret = _scan_get_next(cpp, token)) == 0; token_delete(*token))
+	{
+		if(*token == NULL) /* end of file */
+			break;
+		switch((code = token_get_code(*token)))
+		{
+			case CPP_CODE_META_IFDEF:
+				return _scan_ifdef(cpp, token);
+			case CPP_CODE_META_IFNDEF:
+				return _scan_ifndef(cpp, token);
+			case CPP_CODE_META_IF:
+				return _scan_if(cpp);
+			case CPP_CODE_META_ELIF:
+				return _scan_elif(cpp, token);
+			case CPP_CODE_META_ELSE:
+				return _scan_else(cpp, token);
+			case CPP_CODE_META_ENDIF:
+				return _scan_endif(cpp, token);
+			default:
+				break;
+		}
+		if(_cpp_scope_get(cpp) != CPP_SCOPE_TAKING) /* not in scope */
+			continue;
+		switch(code)
+		{
+			case CPP_CODE_META_DEFINE:
+				return _scan_define(cpp, token);
+			case CPP_CODE_META_UNDEF:
+				return _scan_undef(cpp, token);
+			default:
+				return 0;
+		}
+	}
+	return ret;
 }
 
 static int _scan_get_next(Cpp * cpp, Token ** token)
@@ -1302,11 +1269,11 @@ static int _scan_elif(Cpp * cpp, Token ** token)
 				" or #ifndef");
 		return 0;
 	}
-	/* FIXME check the condition */
 	scope = _cpp_scope_get(cpp);
 	if(scope == CPP_SCOPE_TAKING)
 		_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
 	else if(scope == CPP_SCOPE_NOTYET)
+		/* FIXME check the condition */
 		_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
 	return 0;
 }
@@ -1341,5 +1308,83 @@ static int _scan_endif(Cpp * cpp, Token ** token)
 				" or #ifndef");
 	}
 	_cpp_scope_pop(cpp);
+	return 0;
+}
+
+static int _scan_define(Cpp * cpp, Token ** token)
+{
+	char const * str;
+	int tmp;
+	size_t i;
+	size_t j;
+	size_t k = 0;
+	char * var;
+	char const * val;
+
+	str = token_get_string(*token);
+	/* skip '#' and white-spaces */
+	for(str++; (tmp = *str) != '\0' && isspace(tmp); str++);
+	/* skip "define" and white-spaces */
+	for(str+=6; (tmp = *str) != '\0' && isspace(tmp); str++);
+	/* fetch variable name */
+	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++)
+	{
+		/* FIXME actually implement macros */
+		if(str[i] != '(')
+			continue;
+		for(k = i; str[i] != '\0' && str[i] != ')'; i++);
+		if(str[i] == ')')
+			i++;
+		break;
+	}
+	/* skip white-spaces and fetch value */
+	for(j = i; (tmp = str[j]) != '\0' && isspace(tmp); j++);
+	val = (str[j] != '\0') ? &str[j] : NULL;
+	/* FIXME inject an error token instead */
+	if((var = strdup(str)) == NULL)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, strerror(errno));
+		return 0;
+	}
+	var[k != 0 ? k : i] = '\0';
+	if(cpp_define_add(cpp, var, val) != 0)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, error_get());
+	}
+	free(var);
+	return 0;
+}
+
+static int _scan_undef(Cpp * cpp, Token ** token)
+	/* FIXME ignores what's after the spaces after the variable name */
+{
+	char const * str;
+	int tmp;
+	size_t i;
+	char * var;
+
+	str = token_get_string(*token);
+	/* skip '#' and white-spaces */
+	for(str++; (tmp = *str) != '\0' && isspace(tmp); str++);
+	/* skip "undef" and white-spaces */
+	for(str+=5; (tmp = *str) != '\0' && isspace(tmp); str++);
+	/* fetch variable name */
+	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++);
+	/* FIXME inject an error token instead */
+	if((var = strdup(str)) == NULL)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, strerror(errno));
+		return 0;
+	}
+	var[i] = '\0';
+	if(cpp_define_remove(cpp, var) != 0)
+	{
+		token_set_code(*token, CPP_CODE_META_ERROR);
+		token_set_string(*token, error_get());
+	}
+	free(var);
 	return 0;
 }
