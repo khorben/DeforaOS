@@ -8,7 +8,7 @@ CFLAGSF	= -W
 CFLAGS	= -Wall -g -fPIC
 AR	= ar -rc
 RANLIB	= ranlib
-LD	= ld -shared
+LD	= $(CC) -shared
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -24,7 +24,7 @@ as.a: $(as_OBJS)
 	$(RANLIB) as.a
 
 as.so: $(as_OBJS)
-	$(LD) -o as.so $(as_OBJS) -L $(LIBDIR) -rpath $(LIBDIR) -l as
+	$(LD) -o as.so $(as_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
 
 graph_OBJS = graph.o
 graph_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
