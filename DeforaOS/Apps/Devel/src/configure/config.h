@@ -6,5 +6,5 @@
 #endif
 
 #ifndef LIBDIR
-# define LIBDIR "/lib"
+# define LIBDIR PREFIX "/lib"
 #endif
