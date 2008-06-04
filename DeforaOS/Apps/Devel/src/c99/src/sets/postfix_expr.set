@@ -1,2 +1,2 @@
 #include "primary_expr.set"
-	C99_CODE_OPERATOR_LBRACE,
+	C99_CODE_OPERATOR_LPAREN,
