@@ -17,7 +17,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libcpp_OBJS = cpp.o
+libcpp_OBJS = cpp.o scanner.o
 libcpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 
 libcpp.a: $(libcpp_OBJS)
@@ -35,6 +35,9 @@ cpp: $(cpp_OBJS) libcpp.so
 
 cpp.o: cpp.c ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c cpp.c
+
+scanner.o: scanner.c ../include/cpp.h
+	$(CC) $(libcpp_CFLAGS) -c scanner.c
 
 main.o: main.c ../include/cpp.h
 	$(CC) $(cpp_CFLAGS) -c main.c
