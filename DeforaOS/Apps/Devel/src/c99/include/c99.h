@@ -47,6 +47,7 @@ typedef struct _C99Prefs
 	const char ** undefines;
 	size_t undefines_cnt;
 	int optlevel;
+	int warn;
 	char const * target;
 	C99Option * options;
 	size_t options_cnt;

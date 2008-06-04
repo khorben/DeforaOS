@@ -75,7 +75,7 @@ int main(int argc, char * argv[])
 	memset(&prefs, 0, sizeof(prefs));
 	if(_main_default_paths(&prefs) != 0)
 		return 2;
-	while((o = getopt(argc, argv, "cD:EgI:L:m:M:o:O123sU:")) != -1)
+	while((o = getopt(argc, argv, "cD:EgI:L:m:M:o:O123sU:W")) != -1)
 		switch(o)
 		{
 			case 'c':
@@ -114,6 +114,9 @@ int main(int argc, char * argv[])
 			case 'U':
 				if(_main_add_undefine(&prefs, optarg) != 0)
 					return 2;
+				break;
+			case 'W':
+				prefs.warn = 1;
 				break;
 			case '1':
 			case '2':
