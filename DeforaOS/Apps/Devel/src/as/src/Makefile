@@ -35,7 +35,7 @@ libas.so: $(libas_OBJS)
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
-as: $(as_OBJS)
+as: $(as_OBJS) libas.so
 	$(CC) -o as $(as_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -l as
 
 as.o: as.c ../include/as.h ../config.h
