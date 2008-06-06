@@ -9,7 +9,7 @@ CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2
 AR	= ar -rc
 RANLIB	= ranlib
-LD	= ld -shared
+LD	= $(CC) -shared
 BINDIR	= $(PREFIX)/bin
 LDFLAGSF= 
 RM	= rm -f
@@ -30,7 +30,7 @@ libas.a: $(libas_OBJS)
 	$(RANLIB) libas.a
 
 libas.so: $(libas_OBJS)
-	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -rpath $(LIBDIR) -l cpp
+	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l cpp
 
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
