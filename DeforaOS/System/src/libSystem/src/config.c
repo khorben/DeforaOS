@@ -134,12 +134,12 @@ static char * _load_value(FILE * fp);
 
 int config_load(Config * config, char const * filename)
 {
+	int ret = 0;
 	FILE * fp;
 	char * section;
 	char * variable = NULL;
 	int c;
 	char * str;
-	int ret = 0;
 
 	if((section = string_new("")) == NULL)
 		return 1;
@@ -175,7 +175,8 @@ int config_load(Config * config, char const * filename)
 	free(variable);
 	if(!feof(fp))
 		ret = error_set_code(1, "%s: %s", filename, "Syntax error");
-	fclose(fp);
+	if(fclose(fp) != 0)
+		ret = error_set_code(1, "%s: %s", filename, strerror(errno));
 	return ret;
 }
 
