@@ -223,7 +223,7 @@ static int _configure_load(Prefs * prefs, String const * directory,
 	if(prefs->flags & PREFS_v)
 		printf("%s%s%s", "Loading project file ", path, "\n");
 	if(config_load(config, path) != 0)
-		ret = configure_error(path, 1);
+		ret = error_print(PACKAGE);
 	else
 	{
 		array_append(ca, &config);
