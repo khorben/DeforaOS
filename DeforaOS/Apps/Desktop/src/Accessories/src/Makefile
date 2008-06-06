@@ -59,8 +59,11 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 calendar $(DESTDIR)$(BINDIR)/calendar
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 fontsel $(DESTDIR)$(BINDIR)/fontsel
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 progress $(DESTDIR)$(BINDIR)/progress
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 run $(DESTDIR)$(BINDIR)/run
 
 uninstall:
