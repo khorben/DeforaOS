@@ -121,15 +121,25 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 halt $(DESTDIR)$(BINDIR)/halt
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 hexdump $(DESTDIR)$(BINDIR)/hexdump
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 login $(DESTDIR)$(BINDIR)/login
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 mktemp $(DESTDIR)$(BINDIR)/mktemp
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 mount $(DESTDIR)$(BINDIR)/mount
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 poweroff $(DESTDIR)$(BINDIR)/poweroff
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 reboot $(DESTDIR)$(BINDIR)/reboot
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 tar $(DESTDIR)$(BINDIR)/tar
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 umount $(DESTDIR)$(BINDIR)/umount
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 uptime $(DESTDIR)$(BINDIR)/uptime
+	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 w $(DESTDIR)$(BINDIR)/w
 
 uninstall:
