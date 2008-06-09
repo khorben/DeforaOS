@@ -30,7 +30,7 @@
 #include <string.h>
 #include "tar.h"
 
-#define min(a, b) ((a) < (b)) ? (a) : (b)
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 
 /* constants */
@@ -384,7 +384,7 @@ static int _dox_normal(FILE * fp, char const * archive, TarFileHeader * fh)
 
 	if((fp2 = fopen(fh->filename, "w")) == NULL)
 		return _tar_error(fh->filename, 1);
-	for(cnt = 0; cnt < fh->size; cnt+=BUFSIZ)
+	for(cnt = 0; cnt < fh->size; cnt += BUFSIZ)
 	{
 		read = fread(buf, sizeof(char), min(BUFSIZ, fh->size-cnt), fp);
 		if(read == 0)

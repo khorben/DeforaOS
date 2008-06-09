@@ -24,15 +24,16 @@
 
 
 /* types */
-typedef enum {
-	FT_NORMAL = 0,
-	FT_HARDLINK = 1,
-	FT_SYMLINK = 2,
-	FT_CHAR = 3,
-	FT_BLOCK = 4,
-	FT_DIRECTORY = 5,
-	FT_FIFO = 6,
-	FT_CONTIGUOUS = 7
+typedef enum
+{
+	FT_NORMAL	= 0,
+	FT_HARDLINK	= 1,
+	FT_SYMLINK	= 2,
+	FT_CHAR		= 3,
+	FT_BLOCK	= 4,
+	FT_DIRECTORY	= 5,
+	FT_FIFO		= 6,
+	FT_CONTIGUOUS	= 7
 } FileType;
 
 #pragma pack(1)
