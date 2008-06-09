@@ -71,7 +71,8 @@ TargetPlugin target_plugin =
 	_as_section,
 	_as_function_begin,
 	_as_function_call,
-	_as_function_end
+	_as_function_end,
+	NULL				/* FIXME implement label_set */
 };
 
 

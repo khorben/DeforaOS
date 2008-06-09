@@ -34,6 +34,7 @@ typedef struct _TargetPlugin
 	int (*function_begin)(char const * name);
 	int (*function_call)(char const * name);
 	int (*function_end)(void);
+	int (*label_set)(char const * name);
 } TargetPlugin;
 
 #endif /* !_C99_TARGET_TARGET_H */

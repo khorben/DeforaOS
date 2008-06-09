@@ -44,13 +44,14 @@ static int _graph_function_end(void);
 /* variables */
 TargetPlugin target_plugin =
 {
-	NULL,
+	NULL,				/* options */
 	_graph_init,
 	_graph_exit,
-	NULL,
+	NULL,				/* section */
 	_graph_function_begin,
 	_graph_function_call,
-	_graph_function_end
+	_graph_function_end,
+	NULL				/* label_set */
 };
 
 
