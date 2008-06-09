@@ -32,10 +32,9 @@ static int _mktemp(char * template)
 
 	if((template = strdup(template)) == NULL)
 		return _mktemp_error("strdup", 1);
-	if(gettimeofday(&tv, NULL) == 0)
-		srand(getpid() * tv.tv_sec * tv.tv_usec);
-	else
-		srand(getpid());
+	if(gettimeofday(&tv, NULL) != 0)
+		return _mktemp_error("gettimeofday", 1);
+	srand(tv.tv_sec ^ tv.tv_usec ^ getuid() ^ (getpid() << 16));
 	if((fd = mkstemp(template)) == -1)
 		return _mktemp_error(template, 1);
 	if(close(fd) != 0)
