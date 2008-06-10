@@ -28,14 +28,9 @@
 
 
 /* types */
-typedef struct _Array
-{
-	char * data;
-	size_t count;
-	size_t size;
-} Array;
+typedef struct _Array Array;
 
-typedef void (*ArrayApplyFunc)(void * data, void * userdata);
+typedef void (*ArrayForeach)(void * value, void * data);
 
 
 /* functions */
@@ -46,13 +41,13 @@ void array_delete(Array * array);
 size_t array_count(Array * array);
 
 void * array_get(Array * array, size_t pos);
-int array_get_copy(Array * array, size_t pos, void * data);
-int array_set(Array * array, size_t pos, void * data);
+int array_get_copy(Array * array, size_t pos, void * value);
+int array_set(Array * array, size_t pos, void * value);
 
 /* useful */
-int array_append(Array * array, void * data);
+int array_append(Array * array, void * value);
 int array_remove_pos(Array * array, size_t pos);
 
-void array_apply(Array * array, ArrayApplyFunc func, void * userdata);
+void array_foreach(Array * array, ArrayForeach func, void * data);
 
 #endif /* !LIBSYSTEM_ARRAY_H */
