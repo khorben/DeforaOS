@@ -46,7 +46,7 @@ static int _mktemp(char * template)
 
 static int _mktemp_error(char * message, int ret)
 {
-	fprintf(stderr, "%s", "mktemp: ");
+	fputs("mktemp: ", stderr);
 	perror(message);
 	return ret;
 }
