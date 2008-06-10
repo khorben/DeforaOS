@@ -28,10 +28,6 @@
 #include "configure.h"
 #include "../config.h"
 
-#ifndef PACKAGE
-# define PACKAGE	"configure"
-#endif
-
 
 /* configure */
 /* variables */
@@ -120,6 +116,7 @@ static void _configure_detect(Configure * configure);
 static int _configure_load(Prefs * prefs, char const * directory,
 		configArray * ca);
 static int _configure_do(Configure * configure, configArray * ca);
+
 static int _configure(Prefs * prefs, char const * directory)
 {
 	int ret;
@@ -245,7 +242,7 @@ static int _load_subdirs(Prefs * prefs, char const * directory,
 	char c;
 	String * subdir;
 	String * p;
-	
+
 	if((subdir = string_new(subdirs)) == NULL)
 		return 1;
 	p = subdir;
@@ -294,11 +291,14 @@ static int _configure_do(Configure * configure, configArray * ca)
 	for(i = 0; i < cnt; i++)
 	{
 		array_get_copy(ca, i, &configure->config);
-		di = config_get(configure->config, "", "directory");
+		if((di = config_get(configure->config, "", "directory"))
+				== NULL)
+			continue;
 		for(j = i; j < cnt; j++)
 		{
 			array_get_copy(ca, j, &cj);
-			dj = config_get(cj, "", "directory");
+			if((dj = config_get(cj, "", "directory")) == NULL)
+				continue;
 			if(string_find(dj, di) == NULL)
 				break;
 		}
