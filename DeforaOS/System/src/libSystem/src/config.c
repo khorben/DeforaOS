@@ -25,48 +25,43 @@
 
 
 /* Config */
-/* private */
-/* types */
-/* FIXME should be an API to avoid this */
-typedef struct _HashEntry
-{
-	char * name;
-	void * data;
-} HashEntry;
-
-
 /* public */
 /* functions */
 /* config_new */
 Config * config_new(void)
 {
-	Config * config;
-
-	if((config = hash_new()) == NULL)
-		return NULL;
-	return config;
+	return hash_new(hash_func_string, hash_compare_string);
 }
 
 
 /* config_delete */
+static void _delete_foreach(void const * key, void * value, void * data);
+static void _delete_foreach_section(void const * key, void * value,
+		void * data);
+
 void config_delete(Config * config)
 {
-	size_t i;
-	HashEntry * hi;
-	int j;
-	HashEntry * hj;
-
-	for(i = array_count(config); i > 0; i--)
-	{
-		hi = array_get(config, i - 1);
-		for(j = array_count(hi->data); j > 0; j--)
-		{
-			hj = array_get(hi->data, j - 1);
-			free(hj->data);
-		}
-		hash_delete(hi->data);
-	}
+	hash_foreach(config, _delete_foreach, NULL);
 	hash_delete(config);
+}
+
+static void _delete_foreach(void const * key, void * value, void * data)
+{
+	char * str = (char*)key;
+	Hash * hash = value;
+
+	free(str);
+	hash_foreach(hash, _delete_foreach_section, data);
+	hash_delete(hash);
+}
+
+static void _delete_foreach_section(void const * key, void * value, void * data)
+{
+	char * k = (char*)key;
+	char * v = value;
+
+	free(k);
+	free(v);
 }
 
 
@@ -102,26 +97,41 @@ char const * config_get(Config * config, char const * section,
 int config_set(Config * config, char const * section, char const * variable,
 		char const * value)
 {
-	Hash * h;
+	Hash * hash;
 	char * p;
+	char * q;
 
-	if((h = hash_get(config, section)) == NULL)
+	if((hash = hash_get(config, section)) == NULL)
 	{
-		if((h = hash_new()) == NULL)
+		if((hash = hash_new(hash_func_string, hash_compare_string))
+				== NULL)
 			return 1;
-		if(hash_set(config, section, h) == 1)
+		if((p = string_new(section)) == NULL
+				|| hash_set(config, p, hash) != 0)
 		{
-			hash_delete(h);
+			free(p);
+			hash_delete(hash);
 			return 1;
 		}
 	}
-	if(value == NULL)
-		return hash_set(h, variable, NULL) == 0 ? 0 : 1;
-	if((p = string_new(value)) == NULL)
+	if((p = string_new(variable)) == NULL)
 		return 1;
-	if(hash_set(h, variable, p) == 0)
+	if(value == NULL)
+	{
+		if(hash_set(hash, p, NULL) == 0)
+			return 0;
+		string_delete(p);
+		return 1;
+	}
+	if((q = string_new(value)) == NULL)
+	{
+		string_delete(p);
+		return 1;
+	}
+	if(hash_set(hash, p, q) == 0)
 		return 0;
-	free(p);
+	string_delete(p);
+	string_delete(q);
 	return 1;
 }
 
@@ -166,6 +176,7 @@ int config_load(Config * config, char const * filename)
 			variable = str;
 			if((str = _load_value(fp)) == NULL)
 				break;
+			/* XXX optimize string alloc/free */
 			config_set(config, section, variable, str);
 			free(str);
 		}
@@ -266,62 +277,46 @@ static char * _load_value(FILE * fp)
 
 
 /* config_save */
-static int _save_section(Hash * h, size_t i, FILE * fp, char const * filename);
-static int _save_variables(Hash * h, FILE * fp, char const * filename);
+void _save_foreach(void const * key, void * value, void * data);
+void _save_foreach_section(void const * key, void * value, void * data);
 
 int config_save(Config * config, char const * filename)
 {
 	FILE * fp;
-	size_t i;
-	size_t j;
-	int ret = 0;
 
-	if((i = array_count(config)) == 0)
-		return 1;
 	if((fp = fopen(filename, "w")) == NULL)
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
-	for(j = 0; j < i; j++)
-		if((ret = _save_section(config, j, fp, filename)) != 0)
-			break;
-	fclose(fp);
-	return ret;
-}
-
-static int _save_section(Hash * h, size_t i, FILE * fp, char const * filename)
-{
-	HashEntry * he;
-
-	he = array_get(h, i);
-	if(he->name[0] != '\0')
-	{
-		if(fprintf(fp, "[%s]\n", he->name) < 0)
-			return error_set_code(1, "%s: %s", filename,
-					strerror(errno));
-	}
-	else if(i != 0 && fwrite("[]\n", sizeof(char), 3, fp) != 3)
+	hash_foreach(config, _save_foreach, &fp);
+	if(fp == NULL || fclose(fp) != 0)
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
-	if(_save_variables(he->data, fp, filename) != 0)
-		return 1;
-	if(fputc('\n', fp) == '\n')
-		return 0;
-	return error_set_code(1, "%s: %s", filename, strerror(errno));
+	return 0;
 }
 
-static int _save_variables(Hash * h, FILE * fp, char const * filename)
+void _save_foreach(void const * key, void * value, void * data)
 {
-	size_t i;
-	size_t j;
-	HashEntry * he;
+	FILE ** fp = data;
+	char const * section = key;
+	Hash * hash = value;
 
-	i = array_count(h);
-	for(j = 0; j < i; j++)
+	if(*fp == NULL)
+		return;
+	if(section[0] != '\0' && fprintf(*fp, "[%s]\n", section) < 0)
 	{
-		he = array_get(h, j);
-		if(he->name == NULL || he->data == NULL)
-			continue;
-		if(fprintf(fp, "%s=%s\n", he->name, (char*)he->data) < 0)
-			return error_set_code(1, "%s: %s", filename,
-					strerror(errno));
+		fclose(*fp);
+		*fp = NULL;
+		return;
 	}
-	return 0;
+	hash_foreach(hash, _save_foreach_section, fp);
+}
+
+void _save_foreach_section(void const * key, void * value, void * data)
+{
+	FILE ** fp = data;
+	char const * var = key;
+	char const * val = value;
+
+	if(fprintf(*fp, "%s=%s\n", var, val) >= 0)
+		return;
+	fclose(*fp);
+	*fp = NULL;
 }
