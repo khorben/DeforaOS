@@ -24,15 +24,27 @@
 
 /* Hash */
 /* types */
-typedef Array Hash;
+typedef struct _Hash Hash;
+
+typedef unsigned int (*HashFunc)(void const * value);
+typedef int (*HashCompare)(void const * value1, void const * value2);
+typedef void (*HashForeach)(void const * key, void * value, void * data);
 
 
 /* functions */
-Hash * hash_new(void);
+Hash * hash_new(HashFunc func, HashCompare compare);
 void hash_delete(Hash * h);
 
+/* helpers */
+extern unsigned int hash_func_string(void const * value);
+extern int hash_compare_string(void const * value1, void const * value2);
+
 /* accessors */
-void * hash_get(Hash * h, char const * name);
-int hash_set(Hash * h, char const * name, void * data);
+void * hash_get(Hash * h, void const * key);
+int hash_set(Hash * h, void const * key, void * value);
+size_t hash_count(Hash * hash);
+
+/* useful */
+void hash_foreach(Hash * hash, HashForeach func, void * data);
 
 #endif /* !LIBSYSTEM_HASH_H */
