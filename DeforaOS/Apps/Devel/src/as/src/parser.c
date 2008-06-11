@@ -194,7 +194,7 @@ int parser(Code * code, char const * infile)
 
 	memset(&state, 0, sizeof(state));
 	state.code = code;
-	if((state.cpp = cpp_new(infile, CPP_FILTER_NONE)) == NULL)
+	if((state.cpp = cpp_new(infile, CPP_FILTER_COMMENT)) == NULL)
 		return _parser_error(&state, "%s", error_get());
 	if(_parser_scan(&state) != 0)
 		return _parser_error(&state, "%s", error_get());
