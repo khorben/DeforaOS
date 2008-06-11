@@ -77,6 +77,7 @@ int _message_set_header(Message * message, char const * header,
 	struct { int col; char * name; } abc[] = {
 		{ MH_COL_SUBJECT,	"Subject: "	},
 		{ MH_COL_FROM,		"From: "	},
+		{ MH_COL_TO,		"To: "		},
 		{ MH_COL_DATE,		"Date: "	},
 		{ -1,			NULL		}
 	};
