@@ -379,6 +379,17 @@
 	push	%ebx
 	push	%esp
 	push	%ebp
+	push	%esi
+	push	%edi
+	/* 0x58 */
+	pop	%eax
+	pop	%ecx
+	pop	%edx
+	pop	%ebx
+	pop	%esp
+	pop	%ebp
+	pop	%esi
+	pop	%edi
 	/* 0x60 */
 	pusha
 	/* 0x62 */
@@ -505,6 +516,21 @@
 	lea	[%ebx], %eax
 	lea	[%esi], %eax
 	lea	[%edi], %eax
+	/* 0x8f */
+	pop	[%eax]
+	pop	[%ecx]
+	pop	[%edx]
+	pop	[%ebx]
+	pop	[%esi]
+	pop	[%edi]
+	pop	%eax
+	pop	%ecx
+	pop	%edx
+	pop	%ebx
+	pop	%esp
+	pop	%ebp
+	pop	%esi
+	pop	%edi
 	/* 0x90 */
 	nop
 	xchg	%eax, %eax
