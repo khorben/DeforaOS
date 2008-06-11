@@ -18,7 +18,7 @@
 
 /* GtkAssistant */
 /* macros */
-# define GTK_ASSISTANT(widget) (widget)
+# define GTK_ASSISTANT(widget) ((GtkAssistant*)(widget))
 
 /* types */
 typedef struct _GtkAssistant
@@ -27,8 +27,8 @@ typedef struct _GtkAssistant
 	GtkWidget * frame;
 	GtkWidget * label;
 	GtkWidget ** page;
-	unsigned int page_cnt;
-	unsigned int page_cur;
+	guint page_cnt;
+	guint page_cur;
 } GtkAssistant;
 
 typedef enum _GtkAssistantPageType
@@ -43,15 +43,15 @@ typedef enum _GtkAssistantPageType
 
 /* functions */
 static GtkWidget * gtk_assistant_new(void);
-static gint gtk_assistant_get_current_page(GtkWidget * widget);
-static GtkWidget * gtk_assistant_get_nth_page(GtkWidget * widget, gint page);
-static void gtk_assistant_set_current_page(GtkWidget * widget, gint page);
-static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * page);
-static void gtk_assistant_set_page_type(GtkWidget * widget, GtkWidget * page,
+static gint gtk_assistant_get_current_page(GtkAssistant * widget);
+static GtkWidget * gtk_assistant_get_nth_page(GtkAssistant * widget, gint page);
+static void gtk_assistant_set_current_page(GtkAssistant * widget, gint page);
+static gint gtk_assistant_append_page(GtkAssistant * widget, GtkWidget * page);
+static void gtk_assistant_set_page_type(GtkAssistant * widget, GtkWidget * page,
 		GtkAssistantPageType type);
-static void gtk_assistant_set_page_title(GtkWidget * widget, GtkWidget * page,
-		const gchar * title);
-static void gtk_assistant_set_page_complete(GtkWidget * widget,
+static void gtk_assistant_set_page_title(GtkAssistant * widget,
+		GtkWidget * page, const gchar * title);
+static void gtk_assistant_set_page_complete(GtkAssistant * widget,
 		GtkWidget * page, gboolean complete);
 
 /* useful */
@@ -163,30 +163,30 @@ static void _on_gtkassistant_back(GtkWidget * widget, gpointer data)
 }
 
 
-static gint gtk_assistant_get_current_page(GtkWidget * widget)
+static gint gtk_assistant_get_current_page(GtkAssistant * widget)
 {
 	/* FIXME */
 	return -1;
 }
 
 
-static GtkWidget * gtk_assistant_get_nth_page(GtkWidget * widget, gint page)
+static GtkWidget * gtk_assistant_get_nth_page(GtkAssistant * widget, gint page)
 {
 	GtkAssistant * assistant = widget;
 
-	if(page < 0 || page >= assistant->page_cnt)
+	if(page < 0 || (guint)page >= assistant->page_cnt)
 		return NULL;
 	return assistant->page[page];
 }
 
 
-static void gtk_assistant_set_current_page(GtkWidget * widget, gint page)
+static void gtk_assistant_set_current_page(GtkAssistant * widget, gint page)
 {
 	/* FIXME */
 }
 
 
-static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * page)
+static gint gtk_assistant_append_page(GtkAssistant * widget, GtkWidget * page)
 {
 	GtkAssistant * assistant;
 	GtkWidget ** p;
@@ -206,21 +206,21 @@ static gint gtk_assistant_append_page(GtkWidget * widget, GtkWidget * page)
 }
 
 
-static void gtk_assistant_set_page_type(GtkWidget * widget, GtkWidget * page,
+static void gtk_assistant_set_page_type(GtkAssistant * widget, GtkWidget * page,
 		GtkAssistantPageType type)
 {
 	/* FIXME */
 }
 
 
-static void gtk_assistant_set_page_title(GtkWidget * widget, GtkWidget * page,
-		const gchar * title)
+static void gtk_assistant_set_page_title(GtkAssistant * widget,
+		GtkWidget * page, const gchar * title)
 {
 	/* FIXME */
 }
 
 
-static void gtk_assistant_set_page_complete(GtkWidget * widget,
+static void gtk_assistant_set_page_complete(GtkAssistant * widget,
 		GtkWidget * page, gboolean complete)
 {
 	/* FIXME */
