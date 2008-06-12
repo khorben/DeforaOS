@@ -580,18 +580,24 @@ static int _struct_declarator(C99 * c99)
 /* enum-specifier
  * PRE	the first token starts an enum-specifier */
 static int _enum_specifier(C99 * c99)
-	/* enum [ identifier ] "{" enumerator { "," enumerator } [ ","] "}"
-	 * enum identifier */
+	/* "enum" [ identifier ] "{" enumerator { "," enumerator } [ ","] "}"
+	 * "enum" identifier */
 {
 	int ret;
+	CodeContext context;
 
 	DEBUG_GRAMMAR();
+	context = code_context_get(c99->code);
 	ret = scan(c99);
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
 	{
+		code_context_set(c99->code, CODE_CONTEXT_ENUMERATION_NAME);
 		ret |= _identifier(c99);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_LBRACE))
+		{
+			code_context_set(c99->code, context);
 			return ret;
+		}
 	}
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
 	ret |= _parse_check_set(c99, c99set_enumerator, "enumerator",
@@ -606,6 +612,7 @@ static int _enum_specifier(C99 * c99)
 			break;
 	}
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	code_context_set(c99->code, context);
 	return ret;
 }
 
@@ -908,9 +915,7 @@ static int _direct_abstract_declarator(C99 * c99)
 	{
 		ret = scan(c99);
 		ret |= _abstract_declarator(c99);
-		fprintf(stderr, "DEBUG: before 2\n");
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-		fprintf(stderr, "DEBUG: after 2\n");
 	}
 	else if(code == C99_CODE_OPERATOR_LBRACKET)
 	{
@@ -925,9 +930,7 @@ static int _direct_abstract_declarator(C99 * c99)
 			ret |= scan(c99);
 			if(_parse_in_set(c99, c99set_parameter_type_list))
 				ret |= _parameter_type_list(c99);
-			fprintf(stderr, "DEBUG: before\n");
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-			fprintf(stderr, "DEBUG: after\n");
 		}
 		else if(code == C99_CODE_OPERATOR_LBRACKET)
 		{

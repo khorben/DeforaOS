@@ -399,6 +399,7 @@ int code_context_set_identifier(Code * code, char const * identifier)
 		"declaration parameters",
 		"declaration start",
 		"enumeration constant",
+		"enumeration name",
 		"enumeration value",
 		"function",
 		"function call",
