@@ -83,6 +83,7 @@ static int _direct_abstract_declarator(C99 * c99);
 static int _assignment_expr(C99 * c99);
 static int _unary_expr(C99 * c99);
 static int _postfix_expr(C99 * c99);
+static int _postfix_expr_do(C99 * c99);
 static int _argument_expr_list(C99 * c99);
 static int _primary_expr(C99 * c99);
 static int _type_name(C99 * c99);
@@ -772,15 +773,7 @@ static int _direct_declarator(C99 * c99)
 			else
 				ret |= code_context_set(c99->code,
 						CODE_CONTEXT_PARAMETERS);
-#if 0
-			fprintf(stderr, "DEBUG: before 3, %d %d\n",
-					C99_CODE_IDENTIFIER, token_get_code(
-						c99->token));
-#endif
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-#if 0
-			fprintf(stderr, "DEBUG: after 3\n");
-#endif
 		}
 	}
 	return ret;
@@ -1023,7 +1016,6 @@ static int _postfix_expr(C99 * c99)
 	 * "(" type-name ")" "{" initializer-list [ "," ] "}" */
 {
 	int ret = 0;
-	int code;
 
 	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_primary_expr))
@@ -1040,6 +1032,17 @@ static int _postfix_expr(C99 * c99)
 			ret |= scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
 	}
+	ret |= _postfix_expr_do(c99);
+	return ret;
+}
+
+
+/* postfix-expr-do */
+static int _postfix_expr_do(C99 * c99)
+{
+	int ret = 0;
+	C99Code code;
+
 	while((code = _parse_get_code(c99)) != TC_NULL)
 		if(code == C99_CODE_OPERATOR_LBRACKET)
 		{
@@ -1050,11 +1053,15 @@ static int _postfix_expr(C99 * c99)
 		}
 		else if(code == C99_CODE_OPERATOR_LPAREN)
 		{
-			code_context_set(c99->code,
-					CODE_CONTEXT_FUNCTION_PARAMETERS);
+			if(code_context_set(c99->code,
+					CODE_CONTEXT_FUNCTION_PARAMETERS) != 0)
+				ret |= _parse_error(c99, error_get());
 			ret |= scan(c99);
 			if(!_parse_is_code(c99, C99_CODE_OPERATOR_RPAREN))
-				ret |= _argument_expr_list(c99);
+				ret |= _parse_check_set(c99,
+						c99set_argument_expr_list,
+						"argument list",
+						_argument_expr_list);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		}
 		else if(code == C99_CODE_OPERATOR_DOT
@@ -1106,11 +1113,12 @@ static int _primary_expr(C99 * c99)
 	 * string-literal
 	 * "(" expression ")" */
 {
-	int ret;
+	int ret = 0;
 	int code;
 
 	DEBUG_GRAMMAR();
-	code_context_set(c99->code, CODE_CONTEXT_PRIMARY_EXPR);
+	if(code_context_set(c99->code, CODE_CONTEXT_PRIMARY_EXPR) != 0)
+		ret |= _parse_error(c99, error_get());
 	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
 	{
 		ret |= _identifier(c99);
@@ -1121,13 +1129,13 @@ static int _primary_expr(C99 * c99)
 	}
 	else if(code == C99_CODE_OPERATOR_LPAREN)
 	{
-		ret = scan(c99);
+		ret |= scan(c99);
 		ret |= _parse_check_set(c99, c99set_expression, "expression",
 				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else /* constant or string-litteral */
-		ret = scan(c99);
+		ret |= scan(c99);
 	c99->can_label = 0;
 	return ret;
 }
@@ -1382,7 +1390,7 @@ static int _multiplicative_expr(C99 * c99)
 	/* cast-expr { ("*" | "/" | "%") cast-expr } */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	ret = _cast_expr(c99);
@@ -1420,6 +1428,7 @@ static int _cast_expr(C99 * c99)
 		ret |= _parse_check_set(c99, c99set_expression,
 				"type cast or expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		ret |= _postfix_expr_do(c99);
 		return ret;
 	}
 	ret |= _unary_expr(c99);

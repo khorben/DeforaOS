@@ -42,6 +42,16 @@ static TokenCode _c99set_abstract_or_declarator[] =
 TokenSet c99set_abstract_or_declarator = _c99set_abstract_or_declarator;
 
 
+/* argument-expr-list */
+static TokenCode _c99set_argument_expr_list[] =
+{
+#include "sets/argument_expr_list.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_argument_expr_list = _c99set_argument_expr_list;
+
+
 /* assignment-expr */
 static TokenCode _c99set_assignment_expr[] =
 {

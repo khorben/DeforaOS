@@ -25,6 +25,7 @@
 /* protected */
 extern TokenSet c99set_abstract_declarator;
 extern TokenSet c99set_abstract_or_declarator;
+extern TokenSet c99set_argument_expr_list;
 extern TokenSet c99set_assignment_expr;
 extern TokenSet c99set_assignment_operator;
 extern TokenSet c99set_block_item;
