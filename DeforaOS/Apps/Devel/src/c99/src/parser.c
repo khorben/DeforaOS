@@ -40,14 +40,14 @@
 
 /* private */
 /* prototypes */
-static int _parse_check(C99 * c99, TokenCode code);
+static int _parse_check(C99 * c99, C99Code code);
 static int _parse_check_set(C99 * c99, TokenSet set, char const * name,
 		int (*callback)(C99 * c99));
 static int _parse_error(C99 * c99, char const * format, ...);
 static int _parse_get_code(C99 * c99);
 static char const * _parse_get_string(C99 * c99);
 static int _parse_in_set(C99 * c99, TokenSet set);
-static int _parse_is_code(C99 * c99, TokenCode code);
+static int _parse_is_code(C99 * c99, C99Code code);
 static int _parse_skip(C99 * c99, TokenSet set);
 
 /* grammar */
@@ -126,7 +126,7 @@ static int _designator(C99 * c99);
 
 /* functions */
 /* parse_check */
-static int _parse_check(C99 * c99, TokenCode code)
+static int _parse_check(C99 * c99, C99Code code)
 {
 	int ret = 0;
 
@@ -202,7 +202,7 @@ static int _parse_in_set(C99 * c99, TokenSet set)
 
 
 /* parse_is_code */
-static int _parse_is_code(C99 * c99, TokenCode code)
+static int _parse_is_code(C99 * c99, C99Code code)
 {
 	if(c99->token == NULL)
 		return 0;
@@ -357,23 +357,6 @@ static int _declaration_do(C99 * c99)
 {
 	int ret;
 
-#if 0
-	if(c99->typedef_flag)
-	{
-		c99->typedef_flag = 0;
-		if(c99->identifier == NULL)
-			return _parse_error(c99, "%s", "DEBUG: typedef without"
-					" identifier");
-		/* FIXME keep the actual token */
-		if(code_type_add(c99->code, token_get_filename(c99->token),
-					token_get_line(c99->token),
-					c99->identifier) < 0)
-			return _parse_error(c99, "%s", error_get());
-	}
-	else if(code_variable_add(c99->code, c99->identifier) != 0)
-		return _parse_error(c99, "%s", error_get());
-	return 0;
-#endif
 	ret = _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	ret |= code_context_set(c99->code, CODE_CONTEXT_DECLARATION_END);
 	return ret;
@@ -416,19 +399,31 @@ static int _declaration_specifiers(C99 * c99)
 static int _storage_class_specifier(C99 * c99)
 	/* "typedef" | "extern" | "static" | "auto" | "register" */
 {
-	int ret = 0;
+	int ret;
+	CodeStorage storage = CODE_STORAGE_NULL;
 
 	DEBUG_GRAMMAR();
 	switch(_parse_get_code(c99))
 	{
 		case C99_CODE_KEYWORD_TYPEDEF:
-			ret |= code_context_set_storage(c99->code,
-					CODE_STORAGE_TYPEDEF);
+			storage = CODE_STORAGE_TYPEDEF;
 			break;
-		/* FIXME implement the others */
+		case C99_CODE_KEYWORD_EXTERN:
+			storage = CODE_STORAGE_EXTERN;
+			break;
+		case C99_CODE_KEYWORD_STATIC:
+			storage = CODE_STORAGE_STATIC;
+			break;
+		case C99_CODE_KEYWORD_AUTO:
+			storage = CODE_STORAGE_AUTO;
+			break;
+		case C99_CODE_KEYWORD_REGISTER:
+			storage = CODE_STORAGE_REGISTER;
+			break;
 		default:
 			break;
 	}
+	ret = code_context_set_storage(c99->code, storage);
 	ret |= scan(c99);
 	return ret;
 }
@@ -464,7 +459,7 @@ static int _struct_or_union_specifier(C99 * c99)
 {
 	int ret;
 	CodeContext context;
-	TokenCode code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	context = code_context_get(c99->code);
@@ -869,10 +864,6 @@ static int _abstract_or_declarator(C99 * c99)
 	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_pointer))
 		ret |= _pointer(c99);
-#if 0
-	fprintf(stderr, "DEBUG: before 4, %d %d\n", C99_CODE_IDENTIFIER,
-			token_get_code(c99->token));
-#endif
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
 		return ret | _direct_declarator(c99);
 	/* FIXME there is still an ambiguity with "(" */
@@ -906,7 +897,7 @@ static int _direct_abstract_declarator(C99 * c99)
 
 {
 	int ret = 0;
-	TokenCode code;
+	C99Code code;
 
 	/* FIXME verify if correct */
 	DEBUG_GRAMMAR();
@@ -953,34 +944,13 @@ static int _assignment_expr(C99 * c99)
 	int ret = 0;
 
 	DEBUG_GRAMMAR();
-	/* FIXME conflict between unary and conditional */
-#if 0
-	while(_parse_in_set(c99, c99set_unary_expr))
-	{
-		ret |= _unary_expr(c99);
-		ret |= _assignment_operator(c99);
-	}
-#endif
-#if 0
-	ret |= _conditional_expr(c99);
-#endif
-#if 0
-	/* FIXME check is this solves the conflict somehow */
+	/* FIXME hack around the conflict between unary and conditional */
 	for(;;)
 	{
 		ret |= _conditional_expr(c99);
 		if(!_parse_in_set(c99, c99set_assignment_operator))
 			return ret;
 		ret |= _assignment_operator(c99);
-	}
-#endif
-	for(;;)
-	{
-		ret |= _conditional_expr(c99);
-		if(!_parse_in_set(c99, c99set_assignment_operator))
-			return ret;
-		ret |= _parse_check_set(c99, c99set_assignment_operator,
-				"assignment operator", _assignment_operator);
 	}
 	return ret;
 }
@@ -1022,7 +992,7 @@ static int _unary_expr(C99 * c99)
 		if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 		{
 			ret |= scan(c99);
-			/* FIXME it may still be an unary-expr */
+			/* FIXME it may still be an unary-expr ("{") */
 			if(_parse_in_set(c99, c99set_type_name))
 				ret |= _type_name(c99);
 			else
@@ -1050,8 +1020,7 @@ static int _postfix_expr(C99 * c99)
 	 * postfix-expr "->" identifier
 	 * postfix-expr "++"
 	 * postfix-expr "--"
-	 * "(" type-name ")" "{" initializer-list "}"
-	 * "(" type-name ")" "{" initializer-list "," "}" */
+	 * "(" type-name ")" "{" initializer-list [ "," ] "}" */
 {
 	int ret = 0;
 	int code;
@@ -1140,24 +1109,27 @@ static int _primary_expr(C99 * c99)
 	int ret;
 	int code;
 
-	/* FIXME complete */
 	DEBUG_GRAMMAR();
 	code_context_set(c99->code, CODE_CONTEXT_PRIMARY_EXPR);
-	/* FIXME use _parse_get_code() */
-	if(c99->token == NULL)
-		return _parse_error(c99, "Unexpected end of file");
-	else if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
-		return _identifier(c99);
+	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
+	{
+		ret |= _identifier(c99);
+		if(c99->can_label && _parse_is_code(c99,
+					C99_CODE_OPERATOR_COLON))
+			/* handle this as a labeled_statement */
+			c99->is_label = 1;
+	}
 	else if(code == C99_CODE_OPERATOR_LPAREN)
 	{
 		ret = scan(c99);
 		ret |= _parse_check_set(c99, c99set_expression, "expression",
 				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-		return ret;
 	}
 	else /* constant or string-litteral */
-		return scan(c99);
+		ret = scan(c99);
+	c99->can_label = 0;
+	return ret;
 }
 
 
@@ -1516,12 +1488,7 @@ static int _statement(C99 * c99)
 	 * jump-statement */
 {
 	DEBUG_GRAMMAR();
-#if 0
-	fprintf(stderr, "DEBUG: in_switch=%d %d case=%d\n", c99->in_switch,
-			_parse_get_code(c99), C99_CODE_KEYWORD_CASE);
-#endif
-	/* FIXME labeled and expression statements conflict */
-	if(c99->in_switch && _parse_in_set(c99, c99set_labeled_statement))
+	if(_parse_in_set(c99, c99set_labeled_statement))
 		return _labeled_statement(c99);
 	else if(_parse_in_set(c99, c99set_compound_statement))
 		return _compound_statement(c99);
@@ -1542,25 +1509,27 @@ static int _statement(C99 * c99)
  * PRE	the first token starts a labeled-statement */
 static int _labeled_statement(C99 * c99)
 	/* identifier ":" statement
-	 * case constant-expr ":" statement
-	 * default ":" statement */
+	 * "case" constant-expr ":" statement
+	 * "default" ":" statement */
 {
-	int ret;
-	int code;
+	int ret = 0;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
-	/* FIXME use _parse_get_code() */
-	if(c99->token == NULL)
-		return _parse_error(c99, "Unexpected end of file");
-	if((code = token_get_code(c99->token)) == C99_CODE_IDENTIFIER)
-		ret = _identifier(c99);
-	else if(code == C99_CODE_KEYWORD_CASE)
+	if((code = _parse_get_code(c99)) == C99_CODE_IDENTIFIER)
+		ret |= _identifier(c99);
+	else
 	{
-		ret = scan(c99);
-		ret |= _constant_expr(c99);
+		if(!c99->in_switch)
+			ret |= _parse_error(c99, "Not in a switch");
+		if(code == C99_CODE_KEYWORD_CASE)
+		{
+			ret |= scan(c99);
+			ret |= _constant_expr(c99);
+		}
+		else /* default */
+			ret |= scan(c99);
 	}
-	else /* default */
-		ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
 	ret |= _parse_check_set(c99, c99set_statement, "statement", _statement);
 	return ret;
@@ -1577,16 +1546,28 @@ static int _constant_expr(C99 * c99)
 
 
 /* expression-statement
- * PRE	the first token starts an expression-statement */
+ * PRE	the first token starts an expression-statement or a label */
 static int _expression_statement(C99 * c99)
-	/* [ expression ] ";" */
+	/* [ expression ] ";"
+	 * identifier ":" */
 {
 	int ret = 0;
 
 	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_expression))
+	{
+		c99->can_label = 1;
+		c99->is_label = 0;
 		ret = _expression(c99);
-	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
+	}
+	if(c99->is_label)
+	{
+		ret |= code_context_set(c99->code, CODE_CONTEXT_LABEL);
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
+		c99->is_label = 0;
+	}
+	else
+		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	return ret;
 }
 
@@ -1709,10 +1690,7 @@ static int _jump_statement(C99 * c99)
 	int code;
 
 	DEBUG_GRAMMAR();
-	/* FIXME use _parse_get_code() */
-	if(c99->token == NULL)
-		return _parse_error(c99, "Unexpected end of file");
-	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
+	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
 	{
 		ret = scan(c99);
 		ret |= _parse_check_set(c99, c99set_identifier, "identifier",
