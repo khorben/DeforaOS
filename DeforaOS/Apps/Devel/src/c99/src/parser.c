@@ -424,7 +424,8 @@ static int _storage_class_specifier(C99 * c99)
 		default:
 			break;
 	}
-	ret = code_context_set_storage(c99->code, storage);
+	if((ret = code_context_set_storage(c99->code, storage)) != 0)
+		_parse_error(c99, error_get());
 	ret |= scan(c99);
 	return ret;
 }
