@@ -466,22 +466,34 @@ int code_context_set_identifier(Code * code, char const * identifier)
 /* code_context_set_storage */
 int code_context_set_storage(Code * code, CodeStorage storage)
 {
-#ifdef DEBUG
-	char const * str[CODE_STORAGE_COUNT] =
+	struct
 	{
-		"NULL",
-		"TYPEDEF",
-		"EXTERN",
-		"STATIC",
-		"AUTO",
-		"REGISTER"
+		CodeStorage storage;
+		char const * name;
+	} sn[CODE_STORAGE_COUNT] =
+	{
+		{ CODE_STORAGE_NULL,	"NULL"		},
+		{ CODE_STORAGE_TYPEDEF,	"typedef"	},
+		{ CODE_STORAGE_EXTERN,	"extern"	},
+		{ CODE_STORAGE_STATIC,	"static"	},
+		{ CODE_STORAGE_AUTO,	"auto"		},
+		{ CODE_STORAGE_REGISTER,"register"	}
 	};
+	size_t i;
 
+#ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, str[storage]);
 #endif
-	/* FIXME should probably warn if already set */
-	code->storage |= storage;
-	return 0;
+	if(!(code->storage & storage))
+	{
+		code->storage |= storage;
+		return 0;
+	}
+	for(i = 0; i < CODE_STORAGE_COUNT; i++)
+		if(sn[i].storage == storage)
+			return error_set_code(1, "%s\"%s\"", "Duplicate ",
+					sn[i].name);
+	return error_set_code(1, "%s", "Duplicate storage class specifier");
 }
 
 
