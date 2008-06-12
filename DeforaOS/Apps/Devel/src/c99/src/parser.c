@@ -1801,7 +1801,7 @@ static int _designator_list(C99 * c99)
 /* designator */
 static int _designator(C99 * c99)
 	/* "[" constant-expression "]"
-	 * identifier */
+	 * "." identifier */
 {
 	int ret;
 
@@ -1815,7 +1815,10 @@ static int _designator(C99 * c99)
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
 	}
 	else
-		ret = _identifier(c99);
+	{
+		ret = _scan(c99);
+		ret |= _identifier(c99);
+	}
 	return ret;
 }
 
