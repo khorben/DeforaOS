@@ -1551,15 +1551,15 @@ static int _expression_statement(C99 * c99)
 	/* [ expression ] ";"
 	 * identifier ":" */
 {
-	int ret = 0;
+	int ret;
 
 	DEBUG_GRAMMAR();
-	if(_parse_in_set(c99, c99set_expression))
-	{
-		c99->can_label = 1;
-		c99->is_label = 0;
-		ret = _expression(c99);
-	}
+	if(_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
+		return scan(c99);
+	c99->can_label = 1;
+	c99->is_label = 0;
+	ret = _parse_check_set(c99, c99set_expression, "expression",
+			_expression);
 	if(c99->is_label)
 	{
 		ret |= code_context_set(c99->code, CODE_CONTEXT_LABEL);
