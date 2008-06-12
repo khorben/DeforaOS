@@ -351,8 +351,7 @@ static int _declaration_specifiers(C99 * c99)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	for(;;)
-	{
+	for(;; looped = 1)
 		if(_parse_in_set(c99, c99set_storage_class_specifier))
 			ret |= _storage_class_specifier(c99);
 		else if(_parse_in_set(c99, c99set_type_specifier))
@@ -368,8 +367,6 @@ static int _declaration_specifiers(C99 * c99)
 					" specifier");
 			break;
 		}
-		looped = 1;
-	}
 	return ret;
 }
 
@@ -1816,7 +1813,7 @@ static int _designator(C99 * c99)
 	}
 	else
 	{
-		ret = _scan(c99);
+		ret = scan(c99);
 		ret |= _identifier(c99);
 	}
 	return ret;
