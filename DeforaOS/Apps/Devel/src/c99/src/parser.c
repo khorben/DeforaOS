@@ -1676,7 +1676,7 @@ static int _iteration_statement(C99 * c99)
 			ret |= _parse_check_set(c99, c99set_expression,
 					"expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
-		if(!_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
+		if(!_parse_is_code(c99, C99_CODE_OPERATOR_RPAREN))
 			ret |= _parse_check_set(c99, c99set_expression,
 					"expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
