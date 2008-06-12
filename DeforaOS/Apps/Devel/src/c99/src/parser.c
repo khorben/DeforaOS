@@ -269,16 +269,18 @@ static int _external_declaration(C99 * c99)
 static int _function_definition(C99 * c99)
 	/* compound-statement */
 {
-	int ret;
+	int ret = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	ret = code_function_begin(c99->code, c99->identifier);
+	if(code_function_begin(c99->code, c99->identifier) != 0)
+		ret |= _parse_error(c99, error_get());
 	free(c99->identifier);
 	c99->identifier = NULL;
 	ret |= _compound_statement(c99);
-	ret |= code_function_end(c99->code);
+	if(code_function_end(c99->code) != 0)
+		ret |= _parse_error(c99, error_get());
 	return ret;
 }
 
