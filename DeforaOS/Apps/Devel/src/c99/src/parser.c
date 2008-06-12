@@ -811,7 +811,7 @@ static int _parameter_declaration(C99 * c99)
 /* abstract-or-declarator */
 static int _abstract_or_declarator(C99 * c99)
 	/* pointer
-	 * [ pointer ] (direct-declarator | abstract-direct-declarator) */
+	 * [ pointer ] (direct-declarator | direct-abstract-declarator) */
 {
 	int ret = 0;
 
