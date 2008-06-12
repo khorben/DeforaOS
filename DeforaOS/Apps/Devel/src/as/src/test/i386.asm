@@ -508,7 +508,8 @@
 	xchg	%al, %ch
 	xchg	%al, %dh
 	xchg	%al, %bh
-	/* 0x87 */
+	/* 0x89 */
+	mov	%esp, %ebp
 	/* 0x8d */
 	lea	[%eax], %eax
 	lea	[%ecx], %eax

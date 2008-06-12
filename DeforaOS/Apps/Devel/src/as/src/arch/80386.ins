@@ -1130,7 +1130,9 @@
 	{ "monitor",	0x0f01c8,AO_NONE,		3, 0, 0, 0 },
 #if 0
 	{ "mov",	0x88,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
-	{ "mov",	0x89,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
+#endif
+	{ "mov",	0x89e5,	AO_SP_ | AO_BP,		2, 0, 0, 0 },
+#if 0
 	{ "mov",	0x8a,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 	{ "mov",	0x8b,	AO_IMM_ | AO_REG,	1, 0, 0, 0 },
 #endif
