@@ -403,6 +403,14 @@ int code_context_set(Code * code, CodeContext context)
 }
 
 
+/* code_context_set_class */
+int code_context_set_class(Code * code, CodeClass cclass)
+{
+	/* FIXME implement */
+	return 0;
+}
+
+
 /* code_context_set_identifier */
 int code_context_set_identifier(Code * code, char const * identifier)
 {

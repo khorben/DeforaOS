@@ -18,6 +18,7 @@
 
 
 
+#include <assert.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -438,17 +439,61 @@ static int _type_specifier(C99 * c99)
 	 * | _Bool | _Complex | _Imaginary | struct-or-union-specifier
 	 * | enum-specifier | typedef-name */
 {
-	int ret;
+	int ret = 0;
+	CodeClass cclass;
 
 	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_struct_or_union_specifier))
-		ret = _struct_or_union_specifier(c99);
+		return _struct_or_union_specifier(c99);
 	else if(_parse_in_set(c99, c99set_enum_specifier))
-		ret = _enum_specifier(c99);
+		return _enum_specifier(c99);
 	else if(_parse_in_set(c99, c99set_typedef_name))
-		ret = _typedef_name(c99);
-	else
-		ret = scan(c99);
+		return _typedef_name(c99);
+	switch(_parse_get_code(c99))
+	{
+		case C99_CODE_KEYWORD_VOID:
+			cclass = CODE_CLASS_VOID;
+			break;
+		case C99_CODE_KEYWORD_CHAR:
+			cclass = CODE_CLASS_CHAR;
+			break;
+		case C99_CODE_KEYWORD_SHORT:
+			cclass = CODE_CLASS_SHORT;
+			break;
+		case C99_CODE_KEYWORD_INT:
+			cclass = CODE_CLASS_INT;
+			break;
+		case C99_CODE_KEYWORD_LONG:
+			cclass = CODE_CLASS_LONG;
+			break;
+		case C99_CODE_KEYWORD_FLOAT:
+			cclass = CODE_CLASS_FLOAT;
+			break;
+		case C99_CODE_KEYWORD_DOUBLE:
+			cclass = CODE_CLASS_DOUBLE;
+			break;
+		case C99_CODE_KEYWORD_SIGNED:
+			cclass = CODE_CLASS_SIGNED;
+			break;
+		case C99_CODE_KEYWORD_UNSIGNED:
+			cclass = CODE_CLASS_UNSIGNED;
+			break;
+		case C99_CODE_KEYWORD__BOOL:
+			cclass = CODE_CLASS__BOOL;
+			break;
+		case C99_CODE_KEYWORD__COMPLEX:
+			cclass = CODE_CLASS__COMPLEX;
+			break;
+		case C99_CODE_KEYWORD__IMAGINARY:
+			cclass = CODE_CLASS__IMAGINARY;
+			break;
+		default:
+			assert(0);
+			break;
+	}
+	if((ret = code_context_set_class(c99->code, cclass)) != 0)
+		_parse_error(c99, error_get());
+	ret |= scan(c99);
 	return ret;
 }
 

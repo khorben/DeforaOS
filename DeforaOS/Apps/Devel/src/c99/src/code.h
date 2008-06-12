@@ -67,6 +67,26 @@ typedef enum _CodeStorage
 # define CODE_STORAGE_LAST	CODE_STORAGE_REGISTER
 # define CODE_STORAGE_COUNT	(CODE_STORAGE_LAST + 1)
 
+typedef enum _CodeClass
+{
+	CODE_CLASS_NULL		= 0x0000,
+	CODE_CLASS_VOID		= 0x0001,
+	CODE_CLASS_CHAR		= 0x0002,
+	CODE_CLASS_SHORT	= 0x0004,
+	CODE_CLASS_INT		= 0x0008,
+	CODE_CLASS_LONG		= 0x0010,
+	CODE_CLASS_LONG_LONG	= 0x0020,
+	CODE_CLASS_FLOAT	= 0x0040,
+	CODE_CLASS_DOUBLE	= 0x0080,
+	CODE_CLASS_SIGNED	= 0x0100,
+	CODE_CLASS_UNSIGNED	= 0x0200,
+	CODE_CLASS__BOOL	= 0x0400,
+	CODE_CLASS__COMPLEX	= 0x0800,
+	CODE_CLASS__IMAGINARY	= 0x1000
+} CodeClass;
+# define CODE_CLASS_LAST	CODE_CLASS__IMAGINARY
+# define CODE_CLASS_COUNT	(CODE_CLASS_LAST + 1)
+
 
 /* functions */
 Code * code_new(C99Prefs const * prefs, char const * outfile);
@@ -76,6 +96,7 @@ int code_delete(Code * code);
 /* context */
 CodeContext code_context_get(Code * code);
 int code_context_set(Code * code, CodeContext context);
+int code_context_set_class(Code * code, CodeClass cclass);
 int code_context_set_identifier(Code * code, char const * identifier);
 int code_context_set_storage(Code * code, CodeStorage storage);
 
