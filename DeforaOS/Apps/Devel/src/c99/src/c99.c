@@ -111,7 +111,7 @@ static char * _new_outfile(int flags, char const * outfile,
 	char * ret;
 	size_t len;
 
-	if(flags & C99PREFS_c && pathname != NULL)
+	if(flags & C99PREFS_c && outfile == NULL && pathname != NULL)
 	{
 		if((len = strlen(pathname)) < 3 || pathname[len - 2] != '.'
 				|| pathname[len - 1] != 'c')
