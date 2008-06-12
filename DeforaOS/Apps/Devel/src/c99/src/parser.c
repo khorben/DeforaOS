@@ -964,6 +964,7 @@ static int _assignment_expr(C99 * c99)
 #if 0
 	ret |= _conditional_expr(c99);
 #endif
+#if 0
 	/* FIXME check is this solves the conflict somehow */
 	for(;;)
 	{
@@ -971,6 +972,15 @@ static int _assignment_expr(C99 * c99)
 		if(!_parse_in_set(c99, c99set_assignment_operator))
 			return ret;
 		ret |= _assignment_operator(c99);
+	}
+#endif
+	for(;;)
+	{
+		ret |= _conditional_expr(c99);
+		if(!_parse_in_set(c99, c99set_assignment_operator))
+			return ret;
+		ret |= _parse_check_set(c99, c99set_assignment_operator,
+				"assignment operator", _assignment_operator);
 	}
 	return ret;
 }
@@ -983,8 +993,8 @@ static int _unary_expr(C99 * c99)
 	 * ++ unary-expr
 	 * -- unary-expr
 	 * unary-operator cast-expr
-	 * sizeof unary-expr
-	 * sizeof "(" type-name ")" */
+	 * "sizeof" unary-expr
+	 * "sizeof" "(" type-name ")" */
 {
 	int ret = 0;
 	int code;
@@ -1012,13 +1022,18 @@ static int _unary_expr(C99 * c99)
 		if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 		{
 			ret |= scan(c99);
-			ret |= _parse_check_set(c99, c99set_type_name,
-					"type name", _type_name);
+			/* FIXME it may still be an unary-expr */
+			if(_parse_in_set(c99, c99set_type_name))
+				ret |= _type_name(c99);
+			else
+				ret |= _parse_check_set(c99, c99set_expression,
+						"type cast or expression",
+						_expression);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		}
 		else
 			ret |= _parse_check_set(c99, c99set_unary_expr,
-					"unary expression or parenthesis",
+					"type cast or expression",
 					_unary_expr);
 	}
 	return ret;
@@ -1205,7 +1220,7 @@ static int _assignment_operator(C99 * c99)
 
 /* conditional-expr */
 static int _conditional_expr(C99 * c99)
-	/* logical-OR-expr [ "?" expression ":" conditional-expr ] */
+	/* logical-OR-expr { "?" expression ":" logical-OR-expr } */
 {
 	int ret;
 
@@ -1421,9 +1436,19 @@ static int _cast_expr(C99 * c99)
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
 		ret |= scan(c99);
-		ret |= _parse_check_set(c99, c99set_type_name, "type name",
-				_type_name);
+		/* in both cases it may already be an unary-expr */
+		if(_parse_in_set(c99, c99set_type_name))
+		{
+			ret |= _type_name(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+			/* FIXME "{" => postfix-expr with initializer-list */
+			continue;
+		}
+		/* primary-expr */
+		ret |= _parse_check_set(c99, c99set_expression,
+				"type cast or expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		return ret;
 	}
 	ret |= _unary_expr(c99);
 	return ret;
