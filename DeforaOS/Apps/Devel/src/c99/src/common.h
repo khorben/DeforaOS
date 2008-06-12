@@ -39,6 +39,8 @@ struct _C99
 	unsigned int error_cnt;
 	unsigned int warning_cnt;
 	Code * code;
+	unsigned int can_label;
+	unsigned int is_label;
 };
 
 typedef enum _C99Code
