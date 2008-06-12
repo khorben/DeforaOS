@@ -29,9 +29,11 @@
 #include "../config.h"
 
 #ifdef DEBUG
+# define DEBUG_FUNC()  fprintf(stderr, "DEBUG: %s()\n", __func__);
 # define DEBUG_SCOPE() fprintf(stderr, "DEBUG: %s() %zu\n", __func__, \
 		code->scopes_cnt);
 #else
+# define DEBUG_FUNC()
 # define DEBUG_SCOPE()
 #endif
 
@@ -70,6 +72,7 @@ typedef struct _CodeIdentifier
 {
 	CodeContext context;
 	CodeStorage storage;
+	/* XXX consider copying the original token instead */
 	char * name;
 } CodeIdentifier;
 
@@ -85,6 +88,7 @@ static int _code_target_exit(Code * code);
 static int _code_target_function_begin(Code * code, char const * name);
 static int _code_target_function_call(Code * code, char const * name);
 static int _code_target_function_end(Code * code);
+static int _code_target_label_set(Code * code, char const * name);
 
 
 /* protected */
@@ -149,9 +153,7 @@ static int _code_context_queue_identifier(Code * code, char const * identifier)
 /* code_target_init */
 static int _code_target_init(Code * code, char const * outfile, int optlevel)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_FUNC();
 	if(code->target->init == NULL)
 		return 0;
 	return code->target->init(outfile, optlevel);
@@ -161,9 +163,7 @@ static int _code_target_init(Code * code, char const * outfile, int optlevel)
 /* code_target_exit */
 static int _code_target_exit(Code * code)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_FUNC();
 	if(code->target->exit == NULL)
 		return 0;
 	return code->target->exit();
@@ -197,12 +197,22 @@ static int _code_target_function_call(Code * code, char const * name)
 /* code_target_function_end */
 static int _code_target_function_end(Code * code)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_FUNC();
 	if(code->target->function_end == NULL)
 		return 0;
 	return code->target->function_end();
+}
+
+
+/* code_target_label_set */
+static int _code_target_label_set(Code * code, char const * name)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
+#endif
+	if(code->target->label_set == NULL)
+		return 0;
+	return code->target->label_set(name);
 }
 
 
@@ -286,9 +296,7 @@ int code_delete(Code * code)
 	CodeScope * scope;
 	size_t i;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_FUNC();
 	if(code->plugin != NULL)
 	{
 		if(code->target != NULL)
@@ -327,6 +335,7 @@ CodeContext code_context_get(Code * code)
 
 /* code_context_set */
 int code_context_set(Code * code, CodeContext context)
+	/* XXX use assertions? */
 {
 	int ret = 0;
 	size_t i;
@@ -379,6 +388,14 @@ int code_context_set(Code * code, CodeContext context)
 			}
 			_code_context_flush(code);
 			break;
+		case CODE_CONTEXT_LABEL:
+			if(code->identifiers_cnt == 1)
+			{
+				code->context = CODE_CONTEXT_LABEL;
+				ret |= code_context_set_identifier(code,
+						code->identifiers[0].name);
+			}
+			_code_context_flush(code);
 		default:
 			break;
 	}
@@ -431,6 +448,8 @@ int code_context_set_identifier(Code * code, char const * identifier)
 			return code_function_begin(code, identifier);
 		case CODE_CONTEXT_FUNCTION_CALL:
 			return code_function_call(code, identifier);
+		case CODE_CONTEXT_LABEL:
+			return code_label_set(code, identifier);
 		case CODE_CONTEXT_PARAMETERS:
 			return _code_context_queue_identifier(code, identifier);
 		case CODE_CONTEXT_PARAMETERS_TYPE:
@@ -451,7 +470,11 @@ int code_context_set_storage(Code * code, CodeStorage storage)
 	char const * str[CODE_STORAGE_COUNT] =
 	{
 		"NULL",
-		"TYPEDEF"
+		"TYPEDEF",
+		"EXTERN",
+		"STATIC",
+		"AUTO",
+		"REGISTER"
 	};
 
 	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, str[storage]);
@@ -491,6 +514,13 @@ int code_function_call(Code * code, char const * name)
 int code_function_end(Code * code)
 {
 	return _code_target_function_end(code);
+}
+
+
+/* code_label_set */
+int code_label_set(Code * code, char const * name)
+{
+	return _code_target_label_set(code, name);
 }
 
 
@@ -547,6 +577,7 @@ int code_scope_pop(Code * code)
 /* types */
 /* code_type_add */
 int code_type_add(Code * code, char const * name)
+	/* FIXME consider using a Token instead of the name */
 {
 	size_t i;
 	CodeType * p;

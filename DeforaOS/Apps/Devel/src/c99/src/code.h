@@ -45,6 +45,7 @@ typedef enum _CodeContext
 	CODE_CONTEXT_FUNCTION_END,
 	CODE_CONTEXT_FUNCTION_PARAMETERS,
 	CODE_CONTEXT_FUNCTION_START,
+	CODE_CONTEXT_LABEL,
 	CODE_CONTEXT_PARAMETERS,
 	CODE_CONTEXT_PARAMETERS_TYPE,
 	CODE_CONTEXT_PRIMARY_EXPR,
@@ -57,9 +58,13 @@ typedef enum _CodeContext
 typedef enum _CodeStorage
 {
 	CODE_STORAGE_NULL	= 0x0,
-	CODE_STORAGE_TYPEDEF	= 0x1
+	CODE_STORAGE_TYPEDEF	= 0x1,
+	CODE_STORAGE_EXTERN	= 0x2,
+	CODE_STORAGE_STATIC	= 0x4,
+	CODE_STORAGE_AUTO	= 0x8,
+	CODE_STORAGE_REGISTER	= 0x10
 } CodeStorage;
-# define CODE_STORAGE_LAST	CODE_STORAGE_TYPEDEF
+# define CODE_STORAGE_LAST	CODE_STORAGE_REGISTER
 # define CODE_STORAGE_COUNT	(CODE_STORAGE_LAST + 1)
 
 
@@ -78,6 +83,9 @@ int code_context_set_storage(Code * code, CodeStorage storage);
 int code_function_begin(Code * code, char const * name);
 int code_function_call(Code * code, char const * name);
 int code_function_end(Code * code);
+
+/* labels */
+int code_label_set(Code * code, char const * name);
 
 /* scope */
 int code_scope_push(Code * code);
