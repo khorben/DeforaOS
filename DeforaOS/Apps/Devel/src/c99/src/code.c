@@ -13,8 +13,6 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with c99; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
-/* TODO:
- * - scope */
 
 
 
@@ -30,11 +28,29 @@
 #include "code.h"
 #include "../config.h"
 
+#ifdef DEBUG
+# define DEBUG_SCOPE() fprintf(stderr, "DEBUG: %s() %zu\n", __func__, \
+		code->scopes_cnt);
+#else
+# define DEBUG_SCOPE()
+#endif
+
 
 /* private */
 /* types */
+typedef enum _CodeTypeFlags
+{
+	CTF_NULL	= 0x0,
+	CTF_SIGNED	= 0x1,
+	CTF_UNSIGNED	= 0x2,
+	CTF_SHORT	= 0x4,
+	CTF_LONG	= 0x8,
+	CTF_LONG_LONG	= 0x10
+} CodeTypeFlags;
+
 typedef struct _CodeType
 {
+	int flags;			/* bitmask of flags */
 	char * name;
 } CodeType;
 
@@ -44,8 +60,26 @@ typedef struct _CodeVariable
 	char * name;
 } CodeVariable;
 
+typedef struct _CodeScope
+{
+	CodeVariable * variables;
+	size_t variables_cnt;
+} CodeScope;
+
+typedef struct _CodeIdentifier
+{
+	CodeContext context;
+	CodeStorage storage;
+	char * name;
+} CodeIdentifier;
+
 
 /* prototypes */
+/* context */
+static void _code_context_flush(Code * code);
+static int _code_context_queue_identifier(Code * code, char const * identifier);
+
+/* target */
 static int _code_target_init(Code * code, char const * outfile, int optlevel);
 static int _code_target_exit(Code * code);
 static int _code_target_function_begin(Code * code, char const * name);
@@ -57,19 +91,61 @@ static int _code_target_function_end(Code * code);
 /* types */
 struct _Code
 {
-	/* types */
-	CodeType * types;
-	size_t types_cnt;
-	CodeVariable * variables;
-	size_t variables_cnt;
 	/* target */
 	Plugin * plugin;
 	TargetPlugin * target;
+	/* types */
+	CodeType * types;
+	size_t types_cnt;
+	/* scope */
+	CodeScope * scopes;
+	size_t scopes_cnt;
+	/* context */
+	CodeContext context;
+	CodeStorage storage;
+	CodeIdentifier * identifiers;
+	size_t identifiers_cnt;
 };
 
 
 /* private */
 /* functions */
+/* context */
+/* code_context_flush */
+static void _code_context_flush(Code * code)
+{
+	size_t i;
+
+	code->context = CODE_CONTEXT_NULL;
+	code->storage = CODE_STORAGE_NULL;
+	for(i = 0; i < code->identifiers_cnt; i++)
+		free(code->identifiers[i].name);
+	free(code->identifiers);
+	code->identifiers = NULL;
+	code->identifiers_cnt = 0;
+}
+
+
+static int _code_context_queue_identifier(Code * code, char const * identifier)
+{
+	CodeIdentifier * p;
+
+	if((p = realloc(code->identifiers, sizeof(*p) * (code->identifiers_cnt
+						+ 1))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	code->identifiers = p;
+	/* initialize identifier */
+	p = &code->identifiers[code->identifiers_cnt];
+	p->context = code->context;
+	p->storage = code->storage;
+	if((p->name = strdup(identifier)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	code->identifiers_cnt++;
+	return 0;
+}
+
+
+/* target */
 /* code_target_init */
 static int _code_target_init(Code * code, char const * outfile, int optlevel)
 {
@@ -139,6 +215,7 @@ static int _new_target(Code * code, char const * target,
 Code * code_new(C99Prefs const * prefs, char const * outfile)
 {
 	Code * code;
+	C99Prefs const * p = prefs;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, prefs, outfile);
@@ -146,10 +223,9 @@ Code * code_new(C99Prefs const * prefs, char const * outfile)
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
 	memset(code, 0, sizeof(*code));
-	if(_new_target(code, prefs->target, prefs->options, prefs->options_cnt)
-			!= 0
-			|| _code_target_init(code, outfile, prefs->optlevel)
-			!= 0)
+	if(_new_target(code, p->target, p->options, p->options_cnt) != 0
+			|| _code_target_init(code, outfile, p->optlevel) != 0
+			|| code_scope_push(code) != 0)
 	{
 		code_delete(code);
 		return NULL;
@@ -207,6 +283,7 @@ static int _new_target(Code * code, char const * target,
 int code_delete(Code * code)
 {
 	int ret = 0;
+	CodeScope * scope;
 	size_t i;
 
 #ifdef DEBUG
@@ -218,9 +295,19 @@ int code_delete(Code * code)
 			ret = _code_target_exit(code);
 		plugin_delete(code->plugin);
 	}
-	for(i = 0; i < code->variables_cnt; i++)
-		free(code->variables[i].name);
-	free(code->variables);
+	/* free the context */
+	_code_context_flush(code);
+	/* free the scopes */
+	/* do it ourselves as code_scope_pop() stops at the global */
+	for(; code->scopes_cnt > 0; code->scopes_cnt--)
+	{
+		scope = &code->scopes[code->scopes_cnt - 1];
+		for(i = 0; i < scope->variables_cnt; i++)
+			free(scope->variables[i].name);
+		free(scope->variables);
+	}
+	free(code->scopes);
+	/* free the types */
 	for(i = 0; i < code->types_cnt; i++)
 		free(code->types[i].name);
 	free(code->types);
@@ -230,6 +317,150 @@ int code_delete(Code * code)
 
 
 /* useful */
+/* context */
+/* code_context_get */
+CodeContext code_context_get(Code * code)
+{
+	return code->context;
+}
+
+
+/* code_context_set */
+int code_context_set(Code * code, CodeContext context)
+{
+	int ret = 0;
+	size_t i;
+	CodeIdentifier * ci;
+
+	code->context = context;
+	switch(context)
+	{
+		case CODE_CONTEXT_DECLARATION:
+			/* handle any DECLARATION_OR_FUNCTION identifier */
+			for(i = 0; i < code->identifiers_cnt; i++)
+			{
+				ci = &code->identifiers[i];
+				/* XXX ugly hack */
+				if(ci->context != CODE_CONTEXT_PARAMETERS_TYPE)
+					code->context = context;
+				else
+					code->context = CODE_CONTEXT_DECLARATION_PARAMETERS;
+				code->storage = ci->storage;
+				ret |= code_context_set_identifier(code,
+						ci->name);
+			}
+			_code_context_flush(code);
+			break;
+		case CODE_CONTEXT_DECLARATION_END:
+			_code_context_flush(code);
+			break;
+		case CODE_CONTEXT_FUNCTION:
+			/* handle any DECLARATION_OR_FUNCTION identifier */
+			if(code->identifiers_cnt >= 1)
+				ret |= code_context_set_identifier(code,
+						code->identifiers[0].name);
+			code->context = CODE_CONTEXT_FUNCTION_PARAMETERS;
+			for(i = 1; i < code->identifiers_cnt; i++)
+				ret |= code_context_set_identifier(code,
+						code->identifiers[i].name);
+			_code_context_flush(code);
+			break;
+		case CODE_CONTEXT_FUNCTION_END:
+			ret |= code_function_end(code);
+			_code_context_flush(code);
+			break;
+		case CODE_CONTEXT_FUNCTION_PARAMETERS:
+			/* XXX unchecked but consider it was a function call */
+			if(code->identifiers_cnt == 1)
+			{
+				code->context = CODE_CONTEXT_FUNCTION_CALL;
+				ret |= code_context_set_identifier(code,
+						code->identifiers[0].name);
+			}
+			_code_context_flush(code);
+			break;
+		default:
+			break;
+	}
+	return ret;
+}
+
+
+/* code_context_set_identifier */
+int code_context_set_identifier(Code * code, char const * identifier)
+{
+#ifdef DEBUG
+	char const * str[CODE_CONTEXT_COUNT] =
+	{
+		"NULL",
+		"declaration",
+		"declaration end",
+		"declaration or function",
+		"declaration parameters",
+		"declaration start",
+		"enumeration constant",
+		"enumeration value",
+		"function",
+		"function call",
+		"function end",
+		"function parameters",
+		"function start",
+		"parameters",
+		"parameters type",
+		"primary expr",
+		"struct",
+		"union"
+	};
+
+	fprintf(stderr, "DEBUG: %s(\"%s\") %s\n", __func__, identifier,
+			str[code->context]);
+#endif
+	switch(code->context)
+	{
+		case CODE_CONTEXT_DECLARATION:
+			if(code->storage & CODE_STORAGE_TYPEDEF)
+				/* FIXME get filename and line */
+				return code_type_add(code, identifier);
+			return code_variable_add(code, identifier);
+		case CODE_CONTEXT_DECLARATION_OR_FUNCTION:
+			return _code_context_queue_identifier(code, identifier);
+		case CODE_CONTEXT_ENUMERATION_CONSTANT:
+			return code_variable_add(code, identifier);
+		case CODE_CONTEXT_FUNCTION:
+			return code_function_begin(code, identifier);
+		case CODE_CONTEXT_FUNCTION_CALL:
+			return code_function_call(code, identifier);
+		case CODE_CONTEXT_PARAMETERS:
+			return _code_context_queue_identifier(code, identifier);
+		case CODE_CONTEXT_PARAMETERS_TYPE:
+			return _code_context_queue_identifier(code, identifier);
+		case CODE_CONTEXT_PRIMARY_EXPR:
+			return _code_context_queue_identifier(code, identifier);
+		default:
+			break;
+	}
+	return 0;
+}
+
+
+/* code_context_set_storage */
+int code_context_set_storage(Code * code, CodeStorage storage)
+{
+#ifdef DEBUG
+	char const * str[CODE_STORAGE_COUNT] =
+	{
+		"NULL",
+		"TYPEDEF"
+	};
+
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, str[storage]);
+#endif
+	/* FIXME should probably warn if already set */
+	code->storage |= storage;
+	return 0;
+}
+
+
 /* functions */
 /* code_function_begin */
 int code_function_begin(Code * code, char const * name)
@@ -262,25 +493,86 @@ int code_function_end(Code * code)
 }
 
 
+/* scope */
+/* code_scope_push
+ * PRE
+ * POST	the current scope is increased one level
+ * 	>= 0	the current scope value
+ * 	else	an error happened */
+int code_scope_push(Code * code)
+{
+	CodeScope * p;
+
+	DEBUG_SCOPE();
+	/* resize the scope array */
+	if((p = realloc(code->scopes, sizeof(*p) * (code->scopes_cnt + 1)))
+			== NULL)
+		return -error_set_code(1, "%s", strerror(errno));
+	code->scopes = p;
+	/* initialize the new scope */
+	p = &code->scopes[code->scopes_cnt];
+	p->variables = NULL;
+	p->variables_cnt = 0;
+	return code->scopes_cnt++;
+}
+
+
+/* code_scope_pop
+ * PRE
+ * POST	the current scope is decreased one level and relevant variables removed
+ * 	>= 0	the current scope value
+ * 	else	the scope was already global (0) */
+int code_scope_pop(Code * code)
+{
+	CodeScope * p;
+	size_t i;
+
+	DEBUG_SCOPE();
+	if(code->scopes_cnt <= 1)
+		return -error_set_code(1, "%s", "Already in global scope");
+	/* free all variables in the current scope */
+	p = &code->scopes[code->scopes_cnt - 1];
+	for(i = 0; i < p->variables_cnt; i++)
+		free(p->variables[i].name);
+	free(p->variables);
+	/* resize the scope array */
+	if((p = realloc(code->scopes, sizeof(*p) * (code->scopes_cnt - 1)))
+			!= NULL) /* ignoring the error is fine */
+		code->scopes = p;
+	return --(code->scopes_cnt);
+}
+
+
 /* types */
 /* code_type_add */
 int code_type_add(Code * code, char const * name)
 {
+	size_t i;
 	CodeType * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, name);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
 #endif
 	if(name == NULL || name[0] == '\0')
-		return error_set_code(1, "%s", "Invalid name for a type");
-	if((p = realloc(code->types, sizeof(*p) * (code->types_cnt + 1)))
-			== NULL)
-		return error_set_code(1, "%s", strerror(errno));
+		return -error_set_code(1, "%s", "Invalid name for a type");
+	for(i = 0; i < code->types_cnt; i++)
+	{
+		p = &code->types[i];
+		if(strcmp(p->name, name) != 0)
+			continue;
+		return -error_set_code(1, "%s%s%s:%u", name,
+				" is already defined");
+	}
+	if((p = realloc(code->types, sizeof(*p) * (i + 1))) == NULL)
+		return -error_set_code(1, "%s", strerror(errno));
 	code->types = p;
-	if((code->types[code->types_cnt].name = strdup(name)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
-	code->types_cnt++;
-	return 0;
+	code->types[i].name = strdup(name);
+	if(code->types[i].name == NULL)
+	{
+		free(code->types[i].name);
+		return -error_set_code(1, "%s", strerror(errno));
+	}
+	return code->types_cnt++;
 }
 
 
@@ -301,31 +593,27 @@ int code_type_get(Code * code, char const * name)
 /* code_variable_add */
 int code_variable_add(Code * code, char const * name)
 {
+	CodeScope * scope;
 	CodeVariable * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
+#endif
+	/* check if the name is valid */
 	if(name == NULL || name[0] == '\0')
 		return error_set_code(1, "%s", "Invalid name for a variable");
-	if((p = realloc(code->variables, sizeof(*p)
-					* (code->variables_cnt + 1))) == NULL)
+	/* resize the current scope */
+	scope = &code->scopes[code->scopes_cnt - 1];
+	if((p = realloc(scope->variables, sizeof(*p)
+					* (scope->variables_cnt + 1))) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
-	code->variables = p;
-	p = &code->variables[code->variables_cnt];
+	scope->variables = p;
+	/* assign the variable */
+	p = &scope->variables[scope->variables_cnt];
 	p->name = strdup(name);
 	p->type = NULL; /* FIXME implement */
 	if(p->name == NULL)
 		return error_set_code(1, "%s", strerror(errno));
-	code->variables_cnt++;
+	scope->variables_cnt++;
 	return 0;
-}
-
-
-/* code_variable_get */
-int code_variable_get(Code * code, char const * name)
-{
-	size_t i;
-
-	for(i = 0; i < code->variables_cnt; i++)
-		if(strcmp(code->variables[i].name, name) == 0)
-			return i;
-	return -error_set_code(1, "%s%s", "Unknown variable ", name);
 }

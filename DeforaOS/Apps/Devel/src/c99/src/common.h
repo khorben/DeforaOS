@@ -39,9 +39,6 @@ struct _C99
 	unsigned int error_cnt;
 	unsigned int warning_cnt;
 	Code * code;
-	/* FIXME still a bit rough */
-	int typedef_flag;
-	char * identifier;
 };
 
 typedef enum _C99Code

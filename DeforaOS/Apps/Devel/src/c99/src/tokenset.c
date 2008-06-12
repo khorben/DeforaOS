@@ -52,6 +52,16 @@ static TokenCode _c99set_assignment_expr[] =
 TokenSet c99set_assignment_expr = _c99set_assignment_expr;
 
 
+/* assignment-operator */
+static TokenCode _c99set_assignment_operator[] =
+{
+#include "sets/assignment_operator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_assignment_operator = _c99set_assignment_operator;
+
+
 /* block-item */
 static TokenCode _c99set_block_item[] =
 {
@@ -162,6 +172,16 @@ static TokenCode _c99set_enum_specifier[] =
 TokenSet c99set_enum_specifier = _c99set_enum_specifier;
 
 
+/* enumerator */
+static TokenCode _c99set_enumerator[] =
+{
+#include "sets/enumerator.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_enumerator = _c99set_enumerator;
+
+
 /* expression */
 static TokenCode _c99set_expression[] =
 {
@@ -180,6 +200,16 @@ static TokenCode _c99set_expression_statement[] =
 };
 
 TokenSet c99set_expression_statement = _c99set_expression_statement;
+
+
+/* external-declaration */
+static TokenCode _c99set_external_declaration[] =
+{
+#include "sets/external_declaration.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_external_declaration = _c99set_external_declaration;
 
 
 /* function-definition */
@@ -202,6 +232,16 @@ static TokenCode _c99set_function_specifier[] =
 TokenSet c99set_function_specifier = _c99set_function_specifier;
 
 
+/* identifier */
+static TokenCode _c99set_identifier[] =
+{
+#include "sets/identifier.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_identifier = _c99set_identifier;
+
+
 /* identifier-list */
 static TokenCode _c99set_identifier_list[] =
 {
@@ -212,14 +252,14 @@ static TokenCode _c99set_identifier_list[] =
 TokenSet c99set_identifier_list = _c99set_identifier_list;
 
 
-/* init-declarator */
-static TokenCode _c99set_init_declarator[] =
+/* init-declarator-list */
+static TokenCode _c99set_init_declarator_list[] =
 {
-#include "sets/init_declarator.set"
+#include "sets/init_declarator_list.set"
 	C99_CODE_NULL
 };
 
-TokenSet c99set_init_declarator = _c99set_init_declarator;
+TokenSet c99set_init_declarator_list = _c99set_init_declarator_list;
 
 
 /* iteration-statement */
@@ -352,6 +392,16 @@ static TokenCode _c99set_struct_declaration[] =
 TokenSet c99set_struct_declaration = _c99set_struct_declaration;
 
 
+/* struct-declaration-list */
+static TokenCode _c99set_struct_declaration_list[] =
+{
+#include "sets/struct_declaration_list.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_struct_declaration_list = _c99set_struct_declaration_list;
+
+
 /* struct-or-union-specifier */
 static TokenCode _c99set_struct_or_union_specifier[] =
 {
@@ -384,6 +434,16 @@ static TokenCode _c99set_type_specifier[] =
 };
 
 TokenSet c99set_type_specifier = _c99set_type_specifier;
+
+
+/* type-name */
+static TokenCode _c99set_type_name[] =
+{
+#include "sets/type_name.set"
+	C99_CODE_NULL
+};
+
+TokenSet c99set_type_name = _c99set_type_name;
 
 
 /* typedef-name */

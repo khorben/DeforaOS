@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with c99; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME:
+ * - check calls to code_context_set() */
 
 
 
@@ -28,15 +30,25 @@
 #include "c99.h"
 #include "../config.h"
 
+#ifdef DEBUG
+# define DEBUG_GRAMMAR() fprintf(stderr, "DEBUG: %s(%p) \"%s\"\n", __func__, \
+		c99, _parse_get_string(c99))
+#else
+# define DEBUG_GRAMMAR()
+#endif
+
 
 /* private */
 /* prototypes */
 static int _parse_check(C99 * c99, TokenCode code);
+static int _parse_check_set(C99 * c99, TokenSet set, char const * name,
+		int (*callback)(C99 * c99));
 static int _parse_error(C99 * c99, char const * format, ...);
 static int _parse_get_code(C99 * c99);
 static char const * _parse_get_string(C99 * c99);
 static int _parse_in_set(C99 * c99, TokenSet set);
 static int _parse_is_code(C99 * c99, TokenCode code);
+static int _parse_skip(C99 * c99, TokenSet set);
 
 /* grammar */
 static int _translation_unit(C99 * c99);
@@ -122,11 +134,22 @@ static int _parse_check(C99 * c99, TokenCode code)
 	{
 		ret = _parse_error(c99, "Expected \"%s\"",
 				tokencode_get_string(code));
+		/* FIXME is it really good? limit to 3 scans? search ; or } ? */
 		while(scan(c99) == 0 && c99->token != NULL /* actual token */
 				&& !_parse_is_code(c99, code));
 	}
 	ret |= scan(c99);
 	return ret;
+}
+
+
+/* parse_check_set */
+static int _parse_check_set(C99 * c99, TokenSet set, char const * name,
+		int (*callback)(C99 * c99))
+{
+	if(!_parse_in_set(c99, set))
+		return _parse_error(c99, "Expected %s", name);
+	return callback(c99);
 }
 
 
@@ -187,6 +210,17 @@ static int _parse_is_code(C99 * c99, TokenCode code)
 }
 
 
+/* parse_skip */
+static int _parse_skip(C99 * c99, TokenSet set)
+{
+	int ret = 0;
+
+	while(!_parse_in_set(c99, set) && (ret = scan(c99)) == 0
+			&& c99->token != NULL);
+	return ret;
+}
+
+
 /* grammar */
 /* translation-unit */
 static int _translation_unit(C99 * c99)
@@ -194,41 +228,43 @@ static int _translation_unit(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(scan(c99) != 0)
 		return 1;
 	while(c99->token != NULL) /* end of file */
-		ret |= _external_declaration(c99);
+		if(!_parse_in_set(c99, c99set_external_declaration))
+		{
+			ret |= _parse_error(c99, "Expected declaration");
+			ret |= _parse_skip(c99, c99set_external_declaration);
+		}
+		else
+			ret |= _external_declaration(c99);
 	if(c99->token != NULL)
 		ret |= 1;
 	return ret;
 }
 
 
-/* external_declaration */
+/* external_declaration
+ * PRE	the first token starts a declaration-specifiers */
 static int _external_declaration(C99 * c99)
 	/* function-definition | declaration */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, _parse_get_string(
-				c99));
-#endif
+	DEBUG_GRAMMAR();
+	code_context_set(c99->code, CODE_CONTEXT_DECLARATION_OR_FUNCTION);
 	ret = _declaration_specifiers(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
 	{
-		/* this is a declaration */
-		ret |= scan(c99);
+		code_context_set(c99->code, CODE_CONTEXT_DECLARATION);
 		ret |= _declaration_do(c99);
 		return ret;
 	}
 	ret |= _declarator(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_EQUALS))
 	{
-		/* this is a declaration */
+		code_context_set(c99->code, CODE_CONTEXT_DECLARATION);
 		ret |= scan(c99);
 		ret |= _initializer(c99);
 		while(_parse_is_code(c99, C99_CODE_COMMA))
@@ -236,44 +272,43 @@ static int _external_declaration(C99 * c99)
 			ret |= scan(c99);
 			ret |= _init_declarator(c99);
 		}
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 		ret |= _declaration_do(c99);
 		return ret;
 	}
 	if(_parse_in_set(c99, c99set_declaration_list))
 	{
-		/* this is a function */
+		code_context_set(c99->code, CODE_CONTEXT_FUNCTION);
 		ret |= _declaration_list(c99);
-		ret |= _function_definition(c99);
+		ret |= _parse_check_set(c99, c99set_compound_statement,
+				"function definition", _function_definition);
 		return ret;
 	}
 	if(_parse_in_set(c99, c99set_compound_statement))
 	{
-		/* this is a function */
+		code_context_set(c99->code, CODE_CONTEXT_FUNCTION);
 		ret |= _function_definition(c99);
 		return ret;
 	}
-	/* this is a declaration */
+	code_context_set(c99->code, CODE_CONTEXT_DECLARATION);
 	if(_parse_is_code(c99, C99_CODE_COMMA))
 	{
 		ret |= scan(c99);
 		ret |= _init_declarator_list(c99);
 	}
-	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	ret |= _declaration_do(c99);
 	return ret;
 }
 
 
-/* function_definition */
+/* function_definition
+ * PRE	the first token starts a compound-statement */
 static int _function_definition(C99 * c99)
 	/* compound-statement */
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
+#if 0
 	if(code_function_begin(c99->code, c99->identifier) != 0)
 		ret |= _parse_error(c99, error_get());
 	free(c99->identifier);
@@ -281,6 +316,10 @@ static int _function_definition(C99 * c99)
 	ret |= _compound_statement(c99);
 	if(code_function_end(c99->code) != 0)
 		ret |= _parse_error(c99, error_get());
+#endif
+	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_START);
+	ret |= _compound_statement(c99);
+	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_END);
 	return ret;
 }
 
@@ -291,9 +330,7 @@ static int _declaration_list(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _declaration(c99);
 	while(_parse_in_set(c99, c99set_declaration))
 		ret |= _declaration(c99);
@@ -307,34 +344,39 @@ static int _declaration(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret |= _declaration_specifiers(c99);
-	if(_parse_in_set(c99, c99set_init_declarator))
+	if(_parse_in_set(c99, c99set_init_declarator_list))
 		ret |= _init_declarator_list(c99);
-	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 	ret |= _declaration_do(c99);
 	return ret;
 }
 
+/* PRE	a full declaration was just parsed until ";" */
 static int _declaration_do(C99 * c99)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	int ret;
+
+#if 0
 	if(c99->typedef_flag)
 	{
 		c99->typedef_flag = 0;
 		if(c99->identifier == NULL)
 			return _parse_error(c99, "%s", "DEBUG: typedef without"
 					" identifier");
-		if(code_type_add(c99->code, c99->identifier) != 0)
+		/* FIXME keep the actual token */
+		if(code_type_add(c99->code, token_get_filename(c99->token),
+					token_get_line(c99->token),
+					c99->identifier) < 0)
 			return _parse_error(c99, "%s", error_get());
 	}
 	else if(code_variable_add(c99->code, c99->identifier) != 0)
 		return _parse_error(c99, "%s", error_get());
 	return 0;
+#endif
+	ret = _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
+	ret |= code_context_set(c99->code, CODE_CONTEXT_DECLARATION_END);
+	return ret;
 }
 
 
@@ -348,9 +390,7 @@ static int _declaration_specifiers(C99 * c99)
 	int ret = 0;
 	int looped = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	for(;; looped = 1)
 		if(_parse_in_set(c99, c99set_storage_class_specifier))
 			ret |= _storage_class_specifier(c99);
@@ -371,21 +411,31 @@ static int _declaration_specifiers(C99 * c99)
 }
 
 
-/* storage-class-specifier */
+/* storage-class-specifier
+ * PRE	the first token starts a storage-class-specifier */
 static int _storage_class_specifier(C99 * c99)
 	/* "typedef" | "extern" | "static" | "auto" | "register" */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
-	if(_parse_is_code(c99, C99_CODE_KEYWORD_TYPEDEF))
-		c99->typedef_flag = 1;
-	return scan(c99);
+	int ret = 0;
+
+	DEBUG_GRAMMAR();
+	switch(_parse_get_code(c99))
+	{
+		case C99_CODE_KEYWORD_TYPEDEF:
+			ret |= code_context_set_storage(c99->code,
+					CODE_STORAGE_TYPEDEF);
+			break;
+		/* FIXME implement the others */
+		default:
+			break;
+	}
+	ret |= scan(c99);
+	return ret;
 }
 
 
-/* type-specifier */
+/* type-specifier
+ * PRE	the first token starts a storage-class-specifier */
 static int _type_specifier(C99 * c99)
 	/* void | char | short | int | long | float | double | signed | unsigned
 	 * | _Bool | _Complex | _Imaginary | struct-or-union-specifier
@@ -393,10 +443,7 @@ static int _type_specifier(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_struct_or_union_specifier))
 		ret = _struct_or_union_specifier(c99);
 	else if(_parse_in_set(c99, c99set_enum_specifier))
@@ -409,53 +456,69 @@ static int _type_specifier(C99 * c99)
 }
 
 
-/* struct-or-union-specifier */
+/* struct-or-union-specifier
+ * PRE	the first token starts a struct-or-union-specifier */
 static int _struct_or_union_specifier(C99 * c99)
 	/* struct-or-union [ identifier ] "{" struct-declaration-list "}"
 	 * | struct-or-union identifier */
 {
 	int ret;
+	CodeContext context;
+	TokenCode code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
+	context = code_context_get(c99->code);
 	ret = _struct_or_union(c99);
-	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
+	if((code = _parse_get_code(c99)) == C99_CODE_IDENTIFIER)
 	{
 		ret |= _identifier(c99);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_LBRACE))
+		{
+			ret |= code_context_set(c99->code, context);
 			return ret;
+		}
 	}
-	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
-	ret |= _struct_declaration_list(c99);
+	else if(code != C99_CODE_OPERATOR_LBRACE)
+	{
+		ret |= code_context_set(c99->code, context);
+		ret |= _parse_error(c99, "%s", "Expected identifier or {");
+		return ret;
+	}
+	ret |= scan(c99);
+	ret |= _parse_check_set(c99, c99set_struct_declaration_list,
+			"struct declaration list", _struct_declaration_list);
 	if(_parse_is_code(c99, C99_CODE_COMMA))
 		ret |= scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	ret |= code_context_set(c99->code, context);
 	return ret;
 }
 
 
-/* struct-or-union */
+/* struct-or-union
+ * PRE	the first token starts a struct-or-union */
 static int _struct_or_union(C99 * c99)
 	/* "struct" | "union" */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
-	return scan(c99);
+	int ret;
+
+	DEBUG_GRAMMAR();
+	ret = code_context_set(c99->code, _parse_get_code(c99)
+			== C99_CODE_KEYWORD_STRUCT ? CODE_CONTEXT_STRUCT
+			: CODE_CONTEXT_UNION);
+	ret |= scan(c99);
+	return ret;
 }
 
 
-/* struct-declaration-list */
+/* struct-declaration-list
+ * PRE	the first token starts a struct-declaration-list */
 static int _struct_declaration_list(C99 * c99)
 	/* struct-declaration { struct-declaration } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _struct_declaration(c99);
 	while(_parse_in_set(c99, c99set_struct_declaration))
 		ret |= _struct_declaration(c99);
@@ -463,15 +526,14 @@ static int _struct_declaration_list(C99 * c99)
 }
 
 
-/* struct-declaration */
+/* struct-declaration
+ * PRE	the first token starts a struct-declaration */
 static int _struct_declaration(C99 * c99)
 	/* specifier-qualifier-list struct-declarator-list ";" */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _specifier_qualifier_list(c99);
 	ret |= _struct_declarator_list(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
@@ -485,9 +547,7 @@ static int _struct_declarator_list(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _struct_declarator(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
@@ -505,9 +565,7 @@ static int _struct_declarator(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(!_parse_is_code(c99, C99_CODE_OPERATOR_COLON))
 		ret |= _declarator(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_COLON))
@@ -519,17 +577,15 @@ static int _struct_declarator(C99 * c99)
 }
 
 
-/* enum-specifier */
+/* enum-specifier
+ * PRE	the first token starts an enum-specifier */
 static int _enum_specifier(C99 * c99)
 	/* enum [ identifier ] "{" enumerator { "," enumerator } [ ","] "}"
 	 * enum identifier */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	ret = scan(c99);
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
 	{
@@ -538,12 +594,14 @@ static int _enum_specifier(C99 * c99)
 			return ret;
 	}
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
-	ret |= _enumerator(c99);
+	ret |= _parse_check_set(c99, c99set_enumerator, "enumerator",
+			_enumerator);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
 		ret |= scan(c99);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_RBRACE))
-			ret |= _enumerator(c99);
+			ret |= _parse_check_set(c99, c99set_enumerator,
+					"enumerator", _enumerator);
 		else
 			break;
 	}
@@ -552,68 +610,62 @@ static int _enum_specifier(C99 * c99)
 }
 
 
-/* enumerator */
+/* enumerator
+ * PRE	the first token starts an enumerator */
 static int _enumerator(C99 * c99)
 	/* enumeration-constant [ "=" constant-expression ] */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
+	code_context_set(c99->code, CODE_CONTEXT_ENUMERATION_CONSTANT);
 	ret = _enumeration_constant(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_EQUALS))
 	{
 		ret |= scan(c99);
+		code_context_set(c99->code, CODE_CONTEXT_ENUMERATION_VALUE);
 		ret |= _constant_expr(c99);
 	}
 	return ret;
 }
 
 
-/* enumeration-constant */
+/* enumeration-constant
+ * PRE	the first token starts an enumeration-constant */
 static int _enumeration_constant(C99 * c99)
 	/* identifier */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	return _identifier(c99);
 }
 
 
-/* typedef-name */
+/* typedef-name
+ * PRE	the first token starts a typedef-name */
 static int _typedef_name(C99 * c99)
 	/* identifier */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	return _identifier(c99);
 }
 
 
-/* type-qualifier */
+/* type-qualifier
+ * PRE	the first token starts a type-qualifier */
 static int _type_qualifier(C99 * c99)
 	/* "const" | "restrict" | "volatile" */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	return scan(c99);
 }
 
 
-/* function-specifier */
+/* function-specifier
+ * PRE	the first token starts a function-specifier */
 static int _function_specifier(C99 * c99)
 	/* "inline" */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"inline\" got \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	return scan(c99);
 }
 
@@ -624,10 +676,7 @@ static int _declarator(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_pointer))
 		ret |= _pointer(c99);
 	ret |= _direct_declarator(c99);
@@ -635,16 +684,14 @@ static int _declarator(C99 * c99)
 }
 
 
-/* pointer */
+/* pointer
+ * PRE	the first token starts a pointer */
 static int _pointer(C99 * c99)
 	 /* "*" [ type-qualifier-list ] { "*" [ type-qualifier-list ] } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"*\" got \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	ret = scan(c99);
 	if(_parse_in_set(c99, c99set_type_qualifier_list))
 		ret |= _type_qualifier_list(c99);
@@ -658,15 +705,14 @@ static int _pointer(C99 * c99)
 }
 
 
-/* type-qualifier-list */
+/* type-qualifier-list
+ * PRE	the first token starts a type-qualifier-list */
 static int _type_qualifier_list(C99 * c99)
 	/* type-qualifier { type-qualifier } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _type_qualifier(c99);
 	while(_parse_in_set(c99, c99set_type_qualifier))
 		ret |= _type_qualifier(c99);
@@ -685,10 +731,7 @@ static int _direct_declarator(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
 		ret = scan(c99);
@@ -713,10 +756,29 @@ static int _direct_declarator(C99 * c99)
 		else /* C99_CODE_OPERATOR_LPAREN */
 		{
 			if(_parse_in_set(c99, c99set_parameter_type_list))
+			{
+				ret |= code_context_set(c99->code,
+						CODE_CONTEXT_PARAMETERS_TYPE);
 				ret |= _parameter_type_list(c99);
+			}
 			else if(_parse_in_set(c99, c99set_identifier_list))
+			{
+				ret |= code_context_set(c99->code,
+						CODE_CONTEXT_PARAMETERS);
 				ret |= _identifier_list(c99);
+			}
+			else
+				ret |= code_context_set(c99->code,
+						CODE_CONTEXT_PARAMETERS);
+#if 0
+			fprintf(stderr, "DEBUG: before 3, %d %d\n",
+					C99_CODE_IDENTIFIER, token_get_code(
+						c99->token));
+#endif
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+#if 0
+			fprintf(stderr, "DEBUG: after 3\n");
+#endif
 		}
 	}
 	return ret;
@@ -728,51 +790,42 @@ static int _identifier(C99 * c99)
 	/* identifier-nondigit { (identifier-nondigit | identifier-digit) } */
 {
 	int ret = 0;
-	char const * str;
-	char * name = NULL;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, _parse_get_string(
-				c99));
-#endif
-	free(c99->identifier);
-	if((str = _parse_get_string(c99)) != NULL
-			&& (name = strdup(str)) == NULL)
-		ret = _parse_error(c99, "%s", strerror(errno));
-	c99->identifier = name;
+	DEBUG_GRAMMAR();
+	if(code_context_set_identifier(c99->code, _parse_get_string(c99)) != 0)
+		ret = _parse_error(c99, "%s", error_get());
 	ret |= scan(c99);
 	return ret;
 }
 
 
-/* identifier-list */
+/* identifier-list
+ * PRE	the first token starts an identifier-list */
 static int _identifier_list(C99 * c99)
 	/* identifier { "," identifier } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _identifier(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
 		ret |= scan(c99);
-		ret |= _identifier(c99);
+		ret |= _parse_check_set(c99, c99set_identifier, "identifier",
+				_identifier);
 	}
 	return ret;
 }
 
 
-/* parameter-type-list */
+/* parameter-type-list
+ * PRE	the first token starts a parameter-type-list */
 static int _parameter_type_list(C99 * c99)
 	/* parameter-declaration { "," parameter-declaration } [ "," "..." ] */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _parameter_declaration(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
@@ -791,16 +844,10 @@ static int _parameter_declaration(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _declaration_specifiers(c99);
 	if(_parse_in_set(c99, c99set_abstract_or_declarator))
 		ret |= _abstract_or_declarator(c99);
-#ifdef DEBUG
-	if(c99->identifier != NULL)
-		fprintf(stderr, "DEBUG: parameter \"%s\"\n", c99->identifier);
-#endif
 	return ret;
 }
 
@@ -812,8 +859,13 @@ static int _abstract_or_declarator(C99 * c99)
 {
 	int ret = 0;
 
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_pointer))
 		ret |= _pointer(c99);
+#if 0
+	fprintf(stderr, "DEBUG: before 4, %d %d\n", C99_CODE_IDENTIFIER,
+			token_get_code(c99->token));
+#endif
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
 		return ret | _direct_declarator(c99);
 	/* FIXME there is still an ambiguity with "(" */
@@ -829,9 +881,7 @@ static int _abstract_declarator(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_pointer))
 		ret = _pointer(c99);
 	if(_parse_in_set(c99, c99set_direct_abstract_declarator))
@@ -852,15 +902,15 @@ static int _direct_abstract_declarator(C99 * c99)
 	TokenCode code;
 
 	/* FIXME verify if correct */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	code = _parse_get_code(c99);
 	if(code == C99_CODE_OPERATOR_LPAREN)
 	{
 		ret = scan(c99);
 		ret |= _abstract_declarator(c99);
+		fprintf(stderr, "DEBUG: before 2\n");
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		fprintf(stderr, "DEBUG: after 2\n");
 	}
 	else if(code == C99_CODE_OPERATOR_LBRACKET)
 	{
@@ -875,7 +925,9 @@ static int _direct_abstract_declarator(C99 * c99)
 			ret |= scan(c99);
 			if(_parse_in_set(c99, c99set_parameter_type_list))
 				ret |= _parameter_type_list(c99);
+			fprintf(stderr, "DEBUG: before\n");
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+			fprintf(stderr, "DEBUG: after\n");
 		}
 		else if(code == C99_CODE_OPERATOR_LBRACKET)
 		{
@@ -897,11 +949,8 @@ static int _assignment_expr(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
-	/* FIXME heavily suspect conflict between unary and conditional */
+	DEBUG_GRAMMAR();
+	/* FIXME conflict between unary and conditional */
 #if 0
 	while(_parse_in_set(c99, c99set_unary_expr))
 	{
@@ -909,7 +958,17 @@ static int _assignment_expr(C99 * c99)
 		ret |= _assignment_operator(c99);
 	}
 #endif
+#if 0
 	ret |= _conditional_expr(c99);
+#endif
+	/* FIXME check is this solves the conflict somehow */
+	for(;;)
+	{
+		ret |= _conditional_expr(c99);
+		if(!_parse_in_set(c99, c99set_assignment_operator))
+			return ret;
+		ret |= _assignment_operator(c99);
+	}
 	return ret;
 }
 
@@ -927,10 +986,7 @@ static int _unary_expr(C99 * c99)
 	int ret = 0;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_postfix_expr))
 		return _postfix_expr(c99);
 	/* FIXME use _parse_get_code() */
@@ -953,17 +1009,21 @@ static int _unary_expr(C99 * c99)
 		if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 		{
 			ret |= scan(c99);
-			ret |= _type_name(c99);
+			ret |= _parse_check_set(c99, c99set_type_name,
+					"type name", _type_name);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		}
 		else
-			ret |= _unary_expr(c99);
+			ret |= _parse_check_set(c99, c99set_unary_expr,
+					"unary expression or parenthesis",
+					_unary_expr);
 	}
 	return ret;
 }
 
 
-/* postfix-expr */
+/* postfix-expr
+ * PRE	the first token starts a postfix-expr */
 static int _postfix_expr(C99 * c99)
 	/* primary-expr
 	 * postfix-expr "[" expression "]"
@@ -978,15 +1038,14 @@ static int _postfix_expr(C99 * c99)
 	int ret = 0;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_primary_expr))
 		ret |= _primary_expr(c99);
 	else if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
 		ret |= scan(c99);
-		ret |= _type_name(c99);
+		ret |= _parse_check_set(c99, c99set_type_name, "type name",
+				_type_name);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
 		ret |= _initializer_list(c99);
@@ -998,23 +1057,29 @@ static int _postfix_expr(C99 * c99)
 		if(code == C99_CODE_OPERATOR_LBRACKET)
 		{
 			ret |= scan(c99);
-			ret |= _expression(c99);
+			ret |= _parse_check_set(c99, c99set_expression,
+					"expression", _expression);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
 		}
 		else if(code == C99_CODE_OPERATOR_LPAREN)
 		{
+			code_context_set(c99->code,
+					CODE_CONTEXT_FUNCTION_PARAMETERS);
 			ret |= scan(c99);
 			if(!_parse_is_code(c99, C99_CODE_OPERATOR_RPAREN))
 				ret |= _argument_expr_list(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+#if 0
 			if(code_function_call(c99->code, c99->identifier) != 0)
 				ret |= _parse_error(c99, "%s", error_get());
+#endif
 		}
 		else if(code == C99_CODE_OPERATOR_DOT
 				|| code == C99_CODE_OPERATOR_MGREATER)
 		{
 			ret |= scan(c99);
-			ret |= _identifier(c99);
+			ret |= _parse_check_set(c99, c99set_identifier,
+					"identifier", _identifier);
 		}
 		else if(code == C99_CODE_OPERATOR_DPLUS
 				|| code == C99_CODE_OPERATOR_DMINUS)
@@ -1050,7 +1115,8 @@ static int _argument_expr_list(C99 * c99)
 }
 
 
-/* primary-expr */
+/* primary-expr
+ * PRE	the first token starts a primary-expr */
 static int _primary_expr(C99 * c99)
 	/* identifier
 	 * constant
@@ -1061,10 +1127,8 @@ static int _primary_expr(C99 * c99)
 	int code;
 
 	/* FIXME complete */
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
+	code_context_set(c99->code, CODE_CONTEXT_PRIMARY_EXPR);
 	/* FIXME use _parse_get_code() */
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
@@ -1073,7 +1137,8 @@ static int _primary_expr(C99 * c99)
 	else if(code == C99_CODE_OPERATOR_LPAREN)
 	{
 		ret = scan(c99);
-		ret |= _expression(c99);
+		ret |= _parse_check_set(c99, c99set_expression, "expression",
+				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 		return ret;
 	}
@@ -1082,15 +1147,14 @@ static int _primary_expr(C99 * c99)
 }
 
 
-/* type-name */
+/* type-name
+ * PRE	the first token starts a type-name */
 static int _type_name(C99 * c99)
 	/* specifier-qualifier-list [ abstract-declarator ] */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _specifier_qualifier_list(c99);
 	if(_parse_in_set(c99, c99set_abstract_declarator))
 		ret |= _abstract_declarator(c99);
@@ -1098,19 +1162,16 @@ static int _type_name(C99 * c99)
 }
 
 
-/* specifier-qualifier-list */
+/* specifier-qualifier-list
+ * PRE	the first token starts a specifier-qualifier-list */
 static int _specifier_qualifier_list(C99 * c99)
 	/* (type-specifier | type-qualifier) { (type-specifier | type-qualifier) } */
 {
 	int ret = 0;
 	int looped = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
-	for(;;)
-	{
+	DEBUG_GRAMMAR();
+	for(;; looped = 1)
 		if(_parse_in_set(c99, c99set_type_specifier))
 			ret |= _type_specifier(c99);
 		else if(_parse_in_set(c99, c99set_type_qualifier))
@@ -1120,8 +1181,6 @@ static int _specifier_qualifier_list(C99 * c99)
 					" or type qualifier");
 		else
 			break;
-		looped = 1;
-	}
 	return ret;
 }
 
@@ -1130,10 +1189,7 @@ static int _specifier_qualifier_list(C99 * c99)
 static int _unary_operator(C99 * c99)
 	/* "&" | "*" | "+" | "-" | "~" | "!" */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	return scan(c99);
 }
 
@@ -1143,9 +1199,7 @@ static int _assignment_operator(C99 * c99)
 	/* "=" | "*=" | "/=" | "%=" | "+=" | "-=" | "<<=" | ">>=" | "&=" | "^="
 	 * | "|=" */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	return scan(c99);
 }
 
@@ -1156,15 +1210,13 @@ static int _conditional_expr(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	ret = _logical_or_expr(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_QUESTION))
 	{
 		ret |= scan(c99);
-		ret |= _expression(c99);
+		ret |= _parse_check_set(c99, c99set_expression, "expression",
+				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
 		ret |= _conditional_expr(c99);
 	}
@@ -1178,9 +1230,7 @@ static int _logical_or_expr(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _logical_and_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_DBAR))
 	{
@@ -1191,16 +1241,13 @@ static int _logical_or_expr(C99 * c99)
 }
 
 
-
 /* logical-AND-expr */
 static int _logical_and_expr(C99 * c99)
 	/* inclusive-OR-expr { "&&" inclusive-OR-expr } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _inclusive_or_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_DAMPERSAND))
 	{
@@ -1217,9 +1264,7 @@ static int _inclusive_or_expr(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _exclusive_or_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_BAR))
 	{
@@ -1236,9 +1281,7 @@ static int _exclusive_or_expr(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _and_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_XOR))
 	{
@@ -1255,9 +1298,7 @@ static int _and_expr(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _equality_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_AMPERSAND))
 	{
@@ -1275,9 +1316,7 @@ static int _equality_expr(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _relational_expr(c99);
 	while((code = _parse_get_code(c99)) != TC_NULL
 			&& (code == C99_CODE_OPERATOR_DEQUALS
@@ -1297,9 +1336,7 @@ static int _relational_expr(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _shift_expr(c99);
 	while((code = _parse_get_code(c99)) != TC_NULL
 			&& (code == C99_CODE_OPERATOR_LESS
@@ -1321,9 +1358,7 @@ static int _shift_expr(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _additive_expr(c99);
 	while((code = _parse_get_code(c99)) != TC_NULL
 			&& (code == C99_CODE_OPERATOR_DLESS
@@ -1343,9 +1378,7 @@ static int _additive_expr(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _multiplicative_expr(c99);
 	while((code = _parse_get_code(c99)) != TC_NULL
 			&& (code == C99_CODE_OPERATOR_PLUS
@@ -1365,9 +1398,7 @@ static int _multiplicative_expr(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _cast_expr(c99);
 	while((code = _parse_get_code(c99)) != TC_NULL
 			&& (code == C99_CODE_OPERATOR_TIMES
@@ -1387,14 +1418,12 @@ static int _cast_expr(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	while(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
 		ret |= scan(c99);
-		ret |= _type_name(c99);
+		ret |= _parse_check_set(c99, c99set_type_name, "type name",
+				_type_name);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	ret |= _unary_expr(c99);
@@ -1402,33 +1431,34 @@ static int _cast_expr(C99 * c99)
 }
 
 
-/* compound-statement */
+/* compound-statement
+ * PRE	the first token starts a compound-statement */
 static int _compound_statement(C99 * c99)
 	/* "{" [ block-item-list ] "}" */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"{\" got \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	ret = scan(c99);
+	if(code_scope_push(c99->code) < 0)
+		ret |= _parse_error(c99, error_get());
 	if(_parse_in_set(c99, c99set_block_item_list))
 		ret |= _block_item_list(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+	if(code_scope_pop(c99->code) < 0)
+		ret |= _parse_error(c99, error_get());
 	return ret;
 }
 
 
-/* block-item-list */
+/* block-item-list
+ * PRE	the first token starts a block-item-list */
 static int _block_item_list(C99 * c99)
 	/* block-item { block-item } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _block_item(c99);
 	while(_parse_in_set(c99, c99set_block_item))
 		ret |= _block_item(c99);
@@ -1436,22 +1466,23 @@ static int _block_item_list(C99 * c99)
 }
 
 
-/* block-item */
+/* block-item
+ * PRE	the first token starts a block-item */
 static int _block_item(C99 * c99)
 	/* declaration | statement */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_declaration))
 		return _declaration(c99);
 	else if(_parse_in_set(c99, c99set_statement))
 		return _statement(c99);
+	/* XXX should be bloat now */
 	return _parse_error(c99, "Expected declaration or statement");
 }
 
 
-/* statement */
+/* statement
+ * PRE	the first token starts a statement */
 static int _statement(C99 * c99)
 	/* labeled-statement
 	 * compound-statement
@@ -1460,8 +1491,10 @@ static int _statement(C99 * c99)
 	 * iteration-statement
 	 * jump-statement */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	DEBUG_GRAMMAR();
+#if 0
+	fprintf(stderr, "DEBUG: in_switch=%d %d case=%d\n", c99->in_switch,
+			_parse_get_code(c99), C99_CODE_KEYWORD_CASE);
 #endif
 	/* FIXME labeled and expression statements conflict */
 	if(c99->in_switch && _parse_in_set(c99, c99set_labeled_statement))
@@ -1476,11 +1509,13 @@ static int _statement(C99 * c99)
 		return _iteration_statement(c99);
 	else if(_parse_in_set(c99, c99set_jump_statement))
 		return _jump_statement(c99);
+	/* XXX should be code bloat now */
 	return _parse_error(c99, "Expected statement");
 }
 
 
-/* labeled-statement */
+/* labeled-statement
+ * PRE	the first token starts a labeled-statement */
 static int _labeled_statement(C99 * c99)
 	/* identifier ":" statement
 	 * case constant-expr ":" statement
@@ -1489,10 +1524,7 @@ static int _labeled_statement(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %s\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	/* FIXME use _parse_get_code() */
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
@@ -1506,7 +1538,7 @@ static int _labeled_statement(C99 * c99)
 	else /* default */
 		ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
-	ret |= _statement(c99);
+	ret |= _parse_check_set(c99, c99set_statement, "statement", _statement);
 	return ret;
 }
 
@@ -1515,23 +1547,19 @@ static int _labeled_statement(C99 * c99)
 static int _constant_expr(C99 * c99)
 	/* conditional-expr */
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	return _conditional_expr(c99);
 }
 
 
-/* expression-statement */
+/* expression-statement
+ * PRE	the first token starts an expression-statement */
 static int _expression_statement(C99 * c99)
 	/* [ expression ] ";" */
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_expression))
 		ret = _expression(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
@@ -1539,15 +1567,14 @@ static int _expression_statement(C99 * c99)
 }
 
 
-/* expression */
+/* expression
+ * PRE	the first token starts an expression */
 static int _expression(C99 * c99)
 	/* assignment-expr { "," assignment-expr } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _assignment_expr(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
@@ -1558,7 +1585,8 @@ static int _expression(C99 * c99)
 }
 
 
-/* selection-statement */
+/* selection-statement
+ * PRE	the first token starts a selection-statement */
 static int _selection_statement(C99 * c99)
 	/* "if" "(" expression ")" statement [ "else" statement ]
 	 * "switch" "(" expression ")" statement */
@@ -1566,33 +1594,36 @@ static int _selection_statement(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
-	/* FIXME use _parse_get_code() */
-	if(c99->token == NULL)
-		return _parse_error(c99, "Unexpected end of file");
-	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_SWITCH)
+	DEBUG_GRAMMAR();
+	if((code = _parse_get_code(c99)) == C99_CODE_KEYWORD_SWITCH)
+	{
 		c99->in_switch++;
+		fprintf(stderr, "DEBUG: LALA switch=%d\n", c99->in_switch);
+	}
 	ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
-	ret |= _expression(c99);
+	ret |= _parse_check_set(c99, c99set_expression, "expression",
+			_expression);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-	ret |= _statement(c99);
+	ret |= _parse_check_set(c99, c99set_statement, "statement", _statement);
 	if(code == C99_CODE_KEYWORD_SWITCH)
+	{
 		c99->in_switch--;
+		fprintf(stderr, "DEBUG: LALA switch=%d\n", c99->in_switch);
+	}
 	else if(code == C99_CODE_KEYWORD_IF
 			&& _parse_is_code(c99, C99_CODE_KEYWORD_ELSE))
 	{
 		ret |= scan(c99);
-		ret |= _statement(c99);
+		ret |= _parse_check_set(c99, c99set_statement, "statement",
+				_statement);
 	}
 	return ret;
 }
 
 
-/* iteration-statement */
+/* iteration-statement
+ * PRE	the first token starts an iteration-statement */
 static int _iteration_statement(C99 * c99)
 	/* while "(" expression ")" statement
 	 * do statement while "(" expression ")" ;
@@ -1601,27 +1632,26 @@ static int _iteration_statement(C99 * c99)
 	int ret = 0;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	/* FIXME use _parse_get_code() */
-	if(c99->token == NULL)
-		return _parse_error(c99, "Unexpected end of file");
-	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_WHILE)
+	DEBUG_GRAMMAR();
+	if((code = _parse_get_code(c99)) == C99_CODE_KEYWORD_WHILE)
 	{
 		ret = scan(c99);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
-		ret |= _expression(c99);
+		ret |= _parse_check_set(c99, c99set_expression, "expression",
+				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-		ret |= _statement(c99);
+		ret |= _parse_check_set(c99, c99set_statement, "statement",
+				_statement);
 	}
 	else if(code == C99_CODE_KEYWORD_DO)
 	{
 		ret = scan(c99);
-		ret |= _statement(c99);
+		ret |= _parse_check_set(c99, c99set_statement, "statement",
+				_statement);
 		ret |= _parse_check(c99, C99_CODE_KEYWORD_WHILE);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
-		ret |= _expression(c99);
+		ret |= _parse_check_set(c99, c99set_expression, "expression",
+				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else if(code == C99_CODE_KEYWORD_FOR)
@@ -1630,21 +1660,26 @@ static int _iteration_statement(C99 * c99)
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
 		/* FIXME or declaration */
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
-			ret |= _expression(c99);
+			ret |= _parse_check_set(c99, c99set_expression,
+					"expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
-			ret |= _expression(c99);
+			ret |= _parse_check_set(c99, c99set_expression,
+					"expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_SEMICOLON);
 		if(!_parse_is_code(c99, C99_CODE_OPERATOR_SEMICOLON))
-			ret |= _expression(c99);
+			ret |= _parse_check_set(c99, c99set_expression,
+					"expression", _expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-		ret |= _statement(c99);
+		ret |= _parse_check_set(c99, c99set_statement, "statement",
+				_statement);
 	}
 	return ret;
 }
 
 
-/* jump-statement */
+/* jump-statement
+ * PRE	the first token starts a jump-statement */
 static int _jump_statement(C99 * c99)
 	/* "goto" identifier ";"
 	 * "continue" ";"
@@ -1654,17 +1689,15 @@ static int _jump_statement(C99 * c99)
 	int ret;
 	int code;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__,
-			_parse_get_string(c99));
-#endif
+	DEBUG_GRAMMAR();
 	/* FIXME use _parse_get_code() */
 	if(c99->token == NULL)
 		return _parse_error(c99, "Unexpected end of file");
 	else if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
 	{
 		ret = scan(c99);
-		ret |= _identifier(c99);
+		ret |= _parse_check_set(c99, c99set_identifier, "identifier",
+				_identifier);
 	}
 	else if(code == C99_CODE_KEYWORD_RETURN)
 	{
@@ -1685,9 +1718,7 @@ static int _init_declarator_list(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _init_declarator(c99);
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
@@ -1704,9 +1735,7 @@ static int _init_declarator(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _declarator(c99);
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_EQUALS))
 	{
@@ -1724,9 +1753,7 @@ static int _initializer(C99 * c99)
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LBRACE))
 	{
 		ret = scan(c99);
@@ -1747,9 +1774,7 @@ static int _initializer_list(C99 * c99)
 {
 	int ret = 0;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_designation))
 		ret |= _designation(c99);
 	ret |= _initializer(c99);
@@ -1764,30 +1789,28 @@ static int _initializer_list(C99 * c99)
 }
 
 
-/* designation */
+/* designation
+ * PRE	the first token starts a designation */
 static int _designation(C99 * c99)
 	/* designator-list "=" */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _designator_list(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_EQUALS);
 	return ret;
 }
 
 
-/* designator-list */
+/* designator-list
+ * PRE	the first token starts a designator-list */
 static int _designator_list(C99 * c99)
 	/* designator { designator } */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	ret = _designator(c99);
 	while(_parse_in_set(c99, c99set_designator))
 		ret |= _designator(c99);
@@ -1795,16 +1818,15 @@ static int _designator_list(C99 * c99)
 }
 
 
-/* designator */
+/* designator
+ * PRE	the first token starts a designator */
 static int _designator(C99 * c99)
 	/* "[" constant-expression "]"
 	 * "." identifier */
 {
 	int ret;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_GRAMMAR();
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LBRACKET))
 	{
 		ret = scan(c99);
@@ -1814,7 +1836,8 @@ static int _designator(C99 * c99)
 	else
 	{
 		ret = scan(c99);
-		ret |= _identifier(c99);
+		ret |= _parse_check_set(c99, c99set_identifier, "identifier",
+				_identifier);
 	}
 	return ret;
 }
