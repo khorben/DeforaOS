@@ -1072,10 +1072,6 @@ static int _postfix_expr(C99 * c99)
 			if(!_parse_is_code(c99, C99_CODE_OPERATOR_RPAREN))
 				ret |= _argument_expr_list(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-#if 0
-			if(code_function_call(c99->code, c99->identifier) != 0)
-				ret |= _parse_error(c99, "%s", error_get());
-#endif
 		}
 		else if(code == C99_CODE_OPERATOR_DOT
 				|| code == C99_CODE_OPERATOR_MGREATER)
@@ -1209,19 +1205,19 @@ static int _assignment_operator(C99 * c99)
 
 /* conditional-expr */
 static int _conditional_expr(C99 * c99)
-	/* logical-OR-expr [ "?" expr ":" conditional-expr ] */
+	/* logical-OR-expr [ "?" expression ":" conditional-expr ] */
 {
 	int ret;
 
 	DEBUG_GRAMMAR();
 	ret = _logical_or_expr(c99);
-	if(_parse_is_code(c99, C99_CODE_OPERATOR_QUESTION))
+	while(_parse_is_code(c99, C99_CODE_OPERATOR_QUESTION))
 	{
 		ret |= scan(c99);
 		ret |= _parse_check_set(c99, c99set_expression, "expression",
 				_expression);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_COLON);
-		ret |= _conditional_expr(c99);
+		ret |= _logical_or_expr(c99);
 	}
 	return ret;
 }
@@ -1582,7 +1578,8 @@ static int _expression(C99 * c99)
 	while(_parse_is_code(c99, C99_CODE_COMMA))
 	{
 		scan(c99);
-		ret |= _assignment_expr(c99);
+		ret |= _parse_check_set(c99, c99set_assignment_expr,
+				"assignment expression", _assignment_expr);
 	}
 	return ret;
 }
