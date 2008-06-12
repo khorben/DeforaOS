@@ -1596,10 +1596,7 @@ static int _selection_statement(C99 * c99)
 
 	DEBUG_GRAMMAR();
 	if((code = _parse_get_code(c99)) == C99_CODE_KEYWORD_SWITCH)
-	{
 		c99->in_switch++;
-		fprintf(stderr, "DEBUG: LALA switch=%d\n", c99->in_switch);
-	}
 	ret = scan(c99);
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_LPAREN);
 	ret |= _parse_check_set(c99, c99set_expression, "expression",
@@ -1607,10 +1604,7 @@ static int _selection_statement(C99 * c99)
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	ret |= _parse_check_set(c99, c99set_statement, "statement", _statement);
 	if(code == C99_CODE_KEYWORD_SWITCH)
-	{
 		c99->in_switch--;
-		fprintf(stderr, "DEBUG: LALA switch=%d\n", c99->in_switch);
-	}
 	else if(code == C99_CODE_KEYWORD_IF
 			&& _parse_is_code(c99, C99_CODE_KEYWORD_ELSE))
 	{
