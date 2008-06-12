@@ -36,7 +36,7 @@ typedef struct _State
 	unsigned int warning_cnt;
 	Code * code;
 	char * operator;
-	CodeOperand * operands;
+	AsOperand ** operands;
 	size_t operands_cnt;
 } State;
 
@@ -391,15 +391,19 @@ static int _instruction(State * state)
 		if(_parser_in_set(state, TS_OPERAND_LIST))
 			ret |= _operand_list(state);
 	}
-	if(state->operator == NULL)
-		return ret | _newline(state);
-	if(code_instruction(state->code, state->operator, state->operands,
-				state->operands_cnt) != 0)
-		ret |= _parser_error(state, "%s", error_get());
-	free(state->operator);
-	state->operator = NULL;
+	if(state->operator != NULL)
+	{
+		if(code_instruction(state->code, state->operator,
+					state->operands, state->operands_cnt))
+			ret |= _parser_error(state, "%s", error_get());
+		free(state->operator);
+		state->operator = NULL;
+	}
 	for(i = 0; i < state->operands_cnt; i++)
-		free(state->operands[i].value);
+	{
+		free(state->operands[i]->value);
+		free(state->operands[i]);
+	}
 	/* optimized free(state->operands); out */
 	state->operands_cnt = 0;
 	return ret | _newline(state);
@@ -465,7 +469,7 @@ static int _operand(State * state)
 	int ret = 0;
 	TokenCode code;
 	char const * string;
-	CodeOperand * p;
+	AsOperand ** p;
 
 	if(state->token == NULL)
 		return 1;
@@ -485,16 +489,18 @@ static int _operand(State * state)
 				token_get_string(state->token));
 #endif
 		if((p = realloc(state->operands, (state->operands_cnt + 1)
-						* sizeof(CodeOperand))) == NULL)
+						* sizeof(*p))) == NULL
+				|| (p[state->operands_cnt] = malloc(
+						sizeof(**p))) == NULL)
 			ret |= _parser_error(state, "%s", strerror(errno));
 		else
 		{
 			state->operands = p;
 			p = &state->operands[state->operands_cnt];
-			p->type = token_get_code(state->token);
-			p->dereference = (code == AS_CODE_OPERATOR_LBRACKET);
+			(*p)->type = token_get_code(state->token);
+			(*p)->dereference = (code == AS_CODE_OPERATOR_LBRACKET);
 			/* FIXME necessary already here? */
-			p->value = strdup(string);
+			(*p)->value = strdup(string);
 			state->operands_cnt++;
 		}
 	}

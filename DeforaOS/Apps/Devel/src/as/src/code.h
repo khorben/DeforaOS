@@ -23,17 +23,11 @@
 # include "token.h"
 # include "arch/arch.h"
 # include "format/format.h"
+# include "as.h"
 
 
 /* types */
 typedef struct _Code Code;
-
-typedef struct _CodeOperand
-{
-	TokenCode type;
-	int dereference;
-	void * value;
-} CodeOperand;
 
 
 /* functions */
@@ -43,7 +37,7 @@ int code_delete(Code * code);
 /* useful */
 int code_function(Code * code, char const * function);
 int code_instruction(Code * code, char const * instruction,
-		CodeOperand operands[], size_t operands_cnt);
+		AsOperand * operands[], size_t operands_cnt);
 int code_section(Code * code, char const * section);
 
 #endif /* !AS_CODE_H */

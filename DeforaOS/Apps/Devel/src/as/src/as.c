@@ -20,6 +20,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -201,10 +202,25 @@ int as_function(As * as, char const * name)
 
 
 /* as_instruction */
-int as_instruction(As * as, char const * name)
+int as_instruction(As * as, char const * name, unsigned int operands_cnt, ...)
 {
-	/* FIXME design a way to pass arguments */
-	return code_instruction(as->code, name, NULL, 0);
+	int ret;
+	va_list ap;
+	AsOperand ** ao = NULL;
+	size_t i;
+
+	if(operands_cnt != 0)
+	{
+		if((ao = malloc(sizeof(*ao) * operands_cnt)) == NULL)
+			return error_set_code(1, "%s", strerror(errno));
+		va_start(ap, operands_cnt);
+		for(i = 0; i < operands_cnt; i++)
+			ao[i] = va_arg(ap, AsOperand *);
+		va_end(ap);
+	}
+	ret = code_instruction(as->code, name, ao, operands_cnt);
+	free(ao);
+	return ret;
 }
 
 

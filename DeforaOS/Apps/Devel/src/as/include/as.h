@@ -24,6 +24,13 @@
 /* types */
 typedef struct _As As;
 
+typedef struct _AsOperand
+{
+	int type;
+	int dereference;
+	void * value;
+} AsOperand;
+
 typedef enum _AsPluginType { ASPT_ARCH = 0, ASPT_FORMAT } AsPluginType;
 
 
@@ -48,7 +55,7 @@ int as_open(As * as, char const * outfile);
 int as_close(As * as);
 int as_section(As * as, char const * name);
 int as_function(As * as, char const * name);
-int as_instruction(As * as, char const * name);
+int as_instruction(As * as, char const * name, unsigned int operands_cnt, ...);
 
 
 /* plugins helpers */

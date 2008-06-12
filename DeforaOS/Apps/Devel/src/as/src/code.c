@@ -23,7 +23,6 @@
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
-#include "as.h"
 #include "common.h"
 #include "code.h"
 
@@ -92,14 +91,14 @@ int code_function(Code * code, char const * function)
 
 /* code_instruction */
 static int _instruction_instruction(Code * code, ArchInstruction ** ai,
-		char const * instruction, CodeOperand operands[],
+		char const * instruction, AsOperand * operands[],
 		size_t operands_cnt);
 static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], size_t operands_cnt);
+		AsOperand * operands[], size_t operands_cnt);
 static ArchRegister * _operands_register(Arch * arch, char const * name);
 
 int code_instruction(Code * code, char const * instruction,
-		CodeOperand operands[], size_t operands_cnt)
+		AsOperand * operands[], size_t operands_cnt)
 	/* FIXME being rewritten */
 {
 	int ret;
@@ -146,31 +145,29 @@ int code_instruction(Code * code, char const * instruction,
 					errno));
 	for(i = 0; i < operands_cnt; i++)
 	{
-		if(i >= 2)
-			break; /* FIXME looks ugly */
-		size = (i == 0) ? ai->op1size : ai->op2size;
+		if(i >= 3)
+			break; /* FIXME this is ugly */
+		size = (i == 0) ? ai->op1size : ((i == 1) ? ai->op2size
+				: ai->op3size);
 		if(size == 0)
 			continue;
-		switch(operands[i].type)
+		u32 = strtol(operands[i]->value + 1, NULL, 0);
+		switch(operands[i]->type)
 		{
 			case AS_CODE_IMMEDIATE:
 				/* FIXME there still is an endian problem */
 				switch(size)
 				{
 					case 1:
-						u8 = strtol(operands[i].value
-								+ 1, NULL, 0);
+						u8 = u32;
 						buf = &u8;
 						break;
 					case 2:
-						u16 = strtol(operands[i].value
-								+ 1, NULL, 0);
+						u16 = u32;
 						buf = &u16;
 						break;
 					default: /* FIXME not always so */
 					case 4:
-						u32 = strtol(operands[i].value
-								+ 1, NULL, 0);
 						buf = &u32;
 						break;
 				}
@@ -181,16 +178,15 @@ int code_instruction(Code * code, char const * instruction,
 				/* FIXME */
 				continue;
 		}
-		if(fwrite(buf, size, 1, code->fp) == 1)
-			continue;
-		return error_set_code(1, "%s: %s", code->filename, strerror(
-					errno));
+		if(fwrite(buf, size, 1, code->fp) != 1)
+			return error_set_code(1, "%s: %s", code->filename,
+					strerror(errno));
 	}
 	return 0;
 }
 
 static int _instruction_instruction(Code * code, ArchInstruction ** ai,
-		char const * instruction, CodeOperand operands[],
+		char const * instruction, AsOperand * operands[],
 		size_t operands_cnt)
 {
 	size_t i;
@@ -214,7 +210,7 @@ static int _instruction_instruction(Code * code, ArchInstruction ** ai,
 }
 
 static int _instruction_operands(Code * code, ArchInstruction * ai,
-		CodeOperand operands[], size_t operands_cnt)
+		AsOperand * operands[], size_t operands_cnt)
 {
 	unsigned long op = 0;
 	char const * reg;
@@ -224,7 +220,7 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 	for(i = 0; i < operands_cnt; i++)
 	{
 		op = op << 8;
-		switch(operands[i].type)
+		switch(operands[i]->type)
 		{
 			case AS_CODE_IMMEDIATE:
 			case AS_CODE_NUMBER:
@@ -238,12 +234,12 @@ static int _instruction_operands(Code * code, ArchInstruction * ai,
 #if 0 /* XXX this looked maybe better */
 				reg = operands[i].value + 1; /* "%rg" => "rg" */
 #else
-				reg = operands[i].value;
+				reg = operands[i]->value;
 #endif
 				if((ar = _operands_register(code->arch, reg))
 						== NULL)
 					return 1;
-				if(operands[i].dereference)
+				if(operands[i]->dereference)
 					op |= (_AO_DREG | (ar->id << 2));
 				else
 					op |= (_AO_REG | (ar->id << 2));
@@ -278,5 +274,8 @@ static ArchRegister * _operands_register(Arch * arch, char const * name)
 /* code_section */
 int code_section(Code * code, char const * section)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, section);
+#endif
 	return format_section(code->format, section);
 }
