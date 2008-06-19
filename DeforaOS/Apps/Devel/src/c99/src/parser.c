@@ -999,8 +999,8 @@ static int _assignment_expr(C99 * c99)
 static int _unary_expr(C99 * c99)
 	/* FIXME still recursive
 	 * postfix-expr
-	 * ++ unary-expr
-	 * -- unary-expr
+	 * "++" unary-expr
+	 * "--" unary-expr
 	 * unary-operator cast-expr
 	 * "sizeof" unary-expr
 	 * "sizeof" "(" type-name ")" */
@@ -1059,7 +1059,8 @@ static int _postfix_expr(C99 * c99)
 	 * postfix-expr "->" identifier
 	 * postfix-expr "++"
 	 * postfix-expr "--"
-	 * "(" type-name ")" "{" initializer-list [ "," ] "}" */
+	 * "(" type-name ")" "{" initializer-list [ "," ] "}"
+	 * "(" expression ")" */
 {
 	int ret = 0;
 
@@ -1069,14 +1070,24 @@ static int _postfix_expr(C99 * c99)
 	else if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
 	{
 		ret |= scan(c99);
-		ret |= _parse_check_set(c99, c99set_type_name, "type name",
-				_type_name);
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
-		ret |= _initializer_list(c99);
-		if(_parse_is_code(c99, C99_CODE_COMMA))
-			ret |= scan(c99);
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+		if(_parse_in_set(c99, c99set_type_name))
+		{
+			ret |= _type_name(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_LBRACE);
+			ret |= _initializer_list(c99);
+			if(_parse_is_code(c99, C99_CODE_COMMA))
+				ret |= scan(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
+		}
+		else if(_parse_in_set(c99, c99set_expression))
+		{
+			ret |= _expression(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		}
+		else
+			ret |= _parse_error(c99,
+					"Expected type name or expression");
 	}
 	ret |= _postfix_expr_do(c99);
 	return ret;
@@ -1156,8 +1167,7 @@ static int _argument_expr_list(C99 * c99)
 static int _primary_expr(C99 * c99)
 	/* identifier
 	 * constant
-	 * string-literal
-	 * "(" expression ")" */
+	 * string-literal */
 {
 	int ret = 0;
 	int code;
@@ -1172,13 +1182,6 @@ static int _primary_expr(C99 * c99)
 					C99_CODE_OPERATOR_COLON))
 			/* handle this as a labeled_statement */
 			c99->is_label = 1;
-	}
-	else if(code == C99_CODE_OPERATOR_LPAREN)
-	{
-		ret |= scan(c99);
-		ret |= _parse_check_set(c99, c99set_expression, "expression",
-				_expression);
-		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else /* constant or string-litteral */
 		ret |= scan(c99);
