@@ -35,7 +35,7 @@ InetdState * inetd_state;
 /* inetd_error */
 int inetd_error(char const * message, int ret)
 {
-	fprintf(stderr, "%s", "inetd: ");
+	fputs("inetd: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -44,6 +44,7 @@ int inetd_error(char const * message, int ret)
 /* inetd */
 static int _inetd_init(InetdState * state, char * filename);
 static int _inetd_do(InetdState * state);
+
 static int _inetd(int debug, int queue, char * filename)
 {
 	InetdState state;
@@ -246,9 +247,9 @@ static int _inetd_do(InetdState * state)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: inetd [-d][-q len] [config file]\n\
+	fputs("Usage: inetd [-d][-q len] [config file]\n\
   -d	Debugging mode\n\
-  -q	Queue length\n");
+  -q	Queue length\n", stderr);
 	return 1;
 }
 
