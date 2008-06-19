@@ -27,7 +27,9 @@
 #include "service.h"
 
 
+/* service_new */
 int _service_port(char * name, char * proto);
+
 Service * service_new(char * name, ServiceSocket socket, ServiceProtocol proto,
 		ServiceWait wait, ServiceId id, char ** program)
 {
@@ -68,6 +70,7 @@ int _service_port(char * name, char * proto)
 }
 
 
+/* service_delete */
 void service_delete(Service * s)
 {
 	char ** p;
@@ -84,6 +87,7 @@ void service_delete(Service * s)
 
 
 /* useful */
+/* service_listen */
 int service_listen(Service * s)
 {
 	struct sockaddr_in sa;
@@ -113,9 +117,11 @@ int service_listen(Service * s)
 }
 
 
+/* service_exec */
 static int _exec_tcp(Service * s);
 static int _exec_udp_nowait(Service * s);
 static int _exec_udp_wait(Service * s);
+
 int service_exec(Service * s)
 {
 	switch(s->proto)

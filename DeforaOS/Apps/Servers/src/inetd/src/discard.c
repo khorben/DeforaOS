@@ -31,7 +31,7 @@ static int _discard(void)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: discard\n");
+	fputs("Usage: discard\n", stderr);
 	return 1;
 }
 

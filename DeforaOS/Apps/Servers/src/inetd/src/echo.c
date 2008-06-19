@@ -44,7 +44,7 @@ static int _echo(void)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "Usage: echo\n");
+	fputs("Usage: echo\n", stderr);
 	return 1;
 }
 
