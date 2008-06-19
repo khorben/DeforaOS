@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include "inetd.h"
 #include "service.h"
 
@@ -127,8 +128,7 @@ int service_exec(Service * s)
 			return _exec_udp_wait(s);
 		default:
 			if(inetd_state->debug)
-				fprintf(stderr, "%s",
-						"inetd: Not implemented\n");
+				fputs("inetd: Not implemented\n", stderr);
 			return 1;
 	}
 }
@@ -138,7 +138,7 @@ static int _exec_tcp(Service * s)
 	int fd;
 	pid_t pid;
 	struct sockaddr_in sa;
-	int sa_size = sizeof(struct sockaddr_in);
+	socklen_t sa_size = sizeof(struct sockaddr_in);
 
 	if((fd = accept(s->fd, (struct sockaddr*)&sa, &sa_size)) == -1)
 		return inetd_error("accept", 1);
@@ -159,6 +159,7 @@ static int _exec_tcp(Service * s)
 		inetd_error(s->program[0], 0);
 	}
 	exit(2);
+	return inetd_error("exit", 1);
 }
 
 static int _exec_udp_nowait(Service * s)
@@ -181,6 +182,7 @@ static int _exec_udp_nowait(Service * s)
 	 * - receive packet some time (normal and error cases) */
 	inetd_error(s->program[0], 0);
 	exit(2);
+	return inetd_error("exit", 1);
 }
 
 static int _exec_udp_wait(Service * s)
@@ -198,4 +200,5 @@ static int _exec_udp_wait(Service * s)
 		inetd_error(s->program[0], 0);
 	}
 	exit(2);
+	return inetd_error("exit", 1);
 }
