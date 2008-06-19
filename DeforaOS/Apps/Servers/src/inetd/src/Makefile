@@ -4,8 +4,8 @@ DESTDIR	=
 BINDIR	= $(PREFIX)/bin
 CC	= cc
 CPPFLAGS=
-CFLAGSF	= -W -Wall -ansi
-CFLAGS	= -g
+CFLAGSF	= -W
+CFLAGS	= -Wall -ansi -g
 RM	= rm -f
 MKDIR	= mkdir -p
 INSTALL	= install
@@ -64,12 +64,8 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 inetd $(DESTDIR)$(BINDIR)/inetd
-	$(INSTALL) -m 0755 discard $(DESTDIR)$(BINDIR)/discard
-	$(INSTALL) -m 0755 echo $(DESTDIR)$(BINDIR)/echo
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/inetd
-	$(RM) $(DESTDIR)$(BINDIR)/discard
-	$(RM) $(DESTDIR)$(BINDIR)/echo
 
 .PHONY: all clean distclean install uninstall
