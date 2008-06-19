@@ -773,7 +773,7 @@ static int _type_qualifier_list(C99 * c99)
 static int _direct_declarator(C99 * c99)
 	/* identifier
 	 * "(" declarator ")"
-	 * direct-declarator "[" (assignment-expr | "*") "]"
+	 * direct-declarator "[" [ assignment-expr | "*" ] "]"
 	 * direct-declarator "(" parameter-type-list ")"
 	 * direct-declarator "(" [ identifier-list ] ")" */
 {
@@ -798,7 +798,7 @@ static int _direct_declarator(C99 * c99)
 		{
 			if(_parse_is_code(c99, C99_CODE_OPERATOR_TIMES))
 				ret |= scan(c99);
-			else
+			else if(_parse_in_set(c99, c99set_assignment_expr))
 				ret |= _assignment_expr(c99);
 			ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACKET);
 		}
@@ -1477,7 +1477,8 @@ static int _cast_expr(C99 * c99)
 		ret |= _postfix_expr_do(c99);
 		return ret;
 	}
-	ret |= _unary_expr(c99);
+	ret |= _parse_check_set(c99, c99set_unary_expr, "unary expression",
+			_unary_expr);
 	return ret;
 }
 
