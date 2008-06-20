@@ -1183,7 +1183,14 @@ static int _primary_expr(C99 * c99)
 			/* handle this as a labeled_statement */
 			c99->is_label = 1;
 	}
-	else /* constant or string-litteral */
+	else if(code == C99_CODE_DQUOTE) /* string-litteral */
+	{
+		ret |= scan(c99);
+		/* FIXME ugly work-around string-literal concatenation */
+		while(token_get_code(c99->token) == C99_CODE_DQUOTE)
+			ret |= scan(c99);
+	}
+	else /* constant */
 		ret |= scan(c99);
 	c99->can_label = 0;
 	return ret;
