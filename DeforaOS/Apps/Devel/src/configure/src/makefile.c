@@ -268,17 +268,17 @@ static int _variables_executables(Configure * configure, FILE * fp)
 		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
 	}
 	if(targets != NULL || includes != NULL)
-		fprintf(fp, "%s", "RM\t= rm -f\n");
+		fputs("RM\t= rm -f\n", fp);
 	if(config_get(configure->config, "", "package"))
 	{
 		if(targets == NULL && includes == NULL)
-			fprintf(fp, "%s", "RM\t= rm -f\n");
+			fputs("RM\t= rm -f\n", fp);
 		fprintf(fp, "%s", "LN\t= ln -sf\nTAR\t= tar -czvf\n");
 	}
 	if(targets != NULL || includes != NULL)
 	{
-		fprintf(fp, "%s", "MKDIR\t= mkdir -p\n");
-		fprintf(fp, "%s", "INSTALL\t= install\n");
+		fputs("MKDIR\t= mkdir -p\n", fp);
+		fputs("INSTALL\t= install\n", fp);
 	}
 	return 0;
 }
@@ -1360,24 +1360,19 @@ static void _install_target_library(Config * config, FILE * fp,
 
 static int _install_include(Config * config, FILE * fp, String const * include)
 {
-	static Config * flag = NULL;
-	static int done;
+	char const * install;
 
-	if(flag != config)
-	{
-		flag = config;
-		done = 0;
-	}
-	if(!done)
-		fputs("\t$(MKDIR) $(DESTDIR)$(INCLUDEDIR)\n", fp);
-	fprintf(fp, "%s%s%s%s%s", "\t$(INSTALL) -m 0644 ", include,
-			" $(DESTDIR)$(INCLUDEDIR)/", include, "\n");
-	done = 1;
+	if((install = config_get(config, include, "install")) == NULL)
+		install = "$(INCLUDEDIR)";
+	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", install);
+	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ", include,
+			" $(DESTDIR)", install, include);
 	return 0;
 }
 
 static int _uninstall_target(Config * config, FILE * fp, String const * target);
-static int _uninstall_include(FILE * fp, String const * include);
+static int _uninstall_include(Config * config, FILE * fp,
+		String const * include);
 static int _write_uninstall(Configure * configure, FILE * fp)
 {
 	int ret = 0;
@@ -1424,7 +1419,8 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 				continue;
 			c = includes[i];
 			includes[i] = '\0';
-			ret = _uninstall_include(fp, includes);
+			ret = _uninstall_include(configure->config, fp,
+					includes);
 			if(c == '\0')
 				break;
 			includes += i + 1;
@@ -1463,8 +1459,13 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 	return 0;
 }
 
-static int _uninstall_include(FILE * fp, String const * include)
+static int _uninstall_include(Config * config, FILE * fp,
+		String const * include)
 {
-	fprintf(fp, "%s%s\n", "\t$(RM) $(DESTDIR)$(INCLUDEDIR)/", include);
+	char const * install;
+
+	if((install = config_get(config, include, "install")) == NULL)
+		install = "$(INCLUDEDIR)";
+	fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", install, include);
 	return 0;
 }
