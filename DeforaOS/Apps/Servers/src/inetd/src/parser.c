@@ -38,7 +38,10 @@ typedef struct _State
 } State;
 
 
+/* functions */
+/* parser */
 static void _config(State * state);
+
 Config * parser(char * filename)
 {
 	State state;
@@ -48,11 +51,13 @@ Config * parser(char * filename)
 	if((state.fp = fopen(filename, "r")) == NULL)
 	{
 		inetd_error(filename, 0);
+		config_delete(state.config);
 		return NULL;
 	}
 	if((state.token = scan(state.fp)) == NULL)
 	{
 		fclose(state.fp);
+		config_delete(state.config);
 		return NULL;
 	}
 	state.filename = filename;
