@@ -21,7 +21,7 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
-#include "target.h"
+#include "c99/target.h"
 #ifdef DEBUG
 # include "../../config.h"
 #endif

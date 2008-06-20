@@ -36,10 +36,10 @@ graph.a: $(graph_OBJS)
 graph.so: $(graph_OBJS)
 	$(LD) -o graph.so $(graph_OBJS)
 
-as.o: as.c target.h ../../config.h
+as.o: as.c ../../include/c99/target.h ../../config.h
 	$(CC) $(as_CFLAGS) -c as.c
 
-graph.o: graph.c target.h
+graph.o: graph.c ../../include/c99/target.h
 	$(CC) $(graph_CFLAGS) -c graph.c
 
 clean:

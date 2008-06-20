@@ -24,7 +24,7 @@
 #endif
 #include <string.h>
 #include <errno.h>
-#include "target/target.h"
+#include "c99/target.h"
 #include "code.h"
 #include "../config.h"
 

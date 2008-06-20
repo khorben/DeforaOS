@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "target.h"
+#include "c99/target.h"
 
 
 /* graph */

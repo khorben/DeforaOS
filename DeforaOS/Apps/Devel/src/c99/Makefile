@@ -24,6 +24,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/c99.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/include/c99/target.h \
+		$(PACKAGE)-$(VERSION)/include/c99/Makefile \
+		$(PACKAGE)-$(VERSION)/include/c99/project.conf \
 		$(PACKAGE)-$(VERSION)/src/c99.c \
 		$(PACKAGE)-$(VERSION)/src/code.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
