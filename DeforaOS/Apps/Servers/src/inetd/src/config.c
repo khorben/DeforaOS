@@ -21,6 +21,7 @@
 
 
 /* Config */
+/* config_new */
 Config * config_new(void)
 {
 	Config * config;
@@ -35,6 +36,8 @@ Config * config_new(void)
 	return config;
 }
 
+
+/* config_delete */
 void config_delete(Config * config)
 {
 	unsigned int i;
@@ -47,6 +50,7 @@ void config_delete(Config * config)
 
 
 /* useful */
+/* config_service_add */
 int config_service_add(Config * config, Service * service)
 {
 	Service ** p;
@@ -55,7 +59,7 @@ int config_service_add(Config * config, Service * service)
 		return 1;
 	if((p = realloc(config->services, sizeof(Service)
 					* (config->services_nb + 1))) == NULL)
-		return 1; /* FIXME be verbose */
+		return inetd_error(service->name, 1);
 	config->services = p;
 	config->services[config->services_nb] = service;
 	config->services_nb++;
