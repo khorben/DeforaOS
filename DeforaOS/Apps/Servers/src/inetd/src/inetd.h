@@ -23,10 +23,11 @@
 
 
 /* types */
-typedef struct _InetdState {
+typedef struct _InetdState
+{
 	int debug;
 	int queue;
-	char * filename;
+	char const * filename;
 	Config * config;
 	fd_set rfds;
 	int fdmax;

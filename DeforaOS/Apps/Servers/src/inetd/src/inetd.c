@@ -42,10 +42,10 @@ int inetd_error(char const * message, int ret)
 
 
 /* inetd */
-static int _inetd_init(InetdState * state, char * filename);
+static int _inetd_init(InetdState * state, char const * filename);
 static int _inetd_do(InetdState * state);
 
-static int _inetd(int debug, int queue, char * filename)
+static int _inetd(int debug, int queue, char const * filename)
 {
 	InetdState state;
 	int ret;
@@ -64,7 +64,7 @@ static int _inetd(int debug, int queue, char * filename)
 static void _inetd_sighandler(int signum);
 static int _inetd_daemonize(InetdState * state);
 static int _inetd_setup(InetdState * state);
-static int _inetd_init(InetdState * state, char * config)
+static int _inetd_init(InetdState * state, char const * filename)
 {
 	struct sigaction sa;
 
@@ -73,7 +73,7 @@ static int _inetd_init(InetdState * state, char * config)
 	if(sigaction(SIGCHLD, &sa, NULL) == -1
 			|| sigaction(SIGHUP, &sa, NULL) == -1)
 		return inetd_error("sigaction", 1);
-	if((state->config = parser(config)) == NULL
+	if((state->config = parser(filename)) == NULL
 			|| _inetd_daemonize(state)
 			|| _inetd_setup(state))
 		return 1;
@@ -260,7 +260,7 @@ int main(int argc, char * argv[])
 	int o;
 	int debug = 0;
 	int queue = 128;
-	char * filename = "/etc/inetd.conf";
+	char const * filename = "/etc/inetd.conf";
 	char * p;
 
 	while((o = getopt(argc, argv, "dq")) != -1)

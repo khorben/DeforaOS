@@ -29,7 +29,7 @@
 /* types */
 typedef struct _State
 {
-	char * filename;
+	char const * filename;
 	FILE * fp;
 	Token * token;
 	unsigned int line;
@@ -42,7 +42,7 @@ typedef struct _State
 /* parser */
 static void _config(State * state);
 
-Config * parser(char * filename)
+Config * parser(char const * filename)
 {
 	State state;
 
@@ -68,7 +68,7 @@ Config * parser(char * filename)
 	return state.config;
 }
 
-static void _parser_error(State * state, char * message)
+static void _parser_error(State * state, char const * message)
 {
 	fprintf(stderr, "%s%s%d%s%s\n", state->filename, ", line ", state->line,
 			": ", message);

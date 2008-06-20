@@ -22,6 +22,6 @@
 # include "config.h"
 
 
-Config * parser(char * filename);
+Config * parser(char const * filename);
 
 #endif /* !__PARSER_H */
