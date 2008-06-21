@@ -34,6 +34,13 @@
 #include <errno.h>
 #include "common.h"
 
+#ifdef DEBUG
+# define DEBUG_CALLBACK() fprintf(stderr, "DEBUG: %s('%c' 0x%x)\n", __func__, \
+		c, c);
+#else
+# define DEBUG_CALLBACK()
+#endif
+
 
 /* Cpp */
 /* private */
@@ -344,9 +351,7 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 
 	if(!isspace(c))
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_CALLBACK();
 	do
 	{
 		if(c != '\n')
@@ -380,9 +385,7 @@ static int _cpp_callback_newline(Parser * parser, Token * token, int c,
 {
 	if(c != '\n')
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_CALLBACK();
 	parser_scan_filter(parser);
 	token_set_code(token, CPP_CODE_NEWLINE);
 	token_set_string(token, "\n");
@@ -402,9 +405,7 @@ static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
 	assert(c != '\n');
 	if(!isspace(c))
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_CALLBACK();
 	do
 	{
 		if((p = realloc(str, len + 2)) == NULL)
@@ -441,9 +442,7 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 
 	if(c != '/')
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_CALLBACK();
 	if((c = parser_scan_filter(parser)) != '*')
 	{
 		token_set_code(token, CPP_CODE_OPERATOR_DIVIDE);
@@ -514,9 +513,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		cpp->directive_newline = 0;
 		return 1;
 	}
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_CALLBACK();
 	if((str = _cpp_parse_line(parser, c)) == NULL)
 		return -1;
 	token_set_string(token, str);
@@ -716,9 +713,7 @@ static int _cpp_callback_comma(Parser * parser, Token * token, int c,
 {
 	if(c != ',')
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	DEBUG_CALLBACK();
 	token_set_code(token, CPP_CODE_COMMA);
 	token_set_string(token, ",");
 	parser_scan_filter(parser);
@@ -740,9 +735,7 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 			break;
 	if(i == _cpp_operators_cnt) /* nothing found */
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s('%c')\n", __func__, c);
-#endif
+	DEBUG_CALLBACK();
 	for(pos = 0; i < j;)
 	{
 		if(_cpp_operators[i].string[pos] == '\0')
@@ -778,9 +771,7 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 		token_set_code(token, CPP_CODE_DQUOTE);
 	else
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s('%c')\n", __func__, c);
-#endif
+	DEBUG_CALLBACK();
 	while((p = realloc(str, len + 3)) != NULL)
 	{
 		str = p;
@@ -820,9 +811,7 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 
 	if(!_cpp_isword(c))
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s('%c')\n", __func__, c);
-#endif
+	DEBUG_CALLBACK();
 	if((str = _cpp_parse_word(parser, c)) == NULL)
 		return -1;
 	token_set_code(token, CPP_CODE_WORD);
@@ -840,9 +829,7 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 
 	if(c == EOF)
 		return 1;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s('%c' 0x%x)\n", __func__, c, c);
-#endif
+	DEBUG_CALLBACK();
 	buf[0] = c;
 	parser_scan(parser);
 	token_set_code(token, CPP_CODE_UNKNOWN);
@@ -858,6 +845,7 @@ Cpp * cpp_new(char const * filename, int filters)
 {
 	Cpp * cpp;
 	char * p;
+	int r = 0;
 
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
@@ -868,10 +856,10 @@ Cpp * cpp_new(char const * filename, int filters)
 	cpp->parent = cpp;
 	if((p = strdup(filename)) != NULL)
 	{
-		cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
+		r = cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
 		free(p);
 	}
-	if(cpp->parser == NULL || cpp->paths_cnt != 1)
+	if(r != 0 || cpp->parser == NULL || cpp->paths_cnt != 1)
 	{
 		cpp_delete(cpp);
 		return NULL;
