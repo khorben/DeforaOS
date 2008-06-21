@@ -825,7 +825,7 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 		void * data)
 {
-	static char buf[2] = { '\0', '\0' };
+	char buf[2] = { '\0', '\0' };
 
 	if(c == EOF)
 		return 1;
