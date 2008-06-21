@@ -1019,6 +1019,7 @@ static int _assignment_expr(C99 * c99)
 		ret |= _conditional_expr(c99);
 		if(!_parse_in_set(c99, c99set_assignment_operator))
 			return ret;
+		ret |= code_context_set(c99->code, CODE_CONTEXT_ASSIGNMENT);
 		ret |= _assignment_operator(c99);
 	}
 	return ret;
@@ -1583,21 +1584,23 @@ static int _statement(C99 * c99)
 	 * iteration-statement
 	 * jump-statement */
 {
+	int ret;
+
 	DEBUG_GRAMMAR();
+	ret = code_context_set(c99->code, CODE_CONTEXT_STATEMENT);
 	if(_parse_in_set(c99, c99set_labeled_statement))
-		return _labeled_statement(c99);
+		ret |= _labeled_statement(c99);
 	else if(_parse_in_set(c99, c99set_compound_statement))
-		return _compound_statement(c99);
+		ret |= _compound_statement(c99);
 	else if(_parse_in_set(c99, c99set_expression_statement))
-		return _expression_statement(c99);
+		ret |= _expression_statement(c99);
 	else if(_parse_in_set(c99, c99set_selection_statement))
-		return _selection_statement(c99);
+		ret |= _selection_statement(c99);
 	else if(_parse_in_set(c99, c99set_iteration_statement))
-		return _iteration_statement(c99);
+		ret |= _iteration_statement(c99);
 	else if(_parse_in_set(c99, c99set_jump_statement))
-		return _jump_statement(c99);
-	/* XXX should be code bloat now */
-	return _parse_error(c99, "Expected statement");
+		ret |= _jump_statement(c99);
+	return ret;
 }
 
 

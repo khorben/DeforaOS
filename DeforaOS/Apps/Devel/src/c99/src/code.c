@@ -341,9 +341,15 @@ int code_context_set(Code * code, CodeContext context)
 	size_t i;
 	CodeIdentifier * ci;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() 0x%x\n", __func__, context);
+#endif
 	code->context = context;
 	switch(context)
 	{
+		case CODE_CONTEXT_ASSIGNMENT:
+			_code_context_flush(code);
+			break;
 		case CODE_CONTEXT_DECLARATION:
 			/* handle any DECLARATION_OR_FUNCTION identifier */
 			for(i = 0; i < code->identifiers_cnt; i++)
@@ -396,6 +402,10 @@ int code_context_set(Code * code, CodeContext context)
 						code->identifiers[0].name);
 			}
 			_code_context_flush(code);
+			break;
+		case CODE_CONTEXT_STATEMENT:
+			_code_context_flush(code);
+			break;
 		default:
 			break;
 	}
@@ -418,6 +428,7 @@ int code_context_set_identifier(Code * code, char const * identifier)
 	char const * str[CODE_CONTEXT_COUNT] =
 	{
 		"NULL",
+		"assignment",
 		"declaration",
 		"declaration end",
 		"declaration or function",
@@ -431,9 +442,11 @@ int code_context_set_identifier(Code * code, char const * identifier)
 		"function end",
 		"function parameters",
 		"function start",
+		"label",
 		"parameters",
 		"parameters type",
 		"primary expr",
+		"statement",
 		"struct",
 		"union"
 	};
@@ -490,7 +503,7 @@ int code_context_set_storage(Code * code, CodeStorage storage)
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, str[storage]);
+	fprintf(stderr, "DEBUG: %s(0x%x)\n", __func__, storage);
 #endif
 	if(!(code->storage & storage))
 	{
