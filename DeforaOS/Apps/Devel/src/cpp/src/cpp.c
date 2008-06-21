@@ -625,11 +625,14 @@ static int _directive_include(Cpp * cpp, Token * token, char const * str)
 	if((path = _include_path(cpp, token, str)) == NULL
 			&& (path = _include_path(cpp->parent, token, str))
 			== NULL)
+	{
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, error_get());
 		return 0;
+	}
 	token_set_code(token, CPP_CODE_META_INCLUDE);
 	if((cpp->subparser = cpp_new(path, cpp->filters)) == NULL)
 	{
-		error_set_code(-1, "%s: %s", path, strerror(errno));
 		free(path);
 		return -1;
 	}
@@ -654,12 +657,21 @@ static char * _include_path(Cpp * cpp, Token * token, char const * str)
 	else if(str[0] == '<')
 		d = '>';
 	else
+	{
+		error_set("%s", "Invalid include directive");
 		return NULL;
+	}
 	len = strlen(str);
 	if(len < 3 || str[len - 1] != d)
+	{
+		error_set("%s", "Invalid include directive");
 		return NULL;
+	}
 	if((path = strdup(&str[1])) == NULL)
+	{
+		error_set("%s", strerror(errno));
 		return NULL;
+	}
 	path[len - 2] = '\0';
 	p = _path_lookup(cpp, token, path, d == '>');
 	free(path);
