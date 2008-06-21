@@ -936,8 +936,6 @@ void cpp_delete(Cpp * cpp)
 /* cpp_get_filename */
 char const * cpp_get_filename(Cpp * cpp)
 {
-	if(cpp->subparser != NULL)
-		return cpp_get_filename(cpp->subparser);
 	return parser_get_filename(cpp->parser);
 }
 
