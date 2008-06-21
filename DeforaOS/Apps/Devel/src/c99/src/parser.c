@@ -778,7 +778,7 @@ static int _direct_declarator(C99 * c99)
 	 * direct-declarator "(" [ identifier-list ] ")" */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
@@ -872,7 +872,10 @@ static int _parameter_type_list(C99 * c99)
 	{
 		ret |= scan(c99);
 		if(_parse_is_code(c99, C99_CODE_OPERATOR_DOTDOTDOT))
-			return ret | scan(c99);
+		{
+			ret |= scan(c99);
+			break;
+		}
 		ret |= _parameter_declaration(c99);
 	}
 	return ret;
@@ -904,9 +907,30 @@ static int _abstract_or_declarator(C99 * c99)
 	if(_parse_in_set(c99, c99set_pointer))
 		ret |= _pointer(c99);
 	if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
-		return ret | _direct_declarator(c99);
-	/* FIXME there is still an ambiguity with "(" */
-	ret |= _direct_abstract_declarator(c99);
+		ret |= _direct_declarator(c99);
+	else if(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
+		/* after "(" it can be:
+		 * - declarator (pointer, identifier, "(")
+		 * - abstract-declarator (pointer, parameter-type-list, "(",
+		 *                        "[", nothing) */
+		while(_parse_is_code(c99, C99_CODE_OPERATOR_LPAREN))
+		{
+			ret |= scan(c99);
+			if(_parse_in_set(c99, c99set_pointer))
+				ret |= _pointer(c99);
+			if(_parse_is_code(c99, C99_CODE_IDENTIFIER))
+				ret |= _direct_declarator(c99);
+			else if(_parse_is_code(c99, C99_CODE_OPERATOR_LBRACKET))
+				ret |= _direct_abstract_declarator(c99);
+			else if(_parse_in_set(c99, c99set_parameter_type_list))
+				ret |= _parameter_type_list(c99);
+			else
+				/* FIXME get rid of recursivity */
+				ret |= _abstract_or_declarator(c99);
+			ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
+		}
+	else
+		ret |= _direct_abstract_declarator(c99);
 	return ret;
 }
 
@@ -944,7 +968,13 @@ static int _direct_abstract_declarator(C99 * c99)
 	if(code == C99_CODE_OPERATOR_LPAREN)
 	{
 		ret = scan(c99);
-		ret |= _abstract_declarator(c99);
+		if(_parse_in_set(c99, c99set_parameter_type_list))
+			ret |= _parameter_type_list(c99);
+		else if(_parse_get_code(c99) != C99_CODE_OPERATOR_RPAREN)
+			_parse_check_set(c99, c99set_abstract_declarator,
+					"parameter type list"
+					"or abstract declarator",
+					_abstract_declarator);
 		ret |= _parse_check(c99, C99_CODE_OPERATOR_RPAREN);
 	}
 	else if(code == C99_CODE_OPERATOR_LBRACKET)
@@ -1006,7 +1036,7 @@ static int _unary_expr(C99 * c99)
 	 * "sizeof" "(" type-name ")" */
 {
 	int ret = 0;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_postfix_expr))
@@ -1170,7 +1200,7 @@ static int _primary_expr(C99 * c99)
 	 * string-literal */
 {
 	int ret = 0;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	if(code_context_set(c99->code, CODE_CONTEXT_PRIMARY_EXPR) != 0)
@@ -1364,7 +1394,7 @@ static int _equality_expr(C99 * c99)
 	/* relational-expr { ("==" | "!=") relational-expr } */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	ret = _relational_expr(c99);
@@ -1384,7 +1414,7 @@ static int _relational_expr(C99 * c99)
 	/* shift-expr { ("<" | ">" | "<=" | ">=") shift-expr } */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	ret = _shift_expr(c99);
@@ -1406,7 +1436,7 @@ static int _shift_expr(C99 * c99)
 	/* additive-expr { ("<<" | ">>") additive-expr } */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	ret = _additive_expr(c99);
@@ -1426,7 +1456,7 @@ static int _additive_expr(C99 * c99)
 	/* multiplicative-expr { ("+" | "-") multiplicative-expr } */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	ret = _multiplicative_expr(c99);
@@ -1664,7 +1694,7 @@ static int _selection_statement(C99 * c99)
 	 * "switch" "(" expression ")" statement */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	if((code = _parse_get_code(c99)) == C99_CODE_KEYWORD_SWITCH)
@@ -1696,7 +1726,7 @@ static int _iteration_statement(C99 * c99)
 	 * for "(" [ (expr | declaration) ] ; [ expr ] ; [ expr ] ")" statement */
 {
 	int ret = 0;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	if((code = _parse_get_code(c99)) == C99_CODE_KEYWORD_WHILE)
@@ -1753,7 +1783,7 @@ static int _jump_statement(C99 * c99)
 	 * "return" [ expression ] ";" */
 {
 	int ret;
-	int code;
+	C99Code code;
 
 	DEBUG_GRAMMAR();
 	if((code = token_get_code(c99->token)) == C99_CODE_KEYWORD_GOTO)
@@ -1934,7 +1964,7 @@ static int _parse_E(C99 * c99)
 {
 	int ret;
 	Token * token;
-	int code;
+	C99Code code;
 
 	while((ret = cpp_scan(c99->cpp, &token)) == 0 && token != NULL)
 	{
