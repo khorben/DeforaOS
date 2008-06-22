@@ -310,7 +310,7 @@ static int _function_definition(C99 * c99)
 	int ret = 0;
 
 	DEBUG_GRAMMAR();
-	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_START);
+	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_BEGIN);
 	ret |= _compound_statement(c99);
 	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_END);
 	return ret;
@@ -364,10 +364,10 @@ static int _declaration_specifiers(C99 * c99)
 	 * function-specifier [ declaration-specifiers ] */
 {
 	int ret = 0;
-	int looped = 0;
+	int looped;
 
 	DEBUG_GRAMMAR();
-	for(;; looped = 1)
+	for(looped = 0;; looped = 1)
 		if(_parse_in_set(c99, c99set_storage_class_specifier))
 			ret |= _storage_class_specifier(c99);
 		else if(_parse_in_set(c99, c99set_type_specifier))
