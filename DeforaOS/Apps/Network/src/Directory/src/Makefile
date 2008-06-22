@@ -20,10 +20,10 @@ Directory_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 Directory: $(Directory_OBJS)
 	$(CC) -o Directory $(Directory_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-directory.o: directory.c
+directory.o: directory.c directory.h
 	$(CC) $(Directory_CFLAGS) -c directory.c
 
-main.o: main.c
+main.o: main.c directory.h
 	$(CC) $(Directory_CFLAGS) -c main.c
 
 clean:
