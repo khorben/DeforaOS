@@ -165,6 +165,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 				$author).'">'._html_safe($author).'</a>';
 		else
 			$author = '';
+		for(; strncmp($rcs[$i + 2], 'branches: ', 10) == 0; $i++);
 		$message = $rcs[$i + 2];
 		if($message == '----------------------------'
 				|| $message ==
