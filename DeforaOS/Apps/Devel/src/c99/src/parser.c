@@ -310,15 +310,6 @@ static int _function_definition(C99 * c99)
 	int ret = 0;
 
 	DEBUG_GRAMMAR();
-#if 0
-	if(code_function_begin(c99->code, c99->identifier) != 0)
-		ret |= _parse_error(c99, error_get());
-	free(c99->identifier);
-	c99->identifier = NULL;
-	ret |= _compound_statement(c99);
-	if(code_function_end(c99->code) != 0)
-		ret |= _parse_error(c99, error_get());
-#endif
 	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_START);
 	ret |= _compound_statement(c99);
 	code_context_set(c99->code, CODE_CONTEXT_FUNCTION_END);
