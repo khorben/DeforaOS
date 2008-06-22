@@ -2,7 +2,6 @@ TARGETS	= gputty
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
 CPPFLAGS=
 CFLAGSF	= -W -Wall `pkg-config --cflags gtk+-2.0`
