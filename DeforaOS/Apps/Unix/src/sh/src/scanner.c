@@ -109,8 +109,8 @@ static Token * _next_word(Scanner * scanner, int * c);
 
 Token * scanner_next(Scanner * scanner)
 {
-	Token * t;
 	static int c = EOF;
+	Token * t;
 
 #ifdef DEBUG
 	fprintf(stderr, "%s", "scanner_next()\n");

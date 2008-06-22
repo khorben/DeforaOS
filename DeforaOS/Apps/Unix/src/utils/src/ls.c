@@ -588,8 +588,8 @@ static void _long_mode(char str[11], mode_t mode)
 
 static char const * _long_owner(uid_t uid)
 {
-	struct passwd * pw;
 	static char buf[12];
+	struct passwd * pw;
 
 	if((pw = getpwuid(uid)) != NULL)
 		return pw->pw_name;
@@ -599,8 +599,8 @@ static char const * _long_owner(uid_t uid)
 
 static char const * _long_group(gid_t gid)
 {
-	struct group * grp;
 	static char buf[12];
+	struct group * grp;
 
 	if((grp = getgrgid(gid)) != NULL)
 		return grp->gr_name;
