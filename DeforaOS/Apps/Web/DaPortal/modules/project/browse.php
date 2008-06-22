@@ -87,7 +87,7 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 			'file='.$file.'&revision='.$revision).'">'.$revision
 				.'</a>';
 		$date = _html_safe(substr($rcs[$revs+2], 6, 19));
-		$author = substr($rcs[$revs+2], 36);
+		$author = substr($rcs[$revs + 2], 36);
 		$author = substr($author, 0, strspn($author,
 				'abcdefghijklmnopqrstuvwxyz'
 				.'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'));
@@ -98,7 +98,9 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		else
 			$author = '';
 		//FIXME this is certainly variable (number of lines)
-		$message = _html_safe($rcs[$revs + 3]);
+		for($revs += 3; strncmp($rcs[$revs], 'branches: ', 10) == 0;
+				$revs++);
+		$message = _html_safe($rcs[$revs]);
 		//FIXME choose icon depending on the file type
 		$entries[] = array('name' => $name,
 				'icon' => $icon, 'thumbnail' => $thumbnail,
@@ -163,7 +165,7 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 				$author).'">'._html_safe($author).'</a>';
 		else
 			$author = '';
-		$message = $rcs[$i+2];
+		$message = $rcs[$i + 2];
 		if($message == '----------------------------'
 				|| $message ==
 '=============================================================================')
@@ -172,9 +174,9 @@ function _browse_file($id, $project, $cvsrep, $cvsroot, $filename)
 		{
 			$apnd = '';
 			for($i++; $i < $count
-					&& $rcs[$i+2] !=
+					&& $rcs[$i + 2] !=
 					'----------------------------'
-					&& $rcs[$i+2] !=
+					&& $rcs[$i + 2] !=
 '=============================================================================';
 					$i++)
 				$apnd = '...';
