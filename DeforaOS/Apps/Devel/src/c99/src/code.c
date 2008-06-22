@@ -371,11 +371,20 @@ int code_context_set(Code * code, CodeContext context)
 			break;
 		case CODE_CONTEXT_FUNCTION:
 			/* handle any DECLARATION_OR_FUNCTION identifier */
-			if(code->identifiers_cnt >= 1)
-				ret |= code_context_set_identifier(code,
-						code->identifiers[0].name);
+			/* XXX ugly hack */
+			for(i = 0; i < code->identifiers_cnt; i++)
+				if(code->identifiers[i].context ==
+						CODE_CONTEXT_TYPEDEF_NAME)
+					continue;
+				else
+				{
+					ret |= code_context_set_identifier(code,
+							code->identifiers[i]
+							.name);
+					break;
+				}
 			code->context = CODE_CONTEXT_FUNCTION_PARAMETERS;
-			for(i = 1; i < code->identifiers_cnt; i++)
+			for(i++; i < code->identifiers_cnt; i++)
 				ret |= code_context_set_identifier(code,
 						code->identifiers[i].name);
 			_code_context_flush(code);
@@ -448,6 +457,7 @@ int code_context_set_identifier(Code * code, char const * identifier)
 		"primary expr",
 		"statement",
 		"struct",
+		"typedef name",
 		"union"
 	};
 

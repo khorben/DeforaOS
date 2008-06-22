@@ -685,8 +685,15 @@ static int _enumeration_constant(C99 * c99)
 static int _typedef_name(C99 * c99)
 	/* identifier */
 {
+	int ret;
+	CodeContext context;
+
 	DEBUG_GRAMMAR();
-	return _identifier(c99);
+	context = code_context_get(c99->code);
+	ret = code_context_set(c99->code, CODE_CONTEXT_TYPEDEF_NAME);
+	ret |= _identifier(c99);
+	ret |= code_context_set(c99->code, context);
+	return ret;
 }
 
 
