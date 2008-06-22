@@ -31,7 +31,7 @@ cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 cpp: $(cpp_OBJS) libcpp.so
-	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -Wl,-rpath,$(LIBDIR) -L $(LIBDIR) -L . -l cpp -l System -l ssl
+	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp -l System
 
 cpp.o: cpp.c ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c cpp.c
