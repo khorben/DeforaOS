@@ -30,10 +30,12 @@
 static int _c99(C99Prefs * prefs, int filec, char * filev[])
 {
 	int ret = 0;
+	size_t len;
 	int i;
 	C99 * c99;
 
-	if(filec == 1)
+	if(filec == 1 && (len = strlen(filev[0])) > 2
+			&& filev[0][len - 2] == '.' && filev[0][len - 1] == 'c')
 	{
 		if((c99 = c99_new(prefs, filev[0])) == NULL)
 			return error_print(PACKAGE);
@@ -41,9 +43,10 @@ static int _c99(C99Prefs * prefs, int filec, char * filev[])
 		c99_delete(c99);
 		return ret;
 	}
+	/* link time */
 	for(i = 0; i < filec; i++)
 	{
-		/* FIXME implement (link edition) */
+		/* FIXME implement */
 	}
 	return ret;
 }
