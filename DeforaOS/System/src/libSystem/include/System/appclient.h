@@ -29,8 +29,8 @@ typedef struct _AppClient AppClient;
 
 
 /* functions */
-AppClient * appclient_new(char * service);
-AppClient * appclient_new_event(char * service, Event * event);
+AppClient * appclient_new(char const * service);
+AppClient * appclient_new_event(char const * service, Event * event);
 void appclient_delete(AppClient * appclient);
 
 /* useful */

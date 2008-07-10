@@ -202,7 +202,7 @@ static char * _appclient_error_ssl(void)
 /* public */
 /* functions */
 /* appclient_new */
-AppClient * appclient_new(char * app)
+AppClient * appclient_new(char const * app)
 {
 	AppClient * appclient;
 	Event * event;
@@ -219,9 +219,9 @@ AppClient * appclient_new(char * app)
 
 
 /* appclient_new_event */
-static int _new_connect(AppClient * appclient, char * app);
+static int _new_connect(AppClient * appclient, char const * app);
 
-AppClient * appclient_new_event(char * app, Event * event)
+AppClient * appclient_new_event(char const * app, Event * event)
 {
 	AppClient * appclient;
 
@@ -255,7 +255,7 @@ AppClient * appclient_new_event(char * app, Event * event)
 }
 
 static int _connect_addr(String const * service, uint32_t * addr);
-static int _new_connect(AppClient * appclient, char * app)
+static int _new_connect(AppClient * appclient, char const * app)
 {
 	struct sockaddr_in sa;
 	int32_t port = -1;
