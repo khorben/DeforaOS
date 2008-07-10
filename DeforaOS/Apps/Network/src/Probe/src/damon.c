@@ -88,7 +88,7 @@ static int _damon_init(DaMon * damon)
 	_damon_refresh(damon);
 	tv.tv_sec = damon->refresh;
 	tv.tv_usec = 0;
-	event_register_timeout(damon->event, tv,
+	event_register_timeout(damon->event, &tv,
 			(EventTimeoutFunc)_damon_refresh, damon);
 	return 0;
 }

@@ -612,7 +612,7 @@ static int _probe(void)
 	}
 	tv.tv_sec = PROBE_REFRESH;
 	tv.tv_usec = 0;
-	if(event_register_timeout(event, tv, (EventTimeoutFunc)_probe_timeout,
+	if(event_register_timeout(event, &tv, (EventTimeoutFunc)_probe_timeout,
 			&probe) != 0)
 		_probe_error("timeout", 0);
 	else
