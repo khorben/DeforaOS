@@ -226,7 +226,7 @@ AppClient * appclient_new_event(char const * app, Event * event)
 	AppClient * appclient;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s", __func__ "(\"", app, "\")\n");
+	fprintf(stderr, "%s%s%s%s", __func__, "(\"", app, "\")\n");
 #endif
 	if((appclient = object_new(sizeof(AppClient))) == NULL)
 		return NULL;
