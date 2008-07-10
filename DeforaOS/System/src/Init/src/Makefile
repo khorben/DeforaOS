@@ -26,7 +26,7 @@ Service_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 Service: $(Service_OBJS)
 	$(CC) -o Service $(Service_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-init.o: init.c service.h
+init.o: init.c service.h ../config.h
 	$(CC) $(Init_CFLAGS) -c init.c
 
 service.o: service.c service.h
