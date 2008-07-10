@@ -41,7 +41,7 @@ int event_register_io_read(Event * event, int fd, EventIOFunc func,
 		void * userdata);
 int event_register_io_write(Event * event, int fd, EventIOFunc func,
 		void * userdata);
-int event_register_timeout(Event * event, struct timeval timeout,
+int event_register_timeout(Event * event, struct timeval * timeout,
 		EventTimeoutFunc func, void * userdata);
 int event_unregister_io_read(Event * event, int fd);
 int event_unregister_io_write(Event * event, int fd);

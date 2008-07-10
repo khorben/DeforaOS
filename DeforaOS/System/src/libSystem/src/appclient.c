@@ -403,7 +403,7 @@ static int _call_event(AppClient * ac)
 
 	eventtmp = ac->event;
 	ac->event = event_new();
-	event_register_timeout(ac->event, tv,
+	event_register_timeout(ac->event, &tv,
 			(EventTimeoutFunc)_appclient_timeout, ac);
 	event_register_io_write(ac->event, ac->fd,
 			(EventIOFunc)_appclient_write, ac);
