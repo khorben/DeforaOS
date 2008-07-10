@@ -183,8 +183,7 @@ int hash_set(Hash * hash, void const * key, void * value)
 /* useful */
 static void _hash_foreach(void * value, void * data);
 
-/* FIXME ugly name */
-struct a
+struct funcdata
 {
 	HashForeach func;
 	void * data;
@@ -192,15 +191,15 @@ struct a
 
 void hash_foreach(Hash * hash, HashForeach func, void * data)
 {
-	struct a ad = { func, data };
+	struct funcdata fd = { func, data };
 
-	array_foreach(hash->entries, _hash_foreach, &ad);
+	array_foreach(hash->entries, _hash_foreach, &fd);
 }
 
 static void _hash_foreach(void * value, void * data)
 {
 	HashEntry * he = value;
-	struct a * ad = data;
+	struct funcdata * fd = data;
 
-	ad->func(he->key, he->value, ad->data);
+	fd->func(he->key, he->value, fd->data);
 }
