@@ -276,6 +276,14 @@ static char * _load_value(FILE * fp)
 }
 
 
+/* config_reset */
+void config_reset(Config * config)
+{
+	/* FIXME untested */
+	hash_foreach(config, _delete_foreach, NULL);
+}
+
+
 /* config_save */
 void _save_foreach(void const * key, void * value, void * data);
 void _save_foreach_section(void const * key, void * value, void * data);
