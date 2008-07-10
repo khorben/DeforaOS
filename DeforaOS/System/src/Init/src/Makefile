@@ -1,4 +1,4 @@
-TARGETS	= Init
+TARGETS	= Init Service
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -14,17 +14,29 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-Init_OBJS = init.o
+Init_OBJS = init.o service.o
 Init_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 Init: $(Init_OBJS)
 	$(CC) -o Init $(Init_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
-init.o: init.c
+Service_OBJS = main.o
+Service_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+Service: $(Service_OBJS)
+	$(CC) -o Service $(Service_OBJS) $(LDFLAGSF) $(LDFLAGS)
+
+init.o: init.c service.h
 	$(CC) $(Init_CFLAGS) -c init.c
 
+service.o: service.c service.h
+	$(CC) $(Init_CFLAGS) -c service.c
+
+main.o: main.c
+	$(CC) $(Service_CFLAGS) -c main.c
+
 clean:
-	$(RM) $(Init_OBJS)
+	$(RM) $(Init_OBJS) $(Service_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
