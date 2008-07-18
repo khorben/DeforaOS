@@ -1480,6 +1480,9 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 					target, ".so\n");
 			break;
 		case TT_OBJECT:
+			fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", path,
+					target);
+			break;
 		case TT_UNKNOWN:
 			break;
 	}
