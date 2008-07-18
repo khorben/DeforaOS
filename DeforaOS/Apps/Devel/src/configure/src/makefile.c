@@ -1321,6 +1321,8 @@ static void _install_target_binary(Config * config, FILE * fp,
 		String const * target);
 static void _install_target_library(Config * config, FILE * fp,
 		String const * target);
+static void _install_target_object(Config * config, FILE * fp,
+		String const * target);
 static int _install_target(Config * config, FILE * fp, String const * target)
 {
 	String const * type;
@@ -1337,6 +1339,8 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 			_install_target_library(config, fp, target);
 			break;
 		case TT_OBJECT:
+			_install_target_object(config, fp, target);
+			break;
 		case TT_UNKNOWN:
 			break;
 	}
@@ -1367,6 +1371,18 @@ static void _install_target_library(Config * config, FILE * fp,
 			".a $(DESTDIR)", path, target, ".a\n");
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 ", target,
 			".so $(DESTDIR)", path, target, ".so\n");
+}
+
+static void _install_target_object(Config * config, FILE * fp,
+		String const * target)
+{
+	String const * path;
+
+	if((path = config_get(config, target, "install")) == NULL)
+		return;
+	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
+	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ", target,
+			" $(DESTDIR)", path, target);
 }
 
 static int _install_include(Config * config, FILE * fp, String const * include)
