@@ -16,7 +16,10 @@ PREFIX=
 
 #internals
 PROGNAME="$0"
-SUBDIRS="System/src/libc Apps/Unix/src/devel Apps/Unix/src/utils Apps/Unix/src/others"
+SUBDIRS="System/src/libc \
+	 Apps/Unix/src/devel \
+	 Apps/Unix/src/utils \
+	 Apps/Unix/src/others"
 
 
 #functions
