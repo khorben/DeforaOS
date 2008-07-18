@@ -358,16 +358,21 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * cc;
 	String const * cff;
 	String const * cf;
+	String const * cppf;
 	String const * cpp;
 	String const * as;
 	String const * asf;
 
+	cppf = config_get(configure->config, "", "cppflags_force");
 	cpp = config_get(configure->config, "", "cppflags");
 	cc = config_get(configure->config, "", "cc");
 	if((cff = config_get(configure->config, "", "cflags_force")) != NULL)
 	{
 		fprintf(fp, "%s%s%s", "CC\t= ", cc != NULL ? cc : "cc",
-				"\nCPPFLAGS=");
+				"\nCPPFLAGSF=");
+		if(cppf != NULL)
+			fprintf(fp, " %s", cppf);
+		fputs("\nCPPFLAGS=", fp);
 		if(cpp != NULL)
 			fprintf(fp, " %s", cpp);
 		fprintf(fp, "%s%s", "\nCFLAGSF\t= ", cff);
@@ -380,7 +385,10 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 		if(cff == NULL)
 		{
 			fprintf(fp, "%s%s%s", "CC\t= ", cc != NULL ? cc : "cc",
-					"\nCPPFLAGS=");
+					"\nCPPFLAGSF=");
+			if(cppf != NULL)
+				fprintf(fp, " %s", cppf);
+			fputs("\nCPPFLAGS=", fp);
 			if(cpp != NULL)
 				fprintf(fp, " %s", cpp);
 			fputc('\n', fp);
@@ -772,7 +780,8 @@ static void _flags_asm(Configure * configure, FILE * fp, String const * target)
 {
 	String const * p;
 
-	fprintf(fp, "%s%s", target, "_ASFLAGS = $(CPPFLAGS) $(ASFLAGS)");
+	fprintf(fp, "%s%s", target, "_ASFLAGS = $(CPPFLAGSF) $(CPPFLAGS)"
+			" $(ASFLAGS)");
 	if((p = config_get(configure->config, target, "asflags")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
@@ -782,7 +791,7 @@ static void _flags_c(Configure * configure, FILE * fp, String const * target)
 {
 	String const * p;
 
-	fprintf(fp, "%s%s", target, "_CFLAGS = $(CPPFLAGS)");
+	fprintf(fp, "%s%s", target, "_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS)");
 	if((p = config_get(configure->config, target, "cppflags")) != NULL)
 		fprintf(fp, " %s", p);
 	fprintf(fp, "%s", " $(CFLAGSF) $(CFLAGS)");
@@ -854,8 +863,8 @@ static int _target_object(Configure * configure, FILE * fp,
 	{
 		case OT_ASM_SOURCE:
 			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
-					target, target, "_ASFLAGS = $(CPPFLAGS)"
-					" $(ASFLAGS)");
+					target, target, "_ASFLAGS ="
+					" $(CPPFLAGSF) $(CPPFLAGS) $(ASFLAGS)");
 			if((p = config_get(configure->config, p, "asflags"))
 					!= NULL)
 				fprintf(fp, " %s", p);
@@ -863,8 +872,9 @@ static int _target_object(Configure * configure, FILE * fp,
 			break;
 		case OT_C_SOURCE:
 			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
-					target, target, "_CFLAGS = $(CPPFLAGS)"
-					" $(CFLAGSF) $(CFLAGS)");
+					target, target, "_CFLAGS ="
+					" $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF)"
+					" $(CFLAGS)");
 			if((p = config_get(configure->config, p, "cflags"))
 					!= NULL)
 				fprintf(fp, " %s", p);
@@ -874,7 +884,8 @@ static int _target_object(Configure * configure, FILE * fp,
 		case OT_CPP_SOURCE:
 			fprintf(fp, "\n%s%s%s\n%s%s", target, "_OBJS = ",
 					target, target, "_CXXFLAGS ="
-					" $(CPPFLAGS) $(CXXFLAGS)");
+					" $(CPPFLAGSF) $(CPPFLAGS)"
+					" $(CXXFLAGS)");
 			if((p = config_get(configure->config, p, "cxxflags"))
 					!= NULL)
 				fprintf(fp, " %s", p);
