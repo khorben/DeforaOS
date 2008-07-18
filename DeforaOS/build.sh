@@ -48,7 +48,7 @@ target()
 	[ ! -z "$CFLAGS" ] && _MAKE="$_MAKE CFLAGS=\"$CFLAGS\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
-		(cd "$i" && eval $_MAKE "$1") || break
+		(cd "$i" && eval $_MAKE "$1") || exit 1
 	done
 }
 
@@ -81,7 +81,7 @@ fi
 while [ $# -gt 0 ]; do
 	case "$1" in
 		all)
-			target install
+			target "install"
 			;;
 		clean|distclean|install|uninstall)
 			target "$1"
