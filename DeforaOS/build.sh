@@ -17,9 +17,8 @@ PREFIX=
 #internals
 PROGNAME="$0"
 SUBDIRS="System/src/libc \
-	 Apps/Unix/src/devel \
-	 Apps/Unix/src/utils \
-	 Apps/Unix/src/others"
+	Apps/Unix/src/sh \
+	Apps/Unix/src/utils"
 
 
 #functions
@@ -48,7 +47,7 @@ target()
 	[ ! -z "$CFLAGS" ] && _MAKE="$_MAKE CFLAGS=\"$CFLAGS\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
-		(cd "$i" && eval $_MAKE "$1") || exit 1
+		(cd "$i" && eval $_MAKE "$1") || exit 2
 	done
 }
 
@@ -72,6 +71,7 @@ done
 #initialize variables
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-fno-builtin"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a"
 
 #run targets
 if [ $# -lt 1 ]; then
