@@ -40,15 +40,15 @@ usage()
 #target
 target()
 {
-	MAKE="$MAKE"
-	[ ! -z "$DESTDIR" ] && MAKE="$MAKE DESTDIR=\"$DESTDIR\""
-	[ ! -z "$PREFIX" ] && MAKE="$MAKE PREFIX=\"$PREFIX\""
-	[ ! -z "$CC" ] && MAKE="$MAKE CC=\"$CC\""
-	[ ! -z "$CPPFLAGS" ] && MAKE="$MAKE CPPFLAGS=\"$CPPFLAGS\""
-	[ ! -z "$CFLAGS" ] && MAKE="$MAKE CFLAGS=\"$CFLAGS\""
-	[ ! -z "$LDFLAGS" ] && MAKE="$MAKE LDFLAGS=\"$LDFLAGS\""
+	_MAKE="$MAKE"
+	[ ! -z "$DESTDIR" ] && _MAKE="$_MAKE DESTDIR=\"$DESTDIR\""
+	[ ! -z "$PREFIX" ] && _MAKE="$_MAKE PREFIX=\"$PREFIX\""
+	[ ! -z "$CC" ] && _MAKE="$_MAKE CC=\"$CC\""
+	[ ! -z "$CPPFLAGS" ] && _MAKE="$_MAKE CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$CFLAGS" ] && _MAKE="$_MAKE CFLAGS=\"$CFLAGS\""
+	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
-		(cd "$i" && eval $MAKE "$1") || break
+		(cd "$i" && eval $_MAKE "$1") || break
 	done
 }
 
