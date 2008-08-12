@@ -163,6 +163,7 @@ while [ $# -gt 0 ]; do
 			$UMOUNT "$DESTDIR"
 			;;
 		iso)
+			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$MKDIR "$DESTDIR" &&
 			target "install" &&
 			$MKDIR "$DESTDIR/boot/grub" &&
