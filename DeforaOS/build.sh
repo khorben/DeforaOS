@@ -6,6 +6,7 @@
 
 
 #variables
+CAT="cat"
 CC=
 CDROM_IMAGE="DeforaOS.iso"
 CFLAGS=
@@ -18,6 +19,7 @@ LDFLAGS=
 DESTDIR=
 FLOPPY_IMAGE="DeforaOS.boot"
 FLOPPY_SIZE="2880"
+KERNEL=
 MAKE="make"
 MKDIR="mkdir -p"
 MKFS=
@@ -117,11 +119,13 @@ done
 #platform specific
 case "$SYSTEM" in
 	NetBSD)
+		[ -z "$KERNEL" ] && KERNEL="/netbsd"
 		[ -z "$MKFS" ] && MKFS="newfs -F"
 		[ -z "$MOUNT" ] && MOUNT="netbsd_mount"
 		[ -z "$UMOUNT" ] && UMOUNT="netbsd_umount"
 		;;
 	*|Linux)
+		[ -z "$KERNEL" ] && KERNEL="/vmlinuz"
 		[ -z "$MKFS" ] && MKFS="mke2fs -F"
 		[ -z "$MOUNT" ] && MOUNT="$SUDO mount -o loop"
 		[ -z "$UMOUNT" ] && UMOUNT="$SUDO umount"
@@ -164,6 +168,14 @@ while [ $# -gt 0 ]; do
 			$MKDIR "$DESTDIR/boot/grub" &&
 			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
 				"$DESTDIR/boot/grub" &&
+			$CP "$KERNEL" "$DESTDIR/boot" &&
+			$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
+default 0
+timeout 10
+
+title DeforaOS
+kernel /boot$KERNEL
+EOF
 			$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
 				-boot-load-size 4 -boot-info-table \
 				-o "$CDROM_IMAGE" "$DESTDIR"
