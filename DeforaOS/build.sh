@@ -7,9 +7,10 @@
 
 #variables
 CC=
-CFLAGS=
-CPPFLAGS=
 CDROM_IMAGE="DeforaOS.iso"
+CFLAGS=
+CP="cp -f"
+CPPFLAGS=
 DISK_IMAGE="DeforaOS.img"
 DISK_SIZE="20000"
 DD="dd bs=1024"
@@ -36,6 +37,14 @@ SYSTEM=`uname -s`
 
 
 #functions
+#error
+error()
+{
+	echo "build.sh: $1" 1>&2
+	exit 2
+}
+
+
 #usage
 usage()
 {
@@ -132,17 +141,15 @@ while [ $# -gt 0 ]; do
 		clean|distclean|install|uninstall)
 			target "$1"
 			;;
-		floppy|iso)
+		floppy)
 			$MKDIR "$DESTDIR" &&
 			$DD if="$DEVZERO" of="$DESTDIR/$FLOPPY_IMAGE" \
 			       count="$FLOPPY_SIZE" &&
 			$MKFS "$DESTDIR/$FLOPPY_IMAGE"
 			#FIXME fill floppy image
-			[ "$1" != "iso" ] && break
-			target "install" &&
-			$MKISOFS -b "$FLOPPY_IMAGE" -o "$CDROM_IMAGE" "$DESTDIR"
 			;;
 		image)
+			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$UMOUNT "$DESTDIR"
 			$MKDIR "$DESTDIR"
 			$DD if="$DEVZERO" of="$DISK_IMAGE" count="$DISK_SIZE" &&
@@ -152,6 +159,14 @@ while [ $# -gt 0 ]; do
 			$UMOUNT "$DESTDIR"
 			;;
 		iso)
+			$MKDIR "$DESTDIR" &&
+			target "install" &&
+			$MKDIR "$DESTDIR/boot/grub" &&
+			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
+				"$DESTDIR/boot/grub" &&
+			$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
+				-boot-load-size 4 -boot-info-table \
+				-o "$CDROM_IMAGE" "$DESTDIR"
 			;;
 		*)
 			echo "build.sh: $1: Unknown target" 1>&2
