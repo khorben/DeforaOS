@@ -13,12 +13,13 @@ CFLAGS=
 CP="cp -f"
 CPPFLAGS=
 DISK_IMAGE="DeforaOS.img"
-DISK_SIZE="20000"
+DISK_SIZE="20480"
 DD="dd bs=1024"
 LDFLAGS=
 DESTDIR=
 FLOPPY_IMAGE="DeforaOS.boot"
 FLOPPY_SIZE="2880"
+GZIP="gzip -9"
 KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
@@ -28,7 +29,10 @@ MKDIR="mkdir -p"
 MKFS=
 MKISOFS="mkisofs -R -J -V DeforaOS"
 MOUNT=
+MV="mv -f"
 PREFIX=
+RAMDISK_IMAGE=
+RAMDISK_SIZE="4096"
 SUDO=
 UMOUNT=
 
@@ -62,6 +66,7 @@ usage()
 	echo "  install	install everything" 1>&2
 	echo "  image		create filesystem image" 1>&2
 	echo "  iso		create bootable CD-ROM image" 1>&2
+	echo "  ramdisk		create bootable ramdisk image" 1>&2
 	echo "  uninstall	uninstall everything" 1>&2
 	exit 1
 }
@@ -78,8 +83,9 @@ target()
 	[ ! -z "$CFLAGS" ] && _MAKE="$_MAKE CFLAGS=\"$CFLAGS\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
-		(cd "$i" && eval $_MAKE "$1") || exit 2
+		(cd "$i" && eval $_MAKE "$1") || return $?
 	done
+	return 0
 }
 
 
@@ -149,27 +155,29 @@ while [ $# -gt 0 ]; do
 			target "$1"
 			;;
 		floppy)
-			$MKDIR "$DESTDIR" &&
+			$MKDIR "$DESTDIR"			|| exit 2
 			$DD if="$DEVZERO" of="$DESTDIR/$FLOPPY_IMAGE" \
-			       count="$FLOPPY_SIZE" &&
-			$MKFS "$DESTDIR/$FLOPPY_IMAGE"
+			       count="$FLOPPY_SIZE"		|| exit 2
+			$MKFS "$DESTDIR/$FLOPPY_IMAGE"		|| exit 2
 			#FIXME fill floppy image
 			;;
 		image)
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$UMOUNT "$DESTDIR"
-			$MKDIR "$DESTDIR"
+			$MKDIR "$DESTDIR"			|| exit 2
 			$DD if="$DEVZERO" of="$DISK_IMAGE" count="$DISK_SIZE" &&
-			$MKFS "$DISK_IMAGE" &&
-			$MOUNT "$DISK_IMAGE" "$DESTDIR" &&
+			$MKFS "$DISK_IMAGE"			|| exit 2
+			$MOUNT "$DISK_IMAGE" "$DESTDIR"		|| exit 2
 			target "install"
+			RET=$?
 			$UMOUNT "$DESTDIR"
+			exit $RET
 			;;
 		iso)
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			$MKDIR "$DESTDIR" &&
-			target "install" &&
-			$MKDIR "$DESTDIR/boot/grub" &&
+			$MKDIR "$DESTDIR"			|| exit 2
+			target "install"			|| exit 2
+			$MKDIR "$DESTDIR/boot/grub"		|| exit 2
 			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
 				"$DESTDIR/boot/grub" &&
 			$CP "$KERNEL" "$DESTDIR/boot/uKernel"
@@ -190,6 +198,22 @@ EOF
 			$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
 				-boot-load-size 4 -boot-info-table \
 				-o "$CDROM_IMAGE" "$DESTDIR"
+			;;
+		ramdisk)
+			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
+			[ -z "$RAMDISK_IMAGE" ] && error \
+				"RAMDISK_IMAGE needs to be set"
+			$UMOUNT "$DESTDIR"
+			$MKDIR "$DESTDIR"
+			$DD if="$DEVZERO" of="$RAMDISK_IMAGE" \
+				count="$RAMDISK_SIZE"		|| exit 2
+			$MKFS "$RAMDISK_IMAGE"			|| exit 2
+			$MOUNT "$RAMDISK_IMAGE" "$DESTDIR"	|| exit 2
+			#FIXME fill ramdisk image
+			SUBDIRS="Apps/Unix/src/others/tools" target linuxrc
+			$UMOUNT "$DESTDIR"
+			$GZIP "$RAMDISK_IMAGE"			|| exit 2
+			$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"|| exit 2
 			;;
 		*)
 			echo "build.sh: $1: Unknown target" 1>&2
