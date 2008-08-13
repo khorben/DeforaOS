@@ -16,7 +16,9 @@
 
 
 
+#include <sys/types.h>
 #include <sys/mount.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -37,10 +39,11 @@ static int _linuxrc_error(char const * message, int ret)
 
 
 /* main */
-int main(int argc, char * argv[])
+int main(void)
 {
 	size_t i;
 	char dev_cdrom[] = "/dev/cdroms/cdromX";
+	struct stat st;
 	int found = 0;
 
 	/* mount /proc */
@@ -57,7 +60,7 @@ int main(int argc, char * argv[])
 			_linuxrc_error(dev_cdrom, 0);
 			continue;
 		}
-		if(stat(INIT_PATH, NULL) != 0)
+		if(stat(INIT_PATH, &st) != 0)
 		{
 			found = 1;
 			break;
