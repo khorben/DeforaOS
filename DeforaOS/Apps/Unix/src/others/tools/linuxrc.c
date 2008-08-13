@@ -70,8 +70,7 @@ int main(void)
 	}
 	if(!found)
 	{
-		fputs(PACKAGE ": Could not find the installation CD-ROM\n",
-				stderr);
+		fputs(PACKAGE ": Could not find the bootable CD-ROM\n", stderr);
 		return 2;
 	}
 	/* FIXME tell the kernel we keep the ramdisk */
