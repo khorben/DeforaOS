@@ -21,7 +21,7 @@
 #include <string.h>
 #include <errno.h>
 
-#define PACKAGE	"linuxrc"
+#define PACKAGE		"linuxrc"
 
 #define CDROM_PATH	"/mnt/cdrom"
 #define INIT_PATH	CDROM_PATH "/sbin/init"
@@ -71,5 +71,6 @@ int main(int argc, char * argv[])
 				stderr);
 		return 2;
 	}
+	/* FIXME tell the kernel we keep the ramdisk */
 	return 0;
 }
