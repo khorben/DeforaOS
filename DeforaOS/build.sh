@@ -22,6 +22,7 @@ FLOPPY_SIZE="2880"
 KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
+KERNEL_RAMDISK=
 MAKE="make"
 MKDIR="mkdir -p"
 MKFS=
@@ -172,12 +173,17 @@ while [ $# -gt 0 ]; do
 			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
 				"$DESTDIR/boot/grub" &&
 			$CP "$KERNEL" "$DESTDIR/boot/uKernel"
+			if [ ! -z "$KERNEL_RAMDISK" ]; then
+				$CP "$KERNEL_RAMDISK" "$DESTDIR/boot/initrd.img"
+				GRUB_INITRD="initrd /boot/initrd.img"
+			fi
 			$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
 default 0
 timeout 10
 
 title DeforaOS
 kernel /boot/uKernel $KERNEL_ARGS
+$GRUB_INITRD
 EOF
 			[ ! -z "$KERNEL_MODULES" ] && cat "$KERNEL_MODULES" | \
 				(cd "$DESTDIR" && tar xzf -)
