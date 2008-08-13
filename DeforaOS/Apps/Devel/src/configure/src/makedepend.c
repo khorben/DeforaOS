@@ -17,9 +17,30 @@
  * - parse C files (.c and .h) and update dependencies in project.conf */
 
 
+
+#include <unistd.h>
+#include <stdio.h>
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: makedepend\n", stderr);
+	return 1;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
-	/* FIXME */
-	return 1;
+	/* FIXME implement */
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	return 2;
 }
