@@ -23,6 +23,34 @@
 #include <string.h>
 #include <errno.h>
 
+/* portability */
+#ifndef MS_RDONLY
+# ifdef MNT_CD9660
+#  include <isofs/cd9660/cd9660_mount.h>
+# else
+struct iso_args
+{
+	char const * fspec;
+};
+# endif
+#else
+# define MF_ASYNC		MS_ASYNC
+# define MF_NODEV		MS_NODEV
+# define MF_NOEXEC		MS_NOEXEC
+# define MF_NOSUID		MS_NOSUID
+# define MF_RDONLY		MS_RDONLY
+# define MT_ISO9660		"iso9660"
+# define MT_PROCFS		"proc"
+struct iso_args
+{
+	char const * fspec;
+};
+# define mount(type, dir, flags, data, data_len) \
+	mount(data, dir, type, flags, NULL)
+# define unmount(dir, flags)	umount(dir)
+#endif
+
+/* constants */
 #define PACKAGE		"linuxrc"
 
 #define CDROM_PATH	"/mnt/cdrom"
@@ -43,19 +71,22 @@ int main(void)
 {
 	size_t i;
 	char dev_cdrom[] = "/dev/cdroms/cdromX";
+	struct iso_args ia;
 	struct stat st;
 	int found = 0;
 
 	/* mount /proc */
-	if(mount(NULL, "/proc", "proc", MS_NOEXEC | MS_NOSUID | MS_NODEV, NULL)
+	if(mount(MT_PROCFS, "/proc", MF_NOEXEC | MF_NOSUID | MF_NODEV, NULL, 0)
 			!= 0)
 		_linuxrc_error("/proc", 0);
+	memset(&ia, 0, sizeof(ia));
+	ia.fspec = dev_cdrom;
 	/* look for the installation CD-ROM */
 	for(i = 0; i < 4; i++)
 	{
 		dev_cdrom[sizeof(dev_cdrom) - 2] = i + '0';
-		if(mount(dev_cdrom, CDROM_PATH, "iso9660", MS_NOSUID | MS_NODEV
-					| MS_RDONLY, NULL) != 0)
+		if(mount(MT_ISO9660, CDROM_PATH, MF_NOSUID | MF_NODEV
+					| MF_RDONLY, &ia, sizeof(ia)) != 0)
 		{
 			_linuxrc_error(dev_cdrom, 0);
 			continue;
@@ -66,7 +97,7 @@ int main(void)
 			break;
 		}
 		_linuxrc_error(INIT_PATH, 0);
-		umount(dev_cdrom);
+		unmount(dev_cdrom, 0); /* FIXME check the flags */
 	}
 	if(!found)
 	{
