@@ -154,10 +154,10 @@ fi
 while [ $# -gt 0 ]; do
 	case "$1" in
 		all)
-			target "install"
+			target "install"			|| exit 2
 			;;
 		clean|distclean|install|uninstall)
-			target "$1"
+			target "$1"				|| exit 2
 			;;
 		floppy)
 			$MKDIR "$DESTDIR"			|| exit 2
@@ -217,8 +217,13 @@ EOF
 			$MKFS "$RAMDISK_IMAGE"			|| exit 2
 			[ ! -z "$TUNE2FS" ] && $TUNE2FS -i 0 "$RAMDISK_IMAGE"
 			$MOUNT "$RAMDISK_IMAGE" "$MOUNTPOINT"	|| exit 2
-			#FIXME fill ramdisk image
-			SUBDIRS="Apps/Unix/src/others/tools" target linuxrc
+			SUBDIRS="Apps/Unix/src/others/tools" target linuxrc \
+				 || exit 2
+			for i in "dev" "proc" "mnt/cdrom"; do
+				$MKDIR "$MOUNTPOINT/$i"		|| exit 2
+			done
+			$CP "Apps/Unix/src/others/tools/linuxrc" "$MOUNTPOINT" \
+				|| exit 2
 			$UMOUNT "$MOUNTPOINT"
 			$GZIP "$RAMDISK_IMAGE"			|| exit 2
 			$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"|| exit 2
