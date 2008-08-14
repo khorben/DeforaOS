@@ -52,10 +52,11 @@ struct iso_args
 #endif
 
 /* constants */
-#define PACKAGE		"linuxrc"
+#define PACKAGE			"linuxrc"
 
-#define CDROM_PATH	"/mnt/cdrom"
-#define INIT_PATH	CDROM_PATH "/sbin/init"
+#define CDROM_PATH		"/mnt/cdrom"
+#define INIT_PATH		CDROM_PATH "/sbin/init"
+#define PROC_REAL_ROOT_DEV	"/proc/sys/kernel/real-root-dev"
 
 
 /* linuxrc_error */
@@ -90,6 +91,7 @@ int main(void)
 	char dev_cdrom[] = "/dev/cdroms/cdromX";
 	struct stat st;
 	int found = 0;
+	FILE * fp;
 
 	/* mount /proc */
 	if(mount(MT_PROCFS, "/proc", MF_NOEXEC | MF_NOSUID | MF_NODEV, NULL, 0)
@@ -117,6 +119,11 @@ int main(void)
 		fputs(PACKAGE ": Could not find the bootable CD-ROM\n", stderr);
 		return 2;
 	}
-	/* FIXME tell the kernel we keep the ramdisk */
+	if((fp = fopen(PROC_REAL_ROOT_DEV, "w")) == NULL)
+		return _linuxrc_error(PROC_REAL_ROOT_DEV, 0);
+	if(fwrite("0x100\n", sizeof(char), 6, fp) != 6)
+		_linuxrc_error(PROC_REAL_ROOT_DEV, 0);
+	if(fclose(fp) != 0)
+		_linuxrc_error(PROC_REAL_ROOT_DEV, 0);
 	return 0;
 }
