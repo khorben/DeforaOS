@@ -6,34 +6,38 @@
 
 
 #variables
-CAT="cat"
-CC=
 CDROM_IMAGE="DeforaOS.iso"
 CFLAGS=
-CP="cp -f"
 CPPFLAGS=
 DISK_IMAGE="DeforaOS.img"
 DISK_SIZE="20480"
-DD="dd bs=1024"
 LDFLAGS=
 DESTDIR=
 FLOPPY_IMAGE="DeforaOS.boot"
 FLOPPY_SIZE="2880"
-GZIP="gzip -9"
 KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
 KERNEL_RAMDISK=
+MOUNTPOINT=
+PREFIX=
+RAMDISK_IMAGE=
+RAMDISK_SIZE="4096"
+SUDO=
+
+#executables
+CAT="cat"
+CC=
+CP="cp -f"
+DD="dd bs=1024"
+GZIP="gzip -9"
 MAKE="make"
 MKDIR="mkdir -p"
 MKFS=
 MKISOFS="mkisofs -R -J -V DeforaOS"
 MOUNT=
 MV="mv -f"
-PREFIX=
-RAMDISK_IMAGE=
-RAMDISK_SIZE="4096"
-SUDO=
+TUNE2FS=
 UMOUNT=
 
 #internals
@@ -137,6 +141,7 @@ case "$SYSTEM" in
 		[ -z "$KERNEL" ] && KERNEL="/vmlinuz"
 		[ -z "$MKFS" ] && MKFS="mke2fs -F"
 		[ -z "$MOUNT" ] && MOUNT="$SUDO mount -o loop"
+		[ -z "$TUNE2FS" ] && TUNE2FS="tune2fs"
 		[ -z "$UMOUNT" ] && UMOUNT="$SUDO umount"
 		;;
 esac
@@ -201,17 +206,20 @@ EOF
 			;;
 		ramdisk)
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
+			[ -z "$MOUNTPOINT" ] && error \
+				"MOUNTPOINT needs to be set"
 			[ -z "$RAMDISK_IMAGE" ] && error \
 				"RAMDISK_IMAGE needs to be set"
-			$UMOUNT "$DESTDIR"
-			$MKDIR "$DESTDIR"
+			$UMOUNT "$MOUNTPOINT"
+			$MKDIR "$MOUNTPOINT"
 			$DD if="$DEVZERO" of="$RAMDISK_IMAGE" \
 				count="$RAMDISK_SIZE"		|| exit 2
 			$MKFS "$RAMDISK_IMAGE"			|| exit 2
-			$MOUNT "$RAMDISK_IMAGE" "$DESTDIR"	|| exit 2
+			[ ! -z "$TUNE2FS" ] && $TUNE2FS -i 0 "$RAMDISK_IMAGE"
+			$MOUNT "$RAMDISK_IMAGE" "$MOUNTPOINT"	|| exit 2
 			#FIXME fill ramdisk image
 			SUBDIRS="Apps/Unix/src/others/tools" target linuxrc
-			$UMOUNT "$DESTDIR"
+			$UMOUNT "$MOUNTPOINT"
 			$GZIP "$RAMDISK_IMAGE"			|| exit 2
 			$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"|| exit 2
 			;;
