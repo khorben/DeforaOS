@@ -46,7 +46,8 @@ struct iso_args
 	char const * fspec;
 };
 # define mount(type, dir, flags, data, data_len) \
-	mount(data, dir, type, flags, NULL)
+	mount(data ? ((struct iso_args *)data)->fspec : NULL, dir, type, \
+				flags, NULL)
 # define unmount(dir, flags)	umount(dir)
 #endif
 
@@ -66,12 +67,27 @@ static int _linuxrc_error(char const * message, int ret)
 }
 
 
+/* linuxrc_mount_cdrom */
+static int _linuxrc_mount_cdrom(char const * source, char const * dir)
+{
+	struct iso_args ia;
+
+	memset(&ia, 0, sizeof(ia));
+	ia.fspec = source;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: mount -t %s %s %s\n", MT_ISO9660,
+			((struct iso_args *)&ia)->fspec, dir);
+#endif
+	return mount(MT_ISO9660, dir, MF_NOSUID | MF_NODEV | MF_RDONLY, &ia,
+			sizeof(ia));
+}
+
+
 /* main */
 int main(void)
 {
 	size_t i;
 	char dev_cdrom[] = "/dev/cdroms/cdromX";
-	struct iso_args ia;
 	struct stat st;
 	int found = 0;
 
@@ -79,14 +95,11 @@ int main(void)
 	if(mount(MT_PROCFS, "/proc", MF_NOEXEC | MF_NOSUID | MF_NODEV, NULL, 0)
 			!= 0)
 		_linuxrc_error("/proc", 0);
-	memset(&ia, 0, sizeof(ia));
-	ia.fspec = dev_cdrom;
 	/* look for the installation CD-ROM */
 	for(i = 0; i < 4; i++)
 	{
 		dev_cdrom[sizeof(dev_cdrom) - 2] = i + '0';
-		if(mount(MT_ISO9660, CDROM_PATH, MF_NOSUID | MF_NODEV
-					| MF_RDONLY, &ia, sizeof(ia)) != 0)
+		if(_linuxrc_mount_cdrom(dev_cdrom, CDROM_PATH) != 0)
 		{
 			_linuxrc_error(dev_cdrom, 0);
 			continue;
