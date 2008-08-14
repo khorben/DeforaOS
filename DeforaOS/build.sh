@@ -31,6 +31,7 @@ CC=
 CP="cp -f"
 DD="dd bs=1024"
 GZIP="gzip -9"
+LN="ln -sf"
 MAKE="make"
 MKDIR="mkdir -p"
 MKFS=
@@ -219,9 +220,10 @@ EOF
 			$MOUNT "$RAMDISK_IMAGE" "$MOUNTPOINT"	|| exit 2
 			SUBDIRS="Apps/Unix/src/others/tools" target linuxrc \
 				 || exit 2
-			for i in "dev" "proc" "mnt/cdrom"; do
+			for i in "dev" "proc" "mnt/cdrom" "sbin"; do
 				$MKDIR "$MOUNTPOINT/$i"		|| exit 2
 			done
+			$LN "../mnt/cdrom/usr/bin/sh" "$MOUNTPOINT/sbin/init"
 			$CP "Apps/Unix/src/others/tools/linuxrc" "$MOUNTPOINT" \
 				|| exit 2
 			$UMOUNT "$MOUNTPOINT"
