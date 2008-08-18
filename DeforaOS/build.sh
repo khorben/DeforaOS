@@ -71,7 +71,7 @@ usage()
 	echo "  install	install everything" 1>&2
 	echo "  image		create filesystem image" 1>&2
 	echo "  iso		create bootable CD-ROM image" 1>&2
-	echo "  ramdisk		create bootable ramdisk image" 1>&2
+	echo "  ramdisk	create bootable ramdisk image" 1>&2
 	echo "  uninstall	uninstall everything" 1>&2
 	exit 1
 }
