@@ -24,15 +24,19 @@
 #include <errno.h>
 
 /* portability */
-#ifndef MS_RDONLY
-# ifdef MNT_CD9660
-#  include <isofs/cd9660/cd9660_mount.h>
-# else
+#if defined(MOUNT_CD9660)	/* NetBSD */
+# include <isofs/cd9660/cd9660_mount.h>
+# define MT_ISO9660		MOUNT_CD9660
+# define MT_PROCFS		MOUNT_PROCFS
+# define MF_NODEV		MNT_NODEV
+# define MF_NOEXEC		MNT_NOEXEC
+# define MF_NOSUID		MNT_NOSUID
+# define MF_RDONLY		MNT_RDONLY
+#elif defined(MT_ISO9660)
 struct iso_args
 {
 	char const * fspec;
 };
-# endif
 #else
 # define MF_ASYNC		MS_ASYNC
 # define MF_NODEV		MS_NODEV
@@ -55,6 +59,7 @@ struct iso_args
 #define PACKAGE			"linuxrc"
 
 #define CDROM_PATH		"/mnt/cdrom"
+#define DEV_CDROMX		"/dev/cdroms/cdromX"
 #define INIT_PATH		CDROM_PATH "/sbin/init"
 #define PROC_REAL_ROOT_DEV	"/proc/sys/kernel/real-root-dev"
 
@@ -88,7 +93,7 @@ static int _linuxrc_mount_cdrom(char const * source, char const * dir)
 int main(void)
 {
 	size_t i;
-	char dev_cdrom[] = "/dev/cdroms/cdromX";
+	char dev_cdrom[] = DEV_CDROMX;
 	struct stat st;
 	int found = 0;
 	FILE * fp;
