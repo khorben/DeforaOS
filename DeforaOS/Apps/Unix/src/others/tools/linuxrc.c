@@ -32,6 +32,10 @@
 # define MF_NOEXEC		MNT_NOEXEC
 # define MF_NOSUID		MNT_NOSUID
 # define MF_RDONLY		MNT_RDONLY
+# if defined(__NetBSD_Version__) && __NetBSD_Version__ < 499000000
+#  define mount(type, dir, flags, data, data_len) \
+	mount(type, dir, flags, data)
+# endif
 #elif defined(MT_ISO9660)
 struct iso_args
 {
