@@ -19,6 +19,7 @@ KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
 KERNEL_RAMDISK=
+LIBGCC=
 MOUNTPOINT=
 PREFIX=
 RAMDISK_IMAGE=
@@ -127,9 +128,11 @@ while [ $# -gt 0 ]; do
 done
 
 #initialize variables
+[ -z "$LIBGCC" ] && LIBGCC=`gcc -print-libgcc-file-name`
+[ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-fno-builtin"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
 #platform specific
 case "$SYSTEM" in
 	NetBSD)
@@ -185,8 +188,8 @@ while [ $# -gt 0 ]; do
 			target "install"			|| exit 2
 			$MKDIR "$DESTDIR/boot/grub"		|| exit 2
 			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
-				"$DESTDIR/boot/grub" &&
-			$CP "$KERNEL" "$DESTDIR/boot/uKernel"
+				"$DESTDIR/boot/grub"		|| exit 2
+			$CP "$KERNEL" "$DESTDIR/boot/uKernel"	|| exit 2
 			if [ ! -z "$KERNEL_RAMDISK" ]; then
 				$CP "$KERNEL_RAMDISK" "$DESTDIR/boot/initrd.img"
 				GRUB_INITRD="initrd /boot/initrd.img"
