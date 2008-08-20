@@ -8,8 +8,8 @@ all: subdirs
 	@echo ========================================================================
 	@echo 'The base library (libSystem) and the compilation configuration tool'
 	@echo 'compiled correctly. To continue the compilation process you need to run'
-	@echo '"make bootstrap". This will install libSystem in $(PREFIX)/lib, replace'
-	@echo 'this Makefile, and compile the rest of the software.'
+	@echo '"$(MAKE) bootstrap". This will install libSystem in $(PREFIX)/lib, and'
+	@echo 'replace this Makefile.'
 	@echo ========================================================================
 	@echo
 
@@ -23,7 +23,12 @@ bootstrap: all
 	(cd System/src/libSystem && $(MAKE) install)
 	$(MAKE) clean
 	./Apps/Devel/src/configure/src/configure -v
-	$(MAKE)
+	@echo
+	@echo ========================================================================
+	@echo 'The sources tree is now configured for your environment. You may compile it'
+	@echo 'as usual with "$(MAKE) all".'
+	@echo ========================================================================
+	@echo
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
