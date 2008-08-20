@@ -264,9 +264,9 @@ function wiki_default($args)
 		return wiki_display($args);
 	if(isset($args['user_id']))
 		return wiki_list($args);
-	print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
 	if(!isset($args['title']) || strlen($args['title']) == 0)
 	{
+		print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
 		include('./modules/wiki/default.tpl');
 		print('<h2 class="title wiki">'._html_safe(RECENT_CHANGES)
 				."</h2>\n");
@@ -293,6 +293,7 @@ function wiki_default($args)
 					substr($res[$i]['content'], 0, 40))
 				.'...';
 			$res[$i]['date'] = _html_safe($res[$i]['date']);
+			$res[$i]['tag'] = $res[$i]['title'];
 			$res[$i]['username'] = '<a href="'
 				._html_link('user', FALSE, $res[$i]['user_id'],
 						$res[$i]['username']).'">'
@@ -326,6 +327,7 @@ function wiki_default($args)
 	}
 	if(count($res) == 1)
 		return wiki_display(array('id' => $res[0]['id']));
+	print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
 	include('./modules/wiki/default.tpl');
 	_info('More than one page matched:', 1);
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -386,7 +388,7 @@ function wiki_display($args)
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 				'class' => array('date' => DATE,
 					'username' => AUTHOR),
-				'view' => 'details'));
+				'toolbar' => FALSE, 'view' => 'details'));
 }
 
 
