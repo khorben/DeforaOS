@@ -25,8 +25,8 @@ bootstrap: all
 	./Apps/Devel/src/configure/src/configure -v
 	@echo
 	@echo ========================================================================
-	@echo 'The sources tree is now configured for your environment. You may compile it'
-	@echo 'as usual with "$(MAKE) all".'
+	@echo 'The sources tree is now configured for your environment. You may compile'
+	@echo 'it as usual with "$(MAKE) all".'
 	@echo ========================================================================
 	@echo
 
