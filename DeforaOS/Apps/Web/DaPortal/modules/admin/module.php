@@ -36,7 +36,10 @@ $text['MODULES'] = 'Modules';
 $text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'de')
+{
 	$text['LANGUAGES'] = 'Spräche';
+	$text['MODULE_NAME'] = 'Module Name';
+}
 else if($lang == 'fr')
 {
 	$text['LANGUAGES'] = 'Langages';
@@ -64,7 +67,7 @@ function admin_admin($args)
 	}
 	print('<h2 class="title language">'._html_safe(LANGUAGES).'</h2>'."\n");
 	if(($lang = _sql_array('SELECT lang_id AS apply_id, name, enabled'
-			.' FROM daportal_lang')) == FALSE)
+			.' FROM daportal_lang ORDER BY name ASC')) == FALSE)
 		_error('Unable to list languages');
 	else
 	{
