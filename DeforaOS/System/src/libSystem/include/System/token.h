@@ -19,6 +19,8 @@
 #ifndef LIBSYSTEM_TOKEN_H
 # define LIBSYSTEM_TOKEN_H
 
+# include "string.h"
+
 
 /* Token */
 /* types */
@@ -33,8 +35,8 @@ void token_delete(Token * token);
 
 
 /* accessors */
-char const * token_get_filename(Token * token);
-int token_set_filename(Token * token, char const * filename);
+String const * token_get_filename(Token * token);
+int token_set_filename(Token * token, String const * filename);
 
 unsigned int token_get_col(Token * token);
 void token_set_col(Token * token, unsigned int col);
@@ -45,8 +47,8 @@ void token_set_line(Token * token, unsigned int line);
 TokenCode token_get_code(Token * token);
 void token_set_code(Token * token, int code);
 
-char const * token_get_string(Token * token);
-int token_set_string(Token * token, char const * string);
+String const * token_get_string(Token * token);
+int token_set_string(Token * token, String const * string);
 
 void * token_get_data(Token * token);
 void token_set_data(Token * token, void * data);

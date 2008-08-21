@@ -32,8 +32,8 @@
 struct _Token
 {
 	TokenCode code;
-	char * string;
-	char * filename;
+	String * string;
+	String * filename;
 	unsigned int line;
 	unsigned int col;
 	void * data;
@@ -44,7 +44,7 @@ struct _Token
 /* functions */
 /* token_new
  * PRE	filename must be non-NULL */
-Token * token_new(char const * filename, unsigned int line, unsigned int col)
+Token * token_new(String const * filename, unsigned int line, unsigned int col)
 {
 	Token * token;
 
@@ -55,7 +55,7 @@ Token * token_new(char const * filename, unsigned int line, unsigned int col)
 		return NULL;
 	token->code = 0;
 	token->string = NULL;
-	token->filename = strdup(filename);
+	token->filename = string_new(filename);
 	token->line = line;
 	token->col = col;
 	token->data = NULL;
@@ -73,7 +73,7 @@ Token * token_new(char const * filename, unsigned int line, unsigned int col)
 /* functions */
 void token_delete(Token * token)
 {
-	free(token->filename);
+	string_delete(token->filename);
 	free(token->string);
 	object_delete(token);
 }
@@ -102,7 +102,7 @@ void * token_get_data(Token * token)
 
 
 /* token_get_filename */
-char const * token_get_filename(Token * token)
+String const * token_get_filename(Token * token)
 {
 	return token->filename;
 }
@@ -116,7 +116,7 @@ unsigned int token_get_line(Token * token)
 
 
 /* token_get_string */
-char const * token_get_string(Token * token)
+String const * token_get_string(Token * token)
 {
 	return token->string;
 }
@@ -144,11 +144,11 @@ void token_set_data(Token * token, void * data)
 
 
 /* token_set_filename */
-int token_set_filename(Token * token, char const * filename)
+int token_set_filename(Token * token, String const * filename)
 {
-	free(token->filename);
-	if((token->filename = strdup(filename)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	string_delete(token->filename);
+	if((token->filename = string_new(filename)) == NULL)
+		return 1;
 	return 0;
 }
 
@@ -161,7 +161,7 @@ void token_set_line(Token * token, unsigned int line)
 
 
 /* token_set_string */
-int token_set_string(Token * token, char const * string)
+int token_set_string(Token * token, String const * string)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, token, string);
