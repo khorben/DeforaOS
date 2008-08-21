@@ -3,19 +3,21 @@
 
 
 #variables
-CVSROOT=":pserver:anonymous@cvs.defora.lan:/Data/CVS"
+[ -z "$ARCH" ] && ARCH=`uname -m`
+[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@cvs.defora.org:/Data/CVS"
+[ -z "$OS" ] && OS=`uname -s`
+#private
 DEVNULL="/dev/null"
 MODULE="DeforaOS"
-[ -z "$ARCH" ] && ARCH=`uname -m`
-[ -z "$OS" ] && OS=`uname -s`
 SRC="$HOME/build/$OS-$ARCH"
 DST="$HOME/destdir/$OS-$ARCH"
-
 #executables
 CVS="cvs -q"
 MAKE="make"
 MKDIR="mkdir -p"
 RM="rm -f"
+
+export CVSROOT
 
 
 #functions
@@ -43,7 +45,7 @@ $MKDIR "$SRC"							|| error
 cd "$SRC"							|| error
 echo ""
 echo "Checking out CVS module $MODULE:"
-$CVS "-d$CVSROOT" co "$MODULE" > "$DEVNULL"			|| error
+$CVS co "$MODULE" > "$DEVNULL"					|| error
 SRC="$SRC/$MODULE"
 
 #create directories

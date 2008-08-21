@@ -3,14 +3,14 @@
 
 
 #variables
-CVSROOT=":pserver:anonymous@cvs.defora.org:/Data/CVS"
+[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@cvs.defora.org:/Data/CVS"
+#private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www/htdocs/download/snapshots"
 MODULE="DeforaOS"
 SRC="$HOME/$MODULE"
-
 #executables
-CVS="cvs"
+CVS="cvs -q"
 LN="ln -f"
 RM="rm -f"
 
