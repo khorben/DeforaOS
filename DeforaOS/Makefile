@@ -8,7 +8,7 @@ all: subdirs
 	$(MAKE) clean
 	@echo
 	@echo ========================================================================
-	@echo 'The sources tree is now configured for your environment. You may compile'
+	@echo 'The source tree is now configured for your environment. You may compile'
 	@echo 'it as usual with "$(MAKE) all".'
 	@echo ========================================================================
 	@echo
