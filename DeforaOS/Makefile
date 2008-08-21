@@ -5,6 +5,7 @@ PREFIX	= /usr/local
 
 all: subdirs
 	./Apps/Devel/src/configure/src/configure -vp "$(PREFIX)"
+	$(MAKE) clean
 	@echo
 	@echo ========================================================================
 	@echo 'The sources tree is now configured for your environment. You may compile'
@@ -17,8 +18,6 @@ subdirs:
 	(cd Apps/Devel/src/configure && $(MAKE) \
 		CPPFLAGS="-I ../../../../../System/src/libSystem/include" \
 		LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a")
-
-bootstrap: all
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
