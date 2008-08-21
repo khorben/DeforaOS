@@ -22,7 +22,7 @@ subdirs:
 bootstrap: all
 	(cd System/src/libSystem && $(MAKE) install)
 	$(MAKE) clean
-	./Apps/Devel/src/configure/src/configure -v
+	./Apps/Devel/src/configure/src/configure -vp "$(PREFIX)"
 	@echo
 	@echo ========================================================================
 	@echo 'The sources tree is now configured for your environment. You may compile'
