@@ -74,7 +74,7 @@ Token * token_new(String const * filename, unsigned int line, unsigned int col)
 void token_delete(Token * token)
 {
 	string_delete(token->filename);
-	free(token->string);
+	string_delete(token->string);
 	object_delete(token);
 }
 
@@ -166,8 +166,8 @@ int token_set_string(Token * token, String const * string)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, token, string);
 #endif
-	free(token->string);
-	if((token->string = strdup(string)) == NULL)
+	string_delete(token->string);
+	if((token->string = string_new(string)) == NULL)
 		return 1;
 	return 0;
 }
