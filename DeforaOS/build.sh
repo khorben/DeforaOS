@@ -19,11 +19,13 @@ KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
 LIBGCC=
+MACHINE=
 MOUNTPOINT=
 PREFIX=
 RAMDISK_IMAGE=
 RAMDISK_SIZE="4096"
-SUDO=
+SYSTEM=
+TARGET=
 
 #executables
 CAT="cat"
@@ -39,6 +41,7 @@ MKFS=
 MKISOFS="mkisofs -R -J -V DeforaOS"
 MOUNT=
 MV="mv -f"
+SUDO=
 TUNE2FS=
 UMOUNT=
 
@@ -48,7 +51,6 @@ PROGNAME="$0"
 SUBDIRS="System/src/libc \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils"
-SYSTEM=`uname -s`
 
 
 #functions
@@ -96,22 +98,6 @@ target()
 }
 
 
-#platform specific
-#netbsd
-netbsd_mount()
-{
-	$SUDO vnconfig -c vnd0 "$1" &&
-	$SUDO mount /dev/vnd0a "$2"
-}
-
-
-netbsd_umount()
-{
-	$SUDO umount "$1" &&
-	$SUDO vnconfig -u vnd0
-}
-
-
 #main
 #parse options
 while [ $# -gt 0 ]; do
@@ -128,28 +114,35 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
+#initialize target
+[ -z "$MACHINE" ] && MACHINE=`uname -m`
+[ -z "$SYSTEM" ] && SYSTEM=`uname -s`
+[ -z "$TARGET" ] && TARGET="$SYSTEM-$MACHINE"
+if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
+	case "$MACHINE" in
+		arm*b|arm*l)
+			MACHINE="arm"
+			;;
+		i?86)
+			MACHINE="i386"
+			;;
+	esac
+	TARGET="$SYSTEM-$MACHINE"
+fi
+if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
+	echo "$0: warning: $TARGET: Unsupported target" 1>&2
+else
+	echo "$0: $TARGET: Loading target" 1>&2
+	source "Apps/Devel/src/scripts/targets/$TARGET"
+fi
+
 #initialize variables
 [ -z "$LIBGCC" ] && LIBGCC=`gcc -print-libgcc-file-name`
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
-[ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-ffreestanding"
+[ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
-#platform specific
-case "$SYSTEM" in
-	NetBSD)
-		[ -z "$KERNEL" ] && KERNEL="/netbsd"
-		[ -z "$MKFS" ] && MKFS="newfs -F"
-		[ -z "$MOUNT" ] && MOUNT="netbsd_mount"
-		[ -z "$UMOUNT" ] && UMOUNT="netbsd_umount"
-		;;
-	*|Linux)
-		[ -z "$KERNEL" ] && KERNEL="/vmlinuz"
-		[ -z "$MKFS" ] && MKFS="mke2fs -F"
-		[ -z "$MOUNT" ] && MOUNT="$SUDO mount -o loop"
-		[ -z "$TUNE2FS" ] && TUNE2FS="tune2fs"
-		[ -z "$UMOUNT" ] && UMOUNT="$SUDO umount"
-		;;
-esac
+[ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
 #run targets
 if [ $# -lt 1 ]; then
@@ -165,6 +158,7 @@ while [ $# -gt 0 ]; do
 			target "$1"				|| exit 2
 			;;
 		floppy)
+			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$MKDIR "$DESTDIR"			|| exit 2
 			$DD if="$DEVZERO" of="$DESTDIR/$FLOPPY_IMAGE" \
 			       count="$FLOPPY_SIZE"		|| exit 2
@@ -173,41 +167,15 @@ while [ $# -gt 0 ]; do
 			;;
 		image)
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			$UMOUNT "$DESTDIR"
 			$MKDIR "$DESTDIR"			|| exit 2
-			$DD if="$DEVZERO" of="$DISK_IMAGE" count="$DISK_SIZE" &&
-			$MKFS "$DISK_IMAGE"			|| exit 2
-			$MOUNT "$DISK_IMAGE" "$DESTDIR"		|| exit 2
-			target "install"
-			RET=$?
-			$UMOUNT "$DESTDIR"
-			exit $RET
+			target "install"			|| exit 2
+			target_image				|| exit 2
 			;;
 		iso)
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$MKDIR "$DESTDIR"			|| exit 2
 			target "install"			|| exit 2
-			$MKDIR "$DESTDIR/boot/grub"		|| exit 2
-			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
-				"$DESTDIR/boot/grub"		|| exit 2
-			$CP "$KERNEL" "$DESTDIR/boot/uKernel"	|| exit 2
-			if [ ! -z "$RAMDISK_IMAGE" ]; then
-				$CP "$RAMDISK_IMAGE" "$DESTDIR/boot/initrd.img"
-				GRUB_INITRD="initrd /boot/initrd.img"
-			fi
-			$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
-default 0
-timeout 10
-
-title DeforaOS
-kernel /boot/uKernel $KERNEL_ARGS
-$GRUB_INITRD
-EOF
-			[ ! -z "$KERNEL_MODULES" ] && cat "$KERNEL_MODULES" | \
-				(cd "$DESTDIR" && tar xzf -)
-			$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
-				-boot-load-size 4 -boot-info-table \
-				-o "$CDROM_IMAGE" "$DESTDIR"
+			target_iso				|| exit 2
 			;;
 		ramdisk)
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
