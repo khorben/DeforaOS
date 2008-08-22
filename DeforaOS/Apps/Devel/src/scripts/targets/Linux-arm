@@ -1,0 +1,52 @@
+#$Id$
+
+
+
+#variables
+[ -z "$LD" ] && LD="cc -shared -nostdlib"
+[ -z "$MKFS" ] && MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
+#executables
+[ -z "$DU" ] && DU="du -h"
+[ -z "$MKDIR" ] && MKDIR="mkdir -p"
+[ -z "$MV" ] && MV="mv -f"
+[ -z "$TAR" ] && TAR="tar"
+
+
+#includes
+source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
+
+
+#functions
+target_image()
+{
+	echo
+	echo "Creating missing directories:"
+	for i in /bin /etc /lib; do
+		$MKDIR "$DESTDIR$i"
+	done
+
+	echo
+	echo "Fixing installation paths:"
+	for i in /lib/libc.so /bin/sh; do
+		$MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"		|| exit 2
+	done
+
+	if [ ! -z "$KERNEL_MODULES" ]; then
+		echo
+		echo "Installing kernel modules:"
+		gunzip -c < "$KERNEL_MODULES" | (cd "$DESTDIR" && $TAR -xf -) \
+								|| exit 2
+	fi
+
+	echo
+	echo "Building rootfs image:"
+	$MKFS DeforaOS-rootfs.jffs2				|| exit 2
+	$DU DeforaOS-rootfs.jffs2
+
+	echo
+	echo "Building tarball:"
+	OLDPWD="$PWD"
+	(cd "$DESTDIR" && $TAR -czf "$OLDPWD/DeforaOS-rootfs.tar.gz" .) \
+								|| exit 2
+	$DU DeforaOS-rootfs.tar.gz
+}
