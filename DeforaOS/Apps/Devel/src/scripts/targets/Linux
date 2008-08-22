@@ -1,0 +1,5 @@
+[ -z "$KERNEL" ] && KERNEL="/vmlinuz"
+[ -z "$MKFS" ] && MKFS="mke2fs -F"
+[ -z "$MOUNT" ] && MOUNT="$SUDO mount -o loop"
+[ -z "$TUNE2FS" ] && TUNE2FS="tune2fs"
+[ -z "$UMOUNT" ] && UMOUNT="$SUDO umount"

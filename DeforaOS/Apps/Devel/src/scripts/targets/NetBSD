@@ -1,0 +1,19 @@
+[ -z "$KERNEL" ] && KERNEL="/netbsd"
+[ -z "$MKFS" ] && MKFS="newfs -F"
+[ -z "$MOUNT" ] && MOUNT="netbsd_mount"
+[ -z "$UMOUNT" ] && UMOUNT="netbsd_umount"
+
+
+#functions
+netbsd_mount()
+{
+	$SUDO vnconfig -c vnd0 "$1" &&
+	$SUDO mount /dev/vnd0a "$2"
+}
+
+
+netbsd_umount()
+{
+	$SUDO umount "$1" &&
+	$SUDO vnconfig -u vnd0
+}

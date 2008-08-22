@@ -1,0 +1,28 @@
+source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
+
+
+#functions
+target_iso()
+{
+	$MKDIR "$DESTDIR/boot/grub"				|| exit 2
+	$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
+	"$DESTDIR/boot/grub"					|| exit 2
+	$CP "$KERNEL" "$DESTDIR/boot/uKernel"			|| exit 2
+	if [ ! -z "$RAMDISK_IMAGE" ]; then
+		$CP "$RAMDISK_IMAGE" "$DESTDIR/boot/initrd.img"
+		GRUB_INITRD="initrd /boot/initrd.img"
+	fi
+	$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
+default 0
+timeout 10
+
+title DeforaOS
+kernel /boot/uKernel $KERNEL_ARGS
+$GRUB_INITRD
+EOF
+	[ ! -z "$KERNEL_MODULES" ] && cat "$KERNEL_MODULES" | \
+			(cd "$DESTDIR" && tar xzf -)
+	$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
+			-boot-load-size 4 -boot-info-table \
+			-o "$CDROM_IMAGE" "$DESTDIR"
+}
