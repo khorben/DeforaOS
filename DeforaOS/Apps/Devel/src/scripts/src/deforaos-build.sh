@@ -52,7 +52,7 @@ SRC="$SRC/$MODULE"
 $RM -r "$DST"
 $MKDIR "$DST"							|| error
 
-#bootstrapping tree
+#configuring tree
 echo ""
 echo "Configuring CVS module $MODULE:"
 cd "$SRC"							|| error
