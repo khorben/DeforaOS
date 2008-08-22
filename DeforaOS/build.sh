@@ -18,7 +18,6 @@ FLOPPY_SIZE="2880"
 KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
-KERNEL_RAMDISK=
 LIBGCC=
 MOUNTPOINT=
 PREFIX=
@@ -32,6 +31,7 @@ CC=
 CP="cp -f"
 DD="dd bs=1024"
 GZIP="gzip -9"
+LD=
 LN="ln -sf"
 MAKE="make"
 MKDIR="mkdir -p"
@@ -87,6 +87,7 @@ target()
 	[ ! -z "$CC" ] && _MAKE="$_MAKE CC=\"$CC\""
 	[ ! -z "$CPPFLAGS" ] && _MAKE="$_MAKE CPPFLAGS=\"$CPPFLAGS\""
 	[ ! -z "$CFLAGS" ] && _MAKE="$_MAKE CFLAGS=\"$CFLAGS\""
+	[ ! -z "$LD" ] && _MAKE="$_MAKE LD=\"$LD\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
 		(cd "$i" && eval $_MAKE "$1") || return $?
@@ -131,8 +132,8 @@ done
 [ -z "$LIBGCC" ] && LIBGCC=`gcc -print-libgcc-file-name`
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
-[ -z "$CFLAGS" ] && CFLAGS="-fno-builtin"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
+[ -z "$CFLAGS" ] && CFLAGS="-ffreestanding"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
 #platform specific
 case "$SYSTEM" in
 	NetBSD)
@@ -190,8 +191,8 @@ while [ $# -gt 0 ]; do
 			$CP "/usr/lib/grub/i386-pc/stage2_eltorito" \
 				"$DESTDIR/boot/grub"		|| exit 2
 			$CP "$KERNEL" "$DESTDIR/boot/uKernel"	|| exit 2
-			if [ ! -z "$KERNEL_RAMDISK" ]; then
-				$CP "$KERNEL_RAMDISK" "$DESTDIR/boot/initrd.img"
+			if [ ! -z "$RAMDISK_IMAGE" ]; then
+				$CP "$RAMDISK_IMAGE" "$DESTDIR/boot/initrd.img"
 				GRUB_INITRD="initrd /boot/initrd.img"
 			fi
 			$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
