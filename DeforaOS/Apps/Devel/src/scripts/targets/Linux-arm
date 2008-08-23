@@ -20,16 +20,20 @@ source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
 target_image()
 {
 	echo
-	echo "Creating missing directories:"
+	echo -n "Creating missing directories:"
 	for i in /bin /etc /lib; do
+		echo -n " $i"
 		$MKDIR "$DESTDIR$i"
 	done
+	echo
 
 	echo
-	echo "Fixing installation paths:"
+	echo -n "Fixing installation paths:"
 	for i in /lib/libc.so /bin/sh; do
+		echo -n " $i"
 		$MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"		|| exit 2
 	done
+	echo
 
 	if [ ! -z "$KERNEL_MODULES" ]; then
 		echo
