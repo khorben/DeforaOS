@@ -473,7 +473,7 @@ function wiki_modify($args)
 	global $user_id;
 
 	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
-		return PERMISSION_DENIED;
+		return _error(PERMISSION_DENIED);
 	$wiki = _get($args['id']);
 	if(!is_array($wiki))
 		return;
@@ -487,7 +487,7 @@ function wiki_new($args)
 	global $user_id;
 
 	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
-		return PERMISSION_DENIED;
+		return _error(PERMISSION_DENIED);
 	$title = NEW_WIKI_PAGE;
 	include('./modules/wiki/update.tpl');
 }
