@@ -3,7 +3,7 @@
 	<input type="hidden" name="action" value="<?php echo _html_safe($action); ?>"/>
 	<table>
 <?php for($i = 0; $i < count($configs); $i++) { ?>
-		<tr><td class="field"><?php echo _html_safe($configs[$i]['name']); ?>:</td><td><?php switch($configs[$i]['type'])
+		<tr><td class="field"><?php echo _html_safe($configs[$i]['title']); ?>:</td><td><?php switch($configs[$i]['type'])
 	{
 		case 'bool': ?><input type="checkbox" name="<?php echo _html_safe($module.'_'.$configs[$i]['name']); ?>"<?php if(isset($configs[$i]['value']) && $configs[$i]['value'] != FALSE) { ?> checked="checked"<?php } ?>/><?php
 		break;

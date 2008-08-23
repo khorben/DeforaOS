@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ function _config_list($module)
 {
 	if(!($module_id = _module_id($module)))
 		return FALSE;
-	$res = _sql_array('SELECT type, name, value_bool, value_int'
+	$res = _sql_array('SELECT title, type, name, value_bool, value_int'
 			.', value_string FROM daportal_config'
 			." WHERE daportal_config.module_id='".$module_id."'"
 			.' ORDER BY name ASC');
@@ -46,6 +46,8 @@ function _config_list($module)
 		return FALSE;
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
+		if(strlen($res[$i]['title']) == 0)
+			$res[$i]['title'] = $res[$i]['name'];
 		if($res[$i]['type'] == 'bool')
 			$res[$i]['value'] = $res[$i]['value_bool'] == SQL_TRUE;
 		else
