@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -394,10 +394,13 @@ function wiki_display($args)
 
 function wiki_insert($args)
 {
-	global $error;
+	global $error, $user_id;
 
 	if(isset($error) && strlen($error))
 		return _error($error);
+	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
+		return _error(PERMISSION_DENIED);
+	//FIXME check that the page doesn't already exist
 	$title = NEW_WIKI_PAGE;
 	$wiki = array();
 	if(isset($args['title']))
@@ -467,6 +470,10 @@ function wiki_list($args)
 
 function wiki_modify($args)
 {
+	global $user_id;
+
+	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
+		return PERMISSION_DENIED;
 	$wiki = _get($args['id']);
 	if(!is_array($wiki))
 		return;
@@ -477,6 +484,10 @@ function wiki_modify($args)
 
 function wiki_new($args)
 {
+	global $user_id;
+
+	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
+		return PERMISSION_DENIED;
 	$title = NEW_WIKI_PAGE;
 	include('./modules/wiki/update.tpl');
 }
@@ -510,6 +521,7 @@ function _wiki_system_config_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return PERMISSION_DENIED;
+	$args['wiki_anonymous'] = isset($args['wiki_anonymous']) ? TRUE : FALSE;
 	_config_update('wiki', $args);
 	header('Location: '._module_link('wiki', 'admin'));
 	exit(0);
@@ -519,7 +531,7 @@ function _wiki_system_insert($args)
 {
 	global $user_id, $user_name;
 
-	if($user_id == 0)
+	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
 		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
@@ -574,7 +586,7 @@ function _wiki_system_update($args)
 {
 	global $user_id, $user_name, $wiki_content;
 
-	if($user_id == 0)
+	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
 		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
