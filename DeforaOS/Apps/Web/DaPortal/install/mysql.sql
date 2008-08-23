@@ -17,6 +17,7 @@ INSERT INTO daportal_module (name, enabled) VALUES ('search', 1);
 
 CREATE TABLE daportal_config (
 	module_id int(11) NOT NULL auto_increment,
+	title varchar(255),
 	name varchar(255) NOT NULL,
 	value varchar(255) NOT NULL,
 	KEY module_id (module_id)
