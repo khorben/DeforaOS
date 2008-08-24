@@ -126,6 +126,9 @@ if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 		i?86)
 			MACHINE="i386"
 			;;
+		sparc64)
+			MACHINE="sparc"
+			;;
 	esac
 	TARGET="$SYSTEM-$MACHINE"
 fi
