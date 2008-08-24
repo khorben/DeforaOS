@@ -135,7 +135,6 @@ fi
 if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 	echo "$0: warning: $TARGET: Unsupported target" 1>&2
 else
-	echo "$0: $TARGET: Loading target" 1>&2
 	source "Apps/Devel/src/scripts/targets/$TARGET"
 fi
 
@@ -155,12 +154,15 @@ fi
 while [ $# -gt 0 ]; do
 	case "$1" in
 		all)
+			echo "$0: Making target $1 on $TARGET" 1>&2
 			target "install"			|| exit 2
 			;;
 		clean|distclean|install|uninstall)
+			echo "$0: Making target $1 on $TARGET" 1>&2
 			target "$1"				|| exit 2
 			;;
 		floppy)
+			echo "$0: Making target $1 on $TARGET" 1>&2
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$MKDIR "$DESTDIR"			|| exit 2
 			$DD if="$DEVZERO" of="$DESTDIR/$FLOPPY_IMAGE" \
@@ -169,18 +171,21 @@ while [ $# -gt 0 ]; do
 			#FIXME fill floppy image
 			;;
 		image)
+			echo "$0: Making target $1 on $TARGET" 1>&2
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$MKDIR "$DESTDIR"			|| exit 2
 			target "install"			|| exit 2
 			target_image				|| exit 2
 			;;
 		iso)
+			echo "$0: Making target $1 on $TARGET" 1>&2
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			$MKDIR "$DESTDIR"			|| exit 2
 			target "install"			|| exit 2
 			target_iso				|| exit 2
 			;;
 		ramdisk)
+			echo "$0: Making target $1 on $TARGET" 1>&2
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
 			[ -z "$MOUNTPOINT" ] && error \
 				"MOUNTPOINT needs to be set"
