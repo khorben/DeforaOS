@@ -1,0 +1,6 @@
+#$Id$
+
+
+
+#includes
+source "`dirname $0`/Apps/Devel/src/scripts/targets/NetBSD"
