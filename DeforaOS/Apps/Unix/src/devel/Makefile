@@ -1,6 +1,6 @@
 PACKAGE	= devel
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= src include
 RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
@@ -24,6 +24,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/ar.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/include/ar.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf

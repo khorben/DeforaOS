@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF= -I ../include
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
@@ -14,7 +15,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 ar_OBJS = ar.o
-ar_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+ar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 ar: $(ar_OBJS)
 	$(CC) -o ar $(ar_OBJS) $(LDFLAGSF) $(LDFLAGS)
