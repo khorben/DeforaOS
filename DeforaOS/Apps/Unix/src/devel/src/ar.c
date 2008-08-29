@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix devel */
 /* devel is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -25,10 +25,11 @@
 #include <libgen.h>
 #include <errno.h>
 #include <ar.h>
+#include "../config.h"
 
 
 /* macros */
-#define min(a, b) (a) < (b) ? (a) : (b)
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 
 /* ar */
@@ -55,6 +56,78 @@ static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
 static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[]);
 
+/* accessors */
+static struct tm * _ar_get_date(struct ar_hdr * ar);
+static int _ar_get_uid(struct ar_hdr * ar, uid_t * uid);
+static int _ar_get_gid(struct ar_hdr * ar, gid_t * gid);
+static int _ar_get_mode(struct ar_hdr * ar, mode_t * mode);
+static int _ar_get_size(struct ar_hdr * ar, size_t * size);
+
+static struct tm * _ar_get_date(struct ar_hdr * ar)
+{
+	struct tm * ret;
+	char buf[sizeof(ar->ar_date) + 1];
+	time_t date;
+
+	if(ar->ar_date[0] == '\0')
+		return NULL;
+	memcpy(buf, ar->ar_date, sizeof(ar->ar_date));
+	buf[sizeof(buf) - 1] = '\0';
+	date = strtol(buf, NULL, 10);
+	if((ret = gmtime(&date)) == NULL)
+		return NULL;
+	return ret;
+}
+
+static int _ar_get_uid(struct ar_hdr * ar, uid_t * uid)
+{
+	char buf[sizeof(ar->ar_uid) + 1];
+
+	if(ar->ar_uid[0] == '\0')
+		return 1;
+	memcpy(buf, ar->ar_uid, sizeof(ar->ar_uid));
+	buf[sizeof(buf) - 1] = '\0';
+	*uid = strtoul(buf, NULL, 10);
+	return 0;
+}
+
+static int _ar_get_gid(struct ar_hdr * ar, gid_t * gid)
+{
+	char buf[sizeof(ar->ar_gid) + 1];
+
+	if(ar->ar_gid[0] == '\0')
+		return 1;
+	memcpy(buf, ar->ar_gid, sizeof(ar->ar_gid));
+	buf[sizeof(buf) - 1] = '\0';
+	*gid = strtoul(buf, NULL, 10);
+	return 0;
+}
+
+static int _ar_get_mode(struct ar_hdr * ar, mode_t * mode)
+{
+	char buf[sizeof(ar->ar_mode) + 1];
+
+	if(ar->ar_mode[0] == '\0')
+		return 1;
+	memcpy(buf, ar->ar_mode, sizeof(ar->ar_mode));
+	buf[sizeof(buf) - 1] = '\0';
+	*mode = strtoul(buf, NULL, 10);
+	return 0;
+}
+
+static int _ar_get_size(struct ar_hdr * ar, size_t * size)
+{
+	char buf[sizeof(ar->ar_size) + 1];
+
+	if(ar->ar_size[0] == '\0')
+		return 1;
+	memcpy(buf, ar->ar_size, sizeof(ar->ar_size));
+	buf[sizeof(buf) - 1] = '\0';
+	*size = strtoul(buf, NULL, 10);
+	return 0;
+}
+
+
 /* public */
 static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 {
@@ -80,7 +153,7 @@ static int _ar(Prefs * prefs, char const * archive, int filec, char * filev[])
 
 static int _ar_error(char const * message, int ret)
 {
-	fputs("ar: ", stderr);
+	fputs(PACKAGE ": ", stderr);
 	perror(message);
 	return ret;
 }
@@ -101,7 +174,7 @@ static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
 		if(errno != ENOENT)
 			return _ar_error(archive, 1);
 		if(!(*prefs & PREFS_c))
-			fprintf(stderr, "%s%s%s", "ar: ", archive,
+			fprintf(stderr, "%s%s%s", PACKAGE ": ", archive,
 					": Creating archive\n");
 		return _do_create(prefs, archive, filec, filev);
 	}
@@ -215,7 +288,7 @@ static int _do_replace(Prefs * prefs, char const * archive, FILE * fp,
 					!= 0)
 				continue;
 			/* FIXME implement */
-			fprintf(stderr, "%s%s%s", "ar: ", filev[i],
+			fprintf(stderr, "%s%s%s", PACKAGE ": ", filev[i],
 				       	": replacing not implemented yet\n");
 			filev[i] = ""; /* XXX ugly hack */
 		}
@@ -236,7 +309,7 @@ static int _do_hdr_check(char const * archive, struct ar_hdr * hdr)
 {
 	if(strncmp(ARFMAG, hdr->ar_fmag, sizeof(hdr->ar_fmag)) != 0)
 	{
-		fprintf(stderr, "%s%s%s", "ar: ", archive,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", archive,
 			       	": Invalid archive\n");
 		return 1;
 	}
@@ -245,13 +318,11 @@ static int _do_hdr_check(char const * archive, struct ar_hdr * hdr)
 
 static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
 {
-	int size;
-	char * p;
+	size_t size;
 
-	size = strtol(hdr->ar_size, &p, 10);
-	if(hdr->ar_size[0] == '\0')
+	if(_ar_get_size(hdr, &size) != 0)
 	{
-		fprintf(stderr, "%s%s%s", "ar: ", archive,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", archive,
 				": Invalid archive\n");
 		return 1;
 	}
@@ -262,13 +333,14 @@ static int _do_seek_next(char const * archive, FILE * fp, struct ar_hdr * hdr)
 
 
 static int _do_t(Prefs * prefs, char const * archive, FILE * fp,
-		struct ar_hdr * hdr);
+		struct ar_hdr * hdr, char const * name);
 static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
-		struct ar_hdr * hdr);
+		struct ar_hdr * hdr, char const * name);
 static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		char * filev[])
 {
 	struct ar_hdr hdr;
+	char name[sizeof(hdr.ar_name) + 1];
 	unsigned int h;
 	int i;
 	char * p;
@@ -277,13 +349,14 @@ static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 	{
 		if(_do_hdr_check(archive, &hdr) != 0)
 			return 1;
-		for(h = 0, p = hdr.ar_name; h < sizeof(hdr.ar_name); h++)
+		memcpy(name, hdr.ar_name, sizeof(hdr.ar_name));
+		name[sizeof(name) - 1] = '\0';
+		for(h = 0, p = name; h < sizeof(name); h++)
 			if(p[h] == '/')
 			{
 				p[h] = '\0';
 				break;
 			}
-		/* FIXME what if the string doesn't get terminated? */
 		if(h == 0)
 		{
 			if(_do_seek_next(archive, fp, &hdr) != 0)
@@ -291,7 +364,7 @@ static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 			continue;
 		}
 		for(i = 0; i < filec; i++)
-			if(strcmp(hdr.ar_name, filev[i]) == 0)
+			if(strcmp(name, filev[i]) == 0)
 				break;
 		if(i > 0 && i == filec)
 		{
@@ -301,18 +374,18 @@ static int _ar_do_tx(Prefs * prefs, char const * archive, FILE * fp, int filec,
 		}
 		if(*prefs & PREFS_t)
 		{
-			if(_do_t(prefs, archive, fp, &hdr) != 0)
+			if(_do_t(prefs, archive, fp, &hdr, name) != 0)
 				return 1;
 			continue;
 		}
 		else if(*prefs & PREFS_x)
 		{
-			if(_do_x(prefs, archive, fp, &hdr) != 0)
+			if(_do_x(prefs, archive, fp, &hdr, name) != 0)
 				return 1;
 			continue;
 		}
 		/* FIXME clean up this so it won't have to appear */
-		fputs("ar: Not implemented yet\n", stderr);
+		fputs(PACKAGE ": Not implemented yet\n", stderr);
 		return 1;
 	}
 	return 0;
@@ -327,55 +400,54 @@ static int _do_sig_check(char const * archive, FILE * fp)
 		return _ar_error(archive, 1);
 	if(strncmp(ARMAG, sig, SARMAG) == 0)
 		return 0;
-	fprintf(stderr, "%s%s%s", "ar: ", archive, ": Invalid archive\n");
+	fprintf(stderr, "%s%s%s", PACKAGE ": ", archive, ": Invalid archive\n");
 	return 1;
 }
 
-static int _t_print_long(char const * archive, struct ar_hdr * hdr);
+static int _t_print_long(char const * archive, struct ar_hdr * hdr,
+		char const * name);
 static int _do_t(Prefs * prefs, char const * archive, FILE * fp,
-		struct ar_hdr * hdr)
+		struct ar_hdr * hdr, char const * name)
 {
 	if(*prefs & PREFS_v)
 	{
-		if(_t_print_long(archive, hdr) != 0)
+		if(_t_print_long(archive, hdr, name) != 0)
 			return 1;
 	}
 	else
-		printf("%s\n", hdr->ar_name);
+		printf("%s\n", name);
 	return _do_seek_next(archive, fp, hdr);
 }
 
-static char const * _long_mode(int mode);
-static int _t_print_long(char const * archive, struct ar_hdr * hdr)
+static char const * _long_mode(mode_t mode);
+static int _t_print_long(char const * archive, struct ar_hdr * hdr,
+		char const * name)
 {
-	int mode;
-	unsigned long uid;
-	unsigned long gid;
-	unsigned long size;
-	time_t date;
+	mode_t mode;
+	uid_t uid;
+	gid_t gid;
+	size_t size;
 	struct tm * tm;
 	char buf[24];
 
-	/* FIXME the header fields should be terminated or their value copied */
-	mode = strtol(hdr->ar_mode, NULL, 8);
-	uid = strtol(hdr->ar_uid, NULL, 10);
-	gid = strtol(hdr->ar_gid, NULL, 10);
-	size = strtol(hdr->ar_size, NULL, 10);
-	date = strtol(hdr->ar_date, NULL, 10);
-	if((tm = gmtime(&date)) == NULL)
+	if(_ar_get_mode(hdr, &mode) != 0
+			|| _ar_get_uid(hdr, &uid) != 0
+			|| _ar_get_gid(hdr, &gid) != 0
+			|| _ar_get_size(hdr, &size) != 0
+			|| (tm = _ar_get_date(hdr)) == NULL)
 	{
-		fprintf(stderr, "%s%s%s", "ar: ", archive,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", archive,
 				": Invalid archive\n");
 		return 1;
 	}
 	if(strftime(buf, sizeof(buf), "%b %d %H:%M %Y", tm) == 0)
 		return _ar_error("strftime", 1);
-	printf("%s %lu/%lu %lu %s %s\n", _long_mode(mode), uid, gid, size,
-			buf, hdr->ar_name);
+	printf("%s %u/%u %zu %s %s\n", _long_mode(mode), uid, gid, size,
+			buf, name);
 	return 0;
 }
 
-static char const * _long_mode(int mode)
+static char const * _long_mode(mode_t mode)
 {
 	static char str[11];
 	int i;
@@ -405,7 +477,7 @@ static char const * _long_mode(int mode)
 }
 
 static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
-		struct ar_hdr * hdr)
+		struct ar_hdr * hdr, char const * name)
 {
 	FILE * fp2;
 	int fd2;
@@ -413,26 +485,30 @@ static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 	uid_t uid;
 	gid_t gid;
 	size_t size;
-	long date;
 	char buf[BUFSIZ];
 	size_t i;
 
+	if(_ar_get_mode(hdr, &mode) != 0
+			|| _ar_get_uid(hdr, &uid) != 0
+			|| _ar_get_gid(hdr, &gid) != 0
+			|| _ar_get_size(hdr, &size) != 0
+			|| _ar_get_date(hdr) == NULL)
+	{
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", archive,
+				": Invalid archive\n");
+		return 1;
+	}
 	if(*prefs & PREFS_v)
-		printf("%s%s\n", "x - ", hdr->ar_name);
-	if((fp2 = fopen(hdr->ar_name, "w")) == NULL)
-		return _ar_error(hdr->ar_name, 1);
+		printf("%s%s\n", "x - ", name);
+	if((fp2 = fopen(name, "w")) == NULL)
+		return _ar_error(name, 1);
 	fd2 = fileno(fp2);
-	mode = strtol(hdr->ar_mode, NULL, 8);
 	if(fchmod(fd2, mode) != 0)
-		_ar_error(hdr->ar_name, 0);
-	uid = strtol(hdr->ar_uid, NULL, 10);
-	gid = strtol(hdr->ar_gid, NULL, 10);
+		_ar_error(name, 0);
 	if(fchown(fd2, uid, gid) != 0)
-		_ar_error(hdr->ar_name, 0);
-	date = strtol(hdr->ar_date, NULL, 10);
+		_ar_error(name, 0);
 	/* FIXME */
-	size = strtol(hdr->ar_size, NULL, 10);
-	while(size > 0)
+	for(; size > 0; size -= i)
 	{
 		if((i = fread(buf, sizeof(char), min(sizeof(buf), size), fp))
 				== 0)
@@ -443,12 +519,11 @@ static int _do_x(Prefs * prefs, char const * archive, FILE * fp,
 		if(fwrite(buf, sizeof(char), i, fp2) != i)
 		{
 			fclose(fp2);
-			return _ar_error(hdr->ar_name, 1);
+			return _ar_error(name, 1);
 		}
-		size -= i;
 	}
 	if(fclose(fp2) != 0)
-		return _ar_error(hdr->ar_name, 1);
+		return _ar_error(name, 1);
 	return 0;
 }
 
