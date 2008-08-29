@@ -111,7 +111,7 @@ static int _ar_get_mode(struct ar_hdr * ar, mode_t * mode)
 		return 1;
 	memcpy(buf, ar->ar_mode, sizeof(ar->ar_mode));
 	buf[sizeof(buf) - 1] = '\0';
-	*mode = strtoul(buf, NULL, 10);
+	*mode = strtoul(buf, NULL, 8);
 	return 0;
 }
 
@@ -247,8 +247,8 @@ static int _append_header(char const * archive, FILE * fp, char * filename,
 
 	if(fstat(fileno(fp2), &st) != 0)
 		return _ar_error(filename, 1);
-	strncpy(hdr.ar_name, basename(filename), sizeof(hdr.ar_name)-1);
-	hdr.ar_name[sizeof(hdr.ar_name)-1] = '\0'; /* FIXME necessary? */
+	memset(&hdr, 0, sizeof(hdr));
+	strncpy(hdr.ar_name, basename(filename), sizeof(hdr.ar_name) - 1);
 	snprintf(hdr.ar_date, sizeof(hdr.ar_date), "%u", (unsigned)st.st_mtime);
 	snprintf(hdr.ar_uid, sizeof(hdr.ar_uid), "%u", (unsigned)st.st_uid);
 	snprintf(hdr.ar_gid, sizeof(hdr.ar_gid), "%u", (unsigned)st.st_gid);
