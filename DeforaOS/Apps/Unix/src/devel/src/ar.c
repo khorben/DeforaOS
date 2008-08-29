@@ -185,7 +185,7 @@ static int _ar_do_r(Prefs * prefs, char const * archive, int filec,
 }
 
 static int _create_append(Prefs * prefs, char const * archive, FILE * fp,
-	       	char * filename);
+	       	char const * filename);
 static int _do_create(Prefs * prefs, char const * archive, int filec,
 		char * filev[])
 {
@@ -207,11 +207,10 @@ static int _do_create(Prefs * prefs, char const * archive, int filec,
 	return i != filec;
 }
 
-static int _append_header(char const * archive, FILE * fp, char * filename,
-		FILE * fp2);
+static int _append_header(char const * archive, FILE * fp,
+		char const * filename, FILE * fp2);
 static int _create_append(Prefs * prefs, char const * archive, FILE * fp,
-	       	char * filename)
-	/* FIXME filename may get truncated by basename() */
+	       	char const * filename)
 {
 	FILE * fp2;
 	char buf[BUFSIZ];
@@ -239,16 +238,20 @@ static int _create_append(Prefs * prefs, char const * archive, FILE * fp,
 	return 0;
 }
 
-static int _append_header(char const * archive, FILE * fp, char * filename,
-		FILE * fp2)
+static int _append_header(char const * archive, FILE * fp,
+		char const * filename, FILE * fp2)
 {
 	struct ar_hdr hdr;
 	struct stat st;
+	char * p;
 
 	if(fstat(fileno(fp2), &st) != 0)
 		return _ar_error(filename, 1);
+	if((p = strdup(filename)) == NULL)
+		return _ar_error(filename, 1);
 	memset(&hdr, 0, sizeof(hdr));
-	strncpy(hdr.ar_name, basename(filename), sizeof(hdr.ar_name) - 1);
+	strncpy(hdr.ar_name, basename(p), sizeof(hdr.ar_name) - 1);
+	free(p);
 	snprintf(hdr.ar_date, sizeof(hdr.ar_date), "%u", (unsigned)st.st_mtime);
 	snprintf(hdr.ar_uid, sizeof(hdr.ar_uid), "%u", (unsigned)st.st_uid);
 	snprintf(hdr.ar_gid, sizeof(hdr.ar_gid), "%u", (unsigned)st.st_gid);
