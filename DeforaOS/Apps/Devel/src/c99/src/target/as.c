@@ -35,8 +35,8 @@ typedef enum _AsOption
 	ASO_ARCH	= 0,
 	ASO_FORMAT
 } AsOption;
-# define ASO_LAST	ASO_FORMAT
-# define ASO_COUNT	(ASO_LAST + 1)
+#define ASO_LAST	ASO_FORMAT
+#define ASO_COUNT	(ASO_LAST + 1)
 
 
 /* variables */
