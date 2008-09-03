@@ -34,7 +34,7 @@ _create_directories()
 #public
 target_image()
 {
-	_create_directories 'bin' 'dev' 'etc' 'lib'
+	_create_directories 'bin' 'dev' 'etc' 'lib' 'sbin'
 
 	echo
 	echo -n "Fixing installation paths:"
@@ -55,24 +55,39 @@ target_image()
 	if [ ! -z "$KERNEL_MODULES" ]; then
 		echo
 		echo "Installing kernel modules:"
-		gunzip -c < "$KERNEL_MODULES" | (cd "$DESTDIR" && $TAR -xf -) \
-								|| exit 2
+		#progress -ef "$KERNEL_MODULES" -- gunzip -c \
+		gunzip -c "$KERNEL_MODULES" \
+				| (cd "$DESTDIR" && $TAR -xf -)	|| exit 2
+	fi
+
+	if [ ! -x "$DESTDIR/sbin/init" ]; then
+		echo
+		echo -n "Installing init:"
+		cat > "$DESTDIR/sbin/init" << EOF
+#!/bin/sh
+
+echo "init called with arguments: \$@"
+echo "Falling back to interactive mode:"
+/bin/sh
+EOF
+		chmod a+rx "$DESTDIR/sbin/init"
+		echo
 	fi
 
 	echo
 	echo "Building rootfs image:"
-	$MKFS DeforaOS-rootfs.jffs2				|| exit 2
-	$DU DeforaOS-rootfs.jffs2
+	$MKFS "$IMAGE_IMAGE"				|| exit 2
+	$DU "$IMAGE_IMAGE"
 
 	echo
 	echo "Building tarball:"
 	OLDPWD="$PWD"
-	(cd "$DESTDIR" && $TAR -cvzf "$OLDPWD/DeforaOS-rootfs.tar.gz" .) \
+	(cd "$DESTDIR" && $TAR -cvzf "$OLDPWD/$IMAGE_IMAGE.tar.gz" .) \
 	| while read filename; do
 		echo -en "\r$filename"
 	done || (echo && exit 2)
 	echo -en "\r"
-	$DU DeforaOS-rootfs.tar.gz
+	$DU "$IMAGE_IMAGE.tar.gz"
 }
 
 
