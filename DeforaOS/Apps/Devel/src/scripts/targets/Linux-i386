@@ -40,7 +40,7 @@ target_iso()
 default 0
 timeout 10
 
-title DeforaOS
+title $VENDOR
 kernel /boot/uKernel $KERNEL_ARGS
 $GRUB_INITRD
 EOF
