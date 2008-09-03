@@ -188,28 +188,9 @@ while [ $# -gt 0 ]; do
 		ramdisk)
 			echo "$0: Making target $1 on $TARGET" 1>&2
 			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			[ -z "$MOUNTPOINT" ] && error \
-				"MOUNTPOINT needs to be set"
 			[ -z "$RAMDISK_IMAGE" ] && error \
 				"RAMDISK_IMAGE needs to be set"
-			$UMOUNT "$MOUNTPOINT"
-			$MKDIR "$MOUNTPOINT"
-			$DD if="$DEVZERO" of="$RAMDISK_IMAGE" \
-				count="$RAMDISK_SIZE"		|| exit 2
-			$MKFS "$RAMDISK_IMAGE"			|| exit 2
-			[ ! -z "$TUNE2FS" ] && $TUNE2FS -i 0 "$RAMDISK_IMAGE"
-			$MOUNT "$RAMDISK_IMAGE" "$MOUNTPOINT"	|| exit 2
-			SUBDIRS="Apps/Unix/src/others/tools" target linuxrc \
-				 || exit 2
-			for i in "dev" "proc" "mnt/cdrom" "sbin"; do
-				$MKDIR "$MOUNTPOINT/$i"		|| exit 2
-			done
-			$LN "../mnt/cdrom/usr/bin/sh" "$MOUNTPOINT/sbin/init"
-			$CP "Apps/Unix/src/others/tools/linuxrc" "$MOUNTPOINT" \
-				|| exit 2
-			$UMOUNT "$MOUNTPOINT"
-			$GZIP "$RAMDISK_IMAGE"			|| exit 2
-			$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"|| exit 2
+			target_ramdisk
 			;;
 		*)
 			echo "build.sh: $1: Unknown target" 1>&2

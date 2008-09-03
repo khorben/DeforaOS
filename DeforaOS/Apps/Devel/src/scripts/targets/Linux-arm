@@ -17,21 +17,38 @@ source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
 
 
 #functions
-target_image()
+#private
+_create_directories()
 {
 	echo
 	echo -n "Creating missing directories:"
-	for i in /bin /etc /lib; do
-		echo -n " $i"
-		$MKDIR "$DESTDIR$i"
+	while true; do
+		echo -n " $1"
+		$MKDIR "$DESTDIR/$1"				|| exit 2
+		shift || break
 	done
 	echo
+}
+
+
+#public
+target_image()
+{
+	_create_directories 'bin' 'dev' 'etc' 'lib'
 
 	echo
 	echo -n "Fixing installation paths:"
 	for i in /lib/libc.so /bin/sh; do
 		echo -n " $i"
 		$MV "$DESTDIR$PREFIX$i" "$DESTDIR$i"		|| exit 2
+	done
+	echo
+
+	echo
+	echo -n "Creating device nodes:"
+	for i in std pty console input fb; do
+		echo -n " $i"
+		(cd "$DESTDIR/dev" && $SUDO sh /sbin/MAKEDEV "$i")
 	done
 	echo
 
@@ -50,7 +67,31 @@ target_image()
 	echo
 	echo "Building tarball:"
 	OLDPWD="$PWD"
-	(cd "$DESTDIR" && $TAR -czf "$OLDPWD/DeforaOS-rootfs.tar.gz" .) \
-								|| exit 2
+	(cd "$DESTDIR" && $TAR -cvzf "$OLDPWD/DeforaOS-rootfs.tar.gz" .) \
+	| while read filename; do
+		echo -en "\r$filename"
+	done || (echo && exit 2)
+	echo -en "\r"
 	$DU DeforaOS-rootfs.tar.gz
+}
+
+
+target_ramdisk()
+{
+	target "install"					|| exit 2
+
+	_create_directories 'dev' 'proc' 'mnt/cdrom' 'sbin'
+
+	echo
+	echo -n "Building ramdisk image:"
+	$MKFS "$RAMDISK_IMAGE"					|| exit 2
+	echo
+	$DU "$RAMDISK_IMAGE"
+
+	echo
+	echo -n "Compressing ramdisk:"
+	$GZIP "$RAMDISK_IMAGE"					|| exit 2
+	$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"		|| exit 2
+	echo
+	$DU "$RAMDISK_IMAGE"
 }

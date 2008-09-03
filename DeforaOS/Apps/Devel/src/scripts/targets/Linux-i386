@@ -2,6 +2,11 @@
 
 
 
+#variables
+[ -z "$MKFS" ] && MKFS="mke2fs -F"
+[ -z "$TUNE2FS" ] && TUNE2FS="tune2fs"
+
+
 #includes
 source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
 
@@ -44,4 +49,31 @@ EOF
 	$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
 			-boot-load-size 4 -boot-info-table \
 			-o "$CDROM_IMAGE" "$DESTDIR"
+}
+
+
+target_ramdisk()
+{
+	[ -z "$MOUNTPOINT" ] && error "MOUNTPOINT needs to be set"
+	$UMOUNT "$MOUNTPOINT"
+	$MKDIR "$MOUNTPOINT"
+	$DD if="$DEVZERO" of="$RAMDISK_IMAGE" count="$RAMDISK_SIZE"|| exit 2
+	$MKFS "$RAMDISK_IMAGE"					|| exit 2
+	[ ! -z "$TUNE2FS" ] && $TUNE2FS -i 0 "$RAMDISK_IMAGE"
+	$MOUNT "$RAMDISK_IMAGE" "$MOUNTPOINT"			|| exit 2
+	SUBDIRS="Apps/Unix/src/others/tools" target linuxrc	|| exit 2
+
+	DESTDIR="$MOUNTPOINT" _create_directories 'dev' 'proc' 'mnt/cdrom' \
+		'sbin'
+
+	$LN "../mnt/cdrom/usr/bin/sh" "$MOUNTPOINT/sbin/init"
+	$CP "Apps/Unix/src/others/tools/linuxrc" "$MOUNTPOINT"	|| exit 2
+	$UMOUNT "$MOUNTPOINT"
+
+	echo
+	echo -n "Compressing ramdisk:"
+	$GZIP "$RAMDISK_IMAGE"					|| exit 2
+	$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"		|| exit 2
+	echo
+	$DU "$RAMDISK_IMAGE"
 }
