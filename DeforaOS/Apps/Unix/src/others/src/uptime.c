@@ -26,6 +26,7 @@
 
 /* uptime */
 static int _uptime_error(char const * message, int ret);
+
 static int _uptime(void)
 {
 	struct timeval tv;
@@ -74,6 +75,10 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		return _usage();
 	if(argc != 1)
 		return _usage();
 	return _uptime() == 0 ? 0 : 2;
