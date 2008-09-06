@@ -1,8 +1,9 @@
-TARGETS	= halt hexdump login mktemp mount poweroff reboot tar umount uptime w
+TARGETS	= halt hexdump hostname login mktemp mount poweroff reboot tar umount uptime w
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
@@ -14,67 +15,73 @@ INSTALL	= install
 all: $(TARGETS)
 
 halt_OBJS = halt.o
-halt_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+halt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 halt: $(halt_OBJS)
 	$(CC) -o halt $(halt_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 hexdump_OBJS = hexdump.o
-hexdump_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+hexdump_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 hexdump: $(hexdump_OBJS)
 	$(CC) -o hexdump $(hexdump_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
+hostname_OBJS = hostname.o
+hostname_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+
+hostname: $(hostname_OBJS)
+	$(CC) -o hostname $(hostname_OBJS) $(LDFLAGSF) $(LDFLAGS)
+
 login_OBJS = login.o
-login_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+login_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 login: $(login_OBJS)
 	$(CC) -o login $(login_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 mktemp_OBJS = mktemp.o
-mktemp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mktemp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 mktemp: $(mktemp_OBJS)
 	$(CC) -o mktemp $(mktemp_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 mount_OBJS = mount.o
-mount_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mount_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 mount: $(mount_OBJS)
 	$(CC) -o mount $(mount_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 poweroff_OBJS = poweroff.o
-poweroff_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+poweroff_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 poweroff: $(poweroff_OBJS)
 	$(CC) -o poweroff $(poweroff_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 reboot_OBJS = reboot.o
-reboot_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+reboot_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 reboot: $(reboot_OBJS)
 	$(CC) -o reboot $(reboot_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 tar_OBJS = tar.o
-tar_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+tar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 tar: $(tar_OBJS)
 	$(CC) -o tar $(tar_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 umount_OBJS = umount.o
-umount_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+umount_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 umount: $(umount_OBJS)
 	$(CC) -o umount $(umount_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 uptime_OBJS = uptime.o
-uptime_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+uptime_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 uptime: $(uptime_OBJS)
 	$(CC) -o uptime $(uptime_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 w_OBJS = w.o
-w_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+w_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 w: $(w_OBJS)
 	$(CC) -o w $(w_OBJS) $(LDFLAGSF) $(LDFLAGS)
@@ -84,6 +91,9 @@ halt.o: halt.c
 
 hexdump.o: hexdump.c
 	$(CC) $(hexdump_CFLAGS) -c hexdump.c
+
+hostname.o: hostname.c
+	$(CC) $(hostname_CFLAGS) -c hostname.c
 
 login.o: login.c
 	$(CC) $(login_CFLAGS) -c login.c
@@ -113,7 +123,7 @@ w.o: w.c utmpx.c
 	$(CC) $(w_CFLAGS) -c w.c
 
 clean:
-	$(RM) $(halt_OBJS) $(hexdump_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(poweroff_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
+	$(RM) $(halt_OBJS) $(hexdump_OBJS) $(hostname_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(poweroff_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -123,6 +133,8 @@ install: all
 	$(INSTALL) -m 0755 halt $(DESTDIR)$(BINDIR)/halt
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 hexdump $(DESTDIR)$(BINDIR)/hexdump
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 hostname $(DESTDIR)$(BINDIR)/hostname
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 login $(DESTDIR)$(BINDIR)/login
 	$(MKDIR) $(DESTDIR)$(BINDIR)
@@ -145,6 +157,7 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/halt
 	$(RM) $(DESTDIR)$(BINDIR)/hexdump
+	$(RM) $(DESTDIR)$(BINDIR)/hostname
 	$(RM) $(DESTDIR)$(BINDIR)/login
 	$(RM) $(DESTDIR)$(BINDIR)/mktemp
 	$(RM) $(DESTDIR)$(BINDIR)/mount
