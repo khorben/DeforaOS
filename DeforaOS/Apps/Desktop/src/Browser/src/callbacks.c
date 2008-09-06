@@ -870,6 +870,7 @@ static gboolean _press_show(Browser * browser, GdkEventButton * event,
 /* callbacks */
 static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_open(GtkWidget * widget, gpointer data);
+static void _on_icon_open_new_window(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 static void _on_icon_paste(GtkWidget * widget, gpointer data);
@@ -1022,6 +1023,13 @@ static void _press_directory(GtkWidget * menu, IconCallback * ic)
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_with_mnemonic("Open in new _window");
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
+			gtk_image_new_from_icon_name("window-new",
+				GTK_ICON_SIZE_MENU));
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_icon_open_new_window), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, NULL);
@@ -1144,6 +1152,15 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 		browser_set_location(cb->browser, cb->path);
 	else if(cb->browser->mime != NULL)
 		mime_action(cb->browser->mime, "open", cb->path);
+}
+
+static void _on_icon_open_new_window(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+
+	if(!cb->isdir)
+		return;
+	browser_new(cb->path);
 }
 
 static void _on_icon_edit(GtkWidget * widget, gpointer data)
