@@ -48,10 +48,15 @@ static void _prompt(Scanner * scanner)
 {
 	char * prompt;
 	char * env[SP_COUNT] = { "PS1", "PS2", "PS4" };
-	char * dflt[SP_COUNT] = { (getuid() == 0) ? "# " : "$ ", "> ", "+ " };
+	char * dflt[SP_COUNT] = { "$ ", "> ", "+ " };
 
 	if((prompt = getenv(env[scanner->prompt])) == NULL)
-		prompt = dflt[scanner->prompt];
+	{
+		if(scanner->prompt == SP_PS1 && getuid() == 0)
+			prompt = "# ";
+		else
+			prompt = dflt[scanner->prompt];
+	}
 	fputs(prompt, stderr);
 }
 
