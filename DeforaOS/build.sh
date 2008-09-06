@@ -142,7 +142,7 @@ fi
 #initialize variables
 [ -z "$LIBGCC" ] && LIBGCC=`gcc -print-libgcc-file-name`
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
-[ -z "$CFLAGS" ] && CFLAGS="-ffreestanding"
+[ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
