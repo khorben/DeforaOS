@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -30,6 +30,7 @@
 static int _w_error(char * message, int ret);
 static int _print_idle(struct timeval * tv, char * device);
 static int _print_what(pid_t pid);
+
 static int _w(void)
 {
 	struct utmpx * u;
@@ -39,7 +40,7 @@ static int _w(void)
 		return _w_error("gettimeofday", 2);
 	printf("%-8s %-8s %-16s %-5s %5s %s\n", "USER", "TTY", "FROM",
 			"LOGIN@", "IDLE", "WHAT");
-	for(; (u = getutxent()) != NULL;)
+	while((u = getutxent()) != NULL)
 	{
 		if(u->ut_type != USER_PROCESS)
 			continue;
@@ -96,7 +97,7 @@ static int _print_what(pid_t pid)
 		printf(" %d\n", pid);
 		return _w_error(proc, 0);
 	}
-	if((len = fread(proc, sizeof(char), sizeof(proc)-1, fp)) < 0)
+	if((len = fread(proc, sizeof(char), sizeof(proc) - 1, fp)) < 0)
 	{
 		fclose(fp);
 		printf(" %d\n", pid);
@@ -111,7 +112,7 @@ static int _print_what(pid_t pid)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: w\n");
+	fputs("Usage: w\n", stderr);
 	return 1;
 }
 
