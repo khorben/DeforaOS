@@ -195,7 +195,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 	if((prints = string_new(p)) == NULL)
 		return 1;
 	q = prints;
-	fprintf(fp, "%s%s", "TARGETS", "\t=");
+	fputs("TARGETS\t=", fp);
 	for(i = 0;; i++)
 	{
 		if(prints[i] != ',' && prints[i] != '\0')
@@ -216,6 +216,9 @@ static int _variables_targets(Configure * configure, FILE * fp)
 				case TT_LIBRARY:
 					fprintf(fp, " %s%s%s%s", prints, ".a ",
 							prints, ".so");
+					break;
+				case TT_LIBTOOL:
+					fprintf(fp, " %s%s", prints, ".la");
 					break;
 			}
 		if(c == '\0')
@@ -285,6 +288,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 
 static void _variables_binary(Configure * configure, FILE * fp, char * done);
 static void _variables_library(Configure * configure, FILE * fp, char * done);
+static void _variables_libtool(Configure * configure, FILE * fp, char * done);
 static void _executables_variables(Configure * configure, FILE * fp,
 	       	String const * target)
 {
@@ -309,6 +313,9 @@ static void _executables_variables(Configure * configure, FILE * fp,
 			break;
 		case TT_LIBRARY:
 			_variables_library(configure, fp, done);
+			break;
+		case TT_LIBTOOL:
+			_variables_libtool(configure, fp, done);
 			break;
 		case TT_OBJECT:
 		case TT_UNKNOWN:
@@ -496,6 +503,13 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= $(CC) -shared\n", fp);
 }
 
+static void _variables_libtool(Configure * configure, FILE * fp, char * done)
+{
+	_variables_library(configure, fp, done);
+	if(!done[TT_LIBTOOL])
+		fputs("LN\t= ln\nLIBTOOL\t= libtool\n", fp);
+}
+
 static int _variables_includes(Configure * configure, FILE * fp)
 {
 	String const * includes;
@@ -581,6 +595,8 @@ static int _target_binary(Configure * configure, FILE * fp,
 		String const * target);
 static int _target_library(Configure * configure, FILE * fp,
 		String const * target);
+static int _target_libtool(Configure * configure, FILE * fp,
+		String const * target);
 static int _target_object(Configure * configure, FILE * fp,
 		String const * target);
 static int _targets_target(Configure * configure, FILE * fp,
@@ -602,6 +618,8 @@ static int _targets_target(Configure * configure, FILE * fp,
 			return _target_binary(configure, fp, target);
 		case TT_LIBRARY:
 			return _target_library(configure, fp, target);
+		case TT_LIBTOOL:
+			return _target_libtool(configure, fp, target);
 		case TT_OBJECT:
 			return _target_object(configure, fp, target);
 		case TT_UNKNOWN:
@@ -612,17 +630,21 @@ static int _targets_target(Configure * configure, FILE * fp,
 	return 0;
 }
 
-static int _objs_source(Prefs * prefs, FILE * fp, String * source);
+static int _objs_source(Prefs * prefs, FILE * fp, String * source,
+		TargetType tt);
 static int _target_objs(Configure * configure, FILE * fp,
 		String const * target)
 {
 	int ret = 0;
 	String const * p;
+	TargetType tt = TT_UNKNOWN;
 	String * sources;
 	String * q;
 	int i;
 	char c;
 
+	if((p = config_get(configure->config, target, "type")) != NULL)
+		tt = enum_string(TT_LAST, sTargetType, p);
 	if((p = config_get(configure->config, target, "sources")) == NULL)
 	{
 		fprintf(stderr, "%s%s%s", "configure: ", target,
@@ -640,7 +662,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 			continue;
 		c = sources[i];
 		sources[i] = '\0';
-		ret = _objs_source(configure->prefs, fp, sources);
+		ret = _objs_source(configure->prefs, fp, sources, tt);
 		if(c == '\0')
 			break;
 		sources += i + 1;
@@ -652,7 +674,8 @@ static int _target_objs(Configure * configure, FILE * fp,
 	return ret;
 }
 
-static int _objs_source(Prefs * prefs, FILE * fp, String * source)
+static int _objs_source(Prefs * prefs, FILE * fp, String * source,
+		TargetType tt)
 {
 	int ret = 0;
 	String const * extension;
@@ -670,15 +693,12 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source)
 	{
 		case OT_ASM_SOURCE:
 		case OT_C_SOURCE:
-			if(prefs->flags & PREFS_n)
-				break;
-			fprintf(fp, "%s%s%s", " ", source, ".o");
-			break;
 		case OT_CXX_SOURCE:
 		case OT_CPP_SOURCE:
 			if(prefs->flags & PREFS_n)
 				break;
-			fprintf(fp, "%s%s%s", " ", source, ".o");
+			fprintf(fp, " %s%s", source, tt == TT_LIBTOOL ? ".lo"
+					: ".o");
 			break;
 		case OT_UNKNOWN:
 			ret = 1;
@@ -818,22 +838,62 @@ static int _target_library(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * p;
+	String * q;
 
 	if(_target_objs(configure, fp, target) != 0)
 		return 1;
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	_target_flags(configure, fp, target);
-	fprintf(fp, "\n%s%s%s%s", target, ".a: $(", target, "_OBJS)\n");
+	fprintf(fp, "\n%s%s%s%s", target, ".a: $(", target, "_OBJS)");
+	if((p = config_get(configure->config, target, "depends")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s%s", "\t$(AR) ", target, ".a $(", target,
-			"_OBJS)\n");
+			"_OBJS)");
+	if((q = malloc(strlen(target) + 4)) != NULL)
+	{
+		sprintf(q, "%s.a", target);
+		if((p = config_get(configure->config, q, "ldflags")) != NULL)
+			fprintf(fp, " %s", p);
+	}
+	fputc('\n', fp);
 	fprintf(fp, "%s%s%s", "\t$(RANLIB) ", target, ".a\n");
-	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)\n");
+	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)");
+	if((p = config_get(configure->config, target, "depends")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
 			"_OBJS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
+	if(q != NULL)
+	{
+		sprintf(q, "%s.so", target);
+		if((p = config_get(configure->config, q, "ldflags")) != NULL)
+			fprintf(fp, " %s", p);
+		free(q);
+	}
 	fputc('\n', fp);
+	return 0;
+}
+
+static int _target_libtool(Configure * configure, FILE * fp,
+		String const * target)
+{
+	String const * p;
+
+	if(_target_objs(configure, fp, target) != 0)
+		return 1;
+	if(configure->prefs->flags & PREFS_n)
+		return 0;
+	_target_flags(configure, fp, target);
+	fprintf(fp, "\n%s%s%s%s", target, ".la: $(", target, "_OBJS)\n");
+	fprintf(fp, "%s%s%s%s%s", "\t$(LIBTOOL) --mode=link $(CC) -o ", target,
+			".la $(", target, "_OBJS)");
+	if((p = config_get(configure->config, target, "ldflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fputs(" -rpath $(LIBDIR)\n", fp);
 	return 0;
 }
 
@@ -970,10 +1030,13 @@ static int _target_source(Configure * configure, FILE * fp,
 {
 	int ret = 0;
 	String * extension;
+	TargetType tt = TT_UNKNOWN;
 	ObjectType ot;
 	size_t len;
 	String const * p;
 
+	if((p = config_get(configure->config, target, "type")) != NULL)
+			tt = enum_string(TT_LAST, sTargetType, p);
 	if((extension = _source_extension(source)) == NULL)
 		return 1;
 	len = string_length(source) - string_length(extension) - 1;
@@ -983,14 +1046,18 @@ static int _target_source(Configure * configure, FILE * fp,
 		case OT_ASM_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
-			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
-					source, ".", sObjectType[ot]);
+			fprintf(fp, "\n%s.o", source);
+			if(tt == TT_LIBTOOL)
+				fprintf(fp, " %s.lo", source);
+			fprintf(fp, ": %s.%s", source, sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			p = config_get(configure->config, source, "asflags");
 			source[len] = '\0';
-			fprintf(fp, "%s%s%s", "\n\t$(AS) $(", target,
-					"_ASFLAGS)");
+			fputs("\n\t", fp);
+			if(tt == TT_LIBTOOL)
+				fputs("$(LIBTOOL) --mode=compile ", fp);
+			fprintf(fp, "%s%s%s", "$(AS) $(", target, "_ASFLAGS)");
 			if(p != NULL)
 				fprintf(fp, " %s", p);
 			fprintf(fp, "%s%s%s%s%s%s", " -o ", source, ".o ",
@@ -1000,14 +1067,19 @@ static int _target_source(Configure * configure, FILE * fp,
 		case OT_C_SOURCE:
 			if(configure->prefs->flags & PREFS_n)
 				break;
-			fprintf(fp, "%s%s%s%s%s%s", "\n", source, ".o: ",
-					source, ".", sObjectType[ot]);
+			fprintf(fp, "\n%s%s", source, ".o");
+			if(tt == TT_LIBTOOL)
+				fprintf(fp, " %s%s", source, ".lo");
+			fprintf(fp, ": %s.%s", source, sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
 			p = config_get(configure->config, source, "cflags");
 			source[len] = '\0';
-			fprintf(fp, "%s%s%s", "\n\t$(CC) $(", target,
-				       	"_CFLAGS)");
+			fputs("\n\t", fp);
+			if(tt == TT_LIBTOOL)
+				fputs("$(LIBTOOL) --mode=compile ", fp);
+			fprintf(fp, "%s%s%s", "$(CC) $(", target,
+					"_CFLAGS)");
 			if(p != NULL)
 			{
 				fprintf(fp, " %s", p);
@@ -1321,6 +1393,8 @@ static void _install_target_binary(Config * config, FILE * fp,
 		String const * target);
 static void _install_target_library(Config * config, FILE * fp,
 		String const * target);
+static void _install_target_libtool(Config * config, FILE * fp,
+		String const * target);
 static void _install_target_object(Config * config, FILE * fp,
 		String const * target);
 static int _install_target(Config * config, FILE * fp, String const * target)
@@ -1337,6 +1411,9 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 			break;
 		case TT_LIBRARY:
 			_install_target_library(config, fp, target);
+			break;
+		case TT_LIBTOOL:
+			_install_target_libtool(config, fp, target);
 			break;
 		case TT_OBJECT:
 			_install_target_object(config, fp, target);
@@ -1371,6 +1448,20 @@ static void _install_target_library(Config * config, FILE * fp,
 			".a $(DESTDIR)", path, target, ".a\n");
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 ", target,
 			".so $(DESTDIR)", path, target, ".so\n");
+}
+
+static void _install_target_libtool(Config * config, FILE * fp,
+		String const * target)
+{
+	String const * path;
+
+	if((path = config_get(config, target, "install")) == NULL)
+		return;
+	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
+	fprintf(fp, "%s%s%s%s/%s%s", "\tlibtool --mode=install $(INSTALL)"
+			" -m 0755 ", target, ".la $(DESTDIR)", path, target,
+			".la\n");
+	fprintf(fp, "%s/%s\n", "\tlibtool --mode=finish $(DESTDIR)", path);
 }
 
 static void _install_target_object(Config * config, FILE * fp,
@@ -1462,26 +1553,32 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 {
 	String const * type;
 	String const * path;
+	TargetType tt;
+	const String * rm_destdir = "$(RM) $(DESTDIR)";
 
 	if((type = config_get(config, target, "type")) == NULL)
 		return 1;
 	if((path = config_get(config, target, "install")) == NULL)
 		return 0;
-	switch(enum_string(TT_LAST, sTargetType, type))
+	tt = enum_string(TT_LAST, sTargetType, type);
+	switch(tt)
 	{
 		case TT_BINARY:
-			fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", path,
-					target);
+			fprintf(fp, "\t%s%s/%s\n", rm_destdir, path, target);
 			break;
 		case TT_LIBRARY:
-			fprintf(fp, "%s%s/%s%s", "\t$(RM) $(DESTDIR)", path,
-					target, ".a\n");
-			fprintf(fp, "%s%s/%s%s", "\t$(RM) $(DESTDIR)", path,
-					target, ".so\n");
+			fprintf(fp, "\t%s%s/%s%s", rm_destdir, path, target,
+					".a\n");
+			fprintf(fp, "\t%s%s/%s%s", rm_destdir, path, target,
+					".so\n");
+			break;
+		case TT_LIBTOOL:
+			fprintf(fp, "\t%s%s%s/%s%s", "$(LIBTOOL)"
+					" --mode=uninstall ", rm_destdir, path,
+					target, ".la\n");
 			break;
 		case TT_OBJECT:
-			fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", path,
-					target);
+			fprintf(fp, "\t%s%s/%s\n", rm_destdir, path, target);
 			break;
 		case TT_UNKNOWN:
 			break;
