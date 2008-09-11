@@ -65,7 +65,8 @@ const struct HostKernel sHostKernel[] =
 	{ HO_UNKNOWN,	"unknown"	}
 };
 
-const String * sTargetType[TT_COUNT] = { "binary", "library", "object", NULL };
+const String * sTargetType[TT_COUNT] = { "binary", "library", "libtool",
+	"object", NULL };
 const String * sObjectType[OT_COUNT] = { "c", "cc", "cpp", "S", NULL };
 
 String const * _source_extension(String const * source)

@@ -66,7 +66,7 @@ extern const struct HostKernel sHostKernel[HK_COUNT];
 
 typedef enum _TargetType
 {
-	TT_BINARY = 0, TT_LIBRARY, TT_OBJECT, TT_UNKNOWN
+	TT_BINARY = 0, TT_LIBRARY, TT_LIBTOOL, TT_OBJECT, TT_UNKNOWN
 } TargetType;
 # define TT_LAST	TT_UNKNOWN
 # define TT_COUNT	(TT_LAST + 1)
