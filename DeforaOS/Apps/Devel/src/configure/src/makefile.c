@@ -1458,10 +1458,10 @@ static void _install_target_libtool(Config * config, FILE * fp,
 	if((path = config_get(config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
-	fprintf(fp, "%s%s%s%s/%s%s", "\tlibtool --mode=install $(INSTALL)"
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LIBTOOL) --mode=install $(INSTALL)"
 			" -m 0755 ", target, ".la $(DESTDIR)", path, target,
 			".la\n");
-	fprintf(fp, "%s/%s\n", "\tlibtool --mode=finish $(DESTDIR)", path);
+	fprintf(fp, "%s/%s\n", "\t$(LIBTOOL) --mode=finish $(DESTDIR)", path);
 }
 
 static void _install_target_object(Config * config, FILE * fp,
