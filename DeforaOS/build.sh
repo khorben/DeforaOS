@@ -6,15 +6,16 @@
 
 
 #variables
-CDROM_IMAGE="DeforaOS.iso"
+CDROM_IMAGE=
 CFLAGS=
 CPPFLAGS=
-DISK_IMAGE="DeforaOS.img"
+DISK_IMAGE=
 DISK_SIZE="20480"
 LDFLAGS=
 DESTDIR=
-FLOPPY_IMAGE="DeforaOS.boot"
+FLOPPY_IMAGE=
 FLOPPY_SIZE="2880"
+IMAGE_IMAGE=
 KERNEL=
 KERNEL_ARGS=
 KERNEL_MODULES=
@@ -26,6 +27,7 @@ RAMDISK_IMAGE=
 RAMDISK_SIZE="4096"
 SYSTEM=
 TARGET=
+VENDOR="DeforaOS"
 
 #executables
 CAT="cat"
@@ -140,11 +142,16 @@ else
 fi
 
 #initialize variables
+[ -z "$CDROM_IMAGE" ] && CDROM_IMAGE="$VENDOR-cdrom.iso"
+[ -z "$DISK_IMAGE" ] && DISK_IMAGE="$VENDOR-disk.img"
+[ -z "$FLOPPY_IMAGE" ] && FLOPPY_IMAGE="$VENDOR-floppy.img"
+[ -z "$IMAGE_IMAGE" ] && IMAGE_IMAGE="$VENDOR-image.img"
 [ -z "$LIBGCC" ] && LIBGCC=`gcc -print-libgcc-file-name`
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
+[ -z "$RAMDISK_IMAGE" ] && RAMDISK_IMAGE="$VENDOR-ramdisk.img"
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
 #run targets
