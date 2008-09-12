@@ -23,7 +23,7 @@
 #endif
 
 
-#ifndef _PATH_UTMPX
+#if !defined(_PATH_UTMPX) && !defined(UT_NAMESIZE) && !defined(EMPTY)
 # include <sys/time.h>
 # include <string.h>
 
@@ -43,25 +43,36 @@ struct utmpx
 #define EMPTY		0
 #define USER_PROCESS	1
 
+
+/* macros */
+#ifndef min
+# define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+
+/* functions */
 /* getutxent */
 struct utmpx * getutxent(void)
 	/* FIXME implement */
 {
 	static FILE * fp = NULL;
-	static struct utmpx ut;
-	struct utmp buf;
+	static struct utmpx utx;
+	struct utmp ut;
 
 	if(fp == NULL && (fp = fopen(_PATH_UTMP, "r")) == NULL)
 		return NULL; /* FIXME report error */
-	if(fread(&buf, sizeof(buf), 1, fp) != 1)
+	if(fread(&ut, sizeof(ut), 1, fp) != 1)
 		return NULL;
-	memcpy(ut.ut_name, buf.ut_name, sizeof(ut.ut_name));
-	memcpy(ut.ut_line, buf.ut_line, sizeof(ut.ut_line));
-	memcpy(ut.ut_host, buf.ut_host, sizeof(ut.ut_host));
-	ut.ut_type = buf.ut_name[0] == '\0' ? EMPTY :  USER_PROCESS;
-	ut.ut_pid = -1;
-	ut.ut_tv.tv_sec = buf.ut_time;
-	ut.ut_tv.tv_usec = 0;
-	return &ut;
+	memcpy(utx.ut_name, ut.ut_name, min(sizeof(utx.ut_name),
+				sizeof(ut.ut_name)));
+	memcpy(utx.ut_line, ut.ut_line, min(sizeof(utx.ut_line),
+				sizeof(ut.ut_line)));
+	memcpy(utx.ut_host, ut.ut_host, min(sizeof(utx.ut_host),
+				sizeof(ut.ut_host)));
+	utx.ut_type = (ut.ut_name[0] == '\0') ? EMPTY :  USER_PROCESS;
+	utx.ut_pid = -1;
+	utx.ut_tv.tv_sec = ut.ut_time;
+	utx.ut_tv.tv_usec = 0;
+	return &utx;
 }
 #endif
