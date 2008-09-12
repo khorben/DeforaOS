@@ -53,7 +53,8 @@ PROGNAME="$0"
 SUBDIRS="System/src/libc \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils \
-	Apps/Unix/src/devel"
+	Apps/Unix/src/devel \
+	Apps/Unix/src/others"
 
 
 #functions
