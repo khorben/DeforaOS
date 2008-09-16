@@ -32,6 +32,8 @@ static int _poweroff(void)
 	if(reboot(RF_POWEROFF) != 0)
 #elif defined(RB_POWERDOWN) /* NetBSD */
 	if(reboot(RB_POWERDOWN, NULL) != 0)
+#elif defined(RB_POWER_OFF) /* Linux */
+	if(reboot(RB_POWER_OFF) != 0)
 #else
 # warning Unsupported platform
 	errno = ENOSYS;
