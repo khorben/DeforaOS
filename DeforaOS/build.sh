@@ -153,6 +153,7 @@ fi
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
 [ -z "$RAMDISK_IMAGE" ] && RAMDISK_IMAGE="$VENDOR-ramdisk.img"
+[ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
 #run targets
