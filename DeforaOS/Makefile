@@ -5,7 +5,7 @@ PREFIX	= /usr/local
 
 all: subdirs
 	./Apps/Devel/src/configure/src/configure -vp "$(PREFIX)"
-	$(MAKE) clean
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	@echo
 	@echo ========================================================================
 	@echo 'The source tree is now configured for your environment. You may compile'
