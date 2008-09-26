@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2 -ansi
@@ -16,7 +17,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 player_OBJS = callbacks.o player.o main.o
-player_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+player_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 player: $(player_OBJS)
 	$(CC) -o player $(player_OBJS) $(LDFLAGSF) $(LDFLAGS)

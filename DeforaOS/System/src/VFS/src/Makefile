@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
@@ -15,7 +16,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 VFS_OBJS = vfs.o
-VFS_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+VFS_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 VFS: $(VFS_OBJS)
 	$(CC) -o VFS $(VFS_OBJS) $(LDFLAGSF) $(LDFLAGS)

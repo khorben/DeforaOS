@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi -fPIC
 AR	= ar -rc
@@ -16,7 +17,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 amd64_OBJS = amd64.o
-amd64_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+amd64_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 amd64.a: $(amd64_OBJS)
 	$(AR) amd64.a $(amd64_OBJS)
@@ -26,7 +27,7 @@ amd64.so: $(amd64_OBJS)
 	$(LD) -o amd64.so $(amd64_OBJS)
 
 i386_OBJS = i386.o
-i386_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+i386_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 i386.a: $(i386_OBJS)
 	$(AR) i386.a $(i386_OBJS)
@@ -36,7 +37,7 @@ i386.so: $(i386_OBJS)
 	$(LD) -o i386.so $(i386_OBJS)
 
 i386_real_OBJS = i386_real.o
-i386_real_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+i386_real_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 i386_real.a: $(i386_real_OBJS)
 	$(AR) i386_real.a $(i386_real_OBJS)
@@ -46,7 +47,7 @@ i386_real.so: $(i386_real_OBJS)
 	$(LD) -o i386_real.so $(i386_real_OBJS)
 
 i486_OBJS = i486.o
-i486_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+i486_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 i486.a: $(i486_OBJS)
 	$(AR) i486.a $(i486_OBJS)
@@ -56,7 +57,7 @@ i486.so: $(i486_OBJS)
 	$(LD) -o i486.so $(i486_OBJS)
 
 i586_OBJS = i586.o
-i586_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+i586_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 i586.a: $(i586_OBJS)
 	$(AR) i586.a $(i586_OBJS)
@@ -66,7 +67,7 @@ i586.so: $(i586_OBJS)
 	$(LD) -o i586.so $(i586_OBJS)
 
 i686_OBJS = i686.o
-i686_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+i686_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 i686.a: $(i686_OBJS)
 	$(AR) i686.a $(i686_OBJS)
@@ -76,7 +77,7 @@ i686.so: $(i686_OBJS)
 	$(LD) -o i686.so $(i686_OBJS)
 
 sparc_OBJS = sparc.o
-sparc_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+sparc_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 sparc.a: $(sparc_OBJS)
 	$(AR) sparc.a $(sparc_OBJS)
@@ -86,7 +87,7 @@ sparc.so: $(sparc_OBJS)
 	$(LD) -o sparc.so $(sparc_OBJS)
 
 sparc64_OBJS = sparc64.o
-sparc64_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+sparc64_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 sparc64.a: $(sparc64_OBJS)
 	$(AR) sparc64.a $(sparc64_OBJS)

@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2 -Wno-unused-parameter
@@ -15,49 +16,49 @@ INSTALL	= install
 all: $(TARGETS)
 
 browser_OBJS = browser.o callbacks.o mime.o main.o
-browser_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+browser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 browser: $(browser_OBJS)
 	$(CC) -o browser $(browser_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 
 copy_OBJS = copy.o
-copy_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+copy_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 copy: $(copy_OBJS)
 	$(CC) -o copy $(copy_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 delete_OBJS = delete.o
-delete_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+delete_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 delete: $(delete_OBJS)
 	$(CC) -o delete $(delete_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 desktop_OBJS = desktop.o
-desktop_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 desktop: $(desktop_OBJS)
 	$(CC) -o desktop $(desktop_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 move_OBJS = move.o
-move_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+move_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 move: $(move_OBJS)
 	$(CC) -o move $(move_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 open_OBJS = open.o
-open_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+open_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 open: $(open_OBJS)
 	$(CC) -o open $(open_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 properties_OBJS = properties.o
-properties_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 properties: $(properties_OBJS)
 	$(CC) -o properties $(properties_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 view_OBJS = view.o
-view_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+view_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o

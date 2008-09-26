@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
@@ -15,7 +16,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 Directory_OBJS = directory.o main.o
-Directory_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+Directory_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 Directory: $(Directory_OBJS)
 	$(CC) -o Directory $(Directory_OBJS) $(LDFLAGSF) $(LDFLAGS)

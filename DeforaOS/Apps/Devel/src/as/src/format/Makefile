@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall -fPIC
 CFLAGS	= -g
@@ -17,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 elf_OBJS = elf.o
-elf_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+elf_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 elf.a: $(elf_OBJS)
 	$(AR) elf.a $(elf_OBJS)
@@ -27,7 +28,7 @@ elf.so: $(elf_OBJS)
 	$(LD) -o elf.so $(elf_OBJS)
 
 flat_OBJS = flat.o
-flat_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+flat_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 flat.a: $(flat_OBJS)
 	$(AR) flat.a $(flat_OBJS)

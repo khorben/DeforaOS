@@ -4,6 +4,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS= -I ../include
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2
@@ -23,7 +24,7 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 libas_OBJS = as.o code.o parser.o token.o arch/arch.o format/format.o
-libas_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
+libas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 
 libas.a: $(libas_OBJS)
 	$(AR) libas.a $(libas_OBJS)
@@ -33,7 +34,7 @@ libas.so: $(libas_OBJS)
 	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l cpp
 
 as_OBJS = main.o
-as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 as: $(as_OBJS) libas.so
 	$(CC) -o as $(as_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -l as

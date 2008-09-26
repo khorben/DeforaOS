@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -g
@@ -15,25 +16,25 @@ INSTALL	= install
 all: $(TARGETS)
 
 calendar_OBJS = calendar.o
-calendar_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+calendar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 calendar: $(calendar_OBJS)
 	$(CC) -o calendar $(calendar_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 fontsel_OBJS = fontsel.o
-fontsel_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+fontsel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 fontsel: $(fontsel_OBJS)
 	$(CC) -o fontsel $(fontsel_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 progress_OBJS = progress.o
-progress_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+progress_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 progress: $(progress_OBJS)
 	$(CC) -o progress $(progress_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 run_OBJS = run.o
-run_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 run: $(run_OBJS)
 	$(CC) -o run $(run_OBJS) $(LDFLAGSF) $(LDFLAGS)

@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS= -I ../../include
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -fPIC
@@ -17,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 as_OBJS = as.o
-as_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 as.a: $(as_OBJS)
 	$(AR) as.a $(as_OBJS)
@@ -27,7 +28,7 @@ as.so: $(as_OBJS)
 	$(LD) -o as.so $(as_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
 
 graph_OBJS = graph.o
-graph_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+graph_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 graph.a: $(graph_OBJS)
 	$(AR) graph.a $(graph_OBJS)

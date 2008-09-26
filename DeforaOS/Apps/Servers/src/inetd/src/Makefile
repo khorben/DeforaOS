@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
@@ -14,19 +15,19 @@ INSTALL	= install
 all: $(TARGETS)
 
 inetd_OBJS = config.o parser.o scanner.o service.o token.o inetd.o
-inetd_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+inetd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 inetd: $(inetd_OBJS)
 	$(CC) -o inetd $(inetd_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 discard_OBJS = discard.o
-discard_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+discard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 discard: $(discard_OBJS)
 	$(CC) -o discard $(discard_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 echo_OBJS = echo.o
-echo_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+echo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 echo: $(echo_OBJS)
 	$(CC) -o echo $(echo_OBJS) $(LDFLAGSF) $(LDFLAGS)

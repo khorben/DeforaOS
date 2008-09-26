@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -Wall -g -O2
@@ -15,7 +16,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 editor_OBJS = editor.o main.o
-editor_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+editor_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 editor: $(editor_OBJS)
 	$(CC) -o editor $(editor_OBJS) $(LDFLAGSF) $(LDFLAGS)

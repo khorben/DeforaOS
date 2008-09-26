@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2
@@ -16,13 +17,13 @@ INSTALL	= install
 all: $(TARGETS)
 
 configure_OBJS = configure.o makefile.o settings.o
-configure_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+configure_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 configure: $(configure_OBJS)
 	$(CC) -o configure $(configure_OBJS) $(LDFLAGSF) $(LDFLAGS)
 
 makedepend_OBJS = makedepend.o
-makedepend_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+makedepend_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 makedepend: $(makedepend_OBJS)
 	$(CC) -o makedepend $(makedepend_OBJS) $(LDFLAGSF) $(LDFLAGS)

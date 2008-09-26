@@ -4,6 +4,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2 -ansi
@@ -19,7 +20,7 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 mailer_OBJS = account.o callbacks.o common.o compose.o mailer.o main.o
-mailer_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 mailer: $(mailer_OBJS)
 	$(CC) -o mailer $(mailer_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System

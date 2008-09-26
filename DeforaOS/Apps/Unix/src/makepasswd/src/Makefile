@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g
@@ -15,7 +16,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 makepasswd_OBJS = makepasswd.o md5.o
-makepasswd_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+makepasswd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 makepasswd: $(makepasswd_OBJS)
 	$(CC) -o makepasswd $(makepasswd_OBJS) $(LDFLAGSF) $(LDFLAGS)

@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS= -I ../include
 CFLAGSF	= -W
 CFLAGS	= -Wall -g
@@ -18,7 +19,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 libcpp_OBJS = cpp.o scanner.o
-libcpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
+libcpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 
 libcpp.a: $(libcpp_OBJS)
 	$(AR) libcpp.a $(libcpp_OBJS)
@@ -28,7 +29,7 @@ libcpp.so: $(libcpp_OBJS)
 	$(LD) -o libcpp.so $(libcpp_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
 
 cpp_OBJS = main.o
-cpp_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 cpp: $(cpp_OBJS) libcpp.so
 	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp -l System

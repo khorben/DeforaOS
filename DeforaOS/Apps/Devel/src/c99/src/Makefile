@@ -4,6 +4,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS= -I ../include
 CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
@@ -19,7 +20,7 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 c99_OBJS = c99.o code.o main.o parser.o scanner.o tokenset.o
-c99_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+c99_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 c99: $(c99_OBJS)
 	$(CC) -o c99 $(c99_OBJS) $(LDFLAGSF) $(LDFLAGS)

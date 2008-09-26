@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS= -D WITH_SSL -I ../include
 CFLAGSF	= -W -Wall -ansi -fPIC
 CFLAGS	= -g
@@ -17,7 +18,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o error.o event.o hash.o object.o parser.o plugin.o string.o token.o
-libSystem_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+libSystem_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)

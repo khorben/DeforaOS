@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -Wall -g -O2
@@ -16,7 +17,7 @@ INSTALL	= install
 all: $(TARGETS)
 
 gedi_OBJS = gedi.o main.o project.o
-gedi_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+gedi_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 gedi: $(gedi_OBJS)
 	$(CC) -o gedi $(gedi_OBJS) $(LDFLAGSF) $(LDFLAGS)
