@@ -64,6 +64,8 @@ _image_rootfs()
 	#sanity check
 	check "$USAGE" DESTDIR DU GZIP IMAGE_FILE MKFS MV SUDO TAR
 
+	target "install"					|| exit 2
+
 	_create_directories "bin" "dev" "etc" "lib" "sbin"
 
 	echo
@@ -100,7 +102,7 @@ echo "init called with arguments: \$@"
 echo "Falling back to interactive mode:"
 /bin/sh
 EOF
-		chmod a+rx "$DESTDIR/sbin/init"
+		chmod 755 "$DESTDIR/sbin/init"
 		echo
 	fi
 
