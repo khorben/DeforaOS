@@ -6,48 +6,31 @@
 
 
 #variables
-CDROM_IMAGE=
 CFLAGS=
 CPPFLAGS=
-DISK_IMAGE=
-DISK_SIZE="20480"
 LDFLAGS=
 DESTDIR=
-FLOPPY_IMAGE=
-FLOPPY_SIZE="2880"
-IMAGE_IMAGE=
-KERNEL=
-KERNEL_ARGS=
-KERNEL_MODULES=
-LIBGCC=
+HOST=
+IMAGE_FILE=
+IMAGE_TYPE=
 MACHINE=
-MOUNTPOINT=
 PREFIX=
-RAMDISK_IMAGE=
-RAMDISK_SIZE="4096"
 SYSTEM=
 TARGET=
 VENDOR="DeforaOS"
 
 #executables
-CAT="cat"
 CC=
-CP="cp -f"
 DD="dd bs=1024"
-GZIP="gzip -9"
+INSTALL="install"
 LD=
-LN="ln -sf"
 MAKE="make"
 MKDIR="mkdir -p"
-MKFS=
-MKISOFS="mkisofs -R -J -V DeforaOS"
-MOUNT=
 MV="mv -f"
-SUDO=
-TUNE2FS=
-UMOUNT=
+RMDIR="rmdir -p"
 
 #internals
+DEVNULL="/dev/null"
 DEVZERO="/dev/zero"
 PROGNAME="$0"
 SUBDIRS="System/src/libc \
@@ -58,6 +41,24 @@ SUBDIRS="System/src/libc \
 
 
 #functions
+#check
+check()
+{
+	USAGE="$1"
+	EMPTY=
+
+	shift
+	for i in $@; do
+		VAR=`eval echo "\\\$\$i"`
+		[ -z "$VAR" ] && EMPTY="$EMPTY $i"
+	done
+	[ -z "$EMPTY" ] && return
+	USAGE=`echo -e "$USAGE\n\nError:$EMPTY need to be set"`
+	usage "$USAGE"
+	exit 2
+}
+
+
 #error
 error()
 {
@@ -69,17 +70,18 @@ error()
 #usage
 usage()
 {
-	echo "Usage: build.sh [option=value...] target..." 1>&2
-	echo "Targets:" 1>&2
-	echo "  all		build everything" 1>&2
-	echo "  clean		remove object files" 1>&2
-	echo "  distclean	remove all compiled files" 1>&2
-	echo "  floppy	create bootable floppy image" 1>&2
-	echo "  install	install everything" 1>&2
-	echo "  image		create filesystem image" 1>&2
-	echo "  iso		create bootable CD-ROM image" 1>&2
-	echo "  ramdisk	create bootable ramdisk image" 1>&2
-	echo "  uninstall	uninstall everything" 1>&2
+	echo "Usage: build.sh [option=value...] target..."
+	echo "Targets:"
+	echo "  all		Build everything"
+	echo "  clean		Remove object files"
+	echo "  distclean	Remove all compiled files"
+	echo "  install	Install everything"
+	echo "  image		Create an specific image"
+	echo "  uninstall	Uninstall everything"
+	if [ ! -z "$1" ]; then
+		echo
+		echo "$1"
+	fi
 	exit 1
 }
 
@@ -143,16 +145,12 @@ else
 fi
 
 #initialize variables
-[ -z "$CDROM_IMAGE" ] && CDROM_IMAGE="$VENDOR-cdrom.iso"
-[ -z "$DISK_IMAGE" ] && DISK_IMAGE="$VENDOR-disk.img"
-[ -z "$FLOPPY_IMAGE" ] && FLOPPY_IMAGE="$VENDOR-floppy.img"
-[ -z "$IMAGE_IMAGE" ] && IMAGE_IMAGE="$VENDOR-image.img"
-[ -z "$LIBGCC" ] && LIBGCC=`gcc -print-libgcc-file-name`
+[ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
+[ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
-[ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a $LIBGCC"
-[ -z "$RAMDISK_IMAGE" ] && RAMDISK_IMAGE="$VENDOR-ramdisk.img"
+[ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a `gcc -print-libgcc-file-name`"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
@@ -163,43 +161,17 @@ if [ $# -lt 1 ]; then
 fi
 while [ $# -gt 0 ]; do
 	case "$1" in
-		all)
+		all|install)
 			echo "$0: Making target $1 on $TARGET" 1>&2
 			target "install"			|| exit 2
 			;;
-		clean|distclean|install|uninstall)
+		clean|distclean|uninstall)
 			echo "$0: Making target $1 on $TARGET" 1>&2
 			target "$1"				|| exit 2
 			;;
-		floppy)
-			echo "$0: Making target $1 on $TARGET" 1>&2
-			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			$MKDIR "$DESTDIR"			|| exit 2
-			$DD if="$DEVZERO" of="$DESTDIR/$FLOPPY_IMAGE" \
-			       count="$FLOPPY_SIZE"		|| exit 2
-			$MKFS "$DESTDIR/$FLOPPY_IMAGE"		|| exit 2
-			#FIXME fill floppy image
-			;;
 		image)
 			echo "$0: Making target $1 on $TARGET" 1>&2
-			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			$MKDIR "$DESTDIR"			|| exit 2
-			target "install"			|| exit 2
 			target_image				|| exit 2
-			;;
-		iso)
-			echo "$0: Making target $1 on $TARGET" 1>&2
-			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			$MKDIR "$DESTDIR"			|| exit 2
-			target "install"			|| exit 2
-			target_iso				|| exit 2
-			;;
-		ramdisk)
-			echo "$0: Making target $1 on $TARGET" 1>&2
-			[ -z "$DESTDIR" ] && error "DESTDIR needs to be set"
-			[ -z "$RAMDISK_IMAGE" ] && error \
-				"RAMDISK_IMAGE needs to be set"
-			target_ramdisk
 			;;
 		*)
 			echo "build.sh: $1: Unknown target" 1>&2

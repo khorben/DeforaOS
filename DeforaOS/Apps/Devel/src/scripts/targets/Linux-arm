@@ -3,13 +3,8 @@
 
 
 #variables
-[ -z "$LD" ] && LD="cc -shared -nostdlib"
-[ -z "$MKFS" ] && MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
-#executables
-[ -z "$DU" ] && DU="du -h"
-[ -z "$MKDIR" ] && MKDIR="mkdir -p"
-[ -z "$MV" ] && MV="mv -f"
-[ -z "$TAR" ] && TAR="tar"
+[ -z "$LD" ]	&& LD="cc -shared -nostdlib"
+[ -z "$MKFS" ]	&& MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
 
 
 #includes
@@ -31,10 +26,45 @@ _create_directories()
 }
 
 
-#public
-target_image()
+_image_ramdisk()
 {
-	_create_directories 'bin' 'dev' 'etc' 'lib' 'sbin'
+	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
+  IMAGE_FILE	Where to write the filesystem image\n\
+  MKFS		Command used to format the filesystem"
+
+	#sanity check
+	check "$USAGE" DU GZIP IMAGE_FILE MKFS
+
+	target "install"					|| exit 2
+
+	_create_directories "dev" "proc" "mnt/cdrom" "sbin"
+
+	echo
+	echo -n "Building ramdisk image:"
+	$MKFS "$IMAGE_FILE"					|| exit 2
+	echo
+	$DU "$IMAGE_FILE"
+
+	echo
+	echo -n "Compressing ramdisk:"
+	$GZIP "$IMAGE_FILE"					|| exit 2
+	$MV "$IMAGE_FILE.gz" "$IMAGE_FILE"			|| exit 2
+	echo
+	$DU "$IMAGE_FILE"
+}
+
+
+_image_rootfs()
+{
+	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
+  IMAGE_FILE	Where to write the filesystem image\n\
+  IMAGE_MODULES	Path to a tar.gz archive of kernel modules (optional)\n\
+  MKFS		Command used to format the filesystem"
+
+	#sanity check
+	check "$USAGE" DESTDIR DU GZIP IMAGE_FILE MKFS MV SUDO TAR
+
+	_create_directories "bin" "dev" "etc" "lib" "sbin"
 
 	echo
 	echo -n "Fixing installation paths:"
@@ -56,7 +86,7 @@ target_image()
 		echo
 		echo "Installing kernel modules:"
 		#progress -ef "$KERNEL_MODULES" -- gunzip -c \
-		gunzip -c "$KERNEL_MODULES" \
+		$GZIP -dc "$KERNEL_MODULES" \
 				| (cd "$DESTDIR" && $TAR -xf -)	|| exit 2
 	fi
 
@@ -76,37 +106,28 @@ EOF
 
 	echo
 	echo "Building rootfs image:"
-	$MKFS "$IMAGE_IMAGE"				|| exit 2
-	$DU "$IMAGE_IMAGE"
+	$MKFS "$IMAGE_FILE"				|| exit 2
+	$DU "$IMAGE_FILE"
 
 	echo
 	echo "Building tarball:"
 	OLDPWD="$PWD"
-	(cd "$DESTDIR" && $TAR -cvzf "$OLDPWD/$IMAGE_IMAGE.tar.gz" .) \
+	(cd "$DESTDIR" && $TAR -cvzf "$OLDPWD/$IMAGE_FILE.tar.gz" .) \
 	| while read filename; do
 		echo -en "\r$filename"
 	done || (echo && exit 2)
 	echo -en "\r"
-	$DU "$IMAGE_IMAGE.tar.gz"
+	$DU "$IMAGE_FILE.tar.gz"
 }
 
 
-target_ramdisk()
+#public
+target_image()
 {
-	target "install"					|| exit 2
-
-	_create_directories 'dev' 'proc' 'mnt/cdrom' 'sbin'
-
-	echo
-	echo -n "Building ramdisk image:"
-	$MKFS "$RAMDISK_IMAGE"					|| exit 2
-	echo
-	$DU "$RAMDISK_IMAGE"
-
-	echo
-	echo -n "Compressing ramdisk:"
-	$GZIP "$RAMDISK_IMAGE"					|| exit 2
-	$MV "$RAMDISK_IMAGE.gz" "$RAMDISK_IMAGE"		|| exit 2
-	echo
-	$DU "$RAMDISK_IMAGE"
+	case "$IMAGE_TYPE" in
+		"ramdisk")
+			return _image_ramdisk
+		"rootfs"|*)
+			return _image_rootfs
+	esac
 }

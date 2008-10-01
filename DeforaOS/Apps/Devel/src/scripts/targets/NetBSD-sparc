@@ -4,3 +4,32 @@
 
 #includes
 source "`dirname $0`/Apps/Devel/src/scripts/targets/NetBSD"
+
+
+#functions
+#public
+target_image()
+{
+	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
+  IMAGE_FILE	Where to write the filesystem image\n\
+  IMAGE_KERNEL	Path to the kernel\n\
+  IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
+  MKFS		Command used to format the filesystem"
+
+	#sanity check
+	check "$USAGE" DD DESTDIR DEVZERO IMAGE_FILE IMAGE_SIZE INSTALL MKDIR \
+	MKFS MOUNT UMOUNT
+
+	$MKDIR "$DESTDIR"					|| exit 2
+	$UMOUNT "$DESTDIR"
+	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
+	$MKFS "$IMAGE_FILE"					|| exit 2
+	$MOUNT "$IMAGE_FILE" "$DESTDIR"				|| exit 2
+	target "install"
+	RET=$?
+	#FIXME detect errors here too
+	[ ! -z "$IMAGE_KERNEL" ] &&
+	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL"
+	$UMOUNT "$DESTDIR"
+	exit $RET
+}
