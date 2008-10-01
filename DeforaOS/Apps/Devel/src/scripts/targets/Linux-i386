@@ -120,9 +120,12 @@ target_image()
 	case "$IMAGE_TYPE" in
 		"iso")
 			return _image_iso
+			;;
 		"ramdisk")
 			return _image_ramdisk
+			;;
 		*)
 			return _image_image
+			;;
 	esac
 }

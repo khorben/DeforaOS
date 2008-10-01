@@ -127,7 +127,9 @@ target_image()
 	case "$IMAGE_TYPE" in
 		"ramdisk")
 			return _image_ramdisk
+			;;
 		"rootfs"|*)
 			return _image_rootfs
+			;;
 	esac
 }
