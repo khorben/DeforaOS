@@ -25,7 +25,12 @@
 #include <libgen.h>
 #include <errno.h>
 #include <ar.h>
-#include "../config.h"
+
+
+/* constants */
+#ifndef PACKAGE
+# define PACKAGE	"ar"
+#endif
 
 
 /* macros */
