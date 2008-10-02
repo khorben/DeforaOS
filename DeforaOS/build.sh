@@ -147,6 +147,7 @@ fi
 #initialize variables
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
+[ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
@@ -162,15 +163,15 @@ fi
 while [ $# -gt 0 ]; do
 	case "$1" in
 		all|install)
-			echo "$0: Making target $1 on $TARGET" 1>&2
+			echo "$PROGNAME: Making target $1 on $TARGET" 1>&2
 			target "install"			|| exit 2
 			;;
 		clean|distclean|uninstall)
-			echo "$0: Making target $1 on $TARGET" 1>&2
+			echo "$PROGNAME: Making target $1 on $TARGET" 1>&2
 			target "$1"				|| exit 2
 			;;
 		image)
-			echo "$0: Making target $1 on $TARGET" 1>&2
+			echo "$PROGNAME: Making target $1 on $TARGET" 1>&2
 			target_image				|| exit 2
 			;;
 		*)
