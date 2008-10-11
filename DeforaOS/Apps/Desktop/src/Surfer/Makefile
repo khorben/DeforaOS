@@ -1,5 +1,5 @@
 PACKAGE	= Surfer
-VERSION	= 0.0.4
+VERSION	= 0.0.5
 SUBDIRS	= src
 RM	= rm -f
 LN	= ln -sf
@@ -22,11 +22,16 @@ dist:
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/surfer.c \
+		$(PACKAGE)-$(VERSION)/src/ghtml.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
+		$(PACKAGE)-$(VERSION)/src/ghtml.h \
 		$(PACKAGE)-$(VERSION)/src/surfer.h \
+		$(PACKAGE)-$(VERSION)/src/ghtml-gtkhtml.c \
+		$(PACKAGE)-$(VERSION)/src/ghtml-gtkmozembed.c \
+		$(PACKAGE)-$(VERSION)/src/ghtml-gtktextview.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \

@@ -1,17 +1,20 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
-/* Surfer is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License version 2 as published by the Free
- * Software Foundation.
- *
- * Surfer is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA  02111-1307  USA */
+static char const _license[] =
+"Surfer is free software; you can redistribute it and/or modify it\n"
+"under the terms of the GNU General Public License version 2 as\n"
+"published by the Free Software Foundation.\n"
+"\n"
+"Surfer is distributed in the hope that it will be useful, but WITHOUT ANY\n"
+"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
+"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more\n"
+"details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License along\n"
+"with Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
+"Place, Suite 330, Boston, MA  02111-1307  USA\n";
 
 
 
@@ -20,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include "surfer.h"
+#include "ghtml.h"
 #include "callbacks.h"
 #include "../config.h"
 
@@ -30,8 +34,6 @@ static char const * _authors[] =
 	"Pierre Pronchery <khorben@defora.org>",
 	NULL
 };
-static char const _copyright[] = "Copyright (c) 2007 Pierre Pronchery";
-static char const _license[] = "GPL version 2";
 
 
 /* window */
@@ -62,11 +64,10 @@ void on_file_close(GtkWidget * widget, gpointer data)
 void on_file_new_window(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
-	char * url;
+	char const * url;
 	
-	url = gtk_moz_embed_get_location(GTK_MOZ_EMBED(surfer->view));
+	url = ghtml_get_location(surfer->view);
 	surfer_new(url);
-	free(url);
 }
 
 
@@ -74,8 +75,7 @@ void on_file_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_reload(GTK_MOZ_EMBED(surfer->view),
-			GTK_MOZ_EMBED_FLAG_RELOADNORMAL);
+	ghtml_reload(surfer->view);
 }
 
 
@@ -83,8 +83,7 @@ void on_file_force_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_reload(GTK_MOZ_EMBED(surfer->view),
-		       	GTK_MOZ_EMBED_FLAG_RELOADBYPASSCACHE);
+	ghtml_refresh(surfer->view);
 }
 
 
@@ -302,7 +301,8 @@ void on_back(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_go_back(GTK_MOZ_EMBED(surfer->view));
+	if(ghtml_go_back(surfer->view) != TRUE)
+		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), FALSE);
 }
 
 
@@ -310,7 +310,8 @@ void on_forward(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_go_forward(GTK_MOZ_EMBED(surfer->view));
+	if(ghtml_go_forward(surfer->view) != TRUE)
+		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), FALSE);
 }
 
 
@@ -335,8 +336,8 @@ void on_home(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_load_url(GTK_MOZ_EMBED(surfer->view),
-			"http://www.defora.org/");
+	/* FIXME query this from the preferences */
+	ghtml_load_url(surfer->view, SURFER_DEFAULT_HOME);
 }
 
 
@@ -346,7 +347,7 @@ void on_path_activate(GtkWidget * widget, gpointer data)
 	gchar * url;
 
 	url = gtk_combo_box_get_active_text(GTK_COMBO_BOX(surfer->tb_path));
-	gtk_moz_embed_load_url(GTK_MOZ_EMBED(surfer->view), url);
+	ghtml_load_url(surfer->view, url);
 	g_free(url);
 }
 
@@ -355,8 +356,7 @@ void on_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_reload(GTK_MOZ_EMBED(surfer->view),
-		       	GTK_MOZ_EMBED_FLAG_RELOADNORMAL);
+	ghtml_refresh(surfer->view);
 }
 
 
@@ -364,7 +364,7 @@ void on_stop(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	gtk_moz_embed_stop_load(GTK_MOZ_EMBED(surfer->view));
+	ghtml_stop(surfer->view);
 }
 
 
@@ -372,7 +372,7 @@ void on_stop(GtkWidget * widget, gpointer data)
 void on_view_link_message(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
-	char * url = gtk_moz_embed_get_link_message(view);
+	char const * url = ghtml_get_link_message(GTK_WIDGET(view));
 
 	if(surfer->statusbar_id)
 		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
@@ -384,18 +384,17 @@ void on_view_link_message(GtkMozEmbed * view, gpointer data)
 			gtk_statusbar_get_context_id(GTK_STATUSBAR(
 					surfer->statusbar), ""),
 			url != NULL ? url : "Ready");
-	free(url);
 }
 
 
 void on_view_location(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
-	char * url;
+	char const * url;
 	GtkWidget * widget;
-	static int i = 0;
+	static int i = 0; /* XXX should be set per-window */
 
-	url = gtk_moz_embed_get_location(view);
+	url = ghtml_get_location(GTK_WIDGET(view));
 	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
 	if(i == 8)
@@ -403,7 +402,6 @@ void on_view_location(GtkMozEmbed * view, gpointer data)
 	else
 		i++;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->tb_path), url);
-	free(url);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
 			gtk_moz_embed_can_go_back(view));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
@@ -460,7 +458,7 @@ void on_view_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
-	gtk_window_set_title(GTK_WINDOW(window), "Web surfer");
+	gtk_window_set_title(GTK_WINDOW(window), SURFER_DEFAULT_TITLE);
 	if((mask & GTK_MOZ_EMBED_FLAG_WINDOWRESIZEON)
 			!= GTK_MOZ_EMBED_FLAG_WINDOWRESIZEON)
 		gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
@@ -506,18 +504,18 @@ static void _on_popup_resize(GtkMozEmbed * view, gint width, gint height,
 static void _on_popup_title(GtkMozEmbed * view, gpointer data)
 {
 	GtkWindow * window = data;
-	char * title;
+	char const * title;
 	char buf[256];
 
-	title = gtk_moz_embed_get_title(view);
-	if(title[0] == '\0')
-		gtk_window_set_title(window, "Web surfer");
+	title = ghtml_get_title(GTK_WIDGET(view));
+	if(title == NULL || title[0] == '\0')
+		gtk_window_set_title(window, SURFER_DEFAULT_TITLE);
 	else
 	{
-		snprintf(buf, sizeof(buf), "%s%s", "Web surfer - ", title);
+		snprintf(buf, sizeof(buf), "%s - %s", SURFER_DEFAULT_TITLE,
+				title);
 		gtk_window_set_title(window, buf);
 	}
-	free(title);
 }
 
 
@@ -556,16 +554,17 @@ void on_view_resize(GtkMozEmbed * view, gint width, gint height, gpointer data)
 void on_view_title(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
-	char * title;
+	char const * title;
 	char buf[256];
 
-	title = gtk_moz_embed_get_title(view);
-	if(title[0] == '\0')
-		gtk_window_set_title(GTK_WINDOW(surfer->window), "Web surfer");
+	title = ghtml_get_title(GTK_WIDGET(view));
+	if(title == NULL || title[0] == '\0')
+		gtk_window_set_title(GTK_WINDOW(surfer->window),
+				SURFER_DEFAULT_TITLE);
 	else
 	{
-		snprintf(buf, sizeof(buf), "%s%s", "Web surfer - ", title);
+		snprintf(buf, sizeof(buf), "%s - %s", SURFER_DEFAULT_TITLE,
+				title);
 		gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
 	}
-	free(title);
 }

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -19,6 +19,7 @@
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
+#include "ghtml.h"
 #include "surfer.h"
 
 
@@ -90,7 +91,6 @@ Surfer * surfer_new(char const * url)
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GtkWidget * widget;
-	char buf[256];
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
@@ -167,32 +167,14 @@ Surfer * surfer_new(char const * url)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* view */
-	gtk_moz_embed_set_comp_path(SURFER_GTKMOZEMBED_COMPPATH);
-	if(buf[0] != '\0')
-		gtk_moz_embed_set_profile_path(buf, "gecko");
-	if((surfer->view = gtk_moz_embed_new()) == NULL)
+	if((surfer->view = ghtml_new(surfer)) == NULL)
 	{
+		/* XXX display an error dialog */
 		surfer_delete(surfer);
 		return NULL;
 	}
-	g_signal_connect(G_OBJECT(surfer->view), "link_message", G_CALLBACK(
-				on_view_link_message), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "location", G_CALLBACK(
-				on_view_location), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "net_start", G_CALLBACK(
-				on_view_net_start), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "net_stop", G_CALLBACK(
-				on_view_net_stop), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "new_window", G_CALLBACK(
-				on_view_new_window), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "progress", G_CALLBACK(
-				on_view_progress), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "size_to", G_CALLBACK(
-				on_view_resize), surfer);
-	g_signal_connect(G_OBJECT(surfer->view), "title", G_CALLBACK(
-				on_view_title), surfer);
 	if(url != NULL)
-		gtk_moz_embed_load_url(GTK_MOZ_EMBED(surfer->view), url);
+		ghtml_load_url(surfer->view, url);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->view, TRUE, TRUE, 0);
 	/* statusbar */
 	surfer->statusbar = gtk_statusbar_new();

@@ -15,41 +15,15 @@
 
 
 
-#include <unistd.h>
-#include <stdio.h>
-#include "surfer.h"
+#include "ghtml.h"
 
 
-/* usage */
-static int _usage(void)
-{
-	fputs("Usage: surfer [url]\n", stderr);
-	return 1;
-}
-
-
-/* main */
-int main(int argc, char * argv[])
-{
-	int o;
-	Surfer * surfer;
-
-	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
-		switch(o)
-		{
-			default:
-				return _usage();
-		}
-	if(optind == argc)
-		surfer = surfer_new(NULL);
-	else if(optind + 1 == argc)
-		surfer = surfer_new(argv[optind]);
-	else
-		return _usage();
-	if(surfer == NULL)
-		return 2;
-	gtk_main();
-	surfer_delete(surfer);
-	return 0;
-}
+#if defined(WITH_GTKMOZEMBED)
+# include "ghtml-gtkmozembed.c"
+#elif defined(WITH_GTKHTML)
+# include "ghtml-gtkhtml.c"
+#elif defined(WITH_GTKTEXTVIEW)
+# include "ghtml-gtktextview.c"
+#else /* default */
+# include "ghtml-gtkmozembed.c"
+#endif

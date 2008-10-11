@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0 firefox-gtkmozembed`
 CFLAGS	= -Wall -g -O2 -ansi
@@ -15,8 +16,8 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-surfer_OBJS = surfer.o callbacks.o main.o
-surfer_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+surfer_OBJS = surfer.o ghtml.o callbacks.o main.o
+surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 
 surfer: $(surfer_OBJS)
 	$(CC) -o surfer $(surfer_OBJS) $(LDFLAGSF) $(LDFLAGS)
@@ -24,7 +25,10 @@ surfer: $(surfer_OBJS)
 surfer.o: surfer.c callbacks.h surfer.h ../config.h
 	$(CC) $(surfer_CFLAGS) -c surfer.c
 
-callbacks.o: callbacks.c surfer.h callbacks.h
+ghtml.o: ghtml.c ghtml.h ghtml-gtkhtml.c ghtml-gtkmozembed.c ghtml-gtktextview.c
+	$(CC) $(surfer_CFLAGS) -c ghtml.c
+
+callbacks.o: callbacks.c surfer.h ghtml.h callbacks.h
 	$(CC) $(surfer_CFLAGS) -c callbacks.c
 
 main.o: main.c surfer.h

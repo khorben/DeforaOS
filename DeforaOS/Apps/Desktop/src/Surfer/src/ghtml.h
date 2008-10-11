@@ -15,41 +15,33 @@
 
 
 
-#include <unistd.h>
-#include <stdio.h>
-#include "surfer.h"
+#ifndef SURFER_GHTML_H
+# define SURFER_GHTML_H
+
+# include <gtk/gtk.h>
 
 
-/* usage */
-static int _usage(void)
-{
-	fputs("Usage: surfer [url]\n", stderr);
-	return 1;
-}
+/* GHTML */
+/* functions */
+#if 0 /* FIXME pass the callback data another way */
+GtkWidget * ghtml_new(void);
+#else
+GtkWidget * ghtml_new(void * data);
+#endif
 
+/* accessors */
+char const * ghtml_get_link_message(GtkWidget * ghtml);
+char const * ghtml_get_location(GtkWidget * ghtml);
+char const * ghtml_get_title(GtkWidget * ghtml);
 
-/* main */
-int main(int argc, char * argv[])
-{
-	int o;
-	Surfer * surfer;
+/* useful */
+gboolean ghtml_go_back(GtkWidget * ghtml);
+gboolean ghtml_go_forward(GtkWidget * ghtml);
 
-	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
-		switch(o)
-		{
-			default:
-				return _usage();
-		}
-	if(optind == argc)
-		surfer = surfer_new(NULL);
-	else if(optind + 1 == argc)
-		surfer = surfer_new(argv[optind]);
-	else
-		return _usage();
-	if(surfer == NULL)
-		return 2;
-	gtk_main();
-	surfer_delete(surfer);
-	return 0;
-}
+void ghtml_load_url(GtkWidget * ghtml, char const * url);
+
+void ghtml_refresh(GtkWidget * ghtml);
+void ghtml_reload(GtkWidget * ghtml);
+void ghtml_stop(GtkWidget * ghtml);
+
+#endif /* !SURFER_GHTML_H */
