@@ -403,9 +403,9 @@ void on_view_location(GtkMozEmbed * view, gpointer data)
 		i++;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->tb_path), url);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
-			gtk_moz_embed_can_go_back(view));
+			ghtml_can_go_back(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
-			gtk_moz_embed_can_go_forward(view));
+			ghtml_can_go_forward(GTK_WIDGET(view)));
 }
 
 
@@ -414,9 +414,9 @@ void on_view_net_start(GtkMozEmbed * view, gpointer data)
 	Surfer * surfer = data;
 
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
-			gtk_moz_embed_can_go_back(view));
+			ghtml_can_go_back(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
-			gtk_moz_embed_can_go_forward(view));
+			ghtml_can_go_forward(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 }
@@ -427,9 +427,9 @@ void on_view_net_stop(GtkMozEmbed * view, gpointer data)
 	Surfer * surfer = data;
 
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
-			gtk_moz_embed_can_go_back(view));
+			ghtml_can_go_back(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
-			gtk_moz_embed_can_go_forward(view));
+			ghtml_can_go_forward(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
 	if(surfer->statusbar_id)
 		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
@@ -440,82 +440,6 @@ void on_view_net_stop(GtkMozEmbed * view, gpointer data)
 				surfer->statusbar),
 			gtk_statusbar_get_context_id(GTK_STATUSBAR(
 					surfer->statusbar), ""), "Ready");
-}
-
-
-/* on_view_new_window */
-static void _on_popup_destroy_browser(GtkMozEmbed * view, gpointer data);
-static void _on_popup_resize(GtkMozEmbed * view, gint width, gint height,
-		gpointer data);
-static void _on_popup_title(GtkMozEmbed * view, gpointer data);
-void on_view_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
-		gpointer data)
-{
-	Surfer * surfer = data;
-	GtkWidget * window;
-	GtkWidget * vbox;
-	GtkWidget * newview;
-
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
-	gtk_window_set_title(GTK_WINDOW(window), SURFER_DEFAULT_TITLE);
-	if((mask & GTK_MOZ_EMBED_FLAG_WINDOWRESIZEON)
-			!= GTK_MOZ_EMBED_FLAG_WINDOWRESIZEON)
-		gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-	if((mask & GTK_MOZ_EMBED_FLAG_MODAL)
-			== GTK_MOZ_EMBED_FLAG_MODAL)
-		gtk_window_set_transient_for(GTK_WINDOW(window),
-				GTK_WINDOW(surfer->window));
-	vbox = gtk_vbox_new(FALSE, 0);
-	if((mask & GTK_MOZ_EMBED_FLAG_MENUBARON)
-			== GTK_MOZ_EMBED_FLAG_MENUBARON)
-	{
-		/* FIXME implement */
-	}
-	newview = gtk_moz_embed_new();
-	g_signal_connect(G_OBJECT(newview), "destroy_browser", G_CALLBACK(
-				_on_popup_destroy_browser), window);
-	g_signal_connect(G_OBJECT(surfer->view), "size_to", G_CALLBACK(
-				_on_popup_resize), window);
-	g_signal_connect(G_OBJECT(newview), "title", G_CALLBACK(
-				_on_popup_title), window);
-	/* FIXME other settings and callbacks */
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(newview), TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(window), vbox);
-	gtk_widget_show_all(window);
-	*ret = GTK_MOZ_EMBED(newview);
-}
-
-static void _on_popup_destroy_browser(GtkMozEmbed * view, gpointer data)
-{
-	GtkWidget * window = data;
-
-	gtk_widget_destroy(window);
-}
-
-static void _on_popup_resize(GtkMozEmbed * view, gint width, gint height,
-		gpointer data)
-{
-	GtkWindow * window = data;
-
-	gtk_window_resize(window, width, height);
-}
-
-static void _on_popup_title(GtkMozEmbed * view, gpointer data)
-{
-	GtkWindow * window = data;
-	char const * title;
-	char buf[256];
-
-	title = ghtml_get_title(GTK_WIDGET(view));
-	if(title == NULL || title[0] == '\0')
-		gtk_window_set_title(window, SURFER_DEFAULT_TITLE);
-	else
-	{
-		snprintf(buf, sizeof(buf), "%s - %s", SURFER_DEFAULT_TITLE,
-				title);
-		gtk_window_set_title(window, buf);
-	}
 }
 
 

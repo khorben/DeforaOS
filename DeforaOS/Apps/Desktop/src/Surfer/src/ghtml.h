@@ -19,6 +19,7 @@
 # define SURFER_GHTML_H
 
 # include <gtk/gtk.h>
+# include "surfer.h"
 
 
 /* GHTML */
@@ -26,10 +27,13 @@
 #if 0 /* FIXME pass the callback data another way */
 GtkWidget * ghtml_new(void);
 #else
-GtkWidget * ghtml_new(void * data);
+GtkWidget * ghtml_new(Surfer * surfer);
 #endif
 
 /* accessors */
+gboolean ghtml_can_go_back(GtkWidget * ghtml);
+gboolean ghtml_can_go_forward(GtkWidget * ghtml);
+
 char const * ghtml_get_link_message(GtkWidget * ghtml);
 char const * ghtml_get_location(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
