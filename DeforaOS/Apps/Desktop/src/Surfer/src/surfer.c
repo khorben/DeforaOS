@@ -42,7 +42,8 @@ struct _menubar
 /* variables */
 static struct _menu _menu_file[] =
 {
-	{ "_New window",	G_CALLBACK(on_file_new_window), NULL, GDK_N },
+	{ "_New window",	G_CALLBACK(on_file_new_window), "window-new",
+		GDK_N },
 	{ "",			NULL, NULL, 0 },
 	{ "_Refresh",		G_CALLBACK(on_file_refresh), GTK_STOCK_REFRESH,
 		GDK_R },
@@ -197,6 +198,7 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 	GtkWidget * menu;
 	GtkWidget * menubar;
 	GtkWidget * menuitem;
+	GtkWidget * image;
 	unsigned int i;
 	unsigned int j;
 	struct _menu * p;
@@ -215,9 +217,20 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 			else if(p->stock == 0)
 				menuitem = gtk_menu_item_new_with_mnemonic(
 						p->name);
-			else
+			else if(strncmp(p->stock, "gtk-", 4) == 0)
 				menuitem = gtk_image_menu_item_new_from_stock(
 						p->stock, NULL);
+			else
+			{
+				image = gtk_image_new_from_icon_name(p->stock,
+						GTK_ICON_SIZE_MENU);
+				menuitem =
+					gtk_image_menu_item_new_with_mnemonic(
+							p->name);
+				gtk_image_menu_item_set_image(
+						GTK_IMAGE_MENU_ITEM(menuitem),
+						image);
+			}
 			if(p->callback != NULL)
 				g_signal_connect(G_OBJECT(menuitem), "activate",
 						G_CALLBACK(p->callback),
