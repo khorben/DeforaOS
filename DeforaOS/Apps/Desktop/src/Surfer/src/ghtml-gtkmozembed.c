@@ -25,8 +25,18 @@
 /* prototypes */
 /* private */
 /* callbacks */
+static void _on_link_message(GtkMozEmbed * view, gpointer data);
+static void _on_location(GtkMozEmbed * view, gpointer data);
+static void _on_net_start(GtkMozEmbed * view, gpointer data);
+static void _on_net_stop(GtkMozEmbed * view, gpointer data);
 static void _on_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 		gpointer data);
+static void _on_progress(GtkMozEmbed * view, gint cur, gint max, gpointer data);
+static void _on_resize(GtkMozEmbed * view, gint width, gint height,
+		gpointer data);
+static void _on_title(GtkMozEmbed * view, gpointer data);
+
+/* popup */
 static void _on_popup_destroy_browser(GtkMozEmbed * view, gpointer data);
 static void _on_popup_resize(GtkMozEmbed * view, gint width, gint height,
 		gpointer data);
@@ -36,6 +46,80 @@ static void _on_popup_title(GtkMozEmbed * view, gpointer data);
 /* functions */
 /* private */
 /* callbacks */
+static void _on_link_message(GtkMozEmbed * view, gpointer data)
+{
+	Surfer * surfer = data;
+	char const * url = ghtml_get_link_message(GTK_WIDGET(view));
+
+	if(surfer->statusbar_id)
+		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
+				gtk_statusbar_get_context_id(
+					GTK_STATUSBAR(surfer->statusbar), ""),
+				surfer->statusbar_id);
+	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
+				surfer->statusbar),
+			gtk_statusbar_get_context_id(GTK_STATUSBAR(
+					surfer->statusbar), ""),
+			url != NULL ? url : "Ready");
+}
+
+
+static void _on_location(GtkMozEmbed * view, gpointer data)
+{
+	Surfer * surfer = data;
+	char const * url;
+	GtkWidget * widget;
+	static int i = 0; /* XXX should be set per-window */
+
+	url = ghtml_get_location(GTK_WIDGET(view));
+	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
+	gtk_entry_set_text(GTK_ENTRY(widget), url);
+	if(i == 8)
+		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->tb_path), 0);
+	else
+		i++;
+	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->tb_path), url);
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
+			ghtml_can_go_back(GTK_WIDGET(view)));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
+			ghtml_can_go_forward(GTK_WIDGET(view)));
+}
+
+
+static void _on_net_start(GtkMozEmbed * view, gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
+			ghtml_can_go_back(GTK_WIDGET(view)));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
+			ghtml_can_go_forward(GTK_WIDGET(view)));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), TRUE);
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
+}
+
+
+static void _on_net_stop(GtkMozEmbed * view, gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
+			ghtml_can_go_back(GTK_WIDGET(view)));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
+			ghtml_can_go_forward(GTK_WIDGET(view)));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
+	if(surfer->statusbar_id)
+		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
+				gtk_statusbar_get_context_id(
+					GTK_STATUSBAR(surfer->statusbar), ""),
+				surfer->statusbar_id);
+	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
+				surfer->statusbar),
+			gtk_statusbar_get_context_id(GTK_STATUSBAR(
+					surfer->statusbar), ""), "Ready");
+}
+
+
 static void _on_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 		gpointer data)
 {
@@ -76,6 +160,59 @@ static void _on_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 }
 
 
+static void _on_progress(GtkMozEmbed * view, gint cur, gint max, gpointer data)
+{
+	Surfer * surfer = data;
+	char buf[256];
+
+	if(surfer->statusbar_id)
+		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
+				gtk_statusbar_get_context_id(
+					GTK_STATUSBAR(surfer->statusbar), ""),
+				surfer->statusbar_id);
+	if(max > 1024 || max <= 0)
+		snprintf(buf, sizeof(buf), "%s%u%s%u%s", "Transferring data (",
+				cur / 1024, " on ", max / 1024,
+				" KB received)");
+	else
+		snprintf(buf, sizeof(buf), "%s%u%s%u%s", "Transferring data (",
+				cur, " on ", max, " bytes received)");
+	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
+				surfer->statusbar),
+			gtk_statusbar_get_context_id(GTK_STATUSBAR(
+					surfer->statusbar), ""), buf);
+}
+
+
+static void _on_resize(GtkMozEmbed * view, gint width, gint height,
+		gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_window_resize(GTK_WINDOW(surfer->window), width, height);
+}
+
+
+static void _on_title(GtkMozEmbed * view, gpointer data)
+{
+	Surfer * surfer = data;
+	char const * title;
+	char buf[256];
+
+	title = ghtml_get_title(GTK_WIDGET(view));
+	if(title == NULL || title[0] == '\0')
+		gtk_window_set_title(GTK_WINDOW(surfer->window),
+				SURFER_DEFAULT_TITLE);
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s - %s", SURFER_DEFAULT_TITLE,
+				title);
+		gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
+	}
+}
+
+
+/* popup */
 static void _on_popup_destroy_browser(GtkMozEmbed * view, gpointer data)
 {
 	GtkWidget * window = data;
@@ -132,20 +269,20 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	ghtml = gtk_moz_embed_new();
 	/* FIXME handle callbacks in a common way */
 	g_signal_connect(G_OBJECT(ghtml), "link_message", G_CALLBACK(
-				on_view_link_message), surfer);
-	g_signal_connect(G_OBJECT(ghtml), "location", G_CALLBACK(
-				on_view_location), surfer);
+				_on_link_message), surfer);
+	g_signal_connect(G_OBJECT(ghtml), "location", G_CALLBACK(_on_location),
+			surfer);
 	g_signal_connect(G_OBJECT(ghtml), "net_start", G_CALLBACK(
-				on_view_net_start), surfer);
-	g_signal_connect(G_OBJECT(ghtml), "net_stop", G_CALLBACK(
-				on_view_net_stop), surfer);
+				_on_net_start), surfer);
+	g_signal_connect(G_OBJECT(ghtml), "net_stop", G_CALLBACK(_on_net_stop),
+			surfer);
 	g_signal_connect(G_OBJECT(ghtml), "new_window", G_CALLBACK(
 				_on_new_window), surfer);
-	g_signal_connect(G_OBJECT(ghtml), "progress", G_CALLBACK(
-				on_view_progress), surfer);
-	g_signal_connect(G_OBJECT(ghtml), "size_to", G_CALLBACK(on_view_resize),
+	g_signal_connect(G_OBJECT(ghtml), "progress", G_CALLBACK(_on_progress),
 			surfer);
-	g_signal_connect(G_OBJECT(ghtml), "title", G_CALLBACK(on_view_title),
+	g_signal_connect(G_OBJECT(ghtml), "size_to", G_CALLBACK(_on_resize),
+			surfer);
+	g_signal_connect(G_OBJECT(ghtml), "title", G_CALLBACK(_on_title),
 			surfer);
 	return ghtml;
 }
