@@ -42,6 +42,7 @@ enum
 # endif
 	BR_COL_INODE,
 	BR_COL_IS_DIRECTORY,
+	BR_COL_IS_EXECUTABLE,
 	BR_COL_IS_MOUNT_POINT,
 	BR_COL_SIZE,
 	BR_COL_DISPLAY_SIZE,
@@ -105,14 +106,11 @@ typedef struct _Browser
 	GtkIconTheme * theme;
 	GdkPixbuf * pb_file_24;
 	GdkPixbuf * pb_folder_24;
-	GdkPixbuf * pb_executable_24;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GdkPixbuf * pb_file_48;
 	GdkPixbuf * pb_folder_48;
-	GdkPixbuf * pb_executable_48;
 	GdkPixbuf * pb_file_96;
 	GdkPixbuf * pb_folder_96;
-	GdkPixbuf * pb_executable_96;
 #endif
 	GtkWidget * window;
 	GtkToolItem * tb_back;

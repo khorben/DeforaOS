@@ -163,7 +163,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 	Browser * browser = data;
 	GtkWidget * dialog;
 	unsigned long cnt = 0;
-	int ret = GTK_RESPONSE_YES;
+	int res = GTK_RESPONSE_YES;
 	GList * selection;
 	GList * p;
 
@@ -182,11 +182,11 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
 				"%s%lu%s", "Are you sure you want to delete ",
 				cnt, " file(s)?");
-		gtk_window_set_title(GTK_WINDOW(dialog), "Question");
-		ret = gtk_dialog_run(GTK_DIALOG(dialog));
-		gtk_widget_destroy(GTK_WIDGET(dialog));
+		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+		res = gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
 	}
-	if(ret == GTK_RESPONSE_YES
+	if(res == GTK_RESPONSE_YES
 			&& _common_exec("delete", "-ir", selection) != 0)
 		browser_error(browser, "fork", 0);
 	g_list_foreach(selection, (GFunc)free, NULL);
@@ -851,6 +851,7 @@ typedef struct _IconCallback
 {
 	Browser * browser;
 	int isdir;
+	int isexec;
 	int ismnt;
 	char * path;
 } IconCallback;
@@ -873,6 +874,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_open_new_window(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
+static void _on_icon_run(GtkWidget * widget, gpointer data);
 static void _on_icon_paste(GtkWidget * widget, gpointer data);
 static void _on_icon_unmount(GtkWidget * widget, gpointer data);
 
@@ -907,6 +909,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 				(int)event->y, &path, NULL, NULL, NULL);
 	ic.browser = browser;
 	ic.isdir = 0;
+	ic.isexec = 0;
 	ic.path = NULL;
 	if(path == NULL)
 		return _press_context(browser, event, menu, &ic);
@@ -937,6 +940,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	}
 	gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter, BR_COL_PATH,
 			&ic.path, BR_COL_IS_DIRECTORY, &ic.isdir,
+			BR_COL_IS_EXECUTABLE, &ic.isexec,
 			BR_COL_IS_MOUNT_POINT, &ic.ismnt, BR_COL_MIME_TYPE,
 			&mimetype, -1);
 	if(ic.isdir == TRUE)
@@ -1078,6 +1082,14 @@ static void _press_file(Browser * browser, GtkWidget * menu, char * mimetype,
 			"_Edit",
 #endif
 			G_CALLBACK(_on_icon_edit), ic, menu);
+	if(ic->isexec)
+	{
+		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE,
+				NULL);
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_on_icon_run), ic);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), ic);
@@ -1169,6 +1181,32 @@ static void _on_icon_edit(GtkWidget * widget, gpointer data)
 
 	if(cb->browser->mime != NULL)
 		mime_action(cb->browser->mime, "edit", cb->path);
+}
+
+static void _on_icon_run(GtkWidget * widget, gpointer data)
+{
+	IconCallback * cb = data;
+	GtkWidget * dialog;
+	int res;
+	pid_t pid;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(cb->browser->window),
+			GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
+			GTK_BUTTONS_YES_NO, "%s",
+			"Are you sure you want to execute this file?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_YES)
+		return;
+	if((pid = fork()) == -1)
+		browser_error(cb->browser, strerror(errno), 0);
+	else if(pid == 0)
+	{
+		execl(cb->path, cb->path, NULL);
+		browser_error(cb->browser, strerror(errno), 0);
+		exit(127);
+	}
 }
 
 static void _on_icon_open_with(GtkWidget * widget, gpointer data)

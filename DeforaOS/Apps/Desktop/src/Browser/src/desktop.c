@@ -58,7 +58,6 @@ struct _Desktop
 	GtkIconTheme * theme;
 	GdkPixbuf * file;
 	GdkPixbuf * folder;
-	GdkPixbuf * executable;
 };
 
 struct _DesktopIcon
@@ -66,6 +65,7 @@ struct _DesktopIcon
 	Desktop * desktop;
 	char * path;
 	int isdir;
+	int isexec;
 	char const * mimetype;
 
 	gboolean selected;
@@ -171,6 +171,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	}
 	desktopicon->desktop = desktop;
 	desktopicon->isdir = 0;
+	desktopicon->isexec = 0;
 	desktopicon->mimetype = NULL;
 	desktopicon->selected = 0;
 	desktopicon->updated = 1;
@@ -204,7 +205,13 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 			icon = desktop->folder;
 		}
 		else if(st.st_mode & S_IXUSR)
-			icon = desktop->executable;
+		{
+			desktopicon->isexec = 1;
+			mime_icons(desktop->mime, desktop->theme,
+					"application/x-executable",
+					DESKTOPICON_ICON_SIZE,
+					&icon, -1);
+		}
 		else if((desktopicon->mimetype = mime_type(desktop->mime, path))
 				!= NULL)
 			mime_icons(desktop->mime, desktop->theme,
@@ -268,6 +275,7 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 /* callbacks */
 static void _on_icon_open(GtkWidget * widget, gpointer data);
 static void _on_icon_edit(GtkWidget * widget, gpointer data);
+static void _on_icon_run(GtkWidget * widget, gpointer data);
 static void _on_icon_open_with(GtkWidget * widget, gpointer data);
 static void _on_icon_delete(GtkWidget * widget, gpointer data);
 static void _on_icon_properties(GtkWidget * widget, gpointer data);
@@ -341,6 +349,14 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 			"_Edit",
 #endif
 			G_CALLBACK(_on_icon_edit), desktopicon, menu);
+	if(desktopicon->isexec)
+	{
+		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE,
+				NULL);
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_on_icon_run), desktopicon);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), desktopicon);
@@ -385,7 +401,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 		return;
 	execlp("browser", "browser", "--", desktopicon->path, NULL);
 	fprintf(stderr, "%s%s\n", "desktop: browser: ", strerror(errno));
-	exit(2);
+	exit(127);
 }
 
 static void _on_icon_edit(GtkWidget * widget, gpointer data)
@@ -393,6 +409,31 @@ static void _on_icon_edit(GtkWidget * widget, gpointer data)
 	DesktopIcon * desktopicon = data;
 
 	mime_action(desktopicon->desktop->mime, "edit", desktopicon->path);
+}
+
+static void _on_icon_run(GtkWidget * widget, gpointer data)
+{
+	DesktopIcon * desktopicon = data;
+	GtkWidget * dialog;
+	int res;
+	pid_t pid;
+
+	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+			"Are you sure you want to execute this file?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_YES)
+		return;
+	if((pid = fork()) == -1)
+		desktop_error(desktopicon->desktop, "fork", 0);
+	else if(pid == 0)
+	{
+		execl(desktopicon->path, desktopicon->path, NULL);
+		desktop_error(NULL, desktopicon->path, 0);
+		exit(127);
+	}
 }
 
 static void _on_icon_open_with(GtkWidget * widget, gpointer data)
@@ -419,7 +460,7 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	{
 		execlp(filename, filename, desktopicon->path, NULL);
 		desktop_error(NULL, filename, 0);
-		exit(2);
+		exit(127);
 	}
 	g_free(filename);
 }
@@ -446,7 +487,7 @@ static void _on_icon_properties(GtkWidget * widget, gpointer data)
 		return;
 	execlp("properties", "properties", "--", desktopicon->path, NULL);
 	desktop_error(NULL, "properties", 0);
-	exit(2);
+	exit(127);
 }
 
 static gboolean _on_icon_key_press(GtkWidget * widget, GdkEventKey * event,
@@ -590,11 +631,6 @@ Desktop * desktop_new(void)
 		GTK_STOCK_DIRECTORY,
 #endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
-	char * executable[] = { "gnome-fs-executable", "gnome-fs-regular",
-#if GTK_CHECK_VERSION(2, 6, 0)
-		GTK_STOCK_FILE,
-#endif
-		GTK_STOCK_MISSING_IMAGE, NULL };
 	char ** p;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
@@ -617,10 +653,6 @@ Desktop * desktop_new(void)
 	desktop->folder = NULL;
 	for(p = folder; *p != NULL && desktop->folder == NULL; p++)
 		desktop->folder = gtk_icon_theme_load_icon(desktop->theme,
-				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
-	desktop->executable = NULL;
-	for(p = executable; *p != NULL && desktop->executable == NULL; p++)
-		desktop->executable = gtk_icon_theme_load_icon(desktop->theme,
 				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
 	if((home = getenv("HOME")) == NULL)
 		return _new_error(desktop, "HOME");
