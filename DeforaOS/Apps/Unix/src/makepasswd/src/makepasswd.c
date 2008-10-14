@@ -250,11 +250,13 @@ int main(int argc, char* argv[])
 		perror("gettimeofday");
 		exit(2);
 	}
-	if((fd = open("/dev/random", O_RDONLY)) >= 0)
+	if((fd = open("/dev/random", O_RDONLY)) < 0)
 	{
-		read(fd, &s, sizeof(s));
-		close(fd);
+		perror("/dev/random");
+		exit(2);
 	}
+	read(fd, &s, sizeof(s));
+	close(fd);
 	srand(tv.tv_sec ^ tv.tv_usec ^ getuid() ^ (getpid() << 16) ^ s);
 
 	/* go for it */
