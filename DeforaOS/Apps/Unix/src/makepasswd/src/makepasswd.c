@@ -21,6 +21,7 @@
 
 
 #include <sys/time.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -97,6 +98,8 @@ int main(int argc, char* argv[])
 	int i, j, l;
 	char * str;
 	struct timeval tv;
+	int fd;
+	short int s;
 
 	/* initializations */
 	encryption = ENONE;
@@ -247,7 +250,12 @@ int main(int argc, char* argv[])
 		perror("gettimeofday");
 		exit(2);
 	}
-	srand(tv.tv_sec ^ tv.tv_usec ^ getuid() ^ (getpid() << 16));
+	if((fd = open("/dev/random", O_RDONLY)) >= 0)
+	{
+		read(fd, &s, sizeof(s));
+		close(fd);
+	}
+	srand(tv.tv_sec ^ tv.tv_usec ^ getuid() ^ (getpid() << 16) ^ s);
 
 	/* go for it */
 	if(password != NULL)
