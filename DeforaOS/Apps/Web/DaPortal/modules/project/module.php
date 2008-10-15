@@ -1564,9 +1564,9 @@ function project_system($args)
 	if($args['action'] == 'config_update')
 		$error = _project_system_config_update($args);
 	else if($args['action'] == 'download_insert')
-		$error = _project_system_download_update($args);
+		$error = _project_system_download_insert($args);
 	else if($args['action'] == 'screenshot_insert')
-		$error = _project_system_download_update($args, 'screenshot');
+		$error = _project_system_download_insert($args, 'screenshot');
 }
 
 function _project_system_config_update($args)
@@ -1582,7 +1582,7 @@ function _project_system_config_update($args)
 }
 
 
-function _project_system_download_update($args, $category = 'release')
+function _project_system_download_insert($args, $category = 'release')
 {
 	global $user_id;
 
