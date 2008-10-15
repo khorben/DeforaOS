@@ -15,5 +15,6 @@ $dbname = 'daportal';
 $dbuser = 'daportal';
 $dbpassword = 'daportal';
 $friendlylinks = 0;	//force "friendly links" generation
+//$friendlykicker = '';	//replaces "index.php" in "friendly links"
 
 ?>
