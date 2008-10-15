@@ -28,8 +28,6 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
-$text['ADD_RELEASE'] = 'Add release';
-$text['ADD_SCREENSHOT'] = 'Add screenshot';
 $text['ADMINISTRATION'] = 'Administration';
 $text['AND_AWAITS_MODERATION'] = 'and awaits moderation';
 $text['ASSIGNED_TO'] = 'Assigned to';
@@ -48,7 +46,9 @@ $text['MODIFICATION_OF'] = 'Modification of';
 $text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
 $text['MODIFICATION_OF_REPLY_TO_BUG_HASH'] = 'Modification of reply to bug #';
 $text['NEW_PROJECT'] = 'New project';
+$text['NEW_RELEASE'] = 'New release';
 $text['NEW_REPORT'] = 'New report';
+$text['NEW_SCREENSHOT'] = 'New screenshot';
 $text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
 $text['PARENT_DIRECTORY'] = 'Parent directory';
 $text['PRIORITY'] = 'Priority';
@@ -1180,12 +1180,12 @@ function project_download($args)
 	if(_user_admin($user_id) || _project_is_member($project['id']))
 		print('<p><a href="'._html_link('project', 'download_insert',
 					$project['id'])
-				.'"><div class="icon download"></div>'
-				.' Add a release</a> &middot; <a href="'
+				.'"><div class="icon download"></div> '
+				.NEW_RELEASE.'</a> &middot; <a href="'
 				._html_link('project', 'screenshot_insert',
 					$project['id'])
-				.'"><div class="icon screenshot"></div>'
-				.' Add a screenshot</a>'."</p>\n");
+				.'"><div class="icon screenshot"></div> '
+				.NEW_SCREENSHOT.'</a>'."</p>\n");
 	require_once('./system/mime.php');
 	/* FIXME factorize code */
 	$sql = 'SELECT daportal_content.content_id AS id, mode'
@@ -1284,7 +1284,13 @@ function project_download($args)
 						.'/16x16/mime/'.$mime.'.png';
 			}
 		}
-		_module('explorer', 'browse', array('entries' => $files));
+		$toolbar = array();
+		$toolbar[] = array('title' => NEW_RELEASE,
+				'link' => _module_link('project',
+					'download_insert', $project['id']),
+				'class' => 'new');
+		_module('explorer', 'browse', array('entries' => $files,
+					'toolbar' => $toolbar));
 	}
 }
 
@@ -1305,7 +1311,7 @@ function project_download_insert($args)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	print('<h1 class="title project">'._html_safe($project['name']).': '
-		.ADD_RELEASE.'</h1>'."\n");
+		.NEW_RELEASE.'</h1>'."\n");
 	if(isset($error) && strlen($error))
 		_error($error);
 	$directory = isset($args['directory'])
@@ -1541,7 +1547,7 @@ function project_screenshot_insert($args)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	print('<h1 class="title project">'._html_safe($project['name']).': '
-		.ADD_SCREENSHOT.'</h1>'."\n");
+		.NEW_SCREENSHOT.'</h1>'."\n");
 	if(isset($error) && strlen($error))
 		_error($error);
 	$directory = isset($args['directory'])
