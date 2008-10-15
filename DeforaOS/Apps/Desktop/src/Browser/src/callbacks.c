@@ -3,18 +3,17 @@ static char const _copyright[] =
 "Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
-"Browser is not free software; you can redistribute it and/or modify it\n"
-"under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike\n"
-"3.0 Unported as published by the Creative Commons organization.\n"
+"Browser is free software; you can redistribute it and/or modify it under the\n"
+"terms of the GNU General Public License version 3 as published by the Free\n"
+"Software Foundation.\n"
 "\n"
 "Browser is distributed in the hope that it will be useful, but WITHOUT ANY\n"
 "WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
-"FOR A PARTICULAR PURPOSE. See the Creative Commons Attribution-\n"
-"NonCommercial-ShareAlike 3.0 Unported license for more details.\n"
+"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more\n"
+"details.\n"
 "\n"
-"You should have received a copy of the Creative Commons Attribution-\n"
-"NonCommercial-ShareAlike 3.0 along with Browser; if not, browse to\n"
-"http://creativecommons.org/licenses/by-nc-sa/3.0/";
+"You should have received a copy of the GNU General Public License along with\n"
+"Browser; if not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
