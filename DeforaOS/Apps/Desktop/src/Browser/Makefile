@@ -1,5 +1,5 @@
 PACKAGE	= Browser
-VERSION	= 0.0.2
+VERSION	= 0.1.0
 SUBDIRS	= src
 RM	= rm -f
 LN	= ln -sf
@@ -41,6 +41,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
+		$(PACKAGE)-$(VERSION)/TODO \
 		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
