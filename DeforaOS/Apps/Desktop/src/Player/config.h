@@ -1,5 +1,5 @@
 #define PACKAGE "Player"
-#define VERSION "0.0.0"
+#define VERSION "0.1.0"
 
 #ifndef PREFIX
 # define PREFIX "/usr/local"

@@ -1,5 +1,5 @@
 PACKAGE	= Player
-VERSION	= 0.0.0
+VERSION	= 0.1.0
 SUBDIRS	= src
 RM	= rm -f
 LN	= ln -sf
