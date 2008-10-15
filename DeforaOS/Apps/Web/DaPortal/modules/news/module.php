@@ -277,8 +277,8 @@ function _list_user($user_id, $username)
 {
 	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
 			."</h1>\n");
-	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-		.', daportal_content.enabled AS enabled'
+	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
+		.', content, daportal_content.enabled AS enabled'
 		.', daportal_content.user_id AS user_id'
 		.', username, name AS module'
 		.' FROM daportal_content, daportal_user, daportal_module'
@@ -287,7 +287,7 @@ function _list_user($user_id, $username)
 		." AND daportal_module.name='news'"
 		.' AND daportal_module.module_id=daportal_content.module_id'
 		." AND daportal_content.user_id='$user_id'"
-		.' ORDER BY timestamp DESC');
+		.' ORDER BY date DESC');
 	if(!is_array($res))
 		return _error('Unable to list news');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -297,7 +297,7 @@ function _list_user($user_id, $username)
 		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$res[$i]['name'] = $res[$i]['title'];
 		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
-						$res[$i]['timestamp'], 0, 19)));
+						$res[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => SUBMIT_NEWS, 'class' => 'new',
