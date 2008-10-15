@@ -18,6 +18,8 @@
 #ifndef LIBSYSTEM_FILE_H
 # define LIBSYSTEM_FILE_H
 
+# include <sys/types.h>
+
 
 /* types */
 typedef struct _File File;
