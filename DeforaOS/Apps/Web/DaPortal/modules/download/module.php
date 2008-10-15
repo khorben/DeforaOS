@@ -50,17 +50,7 @@ $text['UPLOAD_FILE'] = 'Upload file';
 global $lang;
 if($lang == 'fr')
 {
-	$text['BACK'] = 'Précédent';
-	$text['COMMENT'] = 'Commentaire';
-	$text['CREATE'] = 'Créer';
-	$text['DOWNLOADS_ADMINISTRATION'] = 'Administration des downloads';
-	$text['DOWNLOADS_LIST'] = 'Liste des downloads';
-	$text['FORWARD'] = 'Suivant';
-	$text['IMAGE_PREVIEW'] = "Aperçu de l'image";
-	$text['NEW_DIRECTORY'] = 'Nouveau répertoire';
-	$text['OWNER'] = 'Propriétaire';
-	$text['PARENT_DIRECTORY'] = 'Répertoire parent';
-	$text['SETTINGS'] = 'Paramètres';
+	include('./modules/download/lang.fr.php');
 }
 _lang($text);
 define('S_IFDIR', 01000);
