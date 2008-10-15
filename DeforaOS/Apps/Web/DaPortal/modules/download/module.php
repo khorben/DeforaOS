@@ -449,6 +449,8 @@ function download_file_insert($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
+	if(!isset($_FILES['file']) || !isset($args['parent']))
+		return _error(INVALID_ARGUMENT);
 	$title = $_FILES['file']['name'];
 	if(!($root = _config_get('download', 'root')))
 		return _error('No root directory');
@@ -509,12 +511,12 @@ function download_system($args)
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return;
 	if($args['action'] == 'config_update')
-		$error = _system_config_update($args);
+		$error = _download_system_config_update($args);
 	else if($args['action'] == 'file_insert')
 		$html = 0;
 }
 
-function _system_config_update($args)
+function _download_system_config_update($args)
 {
 	global $user_id;
 
