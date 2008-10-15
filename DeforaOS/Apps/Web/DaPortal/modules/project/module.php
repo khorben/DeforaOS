@@ -27,6 +27,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ADD_DOWNLOAD'] = 'Add download';
 $text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
 $text['ADMINISTRATION'] = 'Administration';
 $text['AND_AWAITS_MODERATION'] = 'and awaits moderation';
@@ -77,6 +78,7 @@ $text['THANK_YOU'] = 'Thank you';
 $text['THERE_ARE'] = 'There are';
 $text['TYPE_CHANGED_TO'] = 'Type changed to';
 $text['TIMELINE'] = 'Timeline';
+$text['UPLOAD'] = 'Upload';
 $text['YOUR_BUG_IS_SUBMITTED'] = 'Your bug is submitted';
 global $lang;
 if($lang == 'de')
@@ -1157,6 +1159,8 @@ function project_display($args)
 
 function project_download($args)
 {
+	global $user_id;
+
 	if(!isset($args['id']) || !is_numeric($args['id']))
 	{
 		return include('./modules/project/download.tpl');
@@ -1166,7 +1170,7 @@ function project_download($args)
 	if($category_id == 0 || $download_id == 0)
 		return _error('Both category and download modules must be'
 				.' installed');
-	$project = _sql_array('SELECT title AS name, synopsis'
+	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
@@ -1175,9 +1179,19 @@ function project_download($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
-	_project_toolbar($args['id']);
+	_project_toolbar($project['id']);
 	print('<h1 class="title project">'._html_safe($project['name']).': '
 		._html_safe(FILES).'</h1>'."\n");
+	require_once('./system/user.php');
+	if(_user_admin($user_id) || _project_is_member($project['id']))
+		print('<p><a href="'._html_link('project', 'download_insert',
+					$project['id'])
+				.'"><div class="icon download"></div>'
+				.' Add a release</a> &middot; <a href="'
+				._html_link('project', 'screenshot_insert',
+					$project['id'])
+				.'"><div class="icon screenshot"></div>'
+				.' Add a screenshot</a>'."</p>\n");
 	require_once('./system/mime.php');
 	/* FIXME factorize code */
 	$sql = 'SELECT daportal_content.content_id AS id, mode'
@@ -1278,6 +1292,31 @@ function project_download($args)
 		}
 		_module('explorer', 'browse', array('entries' => $files));
 	}
+}
+
+
+function project_download_insert($args)
+{
+	global $error;
+
+	if(!isset($args['id']))
+		return _error(INVALID_PROJECT);
+	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND daportal_content.enabled='1'"
+			." AND project_id='".$args['id']."'");
+	if(!is_array($project) || count($project) != 1)
+		return _error(INVALID_PROJECT);
+	$project = $project[0];
+	print('<h1 class="title project">'._html_safe($project['name']).': '
+		.ADD_DOWNLOAD.'</h1>'."\n");
+	if(isset($error) && strlen($error))
+		_error($error);
+	$directory = isset($args['directory'])
+		? stripslashes($args['directory']) : '';
+	include('./modules/project/download_update.tpl');
 }
 
 
@@ -1491,6 +1530,32 @@ function project_package($args)
 }
 
 
+function project_screenshot_insert($args)
+{
+	/* FIXME factorize with download_insert */
+	global $error;
+
+	if(!isset($args['id']))
+		return _error(INVALID_PROJECT);
+	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND daportal_content.enabled='1'"
+			." AND project_id='".$args['id']."'");
+	if(!is_array($project) || count($project) != 1)
+		return _error(INVALID_PROJECT);
+	$project = $project[0];
+	print('<h1 class="title project">'._html_safe($project['name']).': '
+		.ADD_DOWNLOAD.'</h1>'."\n");
+	if(isset($error) && strlen($error))
+		_error($error);
+	$directory = isset($args['directory'])
+		? stripslashes($args['directory']) : '';
+	include('./modules/project/screenshot_update.tpl');
+}
+
+
 function project_system($args)
 {
 	global $title, $html, $error;
@@ -1501,11 +1566,17 @@ function project_system($args)
 	if($args['action'] == 'browse' && isset($args['download'])
 			&& $args['download'] == 1)
 		$html = 0;
-	else if($args['action'] == 'config_update')
-		$error = _system_config_update($args);
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return;
+	if($args['action'] == 'config_update')
+		$error = _project_system_config_update($args);
+	else if($args['action'] == 'download_insert')
+		$error = _project_system_download_update($args);
+	else if($args['action'] == 'screenshot_insert')
+		$error = _project_system_download_update($args, 'screenshot');
 }
 
-function _system_config_update($args)
+function _project_system_config_update($args)
 {
 	global $user_id;
 
@@ -1515,6 +1586,81 @@ function _system_config_update($args)
 	_config_update('project', $args);
 	header('Location: '._module_link('project', 'admin'));
 	exit(0);
+}
+
+
+function _project_system_download_update($args, $category = 'release')
+{
+	global $user_id;
+
+	if(!isset($args['id']))
+		return INVALID_PROJECT;
+	if(!isset($args['directory']))
+		return INVALID_ARGUMENT;
+	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
+			.' FROM daportal_project, daportal_content'
+			.' WHERE daportal_project.project_id'
+			.'=daportal_content.content_id'
+			." AND daportal_content.enabled='1'"
+			." AND project_id='".$args['id']."'");
+	if(!is_array($project) || count($project) != 1)
+		return _error(INVALID_PROJECT);
+	$project = $project[0];
+	require_once('./system/user.php');
+	if(!_user_admin($user_id) || !_project_is_member($project['id']))
+		return PERMISSION_DENIED;
+	if(!_module_id('download')
+			|| !($category_module_id = _module_id('category')))
+		return 'The download and category modules are required';
+	/* lookup directory */
+	/* FIXME this code belongs to the download module */
+	$path = stripslashes($args['directory']);
+	$path = explode('/', $path);
+	$parent = ' IS NULL';
+	foreach($path as $p)
+	{
+		$sql = 'SELECT download_id FROM daportal_download'
+			.', daportal_content'
+			.' WHERE daportal_download.content_id'
+			.'=daportal_content.content_id'
+			." AND title='$p' AND parent$parent";
+		$download_id = _sql_single($sql);
+		if($download_id == FALSE)
+			return 'Path not found';
+		$parent = "='$download_id'";
+		_info("Path \"$p\" found");
+	}
+	/* upload file */
+	/* FIXME will no longer work when downloads are restricted to POST */
+	/* FIXME it sets a redirection and this breaks $error */
+	_module('download', 'file_insert', array('parent' => $download_id));
+	/* FIXME assumes it was successful + race condition? */
+	if(($id = _sql_id('daportal_download', 'download_id')) == FALSE)
+		return 'Internal server error';
+	if(($content_id = _sql_single('SELECT content_id FROM daportal_download'
+			." WHERE download_id='$id'")) == FALSE)
+		return 'Internal server error';
+	/* insert into categories */
+	/* FIXME this code belongs to the category module */
+	/* FIXME need a nice API here */
+	/* FIXME this assumes both categories already exist */
+	$category_id = _sql_single('SELECT content_id AS id'
+			.' FROM daportal_content'
+			." WHERE module_id='$category_module_id'"
+			." AND title='".$project['name']."'");
+	if($category_id != FALSE)
+		_module('category', 'link_insert', array('id' => $category_id,
+					'content_id' => $content_id));
+	/* FIXME code duplication */
+	$category_id = _sql_single('SELECT content_id AS id'
+			.' FROM daportal_content'
+			." WHERE module_id='$category_module_id'"
+			." AND title='$category'");
+	if($category_id != FALSE)
+		_module('category', 'link_insert', array('id' => $category_id,
+					'content_id' => $content_id));
+	header('Location: '._module_link('project', 'download',
+				$project['id']));
 }
 
 
