@@ -1115,30 +1115,23 @@ function project_display($args)
 	$title = $project['title'];
 	_project_toolbar($args['id']);
 	include('./modules/project/project_display.tpl');
-	$members = array();
-	$members[] = array('id' => $project['user_id'],
-			'name' => _html_safe($project['username']),
-			'title' => _html_safe($project['username']),
-			'icon' => 'icons/16x16/user.png',
-			'thumbnail' => 'icons/48x48/user.png',
-			'module' => 'user', 'action' => 'default',
-			'admin' => '<img src="icons/16x16/enabled.png" alt="yes"/>');
-	$m = _sql_array('SELECT daportal_user.user_id AS id, username AS name'
-			.' FROM daportal_project_user, daportal_user'
-			." WHERE project_id='".$args['id']."'"
-			.' AND daportal_project_user.user_id'
-			.'=daportal_user.user_id');
-	foreach($m as $n)
-		$members[] = array('id' => $n['id'],
-				'name' => _html_safe($n['name']),
-				'title' => _html_safe($n['name']),
-				'icon' => 'icons/16x16/user.png',
-				'thumbnail' => 'icons/48x48/user.png',
-				'module' => 'user', 'action' => 'default',
-				'apply_module' => 'project',
-				'apply_id' => $n['id'],
-				'apply_args' => 'project_id='.$project['id'],
-				'admin' => '<img src="icons/16x16/disabled.png" alt="no"/>');
+	/* list members */
+	$members = _project_members($project['id']);
+	for($i = 0, $cnt = count($members); $i < $cnt; $i++)
+	{
+		$members[$i]['name'] = $members[$i]['username'];
+		$members[$i]['icon'] = 'icons/16x16/user.png';
+		$members[$i]['thumbnail'] = 'icons/48x48/user.png';
+		$members[$i]['module'] = 'user';
+		$members[$i]['action'] = 'default';
+		$members[$i]['apply_module'] = 'project';
+		$members[$i]['apply_id'] = $members[$i]['id'];
+		$members[$i]['apply_args'] = 'project_id='.$project['id'];
+		/* XXX assumes the first user is admin */
+		$members[$i]['admin'] = ($i == 0)
+			? '<img src="icons/16x16/enabled.png" alt="yes"/>'
+			: '<img src="icons/16x16/disabled.png" alt="no"/>';
+	}
 	print('<h2 class="title members">'._html_safe(MEMBERS).'</h2>'."\n");
 	$explorer = array('view' => 'details', 'entries' => $members,
 			'class' => array('admin' => ADMINISTRATOR),
