@@ -27,8 +27,9 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
-$text['ADD_DOWNLOAD'] = 'Add download';
 $text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
+$text['ADD_RELEASE'] = 'Add release';
+$text['ADD_SCREENSHOT'] = 'Add screenshot';
 $text['ADMINISTRATION'] = 'Administration';
 $text['AND_AWAITS_MODERATION'] = 'and awaits moderation';
 $text['ASSIGNED_TO'] = 'Assigned to';
@@ -1304,7 +1305,7 @@ function project_download_insert($args)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	print('<h1 class="title project">'._html_safe($project['name']).': '
-		.ADD_DOWNLOAD.'</h1>'."\n");
+		.ADD_RELEASE.'</h1>'."\n");
 	if(isset($error) && strlen($error))
 		_error($error);
 	$directory = isset($args['directory'])
@@ -1540,7 +1541,7 @@ function project_screenshot_insert($args)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	print('<h1 class="title project">'._html_safe($project['name']).': '
-		.ADD_DOWNLOAD.'</h1>'."\n");
+		.ADD_SCREENSHOT.'</h1>'."\n");
 	if(isset($error) && strlen($error))
 		_error($error);
 	$directory = isset($args['directory'])
@@ -1600,7 +1601,7 @@ function _project_system_download_insert($args, $category = 'release')
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
 	require_once('./system/user.php');
-	if(!_user_admin($user_id) || !_project_is_member($project['id']))
+	if(!_user_admin($user_id) && !_project_is_member($project['id']))
 		return PERMISSION_DENIED;
 	if(!_module_id('download')
 			|| !($category_module_id = _module_id('category')))
@@ -1626,6 +1627,7 @@ function _project_system_download_insert($args, $category = 'release')
 	/* upload file */
 	/* FIXME will no longer work when downloads are restricted to POST */
 	/* FIXME it sets a redirection and this breaks $error */
+	/* FIXME currently requires to be an admin */
 	_module('download', 'file_insert', array('parent' => $download_id));
 	/* FIXME assumes it was successful + race condition? */
 	if(($id = _sql_id('daportal_download', 'download_id')) == FALSE)
