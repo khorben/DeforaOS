@@ -12,12 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* FIXME:
- * - conform to http://www.freedesktop.org/wiki/Specifications/XDND
- *   * the target should be "text/uri-list"
- *   * filenames should be prepended with "file:///"
- *   * how is this supposed to handle multiple filenames then? "\r\n"?
- * - implement XDS: http://www.newplanetsoftware.com/xds/ */
 
 
 /* macros */

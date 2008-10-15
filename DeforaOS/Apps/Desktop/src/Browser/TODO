@@ -1,0 +1,29 @@
+- conditional compilation for embedded/finger interface
+
+[browser.c]
+- C-c C-x C-v menu shortcuts break cut/copy/paste in the location bar
+
+[common.c]
+- conform to http://www.freedesktop.org/wiki/Specifications/XDND:
+  * the target should be "text/uri-list"
+  * filenames should be prepended with "file:///"
+  * how is this supposed to handle multiple filenames then? "\r\n"?
+- implement XDS: http://www.newplanetsoftware.com/xds/
+
+[copy.c]
+- browse sub-directories when idle
+- copy files when data is available
+
+[desktop.c]
+- enable drag and drop as a source
+
+[properties.c]
+- add dates
+- resolve relative paths
+- add an option to count files altogether
+- update permissions and group
+
+[view.c]
+- load text files progressively
+- add an option to force a file type
+- default to a file selection dialog when launched without an argument
