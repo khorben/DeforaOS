@@ -224,6 +224,8 @@ function download_default($args)
 		{
 			$dls[$i]['icon'] = 'icons/16x16/mime/folder.png';
 			$dls[$i]['thumbnail'] = 'icons/48x48/mime/folder.png';
+			$dls[$i]['mode'] = _html_safe(_permissions(
+						$dls[$i]['mode']));
 			continue;
 		}
 		$dls[$i]['thumbnail'] = is_readable('icons/48x48/mime/'.$mime
@@ -232,6 +234,10 @@ function download_default($args)
 		$dls[$i]['icon'] = is_readable('icons/16x16/mime/'.$mime.'.png')
 			? 'icons/16x16/mime/'.$mime.'.png'
 			: $dls[$i]['thumbnail'];
+		$dls[$i]['username'] = '<a href="'._html_link('user', FALSE,
+			$dls[$i]['user_id'], $dls[$i]['username']).'">'
+				.$dls[$i]['username'].'</a>';
+		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
@@ -262,8 +268,9 @@ function download_default($args)
 		$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 				'action' => 'delete', 'confirm' => 'delete');
 	}
-	_module('explorer', 'browse', array('entries' => $dls,
-				'class' => array('username' => AUTHOR),
+	_module('explorer', 'browse_trusted', array('entries' => $dls,
+				'class' => array('username' => AUTHOR,
+					'mode' => PERMISSIONS),
 				'toolbar' => $toolbar, 'view' => 'thumbnails',
 				'module' => 'download', 'action' => 'default',
 				'id' => $file['id']));
