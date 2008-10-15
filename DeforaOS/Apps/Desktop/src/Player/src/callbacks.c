@@ -1,20 +1,19 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Player */
 static char const _license[] =
-"Player is free software; you can redistribute it and/or modify it\n"
-"under the terms of the GNU General Public License version 2 as\n"
-"published by the Free Software Foundation.\n"
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
 "\n"
-"Player is distributed in the hope that it will be useful, but WITHOUT\n"
-"ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or\n"
-"FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License\n"
-"for more details.\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n"
+"GNU General Public License for more details.\n"
 "\n"
 "You should have received a copy of the GNU General Public License\n"
-"along with Player; if not, write to the Free Software Foundation, Inc.,\n"
-"59 Temple Place, Suite 330, Boston, MA  02111-1307  USA";
+"along with this program. If not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
