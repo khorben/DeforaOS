@@ -141,6 +141,7 @@ CREATE TABLE daportal_bug_reply (
 
 INSERT INTO daportal_module (name, enabled) VALUES ('project', '1');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('10', 'Path to the CVS repository', 'string', 'cvsroot', '');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('10', 'Allow anonymous bug replies', 'bool', 'anonymous_bug_replies', '0');
 
 
 /* module: probe */
