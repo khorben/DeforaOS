@@ -1,10 +1,10 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
 static char const _license[] =
 "Editor is free software; you can redistribute it and/or modify it under the\n"
-"terms of the GNU General Public License version 2 as published by the Free\n"
+"terms of the GNU General Public License version 3 as published by the Free\n"
 "Software Foundation.\n"
 "\n"
 "Editor is distributed in the hope that it will be useful, but WITHOUT ANY\n"
@@ -13,8 +13,7 @@ static char const _license[] =
 "details.\n"
 "\n"
 "You should have received a copy of the GNU General Public License along with\n"
-"Editor; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
-"Place, Suite 330, Boston, MA  02111-1307  USA\n";
+"Editor; if not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
