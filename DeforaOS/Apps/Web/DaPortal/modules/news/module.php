@@ -296,7 +296,7 @@ function _list_user($user_id, $username)
 		$res[$i]['icon'] = 'icons/16x16/news.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/news.png';
 		$res[$i]['name'] = $res[$i]['title'];
-		$res[$i]['date'] = strftime('%d/%m/%y %H:%M', strtotime(substr(
+		$res[$i]['date'] = strftime('%d/%m/%Y %H:%M', strtotime(substr(
 						$res[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
