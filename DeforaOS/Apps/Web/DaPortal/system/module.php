@@ -39,7 +39,8 @@ function _module($module = '', $action = '', $args = FALSE)
 		$module = isset($_POST['module']) ? $_POST['module'] : '';
 		if(!strlen($action) || $args == FALSE)
 			$args =& $_POST;
-		$action = strlen($action) ? $action : $_POST['action'];
+		$action = strlen($action) ? $action : (isset($_POST['action'])
+				? $_POST['action'] : '');
 	}
 	else
 		return _error('Invalid module request', 0);
@@ -127,9 +128,13 @@ function _module_id_tag($module, $id, $tag)
 function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		$params = FALSE)
 {
-	global $friendlylinks;
+	global $friendlylinks, $friendlykicker;
 
 	$link = $_SERVER['SCRIPT_NAME'];
+	if(isset($friendlykicker) && isset($_SERVER['DOCUMENT_ROOT'])
+			&& is_readable($_SERVER['DOCUMENT_ROOT']
+				."/$friendlykicker.php"))
+		$link = '/'.$friendlykicker;
 	if(is_array($params))
 	{
 		$keys = array_keys($params);
