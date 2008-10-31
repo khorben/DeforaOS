@@ -174,6 +174,7 @@ Editor * editor_new(void)
 	/* preferences */
 	editor->pr_window = NULL;
 	gtk_container_add(GTK_CONTAINER(editor->window), vbox);
+	gtk_window_set_focus(editor->window, editor->view);
 	gtk_widget_show_all(editor->window);
 	return editor;
 }
