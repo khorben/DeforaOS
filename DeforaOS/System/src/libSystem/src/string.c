@@ -16,7 +16,9 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "System.h"
 
 
@@ -25,20 +27,34 @@
 /* string_new */
 String * string_new(String const * string)
 {
-	String * str;
+	String * ret;
 	size_t length = string_length(string);
 
-	if((str = malloc(length + 1)) == NULL)
+	if((ret = object_new(length + 1)) == NULL)
 		return NULL;
-	strcpy(str, string);
-	return str;
+	strcpy(ret, string);
+	return ret;
+}
+
+
+String * string_new_length(String const * string, size_t length)
+{
+	String * ret;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %zu)\n", __func__, string, length);
+#endif
+	if((ret = object_new(++length)) == NULL)
+		return NULL;
+	snprintf(ret, length, "%s", string);
+	return ret;
 }
 
 
 /* string_delete */
 void string_delete(String * string)
 {
-	free(string);
+	object_delete(string);
 }
 
 
@@ -92,18 +108,86 @@ int string_compare_length(String const * string, String const * string2,
 }
 
 
+/* string_explode */
+/* FIXME return a StringArray instead? */
+String ** string_explode(String const * string, String const * separator)
+{
+	String ** ret = NULL;
+	size_t ret_cnt = 0;
+	String ** p;			/* temporary pointer */
+	size_t i;			/* current position */
+	String const * s;		/* &string[i] */
+	ssize_t j;			/* position of the next separator */
+	ssize_t l;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%s\")\n", __func__, string,
+			separator);
+#endif
+	if(separator == NULL || (l = string_length(separator)) == 0)
+	{
+		error_set_code(1, "%s", strerror(EINVAL));
+		return NULL;
+	}
+	for(i = 0;; i += j + l)
+	{
+		s = &string[i];
+		j = string_index(s, separator);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s(): i=%zu, j=%zd\n", __func__, i, j);
+#endif
+		if((p = realloc(ret, sizeof(*ret) * (ret_cnt + 2))) == NULL)
+			break;
+		ret = p;
+		if(j < 0)
+		{
+			if((ret[ret_cnt++] = string_new(s)) == NULL)
+				break;
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s(): \"%s\"\n", __func__,
+					ret[ret_cnt - 1]);
+#endif
+			ret[ret_cnt++] = NULL;
+			return ret;
+		}
+		if((ret[ret_cnt++] = string_new_length(s, j)) == NULL)
+			break;
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s(): \"%s\"\n", __func__,
+				ret[ret_cnt - 1]);
+#endif
+	}
+	/* free everything */
+	for(p = ret; *p != NULL; p++)
+		string_delete(*p);
+	free(ret);
+	return NULL;
+}
+
+
 /* string_find */
 String * string_find(String const * string, String const * key)
 {
+	ssize_t i;
+
+	if((i = string_index(string, key)) < 0)
+		return NULL;
+	return (String*)&string[i]; /* XXX */
+}
+
+
+/* string_index */
+ssize_t string_index(String const * string, String const * key)
+{
 	size_t len;
-	char const * p;
+	ssize_t i;
 
 	len = string_length(key);
-	for(p = string; *p != '\0' && string_compare_length(key, p, len) != 0;
-			p++);
-	if(*p == '\0')
-		return NULL;
-	return (String *)p;
+	for(i = 0; string[i] != '\0' && string_compare_length(&string[i], key,
+				len) != 0; i++);
+	if(string[i] == '\0')
+		return -1;
+	return i;
 }
 
 

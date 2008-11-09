@@ -26,6 +26,7 @@ typedef char String;
 
 /* functions */
 String * string_new(String const * string);
+String * string_new_length(String const * string, size_t length);
 void string_delete(String * string);
 
 /* returns */
@@ -39,6 +40,9 @@ int string_compare(String const * string, String const * string2);
 int string_compare_length(String const * string, String const * string2,
 		size_t length);
 
+String ** string_explode(String const * string, String const * separator);
+
 String * string_find(String const * string, String const * key);
+ssize_t string_index(String const * string, String const * key);
 
 #endif /* !LIBSYSTEM_STRING_H */
