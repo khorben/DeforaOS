@@ -550,6 +550,8 @@ static void _new_mplayer(Player * player)
 {
 	char buf[] = "pausing loadfile splash.png 0\nframe_step\n";
 	char wid[16];
+	char * argv[] = { "mplayer", "-slave", "-wid", wid, "-quiet",
+		"-idle", "-softvol", "-identify", "-noconsolecontrols", NULL };
 
 	_player_reset(player);
 	snprintf(wid, sizeof(wid), "%u", gtk_socket_get_id(GTK_SOCKET(
@@ -567,10 +569,8 @@ static void _new_mplayer(Player * player)
 			exit(_player_error("dup2", 2));
 		if(dup2(player->fd[0][1], 1) == -1)
 			exit(_player_error("dup2", 2));
-		execlp("mplayer", "mplayer", "-slave", "-wid", wid, "-quiet",
-				"-idle", "-softvol", "-identify",
-				"-noconsolecontrols", NULL);
-		exit(_player_error("mplayer", 2));
+		execvp(argv[0], argv);
+		exit(_player_error(argv[0], 2));
 	}
 	close(player->fd[0][1]);
 	close(player->fd[1][0]);
