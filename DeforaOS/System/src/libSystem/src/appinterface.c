@@ -122,6 +122,7 @@ static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
 /* appinterface_new */
 static int _new_append(AppInterface * appinterface, AppInterfaceCallType type,
 		char const * function, size_t args_cnt, ...);
+static int _new_init(AppInterface * appinterface);
 static int _new_session(AppInterface * appinterface);
 static int _new_gserver(AppInterface * appinterface);
 static int _new_probe(AppInterface * appinterface);
@@ -143,6 +144,7 @@ AppInterface * appinterface_new(char const * app)
 		uint16_t port;
 	} ifaces[] =
 	{
+		{ "Init",	_new_init,	4241 },
 		{ "Session",	_new_session,	4242 },
 		{ "GServer",	_new_gserver,	4246 },
 		{ "Probe",	_new_probe,	4243 },
@@ -240,6 +242,15 @@ static void _append_arg(AppInterfaceCallArg * arg, AppInterfaceCallType type,
 	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %d\n",
 			AICTString[type], direction, arg->size);
 #endif
+}
+
+static int _new_init(AppInterface * ai)
+{
+	int ret = 0;
+
+	ret |= _new_append(ai, AICT_UINT16, "init_register", 1, AICT_STRING,
+			AICT_INT16);
+	return ret;
 }
 
 static int _new_session(AppInterface * ai)
