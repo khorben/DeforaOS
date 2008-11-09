@@ -23,6 +23,7 @@
 
 
 /* Player */
+/* types */
 typedef struct _Player
 {
 	/* view */
@@ -71,8 +72,28 @@ typedef struct _Player
 	GtkToolItem * tb_fullscreen;
 	GtkWidget * statusbar;
 	gint statusbar_id;
+
+	/* playlist */
+	GtkWidget * pl_window;
+	GtkListStore * pl_store;
+	GtkWidget * pl_view;
 } Player;
 
+enum
+{
+	PL_COL_ENABLED = 0,
+	PL_COL_ICON,
+	PL_COL_FILENAME,
+	PL_COL_TRACK,
+	PL_COL_ARTIST,
+	PL_COL_ALBUM,
+	PL_COL_TITLE,
+	PL_NUM_COLS
+};
+# define PL_LAST PL_NUM_COLS
+
+
+/* functions */
 Player * player_new(void);
 void player_delete(Player * player);
 

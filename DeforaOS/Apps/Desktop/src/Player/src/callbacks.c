@@ -105,11 +105,21 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 
 /* view menu */
+/* on_view_fullscreen */
 void on_view_fullscreen(GtkWidget * widget, gpointer data)
 {
 	Player * player = data;
 
 	player_set_fullscreen(player, !player_get_fullscreen(player));
+}
+
+
+/* on_view_playlist */
+void on_view_playlist(GtkWidget * widget, gpointer data)
+{
+	Player * player = data;
+
+	gtk_widget_show(player->pl_window);
 }
 
 
@@ -218,4 +228,15 @@ void on_fullscreen(GtkWidget * widget, gpointer data)
 	Player * player = data;
 
 	player_set_fullscreen(player, !player_get_fullscreen(player));
+}
+
+
+/* view */
+/* playlist */
+gboolean on_playlist_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+{
+	Player * player = data;
+
+	gtk_widget_hide(player->pl_window);
+	return TRUE;
 }

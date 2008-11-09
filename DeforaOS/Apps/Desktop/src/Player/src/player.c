@@ -60,6 +60,7 @@ struct _menu _menu_edit[] =
 
 struct _menu _menu_view[] =
 {
+	{ "_Playlist", G_CALLBACK(on_view_playlist), NULL },
 #if GTK_CHECK_VERSION(2, 8, 0)
 	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN },
 #else
@@ -325,6 +326,7 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 static int _player_error(char const * message, int ret);
 static GtkWidget * _new_menubar(Player * player);
 static void _new_mplayer(Player * player);
+static void _new_column_text(GtkWidget * view, char const * title, int id);
 #if !GTK_CHECK_VERSION(2, 12, 0)
 static void gtk_widget_set_tooltip_text(GtkWidget * widget, const char * text);
 #endif
@@ -334,6 +336,7 @@ Player * player_new(void)
 	Player * player;
 	GtkWidget * widget;
 	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 
@@ -438,6 +441,53 @@ Player * player_new(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_fullscreen, -1);
 	gtk_box_pack_end(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	gtk_widget_show_all(player->window);
+	/* playlist */
+	/* FIXME make it dockable */
+	player->pl_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(player->pl_window), "Playlist");
+	g_signal_connect(G_OBJECT(player->pl_window), "delete-event",
+			G_CALLBACK(on_playlist_closex), player);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* view */
+	/* FIXME determine what to store there */
+	player->pl_store = gtk_list_store_new(PL_NUM_COLS,
+			G_TYPE_BOOLEAN,	/* enabled */
+			GDK_TYPE_PIXBUF,/* icon */
+			G_TYPE_STRING,	/* filename */
+			G_TYPE_UINT,	/* track number */
+			G_TYPE_STRING,	/* artist */
+			G_TYPE_STRING,	/* album */
+			G_TYPE_STRING);	/* name */
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	player->pl_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				player->pl_store));
+	gtk_tree_view_append_column(GTK_TREE_VIEW(player->pl_view),
+			gtk_tree_view_column_new_with_attributes("",
+				gtk_cell_renderer_pixbuf_new(), "pixbuf",
+				PL_COL_ICON, NULL));
+	_new_column_text(player->pl_view, "Artist", PL_COL_ARTIST);
+	_new_column_text(player->pl_view, "Album", PL_COL_ALBUM);
+	_new_column_text(player->pl_view, "Title", PL_COL_TITLE);
+	gtk_container_add(GTK_CONTAINER(widget), player->pl_view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	hbox = gtk_hbox_new(TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OPEN);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_ADD);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	gtk_container_add(GTK_CONTAINER(player->pl_window), vbox);
+#ifdef DEBUG
+	gtk_widget_show_all(player->pl_window);
+#else
+	gtk_widget_show_all(vbox);
+#endif
 	/* mplayer */
 	_new_mplayer(player);
 	return player;
@@ -517,6 +567,18 @@ static void _new_mplayer(Player * player)
 	player->channel[1] = g_io_channel_unix_new(player->fd[1][1]);
 	_player_command(player, buf, sizeof(buf) - 1);
 	player->paused = 1;
+}
+
+static void _new_column_text(GtkWidget * view, char const * title, int id)
+{
+	GtkTreeViewColumn * column;
+	GtkCellRenderer * renderer;
+
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(title, renderer,
+			"text", id, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, id);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 }
 
 #if !GTK_CHECK_VERSION(2, 12, 0)
