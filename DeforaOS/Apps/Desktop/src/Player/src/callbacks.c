@@ -60,6 +60,8 @@ void on_file_properties(GtkWidget * widget, gpointer data)
 	GtkWidget * window;
 	char buf[256];
 
+	if(player->filename == NULL)
+		return;
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				gtk_widget_destroy), NULL);
