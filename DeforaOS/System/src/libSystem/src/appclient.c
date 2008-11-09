@@ -219,6 +219,7 @@ AppClient * appclient_new(char const * app)
 
 /* appclient_new_event */
 static int _new_connect(AppClient * appclient, char const * app);
+static int _connect_addr(String const * service, uint32_t * addr);
 
 AppClient * appclient_new_event(char const * app, Event * event)
 {
@@ -229,7 +230,7 @@ AppClient * appclient_new_event(char const * app, Event * event)
 #endif
 	if((appclient = object_new(sizeof(AppClient))) == NULL)
 		return NULL;
-	if((appclient->interface = appinterface_new("Session")) == NULL)
+	if((appclient->interface = appinterface_new("Init")) == NULL)
 	{
 		object_delete(appclient);
 		return NULL;
@@ -253,7 +254,6 @@ AppClient * appclient_new_event(char const * app, Event * event)
 	return appclient;
 }
 
-static int _connect_addr(String const * service, uint32_t * addr);
 static int _new_connect(AppClient * appclient, char const * app)
 {
 	struct sockaddr_in sa;
@@ -263,10 +263,10 @@ static int _new_connect(AppClient * appclient, char const * app)
 		return 1;
 	sa.sin_family = AF_INET;
 	sa.sin_port = htons(appinterface_get_port(appclient->interface));
-	if(_connect_addr("Session", &sa.sin_addr.s_addr) != 0)
+	if(_connect_addr("Init", &sa.sin_addr.s_addr) != 0)
 		return 1;
 	if(connect(appclient->fd, (struct sockaddr *)&sa, sizeof(sa)) != 0)
-		return error_set_code(1, "%s%s", "Session: ", strerror(errno));
+		return error_set_code(1, "%s%s", "Init: ", strerror(errno));
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: connect(%d, %s:%d) => 0\n", appclient->fd,
 			inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
@@ -277,7 +277,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 		return error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_set_connect_state(appclient->ssl);
 #endif
-	if(appclient_call(appclient, &port, "port", app) != 0)
+	if(appclient_call(appclient, &port, "init_get_session", app) != 0)
 		return 1;
 	if(port < 0)
 		return error_set_code(1, "%s", "Could not obtain remote port");

@@ -129,7 +129,7 @@ static AppServerClient * _appserverclient_new(int fd, uint32_t addr,
 {
 	AppServerClient * asc;
 
-	if((asc = object_new(sizeof(AppServerClient))) == NULL)
+	if((asc = object_new(sizeof(*asc))) == NULL)
 		return NULL;
 	asc->state = ASCS_NEW;
 	asc->addr = addr;
@@ -225,6 +225,9 @@ static int _appserver_accept(int fd, AppServer * appserver)
 #endif
 					)) == NULL)
 	{
+#ifdef DEBUG
+		error_print("DEBUG");
+#endif
 		close(newfd);
 		return 0;
 	}

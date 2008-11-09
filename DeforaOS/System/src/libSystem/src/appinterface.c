@@ -239,7 +239,7 @@ static void _append_arg(AppInterfaceCallArg * arg, AppInterfaceCallType type,
 	arg->direction = direction;
 	arg->size = _aict_size[type];
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %d\n",
+	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %zu\n",
 			AICTString[type], direction, arg->size);
 #endif
 }
@@ -248,8 +248,14 @@ static int _new_init(AppInterface * ai)
 {
 	int ret = 0;
 
-	ret |= _new_append(ai, AICT_UINT16, "init_register", 1, AICT_STRING,
+	ret |= _new_append(ai, AICT_UINT16, "init_login", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT16, "init_logout", 0);
+	ret |= _new_append(ai, AICT_UINT16, "init_register", 2, AICT_STRING,
 			AICT_INT16);
+	ret |= _new_append(ai, AICT_UINT16, "init_get_session", 1, AICT_STRING);
+	ret |= _new_append(ai, AICT_UINT16, "init_get_profile", 1,
+			AICT_STRING | AICD_OUT);
+	ret |= _new_append(ai, AICT_UINT16, "init_set_profile", 1, AICT_STRING);
 	return ret;
 }
 
@@ -257,6 +263,7 @@ static int _new_session(AppInterface * ai)
 {
 	int ret = 0;
 
+	/* FIXME re-factor: session_register() etc */
 	ret |= _new_append(ai, AICT_UINT16, "port", 1, AICT_STRING);
 	ret |= _new_append(ai, AICT_VOID, "list", 0);
 	ret |= _new_append(ai, AICT_BOOL, "start", 1, AICT_STRING);
