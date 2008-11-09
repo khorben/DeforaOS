@@ -41,7 +41,7 @@ static char const * _authors[] =
 gboolean on_player_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	on_file_close(widget, data);
-	return FALSE;
+	return TRUE;
 }
 
 
