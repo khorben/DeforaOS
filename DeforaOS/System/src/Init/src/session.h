@@ -15,31 +15,26 @@
 
 
 
-#ifndef INIT_SERVICE_H
-# define INIT_SERVICE_H
+#ifndef INIT_SESSION_H
+# define INIT_SESSION_H
 
 # include <System.h>
-# include <sys/wait.h>
 
 
-/* Service */
 /* types */
-typedef struct _Service Service;
+typedef struct _Session Session;
 
 
 /* functions */
-Service * service_new(String const * name);
-void service_delete(Service * service);
+Session * session_new(char const * name, char const * profile, Event * event);
+void session_delete(Session * session);
 
-/* accessors */
-String const * service_get_name(Service * service);
-
-int service_has_pid(Service * service, pid_t pid);
+/* AppInterface */
+int session_register(String const * interface, uint16_t port);
 
 /* useful */
-int service_load(Service * service);
-int service_restart(Service * service);
-int service_start(Service * service);
-int service_stop(Service * service);
+int session_reload(Session * session);
+int session_start(Session * session);
+int session_stop(Session * session);
 
-#endif /* INIT_SERVICE_H */
+#endif /* INIT_SESSION_H */

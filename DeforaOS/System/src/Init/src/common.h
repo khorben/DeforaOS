@@ -15,31 +15,27 @@
 
 
 
-#ifndef INIT_SERVICE_H
-# define INIT_SERVICE_H
+#ifndef INIT_COMMON_H
+# define INIT_COMMON_H
 
-# include <System.h>
-# include <sys/wait.h>
+# include "../config.h"
 
+
+/* constants */
+/* Session */
+# ifdef __DeforaOS__
+#  define SESSIONDIR	PREFIX "/Config/Sessions"
+# else
+#  define SESSIONDIR	PREFIX "/etc/Sessions"
+# endif
+# define SESSIONEXT	"session"
 
 /* Service */
-/* types */
-typedef struct _Service Service;
+# ifdef __DeforaOS__
+#  define SERVICEDIR	PREFIX "/Config/Services"
+# else
+#  define SERVICEDIR	PREFIX "/etc/Services"
+# endif
+# define SERVICEEXT	"service"
 
-
-/* functions */
-Service * service_new(String const * name);
-void service_delete(Service * service);
-
-/* accessors */
-String const * service_get_name(Service * service);
-
-int service_has_pid(Service * service, pid_t pid);
-
-/* useful */
-int service_load(Service * service);
-int service_restart(Service * service);
-int service_start(Service * service);
-int service_stop(Service * service);
-
-#endif /* INIT_SERVICE_H */
+#endif /* !INIT_COMMON_H */

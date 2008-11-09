@@ -22,9 +22,14 @@ dist:
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/init.c \
-		$(PACKAGE)-$(VERSION)/src/service.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/service.c \
+		$(PACKAGE)-$(VERSION)/src/session.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/common.h \
+		$(PACKAGE)-$(VERSION)/src/init.h \
+		$(PACKAGE)-$(VERSION)/src/service.h \
+		$(PACKAGE)-$(VERSION)/src/session.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \

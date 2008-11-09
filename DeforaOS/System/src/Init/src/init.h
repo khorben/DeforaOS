@@ -15,31 +15,27 @@
 
 
 
-#ifndef INIT_SERVICE_H
-# define INIT_SERVICE_H
-
-# include <System.h>
-# include <sys/wait.h>
+#ifndef INIT_INIT_H
+# define INIT_INIT_H
 
 
-/* Service */
+/* Init */
 /* types */
-typedef struct _Service Service;
+typedef struct _Init Init;
 
 
 /* functions */
-Service * service_new(String const * name);
-void service_delete(Service * service);
+Init * init_new(char const * profile);
+void init_delete(Init * init);
 
-/* accessors */
-String const * service_get_name(Service * service);
-
-int service_has_pid(Service * service, pid_t pid);
+/* AppInterface */
+int init_get_profile(String ** profile);
+int init_login(String const * username);
+int init_logout(void);
+int init_register(char const * service, uint16_t port);
+int init_set_profile(String const * profile);
 
 /* useful */
-int service_load(Service * service);
-int service_restart(Service * service);
-int service_start(Service * service);
-int service_stop(Service * service);
+int init_loop(Init * init);
 
-#endif /* INIT_SERVICE_H */
+#endif /* !INIT_INIT_H */
