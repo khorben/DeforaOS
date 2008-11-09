@@ -72,6 +72,8 @@ char const * config_get(Config * config, char const * section,
 	Hash * h;
 	char const * value;
 
+	if(section == NULL)
+		section = "";
 	if((h = hash_get(config, section)) != NULL) /* found section */
 	{
 		if((value = hash_get(h, variable)) != NULL) /* found value */
