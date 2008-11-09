@@ -34,6 +34,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data);
 
 /* view menu */
 void on_view_fullscreen(GtkWidget * widget, gpointer data);
+void on_view_playlist(GtkWidget * widget, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
@@ -49,5 +50,8 @@ void on_next(GtkWidget * widget, gpointer data);
 void on_fullscreen(GtkWidget * widget, gpointer data);
 
 /* view */
+/* playlist */
+gboolean on_playlist_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 
 #endif /* !PLAYER_CALLBACKS_H */
