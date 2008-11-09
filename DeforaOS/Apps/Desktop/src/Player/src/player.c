@@ -18,6 +18,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
@@ -356,8 +358,7 @@ Player * player_new(void)
 	player->video_codec = NULL;
 	/* mplayer */
 	player->pid = -1;
-	if(pipe(player->fd[0]) != 0
-			|| pipe(player->fd[1]) != 0)
+	if(pipe(player->fd[0]) != 0 || pipe(player->fd[1]) != 0)
 	{
 		player_error(player, strerror(errno), 0);
 		free(player);
@@ -454,7 +455,6 @@ Player * player_new(void)
 			G_CALLBACK(on_playlist_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* view */
-	/* FIXME determine what to store there */
 	player->pl_store = gtk_list_store_new(PL_NUM_COLS,
 			G_TYPE_BOOLEAN,	/* enabled */
 			GDK_TYPE_PIXBUF,/* icon */
@@ -479,12 +479,16 @@ Player * player_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OPEN);
+	/* FIXME implement signal */
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	/* FIXME implement signal */
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_ADD);
+	/* FIXME implement signal */
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_REMOVE);
+	/* FIXME implement signal */
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(player->pl_window), vbox);
@@ -551,7 +555,8 @@ static void _new_mplayer(Player * player)
 	char buf[] = "pausing loadfile splash.png 0\nframe_step\n";
 	char wid[16];
 	char * argv[] = { "mplayer", "-slave", "-wid", wid, "-quiet",
-		"-idle", "-softvol", "-identify", "-noconsolecontrols", NULL };
+		"-idle", "-framedrop", "-softvol", "-identify",
+		"-noconsolecontrols", "-nomouseinput", NULL };
 
 	_player_reset(player);
 	snprintf(wid, sizeof(wid), "%u", gtk_socket_get_id(GTK_SOCKET(
@@ -619,6 +624,8 @@ void player_delete(Player * player)
 	if(player->timeout_id != 0)
 		g_source_remove(player->timeout_id);
 	_player_command(player, cmd, sizeof(cmd) - 1);
+	g_io_channel_shutdown(player->channel[1], TRUE, NULL);
+	kill(player->pid, SIGTERM);
 	free(player);
 }
 
@@ -651,6 +658,7 @@ void player_set_fullscreen(Player * player, int fullscreen)
 }
 
 
+/* player_set_size */
 void player_set_size(Player * player, int width, int height)
 {
 	if(width < 0)
@@ -664,6 +672,7 @@ void player_set_size(Player * player, int width, int height)
 
 
 /* useful */
+/* player_error */
 int player_error(Player * player, char const * message, int ret)
 {
 	GtkWidget * dialog;
