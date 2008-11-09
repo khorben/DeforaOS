@@ -21,7 +21,9 @@
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
+#include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
+#include "../config.h"
 #include "player.h"
 
 
@@ -31,6 +33,7 @@ struct _menu
 	char * name;
 	GtkSignalFunc callback;
 	char * stock;
+	unsigned int accel;
 };
 
 struct _menubar
@@ -43,40 +46,42 @@ struct _menubar
 /* constants */
 struct _menu _menu_file[] =
 {
-	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN },
-	{ "", NULL, NULL },
-	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES },
-	{ "", NULL, NULL },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE },
-	{ NULL, NULL, NULL }
+	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
+	{ "", NULL, NULL, 0 },
+	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES,
+		0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_edit[] =
 {
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES },
-	{ NULL, NULL, NULL }
+		GTK_STOCK_PREFERENCES, GDK_P },
+	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_view[] =
 {
-	{ "_Playlist", G_CALLBACK(on_view_playlist), NULL },
+	{ "_Playlist", G_CALLBACK(on_view_playlist), NULL, GDK_L },
 #if GTK_CHECK_VERSION(2, 8, 0)
-	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN },
+	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
 #else
-	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), NULL },
+	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), NULL,
 #endif
-	{ NULL, NULL, NULL }
+		GDK_F },
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT },
+	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL },
+	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
 #endif
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _menubar[] =
@@ -165,7 +170,7 @@ static int _player_command(Player * player, char const * cmd, size_t cmd_len)
 
 	if(player->pid == -1)
 	{
-		fputs("Player: mplayer not running\n", stderr);
+		fputs(PACKAGE ": mplayer not running\n", stderr);
 		return 1;
 	}
 #ifdef DEBUG
@@ -496,6 +501,7 @@ Player * player_new(void)
 static GtkWidget * _new_menubar(Player * player)
 {
 	GtkWidget * tb_menubar;
+	GtkAccelGroup * group;
 	GtkWidget * menu;
 	GtkWidget * menubar;
 	GtkWidget * menuitem;
@@ -504,6 +510,7 @@ static GtkWidget * _new_menubar(Player * player)
 	struct _menu * p;
 
 	tb_menubar = gtk_menu_bar_new();
+	group = gtk_accel_group_new();
 	for(i = 0; _menubar[i].name != NULL; i++)
 	{
 		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
@@ -525,11 +532,17 @@ static GtkWidget * _new_menubar(Player * player)
 						player);
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
+			if(p->accel != 0)
+				gtk_widget_add_accelerator(menuitem, "activate",
+						group, p->accel,
+						GDK_CONTROL_MASK,
+						GTK_ACCEL_VISIBLE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
 		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
 	}
+	gtk_window_add_accel_group(GTK_WINDOW(player->window), group);
 	return tb_menubar;
 }
 
