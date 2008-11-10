@@ -1,3 +1,7 @@
+#$Id$
+
+
+
 [ -z "$DU" ]	&& DU="du -h"
 [ -z "$GZIP" ]	&& GZIP="gzip -9"
 [ -z "$KERNEL" ]&& KERNEL="/boot/vmlinuz"

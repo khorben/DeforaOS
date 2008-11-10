@@ -1,3 +1,7 @@
+#$Id$
+
+
+
 [ -z "$KERNEL" ]&& KERNEL="/netbsd"
 [ -z "$MKFS" ]	&& MKFS="newfs -F"
 [ -z "$MOUNT" ]	&& MOUNT="_netbsd_mount"
