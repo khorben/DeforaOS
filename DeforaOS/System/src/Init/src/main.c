@@ -15,7 +15,6 @@
 
 
 
-#define DEBUG
 #include <System.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -33,16 +32,6 @@ static int _usage(void);
 
 
 /* functions */
-/* public */
-#if 0
-/* Init AppInterface */
-int init_register(char const * service, int16_t port)
-{
-	return session_register(service, port);
-}
-#endif
-
-
 /* private */
 /* init */
 static int _init(char const * profile)
@@ -99,7 +88,7 @@ int main(int argc, char * argv[])
 		}
 	if((ret = _init(profile) != 0) && getpid() == 1)
 	{
-		fprintf(stderr, "%s: Spawning a shell\n", PACKAGE);
+		fputs(PACKAGE ": Spawning a shell\n", stderr);
 		execve(shell[0], shell, NULL);
 		return 127;
 	}
