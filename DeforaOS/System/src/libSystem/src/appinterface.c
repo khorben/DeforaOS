@@ -22,6 +22,7 @@
 #endif
 #include <string.h>
 #include <dlfcn.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
