@@ -26,9 +26,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#ifdef DEBUG
-# include <arpa/inet.h>
-#endif
+#include <arpa/inet.h>
 #ifdef WITH_SSL
 # include <openssl/ssl.h>
 # include <openssl/err.h>
