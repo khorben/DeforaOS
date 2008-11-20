@@ -4,7 +4,7 @@ PREFIX	= /usr/local
 
 
 all: subdirs
-	./Apps/Devel/src/configure/src/configure -vp "$(PREFIX)"
+	./Apps/Devel/src/configure/src/configure -p "$(PREFIX)"
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	@echo
 	@echo ========================================================================
