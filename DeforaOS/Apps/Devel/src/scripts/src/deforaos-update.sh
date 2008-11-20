@@ -9,6 +9,7 @@ DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www/htdocs/download/snapshots"
 MODULE="DeforaOS"
 SRC="$HOME/$MODULE"
+
 #executables
 CVS="cvs -q"
 LN="ln -f"
@@ -19,10 +20,6 @@ RM="rm -f"
 #main
 #configure cvs if necessary
 [ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
-[ ! -f "$HOME/.cvsrc" ] && cat > "$HOME/.cvsrc" << EOF
-cvs -q
-update -dPA
-EOF
 
 #checkout tree if necessary
 if [ ! -d "$SRC" ]; then
@@ -35,7 +32,7 @@ fi
 echo ""
 echo "Updating CVS module $MODULE:"
 cd "$SRC" || exit 1
-$CVS update
+$CVS update -dPA
 
 #make archive
 echo ""

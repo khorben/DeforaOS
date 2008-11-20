@@ -11,6 +11,7 @@ DEVNULL="/dev/null"
 MODULE="DeforaOS"
 SRC="$HOME/build/$OS-$ARCH"
 DST="$HOME/destdir/$OS-$ARCH"
+
 #executables
 CVS="cvs -q"
 MAKE="make"
@@ -34,10 +35,6 @@ error()
 #main
 #configure cvs if necessary
 [ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
-[ ! -f "$HOME/.cvsrc" ] && cat > "$HOME/.cvsrc" << EOF
-cvs -q
-update -dPA
-EOF
 
 #checkout tree
 $RM -r "$SRC"
