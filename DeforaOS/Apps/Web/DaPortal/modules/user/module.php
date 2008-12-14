@@ -561,7 +561,7 @@ function _confirm_manual($key, $user)
 }
 
 
-function _system_login($args)
+function _user_system_login($args)
 {
 	global $user_id; 
 
@@ -603,13 +603,15 @@ function user_system($args)
 	if($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		if($_POST['action'] == 'login')
-			$error = _system_login($args);
+			$error = _user_system_login($args);
 		else if($_POST['action'] == 'config_update')
 			$error = _user_system_config_update($args);
 		else if($_POST['action'] == 'error')
 			$_POST['action'] = 'default';
 		else if($_POST['action'] == 'appearance')
-			return _system_appearance($args);
+			return _user_system_appearance($args);
+		else if($_POST['action'] == 'update')
+			$error = _user_system_update($args);
 	}
 	else if($_SERVER['REQUEST_METHOD'] == 'GET')
 	{
@@ -622,7 +624,7 @@ function user_system($args)
 	}
 }
 
-function _system_appearance($args)
+function _user_system_appearance($args)
 {
 	global $debug, $user_id;
 
@@ -658,43 +660,48 @@ function _user_system_config_update($args)
 	exit(0);
 }
 
-
-function user_update($args)
+function _user_system_update($args)
 {
 	global $user_id;
 
-	if($_SERVER['REQUEST_METHOD'] != 'POST')
-		return _error(PERMISSION_DENIED);
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$id = $args['id'];
 	else if($user_id != 0)
 		$id = $user_id;
 	else
-		return _error(PERMISSION_DENIED);
+		return PERMISSION_DENIED;
+	if($args['password1'] != $args['password2'])
+		return 'Passwords do not match';
 	$password = '';
-	if(strlen($args['password1'])
-			&& $args['password1'] == $args['password2'])
+	if(strlen($args['password1']))
 		$password = "password='".md5($args['password1'])."'";
 	if(_user_admin($user_id))
-	{
-		if(!_sql_query('UPDATE daportal_user SET'
-					." username='".$args['username']."'"
-					.", enabled='".(isset($args['enabled'])
-						&& $args['enabled'] == 'on'
-						? '1' : '0')."'"
-					.", admin='".(isset($args['admin'])
-						&& $args['admin'] == 'on'
-						? '1' : '0')."'"
-					.", email='".$args['email']."'"
-					.(strlen($password) ? ', '.$password
-					       	: '')." WHERE user_id='$id'"))
-			return _error('Could not update user');
-	}
-	else if(strlen($password) && !_sql_query('UPDATE daportal_user SET '
-				.$password." WHERE user_id='$id'"))
-		return _error('Could not update user');
-	user_display(array('id' => $id));
+		$sql = 'UPDATE daportal_user SET username='
+			."'".$args['username']."', enabled='"
+			.(isset($args['enabled']) && $args['enabled'] == 'on'
+					? '1' : '0')."', admin='"
+			.(isset($args['admin']) && $args['admin'] == 'on'
+					? '1' : '0')."', email='"
+			.$args['email']."'".(strlen($password) ? ', '.$password
+					: '')." WHERE user_id='$id'";
+	else if(strlen($password))
+		$sql = 'UPDATE daportal_user SET '.$password
+			." WHERE user_id='$id'";
+	if(strlen($sql) && _sql_query($sql) == FALSE)
+		return 'Could not update user';
+	header('Location: '._module_link_full('user', 'display',
+				array('id' => $id)));
+}
+
+
+function user_update($args)
+{
+	global $user_id, $error;
+
+	user_modify($args);
+	if(isset($error) && strlen($error))
+		_error($error);
 }
 
 ?>
