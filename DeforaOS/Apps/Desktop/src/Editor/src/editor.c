@@ -20,6 +20,7 @@ static char const _license[] =
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gdk/gdkkeysyms.h>
 #include "editor.h"
 #include "../config.h"
 
@@ -30,6 +31,7 @@ struct _menu
 	char * name;
 	GtkSignalFunc callback;
 	char * stock;
+	unsigned int accel;
 };
 
 struct _menubar
@@ -62,38 +64,38 @@ static void _on_save(GtkWidget * widget, gpointer data);
 static void _on_save_as(GtkWidget * widget, gpointer data);
 struct _menu _menu_file[] =
 {
-	{ "_New", G_CALLBACK(_on_file_new), GTK_STOCK_NEW },
-	{ "_Open", G_CALLBACK(_on_file_open), GTK_STOCK_OPEN },
-	{ "", NULL, NULL },
-	{ "_Save", G_CALLBACK(_on_file_save), GTK_STOCK_SAVE },
-	{ "_Save as...", G_CALLBACK(_on_file_save_as), GTK_STOCK_SAVE_AS },
-	{ "", NULL, NULL },
-	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE },
-	{ NULL, NULL, NULL }
+	{ "_New", G_CALLBACK(_on_file_new), GTK_STOCK_NEW, GDK_N },
+	{ "_Open", G_CALLBACK(_on_file_open), GTK_STOCK_OPEN, GDK_O },
+	{ "", NULL, NULL, 0 },
+	{ "_Save", G_CALLBACK(_on_file_save), GTK_STOCK_SAVE, GDK_S },
+	{ "_Save as...", G_CALLBACK(_on_file_save_as), GTK_STOCK_SAVE_AS, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, 0 },
+	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_edit[] =
 {
-	{ "_Undo", NULL, GTK_STOCK_UNDO }, /* FIXME implement */
-	{ "_Redo", NULL, GTK_STOCK_REDO }, /* FIXME implement */
-	{ "", NULL, NULL },
-	{ "_Cut", NULL, GTK_STOCK_CUT }, /* FIXME implement */
-	{ "_Copy", NULL, GTK_STOCK_COPY }, /* FIXME implement */
-	{ "_Paste", NULL, GTK_STOCK_PASTE }, /* FIXME implement */
-	{ "", NULL, NULL },
+	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_Z }, /* FIXME implement */
+	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_R }, /* FIXME implement */
+	{ "", NULL, NULL, 0 },
+	{ "_Cut", NULL, GTK_STOCK_CUT, 0 }, /* FIXME implement */
+	{ "_Copy", NULL, GTK_STOCK_COPY, 0 }, /* FIXME implement */
+	{ "_Paste", NULL, GTK_STOCK_PASTE, 0 }, /* FIXME implement */
+	{ "", NULL, NULL, 0 },
 	{ "_Preferences", G_CALLBACK(_on_edit_preferences),
-		GTK_STOCK_PREFERENCES },
-	{ NULL, NULL, NULL }
+		GTK_STOCK_PREFERENCES, GDK_P },
+	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT },
+	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(_on_help_about), NULL },
+	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 },
 #endif
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _menubar[] =
@@ -108,6 +110,7 @@ static struct _menubar _menubar[] =
 /* Editor */
 static void _new_set_title(Editor * editor);
 static GtkWidget * _new_menubar(Editor * editor);
+
 Editor * editor_new(void)
 {
 	Editor * editor;
@@ -174,7 +177,7 @@ Editor * editor_new(void)
 	/* preferences */
 	editor->pr_window = NULL;
 	gtk_container_add(GTK_CONTAINER(editor->window), vbox);
-	gtk_window_set_focus(editor->window, editor->view);
+	gtk_window_set_focus(GTK_WINDOW(editor->window), editor->view);
 	gtk_widget_show_all(editor->window);
 	return editor;
 }
@@ -191,6 +194,7 @@ static void _new_set_title(Editor * editor)
 static GtkWidget * _new_menubar(Editor * editor)
 {
 	GtkWidget * tb_menubar;
+	GtkAccelGroup * group;
 	GtkWidget * menu;
 	GtkWidget * menubar;
 	GtkWidget * menuitem;
@@ -199,6 +203,7 @@ static GtkWidget * _new_menubar(Editor * editor)
 	struct _menu * p;
 
 	tb_menubar = gtk_menu_bar_new();
+	group = gtk_accel_group_new();
 	for(i = 0; _menubar[i].name != NULL; i++)
 	{
 		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
@@ -219,11 +224,17 @@ static GtkWidget * _new_menubar(Editor * editor)
 						G_CALLBACK(p->callback), editor);
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
+			if(p->accel != 0)
+				gtk_widget_add_accelerator(menuitem, "activate",
+						group, p->accel,
+						GDK_CONTROL_MASK,
+						GTK_ACCEL_VISIBLE);
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
 		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
 	}
+	gtk_window_add_accel_group(GTK_WINDOW(editor->window), group);
 	return tb_menubar;
 }
 
