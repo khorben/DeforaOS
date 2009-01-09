@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Accessories */
 /* Accessories is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -14,7 +14,8 @@
  * Accessories; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA  02111-1307  USA */
 /* TODO:
- * - use g_io_channel_get_flags() (instead of eof?) */
+ * - use g_io_channel_get_flags() (instead of eof?)
+ * - go back into the idle loop after data transfer */
 
 
 
@@ -198,6 +199,7 @@ static int _error_do(char const * message, char const * error, int ret)
 			message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
 }
 
