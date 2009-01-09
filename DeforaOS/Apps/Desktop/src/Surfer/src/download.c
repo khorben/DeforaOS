@@ -56,7 +56,7 @@ typedef struct _Download
 
 /* prototypes */
 static int _download(Prefs * prefs, char const * url);
-static int _download_error(char const * message, int ret);
+static int _download_error(Download * download, char const * message, int ret);
 static void _download_refresh(Download * download);
 
 /* callbacks */
@@ -82,7 +82,7 @@ static int _download(Prefs * prefs, char const * url)
 	if(prefs->output == NULL)
 		prefs->output = basename(url);
 	if(gettimeofday(&download.tv, NULL) != 0)
-		return _download_error("gettimeofday", 1);
+		return _download_error(NULL, "gettimeofday", 1);
 	download.data_received = 0;
 	download.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(download.window), "Download file");
@@ -113,7 +113,7 @@ static int _download(Prefs * prefs, char const * url)
 
 
 /* download_error */
-static int _download_error(char const * message, int ret)
+static int _download_error(Download * download, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
@@ -123,11 +123,13 @@ static int _download_error(char const * message, int ret)
 		perror(message);
 		return -ret;
 	}
-	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s: %s",
-			message, strerror(errno));
+	dialog = gtk_message_dialog_new(download != NULL
+			? GTK_WINDOW(download->window) : NULL,
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
 }
 
@@ -312,9 +314,9 @@ static gboolean _download_on_idle(gpointer data)
 
 	if((download->fp = fopen(download->prefs->output, "w")) == NULL)
 	{
-		/* FIXME really report the error as such */
-		gtk_label_set_text(GTK_LABEL(download->status), strerror(
-					errno));
+		_download_error(download, download->prefs->output, 0);
+		/* FIXME cleanup */
+		gtk_main_quit();
 		return FALSE;
 	}
 	download->conn = gnet_conn_http_new();
