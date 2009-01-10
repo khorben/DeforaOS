@@ -31,6 +31,7 @@
 typedef struct _Prefs
 {
 	char const * output;
+	char const * user_agent;
 } Prefs;
 
 typedef struct _Download
@@ -323,6 +324,9 @@ static gboolean _download_on_idle(gpointer data)
 	gnet_conn_http_set_method(download->conn, GNET_CONN_HTTP_METHOD_GET,
 			NULL, 0);
 	gnet_conn_http_set_uri(download->conn, download->url);
+	if(download->prefs->user_agent != NULL)
+		gnet_conn_http_set_user_agent(download->conn,
+				download->prefs->user_agent);
 	gnet_conn_http_run_async(download->conn, _download_on_http, download);
 	g_timeout_add(500, _download_on_timeout, download);
 	return FALSE;
@@ -342,7 +346,9 @@ static gboolean _download_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: download [-O output] url\n", stderr);
+	fputs("Usage: download [-O output][-U user-agent] url\n"
+"  -O	file to write document to\n"
+"  -U	user agent string to send\n", stderr);
 	return 1;
 }
 
@@ -355,11 +361,14 @@ int main(int argc, char * argv[])
 
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "O:")) != -1)
+	while((o = getopt(argc, argv, "O:U:")) != -1)
 		switch(o)
 		{
 			case 'O':
 				prefs.output = optarg;
+				break;
+			case 'U':
+				prefs.user_agent = optarg;
 				break;
 			default:
 				return _usage();
