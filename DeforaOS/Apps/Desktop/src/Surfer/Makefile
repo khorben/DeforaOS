@@ -21,6 +21,7 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/download.c \
 		$(PACKAGE)-$(VERSION)/src/surfer.c \
 		$(PACKAGE)-$(VERSION)/src/ghtml.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \

@@ -19,7 +19,6 @@
 # define SURFER_SURFER_H
 
 # include <gtk/gtk.h>
-# include <gtkmozembed.h>
 
 
 /* Surfer */
