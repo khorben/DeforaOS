@@ -726,10 +726,8 @@ static int _target_binary(Configure * configure, FILE * fp,
 	/* FIXME change commas to spaces */
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
-	fprintf(fp, "%s%s%s%s%s", "\n\t$(CC) -o ", target, " $(", target,
-			"_OBJS) $(LDFLAGSF) $(LDFLAGS)");
-	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		fprintf(fp, " %s", p);
+	fprintf(fp, "%s%s%s%s%s%s%s", "\n\t$(CC) -o ", target, " $(", target,
+			"_OBJS) $(", target, "_LDFLAGS)");
 	fputc('\n', fp);
 	return 0;
 }
@@ -821,6 +819,10 @@ static void _flags_c(Configure * configure, FILE * fp, String const * target)
 		if(configure->os == HO_GNU_LINUX && string_find(p, "-ansi"))
 			fprintf(fp, "%s", " -D _GNU_SOURCE");
 	}
+	fputc('\n', fp);
+	fprintf(fp, "%s%s", target, "_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)");
+	if((p = config_get(configure->config, target, "ldflags")) != NULL)
+		fprintf(fp, " %s", p);
 	fputc('\n', fp);
 }
 
