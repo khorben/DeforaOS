@@ -51,6 +51,7 @@ typedef struct _Download
 	GtkWidget * status;
 	GtkWidget * speed;
 	GtkWidget * progress;
+	GtkWidget * cancel;
 
 	guint timeout;
 	int pulse;
@@ -59,8 +60,10 @@ typedef struct _Download
 
 /* prototypes */
 static int _download(Prefs * prefs, char const * url);
+static int _download_cancel(Download * download);
 static int _download_error(Download * download, char const * message, int ret);
 static void _download_refresh(Download * download);
+static int _download_write(Download * download);
 
 /* callbacks */
 static void _download_on_cancel(GtkWidget * widget, gpointer data);
@@ -79,7 +82,7 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 
 static int _download(Prefs * prefs, char const * url)
 {
-	static Download download;
+	Download download;
 	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -102,7 +105,7 @@ static int _download(Prefs * prefs, char const * url)
 	snprintf(buf, sizeof(buf), "%s %s", "Download", url);
 	gtk_window_set_title(GTK_WINDOW(download.window), buf);
 	g_signal_connect(G_OBJECT(download.window), "delete-event", G_CALLBACK(
-				_download_on_closex), NULL);
+				_download_on_closex), &download);
 	vbox = gtk_vbox_new(FALSE, 0);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
@@ -117,12 +120,12 @@ static int _download(Prefs * prefs, char const * url)
 	/* progress bar */
 	download.progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), download.progress, TRUE, TRUE, 4);
-	/* cancel button */
-	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	/* button */
+	hbox = gtk_hbox_new(FALSE, 0);
+	download.cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect(G_OBJECT(download.cancel), "clicked", G_CALLBACK(
 				_download_on_cancel), &download);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+	gtk_box_pack_end(GTK_BOX(hbox), download.cancel, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(download.window), 4);
 	gtk_container_add(GTK_CONTAINER(download.window), vbox);
@@ -150,6 +153,26 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 	gtk_size_group_add_widget(right, *widget);
 	gtk_box_pack_start(GTK_BOX(hbox), *widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+}
+
+
+/* download_cancel */
+static int _download_cancel(Download * download)
+{
+	int ret = 0;
+
+	if(download->fp != NULL)
+	{
+		if(fclose(download->fp) != 0)
+			ret |= _download_error(download,
+					download->prefs->output, 1);
+		if(unlink(download->prefs->output) != 0)
+			ret |= _download_error(download,
+					download->prefs->output, 1);
+		download->fp = NULL;
+	}
+	gtk_main_quit();
+	return ret;
 }
 
 
@@ -220,23 +243,48 @@ static void _download_refresh(Download * download)
 }
 
 
+/* download_write */
+static int _download_write(Download * download)
+{
+	gchar * buf;
+	gsize size;
+	gsize s;
+
+	if(gnet_conn_http_steal_buffer(download->conn, &buf, &size) != TRUE)
+		return 0;
+	/* FIXME use a GIOChannel instead */
+	s = fwrite(buf, sizeof(*buf), size, download->fp);
+	g_free(buf);
+	if(s == size)
+	{
+		download->pulse = 1;
+		return 0;
+	}
+	_download_error(download, download->prefs->output, 0);
+	_download_cancel(download);
+	return 1;
+}
+
+
 /* callbacks */
+/* download_on_cancel */
 static void _download_on_cancel(GtkWidget * widget, gpointer data)
 {
 	Download * download = data;
 
 	gtk_widget_hide(download->window);
-	/* FIXME cleanup, unlink... */
-	gtk_main_quit();
+	_download_cancel(download);
 }
 
 
+/* download_on_closex */
 static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
+	Download * download = data;
+
 	gtk_widget_hide(widget);
-	/* FIXME cleanup, unlink... */
-	gtk_main_quit();
+	_download_cancel(download);
 	return FALSE;
 }
 
@@ -302,44 +350,29 @@ static void _http_error(GConnHttpEventError * event, Download * download)
 static void _http_data_complete(GConnHttpEventData * event,
 		Download * download)
 {
-	gchar * buf;
-	gsize size;
-
-	gtk_label_set_text(GTK_LABEL(download->status), "Complete");
-	if(gnet_conn_http_steal_buffer(download->conn, &buf, &size))
-	{
-		/* FIXME use a GIOChannel instead, check errors */
-		fwrite(buf, sizeof(*buf), size, download->fp);
-		g_free(buf);
-	}
+	g_source_remove(download->timeout);
+	download->timeout = 0;
+	if(_download_write(download) != 0)
+		return;
 	download->data_received = event->data_received;
 	if(event->content_length == 0)
 	download->content_length = (event->content_length != 0)
 		? event->content_length : event->data_received;
 	if(fclose(download->fp) != 0)
 		_download_error(download, download->prefs->output, 0);
+	download->fp = NULL;
 	_download_refresh(download);
-	g_source_remove(download->timeout);
-	download->timeout = 0;
+	gtk_label_set_text(GTK_LABEL(download->status), "Complete");
+	gtk_button_set_label(GTK_BUTTON(download->cancel), GTK_STOCK_CLOSE);
 }
 
 static void _http_data_partial(GConnHttpEventData * event, Download * download)
 {
-	gchar * buf;
-	gsize size;
-
 	if(download->content_length == 0 && download->data_received == 0)
 		gtk_label_set_text(GTK_LABEL(download->status), "Downloading");
-	/* FIXME code duplication with data_complete */
 	download->data_received = event->data_received;
 	download->content_length = event->content_length;
-	if(gnet_conn_http_steal_buffer(download->conn, &buf, &size))
-	{
-		/* FIXME use a GIOChannel instead, check errors */
-		fwrite(buf, sizeof(*buf), size, download->fp);
-		g_free(buf);
-		download->pulse = 1;
-	}
+	_download_write(download);
 }
 
 static void _http_redirect(GConnHttpEventRedirect * event, Download * download)
@@ -377,6 +410,7 @@ static void _http_timeout(Download * download)
 }
 
 
+/* download_on_idle */
 static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
@@ -403,6 +437,7 @@ static gboolean _download_on_idle(gpointer data)
 }
 
 
+/* download_on_timeout */
 static gboolean _download_on_timeout(gpointer data)
 {
 	Download * download = data;
