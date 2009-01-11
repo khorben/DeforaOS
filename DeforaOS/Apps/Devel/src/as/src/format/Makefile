@@ -19,6 +19,7 @@ all: $(TARGETS)
 
 elf_OBJS = elf.o
 elf_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+elf_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 elf.a: $(elf_OBJS)
 	$(AR) elf.a $(elf_OBJS)
@@ -29,6 +30,7 @@ elf.so: $(elf_OBJS)
 
 flat_OBJS = flat.o
 flat_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+flat_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 flat.a: $(flat_OBJS)
 	$(AR) flat.a $(flat_OBJS)

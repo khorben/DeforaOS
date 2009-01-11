@@ -19,6 +19,7 @@ all: $(TARGETS)
 
 libSystem_OBJS = appclient.o appinterface.o appserver.o array.o buffer.o config.o error.o event.o hash.o object.o parser.o plugin.o string.o token.o
 libSystem_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+libSystem_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -l ssl
 
 libSystem.a: $(libSystem_OBJS)
 	$(AR) libSystem.a $(libSystem_OBJS)

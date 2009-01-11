@@ -3,6 +3,7 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
@@ -16,16 +17,18 @@ INSTALL	= install
 all: $(TARGETS)
 
 Probe_OBJS = probe.o
-Probe_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+Probe_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+Probe_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -Wl,--export-dynamic
 
 Probe: $(Probe_OBJS)
-	$(CC) -o Probe $(Probe_OBJS) $(LDFLAGSF) $(LDFLAGS) -Wl,--export-dynamic
+	$(CC) -o Probe $(Probe_OBJS) $(Probe_LDFLAGS)
 
 DaMon_OBJS = damon.o
-DaMon_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+DaMon_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+DaMon_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 DaMon: $(DaMon_OBJS)
-	$(CC) -o DaMon $(DaMon_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o DaMon $(DaMon_OBJS) $(DaMon_LDFLAGS)
 
 probe.o: probe.c
 	$(CC) $(Probe_CFLAGS) -c probe.c
@@ -40,12 +43,7 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 Probe $(DESTDIR)$(BINDIR)/Probe
-	$(INSTALL) -m 0755 DaMon $(DESTDIR)$(BINDIR)/DaMon
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/Probe
-	$(RM) $(DESTDIR)$(BINDIR)/DaMon
 
 .PHONY: all clean distclean install uninstall

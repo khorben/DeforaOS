@@ -17,9 +17,10 @@ all: $(TARGETS)
 
 editor_OBJS = editor.o main.o
 editor_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+editor_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 editor: $(editor_OBJS)
-	$(CC) -o editor $(editor_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o editor $(editor_OBJS) $(editor_LDFLAGS)
 
 editor.o: editor.c ../config.h
 	$(CC) $(editor_CFLAGS) -c editor.c

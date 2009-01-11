@@ -16,279 +16,325 @@ all: $(TARGETS)
 
 basename_OBJS = basename.o
 basename_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+basename_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 basename: $(basename_OBJS)
-	$(CC) -o basename $(basename_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o basename $(basename_OBJS) $(basename_LDFLAGS)
 
 cat_OBJS = cat.o
 cat_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cat_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cat: $(cat_OBJS)
-	$(CC) -o cat $(cat_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o cat $(cat_OBJS) $(cat_LDFLAGS)
 
 chgrp_OBJS = chgrp.o
 chgrp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+chgrp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 chgrp: $(chgrp_OBJS)
-	$(CC) -o chgrp $(chgrp_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o chgrp $(chgrp_OBJS) $(chgrp_LDFLAGS)
 
 chmod_OBJS = chmod.o
 chmod_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+chmod_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 chmod: $(chmod_OBJS) common.c
-	$(CC) -o chmod $(chmod_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o chmod $(chmod_OBJS) $(chmod_LDFLAGS)
 
 chown_OBJS = chown.o
 chown_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+chown_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 chown: $(chown_OBJS)
-	$(CC) -o chown $(chown_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o chown $(chown_OBJS) $(chown_LDFLAGS)
 
 cksum_OBJS = cksum.o
 cksum_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cksum_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cksum: $(cksum_OBJS)
-	$(CC) -o cksum $(cksum_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o cksum $(cksum_OBJS) $(cksum_LDFLAGS)
 
 cmp_OBJS = cmp.o
 cmp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cmp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cmp: $(cmp_OBJS)
-	$(CC) -o cmp $(cmp_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o cmp $(cmp_OBJS) $(cmp_LDFLAGS)
 
 cp_OBJS = cp.o
 cp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cp: $(cp_OBJS)
-	$(CC) -o cp $(cp_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o cp $(cp_OBJS) $(cp_LDFLAGS)
 
 df_OBJS = df.o
 df_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+df_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 df: $(df_OBJS)
-	$(CC) -o df $(df_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o df $(df_OBJS) $(df_LDFLAGS)
 
 dirname_OBJS = dirname.o
 dirname_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+dirname_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 dirname: $(dirname_OBJS)
-	$(CC) -o dirname $(dirname_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o dirname $(dirname_OBJS) $(dirname_LDFLAGS)
 
 du_OBJS = du.o
 du_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+du_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 du: $(du_OBJS)
-	$(CC) -o du $(du_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o du $(du_OBJS) $(du_LDFLAGS)
 
 echo_OBJS = echo.o
 echo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+echo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 echo: $(echo_OBJS)
-	$(CC) -o echo $(echo_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o echo $(echo_OBJS) $(echo_LDFLAGS)
 
 false_OBJS = false.o
 false_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+false_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 false: $(false_OBJS)
-	$(CC) -o false $(false_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o false $(false_OBJS) $(false_LDFLAGS)
 
 file_OBJS = file.o
 file_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+file_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 file: $(file_OBJS)
-	$(CC) -o file $(file_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o file $(file_OBJS) $(file_LDFLAGS)
 
 find_OBJS = find.o
 find_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+find_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 find: $(find_OBJS)
-	$(CC) -o find $(find_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o find $(find_OBJS) $(find_LDFLAGS)
 
 head_OBJS = head.o
 head_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+head_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 head: $(head_OBJS)
-	$(CC) -o head $(head_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o head $(head_OBJS) $(head_LDFLAGS)
 
 id_OBJS = id.o
 id_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+id_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 id: $(id_OBJS)
-	$(CC) -o id $(id_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o id $(id_OBJS) $(id_LDFLAGS)
 
 kill_OBJS = kill.o
 kill_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+kill_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 kill: $(kill_OBJS)
-	$(CC) -o kill $(kill_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o kill $(kill_OBJS) $(kill_LDFLAGS)
 
 link_OBJS = link.o
 link_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+link_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 link: $(link_OBJS)
-	$(CC) -o link $(link_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o link $(link_OBJS) $(link_LDFLAGS)
 
 ln_OBJS = ln.o
 ln_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+ln_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 ln: $(ln_OBJS)
-	$(CC) -o ln $(ln_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o ln $(ln_OBJS) $(ln_LDFLAGS)
 
 locale_OBJS = locale.o
 locale_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+locale_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 locale: $(locale_OBJS)
-	$(CC) -o locale $(locale_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o locale $(locale_OBJS) $(locale_LDFLAGS)
 
 logname_OBJS = logname.o
 logname_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+logname_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 logname: $(logname_OBJS)
-	$(CC) -o logname $(logname_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o logname $(logname_OBJS) $(logname_LDFLAGS)
 
 ls_OBJS = ls.o
 ls_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+ls_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 ls: $(ls_OBJS)
-	$(CC) -o ls $(ls_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o ls $(ls_OBJS) $(ls_LDFLAGS)
 
 mkdir_OBJS = mkdir.o
 mkdir_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mkdir_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mkdir: $(mkdir_OBJS)
-	$(CC) -o mkdir $(mkdir_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o mkdir $(mkdir_OBJS) $(mkdir_LDFLAGS)
 
 mkfifo_OBJS = mkfifo.o
 mkfifo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mkfifo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mkfifo: $(mkfifo_OBJS)
-	$(CC) -o mkfifo $(mkfifo_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o mkfifo $(mkfifo_OBJS) $(mkfifo_LDFLAGS)
 
 mv_OBJS = mv.o
 mv_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mv_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mv: $(mv_OBJS)
-	$(CC) -o mv $(mv_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o mv $(mv_OBJS) $(mv_LDFLAGS)
 
 nice_OBJS = nice.o
 nice_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+nice_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 nice: $(nice_OBJS)
-	$(CC) -o nice $(nice_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o nice $(nice_OBJS) $(nice_LDFLAGS)
 
 pr_OBJS = pr.o
 pr_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+pr_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pr: $(pr_OBJS)
-	$(CC) -o pr $(pr_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o pr $(pr_OBJS) $(pr_LDFLAGS)
 
 printf_OBJS = printf.o
 printf_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+printf_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 printf: $(printf_OBJS)
-	$(CC) -o printf $(printf_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o printf $(printf_OBJS) $(printf_LDFLAGS)
 
 pwd_OBJS = pwd.o
 pwd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+pwd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pwd: $(pwd_OBJS)
-	$(CC) -o pwd $(pwd_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o pwd $(pwd_OBJS) $(pwd_LDFLAGS)
 
 renice_OBJS = renice.o
 renice_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+renice_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 renice: $(renice_OBJS)
-	$(CC) -o renice $(renice_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o renice $(renice_OBJS) $(renice_LDFLAGS)
 
 rm_OBJS = rm.o
 rm_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+rm_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 rm: $(rm_OBJS)
-	$(CC) -o rm $(rm_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o rm $(rm_OBJS) $(rm_LDFLAGS)
 
 rmdir_OBJS = rmdir.o
 rmdir_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+rmdir_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 rmdir: $(rmdir_OBJS)
-	$(CC) -o rmdir $(rmdir_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o rmdir $(rmdir_OBJS) $(rmdir_LDFLAGS)
 
 sleep_OBJS = sleep.o
 sleep_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+sleep_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 sleep: $(sleep_OBJS)
-	$(CC) -o sleep $(sleep_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o sleep $(sleep_OBJS) $(sleep_LDFLAGS)
 
 strings_OBJS = strings.o
 strings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+strings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 strings: $(strings_OBJS)
-	$(CC) -o strings $(strings_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o strings $(strings_OBJS) $(strings_LDFLAGS)
 
 tail_OBJS = tail.o
 tail_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+tail_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 tail: $(tail_OBJS)
-	$(CC) -o tail $(tail_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o tail $(tail_OBJS) $(tail_LDFLAGS)
 
 test_OBJS = test.o
 test_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+test_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 test: $(test_OBJS)
-	$(CC) -o test $(test_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o test $(test_OBJS) $(test_LDFLAGS)
 
 time_OBJS = time.o
 time_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+time_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 time: $(time_OBJS)
-	$(CC) -o time $(time_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o time $(time_OBJS) $(time_LDFLAGS)
 
 touch_OBJS = touch.o
 touch_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+touch_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 touch: $(touch_OBJS)
-	$(CC) -o touch $(touch_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o touch $(touch_OBJS) $(touch_LDFLAGS)
 
 true_OBJS = true.o
 true_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+true_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 true: $(true_OBJS)
-	$(CC) -o true $(true_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o true $(true_OBJS) $(true_LDFLAGS)
 
 tty_OBJS = tty.o
 tty_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+tty_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 tty: $(tty_OBJS)
-	$(CC) -o tty $(tty_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o tty $(tty_OBJS) $(tty_LDFLAGS)
 
 uname_OBJS = uname.o
 uname_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+uname_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 uname: $(uname_OBJS)
-	$(CC) -o uname $(uname_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o uname $(uname_OBJS) $(uname_LDFLAGS)
 
 uniq_OBJS = uniq.o
 uniq_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+uniq_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 uniq: $(uniq_OBJS)
-	$(CC) -o uniq $(uniq_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o uniq $(uniq_OBJS) $(uniq_LDFLAGS)
 
 unlink_OBJS = unlink.o
 unlink_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+unlink_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 unlink: $(unlink_OBJS)
-	$(CC) -o unlink $(unlink_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o unlink $(unlink_OBJS) $(unlink_LDFLAGS)
 
 wc_OBJS = wc.o
 wc_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+wc_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 wc: $(wc_OBJS)
-	$(CC) -o wc $(wc_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o wc $(wc_OBJS) $(wc_LDFLAGS)
 
 who_OBJS = who.o
 who_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+who_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 who: $(who_OBJS)
-	$(CC) -o who $(who_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o who $(who_OBJS) $(who_LDFLAGS)
 
 basename.o: basename.c
 	$(CC) $(basename_CFLAGS) -c basename.c

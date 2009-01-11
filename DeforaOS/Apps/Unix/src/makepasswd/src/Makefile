@@ -17,9 +17,10 @@ all: $(TARGETS)
 
 makepasswd_OBJS = makepasswd.o md5.o
 makepasswd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+makepasswd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 makepasswd: $(makepasswd_OBJS)
-	$(CC) -o makepasswd $(makepasswd_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o makepasswd $(makepasswd_OBJS) $(makepasswd_LDFLAGS)
 
 makepasswd.o: makepasswd.c
 	$(CC) $(makepasswd_CFLAGS) -c makepasswd.c

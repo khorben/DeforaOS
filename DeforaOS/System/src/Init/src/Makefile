@@ -17,9 +17,10 @@ all: $(TARGETS)
 
 Init_OBJS = init.o main.o service.o session.o
 Init_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+Init_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 Init: $(Init_OBJS)
-	$(CC) -o Init $(Init_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o Init $(Init_OBJS) $(Init_LDFLAGS)
 
 init.o: init.c session.h init.h
 	$(CC) $(Init_CFLAGS) -c init.c

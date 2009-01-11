@@ -19,6 +19,7 @@ all: $(TARGETS)
 
 mbox_OBJS = mbox.o
 mbox_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mbox.a: $(mbox_OBJS)
 	$(AR) mbox.a $(mbox_OBJS)
@@ -29,6 +30,7 @@ mbox.so: $(mbox_OBJS)
 
 pop3_OBJS = pop3.o
 pop3_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+pop3_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 pop3.a: $(pop3_OBJS)
 	$(AR) pop3.a $(pop3_OBJS)
@@ -39,6 +41,7 @@ pop3.so: $(pop3_OBJS)
 
 imap4_OBJS = imap4.o
 imap4_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+imap4_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 imap4.a: $(imap4_OBJS)
 	$(AR) imap4.a $(imap4_OBJS)
@@ -49,6 +52,7 @@ imap4.so: $(imap4_OBJS)
 
 nntp_OBJS = nntp.o
 nntp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+nntp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 nntp.a: $(nntp_OBJS)
 	$(AR) nntp.a $(nntp_OBJS)
@@ -59,6 +63,7 @@ nntp.so: $(nntp_OBJS)
 
 rss_OBJS = rss.o
 rss_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+rss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 rss.a: $(rss_OBJS)
 	$(AR) rss.a $(rss_OBJS)

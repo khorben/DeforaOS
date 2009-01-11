@@ -17,51 +17,59 @@ all: $(TARGETS)
 
 browser_OBJS = browser.o callbacks.o mime.o main.o
 browser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+browser_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 
 browser: $(browser_OBJS)
-	$(CC) -o browser $(browser_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
+	$(CC) -o browser $(browser_OBJS) $(browser_LDFLAGS)
 
 copy_OBJS = copy.o
 copy_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+copy_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 copy: $(copy_OBJS)
-	$(CC) -o copy $(copy_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o copy $(copy_OBJS) $(copy_LDFLAGS)
 
 delete_OBJS = delete.o
 delete_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+delete_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 delete: $(delete_OBJS)
-	$(CC) -o delete $(delete_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o delete $(delete_OBJS) $(delete_LDFLAGS)
 
 desktop_OBJS = desktop.o
 desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 desktop: $(desktop_OBJS)
-	$(CC) -o desktop $(desktop_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
+	$(CC) -o desktop $(desktop_OBJS) $(desktop_LDFLAGS)
 
 move_OBJS = move.o
 move_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+move_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 move: $(move_OBJS)
-	$(CC) -o move $(move_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o move $(move_OBJS) $(move_LDFLAGS)
 
 open_OBJS = open.o
 open_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+open_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 open: $(open_OBJS)
-	$(CC) -o open $(open_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
+	$(CC) -o open $(open_OBJS) $(open_LDFLAGS)
 
 properties_OBJS = properties.o
 properties_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+properties_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 properties: $(properties_OBJS)
-	$(CC) -o properties $(properties_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
+	$(CC) -o properties $(properties_OBJS) $(properties_LDFLAGS)
 
 view_OBJS = view.o
 view_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
 
 view: $(view_OBJS)
-	$(CC) -o view $(view_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System mime.o
+	$(CC) -o view $(view_OBJS) $(view_LDFLAGS)
 
 browser.o: browser.c mime.h callbacks.h browser.h common.c
 	$(CC) $(browser_CFLAGS) -c browser.c

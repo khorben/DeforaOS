@@ -16,9 +16,10 @@ all: $(TARGETS)
 
 ar_OBJS = ar.o
 ar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+ar_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 ar: $(ar_OBJS)
-	$(CC) -o ar $(ar_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o ar $(ar_OBJS) $(ar_LDFLAGS)
 
 ar.o: ar.c
 	$(CC) $(ar_CFLAGS) -c ar.c

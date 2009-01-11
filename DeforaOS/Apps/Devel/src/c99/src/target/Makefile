@@ -19,6 +19,7 @@ all: $(TARGETS)
 
 as_OBJS = as.o
 as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
 
 as.a: $(as_OBJS)
 	$(AR) as.a $(as_OBJS)
@@ -29,6 +30,7 @@ as.so: $(as_OBJS)
 
 graph_OBJS = graph.o
 graph_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+graph_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 graph.a: $(graph_OBJS)
 	$(AR) graph.a $(graph_OBJS)

@@ -16,21 +16,24 @@ all: $(TARGETS)
 
 inetd_OBJS = config.o parser.o scanner.o service.o token.o inetd.o
 inetd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+inetd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 inetd: $(inetd_OBJS)
-	$(CC) -o inetd $(inetd_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o inetd $(inetd_OBJS) $(inetd_LDFLAGS)
 
 discard_OBJS = discard.o
 discard_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+discard_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 discard: $(discard_OBJS)
-	$(CC) -o discard $(discard_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o discard $(discard_OBJS) $(discard_LDFLAGS)
 
 echo_OBJS = echo.o
 echo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+echo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 echo: $(echo_OBJS)
-	$(CC) -o echo $(echo_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o echo $(echo_OBJS) $(echo_LDFLAGS)
 
 config.o: config.c
 	$(CC) $(inetd_CFLAGS) -c config.c

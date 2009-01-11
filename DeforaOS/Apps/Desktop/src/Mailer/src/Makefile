@@ -21,9 +21,10 @@ subdirs:
 
 mailer_OBJS = account.o callbacks.o common.o compose.o mailer.o main.o
 mailer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mailer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 
 mailer: $(mailer_OBJS)
-	$(CC) -o mailer $(mailer_OBJS) $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
+	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
 
 account.o: account.c account/account.h
 	$(CC) $(mailer_CFLAGS) -c account.c

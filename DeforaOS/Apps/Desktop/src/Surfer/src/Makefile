@@ -17,15 +17,17 @@ all: $(TARGETS)
 
 download_OBJS = download.o
 download_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 gnet-2.0`
+download_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 gnet-2.0`
 
 download: $(download_OBJS)
-	$(CC) -o download $(download_OBJS) $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 gnet-2.0`
+	$(CC) -o download $(download_OBJS) $(download_LDFLAGS)
 
 surfer_OBJS = surfer.o ghtml.o callbacks.o main.o
 surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 firefox-gtkmozembed`
+surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 firefox-gtkmozembed`
 
 surfer: $(surfer_OBJS)
-	$(CC) -o surfer $(surfer_OBJS) $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 firefox-gtkmozembed`
+	$(CC) -o surfer $(surfer_OBJS) $(surfer_LDFLAGS)
 
 download.o: download.c
 	$(CC) $(download_CFLAGS) -c download.c

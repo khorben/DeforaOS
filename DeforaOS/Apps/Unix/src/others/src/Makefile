@@ -16,75 +16,87 @@ all: $(TARGETS)
 
 halt_OBJS = halt.o
 halt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+halt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 halt: $(halt_OBJS)
-	$(CC) -o halt $(halt_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o halt $(halt_OBJS) $(halt_LDFLAGS)
 
 hexdump_OBJS = hexdump.o
 hexdump_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+hexdump_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 hexdump: $(hexdump_OBJS)
-	$(CC) -o hexdump $(hexdump_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o hexdump $(hexdump_OBJS) $(hexdump_LDFLAGS)
 
 hostname_OBJS = hostname.o
 hostname_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+hostname_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 hostname: $(hostname_OBJS)
-	$(CC) -o hostname $(hostname_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o hostname $(hostname_OBJS) $(hostname_LDFLAGS)
 
 login_OBJS = login.o
 login_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+login_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 login: $(login_OBJS)
-	$(CC) -o login $(login_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o login $(login_OBJS) $(login_LDFLAGS)
 
 mktemp_OBJS = mktemp.o
 mktemp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mktemp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mktemp: $(mktemp_OBJS)
-	$(CC) -o mktemp $(mktemp_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o mktemp $(mktemp_OBJS) $(mktemp_LDFLAGS)
 
 mount_OBJS = mount.o
 mount_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+mount_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 mount: $(mount_OBJS)
-	$(CC) -o mount $(mount_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o mount $(mount_OBJS) $(mount_LDFLAGS)
 
 poweroff_OBJS = poweroff.o
 poweroff_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+poweroff_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 poweroff: $(poweroff_OBJS)
-	$(CC) -o poweroff $(poweroff_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o poweroff $(poweroff_OBJS) $(poweroff_LDFLAGS)
 
 reboot_OBJS = reboot.o
 reboot_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+reboot_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 reboot: $(reboot_OBJS)
-	$(CC) -o reboot $(reboot_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o reboot $(reboot_OBJS) $(reboot_LDFLAGS)
 
 tar_OBJS = tar.o
 tar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+tar_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 tar: $(tar_OBJS)
-	$(CC) -o tar $(tar_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o tar $(tar_OBJS) $(tar_LDFLAGS)
 
 umount_OBJS = umount.o
 umount_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+umount_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 umount: $(umount_OBJS)
-	$(CC) -o umount $(umount_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o umount $(umount_OBJS) $(umount_LDFLAGS)
 
 uptime_OBJS = uptime.o
 uptime_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+uptime_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 uptime: $(uptime_OBJS)
-	$(CC) -o uptime $(uptime_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o uptime $(uptime_OBJS) $(uptime_LDFLAGS)
 
 w_OBJS = w.o
 w_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+w_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 w: $(w_OBJS)
-	$(CC) -o w $(w_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o w $(w_OBJS) $(w_LDFLAGS)
 
 halt.o: halt.c
 	$(CC) $(halt_CFLAGS) -c halt.c

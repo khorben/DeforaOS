@@ -18,15 +18,17 @@ all: $(TARGETS)
 
 configure_OBJS = configure.o makefile.o settings.o
 configure_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+configure_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 configure: $(configure_OBJS)
-	$(CC) -o configure $(configure_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o configure $(configure_OBJS) $(configure_LDFLAGS)
 
 makedepend_OBJS = makedepend.o
 makedepend_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+makedepend_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 makedepend: $(makedepend_OBJS)
-	$(CC) -o makedepend $(makedepend_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o makedepend $(makedepend_OBJS) $(makedepend_LDFLAGS)
 
 configure.o: configure.c configure.h makefile.h
 	$(CC) $(configure_CFLAGS) -c configure.c

@@ -17,9 +17,10 @@ all: $(TARGETS)
 
 VFS_OBJS = vfs.o
 VFS_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+VFS_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 VFS: $(VFS_OBJS)
-	$(CC) -o VFS $(VFS_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o VFS $(VFS_OBJS) $(VFS_LDFLAGS)
 
 vfs.o: vfs.c
 	$(CC) $(VFS_CFLAGS) -c vfs.c

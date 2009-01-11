@@ -17,27 +17,31 @@ all: $(TARGETS)
 
 calendar_OBJS = calendar.o
 calendar_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+calendar_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 calendar: $(calendar_OBJS)
-	$(CC) -o calendar $(calendar_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o calendar $(calendar_OBJS) $(calendar_LDFLAGS)
 
 fontsel_OBJS = fontsel.o
 fontsel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+fontsel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 fontsel: $(fontsel_OBJS)
-	$(CC) -o fontsel $(fontsel_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o fontsel $(fontsel_OBJS) $(fontsel_LDFLAGS)
 
 progress_OBJS = progress.o
 progress_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+progress_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 progress: $(progress_OBJS)
-	$(CC) -o progress $(progress_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o progress $(progress_OBJS) $(progress_LDFLAGS)
 
 run_OBJS = run.o
 run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 run: $(run_OBJS)
-	$(CC) -o run $(run_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o run $(run_OBJS) $(run_LDFLAGS)
 
 calendar.o: calendar.c
 	$(CC) $(calendar_CFLAGS) -c calendar.c

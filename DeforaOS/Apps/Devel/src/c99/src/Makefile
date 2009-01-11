@@ -21,9 +21,10 @@ subdirs:
 
 c99_OBJS = c99.o code.o main.o parser.o scanner.o tokenset.o
 c99_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+c99_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 c99: $(c99_OBJS)
-	$(CC) -o c99 $(c99_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o c99 $(c99_OBJS) $(c99_LDFLAGS)
 
 c99.o: c99.c common.h code.h parser.h ../include/c99.h
 	$(CC) $(c99_CFLAGS) -c c99.c

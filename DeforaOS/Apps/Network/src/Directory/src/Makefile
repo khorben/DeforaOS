@@ -17,9 +17,10 @@ all: $(TARGETS)
 
 Directory_OBJS = directory.o main.o
 Directory_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+Directory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 Directory: $(Directory_OBJS)
-	$(CC) -o Directory $(Directory_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o Directory $(Directory_OBJS) $(Directory_LDFLAGS)
 
 directory.o: directory.c directory.h
 	$(CC) $(Directory_CFLAGS) -c directory.c

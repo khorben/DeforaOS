@@ -20,6 +20,7 @@ all: $(TARGETS)
 
 libcpp_OBJS = cpp.o scanner.o
 libcpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
+libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
 
 libcpp.a: $(libcpp_OBJS)
 	$(AR) libcpp.a $(libcpp_OBJS)
@@ -30,9 +31,10 @@ libcpp.so: $(libcpp_OBJS)
 
 cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp -l System
 
 cpp: $(cpp_OBJS) libcpp.so
-	$(CC) -o cpp $(cpp_OBJS) $(LDFLAGSF) $(LDFLAGS) -L . -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp -l System
+	$(CC) -o cpp $(cpp_OBJS) $(cpp_LDFLAGS)
 
 cpp.o: cpp.c ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c cpp.c

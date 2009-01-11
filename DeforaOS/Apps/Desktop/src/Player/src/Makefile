@@ -18,9 +18,10 @@ all: $(TARGETS)
 
 player_OBJS = callbacks.o player.o main.o
 player_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+player_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 player: $(player_OBJS)
-	$(CC) -o player $(player_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o player $(player_OBJS) $(player_LDFLAGS)
 
 callbacks.o: callbacks.c callbacks.h player.h
 	$(CC) $(player_CFLAGS) -c callbacks.c
