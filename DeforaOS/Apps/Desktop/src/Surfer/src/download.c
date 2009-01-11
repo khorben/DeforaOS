@@ -48,10 +48,12 @@ typedef struct _Download
 
 	/* widgets */
 	GtkWidget * window;
-	GtkWidget * label;
 	GtkWidget * status;
 	GtkWidget * speed;
 	GtkWidget * progress;
+
+	guint timeout;
+	int pulse;
 } Download;
 
 
@@ -74,9 +76,13 @@ static gboolean _download_on_timeout(gpointer data);
 static int _download(Prefs * prefs, char const * url)
 {
 	static Download download;
+	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkSizeGroup * left;
+	GtkSizeGroup * right;
+	PangoFontDescription * bold;
 
 	download.prefs = prefs;
 	download.url = url;
@@ -85,30 +91,71 @@ static int _download(Prefs * prefs, char const * url)
 	if(gettimeofday(&download.tv, NULL) != 0)
 		return _download_error(NULL, "gettimeofday", 1);
 	download.data_received = 0;
+	download.content_length = 0;
+	download.pulse = 0;
+	/* window */
 	download.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(download.window), "Download file");
+	snprintf(buf, sizeof(buf), "%s %s", "Download", url);
+	gtk_window_set_title(GTK_WINDOW(download.window), buf);
 	g_signal_connect(G_OBJECT(download.window), "delete-event", G_CALLBACK(
 				_download_on_closex), NULL);
-	vbox = gtk_vbox_new(FALSE, 4);
-	download.label = gtk_label_new("");
-	gtk_box_pack_start(GTK_BOX(vbox), download.label, TRUE, TRUE, 4);
+	vbox = gtk_vbox_new(FALSE, 0);
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* filename */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("File: ");
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	widget = gtk_label_new(prefs->output);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(right, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* status */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Status: ");
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	download.status = gtk_label_new("Resolving...");
-	gtk_box_pack_start(GTK_BOX(vbox), download.status, TRUE, TRUE, 4);
+	gtk_misc_set_alignment(GTK_MISC(download.status), 0, 0);
+	gtk_size_group_add_widget(right, download.status);
+	gtk_box_pack_start(GTK_BOX(hbox), download.status, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	/* speed */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Speed: ");
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	download.speed = gtk_label_new("0.0 kB/s");
-	gtk_box_pack_start(GTK_BOX(vbox), download.speed, TRUE, TRUE, 4);
+	gtk_misc_set_alignment(GTK_MISC(download.speed), 0, 0);
+	gtk_size_group_add_widget(right, download.speed);
+	gtk_box_pack_start(GTK_BOX(hbox), download.speed, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* progress bar */
 	download.progress = gtk_progress_bar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), download.progress, TRUE, TRUE, 4);
+	/* cancel button */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_download_on_cancel), &download);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(download.window), 4);
 	gtk_container_add(GTK_CONTAINER(download.window), vbox);
 	g_idle_add(_download_on_idle, &download);
 	_download_refresh(&download);
 	gtk_widget_show_all(download.window);
+	gtk_main();
 	return 0;
 }
 
@@ -143,9 +190,6 @@ static void _download_refresh(Download * download)
 	double rate;
 	double fraction;
 
-	snprintf(buf, sizeof(buf), "Saving to file: %s",
-			download->prefs->output);
-	gtk_label_set_text(GTK_LABEL(download->label), buf);
 	/* XXX should check gettimeofday() return value explicitly */
 	if(download->data_received > 0 && gettimeofday(&tv, NULL) == 0)
 	{
@@ -162,7 +206,15 @@ static void _download_refresh(Download * download)
 		gtk_label_set_text(GTK_LABEL(download->speed), buf);
 	}
 	if(download->content_length == 0)
+	{
 		buf[0] = '\0';
+		if(download->pulse != 0)
+		{
+			gtk_progress_bar_pulse(GTK_PROGRESS_BAR(
+						download->progress));
+			download->pulse = 0;
+		}
+	}
 	else
 	{
 		fraction = (double)download->data_received
@@ -181,7 +233,7 @@ static void _download_on_cancel(GtkWidget * widget, gpointer data)
 	Download * download = data;
 
 	gtk_widget_hide(download->window);
-	/* FIXME cleanup */
+	/* FIXME cleanup, unlink... */
 	gtk_main_quit();
 }
 
@@ -190,7 +242,7 @@ static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
-	/* FIXME cleanup */
+	/* FIXME cleanup, unlink... */
 	gtk_main_quit();
 	return FALSE;
 }
@@ -247,7 +299,10 @@ static void _http_connected(Download * download)
 
 static void _http_error(GConnHttpEventError * event, Download * download)
 {
-	gtk_label_set_text(GTK_LABEL(download->status), "Connected");
+	char buf[10];
+
+	snprintf(buf, sizeof(buf), "%s %u", "Error ", event->code);
+	gtk_label_set_text(GTK_LABEL(download->status), buf);
 	/* FIXME implement */
 }
 
@@ -258,15 +313,21 @@ static void _http_data_complete(GConnHttpEventData * event,
 	gsize size;
 
 	gtk_label_set_text(GTK_LABEL(download->status), "Complete");
-	download->data_received = event->data_received;
-	download->content_length = event->content_length;
 	if(gnet_conn_http_steal_buffer(download->conn, &buf, &size))
 	{
 		/* FIXME use a GIOChannel instead, check errors */
 		fwrite(buf, sizeof(*buf), size, download->fp);
 		g_free(buf);
 	}
-	fclose(download->fp); /* FIXME re-use cleanup code */
+	download->data_received = event->data_received;
+	if(event->content_length == 0)
+	download->content_length = (event->content_length != 0)
+		? event->content_length : event->data_received;
+	if(fclose(download->fp) != 0)
+		_download_error(download, download->prefs->output, 0);
+	_download_refresh(download);
+	g_source_remove(download->timeout);
+	download->timeout = 0;
 }
 
 static void _http_data_partial(GConnHttpEventData * event, Download * download)
@@ -275,7 +336,7 @@ static void _http_data_partial(GConnHttpEventData * event, Download * download)
 	gsize size;
 
 	gtk_label_set_text(GTK_LABEL(download->status), "Downloading");
-	/* FIXME code duplication */
+	/* FIXME code duplication with data_complete */
 	download->data_received = event->data_received;
 	download->content_length = event->content_length;
 	if(gnet_conn_http_steal_buffer(download->conn, &buf, &size))
@@ -283,12 +344,20 @@ static void _http_data_partial(GConnHttpEventData * event, Download * download)
 		/* FIXME use a GIOChannel instead, check errors */
 		fwrite(buf, sizeof(*buf), size, download->fp);
 		g_free(buf);
+		download->pulse = 1;
 	}
 }
 
 static void _http_redirect(GConnHttpEventRedirect * event, Download * download)
 {
-	gtk_label_set_text(GTK_LABEL(download->status), "Redirecting");
+	char buf[256];
+
+	if(event->new_location != NULL)
+		snprintf(buf, sizeof(buf), "%s %s", "Redirected to",
+				event->new_location);
+	else
+		strcpy(buf, "Redirected");
+	gtk_label_set_text(GTK_LABEL(download->status), buf);
 	/* FIXME implement */
 }
 
@@ -300,11 +369,16 @@ static void _http_resolved(GConnHttpEventResolved * event, Download * download)
 
 static void _http_response(GConnHttpEventResponse * event, Download * download)
 {
+	char buf[10];
+
+	snprintf(buf, sizeof(buf), "%s %u", "Code ", event->response_code);
+	gtk_label_set_text(GTK_LABEL(download->status), buf);
 	/* FIXME implement */
 }
 
 static void _http_timeout(Download * download)
 {
+	gtk_label_set_text(GTK_LABEL(download->status), "Timeout");
 	/* FIXME implement */
 }
 
@@ -312,23 +386,25 @@ static void _http_timeout(Download * download)
 static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
+	Prefs * prefs = download->prefs;
 
-	if((download->fp = fopen(download->prefs->output, "w")) == NULL)
+	if((download->fp = fopen(prefs->output, "w")) == NULL)
 	{
-		_download_error(download, download->prefs->output, 0);
+		_download_error(download, prefs->output, 0);
 		/* FIXME cleanup */
 		gtk_main_quit();
 		return FALSE;
 	}
 	download->conn = gnet_conn_http_new();
-	gnet_conn_http_set_method(download->conn, GNET_CONN_HTTP_METHOD_GET,
-			NULL, 0);
+	if(gnet_conn_http_set_method(download->conn, GNET_CONN_HTTP_METHOD_GET,
+			NULL, 0) != TRUE)
+		return _download_error(download, "Unknown error", FALSE);
 	gnet_conn_http_set_uri(download->conn, download->url);
-	if(download->prefs->user_agent != NULL)
+	if(prefs->user_agent != NULL)
 		gnet_conn_http_set_user_agent(download->conn,
-				download->prefs->user_agent);
+				prefs->user_agent);
 	gnet_conn_http_run_async(download->conn, _download_on_http, download);
-	g_timeout_add(500, _download_on_timeout, download);
+	download->timeout = g_timeout_add(250, _download_on_timeout, download);
 	return FALSE;
 }
 
@@ -338,7 +414,6 @@ static gboolean _download_on_timeout(gpointer data)
 	Download * download = data;
 
 	_download_refresh(download);
-	/* FIXME check if we are still needed */
 	return TRUE;
 }
 
@@ -375,7 +450,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind + 1 != argc)
 		return _usage();
-	_download(&prefs, argv[optind]);
-	gtk_main();
-	return 0;
+	return _download(&prefs, argv[optind]) == 0 ? 0 : 2;
 }
