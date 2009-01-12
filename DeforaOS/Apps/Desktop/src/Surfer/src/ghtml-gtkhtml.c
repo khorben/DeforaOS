@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <libgtkhtml/gtkhtml.h>
 #include <libgtkhtml/util/rfc1738.h>
+#define GNET_EXPERIMENTAL
 #include <gnet.h>
 #include "ghtml.h"
 
