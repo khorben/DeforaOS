@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -149,6 +149,7 @@ Mailer * mailer_new(void)
 	mailer->account = NULL;
 	mailer->account_cnt = 0;
 	mailer->account_cur = NULL;
+	mailer->folder_cur = NULL;
 	/* widgets */
 	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 800, 600);
@@ -183,7 +184,8 @@ Mailer * mailer_new(void)
 	gtk_paned_add1(GTK_PANED(vpaned), widget);
 	/* messages body */
 	vbox2 = _new_headers(mailer);
-	mailer->view_body = gtk_text_view_new();
+	mailer->view_buffer = gtk_text_buffer_new(NULL);
+	mailer->view_body = gtk_text_view_new_with_buffer(mailer->view_buffer);
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(mailer->view_body), FALSE);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),

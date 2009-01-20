@@ -367,23 +367,38 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data)
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 	GtkListStore * store;
-	Account * a;
-	AccountFolder * af;
+	GtkTreePath * path;
 
 #ifdef DEBUG
-	fputs("DEBUG: " __func__ "()\n", stderr);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(!gtk_tree_selection_get_selected(selection, &model, &iter))
+	{
+		mailer->account_cur = NULL;
+		mailer->folder_cur = NULL;
+		gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
+				NULL);
 		return;
-	gtk_tree_model_get(model, &iter, MF_COL_ACCOUNT, &a, MF_COL_FOLDER, &af,
+	}
+	/* get current folder */
+	gtk_tree_model_get(model, &iter, MF_COL_FOLDER, &mailer->folder_cur,
 			-1);
-	store = account_get_store(a, af);
+	/* get current account */
+	path = gtk_tree_model_get_path(model, &iter);
+	while(gtk_tree_path_get_depth(path) > 1 && gtk_tree_path_up(path));
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, MF_COL_ACCOUNT, &mailer->account_cur,
+			-1);
+	gtk_tree_path_free(path);
+	/* display headers */
+	store = account_get_store(mailer->account_cur, mailer->folder_cur);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
 			GTK_TREE_MODEL(store));
 }
 
 
 /* header view */
+/* on_header_change */
 void on_header_change(GtkTreeSelection * selection, gpointer data)
 {
 	Mailer * mailer = data;
@@ -391,23 +406,33 @@ void on_header_change(GtkTreeSelection * selection, gpointer data)
 	GList * sel;
 	GtkTreeIter iter;
 	char * p;
+	AccountMessage * message;
 
 	sel = gtk_tree_selection_get_selected_rows(selection, &model);
 	if(sel == NULL || sel->next != NULL) /* empty or multiple */
 	{
 		gtk_widget_hide(mailer->hdr_vbox);
-		return;
+		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
+				mailer->view_buffer);
 	}
-	gtk_tree_model_get_iter(model, &iter, sel->data);
-	gtk_tree_model_get(model, &iter, MH_COL_SUBJECT, &p, -1);
-	gtk_label_set_text(GTK_LABEL(mailer->hdr_subject), p);
-	gtk_tree_model_get(model, &iter, MH_COL_FROM, &p, -1);
-	gtk_label_set_text(GTK_LABEL(mailer->hdr_from), p);
-	gtk_tree_model_get(model, &iter, MH_COL_TO, &p, -1);
-	gtk_label_set_text(GTK_LABEL(mailer->hdr_to), p);
-	gtk_tree_model_get(model, &iter, MH_COL_DATE, &p, -1);
-	gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
-	gtk_widget_show(mailer->hdr_vbox);
+	else
+	{
+		gtk_tree_model_get_iter(model, &iter, sel->data);
+		gtk_tree_model_get(model, &iter, MH_COL_MESSAGE, &message, -1);
+		gtk_tree_model_get(model, &iter, MH_COL_SUBJECT, &p, -1);
+		gtk_label_set_text(GTK_LABEL(mailer->hdr_subject), p);
+		gtk_tree_model_get(model, &iter, MH_COL_FROM, &p, -1);
+		gtk_label_set_text(GTK_LABEL(mailer->hdr_from), p);
+		gtk_tree_model_get(model, &iter, MH_COL_TO, &p, -1);
+		gtk_label_set_text(GTK_LABEL(mailer->hdr_to), p);
+		gtk_tree_model_get(model, &iter, MH_COL_DATE, &p, -1);
+		gtk_label_set_text(GTK_LABEL(mailer->hdr_date), p);
+		gtk_widget_show(mailer->hdr_vbox);
+		account_select(mailer->account_cur, mailer->folder_cur,
+				message);
+		gtk_text_view_set_buffer(GTK_TEXT_VIEW(mailer->view_body),
+				mailer->account_cur->buffer);
+	}
 	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(sel);
 }
@@ -1284,6 +1309,7 @@ void on_compose_edit_paste(GtkWidget * widget, gpointer data)
 
 
 /* compose view menu */
+/* on_compose_view_cc */
 void on_compose_view_cc(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
@@ -1292,6 +1318,7 @@ void on_compose_view_cc(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_compose_view_bcc */
 void on_compose_view_bcc(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
@@ -1300,6 +1327,7 @@ void on_compose_view_bcc(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_compose_help_about */
 void on_compose_help_about(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
@@ -1318,6 +1346,7 @@ gboolean on_send_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
+/* on_send_cancel */
 void on_send_cancel(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
@@ -1328,6 +1357,7 @@ void on_send_cancel(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_send_write */
 gboolean on_send_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {

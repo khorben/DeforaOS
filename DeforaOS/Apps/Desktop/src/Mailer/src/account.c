@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -65,6 +65,7 @@ Account * account_new(char const * type, char const * title)
 	free(filename);
 	account->enabled = 1;
 	account->identity = NULL;
+	account->buffer = gtk_text_buffer_new(NULL);
 	return account;
 }
 
@@ -95,6 +96,7 @@ void account_delete(Account * account)
 	free(account->title);
 	if(account->handle != NULL)
 		dlclose(account->handle);
+	g_object_unref(G_OBJECT(account->buffer));
 	free(account);
 }
 
@@ -232,5 +234,15 @@ int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 #endif
 	if(account->plugin->init == NULL)
 		return 0;
-	return account->plugin->init(store, parent);
+	return account->plugin->init(store, parent, account->buffer);
+}
+
+
+/* account_select */
+int account_select(Account * account, AccountFolder * folder,
+		AccountMessage * message)
+{
+	if(account->plugin->select == NULL)
+		return 0;
+	return account->plugin->select(folder, message);
 }

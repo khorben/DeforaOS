@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -44,6 +44,7 @@ AccountPlugin account_plugin =
 	pop3_type,
 	pop3_name,
 	pop3_config,
+	NULL,
 	NULL,
 	NULL
 };

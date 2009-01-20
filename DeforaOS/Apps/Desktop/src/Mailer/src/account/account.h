@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -50,6 +50,10 @@ typedef struct _AccountConfig
 } AccountConfig;
 
 
+/* AccountMessage */
+typedef struct _AccountMessage AccountMessage;
+
+
 /* AccountFolderType */
 typedef enum _AccountFolderType
 {
@@ -77,8 +81,10 @@ typedef struct _AccountPlugin
 	char const * type;
 	char const * name;
 	AccountConfig * config;
-	int (*init)(GtkTreeStore * store, GtkTreeIter * parent);
+	int (*init)(GtkTreeStore * store, GtkTreeIter * parent,
+			GtkTextBuffer * buffer);
 	int (*quit)(void);
+	int (*select)(AccountFolder * folder, AccountMessage * message);
 } AccountPlugin;
 
 
@@ -92,6 +98,7 @@ typedef struct _Account
 	AccountIdentity * identity;
 	void * handle;
 	AccountPlugin * plugin;
+	GtkTextBuffer * buffer;
 } Account;
 
 
@@ -113,5 +120,8 @@ int account_config_load(Account * account, Config * config);
 int account_config_save(Account * account, Config * config);
 int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent);
 int account_quit(Account * account);
+
+int account_select(Account * account, AccountFolder * folder,
+		AccountMessage * message);
 
 #endif /* !MAILER_ACCOUNT_H */

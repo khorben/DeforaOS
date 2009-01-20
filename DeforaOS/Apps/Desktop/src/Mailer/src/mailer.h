@@ -60,6 +60,7 @@ typedef struct _Mailer
 	Account ** account;
 	unsigned int account_cnt;
 	Account * account_cur;
+	AccountFolder * folder_cur;
 
 	/* configuration */
 	Config * config;
@@ -73,6 +74,7 @@ typedef struct _Mailer
 	GtkWidget * hdr_from;
 	GtkWidget * hdr_to;
 	GtkWidget * hdr_date;
+	GtkTextBuffer * view_buffer;
 	GtkWidget * view_body;
 	GtkWidget * statusbar;
 	gint statusbar_id;
