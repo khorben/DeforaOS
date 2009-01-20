@@ -121,6 +121,7 @@ Compose * compose_new(Mailer * mailer)
 	g_signal_connect(G_OBJECT(compose->window), "delete_event", G_CALLBACK(
 				on_compose_closex), compose);
 	vbox = gtk_vbox_new(FALSE, 0);
+	/* menubar */
 	widget = common_new_menubar(GTK_WINDOW(compose->window),
 			_compose_menubar, compose);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
@@ -206,15 +207,17 @@ Compose * compose_new(Mailer * mailer)
 	compose->statusbar_id = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), compose->statusbar, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(compose->window), vbox);
-	gtk_widget_show_all(compose->window);
-	/* FIXME should not be showed in the first place */
+	gtk_widget_show_all(vbox);
 	gtk_widget_hide(compose->tb_cc);
 	gtk_widget_hide(compose->tb_bcc);
+	gtk_widget_show(compose->window);
 	return compose;
 }
 
 static GtkWidget * _new_text_view(Mailer * mailer)
 {
+	static const char signature[] = "/.signature";
+	static const char prefix[] = "\n-- \n";
 	GtkWidget * textview;
 	PangoFontDescription * desc;
 	char const * homedir;
@@ -222,8 +225,6 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	gchar * buf;
 	size_t cnt;
 	GtkTextBuffer * buffer;
-	static char const signature[] = "/.signature";
-	static char const prefix[] = "\n-- \n";
 
 	textview = gtk_text_view_new();
 	/* font */
