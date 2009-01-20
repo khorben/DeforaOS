@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Mailer */
 static char const _license[] =
 "Mailer is free software; you can redistribute it and/or modify it under the\n"
@@ -45,6 +45,13 @@ const char * title[3] =
 };
 
 
+/* prototypes */
+/* private */
+static void _on_about(GtkWidget * window);
+
+
+/* functions */
+/* public */
 /* callbacks */
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
@@ -296,45 +303,9 @@ static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Mailer * mailer = data;
-	static GtkWidget * window = NULL;
-#if GTK_CHECK_VERSION(2, 6, 0)
-	gsize cnt = 65536;
-	gchar * buf;
 
-	if(window != NULL)
-	{
-		gtk_widget_show(window);
-		return;
-	}
-	if((buf = malloc(sizeof(*buf) * cnt)) == NULL)
-	{
-		mailer_error(mailer, "malloc", 0);
-		return;
-	}
-	window = gtk_about_dialog_new();
-	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				mailer->window));
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
-	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
-	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
-				NULL) == TRUE)
-		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
-	else
-		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window),
-				_license);
-	free(buf);
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_on_about_closex), NULL);
-	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
-				gtk_widget_hide), NULL);
-	gtk_widget_show(window);
+	_on_about(mailer->window);
 }
-#else /* !GTK_CHECK_VERSION(2, 6, 0) */
-	/* FIXME implement */
-}
-#endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
 static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
@@ -1333,7 +1304,7 @@ void on_compose_help_about(GtkWidget * widget, gpointer data)
 {
 	Compose * c = data;
 
-	on_help_about(widget, c->mailer);
+	_on_about(c->window);
 }
 
 
@@ -1382,4 +1353,43 @@ gboolean on_send_write(GIOChannel * source, GIOCondition condition,
 		return FALSE;
 	}
 	return TRUE;
+}
+
+
+/* private */
+/* on_about */
+static void _on_about(GtkWidget * window)
+{
+	GtkWidget * dialog;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gsize cnt = 65536;
+	gchar * buf;
+
+	if((buf = malloc(sizeof(*buf) * cnt)) == NULL)
+	{
+		mailer_error(NULL, "malloc", 0);
+		return;
+	}
+	dialog = gtk_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE);
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), VERSION);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _copyright);
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), _authors);
+	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
+				NULL) == TRUE)
+		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(dialog), buf);
+	else
+		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(dialog),
+				_license);
+	free(buf);
+	g_signal_connect(G_OBJECT(dialog), "delete_event", G_CALLBACK(
+				_on_about_closex), NULL);
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+#else /* !GTK_CHECK_VERSION(2, 6, 0) */
+	/* FIXME implement */
+#endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 }
