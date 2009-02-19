@@ -31,6 +31,7 @@ _image_image()
 
 	$MKDIR "$DESTDIR"					|| exit 2
 	$UMOUNT "$DESTDIR"
+	$VNCONFIG -u "$VND"
 	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
 	$FDISK -Ffi "$IMAGE_FILE"				|| exit 2
 	SIZE=$((IMAGE_SIZE - 63))
