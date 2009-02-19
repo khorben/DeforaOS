@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
@@ -37,7 +38,7 @@ typedef struct _Prefs
 typedef struct _Download
 {
 	Prefs * prefs;
-	char const * url;
+	char * url;
 	FILE * fp;
 
 	struct timeval tv;
@@ -86,15 +87,14 @@ static int _download(Prefs * prefs, char const * url)
 	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
-	GtkWidget * widget;
 	GtkSizeGroup * left;
 	GtkSizeGroup * right;
 	PangoFontDescription * bold;
 
 	download.prefs = prefs;
-	download.url = url;
+	download.url = strdup(url);
 	if(prefs->output == NULL)
-		prefs->output = basename(url);
+		prefs->output = basename(download.url);
 	if(gettimeofday(&download.tv, NULL) != 0)
 		return _download_error(NULL, "gettimeofday", 1);
 	download.data_received = 0;
@@ -133,6 +133,7 @@ static int _download(Prefs * prefs, char const * url)
 	_download_refresh(&download);
 	gtk_widget_show_all(download.window);
 	gtk_main();
+	free(download.url);
 	return 0;
 }
 
@@ -305,6 +306,8 @@ static void _download_on_http(GConnHttp * conn, GConnHttpEvent * event,
 {
 	Download * download = data;
 
+	if(download->conn != conn)
+		return; /* FIXME report error */
 	switch(event->type)
 	{
 		case GNET_CONN_HTTP_CONNECTED:
