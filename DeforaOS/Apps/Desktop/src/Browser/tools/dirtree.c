@@ -35,6 +35,8 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter);
 /* callbacks */
 static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+static void _on_dirtree_default(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 
 static int _dirtree_new(char * pathname)
 {
@@ -55,6 +57,7 @@ static int _dirtree_new(char * pathname)
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Directory tree");
+	gtk_window_set_default_size(GTK_WINDOW(window), 480, 640);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_on_dirtree_delete), NULL);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -76,6 +79,8 @@ static int _dirtree_new(char * pathname)
 	column = gtk_tree_view_column_new_with_attributes("Name", renderer,
 			"text", 2, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+	g_signal_connect(G_OBJECT(treeview), "row-activated", G_CALLBACK(
+				_on_dirtree_default), NULL);
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
 	gtk_container_add(GTK_CONTAINER(window), scrolled);
 	gtk_widget_show_all(window);
@@ -98,7 +103,7 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter)
 	p = g_value_get_string(&pathname);
 	len = strlen(p) + 1;
 	if((dir = opendir(p)) == NULL
-			|| (str = malloc(len)) == NULL)
+			|| (str = malloc(len + 1)) == NULL)
 	{
 		perror(p);
 		g_value_unset(&pathname);
@@ -133,6 +138,22 @@ static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 {
 	gtk_main_quit();
 	return FALSE;
+}
+
+static void _on_dirtree_default(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
+{
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	char * location;
+
+	model = gtk_tree_view_get_model(view);
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, 1, &location, -1);
+	if(location == NULL)
+		return; /* FIXME should not happen */
+	execlp("browser", "browser", location, NULL);
+	perror("browser");
 }
 
 
