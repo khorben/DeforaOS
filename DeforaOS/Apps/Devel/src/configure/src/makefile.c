@@ -327,12 +327,11 @@ static void _executables_variables(Configure * configure, FILE * fp,
 
 static void _targets_cflags(Configure * configure, FILE * fp);
 static void _targets_cxxflags(Configure * configure, FILE * fp);
+static void _targets_ldflags(Configure * configure, FILE * fp);
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
 static void _variables_binary(Configure * configure, FILE * fp, char * done)
 {
-	String const * p;
-
 	if(!done[TT_LIBRARY])
 	{
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
@@ -347,16 +346,7 @@ static void _variables_binary(Configure * configure, FILE * fp, char * done)
 	{
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
-	}
-	if((p = config_get(configure->config, "", "ldflags_force")) != NULL)
-	{
-		fprintf(fp, "%s", "LDFLAGSF= ");
-		_binary_ldflags(configure, fp, p);
-	}
-	if((p = config_get(configure->config, "", "ldflags")) != NULL)
-	{
-		fprintf(fp, "%s", "LDFLAGS\t= ");
-		_binary_ldflags(configure, fp, p);
+		_targets_ldflags(configure, fp);
 	}
 }
 
@@ -435,6 +425,22 @@ static void _targets_cxxflags(Configure * configure, FILE * fp)
 	}
 }
 
+static void _targets_ldflags(Configure * configure, FILE * fp)
+{
+	String const * p;
+
+	if((p = config_get(configure->config, "", "ldflags_force")) != NULL)
+	{
+		fprintf(fp, "%s", "LDFLAGSF= ");
+		_binary_ldflags(configure, fp, p);
+	}
+	if((p = config_get(configure->config, "", "ldflags")) != NULL)
+	{
+		fprintf(fp, "%s", "LDFLAGS\t= ");
+		_binary_ldflags(configure, fp, p);
+	}
+}
+
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
@@ -499,6 +505,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 	{
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
+		_targets_ldflags(configure, fp);
 	}
 	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= $(CC) -shared\n", fp);
 }
@@ -895,7 +902,7 @@ static int _target_libtool(Configure * configure, FILE * fp,
 			".la $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
-	fputs(" -rpath $(LIBDIR)\n", fp);
+	fprintf(fp, "%s%s%s", " -rpath $(LIBDIR) $(", target, "_LDFLAGS)\n");
 	return 0;
 }
 
@@ -1031,7 +1038,7 @@ static int _target_source(Configure * configure, FILE * fp,
 	/* FIXME check calls to _source_depends() */
 {
 	int ret = 0;
-	String * extension;
+	String const * extension;
 	TargetType tt = TT_UNKNOWN;
 	ObjectType ot;
 	size_t len;
