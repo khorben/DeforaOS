@@ -29,8 +29,10 @@
 #include "callbacks.h"
 #include "browser.h"
 
-#define COMMON_MENU
-#include "common.c"
+#ifndef FOR_EMBEDDED
+# define COMMON_MENU
+# include "common.c"
+#endif
 
 
 /* constants */
@@ -40,6 +42,7 @@
 /* Browser */
 /* private */
 /* constants */
+#ifndef FOR_EMBEDDED
 static struct _menu _browser_menu_file[] =
 {
 	{ "_New window", G_CALLBACK(on_file_new_window), "window-new", GDK_N },
@@ -106,6 +109,7 @@ static struct _menubar _browser_menubar[] =
 	{ "_Help", _browser_menu_help },
 	{ NULL, NULL }
 };
+#endif
 
 
 /* prototypes */
@@ -146,7 +150,9 @@ Browser * browser_new(char const * directory)
 {
 	Browser * browser;
 	GtkWidget * vbox;
+#ifndef FOR_EMBEDDED
 	GtkWidget * tb_menubar;
+#endif
 	GtkWidget * toolbar;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
@@ -203,9 +209,11 @@ Browser * browser_new(char const * directory)
 			browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
+#ifndef FOR_EMBEDDED
 	tb_menubar = _common_new_menubar(GTK_WINDOW(browser->window),
 			_browser_menubar, browser);
 	gtk_box_pack_start(GTK_BOX(vbox), tb_menubar, FALSE, FALSE, 0);
+#endif
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	browser->tb_back = gtk_tool_button_new_from_stock(GTK_STOCK_GO_BACK);
