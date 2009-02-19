@@ -149,9 +149,9 @@ fi
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
-[ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -I $DESTDIR$PREFIX/include"
+[ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -static $DESTDIR$PREFIX/lib/start.o $DESTDIR$PREFIX/lib/libc.a `gcc -print-libgcc-file-name`"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib $DESTDIR$PREFIX/lib/start.o -l c -l gcc"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
