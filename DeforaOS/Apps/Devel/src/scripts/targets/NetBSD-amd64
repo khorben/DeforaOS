@@ -3,4 +3,12 @@
 
 
 #includes
-. "`dirname $0`/Apps/Devel/src/scripts/targets/NetBSD-i386"
+. "`dirname $0`/Apps/Devel/src/scripts/targets/NetBSD"
+
+
+#functions
+#public
+target_image()
+{
+	_image_image
+}

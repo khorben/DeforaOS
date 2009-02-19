@@ -2,22 +2,50 @@
 
 
 
-[ -z "$KERNEL" ]&& KERNEL="/netbsd"
-[ -z "$MKFS" ]	&& MKFS="newfs -F"
-[ -z "$MOUNT" ]	&& MOUNT="_netbsd_mount"
-[ -z "$UMOUNT" ]&& UMOUNT="_netbsd_umount"
+[ -z "$FDISK" ]		&& FDISK="fdisk"
+[ -z "$INSTALLBOOT" ]	&& INSTALLBOOT="installboot"
+[ -z "$KERNEL" ]	&& KERNEL="/netbsd"
+[ -z "$MBRLABEL" ]	&& MBRLABEL="mbrlabel"
+[ -z "$MKFS" ]		&& MKFS="newfs"
+[ -z "$MOUNT" ]		&& MOUNT="mount"
+[ -z "$UMOUNT" ]	&& UMOUNT="umount"
+[ -z "$VNCONFIG" ]	&& VNCONFIG="vnconfig"
+[ -z "$VND" ]		&& VND="vnd0"
 
 
 #functions
-_netbsd_mount()
+#private
+#image_image
+_image_image()
 {
-	$SUDO vnconfig -c vnd0 "$1" &&
-	$SUDO mount /dev/vnd0a "$2"
-}
+	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
+  IMAGE_FILE	Where to write the filesystem image\n\
+  IMAGE_KERNEL	Path to the kernel\n\
+  IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
+  MKFS		Command used to format the filesystem"
 
+	#sanity check
+	check "$USAGE" DD DESTDIR DEVZERO FDISK IMAGE_FILE IMAGE_KERNEL \
+		IMAGE_SIZE INSTALLBOOT MBRLABEL MKDIR MKFS MOUNT UMOUNT \
+		VNCONFIG VND
 
-_netbsd_umount()
-{
-	$SUDO umount "$1" &&
-	$SUDO vnconfig -u vnd0
+	$MKDIR "$DESTDIR"					|| exit 2
+	$UMOUNT "$DESTDIR"
+	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
+	$FDISK -Ffi "$IMAGE_FILE"				|| exit 2
+	SIZE=$((IMAGE_SIZE - 63))
+	$FDISK -Ffu0s "169/63/$SIZE" "$IMAGE_FILE"		|| exit 2
+	$FDISK -Ffa0 "$IMAGE_FILE"				|| exit 2
+	$VNCONFIG -c "$VND" "$IMAGE_FILE"			|| exit 2
+	$MBRLABEL -frw "$VND"					&&
+	$MKFS "${VND}e"						&&
+	$MOUNT "/dev/${VND}e" "$DESTDIR"			&&
+	target "install"					&&
+	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	&&
+	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
+	$INSTALLBOOT -m "$MACHINE" "/dev/r${VND}e" /usr/mdec/bootxx_ffsv1
+	RET=$?
+	$UMOUNT "$DESTDIR"
+	$VNCONFIG -u "$VND"
+	exit $RET
 }
