@@ -324,7 +324,7 @@ void _save_foreach_section(void const * key, void * value, void * data)
 	char const * var = key;
 	char const * val = value;
 
-	if(fprintf(*fp, "%s=%s\n", var, val) >= 0)
+	if(fprintf(*fp, "%s=%s\n", var, val != NULL ? val : "") >= 0)
 		return;
 	fclose(*fp);
 	*fp = NULL;
