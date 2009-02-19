@@ -15,14 +15,17 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-editor_OBJS = editor.o main.o
+editor_OBJS = callbacks.o editor.o main.o
 editor_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 editor_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 editor: $(editor_OBJS)
 	$(CC) -o editor $(editor_OBJS) $(editor_LDFLAGS)
 
-editor.o: editor.c ../config.h
+callbacks.o: callbacks.c callbacks.h
+	$(CC) $(editor_CFLAGS) -c callbacks.c
+
+editor.o: editor.c callbacks.h editor.h ../config.h
 	$(CC) $(editor_CFLAGS) -c editor.c
 
 main.o: main.c
