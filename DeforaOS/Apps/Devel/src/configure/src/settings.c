@@ -41,30 +41,34 @@ String * sSettingsType[ST_LAST+1] =
 static int _settings_do(Prefs * prefs, Config * config,
 		String const * directory, String const * package,
 		String const * version, String const * extension);
+
 int settings(Prefs * prefs, Config * config, String const * directory,
 		String const * package, String const * version)
 {
 	int ret = 0;
-	String * p;
+	String const * p;
+	String * q;
 	unsigned long i;
 	char c;
 
 	if((p = config_get(config, "", "config")) == NULL)
 		return 0;
+	if((q = string_new(p)) == NULL)
+		return 1;
 	for(i = 0;; i++)
 	{
-		if(p[i] != ',' && p[i] != '\0')
+		if(q[i] != ',' && q[i] != '\0')
 			continue;
-		c = p[i];
-		p[i] = '\0';
+		c = q[i];
+		q[i] = '\0';
 		ret |= _settings_do(prefs, config, directory, package, version,
-				p);
+				q);
 		if(c == '\0')
 			break;
-		p[i] = c;
-		p+=i+1;
+		q+=i+1;
 		i = 0;
 	}
+	string_delete(q);
 	return ret;
 }
 
