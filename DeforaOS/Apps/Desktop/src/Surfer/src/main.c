@@ -34,6 +34,10 @@ int main(int argc, char * argv[])
 	int o;
 	Surfer * surfer;
 
+#ifdef WITH_GTKHTML /* XXX */
+	if(g_thread_supported() == FALSE)
+		g_thread_init(NULL);
+#endif /* WITH_GTKHTML */
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
