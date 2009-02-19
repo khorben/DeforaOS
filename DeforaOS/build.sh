@@ -141,7 +141,7 @@ fi
 if [ ! -f "Apps/Devel/src/scripts/targets/$TARGET" ]; then
 	echo "$0: warning: $TARGET: Unsupported target" 1>&2
 else
-	source "Apps/Devel/src/scripts/targets/$TARGET"
+	. "Apps/Devel/src/scripts/targets/$TARGET"
 fi
 
 #initialize variables
