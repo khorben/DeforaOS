@@ -219,6 +219,7 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 	static const char signature[] = "/.signature";
 	static const char prefix[] = "\n-- \n";
 	GtkWidget * textview;
+	char const * font;
 	PangoFontDescription * desc;
 	char const * homedir;
 	char * filename;
@@ -228,10 +229,12 @@ static GtkWidget * _new_text_view(Mailer * mailer)
 
 	textview = gtk_text_view_new();
 	/* font */
-	desc = pango_font_description_from_string(mailer_get_config(mailer,
-				"messages_font"));
-	gtk_widget_modify_font(textview, desc);
-	pango_font_description_free(desc);
+	if((font = mailer_get_config(mailer, "messages_font")) != NULL)
+	{
+		desc = pango_font_description_from_string(font);
+		gtk_widget_modify_font(textview, desc);
+		pango_font_description_free(desc);
+	}
 	/* signature */
 	if((homedir = getenv("HOME")) == NULL)
 		return textview;

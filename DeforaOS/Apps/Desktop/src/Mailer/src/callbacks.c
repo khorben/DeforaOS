@@ -122,6 +122,12 @@ void on_message_delete(GtkWidget * widget, gpointer data)
 }
 
 
+void on_message_view_source(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
 /* edit menu */
 typedef enum _AccountColumn
 {
@@ -391,6 +397,9 @@ void on_folder_change(GtkTreeSelection * selection, gpointer data)
 			-1);
 	gtk_tree_path_free(path);
 	/* display headers */
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() account_get_store()\n", __func__);
+#endif
 	store = account_get_store(mailer->account_cur, mailer->folder_cur);
 	gtk_tree_view_set_model(GTK_TREE_VIEW(mailer->view_headers),
 			GTK_TREE_MODEL(store));
@@ -408,6 +417,9 @@ void on_header_change(GtkTreeSelection * selection, gpointer data)
 	char * p;
 	AccountMessage * message;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	sel = gtk_tree_selection_get_selected_rows(selection, &model);
 	if(sel == NULL || sel->next != NULL) /* empty or multiple */
 	{

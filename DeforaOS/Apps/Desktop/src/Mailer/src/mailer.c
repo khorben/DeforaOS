@@ -56,7 +56,10 @@ static struct _menu _menu_message[] =
 	{ "Reply to _all", G_CALLBACK(on_message_reply_to_all),
 		"stock_mail-reply-to-all", 0 },
 	{ "_Forward", G_CALLBACK(on_message_forward), "stock_mail-forward", 0 },
+	{ "", NULL, NULL, 0 },
 	{ "_Delete", G_CALLBACK(on_message_delete), GTK_STOCK_DELETE, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_View source", G_CALLBACK(on_message_view_source), NULL, 0 },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -202,8 +205,9 @@ Mailer * mailer_new(void)
 	/* load configuration */
 	_new_config_load(mailer);
 	/* show window */
-	gtk_widget_show_all(mailer->window);
+	gtk_widget_show_all(vbox);
 	gtk_widget_hide(mailer->hdr_vbox);
+	gtk_widget_show(mailer->window);
 	mailer->pr_window = NULL;
 	return mailer;
 }

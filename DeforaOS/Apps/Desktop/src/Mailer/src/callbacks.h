@@ -39,6 +39,7 @@ void on_message_reply(GtkWidget * widget, gpointer data);
 void on_message_reply_to_all(GtkWidget * widget, gpointer data);
 void on_message_forward(GtkWidget * widget, gpointer data);
 void on_message_delete(GtkWidget * widget, gpointer data);
+void on_message_view_source(GtkWidget * widget, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);

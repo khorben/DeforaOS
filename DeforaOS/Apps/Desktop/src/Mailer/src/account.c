@@ -230,7 +230,7 @@ int account_config_save(Account * account, Config * config)
 int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: account_init(%p, %p)\n", store, parent);
+	fprintf(stderr, "DEBUG: %s(%p, %p)\n", __func__, store, parent);
 #endif
 	if(account->plugin->init == NULL)
 		return 0;
@@ -242,6 +242,10 @@ int account_init(Account * account, GtkTreeStore * store, GtkTreeIter * parent)
 int account_select(Account * account, AccountFolder * folder,
 		AccountMessage * message)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p)\n", __func__, folder->name,
+			message);
+#endif
 	if(account->plugin->select == NULL)
 		return 0;
 	return account->plugin->select(folder, message);
