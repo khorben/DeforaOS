@@ -80,7 +80,7 @@ static char const * _error = NULL;
 static AccountConfig _mbox_config[_FOLDER_CNT] =
 {
 	{ "mbox",	"Inbox file",		ACT_FILE,	NULL },
-	{ "spool",	"Incoming mails file",	ACT_FILE,	NULL },
+	{ "spool",	"Spool file",		ACT_FILE,	NULL },
 	{ "draft",	"Draft mails file",	ACT_FILE,	NULL },
 	{ "sent",	"Sent mails file",	ACT_FILE,	NULL },
 	{ "trash",	"Deleted mails file",	ACT_FILE,	NULL },
@@ -195,6 +195,9 @@ static int _mbox_init(GtkTreeStore * store, GtkTreeIter * parent,
 	GdkPixbuf * pixbuf;
 	GtkTreeIter iter;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	theme = gtk_icon_theme_get_default();
 	for(i = 0; i < _FOLDER_CNT; i++)
 	{
@@ -246,10 +249,14 @@ static int _mbox_quit(void)
 static int _mbox_select(AccountFolder * folder, AccountMessage * message)
 {
 	MboxFolder * mf = folder->data;
-	Message * m = message;
+	Message * m = (Message*)message;
 	GtkTextIter iter;
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", \"%p\")\n", __func__, folder->name,
+			message);
+#endif
 	gtk_text_buffer_set_text(mf->buffer, "", 0);
 	gtk_text_buffer_get_end_iter(mf->buffer, &iter);
 	for(i = 0; i < m->headers_cnt; i++)
@@ -303,12 +310,17 @@ static int _message_set_header(Message * message, char const * header,
 	struct { int col; char * name; } abc[] = {
 		{ MH_COL_SUBJECT,	"Subject: "	},
 		{ MH_COL_FROM,		"From: "	},
+		{ MH_COL_FROM,		"From "		},
 		{ MH_COL_TO,		"To: "		},
 		{ MH_COL_DATE,		"Date: "	},
 		{ -1,			NULL		}
 	};
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", store)\n", __func__, message,
+			header);
+#endif
 	if((p = realloc(message->headers, sizeof(*p)
 					* (message->headers_cnt + 1))) == NULL)
 	{
@@ -332,6 +344,10 @@ Message * _folder_message_add(AccountFolder * folder, off_t offset)
 	Message ** p;
 	Message * message;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %ld)\n", __func__,
+			mbox->config->value, offset);
+#endif
 	if((p = realloc(mbox->messages, sizeof(*p)
 					* (mbox->messages_cnt + 1))) == NULL)
 	{
@@ -360,7 +376,11 @@ static gboolean _folder_idle(gpointer data)
 	char const * filename = mbox->config->value;
 	GError * error = NULL;
 
-	if(stat(filename, &st) != 0 || st.st_mtime == mbox->mtime)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() stat(\"%s\")\n", __func__, filename);
+#endif
+	if(filename[0] == '\0' || stat(filename, &st) != 0
+			|| st.st_mtime == mbox->mtime)
 	{
 		_error = strerror(errno);
 		mbox->source = g_timeout_add(1000, _folder_idle, folder);
@@ -404,6 +424,9 @@ static gboolean _folder_watch(GIOChannel * source, GIOCondition condition,
 	GError * error = NULL;
 	GIOStatus status;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, mbox->config->value);
+#endif
 	if(condition != G_IO_IN)
 		return FALSE; /* FIXME implement message deletion */
 	status = g_io_channel_read_chars(source, buf, sizeof(buf), &read,
@@ -483,7 +506,8 @@ static void _parse_context(AccountFolder * folder, ParserContext context)
 static void _parse_from(AccountFolder * folder, char const buf[], size_t read,
 		size_t * i)
 {
-	static char const from[] = "From ";
+	static char const from[] = "From: ";
+	static char const from2[] = "From ";
 	MboxFolder * mbox = folder->data;
 	size_t m;
 
@@ -494,7 +518,9 @@ static void _parse_from(AccountFolder * folder, char const buf[], size_t read,
 	if(*i == read) /* not enough data read */
 		return;
 	if(mbox->pos < sizeof(from) - 1 /* early newline */
-			|| strncmp(mbox->str, from, sizeof(from) - 1) != 0)
+			|| (strncmp(mbox->str, from, sizeof(from) - 1) != 0
+				&& strncmp(mbox->str, from2, sizeof(from2) - 1)
+				!= 0))
 	{
 		mbox->context = mbox->message != NULL
 			? PC_BODY : PC_GARBAGE;
@@ -507,6 +533,7 @@ static void _parse_from(AccountFolder * folder, char const buf[], size_t read,
 		return; /* grab more data XXX is gonna force a check again */
 	mbox->message = _folder_message_add(folder, mbox->offset + *i
 			- mbox->pos);
+	_message_set_header(mbox->message, mbox->str, folder->store);
 	_parse_context(folder, PC_HEADER); /* read headers */
 	(*i)++;
 }
