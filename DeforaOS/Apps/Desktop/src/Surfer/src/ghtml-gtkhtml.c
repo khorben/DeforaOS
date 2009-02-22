@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -12,12 +12,18 @@
  * You should have received a copy of the GNU General Public License along with
  * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA  02111-1307  USA */
+/* TODO:
+ * - fix URL generation for relative path
+ * - progressive file load
+ * - update the URL and title of the main window
+ * - implement selection */
 
 
 
 #include <stdlib.h>
+#include <string.h>
 #include <libgtkhtml/gtkhtml.h>
-#include <libgtkhtml/util/rfc1738.h>
+#include <libgtkhtml/view/htmlselection.h>
 #define GNET_EXPERIMENTAL
 #include <gnet.h>
 #include "ghtml.h"
@@ -40,6 +46,8 @@ typedef struct _GHtml
 /* prototypes */
 static gboolean _ghtml_document_load(GHtml * ghtml, gchar const * base,
 		gchar const * url);
+static gchar * _ghtml_make_url(gchar const * base, gchar const * url);
+
 /* callbacks */
 static void _on_link_clicked(HtmlDocument * document, const gchar * url);
 static void _on_request_url(HtmlDocument * document, const gchar * url,
@@ -144,7 +152,7 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, url);
 #endif
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	if(_ghtml_document_load(ghtml, "", url) != TRUE)
+	if(_ghtml_document_load(ghtml, NULL, url) != TRUE)
 		return;
 	/* FIXME with current code another base may have been set in between */
 	g_free(ghtml->html_base);
@@ -161,7 +169,7 @@ void ghtml_refresh(GtkWidget * widget)
 	if(ghtml->html_base == NULL)
 		return;
 	/* FIXME should differentiate URL and base */
-	_ghtml_document_load(ghtml, "", ghtml->html_base);
+	_ghtml_document_load(ghtml, NULL, ghtml->html_base);
 }
 
 
@@ -172,9 +180,57 @@ void ghtml_reload(GtkWidget * ghtml)
 }
 
 
+/* ghtml_select_all */
+void ghtml_select_all(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* ghtml_stop */
 void ghtml_stop(GtkWidget * ghtml)
 {
 	/* FIXME implement */
+}
+
+
+/* ghtml_unselect_all */
+void ghtml_unselect_all(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	html_selection_clear(HTML_VIEW(ghtml->html_view));
+}
+
+
+/* ghtml_zoom_in */
+void ghtml_zoom_in(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	html_view_zoom_in(HTML_VIEW(ghtml->html_view));
+}
+
+
+/* ghtml_zoom_out */
+void ghtml_zoom_out(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	html_view_zoom_out(HTML_VIEW(ghtml->html_view));
+}
+
+
+/* ghtml_zoom_reset */
+void ghtml_zoom_reset(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	html_view_zoom_reset(HTML_VIEW(ghtml->html_view));
 }
 
 
@@ -205,23 +261,56 @@ static gboolean _ghtml_document_load(GHtml * ghtml, gchar const * base,
 static gboolean _load_write_stream(HtmlStream * stream, gchar const * base,
 		gchar const * url)
 {
+	gchar * u;
 	gchar * buf = NULL;
 	gsize len = 0;
 	guint response;
+	gboolean error;
 
-	url = rfc1738_make_full_url(base, url);
+	if((u = _ghtml_make_url(base, url)) == NULL)
+		return FALSE;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() url=\"%s\"\n", __func__, url);
+	fprintf(stderr, "DEBUG: %s() url=\"%s\"\n", __func__, u);
 #endif
-	if(gnet_http_get(url, &buf, &len, &response) != TRUE)
-	{
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: gnet_http_get() => %u\n", response);
-#endif
+	if(u[0] == '/')
+		error = g_file_get_contents(u, &buf, &len, NULL) == FALSE;
+	else if(strncmp("file:/", u, 6) == 0)
+		error = g_file_get_contents(&u[5], &buf, &len, NULL) == FALSE;
+	/* XXX assuming the rest is http */
+	else
+		error = gnet_http_get(u, &buf, &len, &response) != TRUE;
+	g_free(u);
+	if(error)
 		return FALSE; /* FIXME report error */
-	}
 	html_stream_write(stream, buf, len);
 	return TRUE;
+}
+
+
+/* ghtml_make_url */
+static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
+{
+	if(url == NULL)
+		return NULL;
+	/* XXX use a more generic protocol finder (strchr(':')) */
+	if(strncmp("http://", url, 7) == 0)
+		return g_strdup(url);
+	if(strncmp("ftp://", url, 6) == 0)
+		return g_strdup(url);
+	if(base != NULL)
+	{
+		if(url[0] == '/')
+			/* FIXME construct from / */
+			return g_strdup_printf("%s%s", base, url);
+		/* FIXME construct from last / */
+		return g_strdup_printf("%s/%s", base, url);
+	}
+	/* base is NULL, url is not NULL */
+	if(strncmp("ftp", url, 3) == 0)
+		return g_strdup_printf("%s%s", "ftp://", url);
+	if(url[0] == '/')
+		return g_strdup(url);
+	return g_strdup_printf("%s%s", "http://", url);
 }
 
 

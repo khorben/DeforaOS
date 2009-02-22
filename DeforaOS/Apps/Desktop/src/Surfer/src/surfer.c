@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -25,6 +25,7 @@
 
 /* Surfer */
 /* types */
+#ifndef FOR_EMBEDDED
 struct _menu
 {
 	char * name;
@@ -39,15 +40,14 @@ struct _menubar
 	struct _menu * menu;
 };
 
+
 /* variables */
 static struct _menu _menu_file[] =
 {
 	{ "_New window",	G_CALLBACK(on_file_new_window), "window-new",
 		GDK_N },
-	{ "",			NULL, NULL, 0 },
-	{ "_Refresh",		G_CALLBACK(on_file_refresh), GTK_STOCK_REFRESH,
-		GDK_R },
-	{ "_Force refresh",	G_CALLBACK(on_file_force_refresh), NULL, 0 },
+	{ "_Open...",		G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+		GDK_O },
 	{ "", NULL, NULL, 0 },
 	{ "_Close",		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_W },
@@ -56,8 +56,35 @@ static struct _menu _menu_file[] =
 
 static struct _menu _menu_edit[] =
 {
+	{ "_Cut",		NULL, GTK_STOCK_CUT, GDK_X },
+	{ "Cop_y",		NULL, GTK_STOCK_COPY, GDK_C },
+	{ "_Paste",		NULL, GTK_STOCK_PASTE, GDK_V },
+	{ "",			NULL, NULL, 0 },
+	{ "Select _all",	G_CALLBACK(on_edit_select_all),
+		GTK_STOCK_SELECT_ALL, GDK_A },
+	{ "Unselect all",	G_CALLBACK(on_edit_unselect_all), NULL, 0 },
+	{ "",			NULL, NULL, 0 },
 	{ "_Preferences",	G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_P },
+	{ NULL,			NULL, NULL, 0 }
+};
+
+static struct _menu _menu_view[] =
+{
+	{ "Zoom in",		G_CALLBACK(on_view_zoom_in), "zoom-in",
+		GDK_plus },
+	{ "Zoom out",		G_CALLBACK(on_view_zoom_out), "zoom-out",
+		GDK_minus },
+	{ "Normal size",	G_CALLBACK(on_view_normal_size), "zoom-1",
+		GDK_0 },
+	{ "",			NULL, NULL, 0 },
+	{ "_Refresh",		G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
+		GDK_R },
+	{ "_Force refresh",	G_CALLBACK(on_view_force_refresh), NULL, 0 },
+	{ "_Stop",		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0 },
+	{ "",			NULL, NULL, 0 },
+	{ "Page so_urce",	G_CALLBACK(on_view_page_source),
+		"stock_view-html-source", GDK_U },
 	{ NULL,			NULL, NULL, 0 }
 };
 
@@ -76,14 +103,18 @@ static struct _menubar _menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Edit", _menu_edit },
+	{ "_View", _menu_view },
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
+#endif /* !FOR_EMBEDDED */
 
 unsigned int surfer_cnt = 0;
 
 /* functions */
+#ifndef FOR_EMBEDDED
 static GtkWidget * _new_menubar(Surfer * surfer);
+#endif
 
 Surfer * surfer_new(char const * url)
 {
@@ -102,9 +133,11 @@ Surfer * surfer_new(char const * url)
 	g_signal_connect(G_OBJECT(surfer->window), "delete_event", G_CALLBACK(
 				on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
+#ifndef FOR_EMBEDDED
 	/* menubar */
 	surfer->menubar = _new_menubar(surfer);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
+#endif
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	surfer->tb_back = gtk_tool_button_new_from_stock(GTK_STOCK_GO_BACK);
@@ -121,10 +154,8 @@ Surfer * surfer_new(char const * url)
 	surfer->tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
 	g_signal_connect(G_OBJECT(surfer->tb_stop), "clicked", G_CALLBACK(
 				on_stop), surfer);
-	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), surfer->tb_stop, -1);
 	surfer->tb_refresh = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
-	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), FALSE);
 	g_signal_connect(G_OBJECT(surfer->tb_refresh), "clicked", G_CALLBACK(
 				on_refresh), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), surfer->tb_refresh, -1);
@@ -191,6 +222,7 @@ Surfer * surfer_new(char const * url)
 	return surfer;
 }
 
+#ifndef FOR_EMBEDDED
 static GtkWidget * _new_menubar(Surfer * surfer)
 {
 	GtkWidget * tb_menubar;
@@ -249,6 +281,7 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 	}
 	return tb_menubar;
 }
+#endif /* !FOR_EMBEDDED */
 
 
 /* surfer_delete */
@@ -273,4 +306,60 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
 	return ret;
+}
+
+
+/* surfer_refresh */
+void surfer_refresh(Surfer * surfer)
+{
+	ghtml_refresh(surfer->view);
+}
+
+
+/* surfer_reload */
+void surfer_reload(Surfer * surfer)
+{
+	ghtml_reload(surfer->view);
+}
+
+
+/* surfer_select_all */
+void surfer_select_all(Surfer * surfer)
+{
+	ghtml_select_all(surfer->view);
+}
+
+
+/* surfer_stop */
+void surfer_stop(Surfer * surfer)
+{
+	ghtml_stop(surfer->view);
+}
+
+
+/* surfer_unselect_all */
+void surfer_unselect_all(Surfer * surfer)
+{
+	ghtml_unselect_all(surfer->view);
+}
+
+
+/* surfer_zoom_in */
+void surfer_zoom_in(Surfer * surfer)
+{
+	ghtml_zoom_in(surfer->view);
+}
+
+
+/* surfer_zoom_out */
+void surfer_zoom_out(Surfer * surfer)
+{
+	ghtml_zoom_out(surfer->view);
+}
+
+
+/* surfer_zoom_reset */
+void surfer_zoom_reset(Surfer * surfer)
+{
+	ghtml_zoom_reset(surfer->view);
 }

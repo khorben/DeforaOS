@@ -24,17 +24,29 @@
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
+#ifndef FOR_EMBEDDED
 /* file menu */
 void on_file_close(GtkWidget * widget, gpointer data);
 void on_file_new_window(GtkWidget * widget, gpointer data);
-void on_file_refresh(GtkWidget * widget, gpointer data);
-void on_file_force_refresh(GtkWidget * widget, gpointer data);
+void on_file_open(GtkWidget * widget, gpointer data);
 
 /* edit menu */
 void on_edit_preferences(GtkWidget * widget, gpointer data);
+void on_edit_select_all(GtkWidget * widget, gpointer data);
+void on_edit_unselect_all(GtkWidget * widget, gpointer data);
+
+/* view menu */
+void on_view_zoom_in(GtkWidget * widget, gpointer data);
+void on_view_zoom_out(GtkWidget * widget, gpointer data);
+void on_view_normal_size(GtkWidget * widget, gpointer data);
+void on_view_refresh(GtkWidget * widget, gpointer data);
+void on_view_force_refresh(GtkWidget * widget, gpointer data);
+void on_view_stop(GtkWidget * widget, gpointer data);
+void on_view_page_source(GtkWidget * widget, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
+#endif /* !FOR_EMBEDDED */
 
 /* toolbar */
 void on_back(GtkWidget * widget, gpointer data);

@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
 static char const _license[] =
 "Surfer is free software; you can redistribute it and/or modify it\n"
@@ -49,6 +49,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
+#ifndef FOR_EMBEDDED
 /* file menu */
 void on_file_close(GtkWidget * widget, gpointer data)
 {
@@ -61,6 +62,7 @@ void on_file_close(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_file_new_window */
 void on_file_new_window(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
@@ -71,42 +73,116 @@ void on_file_new_window(GtkWidget * widget, gpointer data)
 }
 
 
-void on_file_refresh(GtkWidget * widget, gpointer data)
+/* on_file_open */
+void on_file_open(GtkWidget * widget, gpointer data)
 {
-	Surfer * surfer = data;
-
-	ghtml_reload(surfer->view);
-}
-
-
-void on_file_force_refresh(GtkWidget * widget, gpointer data)
-{
-	Surfer * surfer = data;
-
-	ghtml_refresh(surfer->view);
+	/* FIXME implement */
 }
 
 
 /* edit menu */
+/* on_edit_preferences */
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
 	/* FIXME implement */
 }
 
 
+/* on_edit_select_all */
+void on_edit_select_all(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_select_all(surfer);
+}
+
+
+/* on_edit_unselect_all */
+void on_edit_unselect_all(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_unselect_all(surfer);
+}
+
+
+/* view menu */
+/* on_view_force_refresh */
+void on_view_force_refresh(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_refresh(surfer);
+}
+
+
+/* on_view_normal_size */
+void on_view_normal_size(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_zoom_reset(surfer);
+}
+
+
+/* on_view_page_source */
+void on_view_page_source(GtkWidget * widget, gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_view_refresh */
+void on_view_refresh(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_reload(surfer);
+}
+
+
+/* on_view_stop */
+void on_view_stop(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_stop(surfer);
+}
+
+
+/* on_view_zoom_in */
+void on_view_zoom_in(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_zoom_in(surfer);
+}
+
+
+/* on_view_zoom_out */
+void on_view_zoom_out(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_zoom_out(surfer);
+}
+
+
 /* help menu */
+/* on_help_about */
 static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
-#if !GTK_CHECK_VERSION(2, 6, 0)
+# if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
-#endif
+# endif
+
 void on_help_about(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 	static GtkWidget * window = NULL;
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	gsize cnt = 65536;
 	gchar * buf;
 
@@ -140,7 +216,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				gtk_widget_hide), NULL);
 	gtk_widget_show(window);
 }
-#else
+# else
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * button;
@@ -179,7 +255,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 }
-#endif
+# endif
 
 static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
@@ -188,7 +264,7 @@ static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
 	return TRUE;
 }
 
-#if !GTK_CHECK_VERSION(2, 6, 0)
+# if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data)
 {
 	GtkWidget * window = data;
@@ -293,7 +369,8 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 }
-#endif
+# endif /* !GTK_CHECK_VERSION(2, 6, 0) */
+#endif /* !FOR_EMBEDDED */
 
 
 /* toolbar */

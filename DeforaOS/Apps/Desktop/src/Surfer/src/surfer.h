@@ -68,4 +68,15 @@ void surfer_delete(Surfer * surfer);
 /* useful */
 int surfer_error(Surfer * surfer, char const * message, int ret);
 
+void surfer_refresh(Surfer * surfer);
+void surfer_reload(Surfer * surfer);
+void surfer_stop(Surfer * surfer);
+
+void surfer_select_all(Surfer * surfer);
+void surfer_unselect_all(Surfer * surfer);
+
+void surfer_zoom_in(Surfer * surfer);
+void surfer_zoom_out(Surfer * surfer);
+void surfer_zoom_reset(Surfer * surfer);
+
 #endif /* !SURFER_SURFER_H */

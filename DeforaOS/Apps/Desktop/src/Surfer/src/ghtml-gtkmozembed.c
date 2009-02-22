@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -407,8 +407,43 @@ void ghtml_reload(GtkWidget * ghtml)
 }
 
 
+/* ghtml_select_all */
+void ghtml_select_all(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_stop */
 void ghtml_stop(GtkWidget * ghtml)
 {
 	gtk_moz_embed_stop_load(GTK_MOZ_EMBED(ghtml));
+}
+
+
+/* ghtml_unselect_all */
+void ghtml_unselect_all(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* ghtml_zoom_in */
+void ghtml_zoom_in(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* ghtml_zoom_out */
+void ghtml_zoom_out(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* ghtml_zoom_reset */
+void ghtml_zoom_reset(GtkWidget * ghtml)
+{
+	/* FIXME implement */
 }

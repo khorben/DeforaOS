@@ -48,4 +48,11 @@ void ghtml_refresh(GtkWidget * ghtml);
 void ghtml_reload(GtkWidget * ghtml);
 void ghtml_stop(GtkWidget * ghtml);
 
+void ghtml_select_all(GtkWidget * ghtml);
+void ghtml_unselect_all(GtkWidget * ghtml);
+
+void ghtml_zoom_in(GtkWidget * ghtml);
+void ghtml_zoom_out(GtkWidget * ghtml);
+void ghtml_zoom_reset(GtkWidget * ghtml);
+
 #endif /* !SURFER_GHTML_H */
