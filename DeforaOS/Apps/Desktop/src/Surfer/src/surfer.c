@@ -177,9 +177,6 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
-	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
-			GTK_ICON_SIZE_SMALL_TOOLBAR);
-	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 	toolitem = gtk_tool_item_new();
 	widget = gtk_label_new(" Location: ");
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
