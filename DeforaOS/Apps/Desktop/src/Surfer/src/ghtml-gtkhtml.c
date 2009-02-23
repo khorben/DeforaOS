@@ -35,6 +35,7 @@
 #include <gnet.h>
 #include <System.h>
 #include "ghtml.h"
+#include "../config.h"
 
 
 /* GHtml */
@@ -138,6 +139,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 
 
 /* accessors */
+/* ghtml_can_go_back */
 gboolean ghtml_can_go_back(GtkWidget * ghtml)
 {
 	/* FIXME implement */
@@ -145,6 +147,7 @@ gboolean ghtml_can_go_back(GtkWidget * ghtml)
 }
 
 
+/* ghtml_can_go_forward */
 gboolean ghtml_can_go_forward(GtkWidget * ghtml)
 {
 	/* FIXME implement */
@@ -160,6 +163,7 @@ char const * ghtml_get_link_message(GtkWidget * ghtml)
 }
 
 
+/* ghtml_get_location */
 char const * ghtml_get_location(GtkWidget * widget)
 {
 	GHtml * ghtml;
@@ -169,6 +173,7 @@ char const * ghtml_get_location(GtkWidget * widget)
 }
 
 
+/* ghtml_get_title */
 char const * ghtml_get_title(GtkWidget * widget)
 {
 	GHtml * ghtml;
@@ -179,6 +184,7 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 
 /* useful */
+/* ghtml_go_back */
 gboolean ghtml_go_back(GtkWidget * ghtml)
 {
 	/* FIXME implement */
@@ -186,6 +192,7 @@ gboolean ghtml_go_back(GtkWidget * ghtml)
 }
 
 
+/* ghtml_go_forward */
 gboolean ghtml_go_forward(GtkWidget * ghtml)
 {
 	/* FIXME implement */
@@ -357,7 +364,7 @@ static void _ghtmlconn_delete_file(GHtmlConn * ghtmlconn)
 
 static void _ghtmlconn_delete_http(GHtmlConn * ghtmlconn)
 {
-	/* FIXME implement */
+	gnet_conn_http_delete(ghtmlconn->http);
 }
 
 
@@ -414,6 +421,10 @@ static gboolean _stream_load_idle_file(GHtmlConn * conn);
 static gboolean _stream_load_watch_file(GIOChannel * source,
 		GIOCondition condition, gpointer data);
 static gboolean _stream_load_idle_http(GHtmlConn * conn);
+static void _stream_load_watch_http(GConnHttp * connhttp,
+		GConnHttpEvent * event, gpointer data);
+static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn);
+static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn);
 
 static int _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url)
@@ -554,9 +565,64 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 
 static gboolean _stream_load_idle_http(GHtmlConn * conn)
 {
-	surfer_error(conn->ghtml->surfer, "Not implemented yet", 0);
-	_ghtmlconn_delete(conn);
+	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	conn->http = gnet_conn_http_new();
+	gnet_conn_http_set_uri(conn->http, conn->url);
+	gnet_conn_http_set_user_agent(conn->http, "DeforaOS " PACKAGE);
+	gnet_conn_http_set_method(conn->http, GNET_CONN_HTTP_METHOD_GET, NULL,
+			0);
+	gnet_conn_http_run_async(conn->http, _stream_load_watch_http, conn);
 	return FALSE;
+}
+
+static void _stream_load_watch_http(GConnHttp * connhttp,
+		GConnHttpEvent * event, gpointer data)
+	/* FIXME handle error cases */
+{
+	GHtmlConn * conn = data;
+
+	if(conn->http != connhttp)
+		return; /* FIXME report error */
+	switch(event->type)
+	{
+		/* FIXME implement the other cases */
+		case GNET_CONN_HTTP_DATA_COMPLETE:
+			return _http_data_complete((GConnHttpEventData*)event,
+					conn);
+		case GNET_CONN_HTTP_DATA_PARTIAL:
+			return _http_data_partial((GConnHttpEventData*)event,
+					conn);
+	}
+}
+
+static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
+{
+	gchar * buf;
+	gsize size;
+	gdouble fraction;
+
+	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
+		return 0;
+	html_stream_write(conn->stream, buf, size);
+	surfer_set_progress(conn->ghtml->surfer, 1.0);
+	_ghtmlconn_delete(conn);
+}
+
+static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
+{
+	gchar * buf;
+	gsize size;
+	gdouble fraction;
+
+	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
+		return 0;
+	html_stream_write(conn->stream, buf, size);
+	if(conn->content_length > 0)
+	{
+		fraction = conn->data_received;
+		surfer_set_progress(conn->ghtml->surfer,
+				fraction / conn->content_length);
+	}
 }
 
 
