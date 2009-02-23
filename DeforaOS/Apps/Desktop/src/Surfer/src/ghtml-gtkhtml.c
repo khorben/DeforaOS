@@ -204,15 +204,21 @@ gboolean ghtml_go_forward(GtkWidget * ghtml)
 void ghtml_load_url(GtkWidget * widget, char const * url)
 {
 	GHtml * ghtml;
+	gchar * link;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, url);
 #endif
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if((link = _ghtml_make_url(NULL, url)) != NULL)
+		url = link;
 	if(_ghtml_document_load(ghtml, url) != 0)
+	{
+		g_free(link);
 		return;
+	}
 	g_free(ghtml->html_base);
-	ghtml->html_base = g_strdup(url);
+	ghtml->html_base = (link != NULL) ? link : g_strdup(url);
 	g_free(ghtml->html_url);
 	ghtml->html_url = g_strdup(url);
 }
@@ -599,12 +605,18 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 {
 	gchar * buf;
 	gsize size;
-	gdouble fraction;
 
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
-		return 0;
-	html_stream_write(conn->stream, buf, size);
-	surfer_set_progress(conn->ghtml->surfer, 1.0);
+	{
+		/* FIXME report error */
+		surfer_set_progress(conn->ghtml->surfer, 0.0);
+	}
+	else
+	{
+		if(size > 0)
+			html_stream_write(conn->stream, buf, size);
+		surfer_set_progress(conn->ghtml->surfer, 1.0);
+	}
 	_ghtmlconn_delete(conn);
 }
 
@@ -615,7 +627,11 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 	gdouble fraction;
 
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
-		return 0;
+	{
+		/* FIXME report error */
+		_ghtmlconn_delete(conn);
+		return;
+	}
 	html_stream_write(conn->stream, buf, size);
 	if(conn->content_length > 0)
 	{
