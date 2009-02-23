@@ -303,9 +303,12 @@ void surfer_delete(Surfer * surfer)
 /* surfer_set_progress */
 void surfer_set_progress(Surfer * surfer, gdouble fraction)
 {
-	char buf[10];
+	char buf[10] = "";
 
-	snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
+	if(fraction >= 0.0 && fraction <= 1.0)
+		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
+	else
+		fraction = 0.0;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(surfer->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(surfer->progress),
 			fraction);

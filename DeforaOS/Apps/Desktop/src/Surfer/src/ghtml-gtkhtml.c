@@ -502,7 +502,7 @@ static gboolean _stream_load_idle_directory(GHtmlConn * conn)
 #endif
 		html_stream_write(conn->stream, tail, sizeof(tail) - 1);
 		closedir(dir);
-		surfer_set_progress(conn->ghtml->surfer, 1.0);
+		surfer_set_progress(conn->ghtml->surfer, -1.0);
 		surfer_set_status(conn->ghtml->surfer, "Ready");
 	}
 	_ghtmlconn_delete(conn);
@@ -577,8 +577,8 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 
 static gboolean _stream_load_idle_http(GHtmlConn * conn)
 {
-	surfer_set_progress(conn->ghtml->surfer, 0.0);
-	surfer_set_status(conn->ghtml->surfer, "Downloading...");
+	surfer_set_progress(conn->ghtml->surfer, -1.0);
+	surfer_set_status(conn->ghtml->surfer, "Resolving...");
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
 	gnet_conn_http_set_user_agent(conn->http, "DeforaOS " PACKAGE);
@@ -672,7 +672,7 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 
 	snprintf(buf, sizeof(buf), "%s %u", "Error", event->code);
 	surfer_error(conn->ghtml->surfer, buf, 0);
-	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	surfer_set_progress(conn->ghtml->surfer, -1.0);
 	surfer_set_status(conn->ghtml->surfer, "Ready");
 	_ghtmlconn_delete(conn);
 }
@@ -682,7 +682,14 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 	char buf[256];
 	char * name;
 
-	if((name = gnet_inetaddr_get_name_nonblock(event->ia)) == NULL)
+	if(event->ia == NULL)
+	{
+		surfer_set_progress(conn->ghtml->surfer, -1.0);
+		surfer_set_status(conn->ghtml->surfer, "Ready");
+		surfer_error(conn->ghtml->surfer, "Unknown host", 0);
+		_ghtmlconn_delete(conn);
+	}
+	else if((name = gnet_inetaddr_get_name_nonblock(event->ia)) == NULL)
 		surfer_set_status(conn->ghtml->surfer, "Connecting...");
 	else
 	{
@@ -695,7 +702,7 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 static void _http_timeout(GHtmlConn * conn)
 {
 	surfer_error(conn->ghtml->surfer, "Timed out", 0);
-	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	surfer_set_progress(conn->ghtml->surfer, -1.0);
 	surfer_set_status(conn->ghtml->surfer, "Ready");
 	_ghtmlconn_delete(conn);
 }
