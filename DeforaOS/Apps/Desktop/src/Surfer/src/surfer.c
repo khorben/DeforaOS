@@ -357,6 +357,36 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 }
 
 
+/* surfer_open_dialog */
+void surfer_open(Surfer * surfer, char const * url)
+{
+	ghtml_stop(surfer->view);
+	ghtml_load_url(surfer->view, url);
+}
+
+
+/* surfer_open_dialog */
+void surfer_open_dialog(Surfer * surfer)
+{
+	GtkWidget * dialog;
+	char * filename = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Open file...",
+			GTK_WINDOW(surfer->window),
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	surfer_open(surfer, filename);
+	g_free(filename);
+}
+
+
 /* surfer_refresh */
 void surfer_refresh(Surfer * surfer)
 {

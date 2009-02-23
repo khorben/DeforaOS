@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -24,11 +24,7 @@
 
 /* GHTML */
 /* functions */
-#if 0 /* FIXME pass the callback data another way */
-GtkWidget * ghtml_new(void);
-#else
 GtkWidget * ghtml_new(Surfer * surfer);
-#endif
 
 /* accessors */
 gboolean ghtml_can_go_back(GtkWidget * ghtml);

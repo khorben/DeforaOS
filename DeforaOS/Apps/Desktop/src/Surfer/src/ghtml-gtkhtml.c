@@ -18,6 +18,8 @@
  * - update the URL of the main window
  * - implement selection
  * - more meaningful status updates
+ * - implement cookies
+ * - implement referer
  * - need to take care of CSRF? eg remotely load local files */
 
 
@@ -563,6 +565,8 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 	}
 	if(len == 0) /* no more data */
 	{
+		surfer_set_progress(conn->ghtml->surfer, 1.0);
+		surfer_set_status(conn->ghtml->surfer, "Ready");
 		_ghtmlconn_delete(conn);
 		return FALSE;
 	}
