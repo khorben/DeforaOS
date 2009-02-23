@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <libgtkhtml/gtkhtml.h>
 #include <libgtkhtml/view/htmlselection.h>
 #define GNET_EXPERIMENTAL
@@ -304,6 +305,7 @@ static GHtmlConn * _ghtmlconn_new(GHtml * ghtml, HtmlStream * stream,
 	GHtmlConn ** p;
 	GHtmlConn * c;
 
+	/* FIXME leaks memory: records are not re-used */
 	if((p = realloc(ghtml->conns, sizeof(*p) * (ghtml->conns_cnt + 1)))
 			== NULL)
 		return NULL;
