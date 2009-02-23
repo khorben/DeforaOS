@@ -51,6 +51,7 @@ typedef struct _Surfer
 	GtkToolItem * tb_refresh;
 	GtkWidget * tb_path;
 	GtkWidget * view;
+	GtkWidget * progress;
 	GtkWidget * statusbar;
 	guint statusbar_id;
 } Surfer;
@@ -63,6 +64,11 @@ extern unsigned int surfer_cnt;
 /* functions */
 Surfer * surfer_new(char const * url);
 void surfer_delete(Surfer * surfer);
+
+
+/* accessors */
+void surfer_set_progress(Surfer * surfer, gdouble fraction);
+void surfer_set_title(Surfer * surfer, char const * title);
 
 
 /* useful */

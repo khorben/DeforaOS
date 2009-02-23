@@ -123,13 +123,14 @@ Surfer * surfer_new(char const * url)
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GtkWidget * widget;
+	GtkWidget * hbox;
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
 	/* window */
 	surfer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 800, 600);
-	gtk_window_set_title(GTK_WINDOW(surfer->window), "Web surfer");
+	surfer_set_title(surfer, NULL);
 	g_signal_connect(G_OBJECT(surfer->window), "delete_event", G_CALLBACK(
 				on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -209,12 +210,16 @@ Surfer * surfer_new(char const * url)
 		ghtml_load_url(surfer->view, url);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->view, TRUE, TRUE, 0);
 	/* statusbar */
+	hbox = gtk_hbox_new(FALSE, 0);
+	surfer->progress = gtk_progress_bar_new();
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->progress, FALSE, FALSE, 0);
 	surfer->statusbar = gtk_statusbar_new();
 	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
 				surfer->statusbar),
 			gtk_statusbar_get_context_id(GTK_STATUSBAR(
 					surfer->statusbar), ""), "Ready");
-	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbar, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->statusbar, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(surfer->window), vbox);
 	gtk_widget_grab_focus(GTK_WIDGET(surfer->tb_path));
 	gtk_widget_show_all(surfer->window);
@@ -279,6 +284,7 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
 		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
 	}
+	gtk_window_add_accel_group(GTK_WINDOW(surfer->window), group);
 	return tb_menubar;
 }
 #endif /* !FOR_EMBEDDED */
@@ -293,6 +299,30 @@ void surfer_delete(Surfer * surfer)
 }
 
 
+/* accessors */
+/* surfer_set_progress */
+void surfer_set_progress(Surfer * surfer, gdouble fraction)
+{
+	char buf[10];
+
+	snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(surfer->progress), buf);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(surfer->progress),
+			fraction);
+}
+
+
+/* surfer_set_title */
+void surfer_set_title(Surfer * surfer, char const * title)
+{
+	char buf[256];
+
+	snprintf(buf, sizeof(buf), "%s%s%s", "Web surfer", title != NULL
+			? " - " : "", title != NULL ? title : "");
+	gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
+}
+
+
 /* useful */
 /* surfer_error */
 int surfer_error(Surfer * surfer, char const * message, int ret)
@@ -302,6 +332,7 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);

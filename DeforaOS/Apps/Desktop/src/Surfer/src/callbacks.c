@@ -15,6 +15,8 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License along\n"
 "with Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
 "Place, Suite 330, Boston, MA  02111-1307  USA\n";
+/* TODO:
+ * - implement on_file_open() :) */
 
 
 
