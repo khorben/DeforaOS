@@ -177,10 +177,12 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
+#ifndef FOR_EMBEDDED
 	toolitem = gtk_tool_item_new();
 	widget = gtk_label_new(" Location: ");
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif
 	toolitem = gtk_tool_item_new();
 	surfer->tb_path = gtk_combo_box_entry_new_text();
 	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
