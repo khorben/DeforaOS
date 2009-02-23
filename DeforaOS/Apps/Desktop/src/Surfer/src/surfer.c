@@ -312,6 +312,20 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 }
 
 
+/* surfer_set_status */
+void surfer_set_status(Surfer * surfer, char const * status)
+{
+	GtkStatusbar * sb;
+
+	sb = GTK_STATUSBAR(surfer->statusbar);
+	if(surfer->statusbar_id != 0)
+		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
+				surfer->statusbar_id);
+	surfer->statusbar_id = gtk_statusbar_push(sb,
+			gtk_statusbar_get_context_id(sb, ""), status);
+}
+
+
 /* surfer_set_title */
 void surfer_set_title(Surfer * surfer, char const * title)
 {

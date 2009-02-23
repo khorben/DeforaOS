@@ -13,12 +13,11 @@
  * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA  02111-1307  USA */
 /* TODO:
- * - implement http protocol again
  * - fix URL generation for relative path
  * - fix links from directory listing
- * - progressive file load
- * - update the URL and title of the main window
+ * - update the URL of the main window
  * - implement selection
+ * - more meaningful status updates
  * - need to take care of CSRF? eg remotely load local files */
 
 
@@ -365,7 +364,8 @@ static void _ghtmlconn_delete(GHtmlConn * ghtmlconn)
 
 static void _ghtmlconn_delete_file(GHtmlConn * ghtmlconn)
 {
-	/* FIXME implement */
+	if(ghtmlconn->file != NULL)
+		g_io_channel_unref(ghtmlconn->file);
 }
 
 static void _ghtmlconn_delete_http(GHtmlConn * ghtmlconn)
@@ -429,8 +429,12 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 static gboolean _stream_load_idle_http(GHtmlConn * conn);
 static void _stream_load_watch_http(GConnHttp * connhttp,
 		GConnHttpEvent * event, gpointer data);
+static void _http_connected(GHtmlConn * conn);
 static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn);
 static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn);
+static void _http_error(GConnHttpEventError * event, GHtmlConn * conn);
+static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn);
+static void _http_timeout(GHtmlConn * conn);
 
 static int _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url)
@@ -499,6 +503,7 @@ static gboolean _stream_load_idle_directory(GHtmlConn * conn)
 		html_stream_write(conn->stream, tail, sizeof(tail) - 1);
 		closedir(dir);
 		surfer_set_progress(conn->ghtml->surfer, 1.0);
+		surfer_set_status(conn->ghtml->surfer, "Ready");
 	}
 	_ghtmlconn_delete(conn);
 	return FALSE;
@@ -511,6 +516,7 @@ static gboolean _stream_load_idle_file(GHtmlConn * conn)
 	GIOChannel * channel;
 
 	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	surfer_set_status(conn->ghtml->surfer, "Reading file...");
 	if((fd = open(conn->url, O_RDONLY)) < 0)
 	{
 		surfer_error(conn->ghtml->surfer, "Not implemented yet", 0);
@@ -572,6 +578,7 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 static gboolean _stream_load_idle_http(GHtmlConn * conn)
 {
 	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	surfer_set_status(conn->ghtml->surfer, "Downloading...");
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
 	gnet_conn_http_set_user_agent(conn->http, "DeforaOS " PACKAGE);
@@ -591,14 +598,30 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 		return; /* FIXME report error */
 	switch(event->type)
 	{
-		/* FIXME implement the other cases */
+		/* FIXME implement GNET_CONN_HTTP_REDIRECT */
+		case GNET_CONN_HTTP_CONNECTED:
+			return _http_connected(conn);
 		case GNET_CONN_HTTP_DATA_COMPLETE:
 			return _http_data_complete((GConnHttpEventData*)event,
 					conn);
 		case GNET_CONN_HTTP_DATA_PARTIAL:
 			return _http_data_partial((GConnHttpEventData*)event,
 					conn);
+		case GNET_CONN_HTTP_ERROR:
+			return _http_error((GConnHttpEventError*)event, conn);
+		case GNET_CONN_HTTP_RESOLVED:
+			return _http_resolved((GConnHttpEventResolved*)event,
+					conn);
+		case GNET_CONN_HTTP_RESPONSE:
+			return; /* we ignore it */
+		case GNET_CONN_HTTP_TIMEOUT:
+			return _http_timeout(conn);
 	}
+}
+
+static void _http_connected(GHtmlConn * conn)
+{
+	surfer_set_status(conn->ghtml->surfer, "Connected");
 }
 
 static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
@@ -617,6 +640,7 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 			html_stream_write(conn->stream, buf, size);
 		surfer_set_progress(conn->ghtml->surfer, 1.0);
 	}
+	surfer_set_status(conn->ghtml->surfer, "Ready");
 	_ghtmlconn_delete(conn);
 }
 
@@ -626,6 +650,7 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 	gsize size;
 	gdouble fraction;
 
+	surfer_set_status(conn->ghtml->surfer, "Downloading...");
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 	{
 		/* FIXME report error */
@@ -639,6 +664,40 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 		surfer_set_progress(conn->ghtml->surfer,
 				fraction / conn->content_length);
 	}
+}
+
+static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
+{
+	char buf[10];
+
+	snprintf(buf, sizeof(buf), "%s %u", "Error", event->code);
+	surfer_error(conn->ghtml->surfer, buf, 0);
+	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	surfer_set_status(conn->ghtml->surfer, "Ready");
+	_ghtmlconn_delete(conn);
+}
+
+static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
+{
+	char buf[256];
+	char * name;
+
+	if((name = gnet_inetaddr_get_name_nonblock(event->ia)) == NULL)
+		surfer_set_status(conn->ghtml->surfer, "Connecting...");
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s%s%s%d", "Connecting to ", name,
+				":", gnet_inetaddr_get_port(event->ia));
+		surfer_set_status(conn->ghtml->surfer, buf);
+	}
+}
+
+static void _http_timeout(GHtmlConn * conn)
+{
+	surfer_error(conn->ghtml->surfer, "Timed out", 0);
+	surfer_set_progress(conn->ghtml->surfer, 0.0);
+	surfer_set_status(conn->ghtml->surfer, "Ready");
+	_ghtmlconn_delete(conn);
 }
 
 
@@ -704,6 +763,7 @@ static void _on_submit(HtmlDocument * document, const gchar * url,
 	if(strcmp(method, "GET") == 0)
 		_ghtml_document_load(ghtml, url);
 	else if(strcmp(method, "POST") == 0)
+		/* FIXME really use POST */
 		_ghtml_document_load(ghtml, url);
 	else
 	{
