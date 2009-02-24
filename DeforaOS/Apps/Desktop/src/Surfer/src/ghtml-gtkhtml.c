@@ -14,12 +14,15 @@
  * Suite 330, Boston, MA  02111-1307  USA */
 /* TODO:
  * - fix URL generation for relative path
- * - fix links from directory listing
  * - update the URL of the main window
  * - implement selection
  * - more meaningful status updates
- * - implement cookies
+ * - implement cookies (beware same-origin policy)
  * - implement referer
+ * - implement POST
+ * - implement history
+ * - implement anchors
+ * - do we need to use html_stream_cancel?
  * - need to take care of CSRF? eg remotely load local files */
 
 
@@ -67,6 +70,7 @@ struct _GHtmlConn
 	GHtml * ghtml;
 
 	char * url;
+	char const * anchor;
 	guint64 content_length;
 	guint64 data_received;
 	HtmlStream * stream;
@@ -86,6 +90,7 @@ static GHtmlConn * _ghtmlconn_new(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url);
 static void _ghtmlconn_delete(GHtmlConn * ghtmlconn);
 
+static int _ghtml_set_base(GHtml * ghtml, char const * url);
 static int _ghtml_document_load(GHtml * ghtml, gchar const * url);
 static gchar * _ghtml_make_url(gchar const * base, gchar const * url);
 static int _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
@@ -99,6 +104,7 @@ static void _on_set_base(HtmlDocument * document, const gchar * url);
 static void _on_submit(HtmlDocument * document, const gchar * url,
 		const gchar * method, const gchar * encoding);
 static void _on_title_changed(HtmlDocument * document, const gchar * title);
+static void _on_url(HtmlView * view, const gchar * url);
 
 
 /* public */
@@ -116,6 +122,9 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	ghtml->conns = NULL;
 	ghtml->conns_cnt = 0;
 	ghtml->html_view = html_view_new();
+	g_object_set_data(G_OBJECT(ghtml->html_view), "ghtml", ghtml);
+	g_signal_connect(G_OBJECT(ghtml->html_view), "on-url", G_CALLBACK(
+				_on_url), NULL);
 	ghtml->html_document = html_document_new();
 	ghtml->html_title = NULL;
 	g_object_set_data(G_OBJECT(ghtml->html_document), "ghtml", ghtml);
@@ -185,6 +194,16 @@ char const * ghtml_get_title(GtkWidget * widget)
 }
 
 
+/* ghtml_set_base */
+int ghtml_set_base(GtkWidget * widget, char const * url)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return _ghtml_set_base(ghtml, url);
+}
+
+
 /* useful */
 /* ghtml_go_back */
 gboolean ghtml_go_back(GtkWidget * ghtml)
@@ -246,9 +265,16 @@ void ghtml_reload(GtkWidget * ghtml)
 
 
 /* ghtml_select_all */
-void ghtml_select_all(GtkWidget * ghtml)
+void ghtml_select_all(GtkWidget * widget)
 {
-	/* FIXME implement */
+#if 0 /* FIXME does not work */
+	GHtml * ghtml;
+	DomNode * node;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if((node = html_document_find_anchor(ghtml->html_document, "")) != NULL)
+		html_selection_set(HTML_VIEW(ghtml->html_view), node, 0, -1);
+#endif
 }
 
 
@@ -306,6 +332,7 @@ static GHtmlConn * _ghtmlconn_new(GHtml * ghtml, HtmlStream * stream,
 {
 	GHtmlConn ** p;
 	GHtmlConn * c;
+	char * q = NULL;
 
 	/* FIXME leaks memory: records are not re-used */
 	if((p = realloc(ghtml->conns, sizeof(*p) * (ghtml->conns_cnt + 1)))
@@ -317,6 +344,16 @@ static GHtmlConn * _ghtmlconn_new(GHtml * ghtml, HtmlStream * stream,
 	ghtml->conns[ghtml->conns_cnt] = c;
 	c->ghtml = ghtml;
 	c->url = strdup(url);
+	/* look for an anchor */
+	/* XXX should it really be done here? */
+	if(c->url != NULL && (q = strrchr(c->url, '#')) != NULL)
+		*q = '\0';
+	c->anchor = (q != NULL) ? ++q : NULL;
+#ifdef DEBUG
+	if(c->anchor != NULL)
+		fprintf(stderr, "DEBUG: %s() anchor=\"%s\"\n", __func__,
+				c->anchor);
+#endif
 	c->content_length = 0;
 	c->data_received = 0;
 	c->stream = stream;
@@ -375,6 +412,21 @@ static void _ghtmlconn_delete_file(GHtmlConn * ghtmlconn)
 static void _ghtmlconn_delete_http(GHtmlConn * ghtmlconn)
 {
 	gnet_conn_http_delete(ghtmlconn->http);
+}
+
+
+/* ghtml_set_base */
+static int _ghtml_set_base(GHtml * ghtml, char const * url)
+{
+	g_free(ghtml->html_base);
+	if(url != NULL)
+	{
+		if((ghtml->html_base = g_strdup(url)) == NULL)
+			return 1;
+	}
+	else
+		ghtml->html_base = NULL;
+	return 0;
 }
 
 
@@ -437,6 +489,7 @@ static void _http_connected(GHtmlConn * conn);
 static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn);
 static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn);
 static void _http_error(GConnHttpEventError * event, GHtmlConn * conn);
+static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn);
 static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn);
 static void _http_timeout(GHtmlConn * conn);
 
@@ -458,6 +511,8 @@ static gboolean _stream_load_idle(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p) \"%s\"\n", __func__, data, conn->url);
 #endif
+	html_view_jump_to_anchor(HTML_VIEW(conn->ghtml->html_view),
+			(conn->anchor != NULL) ? conn->anchor : "");
 	if(conn->url[0] == '/')
 		return _stream_load_idle_file(conn);
 	if(strncmp(conn->url, "file:", 5) == 0)
@@ -480,35 +535,38 @@ static gboolean _stream_load_idle_directory(GHtmlConn * conn)
 	struct dirent * de;
 
 	if((dir = opendir(conn->url)) == NULL)
-		surfer_error(conn->ghtml->surfer, strerror(errno), 0);
-	else
 	{
-		snprintf(buf, sizeof(buf), "%s%s%s%s%s", "<html><head><title>"
-				"Index of ", conn->url, "</title><body>\n"
-				"<h1>Index of ", conn->url,
-				"</h1>\n<hr>\n<ul>\n");
+		surfer_error(conn->ghtml->surfer, strerror(errno), 0);
+		_ghtmlconn_delete(conn);
+		return FALSE;
+	}
+	if(snprintf(buf, sizeof(buf), "%s/", conn->url) < (int)sizeof(buf))
+		_ghtml_set_base(conn->ghtml, buf); /* XXX what otherwise? */
+	snprintf(buf, sizeof(buf), "%s%s%s%s%s", "<html><head><title>Index of ",
+			conn->url, "</title><body>\n<h1>Index of ", conn->url,
+			"</h1>\n<hr>\n<ul>\n");
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s", buf);
+#endif
+	html_stream_write(conn->stream, buf, strlen(buf));
+	while((de = readdir(dir)) != NULL)
+	{
+		if(strcmp(de->d_name, ".") == 0)
+			continue;
+		snprintf(buf, sizeof(buf), "%s%s%s%s%s", "<li><a href=\"",
+				de->d_name, "\">", de->d_name, "</a></li>\n");
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s", buf);
 #endif
 		html_stream_write(conn->stream, buf, strlen(buf));
-		while((de = readdir(dir)) != NULL)
-		{
-			snprintf(buf, sizeof(buf), "%s%s%s%s%s",
-					"<li><a href=\"", de->d_name, "\">",
-					de->d_name, "</a></li>\n");
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: %s", buf);
-#endif
-			html_stream_write(conn->stream, buf, strlen(buf));
-		}
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s", tail);
-#endif
-		html_stream_write(conn->stream, tail, sizeof(tail) - 1);
-		closedir(dir);
-		surfer_set_progress(conn->ghtml->surfer, -1.0);
-		surfer_set_status(conn->ghtml->surfer, "Ready");
 	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s", tail);
+#endif
+	html_stream_write(conn->stream, tail, sizeof(tail) - 1);
+	closedir(dir);
+	surfer_set_progress(conn->ghtml->surfer, -1.0);
+	surfer_set_status(conn->ghtml->surfer, "Ready");
 	_ghtmlconn_delete(conn);
 	return FALSE;
 }
@@ -519,15 +577,18 @@ static gboolean _stream_load_idle_file(GHtmlConn * conn)
 	struct stat st;
 	GIOChannel * channel;
 
-	surfer_set_progress(conn->ghtml->surfer, 0.0);
-	surfer_set_status(conn->ghtml->surfer, "Reading file...");
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, conn->url);
+#endif
 	if((fd = open(conn->url, O_RDONLY)) < 0)
 	{
-		surfer_error(conn->ghtml->surfer, "Not implemented yet", 0);
+		surfer_error(conn->ghtml->surfer, strerror(errno), 0);
 		_ghtmlconn_delete(conn);
 	}
 	else
 	{
+		surfer_set_progress(conn->ghtml->surfer, 0.0);
+		surfer_set_status(conn->ghtml->surfer, "Reading file...");
 		if(fstat(fd, &st) == 0)
 		{
 			if(S_ISDIR(st.st_mode))
@@ -604,7 +665,6 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 		return; /* FIXME report error */
 	switch(event->type)
 	{
-		/* FIXME implement GNET_CONN_HTTP_REDIRECT */
 		case GNET_CONN_HTTP_CONNECTED:
 			return _http_connected(conn);
 		case GNET_CONN_HTTP_DATA_COMPLETE:
@@ -615,6 +675,9 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 					conn);
 		case GNET_CONN_HTTP_ERROR:
 			return _http_error((GConnHttpEventError*)event, conn);
+		case GNET_CONN_HTTP_REDIRECT:
+			return _http_redirect((GConnHttpEventRedirect*)event,
+					conn);
 		case GNET_CONN_HTTP_RESOLVED:
 			return _http_resolved((GConnHttpEventResolved*)event,
 					conn);
@@ -638,7 +701,7 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 	{
 		/* FIXME report error */
-		surfer_set_progress(conn->ghtml->surfer, 0.0);
+		surfer_set_progress(conn->ghtml->surfer, -1.0);
 	}
 	else
 	{
@@ -664,8 +727,10 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 		return;
 	}
 	html_stream_write(conn->stream, buf, size);
-	if(conn->content_length > 0)
+	if(event->content_length > 0)
 	{
+		conn->data_received = event->data_received;
+		conn->content_length = event->content_length;
 		fraction = conn->data_received;
 		surfer_set_progress(conn->ghtml->surfer,
 				fraction / conn->content_length);
@@ -681,6 +746,17 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 	surfer_set_progress(conn->ghtml->surfer, -1.0);
 	surfer_set_status(conn->ghtml->surfer, "Ready");
 	_ghtmlconn_delete(conn);
+}
+
+static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
+{
+	char buf[256] = "Redirecting...";
+
+	if(event->new_location != NULL)
+		snprintf(buf, sizeof(buf), "%s %s", "Redirecting to ",
+				event->new_location);
+	surfer_set_status(conn->ghtml->surfer, buf);
+	/* FIXME save new URL, limit redirections */
 }
 
 static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
@@ -758,8 +834,7 @@ static void _on_set_base(HtmlDocument * document, const gchar * url)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, url);
 #endif
 	ghtml = g_object_get_data(G_OBJECT(document), "ghtml");
-	g_free(ghtml->html_base);
-	ghtml->html_base = g_strdup(url);
+	_ghtml_set_base(ghtml, url);
 }
 
 
@@ -798,4 +873,23 @@ static void _on_title_changed(HtmlDocument * document, const gchar * title)
 	g_free(ghtml->html_title);
 	ghtml->html_title = g_strdup(title);
 	surfer_set_title(ghtml->surfer, title);
+}
+
+
+static void _on_url(HtmlView * view, const gchar * url)
+{
+	GHtml * ghtml;
+	gchar * link;
+
+	ghtml = g_object_get_data(G_OBJECT(view), "ghtml");
+	if(url == NULL)
+	{
+		surfer_set_status(ghtml->surfer, "Ready");
+		return;
+	}
+	if((link = _ghtml_make_url(ghtml->html_base, url)) != NULL)
+	{
+		surfer_set_status(ghtml->surfer, link);
+		g_free(link);
+	}
 }
