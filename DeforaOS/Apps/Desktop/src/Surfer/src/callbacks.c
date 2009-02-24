@@ -400,12 +400,16 @@ void on_fullscreen(GtkToggleToolButton * button, gpointer data)
 
 	if(gtk_toggle_tool_button_get_active(button))
 	{
+#ifndef FOR_EMBEDDED
 		gtk_widget_hide(surfer->menubar);
+#endif
 		gtk_window_fullscreen(GTK_WINDOW(surfer->window));
 	}
 	else
 	{
+#ifndef FOR_EMBEDDED
 		gtk_widget_show(surfer->menubar);
+#endif
 		gtk_window_unfullscreen(GTK_WINDOW(surfer->window));
 	}
 }
