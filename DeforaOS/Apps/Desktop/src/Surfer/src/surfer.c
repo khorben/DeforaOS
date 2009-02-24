@@ -12,6 +12,8 @@
  * You should have received a copy of the GNU General Public License along with
  * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA  02111-1307  USA */
+/* FIXME:
+ * - disabling the menubar with FOR_EMBEDDED also disables accelerators */
 
 
 
@@ -111,7 +113,9 @@ static struct _menubar _menubar[] =
 
 unsigned int surfer_cnt = 0;
 
+
 /* functions */
+/* surfer_new */
 #ifndef FOR_EMBEDDED
 static GtkWidget * _new_menubar(Surfer * surfer);
 #endif
@@ -177,6 +181,9 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
+	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
+			GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 #ifndef FOR_EMBEDDED
 	toolitem = gtk_tool_item_new();
 	widget = gtk_label_new(" Location: ");
@@ -201,7 +208,7 @@ Surfer * surfer_new(char const * url)
 	/* view */
 	if((surfer->view = ghtml_new(surfer)) == NULL)
 	{
-		/* XXX display an error dialog */
+		surfer_error(NULL, "Could not initialize HTML renderer", 0);
 		surfer_delete(surfer);
 		return NULL;
 	}
@@ -345,7 +352,8 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
-	dialog = gtk_message_dialog_new(GTK_WINDOW(surfer->window),
+	dialog = gtk_message_dialog_new((surfer != NULL)
+			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
