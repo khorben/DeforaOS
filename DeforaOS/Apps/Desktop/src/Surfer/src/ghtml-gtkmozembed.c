@@ -49,18 +49,10 @@ static void _on_popup_title(GtkMozEmbed * view, gpointer data);
 static void _on_link_message(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
-	char const * url = ghtml_get_link_message(GTK_WIDGET(view));
-
-	if(surfer->statusbar_id)
-		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
-				gtk_statusbar_get_context_id(
-					GTK_STATUSBAR(surfer->statusbar), ""),
-				surfer->statusbar_id);
-	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
-				surfer->statusbar),
-			gtk_statusbar_get_context_id(GTK_STATUSBAR(
-					surfer->statusbar), ""),
-			url != NULL ? url : "Ready");
+	char const * url;
+	
+	url = ghtml_get_link_message(GTK_WIDGET(view));
+	surfer_set_status(surfer, url);
 }
 
 
@@ -68,21 +60,9 @@ static void _on_location(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
 	char const * url;
-	GtkWidget * widget;
-	static int i = 0; /* XXX should be set per-window */
 
 	url = ghtml_get_location(GTK_WIDGET(view));
-	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
-	gtk_entry_set_text(GTK_ENTRY(widget), url);
-	if(i == 8)
-		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->tb_path), 0);
-	else
-		i++;
-	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->tb_path), url);
-	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
-			ghtml_can_go_back(GTK_WIDGET(view)));
-	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
-			ghtml_can_go_forward(GTK_WIDGET(view)));
+	surfer_set_location(surfer, url);
 }
 
 
@@ -108,15 +88,7 @@ static void _on_net_stop(GtkMozEmbed * view, gpointer data)
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
 			ghtml_can_go_forward(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
-	if(surfer->statusbar_id)
-		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
-				gtk_statusbar_get_context_id(
-					GTK_STATUSBAR(surfer->statusbar), ""),
-				surfer->statusbar_id);
-	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
-				surfer->statusbar),
-			gtk_statusbar_get_context_id(GTK_STATUSBAR(
-					surfer->statusbar), ""), "Ready");
+	surfer_set_status(surfer, NULL);
 }
 
 
@@ -164,12 +136,8 @@ static void _on_progress(GtkMozEmbed * view, gint cur, gint max, gpointer data)
 {
 	Surfer * surfer = data;
 	char buf[256];
+	gdouble fraction = cur;
 
-	if(surfer->statusbar_id)
-		gtk_statusbar_remove(GTK_STATUSBAR(surfer->statusbar),
-				gtk_statusbar_get_context_id(
-					GTK_STATUSBAR(surfer->statusbar), ""),
-				surfer->statusbar_id);
 	if(max > 1024 || max <= 0)
 		snprintf(buf, sizeof(buf), "%s%u%s%u%s", "Transferring data (",
 				cur / 1024, " on ", max / 1024,
@@ -177,10 +145,9 @@ static void _on_progress(GtkMozEmbed * view, gint cur, gint max, gpointer data)
 	else
 		snprintf(buf, sizeof(buf), "%s%u%s%u%s", "Transferring data (",
 				cur, " on ", max, " bytes received)");
-	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
-				surfer->statusbar),
-			gtk_statusbar_get_context_id(GTK_STATUSBAR(
-					surfer->statusbar), ""), buf);
+	if(max > 0)
+		surfer_set_progress(surfer, cur / max);
+	surfer_set_status(surfer, buf);
 }
 
 
