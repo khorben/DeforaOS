@@ -376,6 +376,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 
 
 /* toolbar */
+/* on_back */
 void on_back(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
@@ -385,6 +386,7 @@ void on_back(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_forward */
 void on_forward(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
@@ -394,6 +396,7 @@ void on_forward(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_fullscreen */
 void on_fullscreen(GtkToggleToolButton * button, gpointer data)
 {
 	Surfer * surfer = data;
@@ -415,6 +418,7 @@ void on_fullscreen(GtkToggleToolButton * button, gpointer data)
 }
 
 
+/* on_home */
 void on_home(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
@@ -424,6 +428,7 @@ void on_home(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_path_activate */
 void on_path_activate(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
@@ -435,6 +440,7 @@ void on_path_activate(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_refresh */
 void on_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
@@ -443,6 +449,7 @@ void on_refresh(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_stop */
 void on_stop(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
