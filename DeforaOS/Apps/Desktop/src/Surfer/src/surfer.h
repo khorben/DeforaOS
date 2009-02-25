@@ -69,6 +69,7 @@ void surfer_delete(Surfer * surfer);
 
 
 /* accessors */
+void surfer_set_location(Surfer * surfer, char const * url);
 void surfer_set_progress(Surfer * surfer, gdouble fraction);
 void surfer_set_status(Surfer * surfer, char const * status);
 void surfer_set_title(Surfer * surfer, char const * title);

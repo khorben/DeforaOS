@@ -306,6 +306,26 @@ void surfer_delete(Surfer * surfer)
 
 
 /* accessors */
+/* surfer_set_location */
+void surfer_set_location(Surfer * surfer, char const * url)
+{
+	GtkWidget * widget;
+	static int i = 0; /* XXX should be set per-window */
+
+	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
+	gtk_entry_set_text(GTK_ENTRY(widget), url);
+	if(i == 8)
+		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->tb_path), 0);
+	else
+		i++;
+	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->tb_path), url);
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
+			ghtml_can_go_back(surfer->view));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
+			ghtml_can_go_forward(surfer->view));
+}
+
+
 /* surfer_set_progress */
 void surfer_set_progress(Surfer * surfer, gdouble fraction)
 {
@@ -331,7 +351,8 @@ void surfer_set_status(Surfer * surfer, char const * status)
 		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
 				surfer->statusbar_id);
 	surfer->statusbar_id = gtk_statusbar_push(sb,
-			gtk_statusbar_get_context_id(sb, ""), status);
+			gtk_statusbar_get_context_id(sb, ""), (status != NULL)
+			? status : "Ready");
 }
 
 
@@ -364,7 +385,7 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 }
 
 
-/* surfer_open_dialog */
+/* surfer_open */
 void surfer_open(Surfer * surfer, char const * url)
 {
 	ghtml_stop(surfer->view);
