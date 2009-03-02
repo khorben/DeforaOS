@@ -339,9 +339,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 /* view menu */
 void on_view_home(GtkWidget * widget, gpointer data)
 {
-	Browser * browser = data;
-
-	browser_set_location(browser, g_get_home_dir());
+	on_home(widget, data);
 }
 
 
@@ -614,7 +612,7 @@ void on_home(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
-	browser_set_location(browser, g_get_home_dir());
+	browser_go_home(browser);
 }
 
 
@@ -663,7 +661,7 @@ void on_view_as(GtkWidget * widget, gpointer data)
 			== GTK_ORIENTATION_HORIZONTAL)
 		browser_set_view(browser, BV_THUMBNAILS);
 	else if(gtk_icon_view_get_item_width(GTK_ICON_VIEW(browser->iconview))
-			!= 112)
+			!= BROWSER_THUMBNAIL_WIDTH)
 		browser_set_view(browser, BV_LIST);
 	else
 		browser_set_view(browser, BV_DETAILS);
@@ -828,7 +826,7 @@ void on_view_drag_data_received(GtkWidget * widget, GdkDragContext * context,
 	if(_common_drag_data_received(context, seldata, dest) != 0)
 		browser_error(browser, "fork", 0);
 }
-#endif
+#endif /* GTK_CHECK_VERSION(2, 8, 0) */
 
 
 /* on_view_popup */

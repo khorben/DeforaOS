@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -280,10 +280,12 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
+#ifndef FOR_EMBEDDED
 	widget = gtk_label_new(" Location: ");
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif
 	browser->tb_path = gtk_combo_box_entry_new_text();
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
 	g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(
@@ -317,8 +319,10 @@ Browser * browser_new(char const * directory)
 	browser_set_view(browser, BV_DETAILS);
 	gtk_widget_grab_focus(browser->detailview);
 #endif
-	browser_set_location(browser, directory != NULL ? directory
-			: g_get_home_dir());
+	if(directory != NULL)
+		browser_set_location(browser, directory);
+	else
+		browser_go_home(browser);
 
 	/* preferences */
 	browser->pr_window = NULL;
@@ -465,15 +469,14 @@ void browser_delete(Browser * browser)
 /* private */
 static void _browser_set_status(Browser * browser, char const * status)
 {
-	if(browser->statusbar_id)
-		gtk_statusbar_remove(GTK_STATUSBAR(browser->statusbar),
-				gtk_statusbar_get_context_id(
-					GTK_STATUSBAR(browser->statusbar), ""),
+	GtkStatusbar * sb;
+
+	sb = GTK_STATUSBAR(browser->statusbar);
+	if(browser->statusbar_id != 0)
+		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
 				browser->statusbar_id);
-	browser->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
-				browser->statusbar),
-			gtk_statusbar_get_context_id(GTK_STATUSBAR(
-					browser->statusbar), ""), status);
+	browser->statusbar_id = gtk_statusbar_push(sb,
+			gtk_statusbar_get_context_id(sb, ""), status);
 }
 
 
@@ -582,6 +585,17 @@ static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value)
 {
 	return config_set(config, "", variable, value ? "1" : "0");
+}
+
+
+/* browser_go_home */
+void browser_go_home(Browser * browser)
+{
+	char const * home;
+
+	if((home = getenv("HOME")) == NULL)
+		home = g_get_home_dir();
+	browser_set_location(browser, home != NULL ? home : "/");
 }
 
 
@@ -1557,8 +1571,8 @@ static void _view_thumbnails(Browser * browser)
 			renderer, "pixbuf", BR_COL_PIXBUF_96, NULL);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
-			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width", 112,
-			NULL);
+			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width",
+			BROWSER_THUMBNAIL_WIDTH, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
@@ -1572,7 +1586,8 @@ static void _view_thumbnails(Browser * browser)
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_DISPLAY_NAME);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
-	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 112);
+	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
+			BROWSER_THUMBNAIL_WIDTH);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show(browser->iconview);
@@ -1580,6 +1595,7 @@ static void _view_thumbnails(Browser * browser)
 #endif
 
 
+/* browser_unselect_all */
 void browser_unselect_all(Browser * browser)
 {
 	GtkTreeSelection * sel;
