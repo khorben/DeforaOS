@@ -50,6 +50,7 @@ static struct _menu _menu_file[] =
 		GDK_N },
 	{ "_Open...",		G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_O },
+	{ "_Open URL...",	G_CALLBACK(on_file_open_url), NULL, GDK_L },
 	{ "", NULL, NULL, 0 },
 	{ "_Close",		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_W },
@@ -388,8 +389,13 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 /* surfer_open */
 void surfer_open(Surfer * surfer, char const * url)
 {
-	ghtml_stop(surfer->view);
-	ghtml_load_url(surfer->view, url);
+	if(url != NULL)
+	{
+		ghtml_stop(surfer->view);
+		ghtml_load_url(surfer->view, url);
+	}
+	else
+		gtk_widget_grab_focus(surfer->tb_path);
 }
 
 

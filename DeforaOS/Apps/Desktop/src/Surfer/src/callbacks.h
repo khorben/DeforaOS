@@ -29,6 +29,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 void on_file_close(GtkWidget * widget, gpointer data);
 void on_file_new_window(GtkWidget * widget, gpointer data);
 void on_file_open(GtkWidget * widget, gpointer data);
+void on_file_open_url(GtkWidget * widget, gpointer data);
 
 /* edit menu */
 void on_edit_preferences(GtkWidget * widget, gpointer data);

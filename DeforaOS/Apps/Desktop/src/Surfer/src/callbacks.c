@@ -82,6 +82,15 @@ void on_file_open(GtkWidget * widget, gpointer data)
 }
 
 
+/* on_file_open_url */
+void on_file_open_url(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_open(surfer, NULL);
+}
+
+
 /* edit menu */
 /* on_edit_preferences */
 void on_edit_preferences(GtkWidget * widget, gpointer data)
