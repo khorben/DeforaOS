@@ -1,6 +1,6 @@
 PACKAGE	= others
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -sf
 TAR	= tar -czvf
@@ -37,6 +37,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/tar.h \
 		$(PACKAGE)-$(VERSION)/src/utmpx.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/linuxrc.c \
+		$(PACKAGE)-$(VERSION)/tools/oinit.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf
