@@ -885,7 +885,7 @@ static void _on_submit(HtmlDocument * document, const gchar * url,
 	ghtml = g_object_get_data(G_OBJECT(document), "ghtml");
 	if((u = _ghtml_make_url(ghtml->html_base, url)) == NULL)
 		return; /* FIXME report error */
-	if(strcasecmp(method, "GET") == 0)
+	if(method == NULL || strcasecmp(method, "GET") == 0)
 	{
 		v = (encoding != NULL) ? g_strdup_printf("%s?%s", u, encoding)
 			: g_strdup(u);
