@@ -489,6 +489,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 static void _variables_library(Configure * configure, FILE * fp, char * done)
 {
 	String const * libdir;
+	String const * p;
 
 	if(!done[TT_LIBRARY])
 	{
@@ -507,7 +508,16 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 		_targets_cxxflags(configure, fp);
 		_targets_ldflags(configure, fp);
 	}
-	fputs("AR\t= ar -rc\nRANLIB\t= ranlib\nLD\t= $(CC) -shared\n", fp);
+	/* FIXME create a function for the executables */
+	if((p = config_get(configure->config, "", "ar")) == NULL)
+		p = "ar -rc";
+	fprintf(fp, "%s%s\n", "AR\t= ", p);
+	if((p = config_get(configure->config, "", "ranlib")) == NULL)
+		p = "ranlib";
+	fprintf(fp, "%s%s\n", "RANLIB\t= ", p);
+	if((p = config_get(configure->config, "", "ld")) == NULL)
+		p = "$(CC) -shared";
+	fprintf(fp, "%s%s\n", "LD\t= ", p);
 }
 
 static void _variables_libtool(Configure * configure, FILE * fp, char * done)
