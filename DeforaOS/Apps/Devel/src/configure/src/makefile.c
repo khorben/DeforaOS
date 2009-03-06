@@ -360,6 +360,7 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * as;
 	String const * asf;
 
+	/* FIXME should output CPPFLAGS even without cflags */
 	cppf = config_get(configure->config, "", "cppflags_force");
 	cpp = config_get(configure->config, "", "cppflags");
 	cc = config_get(configure->config, "", "cc");
