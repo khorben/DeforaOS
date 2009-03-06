@@ -467,6 +467,8 @@ int main(int argc, char * argv[])
 	int o;
 
 	memset(&prefs, 0, sizeof(prefs));
+	if(g_thread_supported() == FALSE)
+		g_thread_init(NULL);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "O:U:")) != -1)
 		switch(o)
