@@ -837,8 +837,13 @@ static void _flags_cxx(Configure * configure, FILE * fp, String const * target)
 {
 	String const * p;
 
-	fprintf(fp, "%s%s", target, "_CXXFLAGS = $(CXXFLAGSF) $(CXXFLAGS)");
+	fprintf(fp, "%s%s", target, "_CXXFLAGS = $(CPPFLAGSF) $(CPPFLAGS)"
+			" $(CXXFLAGSF) $(CXXFLAGS)");
 	if((p = config_get(configure->config, target, "cxxflags")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
+	fprintf(fp, "%s%s", target, "_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)");
+	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
 }
