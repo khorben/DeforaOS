@@ -147,7 +147,7 @@ fi
 #initialize variables
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
-[ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir"
+[ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
