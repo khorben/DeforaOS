@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS
 
 
@@ -151,7 +151,7 @@ fi
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath,$PREFIX/lib $DESTDIR$PREFIX/lib/start.o -l c -l gcc"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -Wl,-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath-link,$PREFIX/lib -l c `gcc -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
