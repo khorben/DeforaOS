@@ -42,11 +42,22 @@ _image_image()
 	$MKFS "${VND}e"						&&
 	$MOUNT "/dev/${VND}e" "$DESTDIR"			&&
 	target "install"					&&
+	$MKDIR "$DESTDIR/bin"					&&
+	$MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"		&&
+	$MKDIR "$DESTDIR/dev"					&&
+	sh -c "cd '$DESTDIR/dev' && /dev/MAKEDEV all"		&&
+	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
+	$INSTALL -m 555 "/libexec/ld.elf_so" "$DESTDIR/libexec"	&&
+	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	&&
+	$MKDIR "$DESTDIR/sbin"					&&
+	SUBDIRS="Apps/Unix/src/others/tools" target oinit	&&
+	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
+			"$DESTDIR/sbin/init"			&&
 	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	&&
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
 	$INSTALLBOOT -m "$MACHINE" "/dev/r${VND}e" /usr/mdec/bootxx_ffsv1
 	RET=$?
 	$UMOUNT "$DESTDIR"
 	$VNCONFIG -u "$VND"
-	exit $RET
+	return $RET
 }
