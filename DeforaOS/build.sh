@@ -24,6 +24,7 @@ CC=
 DD="dd bs=1024"
 INSTALL="install"
 LD=
+LN="ln -f"
 MAKE="make"
 MKDIR="mkdir -p"
 MV="mv -f"
