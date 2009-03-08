@@ -100,25 +100,25 @@ void on_file_quit(GtkWidget * widget, gpointer data)
 /* message menu */
 void on_message_reply(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	on_reply(widget, data);
 }
 
 
 void on_message_reply_to_all(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	on_reply_to_all(widget, data);
 }
 
 
 void on_message_forward(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	on_forward(widget, data);
 }
 
 
 void on_message_delete(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	on_delete(widget, data);
 }
 
 
@@ -338,19 +338,28 @@ void on_stop(GtkWidget * widget, gpointer data)
 
 void on_reply(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	Mailer * mailer = data;
+
+	/* FIXME implement only if selection */
+	compose_new(mailer);
 }
 
 
 void on_reply_to_all(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	Mailer * mailer = data;
+
+	/* FIXME implement only if selection */
+	compose_new(mailer);
 }
 
 
 void on_forward(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	Mailer * mailer = data;
+
+	/* FIXME implement only if selection */
+	compose_new(mailer);
 }
 
 
