@@ -453,7 +453,7 @@ static gboolean _download_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: download [-O output][-U user-agent] url\n"
+	fputs("Usage: download [-O output][-U user-agent] URL\n"
 "  -O	file to write document to\n"
 "  -U	user agent string to send\n", stderr);
 	return 1;
