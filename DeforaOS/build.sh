@@ -76,7 +76,7 @@ usage()
 	echo "  clean		Remove object files"
 	echo "  distclean	Remove all compiled files"
 	echo "  install	Install everything"
-	echo "  image		Create an specific image"
+	echo "  image		Create a specific image"
 	echo "  uninstall	Uninstall everything"
 	if [ ! -z "$1" ]; then
 		echo
