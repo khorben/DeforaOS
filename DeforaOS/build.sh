@@ -150,9 +150,10 @@ fi
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
 [ -z "$PREFIX" ] && PREFIX="/usr/local"
+[ -z "$CC" ] && CC="cc"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -Wl,-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath-link,$PREFIX/lib -l c `gcc -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath-link,$PREFIX/lib -l c `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
