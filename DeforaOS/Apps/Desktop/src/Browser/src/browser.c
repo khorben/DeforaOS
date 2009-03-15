@@ -47,6 +47,7 @@ static struct _menu _browser_menu_file[] =
 {
 	{ "_New window", G_CALLBACK(on_file_new_window), "window-new", GDK_N },
 	{ "New _folder", G_CALLBACK(on_file_new_folder), "folder-new", 0 },
+	{ "Open file...", G_CALLBACK(on_file_open_file), NULL, GDK_O },
 	{ "", NULL, NULL, 0 },
 	{ "_Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0 },
 	{ "", NULL, NULL, 0 },
@@ -596,6 +597,28 @@ void browser_go_home(Browser * browser)
 	if((home = getenv("HOME")) == NULL)
 		home = g_get_home_dir();
 	browser_set_location(browser, home != NULL ? home : "/");
+}
+
+
+/* browser_open */
+void browser_open(Browser * browser, char const * path)
+{
+	GtkWidget * dialog;
+
+	if(path == NULL)
+	{
+		dialog = gtk_file_chooser_dialog_new("Open file...",
+				GTK_WINDOW(browser->window),
+				GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+				GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+				GTK_RESPONSE_ACCEPT, NULL);
+		if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+			path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+						dialog));
+		gtk_widget_destroy(dialog);
+	}
+	if(browser->mime != NULL && path != NULL)
+		mime_action(browser->mime, "open", path);
 }
 
 

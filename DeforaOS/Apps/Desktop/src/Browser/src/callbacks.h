@@ -28,6 +28,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 void on_file_new_window(GtkMenuItem * menuitem, gpointer data);
 void on_file_new_folder(GtkMenuItem * menuitem, gpointer data);
 void on_file_close(GtkMenuItem * menuitem, gpointer data);
+void on_file_open_file(GtkMenuItem * menuitem, gpointer data);
 
 /* edit menu */
 void on_edit_copy(GtkMenuItem * menuitem, gpointer data);

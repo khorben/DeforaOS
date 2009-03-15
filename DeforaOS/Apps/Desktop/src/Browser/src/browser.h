@@ -155,6 +155,7 @@ int browser_config_save(Browser * browser);
 
 void browser_go_home(Browser * browser);
 
+void browser_open(Browser * browser, char const * path);
 void browser_open_with(Browser * browser, char const * path);
 
 void browser_refresh(Browser * browser);

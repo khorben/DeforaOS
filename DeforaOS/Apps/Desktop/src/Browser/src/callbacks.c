@@ -96,6 +96,14 @@ void on_file_close(GtkMenuItem * menuitem, gpointer data)
 }
 
 
+void on_file_open_file(GtkMenuItem * menuitem, gpointer data)
+{
+	Browser * browser = data;
+
+	browser_open(browser, NULL);
+}
+
+
 /* edit menu */
 /* on_edit_copy */
 static GList * _copy_selection(Browser * browser);
