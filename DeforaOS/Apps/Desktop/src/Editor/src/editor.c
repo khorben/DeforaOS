@@ -51,7 +51,8 @@ static struct _menu _menu_file[] =
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
 	{ "", NULL, NULL, 0 },
 	{ "_Save", G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_S },
-	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS, 0 },
+	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
+		GDK_A },
 	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0 },
 	{ NULL, NULL, NULL, 0 }
