@@ -73,6 +73,9 @@ struct _GHtmlConn
 	guint64 data_received;
 	HtmlStream * stream;
 
+	int direct;
+	int image;
+
 	/* file */
 	GIOChannel * file;
 	guint64 file_size;
@@ -95,7 +98,7 @@ static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post);
 static gchar * _ghtml_make_url(gchar const * base, gchar const * url);
 static void _ghtml_stop(GHtml * ghtml);
-static int _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
+static GHtmlConn * _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url, gchar const * post);
 
 /* callbacks */
@@ -363,6 +366,8 @@ static GHtmlConn * _ghtmlconn_new(GHtml * ghtml, HtmlStream * stream,
 	c->content_length = 0;
 	c->data_received = 0;
 	c->stream = stream;
+	c->direct = 0;
+	c->image = 0;
 	c->file = NULL;
 	c->file_size = 0;
 	c->file_read = 0;
@@ -444,12 +449,16 @@ static int _ghtml_set_base(GHtml * ghtml, char const * url)
 static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post)
 {
+	GHtmlConn * gc;
+
 	_ghtml_stop(ghtml);
 	surfer_set_location(ghtml->surfer, url);
 	surfer_set_title(ghtml->surfer, NULL);
 	html_document_open_stream(ghtml->html_document, "text/html");
-	return _ghtml_stream_load(ghtml, ghtml->html_document->current_stream,
-			url, post);
+	if((gc = _ghtml_stream_load(ghtml, ghtml->html_document->current_stream,
+			url, post)) != NULL)
+		gc->direct = 1;
+	return gc != NULL ? 0 : 1;
 }
 
 
@@ -486,6 +495,7 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 	/* guess protocol */
 	if(strncmp("ftp", url, 3) == 0)
 		return g_strdup_printf("%s%s", "ftp://", url);
+	/* FIXME guess http only for "www.*"? we're already in GNet...? */
 	return g_strdup_printf("%s%s", "http://", url);
 }
 
@@ -519,17 +529,18 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn);
 static void _http_error(GConnHttpEventError * event, GHtmlConn * conn);
 static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn);
 static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn);
+static void _http_response(GConnHttpEventResponse * event, GHtmlConn * conn);
 static void _http_timeout(GHtmlConn * conn);
 
-static int _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
+static GHtmlConn * _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url, gchar const * post)
 {
 	GHtmlConn * conn;
 
 	if((conn = _ghtmlconn_new(ghtml, stream, url, post)) == NULL)
-		return -1;
+		return NULL;
 	g_idle_add(_stream_load_idle, conn);
-	return 0;
+	return conn;
 }
 
 static gboolean _stream_load_idle(gpointer data)
@@ -711,7 +722,8 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 			return _http_resolved((GConnHttpEventResolved*)event,
 					conn);
 		case GNET_CONN_HTTP_RESPONSE:
-			return; /* we ignore it */
+			return _http_response((GConnHttpEventResponse*)event,
+					conn);
 		case GNET_CONN_HTTP_TIMEOUT:
 			return _http_timeout(conn);
 	}
@@ -768,24 +780,54 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 
 static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 {
-	char buf[10];
+	char * msg;
 
-	snprintf(buf, sizeof(buf), "%s %u", "Error", event->code);
-	surfer_error(conn->ghtml->surfer, buf, 0);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	switch(event->code)
+	{
+		case GNET_CONN_HTTP_ERROR_PROTOCOL_UNSUPPORTED:
+			msg = "Unsupported protocol";
+			break;
+		case GNET_CONN_HTTP_ERROR_HOSTNAME_RESOLUTION:
+			msg = "Unknown host";
+			break;
+		case GNET_CONN_HTTP_ERROR_UNSPECIFIED:
+		default:
+			msg = "Unspecified error";
+			break;
+	}
 	surfer_set_progress(conn->ghtml->surfer, -1.0);
 	surfer_set_status(conn->ghtml->surfer, NULL);
+	surfer_error(conn->ghtml->surfer, msg, 0);
 	_ghtmlconn_delete(conn);
 }
 
 static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 {
 	char buf[256] = "Redirecting...";
+	char * url = event->new_location;
 
-	if(event->new_location != NULL)
-		snprintf(buf, sizeof(buf), "%s %s", "Redirecting to ",
-				event->new_location);
+	if(url == NULL)
+	{
+		surfer_set_status(conn->ghtml->surfer, buf);
+		return;
+	}
+	if((url = _ghtml_make_url(conn->ghtml->html_base, url)) != NULL)
+	{
+		snprintf(buf, sizeof(buf), "%s %s", "Redirecting to ", url);
+		g_free(conn->url);
+		conn->url = url;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() URL: %s, %d (%u/%u)\n", __func__, url,
+			event->auto_redirect, event->num_redirects,
+			event->max_redirects);
+#endif
+	_ghtml_set_base(conn->ghtml, url);
+	surfer_set_location(conn->ghtml->surfer, url);
 	surfer_set_status(conn->ghtml->surfer, buf);
-	/* FIXME save new URL, limit redirections */
 }
 
 static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
@@ -793,12 +835,17 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 	char buf[256];
 	char * name;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(event->ia == NULL)
 	{
+#if 0
 		surfer_set_progress(conn->ghtml->surfer, -1.0);
 		surfer_set_status(conn->ghtml->surfer, NULL);
 		surfer_error(conn->ghtml->surfer, "Unknown host", 0);
 		_ghtmlconn_delete(conn);
+#endif
 	}
 	else if((name = gnet_inetaddr_get_name_nonblock(event->ia)) == NULL)
 		surfer_set_status(conn->ghtml->surfer, "Connecting...");
@@ -808,6 +855,35 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 				":", gnet_inetaddr_get_port(event->ia));
 		surfer_set_status(conn->ghtml->surfer, buf);
 	}
+}
+
+static void _http_response(GConnHttpEventResponse * event, GHtmlConn * conn)
+{
+	size_t i;
+	char buf[256];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %u %s\n", __func__, event->response_code,
+			conn->url);
+#endif
+	/* embed images in HTML */
+	/* only continue if successful direct query and we have headers */
+	if(conn->direct == 0 || event->response_code != 200
+			|| event->header_fields == NULL)
+		return;
+	for(i = 0; event->header_fields[i] != NULL; i++)
+		if(strcasecmp(event->header_fields[i], "Content-type") == 0)
+			break;
+	if(event->header_fields[i] == NULL)
+		return;
+	/* check if it's an image */
+	if(strncmp(event->header_values[i], "image/", 6) != 0)
+		return;
+	conn->image = 1;
+	fprintf(stderr, "DEBUG: image found\n");
+	snprintf(buf, sizeof(buf), "<img src=\"%s\">\n", conn->url);
+	html_stream_write(conn->stream, buf, strlen(buf));
+	_ghtmlconn_delete(conn);
 }
 
 static void _http_timeout(GHtmlConn * conn)
