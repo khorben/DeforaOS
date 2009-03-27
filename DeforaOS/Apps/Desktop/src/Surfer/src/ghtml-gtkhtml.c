@@ -880,7 +880,6 @@ static void _http_response(GConnHttpEventResponse * event, GHtmlConn * conn)
 	if(strncmp(event->header_values[i], "image/", 6) != 0)
 		return;
 	conn->image = 1;
-	fprintf(stderr, "DEBUG: image found\n");
 	snprintf(buf, sizeof(buf), "<img src=\"%s\">\n", conn->url);
 	html_stream_write(conn->stream, buf, strlen(buf));
 	_ghtmlconn_delete(conn);
