@@ -310,8 +310,8 @@ void surfer_delete(Surfer * surfer)
 /* surfer_set_location */
 void surfer_set_location(Surfer * surfer, char const * url)
 {
-	GtkWidget * widget;
 	static int i = 0; /* XXX should be set per-window */
+	GtkWidget * widget;
 
 	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
