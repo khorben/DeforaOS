@@ -258,7 +258,7 @@ void ghtml_refresh(GtkWidget * widget)
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if(ghtml->html_url == NULL)
 		return;
-	/* FIXME keep and warn about POST data */
+	/* FIXME keep POST data and warn about re-submission */
 	_ghtml_document_load(ghtml, ghtml->html_url, NULL);
 }
 
@@ -526,6 +526,7 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 static void _http_connected(GHtmlConn * conn);
 static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn);
 static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn);
+static void _http_data_progress(GConnHttpEventData * event, GHtmlConn * conn);
 static void _http_error(GConnHttpEventError * event, GHtmlConn * conn);
 static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn);
 static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn);
@@ -748,7 +749,7 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 	{
 		if(size > 0)
 			html_stream_write(conn->stream, buf, size);
-		surfer_set_progress(conn->ghtml->surfer, 1.0);
+		_http_data_progress(event, conn);
 	}
 	surfer_set_status(conn->ghtml->surfer, NULL);
 	_ghtmlconn_delete(conn);
@@ -758,7 +759,6 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 {
 	gchar * buf;
 	gsize size;
-	gdouble fraction;
 
 	surfer_set_status(conn->ghtml->surfer, "Downloading...");
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
@@ -768,13 +768,31 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 		return;
 	}
 	html_stream_write(conn->stream, buf, size);
-	if(event->content_length > 0)
+	_http_data_progress(event, conn);
+}
+
+static void _http_data_progress(GConnHttpEventData * event, GHtmlConn * conn)
+{
+	size_t i;
+	GHtmlConn * p;
+	guint64 len = 0;
+	guint64 rec = 0;
+	gdouble fraction;
+
+	conn->data_received = event->data_received;
+	conn->content_length = event->content_length;
+	for(i = 0; i < conn->ghtml->conns_cnt; i++)
 	{
-		conn->data_received = event->data_received;
-		conn->content_length = event->content_length;
-		fraction = conn->data_received;
-		surfer_set_progress(conn->ghtml->surfer,
-				fraction / conn->content_length);
+		if((p = conn->ghtml->conns[i]) == NULL
+				|| p->content_length == 0)
+			continue;
+		len += p->content_length;
+		rec += p->data_received;
+	}
+	if(len > 0)
+	{
+		fraction = rec;
+		surfer_set_progress(conn->ghtml->surfer, fraction / len);
 	}
 }
 
