@@ -21,17 +21,21 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/css/Makefile \
 		$(PACKAGE)-$(VERSION)/css/debug.css \
 		$(PACKAGE)-$(VERSION)/css/explorer.css \
 		$(PACKAGE)-$(VERSION)/css/icons.css \
 		$(PACKAGE)-$(VERSION)/css/syntax.css \
 		$(PACKAGE)-$(VERSION)/css/project.conf \
+		$(PACKAGE)-$(VERSION)/html/Makefile \
 		$(PACKAGE)-$(VERSION)/html/doctype.html \
 		$(PACKAGE)-$(VERSION)/html/index.php \
 		$(PACKAGE)-$(VERSION)/html/install.html \
 		$(PACKAGE)-$(VERSION)/html/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/index.php \
 		$(PACKAGE)-$(VERSION)/icons/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/16x16/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/article.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/bookmark.png \
@@ -41,7 +45,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/content.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/disabled.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/down.png \
-		$(PACKAGE)-$(VERSION)/icons/16x16/download.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/enabled.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/host.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/language.png \
@@ -58,10 +61,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/webmail.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/wiki.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/16x16/mime/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/16x16/mime/default.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/mime/folder.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/mime/index.php \
 		$(PACKAGE)-$(VERSION)/icons/16x16/mime/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/48x48/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/48x48/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/appearance.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/article.png \
@@ -97,12 +102,15 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/webmail.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/wiki.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/48x48/mime/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/48x48/mime/default.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/mime/folder.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/mime/index.php \
 		$(PACKAGE)-$(VERSION)/icons/48x48/mime/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/gnome/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/add.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_center.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/align_justify.png \
@@ -141,6 +149,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/unindent.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/upload_file.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/16x16/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/bug.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/comment.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/download.png \
@@ -152,6 +161,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/stats.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/users.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/32x32/project.conf \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/addressbook.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/appearance.png \
@@ -180,22 +190,28 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/warning.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/webmail.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/js/Makefile \
 		$(PACKAGE)-$(VERSION)/js/explorer.js \
 		$(PACKAGE)-$(VERSION)/js/project.conf \
+		$(PACKAGE)-$(VERSION)/images/Makefile \
 		$(PACKAGE)-$(VERSION)/images/css.png \
 		$(PACKAGE)-$(VERSION)/images/index.php \
 		$(PACKAGE)-$(VERSION)/images/xhtml.png \
 		$(PACKAGE)-$(VERSION)/images/project.conf \
+		$(PACKAGE)-$(VERSION)/install/Makefile \
 		$(PACKAGE)-$(VERSION)/install/mysql.sql \
 		$(PACKAGE)-$(VERSION)/install/postgresql.sql \
 		$(PACKAGE)-$(VERSION)/install/sqlite.sql \
 		$(PACKAGE)-$(VERSION)/install/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/admin/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/admin/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/admin/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/admin/index.php \
 		$(PACKAGE)-$(VERSION)/modules/admin/module.php \
 		$(PACKAGE)-$(VERSION)/modules/admin/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/article/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/article/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/article/display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/article/index.php \
@@ -203,6 +219,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/article/posted.tpl \
 		$(PACKAGE)-$(VERSION)/modules/article/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/article/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/bookmark/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/display.tpl \
@@ -210,11 +227,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/bookmark/module.php \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/browser/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/browser/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/browser/display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/browser/index.php \
 		$(PACKAGE)-$(VERSION)/modules/browser/module.php \
 		$(PACKAGE)-$(VERSION)/modules/browser/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/category/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/category/choose.tpl \
 		$(PACKAGE)-$(VERSION)/modules/category/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/category/display.tpl \
@@ -222,18 +241,21 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/category/module.php \
 		$(PACKAGE)-$(VERSION)/modules/category/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/category/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/comment/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/comment/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/comment/display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/comment/index.php \
 		$(PACKAGE)-$(VERSION)/modules/comment/module.php \
 		$(PACKAGE)-$(VERSION)/modules/comment/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/comment/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/content/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/content/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/content/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/content/index.php \
 		$(PACKAGE)-$(VERSION)/modules/content/module.php \
 		$(PACKAGE)-$(VERSION)/modules/content/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/content/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/download/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/download/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/download/directory_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/download/file_display.tpl \
@@ -241,6 +263,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/download/index.php \
 		$(PACKAGE)-$(VERSION)/modules/download/module.php \
 		$(PACKAGE)-$(VERSION)/modules/download/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/explorer/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/explorer/bottom.tpl \
 		$(PACKAGE)-$(VERSION)/modules/explorer/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/explorer/entry.tpl \
@@ -250,10 +273,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/explorer/toolbar.tpl \
 		$(PACKAGE)-$(VERSION)/modules/explorer/top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/explorer/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/menu/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/menu/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/menu/index.php \
 		$(PACKAGE)-$(VERSION)/modules/menu/module.php \
 		$(PACKAGE)-$(VERSION)/modules/menu/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/news/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/news/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/news/index.php \
 		$(PACKAGE)-$(VERSION)/modules/news/module.php \
@@ -264,12 +289,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/news/rss_channel_top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/rss_item.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/papadam/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/papadam/ca_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/papadam/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/papadam/download.tpl \
 		$(PACKAGE)-$(VERSION)/modules/papadam/index.php \
 		$(PACKAGE)-$(VERSION)/modules/papadam/module.php \
 		$(PACKAGE)-$(VERSION)/modules/papadam/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/pki/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/pki/ca_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/pki/ca_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/pki/caclient_display.tpl \
@@ -281,6 +308,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/pki/module.php \
 		$(PACKAGE)-$(VERSION)/modules/pki/openssl.cnf.tpl \
 		$(PACKAGE)-$(VERSION)/modules/pki/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/probe/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/probe/bottom.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/probe/graph.tpl \
@@ -291,6 +319,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/probe/module.php \
 		$(PACKAGE)-$(VERSION)/modules/probe/top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/probe/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/project/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/project/browse.php \
 		$(PACKAGE)-$(VERSION)/modules/project/bug_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/bug_list_filter.tpl \
@@ -312,6 +341,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/project/syntax.php \
 		$(PACKAGE)-$(VERSION)/modules/project/toolbar.tpl \
 		$(PACKAGE)-$(VERSION)/modules/project/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/search/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/search/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/search/index.php \
 		$(PACKAGE)-$(VERSION)/modules/search/module.php \
@@ -320,15 +350,18 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/search/search_entry.tpl \
 		$(PACKAGE)-$(VERSION)/modules/search/search_top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/search/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/top/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/top/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/top/index.php \
 		$(PACKAGE)-$(VERSION)/modules/top/module.php \
 		$(PACKAGE)-$(VERSION)/modules/top/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/top/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/translate/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/translate/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/translate/index.php \
 		$(PACKAGE)-$(VERSION)/modules/translate/module.php \
 		$(PACKAGE)-$(VERSION)/modules/translate/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/user/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/user/appearance.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/user/index.php \
@@ -340,6 +373,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/user/user_register.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/user_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/user/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/webmail/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/webmail/bottom.tpl \
 		$(PACKAGE)-$(VERSION)/modules/webmail/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/webmail/desktop.php \
@@ -363,6 +397,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/webmail/tree.js \
 		$(PACKAGE)-$(VERSION)/modules/webmail/tree.tpl \
 		$(PACKAGE)-$(VERSION)/modules/webmail/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/wiki/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/wiki/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/wiki/display.tpl \
@@ -370,6 +405,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/wiki/module.php \
 		$(PACKAGE)-$(VERSION)/modules/wiki/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/wiki/project.conf \
+		$(PACKAGE)-$(VERSION)/system/Makefile \
 		$(PACKAGE)-$(VERSION)/system/config.php \
 		$(PACKAGE)-$(VERSION)/system/config.tpl \
 		$(PACKAGE)-$(VERSION)/system/content.php \
@@ -388,10 +424,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/system/sql.sqlite.php \
 		$(PACKAGE)-$(VERSION)/system/user.php \
 		$(PACKAGE)-$(VERSION)/system/project.conf \
+		$(PACKAGE)-$(VERSION)/templates/Makefile \
 		$(PACKAGE)-$(VERSION)/templates/DaPortal.tpl \
 		$(PACKAGE)-$(VERSION)/templates/index.php \
 		$(PACKAGE)-$(VERSION)/templates/papadmin.tpl \
 		$(PACKAGE)-$(VERSION)/templates/project.conf \
+		$(PACKAGE)-$(VERSION)/themes/Makefile \
 		$(PACKAGE)-$(VERSION)/themes/DaPortal.css \
 		$(PACKAGE)-$(VERSION)/themes/Native.css \
 		$(PACKAGE)-$(VERSION)/themes/index.php \
@@ -403,6 +441,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/BUGS \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/INSTALL \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/README \
 		$(PACKAGE)-$(VERSION)/config.php \
 		$(PACKAGE)-$(VERSION)/engine.php \
