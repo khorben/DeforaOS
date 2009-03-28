@@ -23,7 +23,8 @@
 /* prototypes */
 /* functions */
 /* callbacks */
-static void _on_select_all(WebKitWebView * webview);
+static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * title, gpointer data);
 
 
 /* public */
@@ -34,14 +35,17 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	GtkWidget * view;
 	GtkWidget * widget;
 
+	/* widgets */
 	view = webkit_web_view_new();
-	g_signal_connect(G_OBJECT(view), "select_all", G_CALLBACK(
-				_on_select_all), NULL);
 	widget = gtk_scrolled_window_new(NULL, NULL);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	/* view */
+	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
+				_on_title_changed), widget);
+	/* scrolled window */
 	g_object_set_data(G_OBJECT(widget), "surfer", surfer);
 	g_object_set_data(G_OBJECT(widget), "view", view);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), view);
 	return widget;
 }
@@ -197,7 +201,11 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
-static void _on_select_all(WebKitWebView * webview)
+static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * title, gpointer data)
 {
-	/* FIXME implement */
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_set_title(surfer, title);
 }
