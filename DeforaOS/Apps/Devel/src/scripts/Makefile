@@ -21,13 +21,16 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/deforaos-build.sh \
 		$(PACKAGE)-$(VERSION)/src/deforaos-update.sh \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/targets/Makefile \
 		$(PACKAGE)-$(VERSION)/targets/Linux \
 		$(PACKAGE)-$(VERSION)/targets/Linux-arm \
 		$(PACKAGE)-$(VERSION)/targets/Linux-i386 \
 		$(PACKAGE)-$(VERSION)/targets/NetBSD \
+		$(PACKAGE)-$(VERSION)/targets/NetBSD-amd64 \
 		$(PACKAGE)-$(VERSION)/targets/NetBSD-i386 \
 		$(PACKAGE)-$(VERSION)/targets/NetBSD-sparc \
 		$(PACKAGE)-$(VERSION)/targets/project.conf \

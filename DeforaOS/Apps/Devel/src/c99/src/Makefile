@@ -1,4 +1,4 @@
-SUBDIRS	= target
+SUBDIRS	= sets target
 TARGETS	= c99
 PREFIX	= /usr/local
 DESTDIR	= 
