@@ -40,6 +40,8 @@
 #include "ghtml.h"
 #include "../config.h"
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
 
 /* GHtml */
 /* private */
@@ -415,6 +417,13 @@ static void _ghtmlconn_delete(GHtmlConn * ghtmlconn)
 	if(ghtmlconn->stream != NULL)
 		html_stream_close(ghtmlconn->stream);
 	free(ghtmlconn);
+	/* free the connections array if possible */
+	for(i = 0; i < ghtml->conns_cnt; i++)
+		if(ghtml->conns[i] != NULL)
+			return;
+	free(ghtml->conns);
+	ghtml->conns = NULL;
+	ghtml->conns_cnt = 0;
 }
 
 static void _ghtmlconn_delete_file(GHtmlConn * ghtmlconn)
@@ -471,9 +480,13 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 	if(url == NULL)
 		return NULL;
 	/* XXX use a more generic protocol finder (strchr(':')) */
+	if(strncmp("ftp://", url, 6) == 0)
+		return g_strdup(url);
 	if(strncmp("http://", url, 7) == 0)
 		return g_strdup(url);
-	if(strncmp("ftp://", url, 6) == 0)
+	if(strncmp("https://", url, 8) == 0)
+		return g_strdup(url);
+	if(strncmp("mailto:", url, 7) == 0)
 		return g_strdup(url);
 	if(base != NULL)
 	{
@@ -739,6 +752,7 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 {
 	gchar * buf;
 	gsize size;
+	GHtml * ghtml;
 
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 	{
@@ -751,8 +765,10 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 			html_stream_write(conn->stream, buf, size);
 		_http_data_progress(event, conn);
 	}
-	surfer_set_status(conn->ghtml->surfer, NULL);
+	ghtml = conn->ghtml;
 	_ghtmlconn_delete(conn);
+	if(ghtml->conns_cnt == 0)
+		surfer_set_status(ghtml->surfer, NULL);
 }
 
 static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
@@ -775,8 +791,8 @@ static void _http_data_progress(GConnHttpEventData * event, GHtmlConn * conn)
 {
 	size_t i;
 	GHtmlConn * p;
-	guint64 len = 0;
-	guint64 rec = 0;
+	guint64 len = 1; /* don't divide by zero */
+	guint64 rec = 1;
 	gdouble fraction;
 
 	conn->data_received = event->data_received;
@@ -786,14 +802,12 @@ static void _http_data_progress(GConnHttpEventData * event, GHtmlConn * conn)
 		if((p = conn->ghtml->conns[i]) == NULL
 				|| p->content_length == 0)
 			continue;
-		len += p->content_length;
+		len += (p->content_length != 0) ? p->content_length
+			: p->data_received + 1;
 		rec += p->data_received;
 	}
-	if(len > 0)
-	{
-		fraction = rec;
-		surfer_set_progress(conn->ghtml->surfer, fraction / len);
-	}
+	fraction = rec;
+	surfer_set_progress(conn->ghtml->surfer, fraction / len);
 }
 
 static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)

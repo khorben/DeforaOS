@@ -128,7 +128,6 @@ Surfer * surfer_new(char const * url)
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
 	GtkWidget * widget;
-	GtkWidget * hbox;
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
@@ -217,19 +216,21 @@ Surfer * surfer_new(char const * url)
 		ghtml_load_url(surfer->view, url);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->view, TRUE, TRUE, 0);
 	/* statusbar */
-	hbox = gtk_hbox_new(FALSE, 0);
+	surfer->statusbox = gtk_hbox_new(FALSE, 0);
 	surfer->progress = gtk_progress_bar_new();
-	gtk_box_pack_start(GTK_BOX(hbox), surfer->progress, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(surfer->statusbox), surfer->progress, FALSE,
+			FALSE, 0);
 	surfer->statusbar = gtk_statusbar_new();
-	surfer->statusbar_id = gtk_statusbar_push(GTK_STATUSBAR(
-				surfer->statusbar),
-			gtk_statusbar_get_context_id(GTK_STATUSBAR(
-					surfer->statusbar), ""), "Ready");
-	gtk_box_pack_start(GTK_BOX(hbox), surfer->statusbar, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	surfer->statusbar_id = 0;
+	gtk_box_pack_start(GTK_BOX(surfer->statusbox), surfer->statusbar, TRUE,
+			TRUE, 0);
+	gtk_widget_show_all(surfer->statusbox);
 	gtk_container_add(GTK_CONTAINER(surfer->window), vbox);
 	gtk_widget_grab_focus(GTK_WIDGET(surfer->tb_path));
 	gtk_widget_show_all(surfer->window);
+	/* hack to display the statusbar only if necessary */
+	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
+	surfer_set_status(surfer, NULL);
 	surfer_cnt++;
 	return surfer;
 }
@@ -354,6 +355,20 @@ void surfer_set_status(Surfer * surfer, char const * status)
 	surfer->statusbar_id = gtk_statusbar_push(sb,
 			gtk_statusbar_get_context_id(sb, ""), (status != NULL)
 			? status : "Ready");
+	if(status == NULL)
+	{
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(surfer->progress),
+				"");
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
+					surfer->progress), 0.0);
+#ifdef FOR_EMBEDDED
+		gtk_widget_hide(surfer->statusbox);
+	}
+	else
+	{
+		gtk_widget_show(surfer->statusbox);
+#endif
+	}
 }
 
 

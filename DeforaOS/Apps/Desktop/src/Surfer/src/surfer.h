@@ -54,6 +54,7 @@ typedef struct _Surfer
 	GtkWidget * tb_path;
 	GtkWidget * view;
 	GtkWidget * progress;
+	GtkWidget * statusbox;
 	GtkWidget * statusbar;
 	guint statusbar_id;
 } Surfer;
