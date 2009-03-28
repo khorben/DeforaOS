@@ -23,6 +23,8 @@
 /* prototypes */
 /* functions */
 /* callbacks */
+static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
+		const gchar * url, gpointer data);
 static void _on_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
@@ -41,6 +43,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	view = webkit_web_view_new();
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	/* view */
+	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
+				_on_hovering_over_link), widget);
 	g_signal_connect(G_OBJECT(view), "load-progress-changed", G_CALLBACK(
 				_on_progress_changed), widget);
 	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
@@ -205,6 +209,16 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
+static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
+		const gchar * url, gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_set_status(surfer, url);
+}
+
+
 static void _on_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data)
 {
