@@ -30,6 +30,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/code.h \
+		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/parser.h \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
@@ -51,9 +52,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/80586.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/80686.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/80686.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/amd64.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/amd64.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/sparc.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/sparc64.ins \
+		$(PACKAGE)-$(VERSION)/src/arch/sparc64.reg \
 		$(PACKAGE)-$(VERSION)/src/arch/common.reg \
+		$(PACKAGE)-$(VERSION)/src/arch/null.ins \
 		$(PACKAGE)-$(VERSION)/src/arch/project.conf \
 		$(PACKAGE)-$(VERSION)/src/format/elf.c \
 		$(PACKAGE)-$(VERSION)/src/format/flat.c \
@@ -61,9 +67,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
 		$(PACKAGE)-$(VERSION)/include/as.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
+		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
