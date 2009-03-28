@@ -33,6 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/ghtml-gtkhtml.c \
 		$(PACKAGE)-$(VERSION)/src/ghtml-gtkmozembed.c \
 		$(PACKAGE)-$(VERSION)/src/ghtml-gtktextview.c \
+		$(PACKAGE)-$(VERSION)/src/ghtml-webkit.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
