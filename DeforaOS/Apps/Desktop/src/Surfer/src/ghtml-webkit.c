@@ -23,6 +23,8 @@
 /* prototypes */
 /* functions */
 /* callbacks */
+static void _on_progress_changed(WebKitWebView * view, gint progress,
+		gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data);
 
@@ -39,6 +41,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	view = webkit_web_view_new();
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	/* view */
+	g_signal_connect(G_OBJECT(view), "load-progress-changed", G_CALLBACK(
+				_on_progress_changed), widget);
 	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
 				_on_title_changed), widget);
 	/* scrolled window */
@@ -201,6 +205,17 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
+static void _on_progress_changed(WebKitWebView * view, gint progress,
+		gpointer data)
+{
+	Surfer * surfer;
+	gdouble fraction = progress;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_set_progress(surfer, fraction / 100);
+}
+
+
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data)
 {
