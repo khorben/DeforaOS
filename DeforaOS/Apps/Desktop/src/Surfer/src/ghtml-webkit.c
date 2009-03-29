@@ -327,7 +327,7 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 		gtk_window_resize(GTK_WINDOW(surfer->window), w, h);
 	g_object_get(G_OBJECT(features), "fullscreen", &b, NULL);
 	if(b == TRUE)
-		gtk_window_fullscreen(GTK_WINDOW(surfer->window));
+		surfer_set_fullscreen(surfer, TRUE);
 #ifndef FOR_EMBEDDED
 	g_object_get(G_OBJECT(features), "menubar-visible", &b, NULL);
 	if(b == FALSE)

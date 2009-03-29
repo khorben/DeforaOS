@@ -339,6 +339,16 @@ void surfer_delete(Surfer * surfer)
 
 
 /* accessors */
+/* surfer_set_fullscreen */
+void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen)
+{
+	if(fullscreen == TRUE)
+		gtk_window_fullscreen(GTK_WINDOW(surfer->window));
+	else
+		gtk_window_unfullscreen(GTK_WINDOW(surfer->window));
+}
+
+
 /* surfer_set_location */
 void surfer_set_location(Surfer * surfer, char const * url)
 {
@@ -428,6 +438,28 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
+	return ret;
+}
+
+
+/* surfer_go_back */
+gboolean surfer_go_back(Surfer * surfer)
+{
+	gboolean ret;
+
+	ret = ghtml_go_back(surfer->view);
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), ret);
+	return ret;
+}
+
+
+/* surfer_go_forward */
+gboolean surfer_go_forward(Surfer * surfer)
+{
+	gboolean ret;
+
+	ret = ghtml_go_forward(surfer->view);
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), ret);
 	return ret;
 }
 

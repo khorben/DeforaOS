@@ -388,8 +388,7 @@ void on_back(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	if(ghtml_go_back(surfer->view) != TRUE)
-		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), FALSE);
+	surfer_go_back(surfer);
 }
 
 
@@ -398,8 +397,7 @@ void on_forward(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	if(ghtml_go_forward(surfer->view) != TRUE)
-		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), FALSE);
+	surfer_go_forward(surfer);
 }
 
 
@@ -413,14 +411,14 @@ void on_fullscreen(GtkToggleToolButton * button, gpointer data)
 #ifndef FOR_EMBEDDED
 		gtk_widget_hide(surfer->menubar);
 #endif
-		gtk_window_fullscreen(GTK_WINDOW(surfer->window));
+		surfer_set_fullscreen(surfer, TRUE);
 	}
 	else
 	{
 #ifndef FOR_EMBEDDED
 		gtk_widget_show(surfer->menubar);
 #endif
-		gtk_window_unfullscreen(GTK_WINDOW(surfer->window));
+		surfer_set_fullscreen(surfer, FALSE);
 	}
 }
 
@@ -431,7 +429,7 @@ void on_home(GtkWidget * widget, gpointer data)
 	Surfer * surfer = data;
 
 	/* FIXME query this from the preferences */
-	ghtml_load_url(surfer->view, SURFER_DEFAULT_HOME);
+	surfer_open(surfer, SURFER_DEFAULT_HOME);
 }
 
 
@@ -439,11 +437,12 @@ void on_home(GtkWidget * widget, gpointer data)
 void on_path_activate(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
-	gchar * url;
+	GtkWidget * entry;
+	const gchar * url;
 
-	url = gtk_combo_box_get_active_text(GTK_COMBO_BOX(surfer->tb_path));
-	ghtml_load_url(surfer->view, url);
-	g_free(url);
+	entry = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
+	url = gtk_entry_get_text(GTK_ENTRY(entry));
+	surfer_open(surfer, url);
 }
 
 
@@ -452,7 +451,7 @@ void on_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	ghtml_refresh(surfer->view);
+	surfer_refresh(surfer);
 }
 
 
@@ -461,5 +460,5 @@ void on_stop(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	ghtml_stop(surfer->view);
+	surfer_stop(surfer);
 }

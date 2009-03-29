@@ -74,6 +74,7 @@ void surfer_delete(Surfer * surfer);
 
 
 /* accessors */
+void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen);
 void surfer_set_location(Surfer * surfer, char const * url);
 void surfer_set_progress(Surfer * surfer, gdouble fraction);
 void surfer_set_status(Surfer * surfer, char const * status);
@@ -86,6 +87,9 @@ void surfer_warning(Surfer * surfer, char const * message);
 
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
+
+gboolean surfer_go_back(Surfer * surfer);
+gboolean surfer_go_forward(Surfer * surfer);
 
 void surfer_refresh(Surfer * surfer);
 void surfer_reload(Surfer * surfer);
