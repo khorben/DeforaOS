@@ -31,6 +31,8 @@ static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data);
 static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
+static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
+		gchar * message, gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data);
 
@@ -57,6 +59,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 				_on_load_progress_changed), widget);
 	g_signal_connect(G_OBJECT(view), "load-started", G_CALLBACK(
 				_on_load_started), widget);
+	g_signal_connect(G_OBJECT(view), "script-alert", G_CALLBACK(
+				_on_script_alert), widget);
 	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
 				_on_title_changed), widget);
 	/* scrolled window */
@@ -257,6 +261,16 @@ static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_set_progress(surfer, 0.0);
 	surfer_set_status(surfer, "Downloading...");
+}
+
+
+static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
+		gchar * message, gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_warning(surfer, message);
 }
 
 

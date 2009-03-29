@@ -488,6 +488,22 @@ void surfer_unselect_all(Surfer * surfer)
 }
 
 
+/* surfer_warning */
+void surfer_warning(Surfer * surfer, char const * message)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new((surfer != NULL)
+			? GTK_WINDOW(surfer->window) : NULL,
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+}
+
+
 /* surfer_zoom_in */
 void surfer_zoom_in(Surfer * surfer)
 {

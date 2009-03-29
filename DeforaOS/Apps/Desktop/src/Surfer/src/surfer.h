@@ -78,6 +78,7 @@ void surfer_set_title(Surfer * surfer, char const * title);
 
 /* useful */
 int surfer_error(Surfer * surfer, char const * message, int ret);
+void surfer_warning(Surfer * surfer, char const * message);
 
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
