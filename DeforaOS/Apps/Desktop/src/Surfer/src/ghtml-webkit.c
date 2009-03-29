@@ -333,6 +333,9 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 	if(b == FALSE)
 		gtk_widget_hide(surfer->menubar);
 #endif
+	g_object_get(G_OBJECT(features), "toolbar-visible", &b, NULL);
+	if(b == FALSE)
+		gtk_widget_hide(surfer->toolbar);
 	g_object_get(G_OBJECT(features), "statusbar-visible", &b, NULL);
 	if(b == FALSE)
 		gtk_widget_hide(surfer->statusbox);

@@ -152,7 +152,8 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
 #endif
 	/* toolbar */
-	toolbar = gtk_toolbar_new();
+	surfer->toolbar = gtk_toolbar_new();
+	toolbar = surfer->toolbar;
 	surfer->tb_back = gtk_tool_button_new_from_stock(GTK_STOCK_GO_BACK);
 	g_signal_connect(G_OBJECT(surfer->tb_back), "clicked", G_CALLBACK(
 				on_back), surfer);

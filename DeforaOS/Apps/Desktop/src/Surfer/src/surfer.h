@@ -49,6 +49,7 @@ typedef struct _Surfer
 #ifndef FOR_EMBEDDED
 	GtkWidget * menubar;
 #endif
+	GtkWidget * toolbar;
 	GtkToolItem * tb_back;
 	GtkToolItem * tb_forward;
 	GtkToolItem * tb_stop;
