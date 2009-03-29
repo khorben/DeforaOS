@@ -25,7 +25,11 @@
 /* callbacks */
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data);
-static void _on_progress_changed(WebKitWebView * view, gint progress,
+static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * frame,
+		gpointer data);
+static void _on_load_progress_changed(WebKitWebView * view, gint progress,
+		gpointer data);
+static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data);
@@ -42,16 +46,20 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	/* widgets */
 	view = webkit_web_view_new();
 	widget = gtk_scrolled_window_new(NULL, NULL);
+	g_object_set_data(G_OBJECT(widget), "surfer", surfer);
+	g_object_set_data(G_OBJECT(widget), "view", view);
 	/* view */
 	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
 				_on_hovering_over_link), widget);
+	g_signal_connect(G_OBJECT(view), "load-finished", G_CALLBACK(
+				_on_load_finished), widget);
 	g_signal_connect(G_OBJECT(view), "load-progress-changed", G_CALLBACK(
-				_on_progress_changed), widget);
+				_on_load_progress_changed), widget);
+	g_signal_connect(G_OBJECT(view), "load-started", G_CALLBACK(
+				_on_load_started), widget);
 	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
 				_on_title_changed), widget);
 	/* scrolled window */
-	g_object_set_data(G_OBJECT(widget), "surfer", surfer);
-	g_object_set_data(G_OBJECT(widget), "view", view);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	gtk_container_add(GTK_CONTAINER(widget), view);
@@ -219,7 +227,18 @@ static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 }
 
 
-static void _on_progress_changed(WebKitWebView * view, gint progress,
+static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
+			gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_set_progress(surfer, -1.0);
+	surfer_set_status(surfer, NULL);
+}
+
+
+static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data)
 {
 	Surfer * surfer;
@@ -227,6 +246,17 @@ static void _on_progress_changed(WebKitWebView * view, gint progress,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_set_progress(surfer, fraction / 100);
+}
+
+
+static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
+		gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_set_progress(surfer, 0.0);
+	surfer_set_status(surfer, "Downloading...");
 }
 
 

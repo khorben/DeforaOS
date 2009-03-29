@@ -120,6 +120,7 @@ unsigned int surfer_cnt = 0;
 #ifndef FOR_EMBEDDED
 static GtkWidget * _new_menubar(Surfer * surfer);
 #endif
+static gboolean _new_idle(gpointer data);
 
 Surfer * surfer_new(char const * url)
 {
@@ -212,8 +213,6 @@ Surfer * surfer_new(char const * url)
 		surfer_delete(surfer);
 		return NULL;
 	}
-	if(url != NULL)
-		ghtml_load_url(surfer->view, url);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->view, TRUE, TRUE, 0);
 	/* statusbar */
 	surfer->statusbox = gtk_hbox_new(FALSE, 0);
@@ -232,6 +231,13 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
 	surfer_cnt++;
+	/* load url as soon as we're idle */
+	if(url != NULL)
+	{
+		g_object_set_data(G_OBJECT(surfer->window), "url",
+				g_strdup(url)); /* XXX a bit ugly */
+		g_idle_add(_new_idle, surfer);
+	}
 	return surfer;
 }
 
@@ -296,6 +302,17 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 	return tb_menubar;
 }
 #endif /* !FOR_EMBEDDED */
+
+static gboolean _new_idle(gpointer data)
+{
+	Surfer * surfer = data;
+	gchar * url;
+
+	url = g_object_get_data(G_OBJECT(surfer->window), "url");
+	ghtml_load_url(surfer->view, url);
+	g_free(url);
+	return FALSE;
+}
 
 
 /* surfer_delete */
