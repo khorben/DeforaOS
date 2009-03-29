@@ -132,6 +132,13 @@ Surfer * surfer_new(char const * url)
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
+	surfer->url = NULL;
+	if(url != NULL && (surfer->url = strdup(url)) == NULL)
+	{
+		free(surfer);
+		return NULL;
+	}
+	/* widgets */
 	/* window */
 	surfer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 800, 600);
@@ -233,11 +240,7 @@ Surfer * surfer_new(char const * url)
 	surfer_cnt++;
 	/* load url as soon as we're idle */
 	if(url != NULL)
-	{
-		g_object_set_data(G_OBJECT(surfer->window), "url",
-				g_strdup(url)); /* XXX a bit ugly */
 		g_idle_add(_new_idle, surfer);
-	}
 	return surfer;
 }
 
@@ -306,12 +309,21 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 static gboolean _new_idle(gpointer data)
 {
 	Surfer * surfer = data;
-	gchar * url;
 
-	url = g_object_get_data(G_OBJECT(surfer->window), "url");
-	ghtml_load_url(surfer->view, url);
-	g_free(url);
+	ghtml_load_url(surfer->view, surfer->url);
 	return FALSE;
+}
+
+
+/* surfer_new_copy */
+Surfer * surfer_new_copy(Surfer * surfer)
+{
+	Surfer * ret;
+
+	if((ret = surfer_new(surfer->url)) == NULL)
+		return NULL;
+	/* FIXME also copy history */
+	return ret;
 }
 
 
@@ -319,6 +331,7 @@ static gboolean _new_idle(gpointer data)
 void surfer_delete(Surfer * surfer)
 {
 	/* config_delete(surfer->config); */
+	free(surfer->url);
 	free(surfer);
 	surfer_cnt--;
 }

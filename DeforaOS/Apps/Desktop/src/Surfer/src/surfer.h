@@ -41,6 +41,8 @@
 /* types */
 typedef struct _Surfer
 {
+	char * url;
+
 	/* widgets */
 	/* main window */
 	GtkWidget * window;
@@ -66,6 +68,7 @@ extern unsigned int surfer_cnt;
 
 /* functions */
 Surfer * surfer_new(char const * url);
+Surfer * surfer_new_copy(Surfer * surfer);
 void surfer_delete(Surfer * surfer);
 
 

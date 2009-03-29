@@ -23,6 +23,8 @@
 /* prototypes */
 /* functions */
 /* callbacks */
+static WebKitWebView * _on_create_web_view(WebKitWebView * view,
+		WebKitWebFrame * frame, gpointer data);
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data);
 static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * frame,
@@ -35,6 +37,7 @@ static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
 		gchar * message, gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data);
+static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data);
 
 
 /* public */
@@ -51,6 +54,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	g_object_set_data(G_OBJECT(widget), "surfer", surfer);
 	g_object_set_data(G_OBJECT(widget), "view", view);
 	/* view */
+	g_signal_connect(G_OBJECT(view), "create-web-view", G_CALLBACK(
+				_on_create_web_view), widget);
 	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
 				_on_hovering_over_link), widget);
 	g_signal_connect(G_OBJECT(view), "load-finished", G_CALLBACK(
@@ -221,6 +226,28 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
+static WebKitWebView * _on_create_web_view(WebKitWebView * view,
+		WebKitWebFrame * frame, gpointer data)
+{
+	WebKitWebView * ret;
+	Surfer * surfer;
+	Surfer * copy;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	if((copy = surfer_new_copy(surfer)) == NULL)
+		return NULL;
+	/* FIXME many things:
+	 * - this is a bit ugly (showing and hiding)
+	 * - we may not want history etc to be copied
+	 * - it loads the current URL first */
+	gtk_widget_hide(copy->window);
+	ret = g_object_get_data(G_OBJECT(copy->view), "view");
+	g_signal_connect(G_OBJECT(ret), "web-view-ready", G_CALLBACK(
+				_on_web_view_ready), copy->view);
+	return ret;
+}
+
+
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data)
 {
@@ -281,4 +308,34 @@ static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_set_title(surfer, title);
+}
+
+
+static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
+{
+	Surfer * surfer;
+	WebKitWebWindowFeatures * features;
+	gboolean b;
+	gint w;
+	gint h;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	features = webkit_web_view_get_window_features(WEBKIT_WEB_VIEW(view));
+	/* FIXME track properties with notify:: instead */
+	g_object_get(G_OBJECT(features), "width", &w, "height", &h, NULL);
+	if(w > 0 && h > 0)
+		gtk_window_resize(GTK_WINDOW(surfer->window), w, h);
+	g_object_get(G_OBJECT(features), "fullscreen", &b, NULL);
+	if(b == TRUE)
+		gtk_window_fullscreen(GTK_WINDOW(surfer->window));
+#ifndef FOR_EMBEDDED
+	g_object_get(G_OBJECT(features), "menubar-visible", &b, NULL);
+	if(b == FALSE)
+		gtk_widget_hide(surfer->menubar);
+#endif
+	g_object_get(G_OBJECT(features), "statusbar-visible", &b, NULL);
+	if(b == FALSE)
+		gtk_widget_hide(surfer->statusbox);
+	gtk_widget_show(surfer->window);
+	return FALSE;
 }
