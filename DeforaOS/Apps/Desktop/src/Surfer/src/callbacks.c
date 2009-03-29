@@ -66,10 +66,8 @@ void on_file_close(GtkWidget * widget, gpointer data)
 void on_file_new_window(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
-	char const * url;
 	
-	url = ghtml_get_location(surfer->view);
-	surfer_new(url);
+	surfer_new_copy(surfer);
 }
 
 
