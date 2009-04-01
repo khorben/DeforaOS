@@ -27,6 +27,7 @@ LD=
 LN="ln -f"
 MAKE="make"
 MKDIR="mkdir -p"
+MKNOD="mknod"
 MV="mv -f"
 RMDIR="rmdir -p"
 
@@ -146,6 +147,7 @@ else
 fi
 
 #initialize variables
+[ -z "$CC" ] && CC="cc"
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
@@ -153,7 +155,7 @@ fi
 [ -z "$CC" ] && CC="cc"
 [ -z "$CPPFLAGS" ] && CPPFLAGS="-nostdinc -isystem $DESTDIR$PREFIX/include"
 [ -z "$CFLAGS" ] && CFLAGS="-Wall -ffreestanding -g"
-[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath-link,$PREFIX/lib -l c `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
+[ -z "$LDFLAGS" ] && LDFLAGS="-nostdlib -L $DESTDIR$PREFIX/lib -Wl,-rpath-link,$PREFIX/lib -Wl,-rpath,$PREFIX/lib -l c `$CC -print-libgcc-file-name` $DESTDIR$PREFIX/lib/start.o"
 [ -z "$UID" ] && UID=`id -u`
 [ -z "$SUDO" -a "$UID" -ne 0 ] && SUDO="sudo"
 
