@@ -1,4 +1,5 @@
 #$Id$
+#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 
 
 
@@ -13,6 +14,7 @@ source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
 
 #functions
 #private
+#create_directories
 _create_directories()
 {
 	echo
@@ -26,6 +28,7 @@ _create_directories()
 }
 
 
+#image_ramdisk
 _image_ramdisk()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
@@ -54,6 +57,7 @@ _image_ramdisk()
 }
 
 
+#image_rootfs
 _image_rootfs()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
@@ -124,6 +128,7 @@ EOF
 
 
 #public
+#target_image
 target_image()
 {
 	case "$IMAGE_TYPE" in
