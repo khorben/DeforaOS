@@ -1,10 +1,11 @@
 #$Id$
+#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 
 
 
+#variables
 [ -z "$FDISK" ]		&& FDISK="fdisk"
 [ -z "$INSTALLBOOT" ]	&& INSTALLBOOT="installboot"
-[ -z "$KERNEL" ]	&& KERNEL="/netbsd"
 [ -z "$MBRLABEL" ]	&& MBRLABEL="mbrlabel"
 [ -z "$MKFS" ]		&& MKFS="newfs"
 [ -z "$MOUNT" ]		&& MOUNT="mount"
@@ -45,7 +46,7 @@ _image_image()
 	$MKDIR "$DESTDIR/bin"					&&
 	$MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"		&&
 	$MKDIR "$DESTDIR/dev"					&&
-	sh -c "cd '$DESTDIR/dev' && /dev/MAKEDEV all"		&&
+	$MKNOD -m 600 "$DESTDIR/dev/console" c 0 0		&&
 	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
 	$INSTALL -m 555 "/libexec/ld.elf_so" "$DESTDIR/libexec"	&&
 	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	&&
@@ -60,4 +61,31 @@ _image_image()
 	$UMOUNT "$DESTDIR"
 	$VNCONFIG -u "$VND"
 	return $RET
+}
+
+
+#image_iso
+_image_iso()
+{
+	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
+  IMAGE_FILE	Where to write the filesystem image\n\
+  IMAGE_KERNEL	Path to the kernel"
+	MAKEFS="makefs -t cd9660"
+	MAKEFS_ARGS="-o bootimage=i386;/usr/mdec/bootxx_cd9660,no-emul-boot"
+
+	#sanity check
+	check "$USAGE" IMAGE_FILE IMAGE_KERNEL
+	target "install"					|| exit 2
+	$MKDIR "$DESTDIR/dev"					|| exit 2
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
+	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	|| exit 2
+	$INSTALL -m 555 "/libexec/ld.elf_so" "$DESTDIR/libexec"	|| exit 2
+	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	|| exit 2
+	$MKDIR "$DESTDIR/sbin"					|| exit 2
+	SUBDIRS="Apps/Unix/src/others/tools" target oinit	|| exit 2
+	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
+			"$DESTDIR/sbin/init"			|| exit 2
+	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	|| exit 2
+	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	|| exit 2
+	$MAKEFS $MAKEFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
 }
