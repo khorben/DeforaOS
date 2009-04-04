@@ -8,6 +8,7 @@
 [ -z "$INSTALLBOOT" ]	&& INSTALLBOOT="installboot"
 [ -z "$MBRLABEL" ]	&& MBRLABEL="mbrlabel"
 [ -z "$MKFS" ]		&& MKFS="newfs"
+[ -z "$MKISOFS" ]	&& MKISOFS="makefs -t cd9660"
 [ -z "$MOUNT" ]		&& MOUNT="mount"
 [ -z "$UMOUNT" ]	&& UMOUNT="umount"
 [ -z "$VNCONFIG" ]	&& VNCONFIG="vnconfig"
@@ -26,40 +27,44 @@ _image_image()
   MKFS		Command used to format the filesystem"
 
 	#sanity check
-	check "$USAGE" DD DESTDIR DEVZERO FDISK IMAGE_FILE IMAGE_KERNEL \
-		IMAGE_SIZE INSTALLBOOT MBRLABEL MKDIR MKFS MOUNT UMOUNT \
-		VNCONFIG VND
+	check "$USAGE" CHOWN DD DESTDIR DEVZERO FDISK IMAGE_FILE IMAGE_KERNEL \
+		IMAGE_SIZE INSTALL INSTALLBOOT LN MBRLABEL MKDIR MKFS MKNOD \
+		MOUNT MV UMOUNT VNCONFIG VND
 
 	$MKDIR "$DESTDIR"					|| exit 2
-	$UMOUNT "$DESTDIR"
-	$VNCONFIG -u "$VND"
+	$SUDO $UMOUNT "$DESTDIR"
+	$SUDO $VNCONFIG -u "$VND"
 	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
 	$FDISK -Ffi "$IMAGE_FILE"				|| exit 2
 	SIZE=$((IMAGE_SIZE - 63))
 	$FDISK -Ffu0s "169/63/$SIZE" "$IMAGE_FILE"		|| exit 2
 	$FDISK -Ffa0 "$IMAGE_FILE"				|| exit 2
-	$VNCONFIG -c "$VND" "$IMAGE_FILE"			|| exit 2
-	$MBRLABEL -frw "$VND"					&&
-	$MKFS "${VND}e"						&&
-	$MOUNT "/dev/${VND}e" "$DESTDIR"			&&
+	$SUDO $VNCONFIG -c "$VND" "$IMAGE_FILE"			|| exit 2
+	$SUDO $MBRLABEL -frw "$VND"				&&
+	$SUDO $MKFS "${VND}e"					&&
+	$SUDO $MOUNT "/dev/${VND}e" "$DESTDIR"			&&
+	$SUDO $MKDIR "$DESTDIR$PREFIX"				&&
+	$SUDO $CHOWN "$UID:$GID" "$DESTDIR$PREFIX"		&&
 	target "install"					&&
-	$MKDIR "$DESTDIR/bin"					&&
-	$MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"		&&
-	$MKDIR "$DESTDIR/dev"					&&
-	$MKNOD -m 600 "$DESTDIR/dev/console" c 0 0		&&
-	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
-	$INSTALL -m 555 "/libexec/ld.elf_so" "$DESTDIR/libexec"	&&
-	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	&&
-	$MKDIR "$DESTDIR/sbin"					&&
+	$SUDO $CHOWN -R "0:0" "$DESTDIR$PREFIX"			&&
+	$SUDO $MKDIR "$DESTDIR/bin"				&&
+	$SUDO $MV "$DESTDIR$PREFIX/bin/sh" "$DESTDIR/bin/sh"	&&
+	$SUDO $MKDIR "$DESTDIR/dev"				&&
+	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	&&
+	$SUDO $MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
+	$SUDO $INSTALL -m 555 "/libexec/ld.elf_so" \
+			"$DESTDIR/libexec"			&&
+	$SUDO $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"&&
+	$SUDO $MKDIR "$DESTDIR/sbin"				&&
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	&&
-	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
+	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
 			"$DESTDIR/sbin/init"			&&
-	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	&&
-	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
-	$INSTALLBOOT -m "$MACHINE" "/dev/r${VND}e" /usr/mdec/bootxx_ffsv1
+	$SUDO $INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	&&
+	$SUDO $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
+	$SUDO $INSTALLBOOT -m "$MACHINE" "/dev/r${VND}e" /usr/mdec/bootxx_ffsv1
 	RET=$?
-	$UMOUNT "$DESTDIR"
-	$VNCONFIG -u "$VND"
+	$SUDO $UMOUNT "$DESTDIR"
+	$SUDO $VNCONFIG -u "$VND"
 	return $RET
 }
 
@@ -69,12 +74,12 @@ _image_iso()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
-  IMAGE_KERNEL	Path to the kernel"
-	MAKEFS="makefs -t cd9660"
-	MAKEFS_ARGS="-o bootimage=i386;/usr/mdec/bootxx_cd9660,no-emul-boot"
+  IMAGE_KERNEL	Path to the kernel
+  MKISOFS	Command used to format the filesystem"
+	MKISOFS_ARGS="-o bootimage=i386;bootxx,no-emul-boot,rockridge"
 
 	#sanity check
-	check "$USAGE" IMAGE_FILE IMAGE_KERNEL
+	check "$USAGE" IMAGE_FILE IMAGE_KERNEL MKISOFS
 	target "install"					|| exit 2
 	$MKDIR "$DESTDIR/dev"					|| exit 2
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
@@ -87,5 +92,7 @@ _image_iso()
 			"$DESTDIR/sbin/init"			|| exit 2
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	|| exit 2
 	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	|| exit 2
-	$MAKEFS $MAKEFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
+	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
+	$INSTALLBOOT -m amd64 -o console=pc -e bootxx		|| exit 2
+	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
 }
