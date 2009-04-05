@@ -35,6 +35,10 @@ static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
 static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
 		gchar * message, gpointer data);
+static gboolean _on_script_confirm(WebKitWebView * view, WebKitWebFrame * frame,
+		gchar * message, gboolean confirmed, gpointer data);
+static void _on_status_bar_text_changed(WebKitWebView * view, gchar * arg1,
+		gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * title, gpointer data);
 static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data);
@@ -66,6 +70,10 @@ GtkWidget * ghtml_new(Surfer * surfer)
 				_on_load_started), widget);
 	g_signal_connect(G_OBJECT(view), "script-alert", G_CALLBACK(
 				_on_script_alert), widget);
+	g_signal_connect(G_OBJECT(view), "script-confirm", G_CALLBACK(
+				_on_script_confirm), widget);
+	g_signal_connect(G_OBJECT(view), "status-bar-text-changed", G_CALLBACK(
+				_on_status_bar_text_changed), widget);
 	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
 				_on_title_changed), widget);
 	/* scrolled window */
@@ -298,6 +306,26 @@ static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_warning(surfer, message);
+}
+
+
+static gboolean _on_script_confirm(WebKitWebView * view, WebKitWebFrame * frame,
+		gchar * message, gboolean confirmed, gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	return surfer_confirm(surfer, message);
+}
+
+
+static void _on_status_bar_text_changed(WebKitWebView * view, gchar * arg1,
+		gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_set_status(surfer, arg1);
 }
 
 
