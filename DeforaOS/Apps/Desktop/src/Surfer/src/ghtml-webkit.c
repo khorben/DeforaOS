@@ -27,6 +27,8 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data);
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data);
+static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
+		gpointer data);
 static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
 static void _on_load_progress_changed(WebKitWebView * view, gint progress,
@@ -62,6 +64,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 				_on_create_web_view), widget);
 	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
 				_on_hovering_over_link), widget);
+	g_signal_connect(G_OBJECT(view), "load-committed", G_CALLBACK(
+				_on_load_committed), widget);
 	g_signal_connect(G_OBJECT(view), "load-finished", G_CALLBACK(
 				_on_load_finished), widget);
 	g_signal_connect(G_OBJECT(view), "load-progress-changed", G_CALLBACK(
@@ -271,6 +275,19 @@ static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_set_status(surfer, url);
+}
+
+
+static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
+		gpointer data)
+{
+	Surfer * surfer;
+	char const * location;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	if(frame == webkit_web_view_get_main_frame(view)
+			&& (location = webkit_web_frame_get_uri(frame)) != NULL)
+		surfer_set_location(surfer, location);
 }
 
 
