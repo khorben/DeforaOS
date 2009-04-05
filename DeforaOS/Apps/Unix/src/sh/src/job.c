@@ -76,13 +76,12 @@ static int _job_remove(unsigned int id);
 static int _add_wait(unsigned int id)
 {
 	int status;
-	int ret;
 
-	while((ret = waitpid(jobs[id-1].pid, &status, 0)) != -1)
-		if(WIFEXITED(status) || WIFSIGNALED(status))
+	for(;;)
+		if(waitpid(jobs[id - 1].pid, &status, 0) == -1)
+			return sh_error("waitpid", -1);
+		else if(WIFEXITED(status) || WIFSIGNALED(status))
 			break;
-	if(ret == -1)
-		return sh_error("waitpid", -1);
 	_job_remove(id);
 	return WEXITSTATUS(status);
 }
