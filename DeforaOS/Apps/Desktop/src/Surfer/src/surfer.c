@@ -425,6 +425,26 @@ void surfer_set_title(Surfer * surfer, char const * title)
 
 
 /* useful */
+/* surfer_confirm */
+int surfer_confirm(Surfer * surfer, char const * message)
+{
+	int ret;
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new((surfer != NULL)
+			? GTK_WINDOW(surfer->window) : NULL,
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return (ret == GTK_RESPONSE_YES) ? 1 : 0;
+}
+
+
 /* surfer_error */
 int surfer_error(Surfer * surfer, char const * message, int ret)
 {

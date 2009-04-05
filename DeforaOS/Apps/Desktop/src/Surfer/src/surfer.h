@@ -82,6 +82,7 @@ void surfer_set_title(Surfer * surfer, char const * title);
 
 
 /* useful */
+int surfer_confirm(Surfer * surfer, char const * message);
 int surfer_error(Surfer * surfer, char const * message, int ret);
 void surfer_warning(Surfer * surfer, char const * message);
 
