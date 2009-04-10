@@ -38,6 +38,7 @@
 #include <gnet.h>
 #include <System.h>
 #include "ghtml.h"
+#include "callbacks.h"
 #include "../config.h"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -104,6 +105,8 @@ static GHtmlConn * _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url, gchar const * post);
 
 /* callbacks */
+static gboolean _on_button_press_event(GtkWidget* widget,
+		GdkEventButton * event, gpointer data);
 static void _on_link_clicked(HtmlDocument * document, const gchar * url);
 static void _on_request_url(HtmlDocument * document, const gchar * url,
 		HtmlStream * stream);
@@ -130,6 +133,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	ghtml->conns_cnt = 0;
 	ghtml->html_view = html_view_new();
 	g_object_set_data(G_OBJECT(ghtml->html_view), "ghtml", ghtml);
+	g_signal_connect(G_OBJECT(ghtml->html_view), "button-press-event",
+			G_CALLBACK(_on_button_press_event), ghtml);
 	g_signal_connect(G_OBJECT(ghtml->html_view), "on-url", G_CALLBACK(
 				_on_url), NULL);
 	ghtml->html_document = html_document_new();
@@ -927,6 +932,42 @@ static void _http_timeout(GHtmlConn * conn)
 
 
 /* callbacks */
+static gboolean _on_button_press_event(GtkWidget* widget,
+		GdkEventButton * event, gpointer data)
+{
+	GHtml * ghtml = data;
+	Surfer * surfer;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+
+	if(event->type == GDK_BUTTON_PRESS
+			&& event->button == 3)
+	{
+		surfer = ghtml->surfer;
+		menu = gtk_menu_new();
+		menuitem = gtk_image_menu_item_new_from_stock(
+				GTK_STOCK_GO_BACK, NULL);
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					on_back), surfer);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_image_menu_item_new_from_stock(
+				GTK_STOCK_GO_FORWARD, NULL);
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					on_forward), surfer);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_image_menu_item_new_from_stock(
+				GTK_STOCK_REFRESH, NULL);
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					on_refresh), surfer);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		gtk_widget_show_all(menu);
+		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+				event->button, event->time);
+	}
+	return FALSE;
+}
+
+
 static void _on_link_clicked(HtmlDocument * document, const gchar * url)
 {
 	GHtml * ghtml;
