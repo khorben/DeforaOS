@@ -101,6 +101,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
+	PangoFontDescription * desc;
 	GtkWidget * vbox;
 	GtkWidget * notebook;
 	GtkWidget * page;
@@ -112,6 +113,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 		return;
 	}
 	/* FIXME consider using gtk_dialog_new() */
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
@@ -127,6 +130,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	page = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Homepage:");
+	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
@@ -153,6 +157,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	_preferences_set(surfer);
 	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
 	gtk_widget_show_all(surfer->pr_window);
+	pango_font_description_free(desc);
 }
 
 static void _preferences_set(Surfer * surfer)
