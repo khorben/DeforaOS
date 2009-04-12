@@ -24,7 +24,7 @@ download: $(download_OBJS)
 
 surfer_OBJS = surfer.o ghtml.o callbacks.o main.o
 surfer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 firefox-gtkmozembed`
-surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 firefox-gtkmozembed`
+surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 firefox-gtkmozembed` -l System
 
 surfer: $(surfer_OBJS)
 	$(CC) -o surfer $(surfer_OBJS) $(surfer_LDFLAGS)
