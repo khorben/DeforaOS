@@ -282,6 +282,11 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 	browser->pr_hidden = gtk_check_button_new_with_mnemonic(
 			"Show _hidden files");
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 4);
+	/* separator */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
