@@ -91,8 +91,86 @@ void on_file_open_url(GtkWidget * widget, gpointer data)
 
 /* edit menu */
 /* on_edit_preferences */
+static void _preferences_set(Surfer * surfer);
+/* callbacks */
+static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
+static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
+	Surfer * surfer = data;
+	GtkWidget * vbox;
+	GtkWidget * notebook;
+	GtkWidget * hbox;
+
+	if(surfer->pr_window != NULL)
+	{
+		gtk_widget_show(surfer->pr_window);
+		return;
+	}
+	/* FIXME consider using gtk_dialog_new() */
+	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
+	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
+			"Web surfer preferences");
+	gtk_window_set_transient_for(GTK_WINDOW(surfer->pr_window), GTK_WINDOW(
+				surfer->window));
+	g_signal_connect(G_OBJECT(surfer->pr_window), "delete-event",
+			G_CALLBACK(_preferences_on_closex), surfer);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* notebook */
+	notebook = gtk_notebook_new();
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
+	/* separator */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	/* dialog */
+	hbox = gtk_hbox_new(TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_ok), surfer);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_cancel), surfer);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	_preferences_set(surfer);
+	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
+	gtk_widget_show_all(surfer->pr_window);
+}
+
+static void _preferences_set(Surfer * surfer)
+{
+	/* FIXME implement */
+}
+
+static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	Surfer * surfer = data;
+
+	_preferences_on_cancel(widget, surfer);
+	return TRUE;
+}
+
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_hide(surfer->pr_window);
+	_preferences_set(surfer);
+}
+
+static void _preferences_on_ok(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_hide(surfer->pr_window);
 	/* FIXME implement */
 }
 

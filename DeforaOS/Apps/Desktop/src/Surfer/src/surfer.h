@@ -60,6 +60,9 @@ typedef struct _Surfer
 	GtkWidget * statusbox;
 	GtkWidget * statusbar;
 	guint statusbar_id;
+
+	/* preferences */
+	GtkWidget * pr_window;
 } Surfer;
 
 

@@ -235,6 +235,8 @@ Surfer * surfer_new(char const * url)
 	gtk_container_add(GTK_CONTAINER(surfer->window), vbox);
 	gtk_widget_grab_focus(GTK_WIDGET(surfer->tb_path));
 	gtk_widget_show_all(surfer->window);
+	/* preferences window */
+	surfer->pr_window = NULL;
 	/* hack to display the statusbar only if necessary */
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
