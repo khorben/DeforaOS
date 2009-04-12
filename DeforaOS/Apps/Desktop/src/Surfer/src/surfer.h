@@ -18,6 +18,7 @@
 #ifndef SURFER_SURFER_H
 # define SURFER_SURFER_H
 
+# include <System.h>
 # include <gtk/gtk.h>
 
 
@@ -41,6 +42,7 @@
 /* types */
 typedef struct _Surfer
 {
+	Config * config;
 	char * url;
 
 	/* widgets */
@@ -63,6 +65,7 @@ typedef struct _Surfer
 
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_homepage;
 } Surfer;
 
 
@@ -85,6 +88,9 @@ void surfer_set_title(Surfer * surfer, char const * title);
 
 
 /* useful */
+int surfer_config_load(Surfer * surfer);
+int surfer_config_save(Surfer * surfer);
+
 int surfer_confirm(Surfer * surfer, char const * message);
 int surfer_error(Surfer * surfer, char const * message, int ret);
 void surfer_warning(Surfer * surfer, char const * message);

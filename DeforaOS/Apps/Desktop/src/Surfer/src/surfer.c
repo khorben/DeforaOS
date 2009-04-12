@@ -132,9 +132,13 @@ Surfer * surfer_new(char const * url)
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
+	surfer->config = config_new();
 	surfer->url = NULL;
-	if(url != NULL && (surfer->url = strdup(url)) == NULL)
+	if(surfer->config == NULL
+			|| (url != NULL && (surfer->url = strdup(url)) == NULL))
 	{
+		if(surfer->config != NULL)
+			config_delete(surfer->config);
 		free(surfer);
 		return NULL;
 	}
@@ -333,7 +337,7 @@ Surfer * surfer_new_copy(Surfer * surfer)
 /* surfer_delete */
 void surfer_delete(Surfer * surfer)
 {
-	/* config_delete(surfer->config); */
+	config_delete(surfer->config);
 	free(surfer->url);
 	free(surfer);
 	surfer_cnt--;
@@ -427,6 +431,22 @@ void surfer_set_title(Surfer * surfer, char const * title)
 
 
 /* useful */
+/* surfer_config_load */
+int surfer_config_load(Surfer * surfer)
+{
+	/* FIXME implement */
+	return 0;
+}
+
+
+/* surfer_config_save */
+int surfer_config_save(Surfer * surfer)
+{
+	/* FIXME implement */
+	return 0;
+}
+
+
 /* surfer_confirm */
 int surfer_confirm(Surfer * surfer, char const * message)
 {

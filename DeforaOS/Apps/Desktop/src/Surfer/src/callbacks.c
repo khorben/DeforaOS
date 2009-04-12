@@ -103,6 +103,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	Surfer * surfer = data;
 	GtkWidget * vbox;
 	GtkWidget * notebook;
+	GtkWidget * page;
 	GtkWidget * hbox;
 
 	if(surfer->pr_window != NULL)
@@ -122,7 +123,17 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* notebook */
 	notebook = gtk_notebook_new();
-	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
+	/* general */
+	page = gtk_vbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Homepage:");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	surfer->pr_homepage = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new("General"));
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	/* separator */
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_hseparator_new();
@@ -172,6 +183,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 
 	gtk_widget_hide(surfer->pr_window);
 	/* FIXME implement */
+	surfer_config_save(surfer);
 }
 
 
