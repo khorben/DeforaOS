@@ -21,6 +21,7 @@ VENDOR="DeforaOS"
 
 #executables
 CC=
+CHOWN="chown"
 DD="dd bs=1024"
 INSTALL="install"
 LD=
