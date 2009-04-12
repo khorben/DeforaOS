@@ -157,7 +157,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 static void _preferences_set(Surfer * surfer)
 {
-	/* FIXME implement */
+	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage);
 }
 
 static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
@@ -182,7 +182,9 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 	Surfer * surfer = data;
 
 	gtk_widget_hide(surfer->pr_window);
-	/* FIXME implement */
+	free(surfer->homepage);
+	surfer->homepage = strdup(gtk_entry_get_text(GTK_ENTRY(
+					surfer->pr_homepage)));
 	surfer_config_save(surfer);
 }
 
@@ -518,8 +520,7 @@ void on_home(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	/* FIXME query this from the preferences */
-	surfer_open(surfer, SURFER_DEFAULT_HOME);
+	surfer_go_home(surfer);
 }
 
 

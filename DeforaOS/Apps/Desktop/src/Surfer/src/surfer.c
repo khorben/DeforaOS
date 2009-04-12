@@ -26,6 +26,7 @@
 
 
 /* Surfer */
+/* private */
 /* types */
 #ifndef FOR_EMBEDDED
 struct _menu
@@ -115,6 +116,15 @@ static struct _menubar _menubar[] =
 unsigned int surfer_cnt = 0;
 
 
+/* prototypes */
+static char * _config_get_filename(void);
+static int _config_load_string(Config * config, char const * variable,
+		char ** value);
+static int _config_save_string(Config * config, char const * variable,
+		char const * value);
+
+
+/* public */
 /* functions */
 /* surfer_new */
 #ifndef FOR_EMBEDDED
@@ -132,14 +142,13 @@ Surfer * surfer_new(char const * url)
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
-	surfer->config = config_new();
 	surfer->url = NULL;
-	if(surfer->config == NULL
+	surfer->homepage = NULL;
+	if((surfer->config = config_new()) == NULL
+			|| surfer_config_load(surfer) != 0
 			|| (url != NULL && (surfer->url = strdup(url)) == NULL))
 	{
-		if(surfer->config != NULL)
-			config_delete(surfer->config);
-		free(surfer);
+		surfer_delete(surfer);
 		return NULL;
 	}
 	/* widgets */
@@ -339,6 +348,7 @@ void surfer_delete(Surfer * surfer)
 {
 	config_delete(surfer->config);
 	free(surfer->url);
+	free(surfer->homepage);
 	free(surfer);
 	surfer_cnt--;
 }
@@ -434,7 +444,13 @@ void surfer_set_title(Surfer * surfer, char const * title)
 /* surfer_config_load */
 int surfer_config_load(Surfer * surfer)
 {
-	/* FIXME implement */
+	char * filename;
+
+	if((filename = _config_get_filename()) == NULL)
+		return 1;
+	config_load(surfer->config, filename); /* XXX ignore errors */
+	free(filename);
+	_config_load_string(surfer->config, "homepage", &surfer->homepage);
 	return 0;
 }
 
@@ -442,8 +458,17 @@ int surfer_config_load(Surfer * surfer)
 /* surfer_config_save */
 int surfer_config_save(Surfer * surfer)
 {
-	/* FIXME implement */
-	return 0;
+	int ret = 0;
+	char * filename;
+
+	if((filename = _config_get_filename()) == NULL)
+		return 1;
+	ret |= _config_save_string(surfer->config, "homepage",
+			surfer->homepage);
+	if(ret == 0)
+		ret |= config_save(surfer->config, filename);
+	free(filename);
+	return ret;
 }
 
 
@@ -503,6 +528,17 @@ gboolean surfer_go_forward(Surfer * surfer)
 	ret = ghtml_go_forward(surfer->view);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), ret);
 	return ret;
+}
+
+
+/* surfer_go_home */
+void surfer_go_home(Surfer * surfer)
+{
+	char const * homepage;
+
+	if((homepage = config_get(surfer->config, "", "homepage")) == NULL)
+		homepage = SURFER_DEFAULT_HOME;
+	surfer_open(surfer, homepage);
 }
 
 
@@ -610,4 +646,45 @@ void surfer_zoom_out(Surfer * surfer)
 void surfer_zoom_reset(Surfer * surfer)
 {
 	ghtml_zoom_reset(surfer->view);
+}
+
+
+/* private */
+/* functions */
+static char * _config_get_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(SURFER_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, SURFER_CONFIG_FILE);
+	return filename;
+}
+
+
+static int _config_load_string(Config * config, char const * variable,
+		char ** value)
+{
+	char const * str;
+	char * p;
+
+	if((str = config_get(config, "", variable)) == NULL)
+		return 0;
+	if((p = strdup(str)) == NULL)
+		return 1;
+	free(*value);
+	*value = p;
+	return 0;
+}
+
+
+static int _config_save_string(Config * config, char const * variable,
+		char const * value)
+{
+	return config_set(config, "", variable, value);
 }

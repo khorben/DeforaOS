@@ -24,6 +24,8 @@
 
 /* Surfer */
 /* constants */
+# define SURFER_CONFIG_FILE			".surferrc"
+
 # define SURFER_DEFAULT_MINIMUM_FONT_SIZE	8.0
 # define SURFER_DEFAULT_FONT_SIZE		12.0
 # define SURFER_DEFAULT_FIXED_FONT_SIZE		12.0
@@ -44,6 +46,9 @@ typedef struct _Surfer
 {
 	Config * config;
 	char * url;
+
+	/* preferences */
+	char * homepage;
 
 	/* widgets */
 	/* main window */
@@ -100,6 +105,7 @@ void surfer_open_dialog(Surfer * surfer);
 
 gboolean surfer_go_back(Surfer * surfer);
 gboolean surfer_go_forward(Surfer * surfer);
+void surfer_go_home(Surfer * surfer);
 
 void surfer_refresh(Surfer * surfer);
 void surfer_reload(Surfer * surfer);
