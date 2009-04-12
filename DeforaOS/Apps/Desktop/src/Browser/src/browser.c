@@ -114,30 +114,16 @@ static struct _menubar _browser_menubar[] =
 
 
 /* prototypes */
-static char * _browser_get_config_filename(void);
+static char * _config_get_filename(void);
+static void _config_load_boolean(Config * config, char const * variable,
+		gboolean * value);
+static int _config_save_boolean(Config * config, char const * variable,
+		gboolean value);
 
 
 /* protected */
 /* variables */
 unsigned int browser_cnt = 0;
-
-
-/* private */
-/* functions */
-static char * _browser_get_config_filename(void)
-{
-	char const * homedir;
-	size_t len;
-	char * filename;
-
-	if((homedir = getenv("HOME")) == NULL)
-		return NULL;
-	len = strlen(homedir) + 1 + sizeof(BROWSER_CONFIG_FILE);
-	if((filename = malloc(len)) == NULL)
-		return NULL;
-	snprintf(filename, len, "%s/%s", homedir, BROWSER_CONFIG_FILE);
-	return filename;
-}
 
 
 /* public */
@@ -181,8 +167,7 @@ Browser * browser_new(char const * directory)
 	browser->prefs.confirm_before_delete = TRUE;
 	browser->prefs.sort_folders_first = TRUE;
 	browser->prefs.show_hidden_files = FALSE;
-	browser->config = config_new();
-	if(_new_config(browser) != 0
+	if((browser->config = config_new()) == NULL
 			|| browser_config_load(browser) != 0)
 		browser_error(browser, "Error while loading configuration", 0);
 
@@ -385,19 +370,6 @@ static int _new_pixbufs(Browser * browser)
 #endif
 }
 
-static int _new_config(Browser * browser)
-{
-	char * filename;
-
-	if((browser->config = config_new()) == NULL)
-		return 1;
-	if((filename = _browser_get_config_filename()) == NULL)
-		return 1;
-	config_load(browser->config, filename); /* XXX ignore errors */
-	free(filename);
-	return 0;
-}
-
 static int _sort_func(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b,
 		gpointer data)
 {
@@ -528,13 +500,16 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 
 
 /* browser_config_load */
-static void _config_load_boolean(Config * config, char const * variable,
-		gboolean * value);
-
 int browser_config_load(Browser * browser)
 {
+	char * filename;
+
 	if(browser->config == NULL)
 		return 0; /* XXX ignore error */
+	if((filename = _config_get_filename()) == NULL)
+		return 1;
+	config_load(browser->config, filename); /* XXX ignore errors */
+	free(filename);
 	_config_load_boolean(browser->config, "confirm_before_delete",
 			&browser->prefs.confirm_before_delete);
 	_config_load_boolean(browser->config, "sort_folders_first",
@@ -544,24 +519,8 @@ int browser_config_load(Browser * browser)
 	return 0;
 }
 
-static void _config_load_boolean(Config * config, char const * variable,
-		gboolean * value)
-{
-	char const * str;
-
-	if((str = config_get(config, "", variable)) == NULL)
-		return;
-	if(strcmp(str, "0") == 0)
-		*value = FALSE;
-	else if(strcmp(str, "1") == 0)
-		*value = TRUE;
-}
-
 
 /* browser_config_save */
-static int _config_save_boolean(Config * config, char const * variable,
-		gboolean value);
-
 int browser_config_save(Browser * browser)
 {
 	int ret = 0;
@@ -569,7 +528,7 @@ int browser_config_save(Browser * browser)
 
 	if(browser->config == NULL)
 		return 0; /* XXX ignore error */
-	if((filename = _browser_get_config_filename()) == NULL)
+	if((filename = _config_get_filename()) == NULL)
 		return 1;
 	ret |= _config_save_boolean(browser->config, "confirm_before_delete",
 			browser->prefs.confirm_before_delete);
@@ -577,15 +536,10 @@ int browser_config_save(Browser * browser)
 			browser->prefs.sort_folders_first);
 	ret |= _config_save_boolean(browser->config, "show_hidden_files",
 			browser->prefs.show_hidden_files);
-	ret |= config_save(browser->config, filename);
+	if(ret == 0)
+		ret |= config_save(browser->config, filename);
 	free(filename);
 	return ret;
-}
-
-static int _config_save_boolean(Config * config, char const * variable,
-		gboolean value)
-{
-	return config_set(config, "", variable, value ? "1" : "0");
 }
 
 
@@ -596,6 +550,7 @@ void browser_go_home(Browser * browser)
 
 	if((home = getenv("HOME")) == NULL)
 		home = g_get_home_dir();
+	/* XXX use open while set_location should only update the toolbar? */
 	browser_set_location(browser, home != NULL ? home : "/");
 }
 
@@ -1632,4 +1587,43 @@ void browser_unselect_all(Browser * browser)
 #endif
 	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(browser->detailview));
 	gtk_tree_selection_unselect_all(sel);
+}
+
+
+/* private */
+/* functions */
+static char * _config_get_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(BROWSER_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, BROWSER_CONFIG_FILE);
+	return filename;
+}
+
+
+static void _config_load_boolean(Config * config, char const * variable,
+		gboolean * value)
+{
+	char const * str;
+
+	if((str = config_get(config, "", variable)) == NULL)
+		return; /* XXX default to something? */
+	if(strcmp(str, "0") == 0)
+		*value = FALSE;
+	else if(strcmp(str, "1") == 0)
+		*value = TRUE;
+}
+
+
+static int _config_save_boolean(Config * config, char const * variable,
+		gboolean value)
+{
+	return config_set(config, "", variable, value ? "1" : "0");
 }
