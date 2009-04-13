@@ -96,8 +96,12 @@ _image_ramdisk()
 	$INSTALL -m 755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc"	|| exit 2
 
 	#setup init
-	_create_directories "dev" "proc" "mnt/cdrom" "sbin"	|| exit 2
+	_create_directories "dev" "lib" "proc" "mnt/cdrom" "sbin" \
+								|| exit 2
 	$LN -s "../mnt/cdrom/usr/bin/sh" "$DESTDIR/sbin/init"	|| exit 2
+
+	#install loader
+	$INSTALL -m 755 "/lib/ld-linux.so.2" "$DESTDIR/lib"	|| exit 2
 
 	echo
 	echo -n "Creating ramdisk:"
