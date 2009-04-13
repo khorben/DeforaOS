@@ -5,6 +5,7 @@
 
 #variables
 #XXX insert i386-specific variables here (grub...)
+[ -z "$GENEXT2FS" ]	&& GENEXT2FS="genext2fs"
 
 
 #includes
@@ -49,10 +50,8 @@ _image_iso()
 
 	#sanity check
 	check "$USAGE" DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL MKDIR \
-		MKISOFS MOUNT RAMDISK TAR UMOUNT
+		MKISOFS RAMDISK TAR
 
-	$MKDIR "$DESTDIR"					|| exit 2
-	target "install"					|| exit 2
 	$MKDIR "$DESTDIR/boot/grub"				|| exit 2
 	$INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
 	"$DESTDIR/boot/grub"					|| exit 2
@@ -82,30 +81,29 @@ _image_ramdisk()
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
   IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
-  MKFS		Command used to format the ramdisk image\n\
-  MOUNTPOINT	Path where to temporarily mount the ramdisk image"
+  GENEXT2FS	Command used to generate the ramdisk image"
 
 	#sanity check
-	check "$USAGE" DD DEVZERO DU GZIP IMAGE_FILE IMAGE_SIZE INSTALL LN \
-	MKDIR MKFS MOUNTPOINT MV UMOUNT
+	check "$USAGE" DD DESTDIR DEVZERO DU GENEXT2FS GZIP IMAGE_FILE \
+		IMAGE_SIZE INSTALL LN MKDIR MKFS MV
 
-	$MKDIR "$MOUNTPOINT"
-	$UMOUNT "$MOUNTPOINT"
-	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE"	|| exit 2
-	$MKFS "$IMAGE_FILE"					|| exit 2
-	[ ! -z "$TUNE2FS" ] && $TUNE2FS -i 0 "$IMAGE_FILE"
-	#FIXME umount on subsequent failures
-	$MOUNT "$IMAGE_FILE" "$MOUNTPOINT"			|| exit 2
+	$MKDIR "$DESTDIR"					|| exit 2
+	target "install"					|| exit 2
 
 	#compile and install linuxrc
-	SUBDIRS="Apps/Unix/src/others/tools" target linuxrc	|| exit 2
+	TOOLS="Apps/Unix/src/others/tools"
+	SUBDIRS="$TOOLS" target linuxrc				|| exit 2
+	$INSTALL -m 755 "$TOOLS/linuxrc" "$DESTDIR/linuxrc"	|| exit 2
 
-	DESTDIR="$MOUNTPOINT" _create_directories "dev" "proc" "mnt/cdrom" \
-		"sbin"
-	$LN "../mnt/cdrom/usr/bin/sh" "$MOUNTPOINT/sbin/init"
-	$INSTALL -m 755 "Apps/Unix/src/others/tools/linuxrc" \
-	"$MOUNTPOINT/linuxrc"					|| exit 2
-	$UMOUNT "$MOUNTPOINT"
+	#setup init
+	_create_directories "dev" "proc" "mnt/cdrom" "sbin"	|| exit 2
+	$LN -s "../mnt/cdrom/usr/bin/sh" "$DESTDIR/sbin/init"	|| exit 2
+
+	echo
+	echo -n "Creating ramdisk:"
+	$GENEXT2FS -r 0 -b "$IMAGE_SIZE" -d "$DESTDIR" "$IMAGE_FILE"
+	echo
+	$DU "$IMAGE_FILE"
 
 	echo
 	echo -n "Compressing ramdisk:"

@@ -14,20 +14,6 @@ source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
 
 #functions
 #private
-#create_directories
-_create_directories()
-{
-	echo
-	echo -n "Creating missing directories:"
-	while true; do
-		echo -n " $1"
-		$MKDIR "$DESTDIR/$1"				|| exit 2
-		shift || break
-	done
-	echo
-}
-
-
 #image_ramdisk
 _image_ramdisk()
 {
