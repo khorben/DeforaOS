@@ -49,8 +49,8 @@ _image_iso()
   MKISOFS	Command used to create the ISO image"
 
 	#sanity check
-	check "$USAGE" DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL MKDIR \
-		MKISOFS RAMDISK TAR
+	check "$USAGE" CAT DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL \
+		MKDIR MKISOFS RAMDISK TAR
 
 	$MKDIR "$DESTDIR/boot/grub"				|| exit 2
 	$INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
