@@ -20,6 +20,7 @@ TARGET=
 VENDOR="DeforaOS"
 
 #executables
+CAT="cat"
 CC=
 CHOWN="chown"
 DD="dd bs=1024"
