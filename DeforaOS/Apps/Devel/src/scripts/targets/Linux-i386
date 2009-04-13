@@ -71,7 +71,7 @@ $GRUB_INITRD
 EOF
 	[ ! -z "$IMAGE_MODULES" ] && cat "$IMAGE_MODULES" | \
 			(cd "$DESTDIR" && $TAR -xzf -)
-	$MKISOFS -b "boot/grub/stage2_eltorito" -no-emul-boot \
+	$MKISOFS -J -r -b "boot/grub/stage2_eltorito" -no-emul-boot \
 			-boot-load-size 4 -boot-info-table \
 			-o "$IMAGE_FILE" "$DESTDIR"
 }
