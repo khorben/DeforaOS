@@ -44,14 +44,15 @@ _image_iso()
   IMAGE_KERNEL	Path to the kernel\n\
   IMAGE_MODULES	Path to a tar.gz archive of kernel modules (optional)\n\
   IMAGE_RAMDISK	Path to the ramdisk (optional)\n\
-  IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
   KERNEL_ARGS	Additional arguments to give to the kernel (optional)\n\
   MKISOFS	Command used to create the ISO image"
 
 	#sanity check
-	check "$USAGE" DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL IMAGE_SIZE \
-		INSTALL MKDIR MKISOFS MOUNT RAMDISK TAR UMOUNT
+	check "$USAGE" DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL MKDIR \
+		MKISOFS MOUNT RAMDISK TAR UMOUNT
 
+	$MKDIR "$DESTDIR"					|| exit 2
+	target "install"					|| exit 2
 	$MKDIR "$DESTDIR/boot/grub"				|| exit 2
 	$INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
 	"$DESTDIR/boot/grub"					|| exit 2
