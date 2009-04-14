@@ -52,14 +52,20 @@ _image_iso()
 	check "$USAGE" CAT DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL \
 		MKDIR MKISOFS RAMDISK TAR
 
-	$MKDIR "$DESTDIR/boot/grub"				|| exit 2
-	$INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
-	"$DESTDIR/boot/grub"					|| exit 2
+	#install kernel with ramdisk and modules
+	$MKDIR "$DESTDIR/boot"					|| exit 2
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL"	|| exit 2
 	if [ ! -z "$IMAGE_RAMDISK" ]; then
 		$INSTALL -m 644 "$IMAGE_RAMDISK" "$DESTDIR/$RAMDISK"
 		GRUB_INITRD="initrd $RAMDISK"
 	fi
+	[ ! -z "$IMAGE_MODULES" ] && $CAT "$IMAGE_MODULES" | \
+			(cd "$DESTDIR" && $TAR -xzf -)
+
+	#setup bootloader
+	$MKDIR "$DESTDIR/boot/grub"				|| exit 2
+	$INSTALL -m 644 "/usr/lib/grub/i386-pc/stage2_eltorito" \
+	"$DESTDIR/boot/grub"					|| exit 2
 	$CAT > "$DESTDIR/boot/grub/menu.lst" << EOF
 default 0
 timeout 10
@@ -68,8 +74,6 @@ title $VENDOR
 kernel $KERNEL $KERNEL_ARGS
 $GRUB_INITRD
 EOF
-	[ ! -z "$IMAGE_MODULES" ] && cat "$IMAGE_MODULES" | \
-			(cd "$DESTDIR" && $TAR -xzf -)
 	$MKISOFS -J -r -b "boot/grub/stage2_eltorito" -no-emul-boot \
 			-boot-load-size 4 -boot-info-table \
 			-o "$IMAGE_FILE" "$DESTDIR"
@@ -80,6 +84,7 @@ _image_ramdisk()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
+  IMAGE_MODULES	Path to a tar.gz archive of kernel modules (optional)\n\
   IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
   GENEXT2FS	Command used to generate the ramdisk image"
 
@@ -89,6 +94,10 @@ _image_ramdisk()
 
 	$MKDIR "$DESTDIR"					|| exit 2
 	target "install"					|| exit 2
+
+	#install kernel modules
+	[ ! -z "$IMAGE_MODULES" ] && $CAT "$IMAGE_MODULES" | \
+			(cd "$DESTDIR" && $TAR -xzf -)
 
 	#compile and install linuxrc
 	TOOLS="Apps/Unix/src/others/tools"
