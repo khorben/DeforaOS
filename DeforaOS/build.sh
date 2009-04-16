@@ -7,6 +7,7 @@
 
 #variables
 CFLAGS=
+CPATH=
 CPPFLAGS=
 LDFLAGS=
 DESTDIR=
