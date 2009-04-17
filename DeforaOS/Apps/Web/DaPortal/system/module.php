@@ -153,7 +153,8 @@ function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		if($tag != FALSE && $tag != '')
 		{
 			$tag = str_replace(array(' ', '/', '?', '&', '%', '#',
-						'<', '>', "'", '"'), '-', $tag);
+						'<', '>', "'", '"', ","),
+						'-', $tag);
 			$link .= '/'.$tag;
 		}
 		if($params != FALSE && $params != '')
