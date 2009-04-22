@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -154,15 +154,10 @@ function news_admin($args)
 
 function news_default($args)
 {
-	if(isset($args['id']))
-	{
-		_news_display($args['id']);
-		if(_module_id('comment'))
-			_module('comment', 'childs',
-					array('id' => $args['id']));
-	}
-	else
-		news_list($args);
+	if(!isset($args['id']))
+		return news_list($args);
+	if(_news_display($args['id']) && _module_id('comment'))
+		_module('comment', 'childs', array('id' => $args['id']));
 }
 
 
