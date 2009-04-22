@@ -154,7 +154,7 @@ function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		{
 			$tag = str_replace(array(' ', '/', '?', '&', '%', '#',
 						'<', '>', "'", '"', ","),
-						'-', $tag);
+					'-', $tag);
 			$link .= '/'.$tag;
 		}
 		if($params != FALSE && $params != '')
