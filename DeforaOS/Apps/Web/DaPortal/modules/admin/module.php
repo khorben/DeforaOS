@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -29,10 +29,12 @@ require_once('./system/user.php');
 $text = array();
 $text['ADMINISTRATION'] = 'Administration';
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
+$text['INSERT_MODULE'] = 'Insert module';
 $text['LANGUAGES'] = 'Languages';
 $text['PORTAL_ADMINISTRATION'] = 'Portal administration';
 $text['MODULE_NAME'] = 'Module name';
 $text['MODULES'] = 'Modules';
+$text['NEW_MODULE'] = 'New module';
 $text['SETTINGS'] = 'Settings';
 global $lang;
 if($lang == 'de')
@@ -134,6 +136,9 @@ function admin_admin($args)
 		$modules[$i]['name'] = _html_safe($modules[$i]['name']);
 	}
 	$toolbar = array();
+	$toolbar[] = array('title' => NEW_MODULE, 'class' => 'new',
+			'link' => _module_link('admin', 'module_insert'));
+	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'module_disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
@@ -225,6 +230,17 @@ function admin_module_enable($args)
 }
 
 
+function admin_module_insert($args)
+{
+	global $error;
+
+	print('<h1 class="title admin">'._html_safe(INSERT_MODULE)."</h1>\n");
+	if(isset($error) && strlen($error))
+		_error($error);
+	include('./modules/admin/module_insert.tpl');
+}
+
+
 function admin_system($args)
 {
 	global $title, $error;
@@ -238,6 +254,9 @@ function admin_system($args)
 		case 'config_update':
 			$error = _system_config_update($args);
 			break;
+		case 'module_insert':
+			$error = _system_module_insert($args);
+			break;
 	}
 }
 
@@ -245,10 +264,24 @@ function _system_config_update($args)
 {
 	global $user_id;
 
-	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return PERMISSION_DENIED;
 	_config_update('admin', $args);
+	header('Location: '._module_link('admin', 'admin'));
+	exit(0);
+}
+
+function _system_module_insert($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	if(!isset($args['name']))
+		return INVALID_ARGUMENT;
+	if(!_sql_query('INSERT INTO daportal_module (name, enabled)'
+				." VALUES ('".$args['name']."', '0')"))
+		return INTERNAL_ERROR;
 	header('Location: '._module_link('admin', 'admin'));
 	exit(0);
 }
