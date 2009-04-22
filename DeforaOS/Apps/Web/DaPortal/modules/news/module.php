@@ -349,26 +349,28 @@ function news_rss($args)
 	if(($module_id = _module_id('news')) == FALSE)
 		return;
 	require_once('./system/html.php');
-	$link = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME'];
-	$content = ''; //FIXME
+	$link = _module_link_full('news');
+	$atomlink = _module_link_full('news', 'rss');
+	$content = $title;
 	include('./modules/news/rss_channel_top.tpl');
-	$res = _sql_array('SELECT content_id AS id, timestamp, title, content'
-			.', username FROM daportal_content, daportal_user'
+	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
+			.', content, username AS author, email'
+			.' FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id'
 			.'=daportal_user.user_id'
 			." AND module_id='$module_id'"
-			." AND daportal_content.enabled='".SQL_TRUE."'"
+			." AND daportal_content.enabled='1'"
 			.' ORDER BY timestamp DESC '._sql_offset(0, 10));
 	if(is_array($res))
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
 			$news = $res[$i];
+			$news['author'] = $news['email']
+				.' ('.$news['author'].')';
 			$news['date'] = date('D, j M Y H:i:s O', strtotime(
-						substr($news['timestamp'], 0,
-						       19)));
-			$news['link'] = 'http://'.$_SERVER['HTTP_HOST']
-				.$_SERVER['SCRIPT_NAME'].'?module=news&id='
-				.$news['id'];
+						substr($news['date'], 0, 19)));
+			$news['link'] = _html_link_full('news', FALSE,
+					$news['id']);
 			$news['content'] = _html_pre($news['content']);
 			include('./modules/news/rss_item.tpl');
 		}
