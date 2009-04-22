@@ -28,6 +28,17 @@ function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 }
 
 
+//PRE  module, action and params are trusted
+function _html_link_full($module, $action = FALSE, $id = FALSE, $title = FALSE,
+		$params = FALSE)
+{
+	$link = _module_link_full($module, $action, $id, $title, $params);
+	$link = htmlentities($link);
+	$link = str_replace('&amp;amp;', '%26', $link);
+	return $link;
+}
+
+
 function _html_paging($link, $page, $count)
 {
 	print('<div class="paging">'."\n");
