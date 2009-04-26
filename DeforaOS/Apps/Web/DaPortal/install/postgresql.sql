@@ -233,3 +233,7 @@ CREATE TABLE daportal_caserver (
 
 INSERT INTO daportal_module (name, enabled) VALUES ('pki', '1');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('18', 'Path to the PKI repository', 'string', 'root', '');
+
+
+/* module: blog */
+INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');

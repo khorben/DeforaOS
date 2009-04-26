@@ -320,3 +320,7 @@ INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES 
 
 /* module: translate */
 INSERT INTO daportal_module (name, enabled) VALUES ('translate', '1');
+
+
+/* module: blog */
+INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');

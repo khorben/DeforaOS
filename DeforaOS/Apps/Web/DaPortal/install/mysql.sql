@@ -153,3 +153,7 @@ INSERT INTO daportal_config (module_id, name, value) VALUES ('15', 'root', '/tmp
 /* module: wiki */
 INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
 INSERT INTO daportal_config (module_id, type, name, value_string) VALUES ('16', 'string', 'root', '');
+
+
+/* module: blog */
+INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
