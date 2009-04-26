@@ -117,7 +117,7 @@ function _html_safe($string)
 
 function _start_css_themes($theme)
 {
-	if(($dir = @opendir(dirname($_SERVER['SCRIPT_NAME']).'/themes')) 
+	if(($dir = opendir(dirname($_SERVER['SCRIPT_FILENAME']).'/themes')) 
 			== FALSE)
 		return;
 	while(($de = readdir($dir)))
