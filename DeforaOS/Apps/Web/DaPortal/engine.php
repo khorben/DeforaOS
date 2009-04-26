@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2004, 2005, 2006, 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -54,6 +54,8 @@ require_once('./system/config.php');
 //configuration variables
 if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
+if(($t = _config_get('admin', 'theme')) != FALSE)
+	$theme = $t;
 
 require_once('./system/lang.php');
 

@@ -33,6 +33,7 @@ INSERT INTO daportal_config_enum_type (name) VALUES ('int');
 INSERT INTO daportal_config_enum_type (name) VALUES ('string');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Path to MIME globs file', 'string', 'globs', '/usr/share/mime/globs');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default language', 'string', 'lang', 'en');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default theme', 'string', 'theme', 'DaPortal');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default title', 'string', 'title', 'DaPortal');
 
 
