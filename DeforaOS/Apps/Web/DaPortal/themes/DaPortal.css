@@ -20,7 +20,7 @@ img {
 
 
 /* modules */
-.explorer .selected, .explorer .selected a {
+form.explorer .selected, form.explorer .selected a {
 	background-color:		#0000ff;
 	color:				#ffffff;
 }

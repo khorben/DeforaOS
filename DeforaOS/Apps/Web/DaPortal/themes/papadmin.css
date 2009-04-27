@@ -134,21 +134,21 @@ h3.title {
 }
 
 /* explorer */
-.explorer .entry {
+form.explorer div.entry {
 	overflow:			hidden;
 }
 
-.explorer .listing_list .entry {
+form.explorer .listing_list div.entry {
 	width:				150px;
 }
 
-.explorer .entry .thumbnail {
+form.explorer div.entry span.thumbnail {
 	height:				100px;
 	text-align:			center;
 	width:				100px;
 }
 
-.explorer .selected, .explorer .selected a {
+form.explorer .selected, .explorer .selected a {
 	background-color:		#d0d080;
 }
 

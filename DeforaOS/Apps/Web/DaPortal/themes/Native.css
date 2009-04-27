@@ -171,19 +171,19 @@ pre {
 
 /* modules */
 /* explorer */
-.explorer {
+form.explorer {
 	background-color:	#ffffff;
 }
 
-.explorer .entry .icon {
+form.explorer .entry .icon {
 	width:			20px;
 }
 
-.explorer .entry .icon, .explorer .entry .thumbnail {
+form.explorer .entry .icon, .explorer .entry .thumbnail {
 	text-align:		center;
 }
 
-.explorer .header div {
+form.explorer .header div {
 	background-color:	#dcdad5;
 	border-bottom:		1px solid #000000;
 	border-left:		1px solid #ffffff;
@@ -192,57 +192,57 @@ pre {
 	padding-left:		2px;
 }
 
-.explorer .header div a {
+form.explorer .header div a {
 	display:		block;
 }
 
-.explorer .header div.sort {
+form.explorer .header div.sort {
 	background-image:	url('../modules/explorer/sort.png');
 	background-position:	center right;
 	background-repeat:	no-repeat;
 }
 
-.explorer .listing_details, .explorer .listing_list,
+form.explorer .listing_details, .explorer .listing_list,
 	.explorer .listing_thumbnails {
 	border-bottom:		1px solid #ffffff;
 	width:			100%;
 }
 
-.explorer .listing_list .entry {
+form.explorer .listing_list .entry {
 	height:			20px;
 	overflow:		hidden;
 	white-space:		nowrap;
 	width:			200px;
 }
 
-.explorer .listing_thumbnails .entry {
+form.explorer .listing_thumbnails .entry {
 	width:			100px;
 }
 
-.explorer .listing_thumbnails .entry .name {
+form.explorer .listing_thumbnails .entry .name {
 	overflow:		hidden;
 }
 
-.explorer .selected {
+form.explorer .selected {
 	background-color:	#4b6983;
 	color:			#ffffff;
 }
 
-.explorer .selected a {
+form.explorer .selected a {
 	color:			#ffffff;
 }
 
-.explorer .toolbar {
+form.explorer .toolbar {
 	background-color:	#dcdad5;
 	border-bottom:		1px solid #000000;
 	border-top:		1px solid #ffffff;
 }
 
-.explorer .toolbar img {
+form.explorer .toolbar img {
 	border:			1px solid #dcdad5;
 }
 
-.explorer .toolbar img:hover {
+form.explorer .toolbar img:hover {
 	background-color:	#eeebe7;
 	border-bottom:		1px solid #afa699;
 	border-left:		1px solid #ffffff;
@@ -250,7 +250,7 @@ pre {
 	border-top:		1px solid #ffffff;
 }
 
-.explorer .toolbar .separator {
+form.explorer .toolbar .separator {
 	border-left:		1px solid #9e9a91;
 	border-right:		1px solid #ffffff;
 }

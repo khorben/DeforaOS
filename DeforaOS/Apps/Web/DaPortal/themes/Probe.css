@@ -74,11 +74,11 @@ img {
 	vertical-align:			middle;
 }
 
-.explorer .entry .thumbnail {
+form.explorer .entry .thumbnail {
 	text-align:			center;
 }
 
-.explorer .listing_thumbnails .entry {
+form.explorer .listing_thumbnails div.entry {
 	margin:				10px;
 }
 
