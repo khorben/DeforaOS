@@ -94,6 +94,7 @@ $text['MEMBERS'] = 'Members';
 $text['MESSAGE'] = 'Message';
 $text['MODIFY'] = 'Modify';
 $text['NAME'] = 'Name';
+$text['NEW_POST'] = 'New post';
 $text['NEWS'] = 'News';
 $text['NO'] = 'No';
 $text['PASSWORD'] = 'Password';
