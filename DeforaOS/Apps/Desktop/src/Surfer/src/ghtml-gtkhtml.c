@@ -47,14 +47,15 @@
 /* GHtml */
 /* private */
 typedef struct _GHtmlConn GHtmlConn;
+typedef struct _GHtmlHistory GHtmlHistory;
 
 typedef struct _GHtml
 {
 	Surfer * surfer;
 
-	gchar * html_base;
-	gchar * html_url;
-	/* FIXME implement history */
+	/* history */
+	GList * history;
+	GList * current;
 
 	/* connections */
 	struct _GHtmlConn ** conns;
@@ -96,9 +97,11 @@ static GHtmlConn * _ghtmlconn_new(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url, gchar const * post);
 static void _ghtmlconn_delete(GHtmlConn * ghtmlconn);
 
+static char const * _ghtml_get_base(GHtml * ghtml);
 static int _ghtml_set_base(GHtml * ghtml, char const * url);
 static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post);
+static int _ghtml_document_reload(GHtml * ghtml);
 static gchar * _ghtml_make_url(gchar const * base, gchar const * url);
 static void _ghtml_stop(GHtml * ghtml);
 static GHtmlConn * _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
@@ -117,6 +120,21 @@ static void _on_title_changed(HtmlDocument * document, const gchar * title);
 static void _on_url(HtmlView * view, const gchar * url);
 
 
+/* GHtmlHistory */
+/* types */
+struct _GHtmlHistory
+{
+	gchar * base;
+	gchar * url;
+	gchar * post;
+};
+
+
+/* prototypes */
+static GHtmlHistory * _ghtmlhistory_new(char const * url, char const * post);
+static void _ghtmlhistory_delete(GHtmlHistory * h);
+
+
 /* public */
 /* functions */
 GtkWidget * ghtml_new(Surfer * surfer)
@@ -127,8 +145,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	if((ghtml = malloc(sizeof(*ghtml))) == NULL)
 		return NULL;
 	ghtml->surfer = surfer;
-	ghtml->html_base = NULL;
-	ghtml->html_url = NULL;
+	ghtml->history = NULL;
+	ghtml->current = NULL;
 	ghtml->conns = NULL;
 	ghtml->conns_cnt = 0;
 	ghtml->html_view = html_view_new();
@@ -163,18 +181,24 @@ GtkWidget * ghtml_new(Surfer * surfer)
 
 /* accessors */
 /* ghtml_can_go_back */
-gboolean ghtml_can_go_back(GtkWidget * ghtml)
+gboolean ghtml_can_go_back(GtkWidget * widget)
 {
-	/* FIXME implement */
-	return FALSE;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return ghtml->current != NULL && ghtml->current->prev != NULL
+		? TRUE : FALSE;
 }
 
 
 /* ghtml_can_go_forward */
-gboolean ghtml_can_go_forward(GtkWidget * ghtml)
+gboolean ghtml_can_go_forward(GtkWidget * widget)
 {
-	/* FIXME implement */
-	return FALSE;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return ghtml->current != NULL && ghtml->current->next != NULL
+		? TRUE : FALSE;
 }
 
 
@@ -190,9 +214,14 @@ char const * ghtml_get_link_message(GtkWidget * ghtml)
 char const * ghtml_get_location(GtkWidget * widget)
 {
 	GHtml * ghtml;
+	GHtmlHistory * h;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	return ghtml->html_url;
+	if(ghtml == NULL || ghtml->current == NULL
+			|| ghtml->current->data == NULL)
+		return NULL;
+	h = ghtml->current->data;
+	return h->url;
 }
 
 
@@ -218,18 +247,30 @@ int ghtml_set_base(GtkWidget * widget, char const * url)
 
 /* useful */
 /* ghtml_go_back */
-gboolean ghtml_go_back(GtkWidget * ghtml)
+gboolean ghtml_go_back(GtkWidget * widget)
 {
-	/* FIXME implement */
-	return FALSE;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if(ghtml->current == NULL || ghtml->current->prev == NULL)
+		return FALSE;
+	ghtml->current = ghtml->current->prev;
+	ghtml_refresh(widget);
+	return (ghtml->current->prev != NULL) ? TRUE : FALSE;
 }
 
 
 /* ghtml_go_forward */
-gboolean ghtml_go_forward(GtkWidget * ghtml)
+gboolean ghtml_go_forward(GtkWidget * widget)
 {
-	/* FIXME implement */
-	return FALSE;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if(ghtml->current == NULL || ghtml->current->next == NULL)
+		return FALSE;
+	ghtml->current = ghtml->current->next;
+	ghtml_refresh(widget);
+	return (ghtml->current->next != NULL) ? TRUE : FALSE;
 }
 
 
@@ -245,15 +286,8 @@ void ghtml_load_url(GtkWidget * widget, char const * url)
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	if((link = _ghtml_make_url(NULL, url)) != NULL)
 		url = link;
-	if(_ghtml_document_load(ghtml, url, NULL) != 0)
-	{
-		g_free(link);
-		return;
-	}
-	g_free(ghtml->html_base);
-	ghtml->html_base = (link != NULL) ? link : g_strdup(url);
-	g_free(ghtml->html_url);
-	ghtml->html_url = g_strdup(url);
+	_ghtml_document_load(ghtml, url, NULL);
+	g_free(link);
 }
 
 
@@ -263,10 +297,7 @@ void ghtml_refresh(GtkWidget * widget)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	if(ghtml->html_url == NULL)
-		return;
-	/* FIXME keep POST data and warn about re-submission */
-	_ghtml_document_load(ghtml, ghtml->html_url, NULL);
+	_ghtml_document_reload(ghtml);
 }
 
 
@@ -444,17 +475,29 @@ static void _ghtmlconn_delete_http(GHtmlConn * ghtmlconn)
 }
 
 
+/* ghtml_get_base */
+static char const * _ghtml_get_base(GHtml * ghtml)
+{
+	GHtmlHistory * h;
+
+	if(ghtml->current == NULL || (h = ghtml->current->data) == NULL)
+		return NULL;
+	return (h->base != NULL) ? h->base : h->url;
+}
+
+
 /* ghtml_set_base */
 static int _ghtml_set_base(GHtml * ghtml, char const * url)
 {
-	g_free(ghtml->html_base);
-	if(url != NULL)
-	{
-		if((ghtml->html_base = g_strdup(url)) == NULL)
-			return 1;
-	}
-	else
-		ghtml->html_base = NULL;
+	GHtmlHistory * h;
+
+	if(ghtml->current == NULL || (h = ghtml->current->data) == NULL)
+		return 1;
+	free(h->base);
+	if(url == NULL)
+		h->base = NULL;
+	else if((h->base = strdup(url)) == NULL)
+		return 1;
 	return 0;
 }
 
@@ -464,13 +507,37 @@ static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post)
 {
 	GHtmlConn * gc;
+	GHtmlHistory * h;
 
 	_ghtml_stop(ghtml);
+	if((h = _ghtmlhistory_new(url, post)) == NULL)
+		return 1;
+	ghtml->history = g_list_append(ghtml->history, h);
+	ghtml->current = g_list_last(ghtml->history);
 	surfer_set_location(ghtml->surfer, url);
 	surfer_set_title(ghtml->surfer, NULL);
 	html_document_open_stream(ghtml->html_document, "text/html");
 	if((gc = _ghtml_stream_load(ghtml, ghtml->html_document->current_stream,
 			url, post)) != NULL)
+		gc->direct = 1;
+	return gc != NULL ? 0 : 1;
+}
+
+
+static int _ghtml_document_reload(GHtml * ghtml)
+{
+	GHtmlConn * gc;
+	GHtmlHistory * h;
+
+	_ghtml_stop(ghtml);
+	if(ghtml->current == NULL || (h = ghtml->current->data) == NULL)
+		return 0;
+	surfer_set_location(ghtml->surfer, h->url);
+	surfer_set_title(ghtml->surfer, NULL);
+	html_document_open_stream(ghtml->html_document, "text/html");
+	/* FIXME warn if h->post is set */
+	if((gc = _ghtml_stream_load(ghtml, ghtml->html_document->current_stream,
+			h->url, h->post)) != NULL)
 		gc->direct = 1;
 	return gc != NULL ? 0 : 1;
 }
@@ -516,7 +583,11 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 		/* construct from basename */
 		if((b = strdup(base)) == NULL)
 			return NULL;
-		if((p = strrchr(b, '/')) != NULL)
+		p = b;
+		/* FIXME implement other protocols */
+		if(strncmp("http://", p, 7) == 0)
+			p += 7;
+		if((p = strrchr(p, '/')) != NULL)
 			*p = '\0';
 		p = g_strdup_printf("%s/%s", b, url);
 		free(b);
@@ -858,15 +929,16 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 
 static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 {
+	GHtml * ghtml = conn->ghtml;
 	char buf[256] = "Redirecting...";
 	char * url = event->new_location;
 
 	if(url == NULL)
 	{
-		surfer_set_status(conn->ghtml->surfer, buf);
+		surfer_set_status(ghtml->surfer, buf);
 		return;
 	}
-	if((url = _ghtml_make_url(conn->ghtml->html_base, url)) != NULL)
+	if((url = _ghtml_make_url(_ghtml_get_base(ghtml), url)) != NULL)
 	{
 		snprintf(buf, sizeof(buf), "%s %s", "Redirecting to ", url);
 		g_free(conn->url);
@@ -877,9 +949,9 @@ static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 			event->auto_redirect, event->num_redirects,
 			event->max_redirects);
 #endif
-	_ghtml_set_base(conn->ghtml, url);
-	surfer_set_location(conn->ghtml->surfer, url);
-	surfer_set_status(conn->ghtml->surfer, buf);
+	_ghtml_set_base(ghtml, url);
+	surfer_set_location(ghtml->surfer, url);
+	surfer_set_status(ghtml->surfer, buf);
 }
 
 static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
@@ -892,7 +964,7 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 #endif
 	if(event->ia == NULL)
 	{
-#if 0
+#if 0 /* XXX check again if this is really an error case */
 		surfer_set_progress(conn->ghtml->surfer, -1.0);
 		surfer_set_status(conn->ghtml->surfer, NULL);
 		surfer_error(conn->ghtml->surfer, "Unknown host", 0);
@@ -989,11 +1061,11 @@ static void _on_link_clicked(HtmlDocument * document, const gchar * url)
 	gchar * link;
 
 	ghtml = g_object_get_data(G_OBJECT(document), "ghtml");
-	if((link = _ghtml_make_url(ghtml->html_base, url)) == NULL)
+	if((link = _ghtml_make_url(_ghtml_get_base(ghtml), url)) == NULL)
 		return; /* FIXME report error */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") base=\"%s\" => \"%s\"\n", __func__,
-			url, ghtml->html_base, link);
+			url, _ghtml_get_base(ghtml), link);
 #endif
 	_ghtml_document_load(ghtml, link, NULL);
 	g_free(link);
@@ -1007,11 +1079,11 @@ static void _on_request_url(HtmlDocument * document, const gchar * url,
 	gchar * link;
 
 	ghtml = g_object_get_data(G_OBJECT(document), "ghtml");
-	if((link = _ghtml_make_url(ghtml->html_base, url)) == NULL)
+	if((link = _ghtml_make_url(_ghtml_get_base(ghtml), url)) == NULL)
 		return; /* FIXME report error */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") base=\"%s\" => \"%s\"\n", __func__,
-			url, ghtml->html_base, link);
+			url, _ghtml_get_base(ghtml), link);
 #endif
 	_ghtml_stream_load(ghtml, stream, link, NULL);
 	g_free(link);
@@ -1028,7 +1100,7 @@ static void _on_set_base(HtmlDocument * document, const gchar * url)
 #endif
 	ghtml = g_object_get_data(G_OBJECT(document), "ghtml");
 	/* FIXME may fail */
-	u = _ghtml_make_url(ghtml->html_base, url);
+	u = _ghtml_make_url(_ghtml_get_base(ghtml), url);
 	_ghtml_set_base(ghtml, u);
 	g_free(u);
 }
@@ -1046,7 +1118,7 @@ static void _on_submit(HtmlDocument * document, const gchar * url,
 			url, method, encoding);
 #endif
 	ghtml = g_object_get_data(G_OBJECT(document), "ghtml");
-	if((u = _ghtml_make_url(ghtml->html_base, url)) == NULL)
+	if((u = _ghtml_make_url(_ghtml_get_base(ghtml), url)) == NULL)
 		return; /* FIXME report error */
 	if(method == NULL || strcasecmp(method, "GET") == 0)
 	{
@@ -1091,9 +1163,40 @@ static void _on_url(HtmlView * view, const gchar * url)
 		surfer_set_status(ghtml->surfer, NULL);
 		return;
 	}
-	if((link = _ghtml_make_url(ghtml->html_base, url)) != NULL)
+	if((link = _ghtml_make_url(_ghtml_get_base(ghtml), url)) != NULL)
 	{
 		surfer_set_status(ghtml->surfer, link);
 		g_free(link);
 	}
+}
+
+
+/* GHtmlHistory */
+/* functions */
+/* ghtmlhistory_new */
+static GHtmlHistory * _ghtmlhistory_new(char const * url, char const * post)
+{
+	GHtmlHistory * h;
+
+	if((h = object_new(sizeof(*h))) == NULL)
+		return NULL;
+	h->base = NULL;
+	h->url = strdup(url);
+	h->post = (post != NULL) ? strdup(post) : NULL;
+	if(h->url == NULL || (post != NULL && h->post == NULL))
+	{
+		_ghtmlhistory_delete(h);
+		return NULL;
+	}
+	return h;
+}
+
+
+/* ghtmlhistory_delete */
+static void _ghtmlhistory_delete(GHtmlHistory * h)
+{
+	free(h->base);
+	free(h->url);
+	free(h->post);
+	free(h);
 }
