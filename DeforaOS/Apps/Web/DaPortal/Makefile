@@ -219,6 +219,16 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/article/posted.tpl \
 		$(PACKAGE)-$(VERSION)/modules/article/update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/article/project.conf \
+		$(PACKAGE)-$(VERSION)/modules/blog/Makefile \
+		$(PACKAGE)-$(VERSION)/modules/blog/desktop.php \
+		$(PACKAGE)-$(VERSION)/modules/blog/index.php \
+		$(PACKAGE)-$(VERSION)/modules/blog/module.php \
+		$(PACKAGE)-$(VERSION)/modules/blog/blog_display.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/blog_update.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/rss_channel_bottom.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/rss_channel_top.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/rss_item.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/default.tpl \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/desktop.php \
