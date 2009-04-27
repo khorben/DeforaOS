@@ -496,8 +496,23 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 	if(base != NULL)
 	{
 		if(url[0] == '/')
-			/* FIXME construct from / of base */
+		{
+			if(strncmp("http://", base, 7) == 0)
+			{
+				if((b = g_strdup(base)) == NULL)
+					return NULL;
+				if((p = strchr(&b[7], '/')) != NULL)
+				{
+					*p = '\0';
+					p = g_strdup_printf("%s%s", b, url);
+					free(b);
+					return p;
+				}
+				free(b);
+			}
+			/* FIXME implement other protocols */
 			return g_strdup_printf("%s%s", base, url);
+		}
 		/* construct from basename */
 		if((b = strdup(base)) == NULL)
 			return NULL;
