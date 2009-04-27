@@ -245,79 +245,79 @@ table.bordered th {
 	color:				#ff0000;
 }
 
-.explorer .entry {
+form.explorer div.entry {
 	overflow:			hidden;
 }
 
-.explorer .entry .icon {
+form.explorer div.entry span.icon {
 	text-align:			center;
 	width:				20px;
 }
 
-.explorer .entry .thumbnail {
+form.explorer div.entry span.thumbnail {
 	height:				100px;
 	margin-top:			4px;
 	text-align:			center;
 	width:				100px;
 }
 
-.explorer .entry .thumbnail img {
+form.explorer div.entry span.thumbnail img {
 	max-height:			100px;
 	max-width:			100px;
 }
 
-.explorer .header {
+form.explorer div.header {
 	background-color:		#404040;
 }
 
-.explorer .header div.sort {
+form.explorer .header div.sort {
 	background-image:		url("../icons/16x16/down.png");
 	background-repeat:		no-repeat;
 	background-position:		center right;
 	padding-right:			16px;
 }
 
-.explorer .selected {
+form.explorer .selected {
 	background-color:		#400000;
 }
 
-.explorer .listing_details .header div,
-.explorer .listing_details .entry div {
+form.explorer .listing_details div.header span,
+form.explorer .listing_details div.entry span {
 	padding-left:			4px;
 	text-align:			left;
 }
 
-.explorer .listing_details .header div.icon,
-.explorer .listing_details .header div.name,
-.explorer .listing_details .entry div.icon,
-.explorer .listing_details .entry div.name {
+form.explorer .listing_details div.header span.icon,
+form.explorer .listing_details div.header span.name,
+form.explorer .listing_details div.entry span.icon,
+form.explorer .listing_details div.entry span.name {
 	padding:			0;
 }
 
-.explorer .listing_details .entry .date,
-.explorer .listing_details .entry .mode,
-.explorer .listing_details .entry .revision {
+form.explorer .listing_details div.entry span.date,
+form.explorer .listing_details div.entry span.mode,
+form.explorer .listing_details div.entry span.revision {
 	font-family:			monospace;
 	font-size:			90%;
 }
 
-.explorer .listing_list .entry {
+form.explorer .listing_list div.entry {
 	height:				1em;
 	min-height:			16px;
 	width:				200px;
 }
 
-.explorer .listing_list .entry .name {
+form.explorer .listing_list div.entry span.name {
 	text-align:			left;
 }
 
-.explorer .listing_thumbnails .entry {
+form.explorer .listing_thumbnails div.entry {
 	margin-right:			4px;
 	margin-top:			4px;
 	width:				100px;
 }
 
-.explorer .toolbar {
+form.explorer div.toolbar {
 	background-color:		#790000;
 }
 
