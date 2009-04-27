@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 }
 
 
-//PRE  module, action and params are trusted
+//PRE	module, action and params are trusted
 function _html_link_full($module, $action = FALSE, $id = FALSE, $title = FALSE,
 		$params = FALSE)
 {
@@ -44,9 +44,8 @@ function _html_paging($link, $page, $count)
 	print('<div class="paging">'."\n");
 	for($i = 1; $i <= $count; $i++)
 	{
-		print('	');
 		if($i != 1)
-			print('| ');
+			print(' | ');
 		if($i == $page)
 			print($page."\n");
 		else
