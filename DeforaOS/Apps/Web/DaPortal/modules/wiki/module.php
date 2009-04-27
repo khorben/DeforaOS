@@ -37,6 +37,7 @@ $text['INSERT_HORIZONTAL_RULE'] = 'Insert horizontal rule';
 $text['INSERT_IMAGE'] = 'Insert image';
 $text['INSERT_LINK'] = 'Insert link';
 $text['ITALIC'] = 'Italic';
+$text['LOOK_FOR_A_PAGE'] = 'Look for a page';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['PASTE'] = 'Paste';
