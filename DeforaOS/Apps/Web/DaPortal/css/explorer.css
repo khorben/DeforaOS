@@ -3,108 +3,102 @@
 
 
 /* explorer */
-.explorer {
+form.explorer {
 	overflow:		auto;
 }
 
-.explorer .toolbar img {
+form.explorer div.toolbar img {
 	padding:		2px;
 	max-height:		16px;
 	max-width:		16px;
 }
 
-.explorer .toolbar .separator {
+form.explorer div.toolbar .separator {
 	display:		inline;
 }
 
-.explorer .header {
+form.explorer div.header {
 	font-weight:		bold;
 }
 
-.explorer .entry {
+form.explorer div.entry {
 	cursor:			default;
 }
 
-.explorer .entry .icon {
+form.explorer div.entry span.icon {
 	padding-left:		2px;
 	padding-right:		2px;
 }
 
-.explorer .entry .icon img {
+form.explorer div.entry span.icon img {
 	max-height:		16px;
 	max-width:		16px;
 }
 
 /* explorer listing_details */
-.explorer .listing_details .entry div {
+form.explorer div.listing_details div.entry span {
 	vertical-align:		middle;
 }
 
-.explorer .listing_details {
+form.explorer div.listing_details {
 	display:		table;
 	width:			100%;
 }
 
-.explorer .listing_details .header {
+form.explorer div.listing_details div.header {
 	display:		table-row;
 }
 
-.explorer .listing_details .header div {
+form.explorer div.listing_details div.header span {
 	display:		table-cell;
 }
 
-.explorer .listing_details .entry {
+form.explorer div.listing_details div.entry {
 	display:		table-row;
 }
 
-.explorer .listing_details .entry div {
+form.explorer div.listing_details div.entry span {
 	display:		table-cell;
 }
 
-.explorer .listing_details .entry .thumbnail {
+form.explorer div.listing_details div.entry span.thumbnail {
 	display:		none;
 }
 
 /* explorer listing_list */
-.explorer .listing_list .header {
+form.explorer div.listing_list div.header,
+form.explorer div.listing_list div.entry span {
 	display:		none;
 }
 
-.explorer .listing_list .entry {
+form.explorer div.listing_list div.entry {
 	float:			left;
 }
 
-.explorer .listing_list .entry div {
-	display:		none;
-}
-
-.explorer .listing_list .entry .icon {
+form.explorer div.listing_list div.entry span.icon,
+form.explorer div.listing_list div.entry span.name {
 	display:		inline;
 }
 
-.explorer .listing_list .entry .name {
-	display:		inline;
+form.explorer div.listing_list div.entry span.name {
 	vertical-align:		top;
 }
 
 /* explorer listing_thumbnails */
-.explorer .listing_thumbnails .header {
+form.explorer div.listing_thumbnails div.header,
+form.explorer div.listing_thumbnails div.entry span {
 	display:		none;
 }
 
-.explorer .listing_thumbnails .entry {
+form.explorer div.listing_thumbnails div.entry {
 	float:			left;
 }
 
-.explorer .listing_thumbnails .entry div {
-	display:		none;
-}
-
-.explorer .listing_thumbnails .entry .name {
-	display:		block;
+form.explorer div.listing_thumbnails div.entry span.name {
 	text-align:		center;
 }
 
-.explorer .listing_thumbnails .entry .thumbnail {
+form.explorer div.listing_thumbnails div.entry span.name,
+form.explorer div.listing_thumbnails div.entry span.thumbnail {
 	display:		block;
 }

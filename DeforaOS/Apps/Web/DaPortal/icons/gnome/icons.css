@@ -5,12 +5,12 @@
 
 
 /* classes */
-div.icon, div.thumbnail {
+div.icon, div.thumbnail, span.icon, span.thumbnail {
 	background-position:	bottom right;
 	background-repeat:	no-repeat;
 }
 
-div.icon {
+div.icon, span.icon {
 	display:		inline;
 	margin-left:		2px;
 	padding-left:		8px;
@@ -19,7 +19,7 @@ div.icon {
 	padding-top:		0px;
 }
 
-div.thumbnail {
+div.thumbnail, span.thumbnail {
 	min-height:		48px;
 	min-width:		48px;
 }

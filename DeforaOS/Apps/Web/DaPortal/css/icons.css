@@ -22,22 +22,10 @@ h3.title {
 
 
 /* existing icons */
-div.icon.disabled {
+.icon.disabled {
 	background-image:		url('../icons/16x16/disabled.png');
 }
 
-div.icon.enabled {
+.icon.enabled {
 	background-image:		url('../icons/16x16/enabled.png');
-}
-
-div.icon.project {
-	background-image:		url('../icons/16x16/project.png');
-}
-
-h1.title.logout {
-	background-image:		url('../icons/48x48/logout.png');
-}
-
-h1.title.papadam {
-	background-image:		url('../icons/48x48/papadam.png');
 }
