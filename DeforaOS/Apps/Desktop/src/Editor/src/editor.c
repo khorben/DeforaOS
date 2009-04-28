@@ -149,6 +149,9 @@ Editor * editor_new(void)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	editor->view = gtk_text_view_new();
+	/* FIXME make it an option */
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor->view),
+			GTK_WRAP_WORD_CHAR);
 	desc = pango_font_description_new();
 	pango_font_description_set_family(desc, "monospace");
 	gtk_widget_modify_font(editor->view, desc);
