@@ -93,6 +93,6 @@ _image_iso()
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	|| exit 2
 	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	|| exit 2
 	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
-	$INSTALLBOOT -m amd64 -o console=pc -e bootxx		|| exit 2
+	$INSTALLBOOT -m "$ARCH" -o console=pc -e bootxx		|| exit 2
 	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
 }
