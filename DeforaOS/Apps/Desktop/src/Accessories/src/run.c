@@ -28,6 +28,7 @@
 /* types */
 typedef struct _Run
 {
+	gboolean terminal;
 	GtkWidget * window;
 	GtkWidget * entry;
 	pid_t pid;		/* current child */
@@ -46,6 +47,7 @@ static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 		gpointer data);
 static void _on_run_execute(GtkWidget * widget, gpointer data);
 static void _on_run_path_activate(GtkWidget * widget, gpointer data);
+static void _on_run_terminal_toggle(GtkWidget * widget, gpointer data);
 
 /* run */
 static void _run(void)
@@ -57,6 +59,7 @@ static void _run(void)
 	GtkWidget * widget;
 	GtkSizeGroup * group;
 
+	run.terminal = FALSE;
 	run.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(run.window);
 	gtk_window_set_title(window, "Run program...");
@@ -67,7 +70,7 @@ static void _run(void)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Run: ");
+	widget = gtk_label_new("Command: ");
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
 	run.entry = gtk_entry_new();
 	g_signal_connect(G_OBJECT(run.entry), "activate", G_CALLBACK(
@@ -82,6 +85,10 @@ static void _run(void)
 	widget = gtk_file_chooser_button_new_with_dialog(widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 4);
+	widget = gtk_check_button_new_with_label("Run in a terminal");
+	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
+				_on_run_terminal_toggle), &run);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
@@ -174,7 +181,10 @@ static void _on_run_execute(GtkWidget * widget, gpointer data)
 	}
 	else /* child process */
 	{
-		execlp("/bin/sh", "run", "-c", path, NULL);
+		if(run->terminal == TRUE)
+			execlp("xterm", "xterm", "-e", "sh", "-c", path, NULL);
+		else
+			execlp("/bin/sh", "run", "-c", path, NULL);
 		_exit(127); /* an error occured */
 	}
 }
@@ -217,6 +227,15 @@ static gboolean _execute_idle(gpointer data)
 static void _on_run_path_activate(GtkWidget * widget, gpointer data)
 {
 	_on_run_execute(widget, data);
+}
+
+
+/* on_run_terminal_toggle */
+static void _on_run_terminal_toggle(GtkWidget * widget, gpointer data)
+{
+	Run * run = data;
+
+	run->terminal = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 
