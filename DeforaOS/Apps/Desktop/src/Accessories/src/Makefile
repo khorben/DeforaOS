@@ -38,7 +38,7 @@ progress: $(progress_OBJS)
 
 run_OBJS = run.o
 run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 
 run: $(run_OBJS)
 	$(CC) -o run $(run_OBJS) $(run_LDFLAGS)

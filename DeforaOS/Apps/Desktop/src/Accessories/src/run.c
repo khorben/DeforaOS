@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Accessories */
 /* Accessories is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -16,6 +16,7 @@
 
 
 
+#include <System.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -28,16 +29,26 @@
 /* types */
 typedef struct _Run
 {
+	Config * config;
 	gboolean terminal;
+
+	/* widgets */
 	GtkWidget * window;
 	GtkWidget * entry;
+
+	/* internal */
 	pid_t pid;		/* current child */
 } Run;
+
+
+/* constants */
+#define RUN_CONFIG_FILE ".runrc"
 
 
 /* functions */
 /* useful */
 static int _run_error(char const * message, int ret);
+static char * _run_get_config_filename(void);
 
 /* callbacks */
 static gboolean _on_run_closex(GtkWidget * widget, GdkEvent * event,
@@ -49,60 +60,112 @@ static void _on_run_execute(GtkWidget * widget, gpointer data);
 static void _on_run_path_activate(GtkWidget * widget, gpointer data);
 static void _on_run_terminal_toggle(GtkWidget * widget, gpointer data);
 
-/* run */
-static void _run(void)
+/* run_new */
+static GtkWidget * _new_entry(Config * config);
+
+static Run * _run_new(void)
 {
-	static Run run;
+	Run * run;
 	GtkWindow * window;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkSizeGroup * group;
 
-	run.terminal = FALSE;
-	run.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	window = GTK_WINDOW(run.window);
-	gtk_window_set_title(window, "Run program...");
-	gtk_window_set_resizable(window, FALSE);
+	if((run = object_new(sizeof(*run))) == NULL)
+		return NULL;
+	run->config = config_new();
+	run->terminal = FALSE;
+	run->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	window = GTK_WINDOW(run->window);
 	gtk_window_set_keep_above(window, TRUE);
+	gtk_window_set_resizable(window, FALSE);
+	gtk_window_set_skip_pager_hint(window, TRUE);
+	gtk_window_set_title(window, "Run program...");
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_on_run_closex), &run);
+				_on_run_closex), run);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Command: ");
+	widget = gtk_label_new("Command:");
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
-	run.entry = gtk_entry_new();
-	g_signal_connect(G_OBJECT(run.entry), "activate", G_CALLBACK(
-				_on_run_path_activate), &run);
-	gtk_box_pack_start(GTK_BOX(hbox), run.entry, TRUE, TRUE, 4);
+	run->entry = _new_entry(run->config);
+	g_signal_connect(G_OBJECT(run->entry), "activate", G_CALLBACK(
+				_on_run_path_activate), run);
+	gtk_box_pack_start(GTK_BOX(hbox), run->entry, TRUE, TRUE, 4);
 	widget = gtk_file_chooser_dialog_new("Run program...", window,
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
 	g_signal_connect(G_OBJECT(widget), "response", G_CALLBACK(
-				_on_run_choose_activate), &run);
+				_on_run_choose_activate), run);
 	widget = gtk_file_chooser_button_new_with_dialog(widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 4);
 	widget = gtk_check_button_new_with_label("Run in a terminal");
 	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
-				_on_run_terminal_toggle), &run);
+				_on_run_terminal_toggle), run);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_run_execute), &run);
+				_on_run_execute), run);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_on_run_cancel), &run);
+				_on_run_cancel), run);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
-	gtk_container_add(GTK_CONTAINER(run.window), vbox);
-	gtk_widget_show_all(run.window);
+	gtk_container_add(GTK_CONTAINER(run->window), vbox);
+	gtk_widget_show_all(run->window);
+	return run;
+}
+
+static GtkWidget * _new_entry(Config * config)
+{
+	GtkWidget * entry;
+	char * p;
+	char const * q;
+	GtkEntryCompletion * completion;
+	GtkListStore * store;
+	int i;
+	char buf[10];
+	GtkTreeIter iter;
+
+	entry = gtk_entry_new();
+	if(config == NULL)
+		return entry;
+	if((p = _run_get_config_filename()) == NULL)
+		return entry;
+	config_load(config, p);
+	free(p);
+	completion = gtk_entry_completion_new();
+	gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+	g_object_unref(completion);
+	store = gtk_list_store_new(1, G_TYPE_STRING);
+	gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
+	g_object_unref(store);
+	gtk_entry_completion_set_text_column(completion, 0);
+	for(i = 0; i < 100; i++)
+	{
+		snprintf(buf, sizeof(buf), "%s%d", "command", i);
+		if((q = config_get(config, "", buf)) == NULL)
+			break;
+		gtk_list_store_append(store, &iter);
+		gtk_list_store_set(store, &iter, 0, q, -1);
+	}
+	return entry;
+}
+
+
+/* run_delete */
+static void _run_delete(Run * run)
+{
+	if(run->config != NULL)
+		config_delete(run->config);
+	object_delete(run);
 }
 
 
@@ -119,6 +182,23 @@ static int _run_error(char const * message, int ret)
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
+}
+
+
+/* run_get_config_filename */
+static char * _run_get_config_filename(void)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(RUN_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, RUN_CONFIG_FILE);
+	return filename;
 }
 
 
@@ -161,6 +241,7 @@ static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 /* on_run_execute */
 /* static void _execute_parent(GtkWidget * window, pid_t pid); */
 static gboolean _execute_idle(gpointer data);
+static void _idle_save_config(Run * run);
 
 static void _on_run_execute(GtkWidget * widget, gpointer data)
 {
@@ -215,11 +296,42 @@ static gboolean _execute_idle(gpointer data)
 		{
 			_run_error("Child exited with error code 127", 0);
 			gtk_widget_show(run->window);
+			return FALSE;
 		}
-		else
-			gtk_main_quit();
+		_idle_save_config(run);
+		gtk_main_quit();
 	}
 	return FALSE;
+}
+
+static void _idle_save_config(Run * run)
+{
+	char const * p;
+	int i;
+	char buf[10];
+	char const * q;
+	char * filename;
+
+	if((filename = _run_get_config_filename()) == NULL)
+		return;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	p = gtk_entry_get_text(GTK_ENTRY(run->entry));
+	for(i = 0; i < 100; i++)
+	{
+		snprintf(buf, sizeof(buf), "%s%d", "command", i);
+		q = config_get(run->config, "", buf);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() config_set(config, "", %s, %s)\n",
+				__func__, buf, p);
+#endif
+		config_set(run->config, "", buf, p);
+		if((p = q) == NULL)
+			break;
+	}
+	config_save(run->config, filename);
+	free(filename);
 }
 
 
@@ -242,8 +354,12 @@ static void _on_run_terminal_toggle(GtkWidget * widget, gpointer data)
 /* main */
 int main(int argc, char * argv[])
 {
+	Run * run;
+
 	gtk_init(&argc, &argv);
-	_run();
+	if((run = _run_new()) == NULL)
+		return _run_error(error_get(), 2);
 	gtk_main();
+	_run_delete(run);
 	return 0;
 }
