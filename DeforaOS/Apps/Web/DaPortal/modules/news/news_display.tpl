@@ -10,18 +10,18 @@
 	<div class="content"><?php echo _html_pre($news['content']); ?></div>
 	<div class="status">
 <?php if(isset($news['preview'])) { ?>
-		<?php echo _html_safe(NEWS_PREVIEW); ?>
+	<?php echo _html_safe(NEWS_PREVIEW); ?>
 <?php } else { ?>
 		<a href="<?php echo _html_link('news', FALSE, $news['id'], $news['tag']); ?>"><div class="icon read"></div> <?php echo _html_safe(READ); ?></a>
 <?php if(_module_id('comment')) { ?>
 		(<?php echo _html_safe(_module('comment', 'count', array('id' => $news['id'])).' '.COMMENT_S); ?>)
 		<span class="middot">&middot;</span>
 		<a href="<?php echo _html_link('news', 'reply', $news['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
-<?php } } ?>
+<?php } ?>
 <?php global $user_id; require_once('./system/user.php');
 if(isset($news['id']) && _user_admin($user_id)) { ?>
 		<span class="middot">&middot;</span>
 		<a href="<?php echo _html_link('news', 'update', $news['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
-<?php } ?>
+<?php } } ?>
 	</div>
 </div>

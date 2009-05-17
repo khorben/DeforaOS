@@ -75,6 +75,8 @@ function _news_insert($news)
 }
 
 
+//public
+//news_admin
 function news_admin($args)
 {
 	global $user_id;
@@ -152,6 +154,7 @@ function news_admin($args)
 }
 
 
+//news_default
 function news_default($args)
 {
 	if(!isset($args['id']))
@@ -161,6 +164,7 @@ function news_default($args)
 }
 
 
+//news_delete
 function news_delete($args)
 {
 	global $user_id;
@@ -174,6 +178,7 @@ function news_delete($args)
 }
 
 
+//news_disable
 function news_disable($args)
 {
 	global $user_id;
@@ -187,6 +192,7 @@ function news_disable($args)
 }
 
 
+//news_enable
 function news_enable($args)
 {
 	global $user_id;
@@ -200,6 +206,7 @@ function news_enable($args)
 }
 
 
+//news_headline
 function news_headline($args)
 {
 	$page = 1;
@@ -229,11 +236,11 @@ function news_headline($args)
 }
 
 
+//news_list
 function news_list($args)
 {
-	if(isset($args['user_id']) && ($username = _sql_single('SELECT username'
-			.' FROM daportal_user'
-			." WHERE user_id='".$args['user_id']."'")) != FALSE)
+	if(isset($args['user_id'])
+			&& ($username = _user_name($user_id)) != FALSE)
 		return _list_user($args['user_id'], $username);
 	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
@@ -337,6 +344,7 @@ function news_reply($args)
 }
 
 
+//news_rss
 function news_rss($args)
 {
 	global $title;
@@ -373,6 +381,7 @@ function news_rss($args)
 }
 
 
+//news_submit
 function news_submit($args)
 {
 	global $error, $user_id, $user_name;
@@ -401,6 +410,7 @@ function news_submit($args)
 }
 
 
+//news_system
 function news_system($args)
 {
 	global $html, $title, $error;
@@ -516,6 +526,7 @@ function _system_news_update($args)
 }
 
 
+//news_update
 function news_update($args)
 {
 	global $error, $user_id, $user_name;
