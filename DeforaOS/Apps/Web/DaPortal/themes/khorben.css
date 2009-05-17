@@ -58,6 +58,10 @@ table th a {
 	padding-left:			2em;
 }
 
+.field {
+	font-weight:			bold;
+}
+
 .hidden {
 	display:			none;
 }
