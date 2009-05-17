@@ -1,9 +1,10 @@
 #!/usr/bin/env sh
+#$Id$
 
 
 
 #variables
-[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@cvs.defora.org:/Data/CVS"
+[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/Data/CVS"
 #private
 DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www/htdocs/download/snapshots"

@@ -5,7 +5,7 @@
 
 #variables
 [ -z "$ARCH" ] && ARCH=`uname -m`
-[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@cvs.defora.org:/Data/CVS"
+[ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/Data/CVS"
 [ -z "$OS" ] && OS=`uname -s`
 #private
 DESTDIR="/var/www/htdocs/download/snapshots"
