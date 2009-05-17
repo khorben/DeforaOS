@@ -37,12 +37,10 @@ $text['BLOG_POST'] = 'Blog post';
 $text['BLOG_PREVIEW'] = 'Blog post preview';
 $text['COMMENT_S'] = 'comment(s)';
 $text['NEW_BLOG_POST'] = 'New blog post';
-$text['NEW_POST'] = 'New post';
 global $lang;
 if($lang == 'fr')
 {
 	$text['NEW_BLOG_POST'] = 'Nouveau billet';
-	$text['NEW_POST'] = 'Nouveau billet';
 }
 _lang($text);
 
@@ -135,7 +133,7 @@ function blog_admin($args)
 							0, 19))));
 	}
 	$toolbar = array();
-	$toolbar[] = array('title' => NEW_POST, 'class' => 'new',
+	$toolbar[] = array('title' => NEW_BLOG_POST, 'class' => 'new',
 			'link' => _module_link('blog', 'insert'));
 	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
@@ -367,6 +365,9 @@ function blog_system($args)
 			case 'insert':
 				$error = _system_blog_insert($args);
 				return;
+			case 'update':
+				$error = _system_blog_update($args);
+				return;
 		}
 }
 
@@ -385,6 +386,55 @@ function _system_blog_insert($args)
 		return 'Could not insert blog post';
 	header('Location: '._module_link('blog', FALSE, $post['id']));
 	exit(0);
+}
+
+function _system_blog_update($args)
+{
+	if(!isset($args['id']) || !isset($args['title'])
+			|| !isset($args['content']))
+		return INVALID_ARGUMENT;
+	if(isset($args['preview']) || !isset($args['send']))
+		return;
+	require_once('./system/content.php');
+	if(!_content_user_update($args['id'], $args['title'], $args['content']))
+		return PERMISSION_DENIED;
+	header('Location: '._module_link('blog', FALSE, $args['id']));
+	exit(0);
+}
+
+
+//blog_update
+function blog_update($args)
+{
+	global $error, $user_id;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	if(($post = _content_select($args['id'])) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/user.php');
+	if(!_user_admin($user_id) || $post['user_id'] != $user_id)
+		return _error(PERMISSION_DENIED);
+	print('<h1 class="title blog">Modification of blog post: '
+		.$post['title']."</h1>\n");
+	if(isset($args['preview']) && isset($args['title'])
+			&& isset($args['content']))
+	{
+		$long = 1;
+		$post = array('id' => $args['id'],
+				'title' => PREVIEW.': '.stripslashes($args['title']),
+				'tag' => stripslashes($args['title']),
+				'user_id' => $post['user_id'],
+				'username' => $post['username'],
+				'date' => _sql_date($post['timestamp']),
+				'content' => stripslashes($args['content']));
+		include('./modules/blog/blog_display.tpl');
+		$post['title'] = stripslashes($args['title']);
+	}
+	include('./modules/blog/blog_update.tpl');
 }
 
 ?>
