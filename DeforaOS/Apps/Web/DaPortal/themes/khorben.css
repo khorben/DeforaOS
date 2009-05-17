@@ -40,32 +40,6 @@ table th a {
 }
 
 
-/* classes */
-/* blog */
-.blog {
-	padding-top:			2em;
-	padding-bottom:			1em;
-}
-
-.blog .title {
-	font-weight:			bold;
-	font-size:			large;
-}
-
-.blog .date {
-	padding:			1ex;
-	padding-bottom:			0;
-	padding-left:			2em;
-}
-
-.field {
-	font-weight:			bold;
-}
-
-.hidden {
-	display:			none;
-}
-
 /* container */
 #container {
 	background-color:		#ffffff;
@@ -78,6 +52,50 @@ table th a {
 	padding:			2ex;
 	width:				85ex;
 }
+
+
+/* classes */
+.field {
+	font-weight:			bold;
+}
+
+.hidden {
+	display:			none;
+}
+
+.title a {
+	text-decoration:		none;
+}
+
+
+/* modules */
+/* blog */
+.blog {
+	padding-top:			2em;
+	padding-bottom:			1em;
+}
+
+.blog .title {
+	font-weight:			bold;
+	font-size:			large;
+}
+
+.blog .author {
+	display:			none;
+}
+
+.blog .date {
+	padding:			1ex;
+	padding-bottom:			0;
+	padding-left:			2em;
+}
+
+
+/* explorer */
+form.explorer a {
+	text-decoration:		none;
+}
+
 
 /* menu */
 ul.menu {
