@@ -128,16 +128,21 @@ function _content_user_update($id, $title, $content)
 		return _content_update($id, $title, $content);
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
+	if(!is_numeric($id))
+		return FALSE;
 	return _sql_query('UPDATE daportal_content SET'
 			." title='$title', content='$content'"
 			." WHERE user_id='$user_id' AND content_id='$id'");
 }
+
 
 function _content_update($id, $title, $content = FALSE)
 {
 	global $module_id;
 
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return FALSE;
+	if(!is_numeric($id))
 		return FALSE;
 	$sql = 'UPDATE daportal_content SET';
 	$sep = '';
