@@ -38,6 +38,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/icons/16x16/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/article.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/blog.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/bookmark.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/category.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/comment.png \
@@ -70,6 +71,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/appearance.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/article.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/blog.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/bookmark.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/browser.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/bug-assigned.png \
@@ -166,6 +168,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/admin.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/appearance.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/article.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/blog.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/bookmark.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/browser.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/bug.png \
@@ -194,6 +197,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/js/explorer.js \
 		$(PACKAGE)-$(VERSION)/js/project.conf \
 		$(PACKAGE)-$(VERSION)/images/Makefile \
+		$(PACKAGE)-$(VERSION)/images/ccbyncsa.png \
 		$(PACKAGE)-$(VERSION)/images/css.png \
 		$(PACKAGE)-$(VERSION)/images/index.php \
 		$(PACKAGE)-$(VERSION)/images/xhtml.png \
