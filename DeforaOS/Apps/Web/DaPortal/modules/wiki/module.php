@@ -72,8 +72,8 @@ global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist,
 $wiki_blacklisted = 1;
 $wiki_attrib_whitelist = array('alt', 'border', 'class', 'colspan', 'height',
 		'href', 'size', 'src', 'style', 'title', 'width');
-$wiki_tag_whitelist = array('a', 'b', 'big', 'br', 'center', 'div', 'font',
-		'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+$wiki_tag_whitelist = array('a', 'acronym', 'b', 'big', 'br', 'center', 'div',
+		'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
 		'hr', 'i', 'img', 'li', 'ol', 'p', 'pre', 'span',
 		'sub', 'sup', 'table', 'td', 'th', 'tr', 'tt', 'u', 'ul');
 $wiki_content = '';
@@ -84,8 +84,11 @@ function _exec($cmd)
 {
 	$output = array();
 	$ret = 1;
-	_info($cmd);
 	exec($cmd, $output, $ret);
+	_info("Command \"$cmd\" returned $ret");
+	$i = 1;
+	foreach($output as $o)
+		_info($i++.": $o");
 	return $ret == 0 ? TRUE : FALSE;
 }
 
@@ -577,6 +580,7 @@ function _wiki_system_insert($args)
 				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
+		unlink($filename);
 		return 'An error occured while checking in';
 	}
 	header('Location: '._module_link('wiki', 'display', $id, $title));
