@@ -74,6 +74,7 @@ $text['ABOUT'] = 'About';
 $text['ADMINISTRATOR'] = 'Administrator';
 $text['AUTHOR'] = 'Author';
 $text['BACK'] = 'Back';
+$text['CANCEL'] = 'Cancel';
 $text['CONTENT'] = 'Content';
 $text['DATE'] = 'Date';
 $text['DATE_FORMAT'] = '%A, %B %e %Y, %H:%M';

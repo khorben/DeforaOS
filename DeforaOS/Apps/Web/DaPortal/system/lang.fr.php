@@ -22,6 +22,7 @@ $text['ABOUT'] = 'A propos';
 $text['ADMINISTRATOR'] = 'Administrateur';
 $text['AUTHOR'] = 'Auteur';
 $text['BACK'] = 'Précédent';
+$text['CANCEL'] = 'Annuler';
 $text['CONTENT'] = 'Contenu';
 $text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
 $text['DELETE'] = 'Supprimer';
