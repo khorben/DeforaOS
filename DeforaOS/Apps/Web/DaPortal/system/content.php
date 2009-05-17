@@ -119,24 +119,28 @@ function _content_select_lang($id, &$title, &$content)
 }
 
 
-function _content_user_update($id, $title, $content)
+//FIXME code duplication with _content_update()
+function _content_user_update($id, $title, $content, $timestamp = FALSE)
 {
 	global $user_id;
 
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
-		return _content_update($id, $title, $content);
+		return _content_update($id, $title, $content, $timestamp);
 	if($_SERVER['REQUEST_METHOD'] != 'POST')
 		return FALSE;
 	if(!is_numeric($id))
 		return FALSE;
-	return _sql_query('UPDATE daportal_content SET'
-			." title='$title', content='$content'"
-			." WHERE user_id='$user_id' AND content_id='$id'");
+	$sql = "UPDATE daportal_content SET title='$title'"
+		.", content='$content'";
+	if($timestamp != FALSE)
+		$sql.=", timestamp='$timestamp'";
+	$sql.=" WHERE user_id='$user_id' AND content_id='$id'";
+	return _sql_query($sql);
 }
 
 
-function _content_update($id, $title, $content = FALSE)
+function _content_update($id, $title, $content = FALSE, $timestamp = FALSE)
 {
 	global $module_id;
 
@@ -152,7 +156,12 @@ function _content_update($id, $title, $content = FALSE)
 		$sep = ',';
 	}
 	if($content != FALSE)
+	{
 		$sql.=$sep." content='$content'";
+		$sep = ',';
+	}
+	if($timestamp != FALSE)
+		$sql.=$sep." timestamp='$timestamp'";
 	$sql.=" WHERE module_id='$module_id' AND content_id='$id'";
 	return _sql_query($sql);
 }

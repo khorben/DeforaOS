@@ -255,7 +255,7 @@ function blog_list($args)
 	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
 			.', content, daportal_content.enabled AS enabled'
 			.', daportal_content.user_id AS user_id, username'
-			.', name AS module'.$sql.' ORDER BY timestamp');
+			.', name AS module'.$sql.' ORDER BY timestamp DESC');
 	if(!is_array($res))
 		return _error('Unable to list posts');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -422,12 +422,14 @@ function _system_blog_insert($args)
 function _system_blog_update($args)
 {
 	if(!isset($args['id']) || !isset($args['title'])
-			|| !isset($args['content']))
+			|| !isset($args['content'])
+			|| !isset($args['timestamp']))
 		return INVALID_ARGUMENT;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
 	require_once('./system/content.php');
-	if(!_content_user_update($args['id'], $args['title'], $args['content']))
+	if(!_content_user_update($args['id'], $args['title'], $args['content'],
+				$args['timestamp']))
 		return PERMISSION_DENIED;
 	header('Location: '._module_link('blog', FALSE, $args['id']));
 	exit(0);
@@ -458,9 +460,10 @@ function blog_update($args)
 		$post = array('id' => $args['id'],
 				'title' => PREVIEW.': '.stripslashes($args['title']),
 				'tag' => stripslashes($args['title']),
+				'timestamp' => stripslashes($args['timestamp']),
+				'date' => _sql_date($args['timestamp']),
 				'user_id' => $post['user_id'],
 				'username' => $post['username'],
-				'date' => _sql_date($post['timestamp']),
 				'content' => stripslashes($args['content']),
 				'preview' => 1);
 		include('./modules/blog/blog_display.tpl');
