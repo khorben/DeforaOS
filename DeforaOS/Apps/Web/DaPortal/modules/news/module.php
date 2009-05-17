@@ -239,6 +239,7 @@ function news_headline($args)
 //news_list
 function news_list($args)
 {
+	require_once('./system/user.php');
 	if(isset($args['user_id'])
 			&& ($username = _user_name($user_id)) != FALSE)
 		return _list_user($args['user_id'], $username);
