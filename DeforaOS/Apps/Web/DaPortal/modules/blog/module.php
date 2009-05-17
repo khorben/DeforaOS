@@ -209,6 +209,36 @@ function blog_enable($args)
 }
 
 
+//blog_headline
+function blog_headline($args)
+{
+	$page = 1;
+	$npp = 10;
+	if(isset($args['npp']) && is_numeric($args['npp']))
+		$npp = $args['npp'];
+	$posts = _sql_array('SELECT content_id AS id, title, name AS module'
+			.' FROM daportal_content, daportal_module'
+			.' WHERE daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_module.name='blog'"
+			." AND daportal_content.enabled='1'"
+			.' ORDER BY timestamp DESC '
+			.(_sql_offset(($page-1) * $npp, $npp)));
+	if(!is_array($posts))
+		return _error('Could not list posts');
+	for($i = 0, $cnt = count($posts); $i < $cnt; $i++)
+	{
+		$posts[$i]['action'] = 'default';
+		$posts[$i]['icon'] = 'icons/16x16/blog.png';
+		$posts[$i]['thumbnail'] = 'icons/48x48/blog.png';
+		$posts[$i]['name'] = $posts[$i]['title'];
+		$posts[$i]['tag'] = $posts[$i]['title'];
+	}
+	_module('explorer', 'browse', array('toolbar' => 0, 'view' => 'details',
+				'header' => 0, 'entries' => $posts));
+}
+
+
 //blog_insert
 function blog_insert($args)
 {
@@ -238,6 +268,8 @@ function blog_insert($args)
 function blog_list($args)
 {
 	$title = BLOG_POSTS;
+	$and = '';
+	require_once('./system/user.php');
 	if(isset($args['user_id'])
 			&& ($username = _user_name($args['user_id'])) != FALSE)
 	{
@@ -282,12 +314,13 @@ function blog_planet($args)
 	$title = BLOG_PLANET;
 	$and = '';
 	$paging = '';
+	require_once('./system/user.php');
 	if(isset($args['user_id'])
 			&& ($username = _user_name($args['user_id'])) != FALSE)
 	{
 		$title = BLOG_BY.' '.$username;
 		$and = " AND daportal_user.user_id='".$args['user_id']."'";
-		$paging = 'user_id='._html_safe($args['user_id']).'&amp;';
+		$paging = 'user_id='._html_safe($args['user_id']).'&';
 	}
 	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
 	unset($title); //XXX hoping this doesn't affect the global variable
@@ -319,8 +352,8 @@ function blog_planet($args)
 		$post['date'] = _sql_date($post['timestamp']);
 		include('./modules/blog/blog_display.tpl');
 	}
-	_html_paging(_html_link('blog', 'list', FALSE, FALSE, $paging.'page='),
-			$page, $pages);
+	_html_paging(_html_link('blog', 'planet', FALSE, FALSE,
+				$paging.'page='), $page, $pages);
 }
 
 
