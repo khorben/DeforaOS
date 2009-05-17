@@ -14,6 +14,10 @@ h1.title.article {
 	background-image:		url('article.png');
 }
 
+h1.title.blog {
+	background-image:		url('blog.png');
+}
+
 h1.title.bookmark {
 	background-image:		url('bookmark.png');
 }
