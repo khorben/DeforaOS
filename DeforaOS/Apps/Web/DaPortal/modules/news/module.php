@@ -502,10 +502,11 @@ function _system_news_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return PERMISSION_DENIED;
+	if(!isset($args['id']) || !isset($args['title'])
+			|| !isset($args['content']))
+		return INVALID_ARGUMENT;
 	if(isset($args['preview']))
 		return;
-	if(!is_numeric($args['id']))
-		return INVALID_ARGUMENT;
 	require_once('./system/content.php');
 	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return 'Could not update news';
@@ -524,13 +525,13 @@ function news_update($args)
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(!isset($args['id']) || !is_numeric($args['id']))
+	if(!isset($args['id']))
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
 	if(($news = _content_select($args['id'])) == FALSE)
 		return _error(INVALID_ARGUMENT);
-	print('<h1 class="title news">'._html_safe(MODIFICATION_OF_NEWS.' "'
-				.$news['title'])."\"</h1>\n");
+	print('<h1 class="title news">'._html_safe(MODIFICATION_OF_NEWS.': '
+				.$news['title'])."</h1>\n");
 	if(isset($args['preview']))
 	{
 		$long = 1;
