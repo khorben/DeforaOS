@@ -125,8 +125,8 @@ function _module_id_tag($module, $id, $tag)
 
 
 //PRE	$module, $action and $params are trusted
-function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
-		$params = FALSE)
+function _module_link($module = FALSE, $action = FALSE, $id = FALSE,
+		$tag = FALSE, $params = FALSE)
 {
 	global $friendlylinks, $friendlykicker;
 
@@ -143,7 +143,9 @@ function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		foreach($keys as $k)
 			$params .= $k.'='.$p[$k];
 	}
-	if($friendlylinks == 1)
+	if($friendlylinks == 1 && $module == FALSE)
+		$link .= '/';
+	else if($friendlylinks == 1)
 	{
 		$link .= '/'.$module;
 		if($action != FALSE && $action != '' && $action != 'default')
@@ -160,7 +162,7 @@ function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 		if($params != FALSE && $params != '')
 			$link .= '?'.$params;
 	}
-	else
+	else if($module != FALSE)
 	{
 		$link .= '?module='.$module;
 		if($action != FALSE && $action != '' && $action != 'default')
@@ -174,8 +176,8 @@ function _module_link($module, $action = FALSE, $id = FALSE, $tag = FALSE,
 }
 
 
-function _module_link_full($module, $action = FALSE, $id = FALSE, $tag = FALSE,
-		$params = FALSE)
+function _module_link_full($module = FALSE, $action = FALSE, $id = FALSE,
+		$tag = FALSE, $params = FALSE)
 {
 	$link = $_SERVER['SERVER_NAME'];
 	if(isset($_SERVER['HTTPS']))

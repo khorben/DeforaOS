@@ -18,8 +18,8 @@
 
 
 //PRE	module, action and params are trusted
-function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
-		$params = FALSE)
+function _html_link($module = FALSE, $action = FALSE, $id = FALSE,
+		$title = FALSE, $params = FALSE)
 {
 	$link = _module_link($module, $action, $id, $title, $params);
 	$link = htmlentities($link);
@@ -29,8 +29,8 @@ function _html_link($module, $action = FALSE, $id = FALSE, $title = FALSE,
 
 
 //PRE	module, action and params are trusted
-function _html_link_full($module, $action = FALSE, $id = FALSE, $title = FALSE,
-		$params = FALSE)
+function _html_link_full($module = FALSE, $action = FALSE, $id = FALSE,
+		$title = FALSE, $params = FALSE)
 {
 	$link = _module_link_full($module, $action, $id, $title, $params);
 	$link = htmlentities($link);
