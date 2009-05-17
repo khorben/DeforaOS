@@ -34,12 +34,14 @@ $text['BLOG_BY'] = 'Blog by';
 $text['BLOG_ON'] = 'on';
 $text['BLOG_PLANET'] = 'Planet';
 $text['BLOG_POST'] = 'Blog post';
+$text['BLOG_POSTS'] = 'Blog posts';
 $text['BLOG_PREVIEW'] = 'Blog post preview';
 $text['COMMENT_S'] = 'comment(s)';
 $text['NEW_BLOG_POST'] = 'New blog post';
 global $lang;
 if($lang == 'fr')
 {
+	$text['BLOG_POSTS'] = 'Billets';
 	$text['NEW_BLOG_POST'] = 'Nouveau billet';
 }
 _lang($text);
@@ -235,21 +237,57 @@ function blog_insert($args)
 //blog_list
 function blog_list($args)
 {
+	$title = BLOG_POSTS;
+	if(isset($args['user_id'])
+			&& ($username = _user_name($args['user_id'])) != FALSE)
+	{
+		$title = BLOG_POSTS._BY_.' '.$username;
+		$and = " AND daportal_user.user_id='".$args['user_id']."'";
+		$paging = 'user_id='._html_safe($args['user_id']).'&amp;';
+	}
+	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
+	unset($title); //XXX hoping this doesn't affect the global variable
+	$sql = ' FROM daportal_module, daportal_content, daportal_user'
+		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_module.name='blog'".$and
+		.' AND daportal_module.module_id=daportal_content.module_id';
+	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
+			.', content, daportal_content.enabled AS enabled'
+			.', daportal_content.user_id AS user_id, username'
+			.', name AS module'.$sql.' ORDER BY timestamp');
+	if(!is_array($res))
+		return _error('Unable to list posts');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['action'] = 'default';
+		$res[$i]['icon'] = 'icons/16x16/blog.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/blog.png';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['date'] = strftime('%d/%m/%Y %H:%M', strtotime(substr(
+						$res[$i]['date'], 0, 19)));
+	}
+	$toolbar = array();
+	$toolbar[] = array('title' => NEW_BLOG_POST, 'class' => 'new',
+			'link' => _module_link('blog', 'insert'));
+	_module('explorer', 'browse', array('class' => array('date' => DATE),
+			'view' => 'details', 'entries' => $res,
+			'toolbar' => $toolbar));
+}
+
+
+//blog_planet
+function blog_planet($args)
+{
 	$title = BLOG_PLANET;
 	$and = '';
 	$paging = '';
-	if(isset($args['user_id']))
+	if(isset($args['user_id'])
+			&& ($username = _user_name($args['user_id'])) != FALSE)
 	{
-		$username = _sql_single('SELECT username FROM daportal_user'
-				." WHERE user_id='".$args['user_id']."'");
-		if($username != FALSE)
-		{
-			$title = BLOG_BY.' '.$username;
-			$and = ' AND daportal_user.user_id'
-				."='".$args['user_id']."'";
-			$paging = 'user_id='._html_safe($args['user_id'])
-				.'&amp;';
-		}
+		$title = BLOG_BY.' '.$username;
+		$and = " AND daportal_user.user_id='".$args['user_id']."'";
+		$paging = 'user_id='._html_safe($args['user_id']).'&amp;';
 	}
 	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
 	unset($title); //XXX hoping this doesn't affect the global variable
@@ -283,13 +321,6 @@ function blog_list($args)
 	}
 	_html_paging(_html_link('blog', 'list', FALSE, FALSE, $paging.'page='),
 			$page, $pages);
-}
-
-
-//blog_planet
-function blog_planet($args)
-{
-	return blog_list($args);
 }
 
 
@@ -430,7 +461,8 @@ function blog_update($args)
 				'user_id' => $post['user_id'],
 				'username' => $post['username'],
 				'date' => _sql_date($post['timestamp']),
-				'content' => stripslashes($args['content']));
+				'content' => stripslashes($args['content']),
+				'preview' => 1);
 		include('./modules/blog/blog_display.tpl');
 		$post['title'] = stripslashes($args['title']);
 	}
