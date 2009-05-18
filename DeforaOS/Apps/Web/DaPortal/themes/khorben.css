@@ -67,6 +67,11 @@ table th a {
 	text-decoration:		none;
 }
 
+h1.title {
+	background-position:		top right;
+	padding-left:			0;
+}
+
 
 /* modules */
 /* blog */
