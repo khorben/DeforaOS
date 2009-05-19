@@ -499,10 +499,10 @@ function blog_update($args)
 				'username' => $post['username'],
 				'content' => stripslashes($args['content']),
 				'preview' => 1);
-		include('./modules/blog/blog_display.tpl');
+		include('./modules/blog/post_display.tpl');
 		$post['title'] = stripslashes($args['title']);
 	}
-	include('./modules/blog/blog_update.tpl');
+	include('./modules/blog/post_update.tpl');
 }
 
 ?>
