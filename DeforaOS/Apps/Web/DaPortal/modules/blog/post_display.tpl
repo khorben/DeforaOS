@@ -10,18 +10,18 @@
 	<div class="content"><?php echo _html_pre($post['content']); ?></div>
 	<div class="status">
 <?php if(isset($post['preview'])) { ?>
-	<?php echo _html_safe(BLOG_PREVIEW); ?>
+		<?php echo _html_safe(BLOG_PREVIEW); ?>
 <?php } else { ?>
 		<a href="<?php echo _html_link('blog', FALSE, $post['id'], $post['tag']); ?>"><div class="icon read"></div> <?php echo _html_safe(READ); ?></a>
 <?php if(_module_id('comment')) { ?>
 		(<?php echo _html_safe(_module('comment', 'count', array('id' => $post['id'])).' '.COMMENT_S); ?>)
 		<span class="middot">&middot;</span>
 		<a href="<?php echo _html_link('blog', 'reply', $post['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
-<?php } ?>
+<?php } } ?>
 <?php global $user_id; require_once('./system/user.php');
-if(isset($post['id']) && (_user_admin($user_id) || $user_id == $post['user_id'])) { ?>
+if(isset($post['id']) && _user_admin($user_id)) { ?>
 		<span class="middot">&middot;</span>
 		<a href="<?php echo _html_link('blog', 'update', $post['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
-<?php } } ?>
+<?php } ?>
 	</div>
 </div>

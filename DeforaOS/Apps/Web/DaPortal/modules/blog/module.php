@@ -59,7 +59,7 @@ function _blog_display($id, $title = BLOG_POST)
 	}
 	$long = 1;
 	$post['date'] = _sql_date($post['timestamp']);
-	include('./modules/blog/blog_display.tpl');
+	include('./modules/blog/post_display.tpl');
 	return TRUE;
 }
 
@@ -257,10 +257,10 @@ function blog_insert($args)
 				'content' => stripslashes($args['content']),
 				'date' => strftime(DATE_FORMAT),
 				'preview' => 1);
-		include('./modules/blog/blog_display.tpl');
+		include('./modules/blog/post_display.tpl');
 		unset($title);
 	}
-	include('./modules/blog/blog_update.tpl');
+	include('./modules/blog/post_update.tpl');
 }
 
 
@@ -350,7 +350,7 @@ function blog_planet($args)
 		_content_select_lang($post['id'], $post['title'],
 				$post['content']);
 		$post['date'] = _sql_date($post['timestamp']);
-		include('./modules/blog/blog_display.tpl');
+		include('./modules/blog/post_display.tpl');
 	}
 	_html_paging(_html_link('blog', 'planet', FALSE, FALSE,
 				$paging.'page='), $page, $pages);

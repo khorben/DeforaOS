@@ -12,12 +12,6 @@
 			<td class="field"><?php echo _html_safe(TITLE); ?>:</td>
 			<td><input type="text" name="title"<?php if(isset($post['title'])) print(' value="'._html_safe($post['title']).'"'); ?> size="50"/></td>
 		</tr>
-		<?php if(isset($post['timestamp'])) { ?>
-		<tr>
-			<td class="field"><?php echo _html_safe(DATE); ?>:</td>
-			<td><input type="text" name="timestamp" value="<?php echo(_html_safe($post['timestamp'])); ?>" size="20"/></td>
-		</tr>
-		<?php } ?>
 		<tr>
 			<td class="field"><?php echo _html_safe(CONTENT); ?>:</td>
 			<td><textarea name="content" cols="50" rows="10"><?php
