@@ -133,6 +133,7 @@ function _module_link($module = FALSE, $action = FALSE, $id = FALSE,
 	$link = $_SERVER['SCRIPT_NAME'];
 	if(isset($friendlykicker) && isset($_SERVER['DOCUMENT_ROOT'])
 			&& is_readable($_SERVER['DOCUMENT_ROOT']
+				.dirname($_SERVER['SCRIPT_NAME'])
 				."/$friendlykicker.php"))
 		$link = '/'.$friendlykicker;
 	if(is_array($params))
