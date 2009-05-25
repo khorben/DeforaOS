@@ -261,7 +261,7 @@ void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
 
 	if(browser->pr_window != NULL)
 	{
-		gtk_widget_show(browser->pr_window);
+		gtk_window_present(GTK_WINDOW(browser->pr_window));
 		return;
 	}
 	browser->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -412,7 +412,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 
 	if(browser->ab_window != NULL)
 	{
-		gtk_widget_show(browser->ab_window);
+		gtk_window_present(GTK_WINDOW(browser->ab_window));
 		return;
 	}
 	browser->ab_window = gtk_about_dialog_new();
@@ -437,7 +437,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 
 	if(browser->ab_window != NULL)
 	{
-		gtk_widget_show(browser->ab_window);
+		gtk_window_present(GTK_WINDOW(browser->ab_window));
 		return;
 	}
 	browser->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -501,7 +501,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 
 	if(window != NULL)
 	{
-		gtk_widget_show(window);
+		gtk_window_present(GTK_WINDOW(window));
 		return;
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -553,7 +553,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 
 	if(window != NULL)
 	{
-		gtk_widget_show(window);
+		gtk_window_present(GTK_WINDOW(window));
 		return;
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
