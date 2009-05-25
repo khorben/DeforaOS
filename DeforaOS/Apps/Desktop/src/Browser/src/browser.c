@@ -130,7 +130,6 @@ unsigned int browser_cnt = 0;
 /* functions */
 /* browser_new */
 static int _new_pixbufs(Browser * browser);
-static int _new_config(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
 
 Browser * browser_new(char const * directory)
