@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -174,17 +174,20 @@ char const * mime_get_handler(Mime * mime, char const * type,
 /* mime_type */
 char const * mime_type(Mime * mime, char const * path)
 {
+	char const * p;
 	unsigned int i;
 
+	p = strrchr(path, '/');
+	p = (p != NULL) ? p + 1 : path;
 	for(i = 0; i < mime->types_cnt; i++)
-		if(fnmatch(mime->types[i].glob, path, FNM_NOESCAPE) == 0)
+		if(fnmatch(mime->types[i].glob, p, FNM_NOESCAPE) == 0)
 			break;
 #ifdef FNM_CASEFOLD
 	if(i < mime->types_cnt)
 		return mime->types[i].type;
 	for(i = 0; i < mime->types_cnt; i++)
-		if(fnmatch(mime->types[i].glob, path,
-					FNM_NOESCAPE | FNM_CASEFOLD) == 0)
+		if(fnmatch(mime->types[i].glob, p, FNM_NOESCAPE | FNM_CASEFOLD)
+				== 0)
 			break;
 #endif
 	return i < mime->types_cnt ? mime->types[i].type : NULL;
