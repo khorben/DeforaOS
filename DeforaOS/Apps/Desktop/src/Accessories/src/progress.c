@@ -56,6 +56,8 @@ typedef struct _Progress
 	size_t cnt;			/* bytes written	*/
 	char buf[BUFSIZ];
 	size_t buf_cnt;
+	GIOChannel * in_channel;
+	GIOChannel * out_channel;
 
 	/* widgets */
 	GtkWidget * speed;
@@ -74,13 +76,14 @@ static gboolean _progress_closex(GtkWidget * widget, GdkEvent * event,
 static void _progress_cancel(GtkWidget * widget, gpointer data);
 static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 		gpointer data);
+static gboolean _progress_idle_in(gpointer data);
+static gboolean _progress_idle_out(gpointer data);
 static gboolean _progress_timeout(gpointer data);
 
 static int _progress(Prefs * prefs, char * argv[])
 {
 	Progress p;
 	struct stat st;
-	GIOChannel * channel;
 	GtkWidget * window = NULL;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -111,12 +114,12 @@ static int _progress(Prefs * prefs, char * argv[])
 		return _progress_error(prefs->filename, 1);
 	else if(fstat(p.fd, &st) == 0)
 		prefs->length = st.st_size;
-	channel = g_io_channel_unix_new(p.fd);
-	g_io_add_watch(channel, G_IO_IN, _progress_channel, &p);
-	g_io_channel_set_encoding(channel, NULL, NULL);
-	channel = g_io_channel_unix_new(p.fds[1]);
-	g_io_add_watch(channel, G_IO_OUT, _progress_channel, &p);
-	g_io_channel_set_encoding(channel, NULL, NULL);
+	p.in_channel = g_io_channel_unix_new(p.fd);
+	g_io_channel_set_encoding(p.in_channel, NULL, NULL);
+	g_idle_add(_progress_idle_in, &p);
+	p.out_channel = g_io_channel_unix_new(p.fds[1]);
+	g_io_channel_set_encoding(p.out_channel, NULL, NULL);
+	g_idle_add(_progress_idle_out, &p);
 	/* graphical interface */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), prefs->title != NULL
@@ -203,6 +206,22 @@ static int _error_do(char const * message, char const * error, int ret)
 	return ret;
 }
 
+static gboolean _progress_idle_in(gpointer data)
+{
+	Progress * p = data;
+
+	g_io_add_watch(p->in_channel, G_IO_IN, _progress_channel, p);
+	return FALSE;
+}
+
+static gboolean _progress_idle_out(gpointer data)
+{
+	Progress * p = data;
+
+	g_io_add_watch(p->out_channel, G_IO_OUT, _progress_channel, p);
+	return FALSE;
+}
+
 
 /* progress_exec */
 static int _exec_gunzip(Progress * progress, char * argv[]);
@@ -263,6 +282,7 @@ static void _progress_cancel(GtkWidget * widget, gpointer data)
 /* progress_out */
 static gboolean _channel_in(Progress * p, GIOChannel * source);
 static gboolean _channel_out(Progress * p, GIOChannel * source);
+static void _out_rate(Progress * p);
 
 static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 		gpointer data)
@@ -271,13 +291,11 @@ static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 
 	if(condition == G_IO_IN)
 		return _channel_in(p, source);
-	if(condition != G_IO_OUT)
-	{
-		_progress_error(p->prefs->filename, 0);
-		gtk_main_quit();
-		return FALSE;
-	}
-	return _channel_out(p, source);
+	if(condition == G_IO_OUT)
+		return _channel_out(p, source);
+	_progress_error(p->prefs->filename, 0);
+	gtk_main_quit();
+	return FALSE;
 }
 
 static gboolean _channel_in(Progress * p, GIOChannel * source)
@@ -298,12 +316,14 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 	if(p->buf_cnt == sizeof(p->buf))
 		return FALSE; /* pause reading for now */
 	if(read != 0)
-		return TRUE;
+	{
+		/* continue to read */
+		_progress_idle_in(p);
+		return FALSE;
+	}
 	p->eof = 1; /* reached end of input file */
 	return FALSE;
 }
-
-static void _out_rate(Progress * p);
 
 static gboolean _channel_out(Progress * p, GIOChannel * source)
 {
@@ -318,9 +338,11 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 			gtk_main_quit();
 			return FALSE;
 		}
-		channel = g_io_channel_unix_new(p->fd); /* read some more */
-		g_io_add_watch(channel, G_IO_IN, _progress_channel, p);
-		return TRUE;
+		/* read again */
+		g_io_add_watch(p->in_channel, G_IO_IN, _progress_channel, p);
+		/* continue to write */
+		g_idle_add(_progress_idle_out, p);
+		return FALSE;
 	}
 	if(g_io_channel_write_chars(source, p->buf, p->buf_cnt, &written,
 				&error) == G_IO_STATUS_ERROR)
@@ -333,7 +355,9 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 	memmove(p->buf, &p->buf[written], p->buf_cnt);
 	p->cnt += written;
 	_out_rate(p);
-	return TRUE;
+	/* continue to write */
+	g_idle_add(_progress_idle_out, p);
+	return FALSE;
 }
 
 static void _out_rate(Progress * p)
