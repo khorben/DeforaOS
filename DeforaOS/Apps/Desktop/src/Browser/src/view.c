@@ -55,6 +55,7 @@ typedef struct _View
 
 /* prototypes */
 static View * _view_new(char const * path);
+static View * _view_new_open(void);
 static void _view_delete(View * view);
 
 /* useful */
@@ -248,6 +249,29 @@ static GtkWidget * _new_text(View * view, char const * path)
 	}
 	fclose(fp);
 	return widget;
+}
+
+
+/* view_new_open */
+static View * _view_new_open(void)
+{
+	View * ret;
+	GtkWidget * dialog;
+	char * pathname = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("View file...", NULL,
+			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
+			GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		pathname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(pathname == NULL)
+		return NULL;
+	ret = _view_new(pathname);
+	free(pathname);
+	return ret;
 }
 
 
@@ -579,9 +603,11 @@ int main(int argc, char * argv[])
 				return _usage();
 		}
 	if(optind == argc)
-		return _usage();
-	for(i = optind; i < argc; i++)
-		_view_new(argv[i]);
-	gtk_main();
+		_view_new_open();
+	else
+		for(i = optind; i < argc; i++)
+			_view_new(argv[i]);
+	if(_view_cnt)
+		gtk_main();
 	return 0;
 }
