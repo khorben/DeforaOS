@@ -327,7 +327,6 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 
 static gboolean _channel_out(Progress * p, GIOChannel * source)
 {
-	GIOChannel * channel;
 	gsize written;
 	GError * error = NULL;
 
