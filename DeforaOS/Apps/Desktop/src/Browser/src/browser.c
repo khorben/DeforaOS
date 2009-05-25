@@ -228,6 +228,20 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
 			-1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_CUT);
+	g_signal_connect(tb_button, "clicked", G_CALLBACK(on_edit_cut),
+			browser);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_COPY);
+	g_signal_connect(tb_button, "clicked", G_CALLBACK(on_edit_copy),
+			browser);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_PASTE);
+	g_signal_connect(tb_button, "clicked", G_CALLBACK(on_edit_paste),
+			browser);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), gtk_separator_tool_item_new(),
+			-1);
 	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_PROPERTIES);
 	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
 				on_properties), browser);
