@@ -65,7 +65,12 @@ static struct _menu _menu_edit[] =
 	{ "_Paste",		NULL, GTK_STOCK_PASTE, GDK_V },
 	{ "",			NULL, NULL, 0 },
 	{ "Select _all",	G_CALLBACK(on_edit_select_all),
-		GTK_STOCK_SELECT_ALL, GDK_A },
+#if GTK_CHECK_VERSION(2, 10, 0)
+		GTK_STOCK_SELECT_ALL,
+#else
+		NULL,
+#endif
+		GDK_A },
 	{ "Unselect all",	G_CALLBACK(on_edit_unselect_all), NULL, 0 },
 	{ "",			NULL, NULL, 0 },
 	{ "_Preferences",	G_CALLBACK(on_edit_preferences),
