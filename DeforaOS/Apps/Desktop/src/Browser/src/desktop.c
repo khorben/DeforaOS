@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ struct _Desktop
 	DesktopIcon ** icon;
 	size_t icon_cnt;
 	Mime * mime;
+	char const * home;
 	char * path;
 	size_t path_cnt;
 	DIR * refresh_dir;
@@ -608,8 +609,8 @@ void desktopicon_show(DesktopIcon * desktopicon)
 /* functions */
 /* desktop_new */
 static Desktop * _new_error(Desktop * desktop, char const * message);
-static int _new_create_desktop(Desktop * desktop, char const * home);
-static void _new_add_home(Desktop * desktop, char const * home);
+static int _new_create_desktop(Desktop * desktop);
+static void _new_add_home(Desktop * desktop);
 
 /* callbacks */
 /* FIXME implement desktop resizing callback */
@@ -617,7 +618,6 @@ static void _new_add_home(Desktop * desktop, char const * home);
 Desktop * desktop_new(void)
 {
 	Desktop * desktop;
-	char * home;
 	char * file[] = { "gnome-fs-regular",
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_FILE,
@@ -651,11 +651,12 @@ Desktop * desktop_new(void)
 	for(p = folder; *p != NULL && desktop->folder == NULL; p++)
 		desktop->folder = gtk_icon_theme_load_icon(desktop->theme,
 				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
-	if((home = getenv("HOME")) == NULL)
-		return _new_error(desktop, "HOME");
-	if(_new_create_desktop(desktop, home) != 0)
+	if((desktop->home = getenv("HOME")) == NULL
+			&& (desktop->home = g_get_home_dir()) == NULL)
+		desktop->home = "/";
+	if(_new_create_desktop(desktop) != 0)
 		return _new_error(desktop, "Creating desktop");
-	_new_add_home(desktop, home);
+	_new_add_home(desktop);
 	desktop_refresh(desktop);
 	return desktop;
 }
@@ -667,14 +668,15 @@ static Desktop * _new_error(Desktop * desktop, char const * message)
 	return NULL;
 }
 
-static int _new_create_desktop(Desktop * desktop, char const * home)
+static int _new_create_desktop(Desktop * desktop)
 {
 	struct stat st;
 
-	desktop->path_cnt = strlen(home) + strlen("/" DESKTOP) + 1;
+	desktop->path_cnt = strlen(desktop->home) + strlen("/" DESKTOP) + 1;
 	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
 		return 1;
-	sprintf(desktop->path, "%s%s", home, "/" DESKTOP);
+	snprintf(desktop->path, desktop->path_cnt, "%s%s", desktop->home,
+			"/" DESKTOP);
 	if(lstat(desktop->path, &st) == 0)
 	{
 		if(!S_ISDIR(st.st_mode))
@@ -688,12 +690,13 @@ static int _new_create_desktop(Desktop * desktop, char const * home)
 	return 0;
 }
 
-static void _new_add_home(Desktop * desktop, char const * home)
+static void _new_add_home(Desktop * desktop)
 {
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
 
-	if((desktopicon = desktopicon_new(desktop, "Home", home)) == NULL)
+	if((desktopicon = desktopicon_new(desktop, "Home", desktop->home))
+			== NULL)
 		return;
 	desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-home",
