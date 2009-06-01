@@ -25,6 +25,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <X11/Xlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include "mime.h"
@@ -53,9 +54,11 @@ struct _Desktop
 	DIR * refresh_dir;
 	time_t refresh_mti;
 
+	GdkWindow * root;
 	GtkIconTheme * theme;
 	GdkPixbuf * file;
 	GdkPixbuf * folder;
+	GtkWidget * menu;
 };
 
 struct _DesktopIcon
@@ -614,6 +617,8 @@ static void _new_add_home(Desktop * desktop);
 
 /* callbacks */
 /* FIXME implement desktop resizing callback */
+static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data);
 
 Desktop * desktop_new(void)
 {
@@ -658,6 +663,14 @@ Desktop * desktop_new(void)
 		return _new_error(desktop, "Creating desktop");
 	_new_add_home(desktop);
 	desktop_refresh(desktop);
+	/* manage root window events */
+	desktop->menu = NULL;
+	desktop->root = gdk_screen_get_root_window(
+			gdk_display_get_default_screen(
+				gdk_display_get_default()));
+	gdk_window_set_events(desktop->root, gdk_window_get_events(
+				desktop->root) | GDK_BUTTON_PRESS_MASK);
+	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
 	return desktop;
 }
 
@@ -707,6 +720,140 @@ static void _new_add_home(Desktop * desktop)
 				0, NULL);
 	if(icon != NULL)
 		desktopicon_set_icon(desktopicon, icon);
+}
+
+static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
+		Desktop * desktop);
+static void _on_popup_new_folder(GtkWidget * widget, gpointer data);
+static void _on_popup_new_text_file(GtkWidget * widget, gpointer data);
+static void _on_popup_paste(GtkWidget * widget, gpointer data);
+static void _on_popup_preferences(GtkWidget * widget, gpointer data);
+
+static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data)
+{
+	Desktop * desktop = data;
+	XEvent * xev = xevent;
+
+	if(xev->type == ButtonPress)
+		return _event_button_press(xevent, desktop);
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
+		Desktop * desktop)
+{
+	GtkWidget * menuitem;
+	GtkWidget * submenu;
+	GtkWidget * image;
+
+	if(xbev->button != 3 || desktop->menu != NULL)
+	{
+		if(desktop->menu != NULL)
+		{
+			gtk_widget_destroy(desktop->menu);
+			desktop->menu = NULL;
+		}
+		return GDK_FILTER_CONTINUE;
+	}
+	desktop->menu = gtk_menu_new();
+	menuitem = gtk_menu_item_new_with_label("New");
+	submenu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
+	/* submenu for new documents */
+	menuitem = gtk_image_menu_item_new_with_label("Text file");
+	image = gtk_image_new_from_icon_name("stock_new-text",
+			GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_new_text_file), desktop);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_image_menu_item_new_with_label("Folder");
+	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_new_folder), desktop);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	/* edition */
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_paste), desktop);
+	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
+	/* preferences */
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
+			NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_preferences), desktop);
+	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
+	gtk_widget_show_all(desktop->menu);
+	gtk_menu_popup(GTK_MENU(desktop->menu), NULL, NULL, NULL, NULL, 3,
+			xbev->time);
+	return GDK_FILTER_CONTINUE;
+}
+
+static void _on_popup_new_folder(GtkWidget * widget, gpointer data)
+{
+	static char const newfolder[] = "New folder";
+	Desktop * desktop = data;
+	char * path;
+
+	gtk_widget_destroy(desktop->menu);
+	desktop->menu = NULL;
+	if((path = malloc(strlen(desktop->path) + sizeof(newfolder) + 1))
+			== NULL)
+	{
+		desktop_error(desktop, "malloc", 0);
+		return;
+	}
+	sprintf(path, "%s/%s", desktop->path, newfolder);
+	if(mkdir(path, 0777) != 0)
+		desktop_error(desktop, path, 0);
+	free(path);
+}
+
+static void _on_popup_new_text_file(GtkWidget * widget, gpointer data)
+{
+	static char const newtext[] = "New text file.txt";
+	Desktop * desktop = data;
+	char * path;
+	int fd;
+
+	gtk_widget_destroy(desktop->menu);
+	desktop->menu = NULL;
+	if((path = malloc(strlen(desktop->path) + sizeof(newtext) + 1)) == NULL)
+	{
+		desktop_error(desktop, "malloc", 0);
+		return;
+	}
+	sprintf(path, "%s/%s", desktop->path, newtext);
+	if((fd = creat(path, 0666)) < 0)
+		desktop_error(desktop, path, 0);
+	else
+		close(fd);
+	free(path);
+}
+
+static void _on_popup_paste(GtkWidget * widget, gpointer data)
+{
+	Desktop * desktop = data;
+
+	/* FIXME implement */
+	gtk_widget_destroy(desktop->menu);
+	desktop->menu = NULL;
+}
+
+static void _on_popup_preferences(GtkWidget * widget, gpointer data)
+{
+	Desktop * desktop = data;
+
+	/* FIXME implement */
+	gtk_widget_destroy(desktop->menu);
+	desktop->menu = NULL;
 }
 
 
