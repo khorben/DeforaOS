@@ -97,6 +97,8 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 {
 	int width;
 	int height;
+	int iwidth;
+	int iheight;
 	GdkBitmap * mask;
 	GdkBitmap * iconmask;
 	GdkGC * gc;
@@ -106,8 +108,11 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 	int offset;
 
 	gtk_window_get_size(GTK_WINDOW(desktopicon->window), &width, &height);
+	iwidth = gdk_pixbuf_get_width(icon);
+	iheight = gdk_pixbuf_get_height(icon);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: window is %dx%d\n", width, height);
+	fprintf(stderr, "DEBUG: %s(%s) window is %dx%d\n", __func__,
+			desktopicon->path, width, height);
 #endif
 	mask = gdk_pixmap_new(NULL, width, height, 1);
 	gdk_pixbuf_render_pixmap_and_mask(icon, NULL, &iconmask, 255);
@@ -115,11 +120,13 @@ static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 	gdk_gc_set_foreground(gc, &black);
 	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, height);
 	gdk_draw_drawable(mask, gc, iconmask, 0, 0,
-			(width - DESKTOPICON_ICON_SIZE) / 2, 4, -1, -1);
+			(width - iwidth) / 2,
+			(DESKTOPICON_ICON_SIZE + 8 - iheight) / 2, -1, -1);
 	gdk_gc_set_foreground(gc, &white);
 	gtk_widget_size_request(desktopicon->label, &req);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: label is %dx%d\n", req.width, req.height);
+	fprintf(stderr, "DEBUG: %s(%s) label is %dx%d\n", __func__,
+			desktopicon->path, req.width, req.height);
 #endif
 	offset = DESKTOPICON_ICON_SIZE + 8;
 	gdk_draw_rectangle(mask, gc, TRUE, (width - req.width - 8) / 2,
