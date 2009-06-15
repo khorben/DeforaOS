@@ -4,17 +4,17 @@
 
 
 #variables
-[ -z "$DU" ]	&& DU="du -h"
-[ -z "$GZIP" ]	&& GZIP="gzip -9"
-[ -z "$KERNEL" ]&& KERNEL="/boot/vmlinuz"
-[ -z "$LN" ]	&& LN="ln"
-[ -z "$MKFS" ]	&& MKFS="mke2fs -F"
-[ -z "$MKISOFS" ]&& MKISOFS="mkisofs -J -V \"$VENDOR\""
-[ -z "$MOUNT" ]	&& MOUNT="$SUDO mount -o loop"
-[ -z "$RAMDISK" ]&& RAMDISK="/boot/initrd.img"
-[ -z "$TAR" ]	&& TAR="tar"
-[ -z "$TUNE2FS" ]&& TUNE2FS="tune2fs"
-[ -z "$UMOUNT" ]&& UMOUNT="$SUDO umount"
+[ -z "$DU"	] && DU="du -h"
+[ -z "$GZIP"	] && GZIP="gzip -9"
+[ -z "$KERNEL"	] && KERNEL="/boot/vmlinuz"
+[ -z "$LN"	] && LN="ln"
+[ -z "$MKFS"	] && MKFS="mke2fs -F"
+[ -z "$MKISOFS"	] && MKISOFS="mkisofs -J -V \"$VENDOR\""
+[ -z "$MOUNT"	] && MOUNT="$SUDO mount -o loop"
+[ -z "$RAMDISK"	] && RAMDISK="/boot/initrd.img"
+[ -z "$TAR"	] && TAR="tar"
+[ -z "$TUNE2FS"	] && TUNE2FS="tune2fs"
+[ -z "$UMOUNT"	] && UMOUNT="$SUDO umount"
 
 
 

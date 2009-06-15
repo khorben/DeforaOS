@@ -4,8 +4,8 @@
 
 
 #variables
-[ -z "$LD" ]	&& LD="cc -shared -nostdlib"
-[ -z "$MKFS" ]	&& MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
+[ -z "$LD"	] && LD="cc -shared -nostdlib"
+[ -z "$MKFS"	] && MKFS="mkfs.jffs2 -n -e 0x4000 -l -q -r $DESTDIR -X zlib -o"
 
 
 #includes

@@ -5,7 +5,7 @@
 
 #variables
 #XXX insert i386-specific variables here (grub...)
-[ -z "$GENEXT2FS" ]	&& GENEXT2FS="genext2fs"
+[ -z "$GENEXT2FS"	] && GENEXT2FS="genext2fs"
 
 
 #includes

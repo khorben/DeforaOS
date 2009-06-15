@@ -4,15 +4,15 @@
 
 
 #variables
-[ -z "$FDISK" ]		&& FDISK="fdisk"
-[ -z "$INSTALLBOOT" ]	&& INSTALLBOOT="installboot"
-[ -z "$MBRLABEL" ]	&& MBRLABEL="mbrlabel"
-[ -z "$MKFS" ]		&& MKFS="newfs"
-[ -z "$MKISOFS" ]	&& MKISOFS="makefs -t cd9660"
-[ -z "$MOUNT" ]		&& MOUNT="mount"
-[ -z "$UMOUNT" ]	&& UMOUNT="umount"
-[ -z "$VNCONFIG" ]	&& VNCONFIG="vnconfig"
-[ -z "$VND" ]		&& VND="vnd0"
+[ -z "$FDISK"		] && FDISK="fdisk"
+[ -z "$INSTALLBOOT"	] && INSTALLBOOT="installboot"
+[ -z "$MBRLABEL"	] && MBRLABEL="mbrlabel"
+[ -z "$MKFS"		] && MKFS="newfs"
+[ -z "$MKISOFS"		] && MKISOFS="makefs -t cd9660"
+[ -z "$MOUNT"		] && MOUNT="mount"
+[ -z "$UMOUNT"		] && UMOUNT="umount"
+[ -z "$VNCONFIG"	] && VNCONFIG="vnconfig"
+[ -z "$VND"		] && VND="vnd0"
 
 
 #functions
