@@ -1,4 +1,4 @@
-TARGETS	= halt hexdump hostname login mktemp mount poweroff reboot tar umount uptime w
+TARGETS	= halt hexdump host hostname login mktemp mount poweroff reboot tar umount uptime w
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -27,6 +27,13 @@ hexdump_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 hexdump: $(hexdump_OBJS)
 	$(CC) -o hexdump $(hexdump_OBJS) $(hexdump_LDFLAGS)
+
+host_OBJS = host.o
+host_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+host_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lsocket
+
+host: $(host_OBJS)
+	$(CC) -o host $(host_OBJS) $(host_LDFLAGS)
 
 hostname_OBJS = hostname.o
 hostname_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -104,6 +111,9 @@ halt.o: halt.c
 hexdump.o: hexdump.c
 	$(CC) $(hexdump_CFLAGS) -c hexdump.c
 
+host.o: host.c
+	$(CC) $(host_CFLAGS) -c host.c
+
 hostname.o: hostname.c
 	$(CC) $(hostname_CFLAGS) -c hostname.c
 
@@ -135,7 +145,7 @@ w.o: w.c utmpx.c
 	$(CC) $(w_CFLAGS) -c w.c
 
 clean:
-	$(RM) $(halt_OBJS) $(hexdump_OBJS) $(hostname_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(poweroff_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
+	$(RM) $(halt_OBJS) $(hexdump_OBJS) $(host_OBJS) $(hostname_OBJS) $(login_OBJS) $(mktemp_OBJS) $(mount_OBJS) $(poweroff_OBJS) $(reboot_OBJS) $(tar_OBJS) $(umount_OBJS) $(uptime_OBJS) $(w_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -145,6 +155,8 @@ install: all
 	$(INSTALL) -m 0755 halt $(DESTDIR)$(BINDIR)/halt
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 hexdump $(DESTDIR)$(BINDIR)/hexdump
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 host $(DESTDIR)$(BINDIR)/host
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 hostname $(DESTDIR)$(BINDIR)/hostname
 	$(MKDIR) $(DESTDIR)$(BINDIR)
@@ -169,6 +181,7 @@ install: all
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/halt
 	$(RM) $(DESTDIR)$(BINDIR)/hexdump
+	$(RM) $(DESTDIR)$(BINDIR)/host
 	$(RM) $(DESTDIR)$(BINDIR)/hostname
 	$(RM) $(DESTDIR)$(BINDIR)/login
 	$(RM) $(DESTDIR)$(BINDIR)/mktemp

@@ -23,6 +23,7 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/halt.c \
 		$(PACKAGE)-$(VERSION)/src/hexdump.c \
+		$(PACKAGE)-$(VERSION)/src/host.c \
 		$(PACKAGE)-$(VERSION)/src/hostname.c \
 		$(PACKAGE)-$(VERSION)/src/login.c \
 		$(PACKAGE)-$(VERSION)/src/mktemp.c \
