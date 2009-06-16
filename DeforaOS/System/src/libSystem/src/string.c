@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 
 
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,6 +34,28 @@ String * string_new(String const * string)
 	if((ret = object_new(length + 1)) == NULL)
 		return NULL;
 	strcpy(ret, string);
+	return ret;
+}
+
+
+String * string_new_append(String const * string, ...)
+{
+	String * ret = NULL;
+	va_list ap;
+
+	if(string == NULL)
+		return string_new("");
+	ret = string_new(string);
+	va_start(ap, string);
+	for( string = va_arg(ap, String *);
+			string != NULL;
+			string = va_arg(ap, String *))
+		if(string_append(&ret, string) != 0)
+		{
+			string_delete(ret);
+			return NULL;
+		}
+	va_end(ap);
 	return ret;
 }
 
