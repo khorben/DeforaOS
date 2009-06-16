@@ -282,6 +282,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	{
 		fputs("MKDIR\t= mkdir -p\n", fp);
 		fputs("INSTALL\t= install\n", fp);
+		fputs("LN\t= ln -f\n", fp);
 	}
 	return 0;
 }
@@ -1409,7 +1410,7 @@ static int _install_targets(Configure * configure, FILE * fp)
 
 static void _install_target_binary(Config * config, FILE * fp,
 		String const * target);
-static void _install_target_library(Config * config, FILE * fp,
+static int _install_target_library(Config * config, FILE * fp,
 		String const * target);
 static void _install_target_libtool(Config * config, FILE * fp,
 		String const * target);
@@ -1417,6 +1418,7 @@ static void _install_target_object(Config * config, FILE * fp,
 		String const * target);
 static int _install_target(Config * config, FILE * fp, String const * target)
 {
+	int ret = 0;
 	String const * type;
 	TargetType tt;
 
@@ -1428,7 +1430,7 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 			_install_target_binary(config, fp, target);
 			break;
 		case TT_LIBRARY:
-			_install_target_library(config, fp, target);
+			ret = _install_target_library(config, fp, target);
 			break;
 		case TT_LIBTOOL:
 			_install_target_libtool(config, fp, target);
@@ -1439,7 +1441,7 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 		case TT_UNKNOWN:
 			break;
 	}
-	return 0;
+	return ret;
 }
 
 static void _install_target_binary(Config * config, FILE * fp,
@@ -1454,18 +1456,32 @@ static void _install_target_binary(Config * config, FILE * fp,
 			" $(DESTDIR)", path, target);
 }
 
-static void _install_target_library(Config * config, FILE * fp,
+static int _install_target_library(Config * config, FILE * fp,
 		String const * target)
 {
 	String const * path;
+	String const * p;
+	String * soname;
 
 	if((path = config_get(config, target, "install")) == NULL)
-		return;
+		return 0;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 ", target,
 			".a $(DESTDIR)", path, target, ".a\n");
+	if((p = config_get(config, target, "soname")) != NULL)
+		soname = string_new(p);
+	else
+		soname = string_new_append(target, ".so.0", NULL);
+	if(soname == NULL)
+		return 1;
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 ", target,
-			".so $(DESTDIR)", path, target, ".so\n");
+			".so $(DESTDIR)", path, soname, ".0\n");
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s ", soname,
+			".0 $(DESTDIR)", path, soname, "\n");
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s ", soname,
+			".0 $(DESTDIR)", path, target, ".so\n");
+	string_delete(soname);
+	return 0;
 }
 
 static void _install_target_libtool(Config * config, FILE * fp,
@@ -1599,6 +1615,8 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 	return ret;
 }
 
+static void _uninstall_target_library(Config * config, FILE * fp,
+		String const * target, String const * path);
 static int _uninstall_target(Config * config, FILE * fp, String const * target)
 {
 	String const * type;
@@ -1617,10 +1635,7 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 			fprintf(fp, "\t%s%s/%s\n", rm_destdir, path, target);
 			break;
 		case TT_LIBRARY:
-			fprintf(fp, "\t%s%s/%s%s", rm_destdir, path, target,
-					".a\n");
-			fprintf(fp, "\t%s%s/%s%s", rm_destdir, path, target,
-					".so\n");
+			_uninstall_target_library(config, fp, target, path);
 			break;
 		case TT_LIBTOOL:
 			fprintf(fp, "\t%s%s%s/%s%s", "$(LIBTOOL)"
@@ -1634,6 +1649,27 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 			break;
 	}
 	return 0;
+}
+
+static void _uninstall_target_library(Config * config, FILE * fp,
+		String const * target, String const * path)
+{
+	String const * soname;
+	const String * format = "\t%s%s/%s%s";
+	const String * rm_destdir = "$(RM) $(DESTDIR)";
+
+	fprintf(fp, format, rm_destdir, path, target, ".a\n");
+	if((soname = config_get(config, target, "soname")) == NULL)
+	{
+		fprintf(fp, format, rm_destdir, path, target, ".so.0.0\n");
+		fprintf(fp, format, rm_destdir, path, target, ".so.0\n");
+	}
+	else
+	{
+		fprintf(fp, format, rm_destdir, path, soname, ".0\n");
+		fprintf(fp, format, rm_destdir, path, soname, "\n");
+	}
+	fprintf(fp, format, rm_destdir, path, target, ".so\n");
 }
 
 static int _uninstall_include(Config * config, FILE * fp,
