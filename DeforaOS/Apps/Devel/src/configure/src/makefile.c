@@ -1358,17 +1358,12 @@ static int _dist_subdir_dist(FILE * fp, String const * path,
 	return 0;
 }
 
-static int _install_target(Config * config, FILE * fp, String const * target);
+static int _install_targets(Configure * configure, FILE * fp);
+static int _install_includes(Configure * configure, FILE * fp);
 static int _install_include(Config * config, FILE * fp, String const * include);
 static int _write_install(Configure * configure, FILE * fp)
 {
 	int ret = 0;
-	String const * p;
-	String * targets;
-	String * q;
-	String * includes;
-	size_t i;
-	char c;
 
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
@@ -1376,45 +1371,39 @@ static int _write_install(Configure * configure, FILE * fp)
 	if(config_get(configure->config, "", "subdirs") != NULL)
 		fputs("\t@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install)"
 				" || exit; done\n", fp);
-	if((p = config_get(configure->config, "", "targets")) != NULL)
+	ret |= _install_targets(configure, fp);
+	ret |= _install_includes(configure, fp);
+	return ret;
+}
+
+static int _install_target(Config * config, FILE * fp, String const * target);
+static int _install_targets(Configure * configure, FILE * fp)
+{
+	int ret = 0;
+	String const * p;
+	String * q;
+	String * targets;
+	size_t i;
+	char c;
+
+	if((p = config_get(configure->config, "", "targets")) == NULL)
+		return 0;
+	if((targets = string_new(p)) == NULL)
+		return 1;
+	q = targets;
+	for(i = 0; ret == 0; i++)
 	{
-		if((targets = string_new(p)) == NULL)
-			return 1;
-		q = targets;
-		for(i = 0; ret == 0; i++)
-		{
-			if(targets[i] != ',' && targets[i] != '\0')
-				continue;
-			c = targets[i];
-			targets[i] = '\0';
-			ret |= _install_target(configure->config, fp, targets);
-			if(c == '\0')
-				break;
-			targets += i + 1;
-			i = 0;
-		}
-		string_delete(q);
+		if(targets[i] != ',' && targets[i] != '\0')
+			continue;
+		c = targets[i];
+		targets[i] = '\0';
+		ret |= _install_target(configure->config, fp, targets);
+		if(c == '\0')
+			break;
+		targets += i + 1;
+		i = 0;
 	}
-	if((p = config_get(configure->config, "", "includes")) != NULL)
-	{
-		if((includes = string_new(p)) == NULL)
-			return 1;
-		q = includes;
-		for(i = 0; ret == 0; i++)
-		{
-			if(includes[i] != ',' && includes[i] != '\0')
-				continue;
-			c = includes[i];
-			includes[i] = '\0';
-			ret |= _install_include(configure->config, fp,
-					includes);
-			if(c == '\0')
-				break;
-			includes += i + 1;
-			i = 0;
-		}
-		string_delete(q);
-	}
+	string_delete(q);
 	return ret;
 }
 
@@ -1503,6 +1492,38 @@ static void _install_target_object(Config * config, FILE * fp,
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ", target,
 			" $(DESTDIR)", path, target);
+}
+
+static int _install_include(Config * config, FILE * fp, String const * include);
+static int _install_includes(Configure * configure, FILE * fp)
+{
+	int ret = 0;
+	String const * p;
+	String * q;
+	String * includes;
+	size_t i;
+	char c;
+
+	if((p = config_get(configure->config, "", "includes")) == NULL)
+		return 0;
+	if((includes = string_new(p)) == NULL)
+		return 1;
+	q = includes;
+	for(i = 0; ret == 0; i++)
+	{
+		if(includes[i] != ',' && includes[i] != '\0')
+			continue;
+		c = includes[i];
+		includes[i] = '\0';
+		ret |= _install_include(configure->config, fp,
+				includes);
+		if(c == '\0')
+			break;
+		includes += i + 1;
+		i = 0;
+	}
+	string_delete(q);
+	return ret;
 }
 
 static int _install_include(Config * config, FILE * fp, String const * include)
