@@ -237,6 +237,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 {
 	String const * targets;
 	String const * includes;
+	String const * package;
 	String * p;
 	String * q;
 	size_t i;
@@ -246,6 +247,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 		return 0;
 	targets = config_get(configure->config, "", "targets");
 	includes = config_get(configure->config, "", "includes");
+	package = config_get(configure->config, "", "package");
 	if(targets != NULL)
 	{
 		if((p = string_new(targets)) == NULL)
@@ -270,19 +272,16 @@ static int _variables_executables(Configure * configure, FILE * fp)
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
 		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
 	}
-	if(targets != NULL || includes != NULL)
-		fputs("RM\t= rm -f\n", fp);
-	if(config_get(configure->config, "", "package"))
+	if(targets != NULL || includes != NULL || package != NULL)
+		fputs("RM\t= rm -f\nLN\t= ln -f\n", fp);
+	if(package != NULL)
 	{
-		if(targets == NULL && includes == NULL)
-			fputs("RM\t= rm -f\n", fp);
-		fprintf(fp, "%s", "LN\t= ln -f\nTAR\t= tar -czvf\n");
+		fprintf(fp, "%s", "TAR\t= tar -czvf\n");
 	}
 	if(targets != NULL || includes != NULL)
 	{
 		fputs("MKDIR\t= mkdir -p\n", fp);
 		fputs("INSTALL\t= install\n", fp);
-		fputs("LN\t= ln -f\n", fp);
 	}
 	return 0;
 }
@@ -526,7 +525,7 @@ static void _variables_libtool(Configure * configure, FILE * fp, char * done)
 {
 	_variables_library(configure, fp, done);
 	if(!done[TT_LIBTOOL])
-		fputs("LN\t= ln -f\nLIBTOOL\t= libtool\n", fp);
+		fputs("LIBTOOL\t= libtool\n", fp);
 }
 
 static int _variables_includes(Configure * configure, FILE * fp)
