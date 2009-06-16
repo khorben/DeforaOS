@@ -12,6 +12,7 @@ RANLIB	= ranlib
 LD	= $(CC) -shared
 BINDIR	= $(PREFIX)/bin
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
@@ -27,7 +28,7 @@ libcpp.a: $(libcpp_OBJS)
 	$(RANLIB) libcpp.a
 
 libcpp.so: $(libcpp_OBJS)
-	$(LD) -o libcpp.so $(libcpp_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
+	$(LD) -o libcpp.so -Wl,-soname,libcpp.so.0 $(libcpp_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
 
 cpp_OBJS = main.o
 cpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -54,12 +55,16 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 libcpp.a $(DESTDIR)$(LIBDIR)/libcpp.a
-	$(INSTALL) -m 0755 libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so
+	$(INSTALL) -m 0755 libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
+	$(LN) -s libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so.0
+	$(LN) -s libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 cpp $(DESTDIR)$(BINDIR)/cpp
 
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.a
+	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so
 	$(RM) $(DESTDIR)$(BINDIR)/cpp
 

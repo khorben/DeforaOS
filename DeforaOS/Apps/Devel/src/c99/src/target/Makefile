@@ -11,6 +11,7 @@ AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
@@ -26,7 +27,7 @@ as.a: $(as_OBJS)
 	$(RANLIB) as.a
 
 as.so: $(as_OBJS)
-	$(LD) -o as.so $(as_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
+	$(LD) -o as.so -Wl,-soname,as.so.0 $(as_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l as
 
 graph_OBJS = graph.o
 graph_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -37,7 +38,7 @@ graph.a: $(graph_OBJS)
 	$(RANLIB) graph.a
 
 graph.so: $(graph_OBJS)
-	$(LD) -o graph.so $(graph_OBJS)
+	$(LD) -o graph.so -Wl,-soname,graph.so.0 $(graph_OBJS)
 
 as.o: as.c ../../include/c99/target.h ../../config.h
 	$(CC) $(as_CFLAGS) -c as.c
@@ -54,15 +55,23 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
 	$(INSTALL) -m 0644 as.a $(DESTDIR)$(LIBDIR)/c99/target/as.a
-	$(INSTALL) -m 0755 as.so $(DESTDIR)$(LIBDIR)/c99/target/as.so
+	$(INSTALL) -m 0755 as.so $(DESTDIR)$(LIBDIR)/c99/target/as.so.0.0
+	$(LN) -s as.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/as.so.0
+	$(LN) -s as.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/as.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
 	$(INSTALL) -m 0644 graph.a $(DESTDIR)$(LIBDIR)/c99/target/graph.a
-	$(INSTALL) -m 0755 graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(INSTALL) -m 0755 graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0.0
+	$(LN) -s graph.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0
+	$(LN) -s graph.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/graph.so
 
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/as.a
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/as.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/as.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/as.so
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.a
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so
 
 .PHONY: all clean distclean install uninstall

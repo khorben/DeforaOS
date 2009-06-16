@@ -8,6 +8,7 @@ CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 

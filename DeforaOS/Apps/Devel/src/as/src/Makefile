@@ -14,6 +14,7 @@ RANLIB	= ranlib
 LD	= $(CC) -shared
 BINDIR	= $(PREFIX)/bin
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
@@ -32,7 +33,7 @@ libas.a: $(libas_OBJS)
 	$(RANLIB) libas.a
 
 libas.so: $(libas_OBJS)
-	$(LD) -o libas.so $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l cpp
+	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l cpp
 
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -75,13 +76,17 @@ install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 libas.a $(DESTDIR)$(LIBDIR)/libas.a
-	$(INSTALL) -m 0755 libas.so $(DESTDIR)$(LIBDIR)/libas.so
+	$(INSTALL) -m 0755 libas.so $(DESTDIR)$(LIBDIR)/libas.so.0.0
+	$(LN) -s libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so.0
+	$(LN) -s libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 as $(DESTDIR)$(BINDIR)/as
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(LIBDIR)/libas.a
+	$(RM) $(DESTDIR)$(LIBDIR)/libas.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/libas.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/libas.so
 	$(RM) $(DESTDIR)$(BINDIR)/as
 

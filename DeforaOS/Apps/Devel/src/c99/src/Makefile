@@ -10,6 +10,7 @@ CFLAGSF	= -W
 CFLAGS	= -Wall -ansi -g
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath $(PREFIX)/lib -l cpp
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 

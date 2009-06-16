@@ -10,6 +10,7 @@ CFLAGS	= -Wall -g -O2
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 LDFLAGS	= 
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 

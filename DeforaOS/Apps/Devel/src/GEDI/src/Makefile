@@ -10,6 +10,7 @@ CFLAGS	= -Wall -g -O2
 LDFLAGSF= `pkg-config --libs gtk+-2.0` -l System
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
