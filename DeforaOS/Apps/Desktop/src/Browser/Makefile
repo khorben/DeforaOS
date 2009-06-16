@@ -2,7 +2,7 @@ PACKAGE	= Browser
 VERSION	= 0.1.1
 SUBDIRS	= src
 RM	= rm -f
-LN	= ln -sf
+LN	= ln -f
 TAR	= tar -czvf
 
 
@@ -19,7 +19,7 @@ distclean:
 
 dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) . $(PACKAGE)-$(VERSION)
+	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/browser.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \

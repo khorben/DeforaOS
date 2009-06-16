@@ -2,7 +2,7 @@ PACKAGE	= VFS
 VERSION	= 0.0.0
 SUBDIRS	= src
 RM	= rm -f
-LN	= ln -sf
+LN	= ln -f
 TAR	= tar -czvf
 
 
@@ -19,7 +19,7 @@ distclean:
 
 dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) . $(PACKAGE)-$(VERSION)
+	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/vfs.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \

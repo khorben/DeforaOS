@@ -2,7 +2,7 @@ PACKAGE	= makepasswd
 VERSION	= 0.4.2
 SUBDIRS	= src
 RM	= rm -f
-LN	= ln -sf
+LN	= ln -f
 TAR	= tar -czvf
 
 
@@ -19,7 +19,7 @@ distclean:
 
 dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) . $(PACKAGE)-$(VERSION)
+	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/makepasswd.c \
 		$(PACKAGE)-$(VERSION)/src/md5.c \

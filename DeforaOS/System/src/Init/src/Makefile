@@ -9,6 +9,7 @@ CFLAGSF	= -W -Wall -ansi
 CFLAGS	= -g -O2
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System -Wl,--export-dynamic 
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 

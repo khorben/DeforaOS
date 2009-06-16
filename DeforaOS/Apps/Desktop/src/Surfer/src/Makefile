@@ -9,6 +9,7 @@ CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -ansi
 LDFLAGS	= 
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 

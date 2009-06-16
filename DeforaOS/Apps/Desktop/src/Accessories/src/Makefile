@@ -9,6 +9,7 @@ CFLAGSF	= -W -Wall -ansi `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -g
 LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
