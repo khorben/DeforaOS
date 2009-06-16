@@ -276,7 +276,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	{
 		if(targets == NULL && includes == NULL)
 			fputs("RM\t= rm -f\n", fp);
-		fprintf(fp, "%s", "LN\t= ln -sf\nTAR\t= tar -czvf\n");
+		fprintf(fp, "%s", "LN\t= ln -f\nTAR\t= tar -czvf\n");
 	}
 	if(targets != NULL || includes != NULL)
 	{
@@ -525,7 +525,7 @@ static void _variables_libtool(Configure * configure, FILE * fp, char * done)
 {
 	_variables_library(configure, fp, done);
 	if(!done[TT_LIBTOOL])
-		fputs("LN\t= ln\nLIBTOOL\t= libtool\n", fp);
+		fputs("LN\t= ln -f\nLIBTOOL\t= libtool\n", fp);
 }
 
 static int _variables_includes(Configure * configure, FILE * fp)
@@ -1258,7 +1258,7 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 	if(package == NULL || version == NULL)
 		return 0;
 	fputs("\ndist:\n\t$(RM) -r $(PACKAGE)-$(VERSION)\n"
-			"\t$(LN) . $(PACKAGE)-$(VERSION)\n"
+			"\t$(LN) -s . $(PACKAGE)-$(VERSION)\n"
 			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n", fp);
 	for(i = from + 1; i < to; i++)
 	{
