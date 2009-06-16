@@ -888,8 +888,12 @@ static int _target_library(Configure * configure, FILE * fp,
 	if((p = config_get(configure->config, target, "depends")) != NULL)
 		fprintf(fp, " %s", p);
 	fputc('\n', fp);
-	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
-			"_OBJS)");
+	fprintf(fp, "%s%s%s", "\t$(LD) -o ", target, ".so");
+	if((p = config_get(configure->config, target, "soname")) == NULL)
+		fprintf(fp, "%s%s%s", " -Wl,-soname,", target, ".so.0");
+	else
+		fprintf(fp, "%s%s", " -Wl,-soname,", p);
+	fprintf(fp, "%s%s%s", " $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
 		fprintf(fp, " %s", p);
 	if(q != NULL)
