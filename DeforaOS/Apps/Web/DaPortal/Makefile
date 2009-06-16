@@ -2,7 +2,7 @@ PACKAGE	= DaPortal
 VERSION	= 20080408
 SUBDIRS	= css html icons js images install modules system templates themes
 RM	= rm -f
-LN	= ln -sf
+LN	= ln -f
 TAR	= tar -czvf
 
 
@@ -19,7 +19,7 @@ distclean:
 
 dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) . $(PACKAGE)-$(VERSION)
+	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/css/Makefile \
 		$(PACKAGE)-$(VERSION)/css/debug.css \
@@ -227,8 +227,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/blog/desktop.php \
 		$(PACKAGE)-$(VERSION)/modules/blog/index.php \
 		$(PACKAGE)-$(VERSION)/modules/blog/module.php \
-		$(PACKAGE)-$(VERSION)/modules/blog/blog_display.tpl \
-		$(PACKAGE)-$(VERSION)/modules/blog/blog_update.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/post_display.tpl \
+		$(PACKAGE)-$(VERSION)/modules/blog/post_update.tpl \
 		$(PACKAGE)-$(VERSION)/modules/blog/rss_channel_bottom.tpl \
 		$(PACKAGE)-$(VERSION)/modules/blog/rss_channel_top.tpl \
 		$(PACKAGE)-$(VERSION)/modules/blog/rss_item.tpl \
