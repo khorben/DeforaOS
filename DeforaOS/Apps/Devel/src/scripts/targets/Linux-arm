@@ -9,7 +9,7 @@
 
 
 #includes
-source "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
+. "`dirname $0`/Apps/Devel/src/scripts/targets/Linux"
 
 
 #functions
