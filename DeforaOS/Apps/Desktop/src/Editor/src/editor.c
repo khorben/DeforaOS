@@ -47,11 +47,12 @@ struct _menubar
 #ifndef FOR_EMBEDDED
 static struct _menu _menu_file[] =
 {
-	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_N },
-	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
+	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_n },
+	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_o },
 	{ "", NULL, NULL, 0 },
-	{ "_Save", G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_S },
-	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS, 0 },
+	{ "_Save", G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_s },
+	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
+		GDK_S },
 	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0 },
 	{ NULL, NULL, NULL, 0 }
@@ -59,15 +60,15 @@ static struct _menu _menu_file[] =
 
 static struct _menu _menu_edit[] =
 {
-	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_Z }, /* FIXME implement */
-	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_R }, /* FIXME implement */
+	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_z }, /* FIXME implement */
+	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_r }, /* FIXME implement */
 	{ "", NULL, NULL, 0 },
 	{ "_Cut", NULL, GTK_STOCK_CUT, 0 }, /* FIXME implement */
 	{ "_Copy", NULL, GTK_STOCK_COPY, 0 }, /* FIXME implement */
 	{ "_Paste", NULL, GTK_STOCK_PASTE, 0 }, /* FIXME implement */
 	{ "", NULL, NULL, 0 },
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
+		GTK_STOCK_PREFERENCES, GDK_p },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -188,6 +189,7 @@ static GtkWidget * _new_menubar(Editor * editor)
 	unsigned int i;
 	unsigned int j;
 	struct _menu * p;
+	GdkModifierType mt;
 
 	tb_menubar = gtk_menu_bar_new();
 	group = gtk_accel_group_new();
@@ -213,10 +215,14 @@ static GtkWidget * _new_menubar(Editor * editor)
 			else
 				gtk_widget_set_sensitive(menuitem, FALSE);
 			if(p->accel != 0)
+			{
+				mt = (p->accel >= GDK_A && p->accel <= GDK_Z)
+					? GDK_CONTROL_MASK | GDK_SHIFT_MASK
+					: GDK_CONTROL_MASK;
 				gtk_widget_add_accelerator(menuitem, "activate",
-						group, p->accel,
-						GDK_CONTROL_MASK,
+						group, p->accel, mt,
 						GTK_ACCEL_VISIBLE);
+			}
 			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 		}
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
