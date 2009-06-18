@@ -53,7 +53,7 @@ typedef struct _Progress
 	int fds[2];			/* for the pipe		*/
 	pid_t pid;			/* child's pid		*/
 	size_t cnt;			/* bytes written	*/
-	char buf[BUFSIZ];
+	char buf[65536];
 	size_t buf_cnt;
 	GIOChannel * in_channel;
 	guint in_id;
