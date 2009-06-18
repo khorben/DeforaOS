@@ -388,6 +388,7 @@ static gboolean _progress_timeout(gpointer data)
 	struct timeval tv;
 	double rate;
 	char buf[16];
+	char const * unit = "kB";
 
 	if(progress->pulse == 1)
 	{
@@ -409,8 +410,12 @@ static gboolean _progress_timeout(gpointer data)
 		tv.tv_usec += 1000000;
 	}
 	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	rate = progress->cnt / rate;
-	snprintf(buf, sizeof(buf), "%.1f kB/s", rate);
+	if((rate = progress->cnt / rate) > 1024)
+	{
+		rate /= 1024;
+		unit = "MB";
+	}
+	snprintf(buf, sizeof(buf), "%.1f %s/s", rate, unit);
 	gtk_label_set_text(GTK_LABEL(progress->speed), buf);
 	return TRUE;
 }
