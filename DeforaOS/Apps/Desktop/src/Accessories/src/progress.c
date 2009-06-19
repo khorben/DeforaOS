@@ -355,7 +355,10 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 	if(p->buf_cnt > 0)
 		g_idle_add(_progress_idle_out, p);
 	else if(p->eof == 1) /* reached end of output */
+	{
+		g_io_channel_close(p->out_channel);
 		gtk_main_quit();
+	}
 	return FALSE;
 }
 
