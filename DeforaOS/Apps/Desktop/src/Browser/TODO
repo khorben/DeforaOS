@@ -26,4 +26,3 @@
 [view.c]
 - load text files progressively
 - add an option to force a file type
-- default to a file selection dialog when launched without an argument
