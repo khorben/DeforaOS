@@ -306,30 +306,30 @@ static gboolean _progress_channel(GIOChannel * source, GIOCondition condition,
 
 static gboolean _channel_in(Progress * p, GIOChannel * source)
 {
+	GIOStatus status;
 	gsize read;
+	GError * error = NULL;
 
 	p->in_id = 0;
-	/* I would use g_io_channel_read_chars but it doesn't work */
-	if(g_io_channel_read(source, &p->buf[p->buf_cnt],
-				sizeof(p->buf) - p->buf_cnt, &read)
-			!= G_IO_ERROR_NONE)
+	status = g_io_channel_read_chars(source, &p->buf[p->buf_cnt],
+			sizeof(p->buf) - p->buf_cnt, &read, &error);
+	if(status == G_IO_STATUS_ERROR)
 	{
 		_progress_error(p->prefs->filename, 0);
 		g_io_channel_close(source);
 		gtk_main_quit();
 		return FALSE;
 	}
-	if(read == 0)
+	else if(status == G_IO_STATUS_EOF)
 	{
 		p->eof = 1; /* reached end of input file */
 		g_io_channel_close(source);
-		return FALSE;
 	}
+	else if(p->buf_cnt + read != sizeof(p->buf))
+		g_idle_add(_progress_idle_in, p); /* continue to read */
 	if(p->buf_cnt == 0)
 		g_idle_add(_progress_idle_out, p); /* begin to write */
 	p->buf_cnt += read;
-	if(p->buf_cnt != sizeof(p->buf))
-		g_idle_add(_progress_idle_in, p); /* continue to read */
 	return FALSE;
 }
 
