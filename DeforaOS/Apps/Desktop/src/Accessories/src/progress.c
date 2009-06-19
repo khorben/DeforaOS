@@ -319,19 +319,16 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 		gtk_main_quit();
 		return FALSE;
 	}
-	/* begin to write */
-	if(p->buf_cnt == 0 && read != 0)
-		g_idle_add(_progress_idle_out, p);
-	p->buf_cnt += read;
-	if(p->buf_cnt == sizeof(p->buf))
-		return FALSE; /* pause reading for now */
-	if(read != 0)
+	if(read == 0)
 	{
-		/* continue to read */
-		_progress_idle_in(p);
+		p->eof = 1; /* reached end of input file */
 		return FALSE;
 	}
-	p->eof = 1; /* reached end of input file */
+	if(p->buf_cnt == 0)
+		g_idle_add(_progress_idle_out, p); /* begin to write */
+	p->buf_cnt += read;
+	if(p->buf_cnt != sizeof(p->buf))
+		_progress_idle_in(p); /* continue to read */
 	return FALSE;
 }
 
