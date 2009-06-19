@@ -315,20 +315,21 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 			!= G_IO_ERROR_NONE)
 	{
 		_progress_error(p->prefs->filename, 0);
-		g_io_channel_unref(source);
+		g_io_channel_close(source);
 		gtk_main_quit();
 		return FALSE;
 	}
 	if(read == 0)
 	{
 		p->eof = 1; /* reached end of input file */
+		g_io_channel_close(source);
 		return FALSE;
 	}
 	if(p->buf_cnt == 0)
 		g_idle_add(_progress_idle_out, p); /* begin to write */
 	p->buf_cnt += read;
 	if(p->buf_cnt != sizeof(p->buf))
-		_progress_idle_in(p); /* continue to read */
+		g_idle_add(_progress_idle_in, p); /* continue to read */
 	return FALSE;
 }
 
@@ -346,7 +347,8 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 		gtk_main_quit();
 		return FALSE;
 	}
-	g_idle_add(_progress_idle_in, p);
+	if(p->buf_cnt == sizeof(p->buf))
+		g_idle_add(_progress_idle_in, p); /* read again */
 	p->buf_cnt -= written;
 	memmove(p->buf, &p->buf[written], p->buf_cnt);
 	p->cnt += written;
