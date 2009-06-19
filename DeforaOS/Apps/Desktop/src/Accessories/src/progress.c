@@ -364,6 +364,7 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 static void _out_rate(Progress * p)
 {
 	gdouble fraction;
+	GtkProgressBar * bar = GTK_PROGRESS_BAR(p->progress);
 	char buf[16];
 
 	if(p->prefs->length == 0 || p->cnt == 0)
@@ -373,10 +374,11 @@ static void _out_rate(Progress * p)
 	}
 	fraction = p->cnt;
 	fraction /= p->prefs->length;
-	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(p->progress),
-			fraction);
+	if(gtk_progress_bar_get_fraction(bar) == fraction)
+		return;
+	gtk_progress_bar_set_fraction(bar, fraction);
 	snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(p->progress), buf);
+	gtk_progress_bar_set_text(bar, buf);
 }
 
 
