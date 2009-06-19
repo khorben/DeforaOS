@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,9 +49,26 @@ typedef struct _Copy
 	unsigned int filec;
 	char ** filev;
 	unsigned int cur;
+
+	struct timeval tv;
+	size_t size;
+	size_t cnt;
+	char buf[65536];
+	size_t buf_cnt;
+	int eof;
+	GIOChannel * in_channel;
+	guint in_id;
+	GIOChannel * out_channel;
+	guint out_id;
+
+	/* widgets */
 	GtkWidget * window;
 	GtkWidget * label;
 	GtkWidget * progress;
+	GtkWidget * flabel;
+	GtkWidget * fspeed;
+	GtkWidget * fprogress;
+	int fpulse;			/* tells when to pulse */
 } Copy;
 
 /* functions */
@@ -81,7 +98,16 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 	copy.label = gtk_label_new("");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.label, TRUE, TRUE, 4);
 	copy.progress = gtk_progress_bar_new();
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.progress), "");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.progress, TRUE, TRUE, 4);
+	copy.flabel = gtk_label_new("");
+	gtk_label_set_ellipsize(GTK_LABEL(copy.flabel), PANGO_ELLIPSIZE_START);
+	gtk_box_pack_start(GTK_BOX(vbox), copy.flabel, TRUE, TRUE, 4);
+	copy.fspeed = gtk_label_new("");
+	gtk_box_pack_start(GTK_BOX(vbox), copy.fspeed, TRUE, TRUE, 4);
+	copy.fprogress = gtk_progress_bar_new();
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.fprogress), "");
+	gtk_box_pack_start(GTK_BOX(vbox), copy.fprogress, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
@@ -101,8 +127,10 @@ static void _copy_refresh(Copy * copy)
 
 	snprintf(buf, sizeof(buf), "Copying file: %s", copy->filev[copy->cur]);
 	gtk_label_set_text(GTK_LABEL(copy->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur, copy->filec - 1);
-	fraction = (double)(copy->cur) / (double)copy->filec;
+	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur + 1,
+			copy->filec - 1);
+	fraction = copy->cur;
+	fraction /= copy->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->progress),
 			fraction);
@@ -197,13 +225,18 @@ static int _single_fifo(Copy * copy, char const * dst);
 static int _single_symlink(Copy * copy, char const * src, char const * dst);
 static int _single_regular(Copy * copy, char const * src, char const * dst);
 static int _single_p(Copy * copy, char const * dst, struct stat const * st);
+static gboolean _single_timeout(gpointer data);
 
 static int _copy_single(Copy * copy, char const * src, char const * dst)
 {
 	int ret;
 	struct stat st;
 	struct stat st2;
+	guint timeout;
 
+	gtk_label_set_text(GTK_LABEL(copy->flabel), src);
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->fprogress), 0.0);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->fprogress), "");
 	if(*(copy->prefs) & PREFS_P) /* don't follow symlinks */
 	{
 		if(lstat(src, &st) != 0 && errno == ENOENT)
@@ -225,7 +258,12 @@ static int _copy_single(Copy * copy, char const * src, char const * dst)
 	else if(S_ISLNK(st.st_mode))
 		ret = _single_symlink(copy, src, dst);
 	else
+	{
 		ret = _single_regular(copy, src, dst);
+		timeout = g_timeout_add(250, _single_timeout, copy);
+		gtk_main(); /* XXX ugly */
+		g_source_remove(timeout);
+	}
 	if(ret != 0)
 		return ret;
 	if(*(copy->prefs) & PREFS_p) /* XXX TOCTOU */
@@ -314,32 +352,159 @@ static int _single_symlink(Copy * copy, char const * src, char const * dst)
 	return 0;
 }
 
+static gboolean _regular_idle_in(gpointer data);
+static gboolean _regular_idle_out(gpointer data);
+
 static int _single_regular(Copy * copy, char const * src, char const * dst)
 {
 	int ret = 0;
-	FILE * fsrc;
-	FILE * fdst;
-	char buf[BUFSIZ];
-	size_t size;
+	int in_fd;
+	int out_fd;
+	struct stat st;
 
-	if((fsrc = fopen(src, "r")) == NULL)
+	if(gettimeofday(&copy->tv, NULL) != 0)
+		return _copy_error(copy, "gettimeofday", 1);
+	if((in_fd = open(src, O_RDONLY)) < 0)
 		return _copy_error(copy, src, 1);
-	if((fdst = fopen(dst, "w")) == NULL)
+	if((out_fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644)) < 0)
 	{
-		ret = _copy_error(copy, dst, 1);
-		fclose(fsrc);
+		ret = _copy_error(copy, src, 1);
+		close(in_fd);
 		return ret;
 	}
-	while((size = fread(buf, sizeof(char), sizeof(buf), fsrc)) > 0)
-		if(fwrite(buf, sizeof(char), size, fdst) != size)
-			break;
-	if(!feof(fsrc))
-		ret |= _copy_error(copy, size == 0 ? src : dst, 1);
-	if(fclose(fsrc) != 0)
-		ret |= _copy_error(copy, src, 1);
-	if(fclose(fdst) != 0)
-		ret |= _copy_error(copy, dst, 1);
+	copy->size = 0;
+	if(fstat(in_fd, &st) == 0)
+		copy->size = st.st_size;
+	copy->cnt = 0;
+	copy->buf_cnt = 0;
+	copy->eof = 0;
+	copy->in_channel = g_io_channel_unix_new(in_fd);
+	g_io_channel_set_encoding(copy->in_channel, NULL, NULL);
+	copy->in_id = 0;
+	g_idle_add(_regular_idle_in, copy);
+	copy->out_channel = g_io_channel_unix_new(out_fd);
+	g_io_channel_set_encoding(copy->out_channel, NULL, NULL);
+	copy->out_id = 0;
 	return ret;
+}
+
+static gboolean _regular_channel(GIOChannel * source, GIOCondition condition,
+		gpointer data);
+static gboolean _channel_in(Copy * copy, GIOChannel * source);
+static gboolean _channel_out(Copy * copy, GIOChannel * source);
+static void _out_rate(Copy * copy);
+
+static gboolean _regular_idle_in(gpointer data)
+{
+	Copy * copy = data;
+
+	if(copy->in_id == 0)
+		copy->in_id = g_io_add_watch(copy->in_channel, G_IO_IN,
+				_regular_channel, copy);
+	return FALSE;
+}
+
+static gboolean _regular_channel(GIOChannel * source, GIOCondition condition,
+		gpointer data)
+{
+	Copy * copy = data;
+
+	if(condition == G_IO_IN)
+		return _channel_in(copy, source);
+	else if(condition == G_IO_OUT)
+		return _channel_out(copy, source);
+	_copy_error(copy, copy->filev[copy->cur], 0);
+	gtk_main_quit();
+	return FALSE;
+}
+
+static gboolean _channel_in(Copy * copy, GIOChannel * source)
+{
+	GIOStatus status;
+	gsize read;
+	GError * error = NULL;
+
+	copy->in_id = 0;
+	status = g_io_channel_read_chars(source, &copy->buf[copy->buf_cnt],
+			sizeof(copy->buf) - copy->buf_cnt, &read, &error);
+	if(status == G_IO_STATUS_ERROR)
+	{
+		_copy_error(copy, copy->filev[copy->cur], 0);
+		g_io_channel_unref(source);
+		gtk_main_quit(); /* XXX ugly */
+		return FALSE;
+	}
+	else if(status == G_IO_STATUS_EOF)
+	{
+		copy->eof = 1; /* reached end of input file */
+		g_io_channel_close(source);
+	}
+	else if(copy->buf_cnt + read != sizeof(copy->buf))
+		g_idle_add(_regular_idle_in, copy); /* continue to read */
+	if(copy->buf_cnt == 0)
+		g_idle_add(_regular_idle_out, copy); /* begin to write */
+	copy->buf_cnt += read;
+	return FALSE;
+}
+
+static gboolean _channel_out(Copy * copy, GIOChannel * source)
+{
+	gsize written;
+	GError * error = NULL;
+
+	copy->out_id = 0;
+	/* write data */
+	if(g_io_channel_write_chars(source, copy->buf, copy->buf_cnt, &written,
+				&error) == G_IO_STATUS_ERROR)
+	{
+		_copy_error(copy, copy->filev[copy->cur], 0);
+		gtk_main_quit(); /* XXX ugly */
+		return FALSE;
+	}
+	if(copy->buf_cnt == sizeof(copy->buf))
+		g_idle_add(_regular_idle_in, copy); /* read again */
+	copy->buf_cnt -= written;
+	memmove(copy->buf, &copy->buf[written], copy->buf_cnt);
+	copy->cnt += written;
+	_out_rate(copy);
+	if(copy->buf_cnt > 0)
+		g_idle_add(_regular_idle_out, copy); /* continue to write */
+	else if(copy->eof == 1) /* reached end of input */
+	{
+		g_io_channel_close(copy->out_channel);
+		gtk_main_quit(); /* XXX ugly */
+	}
+	return FALSE;
+}
+
+static void _out_rate(Copy * copy)
+{
+	gdouble fraction;
+	GtkProgressBar * bar = GTK_PROGRESS_BAR(copy->fprogress);
+	char buf[16];
+
+	if(copy->size == 0 || copy->cnt == 0)
+	{
+		copy->fpulse = 1;
+		return;
+	}
+	fraction = copy->cnt;
+	fraction /= copy->size;
+	if(gtk_progress_bar_get_fraction(bar) == fraction)
+		return;
+	gtk_progress_bar_set_fraction(bar, fraction);
+	snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
+	gtk_progress_bar_set_text(bar, buf);
+}
+
+static gboolean _regular_idle_out(gpointer data)
+{
+	Copy * copy = data;
+
+	if(copy->out_id == 0)
+		copy->out_id = g_io_add_watch(copy->out_channel, G_IO_OUT,
+				_regular_channel, copy);
+	return FALSE;
 }
 
 static int _single_p(Copy * copy, char const * dst, struct stat const * st)
@@ -361,6 +526,44 @@ static int _single_p(Copy * copy, char const * dst, struct stat const * st)
 	if(utimes(dst, tv) != 0)
 		_copy_error(copy, dst, 0);
 	return 0;
+}
+
+static gboolean _single_timeout(gpointer data)
+{
+	Copy * copy = data;
+	struct timeval tv;
+	double rate;
+	char buf[16];
+	char const * unit = "kB";
+
+	if(copy->fpulse == 1)
+	{
+		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(copy->fprogress));
+		copy->fpulse = 0;
+	}
+	if(copy->cnt == 0)
+	{
+		gtk_label_set_text(GTK_LABEL(copy->fspeed), "0.0 kB/s");
+		return TRUE;
+	}
+	if(gettimeofday(&tv, NULL) != 0)
+		return _copy_error(copy, "gettimeofday", FALSE);
+	if((tv.tv_sec = tv.tv_sec - copy->tv.tv_sec) < 0)
+		tv.tv_sec = 0;
+	if((tv.tv_usec = tv.tv_usec - copy->tv.tv_usec) < 0)
+	{
+		tv.tv_sec--;
+		tv.tv_usec += 1000000;
+	}
+	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	if((rate = copy->cnt / rate) > 1024)
+	{
+		rate /= 1024;
+		unit = "MB";
+	}
+	snprintf(buf, sizeof(buf), "%.1f %s/s", rate, unit);
+	gtk_label_set_text(GTK_LABEL(copy->fspeed), buf);
+	return TRUE;
 }
 
 static int _copy_multiple(Copy * copy, char const * src, char const * dst);
