@@ -351,9 +351,8 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 	memmove(p->buf, &p->buf[written], p->buf_cnt);
 	p->cnt += written;
 	_out_rate(p);
-	/* continue to write */
 	if(p->buf_cnt > 0)
-		g_idle_add(_progress_idle_out, p);
+		g_idle_add(_progress_idle_out, p); /* continue to write */
 	else if(p->eof == 1) /* reached end of output */
 	{
 		g_io_channel_close(p->out_channel);
