@@ -98,7 +98,7 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 	copy.label = gtk_label_new("");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.label, TRUE, TRUE, 4);
 	copy.progress = gtk_progress_bar_new();
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.progress), "");
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.progress), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.progress, TRUE, TRUE, 4);
 	copy.flabel = gtk_label_new("");
 	gtk_label_set_ellipsize(GTK_LABEL(copy.flabel), PANGO_ELLIPSIZE_START);
@@ -106,7 +106,7 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 	copy.fspeed = gtk_label_new("");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.fspeed, TRUE, TRUE, 4);
 	copy.fprogress = gtk_progress_bar_new();
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.fprogress), "");
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.fprogress), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.fprogress, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -236,7 +236,7 @@ static int _copy_single(Copy * copy, char const * src, char const * dst)
 
 	gtk_label_set_text(GTK_LABEL(copy->flabel), src);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->fprogress), 0.0);
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->fprogress), "");
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->fprogress), " ");
 	if(*(copy->prefs) & PREFS_P) /* don't follow symlinks */
 	{
 		if(lstat(src, &st) != 0 && errno == ENOENT)
