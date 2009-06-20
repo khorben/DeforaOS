@@ -96,6 +96,7 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 	/* graphical interface */
 	copy.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(copy.window), "Copy file(s)");
+	gtk_window_set_resizable(GTK_WINDOW(copy.window), FALSE);
 	g_signal_connect(G_OBJECT(copy.window), "delete_event", G_CALLBACK(
 			_copy_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
