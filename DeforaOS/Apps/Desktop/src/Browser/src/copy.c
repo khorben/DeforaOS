@@ -84,34 +84,75 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 	static Copy copy;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkSizeGroup * left;
+	GtkSizeGroup * right;
 	GtkWidget * widget;
+	PangoFontDescription * bold;
 
 	copy.prefs = prefs;
 	copy.filec = filec;
 	copy.filev = filev;
 	copy.cur = 0;
+	/* graphical interface */
 	copy.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(copy.window), "Copy file(s)");
 	g_signal_connect(G_OBJECT(copy.window), "delete_event", G_CALLBACK(
 			_copy_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
+	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* current argument */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Argument: ");
+	bold = pango_font_description_new();
+	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	copy.label = gtk_label_new("");
-	gtk_box_pack_start(GTK_BOX(vbox), copy.label, TRUE, TRUE, 4);
+	gtk_misc_set_alignment(GTK_MISC(copy.label), 0, 0);
+	gtk_size_group_add_widget(right, copy.label);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.label, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* progress bar */
 	copy.progress = gtk_progress_bar_new();
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.progress), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), copy.progress, TRUE, TRUE, 4);
+	/* file copy */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Filename: ");
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	copy.flabel = gtk_label_new("");
 	gtk_label_set_ellipsize(GTK_LABEL(copy.flabel), PANGO_ELLIPSIZE_START);
-	gtk_box_pack_start(GTK_BOX(vbox), copy.flabel, TRUE, TRUE, 4);
+	gtk_label_set_width_chars(GTK_LABEL(copy.flabel), 25);
+	gtk_misc_set_alignment(GTK_MISC(copy.flabel), 0, 0);
+	gtk_size_group_add_widget(right, copy.flabel);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.flabel, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* file copy speed */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Speed: ");
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	copy.fspeed = gtk_label_new("");
-	gtk_box_pack_start(GTK_BOX(vbox), copy.fspeed, TRUE, TRUE, 4);
+	gtk_misc_set_alignment(GTK_MISC(copy.fspeed), 0, 0);
+	gtk_size_group_add_widget(right, copy.fspeed);
+	gtk_box_pack_start(GTK_BOX(hbox), copy.fspeed, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	/* file progress bar */
 	copy.fprogress = gtk_progress_bar_new();
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy.fprogress), " ");
-	gtk_box_pack_start(GTK_BOX(vbox), copy.fprogress, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), copy.fprogress, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(copy.window), 4);
 	gtk_container_add(GTK_CONTAINER(copy.window), vbox);
 	g_idle_add(_copy_idle_first, &copy);
@@ -122,11 +163,11 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 
 static void _copy_refresh(Copy * copy)
 {
-	char buf[256]; /* FIXME convert to UTF-8 */
+	char buf[32];
 	double fraction;
 
-	snprintf(buf, sizeof(buf), "Copying file: %s", copy->filev[copy->cur]);
-	gtk_label_set_text(GTK_LABEL(copy->label), buf);
+	/* FIXME convert to UTF-8 */
+	gtk_label_set_text(GTK_LABEL(copy->label), copy->filev[copy->cur]);
 	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur + 1,
 			copy->filec - 1);
 	fraction = copy->cur;
