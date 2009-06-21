@@ -393,7 +393,7 @@ void surfer_set_location(Surfer * surfer, char const * url)
 /* surfer_set_progress */
 void surfer_set_progress(Surfer * surfer, gdouble fraction)
 {
-	char buf[10] = "";
+	char buf[10] = " ";
 
 	if(fraction >= 0.0 && fraction <= 1.0)
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
@@ -408,9 +408,9 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 /* surfer_set_status */
 void surfer_set_status(Surfer * surfer, char const * status)
 {
-	GtkStatusbar * sb;
+	GtkStatusbar * sb = GTK_STATUSBAR(surfer->statusbar);
+	GtkProgressBar * pb = GTK_PROGRESS_BAR(surfer->progress);
 
-	sb = GTK_STATUSBAR(surfer->statusbar);
 	if(surfer->statusbar_id != 0)
 		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
 				surfer->statusbar_id);
@@ -419,10 +419,8 @@ void surfer_set_status(Surfer * surfer, char const * status)
 			? status : "Ready");
 	if(status == NULL)
 	{
-		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(surfer->progress),
-				"");
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(
-					surfer->progress), 0.0);
+		gtk_progress_bar_set_text(pb, " ");
+		gtk_progress_bar_set_fraction(pb, 0.0);
 #ifdef FOR_EMBEDDED
 		gtk_widget_hide(surfer->statusbox);
 	}
