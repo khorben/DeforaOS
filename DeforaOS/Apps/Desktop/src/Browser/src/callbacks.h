@@ -25,19 +25,19 @@
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 /* file menu */
-void on_file_new_window(GtkMenuItem * menuitem, gpointer data);
-void on_file_new_folder(GtkMenuItem * menuitem, gpointer data);
-void on_file_close(GtkMenuItem * menuitem, gpointer data);
-void on_file_open_file(GtkMenuItem * menuitem, gpointer data);
+void on_file_new_window(GtkWidget * widget, gpointer data);
+void on_file_new_folder(GtkWidget * widget, gpointer data);
+void on_file_close(GtkWidget * widget, gpointer data);
+void on_file_open_file(GtkWidget * widget, gpointer data);
 
 /* edit menu */
-void on_edit_copy(GtkMenuItem * menuitem, gpointer data);
-void on_edit_cut(GtkMenuItem * menuitem, gpointer data);
-void on_edit_delete(GtkMenuItem * menuitem, gpointer data);
-void on_edit_paste(GtkMenuItem * menuitem, gpointer data);
-void on_edit_preferences(GtkMenuItem * menuitem, gpointer data);
-void on_edit_select_all(GtkMenuItem * menuitem, gpointer data);
-void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data);
+void on_edit_copy(GtkWidget * widget, gpointer data);
+void on_edit_cut(GtkWidget * widget, gpointer data);
+void on_edit_delete(GtkWidget * widget, gpointer data);
+void on_edit_paste(GtkWidget * widget, gpointer data);
+void on_edit_preferences(GtkWidget * widget, gpointer data);
+void on_edit_select_all(GtkWidget * widget, gpointer data);
+void on_edit_unselect_all(GtkWidget * widget, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);

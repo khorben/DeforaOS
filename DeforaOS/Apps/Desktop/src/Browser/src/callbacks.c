@@ -23,6 +23,7 @@ static char const _license[] =
 # define unmount(a, b) umount(a)
 #endif
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,7 +60,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 
 
 /* file menu */
-void on_file_new_window(GtkMenuItem * menuitem, gpointer data)
+void on_file_new_window(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -67,14 +68,14 @@ void on_file_new_window(GtkMenuItem * menuitem, gpointer data)
 }
 
 
-void on_file_new_folder(GtkMenuItem * menuitem, gpointer data)
+void on_file_new_folder(GtkWidget * widget, gpointer data)
 {
-	static char const * newfolder = "New folder";
+	static char const newfolder[] = "New folder";
 	Browser * browser = data;
 	char const * cur = browser->current->data;
 	char * path;
 
-	if((path = malloc(strlen(cur) + 2 + strlen(newfolder))) == NULL)
+	if((path = malloc(strlen(cur) + sizeof(newfolder) + 1)) == NULL)
 	{
 		browser_error(browser, strerror(errno), 0);
 		return;
@@ -86,7 +87,7 @@ void on_file_new_folder(GtkMenuItem * menuitem, gpointer data)
 }
 
 
-void on_file_close(GtkMenuItem * menuitem, gpointer data)
+void on_file_close(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -96,7 +97,7 @@ void on_file_close(GtkMenuItem * menuitem, gpointer data)
 }
 
 
-void on_file_open_file(GtkMenuItem * menuitem, gpointer data)
+void on_file_open_file(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -108,7 +109,7 @@ void on_file_open_file(GtkMenuItem * menuitem, gpointer data)
 /* on_edit_copy */
 static GList * _copy_selection(Browser * browser);
 
-void on_edit_copy(GtkMenuItem * menuitem, gpointer data)
+void on_edit_copy(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -153,7 +154,7 @@ static GList * _copy_selection(Browser * browser)
 
 
 /* on_edit_cut */
-void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
+void on_edit_cut(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -165,7 +166,7 @@ void on_edit_cut(GtkMenuItem * menuitem, gpointer data)
 
 
 /* on_edit_delete */
-void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
+void on_edit_delete(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * dialog;
@@ -202,7 +203,7 @@ void on_edit_delete(GtkMenuItem * menuitem, gpointer data)
 
 
 /* on_edit_paste */
-void on_edit_paste(GtkMenuItem * menuitem, gpointer data)
+void on_edit_paste(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 	char * p = browser->current->data;
@@ -227,7 +228,7 @@ void on_edit_paste(GtkMenuItem * menuitem, gpointer data)
 
 
 /* on_edit_select_all */
-void on_edit_select_all(GtkMenuItem * menuitem, gpointer data)
+void on_edit_select_all(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -235,7 +236,7 @@ void on_edit_select_all(GtkMenuItem * menuitem, gpointer data)
 }
 
 
-void on_edit_unselect_all(GtkMenuItem * menuitem, gpointer data)
+void on_edit_unselect_all(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 
@@ -251,12 +252,11 @@ static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 
-void on_edit_preferences(GtkMenuItem * menuitem, gpointer data)
+void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
-	GtkWidget * widget;
 	GtkSizeGroup * group;
 
 	if(browser->pr_window != NULL)
@@ -971,7 +971,8 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	return _press_show(browser, event, menu);
 }
 
-static void _on_folder_new(GtkWidget * widget, gpointer data);
+static void _on_popup_new_text_file(GtkWidget * widget, gpointer data);
+static void _on_popup_new_folder(GtkWidget * widget, gpointer data);
 static gboolean _press_context(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu, IconCallback * ic)
 {
@@ -983,18 +984,25 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 
 	browser_unselect_all(browser);
 	menuitem = gtk_menu_item_new_with_label("New");
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_with_label("Text file");
+	image = gtk_image_new_from_icon_name("stock_new-text",
+			GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_new_text_file), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 #if GTK_CHECK_VERSION(2, 8, 0) /* XXX actually depends on the icon theme */
-	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
 	menuitem = gtk_image_menu_item_new_with_label("Folder");
+	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
 #else
 	menuitem = gtk_menu_item_new_with_label("Folder");
 #endif
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_folder_new), ic);
+				_on_popup_new_folder), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1021,12 +1029,34 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	return _press_show(browser, event, menu);
 }
 
-static void _on_folder_new(GtkWidget * widget, gpointer data)
+static void _on_popup_new_text_file(GtkWidget * widget, gpointer data)
+{
+	static char const newtext[] = "New text file.txt";
+	IconCallback * ic = data;
+	Browser * browser = ic->browser;
+	char const * cur = browser->current->data;
+	char * path;
+	int fd;
+
+	if((path = malloc(strlen(cur) + sizeof(newtext) + 1)) == NULL)
+	{
+		browser_error(browser, strerror(errno), 0);
+		return;
+	}
+	sprintf(path, "%s/%s", cur, newtext);
+	if((fd = creat(path, 0666)) < 0)
+		browser_error(browser, strerror(errno), 0);
+	else
+		close(fd);
+	free(path);
+}
+
+static void _on_popup_new_folder(GtkWidget * widget, gpointer data)
 {
 	IconCallback * ic = data;
 	Browser * browser = ic->browser;
 
-	on_file_new_folder(NULL, browser); /* XXX ugly */
+	on_file_new_folder(widget, browser);
 }
 
 static void _press_directory(GtkWidget * menu, IconCallback * ic)
@@ -1163,7 +1193,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data)
 	IconCallback * cb = data;
 
 	/* FIXME not selected => cursor */
-	on_edit_delete(GTK_MENU_ITEM(widget), cb->browser);
+	on_edit_delete(widget, cb->browser);
 }
 
 static void _on_icon_open(GtkWidget * widget, gpointer data)
@@ -1232,7 +1262,7 @@ static void _on_icon_paste(GtkWidget * widget, gpointer data)
 	char * p = cb->browser->current->data;
 
 	cb->browser->current->data = cb->path; /* XXX this is totally ugly */
-	on_edit_paste(GTK_MENU_ITEM(widget), cb->browser);
+	on_edit_paste(widget, cb->browser);
 	cb->browser->current->data = p;
 }
 
