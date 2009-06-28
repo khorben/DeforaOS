@@ -186,7 +186,9 @@ static int _progress_error(char const * message, int ret)
 
 static int _progress_gerror(char const * message, GError * error, int ret)
 {
-	return _error_do(message, error->message, ret);
+	_error_do(message, error->message, ret);
+	g_error_free(error);
+	return ret;
 }
 
 static int _error_do(char const * message, char const * error, int ret)
