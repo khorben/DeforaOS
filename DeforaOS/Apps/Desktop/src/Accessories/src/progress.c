@@ -14,7 +14,7 @@
  * Accessories; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA  02111-1307  USA */
 /* TODO:
- * - use g_io_channel_get_flags() (instead of eof?) */
+ * - fix when EOF occurs on the output side */
 
 
 
@@ -335,19 +335,26 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 
 static gboolean _channel_out(Progress * p, GIOChannel * source)
 {
+	GIOStatus status;
 	gsize written;
 	GError * error = NULL;
 
 	p->out_id = 0;
 	/* write data */
-	if(g_io_channel_write_chars(source, p->buf, p->buf_cnt, &written,
-				&error) == G_IO_STATUS_ERROR)
+	status = g_io_channel_write_chars(source, p->buf, p->buf_cnt, &written,
+				&error);
+	if(status == G_IO_STATUS_ERROR)
 	{
 		_progress_gerror(p->prefs->filename, error, 0);
 		gtk_main_quit();
 		return FALSE;
 	}
-	if(p->buf_cnt == sizeof(p->buf))
+	else if(status == G_IO_STATUS_EOF)
+	{
+		p->eof = 1; /* reached end of output file */
+		g_io_channel_close(source);
+	}
+	else if(p->buf_cnt == sizeof(p->buf))
 		g_idle_add(_progress_idle_in, p); /* read again */
 	p->buf_cnt -= written;
 	memmove(p->buf, &p->buf[written], p->buf_cnt);
