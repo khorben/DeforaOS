@@ -104,7 +104,7 @@ static int _copy(Prefs * prefs, int filec, char * filev[])
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* current argument */
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Argument: ");
+	widget = gtk_label_new("Copying: ");
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(widget, bold);
