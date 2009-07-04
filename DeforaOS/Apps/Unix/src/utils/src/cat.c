@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -34,8 +34,11 @@ typedef enum _OutputDelay {
  * 	returns:
  * 		0	successful
  * 		2	an error occured */
-static int _cat_error(char * message, int ret);
+static int _cat_error(char const * message, int ret);
 static void _cat_file(FILE * fp, OutputDelay od);
+static int _write_nonbuf(int c);
+static int _write_buf(int c);
+
 static int _cat(OutputDelay od, int argc, char * argv[])
 {
 	int ret = 0;
@@ -63,15 +66,13 @@ static int _cat(OutputDelay od, int argc, char * argv[])
 	return ret;
 }
 
-static int _cat_error(char * message, int ret)
+static int _cat_error(char const * message, int ret)
 {
 	fputs("cat: ", stderr);
 	perror(message);
 	return ret;
 }
 
-static int _write_nonbuf(int c);
-static int _write_buf(int c);
 static void _cat_file(FILE * fp, OutputDelay od)
 {
 	int c;
