@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 The DeforaOS Project */
+/* Copyright (c) 2009 The DeforaOS Project */
 /* This file is part of DeforaOS System VFS */
 /* VFS is not free software; you can redistribute it and/or modify it
  * under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
@@ -213,7 +213,7 @@ static int _vfs(char const * root)
 VFS_STUB2(int32_t, chmod, char const *, path, uint32_t, mode)
 VFS_STUB3(int32_t, chown, char const *, path, uint32_t, owner, uint32_t, group)
 VFS_STUB3(int32_t, lchown, char const *, path, uint32_t, owner, uint32_t, group)
-VFS_STUB2(int32_t, link, char const *, name1, char const *, name2);
+VFS_STUB2(int32_t, link, char const *, name1, char const *, name2)
 VFS_STUB2(int32_t, mkdir, char const *, path, uint32_t, mode)
 VFS_STUB2(int32_t, rename, char const *, from, char const *, to)
 VFS_STUB1(int32_t, rmdir, char const *, path)
