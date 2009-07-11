@@ -554,10 +554,11 @@ static void _new_mplayer(Player * player)
 {
 	char buf[] = "pausing loadfile splash.png 0\nframe_step\n";
 	char wid[16];
-	char * argv[] = { "mplayer", "-slave", "-wid", wid, "-quiet",
+	char * argv[] = { "mplayer", "-slave", "-wid", NULL, "-quiet",
 		"-idle", "-framedrop", "-softvol", "-identify",
 		"-noconsolecontrols", "-nomouseinput", NULL };
 
+	argv[3] = wid;
 	_player_reset(player);
 	snprintf(wid, sizeof(wid), "%u", gtk_socket_get_id(GTK_SOCKET(
 					player->view_window)));
