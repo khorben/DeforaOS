@@ -35,7 +35,7 @@ static int _time(char * argv[])
 	struct tms tmsbuf;
 	clock_t cbefore, cafter;
 
-	if((cbefore = times(NULL)) == (clock_t)-1)
+	if((cbefore = times(&tmsbuf)) == (clock_t)-1)
 		return _time_error("times", 2);
 	if((pid = fork()) == -1)
 		return _time_error("fork", 2);
