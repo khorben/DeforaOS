@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -73,11 +73,14 @@ static int _time_exec(char * argv[])
 static int _time_print(long real, long user, long sys)
 {
 	static const char * args[3] = { "real", "user", "sys" };
-	long * argl[3] = { &real, &user, &sys };
+	long * argl[3];
 	int i;
 	long l;
 	long r;
 
+	argl[0] = &real;
+	argl[1] = &user;
+	argl[2] = &sys;
 	if((r = sysconf(_SC_CLK_TCK)) == -1)
 	{
 		_time_error("sysconf", 0);
