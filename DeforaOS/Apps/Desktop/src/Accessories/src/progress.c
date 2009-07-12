@@ -34,6 +34,7 @@
 typedef struct _Prefs
 {
 	int flags;
+	ssize_t bufsiz;
 	char * filename;
 	char * title;
 	size_t length;
@@ -53,7 +54,8 @@ typedef struct _Progress
 	int fds[2];			/* for the pipe		*/
 	pid_t pid;			/* child's pid		*/
 	size_t cnt;			/* bytes written	*/
-	char buf[65536];
+	char * buf;
+	size_t bufsiz;
 	size_t buf_cnt;
 	GIOChannel * in_channel;
 	guint in_id;
@@ -96,6 +98,9 @@ static int _progress(Prefs * prefs, char * argv[])
   
 	memset(&p, 0, sizeof(p));
 	p.prefs = prefs;
+	if((p.buf = malloc(prefs->bufsiz)) == NULL)
+		return _progress_error("malloc", 1);
+	p.bufsiz = prefs->bufsiz;
 	if(pipe(p.fds) != 0)
 		return _progress_error("pipe", 1);
 	if((p.pid = fork()) == -1)
@@ -314,7 +319,7 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 
 	p->in_id = 0;
 	status = g_io_channel_read_chars(source, &p->buf[p->buf_cnt],
-			sizeof(p->buf) - p->buf_cnt, &read, &error);
+			p->bufsiz - p->buf_cnt, &read, &error);
 	if(status == G_IO_STATUS_ERROR)
 	{
 		_progress_error(p->prefs->filename, 0);
@@ -327,7 +332,7 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 		p->eof = 1; /* reached end of input file */
 		g_io_channel_close(source);
 	}
-	else if(p->buf_cnt + read != sizeof(p->buf))
+	else if(p->buf_cnt + read != p->bufsiz)
 		g_idle_add(_progress_idle_in, p); /* continue to read */
 	if(p->buf_cnt == 0)
 		g_idle_add(_progress_idle_out, p); /* begin to write */
@@ -436,8 +441,9 @@ static gboolean _progress_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: progress [-z][-f file][-l length][-p prefix][-t title]"
-			" cmd [args...]\n", stderr);
+	fputs("Usage: progress [-z][-b buffer size][-f file][-l length]"
+"[-p prefix]\n"
+"                [-t title] cmd [args...]\n", stderr);
 	return 1;
 }
 
@@ -450,10 +456,17 @@ int main(int argc, char * argv[])
 	char * p;
 
 	memset(&prefs, 0, sizeof(prefs));
+	prefs.bufsiz = 65536;
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "f:l:t:z")) != -1)
+	while((o = getopt(argc, argv, "b:f:l:t:z")) != -1)
 		switch(o)
 		{
+			case 'b':
+				prefs.bufsiz = strtol(optarg, &p, 0);
+				if(optarg[0] == '\0' || *p != '\0'
+						|| prefs.bufsiz <= 0)
+					return _usage();
+				break;
 			case 'f':
 				prefs.filename = optarg;
 				break;
