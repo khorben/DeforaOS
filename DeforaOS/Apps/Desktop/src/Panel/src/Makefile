@@ -6,9 +6,10 @@ CC	= cc
 CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
-CFLAGS	= -Wall -g -O2
+CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
