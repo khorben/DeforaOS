@@ -34,7 +34,7 @@ int main(int argc, char * argv[])
 	int o;
 	Surfer * surfer;
 
-#ifdef WITH_GTKHTML /* XXX */
+#if defined(WITH_GTKHTML) || defined(WITH_WEBKIT) /* XXX */
 	if(g_thread_supported() == FALSE)
 		g_thread_init(NULL);
 #endif /* WITH_GTKHTML */
