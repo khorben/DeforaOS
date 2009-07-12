@@ -117,7 +117,7 @@ static Run * _run_new(void)
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_run_cancel), run);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	gtk_container_add(GTK_CONTAINER(run->window), vbox);
 	gtk_widget_show_all(run->window);
