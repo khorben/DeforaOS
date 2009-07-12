@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ typedef struct _HashEntry
 	void const * key;
 	void * value;
 } HashEntry;
-ARRAY(HashEntry, _hashentry);
+ARRAY(HashEntry, _hashentry)
 #define HashEntryArray _hashentryArray
 
 
