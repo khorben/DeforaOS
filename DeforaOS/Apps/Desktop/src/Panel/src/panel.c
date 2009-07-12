@@ -16,9 +16,12 @@
 
 
 #include <sys/time.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include "panel.h"
 
@@ -38,7 +41,7 @@ struct _Panel
 
 
 /* prototypes */
-static int _panel_error(Panel * panel, char const * message, int ret);
+static int _panel_exec(Panel * panel, char * command);
 
 
 /* public */
@@ -46,8 +49,8 @@ static int _panel_error(Panel * panel, char const * message, int ret);
 static GtkWidget * _new_button(char const * stock);
 static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
-static void _on_lock(GtkWidget * widget, gpointer * data);
-static void _on_menu(GtkWidget * widget, gpointer * data);
+static void _on_lock(GtkWidget * widget, gpointer data);
+static void _on_menu(GtkWidget * widget, gpointer data);
 static void _on_menu_position(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 static void _on_run(GtkWidget * widget, gpointer data);
@@ -64,7 +67,11 @@ Panel * panel_new(void)
 	gint depth;
 
 	if((panel = malloc(sizeof(*panel))) == NULL)
+	{
+		/* FIXME visually warn the user */
+		panel_error(NULL, "malloc", 1);
 		return NULL;
+	}
 	/* root window */
 	panel->root = gdk_screen_get_root_window(
 			gdk_display_get_default_screen(
@@ -148,13 +155,14 @@ static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 	return FALSE;
 }
 
-static void _on_lock(GtkWidget * widget, gpointer * data)
+static void _on_lock(GtkWidget * widget, gpointer data)
 {
-	/* XXX could be more efficient and integrated */
-	system("xscreensaver-command -lock");
+	Panel * panel = data;
+
+	_panel_exec(panel, "xscreensaver-command -lock");
 }
 
-static void _on_menu(GtkWidget * widget, gpointer * data)
+static void _on_menu(GtkWidget * widget, gpointer data)
 {
 	GtkWidget * menu;
 	GtkWidget * menuitem;
@@ -162,7 +170,8 @@ static void _on_menu(GtkWidget * widget, gpointer * data)
 
 	menu = gtk_menu_new();
 	menuitem = gtk_image_menu_item_new_with_label("Applications");
-	image = gtk_image_new_from_icon_name("gnome-applications", GTK_ICON_SIZE_MENU);
+	image = gtk_image_new_from_icon_name("gnome-applications",
+			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
@@ -217,8 +226,9 @@ static void _on_menu_position(GtkMenu * menu, gint * x, gint * y,
 
 static void _on_run(GtkWidget * widget, gpointer data)
 {
-	/* XXX could be more efficient and integrated */
-	system("run");
+	Panel * panel = data;
+
+	_panel_exec(panel, "run");
 }
 
 static gboolean _on_timeout_clock(gpointer data)
@@ -230,7 +240,7 @@ static gboolean _on_timeout_clock(gpointer data)
 	char buf[32];
 
 	if(gettimeofday(&tv, NULL) != 0)
-		return _panel_error(panel, "gettimeofday", TRUE);
+		return panel_error(panel, "gettimeofday", TRUE);
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
 	strftime(buf, sizeof(buf), "%H:%M:%S\n%d/%m/%Y", &tm);
@@ -246,11 +256,44 @@ void panel_delete(Panel * panel)
 }
 
 
-/* private */
-/* functions */
-static int _panel_error(Panel * panel, char const * message, int ret)
+/* useful */
+static int _error_text(char const * message, int ret);
+
+int panel_error(Panel * panel, char const * message, int ret)
+{
+	GtkWidget * dialog;
+
+	if(panel == NULL)
+		return _error_text(message, ret);
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
 {
 	fputs("panel: ", stderr);
 	perror(message);
 	return ret;
+}
+
+
+/* private */
+/* functions */
+/* panel_exec */
+static int _panel_exec(Panel * panel, char * command)
+{
+	pid_t pid;
+
+	if((pid = fork()) == -1)
+		return panel_error(panel, "fork", 1);
+	else if(pid != 0) /* the parent returns */
+		return 0;
+	execlp("/bin/sh", "sh", "-c", command, NULL);
+	exit(panel_error(NULL, command, 2));
+	return 1;
 }

@@ -15,8 +15,10 @@
 
 
 
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 #include <gtk/gtk.h>
 #include "panel.h"
 
@@ -30,10 +32,13 @@ static int _usage(void)
 
 
 /* main */
+static void _main_sigchld(int signum);
+
 int main(int argc, char * argv[])
 {
-	Panel * panel;
 	int o;
+	Panel * panel;
+	struct sigaction sa;
 
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
@@ -44,8 +49,19 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	panel = panel_new();
+	if((panel = panel_new()) == NULL)
+		return 2;
+	sa.sa_handler = _main_sigchld;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	if(sigaction(SIGCHLD, &sa, NULL) == -1)
+		panel_error(panel, "signal handling error", 0);
 	gtk_main();
 	panel_delete(panel);
 	return 0;
+}
+
+static void _main_sigchld(int signum)
+{
+	wait(NULL);
 }

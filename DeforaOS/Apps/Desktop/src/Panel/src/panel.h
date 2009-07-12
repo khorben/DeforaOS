@@ -28,4 +28,7 @@ typedef struct _Panel Panel;
 Panel * panel_new(void);
 void panel_delete(Panel * panel);
 
+/* useful */
+int panel_error(Panel * panel, char const * message, int ret);
+
 # endif /* !PANEL_PANEL_H */
