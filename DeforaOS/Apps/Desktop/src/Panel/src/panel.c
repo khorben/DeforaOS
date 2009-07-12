@@ -233,7 +233,7 @@ static gboolean _on_timeout_clock(gpointer data)
 		return _panel_error(panel, "gettimeofday", TRUE);
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
-	strftime(buf, sizeof(buf), "%T\n%d/%m/%Y", &tm);
+	strftime(buf, sizeof(buf), "%H:%M:%S\n%d/%m/%Y", &tm);
 	gtk_label_set_text(GTK_LABEL(panel->clock), buf);
 	return TRUE;
 }
