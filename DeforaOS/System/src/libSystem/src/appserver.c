@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ static void _appserverclient_delete(AppServerClient * appserverclient);
 /* AppServer */
 /* private */
 /* types */
-ARRAY(AppServerClient *, AppServerClient);
+ARRAY(AppServerClient *, AppServerClient)
 struct _AppServer
 {
 	AppInterface * interface;

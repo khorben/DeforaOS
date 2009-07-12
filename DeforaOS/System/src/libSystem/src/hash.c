@@ -190,8 +190,10 @@ struct funcdata
 
 void hash_foreach(Hash * hash, HashForeach func, void * data)
 {
-	struct funcdata fd = { func, data };
+	struct funcdata fd;
 
+	fd.func = func;
+	fd.data = data;
 	array_foreach(hash->entries, _hash_foreach, &fd);
 }
 
