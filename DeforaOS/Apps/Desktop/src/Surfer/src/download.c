@@ -311,27 +311,34 @@ static void _download_on_http(GConnHttp * conn, GConnHttpEvent * event,
 	switch(event->type)
 	{
 		case GNET_CONN_HTTP_CONNECTED:
-			return _http_connected(download);
+			_http_connected(download);
+			break;
 		case GNET_CONN_HTTP_ERROR:
-			return _http_error((GConnHttpEventError*)event,
-					download);
+			_http_error((GConnHttpEventError*)event, download);
+			break;
 		case GNET_CONN_HTTP_DATA_COMPLETE:
-			return _http_data_complete((GConnHttpEventData*)event,
+			_http_data_complete((GConnHttpEventData*)event,
 					download);
+			break;
 		case GNET_CONN_HTTP_DATA_PARTIAL:
-			return _http_data_partial((GConnHttpEventData*)event,
-			       download);
+			_http_data_partial((GConnHttpEventData*)event,
+					download);
+			break;
 		case GNET_CONN_HTTP_REDIRECT:
-			return _http_redirect((GConnHttpEventRedirect*)event,
+			_http_redirect((GConnHttpEventRedirect*)event,
 					download);
+			break;
 		case GNET_CONN_HTTP_RESOLVED:
-			return _http_resolved((GConnHttpEventResolved*)event,
+			_http_resolved((GConnHttpEventResolved*)event,
 					download);
+			break;
 		case GNET_CONN_HTTP_RESPONSE:
-			return _http_response((GConnHttpEventResponse*)event,
+			_http_response((GConnHttpEventResponse*)event,
 					download);
+			break;
 		case GNET_CONN_HTTP_TIMEOUT:
-			return _http_timeout(download);
+			_http_timeout(download);
+			break;
 	}
 }
 
