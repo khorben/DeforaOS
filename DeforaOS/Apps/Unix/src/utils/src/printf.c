@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -95,7 +95,7 @@ static int _printf_unescape(char const ** p)
 			putc('\b', stdout);
 			break;
 		case 'e':
-			putc('\e', stdout);
+			putc('\x1b', stdout);
 			break;
 		case 'f':
 			putc('\f', stdout);
