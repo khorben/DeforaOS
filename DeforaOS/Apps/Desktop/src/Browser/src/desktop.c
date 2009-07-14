@@ -769,18 +769,20 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
 	/* submenu for new documents */
+	menuitem = gtk_image_menu_item_new_with_label("Folder");
+	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_new_folder), desktop);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_image_menu_item_new_with_label("Text file");
 	image = gtk_image_new_from_icon_name("stock_new-text",
 			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_text_file), desktop);
-	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Folder");
-	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_popup_new_folder), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	/* edition */
 	menuitem = gtk_separator_menu_item_new();
