@@ -408,7 +408,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 	}
 	if((pid = fork()) == -1)
 	{
-		desktop_error(desktopicon->desktop, strerror(errno), 0);
+		desktop_error(desktopicon->desktop, "fork", 0);
 		return;
 	}
 	if(pid != 0)
@@ -626,6 +626,14 @@ void desktopicon_show(DesktopIcon * desktopicon)
 
 
 /* Desktop */
+/* private */
+/* prototypes */
+static int _desktop_error(Desktop * desktop, char const * message,
+		char const * error, int ret);
+static int _desktop_serror(Desktop * desktop, char const * message, int ret);
+
+
+/* public */
 /* functions */
 /* desktop_new */
 static Desktop * _new_error(Desktop * desktop, char const * message);
@@ -692,8 +700,7 @@ Desktop * desktop_new(void)
 	gdk_window_get_geometry(desktop->root, &x, &y, &desktop->width,
 			&desktop->height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
-				desktop->root) | GDK_BUTTON_PRESS_MASK
-			| GDK_EXPOSURE_MASK);
+				desktop->root) | GDK_BUTTON_PRESS_MASK);
 	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
 	/* draw background when idle */
 	g_idle_add(_new_idle, desktop);
@@ -759,35 +766,40 @@ static gboolean _new_idle(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((config = config_new()) == NULL)
-		return desktop_error(desktop, error_get(), FALSE);
-	if((pathname = string_new_append(desktop->home, "/", DESKTOPRC, NULL))
-			== NULL)
+	if((config = config_new()) == NULL
+			|| (pathname = string_new_append(desktop->home, "/",
+					DESKTOPRC, NULL)) == NULL)
 	{
+		if(config != NULL)
+			config_delete(config);
+		return _desktop_serror(desktop, "Could not load preferences",
+				FALSE);
+	}
+	if(config_load(config, pathname) != 0
+			|| (p = config_get(config, "", "background")) == NULL)
+	{
+		object_delete(pathname);
 		config_delete(config);
-		return desktop_error(desktop, error_get(), FALSE);
+		return FALSE;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() config=\"%s\"\n", __func__, pathname);
+	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
 #endif
-	if(config_load(config, pathname) != 0)
-		desktop_error(desktop, error_get(), 0);
-	else if((p = config_get(config, "", "background")) != NULL)
+	/* FIXME may be resized (xrandr...) */
+	if((desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
+					desktop->width, desktop->height,
+					FALSE, &error)) == NULL)
 	{
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
-#endif
-		/* FIXME may be resized (xrandr...) */
-		if((desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
-						desktop->width, desktop->height,
-						FALSE, &error))
-				== NULL)
-			desktop_error(desktop, error->message, 0);
-		else
-			gdk_draw_pixbuf(desktop->root, NULL,
-					desktop->background, 0, 0, 0, 0,
-					-1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
+		desktop_error(desktop, error->message, 0);
+		object_delete(pathname);
+		config_delete(config);
+		return FALSE;
 	}
+	gdk_draw_pixbuf(desktop->root, NULL, desktop->background, 0, 0, 0, 0,
+			-1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
+	gdk_window_set_events(desktop->root, gdk_window_get_events(
+				desktop->root) | GDK_BUTTON_PRESS_MASK
+			| GDK_EXPOSURE_MASK);
 	object_delete(pathname);
 	config_delete(config);
 	return FALSE;
@@ -966,28 +978,9 @@ void desktop_delete(Desktop * desktop)
 
 /* useful */
 /* desktop_error */
-static int _error_text(char const * message, int ret);
-
 int desktop_error(Desktop * desktop, char const * message, int ret)
 {
-	GtkWidget * dialog;
-
-	if(desktop == NULL)
-		return _error_text(message, ret);
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
-	if(ret < 0)
-	{
-		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-					gtk_main_quit), NULL);
-		ret = -ret;
-	}
-	else
-		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-					gtk_widget_destroy), NULL);
-	gtk_widget_show(dialog);
-	return ret;
+	return _desktop_error(desktop, message, strerror(errno), ret);
 }
 
 static int _error_text(char const * message, int ret)
@@ -1263,6 +1256,42 @@ void desktop_unselect_all(Desktop * desktop)
 
 	for(i = 0; i < desktop->icon_cnt; i++)
 		desktopicon_set_selected(desktop->icon[i], FALSE);
+}
+
+
+/* private */
+/* functions */
+/* desktop_error */
+static int _error_text(char const * message, int ret);
+
+static int _desktop_error(Desktop * desktop, char const * message,
+		char const * error, int ret)
+{
+	GtkWidget * dialog;
+
+	if(desktop == NULL)
+		return _error_text(message, ret);
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s: %s", message, error);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	if(ret < 0)
+	{
+		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+					gtk_main_quit), NULL);
+		ret = -ret;
+	}
+	else
+		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+					gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+	return ret;
+}
+
+
+/* desktop_serror */
+static int _desktop_serror(Desktop * desktop, char const * message, int ret)
+{
+	return _desktop_error(desktop, message, error_get(), ret);
 }
 
 
