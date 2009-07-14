@@ -764,7 +764,7 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		return GDK_FILTER_CONTINUE;
 	}
 	desktop->menu = gtk_menu_new();
-	menuitem = gtk_menu_item_new_with_label("New");
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_NEW, NULL);
 	submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
