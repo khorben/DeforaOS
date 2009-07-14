@@ -28,6 +28,7 @@
 #include <X11/Xlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <System.h>
 #include "mime.h"
 #include "desktop.h"
 #define PACKAGE "desktop"
@@ -39,6 +40,7 @@
 
 /* constants */
 #define DESKTOP ".desktop"
+#define DESKTOPRC ".desktoprc"
 
 
 /* DesktopIcon */
@@ -55,10 +57,14 @@ struct _Desktop
 	time_t refresh_mti;
 
 	GdkWindow * root;
+	GdkPixbuf * background;
 	GtkIconTheme * theme;
 	GdkPixbuf * file;
 	GdkPixbuf * folder;
 	GtkWidget * menu;
+
+	gint width;
+	gint height;
 };
 
 struct _DesktopIcon
@@ -569,18 +575,21 @@ void desktopicon_delete(DesktopIcon * desktopicon)
 
 
 /* accessors */
+/* desktopicon_get_path */
 char const * desktopicon_get_path(DesktopIcon * desktopicon)
 {
 	return desktopicon->path;
 }
 
 
+/* desktopicon_get_selected */
 gboolean desktopicon_get_selected(DesktopIcon * desktopicon)
 {
 	return desktopicon->selected;
 }
 
 
+/* desktopicon_set_icon */
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
 	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
@@ -588,6 +597,7 @@ void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 }
 
 
+/* desktopicon_set_selected */
 void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected)
 {
 #ifdef DEBUG
@@ -624,6 +634,7 @@ static void _new_add_home(Desktop * desktop);
 
 /* callbacks */
 /* FIXME implement desktop resizing callback */
+static gboolean _new_idle(gpointer data);
 static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
@@ -641,6 +652,9 @@ Desktop * desktop_new(void)
 #endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
 	char ** p;
+	gint x;
+	gint y;
+	gint depth;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
@@ -675,9 +689,14 @@ Desktop * desktop_new(void)
 	desktop->root = gdk_screen_get_root_window(
 			gdk_display_get_default_screen(
 				gdk_display_get_default()));
+	gdk_window_get_geometry(desktop->root, &x, &y, &desktop->width,
+			&desktop->height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
-				desktop->root) | GDK_BUTTON_PRESS_MASK);
+				desktop->root) | GDK_BUTTON_PRESS_MASK
+			| GDK_EXPOSURE_MASK);
 	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
+	/* draw background when idle */
+	g_idle_add(_new_idle, desktop);
 	return desktop;
 }
 
@@ -729,8 +748,54 @@ static void _new_add_home(Desktop * desktop)
 		desktopicon_set_icon(desktopicon, icon);
 }
 
+static gboolean _new_idle(gpointer data)
+{
+	Desktop * desktop = data;
+	Config * config;
+	char * pathname;
+	char const * p;
+	GError * error = NULL;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if((config = config_new()) == NULL)
+		return desktop_error(desktop, error_get(), FALSE);
+	if((pathname = string_new_append(desktop->home, "/", DESKTOPRC, NULL))
+			== NULL)
+	{
+		config_delete(config);
+		return desktop_error(desktop, error_get(), FALSE);
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() config=\"%s\"\n", __func__, pathname);
+#endif
+	if(config_load(config, pathname) != 0)
+		desktop_error(desktop, error_get(), 0);
+	else if((p = config_get(config, "", "background")) != NULL)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
+#endif
+		/* FIXME may be resized (xrandr...) */
+		if((desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
+						desktop->width, desktop->height,
+						FALSE, &error))
+				== NULL)
+			desktop_error(desktop, error->message, 0);
+		else
+			gdk_draw_pixbuf(desktop->root, NULL,
+					desktop->background, 0, 0, 0, 0,
+					-1, -1, GDK_RGB_DITHER_NORMAL, 0, 0);
+	}
+	object_delete(pathname);
+	config_delete(config);
+	return FALSE;
+}
+
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		Desktop * desktop);
+static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop);
 static void _on_popup_new_folder(GtkWidget * widget, gpointer data);
 static void _on_popup_new_text_file(GtkWidget * widget, gpointer data);
 static void _on_popup_paste(GtkWidget * widget, gpointer data);
@@ -744,6 +809,11 @@ static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type == ButtonPress)
 		return _event_button_press(xevent, desktop);
+	else if(xev->type == Expose)
+		return _event_expose(xevent, desktop);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %d\n", __func__, xev->type);
+#endif
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -802,6 +872,19 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_widget_show_all(desktop->menu);
 	gtk_menu_popup(GTK_MENU(desktop->menu), NULL, NULL, NULL, NULL, 3,
 			xbev->time);
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %d %d, %d %d\n", __func__,
+			xevent->x, xevent->y, xevent->width, xevent->height);
+#endif
+	gdk_draw_pixbuf(desktop->root, NULL,
+			desktop->background, xevent->x, xevent->y,
+			xevent->x, xevent->y, xevent->width, xevent->height,
+			GDK_RGB_DITHER_NORMAL, 0, 0);
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -884,6 +967,7 @@ void desktop_delete(Desktop * desktop)
 /* useful */
 /* desktop_error */
 static int _error_text(char const * message, int ret);
+
 int desktop_error(Desktop * desktop, char const * message, int ret)
 {
 	GtkWidget * dialog;
@@ -914,7 +998,16 @@ static int _error_text(char const * message, int ret)
 }
 
 
+/* desktop_refresh */
 static void _refresh_current(Desktop * desktop);
+static int _current_loop(Desktop * desktop);
+static gboolean _current_idle(gpointer data);
+static gboolean _current_done(Desktop * desktop);
+
+static int _loop_lookup(Desktop * desktop, char const * name);
+
+static gboolean _done_timeout(gpointer data);
+
 void desktop_refresh(Desktop * desktop)
 {
 	int fd;
@@ -948,9 +1041,6 @@ void desktop_refresh(Desktop * desktop)
 	_refresh_current(desktop);
 }
 
-static int _current_loop(Desktop * desktop);
-static gboolean _current_idle(gpointer data);
-static gboolean _current_done(Desktop * desktop);
 static void _refresh_current(Desktop * desktop)
 {
 	unsigned int i;
@@ -962,7 +1052,6 @@ static void _refresh_current(Desktop * desktop)
 		_current_done(desktop);
 }
 
-static int _loop_lookup(Desktop * desktop, char const * name);
 static int _current_loop(Desktop * desktop)
 {
 	struct dirent * de;
@@ -1024,7 +1113,6 @@ static gboolean _current_idle(gpointer data)
 	return _current_done(desktop);
 }
 
-static gboolean _done_timeout(gpointer data);
 static gboolean _current_done(Desktop * desktop)
 {
 	size_t i = 1;
