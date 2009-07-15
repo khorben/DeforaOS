@@ -40,6 +40,11 @@ struct _Panel
 };
 
 
+/* constants */
+#define PANEL_BORDER_WIDTH		4
+#define PANEL_ICON_SIZE			48
+
+
 /* prototypes */
 static int _panel_exec(Panel * panel, char * command);
 
@@ -219,8 +224,8 @@ static void _on_menu_position(GtkMenu * menu, gint * x, gint * y,
 #endif
 	if(req.height <= 0)
 		return;
-	*x = 4;
-	*y = panel->height - 52 - req.height;
+	*x = PANEL_BORDER_WIDTH;
+	*y = panel->height - PANEL_BORDER_WIDTH - PANEL_ICON_SIZE - req.height;
 	*push_in = TRUE;
 }
 
