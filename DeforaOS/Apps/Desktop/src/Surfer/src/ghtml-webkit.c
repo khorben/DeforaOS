@@ -189,7 +189,7 @@ void ghtml_refresh(GtkWidget * ghtml)
 
 void ghtml_reload(GtkWidget * ghtml)
 {
-	return ghtml_refresh(ghtml);
+	ghtml_refresh(ghtml);
 }
 
 
