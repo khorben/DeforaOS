@@ -36,7 +36,7 @@ _image_image()
 	$SUDO $VNCONFIG -u "$VND"
 	$DD if="$DEVZERO" of="$IMAGE_FILE" count="$IMAGE_SIZE" &&
 	$FDISK -Ffi "$IMAGE_FILE"				|| exit 2
-	SIZE=$((IMAGE_SIZE - 63))
+	SIZE=$((IMAGE_SIZE * 2 - 63))
 	$FDISK -Ffu0s "169/63/$SIZE" "$IMAGE_FILE"		|| exit 2
 	$FDISK -Ffa0 "$IMAGE_FILE"				|| exit 2
 	$SUDO $VNCONFIG -c "$VND" "$IMAGE_FILE"			|| exit 2
