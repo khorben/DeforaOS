@@ -376,6 +376,7 @@ static gboolean _panel_idle_apps(gpointer data)
 	const char path[] = "/usr/pkg/share/applications";
 	DIR * dir;
 	struct dirent * de;
+	size_t len;
 	const char ext[] = ".desktop";
 	const char section[] = "Desktop Entry";
 	char * name = NULL;
@@ -390,17 +391,17 @@ static gboolean _panel_idle_apps(gpointer data)
 		return panel_error(panel, path, FALSE);
 	while((de = readdir(dir)) != NULL)
 	{
-		if(de->d_namlen < sizeof(ext) || strncmp(&de->d_name[
-					de->d_namlen - sizeof(ext) + 1],
-					ext, sizeof(ext)) != 0)
+		len = strlen(de->d_name);
+		if(len < sizeof(ext) || strncmp(&de->d_name[len - sizeof(ext)
+					+ 1], ext, sizeof(ext)) != 0)
 			continue;
-		if((p = realloc(name, sizeof(path) + de->d_namlen + 1)) == NULL)
+		if((p = realloc(name, sizeof(path) + len + 1)) == NULL)
 		{
 			panel_error(panel, "realloc", 1);
 			continue;
 		}
 		name = p;
-		snprintf(name, sizeof(path) + de->d_namlen + 1, "%s/%s", path,
+		snprintf(name, sizeof(path) + len + 1, "%s/%s", path,
 				de->d_name);
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, name);
