@@ -15,7 +15,10 @@
 
 
 
+#include <System.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,6 +34,8 @@
 /* types */
 struct _Panel
 {
+	GSList * apps;
+
 	GdkWindow * root;
 	GtkWidget * window;
 	GtkWidget * clock;
@@ -46,7 +51,8 @@ struct _Panel
 
 
 /* prototypes */
-static int _panel_exec(Panel * panel, char * command);
+static int _panel_exec(Panel * panel, char const * command);
+static gboolean _panel_idle_apps(gpointer data);
 
 
 /* public */
@@ -77,6 +83,9 @@ Panel * panel_new(void)
 		panel_error(NULL, "malloc", 1);
 		return NULL;
 	}
+	/* applications */
+	panel->apps = NULL;
+	g_idle_add(_panel_idle_apps, panel);
 	/* root window */
 	panel->root = gdk_screen_get_root_window(
 			gdk_display_get_default_screen(
@@ -89,9 +98,10 @@ Panel * panel_new(void)
 #endif
 	/* panel */
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->height - 56);
+	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->height
+		- PANEL_ICON_SIZE - (PANEL_BORDER_WIDTH * 2));
 	gtk_window_set_default_size(GTK_WINDOW(panel->window), panel->width,
-			56);
+			PANEL_ICON_SIZE + (PANEL_BORDER_WIDTH * 2));
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	event = gtk_event_box_new();
@@ -167,8 +177,11 @@ static void _on_lock(GtkWidget * widget, gpointer data)
 	_panel_exec(panel, "xscreensaver-command -lock");
 }
 
+static GtkWidget * _menu_applications(Panel * panel);
+static void _applications_activate(GtkWidget * widget, gpointer data);
 static void _on_menu(GtkWidget * widget, gpointer data)
 {
+	Panel * panel = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 	GtkWidget * image;
@@ -178,6 +191,8 @@ static void _on_menu(GtkWidget * widget, gpointer data)
 	image = gtk_image_new_from_icon_name("gnome-applications",
 			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem),
+			_menu_applications(panel));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -209,6 +224,50 @@ static void _on_menu(GtkWidget * widget, gpointer data)
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, _on_menu_position, data, 0,
 			gtk_get_current_event_time());
+}
+
+static GtkWidget * _menu_applications(Panel * panel)
+{
+	GSList * p;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+	GtkWidget * image;
+	Config * config;
+	const char section[] = "Desktop Entry";
+	char const * q;
+
+	_panel_idle_apps(panel); /* just in case */
+	menu = gtk_menu_new();
+	for(p = panel->apps; p != NULL; p = p->next)
+	{
+		config = p->data;
+		q = config_get(config, section, "Name"); /* should not fail */
+		menuitem = gtk_image_menu_item_new_with_label(q);
+		if((q = config_get(config, section, "Icon")) != NULL)
+		{
+			image = gtk_image_new_from_icon_name(q,
+					GTK_ICON_SIZE_MENU);
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(
+						menuitem), image);
+		}
+		q = config_get(config, section, "Exec"); /* should not fail */
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_applications_activate), (gpointer)q);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
+	return menu;
+}
+
+static void _applications_activate(GtkWidget * widget, gpointer data)
+{
+	char const * program = data;
+
+	if(program == NULL)
+		return;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() \"%s\"", __func__, program);
+#endif
+	_panel_exec(NULL, program);
 }
 
 static void _on_menu_position(GtkMenu * menu, gint * x, gint * y,
@@ -290,7 +349,7 @@ static int _error_text(char const * message, int ret)
 /* private */
 /* functions */
 /* panel_exec */
-static int _panel_exec(Panel * panel, char * command)
+static int _panel_exec(Panel * panel, char const * command)
 {
 	pid_t pid;
 
@@ -301,4 +360,76 @@ static int _panel_exec(Panel * panel, char * command)
 	execlp("/bin/sh", "sh", "-c", command, NULL);
 	exit(panel_error(NULL, command, 2));
 	return 1;
+}
+
+
+/* callbacks */
+/* panel_idle_apps */
+static gint _apps_compare(gconstpointer a, gconstpointer b);
+
+static gboolean _panel_idle_apps(gpointer data)
+{
+	Panel * panel = data;
+	const char path[] = "/usr/pkg/share/applications";
+	DIR * dir;
+	struct dirent * de;
+	const char ext[] = ".desktop";
+	const char section[] = "Desktop Entry";
+	char * name = NULL;
+	char * p;
+	Config * config = NULL;
+	String const * q;
+	String const * r;
+
+	if(panel->apps != NULL)
+		return FALSE;
+	if((dir = opendir(path)) == NULL)
+		return panel_error(panel, path, FALSE);
+	while((de = readdir(dir)) != NULL)
+	{
+		if(de->d_namlen < sizeof(ext) || strncmp(&de->d_name[
+					de->d_namlen - sizeof(ext) + 1],
+					ext, sizeof(ext)) != 0)
+			continue;
+		if((p = realloc(name, sizeof(path) + de->d_namlen + 1)) == NULL)
+		{
+			panel_error(panel, "realloc", 1);
+			continue;
+		}
+		name = p;
+		snprintf(name, sizeof(path) + de->d_namlen + 1, "%s/%s", path,
+				de->d_name);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, name);
+#endif
+		if(config == NULL && (config = config_new()) == NULL)
+			continue; /* XXX report error */
+		else
+			config_reset(config);
+		config_load(config, name);
+		q = config_get(config, section, "Name");
+		r = config_get(config, section, "Exec");
+		if(q == NULL || r == NULL)
+			continue;
+		panel->apps = g_slist_insert_sorted(panel->apps, config,
+				_apps_compare);
+		config = NULL;
+	}
+	free(name);
+	closedir(dir);
+	return FALSE;
+}
+
+static gint _apps_compare(gconstpointer a, gconstpointer b)
+{
+	Config * ca = (Config *)a;
+	Config * cb = (Config *)b;
+	char const * cap;
+	char const * cbp;
+	const char section[] = "Desktop Entry";
+
+	/* these should not fail */
+	cap = config_get(ca, section, "Name");
+	cbp = config_get(cb, section, "Name");
+	return string_compare(cap, cbp);
 }
