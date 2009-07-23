@@ -121,11 +121,14 @@ Panel * panel_new(void)
 	gtk_box_pack_start(GTK_BOX(hbox), _new_button("gnome-logout"), FALSE,
 			TRUE, 0);
 	/* clock */
+	widget = gtk_frame_new(NULL);
+	gtk_frame_set_shadow_type(GTK_FRAME(widget), GTK_SHADOW_IN);
 	panel->clock = gtk_label_new(" \n ");
 	gtk_label_set_justify(GTK_LABEL(panel->clock), GTK_JUSTIFY_CENTER);
 	g_timeout_add(1000, _on_timeout_clock, panel);
 	_on_timeout_clock(panel);
-	gtk_box_pack_end(GTK_BOX(hbox), panel->clock, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(widget), panel->clock);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(event), hbox);
 	gtk_container_add(GTK_CONTAINER(panel->window), event);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
