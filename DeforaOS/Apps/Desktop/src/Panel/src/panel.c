@@ -46,6 +46,9 @@ struct _Panel
 
 
 /* constants */
+#ifndef PREFIX
+# define PREFIX "/usr/local"
+#endif
 #define PANEL_BORDER_WIDTH		4
 #define PANEL_ICON_SIZE			48
 
@@ -373,7 +376,7 @@ static gint _apps_compare(gconstpointer a, gconstpointer b);
 static gboolean _panel_idle_apps(gpointer data)
 {
 	Panel * panel = data;
-	const char path[] = "/usr/pkg/share/applications";
+	const char path[] = PREFIX "/share/applications";
 	DIR * dir;
 	struct dirent * de;
 	size_t len;
