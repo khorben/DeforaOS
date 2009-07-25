@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "Browser is free software; you can redistribute it and/or modify it under the\n"
@@ -89,11 +89,7 @@ void on_file_new_folder(GtkWidget * widget, gpointer data)
 
 void on_file_close(GtkWidget * widget, gpointer data)
 {
-	Browser * browser = data;
-
-	browser_delete(browser);
-	if(browser_cnt == 0)
-		gtk_main_quit();
+	on_closex(widget, NULL, data);
 }
 
 
