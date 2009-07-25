@@ -101,9 +101,11 @@ int config_set(Config * config, char const * section, char const * variable,
 	Hash * hash;
 	char * p;
 	char * q;
+	char * v = NULL;
 
 	if((hash = hash_get(config, section)) == NULL)
 	{
+		/* create a new section */
 		if((hash = hash_new(hash_func_string, hash_compare_string))
 				== NULL)
 			return 1;
@@ -115,12 +117,18 @@ int config_set(Config * config, char const * section, char const * variable,
 			return 1;
 		}
 	}
+	else
+		/* to free the current value if already set */
+		v = hash_get(hash, variable);
 	if((p = string_new(variable)) == NULL)
 		return 1;
 	if(value == NULL)
 	{
 		if(hash_set(hash, p, NULL) == 0)
+		{
+			string_delete(v);
 			return 0;
+		}
 		string_delete(p);
 		return 1;
 	}
@@ -130,7 +138,10 @@ int config_set(Config * config, char const * section, char const * variable,
 		return 1;
 	}
 	if(hash_set(hash, p, q) == 0)
+	{
+		string_delete(v);
 		return 0;
+	}
 	string_delete(p);
 	string_delete(q);
 	return 1;
