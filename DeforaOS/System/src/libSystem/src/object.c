@@ -55,19 +55,19 @@ void object_delete(void * object)
 
 
 /* useful */
-Object * object_resize(Object ** object, size_t size)
+int object_resize(Object ** object, size_t size)
 {
 	void * p;
 
 	if((p = realloc(*object, size)) == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
-		return NULL;
+		return 1;
 	}
 	*object = p;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(&%p, %zu) => %p\n", __func__, *object, size,
 			p);
 #endif
-	return p;
+	return 0;
 }
