@@ -364,6 +364,7 @@ static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
 }
 
 
+#if WEBKIT_CHECK_VERSION(1, 0, 3)
 static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 {
 	Surfer * surfer;
@@ -381,11 +382,11 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 	g_object_get(G_OBJECT(features), "fullscreen", &b, NULL);
 	if(b == TRUE)
 		surfer_set_fullscreen(surfer, TRUE);
-#ifndef FOR_EMBEDDED
+# ifndef FOR_EMBEDDED
 	g_object_get(G_OBJECT(features), "menubar-visible", &b, NULL);
 	if(b == FALSE)
 		gtk_widget_hide(surfer->menubar);
-#endif
+# endif
 	g_object_get(G_OBJECT(features), "toolbar-visible", &b, NULL);
 	if(b == FALSE)
 		gtk_widget_hide(surfer->toolbar);
@@ -395,3 +396,16 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 	gtk_widget_show(surfer->window);
 	return FALSE;
 }
+#else /* WebKitWebWindowFeatures is not available */
+static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
+{
+	Surfer * surfer;
+	gboolean b;
+	gint w;
+	gint h;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	gtk_widget_show(surfer->window);
+	return FALSE;
+}
+#endif
