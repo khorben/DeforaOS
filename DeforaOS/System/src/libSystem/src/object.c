@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@
 
 
 #include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include "System.h"
@@ -27,19 +30,25 @@
 /* object_new */
 void * object_new(size_t size)
 {
-	void * ptr;
+	void * object;
 
-	if((ptr = malloc(size)) == NULL)
+	if((object = malloc(size)) == NULL)
 	{
 		error_set_code(1, "%s", strerror(errno));
 		return NULL;
 	}
-	return ptr;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() => %p\n", __func__, object);
+#endif
+	return object;
 }
 
 
 /* object_delete */
 void object_delete(void * object)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, object);
+#endif
 	free(object);
 }
