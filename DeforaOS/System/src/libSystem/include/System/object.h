@@ -27,4 +27,7 @@ typedef void Object;
 Object * object_new(size_t size);
 void object_delete(Object * object);
 
+/* useful */
+Object * object_resize(Object ** object, size_t size);
+
 #endif /* !LIBSYSTEM_OBJECT_H */
