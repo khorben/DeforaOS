@@ -41,9 +41,10 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	Surfer * surfer = data;
 
-	surfer_delete(surfer);
-	if(surfer_cnt == 0)
+	if(surfer_cnt == 1)
 		gtk_main_quit();
+	else
+		surfer_delete(surfer);
 	return FALSE;
 }
 
