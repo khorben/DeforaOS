@@ -54,6 +54,5 @@ int main(int argc, char * argv[])
 	if(surfer == NULL)
 		return 2;
 	gtk_main();
-	surfer_delete(surfer);
 	return 0;
 }
