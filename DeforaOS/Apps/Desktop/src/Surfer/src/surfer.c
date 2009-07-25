@@ -351,6 +351,7 @@ Surfer * surfer_new_copy(Surfer * surfer)
 /* surfer_delete */
 void surfer_delete(Surfer * surfer)
 {
+	gtk_widget_destroy(surfer->window);
 	config_delete(surfer->config);
 	free(surfer->url);
 	free(surfer->homepage);
