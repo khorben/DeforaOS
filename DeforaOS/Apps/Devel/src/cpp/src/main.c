@@ -144,7 +144,7 @@ static int _cpp_error(void)
 /* FIXME -E prints metadata? */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-D name[=value]]...[-I directory][-o outfile][-t][-U name]... input...\n"
+	fputs("Usage: " PACKAGE " [-D name[=value]]...[-I directory][-o file][-t][-U name]... input...\n"
 "  -D	Add a substitution\n"
 "  -I	Add a directory to the search path\n"
 "  -o	Write output to a file\n"
