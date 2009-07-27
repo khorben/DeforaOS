@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGSF=
 CPPFLAGS= -I ../include
 CFLAGSF	= -W
-CFLAGS	= -Wall -g
+CFLAGS	= -Wall -g -O2
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
@@ -37,10 +37,10 @@ cpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l c
 cpp: $(cpp_OBJS) libcpp.so
 	$(CC) -o cpp $(cpp_OBJS) $(cpp_LDFLAGS)
 
-cpp.o: cpp.c ../include/cpp.h
+cpp.o: cpp.c common.h ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c cpp.c
 
-scanner.o: scanner.c ../include/cpp.h
+scanner.o: scanner.c common.h ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c scanner.c
 
 main.o: main.c ../include/cpp.h
