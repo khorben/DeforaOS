@@ -518,10 +518,14 @@ static int _struct_or_union_specifier(C99 * c99)
 		return ret;
 	}
 	ret |= scan(c99);
-	ret |= _parse_check_set(c99, c99set_struct_declaration_list,
-			"struct declaration list", _struct_declaration_list);
-	if(_parse_is_code(c99, C99_CODE_COMMA))
-		ret |= scan(c99);
+	/* XXX the grammar says there's got to be one */
+	if(_parse_in_set(c99, c99set_struct_declaration_list))
+	{
+		ret |= _struct_declaration_list(c99);
+		/* XXX the grammar doesn't mention this? */
+		if(_parse_is_code(c99, C99_CODE_COMMA))
+			ret |= scan(c99);
+	}
 	ret |= _parse_check(c99, C99_CODE_OPERATOR_RBRACE);
 	ret |= code_context_set(c99->code, context);
 	return ret;
