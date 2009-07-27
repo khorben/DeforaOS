@@ -55,15 +55,20 @@ C99 * c99_new(C99Prefs const * prefs, char const * pathname)
 		return NULL;
 	}
 	if((c99->outfile = _new_outfile(prefs->flags, prefs->outfile, pathname))
-			== NULL
-			|| (c99->code = code_new(prefs, c99->outfile)) == NULL)
+			== NULL)
 	{
 		c99_delete(c99);
 		return NULL;
 	}
-	/* if not pre-processing we can already return */
-	if(!(prefs->flags & C99PREFS_E))
+	if(!(prefs->flags & C99PREFS_E)) /* we're not pre-processing */
+	{
+		if((c99->code = code_new(prefs, c99->outfile)) == NULL)
+		{
+			c99_delete(c99);
+			return NULL;
+		}
 		return c99;
+	}
 	if(c99->outfile[0] == '\0')
 	{
 		c99->outfp = stdout;
