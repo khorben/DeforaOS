@@ -108,6 +108,7 @@ static int _cpp_scope_pop(Cpp * cpp)
 
 /* public */
 /* cpp_scan */
+static void _scan_meta_line(Token * token);
 static int _scan_ifdef(Cpp * cpp, Token ** token);
 static int _scan_ifndef(Cpp * cpp, Token ** token);
 static int _scan_if(Cpp * cpp, Token ** token);
@@ -127,7 +128,10 @@ int cpp_scan(Cpp * cpp, Token ** token)
 	{
 		if(*token == NULL) /* end of file */
 			break;
-		switch((code = token_get_code(*token)))
+		if((code = token_get_code(*token)) >= CPP_CODE_META_FIRST
+				&& code <= CPP_CODE_META_LAST)
+			_scan_meta_line(*token);
+		switch(code)
 		{
 			case CPP_CODE_META_IFDEF:
 				return _scan_ifdef(cpp, token);
@@ -157,6 +161,12 @@ int cpp_scan(Cpp * cpp, Token ** token)
 		}
 	}
 	return ret;
+}
+
+static void _scan_meta_line(Token * token)
+{
+	/* decrement the line number, not so elegant but works */
+	token_set_line(token, token_get_line(token) - 1);
 }
 
 static int _scan_ifdef(Cpp * cpp, Token ** token)

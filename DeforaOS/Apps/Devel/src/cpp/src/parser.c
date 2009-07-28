@@ -380,16 +380,9 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 	{
 		str[len] = '\0';
 		token_set_string(token, str);
+		free(str);
 		cpp->directive_newline = 1;
 		cpp->queue_ready = 1;
-		if(_cpp_callback_dequeue(parser, token, c, cpp) == 0) /* XXX */
-		{
-			cpp->queue_ready = 1;
-			cpp->queue_code = CPP_CODE_WHITESPACE;
-			cpp->queue_string = str;
-		}
-		else
-			free(str);
 		return 0;
 	}
 	token_set_string(token, " ");
@@ -415,17 +408,8 @@ static int _cpp_callback_newline(Parser * parser, Token * token, int c,
 	cpp->directive_newline = 1;
 	cpp->queue_ready = 1;
 	parser_scan_filter(parser);
-	if(_cpp_callback_dequeue(parser, token, c, cpp) == 0) /* XXX */
-	{
-		cpp->queue_ready = 1;
-		cpp->queue_code = CPP_CODE_NEWLINE;
-		cpp->queue_string = string_new("\n");
-	}
-	else
-	{
-		token_set_code(token, CPP_CODE_NEWLINE);
-		token_set_string(token, "\n");
-	}
+	token_set_code(token, CPP_CODE_NEWLINE);
+	token_set_string(token, "\n");
 	return ret;
 }
 
