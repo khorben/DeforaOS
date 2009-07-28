@@ -138,8 +138,8 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 /* directives */
 static const char * _cpp_directives[] =
 {
-	"define", "elif", "else", "endif", "error", "if", "ifdef", "ifndef",
-	"include", "line", "pragma", "undef", "warning", NULL
+	"data", "define", "elif", "else", "endif", "error", "if", "ifdef",
+	"ifndef", "include", "pragma", "undef", "warning", NULL
 };
 
 
@@ -147,6 +147,8 @@ static const char * _cpp_directives[] =
 /* useful */
 static int _cpp_isword(int c);
 static char * _cpp_parse_word(Parser * parser, int c);
+static int _cpp_token_set(CppParser * cp, Token * token, TokenCode code,
+		char const * string);
 
 /* filters */
 static int _cpp_filter_newlines(int * c, void * data);
@@ -211,6 +213,33 @@ static char * _cpp_parse_word(Parser * parser, int c)
 	while(_cpp_isword((c = parser_scan_filter(parser))));
 	str[len] = '\0';
 	return str;
+}
+
+
+/* cpp_token_set */
+static int _cpp_token_set(CppParser * cp, Token * token, TokenCode code,
+		char const * string)
+{
+	if(token_set_string(token, string) != 0)
+		return -1;
+	if(cp->queue_code == CPP_CODE_NULL)
+	{
+		token_set_code(token, code);
+		return 0;
+	}
+	/* we are parsing a directive */
+	token_set_code(token, CPP_CODE_META_DATA);
+	if(code == CPP_CODE_COMMENT)
+		/* comments really are whitespaces */
+		string = " ";
+	if(cp->queue_string == NULL)
+	{
+		if((cp->queue_string = string_new(string)) == NULL)
+			return -1;
+	}
+	else if(string_append(&cp->queue_string, string) != 0)
+		return -1;
+	return 0;
 }
 
 
@@ -442,7 +471,7 @@ static int _cpp_callback_otherspace(Parser * parser, Token * token, int c,
 static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cpp = data;
+	CppParser * cp = data;
 	char * str = NULL;
 	size_t len = 2;
 	char * p;
@@ -451,17 +480,10 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 		return 1;
 	DEBUG_CALLBACK();
 	if((c = parser_scan_filter(parser)) != '*')
-	{
-		if(cpp->queue_code == CPP_CODE_NULL)
-			token_set_code(token, CPP_CODE_OPERATOR_DIVIDE);
-		else
-			token_set_code(token, CPP_CODE_META_LINE); /* XXX */
-		token_set_string(token, "/");
-		return 0;
-	}
+		return _cpp_token_set(cp, token, CPP_CODE_OPERATOR_DIVIDE, "/");
 	for(c = parser_scan_filter(parser); c != EOF;)
 	{
-		if(!(cpp->filters & CPP_FILTER_COMMENT))
+		if(!(cp->filters & CPP_FILTER_COMMENT))
 		{
 			if((p = realloc(str, len + 3)) == NULL)
 				return -error_set_code(1, "%s", strerror(
@@ -479,22 +501,15 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 	}
 	if(c == EOF)
 		return -error_set_code(1, "%s", "End of file within a comment");
-	if(str != NULL)
-	{
-		str[0] = '/';
-		str[1] = '*';
-		str[len++] = '/';
-		str[len] = '\0';
-		token_set_code(token, CPP_CODE_COMMENT);
-		token_set_string(token, str);
-		free(str);
-	}
-	else
-	{
-		token_set_code(token, CPP_CODE_WHITESPACE);
-		token_set_string(token, " ");
-	}
 	parser_scan_filter(parser);
+	if(str == NULL)
+		return _cpp_token_set(cp, token, CPP_CODE_WHITESPACE, " ");
+	str[0] = '/';
+	str[1] = '*';
+	str[len++] = '/';
+	str[len] = '\0';
+	_cpp_token_set(cp, token, CPP_CODE_COMMENT, str); /* XXX may fail */
+	free(str);
 	return 0;
 }
 
@@ -682,7 +697,7 @@ static int _cpp_callback_header(Parser * parser, Token * token, int c,
 		parser_scan_filter(parser);
 	}
 	str[len] = '\0';
-	token_set_code(token, CPP_CODE_META_LINE);
+	token_set_code(token, CPP_CODE_META_DATA);
 	token_set_string(token, str);
 	if(cp->queue_string == NULL)
 		cp->queue_string = str;
@@ -711,7 +726,7 @@ static int _cpp_callback_control(Parser * parser, Token * token, int c,
 	}
 	DEBUG_CALLBACK();
 	parser_scan_filter(parser);
-	token_set_code(token, CPP_CODE_META_LINE); /* XXX */
+	token_set_code(token, CPP_CODE_META_DATA);
 	token_set_string(token, "#");
 	cpp->directive_newline = 0;
 	cpp->directive_control = 1;
@@ -724,20 +739,13 @@ static int _cpp_callback_control(Parser * parser, Token * token, int c,
 static int _cpp_callback_comma(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cpp = data;
+	CppParser * cp = data;
 
 	if(c != ',')
 		return 1;
 	DEBUG_CALLBACK();
-	token_set_code(token, CPP_CODE_COMMA);
-	token_set_string(token, ",");
-	if(cpp->queue_code != CPP_CODE_NULL)
-	{
-		token_set_code(token, CPP_CODE_META_LINE); /* XXX */
-		string_append(&cpp->queue_string, ",");
-	}
 	parser_scan_filter(parser);
-	return 0;
+	return _cpp_token_set(cp, token, CPP_CODE_COMMA, ",");
 }
 
 
@@ -746,7 +754,7 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 		void * data)
 	/* FIXME probably fails for ".." and similar cases */
 {
-	CppParser * cpp = data;
+	CppParser * cp = data;
 	size_t i;
 	const size_t j = sizeof(_cpp_operators) / sizeof(*_cpp_operators);
 	size_t pos;
@@ -771,19 +779,8 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 	}
 	if(i == j) /* should not happen */
 		return -1;
-	token_set_code(token, _cpp_operators[i].code);
-	token_set_string(token, _cpp_operators[i].string);
-	if(cpp->queue_code != CPP_CODE_NULL)
-	{
-		token_set_code(token, CPP_CODE_META_LINE); /* XXX */
-		if(cpp->queue_string == NULL)
-			cpp->queue_string = string_new(
-					_cpp_operators[i].string);
-		else
-			string_append(&cpp->queue_string,
-					_cpp_operators[i].string);
-	}
-	return 0;
+	return _cpp_token_set(cp, token, _cpp_operators[i].code,
+			_cpp_operators[i].string);
 }
 
 
@@ -791,7 +788,7 @@ static int _cpp_callback_operator(Parser * parser, Token * token, int c,
 static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cpp = data;
+	CppParser * cp = data;
 	int escape = 0;
 	char * str = NULL;
 	size_t len = 0;
@@ -829,15 +826,8 @@ static int _cpp_callback_quote(Parser * parser, Token * token, int c,
 		parser_scan_filter(parser);
 	} /* XXX else we should probably issue a warning */
 	str[len] = '\0';
-	token_set_string(token, str);
-	if(cpp->queue_code != CPP_CODE_NULL)
-	{
-		token_set_code(token, CPP_CODE_META_LINE); /* XXX */
-		if(cpp->queue_string == NULL)
-			cpp->queue_string = string_new(str);
-		else
-			string_append(&cpp->queue_string, str);
-	}
+	/* XXX keep code earlier, may fail */
+	_cpp_token_set(cp, token, token_get_code(token), str);
 	free(str);
 	return 0;
 }
@@ -871,7 +861,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 		cpp->queue_string = string_new_append("Invalid directive: #",
 				str, ":", NULL); /* XXX check for errors */
 	}
-	token_set_code(token, CPP_CODE_META_LINE); /* XXX */
+	token_set_code(token, CPP_CODE_META_DATA);
 	token_set_string(token, str);
 	free(str);
 	return 0;
@@ -882,7 +872,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 static int _cpp_callback_word(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cpp = data;
+	CppParser * cp = data;
 	char * str;
 
 	if(!_cpp_isword(c))
@@ -890,16 +880,7 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 	DEBUG_CALLBACK();
 	if((str = _cpp_parse_word(parser, c)) == NULL)
 		return -1;
-	token_set_code(token, CPP_CODE_WORD);
-	token_set_string(token, str);
-	if(cpp->queue_code != CPP_CODE_NULL)
-	{
-		token_set_code(token, CPP_CODE_META_LINE); /* XXX */
-		if(cpp->queue_string == NULL)
-			cpp->queue_string = string_new(str);
-		else
-			string_append(&cpp->queue_string, str);
-	}
+	_cpp_token_set(cp, token, CPP_CODE_WORD, str); /* XXX may fail */
 	free(str);
 	return 0;
 }
@@ -909,7 +890,7 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 		void * data)
 {
-	CppParser * cpp = data;
+	CppParser * cp = data;
 	char buf[2] = "\0";
 
 	if(c == EOF)
@@ -917,14 +898,7 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 	DEBUG_CALLBACK();
 	buf[0] = c;
 	parser_scan(parser);
-	token_set_code(token, CPP_CODE_UNKNOWN);
-	token_set_string(token, buf);
-	if(cpp->queue_code != CPP_CODE_NULL)
-	{
-		token_set_code(token, CPP_CODE_META_LINE); /* XXX */
-		string_append(&cpp->queue_string, buf);
-	}
-	return 0;
+	return _cpp_token_set(cp, token, CPP_CODE_UNKNOWN, buf);
 }
 
 
