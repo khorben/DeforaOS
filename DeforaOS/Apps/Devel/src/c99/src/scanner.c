@@ -29,8 +29,8 @@ static char * _tokens[C99_CODE_COUNT] =
 {
 	NULL, ",", "\"",
 	/* directives */
-	"#define", "#elif", "#else", "#endif", "#error", "#if", "#ifdef",
-	"#ifndef", "#include", "#line", "#pragma", "#undef", "#warning",
+	NULL, "#define", "#elif", "#else", "#endif", "#error", "#if", "#ifdef",
+	"#ifndef", "#include", "#pragma", "#undef", "#warning",
 	/* operators */
 	"&=", "&", "|", "|=", ":", "&&", "||", "==", ">>=", ">>", "##", "/=",
 	"/", "<<=", "<<", "--", ".", "...", "++", "=", ">=", ">", "#", "{",
