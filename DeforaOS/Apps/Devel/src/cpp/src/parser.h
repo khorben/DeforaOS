@@ -15,43 +15,27 @@
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 
 
-#ifndef _CPP_COMMON_H
-# define _CPP_COMMON_H
+#ifndef _CPP_PARSER_H
+# define _CPP_PARSER_H
 
-# include "parser.h"
 # include "cpp.h"
 
 
 /* types */
-typedef struct _CppDefine /* FIXME use a hash table */
-{
-	char * name;
-	char * value;
-} CppDefine;
-
-typedef enum _CppScope
-{
-	CPP_SCOPE_NOTYET = 0,
-	CPP_SCOPE_TAKING,
-	CPP_SCOPE_TAKEN
-} CppScope;
-
-struct _Cpp
-{
-	/* for include directives */
-	CppParser * parser;
-	char ** paths;
-	size_t paths_cnt;
-	/* for substitutions */
-	CppDefine * defines;
-	size_t defines_cnt;
-	/* for context */
-	CppScope * scopes;
-	size_t scopes_cnt;
-};
+typedef struct _CppParser CppParser;
 
 
 /* functions */
-char * cpp_path_lookup(Cpp * cpp, char const * filename);
+CppParser * cppparser_new(Cpp * cpp, CppParser * parent, char const * filename,
+		int filters);
+void cppparser_delete(CppParser * cppparser);
 
-#endif /* !_CPP_COMMON_H */
+
+/* accessors */
+char const * cppparser_get_filename(CppParser * cppparser);
+
+
+/* useful */
+int cppparser_scan(CppParser * cppparser, Token ** token);
+
+#endif /* !_CPP_PARSER_H */

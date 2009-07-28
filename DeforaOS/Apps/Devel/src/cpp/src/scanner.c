@@ -52,7 +52,6 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 {
 	CppScope * p;
 
-	cpp = cpp->toplevel;
 	if(_cpp_scope_get(cpp) != CPP_SCOPE_TAKING)
 		scope = CPP_SCOPE_TAKEN;
 	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt + 1)))
@@ -67,7 +66,6 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 /* cpp_scope_get */
 static CppScope _cpp_scope_get(Cpp * cpp)
 {
-	cpp = cpp->toplevel;
 	return (cpp->scopes_cnt == 0) ? CPP_SCOPE_TAKING
 		: cpp->scopes[cpp->scopes_cnt - 1];
 }
@@ -76,14 +74,13 @@ static CppScope _cpp_scope_get(Cpp * cpp)
 /* cpp_scope_get_count */
 static size_t _cpp_scope_get_count(Cpp * cpp)
 {
-	return cpp->toplevel->scopes_cnt;
+	return cpp->scopes_cnt;
 }
 
 
 /* cpp_scope_set */
 static void _cpp_scope_set(Cpp * cpp, CppScope scope)
 {
-	cpp = cpp->toplevel;
 	assert(cpp->scopes_cnt > 0);
 	cpp->scopes[cpp->scopes_cnt - 1] = scope;
 }
@@ -94,7 +91,6 @@ static int _cpp_scope_pop(Cpp * cpp)
 {
 	CppScope * p;
 
-	cpp = cpp->toplevel;
 	assert(cpp->scopes_cnt > 0);
 	if(cpp->scopes_cnt == 1)
 	{
@@ -112,7 +108,6 @@ static int _cpp_scope_pop(Cpp * cpp)
 
 /* public */
 /* cpp_scan */
-static int _scan_get_next(Cpp * cpp, Token ** token);
 static int _scan_ifdef(Cpp * cpp, Token ** token);
 static int _scan_ifndef(Cpp * cpp, Token ** token);
 static int _scan_if(Cpp * cpp, Token ** token);
@@ -127,7 +122,8 @@ int cpp_scan(Cpp * cpp, Token ** token)
 	int ret;
 	TokenCode code;
 
-	for(; (ret = _scan_get_next(cpp, token)) == 0; token_delete(*token))
+	for(; (ret = cppparser_scan(cpp->parser, token)) == 0;
+			token_delete(*token))
 	{
 		if(*token == NULL) /* end of file */
 			break;
@@ -161,20 +157,6 @@ int cpp_scan(Cpp * cpp, Token ** token)
 		}
 	}
 	return ret;
-}
-
-static int _scan_get_next(Cpp * cpp, Token ** token)
-{
-	if(cpp->subparser != NULL)
-	{
-		if(_scan_get_next(cpp->subparser, token) != 0)
-			return 1;
-		if(*token != NULL)
-			return 0;
-		cpp_delete(cpp->subparser); /* end of file */
-		cpp->subparser = NULL;
-	}
-	return parser_get_token(cpp->parser, token);
 }
 
 static int _scan_ifdef(Cpp * cpp, Token ** token)

@@ -19,7 +19,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-libcpp_OBJS = cpp.o scanner.o
+libcpp_OBJS = cpp.o parser.o scanner.o
 libcpp_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
 libcpp_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l System
 
@@ -39,6 +39,9 @@ cpp: $(cpp_OBJS) libcpp.so
 
 cpp.o: cpp.c common.h ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c cpp.c
+
+parser.o: parser.c parser.h ../include/cpp.h
+	$(CC) $(libcpp_CFLAGS) -c parser.c
 
 scanner.o: scanner.c common.h ../include/cpp.h
 	$(CC) $(libcpp_CFLAGS) -c scanner.c
