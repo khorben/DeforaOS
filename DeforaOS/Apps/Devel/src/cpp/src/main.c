@@ -107,7 +107,7 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 		if(token == NULL) /* end of file */
 			break;
 #ifdef DEBUG
-		fprintf(stderr, "DEBUG: %s (%d)\n", token_get_string(token),
+		fprintf(stderr, "DEBUG: \"%s\" (%d)\n", token_get_string(token),
 				token_get_code(token));
 #else
 		if((code = token_get_code(token)) == CPP_CODE_META_ERROR
@@ -118,9 +118,6 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 					token_get_filename(token), ":",
 					token_get_line(token), ": ",
 					token_get_string(token));
-		else if(code >= CPP_CODE_META_FIRST
-			&& code <= CPP_CODE_META_LAST)
-			fprintf(fp, "%s\n", token_get_string(token));
 		else
 			fputs(token_get_string(token), fp);
 #endif

@@ -1,4 +1,5 @@
 /* */ #warning "Comments are allowed before a directive"
+#warning "Comments are allowed after a directive" /* comment */
 #error This should trigger an error
 #error "This should also trigger an error with the full text"
 #qwerty Invalid directive

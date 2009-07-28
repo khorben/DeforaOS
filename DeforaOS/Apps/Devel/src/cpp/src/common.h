@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel cpp */
 /* cpp is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -35,7 +35,7 @@ typedef enum _CppScope
 	CPP_SCOPE_TAKEN
 } CppScope;
 
-/* FIXME make a subtype for the actual parser instead of the "parent" hack */
+/* FIXME make a subtype for the actual parser instead of the "toplevel" hack */
 struct _Cpp
 {
 	int filters;
@@ -46,10 +46,15 @@ struct _Cpp
 	/* for cpp_filter_trigraphs */
 	int trigraphs_last;
 	int trigraphs_last_cnt;
+	/* to queue a token */
+	int queue_ready;
+	TokenCode queue_code;
+	String * queue_string;
 	/* for cpp_callback_directive */
 	int directive_newline;
+	int directive_control;
 	/* for include directives */
-	Cpp * parent;
+	Cpp * toplevel;
 	Cpp * subparser;
 	char ** paths;
 	size_t paths_cnt;

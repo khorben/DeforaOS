@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel cpp */
 /* cpp is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -52,7 +52,7 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 {
 	CppScope * p;
 
-	cpp = cpp->parent;
+	cpp = cpp->toplevel;
 	if(_cpp_scope_get(cpp) != CPP_SCOPE_TAKING)
 		scope = CPP_SCOPE_TAKEN;
 	if((p = realloc(cpp->scopes, sizeof(*p) * (cpp->scopes_cnt + 1)))
@@ -67,7 +67,7 @@ static int _cpp_scope_push(Cpp * cpp, CppScope scope)
 /* cpp_scope_get */
 static CppScope _cpp_scope_get(Cpp * cpp)
 {
-	cpp = cpp->parent;
+	cpp = cpp->toplevel;
 	return (cpp->scopes_cnt == 0) ? CPP_SCOPE_TAKING
 		: cpp->scopes[cpp->scopes_cnt - 1];
 }
@@ -76,15 +76,14 @@ static CppScope _cpp_scope_get(Cpp * cpp)
 /* cpp_scope_get_count */
 static size_t _cpp_scope_get_count(Cpp * cpp)
 {
-	cpp = cpp->parent;
-	return cpp->scopes_cnt;
+	return cpp->toplevel->scopes_cnt;
 }
 
 
 /* cpp_scope_set */
 static void _cpp_scope_set(Cpp * cpp, CppScope scope)
 {
-	cpp = cpp->parent;
+	cpp = cpp->toplevel;
 	assert(cpp->scopes_cnt > 0);
 	cpp->scopes[cpp->scopes_cnt - 1] = scope;
 }
@@ -95,7 +94,7 @@ static int _cpp_scope_pop(Cpp * cpp)
 {
 	CppScope * p;
 
-	cpp = cpp->parent;
+	cpp = cpp->toplevel;
 	assert(cpp->scopes_cnt > 0);
 	if(cpp->scopes_cnt == 1)
 	{
@@ -116,7 +115,7 @@ static int _cpp_scope_pop(Cpp * cpp)
 static int _scan_get_next(Cpp * cpp, Token ** token);
 static int _scan_ifdef(Cpp * cpp, Token ** token);
 static int _scan_ifndef(Cpp * cpp, Token ** token);
-static int _scan_if(Cpp * cpp);
+static int _scan_if(Cpp * cpp, Token ** token);
 static int _scan_elif(Cpp * cpp, Token ** token);
 static int _scan_else(Cpp * cpp, Token ** token);
 static int _scan_endif(Cpp * cpp, Token ** token);
@@ -139,7 +138,7 @@ int cpp_scan(Cpp * cpp, Token ** token)
 			case CPP_CODE_META_IFNDEF:
 				return _scan_ifndef(cpp, token);
 			case CPP_CODE_META_IF:
-				return _scan_if(cpp);
+				return _scan_if(cpp, token);
 			case CPP_CODE_META_ELIF:
 				return _scan_elif(cpp, token);
 			case CPP_CODE_META_ELSE:
@@ -206,7 +205,7 @@ static int _scan_ifndef(Cpp * cpp, Token ** token)
 	return 0;
 }
 
-static int _scan_if(Cpp * cpp)
+static int _scan_if(Cpp * cpp, Token ** token)
 {
 	DEBUG_SCOPE();
 	/* FIXME check the condition */
@@ -270,7 +269,7 @@ static int _scan_endif(Cpp * cpp, Token ** token)
 
 static int _scan_define(Cpp * cpp, Token ** token)
 {
-	char const * str;
+	char * str;
 	int tmp;
 	size_t i;
 	size_t j;
@@ -278,11 +277,7 @@ static int _scan_define(Cpp * cpp, Token ** token)
 	char * var;
 	char const * val;
 
-	str = token_get_string(*token);
-	/* skip '#' and white-spaces */
-	for(str++; (tmp = *str) != '\0' && isspace(tmp); str++);
-	/* skip "define" and white-spaces */
-	for(str+=6; (tmp = *str) != '\0' && isspace(tmp); str++);
+	str = token_get_data(*token);
 	/* fetch variable name */
 	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++)
 	{
@@ -297,11 +292,12 @@ static int _scan_define(Cpp * cpp, Token ** token)
 	/* skip white-spaces and fetch value */
 	for(j = i; (tmp = str[j]) != '\0' && isspace(tmp); j++);
 	val = (str[j] != '\0') ? &str[j] : NULL;
-	/* FIXME inject an error token instead */
 	if((var = strdup(str)) == NULL)
 	{
 		token_set_code(*token, CPP_CODE_META_ERROR);
 		token_set_string(*token, strerror(errno));
+		token_set_data(*token, NULL);
+		free(str);
 		return 0;
 	}
 	var[k != 0 ? k : i] = '\0';
@@ -311,29 +307,27 @@ static int _scan_define(Cpp * cpp, Token ** token)
 		token_set_string(*token, error_get());
 	}
 	free(var);
+	token_set_data(*token, NULL);
+	free(str);
 	return 0;
 }
 
 static int _scan_undef(Cpp * cpp, Token ** token)
 	/* FIXME ignores what's after the spaces after the variable name */
 {
-	char const * str;
+	char * str;
 	int tmp;
 	size_t i;
 	char * var;
 
-	str = token_get_string(*token);
-	/* skip '#' and white-spaces */
-	for(str++; (tmp = *str) != '\0' && isspace(tmp); str++);
-	/* skip "undef" and white-spaces */
-	for(str+=5; (tmp = *str) != '\0' && isspace(tmp); str++);
+	str = token_get_data(*token);
 	/* fetch variable name */
 	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++);
-	/* FIXME inject an error token instead */
 	if((var = strdup(str)) == NULL)
 	{
 		token_set_code(*token, CPP_CODE_META_ERROR);
 		token_set_string(*token, strerror(errno));
+		free(str);
 		return 0;
 	}
 	var[i] = '\0';
@@ -343,5 +337,6 @@ static int _scan_undef(Cpp * cpp, Token ** token)
 		token_set_string(*token, error_get());
 	}
 	free(var);
+	free(str);
 	return 0;
 }
