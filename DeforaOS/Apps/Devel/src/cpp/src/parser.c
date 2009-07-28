@@ -856,6 +856,7 @@ static int _cpp_callback_directive(Parser * parser, Token * token, int c,
 static int _cpp_callback_word(Parser * parser, Token * token, int c,
 		void * data)
 {
+	int ret;
 	CppParser * cp = data;
 	char * str;
 
@@ -864,9 +865,9 @@ static int _cpp_callback_word(Parser * parser, Token * token, int c,
 	DEBUG_CALLBACK();
 	if((str = _cpp_parse_word(parser, c)) == NULL)
 		return -1;
-	_cpp_token_set(cp, token, CPP_CODE_WORD, str); /* XXX may fail */
+	ret = _cpp_token_set(cp, token, CPP_CODE_WORD, str);
 	free(str);
-	return 0;
+	return ret;
 }
 
 
