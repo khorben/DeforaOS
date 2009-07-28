@@ -943,7 +943,8 @@ CppParser * cppparser_new(Cpp * cpp, CppParser * parent, char const * filename,
 void cppparser_delete(CppParser * cp)
 {
 	string_delete(cp->queue_string);
-	parser_delete(cp->parser);
+	if(cp->parser != NULL)
+		parser_delete(cp->parser);
 	if(cp->subparser != NULL)
 		cppparser_delete(cp->subparser);
 	object_delete(cp);
