@@ -18,6 +18,8 @@
 
 #include <sys/stat.h>
 #include <libgen.h>
+#include <limits.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,19 +35,24 @@
 Cpp * cpp_new(char const * filename, int filters)
 {
 	Cpp * cpp;
-	char * p;
+	String * p;
+	char buf[PATH_MAX];
 	int r = 0;
 
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
 	memset(cpp, 0, sizeof(*cpp));
 	cpp->parser = cppparser_new(cpp, NULL, filename, filters);
-	if((p = strdup(filename)) != NULL)
+	if((p = string_new(filename)) != NULL)
 	{
-		r = cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
-		free(p);
+		r |= cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
+		string_delete(p);
 	}
-	if(r != 0 || cpp->parser == NULL || cpp->paths_cnt != 1)
+	if(getcwd(buf, sizeof(buf)) != NULL)
+		r |= cpp_path_add(cpp, buf);
+	else
+		error_set("%s%s", "getcwd: ", strerror(errno));
+	if(r != 0 || cpp->parser == NULL || cpp->paths_cnt != 2)
 	{
 		cpp_delete(cpp);
 		return NULL;
