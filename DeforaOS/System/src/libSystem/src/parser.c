@@ -73,7 +73,7 @@ static int _parser_scanner_file(int * c, void * data);
 /* parser_scan_filter */
 int parser_scan_filter(Parser * parser)
 {
-	int c;
+	int c = parser->last;
 	size_t i;
 	ParserFilterData * pfd;
 	int l;
@@ -189,26 +189,27 @@ int parser_get_token(Parser * parser, Token ** token)
 	int ret = 0; /* XXX not sure */
 	size_t i;
 	ParserCallbackData * pcd;
-	int c;
 
 	if((*token = token_new(parser->filename, parser->line, parser->col))
 			== NULL)
 		return 1;
-	c = (parser->last == EOF) ? parser_scan_filter(parser) : parser->last;
+	if(parser->last == EOF)
+		parser_scan_filter(parser);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %c\n", __func__, c);
+	fprintf(stderr, "DEBUG: %s() %c\n", __func__, parser->last);
 #endif
 	for(i = 0; i < parser->callbacks_cnt; i++)
 	{
 		pcd = &parser->callbacks[i];
-		if((ret = pcd->callback(parser, *token, c, pcd->data)) <= 0)
+		if((ret = pcd->callback(parser, *token, parser->last,
+						pcd->data)) <= 0)
 			break;
 	}
 	if(ret == 0 && i != parser->callbacks_cnt)
 		return 0; /* there is a token and no error */
 	token_delete(*token);
 	*token = NULL;
-	return (ret >= 0 && c == EOF) ? 0 : 1;
+	return (ret >= 0 && parser->last == EOF) ? 0 : 1;
 }
 
 
