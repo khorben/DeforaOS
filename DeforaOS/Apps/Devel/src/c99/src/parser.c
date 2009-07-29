@@ -1981,9 +1981,6 @@ static int _parse_E(C99 * c99)
 					token_get_filename(token), ":",
 					token_get_line(token), ": ",
 					token_get_string(token));
-		else if(code >= CPP_CODE_META_FIRST
-				&& code <= CPP_CODE_META_LAST)
-			fprintf(c99->outfp, "%s\n", token_get_string(token));
 		else
 			fputs(token_get_string(token), c99->outfp);
 		token_delete(token);
