@@ -123,6 +123,7 @@ int cpp_scan(Cpp * cpp, Token ** token)
 	int ret;
 	TokenCode code;
 	char const * str;
+	char const * s;
 
 	for(; (ret = cppparser_scan(cpp->parser, token)) == 0;
 			token_delete(*token))
@@ -159,9 +160,11 @@ int cpp_scan(Cpp * cpp, Token ** token)
 				return _scan_undef(cpp, token);
 			case CPP_CODE_WORD:
 				str = token_get_string(*token);
-				if((str = cpp_define_get(cpp, str)) != NULL)
+				if((s = cpp_define_get(cpp, str)) != NULL)
 				{
-					if(cppparser_inject(cpp->parser, str)
+					if(strcmp(str, s) == 0) /* XXX hack */
+						return 0;
+					if(cppparser_inject(cpp->parser, s)
 							!= 0)
 						return -1;
 					continue;
