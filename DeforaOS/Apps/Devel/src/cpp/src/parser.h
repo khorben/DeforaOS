@@ -36,6 +36,7 @@ char const * cppparser_get_filename(CppParser * cppparser);
 
 
 /* useful */
+int cppparser_inject(CppParser * cppparser, char const * string);
 int cppparser_scan(CppParser * cppparser, Token ** token);
 
 #endif /* !_CPP_PARSER_H */

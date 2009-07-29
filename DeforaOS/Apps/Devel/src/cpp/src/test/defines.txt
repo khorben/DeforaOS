@@ -2,5 +2,6 @@
 #define a b
 #define def123
 #define df2 some text
-#define df2
+now "df2" is df2
+#define def123
 #undef def123

@@ -122,6 +122,7 @@ int cpp_scan(Cpp * cpp, Token ** token)
 {
 	int ret;
 	TokenCode code;
+	char const * str;
 
 	for(; (ret = cppparser_scan(cpp->parser, token)) == 0;
 			token_delete(*token))
@@ -156,6 +157,16 @@ int cpp_scan(Cpp * cpp, Token ** token)
 				return _scan_define(cpp, token);
 			case CPP_CODE_META_UNDEF:
 				return _scan_undef(cpp, token);
+			case CPP_CODE_WORD:
+				str = token_get_string(*token);
+				if((str = cpp_define_get(cpp, str)) != NULL)
+				{
+					if(cppparser_inject(cpp->parser, str)
+							!= 0)
+						return -1;
+					continue;
+				}
+				return 0;
 			default:
 				return 0;
 		}

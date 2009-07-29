@@ -32,9 +32,12 @@
 #include "common.h"
 
 #ifdef DEBUG
+# define DEBUG_FILTER() fprintf(stderr, "DEBUG: %s('%c' 0x%x)\n", __func__, \
+		*c, *c);
 # define DEBUG_CALLBACK() fprintf(stderr, "DEBUG: %s('%c' 0x%x)\n", __func__, \
 		c, c);
 #else
+# define DEBUG_FILTER()
 # define DEBUG_CALLBACK()
 #endif
 
@@ -56,6 +59,9 @@ struct _CppParser
 	Parser * parser;
 	int filters;
 
+	/* for cpp_filter_inject */
+	char * inject;
+	int inject_first;
 	/* for cpp_filter_newlines */
 	int newlines_last;
 	int newlines_last_cnt;
@@ -151,10 +157,13 @@ static int _cpp_token_set(CppParser * cp, Token * token, TokenCode code,
 		char const * string);
 
 /* filters */
+static int _cpp_filter_inject(int * c, void * data);
 static int _cpp_filter_newlines(int * c, void * data);
 static int _cpp_filter_trigraphs(int * c, void * data);
 
 /* callbacks */
+static int _cpp_callback_inject(Parser * parser, Token * token, int c,
+		void * data);
 static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 		void * data);
 static int _cpp_callback_header(Parser * parser, Token * token, int c,
@@ -230,7 +239,7 @@ static int _cpp_token_set(CppParser * cp, Token * token, TokenCode code,
 	/* we are parsing a directive */
 	token_set_code(token, CPP_CODE_META_DATA);
 	if(code == CPP_CODE_COMMENT)
-		/* comments really are whitespaces */
+		/* comments within directives are whitespaces */
 		string = " ";
 	if(cp->queue_string == NULL)
 	{
@@ -244,6 +253,36 @@ static int _cpp_token_set(CppParser * cp, Token * token, TokenCode code,
 
 
 /* filters */
+/* cpp_filter_inject */
+static int _cpp_filter_inject(int * c, void * data)
+{
+	CppParser * cp = data;
+	size_t len;
+	int d;
+
+	if(cp->inject == NULL)
+		return 0;
+	DEBUG_FILTER();
+	if((len = strlen(cp->inject)) > 0)
+	{
+		d = *c;
+		*c = cp->inject[0];
+		memmove(cp->inject, &cp->inject[1], len--);
+		if(cp->inject_first && d != EOF && d != '\0')
+		{
+			cp->inject[len++] = d;
+			cp->inject[len] = '\0';
+			cp->inject_first = 0;
+		}
+	}
+	if(len > 0)
+		return 1;
+	free(cp->inject);
+	cp->inject = NULL;
+	return 0;
+}
+
+
 /* cpp_filter_newlines */
 static int _cpp_filter_newlines(int * c, void * data)
 {
@@ -495,6 +534,27 @@ static int _cpp_callback_comment(Parser * parser, Token * token, int c,
 	_cpp_token_set(cp, token, CPP_CODE_COMMENT, str); /* XXX may fail */
 	free(str);
 	return 0;
+}
+
+
+/* cpp_callback_inject */
+static int _cpp_callback_inject(Parser * parser, Token * token, int c,
+		void * data)
+{
+	CppParser * cp = data;
+	char buf[2] = "\0";
+
+	if(cp->inject_first == 0)
+		return 1;
+	DEBUG_CALLBACK();
+	if(c == EOF)
+		return 1;
+	/* the current character actually goes after the substitution */
+	buf[0] = c;
+	if(string_append(&cp->inject, buf) != 0)
+		return -1;
+	parser_scan_filter(parser);
+	return 1;
 }
 
 
@@ -882,7 +942,7 @@ static int _cpp_callback_unknown(Parser * parser, Token * token, int c,
 		return 1;
 	DEBUG_CALLBACK();
 	buf[0] = c;
-	parser_scan(parser);
+	parser_scan_filter(parser);
 	return _cpp_token_set(cp, token, CPP_CODE_UNKNOWN, buf);
 }
 
@@ -901,6 +961,8 @@ CppParser * cppparser_new(Cpp * cpp, CppParser * parent, char const * filename,
 	cp->parent = parent;
 	cp->parser = parser_new(filename);
 	cp->filters = filters;
+	cp->inject = NULL;
+	cp->inject_first = 0;
 	cp->newlines_last = 0;
 	cp->newlines_last_cnt = 0;
 	cp->trigraphs_last = 0;
@@ -916,9 +978,11 @@ CppParser * cppparser_new(Cpp * cpp, CppParser * parent, char const * filename,
 		cppparser_delete(cp);
 		return NULL;
 	}
+	parser_add_filter(cp->parser, _cpp_filter_inject, cp);
 	parser_add_filter(cp->parser, _cpp_filter_newlines, cp);
 	if(cp->filters & CPP_FILTER_TRIGRAPH)
 		parser_add_filter(cp->parser, _cpp_filter_trigraphs, cp);
+	parser_add_callback(cp->parser, _cpp_callback_inject, cp);
 	parser_add_callback(cp->parser, _cpp_callback_dequeue, cp);
 	if(cp->filters & CPP_FILTER_WHITESPACE)
 		parser_add_callback(cp->parser, _cpp_callback_whitespace, cp);
@@ -944,10 +1008,11 @@ CppParser * cppparser_new(Cpp * cpp, CppParser * parent, char const * filename,
 void cppparser_delete(CppParser * cp)
 {
 	string_delete(cp->queue_string);
-	if(cp->parser != NULL)
-		parser_delete(cp->parser);
 	if(cp->subparser != NULL)
 		cppparser_delete(cp->subparser);
+	if(cp->parser != NULL)
+		parser_delete(cp->parser);
+	string_delete(cp->inject);
 	object_delete(cp);
 }
 
@@ -961,6 +1026,30 @@ char const * cppparser_get_filename(CppParser * cpp)
 
 
 /* useful */
+/* cppparser_inject */
+/* FIXME should take a buffer as input? */
+int cppparser_inject(CppParser * cp, char const * string)
+{
+	if(string == NULL || string[0] == '\0')
+		return 0; /* don't bother */
+	for(; cp->subparser != NULL; cp = cp->subparser);
+	if(cp->inject == NULL)
+	{
+		if((cp->inject = string_new(string)) == NULL)
+			return 1;
+	}
+	else if(string_append(&cp->inject, string) != 0)
+		return 1;
+	cp->inject_first = 1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\") => \"%s\"\n", __func__, cp,
+			string, cp->inject);
+#endif
+	return 0;
+}
+
+
+/* cppparser_scan */
 int cppparser_scan(CppParser * cp, Token ** token)
 {
 	if(cp->subparser != NULL)
