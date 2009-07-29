@@ -431,7 +431,7 @@ static int _type_specifier(C99 * c99)
 	 * | enum-specifier | typedef-name */
 {
 	int ret = 0;
-	CodeClass cclass;
+	CodeClass cclass = CODE_CLASS_NULL;
 
 	DEBUG_GRAMMAR();
 	if(_parse_in_set(c99, c99set_struct_or_union_specifier))
