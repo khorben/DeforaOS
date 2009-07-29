@@ -187,7 +187,7 @@ static int _scan_ifdef(Cpp * cpp, Token ** token)
 
 	DEBUG_SCOPE();
 	name = token_get_data(*token);
-	take = cpp_is_defined(cpp, name);
+	take = (cpp_define_get(cpp, name) != NULL) ? 1 : 0;
 	token_set_data(*token, NULL);
 	free(name);
 	_cpp_scope_push(cpp, take ? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);
@@ -201,7 +201,7 @@ static int _scan_ifndef(Cpp * cpp, Token ** token)
 
 	DEBUG_SCOPE();
 	name = token_get_data(*token);
-	take = !cpp_is_defined(cpp, name);
+	take = (cpp_define_get(cpp, name) == NULL) ? 1 : 0;
 	token_set_data(*token, NULL);
 	free(name);
 	_cpp_scope_push(cpp, take ? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);

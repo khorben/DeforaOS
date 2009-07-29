@@ -101,18 +101,6 @@ char const * cpp_get_filename(Cpp * cpp)
 }
 
 
-/* cpp_is_defined */
-int cpp_is_defined(Cpp * cpp, char const * name)
-{
-	size_t i;
-
-	for(i = 0; i < cpp->defines_cnt; i++)
-		if(strcmp(cpp->defines[i].name, name) == 0)
-			return 1;
-	return 0;
-}
-
-
 /* useful */
 /* cpp_define_add */
 int cpp_define_add(Cpp * cpp, char const * name, char const * value)

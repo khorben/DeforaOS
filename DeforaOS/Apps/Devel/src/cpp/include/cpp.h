@@ -119,8 +119,6 @@ void cpp_delete(Cpp * cpp);
 /* accessors */
 char const * cpp_get_filename(Cpp * cpp);
 
-int cpp_is_defined(Cpp * cpp, char const * name);
-
 /* useful */
 int cpp_define_add(Cpp * cpp, char const * name, char const * value);
 char const * cpp_define_get(Cpp * cpp, char const * name);
