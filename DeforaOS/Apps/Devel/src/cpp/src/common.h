@@ -23,11 +23,7 @@
 
 
 /* types */
-typedef struct _CppDefine /* FIXME use a hash table */
-{
-	char * name;
-	char * value;
-} CppDefine;
+typedef struct _CppDefine CppDefine;
 
 typedef enum _CppScope
 {

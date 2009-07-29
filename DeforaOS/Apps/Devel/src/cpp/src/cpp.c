@@ -28,6 +28,15 @@
 
 
 /* Cpp */
+/* private */
+/* types */
+struct _CppDefine /* FIXME use a hash table */
+{
+	char * name;
+	char * value;
+};
+
+
 /* public */
 /* functions */
 /* cpp_new */
@@ -107,7 +116,6 @@ int cpp_is_defined(Cpp * cpp, char const * name)
 /* useful */
 /* cpp_define_add */
 int cpp_define_add(Cpp * cpp, char const * name, char const * value)
-	/* FIXME should verify validity of name and interpret value */
 {
 	size_t i;
 	CppDefine * p;
@@ -116,6 +124,10 @@ int cpp_define_add(Cpp * cpp, char const * name, char const * value)
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\", \"%s\")\n", __func__, name,
 			value);
 #endif
+	if(name == NULL || name[0] == '\0')
+		return error_set_code(1, "%s", strerror(EINVAL));
+	if(value == NULL)
+		value = "";
 	for(i = 0; i < cpp->defines_cnt; i++)
 		if(strcmp(cpp->defines[i].name, name) == 0)
 			break;
@@ -126,16 +138,28 @@ int cpp_define_add(Cpp * cpp, char const * name, char const * value)
 		return error_set_code(1, "%s", strerror(errno));
 	cpp->defines = p;
 	p = &p[cpp->defines_cnt];
-	p->name = strdup(name);
-	p->value = (value != NULL) ? strdup(value) : NULL;
-	if(p->name == NULL || (value != NULL && p->value == NULL))
+	p->name = string_new(name);
+	p->value = string_new(value);
+	if(p->name == NULL || p->value == NULL)
 	{
-		free(p->name);
-		free(p->value);
-		return error_set_code(1, "%s", strerror(errno));
+		string_delete(p->name);
+		string_delete(p->value);
+		return 1;
 	}
 	cpp->defines_cnt++;
 	return 0;
+}
+
+
+/* cpp_define_get */
+char const * cpp_define_get(Cpp * cpp, char const * name)
+{
+	size_t i;
+
+	for(i = 0; i < cpp->defines_cnt; i++)
+		if(strcmp(cpp->defines[i].name, name) == 0)
+			return cpp->defines[i].value;
+	return NULL;
 }
 
 

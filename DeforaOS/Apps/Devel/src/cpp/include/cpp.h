@@ -123,6 +123,7 @@ int cpp_is_defined(Cpp * cpp, char const * name);
 
 /* useful */
 int cpp_define_add(Cpp * cpp, char const * name, char const * value);
+char const * cpp_define_get(Cpp * cpp, char const * name);
 int cpp_define_remove(Cpp * cpp, char const * name);
 
 int cpp_path_add(Cpp * cpp, char const * path);
