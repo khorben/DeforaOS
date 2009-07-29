@@ -133,16 +133,20 @@ int main(int argc, char * argv[])
 				return _usage();
 		}
 	if(optind == argc)
-		return _usage();
-	if(prefs.flags & C99PREFS_c
+		ret = _usage();
+	else if(prefs.flags & C99PREFS_c
 			&& prefs.outfile != NULL
 			&& optind + 1 != argc)
-		return _usage();
-	ret = _c99(&prefs, argc - optind, &argv[optind]);
+		ret = _usage();
+	else
+	{
+		ret = _c99(&prefs, argc - optind, &argv[optind]);
+		ret = (ret == 0) ? 0 : 2;
+	}
 	free(prefs.paths);
 	free(prefs.defines);
 	free(prefs.undefines);
-	return (ret == 0) ? 0 : 2;
+	return ret;
 }
 
 static int _main_default_defines(C99Prefs * prefs)
