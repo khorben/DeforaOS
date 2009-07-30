@@ -125,10 +125,10 @@ function blog_admin($args)
 	print('<h2 class="title blog">'._html_safe(BLOGS_REGISTERED)."</h2>\n");
 	$module = _module_id('blog');
 	$sql = 'SELECT content_id AS id, daportal_content.enabled AS enabled'
-		.', title AS name, username, theme'
-		.' FROM daportal_content, daportal_user, daportal_blog_user'
-		.' WHERE daportal_user.user_id=daportal_content.user_id'
-		.' AND daportal_content.content_id'
+		.', title AS name, daportal_user.user_id AS user_id, username'
+		.', theme FROM daportal_content, daportal_user'
+		.', daportal_blog_user WHERE daportal_user.user_id'
+		.'=daportal_content.user_id AND daportal_content.content_id'
 		.'=daportal_blog_user.blog_user_id';
 	$res = _sql_array($sql);
 	if(!is_array($res))
