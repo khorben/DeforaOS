@@ -229,9 +229,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/blog/module.php \
 		$(PACKAGE)-$(VERSION)/modules/blog/post_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/blog/post_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/blog/rss_channel_bottom.tpl \
-		$(PACKAGE)-$(VERSION)/modules/blog/rss_channel_top.tpl \
-		$(PACKAGE)-$(VERSION)/modules/blog/rss_item.tpl \
 		$(PACKAGE)-$(VERSION)/modules/blog/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/bookmark/default.tpl \
@@ -299,9 +296,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/modules/news/news_display.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/news_posted.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/news_update.tpl \
-		$(PACKAGE)-$(VERSION)/modules/news/rss_channel_bottom.tpl \
-		$(PACKAGE)-$(VERSION)/modules/news/rss_channel_top.tpl \
-		$(PACKAGE)-$(VERSION)/modules/news/rss_item.tpl \
 		$(PACKAGE)-$(VERSION)/modules/news/project.conf \
 		$(PACKAGE)-$(VERSION)/modules/papadam/Makefile \
 		$(PACKAGE)-$(VERSION)/modules/papadam/ca_update.tpl \
@@ -432,6 +426,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/system/mail.php \
 		$(PACKAGE)-$(VERSION)/system/mime.php \
 		$(PACKAGE)-$(VERSION)/system/module.php \
+		$(PACKAGE)-$(VERSION)/system/rss.php \
 		$(PACKAGE)-$(VERSION)/system/sql.php \
 		$(PACKAGE)-$(VERSION)/system/sql.mysql.php \
 		$(PACKAGE)-$(VERSION)/system/sql.pgsql.php \
