@@ -101,6 +101,10 @@ form.explorer a {
 	text-decoration:		none;
 }
 
+form.explorer .selected {
+	background-color:		#ddccee;
+}
+
 
 /* menu */
 ul.menu {
