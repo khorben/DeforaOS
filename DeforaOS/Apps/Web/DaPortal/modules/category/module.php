@@ -367,6 +367,7 @@ function category_list($args)
 		$categories[$i]['icon'] = 'icons/16x16/category.png';
 		$categories[$i]['thumbnail'] = 'icons/48x48/category.png';
 		$categories[$i]['name'] = $categories[$i]['title'];
+		$categories[$i]['tag'] = $categories[$i]['title'];
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_CATEGORY, 'class' => 'new',
