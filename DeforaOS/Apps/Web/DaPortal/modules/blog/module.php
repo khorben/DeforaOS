@@ -15,8 +15,6 @@
 //along with DaPortal; if not, write to the Free Software
 //Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //FIXME
-//- create a specific table for blog posts (allow comments, ...)
-//- create a table for blogs (name, theme...)
 //- allow listing people's blogs
 
 
