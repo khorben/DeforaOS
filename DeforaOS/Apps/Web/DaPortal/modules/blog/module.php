@@ -451,7 +451,6 @@ function blog_planet($args)
 
 
 //blog_rss
-//FIXME share code with the news module (create system/rss.php)
 function blog_rss($args)
 {
 	global $title;
@@ -461,14 +460,19 @@ function blog_rss($args)
 	$and = '';
 	if(isset($args['user_id']) || isset($args['user']))
 	{
-		$and = isset($args['user'])
-			? " AND username='".$args['user']."'"
-			: " AND daportal_user.user_id='".$args['user_id']."'";
+		require_once('./system/user.php');
+		if(isset($args['user']))
+			$args['user_id'] = _user_id($args['user']);
+		else
+			$args['user'] = _user_name($args['user_id']);
+		$and = " AND daportal_user.user_id='".$args['user_id']."'";
 		$link = _module_link_full('blog', FALSE, FALSE,
-				array('user_id' => $args['user_id']));
-		$link = _module_link_full('blog', 'rss', FALSE,
-				array('user_id' => $args['user_id']));
-		$title = $title.' - '.BLOG_BY; //FIXME with the username
+				array('user' => $args['user']));
+		$link = _module_link_full('blog', 'rss', FALSE, FALSE,
+				array('user' => $args['user']));
+		$atomlink = _module_link_full('blog', 'rss', FALSE, FALSE,
+				array('user' => $args['user']));
+		$title = $title.' - '.BLOG_BY.' '.$args['user'];
 		$content = $title;
 	}
 	else
@@ -479,7 +483,6 @@ function blog_rss($args)
 		$content = $title;
 	}
 	require_once('./system/html.php');
-	include('./modules/blog/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
 			.', content, username AS author, email'
 			.' FROM daportal_content, daportal_user'
@@ -494,17 +497,17 @@ function blog_rss($args)
 	if(is_array($res))
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$post = $res[$i];
-			$post['author'] = $post['email']
-				.' ('.$post['author'].')';
-			$post['date'] = date('D, j M Y H:i:s O', strtotime(
-						substr($post['date'], 0, 19)));
-			$post['link'] = _html_link_full('post', FALSE,
-					$post['id']);
-			$post['content'] = _html_pre($post['content']);
-			include('./modules/blog/rss_item.tpl');
+			$res[$i]['author'] = $res[$i]['email']
+				.' ('.$res[$i]['author'].')';
+			$res[$i]['date'] = date('D, j M Y H:i:s O', strtotime(
+						substr($res[$i]['date'], 0,
+						19)));
+			$res[$i]['link'] = _html_link_full('post', FALSE,
+					$res[$i]['id']);
+			$res[$i]['content'] = _html_pre($res[$i]['content']);
 		}
-	include('./modules/blog/rss_channel_bottom.tpl');
+	require_once('./system/rss.php');
+	_rss($title, $link, $atomlink, $content, $res);
 }
 
 
