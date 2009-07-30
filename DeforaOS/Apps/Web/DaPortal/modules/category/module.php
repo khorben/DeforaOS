@@ -411,6 +411,8 @@ function category_set($args)
 {
 	global $user_id;
 
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
 	if($user_id == 0 || _sql_single('SELECT user_id FROM daportal_content'
 			." WHERE content_id='".$args['id']."'") != $user_id)
 		return _error(PERMISSION_DENIED);
