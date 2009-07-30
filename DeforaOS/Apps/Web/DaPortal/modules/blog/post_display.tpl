@@ -7,6 +7,7 @@
 <?php } ?>
 	<div class="author"><?php echo _html_safe(BLOG_POST._BY_); ?> <a href="<?php echo _html_link('user', FALSE, $post['user_id'], $post['username']); ?>"><?php echo _html_safe($post['username']); ?></a></div>
 	<div class="date"><?php echo _html_safe(BLOG_ON); ?> <?php echo _html_safe($post['date']); ?></div>
+<?php if(_module_id('category')) _module('category', 'get', array('id' => $post['id'])); ?>
 	<div class="content"><?php echo _html_pre($post['content']); ?></div>
 	<div class="status">
 <?php if(isset($post['preview'])) { ?>
