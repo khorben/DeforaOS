@@ -123,3 +123,7 @@ div.top a {
 div.top a:hover {
 	background-color:		#e8d5fb;
 }
+
+div.top span.middot {
+	display:			none;
+}
