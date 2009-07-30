@@ -106,34 +106,20 @@ form.explorer .selected {
 }
 
 
-/* menu */
-ul.menu {
-	margin:				0;
-	padding:			5px;
-}
-
-ul.menu li {
-	display:			inline;
+/* top */
+div.top a {
+	background-color:		#ddccee;
+	border-left:			1em solid #331122;
+	display:			block;
 	float:				left;
 	list-style-type:		none;
 	margin:				5px;
 	min-width:			12%;
-	padding:			0;
-	text-align:			center;
-}
-
-ul.menu li a {
-	background-color:		#ddccee;
-	border-left:			1em solid #331122;
-	display:			block;
 	padding:			5px;
+	text-align:			center;
 	text-decoration:		none;
 }
 
-ul.menu li a:hover {
+div.top a:hover {
 	background-color:		#e8d5fb;
-}
-
-ul.menu ul {
-	display:			none;
 }
