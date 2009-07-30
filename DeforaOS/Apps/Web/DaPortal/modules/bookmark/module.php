@@ -192,8 +192,6 @@ function bookmark_insert($args)
 	if(!_sql_query('INSERT INTO daportal_bookmark (bookmark_id, url)'
 			.' VALUES ('."'$id', '".$args['url']."')"))
 		return _error('Unable to insert bookmark', 1);
-	if(_module_id('category'))
-		_module('category', 'set', array('id' => $id));
 	bookmark_display(array('id' => $id));
 }
 
