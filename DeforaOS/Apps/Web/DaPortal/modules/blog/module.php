@@ -459,9 +459,11 @@ function blog_rss($args)
 	if(($module_id = _module_id('blog')) == FALSE)
 		return;
 	$and = '';
-	if(isset($args['user_id']))
+	if(isset($args['user_id']) || isset($args['user']))
 	{
-		$and = " AND user_id='".$args['user_id']."'";
+		$and = isset($args['user'])
+			? " AND username='".$args['user']."'"
+			: " AND daportal_user.user_id='".$args['user_id']."'";
 		$link = _module_link_full('blog', FALSE, FALSE,
 				array('user_id' => $args['user_id']));
 		$link = _module_link_full('blog', 'rss', FALSE,
@@ -481,8 +483,11 @@ function blog_rss($args)
 	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
 			.', content, username AS author, email'
 			.' FROM daportal_content, daportal_user'
+			.', daportal_blog_content'
 			.' WHERE daportal_content.user_id'
 			.'=daportal_user.user_id'
+			.' AND daportal_content.content_id'
+			.'=daportal_blog_content.blog_content_id'
 			." AND module_id='$module_id'"
 			." AND daportal_content.enabled='1'".$and
 			.' ORDER BY timestamp DESC '._sql_offset(0, 10));
