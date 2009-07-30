@@ -91,7 +91,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/files.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/host.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/language.png \
-		$(PACKAGE)-$(VERSION)/icons/48x48/logout.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/menu.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/news.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/papadam.png \
@@ -182,6 +181,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/home.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/icons.css \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/info.png \
+		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/logout.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/news.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/package.png \
 		$(PACKAGE)-$(VERSION)/icons/gnome/48x48/probe.png \
