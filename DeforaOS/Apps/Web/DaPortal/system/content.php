@@ -89,7 +89,8 @@ function _content_select($id, $enabled = '')
 
 	if(!is_numeric($id))
 		return FALSE;
-	$and = is_bool($enabled) ? " AND enabled='".$enabled.'"' : '';
+	$and = is_bool($enabled)
+		? " AND daportal_content.enabled='".$enabled."'" : '';
 	$content = _sql_array('SELECT content_id AS id, timestamp'
 			.', daportal_content.user_id AS user_id, username'
 			.', title, content, daportal_content.enabled AS enabled'
