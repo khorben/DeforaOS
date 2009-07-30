@@ -36,34 +36,22 @@ $text['BLOG_PLANET'] = 'Planet';
 $text['BLOG_POST'] = 'Blog post';
 $text['BLOG_POSTS'] = 'Blog posts';
 $text['BLOG_PREVIEW'] = 'Blog post preview';
+$text['BLOGS_REGISTERED'] = 'Blogs registered';
 $text['COMMENT_S'] = 'comment(s)';
+$text['COMMENTS'] = 'Comments';
 $text['NEW_BLOG_POST'] = 'New blog post';
+$text['THEME'] = 'Theme';
 global $lang;
 if($lang == 'fr')
 {
 	$text['BLOG_POSTS'] = 'Billets';
 	$text['NEW_BLOG_POST'] = 'Nouveau billet';
+	$text['THEME'] = 'Thème';
 }
 _lang($text);
 
 
 //private
-//blog_display
-function _blog_display($id, $title = BLOG_POST)
-{
-	require_once('./system/content.php');
-	if(($post = _content_select($id, 1)) == FALSE)
-	{
-		_error(INVALID_ARGUMENT);
-		return FALSE;
-	}
-	$long = 1;
-	$post['date'] = _sql_date($post['timestamp']);
-	include('./modules/blog/post_display.tpl');
-	return TRUE;
-}
-
-
 //blog_insert
 function _blog_insert($post)
 {
@@ -72,7 +60,36 @@ function _blog_insert($post)
 	if($user_id == 0)
 		return FALSE;
 	require_once('./system/content.php');
-	return _content_insert($post['title'], $post['content'], 1);
+	if(($id = _content_insert($post['title'], $post['content'], 1))
+			== FALSE)
+	{
+		_error('Could not insert blog post');
+		return FALSE;
+	}
+	$comment = (isset($post['comment']) && $post['comment'] == 1) ? 1 : 0;
+	if(_sql_query('INSERT INTO daportal_blog_content (blog_content_id, '
+					."comment) VALUES ('$id', '$comment')")
+				== FALSE)
+	{
+		_content_delete($id);
+		_error('Could not insert blog post');
+		return FALSE;
+	}
+	return $id;
+}
+
+
+//blog_title
+function _blog_title($id)
+{
+	$sql = 'SELECT blog.title AS title'
+		.' FROM daportal_content blog, daportal_blog_user'
+		.', daportal_content post, daportal_blog_content'
+		.' WHERE blog.content_id=daportal_blog_user.blog_user_id'
+		.' AND blog.user_id=post.user_id'
+		.' AND post.content_id=daportal_blog_content.blog_content_id'
+		." AND daportal_blog_content.blog_content_id='$id'";
+	return _sql_single($sql);
 }
 
 
@@ -87,6 +104,46 @@ function blog_admin($args)
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title blog">'._html_safe(BLOG_ADMINISTRATION)
 			."</h1>\n");
+	print('<h2 class="title blog">'._html_safe(BLOGS_REGISTERED)."</h2>\n");
+	$module = _module_id('blog');
+	$sql = 'SELECT content_id AS id, daportal_content.enabled AS enabled'
+		.', title AS name, username, theme'
+		.' FROM daportal_content, daportal_user, daportal_blog_user'
+		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		.' AND daportal_content.content_id'
+		.'=daportal_blog_user.blog_user_id';
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		return _error('Unable to list blogs');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['module'] = 'blog';
+		$res[$i]['apply_module'] = 'blog';
+		$res[$i]['action'] = 'update';
+		$res[$i]['apply_id'] = $res[$i]['id'];
+		$res[$i]['icon'] = 'icons/16x16/blog.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/blog.png';
+		$res[$i]['name'] = _html_safe($res[$i]['name']);
+		$res[$i]['username'] = '<a href="'._html_link('user', '',
+			$res[$i]['user_id'], $res[$i]['username']).'">'
+				._html_safe($res[$i]['username']).'</a>';
+		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
+			'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+				.$res[$i]['enabled'].'.png" alt="'
+				.$res[$i]['enabled'].'" title="'
+				.($res[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED).'"/>';
+		$res[$i]['theme'] = _html_safe($res[$i]['theme']);
+	}
+	$toolbar = array();
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+				'class' => array('enabled' => ENABLED,
+					'theme' => THEME,
+					'username' => AUTHOR),
+				'module' => 'blog', 'action' => 'admin',
+				'toolbar' => $toolbar, 'view' => 'details'));
+	print('<h2 class="title blog">'._html_safe(BLOG_POSTS)."</h2>\n");
 	$order = 'DESC';
 	$sort = 'timestamp';
 	if(isset($args['sort']))
@@ -101,14 +158,15 @@ function blog_admin($args)
 			default:	$order = 'DESC';	break;
 		}
 	}
-	$res = _sql_array('SELECT content_id AS id, timestamp'
+	$sql = 'SELECT content_id AS id, timestamp'
 		.', daportal_content.enabled AS enabled, title AS name, content'
-		.', daportal_content.user_id AS user_id, username'
-		.' FROM daportal_content, daportal_user, daportal_module'
+		.', daportal_content.user_id AS user_id, username, comment'
+		.' FROM daportal_content, daportal_user, daportal_blog_content'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
-		." AND daportal_module.name='blog'"
-		.' AND daportal_module.module_id=daportal_content.module_id'
-		.' ORDER BY '.$sort.' '.$order);
+		.' AND daportal_content.content_id'
+		.'=daportal_blog_content.blog_content_id'
+		." AND module_id='$module' ORDER BY ".$sort.' '.$order;
+	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Unable to list posts');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
@@ -130,6 +188,13 @@ function blog_admin($args)
 				.$res[$i]['enabled'].'" title="'
 				.($res[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
+		$res[$i]['comment'] = $res[$i]['comment'] == SQL_TRUE ?
+			'enabled' : 'disabled';
+		$res[$i]['comment'] = '<img src="icons/16x16/'
+				.$res[$i]['comment'].'.png" alt="'
+				.$res[$i]['comment'].'" title="'
+				.($res[$i]['comment'] == 'enabled'
+						? ENABLED : DISABLED).'"/>';
 		$res[$i]['date'] = _html_safe(strftime('%d/%m/%y %H:%M',
 					strtotime(substr($res[$i]['timestamp'],
 							0, 19))));
@@ -147,6 +212,7 @@ function blog_admin($args)
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => array('enabled' => ENABLED,
+					'comment' => COMMENTS,
 					'username' => AUTHOR, 'date' => DATE),
 				'module' => 'blog', 'action' => 'admin',
 				'sort' => isset($args['sort']) ? $args['sort']
@@ -160,7 +226,7 @@ function blog_default($args)
 {
 	if(!isset($args['id']))
 		return blog_planet($args);
-	_blog_display($args['id']);
+	blog_display($args);
 }
 
 
@@ -194,6 +260,25 @@ function blog_disable($args)
 }
 
 
+//blog_display
+function blog_display($args)
+{
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	if(($post = _content_select($args['id'], 1)) == FALSE)
+	{
+		_error(INVALID_ARGUMENT);
+		return FALSE;
+	}
+	$title = _blog_title($args['id']);
+	$long = 1;
+	$post['date'] = _sql_date($post['timestamp']);
+	include('./modules/blog/post_display.tpl');
+	return TRUE;
+}
+
+
 //blog_enable
 //FIXME allow to delete one's own content
 function blog_enable($args)
@@ -216,6 +301,7 @@ function blog_headline($args)
 	$npp = 10;
 	if(isset($args['npp']) && is_numeric($args['npp']))
 		$npp = $args['npp'];
+	//FIXME use the daportal_blog_content table too
 	$posts = _sql_array('SELECT content_id AS id, title, name AS module'
 			.' FROM daportal_content, daportal_module'
 			.' WHERE daportal_content.module_id'
@@ -280,7 +366,10 @@ function blog_list($args)
 	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
 	unset($title); //XXX hoping this doesn't affect the global variable
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
+		.', daportal_blog_content'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		.' AND daportal_content.content_id'
+		.'=daportal_blog_content.blog_content_id'
 		." AND daportal_content.enabled='1'"
 		." AND daportal_module.name='blog'".$and
 		.' AND daportal_module.module_id=daportal_content.module_id';
@@ -309,6 +398,7 @@ function blog_list($args)
 
 
 //blog_planet
+//FIXME code duplication with blog_list
 function blog_planet($args)
 {
 	$title = BLOG_PLANET;
@@ -325,7 +415,10 @@ function blog_planet($args)
 	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
 	unset($title); //XXX hoping this doesn't affect the global variable
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
+		.', daportal_blog_content'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
+		.' AND daportal_content.content_id'
+		.'=daportal_blog_content.blog_content_id'
 		." AND daportal_content.enabled='1'"
 		." AND daportal_module.name='blog'".$and
 		.' AND daportal_module.module_id=daportal_content.module_id';
