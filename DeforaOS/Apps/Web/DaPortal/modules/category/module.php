@@ -207,7 +207,7 @@ function category_get($args)
 			.' WHERE daportal_category_content.category_id'
 			.'=daportal_content.content_id'
 			." AND daportal_category_content.content_id='"
-			.$args['id']."' AND enabled='1'");
+			.$args['id']."' AND enabled='1' ORDER BY title ASC");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$count = count($categories);
@@ -309,7 +309,7 @@ function category_link_insert($args)
 			." WHERE category_id='".$args['id']."'"
 			." AND content_id='".$args['content_id']."'")
 			== $args['content_id'])
-		return _error(ALREADY_LINKED);
+		return _warning(ALREADY_LINKED);
 	_sql_query('INSERT INTO daportal_category_content'
 			.' (category_id, content_id) VALUES ('
 			."'".$args['id']."', '".$args['content_id']."')");
@@ -424,7 +424,8 @@ function category_set($args)
 	print('<h2 class="title category">'.CHOOSE_CATEGORIES.'</h2>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
 			.' FROM daportal_content'
-			." WHERE module_id='$module'"." AND enabled='1'");
+			." WHERE module_id='$module'"." AND enabled='1'"
+			.' ORDER BY title ASC');
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$cnt = count($categories);
