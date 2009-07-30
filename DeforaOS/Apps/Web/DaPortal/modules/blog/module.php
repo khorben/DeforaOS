@@ -87,7 +87,27 @@ function _blog_title($id)
 		.' AND blog.user_id=post.user_id'
 		.' AND post.content_id=daportal_blog_content.blog_content_id'
 		." AND daportal_blog_content.blog_content_id='$id'";
-	return _sql_single($sql);
+	if(($res = _sql_single($sql)) != FALSE)
+		return $res;
+	require_once('./system/content.php');
+	if(($content = _content_select($id, TRUE)) != FALSE)
+		return BLOG_BY.' '.$content['username'];
+	return BLOG;
+}
+
+
+//blog_title_user
+function _blog_title_user($user_id)
+{
+	$sql = 'SELECT title'
+		.' FROM daportal_content, daportal_blog_user'
+		.' WHERE daportal_content.content_id'
+		.'=daportal_blog_user.blog_user_id'
+		." AND daportal_content.user_id='$user_id'";
+	if(($res = _sql_single($sql)) != FALSE)
+		return $res;
+	require_once('./system/user.php');
+	return BLOG_BY.' '._user_name($user_id);
 }
 
 
@@ -349,6 +369,7 @@ function blog_insert($args)
 
 
 //blog_list
+//FIXME list the blogs if $args['user_id'] or $args['user'] is not set
 function blog_list($args)
 {
 	$title = BLOG_POSTS;
@@ -403,10 +424,12 @@ function blog_planet($args)
 	$and = '';
 	$paging = '';
 	require_once('./system/user.php');
-	if(isset($args['user_id'])
+	if(!isset($args['user_id']) && isset($args['user']))
+		$args['user_id'] = _user_id($args['user']);
+	if(isset($args['user_id']) && $args['user_id'] != FALSE
 			&& ($username = _user_name($args['user_id'])) != FALSE)
 	{
-		$title = BLOG_BY.' '.$username;
+		$title = _blog_title_user($args['user_id']);
 		$and = " AND daportal_user.user_id='".$args['user_id']."'";
 		$paging = 'user_id='._html_safe($args['user_id']).'&';
 	}
@@ -470,8 +493,9 @@ function blog_rss($args)
 				array('user' => $args['user']));
 		$atomlink = _module_link_full('blog', 'rss', FALSE, FALSE,
 				array('user' => $args['user']));
-		$title = $title.' - '.BLOG_BY.' '.$args['user'];
-		$content = $title;
+		//FIXME get the description instead
+		$content = $title.' - '.BLOG_BY.' '.$args['user'];
+		$title = _blog_title_user($args['user_id']);
 	}
 	else
 	{
