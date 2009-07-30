@@ -356,7 +356,6 @@ function news_rss($args)
 	$link = _module_link_full('news');
 	$atomlink = _module_link_full('news', 'rss');
 	$content = $title;
-	include('./modules/news/rss_channel_top.tpl');
 	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
 			.', content, username AS author, email'
 			.' FROM daportal_content, daportal_user'
@@ -368,17 +367,17 @@ function news_rss($args)
 	if(is_array($res))
 		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 		{
-			$news = $res[$i];
-			$news['author'] = $news['email']
-				.' ('.$news['author'].')';
-			$news['date'] = date('D, j M Y H:i:s O', strtotime(
-						substr($news['date'], 0, 19)));
-			$news['link'] = _html_link_full('news', FALSE,
-					$news['id']);
-			$news['content'] = _html_pre($news['content']);
-			include('./modules/news/rss_item.tpl');
+			$res[$i]['author'] = $res[$i]['email']
+				.' ('.$res[$i]['author'].')';
+			$res[$i]['date'] = date('D, j M Y H:i:s O', strtotime(
+						substr($res[$i]['date'], 0,
+						19)));
+			$res[$i]['link'] = _html_link_full('news', FALSE,
+					$res[$i]['id']);
+			$res[$i]['content'] = _html_pre($res[$i]['content']);
 		}
-	include('./modules/news/rss_channel_bottom.tpl');
+	require_once('./system/rss.php');
+	_rss($title, $link, $atomlink, $content, $res);
 }
 
 
