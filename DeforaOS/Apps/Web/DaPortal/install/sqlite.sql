@@ -324,4 +324,16 @@ INSERT INTO daportal_module (name, enabled) VALUES ('translate', '1');
 
 
 /* module: blog */
+CREATE TABLE daportal_blog_user (
+	blog_user_id INTEGER,
+	theme VARCHAR(255),
+	FOREIGN KEY (blog_user_id) REFERENCES daportal_content (content_id)
+);
+
+CREATE TABLE daportal_blog_content (
+	blog_content_id INTEGER,
+	comment BOOLEAN DEFAULT FALSE,
+	FOREIGN KEY (blog_content_id) REFERENCES daportal_content (content_id)
+);
+
 INSERT INTO daportal_module (name, enabled) VALUES ('blog', '1');
