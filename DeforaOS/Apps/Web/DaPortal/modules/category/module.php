@@ -30,6 +30,7 @@ $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
 $text['CATEGORY'] = 'Category';
 $text['CATEGORY_LIST'] = 'Category list';
 $text['CHOOSE_CATEGORIES'] = 'Choose categories';
+$text['CONTENT_TAGGED'] = 'Content tagged';
 $text['DELETE_LINK'] = 'Delete link';
 $text['DESCRIPTION'] = 'Description';
 $text['MEMBER_OF'] = 'Member of';
@@ -407,6 +408,45 @@ function category_new($args)
 }
 
 
+function category_rss($args)
+{
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	if(($category = _content_select($args['id'])) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	$sql = 'SELECT daportal_content.content_id AS id, name AS module'
+		.', daportal_content.user_id AS user_id, title'
+		.', username AS author, timestamp AS date, content'
+		.' FROM daportal_category_content, daportal_content'
+		.', daportal_module, daportal_user'
+		.' WHERE daportal_category_content.content_id'
+		.'=daportal_content.content_id'
+		.' AND daportal_content.module_id=daportal_module.module_id'
+		." AND daportal_content.enabled='1'"
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND category_id='".$args['id']."'"
+		.' ORDER BY timestamp DESC '._sql_offset(0, 10);
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		return _error('Could not list content');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['date'] = date('D, j M Y H:i:s O', strtotime(
+					substr($res[$i]['date'], 0, 19)));
+		$res[$i]['link'] = _module_link_full($res[$i]['module'], FALSE,
+				$res[$i]['id'], $res[$i]['title']);
+		/* FIXME forcibly format the content */
+		require_once('./system/html.php');
+		$res[$i]['content'] = _html_pre($res[$i]['content']);
+	}
+	require_once('./system/rss.php');
+	$link = _module_link_full('category', FALSE, $args['id']);
+	$atomlink = _module_link_full('category', 'rss', $args['id']);
+	_rss(CONTENT_TAGGED.' '.$category['title'], $link, $atomlink, '', $res);
+}
+
+
 function category_set($args)
 {
 	global $user_id;
@@ -450,6 +490,19 @@ function category_set($args)
 				'module' => 'category', 'action' => 'set',
 				'id' => $args['id']));
 	include('./modules/category/choose.tpl');
+}
+
+
+function category_system($args)
+{
+	global $html;
+
+	if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($args['action'])
+			&& $args['action'] == 'rss')
+	{
+		$html = 0;
+		header('Content-Type: text/xml');
+	}
 }
 
 
