@@ -98,7 +98,7 @@ function top_default($args)
 		print("\t\t\t".$sep.'<a href="'._html_safe($l['link']).'"'
 				.' title="'._html_safe($l['name']).'">'
 				._html_safe($l['name']).'</a>'."\n");
-		$sep = '<span class="middot"> &middot; </span>';
+		$sep = ' <span class="middot">&middot;</span> ';
 	}
 	print("\t\t".'</div>'."\n");
 }
