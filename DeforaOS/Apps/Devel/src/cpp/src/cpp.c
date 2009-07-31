@@ -40,7 +40,7 @@ struct _CppDefine /* FIXME use a hash table */
 /* public */
 /* functions */
 /* cpp_new */
-Cpp * cpp_new(char const * filename, int filters)
+Cpp * cpp_new(CppPrefs * prefs)
 {
 	Cpp * cpp;
 	String * p;
@@ -49,8 +49,10 @@ Cpp * cpp_new(char const * filename, int filters)
 	if((cpp = object_new(sizeof(*cpp))) == NULL)
 		return NULL;
 	memset(cpp, 0, sizeof(*cpp));
-	cpp->parser = cppparser_new(cpp, NULL, filename, filters);
-	if((p = string_new(filename)) != NULL)
+	cpp->options = prefs->options;
+	cpp->parser = cppparser_new(cpp, NULL, prefs->filename,
+			prefs->filters);
+	if((p = string_new(prefs->filename)) != NULL)
 	{
 		r |= cpp_path_add(cpp, dirname(p)); /* FIXME inclusion order */
 		string_delete(p);

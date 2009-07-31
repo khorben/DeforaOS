@@ -34,6 +34,7 @@ typedef enum _CppScope
 
 struct _Cpp
 {
+	int options;
 	/* for include directives */
 	CppParser * parser;
 	char ** paths;
