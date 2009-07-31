@@ -34,6 +34,19 @@ typedef enum _CppFilter
 	CPP_FILTER_COMMENT	= 4
 } CppFilter;
 
+typedef enum _CppOption
+{
+	CPP_OPTION_NONE		= 0,
+	CPP_OPTION_IGNORE_META	= 1
+} CppOption;
+
+typedef struct _CppPrefs
+{
+	char const * filename;
+	int filters;
+	int options;
+} CppPrefs;
+
 typedef enum _CppCode
 {
 	CPP_CODE_NULL = TC_NULL,
@@ -113,7 +126,7 @@ typedef enum _CppCode
 
 
 /* functions */
-Cpp * cpp_new(char const * filename, int filters);
+Cpp * cpp_new(CppPrefs * prefs);
 void cpp_delete(Cpp * cpp);
 
 /* accessors */
