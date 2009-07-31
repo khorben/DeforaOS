@@ -190,11 +190,15 @@ static int _parser_warning(State * state, char const * format, ...)
 /* parser */
 int parser(Code * code, char const * infile)
 {
+	CppPrefs prefs;
 	State state;
 
+	memset(&prefs, 0, sizeof(prefs));
+	prefs.filename = infile;
+	prefs.filters = CPP_FILTER_COMMENT;
 	memset(&state, 0, sizeof(state));
 	state.code = code;
-	if((state.cpp = cpp_new(infile, CPP_FILTER_COMMENT)) == NULL)
+	if((state.cpp = cpp_new(&prefs)) == NULL)
 		return _parser_error(&state, "%s", error_get());
 	if(_parser_scan(&state) != 0)
 		return _parser_error(&state, "%s", error_get());
