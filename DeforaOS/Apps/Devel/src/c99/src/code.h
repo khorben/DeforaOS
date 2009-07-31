@@ -96,6 +96,9 @@ Code * code_new(C99Prefs const * prefs, char const * outfile);
 int code_delete(Code * code);
 
 /* useful */
+/* parsing */
+int code_token(Code * code, Token * token);
+
 /* context */
 CodeContext code_context_get(Code * code);
 int code_context_set(Code * code, CodeContext context);
