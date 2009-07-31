@@ -89,10 +89,10 @@ static Cpp * _new_cpp(C99Prefs const * prefs, char const * pathname)
 	size_t j;
 	size_t k;
 
+	memset(&cppprefs, 0, sizeof(cppprefs));
 	cppprefs.filename = pathname;
 	cppprefs.filters = CPP_FILTER_TRIGRAPH | CPP_FILTER_WHITESPACE
 		| CPP_FILTER_COMMENT;
-	cppprefs.options = 0;
 	if((cpp = cpp_new(&cppprefs)) == NULL)
 		return NULL;
 	for(i = 0; i < prefs->paths_cnt; i++)

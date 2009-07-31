@@ -83,9 +83,9 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	Token * token;
 	int code;
 
+	memset(&cppprefs, 0, sizeof(cppprefs));
 	cppprefs.filename = filename;
 	cppprefs.filters = CPP_FILTER_WHITESPACE | CPP_FILTER_COMMENT;
-	cppprefs.options = 0;
 	if(prefs->flags & PREFS_t)
 		cppprefs.filters |= CPP_FILTER_TRIGRAPH;
 	if((cpp = cpp_new(&cppprefs)) == NULL)
