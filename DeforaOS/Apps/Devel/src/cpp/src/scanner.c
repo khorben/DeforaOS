@@ -133,6 +133,13 @@ int cpp_scan(Cpp * cpp, Token ** token)
 		if((code = token_get_code(*token)) >= CPP_CODE_META_FIRST
 				&& code <= CPP_CODE_META_LAST)
 			_scan_meta_line(*token);
+		if(cpp->options & CPP_OPTION_IGNORE_META)
+		{
+			if(code == CPP_CODE_META_ERROR
+					|| code == CPP_CODE_META_WARNING)
+				continue;
+			return 0;
+		}
 		switch(code)
 		{
 			case CPP_CODE_META_IFDEF:
