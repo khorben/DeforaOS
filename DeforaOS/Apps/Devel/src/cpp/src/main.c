@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel cpp */
 /* cpp is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -52,6 +52,7 @@ static int _cpp_error(void);
 /* functions */
 /* cpp */
 static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename);
+static void _do_print_token(FILE * fp, Token * token);
 
 static int _cpp(Prefs * prefs, int filec, char * filev[])
 {
@@ -81,7 +82,6 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	size_t j;
 	size_t k;
 	Token * token;
-	int code;
 
 	memset(&cppprefs, 0, sizeof(cppprefs));
 	cppprefs.filename = filename;
@@ -109,27 +109,33 @@ static int _cpp_do(Prefs * prefs, FILE * fp, char const * filename)
 	{
 		if(token == NULL) /* end of file */
 			break;
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: \"%s\" (%d)\n", token_get_string(token),
-				token_get_code(token));
-#else
-		if((code = token_get_code(token)) == CPP_CODE_META_ERROR
-				|| code == CPP_CODE_META_WARNING)
-			fprintf(stderr, "%s%s%s%s%u%s%s\n",
-					code == CPP_CODE_META_ERROR
-					? "Error" : "Warning", " in ",
-					token_get_filename(token), ":",
-					token_get_line(token), ": ",
-					token_get_string(token));
-		else
-			fputs(token_get_string(token), fp);
-#endif
+		_do_print_token(fp, token);
 		token_delete(token);
 	}
 	if(ret != 0)
 		_cpp_error();
 	cpp_delete(cpp);
 	return ret;
+}
+
+static void _do_print_token(FILE * fp, Token * token)
+{
+	CppCode code;
+
+	code = token_get_code(token);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: \"%s\" (%d)\n", token_get_string(token), code);
+#else
+	if(code != CPP_CODE_META_ERROR && code != CPP_CODE_META_WARNING)
+	{
+		fputs(token_get_string(token), fp);
+		return;
+	}
+	fprintf(stderr, "%s%s%s%s%u%s%s\n", code == CPP_CODE_META_ERROR
+			? "Error" : "Warning", " in ",
+			token_get_filename(token), ":", token_get_line(token),
+			": ", token_get_string(token));
+#endif
 }
 
 
