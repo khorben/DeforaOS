@@ -272,13 +272,16 @@ gboolean editor_close(Editor * editor)
 	}
 	dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
 			"There are unsaved changes.\n"
 			"Are you sure you want to close?");
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
+			GTK_RESPONSE_CLOSE, NULL);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(res == GTK_RESPONSE_NO)
+	if(res != GTK_RESPONSE_CLOSE)
 		return TRUE;
 	gtk_main_quit();
 	return FALSE;
@@ -302,13 +305,16 @@ void editor_open(Editor * editor, char const * filename)
 		dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
 				GTK_DIALOG_MODAL
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+				GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
 				"There are unsaved changes.\n"
-				"Are you sure you want to lose them?");
+				"Are you sure you want to discard them?");
+		gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+				GTK_RESPONSE_CANCEL, GTK_STOCK_DISCARD,
+				GTK_RESPONSE_CLOSE, NULL);
 		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
-		if(res == GTK_RESPONSE_NO)
+		if(res != GTK_RESPONSE_CLOSE)
 			return;
 	}
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
