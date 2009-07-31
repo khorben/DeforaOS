@@ -30,6 +30,7 @@ typedef struct _TargetPlugin
 	C99Option * options;
 	int (*init)(char const * outfile, int optlevel);
 	int (*exit)(void);
+	int (*token)(Token * token);
 	int (*section)(char const * name);
 	int (*function_begin)(char const * name);
 	int (*function_call)(char const * name);

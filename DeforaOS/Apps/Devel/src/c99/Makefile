@@ -98,6 +98,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/sets/project.conf \
 		$(PACKAGE)-$(VERSION)/src/target/as.c \
 		$(PACKAGE)-$(VERSION)/src/target/graph.c \
+		$(PACKAGE)-$(VERSION)/src/target/indent.c \
 		$(PACKAGE)-$(VERSION)/src/target/Makefile \
 		$(PACKAGE)-$(VERSION)/src/target/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \

@@ -101,6 +101,8 @@ static int _scan_skip_meta(C99 * c99)
 
 	while(cpp_scan(c99->cpp, &c99->token) == 0)
 	{
+		if(code_token(c99->code, c99->token) != 0)
+			return 1;
 		if(c99->token == NULL)
 			return 0;
 		if((code = token_get_code(c99->token)) != C99_CODE_WHITESPACE

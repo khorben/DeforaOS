@@ -85,6 +85,7 @@ static int _code_context_queue_identifier(Code * code, char const * identifier);
 /* target */
 static int _code_target_init(Code * code, char const * outfile, int optlevel);
 static int _code_target_exit(Code * code);
+static int _code_target_token(Code * code, Token * token);
 static int _code_target_function_begin(Code * code, char const * name);
 static int _code_target_function_call(Code * code, char const * name);
 static int _code_target_function_end(Code * code);
@@ -167,6 +168,16 @@ static int _code_target_exit(Code * code)
 	if(code->target->exit == NULL)
 		return 0;
 	return code->target->exit();
+}
+
+
+/* code_target_token */
+static int _code_target_token(Code * code, Token * token)
+{
+	DEBUG_FUNC();
+	if(code->target->token == NULL)
+		return 0;
+	return code->target->token(token);
 }
 
 
@@ -325,6 +336,13 @@ int code_delete(Code * code)
 
 
 /* useful */
+/* parsing */
+int code_token(Code * code, Token * token)
+{
+	return _code_target_token(code, token);
+}
+
+
 /* context */
 /* code_context_get */
 CodeContext code_context_get(Code * code)

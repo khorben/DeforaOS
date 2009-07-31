@@ -1,4 +1,4 @@
-TARGETS	= as.a as.so graph.a graph.so
+TARGETS	= as.a as.so graph.a graph.so indent.a indent.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -40,14 +40,28 @@ graph.a: $(graph_OBJS)
 graph.so: $(graph_OBJS)
 	$(LD) -o graph.so -Wl,-soname,graph.so.0 $(graph_OBJS)
 
+indent_OBJS = indent.o
+indent_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+indent_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+indent.a: $(indent_OBJS)
+	$(AR) indent.a $(indent_OBJS)
+	$(RANLIB) indent.a
+
+indent.so: $(indent_OBJS)
+	$(LD) -o indent.so -Wl,-soname,indent.so.0 $(indent_OBJS)
+
 as.o: as.c ../../include/c99/target.h ../../config.h
 	$(CC) $(as_CFLAGS) -c as.c
 
 graph.o: graph.c ../../include/c99/target.h
 	$(CC) $(graph_CFLAGS) -c graph.c
 
+indent.o: indent.c ../../include/c99/target.h
+	$(CC) $(indent_CFLAGS) -c indent.c
+
 clean:
-	$(RM) $(as_OBJS) $(graph_OBJS)
+	$(RM) $(as_OBJS) $(graph_OBJS) $(indent_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -63,6 +77,11 @@ install: all
 	$(INSTALL) -m 0755 graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0.0
 	$(LN) -s graph.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0
 	$(LN) -s graph.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
+	$(INSTALL) -m 0644 indent.a $(DESTDIR)$(LIBDIR)/c99/target/indent.a
+	$(INSTALL) -m 0755 indent.so $(DESTDIR)$(LIBDIR)/c99/target/indent.so.0.0
+	$(LN) -s indent.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/indent.so.0
+	$(LN) -s indent.so.0.0 $(DESTDIR)$(LIBDIR)/c99/target/indent.so
 
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/as.a
@@ -73,5 +92,9 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0.0
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/indent.a
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/indent.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/indent.so.0
+	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/indent.so
 
 .PHONY: all clean distclean install uninstall
