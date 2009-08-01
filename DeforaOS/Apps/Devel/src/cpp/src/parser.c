@@ -575,6 +575,7 @@ static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 	switch(cpp->queue_code)
 	{
 		case CPP_CODE_META_DEFINE:
+		case CPP_CODE_META_IF:
 		case CPP_CODE_META_IFDEF:
 		case CPP_CODE_META_IFNDEF:
 		case CPP_CODE_META_INCLUDE:

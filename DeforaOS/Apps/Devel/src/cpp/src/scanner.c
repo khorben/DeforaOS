@@ -223,9 +223,26 @@ static int _scan_ifndef(Cpp * cpp, Token ** token)
 
 static int _scan_if(Cpp * cpp, Token ** token)
 {
+	char * str;
+	char * p;
+
 	DEBUG_SCOPE();
-	/* FIXME check the condition */
-	_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
+	if((str = token_get_data(*token)) == NULL)
+		/* FIXME it's probably an error case instead */
+		_cpp_scope_push(cpp, CPP_SCOPE_NOTYET);
+	else if(strcmp(str, "1") == 0)
+		_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
+	else if(strncmp(str, "defined(", 8) == 0 &&
+			(p = strchr(str, ')')) != NULL)
+	{
+		*p = '\0';
+		_cpp_scope_push(cpp, cpp_define_get(cpp, &str[8]) != NULL
+				? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);
+	}
+	else
+		/* FIXME really check the condition */
+		_cpp_scope_push(cpp, CPP_SCOPE_NOTYET);
+	free(str);
 	return 0;
 }
 
