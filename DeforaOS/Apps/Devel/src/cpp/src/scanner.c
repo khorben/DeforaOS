@@ -14,7 +14,8 @@
  * NonCommercial-ShareAlike 3.0 along with cpp; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
 /* FIXME:
- * - potential memory leak with tokens' data */
+ * - potential memory leak with tokens' data
+ * - apparently not checking that scopes are properly closed upon exit */
 
 
 
@@ -221,53 +222,70 @@ static int _scan_ifndef(Cpp * cpp, Token ** token)
 	return 0;
 }
 
+static CppScope _if_do(Cpp * cpp, char const * str);
 static int _scan_if(Cpp * cpp, Token ** token)
 {
 	char * str;
-	char * p;
-	char const * q;
 
 	DEBUG_SCOPE();
-	if((str = token_get_data(*token)) == NULL)
-		/* FIXME it's probably an error case instead */
-		_cpp_scope_push(cpp, CPP_SCOPE_NOTYET);
-	else if(strcmp(str, "1") == 0)
-		_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
-	else if(strncmp(str, "defined(", 8) == 0 &&
-			(p = strchr(str, ')')) != NULL)
-	{
-		*p = '\0';
-		_cpp_scope_push(cpp, cpp_define_get(cpp, &str[8]) != NULL
-				? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);
-	}
-	else if((q = cpp_define_get(cpp, str)) != NULL && strcmp(q, "1") == 0)
-		_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
-	else
-		/* FIXME really check the condition */
-		_cpp_scope_push(cpp, CPP_SCOPE_NOTYET);
+	str = token_get_data(*token);
+	_cpp_scope_push(cpp, _if_do(cpp, str));
+	token_set_data(*token, NULL);
 	free(str);
 	return 0;
 }
 
+static CppScope _if_do(Cpp * cpp, char const * str)
+{
+	char * p;
+	char const * q;
+
+	if(str == NULL)
+		/* FIXME it's probably an error case instead */
+		return CPP_SCOPE_NOTYET;
+	if(strcmp(str, "1") == 0)
+		return CPP_SCOPE_TAKING;
+	if(strncmp(str, "defined(", 8) == 0 && (p = strchr(str, ')')) != NULL)
+	{
+		*p = '\0';
+		return (cpp_define_get(cpp, &str[8]) != NULL)
+			? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET;
+	}
+	else if((q = cpp_define_get(cpp, str)) != NULL && strcmp(q, "1") == 0)
+		return CPP_SCOPE_TAKING;
+	/* FIXME really check the condition */
+	return CPP_SCOPE_NOTYET;
+}
+
 static int _scan_elif(Cpp * cpp, Token ** token)
 {
+	int ret = 0;
 	CppScope scope;
+	char * str;
 
 	DEBUG_SCOPE();
+	str = token_get_data(*token);
 	if(_cpp_scope_get_count(cpp) == 0)
 	{
 		token_set_code(*token, CPP_CODE_META_ERROR);
 		token_set_string(*token, "#elif without #if or #ifdef"
 				" or #ifndef");
-		return 0;
+		ret = 0;
 	}
-	scope = _cpp_scope_get(cpp);
-	if(scope == CPP_SCOPE_TAKING)
-		_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
-	else if(scope == CPP_SCOPE_NOTYET)
-		/* FIXME check the condition */
-		_cpp_scope_set(cpp, CPP_SCOPE_TAKING);
-	return 0;
+	else
+	{
+		scope = _cpp_scope_get(cpp);
+		if(scope == CPP_SCOPE_TAKING)
+			_cpp_scope_set(cpp, CPP_SCOPE_TAKEN);
+		else if(scope == CPP_SCOPE_NOTYET)
+			_cpp_scope_set(cpp, _if_do(cpp, str));
+	}
+	if(str != NULL)
+	{
+		token_set_data(*token, NULL);
+		free(str);
+	}
+	return ret;
 }
 
 static int _scan_else(Cpp * cpp, Token ** token)
