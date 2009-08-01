@@ -590,11 +590,6 @@ static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 			token_set_string(token, (cpp->queue_string != NULL)
 					? cpp->queue_string : "");
 			break;
-		case CPP_CODE_NEWLINE: /* XXX these two shouldn't be here */
-		case CPP_CODE_WHITESPACE:
-			token_set_string(token, cpp->queue_string);
-			cpp->queue_string = NULL;
-			break;
 		default:
 			token_set_string(token, "");
 			break;
