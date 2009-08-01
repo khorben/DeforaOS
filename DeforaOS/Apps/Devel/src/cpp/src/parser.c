@@ -425,11 +425,8 @@ static int _cpp_callback_whitespace(Parser * parser, Token * token, int c,
 		return 0;
 	}
 	token_set_string(token, " ");
-	if(cpp->queue_code != CPP_CODE_NULL)
-	{
-		if(cpp->queue_string != NULL)
-			string_append(&cpp->queue_string, " ");
-	}
+	if(cpp->queue_code != CPP_CODE_NULL && cpp->queue_string != NULL)
+		string_append(&cpp->queue_string, " ");
 	return 0;
 }
 
