@@ -144,7 +144,7 @@ static const size_t _cpp_operators_cnt = sizeof(_cpp_operators)
 /* directives */
 static const char * _cpp_directives[] =
 {
-	"data", "define", "elif", "else", "endif", "error", "if", "ifdef",
+	"", "define", "elif", "else", "endif", "error", "if", "ifdef",
 	"ifndef", "include", "pragma", "undef", "warning", NULL
 };
 
