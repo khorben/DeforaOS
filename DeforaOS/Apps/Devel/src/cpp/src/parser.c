@@ -614,7 +614,7 @@ static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 
 static int _dequeue_include(CppParser * cp, Token * token, char const * str)
 {
-	char * path = NULL;
+	char * path;
 
 	if((path = _include_path(cp, str)) == NULL)
 	{
