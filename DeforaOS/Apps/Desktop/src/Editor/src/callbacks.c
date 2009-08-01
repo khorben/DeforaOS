@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
 static char const _license[] =
 "Editor is free software; you can redistribute it and/or modify it under the\n"
@@ -52,6 +52,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 void on_edit_preferences(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
+	PangoFontDescription * desc;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
@@ -61,6 +62,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 		gtk_widget_show(editor->pr_window);
 		return;
 	}
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	editor->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(editor->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(editor->pr_window),
@@ -71,6 +74,16 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 			G_CALLBACK(_preferences_on_close), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* dialog */
+	hbox = gtk_hbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	widget = gtk_label_new("Font:");
+	gtk_widget_modify_font(widget, desc);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	editor->pr_font = gtk_font_button_new();
+	gtk_font_button_set_use_font(GTK_FONT_BUTTON(editor->pr_font), TRUE);
+	gtk_size_group_add_widget(group, editor->pr_font);
+	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
@@ -91,6 +104,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 static void _preferences_set(Editor * editor)
 {
+	gtk_font_button_set_font_name(GTK_FONT_BUTTON(editor->pr_font),
+			editor->font);
 }
 
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
@@ -113,9 +128,11 @@ static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
 static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 {
 	Editor * editor = data;
+	char const * font;
 
 	gtk_widget_hide(editor->pr_window);
-	/* FIXME apply settings */
+	font = gtk_font_button_get_font_name(GTK_FONT_BUTTON(editor->pr_font));
+	editor_set_font(editor, font);
 }
 
 

@@ -102,6 +102,7 @@ static GtkWidget * _new_menubar(Editor * editor);
 Editor * editor_new(void)
 {
 	Editor * editor;
+	GtkSettings * settings;
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * tb_button;
@@ -110,6 +111,11 @@ Editor * editor_new(void)
 
 	if((editor = malloc(sizeof(*editor))) == NULL)
 		return NULL;
+	editor->font = NULL;
+	settings = gtk_settings_get_default();
+	g_object_get(G_OBJECT(settings), "gtk-font-name", &editor->font, NULL);
+	if(editor->font == NULL)
+		editor->font = EDITOR_DEFAULT_FONT;
 	editor->filename = NULL;
 	/* widgets */
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -152,9 +158,9 @@ Editor * editor_new(void)
 	/* FIXME make it an option */
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(editor->view),
 			GTK_WRAP_WORD_CHAR);
-	desc = pango_font_description_new();
+	desc = pango_font_description_from_string(editor->font);
 	pango_font_description_set_family(desc, "monospace");
-	gtk_widget_modify_font(editor->view, desc);
+	editor_set_font(editor, pango_font_description_to_string(desc));
 	pango_font_description_free(desc);
 	gtk_container_add(GTK_CONTAINER(widget), editor->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -238,6 +244,18 @@ static GtkWidget * _new_menubar(Editor * editor)
 void editor_delete(Editor * editor)
 {
 	free(editor);
+}
+
+
+/* accessors */
+void editor_set_font(Editor * editor, char const * font)
+{
+	PangoFontDescription * desc;
+
+	editor->font = font;
+	desc = pango_font_description_from_string(font);
+	gtk_widget_modify_font(editor->view, desc);
+	pango_font_description_free(desc);
 }
 
 

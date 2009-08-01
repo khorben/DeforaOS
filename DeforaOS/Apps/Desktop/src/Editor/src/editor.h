@@ -21,9 +21,11 @@
 # include <gtk/gtk.h>
 
 
+/* Editor */
 /* types */
 typedef struct _Editor
 {
+	char const * font;
 	char * filename;
 	/* widgets */
 	GtkWidget * window;
@@ -31,12 +33,20 @@ typedef struct _Editor
 	GtkWidget * statusbar;
 	/* preferences */
 	GtkWidget * pr_window;
+	GtkWidget * pr_font;
 } Editor;
+
+
+/* constants */
+# define EDITOR_DEFAULT_FONT "monospace"
 
 
 /* functions */
 Editor * editor_new(void);
 void editor_delete(Editor * editor);
+
+/* accessors */
+void editor_set_font(Editor * editor, char const * font);
 
 /* useful */
 int editor_error(Editor * editor, char const * message, int ret);
