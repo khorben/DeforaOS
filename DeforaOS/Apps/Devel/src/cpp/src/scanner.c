@@ -243,6 +243,9 @@ static CppScope _if_do(Cpp * cpp, char const * str)
 	if(str == NULL)
 		/* FIXME it's probably an error case instead */
 		return CPP_SCOPE_NOTYET;
+	if(str[0] == '!')
+		return (_if_do(cpp, &str[1]) == CPP_SCOPE_TAKING)
+			? CPP_SCOPE_NOTYET : CPP_SCOPE_TAKING;
 	if(strcmp(str, "1") == 0)
 		return CPP_SCOPE_TAKING;
 	if(strncmp(str, "defined(", 8) == 0 && (p = strchr(str, ')')) != NULL)
