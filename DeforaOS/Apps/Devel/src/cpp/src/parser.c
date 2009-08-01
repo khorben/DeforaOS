@@ -559,10 +559,6 @@ static int _cpp_callback_inject(Parser * parser, Token * token, int c,
 
 
 /* cpp_callback_dequeue */
-static int _dequeue_include(CppParser * cpp, Token * token, char const * str);
-static char * _include_path(CppParser * cpp, char const * str);
-static char * _path_lookup(CppParser * cpp, char const * path, int system);
-
 static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 		void * data)
 {
@@ -581,14 +577,11 @@ static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 		case CPP_CODE_META_DEFINE:
 		case CPP_CODE_META_IFDEF:
 		case CPP_CODE_META_IFNDEF:
+		case CPP_CODE_META_INCLUDE:
 		case CPP_CODE_META_UNDEF:
 			token_set_string(token, "");
 			token_set_data(token, cpp->queue_string);
 			cpp->queue_string = NULL;
-			break;
-		case CPP_CODE_META_INCLUDE:
-			token_set_string(token, "");
-			ret = _dequeue_include(cpp, token, cpp->queue_string);
 			break;
 		case CPP_CODE_META_ERROR:
 		case CPP_CODE_META_WARNING:
@@ -610,98 +603,6 @@ static int _cpp_callback_dequeue(Parser * parser, Token * token, int c,
 	cpp->directive_newline = 1;
 	cpp->directive_control = 0;
 	return ret;
-}
-
-static int _dequeue_include(CppParser * cp, Token * token, char const * str)
-{
-	char * path;
-
-	if((path = _include_path(cp, str)) == NULL)
-	{
-		token_set_code(token, CPP_CODE_META_ERROR);
-		token_set_string(token, error_get());
-		return 0;
-	}
-	if((cp->subparser = cppparser_new(cp->cpp, cp, path, cp->filters))
-			== NULL)
-	{
-		free(path);
-		return -1;
-	}
-	free(path);
-	return 0;
-}
-
-static char * _include_path(CppParser * cpp, char const * str)
-{
-	int d;
-	size_t len;
-	char * path = NULL;
-	char * p;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, cpp, str);
-#endif
-	if(str[0] == '"')
-		d = str[0];
-	else if(str[0] == '<')
-		d = '>';
-	else
-	{
-		error_set("%s", "Invalid include directive");
-		return NULL;
-	}
-	len = strlen(str);
-	if(len < 3 || str[len - 1] != d)
-	{
-		error_set("%s", "Invalid include directive");
-		return NULL;
-	}
-	if((path = strdup(&str[1])) == NULL)
-	{
-		error_set("%s", strerror(errno));
-		return NULL;
-	}
-	path[len - 2] = '\0';
-	p = _path_lookup(cpp, path, d == '>');
-	free(path);
-	return p;
-}
-
-static char * _path_lookup(CppParser * cp, char const * path, int system)
-{
-	Cpp * cpp = cp->cpp;
-	char const * filename;
-	char * p;
-	char * q;
-	char * r;
-	struct stat st;
-
-	if(system != 0)
-		return cpp_path_lookup(cp->cpp, path);
-	for(; cp != NULL; cp = cp->parent)
-	{
-		filename = parser_get_filename(cp->parser);
-		if((p = string_new(filename)) == NULL)
-			return NULL;
-		q = dirname(p);
-		if((r = string_new(q)) == NULL || string_append(&r, "/") != 0
-				|| string_append(&r, path) != 0)
-		{
-			string_delete(r);
-			string_delete(p);
-			return NULL;
-		}
-		string_delete(p);
-#ifdef DEBUG
-		fprintf(stderr, "DEBUG: stat(\"%s\", %p)\n", r, &st);
-#endif
-		if(stat(r, &st) == 0)
-			return r;
-		error_set("%s: %s", r, strerror(errno));
-		string_delete(r);
-	}
-	return cpp_path_lookup(cpp, path); /* XXX errors change "" into <> */
 }
 
 
@@ -1026,6 +927,99 @@ char const * cppparser_get_filename(CppParser * cpp)
 
 
 /* useful */
+/* cppparser_include */
+static char * _include_path(CppParser * cpp, char const * str);
+static char * _path_lookup(CppParser * cp, char const * path, int system);
+
+int cppparser_include(CppParser * cp, char const * include)
+{
+	char * path;
+
+	if((path = _include_path(cp, include)) == NULL)
+		return -1;
+	if((cp->subparser = cppparser_new(cp->cpp, cp, path, cp->filters))
+			== NULL)
+	{
+		free(path);
+		return -1;
+	}
+	free(path);
+	return 0;
+}
+
+static char * _include_path(CppParser * cpp, char const * str)
+{
+	int d;
+	size_t len;
+	char * path = NULL;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, cpp, str);
+#endif
+	if(str[0] == '"')
+		d = str[0];
+	else if(str[0] == '<')
+		d = '>';
+	else
+	{
+		error_set("%s", "Invalid include directive");
+		return NULL;
+	}
+	len = strlen(str);
+	if(len < 3 || str[len - 1] != d)
+	{
+		error_set("%s", "Invalid include directive");
+		return NULL;
+	}
+	if((path = strdup(&str[1])) == NULL)
+	{
+		error_set("%s", strerror(errno));
+		return NULL;
+	}
+	path[len - 2] = '\0';
+	p = _path_lookup(cpp, path, d == '>');
+	free(path);
+	return p;
+}
+
+static char * _path_lookup(CppParser * cp, char const * path, int system)
+{
+	Cpp * cpp = cp->cpp;
+	char const * filename;
+	char * p;
+	char * q;
+	char * r;
+	struct stat st;
+
+	if(system != 0)
+		return cpp_path_lookup(cp->cpp, path);
+	for(; cp != NULL; cp = cp->parent)
+	{
+		filename = parser_get_filename(cp->parser);
+		if((p = string_new(filename)) == NULL)
+			return NULL;
+		q = dirname(p);
+		if((r = string_new(q)) == NULL || string_append(&r, "/") != 0
+				|| string_append(&r, path) != 0)
+		{
+			string_delete(r);
+			string_delete(p);
+			return NULL;
+		}
+		string_delete(p);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: stat(\"%s\", %p)\n", r, &st);
+#endif
+		if(stat(r, &st) == 0)
+			return r;
+		error_set("%s: %s", r, strerror(errno));
+		string_delete(r);
+	}
+	return cpp_path_lookup(cpp, path); /* XXX errors change "" into <> */
+}
+
+
 /* cppparser_inject */
 /* FIXME should take a buffer as input? */
 int cppparser_inject(CppParser * cp, char const * string)

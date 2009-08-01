@@ -116,6 +116,7 @@ static int _scan_elif(Cpp * cpp, Token ** token);
 static int _scan_else(Cpp * cpp, Token ** token);
 static int _scan_endif(Cpp * cpp, Token ** token);
 static int _scan_define(Cpp * cpp, Token ** token);
+static int _scan_include(Cpp * cpp, Token * token);
 static int _scan_undef(Cpp * cpp, Token ** token);
 
 int cpp_scan(Cpp * cpp, Token ** token)
@@ -163,6 +164,8 @@ int cpp_scan(Cpp * cpp, Token ** token)
 		{
 			case CPP_CODE_META_DEFINE:
 				return _scan_define(cpp, token);
+			case CPP_CODE_META_INCLUDE:
+				return _scan_include(cpp, *token);
 			case CPP_CODE_META_UNDEF:
 				return _scan_undef(cpp, token);
 			case CPP_CODE_WORD:
@@ -322,6 +325,15 @@ static int _scan_define(Cpp * cpp, Token ** token)
 	free(var);
 	token_set_data(*token, NULL);
 	free(str);
+	return 0;
+}
+
+static int _scan_include(Cpp * cpp, Token * token)
+{
+	if(cppparser_include(cpp->parser, token_get_data(token)) == 0)
+		return 0;
+	token_set_code(token, CPP_CODE_META_ERROR);
+	token_set_string(token, error_get());
 	return 0;
 }
 
