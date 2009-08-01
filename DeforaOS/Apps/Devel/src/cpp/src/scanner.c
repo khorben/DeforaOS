@@ -115,9 +115,9 @@ static int _scan_if(Cpp * cpp, Token ** token);
 static int _scan_elif(Cpp * cpp, Token ** token);
 static int _scan_else(Cpp * cpp, Token ** token);
 static int _scan_endif(Cpp * cpp, Token ** token);
-static int _scan_define(Cpp * cpp, Token ** token);
+static int _scan_define(Cpp * cpp, Token * token);
 static int _scan_include(Cpp * cpp, Token * token);
-static int _scan_undef(Cpp * cpp, Token ** token);
+static int _scan_undef(Cpp * cpp, Token * token);
 
 int cpp_scan(Cpp * cpp, Token ** token)
 {
@@ -163,11 +163,11 @@ int cpp_scan(Cpp * cpp, Token ** token)
 		switch(code)
 		{
 			case CPP_CODE_META_DEFINE:
-				return _scan_define(cpp, token);
+				return _scan_define(cpp, *token);
 			case CPP_CODE_META_INCLUDE:
 				return _scan_include(cpp, *token);
 			case CPP_CODE_META_UNDEF:
-				return _scan_undef(cpp, token);
+				return _scan_undef(cpp, *token);
 			case CPP_CODE_WORD:
 				str = token_get_string(*token);
 				if((s = cpp_define_get(cpp, str)) != NULL)
@@ -283,7 +283,7 @@ static int _scan_endif(Cpp * cpp, Token ** token)
 	return 0;
 }
 
-static int _scan_define(Cpp * cpp, Token ** token)
+static int _scan_define(Cpp * cpp, Token * token)
 {
 	char * str;
 	int tmp;
@@ -293,7 +293,7 @@ static int _scan_define(Cpp * cpp, Token ** token)
 	char * var;
 	char const * val;
 
-	str = token_get_data(*token);
+	str = token_get_data(token);
 	/* fetch variable name */
 	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++)
 	{
@@ -310,20 +310,20 @@ static int _scan_define(Cpp * cpp, Token ** token)
 	val = (str[j] != '\0') ? &str[j] : NULL;
 	if((var = strdup(str)) == NULL)
 	{
-		token_set_code(*token, CPP_CODE_META_ERROR);
-		token_set_string(*token, strerror(errno));
-		token_set_data(*token, NULL);
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, strerror(errno));
+		token_set_data(token, NULL);
 		free(str);
 		return 0;
 	}
 	var[k != 0 ? k : i] = '\0';
 	if(cpp_define_add(cpp, var, val) != 0)
 	{
-		token_set_code(*token, CPP_CODE_META_ERROR);
-		token_set_string(*token, error_get());
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, error_get());
 	}
 	free(var);
-	token_set_data(*token, NULL);
+	token_set_data(token, NULL);
 	free(str);
 	return 0;
 }
@@ -337,7 +337,7 @@ static int _scan_include(Cpp * cpp, Token * token)
 	return 0;
 }
 
-static int _scan_undef(Cpp * cpp, Token ** token)
+static int _scan_undef(Cpp * cpp, Token * token)
 	/* FIXME ignores what's after the spaces after the variable name */
 {
 	char * str;
@@ -345,21 +345,21 @@ static int _scan_undef(Cpp * cpp, Token ** token)
 	size_t i;
 	char * var;
 
-	str = token_get_data(*token);
+	str = token_get_data(token);
 	/* fetch variable name */
 	for(i = 1; (tmp = str[i]) != '\0' && !isspace(tmp); i++);
 	if((var = strdup(str)) == NULL)
 	{
-		token_set_code(*token, CPP_CODE_META_ERROR);
-		token_set_string(*token, strerror(errno));
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, strerror(errno));
 		free(str);
 		return 0;
 	}
 	var[i] = '\0';
 	if(cpp_define_remove(cpp, var) != 0)
 	{
-		token_set_code(*token, CPP_CODE_META_ERROR);
-		token_set_string(*token, error_get());
+		token_set_code(token, CPP_CODE_META_ERROR);
+		token_set_string(token, error_get());
 	}
 	free(var);
 	free(str);
