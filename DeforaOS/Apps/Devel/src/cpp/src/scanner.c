@@ -225,6 +225,7 @@ static int _scan_if(Cpp * cpp, Token ** token)
 {
 	char * str;
 	char * p;
+	char const * q;
 
 	DEBUG_SCOPE();
 	if((str = token_get_data(*token)) == NULL)
@@ -239,6 +240,8 @@ static int _scan_if(Cpp * cpp, Token ** token)
 		_cpp_scope_push(cpp, cpp_define_get(cpp, &str[8]) != NULL
 				? CPP_SCOPE_TAKING : CPP_SCOPE_NOTYET);
 	}
+	else if((q = cpp_define_get(cpp, str)) != NULL && strcmp(q, "1") == 0)
+		_cpp_scope_push(cpp, CPP_SCOPE_TAKING);
 	else
 		/* FIXME really check the condition */
 		_cpp_scope_push(cpp, CPP_SCOPE_NOTYET);
