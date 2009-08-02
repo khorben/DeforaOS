@@ -127,6 +127,7 @@ int config_set(Config * config, char const * section, char const * variable,
 
 /* useful */
 /* config_load */
+static int _load_isprint(int c);
 static String * _load_section(FILE * fp);
 static String * _load_variable(FILE * fp, int c);
 static String * _load_value(FILE * fp);
@@ -182,6 +183,13 @@ int config_load(Config * config, char const * filename)
 	return ret;
 }
 
+static int _load_isprint(int c)
+{
+	if(c == '\n' || c == '\0')
+		return 0;
+	return 1;
+}
+
 static String * _load_section(FILE * fp)
 {
 	int c;
@@ -189,7 +197,7 @@ static String * _load_section(FILE * fp)
 	size_t len = 0;
 	char * p;
 
-	while((c = fgetc(fp)) != EOF && c != ']' && isprint(c))
+	while((c = fgetc(fp)) != EOF && c != ']' && _load_isprint(c))
 	{
 		if((p = realloc(str, sizeof(*str) * (len + 2))) == NULL)
 		{
@@ -218,7 +226,7 @@ static String * _load_variable(FILE * fp, int c)
 	buf[0] = c;
 	if((str = string_new(buf)) == NULL)
 		return NULL;
-	while((c = fgetc(fp)) != EOF && c != '=' && isprint(c))
+	while((c = fgetc(fp)) != EOF && c != '=' && _load_isprint(c))
 	{
 		buf[0] = c;
 		if(string_append(&str, buf) != 0)
@@ -242,7 +250,7 @@ static String * _load_value(FILE * fp)
 	size_t len = 0;
 	char * p;
 
-	while((c = fgetc(fp)) != EOF && isprint(c))
+	while((c = fgetc(fp)) != EOF && _load_isprint(c))
 	{
 		if((p = realloc(str, sizeof(*str) * (len + 2))) == NULL)
 		{
