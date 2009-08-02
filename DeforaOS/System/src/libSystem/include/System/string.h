@@ -30,6 +30,9 @@ String * string_new_append(String const * string, ...);
 String * string_new_length(String const * string, size_t length);
 void string_delete(String * string);
 
+/* accessors */
+int string_set(String ** string, String const * string2);
+
 /* returns */
 size_t string_length(String const * string);
 

@@ -28,12 +28,10 @@
 /* string_new */
 String * string_new(String const * string)
 {
-	String * ret;
-	size_t length = string_length(string);
+	String * ret = NULL;
 
-	if((ret = object_new(length + 1)) == NULL)
+	if(string_set(&ret, string) != 0)
 		return NULL;
-	strcpy(ret, string);
 	return ret;
 }
 
@@ -83,17 +81,45 @@ void string_delete(String * string)
 }
 
 
+/* accessors */
+/* string_set */
+int string_set(String ** string, String const * string2)
+{
+	size_t len = string_length(string2) + 1;
+
+	if(object_resize((Object**)string, len) != 0)
+		return 1;
+	strcpy(*string, string2);
+	return 0;
+}
+
+
+/* returns */
+/* string_length */
+size_t string_length(String const * string)
+{
+	size_t length;
+
+	for(length = 0; *string != '\0'; string++)
+		length++;
+	return length;
+}
+
+
 /* useful */
 /* string_append */
 int string_append(String ** string, String const * append)
 {
-	char * p;
-	size_t length = string_length(*string);
+	size_t slength = string_length(*string);
+	size_t alength;
 
-	if((p = realloc(*string, length + string_length(append) + 1)) == NULL)
+	if(append == NULL)
+		return error_set_code(1, "%s", strerror(EINVAL));
+	if((alength = string_length(append)) == 0)
+		return 0;
+	if(object_resize((Object**)string, slength + alength + 1) != 0)
 		return 1;
-	*string = p;
-	strcpy(p + length, append);
+	strcpy(*string + slength, append);
 	return 0;
 }
 
@@ -222,19 +248,4 @@ ssize_t string_index(String const * string, String const * key)
 	if(string[i] == '\0')
 		return -1;
 	return i;
-}
-
-
-/* string_length */
-size_t string_length(String const * string)
-{
-	String const * s = string;
-	size_t length;
-
-	for(length = 0; *s != '\0'; s++)
-		length++;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s) => %zu\n", __func__, string, length);
-#endif
-	return length;
 }
