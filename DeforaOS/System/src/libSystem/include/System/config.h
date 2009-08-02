@@ -38,7 +38,7 @@ int config_set(Config * config, char const * section, char const * variable,
 
 /* useful */
 int config_load(Config * config, char const * filename);
-void config_reset(Config * config);
+int config_reset(Config * config);
 int config_save(Config * config, char const * filename);
 
 #endif /* !LIBSYSTEM_CONFIG_H */

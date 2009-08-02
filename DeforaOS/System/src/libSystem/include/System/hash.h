@@ -45,5 +45,6 @@ size_t hash_count(Hash * hash);
 
 /* useful */
 void hash_foreach(Hash * hash, HashForeach func, void * data);
+int hash_reset(Hash * hash);
 
 #endif /* !LIBSYSTEM_HASH_H */

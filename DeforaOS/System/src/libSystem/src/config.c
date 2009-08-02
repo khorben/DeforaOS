@@ -34,33 +34,10 @@ Config * config_new(void)
 
 
 /* config_delete */
-static void _delete_foreach(void const * key, void * value, void * data);
-static void _delete_foreach_section(void const * key, void * value,
-		void * data);
-
 void config_delete(Config * config)
 {
-	hash_foreach(config, _delete_foreach, NULL);
+	config_reset(config);
 	hash_delete(config);
-}
-
-static void _delete_foreach(void const * key, void * value, void * data)
-{
-	char * str = (char*)key;
-	Hash * hash = value;
-
-	free(str);
-	hash_foreach(hash, _delete_foreach_section, data);
-	hash_delete(hash);
-}
-
-static void _delete_foreach_section(void const * key, void * value, void * data)
-{
-	char * k = (char*)key;
-	char * v = value;
-
-	free(k);
-	free(v);
 }
 
 
@@ -150,24 +127,24 @@ int config_set(Config * config, char const * section, char const * variable,
 
 /* useful */
 /* config_load */
-static char * _load_section(FILE * fp);
-static char * _load_variable(FILE * fp, int c);
-static char * _load_value(FILE * fp);
+static String * _load_section(FILE * fp);
+static String * _load_variable(FILE * fp, int c);
+static String * _load_value(FILE * fp);
 
 int config_load(Config * config, char const * filename)
 {
 	int ret = 0;
 	FILE * fp;
-	char * section;
-	char * variable = NULL;
+	String * section;
+	String * variable = NULL;
 	int c;
-	char * str;
+	String * str;
 
 	if((section = string_new("")) == NULL)
 		return 1;
 	if((fp = fopen(filename, "r")) == NULL)
 	{
-		free(section);
+		string_delete(section);
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
 	}
 	while((c = fgetc(fp)) != EOF)
@@ -177,25 +154,25 @@ int config_load(Config * config, char const * filename)
 		{
 			if((str = _load_section(fp)) == NULL)
 				break;
-			free(section);
+			string_delete(section);
 			section = str;
 		}
 		else if(isprint(c))
 		{
 			if((str = _load_variable(fp, c)) == NULL)
 				break;
-			free(variable);
+			string_delete(variable);
 			variable = str;
 			if((str = _load_value(fp)) == NULL)
 				break;
-			/* XXX optimize string alloc/free */
+			/* XXX optimize string alloc/free, and may fail */
 			config_set(config, section, variable, str);
-			free(str);
+			string_delete(str);
 		}
 		else if(c != '\n')
 			break;
-	free(section);
-	free(variable);
+	string_delete(section);
+	string_delete(variable);
 	if(!feof(fp))
 		ret = error_set_code(1, "%s: %s", filename, "Syntax error");
 	if(fclose(fp) != 0)
@@ -203,7 +180,7 @@ int config_load(Config * config, char const * filename)
 	return ret;
 }
 
-static char * _load_section(FILE * fp)
+static String * _load_section(FILE * fp)
 {
 	int c;
 	char * str = NULL;
@@ -226,44 +203,41 @@ static char * _load_section(FILE * fp)
 		return NULL;
 	}
 	if(str == NULL)
-		return strdup("");
+		return string_new("");
 	str[len] = '\0';
 	return str;
 }
 
-static char * _load_variable(FILE * fp, int c)
+static String * _load_variable(FILE * fp, int c)
 {
-	char * str;
-	int len = 1;
-	char * p;
+	String * str;
+	String buf[2] = "\0";
 
-	if((str = malloc(sizeof(char) * (len+1))) == NULL)
+	buf[0] = c;
+	if((str = string_new(buf)) == NULL)
 		return NULL;
-	str[0] = c;
 	while((c = fgetc(fp)) != EOF && c != '=' && isprint(c))
 	{
-		if((p = realloc(str, sizeof(*str) * (len + 2))) == NULL)
+		buf[0] = c;
+		if(string_append(&str, buf) != 0)
 		{
-			free(str);
+			string_delete(str);
 			return NULL;
 		}
-		str = p;
-		str[len++] = c;
 	}
 	if(c != '=')
 	{
-		free(str);
+		string_delete(str);
 		return NULL;
 	}
-	str[len] = '\0';
 	return str;
 }
 
-static char * _load_value(FILE * fp)
+static String * _load_value(FILE * fp)
 {
 	int c;
-	char * str = NULL;
-	int len = 0;
+	String * str = NULL;
+	size_t len = 0;
 	char * p;
 
 	while((c = fgetc(fp)) != EOF && isprint(c))
@@ -289,10 +263,33 @@ static char * _load_value(FILE * fp)
 
 
 /* config_reset */
-void config_reset(Config * config)
+static void _delete_foreach(void const * key, void * value, void * data);
+static void _delete_foreach_section(void const * key, void * value,
+		void * data);
+
+int config_reset(Config * config)
 {
-	/* FIXME untested */
 	hash_foreach(config, _delete_foreach, NULL);
+	return hash_reset(config);
+}
+
+static void _delete_foreach(void const * key, void * value, void * data)
+{
+	char * str = (char*)key;
+	Hash * hash = value;
+
+	free(str);
+	hash_foreach(hash, _delete_foreach_section, data);
+	hash_delete(hash);
+}
+
+static void _delete_foreach_section(void const * key, void * value, void * data)
+{
+	char * k = (char*)key;
+	char * v = value;
+
+	free(k);
+	free(v);
 }
 
 

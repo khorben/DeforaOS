@@ -38,7 +38,7 @@ static void _hashentry_init(HashEntry * he, HashFunc func, void const * key,
 		void * value);
 
 /* accessors */
-static void _hashentry_set_value(HashEntry * he, void * value);
+static int _hashentry_set_value(HashEntry * he, void * value);
 
 
 /* functions */
@@ -54,9 +54,10 @@ static void _hashentry_init(HashEntry * he, HashFunc func, void const * key,
 
 /* accessors */
 /* hashentry_set_value */
-static void _hashentry_set_value(HashEntry * he, void * value)
+static int _hashentry_set_value(HashEntry * he, void * value)
 {
 	he->value = value;
+	return 0;
 }
 
 
@@ -166,20 +167,22 @@ int hash_set(Hash * hash, void const * key, void * value)
 			return 1;
 		if(p->hash != h)
 			continue;
-		if(hash->compare(p->key, key) == 0)
-		{
-			_hashentry_set_value(p, value);
-			return 0;
-		}
+		if(hash->compare(p->key, key) != 0)
+			continue;
+		if(value == NULL)
+			return (array_remove_pos(hash->entries, i) == 0)
+				? 0 : 1;
+		return _hashentry_set_value(p, value);
 	}
-	_hashentry_init(&he, hash->func, key, value);
-	if(array_append(hash->entries, &he) == 0)
+	if(value == NULL)
 		return 0;
-	return 1;
+	_hashentry_init(&he, hash->func, key, value);
+	return (array_append(hash->entries, &he) == 0) ? 0 : 1;
 }
 
 
 /* useful */
+/* hash_foreach */
 static void _hash_foreach(void * value, void * data);
 
 struct funcdata
@@ -203,4 +206,14 @@ static void _hash_foreach(void * value, void * data)
 	struct funcdata * fd = data;
 
 	fd->func(he->key, he->value, fd->data);
+}
+
+
+/* hash_reset */
+int hash_reset(Hash * hash)
+{
+	while(array_count(hash->entries))
+		if(array_remove_pos(hash->entries, 0) != 0)
+			return 1;
+	return 0;
 }
