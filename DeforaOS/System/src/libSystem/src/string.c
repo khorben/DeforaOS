@@ -38,6 +38,7 @@ String * string_new(String const * string)
 }
 
 
+/* string_new_append */
 String * string_new_append(String const * string, ...)
 {
 	String * ret = NULL;
@@ -52,13 +53,15 @@ String * string_new_append(String const * string, ...)
 		if(string_append(&ret, string) != 0)
 		{
 			string_delete(ret);
-			return NULL;
+			ret = NULL;
+			break;
 		}
 	va_end(ap);
 	return ret;
 }
 
 
+/* string_new_length */
 String * string_new_length(String const * string, size_t length)
 {
 	String * ret;
@@ -90,7 +93,7 @@ int string_append(String ** string, String const * append)
 	if((p = realloc(*string, length + string_length(append) + 1)) == NULL)
 		return 1;
 	*string = p;
-	strcpy(*string + length, append);
+	strcpy(p + length, append);
 	return 0;
 }
 
@@ -98,9 +101,13 @@ int string_append(String ** string, String const * append)
 /* string_compare */
 int string_compare(String const * string, String const * string2)
 {
+	int ret;
 	unsigned char const * u1;
 	unsigned char const * u2;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s, %s)\n", __func__, string, string2);
+#endif
 	u1 = (unsigned char const *)string;
 	u2 = (unsigned char const *)string2;
 	while(*u1 && *u2 && *u1 == *u2)
@@ -108,7 +115,8 @@ int string_compare(String const * string, String const * string2)
 		u1++;
 		u2++;
 	}
-	return *u1 - *u2;
+	ret = *u1 - *u2;
+	return ret;
 }
 
 
@@ -116,9 +124,12 @@ int string_compare(String const * string, String const * string2)
 int string_compare_length(String const * string, String const * string2,
 		size_t length)
 {
+	int ret;
 	unsigned char const * u1;
 	unsigned char const * u2;
 
+	if(length == 0)
+		return 0;
 	u1 = (unsigned char const *)string;
 	u2 = (unsigned char const *)string2;
 	while(--length && *u1 && *u2 && *u1 == *u2)
@@ -126,7 +137,8 @@ int string_compare_length(String const * string, String const * string2,
 		u1++;
 		u2++;
 	}
-	return *u1 - *u2;
+	ret = *u1 - *u2;
+	return ret;
 }
 
 
@@ -216,9 +228,13 @@ ssize_t string_index(String const * string, String const * key)
 /* string_length */
 size_t string_length(String const * string)
 {
+	String const * s = string;
 	size_t length;
 
-	for(length = 0; *string != '\0'; string++)
+	for(length = 0; *s != '\0'; s++)
 		length++;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s) => %zu\n", __func__, string, length);
+#endif
 	return length;
 }
