@@ -64,6 +64,7 @@ static GtkWidget * _new_button(char const * stock);
 static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
 static void _on_lock(GtkWidget * widget, gpointer data);
+static void _on_logout(GtkWidget * widget, gpointer data);
 static void _on_menu(GtkWidget * widget, gpointer data);
 static void _on_menu_position(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
@@ -121,8 +122,10 @@ Panel * panel_new(void)
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_lock),
 			panel);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), _new_button("gnome-logout"), FALSE,
-			TRUE, 0);
+	widget = _new_button("gnome-logout");
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_on_logout),
+			panel);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	/* clock */
 	widget = gtk_frame_new(NULL);
 	gtk_frame_set_shadow_type(GTK_FRAME(widget), GTK_SHADOW_IN);
@@ -183,6 +186,29 @@ static void _on_lock(GtkWidget * widget, gpointer data)
 	_panel_exec(panel, "xscreensaver-command -lock");
 }
 
+static void _on_logout(GtkWidget * widget, gpointer data)
+{
+	GtkWidget * dialog;
+	const char message[] = "This will log you out of the current session,"
+		" therefore closing any application currently opened and losing"
+		" any unsaved data.\nDo you really want to proceed?";
+	int res;
+
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
+			GTK_BUTTONS_NONE, "%s", message);
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, "Logout", GTK_RESPONSE_ACCEPT,
+			NULL);
+	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res != GTK_RESPONSE_ACCEPT)
+		return;
+	gtk_main_quit();
+}
+
 static GtkWidget * _menu_applications(Panel * panel);
 static void _applications_activate(GtkWidget * widget, gpointer data);
 static void _on_menu(GtkWidget * widget, gpointer data)
@@ -226,6 +252,8 @@ static void _on_menu(GtkWidget * widget, gpointer data)
 	image = gtk_image_new_from_icon_name("gnome-logout",
 			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_logout),
+			data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, _on_menu_position, data, 0,
