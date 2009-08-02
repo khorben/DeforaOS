@@ -32,6 +32,13 @@
 /* Panel */
 /* private */
 /* types */
+typedef struct _PanelMenu
+{
+	char const * category;
+	char const * label;
+	char const * stock;
+} PanelMenu;
+
 struct _Panel
 {
 	GSList * apps;
@@ -52,10 +59,29 @@ struct _Panel
 #define PANEL_BORDER_WIDTH		4
 #define PANEL_ICON_SIZE			48
 
+static const PanelMenu _panel_menus[] =
+{
+	{ "Audio;",	"Audio",	NULL,				},
+	{ "Development;","Development",	"applications-development",	},
+	{ "Education;",	"Education",	NULL,				},
+	{ "Game;",	"Games",	"applications-games",		},
+	{ "Graphics;",	"Graphics",	"applications-graphics",	},
+	{ "AudioVideo;","Multimedia",	"applications-multimedia",	},
+	{ "Network;",	"Network",	"applications-internet",	},
+	{ "Office;",	"Office",	"applications-office",		},
+	{ "Settings;",	"Settings",	"gnome-settings",		},
+	{ "System;",	"System",	"applications-system",		},
+	{ "Utility;",	"Utilities",	"applications-utilities",	},
+	{ "Video;",	"Video",	"video",			},
+	{ NULL,		NULL,		NULL,				}
+};
+#define PANEL_MENUS_CNT (sizeof(_panel_menus) / sizeof(*_panel_menus))
+
 
 /* prototypes */
 static int _panel_exec(Panel * panel, char const * command);
 static gboolean _panel_idle_apps(gpointer data);
+static GtkWidget * _panel_menuitem(char const * label, char const * stock);
 
 
 /* public */
@@ -210,27 +236,22 @@ static void _on_logout(GtkWidget * widget, gpointer data)
 }
 
 static GtkWidget * _menu_applications(Panel * panel);
-static void _applications_activate(GtkWidget * widget, gpointer data);
+static void _applications_on_activate(GtkWidget * widget, gpointer data);
+static void _applications_categories(GtkWidget * menu, GtkWidget ** menus);
 static void _on_menu(GtkWidget * widget, gpointer data)
 {
 	Panel * panel = data;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
-	GtkWidget * image;
 
 	menu = gtk_menu_new();
-	menuitem = gtk_image_menu_item_new_with_label("Applications");
-	image = gtk_image_new_from_icon_name("gnome-applications",
-			GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	menuitem = _panel_menuitem("Applications", "gnome-applications");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem),
 			_menu_applications(panel));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Run...");
-	image = gtk_image_new_from_stock(GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	menuitem = _panel_menuitem("Run...", GTK_STOCK_EXECUTE);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_run),
 			data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -241,17 +262,11 @@ static void _on_menu(GtkWidget * widget, gpointer data)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Lock screen");
-	image = gtk_image_new_from_icon_name("gnome-lockscreen",
-			GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	menuitem = _panel_menuitem("Lock screen", "gnome-lockscreen");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_lock),
 			data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Logout...");
-	image = gtk_image_new_from_icon_name("gnome-logout",
-			GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	menuitem = _panel_menuitem("Logout...", "gnome-logout");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_logout),
 			data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -262,37 +277,49 @@ static void _on_menu(GtkWidget * widget, gpointer data)
 
 static GtkWidget * _menu_applications(Panel * panel)
 {
+	GtkWidget * menus[PANEL_MENUS_CNT];
 	GSList * p;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
-	GtkWidget * image;
 	Config * config;
 	const char section[] = "Desktop Entry";
 	char const * q;
+	size_t i;
 
 	_panel_idle_apps(panel); /* just in case */
+	memset(menus, 0, sizeof(menus));
 	menu = gtk_menu_new();
 	for(p = panel->apps; p != NULL; p = p->next)
 	{
 		config = p->data;
 		q = config_get(config, section, "Name"); /* should not fail */
-		menuitem = gtk_image_menu_item_new_with_label(q);
-		if((q = config_get(config, section, "Icon")) != NULL)
-		{
-			image = gtk_image_new_from_icon_name(q,
-					GTK_ICON_SIZE_MENU);
-			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(
-						menuitem), image);
-		}
+		menuitem = _panel_menuitem(q, config_get(config, section,
+					"Icon"));
 		q = config_get(config, section, "Exec"); /* should not fail */
 		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_applications_activate), (gpointer)q);
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+					_applications_on_activate),
+				(gpointer)q);
+		if((q = config_get(config, section, "Categories")) == NULL)
+		{
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			continue;
+		}
+		for(i = 0; _panel_menus[i].category != NULL && string_find(q,
+					_panel_menus[i].category) == NULL; i++);
+		if(_panel_menus[i].category == NULL)
+		{
+			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+			continue;
+		}
+		if(menus[i] == NULL)
+			menus[i] = gtk_menu_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menus[i]), menuitem);
 	}
+	_applications_categories(menu, menus);
 	return menu;
 }
 
-static void _applications_activate(GtkWidget * widget, gpointer data)
+static void _applications_on_activate(GtkWidget * widget, gpointer data)
 {
 	char const * program = data;
 
@@ -302,6 +329,24 @@ static void _applications_activate(GtkWidget * widget, gpointer data)
 	fprintf(stderr, "DEBUG: %s() \"%s\"", __func__, program);
 #endif
 	_panel_exec(NULL, program);
+}
+
+static void _applications_categories(GtkWidget * menu, GtkWidget ** menus)
+{
+	size_t i;
+	const PanelMenu * m;
+	GtkWidget * menuitem;
+	size_t pos = 0;
+
+	for(i = 0; _panel_menus[i].category != NULL; i++)
+	{
+		if(menus[i] == NULL)
+			continue;
+		m = &_panel_menus[i];
+		menuitem = _panel_menuitem(m->label, m->stock);
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menus[i]);
+		gtk_menu_shell_insert(GTK_MENU_SHELL(menu), menuitem, pos++);
+	}
 }
 
 static void _on_menu_position(GtkMenu * menu, gint * x, gint * y,
@@ -350,6 +395,7 @@ static gboolean _on_timeout_clock(gpointer data)
 /* panel_delete */
 void panel_delete(Panel * panel)
 {
+	/* FIXME delete panel->apps */
 	free(panel);
 }
 
@@ -474,4 +520,20 @@ static gint _apps_compare(gconstpointer a, gconstpointer b)
 	cap = config_get(ca, section, variable);
 	cbp = config_get(cb, section, variable);
 	return string_compare(cap, cbp);
+}
+
+
+/* panel_menuitem */
+static GtkWidget * _panel_menuitem(char const * label, char const * stock)
+{
+	GtkWidget * ret;
+	GtkWidget * image;
+
+	ret = gtk_image_menu_item_new_with_label(label);
+	if(stock != NULL)
+	{
+		image = gtk_image_new_from_icon_name(stock, GTK_ICON_SIZE_MENU);
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(ret), image);
+	}
+	return ret;
 }
