@@ -434,9 +434,10 @@ static gint _apps_compare(gconstpointer a, gconstpointer b)
 	char const * cap;
 	char const * cbp;
 	const char section[] = "Desktop Entry";
+	const char variable[] = "Name";
 
 	/* these should not fail */
-	cap = config_get(ca, section, "Name");
-	cbp = config_get(cb, section, "Name");
+	cap = config_get(ca, section, variable);
+	cbp = config_get(cb, section, variable);
 	return string_compare(cap, cbp);
 }
