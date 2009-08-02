@@ -88,7 +88,7 @@ Directory * directory_new(Event * event)
 
 static void _new_config(Directory * directory)
 {
-	char * root = NULL;
+	char const * root = NULL;
 
 	if((directory->config = config_new()) == NULL)
 		return;
