@@ -413,7 +413,11 @@ static gboolean _panel_idle_apps(gpointer data)
 			continue; /* XXX report error */
 		else
 			config_reset(config);
-		config_load(config, name);
+		if(config_load(config, name) != 0)
+		{
+			error_print("panel");
+			continue;
+		}
 		q = config_get(config, section, "Name");
 		r = config_get(config, section, "Exec");
 		if(q == NULL || r == NULL)
@@ -424,6 +428,8 @@ static gboolean _panel_idle_apps(gpointer data)
 	}
 	free(name);
 	closedir(dir);
+	if(config != NULL)
+		config_delete(config);
 	return FALSE;
 }
 
