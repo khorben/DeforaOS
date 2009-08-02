@@ -134,6 +134,7 @@ static String * _load_value(FILE * fp);
 int config_load(Config * config, char const * filename)
 {
 	int ret = 0;
+	size_t line = 1;
 	FILE * fp;
 	String * section;
 	String * variable = NULL;
@@ -169,12 +170,15 @@ int config_load(Config * config, char const * filename)
 			config_set(config, section, variable, str);
 			string_delete(str);
 		}
-		else if(c != '\n')
+		else if(c == '\n')
+			line++;
+		else
 			break;
 	string_delete(section);
 	string_delete(variable);
 	if(!feof(fp))
-		ret = error_set_code(1, "%s: %s", filename, "Syntax error");
+		ret = error_set_code(1, "%s: %s%zd", filename, "Syntax error"
+				" at line ", line);
 	if(fclose(fp) != 0)
 		ret = error_set_code(1, "%s: %s", filename, strerror(errno));
 	return ret;
