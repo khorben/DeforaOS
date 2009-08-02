@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=File browser
+Comment=A file browser able to display thumbnails
+Exec=browser
+Icon=system-file-manager
+Type=Application
+Categories=System;Core;FileManager;GTK

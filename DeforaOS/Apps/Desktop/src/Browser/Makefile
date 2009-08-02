@@ -1,6 +1,6 @@
 PACKAGE	= Browser
 VERSION	= 0.1.1
-SUBDIRS	= src
+SUBDIRS	= src data
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -39,6 +39,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/desktop.h \
 		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/data/browser.desktop \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/TODO \
