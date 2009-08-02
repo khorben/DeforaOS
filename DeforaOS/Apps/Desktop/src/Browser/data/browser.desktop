@@ -4,4 +4,4 @@ Comment=A file browser able to display thumbnails
 Exec=browser
 Icon=system-file-manager
 Type=Application
-Categories=System;Core;FileManager;GTK
+Categories=System;Core;FileManager;GTK;
