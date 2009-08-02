@@ -134,7 +134,7 @@ static String * _load_value(FILE * fp);
 int config_load(Config * config, char const * filename)
 {
 	int ret = 0;
-	size_t line = 1;
+	size_t line;
 	FILE * fp;
 	String * section;
 	String * variable = NULL;
@@ -148,7 +148,7 @@ int config_load(Config * config, char const * filename)
 		string_delete(section);
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
 	}
-	while((c = fgetc(fp)) != EOF)
+	for(line = 0; (c = fgetc(fp)) != EOF; line++)
 		if(c == '#')
 			while((c = fgetc(fp)) != EOF && c != '\n');
 		else if(c == '[')
@@ -170,9 +170,7 @@ int config_load(Config * config, char const * filename)
 			config_set(config, section, variable, str);
 			string_delete(str);
 		}
-		else if(c == '\n')
-			line++;
-		else
+		else if(c != '\n')
 			break;
 	string_delete(section);
 	string_delete(variable);
