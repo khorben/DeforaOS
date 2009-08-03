@@ -159,7 +159,7 @@ int config_load(Config * config, char const * filename)
 			string_delete(section);
 			section = str;
 		}
-		else if(isprint(c))
+		else if(_load_isprint(c))
 		{
 			if((str = _load_variable(fp, c)) == NULL)
 				break;
