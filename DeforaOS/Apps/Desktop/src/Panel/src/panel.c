@@ -81,6 +81,7 @@ static const PanelMenu _panel_menus[] =
 /* prototypes */
 static int _panel_exec(Panel * panel, char const * command);
 static gboolean _panel_idle_apps(gpointer data);
+static GtkWidget * _panel_image(char const * name);
 static GtkWidget * _panel_menuitem(char const * label, char const * stock);
 
 
@@ -523,6 +524,33 @@ static gint _apps_compare(gconstpointer a, gconstpointer b)
 }
 
 
+/* panel_image */
+static GtkWidget * _panel_image(char const * name)
+{
+	int width;
+	int height;
+	size_t len;
+	String * buf;
+	GError * error = NULL;
+	GdkPixbuf * pixbuf = NULL;
+
+	if(gtk_icon_size_lookup(GTK_ICON_SIZE_MENU, &width, &height) == TRUE
+			&& (name != NULL && (len = strlen(name)) > 4)
+			&& (strcmp(&name[len - 4], ".png") == 0
+				|| strcmp(&name[len - 4], ".xpm") == 0)
+			&& (buf = string_new_append(PREFIX, "/share/pixmaps/",
+					name, NULL)) != NULL)
+	{
+		pixbuf = gdk_pixbuf_new_from_file_at_size(buf, width, height,
+				&error);
+		string_delete(buf);
+	}
+	if(pixbuf != NULL)
+		return gtk_image_new_from_pixbuf(pixbuf);
+	return gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_MENU);
+}
+
+
 /* panel_menuitem */
 static GtkWidget * _panel_menuitem(char const * label, char const * stock)
 {
@@ -532,7 +560,7 @@ static GtkWidget * _panel_menuitem(char const * label, char const * stock)
 	ret = gtk_image_menu_item_new_with_label(label);
 	if(stock != NULL)
 	{
-		image = gtk_image_new_from_icon_name(stock, GTK_ICON_SIZE_MENU);
+		image = _panel_image(stock);
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(ret), image);
 	}
 	return ret;
