@@ -72,30 +72,6 @@ struct _Hash
 };
 
 
-/* functions */
-/* hash_func_string */
-unsigned int hash_func_string(void const * key)
-{
-	String const * str = key;
-	size_t i;
-	unsigned int hash = 0;
-
-	for(i = 0; i < sizeof(hash) && str[i] != '\0'; i++)
-		hash |= str[i] << (i << 3);
-	return hash;
-}
-
-
-/* hash_compare_string */
-int hash_compare_string(void const * value1, void const * value2)
-{
-	String const * str1 = value1;
-	String const * str2 = value2;
-
-	return string_compare(str1, str2);
-}
-
-
 /* public */
 /* functions */
 /* hash_new */
@@ -126,6 +102,30 @@ void hash_delete(Hash * hash)
 {
 	array_delete(hash->entries);
 	object_delete(hash);
+}
+
+
+/* helpers */
+/* hash_func_string */
+unsigned int hash_func_string(void const * key)
+{
+	String const * str = key;
+	size_t i;
+	unsigned int hash = 0;
+
+	for(i = 0; i < sizeof(hash) && str[i] != '\0'; i++)
+		hash |= str[i] << (i << 3);
+	return hash;
+}
+
+
+/* hash_compare_string */
+int hash_compare_string(void const * value1, void const * value2)
+{
+	String const * str1 = value1;
+	String const * str2 = value2;
+
+	return string_compare(str1, str2);
 }
 
 
