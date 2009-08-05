@@ -53,6 +53,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/16x16/pki.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/project.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/reply.png \
+		$(PACKAGE)-$(VERSION)/icons/16x16/rss.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/save.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/search.png \
 		$(PACKAGE)-$(VERSION)/icons/16x16/top.png \
