@@ -90,6 +90,7 @@ static GtkWidget * _panel_menuitem(char const * label, char const * stock);
 static GtkWidget * _new_button(char const * stock);
 static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 static void _on_lock(GtkWidget * widget, gpointer data);
 static void _on_logout(GtkWidget * widget, gpointer data);
 static void _on_menu(GtkWidget * widget, gpointer data);
@@ -129,12 +130,14 @@ Panel * panel_new(void)
 #endif
 	/* panel */
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->height
-		- PANEL_ICON_SIZE - (PANEL_BORDER_WIDTH * 2));
 	gtk_window_set_default_size(GTK_WINDOW(panel->window), panel->width,
 			PANEL_ICON_SIZE + (PANEL_BORDER_WIDTH * 2));
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
+	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->height
+		- PANEL_ICON_SIZE - (PANEL_BORDER_WIDTH * 2));
+	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
+				_on_closex), panel);
 	event = gtk_event_box_new();
 	g_signal_connect(G_OBJECT(event), "button-press-event", G_CALLBACK(
 				_on_button_press), panel);
@@ -204,6 +207,11 @@ static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, data, event->button,
 			event->time);
 	return FALSE;
+}
+
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+{
+	return TRUE;
 }
 
 static void _on_lock(GtkWidget * widget, gpointer data)
