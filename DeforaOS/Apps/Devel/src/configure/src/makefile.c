@@ -185,6 +185,7 @@ static int _variables_dist(Configure * configure, FILE * fp)
 {
 	String const * p;
 	String * dist;
+	String * q;
 	size_t i;
 	char c;
 
@@ -194,6 +195,7 @@ static int _variables_dist(Configure * configure, FILE * fp)
 		return 0;
 	if((dist = string_new(p)) == NULL)
 		return 1;
+	q = dist;
 	for(i = 0;; i++)
 	{
 		if(dist[i] != ',' && dist[i] != '\0')
@@ -217,7 +219,7 @@ static int _variables_dist(Configure * configure, FILE * fp)
 		dist += i + 1;
 		i = 0;
 	}
-	string_delete(dist);
+	string_delete(q);
 	return 0;
 }
 
