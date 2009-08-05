@@ -96,6 +96,7 @@ static int _variables_package(Configure * configure, FILE * fp,
 		String const * directory);
 static int _variables_print(Configure * configure, FILE * fp,
 	       	char const * input, char const * output);
+static int _variables_dist(Configure * configure, FILE * fp);
 static int _variables_targets(Configure * configure, FILE * fp);
 static int _variables_executables(Configure * configure, FILE * fp);
 static int _variables_includes(Configure * configure, FILE * fp);
@@ -107,6 +108,7 @@ static int _write_variables(Configure * configure, FILE * fp)
 	directory = config_get(configure->config, "", "directory");
 	ret |= _variables_package(configure, fp, directory);
 	ret |= _variables_print(configure, fp, "subdirs", "SUBDIRS");
+	ret |= _variables_dist(configure, fp);
 	ret |= _variables_targets(configure, fp);
 	ret |= _variables_executables(configure, fp);
 	ret |= _variables_includes(configure, fp);
@@ -176,6 +178,46 @@ static int _variables_print(Configure * configure, FILE * fp,
 	}
 	fputc('\n', fp);
 	string_delete(q);
+	return 0;
+}
+
+static int _variables_dist(Configure * configure, FILE * fp)
+{
+	String const * p;
+	String * dist;
+	size_t i;
+	char c;
+
+	if(configure->prefs->flags & PREFS_n)
+		return 0;
+	if((p = config_get(configure->config, "", "dist")) == NULL)
+		return 0;
+	if((dist = string_new(p)) == NULL)
+		return 1;
+	for(i = 0;; i++)
+	{
+		if(dist[i] != ',' && dist[i] != '\0')
+			continue;
+		c = dist[i];
+		dist[i] = '\0';
+		if(config_get(configure->config, dist, "install") != NULL)
+		{
+			/* FIXME may also be output when parsing targets */
+			fprintf(fp, "%s%s\n%s%s\n%s%s%s", "PREFIX\t= ",
+					configure->prefs->prefix,
+					"DESTDIR\t= ",
+					configure->prefs->destdir,
+					"MKDIR\t= mkdir -p\n",
+					"INSTALL\t= install\n",
+					"RM\t= rm -f\n");
+			break;
+		}
+		if(c == '\0')
+			break;
+		dist += i + 1;
+		i = 0;
+	}
+	string_delete(dist);
 	return 0;
 }
 
@@ -452,7 +494,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 	char ** libs;
 	String * p;
 	String * q;
-	int i;
+	size_t i;
 
 	if((p = string_new(ldflags)) == NULL)
 	{
@@ -555,8 +597,8 @@ static int _write_targets(Configure * configure, FILE * fp)
 	String const * p;
 	String * targets;
 	String * q;
+	size_t i;
 	char c;
-	int i;
 
 	if(_targets_all(configure, fp) != 0
 			|| _targets_subdirs(configure, fp) != 0)
@@ -572,7 +614,7 @@ static int _write_targets(Configure * configure, FILE * fp)
 			continue;
 		c = targets[i];
 		targets[i] = '\0';
-		ret += _targets_target(configure, fp, targets);
+		ret |= _targets_target(configure, fp, targets);
 		if(c == '\0')
 			break;
 		targets += i + 1;
@@ -658,7 +700,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 	TargetType tt = TT_UNKNOWN;
 	String * sources;
 	String * q;
-	int i;
+	size_t i;
 	char c;
 
 	if((p = config_get(configure->config, target, "type")) != NULL)
@@ -1360,7 +1402,7 @@ static int _dist_subdir_dist(FILE * fp, String const * path,
 
 static int _install_targets(Configure * configure, FILE * fp);
 static int _install_includes(Configure * configure, FILE * fp);
-static int _install_include(Config * config, FILE * fp, String const * include);
+static int _install_dist(Configure * configure, FILE * fp);
 static int _write_install(Configure * configure, FILE * fp)
 {
 	int ret = 0;
@@ -1373,6 +1415,7 @@ static int _write_install(Configure * configure, FILE * fp)
 				" || exit; done\n", fp);
 	ret |= _install_targets(configure, fp);
 	ret |= _install_includes(configure, fp);
+	ret |= _install_dist(configure, fp);
 	return ret;
 }
 
@@ -1514,8 +1557,8 @@ static int _install_includes(Configure * configure, FILE * fp)
 {
 	int ret = 0;
 	String const * p;
-	String * q;
 	String * includes;
+	String * q;
 	size_t i;
 	char c;
 
@@ -1553,9 +1596,45 @@ static int _install_include(Config * config, FILE * fp, String const * include)
 	return 0;
 }
 
+static int _install_dist(Configure * configure, FILE * fp)
+{
+	String const * p;
+	String * dist;
+	String * q;
+	size_t i;
+	char c;
+	String const * d;
+
+	if((p = config_get(configure->config, "", "dist")) == NULL)
+		return 0;
+	if((dist = string_new(p)) == NULL)
+		return 1;
+	q = dist;
+	for(i = 0;; i++)
+	{
+		if(dist[i] != ',' && dist[i] != '\0')
+			continue;
+		c = dist[i];
+		dist[i] = '\0';
+		if((d = config_get(configure->config, dist, "install")) != NULL)
+		{
+			fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", d);
+			fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ",
+					dist, " $(DESTDIR)", d, dist);
+		}
+		if(c == '\0')
+			break;
+		dist += i + 1;
+		i = 0;
+	}
+	string_delete(q);
+	return 0;
+}
+
 static int _uninstall_target(Config * config, FILE * fp, String const * target);
 static int _uninstall_include(Config * config, FILE * fp,
 		String const * include);
+static int _uninstall_dist(Config * config, FILE * fp, String const * dist);
 static int _write_uninstall(Configure * configure, FILE * fp)
 {
 	int ret = 0;
@@ -1563,7 +1642,8 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 	String * targets;
 	String * q;
 	String * includes;
-	int i;
+	String * dist;
+	size_t i;
 	char c;
 
 	if(configure->prefs->flags & PREFS_n)
@@ -1607,6 +1687,25 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 			if(c == '\0')
 				break;
 			includes += i + 1;
+			i = 0;
+		}
+		string_delete(q);
+	}
+	if((p = config_get(configure->config, "", "dist")) != NULL)
+	{
+		if((dist = string_new(p)) == NULL)
+			return 1;
+		q = dist;
+		for(i = 0; ret == 0; i++)
+		{
+			if(dist[i] != ',' && dist[i] != '\0')
+				continue;
+			c = dist[i];
+			dist[i] = '\0';
+			ret = _uninstall_dist(configure->config, fp, dist);
+			if(c == '\0')
+				break;
+			dist += i + 1;
 			i = 0;
 		}
 		string_delete(q);
@@ -1674,10 +1773,20 @@ static void _uninstall_target_library(Config * config, FILE * fp,
 static int _uninstall_include(Config * config, FILE * fp,
 		String const * include)
 {
-	char const * install;
+	String const * install;
 
 	if((install = config_get(config, include, "install")) == NULL)
 		install = "$(INCLUDEDIR)";
 	fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", install, include);
+	return 0;
+}
+
+static int _uninstall_dist(Config * config, FILE * fp, String const * dist)
+{
+	String const * install;
+
+	if((install = config_get(config, dist, "install")) == NULL)
+		return 0;
+	fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", install, dist);
 	return 0;
 }
