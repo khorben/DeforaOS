@@ -92,6 +92,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/icons/48x48/files.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/host.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/language.png \
+		$(PACKAGE)-$(VERSION)/icons/48x48/logout.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/menu.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/news.png \
 		$(PACKAGE)-$(VERSION)/icons/48x48/papadam.png \
