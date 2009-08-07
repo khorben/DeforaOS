@@ -114,6 +114,7 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 static char * _do_size(char * buf, size_t buf_cnt, size_t size);
 static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
+static char * _do_time(char * buf, size_t buf_cnt, time_t date);
 static GtkWidget * _do_groups(Properties * properties);
 static GtkWidget * _do_mode(Properties * properties, mode_t mode);
 
@@ -213,7 +214,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 				_properties_on_closex), &_properties_cnt);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	table = gtk_table_new(9, 2, FALSE);
+	table = gtk_table_new(12, 2, FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 4);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 4);
 	gtk_table_attach_defaults(GTK_TABLE(table), image, 0, 1, 0, 2);
@@ -243,24 +244,39 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	else
 		widget = _do_groups(properties);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 4, 5);
-	widget = gtk_label_new("Permissions:"); /* permissions */
+	widget = gtk_label_new("Accessed:"); /* last access */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 5, 6);
-	widget = gtk_label_new("Owner:"); /* owner permissions */
+	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 5, 6);
+	widget = gtk_label_new("Modified:"); /* last modification */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 6, 7);
-	widget = _do_mode(properties, (st.st_mode & 0700) >> 6);
+	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 6, 7);
-	widget = gtk_label_new("Group:"); /* group permissions */
+	widget = gtk_label_new("Changed:"); /* last change */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 7, 8);
-	widget = _do_mode(properties, (st.st_mode & 0070) >> 3);
+	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 7, 8);
-	widget = gtk_label_new("Others:"); /* others permissions */
+	widget = gtk_label_new("Permissions:"); /* permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 8, 9);
+	widget = gtk_label_new("Owner:"); /* owner permissions */
+	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
+	widget = _do_mode(properties, (st.st_mode & 0700) >> 6);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 9, 10);
+	widget = gtk_label_new("Group:"); /* group permissions */
+	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
+	widget = _do_mode(properties, (st.st_mode & 0070) >> 3);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 10, 11);
+	widget = gtk_label_new("Others:"); /* others permissions */
+	gtk_widget_modify_font(widget, bold);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
 	widget = _do_mode(properties, st.st_mode & 0007);
-	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 8, 9);
+	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 11, 12);
 	gtk_box_pack_start(GTK_BOX(hbox), table, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 4); /* separator */
@@ -329,6 +345,21 @@ static char * _do_group(char * buf, size_t buf_cnt, gid_t gid)
 	if((gr = getgrgid(gid)) != NULL)
 		return gr->gr_name;
 	snprintf(buf, buf_cnt, "%lu", (unsigned long)gid);
+	return buf;
+}
+
+static char * _do_time(char * buf, size_t buf_cnt, time_t date)
+{
+	static time_t sixmonths = -1;
+	struct tm tm;
+
+	if(sixmonths == -1)
+		sixmonths = time(NULL) - 15552000;
+	localtime_r(&date, &tm);
+	if(date < sixmonths)
+		strftime(buf, buf_cnt, "%b %e  %Y", &tm);
+	else
+		strftime(buf, buf_cnt, "%b %e %H:%M", &tm);
 	return buf;
 }
 
