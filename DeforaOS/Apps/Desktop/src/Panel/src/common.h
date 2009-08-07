@@ -15,13 +15,18 @@
 
 
 
-#ifndef PANEL_PANEL_H
-# define PANEL_PANEL_H
+#ifndef PANEL_COMMON_H
+# define PANEL_COMMON_H
 
 
 /* Panel */
 /* types */
 typedef struct _Panel Panel;
+
+
+/* constants */
+#define PANEL_BORDER_WIDTH	4
+#define PANEL_ICON_SIZE		48
 
 
 /* functions */
@@ -31,4 +36,4 @@ void panel_delete(Panel * panel);
 /* useful */
 int panel_error(Panel * panel, char const * message, int ret);
 
-# endif /* !PANEL_PANEL_H */
+# endif /* !PANEL_COMMON_H */

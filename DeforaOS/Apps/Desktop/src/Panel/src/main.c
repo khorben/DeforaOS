@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <gtk/gtk.h>
-#include "panel.h"
+#include "common.h"
 
 
 /* usage */

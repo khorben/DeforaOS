@@ -1,6 +1,6 @@
 PACKAGE	= Panel
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= include src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,11 +21,18 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/include/panel.h \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/panel.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/panel.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
+		$(PACKAGE)-$(VERSION)/src/applets/lock.c \
+		$(PACKAGE)-$(VERSION)/src/applets/logout.c \
+		$(PACKAGE)-$(VERSION)/src/applets/main.c \
+		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
