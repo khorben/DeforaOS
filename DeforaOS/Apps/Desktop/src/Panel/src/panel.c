@@ -135,14 +135,26 @@ static gboolean _on_idle(gpointer data)
 		{
 			switch(applet->position)
 			{
-				case PANEL_APPLET_POSITION_START: /* XXX */
+				case PANEL_APPLET_POSITION_END:
+					gtk_box_pack_end(GTK_BOX(panel->hbox),
+							widget, FALSE, TRUE, 2);
+					break;
 				case PANEL_APPLET_POSITION_FIRST:
 					gtk_box_pack_start(GTK_BOX(panel->hbox),
 							widget, FALSE, TRUE, 2);
+					gtk_box_reorder_child(GTK_BOX(
+								panel->hbox),
+							widget, 0);
 					break;
-				case PANEL_APPLET_POSITION_END: /* XXX */
 				case PANEL_APPLET_POSITION_LAST:
 					gtk_box_pack_end(GTK_BOX(panel->hbox),
+							widget, FALSE, TRUE, 2);
+					gtk_box_reorder_child(GTK_BOX(
+								panel->hbox),
+							widget, -1);
+					break;
+				case PANEL_APPLET_POSITION_START:
+					gtk_box_pack_start(GTK_BOX(panel->hbox),
 							widget, FALSE, TRUE, 2);
 					break;
 			}
