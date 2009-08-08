@@ -189,8 +189,10 @@ Browser * browser_new(char const * directory)
 	/* widgets */
 	browser->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(browser->window), 640, 480);
+#if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(browser->window),
 			"system-file-manager");
+#endif
 	gtk_window_set_title(GTK_WINDOW(browser->window), "File browser");
 	g_signal_connect(browser->window, "delete-event", G_CALLBACK(on_closex),
 			browser);
