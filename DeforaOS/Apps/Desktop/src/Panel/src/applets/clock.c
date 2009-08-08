@@ -49,7 +49,7 @@ PanelApplet applet =
 	NULL,
 	_clock_init,
 	_clock_destroy,
-	PANEL_APPLET_POSITION_END,
+	PANEL_APPLET_POSITION_LAST,
 	NULL
 };
 
