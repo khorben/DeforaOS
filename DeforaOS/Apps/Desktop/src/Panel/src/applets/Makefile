@@ -1,4 +1,4 @@
-TARGETS	= clock.a clock.so lock.a lock.so logout.a logout.so main.a main.so
+TARGETS	= clock.a clock.so cpu.a cpu.so lock.a lock.so logout.a logout.so main.a main.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -28,6 +28,17 @@ clock.a: $(clock_OBJS)
 
 clock.so: $(clock_OBJS)
 	$(LD) -o clock.so -Wl,-soname,clock.so.0 $(clock_OBJS)
+
+cpu_OBJS = cpu.o
+cpu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cpu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+cpu.a: $(cpu_OBJS)
+	$(AR) cpu.a $(cpu_OBJS)
+	$(RANLIB) cpu.a
+
+cpu.so: $(cpu_OBJS)
+	$(LD) -o cpu.so -Wl,-soname,cpu.so.0 $(cpu_OBJS)
 
 lock_OBJS = lock.o
 lock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -65,6 +76,9 @@ main.so: $(main_OBJS)
 clock.o: clock.c
 	$(CC) $(clock_CFLAGS) -c clock.c
 
+cpu.o: cpu.c
+	$(CC) $(cpu_CFLAGS) -c cpu.c
+
 lock.o: lock.c
 	$(CC) $(lock_CFLAGS) -c lock.c
 
@@ -75,7 +89,7 @@ main.o: main.c
 	$(CC) $(main_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(clock_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS)
+	$(RM) $(clock_OBJS) $(cpu_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -86,6 +100,11 @@ install: all
 	$(INSTALL) -m 0755 clock.so $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so.0.0
 	$(LN) -s clock.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so.0
 	$(LN) -s clock.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 cpu.a $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.a
+	$(INSTALL) -m 0755 cpu.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0.0
+	$(LN) -s cpu.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0
+	$(LN) -s cpu.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 lock.a $(DESTDIR)$(LIBDIR)/Panel/applets/lock.a
 	$(INSTALL) -m 0755 lock.so $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so.0.0
@@ -107,6 +126,10 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so.0.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.a
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.a
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so.0.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so.0

@@ -118,7 +118,8 @@ static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
 	/* FIXME load all plugins, a configuration file or ask the user */
-	const char * plugins[] = { "main", "lock", "logout", "clock", NULL };
+	const char * plugins[] = { "cpu", "clock", "lock", "logout", "main",
+		NULL };
 	size_t i;
 	Plugin * plugin;
 	PanelApplet * applet;
@@ -151,7 +152,7 @@ static gboolean _on_idle(gpointer data)
 							widget, FALSE, TRUE, 2);
 					gtk_box_reorder_child(GTK_BOX(
 								panel->hbox),
-							widget, -1);
+							widget, 0);
 					break;
 				case PANEL_APPLET_POSITION_START:
 					gtk_box_pack_start(GTK_BOX(panel->hbox),
