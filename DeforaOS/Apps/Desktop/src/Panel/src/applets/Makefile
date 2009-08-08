@@ -1,4 +1,4 @@
-TARGETS	= clock.a clock.so cpu.a cpu.so lock.a lock.so logout.a logout.so main.a main.so
+TARGETS	= clock.a clock.so cpu.a cpu.so lock.a lock.so logout.a logout.so main.a main.so memory.a memory.so tasks.a tasks.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -73,6 +73,28 @@ main.a: $(main_OBJS)
 main.so: $(main_OBJS)
 	$(LD) -o main.so -Wl,-soname,main.so.0 $(main_OBJS)
 
+memory_OBJS = memory.o
+memory_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+memory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+memory.a: $(memory_OBJS)
+	$(AR) memory.a $(memory_OBJS)
+	$(RANLIB) memory.a
+
+memory.so: $(memory_OBJS)
+	$(LD) -o memory.so -Wl,-soname,memory.so.0 $(memory_OBJS)
+
+tasks_OBJS = tasks.o
+tasks_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+tasks.a: $(tasks_OBJS)
+	$(AR) tasks.a $(tasks_OBJS)
+	$(RANLIB) tasks.a
+
+tasks.so: $(tasks_OBJS)
+	$(LD) -o tasks.so -Wl,-soname,tasks.so.0 $(tasks_OBJS)
+
 clock.o: clock.c
 	$(CC) $(clock_CFLAGS) -c clock.c
 
@@ -88,8 +110,14 @@ logout.o: logout.c
 main.o: main.c
 	$(CC) $(main_CFLAGS) -c main.c
 
+memory.o: memory.c
+	$(CC) $(memory_CFLAGS) -c memory.c
+
+tasks.o: tasks.c
+	$(CC) $(tasks_CFLAGS) -c tasks.c
+
 clean:
-	$(RM) $(clock_OBJS) $(cpu_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS)
+	$(RM) $(clock_OBJS) $(cpu_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(tasks_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -120,6 +148,16 @@ install: all
 	$(INSTALL) -m 0755 main.so $(DESTDIR)$(LIBDIR)/Panel/applets/main.so.0.0
 	$(LN) -s main.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/main.so.0
 	$(LN) -s main.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 memory.a $(DESTDIR)$(LIBDIR)/Panel/applets/memory.a
+	$(INSTALL) -m 0755 memory.so $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so.0.0
+	$(LN) -s memory.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so.0
+	$(LN) -s memory.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 tasks.a $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.a
+	$(INSTALL) -m 0755 tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so.0.0
+	$(LN) -s tasks.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so.0
+	$(LN) -s tasks.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.a
@@ -142,5 +180,13 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so.0.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.a
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.a
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 
 .PHONY: all clean distclean install uninstall

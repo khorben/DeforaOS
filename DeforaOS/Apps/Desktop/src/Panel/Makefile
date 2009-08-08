@@ -29,9 +29,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/panel.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
+		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
 		$(PACKAGE)-$(VERSION)/src/applets/lock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/logout.c \
 		$(PACKAGE)-$(VERSION)/src/applets/main.c \
+		$(PACKAGE)-$(VERSION)/src/applets/memory.c \
+		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
