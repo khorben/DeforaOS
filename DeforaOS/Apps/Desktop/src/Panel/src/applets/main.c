@@ -62,7 +62,7 @@ static const MainMenu _main_menus[] =
 	{ "Video;",	"Video",	"video",			},
 	{ NULL,		NULL,		NULL,				}
 };
-#define MAIN_MENUS_CNT (sizeof(_main_menus) / sizeof(*_main_menus))
+#define MAIN_MENUS_COUNT (sizeof(_main_menus) / sizeof(*_main_menus))
 
 
 /* prototypes */
@@ -114,6 +114,7 @@ static GtkWidget * _main_init(PanelApplet * applet)
 			GTK_ICON_SIZE_LARGE_TOOLBAR);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
+	gtk_widget_set_tooltip_text(ret, "Main menu");
 	g_signal_connect(G_OBJECT(ret), "clicked", G_CALLBACK(_on_clicked),
 			main);
 	return ret;
@@ -139,7 +140,7 @@ static void _applications_categories(GtkWidget * menu, GtkWidget ** menus);
 
 static GtkWidget * _main_applications(Main * main)
 {
-	GtkWidget * menus[MAIN_MENUS_CNT];
+	GtkWidget * menus[MAIN_MENUS_COUNT];
 	GSList * p;
 	GtkWidget * menu;
 	GtkWidget * menuitem;
