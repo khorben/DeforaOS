@@ -28,10 +28,10 @@ typedef struct _PanelApplet PanelApplet;
 
 typedef struct _PanelAppletHelper
 {
-	void * priv;
 	int (*logout_dialog)(void);
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
 			gboolean * push_in, gpointer data);
+	void * priv;
 } PanelAppletHelper;
 
 typedef GtkWidget * (*PanelAppletInitFunc)(PanelApplet * applet);
