@@ -229,11 +229,19 @@ static void _tasks_do(Tasks * tasks)
 			continue;
 		if((name = _do_name(tasks, windows[i])) == NULL)
 			continue;
+#ifndef EMBEDDED
 		widget = gtk_button_new_with_label(name);
 		if((pixbuf = _do_pixbuf(tasks, windows[i])) != NULL)
 			gtk_button_set_image(GTK_BUTTON(widget),
 					gtk_image_new_from_pixbuf(pixbuf));
 		gtk_widget_set_size_request(widget, 100, -1);
+#else
+		if((pixbuf = _do_pixbuf(tasks, windows[i])) == NULL)
+			continue;
+		widget = gtk_button_new();
+		gtk_button_set_image(GTK_BUTTON(widget),
+				gtk_image_new_from_pixbuf(pixbuf));
+#endif
 		gtk_widget_show_all(widget);
 		gtk_box_pack_start(GTK_BOX(tasks->hbox), widget, FALSE, TRUE,
 				0);
@@ -317,6 +325,7 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 		ret = gdk_pixbuf_new_from_data(pixbuf, GDK_COLORSPACE_RGB,
 				TRUE, 8, width, height, width * 4,
 				(GdkPixbufDestroyNotify)free, NULL);
+		/* FIXME memory leak */
 		ret = gdk_pixbuf_scale_simple(ret, tasks->icon_width,
 				tasks->icon_height, GDK_INTERP_BILINEAR);
 		return ret;
