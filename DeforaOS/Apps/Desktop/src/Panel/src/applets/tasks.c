@@ -42,6 +42,8 @@ typedef enum _TasksAtom
 typedef struct _Tasks
 {
 	GtkWidget * hbox;
+	int icon_width;
+	int icon_height;
 
 	Atom atom[TASKS_ATOM_COUNT];
 	GdkDisplay * display;
@@ -107,6 +109,10 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	tasks->hbox = gtk_hbox_new(FALSE, 0);
 	g_signal_connect(G_OBJECT(tasks->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), tasks);
+	tasks->icon_width = 48;
+	tasks->icon_height = 48;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR, &tasks->icon_width,
+			&tasks->icon_height);
 	tasks->display = NULL;
 	tasks->screen = NULL;
 	tasks->root = NULL;
@@ -230,7 +236,7 @@ static void _tasks_do(Tasks * tasks)
 		gtk_widget_set_size_request(widget, 100, -1);
 		gtk_widget_show_all(widget);
 		gtk_box_pack_start(GTK_BOX(tasks->hbox), widget, FALSE, TRUE,
-				2);
+				0);
 		g_free(name);
 	}
 }
@@ -277,6 +283,7 @@ static char * _do_name_utf8(Tasks * tasks, Window window, Atom property)
 
 static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 {
+	GdkPixbuf * ret;
 	unsigned long cnt = 0;
 	unsigned long * buf = NULL;
 	unsigned long i;
@@ -295,7 +302,7 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 		height = buf[i + 1];
 		if(i + 2 + (width * height) > cnt)
 			break;
-		if(width != 48 || height != 48)
+		if(width == 0 || height == 0 || width != height)
 			continue;
 		size = width * height * 4;
 		if((pixbuf = malloc(size)) == NULL)
@@ -307,9 +314,12 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 			pixbuf[j++] = buf[i] & 0xff; /* blue */
 			pixbuf[j++] = buf[i] >> 24; /* alpha */
 		}
-		return gdk_pixbuf_new_from_data(pixbuf, GDK_COLORSPACE_RGB,
+		ret = gdk_pixbuf_new_from_data(pixbuf, GDK_COLORSPACE_RGB,
 				TRUE, 8, width, height, width * 4,
 				(GdkPixbufDestroyNotify)free, NULL);
+		ret = gdk_pixbuf_scale_simple(ret, tasks->icon_width,
+				tasks->icon_height, GDK_INTERP_BILINEAR);
+		return ret;
 	}
 	return NULL;
 }
