@@ -39,8 +39,18 @@ typedef enum _TasksAtom
 #define TASKS_ATOM_LAST TASKS_ATOM_UTF8_STRING
 #define TASKS_ATOM_COUNT (TASKS_ATOM_LAST + 1)
 
+typedef struct _Task
+{
+	Window window;
+	GtkWidget * widget;
+	gboolean delete;
+} Task;
+
 typedef struct _Tasks
 {
+	Task * tasks;
+	size_t tasks_cnt;
+
 	GtkWidget * hbox;
 	int icon_width;
 	int icon_height;
@@ -107,7 +117,9 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	if((tasks = malloc(sizeof(*tasks))) == NULL)
 		return NULL;
 	applet->priv = tasks;
-	tasks->hbox = gtk_hbox_new(FALSE, 0);
+	tasks->tasks = NULL;
+	tasks->tasks_cnt = 0;
+	tasks->hbox = gtk_hbox_new(TRUE, 0);
 	g_signal_connect(G_OBJECT(tasks->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), tasks);
 	tasks->icon_width = 48;
@@ -126,6 +138,7 @@ static void _tasks_destroy(PanelApplet * applet)
 {
 	Tasks * tasks = applet->priv;
 
+	free(tasks->tasks);
 	free(tasks);
 }
 
@@ -201,6 +214,9 @@ static char * _do_name(Tasks * tasks, Window window);
 static char * _do_name_text(Tasks * tasks, Window window, Atom property);
 static char * _do_name_utf8(Tasks * tasks, Window window, Atom property);
 static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window);
+static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
+		GdkPixbuf * pixbuf);
+static void _do_tasks_clean(Tasks * tasks);
 
 static void _tasks_do(Tasks * tasks)
 {
@@ -209,17 +225,16 @@ static void _tasks_do(Tasks * tasks)
 	unsigned long i;
 	GdkWindow * window;
 	char * name;
-	GtkWidget * widget;
-	GdkPixbuf * pixbuf;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(_tasks_get_window_property(tasks, GDK_WINDOW_XWINDOW(tasks->root),
 				TASKS_ATOM_NET_CLIENT_LIST,
-				XA_WINDOW, &cnt, (void*)&windows)
-			!= 0)
+				XA_WINDOW, &cnt, (void*)&windows) != 0)
 		return;
+	for(i = 0; i < tasks->tasks_cnt; i++)
+		tasks->tasks[i].delete = 1;
 	for(i = 0; i < cnt; i++)
 	{
 		if((window = gdk_window_foreign_new_for_display(tasks->display,
@@ -230,27 +245,11 @@ static void _tasks_do(Tasks * tasks)
 			continue;
 		if((name = _do_name(tasks, windows[i])) == NULL)
 			continue;
-#ifndef EMBEDDED
-		widget = gtk_button_new_with_label(name);
-		if((pixbuf = _do_pixbuf(tasks, windows[i])) != NULL)
-			gtk_button_set_image(GTK_BUTTON(widget),
-					gtk_image_new_from_pixbuf(pixbuf));
-		gtk_widget_set_size_request(widget, 100, -1);
-#else
-		if((pixbuf = _do_pixbuf(tasks, windows[i])) == NULL)
-			continue;
-		widget = gtk_button_new();
-		gtk_widget_set_tooltip_text(widget, name);
-		gtk_button_set_image(GTK_BUTTON(widget),
-				gtk_image_new_from_pixbuf(pixbuf));
-#endif
-		g_signal_connect(widget, "clicked", G_CALLBACK(_on_clicked),
-				window);
-		gtk_widget_show_all(widget);
-		gtk_box_pack_start(GTK_BOX(tasks->hbox), widget, FALSE, TRUE,
-				0);
+		_do_tasks_add(tasks, windows[i], name, _do_pixbuf(tasks,
+					windows[i]));
 		g_free(name);
 	}
+	_do_tasks_clean(tasks);
 }
 
 static char * _do_name(Tasks * tasks, Window window)
@@ -337,13 +336,84 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 	return NULL;
 }
 
+static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
+		GdkPixbuf * pixbuf)
+{
+	size_t i;
+	Task * p = NULL;
+	GtkWidget * image;
+
+	for(i = 0; i < tasks->tasks_cnt; i++)
+		if(tasks->tasks[i].window == window)
+			break;
+	if(i < tasks->tasks_cnt)
+		p = &tasks->tasks[i];
+	else
+	{
+		if((p = realloc(tasks->tasks, (tasks->tasks_cnt + 1)
+						* sizeof(*p))) == NULL)
+			return 1;
+		tasks->tasks = p;
+		p = &tasks->tasks[tasks->tasks_cnt++];
+		p->widget = gtk_button_new();
+#ifndef EMBEDDED
+		gtk_button_set_alignment(GTK_BUTTON(p->widget), 0.0, 0.5);
+		gtk_widget_set_size_request(p->widget, 100, -1);
+#else
+		gtk_widget_set_tooltip_text(p->widget, name);
+#endif
+		g_signal_connect(p->widget, "clicked", G_CALLBACK(_on_clicked),
+				p);
+		gtk_widget_show_all(p->widget);
+		gtk_box_pack_start(GTK_BOX(tasks->hbox), p->widget, FALSE, TRUE,
+				0);
+	}
+#ifndef EMBEDDED
+	gtk_button_set_label(GTK_BUTTON(p->widget), name);
+#endif
+	if(pixbuf != NULL)
+		image = gtk_image_new_from_pixbuf(pixbuf);
+	else
+		image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE,
+				GTK_ICON_SIZE_LARGE_TOOLBAR);
+	gtk_button_set_image(GTK_BUTTON(p->widget), image);
+	p->delete = 0;
+	return 0;
+}
+
+static void _do_tasks_clean(Tasks * tasks)
+{
+	size_t i;
+	size_t cnt;
+	Task * p;
+
+	for(i = 0, cnt = tasks->tasks_cnt; i < cnt;)
+	{
+		if(tasks->tasks[i].delete == 0)
+		{
+			i++;
+			continue;
+		}
+		p = &tasks->tasks[i];
+		gtk_container_remove(GTK_CONTAINER(tasks->hbox), p->widget);
+		cnt--;
+		memmove(p, p + 1, (cnt - i) * sizeof(*p));
+		if((p = realloc(tasks->tasks, cnt * sizeof(*p))) != NULL)
+			tasks->tasks = p;
+	}
+	tasks->tasks_cnt = cnt;
+}
+
 
 /* callbacks */
 /* on_clicked */
 static void _on_clicked(GtkWidget * widget, gpointer data)
 {
-	GdkWindow * window = data;
+	Task * task = data;
+	GdkWindow * window;
 
+	if((window = gdk_window_foreign_new(task->window)) == NULL)
+		return;
 	switch(gdk_window_get_state(window))
 	{
 		case GDK_WINDOW_STATE_ICONIFIED:
