@@ -31,8 +31,9 @@
 typedef enum _TasksAtom
 {
 	TASKS_ATOM_NET_CLIENT_LIST = 0,
-	TASKS_ATOM_NET_WM_VISIBLE_NAME,
+	TASKS_ATOM_NET_WM_ICON,
 	TASKS_ATOM_NET_WM_NAME,
+	TASKS_ATOM_NET_WM_VISIBLE_NAME,
 	TASKS_ATOM_UTF8_STRING
 } TasksAtom;
 #define TASKS_ATOM_LAST TASKS_ATOM_UTF8_STRING
@@ -53,8 +54,9 @@ typedef struct _Tasks
 static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 {
 	"_NET_CLIENT_LIST",
-	"_NET_WM_VISIBLE_NAME",
+	"_NET_WM_ICON",
 	"_NET_WM_NAME",
+	"_NET_WM_VISIBLE_NAME",
 	"UTF8_STRING"
 };
 
@@ -191,6 +193,7 @@ static int _tasks_get_window_property(Tasks * tasks, Window window,
 static char * _do_name(Tasks * tasks, Window window);
 static char * _do_name_text(Tasks * tasks, Window window, Atom property);
 static char * _do_name_utf8(Tasks * tasks, Window window, Atom property);
+static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window);
 
 static void _tasks_do(Tasks * tasks)
 {
@@ -200,6 +203,7 @@ static void _tasks_do(Tasks * tasks)
 	GdkWindow * window;
 	char * name;
 	GtkWidget * widget;
+	GdkPixbuf * pixbuf;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -220,7 +224,11 @@ static void _tasks_do(Tasks * tasks)
 		if((name = _do_name(tasks, windows[i])) == NULL)
 			continue;
 		widget = gtk_button_new_with_label(name);
+		if((pixbuf = _do_pixbuf(tasks, windows[i])) != NULL)
+			gtk_button_set_image(GTK_BUTTON(widget),
+					gtk_image_new_from_pixbuf(pixbuf));
 		gtk_widget_set_size_request(widget, 100, -1);
+		gtk_widget_show_all(widget);
 		gtk_box_pack_start(GTK_BOX(tasks->hbox), widget, FALSE, TRUE,
 				2);
 		g_free(name);
@@ -265,6 +273,45 @@ static char * _do_name_utf8(Tasks * tasks, Window window, Atom property)
 		ret = g_strndup(str, cnt);
 	XFree(str);
 	return ret;
+}
+
+static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
+{
+	unsigned long cnt = 0;
+	unsigned long * buf = NULL;
+	unsigned long i;
+	unsigned long width;
+	unsigned long height;
+	unsigned long size;
+	unsigned char * pixbuf;
+	unsigned long j;
+
+	if(_tasks_get_window_property(tasks, window, TASKS_ATOM_NET_WM_ICON,
+				XA_CARDINAL, &cnt, (void*)&buf) != 0)
+		return NULL;
+	for(i = 0; i < cnt - 3; i++)
+	{
+		width = buf[i];
+		height = buf[i + 1];
+		if(i + 2 + (width * height) > cnt)
+			break;
+		if(width != 48 || height != 48)
+			continue;
+		size = width * height * 4;
+		if((pixbuf = malloc(size)) == NULL)
+			return NULL;
+		for(i+=2, j = 0; j < size; i++)
+		{
+			pixbuf[j++] = (buf[i] >> 16) & 0xff; /* red */
+			pixbuf[j++] = (buf[i] >> 8) & 0xff; /* green */
+			pixbuf[j++] = buf[i] & 0xff; /* blue */
+			pixbuf[j++] = buf[i] >> 24; /* alpha */
+		}
+		return gdk_pixbuf_new_from_data(pixbuf, GDK_COLORSPACE_RGB,
+				TRUE, 8, width, height, width * 4,
+				(GdkPixbufDestroyNotify)free, NULL);
+	}
+	return NULL;
 }
 
 
