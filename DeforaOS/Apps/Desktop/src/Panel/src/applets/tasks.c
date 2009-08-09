@@ -78,6 +78,7 @@ static int _tasks_get_window_property(Tasks * tasks, Window window,
 static void _tasks_do(Tasks * tasks);
 
 /* callbacks */
+static void _on_clicked(GtkWidget * widget, gpointer data);
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
@@ -239,9 +240,12 @@ static void _tasks_do(Tasks * tasks)
 		if((pixbuf = _do_pixbuf(tasks, windows[i])) == NULL)
 			continue;
 		widget = gtk_button_new();
+		gtk_widget_set_tooltip_text(widget, name);
 		gtk_button_set_image(GTK_BUTTON(widget),
 				gtk_image_new_from_pixbuf(pixbuf));
 #endif
+		g_signal_connect(widget, "clicked", G_CALLBACK(_on_clicked),
+				window);
 		gtk_widget_show_all(widget);
 		gtk_box_pack_start(GTK_BOX(tasks->hbox), widget, FALSE, TRUE,
 				0);
@@ -335,6 +339,23 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 
 
 /* callbacks */
+/* on_clicked */
+static void _on_clicked(GtkWidget * widget, gpointer data)
+{
+	GdkWindow * window = data;
+
+	switch(gdk_window_get_state(window))
+	{
+		case GDK_WINDOW_STATE_ICONIFIED:
+			gdk_window_deiconify(window);
+			break;
+		default:
+			gdk_window_iconify(window);
+			break;
+	}
+}
+
+
 /* on_filter */
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
