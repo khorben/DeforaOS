@@ -61,6 +61,9 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 {
 	GtkWidget * ret;
 	Clock * clock;
+#ifdef EMBEDDED
+	PangoFontDescription * desc;
+#endif
 
 	if((clock = malloc(sizeof(*clock))) == NULL)
 		return NULL;
@@ -68,6 +71,12 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	ret = gtk_frame_new(NULL);
 	gtk_frame_set_shadow_type(GTK_FRAME(ret), GTK_SHADOW_IN);
 	clock->label = gtk_label_new(" \n ");
+#ifdef EMBEDDED
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+	gtk_widget_modify_font(clock->label, desc);
+	pango_font_description_free(desc);
+#endif
 	gtk_label_set_justify(GTK_LABEL(clock->label), GTK_JUSTIFY_CENTER);
 	gtk_container_add(GTK_CONTAINER(ret), clock->label);
 	clock->timeout = g_timeout_add(1000, _on_timeout, clock);
@@ -101,7 +110,11 @@ static gboolean _on_timeout(gpointer data)
 				strerror(errno));
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
+#ifndef EMBEDDED
 	strftime(buf, sizeof(buf), "%H:%M:%S\n%d/%m/%Y", &tm);
+#else
+	strftime(buf, sizeof(buf), "%H:%M", &tm);
+#endif
 	gtk_label_set_text(GTK_LABEL(clock->label), buf);
 	return TRUE;
 }
