@@ -79,6 +79,7 @@ static Run * _run_new(void)
 	run->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(run->window);
 	gtk_window_set_keep_above(window, TRUE);
+	gtk_window_set_icon_name(window, GTK_STOCK_EXECUTE);
 	gtk_window_set_position(window, GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_resizable(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
