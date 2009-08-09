@@ -1,4 +1,4 @@
-TARGETS	= clock.a clock.so cpu.a cpu.so lock.a lock.so logout.a logout.so main.a main.so memory.a memory.so tasks.a tasks.so
+TARGETS	= clock.a clock.so cpu.a cpu.so desktop.a desktop.so lock.a lock.so logout.a logout.so main.a main.so memory.a memory.so tasks.a tasks.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -39,6 +39,17 @@ cpu.a: $(cpu_OBJS)
 
 cpu.so: $(cpu_OBJS)
 	$(LD) -o cpu.so -Wl,-soname,cpu.so.0 $(cpu_OBJS)
+
+desktop_OBJS = desktop.o
+desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+desktop.a: $(desktop_OBJS)
+	$(AR) desktop.a $(desktop_OBJS)
+	$(RANLIB) desktop.a
+
+desktop.so: $(desktop_OBJS)
+	$(LD) -o desktop.so -Wl,-soname,desktop.so.0 $(desktop_OBJS)
 
 lock_OBJS = lock.o
 lock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -101,6 +112,9 @@ clock.o: clock.c
 cpu.o: cpu.c
 	$(CC) $(cpu_CFLAGS) -c cpu.c
 
+desktop.o: desktop.c
+	$(CC) $(desktop_CFLAGS) -c desktop.c
+
 lock.o: lock.c
 	$(CC) $(lock_CFLAGS) -c lock.c
 
@@ -117,7 +131,7 @@ tasks.o: tasks.c
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 clean:
-	$(RM) $(clock_OBJS) $(cpu_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(tasks_OBJS)
+	$(RM) $(clock_OBJS) $(cpu_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(tasks_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -133,6 +147,11 @@ install: all
 	$(INSTALL) -m 0755 cpu.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0.0
 	$(LN) -s cpu.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0
 	$(LN) -s cpu.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 desktop.a $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.a
+	$(INSTALL) -m 0755 desktop.so $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so.0.0
+	$(LN) -s desktop.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so.0
+	$(LN) -s desktop.so.0.0 $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 lock.a $(DESTDIR)$(LIBDIR)/Panel/applets/lock.a
 	$(INSTALL) -m 0755 lock.so $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so.0.0
@@ -168,6 +187,10 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.a
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so.0.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so.0
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.a
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so.0.0
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so.0

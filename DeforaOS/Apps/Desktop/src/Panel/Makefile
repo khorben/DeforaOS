@@ -30,6 +30,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
+		$(PACKAGE)-$(VERSION)/src/applets/desktop.c \
 		$(PACKAGE)-$(VERSION)/src/applets/lock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/logout.c \
 		$(PACKAGE)-$(VERSION)/src/applets/main.c \

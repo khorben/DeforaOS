@@ -118,8 +118,8 @@ static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
 	/* FIXME load all plugins, a configuration file or ask the user */
-	const char * plugins[] = { "cpu", "clock", "lock", "logout", "main",
-		"memory", "tasks", NULL };
+	const char * plugins[] = { "cpu", "clock", "desktop", "lock", "logout",
+		"main", "memory", "tasks", NULL };
 	size_t i;
 	Plugin * plugin;
 	PanelApplet * applet;
