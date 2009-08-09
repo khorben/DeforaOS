@@ -92,7 +92,8 @@ typedef enum _CodeClass
 
 
 /* functions */
-Code * code_new(C99Prefs const * prefs, char const * outfile);
+Code * code_new(C99Prefs const * prefs, C99Helper * helper,
+		char const * outfile);
 int code_delete(Code * code);
 
 /* useful */

@@ -51,6 +51,7 @@ static int _indent_function_end(void);
 /* variables */
 TargetPlugin target_plugin =
 {
+	NULL,				/* helper */
 	NULL,				/* options */
 	_indent_init,
 	_indent_exit,

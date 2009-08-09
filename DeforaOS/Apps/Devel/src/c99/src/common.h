@@ -29,6 +29,7 @@
 /* types */
 struct _C99
 {
+	C99Helper helper;
 	Cpp * cpp;
 	char * outfile;
 	FILE * outfp;

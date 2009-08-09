@@ -30,6 +30,12 @@ typedef struct _C99 C99;
 
 /* public */
 /* types */
+typedef struct _C99Helper
+{
+	struct _C99 * c99;
+	int (*define_add)(C99 * c99, char const * name, char const * value);
+} C99Helper;
+
 typedef struct _C99Option
 {
 	char const * name;
@@ -63,6 +69,8 @@ C99 * c99_new(C99Prefs const * prefs, char const * pathname);
 int c99_delete(C99 * c99);
 
 /* useful */
+int c99_define_add(C99 * c99, char const * name, char const * value);
+
 int c99_parse(C99 * c99);
 
 #endif /* !C99_C99_H */

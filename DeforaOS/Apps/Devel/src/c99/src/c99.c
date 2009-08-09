@@ -44,11 +44,13 @@ C99 * c99_new(C99Prefs const * prefs, char const * pathname)
 	C99 * c99;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pathname);
 #endif
 	if((c99 = object_new(sizeof(*c99))) == NULL)
 		return NULL;
 	memset(c99, 0, sizeof(*c99));
+	c99->helper.c99 = c99;
+	c99->helper.define_add = c99_define_add;
 	if((c99->cpp = _new_cpp(prefs, pathname)) == NULL)
 	{
 		object_delete(c99);
@@ -62,7 +64,8 @@ C99 * c99_new(C99Prefs const * prefs, char const * pathname)
 	}
 	if(!(prefs->flags & C99PREFS_E)) /* we're not pre-processing */
 	{
-		if((c99->code = code_new(prefs, c99->outfile)) == NULL)
+		if((c99->code = code_new(prefs, &c99->helper, c99->outfile))
+				== NULL)
 		{
 			c99_delete(c99);
 			return NULL;
@@ -171,6 +174,13 @@ int c99_delete(C99 * c99)
 
 
 /* useful */
+/* c99_define_add */
+int c99_define_add(C99 * c99, char const * name, char const * value)
+{
+	return cpp_define_add(c99->cpp, name, value);
+}
+
+
 /* c99_parse */
 int c99_parse(C99 * c99)
 {

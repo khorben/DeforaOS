@@ -27,6 +27,7 @@
 /* types */
 typedef struct _TargetPlugin
 {
+	C99Helper * helper;
 	C99Option * options;
 	int (*init)(char const * outfile, int optlevel);
 	int (*exit)(void);

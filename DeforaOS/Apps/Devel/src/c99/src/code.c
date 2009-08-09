@@ -97,6 +97,7 @@ static int _code_target_label_set(Code * code, char const * name);
 struct _Code
 {
 	/* target */
+	C99Helper * helper;
 	Plugin * plugin;
 	TargetPlugin * target;
 	/* types */
@@ -233,7 +234,8 @@ static int _code_target_label_set(Code * code, char const * name)
 static int _new_target(Code * code, char const * target,
 		C99Option const * options, size_t options_cnt);
 
-Code * code_new(C99Prefs const * prefs, char const * outfile)
+Code * code_new(C99Prefs const * prefs, C99Helper * helper,
+		char const * outfile)
 {
 	Code * code;
 	C99Prefs const * p = prefs;
@@ -244,6 +246,7 @@ Code * code_new(C99Prefs const * prefs, char const * outfile)
 	if((code = object_new(sizeof(*code))) == NULL)
 		return NULL;
 	memset(code, 0, sizeof(*code));
+	code->helper = helper;
 	if(_new_target(code, p->target, p->options, p->options_cnt) != 0
 			|| _code_target_init(code, outfile, p->optlevel) != 0
 			|| code_scope_push(code) != 0)
@@ -272,6 +275,7 @@ static int _new_target(Code * code, char const * target,
 			|| (code->target = plugin_lookup(code->plugin,
 					"target_plugin")) == NULL)
 		return 1;
+	code->target->helper = code->helper;
 	if(code->target->options == NULL)
 	{
 		if(options_cnt == 0)

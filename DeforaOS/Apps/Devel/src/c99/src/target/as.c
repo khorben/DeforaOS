@@ -18,9 +18,9 @@
 
 #include <as.h>
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 #include "c99/target.h"
 #ifdef DEBUG
 # include "../../config.h"
@@ -65,6 +65,7 @@ static int _as_function_end(void);
 /* variables */
 TargetPlugin target_plugin =
 {
+	NULL,
 	_as_options,
 	_as_init,
 	_as_exit,
@@ -80,6 +81,8 @@ TargetPlugin target_plugin =
 /* protected */
 /* functions */
 /* as_init */
+static int _init_defines(char const * format);
+
 static int _as_init(char const * outfile, int optlevel)
 {
 	char const * arch = _as_options[ASO_ARCH].value;
@@ -96,11 +99,36 @@ static int _as_init(char const * outfile, int optlevel)
 	fprintf(stderr, "DEBUG: %s: architecture \"%s\", format \"%s\"\n",
 			PACKAGE, as_get_arch(_as_as), as_get_format(_as_as));
 #endif
-	if(as_open(_as_as, outfile) != 0 || _as_section(".text") != 0)
+	if(_init_defines(as_get_format(_as_as)) != 0
+			|| as_open(_as_as, outfile) != 0
+			|| _as_section(".text") != 0)
 	{
 		as_delete(_as_as);
 		return 1;
 	}
+	return 0;
+}
+
+static int _init_defines(char const * format)
+{
+	C99 * c99;
+	size_t len;
+	char * p;
+	size_t i;
+	int c;
+
+	c99 = target_plugin.helper->c99;
+	len = strlen(format) + 5;
+	if((p = malloc(len)) == NULL)
+		return 1;
+	snprintf(p, len, "%s%s%s", "__", format, "__");
+	for(i = 2; i < len - 2; i++)
+	{
+		c = p[i];
+		p[i] = toupper(c);
+	}
+	target_plugin.helper->define_add(c99, p, NULL);
+	free(p);
 	return 0;
 }
 
