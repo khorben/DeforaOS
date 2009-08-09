@@ -55,6 +55,7 @@ static GtkWidget * _desktop_init(PanelApplet * applet)
 			GTK_ICON_SIZE_LARGE_TOOLBAR);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
+	gtk_widget_set_tooltip_text(ret, "Show desktop");
 	g_signal_connect(G_OBJECT(ret), "clicked", G_CALLBACK(_on_clicked),
 			NULL);
 	return ret;
