@@ -355,6 +355,7 @@ static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
 			return 1;
 		tasks->tasks = p;
 		p = &tasks->tasks[tasks->tasks_cnt++];
+		p->window = window;
 		p->widget = gtk_button_new();
 #ifndef EMBEDDED
 		gtk_button_set_alignment(GTK_BUTTON(p->widget), 0.0, 0.5);
