@@ -164,9 +164,8 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 
 #ifndef EMBEDDED
 	gtk_button_set_label(task->widget, name);
-#else
-	gtk_widget_set_tooltip_text(task->widget, name);
 #endif
+	gtk_widget_set_tooltip_text(task->widget, name);
 	if((image = gtk_button_get_image(GTK_BUTTON(task->widget))) == NULL)
 	{
 		if(pixbuf != NULL)
@@ -488,12 +487,15 @@ static int _do_typehint_normal(Tasks * tasks, Window window)
 
 	if(_tasks_get_window_property(tasks, window,
 				TASKS_ATOM_NET_WM_WINDOW_TYPE, XA_ATOM, &cnt,
-				(void*)&p) != 0)
-		return 1;
-	typehint = *p;
-	XFree(p);
-	return typehint == tasks->atom[TASKS_ATOM_NET_WM_WINDOW_TYPE_NORMAL]
-		? 0 : 1;
+				(void*)&p) == 0)
+	{
+		typehint = *p;
+		XFree(p);
+		return typehint == tasks->atom[
+			TASKS_ATOM_NET_WM_WINDOW_TYPE_NORMAL] ? 0 : 1;
+	}
+	/* FIXME return 1 if WM_TRANSIENT_FOR is set */
+	return 0;
 }
 
 
