@@ -95,7 +95,7 @@ Panel * panel_new(void)
 	/* panel */
 	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_default_size(GTK_WINDOW(panel->window), panel->width,
+	gtk_window_resize(GTK_WINDOW(panel->window), panel->width,
 			PANEL_ICON_SIZE + (PANEL_BORDER_WIDTH * 2));
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);

@@ -142,7 +142,7 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 	task->delete = FALSE;
 #ifndef EMBEDDED
 	gtk_button_set_alignment(GTK_BUTTON(task->widget), 0.0, 0.5);
-	gtk_widget_set_size_request(task->widget, 100, -1);
+	gtk_widget_set_size_request(task->widget, tasks->icon_width, -1);
 #endif
 	g_signal_connect(task->widget, "clicked", G_CALLBACK(_on_clicked),
 			task);
