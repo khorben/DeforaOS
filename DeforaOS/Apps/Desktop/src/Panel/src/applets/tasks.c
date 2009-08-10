@@ -516,6 +516,9 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 	Task * task = data;
 
 	_clicked_activate(task);
+#ifdef EMBEDDED
+	gtk_box_reorder_child(GTK_BOX(task->tasks->hbox), widget, 0);
+#endif
 }
 
 static void _clicked_activate(Task * task)
