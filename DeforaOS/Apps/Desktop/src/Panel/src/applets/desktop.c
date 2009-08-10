@@ -75,6 +75,7 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 	display = gtk_widget_get_display(widget);
 	root = gdk_screen_get_root_window(screen);
 	xev.xclient.type = ClientMessage;
+	xev.xclient.window = GDK_WINDOW_XWINDOW(root);
 	xev.xclient.message_type = gdk_x11_get_xatom_by_name_for_display(
 			display, "_NET_SHOWING_DESKTOP");
 	xev.xclient.format = 32;
