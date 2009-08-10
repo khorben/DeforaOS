@@ -22,11 +22,12 @@ dist:
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/include/panel.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/panel.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/panel.h \
+		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
@@ -36,8 +37,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/main.c \
 		$(PACKAGE)-$(VERSION)/src/applets/memory.c \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
+		$(PACKAGE)-$(VERSION)/src/applets/Makefile \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
+		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
