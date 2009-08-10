@@ -128,6 +128,8 @@ static gboolean _on_idle(gpointer data)
 	Plugin * plugin;
 	PanelApplet * applet;
 	GtkWidget * widget;
+	gboolean exp;
+	gboolean fill;
 
 	for(i = 0; plugins[i] != NULL; i++)
 		if((plugin = plugin_new(LIBDIR, PACKAGE, "applets", plugins[i]))
@@ -138,29 +140,31 @@ static gboolean _on_idle(gpointer data)
 				&& applet->init != NULL
 				&& (widget = applet->init(applet)) != NULL)
 		{
+			exp = applet->expand;
+			fill = applet->fill;
 			switch(applet->position)
 			{
 				case PANEL_APPLET_POSITION_END:
 					gtk_box_pack_end(GTK_BOX(panel->hbox),
-							widget, FALSE, TRUE, 2);
+							widget, exp, fill, 2);
 					break;
 				case PANEL_APPLET_POSITION_FIRST:
 					gtk_box_pack_start(GTK_BOX(panel->hbox),
-							widget, FALSE, TRUE, 2);
+							widget, exp, fill, 2);
 					gtk_box_reorder_child(GTK_BOX(
 								panel->hbox),
 							widget, 0);
 					break;
 				case PANEL_APPLET_POSITION_LAST:
 					gtk_box_pack_end(GTK_BOX(panel->hbox),
-							widget, FALSE, TRUE, 2);
+							widget, exp, fill, 2);
 					gtk_box_reorder_child(GTK_BOX(
 								panel->hbox),
 							widget, 0);
 					break;
 				case PANEL_APPLET_POSITION_START:
 					gtk_box_pack_start(GTK_BOX(panel->hbox),
-							widget, FALSE, TRUE, 2);
+							widget, exp, fill, 2);
 					break;
 			}
 			gtk_widget_show_all(widget);

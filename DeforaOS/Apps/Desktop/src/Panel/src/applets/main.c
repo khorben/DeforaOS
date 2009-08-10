@@ -90,6 +90,8 @@ PanelApplet applet =
 	_main_init,
 	_main_destroy,
 	PANEL_APPLET_POSITION_FIRST,
+	FALSE,
+	TRUE,
 	NULL
 };
 

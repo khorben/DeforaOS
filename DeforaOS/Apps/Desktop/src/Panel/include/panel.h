@@ -51,6 +51,8 @@ struct _PanelApplet
 	PanelAppletInitFunc init;
 	PanelAppletDestroyFunc destroy;
 	PanelAppletPosition position;
+	gboolean expand;
+	gboolean fill;
 	void * priv;
 };
 

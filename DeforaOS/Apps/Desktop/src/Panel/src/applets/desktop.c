@@ -38,6 +38,8 @@ PanelApplet applet =
 	_desktop_init,
 	NULL,
 	PANEL_APPLET_POSITION_FIRST,
+	FALSE,
+	TRUE,
 	NULL
 };
 

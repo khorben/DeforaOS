@@ -50,6 +50,8 @@ PanelApplet applet =
 	_clock_init,
 	_clock_destroy,
 	PANEL_APPLET_POSITION_LAST,
+	FALSE,
+	TRUE,
 	NULL
 };
 

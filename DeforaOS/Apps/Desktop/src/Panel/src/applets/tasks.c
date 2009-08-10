@@ -119,6 +119,8 @@ PanelApplet applet =
 	_tasks_init,
 	_tasks_destroy,
 	PANEL_APPLET_POSITION_START,
+	TRUE,
+	TRUE,
 	NULL
 };
 
@@ -189,6 +191,7 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 /* tasks_init */
 static GtkWidget * _tasks_init(PanelApplet * applet)
 {
+	GtkWidget * ret;
 	Tasks * tasks;
 
 	if((tasks = malloc(sizeof(*tasks))) == NULL)
@@ -206,7 +209,12 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	tasks->display = NULL;
 	tasks->screen = NULL;
 	tasks->root = NULL;
-	return tasks->hbox;
+	ret = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(ret),
+			GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(ret),
+			tasks->hbox);
+	return ret;
 }
 
 

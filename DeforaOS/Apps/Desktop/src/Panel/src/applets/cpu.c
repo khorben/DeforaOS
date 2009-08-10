@@ -57,6 +57,8 @@ PanelApplet applet =
 	_cpu_init,
 	_cpu_destroy,
 	PANEL_APPLET_POSITION_END,
+	FALSE,
+	TRUE,
 	NULL
 };
 
