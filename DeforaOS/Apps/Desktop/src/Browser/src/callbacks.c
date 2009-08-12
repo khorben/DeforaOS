@@ -183,9 +183,12 @@ void on_edit_delete(GtkWidget * widget, gpointer data)
 		dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 				GTK_DIALOG_MODAL
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
-				"%s%lu%s", "Are you sure you want to delete ",
-				cnt, " file(s)?");
+				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+				"Warning");
+		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+					dialog), "%s%lu%s",
+				"Are you sure you want to delete ", cnt,
+				" file(s)?");
 		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
@@ -1228,8 +1231,9 @@ static void _on_icon_run(GtkWidget * widget, gpointer data)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(cb->browser->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_YES_NO, "%s",
-			"Are you sure you want to execute this file?");
+			GTK_BUTTONS_YES_NO, "%s", "Warning");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", "Are you sure you want to execute this file?");
 	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
