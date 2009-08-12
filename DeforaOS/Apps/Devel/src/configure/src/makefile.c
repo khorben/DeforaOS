@@ -264,6 +264,9 @@ static int _variables_targets(Configure * configure, FILE * fp)
 				case TT_LIBTOOL:
 					fprintf(fp, " %s%s", prints, ".la");
 					break;
+				case TT_PLUGIN:
+					fprintf(fp, " %s%s", prints, ".so");
+					break;
 			}
 		if(c == '\0')
 			break;
@@ -356,6 +359,7 @@ static void _executables_variables(Configure * configure, FILE * fp,
 			_variables_binary(configure, fp, done);
 			break;
 		case TT_LIBRARY:
+		case TT_PLUGIN:
 			_variables_library(configure, fp, done);
 			break;
 		case TT_LIBTOOL:
@@ -661,6 +665,8 @@ static int _target_libtool(Configure * configure, FILE * fp,
 		String const * target);
 static int _target_object(Configure * configure, FILE * fp,
 		String const * target);
+static int _target_plugin(Configure * configure, FILE * fp,
+		String const * target);
 static int _targets_target(Configure * configure, FILE * fp,
 		String const * target)
 {
@@ -684,6 +690,8 @@ static int _targets_target(Configure * configure, FILE * fp,
 			return _target_libtool(configure, fp, target);
 		case TT_OBJECT:
 			return _target_object(configure, fp, target);
+		case TT_PLUGIN:
+			return _target_plugin(configure, fp, target);
 		case TT_UNKNOWN:
 			fprintf(stderr, "%s%s%s", "configure: ", target,
 					": unknown type for target\n");
@@ -1029,6 +1037,36 @@ static int _target_object(Configure * configure, FILE * fp,
 					": Unknown source type for object\n");
 			return 1;
 	}
+	return 0;
+}
+
+static int _target_plugin(Configure * configure, FILE * fp,
+		String const * target)
+{
+	String const * p;
+	String * q;
+
+	if(_target_objs(configure, fp, target) != 0)
+		return 1;
+	if(configure->prefs->flags & PREFS_n)
+		return 0;
+	_target_flags(configure, fp, target);
+	fprintf(fp, "\n%s%s%s%s", target, ".so: $(", target, "_OBJS)");
+	if((p = config_get(configure->config, target, "depends")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
+	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
+			"_OBJS)");
+	if((p = config_get(configure->config, target, "ldflags")) != NULL)
+		fprintf(fp, " %s", p);
+	if((q = malloc(strlen(target) + 4)) != NULL)
+	{
+		sprintf(q, "%s.so", target);
+		if((p = config_get(configure->config, q, "ldflags")) != NULL)
+			fprintf(fp, " %s", p);
+		free(q);
+	}
+	fputc('\n', fp);
 	return 0;
 }
 
@@ -1460,6 +1498,8 @@ static void _install_target_libtool(Config * config, FILE * fp,
 		String const * target);
 static void _install_target_object(Config * config, FILE * fp,
 		String const * target);
+static void _install_target_plugin(Config * config, FILE * fp,
+		String const * target);
 static int _install_target(Config * config, FILE * fp, String const * target)
 {
 	int ret = 0;
@@ -1481,6 +1521,9 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 			break;
 		case TT_OBJECT:
 			_install_target_object(config, fp, target);
+			break;
+		case TT_PLUGIN:
+			_install_target_plugin(config, fp, target);
 			break;
 		case TT_UNKNOWN:
 			break;
@@ -1552,6 +1595,18 @@ static void _install_target_object(Config * config, FILE * fp,
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ", target,
 			" $(DESTDIR)", path, target);
+}
+
+static void _install_target_plugin(Config * config, FILE * fp,
+		String const * target)
+{
+	String const * path;
+
+	if((path = config_get(config, target, "install")) == NULL)
+		return;
+	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 ", target,
+			".so $(DESTDIR)", path, target, ".so\n");
 }
 
 static int _install_include(Config * config, FILE * fp, String const * include);
@@ -1744,6 +1799,10 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 			break;
 		case TT_OBJECT:
 			fprintf(fp, "\t%s%s/%s\n", rm_destdir, path, target);
+			break;
+		case TT_PLUGIN:
+			fprintf(fp, "\t%s%s/%s%s\n", rm_destdir, path, target,
+					".so");
 			break;
 		case TT_UNKNOWN:
 			break;
