@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel GEDI */
 /* GEDI is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -15,15 +15,31 @@
 
 
 
+#include <unistd.h>
 #include "gedi.h"
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: gedi\n", stderr);
+	return 1;
+}
 
 
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
 	GEDI * gedi;
 
 	gtk_init(&argc, &argv);
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
 	if((gedi = gedi_new()) == NULL)
 		return 1;
 	gtk_main();

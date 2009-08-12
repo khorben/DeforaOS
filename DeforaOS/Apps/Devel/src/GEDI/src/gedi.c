@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel GEDI */
 /* GEDI is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -32,14 +32,14 @@ static void _on_file_preferences(GtkWidget * widget, gpointer data);
 static void _on_preferences_apply(GtkWidget * widget, gpointer data);
 static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
 static void _on_preferences_ok(GtkWidget * widget, gpointer data);
-static gboolean _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_project_new(GtkWidget * widget, gpointer data);
 static void _on_project_open(GtkWidget * widget, gpointer data);
 static void _on_project_properties(GtkWidget * widget, gpointer data);
 static void _on_project_save(GtkWidget * widget, gpointer data);
 static void _on_project_save_as(GtkWidget * widget, gpointer data);
-static gboolean _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data);
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 /* menus */
 struct _menu {
 	char * name;
@@ -140,7 +140,7 @@ static void _new_toolbar(GEDI * g)
 	gtk_window_set_title(GTK_WINDOW(g->tb_window), "GEDI");
 	gtk_window_set_resizable(GTK_WINDOW(g->tb_window), FALSE);
 	g_signal_connect(G_OBJECT(g->tb_window), "delete_event",
-			G_CALLBACK(_on_xkill), g);
+			G_CALLBACK(_on_closex), g);
 	g->tb_vbox = gtk_vbox_new(FALSE, 0);
 	_new_toolbar_menu(g);
 	g->tb_toolbar = gtk_toolbar_new();
@@ -206,7 +206,7 @@ void gedi_delete(GEDI * gedi)
 
 /* useful */
 /* gedi_error */
-void gedi_error(GEDI * gedi, char const * title, char const * message)
+int gedi_error(GEDI * gedi, char const * title, char const * message)
 {
 	GtkWidget * dialog;
 
@@ -215,8 +215,10 @@ void gedi_error(GEDI * gedi, char const * title, char const * message)
 			GTK_BUTTONS_CLOSE, "%s", title);
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return 1;
 }
 
 
@@ -262,16 +264,16 @@ static void _on_exit(GtkWidget * widget, gpointer data)
 
 /* _on_help_about */
 /* callbacks */
-static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data)
 {
 	GEDI * gedi = data;
-	static GtkWidget * window = NULL;
-	char const * authors[] = { "Pierre Pronchery <khorben@defora.org>",
+	static GtkWidget * window = NULL; /* FIXME do not make it static */
+	const char * authors[] = { "Pierre Pronchery <khorben@defora.org>",
 		NULL };
-	char const copyright[] = "Copyright (c) 2007 Pierre Pronchery";
-	char const license[] = "GPL version 2";
+	const char copyright[] = "Copyright (c) 2009 Pierre Pronchery";
+	const char license[] = "GNU GPL version 2";
 
 	if(window != NULL)
 	{
@@ -281,17 +283,19 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				gedi->tb_window));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_on_about_xkill), NULL);
-	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
-				gtk_widget_hide), NULL);
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
+	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+				_on_about_closex), NULL);
+	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
 	gtk_widget_show(window);
 }
 
-static gboolean _on_about_xkill(GtkWidget * widget, GdkEvent * event,
+static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
@@ -352,7 +356,7 @@ static void _file_preferences_new(GEDI * g)
 	gtk_container_set_border_width(GTK_CONTAINER(g->pr_window), 4);
 	gtk_window_set_title(GTK_WINDOW(g->pr_window), "Preferences");
 	g_signal_connect(G_OBJECT(g->pr_window), "delete_event",
-			G_CALLBACK(_on_preferences_xkill), g);
+			G_CALLBACK(_on_preferences_closex), g);
 	vbox = gtk_vbox_new(FALSE, 0);
 	nb = gtk_notebook_new();
 	/* notebook page editor */
@@ -416,8 +420,8 @@ static void _on_preferences_ok(GtkWidget * widget, gpointer data)
 }
 
 
-/* _on_preferences_xkill */
-static gboolean _on_preferences_xkill(GtkWidget * widget, GdkEvent * event,
+/* _on_preferences_closex */
+static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
@@ -500,8 +504,8 @@ static void _on_project_save_as(GtkWidget * widget, gpointer data)
 }
 
 
-/* _on_xkill */
-static gboolean _on_xkill(GtkWidget * widget, GdkEvent * event, gpointer data)
+/* _on_closex */
+static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
 	_on_exit(widget, data);
 	return FALSE;

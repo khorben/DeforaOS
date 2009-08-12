@@ -47,7 +47,8 @@ GEDI * gedi_new(void);
 void gedi_delete(GEDI * gedi);
 
 /* useful */
-void gedi_error(GEDI * gedi, char const * title, char const * message);
+int gedi_error(GEDI * gedi, char const * title, char const * message);
+
 void gedi_file_open(GEDI * gedi, char const * file);
 void gedi_project_open(GEDI * gedi, char const * file);
 void gedi_project_save(GEDI * gedi);
