@@ -1,4 +1,4 @@
-TARGETS	= elf.a elf.so flat.a flat.so
+TARGETS	= elf.so flat.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -22,23 +22,15 @@ elf_OBJS = elf.o
 elf_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 elf_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-elf.a: $(elf_OBJS)
-	$(AR) elf.a $(elf_OBJS)
-	$(RANLIB) elf.a
-
 elf.so: $(elf_OBJS)
-	$(LD) -o elf.so -Wl,-soname,elf.so.0 $(elf_OBJS)
+	$(LD) -o elf.so $(elf_OBJS)
 
 flat_OBJS = flat.o
 flat_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 flat_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-flat.a: $(flat_OBJS)
-	$(AR) flat.a $(flat_OBJS)
-	$(RANLIB) flat.a
-
 flat.so: $(flat_OBJS)
-	$(LD) -o flat.so -Wl,-soname,flat.so.0 $(flat_OBJS)
+	$(LD) -o flat.so $(flat_OBJS)
 
 elf.o: elf.c format.h
 	$(CC) $(elf_CFLAGS) -c elf.c
@@ -54,24 +46,12 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
-	$(INSTALL) -m 0644 elf.a $(DESTDIR)$(LIBDIR)/as/format/elf.a
-	$(INSTALL) -m 0755 elf.so $(DESTDIR)$(LIBDIR)/as/format/elf.so.0.0
-	$(LN) -s elf.so.0.0 $(DESTDIR)$(LIBDIR)/as/format/elf.so.0
-	$(LN) -s elf.so.0.0 $(DESTDIR)$(LIBDIR)/as/format/elf.so
+	$(INSTALL) -m 0644 elf.so $(DESTDIR)$(LIBDIR)/as/format/elf.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
-	$(INSTALL) -m 0644 flat.a $(DESTDIR)$(LIBDIR)/as/format/flat.a
-	$(INSTALL) -m 0755 flat.so $(DESTDIR)$(LIBDIR)/as/format/flat.so.0.0
-	$(LN) -s flat.so.0.0 $(DESTDIR)$(LIBDIR)/as/format/flat.so.0
-	$(LN) -s flat.so.0.0 $(DESTDIR)$(LIBDIR)/as/format/flat.so
+	$(INSTALL) -m 0644 flat.so $(DESTDIR)$(LIBDIR)/as/format/flat.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.a
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.so.0.0
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.so
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.a
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.so.0.0
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.so.0
 	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.so
 
 .PHONY: all clean distclean install uninstall
