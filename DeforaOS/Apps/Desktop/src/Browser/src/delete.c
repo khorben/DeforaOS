@@ -106,7 +106,9 @@ static int _delete_error(Delete * delete, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_OK, "%s: %s", message, strerror(errno));
+			GTK_BUTTONS_OK, "%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -173,8 +175,10 @@ static int _idle_ask_recursive(Delete * delete, char const * filename)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-			"%s is a directory\nRecursively delete?", filename);
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+			"Question");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s is a directory.\nRecursively delete?", filename);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
 	gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes to all", 1);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -194,8 +198,11 @@ static int _idle_ask(Delete * delete, char const * filename)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-			"%s will be permanently deleted\nContinue?", filename);
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+			"Question");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s%s", filename, " will be permanently deleted.\n"
+			"Continue?");
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
 	gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes to all", 1);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
