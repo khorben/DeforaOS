@@ -23,7 +23,7 @@
 #include "settings.h"
 #include "configure.h"
 
-ARRAY(Config *, config);
+ARRAY(Config *, config)
 
 
 /* functions */
