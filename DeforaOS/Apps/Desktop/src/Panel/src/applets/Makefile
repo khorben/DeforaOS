@@ -81,10 +81,10 @@ tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 tasks.so: $(tasks_OBJS)
 	$(LD) -o tasks.so $(tasks_OBJS)
 
-clock.o: clock.c
+clock.o: clock.c ../../config.h
 	$(CC) $(clock_CFLAGS) -c clock.c
 
-cpu.o: cpu.c
+cpu.o: cpu.c ../../config.h
 	$(CC) $(cpu_CFLAGS) -c cpu.c
 
 desktop.o: desktop.c
@@ -99,13 +99,13 @@ logout.o: logout.c
 main.o: main.c
 	$(CC) $(main_CFLAGS) -c main.c
 
-memory.o: memory.c
+memory.o: memory.c ../../config.h
 	$(CC) $(memory_CFLAGS) -c memory.c
 
 pager.o: pager.c
 	$(CC) $(pager_CFLAGS) -c pager.c
 
-tasks.o: tasks.c
+tasks.o: tasks.c ../../config.h
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 clean:
