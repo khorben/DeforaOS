@@ -1,4 +1,4 @@
-TARGETS	= clock.so cpu.so desktop.so lock.so logout.so main.so memory.so tasks.so
+TARGETS	= clock.so cpu.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -67,6 +67,13 @@ memory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 memory.so: $(memory_OBJS)
 	$(LD) -o memory.so $(memory_OBJS)
 
+pager_OBJS = pager.o
+pager_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+pager_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+pager.so: $(pager_OBJS)
+	$(LD) -o pager.so $(pager_OBJS)
+
 tasks_OBJS = tasks.o
 tasks_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -95,11 +102,14 @@ main.o: main.c
 memory.o: memory.c
 	$(CC) $(memory_CFLAGS) -c memory.c
 
+pager.o: pager.c
+	$(CC) $(pager_CFLAGS) -c pager.c
+
 tasks.o: tasks.c
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 clean:
-	$(RM) $(clock_OBJS) $(cpu_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(tasks_OBJS)
+	$(RM) $(clock_OBJS) $(cpu_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -120,6 +130,8 @@ install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 memory.so $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 pager.so $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 
 uninstall:
@@ -130,6 +142,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 
 .PHONY: all clean distclean install uninstall
