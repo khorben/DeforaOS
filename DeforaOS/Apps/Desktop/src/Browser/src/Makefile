@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
-CFLAGS	= -Wall -g -O2 -Wno-unused-parameter
+CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
 LN	= ln -f
@@ -76,7 +76,7 @@ browser.o: browser.c mime.h callbacks.h browser.h common.c
 	$(CC) $(browser_CFLAGS) -c browser.c
 
 callbacks.o: callbacks.c browser.h callbacks.h ../config.h common.c
-	$(CC) $(browser_CFLAGS) -c callbacks.c
+	$(CC) $(browser_CFLAGS) -Wno-unused-parameter -c callbacks.c
 
 mime.o: mime.c mime.h ../config.h
 	$(CC) $(browser_CFLAGS) -c mime.c
