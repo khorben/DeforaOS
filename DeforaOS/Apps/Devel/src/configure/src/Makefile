@@ -6,7 +6,7 @@ CC	= cc
 CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2
+CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
 LDFLAGS	= 
 RM	= rm -f
@@ -31,7 +31,7 @@ makedepend_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 makedepend: $(makedepend_OBJS)
 	$(CC) -o makedepend $(makedepend_OBJS) $(makedepend_LDFLAGS)
 
-configure.o: configure.c configure.h makefile.h
+configure.o: configure.c configure.h makefile.h ../config.h
 	$(CC) $(configure_CFLAGS) -c configure.c
 
 makefile.o: makefile.c configure.h settings.h
