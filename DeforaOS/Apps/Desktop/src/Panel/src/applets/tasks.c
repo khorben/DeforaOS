@@ -107,7 +107,7 @@ static void _tasks_do(Tasks * tasks);
 static void _on_clicked(GtkWidget * widget, gpointer data);
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
-void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
+static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 		gpointer data);
 
 
@@ -119,7 +119,11 @@ PanelApplet applet =
 	_tasks_init,
 	_tasks_destroy,
 	PANEL_APPLET_POSITION_START,
+#ifndef EMBEDDED
 	TRUE,
+#else
+	FALSE,
+#endif
 	TRUE,
 	NULL
 };
@@ -209,11 +213,15 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	tasks->display = NULL;
 	tasks->screen = NULL;
 	tasks->root = NULL;
+#ifndef EMBEDDED
 	ret = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(ret),
 			GTK_POLICY_NEVER, GTK_POLICY_NEVER);
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(ret),
 			tasks->hbox);
+#else
+	ret = tasks->hbox;
+#endif
 	return ret;
 }
 
@@ -561,7 +569,8 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 
 
 /* on_screen_changed */
-void _on_screen_changed(GtkWidget * widget, GdkScreen * previous, gpointer data)
+static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
+		gpointer data)
 {
 	Tasks * tasks = data;
 	GdkEventMask events;
