@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Web surfer
+Comment=Navigator to surf web pages
+Exec=surfer
+Icon=stock_internet
+Type=Application
+Categories=Network;GTK;
