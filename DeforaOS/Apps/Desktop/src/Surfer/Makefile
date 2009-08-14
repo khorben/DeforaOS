@@ -1,5 +1,5 @@
 PACKAGE	= Surfer
-VERSION	= 0.0.6
+VERSION	= 0.0.7
 SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f
