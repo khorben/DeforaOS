@@ -48,7 +48,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 /* file menu */
 void on_file_close(GtkWidget * widget, gpointer data)
 {
@@ -470,7 +470,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_widget_show_all(window);
 }
 # endif /* !GTK_CHECK_VERSION(2, 6, 0) */
-#endif /* !FOR_EMBEDDED */
+#endif /* !EMBEDDED */
 
 
 /* toolbar */
@@ -499,14 +499,14 @@ void on_fullscreen(GtkToggleToolButton * button, gpointer data)
 
 	if(gtk_toggle_tool_button_get_active(button))
 	{
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 		gtk_widget_hide(surfer->menubar);
 #endif
 		surfer_set_fullscreen(surfer, TRUE);
 	}
 	else
 	{
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 		gtk_widget_show(surfer->menubar);
 #endif
 		surfer_set_fullscreen(surfer, FALSE);

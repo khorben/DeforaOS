@@ -13,7 +13,7 @@
  * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA  02111-1307  USA */
 /* FIXME:
- * - disabling the menubar with FOR_EMBEDDED also disables accelerators */
+ * - disabling the menubar with EMBEDDED also disables accelerators */
 
 
 
@@ -28,7 +28,7 @@
 /* Surfer */
 /* private */
 /* types */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 struct _menu
 {
 	char * name;
@@ -116,7 +116,7 @@ static struct _menubar _menubar[] =
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
-#endif /* !FOR_EMBEDDED */
+#endif /* !EMBEDDED */
 
 unsigned int surfer_cnt = 0;
 
@@ -132,7 +132,7 @@ static int _config_save_string(Config * config, char const * variable,
 /* public */
 /* functions */
 /* surfer_new */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 static GtkWidget * _new_menubar(Surfer * surfer);
 #endif
 static gboolean _new_idle(gpointer data);
@@ -164,7 +164,7 @@ Surfer * surfer_new(char const * url)
 	g_signal_connect(G_OBJECT(surfer->window), "delete_event", G_CALLBACK(
 				on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	/* menubar */
 	surfer->menubar = _new_menubar(surfer);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
@@ -211,7 +211,7 @@ Surfer * surfer_new(char const * url)
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	toolitem = gtk_tool_item_new();
 	widget = gtk_label_new(" Location: ");
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
@@ -265,7 +265,7 @@ Surfer * surfer_new(char const * url)
 	return surfer;
 }
 
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 static GtkWidget * _new_menubar(Surfer * surfer)
 {
 	GtkWidget * tb_menubar;
@@ -325,7 +325,7 @@ static GtkWidget * _new_menubar(Surfer * surfer)
 	gtk_window_add_accel_group(GTK_WINDOW(surfer->window), group);
 	return tb_menubar;
 }
-#endif /* !FOR_EMBEDDED */
+#endif /* !EMBEDDED */
 
 static gboolean _new_idle(gpointer data)
 {
@@ -422,7 +422,7 @@ void surfer_set_status(Surfer * surfer, char const * status)
 	{
 		gtk_progress_bar_set_text(pb, " ");
 		gtk_progress_bar_set_fraction(pb, 0.0);
-#ifdef FOR_EMBEDDED
+#ifdef EMBEDDED
 		gtk_widget_hide(surfer->statusbox);
 	}
 	else

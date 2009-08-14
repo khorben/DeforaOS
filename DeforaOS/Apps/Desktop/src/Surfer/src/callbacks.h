@@ -24,7 +24,7 @@
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 /* file menu */
 void on_file_close(GtkWidget * widget, gpointer data);
 void on_file_new_window(GtkWidget * widget, gpointer data);
@@ -47,7 +47,7 @@ void on_view_page_source(GtkWidget * widget, gpointer data);
 
 /* help menu */
 void on_help_about(GtkWidget * widget, gpointer data);
-#endif /* !FOR_EMBEDDED */
+#endif /* !EMBEDDED */
 
 /* toolbar */
 void on_back(GtkWidget * widget, gpointer data);

@@ -53,7 +53,7 @@ typedef struct _Surfer
 	/* widgets */
 	/* main window */
 	GtkWidget * window;
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	GtkWidget * menubar;
 #endif
 	GtkWidget * toolbar;

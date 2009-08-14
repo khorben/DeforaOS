@@ -382,7 +382,7 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 	g_object_get(G_OBJECT(features), "fullscreen", &b, NULL);
 	if(b == TRUE)
 		surfer_set_fullscreen(surfer, TRUE);
-# ifndef FOR_EMBEDDED
+# ifndef EMBEDDED
 	g_object_get(G_OBJECT(features), "menubar-visible", &b, NULL);
 	if(b == FALSE)
 		gtk_widget_hide(surfer->menubar);
