@@ -51,7 +51,7 @@ static GtkWidget * _lock_init(PanelApplet * applet)
 
 	ret = gtk_button_new();
 	image = gtk_image_new_from_icon_name("gnome-lockscreen",
-			GTK_ICON_SIZE_LARGE_TOOLBAR);
+			applet->helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 	gtk_widget_set_tooltip_text(ret, "Lock screen");

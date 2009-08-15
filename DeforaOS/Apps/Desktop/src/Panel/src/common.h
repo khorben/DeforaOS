@@ -26,7 +26,6 @@ typedef struct _Panel Panel;
 
 /* constants */
 #define PANEL_BORDER_WIDTH	4
-#define PANEL_ICON_SIZE		48
 
 
 /* functions */

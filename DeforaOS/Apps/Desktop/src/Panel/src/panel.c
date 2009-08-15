@@ -32,13 +32,16 @@
 /* types */
 struct _Panel
 {
+	gint icon_width;
+	gint icon_height;
+
 	PanelAppletHelper helper;
-	GdkWindow * root;
 	GtkWidget * window;
 	GtkWidget * hbox;
 
-	gint width;			/* width of the root window	*/
-	gint height;			/* height of the root window	*/
+	GdkWindow * root;
+	gint root_width;		/* width of the root window	*/
+	gint root_height;		/* height of the root window	*/
 };
 
 
@@ -71,6 +74,7 @@ Panel * panel_new(void)
 	GtkWidget * event;
 	gint x;
 	gint y;
+	gint height;
 	gint depth;
 
 	if((panel = malloc(sizeof(*panel))) == NULL)
@@ -79,28 +83,37 @@ Panel * panel_new(void)
 		panel_error(NULL, "malloc", 1);
 		return NULL;
 	}
+	panel->icon_width = 48;
+	panel->icon_height = 48;
+	gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR, &panel->icon_width,
+			&panel->icon_height);
 	panel->helper.priv = panel;
+	panel->helper.icon_size = GTK_ICON_SIZE_LARGE_TOOLBAR;
 	panel->helper.logout_dialog = _panel_logout_dialog;
 	panel->helper.position_menu = _panel_position_menu;
 	/* root window */
 	panel->root = gdk_screen_get_root_window(
 			gdk_display_get_default_screen(
 				gdk_display_get_default()));
-	gdk_window_get_geometry(panel->root, &x, &y, &panel->width,
-			&panel->height, &depth);
+	gdk_window_get_geometry(panel->root, &x, &y, &panel->root_width,
+			&panel->root_height, &depth);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() x=%d y=%d width=%d height=%d depth=%d\n",
-			__func__, x, y, panel->width, panel->height, depth);
+			__func__, x, y, panel->root_width, panel->root_height,
+			depth);
 #endif
 	/* panel */
 	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_resize(GTK_WINDOW(panel->window), panel->width,
-			PANEL_ICON_SIZE + (PANEL_BORDER_WIDTH * 2));
+	height = panel->icon_height + (PANEL_BORDER_WIDTH * 8);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, height);
+#endif
+	gtk_window_resize(GTK_WINDOW(panel->window), panel->root_width, height);
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
-	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->height
-		- PANEL_ICON_SIZE - (PANEL_BORDER_WIDTH * 2));
+	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->root_height
+			- height);
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);
 	event = gtk_event_box_new();
@@ -282,6 +295,7 @@ static void _panel_position_menu(GtkMenu * menu, gint * x, gint * y,
 	if(req.height <= 0)
 		return;
 	*x = PANEL_BORDER_WIDTH;
-	*y = panel->height - PANEL_BORDER_WIDTH - PANEL_ICON_SIZE - req.height;
+	*y = panel->root_height - PANEL_BORDER_WIDTH - panel->icon_height
+		- req.height;
 	*push_in = TRUE;
 }

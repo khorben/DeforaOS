@@ -58,6 +58,7 @@ struct _Tasks
 	size_t tasks_cnt;
 
 	GtkWidget * hbox;
+	GtkIconSize icon_size;
 	int icon_width;
 	int icon_height;
 
@@ -179,7 +180,7 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 		else
 			image = gtk_image_new_from_stock(
 					GTK_STOCK_MISSING_IMAGE,
-					GTK_ICON_SIZE_LARGE_TOOLBAR);
+					task->tasks->icon_size);
 		gtk_button_set_image(GTK_BUTTON(task->widget), image);
 	}
 	else if(pixbuf != NULL)
@@ -187,7 +188,7 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 	else
 		gtk_image_set_from_stock(GTK_IMAGE(image),
 				GTK_STOCK_MISSING_IMAGE,
-				GTK_ICON_SIZE_LARGE_TOOLBAR);
+				task->tasks->icon_size);
 }
 
 
@@ -206,9 +207,10 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	tasks->hbox = gtk_hbox_new(TRUE, 0);
 	g_signal_connect(G_OBJECT(tasks->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), tasks);
+	tasks->icon_size = applet->helper->icon_size;
 	tasks->icon_width = 48;
 	tasks->icon_height = 48;
-	gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR, &tasks->icon_width,
+	gtk_icon_size_lookup(tasks->icon_size, &tasks->icon_width,
 			&tasks->icon_height);
 	tasks->display = NULL;
 	tasks->screen = NULL;

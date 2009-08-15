@@ -28,6 +28,7 @@ typedef struct _PanelApplet PanelApplet;
 
 typedef struct _PanelAppletHelper
 {
+	GtkIconSize icon_size;
 	int (*logout_dialog)(void);
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
 			gboolean * push_in, gpointer data);
