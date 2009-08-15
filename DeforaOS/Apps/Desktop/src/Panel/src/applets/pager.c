@@ -28,9 +28,11 @@
 typedef enum _PagerAtom
 {
 	PAGER_ATOM_NET_CURRENT_DESKTOP = 0,
-	PAGER_ATOM_NET_NUMBER_OF_DESKTOPS
+	PAGER_ATOM_NET_DESKTOP_NAMES,
+	PAGER_ATOM_NET_NUMBER_OF_DESKTOPS,
+	PAGER_ATOM_UTF8_STRING
 } PagerAtom;
-#define PAGER_ATOM_LAST PAGER_ATOM_NET_NUMBER_OF_DESKTOPS
+#define PAGER_ATOM_LAST PAGER_ATOM_UTF8_STRING
 #define PAGER_ATOM_COUNT (PAGER_ATOM_LAST + 1)
 
 typedef struct _Pager
@@ -40,7 +42,7 @@ typedef struct _Pager
 	GtkWidget ** widgets;
 	size_t widgets_cnt;
 
-	Atom atom[PAGER_ATOM_COUNT];
+	Atom atoms[PAGER_ATOM_COUNT];
 	GdkDisplay * display;
 	GdkScreen * screen;
 	GdkWindow * root;
@@ -51,7 +53,9 @@ typedef struct _Pager
 static const char * _pager_atom[PAGER_ATOM_COUNT] =
 {
 	"_NET_CURRENT_DESKTOP",
-	"_NET_NUMBER_OF_DESKTOPS"
+	"_NET_DESKTOP_NAMES",
+	"_NET_NUMBER_OF_DESKTOPS",
+	"UTF8_STRING"
 };
 
 
@@ -61,6 +65,7 @@ static void _pager_destroy(PanelApplet * applet);
 
 /* accessors */
 static int _pager_get_current_desktop(Pager * pager);
+static char ** _pager_get_desktop_names(Pager * pager);
 static int _pager_get_window_property(Pager * pager, Window window,
 		PagerAtom property, Atom atom, unsigned long * cnt,
 		unsigned char ** ret);
@@ -122,6 +127,7 @@ static void _pager_destroy(PanelApplet * applet)
 
 
 /* accessors */
+/* pager_get_current_desktop */
 static int _pager_get_current_desktop(Pager * pager)
 {
 	unsigned long cnt;
@@ -134,6 +140,45 @@ static int _pager_get_current_desktop(Pager * pager)
 	cnt = *p;
 	XFree(p);
 	return cnt;
+}
+
+
+/* pager_get_desktop_names */
+static char ** _pager_get_desktop_names(Pager * pager)
+{
+	char ** ret = NULL;
+	size_t ret_cnt = 0;
+	unsigned long cnt;
+	char * p;
+	unsigned long i;
+	unsigned long last = 0;
+	char ** q;
+
+	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
+				PAGER_ATOM_NET_DESKTOP_NAMES,
+				pager->atoms[PAGER_ATOM_UTF8_STRING], &cnt,
+				(void*)&p) != 0)
+		return NULL;
+	for(i = 0; i < cnt; i++)
+	{
+		if(p[i] != '\0')
+			continue;
+		if((q = realloc(ret, (ret_cnt + 2) * (sizeof(*q)))) == NULL)
+		{
+			free(ret);
+			XFree(p);
+			return NULL;
+		}
+		ret = q;
+		/* FIXME validate the UTF8 string */
+		ret[ret_cnt++] = g_strdup(&p[last]);
+		last = i + 1;
+	}
+	XFree(p);
+	if(ret == NULL)
+		return ret;
+	ret[ret_cnt] = NULL;
+	return ret;
 }
 
 
@@ -152,7 +197,7 @@ static int _pager_get_window_property(Pager * pager, Window window,
 			_pager_atom[property], atom);
 #endif
 	res = XGetWindowProperty(GDK_DISPLAY_XDISPLAY(pager->display), window,
-			pager->atom[property], 0, G_MAXLONG, False, atom,
+			pager->atoms[property], 0, G_MAXLONG, False, atom,
 			&type, &format, cnt, &bytes, ret);
 	if(res != Success)
 		return 1;
@@ -168,6 +213,7 @@ static int _pager_get_window_property(Pager * pager, Window window,
 
 
 /* useful */
+/* pager_do */
 static void _pager_do(Pager * pager)
 {
 	unsigned long cnt = 0;
@@ -176,6 +222,7 @@ static void _pager_do(Pager * pager)
 	unsigned long i;
 	GtkWidget ** q;
 	int cur;
+	char ** names;
 	char buf[16];
 
 	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
@@ -198,9 +245,23 @@ static void _pager_do(Pager * pager)
 	pager->widgets = q;
 	pager->widgets_cnt = l;
 	cur = _pager_get_current_desktop(pager);
+	names = _pager_get_desktop_names(pager);
 	for(i = 0; i < l; i++)
 	{
 		snprintf(buf, sizeof(buf), "Desk %ld\n", i + 1);
+		if(names != NULL)
+		{
+			if(names[i] != NULL)
+			{
+				snprintf(buf, sizeof(buf), "%s", names[i]);
+				g_free(names[i]);
+			}
+			else
+			{
+				free(names);
+				names = NULL;
+			}
+		}
 		pager->widgets[i] = gtk_button_new_with_label(buf);
 		if(i == cur)
 			gtk_button_set_relief(GTK_BUTTON(pager->widgets[i]),
@@ -210,6 +271,7 @@ static void _pager_do(Pager * pager)
 		gtk_box_pack_start(GTK_BOX(pager->hbox), pager->widgets[i],
 				FALSE, TRUE, 0);
 	}
+	free(names);
 	gtk_widget_show_all(pager->hbox);
 }
 
@@ -258,7 +320,7 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type != PropertyNotify)
 		return GDK_FILTER_CONTINUE;
-	if(xev->xproperty.atom == pager->atom[PAGER_ATOM_NET_CURRENT_DESKTOP])
+	if(xev->xproperty.atom == pager->atoms[PAGER_ATOM_NET_CURRENT_DESKTOP])
 	{
 		if((cur = _pager_get_current_desktop(pager)) < 0)
 			return GDK_FILTER_CONTINUE;
@@ -268,10 +330,11 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 					: GTK_RELIEF_NORMAL);
 		return GDK_FILTER_CONTINUE;
 	}
-	if(xev->xproperty.atom != pager->atom[
-			PAGER_ATOM_NET_NUMBER_OF_DESKTOPS])
-		return GDK_FILTER_CONTINUE;
-	_pager_do(pager);
+	if(xev->xproperty.atom == pager->atoms[
+			PAGER_ATOM_NET_NUMBER_OF_DESKTOPS]
+			|| xev->xproperty.atom == pager->atoms[
+			PAGER_ATOM_NET_DESKTOP_NAMES])
+		_pager_do(pager);
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -293,7 +356,7 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	gdk_window_add_filter(pager->root, _on_filter, pager);
 	/* atoms */
 	for(i = 0; i < PAGER_ATOM_COUNT; i++)
-		pager->atom[i] = gdk_x11_get_xatom_by_name_for_display(
+		pager->atoms[i] = gdk_x11_get_xatom_by_name_for_display(
 				pager->display, _pager_atom[i]);
 	_pager_do(pager);
 }
