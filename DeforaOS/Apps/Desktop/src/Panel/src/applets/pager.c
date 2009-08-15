@@ -60,6 +60,7 @@ static GtkWidget * _pager_init(PanelApplet * applet);
 static void _pager_destroy(PanelApplet * applet);
 
 /* accessors */
+static int _pager_get_current_desktop(Pager * pager);
 static int _pager_get_window_property(Pager * pager, Window window,
 		PagerAtom property, Atom atom, unsigned long * cnt,
 		unsigned char ** ret);
@@ -121,6 +122,21 @@ static void _pager_destroy(PanelApplet * applet)
 
 
 /* accessors */
+static int _pager_get_current_desktop(Pager * pager)
+{
+	unsigned long cnt;
+	unsigned long * p;
+
+	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
+				PAGER_ATOM_NET_CURRENT_DESKTOP,
+				XA_CARDINAL, &cnt, (void*)&p) != 0)
+		return -1;
+	cnt = *p;
+	XFree(p);
+	return cnt;
+}
+
+
 /* pager_get_window_property */
 static int _pager_get_window_property(Pager * pager, Window window,
 		PagerAtom property, Atom atom, unsigned long * cnt,
@@ -159,6 +175,7 @@ static void _pager_do(Pager * pager)
 	unsigned long * p;
 	unsigned long i;
 	GtkWidget ** q;
+	int cur;
 	char buf[16];
 
 	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
@@ -180,10 +197,14 @@ static void _pager_do(Pager * pager)
 		return;
 	pager->widgets = q;
 	pager->widgets_cnt = l;
+	cur = _pager_get_current_desktop(pager);
 	for(i = 0; i < l; i++)
 	{
 		snprintf(buf, sizeof(buf), "Desk %ld\n", i + 1);
 		pager->widgets[i] = gtk_button_new_with_label(buf);
+		if(i == cur)
+			gtk_button_set_relief(GTK_BUTTON(pager->widgets[i]),
+					GTK_RELIEF_NONE);
 		g_signal_connect(G_OBJECT(pager->widgets[i]), "clicked",
 				G_CALLBACK(_on_clicked), pager);
 		gtk_box_pack_start(GTK_BOX(pager->hbox), pager->widgets[i],
@@ -232,9 +253,21 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 {
 	Pager * pager = data;
 	XEvent * xev = xevent;
+	int cur;
+	size_t i;
 
 	if(xev->type != PropertyNotify)
 		return GDK_FILTER_CONTINUE;
+	if(xev->xproperty.atom == pager->atom[PAGER_ATOM_NET_CURRENT_DESKTOP])
+	{
+		if((cur = _pager_get_current_desktop(pager)) < 0)
+			return GDK_FILTER_CONTINUE;
+		for(i = 0; i < pager->widgets_cnt; i++)
+			gtk_button_set_relief(GTK_BUTTON(pager->widgets[i]),
+					i == cur ? GTK_RELIEF_NONE
+					: GTK_RELIEF_NORMAL);
+		return GDK_FILTER_CONTINUE;
+	}
 	if(xev->xproperty.atom != pager->atom[
 			PAGER_ATOM_NET_NUMBER_OF_DESKTOPS])
 		return GDK_FILTER_CONTINUE;
@@ -251,19 +284,16 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	GdkEventMask events;
 	size_t i;
 
-	if(pager->screen == NULL)
-	{
-		pager->screen = gtk_widget_get_screen(widget);
-		pager->display = gdk_screen_get_display(pager->screen);
-		pager->root = gdk_screen_get_root_window(pager->screen);
-		events = gdk_window_get_events(pager->root);
-		gdk_window_set_events(pager->root, events
-				| GDK_PROPERTY_CHANGE_MASK);
-		gdk_window_add_filter(pager->root, _on_filter, pager);
-		/* atoms */
-		for(i = 0; i < PAGER_ATOM_COUNT; i++)
-			pager->atom[i] = gdk_x11_get_xatom_by_name_for_display(
-					pager->display, _pager_atom[i]);
-	}
+	pager->screen = gtk_widget_get_screen(widget);
+	pager->display = gdk_screen_get_display(pager->screen);
+	pager->root = gdk_screen_get_root_window(pager->screen);
+	events = gdk_window_get_events(pager->root);
+	gdk_window_set_events(pager->root, events
+			| GDK_PROPERTY_CHANGE_MASK);
+	gdk_window_add_filter(pager->root, _on_filter, pager);
+	/* atoms */
+	for(i = 0; i < PAGER_ATOM_COUNT; i++)
+		pager->atom[i] = gdk_x11_get_xatom_by_name_for_display(
+				pager->display, _pager_atom[i]);
 	_pager_do(pager);
 }
