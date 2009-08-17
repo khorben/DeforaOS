@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -156,6 +156,9 @@ Mailer * mailer_new(void)
 	/* widgets */
 	mailer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(mailer->window), 800, 600);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(mailer->window), "stock_mail");
+#endif
 	gtk_window_set_title(GTK_WINDOW(mailer->window), "Mailer");
 	g_signal_connect(G_OBJECT(mailer->window), "delete-event", G_CALLBACK(
 				on_closex), NULL);
@@ -362,11 +365,11 @@ static GtkWidget * _new_headers(Mailer * mailer)
 		GtkWidget ** widget;
 	} widgets[] =
 	{
-		{ " Subject: ",	&mailer->hdr_subject	},
-		{ " From: ",	&mailer->hdr_from	},
-		{ " To: ",	&mailer->hdr_to		},
-		{ " Date: ",	&mailer->hdr_date	},
-		{ NULL,		NULL			}
+		{ " Subject: ",	NULL	},
+		{ " From: ",	NULL	},
+		{ " To: ",	NULL	},
+		{ " Date: ",	NULL	},
+		{ NULL,		NULL	}
 	};
 	int i;
 	GtkWidget * vbox;
@@ -375,6 +378,10 @@ static GtkWidget * _new_headers(Mailer * mailer)
 	GtkSizeGroup * group;
 	PangoFontDescription * bold;
 
+	widgets[0].widget = &mailer->hdr_subject;
+	widgets[1].widget = &mailer->hdr_from;
+	widgets[2].widget = &mailer->hdr_to;
+	widgets[3].widget = &mailer->hdr_date;
 	vbox = gtk_vbox_new(FALSE, 0);
 	mailer->hdr_vbox = gtk_vbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
