@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Player */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -372,6 +372,9 @@ Player * player_new(void)
 	/* widgets */
 	player->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(player->window), 512, 384);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(player->window), "multimedia");
+#endif
 	gtk_window_set_title(GTK_WINDOW(player->window), "Player");
 	gtk_widget_realize(player->window);
 	g_signal_connect(G_OBJECT(player->window), "delete-event", G_CALLBACK(
