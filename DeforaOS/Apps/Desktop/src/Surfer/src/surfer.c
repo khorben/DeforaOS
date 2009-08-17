@@ -160,6 +160,9 @@ Surfer * surfer_new(char const * url)
 	/* window */
 	surfer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 800, 600);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
+#endif
 	surfer_set_title(surfer, NULL);
 	g_signal_connect(G_OBJECT(surfer->window), "delete_event", G_CALLBACK(
 				on_closex), surfer);
