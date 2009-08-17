@@ -121,6 +121,9 @@ Editor * editor_new(void)
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(editor->window), 600, 400);
 	_new_set_title(editor);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(editor->window), "text-editor");
+#endif
 	g_signal_connect(G_OBJECT(editor->window), "delete-event", G_CALLBACK(
 			on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
