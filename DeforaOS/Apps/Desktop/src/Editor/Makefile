@@ -1,6 +1,6 @@
 PACKAGE	= Editor
-VERSION	= 0.0.1
-SUBDIRS	= src
+VERSION	= 0.0.2
+SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,9 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/editor.desktop \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/editor.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
