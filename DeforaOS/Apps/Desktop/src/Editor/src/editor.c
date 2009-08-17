@@ -26,7 +26,7 @@
 
 
 /* types */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 struct _menu
 {
 	char * name;
@@ -44,7 +44,7 @@ struct _menubar
 
 
 /* constants */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 static struct _menu _menu_file[] =
 {
 	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_n },
@@ -95,7 +95,7 @@ static struct _menubar _menubar[] =
 /* Editor */
 /* editor_new */
 static void _new_set_title(Editor * editor);
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 static GtkWidget * _new_menubar(Editor * editor);
 #endif
 
@@ -128,7 +128,7 @@ Editor * editor_new(void)
 			on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	gtk_box_pack_start(GTK_BOX(vbox), _new_menubar(editor), FALSE, FALSE,
 			0);
 #endif
@@ -187,7 +187,7 @@ static void _new_set_title(Editor * editor)
 	gtk_window_set_title(GTK_WINDOW(editor->window), buf);
 }
 
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 static GtkWidget * _new_menubar(Editor * editor)
 {
 	GtkWidget * tb_menubar;
@@ -319,6 +319,10 @@ void editor_open(Editor * editor, char const * filename)
 	GtkTextIter iter;
 	char buf[BUFSIZ];
 	size_t len;
+	char * p;
+	size_t rlen;
+	size_t wlen;
+	GError * error = NULL;
 
 	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
 						editor->view))) == TRUE)
@@ -358,7 +362,22 @@ void editor_open(Editor * editor, char const * filename)
 	while((len = fread(buf, sizeof(char), sizeof(buf), fp)) > 0)
 	{
 		gtk_text_buffer_get_end_iter(tbuf, &iter);
-		gtk_text_buffer_insert(tbuf, &iter, buf, len);
+#if 0
+		if((p = g_convert(buf, len, "UTF-8", "ISO-8859-15", &rlen, &wlen, NULL)) != NULL)
+		{
+			gtk_text_buffer_insert(tbuf, &iter, p, wlen);
+			g_free(p);
+		}
+		else
+			gtk_text_buffer_insert(tbuf, &iter, buf, len);
+#else
+		if((p = g_locale_to_utf8(buf, len, &rlen, &wlen, &error))
+				!= NULL)
+			/* FIXME may lose characters */
+			gtk_text_buffer_insert(tbuf, &iter, p, wlen);
+		else
+			gtk_text_buffer_insert(tbuf, &iter, buf, len);
+#endif
 	}
 	fclose(fp);
 	gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(gtk_text_view_get_buffer(
