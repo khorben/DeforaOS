@@ -26,6 +26,7 @@ typedef struct _Panel Panel;
 
 /* constants */
 #define PANEL_BORDER_WIDTH	4
+#define PANEL_ICON_SIZE		GTK_ICON_SIZE_LARGE_TOOLBAR
 
 
 /* functions */

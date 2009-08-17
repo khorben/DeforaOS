@@ -103,7 +103,10 @@ static GtkWidget * _pager_init(PanelApplet * applet)
 	Pager * pager;
 
 	if((pager = malloc(sizeof(*pager))) == NULL)
+	{
+		applet->helper->error(applet->helper->priv, "malloc", 0);
 		return NULL;
+	}
 	applet->priv = pager;
 	pager->hbox = gtk_hbox_new(TRUE, 0);
 	g_signal_connect(G_OBJECT(pager->hbox), "screen-changed", G_CALLBACK(
@@ -264,8 +267,7 @@ static void _pager_do(Pager * pager)
 		}
 		pager->widgets[i] = gtk_button_new_with_label(buf);
 		if(i == cur)
-			gtk_button_set_relief(GTK_BUTTON(pager->widgets[i]),
-					GTK_RELIEF_NONE);
+			gtk_widget_set_sensitive(pager->widgets[i], FALSE);
 		g_signal_connect(G_OBJECT(pager->widgets[i]), "clicked",
 				G_CALLBACK(_on_clicked), pager);
 		gtk_box_pack_start(GTK_BOX(pager->hbox), pager->widgets[i],
@@ -325,9 +327,8 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		if((cur = _pager_get_current_desktop(pager)) < 0)
 			return GDK_FILTER_CONTINUE;
 		for(i = 0; i < pager->widgets_cnt; i++)
-			gtk_button_set_relief(GTK_BUTTON(pager->widgets[i]),
-					i == cur ? GTK_RELIEF_NONE
-					: GTK_RELIEF_NORMAL);
+			gtk_widget_set_sensitive(pager->widgets[i], i == cur
+					? FALSE : TRUE);
 		return GDK_FILTER_CONTINUE;
 	}
 	if(xev->xproperty.atom == pager->atoms[

@@ -18,7 +18,6 @@
 #ifndef PANEL_PANEL_H
 # define PANEL_PANEL_H
 
-# include <System.h>
 # include <gtk/gtk.h>
 
 
@@ -29,6 +28,7 @@ typedef struct _PanelApplet PanelApplet;
 typedef struct _PanelAppletHelper
 {
 	GtkIconSize icon_size;
+	int (*error)(void * priv, char const * message, int ret);
 	int (*logout_dialog)(void);
 	void (*position_menu)(GtkMenu * menu, gint * x, gint * y,
 			gboolean * push_in, gpointer data);

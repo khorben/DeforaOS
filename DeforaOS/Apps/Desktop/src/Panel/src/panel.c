@@ -56,8 +56,9 @@ struct _Panel
 
 /* prototypes */
 /* helpers */
-static int _panel_logout_dialog(void);
-static void _panel_position_menu(GtkMenu * menu, gint * x, gint * y,
+static int _panel_helper_error(void * priv, char const * message, int ret);
+static int _panel_helper_logout_dialog(void);
+static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 
 
@@ -88,9 +89,10 @@ Panel * panel_new(void)
 	gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR, &panel->icon_width,
 			&panel->icon_height);
 	panel->helper.priv = panel;
-	panel->helper.icon_size = GTK_ICON_SIZE_LARGE_TOOLBAR;
-	panel->helper.logout_dialog = _panel_logout_dialog;
-	panel->helper.position_menu = _panel_position_menu;
+	panel->helper.error = _panel_helper_error;
+	panel->helper.icon_size = PANEL_ICON_SIZE;
+	panel->helper.logout_dialog = _panel_helper_logout_dialog;
+	panel->helper.position_menu = _panel_helper_position_menu;
 	/* root window */
 	panel->root = gdk_screen_get_root_window(
 			gdk_display_get_default_screen(
@@ -132,10 +134,11 @@ static gboolean _on_idle(gpointer data)
 	Panel * panel = data;
 	/* FIXME load all plugins, a configuration file or ask the user */
 #ifndef EMBEDDED
-	const char * plugins[] = { "cpu", "clock", "desktop", "lock", "logout",
-		"main", "memory", "pager", "tasks", NULL };
+	const char * plugins[] = { "battery", "clock", "cpu", "desktop", "lock",
+		"logout", "main", "memory", "pager", "tasks", NULL };
 #else
-	const char * plugins[] = { "clock", "desktop", "main", "tasks", NULL };
+	const char * plugins[] = { "battery", "clock", "desktop", "main",
+		"tasks", NULL };
 #endif
 	size_t i;
 	Plugin * plugin;
@@ -254,8 +257,17 @@ static int _error_text(char const * message, int ret)
 /* private */
 /* functions */
 /* helpers */
-/* panel_logout_dialog */
-static int _panel_logout_dialog(void)
+/* panel_helper_error */
+static int _panel_helper_error(void * priv, char const * message, int ret)
+{
+	Panel * panel = priv;
+
+	return panel_error(panel, message, ret);
+}
+
+
+/* panel_helper_logout_dialog */
+static int _panel_helper_logout_dialog(void)
 {
 	GtkWidget * dialog;
 	const char message[] = "This will log you out of the current session,"
@@ -280,8 +292,8 @@ static int _panel_logout_dialog(void)
 }
 
 
-/* panel_position_menu */
-static void _panel_position_menu(GtkMenu * menu, gint * x, gint * y,
+/* panel_helper_position_menu */
+static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data)
 {
 	Panel * panel = data;
@@ -295,7 +307,7 @@ static void _panel_position_menu(GtkMenu * menu, gint * x, gint * y,
 	if(req.height <= 0)
 		return;
 	*x = PANEL_BORDER_WIDTH;
-	*y = panel->root_height - PANEL_BORDER_WIDTH - panel->icon_height
+	*y = panel->root_height - (PANEL_BORDER_WIDTH * 8) - panel->icon_height
 		- req.height;
 	*push_in = TRUE;
 }

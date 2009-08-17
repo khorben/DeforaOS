@@ -1,4 +1,4 @@
-TARGETS	= clock.so cpu.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so
+TARGETS	= battery.so clock.so cpu.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -17,6 +17,13 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+battery_OBJS = battery.o
+battery_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+battery_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+battery.so: $(battery_OBJS)
+	$(LD) -o battery.so $(battery_OBJS)
 
 clock_OBJS = clock.o
 clock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -54,7 +61,7 @@ logout.so: $(logout_OBJS)
 	$(LD) -o logout.so $(logout_OBJS)
 
 main_OBJS = main.o
-main_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+main_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -D PREFIX=\"$(PREFIX)\" $(CFLAGSF) $(CFLAGS)
 main_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 main.so: $(main_OBJS)
@@ -81,40 +88,45 @@ tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 tasks.so: $(tasks_OBJS)
 	$(LD) -o tasks.so $(tasks_OBJS)
 
-clock.o: clock.c ../../config.h
+battery.o: battery.c ../../include/panel.h
+	$(CC) $(battery_CFLAGS) -c battery.c
+
+clock.o: clock.c ../../include/panel.h
 	$(CC) $(clock_CFLAGS) -c clock.c
 
-cpu.o: cpu.c ../../config.h
+cpu.o: cpu.c ../../include/panel.h
 	$(CC) $(cpu_CFLAGS) -c cpu.c
 
-desktop.o: desktop.c
+desktop.o: desktop.c ../../include/panel.h
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
-lock.o: lock.c
+lock.o: lock.c ../../include/panel.h
 	$(CC) $(lock_CFLAGS) -c lock.c
 
-logout.o: logout.c
+logout.o: logout.c ../../include/panel.h
 	$(CC) $(logout_CFLAGS) -c logout.c
 
-main.o: main.c
+main.o: main.c ../../include/panel.h
 	$(CC) $(main_CFLAGS) -c main.c
 
-memory.o: memory.c ../../config.h
+memory.o: memory.c ../../include/panel.h
 	$(CC) $(memory_CFLAGS) -c memory.c
 
-pager.o: pager.c
+pager.o: pager.c ../../include/panel.h
 	$(CC) $(pager_CFLAGS) -c pager.c
 
-tasks.o: tasks.c ../../config.h
+tasks.o: tasks.c ../../include/panel.h
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 clean:
-	$(RM) $(clock_OBJS) $(cpu_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS)
+	$(RM) $(battery_OBJS) $(clock_OBJS) $(cpu_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 battery.so $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 clock.so $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
@@ -135,6 +147,7 @@ install: all
 	$(INSTALL) -m 0644 tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 
 uninstall:
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so

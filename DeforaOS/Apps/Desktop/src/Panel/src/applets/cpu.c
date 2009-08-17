@@ -24,7 +24,6 @@
 # include <sys/sysctl.h>
 #endif
 #include "panel.h"
-#include "../../config.h"
 
 
 /* Cpu */
@@ -32,6 +31,7 @@
 /* types */
 typedef struct _Cpu
 {
+	PanelAppletHelper * helper;
 	GtkWidget * scale;
 	guint timeout;
 #ifdef __NetBSD__
@@ -74,8 +74,12 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 	GtkWidget * widget;
 
 	if((cpu = malloc(sizeof(*cpu))) == NULL)
+	{
+		applet->helper->error(applet->helper->priv, "malloc", 0);
 		return NULL;
+	}
 	applet->priv = cpu;
+	cpu->helper = applet->helper;
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
@@ -122,7 +126,7 @@ static gboolean _on_timeout(gpointer data)
 	gdouble value;
 
 	if(sysctl(mib, 2, &cpu_time, &size, NULL, 0) < 0)
-		return TRUE;
+		return cpu->helper->error(cpu->helper->priv, "sysctl", TRUE);
 	used = cpu_time[CP_USER] + cpu_time[CP_SYS] + cpu_time[CP_NICE]
 		+ cpu_time[CP_INTR];
 	total = used + cpu_time[CP_IDLE];

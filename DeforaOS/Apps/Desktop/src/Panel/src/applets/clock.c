@@ -21,7 +21,6 @@
 #include <time.h>
 #include <errno.h>
 #include "panel.h"
-#include "../../config.h"
 
 
 /* Clock */
@@ -29,6 +28,7 @@
 /* types */
 typedef struct _Clock
 {
+	PanelAppletHelper * helper;
 	GtkWidget * label;
 	guint timeout;
 } Clock;
@@ -70,6 +70,7 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	if((clock = malloc(sizeof(*clock))) == NULL)
 		return NULL;
 	applet->priv = clock;
+	clock->helper = applet->helper;
 	ret = gtk_frame_new(NULL);
 	gtk_frame_set_shadow_type(GTK_FRAME(ret), GTK_SHADOW_IN);
 	clock->label = gtk_label_new(" \n ");
@@ -108,8 +109,8 @@ static gboolean _on_timeout(gpointer data)
 	char buf[32];
 
 	if(gettimeofday(&tv, NULL) != 0)
-		return error_set_print(PACKAGE, TRUE, "%s: %s", "gettimeofday",
-				strerror(errno));
+		return clock->helper->error(clock->helper->priv, "gettimeofday",
+				TRUE);
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
 #ifndef EMBEDDED

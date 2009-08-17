@@ -23,7 +23,6 @@
 # include <sys/sysctl.h>
 #endif
 #include "panel.h"
-#include "../../config.h"
 
 
 /* Memory */
@@ -69,7 +68,10 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 	GtkWidget * widget;
 
 	if((memory = malloc(sizeof(*memory))) == NULL)
+	{
+		applet->helper->error(applet->helper->priv, "malloc", 0);
 		return NULL;
+	}
 	applet->priv = memory;
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();

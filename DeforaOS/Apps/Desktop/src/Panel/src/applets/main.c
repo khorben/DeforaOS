@@ -15,12 +15,13 @@
 
 
 
+#include <sys/stat.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <System.h>
 #include "panel.h"
-#include "../common.h"
 
 
 /* Main */
@@ -31,6 +32,7 @@ typedef struct _Main
 	PanelAppletHelper * helper;
 	GSList * apps;
 	guint idle;
+	time_t refresh_mti;
 } Main;
 
 typedef struct _MainMenu
@@ -80,6 +82,7 @@ static gboolean _on_idle(gpointer data);
 static void _on_lock(GtkWidget * widget, gpointer data);
 static void _on_logout(GtkWidget * widget, gpointer data);
 static void _on_run(GtkWidget * widget, gpointer data);
+static gboolean _on_timeout(gpointer data);
 
 
 /* public */
@@ -110,6 +113,7 @@ static GtkWidget * _main_init(PanelApplet * applet)
 	main->helper = applet->helper;
 	main->apps = NULL;
 	main->idle = g_idle_add(_on_idle, main);
+	main->refresh_mti = 0;
 	applet->priv = main;
 	ret = gtk_button_new();
 	image = gtk_image_new_from_icon_name("gnome-main-menu",
@@ -259,6 +263,45 @@ static GtkWidget * _main_menuitem(char const * label, char const * stock)
 
 
 /* callbacks */
+/* on_clicked */
+static void _on_clicked(GtkWidget * widget, gpointer data)
+{
+	Main * main = data;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+
+	menu = gtk_menu_new();
+	menuitem = _main_menuitem("Applications", "gnome-applications");
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), _main_applications(
+				main));
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = _main_menuitem("Run...", GTK_STOCK_EXECUTE);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_run),
+			data);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
+			NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = _main_menuitem("Lock screen", "gnome-lockscreen");
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_lock),
+			data);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	menuitem = _main_menuitem("Logout...", "gnome-logout");
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_logout),
+			data);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, main->helper->position_menu,
+			main->helper->priv, 0, gtk_get_current_event_time());
+}
+
+
 /* on_idle */
 static gint _idle_apps_compare(gconstpointer a, gconstpointer b);
 
@@ -267,6 +310,8 @@ static gboolean _on_idle(gpointer data)
 	Main * main = data;
 	const char path[] = PREFIX "/share/applications";
 	DIR * dir;
+	int fd;
+	struct stat st;
 	struct dirent * de;
 	size_t len;
 	const char ext[] = ".desktop";
@@ -279,9 +324,18 @@ static gboolean _on_idle(gpointer data)
 
 	if(main->apps != NULL)
 		return FALSE;
-	if((dir = opendir(path)) == NULL)
+#if defined(__sun__)
+	if((fd = open(path, O_RDONLY)) < 0
+			|| fstat(fd, &st) != 0
+			|| (dir = fdopendir(fd)) == NULL)
+#else
+	if((dir = opendir(path)) == NULL
+			|| (fd = dirfd(dir)) < 0
+			|| fstat(fd, &st) != 0)
+#endif
 		return error_set_print("panel", FALSE, "%s: %s", path, strerror(
 					errno));
+	main->refresh_mti = st.st_mtime;
 	while((de = readdir(dir)) != NULL)
 	{
 		len = strlen(de->d_name);
@@ -321,6 +375,7 @@ static gboolean _on_idle(gpointer data)
 	closedir(dir);
 	if(config != NULL)
 		config_delete(config);
+	g_timeout_add(1000, _on_timeout, main);
 	return FALSE;
 }
 
@@ -338,74 +393,6 @@ static gint _idle_apps_compare(gconstpointer a, gconstpointer b)
 	cbp = config_get(cb, section, variable);
 	return string_compare(cap, cbp);
 }
-
-
-/* on_clicked */
-#if 0
-static void _clicked_menu_position(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, gpointer data);
-#endif
-
-static void _on_clicked(GtkWidget * widget, gpointer data)
-{
-	Main * main = data;
-	GtkWidget * menu;
-	GtkWidget * menuitem;
-
-	menu = gtk_menu_new();
-	menuitem = _main_menuitem("Applications", "gnome-applications");
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), _main_applications(
-				main));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = _main_menuitem("Run...", GTK_STOCK_EXECUTE);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_run),
-			data);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
-			NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = _main_menuitem("Lock screen", "gnome-lockscreen");
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_lock),
-			data);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = _main_menuitem("Logout...", "gnome-logout");
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_logout),
-			data);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	gtk_widget_show_all(menu);
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, main->helper->position_menu,
-			main->helper->priv, 0, gtk_get_current_event_time());
-}
-
-#if 0
-static void _clicked_menu_position(GtkMenu * menu, gint * x, gint * y,
-		gboolean * push_in, gpointer data)
-{
-	Panel * panel = data;
-	GtkRequisition req;
-
-	gtk_widget_size_request(GTK_WIDGET(menu), &req);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() width=%d, height=%d\n", __func__,
-			req.width, req.height);
-#endif
-	if(req.height <= 0)
-		return;
-	*x = PANEL_BORDER_WIDTH;
-#if 0 /* FIXME figure a way for this */
-	*y = panel->height - PANEL_BORDER_WIDTH - PANEL_ICON_SIZE - req.height;
-#else
-	*y = 1024 - PANEL_BORDER_WIDTH - PANEL_ICON_SIZE - req.height;
-#endif
-	*push_in = TRUE;
-}
-#endif
 
 
 /* on_lock */
@@ -438,4 +425,26 @@ static void _on_run(GtkWidget * widget, gpointer data)
 		| G_SPAWN_STDERR_TO_DEV_NULL;
 
 	g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, NULL);
+}
+
+
+/* on_timeout */
+static gboolean _on_timeout(gpointer data)
+{
+	Main * main = data;
+	const char path[] = PREFIX "/share/applications";
+	struct stat st;
+
+	if(stat(path, &st) != 0)
+		return TRUE;
+	if(st.st_mtime == main->refresh_mti)
+		return TRUE;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() resetting the menu\n", __func__);
+#endif
+	g_slist_foreach(main->apps, (GFunc)config_delete, NULL);
+	g_slist_free(main->apps);
+	main->apps = NULL;
+	g_idle_add(_on_idle, main);
+	return FALSE;
 }

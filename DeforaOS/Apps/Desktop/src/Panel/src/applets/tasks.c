@@ -22,7 +22,6 @@
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #include "panel.h"
-#include "../../config.h"
 
 
 /* Tasks */
@@ -49,11 +48,16 @@ typedef struct _Task
 	Tasks * tasks;
 	Window window;
 	GtkWidget * widget;
+	GtkWidget * image;
+#ifndef EMBEDDED
+	GtkWidget * label;
+#endif
 	gboolean delete;
 } Task;
 
 struct _Tasks
 {
+	PanelAppletHelper * helper;
 	Task ** tasks;
 	size_t tasks_cnt;
 
@@ -138,17 +142,32 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 		GdkPixbuf * pixbuf)
 {
 	Task * task;
+	GtkWidget * hbox;
 
 	if((task = malloc(sizeof(*task))) == NULL)
+	{
+		tasks->helper->error(tasks->helper->priv, "malloc", 0);
 		return NULL;
+	}
 	task->tasks = tasks;
 	task->window = window;
 	task->widget = gtk_button_new();
+	task->image = gtk_image_new();
 	task->delete = FALSE;
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), task->image, FALSE, TRUE, 0);
 #ifndef EMBEDDED
-	gtk_button_set_alignment(GTK_BUTTON(task->widget), 0.0, 0.5);
+	task->label = gtk_label_new(name);
+#if 0 /* FIXME doesn't seem to work properly */
+	gtk_label_set_ellipsize(GTK_LABEL(task->label), PANGO_ELLIPSIZE_END);
+#endif
+	gtk_label_set_line_wrap(GTK_LABEL(task->label), TRUE);
+	gtk_label_set_line_wrap_mode(GTK_LABEL(task->label),
+			PANGO_WRAP_WORD_CHAR);
+	gtk_box_pack_start(GTK_BOX(hbox), task->label, FALSE, TRUE, 0);
 	gtk_widget_set_size_request(task->widget, tasks->icon_width, -1);
 #endif
+	gtk_container_add(GTK_CONTAINER(task->widget), hbox);
 	g_signal_connect(task->widget, "clicked", G_CALLBACK(_on_clicked),
 			task);
 	_task_set(task, name, pixbuf);
@@ -167,26 +186,14 @@ static void _task_delete(Task * task)
 /* task_set */
 static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 {
-	GtkWidget * image;
-
 #ifndef EMBEDDED
-	gtk_button_set_label(task->widget, name);
+	gtk_label_set_text(GTK_LABEL(task->label), name);
 #endif
 	gtk_widget_set_tooltip_text(task->widget, name);
-	if((image = gtk_button_get_image(GTK_BUTTON(task->widget))) == NULL)
-	{
-		if(pixbuf != NULL)
-			image = gtk_image_new_from_pixbuf(pixbuf);
-		else
-			image = gtk_image_new_from_stock(
-					GTK_STOCK_MISSING_IMAGE,
-					task->tasks->icon_size);
-		gtk_button_set_image(GTK_BUTTON(task->widget), image);
-	}
-	else if(pixbuf != NULL)
-		gtk_image_set_from_pixbuf(GTK_IMAGE(image), pixbuf);
+	if(pixbuf != NULL)
+		gtk_image_set_from_pixbuf(GTK_IMAGE(task->image), pixbuf);
 	else
-		gtk_image_set_from_stock(GTK_IMAGE(image),
+		gtk_image_set_from_stock(GTK_IMAGE(task->image),
 				GTK_STOCK_MISSING_IMAGE,
 				task->tasks->icon_size);
 }
@@ -202,6 +209,7 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	if((tasks = malloc(sizeof(*tasks))) == NULL)
 		return NULL;
 	applet->priv = tasks;
+	tasks->helper = applet->helper;
 	tasks->tasks = NULL;
 	tasks->tasks_cnt = 0;
 	tasks->hbox = gtk_hbox_new(TRUE, 0);
@@ -450,9 +458,6 @@ static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
 	if(i < tasks->tasks_cnt)
 	{
 		p = tasks->tasks[i];
-#ifndef EMBEDDED
-		gtk_button_set_label(GTK_BUTTON(p->widget), name);
-#endif
 		_task_set(p, name, pixbuf);
 		p->delete = FALSE;
 	}	
@@ -468,6 +473,9 @@ static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
 		gtk_widget_show_all(p->widget);
 		gtk_box_pack_start(GTK_BOX(tasks->hbox), p->widget, FALSE, TRUE,
 				0);
+#ifdef EMBEDDED
+		gtk_box_reorder_child(GTK_BOX(tasks->hbox), p->widget, 0);
+#endif
 	}
 	return 0;
 }
