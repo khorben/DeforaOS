@@ -77,12 +77,12 @@ void on_file_new_folder(GtkWidget * widget, gpointer data)
 
 	if((path = malloc(strlen(cur) + sizeof(newfolder) + 1)) == NULL)
 	{
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, "malloc", 0);
 		return;
 	}
 	sprintf(path, "%s/%s", cur, newfolder);
 	if(mkdir(path, 0777) != 0)
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, path, 0);
 	free(path);
 }
 
@@ -655,7 +655,6 @@ void on_updir(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 	char * dir;
 
-	browser = data;
 	dir = g_path_get_dirname(browser->current->data);
 	browser_set_location(browser, dir);
 	g_free(dir);
@@ -764,14 +763,14 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	{
 		q = g_filename_from_utf8(p, -1, NULL, NULL, NULL);
 		if(rename(path, q != NULL ? q : p) != 0)
-			browser_error(browser, strerror(errno), 0);
+			browser_error(browser, path, 0);
 		else
 			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
 					p, BR_COL_DISPLAY_NAME, arg2, -1);
 		free(q);
 	}
 	else if(link(path, p) != 0 || unlink(path) != 0)
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, path, 0);
 	else
 		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, p,
 				BR_COL_DISPLAY_NAME, arg2, -1);
@@ -1039,12 +1038,12 @@ static void _on_popup_new_text_file(GtkWidget * widget, gpointer data)
 
 	if((path = malloc(strlen(cur) + sizeof(newtext) + 1)) == NULL)
 	{
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, "malloc", 0);
 		return;
 	}
 	sprintf(path, "%s/%s", cur, newtext);
 	if((fd = creat(path, 0666)) < 0)
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, path, 0);
 	else
 		close(fd);
 	free(path);
@@ -1240,11 +1239,11 @@ static void _on_icon_run(GtkWidget * widget, gpointer data)
 	if(res != GTK_RESPONSE_YES)
 		return;
 	if((pid = fork()) == -1)
-		browser_error(cb->browser, strerror(errno), 0);
+		browser_error(cb->browser, "fork", 0);
 	else if(pid == 0)
 	{
 		execl(cb->path, cb->path, NULL);
-		browser_error(cb->browser, strerror(errno), 0);
+		browser_error(cb->browser, "fork", 0);
 		exit(127);
 	}
 }
@@ -1271,5 +1270,5 @@ static void _on_icon_unmount(GtkWidget * widget, gpointer data)
 	IconCallback * cb = data;
 
 	if(unmount(cb->path, 0) != 0)
-		browser_error(cb->browser, strerror(errno), 0);
+		browser_error(cb->browser, cb->path, 0);
 }

@@ -129,6 +129,7 @@ unsigned int browser_cnt = 0;
 /* public */
 /* functions */
 /* browser_new */
+static gboolean _new_idle(gpointer data);
 static int _new_pixbufs(Browser * browser);
 static GtkListStore * _create_store(Browser * browser);
 
@@ -147,6 +148,7 @@ Browser * browser_new(char const * directory)
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 #endif
+	char * p;
 
 	if((browser = malloc(sizeof(*browser))) == NULL)
 	{
@@ -322,10 +324,6 @@ Browser * browser_new(char const * directory)
 	browser_set_view(browser, BV_DETAILS);
 	gtk_widget_grab_focus(browser->detailview);
 #endif
-	if(directory != NULL)
-		browser_set_location(browser, directory);
-	else
-		browser_go_home(browser);
 
 	/* preferences */
 	browser->pr_window = NULL;
@@ -333,10 +331,34 @@ Browser * browser_new(char const * directory)
 	/* about */
 	browser->ab_window = NULL;
 
+	/* open directory */
+	if(directory != NULL && (p = strdup(directory)) != NULL)
+		browser->current = g_list_append(browser->current, p);
+	g_idle_add(_new_idle, browser);
+
+
 	gtk_container_add(GTK_CONTAINER(browser->window), vbox);
 	gtk_widget_show_all(browser->window);
 	browser_cnt++;
 	return browser;
+}
+
+static gboolean _new_idle(gpointer data)
+{
+	Browser * browser = data;
+	char * p;
+
+	if(browser->current == NULL)
+		browser_go_home(browser);
+	else
+	{
+		p = browser->current->data;
+		browser->current = g_list_delete_link(browser->current,
+				browser->current);
+		browser_set_location(browser, p);
+		free(p);
+	}
+	return FALSE;
 }
 
 static int _new_pixbufs(Browser * browser)
@@ -486,7 +508,7 @@ int browser_error(Browser * browser, char const * message, int ret)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	if(ret < 0)
 	{
@@ -655,7 +677,7 @@ void browser_refresh(Browser * browser)
 			|| fstat(fd, &st) != 0
 			|| (dir = fdopendir(fd)) == NULL)
 	{
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, browser->current->data, 0);
 		if(fd >= 0)
 			close(fd);
 		return;
@@ -663,13 +685,13 @@ void browser_refresh(Browser * browser)
 #else
 	if((dir = opendir(browser->current->data)) == NULL)
 	{
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, browser->current->data, 0);
 		return;
 	}
 	fd = dirfd(dir);
 	if(fstat(fd, &st) != 0)
 	{
-		browser_error(browser, strerror(errno), 0);
+		browser_error(browser, browser->current->data, 0);
 		closedir(dir);
 		return;
 	}
@@ -738,8 +760,8 @@ static void _refresh_path(Browser * browser)
 
 
 /* _refresh_new */
-static int _new_loop(Browser * browser);
-static gboolean _new_idle(gpointer data);
+static int _refresh_new_loop(Browser * browser);
+static gboolean _refresh_new_idle(gpointer data);
 static void _refresh_done(Browser * browser);
 
 static void _refresh_new(Browser * browser)
@@ -747,21 +769,22 @@ static void _refresh_new(Browser * browser)
 	unsigned int i;
 
 	gtk_list_store_clear(browser->store);
-	for(i = 0; i < IDLE_LOOP_ICON_CNT && _new_loop(browser) == 0; i++);
+	for(i = 0; i < IDLE_LOOP_ICON_CNT
+			&& _refresh_new_loop(browser) == 0; i++);
 	if(i == IDLE_LOOP_ICON_CNT)
-		browser->refresh_id = g_idle_add(_new_idle, browser);
+		browser->refresh_id = g_idle_add(_refresh_new_idle, browser);
 	else
 		_refresh_done(browser);
 }
 
 
-/* _new_loop */
+/* _refresh_new_loop */
 static int _loop_status(Browser * browser);
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * lst,
 		struct stat * st, gboolean updated);
 
-static int _new_loop(Browser * browser)
+static int _refresh_new_loop(Browser * browser)
 {
 	struct dirent * de;
 	GtkTreeIter iter;
@@ -1029,12 +1052,13 @@ static void _insert_dir(Browser * browser, GdkPixbuf ** icon_24,
 #endif
 }
 
-static gboolean _new_idle(gpointer data)
+static gboolean _refresh_new_idle(gpointer data)
 {
 	Browser * browser = data;
 	unsigned int i;
 
-	for(i = 0; i < IDLE_LOOP_ICON_CNT && _new_loop(browser) == 0; i++);
+	for(i = 0; i < IDLE_LOOP_ICON_CNT
+			&& _refresh_new_loop(browser) == 0; i++);
 	if(i == IDLE_LOOP_ICON_CNT)
 		return TRUE;
 	_refresh_done(browser);
@@ -1260,7 +1284,7 @@ void browser_set_location(Browser * browser, char const * path)
 		return;
 	}
 	else
-		browser_error(browser, realpath, 0); /* XXX call strerror() */
+		browser_error(browser, realpath, 0);
 	free(realpath);
 }
 
