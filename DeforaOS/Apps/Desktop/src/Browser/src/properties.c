@@ -282,7 +282,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	hbox = gtk_hbox_new(FALSE, 4); /* separator */
 	widget = gtk_hseparator_new();
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0); /* close button */
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
@@ -295,7 +295,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 					_properties_on_apply), properties);
 		gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	}
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
 	pango_font_description_free(bold);
