@@ -1,6 +1,6 @@
 PACKAGE	= Browser
 VERSION	= 0.1.2
-SUBDIRS	= src data
+SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,9 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/browser.desktop \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/browser.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
@@ -39,8 +42,6 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/desktop.h \
 		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/data/browser.desktop \
-		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/TODO \
