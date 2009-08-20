@@ -31,6 +31,7 @@ typedef enum _TasksAtom
 {
 	TASKS_ATOM_NET_ACTIVE_WINDOW = 0,
 	TASKS_ATOM_NET_CLIENT_LIST,
+	TASKS_ATOM_NET_CLOSE_WINDOW,
 	TASKS_ATOM_NET_WM_ICON,
 	TASKS_ATOM_NET_WM_NAME,
 	TASKS_ATOM_NET_WM_VISIBLE_NAME,
@@ -78,6 +79,7 @@ static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 {
 	"_NET_ACTIVE_WINDOW",
 	"_NET_CLIENT_LIST",
+	"_NET_CLOSE_WINDOW",
 	"_NET_WM_ICON",
 	"_NET_WM_NAME",
 	"_NET_WM_VISIBLE_NAME",
@@ -110,8 +112,10 @@ static void _tasks_do(Tasks * tasks);
 
 /* callbacks */
 static void _on_clicked(GtkWidget * widget, gpointer data);
+static void _on_close(GtkWidget * widget, gpointer data);
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
+static gboolean _on_popup(GtkWidget * widget, gpointer data);
 static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 		gpointer data);
 
@@ -152,6 +156,10 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 	task->tasks = tasks;
 	task->window = window;
 	task->widget = gtk_button_new();
+	g_signal_connect(G_OBJECT(task->widget), "popup_menu", G_CALLBACK(
+				_on_popup), task);
+	g_signal_connect(task->widget, "clicked", G_CALLBACK(_on_clicked),
+			task);
 	task->image = gtk_image_new();
 	task->delete = FALSE;
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -168,8 +176,6 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 	gtk_widget_set_size_request(task->widget, tasks->icon_width, -1);
 #endif
 	gtk_container_add(GTK_CONTAINER(task->widget), hbox);
-	g_signal_connect(task->widget, "clicked", G_CALLBACK(_on_clicked),
-			task);
 	_task_set(task, name, pixbuf);
 	return task;
 }
@@ -539,6 +545,31 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 #endif
 }
 
+
+/* on_close */
+static void _on_close(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	GdkDisplay * display;
+	XEvent xev;
+
+	display = task->tasks->display;
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = task->tasks->atom[
+		TASKS_ATOM_NET_CLOSE_WINDOW];
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = gdk_x11_display_get_user_time(display);
+	xev.xclient.data.l[1] = 2;
+	gdk_error_trap_push();
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(task->tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+	gdk_error_trap_pop();
+}
+
+
 static void _clicked_activate(Task * task)
 {
 	GdkDisplay * display;
@@ -575,6 +606,25 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		return GDK_FILTER_CONTINUE;
 	_tasks_do(tasks);
 	return GDK_FILTER_CONTINUE;
+}
+
+
+/* on_popup */
+static gboolean _on_popup(GtkWidget * widget, gpointer data)
+{
+	Task * task = data;
+	GtkWidget * menu;
+	GtkWidget * menuitem;
+
+	menu = gtk_menu_new();
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, NULL);
+	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_close),
+			task);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	gtk_widget_show_all(menu);
+	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, task, 2,
+			gtk_get_current_event_time());
+	return TRUE;
 }
 
 
