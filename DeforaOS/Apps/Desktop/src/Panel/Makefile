@@ -21,7 +21,7 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		$(PACKAGE)-$(VERSION)/include/panel.h \
+		$(PACKAGE)-$(VERSION)/include/Panel.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/panel.c \

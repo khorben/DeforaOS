@@ -22,7 +22,7 @@
 #ifdef __NetBSD__
 # include <sys/sysctl.h>
 #endif
-#include "panel.h"
+#include "Panel.h"
 
 
 /* Memory */

@@ -88,34 +88,34 @@ tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 tasks.so: $(tasks_OBJS)
 	$(LD) -o tasks.so $(tasks_OBJS)
 
-battery.o: battery.c ../../include/panel.h
+battery.o: battery.c ../../include/Panel.h
 	$(CC) $(battery_CFLAGS) -c battery.c
 
-clock.o: clock.c ../../include/panel.h
+clock.o: clock.c ../../include/Panel.h
 	$(CC) $(clock_CFLAGS) -c clock.c
 
-cpu.o: cpu.c ../../include/panel.h
+cpu.o: cpu.c ../../include/Panel.h
 	$(CC) $(cpu_CFLAGS) -c cpu.c
 
-desktop.o: desktop.c ../../include/panel.h
+desktop.o: desktop.c ../../include/Panel.h
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
-lock.o: lock.c ../../include/panel.h
+lock.o: lock.c ../../include/Panel.h
 	$(CC) $(lock_CFLAGS) -c lock.c
 
-logout.o: logout.c ../../include/panel.h
+logout.o: logout.c ../../include/Panel.h
 	$(CC) $(logout_CFLAGS) -c logout.c
 
-main.o: main.c ../../include/panel.h
+main.o: main.c ../../include/Panel.h
 	$(CC) $(main_CFLAGS) -c main.c
 
-memory.o: memory.c ../../include/panel.h
+memory.o: memory.c ../../include/Panel.h
 	$(CC) $(memory_CFLAGS) -c memory.c
 
-pager.o: pager.c ../../include/panel.h
+pager.o: pager.c ../../include/Panel.h
 	$(CC) $(pager_CFLAGS) -c pager.c
 
-tasks.o: tasks.c ../../include/panel.h
+tasks.o: tasks.c ../../include/Panel.h
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 clean:

@@ -20,7 +20,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
-#include "panel.h"
+#include "Panel.h"
 
 
 /* Clock */

@@ -18,7 +18,7 @@
 #include <string.h>
 #include <gdk/gdkx.h>
 #include <X11/X.h>
-#include "panel.h"
+#include "Panel.h"
 
 
 /* Desktop */

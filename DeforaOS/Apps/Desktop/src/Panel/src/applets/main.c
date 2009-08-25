@@ -21,7 +21,7 @@
 #include <string.h>
 #include <errno.h>
 #include <System.h>
-#include "panel.h"
+#include "Panel.h"
 
 
 /* Main */

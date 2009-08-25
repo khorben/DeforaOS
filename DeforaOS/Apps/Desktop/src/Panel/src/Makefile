@@ -27,7 +27,7 @@ panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 panel: $(panel_OBJS)
 	$(CC) -o panel $(panel_OBJS) $(panel_LDFLAGS)
 
-panel.o: panel.c common.h ../include/panel.h
+panel.o: panel.c common.h ../include/Panel.h
 	$(CC) $(panel_CFLAGS) -c panel.c
 
 main.o: main.c common.h

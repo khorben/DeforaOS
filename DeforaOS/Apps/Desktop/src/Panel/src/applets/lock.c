@@ -15,7 +15,7 @@
 
 
 
-#include "panel.h"
+#include "Panel.h"
 
 
 /* Lock */

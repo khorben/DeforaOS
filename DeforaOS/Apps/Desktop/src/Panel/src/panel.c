@@ -22,7 +22,7 @@
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
-#include "panel.h"
+#include "Panel.h"
 #include "common.h"
 #include "../config.h"
 

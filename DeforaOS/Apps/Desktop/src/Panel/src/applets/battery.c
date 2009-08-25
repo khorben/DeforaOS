@@ -28,7 +28,7 @@
 # include <unistd.h>
 # include <paths.h>
 #endif
-#include "panel.h"
+#include "Panel.h"
 
 
 /* Battery */
