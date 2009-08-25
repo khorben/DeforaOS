@@ -334,7 +334,12 @@ void editor_open(Editor * editor, char const * filename)
 				"There are unsaved changes.\n"
 				"Are you sure you want to discard them?");
 		gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-				GTK_RESPONSE_CANCEL, GTK_STOCK_DISCARD,
+				GTK_RESPONSE_CANCEL,
+#if GTK_CHECK_VERSION(2, 12, 0)
+				GTK_STOCK_DISCARD,
+#else
+				"Discard",
+#endif
 				GTK_RESPONSE_CLOSE, NULL);
 		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
