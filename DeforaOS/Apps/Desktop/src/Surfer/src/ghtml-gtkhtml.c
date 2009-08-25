@@ -811,26 +811,29 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 	switch(event->type)
 	{
 		case GNET_CONN_HTTP_CONNECTED:
-			return _http_connected(conn);
+			_http_connected(conn);
+			return;
 		case GNET_CONN_HTTP_DATA_COMPLETE:
-			return _http_data_complete((GConnHttpEventData*)event,
-					conn);
+			_http_data_complete((GConnHttpEventData*)event, conn);
+			return;
 		case GNET_CONN_HTTP_DATA_PARTIAL:
-			return _http_data_partial((GConnHttpEventData*)event,
-					conn);
+			_http_data_partial((GConnHttpEventData*)event, conn);
+			return;
 		case GNET_CONN_HTTP_ERROR:
-			return _http_error((GConnHttpEventError*)event, conn);
+			_http_error((GConnHttpEventError*)event, conn);
+			return;
 		case GNET_CONN_HTTP_REDIRECT:
-			return _http_redirect((GConnHttpEventRedirect*)event,
-					conn);
+			_http_redirect((GConnHttpEventRedirect*)event, conn);
+			return;
 		case GNET_CONN_HTTP_RESOLVED:
-			return _http_resolved((GConnHttpEventResolved*)event,
-					conn);
+			_http_resolved((GConnHttpEventResolved*)event, conn);
+			return;
 		case GNET_CONN_HTTP_RESPONSE:
-			return _http_response((GConnHttpEventResponse*)event,
-					conn);
+			_http_response((GConnHttpEventResponse*)event, conn);
+			return;
 		case GNET_CONN_HTTP_TIMEOUT:
-			return _http_timeout(conn);
+			_http_timeout(conn);
+			return;
 	}
 }
 
@@ -913,9 +916,11 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 		case GNET_CONN_HTTP_ERROR_PROTOCOL_UNSUPPORTED:
 			msg = "Unsupported protocol";
 			break;
+#if GNET_CHECK_VERSION(2, 0, 8) /* XXX unsure about the exact version */
 		case GNET_CONN_HTTP_ERROR_HOSTNAME_RESOLUTION:
 			msg = "Unknown host";
 			break;
+#endif
 		case GNET_CONN_HTTP_ERROR_UNSPECIFIED:
 		default:
 			msg = "Unspecified error";
