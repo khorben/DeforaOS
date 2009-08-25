@@ -106,8 +106,10 @@ static void _battery_destroy(PanelApplet * applet)
 	Battery * battery = applet->priv;
 
 	g_source_remove(battery->timeout);
+#ifdef __NetBSD__
 	if(battery->fd != -1)
 		close(battery->fd);
+#endif
 	free(battery);
 }
 
