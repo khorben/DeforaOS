@@ -72,11 +72,9 @@ static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 Panel * panel_new(void)
 {
 	Panel * panel;
+	GdkScreen * screen;
 	GtkWidget * event;
-	gint x;
-	gint y;
-	gint height;
-	gint depth;
+	GdkRectangle rect;
 
 	if((panel = malloc(sizeof(*panel))) == NULL)
 	{
@@ -94,28 +92,28 @@ Panel * panel_new(void)
 	panel->helper.logout_dialog = _panel_helper_logout_dialog;
 	panel->helper.position_menu = _panel_helper_position_menu;
 	/* root window */
-	panel->root = gdk_screen_get_root_window(
-			gdk_display_get_default_screen(
-				gdk_display_get_default()));
-	gdk_window_get_geometry(panel->root, &x, &y, &panel->root_width,
-			&panel->root_height, &depth);
+	panel->root = gdk_screen_get_root_window(gdk_screen_get_default());
+	screen = gdk_screen_get_default();
+	gdk_screen_get_monitor_geometry(screen, 0, &rect);
+	panel->root_width = rect.width;
+	panel->root_height = rect.height;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() x=%d y=%d width=%d height=%d depth=%d\n",
-			__func__, x, y, panel->root_width, panel->root_height,
-			depth);
+	fprintf(stderr, "DEBUG: %s() width=%d height=%d\n", __func__,
+			panel->root_width, panel->root_height);
 #endif
 	/* panel */
 	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	height = panel->icon_height + (PANEL_BORDER_WIDTH * 8);
+	rect.height = panel->icon_height + (PANEL_BORDER_WIDTH * 8);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, height);
+	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, rect.height);
 #endif
-	gtk_window_resize(GTK_WINDOW(panel->window), panel->root_width, height);
+	gtk_window_resize(GTK_WINDOW(panel->window), panel->root_width,
+			rect.height);
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->root_height
-			- height);
+			- rect.height);
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);
 	event = gtk_event_box_new();
