@@ -137,8 +137,8 @@ static int _pager_get_current_desktop(Pager * pager)
 	unsigned long * p;
 
 	if(_pager_get_window_property(pager, GDK_WINDOW_XWINDOW(pager->root),
-				PAGER_ATOM_NET_CURRENT_DESKTOP,
-				XA_CARDINAL, &cnt, (void*)&p) != 0)
+				PAGER_ATOM_NET_CURRENT_DESKTOP, XA_CARDINAL,
+				&cnt, (void*)&p) != 0)
 		return -1;
 	cnt = *p;
 	XFree(p);
