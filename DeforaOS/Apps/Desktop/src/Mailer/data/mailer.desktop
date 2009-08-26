@@ -4,4 +4,4 @@ Comment=Read and send e-mails and more
 Exec=mailer
 Icon=stock_mail
 Type=Application
-Categories=GTK;
+Categories=Office;Network;Email;GTK;
