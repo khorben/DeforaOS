@@ -39,7 +39,7 @@ static char const * _authors[] =
 	NULL
 };
 
-const char * title[3] =
+static const char * _title[3] =
 {
 	"New account", "Account settings", "Account confirmation"
 };
@@ -633,7 +633,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	/* plug-in selection */
 	page = _assistant_account_select(ad);
 	gtk_assistant_append_page(assistant, page);
-	gtk_assistant_set_page_title(assistant, page, title[0]);
+	gtk_assistant_set_page_title(assistant, page, _title[0]);
 	gtk_assistant_set_page_type(assistant, page, GTK_ASSISTANT_PAGE_INTRO);
 	gtk_assistant_set_page_complete(assistant, page, FALSE);
 	/* plug-in preferences */
@@ -641,7 +641,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	ad->settings = page;
 	gtk_widget_show(page);
 	gtk_assistant_append_page(assistant, page);
-	gtk_assistant_set_page_title(assistant, page, title[1]);
+	gtk_assistant_set_page_title(assistant, page, _title[1]);
 	gtk_assistant_set_page_type(assistant, page,
 			GTK_ASSISTANT_PAGE_CONTENT);
 	gtk_assistant_set_page_complete(assistant, page, TRUE);
@@ -650,7 +650,7 @@ void on_account_new(GtkWidget * widget, gpointer data)
 	ad->confirm = page;
 	gtk_widget_show(page);
 	gtk_assistant_append_page(assistant, page);
-	gtk_assistant_set_page_title(assistant, page, title[2]);
+	gtk_assistant_set_page_title(assistant, page, _title[2]);
 	gtk_assistant_set_page_type(assistant, page,
 			GTK_ASSISTANT_PAGE_CONFIRM);
 	gtk_assistant_set_page_complete(assistant, page, TRUE);
@@ -707,7 +707,7 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 	Account * ac;
 
 	i = gtk_assistant_get_current_page(GTK_ASSISTANT(widget));
-	gtk_window_set_title(GTK_WINDOW(widget), title[i]);
+	gtk_window_set_title(GTK_WINDOW(widget), _title[i]);
 	if(i == 1)
 	{
 		/* XXX something is wrong with gtk_container_remove */
@@ -743,13 +743,15 @@ static void _on_assistant_prepare(GtkWidget * widget, GtkWidget * page,
 
 /* _assistant_account_select */
 static void _on_account_name_changed(GtkWidget * widget, gpointer data);
-static void _account_add_label(GtkWidget * box, char const * text);
+static void _account_add_label(GtkWidget * box, PangoFontDescription * desc,
+		char const * text);
 
 static GtkWidget * _assistant_account_select(AccountData * ad)
 {
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
+	PangoFontDescription * desc;
 	GtkWidget * widget;
 	unsigned int i;
 
@@ -757,7 +759,9 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, "Account name");
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+	_account_add_label(hbox, desc, "Account name");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_account_name_changed), ad);
@@ -765,7 +769,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, "Your name");
+	_account_add_label(hbox, desc, "Your name");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.from));
@@ -773,7 +777,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, "e-mail address");
+	_account_add_label(hbox, desc, "e-mail address");
 	widget = gtk_entry_new();
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_entry_changed), &(ad->identity.email));
@@ -781,7 +785,7 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	_account_add_label(hbox, "Type of account");
+	_account_add_label(hbox, desc, "Type of account");
 	widget = gtk_combo_box_new_text();
 	gtk_size_group_add_widget(group, widget);
 	/* XXX this works because there is no plug-in list reload
@@ -792,8 +796,9 @@ static GtkWidget * _assistant_account_select(AccountData * ad)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
 	g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(
 				_on_account_type_changed), ad);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+	pango_font_description_free(desc);
 	gtk_widget_show_all(vbox);
 	return vbox;
 }
@@ -812,35 +817,44 @@ static void _on_account_name_changed(GtkWidget * widget, gpointer data)
 			strlen(ad->title) ? TRUE : FALSE);
 }
 
-static void _account_add_label(GtkWidget * box, char const * text)
+static void _account_add_label(GtkWidget * box, PangoFontDescription * desc,
+		char const * text)
 {
 	static char buf[80]; /* XXX hard-coded size */
 	GtkWidget * label;
 
 	snprintf(buf, sizeof(buf), "%s:", text);
 	label = gtk_label_new(buf);
+	if(desc != NULL)
+		gtk_widget_modify_font(label, desc);
 	gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
 }
 
 /* _assistant_account_config */
-static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group);
+static GtkWidget * _update_string(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group);
 static GtkWidget * _update_password(AccountConfig * config,
-		GtkSizeGroup * group);
-static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group);
-static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group);
+		PangoFontDescription * desc, GtkSizeGroup * group);
+static GtkWidget * _update_file(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group);
+static GtkWidget * _update_uint16(AccountConfig * config,
+		PangoFontDescription * desc);
 static GtkWidget * _update_boolean(AccountConfig * config);
 
 static GtkWidget * _assistant_account_config(AccountConfig * config)
 {
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
+	PangoFontDescription * desc;
 	GtkWidget * widget;
 	size_t i;
 
 	vbox = gtk_vbox_new(FALSE, 4);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	for(i = 0; config[i].name != NULL; i++)
 	{
 		switch(config[i].type)
@@ -848,16 +862,18 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 			case ACT_NONE:
 				continue;
 			case ACT_STRING:
-				widget = _update_string(&config[i], group);
+				widget = _update_string(&config[i], desc,
+						group);
 				break;
 			case ACT_PASSWORD:
-				widget = _update_password(&config[i], group);
+				widget = _update_password(&config[i], desc,
+						group);
 				break;
 			case ACT_FILE:
-				widget = _update_file(&config[i], group);
+				widget = _update_file(&config[i], desc, group);
 				break;
 			case ACT_UINT16:
-				widget = _update_uint16(&config[i], group);
+				widget = _update_uint16(&config[i], desc);
 				break;
 			case ACT_BOOLEAN:
 				widget = _update_boolean(&config[i]);
@@ -867,16 +883,18 @@ static GtkWidget * _assistant_account_config(AccountConfig * config)
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
+	pango_font_description_free(desc);
 	return vbox;
 }
 
-static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
+static GtkWidget * _update_string(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_entry_new();
 	if(config->value != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), config->value);
@@ -888,13 +906,13 @@ static GtkWidget * _update_string(AccountConfig * config, GtkSizeGroup * group)
 }
 
 static GtkWidget * _update_password(AccountConfig * config,
-		GtkSizeGroup * group)
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(widget), FALSE);
 	if(config->value != NULL)
@@ -908,13 +926,14 @@ static GtkWidget * _update_password(AccountConfig * config,
 
 static void _on_file_activated(GtkWidget * widget, gpointer data);
 
-static GtkWidget * _update_file(AccountConfig * config, GtkSizeGroup * group)
+static GtkWidget * _update_file(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_file_chooser_button_new("Choose file",
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_file_chooser_button_set_title(GTK_FILE_CHOOSER_BUTTON(widget),
@@ -947,7 +966,8 @@ static void _on_file_activated(GtkWidget * widget, gpointer data)
 
 static void _on_uint16_changed(GtkWidget * widget, gpointer data);
 
-static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
+static GtkWidget * _update_uint16(AccountConfig * config,
+		PangoFontDescription * desc)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -955,7 +975,7 @@ static GtkWidget * _update_uint16(AccountConfig * config, GtkSizeGroup * group)
 	gdouble value = u16;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_spin_button_new_with_range(0, 65535, 1);
 	gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), value);
@@ -996,20 +1016,22 @@ static void _on_boolean_toggled(GtkWidget * widget, gpointer data)
 }
 
 static GtkWidget * _display_string(AccountConfig * config,
-		GtkSizeGroup * group);
+		PangoFontDescription * desc, GtkSizeGroup * group);
 static GtkWidget * _display_password(AccountConfig * config,
-		GtkSizeGroup * group);
-static GtkWidget * _display_file(AccountConfig * config, GtkSizeGroup * group);
+		PangoFontDescription * desc, GtkSizeGroup * group);
+static GtkWidget * _display_file(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group);
 static GtkWidget * _display_uint16(AccountConfig * config,
-		GtkSizeGroup * group);
+		PangoFontDescription * desc, GtkSizeGroup * group);
 static GtkWidget * _display_boolean(AccountConfig * config,
-		GtkSizeGroup * group);
+		PangoFontDescription * desc, GtkSizeGroup * group);
 static GtkWidget * _account_display(Account * account)
 {
 	AccountConfig * config = account->plugin->config;
 	AccountConfig p;
 	GtkWidget * vbox;
 	GtkSizeGroup * group;
+	PangoFontDescription * desc;
 	GtkWidget * widget;
 	unsigned int i;
 
@@ -1019,7 +1041,9 @@ static GtkWidget * _account_display(Account * account)
 	p.name = NULL;
 	p.title = "Account name";
 	p.value = account->title;
-	widget = _display_string(&p, group);
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+	widget = _display_string(&p, desc, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	for(i = 0; config[i].name != NULL; i++)
 	{
@@ -1028,19 +1052,23 @@ static GtkWidget * _account_display(Account * account)
 			case ACT_NONE:
 				continue;
 			case ACT_STRING:
-				widget = _display_string(&config[i], group);
+				widget = _display_string(&config[i], desc,
+						group);
 				break;
 			case ACT_PASSWORD:
-				widget = _display_password(&config[i], group);
+				widget = _display_password(&config[i], desc,
+						group);
 				break;
 			case ACT_FILE:
-				widget = _display_file(&config[i], group);
+				widget = _display_file(&config[i], desc, group);
 				break;
 			case ACT_UINT16:
-				widget = _display_uint16(&config[i], group);
+				widget = _display_uint16(&config[i], desc,
+						group);
 				break;
 			case ACT_BOOLEAN:
-				widget = _display_boolean(&config[i], group);
+				widget = _display_boolean(&config[i], desc,
+						group);
 				break;
 			default: /* should not happen */
 				assert(0);
@@ -1048,37 +1076,39 @@ static GtkWidget * _account_display(Account * account)
 		}
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	}
+	pango_font_description_free(desc);
 	gtk_widget_show_all(vbox);
 	return vbox;
 }
 
-static GtkWidget * _display_string(AccountConfig * config, GtkSizeGroup * group)
+static GtkWidget * _display_string(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_label_new(config->value);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	return hbox;
 }
 
-static GtkWidget * _display_file(AccountConfig * config, GtkSizeGroup * group)
+static GtkWidget * _display_file(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
-	return _display_string(config, group);
+	return _display_string(config, desc, group);
 }
 
 static GtkWidget * _display_password(AccountConfig * config,
-		GtkSizeGroup * group)
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
-	PangoFontDescription * desc;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_label_new("hidden");
 	desc = pango_font_description_new();
 	pango_font_description_set_style(desc, PANGO_STYLE_ITALIC);
@@ -1089,7 +1119,8 @@ static GtkWidget * _display_password(AccountConfig * config,
 	return hbox;
 }
 
-static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
+static GtkWidget * _display_uint16(AccountConfig * config,
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -1097,7 +1128,7 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 	uint16_t u16 = (intptr_t)config->value;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	snprintf(buf, sizeof(buf), "%hu", u16);
 	widget = gtk_label_new(buf);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -1107,13 +1138,13 @@ static GtkWidget * _display_uint16(AccountConfig * config, GtkSizeGroup * group)
 }
 
 static GtkWidget * _display_boolean(AccountConfig * config,
-		GtkSizeGroup * group)
+		PangoFontDescription * desc, GtkSizeGroup * group)
 {
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	_account_add_label(hbox, config->title);
+	_account_add_label(hbox, desc, config->title);
 	widget = gtk_label_new(config->value != 0 ? "Yes" : "No");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
