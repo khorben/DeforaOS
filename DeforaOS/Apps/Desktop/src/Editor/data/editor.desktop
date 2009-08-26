@@ -4,4 +4,4 @@ Comment=A simple text editor
 Exec=editor
 Icon=text-editor
 Type=Application
-Categories=;GTK;
+Categories=Utility;TextEditor;GTK;
