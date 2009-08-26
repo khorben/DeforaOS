@@ -32,6 +32,8 @@ typedef enum _TasksAtom
 	TASKS_ATOM_NET_ACTIVE_WINDOW = 0,
 	TASKS_ATOM_NET_CLIENT_LIST,
 	TASKS_ATOM_NET_CLOSE_WINDOW,
+	TASKS_ATOM_NET_CURRENT_DESKTOP,
+	TASKS_ATOM_NET_WM_DESKTOP,
 	TASKS_ATOM_NET_WM_ICON,
 	TASKS_ATOM_NET_WM_NAME,
 	TASKS_ATOM_NET_WM_VISIBLE_NAME,
@@ -80,6 +82,8 @@ static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 	"_NET_ACTIVE_WINDOW",
 	"_NET_CLIENT_LIST",
 	"_NET_CLOSE_WINDOW",
+	"_NET_CURRENT_DESKTOP",
+	"_NET_WM_DESKTOP",
 	"_NET_WM_ICON",
 	"_NET_WM_NAME",
 	"_NET_WM_VISIBLE_NAME",
@@ -101,6 +105,7 @@ static GtkWidget * _tasks_init(PanelApplet * applet);
 static void _tasks_destroy(PanelApplet * applet);
 
 /* accessors */
+static int _tasks_get_current_desktop(Tasks * tasks);
 static int _tasks_get_text_property(Tasks * tasks, Window window, Atom property,
 		char ** ret);
 static int _tasks_get_window_property(Tasks * tasks, Window window,
@@ -256,6 +261,26 @@ static void _tasks_destroy(PanelApplet * applet)
 
 
 /* accessors */
+/* tasks_get_current_desktop */
+static int _tasks_get_current_desktop(Tasks * tasks)
+{
+#ifndef EMBEDDED
+	unsigned long cnt;
+	unsigned long *p;
+
+	if(_tasks_get_window_property(tasks, GDK_WINDOW_XWINDOW(tasks->root),
+				TASKS_ATOM_NET_CURRENT_DESKTOP, XA_CARDINAL,
+				&cnt, (void*)&p) != 0)
+		return -1;
+	cnt = *p;
+	XFree(p);
+	return cnt;
+#else
+	return -1;
+#endif
+}
+
+
 /* tasks_get_text_property */
 static int _tasks_get_text_property(Tasks * tasks, Window window,
 		Atom property, char ** ret)
@@ -328,8 +353,8 @@ static char * _do_name(Tasks * tasks, Window window);
 static char * _do_name_text(Tasks * tasks, Window window, Atom property);
 static char * _do_name_utf8(Tasks * tasks, Window window, Atom property);
 static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window);
-static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
-		GdkPixbuf * pixbuf);
+static int _do_tasks_add(Tasks * tasks, int desktop, Window window,
+		char const * name, GdkPixbuf * pixbuf);
 static void _do_tasks_clean(Tasks * tasks);
 static int _do_typehint_normal(Tasks * tasks, Window window);
 
@@ -337,6 +362,7 @@ static void _tasks_do(Tasks * tasks)
 {
 	unsigned long cnt = 0;
 	Window * windows = NULL;
+	int desktop;
 	unsigned long i;
 	char * name;
 
@@ -347,6 +373,7 @@ static void _tasks_do(Tasks * tasks)
 				TASKS_ATOM_NET_CLIENT_LIST,
 				XA_WINDOW, &cnt, (void*)&windows) != 0)
 		return;
+	desktop = _tasks_get_current_desktop(tasks);
 	for(i = 0; i < tasks->tasks_cnt; i++)
 		tasks->tasks[i]->delete = TRUE;
 	for(i = 0; i < cnt; i++)
@@ -355,8 +382,8 @@ static void _tasks_do(Tasks * tasks)
 			continue;
 		if((name = _do_name(tasks, windows[i])) == NULL)
 			continue;
-		_do_tasks_add(tasks, windows[i], name, _do_pixbuf(tasks,
-					windows[i]));
+		_do_tasks_add(tasks, desktop, windows[i], name, _do_pixbuf(
+					tasks, windows[i]));
 		g_free(name);
 	}
 	_do_tasks_clean(tasks);
@@ -451,38 +478,49 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 	return NULL;
 }
 
-static int _do_tasks_add(Tasks * tasks, Window window, char const * name,
-		GdkPixbuf * pixbuf)
+static int _do_tasks_add(Tasks * tasks, int desktop, Window window,
+		char const * name, GdkPixbuf * pixbuf)
 {
 	size_t i;
 	Task * p = NULL;
+	unsigned long * l;
+	unsigned long cnt;
+	int cur = -1;
 	Task ** q;
 
+#ifndef EMBEDDED
+	if(_tasks_get_window_property(tasks, window, TASKS_ATOM_NET_WM_DESKTOP,
+			XA_CARDINAL, &cnt, (void*)&l) == 0)
+	{
+		if(cnt == 1)
+			cur = *l;
+		XFree(l);
+	}
+	if(cur >= 0 && cur != desktop)
+		return 0;
+#endif
 	for(i = 0; i < tasks->tasks_cnt; i++)
 		if(tasks->tasks[i]->window == window)
 			break;
-	if(i < tasks->tasks_cnt)
+	if(i < tasks->tasks_cnt) /* found the task */
 	{
 		p = tasks->tasks[i];
 		_task_set(p, name, pixbuf);
 		p->delete = FALSE;
-	}	
-	else
-	{
-		if((q = realloc(tasks->tasks, (tasks->tasks_cnt + 1)
-						* sizeof(*q))) == NULL)
-			return 1;
-		tasks->tasks = q;
-		if((p = _task_new(tasks, window, name, pixbuf)) == NULL)
-			return 1;
-		tasks->tasks[tasks->tasks_cnt++] = p;
-		gtk_widget_show_all(p->widget);
-		gtk_box_pack_start(GTK_BOX(tasks->hbox), p->widget, FALSE, TRUE,
-				0);
-#ifdef EMBEDDED
-		gtk_box_reorder_child(GTK_BOX(tasks->hbox), p->widget, 0);
-#endif
+		return 0;
 	}
+	if((q = realloc(tasks->tasks, (tasks->tasks_cnt + 1) * sizeof(*q)))
+			== NULL)
+		return 1;
+	tasks->tasks = q;
+	if((p = _task_new(tasks, window, name, pixbuf)) == NULL)
+		return 1;
+	tasks->tasks[tasks->tasks_cnt++] = p;
+	gtk_widget_show_all(p->widget);
+	gtk_box_pack_start(GTK_BOX(tasks->hbox), p->widget, FALSE, TRUE, 0);
+#ifdef EMBEDDED
+	gtk_box_reorder_child(GTK_BOX(tasks->hbox), p->widget, 0);
+#endif
 	return 0;
 }
 
@@ -602,7 +640,12 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type != PropertyNotify)
 		return GDK_FILTER_CONTINUE;
-	if(xev->xproperty.atom != tasks->atom[TASKS_ATOM_NET_CLIENT_LIST])
+	if(xev->xproperty.atom != tasks->atom[TASKS_ATOM_NET_CLIENT_LIST]
+#ifndef EMBEDDED
+			&& xev->xproperty.atom
+			!= tasks->atom[TASKS_ATOM_NET_CURRENT_DESKTOP]
+#endif
+			)
 		return GDK_FILTER_CONTINUE;
 	_tasks_do(tasks);
 	return GDK_FILTER_CONTINUE;
