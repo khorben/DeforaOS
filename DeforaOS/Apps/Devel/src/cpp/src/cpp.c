@@ -109,6 +109,7 @@ int cpp_define_add(Cpp * cpp, char const * name, char const * value)
 {
 	size_t i;
 	CppDefine * p;
+	char const * q;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(cpp, \"%s\", \"%s\")\n", __func__, name,
@@ -123,6 +124,10 @@ int cpp_define_add(Cpp * cpp, char const * name, char const * value)
 			break;
 	if(i != cpp->defines_cnt)
 		return error_set_code(1, "%s is already defined", name);
+	if(value != NULL) /* XXX not sure if this should be done here */
+		for(q = cpp_define_get(cpp, value); q != NULL;
+				q = cpp_define_get(cpp, value))
+			value = q; /* XXX may deadloop */
 	if((p = realloc(cpp->defines, sizeof(*p) * (cpp->defines_cnt + 1)))
 			== NULL)
 		return error_set_code(1, "%s", strerror(errno));
