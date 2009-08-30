@@ -931,6 +931,7 @@ int cppparser_include(CppParser * cp, char const * include)
 
 	if((path = _include_path(cp, include)) == NULL)
 		return -1;
+	for(; cp->subparser != NULL; cp = cp->subparser);
 	cp->subparser = cppparser_new(cp->cpp, cp, path, cp->filters);
 	free(path);
 	return (cp->subparser != NULL) ? 0 : -1;
