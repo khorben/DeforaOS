@@ -198,7 +198,7 @@ static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
-		return FALSE;
+		return TRUE;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() right-click\n", __func__);
 #endif
