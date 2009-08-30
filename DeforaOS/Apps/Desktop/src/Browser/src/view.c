@@ -208,9 +208,13 @@ static GtkWidget * _new_image(View * view, char const * path)
 	ph = gdk_pixbuf_get_height(pixbuf) + 4;
 	/* get the current monitor size */
 	screen = gdk_screen_get_default();
+#if GTK_CHECK_VERSION(2, 14, 0)
 	gtk_widget_realize(view->window);
 	monitor = gdk_screen_get_monitor_at_window(screen,
 			gtk_widget_get_window(view->window));
+#else
+	monitor = 0; /* FIXME hard-coded */
+#endif
 	gdk_screen_get_monitor_geometry(screen, monitor, &rect);
 	/* set an upper bound to the size of the window */
 	gtk_widget_set_size_request(window, min(pw, rect.width), min(ph,
