@@ -189,8 +189,8 @@ static GtkWidget * _new_image(View * view, char const * path)
 	int pw;
 	int ph;
 	GdkScreen * screen;
-	int sw;
-	int sh;
+	gint monitor;
+	GdkRectangle rect;
 
 	window = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(window),
@@ -206,10 +206,15 @@ static GtkWidget * _new_image(View * view, char const * path)
 			widget);
 	pw = gdk_pixbuf_get_width(pixbuf) + 4;
 	ph = gdk_pixbuf_get_height(pixbuf) + 4;
+	/* get the current monitor size */
 	screen = gdk_screen_get_default();
-	sw = gdk_screen_get_width(screen);
-	sh = gdk_screen_get_height(screen);
-	gtk_widget_set_size_request(window, min(pw, sw), min(ph, sh));
+	gtk_widget_realize(view->window);
+	monitor = gdk_screen_get_monitor_at_window(screen,
+			gtk_widget_get_window(view->window));
+	gdk_screen_get_monitor_geometry(screen, monitor, &rect);
+	/* set an upper bound to the size of the window */
+	gtk_widget_set_size_request(window, min(pw, rect.width), min(ph,
+				rect.height));
 	return window;
 }
 
