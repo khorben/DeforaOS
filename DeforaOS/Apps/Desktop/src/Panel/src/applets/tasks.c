@@ -200,7 +200,9 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 #ifndef EMBEDDED
 	gtk_label_set_text(GTK_LABEL(task->label), name);
 #endif
+#if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(task->widget, name);
+#endif
 	if(pixbuf != NULL)
 		gtk_image_set_from_pixbuf(GTK_IMAGE(task->image), pixbuf);
 	else

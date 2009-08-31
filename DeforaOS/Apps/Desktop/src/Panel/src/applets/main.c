@@ -121,7 +121,9 @@ static GtkWidget * _main_init(PanelApplet * applet)
 			applet->helper->icon_size);
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
+#if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(ret, "Main menu");
+#endif
 	g_signal_connect(G_OBJECT(ret), "clicked", G_CALLBACK(_on_clicked),
 			main);
 	return ret;
