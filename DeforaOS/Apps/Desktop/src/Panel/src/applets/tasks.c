@@ -175,8 +175,10 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 	gtk_label_set_ellipsize(GTK_LABEL(task->label), PANGO_ELLIPSIZE_END);
 #endif
 	gtk_label_set_line_wrap(GTK_LABEL(task->label), TRUE);
+#if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_label_set_line_wrap_mode(GTK_LABEL(task->label),
 			PANGO_WRAP_WORD_CHAR);
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), task->label, FALSE, TRUE, 4);
 	gtk_widget_set_size_request(task->widget, tasks->icon_width, -1);
 #endif
