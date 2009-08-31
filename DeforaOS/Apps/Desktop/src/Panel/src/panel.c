@@ -132,11 +132,10 @@ static gboolean _on_idle(gpointer data)
 	Panel * panel = data;
 	/* FIXME load all plugins, a configuration file or ask the user */
 #ifndef EMBEDDED
-	const char * plugins[] = { "battery", "clock", "cpu", "desktop", "lock",
-		"logout", "main", "memory", "pager", "tasks", NULL };
+	const char * plugins[] = { "clock", "cpu", "desktop", "lock", "logout",
+		"main", "pager", "tasks", NULL };
 #else
-	const char * plugins[] = { "battery", "clock", "desktop", "main",
-		"tasks", NULL };
+	const char * plugins[] = { "clock", "desktop", "main", "tasks", NULL };
 #endif
 	size_t i;
 	Plugin * plugin;
