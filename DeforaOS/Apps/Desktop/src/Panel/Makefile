@@ -26,6 +26,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/src/panel.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/run.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \

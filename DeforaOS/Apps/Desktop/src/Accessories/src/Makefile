@@ -1,4 +1,4 @@
-TARGETS	= calendar fontsel progress run
+TARGETS	= calendar fontsel progress
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -37,13 +37,6 @@ progress_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 progress: $(progress_OBJS)
 	$(CC) -o progress $(progress_OBJS) $(progress_LDFLAGS)
 
-run_OBJS = run.o
-run_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System
-
-run: $(run_OBJS)
-	$(CC) -o run $(run_OBJS) $(run_LDFLAGS)
-
 calendar.o: calendar.c
 	$(CC) $(calendar_CFLAGS) -c calendar.c
 
@@ -53,11 +46,8 @@ fontsel.o: fontsel.c
 progress.o: progress.c
 	$(CC) $(progress_CFLAGS) -c progress.c
 
-run.o: run.c
-	$(CC) $(run_CFLAGS) -c run.c
-
 clean:
-	$(RM) $(calendar_OBJS) $(fontsel_OBJS) $(progress_OBJS) $(run_OBJS)
+	$(RM) $(calendar_OBJS) $(fontsel_OBJS) $(progress_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -69,13 +59,10 @@ install: all
 	$(INSTALL) -m 0755 fontsel $(DESTDIR)$(BINDIR)/fontsel
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 progress $(DESTDIR)$(BINDIR)/progress
-	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 run $(DESTDIR)$(BINDIR)/run
 
 uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/calendar
 	$(RM) $(DESTDIR)$(BINDIR)/fontsel
 	$(RM) $(DESTDIR)$(BINDIR)/progress
-	$(RM) $(DESTDIR)$(BINDIR)/run
 
 .PHONY: all clean distclean install uninstall
