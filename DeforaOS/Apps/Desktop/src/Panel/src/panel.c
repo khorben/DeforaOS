@@ -116,6 +116,7 @@ Panel * panel_new(void)
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->root_height
 			- rect.height);
+	gtk_window_stick(GTK_WINDOW(panel->window));
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);
 	event = gtk_event_box_new();
