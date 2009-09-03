@@ -438,7 +438,9 @@ static void _on_run(GtkWidget * widget, gpointer data)
 /* on_shutdown */
 static void _on_shutdown(GtkWidget * widget, gpointer data)
 {
-	/* FIXME implement */
+	Main * main = data;
+
+	main->helper->shutdown_dialog();
 }
 
 

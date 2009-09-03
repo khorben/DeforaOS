@@ -60,6 +60,7 @@ static int _panel_helper_error(void * priv, char const * message, int ret);
 static int _panel_helper_logout_dialog(void);
 static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
+static int _panel_helper_shutdown_dialog(void);
 
 
 /* public */
@@ -91,6 +92,7 @@ Panel * panel_new(void)
 	panel->helper.icon_size = PANEL_ICON_SIZE;
 	panel->helper.logout_dialog = _panel_helper_logout_dialog;
 	panel->helper.position_menu = _panel_helper_position_menu;
+	panel->helper.shutdown_dialog = _panel_helper_shutdown_dialog;
 	/* root window */
 	panel->root = gdk_screen_get_root_window(gdk_screen_get_default());
 	screen = gdk_screen_get_default();
@@ -307,4 +309,43 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 	*y = panel->root_height - (PANEL_BORDER_WIDTH * 8) - panel->icon_height
 		- req.height;
 	*push_in = TRUE;
+}
+
+
+/* panel_helper_shutdown_dialog */
+static int _panel_helper_shutdown_dialog(void)
+{
+	GtkWidget * dialog;
+	const char message[] = "This will shutdown your computer,"
+		" therefore closing any application currently opened and losing"
+		" any unsaved data.\nDo you really want to proceed?";
+	enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
+	int res;
+	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
+	char * shutdown[] = { "/sbin/shutdown", "shutdown",
+#ifdef __NetBSD__
+		"-p",
+#else
+		"-h",
+#endif
+		"now", NULL };
+
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
+			GTK_BUTTONS_NONE, "%s", message);
+	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
+			"Reboot", RES_REBOOT, "Shutdown", RES_SHUTDOWN, NULL);
+	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
+	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res == RES_SHUTDOWN)
+		g_spawn_async(NULL, shutdown, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
+				NULL, NULL, NULL, NULL);
+	else if(res == RES_REBOOT)
+		g_spawn_async(NULL, reboot, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
+				NULL, NULL, NULL, NULL);
+	else
+		return 1;
+	return 0;
 }
