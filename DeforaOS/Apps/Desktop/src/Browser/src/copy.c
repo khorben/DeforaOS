@@ -79,7 +79,7 @@ static void _copy_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static gboolean _copy_idle_first(gpointer data);
 
-static int _copy(Prefs * prefs, int filec, char * filev[])
+static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 {
 	static Copy copy;
 	GtkWidget * vbox;
@@ -172,7 +172,7 @@ static void _copy_refresh(Copy * copy)
 	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur + 1,
 			copy->filec - 1);
 	fraction = copy->cur;
-	fraction /= copy->filec;
+	fraction /= copy->filec - 1;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(copy->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(copy->progress),
 			fraction);
