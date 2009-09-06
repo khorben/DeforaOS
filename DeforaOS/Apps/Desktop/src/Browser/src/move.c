@@ -56,13 +56,15 @@ static void _move_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static gboolean _move_idle_first(gpointer data);
 
-static int _move(Prefs * prefs, int filec, char * filev[])
+static int _move(Prefs * prefs, unsigned int filec, char * filev[])
 {
 	static Move move;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
+	if(filec < 2 || filev == NULL)
+		return 1; /* FIXME report error */
 	move.prefs = prefs;
 	move.filec = filec;
 	move.filev = filev;

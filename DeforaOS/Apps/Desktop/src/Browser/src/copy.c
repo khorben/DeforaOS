@@ -89,6 +89,8 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	GtkWidget * widget;
 	PangoFontDescription * bold;
 
+	if(filec < 2 || filev == NULL)
+		return 1; /* FIXME report error */
 	copy.prefs = prefs;
 	copy.filec = filec;
 	copy.filev = filev;
