@@ -404,7 +404,6 @@ function blog_insert($args)
 
 
 //blog_list
-//FIXME list the blogs if $args['user_id'] or $args['user'] is not set
 function blog_list($args)
 {
 	if(!isset($args['user_id']) && !isset($args['user']))
