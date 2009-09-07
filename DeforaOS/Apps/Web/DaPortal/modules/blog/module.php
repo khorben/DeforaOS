@@ -29,6 +29,7 @@ $text = array();
 $text['BLOG'] = 'Blog';
 $text['BLOG_ADMINISTRATION'] = 'Blog administration';
 $text['BLOG_BY'] = 'Blog by';
+$text['BLOG_LIST'] = 'Blog list';
 $text['BLOG_ON'] = 'on';
 $text['BLOG_PLANET'] = 'Planet';
 $text['BLOG_POST'] = 'Blog post';
@@ -74,6 +75,39 @@ function _blog_insert($post)
 		return FALSE;
 	}
 	return $id;
+}
+
+
+//blog_list_blogs
+function _blog_list_blogs($args)
+{
+	print('<h1 class="title blog">'._html_safe(BLOG_LIST)."</h1>\n");
+	$sql = 'SELECT title AS name, daportal_user.user_id AS user_id'
+		.', username'
+		.' FROM daportal_content, daportal_blog_user, daportal_user'
+		.' WHERE daportal_content.content_id'
+		.' =daportal_blog_user.blog_user_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND daportal_content.enabled='1'"
+		." AND daportal_user.enabled='1'";
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		return _error('Could not list blogs');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['icon'] = 'icons/16x16/blog.png';
+		$res[$i]['thumbnail'] = 'icons/48x48/blog.png';
+		$res[$i]['name'] = '<a href="'._html_link('blog', FALSE, FALSE,
+			FALSE, array('user' => $res[$i]['username']))
+			.'">'._html_safe($res[$i]['name']).'</a>';
+		$res[$i]['username'] = '<a href="'._html_link('user', '',
+			$res[$i]['user_id'], $res[$i]['username']).'">'
+				._html_safe($res[$i]['username']).'</a>';
+	}
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+				'class' => array('username' => AUTHOR),
+				'module' => 'blog', 'toolbar' => FALSE,
+				'view' => 'details'));
 }
 
 
@@ -281,6 +315,7 @@ function blog_disable($args)
 //blog_display
 function blog_display($args)
 {
+	/* FIXME make a difference between blog descriptions and posts */
 	if(!isset($args['id']))
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
@@ -372,6 +407,8 @@ function blog_insert($args)
 //FIXME list the blogs if $args['user_id'] or $args['user'] is not set
 function blog_list($args)
 {
+	if(!isset($args['user_id']) && !isset($args['user']))
+		return _blog_list_blogs($args);
 	$title = BLOG_POSTS;
 	$and = '';
 	require_once('./system/user.php');
