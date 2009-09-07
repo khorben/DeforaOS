@@ -59,7 +59,7 @@ function _blog_insert($post)
 	if($user_id == 0)
 		return FALSE;
 	require_once('./system/content.php');
-	if(($id = _content_insert($post['title'], $post['content'], 1))
+	if(($id = _content_insert($post['title'], $post['content'], 0))
 			== FALSE)
 	{
 		_error('Could not insert blog post');
@@ -406,16 +406,23 @@ function blog_insert($args)
 //blog_list
 function blog_list($args)
 {
+	global $user_id;
+
 	if(!isset($args['user_id']) && !isset($args['user']))
 		return _blog_list_blogs($args);
 	$title = BLOG_POSTS;
 	$and = '';
+	$myself = 0;
 	require_once('./system/user.php');
 	if(isset($args['user_id'])
 			&& ($username = _user_name($args['user_id'])) != FALSE)
 	{
 		$title = BLOG_POSTS._BY_.' '.$username;
 		$and = " AND daportal_user.user_id='".$args['user_id']."'";
+		if($user_id == $args['user_id'])
+			$myself = 1;
+		else
+			$and.=" AND daportal_content.enabled='1'";
 		$paging = 'user_id='._html_safe($args['user_id']).'&amp;';
 	}
 	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
@@ -425,7 +432,6 @@ function blog_list($args)
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		.' AND daportal_content.content_id'
 		.'=daportal_blog_content.blog_content_id'
-		." AND daportal_content.enabled='1'"
 		." AND daportal_module.name='blog'".$and
 		.' AND daportal_module.module_id=daportal_content.module_id';
 	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
@@ -433,21 +439,44 @@ function blog_list($args)
 			.', daportal_content.user_id AS user_id, username'
 			.', name AS module'.$sql.' ORDER BY timestamp DESC');
 	if(!is_array($res))
-		return _error('Unable to list posts');
+		return _error('Could not list blog posts');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
-		$res[$i]['action'] = 'default';
+		$res[$i]['module'] = 'blog';
 		$res[$i]['icon'] = 'icons/16x16/blog.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/blog.png';
-		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['name'] = _html_safe($res[$i]['title']);
 		$res[$i]['date'] = strftime('%d/%m/%Y %H:%M', strtotime(substr(
 						$res[$i]['date'], 0, 19)));
+		$res[$i]['date'] = _html_safe($res[$i]['date']);
+		if(!$myself)
+			continue;
+		$res[$i]['apply_module'] = 'blog';
+		$res[$i]['apply_id'] = $res[$i]['id'];
+		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE
+			? 'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+				.$res[$i]['enabled'].'.png" alt="'
+				.$res[$i]['enabled'].'" title="'
+				.($res[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED).'"/>';
 	}
 	$toolbar = array();
 	$toolbar[] = array('title' => NEW_BLOG_POST, 'class' => 'new',
 			'link' => _module_link('blog', 'insert'));
-	_module('explorer', 'browse', array('class' => array('date' => DATE),
-			'view' => 'details', 'entries' => $res,
+	if($myself)
+	{
+		$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
+				'action' => 'disable');
+		$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
+				'action' => 'enable');
+	}
+	$class = $myself ? array('enabled' => ENABLED, 'date' => DATE)
+		: array('date' => DATE);
+	//FIXME the redirection is incomplete (need to specify the user_id)
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+			'module' => 'blog', 'action' => 'list',
+			'class' => $class, 'view' => 'details', 
 			'toolbar' => $toolbar));
 }
 
