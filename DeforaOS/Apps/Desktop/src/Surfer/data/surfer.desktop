@@ -5,3 +5,4 @@ Exec=surfer
 Icon=stock_internet
 Type=Application
 Categories=Network;GTK;
+StartupNotify=true

@@ -5,3 +5,4 @@ Exec=mailer
 Icon=stock_mail
 Type=Application
 Categories=Office;Network;Email;GTK;
+StartupNotify=true

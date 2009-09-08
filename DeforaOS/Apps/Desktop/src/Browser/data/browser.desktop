@@ -5,3 +5,4 @@ Exec=browser
 Icon=system-file-manager
 Type=Application
 Categories=System;Core;FileManager;GTK;
+StartupNotify=true

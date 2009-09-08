@@ -5,3 +5,4 @@ Exec=editor
 Icon=text-editor
 Type=Application
 Categories=Utility;TextEditor;GTK;
+StartupNotify=true
