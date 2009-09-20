@@ -219,6 +219,9 @@ static gboolean _progress_idle_in(gpointer data)
 {
 	Progress * p = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() in_id=%u\n", __func__, p->in_id);
+#endif
 	if(p->in_id == 0)
 		p->in_id = g_io_add_watch(p->in_channel, G_IO_IN,
 				_progress_channel, p);
@@ -229,6 +232,9 @@ static gboolean _progress_idle_out(gpointer data)
 {
 	Progress * p = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() out_id=%u\n", __func__, p->out_id);
+#endif
 	if(p->out_id == 0)
 		p->out_id = g_io_add_watch(p->out_channel, G_IO_OUT,
 				_progress_channel, p);
@@ -317,6 +323,9 @@ static gboolean _channel_in(Progress * p, GIOChannel * source)
 	gsize read;
 	GError * error = NULL;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	p->in_id = 0;
 	status = g_io_channel_read_chars(source, &p->buf[p->buf_cnt],
 			p->bufsiz - p->buf_cnt, &read, &error);
@@ -346,6 +355,9 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 	gsize written;
 	GError * error = NULL;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	p->out_id = 0;
 	/* write data */
 	status = g_io_channel_write_chars(source, p->buf, p->buf_cnt, &written,
@@ -361,7 +373,7 @@ static gboolean _channel_out(Progress * p, GIOChannel * source)
 		p->eof = 1; /* reached end of output file */
 		g_io_channel_close(source);
 	}
-	else if(p->buf_cnt == sizeof(p->buf))
+	else if(p->buf_cnt == p->bufsiz)
 		g_idle_add(_progress_idle_in, p); /* read again */
 	p->buf_cnt -= written;
 	memmove(p->buf, &p->buf[written], p->buf_cnt);
