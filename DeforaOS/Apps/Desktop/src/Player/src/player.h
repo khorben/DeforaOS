@@ -58,7 +58,9 @@ typedef struct _Player
 
 	/* widgets */
 	GtkWidget * window;
+#ifndef EMBEDDED
 	GtkWidget * menubar;
+#endif
 	GtkWidget * view;
 	GtkWidget * view_window;
 	GtkToolItem * tb_previous;
@@ -70,8 +72,10 @@ typedef struct _Player
 	GtkToolItem * tb_next;
 	GtkWidget * progress;
 	GtkToolItem * tb_fullscreen;
+#ifndef EMBEDDED
 	GtkWidget * statusbar;
 	gint statusbar_id;
+#endif
 
 	/* playlist */
 	GtkWidget * pl_window;

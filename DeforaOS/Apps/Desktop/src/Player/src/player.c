@@ -30,6 +30,7 @@
 
 
 /* types */
+#ifndef EMBEDDED
 struct _menu
 {
 	char * name;
@@ -43,9 +44,11 @@ struct _menubar
 	char * name;
 	struct _menu * menu;
 };
+#endif
 
 
 /* constants */
+#ifndef EMBEDDED
 struct _menu _menu_file[] =
 {
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
@@ -67,22 +70,22 @@ struct _menu _menu_edit[] =
 struct _menu _menu_view[] =
 {
 	{ "_Playlist", G_CALLBACK(on_view_playlist), NULL, GDK_L },
-#if GTK_CHECK_VERSION(2, 8, 0)
+# if GTK_CHECK_VERSION(2, 8, 0)
 	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
-#else
+# else
 	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), NULL,
-#endif
+# endif
 		GDK_F },
 	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menu _menu_help[] =
 {
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
-#else
+# else
 	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
-#endif
+# endif
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -94,6 +97,7 @@ static struct _menubar _menubar[] =
 	{ "_Help", _menu_help },
 	{ NULL, NULL }
 };
+#endif
 
 
 /* Player */
@@ -331,7 +335,9 @@ static gboolean _command_write(GIOChannel * source, GIOCondition condition,
 /* public */
 /* player_new */
 static int _player_error(char const * message, int ret);
+#ifndef EMBEDDED
 static GtkWidget * _new_menubar(Player * player);
+#endif
 static void _new_mplayer(Player * player);
 static void _new_column_text(GtkWidget * view, char const * title, int id);
 #if !GTK_CHECK_VERSION(2, 12, 0)
@@ -381,15 +387,19 @@ Player * player_new(void)
 				on_player_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(player->window), vbox);
+#ifndef EMBEDDED
 	player->menubar = _new_menubar(player);
 	gtk_box_pack_start(GTK_BOX(vbox), player->menubar, FALSE, FALSE, 0);
+#endif
 	/* view */
 	player->view_window = gtk_socket_new();
 	gtk_box_pack_start(GTK_BOX(vbox), player->view_window, TRUE, TRUE, 0);
+#ifndef EMBEDDED
 	/* statusbar */
 	player->statusbar = gtk_statusbar_new();
 	player->statusbar_id = 0;
 	gtk_box_pack_end(GTK_BOX(vbox), player->statusbar, FALSE, FALSE, 0);
+#endif
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
@@ -505,6 +515,7 @@ Player * player_new(void)
 	return player;
 }
 
+#ifndef EMBEDDED
 static GtkWidget * _new_menubar(Player * player)
 {
 	GtkWidget * tb_menubar;
@@ -552,6 +563,7 @@ static GtkWidget * _new_menubar(Player * player)
 	gtk_window_add_accel_group(GTK_WINDOW(player->window), group);
 	return tb_menubar;
 }
+#endif
 
 static void _new_mplayer(Player * player)
 {
@@ -647,8 +659,10 @@ void player_set_fullscreen(Player * player, int fullscreen)
 	{
 		if(player->fullscreen)
 			return;
+#ifndef EMBEDDED
 		gtk_widget_hide(player->menubar);
 		gtk_widget_hide(player->statusbar);
+#endif
 		gtk_window_fullscreen(GTK_WINDOW(player->window));
 		player->fullscreen = !player->fullscreen;
 		return;
@@ -656,8 +670,10 @@ void player_set_fullscreen(Player * player, int fullscreen)
 	if(!player->fullscreen)
 		return;
 	gtk_window_unfullscreen(GTK_WINDOW(player->window));
+#ifndef EMBEDDED
 	gtk_widget_show(player->menubar);
 	gtk_widget_show(player->statusbar);
+#endif
 	player->fullscreen = !player->fullscreen;
 }
 
