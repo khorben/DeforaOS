@@ -47,6 +47,7 @@ else if($lang == 'fr')
 _lang($text);
 
 
+//bookmark_admin
 function bookmark_admin($args)
 {
 	global $user_id;
@@ -103,6 +104,7 @@ function bookmark_admin($args)
 }
 
 
+//bookmark_default
 function bookmark_default($args)
 {
 	if(isset($args['id']))
@@ -113,6 +115,7 @@ function bookmark_default($args)
 }
 
 
+//bookmark_delete
 function bookmark_delete($args)
 {
 	global $user_id;
@@ -130,6 +133,7 @@ function bookmark_delete($args)
 }
 
 
+//bookmark_disable
 function bookmark_disable($args)
 {
 	global $user_id;
@@ -144,6 +148,7 @@ function bookmark_disable($args)
 }
 
 
+//bookmark_display
 function bookmark_display($args)
 {
 	global $user_id;
@@ -164,6 +169,7 @@ function bookmark_display($args)
 }
 
 
+//bookmark_enable
 function bookmark_enable($args)
 {
 	global $user_id;
@@ -178,6 +184,7 @@ function bookmark_enable($args)
 }
 
 
+//bookmark_insert
 function bookmark_insert($args)
 {
 	global $user_id;
@@ -196,6 +203,7 @@ function bookmark_insert($args)
 }
 
 
+//bookmark_list
 function bookmark_list($args)
 {
 	global $user_id;
