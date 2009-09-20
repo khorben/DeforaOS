@@ -295,10 +295,13 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_lock),
 			data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = _main_menuitem("Logout...", "gnome-logout");
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_logout),
-			data);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(main->helper->logout_dialog != NULL)
+	{
+		menuitem = _main_menuitem("Logout...", "gnome-logout");
+		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+					_on_logout), data);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	menuitem = _main_menuitem("Shutdown...", "gnome-shutdown");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_shutdown), data);

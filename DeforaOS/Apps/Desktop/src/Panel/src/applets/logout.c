@@ -49,6 +49,11 @@ static GtkWidget * _logout_init(PanelApplet * applet)
 	GtkWidget * ret;
 	GtkWidget * image;
 
+	if(applet->helper->logout_dialog == NULL)
+	{
+		error_set_code(0, "%s", "logout: Logging out is disabled");
+		return NULL;
+	}
 	ret = gtk_button_new();
 	image = gtk_image_new_from_icon_name("gnome-logout",
 			applet->helper->icon_size);

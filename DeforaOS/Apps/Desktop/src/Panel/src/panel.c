@@ -57,7 +57,9 @@ struct _Panel
 /* prototypes */
 /* helpers */
 static int _panel_helper_error(void * priv, char const * message, int ret);
+#ifndef EMBEDDED
 static int _panel_helper_logout_dialog(void);
+#endif
 static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 		gboolean * push_in, gpointer data);
 static int _panel_helper_shutdown_dialog(void);
@@ -90,7 +92,11 @@ Panel * panel_new(void)
 	panel->helper.priv = panel;
 	panel->helper.error = _panel_helper_error;
 	panel->helper.icon_size = PANEL_ICON_SIZE;
+#ifndef EMBEDDED
 	panel->helper.logout_dialog = _panel_helper_logout_dialog;
+#else
+	panel->helper.logout_dialog = NULL;
+#endif
 	panel->helper.position_menu = _panel_helper_position_menu;
 	panel->helper.shutdown_dialog = _panel_helper_shutdown_dialog;
 	/* root window */
@@ -266,6 +272,7 @@ static int _panel_helper_error(void * priv, char const * message, int ret)
 }
 
 
+#ifndef EMBEDDED
 /* panel_helper_logout_dialog */
 static int _panel_helper_logout_dialog(void)
 {
@@ -290,6 +297,7 @@ static int _panel_helper_logout_dialog(void)
 	gtk_main_quit();
 	return 0;
 }
+#endif
 
 
 /* panel_helper_position_menu */
