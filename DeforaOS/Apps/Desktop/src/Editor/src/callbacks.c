@@ -216,8 +216,10 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
+			"text-editor");
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);

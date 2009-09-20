@@ -420,9 +420,11 @@ void on_help_about(GtkWidget * widget, gpointer data)
 				browser->window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), _license);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
+			"system-file-manager");
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(

@@ -1449,8 +1449,10 @@ static void _on_about(GtkWidget * window)
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), VERSION);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), _authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog), _copyright);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog),
+			"stock_mail");
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(dialog), buf);
