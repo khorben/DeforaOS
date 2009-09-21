@@ -283,7 +283,9 @@ static int _panel_helper_logout_dialog(void)
 	int res;
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_NONE, "%s", message);
+			GTK_BUTTONS_NONE, "%s", "Warning");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, "Logout", GTK_RESPONSE_ACCEPT,
 			NULL);
@@ -340,7 +342,9 @@ static int _panel_helper_shutdown_dialog(void)
 		"now", NULL };
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_NONE, "%s", message);
+			GTK_BUTTONS_NONE, "%s", "Warning");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
 			"Reboot", RES_REBOOT, "Shutdown", RES_SHUTDOWN, NULL);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
