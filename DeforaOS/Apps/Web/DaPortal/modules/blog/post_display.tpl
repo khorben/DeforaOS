@@ -1,6 +1,9 @@
 <?php if(isset($title)) { ?>
 <h1 class="title blog"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
+<?php if(isset($description)) { ?>
+<div class="blog description"><?php echo _html_safe($description); ?></div>
+<?php } ?>
 <div class="blog entry">
 <?php if(isset($post['title'])) { ?>
 	<div class="title"><span><span><span><?php if(!$long) { ?><a href="<?php echo _html_link('blog', FALSE, $post['id'], $post['tag']); ?>"><?php } ?><?php echo _html_safe($post['title']); ?><?php if(!$long) { ?></a><?php } ?></span></span></span></div>
