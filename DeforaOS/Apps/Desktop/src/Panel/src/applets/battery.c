@@ -216,7 +216,8 @@ static int _timeout_tre(int fd, int sensor, envsys_tre_data_t * tre)
 #else
 static gboolean _on_timeout(gpointer data)
 {
-	/* nothing to do */
+	/* XXX should show uncertain state instead of a full battery */
+	_battery_set(battery, 100.0);
 	return FALSE;
 }
 #endif
