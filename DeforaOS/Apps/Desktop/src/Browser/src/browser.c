@@ -29,7 +29,7 @@
 #include "callbacks.h"
 #include "browser.h"
 
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 # define COMMON_MENU
 # include "common.c"
 #endif
@@ -42,7 +42,7 @@
 /* Browser */
 /* private */
 /* constants */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 static struct _menu _browser_menu_file[] =
 {
 	{ "_New window", G_CALLBACK(on_file_new_window), "window-new", GDK_N },
@@ -139,7 +139,7 @@ Browser * browser_new(char const * directory)
 {
 	Browser * browser;
 	GtkWidget * vbox;
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	GtkWidget * tb_menubar;
 #endif
 	GtkWidget * toolbar;
@@ -205,7 +205,7 @@ Browser * browser_new(char const * directory)
 			browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	tb_menubar = _common_new_menubar(GTK_WINDOW(browser->window),
 			_browser_menubar, browser);
 	gtk_box_pack_start(GTK_BOX(vbox), tb_menubar, FALSE, FALSE, 0);
@@ -290,7 +290,7 @@ Browser * browser_new(char const * directory)
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
-#ifndef FOR_EMBEDDED
+#ifndef EMBEDDED
 	widget = gtk_label_new(" Location: ");
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
