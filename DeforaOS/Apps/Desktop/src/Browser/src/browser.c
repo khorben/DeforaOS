@@ -284,6 +284,12 @@ Browser * browser_new(char const * directory)
 	gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolitem), menu);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
+#ifdef EMBEDDED
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
+	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				on_edit_preferences), browser);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
