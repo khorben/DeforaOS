@@ -53,13 +53,15 @@ static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static gboolean _delete_idle(gpointer data);
 
-static int _delete(Prefs * prefs, int filec, char * filev[])
+static int _delete(Prefs * prefs, unsigned int filec, char * filev[])
 {
 	static Delete delete;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
+	if(filec < 1 || filev == NULL)
+		return 1;
 	delete.prefs = prefs;
 	delete.filec = filec;
 	delete.filev = filev;
@@ -94,7 +96,8 @@ static void _delete_refresh(Delete * delete)
 			delete->filev[delete->cur]);
 	gtk_label_set_text(GTK_LABEL(delete->label), buf);
 	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur, delete->filec);
-	fraction = (double)(delete->cur) / (double)delete->filec;
+	fraction = delete->cur;
+	fraction /= delete->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(delete->progress),
 			fraction);
