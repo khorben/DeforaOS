@@ -295,11 +295,6 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	browser->pr_hidden = gtk_check_button_new_with_mnemonic(
 			"Show _hidden files");
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 4);
-	/* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
@@ -313,7 +308,12 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), browser);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	/* separator */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
 	_preferences_set(browser);
 	gtk_widget_show_all(browser->pr_window);
