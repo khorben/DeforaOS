@@ -1,5 +1,5 @@
 PACKAGE	= Editor
-VERSION	= 0.0.2
+VERSION	= 0.1.1
 SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f

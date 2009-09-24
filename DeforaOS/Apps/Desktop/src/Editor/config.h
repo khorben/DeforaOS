@@ -1,5 +1,5 @@
 #define PACKAGE "Editor"
-#define VERSION "0.0.2"
+#define VERSION "0.1.1"
 
 #ifndef PREFIX
 # define PREFIX "/usr/local"
