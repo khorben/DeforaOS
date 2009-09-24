@@ -63,14 +63,20 @@ typedef enum _BrowserView
 	BV_LIST,
 	BV_THUMBNAILS
 } BrowserView;
+#  define BV_FIRST BV_DETAILS
 #  define BV_LAST BV_THUMBNAILS
 # else
 } BrowserView;
+#  define BV_FIRST BV_DETAILS
 #  define BV_LAST BV_DETAILS
 # endif
+# define BV_COUNT (BV_LAST + 1)
 
 typedef struct _BrowserPrefs
 {
+# if GTK_CHECK_VERSION(2, 6, 0)
+	int default_view;
+# endif
 	gboolean confirm_before_delete;
 	gboolean sort_folders_first;
 	gboolean show_hidden_files;
@@ -127,6 +133,9 @@ typedef struct _Browser
 	guint statusbar_id;
 	/* preferences */
 	GtkWidget * pr_window;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	GtkWidget * pr_view;
+#endif
 	GtkWidget * pr_confirm;
 	GtkWidget * pr_sort;
 	GtkWidget * pr_hidden;

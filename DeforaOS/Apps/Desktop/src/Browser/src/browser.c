@@ -117,6 +117,8 @@ static struct _menubar _browser_menubar[] =
 static char * _config_get_filename(void);
 static void _config_load_boolean(Config * config, char const * variable,
 		gboolean * value);
+static int _config_load_string(Config * config, char const * variable,
+		char ** value);
 static int _config_save_boolean(Config * config, char const * variable,
 		gboolean value);
 
@@ -165,6 +167,9 @@ Browser * browser_new(char const * directory)
 
 	/* config */
 	/* set defaults */
+#if GTK_CHECK_VERSION(2, 6, 0)
+	browser->prefs.default_view = BV_ICONS;
+#endif
 	browser->prefs.confirm_before_delete = TRUE;
 	browser->prefs.sort_folders_first = TRUE;
 	browser->prefs.show_hidden_files = FALSE;
@@ -318,8 +323,9 @@ Browser * browser_new(char const * directory)
 	browser->detailview = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->iconview = NULL;
-	browser_set_view(browser, BV_ICONS);
-	gtk_widget_grab_focus(browser->iconview);
+	browser_set_view(browser, browser->prefs.default_view);
+	if(browser->iconview != NULL)
+		gtk_widget_grab_focus(browser->iconview);
 #else
 	browser_set_view(browser, BV_DETAILS);
 	gtk_widget_grab_focus(browser->detailview);
@@ -544,6 +550,9 @@ static void _error_response(GtkDialog * dialog, gint arg, gpointer data)
 int browser_config_load(Browser * browser)
 {
 	char * filename;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	char * p = NULL;
+#endif
 
 	if(browser->config == NULL)
 		return 0; /* XXX ignore error */
@@ -551,6 +560,22 @@ int browser_config_load(Browser * browser)
 		return 1;
 	config_load(browser->config, filename); /* XXX ignore errors */
 	free(filename);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	/* XXX deserves a rework (enum) */
+	if(_config_load_string(browser->config, "default_view", &p) == 0
+			&& p != NULL)
+	{
+		if(strcmp(p, "details") == 0)
+			browser->prefs.default_view = BV_DETAILS;
+		else if(strcmp(p, "icons") == 0)
+			browser->prefs.default_view = BV_ICONS;
+		else if(strcmp(p, "list") == 0)
+			browser->prefs.default_view = BV_LIST;
+		else if(strcmp(p, "thumbnails") == 0)
+			browser->prefs.default_view = BV_THUMBNAILS;
+		free(p);
+	}
+#endif
 	_config_load_boolean(browser->config, "confirm_before_delete",
 			&browser->prefs.confirm_before_delete);
 	_config_load_boolean(browser->config, "sort_folders_first",
@@ -566,11 +591,21 @@ int browser_config_save(Browser * browser)
 {
 	int ret = 0;
 	char * filename;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	char * str[BV_COUNT] = { "details", "icons", "list", "thumbnails" };
+#endif
 
 	if(browser->config == NULL)
 		return 0; /* XXX ignore error */
 	if((filename = _config_get_filename()) == NULL)
 		return 1;
+#if GTK_CHECK_VERSION(2, 6, 0)
+	/* XXX deserves a rework (enum) */
+	if(browser->prefs.default_view >= BV_FIRST
+			&& browser->prefs.default_view <= BV_LAST)
+		ret |= config_set(browser->config, "", "default_view",
+				str[browser->prefs.default_view]);
+#endif
 	ret |= _config_save_boolean(browser->config, "confirm_before_delete",
 			browser->prefs.confirm_before_delete);
 	ret |= _config_save_boolean(browser->config, "sort_folders_first",
@@ -1662,6 +1697,22 @@ static void _config_load_boolean(Config * config, char const * variable,
 		*value = FALSE;
 	else if(strcmp(str, "1") == 0)
 		*value = TRUE;
+}
+
+
+static int _config_load_string(Config * config, char const * variable,
+		char ** value)
+{
+	char const * str;
+	char * p;
+
+	if((str = config_get(config, "", variable)) == NULL)
+		return 0;
+	if((p = strdup(str)) == NULL)
+		return 1;
+	free(*value);
+	*value = p;
+	return 0;
 }
 
 

@@ -272,6 +272,20 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	g_signal_connect(G_OBJECT(browser->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Default view:");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_combo_box_new_text();
+	browser->pr_view = widget;
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "Details");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "Icons");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "List");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "Thumbnails");
+	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 1);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+#endif
 	browser->pr_confirm = gtk_check_button_new_with_mnemonic(
 			"_Confirm before delete");
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_confirm, FALSE, FALSE, 4);
@@ -298,7 +312,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), browser);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	gtk_container_add(GTK_CONTAINER(browser->pr_window), vbox);
 	_preferences_set(browser);
@@ -307,6 +321,10 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 static void _preferences_set(Browser * browser)
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_combo_box_set_active(GTK_COMBO_BOX(browser->pr_view),
+			browser->prefs.default_view);
+#endif
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_confirm),
 			browser->prefs.confirm_before_delete);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(browser->pr_sort),
@@ -337,6 +355,10 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 	Browser * browser = data;
 
 	gtk_widget_hide(browser->pr_window);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	browser->prefs.default_view = gtk_combo_box_get_active(GTK_COMBO_BOX(
+				browser->pr_view));
+#endif
 	browser->prefs.confirm_before_delete = gtk_toggle_button_get_active(
 			GTK_TOGGLE_BUTTON(browser->pr_confirm));
 	browser->prefs.sort_folders_first = gtk_toggle_button_get_active(
