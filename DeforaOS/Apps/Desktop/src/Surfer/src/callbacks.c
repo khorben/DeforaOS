@@ -100,6 +100,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	GtkWidget * notebook;
 	GtkWidget * page;
 	GtkWidget * hbox;
+	GtkSizeGroup * group;
 
 	if(surfer->pr_window != NULL)
 	{
@@ -132,22 +133,25 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new("General"));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	/* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	/* dialog */
-	hbox = gtk_hbox_new(TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_ok), surfer);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), surfer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	/* separator */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 	_preferences_set(surfer);
 	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
 	gtk_widget_show_all(surfer->pr_window);
@@ -156,7 +160,8 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 
 static void _preferences_set(Surfer * surfer)
 {
-	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage);
+	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
+			!= NULL ? surfer->homepage : "");
 }
 
 static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
