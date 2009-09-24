@@ -152,6 +152,14 @@ Editor * editor_new(void)
 	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
 				on_save_as), editor);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+#ifdef EMBEDDED
+	tb_button = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
+	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
+				on_preferences), editor);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	/* view */
 	widget = gtk_scrolled_window_new(NULL, NULL);

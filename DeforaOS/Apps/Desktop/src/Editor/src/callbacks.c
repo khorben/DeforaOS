@@ -73,9 +73,9 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	g_signal_connect(G_OBJECT(editor->pr_window), "delete_event",
 			G_CALLBACK(_preferences_on_close), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* font */
 	widget = gtk_label_new("Font:");
 	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
@@ -84,6 +84,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	gtk_size_group_add_widget(group, editor->pr_font);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->pr_font, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
@@ -95,8 +96,13 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 	gtk_size_group_add_widget(group, widget);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), editor);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
+	/* separator */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 	gtk_container_add(GTK_CONTAINER(editor->pr_window), vbox);
 	_preferences_set(editor);
 	gtk_widget_show_all(editor->pr_window);
@@ -385,6 +391,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
 
+/* toolbar */
 /* on_new */
 void on_new(GtkWidget * widget, gpointer data)
 {
@@ -419,3 +426,14 @@ void on_save_as(GtkWidget * widget, gpointer data)
 
 	editor_save_as_dialog(editor);
 }
+
+
+#ifdef EMBEDDED
+/* on_preferences */
+void on_preferences(GtkWidget * widget, gpointer data)
+{
+	Editor * editor = data;
+
+	on_edit_preferences(widget, editor);
+}
+#endif

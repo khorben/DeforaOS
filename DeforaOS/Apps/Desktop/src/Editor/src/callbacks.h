@@ -30,9 +30,14 @@ void on_file_open(GtkWidget * widget, gpointer data);
 void on_file_save(GtkWidget * widget, gpointer data);
 void on_file_save_as(GtkWidget * widget, gpointer data);
 void on_help_about(GtkWidget * widget, gpointer data);
+
+/* toolbar */
 void on_new(GtkWidget * widget, gpointer data);
 void on_open(GtkWidget * widget, gpointer data);
 void on_save(GtkWidget * widget, gpointer data);
 void on_save_as(GtkWidget * widget, gpointer data);
+# ifdef EMBEDDED
+void on_preferences(GtkWidget * widget, gpointer data);
+# endif
 
 #endif /* !EDITOR_CALLBACKS_H */
