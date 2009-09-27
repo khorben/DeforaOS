@@ -24,6 +24,9 @@
 #include <gdk/gdkx.h>
 #include "../config.h"
 
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 
 /* Framer */
 /* types */
@@ -161,18 +164,40 @@ static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
 static GdkFilterReturn _filter_configure_request(
 		XConfigureRequestEvent * xconfigure, Framer * framer)
 {
+	XWindowChanges wc;
+	unsigned long mask;
+
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s() (%d,%d) %dx%d %lu\n", __func__,
+			xconfigure->x, xconfigure->y, xconfigure->width,
+			xconfigure->height, xconfigure->value_mask);
 #endif
+	memset(&wc, 0, sizeof(wc));
 #ifndef EMBEDDED
-	XMoveResizeWindow(xconfigure->display, xconfigure->window,
-			xconfigure->x, xconfigure->y,
-			xconfigure->width, xconfigure->height);
+	if(xconfigure->value_mask & CWX)
+		wc.x = max(xconfigure->x, 0);
+	if(xconfigure->value_mask & CWY)
+		wc.y = max(xconfigure->y, 0);
+	if(xconfigure->value_mask & CWWidth)
+		wc.width = min(xconfigure->width, framer->width);
+	if(xconfigure->value_mask & CWHeight)
+		wc.height = min(xconfigure->height, framer->height - 64);
+	mask = CWX | CWY | CWWidth | CWHeight;
 #else
-	XMoveResizeWindow(xconfigure->display, xconfigure->window,
-			0, 0, framer->width, framer->height - 64);
+	if(xconfigure->value_mask & CWX)
+		wc.x = 0;
+	if(xconfigure->value_mask & CWY)
+		wc.y = 0;
+	if(xconfigure->value_mask & CWWidth)
+		wc.width = framer->width;
+	if(xconfigure->value_mask & CWHeight)
+		wc.height = framer->height - 64;
+	if(xconfigure->value_mask & CWBorderWidth)
+		wc.border_width = 0;
 #endif
-	return GDK_FILTER_CONTINUE;
+	XConfigureWindow(xconfigure->display, xconfigure->window,
+			xconfigure->value_mask, &wc);
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate)
