@@ -1,4 +1,4 @@
-#define PACKAGE "framer"
+#define PACKAGE "Framer"
 #define VERSION "0.0.0"
 
 #ifndef PREFIX

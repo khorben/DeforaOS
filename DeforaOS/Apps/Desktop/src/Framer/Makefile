@@ -1,4 +1,4 @@
-PACKAGE	= framer
+PACKAGE	= Framer
 VERSION	= 0.0.0
 SUBDIRS	= src
 RM	= rm -f
