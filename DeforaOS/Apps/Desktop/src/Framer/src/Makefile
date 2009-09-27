@@ -1,0 +1,39 @@
+TARGETS	= framer
+PREFIX	= /usr/local
+DESTDIR	= 
+BINDIR	= $(PREFIX)/bin
+CC	= cc
+CPPFLAGSF=
+CPPFLAGS=
+CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
+CFLAGS	= -Wall -g
+LDFLAGSF= `pkg-config --libs gtk+-2.0`
+RM	= rm -f
+LN	= ln -f
+MKDIR	= mkdir -p
+INSTALL	= install
+
+
+all: $(TARGETS)
+
+framer_OBJS = main.o
+framer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+framer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+framer: $(framer_OBJS)
+	$(CC) -o framer $(framer_OBJS) $(framer_LDFLAGS)
+
+main.o: main.c
+	$(CC) $(framer_CFLAGS) -c main.c
+
+clean:
+	$(RM) $(framer_OBJS)
+
+distclean: clean
+	$(RM) $(TARGETS)
+
+install: all
+
+uninstall:
+
+.PHONY: all clean distclean install uninstall
