@@ -165,7 +165,7 @@ static GdkFilterReturn _filter_configure_request(
 		XConfigureRequestEvent * xconfigure, Framer * framer)
 {
 	XWindowChanges wc;
-	unsigned long mask;
+	unsigned long mask = xconfigure->value_mask;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() (%d,%d) %dx%d %lu\n", __func__,
@@ -182,21 +182,23 @@ static GdkFilterReturn _filter_configure_request(
 		wc.width = min(xconfigure->width, framer->width);
 	if(xconfigure->value_mask & CWHeight)
 		wc.height = min(xconfigure->height, framer->height - 64);
-	mask = CWX | CWY | CWWidth | CWHeight;
 #else
-	if(xconfigure->value_mask & CWX)
+	if(xconfigure->value_mask & (CWX | CWWidth))
+	{
 		wc.x = 0;
-	if(xconfigure->value_mask & CWY)
-		wc.y = 0;
-	if(xconfigure->value_mask & CWWidth)
 		wc.width = framer->width;
-	if(xconfigure->value_mask & CWHeight)
+		mask |= CWX | CWWidth;
+	}
+	if(xconfigure->value_mask & (CWY | CWHeight))
+	{
+		wc.y = 0;
+		mask |= CWY | CWHeight;
 		wc.height = framer->height - 64;
+	}
 	if(xconfigure->value_mask & CWBorderWidth)
 		wc.border_width = 0;
 #endif
-	XConfigureWindow(xconfigure->display, xconfigure->window,
-			xconfigure->value_mask, &wc);
+	XConfigureWindow(xconfigure->display, xconfigure->window, mask, &wc);
 	return GDK_FILTER_REMOVE;
 }
 
