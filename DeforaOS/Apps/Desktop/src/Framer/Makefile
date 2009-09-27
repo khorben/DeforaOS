@@ -22,7 +22,9 @@ dist:
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 
