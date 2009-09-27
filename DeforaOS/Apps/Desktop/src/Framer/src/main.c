@@ -1,6 +1,6 @@
 /* $Id$ */
 /* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
-/* This file is part of DeforaOS Desktop Browser */
+/* This file is part of DeforaOS Desktop Framer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
@@ -192,8 +192,8 @@ static GdkFilterReturn _filter_configure_request(
 	if(xconfigure->value_mask & (CWY | CWHeight))
 	{
 		wc.y = 0;
-		mask |= CWY | CWHeight;
 		wc.height = framer->height - 64;
+		mask |= CWY | CWHeight;
 	}
 	if(xconfigure->value_mask & CWBorderWidth)
 		wc.border_width = 0;
