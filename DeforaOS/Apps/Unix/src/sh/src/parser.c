@@ -624,8 +624,11 @@ static void parser_rule7a(Parser * parser)
 		return;
 	for(i = 0; parser->token->string[i] != '\0'; i++)
 		if(parser->token->string[i] == '=')
-			return parser_rule7b(parser);
-	return parser_rule1(parser);
+		{
+			parser_rule7b(parser);
+			return;
+		}
+	parser_rule1(parser);
 }
 
 
@@ -813,17 +816,23 @@ static void compound_command(Parser * p)
 	switch(p->token->code)
 	{
 		case TC_RW_LBRACE:
-			return brace_group(p);
+			brace_group(p);
+			return;
 		case TC_RW_FOR:
-			return for_clause(p);
+			for_clause(p);
+			return;
 		case TC_RW_CASE:
-			return case_clause(p);
+			case_clause(p);
+			return;
 		case TC_RW_IF:
-			return if_clause(p);
+			if_clause(p);
+			return;
 		case TC_RW_WHILE:
-			return while_clause(p);
+			while_clause(p);
+			return;
 		case TC_RW_UNTIL:
-			return until_clause(p);
+			until_clause(p);
+			return;
 		default:
 			break;
 	}
@@ -1333,7 +1342,10 @@ static void newline_list(Parser * p)
 	fputs("newline_list()\n", stderr);
 #endif
 	if(p->token != NULL && p->token->code != TC_NEWLINE)
-		return parser_error(p, "%s", "newline expected");
+	{
+		parser_error(p, "%s", "newline expected");
+		return;
+	}
 	/* FIXME
 	parser_scan(p);
 	while(p->token != NULL && p->token->code == TC_NEWLINE)
@@ -1369,9 +1381,15 @@ static void separator(Parser * p)
 	if(p->token == NULL)
 		return;
 	if(token_in_set(p->token, TS_NEWLINE_LIST))
-		return newline_list(p);
+	{
+		newline_list(p);
+		return;
+	}
 	if(!token_in_set(p->token, TS_SEPARATOR_OP))
-		return parser_error(p, "%s", "separator or newline expected");
+	{
+		parser_error(p, "%s", "separator or newline expected");
+		return;
+	}
 	separator_op(p);
 	linebreak(p);
 }
@@ -1388,7 +1406,8 @@ static void sequential_sep(Parser * p)
 	if(p->token != NULL && p->token->code == TC_OP_SEMICOLON)
 	{
 		parser_scan(p);
-		return linebreak(p);
+		linebreak(p);
+		return;
 	}
 	newline_list(p);
 }
