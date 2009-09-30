@@ -35,10 +35,16 @@
 typedef enum _FramerAtom
 {
 	FA_NET_CURRENT_DESKTOP = 0,
-	FA_NET_NUMBER_OF_DESKTOPS
+	FA_NET_NUMBER_OF_DESKTOPS,
+	FA_NET_SHOWING_DESKTOP,
+	FA_NET_WM_WINDOW_TYPE,
+	FA_NET_WM_WINDOW_TYPE_DOCK,
+	FA_NET_WM_WINDOW_TYPE_NORMAL
 } FramerAtom;
-#define FA_LAST FA_NET_NUMBER_OF_DESKTOPS
-#define FA_COUNT (FA_LAST + 1)
+#define FA_LAST				FA_NET_WM_WINDOW_TYPE_NORMAL
+#define FA_COUNT			(FA_LAST + 1)
+#define FA_NET_WM_WINDOW_TYPE_FIRST	FA_NET_WM_WINDOW_TYPE_DOCK
+#define FA_NET_WM_WINDOW_TYPE_LAST	FA_NET_WM_WINDOW_TYPE_NORMAL
 
 struct _Framer
 {
@@ -55,12 +61,19 @@ struct _Framer
 static char const * _framer_atom[FA_COUNT] =
 {
 	"_NET_CURRENT_DESKTOP",
-	"_NET_NUMBER_OF_DESKTOPS"
+	"_NET_NUMBER_OF_DESKTOPS",
+	"_NET_SHOWING_DESKTOP",
+	"_NET_WM_WINDOW_TYPE",
+	"_NET_WM_WINDOW_TYPE_DOCK",
+	"_NET_WM_WINDOW_TYPE_NORMAL"
 };
 
 
 /* prototypes */
 static int _framer_error(char const * message, int ret);
+static int _framer_get_window_property(Framer * framer, Window window,
+		FramerAtom property, Atom atom, unsigned long * cnt,
+		unsigned char ** ret);
 
 /* callbacks */
 static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
@@ -69,7 +82,7 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 
 /* public */
 /* functions */
-/* framer */
+/* framer_new */
 Framer * framer_new(void)
 {
 	Framer * framer;
@@ -127,11 +140,44 @@ void framer_delete(Framer * framer)
 }
 
 
+/* private */
+/* functions */
 /* framer error */
 static int _framer_error(char const * message, int ret)
 {
 	fprintf(stderr, "%s: %s\n", PACKAGE, message);
 	return ret;
+}
+
+
+/* framer_get_window_property */
+static int _framer_get_window_property(Framer * framer, Window window,
+		FramerAtom property, Atom atom, unsigned long * cnt,
+		unsigned char ** ret)
+{
+	int res;
+	Atom type;
+	int format;
+	unsigned long bytes;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(framer, window, %s, %lu)\n", __func__,
+			_framer_atom[property], atom);
+#endif
+	gdk_error_trap_push();
+	res = XGetWindowProperty(GDK_DISPLAY_XDISPLAY(framer->display), window,
+			framer->atom[property], 0, G_MAXLONG, False, atom,
+			&type, &format, cnt, &bytes, ret);
+	if(gdk_error_trap_pop() != 0 || res != Success)
+		return 1;
+	if(type != atom)
+	{
+		if(*ret != NULL)
+			XFree(*ret);
+		*ret = NULL;
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -197,14 +243,23 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 		Framer * framer)
 {
 	GdkAtom atom;
+	int i;
 	char * name;
 
+	for(i = 0; i < FA_COUNT; i++)
+		if(xclient->message_type == framer->atom[i])
+		{
+			/* FIXME implement each message */
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() %s\n", __func__,
+					_framer_atom[i]);
+#endif
+			return GDK_FILTER_REMOVE;
+		}
 	atom = gdk_x11_xatom_to_atom_for_display(framer->display,
 			xclient->message_type);
 	name = gdk_atom_name(atom);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %s\n", __func__, name);
-#endif
+	fprintf(stderr, "%s: %s: %s\n", PACKAGE, name, "Unsupported atom");
 	g_free(name);
 	return GDK_FILTER_CONTINUE;
 }
@@ -220,6 +275,11 @@ static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
 static GdkFilterReturn _filter_configure_request(
 		XConfigureRequestEvent * xconfigure, Framer * framer)
 {
+	FramerAtom type = FA_NET_WM_WINDOW_TYPE_NORMAL;
+	Atom typehint;
+	Atom * p;
+	unsigned long cnt = 0;
+	int i;
 	XWindowChanges wc;
 	unsigned long mask = xconfigure->value_mask;
 
@@ -227,6 +287,22 @@ static GdkFilterReturn _filter_configure_request(
 	fprintf(stderr, "DEBUG: %s() (%d,%d) %dx%d %lu\n", __func__,
 			xconfigure->x, xconfigure->y, xconfigure->width,
 			xconfigure->height, xconfigure->value_mask);
+#endif
+	if(_framer_get_window_property(framer, xconfigure->window,
+		FA_NET_WM_WINDOW_TYPE, XA_ATOM, &cnt, (void*)&p) == 0)
+	{
+		typehint = *p;
+		XFree(p);
+		for(i = FA_NET_WM_WINDOW_TYPE_FIRST;
+				i < FA_NET_WM_WINDOW_TYPE_LAST; i++)
+			if(typehint == framer->atom[i])
+			{
+				type = i;
+				break;
+			}
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %s\n", __func__, _framer_atom[type]);
 #endif
 	memset(&wc, 0, sizeof(wc));
 #ifndef EMBEDDED
@@ -239,17 +315,28 @@ static GdkFilterReturn _filter_configure_request(
 	if(xconfigure->value_mask & CWHeight)
 		wc.height = min(xconfigure->height, framer->height - 64);
 #else
-	if(xconfigure->value_mask & (CWX | CWWidth))
+	if(type == FA_NET_WM_WINDOW_TYPE_DOCK)
+	{
+		if(xconfigure->value_mask & (CWX | CWWidth))
+		{
+			wc.x = 0;
+			wc.width = framer->width;
+			mask |= CWX | CWWidth;
+		}
+		if(xconfigure->value_mask & (CWY | CWHeight))
+		{
+			wc.y = framer->height - 64;
+			wc.height = 64;
+			mask |= CWY | CWHeight;
+		}
+	}
+	else /* other than dock window */
 	{
 		wc.x = 0;
 		wc.width = framer->width;
-		mask |= CWX | CWWidth;
-	}
-	if(xconfigure->value_mask & (CWY | CWHeight))
-	{
 		wc.y = 0;
 		wc.height = framer->height - 64;
-		mask |= CWY | CWHeight;
+		mask |= CWX | CWWidth | CWY | CWHeight;
 	}
 	if(xconfigure->value_mask & CWBorderWidth)
 		wc.border_width = 0;

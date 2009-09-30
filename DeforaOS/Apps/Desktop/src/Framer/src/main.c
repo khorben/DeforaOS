@@ -21,6 +21,7 @@
 #include "framer.h"
 
 
+/* functions */
 /* usage */
 static int _usage(void)
 {
