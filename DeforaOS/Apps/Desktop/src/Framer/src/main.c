@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
+#include <X11/Xatom.h>
 #include "../config.h"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -30,6 +31,14 @@
 
 /* Framer */
 /* types */
+typedef enum _FramerAtom
+{
+	FA_NET_CURRENT_DESKTOP = 0,
+	FA_NET_NUMBER_OF_DESKTOPS
+} FramerAtom;
+#define FA_LAST FA_NET_NUMBER_OF_DESKTOPS
+#define FA_COUNT (FA_LAST + 1)
+
 typedef struct _Framer
 {
 	GdkDisplay * display;
@@ -37,11 +46,21 @@ typedef struct _Framer
 	GdkWindow * root;
 	int width;
 	int height;
+	Atom atom[FA_COUNT];
 } Framer;
 
 
+/* constants */
+static char const * _framer_atom[FA_COUNT] =
+{
+	"_NET_CURRENT_DESKTOP",
+	"_NET_NUMBER_OF_DESKTOPS"
+};
+
+
 /* prototypes */
-static int _framer(void);
+static Framer * _framer_new(void);
+static void _framer_delete(Framer * framer);
 static int _framer_error(char const * message, int ret);
 
 /* callbacks */
@@ -51,23 +70,59 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 
 /* functions */
 /* framer */
-static int _framer(void)
+static Framer * _framer_new(void)
 {
 	Framer * framer;
+	int i;
+	long cnt = 1;
+	long cur = 0;
 
 	if((framer = malloc(sizeof(*framer))) == NULL)
-		return _framer_error(strerror(errno), 1);
+	{
+		_framer_error(strerror(errno), 1);
+		return NULL;
+	}
 	if((framer->display = gdk_display_get_default()) == NULL)
-		return _framer_error("There is no default display", 1);
+	{
+		_framer_error("There is no default display", 1);
+		free(framer);
+		return NULL;
+	}
 	framer->screen = gdk_display_get_default_screen(framer->display);
 	framer->root = gdk_screen_get_root_window(framer->screen);
 	framer->width = gdk_screen_get_width(framer->screen);
 	framer->height = gdk_screen_get_height(framer->screen);
+	/* atoms */
+	for(i = 0; i < FA_COUNT; i++)
+		framer->atom[i] = gdk_x11_get_xatom_by_name_for_display(
+				framer->display, _framer_atom[i]);
+	/* NETWM compliance */
+	XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display),
+			GDK_WINDOW_XWINDOW(framer->root),
+			framer->atom[FA_NET_NUMBER_OF_DESKTOPS], XA_CARDINAL,
+			32, PropModeReplace, (unsigned char *)&cnt, 1);
+	XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display),
+			GDK_WINDOW_XWINDOW(framer->root),
+			framer->atom[FA_NET_CURRENT_DESKTOP], XA_CARDINAL,
+			32, PropModeReplace, (unsigned char *)&cur, 1);
+	/* register as window manager */
 	XSelectInput(gdk_x11_display_get_xdisplay(framer->display),
 			GDK_WINDOW_XWINDOW(framer->root), NoEventMask
 			| SubstructureRedirectMask);
 	gdk_window_add_filter(framer->root, _framer_filter, framer);
-	return 0;
+	return framer;
+}
+
+
+static void _framer_delete(Framer * framer)
+{
+	int i;
+
+	for(i = 0; i < FA_COUNT; i++)
+		XDeleteProperty(GDK_DISPLAY_XDISPLAY(framer->display),
+				GDK_WINDOW_XWINDOW(framer->root),
+				framer->atom[i]);
+	free(framer);
 }
 
 
@@ -289,6 +344,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	Framer * framer;
 
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
@@ -297,8 +353,9 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(_framer() != 0)
+	if((framer = _framer_new()) == NULL)
 		return 2;
 	gtk_main();
+	_framer_delete(framer);
 	return 0;
 }
