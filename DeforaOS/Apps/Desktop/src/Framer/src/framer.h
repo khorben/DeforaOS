@@ -15,36 +15,17 @@
 
 
 
-#include <unistd.h>
-#include <stdio.h>
-#include <gtk/gtk.h>
-#include "framer.h"
+#ifndef FRAMER_FRAMER_H
+# define FRAMER_FRAMER_H
 
 
-/* usage */
-static int _usage(void)
-{
-	fputs("Usage: framer\n", stderr);
-	return 1;
-}
+/* Framer */
+/* types */
+typedef struct _Framer Framer;
 
 
-/* main */
-int main(int argc, char * argv[])
-{
-	int o;
-	Framer * framer;
+/* functions */
+Framer * framer_new(void);
+void framer_delete(Framer * framer);
 
-	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
-		switch(o)
-		{
-			default:
-				return _usage();
-		}
-	if((framer = framer_new()) == NULL)
-		return 2;
-	gtk_main();
-	framer_delete(framer);
-	return 0;
-}
+#endif /* !FRAMER_FRAMER_H */

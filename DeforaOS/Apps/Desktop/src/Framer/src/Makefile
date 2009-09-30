@@ -16,12 +16,15 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-framer_OBJS = main.o
+framer_OBJS = framer.o main.o
 framer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 framer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 framer: $(framer_OBJS)
 	$(CC) -o framer $(framer_OBJS) $(framer_LDFLAGS)
+
+framer.o: framer.c
+	$(CC) $(framer_CFLAGS) -c framer.c
 
 main.o: main.c
 	$(CC) $(framer_CFLAGS) -c main.c
