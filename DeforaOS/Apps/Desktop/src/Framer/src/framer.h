@@ -28,4 +28,7 @@ typedef struct _Framer Framer;
 Framer * framer_new(void);
 void framer_delete(Framer * framer);
 
+/* accessors */
+void framer_set_show_desktop(Framer * framer, gboolean shown);
+
 #endif /* !FRAMER_FRAMER_H */

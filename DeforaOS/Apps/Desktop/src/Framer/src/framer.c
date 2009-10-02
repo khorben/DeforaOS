@@ -35,15 +35,19 @@
 typedef enum _FramerAtom
 {
 	FA_NET_CURRENT_DESKTOP = 0,
+	FA_NET_DESKTOP_GEOMETRY,
+	FA_NET_DESKTOP_VIEWPORT,
 	FA_NET_NUMBER_OF_DESKTOPS,
 	FA_NET_SHOWING_DESKTOP,
 	FA_NET_WM_WINDOW_TYPE,
+	FA_NET_WM_WINDOW_TYPE_DESKTOP,
 	FA_NET_WM_WINDOW_TYPE_DOCK,
-	FA_NET_WM_WINDOW_TYPE_NORMAL
+	FA_NET_WM_WINDOW_TYPE_NORMAL,
+	FA_NET_WORKAREA
 } FramerAtom;
-#define FA_LAST				FA_NET_WM_WINDOW_TYPE_NORMAL
+#define FA_LAST				FA_NET_WORKAREA
 #define FA_COUNT			(FA_LAST + 1)
-#define FA_NET_WM_WINDOW_TYPE_FIRST	FA_NET_WM_WINDOW_TYPE_DOCK
+#define FA_NET_WM_WINDOW_TYPE_FIRST	FA_NET_WM_WINDOW_TYPE_DESKTOP
 #define FA_NET_WM_WINDOW_TYPE_LAST	FA_NET_WM_WINDOW_TYPE_NORMAL
 
 struct _Framer
@@ -61,11 +65,15 @@ struct _Framer
 static char const * _framer_atom[FA_COUNT] =
 {
 	"_NET_CURRENT_DESKTOP",
+	"_NET_DESKTOP_GEOMETRY",
+	"_NET_DESKTOP_VIEWPORT",
 	"_NET_NUMBER_OF_DESKTOPS",
 	"_NET_SHOWING_DESKTOP",
 	"_NET_WM_WINDOW_TYPE",
+	"_NET_WM_WINDOW_TYPE_DESKTOP",
 	"_NET_WM_WINDOW_TYPE_DOCK",
-	"_NET_WM_WINDOW_TYPE_NORMAL"
+	"_NET_WM_WINDOW_TYPE_NORMAL",
+	"_NET_WORKAREA"
 };
 
 
@@ -83,12 +91,11 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 /* public */
 /* functions */
 /* framer_new */
+static void _new_ewmh(Framer * framer);
+
 Framer * framer_new(void)
 {
 	Framer * framer;
-	int i;
-	long cnt = 1;
-	long cur = 0;
 
 	if((framer = malloc(sizeof(*framer))) == NULL)
 	{
@@ -105,25 +112,58 @@ Framer * framer_new(void)
 	framer->root = gdk_screen_get_root_window(framer->screen);
 	framer->width = gdk_screen_get_width(framer->screen);
 	framer->height = gdk_screen_get_height(framer->screen);
-	/* atoms */
-	for(i = 0; i < FA_COUNT; i++)
-		framer->atom[i] = gdk_x11_get_xatom_by_name_for_display(
-				framer->display, _framer_atom[i]);
-	/* NETWM compliance */
-	XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display),
-			GDK_WINDOW_XWINDOW(framer->root),
-			framer->atom[FA_NET_NUMBER_OF_DESKTOPS], XA_CARDINAL,
-			32, PropModeReplace, (unsigned char *)&cnt, 1);
-	XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display),
-			GDK_WINDOW_XWINDOW(framer->root),
-			framer->atom[FA_NET_CURRENT_DESKTOP], XA_CARDINAL,
-			32, PropModeReplace, (unsigned char *)&cur, 1);
+	_new_ewmh(framer);
 	/* register as window manager */
 	XSelectInput(gdk_x11_display_get_xdisplay(framer->display),
 			GDK_WINDOW_XWINDOW(framer->root), NoEventMask
 			| SubstructureRedirectMask);
 	gdk_window_add_filter(framer->root, _framer_filter, framer);
 	return framer;
+}
+
+static void _new_ewmh(Framer * framer)
+{
+	long data[4];
+	size_t i;
+	long cnt = 0;
+
+	memset(&data, 0, sizeof(data));
+	for(i = 0; i < FA_COUNT; i++)
+	{
+		framer->atom[i] = gdk_x11_get_xatom_by_name_for_display(
+				framer->display, _framer_atom[i]);
+		switch(i)
+		{
+			case FA_NET_CURRENT_DESKTOP:
+				cnt = 1;
+				break;
+			case FA_NET_NUMBER_OF_DESKTOPS:
+				data[0] = 1;
+				cnt = 1;
+				break;
+			case FA_NET_DESKTOP_GEOMETRY:
+				data[0] = framer->width;
+				data[1] = framer->height;
+				cnt = 2;
+				break;
+			case FA_NET_DESKTOP_VIEWPORT:
+				cnt = 2;
+				break;
+			case FA_NET_WORKAREA:
+				data[2] = framer->width;
+				data[3] = max(framer->height - 64, 1);
+				cnt = 4;
+				break;
+			default:
+				continue;
+		}
+		XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display),
+				GDK_WINDOW_XWINDOW(framer->root),
+				framer->atom[i], XA_CARDINAL, 32,
+				PropModeReplace, (unsigned char *)&data, cnt);
+		cnt = 0;
+		memset(&data, 0, sizeof(data));
+	}
 }
 
 
@@ -140,9 +180,20 @@ void framer_delete(Framer * framer)
 }
 
 
+/* accessors */
+/* framer_set_show_desktop */
+void framer_set_show_desktop(Framer * framer, gboolean shown)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, shown ? "TRUE" : "FALSE");
+#endif
+	/* FIXME implement */
+}
+
+
 /* private */
 /* functions */
-/* framer error */
+/* framer_error */
 static int _framer_error(char const * message, int ret)
 {
 	fprintf(stderr, "%s: %s\n", PACKAGE, message);
@@ -161,7 +212,7 @@ static int _framer_get_window_property(Framer * framer, Window window,
 	unsigned long bytes;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(framer, window, %s, %lu)\n", __func__,
+	fprintf(stderr, "DEBUG: %s(window, %s, %lu)\n", __func__,
 			_framer_atom[property], atom);
 #endif
 	gdk_error_trap_push();
@@ -232,8 +283,10 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 		case UnmapNotify:
 			return _filter_unmap_notify(&xev->xunmap);
 		default:
+#ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() type=%d\n", __func__,
 					xev->type);
+#endif
 			break;
 	}
 	return GDK_FILTER_CONTINUE;
@@ -243,25 +296,36 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 		Framer * framer)
 {
 	GdkAtom atom;
-	int i;
-	char * name;
+	size_t i;
+	char const * name;
+	char * p = NULL;
 
 	for(i = 0; i < FA_COUNT; i++)
 		if(xclient->message_type == framer->atom[i])
-		{
-			/* FIXME implement each message */
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: %s() %s\n", __func__,
-					_framer_atom[i]);
-#endif
-			return GDK_FILTER_REMOVE;
-		}
-	atom = gdk_x11_xatom_to_atom_for_display(framer->display,
-			xclient->message_type);
-	name = gdk_atom_name(atom);
-	fprintf(stderr, "%s: %s: %s\n", PACKAGE, name, "Unsupported atom");
-	g_free(name);
-	return GDK_FILTER_CONTINUE;
+			break;
+	switch(i)
+	{
+		case FA_NET_SHOWING_DESKTOP:
+			framer_set_show_desktop(framer, TRUE);
+			break;
+		default:
+			if(i < FA_COUNT)
+				name = _framer_atom[i];
+			else
+			{
+				atom = gdk_x11_xatom_to_atom_for_display(
+						framer->display,
+						xclient->message_type);
+				p = gdk_atom_name(atom);
+				name = p;
+			}
+			fprintf(stderr, "%s: %s: %s\n", PACKAGE, name,
+					"Unsupported message");
+			if(p != NULL)
+				g_free(p);
+			break;
+	}
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
