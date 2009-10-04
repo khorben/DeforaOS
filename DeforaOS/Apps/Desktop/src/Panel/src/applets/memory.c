@@ -84,7 +84,7 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 	gtk_range_set_inverted(GTK_RANGE(memory->scale), TRUE);
 	gtk_scale_set_value_pos(GTK_SCALE(memory->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(ret), memory->scale, FALSE, FALSE, 0);
-	memory->timeout = g_timeout_add(500, _on_timeout, memory);
+	memory->timeout = g_timeout_add(5000, _on_timeout, memory);
 	_on_timeout(memory);
 	pango_font_description_free(desc);
 	return ret;
@@ -105,26 +105,17 @@ static void _memory_destroy(PanelApplet * applet)
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
-#if 0 /* def __NetBSD__ */
+#ifdef __NetBSD__
 	Memory * memory = data;
-	int mib[] = { CTL_KERN, KERN_CP_TIME };
-	uint64_t memory_time[CPUSTATES];
-	size_t size = sizeof(memory_time);
-	int used;
-	int total;
+	int mib[] = { CTL_VM, VM_METER };
+	struct vmtotal vm;
+	size_t size = sizeof(vm);
 	gdouble value;
 
-	if(sysctl(mib, 2, &memory_time, &size, NULL, 0) < 0)
+	if(sysctl(mib, 2, &vm, &size, NULL, 0) < 0)
 		return TRUE;
-	used = memory_time[CP_USER] + memory_time[CP_SYS] + memory_time[CP_NICE]
-		+ memory_time[CP_INTR];
-	total = used + memory_time[CP_IDLE];
-	if(memory->used == 0)
-		value = 0;
-	else
-		value = 100 * (used - memory->used) / (total - memory->total);
-	memory->used = used;
-	memory->total = total;
+	value = vm.t_arm * 100;
+	value /= (vm.t_rm + vm.t_free);
 	gtk_range_set_value(GTK_RANGE(memory->scale), value);
 #endif
 	return TRUE;
