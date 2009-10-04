@@ -34,7 +34,9 @@
 /* types */
 typedef enum _FramerAtom
 {
-	FA_NET_CURRENT_DESKTOP = 0,
+	FA_NET_ACTIVE_WINDOW = 0,
+	FA_NET_CLIENT_LIST,
+	FA_NET_CURRENT_DESKTOP,
 	FA_NET_DESKTOP_GEOMETRY,
 	FA_NET_DESKTOP_VIEWPORT,
 	FA_NET_NUMBER_OF_DESKTOPS,
@@ -52,18 +54,29 @@ typedef enum _FramerAtom
 
 struct _Framer
 {
+	/* essential */
 	GdkDisplay * display;
 	GdkScreen * screen;
 	GdkWindow * root;
+
+	/* screen */
 	int width;
 	int height;
+
+	/* atoms */
 	Atom atom[FA_COUNT];
+
+	/* client list */
+	Window * window;
+	size_t window_cnt;
 };
 
 
 /* constants */
 static char const * _framer_atom[FA_COUNT] =
 {
+	"_NET_ACTIVE_WINDOW",
+	"_NET_CLIENT_LIST",
 	"_NET_CURRENT_DESKTOP",
 	"_NET_DESKTOP_GEOMETRY",
 	"_NET_DESKTOP_VIEWPORT",
@@ -79,9 +92,13 @@ static char const * _framer_atom[FA_COUNT] =
 
 /* prototypes */
 static int _framer_error(char const * message, int ret);
-static int _framer_get_window_property(Framer * framer, Window window,
+static int _framer_window_get_property(Framer * framer, Window window,
 		FramerAtom property, Atom atom, unsigned long * cnt,
 		unsigned char ** ret);
+static int _framer_window_is_manageable(Framer * framer, Window window);
+static int _framer_window_set_property(Framer * framer, Window window,
+		FramerAtom property, Atom atom, unsigned long cnt,
+		unsigned char * data);
 
 /* callbacks */
 static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
@@ -91,6 +108,8 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 /* public */
 /* functions */
 /* framer_new */
+static void _new_atoms(Framer * framer);
+static void _new_windows(Framer * framer);
 static void _new_ewmh(Framer * framer);
 
 Framer * framer_new(void)
@@ -112,28 +131,74 @@ Framer * framer_new(void)
 	framer->root = gdk_screen_get_root_window(framer->screen);
 	framer->width = gdk_screen_get_width(framer->screen);
 	framer->height = gdk_screen_get_height(framer->screen);
+	_new_atoms(framer);
+	_new_windows(framer);
 	_new_ewmh(framer);
 	/* register as window manager */
 	XSelectInput(gdk_x11_display_get_xdisplay(framer->display),
 			GDK_WINDOW_XWINDOW(framer->root), NoEventMask
+			| SubstructureNotifyMask
 			| SubstructureRedirectMask);
-	gdk_window_add_filter(framer->root, _framer_filter, framer);
+	gdk_window_add_filter(NULL, _framer_filter, framer);
 	return framer;
+}
+
+static void _new_atoms(Framer * framer)
+{
+	size_t i;
+
+	for(i = 0; i < FA_COUNT; i++)
+		framer->atom[i] = gdk_x11_get_xatom_by_name_for_display(
+				framer->display, _framer_atom[i]);
+}
+
+static void _new_windows(Framer * framer)
+{
+	Window root;
+	Window parent;
+	Window * children = NULL;
+	unsigned int nchildren = 0;
+	unsigned int i;
+
+	framer->window = NULL;
+	framer->window_cnt = 0;
+	if(XQueryTree(GDK_DISPLAY_XDISPLAY(framer->display),
+				GDK_WINDOW_XWINDOW(framer->root), &root,
+				&parent, &children, &nchildren) == 0)
+	{
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() failed\n", __func__);
+#endif
+		return;
+	}
+	for(i = 0; i < nchildren; i++)
+		framer_window_add(framer, children[i]);
+	XFree(children);
 }
 
 static void _new_ewmh(Framer * framer)
 {
 	long data[4];
 	size_t i;
+	Atom type = XA_CARDINAL;
+	unsigned char * p = (unsigned char *)&data;
 	long cnt = 0;
 
 	memset(&data, 0, sizeof(data));
 	for(i = 0; i < FA_COUNT; i++)
 	{
-		framer->atom[i] = gdk_x11_get_xatom_by_name_for_display(
-				framer->display, _framer_atom[i]);
 		switch(i)
 		{
+			case FA_NET_ACTIVE_WINDOW:
+				type = XA_WINDOW;
+				data[0] = None;
+				cnt = 1;
+				break;
+			case FA_NET_CLIENT_LIST:
+				type = XA_WINDOW;
+				p = (unsigned char *)framer->window;
+				cnt = framer->window_cnt;
+				break;
 			case FA_NET_CURRENT_DESKTOP:
 				cnt = 1;
 				break;
@@ -157,12 +222,12 @@ static void _new_ewmh(Framer * framer)
 			default:
 				continue;
 		}
-		XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display),
-				GDK_WINDOW_XWINDOW(framer->root),
-				framer->atom[i], XA_CARDINAL, 32,
-				PropModeReplace, (unsigned char *)&data, cnt);
+		_framer_window_set_property(framer, GDK_WINDOW_XWINDOW(
+					framer->root), i, type, cnt, p);
+		type = XA_CARDINAL;
 		cnt = 0;
 		memset(&data, 0, sizeof(data));
+		p = (unsigned char *)&data;
 	}
 }
 
@@ -184,10 +249,91 @@ void framer_delete(Framer * framer)
 /* framer_set_show_desktop */
 void framer_set_show_desktop(Framer * framer, gboolean shown)
 {
+	size_t i;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, shown ? "TRUE" : "FALSE");
 #endif
-	/* FIXME implement */
+	if(shown != TRUE)
+		return;
+	for(i = 0; i < framer->window_cnt; i++)
+		framer_window_iconify(framer, framer->window[i]);
+}
+
+
+/* framer_window_set_active */
+int framer_window_set_active(Framer * framer, Window window)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, (int)window);
+#endif
+	XMapRaised(GDK_DISPLAY_XDISPLAY(framer->display), window);
+	return _framer_window_set_property(framer, window, FA_NET_ACTIVE_WINDOW,
+			XA_WINDOW, 1, (unsigned char *)&window);
+}
+
+
+/* useful */
+/* framer_window_add */
+int framer_window_add(Framer * framer, Window window)
+{
+	size_t i;
+	Window * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, (int)window);
+#endif
+	if(!_framer_window_is_manageable(framer, window))
+		return 0;
+	for(i = 0; i < framer->window_cnt; i++)
+		if(framer->window[i] == window)
+			return 0;
+	if((p = realloc(framer->window, sizeof(*p) * (framer->window_cnt + 1)))
+			== NULL)
+		return -1;
+	framer->window = p;
+	p = &framer->window[framer->window_cnt++];
+	*p = window;
+	_framer_window_set_property(framer, GDK_WINDOW_XWINDOW(framer->root),
+			FA_NET_CLIENT_LIST, XA_WINDOW, framer->window_cnt,
+			(unsigned char *)framer->window);
+	return 0;
+}
+
+
+/* framer_window_iconify */
+void framer_window_iconify(Framer * framer, Window window)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, (int)window);
+#endif
+	XUnmapWindow(GDK_DISPLAY_XDISPLAY(framer->display), window);
+}
+
+
+/* framer_window_remove */
+int framer_window_remove(Framer * framer, Window window)
+{
+	size_t i;
+	Window * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, (int)window);
+#endif
+	for(i = 0; i < framer->window_cnt; i++)
+		if(framer->window[i] == window)
+			break;
+	if(i == framer->window_cnt) /* we don't know this window anyway */
+		return 0;
+	memmove(&framer->window[i], &framer->window[i + 1],
+			(--framer->window_cnt - i) * sizeof(*p));
+	if((p = realloc(framer->window, framer->window_cnt * sizeof(*p)))
+			!= NULL) /* we can ignore errors */
+		framer->window = p;
+	_framer_window_set_property(framer, GDK_WINDOW_XWINDOW(framer->root),
+			FA_NET_CLIENT_LIST, XA_WINDOW, framer->window_cnt,
+			(unsigned char *)framer->window);
+	return 0;
 }
 
 
@@ -201,8 +347,8 @@ static int _framer_error(char const * message, int ret)
 }
 
 
-/* framer_get_window_property */
-static int _framer_get_window_property(Framer * framer, Window window,
+/* framer_window_get_property */
+static int _framer_window_get_property(Framer * framer, Window window,
 		FramerAtom property, Atom atom, unsigned long * cnt,
 		unsigned char ** ret)
 {
@@ -212,7 +358,7 @@ static int _framer_get_window_property(Framer * framer, Window window,
 	unsigned long bytes;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(window, %s, %lu)\n", __func__,
+	fprintf(stderr, "DEBUG: %s(%d, %s, %lu)\n", __func__, (int)window,
 			_framer_atom[property], atom);
 #endif
 	gdk_error_trap_push();
@@ -232,6 +378,43 @@ static int _framer_get_window_property(Framer * framer, Window window,
 }
 
 
+/* framer_window_is_manageable */
+static int _framer_window_is_manageable(Framer * framer, Window window)
+{
+	Atom typehint;
+	Atom * p = NULL;
+	unsigned long cnt = 0;
+
+	if(_framer_window_get_property(framer, window, FA_NET_WM_WINDOW_TYPE,
+				XA_ATOM, &cnt, (void*)&p) != 0)
+		return 0;
+	typehint = *p;
+	XFree(p);
+	return typehint == framer->atom[FA_NET_WM_WINDOW_TYPE_NORMAL] ? 1 : 0;
+}
+
+
+/* framer_window_set_property */
+static int _framer_window_set_property(Framer * framer, Window window,
+		FramerAtom property, Atom atom, unsigned long cnt,
+		unsigned char * data)
+{
+	int res;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %s, %lu, %lu)\n", __func__,
+			(int)window, _framer_atom[property], atom, cnt);
+#endif
+	gdk_error_trap_push();
+	res = XChangeProperty(GDK_DISPLAY_XDISPLAY(framer->display), window,
+			framer->atom[property], atom, 32, PropModeReplace,
+			data, cnt);
+	if(gdk_error_trap_pop() != 0 || res != Success)
+		return 1;
+	return 0;
+}
+
+
 /* callbacks */
 /* framer_filter */
 static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
@@ -239,16 +422,18 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure);
 static GdkFilterReturn _filter_configure_request(
 		XConfigureRequestEvent * xconfigure, Framer * framer);
-static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate);
-static GdkFilterReturn _filter_destroy_notify(XDestroyWindowEvent * xdestroy);
-static GdkFilterReturn _filter_leave_notify(XCrossingEvent * xleave);
-static GdkFilterReturn _filter_map_notify(XMapEvent * xmap, Framer * framer);
-static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap,
+static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate,
 		Framer * framer);
+static GdkFilterReturn _filter_destroy_notify(XDestroyWindowEvent * xdestroy,
+		Framer * framer);
+static GdkFilterReturn _filter_leave_notify(XCrossingEvent * xleave);
+static GdkFilterReturn _filter_map_notify(XMapEvent * xmap);
+static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap);
 static GdkFilterReturn _filter_motion_notify(XMotionEvent * xmotion);
 static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
 		Framer * framer);
-static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xmap);
+static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap,
+		Framer * framer);
 
 static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
@@ -266,22 +451,24 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 			return _filter_configure_request(
 					&xev->xconfigurerequest, framer);
 		case CreateNotify:
-			return _filter_create_notify(&xev->xcreatewindow);
+			return _filter_create_notify(&xev->xcreatewindow,
+					framer);
 		case DestroyNotify:
-			return _filter_destroy_notify(&xev->xdestroywindow);
+			return _filter_destroy_notify(&xev->xdestroywindow,
+					framer);
 		case LeaveNotify:
 			return _filter_leave_notify(&xev->xcrossing);
 		case MapNotify:
-			return _filter_map_notify(&xev->xmap, framer);
+			return _filter_map_notify(&xev->xmap);
 		case MapRequest:
-			return _filter_map_request(&xev->xmaprequest, framer);
+			return _filter_map_request(&xev->xmaprequest);
 		case MotionNotify:
 			return _filter_motion_notify(&xev->xmotion);
 		case PropertyNotify:
 			return _filter_property_notify(&xev->xproperty,
 					framer);
 		case UnmapNotify:
-			return _filter_unmap_notify(&xev->xunmap);
+			return _filter_unmap_notify(&xev->xunmap, framer);
 		default:
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() type=%d\n", __func__,
@@ -289,7 +476,7 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 #endif
 			break;
 	}
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
@@ -305,6 +492,9 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 			break;
 	switch(i)
 	{
+		case FA_NET_ACTIVE_WINDOW:
+			framer_window_set_active(framer, xclient->window);
+			break;
 		case FA_NET_SHOWING_DESKTOP:
 			framer_set_show_desktop(framer, TRUE);
 			break;
@@ -333,7 +523,7 @@ static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_configure_request(
@@ -352,7 +542,7 @@ static GdkFilterReturn _filter_configure_request(
 			xconfigure->x, xconfigure->y, xconfigure->width,
 			xconfigure->height, xconfigure->value_mask);
 #endif
-	if(_framer_get_window_property(framer, xconfigure->window,
+	if(_framer_window_get_property(framer, xconfigure->window,
 		FA_NET_WM_WINDOW_TYPE, XA_ATOM, &cnt, (void*)&p) == 0)
 	{
 		typehint = *p;
@@ -409,20 +599,24 @@ static GdkFilterReturn _filter_configure_request(
 	return GDK_FILTER_REMOVE;
 }
 
-static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate)
+static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate,
+		Framer * framer)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	framer_window_add(framer, xcreate->window);
+	return GDK_FILTER_REMOVE;
 }
 
-static GdkFilterReturn _filter_destroy_notify(XDestroyWindowEvent * xdestroy)
+static GdkFilterReturn _filter_destroy_notify(XDestroyWindowEvent * xdestroy,
+		Framer * framer)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	framer_window_remove(framer, xdestroy->window);
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_leave_notify(XCrossingEvent * xleave)
@@ -430,25 +624,24 @@ static GdkFilterReturn _filter_leave_notify(XCrossingEvent * xleave)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
-static GdkFilterReturn _filter_map_notify(XMapEvent * xmap, Framer * framer)
+static GdkFilterReturn _filter_map_notify(XMapEvent * xmap)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
-static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap,
-		Framer * framer)
+static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	XMapWindow(xmap->display, xmap->window);
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_motion_notify(XMotionEvent * xmotion)
@@ -456,7 +649,7 @@ static GdkFilterReturn _filter_motion_notify(XMotionEvent * xmotion)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
 static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
@@ -469,16 +662,18 @@ static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
 		xproperty->atom);
 	name = gdk_atom_name(atom);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %s\n", __func__, name);
+	fprintf(stderr, "DEBUG: %s() %s, %s\n", __func__, name,
+			xproperty->send_event ? "TRUE" : "FALSE");
 #endif
 	g_free(name);
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
 
-static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xmap)
+static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap,
+		Framer * framer)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_CONTINUE;
+	return GDK_FILTER_REMOVE;
 }
