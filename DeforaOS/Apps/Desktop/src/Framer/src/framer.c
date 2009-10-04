@@ -483,7 +483,7 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 #endif
 			break;
 	}
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
@@ -522,7 +522,7 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 				g_free(p);
 			break;
 	}
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
@@ -530,7 +530,7 @@ static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_configure_request(
@@ -603,7 +603,7 @@ static GdkFilterReturn _filter_configure_request(
 		wc.border_width = 0;
 #endif
 	XConfigureWindow(xconfigure->display, xconfigure->window, mask, &wc);
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate,
@@ -613,7 +613,7 @@ static GdkFilterReturn _filter_create_notify(XCreateWindowEvent * xcreate,
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	framer_window_add(framer, xcreate->window);
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_destroy_notify(XDestroyWindowEvent * xdestroy,
@@ -623,7 +623,7 @@ static GdkFilterReturn _filter_destroy_notify(XDestroyWindowEvent * xdestroy,
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	framer_window_remove(framer, xdestroy->window);
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_leave_notify(XCrossingEvent * xleave)
@@ -631,7 +631,7 @@ static GdkFilterReturn _filter_leave_notify(XCrossingEvent * xleave)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_map_notify(XMapEvent * xmap)
@@ -639,7 +639,7 @@ static GdkFilterReturn _filter_map_notify(XMapEvent * xmap)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap)
@@ -648,7 +648,7 @@ static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	XMapWindow(xmap->display, xmap->window);
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_motion_notify(XMotionEvent * xmotion)
@@ -656,7 +656,7 @@ static GdkFilterReturn _filter_motion_notify(XMotionEvent * xmotion)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
@@ -673,7 +673,7 @@ static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
 			xproperty->send_event ? "TRUE" : "FALSE");
 #endif
 	g_free(name);
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
 
 static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap,
@@ -682,5 +682,5 @@ static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return GDK_FILTER_REMOVE;
+	return GDK_FILTER_CONTINUE;
 }
