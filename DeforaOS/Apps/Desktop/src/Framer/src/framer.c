@@ -41,6 +41,7 @@ typedef enum _FramerAtom
 	FA_NET_DESKTOP_VIEWPORT,
 	FA_NET_NUMBER_OF_DESKTOPS,
 	FA_NET_SHOWING_DESKTOP,
+	FA_NET_SUPPORTED,
 	FA_NET_WM_WINDOW_TYPE,
 	FA_NET_WM_WINDOW_TYPE_DESKTOP,
 	FA_NET_WM_WINDOW_TYPE_DOCK,
@@ -82,6 +83,7 @@ static char const * _framer_atom[FA_COUNT] =
 	"_NET_DESKTOP_VIEWPORT",
 	"_NET_NUMBER_OF_DESKTOPS",
 	"_NET_SHOWING_DESKTOP",
+	"_NET_SUPPORTED",
 	"_NET_WM_WINDOW_TYPE",
 	"_NET_WM_WINDOW_TYPE_DESKTOP",
 	"_NET_WM_WINDOW_TYPE_DOCK",
@@ -213,6 +215,11 @@ static void _new_ewmh(Framer * framer)
 				break;
 			case FA_NET_DESKTOP_VIEWPORT:
 				cnt = 2;
+				break;
+			case FA_NET_SUPPORTED:
+				type = XA_ATOM;
+				p = (unsigned char *)framer->atom;
+				cnt = FA_COUNT;
 				break;
 			case FA_NET_WORKAREA:
 				data[2] = framer->width;
