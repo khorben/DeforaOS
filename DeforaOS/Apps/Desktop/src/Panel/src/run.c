@@ -154,7 +154,7 @@ static GtkWidget * _new_entry(Config * config)
 	{
 		snprintf(buf, sizeof(buf), "%s%d", "command", i);
 		if((q = config_get(config, "", buf)) == NULL)
-			break;
+			continue;
 		gtk_list_store_append(store, &iter);
 		gtk_list_store_set(store, &iter, 0, q, -1);
 	}
@@ -242,7 +242,6 @@ static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 
 
 /* on_run_execute */
-/* static void _execute_parent(GtkWidget * window, pid_t pid); */
 static gboolean _execute_idle(gpointer data);
 static void _idle_save_config(Run * run);
 
@@ -321,6 +320,15 @@ static void _idle_save_config(Run * run)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	p = gtk_entry_get_text(GTK_ENTRY(run->entry));
+	for(i = 0; i < 100; i++)
+	{
+		snprintf(buf, sizeof(buf), "%s%d", "command", i);
+		q = config_get(run->config, "", buf);
+		if(q == NULL || strcmp(p, q) != 0)
+			continue;
+		free(filename); /* the command is already known */
+		return;
+	}
 	for(i = 0; i < 100; i++)
 	{
 		snprintf(buf, sizeof(buf), "%s%d", "command", i);
