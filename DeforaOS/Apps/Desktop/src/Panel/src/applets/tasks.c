@@ -487,9 +487,11 @@ static int _do_tasks_add(Tasks * tasks, int desktop, Window window,
 {
 	size_t i;
 	Task * p = NULL;
+#ifndef EMBEDDED
 	unsigned long * l;
 	unsigned long cnt;
 	int cur = -1;
+#endif
 	Task ** q;
 
 #ifndef EMBEDDED
@@ -587,6 +589,35 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 #endif
 }
 
+static void _clicked_activate(Task * task)
+{
+	GdkDisplay * display;
+	XEvent xev;
+	int res;
+
+	display = task->tasks->display;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = task->tasks->atom[
+		TASKS_ATOM_NET_ACTIVE_WINDOW];
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 2;
+	xev.xclient.data.l[1] = gdk_x11_display_get_user_time(display);
+	xev.xclient.data.l[2] = 0;
+	gdk_error_trap_push();
+	res = XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(task->tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+#ifdef DEBUG
+	if(gdk_error_trap_pop() != 0 || res != Success)
+		fprintf(stderr, "DEBUG: %s() error\n", __func__);
+#else
+	gdk_error_trap_pop();
+#endif
+}
+
 
 /* on_close */
 static void _on_close(GtkWidget * widget, gpointer data)
@@ -596,6 +627,7 @@ static void _on_close(GtkWidget * widget, gpointer data)
 	XEvent xev;
 
 	display = task->tasks->display;
+	memset(&xev, 0, sizeof(xev));
 	xev.xclient.type = ClientMessage;
 	xev.xclient.window = task->window;
 	xev.xclient.message_type = task->tasks->atom[
@@ -603,29 +635,6 @@ static void _on_close(GtkWidget * widget, gpointer data)
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = gdk_x11_display_get_user_time(display);
 	xev.xclient.data.l[1] = 2;
-	gdk_error_trap_push();
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(task->tasks->root), False,
-			SubstructureNotifyMask | SubstructureRedirectMask,
-			&xev);
-	gdk_error_trap_pop();
-}
-
-
-static void _clicked_activate(Task * task)
-{
-	GdkDisplay * display;
-	XEvent xev;
-
-	display = task->tasks->display;
-	xev.xclient.type = ClientMessage;
-	xev.xclient.window = task->window;
-	xev.xclient.message_type = task->tasks->atom[
-		TASKS_ATOM_NET_ACTIVE_WINDOW];
-	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = 2;
-	xev.xclient.data.l[1] = gdk_x11_display_get_user_time(display);
-	xev.xclient.data.l[2] = GDK_WINDOW_XWINDOW(task->tasks->root);
 	gdk_error_trap_push();
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
 			GDK_WINDOW_XWINDOW(task->tasks->root), False,
