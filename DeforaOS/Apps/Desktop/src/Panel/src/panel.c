@@ -147,52 +147,10 @@ static gboolean _on_idle(gpointer data)
 	const char * plugins[] = { "clock", "desktop", "main", "tasks", NULL };
 #endif
 	size_t i;
-	Plugin * plugin;
-	PanelApplet * applet;
-	GtkWidget * widget;
-	gboolean exp;
-	gboolean fill;
 
 	for(i = 0; plugins[i] != NULL; i++)
-		if((plugin = plugin_new(LIBDIR, PACKAGE, "applets", plugins[i]))
-				!= NULL
-				&& (applet = plugin_lookup(plugin, "applet"))
-				!= NULL
-				&& (applet->helper = &panel->helper) != NULL
-				&& applet->init != NULL
-				&& (widget = applet->init(applet)) != NULL)
-		{
-			exp = applet->expand;
-			fill = applet->fill;
-			switch(applet->position)
-			{
-				case PANEL_APPLET_POSITION_END:
-					gtk_box_pack_end(GTK_BOX(panel->hbox),
-							widget, exp, fill, 2);
-					break;
-				case PANEL_APPLET_POSITION_FIRST:
-					gtk_box_pack_start(GTK_BOX(panel->hbox),
-							widget, exp, fill, 2);
-					gtk_box_reorder_child(GTK_BOX(
-								panel->hbox),
-							widget, 0);
-					break;
-				case PANEL_APPLET_POSITION_LAST:
-					gtk_box_pack_end(GTK_BOX(panel->hbox),
-							widget, exp, fill, 2);
-					gtk_box_reorder_child(GTK_BOX(
-								panel->hbox),
-							widget, 0);
-					break;
-				case PANEL_APPLET_POSITION_START:
-					gtk_box_pack_start(GTK_BOX(panel->hbox),
-							widget, exp, fill, 2);
-					break;
-			}
-			gtk_widget_show_all(widget);
-		}
-		else
-			error_print(PACKAGE);
+		if(panel_load(panel, plugins[i]))
+			error_print(PACKAGE); /* we can ignore errors */
 	return FALSE;
 }
 
@@ -257,6 +215,52 @@ static int _error_text(char const * message, int ret)
 	fputs("panel: ", stderr);
 	perror(message);
 	return ret;
+}
+
+
+/* panel_load */
+int panel_load(Panel * panel, char const * applet)
+{
+	Plugin * plugin;
+	PanelApplet * pa;
+	GtkWidget * widget;
+	gboolean exp;
+	gboolean fill;
+
+	if((plugin = plugin_new(LIBDIR, PACKAGE, "applets", applet)) == NULL)
+		return -1;
+	if((pa = plugin_lookup(plugin, "applet")) == NULL
+			|| (pa->helper = &panel->helper) == NULL
+			|| pa->init == NULL || (widget = pa->init(pa)) == NULL)
+	{
+		plugin_delete(plugin);
+		return -1;
+	}
+	exp = pa->expand;
+	fill = pa->fill;
+	switch(pa->position)
+	{
+		case PANEL_APPLET_POSITION_END:
+			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, exp,
+					fill, 2);
+			break;
+		case PANEL_APPLET_POSITION_FIRST:
+			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, exp,
+					fill, 2);
+			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
+			break;
+		case PANEL_APPLET_POSITION_LAST:
+			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, exp,
+					fill, 2);
+			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
+			break;
+		case PANEL_APPLET_POSITION_START:
+			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, exp,
+					fill, 2);
+			break;
+	}
+	gtk_widget_show_all(widget);
+	return 0;
 }
 
 

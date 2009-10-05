@@ -35,5 +35,6 @@ void panel_delete(Panel * panel);
 
 /* useful */
 int panel_error(Panel * panel, char const * message, int ret);
+int panel_load(Panel * panel, char const * applet);
 
 # endif /* !PANEL_COMMON_H */
