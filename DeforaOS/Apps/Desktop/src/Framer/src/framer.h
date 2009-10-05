@@ -18,6 +18,8 @@
 #ifndef FRAMER_FRAMER_H
 # define FRAMER_FRAMER_H
 
+# include <X11/X.h>
+
 
 /* Framer */
 /* types */
