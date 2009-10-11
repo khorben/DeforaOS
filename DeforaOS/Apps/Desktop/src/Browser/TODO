@@ -18,7 +18,6 @@
 - enable drag and drop as a source
 
 [properties.c]
-- add dates
 - resolve relative paths
 - add an option to count files altogether
 - update permissions and group
