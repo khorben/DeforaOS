@@ -37,7 +37,7 @@ int framer_window_set_active(Framer * framer, Window window);
 
 /* useful */
 int framer_window_add(Framer * framer, Window window);
-void framer_window_iconify(Framer * framer, Window window);
+int framer_window_iconify(Framer * framer, Window window);
 int framer_window_remove(Framer * framer, Window window);
 
 #endif /* !FRAMER_FRAMER_H */

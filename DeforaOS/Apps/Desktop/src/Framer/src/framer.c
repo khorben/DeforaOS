@@ -309,12 +309,16 @@ int framer_window_add(Framer * framer, Window window)
 
 
 /* framer_window_iconify */
-void framer_window_iconify(Framer * framer, Window window)
+int framer_window_iconify(Framer * framer, Window window)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, (int)window);
 #endif
+	gdk_error_trap_push();
 	XUnmapWindow(GDK_DISPLAY_XDISPLAY(framer->display), window);
+	if(gdk_error_trap_pop() != 0)
+		return 1;
+	return 0;
 }
 
 
@@ -578,20 +582,12 @@ static GdkFilterReturn _filter_configure_request(
 #else
 	if(type == FA_NET_WM_WINDOW_TYPE_DOCK)
 	{
-		if(xconfigure->value_mask & (CWX | CWWidth))
-		{
-			wc.x = 0;
-			wc.width = framer->width;
-			mask |= CWX | CWWidth;
-		}
-		if(xconfigure->value_mask & (CWY | CWHeight))
-		{
-			wc.y = framer->height - 64;
-			wc.height = 64;
-			mask |= CWY | CWHeight;
-		}
+		wc.x = xconfigure->x;
+		wc.y = xconfigure->y;
+		wc.width = xconfigure->width;
+		wc.height = xconfigure->height;
 	}
-	else /* other than dock window */
+	else
 	{
 		wc.x = 0;
 		wc.width = framer->width;
@@ -602,7 +598,9 @@ static GdkFilterReturn _filter_configure_request(
 	if(xconfigure->value_mask & CWBorderWidth)
 		wc.border_width = 0;
 #endif
+	gdk_error_trap_push();
 	XConfigureWindow(xconfigure->display, xconfigure->window, mask, &wc);
+	gdk_error_trap_pop();
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -647,7 +645,9 @@ static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	gdk_error_trap_push();
 	XMapWindow(xmap->display, xmap->window);
+	gdk_error_trap_pop(); /* we ignore errors */
 	return GDK_FILTER_CONTINUE;
 }
 
