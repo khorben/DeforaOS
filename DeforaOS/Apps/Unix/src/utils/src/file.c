@@ -24,7 +24,11 @@
 
 /* prefs */
 typedef int Prefs;
-enum { PREFS_d = 6, PREFS_h = 1, PREFS_m = 2, PREFS_M = 4, PREFS_i = 8 };
+#define PREFS_h	1
+#define PREFS_m	2
+#define PREFS_M	4
+#define PREFS_d	6
+#define PREFS_i	8
 
 
 /* file */
