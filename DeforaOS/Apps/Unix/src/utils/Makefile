@@ -1,6 +1,6 @@
 PACKAGE	= utils
 VERSION	= 0.0.1
-SUBDIRS	= src
+SUBDIRS	= src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -70,6 +70,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/utilbox.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/utils.sh \
+		$(PACKAGE)-$(VERSION)/tools/utils.c \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf
