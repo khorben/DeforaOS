@@ -42,6 +42,11 @@ typedef enum _FramerAtom
 	FA_NET_NUMBER_OF_DESKTOPS,
 	FA_NET_SHOWING_DESKTOP,
 	FA_NET_SUPPORTED,
+	FA_NET_WM_STATE,
+	FA_NET_WM_STATE_ADD,
+	FA_NET_WM_STATE_FULLSCREEN,
+	FA_NET_WM_STATE_REMOVE,
+	FA_NET_WM_STATE_TOGGLE,
 	FA_NET_WM_WINDOW_TYPE,
 	FA_NET_WM_WINDOW_TYPE_DESKTOP,
 	FA_NET_WM_WINDOW_TYPE_DOCK,
@@ -84,6 +89,11 @@ static char const * _framer_atom[FA_COUNT] =
 	"_NET_NUMBER_OF_DESKTOPS",
 	"_NET_SHOWING_DESKTOP",
 	"_NET_SUPPORTED",
+	"_NET_WM_STATE",
+	"_NET_WM_STATE_ADD",
+	"_NET_WM_STATE_FULLSCREEN",
+	"_NET_WM_STATE_REMOVE",
+	"_NET_WM_STATE_TOGGLE",
 	"_NET_WM_WINDOW_TYPE",
 	"_NET_WM_WINDOW_TYPE_DESKTOP",
 	"_NET_WM_WINDOW_TYPE_DOCK",
@@ -268,6 +278,23 @@ void framer_set_show_desktop(Framer * framer, gboolean shown)
 }
 
 
+/* framer_window_is_fullscreen */
+int framer_window_is_fullscreen(Framer * framer, Window window,
+		gboolean * fullscreen)
+{
+	XWindowAttributes wa;
+
+	gdk_error_trap_push();
+	XGetWindowAttributes(GDK_DISPLAY_XDISPLAY(framer->display), window,
+			&wa);
+	if(gdk_error_trap_pop() != 0)
+		return 1;
+	*fullscreen = (wa.x == 0 && wa.y == 0 && wa.height == framer->height
+			&& wa.width == framer->width) ? TRUE : FALSE;
+	return 0;
+}
+
+
 /* framer_window_set_active */
 int framer_window_set_active(Framer * framer, Window window)
 {
@@ -277,6 +304,43 @@ int framer_window_set_active(Framer * framer, Window window)
 	XMapRaised(GDK_DISPLAY_XDISPLAY(framer->display), window);
 	return _framer_window_set_property(framer, window, FA_NET_ACTIVE_WINDOW,
 			XA_WINDOW, 1, (unsigned char *)&window);
+}
+
+
+/* framer_window_set_fullscreen */
+int framer_window_set_fullscreen(Framer * framer, Window window,
+		gboolean fullscreen)
+{
+	XWindowChanges wc;
+	unsigned long mask = 0;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, fullscreen ? "TRUE"
+			: "FALSE");
+#endif
+	memset(&wc, 0, sizeof(wc));
+	if(fullscreen == TRUE)
+	{
+		wc.width = framer->width;
+		wc.height = framer->height;
+		mask |= CWX | CWY | CWHeight | CWWidth;
+	}
+	else
+#ifdef EMBEDDED
+	{
+		wc.width = framer->width;
+		wc.height = framer->height - 64;
+		mask |= CWX | CWY | CWHeight | CWWidth;
+	}
+#else
+		return 1; /* FIXME implement */
+#endif
+	gdk_error_trap_push();
+	XConfigureWindow(GDK_DISPLAY_XDISPLAY(framer->display), window,
+			mask, &wc);
+	if(gdk_error_trap_pop() != 0)
+		return 1;
+	return 0;
 }
 
 
@@ -490,6 +554,9 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 	return GDK_FILTER_CONTINUE;
 }
 
+static void _message_state(Framer * framer, Window window, unsigned long hint,
+		unsigned long property);
+
 static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 		Framer * framer)
 {
@@ -509,6 +576,12 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 		case FA_NET_SHOWING_DESKTOP:
 			framer_set_show_desktop(framer, TRUE);
 			break;
+		case FA_NET_WM_STATE:
+			_message_state(framer, xclient->window,
+					xclient->data.l[0], xclient->data.l[1]);
+			_message_state(framer, xclient->window,
+					xclient->data.l[0], xclient->data.l[2]);
+			break;
 		default:
 			if(i < FA_COUNT)
 				name = _framer_atom[i];
@@ -527,6 +600,39 @@ static GdkFilterReturn _filter_client_message(XClientMessageEvent * xclient,
 			break;
 	}
 	return GDK_FILTER_CONTINUE;
+}
+
+static void _message_state(Framer * framer, Window window, unsigned long hint,
+		unsigned long property)
+{
+	int i;
+	gboolean enabled;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%ld, %ld)\n", __func__, hint, property);
+#endif
+	if(property == 0)
+		return;
+	for(i = 0; i < FA_COUNT; i++)
+		if(framer->atom[i] == property)
+			break;
+	switch(i)
+	{
+		case FA_NET_WM_STATE_FULLSCREEN:
+			if(hint == framer->atom[FA_NET_WM_STATE_ADD])
+				enabled = TRUE;
+			else if(hint == framer->atom[FA_NET_WM_STATE_REMOVE])
+				enabled = FALSE;
+			else /* assume toggle */
+			{
+				if(framer_window_is_fullscreen(framer, window,
+							&enabled) != 0)
+					break;
+				enabled = !enabled;
+			}
+			framer_window_set_fullscreen(framer, window, enabled);
+			break;
+	}
 }
 
 static GdkFilterReturn _filter_configure_notify(XConfigureEvent * xconfigure)
