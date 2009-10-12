@@ -40,7 +40,7 @@ chmod_OBJS = chmod.o
 chmod_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 chmod_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-chmod: $(chmod_OBJS) common.c
+chmod: $(chmod_OBJS)
 	$(CC) -o chmod $(chmod_OBJS) $(chmod_LDFLAGS)
 
 chown_OBJS = chown.o
@@ -346,7 +346,7 @@ cat.o: cat.c
 chgrp.o: chgrp.c
 	$(CC) $(chgrp_CFLAGS) -c chgrp.c
 
-chmod.o: chmod.c
+chmod.o: chmod.c common.c
 	$(CC) $(chmod_CFLAGS) -c chmod.c
 
 chown.o: chown.c
@@ -406,10 +406,10 @@ logname.o: logname.c
 ls.o: ls.c
 	$(CC) $(ls_CFLAGS) -c ls.c
 
-mkdir.o: mkdir.c
+mkdir.o: mkdir.c common.c
 	$(CC) $(mkdir_CFLAGS) -c mkdir.c
 
-mkfifo.o: mkfifo.c
+mkfifo.o: mkfifo.c common.c
 	$(CC) $(mkfifo_CFLAGS) -c mkfifo.c
 
 mv.o: mv.c
