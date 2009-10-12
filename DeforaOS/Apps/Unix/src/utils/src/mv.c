@@ -84,13 +84,13 @@ static int _mv_confirm(char const * dst)
 }
 
 /* mv_single */
-static int _single_dir(Prefs * prefs, char const * src, char const * dst);
-static int _single_fifo(char const * src, char const * dst);
-static int _single_nod(char const * src, char const * dst, mode_t mode,
+static int _mv_single_dir(Prefs * prefs, char const * src, char const * dst);
+static int _mv_single_fifo(char const * src, char const * dst);
+static int _mv_single_nod(char const * src, char const * dst, mode_t mode,
 		dev_t rdev);
-static int _single_symlink(char const * src, char const * dst);
-static int _single_regular(char const * src, char const * dst);
-static int _single_p(char const * dst, struct stat const * st);
+static int _mv_single_symlink(char const * src, char const * dst);
+static int _mv_single_regular(char const * src, char const * dst);
+static int _mv_single_p(char const * dst, struct stat const * st);
 
 static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 {
@@ -113,39 +113,40 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 	if(lstat(src, &st) != 0)
 		return _mv_error(dst, 1);
 	if(S_ISDIR(st.st_mode))
-		ret = _single_dir(prefs, src, dst);
+		ret = _mv_single_dir(prefs, src, dst);
 	else if(S_ISFIFO(st.st_mode))
-		ret = _single_fifo(src, dst);
+		ret = _mv_single_fifo(src, dst);
 	else if(S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode))
-		ret = _single_nod(src, dst, st.st_mode, st.st_rdev);
+		ret = _mv_single_nod(src, dst, st.st_mode, st.st_rdev);
 	else if(S_ISLNK(st.st_mode))
-		ret = _single_symlink(src, dst);
+		ret = _mv_single_symlink(src, dst);
 	else if(!S_ISREG(st.st_mode)) /* FIXME not implemented */
 	{
 		errno = ENOSYS;
 		return _mv_error(src, 1);
 	}
 	else
-		ret = _single_regular(src, dst);
+		ret = _mv_single_regular(src, dst);
 	if(ret != 0)
 		return ret;
-	_single_p(dst, &st);
+	_mv_single_p(dst, &st);
 	return 0;
 }
 
-/* single_dir */
-static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+/* _mv_single_dir */
+static int _mv_single_recurse(Prefs * prefs, char const * src,
+		char const * dst);
 
-static int _single_dir(Prefs * prefs, char const * src, char const * dst)
+static int _mv_single_dir(Prefs * prefs, char const * src, char const * dst)
 {
-	if(_single_recurse(prefs, src, dst) != 0)
+	if(_mv_single_recurse(prefs, src, dst) != 0)
 		return 1;
 	if(rmdir(src) != 0) /* FIXME probably gonna fail, recurse before */
 		_mv_error(src, 0);
 	return 0;
 }
 
-static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
+static int _mv_single_recurse(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
 	size_t srclen;
@@ -190,7 +191,7 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
-static int _single_fifo(char const * src, char const * dst)
+static int _mv_single_fifo(char const * src, char const * dst)
 {
 	if(mkfifo(dst, 0666) != 0)
 		return _mv_error(dst, 1);
@@ -199,7 +200,7 @@ static int _single_fifo(char const * src, char const * dst)
 	return 0;
 }
 
-static int _single_nod(char const * src, char const * dst, mode_t mode,
+static int _mv_single_nod(char const * src, char const * dst, mode_t mode,
 		dev_t rdev)
 {
 	if(mknod(dst, mode, rdev) != 0)
@@ -209,7 +210,7 @@ static int _single_nod(char const * src, char const * dst, mode_t mode,
 	return 0;
 }
 
-static int _single_symlink(char const * src, char const * dst)
+static int _mv_single_symlink(char const * src, char const * dst)
 {
 	char buf[PATH_MAX];
 	ssize_t i;
@@ -224,7 +225,7 @@ static int _single_symlink(char const * src, char const * dst)
 	return 0;
 }
 
-static int _single_regular(char const * src, char const * dst)
+static int _mv_single_regular(char const * src, char const * dst)
 {
 	int ret = 0;
 	FILE * fsrc;
@@ -254,7 +255,7 @@ static int _single_regular(char const * src, char const * dst)
 	return ret;
 }
 
-static int _single_p(char const * dst, struct stat const * st)
+static int _mv_single_p(char const * dst, struct stat const * st)
 {
 	struct timeval tv[2];
 

@@ -93,11 +93,11 @@ static int _cp_confirm(char const * message)
 
 /* _cp_single
  * XXX TOCTOU all over the place (*stat) but seem impossible to avoid */
-static int _single_dir(Prefs * prefs, char const * src, char const * dst);
-static int _single_fifo(char const * dst);
-static int _single_symlink(char const * src, char const * dst);
-static int _single_regular(char const * src, char const * dst);
-static int _single_p(char const * dst, struct stat * st);
+static int _cp_single_dir(Prefs * prefs, char const * src, char const * dst);
+static int _cp_single_fifo(char const * dst);
+static int _cp_single_symlink(char const * src, char const * dst);
+static int _cp_single_regular(char const * src, char const * dst);
+static int _cp_single_p(char const * dst, struct stat * st);
 
 static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 {
@@ -120,32 +120,32 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 			return _cp_error(dst, 1);
 	}
 	if(S_ISDIR(st.st_mode))
-		ret = _single_dir(prefs, src, dst);
+		ret = _cp_single_dir(prefs, src, dst);
 	else if(S_ISFIFO(st.st_mode))
-		ret = _single_fifo(dst);
+		ret = _cp_single_fifo(dst);
 	else if(S_ISLNK(st.st_mode))
-		ret = _single_symlink(src, dst);
+		ret = _cp_single_symlink(src, dst);
 	else
-		ret = _single_regular(src, dst);
+		ret = _cp_single_regular(src, dst);
 	if(ret != 0)
 		return ret;
 	if(*prefs & PREFS_p) /* XXX TOCTOU */
-		_single_p(dst, &st);
+		_cp_single_p(dst, &st);
 	return 0;
 }
 
 /* single_dir */
-static int _single_recurse(Prefs * prefs, char const * src, char const * dst);
+static int _cp_single_recurse(Prefs * prefs, char const * src, char const * dst);
 
-static int _single_dir(Prefs * prefs, char const * src, char const * dst)
+static int _cp_single_dir(Prefs * prefs, char const * src, char const * dst)
 {
 	if(*prefs & PREFS_R)
-		return _single_recurse(prefs, src, dst);
+		return _cp_single_recurse(prefs, src, dst);
 	fprintf(stderr, "%s%s%s", "cp: ", src, ": Omitting directory\n");
 	return 0;
 }
 
-static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
+static int _cp_single_recurse(Prefs * prefs, char const * src, char const * dst)
 {
 	int ret = 0;
 	Prefs prefs2 = *prefs;
@@ -192,14 +192,14 @@ static int _single_recurse(Prefs * prefs, char const * src, char const * dst)
 	return ret;
 }
 
-static int _single_fifo(char const * dst)
+static int _cp_single_fifo(char const * dst)
 {
 	if(mkfifo(dst, 0666) != 0)
 		return _cp_error(dst, 1);
 	return 0;
 }
 
-static int _single_symlink(char const * src, char const * dst)
+static int _cp_single_symlink(char const * src, char const * dst)
 {
 	char buf[PATH_MAX];
 	ssize_t len;
@@ -212,7 +212,7 @@ static int _single_symlink(char const * src, char const * dst)
 	return 0;
 }
 
-static int _single_regular(char const * src, char const * dst)
+static int _cp_single_regular(char const * src, char const * dst)
 {
 	int ret = 0;
 	FILE * fsrc;
@@ -240,7 +240,7 @@ static int _single_regular(char const * src, char const * dst)
 	return ret;
 }
 
-static int _single_p(char const * dst, struct stat * st)
+static int _cp_single_p(char const * dst, struct stat * st)
 {
 	struct timeval tv[2];
 
