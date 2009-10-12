@@ -507,8 +507,7 @@ static GdkFilterReturn _filter_map_request(XMapRequestEvent * xmap);
 static GdkFilterReturn _filter_motion_notify(XMotionEvent * xmotion);
 static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
 		Framer * framer);
-static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap,
-		Framer * framer);
+static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap);
 
 static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
@@ -543,7 +542,7 @@ static GdkFilterReturn _framer_filter(GdkXEvent * xevent, GdkEvent * event,
 			return _filter_property_notify(&xev->xproperty,
 					framer);
 		case UnmapNotify:
-			return _filter_unmap_notify(&xev->xunmap, framer);
+			return _filter_unmap_notify(&xev->xunmap);
 		default:
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() type=%d\n", __func__,
@@ -782,8 +781,7 @@ static GdkFilterReturn _filter_property_notify(XPropertyEvent * xproperty,
 	return GDK_FILTER_CONTINUE;
 }
 
-static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap,
-		Framer * framer)
+static GdkFilterReturn _filter_unmap_notify(XUnmapEvent * xunmap)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
