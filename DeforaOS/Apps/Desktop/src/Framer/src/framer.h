@@ -32,7 +32,11 @@ void framer_delete(Framer * framer);
 
 /* accessors */
 void framer_set_show_desktop(Framer * framer, gboolean shown);
+int framer_window_is_fullscreen(Framer * framer, Window window,
+		gboolean * fullscreen);
 int framer_window_set_active(Framer * framer, Window window);
+int framer_window_set_fullscreen(Framer * framer, Window window,
+		gboolean fullscreen);
 
 
 /* useful */
