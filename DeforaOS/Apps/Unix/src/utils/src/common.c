@@ -16,8 +16,11 @@
 
 
 
-#ifdef COMMON_MODE
-# include <ctype.h>
+#ifndef UTILS_COMMON_C
+# define UTILS_COMMON_C
+
+# ifdef COMMON_MODE
+#  include <ctype.h>
 
 /* mode
  * PRE	*mask exists
@@ -162,4 +165,5 @@ static void _perm(char const ** mode)
 	/* FIXME */
 	(*mode)++;
 }
-#endif /* COMMON_MODE */
+# endif /* COMMON_MODE */
+#endif /* UTILS_COMMON_C */
