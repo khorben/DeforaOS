@@ -15,6 +15,9 @@
 
 
 
+#include "utilbox.h"
+
+
 /* basename.c */
 #define main _basename_main
 #define _usage _basename_usage
@@ -706,7 +709,7 @@
 #undef _who
 
 
-static Call _calls[] =
+Call calls[] =
 {
 
 	{ "basename",	_basename_main	},

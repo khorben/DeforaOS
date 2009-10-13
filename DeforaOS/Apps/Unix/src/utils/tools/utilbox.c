@@ -20,22 +20,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
+#include "utilbox.h"
 
 
 /* utilbox */
 /* private */
-/* types */
-typedef struct _Call
-{
-	char const * name;
-	int (*call)(int argc, char * argv[]);
-} Call;
-
-
-/* variables */
-#include "utils.c"
-
-
 /* prototypes */
 static int _error(char const * message, int ret);
 static int _list(Call * calls);
@@ -86,25 +75,25 @@ int main(int argc, char * argv[])
 	if((p = strdup(argv[0])) == NULL)
 		return _error(NULL, 2);
 	q = basename(p);
-	for(i = 0; _calls[i].name != NULL; i++)
-		if(strcmp(_calls[i].name, q) == 0)
+	for(i = 0; calls[i].name != NULL; i++)
+		if(strcmp(calls[i].name, q) == 0)
 		{
 			free(p);
-			return _calls[i].call(argc, argv);
+			return calls[i].call(argc, argv);
 		}
 	free(p);
 	while((o = getopt(argc, argv, "l")) != -1)
 		switch(o)
 		{
 			case 'l':
-				return _list(_calls);
+				return _list(calls);
 			default:
 				return _usage();
 		}
 	if(optind == argc)
 		return _usage();
-	for(i = 0; _calls[i].name != NULL; i++)
-		if(strcmp(_calls[i].name, argv[optind]) == 0)
-			return _calls[i].call(argc - optind, &argv[optind]);
+	for(i = 0; calls[i].name != NULL; i++)
+		if(strcmp(calls[i].name, argv[optind]) == 0)
+			return calls[i].call(argc - optind, &argv[optind]);
 	return 0;
 }

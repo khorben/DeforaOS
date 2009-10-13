@@ -15,15 +15,18 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-utilbox_OBJS = utilbox.o
+utilbox_OBJS = utilbox.o utils.o
 utilbox_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 utilbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-utilbox: $(utilbox_OBJS) utils.c
+utilbox: $(utilbox_OBJS)
 	$(CC) -o utilbox $(utilbox_OBJS) $(utilbox_LDFLAGS)
 
 utilbox.o: utilbox.c
 	$(CC) $(utilbox_CFLAGS) -c utilbox.c
+
+utils.o: utils.c
+	$(CC) $(utilbox_CFLAGS) -c utils.c
 
 clean:
 	$(RM) $(utilbox_OBJS)

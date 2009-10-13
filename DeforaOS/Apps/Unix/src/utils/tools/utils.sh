@@ -60,6 +60,9 @@ cat > "utils.c" << EOF
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
+
+#include "utilbox.h"
+
 EOF
 for i in ../src/*.c; do
 	BASENAME=`basename $i`
@@ -73,7 +76,7 @@ done >> "utils.c"
 cat >> "utils.c" << EOF
 
 
-static Call _calls[] =
+Call calls[] =
 {
 $CALLS
 	{ NULL,		NULL		}
