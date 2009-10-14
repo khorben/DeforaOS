@@ -16,8 +16,28 @@
 
 
 
-/* main */
-int main(void)
+#include <unistd.h>
+#include <stdio.h>
+
+
+/* usage */
+static int _usage(void)
 {
+	fputs("Usage: true\n", stderr);
+	return 1;
+}
+
+
+/* main */
+int main(int argc, char * argv[])
+{
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
 	return 0;
 }
