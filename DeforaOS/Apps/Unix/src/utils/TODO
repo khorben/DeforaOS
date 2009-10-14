@@ -1,4 +1,3 @@
-all:
 - factorize code (either need to improve configure or include a .c file)
 - improve command line arguments fetching? (inspired from wc?)
 - factorize code; either:
@@ -19,27 +18,24 @@ all:
     . include always;
     . build conditionally;
 
-id:
+[id]
 - check if it's complete
 
-kill:
+[kill]
 - get signal number from its name
 
-ls:
+[ls]
 - race condition between looking if is a directory and opendir()? (check cksum too)
 
-rm:
-- check for symlinks in recursive removal?
-
-id:
+[id]
 - write more readable code
 - check if it's complete
 
-kill:
-- get signal number from its name
-
-mkdir/rmdir:
+[mkdir/rmdir]
 - check recursive algorithms
 
-tail:
+[rm]
+- check for symlinks in recursive removal?
+
+[tail]
 - implement
