@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -16,6 +16,7 @@
 
 
 
+#include <unistd.h>
 #include <libgen.h>
 #include <stdio.h>
 
@@ -39,7 +40,15 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	if(argc != 2)
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc - 1)
 		return _usage();
-	return _dirname(argv[1]);
+	return _dirname(argv[optind]);
 }
