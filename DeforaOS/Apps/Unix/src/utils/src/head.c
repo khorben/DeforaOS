@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -23,16 +23,17 @@
 
 /* head */
 static int _head_error(char const * message, int ret);
-static int _head_do(int flgn, char * filename);
-static int _head(int flgn, int argc, char * argv[])
+static int _head_do(int flgn, char const * filename);
+
+static int _head(int flgn, int filec, char * filev[])
 {
 	int ret = 0;
 	int i;
 
-	if(argc == 0)
+	if(filec == 0)
 		return _head_do(flgn, NULL);
-	for(i = 0; i < argc; i++)
-		if(_head_do(flgn, argv[i]) != 0)
+	for(i = 0; i < filec; i++)
+		if(_head_do(flgn, filev[i]) != 0)
 			ret = 1;
 	return ret;
 }
@@ -44,7 +45,7 @@ static int _head_error(char const * message, int ret)
 	return ret;
 }
 
-static int _head_do(int flgn, char * filename)
+static int _head_do(int flgn, char const * filename)
 {
 	FILE * fp;
 	int n = 0;
