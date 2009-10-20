@@ -25,9 +25,10 @@
 
 
 /* time */
-static int _time_error(char * error, int ret);
+static int _time_error(char const * error, int ret);
 static int _time_exec(char * argv[]);
 static int _time_print(long real, long user, long sys);
+
 static int _time(char * argv[])
 {
 	pid_t pid;
@@ -55,7 +56,7 @@ static int _time(char * argv[])
 			tmsbuf.tms_stime + tmsbuf.tms_cstime);
 }
 
-static int _time_error(char * message, int ret)
+static int _time_error(char const * message, int ret)
 {
 	fputs("time: ", stderr);
 	perror(message);

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -95,7 +95,7 @@ static int _prefs_ttime(char * string, time_t * time)
 	{
 		case 15:
 		case 12:
-			ret +=_ttime_century(p, &t);
+			ret += _ttime_century(p, &t);
 		case 13:
 		case 10:
 			ret += _ttime_year(p, &t);
@@ -208,10 +208,11 @@ static int _ttime_second(char ** p, time_t * time)
 
 
 /* touch */
-static int _touch_error(char * message, int ret);
-static int _touch_rtime(char * filename, time_t * atime, time_t * mtime);
-static int _touch_do(Prefs * prefs, char * filename,
+static int _touch_error(char const * message, int ret);
+static int _touch_rtime(char const * filename, time_t * atime, time_t * mtime);
+static int _touch_do(Prefs * prefs, char const * filename,
 		time_t atime, time_t mtime);
+
 static int _touch(Prefs * prefs, int argc, char * argv[])
 {
 	int res = 0;
@@ -234,14 +235,14 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 	return res > 0 ? 2 : 0;
 }
 
-static int _touch_error(char * message, int ret)
+static int _touch_error(char const * message, int ret)
 {
 	fputs("touch: ", stderr);
 	perror(message);
 	return ret;
 }
 
-static int _touch_rtime(char * filename, time_t * atime, time_t * mtime)
+static int _touch_rtime(char const * filename, time_t * atime, time_t * mtime)
 {
 	struct stat st;
 
@@ -252,7 +253,8 @@ static int _touch_rtime(char * filename, time_t * atime, time_t * mtime)
 	return 0;
 }
 
-static int _touch_do(Prefs * prefs, char * filename, time_t atime, time_t mtime)
+static int _touch_do(Prefs * prefs, char const * filename, time_t atime,
+		time_t mtime)
 {
 	struct stat st;
 	struct utimbuf ut;
