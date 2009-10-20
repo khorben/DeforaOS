@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -24,15 +24,15 @@
 
 /* prefs */
 typedef int Prefs;
-#define PREFS_h	1
-#define PREFS_m	2
-#define PREFS_M	4
-#define PREFS_d	6
-#define PREFS_i	8
+#define FILE_PREFS_h	1
+#define FILE_PREFS_m	2
+#define FILE_PREFS_M	4
+#define FILE_PREFS_d	6
+#define FILE_PREFS_i	8
 
 
 /* file */
-static int _file_do(Prefs * p, char * filename);
+static int _file_do(Prefs * p, char const * filename);
 static int _file(Prefs * p, int argc, char * argv[])
 {
 	int ret = 0;
@@ -43,41 +43,40 @@ static int _file(Prefs * p, int argc, char * argv[])
 	return ret;
 }
 
-static int _file_do(Prefs * p, char * filename)
+static int _file_do(Prefs * p, char const * filename)
 {
 	struct stat st;
-	int (*statfunc)(const char *, struct stat*) = *p & PREFS_h
+	int (*statfunc)(const char *, struct stat*) = *p & FILE_PREFS_h
 		? lstat : stat;
 
 	printf("%s: ", filename);
 	if(statfunc(filename, &st) != 0)
 	{
-		printf("%s\n", "cannot open file");
+		puts("cannot open file");
 		return 0;
 	}
 	if(S_ISLNK(st.st_mode))
-		printf("%s", "symbolic link to ");
+		fputs("symbolic link to ", stdout);
 	if(S_ISBLK(st.st_mode))
-		printf("%s", "block special ");
+		fputs("block special ", stdout);
 	else if(S_ISCHR(st.st_mode))
-		printf("%s", "character special ");
+		fputs("character special ", stdout);
 	else if(S_ISDIR(st.st_mode))
-		printf("%s", "directory ");
+		fputs("directory ", stdout);
 	else if(S_ISFIFO(st.st_mode))
-		printf("%s", "fifo ");
+		fputs("fifo ", stdout);
 	else if(S_ISSOCK(st.st_mode))
-		printf("%s", "socket ");
+		fputs("socket ", stdout);
 	else
 	{
-		if(*p & PREFS_i)
-			printf("%s", "regular file ");
+		if(*p & FILE_PREFS_i)
+			fputs("regular file ", stdout);
 		else if(st.st_size == 0)
-			printf("%s", "empty ");
+			fputs("empty ", stdout);
 		if(st.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
-			printf("%s", "executable ");
+			fputs("executable ", stdout);
 	}
-	printf("%s", "data");
-	fputc('\n', stdout);
+	puts("data");
 	return 0;
 }
 
@@ -101,30 +100,30 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'd':
-				if(p & PREFS_i)
+				if(p & FILE_PREFS_i)
 					return _usage();
-				p |= PREFS_d;
+				p |= FILE_PREFS_d;
 				break;
 			case 'h':
-				p |= PREFS_h;
+				p |= FILE_PREFS_h;
 				break;
 			case 'i':
 				if(p != 0)
 					return _usage();
-				p = PREFS_i;
+				p = FILE_PREFS_i;
 				break;
 			case 'M':
-				if(p & PREFS_i)
+				if(p & FILE_PREFS_i)
 					return _usage();
-				p |= PREFS_M;
+				p |= FILE_PREFS_M;
 				break;
 			case 'm':
-				if(p & PREFS_i)
+				if(p & FILE_PREFS_i)
 					return _usage();
-				p |= PREFS_m;
+				p |= FILE_PREFS_m;
 				break;
 			default:
 				return _usage();
 		}
-	return _file(&p, argc-optind, &argv[optind]);
+	return _file(&p, argc - optind, &argv[optind]);
 }

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -23,25 +23,26 @@
 
 /* prefs */
 typedef int Prefs;
-#define PREFS_a 0x1
-#define PREFS_m 0x2
-#define PREFS_c 0x4
-#define PREFS_k 0x8
+#define LOCALE_PREFS_a 0x1
+#define LOCALE_PREFS_m 0x2
+#define LOCALE_PREFS_c 0x4
+#define LOCALE_PREFS_k 0x8
 
 
 /* locale */
 static int _locale_locales(void);
 static int _locale_charsets(void);
 static int _locale_default(void);
-static int _locale_do(Prefs * p, char * locale);
+static int _locale_do(Prefs * p, char const * locale);
+
 static int _locale(Prefs * p, int argc, char * argv[])
 {
 	int ret = 0;
 	int i;
 
-	if(*p & PREFS_a)
+	if(*p & LOCALE_PREFS_a)
 		return _locale_locales();
-	if(*p & PREFS_m)
+	if(*p & LOCALE_PREFS_m)
 		return _locale_charsets();
 	if(*p == 0 && argc == 0)
 		return _locale_default() ? 2 : 0;
@@ -52,13 +53,13 @@ static int _locale(Prefs * p, int argc, char * argv[])
 
 static int _locale_locales(void)
 {
-	printf("%s", "C\nPOSIX\n");
+	puts("C\nPOSIX");
 	return 0;
 }
 
 static int _locale_charsets(void)
 {
-	printf("%s", "ISO_10646\n");
+	puts("ISO_10646");
 	return 0;
 }
 
@@ -72,9 +73,9 @@ static int _locale_default(void)
 	{
 		printf("%s=", *p);
 		if((e = getenv(*p)) == NULL)
-			printf("\"\"\n");
+			puts("\"\"");
 		else
-			printf("%s\n", e);
+			puts(e);
 	}
 	if((e = getenv("LC_ALL")) == NULL)
 		e = "";
@@ -82,9 +83,9 @@ static int _locale_default(void)
 	return 0;
 }
 
-static int _locale_do(Prefs * p, char * locale)
+static int _locale_do(Prefs * p, char const * locale)
 {
-	/* FIXME */
+	/* FIXME implement */
 	return 0;
 }
 
@@ -108,23 +109,25 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'a':
-				p -= (p & (PREFS_m | PREFS_c | PREFS_k));
-				p |= PREFS_a;
+				p -= (p & (LOCALE_PREFS_m | LOCALE_PREFS_c
+							| LOCALE_PREFS_k));
+				p |= LOCALE_PREFS_a;
 				break;
 			case 'm':
-				p -= (p & (PREFS_a | PREFS_c | PREFS_k));
-				p |= PREFS_m;
+				p -= (p & (LOCALE_PREFS_a | LOCALE_PREFS_c
+							| LOCALE_PREFS_k));
+				p |= LOCALE_PREFS_m;
 				break;
 			case 'c':
-				p -= (p & (PREFS_a | PREFS_m));
-				p |= PREFS_c;
+				p -= (p & (LOCALE_PREFS_a | LOCALE_PREFS_m));
+				p |= LOCALE_PREFS_c;
 				break;
 			case 'k':
-				p -= (p & (PREFS_a | PREFS_m));
-				p |= PREFS_k;
+				p -= (p & (LOCALE_PREFS_a | LOCALE_PREFS_m));
+				p |= LOCALE_PREFS_k;
 				break;
 			default:
 				return _usage();
 		}
-	return _locale(&p, argc-optind, &argv[optind]);
+	return _locale(&p, argc - optind, &argv[optind]);
 }

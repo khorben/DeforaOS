@@ -21,6 +21,7 @@
 #include <string.h>
 
 
+/* cat */
 /* types */
 typedef enum _OutputDelay {
 	OD_NONE,

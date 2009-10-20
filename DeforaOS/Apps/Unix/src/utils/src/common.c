@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -28,6 +28,7 @@
  * 	1	an error happened */
 static int _mode_alpha(char const * mode, mode_t * mask);
 static int _mode_digit(char const * mode, mode_t * mask);
+
 static int _mode(char const * mode, mode_t * mask)
 	/* FIXME need a way to tell whether to =, & or | the resulting mask */
 {
@@ -41,8 +42,9 @@ static int _mode(char const * mode, mode_t * mask)
 static int _mode_digit(char const * mode, mode_t * mask)
 {
 	char const * p;
+	int i;
 
-	for(p = mode; isdigit(*p) && *p < '8'; p++);
+	for(p = mode; (i = *p) != '\0' && isdigit(i) && i < '8'; p++);
 	if(*p == '\0')
 	{
 		*mask = strtol(mode, NULL, 8);

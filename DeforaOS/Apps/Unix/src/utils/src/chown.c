@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -31,11 +31,11 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_h 1
-#define PREFS_R 2
-#define PREFS_H 4
-#define PREFS_L 8
-#define PREFS_P 12
+#define CHOWN_PREFS_h 1
+#define CHOWN_PREFS_R 2
+#define CHOWN_PREFS_H 4
+#define CHOWN_PREFS_L 8
+#define CHOWN_PREFS_P 12
 
 
 /* chown */
@@ -46,14 +46,14 @@ static int _chown_do_recursive(Prefs * prefs, uid_t uid, gid_t gid,
 static int _chown_do(Prefs * prefs, uid_t uid, gid_t gid, char * file);
 static int _chown(Prefs * prefs, char * owner, int argc, char * argv[])
 {
-	uid_t uid;
-	gid_t gid;
 	int ret = 0;
+	uid_t uid = 0;
+	gid_t gid = 0;
 	int i;
 
 	if(_chown_owner(owner, &uid, &gid) != 0)
 		return 2;
-	if(*prefs & PREFS_R)
+	if(*prefs & CHOWN_PREFS_R)
 	{
 		for(i = 0; i < argc; i++)
 			ret |= _chown_do_recursive(prefs, uid, gid, argv[i]);
@@ -188,7 +188,7 @@ static int _chown_do(Prefs * prefs, uid_t uid, gid_t gid, char * file)
 {
 	int res;
 
-	if((*prefs & PREFS_h) == PREFS_h)
+	if((*prefs & CHOWN_PREFS_h) == CHOWN_PREFS_h)
 		res = lchown(file, uid, gid);
 	else
 		res = chown(file, uid, gid);
@@ -212,17 +212,17 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	int o;
 	Prefs prefs = 0;
+	int o;
 
 	while((o = getopt(argc, argv, "hRHLP")) != -1)
 		switch(o)
 		{
 			case 'h':
-				prefs |= PREFS_h;
+				prefs |= CHOWN_PREFS_h;
 				break;
 			case 'R':
-				prefs |= PREFS_R;
+				prefs |= CHOWN_PREFS_R;
 				break;
 			case 'H':
 			case 'L':
@@ -234,6 +234,6 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 2)
 		return _usage();
-	return _chown(&prefs, argv[optind], argc-optind-1, &argv[optind+1]) == 0
-		? 0 : 2;
+	return (_chown(&prefs, argv[optind], argc - optind - 1,
+			&argv[optind + 1]) == 0) ? 0 : 2;
 }

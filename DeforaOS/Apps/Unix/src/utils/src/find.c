@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -33,17 +33,34 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_H 1
-#define PREFS_L 2
+#define FIND_PREFS_H 1
+#define FIND_PREFS_L 2
 
 
 /* find */
 /* types */
 typedef enum _FindCmd
 {
-	FC_INVALID = -1, FC_NAME = 0, FC_NOGROUP, FC_NOUSER, FC_XDEV, FC_PRUNE,
-	FC_PERM, FC_TYPE, FC_LINKS, FC_USER, FC_GROUP, FC_SIZE, FC_ATIME,
-	FC_CTIME, FC_MTIME, FC_EXEC, FC_OK, FC_PRINT, FC_NEWER, FC_DEPTH
+	FC_INVALID = -1,
+	FC_NAME = 0,
+	FC_NOGROUP,
+	FC_NOUSER,
+	FC_XDEV,
+	FC_PRUNE,
+	FC_PERM,
+	FC_TYPE,
+	FC_LINKS,
+	FC_USER,
+	FC_GROUP,
+	FC_SIZE,
+	FC_ATIME,
+	FC_CTIME,
+	FC_MTIME,
+	FC_EXEC,
+	FC_OK,
+	FC_PRINT,
+	FC_NEWER,
+	FC_DEPTH
 } FindCmd;
 #define FC_LAST FC_DEPTH
 
@@ -93,7 +110,7 @@ static int _find_do(Prefs * prefs, char const * pathname, int cmdc,
 
 	if(stat(pathname, &st) != 0) /* XXX TOCTOU, danger of infinite loop */
 	{
-		if(errno != ENOENT || *prefs & PREFS_L
+		if(errno != ENOENT || *prefs & FIND_PREFS_L
 				|| stat(pathname, &st) != 0)
 			return _find_error(pathname, 1);
 	}
@@ -168,7 +185,7 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 					ret = 1;
 				break;
 			case FC_PRINT:
-				printf("%s\n", pathname);
+				puts(pathname);
 				break;
 			case FC_PRUNE:
 				if(S_ISDIR(st->st_mode))
@@ -201,7 +218,7 @@ static int _do_cmd(Prefs * prefs, char const * pathname, struct stat * st,
 				return _find_error(cmdv[i], 1);
 		}
 	if(ret == 0 && i == cmdc)
-		printf("%s\n", pathname);
+		puts(pathname);
 	if(S_ISDIR(st->st_mode))
 		return 0;
 	return ret;
@@ -255,12 +272,13 @@ static int _do_dir(Prefs * prefs, char const * pathname, int cmdc,
 	int ret = 0;
 	DIR * dir;
 	struct dirent * de;
-	size_t len = strlen(pathname) + 2;
+	size_t len;
 	char * path;
 	char * p;
 
 	if((dir = opendir(pathname)) == NULL)
 		return _find_error(pathname, 1);
+	len = strlen(pathname) + 2;
 	if((path = malloc(len)) == NULL)
 	{
 		closedir(dir);
@@ -301,25 +319,24 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Prefs prefs = 0;
 	int o;
-	Prefs prefs;
 
-	memset(&prefs, 0, sizeof(prefs));
 	while((o = getopt(argc, argv, "HL")) != -1)
 		switch(o)
 		{
 			case 'H':
-				prefs &= ~PREFS_L;
-				prefs |= PREFS_H;
+				prefs &= ~FIND_PREFS_L;
+				prefs |= FIND_PREFS_H;
 				break;
 			case 'L':
-				prefs &= ~PREFS_H;
-				prefs |= PREFS_L;
+				prefs &= ~FIND_PREFS_H;
+				prefs |= FIND_PREFS_L;
 				break;
 			default:
 				return _usage();
 		}
 	if(argc - optind == 0)
 		return _usage();
-	return _find(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	return (_find(&prefs, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }

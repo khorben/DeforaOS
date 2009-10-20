@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -26,8 +26,8 @@
 
 /* Prefs */
 typedef int Prefs;
-#define PREFS_k 1
-#define PREFS_P 2
+#define DF_PREFS_k 1
+#define DF_PREFS_P 2
 
 
 /* df */
@@ -39,7 +39,7 @@ static int _df(Prefs * prefs, int filec, char * filev[])
 	int ret = 0;
 	int i;
 
-	printf("%s%s%s", "Filesystem ", *prefs & PREFS_k ? "1024" : " 512",
+	printf("%s%s%s", "Filesystem ", (*prefs & DF_PREFS_k) ? "1024" : " 512",
 			"-blocks       Used  Available Capacity Mounted on\n");
 	if(filec == 0)
 		return _df_mtab(prefs);
@@ -93,7 +93,7 @@ static void _df_print(Prefs * prefs, struct statvfs const * f)
 	unsigned long long avail;
 	unsigned int cap;
 
-	mod = f->f_bsize / ((*prefs & PREFS_k) ? 8192 : 4096);
+	mod = f->f_bsize / ((*prefs & DF_PREFS_k) ? 8192 : 4096);
 	cnt = f->f_blocks * mod;
 	used = (f->f_blocks - f->f_bfree) * mod;
 	avail = f->f_bavail * mod;
@@ -130,18 +130,17 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Prefs prefs = 0;
 	int o;
-	Prefs prefs;
 
-	memset(&prefs, 0, sizeof(prefs));
 	while((o = getopt(argc, argv, "kP")) != -1)
 		switch(o)
 		{
 			case 'k':
-				prefs |= PREFS_k;
+				prefs |= DF_PREFS_k;
 				break;
 			case 'P':
-				prefs |= PREFS_P;
+				prefs |= DF_PREFS_P;
 				break;
 			default:
 				return _usage();

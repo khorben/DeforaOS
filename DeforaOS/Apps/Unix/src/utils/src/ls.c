@@ -34,18 +34,18 @@
 
 /* Prefs */
 typedef int Prefs;
-#define PREFS_C 00001
-#define PREFS_F 00002
-#define PREFS_R 00004
-#define PREFS_a 00010
-#define PREFS_c 00020
-#define PREFS_d 00040
-#define PREFS_l 00100
-#define PREFS_t 00200
-#define PREFS_u 00400
-#define PREFS_1 01000
-#define PREFS_H 02000
-#define PREFS_L 04000
+#define LS_PREFS_C 00001
+#define LS_PREFS_F 00002
+#define LS_PREFS_R 00004
+#define LS_PREFS_a 00010
+#define LS_PREFS_c 00020
+#define LS_PREFS_d 00040
+#define LS_PREFS_l 00100
+#define LS_PREFS_t 00200
+#define LS_PREFS_u 00400
+#define LS_PREFS_1 01000
+#define LS_PREFS_H 02000
+#define LS_PREFS_L 04000
 
 static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 {
@@ -56,45 +56,45 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 		switch(o)
 		{
 			case 'C':
-				*prefs -= *prefs & PREFS_1;
-				*prefs |= PREFS_C;
+				*prefs -= *prefs & LS_PREFS_1;
+				*prefs |= LS_PREFS_C;
 				break;
 			case 'F':
-				*prefs |= PREFS_F;
+				*prefs |= LS_PREFS_F;
 				break;
 			case 'R':
-				*prefs |= PREFS_R;
+				*prefs |= LS_PREFS_R;
 				break;
 			case 'a':
-				*prefs |= PREFS_a;
+				*prefs |= LS_PREFS_a;
 				break;
 			case 'c':
-				*prefs -= *prefs & PREFS_u;
-				*prefs |= PREFS_c;
+				*prefs -= *prefs & LS_PREFS_u;
+				*prefs |= LS_PREFS_c;
 				break;
 			case 'd':
-				*prefs |= PREFS_d;
+				*prefs |= LS_PREFS_d;
 				break;
 			case 'l':
-				*prefs |= PREFS_l;
+				*prefs |= LS_PREFS_l;
 				break;
 			case 't':
-				*prefs |= PREFS_t;
+				*prefs |= LS_PREFS_t;
 				break;
 			case 'u':
-				*prefs -= *prefs & PREFS_c;
-				*prefs |= PREFS_u;
+				*prefs -= *prefs & LS_PREFS_c;
+				*prefs |= LS_PREFS_u;
 				break;
 			case '1':
-				*prefs |= PREFS_1;
+				*prefs |= LS_PREFS_1;
 				break;
 			case 'H':
-				*prefs -= *prefs & PREFS_L;
-				*prefs |= PREFS_H;
+				*prefs -= *prefs & LS_PREFS_L;
+				*prefs |= LS_PREFS_H;
 				break;
 			case 'L':
-				*prefs -= *prefs & PREFS_H;
-				*prefs |= PREFS_L;
+				*prefs -= *prefs & LS_PREFS_H;
+				*prefs |= LS_PREFS_L;
 				break;
 			default:
 				return 1;
@@ -225,7 +225,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 	int isdir;
 	char * str;
 
-	if(argc == 0 && !(*prefs & PREFS_d))
+	if(argc == 0 && !(*prefs & LS_PREFS_d))
 		return _ls_directory_do(prefs, ".");
 	if(_ls_args(&files, &dirs) != 0)
 		return 2;
@@ -237,7 +237,7 @@ static int _ls(int argc, char * argv[], Prefs * prefs)
 			ret |= 1;
 		else if((str = strdup(argv[i])) == NULL)
 			ret |= _ls_error("malloc", 1);
-		else if(*prefs & PREFS_d)
+		else if(*prefs & LS_PREFS_d)
 			ret |= slist_insert_sorted(files, str, cmp);
 		else
 			ret |= slist_insert_sorted(isdir ? dirs : files, str,
@@ -258,9 +258,9 @@ static int _acccmp(char * a, char * b);
 static int _modcmp(char * a, char * b);
 static compare_func _ls_compare(Prefs * prefs)
 {
-	if(!(*prefs & PREFS_t))
+	if(!(*prefs & LS_PREFS_t))
 		return (compare_func)strcmp;
-	if(*prefs & PREFS_u)
+	if(*prefs & LS_PREFS_u)
 		return (compare_func)_acccmp;
 	return (compare_func)_modcmp;
 }
@@ -305,7 +305,7 @@ static int _ls_directory_do(Prefs * prefs, char const * directory)
 	_ls_args(&files, &dirs);
 	for(; (de = readdir(dir)) != NULL; pos++)
 	{
-		if(*(de->d_name) == '.' && !(*prefs & PREFS_a))
+		if(*(de->d_name) == '.' && !(*prefs & LS_PREFS_a))
 			continue;
 		slist_insert_sorted(files, strdup(de->d_name), cmp);
 		if(pos <= 2)
@@ -318,7 +318,7 @@ static int _ls_directory_do(Prefs * prefs, char const * directory)
 		}
 		file = p;
 		sprintf(file, "%s/%s", directory, de->d_name);
-		if((*prefs & PREFS_R) && _is_directory(prefs, file) == 1)
+		if((*prefs & LS_PREFS_R) && _is_directory(prefs, file) == 1)
 			slist_insert_sorted(dirs, strdup(file), cmp);
 	}
 	free(file);
@@ -345,7 +345,7 @@ static int _is_directory(Prefs * prefs, char const * filename)
 	int (*_stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
-	if(*prefs & PREFS_H || *prefs & PREFS_L)
+	if(*prefs & LS_PREFS_H || *prefs & LS_PREFS_L)
 		_stat = stat;
 	if((_stat(filename, &st)) != 0)
 		return _ls_error(filename, 2);
@@ -378,7 +378,7 @@ static int _ls_do_files(Prefs * prefs, char const * directory, SList * files)
 {
 	int res = 0;
 
-	if(*prefs & PREFS_l)
+	if(*prefs & LS_PREFS_l)
 		res = _ls_do_files_long(prefs, directory, files);
 	else
 		res = _ls_do_files_short(prefs, directory, files);
@@ -403,7 +403,7 @@ static int _ls_do_files_short(Prefs * prefs, char const * directory,
 	char c;
 	SList cur;
 
-	if(((*prefs & PREFS_1) == 0) && (cols = getenv("COLUMNS")) != NULL
+	if(((*prefs & LS_PREFS_1) == 0) && (cols = getenv("COLUMNS")) != NULL
 			&& *cols != '\0' && (len = strtol(cols, &p, 10)) > 0
 			&& *p == '\0')
 	{
@@ -412,7 +412,7 @@ static int _ls_do_files_short(Prefs * prefs, char const * directory,
 			lencur = strlen(slist_data(&cur));
 			lenmax = max(lenmax, lencur);
 		}
-		if(*prefs & PREFS_F)
+		if(*prefs & LS_PREFS_F)
 			lenmax++;
 		if(lenmax > 0)
 			colnb = len / ++lenmax;
@@ -422,7 +422,7 @@ static int _ls_do_files_short(Prefs * prefs, char const * directory,
 		p = slist_data(&cur);
 		j = strlen(p);
 		fwrite(p, sizeof(char), j, stdout);
-		if((*prefs & PREFS_F)
+		if((*prefs & LS_PREFS_F)
 				&& (c = _short_file_mode(prefs, directory, p)))
 		{
 			fputc(c, stdout);
@@ -450,7 +450,7 @@ static char _short_file_mode(Prefs * prefs, char const * directory,
 	struct stat st;
 	char * p;
 
-	if(*prefs & PREFS_H || *prefs & PREFS_L)
+	if(*prefs & LS_PREFS_H || *prefs & LS_PREFS_L)
 		_stat = stat;
 	if(directory == NULL)
 	{
@@ -484,7 +484,7 @@ static int _ls_do_files_long(Prefs * prefs, char const * directory,
 	int (* _stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
-	if(*prefs & PREFS_H || *prefs & PREFS_L)
+	if(*prefs & LS_PREFS_H || *prefs & LS_PREFS_L)
 		_stat = stat;
 	for(cur = *files; cur != NULL; slist_next(&cur))
 	{
@@ -529,17 +529,18 @@ static void _long_print(Prefs * prefs, char const * filename,
 	_long_mode(mode, st->st_mode);
 	owner = _long_owner(st->st_uid);
 	group = _long_group(st->st_gid);
-	if(*prefs & PREFS_u)
+	if(*prefs & LS_PREFS_u)
 		date = _long_date(st->st_atime);
-	else if(*prefs & PREFS_c)
+	else if(*prefs & LS_PREFS_c)
 		date = _long_date(st->st_ctime);
 	else
 		date = _long_date(st->st_mtime);
 	printf("%s %2u %-7s %-7s %6u %s %s", mode, (unsigned)st->st_nlink,
 			owner, group, (unsigned)st->st_size, date, basename);
-	if(S_ISLNK(st->st_mode) && !(*prefs & PREFS_L)) /* FIXME not in POSIX? */
+	if(S_ISLNK(st->st_mode) && !(*prefs & LS_PREFS_L))
+		/* FIXME not in POSIX? */
 		_print_link(filename);
-	else if(*prefs & PREFS_F)
+	else if(*prefs & LS_PREFS_F)
 		fputc(_file_mode_letter(st->st_mode), stdout);
 	fputc('\n', stdout);
 }

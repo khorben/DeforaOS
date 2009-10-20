@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -32,13 +32,13 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_f 0x01
-#define PREFS_i 0x02
-#define PREFS_p 0x04
-#define PREFS_R 0x08
-#define PREFS_H 0x10
-#define PREFS_L 0x20
-#define PREFS_P 0x40
+#define CP_PREFS_f 0x01
+#define CP_PREFS_i 0x02
+#define CP_PREFS_p 0x04
+#define CP_PREFS_R 0x08
+#define CP_PREFS_H 0x10
+#define CP_PREFS_L 0x20
+#define CP_PREFS_P 0x40
 
 
 /* cp */
@@ -105,7 +105,7 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 	struct stat st;
 	struct stat st2;
 
-	if(*prefs & PREFS_P) /* don't follow symlinks */
+	if(*prefs & CP_PREFS_P) /* don't follow symlinks */
 	{
 		if(lstat(src, &st) != 0 && errno == ENOENT)
 			return _cp_error(src, 1);
@@ -114,7 +114,7 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 		return _cp_error(src, 1);
 	if(lstat(dst, &st2) == 0)
 	{
-		if(*prefs & PREFS_i && _cp_confirm(dst) != 1)
+		if(*prefs & CP_PREFS_i && _cp_confirm(dst) != 1)
 			return 0;
 		if(unlink(dst) != 0)
 			return _cp_error(dst, 1);
@@ -129,17 +129,18 @@ static int _cp_single(Prefs * prefs, char const * src, char const * dst)
 		ret = _cp_single_regular(src, dst);
 	if(ret != 0)
 		return ret;
-	if(*prefs & PREFS_p) /* XXX TOCTOU */
+	if(*prefs & CP_PREFS_p) /* XXX TOCTOU */
 		_cp_single_p(dst, &st);
 	return 0;
 }
 
 /* single_dir */
-static int _cp_single_recurse(Prefs * prefs, char const * src, char const * dst);
+static int _cp_single_recurse(Prefs * prefs, char const * src,
+		char const * dst);
 
 static int _cp_single_dir(Prefs * prefs, char const * src, char const * dst)
 {
-	if(*prefs & PREFS_R)
+	if(*prefs & CP_PREFS_R)
 		return _cp_single_recurse(prefs, src, dst);
 	fprintf(stderr, "%s%s%s", "cp: ", src, ": Omitting directory\n");
 	return 0;
@@ -163,7 +164,7 @@ static int _cp_single_recurse(Prefs * prefs, char const * src, char const * dst)
 	dstlen = strlen(dst);
 	if((dir = opendir(src)) == NULL)
 		return _cp_error(src, 1);
-	prefs2 |= (prefs2 & PREFS_H) ? PREFS_P : 0;
+	prefs2 |= (prefs2 & CP_PREFS_H) ? CP_PREFS_P : 0;
 	while((de = readdir(dir)) != NULL)
 	{
 		if(de->d_name[0] == '.' && (de->d_name[1] == '\0'
@@ -307,45 +308,43 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs prefs;
+	Prefs prefs = CP_PREFS_i | CP_PREFS_H;
 	int o;
 
-	memset(&prefs, 0, sizeof(Prefs));
-	prefs |= PREFS_i | PREFS_H;
 	while((o = getopt(argc, argv, "fipRrHLP")) != -1)
 		switch(o)
 		{
 			case 'f':
-				prefs -= prefs & PREFS_i;
-				prefs |= PREFS_f;
+				prefs -= prefs & CP_PREFS_i;
+				prefs |= CP_PREFS_f;
 				break;
 			case 'i':
-				prefs -= prefs & PREFS_f;
-				prefs |= PREFS_i;
+				prefs -= prefs & CP_PREFS_f;
+				prefs |= CP_PREFS_i;
 				break;
 			case 'p':
-				prefs |= PREFS_p;
+				prefs |= CP_PREFS_p;
 				break;
 			case 'R':
 			case 'r':
-				prefs |= PREFS_R;
+				prefs |= CP_PREFS_R;
 				break;
 			case 'H':
-				prefs -= prefs & (PREFS_L | PREFS_P);
-				prefs |= PREFS_H;
+				prefs -= prefs & (CP_PREFS_L | CP_PREFS_P);
+				prefs |= CP_PREFS_H;
 				break;
 			case 'L':
-				prefs -= prefs & (PREFS_H | PREFS_P);
-				prefs |= PREFS_L;
+				prefs -= prefs & (CP_PREFS_H | CP_PREFS_P);
+				prefs |= CP_PREFS_L;
 				break;
 			case 'P':
-				prefs -= prefs & (PREFS_H | PREFS_L);
-				prefs |= PREFS_P;
+				prefs -= prefs & (CP_PREFS_H | CP_PREFS_L);
+				prefs |= CP_PREFS_P;
 				break;
 			default:
 				return _usage();
 		}
 	if(argc - optind < 2)
 		return _usage();
-	return _cp(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	return (_cp(&prefs, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -34,10 +34,10 @@ typedef struct _Prefs
 	int width;
 	int offset;
 } Prefs;
-#define PREFS_d 1
-#define PREFS_F 2
-#define PREFS_n 4
-#define PREFS_t 8
+#define PR_PREFS_d 1
+#define PR_PREFS_F 2
+#define PR_PREFS_n 4
+#define PR_PREFS_t 8
 
 /* functions */
 static int _pr_error(char const * message, int ret);
@@ -98,13 +98,13 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 		return _pr_error("malloc", 1);
 	while(fgets(buf, prefs->width, fp) != NULL)
 	{
-		if(nb == 0 && !(prefs->flags & PREFS_t) && prefs->lines > 10)
+		if(nb == 0 && !(prefs->flags & PR_PREFS_t) && prefs->lines > 10)
 		{
 			_do_header(prefs, mtime, filename, page++);
 			nb = 10;
 		}
 		_do_offset(prefs->offset); /* FIXME not if truncated line */
-		if(prefs->flags & PREFS_n)
+		if(prefs->flags & PR_PREFS_n)
 			printf("%5lu ", line);
 		if((len = strlen(buf)) > 0)
 		{
@@ -113,7 +113,7 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 			else
 			{
 				line++;
-				if(prefs->flags & PREFS_d)
+				if(prefs->flags & PR_PREFS_d)
 					buf[len++] = '\n';
 			}
 		}
@@ -123,13 +123,13 @@ static int _pr_do(Prefs * prefs, FILE * fp, char const * filename)
 			return _pr_error("stdout", 1);
 		}
 		if(nb++ == prefs->lines && prefs->lines > 10
-				&& !(prefs->flags & PREFS_t))
+				&& !(prefs->flags & PR_PREFS_t))
 		{
 			_do_footer(prefs);
 			nb = 0;
 		}
 	}
-	if(prefs->lines > 10 && !(prefs->flags & PREFS_t))
+	if(prefs->lines > 10 && !(prefs->flags & PR_PREFS_t))
 		for(; nb != prefs->lines; nb++)
 			fputc('\n', stdout);
 	free(buf);
@@ -180,7 +180,7 @@ static void _do_footer(Prefs * prefs)
 {
 	int i;
 
-	if(prefs->flags & PREFS_F)
+	if(prefs->flags & PR_PREFS_F)
 	{
 		_do_offset(prefs->offset);
 		fputc('\f', stdout);
@@ -222,10 +222,10 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'd':
-				prefs.flags |= PREFS_d;
+				prefs.flags |= PR_PREFS_d;
 				break;
 			case 'F':
-				prefs.flags |= PREFS_F;
+				prefs.flags |= PR_PREFS_F;
 				break;
 			case 'h':
 				prefs.header = optarg;
@@ -237,7 +237,7 @@ int main(int argc, char * argv[])
 					return _usage();
 				break;
 			case 'n':
-				prefs.flags |= PREFS_n;
+				prefs.flags |= PR_PREFS_n;
 				break;
 			case 'o':
 				prefs.offset = strtol(optarg, &p, 10);
@@ -246,7 +246,7 @@ int main(int argc, char * argv[])
 					return _usage();
 				break;
 			case 't':
-				prefs.flags |= PREFS_t;
+				prefs.flags |= PR_PREFS_t;
 				break;
 			case 'w':
 				prefs.width = strtol(optarg, &p, 10);

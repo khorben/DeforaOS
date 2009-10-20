@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -28,25 +28,26 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_f 0x1
-#define PREFS_i 0x2
-#define PREFS_R 0x4
+#define RM_PREFS_f 0x1
+#define RM_PREFS_i 0x2
+#define RM_PREFS_R 0x4
 
 
 /* rm */
-static int _rm_error(char * message, int ret);
+static int _rm_error(char const * message, int ret);
+
 static int _rm_do(Prefs * prefs, char * file);
 static int _rm(Prefs * prefs, int argc, char * argv[])
 {
-	int i;
 	int ret = 0;
+	int i;
 
 	for(i = 0; i < argc; i++)
 		ret |= _rm_do(prefs, argv[i]);
 	return ret;
 }
 
-static int _rm_error(char * message, int ret)
+static int _rm_error(char const * message, int ret)
 {
 	fputs("rm: ", stderr);
 	perror(message);
@@ -72,21 +73,21 @@ static int _rm_do(Prefs * prefs, char * file)
 
 	if(lstat(file, &st) != 0 && errno == ENOENT)
 	{
-		if(!(*prefs & PREFS_f))
+		if(!(*prefs & RM_PREFS_f))
 			return _rm_error(file, 1);
 		return 0;
 	}
 	if(S_ISDIR(st.st_mode))
 	{
-		if(!(*prefs & PREFS_R))
+		if(!(*prefs & RM_PREFS_R))
 		{
 			errno = EISDIR;
-			return _rm_error(file, *prefs & PREFS_f ? 0 : 1);
+			return _rm_error(file, *prefs & RM_PREFS_f ? 0 : 1);
 		}
 		return _rm_do_recursive(prefs, file);
 	}
 	/* FIXME ask also if permissions do not allow file removal */
-	if(*prefs & PREFS_i && !_rm_confirm(file, "file"))
+	if(*prefs & RM_PREFS_i && !_rm_confirm(file, "file"))
 		return 0;
 	if(unlink(file) != 0)
 		return _rm_error(file, 1);
@@ -126,7 +127,7 @@ static int _rm_do_recursive(Prefs * prefs, char * filename)
 	closedir(dir);
 	if(de != NULL)
 		return _rm_error(filename, 1);
-	if(*prefs & PREFS_i && !_rm_confirm(filename, "directory"))
+	if(*prefs & RM_PREFS_i && !_rm_confirm(filename, "directory"))
 		return ret;
 	if(rmdir(filename) != 0)
 		return _rm_error(filename, 1);
@@ -149,24 +150,23 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	Prefs prefs;
+	Prefs prefs = 0;
 	int o;
 
-	memset(&prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "fiRr")) != -1)
 		switch(o)
 		{
 			case 'f':
-				prefs -= prefs & PREFS_i;
-				prefs |= PREFS_f;
+				prefs -= prefs & RM_PREFS_i;
+				prefs |= RM_PREFS_f;
 				break;
 			case 'i':
-				prefs -= prefs & PREFS_f;
-				prefs |= PREFS_i;
+				prefs -= prefs & RM_PREFS_f;
+				prefs |= RM_PREFS_i;
 				break;
 			case 'R':
 			case 'r':
-				prefs |= PREFS_R;
+				prefs |= RM_PREFS_R;
 				break;
 			default:
 				return _usage();

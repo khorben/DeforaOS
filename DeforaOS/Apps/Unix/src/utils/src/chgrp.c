@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -27,19 +27,23 @@
 #include <string.h>
 
 
+/* chgrp */
 /* types */
-#define OPT_h 1
-#define OPT_R 2
-#define OPT_H 4
-#define OPT_L 8
-#define OPT_P 12
+typedef int Prefs;
+#define CHGRP_PREFS_h 1
+#define CHGRP_PREFS_R 2
+#define CHGRP_PREFS_H 4
+#define CHGRP_PREFS_L 8
+#define CHGRP_PREFS_P 12
 
 
+/* functions */
 /* chgrp */
 static int _chgrp_grp_error(char * group);
 static int _chgrp_do_recursive(int opts, gid_t gid, char * file);
 static int _chgrp_do(int opts, gid_t gid, char * file);
-static int _chgrp(int opts, char * group, int argc, char * argv[])
+
+static int _chgrp(Prefs opts, char * group, int argc, char * argv[])
 {
 	struct group * grp;
 	int res = 0;
@@ -47,14 +51,14 @@ static int _chgrp(int opts, char * group, int argc, char * argv[])
 
 	if((grp = getgrnam(group)) == NULL)
 		return _chgrp_grp_error(group);
-	if((opts & OPT_R) == OPT_R)
+	if((opts & CHGRP_PREFS_R) == CHGRP_PREFS_R)
 	{
 		for(i = 0; i < argc; i++)
-			res +=_chgrp_do_recursive(opts, grp->gr_gid, argv[i]);
+			res += _chgrp_do_recursive(opts, grp->gr_gid, argv[i]);
 		return res;
 	}
 	for(i = 0; i < argc; i++)
-		res +=_chgrp_do(opts, grp->gr_gid, argv[i]);
+		res += _chgrp_do(opts, grp->gr_gid, argv[i]);
 	return res;
 }
 
@@ -104,15 +108,15 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 	readdir(dir);
 	readdir(dir);
 	len = strlen(file);
-	len += (len && file[len-1] == '/') ? 1 : 2;
+	len += (len && file[len - 1] == '/') ? 1 : 2;
 	if((s = malloc(len)) == NULL)
 	{
 		closedir(dir);
 		return _chgrp_error(file, 1);
 	}
 	strcpy(s, file);
-	s[len-2] = '/';
-	s[len-1] = '\0';
+	s[len - 2] = '/';
+	s[len - 1] = '\0';
 	while((de = readdir(dir)) != NULL)
 	{
 		if((p = realloc(s, len + strlen(de->d_name))) == NULL)
@@ -123,7 +127,7 @@ static int _chgrp_do_recursive_do(int opts, gid_t gid, char * file)
 		s = p;
 		strcat(s, de->d_name);
 		_chgrp_do_recursive(opts, gid, s);
-		s[len-1] = '\0';
+		s[len - 1] = '\0';
 	}
 	free(s);
 	closedir(dir);
@@ -134,7 +138,7 @@ static int _chgrp_do(int opts, gid_t gid, char * file)
 {
 	int res;
 
-	if((opts & OPT_h) == OPT_h)
+	if((opts & CHGRP_PREFS_h) == CHGRP_PREFS_h)
 		res = lchown(file, -1, gid);
 	else
 		res = chown(file, -1, gid);
@@ -154,25 +158,27 @@ static int _usage(void)
 	return 1;
 }
 
+
 /* main */
 int main(int argc, char * argv[])
 {
 	int o;
-	int opts = 0;
+	Prefs opts = 0;
 
 	while((o = getopt(argc, argv, "hRHLP")) != -1)
 	{
 		switch(o)
 		{
 			case 'h':
-				opts |= OPT_h;
+				opts |= CHGRP_PREFS_h;
 				break;
 			case 'R':
-				opts |= OPT_R;
+				opts |= CHGRP_PREFS_R;
 				break;
 			case 'H':
 			case 'L':
 			case 'P':
+				/* FIXME implement */
 				fprintf(stderr, "%s%c%s", "chgrp: -", o,
 						": Not yet implemented\n");
 			default:
@@ -181,5 +187,6 @@ int main(int argc, char * argv[])
 	}
 	if(argc - optind < 2)
 		return _usage();
-	return _chgrp(opts, argv[optind], argc - optind - 1, &argv[optind+1]);
+	return _chgrp(opts, argv[optind], argc - optind - 1,
+			&argv[optind + 1]);
 }

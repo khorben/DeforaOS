@@ -28,11 +28,11 @@
 
 
 /* Prefs */
-#define PREFS_a 1
-#define PREFS_m 2
-#define PREFS_c 4
-#define PREFS_r 8
-#define PREFS_t 16
+#define TOUCH_PREFS_a 1
+#define TOUCH_PREFS_m 2
+#define TOUCH_PREFS_c 4
+#define TOUCH_PREFS_r 8
+#define TOUCH_PREFS_t 16
 typedef struct _Prefs
 {
 	int flags;
@@ -50,30 +50,30 @@ static int _prefs_parse(Prefs * prefs, int argc, char * argv[])
 		switch(o)
 		{
 			case 'a':
-				prefs->flags |= PREFS_a;
+				prefs->flags |= TOUCH_PREFS_a;
 				break;
 			case 'c':
-				prefs->flags |= PREFS_c;
+				prefs->flags |= TOUCH_PREFS_c;
 				break;
 			case 'm':
-				prefs->flags |= PREFS_m;
+				prefs->flags |= TOUCH_PREFS_m;
 				break;
 			case 'r':
-				prefs->flags -= prefs->flags & PREFS_t;
-				prefs->flags |= PREFS_r;
+				prefs->flags -= prefs->flags & TOUCH_PREFS_t;
+				prefs->flags |= TOUCH_PREFS_r;
 				prefs->rtime = optarg;
 				break;
 			case 't':
-				prefs->flags -= prefs->flags & PREFS_r;
-				prefs->flags |= PREFS_t;
+				prefs->flags -= prefs->flags & TOUCH_PREFS_r;
+				prefs->flags |= TOUCH_PREFS_t;
 				if(!_prefs_ttime(optarg, &prefs->ttime))
 					return 1;
 				break;
 			default:
 				return 1;
 		}
-	if(!((prefs->flags & PREFS_a) && (prefs->flags & PREFS_m)))
-		prefs->flags |= (PREFS_a | PREFS_m);
+	if(!((prefs->flags & TOUCH_PREFS_a) && (prefs->flags & TOUCH_PREFS_m)))
+		prefs->flags |= (TOUCH_PREFS_a | TOUCH_PREFS_m);
 	return 0;
 }
 
@@ -220,12 +220,12 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 	time_t mtime = prefs->ttime;
 	int i;
 
-	if(prefs->flags & PREFS_r)
+	if(prefs->flags & TOUCH_PREFS_r)
 	{
 		if(_touch_rtime(prefs->rtime, &atime, &mtime) != 0)
 			return 1;
 	}
-	else if(!(prefs->flags & PREFS_t))
+	else if(!(prefs->flags & TOUCH_PREFS_t))
 	{
 		atime = time(NULL);
 		mtime = atime;
@@ -264,17 +264,17 @@ static int _touch_do(Prefs * prefs, char const * filename, time_t atime,
 	fprintf(stderr, "%s%d%s%s%s%ld%s%ld%s", "_touch_do(", prefs->flags,
 			", ", filename, ", ", atime, ", ", mtime, ");\n");
 #endif
-	if(!(prefs->flags & PREFS_c))
+	if(!(prefs->flags & TOUCH_PREFS_c))
 	{
 		if((fd = open(filename, O_CREAT, 0666) == -1))
 			_touch_error(filename, 0);
 		else if(close(fd) != 0)
 			_touch_error(filename, 0);
 	}
-	if(prefs->flags == PREFS_m || prefs->flags == PREFS_a)
+	if(prefs->flags == TOUCH_PREFS_m || prefs->flags == TOUCH_PREFS_a)
 		if(stat(filename, &st) != 0)
 		{
-			if(prefs->flags == PREFS_m)
+			if(prefs->flags == TOUCH_PREFS_m)
 				atime = st.st_atime;
 			else
 				mtime = st.st_mtime;
@@ -283,7 +283,7 @@ static int _touch_do(Prefs * prefs, char const * filename, time_t atime,
 	ut.modtime = mtime;
 	if(utime(filename, &ut) != 0)
 	{
-		if((prefs->flags & PREFS_c) && errno == ENOENT)
+		if((prefs->flags & TOUCH_PREFS_c) && errno == ENOENT)
 			return 0;
 		return _touch_error(filename, 1);
 	}

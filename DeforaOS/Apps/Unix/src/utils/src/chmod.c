@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -28,27 +28,30 @@
 #include "common.c"
 
 
-#define OPT_R 1
+/* types */
+typedef int Prefs;
+#define CHMOD_PREFS_R 1
 
 
 /* chmod */
-static int _chmod_error(char * message, int ret);
+static int _chmod_error(char const * message, int ret);
 static int _chmod_do(mode_t mode, char * file);
-static int _chmod_do_recursive(int opts, mode_t mode, char * file);
-static int _chmod(int opts, mode_t mode, int filec, char * filev[])
+static int _chmod_do_recursive(Prefs prefs, mode_t mode, char * file);
+
+static int _chmod(Prefs prefs, mode_t mode, int filec, char * filev[])
 {
 	int ret = 0;
 	int i;
 
 	for(i = 0; i < filec; i++)
-		if(opts & OPT_R)
-			ret += _chmod_do_recursive(opts, mode, filev[i]);
+		if(prefs & CHMOD_PREFS_R)
+			ret += _chmod_do_recursive(prefs, mode, filev[i]);
 		else
 			ret += _chmod_do(mode, filev[i]);
-	return ret == 0 ? 0 : 2;
+	return (ret == 0) ? 0 : 2;
 }
 
-static int _chmod_error(char * message, int ret)
+static int _chmod_error(char const * message, int ret)
 {
 	fputs("chmod: ", stderr);
 	perror(message);
@@ -62,8 +65,8 @@ static int _chmod_do(mode_t mode, char * file)
 	return 0;
 }
 
-static int _chmod_do_recursive_do(int opts, mode_t mode, char * file);
-static int _chmod_do_recursive(int opts, mode_t mode, char * file)
+static int _chmod_do_recursive_do(Prefs prefs, mode_t mode, char * file);
+static int _chmod_do_recursive(Prefs prefs, mode_t mode, char * file)
 {
 	struct stat st;
 
@@ -72,11 +75,11 @@ static int _chmod_do_recursive(int opts, mode_t mode, char * file)
 	if(!S_ISDIR(st.st_mode))
 		return _chmod_do(mode, file);
 	if(!S_ISLNK(st.st_mode))
-		return _chmod_do_recursive_do(opts, mode, file);
+		return _chmod_do_recursive_do(prefs, mode, file);
 	return 0;
 }
 
-static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
+static int _chmod_do_recursive_do(Prefs prefs, mode_t mode, char * file)
 {
 	DIR * dir;
 	struct dirent * de;
@@ -89,15 +92,15 @@ static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
 	readdir(dir);
 	readdir(dir);
 	len = strlen(file);
-	len += (len && file[len-1] == '/') ? 1 : 2;
+	len += (len && file[len - 1] == '/') ? 1 : 2;
 	if((s = malloc(len)) == NULL)
 	{
 		closedir(dir);
 		return _chmod_error(file, 1);
 	}
 	strcpy(s, file);
-	s[len-2] = '/';
-	s[len-1] = '\0';
+	s[len - 2] = '/';
+	s[len - 1] = '\0';
 	while((de = readdir(dir)) != NULL)
 	{
 		if((p = realloc(s, len + strlen(de->d_name))) == NULL)
@@ -107,8 +110,8 @@ static int _chmod_do_recursive_do(int opts, mode_t mode, char * file)
 		}
 		s = p;
 		strcat(s, de->d_name);
-		_chmod_do_recursive(opts, mode, s);
-		s[len-1] = '\0';
+		_chmod_do_recursive(prefs, mode, s);
+		s[len - 1] = '\0';
 	}
 	free(s);
 	closedir(dir);
@@ -128,15 +131,15 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	int opts = 0;
-	mode_t mode;
+	Prefs prefs = 0;
+	mode_t mode = 0;
 	int o;
 
 	while((o = getopt(argc, argv, "R")) != -1)
 		switch(o)
 		{
 			case 'R':
-				mode = OPT_R;
+				prefs = CHMOD_PREFS_R;
 				break;
 			default:
 				return _usage();
@@ -145,5 +148,5 @@ int main(int argc, char * argv[])
 		return _usage();
 	if(_mode(argv[optind], &mode) != 0)
 		return _usage();
-	return _chmod(opts, mode, argc - optind - 1, &argv[optind+1]);
+	return _chmod(prefs, mode, argc - optind - 1, &argv[optind + 1]);
 }

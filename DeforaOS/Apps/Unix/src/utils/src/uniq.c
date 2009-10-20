@@ -22,9 +22,11 @@
 #include <string.h>
 
 
-#define OPTS_c 1
-#define OPTS_d 2
-#define OPTS_u 4
+/* types */
+typedef int Prefs;
+#define UNIQ_PREFS_c 1
+#define UNIQ_PREFS_d 2
+#define UNIQ_PREFS_u 4
 
 
 /* uniq */
@@ -33,10 +35,10 @@
  * 	0	success
  * 	else	error(s) occured */
 static int _uniq_error(char const * message, int ret);
-static int _uniq_do(int opts, char const * fields, unsigned int skip,
+static int _uniq_do(Prefs prefs, char const * fields, unsigned int skip,
 		FILE * infp, FILE * outfp);
 
-static int _uniq(int opts, char const * fields, unsigned int skip,
+static int _uniq(Prefs prefs, char const * fields, unsigned int skip,
 		char const * in, char const * out)
 {
 	FILE * infp = stdin;
@@ -50,7 +52,7 @@ static int _uniq(int opts, char const * fields, unsigned int skip,
 		fclose(infp);
 		return _uniq_error(out, 1);
 	}
-	ret = _uniq_do(opts, fields, skip, infp, outfp);
+	ret = _uniq_do(prefs, fields, skip, infp, outfp);
 	if(in != NULL)
 	{
 		if(fclose(infp) != 0)
@@ -68,8 +70,8 @@ static int _uniq_error(char const * message, int ret)
 	return ret;
 }
 
-static void _do_count(int opts, unsigned int skip, char * line, FILE * fp);
-static int _uniq_do(int opts, char const * fields, unsigned int skip,
+static void _do_count(Prefs prefs, unsigned int skip, char * line, FILE * fp);
+static int _uniq_do(Prefs prefs, char const * fields, unsigned int skip,
 		FILE * infp, FILE * outfp)
 {
 	int ret = 0;
@@ -102,16 +104,16 @@ static int _uniq_do(int opts, char const * fields, unsigned int skip,
 #ifdef DEBUG
 		fprintf(stderr, "%s%s%s", "DEBUG: Got line \"", line, "\"\n");
 #endif
-		_do_count(opts, skip, line, outfp);
+		_do_count(prefs, skip, line, outfp);
 		line = NULL;
 		len = 0;
 	}
-	_do_count(opts, skip, NULL, outfp);
+	_do_count(prefs, skip, NULL, outfp);
 	return ret;
 }
 
 static int _count_repeated(char * lastline, char * line, unsigned int skip);
-static void _do_count(int opts, unsigned int skip, char * line, FILE * fp)
+static void _do_count(Prefs prefs, unsigned int skip, char * line, FILE * fp)
 {
 	static char * lastline = NULL;
 	static unsigned int cnt = 1;
@@ -128,11 +130,12 @@ static void _do_count(int opts, unsigned int skip, char * line, FILE * fp)
 		cnt++;
 		return;
 	}
-	if(cnt == 1 && !(opts & OPTS_d)) /* line is not repeated */
-		fprintf(fp, "%s%s\n", opts & OPTS_c ? "1 " : "", lastline);
-	else if(cnt > 1 && !(opts & OPTS_u)) /* line is repeated */
+	if(cnt == 1 && !(prefs & UNIQ_PREFS_d)) /* line is not repeated */
+		fprintf(fp, "%s%s\n", prefs & UNIQ_PREFS_c ? "1 " : "",
+				lastline);
+	else if(cnt > 1 && !(prefs & UNIQ_PREFS_u)) /* line is repeated */
 	{
-		if(opts & OPTS_c)
+		if(prefs & UNIQ_PREFS_c)
 			fprintf(fp, "%d ", cnt);
 		fprintf(fp, "%s\n", lastline);
 	}
@@ -171,7 +174,7 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	int opts = 0;
+	Prefs prefs = 0;
 	char * fields = NULL;
 	int skip = 0;
 	char * p;
@@ -183,10 +186,10 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'c':
-				opts |= OPTS_c;
+				prefs |= UNIQ_PREFS_c;
 				break;
 			case 'd':
-				opts |= OPTS_d;
+				prefs |= UNIQ_PREFS_d;
 				break;
 			case 's':
 				skip = strtol(optarg, &p, 10);
@@ -194,7 +197,7 @@ int main(int argc, char * argv[])
 					return _usage();
 				break;
 			case 'u':
-				opts |= OPTS_u;
+				prefs |= UNIQ_PREFS_u;
 				break;
 			case 'f':
 				/* FIXME */
@@ -209,5 +212,5 @@ int main(int argc, char * argv[])
 		else if(argc - optind > 2)
 			return _usage();
 	}
-	return (_uniq(opts, fields, skip, in, out) == 0) ? 0 : 2;
+	return (_uniq(prefs, fields, skip, in, out) == 0) ? 0 : 2;
 }

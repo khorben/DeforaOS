@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -31,8 +31,8 @@
 
 /* types */
 typedef int Prefs;
-#define PREFS_f 0x1
-#define PREFS_i 0x2
+#define MV_PREFS_f 0x1
+#define MV_PREFS_i 0x2
 
 
 /* mv */
@@ -99,16 +99,14 @@ static int _mv_single(Prefs * prefs, char const * src, char const * dst)
 
 	if(lstat(src, &st) != 0 && errno == ENOENT) /* XXX TOCTOU */
 		return _mv_error(src, 1);
-	if(*prefs & PREFS_i
-			&& (lstat(dst, &st) == 0 || errno != ENOENT)
+	if(*prefs & MV_PREFS_i && (lstat(dst, &st) == 0 || errno != ENOENT)
 			&& _mv_confirm(dst) != 1)
 		return 0;
 	if(rename(src, dst) == 0)
 		return 0;
 	if(errno != EXDEV)
 		return _mv_error(src, 1);
-	if(unlink(dst) != 0
-			&& errno != ENOENT)
+	if(unlink(dst) != 0 && errno != ENOENT)
 		return _mv_error(dst, 1);
 	if(lstat(src, &st) != 0)
 		return _mv_error(dst, 1);
@@ -320,25 +318,23 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	Prefs prefs;
+	Prefs prefs = MV_PREFS_f;
 
-	memset(&prefs, 0, sizeof(Prefs));
-	prefs |= PREFS_f;
 	while((o = getopt(argc, argv, "fi")) != -1)
 		switch(o)
 		{
 			case 'f':
-				prefs -= prefs & PREFS_i;
-				prefs |= PREFS_f;
+				prefs -= prefs & MV_PREFS_i;
+				prefs |= MV_PREFS_f;
 				break;
 			case 'i':
-				prefs -= prefs & PREFS_f;
-				prefs |= PREFS_i;
+				prefs -= prefs & MV_PREFS_f;
+				prefs |= MV_PREFS_i;
 				break;
 			default:
 				return _usage();
 		}
 	if(argc - optind < 2)
 		return _usage();
-	return _mv(&prefs, argc - optind, &argv[optind]) == 0 ? 0 : 2;
+	return (_mv(&prefs, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }

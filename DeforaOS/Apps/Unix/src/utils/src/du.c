@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -27,12 +27,12 @@
 
 /* Prefs */
 typedef int Prefs;
-#define PREFS_a 1
-#define PREFS_s 2 
-#define PREFS_x 4
-#define PREFS_k 8 
-#define PREFS_H 16
-#define PREFS_L 48
+#define DU_PREFS_a 1
+#define DU_PREFS_s 2 
+#define DU_PREFS_x 4
+#define DU_PREFS_k 8 
+#define DU_PREFS_H 16
+#define DU_PREFS_L 48
 
 
 /* du */
@@ -63,10 +63,10 @@ static int _du_do_recursive(Prefs * prefs, char const * filename);
 
 static int _du_do(Prefs * prefs, char const * filename)
 {
-	int (* _stat)(const char * filename, struct stat * buf) = lstat;
+	int (*_stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 
-	if(*prefs & PREFS_H)
+	if(*prefs & DU_PREFS_H)
 		_stat = stat;
 	if(_stat(filename, &st) != 0)
 		return _du_error(filename);
@@ -135,12 +135,12 @@ static int _recursive_do(Prefs * prefs, off_t * size, char ** filename)
 static off_t _du_blocks(Prefs * prefs, off_t size);
 static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename)
 {
-	int (* _stat)(const char * filename, struct stat * buf) = lstat;
+	int (*_stat)(const char * filename, struct stat * buf) = lstat;
 	struct stat st;
 	char * p;
 	long long dirsize;
 
-	if(*prefs & PREFS_L)
+	if(*prefs & DU_PREFS_L)
 		_stat = stat;
 	if(_stat(*filename, &st) != 0)
 	{
@@ -153,21 +153,21 @@ static void _recursive_do_stat(Prefs * prefs, off_t * size, char ** filename)
 		dirsize = _du_blocks(prefs, st.st_blocks);
 		if((p = strdup(*filename)) == NULL)
 		{
-			_du_error("malloc");
+			_du_error(*filename);
 			return;
 		}
 		_recursive_do(prefs, size, filename);
-		if(!(*prefs & PREFS_s))
+		if(!(*prefs & DU_PREFS_s))
 			printf("%lld %s\n", dirsize, p);
 		free(p);
 	}
-	else if(*prefs & PREFS_a)
+	else if(*prefs & DU_PREFS_a)
 		_du_print(prefs, st.st_blocks, *filename);
 }
 
 static off_t _du_blocks(Prefs * prefs, off_t size)
 {
-	if(*prefs & PREFS_k)
+	if(*prefs & DU_PREFS_k)
 		return size / 2;
 	return size;
 }
@@ -198,32 +198,31 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Prefs prefs = 0;
 	int o;
-	Prefs prefs;
 
-	memset(&prefs, 0, sizeof(Prefs));
 	while((o = getopt(argc, argv, "askxHL")) != -1)
 		switch(o)
 		{
 			case 'a':
-				prefs -= prefs & PREFS_s;
-				prefs |= PREFS_a;
+				prefs -= prefs & DU_PREFS_s;
+				prefs |= DU_PREFS_a;
 				break;
 			case 's':
-				prefs -= prefs & PREFS_a;
-				prefs |= PREFS_s;
+				prefs -= prefs & DU_PREFS_a;
+				prefs |= DU_PREFS_s;
 				break;
 			case 'k':
-				prefs |= PREFS_k;
+				prefs |= DU_PREFS_k;
 				break;
 			case 'x':
-				prefs |= PREFS_x;
+				prefs |= DU_PREFS_x;
 				break;
 			case 'H':
-				prefs |= PREFS_H;
+				prefs |= DU_PREFS_H;
 				break;
 			case 'L':
-				prefs |= PREFS_L;
+				prefs |= DU_PREFS_L;
 				break;
 			default:
 				return _usage();
