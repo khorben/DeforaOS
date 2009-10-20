@@ -20,6 +20,27 @@
 #include <stdio.h>
 
 
+/* logname */
+static int _logname_error(char const * message, int ret);
+
+static int _logname(void)
+{
+	char const * lgnm;
+
+	if((lgnm = getlogin()) == NULL)
+		return _logname_error("getlogin", 1);
+	puts(lgnm);
+	return 0;
+}
+
+static int _logname_error(char const * message, int ret)
+{
+	fputs("logname: ", stderr);
+	perror(message);
+	return ret;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -32,7 +53,6 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	char * lgnm;
 
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
@@ -42,12 +62,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	if((lgnm = getlogin()) == NULL)
-	{
-		fputs("logname: ", stderr);
-		perror("getlogin");
-		return 2;
-	}
-	puts(lgnm);
-	return 0;
+	return (_logname() == 0) ? 0 : 2;
 }
