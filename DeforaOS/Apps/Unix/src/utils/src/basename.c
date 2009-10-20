@@ -16,8 +16,9 @@
 
 
 
-#include <libgen.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <libgen.h>
 #include <string.h>
 
 
@@ -36,7 +37,7 @@ static int _basename(char * arg, char const * suf)
 		if(alen < slen && strcmp(suf, &str[slen - alen]) == 0)
 			str[slen - alen] = '\0';
 	}
-	printf("%s\n", str);
+	puts(str);
 	return 0;
 }
 
@@ -52,9 +53,15 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
-	if(argc == 2)
-		return _basename(argv[1], NULL);
-	if(argc == 3)
-		return _basename(argv[1], argv[2]);
-	return _usage();
+	int o;
+
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc - 1 && optind != argc - 2)
+		return _usage();
+	return (_basename(argv[optind], argv[optind + 1]) == 0) ? 0 : 2;
 }
