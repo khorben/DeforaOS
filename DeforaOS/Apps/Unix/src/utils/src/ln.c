@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -33,6 +33,7 @@ typedef enum _LinkForce {
 	LF_NO,
 	LF_YES
 } LinkForce;
+
 /* link type */
 typedef enum _LinkType {
 	LT_HARD = 0,
@@ -47,14 +48,24 @@ typedef enum _LinkType {
  * POST
  * 	0	success
  * 	2	error */
+static int _ln_error(char const * message, int ret);
 static int _ln_is_directory(char * dest);
-static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest);
+static int _ln_single(LinkForce lf, LinkType lt, char const * src,
+		char const * dest);
 static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[]);
+
 static int _ln(LinkForce lf, LinkType lt, int argc, char * argv[])
 {
 	if(argc == 2 && !_ln_is_directory(argv[1]))
 		return _ln_single(lf, lt, argv[0], argv[1]);
 	return _ln_multiple(lf, lt, argc, argv);
+}
+
+static int _ln_error(char const * message, int ret)
+{
+	fputs("ln: ", stderr);
+	perror(message);
+	return ret;
 }
 
 static int _ln_is_directory(char * dest)
@@ -66,37 +77,33 @@ static int _ln_is_directory(char * dest)
 	return 1;
 }
 
-static int _ln_single(LinkForce lf, LinkType lt, char * src, char * dest)
+static int _ln_single(LinkForce lf, LinkType lt, char const * src,
+		char const * dest)
 {
 	if(lf == LF_YES)
 		unlink(dest);
-	if((lt == LT_HARD ? link(src, dest)
-				: symlink(src, dest)) == -1)
-	{
-		fputs("ln: ", stderr);
-		perror(src);
-		return 2;
-	}
+	if((lt == LT_HARD ? link(src, dest) : symlink(src, dest)) == -1)
+		return _ln_error(dest, 1);
 	return 0;
 }
 
 static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 {
 	int i;
+	ssize_t len;
 	char * dest = NULL;
 	char * p;
 
 	for(i = 0; i < argc - 1; i++)
 	{
-		if((p = realloc(dest, strlen(argv[argc-1]) + strlen(argv[i])
-						+ 2))
-				== NULL)
+		len = strlen(argv[argc - 1]) + strlen(argv[i]) + 2;
+		if((p = realloc(dest, len)) == NULL)
 		{
-			perror("ln");
+			_ln_error(argv[i], 0);
 			continue;
 		}
 		dest = p;
-		sprintf(dest, "%s/%s", argv[argc-1], argv[i]);
+		sprintf(dest, "%s/%s", argv[argc - 1], argv[i]);
 		_ln_single(lf, lt, argv[i], dest);
 	}
 	free(dest);
