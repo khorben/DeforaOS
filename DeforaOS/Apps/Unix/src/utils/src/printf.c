@@ -24,7 +24,7 @@
 
 /* printf */
 static int _printf_error(char const * message, int ret);
-static int _printf_unescape(char const ** p);
+static int _printf_unescape(char const * p);
 static int _printf_format(char const ** p, char const * arg);
 
 static int _printf(char const * format, int argc, char * argv[])
@@ -41,7 +41,7 @@ static int _printf(char const * format, int argc, char * argv[])
 		if(*p == '\\')
 		{
 			p++;
-			if(_printf_unescape(&p) != 0)
+			if(_printf_unescape(p) != 0)
 				break;
 			if(*p == '\0')
 				break;
@@ -82,9 +82,9 @@ static int _printf_error(char const * message, int ret)
 	return ret;
 }
 
-static int _printf_unescape(char const ** p)
+static int _printf_unescape(char const * p)
 {
-	switch(**p)
+	switch(*p)
 	{
 		case '\0':
 			break;
@@ -124,9 +124,9 @@ static int _printf_unescape(char const ** p)
 		case '9':
 		case 'x': /* FIXME implement */
 			errno = ENOSYS;
-			return _printf_error(*p, 1);
+			return _printf_error(p, 1);
 		default:
-			putc(**p, stdout);
+			putc(*p, stdout);
 			break;
 	}
 	return 0;

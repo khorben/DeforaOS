@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -21,24 +21,25 @@
 
 
 /* rmdir */
-static int _rmdir_error(char * message, int ret);
+static int _rmdir_error(char const * message, int ret);
+
 static int _rmdir_p(char * pathname);
-static int _rmdir(int flagp, int argc, char * argv[])
+static int _rmdir(int flagp, int filec, char * filev[])
 {
 	int ret = 0;
 	int i;
 
-	for(i = 0; i < argc; i++)
+	for(i = 0; i < filec; i++)
 	{
-		if(rmdir(argv[i]) != 0)
-			ret = _rmdir_error(argv[i], 2);
-		if(flagp && _rmdir_p(argv[i]) != 0)
-			ret = 2;
+		if(rmdir(filev[i]) != 0)
+			ret |= _rmdir_error(filev[i], 1);
+		if(flagp && _rmdir_p(filev[i]) != 0)
+			ret |= 1;
 	}
 	return ret;
 }
 
-static int _rmdir_error(char * message, int ret)
+static int _rmdir_error(char const * message, int ret)
 {
 	fputs("rmdir: ", stderr);
 	perror(message);
@@ -59,7 +60,7 @@ static int _rmdir_p(char * pathname)
 		if(*str == '\0')
 			return 0;
 		if(rmdir(pathname) == -1)
-			return _rmdir_error(pathname, 2);
+			return _rmdir_error(pathname, 1);
 	}
 	return 0;
 }
@@ -91,5 +92,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		return _usage();
-	return _rmdir(flagp, argc - optind, &argv[optind]);
+	return (_rmdir(flagp, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }

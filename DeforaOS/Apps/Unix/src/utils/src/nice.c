@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -24,16 +24,17 @@
 
 
 /* nice */
-static int _nice_error(char * message, int ret);
+static int _nice_error(char const * message, int ret);
+
 static int _nice(int nice, char * argv[])
 {
 	if(setpriority(PRIO_PROCESS, 0, nice) != 0)
-		return _nice_error("Unable to set priority", 2);
+		return _nice_error("Unable to set priority", 1);
 	execvp(argv[0], argv);
-	return _nice_error(argv[0], 2);
+	return _nice_error(argv[0], 1);
 }
 
-static int _nice_error(char * message, int ret)
+static int _nice_error(char const * message, int ret)
 {
 	fputs("nice: ", stderr);
 	perror(message);
@@ -70,5 +71,5 @@ int main(int argc, char * argv[])
 		}
 	if(argc - optind < 1)
 		return _usage();
-	return _nice(nice, &argv[optind]);
+	return (_nice(nice, &argv[optind]) == 0) ? 0 : 2;
 }

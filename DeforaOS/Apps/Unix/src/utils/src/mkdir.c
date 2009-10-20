@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -27,27 +27,26 @@
 
 
 /* mkdir */
-static int _mkdir_error(char * message, int ret);
+static int _mkdir_error(char const * message, int ret);
 static int _mkdir_p(mode_t mode, char * pathname);
-static int _mkdir(int flagp, mode_t mode, int argc, char * argv[])
+
+static int _mkdir(int flagp, mode_t mode, int filec, char * filev[])
 {
-	int res = 0;
+	int ret = 0;
 	int i;
 
-	for(i = 0; i < argc; i++)
-	{
+	for(i = 0; i < filec; i++)
 		if(flagp == 1)
 		{
-			if(_mkdir_p(mode, argv[i]) != 0)
-				res = 2;
+			if(_mkdir_p(mode, filev[i]) != 0)
+				ret = 2;
 		}
-		else if(mkdir(argv[i], mode) != 0)
-			res = _mkdir_error(argv[i], 2);
-	}
-	return res;
+		else if(mkdir(filev[i], mode) != 0)
+			ret = _mkdir_error(filev[i], 2);
+	return ret;
 }
 
-static int _mkdir_error(char * message, int ret)
+static int _mkdir_error(char const * message, int ret)
 {
 	fputs("mkdir: ", stderr);
 	perror(message);
