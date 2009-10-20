@@ -1,6 +1,6 @@
 PACKAGE	= libSystem
 VERSION	= 0.1.2
-SUBDIRS	= src include
+SUBDIRS	= include src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,24 +21,6 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
-		$(PACKAGE)-$(VERSION)/src/appclient.c \
-		$(PACKAGE)-$(VERSION)/src/appinterface.c \
-		$(PACKAGE)-$(VERSION)/src/appserver.c \
-		$(PACKAGE)-$(VERSION)/src/array.c \
-		$(PACKAGE)-$(VERSION)/src/buffer.c \
-		$(PACKAGE)-$(VERSION)/src/config.c \
-		$(PACKAGE)-$(VERSION)/src/error.c \
-		$(PACKAGE)-$(VERSION)/src/event.c \
-		$(PACKAGE)-$(VERSION)/src/hash.c \
-		$(PACKAGE)-$(VERSION)/src/object.c \
-		$(PACKAGE)-$(VERSION)/src/parser.c \
-		$(PACKAGE)-$(VERSION)/src/plugin.c \
-		$(PACKAGE)-$(VERSION)/src/string.c \
-		$(PACKAGE)-$(VERSION)/src/token.c \
-		$(PACKAGE)-$(VERSION)/src/Makefile \
-		$(PACKAGE)-$(VERSION)/src/appinterface.h \
-		$(PACKAGE)-$(VERSION)/src/token.h \
-		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/include/System.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
@@ -58,6 +40,28 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/System/token.h \
 		$(PACKAGE)-$(VERSION)/include/System/Makefile \
 		$(PACKAGE)-$(VERSION)/include/System/project.conf \
+		$(PACKAGE)-$(VERSION)/src/appclient.c \
+		$(PACKAGE)-$(VERSION)/src/appinterface.c \
+		$(PACKAGE)-$(VERSION)/src/appserver.c \
+		$(PACKAGE)-$(VERSION)/src/array.c \
+		$(PACKAGE)-$(VERSION)/src/buffer.c \
+		$(PACKAGE)-$(VERSION)/src/config.c \
+		$(PACKAGE)-$(VERSION)/src/error.c \
+		$(PACKAGE)-$(VERSION)/src/event.c \
+		$(PACKAGE)-$(VERSION)/src/hash.c \
+		$(PACKAGE)-$(VERSION)/src/object.c \
+		$(PACKAGE)-$(VERSION)/src/parser.c \
+		$(PACKAGE)-$(VERSION)/src/plugin.c \
+		$(PACKAGE)-$(VERSION)/src/string.c \
+		$(PACKAGE)-$(VERSION)/src/token.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/appinterface.h \
+		$(PACKAGE)-$(VERSION)/src/token.h \
+		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/broker.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/README \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
