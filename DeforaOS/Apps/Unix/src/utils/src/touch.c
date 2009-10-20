@@ -215,7 +215,7 @@ static int _touch_do(Prefs * prefs, char const * filename,
 
 static int _touch(Prefs * prefs, int argc, char * argv[])
 {
-	int res = 0;
+	int ret = 0;
 	time_t atime = prefs->ttime;
 	time_t mtime = prefs->ttime;
 	int i;
@@ -223,7 +223,7 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 	if(prefs->flags & PREFS_r)
 	{
 		if(_touch_rtime(prefs->rtime, &atime, &mtime) != 0)
-			return 2;
+			return 1;
 	}
 	else if(!(prefs->flags & PREFS_t))
 	{
@@ -231,8 +231,8 @@ static int _touch(Prefs * prefs, int argc, char * argv[])
 		mtime = atime;
 	}
 	for(i = 0; i < argc; i++)
-		res += _touch_do(prefs, argv[i], atime, mtime);
-	return res > 0 ? 2 : 0;
+		ret |= _touch_do(prefs, argv[i], atime, mtime);
+	return ret;
 }
 
 static int _touch_error(char const * message, int ret)
@@ -311,5 +311,5 @@ int main(int argc, char * argv[])
 
 	if(_prefs_parse(&prefs, argc, argv) != 0 || argc - optind == 0)
 		return _usage();
-	return _touch(&prefs, argc - optind, &argv[optind]);
+	return (_touch(&prefs, argc - optind, &argv[optind]) == 0) ? 0 : 2;
 }
