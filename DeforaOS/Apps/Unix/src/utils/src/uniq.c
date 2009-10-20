@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -35,6 +35,7 @@
 static int _uniq_error(char const * message, int ret);
 static int _uniq_do(int opts, char const * fields, unsigned int skip,
 		FILE * infp, FILE * outfp);
+
 static int _uniq(int opts, char const * fields, unsigned int skip,
 		char const * in, char const * out)
 {
@@ -166,6 +167,8 @@ static int _usage(void)
 	return 1;
 }
 
+
+/* main */
 int main(int argc, char * argv[])
 {
 	int opts = 0;
@@ -206,5 +209,5 @@ int main(int argc, char * argv[])
 		else if(argc - optind > 2)
 			return _usage();
 	}
-	return _uniq(opts, fields, skip, in, out) == 0 ? 0 : 2;
+	return (_uniq(opts, fields, skip, in, out) == 0) ? 0 : 2;
 }
