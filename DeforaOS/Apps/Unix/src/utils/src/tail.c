@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* utils is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -31,7 +31,7 @@ typedef struct _Prefs
 	int bytes;
 	int lines;
 } Prefs;
-#define PREFS_f	0x1
+#define TAIL_PREFS_f	0x1
 
 static int _tail_error(char const * message, int ret);
 static int _tail_do_bytes(Prefs * prefs, FILE * fp, char const * filename);
@@ -117,6 +117,7 @@ static int _tail_do_lines(Prefs * prefs, FILE * fp, char const * filename)
 		lines[pos][column] = '\0';
 		column = 0;
 	}
+	/* FIXME crashes if directly EOF */
 	_lines_print(lines, pos);
 	if(c != EOF || !feof(fp))
 		ret = _tail_error(filename, 1);
@@ -150,9 +151,8 @@ static void _lines_print(char ** lines, int pos)
 
 	for(i = 0; i <= pos; i++)
 	{
-		fputs(lines[i], stdout);
+		puts(lines[i]);
 		free(lines[i]);
-		fputc('\n', stdout);
 	}
 }
 
@@ -178,7 +178,7 @@ int main(int argc, char * argv[])
 		switch(o)
 		{
 			case 'f':
-				prefs.flags |= PREFS_f;
+				prefs.flags |= TAIL_PREFS_f;
 				break;
 			case 'c':
 				prefs.lines = 0;
@@ -197,5 +197,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc && optind + 1 != argc)
 		return _usage();
-	return _tail(&prefs, argv[optind]) ? 0 : 2;
+	return (_tail(&prefs, argv[optind]) == 0) ? 0 : 2;
 }
