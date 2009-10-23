@@ -1,10 +1,13 @@
-/* gserver.c */
+/* $Id$ */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS GServer */
 
 
 
-#include <System.h>
 #include <stdio.h>
+#include <string.h>
 #include <dlfcn.h>
+#include <System.h>
 #include "video/video.h"
 
 
@@ -21,6 +24,7 @@ typedef struct _GServer
 /* functions */
 static int _gserver_init(GServer * gserver);
 static void _gserver_destroy(GServer * gserver);
+
 static int _gserver(void)
 {
 	GServer gserver;
@@ -36,7 +40,7 @@ static int _gserver(void)
 	return 2;
 }
 
-int _init_video(GServer * gs);
+static int _init_video(GServer * gs);
 static int _gserver_init(GServer * gs)
 {
 	memset(gs, 0, sizeof(GServer));
@@ -64,7 +68,7 @@ static void _gserver_destroy(GServer * gs)
 
 
 /* video */
-int _init_video(GServer * gs)
+static int _init_video(GServer * gs)
 	/* FIXME ask Hardware what to load instead of hard-coding vesa */
 {
 	void * handle;

@@ -3,14 +3,15 @@ TARGETS	= GServer
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2 -ansi
-LDFLAGSF= -l System  -l GL
+CFLAGS	= -Wall -g -O2 -pedantic
+LDFLAGSF= -lSystem -lGL
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
@@ -21,10 +22,11 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 GServer_OBJS = gserver.o
-GServer_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+GServer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+GServer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 GServer: $(GServer_OBJS)
-	$(CC) -o GServer $(GServer_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o GServer $(GServer_OBJS) $(GServer_LDFLAGS)
 
 gserver.o: gserver.c
 	$(CC) $(GServer_CFLAGS) -c gserver.c
@@ -40,11 +42,8 @@ distclean:
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
-	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 GServer $(DESTDIR)$(BINDIR)/GServer
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(BINDIR)/GServer
 
 .PHONY: all subdirs clean distclean install uninstall
