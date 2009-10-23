@@ -2,11 +2,13 @@ TARGETS	= strace
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
-INCLUDEDIR= $(PREFIX)/include
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
-CFLAGSF	= -W -Wall -ansi
+CFLAGSF	= -W
+CFLAGS	= -Wall -g -O2 -pedantic
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
@@ -14,10 +16,11 @@ INSTALL	= install
 all: $(TARGETS)
 
 strace_OBJS = strace.o
-strace_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+strace_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+strace_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 strace: $(strace_OBJS)
-	$(CC) -o strace $(strace_OBJS) $(LDFLAGSF) $(LDFLAGS)
+	$(CC) -o strace $(strace_OBJS) $(strace_LDFLAGS)
 
 strace.o: strace.c
 	$(CC) $(strace_CFLAGS) -c strace.c
