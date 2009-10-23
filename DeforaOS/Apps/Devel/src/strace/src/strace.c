@@ -64,7 +64,7 @@ static int _strace_parent(pid_t pid)
 static int _handle(pid_t pid, int status)
 {
 	struct user context;
-	int size = sizeof(syscall) / 4;
+	int size = sizeof(_syscall) / 4;
 
 	if(!WIFSTOPPED(status))
 		return -1;
@@ -74,7 +74,7 @@ static int _handle(pid_t pid, int status)
 			ptrace(PTRACE_GETREGS, pid, NULL, &context);
 			if(size >= context.regs.orig_eax)
 				fprintf(stderr, "%s();\n",
-						syscall[context.regs.orig_eax - 1]);
+						_syscall[context.regs.orig_eax - 1]);
 			else
 				fprintf(stderr, "%ld\n", context.regs.orig_eax);
 			ptrace(PTRACE_SYSCALL, pid, NULL, NULL);

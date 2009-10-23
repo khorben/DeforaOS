@@ -21,7 +21,9 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/src/linux.c \
 		$(PACKAGE)-$(VERSION)/src/strace.c \
+		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \

@@ -20,7 +20,7 @@
 #include "linux.h"
 
 
-char * syscall[] =
+char const * _syscall[] =
 {
 	"exit",
 	"fork",
