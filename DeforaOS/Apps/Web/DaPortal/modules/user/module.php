@@ -507,7 +507,7 @@ function _system_confirm($key)
 	if(!is_array($user) || count($user) != 1)
 		return;
 	$user = $user[0];
-	if(_config_get('user', 'manual') == SQL_FALSE)
+	if(_config_get('user', 'manual') == FALSE)
 		return _confirm_auto($key, $user);
 	return _confirm_manual($key, $user);
 }
