@@ -189,7 +189,10 @@ void ghtml_refresh(GtkWidget * ghtml)
 
 void ghtml_reload(GtkWidget * ghtml)
 {
-	ghtml_refresh(ghtml);
+	GtkWidget * view;
+
+	view = g_object_get_data(G_OBJECT(ghtml), "view");
+	webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(view));
 }
 
 
