@@ -24,6 +24,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ALREADY_LOGGED_IN'] = 'Already logged in';
 $text['APPEARANCE'] = 'Appearance';
 $text['CONFIRMATION_FAILED'] = 'Confirmation failed';
 $text['CREATE'] = 'Create';
