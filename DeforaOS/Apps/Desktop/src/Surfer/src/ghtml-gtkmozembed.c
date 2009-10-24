@@ -362,7 +362,7 @@ void ghtml_load_url(GtkWidget * ghtml, char const * url)
 void ghtml_refresh(GtkWidget * ghtml)
 {
 	gtk_moz_embed_reload(GTK_MOZ_EMBED(ghtml),
-			GTK_MOZ_EMBED_FLAG_RELOADBYPASSCACHE);
+			GTK_MOZ_EMBED_FLAG_RELOADNORMAL);
 }
 
 
@@ -370,7 +370,7 @@ void ghtml_refresh(GtkWidget * ghtml)
 void ghtml_reload(GtkWidget * ghtml)
 {
 	gtk_moz_embed_reload(GTK_MOZ_EMBED(ghtml),
-			GTK_MOZ_EMBED_FLAG_RELOADNORMAL);
+			GTK_MOZ_EMBED_FLAG_RELOADBYPASSCACHE);
 }
 
 
