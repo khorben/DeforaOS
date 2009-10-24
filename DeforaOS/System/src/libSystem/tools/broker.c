@@ -36,7 +36,7 @@ typedef struct _BrokerData
 /* broker */
 static void _broker_head(BrokerData * data);
 static int _broker_foreach(char const * key, Hash * value, BrokerData * data);
-static void _broker_foreach_arg(BrokerData * data, char const * sep,
+static int _broker_foreach_arg(BrokerData * data, char const * sep,
 		char const * arg);
 static void _broker_tail(BrokerData * data);
 
@@ -63,7 +63,7 @@ static int _broker(char const * outfile, char const * filename)
 	}
 	_broker_head(&data);
 	fputs("\n\n/* functions */\n", data.fp);
-	hash_foreach(config, _broker_foreach, &data);
+	hash_foreach(config, (HashForeach)_broker_foreach, &data);
 	_broker_tail(&data);
 	if(outfile != NULL)
 		fclose(data.fp);
@@ -83,7 +83,19 @@ static void _broker_head(BrokerData * data)
 	fputs("typedef Buffer * BUFFER;\n", data->fp);
 	fputs("typedef int32_t INT32;\n", data->fp);
 	fputs("typedef uint32_t UINT32;\n", data->fp);
-	fputs("typedef String * STRING;\n", data->fp);
+	fputs("typedef String const * STRING;\n", data->fp);
+	fputs("\ntypedef BUFFER BUFFER_IN;\n", data->fp);
+	fputs("typedef INT32 INT32_IN;\n", data->fp);
+	fputs("typedef UINT32 UINT32_IN;\n", data->fp);
+	fputs("typedef STRING STRING_IN;\n", data->fp);
+	fputs("\ntypedef Buffer * BUFFER_OUT;\n", data->fp);
+	fputs("typedef int32_t * INT32_OUT;\n", data->fp);
+	fputs("typedef uint32_t * UINT32_OUT;\n", data->fp);
+	fputs("typedef String ** STRING_OUT;\n", data->fp);
+	fputs("\ntypedef Buffer * BUFFER_INOUT;\n", data->fp);
+	fputs("typedef int32_t * INT32_INOUT;\n", data->fp);
+	fputs("typedef uint32_t * UINT32_INOUT;\n", data->fp);
+	fputs("typedef String ** STRING_INOUT;\n", data->fp);
 }
 
 static int _broker_foreach(char const * key, Hash * value, BrokerData * data)
@@ -103,27 +115,32 @@ static int _broker_foreach(char const * key, Hash * value, BrokerData * data)
 		snprintf(buf, sizeof(buf), "arg%d", i + 1);
 		if((p = hash_get(value, buf)) == NULL)
 			break;
-		_broker_foreach_arg(data, sep, p);
+		if(_broker_foreach_arg(data, sep, p) != 0)
+			return 1;
 		sep = ", ";
 	}
 	fprintf(data->fp, "%s", ");\n");
 	return 0;
 }
 
-static void _broker_foreach_arg(BrokerData * data, char const * sep,
+static int _broker_foreach_arg(BrokerData * data, char const * sep,
 		char const * arg)
 {
 	char * p;
+	size_t size;
 
 	if((p = strchr(arg, ',')) == NULL)
 	{
 		fprintf(data->fp, "%s%s", sep, arg);
-		return;
+		return 0;
 	}
 	fputs(sep, data->fp);
-	fwrite(arg, sizeof(*arg), p - arg, data->fp);
+	size = p - arg;
+	if(fwrite(arg, sizeof(*arg), size, data->fp) != size)
+		return 1;
 	if(*(++p) != '\0')
 		fprintf(data->fp, " %s", p);
+	return 0;
 }
 
 static void _broker_tail(BrokerData * data)

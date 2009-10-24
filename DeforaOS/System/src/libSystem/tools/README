@@ -42,4 +42,3 @@ It would also be helpful to:
 - add scripting possibilities to configure (to regenerate the headers
   accordingly)
 - place this code directly inside AppInterface's class
-- implement IN/OUT/IN_OUT
