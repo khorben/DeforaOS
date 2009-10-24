@@ -24,6 +24,8 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['COMPLETE'] = 'Complete';
+$text['MISSING'] = 'Missing';
 $text['ORIGINAL_CONTENT'] = 'Original content';
 $text['TRADUCTION'] = 'Traduction';
 $text['TRADUCTION_OF'] = 'Traduction of';
@@ -91,9 +93,9 @@ function translate_admin($args)
 				." WHERE content_id='$id' AND lang_id='$lid'";
 			$contents[$i][$lid] = (_sql_single($sql) != FALSE)
 				? '<img src="icons/16x16/enabled.png"'
-				.' title="'.ENABLED.'"/>'
+				.' title="'.COMPLETE.'"/>'
 				: '<img src="icons/16x16/disabled.png"'
-				.' title="'.DISABLED.'"/>';
+				.' title="'.MISSING.'"/>';
 			$contents[$i][$lid] = '<a href="'._module_link(
 				'translate', 'update', $id, FALSE,
 				array('lang' => $lid)).'">'
