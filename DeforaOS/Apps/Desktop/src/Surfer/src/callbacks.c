@@ -217,7 +217,7 @@ void on_view_force_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	surfer_refresh(surfer);
+	surfer_reload(surfer);
 }
 
 
@@ -242,7 +242,7 @@ void on_view_refresh(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	surfer_reload(surfer);
+	surfer_refresh(surfer);
 }
 
 
