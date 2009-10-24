@@ -27,6 +27,7 @@
 
 
 /* strace */
+static int _strace_error(char const * message, int ret);
 static int _strace_parent(pid_t pid);
 
 static int _strace(char * argv[])
@@ -34,19 +35,21 @@ static int _strace(char * argv[])
 	pid_t pid;
 
 	if((pid = fork()) == -1)
-	{
-		perror("fork");
-		return 2;
-	}
+		return _strace_error("fork", 1);
 	if(pid == 0)
 	{
 		ptrace(PTRACE_TRACEME, -1, NULL, (ptrace_data_t)NULL);
 		execvp(argv[0], argv);
-		fprintf(stderr, "%s", "strace: ");
-		perror(argv[0]);
-		return 2;
+		return _strace_error(argv[0], 1);
 	}
 	return _strace_parent(pid);
+}
+
+static int _strace_error(char const * message, int ret)
+{
+	fputs("strace: ", stderr);
+	perror(message);
+	return ret;
 }
 
 static int _handle(pid_t pid, int res);
@@ -104,5 +107,5 @@ int main(int argc, char * argv[])
 {
 	if(argc <= 1)
 		return _usage();
-	return _strace(&argv[1]);
+	return (_strace(&argv[1]) == 0) ? 0 : 2;
 }
