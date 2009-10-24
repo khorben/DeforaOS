@@ -16,20 +16,34 @@
 
 
 
-#ifndef STRACE_LINUX_H
-# define STRACE_LINUX_H
-
-# ifdef __linux__
-#  include <linux/user.h>
-#  include <asm/unistd.h>
+#include <stdlib.h>
+#include "netbsd.h"
 
 
-/* types */
-typedef void * ptrace_data_t;
-
-
+#ifdef __NetBSD__
 /* variables */
-extern char * stracecall[__NR_getpid];
-# endif /* __linux__ */
-
-#endif /* !STRACE_LINUX_H */
+char const * stracecall[] =
+{
+	NULL,
+	"exit",
+	"fork",
+	"read",
+	"write",
+	"open",
+	"close",
+	"wait4",
+	"oldcreat",
+	"link",
+	"unlink",
+	"oldexecv",
+	"chdir",
+	"fchdir",
+	"mknod",
+	"chmod",
+	"chown",
+	"break",
+	NULL,
+	"oldlseek",
+	"getpid"
+};
+#endif /* __NetBSD__ */

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel strace */
 /* strace is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -20,7 +20,9 @@
 #include "linux.h"
 
 
-char const * _syscall[] =
+#ifdef __linux__
+/* variables */
+char const * stracecall[] =
 {
 	"exit",
 	"fork",
@@ -43,3 +45,4 @@ char const * _syscall[] =
 	"lseek",
 	"getpid"
 };
+#endif /* __linux__ */

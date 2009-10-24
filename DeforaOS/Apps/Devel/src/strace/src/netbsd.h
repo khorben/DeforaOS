@@ -16,20 +16,38 @@
 
 
 
-#ifndef STRACE_LINUX_H
-# define STRACE_LINUX_H
+#ifndef STRACE_NETBSD_H
+# define STRACE_NETBSD_H
 
-# ifdef __linux__
-#  include <linux/user.h>
-#  include <asm/unistd.h>
+# ifdef __NetBSD__
+#  include <sys/syscall.h>
+#  include <machine/reg.h>
 
 
 /* types */
-typedef void * ptrace_data_t;
+typedef long ptrace_data_t; /* XXX really is int */
+struct user
+{
+	struct reg regs;
+};
+
+
+/* constants */
+#  define PTRACE_CONT		PT_CONTINUE
+#  define PTRACE_GETREGS	PT_GETREGS
+#  define PTRACE_SYSCALL	PT_SYSCALL
+#  define PTRACE_TRACEME	PT_TRACE_ME
+
+#  if defined(__amd64__)
+#   define _REG32_EAX		11 /* XXX or #define _KERNEL */
+#   define orig_eax		regs[_REG32_EAX]
+#  elif defined(__i386__)
+#   define orig_eax		r_eax
+#  endif
 
 
 /* variables */
-extern char * stracecall[__NR_getpid];
-# endif /* __linux__ */
+extern char const * stracecall[SYS_getpid + 1];
+# endif /* __NetBSD__ */
 
-#endif /* !STRACE_LINUX_H */
+#endif /* !STRACE_NETBSD_H */

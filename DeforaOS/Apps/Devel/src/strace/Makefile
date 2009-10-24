@@ -22,6 +22,7 @@ dist:
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/src/linux.c \
+		$(PACKAGE)-$(VERSION)/src/netbsd.c \
 		$(PACKAGE)-$(VERSION)/src/strace.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \

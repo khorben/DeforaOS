@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel strace */
 /* strace is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -17,17 +17,18 @@
 
 
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
+#include <unistd.h>
 #include <stdio.h>
-#ifdef __linux__
-# include "linux.h"
-#endif
+#include <signal.h>
+#include "linux.h"
+#include "netbsd.h"
 
 
 /* strace */
 static int _strace_parent(pid_t pid);
+
 static int _strace(char * argv[])
 {
 	pid_t pid;
@@ -39,7 +40,7 @@ static int _strace(char * argv[])
 	}
 	if(pid == 0)
 	{
-		ptrace(PTRACE_TRACEME);
+		ptrace(PTRACE_TRACEME, -1, NULL, (ptrace_data_t)NULL);
 		execvp(argv[0], argv);
 		fprintf(stderr, "%s", "strace: ");
 		perror(argv[0]);
@@ -64,22 +65,23 @@ static int _strace_parent(pid_t pid)
 static int _handle(pid_t pid, int status)
 {
 	struct user context;
-	int size = sizeof(_syscall) / 4;
+	int size = sizeof(stracecall) / 4;
 
 	if(!WIFSTOPPED(status))
 		return -1;
 	switch(WSTOPSIG(status))
 	{
 		case SIGTRAP:
-			ptrace(PTRACE_GETREGS, pid, NULL, &context);
+			ptrace(PTRACE_GETREGS, pid, NULL,
+					(ptrace_data_t)&context);
 			if(size >= context.regs.orig_eax)
-				fprintf(stderr, "%s();\n",
-						_syscall[context.regs.orig_eax - 1]);
+				fprintf(stderr, "%s();\n", stracecall[
+						context.regs.orig_eax - 1]);
 			else
 				fprintf(stderr, "%ld\n", context.regs.orig_eax);
-			ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+			ptrace(PTRACE_SYSCALL, pid, NULL, (ptrace_data_t)NULL);
 			wait(0);
-			ptrace(PTRACE_SYSCALL, pid, NULL, NULL);
+			ptrace(PTRACE_SYSCALL, pid, NULL, (ptrace_data_t)NULL);
 			break;
 		default:
 			ptrace(PTRACE_CONT, pid, NULL, WSTOPSIG(status));
@@ -92,7 +94,7 @@ static int _handle(pid_t pid, int status)
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: strace program [argument...]\n");
+	fputs("Usage: strace program [argument...]\n", stderr);
 	return 1;
 }
 

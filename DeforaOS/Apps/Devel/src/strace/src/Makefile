@@ -15,15 +15,18 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-strace_OBJS = linux.o strace.o
+strace_OBJS = linux.o netbsd.o strace.o
 strace_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 strace_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 strace: $(strace_OBJS)
 	$(CC) -o strace $(strace_OBJS) $(strace_LDFLAGS)
 
-linux.o: linux.c
+linux.o: linux.c linux.h
 	$(CC) $(strace_CFLAGS) -c linux.c
+
+netbsd.o: netbsd.c netbsd.h
+	$(CC) $(strace_CFLAGS) -c netbsd.c
 
 strace.o: strace.c
 	$(CC) $(strace_CFLAGS) -c strace.c
