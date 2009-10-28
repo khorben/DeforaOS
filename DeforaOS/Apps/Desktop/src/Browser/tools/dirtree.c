@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,19 @@
 
 
 /* dirtree */
+/* types */
+typedef int Prefs;
+#define PREFS_p		01
+#define PREFS_u		02
+
+
 /* variables */
 static GdkPixbuf * _folder = NULL;
+
+
+/* prototypes */
+static int _dirtree_new(Prefs * prefs, char const * pathname);
+static int _dirtree_error(char const * message, int ret);
 
 
 /* functions */
@@ -38,7 +49,7 @@ static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 static void _on_dirtree_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 
-static int _dirtree_new(char * pathname)
+static int _dirtree_new(Prefs * prefs, char const * pathname)
 {
 	GtkIconTheme * theme;
 	GtkWidget * scrolled;
@@ -80,10 +91,12 @@ static int _dirtree_new(char * pathname)
 			"text", 2, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	g_signal_connect(G_OBJECT(treeview), "row-activated", G_CALLBACK(
-				_on_dirtree_default), NULL);
+				_on_dirtree_default), prefs);
 	gtk_container_add(GTK_CONTAINER(scrolled), treeview);
 	gtk_container_add(GTK_CONTAINER(window), scrolled);
 	gtk_widget_show_all(window);
+	if(*prefs & PREFS_u)
+		gtk_tree_view_expand_all(GTK_TREE_VIEW(treeview));
 	return 0;
 }
 
@@ -143,24 +156,47 @@ static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 static void _on_dirtree_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
+	Prefs * prefs = data;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
 	char * location;
+	pid_t pid;
 
 	model = gtk_tree_view_get_model(view);
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, 1, &location, -1);
 	if(location == NULL)
 		return; /* FIXME should not happen */
+	if(*prefs & PREFS_p)
+	{
+		if((pid = fork()) == -1)
+		{
+			_dirtree_error("fork", 1);
+			return;
+		}
+		else if(pid != 0)
+			return;
+	}
 	execlp("browser", "browser", location, NULL);
 	perror("browser");
+}
+
+
+/* dirtree_error */
+static int _dirtree_error(char const * message, int ret)
+{
+	fputs("dirtree: ", stderr);
+	perror(message);
+	return ret;
 }
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: dirtree [pathname]\n", stderr);
+	fputs("Usage: dirtree [-pu][pathname]\n"
+"  -p\tKeep the directory tree opened when opening a folder\n"
+"  -u\tExpand all entries\n", stderr);
 	return 1;
 }
 
@@ -168,13 +204,20 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	Prefs prefs = 0;
 	int o;
 	char * root = "/";
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "pu")) != -1)
 		switch(o)
 		{
+			case 'p':
+				prefs |= PREFS_p;
+				break;
+			case 'u':
+				prefs |= PREFS_u;
+				break;
 			default:
 				return _usage();
 		}
@@ -182,7 +225,7 @@ int main(int argc, char * argv[])
 		root = argv[optind];
 	else if(optind != argc)
 		return _usage();
-	_dirtree_new(root);
+	_dirtree_new(&prefs, root);
 	gtk_main();
 	return 0;
 }
