@@ -1,6 +1,6 @@
 PACKAGE	= Browser
 VERSION	= 0.1.3
-SUBDIRS	= data src
+SUBDIRS	= data src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -42,6 +42,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/desktop.h \
 		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/dirtree.c \
+		$(PACKAGE)-$(VERSION)/tools/iconlist.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/TODO \
