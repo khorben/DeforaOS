@@ -73,7 +73,7 @@ static int _dirtree_new(Prefs * prefs, char const * pathname)
 	gtk_window_set_title(GTK_WINDOW(window), "Directory tree");
 	gtk_window_set_default_size(GTK_WINDOW(window), 480, 640);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_on_dirtree_delete), NULL);
+				_on_dirtree_delete), window);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	store = gtk_tree_store_new(3, GDK_TYPE_PIXBUF, G_TYPE_STRING,
 			G_TYPE_STRING);
@@ -153,6 +153,9 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter)
 static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
+	GtkWidget * window = data;
+
+	gtk_widget_hide(window);
 	gtk_main_quit();
 	return FALSE;
 }
