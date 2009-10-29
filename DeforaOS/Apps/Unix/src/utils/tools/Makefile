@@ -22,10 +22,10 @@ utilbox_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 utilbox: $(utilbox_OBJS)
 	$(CC) -o utilbox $(utilbox_OBJS) $(utilbox_LDFLAGS)
 
-utilbox.o: utilbox.c
+utilbox.o: utilbox.c utilbox.h
 	$(CC) $(utilbox_CFLAGS) -c utilbox.c
 
-utils.o: utils.c
+utils.o: utils.c utilbox.h
 	$(CC) $(utilbox_CFLAGS) -c utils.c
 
 clean:

@@ -74,6 +74,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/tools/utils.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/utils.sh \
+		$(PACKAGE)-$(VERSION)/tools/utilbox.h \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
