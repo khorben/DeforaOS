@@ -66,12 +66,12 @@ static int _iconlist_list(char * theme)
 		if((sizes = gtk_icon_theme_get_icon_sizes(icontheme, p->data))
 				== NULL)
 		{
-			puts(" unknown\n");
+			puts(" unknown");
 			continue;
 		}
 		for(q = sizes; *q != 0; q++)
 			printf(" %d", *q);
-		putc('\n', stdout);
+		putchar('\n');
 		g_free(sizes);
 	}
 	g_list_foreach(list, (GFunc)g_free, NULL);
