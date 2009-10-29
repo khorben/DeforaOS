@@ -59,7 +59,10 @@ static int _dirtree_new(Prefs * prefs, char const * pathname)
 	GtkWidget * treeview;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
+	char * p;
 
+	if((p = strdup(pathname)) == NULL)
+		return -1;
 	if(_folder == NULL)
 	{
 		theme = gtk_icon_theme_get_default();
@@ -77,8 +80,8 @@ static int _dirtree_new(Prefs * prefs, char const * pathname)
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(store), 2,
 			GTK_SORT_ASCENDING);
 	gtk_tree_store_append(store, &iter, NULL);
-	gtk_tree_store_set(store, &iter, 0, _folder, 1, pathname, 2, basename(
-				pathname), -1);
+	gtk_tree_store_set(store, &iter, 0, _folder, 1, pathname, 2,
+			basename(p), -1);
 	_dirtree_add(store, &iter);
 	treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
@@ -97,6 +100,7 @@ static int _dirtree_new(Prefs * prefs, char const * pathname)
 	gtk_widget_show_all(window);
 	if(*prefs & PREFS_u)
 		gtk_tree_view_expand_all(GTK_TREE_VIEW(treeview));
+	free(p);
 	return 0;
 }
 
