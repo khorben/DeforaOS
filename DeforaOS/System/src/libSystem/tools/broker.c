@@ -81,7 +81,9 @@ static void _broker_head(BrokerData * data)
 	fputs("# include <System.h>\n\n", data->fp);
 	fputs("\n/* types */\n", data->fp);
 	fputs("typedef Buffer * BUFFER;\n", data->fp);
+	fputs("typedef int16_t INT16;\n", data->fp);
 	fputs("typedef int32_t INT32;\n", data->fp);
+	fputs("typedef uint16_t UINT16;\n", data->fp);
 	fputs("typedef uint32_t UINT32;\n", data->fp);
 	fputs("typedef String const * STRING;\n", data->fp);
 	fputs("\ntypedef BUFFER BUFFER_IN;\n", data->fp);
