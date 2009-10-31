@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,13 @@
 #include "System.h"
 #include "appinterface.h"
 
+#ifndef PREFIX
+# define PREFIX	"/usr/local"
+#endif
+#ifndef ETCDIR
+# define ETCDIR	PREFIX "/etc"
+#endif
+
 
 /* AppInterface */
 /* private */
@@ -45,6 +52,7 @@ typedef enum _AppInterfaceCallType
 	AICT_STRING	= 012, 	AICT_BUFFER	= 013
 } AppInterfaceCallType;
 #define AICT_LAST AICT_BUFFER
+#define AICT_MASK 077
 
 #ifdef DEBUG
 static const String * AICTString[AICT_LAST + 1] =
@@ -54,7 +62,7 @@ static const String * AICTString[AICT_LAST + 1] =
 };
 #endif
 
-static int _aict_size[AICT_LAST+1] =
+static int _aict_size[AICT_LAST + 1] =
 {
 	0,			sizeof(char),
 	sizeof(int8_t),		sizeof(uint8_t),
@@ -70,6 +78,7 @@ typedef enum _AppInterfaceCallDirection
 	AICD_IN_OUT	= 0100,
 	AICD_OUT	= 0200
 } AppInterfaceCallDirection;
+#define AICD_MASK 0700
 
 typedef struct _AppInterfaceCallArg
 {
@@ -89,15 +98,57 @@ typedef struct _AppInterfaceCall
 
 struct _AppInterface
 {
+	String * name;
 	AppInterfaceCall * calls;
 	size_t calls_cnt;
 	uint16_t port;
 };
 
+typedef struct _StringEnum
+{
+	char const * string;
+	int value;
+} StringEnum;
 
-/* functions */
+
+/* variables */
+StringEnum _string_type[] =
+{
+	{ "VOID",	AICT_VOID	},
+	{ "BOOL",	AICT_BOOL	},
+	{ "INT8",	AICT_INT8	},
+	{ "UINT8",	AICT_UINT8	},
+	{ "INT16",	AICT_INT16	},
+	{ "UINT16",	AICT_UINT16	},
+	{ "INT32",	AICT_INT32	},
+	{ "UINT32",	AICT_UINT32	},
+	{ "INT64",	AICT_INT64	},
+	{ "UINT64",	AICT_UINT64	},
+	{ "STRING",	AICT_STRING	},
+	{ "BUFFER",	AICT_BUFFER	},
+	{ NULL,		0		}
+};
+
+
+/* prototypes */
+static int _string_enum(String const * string, StringEnum * se);
 static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
 		char const * call);
+
+
+/* functions */
+/* string_enum */
+/* FIXME move to string.c */
+static int _string_enum(String const * string, StringEnum * se)
+{
+	size_t i;
+
+	for(i = 0; se[i].string != NULL; i++)
+		if(string_compare(string, se[i].string) == 0)
+			return se[i].value;
+	return -1;
+}
+
 
 /* appinterface_get_call */
 static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
@@ -110,8 +161,8 @@ static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
 			break;
 	if(i == appinterface->calls_cnt)
 	{
-		error_set_code(1, "%s%s%s", "Unknown call ", call,
-				" for interface");
+		error_set_code(1, "%s%s%s%s", "Unknown call ", call,
+				" for interface ", appinterface->name);
 		return NULL;
 	}
 	return &appinterface->calls[i];
@@ -121,41 +172,21 @@ static AppInterfaceCall * _appinterface_get_call(AppInterface * appinterface,
 /* public */
 /* functions */
 /* appinterface_new */
-static int _new_append(AppInterface * appinterface, AppInterfaceCallType type,
-		char const * function, size_t args_cnt, ...);
-static int _new_init(AppInterface * appinterface);
-static int _new_session(AppInterface * appinterface);
-static int _new_gserver(AppInterface * appinterface);
-static int _new_probe(AppInterface * appinterface);
-static int _new_hello(AppInterface * appinterface);
-static int _new_vfs(AppInterface * appinterface);
-static int _new_directory(AppInterface * appinterface);
+static int _new_foreach(char const * key, Hash * value,
+		AppInterface * appinterface);
+static int _new_append(AppInterface * ai, AppInterfaceCallType type,
+		char const * function);
+static int _new_append_arg(AppInterface * ai, char const * arg);
 
 AppInterface * appinterface_new(char const * app)
 {
 #ifdef WITH_SSL
 	static int ssl_init = 0;
 #endif
-	/* FIXME read this from available Servers configuration, or imagine a
-	 * solution to negociate it directly */
-	static const struct iface
-	{
-		char * name;
-		int (*func)(AppInterface *);
-		uint16_t port;
-	} ifaces[] =
-	{
-		{ "Init",	_new_init,	4241 },
-		{ "Session",	_new_session,	4242 },
-		{ "GServer",	_new_gserver,	4246 },
-		{ "Probe",	_new_probe,	4243 },
-		{ "Hello",	_new_hello,	4244 },
-		{ "VFS",	_new_vfs,	4245 },
-		{ "Directory",	_new_directory,	4247 }
-	};
-	static const size_t ifaces_cnt = sizeof(ifaces) / sizeof(struct iface);
 	AppInterface * appinterface;
-	size_t i;
+	String * pathname = NULL;
+	Config * config = NULL;
+	char const * p;
 
 #ifdef WITH_SSL
 	if(ssl_init == 0)
@@ -165,200 +196,111 @@ AppInterface * appinterface_new(char const * app)
 		ssl_init = 1;
 	}
 #endif
+	if(app == NULL)
+		return NULL; /* FIXME report error */
 	if((appinterface = object_new(sizeof(*appinterface))) == NULL)
 		return NULL;
+	appinterface->name = string_new(app);
 	appinterface->calls = NULL;
 	appinterface->calls_cnt = 0;
-	for(i = 0; i < ifaces_cnt; i++)
+	appinterface->port = 0;
+	if(appinterface->name == NULL
+			|| (pathname = string_new_append(
+					ETCDIR "/AppInterface/", app,
+					".interface", NULL)) == NULL
+			|| (config = config_new()) == NULL
+			|| config_load(config, pathname) != 0)
 	{
-		if(string_compare(app, ifaces[i].name) != 0)
-			continue;
-		if(ifaces[i].func(appinterface) == 0)
-			break;
-		object_delete(appinterface);
+		if(config != NULL)
+			config_delete(config);
+		string_delete(pathname);
+		appinterface_delete(appinterface);
 		return NULL;
 	}
-	if(i == ifaces_cnt)
-	{
-		error_set_code(1, "%s", "Unknown interface");
-		object_delete(appinterface);
-		return NULL;
-	}
-	appinterface->port = ifaces[i].port;
-#ifdef DEBUG
-	fprintf(stderr, "%s%s%s%d\n", "DEBUG: AppInterface ", app, " on port ",
-			appinterface->port);
-#endif
+	if((p = config_get(config, NULL, "port")) != NULL)
+		appinterface->port = atoi(p);
+	hash_foreach(config, (HashForeach)_new_foreach, appinterface);
+	config_delete(config);
 	return appinterface;
 }
 
-/* _new_append */
-static void _append_arg(AppInterfaceCallArg * arg, AppInterfaceCallType type,
-		AppInterfaceCallDirection direction);
+static int _new_foreach(char const * key, Hash * value,
+		AppInterface * appinterface)
+{
+	int i;
+	char buf[8];
+	AppInterfaceCallType type = AICT_VOID;
+	char const * p;
+
+	if(key == NULL || key[0] == '\0')
+		return 0;
+	if((p = hash_get(value, "ret")) != NULL)
+		type = _string_enum(p, _string_type);
+	if(_new_append(appinterface, type, key) != 0)
+		return 1; /* FIXME track errors */
+	for(i = 0; i < 3; i++)
+	{
+		snprintf(buf, sizeof(buf), "arg%d", i + 1);
+		if((p = hash_get(value, buf)) == NULL)
+			break;
+		if(_new_append_arg(appinterface, p) != 0)
+			return 1; /* FIXME track errors */
+	}
+	return 0;
+}
 
 static int _new_append(AppInterface * ai, AppInterfaceCallType type,
-		char const * function, size_t args_cnt, ...)
+		char const * function)
 {
 	AppInterfaceCall * p;
-	va_list args;
-	size_t i;
-	size_t j;
-	int type_direction;
-	int direction;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s%s%s%zu%s", "DEBUG: AppInterface supports ",
-			function, "(", args_cnt, ")\n");
+	fprintf(stderr, "DEBUG: %s(\"%s\") %d\n", __func__, function, type);
 #endif
-	for(i = 0; i < ai->calls_cnt; i++)
-		if(string_compare(ai->calls[i].name, function) == 0)
-			return 1;
-	if((p = realloc(ai->calls, sizeof(AppInterfaceCall) * (i + 1))) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+	if((p = realloc(ai->calls, sizeof(*p) * (ai->calls_cnt + 1))) == NULL)
+		return 1;
 	ai->calls = p;
+	p = &ai->calls[ai->calls_cnt];
+	if((p->name = string_new(function)) == NULL)
+		return 1;
+	p->type.type = type & AICT_MASK;
+	p->type.direction = type & AICD_MASK;
+	p->type.size = _aict_size[p->type.type];
+	p->args = NULL;
+	p->args_cnt = 0;
 	ai->calls_cnt++;
-	_append_arg(&ai->calls[i].type, type, AICD_OUT);
-	ai->calls[i].name = string_new(function);
-	ai->calls[i].args = malloc(sizeof(AppInterfaceCallArg) * args_cnt);
-	ai->calls[i].args_cnt = args_cnt;
-	va_start(args, args_cnt);
-	for(j = 0; j < args_cnt; j++)
-	{
-		type_direction = va_arg(args, AppInterfaceCallType);
-		direction = type_direction & (AICD_IN | AICD_OUT | AICD_IN_OUT);
-		_append_arg(&ai->calls[i].args[j], type_direction - direction,
-				direction);
-	}
-	va_end(args);
 	return 0;
 }
 
-static void _append_arg(AppInterfaceCallArg * arg, AppInterfaceCallType type,
-		AppInterfaceCallDirection direction)
+static int _new_append_arg(AppInterface * ai, char const * arg)
 {
-	arg->type = type;
-	arg->direction = direction;
-	arg->size = _aict_size[type];
+	char buf[16];
+	char * p;
+	int type;
+	AppInterfaceCall * q;
+	AppInterfaceCallArg * r;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, arg);
+#endif
+	snprintf(buf, sizeof(buf), "%s", arg);
+	if((p = strchr(buf, ',')) != NULL)
+		*p = '\0';
+	if((type = _string_enum(buf, _string_type)) < 0)
+		return 1;
+	q = &ai->calls[ai->calls_cnt - 1];
+	if((r = realloc(q->args, sizeof(*r) * (q->args_cnt + 1))) == NULL)
+		return 1;
+	q->args = r;
+	r = &q->args[q->args_cnt++];
+	r->type = type & AICT_MASK;
+	r->direction = type & AICD_MASK;
+	r->size = _aict_size[r->type];
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: type %s, direction: %d, size: %zu\n",
-			AICTString[type], direction, arg->size);
+			AICTString[r->type], r->direction, r->size);
 #endif
-}
-
-static int _new_init(AppInterface * ai)
-{
-	int ret = 0;
-
-	ret |= _new_append(ai, AICT_UINT16, "init_login", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT16, "init_logout", 0);
-	ret |= _new_append(ai, AICT_UINT16, "init_register", 2, AICT_STRING,
-			AICT_INT16);
-	ret |= _new_append(ai, AICT_UINT16, "init_get_session", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT16, "init_get_profile", 1,
-			AICT_STRING | AICD_OUT);
-	ret |= _new_append(ai, AICT_UINT16, "init_set_profile", 1, AICT_STRING);
-	return ret;
-}
-
-static int _new_session(AppInterface * ai)
-{
-	int ret = 0;
-
-	/* FIXME re-factor: session_register() etc */
-	ret |= _new_append(ai, AICT_UINT16, "port", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_VOID, "list", 0);
-	ret |= _new_append(ai, AICT_BOOL, "start", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_BOOL, "stop", 1, AICT_STRING);
-	return ret;
-}
-
-static int _new_gserver(AppInterface * appinterface)
-{
 	return 0;
-}
-
-static int _new_probe(AppInterface * ai)
-{
-	int ret = 0;
-
-	/* FIXME need a way to list capabilities, such as network interfaces */
-	ret |= _new_append(ai, AICT_UINT32, "uptime", 0);
-	ret |= _new_append(ai, AICT_UINT32, "load_1", 0);
-	ret |= _new_append(ai, AICT_UINT32, "load_5", 0);
-	ret |= _new_append(ai, AICT_UINT32, "load_15", 0);
-	ret |= _new_append(ai, AICT_UINT32, "ram_total", 0);
-	ret |= _new_append(ai, AICT_UINT32, "ram_free", 0);
-	ret |= _new_append(ai, AICT_UINT32, "ram_shared", 0);
-	ret |= _new_append(ai, AICT_UINT32, "ram_buffer", 0);
-	ret |= _new_append(ai, AICT_UINT32, "swap_total", 0);
-	ret |= _new_append(ai, AICT_UINT32, "swap_free", 0);
-	ret |= _new_append(ai, AICT_UINT32, "users", 0);
-	ret |= _new_append(ai, AICT_UINT32, "procs", 0);
-	ret |= _new_append(ai, AICT_UINT32, "ifrxbytes", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "iftxbytes", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "voltotal", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "volfree", 1, AICT_STRING);
-	return ret;
-}
-
-static int _new_hello(AppInterface * appinterface)
-{
-	return _new_append(appinterface, AICT_VOID, "hello", 0);
-}
-
-static int _new_vfs(AppInterface * ai)
-{
-	int ret = 0;
-
-	ret |= _new_append(ai, AICT_INT32, "vfs_chmod", 2, AICT_STRING,
-			AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_chown", 3, AICT_STRING,
-			AICT_UINT32, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_close", 1, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_fchmod", 2, AICT_INT32,
-			AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_fchown", 3, AICT_INT32,
-			AICT_UINT32, AICT_UINT32);
-	/* ret |= _new_append(ai, AICT_UINT32, "vfs_flock", 2, AICT_UINT32,
-			AICT_UINT32); */
-/*	ret |= _new_append(ai, AICT_UINT32, "vfs_fstat", 2, AICT_UINT32,
-			AICT_BUFFER | AICD_OUT); */
-	ret |= _new_append(ai, AICT_INT32, "vfs_lchown", 3, AICT_STRING,
-			AICT_UINT32, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_link", 2, AICT_STRING,
-			AICT_STRING);
-	ret |= _new_append(ai, AICT_INT32, "vfs_lseek", 3, AICT_INT32,
-			AICT_INT32, AICT_INT32);
-/*	ret |= _new_append(ai, AICT_UINT32, "vfs_lstat", 2, AICT_STRING,
-			AICT_BUFFER | AICD_OUT); */
-	ret |= _new_append(ai, AICT_INT32, "vfs_mkdir", 2, AICT_STRING,
-			AICT_UINT32);
-/*	ret |= _new_append(ai, AICT_UINT32, "vfs_mknod", 2, AICT_STRING,
-			AICT_UINT32, AICT_UINT32); */
-	ret |= _new_append(ai, AICT_UINT32, "vfs_open", 3, AICT_STRING,
-			AICT_UINT32, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_read", 3, AICT_UINT32,
-			AICT_BUFFER | AICD_OUT, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_rename", 2, AICT_STRING,
-			AICT_STRING);
-	ret |= _new_append(ai, AICT_INT32, "vfs_rmdir", 1, AICT_STRING);
-/*	ret |= _new_append(ai, AICT_UINT32, "vfs_stat", 2, AICT_STRING,
-			AICT_BUFFER | AICD_OUT); */
-	ret |= _new_append(ai, AICT_INT32, "vfs_symlink", 2, AICT_STRING,
-			AICT_STRING);
-	ret |= _new_append(ai, AICT_UINT32, "vfs_umask", 1, AICT_UINT32);
-	ret |= _new_append(ai, AICT_INT32, "vfs_unlink", 1, AICT_STRING);
-	ret |= _new_append(ai, AICT_INT32, "vfs_write", 3, AICT_UINT32,
-			AICT_BUFFER, AICT_UINT32);
-	return ret;
-}
-
-static int _new_directory(AppInterface * appinterface)
-{
-	/* uint32_t directory_register(in String, in Buffer, out Buffer); */
-	return _new_append(appinterface, AICT_UINT32, "directory_register", 3,
-			AICT_STRING | AICD_IN, AICT_BUFFER | AICD_IN,
-			AICT_BUFFER | AICD_OUT);
 }
 
 
@@ -368,6 +310,7 @@ AppInterface * appinterface_new_server(char const * app)
 	AppInterface * ai;
 	void * handle;
 	size_t i;
+	String * name;
 
 	if((handle = dlopen(NULL, RTLD_LAZY)) == NULL)
 	{
@@ -377,14 +320,19 @@ AppInterface * appinterface_new_server(char const * app)
 	if((ai = appinterface_new(app)) == NULL)
 		return NULL;
 	for(i = 0; i < ai->calls_cnt; i++)
-		if((ai->calls[i].func = dlsym(handle, ai->calls[i].name))
-				== NULL)
+	{
+		name = string_new_append(ai->name, "_", ai->calls[i].name,
+				NULL);
+		ai->calls[i].func = dlsym(handle, name);
+		string_delete(name);
+		if(ai->calls[i].func == NULL)
 		{
 			error_set_code(1, "%s", dlerror());
 			appinterface_delete(ai);
 			dlclose(handle);
 			return NULL;
 		}
+	}
 	dlclose(handle);
 	return ai;
 }
@@ -401,6 +349,7 @@ void appinterface_delete(AppInterface * appinterface)
 		free(appinterface->calls[i].args);
 	}
 	free(appinterface->calls);
+	string_delete(appinterface->name);
 	object_delete(appinterface);
 }
 
@@ -454,9 +403,8 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s", "DEBUG: call \"", function, "\"\n");
 #endif
-	if((aic = _appinterface_get_call(appinterface, function)) == NULL)
-		return -1;
-	if(_send_string(function, buf, buflen, &pos) != 0)
+	if((aic = _appinterface_get_call(appinterface, function)) == NULL
+			|| _send_string(function, buf, buflen, &pos) != 0)
 		return -1;
 	for(i = 0; i < aic->args_cnt; i++)
 	{

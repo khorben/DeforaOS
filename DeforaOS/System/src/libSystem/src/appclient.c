@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -275,7 +275,7 @@ static int _new_connect(AppClient * appclient, char const * app)
 		return error_set_code(1, "%s", _appclient_error_ssl());
 	SSL_set_connect_state(appclient->ssl);
 #endif
-	if(appclient_call(appclient, &port, "init_get_session", app) != 0)
+	if(appclient_call(appclient, &port, "get_session", app) != 0)
 		return 1;
 	if(port < 0)
 		return error_set_code(1, "%s", "Could not obtain remote port");
@@ -405,7 +405,7 @@ static int _call_event(AppClient * ac)
 	event_register_io_write(ac->event, ac->fd,
 			(EventIOFunc)_appclient_write, ac);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: Waiting for answer\n");
+	fprintf(stderr, "DEBUG: %s() %s\n", __func__, "Waiting for answer");
 #endif
 	event_loop(ac->event);
 	event_delete(ac->event); /* FIXME may already be free'd */
