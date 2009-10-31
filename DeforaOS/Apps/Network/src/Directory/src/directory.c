@@ -1,7 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <pierre.pronchery@duekin.com> */
-/* Copyright (c) 2007 faberNovel <info@fabernovel.com> */
-/* Copyright (c) 2008 The DeforaOS Project <contact@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of Directory */
 /* Directory is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,10 +29,15 @@
 #include <errno.h>
 #include <System.h>
 #include "directory.h"
+#include "Directory.h"
 #include "../config.h"
 
 
 /* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+
 #ifndef ETCDIR
 # define ETCDIR		PREFIX "/etc"
 #endif
@@ -121,7 +124,7 @@ void directory_delete(Directory * directory)
 
 /* interface */
 /* register */
-uint32_t directory_register(char const * title, Buffer * csr, Buffer * x509)
+int32_t Directory_register(String const * title, Buffer * csr, Buffer * x509)
 {
 	static const char cacert_csr[] = "/cacert.csr";
 	static const char begin[] = "-----BEGIN CERTIFICATE REQUEST-----\n";

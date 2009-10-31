@@ -1,0 +1,9 @@
+#$Id$
+service=Directory
+port=4247
+
+[register]
+ret=INT32
+arg1=STRING,title
+arg2=BUFFER,csr
+arg3=BUFFER_OUT,x509

@@ -1,6 +1,6 @@
 PACKAGE	= Directory
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,10 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/Directory.interface \
+		$(PACKAGE)-$(VERSION)/data/Directory.h \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/directory.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \

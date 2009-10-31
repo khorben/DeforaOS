@@ -1,6 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <pierre.pronchery@duekin.com> */
-/* Copyright (c) 2007 faberNovel <info@fabernovel.com> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of Directory */
 /* Directory is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
