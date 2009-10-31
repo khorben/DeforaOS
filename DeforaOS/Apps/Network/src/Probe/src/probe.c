@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Network Probe */
 /* Probe is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <System.h>
+#include "Probe.h"
 
 
 #if defined(__linux__)
@@ -47,7 +48,8 @@
 
 
 /* functions */
-static int _probe_error(char const * message, int ret);
+static int _probe_error(int ret);
+static int _probe_perror(char const * message, int ret);
 
 
 /* sysinfo */
@@ -319,7 +321,7 @@ static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb)
 	int j = 0;
 
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
-		return _probe_error("realloc", 1);
+		return _probe_perror("realloc", 1);
 	*dev = p;
 	for(i = 0; i < sizeof(p->name) && buf[i] != '\0'; i++);
 	if(i != sizeof(p->name))
@@ -371,9 +373,9 @@ static int _ifinfo_bsd(struct ifinfo ** dev)
 	struct ifaddrs * p;
 
 	if(fd < 0 && (fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-		return _probe_error("socket", -1);
+		return _probe_perror("socket", -1);
 	if(getifaddrs(&ifa) != 0)
-		return _probe_error("getifaddrs", -1);
+		return _probe_perror("getifaddrs", -1);
 	for(p = ifa; p != NULL; p = p->ifa_next)
 	{
 		if(p->ifa_addr->sa_family != AF_LINK)
@@ -395,9 +397,9 @@ static int _ifinfo_bsd_append(struct ifinfo ** dev, char * ifname, int fd,
 
 	strcpy(ifdr.ifdr_name, ifname);
 	if(ioctl(fd, SIOCGIFDATA, &ifdr) == -1)
-		return _probe_error("SIOCGIFDATA", 1);
+		return _probe_perror("SIOCGIFDATA", 1);
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
-		return _probe_error("realloc", 1);
+		return _probe_perror("realloc", 1);
 	*dev = p;
 	strcpy(p[nb].name, ifname);
 # if defined(DEBUG)
@@ -448,7 +450,7 @@ static int _volinfo_linux(struct volinfo ** dev)
 	int len;
 
 	if((fp = fopen("/etc/mtab", "r")) == NULL)
-		return _probe_error("/etc/mtab", -1);
+		return _probe_perror("/etc/mtab", -1);
 	for(i = 0; fgets(buf, sizeof(buf), fp) != NULL; i++)
 	{
 		len = string_length(buf);
@@ -514,14 +516,14 @@ static int _volinfo_bsd(struct volinfo ** dev)
 	int cnt2;
 
 	if((cnt = getvfsstat(NULL, 0, ST_WAIT)) == -1)
-		return _probe_error("getvfsstat", -1);
+		return _probe_perror("getvfsstat", -1);
 	if((buf = malloc(sizeof(struct statvfs) * cnt)) == NULL)
-		return _probe_error("malloc", -1);
+		return _probe_perror("malloc", -1);
 	if((cnt2 = getvfsstat(buf, sizeof(struct statvfs) * cnt, ST_WAIT))
 			== -1)
 	{
 		free(buf);
-		return _probe_error("getvfsstat", -1);
+		return _probe_perror("getvfsstat", -1);
 	}
 	for(ret = 0; ret < cnt && ret < cnt2; ret++)
 	{
@@ -540,7 +542,7 @@ static int _volinfo_bsd_append(struct volinfo ** dev, struct statvfs * buf,
 	struct volinfo * p;
 
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
-		return _probe_error("realloc", 1);
+		return _probe_perror("realloc", 1);
 	*dev = p;
 	strcpy(p[nb].name, buf->f_mntonname);
 # if defined(DEBUG)
@@ -565,6 +567,7 @@ static int _volinfo_generic(struct volinfo ** dev)
 
 
 /* Probe */
+/* private */
 /* types */
 typedef struct _Probe
 {
@@ -581,8 +584,14 @@ typedef struct _Probe
 Probe probe;
 
 
-/* functions */
+/* prototypes */
+static int _probe_error(int ret);
+static int _probe_perror(char const * message, int ret);
 static int _probe_timeout(Probe * probe);
+
+
+/* functions */
+/* probe */
 static int _probe(void)
 {
 	AppServer * appserver;
@@ -600,7 +609,7 @@ static int _probe(void)
 	{
 		free(probe.ifinfo);
 		free(probe.volinfo);
-		return _probe_error("Event", 1);
+		return _probe_error(1);
 	}
 	if((appserver = appserver_new_event("Probe", ASO_REMOTE, event))
 			== NULL)
@@ -608,13 +617,13 @@ static int _probe(void)
 		free(probe.ifinfo);
 		free(probe.volinfo);
 		event_delete(event);
-		return _probe_error("AppServer", 1);
+		return _probe_error(1);
 	}
 	tv.tv_sec = PROBE_REFRESH;
 	tv.tv_usec = 0;
 	if(event_register_timeout(event, &tv, (EventTimeoutFunc)_probe_timeout,
 			&probe) != 0)
-		_probe_error("timeout", 0);
+		_probe_error(0);
 	else
 		event_loop(event);
 	appserver_delete(appserver);
@@ -624,13 +633,25 @@ static int _probe(void)
 	return 1;
 }
 
-static int _probe_error(char const * message, int ret)
+
+/* probe_error */
+static int _probe_error(int ret)
+{
+	error_print("Probe");
+	return ret;
+}
+
+
+/* probe_perror */
+static int _probe_perror(char const * message, int ret)
 {
 	fputs("Probe: ", stderr);
 	perror(message);
 	return ret;
 }
 
+
+/* probe_timeout */
 static int _probe_timeout(Probe * probe)
 {
 	int i;
@@ -640,21 +661,24 @@ static int _probe_timeout(Probe * probe)
 	fprintf(stderr, "%s%d%s", "_probe_timeout(", count++, ")\n");
 #endif
 	if(_sysinfo(&probe->sysinfo) != 0)
-		return _probe_error("sysinfo", 1);
+		return _probe_perror("sysinfo", 1);
 	if(_userinfo(&probe->users) != 0)
-		return _probe_error("userinfo", 1);
+		return _probe_perror("userinfo", 1);
 	if((i = _ifinfo(&probe->ifinfo)) < 0)
-		return _probe_error("ifinfo", 1);
+		return _probe_perror("ifinfo", 1);
 	probe->ifinfo_cnt = i;
 	if((i = _volinfo(&probe->volinfo)) < 0)
-		return _probe_error("volinfo", 1);
+		return _probe_perror("volinfo", 1);
 	probe->volinfo_cnt = i;
 	return 0;
 }
 
 
+/* public */
+/* functions */
 /* AppInterface */
-int uptime(void)
+/* Probe_uptime */
+uint32_t Probe_uptime(void)
 {
 #if defined(DEBUG)
 	printf("%s%ld%s", "Uptime: ", probe.sysinfo.uptime, "\n");
@@ -663,7 +687,8 @@ int uptime(void)
 }
 
 
-int load_1(void)
+/* Probe_load_1 */
+uint32_t Probe_load_1(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Load 1: ", probe.sysinfo.loads[0], "\n");
@@ -672,7 +697,8 @@ int load_1(void)
 }
 
 
-int load_5(void)
+/* Probe_load_5 */
+uint32_t Probe_load_5(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Load 5: ", probe.sysinfo.loads[1], "\n");
@@ -681,7 +707,8 @@ int load_5(void)
 }
 
 
-int load_15(void)
+/* Probe_load_15 */
+uint32_t Probe_load_15(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Load 15: ", probe.sysinfo.loads[2], "\n");
@@ -690,7 +717,8 @@ int load_15(void)
 }
 
 
-int ram_total(void)
+/* Probe_ram_total */
+uint32_t Probe_ram_total(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Total RAM: ", probe.sysinfo.totalram, "\n");
@@ -698,7 +726,9 @@ int ram_total(void)
 	return probe.sysinfo.totalram;
 }
 
-int ram_free(void)
+
+/* Probe_ram_free */
+uint32_t Probe_ram_free(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Free RAM: ", probe.sysinfo.freeram, "\n");
@@ -706,7 +736,9 @@ int ram_free(void)
 	return probe.sysinfo.freeram;
 }
 
-int ram_shared(void)
+
+/* Probe_ram_shared */
+uint32_t Probe_ram_shared(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Shared RAM: ", probe.sysinfo.sharedram, "\n");
@@ -714,7 +746,9 @@ int ram_shared(void)
 	return probe.sysinfo.sharedram;
 }
 
-int ram_buffer(void)
+
+/* Probe_ram_buffer */
+uint32_t Probe_ram_buffer(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Buffered RAM: ", probe.sysinfo.bufferram, "\n");
@@ -723,7 +757,8 @@ int ram_buffer(void)
 }
 
 
-int swap_total(void)
+/* Probe_swap_total */
+uint32_t Probe_swap_total(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Total swap: ", probe.sysinfo.totalswap, "\n");
@@ -731,7 +766,9 @@ int swap_total(void)
 	return probe.sysinfo.totalswap;
 }
 
-int swap_free(void)
+
+/* Probe_swap_free */
+uint32_t Probe_swap_free(void)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Free swap: ", probe.sysinfo.freeswap, "\n");
@@ -740,7 +777,8 @@ int swap_free(void)
 }
 
 
-int procs(void)
+/* Probe_procs */
+uint32_t Probe_procs(void)
 {
 #if defined(DEBUG)
 	printf("%s%u%s", "Procs: ", probe.sysinfo.procs, "\n");
@@ -749,7 +787,8 @@ int procs(void)
 }
 
 
-int users(void)
+/* Probe_users */
+uint32_t Probe_users(void)
 {
 #if defined(DEBUG)
 	printf("%s%u%s", "Users: ", probe.users, "\n");
@@ -758,7 +797,8 @@ int users(void)
 }
 
 
-int ifrxbytes(char * dev)
+/* Probe_ifrxbytes */
+uint32_t Probe_ifrxbytes(String const * dev)
 {
 	unsigned int i;
 
@@ -773,7 +813,9 @@ int ifrxbytes(char * dev)
 	return probe.ifinfo[i].ibytes;
 }
 
-int iftxbytes(char * dev)
+
+/* Probe_iftxbytes */
+uint32_t Probe_iftxbytes(String const * dev)
 {
 	unsigned int i;
 
@@ -789,12 +831,13 @@ int iftxbytes(char * dev)
 }
 
 
-int voltotal(char * vol)
+/* Probe_voltotal */
+uint32_t Probe_voltotal(String const * volume)
 {
 	unsigned int i;
 
 	for(i = 0; i < probe.volinfo_cnt
-			&& string_compare(probe.volinfo[i].name, vol) != 0;
+			&& string_compare(probe.volinfo[i].name, volume) != 0;
 			i++);
 	if(i == probe.volinfo_cnt)
 		return -1;
@@ -805,12 +848,14 @@ int voltotal(char * vol)
 	return probe.volinfo[i].total * (probe.volinfo[i].block_size / 1024);
 }
 
-int volfree(char * vol)
+
+/* Probe_volfree */
+uint32_t Probe_volfree(String const * volume)
 {
 	unsigned int i;
 
 	for(i = 0; i < probe.volinfo_cnt
-			&& string_compare(probe.volinfo[i].name, vol) != 0;
+			&& string_compare(probe.volinfo[i].name, volume) != 0;
 			i++);
 	if(i == probe.volinfo_cnt)
 		return -1;

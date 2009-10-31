@@ -1,6 +1,6 @@
 PACKAGE	= Probe
 VERSION	= 0.0.0
-SUBDIRS	= src
+SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -21,6 +21,10 @@ dist:
 	$(RM) -r $(PACKAGE)-$(VERSION)
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/Probe.interface \
+		$(PACKAGE)-$(VERSION)/data/Probe.h \
+		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/probe.c \
 		$(PACKAGE)-$(VERSION)/src/damon.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \

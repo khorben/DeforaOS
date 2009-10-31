@@ -3,10 +3,10 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
+CPPFLAGSF= -I ../data
 CPPFLAGS=
 CFLAGSF	= -W
-CFLAGS	= -Wall -g -O2 -ansi
+CFLAGS	= -Wall -g -O2 -pedantic
 LDFLAGSF= -l System 
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
@@ -31,7 +31,7 @@ DaMon_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 DaMon: $(DaMon_OBJS)
 	$(CC) -o DaMon $(DaMon_OBJS) $(DaMon_LDFLAGS)
 
-probe.o: probe.c
+probe.o: probe.c ../data/Probe.h
 	$(CC) $(Probe_CFLAGS) -c probe.c
 
 damon.o: damon.c

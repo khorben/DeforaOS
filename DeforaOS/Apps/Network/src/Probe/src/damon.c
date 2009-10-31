@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Network Probe */
 /* Probe is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -13,6 +13,8 @@
  * You should have received a copy of the Creative Commons Attribution-
  * NonCommercial-ShareAlike 3.0 along with Probe; if not, browse to
  * http://creativecommons.org/licenses/by-nc-sa/3.0/ */
+/* FIXME: catch SIGPIPE, determine if we can avoid catching it if an AppServer
+ * exits */
 
 
 
@@ -27,16 +29,22 @@
 #include <errno.h>
 #include "../config.h"
 
-#define DAMON_DEFAULT_REFRESH 10
-
+#ifndef PREFIX
+# define PREFIX "/usr/local"
+#endif
 #ifndef ETCDIR
 # define ETCDIR PREFIX "/etc"
 #endif
 
+#define DAMON_DEFAULT_REFRESH 10
+
 
 /* types */
+typedef struct _DaMon DaMon;
+
 typedef struct _Host
 {
+	DaMon * damon;
 	AppClient * appclient;
 	char * hostname;
 	char ** ifaces;
@@ -46,25 +54,26 @@ typedef struct _Host
 
 /* DaMon */
 /* types */
-typedef struct _DaMon
+struct _DaMon
 {
+	char const * prefix;
 	unsigned int refresh;
 	Host * hosts;
 	unsigned int hosts_cnt;
 	Event * event;
-} DaMon;
+};
 
 /* functions */
 /* public */
 /* damon */
-static int _damon_init(DaMon * damon);
+static int _damon_init(DaMon * damon, char const * config);
 static void _damon_destroy(DaMon * damon);
 
-static int _damon(void)
+static int _damon(char const * config)
 {
 	DaMon damon;
 
-	if(_damon_init(&damon) != 0)
+	if(_damon_init(&damon, config) != 0)
 		return 1;
 	if(event_loop(damon.event) != 0)
 		error_print("DaMon");
@@ -74,14 +83,14 @@ static int _damon(void)
 
 
 /* _damon_init */
-static int _init_config(DaMon * damon);
+static int _init_config(DaMon * damon, char const * filename);
 static int _damon_refresh(DaMon * damon);
 
-static int _damon_init(DaMon * damon)
+static int _damon_init(DaMon * damon, char const * filename)
 {
 	struct timeval tv;
 
-	if(_init_config(damon) != 0)
+	if(_init_config(damon, filename) != 0)
 		return 1;
 	if((damon->event = event_new()) == NULL)
 		return error_print("DaMon");
@@ -96,19 +105,21 @@ static int _damon_init(DaMon * damon)
 /* _init_config */
 static int _config_hosts(DaMon * damon, Config * config, char const * hosts);
 
-static int _init_config(DaMon * damon)
+static int _init_config(DaMon * damon, char const * filename)
 {
 	Config * config;
-	char * filename = ETCDIR "/damon.cfg";
 	char const * p;
 	char * q;
 	int tmp;
 
 	if((config = config_new()) == NULL)
 		return 1;
+	damon->prefix = NULL;
 	damon->refresh = DAMON_DEFAULT_REFRESH;
 	damon->hosts = NULL;
 	damon->hosts_cnt = 0;
+	if(filename == NULL)
+		filename = ETCDIR "/damon.cfg";
 	if(config_load(config, filename) != 0)
 	{
 		fprintf(stderr, "DaMon: %s: Could not load configuration\n",
@@ -116,6 +127,8 @@ static int _init_config(DaMon * damon)
 		config_delete(config);
 		return 1;
 	}
+	if((damon->prefix = config_get(config, "", "prefix")) == NULL)
+		damon->prefix = ".";
 	if((p = config_get(config, "", "refresh")) != NULL)
 	{
 		tmp = strtol(p, &q, 10);
@@ -131,8 +144,8 @@ static int _init_config(DaMon * damon)
 	return 0;
 }
 
-static int _hosts_host(Config * config, Host * host, char const * h,
-		unsigned int pos);
+static int _hosts_host(DaMon * damon, Config * config, Host * host,
+		char const * h, unsigned int pos);
 static int _config_hosts(DaMon * damon, Config * config, char const * hosts)
 {
 	char const * h = hosts;
@@ -156,8 +169,8 @@ static int _config_hosts(DaMon * damon, Config * config, char const * hosts)
 			return error_set_print("DaMon", 1, "%s",
 					strerror(errno));
 		damon->hosts = p;
-		if(_hosts_host(config, &damon->hosts[damon->hosts_cnt++], h,
-					pos) != 0)
+		p = &damon->hosts[damon->hosts_cnt++];
+		if(_hosts_host(damon, config, p, h, pos) != 0)
 			return 1;
 		h += pos;
 		pos = 0;
@@ -166,11 +179,12 @@ static int _config_hosts(DaMon * damon, Config * config, char const * hosts)
 }
 
 static char ** _host_comma(char const * line);
-static int _hosts_host(Config * config, Host * host, char const * h,
-		unsigned int pos)
+static int _hosts_host(DaMon * damon, Config * config, Host * host,
+		char const * h, unsigned int pos)
 {
 	char const * p;
 
+	host->damon = damon;
 	host->appclient = NULL;
 	host->ifaces = NULL;
 	host->vols = NULL;
@@ -267,7 +281,7 @@ static int _damon_refresh(DaMon * damon)
 	Host * hosts = damon->hosts;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s", "_damon_refresh()\n");
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	for(i = 0; i < damon->hosts_cnt; i++)
 	{
@@ -276,7 +290,7 @@ static int _damon_refresh(DaMon * damon)
 					== NULL)
 				continue;
 		if((p = realloc(rrd, string_length(hosts[i].hostname) + 12))
-				== NULL)
+				== NULL) /* XXX avoid this constant */
 			break;
 		rrd = p;
 		if(_refresh_uptime(ac, &hosts[i], rrd) != 0
@@ -310,7 +324,7 @@ static AppClient * _refresh_connect(Host * host, Event * event)
 	return host->appclient;
 }
 
-static int _rrd_update(char * file, int args_cnt, ...);
+static int _rrd_update(DaMon * damon, char const * filename, int args_cnt, ...);
 static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
 {
 	int32_t ret;
@@ -318,7 +332,7 @@ static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
 	if(appclient_call(ac, &ret, "uptime") != 0)
 		return error_print("DaMon");
 	sprintf(rrd, "%s_%s", host->hostname, "uptime.rrd");
-	_rrd_update(rrd, 1, ret);
+	_rrd_update(host->damon, rrd, 1, ret);
 	return 0;
 }
 
@@ -331,7 +345,7 @@ static int _refresh_load(AppClient * ac, Host * host, char * rrd)
 			|| appclient_call(ac, &ret[2], "load_15") != 0)
 		return error_print("DaMon");
 	sprintf(rrd, "%s_%s", host->hostname, "load.rrd");
-	_rrd_update(rrd, 3, ret[0], ret[1], ret[2]);
+	_rrd_update(host->damon, rrd, 3, ret[0], ret[1], ret[2]);
 	return 0;
 }
 
@@ -342,7 +356,7 @@ static int _refresh_procs(AppClient * ac, Host * host, char * rrd)
 	if(appclient_call(ac, &res, "procs") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "procs.rrd");
-	_rrd_update(rrd, 1, res);
+	_rrd_update(host->damon, rrd, 1, res);
 	return 0;
 }
 
@@ -356,7 +370,7 @@ static int _refresh_ram(AppClient * ac, Host * host, char * rrd)
 			|| appclient_call(ac, &res[3], "ram_buffer") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "ram.rrd");
-	_rrd_update(rrd, 4, res[0], res[1], res[2], res[3]);
+	_rrd_update(host->damon, rrd, 4, res[0], res[1], res[2], res[3]);
 	return 0;
 }
 
@@ -368,7 +382,7 @@ static int _refresh_swap(AppClient * ac, Host * host, char * rrd)
 			|| appclient_call(ac, &res[1], "swap_free") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "swap.rrd");
-	_rrd_update(rrd, 2, res[0], res[1]);
+	_rrd_update(host->damon, rrd, 2, res[0], res[1]);
 	return 0;
 }
 
@@ -379,11 +393,12 @@ static int _refresh_users(AppClient * ac, Host * host, char * rrd)
 	if(appclient_call(ac, &res, "users") != 0)
 		return 1;
 	sprintf(rrd, "%s_%s", host->hostname, "users.rrd");
-	_rrd_update(rrd, 1, res);
+	_rrd_update(host->damon, rrd, 1, res);
 	return 0;
 }
 
-static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface);
+static int _ifaces_if(AppClient * ac, Host * host, char * rrd,
+		char const * iface);
 static int _refresh_ifaces(AppClient * ac, Host * host, char * rrd)
 {
 	char ** p = host->ifaces;
@@ -396,7 +411,8 @@ static int _refresh_ifaces(AppClient * ac, Host * host, char * rrd)
 	return ret;
 }
 
-static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface)
+static int _ifaces_if(AppClient * ac, Host * host, char * rrd,
+		char const * iface)
 {
 	int32_t res[2];
 
@@ -404,7 +420,7 @@ static int _ifaces_if(AppClient * ac, Host * host, char * rrd, char * iface)
 			|| appclient_call(ac, &res[1], "iftxbytes", iface) != 0)
 		return 1;
 	sprintf(rrd, "%s_%s%s", host->hostname, iface, ".rrd");
-	_rrd_update(rrd, 2, res[0], res[1]);
+	_rrd_update(host->damon, rrd, 2, res[0], res[1]);
 	return 0;
 }
 
@@ -426,17 +442,18 @@ static int _vols_vol(AppClient * ac, Host * host, char * rrd, char * vol)
 	int32_t res[2];
 
 	if(appclient_call(ac, &res[0], "voltotal", vol) != 0
-			|| appclient_call(ac, &res[1], "volfree", vol) != 0)
+			|| appclient_call(ac, &res[1], "volfree", vol)
+			!= 0)
 		return 1;
 	sprintf(rrd, "%s%s%s", host->hostname, vol, ".rrd"); /* FIXME */
-	_rrd_update(rrd, 2, res[0], res[1]);
+	_rrd_update(host->damon, rrd, 2, res[0], res[1]);
 	return 0;
 }
 
 static int _exec(char * argv[]);
-static int _rrd_update(char * file, int args_cnt, ...)
+static int _rrd_update(DaMon * damon, char const * filename, int args_cnt, ...)
 {
-	char * argv[] = { "rrdtool", "update", file, NULL, NULL };
+	char * argv[] = { "rrdtool", "update", NULL, NULL, NULL };
 	struct timeval tv;
 	int pos;
 	int i;
@@ -446,6 +463,7 @@ static int _rrd_update(char * file, int args_cnt, ...)
 	if(gettimeofday(&tv, NULL) != 0)
 		return error_set_print("DaMon", 1, "%s%s", "gettimeofday: ",
 				strerror(errno));
+	argv[2] = string_new_append(damon->prefix, "/", filename, NULL);
 	if((argv[3] = malloc((args_cnt + 1) * 12)) == NULL)
 		return error_set_print("DaMon", 1, "%s", strerror(errno));
 	pos = sprintf(argv[3], "%ld", tv.tv_sec);
@@ -455,6 +473,7 @@ static int _rrd_update(char * file, int args_cnt, ...)
 	va_end(args);
 	ret = _exec(argv);
 	free(argv[3]);
+	string_delete(argv[2]);
 	return ret;
 }
 
@@ -474,9 +493,12 @@ static int _exec(char * argv[])
 				strerror(errno));
 		exit(2);
 	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() ", __func__);
 	while(*argv != NULL)
 		fprintf(stderr, "%s ", *argv++);
 	fprintf(stderr, "\n");
+#endif
 	while((ret = waitpid(pid, &status, 0)) != -1)
 		if(WIFEXITED(status))
 			break;
@@ -487,8 +509,31 @@ static int _exec(char * argv[])
 }
 
 
-/* main */
-int main(void)
+/* usage */
+static int _usage(void)
 {
-	return _damon() == 0 ? 0 : 2;
+	fputs("Usage: DaMon [-f filename]\n"
+"  -f\tConfiguration file to load\n", stderr);
+	return 1;
+}
+
+
+/* main */
+int main(int argc, char * argv[])
+{
+	int o;
+	char const * config = NULL;
+
+	while((o = getopt(argc, argv, "f:")) != -1)
+		switch(o)
+		{
+			case 'f':
+				config = optarg;
+				break;
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
+	return (_damon(config) == 0) ? 0 : 2;
 }
