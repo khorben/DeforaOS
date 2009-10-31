@@ -29,6 +29,7 @@
 #include <string.h>
 #include <errno.h>
 #include <System.h>
+#include "VFS.h"
 #include "../config.h"
 
 
@@ -51,23 +52,23 @@ static size_t _clients_cnt;
 /* macros */
 #if 1
 # define VFS_STUB1(type, name, type1, arg1) \
-	type vfs_ ## name(type1 arg1) \
+	type VFS_ ## name(type1 arg1) \
 { \
 	return name(arg1); \
 }
 #else /* FIXME check if the following approach works too */
 # define VFS_STUB1(type, name, type1, arg1) \
-	type (*vfs_ ## name)(type1 arg1) = name;
+	type (*VFS_ ## name)(type1 arg1) = name;
 #endif
 
 #define VFS_STUB2(type, name, type1, arg1, type2, arg2) \
-	type vfs_ ## name(type1 arg1, type2 arg2) \
+	type VFS_ ## name(type1 arg1, type2 arg2) \
 { \
 	return name(arg1, arg2); \
 }
 
 #define VFS_STUB3(type, name, type1, arg1, type2, arg2, type3, arg3) \
-	type vfs_ ## name(type1 arg1, type2 arg2, type3 arg3) \
+	type VFS_ ## name(type1 arg1, type2 arg2, type3 arg3) \
 { \
 	return name(arg1, arg2, arg3); \
 }
@@ -84,18 +85,6 @@ static int _client_check(int32_t fd);
 
 /* vfs */
 static int _vfs(char const * root);
-
-
-/* public */
-/* prototypes */
-int32_t vfs_close(int32_t fd);
-int32_t vfs_fchmod(int32_t fd, uint32_t mode);
-int32_t vfs_fchown(int32_t fd, uint32_t owner, uint32_t group);
-int32_t vfs_ioctl(int32_t fd, uint32_t request, Buffer * buffer);
-int32_t vfs_lseek(int32_t fd, int32_t offset, int32_t whence);
-int32_t vfs_open(char const * filename, uint32_t flags, uint32_t mode);
-int32_t vfs_read(int32_t fd, Buffer * b, uint32_t count);
-int32_t vfs_write(int fd, Buffer * b, uint32_t count);
 
 
 /* private */
@@ -210,22 +199,24 @@ static int _vfs(char const * root)
 
 /* public */
 /* stubs */
-VFS_STUB2(int32_t, chmod, char const *, path, uint32_t, mode)
-VFS_STUB3(int32_t, chown, char const *, path, uint32_t, owner, uint32_t, group)
-VFS_STUB3(int32_t, lchown, char const *, path, uint32_t, owner, uint32_t, group)
-VFS_STUB2(int32_t, link, char const *, name1, char const *, name2)
-VFS_STUB2(int32_t, mkdir, char const *, path, uint32_t, mode)
-VFS_STUB2(int32_t, rename, char const *, from, char const *, to)
-VFS_STUB1(int32_t, rmdir, char const *, path)
-VFS_STUB2(int32_t, symlink, char const *, name1, char const *, name2)
+VFS_STUB2(int32_t, chmod, String const *, path, uint32_t, mode)
+VFS_STUB3(int32_t, chown, String const *, path, uint32_t, owner,
+		uint32_t, group)
+VFS_STUB3(int32_t, lchown, String const *, path, uint32_t, owner, uint32_t,
+		group)
+VFS_STUB2(int32_t, link, String const *, name1, String const *, name2)
+VFS_STUB2(int32_t, mkdir, String const *, path, uint32_t, mode)
+VFS_STUB2(int32_t, rename, String const *, from, String const *, to)
+VFS_STUB1(int32_t, rmdir, String const *, path)
+VFS_STUB2(int32_t, symlink, String const *, name1, String const *, name2)
 /* FIXME keep track of umask per connection */
 VFS_STUB1(uint32_t, umask, uint32_t, mask)
-VFS_STUB1(int32_t, unlink, char const *, path)
+VFS_STUB1(int32_t, unlink, String const *, path)
 
 
 /* functions */
-/* vfs_close */
-int32_t vfs_close(int32_t fd)
+/* VFS_close */
+int32_t VFS_close(int32_t fd)
 {
 	int32_t ret;
 
@@ -240,8 +231,24 @@ int32_t vfs_close(int32_t fd)
 }
 
 
-/* vfs_fchmod */
-int32_t vfs_fchmod(int32_t fd, uint32_t mode)
+/* VFS_closedir */
+int32_t VFS_closedir(int32_t dir)
+{
+	/* FIXME implement */
+	return -1;
+}
+
+
+/* VFS_dirfd */
+int32_t VFS_dirfd(int32_t dir)
+{
+	/* FIXME implement */
+	return -1;
+}
+
+
+/* VFS_fchmod */
+int32_t VFS_fchmod(int32_t fd, uint32_t mode)
 {
 	if(!_client_check(fd))
 		return -1;
@@ -249,8 +256,8 @@ int32_t vfs_fchmod(int32_t fd, uint32_t mode)
 }
 
 
-/* vfs_fchown */
-int32_t vfs_fchown(int32_t fd, uint32_t owner, uint32_t group)
+/* VFS_fchown */
+int32_t VFS_fchown(int32_t fd, uint32_t owner, uint32_t group)
 {
 	if(!_client_check(fd))
 		return -1;
@@ -258,8 +265,17 @@ int32_t vfs_fchown(int32_t fd, uint32_t owner, uint32_t group)
 }
 
 
+/* VFS_flock */
+int32_t VFS_flock(int32_t fd, uint32_t operation)
+{
+	if(!_client_check(fd))
+		return -1;
+	return flock(fd, operation);
+}
+
+
 /* ioctl */
-int32_t vfs_ioctl(int32_t fd, uint32_t request, Buffer * buffer)
+int32_t VFS_ioctl(int32_t fd, uint32_t request, Buffer * buffer)
 {
 	void * data;
 
@@ -271,7 +287,7 @@ int32_t vfs_ioctl(int32_t fd, uint32_t request, Buffer * buffer)
 
 
 /* lseek */
-int32_t vfs_lseek(int32_t fd, int32_t offset, int32_t whence)
+int32_t VFS_lseek(int32_t fd, int32_t offset, int32_t whence)
 	/* FIXME unify whence, check types sizes */
 {
 	if(!_client_check(fd))
@@ -283,8 +299,8 @@ int32_t vfs_lseek(int32_t fd, int32_t offset, int32_t whence)
 }
 
 
-/* vfs_open */
-int32_t vfs_open(char const * filename, uint32_t flags, uint32_t mode)
+/* VFS_open */
+int32_t VFS_open(String const * filename, uint32_t flags, uint32_t mode)
 {
 	int fd;
 
@@ -304,46 +320,53 @@ int32_t vfs_open(char const * filename, uint32_t flags, uint32_t mode)
 }
 
 
-/* vfs_read */
-int32_t vfs_read(int32_t fd, Buffer * b, uint32_t count)
-	/* FIXME count is normally 64 bits */
+/* VFS_opendir */
+int32_t VFS_opendir(String const * filename)
 {
-	ssize_t ret;
+	/* FIXME implement */
+	return -1;
+}
+
+
+/* VFS_read */
+int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
+{
+	int32_t ret;
 
 	if(!_client_check(fd))
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "VFS: read(%d, %p, %u)\n", fd, b, count);
+	fprintf(stderr, "VFS: %s(%d, %p, %u)\n", __func__, fd, (void*)b, size);
 #endif
-	if(buffer_set_size(b, count) != 0)
+	if(buffer_set_size(b, size) != 0)
 		return -1;
-	ret = read(fd, buffer_get_data(b), count);
+	ret = read(fd, buffer_get_data(b), size);
 #ifdef DEBUG
-	fprintf(stderr, "VFS: read(%d, buf, %u) => %zd\n", fd, count, ret);
+	fprintf(stderr, "VFS: read(%d, buf, %u) => %d\n", fd, size, ret);
 #endif
 	if(buffer_set_size(b, ret < 0 ? 0 : ret) != 0)
 	{
-		memset(buffer_get_data(b), 0, count);
+		memset(buffer_get_data(b), 0, size);
 		return -1;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "VFS: %s() => %zd\n", __func__, ret);
+	fprintf(stderr, "VFS: %s() => %d\n", __func__, ret);
 #endif
 	return ret;
 }
 
 
-/* vfs_write */
-int32_t vfs_write(int fd, Buffer * b, uint32_t count)
+/* VFS_write */
+int32_t VFS_write(int32_t fd, Buffer * b, uint32_t size)
 {
 	if(!_client_check(fd))
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "VFS: write(%d, buf, %u)\n", fd, count);
+	fprintf(stderr, "VFS: write(%d, buf, %u)\n", fd, size);
 #endif
-	if(buffer_get_size(b) != count)
+	if(buffer_get_size(b) < size)
 		return -1;
-	return write(fd, buffer_get_data(b), count);
+	return write(fd, buffer_get_data(b), size);
 }
 
 
