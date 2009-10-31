@@ -22,6 +22,7 @@
 #endif
 #include "session.h"
 #include "init.h"
+#include "Init.h"
 
 
 /* Init */
@@ -79,7 +80,7 @@ void init_delete(Init * init)
 
 /* AppInterface */
 /* init_get_profile */
-int init_get_profile(String ** profile)
+int Init_get_profile(String ** profile)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, profile);
@@ -90,7 +91,7 @@ int init_get_profile(String ** profile)
 
 
 /* init_get_session */
-int init_get_session(String const * session)
+uint16_t Init_get_session(String const * session)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p)\n", __func__, session);
@@ -109,7 +110,7 @@ int init_get_session(String const * session)
 
 
 /* init_login */
-int init_login(String const * username)
+uint16_t Init_login(String const * username)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, username);
@@ -120,7 +121,7 @@ int init_login(String const * username)
 
 
 /* init_logout */
-int init_logout(void)
+uint16_t Init_logout(void)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -131,7 +132,7 @@ int init_logout(void)
 
 
 /* init_register */
-int init_register(char const * service, uint16_t port)
+uint16_t Init_register(String const * service, uint16_t port)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %d)\n", __func__, service, port);
@@ -141,7 +142,7 @@ int init_register(char const * service, uint16_t port)
 
 
 /* init_set_profile */
-int init_set_profile(String const * profile)
+int32_t Init_set_profile(String const * profile)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, profile);

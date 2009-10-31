@@ -3,9 +3,9 @@ PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
+CPPFLAGSF= -I ../data
 CPPFLAGS=
-CFLAGSF	= -W -Wall -ansi
+CFLAGSF	= -W -Wall -pedantic
 CFLAGS	= -g -O2
 LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -l System -Wl,--export-dynamic 
 RM	= rm -f
@@ -23,7 +23,7 @@ Init_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 Init: $(Init_OBJS)
 	$(CC) -o Init $(Init_OBJS) $(Init_LDFLAGS)
 
-init.o: init.c session.h init.h
+init.o: init.c session.h init.h ../data/Init.h
 	$(CC) $(Init_CFLAGS) -c init.c
 
 main.o: main.c init.h session.h ../config.h
