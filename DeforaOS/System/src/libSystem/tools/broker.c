@@ -73,7 +73,7 @@ static int _broker(char const * outfile, char const * filename)
 
 static void _broker_head(BrokerData * data)
 {
-	fputs("/* $Id$ */\n\n\n\n", data->fp);
+	fputs("/* $""Id$ */\n\n\n\n", data->fp);
 	if(data->prefix != NULL)
 		fprintf(data->fp, "%s%s%s%s%s%s", "#ifndef ", data->prefix,
 				"_H\n",	"# define ", data->prefix, "_H\n");
