@@ -479,12 +479,12 @@ static void _targets_ldflags(Configure * configure, FILE * fp)
 
 	if((p = config_get(configure->config, "", "ldflags_force")) != NULL)
 	{
-		fprintf(fp, "%s", "LDFLAGSF= ");
+		fputs("LDFLAGSF=", fp);
 		_binary_ldflags(configure, fp, p);
 	}
 	if((p = config_get(configure->config, "", "ldflags")) != NULL)
 	{
-		fprintf(fp, "%s", "LDFLAGS\t= ");
+		fputs("LDFLAGS\t=", fp);
 		_binary_ldflags(configure, fp, p);
 	}
 }
@@ -493,7 +493,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
 	char const * libs_gnu[] = { "socket", NULL };
-	char const * libs_bsd[] = { "crypt", "dl", "socket", NULL };
+	char const * libs_bsd[] = { "dl", "socket", NULL };
 	char const * libs_sunos[] = { "dl", NULL };
 	char buf[10];
 	char const ** libs;
@@ -501,9 +501,9 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 	String * q;
 	size_t i;
 
-	if((p = string_new(ldflags)) == NULL)
+	if((p = string_new(ldflags)) == NULL) /* XXX report error? */
 	{
-		fprintf(fp, "%s%s", ldflags, "\n");
+		fprintf(fp, " %s%s", ldflags, "\n");
 		return;
 	}
 	switch(configure->os)
@@ -535,7 +535,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 			continue;
 		memmove(q, q + strlen(buf), strlen(q) - strlen(buf) + 1);
 	}
-	fprintf(fp, "%s\n", p);
+	fprintf(fp, " %s\n", p);
 	string_delete(p);
 }
 
@@ -896,7 +896,7 @@ static void _flags_c(Configure * configure, FILE * fp, String const * target)
 	fputc('\n', fp);
 	fprintf(fp, "%s%s", target, "_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		fprintf(fp, " %s", p);
+		_binary_ldflags(configure, fp, p);
 	fputc('\n', fp);
 }
 
@@ -911,7 +911,7 @@ static void _flags_cxx(Configure * configure, FILE * fp, String const * target)
 	fputc('\n', fp);
 	fprintf(fp, "%s%s", target, "_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		fprintf(fp, " %s", p);
+		_binary_ldflags(configure, fp, p);
 	fputc('\n', fp);
 }
 
@@ -936,7 +936,7 @@ static int _target_library(Configure * configure, FILE * fp,
 	{
 		sprintf(q, "%s.a", target);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
-			fprintf(fp, " %s", p);
+			_binary_ldflags(configure, fp, p);
 	}
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s", "\t$(RANLIB) ", target, ".a\n");
@@ -951,12 +951,12 @@ static int _target_library(Configure * configure, FILE * fp,
 		fprintf(fp, "%s%s", " -Wl,-soname,", p);
 	fprintf(fp, "%s%s%s", " $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		fprintf(fp, " %s", p);
+		_binary_ldflags(configure, fp, p);
 	if(q != NULL)
 	{
 		sprintf(q, "%s.so", target);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
-			fprintf(fp, " %s", p);
+			_binary_ldflags(configure, fp, p);
 		free(q);
 	}
 	fputc('\n', fp);
@@ -977,7 +977,7 @@ static int _target_libtool(Configure * configure, FILE * fp,
 	fprintf(fp, "%s%s%s%s%s", "\t$(LIBTOOL) --mode=link $(CC) -o ", target,
 			".la $(", target, "_OBJS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		fprintf(fp, " %s", p);
+		_binary_ldflags(configure, fp, p);
 	fprintf(fp, "%s%s%s", " -rpath $(LIBDIR) $(", target, "_LDFLAGS)\n");
 	return 0;
 }
@@ -1062,12 +1062,12 @@ static int _target_plugin(Configure * configure, FILE * fp,
 	fprintf(fp, "%s%s%s%s%s", "\t$(LD) -o ", target, ".so $(", target,
 			"_OBJS)");
 	if((p = config_get(configure->config, target, "ldflags")) != NULL)
-		fprintf(fp, " %s", p);
+		_binary_ldflags(configure, fp, p);
 	if((q = malloc(strlen(target) + 4)) != NULL)
 	{
 		sprintf(q, "%s.so", target);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
-			fprintf(fp, " %s", p);
+			_binary_ldflags(configure, fp, p);
 		free(q);
 	}
 	fputc('\n', fp);
