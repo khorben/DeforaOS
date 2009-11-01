@@ -492,11 +492,11 @@ static void _targets_ldflags(Configure * configure, FILE * fp)
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
-	char * libs_gnu[] = { "socket", NULL };
-	char * libs_bsd[] = { "crypt", "dl", "socket", NULL };
-	char * libs_sunos[] = { "dl", NULL };
+	char const * libs_gnu[] = { "socket", NULL };
+	char const * libs_bsd[] = { "crypt", "dl", "socket", NULL };
+	char const * libs_sunos[] = { "dl", NULL };
 	char buf[10];
-	char ** libs;
+	char const ** libs;
 	String * p;
 	String * q;
 	size_t i;
