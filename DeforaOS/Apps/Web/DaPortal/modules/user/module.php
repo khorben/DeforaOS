@@ -570,7 +570,7 @@ function _user_system_login($args)
 		session_start();
 	if(!isset($args['username']) || !isset($args['password']))
 		return INVALID_ARGUMENT;
-	$password = md5($args['password']);
+	$password = md5(stripslashes($args['password']));
 	$res = _sql_array('SELECT user_id, username FROM daportal_user'
 			.' WHERE username='."'".$args['username']."'"
 			.' AND password='."'$password' AND enabled='1'");
