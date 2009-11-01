@@ -50,14 +50,14 @@ typedef int Prefs;
 /* tar */
 static int _tar_error(char const * message, int ret);
 static int _tar_create(Prefs * prefs, char const * archive, int filec,
-		char const * filev[]);
+		char * filev[]);
 static int _tar_extract(Prefs * prefs, char const * archive, int filec,
-		char const * filev[]);
+		char * filev[]);
 static int _tar_list(Prefs * prefs, char const * archive, int filec,
-		char const * filev[]);
+		char * filev[]);
 
 static int _tar(Prefs * prefs, char const * archive, int filec,
-		char const * filev[])
+		char * filev[])
 {
 	if(*prefs & PREFS_c)
 		return _tar_create(prefs, archive, filec, filev);
@@ -198,7 +198,7 @@ static void _tar_stat_to_buffer(char const * filename, struct stat * st,
 static int _create_do(Prefs * prefs, FILE * fp, char const * archive,
 		char const * filename);
 static int _tar_create(Prefs * prefs, char const * archive, int filec,
-		char const * filev[])
+		char * filev[])
 {
 	FILE * fp = stdout;
 	int i;
@@ -301,9 +301,9 @@ static int _doc_normal(FILE * fp, char const * archive, FILE * fp2,
 }
 
 static int _extract_do(Prefs * prefs, FILE * fp, char const * archive,
-		TarFileHeader * fh, int filec, char const * filev[]);
+		TarFileHeader * fh, int filec, char * filev[]);
 static int _tar_extract(Prefs * prefs, char const * archive, int filec,
-		char const * filev[])
+		char * filev[])
 {
 	FILE * fp = stdin;
 	TarFileHeaderBuffer fhdrb;
@@ -340,7 +340,7 @@ static int _dox_block(FILE * fp, char const * archive, TarFileHeader * fh);
 static int _dox_directory(TarFileHeader * fh);
 static int _dox_fifo(TarFileHeader * fh);
 static int _extract_do(Prefs * prefs, FILE * fp, char const * archive,
-		TarFileHeader * fh, int filec, char const * filev[])
+		TarFileHeader * fh, int filec, char * filev[])
 {
 	int i;
 
@@ -440,9 +440,9 @@ static int _dox_fifo(TarFileHeader * fh)
 }
 
 static int _list_do(Prefs * prefs, FILE * fp, char const * archive,
-		TarFileHeader * fh, int filec, char const * filev[]);
+		TarFileHeader * fh, int filec, char * filev[]);
 static int _tar_list(Prefs * prefs, char const * archive, int filec,
-		char const * filev[])
+		char * filev[])
 {
 	FILE * fp = stdin;
 	TarFileHeaderBuffer fhdrb;
@@ -472,7 +472,7 @@ static int _tar_list(Prefs * prefs, char const * archive, int filec,
 }
 
 static int _list_do(Prefs * prefs, FILE * fp, char const * archive,
-		TarFileHeader * fh, int filec, char const * filev[])
+		TarFileHeader * fh, int filec, char * filev[])
 {
 	int i;
 

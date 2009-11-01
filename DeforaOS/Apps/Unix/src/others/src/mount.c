@@ -17,7 +17,7 @@
 
 
 #include <sys/statvfs.h>
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if 0 /* defined(__FreeBSD__) || defined(__NetBSD__) */
 # include <sys/param.h>
 #endif
 #include <sys/mount.h>

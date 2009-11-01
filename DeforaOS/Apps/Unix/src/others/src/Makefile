@@ -31,7 +31,8 @@ hexdump: $(hexdump_OBJS)
 
 host_OBJS = host.o
 host_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-host_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lsocket
+host_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) 
+
 
 host: $(host_OBJS)
 	$(CC) -o host $(host_OBJS) $(host_LDFLAGS)
