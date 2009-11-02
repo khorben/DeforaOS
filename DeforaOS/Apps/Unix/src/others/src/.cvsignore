@@ -1,6 +1,7 @@
 .cvsignore
 halt
 hexdump
+host
 hostname
 login
 mktemp
