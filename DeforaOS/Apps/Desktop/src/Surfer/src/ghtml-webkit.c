@@ -192,7 +192,11 @@ void ghtml_reload(GtkWidget * ghtml)
 	GtkWidget * view;
 
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
+#if WEBKIT_CHECK_VERSION(1, 0, 3)
 	webkit_web_view_reload_bypass_cache(WEBKIT_WEB_VIEW(view));
+#else
+	webkit_web_view_reload(WEBKIT_WEB_VIEW(view));
+#endif
 }
 
 
