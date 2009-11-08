@@ -7,7 +7,7 @@ CPPFLAGSF= -I ../data
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= -l System 
+LDFLAGSF= -lSystem 
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 LN	= ln -f
@@ -20,6 +20,7 @@ all: $(TARGETS)
 Probe_OBJS = probe.o
 Probe_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 Probe_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -Wl,--export-dynamic
+
 
 Probe: $(Probe_OBJS)
 	$(CC) -o Probe $(Probe_OBJS) $(Probe_LDFLAGS)
