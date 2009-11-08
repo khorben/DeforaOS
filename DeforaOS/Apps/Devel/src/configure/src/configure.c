@@ -41,6 +41,7 @@ const String * sHostArch[HA_COUNT] =
 };
 const String * sHostOS[HO_COUNT] =
 {
+	"DeforaOS",
 	"Linux",
 	"FreeBSD", "NetBSD", "OpenBSD",
 	"SunOS",
@@ -156,7 +157,9 @@ static int _configure(Prefs * prefs, char const * directory)
 
 
 /* private */
+/* configure_detect */
 static HostKernel _detect_kernel(HostOS os, char const * release);
+
 static void _configure_detect(Configure * configure)
 {
 	struct utsname un;
@@ -170,7 +173,9 @@ static void _configure_detect(Configure * configure)
 		return;
 	}
 	configure->arch = enum_string(HA_LAST, sHostArch, un.machine);
-	configure->os = enum_string(HO_LAST, sHostOS, un.sysname);
+	configure->os = enum_string(HO_LAST, sHostOS,
+			configure->prefs->os != NULL
+			? configure->prefs->os : un.sysname);
 	configure->kernel = _detect_kernel(configure->os, un.release);
 	if(configure->prefs->flags & PREFS_v)
 		printf("Detected system %s version %s on %s\n",
@@ -311,6 +316,7 @@ static int _configure_do(Configure * configure, configArray * ca)
 
 /* usage */
 static void _prefs_init(Prefs * prefs);
+
 static int _usage(void)
 {
 	Prefs prefs;
@@ -324,6 +330,7 @@ static int _usage(void)
   -d	Destination prefix (default: \"\")\n\
   -i	Include files directory (default: \"", prefs.includedir, "\")\n\
   -l	Library files directory (default: \"", prefs.libdir, "\")\n\
+  -O	Force Operating System (default: auto-detected)\n\
   -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n");
 	return 1;
 }
@@ -336,7 +343,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	_prefs_init(&prefs);
-	while((o = getopt(argc, argv, "d:i:l:np:v")) != -1)
+	while((o = getopt(argc, argv, "d:i:l:nO:p:v")) != -1)
 		switch(o)
 		{
 			case 'b':
@@ -353,6 +360,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'n':
 				prefs.flags |= PREFS_n;
+				break;
+			case 'O':
+				prefs.os = optarg;
 				break;
 			case 'p':
 				prefs.prefix = optarg;

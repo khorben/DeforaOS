@@ -6,7 +6,7 @@
 </artheader>
 <para>
 These are the documentation notes for configure. The configure project is a
-Makefiles generator. It uses project description files to propose simple
+Makefiles generator. It uses project description files to provide simple
 Makefiles. It is intended to keep generated code as simple as possible.
 </para>
 <section>
@@ -23,7 +23,7 @@ for projects running on UNIX platforms first.
 <section>
 <title>Who should use configure</title>
 <para>
-Every software developer could gain using configure. However, due to its
+Some software developers could gain using configure. However, due to its
 intentional simplicity, it may not be appropriate to use along with code
 compilation on some non-portable platforms.
 </para>

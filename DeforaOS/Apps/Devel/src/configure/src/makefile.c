@@ -492,8 +492,9 @@ static void _targets_ldflags(Configure * configure, FILE * fp)
 static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags)
 {
-	char const * libs_gnu[] = { "socket", NULL };
 	char const * libs_bsd[] = { "dl", "socket", NULL };
+	char const * libs_deforaos[] = { NULL };
+	char const * libs_gnu[] = { "socket", NULL };
 	char const * libs_sunos[] = { "dl", NULL };
 	char buf[10];
 	char const ** libs;
@@ -518,6 +519,9 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 			break;
 		case HO_SUNOS:
 			libs = libs_sunos;
+			break;
+		case HO_DEFORAOS:
+			libs = libs_deforaos;
 			break;
 		default:
 			libs = libs_gnu;

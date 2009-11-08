@@ -37,7 +37,8 @@ extern const String * sHostArch[HA_COUNT];
 
 typedef enum _HostOS
 {
-	HO_GNU_LINUX = 0,
+	HO_DEFORAOS = 0,
+	HO_GNU_LINUX,
 	HO_FREEBSD, HO_NETBSD, HO_OPENBSD,
 	HO_SUNOS,
 	HO_UNKNOWN
@@ -100,6 +101,7 @@ typedef struct _Prefs
 	char * includedir;
 	char * libdir;
 	char * prefix;
+	char * os;
 } Prefs;
 # define PREFS_n	0x1
 # define PREFS_v	0x2
