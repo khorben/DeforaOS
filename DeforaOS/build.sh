@@ -103,7 +103,8 @@ target()
 	[ ! -z "$LD" ] && _MAKE="$_MAKE LD=\"$LD\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
-		(cd "$i" && eval $_MAKE "$1") || return $?
+		(cd "$i" && configure -vO DeforaOS && eval $_MAKE "$1") \
+			|| return $?
 	done
 	return 0
 }
