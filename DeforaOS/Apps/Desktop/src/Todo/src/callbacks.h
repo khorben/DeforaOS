@@ -18,7 +18,20 @@
 #ifndef TODO_CALLBACKS_H
 # define TODO_CALLBACKS_H
 
+# include <gtk/gtk.h>
+
 
 /* callbacks */
+gboolean on_closex(gpointer data);
+
+/* file menu */
+void on_file_close(gpointer data);
+
+/* edit menu */
+void on_edit_select_all(gpointer data);
+void on_edit_delete(gpointer data);
+
+/* help menu */
+void on_help_about(gpointer data);
 
 #endif /* !TODO_CALLBACKS_H */

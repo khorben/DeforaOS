@@ -28,4 +28,8 @@ typedef struct _Todo Todo;
 Todo * todo_new(void);
 void todo_delete(Todo * todo);
 
+/* useful */
+void todo_delete_selection(Todo * todo);
+void todo_select_all(Todo * todo);
+
 #endif /* !TODO_TODO_H */

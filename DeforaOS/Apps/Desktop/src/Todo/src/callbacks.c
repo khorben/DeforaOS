@@ -20,3 +20,49 @@
 
 
 /* callbacks */
+/* on_closex */
+gboolean on_closex(gpointer data)
+{
+	Todo * todo = data;
+
+	gtk_main_quit();
+	return FALSE;
+}
+
+
+/* file menu */
+/* on_file_close */
+void on_file_close(gpointer data)
+{
+	Todo * todo = data;
+
+	on_closex(todo);
+}
+
+
+/* edit menu */
+/* on_edit_delete */
+void on_edit_delete(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_delete_selection(todo);
+}
+
+
+/* on_edit_select_all */
+void on_edit_select_all(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_select_all(todo);
+}
+
+
+/* help menu */
+void on_help_about(gpointer data)
+{
+	Todo * todo = data;
+
+	/* FIXME implement */
+}
