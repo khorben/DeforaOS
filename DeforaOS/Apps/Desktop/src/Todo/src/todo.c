@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+static char _copyright[] =
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Todo */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char const _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.\n";
 
 
 
@@ -24,6 +26,7 @@
 #include <Desktop.h>
 #include "callbacks.h"
 #include "todo.h"
+#include "../config.h"
 
 
 /* Todo */
@@ -36,6 +39,7 @@ struct _Todo
 	GtkListStore * store;
 	GtkWidget * view;
 	GtkWidget * statusbar;
+	GtkWidget * about;
 };
 
 
@@ -46,6 +50,13 @@ enum { TD_COL_DONE, TD_COL_TITLE };
 
 
 /* variables */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
+
 static DesktopMenu _file_menu[] =
 {
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
@@ -118,6 +129,7 @@ Todo * todo_new(void)
 	/* statusbar */
 	todo->statusbar = gtk_statusbar_new();
 	gtk_box_pack_start(GTK_BOX(vbox), todo->statusbar, FALSE, TRUE, 0);
+	todo->about = NULL;
 	gtk_container_add(GTK_CONTAINER(todo->window), vbox);
 	gtk_widget_show_all(todo->window);
 	return todo;
@@ -141,6 +153,24 @@ void todo_delete(Todo * todo)
 
 
 /* useful */
+/* todo_about */
+void todo_about(Todo * todo)
+{
+	if(todo->about != NULL)
+	{
+		gtk_widget_show(todo->about);
+		return;
+	}
+	todo->about = desktop_about_dialog_new();
+	desktop_about_dialog_set_authors(todo->about, _authors);
+	desktop_about_dialog_set_copyright(todo->about, _copyright);
+	desktop_about_dialog_set_license(todo->about, _license);
+	desktop_about_dialog_set_name(todo->about, PACKAGE);
+	desktop_about_dialog_set_version(todo->about, VERSION);
+	gtk_widget_show(todo->about);
+}
+
+
 /* todo_delete_selection */
 void todo_delete_selection(Todo * todo)
 {

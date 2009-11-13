@@ -19,3 +19,52 @@
 
 
 /* About */
+/* desktop_about_dialog_new */
+GtkWidget * desktop_about_dialog_new(void)
+{
+	return gtk_about_dialog_new();
+}
+
+
+/* desktop_about_dialog_set_authors */
+void desktop_about_dialog_set_authors(GtkWidget * about, char const * authors[])
+{
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(about), authors);
+}
+
+
+/* desktop_about_dialog_set_copyright */
+void desktop_about_dialog_set_copyright(GtkWidget * about,
+		char const * copyright)
+{
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(about), copyright);
+}
+
+
+/* desktop_about_dialog_set_license */
+void desktop_about_dialog_set_license(GtkWidget * about, char const * license)
+{
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(about), license);
+}
+
+
+/* desktop_about_dialog_set_logo_icon_name */
+void desktop_about_dialog_set_logo_icon_name(GtkWidget * about,
+		char const * icon)
+{
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(about), icon);
+}
+
+
+/* desktop_about_dialog_set_name */
+void desktop_about_dialog_set_name(GtkWidget * about, char const * name)
+{
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(about), name);
+}
+
+
+/* desktop_about_dialog_set_version */
+void desktop_about_dialog_set_version(GtkWidget * about, char const * version)
+{
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(about), version);
+}

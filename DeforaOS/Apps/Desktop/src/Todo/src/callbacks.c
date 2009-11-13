@@ -64,5 +64,5 @@ void on_help_about(gpointer data)
 {
 	Todo * todo = data;
 
-	/* FIXME implement */
+	todo_about(todo);
 }
