@@ -22,7 +22,14 @@
 /* desktop_about_dialog_new */
 GtkWidget * desktop_about_dialog_new(void)
 {
-	return gtk_about_dialog_new();
+	GtkWidget * ret;
+
+	ret = gtk_about_dialog_new();
+	g_signal_connect_swapped(G_OBJECT(ret), "delete-event", G_CALLBACK(
+				gtk_widget_hide), ret);
+	g_signal_connect_swapped(G_OBJECT(ret), "response", G_CALLBACK(
+				gtk_widget_hide), ret);
+	return ret;
 }
 
 
