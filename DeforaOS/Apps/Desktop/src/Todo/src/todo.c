@@ -164,6 +164,7 @@ void todo_about(Todo * todo)
 	todo->about = desktop_about_dialog_new();
 	desktop_about_dialog_set_authors(todo->about, _authors);
 	desktop_about_dialog_set_copyright(todo->about, _copyright);
+	desktop_about_dialog_set_logo_icon_name(todo->about, "stock_todo");
 	desktop_about_dialog_set_license(todo->about, _license);
 	desktop_about_dialog_set_name(todo->about, PACKAGE);
 	desktop_about_dialog_set_version(todo->about, VERSION);
