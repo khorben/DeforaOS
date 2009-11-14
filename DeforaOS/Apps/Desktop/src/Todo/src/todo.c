@@ -162,6 +162,8 @@ void todo_about(Todo * todo)
 		return;
 	}
 	todo->about = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(todo->about),
+			GTK_WINDOW(todo->window));
 	desktop_about_dialog_set_authors(todo->about, _authors);
 	desktop_about_dialog_set_copyright(todo->about, _copyright);
 	desktop_about_dialog_set_logo_icon_name(todo->about, "stock_todo");
