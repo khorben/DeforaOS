@@ -19,3 +19,31 @@
 
 
 /* Toolbar */
+GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
+		GtkAccelGroup * accel)
+{
+	GtkWidget * ret;
+	size_t i;
+	DesktopToolbar * p;
+
+	ret = gtk_toolbar_new();
+	for(i = 0; toolbar[i].name != NULL; i++)
+	{
+		p = &toolbar[i];
+		if(p->name[0] == '\0')
+		{
+			p->widget = gtk_separator_tool_item_new();
+			gtk_toolbar_insert(GTK_TOOLBAR(ret), p->widget, -1);
+			continue;
+		}
+		p->widget = gtk_tool_button_new_from_stock(p->name);
+		g_signal_connect_swapped(G_OBJECT(p->widget), "clicked",
+				G_CALLBACK(p->callback), data);
+		if(accel != NULL && p->accel != 0)
+			gtk_widget_add_accelerator(GTK_WIDGET(p->widget),
+					"clicked", accel, p->accel,
+					GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+		gtk_toolbar_insert(GTK_TOOLBAR(ret), p->widget, -1);
+	}
+	return ret;
+}

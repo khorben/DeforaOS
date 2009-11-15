@@ -20,5 +20,18 @@
 
 
 /* Toolbar */
+/* types */
+typedef struct _DesktopToolbar
+{
+	const char * name;
+	GtkSignalFunc callback;
+	unsigned int accel;
+	GtkToolItem * widget;
+} DesktopToolbar;
+
+
+/* functions */
+GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
+		GtkAccelGroup * accel);
 
 #endif /* !LIBDESKTOP_TOOLBAR_H */
