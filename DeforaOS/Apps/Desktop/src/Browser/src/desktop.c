@@ -289,12 +289,12 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		char const * label, GCallback callback, DesktopIcon * icon,
 		GtkWidget * menu);
 /* callbacks */
-static void _on_icon_open(GtkWidget * widget, gpointer data);
-static void _on_icon_edit(GtkWidget * widget, gpointer data);
-static void _on_icon_run(GtkWidget * widget, gpointer data);
-static void _on_icon_open_with(GtkWidget * widget, gpointer data);
-static void _on_icon_delete(GtkWidget * widget, gpointer data);
-static void _on_icon_properties(GtkWidget * widget, gpointer data);
+static void _on_icon_open(gpointer data);
+static void _on_icon_edit(gpointer data);
+static void _on_icon_run(gpointer data);
+static void _on_icon_open_with(gpointer data);
+static void _on_icon_delete(gpointer data);
+static void _on_icon_properties(gpointer data);
 
 static gboolean _on_icon_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data)
@@ -313,7 +313,7 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 	}
 	if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
 	{
-		_on_icon_open(widget, desktopicon);
+		_on_icon_open(desktopicon);
 		return FALSE;
 	}
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
@@ -326,14 +326,14 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_delete), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_properties), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
@@ -346,7 +346,7 @@ static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon)
 	GtkWidget * menuitem;
 
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
@@ -369,12 +369,12 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 	{
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE,
 				NULL);
-		g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
-					_on_icon_run), desktopicon);
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_icon_run), desktopicon);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
@@ -391,11 +391,12 @@ static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		menuitem = gtk_image_menu_item_new_from_stock(label, NULL);
 	else
 		menuitem = gtk_menu_item_new_with_mnemonic(label);
-	g_signal_connect(G_OBJECT(menuitem), "activate", callback, desktopicon);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", callback,
+			desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
-static void _on_icon_open(GtkWidget * widget, gpointer data)
+static void _on_icon_open(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	pid_t pid;
@@ -405,7 +406,7 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 		if(desktopicon->desktop->mime != NULL) /* XXX ugly */
 			if(mime_action(desktopicon->desktop->mime, "open",
 					desktopicon->path) != 0)
-				_on_icon_open_with(widget, desktopicon);
+				_on_icon_open_with(desktopicon);
 		return;
 	}
 	if((pid = fork()) == -1)
@@ -420,14 +421,14 @@ static void _on_icon_open(GtkWidget * widget, gpointer data)
 	exit(127);
 }
 
-static void _on_icon_edit(GtkWidget * widget, gpointer data)
+static void _on_icon_edit(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 
 	mime_action(desktopicon->desktop->mime, "edit", desktopicon->path);
 }
 
-static void _on_icon_run(GtkWidget * widget, gpointer data)
+static void _on_icon_run(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	GtkWidget * dialog;
@@ -454,7 +455,7 @@ static void _on_icon_run(GtkWidget * widget, gpointer data)
 	}
 }
 
-static void _on_icon_open_with(GtkWidget * widget, gpointer data)
+static void _on_icon_open_with(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	GtkWidget * dialog;
@@ -483,7 +484,7 @@ static void _on_icon_open_with(GtkWidget * widget, gpointer data)
 	g_free(filename);
 }
 
-static void _on_icon_delete(GtkWidget * widget, gpointer data)
+static void _on_icon_delete(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 
@@ -491,7 +492,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data)
 	desktop_icon_remove(desktopicon->desktop, desktopicon);
 }
 
-static void _on_icon_properties(GtkWidget * widget, gpointer data)
+static void _on_icon_properties(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
 	pid_t pid;
@@ -812,10 +813,10 @@ static gboolean _new_idle(gpointer data)
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		Desktop * desktop);
 static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop);
-static void _on_popup_new_folder(GtkWidget * widget, gpointer data);
-static void _on_popup_new_text_file(GtkWidget * widget, gpointer data);
-static void _on_popup_paste(GtkWidget * widget, gpointer data);
-static void _on_popup_preferences(GtkWidget * widget, gpointer data);
+static void _on_popup_new_folder(gpointer data);
+static void _on_popup_new_text_file(gpointer data);
+static void _on_popup_paste(gpointer data);
+static void _on_popup_preferences(gpointer data);
 
 static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
@@ -858,7 +859,7 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	menuitem = gtk_image_menu_item_new_with_label("Folder");
 	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_folder), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
@@ -867,14 +868,14 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	image = gtk_image_new_from_icon_name("stock_new-text",
 			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_text_file), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	/* edition */
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_paste), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
 	/* preferences */
@@ -882,7 +883,7 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES,
 			NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_preferences), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
 	gtk_widget_show_all(desktop->menu);
@@ -904,7 +905,7 @@ static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop)
 	return GDK_FILTER_CONTINUE;
 }
 
-static void _on_popup_new_folder(GtkWidget * widget, gpointer data)
+static void _on_popup_new_folder(gpointer data)
 {
 	static char const newfolder[] = "New folder";
 	Desktop * desktop = data;
@@ -924,7 +925,7 @@ static void _on_popup_new_folder(GtkWidget * widget, gpointer data)
 	free(path);
 }
 
-static void _on_popup_new_text_file(GtkWidget * widget, gpointer data)
+static void _on_popup_new_text_file(gpointer data)
 {
 	static char const newtext[] = "New text file.txt";
 	Desktop * desktop = data;
@@ -946,7 +947,7 @@ static void _on_popup_new_text_file(GtkWidget * widget, gpointer data)
 	free(path);
 }
 
-static void _on_popup_paste(GtkWidget * widget, gpointer data)
+static void _on_popup_paste(gpointer data)
 {
 	Desktop * desktop = data;
 
@@ -955,7 +956,7 @@ static void _on_popup_paste(GtkWidget * widget, gpointer data)
 	desktop->menu = NULL;
 }
 
-static void _on_popup_preferences(GtkWidget * widget, gpointer data)
+static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
 
