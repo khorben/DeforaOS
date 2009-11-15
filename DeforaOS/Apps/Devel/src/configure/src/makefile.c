@@ -481,11 +481,13 @@ static void _targets_ldflags(Configure * configure, FILE * fp)
 	{
 		fputs("LDFLAGSF=", fp);
 		_binary_ldflags(configure, fp, p);
+		fputc('\n', fp);
 	}
 	if((p = config_get(configure->config, "", "ldflags")) != NULL)
 	{
 		fputs("LDFLAGS\t=", fp);
 		_binary_ldflags(configure, fp, p);
+		fputc('\n', fp);
 	}
 }
 
@@ -539,7 +541,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 			continue;
 		memmove(q, q + strlen(buf), strlen(q) - strlen(buf) + 1);
 	}
-	fprintf(fp, " %s\n", p);
+	fprintf(fp, " %s", p);
 	string_delete(p);
 }
 
