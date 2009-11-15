@@ -19,3 +19,18 @@
 
 
 /* Accel */
+void desktop_accel_create(DesktopAccel * accel, gpointer data,
+		GtkAccelGroup * group)
+{
+	size_t i;
+	GClosure * cc;
+
+	if(group == NULL)
+		return;
+	for(i = 0; accel[i].callback != NULL; i++)
+	{
+		cc = g_cclosure_new_swap(accel[i].callback, data, NULL);
+		gtk_accel_group_connect(group, accel[i].accel,
+				accel[i].modifier, GTK_ACCEL_VISIBLE, cc);
+	}
+}

@@ -20,5 +20,17 @@
 
 
 /* Accel */
+/* types */
+typedef struct _DesktopAccel
+{
+	GtkSignalFunc callback;
+	GdkModifierType modifier;
+	unsigned int accel;
+} DesktopAccel;
+
+
+/* functions */
+void desktop_accel_create(DesktopAccel * accel, gpointer data,
+		GtkAccelGroup * group);
 
 #endif /* !LIBDESKTOP_ACCEL_H */
