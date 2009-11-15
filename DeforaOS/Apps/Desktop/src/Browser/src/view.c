@@ -80,7 +80,7 @@ static struct _menu _view_menu_file[] =
 
 static struct _menu _view_menu_file_edit[] =
 {
-	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, 0 },
+	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, GDK_E },
 	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
 	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
