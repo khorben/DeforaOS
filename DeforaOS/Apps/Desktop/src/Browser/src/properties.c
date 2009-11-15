@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,11 +36,11 @@ typedef struct _Properties
 	char const * filename;
 	uid_t uid;
 	gid_t gid;
-	mode_t mode;
 
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * combo;
+	GtkWidget * check[9];
 } Properties;
 
 
@@ -116,7 +116,8 @@ static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
 static char * _do_time(char * buf, size_t buf_cnt, time_t date);
 static GtkWidget * _do_groups(Properties * properties);
-static GtkWidget * _do_mode(Properties * properties, mode_t mode);
+static GtkWidget * _do_mode(Properties * properties, GtkWidget ** widget,
+		mode_t mode);
 
 static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		char const * filename)
@@ -145,7 +146,6 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		properties->filename = filename; /* no need to duplicate yet */
 		properties->uid = st.st_uid;
 		properties->gid = st.st_gid;
-		properties->mode = st.st_mode;
 		properties->combo = NULL;
 	}
 	if((gfilename = g_filename_to_utf8(filename, -1, NULL, NULL, NULL))
@@ -265,17 +265,19 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	widget = gtk_label_new("Owner:"); /* owner permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
-	widget = _do_mode(properties, (st.st_mode & 0700) >> 6);
+	widget = _do_mode(properties, &properties->check[6],
+			(st.st_mode & 0700) >> 6);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 9, 10);
 	widget = gtk_label_new("Group:"); /* group permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
-	widget = _do_mode(properties, (st.st_mode & 0070) >> 3);
+	widget = _do_mode(properties, &properties->check[3],
+			(st.st_mode & 0070) >> 3);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 10, 11);
 	widget = gtk_label_new("Others:"); /* others permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
-	widget = _do_mode(properties, st.st_mode & 0007);
+	widget = _do_mode(properties, &properties->check[0], st.st_mode & 0007);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 11, 12);
 	gtk_box_pack_start(GTK_BOX(hbox), table, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
@@ -403,27 +405,30 @@ static GtkWidget * _do_groups(Properties * properties)
 	return box;
 }
 
-static GtkWidget * _do_mode(Properties * properties, mode_t mode)
+static GtkWidget * _do_mode(Properties * properties, GtkWidget ** widget,
+		mode_t mode)
 {
 	GtkWidget * hbox;
-	GtkWidget * widget;
 
 	hbox = gtk_hbox_new(TRUE, 0);
-	widget = gtk_check_button_new_with_label("read"); /* read */
+	widget[2] = gtk_check_button_new_with_label("read"); /* read */
 	if(properties == NULL)
-		gtk_widget_set_sensitive(widget, FALSE);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mode & S_IROTH);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	widget = gtk_check_button_new_with_label("write"); /* write */
+		gtk_widget_set_sensitive(widget[2], FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
+			mode & S_IROTH);
+	gtk_box_pack_start(GTK_BOX(hbox), widget[2], TRUE, TRUE, 4);
+	widget[1] = gtk_check_button_new_with_label("write"); /* write */
 	if(properties == NULL)
-		gtk_widget_set_sensitive(widget, FALSE);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mode & S_IWOTH);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	widget = gtk_check_button_new_with_label("execute"); /* execute */
+		gtk_widget_set_sensitive(widget[1], FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[1]),
+			mode & S_IWOTH);
+	gtk_box_pack_start(GTK_BOX(hbox), widget[1], TRUE, TRUE, 4);
+	widget[0] = gtk_check_button_new_with_label("execute"); /* execute */
 	if(properties == NULL)
-		gtk_widget_set_sensitive(widget, FALSE);
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), mode & S_IXOTH);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+		gtk_widget_set_sensitive(widget[0], FALSE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[0]),
+			mode & S_IXOTH);
+	gtk_box_pack_start(GTK_BOX(hbox), widget[0], TRUE, TRUE, 4);
 	return hbox;
 }
 
@@ -453,14 +458,19 @@ static void _properties_on_apply(GtkWidget * widget, gpointer data)
 	char * p;
 	struct group * gr;
 	gid_t gid = properties->gid;
+	size_t i;
+	mode_t mode = 0;
 
 	p = gtk_combo_box_get_active_text(GTK_COMBO_BOX(properties->combo));
 	if((gr = getgrnam(p)) == NULL)
 		_properties_error(properties->window, p, 0);
 	else
 		gid = gr->gr_gid;
+	for(i = 0; i < 9; i++)
+		mode |= gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+					properties->check[i])) << i;
 	if(chown(properties->filename, properties->uid, gid) != 0
-			|| chmod(properties->filename, properties->mode) != 0)
+			|| chmod(properties->filename, mode) != 0)
 		_properties_error(gtk_widget_get_toplevel(widget),
 				properties->filename, 0);
 }
