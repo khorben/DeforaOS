@@ -18,7 +18,7 @@ all: $(TARGETS)
 
 browser_OBJS = browser.o callbacks.o mime.o main.o
 browser_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-browser_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem
+browser_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop
 
 browser: $(browser_OBJS)
 	$(CC) -o browser $(browser_OBJS) $(browser_LDFLAGS)
@@ -67,16 +67,16 @@ properties: $(properties_OBJS)
 
 view_OBJS = view.o
 view_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem mime.o
+view_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop mime.o
 
 view: $(view_OBJS)
 	$(CC) -o view $(view_OBJS) $(view_LDFLAGS)
 
-browser.o: browser.c mime.h callbacks.h browser.h common.c
+browser.o: browser.c mime.h callbacks.h browser.h
 	$(CC) $(browser_CFLAGS) -c browser.c
 
 callbacks.o: callbacks.c browser.h callbacks.h ../config.h common.c
-	$(CC) $(browser_CFLAGS) -Wno-unused-parameter -c callbacks.c
+	$(CC) $(browser_CFLAGS) -c callbacks.c
 
 mime.o: mime.c mime.h ../config.h
 	$(CC) $(browser_CFLAGS) -c mime.c

@@ -162,6 +162,8 @@ int browser_error(Browser * browser, char const * message, int ret);
 int browser_config_load(Browser * browser);
 int browser_config_save(Browser * browser);
 
+void browser_focus_location(Browser * browser);
+
 void browser_go_home(Browser * browser);
 
 void browser_open(Browser * browser, char const * path);

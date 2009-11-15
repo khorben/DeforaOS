@@ -24,46 +24,55 @@
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
+/* accelerators */
+gboolean on_close(gpointer data);
+gboolean on_location(gpointer data);
+gboolean on_new_window(gpointer data);
+gboolean on_open_file(gpointer data);
+
 /* file menu */
-void on_file_new_window(GtkWidget * widget, gpointer data);
-void on_file_new_folder(GtkWidget * widget, gpointer data);
-void on_file_close(GtkWidget * widget, gpointer data);
-void on_file_open_file(GtkWidget * widget, gpointer data);
+void on_file_new_window(gpointer data);
+void on_file_new_folder(gpointer data);
+void on_file_close(gpointer data);
+void on_file_open_file(gpointer data);
 
 /* edit menu */
-void on_edit_copy(GtkWidget * widget, gpointer data);
-void on_edit_cut(GtkWidget * widget, gpointer data);
-void on_edit_delete(GtkWidget * widget, gpointer data);
-void on_edit_paste(GtkWidget * widget, gpointer data);
-void on_edit_preferences(GtkWidget * widget, gpointer data);
-void on_edit_select_all(GtkWidget * widget, gpointer data);
-void on_edit_unselect_all(GtkWidget * widget, gpointer data);
+void on_edit_copy(gpointer data);
+void on_edit_cut(gpointer data);
+void on_edit_delete(gpointer data);
+void on_edit_paste(gpointer data);
+void on_edit_preferences(gpointer data);
+void on_edit_select_all(gpointer data);
+void on_edit_unselect_all(gpointer data);
 
 /* help menu */
-void on_help_about(GtkWidget * widget, gpointer data);
+void on_help_about(gpointer data);
 
 /* view menu */
-void on_view_home(GtkWidget * widget, gpointer data);
+void on_view_home(gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
-void on_view_details(GtkWidget * widget, gpointer data);
-void on_view_icons(GtkWidget * widget, gpointer data);
-void on_view_list(GtkWidget * widget, gpointer data);
-void on_view_thumbnails(GtkWidget * widget, gpointer data);
+void on_view_details(gpointer data);
+void on_view_icons(gpointer data);
+void on_view_list(gpointer data);
+void on_view_thumbnails(gpointer data);
 #endif
 
 /* toolbar */
-void on_back(GtkWidget * widget, gpointer data);
-void on_forward(GtkWidget * widget, gpointer data);
-void on_home(GtkWidget * widget, gpointer data);
-void on_properties(GtkWidget * widget, gpointer data);
-void on_refresh(GtkWidget * widget, gpointer data);
-void on_updir(GtkWidget * widget, gpointer data);
+void on_back(gpointer data);
+void on_copy(gpointer data);
+void on_cut(gpointer data);
+void on_forward(gpointer data);
+void on_home(gpointer data);
+void on_paste(gpointer data);
+void on_properties(gpointer data);
+void on_refresh(gpointer data);
+void on_updir(gpointer data);
 #if GTK_CHECK_VERSION(2, 6, 0)
-void on_view_as(GtkWidget * widget, gpointer data);
+void on_view_as(gpointer data);
 #endif
 
 /* address bar */
-void on_path_activate(GtkWidget * widget, gpointer data);
+void on_path_activate(gpointer data);
 
 /* view */
 void on_detail_default(GtkTreeView * view, GtkTreePath * path,

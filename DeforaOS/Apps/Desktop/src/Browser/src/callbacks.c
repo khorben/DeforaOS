@@ -38,6 +38,7 @@ static char const _license[] =
 #include "common.c"
 
 
+/* private */
 /* constants */
 static char const * _authors[] =
 {
@@ -46,6 +47,12 @@ static char const * _authors[] =
 };
 
 
+/* prototypes */
+static GList * _copy_selection(Browser * browser);
+
+
+/* public */
+/* functions */
 /* callbacks */
 /* window */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
@@ -59,16 +66,53 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
-/* file menu */
-void on_file_new_window(GtkWidget * widget, gpointer data)
+/* accelerators */
+/* on_close */
+gboolean on_close(gpointer data)
+{
+	on_closex(NULL, NULL, data);
+	return FALSE;
+}
+
+
+/* on_location */
+gboolean on_location(gpointer data)
+{
+	Browser * browser = data;
+
+	browser_focus_location(browser);
+	return FALSE;
+}
+
+
+/* on_new */
+gboolean on_new_window(gpointer data)
 {
 	Browser * browser = data;
 
 	browser_new(browser->current->data);
+	return FALSE;
 }
 
 
-void on_file_new_folder(GtkWidget * widget, gpointer data)
+/* on_open_file */
+gboolean on_open_file(gpointer data)
+{
+	Browser * browser = data;
+
+	browser_open(browser, NULL);
+	return FALSE;
+}
+
+
+/* file menu */
+void on_file_new_window(gpointer data)
+{
+	on_new_window(data);
+}
+
+
+void on_file_new_folder(gpointer data)
 {
 	static char const newfolder[] = "New folder";
 	Browser * browser = data;
@@ -87,82 +131,35 @@ void on_file_new_folder(GtkWidget * widget, gpointer data)
 }
 
 
-void on_file_close(GtkWidget * widget, gpointer data)
+void on_file_close(gpointer data)
 {
-	on_closex(widget, NULL, data);
+	on_closex(NULL, NULL, data);
 }
 
 
-void on_file_open_file(GtkWidget * widget, gpointer data)
+void on_file_open_file(gpointer data)
 {
-	Browser * browser = data;
-
-	browser_open(browser, NULL);
+	on_open_file(data);
 }
 
 
 /* edit menu */
 /* on_edit_copy */
-static GList * _copy_selection(Browser * browser);
-
-void on_edit_copy(GtkWidget * widget, gpointer data)
+void on_edit_copy(gpointer data)
 {
-	Browser * browser = data;
-
-	g_list_foreach(browser->selection, (GFunc)free, NULL);
-	g_list_free(browser->selection);
-	browser->selection = _copy_selection(browser);
-	browser->selection_cut = 0;
-}
-
-static GList * _copy_selection(Browser * browser)
-{
-	GtkTreeSelection * treesel;
-	GList * sel;
-	GList * p;
-	GtkTreeIter iter;
-	char * q;
-
-#if GTK_CHECK_VERSION(2, 6, 0)
-	if(browser->iconview != NULL)
-		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
-					browser->iconview));
-	else
-#endif
-	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						browser->detailview))) == NULL)
-		return NULL;
-	else
-		sel = gtk_tree_selection_get_selected_rows(treesel, NULL);
-	for(p = NULL; sel != NULL; sel = sel->next)
-	{
-		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
-					&iter, sel->data))
-			continue;
-		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
-				BR_COL_PATH, &q, -1);
-		p = g_list_append(p, q);
-	}
-	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free(sel); /* XXX can probably be optimized for re-use */
-	return p;
+	on_copy(data);
 }
 
 
 /* on_edit_cut */
-void on_edit_cut(GtkWidget * widget, gpointer data)
+void on_edit_cut(gpointer data)
 {
-	Browser * browser = data;
-
-	g_list_foreach(browser->selection, (GFunc)free, NULL);
-	g_list_free(browser->selection);
-	browser->selection = _copy_selection(browser);
-	browser->selection_cut = 1;
+	on_cut(data);
 }
 
 
 /* on_edit_delete */
-void on_edit_delete(GtkWidget * widget, gpointer data)
+void on_edit_delete(gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * dialog;
@@ -202,32 +199,14 @@ void on_edit_delete(GtkWidget * widget, gpointer data)
 
 
 /* on_edit_paste */
-void on_edit_paste(GtkWidget * widget, gpointer data)
+void on_edit_paste(gpointer data)
 {
-	Browser * browser = data;
-	char * p = browser->current->data;
-
-	if(browser->selection == NULL)
-		return;
-	browser->selection = g_list_append(browser->selection, p);
-	if(browser->selection_cut != 1)
-	{
-		if(_common_exec("copy", "-ir", browser->selection) != 0)
-			browser_error(browser, "fork", 0);
-		browser->selection = g_list_remove(browser->selection, p);
-		return;
-	}
-	if(_common_exec("move", "-i", browser->selection) != 0)
-		browser_error(browser, "fork", 0);
-	browser->selection = g_list_remove(browser->selection, p);
-	g_list_foreach(browser->selection, (GFunc)free, NULL);
-	g_list_free(browser->selection);
-	browser->selection = NULL;
+	on_paste(data);
 }
 
 
 /* on_edit_select_all */
-void on_edit_select_all(GtkWidget * widget, gpointer data)
+void on_edit_select_all(gpointer data)
 {
 	Browser * browser = data;
 
@@ -235,7 +214,7 @@ void on_edit_select_all(GtkWidget * widget, gpointer data)
 }
 
 
-void on_edit_unselect_all(GtkWidget * widget, gpointer data)
+void on_edit_unselect_all(gpointer data)
 {
 	Browser * browser = data;
 
@@ -251,9 +230,10 @@ static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 
-void on_edit_preferences(GtkWidget * widget, gpointer data)
+void on_edit_preferences(gpointer data)
 {
 	Browser * browser = data;
+	GtkWidget * widget;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkSizeGroup * group;
@@ -371,15 +351,15 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 
 
 /* view menu */
-void on_view_home(GtkWidget * widget, gpointer data)
+void on_view_home(gpointer data)
 {
-	on_home(widget, data);
+	on_home(data);
 }
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
 /* on_view_details */
-void on_view_details(GtkWidget * widget, gpointer data)
+void on_view_details(gpointer data)
 {
 	Browser * browser = data;
 
@@ -388,7 +368,7 @@ void on_view_details(GtkWidget * widget, gpointer data)
 
 
 /* on_view_icons */
-void on_view_icons(GtkWidget * widget, gpointer data)
+void on_view_icons(gpointer data)
 {
 	Browser * browser = data;
 
@@ -397,7 +377,7 @@ void on_view_icons(GtkWidget * widget, gpointer data)
 
 
 /* on_view_list */
-void on_view_list(GtkWidget * widget, gpointer data)
+void on_view_list(gpointer data)
 {
 	Browser * browser = data;
 
@@ -406,7 +386,7 @@ void on_view_list(GtkWidget * widget, gpointer data)
 
 
 /* on_view_thumbnails */
-void on_view_thumbnails(GtkWidget * widget, gpointer data)
+void on_view_thumbnails(gpointer data)
 {
 	Browser * browser = data;
 
@@ -425,7 +405,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
 #endif
 
-void on_help_about(GtkWidget * widget, gpointer data)
+void on_help_about(gpointer data)
 {
 	Browser * browser = data;
 	GtkWidget * window;
@@ -611,7 +591,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 
 
 /* toolbar */
-void on_back(GtkWidget * widget, gpointer data)
+void on_back(gpointer data)
 {
 	Browser * browser = data;
 
@@ -628,7 +608,31 @@ void on_back(GtkWidget * widget, gpointer data)
 }
 
 
-void on_forward(GtkWidget * widget, gpointer data)
+/* on_copy */
+void on_copy(gpointer data)
+{
+	Browser * browser = data;
+
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = _copy_selection(browser);
+	browser->selection_cut = 0;
+}
+
+
+/* on_cut */
+void on_cut(gpointer data)
+{
+	Browser * browser = data;
+
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = _copy_selection(browser);
+	browser->selection_cut = 1;
+}
+
+
+void on_forward(gpointer data)
 {
 	Browser * browser = data;
 
@@ -644,7 +648,7 @@ void on_forward(GtkWidget * widget, gpointer data)
 }
 
 
-void on_home(GtkWidget * widget, gpointer data)
+void on_home(gpointer data)
 {
 	Browser * browser = data;
 
@@ -652,7 +656,33 @@ void on_home(GtkWidget * widget, gpointer data)
 }
 
 
-void on_properties(GtkWidget * widget, gpointer data)
+/* on_paste */
+void on_paste(gpointer data)
+{
+	Browser * browser = data;
+	char * p = browser->current->data;
+
+	if(browser->selection == NULL)
+		return;
+	browser->selection = g_list_append(browser->selection, p);
+	if(browser->selection_cut != 1)
+	{
+		if(_common_exec("copy", "-ir", browser->selection) != 0)
+			browser_error(browser, "fork", 0);
+		browser->selection = g_list_remove(browser->selection, p);
+		return;
+	}
+	if(_common_exec("move", "-i", browser->selection) != 0)
+		browser_error(browser, "fork", 0);
+	browser->selection = g_list_remove(browser->selection, p);
+	g_list_foreach(browser->selection, (GFunc)free, NULL);
+	g_list_free(browser->selection);
+	browser->selection = NULL;
+}
+
+
+/* properties */
+void on_properties(gpointer data)
 {
 	Browser * browser = data;
 	GList * selection;
@@ -666,7 +696,7 @@ void on_properties(GtkWidget * widget, gpointer data)
 }
 
 
-void on_refresh(GtkWidget * widget, gpointer data)
+void on_refresh(gpointer data)
 {
 	Browser * browser = data;
 
@@ -674,7 +704,7 @@ void on_refresh(GtkWidget * widget, gpointer data)
 }
 
 
-void on_updir(GtkWidget * widget, gpointer data)
+void on_updir(gpointer data)
 {
 	Browser * browser = data;
 	char * dir;
@@ -686,7 +716,7 @@ void on_updir(GtkWidget * widget, gpointer data)
 
 
 #if GTK_CHECK_VERSION(2, 6, 0)
-void on_view_as(GtkWidget * widget, gpointer data)
+void on_view_as(gpointer data)
 {
 	Browser * browser = data;
 
@@ -705,9 +735,10 @@ void on_view_as(GtkWidget * widget, gpointer data)
 
 
 /* address bar */
-void on_path_activate(GtkWidget * widget, gpointer data)
+void on_path_activate(gpointer data)
 {
 	Browser * browser = data;
+	GtkWidget * widget;
 	gchar const * p;
 
 	widget = gtk_bin_get_child(GTK_BIN(browser->tb_path));
@@ -718,6 +749,7 @@ void on_path_activate(GtkWidget * widget, gpointer data)
 
 /* view */
 static void _default_do(Browser * browser, GtkTreePath * path);
+
 void on_detail_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data)
 {
@@ -1078,7 +1110,7 @@ static void _on_popup_new_folder(GtkWidget * widget, gpointer data)
 	IconCallback * ic = data;
 	Browser * browser = ic->browser;
 
-	on_file_new_folder(widget, browser);
+	on_file_new_folder(browser);
 }
 
 static void _press_directory(GtkWidget * menu, IconCallback * ic)
@@ -1215,7 +1247,7 @@ static void _on_icon_delete(GtkWidget * widget, gpointer data)
 	IconCallback * cb = data;
 
 	/* FIXME not selected => cursor */
-	on_edit_delete(widget, cb->browser);
+	on_edit_delete(cb->browser);
 }
 
 static void _on_icon_open(GtkWidget * widget, gpointer data)
@@ -1285,7 +1317,7 @@ static void _on_icon_paste(GtkWidget * widget, gpointer data)
 	char * p = cb->browser->current->data;
 
 	cb->browser->current->data = cb->path; /* XXX this is totally ugly */
-	on_edit_paste(widget, cb->browser);
+	on_edit_paste(cb->browser);
 	cb->browser->current->data = p;
 }
 
@@ -1295,4 +1327,41 @@ static void _on_icon_unmount(GtkWidget * widget, gpointer data)
 
 	if(unmount(cb->path, 0) != 0)
 		browser_error(cb->browser, cb->path, 0);
+}
+
+
+/* private */
+/* functions */
+/* copy_selection */
+static GList * _copy_selection(Browser * browser)
+{
+	GtkTreeSelection * treesel;
+	GList * sel;
+	GList * p;
+	GtkTreeIter iter;
+	char * q;
+
+#if GTK_CHECK_VERSION(2, 6, 0)
+	if(browser->iconview != NULL)
+		sel = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(
+					browser->iconview));
+	else
+#endif
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						browser->detailview))) == NULL)
+		return NULL;
+	else
+		sel = gtk_tree_selection_get_selected_rows(treesel, NULL);
+	for(p = NULL; sel != NULL; sel = sel->next)
+	{
+		if(!gtk_tree_model_get_iter(GTK_TREE_MODEL(browser->store),
+					&iter, sel->data))
+			continue;
+		gtk_tree_model_get(GTK_TREE_MODEL(browser->store), &iter,
+				BR_COL_PATH, &q, -1);
+		p = g_list_append(p, q);
+	}
+	g_list_foreach(sel, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(sel); /* XXX can probably be optimized for re-use */
+	return p;
 }

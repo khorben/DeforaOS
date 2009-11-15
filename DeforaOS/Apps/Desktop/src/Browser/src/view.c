@@ -25,19 +25,11 @@ static char const _license[] =
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <Desktop.h>
 #include "mime.h"
 #include "../config.h"
 
-#define COMMON_MENU
 #include "common.c"
-
-
-/* constants */
-static char const * _authors[] =
-{
-	"Pierre Pronchery <khorben@defora.org>",
-	NULL
-};
 
 
 /* View */
@@ -53,6 +45,16 @@ typedef struct _View
 } View;
 
 
+/* constants */
+#ifndef EMBEDDED
+static char const * _view_authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+#endif
+
+
 /* prototypes */
 static View * _view_new(char const * path);
 static View * _view_new_open(void);
@@ -62,15 +64,22 @@ static void _view_delete(View * view);
 static int _view_error(View * view, char const * message, int ret);
 
 /* callbacks */
-static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
-static void _on_file_edit(GtkWidget * widget, gpointer data);
-static void _on_file_open_with(GtkWidget * widget, gpointer data);
-static void _on_file_close(GtkWidget * widget, gpointer data);
-static void _on_help_about(GtkWidget * widget, gpointer data);
+static gboolean _on_closex(gpointer data);
+#ifndef EMBEDDED
+static void _on_file_edit(gpointer data);
+static void _on_file_open_with(gpointer data);
+static void _on_file_close(gpointer data);
+static void _on_help_about(gpointer data);
+#else
+static void _on_close(gpointer data);
+static void _on_edit(gpointer data);
+static void _on_open_with(gpointer data);
+#endif
 
 
 /* constants */
-static struct _menu _view_menu_file[] =
+#ifndef EMBEDDED
+static DesktopMenu _view_menu_file[] =
 {
 	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
 	{ "", NULL, NULL, 0 },
@@ -78,7 +87,7 @@ static struct _menu _view_menu_file[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _view_menu_file_edit[] =
+static DesktopMenu _view_menu_file_edit[] =
 {
 	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, GDK_E },
 	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
@@ -87,29 +96,39 @@ static struct _menu _view_menu_file_edit[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _view_menu_help[] =
+static DesktopMenu _view_menu_help[] =
 {
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
-#else
+# else
 	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 },
-#endif
+# endif
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menubar _view_menubar[] =
+static DesktopMenubar _view_menubar[] =
 {
 	{ "_File", _view_menu_file },
 	{ "_Help", _view_menu_help },
 	{ NULL, NULL }
 };
 
-static struct _menubar _view_menubar_edit[] =
+static DesktopMenubar _view_menubar_edit[] =
 {
 	{ "_File", _view_menu_file_edit },
 	{ "_Help", _view_menu_help },
 	{ NULL, NULL }
 };
+#else
+static DesktopToolbar _view_toolbar[] =
+{
+	{ GTK_STOCK_OPEN, G_CALLBACK(_on_open_with), GDK_O, NULL },
+	{ GTK_STOCK_EDIT, G_CALLBACK(_on_edit), GDK_E, NULL },
+	{ "", 0, 0, 0 },
+	{ GTK_STOCK_CLOSE, G_CALLBACK(_on_close), GDK_W, NULL },
+	{ NULL, 0, 0, 0 }
+};
+#endif /* EMBEDDED */
 
 
 /* variables */
@@ -128,6 +147,7 @@ static View * _view_new(char const * pathname)
 	struct stat st;
 	char const * type;
 	char buf[256];
+	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
@@ -149,15 +169,24 @@ static View * _view_new(char const * pathname)
 		_view_error(view, "Unknown file type", 2);
 		return NULL;
 	}
+	group = gtk_accel_group_new();
 	view->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(view->window), group);
 	snprintf(buf, sizeof(buf), "%s%s", "View - ", pathname);
 	gtk_window_set_title(GTK_WINDOW(view->window), buf);
-	g_signal_connect(view->window, "delete-event", G_CALLBACK(_on_closex),
-			view);
+	g_signal_connect_swapped(view->window, "delete-event", G_CALLBACK(
+				_on_closex), view);
 	vbox = gtk_vbox_new(FALSE, 0);
-	widget = _common_new_menubar(GTK_WINDOW(view->window),
-			mime_get_handler(_mime, type, "edit") != NULL
-			? _view_menubar_edit : _view_menubar, view);
+#ifndef EMBEDDED
+	widget = desktop_menubar_create(mime_get_handler(_mime, type, "edit")
+			!= NULL ? _view_menubar_edit : _view_menubar, view,
+			group);
+#else
+	widget = desktop_toolbar_create(_view_toolbar, view, group);
+	if(mime_get_handler(_mime, type, "edit") == NULL)
+		gtk_widget_set_sensitive(GTK_WIDGET(_view_toolbar[1].widget),
+				FALSE);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	if(strncmp(type, "image/", 6) == 0)
 	{
@@ -213,7 +242,7 @@ static GtkWidget * _new_image(View * view, char const * path)
 	monitor = gdk_screen_get_monitor_at_window(screen,
 			gtk_widget_get_window(view->window));
 #else
-	monitor = 0; /* FIXME hard-coded */
+	monitor = 0; /* XXX hard-coded */
 #endif
 	gdk_screen_get_monitor_geometry(screen, monitor, &rect);
 	/* set an upper bound to the size of the window */
@@ -331,7 +360,7 @@ static void _error_response(GtkWidget * widget, gint arg, gpointer data)
 
 
 /* callbacks */
-static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gboolean _on_closex(gpointer data)
 {
 	View * view = data;
 
@@ -342,7 +371,9 @@ static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
-static void _on_file_edit(GtkWidget * widget, gpointer data)
+#ifndef EMBEDDED
+/* on_file_edit */
+static void _on_file_edit(gpointer data)
 {
 	View * view = data;
 
@@ -351,7 +382,8 @@ static void _on_file_edit(GtkWidget * widget, gpointer data)
 }
 
 
-static void _on_file_open_with(GtkWidget * widget, gpointer data)
+/* on_file_open_with */
+static void _on_file_open_with(gpointer data)
 {
 	View * view = data;
 	GtkWidget * dialog;
@@ -383,13 +415,10 @@ static void _on_file_open_with(GtkWidget * widget, gpointer data)
 }
 
 
-static void _on_file_close(GtkWidget * widget, gpointer data)
+/* on_file_close */
+static void _on_file_close(gpointer data)
 {
-	View * view = data;
-
-	_view_delete(view);
-	if(_view_cnt == 0)
-		gtk_main_quit();
+	_on_closex(data);
 }
 
 
@@ -402,7 +431,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
 #endif
 
-static void _on_help_about(GtkWidget * widget, gpointer data)
+static void _on_help_about(gpointer data)
 {
 	View * view = data;
 	GtkWidget * window;
@@ -422,7 +451,7 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), "View");
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _view_authors);
 	if(g_file_get_contents("/usr/share/common-licenses/GPL-2", &buf, &cnt,
 				NULL) == TRUE)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), buf);
@@ -522,11 +551,11 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview));
 	gtk_text_buffer_set_text(tbuf, "", 0);
-	for(i = 0; _authors[i] != NULL; i++)
+	for(i = 0; _view_authors[i] != NULL; i++)
 	{
 		gtk_text_buffer_get_end_iter(tbuf, &iter);
-		gtk_text_buffer_insert(tbuf, &iter, _authors[i], strlen(
-					_authors[i]));
+		gtk_text_buffer_insert(tbuf, &iter, _view_authors[i], strlen(
+					_view_authors[i]));
 	}
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
@@ -591,6 +620,30 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_widget_show_all(window);
 }
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
+#else
+
+
+/* on_close */
+static void _on_close(gpointer data)
+{
+	_on_closex(data);
+}
+
+
+static void _on_edit(gpointer data)
+{
+	View * view = data;
+
+	if(mime_action(_mime, "edit", view->pathname) != 0)
+		_view_error(view, "Could not edit file", 0);
+}
+
+
+static void _on_open_with(gpointer data)
+{
+	/* FIXME implement */
+}
+#endif /* EMBEDDED */
 
 
 /* usage */
