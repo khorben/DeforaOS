@@ -1016,7 +1016,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_properties), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 #if !GTK_CHECK_VERSION(2, 6, 0)
@@ -1077,7 +1077,7 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
 			GTK_STOCK_PROPERTIES, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_properties), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	return _press_show(browser, event, menu);
