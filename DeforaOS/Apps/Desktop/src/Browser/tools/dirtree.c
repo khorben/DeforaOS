@@ -133,13 +133,13 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter)
 				|| strcmp(".", de->d_name) == 0
 				|| strcmp("..", de->d_name) == 0)
 			continue;
-		if((q = realloc(str, len + de->d_namlen + 1)) == NULL)
+		if((q = realloc(str, len + strlen(de->d_name) + 1)) == NULL)
 			continue;
 		str = q;
-		snprintf(&str[len], de->d_namlen + 1, "%s", de->d_name);
+		snprintf(&str[len], strlen(de->d_name) + 1, "%s", de->d_name);
 		gtk_tree_store_append(store, &iter2, iter);
-		if((q = g_filename_to_utf8(de->d_name, de->d_namlen, NULL, NULL,
-						NULL)) == NULL)
+		if((q = g_filename_to_utf8(de->d_name, strlen(de->d_name), NULL,
+						NULL, NULL)) == NULL)
 			q = de->d_name;
 		gtk_tree_store_set(store, &iter2, 0, _folder, 1, str, 2, q, -1);
 		_dirtree_add(store, &iter2);
