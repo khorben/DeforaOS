@@ -29,7 +29,7 @@ typedef void * ptrace_data_t;
 
 
 /* variables */
-extern char * stracecall[__NR_getpid];
+extern char const * stracecall[__NR_getpid];
 # endif /* __linux__ */
 
 #endif /* !STRACE_LINUX_H */
