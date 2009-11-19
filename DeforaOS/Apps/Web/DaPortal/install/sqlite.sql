@@ -226,6 +226,16 @@ INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('11', 'Path to the RRD databases', 'string', 'RRD_repository', '/tmp');
 
 
+/* module: bookmark */
+CREATE TABLE daportal_bookmark (
+	bookmark_id INTEGER,
+	url VARCHAR(256),
+	FOREIGN KEY (bookmark_id) REFERENCES daportal_content (content_id)
+);
+
+INSERT INTO daportal_module (name, enabled) VALUES ('bookmark', '1');
+
+
 /* module: category */
 CREATE TABLE daportal_category_content (
 	category_content_id INTEGER PRIMARY KEY,
