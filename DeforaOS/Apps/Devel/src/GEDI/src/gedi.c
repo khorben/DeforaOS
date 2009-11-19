@@ -1,5 +1,6 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Devel GEDI */
 /* GEDI is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -23,6 +24,10 @@
 
 
 /* GEDI */
+/* constants */
+#define ICON_NAME	"applications-development"
+
+
 /* callbacks */
 static void _on_exit(GtkWidget * widget, gpointer data);
 static void _on_help_about(GtkWidget * widget, gpointer data);
@@ -86,6 +91,7 @@ struct _menubar _menubar[] = {
 /* gedi_new */
 static void _new_config(GEDI * g);
 static void _new_toolbar(GEDI * g);
+
 GEDI * gedi_new(void)
 {
 	GEDI * gedi;
@@ -120,7 +126,7 @@ static void _new_config(GEDI * g)
 
 static char * _config_file(void)
 {
-	char conffile[] = ".gedi";
+	char conffile[] = ".gedirc";
 	char * homedir;
 	char * filename;
 
@@ -137,6 +143,9 @@ static void _new_toolbar_menu(GEDI * g);
 static void _new_toolbar(GEDI * g)
 {
 	g->tb_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(g->tb_window), ICON_NAME);
+#endif
 	gtk_window_set_title(GTK_WINDOW(g->tb_window), "GEDI");
 	gtk_window_set_resizable(GTK_WINDOW(g->tb_window), FALSE);
 	g_signal_connect(G_OBJECT(g->tb_window), "delete_event",
@@ -272,7 +281,6 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	static GtkWidget * window = NULL; /* FIXME do not make it static */
 	const char * authors[] = { "Pierre Pronchery <khorben@defora.org>",
 		NULL };
-	const char copyright[] = "Copyright (c) 2009 Pierre Pronchery";
 	const char license[] = "GNU GPL version 2";
 
 	if(window != NULL)
@@ -283,11 +291,13 @@ static void _on_help_about(GtkWidget * widget, gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				gedi->tb_window));
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
+			ICON_NAME);
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), copyright);
-	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
 				_on_about_closex), NULL);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
