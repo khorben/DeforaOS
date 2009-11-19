@@ -24,14 +24,31 @@
 /* callbacks */
 gboolean on_closex(gpointer data);
 
+/* menus */
 /* file menu */
+void on_file_new(gpointer data);
+void on_file_edit(gpointer data);
 void on_file_close(gpointer data);
 
 /* edit menu */
 void on_edit_select_all(gpointer data);
 void on_edit_delete(gpointer data);
+void on_edit_preferences(gpointer data);
 
 /* help menu */
 void on_help_about(gpointer data);
+
+/* toolbar */
+void on_new(gpointer data);
+void on_edit(gpointer data);
+void on_select_all(gpointer data);
+void on_delete(gpointer data);
+void on_preferences(gpointer data);
+
+/* view */
+void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
+		gpointer data);
+void on_task_title_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * title, gpointer data);
 
 #endif /* !TODO_CALLBACKS_H */

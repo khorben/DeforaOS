@@ -20,14 +20,13 @@ todo_OBJS = todo.o callbacks.o main.o
 todo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 todo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop
 
-
 todo: $(todo_OBJS)
 	$(CC) -o todo $(todo_OBJS) $(todo_LDFLAGS)
 
-todo.o: todo.c callbacks.h todo.h
+todo.o: todo.c callbacks.h todo.h ../config.h
 	$(CC) $(todo_CFLAGS) -c todo.c
 
-callbacks.o: callbacks.c todo.h callbacks.h ../config.h
+callbacks.o: callbacks.c todo.h callbacks.h
 	$(CC) $(todo_CFLAGS) -c callbacks.c
 
 main.o: main.c todo.h

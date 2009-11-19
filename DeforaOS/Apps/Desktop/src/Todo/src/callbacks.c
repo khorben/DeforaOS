@@ -40,13 +40,40 @@ void on_file_close(gpointer data)
 }
 
 
+/* on_file_edit */
+void on_file_edit(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_edit(todo);
+}
+
+
+/* on_file_new */
+void on_file_new(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_add(todo);
+}
+
+
 /* edit menu */
 /* on_edit_delete */
 void on_edit_delete(gpointer data)
 {
 	Todo * todo = data;
 
-	todo_delete_selection(todo);
+	todo_task_remove(todo);
+}
+
+
+/* on_edit_preferences */
+void on_edit_preferences(gpointer data)
+{
+	Todo * todo = data;
+
+	/* FIXME implement */
 }
 
 
@@ -55,14 +82,88 @@ void on_edit_select_all(gpointer data)
 {
 	Todo * todo = data;
 
-	todo_select_all(todo);
+	todo_task_select_all(todo);
 }
 
 
 /* help menu */
+/* on_help_about */
 void on_help_about(gpointer data)
 {
 	Todo * todo = data;
 
 	todo_about(todo);
+}
+
+
+/* toolbar */
+/* on_delete */
+void on_delete(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_remove(todo);
+}
+
+
+/* on_edit */
+void on_edit(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_edit(todo);
+}
+
+
+/* on_new */
+void on_new(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_add(todo);
+}
+
+
+/* on_preferences */
+void on_preferences(gpointer data)
+{
+	Todo * todo = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_select_all */
+void on_select_all(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_select_all(todo);
+}
+
+
+/* view */
+/* on_task_done_toggled */
+void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
+		gpointer data)
+{
+	Todo * todo = data;
+	GtkTreePath * treepath;
+
+	treepath = gtk_tree_path_new_from_string(path);
+	todo_task_toggle_done(todo, treepath);
+	gtk_tree_path_free(treepath);
+}
+
+
+/* on_task_title_edited */
+void on_task_title_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * title, gpointer data)
+{
+	Todo * todo = data;
+	GtkTreePath * treepath;
+
+	treepath = gtk_tree_path_new_from_string(path);
+	todo_task_set_title(todo, treepath, title);
+	gtk_tree_path_free(treepath);
 }

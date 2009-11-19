@@ -44,9 +44,24 @@ struct _Todo
 
 
 /* constants */
-enum { TD_COL_DONE, TD_COL_TITLE };
-#define TD_COL_LAST TD_COL_TITLE
+enum { TD_COL_DONE, TD_COL_TITLE, TD_COL_START, TD_COL_DISPLAY_START, TD_COL_END,
+	TD_COL_DISPLAY_END, TD_COL_PRIORITY, TD_COL_CATEGORY, TD_COL_COMMENT };
+#define TD_COL_LAST TD_COL_COMMENT
 #define TD_NUM_COLS (TD_COL_LAST + 1)
+
+static struct
+{
+	int col;
+	char const * title;
+	int sort;
+	GCallback callback;
+} _todo_columns[] = {
+	{ TD_COL_DONE, "Done", TD_COL_DONE, G_CALLBACK(on_task_done_toggled) },
+	{ TD_COL_TITLE, "Title", TD_COL_TITLE, G_CALLBACK(on_task_title_edited) },
+	{ TD_COL_DISPLAY_START, "Beginning", TD_COL_START, NULL },
+	{ TD_COL_DISPLAY_END, "Completion", TD_COL_END, NULL },
+	{ 0, NULL, 0, NULL }
+};
 
 
 /* variables */
@@ -56,22 +71,29 @@ static char const * _authors[] =
 	NULL
 };
 
-
+#ifndef EMBEDDED
+/* menubar */
 static DesktopMenu _file_menu[] =
 {
+	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_N },
+	{ "_Edit", G_CALLBACK(on_file_edit), GTK_STOCK_EDIT, GDK_E },
+	{ "", NULL, NULL, 0 },
 	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
 static DesktopMenu _edit_menu[] =
 {
-	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
-	{ "", NULL, NULL, 0 },
 #if GTK_CHECK_VERSION(2, 10, 0)
 	{ "_Select all", G_CALLBACK(on_edit_select_all), GTK_STOCK_SELECT_ALL,
 #else
 	{ "_Select all", G_CALLBACK(on_edit_select_all), "edit-select-all",
 #endif
 		GDK_A },
+	{ "", NULL, NULL, 0 },
+	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
+	{ "", NULL, NULL, 0 },
+	{ "_Preferences", G_CALLBACK(on_edit_preferences), GTK_STOCK_PREFERENCES,
+		GDK_P },
 	{ NULL, NULL, NULL, 0 }
 };
 static DesktopMenu _help_menu[] =
@@ -90,6 +112,22 @@ static DesktopMenubar _menubar[] =
 	{ "_Help", _help_menu },
 	{ NULL, NULL },
 };
+#endif
+
+/* toolbar */
+static DesktopToolbar _toolbar[] =
+{
+	{ GTK_STOCK_NEW, G_CALLBACK(on_new), 0, NULL },
+	{ GTK_STOCK_EDIT, G_CALLBACK(on_edit), 0, NULL },
+	{ "", NULL, 0, NULL },
+	{ GTK_STOCK_SELECT_ALL, G_CALLBACK(on_select_all), 0, NULL },
+	{ GTK_STOCK_DELETE, G_CALLBACK(on_delete), 0, NULL },
+#ifdef EMBEDDED
+	{ "", NULL, 0, NULL },
+	{ GTK_STOCK_PREFERENCES, G_CALLBACK(on_preferences), 0, NULL },
+#endif
+	{ NULL, NULL, 0, NULL }
+};
 
 
 /* public */
@@ -100,6 +138,7 @@ static void _new_view(Todo * todo);
 Todo * todo_new(void)
 {
 	Todo * todo;
+	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
@@ -109,17 +148,23 @@ Todo * todo_new(void)
 		return NULL;
 	}
 	/* main window */
+	group = gtk_accel_group_new();
 	todo->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(todo->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(todo->window), 300, 400);
 	gtk_window_set_icon_name(GTK_WINDOW(todo->window), "stock_todo");
 	gtk_window_set_title(GTK_WINDOW(todo->window), "Todo");
 	g_signal_connect_swapped(G_OBJECT(todo->window), "delete-event",
 			G_CALLBACK(on_closex), todo);
 	vbox = gtk_vbox_new(FALSE, 0);
+#ifndef EMBEDDED
 	/* menubar */
-	widget = desktop_menubar_create(_menubar, todo, NULL);
+	widget = desktop_menubar_create(_menubar, todo, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+#endif
 	/* toolbar */
+	widget = desktop_toolbar_create(_toolbar, todo, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
 	todo->scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(todo->scrolled),
@@ -137,10 +182,45 @@ Todo * todo_new(void)
 
 static void _new_view(Todo * todo)
 {
-	todo->store = gtk_list_store_new(TD_NUM_COLS, G_TYPE_BOOLEAN,
-			G_TYPE_STRING);
-	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
-				todo->store));
+	GtkTreeSelection * sel;
+	size_t i;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	todo->store = gtk_list_store_new(TD_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
+			G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(todo->store));
+	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view))) != NULL)
+		gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
+	/* done column */
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
+				_todo_columns[0].callback), todo);
+	column = gtk_tree_view_column_new_with_attributes(_todo_columns[0].title,
+			renderer, "active", _todo_columns[0].col, NULL);
+	gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),
+			GTK_TREE_VIEW_COLUMN_FIXED);
+	gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column), 50);
+	gtk_tree_view_column_set_sort_column_id(column, TD_COL_DONE);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(todo->view), column);
+	/* other columns */
+	for(i = 1; _todo_columns[i].title != NULL; i++)
+	{
+		renderer = gtk_cell_renderer_text_new();
+		if(_todo_columns[i].callback != NULL)
+		{
+			g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
+			g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+						_todo_columns[i].callback), todo);
+		}
+		column = gtk_tree_view_column_new_with_attributes(
+				_todo_columns[i].title, renderer, "text",
+				_todo_columns[i].col, NULL);
+		gtk_tree_view_column_set_sort_column_id(column,
+				_todo_columns[i].sort);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(todo->view), column);
+	}
 	gtk_container_add(GTK_CONTAINER(todo->scrolled), todo->view);
 }
 
@@ -174,15 +254,59 @@ void todo_about(Todo * todo)
 }
 
 
-/* todo_delete_selection */
-void todo_delete_selection(Todo * todo)
+/* tasks */
+/* todo_task_add */
+void todo_task_add(Todo * todo)
+{
+	GtkTreeIter iter;
+
+	gtk_list_store_insert(todo->store, &iter, 0);
+}
+
+
+/* todo_task_edit */
+void todo_task_edit(Todo * todo)
 {
 	/* FIXME implement */
 }
 
 
-/* todo_select_all */
-void todo_select_all(Todo * todo)
+/* todo_task_remove */
+void todo_task_remove(Todo * todo)
 {
 	/* FIXME implement */
+}
+
+
+/* todo_task_select_all */
+void todo_task_select_all(Todo * todo)
+{
+	GtkTreeSelection * sel;
+
+	sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view));
+	gtk_tree_selection_select_all(sel);
+}
+
+
+/* todo_task_set_title */
+void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title)
+{
+	GtkTreeIter iter;
+
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->store), &iter, path);
+	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, title, -1);
+}
+
+
+/* todo_task_toggle_done */
+void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
+{
+	GtkTreeIter iter;
+	gboolean done;
+
+	gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->store), &iter, path);
+	gtk_tree_model_get(GTK_TREE_MODEL(todo->store), &iter, TD_COL_DONE, &done,
+			-1);
+	done = !done;
+	gtk_list_store_set(todo->store, &iter, TD_COL_DONE, done, -1);
 }
