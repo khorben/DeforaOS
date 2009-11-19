@@ -17,7 +17,7 @@ all: $(TARGETS)
 
 inetd_OBJS = config.o parser.o scanner.o service.o token.o inetd.o
 inetd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-inetd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+inetd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) 
 
 inetd: $(inetd_OBJS)
 	$(CC) -o inetd $(inetd_OBJS) $(inetd_LDFLAGS)
