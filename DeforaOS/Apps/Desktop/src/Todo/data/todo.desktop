@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Todo
+Comment=Remember what you have to do
+Exec=todo
+Icon=stock_todo
+Type=Application
+Categories=Office;GTK;
+StartupNotify=true
