@@ -120,7 +120,11 @@ static DesktopToolbar _toolbar[] =
 	{ GTK_STOCK_NEW, G_CALLBACK(on_new), 0, NULL },
 	{ GTK_STOCK_EDIT, G_CALLBACK(on_edit), 0, NULL },
 	{ "", NULL, 0, NULL },
+#if GTK_CHECK_VERSION(2, 10, 0)
 	{ GTK_STOCK_SELECT_ALL, G_CALLBACK(on_select_all), 0, NULL },
+#else
+	{ "edit-select-all", G_CALLBACK(on_select_all), 0, NULL },
+#endif
 	{ GTK_STOCK_DELETE, G_CALLBACK(on_delete), 0, NULL },
 #ifdef EMBEDDED
 	{ "", NULL, 0, NULL },
