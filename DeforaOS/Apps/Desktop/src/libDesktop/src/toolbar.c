@@ -15,6 +15,7 @@
 
 
 
+#include <string.h>
 #include "Desktop.h"
 
 
@@ -25,6 +26,7 @@ GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
 	GtkWidget * ret;
 	size_t i;
 	DesktopToolbar * p;
+	GtkWidget * widget;
 
 	ret = gtk_toolbar_new();
 	for(i = 0; toolbar[i].name != NULL; i++)
@@ -36,7 +38,15 @@ GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
 			gtk_toolbar_insert(GTK_TOOLBAR(ret), p->widget, -1);
 			continue;
 		}
-		p->widget = gtk_tool_button_new_from_stock(p->name);
+		else if(strncmp(p->name, "gtk-", 4) != 0) /* not a stock icon */
+		{
+			/* XXX have stock and name instead (needs API change) */
+			widget = gtk_image_new_from_icon_name(p->name,
+					GTK_ICON_SIZE_LARGE_TOOLBAR);
+			p->widget = gtk_tool_button_new(widget, NULL);
+		}
+		else
+			p->widget = gtk_tool_button_new_from_stock(p->name);
 		g_signal_connect_swapped(G_OBJECT(p->widget), "clicked",
 				G_CALLBACK(p->callback), data);
 		if(accel != NULL && p->accel != 0)
