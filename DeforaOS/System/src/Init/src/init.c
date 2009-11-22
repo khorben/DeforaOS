@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Init */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,8 +56,7 @@ Init * init_new(char const * profile)
 		? appserver_new_event("Init", ASO_REMOTE, init->event) : NULL;
 	/* FIXME handle signals (Event class?) */
 	/* error handling */
-	if(init->event == NULL || init->session == NULL
-			|| init->appserver == NULL)
+	if(init->event == NULL || init->appserver == NULL)
 	{
 		init_delete(init);
 		return NULL;
