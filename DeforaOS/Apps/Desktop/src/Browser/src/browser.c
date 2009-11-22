@@ -327,7 +327,8 @@ Browser * browser_new(char const * directory)
 	browser->detailview = NULL;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	browser->iconview = NULL;
-	browser_set_view(browser, browser->prefs.default_view);
+	browser->iconview_as = browser->prefs.default_view;
+	browser_set_view(browser, browser->iconview_as);
 	if(browser->iconview != NULL)
 		gtk_widget_grab_focus(browser->iconview);
 #else
@@ -1322,12 +1323,14 @@ static void _view_thumbnails(Browser * browser);
 
 void browser_set_view(Browser * browser, BrowserView view)
 {
+#if GTK_CHECK_VERSION(2, 6, 0)
+	printf("%d => %d\n", browser->iconview_as, view);
+	browser->iconview_as = view;
 	switch(view)
 	{
 		case BV_DETAILS:
 			_view_details(browser);
 			break;
-#if GTK_CHECK_VERSION(2, 6, 0)
 		case BV_ICONS:
 			_view_icons(browser);
 			break;
@@ -1337,8 +1340,10 @@ void browser_set_view(Browser * browser, BrowserView view)
 		case BV_THUMBNAILS:
 			_view_thumbnails(browser);
 			break;
-#endif
 	}
+#else
+	_view_details(browser);
+#endif
 }
 
 static void _details_column_text(GtkTreeView * view, GtkCellRenderer * renderer,
@@ -1439,13 +1444,14 @@ static void _view_icons(Browser * browser)
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "pixbuf", BR_COL_PIXBUF_48, NULL);
 	renderer = gtk_cell_renderer_text_new();
-	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
-			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width", 96,
-			NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				on_filename_edited), browser);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
+	g_object_set(renderer, "editable", TRUE,
+			"ellipsize", PANGO_ELLIPSIZE_END,
+			"width-chars", 16, "wrap-mode", PANGO_WRAP_WORD_CHAR,
+			"xalign", 0.5, NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				on_filename_edited), browser);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 #else
@@ -1454,8 +1460,9 @@ static void _view_icons(Browser * browser)
 			BR_COL_PIXBUF_48);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_DISPLAY_NAME);
+	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
+			BROWSER_ICON_WRAP_WIDTH);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
-	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 96);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show(browser->iconview);
@@ -1501,10 +1508,6 @@ static void _view_icon_view(Browser * browser)
 		g_list_free(sel);
 
 	}
-	gtk_icon_view_set_margin(GTK_ICON_VIEW(browser->iconview), 4);
-	gtk_icon_view_set_column_spacing(GTK_ICON_VIEW(browser->iconview), 4);
-	gtk_icon_view_set_row_spacing(GTK_ICON_VIEW(browser->iconview), 4);
-	gtk_icon_view_set_spacing(GTK_ICON_VIEW(browser->iconview), 4);
 #if GTK_CHECK_VERSION(2, 8, 0)
 	gtk_icon_view_enable_model_drag_source(GTK_ICON_VIEW(browser->iconview),
 			GDK_BUTTON1_MASK, targets, targets_cnt,
@@ -1541,11 +1544,12 @@ static void _view_list(Browser * browser)
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "pixbuf", BR_COL_PIXBUF_24, NULL);
 	renderer = gtk_cell_renderer_text_new();
-	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
-			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width", 118,
-			NULL);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
+	g_object_set(renderer, "editable", TRUE,
+			"ellipsize", PANGO_ELLIPSIZE_END,
+			"width-chars", 20, "wrap-mode", PANGO_WRAP_WORD_CHAR,
+			"xalign", 0.0, NULL);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 #else
@@ -1554,8 +1558,9 @@ static void _view_list(Browser * browser)
 			BR_COL_PIXBUF_24);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_DISPLAY_NAME);
+	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
+			BROWSER_LIST_WRAP_WIDTH + 24);
 #endif /* !GTK_CHECK_VERSION(2, 8, 0) */
-	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview), 146);
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_HORIZONTAL);
 	gtk_widget_show(browser->iconview);
@@ -1574,13 +1579,14 @@ static void _view_thumbnails(Browser * browser)
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "pixbuf", BR_COL_PIXBUF_96, NULL);
 	renderer = gtk_cell_renderer_text_new();
-	g_object_set(renderer, "editable", TRUE, "xalign", 0.5,
-			"wrap-mode", PANGO_WRAP_WORD_CHAR, "wrap-width",
-			BROWSER_THUMBNAIL_WIDTH, NULL);
-	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-				on_filename_edited), browser);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(browser->iconview), renderer,
 			TRUE);
+	g_object_set(renderer, "editable", TRUE,
+			"ellipsize", PANGO_ELLIPSIZE_END,
+			"width-chars", 22, "wrap-mode", PANGO_WRAP_WORD_CHAR,
+			"xalign", 0.5, NULL);
+	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
+				on_filename_edited), browser);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(browser->iconview),
 			renderer, "text", BR_COL_DISPLAY_NAME, NULL);
 #else
@@ -1589,9 +1595,9 @@ static void _view_thumbnails(Browser * browser)
 			BR_COL_PIXBUF_96);
 	gtk_icon_view_set_text_column(GTK_ICON_VIEW(browser->iconview),
 			BR_COL_DISPLAY_NAME);
-#endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 	gtk_icon_view_set_item_width(GTK_ICON_VIEW(browser->iconview),
-			BROWSER_THUMBNAIL_WIDTH);
+			BROWSER_THUMBNAIL_WRAP_WIDTH);
+#endif /* !GTK_CHECK_VERSION(2, 8, 0) */
 	gtk_icon_view_set_orientation(GTK_ICON_VIEW(browser->iconview),
 			GTK_ORIENTATION_VERTICAL);
 	gtk_widget_show(browser->iconview);

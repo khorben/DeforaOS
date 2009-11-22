@@ -420,13 +420,13 @@ void on_help_about(gpointer data)
 	window = browser->ab_window;
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
-	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _authors);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), _license);
 	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
 			"system-file-manager");
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
@@ -722,14 +722,21 @@ void on_view_as(gpointer data)
 
 	if(browser->iconview == NULL)
 		browser_set_view(browser, BV_ICONS);
-	else if(gtk_icon_view_get_orientation(GTK_ICON_VIEW(browser->iconview))
-			== GTK_ORIENTATION_HORIZONTAL)
-		browser_set_view(browser, BV_THUMBNAILS);
-	else if(gtk_icon_view_get_item_width(GTK_ICON_VIEW(browser->iconview))
-			!= BROWSER_THUMBNAIL_WIDTH)
-		browser_set_view(browser, BV_LIST);
-	else
-		browser_set_view(browser, BV_DETAILS);
+	else switch(browser->iconview_as)
+	{
+		case BV_DETAILS:
+			browser_set_view(browser, BV_ICONS);
+			break;
+		case BV_LIST:
+			browser_set_view(browser, BV_THUMBNAILS);
+			break;
+		case BV_ICONS:
+			browser_set_view(browser, BV_LIST);
+			break;
+		case BV_THUMBNAILS:
+			browser_set_view(browser, BV_DETAILS);
+			break;
+	}
 }
 #endif
 

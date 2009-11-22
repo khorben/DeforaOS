@@ -26,7 +26,9 @@
 /* Browser */
 /* defaults */
 # define BROWSER_CONFIG_FILE		".browser"
-# define BROWSER_THUMBNAIL_WIDTH	112
+# define BROWSER_ICON_WRAP_WIDTH	96
+# define BROWSER_LIST_WRAP_WIDTH	118
+# define BROWSER_THUMBNAIL_WRAP_WIDTH	112
 
 
 /* types */
@@ -127,6 +129,7 @@ typedef struct _Browser
 	GtkWidget * detailview;
 #if GTK_CHECK_VERSION(2, 6, 0)
 	GtkWidget * iconview;
+	BrowserView iconview_as;
 #endif
 	GtkListStore * store;
 	GtkWidget * statusbar;
