@@ -53,6 +53,7 @@ typedef struct _Host
 
 
 /* DaMon */
+/* private */
 /* types */
 struct _DaMon
 {
@@ -62,6 +63,11 @@ struct _DaMon
 	unsigned int hosts_cnt;
 	Event * event;
 };
+
+
+/* constants */
+#define DAMON_SEP	'/'
+
 
 /* functions */
 /* public */
@@ -119,7 +125,7 @@ static int _init_config(DaMon * damon, char const * filename)
 	damon->hosts = NULL;
 	damon->hosts_cnt = 0;
 	if(filename == NULL)
-		filename = ETCDIR "/damon.cfg";
+		filename = ETCDIR "/damon.conf";
 	if(config_load(config, filename) != 0)
 	{
 		fprintf(stderr, "DaMon: %s: Could not load configuration\n",
@@ -331,7 +337,7 @@ static int _refresh_uptime(AppClient * ac, Host * host, char * rrd)
 
 	if(appclient_call(ac, &ret, "uptime") != 0)
 		return error_print("DaMon");
-	sprintf(rrd, "%s_%s", host->hostname, "uptime.rrd");
+	sprintf(rrd, "%s%c%s", host->hostname, DAMON_SEP, "uptime.rrd");
 	_rrd_update(host->damon, rrd, 1, ret);
 	return 0;
 }
@@ -344,7 +350,7 @@ static int _refresh_load(AppClient * ac, Host * host, char * rrd)
 			|| appclient_call(ac, &ret[1], "load_5") != 0
 			|| appclient_call(ac, &ret[2], "load_15") != 0)
 		return error_print("DaMon");
-	sprintf(rrd, "%s_%s", host->hostname, "load.rrd");
+	sprintf(rrd, "%s%c%s", host->hostname, DAMON_SEP, "load.rrd");
 	_rrd_update(host->damon, rrd, 3, ret[0], ret[1], ret[2]);
 	return 0;
 }
@@ -355,7 +361,7 @@ static int _refresh_procs(AppClient * ac, Host * host, char * rrd)
 
 	if(appclient_call(ac, &res, "procs") != 0)
 		return 1;
-	sprintf(rrd, "%s_%s", host->hostname, "procs.rrd");
+	sprintf(rrd, "%s%c%s", host->hostname, DAMON_SEP, "procs.rrd");
 	_rrd_update(host->damon, rrd, 1, res);
 	return 0;
 }
@@ -369,7 +375,7 @@ static int _refresh_ram(AppClient * ac, Host * host, char * rrd)
 			|| appclient_call(ac, &res[2], "ram_shared") != 0
 			|| appclient_call(ac, &res[3], "ram_buffer") != 0)
 		return 1;
-	sprintf(rrd, "%s_%s", host->hostname, "ram.rrd");
+	sprintf(rrd, "%s%c%s", host->hostname, DAMON_SEP, "ram.rrd");
 	_rrd_update(host->damon, rrd, 4, res[0], res[1], res[2], res[3]);
 	return 0;
 }
@@ -381,7 +387,7 @@ static int _refresh_swap(AppClient * ac, Host * host, char * rrd)
 	if(appclient_call(ac, &res[0], "swap_total") != 0
 			|| appclient_call(ac, &res[1], "swap_free") != 0)
 		return 1;
-	sprintf(rrd, "%s_%s", host->hostname, "swap.rrd");
+	sprintf(rrd, "%s%c%s", host->hostname, DAMON_SEP, "swap.rrd");
 	_rrd_update(host->damon, rrd, 2, res[0], res[1]);
 	return 0;
 }
@@ -392,7 +398,7 @@ static int _refresh_users(AppClient * ac, Host * host, char * rrd)
 
 	if(appclient_call(ac, &res, "users") != 0)
 		return 1;
-	sprintf(rrd, "%s_%s", host->hostname, "users.rrd");
+	sprintf(rrd, "%s%c%s", host->hostname, DAMON_SEP, "users.rrd");
 	_rrd_update(host->damon, rrd, 1, res);
 	return 0;
 }
@@ -419,7 +425,7 @@ static int _ifaces_if(AppClient * ac, Host * host, char * rrd,
 	if(appclient_call(ac, &res[0], "ifrxbytes", iface) != 0
 			|| appclient_call(ac, &res[1], "iftxbytes", iface) != 0)
 		return 1;
-	sprintf(rrd, "%s_%s%s", host->hostname, iface, ".rrd");
+	sprintf(rrd, "%s%c%s%s", host->hostname, DAMON_SEP, iface, ".rrd");
 	_rrd_update(host->damon, rrd, 2, res[0], res[1]);
 	return 0;
 }
