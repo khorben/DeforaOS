@@ -1,6 +1,6 @@
 PACKAGE	= Probe
 VERSION	= 0.0.0
-SUBDIRS	= data src
+SUBDIRS	= data src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -29,6 +29,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/damon.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/create.sh \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
