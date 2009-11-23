@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Init */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,6 +86,9 @@ Session * session_new(char const * name, char const * profile, Event * event)
 /* session_delete */
 void session_delete(Session * session)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	string_delete(session->name);
 	string_delete(session->profile);
 	config_delete(session->config);
@@ -116,6 +119,9 @@ int session_start(Session * session)
 {
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(_session_load(session) != 0)
 		return -1;
 	for(i = 0; i < session->services_cnt; i++)
@@ -131,6 +137,9 @@ int session_stop(Session * session)
 {
 	size_t i;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	/* FIXME should wait until the last service has stopped */
 	/* FIXME again prone to race conditions */
 	for(i = 0; i < session->services_cnt; i++)
@@ -147,6 +156,9 @@ static String ** _session_get_config_services(Session * session)
 	String const * profile;
 	String const * services;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if((profile = session->profile) == NULL)
 		profile = config_get(session->config, NULL, "profile");
 	if((services = config_get(session->config, profile, "services"))
@@ -191,11 +203,17 @@ static int _session_load(Session * session)
 	String ** services;
 	String ** p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(session->services_cnt != 0)
 		return error_set_code(1, "%s", "Session is already started");
 	/* lookup configuration file */
 	if((filename = _session_get_filename(session)) == NULL)
 		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() filename=\"%s\"\n", __func__, filename);
+#endif
 	config_reset(session->config);
 	ret = config_load(session->config, filename);
 	string_delete(filename);
@@ -220,6 +238,9 @@ static int _load_service(Session * session, String const * service)
 	Service ** p;
 	size_t cnt = session->services_cnt;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, service);
+#endif
 	if((p = realloc(session->services, sizeof(*p) * (cnt + 1))) == NULL)
 		return -error_set_code(1, "%s", strerror(errno));
 	session->services = p;
