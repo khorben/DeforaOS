@@ -1324,7 +1324,6 @@ static void _view_thumbnails(Browser * browser);
 void browser_set_view(Browser * browser, BrowserView view)
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	printf("%d => %d\n", browser->iconview_as, view);
 	browser->iconview_as = view;
 	switch(view)
 	{
