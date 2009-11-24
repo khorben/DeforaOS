@@ -136,7 +136,8 @@ $probe_types['iface'] = array('name' => 'network traffic', 'unit' => 'Bps',
 		.' GPRINT:iftxkb:AVERAGE:"Average\: %.0lf KBps\t\g"'
 		.' GPRINT:iftxkb:MAX:"Maximum\: %.0lf KBps\g"',
 		'params' => array('eth0', 'eth1', 'pppoe0', 'sip0', 'sip1',
-			'sip2', 'sip3', 'sip4', 'sip5', 'sip6', 'ex0'));
+			'sip2', 'sip3', 'sip4', 'sip5', 'sip6', 'ex0',
+			'vlan0'));
 
 $probe_types['vol'] = array('name' => 'volume usage', 'unit' => 'MB',
 		'args' => '-l 0', 'def' => array('voltotal', 'volfree'),
@@ -197,11 +198,11 @@ function _host_graph($id, $type, $time, $param = FALSE)
 		else if(!is_readable($rrd))
 			return;
 		$ret['title'].=' '.$param;
-		$ret['img'] = 'tmp/'.$hostname.$sep.$param.'_'.$time.'.png';
+		$ret['img'] = 'tmp/'.$hostname.'_'.$param.'_'.$time.'.png';
 	}
 	else
 	{
-		$rrd = $probe.'/'.$hostname.'_'.$type.'.rrd';
+		$rrd = $probe.'/'.$hostname.'/'.$type.'.rrd';
 		$ret['img'] = 'tmp/'.$hostname.'_'.$type.'_'.$time.'.png';
 	}
 	_info('rrd: '.$rrd);
