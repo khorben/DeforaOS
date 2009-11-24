@@ -38,15 +38,16 @@ GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
 			gtk_toolbar_insert(GTK_TOOLBAR(ret), p->widget, -1);
 			continue;
 		}
-		else if(strncmp(p->name, "gtk-", 4) != 0) /* not a stock icon */
+		else if(strncmp(p->stock, "gtk-", 4) == 0) /* stock icon */
+			p->widget = gtk_tool_button_new_from_stock(p->stock);
+		else if(p->stock != NULL) /* icon name */
 		{
-			/* XXX have stock and name instead (needs API change) */
-			widget = gtk_image_new_from_icon_name(p->name,
+			widget = gtk_image_new_from_icon_name(p->stock,
 					GTK_ICON_SIZE_LARGE_TOOLBAR);
 			p->widget = gtk_tool_button_new(widget, NULL);
 		}
 		else
-			p->widget = gtk_tool_button_new_from_stock(p->name);
+			p->widget = gtk_tool_button_new(NULL, p->name);
 		g_signal_connect_swapped(G_OBJECT(p->widget), "clicked",
 				G_CALLBACK(p->callback), data);
 		if(accel != NULL && p->accel != 0)

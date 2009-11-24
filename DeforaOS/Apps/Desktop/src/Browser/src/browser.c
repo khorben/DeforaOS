@@ -127,19 +127,19 @@ static DesktopMenubar _browser_menubar[] =
 /* toolbar */
 static DesktopToolbar _browser_toolbar[] =
 {
-	{ GTK_STOCK_GO_BACK, G_CALLBACK(on_back), 0, NULL },
-	{ GTK_STOCK_GO_UP, G_CALLBACK(on_updir), 0, NULL },
-	{ GTK_STOCK_GO_FORWARD, G_CALLBACK(on_forward), 0, NULL },
-	{ GTK_STOCK_REFRESH, G_CALLBACK(on_refresh), 0, NULL },
-	{ "", NULL, 0, NULL },
-	{ GTK_STOCK_HOME, G_CALLBACK(on_home), 0, NULL },
-	{ "", NULL, 0, NULL },
-	{ GTK_STOCK_CUT, G_CALLBACK(on_cut), 0, NULL },
-	{ GTK_STOCK_COPY, G_CALLBACK(on_copy), 0, NULL },
-	{ GTK_STOCK_PASTE, G_CALLBACK(on_paste), 0, NULL },
-	{ "", NULL, 0, NULL },
-	{ GTK_STOCK_PROPERTIES, G_CALLBACK(on_properties), 0, NULL },
-	{ NULL, NULL, 0, NULL }
+	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, NULL },
+	{ "Up", G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, NULL },
+	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, NULL },
+	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
+	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
+	{ "Cut", G_CALLBACK(on_cut), GTK_STOCK_CUT, 0, NULL },
+	{ "Copy", G_CALLBACK(on_copy), GTK_STOCK_COPY, 0, NULL },
+	{ "Paste", G_CALLBACK(on_paste), GTK_STOCK_PASTE, 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
+	{ "Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0, NULL },
+	{ NULL, NULL, NULL, 0, NULL }
 };
 
 

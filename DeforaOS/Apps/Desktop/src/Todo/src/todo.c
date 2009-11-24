@@ -117,20 +117,20 @@ static DesktopMenubar _menubar[] =
 /* toolbar */
 static DesktopToolbar _toolbar[] =
 {
-	{ GTK_STOCK_NEW, G_CALLBACK(on_new), 0, NULL },
-	{ GTK_STOCK_EDIT, G_CALLBACK(on_edit), 0, NULL },
-	{ "", NULL, 0, NULL },
+	{ "New task", G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
+	{ "Edit task", G_CALLBACK(on_edit), GTK_STOCK_EDIT, 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
 #if GTK_CHECK_VERSION(2, 10, 0)
-	{ GTK_STOCK_SELECT_ALL, G_CALLBACK(on_select_all), 0, NULL },
+	{ "Select all", G_CALLBACK(on_select_all), GTK_STOCK_SELECT_ALL, 0, NULL },
 #else
-	{ "edit-select-all", G_CALLBACK(on_select_all), 0, NULL },
+	{ "Select all", G_CALLBACK(on_select_all), "edit-select-all", 0, NULL },
 #endif
-	{ GTK_STOCK_DELETE, G_CALLBACK(on_delete), 0, NULL },
+	{ "Delete task", G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, NULL },
 #ifdef EMBEDDED
-	{ "", NULL, 0, NULL },
-	{ GTK_STOCK_PREFERENCES, G_CALLBACK(on_preferences), 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
+	{ "Preferences", G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES, 0, NULL },
 #endif
-	{ NULL, NULL, 0, NULL }
+	{ NULL, NULL, NULL, 0, NULL }
 };
 
 

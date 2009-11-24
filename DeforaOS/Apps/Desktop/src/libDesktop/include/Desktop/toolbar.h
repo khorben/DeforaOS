@@ -25,6 +25,7 @@ typedef struct _DesktopToolbar
 {
 	const char * name;
 	GtkSignalFunc callback;
+	const char * stock;
 	unsigned int accel;
 	GtkToolItem * widget;
 } DesktopToolbar;
