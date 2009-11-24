@@ -23,6 +23,9 @@
 #include <System.h>
 #include "Panel.h"
 
+/* XXX to avoid pointless warnings with GCC */
+#define main _main
+
 
 /* Main */
 /* private */
