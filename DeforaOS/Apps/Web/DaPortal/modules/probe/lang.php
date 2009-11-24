@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@ $text['COMMENT'] = 'Comment';
 $text['CONFIGURATION_ERROR'] = 'Configuration error';
 $text['GRAPH_LIST'] = 'Graph list';
 $text['HOST_LIST'] = 'Host list';
+$text['HOSTNAME'] = 'Hostname';
 $text['LOAD_AVERAGE'] = 'Load average';
 $text['LOGGED_USERS'] = 'Logged users';
 $text['MONITORING'] = 'Monitoring';
