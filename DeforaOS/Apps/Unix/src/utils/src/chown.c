@@ -98,10 +98,11 @@ static uid_t _chown_uid(char * owner)
 {
 	struct passwd * pwd;
 	char * p;
+	int c;
 
 	if((pwd = getpwnam(owner)) != NULL)
 		return pwd->pw_uid;
-	for(p = owner; *p != '\0' && isdigit(*p); p++);
+	for(p = owner; (c = *p) != '\0' && isdigit(c); p++);
 	if(*p != '\0' || *owner == '\0')
 		return _chown_id_error(owner, "user", -1);
 	return strtol(owner, NULL, 10);
@@ -120,10 +121,11 @@ static gid_t _chown_gid(char * group)
 {
 	struct group * grp;
 	char * p;
+	int c;
 
 	if((grp = getgrnam(group)) != NULL)
 		return grp->gr_gid;
-	for(p = group; *p != '\0' && isdigit(*p); p++);
+	for(p = group; (c = *p) != '\0' && isdigit(c); p++);
 	if(*p != '\0' || *group == '\0')
 		return _chown_id_error(group, "group", -1);
 	return strtol(group, NULL, 10);
