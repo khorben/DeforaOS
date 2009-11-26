@@ -5,32 +5,23 @@ port=4243
 [uptime]
 ret=UINT32
 
-[load_1]
-ret=UINT32
+[load]
+arg1=UINT32_OUT,load_1
+arg2=UINT32_OUT,load_5
+arg3=UINT32_OUT,load_15
+ret=INT32
 
-[load_5]
-ret=UINT32
+[ram]
+arg1=UINT32_OUT,total
+arg2=UINT32_OUT,free
+arg3=UINT32_OUT,shared
+arg4=UINT32_OUT,buffer
+ret=INT32
 
-[load_15]
-ret=UINT32
-
-[ram_total]
-ret=UINT32
-
-[ram_free]
-ret=UINT32
-
-[ram_shared]
-ret=UINT32
-
-[ram_buffer]
-ret=UINT32
-
-[swap_total]
-ret=UINT32
-
-[swap_free]
-ret=UINT32
+[swap]
+arg1=UINT32_OUT,total
+arg2=UINT32_OUT,free
+ret=INT32
 
 [users]
 ret=UINT32

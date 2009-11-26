@@ -11,7 +11,9 @@
 
 /* types */
 typedef Buffer * BUFFER;
+typedef int16_t INT16;
 typedef int32_t INT32;
+typedef uint16_t UINT16;
 typedef uint32_t UINT32;
 typedef String const * STRING;
 
@@ -33,15 +35,9 @@ typedef String ** STRING_INOUT;
 
 /* functions */
 UINT32 Probe_uptime();
-UINT32 Probe_load_1();
-UINT32 Probe_load_5();
-UINT32 Probe_load_15();
-UINT32 Probe_ram_total();
-UINT32 Probe_ram_free();
-UINT32 Probe_ram_shared();
-UINT32 Probe_ram_buffer();
-UINT32 Probe_swap_total();
-UINT32 Probe_swap_free();
+INT32 Probe_load(UINT32_OUT load_1, UINT32_OUT load_5, UINT32_OUT load_15);
+INT32 Probe_ram(UINT32_OUT total, UINT32_OUT free, UINT32_OUT shared, UINT32_OUT buffer);
+INT32 Probe_swap(UINT32_OUT total, UINT32_OUT free);
 UINT32 Probe_users();
 UINT32 Probe_procs();
 UINT32 Probe_ifrxbytes(STRING interface);

@@ -23,8 +23,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <System.h>
 #include "Probe.h"
+#include "../config.h"
 
 
 #if defined(__linux__)
@@ -321,7 +323,7 @@ static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb)
 	int j = 0;
 
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
-		return _probe_perror("realloc", 1);
+		return _probe_perror(NULL, 1);
 	*dev = p;
 	for(i = 0; i < sizeof(p->name) && buf[i] != '\0'; i++);
 	if(i != sizeof(p->name))
@@ -399,7 +401,7 @@ static int _ifinfo_bsd_append(struct ifinfo ** dev, char * ifname, int fd,
 	if(ioctl(fd, SIOCGIFDATA, &ifdr) == -1)
 		return _probe_perror("SIOCGIFDATA", 1);
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
-		return _probe_perror("realloc", 1);
+		return _probe_perror(NULL, 1);
 	*dev = p;
 	strcpy(p[nb].name, ifname);
 # if defined(DEBUG)
@@ -518,7 +520,7 @@ static int _volinfo_bsd(struct volinfo ** dev)
 	if((cnt = getvfsstat(NULL, 0, ST_WAIT)) == -1)
 		return _probe_perror("getvfsstat", -1);
 	if((buf = malloc(sizeof(struct statvfs) * cnt)) == NULL)
-		return _probe_perror("malloc", -1);
+		return _probe_perror(NULL, -1);
 	if((cnt2 = getvfsstat(buf, sizeof(struct statvfs) * cnt, ST_WAIT))
 			== -1)
 	{
@@ -542,7 +544,7 @@ static int _volinfo_bsd_append(struct volinfo ** dev, struct statvfs * buf,
 	struct volinfo * p;
 
 	if((p = realloc(*dev, sizeof(*p) * (nb + 1))) == NULL)
-		return _probe_perror("realloc", 1);
+		return _probe_perror(NULL, 1);
 	*dev = p;
 	strcpy(p[nb].name, buf->f_mntonname);
 # if defined(DEBUG)
@@ -637,7 +639,7 @@ static int _probe(void)
 /* probe_error */
 static int _probe_error(int ret)
 {
-	error_print("Probe");
+	error_print(PACKAGE);
 	return ret;
 }
 
@@ -645,8 +647,8 @@ static int _probe_error(int ret)
 /* probe_perror */
 static int _probe_perror(char const * message, int ret)
 {
-	fputs("Probe: ", stderr);
-	perror(message);
+	error_set_print(PACKAGE, ret, "%s%s%s", message ? message : "",
+			message ? ": " : "", strerror(errno));
 	return ret;
 }
 
@@ -687,93 +689,50 @@ uint32_t Probe_uptime(void)
 }
 
 
-/* Probe_load_1 */
-uint32_t Probe_load_1(void)
+/* Probe_load */
+int32_t Probe_load(uint32_t * load1, uint32_t * load5, uint32_t * load15)
 {
 #if defined(DEBUG)
-	printf("%s%lu%s", "Load 1: ", probe.sysinfo.loads[0], "\n");
+	printf("%s%lu%s%lu%s%lu%s", "Load 1: ", probe.sysinfo.loads[0],
+			", Load 5: ", probe.sysinfo.loads[1],
+			", Load 15: ", probe.sysinfo.loads[2], "\n");
 #endif
-	return probe.sysinfo.loads[0];
+	*load1 = probe.sysinfo.loads[0];
+	*load5 = probe.sysinfo.loads[1];
+	*load15 = probe.sysinfo.loads[2];
+	return 0;
 }
 
 
-/* Probe_load_5 */
-uint32_t Probe_load_5(void)
+/* Probe_ram */
+int32_t Probe_ram(uint32_t * total, uint32_t * free, uint32_t * shared,
+		uint32_t * buffer)
 {
 #if defined(DEBUG)
-	printf("%s%lu%s", "Load 5: ", probe.sysinfo.loads[1], "\n");
+	printf("%s%lu%s%lu%s%lu%s%lu%s",
+			"Total RAM: ", probe.sysinfo.totalram,
+			", Free RAM: ", probe.sysinfo.freeram,
+			", Shared RAM: ", probe.sysinfo.sharedram,
+			", Buffered RAM: ", probe.sysinfo.bufferram, "\n");
 #endif
-	return probe.sysinfo.loads[1];
+	*total = probe.sysinfo.totalram;
+	*free = probe.sysinfo.freeram;
+	*shared = probe.sysinfo.sharedram;
+	*buffer = probe.sysinfo.bufferram;
+	return 0;
 }
 
 
-/* Probe_load_15 */
-uint32_t Probe_load_15(void)
-{
-#if defined(DEBUG)
-	printf("%s%lu%s", "Load 15: ", probe.sysinfo.loads[2], "\n");
-#endif
-	return probe.sysinfo.loads[2];
-}
-
-
-/* Probe_ram_total */
-uint32_t Probe_ram_total(void)
-{
-#if defined(DEBUG)
-	printf("%s%lu%s", "Total RAM: ", probe.sysinfo.totalram, "\n");
-#endif
-	return probe.sysinfo.totalram;
-}
-
-
-/* Probe_ram_free */
-uint32_t Probe_ram_free(void)
-{
-#if defined(DEBUG)
-	printf("%s%lu%s", "Free RAM: ", probe.sysinfo.freeram, "\n");
-#endif
-	return probe.sysinfo.freeram;
-}
-
-
-/* Probe_ram_shared */
-uint32_t Probe_ram_shared(void)
-{
-#if defined(DEBUG)
-	printf("%s%lu%s", "Shared RAM: ", probe.sysinfo.sharedram, "\n");
-#endif
-	return probe.sysinfo.sharedram;
-}
-
-
-/* Probe_ram_buffer */
-uint32_t Probe_ram_buffer(void)
-{
-#if defined(DEBUG)
-	printf("%s%lu%s", "Buffered RAM: ", probe.sysinfo.bufferram, "\n");
-#endif
-	return probe.sysinfo.bufferram;
-}
-
-
-/* Probe_swap_total */
-uint32_t Probe_swap_total(void)
+/* Probe_swap */
+int32_t Probe_swap(uint32_t * total, uint32_t * free)
 {
 #if defined(DEBUG)
 	printf("%s%lu%s", "Total swap: ", probe.sysinfo.totalswap, "\n");
-#endif
-	return probe.sysinfo.totalswap;
-}
-
-
-/* Probe_swap_free */
-uint32_t Probe_swap_free(void)
-{
-#if defined(DEBUG)
 	printf("%s%lu%s", "Free swap: ", probe.sysinfo.freeswap, "\n");
 #endif
-	return probe.sysinfo.freeswap;
+	*total = probe.sysinfo.totalswap;
+	*free = probe.sysinfo.freeswap;
+	return 0;
 }
 
 
