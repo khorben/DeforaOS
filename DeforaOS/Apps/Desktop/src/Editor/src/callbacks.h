@@ -23,21 +23,20 @@
 
 /* functions */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
-void on_edit_preferences(GtkWidget * widget, gpointer data);
-void on_file_close(GtkWidget * widget, gpointer data);
-void on_file_new(GtkWidget * widget, gpointer data);
-void on_file_open(GtkWidget * widget, gpointer data);
-void on_file_save(GtkWidget * widget, gpointer data);
-void on_file_save_as(GtkWidget * widget, gpointer data);
-void on_help_about(GtkWidget * widget, gpointer data);
+void on_edit_preferences(gpointer data);
+void on_file_close(gpointer data);
+void on_file_new(gpointer data);
+void on_file_open(gpointer data);
+void on_file_save(gpointer data);
+void on_file_save_as(gpointer data);
+void on_help_about(gpointer data);
 
 /* toolbar */
-void on_new(GtkWidget * widget, gpointer data);
-void on_open(GtkWidget * widget, gpointer data);
-void on_save(GtkWidget * widget, gpointer data);
-void on_save_as(GtkWidget * widget, gpointer data);
-# ifdef EMBEDDED
-void on_preferences(GtkWidget * widget, gpointer data);
-# endif
+void on_close(gpointer data);
+void on_new(gpointer data);
+void on_open(gpointer data);
+void on_save(gpointer data);
+void on_save_as(gpointer data);
+void on_preferences(gpointer data);
 
 #endif /* !EDITOR_CALLBACKS_H */

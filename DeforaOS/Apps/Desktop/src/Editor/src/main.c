@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Editor */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
-	Editor * e;
+	Editor * editor;
 
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
@@ -41,13 +41,13 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind != argc && optind+1 != argc)
+	if(optind != argc && optind + 1 != argc)
 		return _usage();
-	if((e = editor_new()) == NULL)
+	if((editor = editor_new()) == NULL)
 		return 2;
 	if(argc - optind == 1)
-		editor_open(e, argv[optind]);
+		editor_open(editor, argv[optind]);
 	gtk_main();
-	editor_delete(e);
+	editor_delete(editor);
 	return 0;
 }

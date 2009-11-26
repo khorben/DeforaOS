@@ -49,12 +49,13 @@ static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 
-void on_edit_preferences(GtkWidget * widget, gpointer data)
+void on_edit_preferences(gpointer data)
 {
 	Editor * editor = data;
 	PangoFontDescription * desc;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkWidget * widget;
 	GtkSizeGroup * group;
 
 	if(editor->pr_window != NULL)
@@ -143,7 +144,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 
 
 /* on_file_close */
-void on_file_close(GtkWidget * widget, gpointer data)
+void on_file_close(gpointer data)
 {
 	Editor * editor = data;
 
@@ -152,7 +153,7 @@ void on_file_close(GtkWidget * widget, gpointer data)
 
 
 /* on_file_new */
-void on_file_new(GtkWidget * widget, gpointer data)
+void on_file_new(gpointer data)
 {
 	Editor * editor = data;
 
@@ -161,7 +162,7 @@ void on_file_new(GtkWidget * widget, gpointer data)
 
 
 /* on_file_open */
-void on_file_open(GtkWidget * widget, gpointer data)
+void on_file_open(gpointer data)
 {
 	Editor * editor = data;
 
@@ -170,7 +171,7 @@ void on_file_open(GtkWidget * widget, gpointer data)
 
 
 /* on_file_save */
-void on_file_save(GtkWidget * widget, gpointer data)
+void on_file_save(gpointer data)
 {
 	Editor * editor = data;
 
@@ -179,7 +180,7 @@ void on_file_save(GtkWidget * widget, gpointer data)
 
 
 /* on_file_save_as */
-void on_file_save_as(GtkWidget * widget, gpointer data)
+void on_file_save_as(gpointer data)
 {
 	Editor * editor = data;
 
@@ -195,7 +196,8 @@ static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
 #endif
-void on_help_about(GtkWidget * widget, gpointer data)
+
+void on_help_about(gpointer data)
 {
 	Editor * editor = data;
 	static GtkWidget * window = NULL;
@@ -392,8 +394,17 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 
 
 /* toolbar */
+/* on_close */
+void on_close(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_close(editor);
+}
+
+
 /* on_new */
-void on_new(GtkWidget * widget, gpointer data)
+void on_new(gpointer data)
 {
 	Editor * editor = data;
 
@@ -402,7 +413,7 @@ void on_new(GtkWidget * widget, gpointer data)
 
 
 /* on_open */
-void on_open(GtkWidget * widget, gpointer data)
+void on_open(gpointer data)
 {
 	Editor * editor = data;
 
@@ -411,7 +422,7 @@ void on_open(GtkWidget * widget, gpointer data)
 
 
 /* on_save */
-void on_save(GtkWidget * widget, gpointer data)
+void on_save(gpointer data)
 {
 	Editor * editor = data;
 
@@ -420,7 +431,7 @@ void on_save(GtkWidget * widget, gpointer data)
 
 
 /* on_save_as */
-void on_save_as(GtkWidget * widget, gpointer data)
+void on_save_as(gpointer data)
 {
 	Editor * editor = data;
 
@@ -428,12 +439,10 @@ void on_save_as(GtkWidget * widget, gpointer data)
 }
 
 
-#ifdef EMBEDDED
 /* on_preferences */
-void on_preferences(GtkWidget * widget, gpointer data)
+void on_preferences(gpointer data)
 {
 	Editor * editor = data;
 
-	on_edit_preferences(widget, editor);
+	on_edit_preferences(editor);
 }
-#endif

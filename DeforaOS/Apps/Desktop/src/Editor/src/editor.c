@@ -20,32 +20,29 @@
 #include <string.h>
 #include <errno.h>
 #include <gdk/gdkkeysyms.h>
+#include <Desktop.h>
 #include "callbacks.h"
 #include "editor.h"
 #include "../config.h"
 
 
-/* types */
-#ifndef EMBEDDED
-struct _menu
+/* constants */
+#ifdef EMBEDDED
+static DesktopAccel _editor_accel[] =
 {
-	char * name;
-	GtkSignalFunc callback;
-	char * stock;
-	unsigned int accel;
-};
-
-struct _menubar
-{
-	char * name;
-	struct _menu * menu;
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_w },
+	{ G_CALLBACK(on_new), GDK_CONTROL_MASK, GDK_n },
+	{ G_CALLBACK(on_open), GDK_CONTROL_MASK, GDK_o },
+	{ G_CALLBACK(on_preferences), GDK_CONTROL_MASK, GDK_p },
+	{ G_CALLBACK(on_save), GDK_CONTROL_MASK, GDK_s },
+	{ G_CALLBACK(on_save_as), GDK_CONTROL_MASK, GDK_S },
+	{ NULL, 0, 0 }
 };
 #endif
 
 
-/* constants */
 #ifndef EMBEDDED
-static struct _menu _menu_file[] =
+static DesktopMenu _editor_menu_file[] =
 {
 	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_n },
 	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_o },
@@ -58,7 +55,7 @@ static struct _menu _menu_file[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _menu_edit[] =
+static DesktopMenu _editor_menu_edit[] =
 {
 	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_z }, /* FIXME implement */
 	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_r }, /* FIXME implement */
@@ -72,7 +69,7 @@ static struct _menu _menu_edit[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menu _menu_help[] =
+static DesktopMenu _editor_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
 	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
@@ -82,30 +79,41 @@ static struct _menu _menu_help[] =
 	{ NULL, NULL, NULL, 0 }
 };
 
-static struct _menubar _menubar[] =
+static DesktopMenubar _editor_menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_Edit", _menu_edit },
-	{ "_Help", _menu_help },
+	{ "_File", _editor_menu_file },
+	{ "_Edit", _editor_menu_edit },
+	{ "_Help", _editor_menu_help },
 	{ NULL, NULL }
 };
 #endif
+
+static DesktopToolbar _editor_toolbar[] =
+{
+	{ "New", G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
+	{ "Open", G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
+	{ "Save", G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, NULL },
+	{ "Save as", G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, NULL },
+#ifdef EMBEDDED
+	{ "", NULL, NULL, 0, NULL },
+	{ "Preferences", G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES, 0,
+		NULL },
+#endif
+	{ NULL, NULL, NULL, 0, NULL }
+};
 
 
 /* Editor */
 /* editor_new */
 static void _new_set_title(Editor * editor);
-#ifndef EMBEDDED
-static GtkWidget * _new_menubar(Editor * editor);
-#endif
 
 Editor * editor_new(void)
 {
 	Editor * editor;
+	GtkAccelGroup * group;
 	GtkSettings * settings;
 	GtkWidget * vbox;
-	GtkWidget * toolbar;
-	GtkToolItem * tb_button;
 	GtkWidget * widget;
 	PangoFontDescription * desc;
 
@@ -118,7 +126,9 @@ Editor * editor_new(void)
 		editor->font = EDITOR_DEFAULT_FONT;
 	editor->filename = NULL;
 	/* widgets */
+	group = gtk_accel_group_new();
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(editor->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(editor->window), 600, 400);
 	_new_set_title(editor);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -129,38 +139,14 @@ Editor * editor_new(void)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 #ifndef EMBEDDED
-	gtk_box_pack_start(GTK_BOX(vbox), _new_menubar(editor), FALSE, FALSE,
-			0);
+	widget = desktop_menubar_create(_editor_menubar, editor, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
+#else
+	desktop_accel_create(_editor_accel, editor, group);
 #endif
 	/* toolbar */
-	toolbar = gtk_toolbar_new();
-	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(on_new),
-			editor);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(on_open),
-			editor);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-	tb_button = gtk_separator_tool_item_new();
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(on_save),
-			editor);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE_AS);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
-				on_save_as), editor);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-#ifdef EMBEDDED
-	tb_button = gtk_separator_tool_item_new();
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-	tb_button = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
-	g_signal_connect(G_OBJECT(tb_button), "clicked", G_CALLBACK(
-				on_preferences), editor);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tb_button, -1);
-#endif
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+	widget = desktop_toolbar_create(_editor_toolbar, editor, group);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	/* view */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -195,65 +181,13 @@ static void _new_set_title(Editor * editor)
 	gtk_window_set_title(GTK_WINDOW(editor->window), buf);
 }
 
-#ifndef EMBEDDED
-static GtkWidget * _new_menubar(Editor * editor)
-{
-	GtkWidget * tb_menubar;
-	GtkAccelGroup * group;
-	GtkWidget * menu;
-	GtkWidget * menubar;
-	GtkWidget * menuitem;
-	unsigned int i;
-	unsigned int j;
-	struct _menu * p;
-	GdkModifierType mt;
-
-	tb_menubar = gtk_menu_bar_new();
-	group = gtk_accel_group_new();
-	for(i = 0; _menubar[i].name != NULL; i++)
-	{
-		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
-		menu = gtk_menu_new();
-		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
-		{
-			p = &_menubar[i].menu[j];
-			if(p->name[0] == '\0')
-				menuitem = gtk_separator_menu_item_new();
-			else if(p->stock == 0)
-				menuitem = gtk_menu_item_new_with_mnemonic(
-						p->name);
-			else
-				menuitem = gtk_image_menu_item_new_from_stock(
-						p->stock, NULL);
-			if(p->callback != NULL)
-				g_signal_connect(G_OBJECT(menuitem), "activate",
-						G_CALLBACK(p->callback),
-						editor);
-			else
-				gtk_widget_set_sensitive(menuitem, FALSE);
-			if(p->accel != 0)
-			{
-				mt = (p->accel >= GDK_A && p->accel <= GDK_Z)
-					? GDK_CONTROL_MASK | GDK_SHIFT_MASK
-					: GDK_CONTROL_MASK;
-				gtk_widget_add_accelerator(menuitem, "activate",
-						group, p->accel, mt,
-						GTK_ACCEL_VISIBLE);
-			}
-			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		}
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
-		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
-	}
-	gtk_window_add_accel_group(GTK_WINDOW(editor->window), group);
-	return tb_menubar;
-}
-#endif
-
 
 /* editor_delete */
 void editor_delete(Editor * editor)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	free(editor);
 }
 
@@ -293,6 +227,9 @@ gboolean editor_close(Editor * editor)
 	GtkWidget * dialog;
 	int res;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(gtk_text_buffer_get_modified(gtk_text_view_get_buffer(GTK_TEXT_VIEW(
 						editor->view))) == FALSE)
 	{
