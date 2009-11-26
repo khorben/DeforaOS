@@ -238,7 +238,7 @@ static int _new_foreach(char const * key, Hash * value,
 		type = _string_enum(p, _string_type);
 	if(_new_append(appinterface, type, key) != 0)
 		return 1; /* FIXME track errors */
-	for(i = 0; i < 3; i++)
+	for(i = 0; i < APPSERVER_MAX_ARGUMENTS; i++)
 	{
 		snprintf(buf, sizeof(buf), "arg%d", i + 1);
 		if((p = hash_get(value, buf)) == NULL)
@@ -989,6 +989,7 @@ static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
 	int (*func1)(void *);
 	int (*func2)(void *, void *);
 	int (*func3)(void *, void *, void *);
+	int (*func4)(void *, void *, void *, void *);
 
 	switch(call->args_cnt) /* FIXME not flexible */
 	{
@@ -1007,6 +1008,10 @@ static int _args_exec(AppInterfaceCall * call, int * ret, void ** args)
 		case 3:
 			func3 = call->func;
 			*ret = func3(args[0], args[1], args[2]);
+			break;
+		case 4:
+			func4 = call->func;
+			*ret = func4(args[0], args[1], args[2], args[3]);
 			break;
 		default:
 			return error_set_code(1, "%s%zu%s", "AppInterface: "

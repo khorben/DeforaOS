@@ -116,7 +116,7 @@ static int _appbroker_foreach(char const * key, Hash * value,
 	if((p = hash_get(value, "ret")) == NULL)
 		p = "void";
 	fprintf(data->fp, "%s%s%s%s%s%s", p, " ", data->prefix, "_", key, "(");
-	for(i = 0; i < 3; i++)
+	for(i = 0; i < APPSERVER_MAX_ARGUMENTS; i++)
 	{
 		snprintf(buf, sizeof(buf), "arg%d", i + 1);
 		if((p = hash_get(value, buf)) == NULL)

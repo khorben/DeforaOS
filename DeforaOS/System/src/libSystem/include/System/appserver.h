@@ -31,6 +31,10 @@ typedef enum _AppServerOptions
 } AppServerOptions;
 
 
+/* constants */
+# define APPSERVER_MAX_ARGUMENTS	4
+
+
 /* functions */
 AppServer * appserver_new(char const * app, int options);
 AppServer * appserver_new_event(char const * app, int options, Event * event);
