@@ -1,4 +1,4 @@
-TARGETS	= broker
+TARGETS	= AppBroker
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -17,18 +17,18 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-broker_OBJS = broker.o
-broker_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-broker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+AppBroker_OBJS = appbroker.o
+AppBroker_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+AppBroker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-broker: $(broker_OBJS)
-	$(CC) -o broker $(broker_OBJS) $(broker_LDFLAGS)
+AppBroker: $(AppBroker_OBJS)
+	$(CC) -o AppBroker $(AppBroker_OBJS) $(AppBroker_LDFLAGS)
 
-broker.o: broker.c
-	$(CC) $(broker_CFLAGS) -c broker.c
+appbroker.o: appbroker.c
+	$(CC) $(AppBroker_CFLAGS) -c appbroker.c
 
 clean:
-	$(RM) $(broker_OBJS)
+	$(RM) $(AppBroker_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)

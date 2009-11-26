@@ -58,7 +58,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/appinterface.h \
 		$(PACKAGE)-$(VERSION)/src/token.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
-		$(PACKAGE)-$(VERSION)/tools/broker.c \
+		$(PACKAGE)-$(VERSION)/tools/appbroker.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/README \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \

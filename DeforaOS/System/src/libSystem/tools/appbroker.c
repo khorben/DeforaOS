@@ -21,36 +21,39 @@
 #include <errno.h>
 #include <System.h>
 
-#define PACKAGE "broker"
+#define APPBROKER_PROGNAME "AppBroker"
 
 
-/* broker */
-typedef struct _BrokerData
+/* AppBroker */
+/* private */
+/* types */
+typedef struct _AppBrokerData
 {
 	char const * prefix;
 	char const * outfile;
 	FILE * fp;
-} BrokerData;
+} AppBrokerData;
 
 
-/* broker */
-static void _broker_head(BrokerData * data);
-static int _broker_foreach(char const * key, Hash * value, BrokerData * data);
-static int _broker_foreach_arg(BrokerData * data, char const * sep,
+/* functions */
+static void _appbroker_head(AppBrokerData * data);
+static int _appbroker_foreach(char const * key, Hash * value,
+		AppBrokerData * data);
+static int _appbroker_foreach_arg(AppBrokerData * data, char const * sep,
 		char const * arg);
-static void _broker_tail(BrokerData * data);
+static void _appbroker_tail(AppBrokerData * data);
 
-static int _broker(char const * outfile, char const * filename)
+static int _appbroker(char const * outfile, char const * filename)
 {
 	Config * config;
-	BrokerData data;
+	AppBrokerData data;
 
 	if((config = config_new()) == NULL)
-		return error_print(PACKAGE);
+		return error_print(APPBROKER_PROGNAME);
 	if(config_load(config, filename) != 0)
 	{
 		config_delete(config);
-		return error_print(PACKAGE);
+		return error_print(APPBROKER_PROGNAME);
 	}
 	data.prefix = config_get(config, NULL, "service");
 	if((data.outfile = outfile) == NULL)
@@ -58,20 +61,20 @@ static int _broker(char const * outfile, char const * filename)
 	else if((data.fp = fopen(outfile, "w")) == NULL)
 	{
 		config_delete(config);
-		return error_set_print(PACKAGE, 1, "%s: %s", outfile,
+		return error_set_print(APPBROKER_PROGNAME, 1, "%s: %s", outfile,
 				strerror(errno));
 	}
-	_broker_head(&data);
+	_appbroker_head(&data);
 	fputs("\n\n/* functions */\n", data.fp);
-	hash_foreach(config, (HashForeach)_broker_foreach, &data);
-	_broker_tail(&data);
+	hash_foreach(config, (HashForeach)_appbroker_foreach, &data);
+	_appbroker_tail(&data);
 	if(outfile != NULL)
 		fclose(data.fp);
 	config_delete(config);
 	return 0;
 }
 
-static void _broker_head(BrokerData * data)
+static void _appbroker_head(AppBrokerData * data)
 {
 	fputs("/* $""Id$ */\n\n\n\n", data->fp);
 	if(data->prefix != NULL)
@@ -100,7 +103,8 @@ static void _broker_head(BrokerData * data)
 	fputs("typedef String ** STRING_INOUT;\n", data->fp);
 }
 
-static int _broker_foreach(char const * key, Hash * value, BrokerData * data)
+static int _appbroker_foreach(char const * key, Hash * value,
+		AppBrokerData * data)
 {
 	int i;
 	char buf[8];
@@ -117,7 +121,7 @@ static int _broker_foreach(char const * key, Hash * value, BrokerData * data)
 		snprintf(buf, sizeof(buf), "arg%d", i + 1);
 		if((p = hash_get(value, buf)) == NULL)
 			break;
-		if(_broker_foreach_arg(data, sep, p) != 0)
+		if(_appbroker_foreach_arg(data, sep, p) != 0)
 			return 1;
 		sep = ", ";
 	}
@@ -125,7 +129,7 @@ static int _broker_foreach(char const * key, Hash * value, BrokerData * data)
 	return 0;
 }
 
-static int _broker_foreach_arg(BrokerData * data, char const * sep,
+static int _appbroker_foreach_arg(AppBrokerData * data, char const * sep,
 		char const * arg)
 {
 	char * p;
@@ -145,7 +149,7 @@ static int _broker_foreach_arg(BrokerData * data, char const * sep,
 	return 0;
 }
 
-static void _broker_tail(BrokerData * data)
+static void _appbroker_tail(AppBrokerData * data)
 {
 	if(data->prefix != NULL)
 		fprintf(data->fp, "%s%s%s", "\n#endif /* !", data->prefix,
@@ -156,7 +160,7 @@ static void _broker_tail(BrokerData * data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: broker [-o outfile] filename\n", stderr);
+	fputs("Usage: " APPBROKER_PROGNAME " [-o outfile] filename\n", stderr);
 	return 1;
 }
 
@@ -178,5 +182,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind + 1 != argc)
 		return _usage();
-	return (_broker(outfile, argv[optind]) == 0) ? 0 : 2;
+	return (_appbroker(outfile, argv[optind]) == 0) ? 0 : 2;
 }
