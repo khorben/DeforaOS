@@ -1,5 +1,5 @@
 PACKAGE	= libSystem
-VERSION	= 0.1.2
+VERSION	= 0.1.3
 SUBDIRS	= include src tools
 RM	= rm -f
 LN	= ln -f
