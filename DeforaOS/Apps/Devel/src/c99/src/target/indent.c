@@ -70,7 +70,7 @@ TargetPlugin target_plugin =
 static int _indent_init(char const * outfile, int optlevel)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s(\"%s\", %d)\n", __func__, outfile, optlevel);
+	fprintf(stderr, "DEBUG: %s(\"%s\", %d)\n", __func__, outfile, optlevel);
 #endif
 	if((_filename = strdup(outfile)) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
@@ -89,7 +89,7 @@ static int _indent_exit(void)
 	int ret = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(fclose(_fp) != 0)
 		ret |= error_set_code(1, "%s: %s", _filename, strerror(errno));
@@ -106,7 +106,7 @@ static int _indent_token(Token * token)
 	int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(token == NULL)
 		return 0;
@@ -145,7 +145,7 @@ static int _indent_function_begin(char const * name)
 	int ret = 0;
 
 #ifdef DEBUG
-	fprintf(stderr, "%s(\"%s\")\n", __func__, name);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
 #endif
 	_scope = 1;
 	return ret;
@@ -156,7 +156,7 @@ static int _indent_function_begin(char const * name)
 static int _indent_function_call(char const * name)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s(\"%s\")\n", __func__, name);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, name);
 #endif
 	return 0;
 }
@@ -166,7 +166,7 @@ static int _indent_function_call(char const * name)
 static int _indent_function_end(void)
 {
 #ifdef DEBUG
-	fprintf(stderr, "%s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	_scope = 0;
 	return 0;
