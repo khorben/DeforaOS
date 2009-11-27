@@ -1,13 +1,13 @@
-TARGETS	= VFS
+TARGETS	= ../data/VFS.h VFS
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF= -I ../data
+CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W -Wall -pedantic
 CFLAGS	= -g
-LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -Wl,--export-dynamic 
+LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -Wl,--export-dynamic
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -15,6 +15,9 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+../data/VFS.h:
+	./appbroker.sh "../data/VFS.h"
 
 VFS_OBJS = vfs.o
 VFS_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -27,7 +30,7 @@ vfs.o: vfs.c ../data/VFS.h
 	$(CC) $(VFS_CFLAGS) -c vfs.c
 
 clean:
-	$(RM) $(VFS_OBJS)
+	$(RM) $(../data/VFS.h_OBJS) $(VFS_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)

@@ -30,7 +30,7 @@
 #include <string.h>
 #include <errno.h>
 #include <System.h>
-#include "VFS.h"
+#include "../data/VFS.h"
 #include "../config.h"
 
 
