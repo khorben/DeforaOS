@@ -14,7 +14,7 @@ all: subdirs
 	@echo
 
 subdirs:
-	(cd System/src/libSystem && $(MAKE))
+	(cd System/src/libSystem/src && $(MAKE))
 	(cd Apps/Devel/src/configure && $(MAKE) \
 		CPPFLAGS="-I ../../../../../System/src/libSystem/include" \
 		LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a")
