@@ -25,7 +25,7 @@
 #include <string.h>
 #include <errno.h>
 #include <System.h>
-#include "Probe.h"
+#include "../data/Probe.h"
 #include "../config.h"
 
 

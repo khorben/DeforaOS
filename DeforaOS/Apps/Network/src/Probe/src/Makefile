@@ -1,13 +1,13 @@
-TARGETS	= Probe DaMon
+TARGETS	= ../data/Probe.h Probe DaMon
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF= -I ../data -I $(PREFIX)/include
+CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= -lSystem 
+LDFLAGSF= -lSystem
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 LN	= ln -f
@@ -16,6 +16,9 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+../data/Probe.h:
+	./appbroker.sh "../data/Probe.h"
 
 Probe_OBJS = probe.o
 Probe_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -38,7 +41,7 @@ damon.o: damon.c ../config.h
 	$(CC) $(DaMon_CFLAGS) -c damon.c
 
 clean:
-	$(RM) $(Probe_OBJS) $(DaMon_OBJS)
+	$(RM) $(../data/Probe.h_OBJS) $(Probe_OBJS) $(DaMon_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)

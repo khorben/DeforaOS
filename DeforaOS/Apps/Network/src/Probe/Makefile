@@ -23,11 +23,11 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/Probe.interface \
-		$(PACKAGE)-$(VERSION)/data/Probe.h \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/probe.c \
 		$(PACKAGE)-$(VERSION)/src/damon.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/appbroker.sh \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/create.sh \
