@@ -34,7 +34,10 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 AppBroker $(DESTDIR)$(BINDIR)/AppBroker
 
 uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/AppBroker
 
 .PHONY: all clean distclean install uninstall
