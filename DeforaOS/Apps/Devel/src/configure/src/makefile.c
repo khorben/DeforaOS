@@ -21,6 +21,7 @@
 #include <string.h>
 #include "settings.h"
 #include "configure.h"
+#include "../config.h"
 
 ARRAY(Config *, config)
 
@@ -131,7 +132,7 @@ static int _variables_package(Configure * configure, FILE * fp,
 	{
 		if(configure->prefs->flags & PREFS_v)
 			fputc('\n', stdout);
-		fprintf(stderr, "%s%s%s", "configure: ", directory,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", directory,
 				": \"package\" needs \"version\"\n");
 		return 1;
 	}
@@ -253,6 +254,7 @@ static int _variables_targets(Configure * configure, FILE * fp)
 			{
 				case TT_BINARY:
 				case TT_OBJECT:
+				case TT_SCRIPT:
 				case TT_UNKNOWN:
 					fprintf(fp, " %s", prints);
 					break;
@@ -365,6 +367,7 @@ static void _executables_variables(Configure * configure, FILE * fp,
 			_variables_libtool(configure, fp, done);
 			break;
 		case TT_OBJECT:
+		case TT_SCRIPT:
 		case TT_UNKNOWN:
 			break;
 	}
@@ -677,6 +680,8 @@ static int _target_object(Configure * configure, FILE * fp,
 		String const * target);
 static int _target_plugin(Configure * configure, FILE * fp,
 		String const * target);
+static int _target_script(Configure * configure, FILE * fp,
+		String const * target);
 static int _targets_target(Configure * configure, FILE * fp,
 		String const * target)
 {
@@ -685,7 +690,7 @@ static int _targets_target(Configure * configure, FILE * fp,
 
 	if((type = config_get(configure->config, target, "type")) == NULL)
 	{
-		fprintf(stderr, "%s%s%s", "configure: ", target,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
 				": no type defined for target\n");
 		return 1;
 	}
@@ -702,8 +707,10 @@ static int _targets_target(Configure * configure, FILE * fp,
 			return _target_object(configure, fp, target);
 		case TT_PLUGIN:
 			return _target_plugin(configure, fp, target);
+		case TT_SCRIPT:
+			return _target_script(configure, fp, target);
 		case TT_UNKNOWN:
-			fprintf(stderr, "%s%s%s", "configure: ", target,
+			fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
 					": unknown type for target\n");
 			return 1;
 	}
@@ -727,7 +734,7 @@ static int _target_objs(Configure * configure, FILE * fp,
 		tt = enum_string(TT_LAST, sTargetType, p);
 	if((p = config_get(configure->config, target, "sources")) == NULL)
 	{
-		fprintf(stderr, "%s%s%s", "configure: ", target,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
 				": no sources defined for target\n");
 		return 1;
 	}
@@ -763,7 +770,7 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source,
 
 	if((extension = _source_extension(source)) == NULL)
 	{
-		fprintf(stderr, "%s%s%s", "configure: ", source,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", source,
 				": no extension for source\n");
 		return 1;
 	}
@@ -782,7 +789,7 @@ static int _objs_source(Prefs * prefs, FILE * fp, String * source,
 			break;
 		case OT_UNKNOWN:
 			ret = 1;
-			fprintf(stderr, "%s%s%s", "configure: ", source,
+			fprintf(stderr, "%s%s%s", PACKAGE ": ", source,
 					": unknown extension for source\n");
 			break;
 	}
@@ -996,13 +1003,13 @@ static int _target_object(Configure * configure, FILE * fp,
 
 	if((p = config_get(configure->config, target, "sources")) == NULL)
 	{
-		fprintf(stderr, "%s%s%s", "configure: ", target,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
 				": No sources for target\n");
 		return 1;
 	}
 	if(strchr(p, ',') != NULL)
 	{
-		fprintf(stderr, "%s%s%s", "configure: ", target,
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
 				": An object can have only one source file\n");
 		return 1;
 	}
@@ -1043,7 +1050,7 @@ static int _target_object(Configure * configure, FILE * fp,
 			fputc('\n', fp);
 			break;
 		case OT_UNKNOWN:
-			fprintf(stderr, "%s%s%s", "configure: ", target,
+			fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
 					": Unknown source type for object\n");
 			return 1;
 	}
@@ -1110,6 +1117,28 @@ static int _write_objects(Configure * configure, FILE * fp)
 	}
 	string_delete(q);
 	return ret;
+}
+
+static int _target_script(Configure * configure, FILE * fp,
+		String const * target)
+{
+	String const * script;
+	String const * p;
+
+	if((script = config_get(configure->config, target, "script")) == NULL)
+	{
+		fprintf(stderr, "%s%s%s", PACKAGE ": ", target,
+				": No script for target\n");
+		return 1;
+	}
+	if(configure->prefs->flags & PREFS_n)
+		return 0;
+	fprintf(fp, "\n%s:", target);
+	if((p = config_get(configure->config, target, "depends")) != NULL)
+		fprintf(fp, " %s", p);
+	fputc('\n', fp);
+	fprintf(fp, "\t%s \"%s\"\n", script, target);
+	return 0;
 }
 
 static int _target_source(Configure * configure, FILE * fp,
@@ -1510,6 +1539,8 @@ static void _install_target_object(Config * config, FILE * fp,
 		String const * target);
 static void _install_target_plugin(Config * config, FILE * fp,
 		String const * target);
+static void _install_target_script(Config * config, FILE * fp,
+		String const * target);
 static int _install_target(Config * config, FILE * fp, String const * target)
 {
 	int ret = 0;
@@ -1534,6 +1565,9 @@ static int _install_target(Config * config, FILE * fp, String const * target)
 			break;
 		case TT_PLUGIN:
 			_install_target_plugin(config, fp, target);
+			break;
+		case TT_SCRIPT:
+			_install_target_script(config, fp, target);
 			break;
 		case TT_UNKNOWN:
 			break;
@@ -1617,6 +1651,21 @@ static void _install_target_plugin(Config * config, FILE * fp,
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
 	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 ", target,
 			".so $(DESTDIR)", path, target, ".so\n");
+}
+
+static void _install_target_script(Config * config, FILE * fp,
+		String const * target)
+{
+	String const * path;
+	String const * script;
+
+	if((path = config_get(config, target, "install")) == NULL)
+		return;
+	if((script = config_get(config, target, "script")) == NULL)
+		return;
+	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(PREFIX)",
+			*path ? "/" : "", *path ? path : "", "\" install \"",
+			target, "\"\n");
 }
 
 static int _install_include(Config * config, FILE * fp, String const * include);
@@ -1782,6 +1831,8 @@ static int _write_uninstall(Configure * configure, FILE * fp)
 
 static void _uninstall_target_library(Config * config, FILE * fp,
 		String const * target, String const * path);
+static void _uninstall_target_script(Config * config, FILE * fp,
+		String const * target, String const * path);
 static int _uninstall_target(Config * config, FILE * fp, String const * target)
 {
 	String const * type;
@@ -1814,6 +1865,9 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 			fprintf(fp, "\t%s%s/%s%s\n", rm_destdir, path, target,
 					".so");
 			break;
+		case TT_SCRIPT:
+			_uninstall_target_script(config, fp, target, path);
+			break;
 		case TT_UNKNOWN:
 			break;
 	}
@@ -1839,6 +1893,18 @@ static void _uninstall_target_library(Config * config, FILE * fp,
 		fprintf(fp, format, rm_destdir, path, soname, "\n");
 	}
 	fprintf(fp, format, rm_destdir, path, target, ".so\n");
+}
+
+static void _uninstall_target_script(Config * config, FILE * fp,
+		String const * target, String const * path)
+{
+	String const * script;
+
+	if((script = config_get(config, target, "script")) == NULL)
+		return;
+	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(PREFIX)",
+			*path ? "/" : "", *path ? path : "", "\" uninstall \"",
+			target, "\"\n");
 }
 
 static int _uninstall_include(Config * config, FILE * fp,

@@ -34,7 +34,7 @@ makedepend: $(makedepend_OBJS)
 configure.o: configure.c configure.h makefile.h ../config.h
 	$(CC) $(configure_CFLAGS) -c configure.c
 
-makefile.o: makefile.c configure.h settings.h
+makefile.o: makefile.c configure.h settings.h ../config.h
 	$(CC) $(configure_CFLAGS) -c makefile.c
 
 settings.o: settings.c settings.h
