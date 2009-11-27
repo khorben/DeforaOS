@@ -1,9 +1,9 @@
-TARGETS	= Init
+TARGETS	= ../data/Init.h Init
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF= -I ../data -I $(PREFIX)/include
+CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W -Wall -pedantic
 CFLAGS	= -g -O2
@@ -15,6 +15,9 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+../data/Init.h:
+	./appbroker.sh "../data/Init.h"
 
 Init_OBJS = init.o main.o service.o session.o
 Init_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -36,7 +39,7 @@ session.o: session.c
 	$(CC) $(Init_CFLAGS) -c session.c
 
 clean:
-	$(RM) $(Init_OBJS)
+	$(RM) $(../data/Init.h_OBJS) $(Init_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)

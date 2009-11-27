@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System Init */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ static int _init(char const * profile)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: Init -s [-P profile]\n"
+	fputs("Usage: " PACKAGE " -s [-P profile]\n"
 "  -P	Profile to load\n"
 "  -s	Force the single-user profile\n", stderr);
 	return 1;

@@ -21,8 +21,8 @@
 # include <stdio.h>
 #endif
 #include "session.h"
+#include "../data/Init.h"
 #include "init.h"
-#include "Init.h"
 
 
 /* Init */
