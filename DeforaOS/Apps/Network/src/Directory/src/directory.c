@@ -29,7 +29,7 @@
 #include <errno.h>
 #include <System.h>
 #include "directory.h"
-#include "Directory.h"
+#include "../data/Directory.h"
 #include "../config.h"
 
 

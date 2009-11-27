@@ -1,9 +1,9 @@
-TARGETS	= Directory
+TARGETS	= ../data/Directory.h Directory
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF= -I ../data
+CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic
@@ -16,6 +16,9 @@ INSTALL	= install
 
 all: $(TARGETS)
 
+../data/Directory.h:
+	./appbroker.sh "../data/Directory.h"
+
 Directory_OBJS = directory.o main.o
 Directory_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 Directory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -23,14 +26,14 @@ Directory_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 Directory: $(Directory_OBJS)
 	$(CC) -o Directory $(Directory_OBJS) $(Directory_LDFLAGS)
 
-directory.o: directory.c directory.h
+directory.o: directory.c ../data/Directory.h directory.h
 	$(CC) $(Directory_CFLAGS) -c directory.c
 
 main.o: main.c directory.h
 	$(CC) $(Directory_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(Directory_OBJS)
+	$(RM) $(../data/Directory.h_OBJS) $(Directory_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
