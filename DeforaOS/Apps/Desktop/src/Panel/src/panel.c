@@ -337,6 +337,7 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 static int _panel_helper_shutdown_dialog(void)
 {
 	GtkWidget * dialog;
+	GtkWidget * widget;
 	const char message[] = "This will shutdown your computer,"
 		" therefore closing any application currently opened and losing"
 		" any unsaved data.\nDo you really want to proceed?";
@@ -356,7 +357,12 @@ static int _panel_helper_shutdown_dialog(void)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
-			"Reboot", RES_REBOOT, "Shutdown", RES_SHUTDOWN, NULL);
+			"Reboot", RES_REBOOT, NULL);
+	widget = gtk_button_new_with_label("Shutdown");
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"gnome-shutdown", GTK_ICON_SIZE_BUTTON));
+	gtk_widget_show_all(widget);
+	gtk_dialog_add_action_widget(GTK_DIALOG(dialog), widget, RES_SHUTDOWN);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
