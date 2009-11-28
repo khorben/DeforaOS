@@ -1,6 +1,11 @@
+#$Id$
+#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#This file is part of the DeforaOS Project
+
+
+
 SUBDIRS	= System/src/libSystem Apps/Devel/src/configure
 PREFIX	= /usr/local
-
 
 
 all: subdirs
@@ -15,7 +20,7 @@ all: subdirs
 
 subdirs:
 	(cd System/src/libSystem/src && $(MAKE))
-	(cd Apps/Devel/src/configure && $(MAKE) \
+	(cd Apps/Devel/src/configure/src && $(MAKE) configure \
 		CPPFLAGS="-I ../../../../../System/src/libSystem/include" \
 		LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a")
 
