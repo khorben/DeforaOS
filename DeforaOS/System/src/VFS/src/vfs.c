@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,6 +42,7 @@ typedef struct _VFSClient
 {
 	void * id;
 	int32_t fd;
+	DIR * dir;
 } VFSClient;
 
 
@@ -80,9 +82,10 @@ static size_t _clients_cnt;
 static void _client_init(void);
 static void _client_destroy(void);
 
-static int _client_add(int32_t fd);
+static int _client_add(int32_t fd, DIR * dir);
 static int _client_remove(int32_t fd);
 static int _client_check(int32_t fd);
+static DIR * _client_check_dir(int32_t fd);
 
 /* vfs */
 static int _vfs(char const * root);
@@ -108,7 +111,7 @@ static void _client_destroy(void)
 
 
 /* client_add */
-static int _client_add(int32_t fd)
+static int _client_add(int32_t fd, DIR * dir)
 {
 	void * id;
 	size_t i;
@@ -126,13 +129,15 @@ static int _client_add(int32_t fd)
 	{
 		_clients[i].id = id;
 		_clients[i].fd = fd;
+		_clients[i].dir = dir;
 		return 0;
 	}
 	if((p = realloc(_clients, sizeof(*p) * ++i)) == NULL)
 		return error_set_print(PACKAGE, 1, "%s", strerror(errno));
 	_clients = p;
 	p[_clients_cnt].id = id;
-	p[_clients_cnt++].fd = fd;
+	p[_clients_cnt].fd = fd;
+	p[_clients_cnt++].dir = dir;
 	return 0;
 }
 
@@ -151,6 +156,7 @@ static int _client_remove(int32_t fd)
 		{
 			_clients[i].id = NULL;
 			_clients[i].fd = -1;
+			_clients[i].dir = NULL;
 		}
 	/* reduce memory footprint if the end is clear */
 	for(i = _clients_cnt; i > 0 && _clients[i - 1].id == NULL; i--);
@@ -175,9 +181,29 @@ static int _client_check(int32_t fd)
 	fprintf(stderr, "DEBUG: %s(%d) %p\n", __func__, fd, id);
 #endif
 	for(i = 0; i < _clients_cnt; i++)
-		if(_clients[i].id == id && _clients[i].fd == fd)
+		if(_clients[i].id == id && _clients[i].fd == fd
+				&& _clients[i].dir == NULL)
 			return 1;
 	return 0;
+}
+
+
+/* client_check_dir */
+static DIR * _client_check_dir(int32_t fd)
+{
+	void * id;
+	size_t i;
+
+	if((id = appserver_get_client_id(_appserver)) == NULL)
+		return 0;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d) %p\n", __func__, fd, id);
+#endif
+	for(i = 0; i < _clients_cnt; i++)
+		if(_clients[i].id == id && _clients[i].fd == fd
+				&& _clients[i].dir != NULL)
+			return _clients[i].dir;
+	return NULL;
 }
 
 
@@ -224,7 +250,7 @@ int32_t VFS_close(int32_t fd)
 	if(!_client_check(fd))
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "VFS: close(%d)\n", fd);
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, fd);
 #endif
 	if((ret = close(fd)) == 0)
 		_client_remove(fd);
@@ -235,16 +261,34 @@ int32_t VFS_close(int32_t fd)
 /* VFS_closedir */
 int32_t VFS_closedir(int32_t dir)
 {
-	/* FIXME implement */
-	return -1;
+	int32_t ret;
+	DIR * d;
+
+	if((d = _client_check_dir(dir)) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, dir);
+#endif
+	if((ret = closedir(d)) == 0)
+		_client_remove(dir);
+	return ret;
 }
 
 
 /* VFS_dirfd */
 int32_t VFS_dirfd(int32_t dir)
 {
-	/* FIXME implement */
-	return -1;
+	int32_t ret;
+	DIR * d;
+
+	if((d = _client_check_dir(dir)) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, dir);
+#endif
+	if((ret = dirfd(d)) < 0)
+		return -1;
+	return ret;
 }
 
 
@@ -294,7 +338,8 @@ int32_t VFS_lseek(int32_t fd, int32_t offset, int32_t whence)
 	if(!_client_check(fd))
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "VFS: lseek(%d, %d, %d)\n", fd, offset, whence);
+	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, fd, offset,
+			whence);
 #endif
 	return lseek(fd, offset, whence);
 }
@@ -307,12 +352,12 @@ int32_t VFS_open(String const * filename, uint32_t flags, uint32_t mode)
 
 	fd = open(filename, flags, mode);
 #ifdef DEBUG
-	fprintf(stderr, "VFS: open(%s, %u, %u) => %d\n", filename, flags, mode,
-			fd);
+	fprintf(stderr, "DEBUG: %s(\"%s\", %u, %u) => %d\n", __func__, filename,
+			flags, mode, fd);
 #endif
 	if(fd < 0)
 		return -1;
-	if(_client_add(fd) != 0)
+	if(_client_add(fd, NULL) != 0)
 	{
 		close(fd);
 		return -1;
@@ -324,8 +369,22 @@ int32_t VFS_open(String const * filename, uint32_t flags, uint32_t mode)
 /* VFS_opendir */
 int32_t VFS_opendir(String const * filename)
 {
-	/* FIXME implement */
-	return -1;
+	DIR * dir;
+	int fd;
+
+	dir = opendir(filename);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\") => %p\n", __func__, filename,
+			(void*)dir);
+#endif
+	if(dir == NULL)
+		return -1;
+	if((fd = dirfd(dir)) < 0 || _client_add(fd, dir) != 0)
+	{
+		closedir(dir);
+		return -1;
+	}
+	return fd;
 }
 
 
@@ -337,13 +396,15 @@ int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
 	if(!_client_check(fd))
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "VFS: %s(%d, %p, %u)\n", __func__, fd, (void*)b, size);
+	fprintf(stderr, "DEBUG: %s(%d, %p, %u)\n", __func__, fd, (void*)b,
+			size);
 #endif
 	if(buffer_set_size(b, size) != 0)
 		return -1;
 	ret = read(fd, buffer_get_data(b), size);
 #ifdef DEBUG
-	fprintf(stderr, "VFS: read(%d, buf, %u) => %d\n", fd, size, ret);
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u) => %d\n", __func__, fd, size,
+			ret);
 #endif
 	if(buffer_set_size(b, ret < 0 ? 0 : ret) != 0)
 	{
@@ -351,7 +412,7 @@ int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
 		return -1;
 	}
 #ifdef DEBUG
-	fprintf(stderr, "VFS: %s() => %d\n", __func__, ret);
+	fprintf(stderr, "DEBUG: %s() => %d\n", __func__, ret);
 #endif
 	return ret;
 }
@@ -363,7 +424,7 @@ int32_t VFS_write(int32_t fd, Buffer * b, uint32_t size)
 	if(!_client_check(fd))
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "VFS: write(%d, buf, %u)\n", fd, size);
+	fprintf(stderr, "DEBUG: %s(%d, buf, %u)\n", __func__, fd, size);
 #endif
 	if(buffer_get_size(b) < size)
 		return -1;
