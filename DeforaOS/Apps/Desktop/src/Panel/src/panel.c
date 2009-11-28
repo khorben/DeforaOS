@@ -284,6 +284,7 @@ static int _panel_helper_logout_dialog(void)
 	const char message[] = "This will log you out of the current session,"
 		" therefore closing any application currently opened and losing"
 		" any unsaved data.\nDo you really want to proceed?";
+	GtkWidget * widget;
 	int res;
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
@@ -291,8 +292,13 @@ static int _panel_helper_logout_dialog(void)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, "Logout", GTK_RESPONSE_ACCEPT,
-			NULL);
+			GTK_RESPONSE_CANCEL, NULL);
+	widget = gtk_button_new_with_label("Logout");
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"gnome-logout", GTK_ICON_SIZE_BUTTON));
+	gtk_widget_show_all(widget);
+	gtk_dialog_add_action_widget(GTK_DIALOG(dialog), widget,
+			GTK_RESPONSE_ACCEPT);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
