@@ -1,4 +1,4 @@
-TARGETS	= battery.so clock.so cpu.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so
+TARGETS	= battery.so clock.so cpu.so cpufreq.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -38,6 +38,13 @@ cpu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 cpu.so: $(cpu_OBJS)
 	$(LD) -o cpu.so $(cpu_OBJS)
+
+cpufreq_OBJS = cpufreq.o
+cpufreq_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+cpufreq_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+cpufreq.so: $(cpufreq_OBJS)
+	$(LD) -o cpufreq.so $(cpufreq_OBJS)
 
 desktop_OBJS = desktop.o
 desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -97,6 +104,9 @@ clock.o: clock.c ../../include/Panel.h
 cpu.o: cpu.c ../../include/Panel.h
 	$(CC) $(cpu_CFLAGS) -c cpu.c
 
+cpufreq.o: cpufreq.c ../../include/Panel.h
+	$(CC) $(cpufreq_CFLAGS) -c cpufreq.c
+
 desktop.o: desktop.c ../../include/Panel.h
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
@@ -119,7 +129,7 @@ tasks.o: tasks.c ../../include/Panel.h
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 clean:
-	$(RM) $(battery_OBJS) $(clock_OBJS) $(cpu_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS)
+	$(RM) $(battery_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -131,6 +141,8 @@ install: all
 	$(INSTALL) -m 0644 clock.so $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 cpu.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 cpufreq.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 desktop.so $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
@@ -150,6 +162,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
