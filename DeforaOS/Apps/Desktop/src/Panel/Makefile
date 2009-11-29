@@ -33,6 +33,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/battery.c \
 		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
+		$(PACKAGE)-$(VERSION)/src/applets/cpufreq.c \
 		$(PACKAGE)-$(VERSION)/src/applets/desktop.c \
 		$(PACKAGE)-$(VERSION)/src/applets/lock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/logout.c \
