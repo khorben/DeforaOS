@@ -12,6 +12,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - test the recently added string support
+ * - implement what's missing */
 
 
 
@@ -826,7 +829,7 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 		{
 			case AICD_IN:
 #ifdef DEBUG
-				fprintf(stderr, "%s", "in ");
+				fputs("in ", stderr);
 #endif
 				if(_pre_exec_in(aica, buf, buflen, pos,
 							&args[i]) != 0)
@@ -835,7 +838,7 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 			case AICD_IN_OUT:
 #warning IMPLEMENT THIS
 #ifdef DEBUG
-				fprintf(stderr, "%s", "in out ");
+				fputs("in out ", stderr);
 #endif
 /*				if(_pre_exec_in_out(aica, buf, buflen, pos,
 							&args[i]) != 0) */
@@ -843,7 +846,7 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 				break;
 			case AICD_OUT:
 #ifdef DEBUG
-				fprintf(stderr, "%s", "out ");
+				fputs("out ", stderr);
 #endif
 				if(_pre_exec_out(aica, &args[i]) != 0)
 					return i;
@@ -851,7 +854,7 @@ static size_t _args_pre_exec(AppInterfaceCall * call, char buf[], size_t buflen,
 		}
 	}
 #ifdef DEBUG
-	fprintf(stderr, "%s", ")\n");
+	fputs(")\n", stderr);
 #endif
 	return i;
 }
@@ -952,7 +955,7 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 			if((*p = malloc(aica->size)) == NULL)
 				return -1;
 #ifdef DEBUG
-			fprintf(stderr, "%s", " integer");
+			fputs(" integer", stderr);
 #endif
 			break;
 		case AICT_BUFFER:
@@ -960,12 +963,18 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 			if((*b = buffer_new(0, NULL)) == NULL)
 				return -1;
 #ifdef DEBUG
-			fprintf(stderr, "%s", "Buffer");
+			fputs("Buffer", stderr);
 #endif
 			break;
-		case AICT_STRING: /* FIXME not supported */
-			errno = ENOSYS;
-			return -error_set_code(1, "%s", strerror(ENOSYS));
+		case AICT_STRING:
+			p = arg;
+			if((*p = malloc(sizeof(char*))) == NULL)
+				return -1;
+			*p = NULL;
+#ifdef DEBUG
+			fputs("String", stderr);
+#endif
+			break;
 	}
 	return 0;
 }
@@ -1086,6 +1095,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 	int16_t * i16;
 	int32_t * i32;
 	Buffer * b;
+	char * p;
 	uint32_t size;
 
 	if(aica->size > buflen)
@@ -1131,9 +1141,11 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 					buf, buflen, pos) != 0)
 				return -1;
 			break;
-		case AICT_STRING: /* FIXME not supported */
-			errno = ENOSYS;
-			return -error_set_code(1, "%s", strerror(ENOSYS));
+		case AICT_STRING:
+			p = arg;
+			if(_send_string(p, buf, buflen, pos) != 0)
+				return -1;
+			break;
 	}
 	return 0;
 }
