@@ -25,10 +25,14 @@
 /* callbacks */
 static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data);
+static gboolean _on_download_requested(WebKitWebView * view,
+		WebKitDownload * download, gpointer data);
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data);
 static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
+static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * uri, GError * error, gpointer data);
 static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
 static void _on_load_progress_changed(WebKitWebView * view, gint progress,
@@ -62,10 +66,14 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	/* view */
 	g_signal_connect(G_OBJECT(view), "create-web-view", G_CALLBACK(
 				_on_create_web_view), widget);
+	g_signal_connect(G_OBJECT(view), "download-requested", G_CALLBACK(
+				_on_download_requested), widget);
 	g_signal_connect(G_OBJECT(view), "hovering-over-link", G_CALLBACK(
 				_on_hovering_over_link), widget);
 	g_signal_connect(G_OBJECT(view), "load-committed", G_CALLBACK(
 				_on_load_committed), widget);
+	g_signal_connect(G_OBJECT(view), "load-error", G_CALLBACK(
+				_on_load_error), widget);
 	g_signal_connect(G_OBJECT(view), "load-finished", G_CALLBACK(
 				_on_load_finished), widget);
 	g_signal_connect(G_OBJECT(view), "load-progress-changed", G_CALLBACK(
@@ -253,6 +261,7 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
+/* on_create_web_view */
 static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data)
 {
@@ -275,6 +284,36 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 }
 
 
+/* on_download_requested */
+static gboolean _on_download_requested(WebKitWebView * view,
+		WebKitDownload * download, gpointer data)
+{
+	Surfer * surfer;
+	GtkWidget * dialog;
+	char * filename = NULL;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	dialog = gtk_file_chooser_dialog_new("Save file as...", NULL /* XXX */,
+			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
+			GTK_RESPONSE_ACCEPT, NULL);
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
+			webkit_download_get_suggested_filename(download));
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+	{
+		webkit_download_cancel(download);
+		return FALSE;
+	}
+	webkit_download_set_destination_uri(download, filename);
+	g_free(filename);
+	return TRUE;
+}
+
+
+/* on_hovering_over_link */
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data)
 {
@@ -285,6 +324,7 @@ static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 }
 
 
+/* on_load_committed */
 static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data)
 {
@@ -298,6 +338,20 @@ static void _on_load_committed(WebKitWebView * view, WebKitWebFrame * frame,
 }
 
 
+/* on_load_error */
+static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * uri, GError * error, gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	if(error != NULL && error->message != NULL)
+		surfer_error(surfer, error->message, 0);
+	return TRUE;
+}
+
+
+/* on_load_finished */
 static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 			gpointer data)
 {
@@ -309,6 +363,7 @@ static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 }
 
 
+/* on_load_progress_changed */
 static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data)
 {
@@ -320,6 +375,7 @@ static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 }
 
 
+/* on_load_started */
 static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data)
 {
@@ -331,6 +387,7 @@ static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 }
 
 
+/* on_script_alert */
 static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
 		gchar * message, gpointer data)
 {
