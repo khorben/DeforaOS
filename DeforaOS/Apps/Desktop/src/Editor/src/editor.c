@@ -212,7 +212,13 @@ int editor_error(Editor * editor, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
@@ -239,6 +245,11 @@ gboolean editor_close(Editor * editor)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(editor->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"Warning");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
 			"There are unsaved changes.\n"
 			"Are you sure you want to close?");
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
@@ -276,6 +287,11 @@ void editor_open(Editor * editor, char const * filename)
 				GTK_DIALOG_MODAL
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+				"Warning");
+		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+					dialog), "%s",
+#endif
 				"There are unsaved changes.\n"
 				"Are you sure you want to discard them?");
 		gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
@@ -416,6 +432,11 @@ gboolean editor_save_as(Editor * editor, char const * filename)
 				GTK_DIALOG_MODAL
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+				"Warning");
+		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+					dialog), "%s",
+#endif
 				"File exists. Overwrite?");
 		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
