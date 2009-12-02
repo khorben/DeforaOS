@@ -23,8 +23,12 @@
 #include <libgen.h>
 #include <errno.h>
 #include <gtk/gtk.h>
-#define GNET_EXPERIMENTAL
-#include <gnet.h>
+#ifdef WITH_WEBKIT
+# include <webkit/webkit.h>
+#else
+# define GNET_EXPERIMENTAL
+# include <gnet.h>
+#endif
 
 
 /* Download */
@@ -43,7 +47,11 @@ typedef struct _Download
 
 	struct timeval tv;
 
+#ifdef WITH_WEBKIT
+	WebKitDownload * conn;
+#else
 	GConnHttp * conn;
+#endif
 	guint64 content_length;
 	guint64 data_received;
 
@@ -64,14 +72,18 @@ static int _download(Prefs * prefs, char const * url);
 static int _download_cancel(Download * download);
 static int _download_error(Download * download, char const * message, int ret);
 static void _download_refresh(Download * download);
+#ifndef WITH_WEBKIT
 static int _download_write(Download * download);
+#endif
 
 /* callbacks */
-static void _download_on_cancel(GtkWidget * widget, gpointer data);
+static void _download_on_cancel(gpointer data);
 static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
+#ifndef WITH_WEBKIT
 static void _download_on_http(GConnHttp * conn, GConnHttpEvent * event,
 		gpointer data);
+#endif
 static gboolean _download_on_idle(gpointer data);
 static gboolean _download_on_timeout(gpointer data);
 
@@ -123,8 +135,8 @@ static int _download(Prefs * prefs, char const * url)
 	/* button */
 	hbox = gtk_hbox_new(FALSE, 0);
 	download.cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect(G_OBJECT(download.cancel), "clicked", G_CALLBACK(
-				_download_on_cancel), &download);
+	g_signal_connect_swapped(G_OBJECT(download.cancel), "clicked",
+			G_CALLBACK(_download_on_cancel), &download);
 	gtk_box_pack_end(GTK_BOX(hbox), download.cancel, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(download.window), 4);
@@ -164,9 +176,11 @@ static int _download_cancel(Download * download)
 
 	if(download->fp != NULL)
 	{
+#ifndef WITH_WEBKIT
 		if(fclose(download->fp) != 0)
 			ret |= _download_error(download,
 					download->prefs->output, 1);
+#endif
 		if(unlink(download->prefs->output) != 0)
 			ret |= _download_error(download,
 					download->prefs->output, 1);
@@ -245,6 +259,7 @@ static void _download_refresh(Download * download)
 
 
 /* download_write */
+#ifndef WITH_WEBKIT
 static int _download_write(Download * download)
 {
 	gchar * buf;
@@ -265,11 +280,12 @@ static int _download_write(Download * download)
 	_download_cancel(download);
 	return 1;
 }
+#endif
 
 
 /* callbacks */
 /* download_on_cancel */
-static void _download_on_cancel(GtkWidget * widget, gpointer data)
+static void _download_on_cancel(gpointer data)
 {
 	Download * download = data;
 
@@ -291,6 +307,7 @@ static gboolean _download_on_closex(GtkWidget * widget, GdkEvent * event,
 
 
 /* download_on_http */
+#ifndef WITH_WEBKIT
 static void _http_connected(Download * download);
 static void _http_error(GConnHttpEventError * event, Download * download);
 static void _http_data_complete(GConnHttpEventData * event,
@@ -418,6 +435,7 @@ static void _http_timeout(Download * download)
 	gtk_label_set_text(GTK_LABEL(download->status), "Timeout");
 	/* FIXME implement */
 }
+#endif
 
 
 /* download_on_idle */
@@ -425,6 +443,9 @@ static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
 	Prefs * prefs = download->prefs;
+#ifdef WITH_WEBKIT
+	WebKitNetworkRequest * request;
+#endif
 
 	if((download->fp = fopen(prefs->output, "w")) == NULL)
 	{
@@ -433,6 +454,13 @@ static gboolean _download_on_idle(gpointer data)
 		gtk_main_quit();
 		return FALSE;
 	}
+#ifdef WITH_WEBKIT
+	request = webkit_network_request_new(download->url);
+	download->conn = webkit_download_new(request);
+	webkit_download_set_destination_uri(download->conn,
+			download->prefs->output);
+	webkit_download_start(download->conn);
+#else
 	download->conn = gnet_conn_http_new();
 	if(gnet_conn_http_set_method(download->conn, GNET_CONN_HTTP_METHOD_GET,
 			NULL, 0) != TRUE)
@@ -442,6 +470,7 @@ static gboolean _download_on_idle(gpointer data)
 		gnet_conn_http_set_user_agent(download->conn,
 				prefs->user_agent);
 	gnet_conn_http_run_async(download->conn, _download_on_http, download);
+#endif
 	download->timeout = g_timeout_add(250, _download_on_timeout, download);
 	return FALSE;
 }
@@ -451,7 +480,23 @@ static gboolean _download_on_idle(gpointer data)
 static gboolean _download_on_timeout(gpointer data)
 {
 	Download * download = data;
+#ifdef WITH_WEBKIT
+	WebKitDownloadStatus status;
 
+	/* FIXME not very efficient */
+	download->content_length = webkit_download_get_total_size(
+			download->conn);
+	download->content_length = webkit_download_get_current_size(
+			download->conn);
+	status = webkit_download_get_status(download->conn);
+	switch(status)
+	{
+		case WEBKIT_DOWNLOAD_STATUS_ERROR:
+			gtk_label_set_text(GTK_LABEL(download->status),
+					"Error");
+			break;
+	}
+#endif
 	_download_refresh(download);
 	return TRUE;
 }

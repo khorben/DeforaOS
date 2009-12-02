@@ -30,7 +30,7 @@ surfer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/li
 surfer: $(surfer_OBJS)
 	$(CC) -o surfer $(surfer_OBJS) $(surfer_LDFLAGS)
 
-download.o: download.c
+download.o: download.c ../config.h
 	$(CC) $(download_CFLAGS) -c download.c
 
 surfer.o: surfer.c callbacks.h surfer.h ../config.h
