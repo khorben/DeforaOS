@@ -43,13 +43,13 @@ typedef struct _Download
 {
 	Prefs * prefs;
 	char * url;
-	FILE * fp;
 
 	struct timeval tv;
 
 #ifdef WITH_WEBKIT
 	WebKitDownload * conn;
 #else
+	FILE * fp;
 	GConnHttp * conn;
 #endif
 	guint64 content_length;
@@ -109,6 +109,7 @@ static int _download(Prefs * prefs, char const * url)
 		prefs->output = basename(download.url);
 	if(gettimeofday(&download.tv, NULL) != 0)
 		return _download_error(NULL, "gettimeofday", 1);
+	download.conn = NULL;
 	download.data_received = 0;
 	download.content_length = 0;
 	download.pulse = 0;
@@ -138,7 +139,7 @@ static int _download(Prefs * prefs, char const * url)
 	g_signal_connect_swapped(G_OBJECT(download.cancel), "clicked",
 			G_CALLBACK(_download_on_cancel), &download);
 	gtk_box_pack_end(GTK_BOX(hbox), download.cancel, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(download.window), 4);
 	gtk_container_add(GTK_CONTAINER(download.window), vbox);
 	g_idle_add(_download_on_idle, &download);
@@ -174,18 +175,22 @@ static int _download_cancel(Download * download)
 {
 	int ret = 0;
 
+#ifdef WITH_WEBKIT
+	if(download->conn != NULL)
+		webkit_download_cancel(download->conn);
+	/* XXX also unlink the output file? */
+#else
 	if(download->fp != NULL)
 	{
-#ifndef WITH_WEBKIT
 		if(fclose(download->fp) != 0)
 			ret |= _download_error(download,
 					download->prefs->output, 1);
-#endif
 		if(unlink(download->prefs->output) != 0)
 			ret |= _download_error(download,
 					download->prefs->output, 1);
 		download->fp = NULL;
 	}
+#endif
 	gtk_main_quit();
 	return ret;
 }
@@ -221,6 +226,10 @@ static void _download_refresh(Download * download)
 	double rate;
 	double fraction;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %u/%u\n", __func__,
+			download->data_received, download->content_length);
+#endif
 	/* XXX should check gettimeofday() return value explicitly */
 	if(download->data_received > 0 && gettimeofday(&tv, NULL) == 0)
 	{
@@ -443,24 +452,33 @@ static gboolean _download_on_idle(gpointer data)
 {
 	Download * download = data;
 	Prefs * prefs = download->prefs;
+	char * p = NULL;
 #ifdef WITH_WEBKIT
 	WebKitNetworkRequest * request;
-#endif
 
-	if((download->fp = fopen(prefs->output, "w")) == NULL)
+	if((p = malloc(strlen(prefs->output) + 6)) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
 		/* FIXME cleanup */
 		gtk_main_quit();
 		return FALSE;
 	}
-#ifdef WITH_WEBKIT
+	/* FIXME needs to be an absolute path */
+	sprintf(p, "%s%s", "file:", prefs->output);
 	request = webkit_network_request_new(download->url);
 	download->conn = webkit_download_new(request);
-	webkit_download_set_destination_uri(download->conn,
-			download->prefs->output);
+	webkit_download_set_destination_uri(download->conn, p);
+	free(p);
 	webkit_download_start(download->conn);
 #else
+	if((download->fp = fopen(prefs->output, "w")) == NULL)
+	{
+		_download_error(download, prefs->output, 0);
+		free(p);
+		/* FIXME cleanup */
+		gtk_main_quit();
+		return FALSE;
+	}
 	download->conn = gnet_conn_http_new();
 	if(gnet_conn_http_set_method(download->conn, GNET_CONN_HTTP_METHOD_GET,
 			NULL, 0) != TRUE)
@@ -479,25 +497,41 @@ static gboolean _download_on_idle(gpointer data)
 /* download_on_timeout */
 static gboolean _download_on_timeout(gpointer data)
 {
-	Download * download = data;
+	Download * d = data;
 #ifdef WITH_WEBKIT
 	WebKitDownloadStatus status;
 
 	/* FIXME not very efficient */
-	download->content_length = webkit_download_get_total_size(
-			download->conn);
-	download->content_length = webkit_download_get_current_size(
-			download->conn);
-	status = webkit_download_get_status(download->conn);
+	status = webkit_download_get_status(d->conn);
 	switch(status)
 	{
 		case WEBKIT_DOWNLOAD_STATUS_ERROR:
-			gtk_label_set_text(GTK_LABEL(download->status),
-					"Error");
+			gtk_label_set_text(GTK_LABEL(d->status), "Error");
+			break;
+		case WEBKIT_DOWNLOAD_STATUS_FINISHED:
+			/* XXX pasted from _http_data_complete */
+			g_source_remove(d->timeout);
+			d->timeout = 0;
+			gtk_label_set_text(GTK_LABEL(d->status), "Complete");
+			gtk_button_set_label(GTK_BUTTON(d->cancel),
+					GTK_STOCK_CLOSE);
+			d->data_received = webkit_download_get_current_size(
+					d->conn);
+			d->content_length = webkit_download_get_total_size(
+					d->conn);
+			break;
+		case WEBKIT_DOWNLOAD_STATUS_STARTED:
+			gtk_label_set_text(GTK_LABEL(d->status), "Downloading");
+			d->data_received = webkit_download_get_current_size(
+					d->conn);
+			d->content_length = webkit_download_get_total_size(
+					d->conn);
+			break;
+		default: /* XXX anything else to handle here? */
 			break;
 	}
 #endif
-	_download_refresh(download);
+	_download_refresh(d);
 	return TRUE;
 }
 
