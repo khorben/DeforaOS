@@ -73,7 +73,8 @@ typedef struct _Download
 
 
 /* prototypes */
-static int _download(Prefs * prefs, char const * url);
+static Download * _download_new(Prefs * prefs, char const * url);
+static void _download_delete(Download * download);
 static int _download_cancel(Download * download);
 static int _download_error(Download * download, char const * message, int ret);
 static void _download_refresh(Download * download);
@@ -98,9 +99,9 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 		GtkSizeGroup * left, GtkSizeGroup * right, char const * label,
 		GtkWidget ** widget, char const * text);
 
-static int _download(Prefs * prefs, char const * url)
+static Download * _download_new(Prefs * prefs, char const * url)
 {
-	Download download;
+	Download * download;
 	char buf[256];
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -108,56 +109,62 @@ static int _download(Prefs * prefs, char const * url)
 	GtkSizeGroup * right;
 	PangoFontDescription * bold;
 
-	download.prefs = prefs;
-	download.url = strdup(url);
+	if((download = malloc(sizeof(*download))) == NULL)
+	{
+		_download_error(NULL, "malloc", -1);
+		return NULL;
+	}
+	download->prefs = prefs; /* XXX copy the preferences instead */
+	if(gettimeofday(&download->tv, NULL) != 0)
+	{
+		_download_error(NULL, "gettimeofday", 1);
+		return NULL;
+	}
+	download->url = strdup(url);
 	if(prefs->output == NULL)
-		prefs->output = basename(download.url);
-	if(gettimeofday(&download.tv, NULL) != 0)
-		return _download_error(NULL, "gettimeofday", 1);
-	download.conn = NULL;
-	download.data_received = 0;
-	download.content_length = 0;
-	download.pulse = 0;
+		prefs->output = basename(download->url);
+	download->conn = NULL;
+	download->data_received = 0;
+	download->content_length = 0;
+	download->pulse = 0;
 	/* window */
-	download.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	snprintf(buf, sizeof(buf), "%s %s", "Download", url);
-	gtk_window_set_title(GTK_WINDOW(download.window), buf);
-	g_signal_connect(G_OBJECT(download.window), "delete-event", G_CALLBACK(
-				_download_on_closex), &download);
+	gtk_window_set_title(GTK_WINDOW(download->window), buf);
+	g_signal_connect(G_OBJECT(download->window), "delete-event", G_CALLBACK(
+				_download_on_closex), download);
 	vbox = gtk_vbox_new(FALSE, 0);
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	_download_label(vbox, bold, left, right, "File: ", &download.status,
+	_download_label(vbox, bold, left, right, "File: ", &download->status,
 			prefs->output);
-	_download_label(vbox, bold, left, right, "Status: ", &download.status,
+	_download_label(vbox, bold, left, right, "Status: ", &download->status,
 			"Resolving...");
-	_download_label(vbox, bold, left, right, "Speed: ", &download.speed,
+	_download_label(vbox, bold, left, right, "Speed: ", &download->speed,
 			"0.0 kB/s");
 	/* progress bar */
-	download.progress = gtk_progress_bar_new();
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download.progress), " ");
-	gtk_box_pack_start(GTK_BOX(vbox), download.progress, TRUE, TRUE, 4);
+	download->progress = gtk_progress_bar_new();
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), " ");
+	gtk_box_pack_start(GTK_BOX(vbox), download->progress, TRUE, TRUE, 4);
 	/* checkbox */
-	download.check = gtk_check_button_new_with_label(
+	download->check = gtk_check_button_new_with_label(
 			"Close window when the download is complete");
-	gtk_box_pack_start(GTK_BOX(vbox), download.check, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), download->check, TRUE, TRUE, 0);
 	/* button */
 	hbox = gtk_hbox_new(FALSE, 0);
-	download.cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	g_signal_connect_swapped(G_OBJECT(download.cancel), "clicked",
-			G_CALLBACK(_download_on_cancel), &download);
-	gtk_box_pack_end(GTK_BOX(hbox), download.cancel, FALSE, TRUE, 0);
+	download->cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	g_signal_connect_swapped(G_OBJECT(download->cancel), "clicked",
+			G_CALLBACK(_download_on_cancel), download);
+	gtk_box_pack_end(GTK_BOX(hbox), download->cancel, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	gtk_container_set_border_width(GTK_CONTAINER(download.window), 4);
-	gtk_container_add(GTK_CONTAINER(download.window), vbox);
-	g_idle_add(_download_on_idle, &download);
-	_download_refresh(&download);
-	gtk_widget_show_all(download.window);
-	gtk_main();
-	free(download.url);
-	return 0;
+	gtk_container_set_border_width(GTK_CONTAINER(download->window), 4);
+	gtk_container_add(GTK_CONTAINER(download->window), vbox);
+	g_idle_add(_download_on_idle, download);
+	_download_refresh(download);
+	gtk_widget_show_all(download->window);
+	return download;
 }
 
 static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
@@ -180,27 +187,34 @@ static void _download_label(GtkWidget * vbox, PangoFontDescription * bold,
 }
 
 
+/* download_delete */
+static void _download_delete(Download * download)
+{
+#ifdef WITH_WEBKIT
+	if(download->conn != NULL)
+		webkit_download_cancel(download->conn);
+	/* XXX should also unlink the (temporary) output file */
+#else
+	if(download->conn != NULL)
+		gnet_conn_http_delete(download->conn);
+	if(download->fp != NULL)
+	{
+		if(fclose(download->fp) != 0)
+			_download_error(download, download->prefs->output, 1);
+		if(unlink(download->prefs->output) != 0)
+			_download_error(download, download->prefs->output, 1);
+	}
+#endif
+	free(download->url);
+	free(download);
+}
+
+
 /* download_cancel */
 static int _download_cancel(Download * download)
 {
 	int ret = 0;
 
-#ifdef WITH_WEBKIT
-	if(download->conn != NULL)
-		webkit_download_cancel(download->conn);
-	/* XXX should also unlink the temporary output file */
-#else
-	if(download->fp != NULL)
-	{
-		if(fclose(download->fp) != 0)
-			ret |= _download_error(download,
-					download->prefs->output, 1);
-		if(unlink(download->prefs->output) != 0)
-			ret |= _download_error(download,
-					download->prefs->output, 1);
-		download->fp = NULL;
-	}
-#endif
 	gtk_main_quit();
 	return ret;
 }
@@ -577,6 +591,7 @@ int main(int argc, char * argv[])
 {
 	Prefs prefs;
 	int o;
+	Download * download;
 
 	memset(&prefs, 0, sizeof(prefs));
 	if(g_thread_supported() == FALSE)
@@ -596,5 +611,10 @@ int main(int argc, char * argv[])
 		}
 	if(optind + 1 != argc)
 		return _usage();
-	return _download(&prefs, argv[optind]) == 0 ? 0 : 2;
+	if((download = _download_new(&prefs, argv[optind])) != NULL)
+	{
+		gtk_main();
+		_download_delete(download);
+	}
+	return 0;
 }
