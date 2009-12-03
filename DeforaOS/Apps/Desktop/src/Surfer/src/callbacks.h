@@ -50,12 +50,12 @@ void on_help_about(gpointer data);
 #endif /* !EMBEDDED */
 
 /* toolbar */
-void on_back(GtkWidget * widget, gpointer data);
-void on_forward(GtkWidget * widget, gpointer data);
+void on_back(gpointer data);
+void on_forward(gpointer data);
 void on_fullscreen(GtkToggleToolButton * button, gpointer data);
-void on_home(GtkWidget * widget, gpointer data);
-void on_path_activate(GtkWidget * widget, gpointer data);
-void on_refresh(GtkWidget * widget, gpointer data);
-void on_stop(GtkWidget * widget, gpointer data);
+void on_home(gpointer data);
+void on_path_activate(gpointer data);
+void on_refresh(gpointer data);
+void on_stop(gpointer data);
 
 #endif

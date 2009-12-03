@@ -103,6 +103,17 @@ static DesktopMenubar _surfer_menubar[] =
 };
 #endif /* !EMBEDDED */
 
+static DesktopToolbar _surfer_toolbar[] =
+{
+	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, NULL },
+	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, NULL },
+	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, NULL },
+	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, NULL },
+	{ "", NULL, NULL, 0, NULL },
+	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, NULL },
+	{ NULL, NULL, NULL, 0, NULL }
+};
+
 unsigned int surfer_cnt = 0;
 
 
@@ -159,33 +170,14 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
 #endif
 	/* toolbar */
-	surfer->toolbar = gtk_toolbar_new();
-	toolbar = surfer->toolbar;
-	surfer->tb_back = gtk_tool_button_new_from_stock(GTK_STOCK_GO_BACK);
-	g_signal_connect(G_OBJECT(surfer->tb_back), "clicked", G_CALLBACK(
-				on_back), surfer);
+	toolbar = desktop_toolbar_create(_surfer_toolbar, surfer, group);
+	surfer->toolbar = toolbar;
+	surfer->tb_back = _surfer_toolbar[0].widget;
+	surfer->tb_forward = _surfer_toolbar[1].widget;
+	surfer->tb_stop = _surfer_toolbar[2].widget;
+	surfer->tb_refresh = _surfer_toolbar[3].widget;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), FALSE);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), surfer->tb_back, -1);
-	surfer->tb_forward = gtk_tool_button_new_from_stock(
-			GTK_STOCK_GO_FORWARD);
-	g_signal_connect(G_OBJECT(surfer->tb_forward), "clicked", G_CALLBACK(
-				on_forward), surfer);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), FALSE);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), surfer->tb_forward, -1);
-	surfer->tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
-	g_signal_connect(G_OBJECT(surfer->tb_stop), "clicked", G_CALLBACK(
-				on_stop), surfer);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), surfer->tb_stop, -1);
-	surfer->tb_refresh = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
-	g_signal_connect(G_OBJECT(surfer->tb_refresh), "clicked", G_CALLBACK(
-				on_refresh), surfer);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), surfer->tb_refresh, -1);
-	toolitem = gtk_separator_tool_item_new();
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_HOME);
-	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(on_home),
-			surfer);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #if GTK_CHECK_VERSION(2, 8, 0)
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_FULLSCREEN);
 #else
@@ -194,7 +186,7 @@ Surfer * surfer_new(char const * url)
 	g_signal_connect(G_OBJECT(toolitem), "toggled", G_CALLBACK(
 				on_fullscreen), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
-	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
@@ -209,7 +201,7 @@ Surfer * surfer_new(char const * url)
 	toolitem = gtk_tool_item_new();
 	surfer->tb_path = gtk_combo_box_entry_new_text();
 	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
-	g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), surfer);
 	if(url != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), url);
@@ -217,7 +209,7 @@ Surfer * surfer_new(char const * url)
 	gtk_container_add(GTK_CONTAINER(toolitem), surfer->tb_path);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_JUMP_TO);
-	g_signal_connect(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				on_path_activate), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
