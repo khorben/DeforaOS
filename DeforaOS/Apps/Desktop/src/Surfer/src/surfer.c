@@ -12,8 +12,6 @@
  * You should have received a copy of the GNU General Public License along with
  * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA  02111-1307  USA */
-/* FIXME:
- * - disabling the menubar with EMBEDDED also disables accelerators */
 
 
 
@@ -29,6 +27,15 @@
 /* Surfer */
 /* private */
 /* variables */
+#ifdef EMBEDDED
+static DesktopAccel _surfer_accel[] =
+{
+	/* FIXME implement the missing accelerators in embedded mode */
+	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
+	{ NULL, 0, 0 }
+};
+#endif
+
 #ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
 {
@@ -168,6 +175,8 @@ Surfer * surfer_new(char const * url)
 	surfer->menubar = desktop_menubar_create(_surfer_menubar, surfer,
 			group);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
+#else
+	desktop_accel_create(_surfer_accel, surfer, group);
 #endif
 	/* toolbar */
 	toolbar = desktop_toolbar_create(_surfer_toolbar, surfer, group);
