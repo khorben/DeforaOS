@@ -50,14 +50,14 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 
 #ifndef EMBEDDED
 /* file menu */
-void on_file_close(GtkWidget * widget, gpointer data)
+void on_file_close(gpointer data)
 {
-	on_closex(widget, NULL, data);
+	on_closex(NULL, NULL, data);
 }
 
 
 /* on_file_new_window */
-void on_file_new_window(GtkWidget * widget, gpointer data)
+void on_file_new_window(gpointer data)
 {
 	Surfer * surfer = data;
 	
@@ -66,7 +66,7 @@ void on_file_new_window(GtkWidget * widget, gpointer data)
 
 
 /* on_file_open */
-void on_file_open(GtkWidget * widget, gpointer data)
+void on_file_open(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -75,7 +75,7 @@ void on_file_open(GtkWidget * widget, gpointer data)
 
 
 /* on_file_open_url */
-void on_file_open_url(GtkWidget * widget, gpointer data)
+void on_file_open_url(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -92,11 +92,12 @@ static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 
-void on_edit_preferences(GtkWidget * widget, gpointer data)
+void on_edit_preferences(gpointer data)
 {
 	Surfer * surfer = data;
 	PangoFontDescription * desc;
 	GtkWidget * vbox;
+	GtkWidget * widget;
 	GtkWidget * notebook;
 	GtkWidget * page;
 	GtkWidget * hbox;
@@ -194,7 +195,7 @@ static void _preferences_on_ok(GtkWidget * widget, gpointer data)
 
 
 /* on_edit_select_all */
-void on_edit_select_all(GtkWidget * widget, gpointer data)
+void on_edit_select_all(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -203,7 +204,7 @@ void on_edit_select_all(GtkWidget * widget, gpointer data)
 
 
 /* on_edit_unselect_all */
-void on_edit_unselect_all(GtkWidget * widget, gpointer data)
+void on_edit_unselect_all(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -213,7 +214,7 @@ void on_edit_unselect_all(GtkWidget * widget, gpointer data)
 
 /* view menu */
 /* on_view_force_refresh */
-void on_view_force_refresh(GtkWidget * widget, gpointer data)
+void on_view_force_refresh(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -222,7 +223,7 @@ void on_view_force_refresh(GtkWidget * widget, gpointer data)
 
 
 /* on_view_normal_size */
-void on_view_normal_size(GtkWidget * widget, gpointer data)
+void on_view_normal_size(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -231,14 +232,14 @@ void on_view_normal_size(GtkWidget * widget, gpointer data)
 
 
 /* on_view_page_source */
-void on_view_page_source(GtkWidget * widget, gpointer data)
+void on_view_page_source(gpointer data)
 {
 	/* FIXME implement */
 }
 
 
 /* on_view_refresh */
-void on_view_refresh(GtkWidget * widget, gpointer data)
+void on_view_refresh(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -247,7 +248,7 @@ void on_view_refresh(GtkWidget * widget, gpointer data)
 
 
 /* on_view_stop */
-void on_view_stop(GtkWidget * widget, gpointer data)
+void on_view_stop(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -256,7 +257,7 @@ void on_view_stop(GtkWidget * widget, gpointer data)
 
 
 /* on_view_zoom_in */
-void on_view_zoom_in(GtkWidget * widget, gpointer data)
+void on_view_zoom_in(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -265,7 +266,7 @@ void on_view_zoom_in(GtkWidget * widget, gpointer data)
 
 
 /* on_view_zoom_out */
-void on_view_zoom_out(GtkWidget * widget, gpointer data)
+void on_view_zoom_out(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -283,7 +284,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data);
 static void _about_on_license(GtkWidget * widget, gpointer data);
 # endif
 
-void on_help_about(GtkWidget * widget, gpointer data)
+void on_help_about(gpointer data)
 {
 	Surfer * surfer = data;
 	static GtkWidget * window = NULL;

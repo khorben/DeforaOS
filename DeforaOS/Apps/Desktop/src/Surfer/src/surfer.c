@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gdk/gdkkeysyms.h>
+#include <Desktop.h>
 #include "callbacks.h"
 #include "ghtml.h"
 #include "surfer.h"
@@ -27,25 +28,9 @@
 
 /* Surfer */
 /* private */
-/* types */
-#ifndef EMBEDDED
-struct _menu
-{
-	char * name;
-	GtkSignalFunc callback;
-	char * stock;
-	unsigned int accel; /* FIXME doesn't work */
-};
-
-struct _menubar
-{
-	char * name;
-	struct _menu * menu;
-};
-
-
 /* variables */
-static struct _menu _menu_file[] =
+#ifndef EMBEDDED
+static DesktopMenu _menu_file[] =
 {
 	{ "_New window",	G_CALLBACK(on_file_new_window), "window-new",
 		GDK_N },
@@ -58,7 +43,7 @@ static struct _menu _menu_file[] =
 	{ NULL,			NULL, NULL, 0 }
 };
 
-static struct _menu _menu_edit[] =
+static DesktopMenu _menu_edit[] =
 {
 	{ "_Cut",		NULL, GTK_STOCK_CUT, GDK_X },
 	{ "Cop_y",		NULL, GTK_STOCK_COPY, GDK_C },
@@ -78,7 +63,7 @@ static struct _menu _menu_edit[] =
 	{ NULL,			NULL, NULL, 0 }
 };
 
-static struct _menu _menu_view[] =
+static DesktopMenu _menu_view[] =
 {
 	{ "Zoom in",		G_CALLBACK(on_view_zoom_in), "zoom-in",
 		GDK_plus },
@@ -97,7 +82,7 @@ static struct _menu _menu_view[] =
 	{ NULL,			NULL, NULL, 0 }
 };
 
-static struct _menu _menu_help[] =
+static DesktopMenu _menu_help[] =
 {
 	{ "_About",		G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -108,7 +93,7 @@ static struct _menu _menu_help[] =
 	{ NULL,			NULL, NULL, 0 }
 };
 
-static struct _menubar _menubar[] =
+static DesktopMenubar _surfer_menubar[] =
 {
 	{ "_File", _menu_file },
 	{ "_Edit", _menu_edit },
@@ -132,14 +117,12 @@ static int _config_save_string(Config * config, char const * variable,
 /* public */
 /* functions */
 /* surfer_new */
-#ifndef EMBEDDED
-static GtkWidget * _new_menubar(Surfer * surfer);
-#endif
 static gboolean _new_idle(gpointer data);
 
 Surfer * surfer_new(char const * url)
 {
 	Surfer * surfer;
+	GtkAccelGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * toolbar;
 	GtkToolItem * toolitem;
@@ -158,7 +141,9 @@ Surfer * surfer_new(char const * url)
 	}
 	/* widgets */
 	/* window */
+	group = gtk_accel_group_new();
 	surfer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(surfer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(surfer->window), 800, 600);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
@@ -169,7 +154,8 @@ Surfer * surfer_new(char const * url)
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
 	/* menubar */
-	surfer->menubar = _new_menubar(surfer);
+	surfer->menubar = desktop_menubar_create(_surfer_menubar, surfer,
+			group);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
 #endif
 	/* toolbar */
@@ -267,68 +253,6 @@ Surfer * surfer_new(char const * url)
 		g_idle_add(_new_idle, surfer);
 	return surfer;
 }
-
-#ifndef EMBEDDED
-static GtkWidget * _new_menubar(Surfer * surfer)
-{
-	GtkWidget * tb_menubar;
-	GtkAccelGroup * group;
-	GtkWidget * menu;
-	GtkWidget * menubar;
-	GtkWidget * menuitem;
-	GtkWidget * image;
-	unsigned int i;
-	unsigned int j;
-	struct _menu * p;
-
-	tb_menubar = gtk_menu_bar_new();
-	group = gtk_accel_group_new();
-	for(i = 0; _menubar[i].name != NULL; i++)
-	{
-		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
-		menu = gtk_menu_new();
-		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
-		{
-			p = &_menubar[i].menu[j];
-			if(p->name[0] == '\0')
-				menuitem = gtk_separator_menu_item_new();
-			else if(p->stock == 0)
-				menuitem = gtk_menu_item_new_with_mnemonic(
-						p->name);
-			else if(strncmp(p->stock, "gtk-", 4) == 0)
-				menuitem = gtk_image_menu_item_new_from_stock(
-						p->stock, NULL);
-			else
-			{
-				image = gtk_image_new_from_icon_name(p->stock,
-						GTK_ICON_SIZE_MENU);
-				menuitem =
-					gtk_image_menu_item_new_with_mnemonic(
-							p->name);
-				gtk_image_menu_item_set_image(
-						GTK_IMAGE_MENU_ITEM(menuitem),
-						image);
-			}
-			if(p->callback != NULL)
-				g_signal_connect(G_OBJECT(menuitem), "activate",
-						G_CALLBACK(p->callback),
-						surfer);
-			else
-				gtk_widget_set_sensitive(menuitem, FALSE);
-			if(p->accel != 0)
-				gtk_widget_add_accelerator(menuitem, "activate",
-						group, p->accel,
-						GDK_CONTROL_MASK,
-						GTK_ACCEL_VISIBLE);
-			gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		}
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menubar), menu);
-		gtk_menu_bar_append(GTK_MENU_BAR(tb_menubar), menubar);
-	}
-	gtk_window_add_accel_group(GTK_WINDOW(surfer->window), group);
-	return tb_menubar;
-}
-#endif /* !EMBEDDED */
 
 static gboolean _new_idle(gpointer data)
 {

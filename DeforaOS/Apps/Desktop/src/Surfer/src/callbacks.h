@@ -26,27 +26,27 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 #ifndef EMBEDDED
 /* file menu */
-void on_file_close(GtkWidget * widget, gpointer data);
-void on_file_new_window(GtkWidget * widget, gpointer data);
-void on_file_open(GtkWidget * widget, gpointer data);
-void on_file_open_url(GtkWidget * widget, gpointer data);
+void on_file_close(gpointer data);
+void on_file_new_window(gpointer data);
+void on_file_open(gpointer data);
+void on_file_open_url(gpointer data);
 
 /* edit menu */
-void on_edit_preferences(GtkWidget * widget, gpointer data);
-void on_edit_select_all(GtkWidget * widget, gpointer data);
-void on_edit_unselect_all(GtkWidget * widget, gpointer data);
+void on_edit_preferences(gpointer data);
+void on_edit_select_all(gpointer data);
+void on_edit_unselect_all(gpointer data);
 
 /* view menu */
-void on_view_zoom_in(GtkWidget * widget, gpointer data);
-void on_view_zoom_out(GtkWidget * widget, gpointer data);
-void on_view_normal_size(GtkWidget * widget, gpointer data);
-void on_view_refresh(GtkWidget * widget, gpointer data);
-void on_view_force_refresh(GtkWidget * widget, gpointer data);
-void on_view_stop(GtkWidget * widget, gpointer data);
-void on_view_page_source(GtkWidget * widget, gpointer data);
+void on_view_zoom_in(gpointer data);
+void on_view_zoom_out(gpointer data);
+void on_view_normal_size(gpointer data);
+void on_view_refresh(gpointer data);
+void on_view_force_refresh(gpointer data);
+void on_view_stop(gpointer data);
+void on_view_page_source(gpointer data);
 
 /* help menu */
-void on_help_about(GtkWidget * widget, gpointer data);
+void on_help_about(gpointer data);
 #endif /* !EMBEDDED */
 
 /* toolbar */
