@@ -60,11 +60,16 @@ typedef struct _Download
 	GtkWidget * status;
 	GtkWidget * speed;
 	GtkWidget * progress;
+	GtkWidget * check;
 	GtkWidget * cancel;
 
 	guint timeout;
 	int pulse;
 } Download;
+
+
+/* constants */
+#define PROGNAME	"download"
 
 
 /* prototypes */
@@ -132,7 +137,12 @@ static int _download(Prefs * prefs, char const * url)
 			"0.0 kB/s");
 	/* progress bar */
 	download.progress = gtk_progress_bar_new();
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download.progress), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), download.progress, TRUE, TRUE, 4);
+	/* checkbox */
+	download.check = gtk_check_button_new_with_label(
+			"Close window when the download is complete");
+	gtk_box_pack_start(GTK_BOX(vbox), download.check, TRUE, TRUE, 0);
 	/* button */
 	hbox = gtk_hbox_new(FALSE, 0);
 	download.cancel = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -178,7 +188,7 @@ static int _download_cancel(Download * download)
 #ifdef WITH_WEBKIT
 	if(download->conn != NULL)
 		webkit_download_cancel(download->conn);
-	/* XXX also unlink the output file? */
+	/* XXX should also unlink the temporary output file */
 #else
 	if(download->fp != NULL)
 	{
@@ -203,7 +213,7 @@ static int _download_error(Download * download, char const * message, int ret)
 
 	if(ret < 0)
 	{
-		fputs("download: ", stderr);
+		fputs(PROGNAME ": ", stderr);
 		perror(message);
 		return -ret;
 	}
@@ -398,6 +408,12 @@ static void _http_data_complete(GConnHttpEventData * event,
 		_download_error(download, download->prefs->output, 0);
 	download->fp = NULL;
 	_download_refresh(download);
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(download->check)))
+	{
+		/* FIXME cleanup */
+		gtk_main_quit();
+		return;
+	}
 	gtk_label_set_text(GTK_LABEL(download->status), "Complete");
 	gtk_button_set_label(GTK_BUTTON(download->cancel), GTK_STOCK_CLOSE);
 }
@@ -497,6 +513,7 @@ static gboolean _download_on_idle(gpointer data)
 /* download_on_timeout */
 static gboolean _download_on_timeout(gpointer data)
 {
+	gboolean ret = TRUE;
 	Download * d = data;
 #ifdef WITH_WEBKIT
 	WebKitDownloadStatus status;
@@ -506,12 +523,19 @@ static gboolean _download_on_timeout(gpointer data)
 	switch(status)
 	{
 		case WEBKIT_DOWNLOAD_STATUS_ERROR:
+			ret = FALSE;
 			gtk_label_set_text(GTK_LABEL(d->status), "Error");
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_FINISHED:
 			/* XXX pasted from _http_data_complete */
-			g_source_remove(d->timeout);
-			d->timeout = 0;
+			ret = FALSE;
+			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+							d->check)))
+			{
+				/* FIXME cleanup */
+				gtk_main_quit();
+				break;
+			}
 			gtk_label_set_text(GTK_LABEL(d->status), "Complete");
 			gtk_button_set_label(GTK_BUTTON(d->cancel),
 					GTK_STOCK_CLOSE);
@@ -532,7 +556,9 @@ static gboolean _download_on_timeout(gpointer data)
 	}
 #endif
 	_download_refresh(d);
-	return TRUE;
+	if(ret != TRUE)
+		d->timeout = 0;
+	return ret;
 }
 
 
