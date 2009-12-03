@@ -499,6 +499,34 @@ int surfer_confirm(Surfer * surfer, char const * message)
 }
 
 
+/* surfer_download */
+void surfer_download(Surfer * surfer, char const * url)
+{
+	GtkWidget * dialog;
+	char * filename = NULL;
+	char * argv[] = { "download", "-O", NULL, NULL, NULL };
+	GError * error = NULL;
+
+	dialog = gtk_file_chooser_dialog_new("Save file as...",
+			GTK_WINDOW(surfer->window),
+			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
+			GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
+			GTK_RESPONSE_ACCEPT, NULL);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
+	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	argv[2] = filename;
+	argv[3] = strdup(url);
+	g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL,
+			&error);
+	free(argv[3]);
+	g_free(filename);
+}
+
+
 /* surfer_error */
 int surfer_error(Surfer * surfer, char const * message, int ret)
 {
