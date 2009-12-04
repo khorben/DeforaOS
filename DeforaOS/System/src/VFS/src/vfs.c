@@ -439,6 +439,21 @@ int32_t VFS_readdir(int32_t dir, String ** string)
 }
 
 
+/* VFS_rewinddir */
+int32_t VFS_rewinddir(int32_t dir)
+{
+	DIR * d;
+
+	if((d = _client_check_dir(dir)) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, dir);
+#endif
+	rewinddir(d);
+	return 0;
+}
+
+
 /* VFS_write */
 int32_t VFS_write(int32_t fd, Buffer * b, uint32_t size)
 {

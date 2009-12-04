@@ -82,6 +82,10 @@ ret=INT32
 arg1=STRING,from
 arg2=STRING,to
 
+[rewinddir]
+ret=INT32
+arg1=INT32,dir
+
 [rmdir]
 ret=INT32
 arg1=STRING,pathname

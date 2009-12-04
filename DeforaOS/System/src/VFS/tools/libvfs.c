@@ -64,6 +64,7 @@ static DIR * (*old_opendir)(char const * path);
 static ssize_t (*old_read)(int fd, void * buf, size_t count);
 static struct dirent * (*old_readdir)(DIR * dir);
 static int (*old_rename)(char const * from, char const * to);
+static void (*old_rewinddir)(DIR * dir);
 static int (*old_rmdir)(char const * path);
 static int (*old_symlink)(char const * name1, char const * name2);
 static mode_t (*old_umask)(mode_t mode);
@@ -98,6 +99,7 @@ static void _libvfs_init(void)
 			|| (old_opendir = dlsym(hdl, "opendir")) == NULL
 			|| (old_read = dlsym(hdl, "read")) == NULL
 			|| (old_readdir = dlsym(hdl, "readdir")) == NULL
+			|| (old_rewinddir = dlsym(hdl, "rewinddir")) == NULL
 			|| (old_rename = dlsym(hdl, "rename")) == NULL
 			|| (old_rmdir = dlsym(hdl, "rmdir")) == NULL
 			|| (old_symlink = dlsym(hdl, "symlink")) == NULL
@@ -406,6 +408,20 @@ int rename(char const * from, char const * to)
 	fprintf(stderr, "DEBUG: rename(\"%s\", \"%s\") => %d\n", from, to, ret);
 #endif
 	return ret;
+}
+
+
+/* rewinddir */
+void rewinddir(DIR * dir)
+{
+	VFSDIR * d = (VFSDIR*)dir;
+
+	_libvfs_init();
+	if(d->dir != NULL)
+		old_rewinddir(d->dir);
+	else
+		/* XXX this call ignores errors */
+		appclient_call(_appclient, NULL, "rewinddir", d->fd);
 }
 
 
