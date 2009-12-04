@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - test the recently added string support
  * - implement what's missing */
 
 
@@ -115,19 +114,21 @@ typedef struct _StringEnum
 /* variables */
 StringEnum _string_type[] =
 {
-	{ "VOID",	AICT_VOID	},
-	{ "BOOL",	AICT_BOOL	},
-	{ "INT8",	AICT_INT8	},
-	{ "UINT8",	AICT_UINT8	},
-	{ "INT16",	AICT_INT16	},
-	{ "UINT16",	AICT_UINT16	},
-	{ "INT32",	AICT_INT32	},
-	{ "UINT32",	AICT_UINT32	},
-	{ "INT64",	AICT_INT64	},
-	{ "UINT64",	AICT_UINT64	},
-	{ "STRING",	AICT_STRING	},
-	{ "BUFFER",	AICT_BUFFER	},
-	{ NULL,		0		}
+	{ "VOID",	AICT_VOID		},
+	{ "BOOL",	AICT_BOOL		},
+	{ "INT8",	AICT_INT8		},
+	{ "UINT8",	AICT_UINT8		},
+	{ "INT16",	AICT_INT16		},
+	{ "UINT16",	AICT_UINT16		},
+	{ "INT32",	AICT_INT32		},
+	{ "UINT32",	AICT_UINT32		},
+	{ "INT64",	AICT_INT64		},
+	{ "UINT64",	AICT_UINT64		},
+	{ "STRING",	AICT_STRING		},
+	{ "STRING_OUT",	AICT_STRING | AICD_OUT	},
+	{ "BUFFER",	AICT_BUFFER		},
+	{ "BUFFER_OUT",	AICT_BUFFER | AICD_OUT	},
+	{ NULL,		0			}
 };
 
 
