@@ -537,8 +537,8 @@ int appinterface_call(AppInterface * appinterface, char buf[], size_t buflen,
 					p = va_arg(arg, int64_t *);
 					args[i] = p;
 					break;
-				case AICT_STRING: /* FIXME check this */
-					p = *(va_arg(arg, String **));
+				case AICT_STRING:
+					p = va_arg(arg, String **);
 					args[i] = p;
 					break;
 				case AICT_BUFFER:
