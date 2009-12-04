@@ -16,7 +16,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-../data/Directory.h:
+../data/Directory.h: ../data/Directory.interface
 	./appbroker.sh "../data/Directory.h"
 
 Directory_OBJS = directory.o main.o
