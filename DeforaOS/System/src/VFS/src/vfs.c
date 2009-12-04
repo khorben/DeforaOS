@@ -225,6 +225,7 @@ static int _vfs(char const * root)
 
 /* public */
 /* stubs */
+VFS_STUB2(int32_t, access, String const *, path, uint32_t, mode)
 VFS_STUB2(int32_t, chmod, String const *, path, uint32_t, mode)
 VFS_STUB3(int32_t, chown, String const *, path, uint32_t, owner,
 		uint32_t, group)

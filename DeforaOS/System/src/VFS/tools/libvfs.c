@@ -18,7 +18,6 @@
 
 
 #include <sys/stat.h>
-#include <unistd.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,6 +47,7 @@ static char const _vfs_root[] = "Videos";
 /* variables */
 static AppClient * _appclient = NULL;
 
+static int (*old_access)(char const * path, mode_t mode);
 static int (*old_chmod)(char const * path, mode_t mode);
 static int (*old_chown)(char const * path, uid_t uid, gid_t gid);
 static int (*old_close)(int fd);
@@ -85,7 +85,8 @@ static void _libvfs_init(void)
 		return;
 	if((hdl = dlopen(libc, RTLD_LAZY)) == NULL)
 		exit(1);
-	if((old_chmod = dlsym(hdl, "chmod")) == NULL
+	if((old_access = dlsym(hdl, "access")) == NULL
+			|| (old_chmod = dlsym(hdl, "chmod")) == NULL
 			|| (old_chown = dlsym(hdl, "chown")) == NULL
 			|| (old_close = dlsym(hdl, "close")) == NULL
 			|| (old_closedir = dlsym(hdl, "closedir")) == NULL
@@ -115,6 +116,23 @@ static void _libvfs_init(void)
 
 /* public */
 /* interface */
+/* access */
+int access(char const * path, mode_t mode)
+{
+	int ret;
+
+	_libvfs_init();
+	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
+		return old_access(path, mode);
+	if(appclient_call(_appclient, &ret, "access", path, mode) != 0)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: access(\"%s\", %o) => %d\n", path, mode, ret);
+#endif
+	return ret;
+}
+
+
 /* chmod */
 int chmod(char const * path, mode_t mode)
 {
