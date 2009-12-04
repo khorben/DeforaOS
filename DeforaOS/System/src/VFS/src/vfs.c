@@ -418,6 +418,27 @@ int32_t VFS_read(int32_t fd, Buffer * b, uint32_t size)
 }
 
 
+/* VFS_readdir */
+int32_t VFS_readdir(int32_t dir, String ** string)
+{
+	DIR * d;
+	struct dirent * de;
+
+	if((d = _client_check_dir(dir)) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %p)\n", __func__, dir, string);
+#endif
+	if((de = readdir(d)) == NULL
+			|| (*string = string_new(de->d_name)) == NULL)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, \"%s\") => 0\n", __func__, dir, *string);
+#endif
+	return 0;
+}
+
+
 /* VFS_write */
 int32_t VFS_write(int32_t fd, Buffer * b, uint32_t size)
 {
