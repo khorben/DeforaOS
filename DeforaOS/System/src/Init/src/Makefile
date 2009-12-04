@@ -16,7 +16,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-../data/Init.h:
+../data/Init.h: ../data/Init.interface
 	./appbroker.sh "../data/Init.h"
 
 Init_OBJS = init.o main.o service.o session.o
