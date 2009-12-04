@@ -55,7 +55,6 @@ static int (*old_closedir)(DIR * dir);
 #if 0
 static int (*old_fstat)(int fd, struct stat * st);
 #endif
-static int (*old_ioctl)(int fd, unsigned long request, void * argp);
 static int (*old_lchown)(char const * path, uid_t uid, gid_t gid);
 static off_t (*old_lseek)(int fd, off_t offset, int whence);
 static int (*old_mkdir)(char const * path, mode_t mode);
@@ -91,7 +90,6 @@ static void _libvfs_init(void)
 			|| (old_chown = dlsym(hdl, "chown")) == NULL
 			|| (old_close = dlsym(hdl, "close")) == NULL
 			|| (old_closedir = dlsym(hdl, "closedir")) == NULL
-			|| (old_ioctl = dlsym(hdl, "ioctl")) == NULL
 			|| (old_chown = dlsym(hdl, "lchown")) == NULL
 			|| (old_lseek = dlsym(hdl, "lseek")) == NULL
 			|| (old_mkdir = dlsym(hdl, "mkdir")) == NULL
