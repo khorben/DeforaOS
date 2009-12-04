@@ -17,7 +17,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-../data/Probe.h:
+../data/Probe.h: ../data/Probe.interface
 	./appbroker.sh "../data/Probe.h"
 
 Probe_OBJS = probe.o
