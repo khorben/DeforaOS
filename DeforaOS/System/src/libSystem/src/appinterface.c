@@ -575,6 +575,9 @@ static int _send_string(char const * string, char buf[], size_t buflen,
 {
 	size_t i;
 
+	if(string == NULL)
+		/* XXX always send something until the protocol allows NULL */
+		string = "";
 	for(i = 0; *pos < buflen; i++)
 	{
 		buf[*pos] = string[i];
@@ -1142,7 +1145,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_STRING:
 			p = arg;
-			if(_send_string(*p ? *p : "", buf, buflen, pos) != 0)
+			if(_send_string(*p, buf, buflen, pos) != 0)
 				return -1;
 			break;
 	}
