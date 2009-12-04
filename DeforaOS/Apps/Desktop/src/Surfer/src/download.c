@@ -72,6 +72,10 @@ typedef struct _Download
 #define PROGNAME	"download"
 
 
+/* variables */
+static unsigned int _download_cnt = 0;
+
+
 /* prototypes */
 static Download * _download_new(Prefs * prefs, char const * url);
 static void _download_delete(Download * download);
@@ -164,6 +168,7 @@ static Download * _download_new(Prefs * prefs, char const * url)
 	g_idle_add(_download_on_idle, download);
 	_download_refresh(download);
 	gtk_widget_show_all(download->window);
+	_download_cnt++;
 	return download;
 }
 
@@ -206,17 +211,18 @@ static void _download_delete(Download * download)
 	}
 #endif
 	free(download->url);
+	gtk_widget_destroy(download->window);
 	free(download);
+	if(--_download_cnt == 0)
+		gtk_main_quit();
 }
 
 
 /* download_cancel */
 static int _download_cancel(Download * download)
 {
-	int ret = 0;
-
-	gtk_main_quit();
-	return ret;
+	_download_delete(download);
+	return 0;
 }
 
 
@@ -424,8 +430,7 @@ static void _http_data_complete(GConnHttpEventData * event,
 	_download_refresh(download);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(download->check)))
 	{
-		/* FIXME cleanup */
-		gtk_main_quit();
+		_download_cancel(download);
 		return;
 	}
 	gtk_label_set_text(GTK_LABEL(download->status), "Complete");
@@ -489,8 +494,7 @@ static gboolean _download_on_idle(gpointer data)
 	if((p = malloc(strlen(prefs->output) + 6)) == NULL)
 	{
 		_download_error(download, prefs->output, 0);
-		/* FIXME cleanup */
-		gtk_main_quit();
+		_download_cancel(download);
 		return FALSE;
 	}
 	/* FIXME needs to be an absolute path */
@@ -505,8 +509,7 @@ static gboolean _download_on_idle(gpointer data)
 	{
 		_download_error(download, prefs->output, 0);
 		free(p);
-		/* FIXME cleanup */
-		gtk_main_quit();
+		_download_cancel(download);
 		return FALSE;
 	}
 	download->conn = gnet_conn_http_new();
@@ -546,8 +549,7 @@ static gboolean _download_on_timeout(gpointer data)
 			if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 							d->check)))
 			{
-				/* FIXME cleanup */
-				gtk_main_quit();
+				_download_cancel(d);
 				break;
 			}
 			gtk_label_set_text(GTK_LABEL(d->status), "Complete");
@@ -579,7 +581,7 @@ static gboolean _download_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: download [-O output][-U user-agent] URL\n"
+	fputs("Usage: download [-O output][-U user-agent] URL...\n"
 "  -O	file to write document to\n"
 "  -U	user agent string to send\n", stderr);
 	return 1;
@@ -591,7 +593,8 @@ int main(int argc, char * argv[])
 {
 	Prefs prefs;
 	int o;
-	Download * download;
+	Download ** download;
+	int cnt;
 
 	memset(&prefs, 0, sizeof(prefs));
 	if(g_thread_supported() == FALSE)
@@ -609,12 +612,12 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind + 1 != argc)
+	if((cnt = argc - optind) == 0)
 		return _usage();
-	if((download = _download_new(&prefs, argv[optind])) != NULL)
-	{
-		gtk_main();
-		_download_delete(download);
-	}
+	if((download = malloc(sizeof(*download) * cnt)) == NULL)
+		return _download_error(NULL, "malloc", -2);
+	for(o = 0; o < cnt; o++)
+		download[o] = _download_new(&prefs, argv[optind + o]);
+	gtk_main();
 	return 0;
 }
