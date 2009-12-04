@@ -116,8 +116,7 @@ static char * _do_owner(char * buf, size_t buf_cnt, uid_t uid);
 static char * _do_group(char * buf, size_t buf_cnt, gid_t gid);
 static char * _do_time(char * buf, size_t buf_cnt, time_t date);
 static GtkWidget * _do_groups(Properties * properties);
-static GtkWidget * _do_mode(Properties * properties, GtkWidget ** widget,
-		mode_t mode);
+static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode);
 
 static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		char const * filename)
@@ -265,19 +264,20 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	widget = gtk_label_new("Owner:"); /* owner permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
-	widget = _do_mode(properties, &properties->check[6],
+	widget = _do_mode(properties ? &properties->check[6] : NULL,
 			(st.st_mode & 0700) >> 6);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 9, 10);
 	widget = gtk_label_new("Group:"); /* group permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
-	widget = _do_mode(properties, &properties->check[3],
+	widget = _do_mode(properties ? &properties->check[3] : NULL,
 			(st.st_mode & 0070) >> 3);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 10, 11);
 	widget = gtk_label_new("Others:"); /* others permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
-	widget = _do_mode(properties, &properties->check[0], st.st_mode & 0007);
+	widget = _do_mode(properties ? &properties->check[0] : NULL,
+			st.st_mode & 0007);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 11, 12);
 	gtk_box_pack_start(GTK_BOX(hbox), table, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
@@ -405,14 +405,13 @@ static GtkWidget * _do_groups(Properties * properties)
 	return box;
 }
 
-static GtkWidget * _do_mode(Properties * properties, GtkWidget ** widget,
-		mode_t mode)
+static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode)
 {
 	GtkWidget * hbox;
-	GtkWidget w[3];
+	GtkWidget * w[3];
 
-	if(properties == NULL)
-		widget = &w;
+	if(widget == NULL)
+		widget = w;
 	hbox = gtk_hbox_new(TRUE, 0);
 	widget[2] = gtk_check_button_new_with_label("read"); /* read */
 	gtk_widget_set_sensitive(widget[2], FALSE);
