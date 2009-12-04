@@ -20,9 +20,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#ifdef DEBUG
-# include <stdio.h>
-#endif
+#include <stdio.h>
 #include <string.h>
 #include <dlfcn.h>
 #include <arpa/inet.h>
