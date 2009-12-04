@@ -939,7 +939,7 @@ static int _pre_exec_in(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 
 static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 {
-	char ** p;
+	char *** p;
 	Buffer ** b;
 
 	switch(aica->type)
@@ -968,9 +968,9 @@ static int _pre_exec_out(AppInterfaceCallArg * aica, void * arg)
 			break;
 		case AICT_STRING:
 			p = arg;
-			if((*p = malloc(sizeof(char*))) == NULL)
+			if((*p = malloc(sizeof(**p))) == NULL)
 				return -1;
-			*p = NULL;
+			**p = NULL;
 #ifdef DEBUG
 			fputs("String", stderr);
 #endif
@@ -1095,7 +1095,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 	int16_t * i16;
 	int32_t * i32;
 	Buffer * b;
-	char * p;
+	char ** p;
 	uint32_t size;
 
 	if(aica->size > buflen)
@@ -1143,7 +1143,7 @@ static int _post_exec_out(AppInterfaceCallArg * aica, char buf[], size_t buflen,
 			break;
 		case AICT_STRING:
 			p = arg;
-			if(_send_string(p, buf, buflen, pos) != 0)
+			if(_send_string(*p ? *p : "", buf, buflen, pos) != 0)
 				return -1;
 			break;
 	}
