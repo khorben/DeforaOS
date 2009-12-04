@@ -17,6 +17,7 @@
 
 
 
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -59,6 +60,8 @@ static int (*old_fstat)(int fd, struct stat * st);
 static int (*old_lchown)(char const * path, uid_t uid, gid_t gid);
 static off_t (*old_lseek)(int fd, off_t offset, int whence);
 static int (*old_mkdir)(char const * path, mode_t mode);
+static void * (*old_mmap)(void * addr, size_t len, int prot, int flags, int fd,
+		off_t offset);
 static int (*old_open)(char const * path, int flags, mode_t mode);
 static DIR * (*old_opendir)(char const * path);
 static ssize_t (*old_read)(int fd, void * buf, size_t count);
@@ -97,6 +100,7 @@ static void _libvfs_init(void)
 			|| (old_chown = dlsym(hdl, "lchown")) == NULL
 			|| (old_lseek = dlsym(hdl, "lseek")) == NULL
 			|| (old_mkdir = dlsym(hdl, "mkdir")) == NULL
+			|| (old_mmap = dlsym(hdl, "mmap")) == NULL
 			|| (old_open = dlsym(hdl, "open")) == NULL
 			|| (old_opendir = dlsym(hdl, "opendir")) == NULL
 			|| (old_read = dlsym(hdl, "read")) == NULL
@@ -299,6 +303,18 @@ int mkdir(char const * path, mode_t mode)
 	fprintf(stderr, "DEBUG: mkdir(\"%s\", %d) => %d\n", path, mode, ret);
 #endif
 	return ret;
+}
+
+
+/* mmap */
+void * mmap(void * addr, size_t len, int prot, int flags, int fd,
+		off_t offset)
+{
+	_libvfs_init();
+	if(fd < VFS_OFF)
+		return mmap(addr, len, prot, flags, fd, offset);
+	errno = ENODEV;
+	return MAP_FAILED;
 }
 
 
