@@ -122,11 +122,12 @@ static DesktopMenubar _view_menubar_edit[] =
 #else
 static DesktopToolbar _view_toolbar[] =
 {
-	{ GTK_STOCK_OPEN, G_CALLBACK(_on_open_with), GDK_O, NULL },
-	{ GTK_STOCK_EDIT, G_CALLBACK(_on_edit), GDK_E, NULL },
-	{ "", 0, 0, 0 },
-	{ GTK_STOCK_CLOSE, G_CALLBACK(_on_close), GDK_W, NULL },
-	{ NULL, 0, 0, 0 }
+	{ "Open with...", G_CALLBACK(_on_open_with), GTK_STOCK_OPEN, GDK_O,
+		NULL },
+	{ "Edit", G_CALLBACK(_on_edit), GTK_STOCK_EDIT, GDK_E, NULL },
+	{ "", NULL, NULL, 0, 0 },
+	{ "Close", G_CALLBACK(_on_close), GTK_STOCK_CLOSE, GDK_W, NULL },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 #endif /* EMBEDDED */
 
