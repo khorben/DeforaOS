@@ -16,7 +16,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-../data/VFS.h:
+../data/VFS.h: ../data/VFS.interface
 	./appbroker.sh "../data/VFS.h"
 
 VFS_OBJS = vfs.o
