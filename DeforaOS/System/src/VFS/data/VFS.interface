@@ -67,6 +67,11 @@ arg1=INT32,fd
 arg2=BUFFER_OUT,buf
 arg3=UINT32,size
 
+[readdir]
+ret=INT32
+arg1=INT32,dir
+arg2=STRING_OUT,de
+
 [rename]
 ret=INT32
 arg1=STRING,from
