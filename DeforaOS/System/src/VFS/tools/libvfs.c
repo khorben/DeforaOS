@@ -52,6 +52,7 @@ static int (*old_chmod)(char const * path, mode_t mode);
 static int (*old_chown)(char const * path, uid_t uid, gid_t gid);
 static int (*old_close)(int fd);
 static int (*old_closedir)(DIR * dir);
+static int (*old_dirfd)(DIR * dir);
 #if 0
 static int (*old_fstat)(int fd, struct stat * st);
 #endif
@@ -90,6 +91,9 @@ static void _libvfs_init(void)
 			|| (old_chown = dlsym(hdl, "chown")) == NULL
 			|| (old_close = dlsym(hdl, "close")) == NULL
 			|| (old_closedir = dlsym(hdl, "closedir")) == NULL
+#ifndef dirfd
+			|| (old_dirfd = dlsym(hdl, "dirfd")) == NULL
+#endif
 			|| (old_chown = dlsym(hdl, "lchown")) == NULL
 			|| (old_lseek = dlsym(hdl, "lseek")) == NULL
 			|| (old_mkdir = dlsym(hdl, "mkdir")) == NULL
@@ -201,6 +205,27 @@ int closedir(DIR * dir)
 #endif
 	free(d);
 	return ret;
+}
+
+
+/* dirfd */
+#ifdef dirfd /* XXX useful on NetBSD */
+# undef dirfd
+#endif
+int dirfd(DIR * dir)
+{
+	int ret;
+	VFSDIR * d = (VFSDIR*)dir;
+
+	_libvfs_init();
+	if(d->dir != NULL)
+		ret = old_dirfd(d->dir);
+	else if(appclient_call(_appclient, &ret, "dirfd", d->fd) != 0)
+		return -1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: dirfd(%p) => %d\n", dir, ret);
+#endif
+	return ret + VFS_OFF;
 }
 
 
@@ -418,8 +443,13 @@ void rewinddir(DIR * dir)
 	if(d->dir != NULL)
 		old_rewinddir(d->dir);
 	else
+	{
 		/* XXX this call ignores errors */
 		appclient_call(_appclient, NULL, "rewinddir", d->fd);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: rewinddir(%p)\n", dir);
+#endif
+	}
 }
 
 
