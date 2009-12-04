@@ -313,7 +313,7 @@ int open(char const * path, int flags, mode_t mode)
 	if(appclient_call(_appclient, &ret, "open", path, flags, mode) != 0)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: open(\"%s\", %d, %o) => %d\n", path, flags,
+	fprintf(stderr, "DEBUG: open(\"%s\", %d, 0%o) => %d\n", path, flags,
 			mode, ret);
 #endif
 	if(ret < 0)
@@ -406,7 +406,7 @@ struct dirent * readdir(DIR * dir)
 	snprintf(de.d_name, sizeof(de.d_name), "%s", filename);
 	de.d_namlen = strlen(de.d_name);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: readdir(%p) => \"%s\"\n", dir, de->d_name);
+	fprintf(stderr, "DEBUG: readdir(%p) => \"%s\"\n", dir, de.d_name);
 #endif
 	return &de;
 }
