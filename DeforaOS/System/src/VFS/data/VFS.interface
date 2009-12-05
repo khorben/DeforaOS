@@ -51,6 +51,12 @@ ret=INT32
 arg1=STRING,name1
 arg2=STRING,name2
 
+[lseek]
+ret=INT32
+arg1=INT32,fd
+arg2=INT32,offset
+arg3=INT32,whence
+
 [mkdir]
 ret=INT32
 arg1=STRING,pathname
