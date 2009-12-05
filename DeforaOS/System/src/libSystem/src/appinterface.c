@@ -596,6 +596,8 @@ static int _send_string(char const * string, char buf[], size_t buflen,
  * 	< 0	an error occured
  * 	0	not enough data ready
  * 	> 0	the amount of data read */
+static String * _read_string(char buf[], size_t buflen, size_t * pos);
+
 int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 		char buf[], size_t buflen, char const * function, void ** args)
 {
@@ -603,9 +605,10 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 	size_t i;
 	size_t size;
 	void * v;
+	char ** p;
 	Buffer * b = NULL;
 	uint32_t bsize;
-	int pos = 0;
+	size_t pos = 0;
 	int16_t * i16;
 	int32_t * i32;
 
@@ -636,7 +639,12 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 			case AICT_INT64:
 			case AICT_UINT64:
 				break; /* nothing more to do */
-			case AICT_STRING: /* FIXME implement */
+			case AICT_STRING:
+				if((v = _read_string(buf, buflen, &pos))
+						== NULL)
+					return -1;
+				if((p = args[i]) != NULL)
+					*p = v;
 				break;
 			case AICT_BUFFER: /* read the size */
 				b = args[i];
@@ -688,7 +696,7 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 				fprintf(stderr, "%s", "DEBUG: <= int64\n");
 #endif
 				break; /* FIXME wrong endian */
-			case AICT_STRING: /* FIXME implement */
+			case AICT_STRING: /* already done and never reached */
 				break;
 			case AICT_BUFFER:
 				bsize = ntohl(bsize);
@@ -721,7 +729,6 @@ int appinterface_call_receive(AppInterface * appinterface, int32_t * ret,
 
 
 /* appinterface_receive */
-static String * _read_string(char buf[], size_t buflen, size_t * pos);
 static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 		size_t buflen, size_t * pos, char bufw[], size_t bufwlen,
 		size_t * bufwpos);
