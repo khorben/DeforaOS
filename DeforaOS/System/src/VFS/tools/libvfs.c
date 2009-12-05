@@ -39,6 +39,7 @@ typedef struct _VFSDIR
 
 
 /* constants */
+#define PROGNAME	"libVFS"
 #define VFS_OFF		1024
 
 static char const _vfs_root[] = "Videos";
@@ -79,12 +80,17 @@ static ssize_t (*old_write)(int fd, void const * buf, size_t count);
 static void _libvfs_init(void)
 {
 	static void * hdl = NULL;
-	static char libc[] = "/usr/lib/libc.so";
+	static char libc[] = "/lib/libc.so";
+	static char libc6[] = "/lib/libc.so.6";
 
 	if(hdl != NULL)
 		return;
-	if((hdl = dlopen(libc, RTLD_LAZY)) == NULL)
+	if((hdl = dlopen(libc, RTLD_LAZY)) == NULL
+			&& (hdl = dlopen(libc6, RTLD_LAZY)) == NULL)
+	{
+		fprintf(stderr, "%s: %s\n", PROGNAME, dlerror());
 		exit(1);
+	}
 	if((old_access = dlsym(hdl, "access")) == NULL
 			|| (old_chmod = dlsym(hdl, "chmod")) == NULL
 			|| (old_chown = dlsym(hdl, "chown")) == NULL
@@ -108,11 +114,14 @@ static void _libvfs_init(void)
 			|| (old_umask = dlsym(hdl, "umask")) == NULL
 			|| (old_unlink = dlsym(hdl, "unlink")) == NULL
 			|| (old_write = dlsym(hdl, "write")) == NULL)
-		exit(1);
+		{
+			fprintf(stderr, "%s: %s\n", PROGNAME, dlerror());
+			exit(1);
+		}
 	dlclose(hdl);
 	if((_appclient = appclient_new("VFS")) == NULL)
 	{
-		error_print("libVFS");
+		error_print(PROGNAME);
 		exit(1);
 	}
 }
