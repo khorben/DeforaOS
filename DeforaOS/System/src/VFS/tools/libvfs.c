@@ -353,7 +353,7 @@ DIR * opendir(char const * path)
 		return NULL;
 	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
 	{
-		dir->dir = opendir(path);
+		dir->dir = old_opendir(path);
 		dir->fd = -1;
 	}
 	else
