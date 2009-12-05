@@ -79,11 +79,7 @@ static ssize_t (*old_write)(int fd, void const * buf, size_t count);
 static void _libvfs_init(void)
 {
 	static void * hdl = NULL;
-#ifdef __linux__
-	static char libc[] = "/lib/libc.so.6";
-#else
-	static char libc[] = "/lib/libc.so";
-#endif
+	static char libc[] = "/usr/lib/libc.so";
 
 	if(hdl != NULL)
 		return;
