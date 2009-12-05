@@ -79,7 +79,7 @@ static ssize_t (*old_write)(int fd, void const * buf, size_t count);
 static void _libvfs_init(void)
 {
 	static void * hdl = NULL;
-#ifdef __Linux__
+#ifdef __linux__
 	static char libc[] = "/lib/libc.so.6";
 #else
 	static char libc[] = "/lib/libc.so";
@@ -420,7 +420,11 @@ struct dirent * readdir(DIR * dir)
 	}
 	memset(&de, 0, sizeof(de)); /* XXX set the other fields if possible */
 	snprintf(de.d_name, sizeof(de.d_name), "%s", filename);
+#ifdef _DIRENT_HAVE_D_RECLEN
+	de.d_reclen = strlen(de.d_name);
+#else
 	de.d_namlen = strlen(de.d_name);
+#endif
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: readdir(%p) => \"%s\"\n", dir, de.d_name);
 #endif
