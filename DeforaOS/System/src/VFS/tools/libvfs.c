@@ -312,7 +312,7 @@ void * mmap(void * addr, size_t len, int prot, int flags, int fd,
 {
 	_libvfs_init();
 	if(fd < VFS_OFF)
-		return mmap(addr, len, prot, flags, fd, offset);
+		return old_mmap(addr, len, prot, flags, fd, offset);
 	errno = ENODEV;
 	return MAP_FAILED;
 }
