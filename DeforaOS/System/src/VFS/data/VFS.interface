@@ -46,6 +46,12 @@ ret=INT32
 arg1=INT32,fd
 arg2=UINT32,operation
 
+[lchown]
+ret=INT32
+arg1=STRING,pathname
+arg2=UINT32,owner
+arg3=UINT32,group
+
 [link]
 ret=INT32
 arg1=STRING,name1
