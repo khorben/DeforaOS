@@ -18,7 +18,6 @@
 
 
 
-#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -227,8 +226,8 @@ static int _vfs(char const * root)
 /* stubs */
 VFS_STUB2(int32_t, access, String const *, path, uint32_t, mode)
 VFS_STUB2(int32_t, chmod, String const *, path, uint32_t, mode)
-VFS_STUB3(int32_t, chown, String const *, path, uint32_t, owner,
-		uint32_t, group)
+VFS_STUB3(int32_t, chown, String const *, path, uint32_t, owner, uint32_t,
+		group)
 VFS_STUB3(int32_t, lchown, String const *, path, uint32_t, owner, uint32_t,
 		group)
 VFS_STUB2(int32_t, link, String const *, name1, String const *, name2)
@@ -316,18 +315,6 @@ int32_t VFS_flock(int32_t fd, uint32_t operation)
 	if(!_client_check(fd))
 		return -1;
 	return flock(fd, operation);
-}
-
-
-/* ioctl */
-int32_t VFS_ioctl(int32_t fd, uint32_t request, Buffer * buffer)
-{
-	void * data;
-
-	if(!_client_check(fd))
-		return -1;
-	data = buffer_get_data(buffer);
-	return ioctl(fd, request, data);
 }
 
 
