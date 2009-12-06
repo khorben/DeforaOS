@@ -99,7 +99,7 @@ static void _libvfs_init(void)
 #ifndef dirfd
 			|| (old_dirfd = dlsym(hdl, "dirfd")) == NULL
 #endif
-			|| (old_chown = dlsym(hdl, "lchown")) == NULL
+			|| (old_lchown = dlsym(hdl, "lchown")) == NULL
 			|| (old_lseek = dlsym(hdl, "lseek")) == NULL
 			|| (old_mkdir = dlsym(hdl, "mkdir")) == NULL
 			|| (old_mmap = dlsym(hdl, "mmap")) == NULL
