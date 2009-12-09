@@ -1,4 +1,4 @@
-TARGETS	= battery.so clock.so cpu.so cpufreq.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so
+TARGETS	= battery.so clock.so cpu.so cpufreq.so desktop.so lock.so logout.so main.so memory.so pager.so tasks.so volume.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -95,6 +95,13 @@ tasks_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 tasks.so: $(tasks_OBJS)
 	$(LD) -o tasks.so $(tasks_OBJS)
 
+volume_OBJS = volume.o
+volume_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+volume_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+volume.so: $(volume_OBJS)
+	$(LD) -o volume.so $(volume_OBJS)
+
 battery.o: battery.c ../../include/Panel.h
 	$(CC) $(battery_CFLAGS) -c battery.c
 
@@ -128,8 +135,11 @@ pager.o: pager.c ../../include/Panel.h
 tasks.o: tasks.c ../../include/Panel.h
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
+volume.o: volume.c ../../include/Panel.h
+	$(CC) $(volume_CFLAGS) -c volume.c
+
 clean:
-	$(RM) $(battery_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS)
+	$(RM) $(battery_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(tasks_OBJS) $(volume_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -157,6 +167,8 @@ install: all
 	$(INSTALL) -m 0644 pager.so $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 volume.so $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
 
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
@@ -170,5 +182,6 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
 
 .PHONY: all clean distclean install uninstall

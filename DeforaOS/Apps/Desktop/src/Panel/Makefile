@@ -41,6 +41,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/memory.c \
 		$(PACKAGE)-$(VERSION)/src/applets/pager.c \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
+		$(PACKAGE)-$(VERSION)/src/applets/volume.c \
 		$(PACKAGE)-$(VERSION)/src/applets/Makefile \
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
