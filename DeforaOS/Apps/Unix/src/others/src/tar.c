@@ -390,7 +390,10 @@ static int _dox_normal(FILE * fp, char const * archive, TarFileHeader * fh)
 		if(read == 0)
 			return _tar_error(archive, 1);
 		if(fwrite(buf, sizeof(char), read, fp2) != read)
+		{
+			fclose(fp2);
 			return _tar_error(fh->filename, 1);
+		}
 	}
 	fclose(fp2);
 	if((cnt = fh->size % TAR_BLKSIZ) != 0
