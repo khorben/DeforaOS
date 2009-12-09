@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -24,15 +24,28 @@
 #include <errno.h>
 
 /* portability */
-#if defined(MOUNT_CD9660)	/* NetBSD */
+#if defined(MNT_RDONLY)	/* FreeBSD, NetBSD */
 # include <isofs/cd9660/cd9660_mount.h>
-# define MT_ISO9660		MOUNT_CD9660
-# define MT_PROCFS		MOUNT_PROCFS
-# define MF_NODEV		MNT_NODEV
+# ifndef MOUNT_CD9660
+#  define MT_ISO9660		"cd9660"
+# else
+#  define MT_ISO9660		MOUNT_CD9660
+# endif
+# ifndef MOUNT_PROCFS
+#  define MT_PROCFS		"procfs"
+# else
+#  define MT_PROCFS		MOUNT_PROCFS
+# endif
+# ifndef MNT_NODEV
+#  define MF_NODEV		NODEV
+# else
+#  define MF_NODEV		MNT_NODEV
+# endif
 # define MF_NOEXEC		MNT_NOEXEC
 # define MF_NOSUID		MNT_NOSUID
 # define MF_RDONLY		MNT_RDONLY
-# if defined(__NetBSD_Version__) && __NetBSD_Version__ < 499000000
+# if defined(__FreeBSD__) || \
+	(defined(__NetBSD_Version__) && __NetBSD_Version__ < 499000000)
 #  define mount(type, dir, flags, data, data_len) \
 	mount(type, dir, flags, data)
 # endif
