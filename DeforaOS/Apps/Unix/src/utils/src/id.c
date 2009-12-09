@@ -199,12 +199,16 @@ static int _id_all(char const * user)
 			if((pw = getpwuid(geteuid())) == NULL)
 			{
 				putchar('\n');
+				free(u);
 				return _id_error("getpwuid", 1);
 			}
 			printf(" euid=%u(%s) e", (unsigned)pw->pw_uid,
 					pw->pw_name);
 			if(_print_gid(pw->pw_gid) == NULL)
+			{
+				free(u);
 				return 1;
+			}
 		}
 	}
 	else
