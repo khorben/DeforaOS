@@ -99,16 +99,16 @@ static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
 		}
 		if(md.mixer_class != outputs || md.type != AUDIO_MIXER_VALUE)
 			continue;
-		if(strcmp(md.label.name, "lineout") != 0)
+		if(strcmp(md.label.name, "lineout") != 0
+				&& strcmp(md.label.name, "master") != 0)
 			continue;
 		mc.dev = i;
 		mc.type = AUDIO_MIXER_VALUE;
 		mc.un.value.num_channels = md.un.v.num_channels;
 		mc.un.value.level[0] = gtk_scale_button_get_value(
 				GTK_SCALE_BUTTON(widget)) * 255;
-		for(j = 1; j < mc.un.value.num_channels; j++)
+		for(j = 1; j < mc.un.value.num_channels; j++) /* XXX overflow */
 			mc.un.value.level[j] = mc.un.value.level[0];
-		mc.un.value.level[1] = mc.un.value.level[0];
 		if(ioctl(fd, AUDIO_MIXER_WRITE, &mc) < 0)
 			perror("AUDIO_MIXER_WRITE");
 		break;
