@@ -798,8 +798,9 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 		char const ** ddate, char const ** type, char const * path,
 		GdkPixbuf ** icon_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
-		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96);
+		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96
 #endif
+		);
 
 static void _loop_insert(Browser * browser, GtkTreeIter * iter,
 		char const * path, char const * display, struct stat * lst,
@@ -868,8 +869,9 @@ static void _insert_all(Browser * browser, struct stat * lst, struct stat * st,
 		char const ** ddate, char const ** type, char const * path,
 		GdkPixbuf ** icon_24,
 #if GTK_CHECK_VERSION(2, 6, 0)
-		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96)
+		GdkPixbuf ** icon_48, GdkPixbuf ** icon_96
 #endif
+		)
 {
 	char const * p;
 
