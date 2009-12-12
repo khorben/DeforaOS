@@ -35,10 +35,10 @@ run_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 run: $(run_OBJS)
 	$(CC) -o run $(run_OBJS) $(run_LDFLAGS)
 
-panel.o: panel.c common.h ../include/Panel.h
+panel.o: panel.c common.h ../include/Panel.h ../config.h
 	$(CC) $(panel_CFLAGS) -c panel.c
 
-main.o: main.c common.h
+main.o: main.c common.h ../config.h
 	$(CC) $(panel_CFLAGS) -c main.c
 
 run.o: run.c

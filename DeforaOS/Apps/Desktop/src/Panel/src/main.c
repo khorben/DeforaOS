@@ -21,12 +21,13 @@
 #include <signal.h>
 #include <gtk/gtk.h>
 #include "common.h"
+#include "../config.h"
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: panel\n", stderr);
+	fputs("Usage: " PACKAGE "\n", stderr);
 	return 1;
 }
 

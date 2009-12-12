@@ -214,7 +214,7 @@ int panel_error(Panel * panel, char const * message, int ret)
 
 static int _error_text(char const * message, int ret)
 {
-	fputs("panel: ", stderr);
+	fputs(PACKAGE ": ", stderr);
 	perror(message);
 	return ret;
 }
