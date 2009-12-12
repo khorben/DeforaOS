@@ -15,7 +15,6 @@
 
 
 
-#include <System.h>
 #include <unistd.h>
 #include <stdio.h>
 #include "init.h"
@@ -27,14 +26,14 @@
 
 
 /* private */
-static int _init(char const * profile);
+static int _init(AppServerOptions options, char const * profile);
 static int _usage(void);
 
 
 /* functions */
 /* private */
 /* init */
-static int _init(char const * profile)
+static int _init(AppServerOptions options, char const * profile)
 {
 	int ret = 0;
 	Init * init;
@@ -42,7 +41,7 @@ static int _init(char const * profile)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, profile);
 #endif
-	if((init = init_new(profile)) == NULL)
+	if((init = init_new(options, profile)) == NULL)
 		return error_print(PACKAGE);
 	for(;;)
 	{
@@ -59,8 +58,10 @@ static int _init(char const * profile)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " -s [-P profile]\n"
+	fputs("Usage: " PACKAGE " [-L|-R] -s [-P profile]\n"
+"  -L	Only bind to the local machine\n"
 "  -P	Profile to load\n"
+"  -R	Allow remote connections\n"
 "  -s	Force the single-user profile\n", stderr);
 	return 1;
 }
@@ -71,14 +72,21 @@ int main(int argc, char * argv[])
 {
 	int ret;
 	int o;
+	AppServerOptions options = ASO_LOCAL;
 	char const * profile = NULL;
 	char * shell[] = { "/bin/sh", NULL };
 
-	while((o = getopt(argc, argv, "P:s")) != -1)
+	while((o = getopt(argc, argv, "LRP:s")) != -1)
 		switch(o)
 		{
+			case 'L':
+				options = ASO_LOCAL;
+				break;
 			case 'P':
 				profile = optarg;
+				break;
+			case 'R':
+				options = ASO_REMOTE;
 				break;
 			case 's':
 				profile = "single-user";
@@ -86,7 +94,7 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if((ret = _init(profile) != 0) && getpid() == 1)
+	if((ret = _init(options, profile) != 0) && getpid() == 1)
 	{
 		fputs(PACKAGE ": Spawning a shell\n", stderr);
 		execve(shell[0], shell, NULL);

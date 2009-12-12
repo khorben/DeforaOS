@@ -18,6 +18,8 @@
 #ifndef INIT_INIT_H
 # define INIT_INIT_H
 
+# include <System.h>
+
 
 /* Init */
 /* types */
@@ -25,7 +27,7 @@ typedef struct _Init Init;
 
 
 /* functions */
-Init * init_new(char const * profile);
+Init * init_new(AppServerOptions options, char const * profile);
 void init_delete(Init * init);
 
 /* AppInterface */

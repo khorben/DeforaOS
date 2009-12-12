@@ -15,7 +15,6 @@
 
 
 
-#include <System.h>
 #include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
@@ -39,7 +38,7 @@ struct _Init
 /* public */
 /* functions */
 /* init_new */
-Init * init_new(char const * profile)
+Init * init_new(AppServerOptions options, char const * profile)
 {
 	Init * init;
 
@@ -53,7 +52,7 @@ Init * init_new(char const * profile)
 		? session_new("Init", profile, init->event) : NULL;
 	/* FIXME ASO_LOCAL or ASO_REMOTE comes from the configuration file */
 	init->appserver = (init->event != NULL)
-		? appserver_new_event("Init", ASO_REMOTE, init->event) : NULL;
+		? appserver_new_event("Init", options, init->event) : NULL;
 	/* FIXME handle signals (Event class?) */
 	/* error handling */
 	if(init->event == NULL || init->appserver == NULL)
