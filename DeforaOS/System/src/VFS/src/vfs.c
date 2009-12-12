@@ -86,7 +86,7 @@ static int _client_check(int32_t fd);
 static DIR * _client_check_dir(int32_t fd);
 
 /* vfs */
-static int _vfs(char const * root);
+static int _vfs(AppServerOptions options, char const * root);
 
 
 /* private */
@@ -206,10 +206,10 @@ static DIR * _client_check_dir(int32_t fd)
 
 
 /* vfs */
-static int _vfs(char const * root)
+static int _vfs(AppServerOptions options, char const * root)
 	/* FIXME implement root */
 {
-	if((_appserver = appserver_new("VFS", ASO_LOCAL)) == NULL)
+	if((_appserver = appserver_new("VFS", options)) == NULL)
 	{
 		error_print(PACKAGE);
 		return 1;
@@ -458,7 +458,7 @@ int32_t VFS_write(int32_t fd, Buffer * b, uint32_t size)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-r root]\n", stderr);
+	fputs("Usage: " PACKAGE " [-L|-R][-r root]\n", stderr);
 	return 1;
 }
 
@@ -467,11 +467,18 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	AppServerOptions options = ASO_LOCAL;
 	char * root = "/";
 
-	while(getopt(argc, argv, "r:") != -1)
+	while(getopt(argc, argv, "LRr:") != -1)
 		switch(o)
 		{
+			case 'L':
+				options = ASO_LOCAL;
+				break;
+			case 'R':
+				options = ASO_REMOTE;
+				break;
 			case 'r':
 				root = optarg;
 				break;
@@ -480,5 +487,5 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	return _vfs(root) == 0 ? 0 : 2;
+	return _vfs(options, root) == 0 ? 0 : 2;
 }
