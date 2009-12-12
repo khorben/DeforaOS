@@ -33,6 +33,7 @@ void on_view_inputs(gpointer data);
 void on_view_record(gpointer data);
 void on_view_monitor(gpointer data);
 void on_view_equalization(gpointer data);
+void on_view_mix(gpointer data);
 void on_view_modem(gpointer data);
 void on_help_about(gpointer data);
 

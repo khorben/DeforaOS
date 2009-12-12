@@ -120,6 +120,15 @@ void on_view_equalization(gpointer data)
 }
 
 
+/* on_view_mix */
+void on_view_mix(gpointer data)
+{
+	Mixer * mixer = data;
+
+	mixer_show_class(mixer, "mix");
+}
+
+
 /* on_view_modem */
 void on_view_modem(gpointer data)
 {

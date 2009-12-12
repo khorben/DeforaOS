@@ -66,8 +66,9 @@ static DesktopMenu _mixer_menu_view[] =
 	{ "_Outputs", G_CALLBACK(on_view_outputs), NULL, 0 },
 	{ "_Inputs", G_CALLBACK(on_view_inputs), NULL, 0 },
 	{ "_Record", G_CALLBACK(on_view_record), NULL, 0 },
-	{ "_Monitor", G_CALLBACK(on_view_monitor), NULL, 0 },
+	{ "Monito_r", G_CALLBACK(on_view_monitor), NULL, 0 },
 	{ "_Equalization", G_CALLBACK(on_view_equalization), NULL, 0 },
+	{ "Mi_x", G_CALLBACK(on_view_mix), NULL, 0 },
 	{ "_Modem", G_CALLBACK(on_view_modem), NULL, 0 },
 	{ NULL, NULL, NULL, 0 }
 };
