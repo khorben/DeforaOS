@@ -28,6 +28,7 @@
 # include <unistd.h>
 # include <paths.h>
 #endif
+#include <System.h>
 #include "Panel.h"
 
 
@@ -50,6 +51,7 @@ typedef struct _Battery
 static GtkWidget * _battery_init(PanelApplet * applet);
 static void _battery_destroy(PanelApplet * applet);
 
+static gdouble _battery_get(Battery * battery);
 static void _battery_set(Battery * battery, gdouble value);
 
 /* callbacks */
@@ -77,14 +79,24 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 {
 	GtkWidget * ret;
 	Battery * battery;
+	gdouble value;
 
 	if((battery = malloc(sizeof(*battery))) == NULL)
 		return NULL;
 	applet->priv = battery;
 	battery->helper = applet->helper;
+	battery->timeout = 0;
 #ifdef __NetBSD__
 	battery->fd = -1;
 #endif
+	value = _battery_get(battery);
+	if(value >= 0.0 && value <= 100.0)
+		;
+	else /* an error occurred */
+	{
+		_battery_destroy(applet);
+		return NULL;
+	}
 	ret = gtk_hbox_new(FALSE, 0);
 	battery->image = gtk_image_new_from_icon_name("battery",
 			applet->helper->icon_size);
@@ -95,7 +107,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	gtk_scale_set_value_pos(GTK_SCALE(battery->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(ret), battery->scale, FALSE, TRUE, 0);
 	battery->timeout = g_timeout_add(1000, _on_timeout, battery);
-	_on_timeout(battery);
+	_battery_set(battery, value);
 	return ret;
 }
 
@@ -105,7 +117,8 @@ static void _battery_destroy(PanelApplet * applet)
 {
 	Battery * battery = applet->priv;
 
-	g_source_remove(battery->timeout);
+	if(battery->timeout > 0)
+		g_source_remove(battery->timeout);
 #ifdef __NetBSD__
 	if(battery->fd != -1)
 		close(battery->fd);
@@ -114,31 +127,13 @@ static void _battery_destroy(PanelApplet * applet)
 }
 
 
-/* battery_set */
-static void _battery_set(Battery * battery, gdouble value)
-{
-	/* XXX only set it when necessary? */
-	if(value <= 10.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery-caution", battery->helper->icon_size);
-	else if(value <= 20.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery-low", battery->helper->icon_size);
-	else
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery", battery->helper->icon_size);
-	gtk_range_set_value(GTK_RANGE(battery->scale), value);
-}
-
-
-/* callbacks */
-/* on_timeout */
+/* accessors */
+/* battery_get */
 #ifdef __NetBSD__
-static int _timeout_tre(int fd, int sensor, envsys_tre_data_t * tre);
+static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre);
 
-static gboolean _on_timeout(gpointer data)
+static gdouble _battery_get(Battery * battery)
 {
-	Battery * battery = data;
 	int i;
 	envsys_basic_info_t info;
 	envsys_tre_data_t tre;
@@ -148,8 +143,10 @@ static gboolean _on_timeout(gpointer data)
 
 	if(battery->fd == -1
 			&& (battery->fd = open(_PATH_SYSMON, O_RDONLY) < 0))
-		return battery->helper->error(battery->helper->priv,
-				_PATH_SYSMON, TRUE);
+	{
+		error_set("%s: %s", _PATH_SYSMON, strerror(errno));
+		return -1.0;
+	}
 	for(i = 0; i >= 0; i++)
 	{
 		memset(&info, 0, sizeof(info));
@@ -158,10 +155,9 @@ static gboolean _on_timeout(gpointer data)
 		{
 			close(battery->fd);
 			battery->fd = -1;
-			/* FIXME use error() when known why it breaks once */
-			fprintf(stderr, "%s: %s\n", "ENVSYS_GTREINFO", strerror(
-						errno));
-			return TRUE;
+			/* FIXME why does it always break once? */
+			error_set("%s: %s", "ENVSYS_GTREINFO", strerror(errno));
+			return -1.0;
 		}
 		if(!(info.validflags & ENVSYS_FVALID))
 			break;
@@ -170,7 +166,7 @@ static gboolean _on_timeout(gpointer data)
 				info.desc);
 #endif
 		if(strcmp("acpiacad0 connected", info.desc) == 0
-				&& _timeout_tre(battery->fd, i, &tre) == 0
+				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID)
 			/* FIXME implement */
 			continue;
@@ -179,7 +175,7 @@ static gboolean _on_timeout(gpointer data)
 				|| info.desc[8] != ' ')
 			continue;
 		if(strcmp("charge", &info.desc[9]) == 0
-				&& _timeout_tre(battery->fd, i, &tre) == 0
+				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID
 				&& tre.validflags & ENVSYS_FMAXVALID)
 		{
@@ -187,25 +183,24 @@ static gboolean _on_timeout(gpointer data)
 			maxcharge += tre.max.data_us;
 		}
 		else if(strcmp("charge rate", &info.desc[9]) == 0
-				&& _timeout_tre(battery->fd, i, &tre) == 0
+				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID)
 			rate += tre.cur.data_us;
 		else if(strcmp("charging", &info.desc[9]) == 0
-				&& _timeout_tre(battery->fd, i, &tre) == 0
+				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID
 				&& tre.cur.data_us > 0)
 			/* FIXME implement */
 			continue;
 		else if(strcmp("discharge rate", &info.desc[9]) == 0
-				&& _timeout_tre(battery->fd, i, &tre) == 0
+				&& _get_tre(battery->fd, i, &tre) == 0
 				&& tre.validflags & ENVSYS_FCURVALID)
 			rate += tre.cur.data_us;
 	}
-	_battery_set(battery, (charge * 100.0) / maxcharge);
-	return TRUE;
+	return (charge * 100.0) / maxcharge;
 }
 
-static int _timeout_tre(int fd, int sensor, envsys_tre_data_t * tre)
+static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre)
 {
 	memset(tre, 0, sizeof(*tre));
 	tre->sensor = sensor;
@@ -214,12 +209,52 @@ static int _timeout_tre(int fd, int sensor, envsys_tre_data_t * tre)
 	return !(tre->validflags & ENVSYS_FVALID);
 }
 #else
+static gdouble _battery_get(Battery * battery)
+{
+	/* FIXME not supported */
+	error_set("%s", strerror(ENOSYS));
+	return -1.0;
+}
+#endif
+
+
+/* battery_set */
+static void _battery_set(Battery * battery, gdouble value)
+{
+	/* XXX only set it when necessary? */
+	if(value < 0.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"error", battery->helper->icon_size);
+	else if(value <= 10.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"battery-caution", battery->helper->icon_size);
+	else if(value <= 20.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"battery-low", battery->helper->icon_size);
+	else if(value <= 100.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"battery", battery->helper->icon_size);
+	else
+	{
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"error", battery->helper->icon_size);
+		value = 0.0;
+	}
+	gtk_range_set_value(GTK_RANGE(battery->scale), value);
+}
+
+
+/* callbacks */
+/* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
 	Battery * battery = data;
+	gdouble value;
 
-	/* XXX should show uncertain state instead of a full battery */
-	_battery_set(battery, 100.0);
-	return FALSE;
+	value = _battery_get(battery);
+	if(value >= 0.0 && value <= 100.0)
+		_battery_set(battery, value);
+	else
+		return FALSE;
+	return TRUE;
 }
-#endif
