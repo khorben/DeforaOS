@@ -787,7 +787,7 @@ static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 		_args_post_exec(call, bufw, bufwlen, bufwpos, args, i);
 		free(args);
 #ifdef DEBUG
-		fprintf(stderr, "%s%s\n", "DEBUG: call: ", error_get());
+		error_print(call->name);
 #endif
 		return 1;
 	}
@@ -796,7 +796,7 @@ static int _receive_args(AppInterfaceCall * call, int * ret, char buf[],
 	{
 		free(args);
 #ifdef DEBUG
-		fprintf(stderr, "%s%s\n", "DEBUG: ", error_get());
+		error_print(call->name);
 #endif
 		return 1;
 	}
