@@ -156,7 +156,7 @@ Mixer * mixer_new(void)
 		widget = gtk_vbox_new(FALSE, 0);
 		gtk_box_pack_start(GTK_BOX(widget), gtk_label_new(
 					md.label.name), FALSE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(widget), control, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(widget), control, TRUE, TRUE, 4);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
