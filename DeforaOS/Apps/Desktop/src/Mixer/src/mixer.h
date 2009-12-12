@@ -29,7 +29,10 @@ Mixer * mixer_new(void);
 void mixer_delete(Mixer * mixer);
 
 /* useful */
+void mixer_properties(Mixer * mixer);
+
 void mixer_show(Mixer * mixer, int view);
 void mixer_show_all(Mixer * mixer);
+void mixer_show_class(Mixer * mixer, char const * name);
 
 #endif /* !MIXER_MIXER_H */

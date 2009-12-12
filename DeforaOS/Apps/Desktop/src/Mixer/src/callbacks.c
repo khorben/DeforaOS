@@ -20,6 +20,9 @@ static char _license[] =
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#ifdef __NetBSD__
+# include <sys/audioio.h>
+#endif
 #include <Desktop.h>
 #include "mixer.h"
 #include "callbacks.h"
@@ -46,6 +49,16 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 }
 
 
+/* file menu */
+/* on_file_properties */
+void on_file_properties(gpointer data)
+{
+	Mixer * mixer = data;
+
+	mixer_properties(mixer);
+}
+
+
 /* on_file_close */
 void on_file_close(gpointer data)
 {
@@ -67,7 +80,7 @@ void on_view_outputs(gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_show(mixer, 0);
+	mixer_show_class(mixer, AudioCoutputs);
 }
 
 
@@ -76,7 +89,7 @@ void on_view_inputs(gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_show(mixer, 1);
+	mixer_show_class(mixer, AudioCinputs);
 }
 
 
@@ -85,7 +98,7 @@ void on_view_record(gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_show(mixer, 2);
+	mixer_show_class(mixer, AudioCrecord);
 }
 
 
@@ -94,7 +107,7 @@ void on_view_monitor(gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_show(mixer, 3);
+	mixer_show_class(mixer, AudioCmonitor);
 }
 
 
@@ -103,7 +116,7 @@ void on_view_equalization(gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_show(mixer, 4);
+	mixer_show_class(mixer, AudioCequalization);
 }
 
 
@@ -112,7 +125,7 @@ void on_view_modem(gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_show(mixer, 5);
+	mixer_show_class(mixer, AudioCmodem);
 }
 
 

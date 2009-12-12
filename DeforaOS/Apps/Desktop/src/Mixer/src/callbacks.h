@@ -25,6 +25,7 @@
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 
 /* menubar */
+void on_file_properties(gpointer data);
 void on_file_close(gpointer data);
 void on_view_all(gpointer data);
 void on_view_outputs(gpointer data);
