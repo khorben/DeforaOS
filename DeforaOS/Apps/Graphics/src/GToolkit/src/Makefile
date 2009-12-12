@@ -3,13 +3,15 @@ PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
 CC	= cc
+CPPFLAGSF=
 CPPFLAGS=
 CFLAGSF	= -W -I ../include
-CFLAGS	= -Wall -fPIC -g -O2 -ansi
+CFLAGS	= -Wall -fPIC -g -O2 -pedantic
 AR	= ar -rc
 RANLIB	= ranlib
-LD	= ld -shared
+LD	= $(CC) -shared
 RM	= rm -f
+LN	= ln -f
 MKDIR	= mkdir -p
 INSTALL	= install
 
@@ -17,14 +19,15 @@ INSTALL	= install
 all: $(TARGETS)
 
 libGToolkit_OBJS = common.o gwindow.o gtoolkit.o
-libGToolkit_CFLAGS = $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+libGToolkit_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+libGToolkit_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 libGToolkit.a: $(libGToolkit_OBJS)
 	$(AR) libGToolkit.a $(libGToolkit_OBJS)
 	$(RANLIB) libGToolkit.a
 
 libGToolkit.so: $(libGToolkit_OBJS)
-	$(LD) -o libGToolkit.so $(libGToolkit_OBJS)
+	$(LD) -o libGToolkit.so -Wl,-soname,libGToolkit.so.0 $(libGToolkit_OBJS)
 
 common.o: common.c
 	$(CC) $(libGToolkit_CFLAGS) -c common.c
@@ -42,12 +45,7 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 libGToolkit.a $(DESTDIR)$(LIBDIR)/libGToolkit.a
-	$(INSTALL) -m 0755 libGToolkit.so $(DESTDIR)$(LIBDIR)/libGToolkit.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/libGToolkit.a
-	$(RM) $(DESTDIR)$(LIBDIR)/libGToolkit.so
 
 .PHONY: all clean distclean install uninstall
