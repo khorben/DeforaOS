@@ -20,6 +20,7 @@
 
 
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -594,7 +595,7 @@ static int _probe_timeout(Probe * probe);
 
 /* functions */
 /* probe */
-static int _probe(void)
+static int _probe(AppServerOptions options)
 {
 	AppServer * appserver;
 	Event * event;
@@ -613,7 +614,7 @@ static int _probe(void)
 		free(probe.volinfo);
 		return _probe_error(1);
 	}
-	if((appserver = appserver_new_event("Probe", ASO_REMOTE, event))
+	if((appserver = appserver_new_event("Probe", options, event))
 			== NULL)
 	{
 		free(probe.ifinfo);
@@ -826,8 +827,33 @@ uint32_t Probe_volfree(String const * volume)
 }
 
 
-/* main */
-int main(void)
+/* usage */
+static int _usage(void)
 {
-	return _probe() == 0 ? 0 : 2;
+	fputs("Usage: " PACKAGE " [-L|-R]\n", stderr);
+	return 1;
+}
+
+
+/* main */
+int main(int argc, char * argv[])
+{
+	int o;
+	AppServerOptions options = ASO_LOCAL;
+
+	while((o = getopt(argc, argv, "LR")) != -1)
+		switch(o)
+		{
+			case 'L':
+				options = ASO_LOCAL;
+				break;
+			case 'R':
+				options = ASO_REMOTE;
+				break;
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
+	return _probe(options) == 0 ? 0 : 2;
 }
