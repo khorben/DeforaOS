@@ -27,7 +27,7 @@
 static GtkWidget * _desktop_init(PanelApplet * applet);
 
 /* callbacks */
-static void _on_clicked(GtkWidget * widget, gpointer data);
+static void _on_clicked(GtkWidget * widget);
 
 
 /* public */
@@ -68,7 +68,7 @@ static GtkWidget * _desktop_init(PanelApplet * applet)
 
 /* callbacks */
 /* on_clicked */
-static void _on_clicked(GtkWidget * widget, gpointer data)
+static void _on_clicked(GtkWidget * widget)
 {
 	GdkScreen * screen;
 	GdkDisplay * display;
@@ -85,8 +85,10 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 	xev.xclient.format = 32;
 	memset(&xev.xclient.data, sizeof(xev.xclient.data), 0);
 	xev.xclient.data.l[0] = 1;
+	gdk_error_trap_push();
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XWINDOW(root),
 			False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
 			&xev);
+	gdk_error_trap_pop();
 }
