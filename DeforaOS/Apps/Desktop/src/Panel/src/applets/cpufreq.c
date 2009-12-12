@@ -81,6 +81,14 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	size_t freqsize = sizeof(freq);
 	char const * p;
 
+	if(sysctlbyname("machdep.est.frequency.available", &freq, &freqsize,
+				NULL, 0) != 0
+			|| sysctlbyname("machdep.powernow.frequency.available",
+				&freq, &freqsize, NULL, 0) >= 0)
+	{
+		error_set("%s: %s", "cpufreq", strerror(errno));
+		return NULL;
+	}
 	if((cpufreq = malloc(sizeof(*cpufreq))) == NULL)
 	{
 		applet->helper->error(applet->helper->priv, "malloc", 0);
@@ -97,15 +105,9 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	cpufreq->min = 0;
 	cpufreq->max = 0;
 	cpufreq->step = 1;
-	if(sysctlbyname("machdep.est.frequency.available", &freq, &freqsize,
-				NULL, 0) >= 0
-			|| sysctlbyname("machdep.powernow.frequency.available",
-				&freq, &freqsize, NULL, 0) >= 0)
-	{
-		cpufreq->max = atoi(freq);
-		cpufreq->min = (p = strrchr(freq, ' ')) != NULL ? atoi(p)
-			: cpufreq->max;
-	}
+	cpufreq->max = atoi(freq);
+	cpufreq->min = (p = strrchr(freq, ' ')) != NULL ? atoi(p)
+		: cpufreq->max;
 	cpufreq->scale = gtk_vscale_new_with_range(cpufreq->min, cpufreq->max,
 			cpufreq->step);
 	gtk_widget_set_sensitive(cpufreq->scale, FALSE);
