@@ -207,6 +207,7 @@ static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s)
 
 static GtkWidget * _new_value(Mixer * mixer, struct audio_mixer_value * v)
 {
+	GtkWidget * vbox;
 	GtkWidget * hbox;
 	int i;
 	GtkWidget * widget;
@@ -221,7 +222,14 @@ static GtkWidget * _new_value(Mixer * mixer, struct audio_mixer_value * v)
 					on_value_changed), mixer);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	}
-	return hbox;
+	if(v->num_channels < 2)
+		return hbox;
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	widget = gtk_toggle_button_new_with_label("Bind");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	return vbox;
 }
 
 
