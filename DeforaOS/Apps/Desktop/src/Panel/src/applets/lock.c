@@ -24,7 +24,7 @@
 static GtkWidget * _lock_init(PanelApplet * applet);
 
 /* callbacks */
-static void _on_clicked(GtkWidget * widget, gpointer data);
+static void _on_clicked(void);
 
 
 /* public */
@@ -65,7 +65,7 @@ static GtkWidget * _lock_init(PanelApplet * applet)
 
 /* callbacks */
 /* on_clicked */
-static void _on_clicked(GtkWidget * widget, gpointer data)
+static void _on_clicked(void)
 {
 	char * argv[] = { "xscreensaver-command", "-lock", NULL };
 	GSpawnFlags flags = G_SPAWN_SEARCH_PATH
