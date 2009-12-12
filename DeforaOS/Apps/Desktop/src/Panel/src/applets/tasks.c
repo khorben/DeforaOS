@@ -117,10 +117,10 @@ static void _tasks_do(Tasks * tasks);
 
 /* callbacks */
 static void _on_clicked(GtkWidget * widget, gpointer data);
-static void _on_close(GtkWidget * widget, gpointer data);
+static void _on_close(gpointer data);
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
-static gboolean _on_popup(GtkWidget * widget, gpointer data);
+static gboolean _on_popup(gpointer data);
 static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 		gpointer data);
 
@@ -161,8 +161,8 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 	task->tasks = tasks;
 	task->window = window;
 	task->widget = gtk_button_new();
-	g_signal_connect(G_OBJECT(task->widget), "popup_menu", G_CALLBACK(
-				_on_popup), task);
+	g_signal_connect_swapped(G_OBJECT(task->widget), "popup_menu",
+			G_CALLBACK(_on_popup), task);
 	g_signal_connect(task->widget, "clicked", G_CALLBACK(_on_clicked),
 			task);
 	task->image = gtk_image_new();
@@ -620,7 +620,7 @@ static void _clicked_activate(Task * task)
 
 
 /* on_close */
-static void _on_close(GtkWidget * widget, gpointer data)
+static void _on_close(gpointer data)
 {
 	Task * task = data;
 	GdkDisplay * display;
@@ -666,7 +666,7 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 
 
 /* on_popup */
-static gboolean _on_popup(GtkWidget * widget, gpointer data)
+static gboolean _on_popup(gpointer data)
 {
 	Task * task = data;
 	GtkWidget * menu;
@@ -674,8 +674,8 @@ static gboolean _on_popup(GtkWidget * widget, gpointer data)
 
 	menu = gtk_menu_new();
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, NULL);
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_close),
-			task);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_close), task);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, task, 2,
