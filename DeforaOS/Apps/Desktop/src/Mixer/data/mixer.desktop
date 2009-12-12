@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Volume mixer
+Comment=Set the volume on your sound card
+Exec=mixer
+Icon=gnome-mixer
+Type=Application
+Categories=AudioVideo;Audio;Mixer;GTK;
+StartupNotify=true
