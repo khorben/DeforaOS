@@ -39,7 +39,10 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 mixer $(DESTDIR)$(BINDIR)/mixer
 
 uninstall:
+	$(RM) $(DESTDIR)$(BINDIR)/mixer
 
 .PHONY: all clean distclean install uninstall
