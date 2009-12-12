@@ -139,19 +139,17 @@ static void _cpufreq_destroy(PanelApplet * applet)
 static gboolean _on_timeout(gpointer data)
 {
 	Cpufreq * cpufreq = data;
+	const char name[] = "machdep.est.frequency.current";
 	uint64_t freq;
 	size_t freqsize = sizeof(freq);
 	unsigned int f;
 
-	if(sysctlbyname("machdep.est.frequency.current", &freq, &freqsize, NULL,
-				0) >= 0)
+	if(sysctlbyname(name, &freq, &freqsize, NULL, 0) >= 0)
 		f = freq;
-	if(sysctlbyname("machdep.est.frequency.current", &freq, &freqsize, NULL,
-				0) >= 0)
+	if(sysctlbyname(name, &freq, &freqsize, NULL, 0) >= 0)
 		f = freq;
 	else
-		return cpufreq->helper->error(cpufreq->helper->priv, "sysctl",
-				TRUE);
+		return cpufreq->helper->error(NULL, name, TRUE);
 	gtk_range_set_value(GTK_RANGE(cpufreq->scale), (double)f);
 	return TRUE;
 }
