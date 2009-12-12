@@ -470,7 +470,7 @@ int main(int argc, char * argv[])
 	AppServerOptions options = ASO_LOCAL;
 	char * root = "/";
 
-	while(getopt(argc, argv, "LRr:") != -1)
+	while((o = getopt(argc, argv, "LRr:")) != -1)
 		switch(o)
 		{
 			case 'L':
