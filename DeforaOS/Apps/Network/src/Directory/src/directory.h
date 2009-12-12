@@ -29,7 +29,7 @@ typedef struct _Directory Directory;
 
 
 /* functions */
-Directory * directory_new(Event * event);
+Directory * directory_new(AppServerOptions options, Event * event);
 void directory_delete(Directory * directory);
 
 #endif /* !DIRECTORY_DIRECTORY_H */

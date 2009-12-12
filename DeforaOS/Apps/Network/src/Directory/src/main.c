@@ -19,7 +19,6 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <System.h>
 #include "directory.h"
 #include "../config.h"
 
@@ -27,7 +26,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE "\n", stderr);
+	fputs("Usage: " PACKAGE " [-L|-R]\n", stderr);
 	return 1;
 }
 
@@ -36,18 +35,25 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	AppServerOptions options = ASO_LOCAL;
 	Event * event;
 	Directory * directory;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "LR")) != -1)
 		switch(o)
 		{
+			case 'L':
+				options = ASO_LOCAL;
+				break;
+			case 'R':
+				options = ASO_REMOTE;
+				break;
 			default:
 				return _usage();
 		}
 	if((event = event_new()) == NULL)
 		return error_print(PACKAGE) ? 2 : 2;
-	if((directory = directory_new(event)) == NULL)
+	if((directory = directory_new(options, event)) == NULL)
 	{
 		error_print(PACKAGE);
 		event_delete(event);

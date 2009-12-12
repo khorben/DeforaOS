@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <System.h>
 #include "directory.h"
 #include "../data/Directory.h"
 #include "../config.h"
@@ -71,14 +70,14 @@ static int _x509_from_request(char const * filename, Buffer * csr,
 /* directory_new */
 static void _new_config(Directory * directory);
 
-Directory * directory_new(Event * event)
+Directory * directory_new(AppServerOptions options, Event * event)
 {
 	Directory * directory;
 
 	if((directory = object_new(sizeof(*directory))) == NULL)
 		return NULL;
 	_new_config(directory);
-	directory->appserver = appserver_new_event(PACKAGE, ASO_REMOTE, event);
+	directory->appserver = appserver_new_event(PACKAGE, options, event);
 	if(directory->config == NULL
 			|| directory->appserver == NULL)
 	{
