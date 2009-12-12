@@ -182,8 +182,7 @@ static gdouble _volume_get(Volume * volume)
 		md.index = i;
 		if(ioctl(volume->fd, AUDIO_MIXER_DEVINFO, &md) < 0)
 		{
-			volume->helper->error(volume->helper->priv,
-					"AUDIO_MIXER_DEVINFO", 0);
+			volume->helper->error(NULL, "AUDIO_MIXER_DEVINFO", 0);
 			break;
 		}
 		if(md.mixer_class != volume->outputs
