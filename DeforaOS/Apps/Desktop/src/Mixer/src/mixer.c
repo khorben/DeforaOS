@@ -176,7 +176,7 @@ static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e)
 
 	if(e->num_mem <= 0)
 		return NULL;
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(TRUE, 0);
 	for(i = 0; i < e->num_mem; i++)
 	{
 		widget = gtk_radio_button_new_with_label(group,
@@ -195,7 +195,7 @@ static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s)
 
 	if(s->num_mem <= 0)
 		return NULL;
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(TRUE, 0);
 	for(i = 0; i < s->num_mem; i++)
 	{
 		widget = gtk_check_button_new_with_label(
@@ -213,7 +213,7 @@ static GtkWidget * _new_value(Mixer * mixer, struct audio_mixer_value * v)
 
 	if(v->num_channels <= 0)
 		return NULL;
-	hbox = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(TRUE, 0);
 	for(i = 0; i < v->num_channels; i++)
 	{
 		widget = gtk_vscale_new_with_range(0.0, 1.0, 0.02);
