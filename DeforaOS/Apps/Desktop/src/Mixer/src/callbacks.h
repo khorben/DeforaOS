@@ -36,6 +36,8 @@ void on_view_modem(gpointer data);
 void on_help_about(gpointer data);
 
 /* controls */
+void on_enum_toggled(GtkWidget * widget, gpointer data);
+void on_set_toggled(GtkWidget * widget, gpointer data);
 void on_value_changed(GtkWidget * widget, gdouble value, gpointer data);
 
 #endif /* !MIXER_CALLBACKS_H */

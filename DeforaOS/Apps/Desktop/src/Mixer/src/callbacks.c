@@ -134,6 +134,24 @@ void on_help_about(gpointer data)
 
 
 /* controls */
+/* on_enum_toggled */
+void on_enum_toggled(GtkWidget * widget, gpointer data)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+}
+
+
+/* on_set_toggled */
+void on_set_toggled(GtkWidget * widget, gpointer data)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+}
+
+
 /* on_value_changed */
 void on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
 {

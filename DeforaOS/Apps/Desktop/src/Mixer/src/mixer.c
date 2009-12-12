@@ -182,6 +182,8 @@ static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e)
 		widget = gtk_radio_button_new_with_label(group,
 				e->member[i].label.name);
 		group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(widget));
+		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
+					on_enum_toggled), mixer);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	}
 	return vbox;
@@ -200,6 +202,8 @@ static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s)
 	{
 		widget = gtk_check_button_new_with_label(
 				s->member[i].label.name);
+		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
+					on_set_toggled), mixer);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	}
 	return vbox;
