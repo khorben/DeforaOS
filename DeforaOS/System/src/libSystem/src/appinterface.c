@@ -13,7 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - implement what's missing */
+ * - implement what's missing
+ * - add floating point types (which can be transferred as a string) */
 
 
 
