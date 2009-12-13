@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
@@ -329,6 +330,27 @@ void mixer_delete(Mixer * mixer)
 	if(mixer->window != NULL)
 		gtk_widget_destroy(mixer->window);
 	free(mixer);
+}
+
+
+/* accessors */
+/* mixer_set_value */
+void mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
+{
+	mixer_ctrl_t * p;
+	u_char * level;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%lf)\n", __func__, value);
+#endif
+	p = g_object_get_data(G_OBJECT(widget), "ctrl");
+	level = g_object_get_data(G_OBJECT(widget), "channel");
+	if(p == NULL || level == NULL)
+		return;
+	*level = value * 255;
+	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) != 0)
+		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
+				strerror(errno));
 }
 
 

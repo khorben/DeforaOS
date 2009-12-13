@@ -18,6 +18,8 @@
 #ifndef MIXER_MIXER_H
 # define MIXER_MIXER_H
 
+# include <gtk/gtk.h> /* XXX should not be necessary */
+
 
 /* Mixer */
 /* types */
@@ -27,6 +29,9 @@ typedef struct _Mixer Mixer;
 /* functions */
 Mixer * mixer_new(void);
 void mixer_delete(Mixer * mixer);
+
+/* accessors */
+void mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
 
 /* useful */
 void mixer_properties(Mixer * mixer);

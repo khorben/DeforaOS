@@ -177,7 +177,7 @@ void on_set_toggled(GtkWidget * widget, gpointer data)
 /* on_value_changed */
 void on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%lf)\n", __func__, value);
-#endif
+	Mixer * mixer = data;
+
+	mixer_set_value(mixer, widget, value);
 }
