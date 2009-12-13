@@ -89,6 +89,10 @@ static DesktopMenubar _mixer_menubar[] =
 };
 
 
+/* prototypes */
+mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev);
+
+
 /* public */
 /* mixer_new */
 static GtkWidget * _new_enum(Mixer * mixer, int dev,
@@ -215,16 +219,8 @@ static GtkWidget * _new_enum(Mixer * mixer, int dev,
 
 	if(e->num_mem <= 0)
 		return NULL;
-	/* XXX copy/paste */
-	if((p = malloc(sizeof(*p))) == NULL)
+	if((p = _mixer_get(mixer, dev)) == NULL)
 		return NULL;
-	p->dev = dev;
-	p->type = AUDIO_MIXER_ENUM;
-	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
-	{
-		free(p);
-		p = NULL;
-	}
 	vbox = gtk_vbox_new(TRUE, 0);
 	for(i = 0; i < e->num_mem; i++)
 	{
@@ -251,16 +247,8 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 
 	if(s->num_mem <= 0)
 		return NULL;
-	/* XXX copy/paste */
-	if((p = malloc(sizeof(*p))) == NULL)
+	if((p = _mixer_get(mixer, dev)) == NULL)
 		return NULL;
-	p->dev = dev;
-	p->type = AUDIO_MIXER_SET;
-	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
-	{
-		free(p);
-		p = NULL;
-	}
 	vbox = gtk_vbox_new(TRUE, 0);
 	for(i = 0; i < s->num_mem; i++)
 	{
@@ -288,15 +276,8 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 
 	if(v->num_channels <= 0)
 		return NULL;
-	if((p = malloc(sizeof(*p))) == NULL)
+	if((p = _mixer_get(mixer, dev)) == NULL)
 		return NULL;
-	p->dev = dev;
-	p->type = AUDIO_MIXER_VALUE;
-	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
-	{
-		free(p);
-		p = NULL;
-	}
 	hbox = gtk_hbox_new(TRUE, 0);
 	for(i = 0; i < v->num_channels; i++)
 	{
@@ -334,8 +315,36 @@ void mixer_delete(Mixer * mixer)
 
 
 /* accessors */
+/* mixer_set_enum */
+int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
+{
+	mixer_ctrl_t * p;
+	GSList * group;
+	int ord;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(widget));
+	for(ord = 0; group != NULL; ord++)
+		if(group->data == widget)
+			break;
+		else
+			group = group->next;
+	p = g_object_get_data(G_OBJECT(widget), "ctrl");
+	if(group == NULL || p == NULL)
+		return 1;
+	p->un.ord = ord;
+	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
+		return 0;
+	fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
+			strerror(errno));
+	return 1;
+}
+
+
 /* mixer_set_value */
-void mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
+int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 {
 	mixer_ctrl_t * p;
 	u_char * level;
@@ -346,11 +355,13 @@ void mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
 	level = g_object_get_data(G_OBJECT(widget), "channel");
 	if(p == NULL || level == NULL)
-		return;
+		return 1;
 	*level = value * 255;
-	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) != 0)
-		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
-				strerror(errno));
+	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
+		return 0;
+	fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
+			strerror(errno));
+	return 1;
 }
 
 
@@ -399,4 +410,56 @@ void mixer_show_class(Mixer * mixer, char const * name)
 			gtk_widget_show(mixer->mc[u].hbox);
 		else
 			gtk_widget_hide(mixer->mc[u].hbox);
+}
+
+
+/* private */
+/* functions */
+/* mixer_get */
+mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
+{
+	mixer_ctrl_t * p;
+#ifdef DEBUG
+	int i;
+	size_t u;
+	struct mixer_devinfo md;
+	char * sep = "";
+#endif
+
+	if((p = malloc(sizeof(*p))) == NULL)
+		return NULL;
+	p->dev = dev;
+	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
+	{
+		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_READ",
+				strerror(errno));
+		free(p);
+		return NULL;
+	}
+#ifdef DEBUG
+	md.index = dev;
+	if(ioctl(mixer->fd, AUDIO_MIXER_DEVINFO, &md) != 0)
+		return p; /* XXX ignore error */
+	for(u = 0; u < mixer->mc_cnt; u++)
+		if(mixer->mc[u].mixer_class == md.mixer_class)
+			printf("%s", mixer->mc[u].label.name);
+	printf(".%s=", md.label.name);
+	switch(p->type)
+	{
+		case AUDIO_MIXER_ENUM:
+			printf("%d", p->un.ord);
+			break;
+		case AUDIO_MIXER_SET:
+			break;
+		case AUDIO_MIXER_VALUE:
+			for(i = 0; i < p->un.value.num_channels; i++)
+			{
+				printf("%s%u", sep, p->un.value.level[i]);
+				sep = ",";
+			}
+			break;
+	}
+	putchar('\n');
+#endif
+	return p;
 }

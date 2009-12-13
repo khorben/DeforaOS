@@ -159,9 +159,9 @@ void on_help_about(gpointer data)
 /* on_enum_toggled */
 void on_enum_toggled(GtkWidget * widget, gpointer data)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+	Mixer * mixer = data;
+
+	mixer_set_enum(mixer, widget);
 }
 
 

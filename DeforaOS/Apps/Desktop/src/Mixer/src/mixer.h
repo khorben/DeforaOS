@@ -31,7 +31,8 @@ Mixer * mixer_new(void);
 void mixer_delete(Mixer * mixer);
 
 /* accessors */
-void mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
+int mixer_set_enum(Mixer * mixer, GtkWidget * widget);
+int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
 
 /* useful */
 void mixer_properties(Mixer * mixer);
