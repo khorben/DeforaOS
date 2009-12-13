@@ -90,8 +90,9 @@ static DesktopMenubar _mixer_menubar[] =
 
 /* public */
 /* mixer_new */
-static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e);
-static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s);
+static GtkWidget * _new_enum(Mixer * mixer, int dev,
+		struct audio_mixer_enum * e);
+static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s);
 static GtkWidget * _new_value(Mixer * mixer, int dev,
 		struct audio_mixer_value * v);
 
@@ -177,10 +178,10 @@ Mixer * mixer_new(void)
 		switch(md.type)
 		{
 			case AUDIO_MIXER_ENUM:
-				control = _new_enum(mixer, &md.un.e);
+				control = _new_enum(mixer, i, &md.un.e);
 				break;
 			case AUDIO_MIXER_SET:
-				control = _new_set(mixer, &md.un.s);
+				control = _new_set(mixer, i, &md.un.s);
 				break;
 			case AUDIO_MIXER_VALUE:
 				control = _new_value(mixer, i, &md.un.v);
@@ -202,8 +203,10 @@ Mixer * mixer_new(void)
 	return mixer;
 }
 
-static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e)
+static GtkWidget * _new_enum(Mixer * mixer, int dev,
+		struct audio_mixer_enum * e)
 {
+	mixer_ctrl_t * p;
 	GtkWidget * vbox;
 	int i;
 	GtkWidget * widget;
@@ -211,12 +214,26 @@ static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e)
 
 	if(e->num_mem <= 0)
 		return NULL;
+	/* XXX copy/paste */
+	if((p = malloc(sizeof(*p))) == NULL)
+		return NULL;
+	p->dev = dev;
+	p->type = AUDIO_MIXER_ENUM;
+	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
+	{
+		free(p);
+		p = NULL;
+	}
 	vbox = gtk_vbox_new(TRUE, 0);
 	for(i = 0; i < e->num_mem; i++)
 	{
 		widget = gtk_radio_button_new_with_label(group,
 				e->member[i].label.name);
 		group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(widget));
+		if(p->un.ord == i)
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+					TRUE);
+		g_object_set_data(G_OBJECT(widget), "ctrl", p);
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_enum_toggled), mixer);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -224,19 +241,34 @@ static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e)
 	return vbox;
 }
 
-static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s)
+static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s)
 {
+	mixer_ctrl_t * p;
 	GtkWidget * vbox;
 	int i;
 	GtkWidget * widget;
 
 	if(s->num_mem <= 0)
 		return NULL;
+	/* XXX copy/paste */
+	if((p = malloc(sizeof(*p))) == NULL)
+		return NULL;
+	p->dev = dev;
+	p->type = AUDIO_MIXER_SET;
+	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
+	{
+		free(p);
+		p = NULL;
+	}
 	vbox = gtk_vbox_new(TRUE, 0);
 	for(i = 0; i < s->num_mem; i++)
 	{
 		widget = gtk_check_button_new_with_label(
 				s->member[i].label.name);
+		if(p->un.mask & (1 << i))
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
+					TRUE);
+		g_object_set_data(G_OBJECT(widget), "ctrl", p);
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_set_toggled), mixer);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -247,11 +279,11 @@ static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s)
 static GtkWidget * _new_value(Mixer * mixer, int dev,
 		struct audio_mixer_value * v)
 {
+	mixer_ctrl_t * p;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	int i;
 	GtkWidget * widget;
-	mixer_ctrl_t * p;
 
 	if(v->num_channels <= 0)
 		return NULL;
