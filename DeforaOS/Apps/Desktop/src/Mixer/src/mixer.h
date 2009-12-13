@@ -27,7 +27,7 @@ typedef struct _Mixer Mixer;
 
 
 /* functions */
-Mixer * mixer_new(void);
+Mixer * mixer_new(char const * device);
 void mixer_delete(Mixer * mixer);
 
 /* accessors */

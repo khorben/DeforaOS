@@ -111,7 +111,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s);
 static GtkWidget * _new_value(Mixer * mixer, int dev,
 		struct audio_mixer_value * v);
 
-Mixer * mixer_new(void)
+Mixer * mixer_new(char const * device)
 {
 	Mixer * mixer;
 	GtkAccelGroup * group;
@@ -127,7 +127,9 @@ Mixer * mixer_new(void)
 
 	if((mixer = malloc(sizeof(*mixer))) == NULL)
 		return NULL;
-	mixer->fd = open("/dev/mixer", O_RDWR);
+	if(device == NULL)
+		device = "/dev/mixer";
+	mixer->fd = open(device, O_RDWR);
 	mixer->window = NULL;
 	mixer->properties = NULL;
 	mixer->about = NULL;
@@ -135,6 +137,8 @@ Mixer * mixer_new(void)
 	mixer->mc_cnt = 0;
 	if(mixer->fd < 0)
 	{
+		fprintf(stderr, "%s: %s: %s\n", PACKAGE, device,
+				strerror(errno));
 		mixer_delete(mixer);
 		return NULL;
 	}

@@ -26,7 +26,8 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE "\n", stderr);
+	fputs("Usage: " PACKAGE " [-d device]\n"
+"  -d	The mixer device to use\n", stderr);
 	return 1;
 }
 
@@ -35,18 +36,23 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	char const * device = NULL;
 	Mixer * mixer;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "d:")) != -1)
 		switch(o)
 		{
+			case 'd':
+				device = optarg;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
 	gtk_init(&argc, &argv);
-	mixer = mixer_new();
+	if((mixer = mixer_new(device)) == NULL)
+		return 2;
 	gtk_main();
 	mixer_delete(mixer);
 	return 0;
