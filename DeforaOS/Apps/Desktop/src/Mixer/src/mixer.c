@@ -147,6 +147,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	mixer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(mixer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(mixer->window), 800, 200);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(mixer->window), "gnome-mixer");
+#endif
 	gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
 	g_signal_connect(G_OBJECT(mixer->window), "delete-event", G_CALLBACK(
 				on_closex), mixer);
