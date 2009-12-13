@@ -47,6 +47,7 @@ struct _Mixer
 
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * properties;
 	GtkWidget * about;
 
 	/* internals */
@@ -127,6 +128,7 @@ Mixer * mixer_new(void)
 		return NULL;
 	mixer->fd = open("/dev/mixer", O_RDWR);
 	mixer->window = NULL;
+	mixer->properties = NULL;
 	mixer->about = NULL;
 	mixer->mc = NULL;
 	mixer->mc_cnt = 0;
@@ -400,7 +402,49 @@ void mixer_about(Mixer * mixer)
 /* mixer_properties */
 void mixer_properties(Mixer * mixer)
 {
-	/* FIXME implement */
+	audio_device_t ad;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	if(mixer->properties != NULL)
+	{
+		gtk_widget_show(mixer->properties);
+		return;
+	}
+	if(ioctl(mixer->fd, AUDIO_GETDEV, &ad) != 0)
+	{
+		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_GETDEV",
+				strerror(errno));
+		return;
+	}
+	mixer->properties = gtk_dialog_new_with_buttons("Mixer properties",
+			GTK_WINDOW(mixer->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(mixer->properties));
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Name: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_label_new(ad.name);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Version: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_label_new(ad.version);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Config: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_label_new(ad.config);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_widget_show_all(vbox);
+	g_signal_connect(mixer->properties, "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
+	gtk_widget_show(mixer->properties);
 }
 
 
