@@ -35,6 +35,7 @@ int mixer_set_enum(Mixer * mixer, GtkWidget * widget);
 int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value);
 
 /* useful */
+void mixer_about(Mixer * mixer);
 void mixer_properties(Mixer * mixer);
 
 void mixer_show(Mixer * mixer, int view);

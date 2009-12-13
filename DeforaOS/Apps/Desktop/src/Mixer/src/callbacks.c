@@ -1,19 +1,17 @@
 /* $Id$ */
-static char _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mixer */
-static char _license[] =
-"This program is free software: you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation, version 3 of the License.\n"
-"\n"
-"This program is distributed in the hope that it will be useful,\n"
-"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"GNU General Public License for more details.\n"
-"\n"
-"You should have received a copy of the GNU General Public License\n"
-"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
 
@@ -27,15 +25,6 @@ static char _license[] =
 #include "mixer.h"
 #include "callbacks.h"
 #include "../config.h"
-
-
-/* private */
-/* variables */
-static char const * _authors[] =
-{
-	"Pierre Pronchery <khorben@defora.org>",
-	NULL
-};
 
 
 /* public */
@@ -141,17 +130,9 @@ void on_view_modem(gpointer data)
 /* on_help_about */
 void on_help_about(gpointer data)
 {
-	GtkWidget * about;
+	Mixer * mixer = data;
 
-	about = desktop_about_dialog_new();
-	/* FIXME make it transient */
-	desktop_about_dialog_set_authors(about, _authors);
-	desktop_about_dialog_set_copyright(about, _copyright);
-	desktop_about_dialog_set_license(about, _license);
-	desktop_about_dialog_set_logo_icon_name(about, "gnome-mixer");
-	desktop_about_dialog_set_name(about, PACKAGE);
-	desktop_about_dialog_set_version(about, VERSION);
-	gtk_widget_show(about);
+	mixer_about(mixer);
 }
 
 

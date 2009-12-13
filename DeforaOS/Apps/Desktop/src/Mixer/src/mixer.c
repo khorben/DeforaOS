@@ -1,17 +1,19 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+static char _copyright[] =
+"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Mixer */
-/* This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+static char _license[] =
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
+"\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 
 
 
@@ -45,6 +47,7 @@ struct _Mixer
 
 	/* widgets */
 	GtkWidget * window;
+	GtkWidget * about;
 
 	/* internals */
 	MixerClass * mc;
@@ -53,6 +56,12 @@ struct _Mixer
 
 
 /* variables */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
+
 static DesktopMenu _mixer_menu_file[] =
 {
 	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES,
@@ -118,6 +127,7 @@ Mixer * mixer_new(void)
 		return NULL;
 	mixer->fd = open("/dev/mixer", O_RDWR);
 	mixer->window = NULL;
+	mixer->about = NULL;
 	mixer->mc = NULL;
 	mixer->mc_cnt = 0;
 	if(mixer->fd < 0)
@@ -366,6 +376,27 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 
 
 /* useful */
+void mixer_about(Mixer * mixer)
+{
+
+	if(mixer->about != NULL)
+	{
+		gtk_widget_show(mixer->about);
+		return;
+	}
+	mixer->about = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(mixer->about), GTK_WINDOW(
+				mixer->window));
+	desktop_about_dialog_set_authors(mixer->about, _authors);
+	desktop_about_dialog_set_copyright(mixer->about, _copyright);
+	desktop_about_dialog_set_license(mixer->about, _license);
+	desktop_about_dialog_set_logo_icon_name(mixer->about, "gnome-mixer");
+	desktop_about_dialog_set_name(mixer->about, PACKAGE);
+	desktop_about_dialog_set_version(mixer->about, VERSION);
+	gtk_widget_show(mixer->about);
+}
+
+
 /* mixer_properties */
 void mixer_properties(Mixer * mixer)
 {
