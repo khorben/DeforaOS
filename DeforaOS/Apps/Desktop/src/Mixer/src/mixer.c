@@ -73,14 +73,14 @@ static DesktopMenu _mixer_menu_file[] =
 
 static DesktopMenu _mixer_menu_view[] =
 {
-	{ "_All", G_CALLBACK(on_view_all), NULL, 0 },
-	{ "_Outputs", G_CALLBACK(on_view_outputs), NULL, 0 },
-	{ "_Inputs", G_CALLBACK(on_view_inputs), NULL, 0 },
-	{ "_Record", G_CALLBACK(on_view_record), NULL, 0 },
-	{ "Monito_r", G_CALLBACK(on_view_monitor), NULL, 0 },
-	{ "_Equalization", G_CALLBACK(on_view_equalization), NULL, 0 },
-	{ "Mi_x", G_CALLBACK(on_view_mix), NULL, 0 },
-	{ "_Modem", G_CALLBACK(on_view_modem), NULL, 0 },
+	{ "_All", G_CALLBACK(on_view_all), NULL, GDK_A },
+	{ "_Outputs", G_CALLBACK(on_view_outputs), NULL, GDK_O },
+	{ "_Inputs", G_CALLBACK(on_view_inputs), NULL, GDK_I },
+	{ "_Record", G_CALLBACK(on_view_record), NULL, GDK_R },
+	{ "Mo_nitor", G_CALLBACK(on_view_monitor), NULL, GDK_N },
+	{ "_Equalization", G_CALLBACK(on_view_equalization), NULL, GDK_E },
+	{ "Mi_x", G_CALLBACK(on_view_mix), NULL, GDK_X },
+	{ "_Modem", G_CALLBACK(on_view_modem), NULL, GDK_M },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -114,6 +114,7 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 Mixer * mixer_new(void)
 {
 	Mixer * mixer;
+	GtkAccelGroup * group;
 	GtkWidget * scrolled;
 	GtkWidget * vbox;
 	GtkWidget * widget;
@@ -138,7 +139,9 @@ Mixer * mixer_new(void)
 		return NULL;
 	}
 	/* widgets */
+	group = gtk_accel_group_new();
 	mixer->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_add_accel_group(GTK_WINDOW(mixer->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(mixer->window), 800, 200);
 	gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
 	g_signal_connect(G_OBJECT(mixer->window), "delete-event", G_CALLBACK(
@@ -150,7 +153,7 @@ Mixer * mixer_new(void)
 			GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
-	widget = desktop_menubar_create(_mixer_menubar, mixer, NULL);
+	widget = desktop_menubar_create(_mixer_menubar, mixer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* classes */
 	hbox = gtk_hbox_new(FALSE, 0);
