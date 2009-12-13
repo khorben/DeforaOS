@@ -79,7 +79,6 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 {
 	GtkWidget * ret;
 	Battery * battery;
-	gdouble value;
 
 	if((battery = malloc(sizeof(*battery))) == NULL)
 		return NULL;
@@ -89,14 +88,6 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 #ifdef __NetBSD__
 	battery->fd = -1;
 #endif
-	value = _battery_get(battery);
-	if(value >= 0.0 && value <= 100.0)
-		;
-	else /* an error occurred */
-	{
-		_battery_destroy(applet);
-		return NULL;
-	}
 	ret = gtk_hbox_new(FALSE, 0);
 	battery->image = gtk_image_new_from_icon_name("battery",
 			applet->helper->icon_size);
@@ -107,7 +98,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	gtk_scale_set_value_pos(GTK_SCALE(battery->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(ret), battery->scale, FALSE, TRUE, 0);
 	battery->timeout = g_timeout_add(1000, _on_timeout, battery);
-	_battery_set(battery, value);
+	_on_timeout(battery);
 	return ret;
 }
 
@@ -127,8 +118,37 @@ static void _battery_destroy(PanelApplet * applet)
 }
 
 
-/* accessors */
-/* battery_get */
+/* battery_set */
+static void _battery_set(Battery * battery, gdouble value)
+{
+	/* XXX only set it when necessary? */
+	if(value < 0.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"stock_dialog-question",
+				battery->helper->icon_size);
+	else if(value <= 10.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"battery-caution", battery->helper->icon_size);
+	else if(value <= 20.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"battery-low", battery->helper->icon_size);
+	else if(value <= 100.0)
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"battery", battery->helper->icon_size);
+	else
+	{
+		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
+				"error", battery->helper->icon_size);
+		gtk_widget_hide(battery->image);
+		gtk_widget_hide(battery->scale);
+		value = 0.0;
+	}
+	gtk_range_set_value(GTK_RANGE(battery->scale), value);
+}
+
+
+/* callbacks */
+/* on_timeout */
 #ifdef __NetBSD__
 static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre);
 
@@ -218,43 +238,12 @@ static gdouble _battery_get(Battery * battery)
 #endif
 
 
-/* battery_set */
-static void _battery_set(Battery * battery, gdouble value)
-{
-	/* XXX only set it when necessary? */
-	if(value < 0.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"error", battery->helper->icon_size);
-	else if(value <= 10.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery-caution", battery->helper->icon_size);
-	else if(value <= 20.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery-low", battery->helper->icon_size);
-	else if(value <= 100.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery", battery->helper->icon_size);
-	else
-	{
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"error", battery->helper->icon_size);
-		value = 0.0;
-	}
-	gtk_range_set_value(GTK_RANGE(battery->scale), value);
-}
-
-
 /* callbacks */
 /* on_timeout */
 static gboolean _on_timeout(gpointer data)
 {
 	Battery * battery = data;
-	gdouble value;
 
-	value = _battery_get(battery);
-	if(value >= 0.0 && value <= 100.0)
-		_battery_set(battery, value);
-	else
-		return FALSE;
+	_battery_set(battery, _battery_get(battery));
 	return TRUE;
 }
