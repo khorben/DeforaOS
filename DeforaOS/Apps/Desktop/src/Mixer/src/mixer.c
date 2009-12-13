@@ -92,7 +92,8 @@ static DesktopMenubar _mixer_menubar[] =
 /* mixer_new */
 static GtkWidget * _new_enum(Mixer * mixer, struct audio_mixer_enum * e);
 static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s);
-static GtkWidget * _new_value(Mixer * mixer, struct audio_mixer_value * v);
+static GtkWidget * _new_value(Mixer * mixer, int dev,
+		struct audio_mixer_value * v);
 
 Mixer * mixer_new(void)
 {
@@ -182,7 +183,7 @@ Mixer * mixer_new(void)
 				control = _new_set(mixer, &md.un.s);
 				break;
 			case AUDIO_MIXER_VALUE:
-				control = _new_value(mixer, &md.un.v);
+				control = _new_value(mixer, i, &md.un.v);
 				break;
 		}
 		if(control == NULL)
@@ -243,19 +244,36 @@ static GtkWidget * _new_set(Mixer * mixer, struct audio_mixer_set * s)
 	return vbox;
 }
 
-static GtkWidget * _new_value(Mixer * mixer, struct audio_mixer_value * v)
+static GtkWidget * _new_value(Mixer * mixer, int dev,
+		struct audio_mixer_value * v)
 {
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	int i;
 	GtkWidget * widget;
+	mixer_ctrl_t * p;
 
 	if(v->num_channels <= 0)
 		return NULL;
+	if((p = malloc(sizeof(*p))) == NULL)
+		return NULL;
+	p->dev = dev;
+	p->type = AUDIO_MIXER_VALUE;
+	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
+	{
+		free(p);
+		p = NULL;
+	}
 	hbox = gtk_hbox_new(TRUE, 0);
 	for(i = 0; i < v->num_channels; i++)
 	{
 		widget = gtk_vscale_new_with_range(0.0, 1.0, 0.02);
+		gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
+		gtk_range_set_value(GTK_RANGE(widget),
+				p->un.value.level[i] / 255.0);
+		g_object_set_data(G_OBJECT(widget), "ctrl", p);
+		g_object_set_data(G_OBJECT(widget), "channel",
+				&p->un.value.level[i]);
 		g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(
 					on_value_changed), mixer);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
