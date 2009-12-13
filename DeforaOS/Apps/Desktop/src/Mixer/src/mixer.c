@@ -217,11 +217,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		}
 		if(control == NULL)
 			continue;
-		widget = gtk_vbox_new(FALSE, 0);
-		gtk_box_pack_start(GTK_BOX(widget), gtk_label_new(
-					md.label.name), FALSE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(widget), control, TRUE, TRUE, 4);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+		widget = gtk_frame_new(md.label.name);
+		gtk_container_add(GTK_CONTAINER(widget), control);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(mixer->window), vbox);
@@ -318,6 +316,7 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 	if(v->num_channels < 2)
 		return hbox;
 	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	widget = gtk_toggle_button_new_with_label("Bind");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
