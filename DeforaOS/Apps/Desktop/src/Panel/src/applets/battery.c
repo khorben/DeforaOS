@@ -233,7 +233,7 @@ static gdouble _battery_get(Battery * battery)
 {
 	/* FIXME not supported */
 	error_set("%s", strerror(ENOSYS));
-	return -1.0;
+	return 0.0 / 0.0;
 }
 #endif
 
