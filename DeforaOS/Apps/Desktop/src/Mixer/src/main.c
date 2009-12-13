@@ -26,7 +26,9 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-d device]\n"
+	fputs("Usage: " PACKAGE " [-H|-V][-d device]\n"
+"  -H	Show the classes next to each other\n"
+"  -V	Show the classes on top of each other\n"
 "  -d	The mixer device to use\n", stderr);
 	return 1;
 }
@@ -37,11 +39,18 @@ int main(int argc, char * argv[])
 {
 	int o;
 	char const * device = NULL;
+	MixerOrientation mo = MO_HORIZONTAL;
 	Mixer * mixer;
 
-	while((o = getopt(argc, argv, "d:")) != -1)
+	while((o = getopt(argc, argv, "HVd:")) != -1)
 		switch(o)
 		{
+			case 'H':
+				mo = MO_HORIZONTAL;
+				break;
+			case 'V':
+				mo = MO_VERTICAL;
+				break;
 			case 'd':
 				device = optarg;
 				break;
@@ -51,7 +60,7 @@ int main(int argc, char * argv[])
 	if(optind != argc)
 		return _usage();
 	gtk_init(&argc, &argv);
-	if((mixer = mixer_new(device)) == NULL)
+	if((mixer = mixer_new(device, mo)) == NULL)
 		return 2;
 	gtk_main();
 	mixer_delete(mixer);

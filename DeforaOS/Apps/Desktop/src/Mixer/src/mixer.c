@@ -111,7 +111,7 @@ static GtkWidget * _new_set(Mixer * mixer, int dev, struct audio_mixer_set * s);
 static GtkWidget * _new_value(Mixer * mixer, int dev,
 		struct audio_mixer_value * v);
 
-Mixer * mixer_new(char const * device)
+Mixer * mixer_new(char const * device, MixerOrientation orientation)
 {
 	Mixer * mixer;
 	GtkAccelGroup * group;
@@ -152,7 +152,8 @@ Mixer * mixer_new(char const * device)
 				on_closex), mixer);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
-			GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+			GTK_POLICY_AUTOMATIC, orientation == MO_VERTICAL
+			? GTK_POLICY_AUTOMATIC : GTK_POLICY_NEVER);
 	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_SHADOW_NONE);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -160,7 +161,10 @@ Mixer * mixer_new(char const * device)
 	widget = desktop_menubar_create(_mixer_menubar, mixer, group);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* classes */
-	hbox = gtk_hbox_new(FALSE, 0);
+	if(orientation == MO_VERTICAL)
+		hbox = gtk_vbox_new(TRUE, 0);
+	else
+		hbox = gtk_hbox_new(FALSE, 0);
 	for(i = 0;; i++)
 	{
 		md.index = i;
