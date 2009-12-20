@@ -409,22 +409,25 @@ static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode)
 {
 	GtkWidget * hbox;
 	GtkWidget * w[3];
+	gboolean sensitive = FALSE;
 
 	if(widget == NULL)
 		widget = w;
+	else
+		sensitive = TRUE;
 	hbox = gtk_hbox_new(TRUE, 0);
 	widget[2] = gtk_check_button_new_with_label("read"); /* read */
-	gtk_widget_set_sensitive(widget[2], FALSE);
+	gtk_widget_set_sensitive(widget[2], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
 			mode & S_IROTH);
 	gtk_box_pack_start(GTK_BOX(hbox), widget[2], TRUE, TRUE, 4);
 	widget[1] = gtk_check_button_new_with_label("write"); /* write */
-	gtk_widget_set_sensitive(widget[1], FALSE);
+	gtk_widget_set_sensitive(widget[1], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[1]),
 			mode & S_IWOTH);
 	gtk_box_pack_start(GTK_BOX(hbox), widget[1], TRUE, TRUE, 4);
 	widget[0] = gtk_check_button_new_with_label("execute"); /* execute */
-	gtk_widget_set_sensitive(widget[0], FALSE);
+	gtk_widget_set_sensitive(widget[0], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[0]),
 			mode & S_IXOTH);
 	gtk_box_pack_start(GTK_BOX(hbox), widget[0], TRUE, TRUE, 4);
