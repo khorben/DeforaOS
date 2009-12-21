@@ -24,6 +24,7 @@ _image_image()
   IMAGE_FILE	Where to write the filesystem image\n\
   IMAGE_KERNEL	Path to the kernel\n\
   IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
+  IMAGE_TYPE	The type of image to generate
   MKFS		Command used to format the filesystem"
 
 	#sanity check
@@ -76,6 +77,7 @@ _image_iso()
 	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
   IMAGE_FILE	Where to write the filesystem image\n\
   IMAGE_KERNEL	Path to the kernel
+  IMAGE_TYPE	The type of image to generate
   MKISOFS	Command used to format the filesystem"
 	MKISOFS_ARGS="-o bootimage=i386;bootxx,no-emul-boot,rockridge"
 
