@@ -35,7 +35,7 @@ VENDOR="DeforaOS"
 CAT="cat"
 CC=
 CHOWN="chown"
-CONFIGURE="configure"
+CONFIGURE=
 DD="dd bs=1024"
 INSTALL="install"
 LD=
@@ -49,7 +49,6 @@ RMDIR="rmdir -p"
 #internals
 DEVNULL="/dev/null"
 DEVZERO="/dev/zero"
-PROGNAME="$0"
 SUBDIRS="System/src/libc \
 	Apps/Unix/src/sh \
 	Apps/Unix/src/utils \
@@ -85,25 +84,6 @@ error()
 }
 
 
-#usage
-usage()
-{
-	echo "Usage: build.sh [option=value...] target..."
-	echo "Targets:"
-	echo "  all		Build everything"
-	echo "  clean		Remove object files"
-	echo "  distclean	Remove all compiled files"
-	echo "  install	Install everything"
-	echo "  image		Create a specific image"
-	echo "  uninstall	Uninstall everything"
-	if [ ! -z "$1" ]; then
-		echo
-		echo "$1"
-	fi
-	exit 1
-}
-
-
 #target
 target()
 {
@@ -116,10 +96,68 @@ target()
 	[ ! -z "$LD" ] && _MAKE="$_MAKE LD=\"$LD\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
 	for i in $SUBDIRS; do
-		$CONFIGURE -O "DeforaOS" "$i"			|| return 2
+		$CONFIGURE "$i"					|| return 2
 		(cd "$i" && eval $_MAKE "$1")			|| return 2
 	done
 	return 0
+}
+
+
+#target_all
+target_all()
+{
+	target "install"
+}
+
+
+#target_clean
+target_clean()
+{
+	target "clean"
+}
+
+
+#target_distclean
+target_distclean()
+{
+	target "distclean"
+}
+
+
+#target_install
+target_install()
+{
+	#build to a staging directory and then install
+	target_all						|| return 2
+	DESTDIR=
+	target "install"
+}
+
+
+#target_uninstall
+target_uninstall()
+{
+	DESTDIR=
+	target "uninstall"
+}
+
+
+#usage
+usage()
+{
+	echo "Usage: build.sh [option=value...] target..."
+	echo "Targets:"
+	echo "  all		Build and install in a staging directory"
+	echo "  clean		Remove object files"
+	echo "  distclean	Remove all compiled files"
+	echo "  install	Build and install in the system"
+	echo "  image		Create a specific image"
+	echo "  uninstall	Uninstall everything"
+	if [ ! -z "$1" ]; then
+		echo
+		echo "$1"
+	fi
+	exit 1
 }
 
 
@@ -168,6 +206,7 @@ fi
 
 #initialize variables
 [ -z "$CC" ] && CC="cc"
+[ -z "$CONFIGURE" ] && CONFIGURE="configure -O DeforaOS"
 [ -z "$IMAGE_TYPE" ] && IMAGE_TYPE="image"
 [ -z "$IMAGE_FILE" ] && IMAGE_FILE="$VENDOR-$IMAGE_TYPE.img"
 [ -z "$DESTDIR" ] && DESTDIR="$PWD/destdir-$TARGET"
@@ -186,17 +225,7 @@ if [ $# -lt 1 ]; then
 fi
 while [ $# -gt 0 ]; do
 	case "$1" in
-		all|install)
-			echo "$PROGNAME: Making target $1 on $TARGET" 1>&2
-			target "install"			|| exit 2
-			;;
-		clean|distclean|uninstall)
-			echo "$PROGNAME: Making target $1 on $TARGET" 1>&2
-			target "$1"				|| exit 2
-			;;
-		image)
-			echo "$PROGNAME: Making target $1 on $TARGET" 1>&2
-			target_image				|| exit 2
+		all|clean|distclean|image|install|uninstall)
 			;;
 		*)
 			echo "build.sh: $1: Unknown target" 1>&2
@@ -204,5 +233,7 @@ while [ $# -gt 0 ]; do
 			exit $?
 			;;
 	esac
+	echo "build.sh: Making target $1 on $TARGET" 1>&2
+	"target_$1"						|| exit 2
 	shift
 done
