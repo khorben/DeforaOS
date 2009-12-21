@@ -2,6 +2,11 @@ TARGETS	= libvfs.a libvfs.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
+CC	= cc
+CPPFLAGSF= -I $(PREFIX)/include
+CPPFLAGS=
+CFLAGS	= -W -Wall -g -O2 -fPIC
+LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem
 AR	= ar -rc
 RANLIB	= ranlib
 LD	= $(CC) -shared
@@ -14,15 +19,15 @@ INSTALL	= install
 all: $(TARGETS)
 
 libvfs_OBJS = libvfs.o
-libvfs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -W -Wall -g -O2 -fPIC
-libvfs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem
+libvfs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+libvfs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 libvfs.a: $(libvfs_OBJS)
 	$(AR) libvfs.a $(libvfs_OBJS)
 	$(RANLIB) libvfs.a
 
 libvfs.so: $(libvfs_OBJS)
-	$(LD) -o libvfs.so -Wl,-soname,libvfs.so.0 $(libvfs_OBJS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem
+	$(LD) -o libvfs.so -Wl,-soname,libvfs.so.0 $(libvfs_OBJS)
 
 libvfs.o: libvfs.c
 	$(CC) $(libvfs_CFLAGS) -c libvfs.c
