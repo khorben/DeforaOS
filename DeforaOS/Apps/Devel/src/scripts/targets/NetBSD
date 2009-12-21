@@ -6,6 +6,7 @@
 #variables
 [ -z "$FDISK"		] && FDISK="fdisk"
 [ -z "$INSTALLBOOT"	] && INSTALLBOOT="installboot"
+[ -z "$LDSO"		] && LDSO="/libexec/ld.elf_so"
 [ -z "$MBRLABEL"	] && MBRLABEL="mbrlabel"
 [ -z "$MKFS"		] && MKFS="newfs"
 [ -z "$MKISOFS"		] && MKISOFS="makefs -t cd9660"
@@ -20,11 +21,12 @@
 #image_image
 _image_image()
 {
-	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
-  IMAGE_FILE	Where to write the filesystem image\n\
-  IMAGE_KERNEL	Path to the kernel\n\
-  IMAGE_SIZE	Size of the filesystem image in kilobytes\n\
+	USAGE="Options for $IMAGE_TYPE on $TARGET:
+  IMAGE_FILE	Where to write the filesystem image
+  IMAGE_KERNEL	Path to the kernel
+  IMAGE_SIZE	Size of the filesystem image in kilobytes
   IMAGE_TYPE	The type of image to generate
+  LDSO		Path to the dynamic loader
   MKFS		Command used to format the filesystem"
 
 	#sanity check
@@ -53,8 +55,8 @@ _image_image()
 	$SUDO $MKDIR "$DESTDIR/dev"				&&
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	&&
 	$SUDO $MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	&&
-	$SUDO $INSTALL -m 555 "/libexec/ld.elf_so" \
-			"$DESTDIR/libexec"			&&
+	$SUDO $INSTALL -m 555 "$LDSO" \
+			"$DESTDIR/libexec/ld.elf_so"		&&
 	$SUDO $LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"&&
 	$SUDO $MKDIR "$DESTDIR/sbin"				&&
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	&&
@@ -74,10 +76,11 @@ _image_image()
 #image_iso
 _image_iso()
 {
-	USAGE="Options for $IMAGE_TYPE on $TARGET:\n\
-  IMAGE_FILE	Where to write the filesystem image\n\
+	USAGE="Options for $IMAGE_TYPE on $TARGET:
+  IMAGE_FILE	Where to write the filesystem image
   IMAGE_KERNEL	Path to the kernel
   IMAGE_TYPE	The type of image to generate
+  LDSO		Path to the dynamic loader
   MKISOFS	Command used to format the filesystem"
 	MKISOFS_ARGS="-o bootimage=i386;bootxx,no-emul-boot,rockridge"
 
@@ -87,7 +90,7 @@ _image_iso()
 	$MKDIR "$DESTDIR/dev"					|| exit 2
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
 	$MKDIR "$DESTDIR/libexec" "$DESTDIR/usr/libexec"	|| exit 2
-	$INSTALL -m 555 "/libexec/ld.elf_so" "$DESTDIR/libexec"	|| exit 2
+	$INSTALL -m 555 "$LDSO" "$DESTDIR/libexec/ld.elf_so"	|| exit 2
 	$LN -s "/libexec/ld.elf_so" "$DESTDIR/usr/libexec"	|| exit 2
 	$MKDIR "$DESTDIR/sbin"					|| exit 2
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	|| exit 2
