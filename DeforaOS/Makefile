@@ -36,7 +36,7 @@ distclean:
 install: all
 	$(MAKE) install
 
-uninstall: subdirs
+uninstall: all
 	$(MAKE) uninstall
 
 .PHONY: all subdirs bootstrap clean dist distclean install uninstall
