@@ -64,6 +64,9 @@ struct _Desktop
 	GdkPixbuf * file;
 	GdkPixbuf * folder;
 	GtkWidget * menu;
+	/* preferences */
+	GtkWidget * pr_window;
+	GtkWidget * pr_background;
 
 	gint width;
 	gint height;
@@ -636,6 +639,7 @@ void desktopicon_show(DesktopIcon * desktopicon)
 static int _desktop_error(Desktop * desktop, char const * message,
 		char const * error, int ret);
 static int _desktop_serror(Desktop * desktop, char const * message, int ret);
+static Config * _desktop_get_config(Desktop * desktop);
 
 
 /* public */
@@ -707,6 +711,8 @@ Desktop * desktop_new(void)
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
 				desktop->root) | GDK_BUTTON_PRESS_MASK);
 	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
+	/* preferences */
+	desktop->pr_window = NULL;
 	/* draw background when idle */
 	g_idle_add(_new_idle, desktop);
 	return desktop;
@@ -764,40 +770,29 @@ static gboolean _new_idle(gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
-	char * pathname;
 	char const * p;
 	GError * error = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((config = config_new()) == NULL
-			|| (pathname = string_new_append(desktop->home, "/",
-					DESKTOPRC, NULL)) == NULL)
+	if((config = _desktop_get_config(desktop)) == NULL
+			|| (p = config_get(config, "", "background")) == NULL)
 	{
 		if(config != NULL)
 			config_delete(config);
-		return _desktop_serror(desktop, "Could not load preferences",
-				FALSE);
-	}
-	if(config_load(config, pathname) != 0
-			|| (p = config_get(config, "", "background")) == NULL)
-	{
-		object_delete(pathname);
-		config_delete(config);
 		return FALSE;
 	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
 #endif
 	/* FIXME may be resized (xrandr...) */
-	if((desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
-					desktop->width, desktop->height,
-					FALSE, &error)) == NULL)
+	desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
+			desktop->width, desktop->height, FALSE, &error);
+	config_delete(config);
+	if(desktop->background == NULL)
 	{
 		desktop_error(desktop, error->message, 0);
-		object_delete(pathname);
-		config_delete(config);
 		return FALSE;
 	}
 	gdk_draw_pixbuf(desktop->root, NULL, desktop->background, 0, 0, 0, 0,
@@ -805,8 +800,6 @@ static gboolean _new_idle(gpointer data)
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
 				desktop->root) | GDK_BUTTON_PRESS_MASK
 			| GDK_EXPOSURE_MASK);
-	object_delete(pathname);
-	config_delete(config);
 	return FALSE;
 }
 
@@ -909,42 +902,41 @@ static void _on_popup_new_folder(gpointer data)
 {
 	static char const newfolder[] = "New folder";
 	Desktop * desktop = data;
-	char * path;
+	String * path;
 
 	gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
-	if((path = malloc(strlen(desktop->path) + sizeof(newfolder) + 1))
+	if((path = string_new_append(desktop->path, "/", newfolder, NULL))
 			== NULL)
 	{
-		desktop_error(desktop, "malloc", 0);
+		_desktop_serror(desktop, newfolder, 0);
 		return;
 	}
-	sprintf(path, "%s/%s", desktop->path, newfolder);
 	if(mkdir(path, 0777) != 0)
 		desktop_error(desktop, path, 0);
-	free(path);
+	string_delete(path);
 }
 
 static void _on_popup_new_text_file(gpointer data)
 {
 	static char const newtext[] = "New text file.txt";
 	Desktop * desktop = data;
-	char * path;
+	String * path;
 	int fd;
 
 	gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
-	if((path = malloc(strlen(desktop->path) + sizeof(newtext) + 1)) == NULL)
+	if((path = string_new_append(desktop->path, "/", newtext, NULL))
+			== NULL)
 	{
-		desktop_error(desktop, "malloc", 0);
+		_desktop_serror(desktop, newtext, 0);
 		return;
 	}
-	sprintf(path, "%s/%s", desktop->path, newtext);
 	if((fd = creat(path, 0666)) < 0)
 		desktop_error(desktop, path, 0);
 	else
 		close(fd);
-	free(path);
+	string_delete(path);
 }
 
 static void _on_popup_paste(gpointer data)
@@ -956,13 +948,93 @@ static void _on_popup_paste(gpointer data)
 	desktop->menu = NULL;
 }
 
+static void _on_preferences_response(GtkWidget * widget, gint response,
+		gpointer data);
+static void _preferences_set(Desktop * desktop);
 static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
+	GtkWidget * window;
+	GtkWidget * vbox;
+	GtkWidget * widget;
 
-	/* FIXME implement */
 	gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
+	if(desktop->pr_window != NULL)
+	{
+		gtk_widget_show(desktop->pr_window);
+		return;
+	}
+	desktop->pr_window = gtk_dialog_new_with_buttons("Desktop preferences",
+			NULL, 0, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	g_signal_connect(G_OBJECT(desktop->pr_window), "response", G_CALLBACK(
+				_on_preferences_response), desktop);
+	/* notebook */
+	widget = gtk_notebook_new();
+	vbox = gtk_vbox_new(FALSE, 0);
+	desktop->pr_background = gtk_file_chooser_button_new("Background",
+			GTK_FILE_CHOOSER_ACTION_OPEN);
+	gtk_box_pack_start(GTK_BOX(vbox), desktop->pr_background, FALSE, TRUE,
+			4);
+	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox, gtk_label_new(
+				"Appearance"));
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(desktop->pr_window));
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	_preferences_set(desktop);
+	gtk_widget_show_all(desktop->pr_window);
+}
+
+static void _on_preferences_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	Desktop * desktop = data;
+	Config * config;
+	char * p;
+
+	if(response == GTK_RESPONSE_CANCEL
+			|| response == GTK_RESPONSE_DELETE_EVENT)
+	{
+		gtk_widget_hide(desktop->pr_window);
+		_preferences_set(desktop);
+		return;
+	}
+	if(response == GTK_RESPONSE_OK)
+		gtk_widget_hide(desktop->pr_window);
+	/* FIXME "apply" should not save the changes? */
+	if((config = _desktop_get_config(desktop)) == NULL)
+		return;
+	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+				desktop->pr_background));
+	config_set(config, "", "background", p);
+	g_free(p);
+	/* XXX code duplication */
+	if((p = string_new_append(desktop->home, "/" DESKTOPRC, NULL)) != NULL)
+	{
+		config_save(config, p);
+		object_delete(p);
+	}
+	config_delete(config);
+	/* XXX not very efficient */
+	g_idle_add(_new_idle, desktop);
+}
+
+static void _preferences_set(Desktop * desktop)
+{
+	Config * config;
+	String const * p;
+
+	if((config = _desktop_get_config(desktop)) == NULL)
+	{
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
+					desktop->pr_background), NULL);
+		return;
+	}
+	p = config_get(config, "", "background");
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
+				desktop->pr_background), p);
+	config_delete(config);
 }
 
 
@@ -1053,7 +1125,7 @@ static void _refresh_current(Desktop * desktop)
 static int _current_loop(Desktop * desktop)
 {
 	struct dirent * de;
-	char * p;
+	String * p;
 	DesktopIcon * desktopicon;
 
 	while((de = readdir(desktop->refresh_dir)) != NULL)
@@ -1068,15 +1140,12 @@ static int _current_loop(Desktop * desktop)
 	}
 	if(de == NULL)
 		return 1;
-	if((p = malloc(desktop->path_cnt + strlen(de->d_name) + 1)) == NULL)
-	{
-		desktop_error(NULL, "realloc", 0);
-		return 1;
-	}
-	sprintf(p, "%s/%s", desktop->path, de->d_name);
+	if((p = string_new_append(desktop->path, "/", de->d_name, NULL))
+			== NULL)
+		return _desktop_serror(NULL, de->d_name, 1);
 	if((desktopicon = desktopicon_new(desktop, de->d_name, p)) != NULL)
 		desktop_icon_add(desktop, desktopicon);
-	free(p);
+	string_delete(p);
 	return 0;
 }
 
@@ -1302,6 +1371,28 @@ static int _desktop_serror(Desktop * desktop, char const * message, int ret)
 }
 
 
+/* desktop_get_config */
+static Config * _desktop_get_config(Desktop * desktop)
+{
+	Config * config;
+	String * pathname = NULL;
+
+	if((config = config_new()) == NULL
+			|| (pathname = string_new_append(desktop->home,
+					"/" DESKTOPRC, NULL)) == NULL
+			|| config_load(config, pathname) != 0)
+	{
+		if(config != NULL)
+			config_delete(config);
+		if(pathname != NULL)
+			object_delete(pathname);
+		_desktop_serror(desktop, "Could not load preferences", FALSE);
+		return NULL;
+	}
+	return config;
+}
+
+
 /* usage */
 static int _usage(void)
 {
@@ -1337,7 +1428,7 @@ int main(int argc, char * argv[])
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		desktop_error(desktop, "signal handling error", 0);
+		desktop_error(desktop, "sigaction", 0);
 	gtk_main();
 	desktop_delete(desktop);
 	return 0;
