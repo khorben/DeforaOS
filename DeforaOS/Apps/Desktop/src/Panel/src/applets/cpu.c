@@ -130,7 +130,7 @@ static gboolean _on_timeout(gpointer data)
 	used = cpu_time[CP_USER] + cpu_time[CP_SYS] + cpu_time[CP_NICE]
 		+ cpu_time[CP_INTR];
 	total = used + cpu_time[CP_IDLE];
-	if(cpu->used == 0)
+	if(cpu->used == 0 || total == cpu->total)
 		value = 0;
 	else
 		value = 100 * (used - cpu->used) / (total - cpu->total);
