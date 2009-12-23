@@ -67,7 +67,7 @@ $MKDIR "$DST"							|| error
 echo ""
 echo "Configuring CVS module $MODULE:"
 cd "$SRC"							|| error
-$MAKE DESTDIR="$DESTDIR"					|| error
+$MAKE DESTDIR="$DST" < "$DEVNULL"				|| error
 
 #build
 echo ""
