@@ -18,9 +18,12 @@
 
 #variables
 CFLAGS=
+CFLAGSF=
 CPATH=
 CPPFLAGS=
+CPPFLAGSF=
 LDFLAGS=
+LDFLAGSF=
 DESTDIR=
 HOST=
 IMAGE_FILE=
@@ -92,12 +95,20 @@ target()
 	[ ! -z "$PREFIX" ] && _MAKE="$_MAKE PREFIX=\"$PREFIX\""
 	[ ! -z "$CC" ] && _MAKE="$_MAKE CC=\"$CC\""
 	[ ! -z "$CPPFLAGS" ] && _MAKE="$_MAKE CPPFLAGS=\"$CPPFLAGS\""
+	[ ! -z "$CPPFLAGSF" ] && _MAKE="$_MAKE CPPFLAGSF=\"$CPPFLAGSF\""
 	[ ! -z "$CFLAGS" ] && _MAKE="$_MAKE CFLAGS=\"$CFLAGS\""
+	[ ! -z "$CFLAGSF" ] && _MAKE="$_MAKE CFLAGSF=\"$CFLAGSF\""
 	[ ! -z "$LD" ] && _MAKE="$_MAKE LD=\"$LD\""
 	[ ! -z "$LDFLAGS" ] && _MAKE="$_MAKE LDFLAGS=\"$LDFLAGS\""
-	for i in $SUBDIRS; do
-		$CONFIGURE "$i"					|| return 2
-		(cd "$i" && eval $_MAKE "$1")			|| return 2
+	[ ! -z "$LDFLAGSF" ] && _MAKE="$_MAKE LDFLAGSF=\"$LDFLAGSF\""
+	while [ $# -ge 1 ]; do
+		for i in $SUBDIRS; do
+			if [ -n "$CONFIGURE" ]; then
+				$CONFIGURE "$i"			|| return 2
+			fi
+			(cd "$i" && eval $_MAKE "$1")		|| return 2
+		done
+		shift
 	done
 	return 0
 }
@@ -107,6 +118,127 @@ target()
 target_all()
 {
 	target "install"
+}
+
+
+#target_bootstrap
+target_bootstrap()
+{
+	#reset parameters
+	CPPFLAGS=
+	CFLAGS=
+	LDFLAGS=
+	CONFIGURE=
+	DESTDIR=
+	#build libSystem and configure
+	_bootstrap_libsystem					|| return 2
+	_bootstrap_configure					|| return 2
+	#configure the tree
+	CONFIGURE="configure -v"
+	Apps/Devel/src/configure/src/$CONFIGURE			|| return 2
+	#warn the user
+	echo
+	echo '================================================================='
+	echo 'The source tree is now configured for your environment. Essential'
+	echo 'libraries and tools will now be installed onto your system unless'
+	echo 'you exit this script now with the CTRL+C key combination.'
+	echo 'Otherwise, press ENTER to proceed.'
+	echo '================================================================='
+	echo
+	read IGNORE
+	PATH="$PREFIX/bin:$PATH"
+	#build and install essential libraries and tools
+	FAILED=
+	_bootstrap_system			|| FAILED="$FAILED System"
+	_bootstrap_posix			|| FAILED="$FAILED POSIX"
+	_bootstrap_devel			|| FAILED="$FAILED Devel"
+	_bootstrap_desktop			|| FAILED="$FAILED Desktop"
+	[ -z "$FAILED" ]					&& return 0
+	echo "Failed to build:$FAILED" 1>&2
+	return 2
+}
+
+_bootstrap_configure()
+{
+	C="$CPPFLAGS"
+	L="$LDFLAGSF"
+	CPPFLAGS="-I ../../../../../System/src/libSystem/include"
+	LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a"
+	SUBDIRS="Apps/Devel/src/configure/src"
+	target "clean" "install"				|| return 2
+	CPPFLAGS="$C"
+	LDFLAGSF="$L"
+}
+
+_bootstrap_desktop()
+{
+	RET=0
+
+	#bootstrap libDesktop
+	SUBDIRS="Apps/Desktop/src/libDesktop"
+	if ! target "clean" "install"; then
+		RET=$?
+		FAILED="$FAILED Desktop"
+		return $RET
+	fi
+	#build all desktop applications
+	SUBDIRS="Apps/Desktop/src Apps/Devel/src/GEDI"
+	target "clean all"					|| return 2
+}
+
+_bootstrap_devel()
+{
+	RET=0
+	S="Apps/Devel/src/cpp"
+	#FIXME we can't install cpp and as because of conflicts with the system
+	#	Apps/Devel/src/as \
+	#	Apps/Devel/src/c99 \
+	#	Apps/Devel/src/strace"
+
+	for i in $S; do
+		SUBDIRS="$i"
+		target "clean all"				|| RET=$?
+	done
+	return $RET
+}
+
+_bootstrap_libsystem()
+{
+	SUBDIRS="System/src/libSystem/src"
+	target "clean" "libSystem.a"				|| return 2
+}
+
+_bootstrap_posix()
+{
+	RET=0
+	S="System/src/libc \
+		Apps/Unix/src/sh \
+		Apps/Unix/src/utils \
+		Apps/Unix/src/devel \
+		Apps/Unix/src/others \
+		Apps/Servers/src/inetd"
+
+	for i in $S; do
+		SUBDIRS="$i"
+		target "clean all"				|| RET=$?
+	done
+	return $RET
+}
+
+_bootstrap_system()
+{
+	RET=0
+	S="System/src/Init \
+		System/src/VFS"
+
+	#bootstrap libSystem
+	SUBDIRS="System/src/libSystem"
+	target "clean" "install"				|| return 2
+	for i in $S; do
+		SUBDIRS="$i"
+		target "clean all"				|| RET=$?
+	done
+	return $RET
 }
 
 
@@ -148,6 +280,7 @@ usage()
 	echo "Usage: build.sh [option=value...] target..."
 	echo "Targets:"
 	echo "  all		Build and install in a staging directory"
+	echo "  bootstrap	Bootstrap the system"
 	echo "  clean		Remove object files"
 	echo "  distclean	Remove all compiled files"
 	echo "  install	Build and install in the system"
@@ -225,7 +358,7 @@ if [ $# -lt 1 ]; then
 fi
 while [ $# -gt 0 ]; do
 	case "$1" in
-		all|clean|distclean|image|install|uninstall)
+		all|bootstrap|clean|distclean|image|install|uninstall)
 			;;
 		*)
 			echo "build.sh: $1: Unknown target" 1>&2
