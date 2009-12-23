@@ -133,9 +133,6 @@ target_bootstrap()
 	#build libSystem and configure
 	_bootstrap_libsystem					|| return 2
 	_bootstrap_configure					|| return 2
-	#configure the tree
-	CONFIGURE="configure -v"
-	Apps/Devel/src/configure/src/$CONFIGURE			|| return 2
 	#warn the user
 	echo
 	echo '================================================================='
@@ -146,8 +143,9 @@ target_bootstrap()
 	echo '================================================================='
 	echo
 	read IGNORE
+	#configure, build and install essential libraries and tools
 	PATH="$PREFIX/bin:$PATH"
-	#build and install essential libraries and tools
+	CONFIGURE="configure -v"
 	FAILED=
 	_bootstrap_system			|| FAILED="$FAILED System"
 	_bootstrap_posix			|| FAILED="$FAILED POSIX"
