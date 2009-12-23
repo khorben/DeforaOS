@@ -118,6 +118,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	GtkWidget * scrolled;
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkWidget * hvbox;
 	GtkWidget * hbox;
 	GtkWidget * control;
 	int i;
@@ -165,9 +166,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* classes */
 	if(orientation == MO_VERTICAL)
-		hbox = gtk_vbox_new(TRUE, 0);
+		hvbox = gtk_vbox_new(TRUE, 0);
 	else
-		hbox = gtk_hbox_new(FALSE, 0);
+		hvbox = gtk_hbox_new(FALSE, 0);
 	for(i = 0;; i++)
 	{
 		md.index = i;
@@ -186,11 +187,10 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 		p = &mixer->mc[mixer->mc_cnt++];
 		p->mixer_class = md.mixer_class;
 		memcpy(&p->label, &md.label, sizeof(md.label));
-		p->hbox = gtk_hbox_new(FALSE, 0);
-		gtk_box_pack_start(GTK_BOX(hbox), p->hbox, FALSE, TRUE, 0);
+		p->hbox = NULL;
 	}
 	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled),
-			hbox);
+			hvbox);
 	/* controls */
 	for(i = 0;; i++)
 	{
@@ -222,6 +222,13 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 			continue;
 		widget = gtk_frame_new(md.label.name);
 		gtk_container_add(GTK_CONTAINER(widget), control);
+		if(hbox == NULL)
+		{
+			mixer->mc[u].hbox = gtk_hbox_new(FALSE, 0);
+			hbox = mixer->mc[u].hbox;
+			gtk_box_pack_start(GTK_BOX(hvbox), hbox, FALSE, TRUE,
+					0);
+		}
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 0);
@@ -469,15 +476,20 @@ void mixer_show(Mixer * mixer, int view)
 	if(view < 0)
 	{
 		for(u = 0; u < mixer->mc_cnt; u++)
-			gtk_widget_show(mixer->mc[u].hbox);
+			if(mixer->mc[u].hbox != NULL)
+				gtk_widget_show(mixer->mc[u].hbox);
 		return;
 	}
 	u = view;
 	if(u >= mixer->mc_cnt)
 		return;
 	for(u = 0; u < mixer->mc_cnt; u++)
-		gtk_widget_hide(mixer->mc[u].hbox);
-	gtk_widget_show(mixer->mc[view].hbox);
+		if(mixer->mc[u].hbox == NULL)
+			continue;
+		else if(view == u)
+			gtk_widget_show(mixer->mc[u].hbox);
+		else
+			gtk_widget_hide(mixer->mc[u].hbox);
 }
 
 
@@ -494,7 +506,10 @@ void mixer_show_class(Mixer * mixer, char const * name)
 	size_t u;
 
 	for(u = 0; u < mixer->mc_cnt; u++)
-		if(name == NULL || strcmp(mixer->mc[u].label.name, name) == 0)
+		if(mixer->mc[u].hbox == NULL)
+			continue;
+		else if(name == NULL
+				|| strcmp(mixer->mc[u].label.name, name) == 0)
 			gtk_widget_show(mixer->mc[u].hbox);
 		else
 			gtk_widget_hide(mixer->mc[u].hbox);
