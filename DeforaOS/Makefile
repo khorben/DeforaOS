@@ -24,6 +24,6 @@ install: all
 	$(MAKE) install
 
 uninstall:
-	$(MAKE) uninstall
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 
 .PHONY: all clean dist distclean install uninstall
