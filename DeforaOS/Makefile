@@ -14,8 +14,10 @@ all:
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 
-dist: all
-	configure -v
+dist:
+	#XXX hack to bootstrap only configure
+	./build.sh bootstrap < /dev/null
+	./Apps/Devel/src/configure/src/configure -v
 	$(MAKE) dist
 
 distclean:

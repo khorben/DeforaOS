@@ -142,7 +142,7 @@ target_bootstrap()
 	echo 'Otherwise, press ENTER to proceed.'
 	echo '================================================================='
 	echo
-	read IGNORE
+	read IGNORE						|| return 0
 	#configure, build and install essential libraries and tools
 	PATH="$PREFIX/bin:$PATH"
 	CONFIGURE="configure -v"
