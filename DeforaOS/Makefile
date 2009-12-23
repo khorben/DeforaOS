@@ -23,7 +23,7 @@ distclean:
 install: all
 	$(MAKE) install
 
-uninstall: all
+uninstall:
 	$(MAKE) uninstall
 
 .PHONY: all clean dist distclean install uninstall
