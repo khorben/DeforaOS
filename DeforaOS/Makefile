@@ -15,6 +15,7 @@ clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 
 dist: all
+	configure -v
 	$(MAKE) dist
 
 distclean:
