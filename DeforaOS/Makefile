@@ -4,30 +4,17 @@
 
 
 
-SUBDIRS	= System/src/libSystem Apps/Devel/src/configure
+SUBDIRS	= System/src Apps
 PREFIX	= /usr/local
 
 
-all: subdirs
-	./Apps/Devel/src/configure/src/configure -p "$(PREFIX)"
-	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	@echo
-	@echo ========================================================================
-	@echo 'The source tree is now configured for your environment. You may compile'
-	@echo 'it as usual with "$(MAKE) all".'
-	@echo ========================================================================
-	@echo
-
-subdirs:
-	(cd System/src/libSystem/src && $(MAKE))
-	(cd Apps/Devel/src/configure/src && $(MAKE) configure \
-		CPPFLAGS="-I ../../../../../System/src/libSystem/include" \
-		LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a")
+all:
+	./build.sh bootstrap
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 
-dist: subdirs
+dist: all
 	$(MAKE) dist
 
 distclean:
@@ -39,4 +26,4 @@ install: all
 uninstall: all
 	$(MAKE) uninstall
 
-.PHONY: all subdirs bootstrap clean dist distclean install uninstall
+.PHONY: all clean dist distclean install uninstall
