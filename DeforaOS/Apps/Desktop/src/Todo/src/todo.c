@@ -44,8 +44,9 @@ struct _Todo
 
 
 /* constants */
-enum { TD_COL_DONE, TD_COL_TITLE, TD_COL_START, TD_COL_DISPLAY_START, TD_COL_END,
-	TD_COL_DISPLAY_END, TD_COL_PRIORITY, TD_COL_CATEGORY, TD_COL_COMMENT };
+enum { TD_COL_DONE, TD_COL_TITLE, TD_COL_START, TD_COL_DISPLAY_START,
+	TD_COL_END, TD_COL_DISPLAY_END, TD_COL_PRIORITY, TD_COL_CATEGORY,
+	TD_COL_COMMENT };
 #define TD_COL_LAST TD_COL_COMMENT
 #define TD_NUM_COLS (TD_COL_LAST + 1)
 
@@ -265,6 +266,7 @@ void todo_task_add(Todo * todo)
 	GtkTreeIter iter;
 
 	gtk_list_store_insert(todo->store, &iter, 0);
+	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, "New task", -1);
 }
 
 
