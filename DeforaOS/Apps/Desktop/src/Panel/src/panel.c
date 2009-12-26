@@ -70,7 +70,7 @@ static int _panel_helper_shutdown_dialog(void);
 static gboolean _on_idle(gpointer data);
 static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
-static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static gboolean _on_closex(void);
 
 Panel * panel_new(void)
 {
@@ -180,7 +180,7 @@ static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 	return FALSE;
 }
 
-static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gboolean _on_closex(void)
 {
 	return TRUE;
 }
