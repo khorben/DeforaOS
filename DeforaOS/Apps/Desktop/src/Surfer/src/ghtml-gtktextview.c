@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -15,7 +15,279 @@
 
 
 
+#include <stdlib.h>
 #include "ghtml.h"
+#include "../config.h"
+#include "common/conn.c"
+#include "common/history.c"
+#include "common/url.c"
 
 
-/* FIXME implement */
+/* private */
+/* types */
+typedef struct _GHtml
+{
+	Surfer * surfer;
+	char const * title;
+
+	/* history */
+	GList * history;
+	GList * current;
+
+	/* connection */
+	Conn * conn;
+
+	/* html widget */
+	GtkWidget * view;
+	GtkTextBuffer * buffer;
+} GHtml;
+
+
+/* prototypes */
+static int _ghtml_document_load(GHtml * ghtml, char const * url,
+		char const * post);
+static int _ghtml_stop(GHtml * ghtml);
+
+
+/* public */
+/* functions */
+/* ghtml_new */
+GtkWidget * ghtml_new(Surfer * surfer)
+{
+	GHtml * ghtml;
+	GtkWidget * widget;
+
+	if((ghtml = malloc(sizeof(*ghtml))) == NULL)
+		return NULL;
+	ghtml->surfer = surfer;
+	ghtml->title = NULL;
+	ghtml->history = NULL;
+	ghtml->current = NULL;
+	ghtml->conn = NULL;
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	g_object_set_data(G_OBJECT(widget), "ghtml", ghtml);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	ghtml->view = gtk_text_view_new();
+	ghtml->buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ghtml->view));
+	gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(ghtml->view),
+			FALSE);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(ghtml->view), FALSE);
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(ghtml->view),
+			GTK_WRAP_WORD_CHAR);
+	gtk_container_add(GTK_CONTAINER(widget), ghtml->view);
+	return widget;
+}
+
+
+/* accessors */
+/* ghtml_can_go_back */
+gboolean ghtml_can_go_back(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return _history_can_go_back(ghtml->current);
+}
+
+
+/* ghtml_can_go_forward */
+gboolean ghtml_can_go_forward(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return _history_can_go_forward(ghtml->current);
+}
+
+
+/* ghtml_get_link_message */
+char const * ghtml_get_link_message(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+	return NULL;
+}
+
+
+/* ghtml_get_location */
+char const * ghtml_get_location(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return _history_get_location(ghtml->current);
+}
+
+
+/* ghtml_get_title */
+char const * ghtml_get_title(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return ghtml->title;
+}
+
+
+/* useful */
+/* ghtml_go_back */
+gboolean ghtml_go_back(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+	return FALSE;
+}
+
+
+/* ghtml_go_forward */
+gboolean ghtml_go_forward(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+	return FALSE;
+}
+
+
+/* ghtml_load_url */
+void ghtml_load_url(GtkWidget * widget, char const * url)
+{
+	GHtml * ghtml;
+	gchar * link;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if((link = _ghtml_make_url(NULL, url)) != NULL)
+		url = link;
+	_ghtml_document_load(ghtml, url, NULL);
+	g_free(link);
+}
+
+
+/* ghtml_refresh */
+void ghtml_refresh(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	_ghtml_stop(ghtml);
+	/* FIXME give ghtml directly, forgets POST */
+	ghtml_load_url(widget, _history_get_location(ghtml->current));
+}
+
+
+/* ghtml_reload */
+void ghtml_reload(GtkWidget * ghtml)
+{
+	ghtml_refresh(ghtml);
+}
+
+
+/* ghtml_stop */
+void ghtml_stop(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	_ghtml_stop(ghtml);
+}
+
+
+/* ghtml_select_all */
+void ghtml_select_all(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
+	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
+	gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
+}
+
+
+/* ghtml_unselect_all */
+void ghtml_unselect_all(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	GtkTextIter start;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
+	gtk_text_buffer_select_range(ghtml->buffer, &start, &start);
+}
+
+
+/* ghtml_zoom_in */
+void ghtml_zoom_in(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* ghtml_zoom_out */
+void ghtml_zoom_out(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* ghtml_zoom_reset */
+void ghtml_zoom_reset(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
+/* functions */
+static ssize_t _document_load_write(Conn * conn, char const * buf, ssize_t size,
+		gpointer data);
+static gboolean _document_load_idle(gpointer data);
+
+static int _ghtml_document_load(GHtml * ghtml, char const * url,
+		char const * post)
+{
+	History * h;
+
+	_ghtml_stop(ghtml);
+	if((h = _history_new(url, post)) == NULL)
+		return 1;
+	ghtml->history = g_list_append(ghtml->history, h);
+	ghtml->current = g_list_last(ghtml->history);
+	gtk_text_buffer_set_text(ghtml->buffer, "", 0);
+	surfer_set_location(ghtml->surfer, url);
+	surfer_set_title(ghtml->surfer, NULL);
+	if((ghtml->conn = _conn_new(ghtml->surfer, url, post)) == NULL)
+		return 1;
+	_conn_set_callback_write(ghtml->conn, _document_load_write, ghtml);
+	g_idle_add(_document_load_idle, ghtml);
+	return 0;
+}
+
+static ssize_t _document_load_write(Conn * conn, char const * buf, ssize_t size,
+		gpointer data)
+{
+	GHtml * ghtml = data;
+	GtkTextIter iter;
+
+	gtk_text_buffer_get_end_iter(ghtml->buffer, &iter);
+	gtk_text_buffer_insert(ghtml->buffer, &iter, buf, size);
+	return size;
+}
+
+static gboolean _document_load_idle(gpointer data)
+{
+	GHtml * ghtml = data;
+
+	if(ghtml->conn != NULL)
+		_conn_load(ghtml->conn);
+	return FALSE;
+}
+
+
+/* ghtml_stop */
+static int _ghtml_stop(GHtml * ghtml)
+{
+	if(ghtml->conn == NULL)
+		return 0;
+	_conn_delete(ghtml->conn);
+	ghtml->conn = NULL;
+	return 0;
+}

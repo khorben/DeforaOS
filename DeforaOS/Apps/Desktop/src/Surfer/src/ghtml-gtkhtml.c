@@ -40,6 +40,8 @@
 #include "ghtml.h"
 #include "callbacks.h"
 #include "../config.h"
+#include "common/history.c"
+#include "common/url.c"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
@@ -47,7 +49,6 @@
 /* GHtml */
 /* private */
 typedef struct _GHtmlConn GHtmlConn;
-typedef struct _GHtmlHistory GHtmlHistory;
 
 typedef struct _GHtml
 {
@@ -120,21 +121,6 @@ static void _on_title_changed(HtmlDocument * document, const gchar * title);
 static void _on_url(HtmlView * view, const gchar * url);
 
 
-/* GHtmlHistory */
-/* types */
-struct _GHtmlHistory
-{
-	gchar * base;
-	gchar * url;
-	gchar * post;
-};
-
-
-/* prototypes */
-static GHtmlHistory * _ghtmlhistory_new(char const * url, char const * post);
-static void _ghtmlhistory_delete(GHtmlHistory * h);
-
-
 /* public */
 /* functions */
 GtkWidget * ghtml_new(Surfer * surfer)
@@ -186,8 +172,7 @@ gboolean ghtml_can_go_back(GtkWidget * widget)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	return ghtml->current != NULL && ghtml->current->prev != NULL
-		? TRUE : FALSE;
+	return _history_can_go_back(ghtml->current);
 }
 
 
@@ -197,8 +182,7 @@ gboolean ghtml_can_go_forward(GtkWidget * widget)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	return ghtml->current != NULL && ghtml->current->next != NULL
-		? TRUE : FALSE;
+	return _history_can_go_forward(ghtml->current);
 }
 
 
@@ -214,14 +198,9 @@ char const * ghtml_get_link_message(GtkWidget * ghtml)
 char const * ghtml_get_location(GtkWidget * widget)
 {
 	GHtml * ghtml;
-	GHtmlHistory * h;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	if(ghtml == NULL || ghtml->current == NULL
-			|| ghtml->current->data == NULL)
-		return NULL;
-	h = ghtml->current->data;
-	return h->url;
+	return _history_get_location(ghtml->current);
 }
 
 
@@ -478,7 +457,7 @@ static void _ghtmlconn_delete_http(GHtmlConn * ghtmlconn)
 /* ghtml_get_base */
 static char const * _ghtml_get_base(GHtml * ghtml)
 {
-	GHtmlHistory * h;
+	History * h;
 
 	if(ghtml->current == NULL || (h = ghtml->current->data) == NULL)
 		return NULL;
@@ -489,7 +468,7 @@ static char const * _ghtml_get_base(GHtml * ghtml)
 /* ghtml_set_base */
 static int _ghtml_set_base(GHtml * ghtml, char const * url)
 {
-	GHtmlHistory * h;
+	History * h;
 
 	if(ghtml->current == NULL || (h = ghtml->current->data) == NULL)
 		return 1;
@@ -507,10 +486,10 @@ static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post)
 {
 	GHtmlConn * gc;
-	GHtmlHistory * h;
+	History * h;
 
 	_ghtml_stop(ghtml);
-	if((h = _ghtmlhistory_new(url, post)) == NULL)
+	if((h = _history_new(url, post)) == NULL)
 		return 1;
 	ghtml->history = g_list_append(ghtml->history, h);
 	ghtml->current = g_list_last(ghtml->history);
@@ -527,7 +506,7 @@ static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 static int _ghtml_document_reload(GHtml * ghtml)
 {
 	GHtmlConn * gc;
-	GHtmlHistory * h;
+	History * h;
 
 	_ghtml_stop(ghtml);
 	if(ghtml->current == NULL || (h = ghtml->current->data) == NULL)
@@ -540,67 +519,6 @@ static int _ghtml_document_reload(GHtml * ghtml)
 			h->url, h->post)) != NULL)
 		gc->direct = 1;
 	return gc != NULL ? 0 : 1;
-}
-
-
-/* ghtml_make_url */
-static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
-{
-	char * b;
-	char * p;
-
-	if(url == NULL)
-		return NULL;
-	/* XXX use a more generic protocol finder (strchr(':')) */
-	if(strncmp("ftp://", url, 6) == 0)
-		return g_strdup(url);
-	if(strncmp("http://", url, 7) == 0)
-		return g_strdup(url);
-	if(strncmp("https://", url, 8) == 0)
-		return g_strdup(url);
-	if(strncmp("mailto:", url, 7) == 0)
-		return g_strdup(url);
-	if(base != NULL)
-	{
-		if(url[0] == '/')
-		{
-			if(strncmp("http://", base, 7) == 0)
-			{
-				if((b = g_strdup(base)) == NULL)
-					return NULL;
-				if((p = strchr(&b[7], '/')) != NULL)
-				{
-					*p = '\0';
-					p = g_strdup_printf("%s%s", b, url);
-					free(b);
-					return p;
-				}
-				free(b);
-			}
-			/* FIXME implement other protocols */
-			return g_strdup_printf("%s%s", base, url);
-		}
-		/* construct from basename */
-		if((b = strdup(base)) == NULL)
-			return NULL;
-		p = b;
-		/* FIXME implement other protocols */
-		if(strncmp("http://", p, 7) == 0)
-			p += 7;
-		if((p = strrchr(p, '/')) != NULL)
-			*p = '\0';
-		p = g_strdup_printf("%s/%s", b, url);
-		free(b);
-		return p;
-	}
-	/* base is NULL, url is not NULL */
-	if(url[0] == '/')
-		return g_strdup(url);
-	/* guess protocol */
-	if(strncmp("ftp", url, 3) == 0)
-		return g_strdup_printf("%s%s", "ftp://", url);
-	/* FIXME guess http only for "www.*"? we're already in GNet...? */
-	return g_strdup_printf("%s%s", "http://", url);
 }
 
 
@@ -1173,35 +1091,4 @@ static void _on_url(HtmlView * view, const gchar * url)
 		surfer_set_status(ghtml->surfer, link);
 		g_free(link);
 	}
-}
-
-
-/* GHtmlHistory */
-/* functions */
-/* ghtmlhistory_new */
-static GHtmlHistory * _ghtmlhistory_new(char const * url, char const * post)
-{
-	GHtmlHistory * h;
-
-	if((h = object_new(sizeof(*h))) == NULL)
-		return NULL;
-	h->base = NULL;
-	h->url = strdup(url);
-	h->post = (post != NULL) ? strdup(post) : NULL;
-	if(h->url == NULL || (post != NULL && h->post == NULL))
-	{
-		_ghtmlhistory_delete(h);
-		return NULL;
-	}
-	return h;
-}
-
-
-/* ghtmlhistory_delete */
-static void _ghtmlhistory_delete(GHtmlHistory * h)
-{
-	free(h->base);
-	free(h->url);
-	free(h->post);
-	free(h);
 }
