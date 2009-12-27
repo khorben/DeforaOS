@@ -6,9 +6,15 @@
 
 SUBDIRS	= System/src Apps
 PREFIX	= /usr/local
+DEVNULL	= /dev/null
 
 
-all:
+all: subdirs
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
+
+bootstrap:
 	./build.sh bootstrap
 
 clean:
@@ -16,7 +22,7 @@ clean:
 
 dist:
 	#XXX hack to bootstrap only configure
-	./build.sh bootstrap < /dev/null
+	./build.sh bootstrap < "$(DEVNULL)"
 	./Apps/Devel/src/configure/src/configure -v
 	$(MAKE) dist
 
@@ -29,4 +35,4 @@ install: all
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 
-.PHONY: all clean dist distclean install uninstall
+.PHONY: all subdirs bootstrap clean dist distclean install uninstall
