@@ -945,7 +945,7 @@ static int _target_library(Configure * configure, FILE * fp,
 	fputc('\n', fp);
 	fprintf(fp, "%s%s%s%s%s", "\t$(AR) ", target, ".a $(", target,
 			"_OBJS)");
-	if((q = malloc(strlen(target) + 4)) != NULL)
+	if((q = malloc(strlen(target) + 4)) != NULL) /* for ".so" later */
 	{
 		sprintf(q, "%s.a", target);
 		if((p = config_get(configure->config, q, "ldflags")) != NULL)
@@ -1720,6 +1720,7 @@ static int _install_dist(Configure * configure, FILE * fp)
 	size_t i;
 	char c;
 	String const * d;
+	String const * m;
 
 	if((p = config_get(configure->config, "", "dist")) == NULL)
 		return 0;
@@ -1732,11 +1733,13 @@ static int _install_dist(Configure * configure, FILE * fp)
 			continue;
 		c = dist[i];
 		dist[i] = '\0';
+		if((m = config_get(configure->config, dist, "mode")) == NULL)
+			m = "0644";
 		if((d = config_get(configure->config, dist, "install")) != NULL)
 		{
 			fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", d);
-			fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ",
-					dist, " $(DESTDIR)", d, dist);
+			fprintf(fp, "%s%s%s%s%s%s/%s\n", "\t$(INSTALL) -m ",
+					m, " ", dist, " $(DESTDIR)", d, dist);
 		}
 		if(c == '\0')
 			break;
