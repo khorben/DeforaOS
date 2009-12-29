@@ -1,3 +1,4 @@
+SUBDIRS	= common
 TARGETS	= download surfer
 PREFIX	= /usr/local
 DESTDIR	= 
@@ -14,7 +15,10 @@ MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 download_OBJS = download.o
 download_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 gnet-2.0`
@@ -46,19 +50,24 @@ main.o: main.c surfer.h ../config.h
 	$(CC) $(surfer_CFLAGS) -c main.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) $(download_OBJS) $(surfer_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) $(download_OBJS) $(surfer_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 download $(DESTDIR)$(BINDIR)/download
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 surfer $(DESTDIR)$(BINDIR)/surfer
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/download
 	$(RM) $(DESTDIR)$(BINDIR)/surfer
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

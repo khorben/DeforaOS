@@ -38,6 +38,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/ghtml-gtktextview.c \
 		$(PACKAGE)-$(VERSION)/src/ghtml-webkit.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/common/Makefile \
+		$(PACKAGE)-$(VERSION)/src/common/conn.c \
+		$(PACKAGE)-$(VERSION)/src/common/history.c \
+		$(PACKAGE)-$(VERSION)/src/common/url.c \
+		$(PACKAGE)-$(VERSION)/src/common/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/config.h \
