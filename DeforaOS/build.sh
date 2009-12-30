@@ -143,6 +143,7 @@ target_bootstrap()
 	echo '================================================================='
 	echo
 	read IGNORE						|| return 0
+	_bootstrap_configure install				|| return 2
 	#configure, build and install essential libraries and tools
 	PATH="$PREFIX/bin:$PATH"
 	CONFIGURE="configure -v"
@@ -163,7 +164,10 @@ _bootstrap_configure()
 	CPPFLAGS="-I ../../../../../System/src/libSystem/include"
 	LDFLAGSF="../../../../../System/src/libSystem/src/libSystem.a"
 	SUBDIRS="Apps/Devel/src/configure/src"
-	target "clean" "install"				|| return 2
+	TARGETS="clean all"
+
+	[ $# -eq 1 -a "$1" = "install" ] && TARGETS="install"
+	target $TARGETS						|| return 2
 	CPPFLAGS="$C"
 	LDFLAGSF="$L"
 }
