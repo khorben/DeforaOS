@@ -1,5 +1,5 @@
 PACKAGE	= Mixer
-VERSION	= 0.0.0
+VERSION	= 0.0.1
 SUBDIRS	= data src
 RM	= rm -f
 LN	= ln -f
