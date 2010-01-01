@@ -304,18 +304,22 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 	GtkWidget * hbox;
 	int i;
 	GtkWidget * widget;
+	GtkWidget * bind;
 
 	if(v->num_channels <= 0)
 		return NULL;
 	if((p = _mixer_get(mixer, dev)) == NULL)
 		return NULL;
 	hbox = gtk_hbox_new(TRUE, 0);
+	bind = gtk_toggle_button_new_with_label("Bind");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bind), TRUE);
 	for(i = 0; i < v->num_channels; i++)
 	{
 		widget = gtk_vscale_new_with_range(0.0, 1.0, 0.02);
 		gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
 		gtk_range_set_value(GTK_RANGE(widget),
 				p->un.value.level[i] / 255.0);
+		g_object_set_data(G_OBJECT(widget), "bind", bind);
 		g_object_set_data(G_OBJECT(widget), "ctrl", p);
 		g_object_set_data(G_OBJECT(widget), "channel",
 				&p->un.value.level[i]);
@@ -328,9 +332,7 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-	widget = gtk_toggle_button_new_with_label("Bind");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), bind, FALSE, TRUE, 0);
 	return vbox;
 }
 
@@ -378,17 +380,25 @@ int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
 /* mixer_set_value */
 int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 {
+	GtkWidget * b;
 	mixer_ctrl_t * p;
 	u_char * level;
+	int i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%lf)\n", __func__, value);
 #endif
+	b = g_object_get_data(G_OBJECT(widget), "bind");
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
 	level = g_object_get_data(G_OBJECT(widget), "channel");
 	if(p == NULL || level == NULL)
 		return 1;
 	*level = value * 255;
+	if(p->type == AUDIO_MIXER_VALUE && b != NULL
+			&& gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b)))
+		/* FIXME update the other controls as well */
+		for(i = 0; i < p->un.value.num_channels; i++)
+			p->un.value.level[i] = *level;
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
 		return 0;
 	fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
@@ -486,7 +496,7 @@ void mixer_show(Mixer * mixer, int view)
 	for(u = 0; u < mixer->mc_cnt; u++)
 		if(mixer->mc[u].hbox == NULL)
 			continue;
-		else if(view == u)
+		else if(u == (size_t)view)
 			gtk_widget_show(mixer->mc[u].hbox);
 		else
 			gtk_widget_hide(mixer->mc[u].hbox);
@@ -522,16 +532,22 @@ void mixer_show_class(Mixer * mixer, char const * name)
 mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
 {
 	mixer_ctrl_t * p;
+	struct mixer_devinfo md;
 #ifdef DEBUG
 	int i;
 	size_t u;
-	struct mixer_devinfo md;
 	char * sep = "";
 #endif
 
+	md.index = dev;
+	if(ioctl(mixer->fd, AUDIO_MIXER_DEVINFO, &md) != 0)
+		return NULL;
 	if((p = malloc(sizeof(*p))) == NULL)
 		return NULL;
 	p->dev = dev;
+	/* XXX this is necessary for some drivers and I don't like it */
+	if((p->type = md.type) == AUDIO_MIXER_VALUE)
+		p->un.value.num_channels = md.un.v.num_channels;
 	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
 	{
 		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_READ",
@@ -540,9 +556,6 @@ mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
 		return NULL;
 	}
 #ifdef DEBUG
-	md.index = dev;
-	if(ioctl(mixer->fd, AUDIO_MIXER_DEVINFO, &md) != 0)
-		return p; /* XXX ignore error */
 	for(u = 0; u < mixer->mc_cnt; u++)
 		if(mixer->mc[u].mixer_class == md.mixer_class)
 			printf("%s", mixer->mc[u].label.name);
