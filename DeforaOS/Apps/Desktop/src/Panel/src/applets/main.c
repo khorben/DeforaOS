@@ -53,9 +53,9 @@ typedef struct _MainMenu
 
 static const MainMenu _main_menus[] =
 {
-	{ "Audio;",	"Audio",	NULL,				},
+	{ "Audio;",	"Audio",	"gnome-mime-audio",		},
 	{ "Development;","Development",	"applications-development",	},
-	{ "Education;",	"Education",	NULL,				},
+	{ "Education;",	"Education",	"applications-science",		},
 	{ "Game;",	"Games",	"applications-games",		},
 	{ "Graphics;",	"Graphics",	"applications-graphics",	},
 	{ "AudioVideo;","Multimedia",	"applications-multimedia",	},
