@@ -47,6 +47,9 @@ typedef enum _TasksAtom
 	TASKS_ATOM_NET_WM_DESKTOP,
 	TASKS_ATOM_NET_WM_ICON,
 	TASKS_ATOM_NET_WM_NAME,
+	TASKS_ATOM_NET_WM_STATE,
+	TASKS_ATOM_NET_WM_STATE_FULLSCREEN,
+	TASKS_ATOM_NET_WM_STATE_TOGGLE,
 	TASKS_ATOM_NET_WM_VISIBLE_NAME,
 	TASKS_ATOM_NET_WM_WINDOW_TYPE,
 	TASKS_ATOM_NET_WM_WINDOW_TYPE_NORMAL,
@@ -108,6 +111,9 @@ static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 	"_NET_WM_DESKTOP",
 	"_NET_WM_ICON",
 	"_NET_WM_NAME",
+	"_NET_WM_STATE",
+	"_NET_WM_STATE_FULLSCREEN",
+	"_NET_WM_STATE_TOGGLE",
 	"_NET_WM_VISIBLE_NAME",
 	"_NET_WM_WINDOW_TYPE",
 	"_NET_WM_WINDOW_TYPE_NORMAL",
@@ -785,7 +791,27 @@ static void _on_popup_close(gpointer data)
 /* on_popup_fullscreen */
 static void _on_popup_fullscreen(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+	Tasks * tasks = task->tasks;
+	GdkDisplay * display;
+	XEvent xev;
+
+	display = task->tasks->display;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = tasks->atom[TASKS_ATOM_NET_WM_STATE];
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = tasks->atom[TASKS_ATOM_NET_WM_STATE_TOGGLE];
+	xev.xclient.data.l[1] = tasks->atom[TASKS_ATOM_NET_WM_STATE_FULLSCREEN];
+	xev.xclient.data.l[2] = 0;
+	xev.xclient.data.l[3] = 2;
+	gdk_error_trap_push();
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(task->tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+	gdk_error_trap_pop();
 }
 
 
