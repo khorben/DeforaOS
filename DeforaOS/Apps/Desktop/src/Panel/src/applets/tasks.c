@@ -33,6 +33,17 @@ typedef enum _TasksAtom
 	TASKS_ATOM_NET_CLIENT_LIST,
 	TASKS_ATOM_NET_CLOSE_WINDOW,
 	TASKS_ATOM_NET_CURRENT_DESKTOP,
+	TASKS_ATOM_NET_WM_ACTION_CHANGE_DESKTOP,
+	TASKS_ATOM_NET_WM_ACTION_CLOSE,
+	TASKS_ATOM_NET_WM_ACTION_MOVE,
+	TASKS_ATOM_NET_WM_ACTION_RESIZE,
+	TASKS_ATOM_NET_WM_ACTION_MINIMIZE,
+	TASKS_ATOM_NET_WM_ACTION_SHADE,
+	TASKS_ATOM_NET_WM_ACTION_STICK,
+	TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_HORZ,
+	TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_VERT,
+	TASKS_ATOM_NET_WM_ACTION_FULLSCREEN,
+	TASKS_ATOM_NET_WM_ALLOWED_ACTIONS,
 	TASKS_ATOM_NET_WM_DESKTOP,
 	TASKS_ATOM_NET_WM_ICON,
 	TASKS_ATOM_NET_WM_NAME,
@@ -83,6 +94,17 @@ static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 	"_NET_CLIENT_LIST",
 	"_NET_CLOSE_WINDOW",
 	"_NET_CURRENT_DESKTOP",
+	"_NET_WM_ACTION_CHANGE_DESKTOP",
+	"_NET_WM_ACTION_CLOSE",
+	"_NET_WM_ACTION_MOVE",
+	"_NET_WM_ACTION_RESIZE",
+	"_NET_WM_ACTION_MINIMIZE",
+	"_NET_WM_ACTION_SHADE",
+	"_NET_WM_ACTION_STICK",
+	"_NET_WM_ACTION_MAXIMIZE_HORZ",
+	"_NET_WM_ACTION_MAXIMIZE_VERT",
+	"_NET_WM_ACTION_FULLSCREEN",
+	"_NET_WM_ALLOWED_ACTIONS",
 	"_NET_WM_DESKTOP",
 	"_NET_WM_ICON",
 	"_NET_WM_NAME",
@@ -117,10 +139,19 @@ static void _tasks_do(Tasks * tasks);
 
 /* callbacks */
 static void _on_clicked(GtkWidget * widget, gpointer data);
-static void _on_close(gpointer data);
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 static gboolean _on_popup(gpointer data);
+static void _on_popup_change_desktop(gpointer data);
+static void _on_popup_close(gpointer data);
+static void _on_popup_fullscreen(gpointer data);
+static void _on_popup_maximize_horz(gpointer data);
+static void _on_popup_maximize_vert(gpointer data);
+static void _on_popup_minimize(gpointer data);
+static void _on_popup_move(gpointer data);
+static void _on_popup_resize(gpointer data);
+static void _on_popup_shade(gpointer data);
+static void _on_popup_stick(gpointer data);
 static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 		gpointer data);
 
@@ -619,31 +650,6 @@ static void _clicked_activate(Task * task)
 }
 
 
-/* on_close */
-static void _on_close(gpointer data)
-{
-	Task * task = data;
-	GdkDisplay * display;
-	XEvent xev;
-
-	display = task->tasks->display;
-	memset(&xev, 0, sizeof(xev));
-	xev.xclient.type = ClientMessage;
-	xev.xclient.window = task->window;
-	xev.xclient.message_type = task->tasks->atom[
-		TASKS_ATOM_NET_CLOSE_WINDOW];
-	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = gdk_x11_display_get_user_time(display);
-	xev.xclient.data.l[1] = 2;
-	gdk_error_trap_push();
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(task->tasks->root), False,
-			SubstructureNotifyMask | SubstructureRedirectMask,
-			&xev);
-	gdk_error_trap_pop();
-}
-
-
 /* on_filter */
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
@@ -669,18 +675,151 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 static gboolean _on_popup(gpointer data)
 {
 	Task * task = data;
-	GtkWidget * menu;
+	unsigned long cnt = 0;
+	unsigned long * buf = NULL;
+	unsigned long i;
+	const struct {
+		TasksAtom atom;
+		void (*callback)(gpointer data);
+		char const * stock;
+	} items[] = {
+		{ TASKS_ATOM_NET_WM_ACTION_MOVE, _on_popup_move, "Move" },
+		{ TASKS_ATOM_NET_WM_ACTION_RESIZE, _on_popup_resize, "Resize" },
+		{ TASKS_ATOM_NET_WM_ACTION_MINIMIZE, _on_popup_minimize,
+			"Minimize" },
+		{ TASKS_ATOM_NET_WM_ACTION_SHADE, _on_popup_shade, "Shade" },
+		{ TASKS_ATOM_NET_WM_ACTION_STICK, _on_popup_stick, "Stick" },
+		{ TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_HORZ,
+			_on_popup_maximize_horz, "Maximize horizontally" },
+		{ TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_VERT,
+			_on_popup_maximize_vert, "Maximize vertically" },
+		{ TASKS_ATOM_NET_WM_ACTION_FULLSCREEN, _on_popup_fullscreen,
+			GTK_STOCK_FULLSCREEN},
+		{ TASKS_ATOM_NET_WM_ACTION_CHANGE_DESKTOP,
+			_on_popup_change_desktop, "Change desktop" },
+		{ TASKS_ATOM_NET_WM_ACTION_CLOSE, _on_popup_close,
+			GTK_STOCK_CLOSE }
+	};
+	size_t j;
+	GtkWidget * menu = NULL;
 	GtkWidget * menuitem;
 
-	menu = gtk_menu_new();
-	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, NULL);
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_close), task);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(_tasks_get_window_property(task->tasks, task->window,
+				TASKS_ATOM_NET_WM_ALLOWED_ACTIONS, XA_ATOM,
+				&cnt, (void*)&buf) != 0)
+		return FALSE;
+	for(i = 0; i < cnt; i++)
+	{
+		for(j = 0; j < sizeof(items) / sizeof(*items); j++)
+			if(buf[i] == task->tasks->atom[items[j].atom])
+				break;
+		if(j >= sizeof(items) / sizeof(*items))
+			continue;
+		if(items[j].atom == TASKS_ATOM_NET_WM_ACTION_CHANGE_DESKTOP)
+			continue; /* FIXME implement as a special case */
+		if(menu == NULL)
+			menu = gtk_menu_new();
+		menuitem = gtk_image_menu_item_new_from_stock(items[j].stock,
+				NULL); /* XXX they're not always stock */
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(items[j].callback), task);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
+	XFree(buf);
+	if(menu == NULL)
+		return FALSE;
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, task, 2,
 			gtk_get_current_event_time());
 	return TRUE;
+}
+
+
+/* on_popup_change_desktop */
+static void _on_popup_change_desktop(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_close */
+static void _on_popup_close(gpointer data)
+{
+	Task * task = data;
+	GdkDisplay * display;
+	XEvent xev;
+
+	display = task->tasks->display;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = task->tasks->atom[
+		TASKS_ATOM_NET_CLOSE_WINDOW];
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = gdk_x11_display_get_user_time(display);
+	xev.xclient.data.l[1] = 2;
+	gdk_error_trap_push();
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(task->tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+	gdk_error_trap_pop();
+}
+
+
+/* on_popup_fullscreen */
+static void _on_popup_fullscreen(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_maximize_hort */
+static void _on_popup_maximize_horz(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_maximize_vert */
+static void _on_popup_maximize_vert(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_minimize */
+static void _on_popup_minimize(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_move */
+static void _on_popup_move(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_resize */
+static void _on_popup_resize(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_shade */
+static void _on_popup_shade(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_popup_stick */
+static void _on_popup_stick(gpointer data)
+{
+	/* FIXME implement */
 }
 
 
