@@ -127,6 +127,7 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 		GdkPixbuf * pixbuf);
 static void _task_delete(Task * Task);
 static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf);
+static void _task_toggle_state(Task * task, TasksAtom state);
 
 /* tasks */
 static GtkWidget * _tasks_init(PanelApplet * applet);
@@ -252,6 +253,32 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 		gtk_image_set_from_stock(GTK_IMAGE(task->image),
 				GTK_STOCK_MISSING_IMAGE,
 				task->tasks->icon_size);
+}
+
+
+/* task_toggle_state */
+static void _task_toggle_state(Task * task, TasksAtom state)
+{
+	Tasks * tasks = task->tasks;
+	GdkDisplay * display;
+	XEvent xev;
+
+	display = tasks->display;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = tasks->atom[TASKS_ATOM_NET_WM_STATE];
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = tasks->atom[TASKS_ATOM_NET_WM_STATE_TOGGLE];
+	xev.xclient.data.l[1] = tasks->atom[state];
+	xev.xclient.data.l[2] = 0;
+	xev.xclient.data.l[3] = 2;
+	gdk_error_trap_push();
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+	gdk_error_trap_pop();
 }
 
 
@@ -792,26 +819,8 @@ static void _on_popup_close(gpointer data)
 static void _on_popup_fullscreen(gpointer data)
 {
 	Task * task = data;
-	Tasks * tasks = task->tasks;
-	GdkDisplay * display;
-	XEvent xev;
 
-	display = task->tasks->display;
-	memset(&xev, 0, sizeof(xev));
-	xev.xclient.type = ClientMessage;
-	xev.xclient.window = task->window;
-	xev.xclient.message_type = tasks->atom[TASKS_ATOM_NET_WM_STATE];
-	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = tasks->atom[TASKS_ATOM_NET_WM_STATE_TOGGLE];
-	xev.xclient.data.l[1] = tasks->atom[TASKS_ATOM_NET_WM_STATE_FULLSCREEN];
-	xev.xclient.data.l[2] = 0;
-	xev.xclient.data.l[3] = 2;
-	gdk_error_trap_push();
-	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
-			GDK_WINDOW_XWINDOW(task->tasks->root), False,
-			SubstructureNotifyMask | SubstructureRedirectMask,
-			&xev);
-	gdk_error_trap_pop();
+	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_FULLSCREEN);
 }
 
 
