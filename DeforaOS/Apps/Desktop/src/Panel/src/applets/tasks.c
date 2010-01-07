@@ -138,6 +138,8 @@ static int _tasks_get_window_property(Tasks * tasks, Window window,
 static void _tasks_do(Tasks * tasks);
 
 /* callbacks */
+static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
+		gpointer data);
 static void _on_clicked(GtkWidget * widget, gpointer data);
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
@@ -192,7 +194,9 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 	task->tasks = tasks;
 	task->window = window;
 	task->widget = gtk_button_new();
-	g_signal_connect_swapped(G_OBJECT(task->widget), "popup_menu",
+	g_signal_connect(G_OBJECT(task->widget), "button-press-event",
+			G_CALLBACK(_on_button_press), task);
+	g_signal_connect_swapped(G_OBJECT(task->widget), "popup-menu",
 			G_CALLBACK(_on_popup), task);
 	g_signal_connect(task->widget, "clicked", G_CALLBACK(_on_clicked),
 			task);
@@ -607,6 +611,17 @@ static int _do_typehint_normal(Tasks * tasks, Window window)
 
 
 /* callbacks */
+/* on_button_press */
+static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
+		gpointer data)
+{
+	if(event->button != 3 || event->type != GDK_BUTTON_PRESS)
+		return FALSE;
+	_on_popup(data);
+	return TRUE;
+}
+
+
 /* on_clicked */
 static void _clicked_activate(Task * task);
 
