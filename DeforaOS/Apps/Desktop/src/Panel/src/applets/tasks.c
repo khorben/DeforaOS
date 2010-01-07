@@ -27,40 +27,14 @@
 /* Tasks */
 /* private */
 /* types */
+#define atom(a) TASKS_ATOM_ ## a
 typedef enum _TasksAtom
 {
-	TASKS_ATOM_NET_ACTIVE_WINDOW = 0,
-	TASKS_ATOM_NET_CLIENT_LIST,
-	TASKS_ATOM_NET_CLOSE_WINDOW,
-	TASKS_ATOM_NET_CURRENT_DESKTOP,
-	TASKS_ATOM_NET_WM_ACTION_CHANGE_DESKTOP,
-	TASKS_ATOM_NET_WM_ACTION_CLOSE,
-	TASKS_ATOM_NET_WM_ACTION_MOVE,
-	TASKS_ATOM_NET_WM_ACTION_RESIZE,
-	TASKS_ATOM_NET_WM_ACTION_MINIMIZE,
-	TASKS_ATOM_NET_WM_ACTION_SHADE,
-	TASKS_ATOM_NET_WM_ACTION_STICK,
-	TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_HORZ,
-	TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_VERT,
-	TASKS_ATOM_NET_WM_ACTION_FULLSCREEN,
-	TASKS_ATOM_NET_WM_ALLOWED_ACTIONS,
-	TASKS_ATOM_NET_WM_DESKTOP,
-	TASKS_ATOM_NET_WM_ICON,
-	TASKS_ATOM_NET_WM_NAME,
-	TASKS_ATOM_NET_WM_STATE,
-	TASKS_ATOM_NET_WM_STATE_FULLSCREEN,
-	TASKS_ATOM_NET_WM_STATE_MAXIMIZED_HORZ,
-	TASKS_ATOM_NET_WM_STATE_MAXIMIZED_VERT,
-	TASKS_ATOM_NET_WM_STATE_SHADED,
-	TASKS_ATOM_NET_WM_STATE_STICKY,
-	TASKS_ATOM_NET_WM_STATE_TOGGLE,
-	TASKS_ATOM_NET_WM_VISIBLE_NAME,
-	TASKS_ATOM_NET_WM_WINDOW_TYPE,
-	TASKS_ATOM_NET_WM_WINDOW_TYPE_NORMAL,
-	TASKS_ATOM_UTF8_STRING
+#include "tasks.atoms"
 } TasksAtom;
 #define TASKS_ATOM_LAST TASKS_ATOM_UTF8_STRING
 #define TASKS_ATOM_COUNT (TASKS_ATOM_LAST + 1)
+#undef atom
 
 typedef struct _Tasks Tasks;
 
@@ -95,38 +69,12 @@ struct _Tasks
 
 
 /* constants */
+#define atom(a) "" # a
 static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 {
-	"_NET_ACTIVE_WINDOW",
-	"_NET_CLIENT_LIST",
-	"_NET_CLOSE_WINDOW",
-	"_NET_CURRENT_DESKTOP",
-	"_NET_WM_ACTION_CHANGE_DESKTOP",
-	"_NET_WM_ACTION_CLOSE",
-	"_NET_WM_ACTION_MOVE",
-	"_NET_WM_ACTION_RESIZE",
-	"_NET_WM_ACTION_MINIMIZE",
-	"_NET_WM_ACTION_SHADE",
-	"_NET_WM_ACTION_STICK",
-	"_NET_WM_ACTION_MAXIMIZE_HORZ",
-	"_NET_WM_ACTION_MAXIMIZE_VERT",
-	"_NET_WM_ACTION_FULLSCREEN",
-	"_NET_WM_ALLOWED_ACTIONS",
-	"_NET_WM_DESKTOP",
-	"_NET_WM_ICON",
-	"_NET_WM_NAME",
-	"_NET_WM_STATE",
-	"_NET_WM_STATE_FULLSCREEN",
-	"_NET_WM_STATE_MAXIMIZED_HORZ",
-	"_NET_WM_STATE_MAXIMIZED_VERT",
-	"_NET_WM_STATE_SHADED",
-	"_NET_WM_STATE_STICKY",
-	"_NET_WM_STATE_TOGGLE",
-	"_NET_WM_VISIBLE_NAME",
-	"_NET_WM_WINDOW_TYPE",
-	"_NET_WM_WINDOW_TYPE_NORMAL",
-	"UTF8_STRING"
+#include "tasks.atoms"
 };
+#undef atom
 
 
 /* prototypes */
@@ -275,9 +223,9 @@ static void _task_toggle_state(Task * task, TasksAtom state)
 	memset(&xev, 0, sizeof(xev));
 	xev.xclient.type = ClientMessage;
 	xev.xclient.window = task->window;
-	xev.xclient.message_type = tasks->atom[TASKS_ATOM_NET_WM_STATE];
+	xev.xclient.message_type = tasks->atom[TASKS_ATOM__NET_WM_STATE];
 	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = tasks->atom[TASKS_ATOM_NET_WM_STATE_TOGGLE];
+	xev.xclient.data.l[0] = tasks->atom[TASKS_ATOM__NET_WM_STATE_TOGGLE];
 	xev.xclient.data.l[1] = tasks->atom[state];
 	xev.xclient.data.l[2] = 0;
 	xev.xclient.data.l[3] = 2;
@@ -349,7 +297,7 @@ static int _tasks_get_current_desktop(Tasks * tasks)
 	unsigned long *p;
 
 	if(_tasks_get_window_property(tasks, GDK_WINDOW_XWINDOW(tasks->root),
-				TASKS_ATOM_NET_CURRENT_DESKTOP, XA_CARDINAL,
+				TASKS_ATOM__NET_CURRENT_DESKTOP, XA_CARDINAL,
 				&cnt, (void*)&p) != 0)
 		return -1;
 	cnt = *p;
@@ -450,7 +398,7 @@ static void _tasks_do(Tasks * tasks)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	if(_tasks_get_window_property(tasks, GDK_WINDOW_XWINDOW(tasks->root),
-				TASKS_ATOM_NET_CLIENT_LIST,
+				TASKS_ATOM__NET_CLIENT_LIST,
 				XA_WINDOW, &cnt, (void*)&windows) != 0)
 		return;
 	desktop = _tasks_get_current_desktop(tasks);
@@ -474,10 +422,11 @@ static char * _do_name(Tasks * tasks, Window window)
 {
 	char * ret;
 
-	if((ret = _do_name_utf8(tasks, window, TASKS_ATOM_NET_WM_VISIBLE_NAME))
+	if((ret = _do_name_utf8(tasks, window, TASKS_ATOM__NET_WM_VISIBLE_NAME))
 			!= NULL)
 		return ret;
-	if((ret = _do_name_utf8(tasks, window, TASKS_ATOM_NET_WM_NAME)) != NULL)
+	if((ret = _do_name_utf8(tasks, window, TASKS_ATOM__NET_WM_NAME))
+			!= NULL)
 		return ret;
 	if((ret = _do_name_text(tasks, window, XA_WM_NAME)) != NULL)
 		return ret;
@@ -522,7 +471,7 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 	unsigned long j;
 	GdkPixbuf * p;
 
-	if(_tasks_get_window_property(tasks, window, TASKS_ATOM_NET_WM_ICON,
+	if(_tasks_get_window_property(tasks, window, TASKS_ATOM__NET_WM_ICON,
 				XA_CARDINAL, &cnt, (void*)&buf) != 0)
 		return NULL;
 	for(i = 0; i < cnt - 3; i++)
@@ -571,7 +520,7 @@ static int _do_tasks_add(Tasks * tasks, int desktop, Window window,
 	Task ** q;
 
 #ifndef EMBEDDED
-	if(_tasks_get_window_property(tasks, window, TASKS_ATOM_NET_WM_DESKTOP,
+	if(_tasks_get_window_property(tasks, window, TASKS_ATOM__NET_WM_DESKTOP,
 			XA_CARDINAL, &cnt, (void*)&l) == 0)
 	{
 		if(cnt == 1)
@@ -638,13 +587,13 @@ static int _do_typehint_normal(Tasks * tasks, Window window)
 	unsigned long cnt = 0;
 
 	if(_tasks_get_window_property(tasks, window,
-				TASKS_ATOM_NET_WM_WINDOW_TYPE, XA_ATOM, &cnt,
+				TASKS_ATOM__NET_WM_WINDOW_TYPE, XA_ATOM, &cnt,
 				(void*)&p) == 0)
 	{
 		typehint = *p;
 		XFree(p);
 		return typehint == tasks->atom[
-			TASKS_ATOM_NET_WM_WINDOW_TYPE_NORMAL] ? 0 : 1;
+			TASKS_ATOM__NET_WM_WINDOW_TYPE_NORMAL] ? 0 : 1;
 	}
 	/* FIXME return 1 if WM_TRANSIENT_FOR is set */
 	return 0;
@@ -687,7 +636,7 @@ static void _clicked_activate(Task * task)
 	xev.xclient.type = ClientMessage;
 	xev.xclient.window = task->window;
 	xev.xclient.message_type = task->tasks->atom[
-		TASKS_ATOM_NET_ACTIVE_WINDOW];
+		TASKS_ATOM__NET_ACTIVE_WINDOW];
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = 2;
 	xev.xclient.data.l[1] = gdk_x11_display_get_user_time(display);
@@ -715,10 +664,10 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 
 	if(xev->type != PropertyNotify)
 		return GDK_FILTER_CONTINUE;
-	if(xev->xproperty.atom != tasks->atom[TASKS_ATOM_NET_CLIENT_LIST]
+	if(xev->xproperty.atom != tasks->atom[TASKS_ATOM__NET_CLIENT_LIST]
 #ifndef EMBEDDED
 			&& xev->xproperty.atom
-			!= tasks->atom[TASKS_ATOM_NET_CURRENT_DESKTOP]
+			!= tasks->atom[TASKS_ATOM__NET_CURRENT_DESKTOP]
 #endif
 			)
 		return GDK_FILTER_CONTINUE;
@@ -739,21 +688,21 @@ static gboolean _on_popup(gpointer data)
 		void (*callback)(gpointer data);
 		char const * stock;
 	} items[] = {
-		{ TASKS_ATOM_NET_WM_ACTION_MOVE, _on_popup_move, "Move" },
-		{ TASKS_ATOM_NET_WM_ACTION_RESIZE, _on_popup_resize, "Resize" },
-		{ TASKS_ATOM_NET_WM_ACTION_MINIMIZE, _on_popup_minimize,
+		{ TASKS_ATOM__NET_WM_ACTION_MOVE, _on_popup_move, "Move" },
+		{ TASKS_ATOM__NET_WM_ACTION_RESIZE, _on_popup_resize, "Resize" },
+		{ TASKS_ATOM__NET_WM_ACTION_MINIMIZE, _on_popup_minimize,
 			"Minimize" },
-		{ TASKS_ATOM_NET_WM_ACTION_SHADE, _on_popup_shade, "Shade" },
-		{ TASKS_ATOM_NET_WM_ACTION_STICK, _on_popup_stick, "Stick" },
-		{ TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_HORZ,
+		{ TASKS_ATOM__NET_WM_ACTION_SHADE, _on_popup_shade, "Shade" },
+		{ TASKS_ATOM__NET_WM_ACTION_STICK, _on_popup_stick, "Stick" },
+		{ TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ,
 			_on_popup_maximize_horz, "Maximize horizontally" },
-		{ TASKS_ATOM_NET_WM_ACTION_MAXIMIZE_VERT,
+		{ TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_VERT,
 			_on_popup_maximize_vert, "Maximize vertically" },
-		{ TASKS_ATOM_NET_WM_ACTION_FULLSCREEN, _on_popup_fullscreen,
+		{ TASKS_ATOM__NET_WM_ACTION_FULLSCREEN, _on_popup_fullscreen,
 			GTK_STOCK_FULLSCREEN},
-		{ TASKS_ATOM_NET_WM_ACTION_CHANGE_DESKTOP,
+		{ TASKS_ATOM__NET_WM_ACTION_CHANGE_DESKTOP,
 			_on_popup_change_desktop, "Change desktop" },
-		{ TASKS_ATOM_NET_WM_ACTION_CLOSE, _on_popup_close,
+		{ TASKS_ATOM__NET_WM_ACTION_CLOSE, _on_popup_close,
 			GTK_STOCK_CLOSE }
 	};
 	size_t j;
@@ -761,7 +710,7 @@ static gboolean _on_popup(gpointer data)
 	GtkWidget * menuitem;
 
 	if(_tasks_get_window_property(task->tasks, task->window,
-				TASKS_ATOM_NET_WM_ALLOWED_ACTIONS, XA_ATOM,
+				TASKS_ATOM__NET_WM_ALLOWED_ACTIONS, XA_ATOM,
 				&cnt, (void*)&buf) != 0)
 		return FALSE;
 	for(i = 0; i < cnt; i++)
@@ -771,7 +720,7 @@ static gboolean _on_popup(gpointer data)
 				break;
 		if(j >= sizeof(items) / sizeof(*items))
 			continue;
-		if(items[j].atom == TASKS_ATOM_NET_WM_ACTION_CHANGE_DESKTOP)
+		if(items[j].atom == TASKS_ATOM__NET_WM_ACTION_CHANGE_DESKTOP)
 			continue; /* FIXME implement as a special case */
 		if(menu == NULL)
 			menu = gtk_menu_new();
@@ -810,7 +759,7 @@ static void _on_popup_close(gpointer data)
 	xev.xclient.type = ClientMessage;
 	xev.xclient.window = task->window;
 	xev.xclient.message_type = task->tasks->atom[
-		TASKS_ATOM_NET_CLOSE_WINDOW];
+		TASKS_ATOM__NET_CLOSE_WINDOW];
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = gdk_x11_display_get_user_time(display);
 	xev.xclient.data.l[1] = 2;
@@ -828,7 +777,7 @@ static void _on_popup_fullscreen(gpointer data)
 {
 	Task * task = data;
 
-	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_FULLSCREEN);
+	_task_toggle_state(task, TASKS_ATOM__NET_WM_STATE_FULLSCREEN);
 }
 
 
@@ -837,7 +786,7 @@ static void _on_popup_maximize_horz(gpointer data)
 {
 	Task * task = data;
 
-	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_MAXIMIZED_HORZ);
+	_task_toggle_state(task, TASKS_ATOM__NET_WM_STATE_MAXIMIZED_HORZ);
 }
 
 
@@ -846,7 +795,7 @@ static void _on_popup_maximize_vert(gpointer data)
 {
 	Task * task = data;
 
-	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_MAXIMIZED_VERT);
+	_task_toggle_state(task, TASKS_ATOM__NET_WM_STATE_MAXIMIZED_VERT);
 }
 
 
@@ -876,7 +825,7 @@ static void _on_popup_shade(gpointer data)
 {
 	Task * task = data;
 
-	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_SHADED);
+	_task_toggle_state(task, TASKS_ATOM__NET_WM_STATE_SHADED);
 }
 
 
@@ -885,7 +834,7 @@ static void _on_popup_stick(gpointer data)
 {
 	Task * task = data;
 
-	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_STICKY);
+	_task_toggle_state(task, TASKS_ATOM__NET_WM_STATE_STICKY);
 }
 
 

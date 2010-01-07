@@ -132,7 +132,7 @@ memory.o: memory.c ../../include/Panel.h
 pager.o: pager.c ../../include/Panel.h
 	$(CC) $(pager_CFLAGS) -c pager.c
 
-tasks.o: tasks.c ../../include/Panel.h
+tasks.o: tasks.c ../../include/Panel.h tasks.atoms
 	$(CC) $(tasks_CFLAGS) -c tasks.c
 
 volume.o: volume.c ../../include/Panel.h
