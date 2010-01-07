@@ -49,6 +49,10 @@ typedef enum _TasksAtom
 	TASKS_ATOM_NET_WM_NAME,
 	TASKS_ATOM_NET_WM_STATE,
 	TASKS_ATOM_NET_WM_STATE_FULLSCREEN,
+	TASKS_ATOM_NET_WM_STATE_MAXIMIZED_HORZ,
+	TASKS_ATOM_NET_WM_STATE_MAXIMIZED_VERT,
+	TASKS_ATOM_NET_WM_STATE_SHADED,
+	TASKS_ATOM_NET_WM_STATE_STICKY,
 	TASKS_ATOM_NET_WM_STATE_TOGGLE,
 	TASKS_ATOM_NET_WM_VISIBLE_NAME,
 	TASKS_ATOM_NET_WM_WINDOW_TYPE,
@@ -113,6 +117,10 @@ static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 	"_NET_WM_NAME",
 	"_NET_WM_STATE",
 	"_NET_WM_STATE_FULLSCREEN",
+	"_NET_WM_STATE_MAXIMIZED_HORZ",
+	"_NET_WM_STATE_MAXIMIZED_VERT",
+	"_NET_WM_STATE_SHADED",
+	"_NET_WM_STATE_STICKY",
 	"_NET_WM_STATE_TOGGLE",
 	"_NET_WM_VISIBLE_NAME",
 	"_NET_WM_WINDOW_TYPE",
@@ -827,14 +835,18 @@ static void _on_popup_fullscreen(gpointer data)
 /* on_popup_maximize_hort */
 static void _on_popup_maximize_horz(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+
+	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_MAXIMIZED_HORZ);
 }
 
 
 /* on_popup_maximize_vert */
 static void _on_popup_maximize_vert(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+
+	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_MAXIMIZED_VERT);
 }
 
 
@@ -862,14 +874,18 @@ static void _on_popup_resize(gpointer data)
 /* on_popup_shade */
 static void _on_popup_shade(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+
+	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_SHADED);
 }
 
 
 /* on_popup_stick */
 static void _on_popup_stick(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+
+	_task_toggle_state(task, TASKS_ATOM_NET_WM_STATE_STICKY);
 }
 
 
