@@ -80,8 +80,9 @@ struct _DesktopIcon
 	int isexec;
 	char const * mimetype;
 
+	gboolean immutable;		/* cannot be deleted */
 	gboolean selected;
-	gboolean updated; /* XXX for desktop refresh */
+	gboolean updated;		/* XXX for desktop refresh */
 
 	GtkWidget * window;
 	GtkWidget * image;
@@ -192,8 +193,9 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->isdir = 0;
 	desktopicon->isexec = 0;
 	desktopicon->mimetype = NULL;
-	desktopicon->selected = 0;
-	desktopicon->updated = 1;
+	desktopicon->immutable = FALSE;
+	desktopicon->selected = FALSE;
+	desktopicon->updated = TRUE;
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(desktopicon->window);
 	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
@@ -326,12 +328,16 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 		_popup_directory(menu, desktopicon);
 	else
 		_popup_file(menu, desktopicon);
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, NULL);
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_icon_delete), desktopicon);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(desktopicon->immutable != TRUE)
+	{
+		menuitem = gtk_separator_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE,
+				NULL);
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_icon_delete), desktopicon);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(
@@ -605,6 +611,13 @@ void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 }
 
 
+/* desktopicon_set_immutable */
+void desktopicon_set_immutable(DesktopIcon * desktopicon, gboolean immutable)
+{
+	desktopicon->immutable = immutable;
+}
+
+
 /* desktopicon_set_selected */
 void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected)
 {
@@ -755,6 +768,7 @@ static void _new_add_home(Desktop * desktop)
 	if((desktopicon = desktopicon_new(desktop, "Home", desktop->home))
 			== NULL)
 		return;
+	desktopicon_set_immutable(desktopicon, TRUE);
 	desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-home",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -1156,14 +1170,15 @@ static int _loop_lookup(Desktop * desktop, char const * name)
 
 	for(i = 0; i < desktop->icon_cnt; i++)
 	{
-		if(desktop->icon[i]->updated == 1) /* XXX internal knowledge */
+		/* XXX internal knowledge */
+		if(desktop->icon[i]->updated == TRUE)
 			continue;
 		if((p = desktopicon_get_path(desktop->icon[i])) == NULL
 				|| (p = strrchr(p, '/')) == NULL)
 			continue;
 		if(strcmp(name, ++p) != 0)
 			continue;
-		desktop->icon[i]->updated = 1; /* XXX here too */
+		desktop->icon[i]->updated = TRUE; /* XXX here too */
 		return 1;
 	}
 	return 0;
@@ -1185,10 +1200,10 @@ static gboolean _current_done(Desktop * desktop)
 	size_t i = 1;
 
 	while(i < desktop->icon_cnt)
-		if(desktop->icon[i]->updated != 1)
+		if(desktop->icon[i]->updated != TRUE)
 			desktop_icon_remove(desktop, desktop->icon[i]);
 		else
-			desktop->icon[i++]->updated = 0;
+			desktop->icon[i++]->updated = FALSE;
 	closedir(desktop->refresh_dir);
 	g_timeout_add(1000, _done_timeout, desktop);
 	return FALSE;
