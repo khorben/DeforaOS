@@ -1,10 +1,11 @@
 #$Id$
-#Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 
 
 
 #variables
 [ -z "$FDISK"		] && FDISK="fdisk"
+[ -z "$IMAGE_BOOT"	] && IMAGE_BOOT="/usr/mdec/boot"
 [ -z "$INSTALLBOOT"	] && INSTALLBOOT="installboot"
 [ -z "$LDSO"		] && LDSO="/libexec/ld.elf_so"
 [ -z "$MBRLABEL"	] && MBRLABEL="mbrlabel"
@@ -22,6 +23,7 @@
 _image_image()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:
+  IMAGE_BOOT	Path to the bootloader
   IMAGE_FILE	Where to write the filesystem image
   IMAGE_KERNEL	Path to the kernel
   IMAGE_SIZE	Size of the filesystem image in kilobytes
@@ -30,9 +32,9 @@ _image_image()
   MKFS		Command used to format the filesystem"
 
 	#sanity check
-	check "$USAGE" CHOWN DD DESTDIR DEVZERO FDISK IMAGE_FILE IMAGE_KERNEL \
-		IMAGE_SIZE INSTALL INSTALLBOOT LN MBRLABEL MKDIR MKFS MKNOD \
-		MOUNT MV UMOUNT VNCONFIG VND
+	check "$USAGE" CHOWN DD DESTDIR DEVZERO FDISK IMAGE_BOOT IMAGE_FILE \
+		IMAGE_KERNEL IMAGE_SIZE INSTALL INSTALLBOOT LDSO LN MBRLABEL \
+		MKDIR MKFS MKNOD MOUNT MV UMOUNT VNCONFIG VND
 
 	$MKDIR "$DESTDIR"					|| exit 2
 	$SUDO $UMOUNT "$DESTDIR"
@@ -62,7 +64,9 @@ _image_image()
 	SUBDIRS="Apps/Unix/src/others/tools" target oinit	&&
 	$SUDO $INSTALL -m 755 "Apps/Unix/src/others/tools/oinit" \
 			"$DESTDIR/sbin/init"			&&
-	$SUDO $INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	&&
+	$SUDO $INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"	&&
+	$SUDO sh -c "echo 'menu=Boot DeforaOS:vesa 640x480;boot netbsd' \
+			> $DESTDIR/boot.cfg"			&&
 	$SUDO $INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	&&
 	$SUDO $INSTALLBOOT -m "$MACHINE" -o "console=pc" "/dev/r${VND}e" \
 			"/usr/mdec/bootxx_ffsv1"
@@ -77,6 +81,7 @@ _image_image()
 _image_iso()
 {
 	USAGE="Options for $IMAGE_TYPE on $TARGET:
+  IMAGE_BOOT	Path to the bootloader
   IMAGE_FILE	Where to write the filesystem image
   IMAGE_KERNEL	Path to the kernel
   IMAGE_TYPE	The type of image to generate
@@ -85,7 +90,7 @@ _image_iso()
 	MKISOFS_ARGS="-o bootimage=i386;bootxx,no-emul-boot,rockridge"
 
 	#sanity check
-	check "$USAGE" IMAGE_FILE IMAGE_KERNEL MKISOFS
+	check "$USAGE" IMAGE_BOOT IMAGE_FILE IMAGE_KERNEL LDSO MKISOFS
 	target "install"					|| exit 2
 	$MKDIR "$DESTDIR/dev"					|| exit 2
 	$SUDO $MKNOD -m 600 "$DESTDIR/dev/console" c 0 0	|| exit 2
@@ -97,8 +102,8 @@ _image_iso()
 	$INSTALL -m 755 "Apps/Unix/src/others/tools/oinit"	\
 			"$DESTDIR/sbin/init"			|| exit 2
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/netbsd"	|| exit 2
-	$INSTALL -m 644 "/usr/mdec/boot" "$DESTDIR/boot"	|| exit 2
+	$INSTALL -m 644 "$IMAGE_BOOT" "$DESTDIR/boot"		|| exit 2
 	$INSTALL -m 644 "/usr/mdec/bootxx_cd9660" "bootxx"	|| exit 2
-	$INSTALLBOOT -m "$MACHINE" -o console=pc -e bootxx	|| exit 2
+	$INSTALLBOOT -m "$MACHINE" -o "console=pc" -e bootxx	|| exit 2
 	$MKISOFS $MKISOFS_ARGS "$IMAGE_FILE" "$DESTDIR"		|| exit 2
 }
