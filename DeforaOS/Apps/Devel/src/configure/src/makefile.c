@@ -1184,6 +1184,7 @@ static int _target_source(Configure * configure, FILE * fp,
 	ObjectType ot;
 	size_t len;
 	String const * p;
+	String const * q;
 
 	if((p = config_get(configure->config, target, "type")) != NULL)
 			tt = enum_string(TT_LAST, sTargetType, p);
@@ -1223,18 +1224,22 @@ static int _target_source(Configure * configure, FILE * fp,
 			fprintf(fp, ": %s.%s", source, sObjectType[ot]);
 			source[len] = '.'; /* FIXME ugly */
 			_source_depends(configure->config, fp, source);
-			p = config_get(configure->config, source, "cflags");
+			/* FIXME do both wherever also relevant */
+			p = config_get(configure->config, source, "cppflags");
+			q = config_get(configure->config, source, "cflags");
 			source[len] = '\0';
 			fputs("\n\t", fp);
 			if(tt == TT_LIBTOOL)
 				fputs("$(LIBTOOL) --mode=compile ", fp);
-			fprintf(fp, "%s%s%s", "$(CC) $(", target,
-					"_CFLAGS)");
+			fputs("$(CC)", fp);
 			if(p != NULL)
-			{
 				fprintf(fp, " %s", p);
+			fprintf(fp, "%s%s%s", " $(", target, "_CFLAGS)");
+			if(q != NULL)
+			{
+				fprintf(fp, " %s", q);
 				if(configure->os == HO_GNU_LINUX
-					       	&& string_find(p, "-ansi"))
+					       	&& string_find(q, "-ansi"))
 					fputs(" -D _GNU_SOURCE", fp);
 			}
 			if(string_find(source, "/"))
