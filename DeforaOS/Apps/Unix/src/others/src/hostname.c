@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -18,24 +18,42 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 
 /* hostname */
-static int _hostname(void)
+static int _hostname_error(char const * message, int ret);
+
+static int _hostname(char const * name)
 {
 	char buf[128];
 
+	if(name != NULL)
+	{
+		if(sethostname(name, strlen(name)) != 0)
+			return _hostname_error("sethostname", 1);
+		return 0;
+	}
 	if(gethostname(buf, sizeof(buf)) != 0)
-		return 1;
-	printf("%s\n", buf);
+		return _hostname_error("gethostname", 1);
+	puts(buf);
 	return 0;
+}
+
+
+/* hostname_error */
+static int _hostname_error(char const * message, int ret)
+{
+	fputs("hostname: ", stderr);
+	perror(message);
+	return ret;
 }
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: hostname\n", stderr);
+	fputs("Usage: hostname [name]\n", stderr);
 	return 1;
 }
 
@@ -44,6 +62,7 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	char const * name = NULL;
 
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
@@ -51,7 +70,9 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind != argc)
+	if(optind + 1 == argc)
+		name = argv[optind];
+	else if(optind != argc)
 		return _usage();
-	return _hostname() == 0 ? 0 : 2;
+	return (_hostname(name) == 0) ? 0 : 2;
 }
