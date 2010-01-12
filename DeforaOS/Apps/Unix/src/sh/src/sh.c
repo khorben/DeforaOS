@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix sh */
 /* sh is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -155,6 +155,7 @@ int main(int argc, char * argv[])
 		return _usage();
 	if(prefs & PREFS_c && optind == argc)
 		return _usage();
-	signal(SIGINT, _sh_handler);
+	if(signal(SIGINT, _sh_handler) == SIG_ERR)
+		sh_error("signal", 0); /* ignore error */
 	return _sh(&prefs, argc - optind, &argv[optind]);
 }
