@@ -13,7 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME
- * - use _NET_WORKAREA to determine where to place the icons */
+ * - use _NET_WORKAREA to determine where to place the icons
+ * - track multiple selection on delete/properties... */
 
 
 
@@ -98,12 +99,14 @@ struct _DesktopIcon
 #define DESKTOPICON_MIN_WIDTH	DESKTOPICON_MAX_WIDTH
 
 
-/* functions */
+/* prototypes */
 /* private */
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 		GdkPixbuf * icon);
 
 
+/* functions */
+/* desktopicon_update_transparency */
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
 		GdkPixbuf * icon)
 {
@@ -286,7 +289,7 @@ static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 	return TRUE;
 }
 
-/* FIXME some code is duplicated from callback.c */
+/* FIXME some code is duplicated from callbacks.c */
 /* types */
 static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon);
 static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon);
@@ -496,9 +499,30 @@ static void _on_icon_open_with(gpointer data)
 static void _on_icon_delete(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
+	GtkWidget * dialog;
+	unsigned long cnt = 1; /* FIXME implement */
+	int res;
+	GList * selection = NULL;
 
-	/* FIXME actually delete the file, and wait for the refresh */
-	desktop_icon_remove(desktopicon->desktop, desktopicon);
+	/* FIXME duplicated from callbacks.c */
+	dialog = gtk_message_dialog_new(GTK_WINDOW(desktopicon->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+			"Warning");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+				dialog), "%s%lu%s",
+			"Are you sure you want to delete ", cnt, " file(s)?");
+	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res == GTK_RESPONSE_YES)
+	{
+		/* FIXME check if needs UTF-8 conversion */
+		selection = g_list_append(selection, desktopicon->path);
+		if(_common_exec("delete", "-ir", selection) != 0)
+			desktop_error(desktopicon->desktop, "fork", 0);
+		g_list_free(selection);
+	}
 }
 
 static void _on_icon_properties(gpointer data)
