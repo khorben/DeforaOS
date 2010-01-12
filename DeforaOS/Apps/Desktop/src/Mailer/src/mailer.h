@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -27,7 +27,7 @@
 /* Mailer */
 /* defaults */
 # ifndef PLUGINDIR
-#  define PLUGINDIR LIBDIR	"/Mailer"
+#  define PLUGINDIR		LIBDIR "/Mailer"
 # endif
 
 # define MAILER_CONFIG_FILE	".mailer"
