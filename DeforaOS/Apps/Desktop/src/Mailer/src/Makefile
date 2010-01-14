@@ -28,7 +28,7 @@ mailer: $(mailer_OBJS)
 	$(CC) -o mailer $(mailer_OBJS) $(mailer_LDFLAGS)
 
 account.o: account.c mailer.h account/account.h ../config.h
-	$(CC) -D PREFIX="\"$(PREFIX)\"" $(mailer_CFLAGS) -c account.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c account.c
 
 callbacks.o: callbacks.c account/account.h callbacks.h compose.h mailer.h gtkassistant.c
 	$(CC) $(mailer_CFLAGS) -c callbacks.c
@@ -40,7 +40,7 @@ compose.o: compose.c callbacks.h mailer.h compose.h
 	$(CC) $(mailer_CFLAGS) -c compose.c
 
 mailer.o: mailer.c account/account.h callbacks.h compose.h mailer.h ../config.h
-	$(CC) -D PREFIX="\"$(PREFIX)\"" $(mailer_CFLAGS) -c mailer.c
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(mailer_CFLAGS) -c mailer.c
 
 main.o: main.c mailer.h
 	$(CC) $(mailer_CFLAGS) -c main.c
