@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -304,6 +304,7 @@ static void _delete_foreach_section(void const * key, void * value, void * data)
 
 
 /* config_save */
+void _save_foreach_default(void const * key, void * value, void * data);
 void _save_foreach(void const * key, void * value, void * data);
 void _save_foreach_section(void const * key, void * value, void * data);
 
@@ -313,10 +314,24 @@ int config_save(Config * config, char const * filename)
 
 	if((fp = fopen(filename, "w")) == NULL)
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
+	hash_foreach(config, _save_foreach_default, &fp);
 	hash_foreach(config, _save_foreach, &fp);
 	if(fp == NULL || fclose(fp) != 0)
 		return error_set_code(1, "%s: %s", filename, strerror(errno));
 	return 0;
+}
+
+void _save_foreach_default(void const * key, void * value, void * data)
+{
+	FILE ** fp = data;
+	char const * section = key;
+	Hash * hash = value;
+
+	if(*fp == NULL)
+		return;
+	if(section[0] != '\0')
+		return;
+	hash_foreach(hash, _save_foreach_section, fp);
 }
 
 void _save_foreach(void const * key, void * value, void * data)
@@ -327,7 +342,9 @@ void _save_foreach(void const * key, void * value, void * data)
 
 	if(*fp == NULL)
 		return;
-	if(section[0] != '\0' && fprintf(*fp, "[%s]\n", section) < 0)
+	if(section[0] == '\0')
+		return;
+	if(fprintf(*fp, "\n[%s]\n", section) < 0)
 	{
 		fclose(*fp);
 		*fp = NULL;
@@ -342,6 +359,8 @@ void _save_foreach_section(void const * key, void * value, void * data)
 	char const * var = key;
 	char const * val = value;
 
+	if(*fp == NULL)
+		return;
 	if(val == NULL || fprintf(*fp, "%s=%s\n", var, val) >= 0)
 		return;
 	fclose(*fp);
