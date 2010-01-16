@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,6 +84,7 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	gtk_container_add(GTK_CONTAINER(ret), clock->label);
 	clock->timeout = g_timeout_add(1000, _on_timeout, clock);
 	_on_timeout(clock);
+	gtk_widget_show_all(ret);
 	return ret;
 }
 

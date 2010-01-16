@@ -261,7 +261,6 @@ int panel_load(Panel * panel, char const * applet)
 					fill, 2);
 			break;
 	}
-	gtk_widget_show_all(widget);
 	return 0;
 }
 

@@ -271,6 +271,7 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 #else
 	ret = tasks->hbox;
 #endif
+	gtk_widget_show_all(ret);
 	return ret;
 }
 

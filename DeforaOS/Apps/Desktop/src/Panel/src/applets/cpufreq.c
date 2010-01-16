@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,6 +117,7 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	cpufreq->timeout = g_timeout_add(500, _on_timeout, cpufreq);
 	_on_timeout(cpufreq);
 	pango_font_description_free(desc);
+	gtk_widget_show_all(ret);
 	return ret;
 #else
 	error_set("%s", "cpufreq: Unsupported platform");

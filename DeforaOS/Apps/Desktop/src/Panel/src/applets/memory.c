@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 	memory->timeout = g_timeout_add(5000, _on_timeout, memory);
 	_on_timeout(memory);
 	pango_font_description_free(desc);
+	gtk_widget_show_all(ret);
 	return ret;
 }
 
