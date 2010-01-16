@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 typedef struct _Battery
 {
 	PanelAppletHelper * helper;
+	GtkWidget * hbox;
 	GtkWidget * image;
 	GtkWidget * scale;
 	guint timeout;
@@ -77,7 +78,7 @@ PanelApplet applet =
 /* battery_init */
 static GtkWidget * _battery_init(PanelApplet * applet)
 {
-	GtkWidget * ret;
+	GtkWidget * hbox;
 	Battery * battery;
 
 	if((battery = malloc(sizeof(*battery))) == NULL)
@@ -88,18 +89,21 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 #ifdef __NetBSD__
 	battery->fd = -1;
 #endif
-	ret = gtk_hbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	battery->hbox = hbox;
 	battery->image = gtk_image_new_from_icon_name("battery",
 			applet->helper->icon_size);
-	gtk_box_pack_start(GTK_BOX(ret), battery->image, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), battery->image, FALSE, TRUE, 0);
 	battery->scale = gtk_vscale_new_with_range(0, 100, 1);
 	gtk_widget_set_sensitive(battery->scale, FALSE);
 	gtk_range_set_inverted(GTK_RANGE(battery->scale), TRUE);
 	gtk_scale_set_value_pos(GTK_SCALE(battery->scale), GTK_POS_RIGHT);
-	gtk_box_pack_start(GTK_BOX(ret), battery->scale, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), battery->scale, FALSE, TRUE, 0);
 	battery->timeout = g_timeout_add(1000, _on_timeout, battery);
 	_on_timeout(battery);
-	return ret;
+	gtk_widget_show(battery->image);
+	gtk_widget_show(battery->scale);
+	return hbox;
 }
 
 
@@ -121,7 +125,9 @@ static void _battery_destroy(PanelApplet * applet)
 /* battery_set */
 static void _battery_set(Battery * battery, gdouble value)
 {
-	/* XXX only set it when necessary? */
+	/* XXX only set image and show when necessary? */
+	if(value >= 0.0 && value <= 100.0)
+		gtk_widget_show(battery->hbox);
 	if(value < 0.0)
 		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
 				"stock_dialog-question",
@@ -139,8 +145,7 @@ static void _battery_set(Battery * battery, gdouble value)
 	{
 		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
 				"error", battery->helper->icon_size);
-		gtk_widget_hide(battery->image);
-		gtk_widget_hide(battery->scale);
+		gtk_widget_hide(battery->hbox);
 		value = 0.0;
 	}
 	gtk_range_set_value(GTK_RANGE(battery->scale), value);
