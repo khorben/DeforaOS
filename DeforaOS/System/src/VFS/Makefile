@@ -25,8 +25,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/VFS.interface \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/src/vfs.c \
+		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/appbroker.sh \
+		$(PACKAGE)-$(VERSION)/src/vfs.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/libvfs.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \

@@ -19,7 +19,7 @@ all: $(TARGETS)
 ../data/VFS.h: ../data/VFS.interface
 	./appbroker.sh "../data/VFS.h"
 
-VFS_OBJS = vfs.o
+VFS_OBJS = vfs.o main.o
 VFS_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 VFS_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -28,6 +28,9 @@ VFS: $(VFS_OBJS)
 
 vfs.o: vfs.c ../data/VFS.h
 	$(CC) $(VFS_CFLAGS) -c vfs.c
+
+main.o: main.c
+	$(CC) $(VFS_CFLAGS) -c main.c
 
 clean:
 	$(RM) $(../data/VFS.h_OBJS) $(VFS_OBJS)
