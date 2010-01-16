@@ -52,6 +52,9 @@ _image_iso()
 	check "$USAGE" CAT DESTDIR KERNEL IMAGE_FILE IMAGE_KERNEL INSTALL \
 		MKDIR MKISOFS RAMDISK TAR
 
+	$MKDIR "$DESTDIR"					|| exit 2
+	target "install"					|| exit 2
+
 	#install kernel with ramdisk and modules
 	$MKDIR "$DESTDIR/boot"					|| exit 2
 	$INSTALL -m 755 "$IMAGE_KERNEL" "$DESTDIR/$KERNEL"	|| exit 2
