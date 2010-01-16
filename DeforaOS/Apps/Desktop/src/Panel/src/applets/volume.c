@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,6 +60,7 @@ typedef struct _Volume
 	PanelAppletHelper * helper;
 #ifdef AUDIO_MIXER_DEVINFO
 	int fd;
+	int mix;
 	int outputs;
 #else
 	int fd;
@@ -73,6 +74,9 @@ static void _volume_delete(Volume * volume);
 
 static gdouble _volume_get(Volume * volume);
 static void _volume_set(Volume * volume, gdouble value);
+#ifdef AUDIO_MIXER_DEVINFO
+static int _volume_match(Volume * volume, mixer_devinfo_t * md);
+#endif
 
 /* callbacks */
 static void _on_value_changed(GtkWidget * widget, gdouble value, gpointer data);
@@ -95,6 +99,7 @@ static GtkWidget * _volume_init(PanelApplet * applet)
 	_volume_set(volume, value);
 	g_signal_connect(G_OBJECT(ret), "value-changed", G_CALLBACK(
 				_on_value_changed), volume);
+	gtk_widget_show_all(ret);
 	return ret;
 #else
 	return NULL;
@@ -127,21 +132,24 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 	}
 	volume->helper = helper;
 #ifdef AUDIO_MIXER_DEVINFO
+	volume->mix = -1;
 	volume->outputs = -1;
 	if((volume->fd = open("/dev/mixer", O_RDWR)) < 0)
 	{
 		helper->error(helper->priv, "/dev/mixer", 0);
 		return volume;
 	}
-	for(i = 0; volume->outputs == -1; i++)
+	for(i = 0; volume->outputs == -1 || volume->mix == -1; i++)
 	{
 		md.index = i;
 		if(ioctl(volume->fd, AUDIO_MIXER_DEVINFO, &md) < 0)
 			break;
-		if(md.type != AUDIO_MIXER_CLASS
-				|| strcmp(md.label.name, AudioCoutputs) != 0)
+		if(md.type != AUDIO_MIXER_CLASS)
 			continue;
-		volume->outputs = i;
+		if(strcmp(md.label.name, AudioCoutputs) == 0)
+			volume->outputs = i;
+		else if(strcmp(md.label.name, "mix") == 0)
+			volume->mix = i;
 	}
 #else
 	if((volume->fd = open("/dev/mixer", O_RDWR)) < 0)
@@ -175,7 +183,7 @@ static gdouble _volume_get(Volume * volume)
 	mixer_ctrl_t mc;
 	int i;
 
-	if(volume->outputs < 0)
+	if(volume->outputs < 0 && volume->mix < 0)
 		return ret;
 	for(i = 0;; i++)
 	{
@@ -185,11 +193,7 @@ static gdouble _volume_get(Volume * volume)
 			volume->helper->error(NULL, "AUDIO_MIXER_DEVINFO", 0);
 			break;
 		}
-		if(md.mixer_class != volume->outputs
-				|| md.type != AUDIO_MIXER_VALUE)
-			continue;
-		if(strcmp(md.label.name, "lineout") != 0
-				&& strcmp(md.label.name, "master") != 0)
+		if(_volume_match(volume, &md) != 1)
 			continue;
 		mc.dev = i;
 		mc.type = AUDIO_MIXER_VALUE;
@@ -228,18 +232,14 @@ void _volume_set(Volume * volume, gdouble value)
 # ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%lf)\n", __func__, value);
 # endif
-	if(volume->outputs < 0)
+	if(volume->outputs < 0 && volume->mix < 0)
 		return;
 	for(i = 0;; i++)
 	{
 		md.index = i;
 		if(ioctl(volume->fd, AUDIO_MIXER_DEVINFO, &md) < 0)
 			break;
-		if(md.mixer_class != volume->outputs
-				|| md.type != AUDIO_MIXER_VALUE)
-			continue;
-		if(strcmp(md.label.name, "lineout") != 0
-				&& strcmp(md.label.name, "master") != 0)
+		if(_volume_match(volume, &md) != 1)
 			continue;
 		mc.dev = i;
 		mc.type = AUDIO_MIXER_VALUE;
@@ -263,6 +263,26 @@ void _volume_set(Volume * volume, gdouble value)
 		volume->helper->error(volume->helper->priv, "MIXER_WRITE", 0);
 #endif
 }
+
+
+#ifdef AUDIO_MIXER_DEVINFO
+/* volume_match */
+static int _volume_match(Volume * volume, mixer_devinfo_t * md)
+{
+	if(md->type != AUDIO_MIXER_VALUE)
+		return 0;
+	if(md->mixer_class == volume->mix /* mix.master */
+			&& strcmp(md->label.name, "master") == 0)
+		return 1;
+	if(md->mixer_class == volume->outputs /* outputs.lineout */
+			&& strcmp(md->label.name, "lineout") == 0)
+		return 1;
+	if(md->mixer_class == volume->outputs /* outputs.master */
+			|| strcmp(md->label.name, "master") == 0)
+		return 1;
+	return 0;
+}
+#endif
 
 
 /* callbacks */
