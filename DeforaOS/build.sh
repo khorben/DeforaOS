@@ -261,8 +261,6 @@ target_distclean()
 #target_install
 target_install()
 {
-	#build to a staging directory and then install
-	target_all						|| return 2
 	DESTDIR=
 	target "install"
 }
