@@ -19,7 +19,6 @@
 
 
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -28,7 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <System.h>
 #include "../data/VFS.h"
 #include "../config.h"
 
@@ -104,7 +102,7 @@ static int _client_remove_file(int32_t fd);
 /* public */
 /* functions */
 /* vfs */
-int vfs(AppServerOptions options, char const * root)
+int vfs(AppServerOptions options, mode_t mask, char const * root)
 	/* FIXME implement root */
 {
 	if((_appserver = appserver_new("VFS", options)) == NULL)
@@ -112,6 +110,7 @@ int vfs(AppServerOptions options, char const * root)
 		error_print(PACKAGE);
 		return 1;
 	}
+	umask(mask);
 	_client_init();
 	appserver_loop(_appserver);
 	_client_destroy();

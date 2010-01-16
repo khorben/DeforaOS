@@ -65,7 +65,10 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	if(mask_set == 1)
+	if(mask_set == 0)
+	{
+		mask = umask(0);
 		umask(mask);
-	return (vfs(options, root) == 0) ? 0 : 2;
+	}
+	return (vfs(options, mask, root) == 0) ? 0 : 2;
 }

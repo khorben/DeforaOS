@@ -18,10 +18,11 @@
 #ifndef VFS_VFS_H
 # define VFS_VFS_H
 
+# include <sys/stat.h>
 # include <System.h>
 
 
 /* VFS */
-int vfs(AppServerOptions options, char const * root);
+int vfs(AppServerOptions options, mode_t mask, char const * root);
 
 #endif /* !VFS_VFS_H */
