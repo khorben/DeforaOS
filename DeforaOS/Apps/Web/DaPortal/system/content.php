@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -117,6 +117,20 @@ function _content_select_lang($id, &$title, &$content)
 		return;
 	$title = $res[0]['title'];
 	$content = $res[0]['content'];
+}
+
+
+function _content_set_user($id, $userid)
+{
+	global $module_id;
+
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return FALSE;
+	if(!is_numeric($id) || !is_numeric($userid))
+		return FALSE;
+	$sql = "UPDATE daportal_content SET user_id='$userid'"
+		." WHERE module_id='$module_id' AND content_id='$id'";
+	return _sql_query($sql);
 }
 
 
