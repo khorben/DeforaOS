@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <VFS.h>
+#include "common.c"
 #include "../data/VFS.h"
 #include "../config.h"
 
@@ -222,13 +222,8 @@ int32_t VFS_lseek(int32_t fd, int32_t offset, int32_t whence)
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, fd, offset,
 			whence);
 #endif
-	if(whence == VFS_SEEK_SET)
-		whence = SEEK_SET;
-	else if(whence == VFS_SEEK_CUR)
-		whence = SEEK_CUR;
-	else if(whence == VFS_SEEK_END)
-		whence = SEEK_END;
-	else
+	if((whence = _vfs_flags(_vfs_flags_lseek, _vfs_flags_lseek_cnt, whence,
+					0)) < 0)
 		return -1;
 	return lseek(fd, offset, whence);
 }
@@ -247,11 +242,15 @@ int32_t VFS_mkdir(String const * path, uint32_t mode)
 /* VFS_open */
 int32_t VFS_open(String const * filename, uint32_t flags, uint32_t mode)
 {
+	int vfsflags;
 	int mask;
 	int fd;
 
+	if((vfsflags = _vfs_flags(_vfs_flags_open, _vfs_flags_open_cnt, flags,
+					0)) < 0)
+		return -1;
 	mask = _client_get_umask();
-	fd = open(filename, flags, mode & mask);
+	fd = open(filename, vfsflags, mode & mask);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %u, %u) => %d\n", __func__, filename,
 			flags, mode, fd);

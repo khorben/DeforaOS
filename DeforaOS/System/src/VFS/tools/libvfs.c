@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System VFS */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,14 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <System.h>
-#include <VFS.h>
+#include "../src/common.c"
 
 
 /* libvfs */
@@ -50,7 +51,8 @@ static char const _vfs_root[] = "Videos";
 /* variables */
 static AppClient * _appclient = NULL;
 
-static int (*old_access)(char const * path, mode_t mode);
+/* local functions */
+static int (*old_access)(char const * path, int mode);
 static int (*old_chmod)(char const * path, mode_t mode);
 static int (*old_chown)(char const * path, uid_t uid, gid_t gid);
 static int (*old_close)(int fd);
@@ -75,6 +77,10 @@ static int (*old_symlink)(char const * name1, char const * name2);
 static mode_t (*old_umask)(mode_t mode);
 static int (*old_unlink)(char const * path);
 static ssize_t (*old_write)(int fd, void const * buf, size_t count);
+
+
+/* prototypes */
+static void _libvfs_init(void);
 
 
 /* functions */
@@ -131,7 +137,7 @@ static void _libvfs_init(void)
 /* public */
 /* interface */
 /* access */
-int access(char const * path, mode_t mode)
+int access(const char * path, int mode)
 {
 	int ret;
 
@@ -284,13 +290,8 @@ off_t lseek(int fd, off_t offset, int whence)
 	_libvfs_init();
 	if(fd < VFS_OFF)
 		return old_lseek(fd, offset, whence);
-	if(whence == SEEK_SET)
-		whence = VFS_SEEK_SET;
-	else if(whence == SEEK_CUR)
-		whence = VFS_SEEK_CUR;
-	else if(whence == SEEK_END)
-		whence = VFS_SEEK_END;
-	else
+	if((whence = _vfs_flags(_vfs_flags_lseek, _vfs_flags_lseek_cnt, whence,
+					1)) < 0)
 	{
 		errno = EINVAL;
 		return -1;
@@ -336,14 +337,29 @@ void * mmap(void * addr, size_t len, int prot, int flags, int fd,
 
 
 /* open */
-int open(char const * path, int flags, mode_t mode)
+int open(const char * path, int flags, ...)
 {
 	int ret;
+	int vfsflags;
+	mode_t mode = 0;
+	va_list ap;
 
 	_libvfs_init();
+	if(flags & O_CREAT)
+	{
+		va_start(ap, flags);
+		mode = va_arg(ap, mode_t);
+		va_end(ap);
+	}
 	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
 		return old_open(path, flags, mode);
-	if(appclient_call(_appclient, &ret, "open", path, flags, mode) != 0)
+	if((vfsflags = _vfs_flags(_vfs_flags_open, _vfs_flags_open_cnt,
+					flags, 1)) < 0)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+	if(appclient_call(_appclient, &ret, "open", path, vfsflags, mode) != 0)
 		return -1;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: open(\"%s\", %d, 0%o) => %d\n", path, flags,

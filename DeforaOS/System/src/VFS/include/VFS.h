@@ -21,6 +21,16 @@
 
 /* VFS */
 /* constants */
+/* lseek */
 enum { VFS_SEEK_SET = 0, VFS_SEEK_CUR = 1, VFS_SEEK_END = 2 };
+
+
+/* open */
+enum { VFS_O_RDONLY = 0x0, VFS_O_WRONLY = 0x1, VFS_O_RDWR = 0x2,
+	VFS_O_ACCMODE = 0x4 };
+enum { VFS_O_CREAT = 0x10, VFS_O_EXCL = 0x20, VFS_O_TRUNC = 0x40,
+	VFS_O_NOCTTY = 0x80 };
+enum { VFS_O_APPEND = 0x100, VFS_O_DSYNC = 0x200, VFS_O_NONBLOCK = 0x400,
+	VFS_O_RSYNC = 0x800, VFS_O_SYNC = 0x1000 };
 
 #endif /* !VFS_VFS_H */

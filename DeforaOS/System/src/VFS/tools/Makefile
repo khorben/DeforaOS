@@ -29,7 +29,7 @@ libvfs.a: $(libvfs_OBJS)
 libvfs.so: $(libvfs_OBJS)
 	$(LD) -o libvfs.so -Wl,-soname,libvfs.so.0 $(libvfs_OBJS)
 
-libvfs.o: libvfs.c
+libvfs.o: libvfs.c ../src/common.c ../include/VFS.h
 	$(CC) $(libvfs_CFLAGS) -c libvfs.c
 
 clean:

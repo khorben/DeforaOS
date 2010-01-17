@@ -26,7 +26,7 @@ VFS_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 VFS: $(VFS_OBJS)
 	$(CC) -o VFS $(VFS_OBJS) $(VFS_LDFLAGS)
 
-vfs.o: vfs.c ../data/VFS.h
+vfs.o: vfs.c common.c ../data/VFS.h ../include/VFS.h
 	$(CC) $(VFS_CFLAGS) -c vfs.c
 
 main.o: main.c
