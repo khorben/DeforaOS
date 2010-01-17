@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ACTION'] = 'Action';
 $text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
 $text['ADMINISTRATION'] = 'Administration';
 $text['AND_AWAITS_MODERATION'] = 'and awaits moderation';
@@ -94,14 +95,15 @@ _lang($text);
 define('S_IFDIR', 040000);
 
 
+//functions
+//private
 function _project_toolbar($id)
 {
-	global $user_id, $html;
+	global $html;
 
 	if(!$html)
 		return;
-	require_once('./system/user.php');
-	$admin = _user_admin($user_id);
+	$admin = _project_is_admin($id);
 	$cvsroot = '';
 	$enabled = 0;
 	$project = _sql_array('SELECT title, cvsroot, enabled'
@@ -126,6 +128,21 @@ function _project_id($name)
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			." AND title='$name'");
+}
+
+
+function _project_is_admin($id)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(_user_admin($user_id))
+		return 1;
+	return _sql_single('SELECT user_id'
+			.' FROM daportal_content, daportal_project'
+			.' WHERE daportal_content.content_id'
+			.'=daportal_project.project_id'
+			." AND project_id='$id'") == $user_id;
 }
 
 
@@ -182,11 +199,11 @@ function project_admin($args)
 {
 	global $user_id, $module_id;
 
+	if(isset($args['id']))
+		return project_modify($args);
 	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
-	if(isset($args['id']))
-		return project_modify($args);
 	print('<h1 class="title project">'._html_safe(PROJECTS_ADMINISTRATION)
 			."</h1>\n");
 	if(($configs = _config_list('project')))
@@ -1379,13 +1396,13 @@ function project_list($args)
 		$where = " AND daportal_content.user_id='".$args['user_id']."'";
 	}
 	print('<h1 class="title project">'._html_safe($title).'</h1>'."\n");
-	$sql = 'SELECT content_id AS id, title AS name, username AS admin'
+	$sql = 'SELECT content_id AS id, title, username AS admin'
 		.', daportal_content.user_id AS user_id, synopsis'
 		.' FROM daportal_content, daportal_user, daportal_project'
 		." WHERE daportal_content.enabled='1'"
 		.' AND daportal_content.user_id=daportal_user.user_id'
 		.' AND daportal_content.content_id=daportal_project.project_id'
-		.$where.' ORDER BY name ASC';
+		.$where.' ORDER BY title ASC';
 	$projects = _sql_array($sql);
 	if(!is_array($projects))
 		return _error('Could not list projects');
@@ -1395,14 +1412,14 @@ function project_list($args)
 		$projects[$i]['action'] = 'display';
 		if(isset($action))
 			$projects[$i]['link'] = _html_link('project', $action,
-					'', '',
+					FALSE, FALSE,
 					'project_id='.$projects[$i]['id']);
 		$projects[$i]['icon'] = 'icons/16x16/project.png';
 		$projects[$i]['thumbnail'] = 'icons/48x48/project.png';
 		$projects[$i]['admin'] = '<a href="'._html_link('user', '',
 			$projects[$i]['user_id'], $projects[$i]['admin']).'">'
 				._html_safe($projects[$i]['admin']).'</a>';
-		$projects[$i]['title'] = $projects[$i]['name'];
+		$projects[$i]['name'] = $projects[$i]['title'];
 	}
 	$args = array('entries' => $projects, 'view' => 'details',
 			'class' => array('admin' => ADMINISTRATOR,
@@ -1492,10 +1509,9 @@ function project_member_insert($args)
 
 function project_modify($args)
 {
-	global $user_id;
-
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!isset($args['id']))
+		return _error(INVALID_PROJECT);
+	if(!_project_is_admin($args['id']))
 		return _error(PERMISSION_DENIED);
 	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
 			.', content, cvsroot'
@@ -1715,7 +1731,7 @@ function project_timeline($args)
 		if(!isset($event))
 			continue;
 		$icon = isset($icon) ? 'icons/48x48/cvs-'.$icon.'.png' : '';
-		$name = substr($fields[3], $len+1).'/'.$fields[5];
+		$name = substr($fields[3], $len + 1).'/'.$fields[5];
 		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
 		$date = date('d/m/Y H:i', $date);
 		if(($author = _user_id($fields[1])) != 0)
@@ -1732,7 +1748,7 @@ function project_timeline($args)
 				'date' => _html_safe($date),
 				'event' => _html_safe($event),
 				'revision' => '<a href="'._html_link('project',
-			'browse', $args['id'], '', 'file='._html_safe($name)
+			'browse', $args['id'], FALSE, 'file='._html_safe($name)
 				.',v&amp;revision='._html_safe($fields[4])).'">'
 				._html_safe($fields[4]).'</a>',
 				'author' => $author);
@@ -1749,8 +1765,7 @@ function project_timeline($args)
 			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', array(
 			'entries' => array_reverse($entries),
-			'class' => array('date' => DATE,
-					'event' => 'Action',
+			'class' => array('date' => DATE, 'event' => ACTION,
 					'revision' => REVISION,
 					'author' => AUTHOR),
 			'toolbar' => $toolbar, 'view' => 'details'));
@@ -1762,17 +1777,23 @@ function project_update($args)
 {
 	global $user_id;
 
-	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!isset($args['id']))
+		return _error(INVALID_PROJECT);
+	if(!_project_is_admin($args['id']))
 		return _error(PERMISSION_DENIED);
+	$sql = "UPDATE daportal_project SET synopsis='".$args['synopsis']."'";
+	if(isset($args['cvsroot']))
+	{
+		require_once('./system/user.php');
+		if(_user_admin($user_id))
+			$sql.=", cvsroot='".$args['cvsroot']."'";
+	}
+	$sql.=" WHERE project_id='".$args['id']."'";
 	require_once('./system/content.php');
-	//FIXME allow project's admin to update? XXX check if is a project
+	//FIXME check if it is a project
 	if(!_content_update($args['id'], $args['title'], $args['content']))
 		return _error('Could not update project');
-	_sql_query('UPDATE daportal_project SET'
-			." synopsis='".$args['synopsis']."'"
-			.", cvsroot='".$args['cvsroot']."'"
-			." WHERE project_id='".$args['id']."'");
+	_sql_query($sql);
 	project_display(array('id' => $args['id']));
 }
 
