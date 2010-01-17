@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <VFS.h>
 #include "../data/VFS.h"
 #include "../config.h"
 
@@ -213,7 +214,7 @@ int32_t VFS_flock(int32_t fd, uint32_t operation)
 
 /* VFS_lseek */
 int32_t VFS_lseek(int32_t fd, int32_t offset, int32_t whence)
-	/* FIXME unify whence, check types sizes */
+	/* FIXME check types sizes */
 {
 	if(!_client_check(fd))
 		return -1;
@@ -221,6 +222,14 @@ int32_t VFS_lseek(int32_t fd, int32_t offset, int32_t whence)
 	fprintf(stderr, "DEBUG: %s(%d, %d, %d)\n", __func__, fd, offset,
 			whence);
 #endif
+	if(whence == VFS_SEEK_SET)
+		whence = SEEK_SET;
+	else if(whence == VFS_SEEK_CUR)
+		whence = SEEK_CUR;
+	else if(whence == VFS_SEEK_END)
+		whence = SEEK_END;
+	else
+		return -1;
 	return lseek(fd, offset, whence);
 }
 

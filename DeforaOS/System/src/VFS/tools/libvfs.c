@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <dlfcn.h>
 #include <System.h>
+#include <VFS.h>
 
 
 /* libvfs */
@@ -283,6 +284,17 @@ off_t lseek(int fd, off_t offset, int whence)
 	_libvfs_init();
 	if(fd < VFS_OFF)
 		return old_lseek(fd, offset, whence);
+	if(whence == SEEK_SET)
+		whence = VFS_SEEK_SET;
+	else if(whence == SEEK_CUR)
+		whence = VFS_SEEK_CUR;
+	else if(whence == SEEK_END)
+		whence = VFS_SEEK_END;
+	else
+	{
+		errno = EINVAL;
+		return -1;
+	}
 	if(appclient_call(_appclient, &ret, "lseek", fd - VFS_OFF, offset,
 				whence) != 0)
 		return -1;
