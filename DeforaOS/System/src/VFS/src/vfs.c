@@ -121,7 +121,6 @@ int vfs(AppServerOptions options, mode_t mask, char const * root)
 
 
 /* stubs */
-VFS_STUB2(int32_t, access, String const *, path, uint32_t, mode)
 VFS_STUB2(int32_t, chmod, String const *, path, uint32_t, mode)
 VFS_STUB3(int32_t, chown, String const *, path, uint32_t, owner, uint32_t,
 		group)
@@ -135,6 +134,18 @@ VFS_STUB1(int32_t, unlink, String const *, path)
 
 
 /* interface */
+/* VFS_access */
+int32_t VFS_access(String const * path, uint32_t mode)
+{
+	int vfsmode;
+
+	if((vfsmode = _vfs_flags(_vfs_flags_access, _vfs_flags_access_cnt,
+					mode, 0)) < 0)
+		return -1;
+	return access(path, vfsmode);
+}
+
+
 /* VFS_close */
 int32_t VFS_close(int32_t fd)
 {

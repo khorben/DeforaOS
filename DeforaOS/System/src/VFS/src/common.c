@@ -30,6 +30,17 @@ typedef struct _VFSFlag
 
 /* variables */
 /* flags */
+/* access */
+static VFSFlag _vfs_flags_access[] =
+{
+	{ F_OK,		VFS_F_OK	},
+	{ R_OK,		VFS_R_OK	},
+	{ W_OK,		VFS_W_OK	},
+	{ X_OK,		VFS_X_OK	}
+};
+static const size_t _vfs_flags_access_cnt = sizeof(_vfs_flags_access)
+	/ sizeof(*_vfs_flags_access);
+
 /* lseek */
 static VFSFlag _vfs_flags_lseek[] =
 {

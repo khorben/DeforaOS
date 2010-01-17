@@ -144,6 +144,12 @@ int access(const char * path, int mode)
 	_libvfs_init();
 	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
 		return old_access(path, mode);
+	if((mode = _vfs_flags(_vfs_flags_access, _vfs_flags_access_cnt, mode,
+					1)) < 0)
+	{
+		errno = EINVAL;
+		return -1;
+	}
 	if(appclient_call(_appclient, &ret, "access", path, mode) != 0)
 		return -1;
 #ifdef DEBUG

@@ -21,9 +21,11 @@
 
 /* VFS */
 /* constants */
+/* access */
+enum { VFS_F_OK = 0, VFS_R_OK = 1, VFS_X_OK = 2, VFS_W_OK = 4 };
+
 /* lseek */
 enum { VFS_SEEK_SET = 0, VFS_SEEK_CUR = 1, VFS_SEEK_END = 2 };
-
 
 /* open */
 enum { VFS_O_RDONLY = 0x0, VFS_O_WRONLY = 0x1, VFS_O_RDWR = 0x2,
