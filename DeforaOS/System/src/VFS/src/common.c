@@ -98,6 +98,10 @@ static int _vfs_flags(VFSFlag * flags, size_t flags_cnt, int value, int reverse)
 			value -= flags[i].flag;
 			ret |= flags[i].native;
 		}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %zu, %d, %d) => %d\n", flags, flags_cnt,
+			value, reverse, value == 0 ? ret : -1);
+#endif
 	if(value != 0)
 		return -1;
 	return ret;
