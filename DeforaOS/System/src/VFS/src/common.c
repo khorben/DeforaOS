@@ -87,16 +87,16 @@ static int _vfs_flags(VFSFlag * flags, size_t flags_cnt, int value, int reverse)
 	for(i = 0; i < flags_cnt; i++)
 		if(reverse == 0)
 		{
-			if(value & flags[i].native)
+			if((value & flags[i].native) == flags[i].native)
 			{
 				value -= flags[i].native;
 				ret |= flags[i].flag;
 			}
 		}
-		else if(value & flags[i].flag)
+		else if((value & flags[i].flag) == flags[i].flag)
 		{
-				value -= flags[i].flag;
-				ret |= flags[i].native;
+			value -= flags[i].flag;
+			ret |= flags[i].native;
 		}
 	if(value != 0)
 		return -1;
