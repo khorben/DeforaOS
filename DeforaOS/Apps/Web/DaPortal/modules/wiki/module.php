@@ -634,7 +634,10 @@ function _wiki_system_update($args)
 	$parser = xml_parser_create();
 	xml_set_character_data_handler($parser, '_update_data');
 	if(xml_parse($parser, '<div>'.$content.'</div>') == 1)
+	{
 		_content_update($id, FALSE, $wiki_content, date('Y-m-d H:i:s'));
+		_content_set_user($id, $user_id);
+	}
 	xml_parser_free($parser);
 	$wiki_content = '';
 	header('Location: '._module_link('wiki', 'display', $id, $title));
