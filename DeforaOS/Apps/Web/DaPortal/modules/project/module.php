@@ -150,6 +150,9 @@ function _project_is_member($id, $members = FALSE, $user = FALSE)
 {
 	global $user_id;
 
+	require_once('./system/user.php');
+	if(_user_admin($user_id))
+		return 1;
 	if($members == FALSE)
 		$members = _project_members($id);
 	if($user == FALSE)
@@ -919,7 +922,7 @@ function project_bug_reply_insert($args)
 	$cnt = count($keys);
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
-	$title = '[Bug reply] '.$args['title'];
+	$title = '[Bug reply] '.stripslashes($args['title']);
 	$content = $from.$status."\n".stripslashes($args['content']);
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, $title, wordwrap($content, 72));
@@ -1318,6 +1321,8 @@ function project_download_insert($args)
 
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
+	if(!_project_is_member($args['id']))
+		return _error(PERMISSION_DENIED);
 	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
@@ -1420,6 +1425,7 @@ function project_list($args)
 			$projects[$i]['user_id'], $projects[$i]['admin']).'">'
 				._html_safe($projects[$i]['admin']).'</a>';
 		$projects[$i]['name'] = $projects[$i]['title'];
+		$projects[$i]['tag'] = $projects[$i]['title'];
 	}
 	$args = array('entries' => $projects, 'view' => 'details',
 			'class' => array('admin' => ADMINISTRATOR,
@@ -1607,10 +1613,10 @@ function _project_system_config_update($args)
 
 function _project_system_download_insert($args, $category = 'release')
 {
-	global $user_id;
-
 	if(!isset($args['id']))
 		return INVALID_PROJECT;
+	if(!_project_is_member($args['id']))
+		return PERMISSION_DENIED;
 	if(!isset($args['directory']))
 		return INVALID_ARGUMENT;
 	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
@@ -1620,11 +1626,8 @@ function _project_system_download_insert($args, $category = 'release')
 			." AND daportal_content.enabled='1'"
 			." AND project_id='".$args['id']."'");
 	if(!is_array($project) || count($project) != 1)
-		return _error(INVALID_PROJECT);
+		return INVALID_PROJECT;
 	$project = $project[0];
-	require_once('./system/user.php');
-	if(!_user_admin($user_id) && !_project_is_member($project['id']))
-		return PERMISSION_DENIED;
 	if(!_module_id('download')
 			|| !($category_module_id = _module_id('category')))
 		return 'The download and category modules are required';
