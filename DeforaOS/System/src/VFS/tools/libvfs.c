@@ -45,7 +45,7 @@ typedef struct _VFSDIR
 #define PROGNAME	"libVFS"
 #define VFS_OFF		1024
 
-static char const _vfs_root[] = "Videos";
+static char const _vfs_root[] = "Videos/";
 #define VFS_ROOT_SIZE (sizeof(_vfs_root) - 1)
 
 
@@ -230,7 +230,7 @@ int closedir(DIR * dir)
 		ret = old_closedir(d->dir);
 #else
 	fd = dirfd(dir) - VFS_OFF;
-	if(dirfd(dir) < VFS_OFF)
+	if(fd < 0)
 		ret = old_closedir(dir);
 #endif
 	else if(appclient_call(_appclient, &ret, "closedir", fd) != 0)
@@ -243,7 +243,7 @@ int closedir(DIR * dir)
 #else
 	/* XXX not really closed because the fd is wrong */
 	dirfd(dir) = -1;
-	closedir(dir);
+	old_closedir(dir);
 #endif
 	return ret;
 }
@@ -264,6 +264,8 @@ int dirfd(DIR * dir)
 # ifdef DEBUG
 	fprintf(stderr, "DEBUG: dirfd(%p) => %d\n", dir, ret);
 # endif
+	if(ret < 0)
+		return -1;
 	return ret + VFS_OFF;
 }
 #endif
@@ -386,7 +388,7 @@ int open(const char * path, int flags, ...)
 	if(appclient_call(_appclient, &ret, "open", path, vfsflags, mode) != 0)
 		return -1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: open(\"%s\", %d, 0%o) => %d\n", path, flags,
+	fprintf(stderr, "DEBUG: open(\"%s\", %d, %#o) => %d\n", path, flags,
 			mode, ret);
 #endif
 	if(ret < 0)
@@ -412,31 +414,35 @@ DIR * opendir(char const * path)
 	else
 	{
 		dir->dir = NULL;
-		if(appclient_call(_appclient, &dir->fd, "opendir", path) != 0)
+		if(appclient_call(_appclient, &dir->fd, "opendir", path) != 0
+				|| dir->fd < 0)
 		{
 			free(dir);
 			return NULL;
 		}
 # ifdef DEBUG
-		fprintf(stderr, "DEBUG: opendir(\"%s\") => %d\n", path,
+		fprintf(stderr, "DEBUG: opendir(\"%s\") => %p %d\n", path, dir,
 				dir->fd);
 # endif
 	}
 	return (DIR*)dir;
-#else /* NetBSD... */
+#else
 	DIR * dir;
 	int fd;
 
 	_libvfs_init();
 	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
 		return old_opendir(path);
-	if((dir = opendir("/")) == NULL) /* XXX quite ugly */
+	if((dir = old_opendir("/")) == NULL) /* XXX quite ugly */
 		return NULL;
-	if(appclient_call(_appclient, &fd, "opendir", path) != 0)
+	if(appclient_call(_appclient, &fd, "opendir", path) != 0 || fd < 0)
 	{
-		closedir(dir);
+		old_closedir(dir);
 		return NULL;
 	}
+# ifdef DEBUG
+	fprintf(stderr, "DEBUG: opendir(\"%s\") => %p %d\n", path, dir, fd);
+# endif
 	dirfd(dir) = fd + VFS_OFF;
 	return dir;
 #endif
@@ -478,6 +484,7 @@ struct dirent * readdir(DIR * dir)
 #ifndef dirfd
 	VFSDIR * d = (VFSDIR*)dir;
 #endif
+	int fd;
 	int res;
 	String * filename = NULL;
 
@@ -485,17 +492,16 @@ struct dirent * readdir(DIR * dir)
 #ifndef dirfd
 	if(d->dir != NULL)
 		return old_readdir(d->dir);
-	if(appclient_call(_appclient, &res, "readdir", d->fd, &filename) != 0)
-		return NULL;
+	fd = d->fd;
 #else
 	if(dirfd(dir) < VFS_OFF)
 		return old_readdir(dir);
-	if(appclient_call(_appclient, &res, "readdir", dirfd(dir) - VFS_OFF,
-				&filename) != 0)
-		return NULL;
+	fd = dirfd(dir) - VFS_OFF;
 #endif
+	if(appclient_call(_appclient, &res, "readdir", fd, &filename) != 0)
+		return NULL;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: readdir(%p) => %d\n", dir, res);
+	fprintf(stderr, "DEBUG: readdir(%p %d) => %d\n", dir, fd, res);
 #endif
 	if(res != 0)
 	{
@@ -520,13 +526,17 @@ struct dirent * readdir(DIR * dir)
 int rename(char const * from, char const * to)
 {
 	int ret;
+	int f;
+	int t;
 
 	_libvfs_init();
-	if(strncmp(_vfs_root, from, VFS_ROOT_SIZE) != 0)
+	f = strncmp(_vfs_root, from, VFS_ROOT_SIZE);
+	t = strncmp(_vfs_root, to, VFS_ROOT_SIZE);
+	if(f != 0 && t != 0)
 		return old_rename(from, to);
-	if(strncmp(_vfs_root, to, VFS_ROOT_SIZE) != 0)
+	if((f == 0 && t != 0) || (f != 0 && t == 0))
 	{
-		errno = EINVAL;
+		errno = EXDEV;
 		return -1;
 	}
 	if(appclient_call(_appclient, &ret, "rename", from, to) != 0)
@@ -553,7 +563,7 @@ void rewinddir(DIR * dir)
 		old_rewinddir(d->dir);
 #else
 	fd = dirfd(dir) - VFS_OFF;
-	if(dirfd(dir) < VFS_OFF)
+	if(fd < 0)
 		old_rewinddir(dir);
 #endif
 	else
