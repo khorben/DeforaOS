@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -74,8 +74,8 @@ $wiki_attrib_whitelist = array('alt', 'border', 'class', 'colspan', 'height',
 		'href', 'size', 'src', 'style', 'title', 'width');
 $wiki_tag_whitelist = array('a', 'acronym', 'b', 'big', 'br', 'center', 'div',
 		'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-		'hr', 'i', 'img', 'li', 'ol', 'p', 'pre', 'span',
-		'sub', 'sup', 'table', 'td', 'th', 'tr', 'tt', 'u', 'ul');
+		'hr', 'i', 'img', 'li', 'ol', 'p', 'pre', 'span', 'sub', 'sup',
+		'table', 'tbody', 'td', 'th', 'tr', 'tt', 'u', 'ul');
 $wiki_content = '';
 
 
