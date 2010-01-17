@@ -231,7 +231,7 @@ int closedir(DIR * dir)
 #else
 	fd = dirfd(dir) - VFS_OFF;
 	if(fd < 0)
-		ret = old_closedir(dir);
+		return old_closedir(dir);
 #endif
 	else if(appclient_call(_appclient, &ret, "closedir", fd) != 0)
 		return -1;
