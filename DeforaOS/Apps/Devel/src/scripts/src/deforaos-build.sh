@@ -19,6 +19,8 @@ esac
 DESTDIR="/var/www/htdocs/download/snapshots"
 DEVNULL="/dev/null"
 FILE="DeforaOS-daily.iso"
+KERNEL_VERSION="2.4.37.7"
+KERNEL_PATH="/usr/src/linux-$KERNEL_VERSION"
 MODULE="DeforaOS"
 PREFIX="/usr"
 SRC="$HOME/build/$OS-$ARCH"
@@ -80,14 +82,14 @@ echo ""
 echo "Creating CD-ROM image:"
 ./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" DESTDIR="$DST" PREFIX="$PREFIX" \
 		IMAGE_TYPE="ramdisk" IMAGE_FILE="initrd.img" IMAGE_SIZE=8192 \
-		IMAGE_MODULES="/usr/src/linux-2.4.37/modules-ramdisk.tgz" \
+		IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
 		image						|| error
 $RM -r "$DST"
 ./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" DESTDIR="$DST" PREFIX="$PREFIX" \
 		IMAGE_TYPE="iso" \
 		IMAGE_FILE="DeforaOS-daily.iso" \
-		IMAGE_KERNEL="/usr/src/linux-2.4.37/arch/i386/boot/bzImage" \
-		IMAGE_MODULES="/usr/src/linux-2.4.37/modules.tgz" \
+		IMAGE_KERNEL="$KERNEL_PATH/arch/i386/boot/bzImage" \
+		IMAGE_MODULES="$KERNEL_PATH/modules.tgz" \
 		IMAGE_RAMDISK="initrd.img" \
 		KERNEL_ARGS="vga=0x301 rw" \
 		image						|| error
