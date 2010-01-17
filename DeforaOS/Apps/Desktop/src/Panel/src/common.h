@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,11 @@
 /* types */
 typedef struct _Panel Panel;
 
+typedef struct _PanelPrefs
+{
+	int monitor;
+} PanelPrefs;
+
 
 /* constants */
 #define PANEL_BORDER_WIDTH	4
@@ -30,7 +35,7 @@ typedef struct _Panel Panel;
 
 
 /* functions */
-Panel * panel_new(void);
+Panel * panel_new(PanelPrefs * prefs);
 void panel_delete(Panel * panel);
 
 /* useful */

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,10 +72,11 @@ static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
 		gpointer data);
 static gboolean _on_closex(void);
 
-Panel * panel_new(void)
+Panel * panel_new(PanelPrefs * prefs)
 {
 	Panel * panel;
 	GdkScreen * screen;
+	int monitor;
 	GtkWidget * event;
 	GdkRectangle rect;
 
@@ -102,7 +103,12 @@ Panel * panel_new(void)
 	/* root window */
 	panel->root = gdk_screen_get_root_window(gdk_screen_get_default());
 	screen = gdk_screen_get_default();
-	gdk_screen_get_monitor_geometry(screen, 0, &rect);
+	if(prefs != NULL && prefs->monitor > 0
+			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
+		monitor = prefs->monitor;
+	else
+		monitor = 0;
+	gdk_screen_get_monitor_geometry(screen, monitor, &rect);
 	panel->root_width = rect.width;
 	panel->root_height = rect.height;
 #ifdef DEBUG
@@ -120,8 +126,8 @@ Panel * panel_new(void)
 			rect.height);
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
-	gtk_window_move(GTK_WINDOW(panel->window), 0, panel->root_height
-			- rect.height);
+	gtk_window_move(GTK_WINDOW(panel->window), rect.x,
+			rect.y + panel->root_height - rect.height);
 	gtk_window_stick(GTK_WINDOW(panel->window));
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);

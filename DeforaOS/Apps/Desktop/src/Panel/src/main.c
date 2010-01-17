@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Panel */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
 
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <signal.h>
 #include <gtk/gtk.h>
 #include "common.h"
@@ -27,7 +29,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE "\n", stderr);
+	fputs("Usage: " PACKAGE " [-m monitor]\n", stderr);
 	return 1;
 }
 
@@ -39,18 +41,26 @@ int main(int argc, char * argv[])
 {
 	int o;
 	Panel * panel;
+	PanelPrefs prefs;
+	char * p;
 	struct sigaction sa;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	memset(&prefs, 0, sizeof(prefs));
+	while((o = getopt(argc, argv, "m:")) != -1)
 		switch(o)
 		{
+			case 'm':
+				prefs.monitor = strtol(optarg, &p, 10);
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	if((panel = panel_new()) == NULL)
+	if((panel = panel_new(&prefs)) == NULL)
 		return 2;
 	sa.sa_handler = _main_sigchld;
 	sigemptyset(&sa.sa_mask);
