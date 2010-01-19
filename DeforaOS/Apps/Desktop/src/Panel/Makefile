@@ -40,6 +40,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/main.c \
 		$(PACKAGE)-$(VERSION)/src/applets/memory.c \
 		$(PACKAGE)-$(VERSION)/src/applets/pager.c \
+		$(PACKAGE)-$(VERSION)/src/applets/systray.c \
 		$(PACKAGE)-$(VERSION)/src/applets/tasks.c \
 		$(PACKAGE)-$(VERSION)/src/applets/volume.c \
 		$(PACKAGE)-$(VERSION)/src/applets/Makefile \
