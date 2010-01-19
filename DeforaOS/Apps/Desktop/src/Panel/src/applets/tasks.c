@@ -743,20 +743,17 @@ static gboolean _on_popup(gpointer data)
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(items[j].callback), task);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-		if(items[j].atom == TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_VERT
-				|| items[j].atom
-				== TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ)
-			if(max++ == 1)
-			{
-				menuitem = gtk_image_menu_item_new_from_stock(
-						"Maximize", NULL);
-				g_signal_connect_swapped(G_OBJECT(menuitem),
-						"activate",
-						G_CALLBACK(_on_popup_maximize),
-						task);
-				gtk_menu_shell_append(GTK_MENU_SHELL(menu),
-						menuitem);
-			}
+		/* maximizing horizontally and vertically */
+		if(items[j].atom != TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_VERT
+				&& items[j].atom
+				!= TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ)
+			continue;
+		if(max++ != 1)
+			continue;
+		menuitem = gtk_image_menu_item_new_from_stock("Maximize", NULL);
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_popup_maximize), task);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	XFree(buf);
 	if(menu == NULL)
