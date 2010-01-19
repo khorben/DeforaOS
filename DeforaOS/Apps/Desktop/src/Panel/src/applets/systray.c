@@ -184,7 +184,7 @@ static void _on_screen_changed(GtkWidget * widget, GdkScreen * previous,
 	xev.xclient.data.l[2] = GDK_WINDOW_XWINDOW(systray->owner->window);
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XWINDOW(root),
 			False, StructureNotifyMask, &xev);
-	memset(&xev.xclient.data, sizeof(xev.xclient.data), 0);
+	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
 	gtk_widget_add_events(systray->owner, GDK_PROPERTY_CHANGE_MASK
 			| GDK_STRUCTURE_MASK);
 	gdk_window_add_filter(systray->owner->window, _on_filter, systray);
