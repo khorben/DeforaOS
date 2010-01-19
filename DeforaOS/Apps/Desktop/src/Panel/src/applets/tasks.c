@@ -706,6 +706,7 @@ static gboolean _on_popup(gpointer data)
 		{ TASKS_ATOM__NET_WM_ACTION_CLOSE, _on_popup_close,
 			GTK_STOCK_CLOSE }
 	};
+	const size_t items_cnt = sizeof(items) / sizeof(*items);
 	size_t j;
 	GtkWidget * menu = NULL;
 	GtkWidget * menuitem;
@@ -716,10 +717,10 @@ static gboolean _on_popup(gpointer data)
 		return FALSE;
 	for(i = 0; i < cnt; i++)
 	{
-		for(j = 0; j < sizeof(items) / sizeof(*items); j++)
+		for(j = 0; j < items_cnt; j++)
 			if(buf[i] == task->tasks->atom[items[j].atom])
 				break;
-		if(j >= sizeof(items) / sizeof(*items))
+		if(j >= items_cnt)
 			continue;
 		if(items[j].atom == TASKS_ATOM__NET_WM_ACTION_CHANGE_DESKTOP)
 			continue; /* FIXME implement as a special case */
