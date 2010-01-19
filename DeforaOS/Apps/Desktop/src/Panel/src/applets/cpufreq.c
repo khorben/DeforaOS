@@ -83,8 +83,8 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 
 	if(sysctlbyname("machdep.est.frequency.available", &freq, &freqsize,
 				NULL, 0) != 0
-			|| sysctlbyname("machdep.powernow.frequency.available",
-				&freq, &freqsize, NULL, 0) >= 0)
+			&& sysctlbyname("machdep.powernow.frequency.available",
+				&freq, &freqsize, NULL, 0) != 0)
 	{
 		error_set("%s: %s", "cpufreq", strerror(errno));
 		return NULL;
