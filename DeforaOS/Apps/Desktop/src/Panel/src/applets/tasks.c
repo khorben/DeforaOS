@@ -84,6 +84,8 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 static void _task_delete(Task * Task);
 static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf);
 static void _task_toggle_state(Task * task, TasksAtom state);
+static void _task_toggle_states(Task * task, TasksAtom state1,
+		TasksAtom state2);
 
 /* tasks */
 static GtkWidget * _tasks_init(PanelApplet * applet);
@@ -110,6 +112,7 @@ static gboolean _on_popup(gpointer data);
 static void _on_popup_change_desktop(gpointer data);
 static void _on_popup_close(gpointer data);
 static void _on_popup_fullscreen(gpointer data);
+static void _on_popup_maximize(gpointer data);
 static void _on_popup_maximize_horz(gpointer data);
 static void _on_popup_maximize_vert(gpointer data);
 static void _on_popup_minimize(gpointer data);
@@ -215,6 +218,14 @@ static void _task_set(Task * task, char const * name, GdkPixbuf * pixbuf)
 /* task_toggle_state */
 static void _task_toggle_state(Task * task, TasksAtom state)
 {
+	_task_toggle_states(task, state, 0);
+}
+
+
+/* task_toggle_states */
+static void _task_toggle_states(Task * task, TasksAtom state1,
+		TasksAtom state2)
+{
 	Tasks * tasks = task->tasks;
 	GdkDisplay * display;
 	XEvent xev;
@@ -226,8 +237,8 @@ static void _task_toggle_state(Task * task, TasksAtom state)
 	xev.xclient.message_type = tasks->atom[TASKS_ATOM__NET_WM_STATE];
 	xev.xclient.format = 32;
 	xev.xclient.data.l[0] = tasks->atom[TASKS_ATOM__NET_WM_STATE_TOGGLE];
-	xev.xclient.data.l[1] = tasks->atom[state];
-	xev.xclient.data.l[2] = 0;
+	xev.xclient.data.l[1] = tasks->atom[state1];
+	xev.xclient.data.l[2] = (state2 != 0) ? tasks->atom[state2] : 0;
 	xev.xclient.data.l[3] = 2;
 	gdk_error_trap_push();
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
@@ -710,6 +721,7 @@ static gboolean _on_popup(gpointer data)
 	size_t j;
 	GtkWidget * menu = NULL;
 	GtkWidget * menuitem;
+	int max = 0;
 
 	if(_tasks_get_window_property(task->tasks, task->window,
 				TASKS_ATOM__NET_WM_ALLOWED_ACTIONS, XA_ATOM,
@@ -720,7 +732,7 @@ static gboolean _on_popup(gpointer data)
 		for(j = 0; j < items_cnt; j++)
 			if(buf[i] == task->tasks->atom[items[j].atom])
 				break;
-		if(j >= items_cnt)
+		if(j == items_cnt)
 			continue;
 		if(items[j].atom == TASKS_ATOM__NET_WM_ACTION_CHANGE_DESKTOP)
 			continue; /* FIXME implement as a special case */
@@ -731,6 +743,20 @@ static gboolean _on_popup(gpointer data)
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(items[j].callback), task);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		if(items[j].atom == TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_VERT
+				|| items[j].atom
+				== TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ)
+			if(max++ == 1)
+			{
+				menuitem = gtk_image_menu_item_new_from_stock(
+						"Maximize", NULL);
+				g_signal_connect_swapped(G_OBJECT(menuitem),
+						"activate",
+						G_CALLBACK(_on_popup_maximize),
+						task);
+				gtk_menu_shell_append(GTK_MENU_SHELL(menu),
+						menuitem);
+			}
 	}
 	XFree(buf);
 	if(menu == NULL)
@@ -780,6 +806,16 @@ static void _on_popup_fullscreen(gpointer data)
 	Task * task = data;
 
 	_task_toggle_state(task, TASKS_ATOM__NET_WM_STATE_FULLSCREEN);
+}
+
+
+/* on_popup_maximize */
+static void _on_popup_maximize(gpointer data)
+{
+	Task * task = data;
+
+	_task_toggle_states(task, TASKS_ATOM__NET_WM_STATE_MAXIMIZED_HORZ,
+			TASKS_ATOM__NET_WM_STATE_MAXIMIZED_VERT);
 }
 
 
