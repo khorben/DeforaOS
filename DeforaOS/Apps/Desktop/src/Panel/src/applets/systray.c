@@ -82,7 +82,7 @@ static GtkWidget * _systray_init(PanelApplet * applet)
 		return NULL;
 	}
 	applet->priv = systray;
-	systray->hbox = gtk_hbox_new(TRUE, 0);
+	systray->hbox = gtk_hbox_new(FALSE, 0);
 	systray->owner = gtk_invisible_new();
 	g_signal_connect(G_OBJECT(systray->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), systray);
