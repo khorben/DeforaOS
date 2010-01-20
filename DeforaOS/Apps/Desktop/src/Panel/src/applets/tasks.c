@@ -76,6 +76,10 @@ static const char * _tasks_atom[TASKS_ATOM_COUNT] =
 };
 #undef atom
 
+#define _NET_WM_MOVERESIZE_MOVE			 8 /* movement only */
+#define _NET_WM_MOVERESIZE_SIZE_KEYBOARD	 9 /* size via keyboard */
+#define _NET_WM_MOVERESIZE_MOVE_KEYBOARD	10 /* move via keyboard */
+
 
 /* prototypes */
 /* task */
@@ -849,14 +853,54 @@ static void _on_popup_minimize(gpointer data)
 /* on_popup_move */
 static void _on_popup_move(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+	Tasks * tasks = task->tasks;
+	GdkDisplay * display;
+	XEvent xev;
+
+	display = tasks->display;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = tasks->atom[TASKS_ATOM__NET_WM_MOVERESIZE];
+	xev.xclient.format = 32;
+	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
+	xev.xclient.data.l[2] = _NET_WM_MOVERESIZE_MOVE_KEYBOARD;
+	xev.xclient.data.l[3] = 1; /* XXX may not always be the case */
+	xev.xclient.data.l[4] = 2;
+	gdk_error_trap_push();
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+	gdk_error_trap_pop();
 }
 
 
 /* on_popup_resize */
 static void _on_popup_resize(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+	Tasks * tasks = task->tasks;
+	GdkDisplay * display;
+	XEvent xev;
+
+	display = tasks->display;
+	memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+	xev.xclient.window = task->window;
+	xev.xclient.message_type = tasks->atom[TASKS_ATOM__NET_WM_MOVERESIZE];
+	xev.xclient.format = 32;
+	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
+	xev.xclient.data.l[2] = _NET_WM_MOVERESIZE_SIZE_KEYBOARD;
+	xev.xclient.data.l[3] = 1; /* XXX may not always be the case */
+	xev.xclient.data.l[4] = 2;
+	gdk_error_trap_push();
+	XSendEvent(GDK_DISPLAY_XDISPLAY(display),
+			GDK_WINDOW_XWINDOW(tasks->root), False,
+			SubstructureNotifyMask | SubstructureRedirectMask,
+			&xev);
+	gdk_error_trap_pop();
 }
 
 
