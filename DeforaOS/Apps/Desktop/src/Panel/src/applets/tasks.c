@@ -837,7 +837,12 @@ static void _on_popup_maximize_vert(gpointer data)
 /* on_popup_minimize */
 static void _on_popup_minimize(gpointer data)
 {
-	/* FIXME implement */
+	Task * task = data;
+
+	gdk_error_trap_push();
+	XIconifyWindow(GDK_DISPLAY_XDISPLAY(task->tasks->display), task->window,
+			gdk_x11_screen_get_screen_number(task->tasks->screen));
+	gdk_error_trap_pop();
 }
 
 
