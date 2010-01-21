@@ -18,6 +18,8 @@
 #ifndef PANEL_COMMON_H
 # define PANEL_COMMON_H
 
+# include <gtk/gtk.h>
+
 
 /* Panel */
 /* types */
@@ -25,13 +27,15 @@ typedef struct _Panel Panel;
 
 typedef struct _PanelPrefs
 {
+	GtkIconSize iconsize;
 	int monitor;
 } PanelPrefs;
 
 
 /* constants */
 #define PANEL_BORDER_WIDTH	4
-#define PANEL_ICON_SIZE		GTK_ICON_SIZE_LARGE_TOOLBAR
+#define PANEL_ICON_SIZE_SMALL	GTK_ICON_SIZE_SMALL_TOOLBAR
+#define PANEL_ICON_SIZE_LARGE	GTK_ICON_SIZE_LARGE_TOOLBAR
 
 
 /* functions */

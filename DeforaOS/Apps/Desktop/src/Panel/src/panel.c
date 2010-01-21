@@ -88,11 +88,14 @@ Panel * panel_new(PanelPrefs * prefs)
 	}
 	panel->icon_width = 48;
 	panel->icon_height = 48;
-	gtk_icon_size_lookup(GTK_ICON_SIZE_LARGE_TOOLBAR, &panel->icon_width,
-			&panel->icon_height);
+	if(prefs->iconsize != PANEL_ICON_SIZE_SMALL)
+		prefs->iconsize = PANEL_ICON_SIZE_LARGE;
+	if(gtk_icon_size_lookup(prefs->iconsize, &panel->icon_width,
+			&panel->icon_height) != TRUE)
+		error_set_print(PACKAGE, 0, "Invalid panel size");
 	panel->helper.priv = panel;
 	panel->helper.error = _panel_helper_error;
-	panel->helper.icon_size = PANEL_ICON_SIZE;
+	panel->helper.icon_size = prefs->iconsize;
 #ifndef EMBEDDED
 	panel->helper.logout_dialog = _panel_helper_logout_dialog;
 #else

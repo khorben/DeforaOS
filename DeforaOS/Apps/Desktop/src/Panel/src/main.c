@@ -29,7 +29,10 @@
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-m monitor]\n", stderr);
+	fputs("Usage: " PACKAGE " [-m monitor][-sS]\n"
+"  -m	Monitor to use (default: 0)\n"
+"  -s	Use smaller icons\n"
+"  -S	Use larger icons (default)\n", stderr);
 	return 1;
 }
 
@@ -47,13 +50,20 @@ int main(int argc, char * argv[])
 
 	gtk_init(&argc, &argv);
 	memset(&prefs, 0, sizeof(prefs));
-	while((o = getopt(argc, argv, "m:")) != -1)
+	prefs.iconsize = PANEL_ICON_SIZE_LARGE;
+	while((o = getopt(argc, argv, "m:sS")) != -1)
 		switch(o)
 		{
 			case 'm':
 				prefs.monitor = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
+				break;
+			case 's':
+				prefs.iconsize = PANEL_ICON_SIZE_SMALL;
+				break;
+			case 'S':
+				prefs.iconsize = PANEL_ICON_SIZE_LARGE;
 				break;
 			default:
 				return _usage();
