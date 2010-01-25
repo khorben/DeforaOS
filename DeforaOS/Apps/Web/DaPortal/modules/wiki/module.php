@@ -67,7 +67,7 @@ _lang($text);
 
 //private
 //functions
-function _exec($cmd)
+function _wiki_exec($cmd)
 {
 	$output = array();
 	$ret = 1;
@@ -79,19 +79,19 @@ function _exec($cmd)
 	return $ret == 0 ? TRUE : FALSE;
 }
 
-function _get($id, $lock = FALSE, $revision = FALSE)
+function _wiki_get($id, $lock = FALSE, $revision = FALSE)
 {
 	require_once('./system/content.php');
 	$wiki = _content_select($id);
 	if(!is_array($wiki) || strpos('/', $wiki['tag']) != FALSE)
 		return _error(INVALID_ARGUMENT);
-	if(($root = _root()) == FALSE
+	if(($root = _wiki_root()) == FALSE
 			|| !is_readable($root.'/RCS/'.$wiki['tag'].',v'))
 		return _error('Internal server error');
 	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
 		$cmd.=' -r'.escapeshellarg($revision);
-	if(_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['tag'])) == FALSE)
+	if(_wiki_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['tag'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['tag']))
 			=== FALSE)
@@ -106,7 +106,7 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 	return $wiki;
 }
 
-function _root()
+function _wiki_root()
 {
 	if(($root = _config_get('wiki', 'root')) == FALSE)
 		return FALSE;
@@ -258,14 +258,14 @@ function wiki_default($args)
 
 function wiki_display($args)
 {
-	$wiki = _get($args['id'], FALSE, isset($args['revision'])
+	$wiki = _wiki_get($args['id'], FALSE, isset($args['revision'])
 			? $args['revision'] : FALSE);
 	if(!is_array($wiki))
 		return;
 	$title = WIKI.': '.$wiki['title'];
 	include('./modules/wiki/display.tpl');
 	print('<h2 class="title users">'._html_safe(REVISIONS)."</h2>\n");
-	exec('rlog '.escapeshellarg(_root().'/'.$wiki['title']), $rcs);
+	exec('rlog '.escapeshellarg(_wiki_root().'/'.$wiki['title']), $rcs);
 	for($i = 0, $cnt = count($rcs); $i < $cnt;)
 		if($rcs[$i++] == '----------------------------')
 			break;
@@ -390,7 +390,7 @@ function wiki_modify($args)
 
 	if($user_id == 0 && _config_get('wiki', 'anonymous') != TRUE)
 		return _error(PERMISSION_DENIED);
-	$wiki = _get($args['id']);
+	$wiki = _wiki_get($args['id']);
 	if(!is_array($wiki))
 		return;
 	$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
@@ -451,7 +451,7 @@ function _wiki_system_insert($args)
 		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
-	if(($root = _root()) == FALSE)
+	if(($root = _wiki_root()) == FALSE)
 		return 'Internal server error';
 	if(!isset($args['title']))
 		return INVALID_ARGUMENT;
@@ -498,7 +498,7 @@ function _wiki_system_insert($args)
 		return 'An error occured while writing';
 	}
 	fclose($fp);
-	if(_exec('ci -u -m'.escapeshellarg($user_name).' '
+	if(_wiki_exec('ci -u -m'.escapeshellarg($user_name).' '
 				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
@@ -517,9 +517,9 @@ function _wiki_system_update($args)
 		return PERMISSION_DENIED;
 	if(isset($args['preview']) || !isset($args['send']))
 		return;
-	if(($root = _root()) == FALSE)
+	if(($root = _wiki_root()) == FALSE)
 		return 'Internal server error';
-	$wiki = _get($args['id'], TRUE);
+	$wiki = _wiki_get($args['id'], TRUE);
 	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
 		return INVALID_ARGUMENT;
 	$id = $wiki['id'];
@@ -541,7 +541,7 @@ function _wiki_system_update($args)
 		return 'An error occured while writing';
 	}
 	fclose($fp);
-	if(_exec('ci -u -m'.escapeshellarg($user_name).' '
+	if(_wiki_exec('ci -u -m'.escapeshellarg($user_name).' '
 				.escapeshellarg($filename)) == FALSE)
 	{
 		unlink($filename);
@@ -567,7 +567,7 @@ function wiki_update($args)
 
 	if(isset($error) && strlen($error))
 		return _error($error);
-	$wiki = _get($args['id']);
+	$wiki = _wiki_get($args['id']);
 	if(!is_array($wiki))
 		return _error(INVALID_ARGUMENT);
 	$wiki['content'] = stripslashes($args['content']);
