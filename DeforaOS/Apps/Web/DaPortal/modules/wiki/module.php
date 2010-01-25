@@ -135,8 +135,8 @@ function _validate($content, &$error = '')
 
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
-	$content = str_replace(array('&lt;', '&gt;', '&'), array('<', '>',
-				'&amp;'), htmlentities($content));
+	$content = str_replace(array('&lt;', '&gt;', '&quot;', '&'),
+			array('<', '>', '"', '&amp;'), htmlentities($content));
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
 	$parser = xml_parser_create(); //encoding should not matter
