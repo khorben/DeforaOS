@@ -26,23 +26,23 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['ADDRESS'] = 'Address';
 $text['BOOKMARK_LIST'] = 'Bookmark list';
+$text['BOOKMARK_PRIVATE'] = 'Private';
+$text['BOOKMARK_PUBLIC'] = 'Public';
 $text['BOOKMARKS'] = 'Bookmarks';
 $text['BOOKMARKS_ADMINISTRATION'] = 'Bookmarks administration';
 $text['MODIFICATION_OF'] = 'Modification of';
 $text['NEW_BOOKMARK'] = 'New bookmark';
-$text['PRIVATE'] = 'Private';
-$text['PUBLIC'] = 'Public';
 global $lang;
 if($lang == 'de')
-	$text['PRIVATE'] = 'Privat';
+	$text['BOOKMARK_PRIVATE'] = 'Privat';
 else if($lang == 'fr')
 {
 	$text['ADDRESS'] = 'Adresse';
 	$text['BOOKMARK_LIST'] = 'Liste de liens';
+	$text['BOOKMARK_PRIVATE'] = 'Privé';
 	$text['BOOKMARKS'] = 'Liens';
 	$text['BOOKMARKS_ADMINISTRATION'] = 'Administration des liens';
 	$text['MODIFICATION_OF'] = 'Modification de';
-	$text['PRIVATE'] = 'Privé';
 }
 _lang($text);
 
@@ -90,14 +90,14 @@ function bookmark_admin($args)
 	$toolbar[] = array('title' => NEW_BOOKMARK, 'class' => 'new',
 			'link' => _module_link('bookmark', 'new'));
 	$toolbar[] = array();
-	$toolbar[] = array('title' => PRIVATE, 'class' => 'disabled',
+	$toolbar[] = array('title' => BOOKMARK_PRIVATE, 'class' => 'disabled',
 			'action' => 'disable', 'confirm' => 'private');
-	$toolbar[] = array('title' => PUBLIC, 'class' => 'enabled',
+	$toolbar[] = array('title' => BOOKMARK_PUBLIC, 'class' => 'enabled',
 			'action' => 'enable', 'confirm' => 'publish');
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $bookmarks,
-				'class' => array('enabled' => PUBLIC,
+				'class' => array('enabled' => BOOKMARK_PUBLIC,
 					'url' => ADDRESS),
 				'view' => 'details', 'toolbar' => $toolbar,
 				'module' => 'bookmark', 'action' => 'admin'));
@@ -248,15 +248,17 @@ function bookmark_list($args)
 	if($user_id == $args['user_id'])
 	{
 		$toolbar[] = array();
-		$toolbar[] = array('title' => PRIVATE, 'class' => 'disabled',
-				'action' => 'disable', 'confirm' => 'private');
-		$toolbar[] = array('title' => PUBLIC, 'class' => 'enabled',
-				'action' => 'enable', 'confirm' => 'publish');
+		$toolbar[] = array('title' => BOOKMARK_PRIVATE,
+				'class' => 'disabled', 'action' => 'disable',
+				'confirm' => 'private');
+		$toolbar[] = array('title' => BOOKMARK_PUBLIC,
+				'class' => 'enabled', 'action' => 'enable',
+				'confirm' => 'publish');
 		$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 				'action' => 'delete', 'confirm' => 'delete');
 	}
 	$explorer = array('entries' => $bookmarks,
-			'class' => array('enabled' => PUBLIC,
+			'class' => array('enabled' => BOOKMARK_PUBLIC,
 				'url' => ADDRESS), 'view' => 'details',
 			'module' => 'bookmark', 'action' => 'list');
 	if($user_id)
