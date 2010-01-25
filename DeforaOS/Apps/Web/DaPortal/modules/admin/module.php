@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -52,6 +52,9 @@ else if($lang == 'fr')
 _lang($text);
 
 
+//public
+//functions
+//admin_admin
 function admin_admin($args)
 {
 	global $user_id, $debug;
@@ -143,6 +146,9 @@ function admin_admin($args)
 			'action' => 'module_disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'module_enable');
+	$toolbar[] = array();
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+			'action' => 'module_delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $modules,
 			'class' => array('enabled' => ENABLED,
 					'module_name' => MODULE_NAME),
@@ -151,6 +157,7 @@ function admin_admin($args)
 }
 
 
+//admin_config_update
 function admin_config_update($args)
 {
 	global $error;
@@ -161,6 +168,7 @@ function admin_config_update($args)
 }
 
 
+//admin_default
 function admin_default()
 {
 	global $user_id;
@@ -182,6 +190,7 @@ function admin_default()
 }
 
 
+//admin_lang_disable
 function admin_lang_disable($args)
 {
 	global $user_id;
@@ -194,6 +203,7 @@ function admin_lang_disable($args)
 }
 
 
+//admin_lang_enable
 function admin_lang_enable($args)
 {
 	global $user_id;
@@ -206,6 +216,20 @@ function admin_lang_enable($args)
 }
 
 
+//admin_module_delete
+function admin_module_delete($args)
+{
+	global $user_id;
+
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(_sql_query("DELETE FROM daportal_module"
+			." WHERE module_id='".$args['id']."'") == FALSE)
+		_error('Unable to delete module');
+}
+
+
+//admin_module_disable
 function admin_module_disable($args)
 {
 	global $user_id;
@@ -218,6 +242,7 @@ function admin_module_disable($args)
 }
 
 
+//admin_module_enable
 function admin_module_enable($args)
 {
 	global $user_id;
@@ -230,6 +255,7 @@ function admin_module_enable($args)
 }
 
 
+//admin_module_insert
 function admin_module_insert($args)
 {
 	global $error;
@@ -241,6 +267,7 @@ function admin_module_insert($args)
 }
 
 
+//admin_system
 function admin_system($args)
 {
 	global $title, $error;
@@ -277,12 +304,13 @@ function _system_module_insert($args)
 
 	if(!_user_admin($user_id))
 		return PERMISSION_DENIED;
-	if(!isset($args['name']))
+	//FIXME add more checks
+	if(!isset($args['name']) || strlen($args['name']) == 0)
 		return INVALID_ARGUMENT;
 	if(!_sql_query('INSERT INTO daportal_module (name, enabled)'
 				." VALUES ('".$args['name']."', '0')"))
 		return INTERNAL_ERROR;
-	header('Location: '._module_link('admin', 'admin'));
+	header('Location: '._module_link_full('admin', 'admin'));
 	exit(0);
 }
 
