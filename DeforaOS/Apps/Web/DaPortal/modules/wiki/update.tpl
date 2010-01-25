@@ -3,17 +3,18 @@
 	<h1 class="title wiki"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
 	<script type="text/javascript" src="js/editor.js"></script>
+	<form class="explorer">
 	<div class="toolbar">
-		<div class="icon cut" title="<?php echo _html_safe(CUT); ?>" onclick="editorExec('cut')"></div>
-		<div class="icon copy" title="<?php echo _html_safe(COPY); ?>" onclick="editorExec('copy')"></div>
-		<div class="icon paste" title="<?php echo _html_safe(PASTE); ?>" onclick="editorExec('paste')"></div>
-		<div class="icon separator"></div>
-		<div class="icon undo" title="<?php echo _html_safe(UNDO); ?>" onclick="editorExec('undo')"></div>
-		<div class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="editorExec('redo')"></div>
-		<div class="icon separator"></div>
-		<div class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="editorInsert('<hr>')"></div>
-		<div class="icon link" title="<?php echo _html_safe(INSERT_LINK); ?>" onclick="editorLink()"></div>
-		<div class="icon insert-image" title="<?php echo _html_safe(INSERT_IMAGE); ?>" onclick="editorImage()"></div>
+		<span class="icon cut" title="<?php echo _html_safe(CUT); ?>" onclick="editorExec('cut')"></span>
+		<span class="icon copy" title="<?php echo _html_safe(COPY); ?>" onclick="editorExec('copy')"></span>
+		<span class="icon paste" title="<?php echo _html_safe(PASTE); ?>" onclick="editorExec('paste')"></span>
+		<span class="separator"></span>
+		<span class="icon undo" title="<?php echo _html_safe(UNDO); ?>" onclick="editorExec('undo')"></span>
+		<span class="icon redo" title="<?php echo _html_safe(REDO); ?>" onclick="editorExec('redo')"></span>
+		<span class="separator"></span>
+		<span class="icon hrule" title="<?php echo _html_safe(INSERT_HORIZONTAL_RULE); ?>" onclick="editorInsert('<hr>')"></span>
+		<span class="icon link" title="<?php echo _html_safe(INSERT_LINK); ?>" onclick="editorLink()"></span>
+		<span class="icon insert-image" title="<?php echo _html_safe(INSERT_IMAGE); ?>" onclick="editorImage()"></span>
 	</div>
 	<div class="toolbar">
 		<select id="formatblock" onchange="editorSelect(this.id)">
@@ -44,25 +45,26 @@
 			<option value="5">5</option>
 			<option value="6">6</option>
 		</select>
-		<div class="icon separator"></div>
-		<div class="icon bold" title="<?php echo _html_safe(BOLD); ?>" onclick="editorExec('bold')"></div>
-		<div class="icon italic" title="<?php echo _html_safe(ITALIC); ?>" onclick="editorExec('italic')"></div>
-		<div class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="editorExec('underline')"></div>
-		<div class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="editorExec('strikethrough')"></div>
-		<div class="icon separator"></div>
-		<div class="icon subscript" title="<?php echo _html_safe(SUBSCRIPT); ?>" onclick="editorExec('subscript')"></div>
-		<div class="icon superscript" title="<?php echo _html_safe(SUPERSCRIPT); ?>" onclick="editorExec('superscript')"></div>
-		<div class="icon separator"></div>
-		<div class="icon align_left" title="<?php echo _html_safe(ALIGN_LEFT); ?>" onclick="editorExec('justifyleft')"></div>
-		<div class="icon align_center" title="<?php echo _html_safe(ALIGN_CENTER); ?>" onclick="editorExec('justifycenter')"></div>
-		<div class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="editorExec('justifyright')"></div>
-		<div class="icon align_justify" title="<?php echo _html_safe(ALIGN_JUSTIFY); ?>" onclick="editorExec('justifyfull')"></div>
-		<div class="icon separator"></div>
-		<div class="icon bullet" title="Bullets" onclick="editorExec('insertunorderedlist')"></div>
-		<div class="icon enum" title="Enumerated" onclick="editorExec('insertorderedlist')"></div>
-		<div class="icon unindent" title="Unindent" onclick="editorExec('outdent')"></div>
-		<div class="icon indent" title="Indent" onclick="editorExec('indent')"></div>
+		<span class="separator"></span>
+		<span class="icon bold" title="<?php echo _html_safe(BOLD); ?>" onclick="editorExec('bold')"></span>
+		<span class="icon italic" title="<?php echo _html_safe(ITALIC); ?>" onclick="editorExec('italic')"></span>
+		<span class="icon underline" title="<?php echo _html_safe(UNDERLINE); ?>" onclick="editorExec('underline')"></span>
+		<span class="icon strikethrough" title="<?php echo _html_safe(STRIKE); ?>" onclick="editorExec('strikethrough')"></span>
+		<span class="separator"></span>
+		<span class="icon subscript" title="<?php echo _html_safe(SUBSCRIPT); ?>" onclick="editorExec('subscript')"></span>
+		<span class="icon superscript" title="<?php echo _html_safe(SUPERSCRIPT); ?>" onclick="editorExec('superscript')"></span>
+		<span class="separator"></span>
+		<span class="icon align_left" title="<?php echo _html_safe(ALIGN_LEFT); ?>" onclick="editorExec('justifyleft')"></span>
+		<span class="icon align_center" title="<?php echo _html_safe(ALIGN_CENTER); ?>" onclick="editorExec('justifycenter')"></span>
+		<span class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="editorExec('justifyright')"></span>
+		<span class="icon align_justify" title="<?php echo _html_safe(ALIGN_JUSTIFY); ?>" onclick="editorExec('justifyfull')"></span>
+		<span class="separator"></span>
+		<span class="icon bullet" title="Bullets" onclick="editorExec('insertunorderedlist')"></span>
+		<span class="icon enum" title="Enumerated" onclick="editorExec('insertorderedlist')"></span>
+		<span class="icon unindent" title="Unindent" onclick="editorExec('outdent')"></span>
+		<span class="icon indent" title="Indent" onclick="editorExec('indent')"></span>
 	</div>
+	</form>
 	<form action="index.php" method="post" onsubmit="editorSubmit()">
 		<input type="hidden" name="module" value="wiki"/>
 <?php if(!isset($wiki['id'])) { ?>
