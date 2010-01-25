@@ -1,4 +1,4 @@
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="user"/>
 	<input type="hidden" name="action" value="appearance"/>
 	<table>
