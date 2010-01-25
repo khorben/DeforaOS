@@ -77,6 +77,10 @@ h2 img {
 	max-height:		32px;
 }
 
+iframe {
+	background-color:	#ffffff;
+}
+
 img {
 	border-width:		0;
 	vertical-align:		middle;
