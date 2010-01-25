@@ -113,8 +113,8 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 		return _error('Could not read page');
 	}
 	unlink($root.'/'.$wiki['tag']);
-	if(!_validate($wiki['content']))
-		return _error(DOCUMENT_NOT_VALID);
+	if(!_validate($wiki['content'], $message))
+		return _error(DOCUMENT_NOT_VALID.": $message");
 	return $wiki;
 }
 
@@ -129,18 +129,17 @@ function _root()
 	return $root;
 }
 
-function _validate($content)
+function _validate($content, &$error = '')
 {
 	global $wiki_blacklisted;
 
-	$content = str_replace(array('<br>', '<hr>', '&copy;', '&laquo;',
-				'&nbsp;', '&raquo;'),
-			array('<br/>', '<hr/>', '&amp;copy;', '&amp;laquo;',
-				'&amp;nbsp;', '&amp;raquo;'),
+	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
+	$content = str_replace(array('&lt;', '&gt;', '&'), array('<', '>',
+				'&amp;'), htmlentities($content));
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$content = '<div>'.$content.'</div>';
-	$parser = xml_parser_create(); //FIXME check encoding
+	$parser = xml_parser_create(); //encoding should not matter
 	if(xml_set_element_handler($parser, '_validate_element_start',
 				'_validate_element_end') != TRUE)
 	{
@@ -148,8 +147,10 @@ function _validate($content)
 		return FALSE;
 	}
 	$wiki_blacklisted = 0;
-	if(($ret = xml_parse($parser, $content)) != 1)
-		$error = xml_error_string(xml_get_error_code($parser));
+	if(($ret = xml_parse($parser, $content, TRUE)) != 1)
+		$error = xml_error_string(xml_get_error_code($parser))
+			.' at line '.xml_get_current_line_number($parser)
+			.', column '.xml_get_current_column_number($parser);
 	xml_parser_free($parser);
 	if($wiki_blacklisted != 0)
 		return FALSE;
@@ -413,8 +414,8 @@ function wiki_insert($args)
 	{
 		$title = WIKI_PAGE_PREVIEW;
 		$wiki['content'] = stripslashes($args['content']);
-		if(!_validate($wiki['content']))
-			_error(DOCUMENT_NOT_VALID);
+		if(!_validate($wiki['content'], $message))
+			_error(DOCUMENT_NOT_VALID.": $message");
 		else
 		{
 			include('./modules/wiki/display.tpl');
@@ -546,8 +547,8 @@ function _wiki_system_insert($args)
 			|| $title == 'RCS')
 		return INVALID_ARGUMENT;
 	$content = stripslashes($args['content']);
-	if(_validate($content) == FALSE)
-		return DOCUMENT_NOT_VALID;
+	if(_validate($content, $message) == FALSE)
+		return DOCUMENT_NOT_VALID.": $message";
 	$sql = 'SELECT content_id FROM daportal_content, daportal_module'
 		.' WHERE daportal_content.module_id=daportal_module.module_id'
 		." AND daportal_module.name='wiki'"
@@ -604,8 +605,8 @@ function _wiki_system_update($args)
 	$id = $wiki['id'];
 	$title = $wiki['title'];
 	$content = stripslashes($args['content']);
-	if(!_validate($content))
-		return DOCUMENT_NOT_VALID;
+	if(!_validate($content, $message))
+		return DOCUMENT_NOT_VALID.": $message";
 	if(!file_exists($root.'/RCS/'.$title.',v'))
 		return 'Internal server error';
 	$filename = $root.'/'.$title;
@@ -631,10 +632,12 @@ function _wiki_system_update($args)
 	$wiki_content = '';
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
+	$content = str_replace(array('&lt;', '&gt;', '&'), array('<', '>',
+				'&amp;'), htmlentities($content));
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
-	$parser = xml_parser_create();
+	$parser = xml_parser_create(); //encoding should not matter
 	xml_set_character_data_handler($parser, '_update_data');
-	if(xml_parse($parser, '<div>'.$content.'</div>') == 1)
+	if(xml_parse($parser, '<div>'.$content.'</div>', TRUE) == 1)
 	{
 		_content_update($id, FALSE, $wiki_content, date('Y-m-d H:i:s'));
 		_content_set_user($id, $user_id);
@@ -663,8 +666,8 @@ function wiki_update($args)
 	if(!is_array($wiki))
 		return _error(INVALID_ARGUMENT);
 	$wiki['content'] = stripslashes($args['content']);
-	if(!_validate($wiki['content']))
-		return _error(DOCUMENT_NOT_VALID);
+	if(!_validate($wiki['content'], $message))
+		return _error(DOCUMENT_NOT_VALID.": $message");
 	$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
 	if(isset($args['preview']))
 		include('./modules/wiki/display.tpl');
