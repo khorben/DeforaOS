@@ -49,12 +49,12 @@ input[type="password"], input[type="text"], pre, select, textarea {
 }
 
 /* title corrections */
-h1, h2 {
+h1, h2, h3 {
 	border-left:		0;
 	border-right:		0;
 }
 
-h1.title {
+h1.title, h2.title {
 	background-position:	right;
 	padding-left:		4px;
 }
