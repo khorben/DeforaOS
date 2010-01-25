@@ -66,19 +66,6 @@ _lang($text);
 
 
 //private
-//variables
-global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist,
-       $wiki_content;
-$wiki_blacklisted = 1;
-$wiki_attrib_whitelist = array('alt', 'border', 'class', 'colspan', 'height',
-		'href', 'size', 'src', 'style', 'title', 'width');
-$wiki_tag_whitelist = array('a', 'acronym', 'b', 'big', 'br', 'center', 'div',
-		'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-		'hr', 'i', 'img', 'li', 'ol', 'p', 'pre', 'span', 'sub', 'sup',
-		'table', 'tbody', 'td', 'th', 'tr', 'tt', 'u', 'ul');
-$wiki_content = '';
-
-
 //functions
 function _exec($cmd)
 {
@@ -113,7 +100,8 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 		return _error('Could not read page');
 	}
 	unlink($root.'/'.$wiki['tag']);
-	if(!_validate($wiki['content'], $message))
+	require_once('./system/xml.php');
+	if(!_xml_validate($wiki['content'], $message))
 		return _error(DOCUMENT_NOT_VALID.": $message");
 	return $wiki;
 }
@@ -127,84 +115,6 @@ function _root()
 	if(!is_dir($root.'/RCS') && mkdir($root.'/RCS') != TRUE)
 		return FALSE;
 	return $root;
-}
-
-function _validate($content, &$error = '')
-{
-	global $wiki_blacklisted;
-
-	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
-			$content);
-	$content = str_replace(array('&lt;', '&gt;', '&quot;', '&'),
-			array('<', '>', '"', '&amp;'), htmlentities($content));
-	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
-	$content = '<div>'.$content.'</div>';
-	$parser = xml_parser_create(); //encoding should not matter
-	if(xml_set_element_handler($parser, '_validate_element_start',
-				'_validate_element_end') != TRUE)
-	{
-		xml_parser_free($parser);
-		return FALSE;
-	}
-	$wiki_blacklisted = 0;
-	if(($ret = xml_parse($parser, $content, TRUE)) != 1)
-		$error = xml_error_string(xml_get_error_code($parser))
-			.' at line '.xml_get_current_line_number($parser)
-			.', column '.xml_get_current_column_number($parser);
-	xml_parser_free($parser);
-	if($wiki_blacklisted != 0)
-		return FALSE;
-	$wiki_blacklisted = 1;
-	if($ret == 1)
-		return TRUE;
-	_error('XML error: '.$error, 0);
-	return FALSE;
-}
-
-function _validate_element_start($parser, $name, $attribs)
-{
-	global $wiki_blacklisted, $wiki_attrib_whitelist, $wiki_tag_whitelist;
-
-	//return immediately if already detected as invalid
-	//FIXME disable check in parser instead if possible
-	if($wiki_blacklisted != 0)
-		return;
-	//check the element name
-	$wcnt = count($wiki_tag_whitelist);
-	for($i = 0; $i < $wcnt; $i++)
-		if(strcasecmp($name, $wiki_tag_whitelist[$i]) == 0)
-			break;
-	if($i == $wcnt) //tag not found
-	{
-		$wiki_blacklisted = 1;
-		_error('The tag "'.$name.'" is forbidden', 0);
-		return;
-	}
-	//check every attribute
-	$keys = array_keys($attribs);
-	$attr = array();
-	$i = 0;
-	foreach($keys as $k)
-		$attr[$i++] = $k;
-	$acnt = count($attr);
-	$wcnt = count($wiki_attrib_whitelist);
-	for($i = 0; $i < $acnt; $i++)
-	{
-		$a = $attr[$i];
-		for($j = 0; $j < $wcnt; $j++)
-			if(strcasecmp($a, $wiki_attrib_whitelist[$j]) == 0)
-				break;
-		if($j == $wcnt) //attrib not found
-			break;
-	}
-	if($i == $acnt)
-		return;
-	_error('The attribute "'.$a.'" is forbidden', 0);
-	$wiki_blacklisted = 1;
-}
-
-function _validate_element_end($parser, $name)
-{
 }
 
 
@@ -414,7 +324,8 @@ function wiki_insert($args)
 	{
 		$title = WIKI_PAGE_PREVIEW;
 		$wiki['content'] = stripslashes($args['content']);
-		if(!_validate($wiki['content'], $message))
+		require_once('./system/xml.php');
+		if(!_xml_validate($wiki['content'], $message))
 			_error(DOCUMENT_NOT_VALID.": $message");
 		else
 		{
@@ -542,12 +453,15 @@ function _wiki_system_insert($args)
 		return;
 	if(($root = _root()) == FALSE)
 		return 'Internal server error';
+	if(!isset($args['title']))
+		return INVALID_ARGUMENT;
 	$title = stripslashes($args['title']);
-	if(strlen($title) == 0 || strpos('/', $title) != FALSE
+	if(strlen($title) == 0 || strpos('/', $title) !== FALSE
 			|| $title == 'RCS')
 		return INVALID_ARGUMENT;
 	$content = stripslashes($args['content']);
-	if(_validate($content, $message) == FALSE)
+	require_once('./system/xml.php');
+	if(_xml_validate($content, $message) == FALSE)
 		return DOCUMENT_NOT_VALID.": $message";
 	$sql = 'SELECT content_id FROM daportal_content, daportal_module'
 		.' WHERE daportal_content.module_id=daportal_module.module_id'
@@ -555,9 +469,15 @@ function _wiki_system_insert($args)
 		." AND title='".$args['title']."'";
 	if(($id = _sql_single($sql)) != FALSE)
 		return 'Title already exists';
+	require_once('./system/xml.php');
+	if(($text = _xml_text($content, $message)) === FALSE)
+	{
+		_error($message, 0);
+		$text = 'HTML content';
+	}
+	$text = addslashes($text);
 	require_once('./system/content.php');
-	if(($id = _content_insert($args['title'], 'HTML content', 1))
-			== FALSE) //FIXME insert plain text into database
+	if(($id = _content_insert($args['title'], $text, 1)) == FALSE)
 		return 'Could not insert content';
 	$filename = $root.'/'.$title;
 	if(file_exists($filename) || file_exists($root.'/RCS/'.$title.',v'))
@@ -605,7 +525,8 @@ function _wiki_system_update($args)
 	$id = $wiki['id'];
 	$title = $wiki['title'];
 	$content = stripslashes($args['content']);
-	if(!_validate($content, $message))
+	require_once('./system/xml.php');
+	if(!_xml_validate($content, $message))
 		return DOCUMENT_NOT_VALID.": $message";
 	if(!file_exists($root.'/RCS/'.$title.',v'))
 		return 'Internal server error';
@@ -628,31 +549,15 @@ function _wiki_system_update($args)
 	}
 	unlink($filename);
 	//insert plain text into database
-	//FIXME factorize code and validation
-	$wiki_content = '';
-	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
-			$content);
-	$content = str_replace(array('&lt;', '&gt;', '&quot;', '&'),
-			array('<', '>', '"', '&amp;'), htmlentities($content));
-	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
-	$parser = xml_parser_create(); //encoding should not matter
-	xml_set_character_data_handler($parser, '_update_data');
-	if(xml_parse($parser, '<div>'.$content.'</div>', TRUE) == 1)
+	require_once('./system/xml.php');
+	if(($content = _xml_text($content)) !== FALSE)
 	{
-		_content_update($id, FALSE, $wiki_content, date('Y-m-d H:i:s'));
+		_content_update($id, FALSE, addslashes($content),
+				date('Y-m-d H:i:s'));
 		_content_set_user($id, $user_id);
 	}
-	xml_parser_free($parser);
-	$wiki_content = '';
 	header('Location: '._module_link('wiki', 'display', $id, $title));
 	exit(0);
-}
-
-function _update_data($parser, $data)
-{
-	global $wiki_content;
-
-	$wiki_content.="\n".addslashes($data);
 }
 
 
@@ -666,11 +571,14 @@ function wiki_update($args)
 	if(!is_array($wiki))
 		return _error(INVALID_ARGUMENT);
 	$wiki['content'] = stripslashes($args['content']);
-	if(!_validate($wiki['content'], $message))
+	require_once('./system/xml.php');
+	if(!_xml_validate($wiki['content'], $message))
 		return _error(DOCUMENT_NOT_VALID.": $message");
 	$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
 	if(isset($args['preview']))
+	{
 		include('./modules/wiki/display.tpl');
+	}
 	$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
 	include('./modules/wiki/update.tpl');
 }
