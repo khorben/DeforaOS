@@ -630,7 +630,7 @@ function _user_system_appearance($args)
 	global $debug, $user_id;
 
 	unset($_SESSION['theme']);
-	if(isset($args['theme']) && strchr($args['theme'], '/') == FALSE
+	if(isset($args['theme']) && strpos($args['theme'], '/') === FALSE
 			&& is_readable('themes/'.$args['theme'].'.css'))
 		$_SESSION['theme'] = $args['theme'];
 	unset($_SESSION['view']);
