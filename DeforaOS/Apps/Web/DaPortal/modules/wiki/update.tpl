@@ -65,7 +65,7 @@
 		<span class="icon indent" title="Indent" onclick="editorExec('indent')"></span>
 	</div>
 	</form>
-	<form action="index.php" method="post" onsubmit="editorSubmit()">
+	<form action="<?php echo _html_link(); ?>" method="post" onsubmit="editorSubmit()">
 		<input type="hidden" name="module" value="wiki"/>
 <?php if(!isset($wiki['id'])) { ?>
 		<input type="hidden" name="action" value="insert"/>
