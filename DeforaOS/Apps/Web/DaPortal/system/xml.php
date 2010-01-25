@@ -71,7 +71,6 @@ function _xml_validate($content, &$error = '')
 {
 	global $xml_blacklisted, $xml_error;
 
-	return TRUE;
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
 	$content = str_replace(array('&lt;', '&gt;', '&quot;', '&'),
