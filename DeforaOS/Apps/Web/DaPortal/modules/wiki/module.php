@@ -107,7 +107,7 @@ function _get($id, $lock = FALSE, $revision = FALSE)
 	if(_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['tag'])) == FALSE)
 		return _error('Could not checkout page');
 	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['tag']))
-			== FALSE)
+			=== FALSE)
 	{
 		unlink($root.'/'.$wiki['tag']);
 		return _error('Could not read page');
@@ -569,10 +569,11 @@ function _wiki_system_insert($args)
 		_content_delete($id);
 		return 'Could not write to page';
 	}
-	if(fwrite($fp, $content) == FALSE)
+	if(fwrite($fp, $content) === FALSE)
 	{
 		_content_delete($id);
 		fclose($fp);
+		unlink($filename);
 		return 'An error occured while writing';
 	}
 	fclose($fp);
@@ -612,7 +613,7 @@ function _wiki_system_update($args)
 		return PERMISSION_DENIED;
 	if(($fp = fopen($filename, 'w')) == FALSE)
 		return 'Could not write to page';
-	if(fwrite($fp, $content) == FALSE)
+	if(fwrite($fp, $content) === FALSE)
 	{
 		fclose($fp);
 		return 'An error occured while writing';
