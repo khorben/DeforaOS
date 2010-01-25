@@ -54,7 +54,7 @@ require_once('./system/config.php');
 //configuration variables
 if(!isset($title) && ($title = _config_get('admin', 'title')) == FALSE)
 	$title = 'DaPortal';
-if(($t = _config_get('admin', 'theme')) != FALSE)
+if(!isset($_SESSION['theme']) && ($t = _config_get('admin', 'theme')) != FALSE)
 	$theme = $t;
 
 require_once('./system/lang.php');
