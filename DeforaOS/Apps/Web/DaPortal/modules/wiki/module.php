@@ -632,8 +632,8 @@ function _wiki_system_update($args)
 	$wiki_content = '';
 	$content = str_replace(array('<br>', '<hr>'), array('<br/>', '<hr/>'),
 			$content);
-	$content = str_replace(array('&lt;', '&gt;', '&'), array('<', '>',
-				'&amp;'), htmlentities($content));
+	$content = str_replace(array('&lt;', '&gt;', '&quot;', '&'),
+			array('<', '>', '"', '&amp;'), htmlentities($content));
 	$content = preg_replace('/(<img [^>]*)>/', '\1/>', $content);
 	$parser = xml_parser_create(); //encoding should not matter
 	xml_set_character_data_handler($parser, '_update_data');
