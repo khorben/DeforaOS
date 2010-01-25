@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -336,7 +336,7 @@ function _system_login()
 	if(!($mbox = _webmail_connect()))
 		return;
 	imap_close($mbox);
-	header('Location: index.php?module=webmail');
+	header('Location: '._module_link_full('webmail'));
 	exit(0);
 }
 
