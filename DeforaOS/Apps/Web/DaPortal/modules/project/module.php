@@ -1190,9 +1190,7 @@ function project_download($args)
 	global $user_id;
 
 	if(!isset($args['id']) || !is_numeric($args['id']))
-	{
-		return include('./modules/project/download.tpl');
-	}
+		return _error(INVALID_PROJECT);
 	$category_id = _module_id('category');
 	$download_id = _module_id('download');
 	if($category_id == 0 || $download_id == 0)
