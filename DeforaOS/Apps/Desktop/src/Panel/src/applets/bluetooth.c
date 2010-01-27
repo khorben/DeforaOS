@@ -23,7 +23,7 @@
 # include <stdio.h>
 # include <string.h>
 # include <errno.h>
-#elif defined(__Linux__)
+#elif defined(__linux__)
 # include <fcntl.h>
 # include <unistd.h>
 # include <string.h>
@@ -42,7 +42,7 @@ typedef struct _Bluetooth
 	PanelAppletHelper * helper;
 	GtkWidget * image;
 	guint timeout;
-#if defined(__NetBSD__) || defined(__Linux__)
+#if defined(__NetBSD__) || defined(__linux__)
 	int fd;
 #endif
 } Bluetooth;
@@ -85,7 +85,7 @@ static GtkWidget * _bluetooth_init(PanelApplet * applet)
 	applet->priv = bluetooth;
 	bluetooth->helper = applet->helper;
 	bluetooth->timeout = 0;
-#if defined(__NetBSD__) || defined(__Linux__)
+#if defined(__NetBSD__) || defined(__linux__)
 	bluetooth->fd = -1;
 #endif
 	bluetooth->image = gtk_image_new_from_icon_name("network-wireless",
@@ -103,7 +103,7 @@ static void _bluetooth_destroy(PanelApplet * applet)
 
 	if(bluetooth->timeout > 0)
 		g_source_remove(bluetooth->timeout);
-#if defined(__NetBSD__) || defined(__Linux__)
+#if defined(__NetBSD__) || defined(__linux__)
 	if(bluetooth->fd != -1)
 		close(bluetooth->fd);
 #endif
@@ -149,7 +149,7 @@ static gboolean _bluetooth_get(Bluetooth * bluetooth)
 	bluetooth->fd = -1;
 	return TRUE;
 }
-#elif defined(__Linux__)
+#elif defined(__linux__)
 static gboolean _bluetooth_get(Bluetooth * bluetooth)
 {
 	/* XXX currently hard-coded for the Openmoko Freerunner */
