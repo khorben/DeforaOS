@@ -145,7 +145,7 @@ static gboolean _bluetooth_get(Bluetooth * bluetooth)
 	return TRUE;
 }
 #else
-static gdouble _bluetooth_get(Bluetooth * bluetooth)
+static gboolean _bluetooth_get(Bluetooth * bluetooth)
 {
 	/* FIXME not supported */
 	return FALSE;
