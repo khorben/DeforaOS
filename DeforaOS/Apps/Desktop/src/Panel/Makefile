@@ -31,6 +31,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/common.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/applets/battery.c \
+		$(PACKAGE)-$(VERSION)/src/applets/bluetooth.c \
 		$(PACKAGE)-$(VERSION)/src/applets/clock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpu.c \
 		$(PACKAGE)-$(VERSION)/src/applets/cpufreq.c \

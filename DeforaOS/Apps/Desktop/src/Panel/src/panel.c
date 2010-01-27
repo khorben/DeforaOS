@@ -150,12 +150,12 @@ static gboolean _on_idle(gpointer data)
 	Panel * panel = data;
 	/* FIXME load all plugins, a configuration file or ask the user */
 #ifndef EMBEDDED
-	const char * plugins[] = { "volume", "systray", "battery", "clock",
-		"memory", "cpufreq", "cpu", "desktop", "lock", "logout", "main",
-		"pager", "tasks", NULL };
+	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
+		"clock", "memory", "cpufreq", "cpu", "desktop", "lock",
+		"logout", "main", "pager", "tasks", NULL };
 #else
-	const char * plugins[] = { "volume", "systray", "battery", "clock",
-		"cpufreq", "desktop", "main", "tasks", NULL };
+	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
+		"clock", "cpufreq", "desktop", "main", "tasks", NULL };
 #endif
 	size_t i;
 

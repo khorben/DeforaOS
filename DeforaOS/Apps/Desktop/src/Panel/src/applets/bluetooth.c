@@ -1,0 +1,164 @@
+/* $Id$ */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Desktop Panel */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+#ifdef __NetBSD__
+# include <sys/types.h>
+# include <sys/ioctl.h>
+# include <bluetooth.h>
+# include <unistd.h>
+# include <stdio.h>
+# include <string.h>
+# include <errno.h>
+#endif
+#include <stdlib.h>
+#include <System.h>
+#include "Panel.h"
+
+
+/* Bluetooth */
+/* private */
+/* types */
+typedef struct _Bluetooth
+{
+	PanelAppletHelper * helper;
+	GtkWidget * image;
+	guint timeout;
+#ifdef __NetBSD__
+	int fd;
+#endif
+} Bluetooth;
+
+
+/* prototypes */
+static GtkWidget * _bluetooth_init(PanelApplet * applet);
+static void _bluetooth_destroy(PanelApplet * applet);
+
+static gboolean _bluetooth_get(Bluetooth * bluetooth);
+static void _bluetooth_set(Bluetooth * bluetooth, gboolean on);
+
+/* callbacks */
+static gboolean _on_timeout(gpointer data);
+
+
+/* public */
+/* variables */
+PanelApplet applet =
+{
+	NULL,
+	_bluetooth_init,
+	_bluetooth_destroy,
+	PANEL_APPLET_POSITION_END,
+	FALSE,
+	TRUE,
+	NULL
+};
+
+
+/* private */
+/* functions */
+/* bluetooth_init */
+static GtkWidget * _bluetooth_init(PanelApplet * applet)
+{
+	Bluetooth * bluetooth;
+
+	if((bluetooth = malloc(sizeof(*bluetooth))) == NULL)
+		return NULL;
+	applet->priv = bluetooth;
+	bluetooth->helper = applet->helper;
+	bluetooth->timeout = 0;
+#ifdef __NetBSD__
+	bluetooth->fd = -1;
+#endif
+	bluetooth->image = gtk_image_new_from_icon_name("network-wireless",
+			applet->helper->icon_size);
+	bluetooth->timeout = g_timeout_add(1000, _on_timeout, bluetooth);
+	_on_timeout(bluetooth);
+	return bluetooth->image;
+}
+
+
+/* bluetooth_destroy */
+static void _bluetooth_destroy(PanelApplet * applet)
+{
+	Bluetooth * bluetooth = applet->priv;
+
+	if(bluetooth->timeout > 0)
+		g_source_remove(bluetooth->timeout);
+#ifdef __NetBSD__
+	if(bluetooth->fd != -1)
+		close(bluetooth->fd);
+#endif
+	free(bluetooth);
+}
+
+
+/* bluetooth_set */
+static void _bluetooth_set(Bluetooth * bluetooth, gboolean on)
+{
+	if(on == TRUE)
+		gtk_widget_show(bluetooth->image);
+	else
+		gtk_widget_hide(bluetooth->image);
+}
+
+
+/* callbacks */
+/* on_timeout */
+#ifdef __NetBSD__
+static gboolean _bluetooth_get(Bluetooth * bluetooth)
+{
+	struct btreq btr;
+	const char name[] = "ubt0";
+
+	if(bluetooth->fd == -1 && (bluetooth->fd = socket(PF_BLUETOOTH,
+					SOCK_RAW, BTPROTO_HCI)) == -1)
+	{
+		error_set("%s: %s", "socket", strerror(errno));
+		return FALSE;
+	}
+	memset(&btr, 0, sizeof(btr));
+	strncpy(btr.btr_name, name, sizeof(name));
+	if(ioctl(bluetooth->fd, SIOCGBTINFO, &btr) == -1)
+	{
+		error_set("%s: %s", name, strerror(errno));
+		close(bluetooth->fd);
+		bluetooth->fd = -1;
+		return FALSE;
+	}
+	/* XXX should not be necessary but EBADF happens once otherwise */
+	close(bluetooth->fd);
+	bluetooth->fd = -1;
+	return TRUE;
+}
+#else
+static gdouble _bluetooth_get(Bluetooth * bluetooth)
+{
+	/* FIXME not supported */
+	return FALSE;
+}
+#endif
+
+
+/* callbacks */
+/* on_timeout */
+static gboolean _on_timeout(gpointer data)
+{
+	Bluetooth * bluetooth = data;
+
+	_bluetooth_set(bluetooth, _bluetooth_get(bluetooth));
+	return TRUE;
+}

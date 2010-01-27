@@ -1,4 +1,4 @@
-TARGETS	= battery.so clock.so cpu.so cpufreq.so desktop.so lock.so logout.so main.so memory.so pager.so systray.so tasks.so volume.so
+TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so lock.so logout.so main.so memory.so pager.so systray.so tasks.so volume.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -24,6 +24,13 @@ battery_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 battery.so: $(battery_OBJS)
 	$(LD) -o battery.so $(battery_OBJS)
+
+bluetooth_OBJS = bluetooth.o
+bluetooth_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+bluetooth_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+bluetooth.so: $(bluetooth_OBJS)
+	$(LD) -o bluetooth.so $(bluetooth_OBJS)
 
 clock_OBJS = clock.o
 clock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -112,6 +119,9 @@ volume.so: $(volume_OBJS)
 battery.o: battery.c ../../include/Panel.h
 	$(CC) $(battery_CFLAGS) -c battery.c
 
+bluetooth.o: bluetooth.c ../../include/Panel.h
+	$(CC) $(bluetooth_CFLAGS) -c bluetooth.c
+
 clock.o: clock.c ../../include/Panel.h
 	$(CC) $(clock_CFLAGS) -c clock.c
 
@@ -149,7 +159,7 @@ volume.o: volume.c ../../include/Panel.h
 	$(CC) $(volume_CFLAGS) -c volume.c
 
 clean:
-	$(RM) $(battery_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
+	$(RM) $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -157,6 +167,8 @@ distclean: clean
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 battery.so $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 bluetooth.so $(DESTDIR)$(LIBDIR)/Panel/applets/bluetooth.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 clock.so $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
@@ -184,6 +196,7 @@ install: all
 
 uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/bluetooth.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
