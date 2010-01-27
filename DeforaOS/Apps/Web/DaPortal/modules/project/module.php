@@ -1800,7 +1800,7 @@ function project_update($args)
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
 	if(!_project_is_admin($args['id'])
-			|| $_SERVER['REQUEST_METHOD'] != 'POST'))
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	$sql = "UPDATE daportal_project SET synopsis='".$args['synopsis']."'";
 	if(isset($args['cvsroot']))
