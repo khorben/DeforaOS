@@ -15,12 +15,17 @@
 
 
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 # include <sys/types.h>
 # include <sys/ioctl.h>
 # include <bluetooth.h>
 # include <unistd.h>
 # include <stdio.h>
+# include <string.h>
+# include <errno.h>
+#elif defined(__Linux__)
+# include <fcntl.h>
+# include <unistd.h>
 # include <string.h>
 # include <errno.h>
 #endif
@@ -37,7 +42,7 @@ typedef struct _Bluetooth
 	PanelAppletHelper * helper;
 	GtkWidget * image;
 	guint timeout;
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__Linux__)
 	int fd;
 #endif
 } Bluetooth;
@@ -80,7 +85,7 @@ static GtkWidget * _bluetooth_init(PanelApplet * applet)
 	applet->priv = bluetooth;
 	bluetooth->helper = applet->helper;
 	bluetooth->timeout = 0;
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__Linux__)
 	bluetooth->fd = -1;
 #endif
 	bluetooth->image = gtk_image_new_from_icon_name("network-wireless",
@@ -98,7 +103,7 @@ static void _bluetooth_destroy(PanelApplet * applet)
 
 	if(bluetooth->timeout > 0)
 		g_source_remove(bluetooth->timeout);
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__Linux__)
 	if(bluetooth->fd != -1)
 		close(bluetooth->fd);
 #endif
@@ -118,7 +123,7 @@ static void _bluetooth_set(Bluetooth * bluetooth, gboolean on)
 
 /* callbacks */
 /* on_timeout */
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 static gboolean _bluetooth_get(Bluetooth * bluetooth)
 {
 	struct btreq btr;
@@ -143,6 +148,29 @@ static gboolean _bluetooth_get(Bluetooth * bluetooth)
 	close(bluetooth->fd);
 	bluetooth->fd = -1;
 	return TRUE;
+}
+#elif defined(__Linux__)
+static gboolean _bluetooth_get(Bluetooth * bluetooth)
+{
+	/* XXX currently hard-coded for the Openmoko Freerunner */
+	const char dev[] = "/sys/bus/platform/devices/neo1973-pm-bt.0/power_on";
+	char on;
+
+	if(bluetooth->fd == -1 && (bluetooth->fd = open(dev, O_RDONLY)) == -1)
+	{
+		error_set("%s: %s", dev, strerror(errno));
+		return FALSE;
+	}
+	errno = ENODATA; /* in case the pseudo-file is empty */
+	if(lseek(bluetooth->fd, 0, SEEK_SET) != 0
+			|| read(bluetooth->fd, &on, sizeof(on)) != 1)
+	{
+		error_set("%s: %s", dev, strerror(errno));
+		close(bluetooth->fd);
+		bluetooth->fd = -1;
+		return FALSE;
+	}
+	return (on == '1') ? TRUE : FALSE;
 }
 #else
 static gboolean _bluetooth_get(Bluetooth * bluetooth)
