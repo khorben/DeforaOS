@@ -1285,7 +1285,7 @@ function project_download($args)
 	}
 	/* releases */
 	/* FIXME project members should be trusted too */
-	$files = _sql_array($sql." AND dc3.title='release'");
+	$files = _sql_array($sql." AND dc3.title='release' ORDER BY date DESC");
 	if(is_array($files) && ($cnt = count($files)) > 0)
 	{
 		print('<h2>'._html_safe(RELEASES).'</h2>'."\n");
@@ -1293,6 +1293,9 @@ function project_download($args)
 		{
 			$files[$i]['module'] = 'download';
 			$files[$i]['action'] = 'default';
+			$files[$i]['date'] = strftime('%d/%m/%y %H:%M',
+					strtotime(substr($files[$i]['date'], 0,
+							19)));
 			$mime = _mime_from_ext($files[$i]['name']);
 			if($files[$i]['mode'] & S_IFDIR == S_IFDIR)
 			{
@@ -1322,7 +1325,9 @@ function project_download($args)
 					'download_insert', $project['id']),
 				'class' => 'new');
 		_module('explorer', 'browse', array('entries' => $files,
-					'toolbar' => $toolbar));
+					'class' => array('date' => DATE),
+					'toolbar' => $toolbar,
+					'view' => 'details'));
 	}
 }
 
