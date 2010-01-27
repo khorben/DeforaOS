@@ -198,6 +198,9 @@ function _project_name($id)
 }
 
 
+//public
+//functions
+//project_admin
 function project_admin($args)
 {
 	global $user_id, $module_id;
@@ -504,6 +507,10 @@ function project_bug_insert($args)
 {
 	global $user_id;
 
+	if(($user_id == 0 && _config_get('project', 'anonymous_bug_reports')
+				!= TRUE)
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
 	if(!isset($args['project_id']) || !isset($args['type'])
 			|| !isset($args['priority']))
 		return _error(INVALID_ARGUMENT); //FIXME return to form
@@ -747,6 +754,9 @@ function project_bug_reply($args)
 {
 	global $user_id, $user_name;
 
+	if($user_id == 0 && _config_get('project', 'anonymous_bug_replies')
+			!= TRUE)
+		return _error(PERMISSION_DENIED);
 	$sql = 'SELECT bug.content_id AS id'
 		.', daportal_bug.project_id AS project_id'
 		.', daportal_user.user_id AS user_id'
@@ -813,6 +823,10 @@ function project_bug_reply_insert($args)
 {
 	global $user_id;
 
+	if(($user_id == 0 && _config_get('project', 'anonymous_bug_replies')
+				!= TRUE)
+			|| $_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
 	require_once('./system/user.php');
 	$enabled = ($admin = _user_admin($user_id)) ? ''
 		: " AND enabled='1'";
@@ -989,6 +1003,7 @@ function project_bug_reply_update($args)
 	if(($project_id = _sql_single('SELECT project_id FROM daportal_bug'
 			." WHERE bug_id='$bug_id'")) == FALSE)
 		return _error(INVALID_ARGUMENT);
+	//XXX use _content_update()
 	_sql_query('UPDATE daportal_content SET title='."'".$args['title']."'"
 			.", content='".$args['content']."'"
 			." WHERE content_id='$id'");
@@ -1077,13 +1092,12 @@ function project_delete($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	if(($id = _sql_single('SELECT project_id FROM daportal_project'
 			." WHERE project_id='".$args['id']."'")) == FALSE)
 		return _error(INVALID_PROJECT);
-	_sql_query('DELETE FROM daportal_project'
-			." WHERE project_id='$id'");
+	_sql_query('DELETE FROM daportal_project WHERE project_id='."'$id'");
 	require_once('./system/content.php');
 	_content_delete($id);
 }
@@ -1364,7 +1378,7 @@ function project_insert($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], $args['content'])) == FALSE)
@@ -1488,7 +1502,7 @@ function project_member_delete($args)
 	global $user_id;
 
 	require_once('./system/user.php');
-	if(!_user_admin($user_id))
+	if(!_user_admin($user_id) || $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED, 1);
 	_sql_query('DELETE FROM daportal_project_user WHERE '
 			." project_id='".$args['project_id']."'"
@@ -1782,7 +1796,8 @@ function project_update($args)
 
 	if(!isset($args['id']))
 		return _error(INVALID_PROJECT);
-	if(!_project_is_admin($args['id']))
+	if(!_project_is_admin($args['id'])
+			|| $_SERVER['REQUEST_METHOD'] != 'POST'))
 		return _error(PERMISSION_DENIED);
 	$sql = "UPDATE daportal_project SET synopsis='".$args['synopsis']."'";
 	if(isset($args['cvsroot']))
