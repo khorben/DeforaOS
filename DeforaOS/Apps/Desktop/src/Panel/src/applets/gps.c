@@ -130,7 +130,6 @@ static gboolean _gps_get(GPS * gps)
 			&& (gps->fd = open(path2, O_RDONLY)) == -1)
 	{
 		error_set("%s: %s", path1, strerror(errno));
-		error_print("DEBUG");
 		return FALSE;
 	}
 	errno = ENODATA; /* in case the pseudo-file is empty */
@@ -138,7 +137,6 @@ static gboolean _gps_get(GPS * gps)
 			|| read(gps->fd, &on, sizeof(on)) != 1)
 	{
 		error_set("%s: %s", path1, strerror(errno));
-		error_print("DEBUG");
 		close(gps->fd);
 		gps->fd = -1;
 		return FALSE;
