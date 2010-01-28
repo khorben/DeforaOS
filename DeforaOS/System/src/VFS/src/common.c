@@ -64,9 +64,17 @@ static VFSFlag _vfs_flags_open[] =
 	{ O_TRUNC,	VFS_O_TRUNC     },
 	{ O_NOCTTY,	VFS_O_NOCTTY    },
 	{ O_APPEND,	VFS_O_APPEND    },
+#ifdef O_DSYNC
 	{ O_DSYNC,	VFS_O_DSYNC     },
+#else
+	{ 0,		VFS_O_DSYNC     },
+#endif
 	{ O_NONBLOCK,	VFS_O_NONBLOCK  },
+#ifdef O_RSYNC
 	{ O_RSYNC,	VFS_O_RSYNC     },
+#else
+	{ 0,		VFS_O_RSYNC     },
+#endif
 	{ O_SYNC,	VFS_O_SYNC      }
 };
 static const size_t _vfs_flags_open_cnt = sizeof(_vfs_flags_open)
