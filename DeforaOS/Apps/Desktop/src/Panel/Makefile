@@ -37,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/cpufreq.c \
 		$(PACKAGE)-$(VERSION)/src/applets/desktop.c \
 		$(PACKAGE)-$(VERSION)/src/applets/gps.c \
+		$(PACKAGE)-$(VERSION)/src/applets/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/applets/lock.c \
 		$(PACKAGE)-$(VERSION)/src/applets/logout.c \
 		$(PACKAGE)-$(VERSION)/src/applets/main.c \
