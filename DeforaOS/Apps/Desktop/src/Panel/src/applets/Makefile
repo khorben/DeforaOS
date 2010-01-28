@@ -1,4 +1,4 @@
-TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so lock.so logout.so main.so memory.so pager.so systray.so tasks.so volume.so
+TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so lock.so logout.so main.so memory.so pager.so systray.so tasks.so volume.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -59,6 +59,13 @@ desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 desktop.so: $(desktop_OBJS)
 	$(LD) -o desktop.so $(desktop_OBJS)
+
+gps_OBJS = gps.o
+gps_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+gps_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+gps.so: $(gps_OBJS)
+	$(LD) -o gps.so $(gps_OBJS)
 
 lock_OBJS = lock.o
 lock_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -134,6 +141,9 @@ cpufreq.o: cpufreq.c ../../include/Panel.h
 desktop.o: desktop.c ../../include/Panel.h
 	$(CC) $(desktop_CFLAGS) -c desktop.c
 
+gps.o: gps.c ../../include/Panel.h
+	$(CC) $(gps_CFLAGS) -c gps.c
+
 lock.o: lock.c ../../include/Panel.h
 	$(CC) $(lock_CFLAGS) -c lock.c
 
@@ -159,7 +169,7 @@ volume.o: volume.c ../../include/Panel.h
 	$(CC) $(volume_CFLAGS) -c volume.c
 
 clean:
-	$(RM) $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
+	$(RM) $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -177,6 +187,8 @@ install: all
 	$(INSTALL) -m 0644 cpufreq.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 desktop.so $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 gps.so $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 lock.so $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
@@ -201,6 +213,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
