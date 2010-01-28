@@ -32,7 +32,9 @@
 typedef struct _GSM
 {
 	PanelAppletHelper * helper;
+	GtkWidget * hbox;
 	GtkWidget * image;
+	GtkWidget * operator;
 	guint timeout;
 #if defined(__linux__)
 	int fd;
@@ -46,6 +48,9 @@ static void _gsm_destroy(PanelApplet * applet);
 
 static gboolean _gsm_get(GSM * gsm);
 static void _gsm_set(GSM * gsm, gboolean on);
+#if 0
+static void _gsm_set_operator(GSM * gsm, char const * operator);
+#endif
 
 /* callbacks */
 static gboolean _on_timeout(gpointer data);
@@ -71,6 +76,7 @@ PanelApplet applet =
 static GtkWidget * _gsm_init(PanelApplet * applet)
 {
 	GSM * gsm;
+	PangoFontDescription * desc;
 
 	if((gsm = malloc(sizeof(*gsm))) == NULL)
 		return NULL;
@@ -80,12 +86,22 @@ static GtkWidget * _gsm_init(PanelApplet * applet)
 #if defined(__linux__)
 	gsm->fd = -1;
 #endif
+	gsm->hbox = gtk_hbox_new(FALSE, 0);
 	/* XXX find a better image */
 	gsm->image = gtk_image_new_from_icon_name("phone",
 			applet->helper->icon_size);
+	gtk_widget_show(gsm->image);
+	gtk_box_pack_start(GTK_BOX(gsm->hbox), gsm->image, FALSE, TRUE, 0);
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+	gsm->operator = gtk_label_new(NULL);
+	gtk_widget_modify_font(gsm->operator, desc);
+	gtk_widget_show(gsm->operator);
+	pango_font_description_free(desc);
+	gtk_box_pack_start(GTK_BOX(gsm->hbox), gsm->operator, FALSE, TRUE, 0);
 	gsm->timeout = g_timeout_add(1000, _on_timeout, gsm);
 	_on_timeout(gsm);
-	return gsm->image;
+	return gsm->hbox;
 }
 
 
@@ -108,10 +124,19 @@ static void _gsm_destroy(PanelApplet * applet)
 static void _gsm_set(GSM * gsm, gboolean on)
 {
 	if(on == TRUE)
-		gtk_widget_show(gsm->image);
+		gtk_widget_show(gsm->hbox);
 	else
-		gtk_widget_hide(gsm->image);
+		gtk_widget_hide(gsm->hbox);
 }
+
+
+#if 0
+/* gsm_set_operator */
+static void _gsm_set_operator(GSM * gsm, char const * operator)
+{
+	gtk_label_set_text(GTK_LABEL(gsm->operator), operator);
+}
+#endif
 
 
 /* callbacks */
