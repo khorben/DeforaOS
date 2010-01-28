@@ -20,13 +20,17 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 # include <sys/types.h>
 # include <sys/ioctl.h>
 # include <sys/envsys.h>
 # include <fcntl.h>
 # include <unistd.h>
 # include <paths.h>
+#elif defined(__linux__)
+# include <fcntl.h>
+# include <unistd.h>
+# include <stdio.h>
 #endif
 #include <System.h>
 #include "Panel.h"
@@ -42,7 +46,7 @@ typedef struct _Battery
 	GtkWidget * image;
 	GtkWidget * scale;
 	guint timeout;
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__linux__)
 	int fd;
 #endif
 } Battery;
@@ -86,7 +90,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	applet->priv = battery;
 	battery->helper = applet->helper;
 	battery->timeout = 0;
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__linux__)
 	battery->fd = -1;
 #endif
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -114,7 +118,7 @@ static void _battery_destroy(PanelApplet * applet)
 
 	if(battery->timeout > 0)
 		g_source_remove(battery->timeout);
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__linux__)
 	if(battery->fd != -1)
 		close(battery->fd);
 #endif
@@ -154,7 +158,7 @@ static void _battery_set(Battery * battery, gdouble value)
 
 /* callbacks */
 /* on_timeout */
-#ifdef __NetBSD__
+#if defined(__NetBSD__)
 static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre);
 
 static gdouble _battery_get(Battery * battery)
@@ -232,6 +236,42 @@ static int _get_tre(int fd, int sensor, envsys_tre_data_t * tre)
 	if(ioctl(fd, ENVSYS_GTREDATA, tre) == -1)
 		return 1;
 	return !(tre->validflags & ENVSYS_FVALID);
+}
+#elif defined(__linux__)
+static gdouble _battery_get(Battery * battery)
+{
+	const char apm[] = "/proc/apm";
+	char buf[80];
+	ssize_t buf_cnt;
+	double d;
+	unsigned int u;
+	int i;
+	int b;
+
+	if(battery->fd == -1 && (battery->fd = open(apm, O_RDONLY)) == -1)
+	{
+		error_set("%s: %s", apm, strerror(errno));
+		return 0.0 / 0.0;
+	}
+	errno = ENODATA;
+	if(lseek(battery->fd, 0, SEEK_SET) != 0
+			|| (buf_cnt = read(battery->fd, buf, sizeof(buf))) <= 0)
+	{
+		error_set("%s: %s", apm, strerror(errno));
+		close(battery->fd);
+		battery->fd = -1;
+		return 0.0 / 0.0;
+	}
+	buf[--buf_cnt] = '\0';
+	if(sscanf(buf, "%lf %lf %x %x %x %x %d%% %d min", &d, &d, &u, &u, &u,
+				&u, &b, &i) != 8)
+	{
+		error_set("%s: %s", apm, strerror(errno));
+		close(battery->fd);
+		battery->fd = -1;
+	}
+	d = b;
+	return d;
 }
 #else
 static gdouble _battery_get(Battery * battery)
