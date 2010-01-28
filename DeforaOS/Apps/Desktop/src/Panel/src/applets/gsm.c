@@ -81,7 +81,7 @@ static GtkWidget * _gsm_init(PanelApplet * applet)
 	gsm->fd = -1;
 #endif
 	/* XXX find a better image */
-	gsm->image = gtk_image_new_from_icon_name("network-wireless",
+	gsm->image = gtk_image_new_from_icon_name("phone",
 			applet->helper->icon_size);
 	gsm->timeout = g_timeout_add(1000, _on_timeout, gsm);
 	_on_timeout(gsm);
