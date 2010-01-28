@@ -367,14 +367,14 @@ int open(const char * path, int flags, ...)
 {
 	int ret;
 	int vfsflags;
-	mode_t mode = 0;
+	int mode = 0;
 	va_list ap;
 
 	_libvfs_init();
 	if(flags & O_CREAT)
 	{
 		va_start(ap, flags);
-		mode = va_arg(ap, mode_t);
+		mode = va_arg(ap, int);
 		va_end(ap);
 	}
 	if(strncmp(_vfs_root, path, VFS_ROOT_SIZE) != 0)
