@@ -73,7 +73,7 @@ static Volume * _volume_new(PanelAppletHelper * helper);
 static void _volume_delete(Volume * volume);
 
 static gdouble _volume_get(Volume * volume);
-static void _volume_set(Volume * volume, gdouble value);
+static int _volume_set(Volume * volume, gdouble value);
 #ifdef AUDIO_MIXER_DEVINFO
 static int _volume_match(Volume * volume, mixer_devinfo_t * md);
 #endif
@@ -120,6 +120,7 @@ static void _volume_destroy(PanelApplet * applet)
 static Volume * _volume_new(PanelAppletHelper * helper)
 {
 	Volume * volume;
+	char const mixer[] = "/dev/mixer";
 #ifdef AUDIO_MIXER_DEVINFO
 	int i;
 	mixer_devinfo_t md;
@@ -134,9 +135,9 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 #ifdef AUDIO_MIXER_DEVINFO
 	volume->mix = -1;
 	volume->outputs = -1;
-	if((volume->fd = open("/dev/mixer", O_RDWR)) < 0)
+	if((volume->fd = open(mixer, O_RDWR)) < 0)
 	{
-		helper->error(helper->priv, "/dev/mixer", 0);
+		helper->error(helper->priv, mixer, 0);
 		return volume;
 	}
 	for(i = 0; volume->outputs == -1 || volume->mix == -1; i++)
@@ -152,8 +153,8 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 			volume->mix = i;
 	}
 #else
-	if((volume->fd = open("/dev/mixer", O_RDWR)) < 0)
-		helper->error(helper->priv, "/dev/mixer", 0);
+	if((volume->fd = open(mixer, O_RDWR)) < 0)
+		helper->error(helper->priv, mixer, 0);
 #endif
 	return volume;
 }
@@ -183,6 +184,8 @@ static gdouble _volume_get(Volume * volume)
 	mixer_ctrl_t mc;
 	int i;
 
+	if(volume->fd < 0)
+		return ret;
 	if(volume->outputs < 0 && volume->mix < 0)
 		return ret;
 	for(i = 0;; i++)
@@ -208,6 +211,8 @@ static gdouble _volume_get(Volume * volume)
 #else
 	int value;
 
+	if(volume->fd < 0)
+		return ret;
 	if(ioctl(volume->fd, MIXER_READ(SOUND_MIXER_VOLUME), &value) < 0)
 		volume->helper->error(volume->helper->priv, "MIXER_READ", 0);
 	else
@@ -221,8 +226,9 @@ static gdouble _volume_get(Volume * volume)
 
 
 /* volume_set */
-void _volume_set(Volume * volume, gdouble value)
+int _volume_set(Volume * volume, gdouble value)
 {
+	int ret = 0;
 #ifdef AUDIO_MIXER_DEVINFO
 	mixer_devinfo_t md;
 	mixer_ctrl_t mc;
@@ -232,8 +238,10 @@ void _volume_set(Volume * volume, gdouble value)
 # ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%lf)\n", __func__, value);
 # endif
+	if(volume->fd < 0)
+		return 1;
 	if(volume->outputs < 0 && volume->mix < 0)
-		return;
+		return 1;
 	for(i = 0;; i++)
 	{
 		md.index = i;
@@ -248,7 +256,7 @@ void _volume_set(Volume * volume, gdouble value)
 		for(j = 1; j < mc.un.value.num_channels; j++) /* XXX overflow */
 			mc.un.value.level[j] = mc.un.value.level[0];
 		if(ioctl(volume->fd, AUDIO_MIXER_WRITE, &mc) < 0)
-			volume->helper->error(volume->helper->priv,
+			ret |= volume->helper->error(volume->helper->priv,
 					"AUDIO_MIXER_WRITE", 0);
 		break;
 	}
@@ -260,8 +268,10 @@ void _volume_set(Volume * volume, gdouble value)
 	fprintf(stderr, "DEBUG: %s(%lf) 0x%04x\n", __func__, value, v);
 # endif
 	if(ioctl(volume->fd, MIXER_WRITE(SOUND_MIXER_VOLUME), &v) < 0)
-		volume->helper->error(volume->helper->priv, "MIXER_WRITE", 0);
+		ret |= volume->helper->error(volume->helper->priv,
+				"MIXER_WRITE", 0);
 #endif
+	return ret;
 }
 
 
