@@ -31,6 +31,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/copy.c \
 		$(PACKAGE)-$(VERSION)/src/delete.c \
 		$(PACKAGE)-$(VERSION)/src/desktop.c \
+		$(PACKAGE)-$(VERSION)/src/desktopicon.c \
 		$(PACKAGE)-$(VERSION)/src/move.c \
 		$(PACKAGE)-$(VERSION)/src/open.c \
 		$(PACKAGE)-$(VERSION)/src/properties.c \
@@ -40,6 +41,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/desktop.h \
+		$(PACKAGE)-$(VERSION)/src/desktopicon.h \
 		$(PACKAGE)-$(VERSION)/src/mime.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/dirtree.c \

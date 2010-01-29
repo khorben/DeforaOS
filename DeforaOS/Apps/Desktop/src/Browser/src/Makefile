@@ -37,7 +37,7 @@ delete_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 delete: $(delete_OBJS)
 	$(CC) -o delete $(delete_OBJS) $(delete_LDFLAGS)
 
-desktop_OBJS = desktop.o
+desktop_OBJS = desktop.o desktopicon.o
 desktop_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 desktop_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem mime.o
 
@@ -90,8 +90,11 @@ copy.o: copy.c
 delete.o: delete.c
 	$(CC) $(delete_CFLAGS) -c delete.c
 
-desktop.o: desktop.c common.c mime.o
+desktop.o: desktop.c desktopicon.h desktop.h common.c mime.o
 	$(CC) $(desktop_CFLAGS) -c desktop.c
+
+desktopicon.o: desktopicon.c desktop.h desktopicon.h
+	$(CC) $(desktop_CFLAGS) -c desktopicon.c
 
 move.o: move.c
 	$(CC) $(move_CFLAGS) -c move.c

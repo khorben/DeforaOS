@@ -19,33 +19,33 @@
 # define BROWSER_DESKTOP_H
 
 # include <gtk/gtk.h>
-
-
-/* DesktopIcon */
-/* types */
-typedef struct _DesktopIcon DesktopIcon;
-typedef struct _Desktop Desktop; /* XXX forward declaration */
-
-/* functions */
-DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
-		char const * url);
-void desktopicon_delete(DesktopIcon * desktopicon);
-
-/* accessors */
-char const * desktopicon_get_path(DesktopIcon * desktopicon);
-gboolean desktopicon_get_selected(DesktopIcon * desktopicon);
-void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
-void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected);
-
-/* useful */
-void desktopicon_move(DesktopIcon * desktopicon, int x, int y);
-void desktopicon_show(DesktopIcon * desktopicon);
+# include "mime.h"
+# include "desktopicon.h"
 
 
 /* Desktop */
+/* types */
+# ifndef DesktopIcon
+#  define DesktopIcon DesktopIcon
+typedef struct _DesktopIcon DesktopIcon;
+# endif
+# ifndef Desktop
+#  define Desktop Desktop
+typedef struct _Desktop Desktop;
+# endif
+
+
 /* functions */
 Desktop * desktop_new(void);
 void desktop_delete(Desktop * desktop);
+
+/* accessors */
+/* XXX most of these accessors expose internal structures somehow */
+int desktop_get_drag_data(Desktop * desktop, GtkSelectionData * seldata);
+GdkPixbuf * desktop_get_file(Desktop * desktop);
+GdkPixbuf * desktop_get_folder(Desktop * desktop);
+Mime * desktop_get_mime(Desktop * desktop);
+GtkIconTheme * desktop_get_theme(Desktop * desktop);
 
 /* useful */
 int desktop_error(Desktop * desktop, char const * message, int ret);
