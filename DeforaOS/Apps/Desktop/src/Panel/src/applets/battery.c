@@ -254,8 +254,7 @@ static gdouble _battery_get(Battery * battery)
 		return 0.0 / 0.0;
 	}
 	errno = ENODATA;
-	if(lseek(battery->fd, 0, SEEK_SET) != 0
-			|| (buf_cnt = read(battery->fd, buf, sizeof(buf))) <= 0)
+	if((buf_cnt = read(battery->fd, buf, sizeof(buf))) <= 0)
 	{
 		error_set("%s: %s", apm, strerror(errno));
 		close(battery->fd);
@@ -267,10 +266,12 @@ static gdouble _battery_get(Battery * battery)
 				&u, &b, &i) != 8)
 	{
 		error_set("%s: %s", apm, strerror(errno));
-		close(battery->fd);
-		battery->fd = -1;
+		d = 0.0 / 0.0;
 	}
-	d = b;
+	else
+		d = b;
+	close(battery->fd);
+	battery->fd = -1;
 	return d;
 }
 #else
