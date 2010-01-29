@@ -274,7 +274,10 @@ static void _pager_do(Pager * pager)
 				FALSE, TRUE, 0);
 	}
 	free(names);
-	gtk_widget_show_all(pager->hbox);
+	if(pager->widgets_cnt <= 1)
+		gtk_widget_hide(pager->hbox);
+	else
+		gtk_widget_show_all(pager->hbox);
 }
 
 
