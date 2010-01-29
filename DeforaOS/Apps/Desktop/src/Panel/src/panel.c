@@ -68,8 +68,6 @@ static int _panel_helper_shutdown_dialog(void);
 /* public */
 /* panel_new */
 static gboolean _on_idle(gpointer data);
-static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
-		gpointer data);
 static gboolean _on_closex(void);
 
 Panel * panel_new(PanelPrefs * prefs)
@@ -77,7 +75,6 @@ Panel * panel_new(PanelPrefs * prefs)
 	Panel * panel;
 	GdkScreen * screen;
 	int monitor;
-	GtkWidget * event;
 	GdkRectangle rect;
 
 	if((panel = malloc(sizeof(*panel))) == NULL)
@@ -134,12 +131,8 @@ Panel * panel_new(PanelPrefs * prefs)
 	gtk_window_stick(GTK_WINDOW(panel->window));
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);
-	event = gtk_event_box_new();
-	g_signal_connect(G_OBJECT(event), "button-press-event", G_CALLBACK(
-				_on_button_press), panel);
 	panel->hbox = gtk_hbox_new(FALSE, 2);
-	gtk_container_add(GTK_CONTAINER(event), panel->hbox);
-	gtk_container_add(GTK_CONTAINER(panel->window), event);
+	gtk_container_add(GTK_CONTAINER(panel->window), panel->hbox);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
 	gtk_widget_show_all(panel->window);
 	return panel;
@@ -155,7 +148,7 @@ static gboolean _on_idle(gpointer data)
 		"lock", "logout", "main", "pager", "tasks", NULL };
 #else
 	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
-		"clock", "cpufreq", "desktop", "gps", "gsm", "main", "tasks",
+		"clock", "cpufreq", "gps", "gsm", "main", "pager", "tasks",
 		NULL };
 #endif
 	size_t i;
@@ -163,30 +156,6 @@ static gboolean _on_idle(gpointer data)
 	for(i = 0; plugins[i] != NULL; i++)
 		if(panel_load(panel, plugins[i]))
 			error_print(PACKAGE); /* we can ignore errors */
-	return FALSE;
-}
-
-static gboolean _on_button_press(GtkWidget * widget, GdkEventButton * event,
-		gpointer data)
-{
-	GtkWidget * menu;
-	GtkWidget * menuitem;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
-		return TRUE;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() right-click\n", __func__);
-#endif
-	menu = gtk_menu_new();
-	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_PROPERTIES,
-			NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	gtk_widget_show_all(menu);
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, data, event->button,
-			event->time);
 	return FALSE;
 }
 
@@ -254,21 +223,21 @@ int panel_load(Panel * panel, char const * applet)
 	{
 		case PANEL_APPLET_POSITION_END:
 			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, exp,
-					fill, 2);
+					fill, 0);
 			break;
 		case PANEL_APPLET_POSITION_FIRST:
 			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, exp,
-					fill, 2);
+					fill, 0);
 			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
 			break;
 		case PANEL_APPLET_POSITION_LAST:
 			gtk_box_pack_end(GTK_BOX(panel->hbox), widget, exp,
-					fill, 2);
+					fill, 0);
 			gtk_box_reorder_child(GTK_BOX(panel->hbox), widget, 0);
 			break;
 		case PANEL_APPLET_POSITION_START:
 			gtk_box_pack_start(GTK_BOX(panel->hbox), widget, exp,
-					fill, 2);
+					fill, 0);
 			break;
 	}
 	return 0;
