@@ -50,7 +50,7 @@
 	background-image:		url('delete.png');
 }
 
-.icon.disabled {
+.icon.disabled, .icon.cancel {
 	background-image:		url('disabled.png');
 }
 
@@ -62,7 +62,7 @@
 	background-image:		url('edit.png');
 }
 
-.icon.enabled {
+.icon.enabled, .icon.submit {
 	background-image:		url('enabled.png');
 }
 
