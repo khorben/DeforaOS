@@ -28,7 +28,7 @@ require_once('./system/user.php'); if(_user_admin($user_id)) { ?>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="<?php echo _html_safe(SUBMIT); ?>"/></td>
+			<td><input type="submit" value="<?php echo _html_safe(SUBMIT); ?>" class="icon submit"/></td>
 		</tr>
 	</table>
 </form>

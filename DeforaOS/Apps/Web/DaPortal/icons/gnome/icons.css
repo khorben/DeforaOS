@@ -5,18 +5,26 @@
 
 
 /* classes */
-div.icon, div.thumbnail, span.icon, span.thumbnail {
-	background-position:	bottom right;
+button.icon, input[type="submit"].icon {
+	background-position:	4px 4px;
 	background-repeat:	no-repeat;
+	padding:		4px;
+	padding-left:		20px;
 }
 
 div.icon, span.icon {
+	padding:		2px;
+	padding-left:		20px;
+}
+
+div.icon, div.thumbnail, span.icon, span.thumbnail {
+	background-position:	2px 2px;
+	background-repeat:	no-repeat;
+	margin:			0;
+}
+
+div.icon {
 	display:		inline;
-	margin-left:		2px;
-	padding-left:		8px;
-	padding-right:		8px;
-	padding-bottom:		0px;
-	padding-top:		0px;
 }
 
 div.thumbnail, span.thumbnail {

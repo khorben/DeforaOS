@@ -73,8 +73,12 @@ button, input, select, textarea {
 	border:				1px solid #636363;
 }
 
-button, input, option {
+input, option {
 	padding:			2px;
+}
+
+button, input[type="button"], input[type="submit"] {
+	padding:			4px;
 }
 
 button, input {

@@ -11,6 +11,6 @@
 		default: ?><input type="text" size="30" name="<?php echo _html_safe($module.'_'.$configs[$i]['name']); ?>" value="<?php echo _html_safe($configs[$i]['value']); ?>"/><?php
 		break; ?><?php } ?></td></tr>
 <?php } ?>
-		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(UPDATE); ?>"/></td></tr>
+		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>

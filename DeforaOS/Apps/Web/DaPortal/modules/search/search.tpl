@@ -2,6 +2,6 @@
 <form action="index.php" method="get">
 	<input type="hidden" name="module" value="search"/>
 	<input type="text" name="q" value="<?php if(isset($_GET['q'])) echo _html_safe(stripslashes($_GET['q'])); ?>" size="30"/>
-	<input type="submit" value="<?php echo _html_safe(SEARCH); ?>"/>
+	<input type="submit" value="<?php echo _html_safe(SEARCH); ?>" class="icon search"/>
 </form>
 <hr/>

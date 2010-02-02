@@ -25,7 +25,7 @@ a {
 /* widgets with padding */
 button, input[type="button"], input[type="password"], input[type="submit"],
 input[type="text"] {
-	padding:		2px;
+	padding:		4px;
 }
 
 /* widgets with a border out */
@@ -35,8 +35,6 @@ h1, h2, h3, button, input[type="button"], input[type="submit"] {
 	border-right:		1px solid #000000;
 	border-top:		1px solid #ffffff;
 	margin:			0;
-	padding:		2px;
-	padding-left:		4px;
 }
 
 /* widgets with a border in */
@@ -138,7 +136,7 @@ pre {
 }
 
 #main .toolbar a {
-	padding:		3px;
+	padding:		2px;
 }
 
 #main .toolbar a:hover {
@@ -147,7 +145,7 @@ pre {
 	border-left:		1px solid #ffffff;
 	border-right:		1px solid #afa699;
 	border-top:		1px solid #ffffff;
-	padding:		2px;
+	padding:		1px;
 }
 
 .style1 img {
@@ -183,6 +181,7 @@ pre {
 /* explorer */
 form.explorer {
 	background-color:	#ffffff;
+	padding:		0;
 }
 
 form.explorer .entry .icon {
@@ -258,6 +257,7 @@ form.explorer .toolbar img:hover {
 	border-left:		1px solid #ffffff;
 	border-right:		1px solid #afa699;
 	border-top:		1px solid #ffffff;
+	padding:		2px;
 }
 
 form.explorer .toolbar .separator {
