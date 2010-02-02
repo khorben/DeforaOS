@@ -257,6 +257,8 @@ form.explorer .toolbar img:hover {
 form.explorer .toolbar .separator {
 	border-left:		1px solid #9e9a91;
 	border-right:		1px solid #ffffff;
+	margin-left:		2px;
+	margin-right:		2px;
 }
 
 
