@@ -8,6 +8,7 @@ function editorExec(cmd)
 	var editor = document.getElementById('editor');
 
 	editor.contentWindow.document.execCommand(cmd, false, null);
+	editor.contentWindow.focus();
 }
 
 
@@ -88,6 +89,7 @@ function editorStart()
 		return;
 	}
 	editor.contentWindow.document.body.innerHTML = editortext.value;
+	editor.contentWindow.focus();
 }
 
 
