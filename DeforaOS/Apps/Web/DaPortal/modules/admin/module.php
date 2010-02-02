@@ -29,6 +29,7 @@ require_once('./system/user.php');
 $text = array();
 $text['ADMINISTRATION'] = 'Administration';
 $text['GLOBAL_CONFIGURATION'] = 'Global configuration';
+$text['INSERT'] = 'Insert';
 $text['INSERT_MODULE'] = 'Insert module';
 $text['LANGUAGES'] = 'Languages';
 $text['PORTAL_ADMINISTRATION'] = 'Portal administration';
@@ -44,6 +45,8 @@ if($lang == 'de')
 }
 else if($lang == 'fr')
 {
+	$text['INSERT'] = 'Ajouter';
+	$text['INSERT_MODULE'] = 'Ajouter un module';
 	$text['LANGUAGES'] = 'Langages';
 	$text['MODULE_NAME'] = 'Nom du module';
 	$text['PORTAL_ADMINISTRATION'] = 'Administration du portail';

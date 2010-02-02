@@ -8,7 +8,7 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="Insert"/></td>
+			<td><input type="submit" value="<?php echo _html_safe(INSERT); ?>"/></td>
 		</tr>
 	</table>
 </form>
