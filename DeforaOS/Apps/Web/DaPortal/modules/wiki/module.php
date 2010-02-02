@@ -204,10 +204,12 @@ function wiki_default($args)
 			$res[$i]['action'] = 'display';
 			$res[$i]['name'] = $res[$i]['title'];
 			$res[$i]['date'] = substr($res[$i]['date'], 0, 19);
+			$res[$i]['date'] = strftime('%d/%m/%Y %H:%M:%S',
+					strtotime($res[$i]['date']));
+			$res[$i]['date'] = _html_safe($res[$i]['date']);
 			$res[$i]['content'] = str_replace("\n", ' ',
 					substr($res[$i]['content'], 0, 40))
 				.'...';
-			$res[$i]['date'] = _html_safe($res[$i]['date']);
 			$res[$i]['tag'] = $res[$i]['title'];
 			$res[$i]['username'] = '<a href="'
 				._html_link('user', FALSE, $res[$i]['user_id'],
@@ -372,7 +374,7 @@ function wiki_list($args)
 		$wiki[$i]['action'] = 'display';
 		$wiki[$i]['name'] = $wiki[$i]['title'];
 		$wiki[$i]['tag'] = $wiki[$i]['title'];
-		$wiki[$i]['date'] = strftime('%d/%m/%y %H:%M:%S',
+		$wiki[$i]['date'] = strftime('%d/%m/%Y %H:%M:%S',
 				strtotime(substr($wiki[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
