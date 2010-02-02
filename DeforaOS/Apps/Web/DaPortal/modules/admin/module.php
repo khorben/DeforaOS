@@ -266,7 +266,7 @@ function admin_module_insert($args)
 	print('<h1 class="title admin">'._html_safe(INSERT_MODULE)."</h1>\n");
 	if(isset($error) && strlen($error))
 		_error($error);
-	include('./modules/admin/module_insert.tpl');
+	include('./modules/admin/module_update.tpl');
 }
 
 
