@@ -41,9 +41,9 @@ h1, h2, h3, button, input[type="button"], input[type="submit"] {
 
 /* widgets with a border in */
 input[type="password"], input[type="text"], pre, select, textarea {
-	border-bottom:		1px solid #ffffff;
+	border-bottom:		1px solid #dcdad5;
 	border-left:		1px solid #000000;
-	border-right:		1px solid #ffffff;
+	border-right:		1px solid #dcdad5;
 	border-top:		1px solid #000000;
 	margin:			0;
 }
@@ -63,6 +63,11 @@ h1.title, h2.title {
 h1 img, h2 img, h3 img {
 	float:			right;
 	padding-right:		2px;
+}
+
+form {
+	background-color:	#ffffff;
+	padding:		4px;
 }
 
 h1 {
