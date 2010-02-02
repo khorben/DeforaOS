@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -40,6 +40,7 @@ static int _w(void)
 		return _w_error("gettimeofday", 2);
 	printf("%-8s %-8s %-16s %-5s %5s %s\n", "USER", "TTY", "FROM",
 			"LOGIN@", "IDLE", "WHAT");
+#ifdef USER_PROCESS
 	while((u = getutxent()) != NULL)
 	{
 		if(u->ut_type != USER_PROCESS)
@@ -52,6 +53,9 @@ static int _w(void)
 		_print_idle(&tv, u->ut_line);
 		_print_what(u->ut_pid);
 	}
+#else
+# warning Unsupported platform: USER_PROCESS is not supported
+#endif
 	return 0;
 }
 

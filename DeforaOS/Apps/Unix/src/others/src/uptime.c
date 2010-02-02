@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -32,7 +32,7 @@ static int _uptime(void)
 {
 	struct timeval tv;
 	time_t sec;
-	struct tm * tm;
+	struct tm * tm = NULL;
 	char time[9];
 	unsigned int nusers;
 	struct utmpx * ut;
@@ -46,9 +46,14 @@ static int _uptime(void)
 	if(strftime(time, sizeof(time), "%X", tm) == 0)
 		return _uptime_error("strftime", 1);
 	/* FIXME uptime is not portable afaik */
+#ifdef USER_PROCESS
 	for(nusers = 0; (ut = getutxent()) != NULL;)
 		if(ut->ut_type == USER_PROCESS)
 			nusers++;
+#else
+# warning Unsupported platform: USER_PROCESS is not supported
+	nusers = 0;
+#endif
 	if(getloadavg(loadavg, 3) != 3)
 		return _uptime_error("getloadavg", 1);
 	printf(" %s up %s, %2d%s%.2f, %.2f, %.2f\n", time, "unknown", nusers,

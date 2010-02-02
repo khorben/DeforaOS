@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix utils */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ static int _who(Prefs * prefs)
 	memset(&tm, 0, sizeof(tm));
 	if(*prefs & PREFS_m && (tty = _who_tty()) == NULL)
 		return 1;
+#ifdef USER_PROCESS
 	for(; (u = getutxent()) != NULL;)
 	{
 		if(u->ut_type != USER_PROCESS)
@@ -60,6 +61,9 @@ static int _who(Prefs * prefs)
 			strcpy(buf, "n/a");
 		printf(" %s\n", buf);
 	}
+#else
+# warning Unsupported platform: USER_PROCESS is not supported
+#endif
 	return 0;
 }
 
