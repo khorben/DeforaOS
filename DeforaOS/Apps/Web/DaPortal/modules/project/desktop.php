@@ -22,7 +22,6 @@ $admin = 1;
 $list = 1;
 $actions = array('download' => 'Downloads',
 		'list' => 'List',
-		'package' => 'Packages',
 		'bug_list' => 'Reports');
 global $lang;
 if($lang == 'de')

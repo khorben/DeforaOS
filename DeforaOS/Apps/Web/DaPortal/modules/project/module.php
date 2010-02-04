@@ -1563,12 +1563,6 @@ function project_new($args)
 }
 
 
-function project_package($args)
-{
-	include('./modules/project/package.tpl');
-}
-
-
 function project_screenshot_insert($args)
 {
 	/* FIXME factorize with download_insert */
