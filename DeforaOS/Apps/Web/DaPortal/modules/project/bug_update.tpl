@@ -1,5 +1,5 @@
 <h1 class="title bug"><?php echo _html_safe($title); ?></h1>
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="project"/>
 	<input type="hidden" name="action" value="bug_<?php echo isset($bug) ? 'update' : 'insert'; ?>"/>
 <?php if(!isset($bug)) { ?>
@@ -36,6 +36,6 @@ foreach($priorities as $p) { ?>
 <?php } ?>
 			</select></td><?php } ?></tr>
 		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><?php if(isset($bug['content'])) echo _html_safe($bug['content']); ?></textarea></td></tr>
-		<tr><td></td><td><input type="submit" value="<?php if(!isset($bug)) echo _html_safe(SEND); else echo _html_safe(UPDATE); ?>"/></td></tr>
+		<tr><td></td><td><input type="submit" value="<?php echo (!isset($bug)) ? _html_safe(SEND) : _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
