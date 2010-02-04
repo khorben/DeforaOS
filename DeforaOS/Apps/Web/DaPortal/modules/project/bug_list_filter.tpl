@@ -25,6 +25,6 @@ foreach($priorities as $p) { ?>
 				<option value="<?php echo _html_safe($p); ?>"<?php if(isset($args['priority']) && $args['priority'] == $p) { ?> selected="selected"<?php } ?>><?php echo _html_safe($p); ?></option>
 <?php } ?>
 			</select></td>
-		<td></td><td><input type="submit" value="<?php echo _html_safe(FILTER); ?>"/></td></tr>
+		<td></td><td><input type="submit" value="<?php echo _html_safe(FILTER); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
