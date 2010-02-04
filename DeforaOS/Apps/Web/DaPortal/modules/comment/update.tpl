@@ -17,7 +17,7 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>"/></td>
+			<td><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>" class="icon submit"/></td>
 		</tr>
 	</table>
 </form>
