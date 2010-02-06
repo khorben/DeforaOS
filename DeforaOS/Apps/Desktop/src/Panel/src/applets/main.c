@@ -347,19 +347,21 @@ static gboolean _on_idle(gpointer data)
 			|| (fd = dirfd(dir)) < 0
 			|| fstat(fd, &st) != 0)
 #endif
-		return error_set_print("panel", FALSE, "%s: %s", path, strerror(
-					errno));
+		return main->helper->error(NULL, path, FALSE);
 	main->refresh_mti = st.st_mtime;
 	while((de = readdir(dir)) != NULL)
 	{
+		if(de->d_name[0] == '.')
+			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0'))
+				continue;
 		len = strlen(de->d_name);
 		if(len < sizeof(ext) || strncmp(&de->d_name[len - sizeof(ext)
 					+ 1], ext, sizeof(ext)) != 0)
 			continue;
 		if((p = realloc(name, sizeof(path) + len + 1)) == NULL)
 		{
-			error_set_print("panel", 1, "%s: %s", "realloc",
-					strerror(errno));
+			main->helper->error(NULL, path, 1);
 			continue;
 		}
 		name = p;
@@ -370,11 +372,10 @@ static gboolean _on_idle(gpointer data)
 #endif
 		if(config == NULL && (config = config_new()) == NULL)
 			continue; /* XXX report error */
-		else
-			config_reset(config);
+		config_reset(config);
 		if(config_load(config, name) != 0)
 		{
-			error_print("panel");
+			error_print("Panel"); /* XXX use the error helper */
 			continue;
 		}
 		q = config_get(config, section, "Name");
