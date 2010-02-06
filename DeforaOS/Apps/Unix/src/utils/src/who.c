@@ -19,7 +19,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <utmpx.h>
+#ifndef __FreeBSD__
+# include <utmpx.h>
+#endif
 
 
 /* types */
