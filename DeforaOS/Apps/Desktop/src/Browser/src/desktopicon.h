@@ -45,12 +45,17 @@ typedef struct _DesktopIcon DesktopIcon;
 /* functions */
 DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		char const * url);
+DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path);
 void desktopicon_delete(DesktopIcon * desktopicon);
 
 /* accessors */
+gboolean desktopicon_get_first(DesktopIcon * desktopicon);
+char const * desktopicon_get_name(DesktopIcon * desktopicon);
 char const * desktopicon_get_path(DesktopIcon * desktopicon);
 gboolean desktopicon_get_selected(DesktopIcon * desktopicon);
 gboolean desktopicon_get_updated(DesktopIcon * desktopicon);
+void desktopicon_set_executable(DesktopIcon * desktopicon, gboolean executable);
+void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first);
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
 void desktopicon_set_immutable(DesktopIcon * desktopicon, gboolean immutable);
 void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected);

@@ -90,11 +90,11 @@ copy.o: copy.c
 delete.o: delete.c
 	$(CC) $(delete_CFLAGS) -c delete.c
 
-desktop.o: desktop.c desktopicon.h desktop.h common.c mime.o
-	$(CC) $(desktop_CFLAGS) -c desktop.c
+desktop.o: desktop.c desktopicon.h desktop.h common.c mime.o ../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(desktop_CFLAGS) -c desktop.c
 
-desktopicon.o: desktopicon.c desktop.h desktopicon.h
-	$(CC) $(desktop_CFLAGS) -c desktopicon.c
+desktopicon.o: desktopicon.c desktop.h desktopicon.h ../config.h
+	$(CC) -D PREFIX=\"$(PREFIX)\" $(desktop_CFLAGS) -c desktopicon.c
 
 move.o: move.c
 	$(CC) $(move_CFLAGS) -c move.c

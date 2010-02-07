@@ -16,22 +16,26 @@
 
 
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
 #include <errno.h>
-#include <X11/Xlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
 #include "mime.h"
 #include "desktopicon.h"
-#define PACKAGE "desktop"
+#include "../config.h"
+
+#ifdef PACKAGE
+# undef PACKAGE
+#endif
+#define PACKAGE	"desktop"
+
+#ifndef PREFIX
+# define PREFIX	"/usr/local"
+#endif
 
 #define COMMON_DND
 #define COMMON_EXEC
@@ -44,9 +48,14 @@ struct _DesktopIcon
 {
 	Desktop * desktop;
 	char * path;
-	int isdir;
-	int isexec;
+	char * name;
+	gboolean isfirst;
+	gboolean isdir;
+	gboolean isexec;
 	char const * mimetype;
+	/* applications */
+	char * exec;
+	char * tryexec;
 
 	gboolean immutable;		/* cannot be deleted */
 	gboolean selected;
@@ -60,13 +69,10 @@ struct _DesktopIcon
 
 
 /* prototypes */
-static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
-		GdkPixbuf * icon);
+static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
+		char const * name);
+static void _desktopicon_update_transparency(DesktopIcon * desktopicon);
 
-
-/* public */
-/* functions */
-/* desktopicon_new */
 /* callbacks */
 static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
@@ -81,37 +87,299 @@ static void _on_icon_drag_data_received(GtkWidget * widget,
 		GdkDragContext * context, gint x, gint y,
 		GtkSelectionData * seldata, guint info, guint time,
 		gpointer data);
+static void _on_icon_open(gpointer data);
+static void _on_icon_edit(gpointer data);
+static void _on_icon_run(gpointer data);
+static void _on_icon_open_with(gpointer data);
+static void _on_icon_delete(gpointer data);
+static void _on_icon_properties(gpointer data);
 
+
+/* public */
+/* functions */
+/* desktopicon_new */
 DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		char const * path)
 {
 	DesktopIcon * desktopicon;
-	GtkWindow * window;
-	Mime * mime;
 	struct stat st;
-	GdkGeometry geometry;
-	GtkWidget * vbox;
-	GtkWidget * eventbox;
+	Mime * mime;
+	char const * mimetype = NULL;
+	gboolean isdir = FALSE;
+	gboolean isexec = FALSE;
+	GdkPixbuf * image = NULL;
+	GError * error = NULL;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
+			(void *)desktop, name, path);
+#endif
+	if(stat(path, &st) == 0)
+	{
+		mime = desktop_get_mime(desktop);
+		if(S_ISDIR(st.st_mode))
+		{
+			isdir = TRUE;
+			image = desktop_get_folder(desktop);
+		}
+		else if(st.st_mode & S_IXUSR)
+		{
+			/* FIXME use access() for this */
+			isexec = TRUE;
+			mime_icons(desktop_get_mime(desktop),
+					desktop_get_theme(desktop),
+					"application/x-executable",
+					DESKTOPICON_ICON_SIZE, &image, -1);
+		}
+		else if((mimetype = mime_type(mime, path)) != NULL)
+			mime_icons(mime, desktop_get_theme(desktop), mimetype,
+					DESKTOPICON_ICON_SIZE, &image, -1);
+	}
+	if(name == NULL)
+	{
+		if((p = g_filename_to_utf8(path, -1, NULL, NULL, &error))
+				== NULL)
+		{
+			printf("%s\n", error->message);
+			name = path;
+		}
+		else
+			name = p;
+		if((name = strrchr(name, '/')) != NULL)
+			name++;
+	}
+	if((desktopicon = _desktopicon_new_do(desktop, image, name)) == NULL)
+	{
+		return NULL;
+	}
+	desktopicon->isdir = isdir;
+	desktopicon_set_executable(desktopicon, isexec);
+	desktopicon->mimetype = mimetype;
+	if((desktopicon->path = strdup(path)) == NULL)
+	{
+		desktopicon_delete(desktopicon);
+		return NULL;
+	}
+	return desktopicon;
+}
+
+
+/* desktopicon_new_application */
+DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
+{
+	DesktopIcon * desktopicon;
+	Config * config;
+	const char section[] = "Desktop Entry";
+	char const * name;
+	char const * icon;
+	char * exec = NULL;
+	char * tryexec = NULL;
+	size_t len;
+	String * buf;
+	GError * error = NULL;
+	GdkPixbuf * image = NULL;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\", \"%s\")\n", __func__,
+			(void *)desktop, name, exec, icon);
+#endif
+	if((config = config_new()) == NULL
+			|| config_load(config, path) != 0)
+	{
+		if(config != NULL)
+			config_delete(config);
+		return NULL;
+	}
+	if((name = config_get(config, section, "Exec")) != NULL)
+		exec = strdup(name);
+	if((name = config_get(config, section, "TryExec")) != NULL)
+		tryexec = strdup(name);
+	if(exec == NULL || (name = config_get(config, section, "Name")) == NULL
+			|| (icon = config_get(config, section, "Icon")) == NULL)
+	{
+		free(exec);
+		free(tryexec);
+		config_delete(config);
+		return NULL;
+	}
+	/* image */
+	if((len = strlen(icon)) > 4 && (strcmp(&icon[len - 4], ".png") == 0
+				|| strcmp(&icon[len - 4], ".xpm") == 0)
+			&& (buf = string_new_append(PREFIX, "/share/pixmaps/",
+					icon, NULL)) != NULL)
+	{
+		image = gdk_pixbuf_new_from_file_at_size(buf,
+				DESKTOPICON_ICON_SIZE, DESKTOPICON_ICON_SIZE,
+				&error);
+		string_delete(buf);
+	}
+	if(image == NULL)
+		image = gtk_icon_theme_load_icon(desktop_get_theme(desktop),
+				icon, DESKTOPICON_ICON_SIZE, 0, NULL);
+	if(image == NULL)
+		image = desktop_get_file(desktop);
+	desktopicon = _desktopicon_new_do(desktop, image, name);
+	config_delete(config); /* XXX also remove reference to the pixbuf */
+	if(desktopicon == NULL)
+	{
+		free(exec);
+		free(tryexec);
+		return NULL;
+	}
+	desktopicon->exec = exec;
+	desktopicon->tryexec = tryexec;
+	desktopicon_set_executable(desktopicon, TRUE);
+	desktopicon_set_immutable(desktopicon, TRUE);
+	return desktopicon;
+}
+
+
+/* desktopicon_delete */
+void desktopicon_delete(DesktopIcon * desktopicon)
+{
+	free(desktopicon->tryexec);
+	free(desktopicon->exec);
+	free(desktopicon->name);
+	free(desktopicon->path);
+	gtk_widget_destroy(desktopicon->window);
+	free(desktopicon);
+}
+
+
+/* accessors */
+/* desktopicon_get_first */
+gboolean desktopicon_get_first(DesktopIcon * desktopicon)
+{
+	return desktopicon->isfirst;
+}
+
+
+/* desktopicon_get_name */
+char const * desktopicon_get_name(DesktopIcon * desktopicon)
+{
+	return desktopicon->name;
+}
+
+
+/* desktopicon_get_path */
+char const * desktopicon_get_path(DesktopIcon * desktopicon)
+{
+	return desktopicon->path;
+}
+
+
+/* desktopicon_get_selected */
+gboolean desktopicon_get_selected(DesktopIcon * desktopicon)
+{
+	return desktopicon->selected;
+}
+
+
+/* desktopicon_get_updated */
+gboolean desktopicon_get_updated(DesktopIcon * desktopicon)
+{
+	return desktopicon->updated;
+}
+
+
+/* desktopicon_set_executable */
+void desktopicon_set_executable(DesktopIcon * desktopicon, gboolean executable)
+{
+	desktopicon->isexec = executable;
+}
+
+
+/* desktopicon_set_first */
+void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first)
+{
+	desktopicon->isfirst = first;
+}
+
+
+/* desktopicon_set_icon */
+void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
+{
+	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
+	_desktopicon_update_transparency(desktopicon);
+}
+
+
+/* desktopicon_set_immutable */
+void desktopicon_set_immutable(DesktopIcon * desktopicon, gboolean immutable)
+{
+	desktopicon->immutable = immutable;
+}
+
+
+/* desktopicon_set_name */
+int desktopicon_set_name(DesktopIcon * desktopicon, char const * name)
+{
+	char * p;
+
+	if((p = strdup(name)) == NULL)
+		return 1;
+	free(desktopicon->name);
+	desktopicon->name = p;
+	gtk_label_set_text(GTK_LABEL(desktopicon->label), p);
+	_desktopicon_update_transparency(desktopicon);
+	return 0;
+}
+
+
+/* desktopicon_set_selected */
+void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %p is %s\n", desktopicon, selected ? "selected"
+			: "deselected");
+#endif
+	desktopicon->selected = selected;
+	gtk_widget_set_state(desktopicon->event, selected
+			? GTK_STATE_SELECTED : GTK_STATE_NORMAL);
+}
+
+
+/* desktopicon_set_updated */
+void desktopicon_set_updated(DesktopIcon * desktopicon, gboolean updated)
+{
+	desktopicon->updated = updated;
+}
+
+
+/* useful */
+/* desktopicon_move */
+void desktopicon_move(DesktopIcon * desktopicon, int x, int y)
+{
+	gtk_window_move(GTK_WINDOW(desktopicon->window), x, y);
+}
+
+
+/* desktopicon_show */
+void desktopicon_show(DesktopIcon * desktopicon)
+{
+	gtk_widget_show_all(desktopicon->window);
+}
+
+
+/* private */
+/* desktopicon_new_do */
+static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
+		char const * name)
+{
+	DesktopIcon * desktopicon;
+	GtkWindow * window;
 	GtkTargetEntry targets[] = { { "deforaos_browser_dnd", 0, 0 } };
 	size_t targets_cnt = sizeof(targets) / sizeof(*targets);
-	GdkPixbuf * icon = NULL;
-	char * p;
-	GtkLabel * label;
+	GtkWidget * vbox;
+	GdkGeometry geometry;
 
 	if((desktopicon = malloc(sizeof(*desktopicon))) == NULL)
 		return NULL;
-	if((desktopicon->path = strdup(path)) == NULL)
-	{
-		free(desktopicon);
-		return NULL;
-	}
+	memset(desktopicon, 0, sizeof(*desktopicon));
 	desktopicon->desktop = desktop;
-	desktopicon->isdir = 0;
-	desktopicon->isexec = 0;
-	desktopicon->mimetype = NULL;
-	desktopicon->immutable = FALSE;
-	desktopicon->selected = FALSE;
 	desktopicon->updated = TRUE;
+	/* window */
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = GTK_WINDOW(desktopicon->window);
 	gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
@@ -123,6 +391,20 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 #endif
 	g_signal_connect(G_OBJECT(desktopicon->window), "delete-event",
 			G_CALLBACK(_on_desktopicon_closex), desktopicon);
+	/* event */
+	desktopicon->event = gtk_event_box_new();
+	gtk_drag_source_set(desktopicon->event, GDK_BUTTON1_MASK, targets,
+			targets_cnt, GDK_ACTION_COPY | GDK_ACTION_MOVE);
+	gtk_drag_dest_set(desktopicon->event, GTK_DEST_DEFAULT_ALL, targets,
+			targets_cnt, GDK_ACTION_COPY | GDK_ACTION_MOVE);
+	g_signal_connect(G_OBJECT(desktopicon->event), "button-press-event",
+			G_CALLBACK(_on_icon_button_press), desktopicon);
+	g_signal_connect(G_OBJECT(desktopicon->event), "key-press-event",
+			G_CALLBACK(_on_icon_key_press), desktopicon);
+	g_signal_connect(G_OBJECT(desktopicon->event), "drag-data-get",
+			G_CALLBACK(_on_icon_drag_data_get), desktopicon);
+	g_signal_connect(G_OBJECT(desktopicon->event), "drag-data-received",
+			G_CALLBACK(_on_icon_drag_data_received), desktopicon);
 	vbox = gtk_vbox_new(FALSE, 4);
 	geometry.min_width = DESKTOPICON_MIN_WIDTH;
 	geometry.min_height = DESKTOPICON_MIN_HEIGHT;
@@ -130,67 +412,84 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	geometry.max_height = DESKTOPICON_MAX_HEIGHT;
 	geometry.base_width = DESKTOPICON_MIN_WIDTH;
 	geometry.base_height = DESKTOPICON_MIN_HEIGHT;
-	gtk_window_set_geometry_hints(window, vbox, &geometry,
+	gtk_window_set_geometry_hints(window, vbox, &geometry, /* XXX check */
 			GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE
 			| GDK_HINT_BASE_SIZE);
-	/* icon */
-	if(stat(path, &st) == 0)
-	{
-		mime = desktop_get_mime(desktop);
-		if(S_ISDIR(st.st_mode))
-		{
-			desktopicon->isdir = 1;
-			icon = desktop_get_folder(desktop);
-		}
-		else if(st.st_mode & S_IXUSR)
-		{
-			desktopicon->isexec = 1;
-			mime_icons(desktop_get_mime(desktop),
-					desktop_get_theme(desktop),
-					"application/x-executable",
-					DESKTOPICON_ICON_SIZE,
-					&icon, -1);
-		}
-		else if((desktopicon->mimetype = mime_type(mime, path)) != NULL)
-			mime_icons(mime, desktop_get_theme(desktop),
-					desktopicon->mimetype,
-					DESKTOPICON_ICON_SIZE, &icon, -1);
-	}
-	if(icon == NULL)
-		icon = desktop_get_file(desktop);
-	eventbox = gtk_event_box_new();
-	gtk_drag_source_set(eventbox, GDK_BUTTON1_MASK, targets, targets_cnt,
-			GDK_ACTION_COPY | GDK_ACTION_MOVE);
-	gtk_drag_dest_set(eventbox, GTK_DEST_DEFAULT_ALL, targets, targets_cnt,
-			GDK_ACTION_COPY | GDK_ACTION_MOVE);
-	g_signal_connect(G_OBJECT(eventbox), "button-press-event",
-			G_CALLBACK(_on_icon_button_press), desktopicon);
-	g_signal_connect(G_OBJECT(eventbox), "key-press-event",
-			G_CALLBACK(_on_icon_key_press), desktopicon);
-	g_signal_connect(G_OBJECT(eventbox), "drag-data-get",
-			G_CALLBACK(_on_icon_drag_data_get), desktopicon);
-	g_signal_connect(G_OBJECT(eventbox), "drag-data-received",
-			G_CALLBACK(_on_icon_drag_data_received), desktopicon);
-	desktopicon->event = eventbox;
-	desktopicon->image = gtk_image_new_from_pixbuf(icon);
+	/* image */
+	desktopicon->image = gtk_image_new();
 	gtk_widget_set_size_request(desktopicon->image, DESKTOPICON_MIN_WIDTH,
 			DESKTOPICON_ICON_SIZE);
 	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->image, FALSE, TRUE, 4);
-	if((p = g_filename_to_utf8(name, -1, NULL, NULL, NULL)) != NULL)
-		name = p;
-	desktopicon->label = gtk_label_new(name);
-	label = GTK_LABEL(desktopicon->label);
-	gtk_label_set_justify(label, GTK_JUSTIFY_CENTER);
+	/* label */
+	desktopicon->label = gtk_label_new(NULL);
+	gtk_label_set_justify(GTK_LABEL(desktopicon->label),
+			GTK_JUSTIFY_CENTER);
 #if GTK_CHECK_VERSION(2, 10, 0)
-	gtk_label_set_line_wrap_mode(label, PANGO_WRAP_WORD_CHAR);
+	gtk_label_set_line_wrap_mode(GTK_LABEL(desktopicon->label),
+			PANGO_WRAP_WORD_CHAR);
 #endif
-	gtk_label_set_line_wrap(label, TRUE);
+	gtk_label_set_line_wrap(GTK_LABEL(desktopicon->label), TRUE);
 	gtk_box_pack_start(GTK_BOX(vbox), desktopicon->label, TRUE, FALSE, 4);
-	gtk_container_add(GTK_CONTAINER(eventbox), vbox);
-	gtk_container_add(GTK_CONTAINER(desktopicon->window), eventbox);
-	_desktopicon_update_transparency(desktopicon, icon);
+	gtk_container_add(GTK_CONTAINER(desktopicon->event), vbox);
+	gtk_container_add(GTK_CONTAINER(desktopicon->window),
+			desktopicon->event);
+	if(image == NULL)
+		image = desktop_get_file(desktop);
+	desktopicon_set_icon(desktopicon, image);
+	desktopicon_set_name(desktopicon, name);
 	return desktopicon;
 }
+
+
+/* desktopicon_update_transparency */
+static void _desktopicon_update_transparency(DesktopIcon * desktopicon)
+{
+	GdkPixbuf * icon;
+	int width;
+	int height;
+	int iwidth;
+	int iheight;
+	GdkBitmap * mask;
+	GdkBitmap * iconmask;
+	GdkGC * gc;
+	GdkColor black = { 0, 0, 0, 0 };
+	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
+	GtkRequisition req;
+	int offset;
+
+	if((icon = gtk_image_get_pixbuf(GTK_IMAGE(desktopicon->image))) == NULL)
+		return; /* XXX report error */
+	gtk_window_get_size(GTK_WINDOW(desktopicon->window), &width, &height);
+	iwidth = gdk_pixbuf_get_width(icon);
+	iheight = gdk_pixbuf_get_height(icon);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s) window is %dx%d\n", __func__,
+			desktopicon->path, width, height);
+#endif
+	mask = gdk_pixmap_new(NULL, width, height, 1);
+	gdk_pixbuf_render_pixmap_and_mask(icon, NULL, &iconmask, 255);
+	gc = gdk_gc_new(mask);
+	gdk_gc_set_foreground(gc, &black);
+	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, height);
+	gdk_draw_drawable(mask, gc, iconmask, 0, 0,
+			(width - iwidth) / 2,
+			(DESKTOPICON_ICON_SIZE + 8 - iheight) / 2, -1, -1);
+	gdk_gc_set_foreground(gc, &white);
+	gtk_widget_size_request(desktopicon->label, &req);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s) label is %dx%d\n", __func__,
+			desktopicon->path, req.width, req.height);
+#endif
+	offset = DESKTOPICON_ICON_SIZE + 8;
+	gdk_draw_rectangle(mask, gc, TRUE, (width - req.width - 8) / 2,
+			offset + ((height - offset - req.height - 8)
+				/ 2), req.width + 8, req.height + 8);
+	gtk_widget_shape_combine_mask(desktopicon->window, mask, 0, 0);
+	g_object_unref(gc);
+	g_object_unref(iconmask);
+	g_object_unref(mask);
+}
+
 
 /* callbacks */
 static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
@@ -203,20 +502,14 @@ static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 	return TRUE;
 }
 
+
 /* FIXME some code is duplicated from callbacks.c */
-/* types */
+/* on_icon_button_press */
 static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon);
 static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon);
 static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		char const * label, GCallback callback, DesktopIcon * icon,
 		GtkWidget * menu);
-/* callbacks */
-static void _on_icon_open(gpointer data);
-static void _on_icon_edit(gpointer data);
-static void _on_icon_run(gpointer data);
-static void _on_icon_open_with(gpointer data);
-static void _on_icon_delete(gpointer data);
-static void _on_icon_properties(gpointer data);
 
 static gboolean _on_icon_button_press(GtkWidget * widget,
 		GdkEventButton * event, gpointer data)
@@ -235,13 +528,16 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 	}
 	if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
 	{
-		_on_icon_open(desktopicon);
+		if(desktopicon->isexec == TRUE) /* XXX slightly ugly */
+			_on_icon_run(desktopicon);
+		else
+			_on_icon_open(desktopicon);
 		return FALSE;
 	}
 	if(event->type != GDK_BUTTON_PRESS || event->button != 3)
 		return FALSE;
 	menu = gtk_menu_new();
-	if(desktopicon->isdir)
+	if(desktopicon->isdir == TRUE)
 		_popup_directory(menu, desktopicon);
 	else
 		_popup_file(menu, desktopicon);
@@ -255,13 +551,16 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 				G_CALLBACK(_on_icon_delete), desktopicon);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
-	menuitem = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_from_stock(
-			GTK_STOCK_PROPERTIES, NULL);
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_icon_properties), desktopicon);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(desktopicon->path != NULL)
+	{
+		menuitem = gtk_separator_menu_item_new();
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+		menuitem = gtk_image_menu_item_new_from_stock(
+				GTK_STOCK_PROPERTIES, NULL);
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_icon_properties), desktopicon);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, 3, event->time);
 	return TRUE;
@@ -292,7 +591,7 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 			"_Edit",
 #endif
 			G_CALLBACK(_on_icon_edit), desktopicon, menu);
-	if(desktopicon->isexec)
+	if(desktopicon->isexec == TRUE)
 	{
 		menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_EXECUTE,
 				NULL);
@@ -300,10 +599,13 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 				G_CALLBACK(_on_icon_run), desktopicon);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
-	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_icon_open_with), desktopicon);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	if(desktopicon->path != NULL && desktopicon->path[0] == '/')
+	{
+		menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
+		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+				G_CALLBACK(_on_icon_open_with), desktopicon);
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	}
 }
 
 static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
@@ -329,7 +631,7 @@ static void _on_icon_open(gpointer data)
 	Mime * mime;
 	pid_t pid;
 
-	if(desktopicon->isdir == 0)
+	if(desktopicon->isdir == FALSE)
 	{
 		mime = desktop_get_mime(desktopicon->desktop);
 		if(mime != NULL) /* XXX ugly */
@@ -379,8 +681,23 @@ static void _on_icon_run(gpointer data)
 		desktop_error(desktopicon->desktop, "fork", 0);
 	else if(pid == 0)
 	{
-		execl(desktopicon->path, desktopicon->path, NULL);
-		desktop_error(NULL, desktopicon->path, 0);
+		if(desktopicon->tryexec != NULL) /* XXX ugly */
+		{
+			execlp(desktopicon->tryexec, desktopicon->tryexec,
+					NULL);
+			desktop_error(NULL, desktopicon->tryexec, 0);
+		}
+		if(desktopicon->exec != NULL)
+		{
+			/* FIXME it's actually a format string */
+			execlp(desktopicon->exec, desktopicon->exec, NULL);
+			desktop_error(NULL, desktopicon->exec, 0);
+		}
+		else
+		{
+			execl(desktopicon->path, desktopicon->path, NULL);
+			desktop_error(NULL, desktopicon->path, 0);
+		}
 		exit(127);
 	}
 }
@@ -501,134 +818,4 @@ static void _on_icon_drag_data_received(GtkWidget * widget,
 
 	if(_common_drag_data_received(context, seldata, desktopicon->path) != 0)
 		desktop_error(desktopicon->desktop, "fork", 0);
-}
-
-
-/* desktopicon_delete */
-void desktopicon_delete(DesktopIcon * desktopicon)
-{
-	free(desktopicon->path);
-	gtk_widget_destroy(desktopicon->window);
-	free(desktopicon);
-}
-
-
-/* accessors */
-/* desktopicon_get_path */
-char const * desktopicon_get_path(DesktopIcon * desktopicon)
-{
-	return desktopicon->path;
-}
-
-
-/* desktopicon_get_selected */
-gboolean desktopicon_get_selected(DesktopIcon * desktopicon)
-{
-	return desktopicon->selected;
-}
-
-
-/* desktopicon_get_updated */
-gboolean desktopicon_get_updated(DesktopIcon * desktopicon)
-{
-	return desktopicon->updated;
-}
-
-
-/* desktopicon_set_icon */
-void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
-{
-	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
-	_desktopicon_update_transparency(desktopicon, icon);
-}
-
-
-/* desktopicon_set_immutable */
-void desktopicon_set_immutable(DesktopIcon * desktopicon, gboolean immutable)
-{
-	desktopicon->immutable = immutable;
-}
-
-
-/* desktopicon_set_selected */
-void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %p is %s\n", desktopicon, selected ? "selected"
-			: "deselected");
-#endif
-	desktopicon->selected = selected;
-	gtk_widget_set_state(desktopicon->event, selected
-			? GTK_STATE_SELECTED : GTK_STATE_NORMAL);
-}
-
-
-/* desktopicon_set_updated */
-void desktopicon_set_updated(DesktopIcon * desktopicon, gboolean updated)
-{
-	desktopicon->updated = updated;
-}
-
-
-/* useful */
-/* desktopicon_move */
-void desktopicon_move(DesktopIcon * desktopicon, int x, int y)
-{
-	gtk_window_move(GTK_WINDOW(desktopicon->window), x, y);
-}
-
-
-/* desktopicon_show */
-void desktopicon_show(DesktopIcon * desktopicon)
-{
-	gtk_widget_show_all(desktopicon->window);
-}
-
-
-/* private */
-/* desktopicon_update_transparency */
-static void _desktopicon_update_transparency(DesktopIcon * desktopicon,
-		GdkPixbuf * icon)
-{
-	int width;
-	int height;
-	int iwidth;
-	int iheight;
-	GdkBitmap * mask;
-	GdkBitmap * iconmask;
-	GdkGC * gc;
-	GdkColor black = { 0, 0, 0, 0 };
-	GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff };
-	GtkRequisition req;
-	int offset;
-
-	gtk_window_get_size(GTK_WINDOW(desktopicon->window), &width, &height);
-	iwidth = gdk_pixbuf_get_width(icon);
-	iheight = gdk_pixbuf_get_height(icon);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s) window is %dx%d\n", __func__,
-			desktopicon->path, width, height);
-#endif
-	mask = gdk_pixmap_new(NULL, width, height, 1);
-	gdk_pixbuf_render_pixmap_and_mask(icon, NULL, &iconmask, 255);
-	gc = gdk_gc_new(mask);
-	gdk_gc_set_foreground(gc, &black);
-	gdk_draw_rectangle(mask, gc, TRUE, 0, 0, width, height);
-	gdk_draw_drawable(mask, gc, iconmask, 0, 0,
-			(width - iwidth) / 2,
-			(DESKTOPICON_ICON_SIZE + 8 - iheight) / 2, -1, -1);
-	gdk_gc_set_foreground(gc, &white);
-	gtk_widget_size_request(desktopicon->label, &req);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s) label is %dx%d\n", __func__,
-			desktopicon->path, req.width, req.height);
-#endif
-	offset = DESKTOPICON_ICON_SIZE + 8;
-	gdk_draw_rectangle(mask, gc, TRUE, (width - req.width - 8) / 2,
-			offset + ((height - offset - req.height - 8)
-				/ 2), req.width + 8, req.height + 8);
-	gtk_widget_shape_combine_mask(desktopicon->window, mask, 0, 0);
-	g_object_unref(gc);
-	g_object_unref(iconmask);
-	g_object_unref(mask);
 }

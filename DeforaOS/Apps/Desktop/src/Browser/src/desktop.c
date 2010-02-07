@@ -30,11 +30,19 @@
 #include <errno.h>
 #include <X11/Xlib.h>
 #include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
 #include <System.h>
 #include "mime.h"
 #include "desktop.h"
-#define PACKAGE "desktop"
+#include "../config.h"
+
+#ifdef PACKAGE
+# undef PACKAGE
+#endif
+#define PACKAGE	"desktop"
+
+#ifndef PREFIX
+# define PREFIX	"/usr/local"
+#endif
 
 
 /* Desktop */
@@ -47,6 +55,7 @@
 /* types */
 struct _Desktop
 {
+	DesktopLayout layout;
 	DesktopIcon ** icon;
 	size_t icon_cnt;
 	Mime * mime;
@@ -55,6 +64,8 @@ struct _Desktop
 	size_t path_cnt;
 	DIR * refresh_dir;
 	time_t refresh_mti;
+	/* applications */
+	GSList * apps;
 
 	GdkWindow * root;
 	GdkPixbuf * background;
@@ -83,6 +94,8 @@ static Config * _desktop_get_config(Desktop * desktop);
 /* desktop_new */
 static Desktop * _new_error(Desktop * desktop, char const * message);
 static int _new_create_desktop(Desktop * desktop);
+static int _new_create_desktop_applications(Desktop * desktop);
+static int _new_create_desktop_files(Desktop * desktop);
 static void _new_add_home(Desktop * desktop);
 
 /* callbacks */
@@ -91,29 +104,31 @@ static gboolean _new_idle(gpointer data);
 static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
-Desktop * desktop_new(void)
+Desktop * desktop_new(DesktopLayout layout)
 {
 	Desktop * desktop;
-	char * file[] = { "gnome-fs-regular",
+	const char * file[] = { "gnome-fs-regular",
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_FILE,
 #endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
-	char * folder[] = { "gnome-fs-directory",
+	const char * folder[] = { "gnome-fs-directory",
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_DIRECTORY,
 #endif
 		GTK_STOCK_MISSING_IMAGE, NULL };
-	char ** p;
+	const char ** p;
 	gint x;
 	gint y;
 	gint depth;
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
+	desktop->layout = layout;
 	desktop->icon = NULL;
 	desktop->icon_cnt = 0;
 	desktop->path = NULL;
+	desktop->apps = NULL;
 	if((desktop->mime = mime_new()) == NULL
 			|| (desktop->icon = malloc(sizeof(*(desktop->icon))
 					* desktop->icon_cnt)) == NULL)
@@ -135,7 +150,6 @@ Desktop * desktop_new(void)
 		desktop->home = "/";
 	if(_new_create_desktop(desktop) != 0)
 		return _new_error(desktop, "Creating desktop");
-	_new_add_home(desktop);
 	desktop_refresh(desktop);
 	/* manage root window events */
 	desktop->menu = NULL;
@@ -163,6 +177,35 @@ static Desktop * _new_error(Desktop * desktop, char const * message)
 
 static int _new_create_desktop(Desktop * desktop)
 {
+	switch(desktop->layout)
+	{
+		case DL_APPLICATIONS:
+			return _new_create_desktop_applications(desktop);
+		case DL_FILES:
+		default:
+			return _new_create_desktop_files(desktop);
+	}
+}
+
+static int _new_create_desktop_applications(Desktop * desktop)
+{
+	const char path[] = PREFIX "/share/applications";
+	struct stat st;
+
+	if((desktop->path = strdup(path)) == NULL)
+		return 1;
+	desktop->path_cnt = sizeof(path);
+	if(stat(desktop->path, &st) == 0)
+		if(!S_ISDIR(st.st_mode))
+		{
+			errno = ENOTDIR;
+			return 1;
+		}
+	return 0;
+}
+
+static int _new_create_desktop_files(Desktop * desktop)
+{
 	struct stat st;
 
 	desktop->path_cnt = strlen(desktop->home) + strlen("/" DESKTOP) + 1;
@@ -170,7 +213,7 @@ static int _new_create_desktop(Desktop * desktop)
 		return 1;
 	snprintf(desktop->path, desktop->path_cnt, "%s%s", desktop->home,
 			"/" DESKTOP);
-	if(lstat(desktop->path, &st) == 0)
+	if(stat(desktop->path, &st) == 0)
 	{
 		if(!S_ISDIR(st.st_mode))
 		{
@@ -180,6 +223,7 @@ static int _new_create_desktop(Desktop * desktop)
 	}
 	else if(mkdir(desktop->path, 0777) != 0)
 		return 1;
+	_new_add_home(desktop);
 	return 0;
 }
 
@@ -191,14 +235,14 @@ static void _new_add_home(Desktop * desktop)
 	if((desktopicon = desktopicon_new(desktop, "Home", desktop->home))
 			== NULL)
 		return;
+	desktopicon_set_first(desktopicon, TRUE);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-home",
 			DESKTOPICON_ICON_SIZE, 0, NULL);
 	if(icon == NULL)
-		icon = gtk_icon_theme_load_icon(desktop->theme,
-				"gnome-fs-home", DESKTOPICON_ICON_SIZE,
-				0, NULL);
+		icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-fs-home",
+				DESKTOPICON_ICON_SIZE, 0, NULL);
 	if(icon != NULL)
 		desktopicon_set_icon(desktopicon, icon);
 }
@@ -507,7 +551,8 @@ int desktop_get_drag_data(Desktop * desktop, GtkSelectionData * seldata)
 	{
 		if(desktopicon_get_selected(desktop->icon[i]) != TRUE)
 			continue;
-		path = desktopicon_get_path(desktop->icon[i]);
+		if((path = desktopicon_get_path(desktop->icon[i])) == NULL)
+			continue;
 		len = strlen(path + 1);
 		if((p = realloc(seldata->data, seldata->length + len)) == NULL)
 		{
@@ -568,6 +613,8 @@ static int _error_text(char const * message, int ret)
 /* desktop_refresh */
 static void _refresh_current(Desktop * desktop);
 static int _current_loop(Desktop * desktop);
+static int _current_loop_applications(Desktop * desktop);
+static int _current_loop_files(Desktop * desktop);
 static gboolean _current_idle(gpointer data);
 static gboolean _current_done(Desktop * desktop);
 
@@ -585,7 +632,7 @@ void desktop_refresh(Desktop * desktop)
 			|| fstat(fd, &st) != 0
 			|| (desktop->refresh_dir = fdopendir(fd)) == NULL)
 	{
-		desktop_error(desktop, desktop->path, 0);
+		desktop_error(NULL, desktop->path, 0);
 		if(fd >= 0)
 			close(fd);
 		return;
@@ -593,13 +640,13 @@ void desktop_refresh(Desktop * desktop)
 #else
 	if((desktop->refresh_dir = opendir(desktop->path)) == NULL)
 	{
-		desktop_error(desktop, desktop->path, 0);
+		desktop_error(NULL, desktop->path, 0);
 		return;
 	}
 	fd = dirfd(desktop->refresh_dir);
 	if(fstat(fd, &st) != 0)
 	{
-		desktop_error(desktop, desktop->path, 0);
+		desktop_error(NULL, desktop->path, 0);
 		closedir(desktop->refresh_dir);
 		return;
 	}
@@ -620,6 +667,58 @@ static void _refresh_current(Desktop * desktop)
 }
 
 static int _current_loop(Desktop * desktop)
+{
+	switch(desktop->layout)
+	{
+		case DL_APPLICATIONS:
+			return _current_loop_applications(desktop);
+		case DL_FILES:
+		default:
+			return _current_loop_files(desktop);
+	}
+}
+
+static int _current_loop_applications(Desktop * desktop)
+{
+	struct dirent * de;
+	size_t len;
+	const char ext[] = ".desktop";
+	char * name = NULL;
+	char * p;
+	DesktopIcon * icon;
+
+	while((de = readdir(desktop->refresh_dir)) != NULL)
+	{
+		if(de->d_name[0] == '.')
+			if(de->d_name[1] == '\0' || (de->d_name[1] == '.'
+						&& de->d_name[2] == '\0'))
+				continue;
+		len = strlen(de->d_name);
+		if(len < sizeof(ext) || strncmp(&de->d_name[len - sizeof(ext)
+					+ 1], ext, sizeof(ext)) != 0)
+			continue;
+		if((p = realloc(name, desktop->path_cnt + len + 1)) == NULL)
+		{
+			error_set_print(PACKAGE, 1, "%s: %s", "realloc",
+					strerror(errno));
+			continue;
+		}
+		name = p;
+		sprintf(name, "%s/%s", desktop->path, de->d_name);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, name);
+#endif
+		if((icon = desktopicon_new_application(desktop, name)) == NULL)
+			continue;
+		desktop_icon_add(desktop, icon);
+		free(name);
+		return 0;
+	}
+	free(name);
+	return 1;
+}
+
+static int _current_loop_files(Desktop * desktop)
 {
 	struct dirent * de;
 	String * p;
@@ -775,8 +874,14 @@ static int _align_compare(const void * a, const void * b)
 {
 	DesktopIcon * icona = *(DesktopIcon**)a;
 	DesktopIcon * iconb = *(DesktopIcon**)b;
+	gboolean firsta = desktopicon_get_first(icona);
+	gboolean firstb = desktopicon_get_first(iconb);
 
-	return strcmp(desktopicon_get_path(icona), desktopicon_get_path(iconb));
+	if(firsta)
+		return firstb ? 0 : -1;
+	else if(firstb)
+		return 1;
+	return strcmp(desktopicon_get_name(icona), desktopicon_get_name(iconb));
 }
 
 
@@ -893,7 +998,9 @@ static Config * _desktop_get_config(Desktop * desktop)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: desktop\n", stderr);
+	fputs("Usage: desktop [-A | -F]\n"
+"  -A	Display the applications registered\n"
+"  -F	Display contents of the desktop folder [default]\n", stderr);
 	return 1;
 }
 
@@ -905,18 +1012,25 @@ int main(int argc, char * argv[])
 {
 	int o;
 	Desktop * desktop;
+	DesktopLayout layout = DL_FILES;
 	struct sigaction sa;
 
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "AF")) != -1)
 		switch(o)
 		{
+			case 'A':
+				layout = DL_APPLICATIONS;
+				break;
+			case 'F':
+				layout = DL_FILES;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind < argc)
 		return _usage();
-	if((desktop = desktop_new()) == NULL)
+	if((desktop = desktop_new(layout)) == NULL)
 	{
 		gtk_main();
 		return 2;

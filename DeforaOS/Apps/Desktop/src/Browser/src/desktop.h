@@ -33,10 +33,11 @@ typedef struct _DesktopIcon DesktopIcon;
 #  define Desktop Desktop
 typedef struct _Desktop Desktop;
 # endif
+typedef enum _DesktopLayout { DL_FILES, DL_APPLICATIONS } DesktopLayout;
 
 
 /* functions */
-Desktop * desktop_new(void);
+Desktop * desktop_new(DesktopLayout layout);
 void desktop_delete(Desktop * desktop);
 
 /* accessors */
