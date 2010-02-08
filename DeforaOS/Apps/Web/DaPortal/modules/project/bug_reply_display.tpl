@@ -16,6 +16,6 @@
 	<div class="status"><?php echo _html_safe(PRIORITY_CHANGED_TO.' "'.$reply['priority'].'"'); ?></div>
 <?php } ?>
 <?php if($admin && isset($reply['content_id'])) { ?>
-	<div><a href="<?php echo _html_link('project', 'bug_reply_modify', $reply['id']); ?>"><div class="icon edit"></div><?php echo _html_safe(EDIT); ?></a></div>
+	<div><a href="<?php echo _html_link('project', 'bug_reply_modify', $reply['id']); ?>"><button class="icon edit"><?php echo _html_safe(EDIT); ?></button></a></div>
 <?php } ?>
 </div>
