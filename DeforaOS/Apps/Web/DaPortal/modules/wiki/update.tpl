@@ -59,10 +59,10 @@
 		<span class="icon align_right" title="<?php echo _html_safe(ALIGN_RIGHT); ?>" onclick="editorExec('justifyright')"></span>
 		<span class="icon align_justify" title="<?php echo _html_safe(ALIGN_JUSTIFY); ?>" onclick="editorExec('justifyfull')"></span>
 		<span class="separator"></span>
-		<span class="icon bullet" title="Bullets" onclick="editorExec('insertunorderedlist')"></span>
-		<span class="icon enum" title="Enumerated" onclick="editorExec('insertorderedlist')"></span>
-		<span class="icon unindent" title="Unindent" onclick="editorExec('outdent')"></span>
-		<span class="icon indent" title="Indent" onclick="editorExec('indent')"></span>
+		<span class="icon bullet" title="<?php echo _html_safe(BULLETS); ?>" onclick="editorExec('insertunorderedlist')"></span>
+		<span class="icon enum" title="<?php echo _html_safe(ENUMERATED); ?>" onclick="editorExec('insertorderedlist')"></span>
+		<span class="icon unindent" title="<?php echo _html_safe(UNINDENT); ?>" onclick="editorExec('outdent')"></span>
+		<span class="icon indent" title="<?php echo _html_safe(INDENT); ?>" onclick="editorExec('indent')"></span>
 	</div>
 	</form>
 	<form action="<?php echo _html_link(); ?>" method="post" onsubmit="editorSubmit()">
