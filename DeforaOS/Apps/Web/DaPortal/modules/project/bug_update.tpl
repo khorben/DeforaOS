@@ -11,7 +11,7 @@
 	<table>
 		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td colspan="3"><input type="text" name="title" value="<?php if(isset($bug['title'])) echo _html_safe($bug['title']); ?>" size="50"/></td></tr>
 <?php if(isset($bug)) { ?>
-		<tr><td class="field">State:</td><td><select name="state">
+		<tr><td class="field"><?php echo _html_safe(STATE); ?>:</td><td><select name="state">
 <?php $states = _sql_enum('daportal_bug', 'state');
 foreach($states as $s) { ?>
 				<option value="<?php echo _html_safe($s); ?>"<?php if($bug['state'] == $s) { ?> selected="selected"<?php } ?>><?php echo _html_safe($s); ?></option>
