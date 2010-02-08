@@ -26,6 +26,7 @@ $text['PRIORITY'] = 'Priorität';
 $text['PROJECT'] = 'Projekt';
 $text['PROJECT_LIST'] = 'Projektliste';
 $text['PROJECTS'] = 'Projekte';
+$text['QUELLCODE'] = 'Quellcode';
 $text['STATE'] = 'Stand';
 $text['TIMELINE'] = 'Fortschritt';
 

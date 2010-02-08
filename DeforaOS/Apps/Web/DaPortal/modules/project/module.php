@@ -69,6 +69,7 @@ $text['REPORT_BUG_FOR'] = 'Report bug for';
 $text['REPORT_LIST'] = 'Report list';
 $text['REVISION'] = 'Revision';
 $text['SCREENSHOTS'] = 'Screenshots';
+$text['SOURCE_CODE'] = 'Source code';
 $text['SYNOPSIS'] = 'Synopsis';
 $text['SELECT_PROJECT_TO_BUG'] = 'Select project to bug';
 $text['SETTINGS'] = 'Settings';
@@ -936,7 +937,7 @@ function project_bug_reply_insert($args)
 	$cnt = count($keys);
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
-	$title = '[Bug reply] '.stripslashes($args['title']);
+	$title = '[Bug reply] #'.$bug_id.': '.stripslashes($args['title']);
 	$content = $from.$status."\n".stripslashes($args['content']);
 	require_once('./system/mail.php');
 	_mail('Administration Team', $to, $title, wordwrap($content, 72));
@@ -1197,6 +1198,7 @@ function project_download($args)
 		return _error('Both category and download modules must be'
 				.' installed');
 	$project = _sql_array('SELECT project_id AS id, title AS name, synopsis'
+			.', cvsroot'
 			.' FROM daportal_project, daportal_content'
 			.' WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
@@ -1328,6 +1330,16 @@ function project_download($args)
 					'class' => array('date' => DATE),
 					'toolbar' => $toolbar,
 					'view' => 'details'));
+	}
+	/* source code */
+	if(strlen($project['cvsroot']) && ($repository = _config_get('project',
+					'repository')) != FALSE)
+	{
+		print('<h2>'._html_safe(SOURCE_CODE).'</h2>'."\n");
+		print("<p>The source code is available over anonymous CVS:"
+				."</p>\n");
+		print('<pre>$ cvs -d:'._html_safe($repository)' co '
+				.$project['cvsroot']."</pre>\n");
 	}
 }
 
