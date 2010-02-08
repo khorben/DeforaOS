@@ -1,4 +1,4 @@
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="project"/>
 	<input type="hidden" name="action" value="bug_reply<?php echo isset($reply['id']) ? '_update' : ''; ?>"/>
 <?php if(!isset($reply['id'])) { ?>
@@ -38,6 +38,6 @@ foreach($priorities as $p) { ?>
 			</select></td></tr>
 <?php } ?>
 		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><?php if(isset($reply['content'])) echo _html_safe($reply['content']); ?></textarea></td></tr>
-		<tr><td></td><td><?php if(!isset($reply['id'])) { ?><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>"/><?php } else { ?><input type="submit" value="<?php echo _html_safe(UPDATE); ?>"/><?php } ?></td></tr>
+		<tr><td></td><td><?php if(!isset($reply['id'])) { ?><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview"/> <input type="submit" name="submit" value="<?php echo _html_safe(SEND); ?>" class="icon submit"/><?php } else { ?><input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/><?php } ?></td></tr>
 	</table>
 </form>
