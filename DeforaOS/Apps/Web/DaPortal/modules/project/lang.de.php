@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@ $text['PRIORITY'] = 'Priorität';
 $text['PROJECT'] = 'Projekt';
 $text['PROJECT_LIST'] = 'Projektliste';
 $text['PROJECTS'] = 'Projekte';
-$text['QUELLCODE'] = 'Quellcode';
+$text['SOURCE_CODE'] = 'Quellcode';
 $text['STATE'] = 'Stand';
 $text['TIMELINE'] = 'Fortschritt';
 
