@@ -148,7 +148,7 @@ function _content_user_update($id, $title, $content, $timestamp = FALSE)
 		return FALSE;
 	$sql = "UPDATE daportal_content SET title='$title'"
 		.", content='$content'";
-	if($timestamp != FALSE)
+	if($timestamp !== FALSE)
 		$sql.=", timestamp='$timestamp'";
 	$sql.=" WHERE user_id='$user_id' AND content_id='$id'";
 	return _sql_query($sql);
@@ -165,17 +165,17 @@ function _content_update($id, $title, $content = FALSE, $timestamp = FALSE)
 		return FALSE;
 	$sql = 'UPDATE daportal_content SET';
 	$sep = '';
-	if($title != FALSE)
+	if($title !== FALSE)
 	{
 		$sql.=" title='$title'";
 		$sep = ',';
 	}
-	if($content != FALSE)
+	if($content !== FALSE)
 	{
 		$sql.=$sep." content='$content'";
 		$sep = ',';
 	}
-	if($timestamp != FALSE)
+	if($timestamp !== FALSE)
 		$sql.=$sep." timestamp='$timestamp'";
 	$sql.=" WHERE module_id='$module_id' AND content_id='$id'";
 	return _sql_query($sql);
