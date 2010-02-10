@@ -1,5 +1,5 @@
 <h1 class="title project"><?php echo _html_safe($title); ?></h1>
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="project"/>
 	<input type="hidden" name="action" value="<?php echo isset($project) ? 'update' : 'insert'; ?>"/>
 <?php if(isset($project['id'])) { ?>
