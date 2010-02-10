@@ -1,4 +1,4 @@
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="download"/>
 	<input type="hidden" name="action" value="directory_insert"/>
 <?php if(is_numeric($parent)) { ?>
