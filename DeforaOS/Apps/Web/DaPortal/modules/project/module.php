@@ -829,6 +829,8 @@ function project_bug_reply_insert($args)
 				!= TRUE)
 			|| $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
+	if(!isset($args['id']) || !isset($args['bug_id']))
+		return _error(INVALID_ARGUMENT);
 	require_once('./system/user.php');
 	$enabled = ($admin = _user_admin($user_id)) ? ''
 		: " AND enabled='1'";
