@@ -17,6 +17,6 @@
 		<tr><td class="field"><?php echo _html_safe(ADMINISTRATOR); ?>:</td><td><input type="checkbox" name="admin"<?php if(isset($user['admin']) && $user['admin'] == SQL_TRUE) { ?> checked="checked"<?php } ?>/></td>
 		<tr><td class="field">e-mail:</td><td><input type="text" name="email" value="<?php if(isset($user)) echo _html_safe($user['email']); ?>"/></td>
 <?php } ?>
-		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(isset($user) ? UPDATE : CREATE); ?>"/></td></tr>
+		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(isset($user) ? UPDATE : CREATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
