@@ -98,7 +98,7 @@ function _html_pre($string)
 		else
 			$line.="<br/>\n";
 		$line = preg_replace('/((ftp|http|https|mailto):'
-				.'\/\/([-+a-zA-Z0-9.\/_%?=,;~#@]|&amp;)+)/',
+				.'\/\/([-+a-zA-Z0-9.:\/_%?=,;~#@]|&amp;)+)/',
 				'<a href="\1">\1</a>', $line);
 		$string.=$line;
 	}
