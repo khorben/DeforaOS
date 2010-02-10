@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -28,12 +28,14 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text = array();
 $text['ACCESS_TIME'] = 'Access time';
 $text['BACK'] = 'Back';
+$text['BROWSE'] = 'Browse';
 $text['COMMENT'] = 'Comment';
 $text['CREATE'] = 'Create';
 $text['CREATION_TIME'] = 'Creation time';
 $text['DOWNLOAD'] = 'Download';
 $text['DOWNLOADS_ADMINISTRATION'] = 'Downloads administration';
 $text['DOWNLOADS_LIST'] = 'Downloads list';
+$text['FILE'] = 'File';
 $text['FORWARD'] = 'Forward';
 $text['IMAGE_PREVIEW'] = 'Image preview';
 $text['MODE'] = 'Permissions';
@@ -46,6 +48,7 @@ $text['PERMISSIONS'] = 'Permissions';
 $text['SETTINGS'] = 'Settings';
 $text['SIZE'] = 'Size';
 $text['TYPE'] = 'Type';
+$text['UPLOAD'] = 'Upload';
 $text['UPLOAD_FILE'] = 'Upload file';
 global $lang;
 if($lang == 'fr')
@@ -56,6 +59,7 @@ _lang($text);
 define('S_IFDIR', 01000);
 
 
+//private
 function _permissions($mode)
 {
 	$str = '----------';
@@ -74,6 +78,7 @@ function _permissions($mode)
 }
 
 
+//public
 function download_admin($args)
 {
 	global $user_id;
@@ -484,6 +489,7 @@ function download_file_new($args)
 {
 	global $user_id;
 
+	require_once('./system/user.php');
 	if(!_user_admin($user_id))
 		return _error(PERMISSION_DENIED);
 	print('<h1 class="title download">'._html_safe(UPLOAD_FILE)."</h1>\n");
