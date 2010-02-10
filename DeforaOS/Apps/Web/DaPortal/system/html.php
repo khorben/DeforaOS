@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -97,8 +97,8 @@ function _html_pre($string)
 		}
 		else
 			$line.="<br/>\n";
-		$line = preg_replace('/((ftp|http|https):'
-				.'\/\/([-+a-zA-Z0-9.\/_%?=,;~#]|&amp;)+)/',
+		$line = preg_replace('/((ftp|http|https|mailto):'
+				.'\/\/([-+a-zA-Z0-9.\/_%?=,;~#@]|&amp;)+)/',
 				'<a href="\1">\1</a>', $line);
 		$string.=$line;
 	}
