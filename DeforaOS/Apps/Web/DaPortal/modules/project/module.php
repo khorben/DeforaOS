@@ -946,8 +946,11 @@ function project_bug_reply_insert($args)
 	$cnt = count($keys);
 	for($i = 1; $i < $cnt; $i++)
 		$to.=', '.$keys[$i].' <'.$rcpt[$keys[$i]].'>';
-	$title = '[Bug reply] #'.$bug_id.': '.stripslashes($args['title']);
-	$content = $from.$status."\n".stripslashes($args['content'])."\n\n"
+	$project = _project_name($project_id);
+	$title = '[Bug reply] '.$project.'/#'.$bug_id.': '
+		.stripslashes($args['title']);
+	$content = 'Project: '.$project."\n".$from.$status."\n"
+		.stripslashes($args['content'])."\n\n"
 		._module_link_full('project', 'bug_display', $content_id, FALSE,
 				array('bug_id' => $bug_id));
 	require_once('./system/mail.php');
