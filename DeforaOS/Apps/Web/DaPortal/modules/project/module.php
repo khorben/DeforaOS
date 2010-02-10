@@ -506,7 +506,7 @@ function project_bug_enable($args)
 
 function project_bug_insert($args)
 {
-	global $user_id;
+	global $user_id, $user_name;
 
 	if(($user_id == 0 && _config_get('project', 'anonymous_bug_reports')
 				!= TRUE)
@@ -535,7 +535,7 @@ function project_bug_insert($args)
 	$bugid = _sql_single('SELECT bug_id FROM daportal_bug WHERE content_id='
 			."'$id'");
 	//send mail
-	$to = _sql_array('SELECT username, email'
+	$to = _sql_array('SELECT username, email, title'
 			.' FROM daportal_project, daportal_content'
 			.', daportal_user'
 			.' WHERE daportal_project.project_id'
@@ -553,16 +553,22 @@ function project_bug_insert($args)
 		_error('Could not list members', 0);
 	else
 	{
+		$project = $to[0]['title'];
 		$to = $to[0]['username'].' <'.$to[0]['email'].'>';
 		foreach($members as $m)
 			$to.=', '.$m['username'].' <'.$m['email'].'>';
-		$title = '[Bug submission] '.$args['title'];
-		$content = 'State: New'."\n".'Type: '.$args['type']."\n"
+		$title = '[Bug submission] '.$project.'/#'.$bugid.': '
+			.stripslashes($args['title']);
+		$content = 'Project: '.$project."\n".'From: '.$user_name."\n"
+			.'State: New'."\n".'Type: '.$args['type']."\n"
 			.'Priority: '.$args['priority']."\n\n"
 			.stripslashes($args['content']);
+		$content = wordwrap($content, 72)."\n\n"
+			._module_link_full('project', 'bug_display', $id,
+					stripslashes($args['title']),
+					array('bug_id' => $bugid));
 		require_once('./system/mail.php');
-		_mail('Administration Team', $to, $title, wordwrap($content,
-					72));
+		_mail('Administration Team', $to, $title, $content);
 	}
 	if($enable)
 		return project_bug_display(array('id' => $id,
