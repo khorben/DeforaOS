@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2008 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -24,10 +24,12 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text['BACK'] = 'Précédent';
+$text['BROWSE'] = 'Parcourir';
 $text['COMMENT'] = 'Commentaire';
 $text['CREATE'] = 'Créer';
-$text['DOWNLOADS_ADMINISTRATION'] = 'Administration des downloads';
-$text['DOWNLOADS_LIST'] = 'Liste des downloads';
+$text['DOWNLOADS_ADMINISTRATION'] = 'Administration des téléchargements';
+$text['DOWNLOADS_LIST'] = 'Liste des téléchargements';
+$text['FILE'] = 'Fichier';
 $text['FORWARD'] = 'Suivant';
 $text['IMAGE_PREVIEW'] = "Aperçu de l'image";
 $text['NEW_DIRECTORY'] = 'Nouveau répertoire';
