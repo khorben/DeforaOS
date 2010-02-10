@@ -736,6 +736,7 @@ function project_bug_modify($args)
 	$bug = $bug[0];
 	$title = MODIFICATION_OF_BUG_HASH.$bug['bug_id'].': '.$bug['title'];
 	$members = _project_members($bug['project_id']);
+	$project_id = $bug['project_id'];
 	include('./modules/project/bug_update.tpl');
 }
 
