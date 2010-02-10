@@ -419,3 +419,22 @@ div.probe div.graph {
 	float:			left;
 	width:			200px;
 }
+
+
+/* search */
+.search .entry {
+	padding-bottom:		4px;
+	padding-top:		4px;
+}
+
+.search .entry .title {
+	border-bottom:		1px solid #000000;
+	border-left:		1px solid #ffffff;
+	border-right:		1px solid #000000;
+	border-top:		1px solid #ffffff;
+	margin:			0;
+}
+
+.search .entry .author, .search .entry .date {
+	display:		inline;
+}
