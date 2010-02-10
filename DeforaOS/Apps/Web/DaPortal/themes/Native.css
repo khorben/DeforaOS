@@ -421,6 +421,31 @@ div.probe div.graph {
 }
 
 
+/* project */
+.bug_reply div {
+	padding:		4px;
+}
+
+.bug_reply .author {
+	display:		inline;
+	padding-right:		0;
+}
+
+.bug_reply .date {
+	display:		inline;
+	padding-left:		0;
+}
+
+.bug_reply .status {
+	font-weight:		bold;
+	margin:			4px;
+}
+
+.bug_reply .title {
+	font-weight:		bold;
+}
+
+
 /* search */
 .search .entry {
 	padding-bottom:		4px;
