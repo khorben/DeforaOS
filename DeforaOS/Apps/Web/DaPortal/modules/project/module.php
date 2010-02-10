@@ -600,7 +600,7 @@ function project_bug_list($args)
 	else if(isset($args['project']))
 	{
 		if(($project_id = _project_id($args['project'])) != FALSE)
-			$project = $args['project'];
+			$project = stripslashes($args['project']);
 	}
 	if(isset($args['user_id']))
 	{
