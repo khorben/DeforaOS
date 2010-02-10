@@ -50,6 +50,7 @@ input[type="password"], input[type="text"], pre, select, textarea {
 h1, h2, h3 {
 	border-left:		0;
 	border-right:		0;
+	padding-left:		4px;
 }
 
 h1.title, h2.title {
@@ -96,6 +97,8 @@ p {
 
 pre {
 	background-color:	#ffffff;
+	margin:			4px;
+	padding:		4px;
 }
 
 
