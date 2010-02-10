@@ -1338,7 +1338,7 @@ function project_download($args)
 		print('<h2>'._html_safe(SOURCE_CODE).'</h2>'."\n");
 		print("<p>The source code is available over anonymous CVS:"
 				."</p>\n");
-		print('<pre>$ cvs -d:'._html_safe($repository)' co '
+		print('<pre>$ cvs -d:'._html_safe($repository).' co '
 				.$project['cvsroot']."</pre>\n");
 	}
 }
