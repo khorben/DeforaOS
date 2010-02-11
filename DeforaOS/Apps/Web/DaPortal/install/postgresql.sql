@@ -149,7 +149,8 @@ INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('
 
 /* module: probe */
 INSERT INTO daportal_module (name, enabled) VALUES ('probe', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('11', 'string', 'Path to the RRD databases', 'RRD_repository', '/var/lib/Probe');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('11', 'Path to the rrdtool executable', 'string', 'rrdtool', 'rrdtool');
+INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('11', 'Path to the RRD database', 'string', 'RRD_repository', '/var/lib/Probe');
 
 
 /* module: webmail */

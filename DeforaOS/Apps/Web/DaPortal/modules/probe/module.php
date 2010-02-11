@@ -211,7 +211,10 @@ function _host_graph($id, $type, $time, $param = FALSE)
 	if(is_readable($file) && ($st = stat($file)) != FALSE
 			&& $st['mtime'] + 30 > time())
 		return $ret;
-	$cmd = 'rrdtool graph --slope-mode '.escapeshellarg($file)
+	if(($rrdtool = _config_get('probe', 'rrdtool')) == FALSE)
+		$rrdtool = 'rrdtool';
+	$rrdtool = escapeshellarg($rrdtool);
+	$cmd = $rrdtool.' graph --slope-mode '.escapeshellarg($file)
 		.' --start '.$start.' --imgformat PNG'
 		.' -c BACK#dcdad5 -c SHADEA#ffffff -c SHADEB#9e9a91';
 	if(isset($ret['base']))
