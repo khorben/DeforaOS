@@ -457,13 +457,14 @@ function download_file_insert($args)
 	if(!isset($_FILES['file']) || !isset($args['parent']))
 		return _error(INVALID_ARGUMENT);
 	$title = $_FILES['file']['name'];
+	$comment = isset($args['comment']) ? $args['comment'] : '';
 	if(!($root = _config_get('download', 'root')))
 		return _error('No root directory');
 	$parent = is_numeric($args['parent']) ? "'".$args['parent']."'"
 		: 'NULL';
 	//FIXME not twice the same filename in a directory
 	require_once('./system/content.php');
-	if(!($content_id = _content_insert($title, '', 1)))
+	if(!($content_id = _content_insert($title, $comment, 1)))
 		return _error('Unable to upload file');
 	if(!_sql_query('INSERT INTO daportal_download (content_id, parent)'
 			." VALUES ('$content_id', $parent)"))
