@@ -1,4 +1,4 @@
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="<?php echo _html_safe($module); ?>"/>
 	<input type="hidden" name="action" value="<?php echo _html_safe($action); ?>"/>
 	<table>
@@ -11,6 +11,6 @@
 		default: ?><input type="text" size="30" name="<?php echo _html_safe($module.'_'.$configs[$i]['name']); ?>" value="<?php echo _html_safe($configs[$i]['value']); ?>"/><?php
 		break; ?><?php } ?></td></tr>
 <?php } ?>
-		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
+		<tr><td></td><td><button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
