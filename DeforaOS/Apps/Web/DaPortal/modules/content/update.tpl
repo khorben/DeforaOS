@@ -1,5 +1,5 @@
 <h1 class="title content"><?php echo _html_safe($title); ?></h1>
-<form action="index.php" method="post">
+<form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="content"/>
 	<input type="hidden" name="action" value="update"/>
 	<input type="hidden" name="id" value="<?php echo $id; ?>"/>
@@ -16,6 +16,6 @@
 				<option value="0"<?php if($content['enabled'] == SQL_FALSE) echo ' selected="selected"'; ?>><?php echo _html_safe(NO); ?></option>
 				<option value="1"<?php if($content['enabled'] == SQL_TRUE) echo ' selected="selected"'; ?>><?php echo _html_safe(YES); ?></option>
 			</select></td></tr>
-		<tr><td></td><td><a href="<?php echo _html_link('content', 'admin'); ?>"><button><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo _html_safe(UPDATE); ?>"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('content', 'admin'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
