@@ -34,7 +34,7 @@ default_ca	= CA_default		# The default ca section
 ####################################################################
 [ CA_default ]
 
-dir		= $HOME/<?php echo $ca['title']; ?>		# Where everything is kept
+dir		= $HOME/<?php echo $ca['title']."\n"; ?>	# Where everything is kept
 certs		= $dir/certs		# Where the issued certs are kept
 crl_dir		= $dir/crl		# Where the issued crl are kept
 database	= $dir/index.txt	# database index file.
@@ -122,17 +122,17 @@ string_mask = nombstr
 
 [ req_distinguished_name ]
 countryName			= Country Name (2 letter code)
-countryName_default		= <?php echo $ca['country']; ?>
+countryName_default		= <?php echo $ca['country']."\n"; ?>
 countryName_min			= 2
 countryName_max			= 2
 
 stateOrProvinceName		= State or Province Name (full name)
-stateOrProvinceName_default	= <?php echo $ca['state']; ?>
+stateOrProvinceName_default	= <?php echo $ca['state']."\n"; ?>
 
 localityName			= Locality Name (eg, city)
 
 0.organizationName		= Organization Name (eg, company)
-0.organizationName_default	= <?php echo $ca['organization']; ?>
+0.organizationName_default	= <?php echo $ca['organization']."\n"; ?>
 
 # we can do this but it is not needed normally :-)
 #1.organizationName		= Second Organization Name (eg, company)
