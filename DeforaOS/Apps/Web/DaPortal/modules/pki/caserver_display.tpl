@@ -9,5 +9,5 @@
 		<tr><td class="field"><?php echo _html_safe(COMMON_NAME); ?> (CN):</td><td><?php echo _html_safe($caserver['cn']); ?></td></tr>
 		<tr><td class="field"><?php echo _html_safe(EMAIL); ?>:</td><td><a href="mailto:<?php echo _html_safe($caserver['email']); ?>"><?php echo _html_safe($caserver['email']); ?></a></td></tr>
 	</table>
-	<div class="toolbar"><form action="index.php" method="post"><input type="hidden" name="module" value="pki"/><input type="hidden" name="action" value="caserver_export"/><input type="hidden" name="id" value="<?php echo _html_safe($caserver['id']); ?>"/><?php echo _html_safe(KEY); ?>: <input type="password" name="key" value=""/> <input type="submit" value="<?php echo _html_safe(EXPORT); ?>"/></form></div>
+	<div class="toolbar"><form action="<?php echo _html_link(); ?>" method="post"><input type="hidden" name="module" value="pki"/><input type="hidden" name="action" value="caserver_export"/><input type="hidden" name="id" value="<?php echo _html_safe($caserver['id']); ?>"/><?php echo _html_safe(KEY); ?>: <input type="password" name="key" value=""/> <input type="submit" value="<?php echo _html_safe(EXPORT); ?>"/></form></div>
 </div>

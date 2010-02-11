@@ -2,7 +2,7 @@
 <?php if(isset($title)) { ?>
 	<h1 class="title caserver"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
-	<form action="index.php" method="post">
+	<form action="<?php echo _html_link(); ?>" method="post">
 		<input type="hidden" name="module" value="pki"/>
 <?php if(isset($caserver['id'])) { ?>
 		<input type="hidden" name="action" value="caserver_update"/>
