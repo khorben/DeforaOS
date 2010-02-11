@@ -104,6 +104,7 @@ $text['PREVIEW'] = 'Preview';
 $text['READ'] = 'Read';
 $text['REFRESH'] = 'Refresh';
 $text['REPLY'] = 'Reply';
+$text['RESET'] = 'Reset';
 $text['SEARCH'] = 'Search';
 $text['SEND'] = 'Send';
 $text['SUBMIT'] = 'Submit';
