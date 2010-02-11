@@ -8,9 +8,9 @@
 	<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><?php echo str_replace("\r\n", "<br/>\n",_html_pre($bug['content'])); ?></td>
 </table>
 <form>
-<a href="<?php echo _html_link('project', 'bug_reply', $bug['id']); ?>"><button class="icon reply"><?php echo _html_safe(REPLY); ?></button></a>
+<a href="<?php echo _html_link('project', 'bug_reply', $bug['id']); ?>"><button type="button" class="icon reply"><?php echo _html_safe(REPLY); ?></button></a>
 <?php if($admin == 1) { ?>
-<a href="<?php echo _html_link('project', 'bug_modify', $bug['id'], $bug['title'], 'bug_id='.$bug['bug_id']); ?>"><button class="icon edit"><?php echo _html_safe(EDIT); ?></button></a></td></tr>
+<a href="<?php echo _html_link('project', 'bug_modify', $bug['id'], $bug['title'], 'bug_id='.$bug['bug_id']); ?>"><button type="button" class="icon edit"><?php echo _html_safe(EDIT); ?></button></a></td></tr>
 <?php } ?>
 </form>
 </div>

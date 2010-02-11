@@ -36,6 +36,6 @@ foreach($priorities as $p) { ?>
 <?php } ?>
 			</select></td><?php } ?></tr>
 		<tr><td class="field"><?php echo _html_safe(DESCRIPTION); ?>:</td><td colspan="3"><textarea name="content" cols="50" rows="10"><?php if(isset($bug['content'])) echo _html_safe($bug['content']); ?></textarea></td></tr>
-		<tr><td></td><td><input type="submit" value="<?php echo (!isset($bug)) ? _html_safe(SEND) : _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('project', 'bug_list', $project_id); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo (!isset($bug)) ? _html_safe(SEND) : _html_safe(UPDATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
