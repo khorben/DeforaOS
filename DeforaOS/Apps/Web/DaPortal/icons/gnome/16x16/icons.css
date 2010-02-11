@@ -148,6 +148,10 @@
 	background-image:		url('reply.png');
 }
 
+.icon.reset {
+	background-image:		url('reset.png');
+}
+
 .icon.search, h3.title.search, .icon.preview {
 	background-image:		url('search.png');
 }
