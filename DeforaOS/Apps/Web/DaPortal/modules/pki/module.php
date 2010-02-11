@@ -42,6 +42,7 @@ $text['NEW_CA'] = 'New CA';
 $text['NEW_CACLIENT_FOR'] = 'New client for';
 $text['NEW_CASERVER_FOR'] = 'New server for';
 $text['ORGANIZATION'] = 'Organization';
+$text['PARENT'] = 'Parent';
 $text['PARENT_CA'] = 'Parent CA';
 $text['PKI'] = 'PKI';
 $text['PKI_ADMINISTRATION'] = 'PKI administration';
