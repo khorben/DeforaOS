@@ -21,7 +21,7 @@
 			<tr><td class="field"><?php echo _html_safe(SECTION); ?> (OU):</td><td><input type="text" name="section" value="<?php if(isset($caserver['section'])) echo _html_safe($caserver['section']); ?>"/></td></tr>
 			<tr><td class="field"><?php echo _html_safe(COMMON_NAME); ?> (CN):</td><td><input type="text" name="cn" value="<?php if(isset($caserver['cn'])) echo _html_safe($caserver['cn']); ?>"/></td></tr>
 			<tr><td class="field"><?php echo _html_safe(EMAIL); ?>:</td><td><input type="text" name="email" value="<?php if(isset($caserver['email'])) echo _html_safe($caserver['email']); ?>"/></td></tr>
-			<tr><td></td><td><input type="submit" value="<?php echo isset($caserver['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/></td></tr>
+			<tr><td></td><td><input type="submit" value="<?php echo isset($caserver['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/></td></tr>
 		</table>
 	</form>
 </div>
