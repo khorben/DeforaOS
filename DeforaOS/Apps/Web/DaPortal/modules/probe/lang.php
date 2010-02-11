@@ -26,6 +26,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 $text['ALL_HOSTS'] = 'All hosts';
 $text['COMMENT'] = 'Comment';
 $text['CONFIGURATION_ERROR'] = 'Configuration error';
+$text['CREATE'] = 'Create';
 $text['GRAPH_LIST'] = 'Graph list';
 $text['HOST_LIST'] = 'Host list';
 $text['HOSTNAME'] = 'Hostname';
