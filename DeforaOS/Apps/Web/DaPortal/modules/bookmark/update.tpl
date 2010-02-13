@@ -10,6 +10,6 @@
 		<tr><td class="field"><?php echo _html_safe(TITLE); ?>:</td><td><input type="text" name="title" value="<?php echo _html_safe($bookmark['title']); ?>" size="50"/></td></tr>
 		<tr><td class="field">Description:</td><td><textarea name="content" cols="50" rows="3"><?php echo _html_safe($bookmark['content']); ?></textarea></td></tr>
 		<tr><td class="field"><?php echo _html_safe(BOOKMARK_PUBLIC); ?>:</td><td><input type="checkbox" name="enabled"<?php if($bookmark['enabled'] == SQL_TRUE) { ?> checked="checked"<?php } ?>/></td></tr>
-		<tr><td></td><td><a href="<?php echo _html_link('bookmark', FALSE, $bookmark['id'], $bookmark['title']); ?>"><button class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo isset($bookmark['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('bookmark', FALSE, $bookmark['id'], $bookmark['title']); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo isset($bookmark['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
