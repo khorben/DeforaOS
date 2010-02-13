@@ -1,9 +1,9 @@
 <h1 class="title download"><?php echo _html_safe(DOWNLOADS.': '.$file['name']); ?></h1>
 <p>
-	<a href="<?php echo _html_link('download', FALSE, FALSE, FALSE, 'download_id='.$file['parent']); ?>"><button class="icon parent_directory"><?php echo _html_safe(BROWSE); ?></button></a>
-	<a href="<?php echo _html_link('download', 'download', $file['id'], $file['name']); ?>"><button class="icon download"><?php echo _html_safe(DOWNLOAD); ?></button></a>
+	<a href="<?php echo _html_link('download', FALSE, FALSE, FALSE, 'download_id='.$file['parent']); ?>"><button type="button" class="icon parent_directory"><?php echo _html_safe(BROWSE); ?></button></a>
+	<a href="<?php echo _html_link('download', 'download', $file['id'], $file['name']); ?>"><button type="button" class="icon download"><?php echo _html_safe(DOWNLOAD); ?></button></a>
 <?php global $user_id; if(_user_admin($user_id)) { ?>
-	<a href="<?php echo _html_link('download', 'file_update', $file['id'], $file['name']); ?>"><button class="icon edit"><?php echo _html_safe(UPDATE); ?></button></a>
+	<a href="<?php echo _html_link('download', 'file_update', $file['id'], $file['name']); ?>"><button type="button" class="icon edit"><?php echo _html_safe(UPDATE); ?></button></a>
 <?php } ?>
 </p>
 <table>
