@@ -196,8 +196,8 @@ function download_default($args)
 		print(': '._html_safe($file['name']));
 	print("</h1>\n");
 	$sql = 'SELECT daportal_content.content_id AS id, title AS name'
-		.', daportal_content.enabled AS enabled, mode'
-		.', daportal_content.user_id AS user_id, username'
+		.', daportal_content.enabled AS enabled, timestamp AS date'
+		.', mode, daportal_content.user_id AS user_id, username'
 		.' FROM daportal_download, daportal_content, daportal_user'
 		.' WHERE daportal_download.content_id'
 		.'=daportal_content.content_id'
@@ -232,6 +232,8 @@ function download_default($args)
 		$dls[$i]['username'] = '<a href="'._html_link('user', FALSE,
 			$dls[$i]['user_id'], $dls[$i]['username']).'">'
 				.$dls[$i]['username'].'</a>';
+		/* XXX format the date */
+		$dls[$i]['date'] = _html_safe($dls[$i]['date']);
 		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
 	}
 	$toolbar = array();
@@ -265,7 +267,7 @@ function download_default($args)
 	}
 	_module('explorer', 'browse_trusted', array('entries' => $dls,
 				'class' => array('username' => AUTHOR,
-					'mode' => PERMISSIONS),
+					'date' => DATE, 'mode' => PERMISSIONS),
 				'toolbar' => $toolbar, 'view' => 'thumbnails',
 				'module' => 'download', 'action' => 'default',
 				'id' => $file['id']));
