@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Accessories */
 /* Accessories is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -63,6 +63,7 @@ typedef struct _Progress
 	guint out_id;
 
 	/* widgets */
+	GtkWidget * done;
 	GtkWidget * speed;
 	GtkWidget * progress;
 	int pulse;			/* tells when to pulse	*/
@@ -129,6 +130,7 @@ static int _progress(Prefs * prefs, char * argv[])
 	p.out_id = 0;
 	/* graphical interface */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 300, 100);
 	gtk_window_set_title(GTK_WINDOW(window), prefs->title != NULL
 			? prefs->title : "Progress");
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -137,33 +139,49 @@ static int _progress(Prefs * prefs, char * argv[])
 	hbox = gtk_hbox_new(FALSE, 0);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	/* file */
 	widget = gtk_label_new("File: ");
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(widget, bold);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 	gtk_size_group_add_widget(left, widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	if((q = g_filename_to_utf8(prefs->filename, -1, NULL, NULL, NULL))
 			== NULL)
 		q = prefs->filename;
 	widget = gtk_label_new(q);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_label_set_ellipsize(GTK_LABEL(widget), PANGO_ELLIPSIZE_MIDDLE);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* done */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Done: ");
+	gtk_widget_modify_font(widget, bold);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
+	gtk_size_group_add_widget(left, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	p.done = gtk_label_new("0.0 kB");
+	gtk_misc_set_alignment(GTK_MISC(p.done), 0.0, 0.0);
+	gtk_size_group_add_widget(right, p.done);
+	gtk_box_pack_start(GTK_BOX(hbox), p.done, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	/* speed */
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new("Speed: ");
 	gtk_widget_modify_font(widget, bold);
-	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 	gtk_size_group_add_widget(left, widget);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	p.speed = gtk_label_new("0.0 kB/s");
 	g_timeout_add(250, _progress_timeout, &p);
-	gtk_misc_set_alignment(GTK_MISC(p.speed), 0, 0);
+	gtk_misc_set_alignment(GTK_MISC(p.speed), 0.0, 0.0);
 	gtk_size_group_add_widget(right, p.speed);
 	gtk_box_pack_start(GTK_BOX(hbox), p.speed, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	/* progress */
 	p.progress = gtk_progress_bar_new();
 	p.pulse = 0;
 	gtk_box_pack_start(GTK_BOX(vbox), p.progress, TRUE, TRUE, 4);
@@ -415,6 +433,7 @@ static gboolean _progress_timeout(gpointer data)
 {
 	Progress * progress = data;
 	struct timeval tv;
+	double cnt = progress->cnt / 1024;
 	double rate;
 	char buf[16];
 	char const * unit = "kB";
@@ -429,6 +448,13 @@ static gboolean _progress_timeout(gpointer data)
 		gtk_label_set_text(GTK_LABEL(progress->speed), "0.0 kB/s");
 		return TRUE;
 	}
+	if(cnt > 1024)
+	{
+		cnt /= 1024;
+		unit = "MB";
+	}
+	snprintf(buf, sizeof(buf), "%.1f %s", cnt, unit);
+	gtk_label_set_text(GTK_LABEL(progress->done), buf);
 	if(gettimeofday(&tv, NULL) != 0)
 		return _progress_error("gettimeofday", FALSE);
 	if((tv.tv_sec = tv.tv_sec - progress->tv.tv_sec) < 0)
@@ -439,6 +465,7 @@ static gboolean _progress_timeout(gpointer data)
 		tv.tv_usec += 1000000;
 	}
 	rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	unit = "kB";
 	if((rate = progress->cnt / rate) > 1024)
 	{
 		rate /= 1024;
