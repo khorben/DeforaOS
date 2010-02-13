@@ -156,6 +156,7 @@ function wiki_admin($args)
 		$res[$i]['module'] = 'wiki';
 		$res[$i]['apply_module'] = 'wiki';
 		$res[$i]['action'] = 'display';
+		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
 		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
 			'enabled' : 'disabled';
@@ -164,8 +165,6 @@ function wiki_admin($args)
 				.$res[$i]['enabled'].'" title="'
 				.($res[$i]['enabled'] == 'enabled'
 						? ENABLED : DISABLED).'"/>';
-		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
-			? YES : NO;
 		$res[$i]['username'] = '<a href="'._html_link('user', FALSE,
 			$res[$i]['user_id'], $res[$i]['username']).'">'
 				._html_safe($res[$i]['username']).'</a>';
