@@ -142,7 +142,8 @@ function wiki_admin($args)
 	}
 	print('<h2 class="title wiki">'._html_safe(WIKI_PAGES_LIST)."</h2>\n");
 	$res = _sql_array('SELECT content_id AS id, title'
-			.', daportal_content.enabled AS enabled, username'
+			.', daportal_content.enabled AS enabled'
+			.', daportal_content.user_id AS user_id, username'
 			.' FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id=daportal_user.user_id'
 			." AND module_id='$module_id'");
@@ -153,15 +154,32 @@ function wiki_admin($args)
 		$res[$i]['icon'] = 'icons/16x16/wiki.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/wiki.png';
 		$res[$i]['module'] = 'wiki';
+		$res[$i]['apply_module'] = 'wiki';
 		$res[$i]['action'] = 'display';
-		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['name'] = _html_safe($res[$i]['title']);
+		$res[$i]['enabled'] = $res[$i]['enabled'] == SQL_TRUE ?
+			'enabled' : 'disabled';
+		$res[$i]['enabled'] = '<img src="icons/16x16/'
+				.$res[$i]['enabled'].'.png" alt="'
+				.$res[$i]['enabled'].'" title="'
+				.($res[$i]['enabled'] == 'enabled'
+						? ENABLED : DISABLED).'"/>';
 		$res[$i]['enabled'] = ($res[$i]['enabled'] == SQL_TRUE)
 			? YES : NO;
+		$res[$i]['username'] = '<a href="'._html_link('user', FALSE,
+			$res[$i]['user_id'], $res[$i]['username']).'">'
+				._html_safe($res[$i]['username']).'</a>';
 	}
-	_module('explorer', 'browse', array('entries' => $res,
+	$toolbar = array();
+	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
+			'action' => 'disable');
+	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
+			'action' => 'enable');
+	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => array('enabled' => ENABLED,
 					'username' => AUTHOR),
-				'view' => 'details'));
+				'module' => 'wiki', 'action' => 'admin',
+				'toolbar' => $toolbar, 'view' => 'details'));
 }
 
 
@@ -262,6 +280,20 @@ function wiki_default($args)
 }
 
 
+//wiki_disable
+function wiki_disable($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('./system/content.php');
+	if(!_content_disable($args['id']))
+		return _error('Could not disable wiki page');
+}
+
+
 function wiki_display($args)
 {
 	$wiki = _wiki_get($args['id'], FALSE, isset($args['revision'])
@@ -310,6 +342,20 @@ function wiki_display($args)
 				'class' => array('date' => DATE,
 					'username' => AUTHOR),
 				'toolbar' => FALSE, 'view' => 'details'));
+}
+
+
+//wiki_enable
+function wiki_enable($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	require_once('./system/content.php');
+	if(!_content_enable($args['id']))
+		return _error('Could not enable wiki page');
 }
 
 
