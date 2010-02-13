@@ -50,6 +50,8 @@ $text['SIZE'] = 'Size';
 $text['TYPE'] = 'Type';
 $text['UPLOAD'] = 'Upload';
 $text['UPLOAD_FILE'] = 'Upload file';
+$text['UPDATE'] = 'Update';
+$text['UPDATE_FILE'] = 'Update file';
 global $lang;
 if($lang == 'fr')
 {
@@ -75,6 +77,30 @@ function _permissions($mode)
 	$str[8] = $mode & 02 ? 'w' : '-';
 	$str[9] = $mode & 01 ? 'x' : '-';
 	return $str;
+}
+
+
+function _download_file_get($id)
+{
+	if(!is_numeric($id))
+		return FALSE;
+	if(!($root = _config_get('download', 'root')))
+		return FALSE;
+	$file = _sql_array('SELECT title AS name, daportal_content.content_id'
+			.' AS id, download_id, parent, content AS comment'
+			.' FROM daportal_download, daportal_content'
+			.' WHERE daportal_download.content_id'
+			.'=daportal_content.content_id'
+			." AND enabled='1'"
+			." AND daportal_content.content_id='$id'");
+	if(!is_array($file) || count($file) != 1
+			|| !is_numeric($file[0]['download_id']))
+		return FALSE;
+	$file = $file[0];
+	$file['filename'] = $root.'/'.$file['download_id'];
+	if(!is_readable($file['filename']))
+		return FALSE;
+	return $file;
 }
 
 
@@ -380,24 +406,11 @@ function download_directory_new($args)
 
 function download_download($args)
 {
-	if(!is_numeric($args['id']))
-		return _error(INVALID_ARGUMENT); //FIXME 404
-	if(!($root = _config_get('download', 'root')))
-		return _error('Internal server error'); //FIXME 501
-	$file = _sql_array('SELECT title AS name, download_id'
-			.' FROM daportal_download, daportal_content'
-			.' WHERE daportal_download.content_id'
-			.'=daportal_content.content_id'
-			." AND enabled='1'"
-			." AND daportal_content.content_id='".$args['id']."'");
-	if(!is_array($file) || count($file) != 1
-			|| !is_numeric($file[0]['download_id']))
-		return _error('File not found'); //FIXME 404
-	$file = $file[0];
-	$filename = $root.'/'.$file['download_id'];
-	if(!is_readable($filename))
-		return _error(PERMISSION_DENIED); //FIXME 403
-	if(($fp = fopen($filename, 'r')) == FALSE)
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	if(($file = _download_file_get($args['id'])) == FALSE)
+		return _error(INVALID_ARGUMENT);
+	if(($fp = fopen($file['filename'], 'r')) == FALSE)
 		return _error('Unable to open file'); //FIXME 501
 	require_once('./system/mime.php');
 	if(($mime = _mime_from_ext($file['name'])) == 'default')
@@ -412,7 +425,7 @@ function download_download($args)
 	}
 	$attachment = in_array($mime, $client_mime) ? 'inline' : 'attachment';
 	header('Content-Type: '.$mime);
-	header('Content-Length: '.filesize($filename));
+	header('Content-Length: '.filesize($file['filename']));
 	header('Content-Disposition: '.$attachment.'; filename="'
 			.addslashes($file['name']).'"');
 	if(isset($_SERVER['HTTP_RANGE'])
@@ -504,6 +517,25 @@ function download_file_new($args)
 }
 
 
+function download_file_update($args)
+{
+	global $user_id, $error;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	print('<h1 class="title download">'._html_safe(UPDATE_FILE)."</h1>\n");
+	if(isset($error) && strlen($error))
+		_error($error);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	$file = _download_file_get($args['id']);
+	$parent = _sql_single('SELECT content_id FROM daportal_download'
+			." WHERE download_id='".$file['parent']."'");
+	include('./modules/download/file_update.tpl');
+}
+
+
 function download_system($args)
 {
 	global $html, $title, $error;
@@ -523,6 +555,8 @@ function download_system($args)
 		$error = _download_system_config_update($args);
 	else if($args['action'] == 'file_insert')
 		$html = 0;
+	else if($args['action'] == 'file_update')
+		$error = _download_system_file_update($args);
 }
 
 function _download_system_config_update($args)
@@ -534,6 +568,24 @@ function _download_system_config_update($args)
 		return PERMISSION_DENIED;
 	_config_update('download', $args);
 	header('Location: '._module_link('download', 'admin'));
+	exit(0);
+}
+
+function _download_system_file_update($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	if(!isset($args['id']) || !isset($args['file'])
+			|| !isset($args['comment']))
+		return INVALID_ARGUMENT;
+	require_once('./system/content.php');
+	if(_content_update($args['id'], $args['file'], $args['comment'])
+			== FALSE)
+		return 'Unable to modify file';
+	header('Location: '._module_link('download', FALSE, $args['id']));
 	exit(0);
 }
 
