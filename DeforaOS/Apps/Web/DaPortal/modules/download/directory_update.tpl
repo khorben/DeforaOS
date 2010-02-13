@@ -6,6 +6,6 @@
 <?php } ?>
 	<table>
 		<tr><td class="field"><?php echo _html_safe(NAME); ?>:</td><td><input type="text" name="title" value=""/></td></tr>
-		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(CREATE); ?>" class="icon new_directory"/></td></tr>
+		<tr><td></td><td><a href="<?php echo _html_link('download', FALSE, $parent); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo _html_safe(CREATE); ?>" class="icon new_directory"/></td></tr>
 	</table>
 </form>
