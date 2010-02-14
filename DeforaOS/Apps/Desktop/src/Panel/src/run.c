@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Accessories */
 /* Accessories is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License version 2 as published by the
@@ -42,7 +42,8 @@ typedef struct _Run
 
 
 /* constants */
-#define RUN_CONFIG_FILE ".runrc"
+#define PACKAGE		"run"
+#define RUN_CONFIG_FILE	".runrc"
 
 
 /* functions */
@@ -141,7 +142,8 @@ static GtkWidget * _new_entry(Config * config)
 		return entry;
 	if((p = _run_get_config_filename()) == NULL)
 		return entry;
-	config_load(config, p);
+	if(config_load(config, p) != 0)
+		error_print(PACKAGE);
 	free(p);
 	completion = gtk_entry_completion_new();
 	gtk_entry_set_completion(GTK_ENTRY(entry), completion);
@@ -319,6 +321,10 @@ static void _idle_save_config(Run * run)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	config_reset(run->config);
+	if(config_load(run->config, filename) != 0)
+		/* XXX this risks losing the configuration */
+		error_print(PACKAGE);
 	p = gtk_entry_get_text(GTK_ENTRY(run->entry));
 	for(i = 0; i < 100; i++)
 	{
