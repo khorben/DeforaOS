@@ -267,8 +267,8 @@ static int _panel_helper_logout_dialog(void)
 	GtkWidget * widget;
 	int res;
 
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_NONE, "%s", "Warning");
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+			GTK_BUTTONS_NONE, "%s", "Logout");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
@@ -281,7 +281,7 @@ static int _panel_helper_logout_dialog(void)
 			GTK_RESPONSE_ACCEPT);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	gtk_window_set_title(GTK_WINDOW(dialog), "Logout");
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_ACCEPT)
@@ -332,8 +332,8 @@ static int _panel_helper_shutdown_dialog(void)
 #endif
 		"now", NULL };
 
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_NONE, "%s", "Warning");
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
+			GTK_BUTTONS_NONE, "%s", "Shutdown");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
@@ -345,7 +345,7 @@ static int _panel_helper_shutdown_dialog(void)
 	gtk_dialog_add_action_widget(GTK_DIALOG(dialog), widget, RES_SHUTDOWN);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	gtk_window_set_title(GTK_WINDOW(dialog), "Shutdown");
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res == RES_SHUTDOWN)
