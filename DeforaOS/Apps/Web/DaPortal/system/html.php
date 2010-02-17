@@ -22,9 +22,9 @@ function _html_link($module = FALSE, $action = FALSE, $id = FALSE,
 		$title = FALSE, $params = FALSE)
 {
 	$link = _module_link($module, $action, $id, $title, $params);
-	$link = htmlentities($link);
-	$link = str_replace('&amp;amp;', '%26', $link);
-	return $link;
+	$a = array("'", '"');
+	$b = array('%27', '%22');
+	return str_replace($a, $b, $link);
 }
 
 
@@ -33,9 +33,9 @@ function _html_link_full($module = FALSE, $action = FALSE, $id = FALSE,
 		$title = FALSE, $params = FALSE)
 {
 	$link = _module_link_full($module, $action, $id, $title, $params);
-	$link = htmlentities($link);
-	$link = str_replace('&amp;amp;', '%26', $link);
-	return $link;
+	$a = array("'", '"');
+	$b = array('%27', '%22');
+	return str_replace($a, $b, $link);
 }
 
 
