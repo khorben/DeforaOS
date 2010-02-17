@@ -170,6 +170,9 @@ function wiki_admin($args)
 				._html_safe($res[$i]['username']).'</a>';
 	}
 	$toolbar = array();
+	$toolbar[] = array('title' => NEW_WIKI_PAGE, 'class' => 'new',
+			'link' => _module_link('wiki', 'new'));
+	$toolbar[] = array();
 	$toolbar[] = array('title' => DISABLE, 'class' => 'disabled',
 			'action' => 'disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
