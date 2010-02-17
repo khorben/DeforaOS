@@ -177,6 +177,8 @@ function wiki_admin($args)
 			'action' => 'disable');
 	$toolbar[] = array('title' => ENABLE, 'class' => 'enabled',
 			'action' => 'enable');
+	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
+			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
 				'class' => array('enabled' => ENABLED,
 					'username' => AUTHOR),
@@ -280,6 +282,35 @@ function wiki_default($args)
 	}
 	_module('explorer', 'browse', array('entries' => $res,
 				'view' => 'details', 'toolbar' => 0));
+}
+
+
+//wiki_delete
+function wiki_delete($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return _error(PERMISSION_DENIED);
+	if($_SERVER['REQUEST_METHOD'] != 'POST')
+		return _error(PERMISSION_DENIED);
+	if(!isset($args['id']))
+		return _error(INVALID_ARGUMENT);
+	require_once('./system/content.php');
+	$res = _content_select($args['id']);
+	if(!is_array($res))
+		return _error(INVALID_ARGUMENT);
+	if(($root = _wiki_root()) == FALSE)
+		return 'Internal server error';
+	if(strlen($res['title']) == 0 || strpos('/', $res['title']) !== FALSE
+			|| $res['title'] == 'RCS')
+		return _error(INVALID_ARGUMENT);
+	@unlink($root.'/'.$res['title']); /* we can ignore this error */
+	if(unlink($root.'/RCS/'.$res['title'].',v') != TRUE)
+		return _error(INTERNAL_SERVER_ERROR);
+	if(!_content_delete($args['id']))
+		return _error('Could not delete wiki page');
 }
 
 
