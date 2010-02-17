@@ -142,8 +142,14 @@ function _module_link($module = FALSE, $action = FALSE, $id = FALSE,
 		$keys = array_keys($params);
 		$p = $params;
 		$params = '';
+		$and = '';
+		$a = array('=', '&amp;');
+		$b = array('%3d', '%26');
 		foreach($keys as $k)
-			$params .= $k.'='.$p[$k];
+		{
+			$params .= $and.$k.'='.str_replace($a, $b, $p[$k]);
+			$and = '&';
+		}
 	}
 	if($friendlylinks == 1 && $module == FALSE)
 		$link .= '/';
