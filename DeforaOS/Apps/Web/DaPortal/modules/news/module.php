@@ -239,11 +239,9 @@ function news_headline($args)
 //news_list
 function news_list($args)
 {
-	global $user_id;
-
 	require_once('./system/user.php');
 	if(isset($args['user_id'])
-			&& ($username = _user_name($user_id)) != FALSE)
+			&& ($username = _user_name($args['user_id'])) != FALSE)
 		return _news_list_user($args['user_id'], $username);
 	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
