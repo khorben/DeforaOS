@@ -273,6 +273,7 @@ function wiki_default($args)
 		$res[$i]['icon'] = 'icons/16x16/wiki.png';
 		$res[$i]['action'] = 'display';
 		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['tag'] = $res[$i]['title'];
 	}
 	_module('explorer', 'browse', array('entries' => $res,
 				'view' => 'details', 'toolbar' => 0));
@@ -556,7 +557,7 @@ function _wiki_system_insert($args)
 		unlink($filename);
 		return 'An error occured while checking in';
 	}
-	header('Location: '._module_link('wiki', 'display', $id, $title));
+	header('Location: '._module_link('wiki', FALSE, $id, $title));
 	exit(0);
 }
 
@@ -607,7 +608,7 @@ function _wiki_system_update($args)
 				date('Y-m-d H:i:s'));
 		_content_set_user($id, $user_id);
 	}
-	header('Location: '._module_link('wiki', 'display', $id, $title));
+	header('Location: '._module_link('wiki', FALSE, $id, $title));
 	exit(0);
 }
 
