@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -79,6 +79,7 @@ function _desktop_include($name)
 {
 	$admin = 0;
 	$list = 0;
+	$search = 0;
 	$title = '';
 	$icon = 'admin.png';
 	$actions = FALSE;
@@ -86,9 +87,9 @@ function _desktop_include($name)
 	$filename = './modules/'.$name.'/desktop.php';
 	if(is_readable($filename))
 		include_once($filename);
-	return array('admin' => $admin, 'list' => $list, 'title' => $title,
-			'icon' => $icon, 'actions' => $actions,
-			'user' => $user);
+	return array('admin' => $admin, 'list' => $list, 'search' => $search,
+			'title' => $title, 'icon' => $icon,
+			'actions' => $actions, 'user' => $user);
 }
 
 
