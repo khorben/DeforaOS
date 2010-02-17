@@ -21,6 +21,7 @@ $icon = 'search.png';
 $admin = 0;
 $list = 1;
 $search = 0;
+$actions = array('advanced' => 'Advanced');
 global $lang;
 if($lang == 'de')
 	$title = 'Suche';
