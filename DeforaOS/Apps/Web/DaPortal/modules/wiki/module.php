@@ -637,7 +637,7 @@ function _wiki_system_update($args)
 	unlink($filename);
 	//insert plain text into database
 	require_once('./system/xml.php');
-	if(($content = _xml_text($content)) !== FALSE)
+	if(($content = _xml_text($content, $message)) !== FALSE)
 	{
 		_content_update($id, FALSE, addslashes($content),
 				date('Y-m-d H:i:s'));
