@@ -240,6 +240,9 @@ function download_default($args)
 		$dls[$i]['action'] = 'default';
 		$dls[$i]['apply_module'] = 'download';
 		$dls[$i]['apply_id'] = $dls[$i]['id'];
+		$dls[$i]['username'] = '<a href="'._html_link('user', FALSE,
+			$dls[$i]['user_id'], $dls[$i]['username']).'">'
+				.$dls[$i]['username'].'</a>';
 		$mime = _mime_from_ext($dls[$i]['name']);
 		if($dls[$i]['mode'] & S_IFDIR)
 		{
@@ -255,9 +258,6 @@ function download_default($args)
 		$dls[$i]['icon'] = is_readable('icons/16x16/mime/'.$mime.'.png')
 			? 'icons/16x16/mime/'.$mime.'.png'
 			: $dls[$i]['thumbnail'];
-		$dls[$i]['username'] = '<a href="'._html_link('user', FALSE,
-			$dls[$i]['user_id'], $dls[$i]['username']).'">'
-				.$dls[$i]['username'].'</a>';
 		/* XXX format the date */
 		$dls[$i]['date'] = _html_safe($dls[$i]['date']);
 		$dls[$i]['mode'] = _html_safe(_permissions($dls[$i]['mode']));
@@ -292,11 +292,10 @@ function download_default($args)
 				'action' => 'delete', 'confirm' => 'delete');
 	}
 	_module('explorer', 'browse_trusted', array('entries' => $dls,
-				'class' => array('username' => AUTHOR,
+				'class' => array('username' => USER,
 					'date' => DATE, 'mode' => PERMISSIONS),
-				'toolbar' => $toolbar, 'view' => 'thumbnails',
-				'module' => 'download', 'action' => 'default',
-				'id' => $file['id']));
+				'toolbar' => $toolbar, 'module' => 'download',
+				'action' => 'default', 'id' => $file['id']));
 }
 
 function _default_download($file)
