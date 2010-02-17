@@ -146,7 +146,7 @@ function wiki_admin($args)
 			.', daportal_content.user_id AS user_id, username'
 			.' FROM daportal_content, daportal_user'
 			.' WHERE daportal_content.user_id=daportal_user.user_id'
-			." AND module_id='$module_id'");
+			." AND module_id='$module_id' ORDER BY title ASC");
 	if(!is_array($res))
 		return _error('Could not list wiki pages');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
