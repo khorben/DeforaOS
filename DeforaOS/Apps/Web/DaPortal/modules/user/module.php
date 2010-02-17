@@ -402,14 +402,11 @@ function user_modify($args)
 
 	if($user_id == 0)
 		return _error(PERMISSION_DENIED);
+	$id = $user_id;
 	require_once('./system/user.php');
-	if(_user_admin($user_id))
-		$id = $args['id'];
-	else if(!isset($args['id']) || $args['id'] == $user_id)
-		$id = $user_id;
-	else
-		return _error(PERMISSION_DENIED);
-	$admin = _user_admin($user_id) ? 1 : 0;
+	$admin = _user_admin($user_id) ? TRUE : FALSE;
+	if(isset($args['id']) && $admin == 1)
+			$id = $args['id'];
 	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
 			.' FROM daportal_user WHERE user_id='."'$id'");
 	if(!is_array($user) || count($user) != 1)
