@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -239,10 +239,12 @@ function news_headline($args)
 //news_list
 function news_list($args)
 {
+	global $user_id;
+
 	require_once('./system/user.php');
 	if(isset($args['user_id'])
 			&& ($username = _user_name($user_id)) != FALSE)
-		return _list_user($args['user_id'], $username);
+		return _news_list_user($args['user_id'], $username);
 	print('<h1 class="title news">'._html_safe(NEWS)."</h1>\n");
 	$sql = ' FROM daportal_module, daportal_content, daportal_user'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
@@ -276,7 +278,7 @@ function news_list($args)
 			$pages);
 }
 
-function _list_user($user_id, $username)
+function _news_list_user($user_id, $username)
 {
 	print('<h1 class="title news">'._html_safe(NEWS._BY_.' '.$username)
 			."</h1>\n");
