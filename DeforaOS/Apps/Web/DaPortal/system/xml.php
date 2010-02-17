@@ -32,7 +32,7 @@ $xml_content = '';
 
 
 //functions
-function _xml_text($content, &$error = '')
+function _xml_text($content, &$error)
 {
 	global $xml_content;
 
@@ -66,7 +66,7 @@ function _xml_text_update_data($parser, $data)
 }
 
 
-function _xml_validate($content, &$error = '')
+function _xml_validate($content, &$error)
 {
 	global $xml_blacklisted, $xml_error;
 
