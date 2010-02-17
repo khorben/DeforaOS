@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@ $title = 'Administration';
 $icon = 'admin.png';
 $admin = 1;
 $list = 0;
+$search = 0;
 global $user_id;
 require_once('./system/user.php');
 if(!_user_admin($user_id))

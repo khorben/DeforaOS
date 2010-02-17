@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -48,6 +48,7 @@ $title = USERS;
 $icon = 'users.png';
 $admin = 1;
 $list = 1;
+$search = 0;
 global $user_id;
 if($user_id != 0)
 {

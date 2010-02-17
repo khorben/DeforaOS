@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@ $icon = 'webmail.png';
 $admin = 1;
 global $user_id;
 $list = $user_id != 0 ? 1 : 0;
+$search = 0;
 $actions = array('default' => 'Message list',
 		'logout' => 'Logout');
 global $lang;

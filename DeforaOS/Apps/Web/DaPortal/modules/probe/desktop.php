@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ $title = MONITORING;
 $icon = 'host.png';
 $admin = 1;
 $list = 1;
+$search = 1;
 $actions = array('graph_list' => array('title' => GRAPH_LIST),
 		'host_list' => array('title' => HOST_LIST,
 			'args' => 'action=host_list'));

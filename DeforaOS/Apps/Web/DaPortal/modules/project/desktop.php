@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@ $title = 'Projects';
 $icon = 'project.png';
 $admin = 1;
 $list = 1;
+$search = 1;
 $actions = array('download' => 'Downloads',
 		'list' => 'List',
 		'bug_list' => 'Reports');
