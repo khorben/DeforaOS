@@ -52,7 +52,7 @@ function _xml_text($content, &$error = '')
 			.', column '.xml_get_current_column_number($parser);
 	xml_parser_free($parser);
 	if($ret == 1)
-		return html_entity_decode($xml_content));
+		return html_entity_decode($xml_content);
 	$xml_content = '';
 	return FALSE;
 }
