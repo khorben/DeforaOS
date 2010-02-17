@@ -204,6 +204,25 @@ function _module_link_full($module = FALSE, $action = FALSE, $id = FALSE,
 }
 
 
+function _module_list($enabled = FALSE)
+{
+	$enabled = ($enabled !== FALSE && $enabled == 0) ? ''
+		: " WHERE enabled='1'";
+	$sql = 'SELECT module_id AS id, name FROM daportal_module'.$enabled;
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		return FALSE;
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		if(($r = _module_desktop($res[$i]['name'])) == FALSE)
+			continue;
+		foreach($r as $k => $v)
+			$res[$i][$k] = $v;
+	}
+	return $res;
+}
+
+
 function _module_name($id)
 {
 	static $cache = array();
