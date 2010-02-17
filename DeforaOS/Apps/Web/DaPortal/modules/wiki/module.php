@@ -446,6 +446,7 @@ function wiki_list($args)
 	}
 	else
 		$classes['username'] = AUTHOR;
+	$sql.=' ORDER BY title ASC';
 	print('<h1 class="title wiki">'._html_safe($title)."</h1>\n");
 	$wiki = _sql_array($sql);
 	if(!is_array($wiki))
