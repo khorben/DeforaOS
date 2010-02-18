@@ -406,7 +406,7 @@ function user_modify($args)
 	require_once('./system/user.php');
 	$admin = _user_admin($user_id) ? TRUE : FALSE;
 	if(isset($args['id']) && $admin == TRUE)
-			$id = $args['id'];
+		$id = $args['id'];
 	$user = _sql_array('SELECT user_id, username, enabled, admin, email'
 			.' FROM daportal_user WHERE user_id='."'$id'");
 	if(!is_array($user) || count($user) != 1)
