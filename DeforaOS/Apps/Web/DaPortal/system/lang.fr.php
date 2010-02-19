@@ -31,6 +31,7 @@ $text['DISABLED'] = 'Désactivé';
 $text['EDIT'] = 'Modifier';
 $text['ENABLE'] = 'Activer';
 $text['ENABLED'] = 'Activé';
+$text['ERROR'] = 'Erreur';
 $text['FILTER'] = 'Filtrer';
 $text['FORWARD'] = 'Suivant';
 $text['HOMEPAGE'] = 'Accueil';
@@ -53,6 +54,7 @@ $text['SUBMIT'] = 'Soumettre';
 $text['TITLE'] = 'Titre';
 $text['UPDATE'] = 'Appliquer';
 $text['USERNAME'] = 'Utilisateur';
+$text['WARNING'] = 'Avertissement';
 $text['YES'] = 'Oui';
 
 ?>
