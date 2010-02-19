@@ -113,6 +113,7 @@ $text['SUBMIT'] = 'Submit';
 $text['TITLE'] = 'Title';
 $text['TYPE'] = 'Type';
 $text['UPDATE'] = 'Update';
+$text['USER'] = 'User';
 $text['USERNAME'] = 'Username';
 $text['WARNING'] = 'Warning';
 $text['YES'] = 'Yes';
