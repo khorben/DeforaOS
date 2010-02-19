@@ -586,6 +586,7 @@ function _wiki_system_insert($args)
 	}
 	fclose($fp);
 	if(_wiki_exec('ci -u -m'.escapeshellarg($user_name).' '
+				.' -w'.escapeshellarg($user_name)
 				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
