@@ -394,8 +394,7 @@ div.top {
 	border:			1px solid #333333;
 	color:			#ffffff;
 	min-height:		16px;
-	padding-bottom:		2px;
-	padding-top:		2px;
+	padding:		2px;
 }
 
 div.top a {
