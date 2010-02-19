@@ -8,7 +8,7 @@
 
 /* Native theme */
 html {
-	background-color:	#330033;
+	background-color:	#663366;
 	padding:		16px;
 }
 
@@ -390,25 +390,17 @@ ul.menu li:hover ul li:hover ul li a {
 
 /* top */
 .top {
-	border-bottom:		1px solid #000000;
-	border-left:		1px solid #ffffff;
-	border-right:		1px solid #000000;
-	border-top:		1px solid #ffffff;
+	background-color:	#000000;
+	border:			1px solid #333333;
+	color:			#ffffff;
 	padding-bottom:		3px;
 	padding-top:		3px;
 }
 
 .top a {
+	color:			#ffffff;
 	padding:		3px;
-}
-
-.top a:hover {
-	background-color:	#eeebe7;
-	border-bottom:		1px solid #afa699;
-	border-left:		1px solid #ffffff;
-	border-right:		1px solid #afa699;
-	border-top:		1px solid #ffffff;
-	padding:		2px;
+	font-weight:		bold;
 }
 
 
