@@ -22,6 +22,7 @@ $text['AUTHOR'] = 'Autor';
 $text['CONTENT'] = 'Inhalt';
 $text['DATE_FORMAT'] = '%A %e %B %Y, %H:%M';
 $text['EDIT'] = 'Ändern';
+$text['ERROR'] = 'Fehler';
 $text['LOGIN'] = 'Einloggen';
 $text['LOGOUT'] = 'Ausloggen';
 $text['MESSAGE'] = 'Mitteilung';
@@ -34,6 +35,7 @@ $text['SEND'] = 'Schicken';
 $text['TITLE'] = 'Titel';
 $text['TYPE'] = 'Typ';
 $text['UPDATE'] = 'Anwenden';
+$text['USER'] = 'Benutzer';
 $text['USERNAME'] = 'Benutzername';
 $text['YES'] = 'Ja';
 
