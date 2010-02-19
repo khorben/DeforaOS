@@ -40,7 +40,7 @@ document.getElementById('search').style.display='none';
 <?php if($user_id) _module('menu'); else include('./templates/DeforaOS-menu.tpl');
 if(is_array(($langs = _sql_array('SELECT lang_id AS id, name FROM '
 		." daportal_lang WHERE enabled='1' ORDER BY name ASC")))) { ?>
-			<form class="lang" action="/index.php" method="post" style="float: right; margin-right: 30px"><div>
+			<form class="lang" action="/index.php" method="post" style="float: right; padding-right: 30px"><div>
 				<select name="lang" onchange="submit()">
 <?php foreach($langs as $l) { ?>
 					<option value="<?php echo _html_safe($l['id']); ?>"<?php if($lang == $l['id']) { ?> selected="selected"<?php } ?>><?php echo _html_safe($l['name']); ?></option>
