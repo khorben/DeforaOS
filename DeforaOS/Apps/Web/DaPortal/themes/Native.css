@@ -7,8 +7,14 @@
 
 
 /* Native theme */
+html {
+	background-color:	#330033;
+	padding:		16px;
+}
+
 body {
 	background-color:	#dcdad5;
+	border:			1px solid #000000;
 	color:			#000000;
 	font-family:		sans-serif;
 	font-size:		8pt;
@@ -153,6 +159,7 @@ pre {
 
 .style1 img {
 	float:			right;
+	padding:		2px;
 }
 
 .tree {
@@ -371,15 +378,13 @@ ul.menu li:hover ul li:hover ul li a {
 
 .style1 {
 	background-color:	#dcdad5;
-	border-bottom:		1px solid #ffffff;
-	border-left:		1px solid #000000;
-	border-right:		1px solid #ffffff;
-	border-top:		1px solid #000000;
+	border:			1px solid #000000;
 	bottom:			0;
+	left:			16px;
+	right:			16px;
 	min-height:		18px;
 	padding:		2px;
 	position:		fixed;
-	width:			100%;
 }
 
 
