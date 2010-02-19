@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -85,9 +85,11 @@ $text['DOWNLOADS'] = 'Downloads';
 $text['EDIT'] = 'Edit';
 $text['ENABLE'] = 'Enable';
 $text['ENABLED'] = 'Enabled';
+$text['ERROR'] = 'Error';
 $text['FILTER'] = 'Filter';
 $text['FORWARD'] = 'Forward';
 $text['HOMEPAGE'] = 'Homepage';
+$text['INFORMATION'] = 'Information';
 $text['INVALID_ARGUMENT'] = 'Invalid argument';
 $text['LOGIN'] = 'Login';
 $text['LOGOUT'] = 'Logout';
@@ -112,6 +114,7 @@ $text['TITLE'] = 'Title';
 $text['TYPE'] = 'Type';
 $text['UPDATE'] = 'Update';
 $text['USERNAME'] = 'Username';
+$text['WARNING'] = 'Warning';
 $text['YES'] = 'Yes';
 if($lang == 'de')
 {

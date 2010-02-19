@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ function _debug()
 
 //PRE
 //	$level is trusted
-function _debug_message($level, $message, $visible = 0)
+function _debug_message($level, $title, $message, $visible = 0)
 {
 	global $debug, $debug_messages, $html;
 
@@ -53,7 +53,9 @@ function _debug_message($level, $message, $visible = 0)
 		return;
 	if($visible)
 		print('<div class="debug"><div class="visible '.$level.'">'
-				.htmlspecialchars($message)."</div></div>\n");
+				.'<b>'.htmlspecialchars($title)
+				.'</b><br/>'.htmlspecialchars($message)
+				."</div></div>\n");
 	if(!$debug)
 		return;
 	$debug_messages.="\t".'<div class="'.$level.'"><b>'.(ucfirst($level))
@@ -63,19 +65,19 @@ function _debug_message($level, $message, $visible = 0)
 
 function _error($message, $visible = 1)
 {
-	_debug_message('error', $message, $visible);
+	_debug_message('error', ERROR, $message, $visible);
 }
 
 
 function _info($message, $visible = 0)
 {
-	_debug_message('info', $message, $visible);
+	_debug_message('info', INFORMATION, $message, $visible);
 }
 
 
 function _warning($message, $visible = 0)
 {
-	_debug_message('warning', $message, $visible);
+	_debug_message('warning', WARNING, $message, $visible);
 }
 
 ?>
