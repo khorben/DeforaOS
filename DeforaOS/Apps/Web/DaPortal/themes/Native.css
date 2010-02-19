@@ -460,3 +460,9 @@ div.probe div.graph {
 .search .entry .author, .search .entry .date {
 	display:		inline;
 }
+
+
+/* top_search */
+.top_search {
+	float:			right;
+}
