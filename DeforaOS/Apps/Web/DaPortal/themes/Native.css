@@ -393,13 +393,14 @@ div.top {
 	background-color:	#000000;
 	border:			1px solid #333333;
 	color:			#ffffff;
-	padding-bottom:		3px;
-	padding-top:		3px;
+	min-height:		16px;
+	padding-bottom:		2px;
+	padding-top:		2px;
 }
 
 div.top a {
 	color:			#ffffff;
-	padding:		3px;
+	padding:		2px;
 	font-weight:		bold;
 }
 
