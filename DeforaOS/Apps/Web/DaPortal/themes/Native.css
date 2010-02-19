@@ -389,7 +389,7 @@ ul.menu li:hover ul li:hover ul li a {
 
 
 /* top */
-.top {
+div.top {
 	background-color:	#000000;
 	border:			1px solid #333333;
 	color:			#ffffff;
@@ -397,7 +397,7 @@ ul.menu li:hover ul li:hover ul li a {
 	padding-top:		3px;
 }
 
-.top a {
+div.top a {
 	color:			#ffffff;
 	padding:		3px;
 	font-weight:		bold;
