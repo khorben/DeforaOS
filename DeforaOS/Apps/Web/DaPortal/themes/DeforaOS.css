@@ -93,6 +93,10 @@ iframe, input[type="password"], input[type="text"], select, textarea {
 	border-right:			1px solid #b0b0b0;
 }
 
+input[type="password"], input[type="text"] {
+	padding:			4px;
+}
+
 p {
 	text-align:			justify;
 }
@@ -155,6 +159,48 @@ table.bordered th {
 
 .article .content {
 	padding:			10px;
+}
+
+
+/* module blog */
+.blog .title {
+	background-color:		#000000;
+	border-bottom:			solid 2px #790000;
+}
+
+.blog .title img {
+	float:				right;
+}
+
+.blog .title span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtl.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	padding-left:			10px;
+	padding-top:			2px;
+}
+
+.blog .title span span {
+	background-color:		#000000;
+	background-image:		url("DeforaOS-bbl.png");
+	background-position:		bottom right;
+	background-repeat:		no-repeat;
+	padding:			0;
+	padding-right:			10px;
+	padding-top:			2px;
+}
+
+.blog .title span span span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtr.png");
+	background-position:		top right;
+	background-repeat:		no-repeat;
+	padding-right:			10px;
+}
+
+.blog .author, .blog .date, .blog .edit {
+	display:			inline;
 }
 
 
