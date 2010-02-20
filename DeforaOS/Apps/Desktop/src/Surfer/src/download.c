@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -58,6 +58,7 @@ typedef struct _Download
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * status;
+	GtkWidget * done;
 	GtkWidget * speed;
 	GtkWidget * progress;
 	GtkWidget * check;
@@ -146,6 +147,8 @@ static Download * _download_new(Prefs * prefs, char const * url)
 			prefs->output);
 	_download_label(vbox, bold, left, right, "Status: ", &download->status,
 			"Resolving...");
+	_download_label(vbox, bold, left, right, "Done: ", &download->done,
+			"0.0 kB");
 	_download_label(vbox, bold, left, right, "Speed: ", &download->speed,
 			"0.0 kB/s");
 	/* progress bar */
@@ -274,6 +277,9 @@ static void _download_refresh(Download * download)
 		rate = download->data_received / rate;
 		snprintf(buf, sizeof(buf), "%.1f kB/s", rate);
 		gtk_label_set_text(GTK_LABEL(download->speed), buf);
+		fraction = download->data_received / 1024;
+		snprintf(buf, sizeof(buf), "%.1f kB", fraction);
+		gtk_label_set_text(GTK_LABEL(download->done), buf);
 	}
 	if(download->content_length == 0)
 	{
