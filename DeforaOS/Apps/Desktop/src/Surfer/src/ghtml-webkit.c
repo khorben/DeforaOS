@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -17,6 +17,7 @@
 
 #include <webkit/webkit.h>
 #include "ghtml.h"
+#include "common/url.c"
 
 
 /* private */
@@ -180,9 +181,13 @@ gboolean ghtml_go_forward(GtkWidget * ghtml)
 void ghtml_load_url(GtkWidget * ghtml, char const * url)
 {
 	GtkWidget * view;
+	gchar * p;
 
+	if((p = _ghtml_make_url(NULL, url)) != NULL)
+		url = p;
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
 	webkit_web_view_open(WEBKIT_WEB_VIEW(view), url);
+	g_free(p);
 }
 
 
