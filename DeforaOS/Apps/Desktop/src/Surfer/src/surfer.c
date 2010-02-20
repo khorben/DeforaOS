@@ -250,6 +250,7 @@ Surfer * surfer_new(char const * url)
 	surfer_set_status(surfer, NULL);
 	surfer_cnt++;
 	/* load url as soon as we're idle */
+	/* FIXME this apparently breaks surfer_new_copy() */
 	if(url != NULL)
 		g_idle_add(_new_idle, surfer);
 	return surfer;
@@ -307,6 +308,7 @@ void surfer_set_location(Surfer * surfer, char const * url)
 
 	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
+	/* FIXME also set surfer->url? what about history? */
 	if(i == 8)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->tb_path), 0);
 	else
@@ -425,7 +427,7 @@ int surfer_confirm(Surfer * surfer, char const * message)
 
 
 /* surfer_download */
-void surfer_download(Surfer * surfer, char const * url)
+void surfer_download(Surfer * surfer, char const * url, char const * suggested)
 {
 	GtkWidget * dialog;
 	char * filename = NULL;
@@ -437,6 +439,9 @@ void surfer_download(Surfer * surfer, char const * url)
 			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
 			GTK_RESPONSE_ACCEPT, NULL);
+	if(suggested != NULL) /* XXX also suggest a name otherwise */
+		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
+				suggested);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
 					dialog));
@@ -444,7 +449,7 @@ void surfer_download(Surfer * surfer, char const * url)
 	if(filename == NULL)
 		return;
 	argv[2] = filename;
-	argv[3] = strdup(url);
+	argv[3] = strdup(url); /* XXX may fail */
 	g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL,
 			&error);
 	free(argv[3]);

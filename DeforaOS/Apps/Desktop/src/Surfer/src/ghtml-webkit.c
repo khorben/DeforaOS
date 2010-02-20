@@ -294,27 +294,15 @@ static gboolean _on_download_requested(WebKitWebView * view,
 		WebKitDownload * download, gpointer data)
 {
 	Surfer * surfer;
-	GtkWidget * dialog;
-	char * filename = NULL;
+	char const * url;
+	char const * suggested;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	dialog = gtk_file_chooser_dialog_new("Save file as...", NULL /* XXX */,
-			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
-			GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
-			GTK_RESPONSE_ACCEPT, NULL);
-	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
-			webkit_download_get_suggested_filename(download));
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-		filename = gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog));
-	gtk_widget_destroy(dialog);
-	if(filename == NULL)
-	{
-		webkit_download_cancel(download);
-		return FALSE;
-	}
-	webkit_download_set_destination_uri(download, filename);
-	g_free(filename);
-	return TRUE;
+	url = webkit_download_get_uri(download);
+	suggested = webkit_download_get_suggested_filename(download);
+	surfer_download(surfer, url, suggested);
+	webkit_download_cancel(download);
+	return FALSE;
 }
 
 

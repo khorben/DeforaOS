@@ -103,7 +103,7 @@ void surfer_warning(Surfer * surfer, char const * message);
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
 
-void surfer_download(Surfer * surfer, char const * url);
+void surfer_download(Surfer * surfer, char const * url, char const * suggested);
 
 gboolean surfer_go_back(Surfer * surfer);
 gboolean surfer_go_forward(Surfer * surfer);
