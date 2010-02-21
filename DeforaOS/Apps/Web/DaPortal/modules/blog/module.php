@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -713,15 +713,15 @@ function blog_update($args)
 			&& isset($args['content']))
 	{
 		$long = 1;
-		$post = array('id' => $args['id'],
-				'title' => PREVIEW.': '.stripslashes($args['title']),
-				'tag' => stripslashes($args['title']),
-				'timestamp' => stripslashes($args['timestamp']),
-				'date' => _sql_date($args['timestamp']),
-				'user_id' => $post['user_id'],
-				'username' => $post['username'],
-				'content' => stripslashes($args['content']),
-				'preview' => 1);
+		$post = array('user_id' => $post['user_id'],
+				'username' => $post['username']);
+		$post['id'] = $args['id'];
+		$post['tag'] = stripslashes($args['title']);
+		$post['title'] = PREVIEW.': '.$post['tag'];
+		$post['timestamp'] = stripslashes($args['timestamp']);
+		$post['date'] = _sql_date($post['timestamp']);
+		$post['content'] = stripslashes($args['content']);
+		$post['preview'] = 1;
 		include('./modules/blog/post_display.tpl');
 		$post['title'] = stripslashes($args['title']);
 	}
