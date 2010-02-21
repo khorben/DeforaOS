@@ -1,7 +1,7 @@
 <?php if(isset($title)) { ?>
 <h1 class="title blog"><?php echo _html_safe($title); ?></h1>
 <?php } ?>
-<form class="blog" action="index.php" method="post">
+<form class="blog" action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="blog"/>
 	<input type="hidden" name="action" value="<?php echo isset($post['id']) ? 'update' : 'insert'; ?>"/>
 <?php if(isset($post['id'])) { ?>
@@ -26,7 +26,7 @@ if(isset($post['content'])) print(_html_safe($post['content']));
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>"/><?php if(isset($post)) { ?> <input type="submit" name="send" value="<?php echo isset($post['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>"/><?php } ?></td>
+			<td><input type="submit" name="preview" value="<?php echo _html_safe(PREVIEW); ?>" class="icon preview"/><?php if(isset($post)) { ?> <input type="submit" name="send" value="<?php echo isset($post['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/><?php } ?></td>
 		</tr>
 	</table>
 </form>

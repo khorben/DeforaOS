@@ -456,25 +456,29 @@ function blog_list($args)
 	}
 	print('<h1 class="title blog">'._html_safe($title)."</h1>\n");
 	unset($title); //XXX hoping this doesn't affect the global variable
-	$sql = ' FROM daportal_module, daportal_content, daportal_user'
+	$sql = 'SELECT content_id AS id, timestamp AS date, title, content'
+		.', daportal_content.enabled AS enabled'
+		.', daportal_content.user_id AS user_id, username'
+		.', name AS module'
+		.' FROM daportal_module, daportal_content, daportal_user'
 		.', daportal_blog_content'
 		.' WHERE daportal_user.user_id=daportal_content.user_id'
 		.' AND daportal_content.content_id'
 		.'=daportal_blog_content.blog_content_id'
 		." AND daportal_module.name='blog'".$and
-		.' AND daportal_module.module_id=daportal_content.module_id';
-	$res = _sql_array('SELECT content_id AS id, timestamp AS date, title'
-			.', content, daportal_content.enabled AS enabled'
-			.', daportal_content.user_id AS user_id, username'
-			.', name AS module'.$sql.' ORDER BY timestamp DESC');
+		.' AND daportal_module.module_id=daportal_content.module_id'
+		.' ORDER BY timestamp DESC';
+	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list blog posts');
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['module'] = 'blog';
+		$res[$i]['action'] = 'display';
 		$res[$i]['icon'] = 'icons/16x16/blog.png';
 		$res[$i]['thumbnail'] = 'icons/48x48/blog.png';
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
+		$res[$i]['tag'] = _html_safe($res[$i]['title']);
 		$res[$i]['date'] = strftime('%d/%m/%Y %H:%M', strtotime(substr(
 						$res[$i]['date'], 0, 19)));
 		$res[$i]['date'] = _html_safe($res[$i]['date']);
