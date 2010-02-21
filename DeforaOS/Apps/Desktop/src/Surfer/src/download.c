@@ -277,12 +277,12 @@ static void _download_refresh(Download * download)
 		rate = download->data_received / rate;
 		snprintf(buf, sizeof(buf), "%.1f kB/s", rate);
 		gtk_label_set_text(GTK_LABEL(download->speed), buf);
-		fraction = download->data_received / 1024;
-		snprintf(buf, sizeof(buf), "%.1f kB", fraction);
-		gtk_label_set_text(GTK_LABEL(download->done), buf);
 	}
 	if(download->content_length == 0)
 	{
+		rate = download->data_received / 1024;
+		snprintf(buf, sizeof(buf), "%.1f kB", rate);
+		gtk_label_set_text(GTK_LABEL(download->done), buf);
 		buf[0] = '\0';
 		if(download->pulse != 0)
 		{
@@ -293,6 +293,10 @@ static void _download_refresh(Download * download)
 	}
 	else
 	{
+		rate = download->data_received / 1024;
+		fraction = download->content_length / 1024;
+		snprintf(buf, sizeof(buf), "%.1f of %.1f kB", rate, fraction);
+		gtk_label_set_text(GTK_LABEL(download->done), buf);
 		fraction = (double)download->data_received
 			/ (double)download->content_length;
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
