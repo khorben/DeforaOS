@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -220,6 +220,7 @@ function category_get($args)
 		$categories[$i]['thumbnail'] = 'icons/48x48/category.png';
 		$categories[$i]['apply_module'] = 'category';
 		$categories[$i]['name'] = $categories[$i]['title'];
+		$categories[$i]['tag'] = $categories[$i]['title'];
 		$categories[$i]['apply_id'] = $categories[$i]['id'];
 		$categories[$i]['apply_args'] = 'content_id='.$args['id'];
 	}
