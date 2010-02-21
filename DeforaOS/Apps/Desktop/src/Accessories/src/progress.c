@@ -429,38 +429,52 @@ static void _out_rate(Progress * p)
 
 
 /* progress_timeout */
+static void _timeout_done(Progress * progress);
+static void _timeout_speed(Progress * progress);
+static void _timeout_progress(Progress * progress);
+
 static gboolean _progress_timeout(gpointer data)
 {
 	Progress * progress = data;
-	struct timeval tv;
+
+	_timeout_done(progress);
+	_timeout_speed(progress);
+	_timeout_progress(progress);
+	return TRUE;
+}
+
+static void _timeout_done(Progress * progress)
+{
 	double cnt = progress->cnt / 1024;
-	double rate = progress->prefs->length / 1024;
+	double total = progress->prefs->length / 1024;
 	char buf[32];
 	char const * unit = "kB";
 
-	if(progress->pulse == 1)
-	{
-		gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress->progress));
-		progress->pulse = 0;
-	}
-	if(progress->cnt == 0)
-	{
-		gtk_label_set_text(GTK_LABEL(progress->speed), "0.0 kB/s");
-		return TRUE;
-	}
 	if(progress->prefs->length > 1048576 || progress->cnt > 1048576)
 	{
 		cnt /= 1024;
-		rate /= 1024;
+		total /= 1024;
 		unit = "MB";
 	}
 	if(progress->prefs->length == 0)
 		snprintf(buf, sizeof(buf), "%.1f %s", cnt, unit);
 	else
-		snprintf(buf, sizeof(buf), "%.1f of %.1f %s", cnt, rate, unit);
+		snprintf(buf, sizeof(buf), "%.1f of %.1f %s", cnt, total, unit);
 	gtk_label_set_text(GTK_LABEL(progress->done), buf);
+}
+
+static void _timeout_speed(Progress * progress)
+{
+	struct timeval tv;
+	double rate;
+	char buf[16];
+	char const * unit = "kB";
+
 	if(gettimeofday(&tv, NULL) != 0)
-		return _progress_error("gettimeofday", FALSE);
+	{
+		_progress_error("gettimeofday", FALSE);
+		return;
+	}
 	if((tv.tv_sec = tv.tv_sec - progress->tv.tv_sec) < 0)
 		tv.tv_sec = 0;
 	if((tv.tv_usec = tv.tv_usec - progress->tv.tv_usec) < 0)
@@ -477,7 +491,14 @@ static gboolean _progress_timeout(gpointer data)
 	}
 	snprintf(buf, sizeof(buf), "%.1f %s/s", rate, unit);
 	gtk_label_set_text(GTK_LABEL(progress->speed), buf);
-	return TRUE;
+}
+
+static void _timeout_progress(Progress * progress)
+{
+	if(progress->pulse != 1)
+		return; /* setting the fraction is done somewhere else */
+	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress->progress));
+	progress->pulse = 0;
 }
 
 
