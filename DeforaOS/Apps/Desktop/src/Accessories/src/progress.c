@@ -434,8 +434,8 @@ static gboolean _progress_timeout(gpointer data)
 	Progress * progress = data;
 	struct timeval tv;
 	double cnt = progress->cnt / 1024;
-	double rate;
-	char buf[16];
+	double rate = progress->prefs->length / 1024;
+	char buf[32];
 	char const * unit = "kB";
 
 	if(progress->pulse == 1)
@@ -448,12 +448,16 @@ static gboolean _progress_timeout(gpointer data)
 		gtk_label_set_text(GTK_LABEL(progress->speed), "0.0 kB/s");
 		return TRUE;
 	}
-	if(cnt > 1024)
+	if(progress->prefs->length > 1048576 || progress->cnt > 1048576)
 	{
 		cnt /= 1024;
+		rate /= 1024;
 		unit = "MB";
 	}
-	snprintf(buf, sizeof(buf), "%.1f %s", cnt, unit);
+	if(progress->prefs->length == 0)
+		snprintf(buf, sizeof(buf), "%.1f %s", cnt, unit);
+	else
+		snprintf(buf, sizeof(buf), "%.1f of %.1f %s", cnt, rate, unit);
 	gtk_label_set_text(GTK_LABEL(progress->done), buf);
 	if(gettimeofday(&tv, NULL) != 0)
 		return _progress_error("gettimeofday", FALSE);
