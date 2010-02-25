@@ -65,19 +65,19 @@ function _debug_message($level, $title, $message, $visible = 0)
 
 function _error($message, $visible = 1)
 {
-	_debug_message('error', ERROR, $message, $visible);
+	_debug_message('error', 'Error', $message, $visible);
 }
 
 
 function _info($message, $visible = 0)
 {
-	_debug_message('info', INFORMATION, $message, $visible);
+	_debug_message('info', 'Information', $message, $visible);
 }
 
 
 function _warning($message, $visible = 0)
 {
-	_debug_message('warning', WARNING, $message, $visible);
+	_debug_message('warning', 'Warning', $message, $visible);
 }
 
 ?>
