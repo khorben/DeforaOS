@@ -347,7 +347,8 @@ static void _idle_save_config(Run * run)
 		if((p = q) == NULL)
 			break;
 	}
-	config_save(run->config, filename);
+	if(config_save(run->config, filename) != 0)
+		error_print(PACKAGE);
 	free(filename);
 }
 
