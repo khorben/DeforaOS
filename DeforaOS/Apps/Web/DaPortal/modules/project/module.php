@@ -27,62 +27,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
-$text['ACTION'] = 'Action';
-$text['ADD_MEMBER_TO_PROJECT'] = 'Add member to project';
-$text['ADMINISTRATION'] = 'Administration';
-$text['AND_AWAITS_MODERATION'] = 'and awaits moderation';
-$text['ASSIGNED_TO'] = 'Assigned to';
-$text['BROWSE_REVISIONS'] = 'Browse revisions';
-$text['BROWSE_SOURCE'] = 'Browse source';
-$text['BUG_REPORT'] = 'Bug report';
-$text['BUG_REPORTS'] = 'Bug reports';
-$text['BUGS_BY'] = 'Bugs by';
-$text['CVS_PATH'] = 'CVS path';
-$text['DESCRIPTION'] = 'Description';
-$text['DOWNLOAD_FILE'] = 'Download file';
-$text['FILES'] = 'Files';
-$text['INVALID_PROJECT'] = 'Invalid project';
-$text['MEMBERS'] = 'Members';
-$text['MODIFICATION_OF'] = 'Modification of';
-$text['MODIFICATION_OF_BUG_HASH'] = 'Modification of bug #';
-$text['MODIFICATION_OF_REPLY_TO_BUG_HASH'] = 'Modification of reply to bug #';
-$text['NEW_PROJECT'] = 'New project';
-$text['NEW_RELEASE'] = 'New release';
-$text['NEW_REPORT'] = 'New report';
-$text['NEW_SCREENSHOT'] = 'New screenshot';
-$text['NO_CVS_REPOSITORY'] = 'This project does not have a CVS repository';
-$text['PARENT_DIRECTORY'] = 'Parent directory';
-$text['PRIORITY'] = 'Priority';
-$text['PRIORITY_CHANGED_TO'] = 'Priority changed to';
-$text['PROJECT'] = 'Project';
-$text['PROJECT_LIST'] = 'Project list';
-$text['PROJECT_NAME'] = 'Project name';
-$text['PROJECTS'] = 'Projects';
-$text['PROJECTS_ADMINISTRATION'] = 'Projects administration';
-$text['PROJECTS_REGISTERED'] = 'project(s) registered';
-$text['RELEASES'] = 'Releases';
-$text['REPLY_BY'] = 'Reply by';
-$text['REPLY_ON'] = 'on';
-$text['REPLY_TO_BUG'] = 'Reply to bug';
-$text['REPORT_A_BUG'] = 'Report a bug';
-$text['REPORT_BUG_FOR'] = 'Report bug for';
-$text['REPORT_LIST'] = 'Report list';
-$text['REVISION'] = 'Revision';
-$text['SCREENSHOTS'] = 'Screenshots';
-$text['SOURCE_CODE'] = 'Source code';
-$text['SYNOPSIS'] = 'Synopsis';
-$text['SELECT_PROJECT_TO_BUG'] = 'Select project to bug';
-$text['SETTINGS'] = 'Settings';
-$text['STATE'] = 'State';
-$text['STATISTICS'] = 'Statistics';
-$text['SUBMITTER'] = 'Submitter';
-$text['STATE_CHANGED_TO'] = 'State changed to';
-$text['THANK_YOU'] = 'Thank you';
-$text['THERE_ARE'] = 'There are';
-$text['TYPE_CHANGED_TO'] = 'Type changed to';
-$text['TIMELINE'] = 'Timeline';
-$text['UPLOAD'] = 'Upload';
-$text['YOUR_BUG_IS_SUBMITTED'] = 'Your bug is submitted';
+include('./modules/project/lang.php');
 global $lang;
 if($lang == 'de')
 {
@@ -93,11 +38,14 @@ else if($lang == 'fr')
 	include('./modules/project/lang.fr.php');
 }
 _lang($text);
+
+
+//private
+//constants
 define('S_IFDIR', 040000);
 
 
 //functions
-//private
 function _project_toolbar($id)
 {
 	global $html;
@@ -263,12 +211,12 @@ function project_admin($args)
 	$toolbar[] = array('title' => DELETE, 'class' => 'delete',
 			'action' => 'delete', 'confirm' => 'delete');
 	_module('explorer', 'browse_trusted', array('entries' => $res,
-			'class' => array('enabled' => ENABLED,
-					'admin' => ADMINISTRATOR,
+				'class' => array('enabled' => ENABLED,
+					'admin' => MANAGER,
 					'synopsis' => DESCRIPTION,
 					'cvsroot' => CVS_PATH),
-			'toolbar' => $toolbar, 'view' => 'details',
-			'module' => 'project', 'action' => 'admin'));
+				'toolbar' => $toolbar, 'view' => 'details',
+				'module' => 'project', 'action' => 'admin'));
 	print('<h2 class="title bug">'._html_safe(REPORT_LIST).'</h2>'."\n");
 	$sql = 'SELECT daportal_bug.content_id AS id, bug_id, title'
 		.', daportal_content.enabled AS enabled, name AS module'
@@ -1185,7 +1133,7 @@ function project_display($args)
 	}
 	print('<h2 class="title members">'._html_safe(MEMBERS).'</h2>'."\n");
 	$explorer = array('view' => 'details', 'entries' => $members,
-			'class' => array('admin' => ADMINISTRATOR),
+			'class' => array('admin' => MANAGER),
 			'module' => 'project', 'action' => 'display',
 			'id' => $project['id']);
 	$toolbar = array();
@@ -1310,7 +1258,7 @@ function project_download($args)
 		{
 			$files[$i]['module'] = 'download';
 			$files[$i]['action'] = 'default';
-			$files[$i]['date'] = strftime('%d/%m/%y %H:%M',
+			$files[$i]['date'] = strftime('%d/%m/%Y %H:%M',
 					strtotime(substr($files[$i]['date'], 0,
 							19)));
 			$mime = _mime_from_ext($files[$i]['name']);
@@ -1472,8 +1420,8 @@ function project_list($args)
 		$projects[$i]['tag'] = $projects[$i]['title'];
 	}
 	$args = array('entries' => $projects, 'view' => 'details',
-			'class' => array('admin' => ADMINISTRATOR,
-			'synopsis' => DESCRIPTION));
+			'class' => array('admin' => MANAGER,
+				'synopsis' => DESCRIPTION));
 	require_once('./system/user.php');
 	if(_user_admin($user_id))
 		$args['toolbar'] = array(array('title' => NEW_PROJECT,
