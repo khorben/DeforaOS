@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -82,11 +82,11 @@ function _browse_dir($id, $project, $cvsrep, $cvsroot, $filename)
 		$icon = is_readable('./icons/16x16/mime/'.$mime.'.png')
 			? 'icons/16x16/mime/'.$mime.'.png'
 			: $thumbnail;
-		$revision = _html_safe(substr($rcs[$revs+1], 9));
+		$revision = _html_safe(substr($rcs[$revs + 1], 9));
 		$revision = '<a href="'._html_link('project', 'browse', $id, '',
 			'file='.$file.'&revision='.$revision).'">'.$revision
 				.'</a>';
-		$date = _html_safe(substr($rcs[$revs+2], 6, 19));
+		$date = _html_safe(substr($rcs[$revs + 2], 6, 19));
 		$author = substr($rcs[$revs + 2], 36);
 		$author = substr($author, 0, strspn($author,
 				'abcdefghijklmnopqrstuvwxyz'
