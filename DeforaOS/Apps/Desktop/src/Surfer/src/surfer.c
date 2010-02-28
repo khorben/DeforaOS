@@ -574,10 +574,12 @@ void surfer_select_all(Surfer * surfer)
 /* surfer_show_menubar */
 void surfer_show_menubar(Surfer * surfer, gboolean show)
 {
+#ifndef EMBEDDED
 	if(show == TRUE)
 		gtk_widget_show(surfer->menubar);
 	else
 		gtk_widget_hide(surfer->menubar);
+#endif
 }
 
 
