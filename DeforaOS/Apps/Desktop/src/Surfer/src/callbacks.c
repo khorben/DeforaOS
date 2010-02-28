@@ -86,112 +86,9 @@ void on_file_open_url(gpointer data)
 
 /* edit menu */
 /* on_edit_preferences */
-static void _preferences_set(Surfer * surfer);
-/* callbacks */
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
-static void _preferences_on_ok(GtkWidget * widget, gpointer data);
-
 void on_edit_preferences(gpointer data)
 {
-	Surfer * surfer = data;
-	PangoFontDescription * desc;
-	GtkWidget * vbox;
-	GtkWidget * widget;
-	GtkWidget * notebook;
-	GtkWidget * page;
-	GtkWidget * hbox;
-	GtkSizeGroup * group;
-
-	if(surfer->pr_window != NULL)
-	{
-		gtk_widget_show(surfer->pr_window);
-		return;
-	}
-	/* FIXME consider using gtk_dialog_new() */
-	desc = pango_font_description_new();
-	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
-	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
-			"Web surfer preferences");
-	gtk_window_set_transient_for(GTK_WINDOW(surfer->pr_window), GTK_WINDOW(
-				surfer->window));
-	g_signal_connect(G_OBJECT(surfer->pr_window), "delete-event",
-			G_CALLBACK(_preferences_on_closex), surfer);
-	vbox = gtk_vbox_new(FALSE, 0);
-	/* notebook */
-	notebook = gtk_notebook_new();
-	/* general */
-	page = gtk_vbox_new(FALSE, 0);
-	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Homepage:");
-	gtk_widget_modify_font(widget, desc);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-	surfer->pr_homepage = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
-			gtk_label_new("General"));
-	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-	/* dialog */
-	hbox = gtk_hbox_new(FALSE, 0);
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_ok), surfer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_preferences_on_cancel), surfer);
-	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
-	/* separator */
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_hseparator_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_box_pack_end(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	_preferences_set(surfer);
-	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
-	gtk_widget_show_all(surfer->pr_window);
-	pango_font_description_free(desc);
-}
-
-static void _preferences_set(Surfer * surfer)
-{
-	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
-			!= NULL ? surfer->homepage : "");
-}
-
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
-{
-	Surfer * surfer = data;
-
-	_preferences_on_cancel(widget, surfer);
-	return TRUE;
-}
-
-static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
-{
-	Surfer * surfer = data;
-
-	gtk_widget_hide(surfer->pr_window);
-	_preferences_set(surfer);
-}
-
-static void _preferences_on_ok(GtkWidget * widget, gpointer data)
-{
-	Surfer * surfer = data;
-
-	gtk_widget_hide(surfer->pr_window);
-	free(surfer->homepage);
-	surfer->homepage = strdup(gtk_entry_get_text(GTK_ENTRY(
-					surfer->pr_homepage)));
-	surfer_config_save(surfer);
+	on_preferences(data);
 }
 
 
@@ -542,6 +439,116 @@ void on_path_activate(gpointer data)
 	entry = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
 	url = gtk_entry_get_text(GTK_ENTRY(entry));
 	surfer_open(surfer, url);
+}
+
+
+/* on_preferences */
+static void _preferences_set(Surfer * surfer);
+/* callbacks */
+static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
+static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+
+void on_preferences(gpointer data)
+{
+	Surfer * surfer = data;
+	PangoFontDescription * desc;
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkWidget * notebook;
+	GtkWidget * page;
+	GtkWidget * hbox;
+	GtkSizeGroup * group;
+
+	if(surfer->pr_window != NULL)
+	{
+		gtk_widget_show(surfer->pr_window);
+		return;
+	}
+	/* FIXME consider using gtk_dialog_new() */
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
+	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
+			"Web surfer preferences");
+	gtk_window_set_transient_for(GTK_WINDOW(surfer->pr_window), GTK_WINDOW(
+				surfer->window));
+	g_signal_connect(G_OBJECT(surfer->pr_window), "delete-event",
+			G_CALLBACK(_preferences_on_closex), surfer);
+	vbox = gtk_vbox_new(FALSE, 0);
+	/* notebook */
+	notebook = gtk_notebook_new();
+	/* general */
+	page = gtk_vbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 4);
+	widget = gtk_label_new("Homepage:");
+	gtk_widget_modify_font(widget, desc);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	surfer->pr_homepage = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
+			gtk_label_new("General"));
+	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
+	/* dialog */
+	hbox = gtk_hbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_ok), surfer);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_preferences_on_cancel), surfer);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	/* separator */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_box_pack_end(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	_preferences_set(surfer);
+	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
+	gtk_widget_show_all(surfer->pr_window);
+	pango_font_description_free(desc);
+}
+
+static void _preferences_set(Surfer * surfer)
+{
+	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
+			!= NULL ? surfer->homepage : "");
+}
+
+static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	Surfer * surfer = data;
+
+	_preferences_on_cancel(widget, surfer);
+	return TRUE;
+}
+
+static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_hide(surfer->pr_window);
+	_preferences_set(surfer);
+}
+
+static void _preferences_on_ok(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+
+	gtk_widget_hide(surfer->pr_window);
+	free(surfer->homepage);
+	surfer->homepage = strdup(gtk_entry_get_text(GTK_ENTRY(
+					surfer->pr_homepage)));
+	surfer_config_save(surfer);
 }
 
 

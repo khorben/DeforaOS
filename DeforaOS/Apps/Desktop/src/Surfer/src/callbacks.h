@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -55,6 +55,7 @@ void on_forward(gpointer data);
 void on_fullscreen(GtkToggleToolButton * button, gpointer data);
 void on_home(gpointer data);
 void on_path_activate(gpointer data);
+void on_preferences(gpointer data);
 void on_refresh(gpointer data);
 void on_stop(gpointer data);
 

@@ -196,6 +196,14 @@ Surfer * surfer_new(char const * url)
 	g_signal_connect(G_OBJECT(toolitem), "toggled", G_CALLBACK(
 				on_fullscreen), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#ifdef EMBEDDED
+	toolitem = gtk_separator_tool_item_new();
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PREFERENCES);
+	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
+				on_preferences), surfer);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
+#endif /* EMBEDDED */
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
