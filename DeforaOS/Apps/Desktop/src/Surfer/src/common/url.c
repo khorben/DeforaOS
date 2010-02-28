@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -48,10 +48,10 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 				{
 					*p = '\0';
 					p = g_strdup_printf("%s%s", b, url);
-					free(b);
+					g_free(b);
 					return p;
 				}
-				free(b);
+				g_free(b);
 			}
 			/* FIXME implement other protocols */
 			return g_strdup_printf("%s%s", base, url);
@@ -66,7 +66,7 @@ static gchar * _ghtml_make_url(gchar const * base, gchar const * url)
 		if((p = strrchr(p, '/')) != NULL)
 			*p = '\0';
 		p = g_strdup_printf("%s/%s", b, url);
-		free(b);
+		g_free(b);
 		return p;
 	}
 	/* base is NULL, url is not NULL */

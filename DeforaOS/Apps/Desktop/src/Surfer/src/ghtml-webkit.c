@@ -17,6 +17,7 @@
 
 #include <webkit/webkit.h>
 #include "ghtml.h"
+#include "common.h" /* XXX should not be needed */
 #include "common/url.c"
 
 
@@ -281,7 +282,7 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 	 * - this is a bit ugly (showing and hiding)
 	 * - we may not want history etc to be copied
 	 * - it loads the current URL first */
-	gtk_widget_hide(copy->window);
+	surfer_show_window(copy, FALSE);
 	ret = g_object_get_data(G_OBJECT(copy->view), "view");
 	g_signal_connect(G_OBJECT(ret), "web-view-ready", G_CALLBACK(
 				_on_web_view_ready), copy->view);
@@ -435,22 +436,19 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 	/* FIXME track properties with notify:: instead */
 	g_object_get(G_OBJECT(features), "width", &w, "height", &h, NULL);
 	if(w > 0 && h > 0)
-		gtk_window_resize(GTK_WINDOW(surfer->window), w, h);
+		surfer_resize(surfer, w, h);
 	g_object_get(G_OBJECT(features), "fullscreen", &b, NULL);
 	if(b == TRUE)
 		surfer_set_fullscreen(surfer, TRUE);
 # ifndef EMBEDDED
 	g_object_get(G_OBJECT(features), "menubar-visible", &b, NULL);
-	if(b == FALSE)
-		gtk_widget_hide(surfer->menubar);
+	surfer_show_menubar(surfer, b);
 # endif
 	g_object_get(G_OBJECT(features), "toolbar-visible", &b, NULL);
-	if(b == FALSE)
-		gtk_widget_hide(surfer->toolbar);
+	surfer_show_toolbar(surfer, b);
 	g_object_get(G_OBJECT(features), "statusbar-visible", &b, NULL);
-	if(b == FALSE)
-		gtk_widget_hide(surfer->statusbox);
-	gtk_widget_show(surfer->window);
+	surfer_show_statusbar(surfer, b);
+	surfer_show_window(surfer, TRUE);
 	return FALSE;
 }
 #else /* WebKitWebWindowFeatures is not available */

@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
 static char const _license[] =
 "Surfer is free software; you can redistribute it and/or modify it\n"
@@ -25,6 +25,7 @@ static char const _license[] =
 #include "surfer.h"
 #include "ghtml.h"
 #include "callbacks.h"
+#include "common.h"
 #include "../config.h"
 
 

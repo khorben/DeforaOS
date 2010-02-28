@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -20,6 +20,7 @@
 #include <gtkmozembed.h>
 #include "callbacks.h"
 #include "ghtml.h"
+#include "common.h" /* XXX should not be needed */
 
 
 /* prototypes */
@@ -156,7 +157,7 @@ static void _on_resize(GtkMozEmbed * view, gint width, gint height,
 {
 	Surfer * surfer = data;
 
-	gtk_window_resize(GTK_WINDOW(surfer->window), width, height);
+	surfer_resize(surfer, width, height);
 }
 
 
@@ -164,18 +165,9 @@ static void _on_title(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
 	char const * title;
-	char buf[256];
 
 	title = ghtml_get_title(GTK_WIDGET(view));
-	if(title == NULL || title[0] == '\0')
-		gtk_window_set_title(GTK_WINDOW(surfer->window),
-				SURFER_DEFAULT_TITLE);
-	else
-	{
-		snprintf(buf, sizeof(buf), "%s - %s", SURFER_DEFAULT_TITLE,
-				title);
-		gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
-	}
+	surfer_set_title(surfer, title);
 }
 
 

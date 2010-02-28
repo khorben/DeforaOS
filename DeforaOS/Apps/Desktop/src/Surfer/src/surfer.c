@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -22,6 +22,7 @@
 #include "callbacks.h"
 #include "ghtml.h"
 #include "surfer.h"
+#include "common.h"
 
 
 /* Surfer */
@@ -556,10 +557,57 @@ void surfer_reload(Surfer * surfer)
 }
 
 
+/* surfer_resize */
+void surfer_resize(Surfer * surfer, gint width, gint height)
+{
+	gtk_window_resize(GTK_WINDOW(surfer->window), width, height);
+}
+
+
 /* surfer_select_all */
 void surfer_select_all(Surfer * surfer)
 {
 	ghtml_select_all(surfer->view);
+}
+
+
+/* surfer_show_menubar */
+void surfer_show_menubar(Surfer * surfer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_widget_show(surfer->menubar);
+	else
+		gtk_widget_hide(surfer->menubar);
+}
+
+
+/* surfer_show_statusbar */
+void surfer_show_statusbar(Surfer * surfer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_widget_show(surfer->statusbar);
+	else
+		gtk_widget_hide(surfer->statusbar);
+}
+
+
+/* surfer_show_toolbar */
+void surfer_show_toolbar(Surfer * surfer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_widget_show(surfer->toolbar);
+	else
+		gtk_widget_hide(surfer->toolbar);
+}
+
+
+/* surfer_show_window */
+void surfer_show_window(Surfer * surfer, gboolean show)
+{
+	if(show == TRUE)
+		gtk_widget_show(surfer->window);
+	else
+		gtk_widget_hide(surfer->window);
 }
 
 

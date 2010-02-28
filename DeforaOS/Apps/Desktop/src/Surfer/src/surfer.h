@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -42,36 +42,7 @@
 
 
 /* types */
-typedef struct _Surfer
-{
-	Config * config;
-	char * url;
-
-	/* preferences */
-	char * homepage;
-
-	/* widgets */
-	/* main window */
-	GtkWidget * window;
-#ifndef EMBEDDED
-	GtkWidget * menubar;
-#endif
-	GtkWidget * toolbar;
-	GtkToolItem * tb_back;
-	GtkToolItem * tb_forward;
-	GtkToolItem * tb_stop;
-	GtkToolItem * tb_refresh;
-	GtkWidget * tb_path;
-	GtkWidget * view;
-	GtkWidget * progress;
-	GtkWidget * statusbox;
-	GtkWidget * statusbar;
-	guint statusbar_id;
-
-	/* preferences */
-	GtkWidget * pr_window;
-	GtkWidget * pr_homepage;
-} Surfer;
+typedef struct _Surfer Surfer;
 
 
 /* variables */
@@ -103,19 +74,31 @@ void surfer_warning(Surfer * surfer, char const * message);
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
 
+/* download */
 void surfer_download(Surfer * surfer, char const * url, char const * suggested);
 
+/* interface */
+void surfer_resize(Surfer * surfer, gint width, gint height);
+void surfer_show_menubar(Surfer * surfer, gboolean show);
+void surfer_show_statusbar(Surfer * surfer, gboolean show);
+void surfer_show_toolbar(Surfer * surfer, gboolean show);
+void surfer_show_window(Surfer * surfer, gboolean show);
+
+/* location */
 gboolean surfer_go_back(Surfer * surfer);
 gboolean surfer_go_forward(Surfer * surfer);
 void surfer_go_home(Surfer * surfer);
 
+/* loading */
 void surfer_refresh(Surfer * surfer);
 void surfer_reload(Surfer * surfer);
 void surfer_stop(Surfer * surfer);
 
+/* selection */
 void surfer_select_all(Surfer * surfer);
 void surfer_unselect_all(Surfer * surfer);
 
+/* zoom */
 void surfer_zoom_in(Surfer * surfer);
 void surfer_zoom_out(Surfer * surfer);
 void surfer_zoom_reset(Surfer * surfer);
