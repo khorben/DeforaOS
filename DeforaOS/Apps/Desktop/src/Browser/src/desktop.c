@@ -99,7 +99,6 @@ static int _new_create_desktop_files(Desktop * desktop);
 static void _new_add_home(Desktop * desktop);
 
 /* callbacks */
-/* FIXME implement desktop resizing callback */
 static gboolean _new_idle(gpointer data);
 static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
@@ -156,6 +155,7 @@ Desktop * desktop_new(DesktopLayout layout)
 	desktop->root = gdk_screen_get_root_window(
 			gdk_display_get_default_screen(
 				gdk_display_get_default()));
+	desktop->background = NULL;
 	gdk_window_get_geometry(desktop->root, &x, &y, &desktop->width,
 			&desktop->height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
@@ -267,7 +267,7 @@ static gboolean _new_idle(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() background=\"%s\"\n", __func__, p);
 #endif
-	/* FIXME may be resized (xrandr...) */
+	g_free(desktop->background);
 	desktop->background = gdk_pixbuf_new_from_file_at_scale(p,
 			desktop->width, desktop->height, FALSE, &error);
 	config_delete(config);
@@ -287,6 +287,7 @@ static gboolean _new_idle(gpointer data)
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		Desktop * desktop);
 static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop);
+static GdkFilterReturn _event_configure(XConfigureEvent * xevent, Desktop * desktop);
 static void _on_popup_new_folder(gpointer data);
 static void _on_popup_new_text_file(gpointer data);
 static void _on_popup_paste(gpointer data);
@@ -302,6 +303,8 @@ static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		return _event_button_press(xevent, desktop);
 	else if(xev->type == Expose)
 		return _event_expose(xevent, desktop);
+	else if(xev->type == ConfigureNotify)
+		return _event_configure(xevent, desktop);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %d\n", __func__, xev->type);
 #endif
@@ -379,6 +382,18 @@ static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop)
 	return GDK_FILTER_CONTINUE;
 }
 
+static GdkFilterReturn _event_configure(XConfigureEvent * xevent, Desktop * desktop)
+{
+	desktop->width = xevent->width;
+	desktop->height = xevent->height;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %dx%d\n", __func__, desktop->width,
+			desktop->height);
+#endif
+	g_idle_add(_new_idle, desktop); /* FIXME run it directly? */
+	return GDK_FILTER_CONTINUE;
+}
+
 static void _on_popup_new_folder(gpointer data)
 {
 	static char const newfolder[] = "New folder";
@@ -435,7 +450,6 @@ static void _preferences_set(Desktop * desktop);
 static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
-	GtkWidget * window;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
