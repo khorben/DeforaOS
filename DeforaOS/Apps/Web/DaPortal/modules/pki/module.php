@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <pierre.pronchery@duekin.com>
+//Copyright (c) 2010 Pierre Pronchery <pierre.pronchery@duekin.com>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -73,8 +73,9 @@ _lang($text);
 
 
 //private
+//pki_ca_get
 //get a CA
-function _ca_get($id)
+function _pki_ca_get($id)
 {
 	$parent = _sql_array('SELECT ca_id AS id, title'
 			.' FROM daportal_ca, daportal_content'
@@ -87,9 +88,9 @@ function _ca_get($id)
 }
 
 
-//exec
+//pki_exec
 //helper function for exec()
-function _exec($cmd, &$output)
+function _pki_exec($cmd, &$output)
 {
 	$ret = 1;
 	_info($cmd);
@@ -100,7 +101,7 @@ function _exec($cmd, &$output)
 
 //insert_cleanup
 //cleanup a CA or client files when an error occurs
-function _insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
+function _pki_insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
 {
 	if(is_array($files))
 		foreach($files as $f)
@@ -114,7 +115,7 @@ function _insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
 
 //mkdir
 //variant of mkdir() with optional recursivity
-function _mkdir($pathname, $mode = 0777, $recursive = FALSE)
+function _pki_mkdir($pathname, $mode = 0777, $recursive = FALSE)
 {
 	if(!$recursive)
 		return mkdir($pathname, $mode, $recursive);
@@ -279,7 +280,7 @@ function pki_ca_insert($args)
 			.' FROM daportal_ca, daportal_content'
 			.' WHERE daportal_ca.ca_id=daportal_content.content_id'
 			." AND enabled='1'");
-	if(isset($args['parent']) && _ca_get($args['parent']) != FALSE)
+	if(isset($args['parent']) && _pki_ca_get($args['parent']) != FALSE)
 		$parent_id = $args['parent'];
 	include('./modules/pki/ca_update.tpl');
 }
@@ -303,7 +304,7 @@ function pki_caclient_insert($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	if(!isset($args['parent']) || !($parent = _ca_get($args['parent'])))
+	if(!isset($args['parent']) || !($parent = _pki_ca_get($args['parent'])))
 		return _error(INVALID_ARGUMENT);
 	$title = NEW_CACLIENT_FOR.' '.$parent['title'];
 	$caclient = array();
@@ -334,7 +335,7 @@ function pki_caserver_insert($args)
 
 	if(isset($error) && strlen($error))
 		_error($error);
-	if(!isset($args['parent']) || !($parent = _ca_get($args['parent'])))
+	if(!isset($args['parent']) || !($parent = _pki_ca_get($args['parent'])))
 		return _error(INVALID_ARGUMENT);
 	$title = NEW_CASERVER_FOR.' '.$parent['title'];
 	$caclient = array();
@@ -579,7 +580,7 @@ function _system_ca_export($args, $disposition = 'attachment')
 	$cadir = $root.'/'.$name;
 	$ecadir = escapeshellarg($cadir);
 	$output = array();
-	if(_exec('openssl x509 -in '.$ecadir.'/cacert.crt', $output) != 0)
+	if(_pki_exec('openssl x509 -in '.$ecadir.'/cacert.crt', $output) != 0)
 		return 'Could not export certificate';
 	$crt = implode("\n", $output);
 	header('Content-Type: application/x-x509-ca-cert');
@@ -611,7 +612,7 @@ function _system_ca_insert($args)
 	//validate parent
 	if(isset($args['parent']) && is_numeric($args['parent']))
 	{
-		if(($parent = _ca_get($args['parent'])) == FALSE)
+		if(($parent = _pki_ca_get($args['parent'])) == FALSE)
 			return INVALID_ARGUMENT;
 		$pcadir = $root.'/'.$parent['title'];
 		if(!is_dir($pcadir))
@@ -626,9 +627,9 @@ function _system_ca_insert($args)
 	//create directories
 	$dirs = array('certs', 'crl', 'newcerts', 'newreqs', 'private');
 	foreach($dirs as $d)
-		if(_mkdir($cadir.'/'.$d, 0700, TRUE) != TRUE)
+		if(_pki_mkdir($cadir.'/'.$d, 0700, TRUE) != TRUE)
 		{
-			_insert_cleanup($cadir, $dirs);
+			_pki_insert_cleanup($cadir, $dirs);
 			return 'Could not create directories';
 		}
 
@@ -650,7 +651,7 @@ function _system_ca_insert($args)
 			|| fwrite($fp, "01\n") == FALSE
 			|| fclose($fp) == FALSE)
 	{
-		_insert_cleanup($cadir, $dirs, $files);
+		_pki_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not create files';
 	}
 
@@ -662,12 +663,12 @@ function _system_ca_insert($args)
 	$output = array();
 	$sslargs = isset($parent) ? ' -out '.$ecadir.'/cacert.csr'
 		: ' -x509 -out '.$ecadir.'/cacert.crt';
-	if(_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes -new'
+	if(_pki_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes -new'
 				.$sslargs.' -days 3650'
 				.' -keyout '.$ecadir.'/private/cacert.key'
 				.' -subj '.$subject, $output) != 0)
 	{
-		_insert_cleanup($cadir, $dirs, $files);
+		_pki_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not create certificate';
 	}
 
@@ -676,14 +677,14 @@ function _system_ca_insert($args)
 	{
 		$files[] = 'cacert.crt';
 		$epcadir = escapeshellarg($pcadir);
-		if(_exec('openssl ca -config '.$epcadir.'/openssl.cnf'
+		if(_pki_exec('openssl ca -config '.$epcadir.'/openssl.cnf'
 					.' -extensions v3_ca'
 					.' -policy policy_anything'
 					.' -out '.$ecadir.'/cacert.crt -batch'
 					.' -infiles '.$ecadir.'/cacert.csr',
 					$output) != 0)
 		{
-			_insert_cleanup($cadir, $dirs, $files);
+			_pki_insert_cleanup($cadir, $dirs, $files);
 			return 'Could not sign certificate';
 		}
 	}
@@ -692,7 +693,7 @@ function _system_ca_insert($args)
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], '', 1)) == FALSE)
 	{
-		_insert_cleanup($cadir, $dirs, $files);
+		_pki_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert content';
 	}
 	$sql = 'INSERT INTO daportal_ca (ca_id';
@@ -709,7 +710,7 @@ function _system_ca_insert($args)
 	if(_sql_query($sql) == FALSE)
 	{
 		_content_delete($id);
-		_insert_cleanup($cadir, $dirs, $files);
+		_pki_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert CA';
 	}
 
@@ -803,7 +804,7 @@ function _system_insert($args, $type)
 		return 'Could not fetch the root directory';
 
 	//get parent
-	if(($parent = _ca_get($args['parent'])) == FALSE)
+	if(($parent = _pki_ca_get($args['parent'])) == FALSE)
 		return INVALID_ARGUMENT;
 	$cadir = $root.'/'.$parent['title'];
 	if(!is_dir($cadir))
@@ -835,33 +836,34 @@ function _system_insert($args, $type)
 	$ecrt = escapeshellarg($crt);
 	$output = array();
 	$ext = ($type == 'caclient') ? 'usr_cert' : 'srv_cert';
-	if(_exec('openssl req -config '.$ecadir.'/openssl.cnf -nodes -new -x509'
+	if(_pki_exec('openssl req -config '.$ecadir.'/openssl.cnf'
+				.' -nodes -new -x509'
 				.' -extensions '.$ext.' -days 365'
 				.' -keyout '.$ecrt.' -out '.$ecrt
 				.' -subj '._subject_from_ca($caclient),
 				$output) != 0)
 	{
-		_insert_cleanup($cadir, FALSE, $files);
+		_pki_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate certificate';
 	}
 
 	//create signing request
 	$ecsr = escapeshellarg($csr);
-	if(_exec('openssl x509 -x509toreq -in '.$ecrt.' -out '.$ecsr
+	if(_pki_exec('openssl x509 -x509toreq -in '.$ecrt.' -out '.$ecsr
 				.' -signkey '.$ecrt, $output) != 0)
 	{
-		_insert_cleanup($cadir, FALSE, $files);
+		_pki_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate signing request';
 	}
 
 	//create signed certificate
 	$eout = escapeshellarg($out);
-	if(_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
+	if(_pki_exec('openssl ca -config '.$ecadir.'/openssl.cnf'
 				.' -extensions '.$ext.' -policy policy_anything'
 				.' -out '.$eout.' -batch -infiles '.$ecsr,
 				$output) != 0)
 	{
-		_insert_cleanup($cadir, FALSE, $files);
+		_pki_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not generate signed certificate';
 	}
 
@@ -869,7 +871,7 @@ function _system_insert($args, $type)
 	require_once('./system/content.php');
 	if(($id = _content_insert($args['title'], '', 1)) == FALSE)
 	{
-		_insert_cleanup($cadir, FALSE, $files);
+		_pki_insert_cleanup($cadir, FALSE, $files);
 		return 'Could not insert content';
 	}
 	if(_sql_query('INSERT INTO daportal_'.$type.' ('.$type.'_id, parent'
@@ -881,7 +883,7 @@ function _system_insert($args, $type)
 			.", '".$args['cn']."', '".$args['email']."')") == FALSE)
 	{
 		_content_delete($id);
-		_insert_cleanup($cadir, $dirs, $files);
+		_pki_insert_cleanup($cadir, $dirs, $files);
 		return 'Could not insert CA';
 	}
 
