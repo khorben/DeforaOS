@@ -43,7 +43,8 @@ struct _Surfer
 	GtkToolItem * tb_forward;
 	GtkToolItem * tb_stop;
 	GtkToolItem * tb_refresh;
-	GtkWidget * tb_path;
+	GtkWidget * locationbar;
+	GtkWidget * lb_path;
 	GtkWidget * view;
 	GtkWidget * progress;
 	GtkWidget * statusbox;

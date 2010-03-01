@@ -436,7 +436,7 @@ void on_path_activate(gpointer data)
 	GtkWidget * entry;
 	const gchar * url;
 
-	entry = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
+	entry = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	url = gtk_entry_get_text(GTK_ENTRY(entry));
 	surfer_open(surfer, url);
 }

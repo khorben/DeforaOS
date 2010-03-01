@@ -207,6 +207,7 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
+	surfer->locationbar = toolbar;
 	gtk_toolbar_set_icon_size(GTK_TOOLBAR(toolbar),
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
@@ -217,14 +218,14 @@ Surfer * surfer_new(char const * url)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
 	toolitem = gtk_tool_item_new();
-	surfer->tb_path = gtk_combo_box_entry_new_text();
-	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
+	surfer->lb_path = gtk_combo_box_entry_new_text();
+	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	g_signal_connect_swapped(G_OBJECT(widget), "activate", G_CALLBACK(
 				on_path_activate), surfer);
 	if(url != NULL)
 		gtk_entry_set_text(GTK_ENTRY(widget), url);
 	gtk_tool_item_set_expand(toolitem, TRUE);
-	gtk_container_add(GTK_CONTAINER(toolitem), surfer->tb_path);
+	gtk_container_add(GTK_CONTAINER(toolitem), surfer->lb_path);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_JUMP_TO);
 	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
@@ -250,7 +251,7 @@ Surfer * surfer_new(char const * url)
 			TRUE, 0);
 	gtk_widget_show_all(surfer->statusbox);
 	gtk_container_add(GTK_CONTAINER(surfer->window), vbox);
-	gtk_widget_grab_focus(GTK_WIDGET(surfer->tb_path));
+	gtk_widget_grab_focus(GTK_WIDGET(surfer->lb_path));
 	gtk_widget_show_all(surfer->window);
 	/* preferences window */
 	surfer->pr_window = NULL;
@@ -315,14 +316,14 @@ void surfer_set_location(Surfer * surfer, char const * url)
 	static int i = 0; /* XXX should be set per-window */
 	GtkWidget * widget;
 
-	widget = gtk_bin_get_child(GTK_BIN(surfer->tb_path));
+	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
 	/* FIXME also set surfer->url? what about history? */
 	if(i == 8)
-		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->tb_path), 0);
+		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->lb_path), 0);
 	else
 		i++;
-	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->tb_path), url);
+	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->lb_path), url);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
 			ghtml_can_go_back(surfer->view));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
@@ -525,7 +526,7 @@ void surfer_open(Surfer * surfer, char const * url)
 		ghtml_load_url(surfer->view, url);
 	}
 	else
-		gtk_widget_grab_focus(surfer->tb_path);
+		gtk_widget_grab_focus(surfer->lb_path);
 }
 
 
@@ -605,9 +606,15 @@ void surfer_show_statusbar(Surfer * surfer, gboolean show)
 void surfer_show_toolbar(Surfer * surfer, gboolean show)
 {
 	if(show == TRUE)
+	{
 		gtk_widget_show(surfer->toolbar);
+		gtk_widget_show(surfer->locationbar);
+	}
 	else
+	{
 		gtk_widget_hide(surfer->toolbar);
+		gtk_widget_hide(surfer->locationbar);
+	}
 }
 
 
