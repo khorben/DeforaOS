@@ -142,7 +142,8 @@ void on_enum_toggled(GtkWidget * widget, gpointer data)
 {
 	Mixer * mixer = data;
 
-	mixer_set_enum(mixer, widget);
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE)
+		mixer_set_enum(mixer, widget);
 }
 
 
