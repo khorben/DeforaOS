@@ -99,7 +99,7 @@ function _pki_exec($cmd, &$output)
 }
 
 
-//insert_cleanup
+//pki_insert_cleanup
 //cleanup a CA or client files when an error occurs
 function _pki_insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
 {
@@ -113,7 +113,7 @@ function _pki_insert_cleanup($cadir, $dirs = FALSE, $files = FALSE)
 }
 
 
-//mkdir
+//pki_mkdir
 //variant of mkdir() with optional recursivity
 function _pki_mkdir($pathname, $mode = 0777, $recursive = FALSE)
 {
@@ -207,7 +207,7 @@ function pki_admin($args)
 		$res[$i]['thumbnail'] = 'icons/48x48/ca.png';
 		$res[$i]['module'] = 'pki';
 		$res[$i]['apply_module'] = 'pki';
-		$res[$i]['action'] = 'update';
+		$res[$i]['action'] = 'display';
 		$res[$i]['apply_id'] = $res[$i]['id'];
 		$res[$i]['name'] = _html_safe($res[$i]['title']);
 		foreach($keys as $k)
@@ -237,6 +237,11 @@ function pki_admin($args)
 				'class' => $classes, 'module' => 'pki',
 				'action' => 'admin', 'toolbar' => $toolbar,
 				'view' => 'details'));
+	//XXX rename and move this function
+	//server list
+	_display_ca_list_type(FALSE, 'caserver', CASERVER_LIST, '');
+	//client list
+	_display_ca_list_type(FALSE, 'caclient', CACLIENT_LIST, '');
 }
 
 
@@ -371,7 +376,7 @@ function pki_default($args)
 }
 
 
-//delete
+//pki_delete
 function pki_delete($args)
 {
 	global $user_id;
