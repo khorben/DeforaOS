@@ -188,7 +188,7 @@ function pki_admin($args)
 		$action = 'config_update';
 		include('./system/config.tpl');
 	}
-	print('<h2 class="title pki"> '._html_safe(CA_LIST)."</h2>\n");
+	print('<h2 class="title ca"> '._html_safe(CA_LIST)."</h2>\n");
 	$sql = 'SELECT ca_id AS id, title, enabled, country, state, locality'
 		.', organization, section, cn, email'
 		.' FROM daportal_ca, daportal_content'
