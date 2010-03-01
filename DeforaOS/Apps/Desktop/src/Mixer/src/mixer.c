@@ -247,6 +247,7 @@ static GtkWidget * _new_enum(Mixer * mixer, int dev,
 	int i;
 	GtkWidget * widget;
 	GSList * group = NULL;
+	int * q;
 
 	if(e->num_mem <= 0)
 		return NULL;
@@ -262,6 +263,11 @@ static GtkWidget * _new_enum(Mixer * mixer, int dev,
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),
 					TRUE);
 		g_object_set_data(G_OBJECT(widget), "ctrl", p);
+		if((q = malloc(sizeof(*q))) != NULL)
+		{
+			*q = e->member[i].ord;
+			g_object_set_data(G_OBJECT(widget), "ord", q);
+		}
 		g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 					on_enum_toggled), mixer);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -353,22 +359,16 @@ void mixer_delete(Mixer * mixer)
 int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
 {
 	mixer_ctrl_t * p;
-	GSList * group;
-	int ord;
+	int * q;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(widget));
-	for(ord = 0; group != NULL; ord++)
-		if(group->data == widget)
-			break;
-		else
-			group = group->next;
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
-	if(group == NULL || p == NULL)
+	q = g_object_get_data(G_OBJECT(widget), "ord");
+	if(p == NULL || q == NULL)
 		return 1;
-	p->un.ord = ord;
+	p->un.ord = *q;
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
 		return 0;
 	fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
