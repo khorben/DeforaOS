@@ -32,6 +32,7 @@ gboolean ghtml_can_go_forward(GtkWidget * ghtml);
 
 char const * ghtml_get_link_message(GtkWidget * ghtml);
 char const * ghtml_get_location(GtkWidget * ghtml);
+char const * ghtml_get_source(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
 
 int ghtml_set_base(GtkWidget * ghtml, char const * url);

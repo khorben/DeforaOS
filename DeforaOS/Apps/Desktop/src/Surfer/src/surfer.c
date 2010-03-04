@@ -168,7 +168,7 @@ Surfer * surfer_new(char const * url)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
 #endif
 	surfer_set_title(surfer, NULL);
-	g_signal_connect(G_OBJECT(surfer->window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(surfer->window), "delete-event", G_CALLBACK(
 				on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
@@ -185,6 +185,7 @@ Surfer * surfer_new(char const * url)
 	surfer->tb_back = _surfer_toolbar[0].widget;
 	surfer->tb_forward = _surfer_toolbar[1].widget;
 	surfer->tb_stop = _surfer_toolbar[2].widget;
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
 	surfer->tb_refresh = _surfer_toolbar[3].widget;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), FALSE);
@@ -270,7 +271,7 @@ static gboolean _new_idle(gpointer data)
 {
 	Surfer * surfer = data;
 
-	ghtml_load_url(surfer->view, surfer->url);
+	surfer_open(surfer, surfer->url);
 	return FALSE;
 }
 
@@ -315,10 +316,16 @@ void surfer_set_location(Surfer * surfer, char const * url)
 {
 	static int i = 0; /* XXX should be set per-window */
 	GtkWidget * widget;
+	char * p;
 
 	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
-	/* FIXME also set surfer->url? what about history? */
+	/* FIXME what about history? */
+	if((p = strdup(url)) != NULL)
+	{
+		free(surfer->url);
+		surfer->url = p;
+	}
 	if(i == 8)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->lb_path), 0);
 	else
@@ -359,6 +366,8 @@ void surfer_set_status(Surfer * surfer, char const * status)
 			gtk_statusbar_get_context_id(sb, ""), (status != NULL)
 			? status : "Ready");
 	if(status == NULL)
+		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
+	if(status == NULL)
 	{
 		gtk_progress_bar_set_text(pb, " ");
 		gtk_progress_bar_set_fraction(pb, 0.0);
@@ -378,8 +387,8 @@ void surfer_set_title(Surfer * surfer, char const * title)
 {
 	char buf[256];
 
-	snprintf(buf, sizeof(buf), "%s%s%s", "Web surfer", title != NULL
-			? " - " : "", title != NULL ? title : "");
+	snprintf(buf, sizeof(buf), "%s%s%s", "Web surfer", (title != NULL)
+			? " - " : "", (title != NULL) ? title : "");
 	gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
 }
 
@@ -426,7 +435,9 @@ int surfer_confirm(Surfer * surfer, char const * message)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
-			message);
+			"Question");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
@@ -475,7 +486,9 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
@@ -489,6 +502,7 @@ gboolean surfer_go_back(Surfer * surfer)
 {
 	gboolean ret;
 
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 	ret = ghtml_go_back(surfer->view);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), ret);
 	return ret;
@@ -500,6 +514,7 @@ gboolean surfer_go_forward(Surfer * surfer)
 {
 	gboolean ret;
 
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 	ret = ghtml_go_forward(surfer->view);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), ret);
 	return ret;
@@ -522,6 +537,7 @@ void surfer_open(Surfer * surfer, char const * url)
 {
 	if(url != NULL)
 	{
+		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 		ghtml_stop(surfer->view);
 		ghtml_load_url(surfer->view, url);
 	}
@@ -555,6 +571,7 @@ void surfer_open_dialog(Surfer * surfer)
 /* surfer_refresh */
 void surfer_refresh(Surfer * surfer)
 {
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 	ghtml_refresh(surfer->view);
 }
 
@@ -562,6 +579,7 @@ void surfer_refresh(Surfer * surfer)
 /* surfer_reload */
 void surfer_reload(Surfer * surfer)
 {
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 	ghtml_reload(surfer->view);
 }
 
@@ -642,6 +660,55 @@ void surfer_unselect_all(Surfer * surfer)
 }
 
 
+/* surfer_view_source */
+static gboolean _on_source_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+
+void surfer_view_source(Surfer * surfer)
+{
+	GtkWidget * window;
+	GtkWidget * scrolled;
+	GtkWidget * widget;
+	GtkTextBuffer * tbuf;
+	PangoFontDescription * desc;
+	char buf[256];
+	char const * source;
+
+	if(surfer->url == NULL)
+		return;
+	if((source = ghtml_get_source(surfer->view)) == NULL)
+		return; /* FIXME download to a temporary file and open */
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
+	snprintf(buf, sizeof(buf), "%s%s", "Web surfer - Source of ",
+			surfer->url);
+	gtk_window_set_title(GTK_WINDOW(window), buf);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_on_source_closex), NULL);
+	scrolled = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	widget = gtk_text_view_new();
+	desc = pango_font_description_new();
+	pango_font_description_set_family(desc, "monospace");
+	gtk_widget_modify_font(widget, desc);
+	pango_font_description_free(desc);
+	gtk_text_view_set_editable(GTK_TEXT_VIEW(widget), FALSE);
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+	/* FIXME probably should convert to UTF-8 when not already */
+	gtk_text_buffer_set_text(tbuf, source, strlen(source));
+	gtk_container_add(GTK_CONTAINER(scrolled), widget);
+	gtk_container_add(GTK_CONTAINER(window), scrolled);
+	gtk_widget_show_all(window);
+}
+
+static gboolean _on_source_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	return FALSE;
+}
+
+
 /* surfer_warning */
 void surfer_warning(Surfer * surfer, char const * message)
 {
@@ -650,7 +717,9 @@ void surfer_warning(Surfer * surfer, char const * message)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s", message);
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s", "Warning");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);

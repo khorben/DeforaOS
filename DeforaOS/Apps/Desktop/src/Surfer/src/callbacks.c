@@ -132,7 +132,9 @@ void on_view_normal_size(gpointer data)
 /* on_view_page_source */
 void on_view_page_source(gpointer data)
 {
-	/* FIXME implement */
+	Surfer * surfer = data;
+
+	surfer_view_source(surfer);
 }
 
 

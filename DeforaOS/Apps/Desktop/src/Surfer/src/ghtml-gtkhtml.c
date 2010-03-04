@@ -53,6 +53,7 @@ typedef struct _GHtmlConn GHtmlConn;
 typedef struct _GHtml
 {
 	Surfer * surfer;
+	char * source; /* XXX keep the size */
 
 	/* history */
 	GList * history;
@@ -104,6 +105,7 @@ static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post);
 static int _ghtml_document_reload(GHtml * ghtml);
 static gchar * _ghtml_make_url(gchar const * base, gchar const * url);
+static int _ghtml_source_append(GHtml * ghtml, char const * buf, size_t size);
 static void _ghtml_stop(GHtml * ghtml);
 static GHtmlConn * _ghtml_stream_load(GHtml * ghtml, HtmlStream * stream,
 		gchar const * url, gchar const * post);
@@ -131,6 +133,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	if((ghtml = malloc(sizeof(*ghtml))) == NULL)
 		return NULL;
 	ghtml->surfer = surfer;
+	ghtml->source = NULL;
 	ghtml->history = NULL;
 	ghtml->current = NULL;
 	ghtml->conns = NULL;
@@ -201,6 +204,16 @@ char const * ghtml_get_location(GtkWidget * widget)
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	return _history_get_location(ghtml->current);
+}
+
+
+/* ghtml_get_source */
+char const * ghtml_get_source(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return ghtml->source;
 }
 
 
@@ -522,11 +535,29 @@ static int _ghtml_document_reload(GHtml * ghtml)
 }
 
 
+/* ghtml_source_append */
+static int _ghtml_source_append(GHtml * ghtml, char const * buf, size_t size)
+{
+	size_t len = (ghtml->source != NULL) ? strlen(ghtml->source) : 0;
+	char * p;
+
+	/* FIXME this may lose data (eg if it contains NULL bytes) */
+	if((p = realloc(ghtml->source, len + size + 1)) == NULL)
+		return 1; /* XXX report error */
+	ghtml->source = p;
+	memcpy(p + len, buf, size);
+	p[len + size] = '\0';
+	return 0;
+}
+
+
 /* ghtml_stop */
 static void _ghtml_stop(GHtml * ghtml)
 {
 	size_t i;
 
+	free(ghtml->source);
+	ghtml->source = NULL;
 	for(i = 0; i < ghtml->conns_cnt; i++)
 		if(ghtml->conns[i] != NULL)
 			_ghtmlconn_delete(ghtml->conns[i]);
@@ -693,6 +724,7 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 		_ghtmlconn_delete(conn);
 		return FALSE;
 	}
+	_ghtml_source_append(conn->ghtml, buf, len);
 	html_stream_write(conn->stream, buf, len);
 	conn->file_read+=len;
 	if(conn->file_size > 0)
@@ -774,7 +806,11 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 	else
 	{
 		if(size > 0)
+		{
+			if(conn == conn->ghtml->conns[0]) /* XXX ugly */
+				_ghtml_source_append(conn->ghtml, buf, size);
 			html_stream_write(conn->stream, buf, size);
+		}
 		_http_data_progress(event, conn);
 	}
 	ghtml = conn->ghtml;
@@ -795,6 +831,8 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 		_ghtmlconn_delete(conn);
 		return;
 	}
+	if(conn == conn->ghtml->conns[0]) /* XXX ugly */
+		_ghtml_source_append(conn->ghtml, buf, size);
 	html_stream_write(conn->stream, buf, size);
 	_http_data_progress(event, conn);
 }
@@ -856,7 +894,7 @@ static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 	char buf[256] = "Redirecting...";
 	char * url = event->new_location;
 
-	if(url == NULL)
+	if(conn == conn->ghtml->conns[0] && url == NULL) /* XXX ugly */
 	{
 		surfer_set_status(ghtml->surfer, buf);
 		return;
@@ -872,6 +910,8 @@ static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 			event->auto_redirect, event->num_redirects,
 			event->max_redirects);
 #endif
+	if(conn != conn->ghtml->conns[0]) /* XXX ugly */
+		return;
 	_ghtml_set_base(ghtml, url);
 	surfer_set_location(ghtml->surfer, url);
 	surfer_set_status(ghtml->surfer, buf);

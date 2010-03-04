@@ -308,6 +308,14 @@ char const * ghtml_get_location(GtkWidget * ghtml)
 }
 
 
+/* ghtml_get_source */
+char const * ghtml_get_source(GtkWidget * widget)
+{
+	/* FIXME really implement */
+	return NULL;
+}
+
+
 /* ghtml_get_title */
 char const * ghtml_get_title(GtkWidget * ghtml)
 {

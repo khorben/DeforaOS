@@ -136,6 +136,21 @@ char const * ghtml_get_location(GtkWidget * ghtml)
 }
 
 
+/* ghtml_get_source */
+char const * ghtml_get_source(GtkWidget * ghtml)
+{
+	GtkWidget * view;
+	WebKitWebFrame * frame;
+	WebKitWebDataSource * source;
+
+	/* FIXME doesn't seem to work */
+	view = g_object_get_data(G_OBJECT(ghtml), "view");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
+	source = webkit_web_frame_get_data_source(frame);
+	return webkit_web_data_source_get_data(source);
+}
+
+
 char const * ghtml_get_title(GtkWidget * ghtml)
 {
 	GtkWidget * view;
