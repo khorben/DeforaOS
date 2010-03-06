@@ -187,6 +187,7 @@ Surfer * surfer_new(char const * url)
 	surfer->tb_stop = _surfer_toolbar[2].widget;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
 	surfer->tb_refresh = _surfer_toolbar[3].widget;
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), FALSE);
 #if GTK_CHECK_VERSION(2, 8, 0)
@@ -537,6 +538,7 @@ void surfer_open(Surfer * surfer, char const * url)
 {
 	if(url != NULL)
 	{
+		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), TRUE);
 		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
 		ghtml_stop(surfer->view);
 		ghtml_load_url(surfer->view, url);
