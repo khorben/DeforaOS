@@ -144,7 +144,6 @@ char const * ghtml_get_source(GtkWidget * ghtml)
 	WebKitWebDataSource * source;
 	GString * str;
 
-	/* FIXME doesn't seem to work */
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
 	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
 	source = webkit_web_frame_get_data_source(frame);
