@@ -480,8 +480,8 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 	unsigned long cnt = 0;
 	unsigned long * buf = NULL;
 	unsigned long i;
-	unsigned long width;
-	unsigned long height;
+	long width;
+	long height;
 	unsigned long size;
 	unsigned char * pixbuf;
 	unsigned long j;
@@ -496,7 +496,7 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 		height = buf[i + 1];
 		if(i + 2 + (width * height) > cnt)
 			break;
-		if(width == 0 || height == 0 || width != height)
+		if(width <= 0 || height <= 0 || width != height)
 			continue;
 		size = width * height * 4;
 		if((pixbuf = malloc(size)) == NULL)
