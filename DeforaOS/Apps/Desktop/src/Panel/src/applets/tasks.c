@@ -179,7 +179,8 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 #if 0 /* FIXME doesn't seem to work properly */
 	gtk_label_set_ellipsize(GTK_LABEL(task->label), PANGO_ELLIPSIZE_END);
 #endif
-	gtk_label_set_line_wrap(GTK_LABEL(task->label), TRUE);
+	if(task->tasks->helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
+		gtk_label_set_line_wrap(GTK_LABEL(task->label), TRUE);
 #if GTK_CHECK_VERSION(2, 10, 0)
 	gtk_label_set_line_wrap_mode(GTK_LABEL(task->label),
 			PANGO_WRAP_WORD_CHAR);
