@@ -85,7 +85,8 @@ Panel * panel_new(PanelPrefs * prefs)
 	}
 	panel->icon_width = 48;
 	panel->icon_height = 48;
-	if(prefs->iconsize != PANEL_ICON_SIZE_SMALL)
+	if(prefs->iconsize != PANEL_ICON_SIZE_SMALL
+			&& prefs->iconsize != PANEL_ICON_SIZE_SMALLER)
 		prefs->iconsize = PANEL_ICON_SIZE_LARGE;
 	if(gtk_icon_size_lookup(prefs->iconsize, &panel->icon_width,
 			&panel->icon_height) != TRUE)
