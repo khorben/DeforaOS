@@ -117,10 +117,11 @@ static gboolean _on_timeout(gpointer data)
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
 #ifndef EMBEDDED
-	strftime(buf, sizeof(buf), "%H:%M:%S\n%d/%m/%Y", &tm);
-#else
-	strftime(buf, sizeof(buf), "%H:%M", &tm);
+	if(clock->helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
+		strftime(buf, sizeof(buf), "%H:%M:%S\n%d/%m/%Y", &tm);
+	else
 #endif
+	strftime(buf, sizeof(buf), "%H:%M", &tm);
 	gtk_label_set_text(GTK_LABEL(clock->label), buf);
 	return TRUE;
 }
