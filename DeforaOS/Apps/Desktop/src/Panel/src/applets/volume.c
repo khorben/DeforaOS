@@ -94,6 +94,7 @@ static GtkWidget * _volume_init(PanelApplet * applet)
 	if((volume = _volume_new(applet->helper)) == NULL)
 		return NULL;
 	ret = gtk_volume_button_new();
+	g_object_set(G_OBJECT(ret), "size", applet->helper->icon_size, NULL);
 	value = _volume_get(volume);
 	gtk_scale_button_set_value(GTK_SCALE_BUTTON(ret), value);
 	_volume_set(volume, value);
