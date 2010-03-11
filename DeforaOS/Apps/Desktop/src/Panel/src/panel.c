@@ -299,6 +299,7 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 {
 	Panel * panel = data;
 	GtkRequisition req;
+	gint height;
 
 	gtk_widget_size_request(GTK_WIDGET(menu), &req);
 #ifdef DEBUG
@@ -308,8 +309,8 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 	if(req.height <= 0)
 		return;
 	*x = PANEL_BORDER_WIDTH;
-	*y = panel->root_height - (PANEL_BORDER_WIDTH * 8) - panel->icon_height
-		- req.height;
+	gtk_window_get_size(GTK_WINDOW(panel->window), NULL, &height);
+	*y = panel->root_height - height - req.height;
 	*push_in = TRUE;
 }
 
