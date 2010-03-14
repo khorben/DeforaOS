@@ -111,9 +111,9 @@ static void _memory_destroy(PanelApplet * applet)
 
 /* callbacks */
 /* on_timeout */
+#ifdef __NetBSD__
 static gboolean _on_timeout(gpointer data)
 {
-#ifdef __NetBSD__
 	Memory * memory = data;
 	int mib[] = { CTL_VM, VM_METER };
 	struct vmtotal vm;
@@ -125,6 +125,6 @@ static gboolean _on_timeout(gpointer data)
 	value = vm.t_arm * 100;
 	value /= (vm.t_rm + vm.t_free);
 	gtk_range_set_value(GTK_RANGE(memory->scale), value);
-#endif
 	return TRUE;
 }
+#endif
