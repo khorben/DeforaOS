@@ -119,20 +119,24 @@ function _start_css_themes($theme)
 	if(($dir = opendir(dirname($_SERVER['SCRIPT_FILENAME']).'/themes')) 
 			== FALSE)
 		return;
+	$themes = array();
 	while(($de = readdir($dir)))
 	{
 		if(($len = strlen($de)) < 5
 				|| substr($de, -4) != '.css')
 			continue;
-		$name = substr($de, 0, $len-4);
+		$name = substr($de, 0, $len - 4);
 		if($name == $theme)
 			continue;
+		$themes[] = $name;
+	}
+	closedir($dir);
+	usort($themes, strcmp);
+	foreach($themes as $name)
 		print("\t\t".'<link rel="alternate stylesheet" href="'
 				.rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')
 				.'/themes/'.$name.'.css" title="'.$name.'"/>'
 				."\n");
-	}
-	closedir($dir);
 }
 
 function _html_start()
