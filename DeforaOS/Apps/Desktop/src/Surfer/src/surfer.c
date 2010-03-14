@@ -663,11 +663,14 @@ void surfer_unselect_all(Surfer * surfer)
 
 
 /* surfer_view_source */
+static void _on_source_close(GtkWidget * widget);
 static gboolean _on_source_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 
 void surfer_view_source(Surfer * surfer)
 {
+	GtkAccelGroup * group;
+	GClosure * cc;
 	GtkWidget * window;
 	GtkWidget * scrolled;
 	GtkWidget * widget;
@@ -681,6 +684,11 @@ void surfer_view_source(Surfer * surfer)
 	if((source = ghtml_get_source(surfer->view)) == NULL)
 		return; /* FIXME download to a temporary file and open */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	group = gtk_accel_group_new();
+	cc = g_cclosure_new_swap(G_CALLBACK(_on_source_close), window, NULL);
+	gtk_accel_group_connect(group, GDK_W, GDK_CONTROL_MASK,
+			GTK_ACCEL_VISIBLE, cc);
+	gtk_window_add_accel_group(GTK_WINDOW(window), group);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
 	snprintf(buf, sizeof(buf), "%s%s", "Web surfer - Source of ",
 			surfer->url);
@@ -702,6 +710,11 @@ void surfer_view_source(Surfer * surfer)
 	gtk_container_add(GTK_CONTAINER(scrolled), widget);
 	gtk_container_add(GTK_CONTAINER(window), scrolled);
 	gtk_widget_show_all(window);
+}
+
+static void _on_source_close(GtkWidget * widget)
+{
+	gtk_widget_destroy(widget);
 }
 
 static gboolean _on_source_closex(GtkWidget * widget, GdkEvent * event,
