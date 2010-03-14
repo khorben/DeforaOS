@@ -93,7 +93,7 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 	gtk_widget_show_all(ret);
 	return ret;
 #else
-	/* FIXME not implemented */
+	error_set("%s", "memory: Unsupported platform");
 	return NULL;
 #endif
 }

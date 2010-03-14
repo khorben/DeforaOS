@@ -102,6 +102,7 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 	gtk_widget_show_all(ret);
 	return ret;
 #else
+	error_set("%s", "cpu: Unsupported platform");
 	return NULL;
 #endif
 }
