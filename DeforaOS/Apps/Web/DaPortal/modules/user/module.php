@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -180,7 +180,8 @@ function user_appearance($args)
 
 	print('<h1 class="title appearance">'._html_safe(APPEARANCE)."</h1>\n");
 	$themes = array();
-	if(($dir = opendir('themes')) != FALSE)
+	if(($dir = opendir(dirname($_SERVER['SCRIPT_FILENAME']).'/themes'))
+			!= FALSE)
 		while(($de = readdir($dir)) != FALSE)
 		{
 			if(($len = strlen($de)) < 5
@@ -188,6 +189,7 @@ function user_appearance($args)
 				continue;
 			$themes[] = substr($de, 0, -4);
 		}
+	usort($themes, strcmp);
 	$views = array('details' => VIEW_DETAILS, 'list' => VIEW_LIST,
 			'thumbnails' => VIEW_THUMBNAILS);
 	if(isset($_SESSION['view']))
@@ -248,7 +250,7 @@ function user_default($args)
 	$modules[] = array('name' => MY_PROFILE,
 			'icon' => 'icons/16x16/admin.png',
 			'thumbnail' => 'icons/48x48/admin.png',
-			'module' => 'user', 'action' => 'admin',
+			'module' => 'user', 'action' => 'modify',
 			'id' => $user_id);
 	$modules[] = array('name' => LOGOUT,
 			'icon' => 'icons/16x16/logout.png',
@@ -628,7 +630,8 @@ function _user_system_appearance($args)
 
 	unset($_SESSION['theme']);
 	if(isset($args['theme']) && strpos($args['theme'], '/') === FALSE
-			&& is_readable('themes/'.$args['theme'].'.css'))
+			&& is_readable(dirname($_SERVER['SCRIPT_FILENAME'])
+				.'/themes/'.$args['theme'].'.css'))
 		$_SESSION['theme'] = $args['theme'];
 	unset($_SESSION['view']);
 	$views = array('details', 'list', 'thumbnails');

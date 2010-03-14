@@ -53,7 +53,7 @@ global $user_id;
 if($user_id != 0)
 {
 	$actions = array('appearance' => APPEARANCE,
-			'display' => CONTENT, 'admin' => PROFILE,
+			'display' => CONTENT, 'modify' => PROFILE,
 			'logout' => LOGOUT);
 	$title = USER;
 }
