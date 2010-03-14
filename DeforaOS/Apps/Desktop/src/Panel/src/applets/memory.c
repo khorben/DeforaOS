@@ -40,7 +40,9 @@ static GtkWidget * _memory_init(PanelApplet * applet);
 static void _memory_destroy(PanelApplet * applet);
 
 /* callbacks */
+#ifdef __NetBSD__
 static gboolean _on_timeout(gpointer data);
+#endif
 
 
 /* public */
@@ -62,6 +64,7 @@ PanelApplet applet =
 /* memory_init */
 static GtkWidget * _memory_init(PanelApplet * applet)
 {
+#ifdef __NetBSD__
 	GtkWidget * ret;
 	Memory * memory;
 	PangoFontDescription * desc;
@@ -89,6 +92,10 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 	pango_font_description_free(desc);
 	gtk_widget_show_all(ret);
 	return ret;
+#else
+	/* FIXME not implemented */
+	return NULL;
+#endif
 }
 
 
