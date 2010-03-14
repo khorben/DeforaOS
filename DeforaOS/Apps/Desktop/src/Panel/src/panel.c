@@ -32,6 +32,8 @@
 /* types */
 struct _Panel
 {
+	gint height;
+
 	gint icon_width;
 	gint icon_height;
 
@@ -119,16 +121,16 @@ Panel * panel_new(PanelPrefs * prefs)
 	/* panel */
 	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	rect.height = panel->icon_height + (PANEL_BORDER_WIDTH * 8);
+	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 8);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, rect.height);
+	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, panel->height);
 #endif
 	gtk_window_resize(GTK_WINDOW(panel->window), panel->root_width,
-			rect.height);
+			panel->height);
 	gtk_window_set_type_hint(GTK_WINDOW(panel->window),
 			GDK_WINDOW_TYPE_HINT_DOCK);
 	gtk_window_move(GTK_WINDOW(panel->window), rect.x,
-			rect.y + panel->root_height - rect.height);
+			rect.y + panel->root_height - panel->height);
 	gtk_window_stick(GTK_WINDOW(panel->window));
 	g_signal_connect(G_OBJECT(panel->window), "delete-event", G_CALLBACK(
 				_on_closex), panel);
@@ -299,7 +301,6 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 {
 	Panel * panel = data;
 	GtkRequisition req;
-	gint height;
 
 	gtk_widget_size_request(GTK_WIDGET(menu), &req);
 #ifdef DEBUG
@@ -309,8 +310,7 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 	if(req.height <= 0)
 		return;
 	*x = PANEL_BORDER_WIDTH;
-	gtk_window_get_size(GTK_WINDOW(panel->window), NULL, &height);
-	*y = panel->root_height - height - req.height;
+	*y = panel->root_height - panel->height - req.height;
 	*push_in = TRUE;
 }
 
