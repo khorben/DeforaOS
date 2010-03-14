@@ -46,7 +46,9 @@ static GtkWidget * _cpu_init(PanelApplet * applet);
 static void _cpu_destroy(PanelApplet * applet);
 
 /* callbacks */
+#ifdef __NetBSD__
 static gboolean _on_timeout(gpointer data);
+#endif
 
 
 /* public */
@@ -68,6 +70,7 @@ PanelApplet applet =
 /* cpu_init */
 static GtkWidget * _cpu_init(PanelApplet * applet)
 {
+#ifdef __NetBSD__
 	GtkWidget * ret;
 	Cpu * cpu;
 	PangoFontDescription * desc;
@@ -92,14 +95,15 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 	gtk_scale_set_value_pos(GTK_SCALE(cpu->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(ret), cpu->scale, FALSE, FALSE, 0);
 	cpu->timeout = g_timeout_add(500, _on_timeout, cpu);
-#ifdef __NetBSD__
 	cpu->used = 0;
 	cpu->total = 0;
-#endif
 	_on_timeout(cpu);
 	pango_font_description_free(desc);
 	gtk_widget_show_all(ret);
 	return ret;
+#else
+	return NULL;
+#endif
 }
 
 
@@ -115,9 +119,9 @@ static void _cpu_destroy(PanelApplet * applet)
 
 /* callbacks */
 /* on_timeout */
+#ifdef __NetBSD__
 static gboolean _on_timeout(gpointer data)
 {
-#ifdef __NetBSD__
 	Cpu * cpu = data;
 	int mib[] = { CTL_KERN, KERN_CP_TIME };
 	uint64_t cpu_time[CPUSTATES];
@@ -138,6 +142,6 @@ static gboolean _on_timeout(gpointer data)
 	cpu->used = used;
 	cpu->total = total;
 	gtk_range_set_value(GTK_RANGE(cpu->scale), value);
-#endif
 	return TRUE;
 }
+#endif
