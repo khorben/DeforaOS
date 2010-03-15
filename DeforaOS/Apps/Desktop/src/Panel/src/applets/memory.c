@@ -19,7 +19,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#ifdef __NetBSD__
+#if defined(__linux__)
+# include <sys/sysinfo.h>
+#elif defined(__NetBSD__)
 # include <sys/sysctl.h>
 #endif
 #include "Panel.h"
@@ -30,6 +32,7 @@
 /* types */
 typedef struct _Memory
 {
+	PanelAppletHelper * helper;
 	GtkWidget * scale;
 	guint timeout;
 } Memory;
@@ -40,7 +43,7 @@ static GtkWidget * _memory_init(PanelApplet * applet);
 static void _memory_destroy(PanelApplet * applet);
 
 /* callbacks */
-#ifdef __NetBSD__
+#if defined(__linux__) || defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data);
 #endif
 
@@ -64,7 +67,7 @@ PanelApplet applet =
 /* memory_init */
 static GtkWidget * _memory_init(PanelApplet * applet)
 {
-#ifdef __NetBSD__
+#if defined(__linux__) || defined(__NetBSD__)
 	GtkWidget * ret;
 	Memory * memory;
 	PangoFontDescription * desc;
@@ -76,6 +79,7 @@ static GtkWidget * _memory_init(PanelApplet * applet)
 		return NULL;
 	}
 	applet->priv = memory;
+	memory->helper = applet->helper;
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
@@ -111,7 +115,21 @@ static void _memory_destroy(PanelApplet * applet)
 
 /* callbacks */
 /* on_timeout */
-#ifdef __NetBSD__
+#if defined(__linux__)
+static gboolean _on_timeout(gpointer data)
+{
+	Memory * memory = data;
+	struct sysinfo sy;
+	gdouble value;
+
+	if(sysinfo(&sy) != 0)
+		return memory->helper->error(memory->helper->priv, "sysinfo", TRUE);
+	value = sy.sharedram;
+	value /= sy.totalram;
+	gtk_range_set_value(GTK_RANGE(memory->scale), value);
+	return TRUE;
+}
+#elif defined(__NetBSD__)
 static gboolean _on_timeout(gpointer data)
 {
 	Memory * memory = data;
