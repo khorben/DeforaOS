@@ -23,6 +23,7 @@
 #ifdef __NetBSD__
 # include <sys/sysctl.h>
 #endif
+#include <System.h>
 #include "Panel.h"
 
 
