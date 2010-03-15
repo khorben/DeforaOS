@@ -147,8 +147,8 @@ static gboolean _on_idle(gpointer data)
 	/* FIXME load all plugins, a configuration file or ask the user */
 #ifndef EMBEDDED
 	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
-		"clock", "memory", "cpufreq", "cpu", "desktop", "gps", "gsm",
-		"lock", "logout", "main", "pager", "tasks", NULL };
+		"clock", "swap", "memory", "cpufreq", "cpu", "desktop", "gps",
+		"gsm", "lock", "logout", "main", "pager", "tasks", NULL };
 #else
 	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
 		"clock", "cpufreq", "gps", "gsm", "main", "pager", "tasks",

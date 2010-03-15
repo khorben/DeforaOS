@@ -1,4 +1,4 @@
-TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so gsm.so lock.so logout.so main.so memory.so pager.so systray.so tasks.so volume.so
+TARGETS	= battery.so bluetooth.so clock.so cpu.so cpufreq.so desktop.so gps.so gsm.so lock.so logout.so main.so memory.so pager.so swap.so systray.so tasks.so volume.so
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -109,6 +109,13 @@ pager_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 pager.so: $(pager_OBJS)
 	$(LD) -o pager.so $(pager_OBJS)
 
+swap_OBJS = swap.o
+swap_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+swap_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+swap.so: $(swap_OBJS)
+	$(LD) -o swap.so $(swap_OBJS)
+
 systray_OBJS = systray.o
 systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -169,6 +176,9 @@ memory.o: memory.c ../../include/Panel.h
 pager.o: pager.c ../../include/Panel.h
 	$(CC) $(pager_CFLAGS) -c pager.c
 
+swap.o: swap.c ../../include/Panel.h
+	$(CC) $(swap_CFLAGS) -c swap.c
+
 systray.o: systray.c ../../include/Panel.h
 	$(CC) $(systray_CFLAGS) -c systray.c
 
@@ -179,7 +189,7 @@ volume.o: volume.c ../../include/Panel.h
 	$(CC) $(volume_CFLAGS) -c volume.c
 
 clean:
-	$(RM) $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
+	$(RM) $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
@@ -212,6 +222,8 @@ install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 pager.so $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
+	$(INSTALL) -m 0644 swap.so $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 systray.so $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
 	$(INSTALL) -m 0644 tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
@@ -232,6 +244,7 @@ uninstall:
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
+	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
