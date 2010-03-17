@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -220,7 +220,8 @@ function content_update($args)
 	if(!is_array($content) || count($content) != 1)
 		return _error(INVALID_ARGUMENT);
 	$content = $content[0];
-	$users = _sql_array('SELECT user_id, username FROM daportal_user');
+	$users = _sql_array('SELECT user_id, username FROM daportal_user'
+			.' ORDER BY username ASC');
 	$title = CONTENT_UPDATE;
 	include('./modules/content/update.tpl');
 }
