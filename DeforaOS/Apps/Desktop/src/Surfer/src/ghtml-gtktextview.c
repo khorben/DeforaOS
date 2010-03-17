@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -122,8 +122,15 @@ char const * ghtml_get_location(GtkWidget * widget)
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * widget)
 {
-	/* FIXME really implement */
-	return NULL;
+	GHtml * ghtml;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	/* FIXME leaks memory and will not always correspond to the source */
+	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
+	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
+	return gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
 }
 
 
