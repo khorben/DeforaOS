@@ -357,7 +357,14 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if(error != NULL && error->message != NULL)
+	{
+		/* ignore if the user cancelled it */
+		if(error->domain == WEBKIT_NETWORK_ERROR
+				&& error->code
+				== WEBKIT_NETWORK_ERROR_CANCELLED)
+			return TRUE;
 		surfer_error(surfer, error->message, 0);
+	}
 	return TRUE;
 }
 
