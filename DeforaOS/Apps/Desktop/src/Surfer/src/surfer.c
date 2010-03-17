@@ -489,7 +489,7 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s", (message != NULL) ? message : "Unknown error");
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);

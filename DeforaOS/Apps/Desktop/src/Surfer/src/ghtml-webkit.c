@@ -356,16 +356,19 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 	Surfer * surfer;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	if(error != NULL && error->message != NULL)
+	if(error == NULL)
+		return surfer_error(surfer, "Unknown error", TRUE);
+	if(error->domain == WEBKIT_NETWORK_ERROR
+			&& error->code == WEBKIT_NETWORK_ERROR_CANCELLED)
+		return TRUE; /* ignored if the user cancelled it */
+	if(error->domain == WEBKIT_POLICY_ERROR
+			&& error->code == WEBKIT_POLICY_ERROR_FRAME_LOAD_INTERRUPTED_BY_POLICY_CHANGE)
 	{
-		/* ignore if the user cancelled it */
-		if(error->domain == WEBKIT_NETWORK_ERROR
-				&& error->code
-				== WEBKIT_NETWORK_ERROR_CANCELLED)
-			return TRUE;
-		surfer_error(surfer, error->message, 0);
+		/* FIXME propose to download or cancel instead */
+		surfer_download(surfer, uri, NULL);
+		return TRUE;
 	}
-	return TRUE;
+	return surfer_error(surfer, error->message, TRUE);
 }
 
 
