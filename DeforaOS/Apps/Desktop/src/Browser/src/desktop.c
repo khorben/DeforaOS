@@ -382,7 +382,8 @@ static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop)
 	return GDK_FILTER_CONTINUE;
 }
 
-static GdkFilterReturn _event_configure(XConfigureEvent * xevent, Desktop * desktop)
+static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
+		Desktop * desktop)
 {
 	desktop->width = xevent->width;
 	desktop->height = xevent->height;
@@ -902,7 +903,7 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 
 
 /* desktop_icons_align */
-static int _align_compare(const void * a,  const void * b);
+static int _align_compare(const void * a, const void * b);
 
 void desktop_icons_align(Desktop * desktop)
 {
