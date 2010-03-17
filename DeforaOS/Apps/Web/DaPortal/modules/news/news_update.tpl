@@ -20,7 +20,7 @@ if(isset($news['content'])) print(_html_safe($news['content']));
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" name="preview" value="Preview" class="icon preview"/><?php if(isset($news)) { ?> <input type="submit" name="send" value="<?php echo isset($news['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/><?php } ?></td>
+			<td><a href="<?php echo _html_link('news'); ?>"><button type="button" class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" name="preview" value="Preview" class="icon preview"/><?php if(isset($news)) { ?> <input type="submit" name="send" value="<?php echo isset($news['id']) ? _html_safe(UPDATE) : _html_safe(SEND); ?>" class="icon submit"/><?php } ?></td>
 		</tr>
 	</table>
 </form>
