@@ -444,14 +444,21 @@ static void _on_popup_paste(gpointer data)
 	desktop->menu = NULL;
 }
 
-static void _on_preferences_response(GtkWidget * widget, gint response,
-		gpointer data);
 static void _preferences_set(Desktop * desktop);
+static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+static void _on_preferences_ok(GtkWidget * widget, gpointer data);
+static void _on_preferences_apply(GtkWidget * widget, gpointer data);
+static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
 static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
+	GtkWidget * hbox;
 	GtkWidget * vbox;
+	GtkWidget * vbox2;
+	GtkWidget * hbox2;
 	GtkWidget * widget;
+	GtkSizeGroup * group;
 
 	gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
@@ -460,44 +467,72 @@ static void _on_popup_preferences(gpointer data)
 		gtk_widget_show(desktop->pr_window);
 		return;
 	}
-	desktop->pr_window = gtk_dialog_new_with_buttons("Desktop preferences",
-			NULL, 0, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_APPLY, GTK_RESPONSE_APPLY,
-			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-	g_signal_connect(G_OBJECT(desktop->pr_window), "response", G_CALLBACK(
-				_on_preferences_response), desktop);
+	/* window */
+	desktop->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(desktop->pr_window),
+			"Desktop preferences");
+	g_signal_connect(G_OBJECT(desktop->pr_window), "delete-event",
+			G_CALLBACK(_on_preferences_closex), desktop);
+	hbox = gtk_hbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 0);
 	/* notebook */
 	widget = gtk_notebook_new();
-	vbox = gtk_vbox_new(FALSE, 0);
+	vbox2 = gtk_vbox_new(FALSE, 0);
 	desktop->pr_background = gtk_file_chooser_button_new("Background",
 			GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_box_pack_start(GTK_BOX(vbox), desktop->pr_background, FALSE, TRUE,
+	gtk_box_pack_start(GTK_BOX(vbox2), desktop->pr_background, FALSE, TRUE,
 			4);
-	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox, gtk_label_new(
+	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
 				"Appearance"));
-	vbox = gtk_dialog_get_content_area(GTK_DIALOG(desktop->pr_window));
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
+	/* dialog */
+	hbox2 = gtk_hbox_new(FALSE, 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_ok), desktop);
+	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_apply), desktop);
+	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	gtk_size_group_add_widget(group, widget);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+				_on_preferences_cancel), desktop);
+	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, TRUE, 4);
+	/* container */
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 4);
+	gtk_container_add(GTK_CONTAINER(desktop->pr_window), hbox);
 	_preferences_set(desktop);
 	gtk_widget_show_all(desktop->pr_window);
 }
 
-static void _on_preferences_response(GtkWidget * widget, gint response,
+static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
+{
+	gtk_widget_hide(widget);
+	_on_preferences_cancel(NULL, data);
+	return TRUE;
+}
+
+static void _on_preferences_ok(GtkWidget * widget, gpointer data)
+{
+	Desktop * desktop = data;
+
+	gtk_widget_hide(desktop->pr_window);
+	_on_preferences_apply(widget, data);
+}
+
+static void _on_preferences_apply(GtkWidget * widget, gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
 	char * p;
 
-	if(response == GTK_RESPONSE_CANCEL
-			|| response == GTK_RESPONSE_DELETE_EVENT)
-	{
-		gtk_widget_hide(desktop->pr_window);
-		_preferences_set(desktop);
-		return;
-	}
-	if(response == GTK_RESPONSE_OK)
-		gtk_widget_hide(desktop->pr_window);
-	/* FIXME "apply" should not save the changes? */
 	if((config = _desktop_get_config(desktop)) == NULL)
 		return;
 	p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
@@ -513,6 +548,14 @@ static void _on_preferences_response(GtkWidget * widget, gint response,
 	config_delete(config);
 	/* XXX not very efficient */
 	g_idle_add(_new_idle, desktop);
+}
+
+static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
+{
+	Desktop * desktop = data;
+
+	gtk_widget_hide(desktop->pr_window);
+	_preferences_set(desktop);
 }
 
 static void _preferences_set(Desktop * desktop)
