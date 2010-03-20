@@ -93,6 +93,15 @@ void on_file_print(gpointer data)
 }
 
 
+/* on_file_save_as */
+void on_file_save_as(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_save(surfer, NULL);
+}
+
+
 /* edit menu */
 /* on_edit_preferences */
 void on_edit_preferences(gpointer data)

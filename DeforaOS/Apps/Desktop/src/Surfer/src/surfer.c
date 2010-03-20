@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
@@ -45,6 +46,9 @@ static DesktopMenu _menu_file[] =
 	{ "_Open...",		G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_O },
 	{ "_Open URL...",	G_CALLBACK(on_file_open_url), NULL, GDK_L },
+	{ "", NULL, NULL, 0 },
+	{ "Save _as...",	G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
+		GDK_S },
 	{ "", NULL, NULL, 0 },
 	{ "_Print...",		G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0 },
 	{ "", NULL, NULL, 0 },
@@ -599,6 +603,47 @@ void surfer_reload(Surfer * surfer)
 void surfer_resize(Surfer * surfer, gint width, gint height)
 {
 	gtk_window_resize(GTK_WINDOW(surfer->window), width, height);
+}
+
+
+/* surfer_save */
+void surfer_save(Surfer * surfer, char const * filename)
+{
+	char const * source;
+	GtkWidget * dialog;
+	size_t len;
+	FILE * fp;
+	char buf[256];
+
+	if((source = ghtml_get_source(surfer->view)) == NULL)
+		return; /* XXX report error */
+	if(filename == NULL)
+	{
+		dialog = gtk_file_chooser_dialog_new("Save file as...",
+				GTK_WINDOW(surfer->window),
+				GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
+				GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
+				GTK_RESPONSE_ACCEPT, NULL);
+		if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+			filename = gtk_file_chooser_get_filename(
+					GTK_FILE_CHOOSER(dialog));
+		gtk_widget_destroy(dialog);
+		if(filename == NULL)
+			return;
+	}
+	if((fp = fopen(filename, "w")) == NULL) /* XXX use GIOChannel instead */
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", filename, strerror(errno));
+		surfer_error(surfer, buf, 0);
+		return;
+	}
+	len = strlen(source);
+	if(fwrite(source, sizeof(*source), len, fp) != len)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", filename, strerror(errno));
+		surfer_error(surfer, buf, 0);
+	}
+	fclose(fp);
 }
 
 

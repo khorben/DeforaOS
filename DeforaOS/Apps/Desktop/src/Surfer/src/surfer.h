@@ -76,6 +76,8 @@ void surfer_open_dialog(Surfer * surfer);
 
 void surfer_print(Surfer * surfer);
 
+void surfer_save(Surfer * surfer, char const * filename);
+
 /* download */
 void surfer_download(Surfer * surfer, char const * url, char const * suggested);
 
