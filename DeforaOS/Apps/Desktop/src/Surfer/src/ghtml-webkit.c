@@ -354,6 +354,7 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 		const gchar * uri, GError * error, gpointer data)
 {
 	Surfer * surfer;
+	char const * suggested;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if(error == NULL)
@@ -365,7 +366,9 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 			&& error->code == WEBKIT_POLICY_ERROR_FRAME_LOAD_INTERRUPTED_BY_POLICY_CHANGE)
 	{
 		/* FIXME propose to download or cancel instead */
-		surfer_download(surfer, uri, NULL);
+		if((suggested = strrchr(uri, '/')) != NULL)
+			suggested++;
+		surfer_download(surfer, uri, suggested);
 		return TRUE;
 	}
 	return surfer_error(surfer, error->message, TRUE);
