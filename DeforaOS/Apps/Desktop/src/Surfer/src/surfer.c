@@ -718,8 +718,7 @@ void surfer_unselect_all(Surfer * surfer)
 
 /* surfer_view_source */
 static void _on_source_close(GtkWidget * widget);
-static gboolean _on_source_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _on_source_closex(void);
 
 void surfer_view_source(Surfer * surfer)
 {
@@ -771,8 +770,7 @@ static void _on_source_close(GtkWidget * widget)
 	gtk_widget_destroy(widget);
 }
 
-static gboolean _on_source_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _on_source_closex(void)
 {
 	return FALSE;
 }
