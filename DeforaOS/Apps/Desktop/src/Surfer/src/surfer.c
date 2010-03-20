@@ -46,6 +46,8 @@ static DesktopMenu _menu_file[] =
 		GDK_O },
 	{ "_Open URL...",	G_CALLBACK(on_file_open_url), NULL, GDK_L },
 	{ "", NULL, NULL, 0 },
+	{ "_Print...",		G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0 },
+	{ "", NULL, NULL, 0 },
 	{ "_Close",		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_W },
 	{ NULL,			NULL, NULL, 0 }
@@ -567,6 +569,13 @@ void surfer_open_dialog(Surfer * surfer)
 		return;
 	surfer_open(surfer, filename);
 	g_free(filename);
+}
+
+
+/* surfer_print */
+void surfer_print(Surfer * surfer)
+{
+	ghtml_print(surfer->view);
 }
 
 

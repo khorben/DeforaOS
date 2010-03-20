@@ -84,6 +84,15 @@ void on_file_open_url(gpointer data)
 }
 
 
+/* on_file_print */
+void on_file_print(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_print(surfer);
+}
+
+
 /* edit menu */
 /* on_edit_preferences */
 void on_edit_preferences(gpointer data)

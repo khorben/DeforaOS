@@ -209,6 +209,18 @@ void ghtml_load_url(GtkWidget * ghtml, char const * url)
 }
 
 
+/* ghtml_print */
+void ghtml_print(GtkWidget * ghtml)
+{
+	GtkWidget * view;
+	WebKitWebFrame * frame;
+
+	view = g_object_get_data(G_OBJECT(ghtml), "view");
+	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
+	webkit_web_frame_print(frame);
+}
+
+
 void ghtml_refresh(GtkWidget * ghtml)
 {
 	GtkWidget * view;

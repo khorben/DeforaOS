@@ -30,6 +30,7 @@ void on_file_close(gpointer data);
 void on_file_new_window(gpointer data);
 void on_file_open(gpointer data);
 void on_file_open_url(gpointer data);
+void on_file_print(gpointer data);
 
 /* edit menu */
 void on_edit_preferences(gpointer data);

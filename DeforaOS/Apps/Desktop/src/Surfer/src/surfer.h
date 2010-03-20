@@ -74,6 +74,8 @@ void surfer_warning(Surfer * surfer, char const * message);
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
 
+void surfer_print(Surfer * surfer);
+
 /* download */
 void surfer_download(Surfer * surfer, char const * url, char const * suggested);
 

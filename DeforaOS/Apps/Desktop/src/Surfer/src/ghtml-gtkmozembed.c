@@ -358,6 +358,13 @@ void ghtml_load_url(GtkWidget * ghtml, char const * url)
 }
 
 
+/* ghtml_print */
+void ghtml_print(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_refresh */
 void ghtml_refresh(GtkWidget * ghtml)
 {

@@ -43,6 +43,8 @@ gboolean ghtml_go_forward(GtkWidget * ghtml);
 
 void ghtml_load_url(GtkWidget * ghtml, char const * url);
 
+void ghtml_print(GtkWidget * ghtml);
+
 void ghtml_refresh(GtkWidget * ghtml);
 void ghtml_reload(GtkWidget * ghtml);
 void ghtml_stop(GtkWidget * ghtml);
