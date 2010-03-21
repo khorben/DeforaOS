@@ -497,9 +497,6 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 {
 	Surfer * surfer;
-	gboolean b;
-	gint w;
-	gint h;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	gtk_widget_show(surfer->window);
