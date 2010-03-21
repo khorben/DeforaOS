@@ -30,7 +30,7 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 install: all
-	$(MAKE) install
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
