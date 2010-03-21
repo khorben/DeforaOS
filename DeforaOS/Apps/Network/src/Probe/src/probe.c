@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Network Probe */
 /* Probe is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -156,12 +156,11 @@ static int _sysinfo_loads_sysctl(struct sysinfo * info)
 static int _sysinfo_ram_sysctl(struct sysinfo * info)
 {
 	int mib[2];
-	size_t len;
 	struct uvmexp ue;
+	size_t len = sizeof(ue);
 
 	mib[0] = CTL_VM;
 	mib[1] = VM_UVMEXP;
-	len = sizeof(ue);
 	if(sysctl(mib, 2, &ue, &len, NULL, 0) == -1)
 	{
 		memset(info, 0, sizeof(*info));
@@ -298,7 +297,7 @@ static int _ifinfo_linux(struct ifinfo ** dev)
 	for(i = 0; fgets(buf, sizeof(buf), fp) != NULL; i++)
 	{
 		len = string_length(buf);
-		if(buf[len-1] != '\n')
+		if(buf[len - 1] != '\n')
 		{
 			ret = -1;
 			break;
