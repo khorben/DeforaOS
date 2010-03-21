@@ -35,6 +35,11 @@
 # define _userinfo_generic		_userinfo
 # define _ifinfo_linux			_ifinfo
 # define _volinfo_linux			_volinfo
+#elif defined(__FreeBSD__)
+# define _sysinfo_generic		_sysinfo
+# define _userinfo_none			_userinfo
+# define _ifinfo_generic		_ifinfo
+# define _volinfo_linux			_volinfo
 #elif defined(__NetBSD__) /* FIXME Other BSDs not tested */
 # define _sysinfo_generic		_sysinfo
 # define _userinfo_generic		_userinfo
@@ -111,13 +116,12 @@ static int _sysinfo_generic(struct sysinfo * info)
 static int _sysinfo_uptime_sysctl(struct sysinfo * info)
 {
 	int mib[2];
-	size_t len;
 	struct timeval now;
 	struct timeval tv;
+	size_t len = sizeof(tv);
 
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_BOOTTIME;
-	len = sizeof(tv);
 	if(gettimeofday(&now, NULL) != 0
 			|| sysctl(mib, 2, &tv, &len, NULL, 0) == -1)
 	{
@@ -134,12 +138,11 @@ static int _sysinfo_uptime_sysctl(struct sysinfo * info)
 static int _sysinfo_loads_sysctl(struct sysinfo * info)
 {
 	int mib[2];
-	size_t len;
 	struct loadavg la;
+	size_t len = sizeof(la);
 
 	mib[0] = CTL_VM;
 	mib[1] = VM_LOADAVG;
-	len = sizeof(la);
 	if(sysctl(mib, 2, &la, &len, NULL, 0) == -1)
 	{
 		memset(info->loads, 0, sizeof(info->loads));
@@ -180,12 +183,11 @@ static int _sysinfo_ram_sysctl(struct sysinfo * info)
 static int _sysinfo_procs_sysctl(struct sysinfo * info)
 {
 	int mib[3];
-	size_t len;
+	size_t len = 0;
 
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_PROC;
 	mib[2] = KERN_PROC_ALL;
-	len = 0;
 	if(sysctl(mib, 3, NULL, &len, NULL, 0) == -1)
 	{
 		info->procs = 0;
@@ -261,7 +263,13 @@ static int _userinfo_generic(unsigned int * userinfo)
 	endutxent();
 	return 0;
 }
-#endif /* defined(_userinfo_generic) */
+#elif defined(_userinfo_none)
+static int _userinfo_none(unsigned int * userinfo)
+{
+	*userinfo = 0;
+	return 0;
+}
+#endif
 
 
 /* ifinfo */
@@ -363,6 +371,7 @@ static int _ifinfo_linux_append(struct ifinfo ** dev, char * buf, int nb)
 
 /* ifinfo netbsd */
 #if defined(_ifinfo_bsd)
+# include <sys/socket.h>
 # include <net/if.h>
 # include <ifaddrs.h>
 static int _ifinfo_bsd_append(struct ifinfo ** dev, char * ifname, int fd,
