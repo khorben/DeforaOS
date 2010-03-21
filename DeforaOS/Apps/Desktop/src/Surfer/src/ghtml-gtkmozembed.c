@@ -113,10 +113,14 @@ static void _on_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 				GTK_WINDOW(surfer->window));
 	vbox = gtk_vbox_new(FALSE, 0);
 	if((mask & GTK_MOZ_EMBED_FLAG_MENUBARON)
-			== GTK_MOZ_EMBED_FLAG_MENUBARON)
-	{
-		/* FIXME implement */
-	}
+			!= GTK_MOZ_EMBED_FLAG_MENUBARON)
+		surfer_show_menubar(surfer, FALSE);
+	if((mask & GTK_MOZ_EMBED_FLAG_STATUSBARON)
+			!= GTK_MOZ_EMBED_FLAG_STATUSBARON)
+		surfer_show_statusbar(surfer, FALSE);
+	if((mask & GTK_MOZ_EMBED_FLAG_TOOLBARON)
+			!= GTK_MOZ_EMBED_FLAG_TOOLBARON)
+		surfer_show_toolbar(surfer, FALSE);
 	newview = gtk_moz_embed_new();
 	/* XXX handle more callbacks? */
 	g_signal_connect(G_OBJECT(newview), "destroy_browser", G_CALLBACK(
