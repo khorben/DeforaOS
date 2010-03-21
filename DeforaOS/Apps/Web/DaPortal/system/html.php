@@ -131,7 +131,7 @@ function _start_css_themes($theme)
 		$themes[] = $name;
 	}
 	closedir($dir);
-	usort($themes, strcmp);
+	usort($themes, 'strcmp');
 	foreach($themes as $name)
 		print("\t\t".'<link rel="alternate stylesheet" href="'
 				.rtrim(dirname($_SERVER['SCRIPT_NAME']), '/')

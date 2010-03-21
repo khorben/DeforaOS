@@ -189,7 +189,7 @@ function user_appearance($args)
 				continue;
 			$themes[] = substr($de, 0, -4);
 		}
-	usort($themes, strcmp);
+	usort($themes, 'strcmp');
 	$views = array('details' => VIEW_DETAILS, 'list' => VIEW_LIST,
 			'thumbnails' => VIEW_THUMBNAILS);
 	if(isset($_SESSION['view']))
