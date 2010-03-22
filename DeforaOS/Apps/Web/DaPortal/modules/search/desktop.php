@@ -18,7 +18,7 @@
 
 $title = 'Search';
 $icon = 'search.png';
-$admin = 0;
+$admin = 1;
 $list = 1;
 $search = 0;
 $actions = array('advanced' => 'Advanced');

@@ -30,8 +30,10 @@ $text['CONTENT_FROM'] = 'Content from';
 $text['IN_MODULE'] = 'In module';
 $text['RESULTS_FOUND'] = 'result(s) found';
 $text['QUERY'] = 'Query';
+$text['SEARCH_ADMINISTRATION'] = 'Search administration';
 $text['SEARCH_IN'] = 'Search in';
 $text['SEARCH_RESULTS'] = 'Search results';
+$text['SETTINGS'] = 'Settings';
 $text['TITLES'] = 'Titles';
 global $lang;
 if($lang == 'fr')
@@ -48,10 +50,23 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 		$module = FALSE, $advanced = FALSE)
 {
 	$query = stripslashes($q);
-	$q = str_replace(array('%', '_'), array('\\\%', '\\\_'), $q);
+	$q = explode(' ', $query);
+	if(_config_get('search', 'highlight') == TRUE)
+	{
+		$from = array();
+		$to = array();
+		foreach($q as $r)
+		{
+			$s = _html_safe(strtolower($r));
+			$t = '<span class="highlight">'.$s.'</span>';
+			$from[] = $s;
+			$to[] = $t;
+		}
+	}
+	//escape SQL wildcards
+	$q = str_replace(array('%', '_', '['), array('\\\%', '\\\_', '\\\['),
+			$query);
 	$q = explode(' ', $q);
-	if(!count($q))
-		return;
 	$sql = ' FROM daportal_content, daportal_module, daportal_user'
 		.' WHERE daportal_content.module_id=daportal_module.module_id'
 		.' AND daportal_content.user_id=daportal_user.user_id'
@@ -85,6 +100,8 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 	foreach($res as $q)
 	{
 		$q['date'] = _sql_date($q['timestamp']);
+		if(strlen($q['content']) > 400)
+			$q['content'] = substr($q['content'], 0, 400).'...';
 		include('./modules/search/search_entry.tpl');
 		$i++;
 	}
@@ -97,6 +114,27 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 
 //public
 //functions
++//search_admin
+function search_admin($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return FALSE;
+	print('<h1 class="title search">'._html_safe(SEARCH_ADMINISTRATION)
+			."</h1>\n");
+	if(($configs = _config_list('search')))
+	{
+		print('<h2 class="title settings">'._html_safe(SETTINGS)
+				."</h2>\n");
+		$module = 'search';
+		$action = 'config_update';
+		include('./system/config.tpl');
+	}
+}
+
+
 //search_advanced
 function search_advanced($args)
 {
@@ -123,6 +161,17 @@ function search_advanced($args)
 }
 
 
+//search_config_update
+function search_config_update($args)
+{
+	global $error;
+
+	if(isset($error) && strlen($error))
+		_error($error);
+	return search_admin(array());
+}
+
+
 //search_default
 function search_default($args)
 {
@@ -138,9 +187,28 @@ function search_default($args)
 //search_system
 function search_system($args)
 {
-	global $title;
+	global $title, $error;
 
 	$title.=' - '.SEARCH;
+	if(!isset($args['action']))
+		return;
+	if($_SERVER['REQUEST_METHOD'] == 'POST')
+		if($_POST['action'] == 'config_update')
+			$error = _search_system_config($args);
+}
+
+function _search_system_config($args)
+{
+	global $user_id;
+
+	require_once('./system/user.php');
+	if(!_user_admin($user_id))
+		return PERMISSION_DENIED;
+	$args['search_highlight'] = isset($args['search_highlight']) ? TRUE
+		: FALSE;
+	_config_update('search', $args);
+	header('Location: '._module_link('search', 'admin'));
+	exit(0);
 }
 
 ?>
