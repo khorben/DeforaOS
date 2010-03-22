@@ -459,7 +459,9 @@ static void _on_popup_preferences(gpointer data)
 	GtkWidget * vbox2;
 	GtkWidget * hbox2;
 	GtkWidget * widget;
+	GtkWidget * label;
 	GtkSizeGroup * group;
+	PangoFontDescription * desc;
 
 	gtk_widget_destroy(desktop->menu);
 	desktop->menu = NULL;
@@ -477,12 +479,21 @@ static void _on_popup_preferences(gpointer data)
 	hbox = gtk_hbox_new(FALSE, 0);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* notebook */
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	widget = gtk_notebook_new();
 	vbox2 = gtk_vbox_new(FALSE, 0);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	hbox2 = gtk_hbox_new(FALSE, 0);
+	label = gtk_label_new("Background: ");
+	gtk_widget_modify_font(label, desc);
+	gtk_size_group_add_widget(group, label);
+	gtk_box_pack_start(GTK_BOX(hbox2), label, FALSE, TRUE, 0);
 	desktop->pr_background = gtk_file_chooser_button_new("Background",
 			GTK_FILE_CHOOSER_ACTION_OPEN);
-	gtk_box_pack_start(GTK_BOX(vbox2), desktop->pr_background, FALSE, TRUE,
-			4);
+	gtk_box_pack_start(GTK_BOX(hbox2), desktop->pr_background, TRUE, TRUE,
+			0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox2, FALSE, TRUE, 4);
 	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
 				"Appearance"));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
