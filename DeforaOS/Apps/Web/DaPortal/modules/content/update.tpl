@@ -1,4 +1,5 @@
 <h1 class="title content"><?php echo _html_safe($title); ?></h1>
+<?php _warning('Modifying this content directly may break functionality inside its original module', TRUE); ?>
 <form action="<?php echo _html_link(); ?>" method="post">
 	<input type="hidden" name="module" value="content"/>
 	<input type="hidden" name="action" value="update"/>
