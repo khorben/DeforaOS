@@ -507,6 +507,7 @@ static void _error_response(gpointer data);
 int browser_error(Browser * browser, char const * message, int ret)
 {
 	GtkWidget * dialog;
+	char const * error;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %d) errno=%d\n", __func__, message,
@@ -514,11 +515,12 @@ int browser_error(Browser * browser, char const * message, int ret)
 #endif
 	if(browser == NULL)
 		return _browser_error(message, ret);
+	error = strerror(errno);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, "%s", "Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s: %s", message, strerror(errno));
+			"%s: %s", message, error);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	if(ret < 0)
 	{
