@@ -1091,13 +1091,6 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Text file");
-	image = gtk_image_new_from_icon_name("stock_new-text",
-			GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
-	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
-				_on_popup_new_text_file), ic);
-	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 #if GTK_CHECK_VERSION(2, 8, 0) /* XXX actually depends on the icon theme */
 	menuitem = gtk_image_menu_item_new_with_label("Folder");
 	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
@@ -1108,9 +1101,18 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_folder), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_menu_item_new_with_label("Symbolic link...");
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_symlink), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_image_menu_item_new_with_label("Text file");
+	image = gtk_image_new_from_icon_name("stock_new-text",
+			GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_new_text_file), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	/* cut/copy/paste */
 	menuitem = gtk_separator_menu_item_new();
