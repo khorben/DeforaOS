@@ -60,6 +60,8 @@ static DesktopMenu _browser_menu_file[] =
 {
 	{ "_New window", G_CALLBACK(on_file_new_window), "window-new", GDK_N },
 	{ "New _folder", G_CALLBACK(on_file_new_folder), "folder-new", 0 },
+	{ "New _symbolic link", G_CALLBACK(on_file_new_symlink), "folder-new",
+		0 },
 	{ "Open file...", G_CALLBACK(on_file_open_file), NULL, GDK_O },
 	{ "", NULL, NULL, 0 },
 	{ "_Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0 },

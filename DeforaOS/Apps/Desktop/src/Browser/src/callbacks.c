@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "Browser is free software; you can redistribute it and/or modify it under the\n"
@@ -127,6 +127,45 @@ void on_file_new_folder(gpointer data)
 	sprintf(path, "%s/%s", cur, newfolder);
 	if(mkdir(path, 0777) != 0)
 		browser_error(browser, path, 0);
+	free(path);
+}
+
+
+void on_file_new_symlink(gpointer data)
+{
+	static char const newsymlink[] = "New symbolic link";
+	Browser * browser = data;
+	char const * cur = browser->current->data;
+	char * path;
+	GtkWidget * dialog;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	char const * to = NULL;
+
+	if((path = malloc(strlen(cur) + sizeof(newsymlink) + 1)) == NULL)
+	{
+		browser_error(browser, "malloc", 0);
+		return;
+	}
+	sprintf(path, "%s/%s", cur, newsymlink);
+	dialog = gtk_dialog_new_with_buttons("New symbolic link",
+			GTK_WINDOW(browser->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Destination: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_widget_show_all(hbox);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), hbox, TRUE, TRUE,
+			4);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+		to = gtk_entry_get_text(GTK_ENTRY(widget));
+	if(to != NULL && strlen(to) > 0 && symlink(to, path) != 0)
+		browser_error(browser, path, 0);
+	gtk_widget_destroy(dialog);
 	free(path);
 }
 
@@ -825,18 +864,20 @@ void on_filename_edited(GtkCellRendererText * renderer, gchar * arg1,
 	if(isdir && lstat(p, &st) == -1 && errno == ENOENT) /* XXX TOCTOU */
 	{
 		q = g_filename_from_utf8(p, -1, NULL, NULL, NULL);
-		if(rename(path, q != NULL ? q : p) != 0)
+		if(rename(path, (q != NULL) ? q : p) != 0)
 			browser_error(browser, path, 0);
 		else
 			gtk_list_store_set(browser->store, &iter, BR_COL_PATH,
 					p, BR_COL_DISPLAY_NAME, arg2, -1);
 		free(q);
 	}
+	else if(lstat(path, &st) == 0 && S_ISLNK(st.st_mode))
+	{
+		if(rename(path, p) != 0)
+			browser_error(browser, path, 0);
+	}
 	else if(link(path, p) != 0 || unlink(path) != 0)
 		browser_error(browser, path, 0);
-	else
-		gtk_list_store_set(browser->store, &iter, BR_COL_PATH, p,
-				BR_COL_DISPLAY_NAME, arg2, -1);
 	free(p);
 	free(path);
 }
@@ -1034,6 +1075,7 @@ gboolean on_view_press(GtkWidget * widget, GdkEventButton * event,
 
 static void _on_popup_new_text_file(gpointer data);
 static void _on_popup_new_folder(gpointer data);
+static void _on_popup_new_symlink(gpointer data);
 static gboolean _press_context(Browser * browser, GdkEventButton * event,
 		GtkWidget * menu, IconCallback * ic)
 {
@@ -1044,6 +1086,7 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 #endif
 
 	browser_unselect_all(browser);
+	/* new submenu */
 	menuitem = gtk_menu_item_new_with_label("New");
 	submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
@@ -1065,6 +1108,11 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_folder), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_menu_item_new_with_label("Symbolic link...");
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_new_symlink), ic);
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	/* cut/copy/paste */
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, NULL);
@@ -1118,6 +1166,14 @@ static void _on_popup_new_folder(gpointer data)
 	Browser * browser = ic->browser;
 
 	on_file_new_folder(browser);
+}
+
+static void _on_popup_new_symlink(gpointer data)
+{
+	IconCallback * ic = data;
+	Browser * browser = ic->browser;
+
+	on_file_new_symlink(browser);
 }
 
 static void _press_directory(GtkWidget * menu, IconCallback * ic)
