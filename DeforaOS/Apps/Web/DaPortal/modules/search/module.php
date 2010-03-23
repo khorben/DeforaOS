@@ -114,7 +114,7 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 
 //public
 //functions
-+//search_admin
+//search_admin
 function search_admin($args)
 {
 	global $user_id;
