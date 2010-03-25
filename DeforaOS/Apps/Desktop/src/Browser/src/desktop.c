@@ -35,6 +35,9 @@
 #include "desktop.h"
 #include "../config.h"
 
+#define COMMON_SYMLINK
+#include "common.c"
+
 #ifdef PACKAGE
 # undef PACKAGE
 #endif
@@ -292,6 +295,7 @@ static void _on_popup_new_folder(gpointer data);
 static void _on_popup_new_text_file(gpointer data);
 static void _on_popup_paste(gpointer data);
 static void _on_popup_preferences(gpointer data);
+static void _on_popup_symlink(gpointer data);
 
 static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data)
@@ -340,6 +344,10 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 				_on_popup_new_folder), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
+	menuitem = gtk_image_menu_item_new_with_label("Symbolic link...");
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_popup_symlink), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_image_menu_item_new_with_label("Text file");
 	image = gtk_image_new_from_icon_name("stock_new-text",
@@ -585,6 +593,14 @@ static void _preferences_set(Desktop * desktop)
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(
 				desktop->pr_background), p);
 	config_delete(config);
+}
+
+static void _on_popup_symlink(gpointer data)
+{
+	Desktop * desktop = data;
+
+	if(_common_symlink(NULL, desktop->path) != 0)
+		desktop_error(desktop, "symlink", 0);
 }
 
 
