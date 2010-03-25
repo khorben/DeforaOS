@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,3 +114,42 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 	exit(2);
 }
 #endif /* COMMON_EXEC */
+
+
+#ifdef COMMON_SYMLINK
+/* common_symlink */
+static int _common_symlink(GtkWidget * window, char const * cur)
+{
+	static char const newsymlink[] = "New symbolic link";
+	int ret = 0;
+	char * path;
+	GtkWidget * dialog;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	char const * to = NULL;
+
+	if((path = malloc(strlen(cur) + sizeof(newsymlink) + 1)) == NULL)
+		return 1;
+	sprintf(path, "%s/%s", cur, newsymlink);
+	dialog = gtk_dialog_new_with_buttons("New symbolic link",
+			GTK_WINDOW(window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Destination: ");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	widget = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+	gtk_widget_show_all(hbox);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), hbox, TRUE, TRUE,
+			4);
+	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+		to = gtk_entry_get_text(GTK_ENTRY(widget));
+	if(to != NULL && strlen(to) > 0 && symlink(to, path) != 0)
+		ret = 1;
+	gtk_widget_destroy(dialog);
+	free(path);
+	return ret;
+}
+#endif /* COMMON_SYMLINK */

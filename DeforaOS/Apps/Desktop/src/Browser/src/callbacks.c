@@ -35,6 +35,7 @@ static char const _license[] =
 
 #define COMMON_DND
 #define COMMON_EXEC
+#define COMMON_SYMLINK
 #include "common.c"
 
 
@@ -133,40 +134,11 @@ void on_file_new_folder(gpointer data)
 
 void on_file_new_symlink(gpointer data)
 {
-	static char const newsymlink[] = "New symbolic link";
 	Browser * browser = data;
 	char const * cur = browser->current->data;
-	char * path;
-	GtkWidget * dialog;
-	GtkWidget * hbox;
-	GtkWidget * widget;
-	char const * to = NULL;
 
-	if((path = malloc(strlen(cur) + sizeof(newsymlink) + 1)) == NULL)
-	{
-		browser_error(browser, "malloc", 0);
-		return;
-	}
-	sprintf(path, "%s/%s", cur, newsymlink);
-	dialog = gtk_dialog_new_with_buttons("New symbolic link",
-			GTK_WINDOW(browser->window),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Destination: ");
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
-	widget = gtk_entry_new();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-	gtk_widget_show_all(hbox);
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox), hbox, TRUE, TRUE,
-			4);
-	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
-		to = gtk_entry_get_text(GTK_ENTRY(widget));
-	if(to != NULL && strlen(to) > 0 && symlink(to, path) != 0)
-		browser_error(browser, path, 0);
-	gtk_widget_destroy(dialog);
-	free(path);
+	if(_common_symlink(browser->window, cur) != 0)
+		browser_error(browser, "symlink", 0);
 }
 
 
