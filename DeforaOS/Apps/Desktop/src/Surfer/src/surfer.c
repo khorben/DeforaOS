@@ -72,6 +72,9 @@ static DesktopMenu _menu_edit[] =
 		GDK_A },
 	{ "Unselect all",	G_CALLBACK(on_edit_unselect_all), NULL, 0 },
 	{ "",			NULL, NULL, 0 },
+	{ "_Find",		G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
+		GDK_F },
+	{ "",			NULL, NULL, 0 },
 	{ "_Preferences",	G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_P },
 	{ NULL,			NULL, NULL, 0 }
@@ -263,6 +266,8 @@ Surfer * surfer_new(char const * url)
 	gtk_widget_show_all(surfer->window);
 	/* preferences window */
 	surfer->pr_window = NULL;
+	/* find dialog */
+	surfer->fi_dialog = NULL;
 	/* hack to display the statusbar only if necessary */
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
@@ -501,6 +506,68 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
 	return ret;
+}
+
+
+/* surfer_find */
+static void _on_find_activate(GtkWidget * widget, gpointer data);
+static void _on_find_response(GtkWidget * widget, gint response, gpointer data);
+
+void surfer_find(Surfer * surfer, char const * text)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	if(surfer->fi_dialog == NULL)
+	{
+		surfer->fi_dialog = gtk_dialog_new_with_buttons("Find text",
+				GTK_WINDOW(surfer->window),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+				GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
+		vbox = GTK_DIALOG(surfer->fi_dialog)->vbox;
+		hbox = gtk_hbox_new(FALSE, 0);
+		widget = gtk_label_new("Text:");
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		surfer->fi_text = gtk_entry_new();
+		g_signal_connect(G_OBJECT(surfer->fi_text), "activate",
+				G_CALLBACK(_on_find_activate), surfer);
+		gtk_box_pack_start(GTK_BOX(hbox), surfer->fi_text, TRUE, TRUE,
+				4);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+		gtk_widget_show_all(vbox);
+		g_signal_connect(G_OBJECT(surfer->fi_dialog), "response",
+				G_CALLBACK(_on_find_response), surfer);
+	}
+	gtk_entry_set_text(GTK_ENTRY(surfer->fi_text), (text != NULL) ? text
+			: "");
+	gtk_widget_show(surfer->fi_dialog);
+}
+
+static void _on_find_activate(GtkWidget * widget, gpointer data)
+{
+	Surfer * surfer = data;
+	char const * text;
+
+	if((text = gtk_entry_get_text(GTK_ENTRY(widget))) == NULL
+			|| strlen(text) == 0)
+		return;
+	ghtml_find(surfer->view, text);
+}
+
+static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
+{
+	Surfer * surfer = data;
+
+	if(response != GTK_RESPONSE_ACCEPT)
+	{
+		gtk_widget_hide(widget);
+		if(response == GTK_RESPONSE_DELETE_EVENT)
+			surfer->fi_dialog = NULL;
+		return;
+	}
+	_on_find_activate(surfer->fi_text, surfer);
 }
 
 

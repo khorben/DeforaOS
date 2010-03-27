@@ -103,6 +103,15 @@ void on_file_save_as(gpointer data)
 
 
 /* edit menu */
+/* on_edit_find */
+void on_edit_find(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_find(surfer, NULL);
+}
+
+
 /* on_edit_preferences */
 void on_edit_preferences(gpointer data)
 {

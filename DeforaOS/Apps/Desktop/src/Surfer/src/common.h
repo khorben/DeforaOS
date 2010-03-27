@@ -54,6 +54,10 @@ struct _Surfer
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_homepage;
+
+	/* find */
+	GtkWidget * fi_dialog;
+	GtkWidget * fi_text;
 };
 
 #endif /* !SURFER_COMMON_H */

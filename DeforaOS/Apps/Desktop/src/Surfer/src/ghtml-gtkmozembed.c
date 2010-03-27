@@ -101,6 +101,7 @@ static void _on_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 	GtkWidget * vbox;
 	GtkWidget * newview;
 
+	/* FIXME this should be based on a new Surfer object */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_window_set_title(GTK_WINDOW(window), SURFER_DEFAULT_TITLE);
@@ -335,6 +336,13 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 
 
 /* useful */
+/* ghtml_find */
+void ghtml_find(GtkWidget * ghtml, char const * text)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_go_back */
 gboolean ghtml_go_back(GtkWidget * ghtml)
 {
