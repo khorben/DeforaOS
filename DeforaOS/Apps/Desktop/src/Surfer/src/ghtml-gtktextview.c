@@ -102,7 +102,7 @@ gboolean ghtml_can_go_forward(GtkWidget * widget)
 
 
 /* ghtml_get_link_message */
-char const * ghtml_get_link_message(GtkWidget * ghtml)
+char const * ghtml_get_link_message(GtkWidget * widget)
 {
 	/* FIXME implement */
 	return NULL;
@@ -146,9 +146,35 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 /* useful */
 /* ghtml_find */
-void ghtml_find(GtkWidget * ghtml, char const * text)
+void ghtml_find(GtkWidget * widget, char const * text)
 {
-	/* FIXME implement */
+	GHtml * ghtml;
+	size_t len;
+	GtkTextIter start;
+	GtkTextIter end;
+	gchar * buf;
+	char const * str;
+	size_t offset;
+
+	if(text == NULL || (len = strlen(text)) == 0)
+		return;
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	/* XXX highly inefficient, always returns the first match */
+	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
+	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
+	buf = gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
+	if(buf == NULL || strlen(buf) == 0)
+		return;
+	if((str = strstr(buf, text)) != NULL)
+	{
+		offset = str - buf;
+		gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &start,
+				offset);
+		gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &end,
+				offset + len);
+		gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
+	}
+	g_free(buf);
 }
 
 
