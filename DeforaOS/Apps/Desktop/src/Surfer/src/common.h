@@ -58,6 +58,7 @@ struct _Surfer
 	/* find */
 	GtkWidget * fi_dialog;
 	GtkWidget * fi_text;
+	GtkWidget * fi_case;
 };
 
 #endif /* !SURFER_COMMON_H */

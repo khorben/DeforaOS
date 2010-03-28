@@ -152,7 +152,7 @@ char const * ghtml_get_title(GtkWidget * widget)
 static void _find_match(GHtml * ghtml, char const * buf, char const * str,
 		size_t tlen);
 
-void ghtml_find(GtkWidget * widget, char const * text)
+void ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive)
 {
 	GHtml * ghtml;
 	size_t tlen;

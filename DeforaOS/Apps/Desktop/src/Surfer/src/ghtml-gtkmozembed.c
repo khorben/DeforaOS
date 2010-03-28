@@ -337,7 +337,7 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 
 /* useful */
 /* ghtml_find */
-void ghtml_find(GtkWidget * ghtml, char const * text)
+void ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive)
 {
 	/* FIXME implement */
 }
