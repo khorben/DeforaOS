@@ -34,6 +34,9 @@ typedef struct _GHtml
 	GList * history;
 	GList * current;
 
+	/* search */
+	size_t search;
+
 	/* connection */
 	Conn * conn;
 
@@ -146,35 +149,54 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 /* useful */
 /* ghtml_find */
+static void _find_match(GHtml * ghtml, char const * buf, char const * str,
+		size_t tlen);
+
 void ghtml_find(GtkWidget * widget, char const * text)
 {
 	GHtml * ghtml;
-	size_t len;
+	size_t tlen;
 	GtkTextIter start;
 	GtkTextIter end;
 	gchar * buf;
+	size_t blen;
 	char const * str;
-	size_t offset;
 
-	if(text == NULL || (len = strlen(text)) == 0)
+	if(text == NULL || (tlen = strlen(text)) == 0)
 		return;
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	/* XXX highly inefficient, always returns the first match */
+	/* XXX highly inefficient */
 	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
 	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
 	buf = gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
-	if(buf == NULL || strlen(buf) == 0)
+	if(buf == NULL || (blen = strlen(buf)) == 0)
 		return;
-	if((str = strstr(buf, text)) != NULL)
+	if(ghtml->search >= blen)
+		ghtml->search = 0;
+	if((str = strstr(&buf[ghtml->search], text)) != NULL)
+		_find_match(ghtml, buf, str, tlen);
+	else if(ghtml->search != 0) /* search the first half */
 	{
-		offset = str - buf;
-		gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &start,
-				offset);
-		gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &end,
-				offset + len);
-		gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
+		buf[ghtml->search] = '\0';
+		if((str = strstr(buf, text)) != NULL)
+			_find_match(ghtml, buf, str, tlen);
 	}
 	g_free(buf);
+}
+
+static void _find_match(GHtml * ghtml, char const * buf, char const * str,
+		size_t tlen)
+{
+	size_t offset;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	offset = str - buf;
+	ghtml->search = offset + 1;
+	gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &start, offset);
+	gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &end, offset + tlen);
+	gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
+	gtk_text_view_scroll_to_iter(ghtml->view, &start, 0.0, FALSE, 0.0, 0.0);
 }
 
 
@@ -307,6 +329,7 @@ static int _ghtml_document_load(GHtml * ghtml, char const * url,
 	ghtml->history = g_list_append(ghtml->history, h);
 	ghtml->current = g_list_last(ghtml->history);
 	gtk_text_buffer_set_text(ghtml->buffer, "", 0);
+	ghtml->search = 0;
 	surfer_set_location(ghtml->surfer, url);
 	surfer_set_title(ghtml->surfer, NULL);
 	if((ghtml->conn = _conn_new(ghtml->surfer, url, post)) == NULL)
