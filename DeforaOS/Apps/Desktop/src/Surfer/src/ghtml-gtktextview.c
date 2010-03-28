@@ -152,7 +152,8 @@ char const * ghtml_get_title(GtkWidget * widget)
 static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 		size_t tlen);
 
-gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive)
+gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive,
+		gboolean wrap)
 {
 	gboolean ret = FALSE;
 	GHtml * ghtml;
@@ -176,7 +177,7 @@ gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive)
 		ghtml->search = 0;
 	if((str = strstr(&buf[ghtml->search], text)) != NULL)
 		ret = _find_match(ghtml, buf, str, tlen);
-	else if(ghtml->search != 0) /* search the first half */
+	else if(wrap && ghtml->search != 0) /* wrap around */
 	{
 		buf[ghtml->search] = '\0';
 		if((str = strstr(buf, text)) != NULL)

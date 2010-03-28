@@ -540,6 +540,9 @@ void surfer_find(Surfer * surfer, char const * text)
 				"Case-sensitive");
 		gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_case, TRUE, TRUE,
 				4);
+		surfer->fi_wrap = gtk_check_button_new_with_label("Wrap");
+		gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_wrap, TRUE, TRUE,
+				4);
 		gtk_widget_show_all(vbox);
 		g_signal_connect(G_OBJECT(surfer->fi_dialog), "response",
 				G_CALLBACK(_on_find_response), surfer);
@@ -554,13 +557,16 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 	Surfer * surfer = data;
 	char const * text;
 	gboolean sensitive;
+	gboolean wrap;
 
 	if((text = gtk_entry_get_text(GTK_ENTRY(widget))) == NULL
 			|| strlen(text) == 0)
 		return;
 	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				surfer->fi_case));
-	if(ghtml_find(surfer->view, text, sensitive) == TRUE)
+	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				surfer->fi_wrap));
+	if(ghtml_find(surfer->view, text, sensitive, wrap) == TRUE)
 		return;
 	surfer_error(surfer, "Text not found", 0);
 }
