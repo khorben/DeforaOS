@@ -196,7 +196,8 @@ static void _find_match(GHtml * ghtml, char const * buf, char const * str,
 	gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &start, offset);
 	gtk_text_buffer_get_iter_at_offset(ghtml->buffer, &end, offset + tlen);
 	gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
-	gtk_text_view_scroll_to_iter(ghtml->view, &start, 0.0, FALSE, 0.0, 0.0);
+	gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(ghtml->view), &start, 0.0,
+			FALSE, 0.0, 0.0);
 }
 
 
