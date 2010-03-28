@@ -149,11 +149,12 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 /* useful */
 /* ghtml_find */
-static void _find_match(GHtml * ghtml, char const * buf, char const * str,
+static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 		size_t tlen);
 
-void ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive)
+gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive)
 {
+	gboolean ret = FALSE;
 	GHtml * ghtml;
 	size_t tlen;
 	GtkTextIter start;
@@ -163,28 +164,29 @@ void ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive)
 	char const * str;
 
 	if(text == NULL || (tlen = strlen(text)) == 0)
-		return;
+		return ret;
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	/* XXX highly inefficient */
 	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
 	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
 	buf = gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
 	if(buf == NULL || (blen = strlen(buf)) == 0)
-		return;
+		return ret;
 	if(ghtml->search >= blen)
 		ghtml->search = 0;
 	if((str = strstr(&buf[ghtml->search], text)) != NULL)
-		_find_match(ghtml, buf, str, tlen);
+		ret = _find_match(ghtml, buf, str, tlen);
 	else if(ghtml->search != 0) /* search the first half */
 	{
 		buf[ghtml->search] = '\0';
 		if((str = strstr(buf, text)) != NULL)
-			_find_match(ghtml, buf, str, tlen);
+			ret = _find_match(ghtml, buf, str, tlen);
 	}
 	g_free(buf);
+	return ret;
 }
 
-static void _find_match(GHtml * ghtml, char const * buf, char const * str,
+static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 		size_t tlen)
 {
 	size_t offset;
@@ -198,6 +200,7 @@ static void _find_match(GHtml * ghtml, char const * buf, char const * str,
 	gtk_text_buffer_select_range(ghtml->buffer, &start, &end);
 	gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(ghtml->view), &start, 0.0,
 			FALSE, 0.0, 0.0);
+	return TRUE;
 }
 
 

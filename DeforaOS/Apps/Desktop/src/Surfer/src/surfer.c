@@ -560,7 +560,9 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 		return;
 	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				surfer->fi_case));
-	ghtml_find(surfer->view, text, sensitive);
+	if(ghtml_find(surfer->view, text, sensitive) == TRUE)
+		return;
+	surfer_error(surfer, "Text not found", 0);
 }
 
 static void _on_find_response(GtkWidget * widget, gint response, gpointer data)

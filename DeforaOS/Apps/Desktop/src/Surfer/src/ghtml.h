@@ -52,7 +52,7 @@ void ghtml_stop(GtkWidget * ghtml);
 void ghtml_select_all(GtkWidget * ghtml);
 void ghtml_unselect_all(GtkWidget * ghtml);
 
-void ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive);
+gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive);
 
 void ghtml_zoom_in(GtkWidget * ghtml);
 void ghtml_zoom_out(GtkWidget * ghtml);

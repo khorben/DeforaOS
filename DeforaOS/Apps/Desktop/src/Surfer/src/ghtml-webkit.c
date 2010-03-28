@@ -173,13 +173,13 @@ int ghtml_set_base(GtkWidget * ghtml, char const * url)
 
 /* useful */
 /* ghtml_find */
-void ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive)
+gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive)
 {
 	GtkWidget * view;
 
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
-	webkit_web_view_search_text(WEBKIT_WEB_VIEW(view), text, sensitive,
-			TRUE, TRUE);
+	return webkit_web_view_search_text(WEBKIT_WEB_VIEW(view), text,
+			sensitive, TRUE, TRUE);
 }
 
 
