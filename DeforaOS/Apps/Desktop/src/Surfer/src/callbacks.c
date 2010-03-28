@@ -38,7 +38,7 @@ static char const * _authors[] =
 
 
 /* window */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+gboolean on_closex(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -53,7 +53,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 /* file menu */
 void on_file_close(gpointer data)
 {
-	on_closex(NULL, NULL, data);
+	on_closex(data);
 }
 
 
@@ -418,6 +418,15 @@ void on_back(gpointer data)
 }
 
 
+/* on_close */
+void on_close(gpointer data)
+{
+	Surfer * surfer = data;
+
+	on_closex(surfer);
+}
+
+
 /* on_forward */
 void on_forward(gpointer data)
 {
@@ -474,10 +483,9 @@ void on_path_activate(gpointer data)
 /* on_preferences */
 static void _preferences_set(Surfer * surfer);
 /* callbacks */
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
-static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+static gboolean _preferences_on_closex(gpointer data);
+static void _preferences_on_cancel(gpointer data);
+static void _preferences_on_ok(gpointer data);
 
 void on_preferences(gpointer data)
 {
@@ -504,7 +512,7 @@ void on_preferences(gpointer data)
 			"Web surfer preferences");
 	gtk_window_set_transient_for(GTK_WINDOW(surfer->pr_window), GTK_WINDOW(
 				surfer->window));
-	g_signal_connect(G_OBJECT(surfer->pr_window), "delete-event",
+	g_signal_connect_swapped(G_OBJECT(surfer->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* notebook */
@@ -526,12 +534,12 @@ void on_preferences(gpointer data)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_ok), surfer);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), surfer);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
@@ -552,16 +560,15 @@ static void _preferences_set(Surfer * surfer)
 			!= NULL ? surfer->homepage : "");
 }
 
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _preferences_on_closex(gpointer data)
 {
 	Surfer * surfer = data;
 
-	_preferences_on_cancel(widget, surfer);
+	_preferences_on_cancel(surfer);
 	return TRUE;
 }
 
-static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
+static void _preferences_on_cancel(gpointer data)
 {
 	Surfer * surfer = data;
 
@@ -569,7 +576,7 @@ static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
 	_preferences_set(surfer);
 }
 
-static void _preferences_on_ok(GtkWidget * widget, gpointer data)
+static void _preferences_on_ok(gpointer data)
 {
 	Surfer * surfer = data;
 

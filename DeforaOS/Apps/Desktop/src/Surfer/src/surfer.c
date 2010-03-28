@@ -34,6 +34,7 @@ static DesktopAccel _surfer_accel[] =
 {
 	/* FIXME implement the missing accelerators in embedded mode */
 	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
+	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
 	{ NULL, 0, 0 }
 };
 #endif
@@ -177,8 +178,8 @@ Surfer * surfer_new(char const * url)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
 #endif
 	surfer_set_title(surfer, NULL);
-	g_signal_connect(G_OBJECT(surfer->window), "delete-event", G_CALLBACK(
-				on_closex), surfer);
+	g_signal_connect_swapped(G_OBJECT(surfer->window), "delete-event",
+			G_CALLBACK(on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
 #ifndef EMBEDDED
 	/* menubar */
