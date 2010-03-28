@@ -140,6 +140,11 @@ table.bordered th {
 	border:				1px solid #959595;
 }
 
+.highlight {
+	background-color:		#ffff00;
+	color:				#000000;
+}
+
 .toolbar .separator {
 	background-color:		#404040;
 	margin:				0;
