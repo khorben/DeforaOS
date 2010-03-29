@@ -62,24 +62,24 @@ if [ $# -eq 4 -a "$1" = "-p" -a "$3" = "install" ]; then
 	#PREFIX="$2" XXX doesn't work atm
 	lang="${4%%.mo}"
 
-	$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"		|| return 2
+	$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"		|| exit 2
 	$DEBUG $INSTALL "$4" "$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
-								|| return 2
-	return 0
+								|| exit 2
+	exit 0
 fi
 if [ $# -ne 1 ]; then
 	_usage
-	return $?
+	exit $?
 fi
 case "$1" in
 	*.mo)
-		_gettext_mo "$PACKAGE" "${1%%.mo}"		|| return 2
+		_gettext_mo "$PACKAGE" "${1%%.mo}"		|| exit 2
 		;;
 	*.pot)
-		_gettext_pot "${1%%.pot}"			|| return 2
+		_gettext_pot "${1%%.pot}"			|| exit 2
 		;;
 	*)
-		return 2
+		exit 2
 		;;
 esac
-return 0
+exit 0
