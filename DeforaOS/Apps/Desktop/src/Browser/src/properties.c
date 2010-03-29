@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,24 @@
 #include <pwd.h>
 #include <grp.h>
 #include <libgen.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "mime.h"
+#include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* properties */
@@ -92,7 +108,7 @@ static int _properties_error(GtkWidget * window, char const * message, int ret)
 	if(window != NULL)
 		gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(
 					window));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				_error_response), &_properties_cnt);
 	gtk_widget_show(dialog);
@@ -206,7 +222,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	if(properties != NULL)
 		properties->window = window;
-	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", basename(p));
+	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "), basename(p));
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -224,18 +240,18 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 0, 1);
 	widget = gtk_label_new(type);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 1, 2);
-	widget = gtk_label_new("Size:"); /* XXX justification does not work */
+	widget = gtk_label_new(_("Size:")); /* XXX justification doesn't work */
 	gtk_widget_modify_font(widget, bold);
 	gtk_label_set_justify(GTK_LABEL(widget), GTK_JUSTIFY_LEFT);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 2, 3);
 	widget = gtk_label_new(_do_size(buf, sizeof(buf), st.st_size));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 2, 3);
-	widget = gtk_label_new("Owner:"); /* owner name */
+	widget = gtk_label_new(_("Owner:")); /* owner name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 3, 4);
 	widget = gtk_label_new(_do_owner(buf, sizeof(buf), st.st_uid));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 3, 4);
-	widget = gtk_label_new("Group:"); /* group name */
+	widget = gtk_label_new(_("Group:")); /* group name */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 4, 5);
 	if(properties == NULL)
@@ -243,37 +259,37 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	else
 		widget = _do_groups(properties);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 4, 5);
-	widget = gtk_label_new("Accessed:"); /* last access */
+	widget = gtk_label_new(_("Accessed:")); /* last access */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 5, 6);
 	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 5, 6);
-	widget = gtk_label_new("Modified:"); /* last modification */
+	widget = gtk_label_new(_("Modified:")); /* last modification */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 6, 7);
 	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 6, 7);
-	widget = gtk_label_new("Changed:"); /* last change */
+	widget = gtk_label_new(_("Changed:")); /* last change */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 7, 8);
 	widget = gtk_label_new(_do_time(buf, sizeof(buf), st.st_mtime));
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 7, 8);
-	widget = gtk_label_new("Permissions:"); /* permissions */
+	widget = gtk_label_new(_("Permissions:")); /* permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 8, 9);
-	widget = gtk_label_new("Owner:"); /* owner permissions */
+	widget = gtk_label_new(_("Owner:")); /* owner permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 9, 10);
 	widget = _do_mode(properties ? &properties->check[6] : NULL,
 			(st.st_mode & 0700) >> 6);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 9, 10);
-	widget = gtk_label_new("Group:"); /* group permissions */
+	widget = gtk_label_new(_("Group:")); /* group permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 10, 11);
 	widget = _do_mode(properties ? &properties->check[3] : NULL,
 			(st.st_mode & 0070) >> 3);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 1, 2, 10, 11);
-	widget = gtk_label_new("Others:"); /* others permissions */
+	widget = gtk_label_new(_("Others:")); /* others permissions */
 	gtk_widget_modify_font(widget, bold);
 	gtk_table_attach_defaults(GTK_TABLE(table), widget, 0, 1, 11, 12);
 	widget = _do_mode(properties ? &properties->check[0] : NULL,
@@ -312,19 +328,19 @@ static char * _do_size(char * buf, size_t buf_cnt, size_t size)
 
 	if(sz < 1024)
 	{
-		snprintf(buf, buf_cnt, "%.0f%s", sz, " bytes");
+		snprintf(buf, buf_cnt, "%.0f%s", sz, _(" bytes"));
 		return buf;
 	}
 	else if((sz /= 1024) < 1024)
-		unit = "KB";
+		unit = _("KB");
 	else if((sz /= 1024) < 1024)
-		unit = "MB";
+		unit = _("MB");
 	else if((sz /= 1024) < 1024)
-		unit = "GB";
+		unit = _("GB");
 	else
 	{
 		sz /= 1024;
-		unit = "TB";
+		unit = _("TB");
 	}
 	snprintf(buf, buf_cnt, "%.1f %s", sz, unit);
 	return buf;
@@ -416,17 +432,17 @@ static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode)
 	else
 		sensitive = TRUE;
 	hbox = gtk_hbox_new(TRUE, 0);
-	widget[2] = gtk_check_button_new_with_label("read"); /* read */
+	widget[2] = gtk_check_button_new_with_label(_("read")); /* read */
 	gtk_widget_set_sensitive(widget[2], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[2]),
 			mode & S_IROTH);
 	gtk_box_pack_start(GTK_BOX(hbox), widget[2], TRUE, TRUE, 4);
-	widget[1] = gtk_check_button_new_with_label("write"); /* write */
+	widget[1] = gtk_check_button_new_with_label(_("write")); /* write */
 	gtk_widget_set_sensitive(widget[1], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[1]),
 			mode & S_IWOTH);
 	gtk_box_pack_start(GTK_BOX(hbox), widget[1], TRUE, TRUE, 4);
-	widget[0] = gtk_check_button_new_with_label("execute"); /* execute */
+	widget[0] = gtk_check_button_new_with_label(_("execute")); /* execute */
 	gtk_widget_set_sensitive(widget[0], sensitive);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget[0]),
 			mode & S_IXOTH);
@@ -481,7 +497,7 @@ static void _properties_on_apply(GtkWidget * widget, gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: properties file...\n", stderr);
+	fputs(_("Usage: properties file...\n"), stderr);
 	return 1;
 }
 
@@ -492,6 +508,9 @@ int main(int argc, char * argv[])
 	int ret;
 	int o;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)

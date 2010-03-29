@@ -1,0 +1,6 @@
+../src/browser.c
+../src/callbacks.c
+../src/common.c
+../src/desktop.c
+../src/main.c
+../src/properties.c

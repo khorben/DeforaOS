@@ -29,9 +29,11 @@ static char const _license[] =
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include "callbacks.h"
 #include "browser.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 #define COMMON_DND
 #define COMMON_EXEC
@@ -192,12 +194,12 @@ void on_edit_delete(gpointer data)
 				GTK_DIALOG_MODAL
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
-				"Warning");
+				_("Warning"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s%lu%s",
 				"Are you sure you want to delete ", cnt,
 				" file(s)?");
-		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 	}
@@ -257,7 +259,7 @@ void on_edit_preferences(gpointer data)
 	browser->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(browser->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(browser->pr_window),
-			"File browser preferences");
+			_("File browser preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(browser->pr_window), GTK_WINDOW(
 				browser->window));
 	g_signal_connect(G_OBJECT(browser->pr_window), "delete-event",
@@ -265,26 +267,26 @@ void on_edit_preferences(gpointer data)
 	vbox = gtk_vbox_new(FALSE, 0);
 #if GTK_CHECK_VERSION(2, 6, 0)
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Default view:");
+	widget = gtk_label_new(_("Default view:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_combo_box_new_text();
 	browser->pr_view = widget;
-	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "Details");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "Icons");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "List");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), "Thumbnails");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Details"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Icons"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("List"));
+	gtk_combo_box_append_text(GTK_COMBO_BOX(widget), _("Thumbnails"));
 	gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 1);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 #endif
 	browser->pr_confirm = gtk_check_button_new_with_mnemonic(
-			"_Confirm before delete");
+			_("_Confirm before delete"));
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_confirm, FALSE, FALSE, 4);
 	browser->pr_sort = gtk_check_button_new_with_mnemonic(
-			"Sort _folders first");
+			_("Sort _folders first"));
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_sort, FALSE, FALSE, 4);
 	browser->pr_hidden = gtk_check_button_new_with_mnemonic(
-			"Show _hidden files");
+			_("Show _hidden files"));
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_hidden, FALSE, FALSE, 4);
 	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -457,7 +459,7 @@ void on_help_about(gpointer data)
 	browser->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = browser->ab_window;
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "About Browser");
+	gtk_window_set_title(GTK_WINDOW(window), _("About Browser"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -468,11 +470,11 @@ void on_help_about(gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
-	button = gtk_button_new_with_mnemonic("C_redits");
+	button = gtk_button_new_with_mnemonic(_("C_redits"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_credits), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-	button = gtk_button_new_with_mnemonic("_License");
+	button = gtk_button_new_with_mnemonic(_("_License"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_license), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
@@ -521,7 +523,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_title(GTK_WINDOW(window), _("Credits"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
@@ -544,7 +546,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(widget), textview);
 	notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
-			gtk_label_new("Written by"));
+			gtk_label_new(_("Written by")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -1059,27 +1061,27 @@ static gboolean _press_context(Browser * browser, GdkEventButton * event,
 
 	browser_unselect_all(browser);
 	/* new submenu */
-	menuitem = gtk_menu_item_new_with_label("New");
+	menuitem = gtk_menu_item_new_with_label(_("New"));
 	submenu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 #if GTK_CHECK_VERSION(2, 8, 0) /* XXX actually depends on the icon theme */
-	menuitem = gtk_image_menu_item_new_with_label("Folder");
+	menuitem = gtk_image_menu_item_new_with_label(_("Folder"));
 	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
 #else
-	menuitem = gtk_menu_item_new_with_label("Folder");
+	menuitem = gtk_menu_item_new_with_label(_("Folder"));
 #endif
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_folder), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
-	menuitem = gtk_menu_item_new_with_label("Symbolic link...");
+	menuitem = gtk_menu_item_new_with_label(_("Symbolic link..."));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_new_symlink), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Text file");
+	menuitem = gtk_image_menu_item_new_with_label(_("Text file"));
 	image = gtk_image_new_from_icon_name("stock_new-text",
 			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
@@ -1186,7 +1188,7 @@ static void _press_directory(GtkWidget * menu, IconCallback * ic)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(ic->ismnt)
 	{
-		menuitem = gtk_menu_item_new_with_mnemonic("_Unmount");
+		menuitem = gtk_menu_item_new_with_mnemonic(_("_Unmount"));
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(_on_icon_unmount), ic);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1221,7 +1223,7 @@ static void _press_file(Browser * browser, GtkWidget * menu, char * mimetype,
 				G_CALLBACK(_on_icon_run), ic);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
-	menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
+	menuitem = gtk_menu_item_new_with_mnemonic(_("Open _with..."));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open_with), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -1323,10 +1325,10 @@ static void _on_icon_run(gpointer data)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(cb->browser->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
-			GTK_BUTTONS_YES_NO, "%s", "Warning");
+			GTK_BUTTONS_YES_NO, "%s", _("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", "Are you sure you want to execute this file?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_YES)

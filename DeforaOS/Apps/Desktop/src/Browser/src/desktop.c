@@ -28,23 +28,33 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <X11/Xlib.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #include "mime.h"
 #include "desktop.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 #define COMMON_SYMLINK
 #include "common.c"
 
+
+/* constants */
 #ifdef PACKAGE
 # undef PACKAGE
 #endif
-#define PACKAGE	"desktop"
-
+#define PACKAGE		"desktop"
 #ifndef PREFIX
-# define PREFIX	"/usr/local"
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
 #endif
 
 
@@ -235,7 +245,7 @@ static void _new_add_home(Desktop * desktop)
 	DesktopIcon * desktopicon;
 	GdkPixbuf * icon;
 
-	if((desktopicon = desktopicon_new(desktop, "Home", desktop->home))
+	if((desktopicon = desktopicon_new(desktop, _("Home"), desktop->home))
 			== NULL)
 		return;
 	desktopicon_set_first(desktopicon, TRUE);
@@ -337,7 +347,7 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(desktop->menu), menuitem);
 	/* submenu for new documents */
-	menuitem = gtk_image_menu_item_new_with_label("Folder");
+	menuitem = gtk_image_menu_item_new_with_label(_("Folder"));
 	image = gtk_image_new_from_icon_name("folder-new", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
@@ -345,11 +355,11 @@ static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Symbolic link...");
+	menuitem = gtk_image_menu_item_new_with_label(_("Symbolic link..."));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_popup_symlink), desktop);
 	gtk_menu_shell_append(GTK_MENU_SHELL(submenu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_label("Text file");
+	menuitem = gtk_image_menu_item_new_with_label(_("Text file"));
 	image = gtk_image_new_from_icon_name("stock_new-text",
 			GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
@@ -481,7 +491,7 @@ static void _on_popup_preferences(gpointer data)
 	/* window */
 	desktop->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(desktop->pr_window),
-			"Desktop preferences");
+			_("Desktop preferences"));
 	g_signal_connect(G_OBJECT(desktop->pr_window), "delete-event",
 			G_CALLBACK(_on_preferences_closex), desktop);
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -493,17 +503,17 @@ static void _on_popup_preferences(gpointer data)
 	vbox2 = gtk_vbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox2 = gtk_hbox_new(FALSE, 0);
-	label = gtk_label_new("Background: ");
+	label = gtk_label_new(_("Background: "));
 	gtk_widget_modify_font(label, desc);
 	gtk_size_group_add_widget(group, label);
 	gtk_box_pack_start(GTK_BOX(hbox2), label, FALSE, TRUE, 0);
-	desktop->pr_background = gtk_file_chooser_button_new("Background",
+	desktop->pr_background = gtk_file_chooser_button_new(_("Background"),
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	gtk_box_pack_start(GTK_BOX(hbox2), desktop->pr_background, TRUE, TRUE,
 			0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox2, FALSE, TRUE, 4);
 	gtk_notebook_append_page(GTK_NOTEBOOK(widget), vbox2, gtk_label_new(
-				"Appearance"));
+				_("Appearance")));
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 4);
 	/* dialog */
 	hbox2 = gtk_hbox_new(FALSE, 4);
@@ -1033,10 +1043,10 @@ static int _desktop_error(Desktop * desktop, char const * message,
 	if(desktop == NULL)
 		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", "Error");
+			GTK_BUTTONS_CLOSE, "%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s: %s", message, error);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
 	{
 		g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
@@ -1083,9 +1093,9 @@ static Config * _desktop_get_config(Desktop * desktop)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: desktop [-A | -F]\n"
+	fputs(_("Usage: desktop [-A | -F]\n"
 "  -A	Display the applications registered\n"
-"  -F	Display contents of the desktop folder [default]\n", stderr);
+"  -F	Display contents of the desktop folder [default]\n"), stderr);
 	return 1;
 }
 
@@ -1100,6 +1110,9 @@ int main(int argc, char * argv[])
 	DesktopLayout layout = DL_FILES;
 	struct sigaction sa;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "AF")) != -1)
 		switch(o)

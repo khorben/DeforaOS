@@ -1,6 +1,6 @@
 PACKAGE	= Browser
 VERSION	= 0.1.4
-SUBDIRS	= data src tools
+SUBDIRS	= data po src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -24,6 +24,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/browser.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/de.po \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/browser.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/mime.c \
@@ -52,6 +58,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/TODO \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 

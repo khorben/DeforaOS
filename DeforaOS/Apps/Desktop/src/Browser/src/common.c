@@ -14,7 +14,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
+
+#include <libintl.h>
+
+
 /* macros */
+#ifndef _
+# define _(string) gettext(string)
+#endif
 #define min(a, b) ((a) < (b)) ? (a) : (b)
 
 
@@ -50,8 +57,9 @@ static int _common_drag_data_received(GdkDragContext * context,
 		selection = g_list_append(selection, &seldata->data[i]);
 #ifdef DEBUG
 	fprintf(stderr, "%s%s%s%s%s", "DEBUG: ",
-			context->suggested_action == GDK_ACTION_COPY ? "copying"
-			: "moving", " to \"", dest, "\":\n");
+			context->suggested_action == GDK_ACTION_COPY
+			? _("copying") : _("moving"), _(" to \""), dest,
+			"\":\n");
 	for(s = selection; s != NULL; s = s->next)
 		fprintf(stderr, "DEBUG: \"%s\"\n", (char*)s->data);
 #else
@@ -120,7 +128,7 @@ static int _common_exec(char const * program, char const * flags, GList * args)
 /* common_symlink */
 static int _common_symlink(GtkWidget * window, char const * cur)
 {
-	static char const newsymlink[] = "New symbolic link";
+	static char const * newsymlink = NULL;
 	int ret = 0;
 	char * path;
 	GtkWidget * dialog;
@@ -128,16 +136,17 @@ static int _common_symlink(GtkWidget * window, char const * cur)
 	GtkWidget * widget;
 	char const * to = NULL;
 
-	if((path = malloc(strlen(cur) + sizeof(newsymlink) + 1)) == NULL)
+	if(newsymlink == NULL)
+		newsymlink = _("New symbolic link");
+	if((path = malloc(strlen(cur) + strlen(newsymlink) + 2)) == NULL)
 		return 1;
 	sprintf(path, "%s/%s", cur, newsymlink);
-	dialog = gtk_dialog_new_with_buttons("New symbolic link",
-			GTK_WINDOW(window),
+	dialog = gtk_dialog_new_with_buttons(newsymlink, GTK_WINDOW(window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Destination: ");
+	widget = gtk_label_new(_("Destination: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);

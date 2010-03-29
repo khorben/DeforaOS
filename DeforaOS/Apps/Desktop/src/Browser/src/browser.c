@@ -25,10 +25,12 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "browser.h"
+#define _(string) gettext(string)
 
 
 /* constants */
@@ -235,7 +237,7 @@ Browser * browser_new(char const * directory)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(browser->window), ICON_NAME);
 #endif
-	gtk_window_set_title(GTK_WINDOW(browser->window), "File browser");
+	gtk_window_set_title(GTK_WINDOW(browser->window), _("File browser"));
 	g_signal_connect(browser->window, "delete-event", G_CALLBACK(on_closex),
 			browser);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -254,26 +256,26 @@ Browser * browser_new(char const * directory)
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_updir), FALSE);
 	gtk_widget_set_sensitive(GTK_WIDGET(browser->tb_forward), FALSE);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	toolitem = gtk_menu_tool_button_new(NULL, "View as...");
+	toolitem = gtk_menu_tool_button_new(NULL, _("View as..."));
 	g_signal_connect_swapped(G_OBJECT(toolitem), "clicked", G_CALLBACK(
 				on_view_as), browser);
 	menu = gtk_menu_new();
-	menuitem = gtk_image_menu_item_new_with_label("Details");
+	menuitem = gtk_image_menu_item_new_with_label(_("Details"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
 			gtk_image_new_from_icon_name("stock_view-details",
 				GTK_ICON_SIZE_MENU));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_details), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_label("Icons");
+	menuitem = gtk_menu_item_new_with_label(_("Icons"));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_icons), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_label("List");
+	menuitem = gtk_menu_item_new_with_label(_("List"));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_list), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_menu_item_new_with_label("Thumbnails");
+	menuitem = gtk_menu_item_new_with_label(_("Thumbnails"));
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				on_view_thumbnails), browser);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -294,7 +296,7 @@ Browser * browser_new(char const * directory)
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 #ifndef EMBEDDED
-	widget = gtk_label_new(" Location: ");
+	widget = gtk_label_new(_(" Location: "));
 	toolitem = gtk_tool_item_new();
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
@@ -519,10 +521,10 @@ int browser_error(Browser * browser, char const * message, int ret)
 	error = strerror(errno);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", "Error");
+			GTK_BUTTONS_CLOSE, "%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s: %s", message, error);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
 	{
 		g_signal_connect_swapped(G_OBJECT(dialog), "response",
@@ -652,7 +654,7 @@ void browser_open(Browser * browser, char const * path)
 
 	if(path == NULL)
 	{
-		dialog = gtk_file_chooser_dialog_new("Open file...",
+		dialog = gtk_file_chooser_dialog_new(_("Open file..."),
 				GTK_WINDOW(browser->window),
 				GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 				GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
@@ -674,7 +676,7 @@ void browser_open_with(Browser * browser, char const * path)
 	char * filename = NULL;
 	pid_t pid;
 
-	dialog = gtk_file_chooser_dialog_new("Open with...",
+	dialog = gtk_file_chooser_dialog_new(_("Open with..."),
 			GTK_WINDOW(browser->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
@@ -786,9 +788,9 @@ static int _loop_status(Browser * browser)
 {
 	char status[36];
 
-	snprintf(status, sizeof(status), "%u file%c (%u hidden)",
+	snprintf(status, sizeof(status), _("%u file%c (%u hidden)"),
 			browser->refresh_cnt, browser->refresh_cnt <= 1
-			? '\0' : 's', browser->refresh_hid);
+			? '\0' : 's', browser->refresh_hid); /* XXX translate */
 	_browser_set_status(browser, status);
 	return 1;
 }
@@ -1399,15 +1401,17 @@ static void _view_details(Browser * browser)
 	g_object_set(renderer, "editable", TRUE, NULL);
 	g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
 				on_filename_edited), browser);
-	_details_column_text(view, renderer, "Filename", BR_COL_DISPLAY_NAME,
+	_details_column_text(view, renderer, _("Filename"), BR_COL_DISPLAY_NAME,
 			BR_COL_DISPLAY_NAME);
-	_details_column_text(view, NULL, "Size", BR_COL_DISPLAY_SIZE,
+	_details_column_text(view, NULL, _("Size"), BR_COL_DISPLAY_SIZE,
 			BR_COL_SIZE);
-	_details_column_text(view, NULL, "Owner", BR_COL_OWNER, BR_COL_OWNER);
-	_details_column_text(view, NULL, "Group", BR_COL_GROUP, BR_COL_GROUP);
-	_details_column_text(view, NULL, "Date", BR_COL_DISPLAY_DATE,
+	_details_column_text(view, NULL, _("Owner"), BR_COL_OWNER,
+			BR_COL_OWNER);
+	_details_column_text(view, NULL, _("Group"), BR_COL_GROUP,
+			BR_COL_GROUP);
+	_details_column_text(view, NULL, _("Date"), BR_COL_DISPLAY_DATE,
 			BR_COL_DATE);
-	_details_column_text(view, NULL, "MIME type", BR_COL_MIME_TYPE,
+	_details_column_text(view, NULL, _("MIME type"), BR_COL_MIME_TYPE,
 			BR_COL_MIME_TYPE);
 	gtk_tree_view_set_headers_visible(view, TRUE);
 	g_signal_connect(G_OBJECT(view), "row-activated", G_CALLBACK(
@@ -1682,7 +1686,7 @@ static void _browser_refresh_do(Browser * browser, DIR * dir, struct stat * st)
 	browser->refresh_hid = 0;
 	_refresh_title(browser);
 	_refresh_path(browser);
-	_browser_set_status(browser, "Refreshing folder...");
+	_browser_set_status(browser, _("Refreshing folder..."));
 	if(st->st_dev != browser->refresh_dev
 			|| st->st_ino != browser->refresh_ino)
 	{
