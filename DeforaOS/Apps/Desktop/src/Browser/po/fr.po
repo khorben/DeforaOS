@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-30 00:22+0200\n"
+"POT-Creation-Date: 2010-03-30 00:52+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -72,7 +72,7 @@ msgstr "Taille"
 
 #: ../src/browser.c:1408
 msgid "Owner"
-msgstr "Owner"
+msgstr "Propriétaire"
 
 #: ../src/browser.c:1410
 msgid "Group"
@@ -90,10 +90,18 @@ msgstr "Type MIME"
 msgid "Refreshing folder..."
 msgstr "Actualisation du dossier..."
 
-#: ../src/callbacks.c:197 ../src/callbacks.c:202 ../src/callbacks.c:1328
-#: ../src/callbacks.c:1331
+#: ../src/callbacks.c:197 ../src/callbacks.c:202 ../src/callbacks.c:1329
+#: ../src/callbacks.c:1332
 msgid "Warning"
-msgstr "Attention"
+msgstr "Avertissement"
+
+#: ../src/callbacks.c:200
+msgid "Are you sure you want to delete "
+msgstr "Voulez-vous vraiment effacer "
+
+#: ../src/callbacks.c:201
+msgid " file(s)?"
+msgstr " fichier(s)?"
 
 #: ../src/callbacks.c:262
 msgid "File browser preferences"
@@ -133,7 +141,11 @@ msgstr "Crédits"
 
 #: ../src/callbacks.c:549
 msgid "Written by"
-msgstr ""
+msgstr "Écrit par"
+
+#: ../src/callbacks.c:578
+msgid "License"
+msgstr "Licence"
 
 #: ../src/callbacks.c:1064
 msgid "New"
@@ -151,11 +163,15 @@ msgstr "Lien symbolique..."
 msgid "Text file"
 msgstr "Fichier texte"
 
-#: ../src/callbacks.c:1191
+#: ../src/callbacks.c:1164
+msgid "Open in new _window"
+msgstr "Ouvrir dans une _nouvelle fenêtre"
+
+#: ../src/callbacks.c:1192
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1226
+#: ../src/callbacks.c:1227
 msgid "Open _with..."
 msgstr "Ouvrir _avec..."
 

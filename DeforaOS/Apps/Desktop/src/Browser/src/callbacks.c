@@ -197,8 +197,8 @@ void on_edit_delete(gpointer data)
 				_("Warning"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s%lu%s",
-				"Are you sure you want to delete ", cnt,
-				" file(s)?");
+				_("Are you sure you want to delete "), cnt,
+				_(" file(s)?"));
 		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
@@ -575,7 +575,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "License");
+	gtk_window_set_title(GTK_WINDOW(window), _("License"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
@@ -1160,7 +1160,8 @@ static void _press_directory(GtkWidget * menu, IconCallback * ic)
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), ic);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = gtk_image_menu_item_new_with_mnemonic("Open in new _window");
+	menuitem = gtk_image_menu_item_new_with_mnemonic(
+			_("Open in new _window"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
 			gtk_image_new_from_icon_name("window-new",
 				GTK_ICON_SIZE_MENU));
