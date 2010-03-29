@@ -28,6 +28,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
 		$(PACKAGE)-$(VERSION)/po/de.po \
+		$(PACKAGE)-$(VERSION)/po/es.po \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/browser.c \
