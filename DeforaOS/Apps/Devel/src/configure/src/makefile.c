@@ -1119,11 +1119,11 @@ static int _write_objects(Configure * configure, FILE * fp)
 	return ret;
 }
 
+static int _script_depends(Config * config, FILE * fp, String const * target);
 static int _target_script(Configure * configure, FILE * fp,
 		String const * target)
 {
 	String const * script;
-	String const * p;
 
 	if((script = config_get(configure->config, target, "script")) == NULL)
 	{
@@ -1134,10 +1134,39 @@ static int _target_script(Configure * configure, FILE * fp,
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "\n%s:", target);
-	if((p = config_get(configure->config, target, "depends")) != NULL)
-		fprintf(fp, " %s", p);
+	_script_depends(configure->config, fp, target);
 	fputc('\n', fp);
 	fprintf(fp, "\t%s \"%s\"\n", script, target);
+	return 0;
+}
+
+static int _script_depends(Config * config, FILE * fp, String const * target)
+{
+	String const * p;
+	String * depends;
+	String * q;
+	size_t i;
+	char c;
+
+	/* XXX code duplication */
+	if((p = config_get(config, target, "depends")) == NULL)
+		return 0;
+	if((depends = string_new(p)) == NULL)
+		return 1;
+	q = depends;
+	for(i = 0;; i++)
+	{
+		if(depends[i] != ',' && depends[i] != '\0')
+			continue;
+		c = depends[i];
+		depends[i] = '\0';
+		fprintf(fp, " %s", depends);
+		if(c == '\0')
+			break;
+		depends += i + 1;
+		i = 0;
+	}
+	string_delete(q);
 	return 0;
 }
 
@@ -1276,7 +1305,7 @@ static int _target_source(Configure * configure, FILE * fp,
 	return ret;
 }
 
-static int _source_depends(Config * config, FILE * fp, String const * source)
+static int _source_depends(Config * config, FILE * fp, String const * target)
 {
 	String const * p;
 	String * depends;
@@ -1284,7 +1313,7 @@ static int _source_depends(Config * config, FILE * fp, String const * source)
 	size_t i;
 	char c;
 
-	if((p = config_get(config, source, "depends")) == NULL)
+	if((p = config_get(config, target, "depends")) == NULL)
 		return 0;
 	if((depends = string_new(p)) == NULL)
 		return 1;
