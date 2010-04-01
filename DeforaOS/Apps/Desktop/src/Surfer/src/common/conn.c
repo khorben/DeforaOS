@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -16,8 +16,12 @@
 
 
 #include <string.h>
+#include <libintl.h>
 #define GNET_EXPERIMENTAL
 #include <gnet.h>
+#ifndef _
+# define _(string) gettext(string)
+#endif
 
 
 /* Conn */
@@ -156,7 +160,7 @@ static int _conn_load(Conn * conn)
 		return 1;
 	}
 	surfer_set_progress(conn->surfer, -1.0);
-	surfer_set_status(conn->surfer, "Resolving...");
+	surfer_set_status(conn->surfer, _("Resolving..."));
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
 	gnet_conn_http_set_user_agent(conn->http, "DeforaOS " PACKAGE);
@@ -205,7 +209,7 @@ static void _load_watch_http(GConnHttp * connhttp, GConnHttpEvent * event,
 
 static void _http_connected(Conn * conn)
 {
-	surfer_set_status(conn->surfer, "Connected");
+	surfer_set_status(conn->surfer, _("Connected"));
 }
 
 static void _http_data_complete(GConnHttpEventData * event, Conn * conn)
@@ -230,7 +234,7 @@ static void _http_data_partial(GConnHttpEventData * event, Conn * conn)
 	gchar * buf;
 	gsize size;
 
-	surfer_set_status(conn->surfer, "Downloading...");
+	surfer_set_status(conn->surfer, _("Downloading..."));
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 		/* FIXME report error */
 		return;
@@ -255,16 +259,16 @@ static void _http_error(GConnHttpEventError * event, Conn * conn)
 	switch(event->code)
 	{
 		case GNET_CONN_HTTP_ERROR_PROTOCOL_UNSUPPORTED:
-			msg = "Unsupported protocol";
+			msg = _("Unsupported protocol");
 			break;
 #if GNET_CHECK_VERSION(2, 0, 8) /* XXX unsure about the exact version */
 		case GNET_CONN_HTTP_ERROR_HOSTNAME_RESOLUTION:
-			msg = "Unknown host";
+			msg = _("Unknown host");
 			break;
 #endif
 		case GNET_CONN_HTTP_ERROR_UNSPECIFIED:
 		default:
-			msg = "Unspecified error";
+			msg = _("Unspecified error");
 			break;
 	}
 	surfer_set_progress(conn->surfer, -1.0);
@@ -298,7 +302,7 @@ static void _http_response(GConnHttpEventResponse * event, Conn * conn)
 
 static void _http_timeout(Conn * conn)
 {
-	surfer_error(conn->surfer, "Timed out", 0);
+	surfer_error(conn->surfer, _("Timeout"), 0);
 	surfer_set_progress(conn->surfer, -1.0);
 	surfer_set_status(conn->surfer, NULL);
 }

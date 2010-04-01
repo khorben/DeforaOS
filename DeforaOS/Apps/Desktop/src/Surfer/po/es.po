@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-01 20:00+0200\n"
+"POT-Creation-Date: 2010-04-02 01:09+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -16,62 +16,126 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../src/main.c:42
-msgid "Usage: surfer [URL]\n"
+#: ../src/callbacks.c:269
+msgid "About "
+msgstr "Acercia de "
+
+#: ../src/callbacks.c:278
+msgid "C_redits"
+msgstr "C_réditos"
+
+#: ../src/callbacks.c:282
+msgid "_License"
+msgstr "_Licencia"
+
+#: ../src/callbacks.c:332
+msgid "Credits"
+msgstr "Créditos"
+
+#: ../src/callbacks.c:355
+msgid "Written by"
+msgstr "Escrito pot"
+
+#: ../src/callbacks.c:384
+msgid "License"
+msgstr "Licencia"
+
+#: ../src/callbacks.c:521
+msgid "Web surfer preferences"
+msgstr "Web surfer preferencias"
+
+#: ../src/callbacks.c:532
+msgid "Homepage:"
 msgstr ""
 
-#: ../src/surfer.c:230
+#: ../src/callbacks.c:539
+msgid "General"
+msgstr ""
+
+#: ../src/common/conn.c:163
+msgid "Resolving..."
+msgstr ""
+
+#: ../src/common/conn.c:212
+msgid "Connected"
+msgstr ""
+
+#: ../src/common/conn.c:237
+msgid "Downloading..."
+msgstr ""
+
+#: ../src/common/conn.c:262
+msgid "Unsupported protocol"
+msgstr ""
+
+#: ../src/common/conn.c:266
+msgid "Unknown host"
+msgstr ""
+
+#: ../src/common/conn.c:271
+msgid "Unspecified error"
+msgstr ""
+
+#: ../src/common/conn.c:305
+msgid "Timeout"
+msgstr ""
+
+#: ../src/main.c:42
+msgid "Usage: surfer [URL]\n"
+msgstr "Usage: surfer [URL]\n"
+
+#: ../src/surfer.c:231
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:252
+#: ../src/surfer.c:253
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:453 ../src/surfer.c:456
+#: ../src/surfer.c:454 ../src/surfer.c:457
 msgid "Question"
 msgstr ""
 
-#: ../src/surfer.c:473 ../src/surfer.c:707
+#: ../src/surfer.c:474 ../src/surfer.c:708
 msgid "Save file as..."
-msgstr ""
+msgstr "Guardar como..."
 
-#: ../src/surfer.c:504 ../src/surfer.c:507
+#: ../src/surfer.c:505 ../src/surfer.c:508
 msgid "Error"
 msgstr ""
 
-#: ../src/surfer.c:506
+#: ../src/surfer.c:507
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/surfer.c:527
+#: ../src/surfer.c:528
 msgid "Find text"
-msgstr ""
+msgstr "Buscar"
 
-#: ../src/surfer.c:534
+#: ../src/surfer.c:535
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:543
+#: ../src/surfer.c:544
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:546
+#: ../src/surfer.c:547
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:574
+#: ../src/surfer.c:575
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:648
+#: ../src/surfer.c:649
 msgid "Open file..."
-msgstr ""
+msgstr "Abrir..."
 
-#: ../src/surfer.c:831
+#: ../src/surfer.c:832
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:873 ../src/surfer.c:876
+#: ../src/surfer.c:874 ../src/surfer.c:877
 msgid "Warning"
 msgstr ""

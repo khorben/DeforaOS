@@ -1,2 +1,4 @@
+../src/callbacks.c
+../src/common/conn.c
 ../src/main.c
 ../src/surfer.c

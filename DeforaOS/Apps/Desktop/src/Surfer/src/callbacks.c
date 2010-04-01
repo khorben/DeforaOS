@@ -22,11 +22,13 @@ static char const _license[] =
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include "surfer.h"
 #include "ghtml.h"
 #include "callbacks.h"
 #include "common.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 
 /* constants */
@@ -264,7 +266,7 @@ void on_help_about(gpointer data)
 	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "About " PACKAGE);
+	gtk_window_set_title(GTK_WINDOW(window), _("About " PACKAGE));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				surfer->window));
 	vbox = gtk_vbox_new(FALSE, 2);
@@ -273,11 +275,11 @@ void on_help_about(gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
-	button = gtk_button_new_with_mnemonic("C_redits");
+	button = gtk_button_new_with_mnemonic(_("C_redits"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_credits), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-	button = gtk_button_new_with_mnemonic("_License");
+	button = gtk_button_new_with_mnemonic(_("_License"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_license), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
@@ -327,7 +329,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_title(GTK_WINDOW(window), _("Credits"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
@@ -350,7 +352,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(widget), textview);
 	notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
-			gtk_label_new("Written by"));
+			gtk_label_new(_("Written by")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -379,7 +381,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "License");
+	gtk_window_set_title(GTK_WINDOW(window), _("License"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
@@ -516,7 +518,7 @@ void on_preferences(gpointer data)
 	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
-			"Web surfer preferences");
+			_("Web surfer preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(surfer->pr_window), GTK_WINDOW(
 				surfer->window));
 	g_signal_connect_swapped(G_OBJECT(surfer->pr_window), "delete-event",
@@ -527,14 +529,14 @@ void on_preferences(gpointer data)
 	/* general */
 	page = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 4);
-	widget = gtk_label_new("Homepage:");
+	widget = gtk_label_new(_("Homepage:"));
 	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
-			gtk_label_new("General"));
+			gtk_label_new(_("General")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 	/* dialog */
 	hbox = gtk_hbox_new(FALSE, 0);
