@@ -1,4 +1,4 @@
-TARGETS	= Browser.pot de.mo es.mo fr.mo
+TARGETS	= Browser.pot de.po de.mo es.po es.mo fr.po fr.mo
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -10,17 +10,26 @@ all: $(TARGETS)
 Browser.pot: POTFILES
 	./gettext.sh "Browser.pot"
 
-de.mo: Browser.pot de.po
+de.po: Browser.pot
+	./gettext.sh "de.po"
+
+de.mo: de.po
 	./gettext.sh "de.mo"
 
-es.mo: Browser.pot es.po
+es.po: Browser.pot
+	./gettext.sh "es.po"
+
+es.mo: es.po
 	./gettext.sh "es.mo"
 
-fr.mo: Browser.pot fr.po
+fr.po: Browser.pot
+	./gettext.sh "fr.po"
+
+fr.mo: fr.po
 	./gettext.sh "fr.mo"
 
 clean:
-	$(RM) $(Browser.pot_OBJS) $(de.mo_OBJS) $(es.mo_OBJS) $(fr.mo_OBJS)
+	$(RM) $(Browser.pot_OBJS) $(de.po_OBJS) $(de.mo_OBJS) $(es.po_OBJS) $(es.mo_OBJS) $(fr.po_OBJS) $(fr.mo_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
