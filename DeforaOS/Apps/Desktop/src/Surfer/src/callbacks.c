@@ -203,8 +203,7 @@ void on_view_zoom_out(gpointer data)
 
 /* help menu */
 /* on_help_about */
-static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _about_on_closex(gpointer data);
 # if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
@@ -245,8 +244,8 @@ void on_help_about(gpointer data)
 		gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window),
 				_license);
 	free(buf);
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
 				gtk_widget_hide), NULL);
 	gtk_widget_show(window);
@@ -262,8 +261,8 @@ void on_help_about(gpointer data)
 		return;
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "About " PACKAGE);
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
@@ -292,9 +291,10 @@ void on_help_about(gpointer data)
 }
 # endif
 
-static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _about_on_closex(gpointer data)
 {
+	GtkWidget * widget = data;
+
 	gtk_widget_hide(widget);
 	return TRUE;
 }
@@ -329,8 +329,8 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "Credits");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
@@ -381,8 +381,8 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), "License");
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
@@ -437,15 +437,20 @@ void on_forward(gpointer data)
 
 
 /* on_fullscreen */
-void on_fullscreen(GtkToggleToolButton * button, gpointer data)
+void on_fullscreen(gpointer data)
 {
 	Surfer * surfer = data;
+	GdkWindow * window;
 
-	if(gtk_toggle_tool_button_get_active(button))
+	window = gtk_widget_get_window(surfer->window);
+	if((gdk_window_get_state(window) & GDK_WINDOW_STATE_FULLSCREEN)
+			!= GDK_WINDOW_STATE_FULLSCREEN)
 	{
 #ifndef EMBEDDED
 		gtk_widget_hide(surfer->menubar);
 #endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					surfer->tb_fullscreen), TRUE);
 		surfer_set_fullscreen(surfer, TRUE);
 	}
 	else
@@ -453,6 +458,8 @@ void on_fullscreen(GtkToggleToolButton * button, gpointer data)
 #ifndef EMBEDDED
 		gtk_widget_show(surfer->menubar);
 #endif
+		gtk_toggle_tool_button_set_active(GTK_TOGGLE_TOOL_BUTTON(
+					surfer->tb_fullscreen), FALSE);
 		surfer_set_fullscreen(surfer, FALSE);
 	}
 }

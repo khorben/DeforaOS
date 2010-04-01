@@ -31,15 +31,16 @@
 /* Surfer */
 /* private */
 /* variables */
-#ifdef EMBEDDED
 static DesktopAccel _surfer_accel[] =
 {
+#ifdef EMBEDDED
 	/* FIXME implement the missing accelerators in embedded mode */
 	{ G_CALLBACK(on_refresh), GDK_CONTROL_MASK, GDK_R },
 	{ G_CALLBACK(on_close), GDK_CONTROL_MASK, GDK_W },
+#endif
+	{ G_CALLBACK(on_fullscreen), 0, GDK_F11 },
 	{ NULL, 0, 0 }
 };
-#endif
 
 #ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
@@ -188,9 +189,8 @@ Surfer * surfer_new(char const * url)
 	surfer->menubar = desktop_menubar_create(_surfer_menubar, surfer,
 			group);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->menubar, FALSE, FALSE, 0);
-#else
-	desktop_accel_create(_surfer_accel, surfer, group);
 #endif
+	desktop_accel_create(_surfer_accel, surfer, group);
 	/* toolbar */
 	toolbar = desktop_toolbar_create(_surfer_toolbar, surfer, group);
 	surfer->toolbar = toolbar;
@@ -207,7 +207,8 @@ Surfer * surfer_new(char const * url)
 #else
 	toolitem = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_ZOOM_FIT);
 #endif
-	g_signal_connect(G_OBJECT(toolitem), "toggled", G_CALLBACK(
+	surfer->tb_fullscreen = toolitem;
+	g_signal_connect_swapped(G_OBJECT(toolitem), "toggled", G_CALLBACK(
 				on_fullscreen), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #ifdef EMBEDDED

@@ -56,7 +56,7 @@ void on_help_about(gpointer data);
 void on_back(gpointer data);
 void on_close(gpointer data);
 void on_forward(gpointer data);
-void on_fullscreen(GtkToggleToolButton * button, gpointer data);
+void on_fullscreen(gpointer data);
 void on_home(gpointer data);
 void on_path_activate(gpointer data);
 void on_preferences(gpointer data);
