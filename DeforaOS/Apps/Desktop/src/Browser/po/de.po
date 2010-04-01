@@ -125,7 +125,7 @@ msgstr ""
 
 #: ../src/callbacks.c:462
 msgid "About Browser"
-msgstr "Über Browser"
+msgstr "Info zu Browser"
 
 #: ../src/callbacks.c:473
 msgid "C_redits"
@@ -165,7 +165,7 @@ msgstr ""
 
 #: ../src/callbacks.c:1164
 msgid "Open in new _window"
-msgstr ""
+msgstr "Offnen in neue Fenster"
 
 #: ../src/callbacks.c:1192
 msgid "_Unmount"

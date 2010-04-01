@@ -129,7 +129,7 @@ msgstr "Acerca de Browser"
 
 #: ../src/callbacks.c:473
 msgid "C_redits"
-msgstr ""
+msgstr "C_réditos"
 
 #: ../src/callbacks.c:477
 msgid "_License"
