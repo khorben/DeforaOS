@@ -1,0 +1,77 @@
+# German translations for Surfer package.
+# Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Surfer package.
+# Pierre Pronchery <khorben@defora.org>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Surfer 0.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-01 20:00+0200\n"
+"PO-Revision-Date: 2010-04-01 19:40+0200\n"
+"Last-Translator: Pierre Pronchery <EMAIL@ADDRESS>\n"
+"Language-Team: German\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../src/main.c:42
+msgid "Usage: surfer [URL]\n"
+msgstr ""
+
+#: ../src/surfer.c:230
+msgid " Location: "
+msgstr ""
+
+#: ../src/surfer.c:252
+msgid "Could not initialize HTML renderer"
+msgstr ""
+
+#: ../src/surfer.c:453 ../src/surfer.c:456
+msgid "Question"
+msgstr ""
+
+#: ../src/surfer.c:473 ../src/surfer.c:707
+msgid "Save file as..."
+msgstr ""
+
+#: ../src/surfer.c:504 ../src/surfer.c:507
+msgid "Error"
+msgstr ""
+
+#: ../src/surfer.c:506
+msgid "Unknown error"
+msgstr ""
+
+#: ../src/surfer.c:527
+msgid "Find text"
+msgstr ""
+
+#: ../src/surfer.c:534
+msgid "Text:"
+msgstr ""
+
+#: ../src/surfer.c:543
+msgid "Case-sensitive"
+msgstr ""
+
+#: ../src/surfer.c:546
+msgid "Wrap"
+msgstr ""
+
+#: ../src/surfer.c:574
+msgid "Text not found"
+msgstr ""
+
+#: ../src/surfer.c:648
+msgid "Open file..."
+msgstr ""
+
+#: ../src/surfer.c:831
+msgid "Web surfer - Source of "
+msgstr ""
+
+#: ../src/surfer.c:873 ../src/surfer.c:876
+msgid "Warning"
+msgstr ""

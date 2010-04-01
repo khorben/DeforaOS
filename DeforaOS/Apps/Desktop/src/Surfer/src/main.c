@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Surfer */
 /* Surfer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -17,13 +17,29 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <locale.h>
+#include <libintl.h>
 #include "surfer.h"
+#include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: surfer [url]\n", stderr);
+	fputs(_("Usage: surfer [URL]\n"), stderr);
 	return 1;
 }
 
@@ -34,6 +50,9 @@ int main(int argc, char * argv[])
 	int o;
 	Surfer * surfer;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 #if defined(WITH_GTKHTML) || defined(WITH_GTKTEXTVIEW) || defined(WITH_WEBKIT)
 	if(g_thread_supported() == FALSE)
 		g_thread_init(NULL);

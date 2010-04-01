@@ -18,12 +18,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "ghtml.h"
 #include "surfer.h"
 #include "common.h"
+#define _(string) gettext(string)
 
 
 /* Surfer */
@@ -225,7 +227,7 @@ Surfer * surfer_new(char const * url)
 	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 #ifndef EMBEDDED
 	toolitem = gtk_tool_item_new();
-	widget = gtk_label_new(" Location: ");
+	widget = gtk_label_new(_(" Location: "));
 	gtk_container_add(GTK_CONTAINER(toolitem), widget);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 #endif
@@ -247,7 +249,7 @@ Surfer * surfer_new(char const * url)
 	/* view */
 	if((surfer->view = ghtml_new(surfer)) == NULL)
 	{
-		surfer_error(NULL, "Could not initialize HTML renderer", 0);
+		surfer_error(NULL, _("Could not initialize HTML renderer"), 0);
 		surfer_delete(surfer);
 		return NULL;
 	}
@@ -448,10 +450,10 @@ int surfer_confirm(Surfer * surfer, char const * message)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
-			"Question");
+			_("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -468,7 +470,7 @@ void surfer_download(Surfer * surfer, char const * url, char const * suggested)
 	char * argv[] = { "download", "-O", NULL, NULL, NULL };
 	GError * error = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Save file as...",
+	dialog = gtk_file_chooser_dialog_new(_("Save file as..."),
 			GTK_WINDOW(surfer->window),
 			GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
@@ -499,10 +501,10 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", "Error");
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", (message != NULL) ? message : "Unknown error");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+			"%s", (message != NULL) ? message : _("Unknown error"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
@@ -522,14 +524,14 @@ void surfer_find(Surfer * surfer, char const * text)
 
 	if(surfer->fi_dialog == NULL)
 	{
-		surfer->fi_dialog = gtk_dialog_new_with_buttons("Find text",
+		surfer->fi_dialog = gtk_dialog_new_with_buttons(_("Find text"),
 				GTK_WINDOW(surfer->window),
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 				GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
 		vbox = GTK_DIALOG(surfer->fi_dialog)->vbox;
 		hbox = gtk_hbox_new(FALSE, 0);
-		widget = gtk_label_new("Text:");
+		widget = gtk_label_new(_("Text:"));
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		surfer->fi_text = gtk_entry_new();
 		g_signal_connect(G_OBJECT(surfer->fi_text), "activate",
@@ -538,10 +540,10 @@ void surfer_find(Surfer * surfer, char const * text)
 				4);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
 		surfer->fi_case = gtk_check_button_new_with_label(
-				"Case-sensitive");
+				_("Case-sensitive"));
 		gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_case, TRUE, TRUE,
 				4);
-		surfer->fi_wrap = gtk_check_button_new_with_label("Wrap");
+		surfer->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
 		gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_wrap, TRUE, TRUE,
 				4);
 		gtk_widget_show_all(vbox);
@@ -569,7 +571,7 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 				surfer->fi_wrap));
 	if(ghtml_find(surfer->view, text, sensitive, wrap) == TRUE)
 		return;
-	surfer_error(surfer, "Text not found", 0);
+	surfer_error(surfer, _("Text not found"), 0);
 }
 
 static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
@@ -643,7 +645,7 @@ void surfer_open_dialog(Surfer * surfer)
 	GtkWidget * dialog;
 	char * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Open file...",
+	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
 			GTK_WINDOW(surfer->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -702,7 +704,7 @@ void surfer_save(Surfer * surfer, char const * filename)
 		return; /* XXX report error */
 	if(filename == NULL)
 	{
-		dialog = gtk_file_chooser_dialog_new("Save file as...",
+		dialog = gtk_file_chooser_dialog_new(_("Save file as..."),
 				GTK_WINDOW(surfer->window),
 				GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
 				GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE,
@@ -826,7 +828,7 @@ void surfer_view_source(Surfer * surfer)
 			GTK_ACCEL_VISIBLE, cc);
 	gtk_window_add_accel_group(GTK_WINDOW(window), group);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
-	snprintf(buf, sizeof(buf), "%s%s", "Web surfer - Source of ",
+	snprintf(buf, sizeof(buf), "%s%s", _("Web surfer - Source of "),
 			surfer->url);
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -867,10 +869,11 @@ void surfer_warning(Surfer * surfer, char const * message)
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s", "Warning");
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK, "%s",
+			_("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
