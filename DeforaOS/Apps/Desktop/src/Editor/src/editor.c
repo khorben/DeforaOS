@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Editor */
 /* Editor is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 3 as published by the Free
@@ -64,6 +64,8 @@ static DesktopMenu _editor_menu_edit[] =
 	{ "_Copy", NULL, GTK_STOCK_COPY, 0 }, /* FIXME implement */
 	{ "_Paste", NULL, GTK_STOCK_PASTE, 0 }, /* FIXME implement */
 	{ "", NULL, NULL, 0 },
+	{ "_Find", G_CALLBACK(on_edit_find), GTK_STOCK_FIND, GDK_F },
+	{ "", NULL, NULL, 0 },
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_p },
 	{ NULL, NULL, NULL, 0 }
@@ -105,6 +107,14 @@ static DesktopToolbar _editor_toolbar[] =
 
 
 /* Editor */
+/* private */
+/* prototypes */
+static gboolean _editor_find(Editor * editor, char const * text,
+		gboolean sensitive, gboolean wrap);
+
+
+/* public */
+/* functions */
 /* editor_new */
 static void _new_set_title(Editor * editor);
 
@@ -125,6 +135,7 @@ Editor * editor_new(void)
 	if(editor->font == NULL)
 		editor->font = EDITOR_DEFAULT_FONT;
 	editor->filename = NULL;
+	editor->search = 0;
 	/* widgets */
 	group = gtk_accel_group_new();
 	editor->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -166,6 +177,8 @@ Editor * editor_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), editor->statusbar, FALSE, FALSE, 0);
 	/* preferences */
 	editor->pr_window = NULL;
+	/* find */
+	editor->fi_dialog = NULL;
 	gtk_container_add(GTK_CONTAINER(editor->window), vbox);
 	gtk_window_set_focus(GTK_WINDOW(editor->window), editor->view);
 	gtk_widget_show_all(editor->window);
@@ -265,6 +278,83 @@ gboolean editor_close(Editor * editor)
 }
 
 
+/* editor_find */
+static void _find_dialog(Editor * editor);
+static void _on_find_activate(GtkWidget * widget, gpointer data);
+static void _on_find_response(GtkWidget * widget, gint response, gpointer data);
+
+void editor_find(Editor * editor, char const * text)
+{
+	if(editor->fi_dialog == NULL)
+		_find_dialog(editor);
+	gtk_entry_set_text(GTK_ENTRY(editor->fi_text), (text != NULL) ? text
+			: "");
+	gtk_widget_show(editor->fi_dialog);
+}
+
+static void _find_dialog(Editor * editor)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+
+	editor->fi_dialog = gtk_dialog_new_with_buttons("Find text",
+			GTK_WINDOW(editor->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+			GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
+	vbox = GTK_DIALOG(editor->fi_dialog)->vbox;
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Text:");
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	editor->fi_text = gtk_entry_new();
+	g_signal_connect(G_OBJECT(editor->fi_text), "activate", G_CALLBACK(
+				_on_find_activate), editor);
+	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_text, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	editor->fi_case = gtk_check_button_new_with_label("Case-sensitive");
+	gtk_box_pack_start(GTK_BOX(vbox), editor->fi_case, TRUE, TRUE, 4);
+	editor->fi_wrap = gtk_check_button_new_with_label("Wrap");
+	gtk_box_pack_start(GTK_BOX(vbox), editor->fi_wrap, TRUE, TRUE, 4);
+	gtk_widget_show_all(vbox);
+	g_signal_connect(G_OBJECT(editor->fi_dialog), "response", G_CALLBACK(
+				_on_find_response), editor);
+}
+
+static void _on_find_activate(GtkWidget * widget, gpointer data)
+{
+	Editor * editor = data;
+	char const * text;
+	gboolean sensitive;
+	gboolean wrap;
+
+	if((text = gtk_entry_get_text(GTK_ENTRY(widget))) == NULL
+			|| strlen(text) == 0)
+		return;
+	sensitive = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				editor->fi_case));
+	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+				editor->fi_wrap));
+	if(_editor_find(editor, text, sensitive, wrap) == TRUE)
+		return;
+	editor_error(editor, "Text not found", 0);
+}
+
+static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
+{
+	Editor * editor = data;
+
+	if(response != GTK_RESPONSE_ACCEPT)
+	{
+		gtk_widget_hide(widget);
+		if(response == GTK_RESPONSE_DELETE_EVENT)
+			editor->fi_dialog = NULL;
+		return;
+	}
+	_on_find_activate(editor->fi_text, editor);
+}
+
+
 /* editor_open */
 void editor_open(Editor * editor, char const * filename)
 {
@@ -310,6 +400,7 @@ void editor_open(Editor * editor, char const * filename)
 	}
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
 	gtk_text_buffer_set_text(tbuf, "", 0);
+	editor->search = 0;
 	if(filename == NULL)
 	{
 		gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(
@@ -475,4 +566,73 @@ gboolean editor_save_as_dialog(Editor * editor)
 	ret = editor_save_as(editor, filename);
 	g_free(filename);
 	return ret;
+}
+
+
+/* private */
+/* functions */
+/* editor_find */
+static char const * _find_string(char const * big, char const * little,
+		gboolean sensitive);
+static gboolean _find_match(Editor * editor, GtkTextBuffer * buffer,
+		char const * buf, char const * str, size_t len);
+
+static gboolean _editor_find(Editor * editor, char const * text,
+		gboolean sensitive, gboolean wrap)
+{
+	gboolean ret = FALSE;
+	size_t tlen;
+	GtkTextBuffer * buffer;
+	GtkTextIter start;
+	GtkTextIter end;
+	gchar * buf;
+	size_t blen;
+	char const * str;
+
+	if(text == NULL || (tlen = strlen(text)) == 0)
+		return ret;
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(editor->view));
+	/* XXX highly inefficient */
+	gtk_text_buffer_get_start_iter(buffer, &start);
+	gtk_text_buffer_get_end_iter(buffer, &end);
+	buf = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+	if(buf == NULL || (blen = strlen(buf)) == 0)
+		return ret;
+	if(editor->search >= blen)
+		editor->search = 0;
+	if((str = _find_string(&buf[editor->search], text, sensitive)) != NULL)
+		ret = _find_match(editor, buffer, buf, str, tlen);
+	else if(wrap && editor->search != 0) /* wrap around */
+	{
+		buf[editor->search] = '\0';
+		if((str = _find_string(buf, text, sensitive)) != NULL)
+			ret = _find_match(editor, buffer, buf, str, tlen);
+	}
+	g_free(buf);
+	return ret;
+}
+
+static char const * _find_string(char const * big, char const * little,
+		gboolean sensitive)
+{
+	if(sensitive)
+		return strstr(big, little);
+	return strcasestr(big, little);
+}
+
+static gboolean _find_match(Editor * editor, GtkTextBuffer * buffer,
+		char const * buf, char const * str, size_t len)
+{
+	size_t offset;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	offset = str - buf;
+	editor->search = offset + 1;
+	gtk_text_buffer_get_iter_at_offset(buffer, &start, offset);
+	gtk_text_buffer_get_iter_at_offset(buffer, &end, offset + len);
+	gtk_text_buffer_select_range(buffer, &start, &end);
+	gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(editor->view), &start, 0.0,
+			FALSE, 0.0, 0.0);
+	return TRUE;
 }

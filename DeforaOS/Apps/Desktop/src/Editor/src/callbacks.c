@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Editor */
 static char const _license[] =
 "Editor is free software; you can redistribute it and/or modify it under the\n"
@@ -39,6 +39,15 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 	Editor * editor = data;
 
 	return editor_close(editor);
+}
+
+
+/* on_edit_find */
+void on_edit_find(gpointer data)
+{
+	Editor * editor = data;
+
+	editor_find(editor, NULL);
 }
 
 

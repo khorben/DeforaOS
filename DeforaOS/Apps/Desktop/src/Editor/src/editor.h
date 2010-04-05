@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Editor */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ typedef struct _Editor
 {
 	char const * font;
 	char * filename;
+	size_t search;
+
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * view;
@@ -34,6 +36,11 @@ typedef struct _Editor
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_font;
+	/* find */
+	GtkWidget * fi_dialog;
+	GtkWidget * fi_text;
+	GtkWidget * fi_case;
+	GtkWidget * fi_wrap;
 } Editor;
 
 
@@ -58,5 +65,7 @@ void editor_open_dialog(Editor * editor);
 gboolean editor_save(Editor * editor);
 gboolean editor_save_as(Editor * editor, char const * filename);
 gboolean editor_save_as_dialog(Editor * editor);
+
+void editor_find(Editor * editor, char const * text);
 
 #endif /* !EDITOR_EDITOR_H */

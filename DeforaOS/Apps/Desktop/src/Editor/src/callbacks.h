@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Editor */
 /* This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 /* functions */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+void on_edit_find(gpointer data);
 void on_edit_preferences(gpointer data);
 void on_file_close(gpointer data);
 void on_file_new(gpointer data);
