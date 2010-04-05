@@ -515,46 +515,46 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 
 
 /* surfer_find */
+static void _find_dialog(Surfer * surfer);
 static void _on_find_activate(GtkWidget * widget, gpointer data);
 static void _on_find_response(GtkWidget * widget, gint response, gpointer data);
 
 void surfer_find(Surfer * surfer, char const * text)
 {
+	if(surfer->fi_dialog == NULL)
+		_find_dialog(surfer);
+	gtk_entry_set_text(GTK_ENTRY(surfer->fi_text), (text != NULL) ? text
+			: "");
+	gtk_widget_show(surfer->fi_dialog);
+}
+
+static void _find_dialog(Surfer * surfer)
+{
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
-	if(surfer->fi_dialog == NULL)
-	{
-		surfer->fi_dialog = gtk_dialog_new_with_buttons(_("Find text"),
-				GTK_WINDOW(surfer->window),
-				GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
-				GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
-		vbox = GTK_DIALOG(surfer->fi_dialog)->vbox;
-		hbox = gtk_hbox_new(FALSE, 0);
-		widget = gtk_label_new(_("Text:"));
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		surfer->fi_text = gtk_entry_new();
-		g_signal_connect(G_OBJECT(surfer->fi_text), "activate",
-				G_CALLBACK(_on_find_activate), surfer);
-		gtk_box_pack_start(GTK_BOX(hbox), surfer->fi_text, TRUE, TRUE,
-				4);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-		surfer->fi_case = gtk_check_button_new_with_label(
-				_("Case-sensitive"));
-		gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_case, TRUE, TRUE,
-				4);
-		surfer->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
-		gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_wrap, TRUE, TRUE,
-				4);
-		gtk_widget_show_all(vbox);
-		g_signal_connect(G_OBJECT(surfer->fi_dialog), "response",
-				G_CALLBACK(_on_find_response), surfer);
-	}
-	gtk_entry_set_text(GTK_ENTRY(surfer->fi_text), (text != NULL) ? text
-			: "");
-	gtk_widget_show(surfer->fi_dialog);
+	surfer->fi_dialog = gtk_dialog_new_with_buttons(_("Find text"),
+			GTK_WINDOW(surfer->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
+			GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
+	vbox = GTK_DIALOG(surfer->fi_dialog)->vbox;
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new(_("Text:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	surfer->fi_text = gtk_entry_new();
+	g_signal_connect(G_OBJECT(surfer->fi_text), "activate", G_CALLBACK(
+				_on_find_activate), surfer);
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->fi_text, TRUE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
+	surfer->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
+	gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_case, TRUE, TRUE, 4);
+	surfer->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
+	gtk_box_pack_start(GTK_BOX(vbox), surfer->fi_wrap, TRUE, TRUE, 4);
+	gtk_widget_show_all(vbox);
+	g_signal_connect(G_OBJECT(surfer->fi_dialog), "response", G_CALLBACK(
+				_on_find_response), surfer);
 }
 
 static void _on_find_activate(GtkWidget * widget, gpointer data)
