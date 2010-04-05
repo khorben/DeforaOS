@@ -149,6 +149,8 @@ char const * ghtml_get_title(GtkWidget * widget)
 
 /* useful */
 /* ghtml_find */
+static char const * _find_string(char const * big, char const * little,
+		gboolean sensitive);
 static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
 		size_t tlen);
 
@@ -175,16 +177,22 @@ gboolean ghtml_find(GtkWidget * widget, char const * text, gboolean sensitive,
 		return ret;
 	if(ghtml->search >= blen)
 		ghtml->search = 0;
-	if((str = strstr(&buf[ghtml->search], text)) != NULL)
+	if((str = _find_string(&buf[ghtml->search], text, sensitive)) != NULL)
 		ret = _find_match(ghtml, buf, str, tlen);
 	else if(wrap && ghtml->search != 0) /* wrap around */
 	{
 		buf[ghtml->search] = '\0';
-		if((str = strstr(buf, text)) != NULL)
+		if((str = _find_string(buf, text, sensitive)) != NULL)
 			ret = _find_match(ghtml, buf, str, tlen);
 	}
 	g_free(buf);
 	return ret;
+}
+
+static char const * _find_string(char const * big, char const * little,
+		gboolean sensitive)
+{
+	return sensitive ? strstr(big, little) : strcasestr(big, little);
 }
 
 static gboolean _find_match(GHtml * ghtml, char const * buf, char const * str,
