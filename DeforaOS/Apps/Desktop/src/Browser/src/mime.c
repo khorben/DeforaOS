@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <fnmatch.h>
+#include <libintl.h>
 #include "mime.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 
 /* Mime */
@@ -53,7 +55,7 @@ Mime * mime_new(void)
 			break;
 	if(fp == NULL)
 	{
-		perror("Could not load MIME globs");
+		perror(_("Could not load MIME globs"));
 		free(mime);
 		return NULL;
 	}

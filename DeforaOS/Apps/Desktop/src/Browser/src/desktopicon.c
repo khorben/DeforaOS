@@ -29,19 +29,15 @@
 #include "desktopicon.h"
 #include "../config.h"
 #define _(string) gettext(string)
-
-#ifdef PACKAGE
-# undef PACKAGE
-#endif
-#define PACKAGE	"desktop"
-
-#ifndef PREFIX
-# define PREFIX	"/usr/local"
-#endif
-
 #define COMMON_DND
 #define COMMON_EXEC
 #include "common.c"
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX	"/usr/local"
+#endif
 
 
 /* DesktopIcon */
@@ -649,7 +645,7 @@ static void _on_icon_open(gpointer data)
 	if(pid != 0)
 		return;
 	execlp("browser", "browser", "--", desktopicon->path, NULL);
-	fprintf(stderr, "%s%s\n", PACKAGE ": browser: ", strerror(errno));
+	fprintf(stderr, "%s%s\n", "desktop: browser: ", strerror(errno));
 	exit(127);
 }
 

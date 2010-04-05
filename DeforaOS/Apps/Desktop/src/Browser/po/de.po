@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-05 16:47+0200\n"
+"POT-Creation-Date: 2010-04-05 17:04+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -49,7 +49,7 @@ msgstr "_Info"
 msgid "_File"
 msgstr "_Datei"
 
-#: ../src/browser.c:127 ../src/desktopicon.c:593
+#: ../src/browser.c:127 ../src/desktopicon.c:589
 msgid "_Edit"
 msgstr ""
 
@@ -90,13 +90,13 @@ msgid " Location: "
 msgstr ""
 
 #: ../src/browser.c:528 ../src/browser.c:531 ../src/copy.c:204
-#: ../src/delete.c:127 ../src/delete.c:130 ../src/desktop.c:1046
-#: ../src/desktop.c:1049 ../src/move.c:131 ../src/properties.c:111
+#: ../src/delete.c:127 ../src/delete.c:130 ../src/desktop.c:1042
+#: ../src/desktop.c:1045 ../src/move.c:131 ../src/properties.c:111
 #: ../src/view.c:359 ../src/view.c:362
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/browser.c:683 ../src/desktopicon.c:714 ../src/view.c:141
+#: ../src/browser.c:683 ../src/desktopicon.c:710 ../src/view.c:141
 #: ../src/view.c:410
 msgid "Open with..."
 msgstr "Offnen mit..."
@@ -135,16 +135,16 @@ msgid "Refreshing folder..."
 msgstr "Aktualisierung..."
 
 #: ../src/callbacks.c:197 ../src/callbacks.c:202 ../src/callbacks.c:1329
-#: ../src/callbacks.c:1332 ../src/desktopicon.c:674 ../src/desktopicon.c:677
-#: ../src/desktopicon.c:748 ../src/desktopicon.c:753
+#: ../src/callbacks.c:1332 ../src/desktopicon.c:670 ../src/desktopicon.c:673
+#: ../src/desktopicon.c:744 ../src/desktopicon.c:749
 msgid "Warning"
 msgstr "Achtung"
 
-#: ../src/callbacks.c:200 ../src/desktopicon.c:751
+#: ../src/callbacks.c:200 ../src/desktopicon.c:747
 msgid "Are you sure you want to delete "
 msgstr ""
 
-#: ../src/callbacks.c:201 ../src/desktopicon.c:752
+#: ../src/callbacks.c:201 ../src/desktopicon.c:748
 msgid " file(s)?"
 msgstr ""
 
@@ -196,15 +196,15 @@ msgstr "Lizenz"
 msgid "New"
 msgstr "Neu"
 
-#: ../src/callbacks.c:1069 ../src/callbacks.c:1073 ../src/desktop.c:350
+#: ../src/callbacks.c:1069 ../src/callbacks.c:1073 ../src/desktop.c:346
 msgid "Folder"
 msgstr "Ordner"
 
-#: ../src/callbacks.c:1080 ../src/desktop.c:358
+#: ../src/callbacks.c:1080 ../src/desktop.c:354
 msgid "Symbolic link..."
 msgstr ""
 
-#: ../src/callbacks.c:1084 ../src/desktop.c:362
+#: ../src/callbacks.c:1084 ../src/desktop.c:358
 msgid "Text file"
 msgstr ""
 
@@ -216,7 +216,7 @@ msgstr "Offnen in neue Fenster"
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1227 ../src/desktopicon.c:606
+#: ../src/callbacks.c:1227 ../src/desktopicon.c:602
 msgid "Open _with..."
 msgstr "Offnen _mit..."
 
@@ -337,44 +337,48 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
-#: ../src/desktop.c:164
+#: ../src/desktop.c:160
 msgid "Creating desktop"
 msgstr ""
 
-#: ../src/desktop.c:248
+#: ../src/desktop.c:244
 msgid "Home"
 msgstr "Persönlicher Ordner"
 
-#: ../src/desktop.c:494
+#: ../src/desktop.c:490
 msgid "Desktop preferences"
 msgstr "Desktop Einstellungen"
 
-#: ../src/desktop.c:506
+#: ../src/desktop.c:502
 msgid "Background: "
 msgstr "Hintergrund: "
 
-#: ../src/desktop.c:510
+#: ../src/desktop.c:506
 msgid "Background"
 msgstr "Hintergrund"
 
-#: ../src/desktop.c:516
+#: ../src/desktop.c:512
 msgid "Appearance"
 msgstr ""
 
-#: ../src/desktop.c:1096
+#: ../src/desktop.c:1092
 msgid ""
 "Usage: desktop [-A | -F]\n"
 "  -A\tDisplay the applications registered\n"
 "  -F\tDisplay contents of the desktop folder [default]\n"
 msgstr ""
 
-#: ../src/desktopicon.c:676
+#: ../src/desktopicon.c:672
 msgid "Are you sure you want to execute this file?"
 msgstr ""
 
 #: ../src/main.c:44
 msgid "Usage: browser [directory...]\n"
 msgstr "Usage: browser [Ordner...]\n"
+
+#: ../src/mime.c:58
+msgid "Could not load MIME globs"
+msgstr ""
 
 #: ../src/move.c:87
 msgid "Move file(s)"

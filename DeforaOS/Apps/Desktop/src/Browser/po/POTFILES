@@ -6,6 +6,7 @@
 ../src/desktop.c
 ../src/desktopicon.c
 ../src/main.c
+../src/mime.c
 ../src/move.c
 ../src/open.c
 ../src/properties.c
