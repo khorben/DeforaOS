@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop libDesktop */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 
 
 #include <string.h>
+#include <libintl.h>
 #include "Desktop.h"
 
 
@@ -36,7 +37,8 @@ GtkWidget * desktop_menubar_create(DesktopMenubar * menubar, gpointer data,
 	ret = gtk_menu_bar_new();
 	for(i = 0; menubar[i].name != NULL; i++)
 	{
-		menuitem = gtk_menu_item_new_with_mnemonic(menubar[i].name);
+		menuitem = gtk_menu_item_new_with_mnemonic(gettext(
+					menubar[i].name));
 		menu = _menubar_create_menu(menubar[i].menu, data, accel);
 		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), menu);
 		gtk_menu_bar_append(GTK_MENU_BAR(ret), menuitem);
@@ -59,7 +61,8 @@ static GtkWidget * _menubar_create_menu(DesktopMenu * menu, gpointer data,
 		if(p->name[0] == '\0')
 			menuitem = gtk_separator_menu_item_new();
 		else if(p->stock == NULL)
-			menuitem = gtk_menu_item_new_with_mnemonic(p->name);
+			menuitem = gtk_menu_item_new_with_mnemonic(gettext(
+						p->name));
 		else if(strncmp(p->stock, "gtk-", 4) == 0)
 			menuitem = gtk_image_menu_item_new_from_stock(p->stock,
 					NULL);
@@ -84,7 +87,7 @@ static GtkWidget * _menubar_create_menu_from_image(DesktopMenu * menu)
 	GtkWidget * ret;
 	GtkWidget * image;
 
-	ret = gtk_image_menu_item_new_with_mnemonic(menu->name);
+	ret = gtk_image_menu_item_new_with_mnemonic(gettext(menu->name));
 	image = gtk_image_new_from_icon_name(menu->stock, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(ret), image);
 	return ret;
