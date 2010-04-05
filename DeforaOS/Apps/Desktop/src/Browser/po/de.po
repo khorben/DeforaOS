@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-30 00:52+0200\n"
+"POT-Creation-Date: 2010-04-05 02:34+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -16,77 +16,121 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../src/browser.c:240
-msgid "File browser"
+#: ../src/browser.c:64
+msgid "_New window"
 msgstr ""
 
-#: ../src/browser.c:259
+#: ../src/browser.c:66
+msgid "New _folder"
+msgstr ""
+
+#: ../src/browser.c:67
+msgid "New _symbolic link..."
+msgstr ""
+
+#: ../src/browser.c:69 ../src/browser.c:661
+#, fuzzy
+msgid "Open file..."
+msgstr "Offnen mit..."
+
+#: ../src/browser.c:71
+#, fuzzy
+msgid "_Properties"
+msgstr "Eigenschaften von "
+
+#: ../src/browser.c:74
+msgid "_Close"
+msgstr ""
+
+#: ../src/browser.c:117 ../src/browser.c:119
+msgid "_About"
+msgstr ""
+
+#: ../src/browser.c:126
+msgid "_File"
+msgstr ""
+
+#: ../src/browser.c:127
+#, fuzzy
+msgid "_Edit"
+msgstr "_Mitwirkende"
+
+#: ../src/browser.c:128
+msgid "_View"
+msgstr ""
+
+#: ../src/browser.c:129
+msgid "_Help"
+msgstr ""
+
+#: ../src/browser.c:244
+#, fuzzy
+msgid "File browser"
+msgstr "File browser Einstellungen"
+
+#: ../src/browser.c:263
 msgid "View as..."
 msgstr ""
 
-#: ../src/browser.c:263 ../src/callbacks.c:274
+#: ../src/browser.c:267 ../src/callbacks.c:274
 msgid "Details"
 msgstr ""
 
-#: ../src/browser.c:270 ../src/callbacks.c:275
+#: ../src/browser.c:274 ../src/callbacks.c:275
 msgid "Icons"
 msgstr ""
 
-#: ../src/browser.c:274 ../src/callbacks.c:276
+#: ../src/browser.c:278 ../src/callbacks.c:276
 msgid "List"
 msgstr ""
 
-#: ../src/browser.c:278 ../src/callbacks.c:277
+#: ../src/browser.c:282 ../src/callbacks.c:277
 msgid "Thumbnails"
 msgstr ""
 
-#: ../src/browser.c:299
+#: ../src/browser.c:303
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:524 ../src/browser.c:527 ../src/desktop.c:1046
+#: ../src/browser.c:528 ../src/browser.c:531 ../src/desktop.c:1046
 #: ../src/desktop.c:1049 ../src/properties.c:111
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/browser.c:657
-msgid "Open file..."
-msgstr ""
-
-#: ../src/browser.c:679
+#: ../src/browser.c:683
 msgid "Open with..."
 msgstr "Offnen mit..."
 
-#: ../src/browser.c:791
+#: ../src/browser.c:795
 #, c-format
 msgid "%u file%c (%u hidden)"
 msgstr ""
 
-#: ../src/browser.c:1404
+#: ../src/browser.c:1408
 msgid "Filename"
 msgstr ""
 
-#: ../src/browser.c:1406
+#: ../src/browser.c:1410
 msgid "Size"
 msgstr "Größe"
 
-#: ../src/browser.c:1408
+#: ../src/browser.c:1412
 msgid "Owner"
 msgstr ""
 
-#: ../src/browser.c:1410
+#: ../src/browser.c:1414
 msgid "Group"
 msgstr "Gruppe"
 
-#: ../src/browser.c:1412
+#: ../src/browser.c:1416
 msgid "Date"
 msgstr "Datum"
 
-#: ../src/browser.c:1414
+#: ../src/browser.c:1418
 msgid "MIME type"
 msgstr ""
 
-#: ../src/browser.c:1689
+#: ../src/browser.c:1693
 msgid "Refreshing folder..."
 msgstr "Aktualisierung..."
 
@@ -295,5 +339,6 @@ msgid "execute"
 msgstr ""
 
 #: ../src/properties.c:500
+#, fuzzy
 msgid "Usage: properties file...\n"
-msgstr ""
+msgstr "Usage: browser [Ordner...]\n"

@@ -63,7 +63,7 @@ _gettext_pot()
 	package="$1"
 
 	$DEBUG $XGETTEXT -d "$package" -o "$package.pot" --keyword="_" \
-			-f "$POTFILES"				|| return 1
+			--keyword="N_" -f "$POTFILES"		|| return 1
 }
 
 

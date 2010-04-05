@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "callbacks.h"
 #include "browser.h"
 #define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* constants */
@@ -60,14 +61,17 @@ static DesktopAccel _browser_accel[] =
 #ifndef EMBEDDED
 static DesktopMenu _browser_menu_file[] =
 {
-	{ "_New window", G_CALLBACK(on_file_new_window), "window-new", GDK_N },
-	{ "New _folder", G_CALLBACK(on_file_new_folder), "folder-new", 0 },
-	{ "New _symbolic link...", G_CALLBACK(on_file_new_symlink), NULL, 0 },
-	{ "Open file...", G_CALLBACK(on_file_open_file), NULL, GDK_O },
+	{ N_("_New window"), G_CALLBACK(on_file_new_window), "window-new",
+		GDK_N },
+	{ N_("New _folder"), G_CALLBACK(on_file_new_folder), "folder-new", 0 },
+	{ N_("New _symbolic link..."), G_CALLBACK(on_file_new_symlink), NULL,
+		0 },
+	{ N_("Open file..."), G_CALLBACK(on_file_open_file), NULL, GDK_O },
 	{ "", NULL, NULL, 0 },
-	{ "_Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0 },
+	{ N_("_Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES,
+		0 },
 	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -110,19 +114,19 @@ static DesktopMenu _browser_menu_view[] =
 static DesktopMenu _browser_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
 #endif
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenubar _browser_menubar[] =
 {
-	{ "_File", _browser_menu_file },
-	{ "_Edit", _browser_menu_edit },
-	{ "_View", _browser_menu_view },
-	{ "_Help", _browser_menu_help },
+	{ N_("_File"), _browser_menu_file },
+	{ N_("_Edit"), _browser_menu_edit },
+	{ N_("_View"), _browser_menu_view },
+	{ N_("_Help"), _browser_menu_help },
 	{ NULL, NULL }
 };
 #endif
