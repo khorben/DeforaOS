@@ -33,9 +33,8 @@ msgid "Open file..."
 msgstr ""
 
 #: ../src/browser.c:71
-#, fuzzy
 msgid "_Properties"
-msgstr "Propriedades con "
+msgstr "_Propriedades"
 
 #: ../src/browser.c:74
 msgid "_Close"
@@ -50,9 +49,8 @@ msgid "_File"
 msgstr ""
 
 #: ../src/browser.c:127
-#, fuzzy
 msgid "_Edit"
-msgstr "C_réditos"
+msgstr ""
 
 #: ../src/browser.c:128
 msgid "_View"
@@ -63,9 +61,8 @@ msgid "_Help"
 msgstr ""
 
 #: ../src/browser.c:244
-#, fuzzy
 msgid "File browser"
-msgstr "File browser preferencias"
+msgstr ""
 
 #: ../src/browser.c:263
 msgid "View as..."

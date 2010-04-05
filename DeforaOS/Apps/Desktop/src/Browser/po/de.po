@@ -29,31 +29,28 @@ msgid "New _symbolic link..."
 msgstr ""
 
 #: ../src/browser.c:69 ../src/browser.c:661
-#, fuzzy
 msgid "Open file..."
-msgstr "Offnen mit..."
+msgstr "Offnen..."
 
 #: ../src/browser.c:71
-#, fuzzy
 msgid "_Properties"
-msgstr "Eigenschaften von "
+msgstr "_Eigenschaften"
 
 #: ../src/browser.c:74
 msgid "_Close"
-msgstr ""
+msgstr "_Schliessen"
 
 #: ../src/browser.c:117 ../src/browser.c:119
 msgid "_About"
-msgstr ""
+msgstr "_Info"
 
 #: ../src/browser.c:126
 msgid "_File"
-msgstr ""
+msgstr "_Datei"
 
 #: ../src/browser.c:127
-#, fuzzy
 msgid "_Edit"
-msgstr "_Mitwirkende"
+msgstr ""
 
 #: ../src/browser.c:128
 msgid "_View"
@@ -64,9 +61,8 @@ msgid "_Help"
 msgstr ""
 
 #: ../src/browser.c:244
-#, fuzzy
 msgid "File browser"
-msgstr "File browser Einstellungen"
+msgstr ""
 
 #: ../src/browser.c:263
 msgid "View as..."
@@ -339,6 +335,5 @@ msgid "execute"
 msgstr ""
 
 #: ../src/properties.c:500
-#, fuzzy
 msgid "Usage: properties file...\n"
-msgstr "Usage: browser [Ordner...]\n"
+msgstr "Usage: properties [Ordner...]\n"
