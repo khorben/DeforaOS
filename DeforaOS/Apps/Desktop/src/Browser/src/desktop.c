@@ -161,7 +161,7 @@ Desktop * desktop_new(DesktopLayout layout)
 			&& (desktop->home = g_get_home_dir()) == NULL)
 		desktop->home = "/";
 	if(_new_create_desktop(desktop) != 0)
-		return _new_error(desktop, "Creating desktop");
+		return _new_error(desktop, _("Creating desktop"));
 	desktop_refresh(desktop);
 	/* manage root window events */
 	desktop->menu = NULL;

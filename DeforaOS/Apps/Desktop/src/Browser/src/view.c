@@ -30,6 +30,8 @@ static char const _license[] =
 #include <Desktop.h>
 #include "mime.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 #include "common.c"
 
@@ -113,34 +115,34 @@ static DesktopMenu _view_menu_file_edit[] =
 static DesktopMenu _view_menu_help[] =
 {
 # if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
 # else
-	{ "_About", G_CALLBACK(_on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(_on_help_about), NULL, 0 },
 # endif
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenubar _view_menubar[] =
 {
-	{ "_File", _view_menu_file },
-	{ "_Help", _view_menu_help },
+	{ N_("_File"), _view_menu_file },
+	{ N_("_Help"), _view_menu_help },
 	{ NULL, NULL }
 };
 
 static DesktopMenubar _view_menubar_edit[] =
 {
-	{ "_File", _view_menu_file_edit },
-	{ "_Help", _view_menu_help },
+	{ N_("_File"), _view_menu_file_edit },
+	{ N_("_Help"), _view_menu_help },
 	{ NULL, NULL }
 };
 #else
 static DesktopToolbar _view_toolbar[] =
 {
-	{ "Open with...", G_CALLBACK(_on_open_with), GTK_STOCK_OPEN, GDK_O,
+	{ N_("Open with..."), G_CALLBACK(_on_open_with), GTK_STOCK_OPEN, GDK_O,
 		NULL },
-	{ "Edit", G_CALLBACK(_on_edit), GTK_STOCK_EDIT, GDK_E, NULL },
+	{ N_("Edit"), G_CALLBACK(_on_edit), GTK_STOCK_EDIT, GDK_E, NULL },
 	{ "", NULL, NULL, 0, 0 },
-	{ "Close", G_CALLBACK(_on_close), GTK_STOCK_CLOSE, GDK_W, NULL },
+	{ N_("Close"), G_CALLBACK(_on_close), GTK_STOCK_CLOSE, GDK_W, NULL },
 	{ NULL, NULL, NULL, 0, 0 }
 };
 #endif /* EMBEDDED */

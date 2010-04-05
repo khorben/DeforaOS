@@ -4,6 +4,7 @@
 ../src/copy.c
 ../src/delete.c
 ../src/desktop.c
+../src/desktopicon.c
 ../src/main.c
 ../src/move.c
 ../src/open.c

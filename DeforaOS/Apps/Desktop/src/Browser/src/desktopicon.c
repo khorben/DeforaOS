@@ -21,12 +21,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
 #include "mime.h"
 #include "desktopicon.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 #ifdef PACKAGE
 # undef PACKAGE
@@ -588,7 +590,7 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 #if GTK_CHECK_VERSION(2, 6, 0)
 			GTK_STOCK_EDIT,
 #else
-			"_Edit",
+			_("_Edit"),
 #endif
 			G_CALLBACK(_on_icon_edit), desktopicon, menu);
 	if(desktopicon->isexec == TRUE)
@@ -601,7 +603,7 @@ static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon)
 	}
 	if(desktopicon->path != NULL && desktopicon->path[0] == '/')
 	{
-		menuitem = gtk_menu_item_new_with_mnemonic("Open _with...");
+		menuitem = gtk_menu_item_new_with_mnemonic(_("Open _with..."));
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(_on_icon_open_with), desktopicon);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -647,7 +649,7 @@ static void _on_icon_open(gpointer data)
 	if(pid != 0)
 		return;
 	execlp("browser", "browser", "--", desktopicon->path, NULL);
-	fprintf(stderr, "%s%s\n", "desktop: browser: ", strerror(errno));
+	fprintf(stderr, "%s%s\n", PACKAGE ": browser: ", strerror(errno));
 	exit(127);
 }
 
@@ -669,10 +671,10 @@ static void _on_icon_run(gpointer data)
 
 	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
-			"Warning");
+			_("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", "Are you sure you want to execute this file?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+			"%s", _("Are you sure you want to execute this file?"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_YES)
@@ -709,7 +711,7 @@ static void _on_icon_open_with(gpointer data)
 	char * filename = NULL;
 	pid_t pid;
 
-	dialog = gtk_file_chooser_dialog_new("Open with...",
+	dialog = gtk_file_chooser_dialog_new(_("Open with..."),
 			GTK_WINDOW(desktopicon->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
@@ -743,11 +745,12 @@ static void _on_icon_delete(gpointer data)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(desktopicon->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
-			"Warning");
+			_("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 				dialog), "%s%lu%s",
-			"Are you sure you want to delete ", cnt, " file(s)?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+			_("Are you sure you want to delete "), cnt,
+			_(" file(s)?"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res == GTK_RESPONSE_YES)

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-05 02:34+0200\n"
+"POT-Creation-Date: 2010-04-05 16:47+0200\n"
 "PO-Revision-Date: 2010-03-30 01:04+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -40,15 +40,16 @@ msgstr "_Propriedades"
 msgid "_Close"
 msgstr ""
 
-#: ../src/browser.c:117 ../src/browser.c:119
+#: ../src/browser.c:117 ../src/browser.c:119 ../src/view.c:118
+#: ../src/view.c:120
 msgid "_About"
 msgstr ""
 
-#: ../src/browser.c:126
+#: ../src/browser.c:126 ../src/view.c:127 ../src/view.c:134
 msgid "_File"
 msgstr ""
 
-#: ../src/browser.c:127
+#: ../src/browser.c:127 ../src/desktopicon.c:593
 msgid "_Edit"
 msgstr ""
 
@@ -56,7 +57,7 @@ msgstr ""
 msgid "_View"
 msgstr ""
 
-#: ../src/browser.c:129
+#: ../src/browser.c:129 ../src/view.c:128 ../src/view.c:135
 msgid "_Help"
 msgstr ""
 
@@ -88,12 +89,15 @@ msgstr ""
 msgid " Location: "
 msgstr ""
 
-#: ../src/browser.c:528 ../src/browser.c:531 ../src/desktop.c:1046
-#: ../src/desktop.c:1049 ../src/properties.c:111
+#: ../src/browser.c:528 ../src/browser.c:531 ../src/copy.c:204
+#: ../src/delete.c:127 ../src/delete.c:130 ../src/desktop.c:1046
+#: ../src/desktop.c:1049 ../src/move.c:131 ../src/properties.c:111
+#: ../src/view.c:359 ../src/view.c:362
 msgid "Error"
 msgstr ""
 
-#: ../src/browser.c:683
+#: ../src/browser.c:683 ../src/desktopicon.c:714 ../src/view.c:141
+#: ../src/view.c:410
 msgid "Open with..."
 msgstr ""
 
@@ -131,15 +135,16 @@ msgid "Refreshing folder..."
 msgstr ""
 
 #: ../src/callbacks.c:197 ../src/callbacks.c:202 ../src/callbacks.c:1329
-#: ../src/callbacks.c:1332
+#: ../src/callbacks.c:1332 ../src/desktopicon.c:674 ../src/desktopicon.c:677
+#: ../src/desktopicon.c:748 ../src/desktopicon.c:753
 msgid "Warning"
 msgstr ""
 
-#: ../src/callbacks.c:200
+#: ../src/callbacks.c:200 ../src/desktopicon.c:751
 msgid "Are you sure you want to delete "
 msgstr ""
 
-#: ../src/callbacks.c:201
+#: ../src/callbacks.c:201 ../src/desktopicon.c:752
 msgid " file(s)?"
 msgstr ""
 
@@ -163,27 +168,27 @@ msgstr ""
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/callbacks.c:462 ../src/view.c:496
+#: ../src/callbacks.c:462 ../src/view.c:498
 msgid "About Browser"
 msgstr "Acerca de Browser"
 
-#: ../src/callbacks.c:473 ../src/view.c:507
+#: ../src/callbacks.c:473 ../src/view.c:509
 msgid "C_redits"
 msgstr "C_réditos"
 
-#: ../src/callbacks.c:477 ../src/view.c:511
+#: ../src/callbacks.c:477 ../src/view.c:513
 msgid "_License"
 msgstr "_Licencia"
 
-#: ../src/callbacks.c:526 ../src/view.c:560
+#: ../src/callbacks.c:526 ../src/view.c:562
 msgid "Credits"
 msgstr "Créditos"
 
-#: ../src/callbacks.c:549 ../src/view.c:583
+#: ../src/callbacks.c:549 ../src/view.c:585
 msgid "Written by"
 msgstr "Escrito por"
 
-#: ../src/callbacks.c:578 ../src/view.c:612
+#: ../src/callbacks.c:578 ../src/view.c:614
 msgid "License"
 msgstr "Licencia"
 
@@ -211,7 +216,7 @@ msgstr ""
 msgid "_Unmount"
 msgstr ""
 
-#: ../src/callbacks.c:1227
+#: ../src/callbacks.c:1227 ../src/desktopicon.c:606
 msgid "Open _with..."
 msgstr ""
 
@@ -332,6 +337,10 @@ msgid ""
 "  -r\tEquivalent to -R\n"
 msgstr ""
 
+#: ../src/desktop.c:164
+msgid "Creating desktop"
+msgstr ""
+
 #: ../src/desktop.c:248
 msgid "Home"
 msgstr "Inicio"
@@ -357,6 +366,10 @@ msgid ""
 "Usage: desktop [-A | -F]\n"
 "  -A\tDisplay the applications registered\n"
 "  -F\tDisplay contents of the desktop folder [default]\n"
+msgstr ""
+
+#: ../src/desktopicon.c:676
+msgid "Are you sure you want to execute this file?"
 msgstr ""
 
 #: ../src/main.c:44
@@ -462,30 +475,38 @@ msgstr ""
 msgid "Usage: properties file...\n"
 msgstr ""
 
-#: ../src/view.c:184
+#: ../src/view.c:143
+msgid "Edit"
+msgstr ""
+
+#: ../src/view.c:145
+msgid "Close"
+msgstr ""
+
+#: ../src/view.c:186
 msgid "Unknown file type"
 msgstr ""
 
-#: ../src/view.c:190
+#: ../src/view.c:192
 msgid "View - "
 msgstr ""
 
-#: ../src/view.c:218
+#: ../src/view.c:220
 msgid "Unable to view file type"
 msgstr ""
 
-#: ../src/view.c:315
+#: ../src/view.c:317
 msgid "View file..."
 msgstr ""
 
-#: ../src/view.c:396 ../src/view.c:653
+#: ../src/view.c:398 ../src/view.c:655
 msgid "Could not edit file"
 msgstr ""
 
-#: ../src/view.c:466
+#: ../src/view.c:468
 msgid "View"
 msgstr ""
 
-#: ../src/view.c:667
+#: ../src/view.c:669
 msgid "Usage: view file...\n"
 msgstr ""
