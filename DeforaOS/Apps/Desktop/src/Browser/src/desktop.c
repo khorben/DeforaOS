@@ -43,10 +43,6 @@
 
 
 /* constants */
-#ifdef PACKAGE
-# undef PACKAGE
-#endif
-#define PACKAGE		"desktop"
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -794,7 +790,7 @@ static int _current_loop_applications(Desktop * desktop)
 			continue;
 		if((p = realloc(name, desktop->path_cnt + len + 1)) == NULL)
 		{
-			error_set_print(PACKAGE, 1, "%s: %s", "realloc",
+			error_set_print("desktop", 1, "%s: %s", "realloc",
 					strerror(errno));
 			continue;
 		}
