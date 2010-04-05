@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-02 01:09+0200\n"
+"POT-Creation-Date: 2010-04-05 03:40+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <EMAIL@ADDRESS>\n"
 "Language-Team: German\n"
@@ -84,58 +84,154 @@ msgstr ""
 msgid "Usage: surfer [URL]\n"
 msgstr "Usage: surfer [URL]\n"
 
-#: ../src/surfer.c:231
+#: ../src/surfer.c:49
+msgid "_New window"
+msgstr ""
+
+#: ../src/surfer.c:51
+msgid "_Open..."
+msgstr ""
+
+#: ../src/surfer.c:53
+msgid "_Open URL..."
+msgstr ""
+
+#: ../src/surfer.c:55
+msgid "Save _as..."
+msgstr ""
+
+#: ../src/surfer.c:58
+msgid "_Print..."
+msgstr ""
+
+#: ../src/surfer.c:60
+msgid "_Close"
+msgstr ""
+
+#: ../src/surfer.c:67
+msgid "_Cut"
+msgstr ""
+
+#: ../src/surfer.c:68
+msgid "Cop_y"
+msgstr ""
+
+#: ../src/surfer.c:69
+msgid "_Paste"
+msgstr ""
+
+#: ../src/surfer.c:71
+msgid "Select _all"
+msgstr ""
+
+#: ../src/surfer.c:78
+msgid "Unselect all"
+msgstr ""
+
+#: ../src/surfer.c:80
+msgid "_Find"
+msgstr ""
+
+#: ../src/surfer.c:83
+msgid "_Preferences"
+msgstr ""
+
+#: ../src/surfer.c:90
+msgid "Zoom in"
+msgstr ""
+
+#: ../src/surfer.c:92
+msgid "Zoom out"
+msgstr ""
+
+#: ../src/surfer.c:94
+msgid "Normal size"
+msgstr ""
+
+#: ../src/surfer.c:97
+msgid "_Refresh"
+msgstr ""
+
+#: ../src/surfer.c:99
+msgid "_Force refresh"
+msgstr ""
+
+#: ../src/surfer.c:100
+msgid "_Stop"
+msgstr ""
+
+#: ../src/surfer.c:102
+msgid "Page so_urce"
+msgstr ""
+
+#: ../src/surfer.c:120
+msgid "_File"
+msgstr ""
+
+#: ../src/surfer.c:121
+msgid "_Edit"
+msgstr ""
+
+#: ../src/surfer.c:122
+msgid "_View"
+msgstr ""
+
+#: ../src/surfer.c:123
+msgid "_Help"
+msgstr ""
+
+#: ../src/surfer.c:232
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:253
+#: ../src/surfer.c:254
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:454 ../src/surfer.c:457
+#: ../src/surfer.c:455 ../src/surfer.c:458
 msgid "Question"
 msgstr ""
 
-#: ../src/surfer.c:474 ../src/surfer.c:708
+#: ../src/surfer.c:475 ../src/surfer.c:709
 msgid "Save file as..."
 msgstr ""
 
-#: ../src/surfer.c:505 ../src/surfer.c:508
+#: ../src/surfer.c:506 ../src/surfer.c:509
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/surfer.c:507
+#: ../src/surfer.c:508
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/surfer.c:528
+#: ../src/surfer.c:529
 msgid "Find text"
 msgstr "Suchen"
 
-#: ../src/surfer.c:535
+#: ../src/surfer.c:536
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:544
+#: ../src/surfer.c:545
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:547
+#: ../src/surfer.c:548
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:575
+#: ../src/surfer.c:576
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:649
+#: ../src/surfer.c:650
 msgid "Open file..."
 msgstr ""
 
-#: ../src/surfer.c:832
+#: ../src/surfer.c:833
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:874 ../src/surfer.c:877
+#: ../src/surfer.c:875 ../src/surfer.c:878
 msgid "Warning"
 msgstr "Achtung"

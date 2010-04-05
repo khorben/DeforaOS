@@ -26,6 +26,7 @@
 #include "surfer.h"
 #include "common.h"
 #define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Surfer */
@@ -45,60 +46,60 @@ static DesktopAccel _surfer_accel[] =
 #ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
 {
-	{ "_New window",	G_CALLBACK(on_file_new_window), "window-new",
+	{ N_("_New window"),	G_CALLBACK(on_file_new_window), "window-new",
 		GDK_N },
-	{ "_Open...",		G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+	{ N_("_Open..."),	G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_O },
-	{ "_Open URL...",	G_CALLBACK(on_file_open_url), NULL, GDK_L },
+	{ N_("_Open URL..."),	G_CALLBACK(on_file_open_url), NULL, GDK_L },
 	{ "", NULL, NULL, 0 },
-	{ "Save _as...",	G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
+	{ N_("Save _as..."),	G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
 		GDK_S },
 	{ "", NULL, NULL, 0 },
-	{ "_Print...",		G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0 },
+	{ N_("_Print..."),	G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0 },
 	{ "", NULL, NULL, 0 },
-	{ "_Close",		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+	{ N_("_Close"),		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_W },
 	{ NULL,			NULL, NULL, 0 }
 };
 
 static DesktopMenu _menu_edit[] =
 {
-	{ "_Cut",		NULL, GTK_STOCK_CUT, GDK_X },
-	{ "Cop_y",		NULL, GTK_STOCK_COPY, GDK_C },
-	{ "_Paste",		NULL, GTK_STOCK_PASTE, GDK_V },
+	{ N_("_Cut"),		NULL, GTK_STOCK_CUT, GDK_X },
+	{ N_("Cop_y"),		NULL, GTK_STOCK_COPY, GDK_C },
+	{ N_("_Paste"),		NULL, GTK_STOCK_PASTE, GDK_V },
 	{ "",			NULL, NULL, 0 },
-	{ "Select _all",	G_CALLBACK(on_edit_select_all),
+	{ N_("Select _all"),	G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else
 		NULL,
 #endif
 		GDK_A },
-	{ "Unselect all",	G_CALLBACK(on_edit_unselect_all), NULL, 0 },
+	{ N_("Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0 },
 	{ "",			NULL, NULL, 0 },
-	{ "_Find",		G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
+	{ N_("_Find"),		G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
 		GDK_F },
 	{ "",			NULL, NULL, 0 },
-	{ "_Preferences",	G_CALLBACK(on_edit_preferences),
+	{ N_("_Preferences"),	G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_P },
 	{ NULL,			NULL, NULL, 0 }
 };
 
 static DesktopMenu _menu_view[] =
 {
-	{ "Zoom in",		G_CALLBACK(on_view_zoom_in), "zoom-in",
+	{ N_("Zoom in"),	G_CALLBACK(on_view_zoom_in), "zoom-in",
 		GDK_plus },
-	{ "Zoom out",		G_CALLBACK(on_view_zoom_out), "zoom-out",
+	{ N_("Zoom out"),	G_CALLBACK(on_view_zoom_out), "zoom-out",
 		GDK_minus },
-	{ "Normal size",	G_CALLBACK(on_view_normal_size), "zoom-1",
+	{ N_("Normal size"),	G_CALLBACK(on_view_normal_size), "zoom-1",
 		GDK_0 },
 	{ "",			NULL, NULL, 0 },
-	{ "_Refresh",		G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
+	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
 		GDK_R },
-	{ "_Force refresh",	G_CALLBACK(on_view_force_refresh), NULL, 0 },
-	{ "_Stop",		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0 },
+	{ N_("_Force refresh"),	G_CALLBACK(on_view_force_refresh), NULL, 0 },
+	{ N_("_Stop"),		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0 },
 	{ "",			NULL, NULL, 0 },
-	{ "Page so_urce",	G_CALLBACK(on_view_page_source),
+	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
 		"stock_view-html-source", GDK_U },
 	{ NULL,			NULL, NULL, 0 }
 };
@@ -116,10 +117,10 @@ static DesktopMenu _menu_help[] =
 
 static DesktopMenubar _surfer_menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_Edit", _menu_edit },
-	{ "_View", _menu_view },
-	{ "_Help", _menu_help },
+	{ N_("_File"), _menu_file },
+	{ N_("_Edit"), _menu_edit },
+	{ N_("_View"), _menu_view },
+	{ N_("_Help"), _menu_help },
 	{ NULL, NULL }
 };
 #endif /* !EMBEDDED */
