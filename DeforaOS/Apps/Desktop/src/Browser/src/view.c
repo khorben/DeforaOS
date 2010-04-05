@@ -440,8 +440,7 @@ static void _on_file_close(gpointer data)
 
 
 /* on_help_about */
-static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _about_on_closex(gpointer data);
 #if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
@@ -524,9 +523,10 @@ static void _on_help_about(gpointer data)
 }
 #endif
 
-static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _about_on_closex(gpointer data)
 {
+	GtkWidget * widget = data;
+
 	gtk_widget_hide(widget);
 	return TRUE;
 }
@@ -561,8 +561,8 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), _("Credits"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
@@ -613,8 +613,8 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), _("License"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
