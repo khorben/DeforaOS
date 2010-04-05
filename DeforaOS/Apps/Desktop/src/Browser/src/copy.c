@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,26 @@
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
+#include "../config.h"
+#define _(string) gettext(string)
 
 
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
+
+
+/* Copy */
 /* types */
 typedef int Prefs;
 #define PREFS_f 0x01
@@ -40,9 +57,6 @@ typedef int Prefs;
 #define PREFS_L 0x20
 #define PREFS_P 0x40
 
-
-/* Copy */
-/* types */
 typedef struct _Copy
 {
 	Prefs * prefs;
@@ -97,16 +111,16 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	copy.cur = 0;
 	/* graphical interface */
 	copy.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(copy.window), "Copy file(s)");
+	gtk_window_set_title(GTK_WINDOW(copy.window), _("Copy file(s)"));
 	gtk_window_set_resizable(GTK_WINDOW(copy.window), FALSE);
-	g_signal_connect(G_OBJECT(copy.window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(copy.window), "delete-event", G_CALLBACK(
 			_copy_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* current argument */
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Copying: ");
+	widget = gtk_label_new(_("Copying: "));
 	bold = pango_font_description_new();
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(widget, bold);
@@ -124,7 +138,7 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_box_pack_start(GTK_BOX(vbox), copy.progress, TRUE, TRUE, 4);
 	/* file copy */
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Filename: ");
+	widget = gtk_label_new(_("Filename: "));
 	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
@@ -138,7 +152,7 @@ static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* file copy speed */
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Speed: ");
+	widget = gtk_label_new(_("Speed: "));
 	gtk_widget_modify_font(widget, bold);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
 	gtk_size_group_add_widget(left, widget);
@@ -171,7 +185,7 @@ static void _copy_refresh(Copy * copy)
 
 	/* FIXME convert to UTF-8 */
 	gtk_label_set_text(GTK_LABEL(copy->label), copy->filev[copy->cur]);
-	snprintf(buf, sizeof(buf), "File %u of %u", copy->cur + 1,
+	snprintf(buf, sizeof(buf), _("File %u of %u"), copy->cur + 1,
 			copy->filec - 1);
 	fraction = copy->cur;
 	fraction /= copy->filec - 1;
@@ -187,7 +201,7 @@ static int _copy_error(Copy * copy, char const * message, int ret)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_OK, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -200,7 +214,7 @@ static void _copy_info(Copy * copy, char const * message, char const * info)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_INFO,
 			GTK_BUTTONS_OK, "%s: %s", message, info);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Information");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Information"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 }
@@ -212,8 +226,8 @@ static int _copy_confirm(Copy * copy, char const * dst)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(copy->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO, "%s will be overwritten\n"
-			"Proceed?", dst);
+			GTK_BUTTONS_YES_NO, _("%s will be overwritten\n"
+				"Proceed?"), dst);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -322,7 +336,7 @@ static int _single_dir(Copy * copy, char const * src, char const * dst)
 {
 	if(*(copy->prefs) & PREFS_R)
 		return _single_recurse(copy, src, dst);
-	_copy_info(copy, src, "Omitting directory");
+	_copy_info(copy, src, _("Omitting directory"));
 	return 0;
 }
 
@@ -578,7 +592,7 @@ static gboolean _single_timeout(gpointer data)
 	struct timeval tv;
 	double rate;
 	char buf[16];
-	char const * unit = "kB";
+	char const * unit = _("kB");
 
 	if(copy->fpulse == 1)
 	{
@@ -587,7 +601,7 @@ static gboolean _single_timeout(gpointer data)
 	}
 	if(copy->cnt == 0)
 	{
-		gtk_label_set_text(GTK_LABEL(copy->fspeed), "0.0 kB/s");
+		gtk_label_set_text(GTK_LABEL(copy->fspeed), _("0.0 kB/s"));
 		return TRUE;
 	}
 	if(gettimeofday(&tv, NULL) != 0)
@@ -656,7 +670,7 @@ static int _copy_multiple(Copy * copy, char const * src, char const * dst)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: copy [-fip] source_file target_file\n\
+	fputs(_("Usage: copy [-fip] source_file target_file\n\
        copy [-fip] source_file ... target\n\
        copy -R [-H | -L | -P][-fip] source_file ... target\n\
        copy -r [-H | -L | -P][-fip] source_file ... target\n\
@@ -664,7 +678,7 @@ static int _usage(void)
   -i	Prompt for confirmation if the destination path exists\n\
   -p	Duplicate characteristics of the source files\n\
   -R	Copy file hierarchies\n\
-  -r	Copy file hierarchies\n", stderr);
+  -r	Copy file hierarchies\n"), stderr);
 	return 1;
 }
 
@@ -675,6 +689,9 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 	int o;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	prefs |= PREFS_i | PREFS_H;
 	gtk_init(&argc, &argv);

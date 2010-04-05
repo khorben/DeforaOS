@@ -163,27 +163,27 @@ msgstr ""
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/callbacks.c:462
+#: ../src/callbacks.c:462 ../src/view.c:496
 msgid "About Browser"
 msgstr "Acerca de Browser"
 
-#: ../src/callbacks.c:473
+#: ../src/callbacks.c:473 ../src/view.c:507
 msgid "C_redits"
 msgstr "C_réditos"
 
-#: ../src/callbacks.c:477
+#: ../src/callbacks.c:477 ../src/view.c:511
 msgid "_License"
 msgstr "_Licencia"
 
-#: ../src/callbacks.c:526
+#: ../src/callbacks.c:526 ../src/view.c:560
 msgid "Credits"
 msgstr "Créditos"
 
-#: ../src/callbacks.c:549
+#: ../src/callbacks.c:549 ../src/view.c:583
 msgid "Written by"
 msgstr "Escrito por"
 
-#: ../src/callbacks.c:578
+#: ../src/callbacks.c:578 ../src/view.c:612
 msgid "License"
 msgstr "Licencia"
 
@@ -235,6 +235,103 @@ msgstr ""
 msgid "Destination: "
 msgstr ""
 
+#: ../src/copy.c:114
+msgid "Copy file(s)"
+msgstr ""
+
+#: ../src/copy.c:123
+msgid "Copying: "
+msgstr ""
+
+#: ../src/copy.c:141
+msgid "Filename: "
+msgstr ""
+
+#: ../src/copy.c:155
+msgid "Speed: "
+msgstr ""
+
+#: ../src/copy.c:188 ../src/delete.c:112 ../src/move.c:115
+#, c-format
+msgid "File %u of %u"
+msgstr ""
+
+#: ../src/copy.c:217
+msgid "Information"
+msgstr ""
+
+#: ../src/copy.c:229 ../src/move.c:144
+#, c-format
+msgid ""
+"%s will be overwritten\n"
+"Proceed?"
+msgstr ""
+
+#: ../src/copy.c:339
+msgid "Omitting directory"
+msgstr ""
+
+#: ../src/copy.c:595
+msgid "kB"
+msgstr ""
+
+#: ../src/copy.c:604
+msgid "0.0 kB/s"
+msgstr ""
+
+#: ../src/copy.c:673
+msgid ""
+"Usage: copy [-fip] source_file target_file\n"
+"       copy [-fip] source_file ... target\n"
+"       copy -R [-H | -L | -P][-fip] source_file ... target\n"
+"       copy -r [-H | -L | -P][-fip] source_file ... target\n"
+"  -f\tDo not prompt for confirmation if the destination path exists\n"
+"  -i\tPrompt for confirmation if the destination path exists\n"
+"  -p\tDuplicate characteristics of the source files\n"
+"  -R\tCopy file hierarchies\n"
+"  -r\tCopy file hierarchies\n"
+msgstr ""
+
+#: ../src/delete.c:84
+msgid "Delete file(s)"
+msgstr ""
+
+#: ../src/delete.c:109
+#, c-format
+msgid "Deleting file: %s"
+msgstr ""
+
+#: ../src/delete.c:197 ../src/delete.c:200 ../src/delete.c:220
+#: ../src/delete.c:224 ../src/move.c:146
+msgid "Question"
+msgstr ""
+
+#: ../src/delete.c:199
+#, c-format
+msgid ""
+"%s is a directory.\n"
+"Recursively delete?"
+msgstr ""
+
+#: ../src/delete.c:201 ../src/delete.c:225
+msgid "Yes to all"
+msgstr ""
+
+#: ../src/delete.c:222
+msgid ""
+" will be permanently deleted.\n"
+"Continue?"
+msgstr ""
+
+#: ../src/delete.c:279
+msgid ""
+"Usage: delete [-fiRr] file...\n"
+"  -f\tDo not prompt for confirmation or output error messages\n"
+"  -i\tPrompt for confirmation\n"
+"  -R\tRemove file hierarchies\n"
+"  -r\tEquivalent to -R\n"
+msgstr ""
+
 #: ../src/desktop.c:248
 msgid "Home"
 msgstr "Inicio"
@@ -264,6 +361,33 @@ msgstr ""
 
 #: ../src/main.c:44
 msgid "Usage: browser [directory...]\n"
+msgstr ""
+
+#: ../src/move.c:87
+msgid "Move file(s)"
+msgstr ""
+
+#: ../src/move.c:112
+#, c-format
+msgid "Moving file: %s"
+msgstr ""
+
+#: ../src/move.c:432
+msgid ""
+"Usage: move [-fi] file...\n"
+"  -f\tDo not prompt for confirmation if the destination path exists\n"
+"  -i\tPrompt for confirmation if the destination path exists\n"
+msgstr ""
+
+#: ../src/open.c:59
+msgid ": Could not perform action \""
+msgstr ""
+
+#: ../src/open.c:71
+msgid ""
+"Usage: open [-m mime type][-a action] file...\n"
+"  -m\tMIME type to force (default: auto-detected)\n"
+"  -a\taction to call (default: \"open\")\n"
 msgstr ""
 
 #: ../src/properties.c:225
@@ -336,4 +460,32 @@ msgstr ""
 
 #: ../src/properties.c:500
 msgid "Usage: properties file...\n"
+msgstr ""
+
+#: ../src/view.c:184
+msgid "Unknown file type"
+msgstr ""
+
+#: ../src/view.c:190
+msgid "View - "
+msgstr ""
+
+#: ../src/view.c:218
+msgid "Unable to view file type"
+msgstr ""
+
+#: ../src/view.c:315
+msgid "View file..."
+msgstr ""
+
+#: ../src/view.c:396 ../src/view.c:653
+msgid "Could not edit file"
+msgstr ""
+
+#: ../src/view.c:466
+msgid "View"
+msgstr ""
+
+#: ../src/view.c:667
+msgid "Usage: view file...\n"
 msgstr ""

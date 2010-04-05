@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,17 +26,31 @@
 #include <libgen.h>
 #include <limits.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
+#include "../config.h"
+#define _(string) gettext(string)
 
 
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
+
+
+/* Move */
 /* types */
 typedef int Prefs;
 #define PREFS_f 0x1
 #define PREFS_i 0x2
 
-
-/* Move */
-/* types */
 typedef struct _Move
 {
 	Prefs * prefs;
@@ -70,8 +84,8 @@ static int _move(Prefs * prefs, unsigned int filec, char * filev[])
 	move.filev = filev;
 	move.cur = 0;
 	move.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(move.window), "Move file(s)");
-	g_signal_connect(G_OBJECT(move.window), "delete_event", G_CALLBACK(
+	gtk_window_set_title(GTK_WINDOW(move.window), _("Move file(s)"));
+	g_signal_connect(G_OBJECT(move.window), "delete-event", G_CALLBACK(
 			_move_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	move.label = gtk_label_new("");
@@ -95,9 +109,11 @@ static void _move_refresh(Move * move)
 	char buf[256]; /* FIXME convert to UTF-8 */
 	double fraction;
 
-	snprintf(buf, sizeof(buf), "Moving file: %s", move->filev[move->cur]);
+	snprintf(buf, sizeof(buf), _("Moving file: %s"),
+			move->filev[move->cur]);
 	gtk_label_set_text(GTK_LABEL(move->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", move->cur, move->filec - 1);
+	snprintf(buf, sizeof(buf), _("File %u of %u"), move->cur,
+			move->filec - 1);
 	fraction = move->cur;
 	fraction /= move->filec - 1;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(move->progress), buf);
@@ -112,7 +128,7 @@ static int _move_error(Move * move, char const * message, int ret)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(move->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_OK, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -125,9 +141,9 @@ static int _move_confirm(Move * move, char const * dst)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(move->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION,
-			GTK_BUTTONS_YES_NO, "%s will be overwritten\n"
-			"Proceed?", dst);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
+			GTK_BUTTONS_YES_NO, _("%s will be overwritten\n"
+			"Proceed?"), dst);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret == GTK_RESPONSE_YES ? 1 : 0;
@@ -413,9 +429,9 @@ static int _move_multiple(Move * move, char const * src, char const * dst)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: move [-fi] file...\n\
+	fputs(_("Usage: move [-fi] file...\n\
   -f	Do not prompt for confirmation if the destination path exists\n\
-  -i	Prompt for confirmation if the destination path exists\n", stderr);
+  -i	Prompt for confirmation if the destination path exists\n"), stderr);
 	return 1;
 }
 
@@ -426,6 +442,9 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 	int o;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "fi")) != -1)

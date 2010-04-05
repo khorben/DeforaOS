@@ -1,6 +1,11 @@
 ../src/browser.c
 ../src/callbacks.c
 ../src/common.c
+../src/copy.c
+../src/delete.c
 ../src/desktop.c
 ../src/main.c
+../src/move.c
+../src/open.c
 ../src/properties.c
+../src/view.c

@@ -150,11 +150,11 @@ msgstr "Taille normale"
 
 #: ../src/surfer.c:97
 msgid "_Refresh"
-msgstr ""
+msgstr "_Actualiser"
 
 #: ../src/surfer.c:99
 msgid "_Force refresh"
-msgstr ""
+msgstr "Actualisation forcée"
 
 #: ../src/surfer.c:100
 msgid "_Stop"

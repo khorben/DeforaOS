@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Browser */
 static char const _license[] =
 "view is free software; you can redistribute it and/or modify it under the\n"
@@ -23,6 +23,8 @@ static char const _license[] =
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
@@ -30,6 +32,18 @@ static char const _license[] =
 #include "../config.h"
 
 #include "common.c"
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* View */
@@ -167,13 +181,13 @@ static View * _view_new(char const * pathname)
 		_mime = mime_new();
 	if((type = mime_type(_mime, pathname)) == NULL)
 	{
-		_view_error(view, "Unknown file type", 2);
+		_view_error(view, _("Unknown file type"), 2);
 		return NULL;
 	}
 	group = gtk_accel_group_new();
 	view->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(view->window), group);
-	snprintf(buf, sizeof(buf), "%s%s", "View - ", pathname);
+	snprintf(buf, sizeof(buf), "%s%s", _("View - "), pathname);
 	gtk_window_set_title(GTK_WINDOW(view->window), buf);
 	g_signal_connect_swapped(view->window, "delete-event", G_CALLBACK(
 				_on_closex), view);
@@ -201,7 +215,7 @@ static View * _view_new(char const * pathname)
 	}
 	else
 	{
-		_view_error(view, "Unable to view file type", 2);
+		_view_error(view, _("Unable to view file type"), 2);
 		return NULL;
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -298,7 +312,7 @@ static View * _view_new_open(void)
 	GtkWidget * dialog;
 	char * pathname = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("View file...", NULL,
+	dialog = gtk_file_chooser_dialog_new(_("View file..."), NULL,
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
@@ -340,10 +354,10 @@ static int _view_error(View * view, char const * message, int ret)
 	dialog = gtk_message_dialog_new(view != NULL && view->window != NULL
 			? GTK_WINDOW(view->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", "Error");
+			GTK_BUTTONS_CLOSE, "%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				_error_response), ret != 0 ? view : NULL);
 	gtk_widget_show(dialog);
@@ -379,7 +393,7 @@ static void _on_file_edit(gpointer data)
 	View * view = data;
 
 	if(mime_action(_mime, "edit", view->pathname) != 0)
-		_view_error(view, "Could not edit file", 0);
+		_view_error(view, _("Could not edit file"), 0);
 }
 
 
@@ -391,7 +405,7 @@ static void _on_file_open_with(gpointer data)
 	char * filename = NULL;
 	pid_t pid;
 
-	dialog = gtk_file_chooser_dialog_new("Open with...",
+	dialog = gtk_file_chooser_dialog_new(_("Open with..."),
 			GTK_WINDOW(view->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
@@ -449,7 +463,7 @@ static void _on_help_about(gpointer data)
 	window = view->ab_window;
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				view->window));
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), "View");
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), _("View"));
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
 	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), _view_authors);
@@ -479,7 +493,7 @@ static void _on_help_about(gpointer data)
 	browser->ab_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	window = browser->ab_window;
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "About Browser");
+	gtk_window_set_title(GTK_WINDOW(window), _("About Browser"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				browser->window));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -490,11 +504,11 @@ static void _on_help_about(gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
-	button = gtk_button_new_with_mnemonic("C_redits");
+	button = gtk_button_new_with_mnemonic(_("C_redits"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_credits), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-	button = gtk_button_new_with_mnemonic("_License");
+	button = gtk_button_new_with_mnemonic(_("_License"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_license), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
@@ -543,7 +557,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_title(GTK_WINDOW(window), _("Credits"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
@@ -566,7 +580,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(widget), textview);
 	notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
-			gtk_label_new("Written by"));
+			gtk_label_new(_("Written by")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -595,7 +609,7 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "License");
+	gtk_window_set_title(GTK_WINDOW(window), _("License"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
@@ -636,7 +650,7 @@ static void _on_edit(gpointer data)
 	View * view = data;
 
 	if(mime_action(_mime, "edit", view->pathname) != 0)
-		_view_error(view, "Could not edit file", 0);
+		_view_error(view, _("Could not edit file"), 0);
 }
 
 
@@ -650,7 +664,7 @@ static void _on_open_with(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: view file...\n", stderr);
+	fputs(_("Usage: view file...\n"), stderr);
 	return 1;
 }
 
@@ -661,6 +675,9 @@ int main(int argc, char * argv[])
 	int o;
 	int i;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)

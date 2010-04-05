@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,23 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <locale.h>
+#include <libintl.h>
 #include "mime.h"
+#include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* open */
@@ -39,8 +55,9 @@ static int _open(char const * type, char const * action, int filec,
 		}
 		else if(mime_action_type(mime, action, filev[i], type) == 0)
 			continue;
-		fprintf(stderr, "%s%s%s%s%s", "open: ", filev[i], ": Could not"
-				" perform action \"", action, "\"\n");
+		fprintf(stderr, "%s%s%s%s%s", "open: ", filev[i],
+				_(": Could not perform action \""), action,
+				"\"\n");
 		ret = 1;
 	}
 	mime_delete(mime);
@@ -51,9 +68,9 @@ static int _open(char const * type, char const * action, int filec,
 /* usage */
 static int _usage(void)
 {
-	fprintf(stderr, "%s", "Usage: open [-m mime type][-a action] file...\n"
+	fputs(_("Usage: open [-m mime type][-a action] file...\n"
 "  -m	MIME type to force (default: auto-detected)\n"
-"  -a	action to call (default: \"open\")\n");
+"  -a	action to call (default: \"open\")\n"), stderr);
 	return 1;
 }
 
@@ -65,6 +82,9 @@ int main(int argc, char * argv[])
 	char const * action = "open";
 	char const * type = NULL;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	while((o = getopt(argc, argv, "a:m:")) != -1)
 		switch(o)
 		{

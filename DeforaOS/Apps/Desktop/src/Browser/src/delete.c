@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Browser */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,18 +22,32 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
+#include "../config.h"
+#define _(string) gettext(string)
 
 
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
+
+
+/* Delete */
 /* types */
 typedef int Prefs;
 #define PREFS_f 0x1
 #define PREFS_i 0x2
 #define PREFS_R 0x4
 
-
-/* Delete */
-/* types */
 typedef struct _Delete
 {
 	Prefs * prefs;
@@ -67,8 +81,8 @@ static int _delete(Prefs * prefs, unsigned int filec, char * filev[])
 	delete.filev = filev;
 	delete.cur = 0;
 	delete.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(delete.window), "Delete file(s)");
-	g_signal_connect(G_OBJECT(delete.window), "delete_event", G_CALLBACK(
+	gtk_window_set_title(GTK_WINDOW(delete.window), _("Delete file(s)"));
+	g_signal_connect(G_OBJECT(delete.window), "delete-event", G_CALLBACK(
 			_delete_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	delete.label = gtk_label_new("");
@@ -92,10 +106,11 @@ static void _delete_refresh(Delete * delete)
 	char buf[256];
 	double fraction;
 
-	snprintf(buf, sizeof(buf), "Deleting file: %s",
+	snprintf(buf, sizeof(buf), _("Deleting file: %s"),
 			delete->filev[delete->cur]);
 	gtk_label_set_text(GTK_LABEL(delete->label), buf);
-	snprintf(buf, sizeof(buf), "File %u of %u", delete->cur, delete->filec);
+	snprintf(buf, sizeof(buf), _("File %u of %u"), delete->cur,
+			delete->filec);
 	fraction = delete->cur;
 	fraction /= delete->filec;
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(delete->progress), buf);
@@ -109,10 +124,10 @@ static int _delete_error(Delete * delete, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_OK, "%s", "Error");
+			GTK_BUTTONS_OK, "%s", _("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -179,11 +194,11 @@ static int _idle_ask_recursive(Delete * delete, char const * filename)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
-			"Question");
+			_("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s is a directory.\nRecursively delete?", filename);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
-	gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes to all", 1);
+			_("%s is a directory.\nRecursively delete?"), filename);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	gtk_dialog_add_button(GTK_DIALOG(dialog), _("Yes to all"), 1);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(ret == 1)
@@ -202,12 +217,12 @@ static int _idle_ask(Delete * delete, char const * filename)
 	dialog = gtk_message_dialog_new(GTK_WINDOW(delete->window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
-			"Question");
+			_("Question"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s%s", filename, " will be permanently deleted.\n"
-			"Continue?");
-	gtk_window_set_title(GTK_WINDOW(dialog), "Question");
-	gtk_dialog_add_button(GTK_DIALOG(dialog), "Yes to all", 1);
+			"%s%s", filename, _(" will be permanently deleted.\n"
+				"Continue?"));
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	gtk_dialog_add_button(GTK_DIALOG(dialog), _("Yes to all"), 1);
 	ret = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(ret == 1)
@@ -261,11 +276,11 @@ static int _idle_do_recursive(Delete * delete, char const * filename)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: delete [-fiRr] file...\n\
+	fputs(_("Usage: delete [-fiRr] file...\n\
   -f	Do not prompt for confirmation or output error messages\n\
   -i	Prompt for confirmation\n\
   -R	Remove file hierarchies\n\
-  -r	Equivalent to -R\n", stderr);
+  -r	Equivalent to -R\n"), stderr);
 	return 1;
 }
 
@@ -276,6 +291,9 @@ int main(int argc, char * argv[])
 	Prefs prefs;
 	int o;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	gtk_init(&argc, &argv);
 	while((o = getopt(argc, argv, "fiRr")) != -1)
