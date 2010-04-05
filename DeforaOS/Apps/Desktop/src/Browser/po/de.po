@@ -1,4 +1,4 @@
-# German translations for Browser package.
+# $Id$
 # Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 # This file is distributed under the same license as the Browser package.
 # Pierre Pronchery <khorben@defora.org>, 2010.
