@@ -280,7 +280,7 @@ void on_edit_preferences(gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
 #endif
 	browser->pr_confirm = gtk_check_button_new_with_mnemonic(
-			_("_Confirm before delete"));
+			_("_Confirm before deletion"));
 	gtk_box_pack_start(GTK_BOX(vbox), browser->pr_confirm, FALSE, FALSE, 4);
 	browser->pr_sort = gtk_check_button_new_with_mnemonic(
 			_("Sort _folders first"));

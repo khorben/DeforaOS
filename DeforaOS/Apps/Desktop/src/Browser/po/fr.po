@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-05 17:15+0200\n"
+"POT-Creation-Date: 2010-04-07 23:09+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -157,7 +157,7 @@ msgid "Default view:"
 msgstr "Vue par défaut:"
 
 #: ../src/callbacks.c:283
-msgid "_Confirm before delete"
+msgid "_Confirm before deletion"
 msgstr "_Confirmer l'effacement"
 
 #: ../src/callbacks.c:286
@@ -356,6 +356,7 @@ msgstr ""
 "  -i\tDemander confirmation\n"
 "  -R\tSupprimer récursivement\n"
 "  -r\tÉquivalent à -R\n"
+
 #: ../src/desktop.c:160
 msgid "Creating desktop"
 msgstr "Création desktop"
@@ -542,4 +543,3 @@ msgstr "Voir"
 #: ../src/view.c:669
 msgid "Usage: view file...\n"
 msgstr "Usage: view fichier...\n"
-

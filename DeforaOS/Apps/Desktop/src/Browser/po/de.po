@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Browser 0.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-05 17:04+0200\n"
+"POT-Creation-Date: 2010-04-07 23:09+0200\n"
 "PO-Revision-Date: 2010-03-29 23:28+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: English\n"
@@ -157,7 +157,7 @@ msgid "Default view:"
 msgstr ""
 
 #: ../src/callbacks.c:283
-msgid "_Confirm before delete"
+msgid "_Confirm before deletion"
 msgstr "_Bestätigen vor löschung"
 
 #: ../src/callbacks.c:286
@@ -168,15 +168,15 @@ msgstr "List _Ordner zuerst"
 msgid "Show _hidden files"
 msgstr ""
 
-#: ../src/callbacks.c:462 ../src/view.c:498
+#: ../src/callbacks.c:462 ../src/view.c:497
 msgid "About Browser"
 msgstr "Info zu Browser"
 
-#: ../src/callbacks.c:473 ../src/view.c:509
+#: ../src/callbacks.c:473 ../src/view.c:508
 msgid "C_redits"
 msgstr "_Mitwirkende"
 
-#: ../src/callbacks.c:477 ../src/view.c:513
+#: ../src/callbacks.c:477 ../src/view.c:512
 msgid "_License"
 msgstr "_Lizenz"
 
@@ -507,7 +507,7 @@ msgstr ""
 msgid "Could not edit file"
 msgstr ""
 
-#: ../src/view.c:468
+#: ../src/view.c:467
 msgid "View"
 msgstr ""
 
