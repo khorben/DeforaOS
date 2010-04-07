@@ -56,8 +56,7 @@ void on_edit_find(gpointer data)
 /* on_edit_preferences */
 static void _preferences_set(Editor * editor);
 static void _preferences_on_cancel(gpointer data);
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
 void on_edit_preferences(gpointer data)
@@ -82,7 +81,7 @@ void on_edit_preferences(gpointer data)
 			_("Text editor preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(editor->pr_window), GTK_WINDOW(
 				editor->window));
-	g_signal_connect(G_OBJECT(editor->pr_window), "delete-event",
+	g_signal_connect_swapped(G_OBJECT(editor->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -134,8 +133,7 @@ static void _preferences_on_cancel(gpointer data)
 	_preferences_set(editor);
 }
 
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _preferences_on_closex(gpointer data)
 {
 	Editor * editor = data;
 
