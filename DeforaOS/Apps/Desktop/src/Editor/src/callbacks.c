@@ -18,9 +18,11 @@ static char const _license[] =
 
 
 #include <stdlib.h>
+#include <libintl.h>
 #include "editor.h"
 #include "callbacks.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 
 /* private */
@@ -77,16 +79,16 @@ void on_edit_preferences(gpointer data)
 	editor->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(editor->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(editor->pr_window),
-			"Text editor preferences");
+			_("Text editor preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(editor->pr_window), GTK_WINDOW(
 				editor->window));
-	g_signal_connect(G_OBJECT(editor->pr_window), "delete_event",
+	g_signal_connect(G_OBJECT(editor->pr_window), "delete-event",
 			G_CALLBACK(_preferences_on_close), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* font */
-	widget = gtk_label_new("Font:");
+	widget = gtk_label_new(_("Font:"));
 	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	editor->pr_font = gtk_font_button_new();
@@ -227,7 +229,7 @@ void on_help_about(gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				editor->window));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
 				gtk_widget_hide), NULL);
@@ -258,10 +260,10 @@ void on_help_about(gpointer data)
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "About Editor");
+	gtk_window_set_title(GTK_WINDOW(window), _("About Editor"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				editor->window));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
@@ -269,11 +271,11 @@ void on_help_about(gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(_copyright), FALSE,
 			FALSE, 2);
 	hbox = gtk_hbox_new(TRUE, 4);
-	button = gtk_button_new_with_mnemonic("C_redits");
+	button = gtk_button_new_with_mnemonic(_("C_redits"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_credits), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
-	button = gtk_button_new_with_mnemonic("_License");
+	button = gtk_button_new_with_mnemonic(_("_License"));
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				_about_on_license), window);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 4);
@@ -322,9 +324,9 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "Credits");
+	gtk_window_set_title(GTK_WINDOW(window), _("Credits"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
@@ -345,7 +347,7 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_add(GTK_CONTAINER(widget), textview);
 	notebook = gtk_notebook_new();
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), widget,
-			gtk_label_new("Written by"));
+			gtk_label_new(_("Written by")));
 	gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 4);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -374,9 +376,9 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
-	gtk_window_set_title(GTK_WINDOW(window), "License");
+	gtk_window_set_title(GTK_WINDOW(window), _("License"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();

@@ -1,6 +1,6 @@
 PACKAGE	= Editor
 VERSION	= 0.1.1
-SUBDIRS	= data src
+SUBDIRS	= data po src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -24,6 +24,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/editor.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/de.po \
+		$(PACKAGE)-$(VERSION)/po/es.po \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/editor.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \

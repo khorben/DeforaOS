@@ -19,11 +19,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "editor.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* constants */
@@ -44,29 +47,29 @@ static DesktopAccel _editor_accel[] =
 #ifndef EMBEDDED
 static DesktopMenu _editor_menu_file[] =
 {
-	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_n },
-	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_o },
+	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_n },
+	{ N_("_Open"), G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_o },
 	{ "", NULL, NULL, 0 },
-	{ "_Save", G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_s },
-	{ "_Save as...", G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
+	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_s },
+	{ N_("_Save as..."), G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
 		GDK_S },
 	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0 },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0 },
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenu _editor_menu_edit[] =
 {
-	{ "_Undo", NULL, GTK_STOCK_UNDO, GDK_z }, /* FIXME implement */
-	{ "_Redo", NULL, GTK_STOCK_REDO, GDK_r }, /* FIXME implement */
+	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_z }, /* FIXME implement */
+	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_r }, /* FIXME implement */
 	{ "", NULL, NULL, 0 },
-	{ "_Cut", NULL, GTK_STOCK_CUT, 0 }, /* FIXME implement */
-	{ "_Copy", NULL, GTK_STOCK_COPY, 0 }, /* FIXME implement */
-	{ "_Paste", NULL, GTK_STOCK_PASTE, 0 }, /* FIXME implement */
+	{ N_("_Cut"), NULL, GTK_STOCK_CUT, 0 }, /* FIXME implement */
+	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0 }, /* FIXME implement */
+	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, 0 }, /* FIXME implement */
 	{ "", NULL, NULL, 0 },
-	{ "_Find", G_CALLBACK(on_edit_find), GTK_STOCK_FIND, GDK_F },
+	{ N_("_Find"), G_CALLBACK(on_edit_find), GTK_STOCK_FIND, GDK_F },
 	{ "", NULL, NULL, 0 },
-	{ "_Preferences", G_CALLBACK(on_edit_preferences),
+	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_p },
 	{ NULL, NULL, NULL, 0 }
 };
@@ -74,33 +77,33 @@ static DesktopMenu _editor_menu_edit[] =
 static DesktopMenu _editor_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
 #endif
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenubar _editor_menubar[] =
 {
-	{ "_File", _editor_menu_file },
-	{ "_Edit", _editor_menu_edit },
-	{ "_Help", _editor_menu_help },
+	{ N_("_File"), _editor_menu_file },
+	{ N_("_Edit"), _editor_menu_edit },
+	{ N_("_Help"), _editor_menu_help },
 	{ NULL, NULL }
 };
 #endif
 
 static DesktopToolbar _editor_toolbar[] =
 {
-	{ "New", G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
-	{ "Open", G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, NULL },
+	{ N_("New"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
+	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, NULL },
 	{ "", NULL, NULL, 0, NULL },
-	{ "Save", G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, NULL },
-	{ "Save as", G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, NULL },
+	{ N_("Save"), G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, NULL },
+	{ N_("Save as"), G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, NULL },
 #ifdef EMBEDDED
 	{ "", NULL, NULL, 0, NULL },
-	{ "Preferences", G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES, 0,
-		NULL },
+	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
+		0, NULL },
 #endif
 	{ NULL, NULL, NULL, 0, NULL }
 };
@@ -189,8 +192,8 @@ static void _new_set_title(Editor * editor)
 {
 	char buf[256];
 
-	snprintf(buf, sizeof(buf), "%s%s", "Text editor - ", editor->filename
-		       	== NULL ? "(Untitled)" : editor->filename);
+	snprintf(buf, sizeof(buf), "%s%s", _("Text editor - "), editor->filename
+		       	== NULL ? _("(Untitled)") : editor->filename);
 	gtk_window_set_title(GTK_WINDOW(editor->window), buf);
 }
 
@@ -227,12 +230,12 @@ int editor_error(Editor * editor, char const * message, int ret)
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"Error");
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s",
 #endif
 			message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
@@ -259,16 +262,16 @@ gboolean editor_close(Editor * editor)
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"Warning");
+			_("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s",
 #endif
-			"There are unsaved changes.\n"
-			"Are you sure you want to close?");
+			_("There are unsaved changes.\n"
+				"Are you sure you want to close?"));
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_CLOSE,
 			GTK_RESPONSE_CLOSE, NULL);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_CLOSE)
@@ -298,23 +301,23 @@ static void _find_dialog(Editor * editor)
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
-	editor->fi_dialog = gtk_dialog_new_with_buttons("Find text",
+	editor->fi_dialog = gtk_dialog_new_with_buttons(_("Find text"),
 			GTK_WINDOW(editor->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 			GTK_STOCK_FIND, GTK_RESPONSE_ACCEPT, NULL);
 	vbox = GTK_DIALOG(editor->fi_dialog)->vbox;
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Text:");
+	widget = gtk_label_new(_("Text:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	editor->fi_text = gtk_entry_new();
 	g_signal_connect(G_OBJECT(editor->fi_text), "activate", G_CALLBACK(
 				_on_find_activate), editor);
 	gtk_box_pack_start(GTK_BOX(hbox), editor->fi_text, TRUE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 4);
-	editor->fi_case = gtk_check_button_new_with_label("Case-sensitive");
+	editor->fi_case = gtk_check_button_new_with_label(_("Case-sensitive"));
 	gtk_box_pack_start(GTK_BOX(vbox), editor->fi_case, TRUE, TRUE, 4);
-	editor->fi_wrap = gtk_check_button_new_with_label("Wrap");
+	editor->fi_wrap = gtk_check_button_new_with_label(_("Wrap"));
 	gtk_box_pack_start(GTK_BOX(vbox), editor->fi_wrap, TRUE, TRUE, 4);
 	gtk_widget_show_all(vbox);
 	g_signal_connect(G_OBJECT(editor->fi_dialog), "response", G_CALLBACK(
@@ -337,7 +340,7 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 				editor->fi_wrap));
 	if(_editor_find(editor, text, sensitive, wrap) == TRUE)
 		return;
-	editor_error(editor, "Text not found", 0);
+	editor_error(editor, _("Text not found"), 0);
 }
 
 static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
@@ -378,21 +381,21 @@ void editor_open(Editor * editor, char const * filename)
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-				"Warning");
+				_("Warning"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s",
 #endif
-				"There are unsaved changes.\n"
-				"Are you sure you want to discard them?");
+				_("There are unsaved changes.\n"
+				"Are you sure you want to discard them?"));
 		gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
 				GTK_RESPONSE_CANCEL,
 #if GTK_CHECK_VERSION(2, 12, 0)
 				GTK_STOCK_DISCARD,
 #else
-				"Discard",
+				_("Discard"),
 #endif
 				GTK_RESPONSE_CLOSE, NULL);
-		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 		if(res != GTK_RESPONSE_CLOSE)
@@ -450,7 +453,7 @@ void editor_open_dialog(Editor * editor)
 	GtkWidget * dialog;
 	char * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Open file...",
+	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
 			GTK_WINDOW(editor->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -500,7 +503,7 @@ gboolean editor_save(Editor * editor)
 	{
 		g_free(buf);
 		fclose(fp);
-		editor_error(editor, "Partial write", 0);
+		editor_error(editor, _("Partial write"), 0);
 		return FALSE;
 	}
 	g_free(buf);
@@ -524,11 +527,11 @@ gboolean editor_save_as(Editor * editor, char const * filename)
 				| GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
-				"Warning");
+				_("Warning"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					dialog), "%s",
 #endif
-				"File exists. Overwrite?");
+				_("File exists. Overwrite?"));
 		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
@@ -537,7 +540,7 @@ gboolean editor_save_as(Editor * editor, char const * filename)
 	}
 	g_free(editor->filename);
 	if((editor->filename = g_strdup(filename)) == NULL)
-		return editor_error(editor, "Allocation error", FALSE);
+		return editor_error(editor, _("Allocation error"), FALSE);
 	if(editor_save(editor) != TRUE)
 		return FALSE;
 	_new_set_title(editor);
@@ -552,7 +555,7 @@ gboolean editor_save_as_dialog(Editor * editor)
 	char * filename = NULL;
 	gboolean ret;
 
-	dialog = gtk_file_chooser_dialog_new("Save as...",
+	dialog = gtk_file_chooser_dialog_new(_("Save as..."),
 			GTK_WINDOW(editor->window),
 			GTK_FILE_CHOOSER_ACTION_SAVE,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -615,9 +618,7 @@ static gboolean _editor_find(Editor * editor, char const * text,
 static char const * _find_string(char const * big, char const * little,
 		gboolean sensitive)
 {
-	if(sensitive)
-		return strstr(big, little);
-	return strcasestr(big, little);
+	return sensitive ? strstr(big, little) : strcasestr(big, little);
 }
 
 static gboolean _find_match(Editor * editor, GtkTextBuffer * buffer,
