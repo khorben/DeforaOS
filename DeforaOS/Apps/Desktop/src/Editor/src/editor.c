@@ -148,8 +148,8 @@ Editor * editor_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(editor->window), "text-editor");
 #endif
-	g_signal_connect(G_OBJECT(editor->window), "delete-event", G_CALLBACK(
-			on_closex), editor);
+	g_signal_connect_swapped(G_OBJECT(editor->window), "delete-event",
+			G_CALLBACK(on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 #ifndef EMBEDDED

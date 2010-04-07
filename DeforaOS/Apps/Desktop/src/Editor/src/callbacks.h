@@ -22,7 +22,7 @@
 
 
 /* functions */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+gboolean on_closex(gpointer data);
 void on_edit_find(gpointer data);
 void on_edit_preferences(gpointer data);
 void on_file_close(gpointer data);

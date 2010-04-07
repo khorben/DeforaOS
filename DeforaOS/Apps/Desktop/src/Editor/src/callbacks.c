@@ -36,7 +36,7 @@ static char const * _authors[] =
 
 /* public */
 /* functions */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+gboolean on_closex(gpointer data)
 {
 	Editor * editor = data;
 
