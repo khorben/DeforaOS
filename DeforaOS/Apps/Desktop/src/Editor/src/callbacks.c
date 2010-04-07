@@ -55,10 +55,10 @@ void on_edit_find(gpointer data)
 
 /* on_edit_preferences */
 static void _preferences_set(Editor * editor);
-static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
+static void _preferences_on_cancel(gpointer data);
 static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
-static void _preferences_on_ok(GtkWidget * widget, gpointer data);
+static void _preferences_on_ok(gpointer data);
 
 void on_edit_preferences(gpointer data)
 {
@@ -101,12 +101,12 @@ void on_edit_preferences(gpointer data)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_ok), editor);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_preferences_on_cancel), editor);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
@@ -126,7 +126,7 @@ static void _preferences_set(Editor * editor)
 			editor->font);
 }
 
-static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
+static void _preferences_on_cancel(gpointer data)
 {
 	Editor * editor = data;
 
@@ -139,11 +139,11 @@ static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 {
 	Editor * editor = data;
 
-	_preferences_on_cancel(widget, editor);
+	_preferences_on_cancel(editor);
 	return TRUE;
 }
 
-static void _preferences_on_ok(GtkWidget * widget, gpointer data)
+static void _preferences_on_ok(gpointer data)
 {
 	Editor * editor = data;
 	char const * font;

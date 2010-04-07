@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-07 22:28+0200\n"
+"POT-Creation-Date: 2010-04-07 22:47+0200\n"
 "PO-Revision-Date: 2010-04-07 22:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -24,15 +24,15 @@ msgstr ""
 msgid "Font:"
 msgstr ""
 
-#: ../src/callbacks.c:263
+#: ../src/callbacks.c:262
 msgid "About Editor"
 msgstr ""
 
-#: ../src/callbacks.c:274
+#: ../src/callbacks.c:273
 msgid "C_redits"
 msgstr ""
 
-#: ../src/callbacks.c:278
+#: ../src/callbacks.c:277
 msgid "_License"
 msgstr ""
 
