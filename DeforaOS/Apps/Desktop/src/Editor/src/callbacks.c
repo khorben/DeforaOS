@@ -56,7 +56,7 @@ void on_edit_find(gpointer data)
 /* on_edit_preferences */
 static void _preferences_set(Editor * editor);
 static void _preferences_on_cancel(GtkWidget * widget, gpointer data);
-static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
+static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
 static void _preferences_on_ok(GtkWidget * widget, gpointer data);
 
@@ -83,7 +83,7 @@ void on_edit_preferences(gpointer data)
 	gtk_window_set_transient_for(GTK_WINDOW(editor->pr_window), GTK_WINDOW(
 				editor->window));
 	g_signal_connect(G_OBJECT(editor->pr_window), "delete-event",
-			G_CALLBACK(_preferences_on_close), editor);
+			G_CALLBACK(_preferences_on_closex), editor);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
@@ -134,13 +134,13 @@ static void _preferences_on_cancel(GtkWidget * widget, gpointer data)
 	_preferences_set(editor);
 }
 
-static gboolean _preferences_on_close(GtkWidget * widget, GdkEvent * event,
+static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	Editor * editor = data;
 
 	_preferences_on_cancel(widget, editor);
-	return FALSE;
+	return TRUE;
 }
 
 static void _preferences_on_ok(GtkWidget * widget, gpointer data)
@@ -200,8 +200,7 @@ void on_file_save_as(gpointer data)
 
 
 /* on_help_about */
-static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _about_on_closex(gpointer data);
 #if !GTK_CHECK_VERSION(2, 6, 0)
 static void _about_on_close(GtkWidget * widget, gpointer data);
 static void _about_on_credits(GtkWidget * widget, gpointer data);
@@ -229,8 +228,8 @@ void on_help_about(gpointer data)
 	window = gtk_about_dialog_new();
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				editor->window));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
 				gtk_widget_hide), NULL);
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
@@ -263,7 +262,7 @@ void on_help_about(gpointer data)
 	gtk_window_set_title(GTK_WINDOW(window), _("About Editor"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				editor->window));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 2);
 	gtk_box_pack_start(GTK_BOX(vbox), gtk_label_new(PACKAGE " " VERSION),
@@ -289,9 +288,10 @@ void on_help_about(gpointer data)
 }
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
-static gboolean _about_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _about_on_closex(gpointer data)
 {
+	GtkWidget * widget = data;
+
 	gtk_widget_hide(widget);
 	return TRUE;
 }
@@ -326,8 +326,8 @@ static void _about_on_credits(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), _("Credits"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
@@ -378,8 +378,8 @@ static void _about_on_license(GtkWidget * widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
 	gtk_window_set_title(GTK_WINDOW(window), _("License"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(about));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_about_on_closex), NULL);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_about_on_closex), window);
 	vbox = gtk_vbox_new(FALSE, 0);
 	textview = gtk_text_view_new();
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(textview), FALSE);
