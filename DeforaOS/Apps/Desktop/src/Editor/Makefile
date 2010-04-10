@@ -30,6 +30,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/de.po \
 		$(PACKAGE)-$(VERSION)/po/es.po \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/it.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/editor.c \

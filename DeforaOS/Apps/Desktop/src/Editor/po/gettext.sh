@@ -36,24 +36,16 @@ _debug()
 #gettext_mo
 _gettext_mo()
 {
-	lang="$2"
-
-	$DEBUG $MSGFMT -c -v -o "$lang.mo" "$lang.po"		|| return 1
-}
-
-
-#gettext_po
-_gettext_po()
-{
 	package="$1"
 	lang="$2"
 
 	if [ -f "$lang.po" ]; then
 		$DEBUG $MSGMERGE -U "$lang.po" "$package.pot"	|| return 1
-		return 0
-	fi
-	$DEBUG $MSGINIT -l "$lang" -o "$lang.po" -i "$package.pot" \
+	else
+		$DEBUG $MSGINIT -l "$lang" -o "$lang.po" -i "$package.pot" \
 								|| return 1
+	fi
+	$DEBUG $MSGFMT -c -v -o "$lang.mo" "$lang.po"		|| return 1
 }
 
 
@@ -84,9 +76,6 @@ fi
 case "$1" in
 	*.mo)
 		_gettext_mo "$PACKAGE" "${1%%.mo}"		|| exit 2
-		;;
-	*.po)
-		_gettext_po "$PACKAGE" "${1%%.po}"		|| exit 2
 		;;
 	*.pot)
 		_gettext_pot "${1%%.pot}"			|| exit 2

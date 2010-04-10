@@ -1,4 +1,4 @@
-TARGETS	= Surfer.pot de.po de.mo es.po es.mo fr.po fr.mo
+TARGETS	= Surfer.pot de.mo es.mo fr.mo
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -10,26 +10,17 @@ all: $(TARGETS)
 Surfer.pot: POTFILES
 	./gettext.sh "Surfer.pot"
 
-de.po: Surfer.pot
-	./gettext.sh "de.po"
-
-de.mo: de.po
+de.mo: Surfer.pot de.po
 	./gettext.sh "de.mo"
 
-es.po: Surfer.pot
-	./gettext.sh "es.po"
-
-es.mo: es.po
+es.mo: Surfer.pot es.po
 	./gettext.sh "es.mo"
 
-fr.po: Surfer.pot
-	./gettext.sh "fr.po"
-
-fr.mo: fr.po
+fr.mo: Surfer.pot fr.po
 	./gettext.sh "fr.mo"
 
 clean:
-	$(RM) $(Surfer.pot_OBJS) $(de.po_OBJS) $(de.mo_OBJS) $(es.po_OBJS) $(es.mo_OBJS) $(fr.po_OBJS) $(fr.mo_OBJS)
+	$(RM) $(Surfer.pot_OBJS) $(de.mo_OBJS) $(es.mo_OBJS) $(fr.mo_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
