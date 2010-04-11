@@ -22,12 +22,28 @@
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #ifdef WITH_WEBKIT
 # include <webkit/webkit.h>
 #else
 # define GNET_EXPERIMENTAL
 # include <gnet.h>
+#endif
+#include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
 #endif
 
 
@@ -134,7 +150,7 @@ static Download * _download_new(Prefs * prefs, char const * url)
 	download->pulse = 0;
 	/* window */
 	download->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	snprintf(buf, sizeof(buf), "%s %s", "Download", url);
+	snprintf(buf, sizeof(buf), "%s %s", _("Download"), url);
 	gtk_window_set_title(GTK_WINDOW(download->window), buf);
 	g_signal_connect(G_OBJECT(download->window), "delete-event", G_CALLBACK(
 				_download_on_closex), download);
@@ -143,21 +159,21 @@ static Download * _download_new(Prefs * prefs, char const * url)
 	pango_font_description_set_weight(bold, PANGO_WEIGHT_BOLD);
 	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
-	_download_label(vbox, bold, left, right, "File: ", &download->status,
+	_download_label(vbox, bold, left, right, _("File: "), &download->status,
 			prefs->output);
-	_download_label(vbox, bold, left, right, "Status: ", &download->status,
-			"Resolving...");
-	_download_label(vbox, bold, left, right, "Done: ", &download->done,
-			"0.0 kB");
-	_download_label(vbox, bold, left, right, "Speed: ", &download->speed,
-			"0.0 kB/s");
+	_download_label(vbox, bold, left, right, _("Status: "),
+			&download->status, _("Resolving..."));
+	_download_label(vbox, bold, left, right, _("Done: "), &download->done,
+			_("0.0 kB"));
+	_download_label(vbox, bold, left, right, _("Speed: "), &download->speed,
+			_("0.0 kB/s"));
 	/* progress bar */
 	download->progress = gtk_progress_bar_new();
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(download->progress), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), download->progress, TRUE, TRUE, 4);
 	/* checkbox */
 	download->check = gtk_check_button_new_with_label(
-			"Close window when the download is complete");
+			_("Close window when the download is complete"));
 	gtk_box_pack_start(GTK_BOX(vbox), download->check, TRUE, TRUE, 0);
 	/* button */
 	hbox = gtk_hbox_new(FALSE, 0);
@@ -244,7 +260,7 @@ static int _download_error(Download * download, char const * message, int ret)
 			? GTK_WINDOW(download->window) : NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	return ret;
@@ -275,13 +291,13 @@ static void _download_refresh(Download * download)
 		}
 		rate = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 		rate = download->data_received / rate;
-		snprintf(buf, sizeof(buf), "%.1f kB/s", rate);
+		snprintf(buf, sizeof(buf), _("%.1f kB/s"), rate);
 		gtk_label_set_text(GTK_LABEL(download->speed), buf);
 	}
 	if(download->content_length == 0)
 	{
 		rate = download->data_received / 1024;
-		snprintf(buf, sizeof(buf), "%.1f kB", rate);
+		snprintf(buf, sizeof(buf), _("%.1f kB"), rate);
 		gtk_label_set_text(GTK_LABEL(download->done), buf);
 		buf[0] = '\0';
 		if(download->pulse != 0)
@@ -295,7 +311,8 @@ static void _download_refresh(Download * download)
 	{
 		rate = download->data_received / 1024;
 		fraction = download->content_length / 1024;
-		snprintf(buf, sizeof(buf), "%.1f of %.1f kB", rate, fraction);
+		snprintf(buf, sizeof(buf), _("%.1f of %.1f kB"), rate,
+				fraction);
 		gtk_label_set_text(GTK_LABEL(download->done), buf);
 		fraction = (double)download->data_received
 			/ (double)download->content_length;
@@ -410,7 +427,7 @@ static void _download_on_http(GConnHttp * conn, GConnHttpEvent * event,
 
 static void _http_connected(Download * download)
 {
-	gtk_label_set_text(GTK_LABEL(download->status), "Connected");
+	gtk_label_set_text(GTK_LABEL(download->status), _("Connected"));
 	/* FIXME implement */
 }
 
@@ -418,7 +435,7 @@ static void _http_error(GConnHttpEventError * event, Download * download)
 {
 	char buf[10];
 
-	snprintf(buf, sizeof(buf), "%s %u", "Error ", event->code);
+	snprintf(buf, sizeof(buf), "%s %u", _("Error "), event->code);
 	gtk_label_set_text(GTK_LABEL(download->status), buf);
 	/* FIXME implement */
 }
@@ -443,14 +460,15 @@ static void _http_data_complete(GConnHttpEventData * event,
 		_download_cancel(download);
 		return;
 	}
-	gtk_label_set_text(GTK_LABEL(download->status), "Complete");
+	gtk_label_set_text(GTK_LABEL(download->status), _("Complete"));
 	gtk_button_set_label(GTK_BUTTON(download->cancel), GTK_STOCK_CLOSE);
 }
 
 static void _http_data_partial(GConnHttpEventData * event, Download * download)
 {
 	if(download->content_length == 0 && download->data_received == 0)
-		gtk_label_set_text(GTK_LABEL(download->status), "Downloading");
+		gtk_label_set_text(GTK_LABEL(download->status), _(
+					"Downloading"));
 	download->data_received = event->data_received;
 	download->content_length = event->content_length;
 	_download_write(download);
@@ -461,7 +479,7 @@ static void _http_redirect(GConnHttpEventRedirect * event, Download * download)
 	char buf[256];
 
 	if(event->new_location != NULL)
-		snprintf(buf, sizeof(buf), "%s %s", "Redirected to",
+		snprintf(buf, sizeof(buf), "%s %s", _("Redirected to"),
 				event->new_location);
 	else
 		strcpy(buf, "Redirected");
@@ -471,7 +489,7 @@ static void _http_redirect(GConnHttpEventRedirect * event, Download * download)
 
 static void _http_resolved(GConnHttpEventResolved * event, Download * download)
 {
-	gtk_label_set_text(GTK_LABEL(download->status), "Resolved");
+	gtk_label_set_text(GTK_LABEL(download->status), _("Resolved"));
 	/* FIXME implement */
 }
 
@@ -479,14 +497,14 @@ static void _http_response(GConnHttpEventResponse * event, Download * download)
 {
 	char buf[10];
 
-	snprintf(buf, sizeof(buf), "%s %u", "Code ", event->response_code);
+	snprintf(buf, sizeof(buf), "%s %u", _("Code "), event->response_code);
 	gtk_label_set_text(GTK_LABEL(download->status), buf);
 	/* FIXME implement */
 }
 
 static void _http_timeout(Download * download)
 {
-	gtk_label_set_text(GTK_LABEL(download->status), "Timeout");
+	gtk_label_set_text(GTK_LABEL(download->status), _("Timeout"));
 	/* FIXME implement */
 }
 #endif
@@ -525,7 +543,7 @@ static gboolean _download_on_idle(gpointer data)
 	download->conn = gnet_conn_http_new();
 	if(gnet_conn_http_set_method(download->conn, GNET_CONN_HTTP_METHOD_GET,
 			NULL, 0) != TRUE)
-		return _download_error(download, "Unknown error", FALSE);
+		return _download_error(download, _("Unknown error"), FALSE);
 	gnet_conn_http_set_uri(download->conn, download->url);
 	if(prefs->user_agent != NULL)
 		gnet_conn_http_set_user_agent(download->conn,
@@ -551,7 +569,7 @@ static gboolean _download_on_timeout(gpointer data)
 	{
 		case WEBKIT_DOWNLOAD_STATUS_ERROR:
 			ret = FALSE;
-			gtk_label_set_text(GTK_LABEL(d->status), "Error");
+			gtk_label_set_text(GTK_LABEL(d->status), _("Error"));
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_FINISHED:
 			/* XXX pasted from _http_data_complete */
@@ -562,7 +580,7 @@ static gboolean _download_on_timeout(gpointer data)
 				_download_cancel(d);
 				break;
 			}
-			gtk_label_set_text(GTK_LABEL(d->status), "Complete");
+			gtk_label_set_text(GTK_LABEL(d->status), _("Complete"));
 			gtk_button_set_label(GTK_BUTTON(d->cancel),
 					GTK_STOCK_CLOSE);
 			d->data_received = webkit_download_get_current_size(
@@ -571,7 +589,8 @@ static gboolean _download_on_timeout(gpointer data)
 					d->conn);
 			break;
 		case WEBKIT_DOWNLOAD_STATUS_STARTED:
-			gtk_label_set_text(GTK_LABEL(d->status), "Downloading");
+			gtk_label_set_text(GTK_LABEL(d->status), _(
+						"Downloading"));
 			d->data_received = webkit_download_get_current_size(
 					d->conn);
 			d->content_length = webkit_download_get_total_size(
@@ -591,9 +610,9 @@ static gboolean _download_on_timeout(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: download [-O output][-U user-agent] URL...\n"
+	fputs(_("Usage: download [-O output][-U user-agent] URL...\n"
 "  -O	file to write document to\n"
-"  -U	user agent string to send\n", stderr);
+"  -U	user agent string to send\n"), stderr);
 	return 1;
 }
 
@@ -606,6 +625,9 @@ int main(int argc, char * argv[])
 	Download ** download;
 	int cnt;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	memset(&prefs, 0, sizeof(prefs));
 	if(g_thread_supported() == FALSE)
 		g_thread_init(NULL);
