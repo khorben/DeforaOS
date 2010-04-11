@@ -16,8 +16,10 @@ esac
 [ -z "$CVSROOT" ] && CVSROOT=":pserver:anonymous@anoncvs.defora.org:/Data/CVS"
 [ -z "$OS" ] && OS=`uname -s`
 #private
+DATE=`date '+%Y%m%d'`
 DESTDIR="/var/www/htdocs/download/snapshots"
 DEVNULL="/dev/null"
+EMAIL="build@lists.defora.org"
 FILE="DeforaOS-daily.iso"
 KERNEL_VERSION="2.4.37.7"
 KERNEL_PATH="/usr/src/linux-$KERNEL_VERSION"
@@ -30,6 +32,7 @@ DST="$HOME/destdir/$OS-$ARCH"
 CP="cp -f"
 CONFIGURE="Apps/Devel/src/configure/src/configure -O DeforaOS"
 CVS="cvs -q"
+MAIL="mail"
 MAKE="make"
 MKDIR="mkdir -p"
 RM="rm -f"
@@ -48,54 +51,65 @@ error()
 }
 
 
+#deforaos_build
+deforaos_build()
+{
+	#configure cvs if necessary
+	[ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
+
+	#checkout tree
+	$RM -r "$SRC"
+	$MKDIR "$SRC"						|| error
+	cd "$SRC"						|| error
+	echo ""
+	echo "Checking out CVS module $MODULE:"
+	$CVS co "$MODULE" > "$DEVNULL"				|| error
+	SRC="$SRC/$MODULE"
+
+	#create directories
+	$RM -r "$DST"
+	$MKDIR "$DST"						|| error
+
+	#configuring tree
+	echo ""
+	echo "Configuring CVS module $MODULE:"
+	cd "$SRC"						|| error
+	$MAKE DESTDIR="$DST" PREFIX="$PREFIX" bootstrap < "$DEVNULL" \
+								|| error
+
+	#build
+	echo ""
+	echo "Building CVS module $MODULE:"
+	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
+			DESTDIR="$DST" PREFIX="$PREFIX" all	|| error
+
+	#create CD-ROM image
+	echo ""
+	echo "Creating CD-ROM image:"
+	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
+			DESTDIR="$DST" PREFIX="$PREFIX" \
+			IMAGE_TYPE="ramdisk" \
+			IMAGE_FILE="initrd.img" IMAGE_SIZE=8192 \
+			IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
+			image					|| error
+	$RM -r "$DST"
+	./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" \
+			DESTDIR="$DST" PREFIX="$PREFIX" \
+			IMAGE_TYPE="iso" \
+			IMAGE_FILE="DeforaOS-daily.iso" \
+			IMAGE_KERNEL="$KERNEL_PATH/arch/$ARCH/boot/bzImage" \
+			IMAGE_MODULES="$KERNEL_PATH/modules.tgz" \
+			IMAGE_RAMDISK="initrd.img" \
+			KERNEL_ARGS="vga=0x301 rw" \
+			image					|| error
+	$CP "$FILE" "$DESTDIR"					|| error
+	echo "http://www.defora.org/download/snapshots/$FILE"
+
+	#cleanup
+	$RM -r "$SRC"
+	$RM -r "$DST"
+}
+
+
 #main
-#configure cvs if necessary
-[ ! -f "$HOME/.cvspass" ] && touch "$HOME/.cvspass"
-
-#checkout tree
-$RM -r "$SRC"
-$MKDIR "$SRC"							|| error
-cd "$SRC"							|| error
-echo ""
-echo "Checking out CVS module $MODULE:"
-$CVS co "$MODULE" > "$DEVNULL"					|| error
-SRC="$SRC/$MODULE"
-
-#create directories
-$RM -r "$DST"
-$MKDIR "$DST"							|| error
-
-#configuring tree
-echo ""
-echo "Configuring CVS module $MODULE:"
-cd "$SRC"							|| error
-$MAKE DESTDIR="$DST" PREFIX="$PREFIX" bootstrap < "$DEVNULL"	|| error
-
-#build
-echo ""
-echo "Building CVS module $MODULE:"
-./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" DESTDIR="$DST" PREFIX="$PREFIX" \
-		      all					|| error
-
-#create CD-ROM image
-echo ""
-echo "Creating CD-ROM image:"
-./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" DESTDIR="$DST" PREFIX="$PREFIX" \
-		IMAGE_TYPE="ramdisk" IMAGE_FILE="initrd.img" IMAGE_SIZE=8192 \
-		IMAGE_MODULES="$KERNEL_PATH/modules-ramdisk.tgz" \
-		image						|| error
-$RM -r "$DST"
-./build.sh CONFIGURE="$CONFIGURE" MAKE="$MAKE" DESTDIR="$DST" PREFIX="$PREFIX" \
-		IMAGE_TYPE="iso" \
-		IMAGE_FILE="DeforaOS-daily.iso" \
-		IMAGE_KERNEL="$KERNEL_PATH/arch/i386/boot/bzImage" \
-		IMAGE_MODULES="$KERNEL_PATH/modules.tgz" \
-		IMAGE_RAMDISK="initrd.img" \
-		KERNEL_ARGS="vga=0x301 rw" \
-		image						|| error
-$CP "$FILE" "$DESTDIR"						|| error
-echo "http://www.defora.org/download/snapshots/$FILE"
-
-#cleanup
-$RM -r "$SRC"
-$RM -r "$DST"
+deforaos_build 2>&1 | $MAIL -s "Daily CVS build Linux $ARCH: $DATE" "$EMAIL"
