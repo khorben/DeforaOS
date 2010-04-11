@@ -204,19 +204,19 @@ msgstr ""
 msgid "Unknown error"
 msgstr ""
 
-#: ../src/surfer.c:537
+#: ../src/surfer.c:529
 msgid "Find text"
 msgstr "Buscar"
 
-#: ../src/surfer.c:544
+#: ../src/surfer.c:536
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:551
+#: ../src/surfer.c:545
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:553
+#: ../src/surfer.c:548
 msgid "Wrap"
 msgstr ""
 
