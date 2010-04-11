@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-11 15:07+0200\n"
+"POT-Creation-Date: 2010-04-11 15:12+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -77,7 +77,7 @@ msgstr ""
 msgid "Unspecified error"
 msgstr ""
 
-#: ../src/common/conn.c:305 ../src/download.c:507 ../src/ghtml-gtkhtml.c:995
+#: ../src/common/conn.c:305 ../src/download.c:507 ../src/ghtml-gtkhtml.c:996
 msgid "Timeout"
 msgstr ""
 
@@ -176,23 +176,23 @@ msgstr ""
 msgid "Reading file..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:912
+#: ../src/ghtml-gtkhtml.c:915
 msgid "Redirecting..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:922
+#: ../src/ghtml-gtkhtml.c:923
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:956
+#: ../src/ghtml-gtkhtml.c:957
 msgid "Connecting..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:959
+#: ../src/ghtml-gtkhtml.c:960
 msgid "Connecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1117
+#: ../src/ghtml-gtkhtml.c:1118
 msgid "Unsupported method"
 msgstr ""
 

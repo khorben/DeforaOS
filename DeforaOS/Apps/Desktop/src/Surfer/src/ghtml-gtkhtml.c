@@ -909,9 +909,10 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 {
 	GHtml * ghtml = conn->ghtml;
-	char buf[256] = _("Redirecting...");
+	char buf[256];
 	char * url = event->new_location;
 
+	snprintf(buf, sizeof(buf), "%s", _("Redirecting..."));
 	if(conn == conn->ghtml->conns[0] && url == NULL) /* XXX ugly */
 	{
 		surfer_set_status(ghtml->surfer, buf);
