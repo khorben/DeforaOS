@@ -15,10 +15,12 @@
 
 
 
+#include <libintl.h>
 #include <webkit/webkit.h>
 #include "ghtml.h"
 #include "common.h" /* XXX should not be needed */
 #include "common/url.c"
+#define _(string) gettext(string)
 
 
 /* private */
@@ -382,7 +384,7 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	if(error == NULL)
-		return surfer_error(surfer, "Unknown error", TRUE);
+		return surfer_error(surfer, _("Unknown error"), TRUE);
 	if(error->domain == WEBKIT_NETWORK_ERROR
 			&& error->code == WEBKIT_NETWORK_ERROR_CANCELLED)
 		return TRUE; /* ignored if the user cancelled it */
@@ -431,7 +433,7 @@ static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_set_progress(surfer, 0.0);
-	surfer_set_status(surfer, "Downloading...");
+	surfer_set_status(surfer, _("Downloading..."));
 }
 
 

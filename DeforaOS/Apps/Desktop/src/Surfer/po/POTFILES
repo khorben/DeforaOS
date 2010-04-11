@@ -1,5 +1,7 @@
 ../src/callbacks.c
 ../src/common/conn.c
 ../src/download.c
+../src/ghtml-gtkhtml.c
+../src/ghtml-webkit.c
 ../src/main.c
 ../src/surfer.c

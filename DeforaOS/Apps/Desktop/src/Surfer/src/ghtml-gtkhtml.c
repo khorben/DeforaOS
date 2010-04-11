@@ -631,7 +631,7 @@ static gboolean _stream_load_idle(gpointer data)
 	}
 	if(strncmp(conn->url, "http:", 5) == 0)
 		return _stream_load_idle_http(conn);
-	surfer_error(conn->ghtml->surfer, "Unknown protocol", 0);
+	surfer_error(conn->ghtml->surfer, _("Unknown protocol"), 0);
 	_ghtmlconn_delete(conn);
 	return FALSE;
 }
@@ -697,7 +697,7 @@ static gboolean _stream_load_idle_file(GHtmlConn * conn)
 	else
 	{
 		surfer_set_progress(conn->ghtml->surfer, 0.0);
-		surfer_set_status(conn->ghtml->surfer, "Reading file...");
+		surfer_set_status(conn->ghtml->surfer, _("Reading file..."));
 		if(fstat(fd, &st) == 0)
 		{
 			if(S_ISDIR(st.st_mode))
@@ -755,7 +755,7 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 static gboolean _stream_load_idle_http(GHtmlConn * conn)
 {
 	surfer_set_progress(conn->ghtml->surfer, -1.0);
-	surfer_set_status(conn->ghtml->surfer, "Resolving...");
+	surfer_set_status(conn->ghtml->surfer, _("Resolving..."));
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
 	gnet_conn_http_set_user_agent(conn->http, "DeforaOS " PACKAGE);
@@ -805,7 +805,7 @@ static void _stream_load_watch_http(GConnHttp * connhttp,
 
 static void _http_connected(GHtmlConn * conn)
 {
-	surfer_set_status(conn->ghtml->surfer, "Connected");
+	surfer_set_status(conn->ghtml->surfer, _("Connected"));
 }
 
 static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
@@ -840,7 +840,7 @@ static void _http_data_partial(GConnHttpEventData * event, GHtmlConn * conn)
 	gchar * buf;
 	gsize size;
 
-	surfer_set_status(conn->ghtml->surfer, "Downloading...");
+	surfer_set_status(conn->ghtml->surfer, _("Downloading..."));
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 	{
 		/* FIXME report error */
@@ -886,16 +886,16 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 	switch(event->code)
 	{
 		case GNET_CONN_HTTP_ERROR_PROTOCOL_UNSUPPORTED:
-			msg = "Unsupported protocol";
+			msg = _("Unsupported protocol");
 			break;
 #if GNET_CHECK_VERSION(2, 0, 8) /* XXX unsure about the exact version */
 		case GNET_CONN_HTTP_ERROR_HOSTNAME_RESOLUTION:
-			msg = "Unknown host";
+			msg = _("Unknown host");
 			break;
 #endif
 		case GNET_CONN_HTTP_ERROR_UNSPECIFIED:
 		default:
-			msg = "Unspecified error";
+			msg = _("Unspecified error");
 			break;
 	}
 	surfer_set_progress(conn->ghtml->surfer, -1.0);
@@ -907,7 +907,7 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 {
 	GHtml * ghtml = conn->ghtml;
-	char buf[256] = "Redirecting...";
+	char buf[256] = _("Redirecting...");
 	char * url = event->new_location;
 
 	if(conn == conn->ghtml->conns[0] && url == NULL) /* XXX ugly */
@@ -917,7 +917,7 @@ static void _http_redirect(GConnHttpEventRedirect * event, GHtmlConn * conn)
 	}
 	if((url = _ghtml_make_url(_ghtml_get_base(ghtml), url)) != NULL)
 	{
-		snprintf(buf, sizeof(buf), "%s %s", "Redirecting to ", url);
+		snprintf(buf, sizeof(buf), "%s %s", _("Redirecting to "), url);
 		g_free(conn->url);
 		conn->url = url;
 	}
@@ -951,11 +951,11 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 #endif
 	}
 	else if((name = gnet_inetaddr_get_name_nonblock(event->ia)) == NULL)
-		surfer_set_status(conn->ghtml->surfer, "Connecting...");
+		surfer_set_status(conn->ghtml->surfer, _("Connecting..."));
 	else
 	{
-		snprintf(buf, sizeof(buf), "%s%s%s%d", "Connecting to ", name,
-				":", gnet_inetaddr_get_port(event->ia));
+		snprintf(buf, sizeof(buf), "%s%s%s%d", _("Connecting to "),
+				name, ":", gnet_inetaddr_get_port(event->ia));
 		surfer_set_status(conn->ghtml->surfer, buf);
 	}
 }
@@ -990,7 +990,7 @@ static void _http_response(GConnHttpEventResponse * event, GHtmlConn * conn)
 
 static void _http_timeout(GHtmlConn * conn)
 {
-	surfer_error(conn->ghtml->surfer, "Timed out", 0);
+	surfer_error(conn->ghtml->surfer, _("Timeout"), 0);
 	surfer_set_progress(conn->ghtml->surfer, -1.0);
 	surfer_set_status(conn->ghtml->surfer, NULL);
 	_ghtmlconn_delete(conn);
@@ -1112,7 +1112,7 @@ static void _on_submit(HtmlDocument * document, const gchar * url,
 	else if(strcasecmp(method, "POST") == 0)
 		_ghtml_document_load(ghtml, u, encoding);
 	else
-		surfer_error(ghtml->surfer, "Unsupported method", 0);
+		surfer_error(ghtml->surfer, _("Unsupported method"), 0);
 	g_free(u);
 }
 

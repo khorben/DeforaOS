@@ -16,11 +16,13 @@
 
 
 #include <stdlib.h>
+#include <libintl.h>
 #include "ghtml.h"
 #include "../config.h"
 #include "common/conn.c"
 #include "common/history.c"
 #include "common/url.c"
+#define _(string) gettext(string)
 
 
 /* private */
