@@ -33,6 +33,7 @@
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
+#include <libintl.h>
 #include <libgtkhtml/gtkhtml.h>
 #include <libgtkhtml/view/htmlselection.h>
 #define GNET_EXPERIMENTAL
@@ -43,7 +44,7 @@
 #include "../config.h"
 #include "common/history.c"
 #include "common/url.c"
-
+#define _(string) gettext(string)
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
 
