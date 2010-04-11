@@ -27,7 +27,7 @@ player: $(player_OBJS)
 callbacks.o: callbacks.c callbacks.h player.h
 	$(CC) $(player_CFLAGS) -c callbacks.c
 
-player.o: player.c callbacks.h player.h
+player.o: player.c callbacks.h player.h ../config.h
 	$(CC) $(player_CFLAGS) -c player.c
 
 main.o: main.c player.h
