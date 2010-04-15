@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -331,7 +331,8 @@ static int _usage(void)
   -i	Include files directory (default: \"", prefs.includedir, "\")\n\
   -l	Library files directory (default: \"", prefs.libdir, "\")\n\
   -O	Force Operating System (default: auto-detected)\n\
-  -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n");
+  -p	Installation directory prefix (default: \"", prefs.prefix, "\")\n\
+  -S	Warn about security risks\n");
 	return 1;
 }
 
@@ -343,7 +344,7 @@ int main(int argc, char * argv[])
 	int o;
 
 	_prefs_init(&prefs);
-	while((o = getopt(argc, argv, "d:i:l:nO:p:v")) != -1)
+	while((o = getopt(argc, argv, "d:i:l:nO:p:Sv")) != -1)
 		switch(o)
 		{
 			case 'b':
@@ -366,6 +367,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'p':
 				prefs.prefix = optarg;
+				break;
+			case 'S':
+				prefs.flags |= PREFS_S;
 				break;
 			case 'v':
 				prefs.flags |= PREFS_v;

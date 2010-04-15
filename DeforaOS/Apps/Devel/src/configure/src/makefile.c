@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel configure */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,6 +12,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - only check the PREFS_n flags inside a wrapper around fputs()/fprintf() */
 
 
 
@@ -1131,6 +1133,10 @@ static int _target_script(Configure * configure, FILE * fp,
 				": No script for target\n");
 		return 1;
 	}
+	if(configure->prefs->flags & PREFS_S)
+		error_set_print(PACKAGE, 0, "%s: %s%s%s", target, "the \"",
+				script,
+				"\" script is executed while compiling");
 	if(configure->prefs->flags & PREFS_n)
 		return 0;
 	fprintf(fp, "\n%s:", target);
@@ -1746,8 +1752,11 @@ static int _install_include(Config * config, FILE * fp, String const * include)
 	return 0;
 }
 
+static int _dist_check(Configure * configure, char const * target,
+		char const * mode);
 static int _install_dist(Configure * configure, FILE * fp)
 {
+	int ret = 0;
 	String const * p;
 	String * dist;
 	String * q;
@@ -1769,6 +1778,7 @@ static int _install_dist(Configure * configure, FILE * fp)
 		dist[i] = '\0';
 		if((m = config_get(configure->config, dist, "mode")) == NULL)
 			m = "0644";
+		ret |= _dist_check(configure, dist, m);
 		if((d = config_get(configure->config, dist, "install")) != NULL)
 		{
 			fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", d);
@@ -1781,6 +1791,34 @@ static int _install_dist(Configure * configure, FILE * fp)
 		i = 0;
 	}
 	string_delete(q);
+	return ret;
+}
+
+static int _dist_check(Configure * configure, char const * target,
+		char const * mode)
+{
+	char * p;
+	mode_t m;
+
+	m = strtol(mode, &p, 8);
+	if(mode[0] == '\0' || *p != '\0')
+		return error_set_print(PACKAGE, 1, "%s: %s%s%s", target,
+				"Invalid permissions \"", mode, "\"");
+	if((configure->prefs->flags & PREFS_S) && (m & 04000))
+		error_set_print(PACKAGE, 0, "%s: %s", target,
+				"Installed as a SUID file");
+	if((configure->prefs->flags & PREFS_S) && (m & 04000))
+		error_set_print(PACKAGE, 0, "%s: %s", target,
+				"Installed as a SGID file");
+	if((configure->prefs->flags & PREFS_S) && (m & 0111))
+		error_set_print(PACKAGE, 0, "%s: %s", target,
+				"Installed as an executable file");
+	if((configure->prefs->flags & PREFS_S) && (m & 0020))
+		error_set_print(PACKAGE, 0, "%s: %s", target,
+				"Installed as a group-writable file");
+	if((configure->prefs->flags & PREFS_S) && (m & 0002))
+		error_set_print(PACKAGE, 0, "%s: %s", target,
+				"Installed as a writable file");
 	return 0;
 }
 

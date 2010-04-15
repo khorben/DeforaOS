@@ -104,7 +104,8 @@ typedef struct _Prefs
 	char * os;
 } Prefs;
 # define PREFS_n	0x1
-# define PREFS_v	0x2
+# define PREFS_S	0x2
+# define PREFS_v	0x4
 typedef struct _Configure
 {
 	Prefs * prefs;
