@@ -3,7 +3,7 @@ configure release notes
 
 configure automatically generates Makefiles from project definition files.
 
-configure is Copyright (c) 2005-2009 Pierre Pronchery <khorben@defora.org>
+configure is Copyright (c) 2005-2010 Pierre Pronchery <khorben@defora.org>
 
 configure depends on the DeforaOS libSystem library, which is found on the
 DeforaOS project web site: http://www.defora.org/
