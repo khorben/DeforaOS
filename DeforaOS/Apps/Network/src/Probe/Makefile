@@ -31,6 +31,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/create.sh \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/DaMon \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/Probe \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
