@@ -15,7 +15,7 @@ subdirs:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 bootstrap:
-	./build.sh bootstrap
+	./build.sh PREFIX="$(PREFIX)" bootstrap
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
