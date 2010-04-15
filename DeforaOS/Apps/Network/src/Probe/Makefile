@@ -1,5 +1,5 @@
 PACKAGE	= Probe
-VERSION	= 0.0.1
+VERSION	= 0.0.2
 SUBDIRS	= data src tools
 RM	= rm -f
 LN	= ln -f
