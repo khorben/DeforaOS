@@ -1134,7 +1134,7 @@ static int _target_script(Configure * configure, FILE * fp,
 		return 1;
 	}
 	if(configure->prefs->flags & PREFS_S)
-		error_set_print(PACKAGE, 0, "%s: %s%s%s", target, "the \"",
+		error_set_print(PACKAGE, 0, "%s: %s%s%s", target, "The \"",
 				script,
 				"\" script is executed while compiling");
 	if(configure->prefs->flags & PREFS_n)
