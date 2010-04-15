@@ -8,25 +8,25 @@ msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-04-07 22:49+0200\n"
-"PO-Revision-Date: 2010-04-07 22:08+0200\n"
-"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"PO-Revision-Date: 2010-04-11 12:32+0200\n"
+"Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../src/callbacks.c:81
 msgid "Text editor preferences"
-msgstr "Préférences de l'éditeur de textes"
+msgstr "Préférences de l'éditeur de texte"
 
 #: ../src/callbacks.c:90
 msgid "Font:"
-msgstr "Police:"
+msgstr "Police :"
 
 #: ../src/callbacks.c:260
 msgid "About Editor"
-msgstr "À propos de Editor"
+msgstr "À propos d'Editor"
 
 #: ../src/callbacks.c:271
 msgid "C_redits"
@@ -122,15 +122,15 @@ msgstr "Ouvrir"
 
 #: ../src/editor.c:101
 msgid "Save"
-msgstr ""
+msgstr "Enregistrer"
 
 #: ../src/editor.c:102
 msgid "Save as"
-msgstr ""
+msgstr "Enregistrer sous"
 
 #: ../src/editor.c:105
 msgid "Preferences"
-msgstr ""
+msgstr "Préférences"
 
 #: ../src/editor.c:195
 msgid "Text editor - "
@@ -154,6 +154,8 @@ msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to close?"
 msgstr ""
+"Il y a des modifications non enregistrées.\n"
+"Voulez-vous fermer tout de même ?"
 
 #: ../src/editor.c:304
 msgid "Find text"
@@ -161,45 +163,47 @@ msgstr "Rechercher"
 
 #: ../src/editor.c:311
 msgid "Text:"
-msgstr "Texte:"
+msgstr "Texte :"
 
 #: ../src/editor.c:318
 msgid "Case-sensitive"
-msgstr ""
+msgstr "Sensible à la casse"
 
 #: ../src/editor.c:320
 msgid "Wrap"
-msgstr ""
+msgstr "Boucler"
 
 #: ../src/editor.c:343
 msgid "Text not found"
-msgstr ""
+msgstr "Texte non trouvé"
 
 #: ../src/editor.c:388
 msgid ""
 "There are unsaved changes.\n"
 "Are you sure you want to discard them?"
 msgstr ""
+"Il y a des changements non enregistrés.\n"
+"Êtes-vous sûr de vouloir les annuler ?"
 
 #: ../src/editor.c:395
 msgid "Discard"
-msgstr ""
+msgstr "Annuler"
 
 #: ../src/editor.c:456
 msgid "Open file..."
-msgstr ""
+msgstr "Ouvrir un fichier..."
 
 #: ../src/editor.c:506
 msgid "Partial write"
-msgstr ""
+msgstr "Écriture partielle"
 
 #: ../src/editor.c:534
 msgid "File exists. Overwrite?"
-msgstr ""
+msgstr "Le fichier existe. L'écraser ?"
 
 #: ../src/editor.c:543
 msgid "Allocation error"
-msgstr ""
+msgstr "Erreur d'allocation"
 
 #: ../src/editor.c:558
 msgid "Save as..."
