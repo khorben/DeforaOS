@@ -1,6 +1,6 @@
 PACKAGE	= Init
 VERSION	= 0.0.0
-SUBDIRS	= data src
+SUBDIRS	= data src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -35,6 +35,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/service.h \
 		$(PACKAGE)-$(VERSION)/src/session.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/netbsd/Init \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
