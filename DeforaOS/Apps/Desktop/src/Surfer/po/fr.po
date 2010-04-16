@@ -9,10 +9,10 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-04-11 15:12+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
-"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
@@ -46,7 +46,7 @@ msgstr "Préférences de Web surfer"
 
 #: ../src/callbacks.c:532
 msgid "Homepage:"
-msgstr "Page d'accueil:"
+msgstr "Page d'accueil :"
 
 #: ../src/callbacks.c:539
 msgid "General"
@@ -54,7 +54,7 @@ msgstr "Général"
 
 #: ../src/common/conn.c:163 ../src/download.c:165 ../src/ghtml-gtkhtml.c:760
 msgid "Resolving..."
-msgstr "Résolution du nom..."
+msgstr "Résolution du domaine..."
 
 #: ../src/common/conn.c:212 ../src/download.c:430 ../src/ghtml-gtkhtml.c:810
 msgid "Connected"
@@ -67,7 +67,7 @@ msgstr "Téléchargement..."
 
 #: ../src/common/conn.c:262 ../src/ghtml-gtkhtml.c:891
 msgid "Unsupported protocol"
-msgstr ""
+msgstr "Protocole non supporté"
 
 #: ../src/common/conn.c:266 ../src/ghtml-gtkhtml.c:895
 msgid "Unknown host"
@@ -79,7 +79,7 @@ msgstr "Erreur non spécifiée"
 
 #: ../src/common/conn.c:305 ../src/download.c:507 ../src/ghtml-gtkhtml.c:996
 msgid "Timeout"
-msgstr ""
+msgstr "Délai dépassé"
 
 #: ../src/download.c:153
 msgid "Download"
@@ -87,31 +87,31 @@ msgstr "Téléchargement"
 
 #: ../src/download.c:162
 msgid "File: "
-msgstr "Fichier: "
+msgstr "Fichier : "
 
 #: ../src/download.c:164
 msgid "Status: "
-msgstr ""
+msgstr "Statut : "
 
 #: ../src/download.c:166
 msgid "Done: "
-msgstr ""
+msgstr "Fait : "
 
 #: ../src/download.c:167
 msgid "0.0 kB"
-msgstr ""
+msgstr "0.0 Kio"
 
 #: ../src/download.c:168
 msgid "Speed: "
-msgstr ""
+msgstr "Vitesse : "
 
 #: ../src/download.c:169
 msgid "0.0 kB/s"
-msgstr ""
+msgstr "0.0 Kio/s"
 
 #: ../src/download.c:176
 msgid "Close window when the download is complete"
-msgstr ""
+msgstr "Fermer la fenêtre à la fin du téléchargement"
 
 #: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:506
 #: ../src/surfer.c:509
@@ -121,17 +121,17 @@ msgstr "Erreur"
 #: ../src/download.c:294
 #, c-format
 msgid "%.1f kB/s"
-msgstr ""
+msgstr "%.1f Kio/s"
 
 #: ../src/download.c:300
 #, c-format
 msgid "%.1f kB"
-msgstr ""
+msgstr "%.1f Kio"
 
 #: ../src/download.c:314
 #, c-format
 msgid "%.1f of %.1f kB"
-msgstr ""
+msgstr "%.1f de %.1f Kio"
 
 #: ../src/download.c:438
 msgid "Error "
@@ -139,7 +139,7 @@ msgstr "Erreur "
 
 #: ../src/download.c:463 ../src/download.c:583
 msgid "Complete"
-msgstr ""
+msgstr "Terminé"
 
 #: ../src/download.c:471 ../src/download.c:593
 msgid "Downloading"
@@ -147,11 +147,11 @@ msgstr "Téléchargement"
 
 #: ../src/download.c:482
 msgid "Redirected to"
-msgstr ""
+msgstr "Redirigé vers"
 
 #: ../src/download.c:492
 msgid "Resolved"
-msgstr ""
+msgstr "Résolu"
 
 #: ../src/download.c:500
 msgid "Code "
@@ -167,34 +167,37 @@ msgid ""
 "  -O\tfile to write document to\n"
 "  -U\tuser agent string to send\n"
 msgstr ""
+"Usage: download [-O sortie][-U user-agent] URL...\n"
+"  -O\tfichier de destination\n"
+"  -U\tuser-agent à utiliser\n"
 
 #: ../src/ghtml-gtkhtml.c:636
 msgid "Unknown protocol"
-msgstr ""
+msgstr "Protocole inconnu"
 
 #: ../src/ghtml-gtkhtml.c:702
 msgid "Reading file..."
-msgstr ""
+msgstr "Lecture du fichier..."
 
 #: ../src/ghtml-gtkhtml.c:915
 msgid "Redirecting..."
-msgstr ""
+msgstr "Redirection..."
 
 #: ../src/ghtml-gtkhtml.c:923
 msgid "Redirecting to "
-msgstr ""
+msgstr "Redirection vers "
 
 #: ../src/ghtml-gtkhtml.c:957
 msgid "Connecting..."
-msgstr ""
+msgstr "Connexion..."
 
 #: ../src/ghtml-gtkhtml.c:960
 msgid "Connecting to "
-msgstr ""
+msgstr "Connexion à "
 
 #: ../src/ghtml-gtkhtml.c:1118
 msgid "Unsupported method"
-msgstr ""
+msgstr "Méthode non supportée"
 
 #: ../src/main.c:42
 msgid "Usage: surfer [URL]\n"
@@ -218,7 +221,7 @@ msgstr "Enregistrer _sous..."
 
 #: ../src/surfer.c:58
 msgid "_Print..."
-msgstr ""
+msgstr "Imprimer..."
 
 #: ../src/surfer.c:60
 msgid "_Close"
@@ -246,7 +249,7 @@ msgstr "Tout désélectionner"
 
 #: ../src/surfer.c:80
 msgid "_Find"
-msgstr ""
+msgstr "Rechercher"
 
 #: ../src/surfer.c:83
 msgid "_Preferences"
@@ -254,11 +257,11 @@ msgstr "_Préférences"
 
 #: ../src/surfer.c:90
 msgid "Zoom in"
-msgstr "Zoomer"
+msgstr "Zoom +"
 
 #: ../src/surfer.c:92
 msgid "Zoom out"
-msgstr "Dézoomer"
+msgstr "Zoom -"
 
 #: ../src/surfer.c:94
 msgid "Normal size"
@@ -274,7 +277,7 @@ msgstr "Actualisation forcée"
 
 #: ../src/surfer.c:100
 msgid "_Stop"
-msgstr ""
+msgstr "Arrêter"
 
 #: ../src/surfer.c:102
 msgid "Page so_urce"
@@ -302,7 +305,7 @@ msgstr " Adresse: "
 
 #: ../src/surfer.c:254
 msgid "Could not initialize HTML renderer"
-msgstr ""
+msgstr "Ne peut charger le moteur de rendu HTML"
 
 #: ../src/surfer.c:455 ../src/surfer.c:458
 msgid "Question"
@@ -322,7 +325,7 @@ msgstr "Texte: "
 
 #: ../src/surfer.c:551
 msgid "Case-sensitive"
-msgstr ""
+msgstr "Sensible à la casse"
 
 #: ../src/surfer.c:553
 msgid "Wrap"
