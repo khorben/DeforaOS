@@ -155,7 +155,7 @@ msgstr "Résolu"
 
 #: ../src/download.c:500
 msgid "Code "
-msgstr ""
+msgstr "Code "
 
 #: ../src/download.c:546 ../src/ghtml-webkit.c:387 ../src/surfer.c:508
 msgid "Unknown error"
