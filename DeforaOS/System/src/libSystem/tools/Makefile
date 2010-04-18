@@ -1,4 +1,4 @@
-TARGETS	= AppBroker
+TARGETS	= AppBroker AppClient
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -24,11 +24,21 @@ AppBroker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 AppBroker: $(AppBroker_OBJS)
 	$(CC) -o AppBroker $(AppBroker_OBJS) $(AppBroker_LDFLAGS)
 
+AppClient_OBJS = appclient.o
+AppClient_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+AppClient_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+AppClient: $(AppClient_OBJS)
+	$(CC) -o AppClient $(AppClient_OBJS) $(AppClient_LDFLAGS)
+
 appbroker.o: appbroker.c
 	$(CC) $(AppBroker_CFLAGS) -c appbroker.c
 
+appclient.o: appclient.c
+	$(CC) $(AppClient_CFLAGS) -c appclient.c
+
 clean:
-	$(RM) $(AppBroker_OBJS)
+	$(RM) $(AppBroker_OBJS) $(AppClient_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
