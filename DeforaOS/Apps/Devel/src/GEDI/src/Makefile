@@ -17,12 +17,15 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-gedi_OBJS = gedi.o main.o project.o
+gedi_OBJS = callbacks.o gedi.o main.o project.o
 gedi_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gedi_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 gedi: $(gedi_OBJS)
 	$(CC) -o gedi $(gedi_OBJS) $(gedi_LDFLAGS)
+
+callbacks.o: callbacks.c ../config.h gedi.h
+	$(CC) $(gedi_CFLAGS) -c callbacks.c
 
 gedi.o: gedi.c ../config.h gedi.h
 	$(CC) $(gedi_CFLAGS) -c gedi.c
