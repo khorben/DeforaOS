@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Devel GEDI */
 /* GEDI is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -26,6 +26,10 @@ static char const _copyright[] =
 /* GEDI */
 /* constants */
 #define ICON_NAME	"applications-development"
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
 
 
 /* callbacks */
@@ -115,9 +119,7 @@ static void _new_config(GEDI * g)
 		gedi_error(g, "Could not read configuration", strerror(errno));
 		return;
 	}
-#ifdef PREFIX
-	config_load(g->config, PREFIX "/etc/GEDI.conf");
-#endif
+	config_load(g->config, PREFIX "/etc/" PACKAGE ".conf");
 	if((filename = _config_file()) == NULL)
 		return;
 	config_load(g->config, filename);
