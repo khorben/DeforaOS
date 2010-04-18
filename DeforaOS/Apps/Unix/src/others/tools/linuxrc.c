@@ -92,7 +92,7 @@ static int _linuxrc_error(char const * message, int ret)
 
 
 /* linuxrc_mount_cdrom */
-static int _linuxrc_mount_cdrom(char const * source, char const * dir)
+static int _linuxrc_mount_cdrom(char * source, char const * dir)
 {
 	struct iso_args ia;
 
