@@ -37,7 +37,14 @@ gboolean on_closex(gpointer data)
 /* on_file_new */
 void on_file_new(gpointer data)
 {
-	/* FIXME */
+	GEDI * gedi = data;
+	char * argv[] = { "editor", NULL };
+	GError * error = NULL;
+
+	/* FIXME get the actual editor to launch from the configuration */
+	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+				NULL, &error) != TRUE)
+		gedi_error(gedi, argv[0], 0);
 }
 
 
