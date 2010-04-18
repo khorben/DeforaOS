@@ -28,6 +28,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
 void on_file_new(gpointer data);
 void on_file_open(gpointer data);
 void on_file_preferences(gpointer data);
+void on_file_exit(gpointer data);
 
 /* project menu */
 void on_project_new(gpointer data);
@@ -38,8 +39,5 @@ void on_project_save_as(gpointer data);
 
 /* help menu */
 void on_help_about(gpointer data);
-
-/* toolbar */
-void on_exit(gpointer data);
 
 #endif /* !GEDI_CALLBACKS_H */

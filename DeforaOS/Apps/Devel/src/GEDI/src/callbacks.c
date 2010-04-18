@@ -26,11 +26,11 @@ static char const _copyright[] =
 
 
 /* callbacks */
-/* on_exit */
-void on_exit(gpointer data)
+/* _on_closex */
+gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-	/* FIXME check that everything is properly saved */
-	gtk_main_quit();
+	on_file_exit(data);
+	return FALSE;
 }
 
 
@@ -166,6 +166,14 @@ static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 }
 
 
+/* on_file_exit */
+void on_file_exit(gpointer data)
+{
+	/* FIXME check that everything is properly saved */
+	gtk_main_quit();
+}
+
+
 /* on_help_about */
 static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
@@ -280,12 +288,4 @@ void on_project_save_as(gpointer data)
 		g_free(file);
 	}
 	gtk_widget_destroy(dialog);
-}
-
-
-/* _on_closex */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
-{
-	on_exit(data);
-	return FALSE;
 }

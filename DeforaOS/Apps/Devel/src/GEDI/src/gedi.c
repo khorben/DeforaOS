@@ -45,7 +45,7 @@ static DesktopMenu _gedi_menu_file[] =
 	{ "_Preferences...", G_CALLBACK(on_file_preferences),
 		GTK_STOCK_PREFERENCES, GDK_P },
 	{ "", NULL, NULL, 0 },
-	{ "_Exit", G_CALLBACK(on_exit), GTK_STOCK_QUIT, GDK_Q },
+	{ "_Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, GDK_Q },
 	{ NULL, NULL, NULL, 0 }
 };
 
@@ -79,7 +79,7 @@ static DesktopMenubar _gedi_menubar[] =
 /* toolbar */
 static DesktopToolbar _gedi_toolbar[] =
 {
-	{ "Exit", G_CALLBACK(on_exit), GTK_STOCK_QUIT, 0, NULL },
+	{ "Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, 0, NULL },
 	{ NULL, NULL, NULL, 0, NULL }
 };
 
