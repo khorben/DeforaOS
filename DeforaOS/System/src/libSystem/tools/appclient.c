@@ -74,6 +74,8 @@ static int _appclient(int verbose, char const * hostname, char const * service,
 	for(i = 0; i < calls_cnt; i++)
 		if(_appclient_call(verbose, ac, &calls[i]) != 0)
 			ret |= _error(APPCLIENT_PROGNAME, 1);
+	if(verbose != 0)
+		printf("%s", "Disconnecting\n");
 	appclient_delete(ac);
 	return ret;
 }
@@ -102,7 +104,8 @@ static int _appclient_hostname(int verbose, char const * hostname,
 	if(hostname == NULL)
 	{
 		if(verbose != 0)
-			printf("%s%s\n", "Connecting to ", (env != NULL) ? env
+			printf("%s%s%s%s\n", "Connecting to service ", service,
+					" on ", (env != NULL) ? env
 					: "localhost");
 		free(buf);
 		return 0;
@@ -112,7 +115,8 @@ static int _appclient_hostname(int verbose, char const * hostname,
 	if(res != 0)
 		return error_set_code(1, "%s", strerror(errno));
 	if(verbose != 0)
-		printf("%s%s\n", "Connecting to ", hostname);
+		printf("%s%s%s%s\n", "Connecting to service ", service, " on ",
+				hostname);
 	return 0;
 }
 
