@@ -27,64 +27,22 @@ static char const _copyright[] =
 
 /* callbacks */
 /* on_exit */
-void on_exit(GtkWidget * widget, gpointer data)
+void on_exit(gpointer data)
 {
 	/* FIXME check that everything is properly saved */
 	gtk_main_quit();
 }
 
 
-/* on_help_about */
-/* callbacks */
-static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-void on_help_about(GtkWidget * widget, gpointer data)
-{
-	GEDI * gedi = data;
-	static GtkWidget * window = NULL; /* FIXME do not make it static */
-	const char * authors[] = { "Pierre Pronchery <khorben@defora.org>",
-		NULL };
-	const char license[] = "GNU GPL version 2";
-
-	if(window != NULL)
-	{
-		gtk_widget_show(window);
-		return;
-	}
-	window = gtk_about_dialog_new();
-	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
-				gedi->tb_window));
-	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
-	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
-	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
-			ICON_NAME);
-	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
-	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
-	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_on_about_closex), NULL);
-	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
-				gtk_widget_hide), NULL);
-	gtk_widget_show(window);
-}
-
-static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
-{
-	gtk_widget_hide(widget);
-	return TRUE;
-}
-
-
 /* on_file_new */
-void on_file_new(GtkWidget * widget, gpointer data)
+void on_file_new(gpointer data)
 {
 	/* FIXME */
 }
 
 
 /* on_file_open */
-void on_file_open(GtkWidget * widget, gpointer data)
+void on_file_open(gpointer data)
 {
 	GEDI * gedi = data;
 	GtkWidget * dialog;
@@ -112,7 +70,7 @@ static void _on_preferences_apply(GtkWidget * widget, gpointer data);
 static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
 static void _on_preferences_ok(GtkWidget * widget, gpointer data);
 
-void on_file_preferences(GtkWidget * widget, gpointer data)
+void on_file_preferences(gpointer data)
 {
 	GEDI * g = data;
 
@@ -175,7 +133,7 @@ static void _file_preferences_new(GEDI * g)
 /* _on_preferences_apply */
 static void _on_preferences_apply(GtkWidget * widget, gpointer data)
 {
-	/* FIXME */
+	/* FIXME implement */
 }
 
 
@@ -184,7 +142,7 @@ static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
 {
 	GEDI * gedi = data;
 
-	/* FIXME */
+	/* FIXME implement */
 	gtk_widget_hide(gedi->pr_window);
 }
 
@@ -208,15 +166,57 @@ static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 }
 
 
-/* _on_project_new */
-void on_project_new(GtkWidget * widget, gpointer data)
+/* on_help_about */
+static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
+
+void on_help_about(gpointer data)
 {
-	/* FIXME */
+	GEDI * gedi = data;
+	static GtkWidget * window = NULL; /* FIXME do not make it static */
+	const char * authors[] = { "Pierre Pronchery <khorben@defora.org>",
+		NULL };
+	const char license[] = "GNU GPL version 2";
+
+	if(window != NULL)
+	{
+		gtk_widget_show(window);
+		return;
+	}
+	window = gtk_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
+				gedi->tb_window));
+	gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(window), authors);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(window), _copyright);
+	gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(window),
+			ICON_NAME);
+	gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(window), license);
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(window), PACKAGE);
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(window), VERSION);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_on_about_closex), NULL);
+	g_signal_connect(G_OBJECT(window), "response", G_CALLBACK(
+				gtk_widget_hide), NULL);
+	gtk_widget_show(window);
+}
+
+static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
-/* _on_project_open */
-void on_project_open(GtkWidget * widget, gpointer data)
+/* on_project_new */
+void on_project_new(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_project_open */
+void on_project_open(gpointer data)
 {
 	GEDI * g = data;
 	GtkWidget * dialog;
@@ -237,7 +237,7 @@ void on_project_open(GtkWidget * widget, gpointer data)
 
 
 /* on_project_properties */
-void on_project_properties(GtkWidget * widget, gpointer data)
+void on_project_properties(gpointer data)
 {
 	GEDI * g = data;
 
@@ -252,17 +252,17 @@ void on_project_properties(GtkWidget * widget, gpointer data)
 
 
 /* on_project_save */
-void on_project_save(GtkWidget * widget, gpointer data)
+void on_project_save(gpointer data)
 {
 	GEDI * g = data;
 
-	/* FIXME */
+	/* FIXME implement */
 	gedi_project_save(g);
 }
 
 
 /* on_project_save_as */
-void on_project_save_as(GtkWidget * widget, gpointer data)
+void on_project_save_as(gpointer data)
 {
 	GEDI * g = data;
 	GtkWidget * dialog;
@@ -286,6 +286,6 @@ void on_project_save_as(GtkWidget * widget, gpointer data)
 /* _on_closex */
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-	on_exit(widget, data);
+	on_exit(data);
 	return FALSE;
 }

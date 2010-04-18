@@ -34,8 +34,6 @@ typedef struct _GEDI
 	/* toolbar */
 	GtkWidget * tb_window;
 	GtkWidget * tb_vbox;
-	GtkWidget * tb_menubar;
-	GtkWidget * tb_toolbar;
 
 	/* preferences */
 	GtkWidget * pr_window;

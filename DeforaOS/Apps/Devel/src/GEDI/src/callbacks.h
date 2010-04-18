@@ -22,21 +22,24 @@
 
 
 /* callbacks */
-void on_exit(GtkWidget * widget, gpointer data);
-void on_help_about(GtkWidget * widget, gpointer data);
-void on_file_new(GtkWidget * widget, gpointer data);
-void on_file_open(GtkWidget * widget, gpointer data);
-void on_file_preferences(GtkWidget * widget, gpointer data);
-void on_preferences_apply(GtkWidget * widget, gpointer data);
-void on_preferences_cancel(GtkWidget * widget, gpointer data);
-void on_preferences_ok(GtkWidget * widget, gpointer data);
-gboolean on_preferences_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-void on_project_new(GtkWidget * widget, gpointer data);
-void on_project_open(GtkWidget * widget, gpointer data);
-void on_project_properties(GtkWidget * widget, gpointer data);
-void on_project_save(GtkWidget * widget, gpointer data);
-void on_project_save_as(GtkWidget * widget, gpointer data);
 gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+
+/* file menu */
+void on_file_new(gpointer data);
+void on_file_open(gpointer data);
+void on_file_preferences(gpointer data);
+
+/* project menu */
+void on_project_new(gpointer data);
+void on_project_open(gpointer data);
+void on_project_properties(gpointer data);
+void on_project_save(gpointer data);
+void on_project_save_as(gpointer data);
+
+/* help menu */
+void on_help_about(gpointer data);
+
+/* toolbar */
+void on_exit(gpointer data);
 
 #endif /* !GEDI_CALLBACKS_H */

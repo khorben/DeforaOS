@@ -7,7 +7,7 @@ CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags gtk+-2.0`
 CFLAGS	= -Wall -g -O2
-LDFLAGSF= `pkg-config --libs gtk+-2.0` -l System
+LDFLAGSF= `pkg-config --libs gtk+-2.0` -lSystem -lDesktop
 LDFLAGS	= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib
 RM	= rm -f
 LN	= ln -f
@@ -24,10 +24,10 @@ gedi_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 gedi: $(gedi_OBJS)
 	$(CC) -o gedi $(gedi_OBJS) $(gedi_LDFLAGS)
 
-callbacks.o: callbacks.c ../config.h gedi.h
+callbacks.o: callbacks.c ../config.h callbacks.h gedi.h
 	$(CC) $(gedi_CFLAGS) -c callbacks.c
 
-gedi.o: gedi.c ../config.h gedi.h
+gedi.o: gedi.c ../config.h callbacks.h gedi.h
 	$(CC) $(gedi_CFLAGS) -c gedi.c
 
 main.o: main.c
