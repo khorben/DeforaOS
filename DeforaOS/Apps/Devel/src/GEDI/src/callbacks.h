@@ -22,7 +22,7 @@
 
 
 /* callbacks */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+gboolean on_closex(gpointer data);
 
 /* file menu */
 void on_file_new(gpointer data);

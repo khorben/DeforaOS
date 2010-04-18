@@ -27,7 +27,7 @@ static char const _copyright[] =
 
 /* callbacks */
 /* _on_closex */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+gboolean on_closex(gpointer data)
 {
 	on_file_exit(data);
 	return FALSE;

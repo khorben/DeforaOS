@@ -109,8 +109,8 @@ GEDI * gedi_new(void)
 #endif
 	gtk_window_set_title(GTK_WINDOW(gedi->tb_window), "GEDI");
 	gtk_window_set_resizable(GTK_WINDOW(gedi->tb_window), FALSE);
-	g_signal_connect(G_OBJECT(gedi->tb_window), "delete-event", G_CALLBACK(
-				on_closex), gedi);
+	g_signal_connect_swapped(G_OBJECT(gedi->tb_window), "delete-event",
+			G_CALLBACK(on_closex), gedi);
 	gedi->tb_vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	widget = desktop_menubar_create(_gedi_menubar, gedi, group);
