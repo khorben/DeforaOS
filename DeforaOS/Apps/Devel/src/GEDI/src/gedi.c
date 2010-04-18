@@ -1,6 +1,5 @@
 /* $Id$ */
-static char const _copyright[] =
-"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel GEDI */
 /* GEDI is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
