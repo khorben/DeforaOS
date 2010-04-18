@@ -406,9 +406,7 @@ void editor_open(Editor * editor, char const * filename)
 	editor->search = 0;
 	if(filename == NULL)
 	{
-		gtk_text_buffer_set_modified(GTK_TEXT_BUFFER(
-					gtk_text_view_get_buffer(GTK_TEXT_VIEW(
-							editor->view))), FALSE);
+		gtk_text_buffer_set_modified(tbuf, FALSE);
 		return;
 	}
 	if((fp = fopen(filename, "r")) == NULL)
