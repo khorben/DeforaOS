@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -17,9 +17,7 @@
 
 
 #include <sys/statvfs.h>
-#if 0 /* defined(__FreeBSD__) || defined(__NetBSD__) */
-# include <sys/param.h>
-#endif
+#include <sys/param.h>
 #include <sys/mount.h>
 #include <unistd.h>
 #include <stdlib.h>
