@@ -233,36 +233,38 @@ void on_project_new(gpointer data)
 /* on_project_open */
 void on_project_open(gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 	GtkWidget * dialog;
-	char * file;
+	char * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Open project...", NULL,
+	dialog = gtk_file_chooser_dialog_new("Open project...",
+			GTK_WINDOW(gedi->tb_window),
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
 	if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
-	{
-		file = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		gedi_project_open(g, file);
-		g_free(file);
-	}
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(
+					dialog));
 	gtk_widget_destroy(dialog);
+	if(filename == NULL)
+		return;
+	gedi_project_open(gedi, filename);
+	g_free(filename);
 }
 
 
 /* on_project_properties */
 void on_project_properties(gpointer data)
 {
-	GEDI * g = data;
+	GEDI * gedi = data;
 
-	if(g->project == NULL)
+	if(gedi->cur == NULL)
 	{
 		/* FIXME should not happen (disable callback action) */
-		gedi_error(g, "Error", "No project opened");
+		gedi_error(gedi, "No project opened", 0);
 		return;
 	}
-	project_properties(g->project);
+	project_properties(gedi->cur);
 }
 
 

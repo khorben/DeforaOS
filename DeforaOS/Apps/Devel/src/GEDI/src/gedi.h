@@ -28,15 +28,20 @@ typedef struct _GEDI
 {
 	Config * config;
 	Project ** projects;
-	Project * project;
+	size_t projects_cnt;
+	Project * cur;
 
 	/* widgets */
 	/* toolbar */
 	GtkWidget * tb_window;
-	GtkWidget * tb_vbox;
 
 	/* preferences */
 	GtkWidget * pr_window;
+
+	/* files */
+	GtkWidget * fi_window;
+	GtkWidget * fi_combo;
+	GtkWidget * fi_view;
 } GEDI;
 
 
@@ -45,10 +50,10 @@ GEDI * gedi_new(void);
 void gedi_delete(GEDI * gedi);
 
 /* useful */
-int gedi_error(GEDI * gedi, char const * title, char const * message);
+int gedi_error(GEDI * gedi, char const * message, int ret);
 
 void gedi_file_open(GEDI * gedi, char const * file);
-void gedi_project_open(GEDI * gedi, char const * file);
+int gedi_project_open(GEDI * gedi, char const * file);
 void gedi_project_save(GEDI * gedi);
 void gedi_project_save_as(GEDI * gedi, char const * file);
 

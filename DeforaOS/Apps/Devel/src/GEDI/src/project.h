@@ -37,7 +37,12 @@ typedef struct _Project
 Project * project_new(void);
 void project_delete(Project * project);
 
+/* accessors */
+char const * project_get_package(Project * package);
+
 /* useful */
+int project_load(Project * project, char const * filename);
+
 void project_properties(Project * project);
 
 #endif /* !GEDI_PROJECT_H */

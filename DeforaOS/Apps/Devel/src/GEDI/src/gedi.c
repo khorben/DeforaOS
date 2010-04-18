@@ -93,14 +93,17 @@ GEDI * gedi_new(void)
 {
 	GEDI * gedi;
 	GtkAccelGroup * group;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	if((gedi = malloc(sizeof(*gedi))) == NULL)
 		return NULL;
 	gedi->projects = NULL;
-	gedi->project = NULL;
+	gedi->projects_cnt = 0;
+	gedi->cur = NULL;
 	_new_config(gedi);
-	/* window */
+	/* main window */
 	group = gtk_accel_group_new();
 	gedi->tb_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_add_accel_group(GTK_WINDOW(gedi->tb_window), group);
@@ -111,32 +114,45 @@ GEDI * gedi_new(void)
 	gtk_window_set_resizable(GTK_WINDOW(gedi->tb_window), FALSE);
 	g_signal_connect_swapped(G_OBJECT(gedi->tb_window), "delete-event",
 			G_CALLBACK(on_closex), gedi);
-	gedi->tb_vbox = gtk_vbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 	widget = desktop_menubar_create(_gedi_menubar, gedi, group);
-	gtk_box_pack_start(GTK_BOX(gedi->tb_vbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* toolbar */
 	widget = desktop_toolbar_create(_gedi_toolbar, gedi, group);
-	gtk_box_pack_start(GTK_BOX(gedi->tb_vbox), widget, FALSE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(gedi->tb_window), gedi->tb_vbox);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(gedi->tb_window), vbox);
+	/* files */
+	gedi->fi_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(gedi->fi_window), 150, 200);
+	gtk_window_set_title(GTK_WINDOW(gedi->fi_window), "Files");
+	hbox = gtk_hbox_new(FALSE, 0);
+	vbox = gtk_vbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 2);
+	gedi->fi_combo = gtk_combo_box_new_text();
+	gtk_box_pack_start(GTK_BOX(vbox), gedi->fi_combo, FALSE, TRUE, 2);
+	gedi->fi_view = gtk_tree_view_new();
+	gtk_box_pack_start(GTK_BOX(vbox), gedi->fi_view, TRUE, TRUE, 2);
+	gtk_container_add(GTK_CONTAINER(gedi->fi_window), hbox);
 	gtk_widget_show_all(gedi->tb_window);
+	gtk_widget_show_all(gedi->fi_window);
 	return gedi;
 }
 
 static char * _config_file(void);
-static void _new_config(GEDI * g)
+static void _new_config(GEDI * gedi)
 {
 	char * filename;
 
-	if((g->config = config_new()) == NULL)
+	if((gedi->config = config_new()) == NULL)
 	{
-		gedi_error(g, "Could not read configuration", strerror(errno));
+		gedi_error(gedi, strerror(errno), 0);
 		return;
 	}
-	config_load(g->config, PREFIX "/etc/" PACKAGE ".conf");
+	config_load(gedi->config, PREFIX "/etc/" PACKAGE ".conf");
 	if((filename = _config_file()) == NULL)
 		return;
-	config_load(g->config, filename);
+	config_load(gedi->config, filename);
 	free(filename);
 }
 
@@ -144,14 +160,15 @@ static char * _config_file(void)
 {
 	char const conffile[] = ".gedirc";
 	char const * homedir;
+	size_t len;
 	char * filename;
 
 	if((homedir = getenv("HOME")) == NULL)
 		return NULL;
-	if((filename = malloc(strlen(homedir) + 1 + strlen(conffile) + 1))
-			== NULL)
+	len = strlen(homedir) + 1 + strlen(conffile) + 1;
+	if((filename = malloc(len)) == NULL)
 		return NULL;
-	sprintf(filename, "%s/%s", homedir, conffile);
+	snprintf(filename, len, "%s/%s", homedir, conffile);
 	return filename;
 }
 
@@ -160,6 +177,7 @@ static char * _config_file(void)
 void gedi_delete(GEDI * gedi)
 {
 	char * filename;
+	size_t i;
 
 	if((filename = _config_file()) != NULL)
 	{
@@ -167,25 +185,32 @@ void gedi_delete(GEDI * gedi)
 		free(filename);
 	}
 	config_delete(gedi->config);
+	for(i = 0; i < gedi->projects_cnt; i++)
+		project_delete(gedi->projects[i]);
+	free(gedi->projects);
 	free(gedi);
 }
 
 
 /* useful */
 /* gedi_error */
-int gedi_error(GEDI * gedi, char const * title, char const * message)
+int gedi_error(GEDI * gedi, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
 	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL
 			| GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", title);
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s",
+#endif
+			message);
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	return 1;
+	return ret;
 }
 
 
@@ -197,12 +222,30 @@ void gedi_file_open(GEDI * gedi, char const * file)
 
 
 /* gedi_project_open */
-void gedi_project_open(GEDI * gedi, char const * file)
+int gedi_project_open(GEDI * gedi, char const * file)
 {
-	/* FIXME
-	 * - open project.conf file
-	 * - verify it has a package name
-	 * - */
+	Project ** p;
+
+	if((p = realloc(gedi->projects, sizeof(*p) * (gedi->projects_cnt + 1)))
+			== NULL)
+		return gedi_error(gedi, strerror(errno), 1);
+	gedi->projects = p;
+	p = &gedi->projects[gedi->projects_cnt];
+	if((*p = project_new()) == NULL)
+		return gedi_error(gedi, error_get(), 1);
+	if(project_load(*p, file) != 0)
+	{
+		project_delete(*p);
+		return gedi_error(gedi, error_get(), 1);
+	}
+	gedi->projects_cnt++;
+	gedi->cur = *p;
+	gtk_combo_box_append_text(GTK_COMBO_BOX(gedi->fi_combo),
+			project_get_package(*p));
+	/* FIXME doesn't always select the last project opened */
+	gtk_combo_box_set_active(GTK_COMBO_BOX(gedi->fi_combo),
+			gtk_combo_box_get_active(gedi->fi_combo) + 1);
+	return 0;
 }
 
 
