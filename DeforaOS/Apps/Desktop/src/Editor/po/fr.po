@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-07 22:49+0200\n"
+"POT-Creation-Date: 2010-04-19 01:26+0200\n"
 "PO-Revision-Date: 2010-04-11 12:32+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -145,7 +145,7 @@ msgid "Error"
 msgstr "Erreur"
 
 #: ../src/editor.c:265 ../src/editor.c:274 ../src/editor.c:384
-#: ../src/editor.c:398 ../src/editor.c:530
+#: ../src/editor.c:398 ../src/editor.c:528 ../src/editor.c:533
 msgid "Warning"
 msgstr "Avertissement"
 
@@ -189,23 +189,23 @@ msgstr ""
 msgid "Discard"
 msgstr "Annuler"
 
-#: ../src/editor.c:456
+#: ../src/editor.c:454
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/editor.c:506
+#: ../src/editor.c:504
 msgid "Partial write"
 msgstr "Écriture partielle"
 
-#: ../src/editor.c:534
+#: ../src/editor.c:532
 msgid "File exists. Overwrite?"
 msgstr "Le fichier existe. L'écraser ?"
 
-#: ../src/editor.c:543
+#: ../src/editor.c:541
 msgid "Allocation error"
 msgstr "Erreur d'allocation"
 
-#: ../src/editor.c:558
+#: ../src/editor.c:556
 msgid "Save as..."
 msgstr "Enregistrer sous..."
 

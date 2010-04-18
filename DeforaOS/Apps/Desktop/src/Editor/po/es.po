@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Editor 0.1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-07 22:49+0200\n"
+"POT-Creation-Date: 2010-04-19 01:26+0200\n"
 "PO-Revision-Date: 2010-04-07 22:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -145,7 +145,7 @@ msgid "Error"
 msgstr ""
 
 #: ../src/editor.c:265 ../src/editor.c:274 ../src/editor.c:384
-#: ../src/editor.c:398 ../src/editor.c:530
+#: ../src/editor.c:398 ../src/editor.c:528 ../src/editor.c:533
 msgid "Warning"
 msgstr ""
 
@@ -185,23 +185,23 @@ msgstr ""
 msgid "Discard"
 msgstr ""
 
-#: ../src/editor.c:456
+#: ../src/editor.c:454
 msgid "Open file..."
 msgstr ""
 
-#: ../src/editor.c:506
+#: ../src/editor.c:504
 msgid "Partial write"
 msgstr ""
 
-#: ../src/editor.c:534
+#: ../src/editor.c:532
 msgid "File exists. Overwrite?"
 msgstr ""
 
-#: ../src/editor.c:543
+#: ../src/editor.c:541
 msgid "Allocation error"
 msgstr ""
 
-#: ../src/editor.c:558
+#: ../src/editor.c:556
 msgid "Save as..."
 msgstr ""
 

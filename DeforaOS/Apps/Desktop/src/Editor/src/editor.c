@@ -530,7 +530,7 @@ gboolean editor_save_as(Editor * editor, char const * filename)
 					dialog), "%s",
 #endif
 				_("File exists. Overwrite?"));
-		gtk_window_set_title(GTK_WINDOW(dialog), "Warning");
+		gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 		ret = gtk_dialog_run(GTK_DIALOG(dialog));
 		gtk_widget_destroy(dialog);
 		if(ret == GTK_RESPONSE_NO)
