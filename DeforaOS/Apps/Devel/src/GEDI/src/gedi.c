@@ -244,7 +244,8 @@ int gedi_project_open(GEDI * gedi, char const * file)
 			project_get_package(*p));
 	/* FIXME doesn't always select the last project opened */
 	gtk_combo_box_set_active(GTK_COMBO_BOX(gedi->fi_combo),
-			gtk_combo_box_get_active(gedi->fi_combo) + 1);
+			gtk_combo_box_get_active(GTK_COMBO_BOX(gedi->fi_combo))
+			+ 1);
 	return 0;
 }
 

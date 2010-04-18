@@ -21,8 +21,7 @@
 
 /* Project */
 /* callbacks */
-static void _on_properties_xkill(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _on_properties_closex(gpointer data);
 
 /* project_new */
 Project * project_new(void)
@@ -93,17 +92,17 @@ static void _properties_new(Project * p)
 	p->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(p->pr_window), 4);
 	gtk_window_set_title(GTK_WINDOW(p->pr_window), "Project properties");
-	g_signal_connect(G_OBJECT(p->pr_window), "delete_event",
-			G_CALLBACK(_on_properties_xkill), p);
+	g_signal_connect_swapped(G_OBJECT(p->pr_window), "delete-event",
+			G_CALLBACK(_on_properties_closex), p);
 	/* FIXME */
 }
 
 
 /* callbacks */
-static void _on_properties_xkill(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _on_properties_closex(gpointer data)
 {
 	Project * p = data;
 
 	gtk_widget_hide(p->pr_window);
+	return TRUE;
 }
