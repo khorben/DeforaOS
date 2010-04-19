@@ -67,7 +67,6 @@ static int _mount_all(Prefs * prefs)
 static int _mount_print(void)
 {
 #ifdef ST_WAIT
-	int ret = 0;
 	int cnt;
 	struct statvfs * f;
 	int i;
