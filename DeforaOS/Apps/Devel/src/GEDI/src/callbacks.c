@@ -38,13 +38,8 @@ gboolean on_closex(gpointer data)
 void on_file_new(gpointer data)
 {
 	GEDI * gedi = data;
-	char * argv[] = { "editor", NULL };
-	GError * error = NULL;
 
-	/* FIXME get the actual editor to launch from the configuration */
-	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
-				NULL, &error) != TRUE)
-		gedi_error(gedi, argv[0], 0);
+	gedi_file_open(gedi, NULL); /* XXX hack */
 }
 
 
@@ -226,7 +221,7 @@ static gboolean _on_about_closex(GtkWidget * widget, GdkEvent * event,
 /* on_project_new */
 void on_project_new(gpointer data)
 {
-	/* FIXME implement */
+	/* FIXME implement: assistant, templates... */
 }
 
 

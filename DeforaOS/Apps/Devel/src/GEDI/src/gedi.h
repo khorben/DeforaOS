@@ -52,9 +52,9 @@ void gedi_delete(GEDI * gedi);
 /* useful */
 int gedi_error(GEDI * gedi, char const * message, int ret);
 
-void gedi_file_open(GEDI * gedi, char const * file);
-int gedi_project_open(GEDI * gedi, char const * file);
+void gedi_file_open(GEDI * gedi, char const * filename);
+int gedi_project_open(GEDI * gedi, char const * filename);
 void gedi_project_save(GEDI * gedi);
-void gedi_project_save_as(GEDI * gedi, char const * file);
+void gedi_project_save_as(GEDI * gedi, char const * filename);
 
 #endif /* !GEDI_GEDI_H */

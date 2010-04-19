@@ -215,14 +215,23 @@ int gedi_error(GEDI * gedi, char const * message, int ret)
 
 
 /* gedi_file_open */
-void gedi_file_open(GEDI * gedi, char const * file)
+void gedi_file_open(GEDI * gedi, char const * filename)
 {
-	/* FIXME */
+	/* FIXME really use the MIME sub-system (and preferences) */
+	char * argv[] = { "editor", NULL, NULL };
+	GError * error = NULL;
+
+	if(filename != NULL)
+		argv[1] = g_strdup(filename);
+	if(g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+				NULL, &error) != TRUE)
+		gedi_error(gedi, argv[0], 0);
+	g_free(argv[1]);
 }
 
 
 /* gedi_project_open */
-int gedi_project_open(GEDI * gedi, char const * file)
+int gedi_project_open(GEDI * gedi, char const * filename)
 {
 	Project ** p;
 
@@ -233,7 +242,7 @@ int gedi_project_open(GEDI * gedi, char const * file)
 	p = &gedi->projects[gedi->projects_cnt];
 	if((*p = project_new()) == NULL)
 		return gedi_error(gedi, error_get(), 1);
-	if(project_load(*p, file) != 0)
+	if(project_load(*p, filename) != 0)
 	{
 		project_delete(*p);
 		return gedi_error(gedi, error_get(), 1);
@@ -258,7 +267,7 @@ void gedi_project_save(GEDI * gedi)
 
 
 /* gedi_project_save_as */
-void gedi_project_save_as(GEDI * gedi, char const * file)
+void gedi_project_save_as(GEDI * gedi, char const * filename)
 {
 	/* FIXME */
 }
