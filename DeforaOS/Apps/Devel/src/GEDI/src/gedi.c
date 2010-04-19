@@ -198,9 +198,9 @@ int gedi_error(GEDI * gedi, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
-	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL
-			| GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s",
+	dialog = gtk_message_dialog_new(GTK_WINDOW(gedi->tb_window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
 			"Error");
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
