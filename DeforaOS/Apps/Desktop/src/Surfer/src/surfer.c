@@ -486,18 +486,25 @@ void surfer_set_title(Surfer * surfer, char const * title)
 
 /* useful */
 /* surfer_close_tab */
-void surfer_close_tab(Surfer * surfer)
+void surfer_close_tab(Surfer * surfer, GtkWidget * view)
 {
 	gint n;
-	GtkWidget * view;
 
 	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) == 1)
 	{
 		surfer_delete(surfer);
 		return;
 	}
-	n = gtk_notebook_get_current_page(GTK_NOTEBOOK(surfer->notebook));
-	view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook), n);
+	if(view == NULL)
+	{
+		n = gtk_notebook_get_current_page(GTK_NOTEBOOK(
+					surfer->notebook));
+		view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook),
+				n);
+	}
+	else if((n = gtk_notebook_page_num(GTK_NOTEBOOK(surfer->notebook),
+					view)) < 0)
+		return; /* XXX return error */
 	ghtml_delete(view);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(surfer->notebook), n);
 	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) == 1)
@@ -812,10 +819,11 @@ static GtkWidget * _tab_button(Surfer * surfer, GtkWidget * widget,
 	g_object_set_data(G_OBJECT(widget), "label", label);
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 4);
 	button = gtk_button_new();
+	g_object_set_data(G_OBJECT(button), "widget", widget);
 	gtk_button_set_image(GTK_BUTTON(button), gtk_image_new_from_stock(
 				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
+	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
 				on_notebook_close_tab), surfer);
 	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
 	gtk_widget_show_all(hbox);

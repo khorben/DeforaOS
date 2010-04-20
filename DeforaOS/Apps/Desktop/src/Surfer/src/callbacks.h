@@ -66,7 +66,7 @@ void on_refresh(gpointer data);
 void on_stop(gpointer data);
 
 /* notebook */
-void on_notebook_close_tab(gpointer data);
+void on_notebook_close_tab(GtkWidget * widget, gpointer data);
 void on_notebook_switch_page(gpointer data);
 
 #endif

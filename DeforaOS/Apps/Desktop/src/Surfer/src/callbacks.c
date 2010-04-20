@@ -62,7 +62,7 @@ void on_file_close_tab(gpointer data)
 {
 	Surfer * surfer = data;
 
-	surfer_close_tab(surfer);
+	surfer_close_tab(surfer, NULL);
 }
 
 
@@ -493,11 +493,13 @@ void on_home(gpointer data)
 
 
 /* on_notebook_close_tab */
-void on_notebook_close_tab(gpointer data)
+void on_notebook_close_tab(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
 
-	surfer_close_tab(surfer);
+	if((widget = g_object_get_data(G_OBJECT(widget), "widget")) == NULL)
+		return; /* XXX report error */
+	surfer_close_tab(surfer, widget);
 }
 
 

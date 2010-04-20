@@ -72,7 +72,7 @@ void surfer_warning(Surfer * surfer, char const * message);
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
 void surfer_open_tab(Surfer * surfer, char const * url);
-void surfer_close_tab(Surfer * surfer);
+void surfer_close_tab(Surfer * surfer, GtkWidget * widget);
 
 void surfer_print(Surfer * surfer);
 
