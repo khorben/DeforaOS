@@ -502,20 +502,34 @@ void on_notebook_close_tab(gpointer data)
 
 
 /* on_notebook_switch_page */
-void on_notebook_switch_page(GtkWidget * widget, GtkNotebookPage * page,
-		guint n, gpointer data)
+static gboolean _switch_page_idle(gpointer data);
+
+void on_notebook_switch_page(gpointer data)
 {
 	Surfer * surfer = data;
+
+	g_idle_add(_switch_page_idle, surfer);
+}
+
+static gboolean _switch_page_idle(gpointer data)
+{
+	Surfer * surfer = data;
+	gint n;
 	GtkWidget * ghtml;
 
+	if((n = gtk_notebook_get_current_page(GTK_NOTEBOOK(surfer->notebook)))
+			< 0)
+		return FALSE;
 	ghtml = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook), n);
 	/* FIXME implement:
 	 * - change the title (tab)
 	 * - update toolbar buttons */
-	surfer_set_location(surfer, ghtml_get_location(ghtml));
-	surfer_set_progress(surfer, ghtml_get_progress(ghtml));
-	surfer_set_status(surfer, ghtml_get_status(ghtml));
-	surfer_set_title(surfer, ghtml_get_title(ghtml));
+	/* XXX the Surfer fetches the right values by himself => API change? */
+	surfer_set_location(surfer, NULL);
+	surfer_set_progress(surfer, 0.0);
+	surfer_set_status(surfer, NULL);
+	surfer_set_title(surfer, NULL);
+	return FALSE;
 }
 
 

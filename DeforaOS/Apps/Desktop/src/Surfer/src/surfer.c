@@ -285,8 +285,8 @@ Surfer * _new_do(char const * url)
 	surfer->notebook = gtk_notebook_new();
 	gtk_notebook_set_show_border(GTK_NOTEBOOK(surfer->notebook), FALSE);
 	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook), FALSE);
-	g_signal_connect(G_OBJECT(surfer->notebook), "switch-page", G_CALLBACK(
-				on_notebook_switch_page), surfer);
+	g_signal_connect_swapped(G_OBJECT(surfer->notebook), "switch-page",
+			G_CALLBACK(on_notebook_switch_page), surfer);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->notebook, TRUE, TRUE, 0);
 	/* statusbar */
 	surfer->statusbox = gtk_hbox_new(FALSE, 0);
@@ -383,12 +383,13 @@ void surfer_set_location(Surfer * surfer, char const * url)
 	GtkWidget * widget;
 	GtkWidget * view;
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	url = ghtml_get_location(view);
 	if(url == NULL)
 		url = "";
 	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
-	if((view = surfer_get_view(surfer)) == NULL)
-		return; /* XXX really correct? */
 	if(i == 8)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->lb_path), 0);
 	else
@@ -423,9 +424,13 @@ void surfer_set_progress(Surfer * surfer, gdouble fraction)
 /* surfer_set_status */
 void surfer_set_status(Surfer * surfer, char const * status)
 {
+	GtkWidget * view;
 	GtkStatusbar * sb = GTK_STATUSBAR(surfer->statusbar);
 	GtkProgressBar * pb = GTK_PROGRESS_BAR(surfer->progress);
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	status = ghtml_get_status(view);
 	if(surfer->statusbar_id != 0)
 		gtk_statusbar_remove(sb, gtk_statusbar_get_context_id(sb, ""),
 				surfer->statusbar_id);

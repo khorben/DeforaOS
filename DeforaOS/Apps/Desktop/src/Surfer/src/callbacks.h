@@ -67,7 +67,6 @@ void on_stop(gpointer data);
 
 /* notebook */
 void on_notebook_close_tab(gpointer data);
-void on_notebook_switch_page(GtkWidget * widget, GtkNotebookPage * page,
-		guint n, gpointer data);
+void on_notebook_switch_page(gpointer data);
 
 #endif
