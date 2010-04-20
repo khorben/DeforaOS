@@ -60,7 +60,7 @@ static DesktopMenu _menu_file[] =
 		GDK_N },
 	{ N_("_Open..."),	G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
 		GDK_O },
-	{ N_("_Open URL..."),	G_CALLBACK(on_file_open_url), NULL, GDK_L },
+	{ N_("Open _URL..."),	G_CALLBACK(on_file_open_url), NULL, GDK_L },
 	{ "", NULL, NULL, 0 },
 	{ N_("Save _as..."),	G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
 		GDK_S },
