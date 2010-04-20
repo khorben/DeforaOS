@@ -313,7 +313,8 @@ void surfer_delete(Surfer * surfer)
 	free(surfer->url);
 	free(surfer->homepage);
 	free(surfer);
-	surfer_cnt--;
+	if(--surfer_cnt == 0)
+		gtk_main_quit();
 }
 
 

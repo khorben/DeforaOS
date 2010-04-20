@@ -45,10 +45,6 @@
 typedef struct _Surfer Surfer;
 
 
-/* variables */
-extern unsigned int surfer_cnt;
-
-
 /* functions */
 Surfer * surfer_new(char const * url);
 Surfer * surfer_new_copy(Surfer * surfer);

@@ -45,8 +45,6 @@ gboolean on_closex(gpointer data)
 	Surfer * surfer = data;
 
 	surfer_delete(surfer);
-	if(surfer_cnt == 0)
-		gtk_main_quit();
 	return FALSE;
 }
 
