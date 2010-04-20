@@ -39,7 +39,7 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: surfer [URL]\n"), stderr);
+	fputs(_("Usage: surfer [URL...]\n"), stderr);
 	return 1;
 }
 
@@ -66,10 +66,10 @@ int main(int argc, char * argv[])
 		}
 	if(optind == argc)
 		surfer = surfer_new(NULL);
-	else if(optind + 1 == argc)
-		surfer = surfer_new(argv[optind]);
 	else
-		return _usage();
+		for(; optind != argc; optind++)
+			if((surfer = surfer_new(argv[optind])) == NULL)
+				break; /* ignore potential memory leak */
 	if(surfer == NULL)
 		return 2;
 	gtk_main();
