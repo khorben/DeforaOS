@@ -214,7 +214,7 @@ Surfer * _new_do(char const * url)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
 #endif
-	gtk_window_set_title(GTK_WINDOW(surfer->window), "Surfer");
+	gtk_window_set_title(GTK_WINDOW(surfer->window), _("Web surfer"));
 	g_signal_connect_swapped(G_OBJECT(surfer->window), "delete-event",
 			G_CALLBACK(on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -459,13 +459,28 @@ void surfer_set_title(Surfer * surfer, char const * title)
 {
 	GtkWidget * view;
 	char buf[256];
+	gint n;
+	gint i;
+	GtkWidget * label;
 
 	if((view = surfer_get_view(surfer)) == NULL)
 		return; /* consider the current tab only */
 	title = ghtml_get_title(view);
-	snprintf(buf, sizeof(buf), "%s%s%s", "Web surfer", (title != NULL)
+	snprintf(buf, sizeof(buf), "%s%s%s", _("Web surfer"), (title != NULL)
 			? " - " : "", (title != NULL) ? title : "");
 	gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
+	/* XXX this could all be much more efficient */
+	n = gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook));
+	for(i = 0; i < n; i++)
+	{
+		view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook),
+				i);
+		if((label = g_object_get_data(G_OBJECT(view), "label")) == NULL)
+			continue;
+		title = ghtml_get_title(view);
+		gtk_label_set_text(GTK_LABEL(label), (title != NULL) ? title
+				: _("Untitled"));
+	}
 }
 
 
@@ -761,7 +776,8 @@ void surfer_open_dialog(Surfer * surfer)
 
 
 /* surfer_open_tab */
-static GtkWidget * _tab_button(Surfer * surfer, char const * label);
+static GtkWidget * _tab_button(Surfer * surfer, GtkWidget * widget,
+		char const * text);
 
 void surfer_open_tab(Surfer * surfer, char const * url)
 {
@@ -775,20 +791,26 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 	if(url != NULL)
 		ghtml_load_url(widget, url);
 	gtk_notebook_append_page(GTK_NOTEBOOK(surfer->notebook), widget,
-			_tab_button(surfer, _("Untitled")));
+			_tab_button(surfer, widget, _("Untitled")));
 	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) > 1)
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
 				TRUE);
 	gtk_widget_show_all(widget);
 }
 
-static GtkWidget * _tab_button(Surfer * surfer, char const * label)
+static GtkWidget * _tab_button(Surfer * surfer, GtkWidget * widget,
+		char const * text)
 {
 	GtkWidget * hbox;
+	GtkWidget * label;
 	GtkWidget * button;
 
 	hbox = gtk_hbox_new(FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(label), TRUE, TRUE, 4);
+	label = gtk_label_new(text);
+	gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+	gtk_label_set_width_chars(GTK_LABEL(label), 10);
+	g_object_set_data(G_OBJECT(widget), "label", label);
+	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 4);
 	button = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(button), gtk_image_new_from_stock(
 				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
