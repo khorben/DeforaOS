@@ -38,6 +38,7 @@ struct _Conn
 	guint64 content_length;
 	guint64 data_received;
 	gdouble progress;
+	char * status;
 
 	int direct;
 	int image;
@@ -60,7 +61,9 @@ static void _conn_delete(Conn * conn);
 
 /* accessors */
 static gdouble _conn_get_progress(Conn * conn);
+static char const * _conn_get_status(Conn * conn);
 static void _conn_set_progress(Conn * conn, gdouble progress);
+static void _conn_set_status(Conn * conn, char const * status);
 
 static void _conn_set_callback_write(Conn * conn,
 		ssize_t (*callback)(Conn *, char const *, ssize_t, gpointer),
@@ -85,6 +88,7 @@ static Conn * _conn_new(Surfer * surfer, char const * url, char const * post)
 		return NULL;
 	conn->surfer = surfer;
 	conn->url = strdup(url);
+	conn->status = NULL;
 	conn->http_post = (post != NULL) ? strdup(post) : NULL;
 	if(conn->url == NULL || (post != NULL && conn->http_post == NULL))
 	{
@@ -126,18 +130,28 @@ static ssize_t _new_callback_write(Conn * conn, char const * buf, ssize_t size,
 static void _conn_delete(Conn * conn)
 {
 	free(conn->url);
+	free(conn->status);
 	free(conn->http_post);
 	free(conn);
 }
 
 
 /* accessors */
+/* conn_get_progress */
 static gdouble _conn_get_progress(Conn * conn)
 {
 	return conn->progress;
 }
 
 
+/* conn_get_status */
+static char const * _conn_get_status(Conn * conn)
+{
+	return conn->status;
+}
+
+
+/* conn_set_progress */
 static void _conn_set_progress(Conn * conn, gdouble progress)
 {
 	conn->progress = progress;
@@ -145,6 +159,17 @@ static void _conn_set_progress(Conn * conn, gdouble progress)
 }
 
 
+/* conn_set_status */
+static void _conn_set_status(Conn * conn, char const * status)
+{
+	free(conn->status);
+	/* XXX may fail */
+	conn->status = (status != NULL) ? strdup(status) : NULL;
+	surfer_set_status(conn->surfer, status);
+}
+
+
+/* conn_set_callback_write */
 static void _conn_set_callback_write(Conn * conn,
 		ssize_t (*callback)(Conn *, char const *, ssize_t, gpointer),
 		gpointer data)
@@ -178,7 +203,7 @@ static int _conn_load(Conn * conn)
 		return 1;
 	}
 	_conn_set_progress(conn, -1.0);
-	surfer_set_status(conn->surfer, _("Resolving..."));
+	_conn_set_status(conn, _("Resolving..."));
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
 	gnet_conn_http_set_user_agent(conn->http, "DeforaOS " PACKAGE);
@@ -227,7 +252,7 @@ static void _load_watch_http(GConnHttp * connhttp, GConnHttpEvent * event,
 
 static void _http_connected(Conn * conn)
 {
-	surfer_set_status(conn->surfer, _("Connected"));
+	_conn_set_status(conn, _("Connected"));
 }
 
 static void _http_data_complete(GConnHttpEventData * event, Conn * conn)
@@ -239,12 +264,12 @@ static void _http_data_complete(GConnHttpEventData * event, Conn * conn)
 	{
 		/* FIXME report error */
 		_conn_set_progress(conn, -1.0);
-		surfer_set_status(conn->surfer, NULL);
+		_conn_set_status(conn, NULL);
 		return;
 	}
 	conn->callback_write(conn, buf, size, conn->callback_write_data);
 	_http_data_progress(event, conn);
-	surfer_set_status(conn->surfer, NULL);
+	_conn_set_status(conn, NULL);
 }
 
 static void _http_data_partial(GConnHttpEventData * event, Conn * conn)
@@ -252,7 +277,7 @@ static void _http_data_partial(GConnHttpEventData * event, Conn * conn)
 	gchar * buf;
 	gsize size;
 
-	surfer_set_status(conn->surfer, _("Downloading..."));
+	_conn_set_status(conn, _("Downloading..."));
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 		/* FIXME report error */
 		return;
@@ -290,7 +315,7 @@ static void _http_error(GConnHttpEventError * event, Conn * conn)
 			break;
 	}
 	_conn_set_progress(conn, -1.0);
-	surfer_set_status(conn->surfer, NULL);
+	_conn_set_status(conn, NULL);
 	surfer_error(conn->surfer, msg, 0);
 }
 
@@ -301,11 +326,11 @@ static void _http_redirect(GConnHttpEventRedirect * event, Conn * conn)
 
 	if(url == NULL)
 	{
-		surfer_set_status(conn->surfer, buf);
+		_conn_set_status(conn, buf);
 		return;
 	}
 	/* FIXME implement */
-	surfer_set_status(conn->surfer, buf);
+	_conn_set_status(conn, buf);
 }
 
 static void _http_resolved(GConnHttpEventResolved * event, Conn * conn)
@@ -322,5 +347,5 @@ static void _http_timeout(Conn * conn)
 {
 	surfer_error(conn->surfer, _("Timeout"), 0);
 	_conn_set_progress(conn, -1.0);
-	surfer_set_status(conn->surfer, NULL);
+	_conn_set_status(conn, NULL);
 }

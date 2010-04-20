@@ -566,6 +566,7 @@ static void _ghtml_set_progress(GHtml * ghtml, gdouble progress)
 static void _ghtml_set_status(GHtml * ghtml, char const * status)
 {
 	free(ghtml->status);
+	/* XXX may fail */
 	ghtml->status = (status != NULL) ? strdup(status) : NULL;
 	surfer_set_status(ghtml->surfer, status);
 }

@@ -165,8 +165,12 @@ char const * ghtml_get_source(GtkWidget * widget)
 /* ghtml_get_status */
 char const * ghtml_get_status(GtkWidget * widget)
 {
-	/* FIXME really implement */
-	return NULL;
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if(ghtml->conn == NULL)
+		return NULL;
+	return _conn_get_status(ghtml->conn);
 }
 
 
