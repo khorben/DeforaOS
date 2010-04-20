@@ -67,8 +67,9 @@ static DesktopMenu _menu_file[] =
 	{ "", NULL, NULL, 0 },
 	{ N_("_Print..."),	G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0 },
 	{ "", NULL, NULL, 0 },
+	{ N_("Close _tab"),	G_CALLBACK(on_file_close_tab), NULL, GDK_W },
 	{ N_("_Close"),		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
-		GDK_W },
+		0 },
 	{ NULL,			NULL, NULL, 0 }
 };
 

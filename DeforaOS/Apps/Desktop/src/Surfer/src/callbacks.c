@@ -57,6 +57,15 @@ void on_file_close(gpointer data)
 }
 
 
+/* on_file_close_tab */
+void on_file_close_tab(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_close_tab(surfer);
+}
+
+
 /* on_file_new_tab */
 void on_file_new_tab(gpointer data)
 {

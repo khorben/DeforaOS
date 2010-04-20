@@ -27,6 +27,7 @@ gboolean on_closex(gpointer data);
 #ifndef EMBEDDED
 /* file menu */
 void on_file_close(gpointer data);
+void on_file_close_tab(gpointer data);
 void on_file_new_window(gpointer data);
 void on_file_new_tab(gpointer data);
 void on_file_open(gpointer data);
