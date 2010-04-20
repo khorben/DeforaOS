@@ -52,6 +52,8 @@ void surfer_delete(Surfer * surfer);
 
 
 /* accessors */
+GtkWidget * surfer_get_view(Surfer * surfer);
+
 void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen);
 void surfer_set_location(Surfer * surfer, char const * url);
 void surfer_set_progress(Surfer * surfer, gdouble fraction);
@@ -69,6 +71,8 @@ void surfer_warning(Surfer * surfer, char const * message);
 
 void surfer_open(Surfer * surfer, char const * url);
 void surfer_open_dialog(Surfer * surfer);
+void surfer_open_tab(Surfer * surfer, char const * url);
+void surfer_close_tab(Surfer * surfer);
 
 void surfer_print(Surfer * surfer);
 

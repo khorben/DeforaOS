@@ -27,7 +27,6 @@
 struct _Surfer
 {
 	Config * config;
-	char * url;
 
 	/* preferences */
 	char * homepage;
@@ -46,7 +45,7 @@ struct _Surfer
 	GtkToolItem * tb_fullscreen;
 	GtkWidget * locationbar;
 	GtkWidget * lb_path;
-	GtkWidget * view;
+	GtkWidget * notebook;
 	GtkWidget * progress;
 	GtkWidget * statusbox;
 	GtkWidget * statusbar;

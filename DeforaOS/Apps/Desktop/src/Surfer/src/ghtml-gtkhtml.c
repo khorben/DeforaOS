@@ -64,6 +64,7 @@ typedef struct _GHtml
 	/* connections */
 	struct _GHtmlConn ** conns;
 	size_t conns_cnt;
+	gdouble progress;
 
 	/* html widget */
 	HtmlDocument * html_document;
@@ -103,6 +104,7 @@ static void _ghtmlconn_delete(GHtmlConn * ghtmlconn);
 
 static char const * _ghtml_get_base(GHtml * ghtml);
 static int _ghtml_set_base(GHtml * ghtml, char const * url);
+static void _ghtml_set_progress(GHtml * ghtml, gdouble progress);
 static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post);
 static int _ghtml_document_reload(GHtml * ghtml);
@@ -140,6 +142,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	ghtml->current = NULL;
 	ghtml->conns = NULL;
 	ghtml->conns_cnt = 0;
+	ghtml->progress = -1.0;
 	ghtml->html_view = html_view_new();
 	g_object_set_data(G_OBJECT(ghtml->html_view), "ghtml", ghtml);
 	g_signal_connect(G_OBJECT(ghtml->html_view), "button-press-event",
@@ -167,6 +170,23 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	g_object_set_data(G_OBJECT(widget), "ghtml", ghtml);
 	gtk_container_add(GTK_CONTAINER(widget), ghtml->html_view);
 	return widget;
+}
+
+
+/* ghtml_delete */
+void ghtml_delete(GtkWidget * widget)
+{
+	GHtml * ghtml;
+	size_t i;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	free(ghtml->source);
+	for(i = 0; i < ghtml->conns_cnt; i++)
+		if(ghtml->conns[i] != NULL)
+			_ghtmlconn_delete(ghtml->conns[i]);
+	free(ghtml->conns); /* may not be free()'d by _ghtmlconn_delete() */
+	free(ghtml->html_title);
+	free(ghtml);
 }
 
 
@@ -209,6 +229,16 @@ char const * ghtml_get_location(GtkWidget * widget)
 }
 
 
+/* ghtml_get_progress */
+gdouble ghtml_get_progress(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	return ghtml->progress;
+}
+
+
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * widget)
 {
@@ -216,6 +246,14 @@ char const * ghtml_get_source(GtkWidget * widget)
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
 	return ghtml->source;
+}
+
+
+/* ghtml_get_status */
+char const * ghtml_get_status(GtkWidget * widget)
+{
+	/* FIXME really implement */
+	return NULL;
 }
 
 
@@ -512,6 +550,14 @@ static int _ghtml_set_base(GHtml * ghtml, char const * url)
 }
 
 
+/* ghtml_set_progress */
+static void _ghtml_set_progress(GHtml * ghtml, gdouble progress)
+{
+	surfer_set_progress(ghtml->surfer, progress);
+	ghtml->progress = progress;
+}
+
+
 /* ghtml_document_load */
 static int _ghtml_document_load(GHtml * ghtml, gchar const * url,
 		gchar const * post)
@@ -676,7 +722,7 @@ static gboolean _stream_load_idle_directory(GHtmlConn * conn)
 #endif
 	html_stream_write(conn->stream, tail, sizeof(tail) - 1);
 	closedir(dir);
-	surfer_set_progress(conn->ghtml->surfer, -1.0);
+	_ghtml_set_progress(conn->ghtml, -1.0);
 	surfer_set_status(conn->ghtml->surfer, NULL);
 	_ghtmlconn_delete(conn);
 	return FALSE;
@@ -698,7 +744,7 @@ static gboolean _stream_load_idle_file(GHtmlConn * conn)
 	}
 	else
 	{
-		surfer_set_progress(conn->ghtml->surfer, 0.0);
+		_ghtml_set_progress(conn->ghtml, 0.0);
 		surfer_set_status(conn->ghtml->surfer, _("Reading file..."));
 		if(fstat(fd, &st) == 0)
 		{
@@ -737,7 +783,7 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 	}
 	if(len == 0) /* no more data */
 	{
-		surfer_set_progress(conn->ghtml->surfer, 1.0);
+		_ghtml_set_progress(conn->ghtml, 1.0);
 		surfer_set_status(conn->ghtml->surfer, NULL);
 		_ghtmlconn_delete(conn);
 		return FALSE;
@@ -748,15 +794,14 @@ static gboolean _stream_load_watch_file(GIOChannel * source,
 	if(conn->file_size > 0)
 	{
 		fraction = conn->file_read;
-		surfer_set_progress(conn->ghtml->surfer,
-				fraction / conn->file_size);
+		_ghtml_set_progress(conn->ghtml, fraction / conn->file_size);
 	}
 	return TRUE;
 }
 
 static gboolean _stream_load_idle_http(GHtmlConn * conn)
 {
-	surfer_set_progress(conn->ghtml->surfer, -1.0);
+	_ghtml_set_progress(conn->ghtml, -1.0);
 	surfer_set_status(conn->ghtml->surfer, _("Resolving..."));
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
@@ -819,7 +864,7 @@ static void _http_data_complete(GConnHttpEventData * event, GHtmlConn * conn)
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 	{
 		/* FIXME report error */
-		surfer_set_progress(conn->ghtml->surfer, -1.0);
+		_ghtml_set_progress(conn->ghtml, -1.0);
 	}
 	else
 	{
@@ -875,7 +920,7 @@ static void _http_data_progress(GConnHttpEventData * event, GHtmlConn * conn)
 		rec += p->data_received;
 	}
 	fraction = rec;
-	surfer_set_progress(conn->ghtml->surfer, fraction / len);
+	_ghtml_set_progress(conn->ghtml, fraction / len);
 }
 
 static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
@@ -900,7 +945,7 @@ static void _http_error(GConnHttpEventError * event, GHtmlConn * conn)
 			msg = _("Unspecified error");
 			break;
 	}
-	surfer_set_progress(conn->ghtml->surfer, -1.0);
+	_ghtml_set_progress(conn->ghtml, -1.0);
 	surfer_set_status(conn->ghtml->surfer, NULL);
 	surfer_error(conn->ghtml->surfer, msg, 0);
 	_ghtmlconn_delete(conn);
@@ -947,7 +992,7 @@ static void _http_resolved(GConnHttpEventResolved * event, GHtmlConn * conn)
 	if(event->ia == NULL)
 	{
 #if 0 /* XXX check again if this is really an error case */
-		surfer_set_progress(conn->ghtml->surfer, -1.0);
+		_ghtml_set_progress(conn->ghtml, -1.0);
 		surfer_set_status(conn->ghtml->surfer, NULL);
 		surfer_error(conn->ghtml->surfer, "Unknown host", 0);
 		_ghtmlconn_delete(conn);
@@ -994,7 +1039,7 @@ static void _http_response(GConnHttpEventResponse * event, GHtmlConn * conn)
 static void _http_timeout(GHtmlConn * conn)
 {
 	surfer_error(conn->ghtml->surfer, _("Timeout"), 0);
-	surfer_set_progress(conn->ghtml->surfer, -1.0);
+	_ghtml_set_progress(conn->ghtml, -1.0);
 	surfer_set_status(conn->ghtml->surfer, NULL);
 	_ghtmlconn_delete(conn);
 }

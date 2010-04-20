@@ -85,6 +85,17 @@ GtkWidget * ghtml_new(Surfer * surfer)
 }
 
 
+/* ghtml_delete */
+void ghtml_delete(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	_conn_delete(ghtml->conn);
+	free(ghtml);
+}
+
+
 /* accessors */
 /* ghtml_can_go_back */
 gboolean ghtml_can_go_back(GtkWidget * widget)
@@ -124,6 +135,18 @@ char const * ghtml_get_location(GtkWidget * widget)
 }
 
 
+/* ghtml_get_progress */
+gdouble ghtml_get_progress(GtkWidget * widget)
+{
+	GHtml * ghtml;
+
+	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
+	if(ghtml->conn == NULL)
+		return -1.0;
+	return _conn_get_progress(ghtml->conn);
+}
+
+
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * widget)
 {
@@ -136,6 +159,14 @@ char const * ghtml_get_source(GtkWidget * widget)
 	gtk_text_buffer_get_start_iter(ghtml->buffer, &start);
 	gtk_text_buffer_get_end_iter(ghtml->buffer, &end);
 	return gtk_text_buffer_get_text(ghtml->buffer, &start, &end, FALSE);
+}
+
+
+/* ghtml_get_status */
+char const * ghtml_get_status(GtkWidget * widget)
+{
+	/* FIXME really implement */
+	return NULL;
 }
 
 

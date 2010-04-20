@@ -57,6 +57,15 @@ void on_file_close(gpointer data)
 }
 
 
+/* on_file_new_tab */
+void on_file_new_tab(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_open_tab(surfer, NULL);
+}
+
+
 /* on_file_new_window */
 void on_file_new_window(gpointer data)
 {
@@ -471,6 +480,33 @@ void on_home(gpointer data)
 	Surfer * surfer = data;
 
 	surfer_go_home(surfer);
+}
+
+
+/* on_notebook_close_tab */
+void on_notebook_close_tab(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_close_tab(surfer);
+}
+
+
+/* on_notebook_switch_page */
+void on_notebook_switch_page(GtkWidget * widget, GtkNotebookPage * page,
+		guint n, gpointer data)
+{
+	Surfer * surfer = data;
+	GtkWidget * ghtml;
+
+	ghtml = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook), n);
+	/* FIXME implement:
+	 * - change the title (tab)
+	 * - update toolbar buttons */
+	surfer_set_location(surfer, ghtml_get_location(ghtml));
+	surfer_set_progress(surfer, ghtml_get_progress(ghtml));
+	surfer_set_status(surfer, ghtml_get_status(ghtml));
+	surfer_set_title(surfer, ghtml_get_title(ghtml));
 }
 
 

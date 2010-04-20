@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-11 15:12+0200\n"
+"POT-Creation-Date: 2010-04-11 19:45+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Calimero <calimeroteknik@free.fr>\n"
 "Language-Team: French\n"
@@ -113,8 +113,8 @@ msgstr "0.0 Kio/s"
 msgid "Close window when the download is complete"
 msgstr "Fermer la fenêtre à la fin du téléchargement"
 
-#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:506
-#: ../src/surfer.c:509
+#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:510
+#: ../src/surfer.c:513
 msgid "Error"
 msgstr "Erreur"
 
@@ -157,7 +157,7 @@ msgstr "Résolu"
 msgid "Code "
 msgstr "Code "
 
-#: ../src/download.c:546 ../src/ghtml-webkit.c:387 ../src/surfer.c:508
+#: ../src/download.c:546 ../src/ghtml-webkit.c:387 ../src/surfer.c:512
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -303,46 +303,46 @@ msgstr "_Aide"
 msgid " Location: "
 msgstr " Adresse: "
 
-#: ../src/surfer.c:254
+#: ../src/surfer.c:256
 msgid "Could not initialize HTML renderer"
 msgstr "Ne peut charger le moteur de rendu HTML"
 
-#: ../src/surfer.c:455 ../src/surfer.c:458
+#: ../src/surfer.c:459 ../src/surfer.c:462
 msgid "Question"
 msgstr "Question"
 
-#: ../src/surfer.c:475 ../src/surfer.c:709
+#: ../src/surfer.c:479 ../src/surfer.c:713
 msgid "Save file as..."
 msgstr "Enregistrer sous..."
 
-#: ../src/surfer.c:537
+#: ../src/surfer.c:541
 msgid "Find text"
 msgstr "Chercher du texte"
 
-#: ../src/surfer.c:544
+#: ../src/surfer.c:548
 msgid "Text:"
 msgstr "Texte: "
 
-#: ../src/surfer.c:551
+#: ../src/surfer.c:555
 msgid "Case-sensitive"
 msgstr "Sensible à la casse"
 
-#: ../src/surfer.c:553
+#: ../src/surfer.c:557
 msgid "Wrap"
 msgstr "Chercher en boucle"
 
-#: ../src/surfer.c:576
+#: ../src/surfer.c:580
 msgid "Text not found"
 msgstr "Texte non trouvé"
 
-#: ../src/surfer.c:650
+#: ../src/surfer.c:654
 msgid "Open file..."
 msgstr "Ouvrir un fichier..."
 
-#: ../src/surfer.c:833
+#: ../src/surfer.c:837
 msgid "Web surfer - Source of "
 msgstr "Web surfer - Source de "
 
-#: ../src/surfer.c:875 ../src/surfer.c:878
+#: ../src/surfer.c:879 ../src/surfer.c:882
 msgid "Warning"
 msgstr "Avertissement"

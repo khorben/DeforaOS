@@ -37,6 +37,7 @@ struct _Conn
 	char const * anchor;
 	guint64 content_length;
 	guint64 data_received;
+	gdouble progress;
 
 	int direct;
 	int image;
@@ -58,6 +59,9 @@ static Conn * _conn_new(Surfer * surfer, char const * url,
 static void _conn_delete(Conn * conn);
 
 /* accessors */
+static gdouble _conn_get_progress(Conn * conn);
+static void _conn_set_progress(Conn * conn, gdouble progress);
+
 static void _conn_set_callback_write(Conn * conn,
 		ssize_t (*callback)(Conn *, char const *, ssize_t, gpointer),
 		gpointer data);
@@ -94,6 +98,7 @@ static Conn * _conn_new(Surfer * surfer, char const * url, char const * post)
 	}
 	conn->content_length = 0;
 	conn->data_received = 0;
+	conn->progress = -1.0;
 	conn->direct = 0;
 	conn->image = 0;
 	conn->callback_write = _new_callback_write;
@@ -127,6 +132,19 @@ static void _conn_delete(Conn * conn)
 
 
 /* accessors */
+static gdouble _conn_get_progress(Conn * conn)
+{
+	return conn->progress;
+}
+
+
+static void _conn_set_progress(Conn * conn, gdouble progress)
+{
+	conn->progress = progress;
+	surfer_set_progress(conn->surfer, progress);
+}
+
+
 static void _conn_set_callback_write(Conn * conn,
 		ssize_t (*callback)(Conn *, char const *, ssize_t, gpointer),
 		gpointer data)
@@ -159,7 +177,7 @@ static int _conn_load(Conn * conn)
 		/* FIXME support "file:", report error */
 		return 1;
 	}
-	surfer_set_progress(conn->surfer, -1.0);
+	_conn_set_progress(conn, -1.0);
 	surfer_set_status(conn->surfer, _("Resolving..."));
 	conn->http = gnet_conn_http_new();
 	gnet_conn_http_set_uri(conn->http, conn->url);
@@ -220,7 +238,7 @@ static void _http_data_complete(GConnHttpEventData * event, Conn * conn)
 	if(gnet_conn_http_steal_buffer(conn->http, &buf, &size) != TRUE)
 	{
 		/* FIXME report error */
-		surfer_set_progress(conn->surfer, -1.0);
+		_conn_set_progress(conn, -1.0);
 		surfer_set_status(conn->surfer, NULL);
 		return;
 	}
@@ -249,7 +267,7 @@ static void _http_data_progress(GConnHttpEventData * event, Conn * conn)
 	conn->data_received = event->data_received;
 	conn->content_length = event->content_length;
 	fraction = conn->data_received;
-	surfer_set_progress(conn->surfer, fraction / conn->content_length);
+	_conn_set_progress(conn, fraction / conn->content_length);
 }
 
 static void _http_error(GConnHttpEventError * event, Conn * conn)
@@ -271,7 +289,7 @@ static void _http_error(GConnHttpEventError * event, Conn * conn)
 			msg = _("Unspecified error");
 			break;
 	}
-	surfer_set_progress(conn->surfer, -1.0);
+	_conn_set_progress(conn, -1.0);
 	surfer_set_status(conn->surfer, NULL);
 	surfer_error(conn->surfer, msg, 0);
 }
@@ -303,6 +321,6 @@ static void _http_response(GConnHttpEventResponse * event, Conn * conn)
 static void _http_timeout(Conn * conn)
 {
 	surfer_error(conn->surfer, _("Timeout"), 0);
-	surfer_set_progress(conn->surfer, -1.0);
+	_conn_set_progress(conn, -1.0);
 	surfer_set_status(conn->surfer, NULL);
 }

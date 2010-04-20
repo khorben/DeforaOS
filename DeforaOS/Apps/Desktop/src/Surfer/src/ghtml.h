@@ -25,6 +25,7 @@
 /* GHTML */
 /* functions */
 GtkWidget * ghtml_new(Surfer * surfer);
+void ghtml_delete(GtkWidget * ghtml);
 
 /* accessors */
 gboolean ghtml_can_go_back(GtkWidget * ghtml);
@@ -32,6 +33,7 @@ gboolean ghtml_can_go_forward(GtkWidget * ghtml);
 
 char const * ghtml_get_link_message(GtkWidget * ghtml);
 char const * ghtml_get_location(GtkWidget * ghtml);
+gdouble ghtml_get_progress(GtkWidget * ghtml);
 char const * ghtml_get_source(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
 

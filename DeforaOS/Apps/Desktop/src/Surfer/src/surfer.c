@@ -31,6 +31,14 @@
 
 /* Surfer */
 /* private */
+/* types */
+typedef struct _SurferIdle
+{
+	Surfer * surfer;
+	char * url;
+} SurferIdle;
+
+
 /* variables */
 static DesktopAccel _surfer_accel[] =
 {
@@ -46,6 +54,8 @@ static DesktopAccel _surfer_accel[] =
 #ifndef EMBEDDED
 static DesktopMenu _menu_file[] =
 {
+	{ N_("_New tab"),	G_CALLBACK(on_file_new_tab), "tab-new",
+		GDK_T },
 	{ N_("_New window"),	G_CALLBACK(on_file_new_window), "window-new",
 		GDK_N },
 	{ N_("_Open..."),	G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
@@ -150,9 +160,33 @@ static int _config_save_string(Config * config, char const * variable,
 /* public */
 /* functions */
 /* surfer_new */
+static Surfer * _new_do(char const * url);
 static gboolean _new_idle(gpointer data);
 
 Surfer * surfer_new(char const * url)
+{
+	Surfer * surfer;
+	SurferIdle * si;
+
+	if((surfer = _new_do(url)) == NULL)
+		return NULL;
+	gtk_widget_show(surfer->window);
+	/* load url as soon as we're idle */
+	if((si = malloc(sizeof(*si))) == NULL
+			|| (url != NULL && (si->url = strdup(url)) == NULL))
+	{
+		free(si);
+		surfer_delete(surfer);
+		return NULL;
+	}
+	si->surfer = surfer;
+	if(url == NULL)
+		si->url = NULL;
+	g_idle_add(_new_idle, si);
+	return surfer;
+}
+
+Surfer * _new_do(char const * url)
 {
 	Surfer * surfer;
 	GtkAccelGroup * group;
@@ -163,11 +197,9 @@ Surfer * surfer_new(char const * url)
 
 	if((surfer = malloc(sizeof(*surfer))) == NULL)
 		return NULL;
-	surfer->url = NULL;
 	surfer->homepage = NULL;
 	if((surfer->config = config_new()) == NULL
-			|| surfer_config_load(surfer) != 0
-			|| (url != NULL && (surfer->url = strdup(url)) == NULL))
+			|| surfer_config_load(surfer) != 0)
 	{
 		surfer_delete(surfer);
 		return NULL;
@@ -181,7 +213,7 @@ Surfer * surfer_new(char const * url)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(surfer->window), "stock_internet");
 #endif
-	surfer_set_title(surfer, NULL);
+	gtk_window_set_title(GTK_WINDOW(surfer->window), "Surfer");
 	g_signal_connect_swapped(G_OBJECT(surfer->window), "delete-event",
 			G_CALLBACK(on_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -248,14 +280,13 @@ Surfer * surfer_new(char const * url)
 				on_path_activate), surfer);
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
-	/* view */
-	if((surfer->view = ghtml_new(surfer)) == NULL)
-	{
-		surfer_error(NULL, _("Could not initialize HTML renderer"), 0);
-		surfer_delete(surfer);
-		return NULL;
-	}
-	gtk_box_pack_start(GTK_BOX(vbox), surfer->view, TRUE, TRUE, 0);
+	/* notebook */
+	surfer->notebook = gtk_notebook_new();
+	gtk_notebook_set_show_border(GTK_NOTEBOOK(surfer->notebook), FALSE);
+	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook), FALSE);
+	g_signal_connect(G_OBJECT(surfer->notebook), "switch-page", G_CALLBACK(
+				on_notebook_switch_page), surfer);
+	gtk_box_pack_start(GTK_BOX(vbox), surfer->notebook, TRUE, TRUE, 0);
 	/* statusbar */
 	surfer->statusbox = gtk_hbox_new(FALSE, 0);
 	surfer->progress = gtk_progress_bar_new();
@@ -268,7 +299,7 @@ Surfer * surfer_new(char const * url)
 	gtk_widget_show_all(surfer->statusbox);
 	gtk_container_add(GTK_CONTAINER(surfer->window), vbox);
 	gtk_widget_grab_focus(GTK_WIDGET(surfer->lb_path));
-	gtk_widget_show_all(surfer->window);
+	gtk_widget_show_all(vbox);
 	/* preferences window */
 	surfer->pr_window = NULL;
 	/* find dialog */
@@ -277,18 +308,16 @@ Surfer * surfer_new(char const * url)
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
 	surfer_cnt++;
-	/* load url as soon as we're idle */
-	/* FIXME this apparently breaks surfer_new_copy() */
-	if(url != NULL)
-		g_idle_add(_new_idle, surfer);
 	return surfer;
 }
 
 static gboolean _new_idle(gpointer data)
 {
-	Surfer * surfer = data;
+	SurferIdle * si = data;
 
-	surfer_open(surfer, surfer->url);
+	surfer_open_tab(si->surfer, si->url);
+	free(si->url);
+	free(si);
 	return FALSE;
 }
 
@@ -297,8 +326,14 @@ static gboolean _new_idle(gpointer data)
 Surfer * surfer_new_copy(Surfer * surfer)
 {
 	Surfer * ret;
-
-	if((ret = surfer_new(surfer->url)) == NULL)
+	GtkWidget * view;
+	char const * url;
+	
+	if((view = surfer_get_view(surfer)) == NULL)
+		url = NULL;
+	else
+		url = ghtml_get_location(view);
+	if((ret = surfer_new(url)) == NULL)
 		return NULL;
 	/* FIXME also copy history */
 	return ret;
@@ -310,7 +345,6 @@ void surfer_delete(Surfer * surfer)
 {
 	gtk_widget_destroy(surfer->window);
 	config_delete(surfer->config);
-	free(surfer->url);
 	free(surfer->homepage);
 	free(surfer);
 	if(--surfer_cnt == 0)
@@ -319,6 +353,18 @@ void surfer_delete(Surfer * surfer)
 
 
 /* accessors */
+/* surfer_get_view */
+GtkWidget * surfer_get_view(Surfer * surfer)
+{
+	int cur;
+
+	if((cur = gtk_notebook_get_current_page(GTK_NOTEBOOK(surfer->notebook)))
+			< 0)
+		return NULL;
+	return gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook), cur);
+}
+
+
 /* surfer_set_fullscreen */
 void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen)
 {
@@ -334,33 +380,35 @@ void surfer_set_location(Surfer * surfer, char const * url)
 {
 	static int i = 0; /* XXX should be set per-window */
 	GtkWidget * widget;
-	char * p;
+	GtkWidget * view;
 
+	if(url == NULL)
+		url = "";
 	widget = gtk_bin_get_child(GTK_BIN(surfer->lb_path));
 	gtk_entry_set_text(GTK_ENTRY(widget), url);
-	/* FIXME what about history? */
-	if((p = strdup(url)) != NULL)
-	{
-		free(surfer->url);
-		surfer->url = p;
-	}
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* XXX really correct? */
 	if(i == 8)
 		gtk_combo_box_remove_text(GTK_COMBO_BOX(surfer->lb_path), 0);
 	else
 		i++;
 	gtk_combo_box_append_text(GTK_COMBO_BOX(surfer->lb_path), url);
-	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
-			ghtml_can_go_back(surfer->view));
-	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
-			ghtml_can_go_forward(surfer->view));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), ghtml_can_go_back(
+				view));
+	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), 
+			ghtml_can_go_forward(view));
 }
 
 
 /* surfer_set_progress */
 void surfer_set_progress(Surfer * surfer, gdouble fraction)
 {
+	GtkWidget * view;
 	char buf[10] = " ";
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	fraction = ghtml_get_progress(view);
 	if(fraction >= 0.0 && fraction <= 1.0)
 		snprintf(buf, sizeof(buf), "%.1f%%", fraction * 100);
 	else
@@ -403,8 +451,12 @@ void surfer_set_status(Surfer * surfer, char const * status)
 /* surfer_set_title */
 void surfer_set_title(Surfer * surfer, char const * title)
 {
+	GtkWidget * view;
 	char buf[256];
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return; /* consider the current tab only */
+	title = ghtml_get_title(view);
 	snprintf(buf, sizeof(buf), "%s%s%s", "Web surfer", (title != NULL)
 			? " - " : "", (title != NULL) ? title : "");
 	gtk_window_set_title(GTK_WINDOW(surfer->window), buf);
@@ -412,6 +464,27 @@ void surfer_set_title(Surfer * surfer, char const * title)
 
 
 /* useful */
+/* surfer_close_tab */
+void surfer_close_tab(Surfer * surfer)
+{
+	gint n;
+	GtkWidget * view;
+
+	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) == 1)
+	{
+		surfer_delete(surfer);
+		return;
+	}
+	n = gtk_notebook_get_current_page(GTK_NOTEBOOK(surfer->notebook));
+	view = gtk_notebook_get_nth_page(GTK_NOTEBOOK(surfer->notebook), n);
+	ghtml_delete(view);
+	gtk_notebook_remove_page(GTK_NOTEBOOK(surfer->notebook), n);
+	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) == 1)
+		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
+				FALSE);
+}
+
+
 /* surfer_config_load */
 int surfer_config_load(Surfer * surfer)
 {
@@ -561,10 +634,13 @@ static void _find_dialog(Surfer * surfer)
 static void _on_find_activate(GtkWidget * widget, gpointer data)
 {
 	Surfer * surfer = data;
+	GtkWidget * view;
 	char const * text;
 	gboolean sensitive;
 	gboolean wrap;
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
 	if((text = gtk_entry_get_text(GTK_ENTRY(widget))) == NULL
 			|| strlen(text) == 0)
 		return;
@@ -572,7 +648,7 @@ static void _on_find_activate(GtkWidget * widget, gpointer data)
 				surfer->fi_case));
 	wrap = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
 				surfer->fi_wrap));
-	if(ghtml_find(surfer->view, text, sensitive, wrap) == TRUE)
+	if(ghtml_find(view, text, sensitive, wrap) == TRUE)
 		return;
 	surfer_error(surfer, _("Text not found"), 0);
 }
@@ -596,9 +672,12 @@ static void _on_find_response(GtkWidget * widget, gint response, gpointer data)
 gboolean surfer_go_back(Surfer * surfer)
 {
 	gboolean ret;
+	GtkWidget * view;
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return FALSE;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
-	ret = ghtml_go_back(surfer->view);
+	ret = ghtml_go_back(view);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back), ret);
 	return ret;
 }
@@ -608,9 +687,12 @@ gboolean surfer_go_back(Surfer * surfer)
 gboolean surfer_go_forward(Surfer * surfer)
 {
 	gboolean ret;
+	GtkWidget * view;
 
+	if((view = surfer_get_view(surfer)) == NULL)
+		return FALSE;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
-	ret = ghtml_go_forward(surfer->view);
+	ret = ghtml_go_forward(view);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward), ret);
 	return ret;
 }
@@ -630,12 +712,20 @@ void surfer_go_home(Surfer * surfer)
 /* surfer_open */
 void surfer_open(Surfer * surfer, char const * url)
 {
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+	{
+		surfer_open_tab(surfer, url);
+		return;
+	}
 	if(url != NULL)
 	{
+		view = surfer_get_view(surfer);
 		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), TRUE);
 		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
-		ghtml_stop(surfer->view);
-		ghtml_load_url(surfer->view, url);
+		ghtml_stop(view);
+		ghtml_load_url(view, url);
 	}
 	else
 		gtk_widget_grab_focus(surfer->lb_path);
@@ -664,26 +754,79 @@ void surfer_open_dialog(Surfer * surfer)
 }
 
 
+/* surfer_open_tab */
+static GtkWidget * _tab_button(Surfer * surfer, char const * label);
+
+void surfer_open_tab(Surfer * surfer, char const * url)
+{
+	GtkWidget * widget;
+
+	if((widget = ghtml_new(surfer)) == NULL)
+	{
+		surfer_error(NULL, _("Could not initialize HTML renderer"), 0);
+		return;
+	}
+	if(url != NULL)
+		ghtml_load_url(widget, url);
+	gtk_notebook_append_page(GTK_NOTEBOOK(surfer->notebook), widget,
+			_tab_button(surfer, _("Untitled")));
+	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) > 1)
+		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
+				TRUE);
+	gtk_widget_show_all(widget);
+}
+
+static GtkWidget * _tab_button(Surfer * surfer, char const * label)
+{
+	GtkWidget * hbox;
+	GtkWidget * button;
+
+	hbox = gtk_hbox_new(FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new(label), TRUE, TRUE, 4);
+	button = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(button), gtk_image_new_from_stock(
+				GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
+	gtk_button_set_relief(GTK_BUTTON(button), GTK_RELIEF_NONE);
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
+				on_notebook_close_tab), surfer);
+	gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+	gtk_widget_show_all(hbox);
+	return hbox;
+}
+
+
 /* surfer_print */
 void surfer_print(Surfer * surfer)
 {
-	ghtml_print(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_print(view);
 }
 
 
 /* surfer_refresh */
 void surfer_refresh(Surfer * surfer)
 {
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
-	ghtml_refresh(surfer->view);
+	ghtml_refresh(view);
 }
 
 
 /* surfer_reload */
 void surfer_reload(Surfer * surfer)
 {
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
-	ghtml_reload(surfer->view);
+	ghtml_reload(view);
 }
 
 
@@ -697,13 +840,16 @@ void surfer_resize(Surfer * surfer, gint width, gint height)
 /* surfer_save */
 void surfer_save(Surfer * surfer, char const * filename)
 {
+	GtkWidget * view;
 	char const * source;
 	GtkWidget * dialog;
 	size_t len;
 	FILE * fp;
 	char buf[256];
 
-	if((source = ghtml_get_source(surfer->view)) == NULL)
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	if((source = ghtml_get_source(view)) == NULL)
 		return; /* XXX report error */
 	if(filename == NULL)
 	{
@@ -738,7 +884,11 @@ void surfer_save(Surfer * surfer, char const * filename)
 /* surfer_select_all */
 void surfer_select_all(Surfer * surfer)
 {
-	ghtml_select_all(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_select_all(view);
 }
 
 
@@ -793,14 +943,22 @@ void surfer_show_window(Surfer * surfer, gboolean show)
 /* surfer_stop */
 void surfer_stop(Surfer * surfer)
 {
-	ghtml_stop(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_stop(view);
 }
 
 
 /* surfer_unselect_all */
 void surfer_unselect_all(Surfer * surfer)
 {
-	ghtml_unselect_all(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_unselect_all(view);
 }
 
 
@@ -818,11 +976,14 @@ void surfer_view_source(Surfer * surfer)
 	GtkTextBuffer * tbuf;
 	PangoFontDescription * desc;
 	char buf[256];
+	char const * url;
 	char const * source;
 
-	if(surfer->url == NULL)
+	if((widget = surfer_get_view(surfer)) == NULL)
 		return;
-	if((source = ghtml_get_source(surfer->view)) == NULL)
+	if((url = ghtml_get_location(widget)) == NULL)
+		return;
+	if((source = ghtml_get_source(widget)) == NULL)
 		return; /* FIXME download to a temporary file and open */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	group = gtk_accel_group_new();
@@ -831,8 +992,7 @@ void surfer_view_source(Surfer * surfer)
 			GTK_ACCEL_VISIBLE, cc);
 	gtk_window_add_accel_group(GTK_WINDOW(window), group);
 	gtk_window_set_default_size(GTK_WINDOW(window), 640, 480);
-	snprintf(buf, sizeof(buf), "%s%s", _("Web surfer - Source of "),
-			surfer->url);
+	snprintf(buf, sizeof(buf), "%s%s", _("Web surfer - Source of "), url);
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_on_source_closex), NULL);
@@ -886,21 +1046,33 @@ void surfer_warning(Surfer * surfer, char const * message)
 /* surfer_zoom_in */
 void surfer_zoom_in(Surfer * surfer)
 {
-	ghtml_zoom_in(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_zoom_in(view);
 }
 
 
 /* surfer_zoom_out */
 void surfer_zoom_out(Surfer * surfer)
 {
-	ghtml_zoom_out(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_zoom_out(view);
 }
 
 
 /* surfer_zoom_reset */
 void surfer_zoom_reset(Surfer * surfer)
 {
-	ghtml_zoom_reset(surfer->view);
+	GtkWidget * view;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	ghtml_zoom_reset(view);
 }
 
 

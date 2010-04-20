@@ -28,6 +28,7 @@ gboolean on_closex(gpointer data);
 /* file menu */
 void on_file_close(gpointer data);
 void on_file_new_window(gpointer data);
+void on_file_new_tab(gpointer data);
 void on_file_open(gpointer data);
 void on_file_open_url(gpointer data);
 void on_file_print(gpointer data);
@@ -62,5 +63,10 @@ void on_path_activate(gpointer data);
 void on_preferences(gpointer data);
 void on_refresh(gpointer data);
 void on_stop(gpointer data);
+
+/* notebook */
+void on_notebook_close_tab(gpointer data);
+void on_notebook_switch_page(GtkWidget * widget, GtkNotebookPage * page,
+		guint n, gpointer data);
 
 #endif

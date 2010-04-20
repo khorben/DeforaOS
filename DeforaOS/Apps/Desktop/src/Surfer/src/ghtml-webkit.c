@@ -12,6 +12,8 @@
  * You should have received a copy of the GNU General Public License along with
  * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA  02111-1307  USA */
+/* FIXME
+ * - implement undo/redo */
 
 
 
@@ -100,6 +102,13 @@ GtkWidget * ghtml_new(Surfer * surfer)
 }
 
 
+/* ghtml_delete */
+void ghtml_delete(GtkWidget * ghtml)
+{
+	/* FIXME is it necessary to destroy any widget? */
+}
+
+
 /* accessors */
 /* ghtml_can_go_back */
 gboolean ghtml_can_go_back(GtkWidget * ghtml)
@@ -127,6 +136,7 @@ char const * ghtml_get_link_message(GtkWidget * ghtml)
 }
 
 
+/* ghtml_get_location */
 char const * ghtml_get_location(GtkWidget * ghtml)
 {
 	GtkWidget * view;
@@ -135,6 +145,20 @@ char const * ghtml_get_location(GtkWidget * ghtml)
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
 	frame = webkit_web_view_get_main_frame(WEBKIT_WEB_VIEW(view));
 	return webkit_web_frame_get_uri(frame);
+}
+
+
+/* ghtml_get_progress */
+gdouble ghtml_get_progress(GtkWidget * ghtml)
+{
+	gdouble ret;
+	GtkWidget * view;
+
+	view = g_object_get_data(G_OBJECT(ghtml), "view");
+	ret = webkit_web_view_get_progress(WEBKIT_WEB_VIEW(view));
+	if(ret == 0.0)
+		ret = -1.0;
+	return ret;
 }
 
 
@@ -152,6 +176,14 @@ char const * ghtml_get_source(GtkWidget * ghtml)
 	if((str = webkit_web_data_source_get_data(source)) == NULL)
 		return NULL;
 	return str->str;
+}
+
+
+/* ghtml_get_status */
+char const * ghtml_get_status(GtkWidget * widget)
+{
+	/* FIXME really implement */
+	return NULL;
 }
 
 
@@ -325,10 +357,9 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 	 * - this is a bit ugly (showing and hiding)
 	 * - we may not want history etc to be copied
 	 * - it loads the current URL first */
-	surfer_show_window(copy, FALSE);
-	ret = g_object_get_data(G_OBJECT(copy->view), "view");
+	ret = g_object_get_data(G_OBJECT(surfer_get_view(copy)), "view");
 	g_signal_connect(G_OBJECT(ret), "web-view-ready", G_CALLBACK(
-				_on_web_view_ready), copy->view);
+				_on_web_view_ready), surfer_get_view(copy));
 	return ret;
 }
 

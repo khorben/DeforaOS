@@ -270,6 +270,13 @@ static char const * _new_get_prefs_directory(void)
 }
 
 
+/* ghtml_delete */
+void ghtml_delete(GtkWidget * ghtml)
+{
+	/* FIXME nothing to do? */
+}
+
+
 /* accessors */
 /* ghtml_can_go_back */
 gboolean ghtml_can_go_back(GtkWidget * ghtml)
@@ -313,8 +320,24 @@ char const * ghtml_get_location(GtkWidget * ghtml)
 }
 
 
+/* ghtml_get_progress */
+gdouble ghtml_get_progress(GtkWidget * ghtml)
+{
+	/* FIXME implement */
+	return -1.0;
+}
+
+
 /* ghtml_get_source */
 char const * ghtml_get_source(GtkWidget * widget)
+{
+	/* FIXME really implement */
+	return NULL;
+}
+
+
+/* ghtml_get_status */
+char const * ghtml_get_status(GtkWidget * widget)
 {
 	/* FIXME really implement */
 	return NULL;
