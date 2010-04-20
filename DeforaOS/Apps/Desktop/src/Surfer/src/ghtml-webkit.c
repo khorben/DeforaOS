@@ -20,7 +20,6 @@
 #include <libintl.h>
 #include <webkit/webkit.h>
 #include "ghtml.h"
-#include "common.h" /* XXX should not be needed */
 #include "common/url.c"
 #define _(string) gettext(string)
 
@@ -544,7 +543,7 @@ static gboolean _on_web_view_ready(WebKitWebView * view, gpointer data)
 	Surfer * surfer;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	gtk_widget_show(surfer->window);
+	surfer_show_window(surfer, TRUE);
 	return FALSE;
 }
 #endif
