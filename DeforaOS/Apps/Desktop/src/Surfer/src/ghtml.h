@@ -35,6 +35,7 @@ char const * ghtml_get_link_message(GtkWidget * ghtml);
 char const * ghtml_get_location(GtkWidget * ghtml);
 gdouble ghtml_get_progress(GtkWidget * ghtml);
 char const * ghtml_get_source(GtkWidget * ghtml);
+char const * ghtml_get_status(GtkWidget * ghtml);
 char const * ghtml_get_title(GtkWidget * ghtml);
 
 int ghtml_set_base(GtkWidget * ghtml, char const * url);
