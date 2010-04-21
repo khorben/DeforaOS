@@ -17,6 +17,8 @@
 
 
 
+#include <stdlib.h>
+#include <string.h>
 #include <libintl.h>
 #include <webkit/webkit.h>
 #include "ghtml.h"
@@ -27,6 +29,8 @@
 /* private */
 /* prototypes */
 /* functions */
+static void _ghtml_set_status(GtkWidget * ghtml, char const * status);
+
 /* callbacks */
 static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
 		guint line, const gchar * source, gpointer data);
@@ -113,7 +117,7 @@ GtkWidget * ghtml_new(Surfer * surfer)
 /* ghtml_delete */
 void ghtml_delete(GtkWidget * ghtml)
 {
-	/* FIXME is it necessary to destroy any widget? */
+	free(g_object_get_data(G_OBJECT(ghtml), "status"));
 }
 
 
@@ -190,8 +194,7 @@ char const * ghtml_get_source(GtkWidget * ghtml)
 /* ghtml_get_status */
 char const * ghtml_get_status(GtkWidget * widget)
 {
-	/* FIXME really implement */
-	return NULL;
+	return g_object_get_data(G_OBJECT(widget), "status");
 }
 
 
@@ -263,6 +266,7 @@ gboolean ghtml_go_forward(GtkWidget * ghtml)
 void ghtml_load_url(GtkWidget * ghtml, char const * url)
 {
 	GtkWidget * view;
+	Surfer * surfer;
 	gchar * p;
 
 	if((p = _ghtml_make_url(NULL, url)) != NULL)
@@ -270,6 +274,9 @@ void ghtml_load_url(GtkWidget * ghtml, char const * url)
 	view = g_object_get_data(G_OBJECT(ghtml), "view");
 	webkit_web_view_open(WEBKIT_WEB_VIEW(view), url);
 	g_free(p);
+	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
+	surfer_set_progress(surfer, 0.0);
+	_ghtml_set_status(ghtml, _("Connecting..."));
 }
 
 
@@ -360,6 +367,28 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
+static void _ghtml_set_status(GtkWidget * ghtml, char const * status)
+{
+	Surfer * surfer;
+	gdouble progress;
+	char * p;
+
+	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
+	free(g_object_get_data(G_OBJECT(ghtml), "status"));
+	if(status == NULL)
+	{
+		if((progress = ghtml_get_progress(ghtml)) == 0.0)
+			status = _("Connecting...");
+		else if(progress > 0.0)
+			status = _("Downloading...");
+	}
+	g_object_set_data(G_OBJECT(ghtml), "status", (status != NULL)
+			? strdup(status) : NULL); /* XXX may fail */
+	surfer_set_status(surfer, status);
+}
+
+
+/* callbacks */
 /* on_console_message */
 static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
 		guint line, const gchar * source, gpointer data)
@@ -411,10 +440,9 @@ static gboolean _on_download_requested(WebKitWebView * view,
 static void _on_hovering_over_link(WebKitWebView * view, const gchar * title,
 		const gchar * url, gpointer data)
 {
-	Surfer * surfer;
+	GtkWidget * ghtml = data;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_set_status(surfer, url);
+	_ghtml_set_status(ghtml, url);
 }
 
 
@@ -462,11 +490,12 @@ static gboolean _on_load_error(WebKitWebView * view, WebKitWebFrame * frame,
 static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 			gpointer data)
 {
+	GtkWidget * ghtml = data;
 	Surfer * surfer;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
 	surfer_set_progress(surfer, -1.0);
-	surfer_set_status(surfer, NULL);
+	_ghtml_set_status(ghtml, NULL);
 }
 
 
@@ -474,11 +503,13 @@ static void _on_load_finished(WebKitWebView * view, WebKitWebFrame * arg1,
 static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data)
 {
+	GtkWidget * ghtml = data;
 	Surfer * surfer;
 	gdouble fraction = progress;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
 	surfer_set_progress(surfer, fraction / 100);
+	_ghtml_set_status(ghtml, _("Downloading..."));
 }
 
 
@@ -486,11 +517,12 @@ static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data)
 {
+	GtkWidget * ghtml = data;
 	Surfer * surfer;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_set_progress(surfer, 0.0);
-	surfer_set_status(surfer, _("Downloading..."));
+	surfer = g_object_get_data(G_OBJECT(ghtml), "surfer");
+	surfer_set_progress(surfer, 0.00);
+	_ghtml_set_status(ghtml, _("Downloading..."));
 }
 
 
@@ -534,10 +566,11 @@ static gboolean _on_script_prompt(WebKitWebView * view, WebKitWebFrame * frame,
 static void _on_status_bar_text_changed(WebKitWebView * view, gchar * arg1,
 		gpointer data)
 {
-	Surfer * surfer;
+	GtkWidget * ghtml = data;
 
-	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	surfer_set_status(surfer, arg1);
+	if(strlen(arg1) == 0)
+		return;
+	_ghtml_set_status(ghtml, arg1);
 }
 
 
