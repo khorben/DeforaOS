@@ -10,16 +10,16 @@ all: $(TARGETS)
 Browser.pot: POTFILES
 	./gettext.sh "Browser.pot"
 
-de.mo: de.po
+de.mo: Browser.pot de.po
 	./gettext.sh "de.mo"
 
-es.mo: es.po
+es.mo: Browser.pot es.po
 	./gettext.sh "es.mo"
 
-fr.mo: fr.po
+fr.mo: Browser.pot fr.po
 	./gettext.sh "fr.mo"
 
-it.mo: it.po
+it.mo: Browser.pot it.po
 	./gettext.sh "it.mo"
 
 clean:
