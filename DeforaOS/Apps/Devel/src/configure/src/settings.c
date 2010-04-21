@@ -47,6 +47,7 @@ int settings(Prefs * prefs, Config * config, String const * directory,
 	int ret = 0;
 	String const * p;
 	String * q;
+	String * r;
 	unsigned long i;
 	char c;
 
@@ -54,17 +55,18 @@ int settings(Prefs * prefs, Config * config, String const * directory,
 		return 0;
 	if((q = string_new(p)) == NULL)
 		return 1;
+	r = q;
 	for(i = 0;; i++)
 	{
-		if(q[i] != ',' && q[i] != '\0')
+		if(r[i] != ',' && r[i] != '\0')
 			continue;
-		c = q[i];
-		q[i] = '\0';
+		c = r[i];
+		r[i] = '\0';
 		ret |= _settings_do(prefs, config, directory, package, version,
-				q);
+				r);
 		if(c == '\0')
 			break;
-		q+=i+1;
+		r+=i+1;
 		i = 0;
 	}
 	string_delete(q);
