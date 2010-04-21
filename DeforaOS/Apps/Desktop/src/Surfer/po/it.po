@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-21 01:36+0200\n"
+"POT-Creation-Date: 2010-04-21 03:39+0200\n"
 "PO-Revision-Date: 2010-04-11 12:06+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Italian\n"
@@ -40,15 +40,15 @@ msgstr ""
 msgid "License"
 msgstr ""
 
-#: ../src/callbacks.c:580
+#: ../src/callbacks.c:584
 msgid "Web surfer preferences"
 msgstr ""
 
-#: ../src/callbacks.c:591
+#: ../src/callbacks.c:595
 msgid "Homepage:"
 msgstr ""
 
-#: ../src/callbacks.c:598
+#: ../src/callbacks.c:602
 msgid "General"
 msgstr ""
 
@@ -61,7 +61,7 @@ msgid "Connected"
 msgstr ""
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:904
-#: ../src/ghtml-webkit.c:466
+#: ../src/ghtml-webkit.c:467
 msgid "Downloading..."
 msgstr ""
 
@@ -113,8 +113,8 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:608
-#: ../src/surfer.c:611
+#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:611
+#: ../src/surfer.c:614
 msgid "Error"
 msgstr ""
 
@@ -157,7 +157,7 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:546 ../src/ghtml-webkit.c:417 ../src/surfer.c:610
+#: ../src/download.c:546 ../src/ghtml-webkit.c:418 ../src/surfer.c:613
 msgid "Unknown error"
 msgstr ""
 
@@ -304,7 +304,7 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/surfer.c:217 ../src/surfer.c:469
+#: ../src/surfer.c:217 ../src/surfer.c:467
 msgid "Web surfer"
 msgstr ""
 
@@ -312,50 +312,51 @@ msgstr ""
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:482 ../src/surfer.c:801
+#: ../src/surfer.c:480 ../src/surfer.c:803
 msgid "Untitled"
 msgstr ""
 
-#: ../src/surfer.c:557 ../src/surfer.c:560
+#: ../src/surfer.c:556 ../src/surfer.c:559 ../src/surfer.c:864
+#: ../src/surfer.c:867
 msgid "Question"
 msgstr ""
 
-#: ../src/surfer.c:577 ../src/surfer.c:892
+#: ../src/surfer.c:580 ../src/surfer.c:930
 msgid "Save file as..."
 msgstr ""
 
-#: ../src/surfer.c:639
+#: ../src/surfer.c:641
 msgid "Find text"
 msgstr ""
 
-#: ../src/surfer.c:646
+#: ../src/surfer.c:648
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:653
+#: ../src/surfer.c:655
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:655
+#: ../src/surfer.c:657
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:681
+#: ../src/surfer.c:683
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:769
+#: ../src/surfer.c:771
 msgid "Open file..."
 msgstr ""
 
-#: ../src/surfer.c:795
+#: ../src/surfer.c:797
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:1031
+#: ../src/surfer.c:1069
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:1072 ../src/surfer.c:1075
+#: ../src/surfer.c:1110 ../src/surfer.c:1113
 msgid "Warning"
 msgstr ""
