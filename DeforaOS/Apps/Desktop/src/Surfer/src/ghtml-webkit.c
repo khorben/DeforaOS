@@ -44,10 +44,13 @@ static void _on_load_progress_changed(WebKitWebView * view, gint progress,
 		gpointer data);
 static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 		gpointer data);
-static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
-		gchar * message, gpointer data);
+static gboolean _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * message, gpointer data);
 static gboolean _on_script_confirm(WebKitWebView * view, WebKitWebFrame * frame,
-		gchar * message, gboolean confirmed, gpointer data);
+		const gchar * message, gboolean * confirmed, gpointer data);
+static gboolean _on_script_prompt(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * message, const gchar * default_value,
+		gchar ** value, gpointer data);
 static void _on_status_bar_text_changed(WebKitWebView * view, gchar * arg1,
 		gpointer data);
 static void _on_title_changed(WebKitWebView * view, WebKitWebFrame * frame,
@@ -89,6 +92,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 				_on_script_alert), widget);
 	g_signal_connect(G_OBJECT(view), "script-confirm", G_CALLBACK(
 				_on_script_confirm), widget);
+	g_signal_connect(G_OBJECT(view), "script-prompt", G_CALLBACK(
+				_on_script_prompt), widget);
 	g_signal_connect(G_OBJECT(view), "status-bar-text-changed", G_CALLBACK(
 				_on_status_bar_text_changed), widget);
 	g_signal_connect(G_OBJECT(view), "title-changed", G_CALLBACK(
@@ -464,23 +469,39 @@ static void _on_load_started(WebKitWebView * view, WebKitWebFrame * frame,
 
 
 /* on_script_alert */
-static void _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
-		gchar * message, gpointer data)
+static gboolean _on_script_alert(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * message, gpointer data)
 {
 	Surfer * surfer;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
 	surfer_warning(surfer, message);
+	return TRUE;
 }
 
 
 static gboolean _on_script_confirm(WebKitWebView * view, WebKitWebFrame * frame,
-		gchar * message, gboolean confirmed, gpointer data)
+		const gchar * message, gboolean * confirmed, gpointer data)
 {
 	Surfer * surfer;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	return surfer_confirm(surfer, message);
+	if(surfer_confirm(surfer, message, confirmed) != 0)
+		*confirmed = FALSE;
+	return TRUE;
+}
+
+static gboolean _on_script_prompt(WebKitWebView * view, WebKitWebFrame * frame,
+		const gchar * message, const gchar * default_value,
+		gchar ** value, gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	if(surfer_prompt(surfer, message, default_value, value) == 0)
+		return TRUE;
+	*value = NULL;
+	return TRUE;
 }
 
 

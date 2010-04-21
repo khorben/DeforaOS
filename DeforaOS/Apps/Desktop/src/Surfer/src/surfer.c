@@ -543,10 +543,11 @@ int surfer_config_save(Surfer * surfer)
 
 
 /* surfer_confirm */
-int surfer_confirm(Surfer * surfer, char const * message)
+int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed)
 {
-	int ret;
+	int ret = 0;
 	GtkWidget * dialog;
+	int res;
 
 	dialog = gtk_message_dialog_new((surfer != NULL)
 			? GTK_WINDOW(surfer->window) : NULL,
@@ -556,11 +557,15 @@ int surfer_confirm(Surfer * surfer, char const * message)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	ret = gtk_dialog_run(GTK_DIALOG(dialog));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	return (ret == GTK_RESPONSE_YES) ? 1 : 0;
+	if(res == GTK_RESPONSE_YES)
+		*confirmed = TRUE;
+	else if(res == GTK_RESPONSE_NO)
+		*confirmed = FALSE;
+	else
+		ret = 1;
+	return ret;
 }
 
 
@@ -607,9 +612,8 @@ int surfer_error(Surfer * surfer, char const * message, int ret)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", (message != NULL) ? message : _("Unknown error"));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	gtk_widget_show(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
 }
 
@@ -840,6 +844,39 @@ void surfer_print(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_print(view);
+}
+
+
+/* surfer_prompt */
+int surfer_prompt(Surfer * surfer, char const * message,
+		char const * default_value, char ** value)
+{
+	int ret = 0;
+	GtkWidget * dialog;
+	GtkWidget * vbox;
+	GtkWidget * entry;
+	int res;
+
+	dialog = gtk_message_dialog_new((surfer != NULL)
+			? GTK_WINDOW(surfer->window) : NULL,
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL, "%s",
+			_("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	vbox = GTK_DIALOG(dialog)->vbox;
+	entry = gtk_entry_new();
+	if(default_value != NULL)
+		gtk_entry_set_text(GTK_ENTRY(entry), default_value);
+	gtk_widget_show(entry);
+	gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, TRUE, 0);
+	if((res = gtk_dialog_run(GTK_DIALOG(dialog))) == GTK_RESPONSE_OK)
+		*value = strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+	else
+		ret = 1;
+	gtk_widget_destroy(dialog);
+	return ret;
 }
 
 
@@ -1074,9 +1111,8 @@ void surfer_warning(Surfer * surfer, char const * message)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	gtk_widget_show(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
 
 

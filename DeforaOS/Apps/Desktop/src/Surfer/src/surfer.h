@@ -65,8 +65,10 @@ void surfer_set_title(Surfer * surfer, char const * title);
 int surfer_config_load(Surfer * surfer);
 int surfer_config_save(Surfer * surfer);
 
-int surfer_confirm(Surfer * surfer, char const * message);
+int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed);
 int surfer_error(Surfer * surfer, char const * message, int ret);
+int surfer_prompt(Surfer * surfer, char const * message,
+		char const * default_value, char ** value);
 void surfer_warning(Surfer * surfer, char const * message);
 
 void surfer_open(Surfer * surfer, char const * url);
