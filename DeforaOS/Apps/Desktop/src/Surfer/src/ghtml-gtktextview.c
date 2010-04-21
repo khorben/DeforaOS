@@ -91,7 +91,8 @@ void ghtml_delete(GtkWidget * widget)
 	GHtml * ghtml;
 
 	ghtml = g_object_get_data(G_OBJECT(widget), "ghtml");
-	_conn_delete(ghtml->conn);
+	if(ghtml->conn != NULL)
+		_conn_delete(ghtml->conn);
 	free(ghtml);
 }
 
