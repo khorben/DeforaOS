@@ -165,6 +165,15 @@ void on_view_force_refresh(gpointer data)
 }
 
 
+/* on_view_javascript_console */
+void on_view_javascript_console(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_show_console(surfer, TRUE);
+}
+
+
 /* on_view_normal_size */
 void on_view_normal_size(gpointer data)
 {
@@ -442,6 +451,16 @@ void on_close(gpointer data)
 	Surfer * surfer = data;
 
 	on_closex(surfer);
+}
+
+
+/* on_console_closex */
+gboolean on_console_closex(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_show_console(surfer, FALSE);
+	return TRUE;
 }
 
 

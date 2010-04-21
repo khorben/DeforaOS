@@ -66,6 +66,8 @@ int surfer_config_load(Surfer * surfer);
 int surfer_config_save(Surfer * surfer);
 
 int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed);
+void surfer_console_message(Surfer * surfer, char const * message,
+		char const * source, long line);
 int surfer_error(Surfer * surfer, char const * message, int ret);
 int surfer_prompt(Surfer * surfer, char const * message,
 		char const * default_value, char ** value);
@@ -87,6 +89,7 @@ void surfer_download(Surfer * surfer, char const * url, char const * suggested);
 
 /* interface */
 void surfer_resize(Surfer * surfer, gint width, gint height);
+void surfer_show_console(Surfer * surfer, gboolean show);
 void surfer_show_menubar(Surfer * surfer, gboolean show);
 void surfer_show_statusbar(Surfer * surfer, gboolean show);
 void surfer_show_toolbar(Surfer * surfer, gboolean show);

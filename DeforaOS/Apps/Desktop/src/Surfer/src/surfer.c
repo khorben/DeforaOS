@@ -38,6 +38,13 @@ typedef struct _SurferIdle
 	char * url;
 } SurferIdle;
 
+typedef enum _SurferConsoleMessage
+{
+	SCM_MESSAGE = 0, SCM_SOURCE, SCM_LINE, SCM_DISPLAY_LINE
+} SurferConsoleMessage;
+#define SCM_LAST	SCM_DISPLAY_LINE
+#define SCM_COUNT	(SCM_LAST + 1)
+
 
 /* variables */
 static DesktopAccel _surfer_accel[] =
@@ -112,6 +119,8 @@ static DesktopMenu _menu_view[] =
 	{ "",			NULL, NULL, 0 },
 	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
 		"stock_view-html-source", GDK_U },
+	{ N_("Javascript _console"), G_CALLBACK(on_view_javascript_console),
+		NULL, 0 },
 	{ NULL,			NULL, NULL, 0 }
 };
 
@@ -305,6 +314,10 @@ Surfer * _new_do(char const * url)
 	surfer->pr_window = NULL;
 	/* find dialog */
 	surfer->fi_dialog = NULL;
+	/* console window */
+	surfer->co_window = NULL;
+	surfer->co_store = gtk_list_store_new(SCM_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING);
 	/* hack to display the statusbar only if necessary */
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
@@ -566,6 +579,26 @@ int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed)
 	else
 		ret = 1;
 	return ret;
+}
+
+
+/* surfer_console_message */
+void surfer_console_message(Surfer * surfer, char const * message,
+		char const * source, long line)
+{
+	GtkTreeIter iter;
+	char buf[32] = "";
+
+	if(line < 0)
+		line = -1;
+	else
+		snprintf(buf, sizeof(buf), "%ld", line);
+	gtk_list_store_append(surfer->co_store, &iter);
+	gtk_list_store_set(surfer->co_store, &iter, SCM_MESSAGE, message,
+			SCM_SOURCE, source,
+			(line >= 0) ? SCM_LINE : -1, line,
+			SCM_DISPLAY_LINE, buf,
+			-1);
 }
 
 
@@ -963,6 +996,53 @@ void surfer_select_all(Surfer * surfer)
 	if((view = surfer_get_view(surfer)) == NULL)
 		return;
 	ghtml_select_all(view);
+}
+
+
+/* surfer_show_console */
+void surfer_show_console(Surfer * surfer, gboolean show)
+{
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
+	if(surfer->co_window != NULL)
+	{
+		if(show == TRUE)
+			gtk_widget_show(surfer->co_window);
+		else
+			gtk_widget_hide(surfer->co_window);
+		return;
+	}
+	surfer->co_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(surfer->co_window), 400, 300);
+	gtk_window_set_title(GTK_WINDOW(surfer->co_window),
+			_("Javascript console"));
+	g_signal_connect_swapped(G_OBJECT(surfer->co_window), "delete-event",
+			G_CALLBACK(on_console_closex), surfer);
+	vbox = gtk_vbox_new(FALSE, 0);
+	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				surfer->co_store));
+	/* message */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Message",
+			renderer, "text", SCM_MESSAGE, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	/* source */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Source",
+			renderer, "text", SCM_SOURCE, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	/* line */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes("Line",
+			renderer, "text", SCM_DISPLAY_LINE, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(surfer->co_window), vbox);
+	gtk_widget_show_all(vbox);
+	surfer_show_console(surfer, show);
 }
 
 

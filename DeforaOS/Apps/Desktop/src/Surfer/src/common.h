@@ -60,6 +60,10 @@ struct _Surfer
 	GtkWidget * fi_text;
 	GtkWidget * fi_case;
 	GtkWidget * fi_wrap;
+
+	/* console */
+	GtkWidget * co_window;
+	GtkListStore * co_store;
 };
 
 #endif /* !SURFER_COMMON_H */

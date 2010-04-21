@@ -28,6 +28,8 @@
 /* prototypes */
 /* functions */
 /* callbacks */
+static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
+		guint line, const gchar * source, gpointer data);
 static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data);
 static gboolean _on_download_requested(WebKitWebView * view,
@@ -72,6 +74,8 @@ GtkWidget * ghtml_new(Surfer * surfer)
 	g_object_set_data(G_OBJECT(widget), "surfer", surfer);
 	g_object_set_data(G_OBJECT(widget), "view", view);
 	/* view */
+	g_signal_connect(G_OBJECT(view), "console-message", G_CALLBACK(
+				_on_console_message), widget);
 	g_signal_connect(G_OBJECT(view), "create-web-view", G_CALLBACK(
 				_on_create_web_view), widget);
 	g_signal_connect(G_OBJECT(view), "download-requested", G_CALLBACK(
@@ -346,6 +350,18 @@ void ghtml_zoom_reset(GtkWidget * ghtml)
 
 /* private */
 /* functions */
+/* on_console_message */
+static gboolean _on_console_message(WebKitWebView * view, const gchar * message,
+		guint line, const gchar * source, gpointer data)
+{
+	Surfer * surfer;
+
+	surfer = g_object_get_data(G_OBJECT(data), "surfer");
+	surfer_console_message(surfer, message, source, line);
+	return TRUE;
+}
+
+
 /* on_create_web_view */
 static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 		WebKitWebFrame * frame, gpointer data)

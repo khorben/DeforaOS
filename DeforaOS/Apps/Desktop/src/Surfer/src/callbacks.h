@@ -49,6 +49,7 @@ void on_view_refresh(gpointer data);
 void on_view_force_refresh(gpointer data);
 void on_view_stop(gpointer data);
 void on_view_page_source(gpointer data);
+void on_view_javascript_console(gpointer data);
 
 /* help menu */
 void on_help_about(gpointer data);
@@ -68,5 +69,8 @@ void on_stop(gpointer data);
 /* notebook */
 void on_notebook_close_tab(GtkWidget * widget, gpointer data);
 void on_notebook_switch_page(gpointer data);
+
+/* console */
+gboolean on_console_closex(gpointer data);
 
 #endif
