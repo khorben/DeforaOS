@@ -1063,17 +1063,17 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 				surfer->co_store));
 	/* message */
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Message",
+	column = gtk_tree_view_column_new_with_attributes(_("Message"),
 			renderer, "text", SCM_MESSAGE, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	/* source */
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Source",
+	column = gtk_tree_view_column_new_with_attributes(_("Source"),
 			renderer, "text", SCM_SOURCE, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	/* line */
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Line",
+	column = gtk_tree_view_column_new_with_attributes(_("Line"),
 			renderer, "text", SCM_DISPLAY_LINE, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
 	gtk_container_add(GTK_CONTAINER(hbox), widget);

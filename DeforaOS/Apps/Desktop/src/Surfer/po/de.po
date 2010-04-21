@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-21 04:58+0200\n"
+"POT-Creation-Date: 2010-04-21 05:02+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -368,6 +368,18 @@ msgstr ""
 #: ../src/surfer.c:1049
 msgid "Command:"
 msgstr ""
+
+#: ../src/surfer.c:1066
+msgid "Message"
+msgstr ""
+
+#: ../src/surfer.c:1071
+msgid "Source"
+msgstr ""
+
+#: ../src/surfer.c:1076
+msgid "Line"
+msgstr "Linie"
 
 #: ../src/surfer.c:1201
 msgid "Web surfer - Source of "
