@@ -1059,6 +1059,8 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	/* view */
 	hbox = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(hbox),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				surfer->co_store));
 	/* message */
