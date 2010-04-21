@@ -61,7 +61,8 @@ _gettext_pot()
 
 #main
 if [ $# -eq 4 -a "$1" = "-p" -a "$3" = "install" ]; then
-	#PREFIX="$2" XXX doesn't work atm
+	PREFIX="$2"
+	LOCALEDIR="$PREFIX/share/locale"
 	lang="${4%%.mo}"
 
 	$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"		|| exit 2
