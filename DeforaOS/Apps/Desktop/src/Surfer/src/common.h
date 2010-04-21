@@ -63,6 +63,7 @@ struct _Surfer
 
 	/* console */
 	GtkWidget * co_window;
+	GtkWidget * co_entry;
 	GtkListStore * co_store;
 };
 

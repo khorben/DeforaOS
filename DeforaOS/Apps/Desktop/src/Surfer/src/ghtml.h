@@ -62,4 +62,6 @@ void ghtml_zoom_in(GtkWidget * ghtml);
 void ghtml_zoom_out(GtkWidget * ghtml);
 void ghtml_zoom_reset(GtkWidget * ghtml);
 
+void ghtml_execute(GtkWidget * ghtml, char const * code);
+
 #endif /* !SURFER_GHTML_H */

@@ -454,6 +454,24 @@ void on_close(gpointer data)
 }
 
 
+/* on_console_clear */
+void on_console_clear(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_console_clear(surfer);
+}
+
+
+/* on_console_close */
+void on_console_close(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_show_console(surfer, FALSE);
+}
+
+
 /* on_console_closex */
 gboolean on_console_closex(gpointer data)
 {
@@ -461,6 +479,15 @@ gboolean on_console_closex(gpointer data)
 
 	surfer_show_console(surfer, FALSE);
 	return TRUE;
+}
+
+
+/* on_console_execute */
+void on_console_execute(gpointer data)
+{
+	Surfer * surfer = data;
+
+	surfer_console_execute(surfer);
 }
 
 

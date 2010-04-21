@@ -447,7 +447,7 @@ void surfer_set_status(Surfer * surfer, char const * status)
 				surfer->statusbar_id);
 	surfer->statusbar_id = gtk_statusbar_push(sb,
 			gtk_statusbar_get_context_id(sb, ""), (status != NULL)
-			? status : "Ready");
+			? status : _("Ready"));
 	if(status == NULL)
 		gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
 	if(status == NULL)
@@ -579,6 +579,28 @@ int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed)
 	else
 		ret = 1;
 	return ret;
+}
+
+
+/* surfer_console_clear */
+void surfer_console_clear(Surfer * surfer)
+{
+	gtk_list_store_clear(surfer->co_store);
+}
+
+
+/* surfer_console_execute */
+void surfer_console_execute(Surfer * surfer)
+{
+	GtkWidget * view;
+	char const * text;
+
+	if((view = surfer_get_view(surfer)) == NULL)
+		return;
+	if((text = gtk_entry_get_text(GTK_ENTRY(surfer->co_entry))) == NULL
+			|| strlen(text) == 0)
+		return;
+	ghtml_execute(view, text);
 }
 
 
@@ -1003,6 +1025,7 @@ void surfer_select_all(Surfer * surfer)
 void surfer_show_console(Surfer * surfer, gboolean show)
 {
 	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
@@ -1022,6 +1045,18 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	g_signal_connect_swapped(G_OBJECT(surfer->co_window), "delete-event",
 			G_CALLBACK(on_console_closex), surfer);
 	vbox = gtk_vbox_new(FALSE, 0);
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new(_("Command:"));
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	surfer->co_entry = gtk_entry_new();
+	g_signal_connect_swapped(G_OBJECT(surfer->co_entry), "activate",
+			G_CALLBACK(on_console_execute), surfer);
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->co_entry, TRUE, TRUE, 0);
+	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+	/* view */
+	hbox = gtk_scrolled_window_new(NULL, NULL);
 	widget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				surfer->co_store));
 	/* message */
@@ -1039,9 +1074,24 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 	column = gtk_tree_view_column_new_with_attributes("Line",
 			renderer, "text", SCM_DISPLAY_LINE, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(widget), column);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(surfer->co_window), vbox);
+	gtk_container_add(GTK_CONTAINER(hbox), widget);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* dialog */
+	hbox = gtk_hbutton_box_new();
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
+	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CLEAR);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_console_clear), surfer);
+	gtk_container_add(GTK_CONTAINER(hbox), widget);
+	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_console_close), surfer);
+	gtk_container_add(GTK_CONTAINER(hbox), widget);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_widget_show_all(vbox);
+	gtk_container_add(GTK_CONTAINER(surfer->co_window), vbox);
 	surfer_show_console(surfer, show);
 }
 

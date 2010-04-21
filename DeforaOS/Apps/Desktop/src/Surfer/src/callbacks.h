@@ -71,6 +71,9 @@ void on_notebook_close_tab(GtkWidget * widget, gpointer data);
 void on_notebook_switch_page(gpointer data);
 
 /* console */
+void on_console_clear(gpointer data);
+void on_console_close(gpointer data);
 gboolean on_console_closex(gpointer data);
+void on_console_execute(gpointer data);
 
 #endif

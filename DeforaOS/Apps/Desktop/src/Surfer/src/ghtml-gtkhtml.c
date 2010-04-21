@@ -282,6 +282,13 @@ int ghtml_set_base(GtkWidget * widget, char const * url)
 
 
 /* useful */
+/* ghtml_execute */
+void ghtml_execute(GtkWidget * ghtml, char const * code)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_find */
 gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive,
 		gboolean wrap)

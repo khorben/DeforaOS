@@ -359,6 +359,13 @@ char const * ghtml_get_title(GtkWidget * ghtml)
 
 
 /* useful */
+/* ghtml_execute */
+void ghtml_execute(GtkWidget * ghtml, char const * code)
+{
+	/* FIXME implement */
+}
+
+
 /* ghtml_find */
 gboolean ghtml_find(GtkWidget * ghtml, char const * text, gboolean sensitive,
 		gboolean wrap)

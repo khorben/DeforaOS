@@ -66,6 +66,8 @@ int surfer_config_load(Surfer * surfer);
 int surfer_config_save(Surfer * surfer);
 
 int surfer_confirm(Surfer * surfer, char const * message, gboolean * confirmed);
+void surfer_console_clear(Surfer * surfer);
+void surfer_console_execute(Surfer * surfer);
 void surfer_console_message(Surfer * surfer, char const * message,
 		char const * source, long line);
 int surfer_error(Surfer * surfer, char const * message, int ret);
