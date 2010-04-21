@@ -1053,6 +1053,8 @@ void surfer_show_console(Surfer * surfer, gboolean show)
 			G_CALLBACK(on_console_execute), surfer);
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->co_entry, TRUE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
+				on_console_execute), surfer);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 	/* view */
