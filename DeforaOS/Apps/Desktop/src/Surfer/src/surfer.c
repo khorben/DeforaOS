@@ -328,11 +328,9 @@ Surfer * surfer_new_copy(Surfer * surfer)
 {
 	Surfer * ret;
 	GtkWidget * view;
-	char const * url;
+	char const * url = NULL;
 	
-	if((view = surfer_get_view(surfer)) == NULL)
-		url = NULL;
-	else
+	if((view = surfer_get_view(surfer)) != NULL)
 		url = ghtml_get_location(view);
 	if((ret = surfer_new(url)) == NULL)
 		return NULL;
