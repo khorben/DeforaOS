@@ -347,18 +347,14 @@ static WebKitWebView * _on_create_web_view(WebKitWebView * view,
 {
 	WebKitWebView * ret;
 	Surfer * surfer;
-	Surfer * copy;
 
 	surfer = g_object_get_data(G_OBJECT(data), "surfer");
-	if((copy = surfer_new_copy(surfer)) == NULL)
+	if((surfer = surfer_new(NULL)) == NULL)
 		return NULL;
-	/* FIXME many things:
-	 * - this is a bit ugly (showing and hiding)
-	 * - we may not want history etc to be copied
-	 * - it loads the current URL first */
-	ret = g_object_get_data(G_OBJECT(surfer_get_view(copy)), "view");
+	/* FIXME we may want the history to be copied (and then more) */
+	ret = g_object_get_data(G_OBJECT(surfer_get_view(surfer)), "view");
 	g_signal_connect(G_OBJECT(ret), "web-view-ready", G_CALLBACK(
-				_on_web_view_ready), surfer_get_view(copy));
+				_on_web_view_ready), surfer_get_view(surfer));
 	return ret;
 }
 

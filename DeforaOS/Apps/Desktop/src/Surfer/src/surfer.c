@@ -284,7 +284,7 @@ Surfer * _new_do(char const * url)
 	/* notebook */
 	surfer->notebook = gtk_notebook_new();
 	gtk_notebook_set_show_border(GTK_NOTEBOOK(surfer->notebook), FALSE);
-	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook), FALSE);
+	surfer_open_tab(surfer, NULL);
 	g_signal_connect_swapped(G_OBJECT(surfer->notebook), "switch-page",
 			G_CALLBACK(on_notebook_switch_page), surfer);
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->notebook, TRUE, TRUE, 0);
@@ -316,7 +316,7 @@ static gboolean _new_idle(gpointer data)
 {
 	SurferIdle * si = data;
 
-	surfer_open_tab(si->surfer, si->url);
+	surfer_open(si->surfer, si->url);
 	free(si->url);
 	free(si);
 	return FALSE;
@@ -800,6 +800,9 @@ void surfer_open_tab(Surfer * surfer, char const * url)
 	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) > 1)
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
 				TRUE);
+	else
+		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
+				FALSE);
 	gtk_widget_show_all(widget);
 }
 
