@@ -1324,6 +1324,7 @@ function project_download_insert($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
+	_project_toolbar($project['id']);
 	print('<h1 class="title project">'._html_safe($project['name']).': '
 		.NEW_RELEASE.'</h1>'."\n");
 	if(isset($error) && strlen($error))
@@ -1554,6 +1555,7 @@ function project_screenshot_insert($args)
 	if(!is_array($project) || count($project) != 1)
 		return _error(INVALID_PROJECT);
 	$project = $project[0];
+	_project_toolbar($project['id']);
 	print('<h1 class="title project">'._html_safe($project['name']).': '
 		.NEW_SCREENSHOT.'</h1>'."\n");
 	if(isset($error) && strlen($error))
