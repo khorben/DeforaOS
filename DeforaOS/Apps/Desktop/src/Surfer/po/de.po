@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-21 05:02+0200\n"
+"POT-Creation-Date: 2010-04-21 13:32+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: German\n"
@@ -61,7 +61,8 @@ msgid "Connected"
 msgstr ""
 
 #: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:911
-#: ../src/ghtml-webkit.c:493
+#: ../src/ghtml-webkit.c:383 ../src/ghtml-webkit.c:512
+#: ../src/ghtml-webkit.c:525
 msgid "Downloading..."
 msgstr ""
 
@@ -113,8 +114,8 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:666
-#: ../src/surfer.c:669
+#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:677
+#: ../src/surfer.c:680
 msgid "Error"
 msgstr "Fehler"
 
@@ -157,7 +158,7 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:546 ../src/ghtml-webkit.c:444 ../src/surfer.c:668
+#: ../src/download.c:546 ../src/ghtml-webkit.c:472 ../src/surfer.c:679
 msgid "Unknown error"
 msgstr ""
 
@@ -184,7 +185,8 @@ msgstr ""
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1023
+#: ../src/ghtml-gtkhtml.c:1023 ../src/ghtml-webkit.c:279
+#: ../src/ghtml-webkit.c:381
 msgid "Connecting..."
 msgstr ""
 
@@ -308,83 +310,83 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#: ../src/surfer.c:226 ../src/surfer.c:480
+#: ../src/surfer.c:226 ../src/surfer.c:491
 msgid "Web surfer"
 msgstr "Web surfer"
 
-#: ../src/surfer.c:274
+#: ../src/surfer.c:279
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:450
+#: ../src/surfer.c:461
 msgid "Ready"
 msgstr ""
 
-#: ../src/surfer.c:493 ../src/surfer.c:858
+#: ../src/surfer.c:504 ../src/surfer.c:869
 msgid "Untitled"
 msgstr ""
 
-#: ../src/surfer.c:569 ../src/surfer.c:572 ../src/surfer.c:919
-#: ../src/surfer.c:922
+#: ../src/surfer.c:580 ../src/surfer.c:583 ../src/surfer.c:930
+#: ../src/surfer.c:933
 msgid "Question"
 msgstr ""
 
-#: ../src/surfer.c:635 ../src/surfer.c:985
+#: ../src/surfer.c:646 ../src/surfer.c:996
 msgid "Save file as..."
 msgstr ""
 
-#: ../src/surfer.c:696
+#: ../src/surfer.c:707
 msgid "Find text"
 msgstr "Suchen"
 
-#: ../src/surfer.c:703
+#: ../src/surfer.c:714
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:710
+#: ../src/surfer.c:721
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:712
+#: ../src/surfer.c:723
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:738
+#: ../src/surfer.c:749
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:826
+#: ../src/surfer.c:837
 msgid "Open file..."
 msgstr ""
 
-#: ../src/surfer.c:852
+#: ../src/surfer.c:863
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:1044
+#: ../src/surfer.c:1055
 msgid "Javascript console"
 msgstr ""
 
-#: ../src/surfer.c:1049
+#: ../src/surfer.c:1060
 msgid "Command:"
 msgstr ""
 
-#: ../src/surfer.c:1066
+#: ../src/surfer.c:1079
 msgid "Message"
 msgstr ""
 
-#: ../src/surfer.c:1071
+#: ../src/surfer.c:1084
 msgid "Source"
 msgstr ""
 
-#: ../src/surfer.c:1076
+#: ../src/surfer.c:1089
 msgid "Line"
 msgstr "Linie"
 
-#: ../src/surfer.c:1201
+#: ../src/surfer.c:1214
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:1242 ../src/surfer.c:1245
+#: ../src/surfer.c:1255 ../src/surfer.c:1258
 msgid "Warning"
 msgstr "Achtung"
