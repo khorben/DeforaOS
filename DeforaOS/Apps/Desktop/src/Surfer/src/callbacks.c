@@ -460,7 +460,11 @@ void on_fullscreen(gpointer data)
 	Surfer * surfer = data;
 	GdkWindow * window;
 
+#if GTK_CHECK_VERSION(2, 14, 0)
 	window = gtk_widget_get_window(surfer->window);
+#else
+	window = surfer->window->window;
+#endif
 	if((gdk_window_get_state(window) & GDK_WINDOW_STATE_FULLSCREEN)
 			!= GDK_WINDOW_STATE_FULLSCREEN)
 	{
