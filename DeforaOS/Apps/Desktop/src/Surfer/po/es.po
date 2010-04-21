@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-21 03:39+0200\n"
+"POT-Creation-Date: 2010-04-21 04:58+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -16,68 +16,68 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../src/callbacks.c:285
+#: ../src/callbacks.c:294
 msgid "About "
 msgstr "Acercia de "
 
-#: ../src/callbacks.c:294
+#: ../src/callbacks.c:303
 msgid "C_redits"
 msgstr "C_réditos"
 
-#: ../src/callbacks.c:298
+#: ../src/callbacks.c:307
 msgid "_License"
 msgstr "_Licencia"
 
-#: ../src/callbacks.c:348
+#: ../src/callbacks.c:357
 msgid "Credits"
 msgstr "Créditos"
 
-#: ../src/callbacks.c:371
+#: ../src/callbacks.c:380
 msgid "Written by"
 msgstr "Escrito pot"
 
-#: ../src/callbacks.c:400
+#: ../src/callbacks.c:409
 msgid "License"
 msgstr "Licencia"
 
-#: ../src/callbacks.c:584
+#: ../src/callbacks.c:630
 msgid "Web surfer preferences"
 msgstr "Web surfer preferencias"
 
-#: ../src/callbacks.c:595
+#: ../src/callbacks.c:641
 msgid "Homepage:"
 msgstr ""
 
-#: ../src/callbacks.c:602
+#: ../src/callbacks.c:648
 msgid "General"
 msgstr ""
 
-#: ../src/common/conn.c:206 ../src/download.c:165 ../src/ghtml-gtkhtml.c:819
+#: ../src/common/conn.c:206 ../src/download.c:165 ../src/ghtml-gtkhtml.c:826
 msgid "Resolving..."
 msgstr ""
 
-#: ../src/common/conn.c:255 ../src/download.c:430 ../src/ghtml-gtkhtml.c:869
+#: ../src/common/conn.c:255 ../src/download.c:430 ../src/ghtml-gtkhtml.c:876
 msgid "Connected"
 msgstr ""
 
-#: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:904
-#: ../src/ghtml-webkit.c:467
+#: ../src/common/conn.c:280 ../src/ghtml-gtkhtml.c:911
+#: ../src/ghtml-webkit.c:493
 msgid "Downloading..."
 msgstr ""
 
-#: ../src/common/conn.c:305 ../src/ghtml-gtkhtml.c:950
+#: ../src/common/conn.c:305 ../src/ghtml-gtkhtml.c:957
 msgid "Unsupported protocol"
 msgstr ""
 
-#: ../src/common/conn.c:309 ../src/ghtml-gtkhtml.c:954
+#: ../src/common/conn.c:309 ../src/ghtml-gtkhtml.c:961
 msgid "Unknown host"
 msgstr ""
 
-#: ../src/common/conn.c:314 ../src/ghtml-gtkhtml.c:959
+#: ../src/common/conn.c:314 ../src/ghtml-gtkhtml.c:966
 msgid "Unspecified error"
 msgstr ""
 
-#: ../src/common/conn.c:348 ../src/download.c:507 ../src/ghtml-gtkhtml.c:1055
+#: ../src/common/conn.c:348 ../src/download.c:507 ../src/ghtml-gtkhtml.c:1062
 msgid "Timeout"
 msgstr ""
 
@@ -113,8 +113,8 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:611
-#: ../src/surfer.c:614
+#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:666
+#: ../src/surfer.c:669
 msgid "Error"
 msgstr ""
 
@@ -157,7 +157,7 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:546 ../src/ghtml-webkit.c:418 ../src/surfer.c:613
+#: ../src/download.c:546 ../src/ghtml-webkit.c:444 ../src/surfer.c:668
 msgid "Unknown error"
 msgstr ""
 
@@ -168,31 +168,31 @@ msgid ""
 "  -U\tuser agent string to send\n"
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:696
+#: ../src/ghtml-gtkhtml.c:703
 msgid "Unknown protocol"
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:762
+#: ../src/ghtml-gtkhtml.c:769
 msgid "Reading file..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:974
+#: ../src/ghtml-gtkhtml.c:981
 msgid "Redirecting..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:982
+#: ../src/ghtml-gtkhtml.c:989
 msgid "Redirecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1016
+#: ../src/ghtml-gtkhtml.c:1023
 msgid "Connecting..."
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1019
+#: ../src/ghtml-gtkhtml.c:1026
 msgid "Connecting to "
 msgstr ""
 
-#: ../src/ghtml-gtkhtml.c:1177
+#: ../src/ghtml-gtkhtml.c:1184
 msgid "Unsupported method"
 msgstr ""
 
@@ -200,163 +200,179 @@ msgstr ""
 msgid "Usage: surfer [URL...]\n"
 msgstr "Usage: surfer [URL...]\n"
 
-#: ../src/surfer.c:57
+#: ../src/surfer.c:64
 msgid "_New tab"
 msgstr ""
 
-#: ../src/surfer.c:59
+#: ../src/surfer.c:66
 msgid "_New window"
 msgstr ""
 
-#: ../src/surfer.c:61
+#: ../src/surfer.c:68
 msgid "_Open..."
 msgstr "_Abrir..."
 
-#: ../src/surfer.c:63
+#: ../src/surfer.c:70
 msgid "Open _URL..."
 msgstr "Abrir _URL..."
 
-#: ../src/surfer.c:65
+#: ../src/surfer.c:72
 msgid "Save _as..."
 msgstr "Guardar _como..."
 
-#: ../src/surfer.c:68
+#: ../src/surfer.c:75
 msgid "_Print..."
 msgstr ""
 
-#: ../src/surfer.c:70
+#: ../src/surfer.c:77
 msgid "Close _tab"
 msgstr ""
 
-#: ../src/surfer.c:71
+#: ../src/surfer.c:78
 msgid "_Close"
 msgstr ""
 
-#: ../src/surfer.c:78
+#: ../src/surfer.c:85
 msgid "_Cut"
 msgstr ""
 
-#: ../src/surfer.c:79
+#: ../src/surfer.c:86
 msgid "Cop_y"
 msgstr ""
 
-#: ../src/surfer.c:80
+#: ../src/surfer.c:87
 msgid "_Paste"
 msgstr ""
 
-#: ../src/surfer.c:82
+#: ../src/surfer.c:89
 msgid "Select _all"
 msgstr ""
 
-#: ../src/surfer.c:89
+#: ../src/surfer.c:96
 msgid "Unselect all"
 msgstr ""
 
-#: ../src/surfer.c:91
+#: ../src/surfer.c:98
 msgid "_Find"
 msgstr ""
 
-#: ../src/surfer.c:94
+#: ../src/surfer.c:101
 msgid "_Preferences"
 msgstr ""
 
-#: ../src/surfer.c:101
+#: ../src/surfer.c:108
 msgid "Zoom in"
 msgstr ""
 
-#: ../src/surfer.c:103
+#: ../src/surfer.c:110
 msgid "Zoom out"
 msgstr ""
 
-#: ../src/surfer.c:105
+#: ../src/surfer.c:112
 msgid "Normal size"
 msgstr ""
 
-#: ../src/surfer.c:108
+#: ../src/surfer.c:115
 msgid "_Refresh"
 msgstr ""
 
-#: ../src/surfer.c:110
+#: ../src/surfer.c:117
 msgid "_Force refresh"
 msgstr ""
 
-#: ../src/surfer.c:111
+#: ../src/surfer.c:118
 msgid "_Stop"
 msgstr ""
 
-#: ../src/surfer.c:113
+#: ../src/surfer.c:120
 msgid "Page so_urce"
 msgstr ""
 
-#: ../src/surfer.c:131
+#: ../src/surfer.c:122
+msgid "Javascript _console"
+msgstr ""
+
+#: ../src/surfer.c:140
 msgid "_File"
 msgstr ""
 
-#: ../src/surfer.c:132
+#: ../src/surfer.c:141
 msgid "_Edit"
 msgstr ""
 
-#: ../src/surfer.c:133
+#: ../src/surfer.c:142
 msgid "_View"
 msgstr ""
 
-#: ../src/surfer.c:134
+#: ../src/surfer.c:143
 msgid "_Help"
 msgstr ""
 
-#: ../src/surfer.c:217 ../src/surfer.c:467
+#: ../src/surfer.c:226 ../src/surfer.c:480
 msgid "Web surfer"
 msgstr "Web surfer"
 
-#: ../src/surfer.c:265
+#: ../src/surfer.c:274
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:480 ../src/surfer.c:803
+#: ../src/surfer.c:450
+msgid "Ready"
+msgstr ""
+
+#: ../src/surfer.c:493 ../src/surfer.c:858
 msgid "Untitled"
 msgstr ""
 
-#: ../src/surfer.c:556 ../src/surfer.c:559 ../src/surfer.c:864
-#: ../src/surfer.c:867
+#: ../src/surfer.c:569 ../src/surfer.c:572 ../src/surfer.c:919
+#: ../src/surfer.c:922
 msgid "Question"
 msgstr ""
 
-#: ../src/surfer.c:580 ../src/surfer.c:930
+#: ../src/surfer.c:635 ../src/surfer.c:985
 msgid "Save file as..."
 msgstr "Guardar como..."
 
-#: ../src/surfer.c:641
+#: ../src/surfer.c:696
 msgid "Find text"
 msgstr "Buscar"
 
-#: ../src/surfer.c:648
+#: ../src/surfer.c:703
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:655
+#: ../src/surfer.c:710
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:657
+#: ../src/surfer.c:712
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:683
+#: ../src/surfer.c:738
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:771
+#: ../src/surfer.c:826
 msgid "Open file..."
 msgstr "Abrir..."
 
-#: ../src/surfer.c:797
+#: ../src/surfer.c:852
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:1069
+#: ../src/surfer.c:1044
+msgid "Javascript console"
+msgstr ""
+
+#: ../src/surfer.c:1049
+msgid "Command:"
+msgstr ""
+
+#: ../src/surfer.c:1201
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:1110 ../src/surfer.c:1113
+#: ../src/surfer.c:1242 ../src/surfer.c:1245
 msgid "Warning"
 msgstr ""
