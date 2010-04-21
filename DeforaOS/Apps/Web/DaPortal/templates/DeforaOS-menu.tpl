@@ -1,5 +1,5 @@
 			<ul class="menu">
-				<li><a href="/index.php"><?php echo _html_safe(ABOUT); ?></a><ul>
+				<li><a href="/"><?php echo _html_safe(ABOUT); ?></a><ul>
 					<li><a href="<?php echo _html_link('news'); ?>"><?php echo _html_safe(NEWS); ?></a></li>
 					<li><a href="<?php echo _html_link('project'); ?>"><?php echo _html_safe(PROJECT); ?></a></li>
 					<li><a href="/roadmap.php"><?php echo _html_safe(ROADMAP); ?></a></li>
