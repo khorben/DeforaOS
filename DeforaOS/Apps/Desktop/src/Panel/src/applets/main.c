@@ -20,8 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 /* XXX to avoid pointless warnings with GCC */
 #define main _main
@@ -125,7 +127,7 @@ static GtkWidget * _main_init(PanelApplet * applet)
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
-	gtk_widget_set_tooltip_text(ret, "Main menu");
+	gtk_widget_set_tooltip_text(ret, _("Main menu"));
 #endif
 	g_signal_connect_swapped(G_OBJECT(ret), "clicked", G_CALLBACK(
 				_on_clicked), main);
@@ -278,13 +280,13 @@ static void _on_clicked(gpointer data)
 	GtkWidget * menuitem;
 
 	menu = gtk_menu_new();
-	menuitem = _main_menuitem("Applications", "gnome-applications");
+	menuitem = _main_menuitem(_("Applications"), "gnome-applications");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), _main_applications(
 				main));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = _main_menuitem("Run...", GTK_STOCK_EXECUTE);
+	menuitem = _main_menuitem(_("Run..."), GTK_STOCK_EXECUTE);
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_run),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -295,18 +297,18 @@ static void _on_clicked(gpointer data)
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-	menuitem = _main_menuitem("Lock screen", "gnome-lockscreen");
+	menuitem = _main_menuitem(_("Lock screen"), "gnome-lockscreen");
 	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_lock),
 			NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(main->helper->logout_dialog != NULL)
 	{
-		menuitem = _main_menuitem("Logout...", "gnome-logout");
+		menuitem = _main_menuitem(_("Logout..."), "gnome-logout");
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(_on_logout), data);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
-	menuitem = _main_menuitem("Shutdown...", "gnome-shutdown");
+	menuitem = _main_menuitem(_("Shutdown..."), "gnome-shutdown");
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_shutdown), data);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);

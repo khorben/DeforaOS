@@ -1,3 +1,4 @@
-../src/main.c
+../src/applets/main.c
 ../src/panel.c
+../src/run.c
 ../src/run.c
