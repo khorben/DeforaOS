@@ -1,4 +1,6 @@
 TARGETS	= Editor.pot de.mo es.mo fr.mo it.mo
+PREFIX	= /usr/local
+DESTDIR	= 
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
