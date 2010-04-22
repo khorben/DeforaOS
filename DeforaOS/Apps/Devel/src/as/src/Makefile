@@ -26,14 +26,14 @@ subdirs:
 
 libas_OBJS = as.o code.o parser.o token.o arch/arch.o format/format.o
 libas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) -fPIC
-libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l cpp
+libas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp
 
 libas.a: $(libas_OBJS)
 	$(AR) libas.a $(libas_OBJS)
 	$(RANLIB) libas.a
 
 libas.so: $(libas_OBJS)
-	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath $(LIBDIR) -l cpp
+	$(LD) -o libas.so -Wl,-soname,libas.so.0 $(libas_OBJS) -L $(LIBDIR) -Wl,-rpath,$(LIBDIR) -l cpp
 
 as_OBJS = main.o
 as_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
