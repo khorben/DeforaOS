@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-22 13:59+0200\n"
+"POT-Creation-Date: 2010-04-22 17:54+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -15,6 +15,50 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/applets/battery.c:145
+msgid "Unknown"
+msgstr ""
+
+#: ../src/applets/battery.c:162 ../src/run.c:197 ../src/run.c:201
+msgid "Error"
+msgstr "Erreur"
+
+#: ../src/applets/clock.c:123
+msgid ""
+"%H:%M:%S\n"
+"%d/%m/%Y"
+msgstr ""
+
+#: ../src/applets/cpu.c:92
+msgid "CPU:"
+msgstr ""
+
+#: ../src/applets/cpu.c:108 ../src/applets/cpufreq.c:125
+#: ../src/applets/memory.c:102 ../src/applets/swap.c:102
+msgid "Unsupported platform"
+msgstr "Plate-forme non supportée"
+
+#: ../src/applets/cpufreq.c:104
+msgid "Frequency:"
+msgstr "Fréquence :"
+
+#: ../src/applets/desktop.c:63
+msgid "Show desktop"
+msgstr "Afficher le bureau"
+
+#: ../src/applets/lock.c:60 ../src/applets/main.c:300
+msgid "Lock screen"
+msgstr "Verrouiller l'écran"
+
+#: ../src/applets/logout.c:58
+msgid "Logging out is disabled"
+msgstr ""
+
+#: ../src/applets/logout.c:67 ../src/panel.c:320 ../src/panel.c:325
+#: ../src/panel.c:333
+msgid "Logout"
+msgstr ""
 
 #: ../src/applets/main.c:130
 msgid "Main menu"
@@ -28,10 +72,6 @@ msgstr "Programmes"
 msgid "Run..."
 msgstr "Exécuter..."
 
-#: ../src/applets/main.c:300
-msgid "Lock screen"
-msgstr "Verrouiller l'écran"
-
 #: ../src/applets/main.c:306
 msgid "Logout..."
 msgstr "Déconnecter..."
@@ -40,15 +80,59 @@ msgstr "Déconnecter..."
 msgid "Shutdown..."
 msgstr "Arrêter..."
 
+#: ../src/applets/memory.c:88
+msgid "RAM:"
+msgstr ""
+
+#: ../src/applets/swap.c:88
+msgid "Swap:"
+msgstr ""
+
+#: ../src/applets/tasks.c:453
+msgid "(Untitled)"
+msgstr "(Sans titre)"
+
+#: ../src/applets/tasks.c:711
+msgid "Move"
+msgstr "Déplacer"
+
+#: ../src/applets/tasks.c:713
+msgid "Resize"
+msgstr "Redimensionner"
+
+#: ../src/applets/tasks.c:715
+msgid "Minimize"
+msgstr "Réduire"
+
+#: ../src/applets/tasks.c:717
+msgid "Shade"
+msgstr ""
+
+#: ../src/applets/tasks.c:719
+msgid "Stick"
+msgstr ""
+
+#: ../src/applets/tasks.c:721
+msgid "Maximize horizontally"
+msgstr "Maximiser horizontalement"
+
+#: ../src/applets/tasks.c:723
+msgid "Maximize vertically"
+msgstr "Maximiser verticalement"
+
+#: ../src/applets/tasks.c:727
+msgid "Change desktop"
+msgstr "Déplacer vers le bureau"
+
+#: ../src/applets/tasks.c:764
+msgid "Maximize"
+msgstr "Maximiser"
+
 #: ../src/panel.c:312
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
-msgstr ""
-
-#: ../src/panel.c:320 ../src/panel.c:325 ../src/panel.c:333
-msgid "Logout"
 msgstr ""
 
 #: ../src/panel.c:369
@@ -77,10 +161,6 @@ msgstr "Commande :"
 #: ../src/run.c:122
 msgid "Run in a terminal"
 msgstr "Exécuter dans un terminal"
-
-#: ../src/run.c:197 ../src/run.c:201
-msgid "Error"
-msgstr "Erreur"
 
 #: ../src/run.c:317
 msgid "Child exited with error code 127"

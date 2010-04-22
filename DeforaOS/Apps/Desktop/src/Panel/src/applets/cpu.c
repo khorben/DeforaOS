@@ -23,8 +23,10 @@
 #ifdef __NetBSD__
 # include <sys/sysctl.h>
 #endif
+#include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Cpu */
@@ -87,7 +89,7 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	widget = gtk_label_new("CPU:");
+	widget = gtk_label_new(_("CPU:"));
 	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, FALSE, 0);
 	cpu->scale = gtk_vscale_new_with_range(0, 100, 1);
@@ -103,7 +105,7 @@ static GtkWidget * _cpu_init(PanelApplet * applet)
 	gtk_widget_show_all(ret);
 	return ret;
 #else
-	error_set("%s", "cpu: Unsupported platform");
+	error_set("%s: %s", "cpu", _("Unsupported platform"));
 	return NULL;
 #endif
 }

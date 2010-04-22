@@ -20,13 +20,15 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
-#include <System.h>
 #ifdef __NetBSD__
 # include <sys/param.h>
 # include <sys/sched.h>
 # include <sys/sysctl.h>
 #endif
+#include <libintl.h>
+#include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Cpufreq */
@@ -99,7 +101,7 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	ret = gtk_hbox_new(FALSE, 0);
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-	widget = gtk_label_new("Frequency:");
+	widget = gtk_label_new(_("Frequency:"));
 	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, FALSE, 0);
 	cpufreq->min = 0;
@@ -120,7 +122,7 @@ static GtkWidget * _cpufreq_init(PanelApplet * applet)
 	gtk_widget_show_all(ret);
 	return ret;
 #else
-	error_set("%s", "cpufreq: Unsupported platform");
+	error_set("%s: %s", "cpufreq", _("Unsupported platform"));
 	return NULL;
 #endif
 }

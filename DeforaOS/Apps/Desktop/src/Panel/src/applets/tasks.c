@@ -19,9 +19,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #include "Panel.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Tasks */
@@ -447,7 +450,7 @@ static char * _do_name(Tasks * tasks, Window window)
 		return ret;
 	if((ret = _do_name_text(tasks, window, XA_WM_NAME)) != NULL)
 		return ret;
-	return g_strdup("(Untitled)");
+	return g_strdup(_("(Untitled)"));
 }
 
 static char * _do_name_text(Tasks * tasks, Window window, Atom property)
@@ -705,20 +708,23 @@ static gboolean _on_popup(gpointer data)
 		void (*callback)(gpointer data);
 		char const * stock;
 	} items[] = {
-		{ TASKS_ATOM__NET_WM_ACTION_MOVE, _on_popup_move, "Move" },
-		{ TASKS_ATOM__NET_WM_ACTION_RESIZE, _on_popup_resize, "Resize" },
+		{ TASKS_ATOM__NET_WM_ACTION_MOVE, _on_popup_move, N_("Move") },
+		{ TASKS_ATOM__NET_WM_ACTION_RESIZE, _on_popup_resize,
+			N_("Resize") },
 		{ TASKS_ATOM__NET_WM_ACTION_MINIMIZE, _on_popup_minimize,
-			"Minimize" },
-		{ TASKS_ATOM__NET_WM_ACTION_SHADE, _on_popup_shade, "Shade" },
-		{ TASKS_ATOM__NET_WM_ACTION_STICK, _on_popup_stick, "Stick" },
+			N_("Minimize") },
+		{ TASKS_ATOM__NET_WM_ACTION_SHADE, _on_popup_shade,
+			N_("Shade") },
+		{ TASKS_ATOM__NET_WM_ACTION_STICK, _on_popup_stick,
+			N_("Stick") },
 		{ TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_HORZ,
-			_on_popup_maximize_horz, "Maximize horizontally" },
+			_on_popup_maximize_horz, N_("Maximize horizontally") },
 		{ TASKS_ATOM__NET_WM_ACTION_MAXIMIZE_VERT,
-			_on_popup_maximize_vert, "Maximize vertically" },
+			_on_popup_maximize_vert, N_("Maximize vertically") },
 		{ TASKS_ATOM__NET_WM_ACTION_FULLSCREEN, _on_popup_fullscreen,
 			GTK_STOCK_FULLSCREEN},
 		{ TASKS_ATOM__NET_WM_ACTION_CHANGE_DESKTOP,
-			_on_popup_change_desktop, "Change desktop" },
+			_on_popup_change_desktop, N_("Change desktop") },
 		{ TASKS_ATOM__NET_WM_ACTION_CLOSE, _on_popup_close,
 			GTK_STOCK_CLOSE }
 	};
@@ -743,7 +749,7 @@ static gboolean _on_popup(gpointer data)
 			continue; /* FIXME implement as a special case */
 		if(menu == NULL)
 			menu = gtk_menu_new();
-		menuitem = gtk_image_menu_item_new_from_stock(items[j].stock,
+		menuitem = gtk_image_menu_item_new_from_stock(_(items[j].stock),
 				NULL); /* XXX they're not always stock */
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(items[j].callback), task);
@@ -755,7 +761,8 @@ static gboolean _on_popup(gpointer data)
 			continue;
 		if(max++ != 1)
 			continue;
-		menuitem = gtk_image_menu_item_new_from_stock("Maximize", NULL);
+		menuitem = gtk_image_menu_item_new_from_stock(_("Maximize"),
+				NULL);
 		g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
 				G_CALLBACK(_on_popup_maximize), task);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);

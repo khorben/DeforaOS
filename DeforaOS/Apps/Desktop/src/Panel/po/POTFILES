@@ -1,4 +1,14 @@
+../src/applets/battery.c
+../src/applets/clock.c
+../src/applets/cpu.c
+../src/applets/cpufreq.c
+../src/applets/desktop.c
+../src/applets/lock.c
+../src/applets/logout.c
 ../src/applets/main.c
+../src/applets/memory.c
+../src/applets/swap.c
+../src/applets/tasks.c
 ../src/panel.c
 ../src/run.c
 ../src/run.c

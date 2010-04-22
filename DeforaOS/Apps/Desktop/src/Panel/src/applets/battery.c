@@ -32,8 +32,10 @@
 # include <unistd.h>
 # include <stdio.h>
 #endif
+#include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Battery */
@@ -129,13 +131,19 @@ static void _battery_destroy(PanelApplet * applet)
 /* battery_set */
 static void _battery_set(Battery * battery, gdouble value)
 {
+	char buf[16];
+
+	snprintf(buf, sizeof(buf), "%.1lf%%", value);
 	/* XXX only set image and show when necessary? */
 	if(value >= 0.0 && value <= 100.0)
 		gtk_widget_show(battery->hbox);
 	if(value < 0.0)
+	{
 		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
 				"stock_dialog-question",
 				battery->helper->icon_size);
+		snprintf(buf, sizeof(buf), "%s", _("Unknown"));
+	}
 	else if(value <= 10.0)
 		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
 				"battery-caution", battery->helper->icon_size);
@@ -151,8 +159,13 @@ static void _battery_set(Battery * battery, gdouble value)
 				"error", battery->helper->icon_size);
 		gtk_widget_hide(battery->hbox);
 		value = 0.0;
+		snprintf(buf, sizeof(buf), "%s", _("Error"));
 	}
 	gtk_range_set_value(GTK_RANGE(battery->scale), value);
+#if GTK_CHECK_VERSION(2, 12, 0)
+	/* FIXME use the tooltip to display the exact level */
+	gtk_widget_set_tooltip_text(battery->image, buf);
+#endif
 }
 
 

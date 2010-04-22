@@ -15,8 +15,10 @@
 
 
 
+#include <libintl.h>
 #include <System.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Logout */
@@ -52,7 +54,8 @@ static GtkWidget * _logout_init(PanelApplet * applet)
 
 	if(applet->helper->logout_dialog == NULL)
 	{
-		error_set_code(0, "%s", "logout: Logging out is disabled");
+		error_set_code(0, "%s: %s", "logout",
+				_("Logging out is disabled"));
 		return NULL;
 	}
 	ret = gtk_button_new();
@@ -61,7 +64,7 @@ static GtkWidget * _logout_init(PanelApplet * applet)
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
-	gtk_widget_set_tooltip_text(ret, "Logout");
+	gtk_widget_set_tooltip_text(ret, _("Logout"));
 #endif
 	g_signal_connect_swapped(G_OBJECT(ret), "clicked", G_CALLBACK(
 				_on_clicked), applet);

@@ -20,7 +20,9 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <libintl.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Clock */
@@ -118,7 +120,7 @@ static gboolean _on_timeout(gpointer data)
 	localtime_r(&t, &tm);
 #ifndef EMBEDDED
 	if(clock->helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
-		strftime(buf, sizeof(buf), "%H:%M:%S\n%d/%m/%Y", &tm);
+		strftime(buf, sizeof(buf), _("%H:%M:%S\n%d/%m/%Y"), &tm);
 	else
 #endif
 	strftime(buf, sizeof(buf), "%H:%M", &tm);

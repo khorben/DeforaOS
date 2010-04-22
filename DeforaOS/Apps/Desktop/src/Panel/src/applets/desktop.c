@@ -16,9 +16,11 @@
 
 
 #include <string.h>
+#include <libintl.h>
 #include <gdk/gdkx.h>
 #include <X11/X.h>
 #include "Panel.h"
+#define _(string) gettext(string)
 
 
 /* Desktop */
@@ -58,7 +60,7 @@ static GtkWidget * _desktop_init(PanelApplet * applet)
 	gtk_button_set_image(GTK_BUTTON(ret), image);
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
 #if GTK_CHECK_VERSION(2, 12, 0)
-	gtk_widget_set_tooltip_text(ret, "Show desktop");
+	gtk_widget_set_tooltip_text(ret, _("Show desktop"));
 #endif
 	g_signal_connect(G_OBJECT(ret), "clicked", G_CALLBACK(_on_clicked),
 			NULL);
