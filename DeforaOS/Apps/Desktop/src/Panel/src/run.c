@@ -22,10 +22,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
+#include "../config.h"
+#define _(string) gettext(string)
 
 
-/* run */
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
+
+
+/* Run */
 /* types */
 typedef struct _Run
 {
@@ -42,7 +58,6 @@ typedef struct _Run
 
 
 /* constants */
-#define PACKAGE		"run"
 #define RUN_CONFIG_FILE	".runrc"
 
 
@@ -84,19 +99,19 @@ static Run * _run_new(void)
 	gtk_window_set_position(window, GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_window_set_resizable(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
-	gtk_window_set_title(window, "Run program...");
-	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(
+	gtk_window_set_title(window, _("Run program..."));
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_on_run_closex), run);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Command:");
+	widget = gtk_label_new(_("Command:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
 	run->entry = _new_entry(run->config);
 	g_signal_connect(G_OBJECT(run->entry), "activate", G_CALLBACK(
 				_on_run_path_activate), run);
 	gtk_box_pack_start(GTK_BOX(hbox), run->entry, TRUE, TRUE, 4);
-	widget = gtk_file_chooser_dialog_new("Run program...", window,
+	widget = gtk_file_chooser_dialog_new(_("Run program..."), window,
 			GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN,
 			GTK_RESPONSE_ACCEPT, NULL);
@@ -105,7 +120,7 @@ static Run * _run_new(void)
 	widget = gtk_file_chooser_button_new_with_dialog(widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, FALSE, 4);
-	widget = gtk_check_button_new_with_label("Run in a terminal");
+	widget = gtk_check_button_new_with_label(_("Run in a terminal"));
 	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(
 				_on_run_terminal_toggle), run);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
@@ -143,7 +158,7 @@ static GtkWidget * _new_entry(Config * config)
 	if((p = _run_get_config_filename()) == NULL)
 		return entry;
 	if(config_load(config, p) != 0)
-		error_print(PACKAGE);
+		error_print("run");
 	free(p);
 	completion = gtk_entry_completion_new();
 	gtk_entry_set_completion(GTK_ENTRY(entry), completion);
@@ -180,9 +195,11 @@ static int _run_error(char const * message, int ret)
 	GtkWidget * dialog;
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", message);
+			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_widget_show(dialog);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
@@ -298,7 +315,7 @@ static gboolean _execute_idle(gpointer data)
 	{
 		if(WEXITSTATUS(status) == 127) /* XXX may mean anything... */
 		{
-			_run_error("Child exited with error code 127", 0);
+			_run_error(_("Child exited with error code 127"), 0);
 			gtk_widget_show(run->window);
 			return FALSE;
 		}
@@ -324,7 +341,7 @@ static void _idle_save_config(Run * run)
 	config_reset(run->config);
 	if(config_load(run->config, filename) != 0)
 		/* XXX this risks losing the configuration */
-		error_print(PACKAGE);
+		error_print("run");
 	p = gtk_entry_get_text(GTK_ENTRY(run->entry));
 	for(i = 0; i < 100; i++)
 	{
@@ -348,7 +365,7 @@ static void _idle_save_config(Run * run)
 			break;
 	}
 	if(config_save(run->config, filename) != 0)
-		error_print(PACKAGE);
+		error_print("run");
 	free(filename);
 }
 
@@ -374,6 +391,9 @@ int main(int argc, char * argv[])
 {
 	Run * run;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	if((run = _run_new()) == NULL)
 		return _run_error(error_get(), 2);
