@@ -474,6 +474,7 @@ function project_bug_insert($args)
 		$bug['title'] = stripslashes($args['title']);
 		$title = PREVIEW.': '.REPORT_BUG_FOR.' '
 			._html_safe($bug['project']).': '.$bug['title'];
+		$bug['date'] = _sql_date();
 		$bug['user_id'] = $user_id;
 		$bug['username'] = $user_name;
 		$bug['state'] = 'New';
