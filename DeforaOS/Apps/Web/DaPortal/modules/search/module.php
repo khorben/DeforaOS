@@ -34,6 +34,7 @@ $text['SEARCH_ADMINISTRATION'] = 'Search administration';
 $text['SEARCH_IN'] = 'Search in';
 $text['SEARCH_RESULTS'] = 'Search results';
 $text['SETTINGS'] = 'Settings';
+$text['SIMPLER_SEARCH'] = 'Simpler search';
 $text['TITLES'] = 'Titles';
 global $lang;
 if($lang == 'fr')

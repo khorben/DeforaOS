@@ -12,5 +12,6 @@
 <?php } ?></select></td>
 		<tr><td></td><td colspan="3"><button type="reset" class="icon reset"><?php echo _html_safe(RESET); ?></button> <input type="submit" value="<?php echo _html_safe(SEARCH); ?>" class="icon search"/></td></tr>
 	</table>
+	<p><a href="<?php echo _html_link('search'); ?>"><span class="icon remove"></span><?php echo _html_safe(SIMPLER_SEARCH).'...'; ?></a></p>
 </form>
 <hr/>
