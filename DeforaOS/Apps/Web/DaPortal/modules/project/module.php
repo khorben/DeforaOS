@@ -1397,6 +1397,7 @@ function project_insert($args)
 }
 
 
+//project_list
 function project_list($args)
 {
 	global $user_id;
@@ -1451,6 +1452,10 @@ function project_list($args)
 		$args['toolbar'] = array(array('title' => NEW_PROJECT,
 				'link' => _module_link('project', 'new'),
 				'class' => 'new'));
+	$args['toolbar'][] = array();
+	$args['toolbar'][] = array('title' => REFRESH, 'class' => 'refresh',
+			'link' => _module_link('project', 'list'),
+			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', $args);
 }
 
