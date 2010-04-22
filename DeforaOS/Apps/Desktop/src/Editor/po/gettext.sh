@@ -12,6 +12,7 @@ MKDIR="mkdir -p"
 MSGFMT="msgfmt"
 MSGINIT="msginit"
 MSGMERGE="msgmerge"
+RM="rm -f"
 POTFILES="POTFILES"
 XGETTEXT="xgettext --force-po"
 
@@ -20,7 +21,9 @@ XGETTEXT="xgettext --force-po"
 #usage
 _usage()
 {
-	echo "Usage: ./gettext.sh target" 1>&2
+	echo "Usage: ./gettext.sh <target>" 1>&2
+	echo "       ./gettext.sh -p <prefix> install <target>" 1>&2
+	echo "       ./gettext.sh -p <prefix> uninstall <target>" 1>&2
 	return 1
 }
 
@@ -60,15 +63,24 @@ _gettext_pot()
 
 
 #main
-if [ $# -eq 4 -a "$1" = "-p" -a "$3" = "install" ]; then
+if [ $# -eq 4 -a "$1" = "-p" ]; then
 	PREFIX="$2"
 	LOCALEDIR="$PREFIX/share/locale"
 	lang="${4%%.mo}"
 
-	$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"		|| exit 2
-	$DEBUG $INSTALL "$4" "$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
+	if [ "$3" = "install" ]; then
+		$DEBUG $MKDIR "$LOCALEDIR/$lang/LC_MESSAGES"	|| exit 2
+		$DEBUG $INSTALL "$4" \
+			"$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
 								|| exit 2
-	exit 0
+		exit 0
+	elif [ "$3" = "uninstall" ]; then
+		$DEBUG $RM "$LOCALEDIR/$lang/LC_MESSAGES/$PACKAGE.mo" \
+								|| exit 2
+		exit 0
+	else
+		echo "gettext.sh: $3: Unknown operation" 1>&2
+	fi
 fi
 if [ $# -ne 1 ]; then
 	_usage
