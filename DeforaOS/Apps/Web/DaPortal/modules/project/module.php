@@ -1448,10 +1448,11 @@ function project_list($args)
 			'class' => array('admin' => MANAGER,
 				'synopsis' => DESCRIPTION));
 	require_once('./system/user.php');
+	$args['toolbar'] = array();
 	if(_user_admin($user_id))
-		$args['toolbar'] = array(array('title' => NEW_PROJECT,
+		$args['toolbar'][] = array('title' => NEW_PROJECT,
 				'link' => _module_link('project', 'new'),
-				'class' => 'new'));
+				'class' => 'new');
 	$args['toolbar'][] = array();
 	$args['toolbar'][] = array('title' => REFRESH, 'class' => 'refresh',
 			'link' => _module_link('project', 'list'),
