@@ -21,10 +21,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "Panel.h"
 #include "common.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 
 /* Panel */
@@ -51,10 +53,10 @@ struct _Panel
 
 /* constants */
 #ifndef PREFIX
-# define PREFIX "/usr/local"
+# define PREFIX		"/usr/local"
 #endif
 #ifndef LIBDIR
-# define LIBDIR PREFIX "/lib"
+# define LIBDIR		PREFIX "/lib"
 #endif
 #define PANEL_CONFIG_FILE ".panel"
 
@@ -307,19 +309,20 @@ static int _error_text(char const * message, int ret)
 static int _panel_helper_logout_dialog(void)
 {
 	GtkWidget * dialog;
-	const char message[] = "This will log you out of the current session,"
-		" therefore closing any application currently opened and losing"
-		" any unsaved data.\nDo you really want to proceed?";
+	const char * message = _("This will log you out of the current session,"
+			" therefore closing any application currently opened"
+			" and losing any unsaved data.\n"
+			"Do you really want to proceed?");
 	GtkWidget * widget;
 	int res;
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_NONE, "%s", "Logout");
+			GTK_BUTTONS_NONE, "%s", _("Logout"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL,
 			GTK_RESPONSE_CANCEL, NULL);
-	widget = gtk_button_new_with_label("Logout");
+	widget = gtk_button_new_with_label(_("Logout"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"gnome-logout", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_show_all(widget);
@@ -327,7 +330,7 @@ static int _panel_helper_logout_dialog(void)
 			GTK_RESPONSE_ACCEPT);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Logout");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Logout"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res != GTK_RESPONSE_ACCEPT)
@@ -363,9 +366,10 @@ static int _panel_helper_shutdown_dialog(void)
 {
 	GtkWidget * dialog;
 	GtkWidget * widget;
-	const char message[] = "This will shutdown your computer,"
-		" therefore closing any application currently opened and losing"
-		" any unsaved data.\nDo you really want to proceed?";
+	const char * message = _("This will shutdown your computer,"
+			" therefore closing any application currently opened"
+			" and losing any unsaved data.\n"
+			"Do you really want to proceed?");
 	enum { RES_CANCEL, RES_REBOOT, RES_SHUTDOWN };
 	int res;
 	char * reboot[] = { "/sbin/shutdown", "shutdown", "-r", "now", NULL };
@@ -378,19 +382,19 @@ static int _panel_helper_shutdown_dialog(void)
 		"now", NULL };
 
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_INFO,
-			GTK_BUTTONS_NONE, "%s", "Shutdown");
+			GTK_BUTTONS_NONE, "%s", _("Shutdown"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
-			"Reboot", RES_REBOOT, NULL);
-	widget = gtk_button_new_with_label("Shutdown");
+			_("Reboot"), RES_REBOOT, NULL);
+	widget = gtk_button_new_with_label(_("Shutdown"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"gnome-shutdown", GTK_ICON_SIZE_BUTTON));
 	gtk_widget_show_all(widget);
 	gtk_dialog_add_action_widget(GTK_DIALOG(dialog), widget, RES_SHUTDOWN);
 	gtk_window_set_keep_above(GTK_WINDOW(dialog), TRUE);
 	gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ALWAYS);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Shutdown");
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Shutdown"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 	if(res == RES_SHUTDOWN)

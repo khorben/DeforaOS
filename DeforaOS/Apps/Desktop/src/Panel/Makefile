@@ -1,6 +1,6 @@
 PACKAGE	= Panel
 VERSION	= 0.0.5
-SUBDIRS	= include src
+SUBDIRS	= include po src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -24,6 +24,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/include/Panel.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
+		$(PACKAGE)-$(VERSION)/po/Makefile \
+		$(PACKAGE)-$(VERSION)/po/gettext.sh \
+		$(PACKAGE)-$(VERSION)/po/POTFILES \
+		$(PACKAGE)-$(VERSION)/po/fr.po \
+		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/panel.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/run.c \
@@ -52,6 +57,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/applets/project.conf \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
+		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
 	$(RM) $(PACKAGE)-$(VERSION)
 

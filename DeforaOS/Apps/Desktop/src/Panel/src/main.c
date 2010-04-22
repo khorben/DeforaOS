@@ -21,19 +21,34 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "common.h"
 #include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-m monitor][-sSx]\n"
+	fputs(_("Usage: panel [-m monitor][-sSx]\n"
 "  -m	Monitor to use (default: 0)\n"
 "  -s	Use icons the size of a small toolbar\n"
 "  -S	Use icons the size of a large toolbar (default)\n"
-"  -x	Use icons the size of menus\n", stderr);
+"  -x	Use icons the size of menus\n"), stderr);
 	return 1;
 }
 
@@ -49,6 +64,9 @@ int main(int argc, char * argv[])
 	char * p;
 	struct sigaction sa;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.iconsize = PANEL_ICON_SIZE_LARGE;
@@ -80,7 +98,7 @@ int main(int argc, char * argv[])
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		panel_error(panel, "signal handling error", 0);
+		panel_error(panel, "sigaction", 0);
 	gtk_main();
 	panel_delete(panel);
 	return 0;
