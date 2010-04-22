@@ -386,15 +386,32 @@ static void _on_run_terminal_toggle(GtkWidget * widget, gpointer data)
 }
 
 
+/* usage */
+static int _usage(void)
+{
+	fputs(_("Usage: run\n"), stderr);
+	return 1;
+}
+
+
 /* main */
 int main(int argc, char * argv[])
 {
+	int o;
 	Run * run;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
 	if((run = _run_new()) == NULL)
 		return _run_error(error_get(), 2);
 	gtk_main();
