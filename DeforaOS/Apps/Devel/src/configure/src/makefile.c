@@ -206,12 +206,13 @@ static int _variables_dist(Configure * configure, FILE * fp)
 		dist[i] = '\0';
 		if(config_get(configure->config, dist, "install") != NULL)
 		{
-			/* FIXME may also be output when parsing targets */
-			fprintf(fp, "%s%s\n%s%s\n%s%s%s", "PREFIX\t= ",
-					configure->prefs->prefix,
-					"DESTDIR\t= ",
-					configure->prefs->destdir,
-					"MKDIR\t= mkdir -p\n",
+			/* FIXME may still need to be output */
+			if(config_get(configure->config, "", "targets") == NULL)
+				fprintf(fp, "%s%s\n%s%s\n", "PREFIX\t= ",
+						configure->prefs->prefix,
+						"DESTDIR\t= ",
+						configure->prefs->destdir);
+			fprintf(fp, "%s%s%s", "MKDIR\t= mkdir -p\n",
 					"INSTALL\t= install\n",
 					"RM\t= rm -f\n");
 			break;
@@ -325,9 +326,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 	if(targets != NULL || includes != NULL || package != NULL)
 		fputs("RM\t= rm -f\nLN\t= ln -f\n", fp);
 	if(package != NULL)
-	{
 		fprintf(fp, "%s", "TAR\t= tar -czvf\n");
-	}
 	if(targets != NULL || includes != NULL)
 	{
 		fputs("MKDIR\t= mkdir -p\n", fp);
@@ -339,6 +338,7 @@ static int _variables_executables(Configure * configure, FILE * fp)
 static void _variables_binary(Configure * configure, FILE * fp, char * done);
 static void _variables_library(Configure * configure, FILE * fp, char * done);
 static void _variables_libtool(Configure * configure, FILE * fp, char * done);
+static void _variables_script(Configure * configure, FILE * fp, char * done);
 static void _executables_variables(Configure * configure, FILE * fp,
 	       	String const * target)
 {
@@ -368,8 +368,10 @@ static void _executables_variables(Configure * configure, FILE * fp,
 		case TT_LIBTOOL:
 			_variables_libtool(configure, fp, done);
 			break;
-		case TT_OBJECT:
 		case TT_SCRIPT:
+			_variables_script(configure, fp, done);
+			break;
+		case TT_OBJECT:
 		case TT_UNKNOWN:
 			break;
 	}
@@ -384,7 +386,7 @@ static void _binary_ldflags(Configure * configure, FILE * fp,
 		String const * ldflags);
 static void _variables_binary(Configure * configure, FILE * fp, char * done)
 {
-	if(!done[TT_LIBRARY])
+	if(!done[TT_LIBRARY] && !done[TT_SCRIPT])
 	{
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
 		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
@@ -555,7 +557,7 @@ static void _variables_library(Configure * configure, FILE * fp, char * done)
 	String const * libdir;
 	String const * p;
 
-	if(!done[TT_LIBRARY])
+	if(!done[TT_LIBRARY] && !done[TT_SCRIPT])
 	{
 		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
 		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
@@ -589,6 +591,15 @@ static void _variables_libtool(Configure * configure, FILE * fp, char * done)
 	_variables_library(configure, fp, done);
 	if(!done[TT_LIBTOOL])
 		fputs("LIBTOOL\t= libtool\n", fp);
+}
+
+static void _variables_script(Configure * configure, FILE * fp, char * done)
+{
+	if(!done[TT_BINARY] && !done[TT_LIBRARY] && !done[TT_SCRIPT])
+	{
+		fprintf(fp, "%s%s\n", "PREFIX\t= ", configure->prefs->prefix);
+		fprintf(fp, "%s%s\n", "DESTDIR\t= ", configure->prefs->destdir);
+	}
 }
 
 static int _variables_includes(Configure * configure, FILE * fp)
