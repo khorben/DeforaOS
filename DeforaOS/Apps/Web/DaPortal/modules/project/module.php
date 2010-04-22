@@ -140,8 +140,7 @@ function _project_members($id)
 function _project_name($id)
 {
 	return _sql_single('SELECT title FROM daportal_project'
-			.', daportal_content'
-			.' WHERE daportal_project.project_id'
+			.', daportal_content WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			." AND project_id='$id'");
 }
@@ -460,9 +459,32 @@ function project_bug_insert($args)
 				!= TRUE)
 			|| $_SERVER['REQUEST_METHOD'] != 'POST')
 		return _error(PERMISSION_DENIED);
-	if(!isset($args['project_id']) || !isset($args['type'])
-			|| !isset($args['priority']))
+	if(!isset($args['project_id']) || !is_numeric($args['project_id'])
+			|| !isset($args['type']) || !isset($args['priority']))
 		return _error(INVALID_ARGUMENT); //FIXME return to form
+	_project_toolbar($args['project_id']);
+	if(isset($args['preview']))
+	{
+		$bug = array();
+		if(($bug['project'] = _project_name($args['project_id']))
+				== FALSE)
+			return _error(INVALID_ARGUMENT);
+		$bug['project_id'] = stripslashes($args['project_id']);
+		$project_id = $bug['project_id'];
+		$bug['title'] = stripslashes($args['title']);
+		$title = PREVIEW.': '.REPORT_BUG_FOR.' '
+			._html_safe($bug['project']).': '.$bug['title'];
+		$bug['user_id'] = $user_id;
+		$bug['username'] = $user_name;
+		$bug['state'] = 'New';
+		$bug['type'] = stripslashes($args['type']);
+		$bug['priority'] = stripslashes($args['priority']);
+		$bug['content'] = stripslashes($args['content']);
+		include('./modules/project/bug_display.tpl');
+		unset($title);
+		include('./modules/project/bug_update.tpl');
+		return 0;
+	}
 	require_once('./system/content.php');
 	require_once('./system/user.php');
 	$enable = 0;
@@ -1506,6 +1528,7 @@ function project_member_insert($args)
 }
 
 
+//project_modify
 function project_modify($args)
 {
 	if(!isset($args['id']))
@@ -1764,6 +1787,7 @@ function project_timeline($args)
 }
 
 
+//project_update
 function project_update($args)
 {
 	global $user_id;
