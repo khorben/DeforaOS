@@ -671,8 +671,8 @@ function project_bug_list($args)
 						$bugs[$i]['date'], 0, 19)));
 	}
 	$toolbar = array();
-	$link = _module_link('project', 'bug_new', '', '', (isset($project_id)
-				? 'project_id='.$project_id : ''));
+	$link = _module_link('project', 'bug_new', FALSE, FALSE,
+			(isset($project_id) ? 'project_id='.$project_id : ''));
 	$toolbar[] = array('title' => REPORT_A_BUG, 'class' => 'bug',
 			'link' => $link);
 	_module('explorer', 'browse_trusted', array('entries' => $bugs,
