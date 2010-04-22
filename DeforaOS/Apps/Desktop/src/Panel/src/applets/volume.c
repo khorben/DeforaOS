@@ -121,7 +121,7 @@ static void _volume_destroy(PanelApplet * applet)
 static Volume * _volume_new(PanelAppletHelper * helper)
 {
 	Volume * volume;
-	char const mixer[] = "/dev/mixer";
+	char const * mixer;
 #ifdef AUDIO_MIXER_DEVINFO
 	int i;
 	mixer_devinfo_t md;
@@ -136,6 +136,9 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 #ifdef AUDIO_MIXER_DEVINFO
 	volume->mix = -1;
 	volume->outputs = -1;
+	if((mixer = helper->config_get(helper->priv, NULL, "mixer_device"))
+			== NULL)
+		mixer = "/dev/mixer";
 	if((volume->fd = open(mixer, O_RDWR)) < 0)
 	{
 		helper->error(helper->priv, mixer, 0);
