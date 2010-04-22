@@ -32,6 +32,8 @@
 /* types */
 struct _Panel
 {
+	Config * config;
+
 	gint height;
 
 	gint icon_width;
@@ -54,10 +56,13 @@ struct _Panel
 #ifndef LIBDIR
 # define LIBDIR PREFIX "/lib"
 #endif
+#define PANEL_CONFIG_FILE ".panel"
 
 
 /* prototypes */
 /* helpers */
+static char const * _panel_helper_config_get(void * priv, char const * section,
+		char const * variable);
 static int _panel_helper_error(void * priv, char const * message, int ret);
 #ifndef EMBEDDED
 static int _panel_helper_logout_dialog(void);
@@ -69,6 +74,7 @@ static int _panel_helper_shutdown_dialog(void);
 
 /* public */
 /* panel_new */
+static int _new_config(Panel * panel);
 static gboolean _on_idle(gpointer data);
 static gboolean _on_closex(void);
 
@@ -81,8 +87,13 @@ Panel * panel_new(PanelPrefs * prefs)
 
 	if((panel = malloc(sizeof(*panel))) == NULL)
 	{
-		/* FIXME visually warn the user */
 		panel_error(NULL, "malloc", 1);
+		return NULL;
+	}
+	if(_new_config(panel) != 0)
+	{
+		/* FIXME visually warn the user */
+		panel_delete(panel);
 		return NULL;
 	}
 	panel->icon_width = 48;
@@ -94,6 +105,7 @@ Panel * panel_new(PanelPrefs * prefs)
 			&panel->icon_height) != TRUE)
 		error_set_print(PACKAGE, 0, "Invalid panel size");
 	panel->helper.priv = panel;
+	panel->helper.config_get = _panel_helper_config_get;
 	panel->helper.error = _panel_helper_error;
 	panel->helper.icon_size = prefs->iconsize;
 #ifndef EMBEDDED
@@ -141,6 +153,25 @@ Panel * panel_new(PanelPrefs * prefs)
 	return panel;
 }
 
+static int _new_config(Panel * panel)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((panel->config = config_new()) == NULL)
+		return 1;
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(PANEL_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return 1;
+	snprintf(filename, len, "%s/%s", homedir, PANEL_CONFIG_FILE);
+	config_load(panel->config, filename); /* we can ignore errors */
+	free(filename);
+	return 0;
+}
+
 static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
@@ -172,34 +203,25 @@ static gboolean _on_closex(void)
 void panel_delete(Panel * panel)
 {
 	/* FIXME destroy plugins */
+	if(panel->config != NULL)
+		config_delete(panel->config);
 	free(panel);
 }
 
 
 /* useful */
-static int _error_text(char const * message, int ret);
-
 int panel_error(Panel * panel, char const * message, int ret)
 {
 	GtkWidget * dialog;
 
-	if(panel == NULL)
-		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_CLOSE, "%s: %s", message, strerror(errno));
 	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	gtk_widget_show(dialog);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
 }
 
-static int _error_text(char const * message, int ret)
-{
-	fputs(PACKAGE ": ", stderr);
-	perror(message);
-	return ret;
-}
 
 
 /* panel_load */
@@ -250,12 +272,33 @@ int panel_load(Panel * panel, char const * applet)
 /* private */
 /* functions */
 /* helpers */
+/* panel_helper_config_get */
+static char const * _panel_helper_config_get(void * priv, char const * section,
+		char const * variable)
+{
+	Panel * panel = priv;
+
+	return config_get(panel->config, section, variable);
+}
+
+
 /* panel_helper_error */
+static int _error_text(char const * message, int ret);
+
 static int _panel_helper_error(void * priv, char const * message, int ret)
 {
 	Panel * panel = priv;
 
+	if(priv == NULL)
+		return _error_text(message, ret);
 	return panel_error(panel, message, ret);
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs(PACKAGE ": ", stderr);
+	perror(message);
+	return ret;
 }
 
 
