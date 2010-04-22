@@ -41,6 +41,7 @@ $text['INSERT_IMAGE'] = 'Insert image';
 $text['INSERT_LINK'] = 'Insert link';
 $text['ITALIC'] = 'Italic';
 $text['LOOK_FOR_A_PAGE'] = 'Look for a page';
+$text['MESSAGE'] = 'Message';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
 $text['PASTE'] = 'Paste';
@@ -87,23 +88,22 @@ function _wiki_get($id, $lock = FALSE, $revision = FALSE)
 {
 	require_once('./system/content.php');
 	$wiki = _content_select($id);
-	if(!is_array($wiki) || strpos('/', $wiki['tag']) != FALSE)
+	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
 		return _error(INVALID_ARGUMENT);
 	if(($root = _wiki_root()) == FALSE
-			|| !is_readable($root.'/RCS/'.$wiki['tag'].',v'))
+			|| !is_readable($root.'/RCS/'.$wiki['title'].',v'))
 		return _error('Internal server error');
+	$filename = $root.'/'.$wiki['title'];
+	//FIXME use -p instead (no need to unlink() files after that)
 	$cmd = $lock ? 'co -l' : 'co'; //XXX probable race conditions
 	if($revision != FALSE)
 		$cmd.=' -r'.escapeshellarg($revision);
-	if(_wiki_exec($cmd.' '.escapeshellarg($root.'/'.$wiki['tag'])) == FALSE)
+	if(_wiki_exec($cmd.' '.escapeshellarg($filename)) == FALSE)
 		return _error('Could not checkout page');
-	if(($wiki['content'] = file_get_contents($root.'/'.$wiki['tag']))
-			=== FALSE)
-	{
-		unlink($root.'/'.$wiki['tag']);
+	$wiki['content'] = file_get_contents($filename);
+	@unlink($filename); //we can ignore errors
+	if($wiki['content'] === FALSE)
 		return _error('Could not read page');
-	}
-	unlink($root.'/'.$wiki['tag']);
 	require_once('./system/xml.php');
 	if(!_xml_validate($wiki['content'], $message))
 		return _error(DOCUMENT_NOT_VALID.": $message");
@@ -119,6 +119,18 @@ function _wiki_root()
 	if(!is_dir($root.'/RCS') && mkdir($root.'/RCS') != TRUE)
 		return FALSE;
 	return $root;
+}
+
+
+function _wiki_validate_title($title)
+{
+	if(strlen($title) == 0 || $title == '.' || $title == '..')
+		return FALSE;
+	if(strpos('/', $title) !== FALSE)
+		return FALSE;
+	if($title == 'RCS')
+		return FALSE;
+	return TRUE;
 }
 
 
@@ -303,8 +315,7 @@ function wiki_delete($args)
 		return _error(INVALID_ARGUMENT);
 	if(($root = _wiki_root()) == FALSE)
 		return 'Internal server error';
-	if(strlen($res['title']) == 0 || strpos('/', $res['title']) !== FALSE
-			|| $res['title'] == 'RCS')
+	if(_wiki_validate_title($res['title']) != TRUE)
 		return _error(INVALID_ARGUMENT);
 	@unlink($root.'/'.$res['title']); /* we can ignore this error */
 	if(unlink($root.'/RCS/'.$res['title'].',v') != TRUE)
@@ -345,7 +356,16 @@ function wiki_display($args)
 	for(; $i < $cnt - 2; $i+=3)
 	{
 		$name = _html_safe(substr($rcs[$i], 9));
-		$date = _html_safe(substr($rcs[$i+1], 6, 19));
+		$date = _html_safe(substr($rcs[$i + 1], 6, 19));
+		$username = substr($rcs[$i + 1], 36);
+		$username = substr($username, 0, strspn($username, 'abcdefghijk'
+					.'lmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV'
+					.'WXYZ0123456789'));
+		require_once('./system/user.php');
+		$username = ($user_id = _user_id($username)) != FALSE
+			? '<a href="'._html_link('user', FALSE, $user_id,
+			$username).'">'._html_safe($username).'</a>'
+				: _html_safe($username);
 		$sep = '======================================================';
 		$message = $rcs[$i+2];
 		if($message == '----------------------------'
@@ -360,21 +380,18 @@ function wiki_display($args)
 						strlen($sep)) != 0; $i++)
 				$apnd = '...';
 			$message.=$apnd;
-			require_once('./system/user.php');
-			$username = ($user_id =_user_id($message)) != FALSE
-				? '<a href="'._html_link('user', FALSE,
-				$user_id, $message).'">'._html_safe($message)
-					.'</a>' : '';
 		}
 		$revisions[] = array('module' => 'wiki', 'action' => 'display',
 				'id' => $wiki['id'], 'name' => $name,
 				'title' => $wiki['title'], 'date' => $date,
 				'username' => $username,
+				'message' => _html_safe($message),
 				'args' => 'revision='.$name);
 	}
 	_module('explorer', 'browse_trusted', array('entries' => $revisions,
 				'class' => array('date' => DATE,
-					'username' => AUTHOR),
+					'username' => AUTHOR,
+					'message' => MESSAGE),
 				'toolbar' => FALSE, 'view' => 'details'));
 }
 
@@ -403,13 +420,14 @@ function wiki_insert($args)
 		return _error(PERMISSION_DENIED);
 	//FIXME check that the page doesn't already exist
 	$title = NEW_WIKI_PAGE;
-	$wiki = array();
+	$wiki = array('title' => '', 'content' => '');
 	if(isset($args['title']))
 		$wiki['title'] = stripslashes($args['title']);
 	if(isset($args['preview']) && isset($args['content']))
 	{
-		$title = WIKI_PAGE_PREVIEW;
-		$wiki['content'] = stripslashes($args['content']);
+		$title = WIKI_PAGE_PREVIEW.': '.$wiki['title'];
+		if(isset($args['content']))
+			$wiki['content'] = stripslashes($args['content']);
 		require_once('./system/xml.php');
 		if(!_xml_validate($wiki['content'], $message))
 			_error(DOCUMENT_NOT_VALID.": $message");
@@ -419,6 +437,8 @@ function wiki_insert($args)
 			unset($title);
 		}
 	}
+	$message = isset($args['message']) ? stripslashes($args['message'])
+		: '';
 	include('./modules/wiki/update.tpl');
 }
 
@@ -543,8 +563,7 @@ function _wiki_system_insert($args)
 	if(!isset($args['title']))
 		return INVALID_ARGUMENT;
 	$title = stripslashes($args['title']);
-	if(strlen($title) == 0 || strpos('/', $title) !== FALSE
-			|| $title == 'RCS')
+	if(_wiki_validate_title($title) != TRUE)
 		return INVALID_ARGUMENT;
 	$content = stripslashes($args['content']);
 	require_once('./system/xml.php');
@@ -585,8 +604,11 @@ function _wiki_system_insert($args)
 		return 'An error occured while writing';
 	}
 	fclose($fp);
-	if(_wiki_exec('ci -u -m'.escapeshellarg($user_name).' '
-				.' -w'.escapeshellarg($user_name)
+	if(isset($args['message']) && strlen($args['message']))
+		$message = ' -m'.escapeshellarg(stripslashes($args['message']));
+	else
+		$message = '';
+	if(_wiki_exec('ci -u'.$message.' -w'.escapeshellarg($user_name).' '
 				.escapeshellarg($filename)) == FALSE)
 	{
 		_content_delete($id);
@@ -608,7 +630,7 @@ function _wiki_system_update($args)
 	if(($root = _wiki_root()) == FALSE)
 		return 'Internal server error';
 	$wiki = _wiki_get($args['id'], TRUE);
-	if(!is_array($wiki) || strpos('/', $wiki['title']) != FALSE)
+	if(!is_array($wiki) || _wiki_validate_title($wiki['title']) != TRUE)
 		return INVALID_ARGUMENT;
 	$id = $wiki['id'];
 	$title = $wiki['title'];
@@ -629,10 +651,16 @@ function _wiki_system_update($args)
 		return 'An error occured while writing';
 	}
 	fclose($fp);
-	if(_wiki_exec('ci -u -m'.escapeshellarg($user_name).' '
-				.escapeshellarg($filename)) == FALSE)
+	if(isset($args['message']) && strlen($args['message']))
+		$message = ' -m'.escapeshellarg(stripslashes($args['message']));
+	else
+		$message = '';
+	if(_wiki_exec('ci -u'.$message.' -w'.escapeshellarg($user_name)
+				.' '.escapeshellarg($filename)) == FALSE)
 	{
 		unlink($filename);
+		//XXX the submission form should be displayed again anyway
+		//XXX (only the HTML should be ripped off if invalid)
 		return 'An error occured while checking in';
 	}
 	unlink($filename);
@@ -668,6 +696,8 @@ function wiki_update($args)
 		include('./modules/wiki/display.tpl');
 	}
 	$title = MODIFICATION_OF_WIKI_PAGE.': '.$wiki['title'];
+	$message = isset($args['message']) ? stripslashes($args['message'])
+		: '';
 	include('./modules/wiki/update.tpl');
 }
 
