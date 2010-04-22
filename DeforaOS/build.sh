@@ -149,6 +149,7 @@ target_bootstrap()
 	CONFIGURE="configure -v"
 	FAILED=
 	_bootstrap_system			|| FAILED="$FAILED System"
+	_bootstrap_network			|| FAILED="$FAILED Network"
 	_bootstrap_posix			|| FAILED="$FAILED POSIX"
 	_bootstrap_devel			|| FAILED="$FAILED Devel"
 	_bootstrap_desktop			|| FAILED="$FAILED Desktop"
@@ -208,6 +209,19 @@ _bootstrap_libsystem()
 {
 	SUBDIRS="System/src/libSystem/src"
 	target "clean" "libSystem.a"				|| return 2
+}
+
+_bootstrap_network()
+{
+	RET=0
+	S="Apps/Network/src/Directory \
+		Apps/Network/src/Probe"
+
+	for i in $S; do
+		SUBDIRS="$i"
+		target "clean all"				|| RET=$?
+	done
+	return $RET
 }
 
 _bootstrap_posix()
