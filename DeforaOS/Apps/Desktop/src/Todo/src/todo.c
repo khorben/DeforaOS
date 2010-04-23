@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Todo */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -20,6 +20,7 @@ static char const _license[] =
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <System.h>
@@ -27,6 +28,8 @@ static char const _license[] =
 #include "callbacks.h"
 #include "todo.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Todo */
@@ -56,11 +59,14 @@ static struct
 	char const * title;
 	int sort;
 	GCallback callback;
-} _todo_columns[] = {
-	{ TD_COL_DONE, "Done", TD_COL_DONE, G_CALLBACK(on_task_done_toggled) },
-	{ TD_COL_TITLE, "Title", TD_COL_TITLE, G_CALLBACK(on_task_title_edited) },
-	{ TD_COL_DISPLAY_START, "Beginning", TD_COL_START, NULL },
-	{ TD_COL_DISPLAY_END, "Completion", TD_COL_END, NULL },
+} _todo_columns[] =
+{
+	{ TD_COL_DONE, N_("Done"), TD_COL_DONE, G_CALLBACK(
+			on_task_done_toggled) },
+	{ TD_COL_TITLE, N_("Title"), TD_COL_TITLE, G_CALLBACK(
+			on_task_title_edited) },
+	{ TD_COL_DISPLAY_START, N_("Beginning"), TD_COL_START, NULL },
+	{ TD_COL_DISPLAY_END, N_("Completion"), TD_COL_END, NULL },
 	{ 0, NULL, 0, NULL }
 };
 
@@ -76,41 +82,42 @@ static char const * _authors[] =
 /* menubar */
 static DesktopMenu _file_menu[] =
 {
-	{ "_New", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_N },
-	{ "_Edit", G_CALLBACK(on_file_edit), GTK_STOCK_EDIT, GDK_E },
+	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_N },
+	{ N_("_Edit"), G_CALLBACK(on_file_edit), GTK_STOCK_EDIT, GDK_E },
 	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
 static DesktopMenu _edit_menu[] =
 {
 #if GTK_CHECK_VERSION(2, 10, 0)
-	{ "_Select all", G_CALLBACK(on_edit_select_all), GTK_STOCK_SELECT_ALL,
+	{ N_("_Select all"), G_CALLBACK(on_edit_select_all),
+		GTK_STOCK_SELECT_ALL,
 #else
-	{ "_Select all", G_CALLBACK(on_edit_select_all), "edit-select-all",
+	{ N_("_Select all"), G_CALLBACK(on_edit_select_all), "edit-select-all",
 #endif
 		GDK_A },
 	{ "", NULL, NULL, 0 },
-	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
+	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
 	{ "", NULL, NULL, 0 },
-	{ "_Preferences", G_CALLBACK(on_edit_preferences), GTK_STOCK_PREFERENCES,
-		GDK_P },
+	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
+		GTK_STOCK_PREFERENCES, GDK_P },
 	{ NULL, NULL, NULL, 0 }
 };
 static DesktopMenu _help_menu[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 #else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
 #endif
 	{ NULL, NULL, NULL, 0 }
 };
 static DesktopMenubar _menubar[] =
 {
-	{ "_File", _file_menu },
-	{ "_Edit", _edit_menu },
-	{ "_Help", _help_menu },
+	{ N_("_File"), _file_menu },
+	{ N_("_Edit"), _edit_menu },
+	{ N_("_Help"), _help_menu },
 	{ NULL, NULL },
 };
 #endif
@@ -118,18 +125,21 @@ static DesktopMenubar _menubar[] =
 /* toolbar */
 static DesktopToolbar _toolbar[] =
 {
-	{ "New task", G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
-	{ "Edit task", G_CALLBACK(on_edit), GTK_STOCK_EDIT, 0, NULL },
+	{ N_("New task"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
+	{ N_("Edit task"), G_CALLBACK(on_edit), GTK_STOCK_EDIT, 0, NULL },
 	{ "", NULL, NULL, 0, NULL },
 #if GTK_CHECK_VERSION(2, 10, 0)
-	{ "Select all", G_CALLBACK(on_select_all), GTK_STOCK_SELECT_ALL, 0, NULL },
+	{ N_("Select all"), G_CALLBACK(on_select_all), GTK_STOCK_SELECT_ALL, 0,
+		NULL },
 #else
-	{ "Select all", G_CALLBACK(on_select_all), "edit-select-all", 0, NULL },
+	{ N_("Select all"), G_CALLBACK(on_select_all), "edit-select-all", 0,
+		NULL },
 #endif
-	{ "Delete task", G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, NULL },
+	{ N_("Delete task"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, NULL },
 #ifdef EMBEDDED
 	{ "", NULL, NULL, 0, NULL },
-	{ "Preferences", G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES, 0, NULL },
+	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
+		0, NULL },
 #endif
 	{ NULL, NULL, NULL, 0, NULL }
 };
@@ -158,7 +168,7 @@ Todo * todo_new(void)
 	gtk_window_add_accel_group(GTK_WINDOW(todo->window), group);
 	gtk_window_set_default_size(GTK_WINDOW(todo->window), 300, 400);
 	gtk_window_set_icon_name(GTK_WINDOW(todo->window), "stock_todo");
-	gtk_window_set_title(GTK_WINDOW(todo->window), "Todo");
+	gtk_window_set_title(GTK_WINDOW(todo->window), _("Todo"));
 	g_signal_connect_swapped(G_OBJECT(todo->window), "delete-event",
 			G_CALLBACK(on_closex), todo);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -192,18 +202,20 @@ static void _new_view(Todo * todo)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
-	todo->store = gtk_list_store_new(TD_NUM_COLS, G_TYPE_BOOLEAN, G_TYPE_STRING,
-			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-			G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+	todo->store = gtk_list_store_new(TD_NUM_COLS, G_TYPE_BOOLEAN,
+			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT,
+			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
 	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(todo->store));
-	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view))) != NULL)
+	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
+			!= NULL)
 		gtk_tree_selection_set_mode(sel, GTK_SELECTION_MULTIPLE);
 	/* done column */
 	renderer = gtk_cell_renderer_toggle_new();
 	g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(
 				_todo_columns[0].callback), todo);
-	column = gtk_tree_view_column_new_with_attributes(_todo_columns[0].title,
-			renderer, "active", _todo_columns[0].col, NULL);
+	column = gtk_tree_view_column_new_with_attributes(
+			_(_todo_columns[0].title), renderer, "active",
+			_todo_columns[0].col, NULL);
 	gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),
 			GTK_TREE_VIEW_COLUMN_FIXED);
 	gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column), 50);
@@ -215,12 +227,14 @@ static void _new_view(Todo * todo)
 		renderer = gtk_cell_renderer_text_new();
 		if(_todo_columns[i].callback != NULL)
 		{
-			g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
-			g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(
-						_todo_columns[i].callback), todo);
+			g_object_set(G_OBJECT(renderer), "editable", TRUE,
+					NULL);
+			g_signal_connect(G_OBJECT(renderer), "edited",
+					G_CALLBACK(_todo_columns[i].callback),
+					todo);
 		}
 		column = gtk_tree_view_column_new_with_attributes(
-				_todo_columns[i].title, renderer, "text",
+				_(_todo_columns[i].title), renderer, "text",
 				_todo_columns[i].col, NULL);
 		gtk_tree_view_column_set_sort_column_id(column,
 				_todo_columns[i].sort);
@@ -266,7 +280,7 @@ void todo_task_add(Todo * todo)
 	GtkTreeIter iter;
 
 	gtk_list_store_insert(todo->store, &iter, 0);
-	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, "New task", -1);
+	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, _("New task"), -1);
 }
 
 
@@ -311,8 +325,8 @@ void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
 	gboolean done;
 
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->store), &iter, path);
-	gtk_tree_model_get(GTK_TREE_MODEL(todo->store), &iter, TD_COL_DONE, &done,
-			-1);
+	gtk_tree_model_get(GTK_TREE_MODEL(todo->store), &iter, TD_COL_DONE,
+			&done, -1);
 	done = !done;
 	gtk_list_store_set(todo->store, &iter, TD_COL_DONE, done, -1);
 }

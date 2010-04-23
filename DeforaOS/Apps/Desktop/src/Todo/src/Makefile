@@ -7,7 +7,7 @@ CPPFLAGSF= -I $(PREFIX)/include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config gtk+-2.0 --cflags`
 CFLAGS	= -Wall -g -O2 -pedantic
-LDFLAGSF= `pkg-config gtk+-2.0 --libs`
+LDFLAGSF= -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop `pkg-config gtk+-2.0 --libs`
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -p
@@ -18,7 +18,7 @@ all: $(TARGETS)
 
 todo_OBJS = todo.o callbacks.o main.o
 todo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-todo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L $(PREFIX)/lib -Wl,-rpath,$(PREFIX)/lib -lSystem -lDesktop
+todo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 todo: $(todo_OBJS)
 	$(CC) -o todo $(todo_OBJS) $(todo_LDFLAGS)
@@ -29,7 +29,7 @@ todo.o: todo.c callbacks.h todo.h ../config.h
 callbacks.o: callbacks.c todo.h callbacks.h
 	$(CC) $(todo_CFLAGS) -c callbacks.c
 
-main.o: main.c todo.h
+main.o: main.c todo.h ../config.h
 	$(CC) $(todo_CFLAGS) -c main.c
 
 clean:
