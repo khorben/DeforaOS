@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Player */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,13 @@
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gdk/gdkkeysyms.h>
 #include "callbacks.h"
 #include "../config.h"
 #include "player.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* types */
@@ -51,29 +54,30 @@ struct _menubar
 #ifndef EMBEDDED
 struct _menu _menu_file[] =
 {
-	{ "_Open", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
+	{ N_("_Open..."), G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
 	{ "", NULL, NULL, 0 },
-	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES,
-		0 },
+	{ N_("_Properties"), G_CALLBACK(on_file_properties),
+		GTK_STOCK_PROPERTIES, 0 },
 	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_edit[] =
 {
-	{ "_Preferences", G_CALLBACK(on_edit_preferences),
+	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
 		GTK_STOCK_PREFERENCES, GDK_P },
 	{ NULL, NULL, NULL, 0 }
 };
 
 struct _menu _menu_view[] =
 {
-	{ "_Playlist", G_CALLBACK(on_view_playlist), NULL, GDK_L },
+	{ N_("_Playlist"), G_CALLBACK(on_view_playlist), NULL, GDK_L },
 # if GTK_CHECK_VERSION(2, 8, 0)
-	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), GTK_STOCK_FULLSCREEN,
+	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen),
+		GTK_STOCK_FULLSCREEN,
 # else
-	{ "_Fullscreen", G_CALLBACK(on_view_fullscreen), NULL,
+	{ N_("_Fullscreen"), G_CALLBACK(on_view_fullscreen), NULL,
 # endif
 		GDK_F },
 	{ NULL, NULL, NULL, 0 }
@@ -82,19 +86,19 @@ struct _menu _menu_view[] =
 static struct _menu _menu_help[] =
 {
 # if GTK_CHECK_VERSION(2, 6, 0)
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 # else
-	{ "_About", G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
 # endif
 	{ NULL, NULL, NULL, 0 }
 };
 
 static struct _menubar _menubar[] =
 {
-	{ "_File", _menu_file },
-	{ "_Edit", _menu_edit },
-	{ "_View", _menu_view },
-	{ "_Help", _menu_help },
+	{ N_("_File"), _menu_file },
+	{ N_("_Edit"), _menu_edit },
+	{ N_("_View"), _menu_view },
+	{ N_("_Help"), _menu_help },
 	{ NULL, NULL }
 };
 #endif
@@ -138,7 +142,7 @@ static void _player_set_progress(Player * player, unsigned int progress)
 /* player_error */
 static int _player_error(char const * message, int ret)
 {
-	fputs("Player: ", stderr);
+	fputs("player: ", stderr);
 	perror(message);
 	return ret;
 }
@@ -381,7 +385,7 @@ Player * player_new(void)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(player->window), "multimedia");
 #endif
-	gtk_window_set_title(GTK_WINDOW(player->window), "Player");
+	gtk_window_set_title(GTK_WINDOW(player->window), _("Player"));
 	gtk_widget_realize(player->window);
 	g_signal_connect(G_OBJECT(player->window), "delete-event", G_CALLBACK(
 				on_player_closex), player);
@@ -408,41 +412,42 @@ Player * player_new(void)
 	g_signal_connect(player->tb_previous, "clicked", G_CALLBACK(
 				on_previous), player);
 	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_previous),
-			"Previous");
+			_("Previous"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_previous, -1);
 	player->tb_rewind = gtk_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_REWIND);
 	g_signal_connect(player->tb_rewind, "clicked", G_CALLBACK(
 				on_rewind), player);
 	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_rewind),
-			"Rewind");
+			_("Rewind"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_rewind, -1);
 	player->tb_play = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_PLAY);
 	g_signal_connect(player->tb_play, "clicked", G_CALLBACK(on_play),
 			player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_play), "Play");
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_play), _("Play"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_play, -1);
 	player->tb_pause = gtk_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_PAUSE);
 	g_signal_connect(player->tb_pause, "clicked", G_CALLBACK(on_pause),
 			player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_pause), "Pause");
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_pause), _("Pause"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_pause, -1);
 	player->tb_stop = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_STOP);
 	g_signal_connect(player->tb_stop, "clicked", G_CALLBACK(on_stop),
 			player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_stop), "Stop");
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_stop), _("Stop"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_stop, -1);
 	player->tb_forward = gtk_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_FORWARD);
 	g_signal_connect(player->tb_forward, "clicked", G_CALLBACK(
 				on_forward), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_forward), "Forward");
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_forward),
+			_("Forward"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_forward, -1);
 	player->tb_next = gtk_tool_button_new_from_stock(GTK_STOCK_MEDIA_NEXT);
 	g_signal_connect(player->tb_next, "clicked", G_CALLBACK(
 				on_next), player);
-	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_next), "Next");
+	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_next), _("Next"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_next, -1);
 	toolitem = gtk_tool_item_new();
 	gtk_tool_item_set_expand(toolitem, TRUE);
@@ -452,18 +457,18 @@ Player * player_new(void)
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), toolitem, -1);
 	widget = gtk_image_new_from_icon_name("stock_fullscreen",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
-	player->tb_fullscreen = gtk_tool_button_new(widget, "Fullscreen");
+	player->tb_fullscreen = gtk_tool_button_new(widget, _("Fullscreen"));
 	g_signal_connect(player->tb_fullscreen, "clicked", G_CALLBACK(
 				on_fullscreen), player);
 	gtk_widget_set_tooltip_text(GTK_WIDGET(player->tb_fullscreen),
-			"Fullscreen");
+			_("Fullscreen"));
 	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), player->tb_fullscreen, -1);
 	gtk_box_pack_end(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
 	gtk_widget_show_all(player->window);
 	/* playlist */
 	/* FIXME make it dockable */
 	player->pl_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(player->pl_window), "Playlist");
+	gtk_window_set_title(GTK_WINDOW(player->pl_window), _("Playlist"));
 	g_signal_connect(G_OBJECT(player->pl_window), "delete-event",
 			G_CALLBACK(on_playlist_closex), player);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -485,9 +490,9 @@ Player * player_new(void)
 			gtk_tree_view_column_new_with_attributes("",
 				gtk_cell_renderer_pixbuf_new(), "pixbuf",
 				PL_COL_ICON, NULL));
-	_new_column_text(player->pl_view, "Artist", PL_COL_ARTIST);
-	_new_column_text(player->pl_view, "Album", PL_COL_ALBUM);
-	_new_column_text(player->pl_view, "Title", PL_COL_TITLE);
+	_new_column_text(player->pl_view, _("Artist"), PL_COL_ARTIST);
+	_new_column_text(player->pl_view, _("Album"), PL_COL_ALBUM);
+	_new_column_text(player->pl_view, _("Title"), PL_COL_TITLE);
 	gtk_container_add(GTK_CONTAINER(widget), player->pl_view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	hbox = gtk_hbox_new(TRUE, 0);
@@ -531,7 +536,7 @@ static GtkWidget * _new_menubar(Player * player)
 	group = gtk_accel_group_new();
 	for(i = 0; _menubar[i].name != NULL; i++)
 	{
-		menubar = gtk_menu_item_new_with_mnemonic(_menubar[i].name);
+		menubar = gtk_menu_item_new_with_mnemonic(_(_menubar[i].name));
 		menu = gtk_menu_new();
 		for(j = 0; _menubar[i].menu[j].name != NULL; j++)
 		{
@@ -540,7 +545,7 @@ static GtkWidget * _new_menubar(Player * player)
 				menuitem = gtk_separator_menu_item_new();
 			else if(p->stock == NULL)
 				menuitem = gtk_menu_item_new_with_mnemonic(
-						p->name);
+						_(p->name));
 			else
 				menuitem = gtk_image_menu_item_new_from_stock(
 						p->stock, NULL);
@@ -699,8 +704,14 @@ int player_error(Player * player, char const * message, int ret)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(player->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
-	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_dialog_run(GTK_DIALOG(dialog));
@@ -719,7 +730,7 @@ int player_sigchld(Player * player)
 		return player_error(player, "waitpid", 1);
 	if(pid == 0)
 		return 1;
-	fputs("Player: mplayer ", stderr);
+	fputs("player: mplayer ", stderr);
 	if(WIFEXITED(status))
 		fprintf(stderr, "%d%s%u\n", pid, ": exited with code ",
 				WEXITSTATUS(status));
@@ -760,15 +771,15 @@ int player_open(Player * player, char const * filename)
 			player->filename, "\" 0\nframe_step\n");
 	if(len >= sizeof(cmd))
 	{
-		fputs("Player: String too long\n", stderr);
+		fputs("player: String too long\n", stderr);
 		return 1;
 	}
 	if(_player_command(player, cmd, len) != 0)
 		return 1;
 	player->paused = 1;
 	p = strdup(filename);
-	snprintf(cmd, sizeof(cmd), "%s%s", "Player - ", p != NULL ? basename(p)
-			: filename);
+	snprintf(cmd, sizeof(cmd), "%s - %s", _("Player"), p != NULL
+			? basename(p) : filename);
 	free(p);
 	gtk_window_set_title(GTK_WINDOW(player->window), cmd);
 	return 0;
@@ -781,7 +792,7 @@ int player_open_dialog(Player * player)
 	GtkWidget * dialog;
 	char * filename = NULL;
 
-	dialog = gtk_file_chooser_dialog_new("Open file...",
+	dialog = gtk_file_chooser_dialog_new(_("Open file..."),
 			GTK_WINDOW(player->window),
 			GTK_FILE_CHOOSER_ACTION_OPEN,
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -806,7 +817,7 @@ void player_queue_add(Player * player, char const * filename)
 	len = snprintf(cmd, sizeof(cmd), "%s%s%s", "loadfile \"", filename,
 			"\" 1\n");
 	if(len >= sizeof(cmd))
-		fputs("Player: String too long\n", stderr);
+		fputs("player: String too long\n", stderr);
 	else
 		_player_command(player, cmd, len);
 }
@@ -830,7 +841,7 @@ int player_play(Player * player)
 					player->filename, "\" 0\n"))
 			>= sizeof(cmd))
 	{
-		fputs("Player: String too long\n", stderr);
+		fputs("player: String too long\n", stderr);
 		return 1;
 	}
 	else

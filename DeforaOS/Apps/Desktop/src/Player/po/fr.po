@@ -1,0 +1,133 @@
+# $Id$
+# Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Player package.
+# Pierre Pronchery <khorben@defora.org>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Player 0.1.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-23 03:59+0200\n"
+"PO-Revision-Date: 2010-04-23 03:44+0200\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/callbacks.c:70
+msgid "Properties of "
+msgstr "_Propriétés de "
+
+#: ../src/callbacks.c:100
+msgid "Preferences"
+msgstr "Préférences"
+
+#: ../src/main.c:49
+msgid "Usage: player [file...]\n"
+msgstr "Usage: player [fichier...]\n"
+
+#: ../src/player.c:57
+msgid "_Open..."
+msgstr "_Ouvrir..."
+
+#: ../src/player.c:59
+msgid "_Properties"
+msgstr "_Propriétés"
+
+#: ../src/player.c:62
+msgid "_Close"
+msgstr "_Fermer"
+
+#: ../src/player.c:68
+msgid "_Preferences"
+msgstr "_Préférences"
+
+#: ../src/player.c:75
+msgid "_Playlist"
+msgstr "_Liste de lecture"
+
+#: ../src/player.c:77 ../src/player.c:80
+msgid "_Fullscreen"
+msgstr "_Plein écran"
+
+#: ../src/player.c:89 ../src/player.c:91
+msgid "_About"
+msgstr ""
+
+#: ../src/player.c:98
+msgid "_File"
+msgstr "_Fichier"
+
+#: ../src/player.c:99
+msgid "_Edit"
+msgstr "É_dition"
+
+#: ../src/player.c:100
+msgid "_View"
+msgstr "_Vue"
+
+#: ../src/player.c:101
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/player.c:388 ../src/player.c:781
+msgid "Player"
+msgstr ""
+
+#: ../src/player.c:415
+msgid "Previous"
+msgstr ""
+
+#: ../src/player.c:422
+msgid "Rewind"
+msgstr ""
+
+#: ../src/player.c:427
+msgid "Play"
+msgstr ""
+
+#: ../src/player.c:433
+msgid "Pause"
+msgstr "Pause"
+
+#: ../src/player.c:438
+msgid "Stop"
+msgstr ""
+
+#: ../src/player.c:445
+msgid "Forward"
+msgstr ""
+
+#: ../src/player.c:450
+msgid "Next"
+msgstr ""
+
+#: ../src/player.c:460 ../src/player.c:464
+msgid "Fullscreen"
+msgstr "Plein écran"
+
+#: ../src/player.c:471
+msgid "Playlist"
+msgstr ""
+
+#: ../src/player.c:493
+msgid "Artist"
+msgstr ""
+
+#: ../src/player.c:494
+msgid "Album"
+msgstr "Album"
+
+#: ../src/player.c:495
+msgid "Title"
+msgstr "Titre"
+
+#: ../src/player.c:709 ../src/player.c:714
+msgid "Error"
+msgstr "Erreur"
+
+#: ../src/player.c:795
+msgid "Open file..."
+msgstr "Ouvrir fichier..."

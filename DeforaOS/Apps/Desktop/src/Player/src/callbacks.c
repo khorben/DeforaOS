@@ -1,6 +1,6 @@
 /* $Id$ */
 static char const _copyright[] =
-"Copyright (c) 2009 Pierre Pronchery <khorben@defora.org>";
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Player */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -19,9 +19,11 @@ static char const _license[] =
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <libintl.h>
 #include "player.h"
 #include "callbacks.h"
 #include "../config.h"
+#define _(string) gettext(string)
 
 
 /* macros */
@@ -65,7 +67,8 @@ void on_file_properties(GtkWidget * widget, gpointer data)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				gtk_widget_destroy), NULL);
-	snprintf(buf, sizeof(buf), "%s%s", "Properties of ", player->filename);
+	snprintf(buf, sizeof(buf), "%s%s", _("Properties of "),
+			player->filename);
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	/* FIXME implement */
 	gtk_widget_show_all(window);
@@ -94,7 +97,7 @@ void on_edit_preferences(GtkWidget * widget, gpointer data)
 		return;
 	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), "Preferences");
+	gtk_window_set_title(GTK_WINDOW(window), _("Preferences"));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(
 				player->window));
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
@@ -163,7 +166,7 @@ void on_help_about(GtkWidget * widget, gpointer data)
 	gtk_widget_show(window);
 }
 #else /* !GTK_CHECK_VERSION(2, 6, 0) */
-	/* FIXME implement */
+	/* FIXME use libDesktop */
 }
 #endif /* !GTK_CHECK_VERSION(2, 6, 0) */
 
