@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mixer */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,34 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <locale.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "mixer.h"
 #include "../config.h"
+#define _(string) gettext(string)
+
+
+/* constants */
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef DATADIR
+# define DATADIR	PREFIX "/share"
+#endif
+#ifndef LOCALEDIR
+# define LOCALEDIR	DATADIR "/locale"
+#endif
 
 
 /* functions */
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PACKAGE " [-H|-V][-d device]\n"
+	fputs(_("Usage: mixer [-H|-V][-d device]\n"
 "  -H	Show the classes next to each other\n"
 "  -V	Show the classes on top of each other\n"
-"  -d	The mixer device to use\n", stderr);
+"  -d	The mixer device to use\n"), stderr);
 	return 1;
 }
 
@@ -42,6 +57,9 @@ int main(int argc, char * argv[])
 	MixerOrientation mo = MO_HORIZONTAL;
 	Mixer * mixer;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 	while((o = getopt(argc, argv, "HVd:")) != -1)
 		switch(o)
 		{

@@ -1,0 +1,97 @@
+# $Id$
+# Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
+# This file is distributed under the same license as the Mixer package.
+# Pierre Pronchery <khorben@defora.org>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Mixer 0.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-04-23 04:16+0200\n"
+"PO-Revision-Date: 2010-04-23 04:08+0200\n"
+"Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: ../src/main.c:44
+msgid ""
+"Usage: mixer [-H|-V][-d device]\n"
+"  -H\tShow the classes next to each other\n"
+"  -V\tShow the classes on top of each other\n"
+"  -d\tThe mixer device to use\n"
+msgstr ""
+
+#: ../src/mixer.c:71
+msgid "_Properties"
+msgstr "_Propriétés"
+
+#: ../src/mixer.c:73
+msgid "_Close"
+msgstr "_Fermer"
+
+#: ../src/mixer.c:79
+msgid "_All"
+msgstr "_Tous"
+
+#: ../src/mixer.c:80
+msgid "_Outputs"
+msgstr "_Sorties"
+
+#: ../src/mixer.c:81
+msgid "_Inputs"
+msgstr "_Entrées"
+
+#: ../src/mixer.c:82
+msgid "_Record"
+msgstr "En_registrement"
+
+#: ../src/mixer.c:83
+msgid "Mo_nitor"
+msgstr "Sui_vi"
+
+#: ../src/mixer.c:84
+msgid "_Equalization"
+msgstr "É_galisation"
+
+#: ../src/mixer.c:85
+msgid "Mi_x"
+msgstr "Mi_x"
+
+#: ../src/mixer.c:86
+msgid "_Modem"
+msgstr "_Modem"
+
+#: ../src/mixer.c:92
+msgid "_About"
+msgstr "À _propos"
+
+#: ../src/mixer.c:98
+msgid "_File"
+msgstr "_Fichier"
+
+#: ../src/mixer.c:99
+msgid "_View"
+msgstr "_Vue"
+
+#: ../src/mixer.c:100
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/mixer.c:454
+msgid "Mixer properties"
+msgstr "Propriétés du mixer"
+
+#: ../src/mixer.c:460
+msgid "Name: "
+msgstr "Nom : "
+
+#: ../src/mixer.c:466
+msgid "Version: "
+msgstr "Version : "
+
+#: ../src/mixer.c:472
+msgid "Config: "
+msgstr "Config : "

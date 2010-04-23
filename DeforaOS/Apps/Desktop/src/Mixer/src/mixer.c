@@ -23,12 +23,15 @@ static char _license[] =
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <Desktop.h>
 #include "callbacks.h"
 #include "mixer.h"
 #include "../config.h"
+#define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* Mixer */
@@ -65,36 +68,36 @@ static char const * _authors[] =
 
 static DesktopMenu _mixer_menu_file[] =
 {
-	{ "_Properties", G_CALLBACK(on_file_properties), GTK_STOCK_PROPERTIES,
-		GDK_P },
-	{ "_Close", G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
+	{ N_("_Properties"), G_CALLBACK(on_file_properties),
+		GTK_STOCK_PROPERTIES, GDK_P },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenu _mixer_menu_view[] =
 {
-	{ "_All", G_CALLBACK(on_view_all), NULL, GDK_A },
-	{ "_Outputs", G_CALLBACK(on_view_outputs), NULL, GDK_O },
-	{ "_Inputs", G_CALLBACK(on_view_inputs), NULL, GDK_I },
-	{ "_Record", G_CALLBACK(on_view_record), NULL, GDK_R },
-	{ "Mo_nitor", G_CALLBACK(on_view_monitor), NULL, GDK_N },
-	{ "_Equalization", G_CALLBACK(on_view_equalization), NULL, GDK_E },
-	{ "Mi_x", G_CALLBACK(on_view_mix), NULL, GDK_X },
-	{ "_Modem", G_CALLBACK(on_view_modem), NULL, GDK_M },
+	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_A },
+	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_O },
+	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_I },
+	{ N_("_Record"), G_CALLBACK(on_view_record), NULL, GDK_R },
+	{ N_("Mo_nitor"), G_CALLBACK(on_view_monitor), NULL, GDK_N },
+	{ N_("_Equalization"), G_CALLBACK(on_view_equalization), NULL, GDK_E },
+	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_X },
+	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_M },
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenu _mixer_menu_help[] =
 {
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
 	{ NULL, NULL, NULL, 0 }
 };
 
 static DesktopMenubar _mixer_menubar[] =
 {
-	{ "_File", _mixer_menu_file },
-	{ "_View", _mixer_menu_view },
-	{ "_Help", _mixer_menu_help },
+	{ N_("_File"), _mixer_menu_file },
+	{ N_("_View"), _mixer_menu_view },
+	{ N_("_Help"), _mixer_menu_help },
 	{ NULL, NULL },
 };
 
@@ -448,25 +451,25 @@ void mixer_properties(Mixer * mixer)
 				strerror(errno));
 		return;
 	}
-	mixer->properties = gtk_dialog_new_with_buttons("Mixer properties",
+	mixer->properties = gtk_dialog_new_with_buttons(_("Mixer properties"),
 			GTK_WINDOW(mixer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(mixer->properties));
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Name: ");
+	widget = gtk_label_new(_("Name: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(ad.name);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Version: ");
+	widget = gtk_label_new(_("Version: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(ad.version);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
-	widget = gtk_label_new("Config: ");
+	widget = gtk_label_new(_("Config: "));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(ad.config);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
