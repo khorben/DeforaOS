@@ -65,6 +65,9 @@ struct _Surfer
 	GtkWidget * co_window;
 	GtkWidget * co_entry;
 	GtkListStore * co_store;
+
+	/* about */
+	GtkWidget * ab_dialog;
 };
 
 #endif /* !SURFER_COMMON_H */

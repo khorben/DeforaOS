@@ -1,17 +1,20 @@
 /* $Id$ */
-/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+static char const _copyright[] =
+"Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
-/* Surfer is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License version 2 as published by the Free
- * Software Foundation.
- *
- * Surfer is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA  02111-1307  USA */
+static char const _license[] =
+"Surfer is free software; you can redistribute it and/or modify it\n"
+"under the terms of the GNU General Public License version 2 as\n"
+"published by the Free Software Foundation.\n"
+"\n"
+"Surfer is distributed in the hope that it will be useful, but WITHOUT ANY\n"
+"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
+"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more\n"
+"details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License along\n"
+"with Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
+"Place, Suite 330, Boston, MA  02111-1307  USA\n";
 
 
 
@@ -25,6 +28,7 @@
 #include "ghtml.h"
 #include "surfer.h"
 #include "common.h"
+#include "../config.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
 
@@ -44,6 +48,14 @@ typedef enum _SurferConsoleMessage
 } SurferConsoleMessage;
 #define SCM_LAST	SCM_DISPLAY_LINE
 #define SCM_COUNT	(SCM_LAST + 1)
+
+
+/* constants */
+static char const * _authors[] =
+{
+	"Pierre Pronchery <khorben@defora.org>",
+	NULL
+};
 
 
 /* variables */
@@ -318,6 +330,8 @@ Surfer * _new_do(char const * url)
 	surfer->co_window = NULL;
 	surfer->co_store = gtk_list_store_new(SCM_COUNT, G_TYPE_STRING,
 			G_TYPE_STRING, G_TYPE_INT, G_TYPE_STRING);
+	/* about */
+	surfer->ab_dialog = NULL;
 	/* hack to display the statusbar only if necessary */
 	gtk_box_pack_start(GTK_BOX(vbox), surfer->statusbox, FALSE, FALSE, 0);
 	surfer_set_status(surfer, NULL);
@@ -496,6 +510,28 @@ void surfer_set_title(Surfer * surfer, char const * title)
 
 
 /* useful */
+/* surfer_about */
+void surfer_about(Surfer * surfer)
+{
+	if(surfer->ab_dialog != NULL)
+	{
+		gtk_widget_show(surfer->ab_dialog);
+		return;
+	}
+	surfer->ab_dialog = desktop_about_dialog_new();
+	gtk_window_set_transient_for(GTK_WINDOW(surfer->ab_dialog),
+			GTK_WINDOW(surfer->window));
+	desktop_about_dialog_set_authors(surfer->ab_dialog, _authors);
+	desktop_about_dialog_set_copyright(surfer->ab_dialog, _copyright);
+	desktop_about_dialog_set_logo_icon_name(surfer->ab_dialog,
+			"stock_internet");
+	desktop_about_dialog_set_license(surfer->ab_dialog, _license);
+	desktop_about_dialog_set_name(surfer->ab_dialog, PACKAGE);
+	desktop_about_dialog_set_version(surfer->ab_dialog, VERSION);
+	gtk_widget_show(surfer->ab_dialog);
+}
+
+
 /* surfer_close_tab */
 void surfer_close_tab(Surfer * surfer, GtkWidget * view)
 {
