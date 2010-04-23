@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Player */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,13 +30,14 @@ Player * player;
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: Player [file...]\n", stderr);
+	fputs("Usage: player [file...]\n", stderr);
 	return 1;
 }
 
 
 /* main */
 static void _main_signal(void);
+
 int main(int argc, char * argv[])
 {
 	int o;
@@ -54,7 +55,7 @@ int main(int argc, char * argv[])
 		return 2;
 	if(optind < argc)
 		player_open(player, argv[optind]);
-	for(i = optind+1; i < argc; i++)
+	for(i = optind + 1; i < argc; i++)
 		player_queue_add(player, argv[i]);
 	gtk_main();
 	player_delete(player);
@@ -73,7 +74,7 @@ static void _main_signal(void)
 	sa.sa_handler = _signal_handler;
 	sigfillset(&sa.sa_mask);
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		fputs("Player: SIGCHLD: Not handled\n", stderr);
+		fputs("player: SIGCHLD: Not handled\n", stderr);
 }
 
 static void _signal_handler(int signum)
@@ -92,7 +93,7 @@ static void _signal_handler(int signum)
 	}
 	if(pid == 0)
 		return;
-	fprintf(stderr, "%s", "Player: ");
+	fputs("player: ", stderr);
 	if(WIFEXITED(status))
 		fprintf(stderr, "%s%d%s%u\n", "child ", pid,
 				": exited with code ", WEXITSTATUS(status));
