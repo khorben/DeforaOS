@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-24 02:07+0200\n"
+"POT-Creation-Date: 2010-04-24 19:37+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,14 +16,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/main.c:32
+#: ../src/main.c:45
 msgid "Usage: phone -d device\n"
 msgstr ""
 
-#: ../src/phone.c:95
+#: ../src/phone.c:115
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:100
+#: ../src/phone.c:123
 msgid "Hang up"
 msgstr "Raccrocher"
