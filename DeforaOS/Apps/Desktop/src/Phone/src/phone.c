@@ -112,6 +112,7 @@ static GtkWidget * _new_dialpad(Phone * phone)
 	image = gtk_image_new_from_icon_name("call-start",
 			GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button), image);
+	gtk_button_set_label(GTK_BUTTON(button), _("Call"));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
 			on_phone_dialpad_call), phone);
 	gtk_table_attach(GTK_TABLE(table), button, 0, 3, 0, 1,
@@ -119,6 +120,7 @@ static GtkWidget * _new_dialpad(Phone * phone)
 	button = gtk_button_new();
 	image = gtk_image_new_from_icon_name("call-stop", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button), image);
+	gtk_button_set_label(GTK_BUTTON(button), _("Hang up"));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
 				on_phone_dialpad_hangup), phone);
 	gtk_table_attach(GTK_TABLE(table), button, 3, 6, 0, 1,
