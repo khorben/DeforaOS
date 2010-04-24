@@ -386,7 +386,7 @@ static int _panel_helper_shutdown_dialog(void)
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 			"%s", message);
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog), GTK_STOCK_CANCEL, RES_CANCEL,
-			_("Reboot"), RES_REBOOT, NULL);
+			_("Restart"), RES_REBOOT, NULL);
 	widget = gtk_button_new_with_label(_("Shutdown"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"gnome-shutdown", GTK_ICON_SIZE_BUTTON));
