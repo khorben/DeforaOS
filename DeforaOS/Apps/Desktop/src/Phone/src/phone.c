@@ -202,4 +202,5 @@ void phone_dialpad_append(Phone * phone, char character)
 void phone_hangup(Phone * phone)
 {
 	gsm_hangup(phone->gsm);
+	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
 }

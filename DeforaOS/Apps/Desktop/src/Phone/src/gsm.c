@@ -48,6 +48,9 @@ struct _GSM
 
 
 /* prototypes */
+static int _is_figure(int c);
+static int _is_number(char const * number);
+
 /* callbacks */
 static gboolean _on_reset(gpointer data);
 
@@ -156,7 +159,8 @@ int gsm_modem_call(GSM * gsm, char const * number)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, number);
 #endif
-	/* FIXME check that the number is valid */
+	if(!_is_number(number))
+		return 1;
 	len = sizeof(cmd) + strlen(number) + 1;
 	if((buf = malloc(len)) == NULL)
 		return phone_error(NULL, "malloc", 1);
@@ -243,6 +247,29 @@ void gsm_reset(GSM * gsm, unsigned int delay)
 
 /* private */
 /* functions */
+/* is_figure */
+static int _is_figure(int c)
+{
+	if(c >= '0' && c <= '9')
+		return 1;
+	if(c == '*' || c == '+' || c == '#')
+		return 1;
+	return 0;
+}
+
+
+/* is_number */
+static int _is_number(char const * number)
+{
+	if(number == NULL || number[0] == '\0')
+		return 0;
+	while(*number != '\0')
+		if(!_is_figure(*(number++)))
+			return 0;
+	return 1;
+}
+
+
 /* callbacks */
 /* on_reset */
 static int _reset_do(GSM * gsm);
