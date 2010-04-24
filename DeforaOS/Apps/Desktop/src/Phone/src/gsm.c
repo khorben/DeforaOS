@@ -285,7 +285,7 @@ static gboolean _on_reset(gpointer data)
 
 	gsm->source = 0;
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0)
-		return phone_error(NULL, "open", 1);
+		return phone_error(NULL, "open", FALSE);
 	if(_reset_do(gsm, fd) != 0)
 	{
 		close(fd);
