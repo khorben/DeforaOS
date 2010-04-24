@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <glib.h>
 #include "phone.h"
 #include "gsm.h"
@@ -161,10 +162,10 @@ int gsm_modem_call(GSM * gsm, char const * number)
 #endif
 	if(!_is_number(number))
 		return 1;
-	len = sizeof(cmd) + strlen(number) + 1;
+	len = sizeof(cmd) + strlen(number) + 2;
 	if((buf = malloc(len)) == NULL)
 		return phone_error(NULL, "malloc", 1);
-	snprintf(buf, len, "%s%s\n", cmd, number);
+	snprintf(buf, len, "%s%s\r\n", cmd, number);
 	ret = gsm_modem_queue(gsm, buf);
 	free(buf);
 	return ret;
@@ -174,7 +175,7 @@ int gsm_modem_call(GSM * gsm, char const * number)
 /* gsm_modem_hangup */
 int gsm_modem_hangup(GSM * gsm)
 {
-	return gsm_modem_queue(gsm, "ATH\n");
+	return gsm_modem_queue(gsm, "\r\nATH\r\n");
 }
 
 
@@ -202,7 +203,8 @@ int gsm_modem_queue(GSM * gsm, char const * command)
 /* gsm_modem_reset */
 int gsm_modem_reset(GSM * gsm)
 {
-	return gsm_modem_queue(gsm, "ATZ\n");
+	/* FIXME queue commands in sequence and prepend this one to the list */
+	return gsm_modem_queue(gsm, "\r\nATZ\r\n");
 }
 
 
@@ -272,50 +274,91 @@ static int _is_number(char const * number)
 
 /* callbacks */
 /* on_reset */
-static int _reset_do(GSM * gsm);
+static int _reset_do(GSM * gsm, int fd);
 
 static gboolean _on_reset(gpointer data)
 {
 	GSM * gsm = data;
+	int fd;
+	GError * error = NULL;
 
 	gsm->source = 0;
-	if(_reset_do(gsm) != 0)
+	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0)
+		return phone_error(NULL, "open", 1);
+	if(_reset_do(gsm, fd) != 0)
 	{
-		phone_error(NULL, gsm->device, 0);
+		close(fd);
 		if(gsm->retry > 0)
 			gsm->source = g_timeout_add(gsm->retry, _on_reset, gsm);
+		return FALSE;
 	}
+	gsm->channel = g_io_channel_unix_new(fd);
+	if((g_io_channel_set_encoding(gsm->channel, NULL, &error))
+			!= G_IO_STATUS_NORMAL)
+		/* XXX ugly */
+		fprintf(stderr, "ERROR: %s() g_io_channel_set_encoding\n",
+				__func__);
+	g_io_channel_set_buffered(gsm->channel, FALSE);
+	gsm->rd_io = g_io_add_watch(gsm->channel, G_IO_IN, _on_watch_read, gsm);
+	gsm_modem_reset(gsm);
 	return FALSE;
 }
 
-static int _reset_do(GSM * gsm)
+static int _reset_do(GSM * gsm, int fd)
 {
-	int fd;
+	struct stat st;
 	int fl;
-	struct termios tios;
+	struct termios term;
 
-	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0)
-		return 1;
-	fl = fcntl(fd, F_GETFL);
-	if(fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1
-			|| tcgetattr(fd, &tios) != 0)
-#ifdef DEBUG /* ignore errors here */
-		;
-#else
-		return 1;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, fd);
 #endif
-	tios.c_ispeed = gsm->baudrate;
-	tios.c_ospeed = gsm->baudrate;
-	if(tcsetattr(fd, TCSANOW, &tios) != 0)
+	if(flock(fd, LOCK_EX | LOCK_NB) != 0)
+		return phone_error(NULL, "flock", 1);
+	if(fstat(fd, &st) != 0)
+		return phone_error(NULL, "fstat", 1);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d) mode 0%o\n", __func__, fd, st.st_mode);
+#endif
+	if(st.st_mode & S_IFCHR) /* character special */
 	{
-#ifndef DEBUG /* ignore errors here as well */
-		close(fd);
-		return 1;
-#endif
+		if(tcgetattr(fd, &term) != 0)
+			return phone_error(NULL, "tcgetattr", 1);
+		switch(gsm->baudrate) /* XXX rewrite this a nicer way */
+		{
+			case 4800:
+				term.c_cflag = B4800;
+				break;
+			case 9600:
+				term.c_cflag = B9600;
+				break;
+			case 19200:
+				term.c_cflag = B19200;
+				break;
+			case 38400:
+				term.c_cflag = B38400;
+				break;
+			case 115200:
+				term.c_cflag = B115200;
+				break;
+			default:
+				errno = EINVAL;
+				return phone_error(NULL, "baudrate", 1);
+		}
+		term.c_cflag |= CS8;
+		term.c_cflag |= CREAD;
+		term.c_cflag |= CLOCAL;
+		term.c_iflag = (IGNPAR | IGNBRK);
+		term.c_lflag = 0;
+		term.c_oflag = 0;
+		term.c_cc[VMIN] = 1;
+		term.c_cc[VTIME] = 0;
+		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
+			return phone_error(NULL, "tcsetattr", 1);
 	}
-	gsm->channel = g_io_channel_unix_new(fd);
-	gsm->rd_io = g_io_add_watch(gsm->channel, G_IO_IN, _on_watch_read, gsm);
-	gsm_modem_reset(gsm);
+	fl = fcntl(fd, F_GETFL, 0);
+	if(fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
+		return phone_error(NULL, "fcntl", 1);
 	return 0;
 }
 
@@ -331,22 +374,28 @@ static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, condition);
 #endif
 	if(condition != G_IO_IN || source != gsm->channel)
 		return FALSE;
 	/* FIXME really implement */
 	status = g_io_channel_read_chars(source, buf, sizeof(buf), &cnt,
 			&error);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, cnt);
+#endif
 	switch(status)
 	{
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
 			/* XXX report error, do not break */
+			fprintf(stderr, "%s%s\n", "phone: read: ",
+					error->message);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
-			gsm_reset(gsm, 1000);
+			if(gsm->retry > 0)
+				gsm_reset(gsm, gsm->retry);
 			return FALSE;
 	}
 	/* FIXME parse and interpret the output */
@@ -369,12 +418,18 @@ static gboolean _on_watch_write(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 	char * p;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, condition);
+#endif
 	if(condition != G_IO_OUT || source != gsm->channel)
 		return FALSE;
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() write %zu\n", __func__, gsm->wr_buf_cnt);
+#endif
 	status = g_io_channel_write_chars(source, gsm->wr_buf, gsm->wr_buf_cnt,
 			&cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"", __func__);
+	fprintf(stderr, "DEBUG: %s() wrote %lu \"", __func__, cnt);
 	fwrite(gsm->wr_buf, sizeof(*gsm->wr_buf), cnt, stderr);
 	fputs("\"\n", stderr);
 #endif
@@ -391,8 +446,16 @@ static gboolean _on_watch_write(GIOChannel * source, GIOCondition condition,
 			break;
 		case G_IO_STATUS_ERROR:
 			/* XXX report error, do not break */
+#ifdef DEBUG
+			perror("phone: write");
+#else
+			fprintf(stderr, "%s%s\n", "phone: write: ",
+					error->message);
+#endif
+		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
-			gsm_reset(gsm, 1000);
+			if(gsm->retry > 0)
+				gsm_reset(gsm, gsm->retry);
 			return FALSE;
 	}
 	if(gsm->wr_buf_cnt > 0) /* there is more data to write */

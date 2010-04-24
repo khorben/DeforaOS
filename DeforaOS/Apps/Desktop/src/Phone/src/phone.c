@@ -51,6 +51,9 @@ Phone * phone_new(char const * device, unsigned int baudrate)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, device, baudrate);
+#endif
 	if((phone = malloc(sizeof(*phone))) == NULL)
 		return NULL;
 	if(device == NULL)
