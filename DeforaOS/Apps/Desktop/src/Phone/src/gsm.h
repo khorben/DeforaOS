@@ -40,8 +40,10 @@ void gsm_reset(GSM * gsm, unsigned int delay);
 /* modem */
 /* XXX considering making these private */
 int gsm_modem_call(GSM * gsm, char const * number);
+int gsm_modem_call_last(GSM * gsm);
 int gsm_modem_hangup(GSM * gsm);
 int gsm_modem_queue(GSM * gsm, char const * command);
 int gsm_modem_reset(GSM * gsm);
+int gsm_modem_set_echo(GSM * gsm, int echo);
 
 #endif /* !PHONE_GSM_H */

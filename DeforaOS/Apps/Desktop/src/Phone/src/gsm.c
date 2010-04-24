@@ -138,6 +138,8 @@ int gsm_call(GSM * gsm, char const * number)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, number);
 #endif
 	/* FIXME check current status before calling */
+	if(number == NULL)
+		return gsm_modem_call_last(gsm);
 	return gsm_modem_call(gsm, number);
 }
 
@@ -163,19 +165,34 @@ int gsm_modem_call(GSM * gsm, char const * number)
 #endif
 	if(!_is_number(number))
 		return 1;
-	len = sizeof(cmd) + strlen(number) + 2;
+	len = sizeof(cmd) + strlen(number) + 3;
 	if((buf = malloc(len)) == NULL)
 		return phone_error(NULL, "malloc", 1);
-	snprintf(buf, len, "%s%s\r\n", cmd, number);
+	snprintf(buf, len, "%s%s;\r\n", cmd, number);
 	ret = gsm_modem_queue(gsm, buf);
 	free(buf);
 	return ret;
 }
 
 
+/* gsm_modem_call_last */
+int gsm_modem_call_last(GSM * gsm)
+{
+	char const cmd[] = "ATDL;\r\n";
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return gsm_modem_queue(gsm, cmd);
+}
+
+
 /* gsm_modem_hangup */
 int gsm_modem_hangup(GSM * gsm)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	return gsm_modem_queue(gsm, "\r\nATH\r\n");
 }
 
@@ -204,8 +221,21 @@ int gsm_modem_queue(GSM * gsm, char const * command)
 /* gsm_modem_reset */
 int gsm_modem_reset(GSM * gsm)
 {
-	/* FIXME queue commands in sequence and prepend this one to the list */
+	/* TODO
+	 * - queue all commands in sequence
+	 * - prepend this one to the list (flush the others?)
+	 * - make sure the modem has settled before continuing */
 	return gsm_modem_queue(gsm, "\r\nATZ\r\n");
+}
+
+
+/* gsm_modem_set_echo */
+int gsm_modem_set_echo(GSM * gsm, int echo)
+{
+	char cmd[] = "ATE?\r\n";
+
+	cmd[3] = (echo != 0) ? '1' : '0';
+	return gsm_modem_queue(gsm, cmd);
 }
 
 
@@ -306,6 +336,7 @@ static gboolean _on_reset(gpointer data)
 	g_io_channel_set_buffered(gsm->channel, FALSE);
 	gsm->rd_io = g_io_add_watch(gsm->channel, G_IO_IN, _on_watch_read, gsm);
 	gsm_modem_reset(gsm);
+	gsm_modem_set_echo(gsm, 0);
 	return FALSE;
 }
 
@@ -405,9 +436,8 @@ static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 	}
 	/* FIXME parse and interpret the output */
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"", __func__);
+	fprintf(stderr, "%s", "DEBUG: modem: ");
 	fwrite(buf, sizeof(*buf), cnt, stderr);
-	fputs("\"\n", stderr);
 #endif
 	return TRUE;
 }
@@ -428,17 +458,13 @@ static gboolean _on_watch_write(GIOChannel * source, GIOCondition condition,
 #endif
 	if(condition != G_IO_OUT || source != gsm->channel)
 		return FALSE;
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() write %zu\n", __func__, gsm->wr_buf_cnt);
-#endif
 	status = g_io_channel_write_chars(source, gsm->wr_buf, gsm->wr_buf_cnt,
 			&cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() wrote %lu \"", __func__, cnt);
+	fprintf(stderr, "%s", "DEBUG: phone: ");
 	fwrite(gsm->wr_buf, sizeof(*gsm->wr_buf), cnt, stderr);
-	fputs("\"\n", stderr);
 #endif
-	if(cnt != 0) /* data may have be written anyway */
+	if(cnt != 0) /* some data may have been written anyway */
 	{
 		memmove(gsm->wr_buf, &gsm->wr_buf[cnt], gsm->wr_buf_cnt - cnt);
 		gsm->wr_buf_cnt -= cnt;
