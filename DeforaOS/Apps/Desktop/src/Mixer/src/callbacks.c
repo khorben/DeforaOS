@@ -161,5 +161,9 @@ void on_value_changed(GtkWidget * widget, gdouble value, gpointer data)
 {
 	Mixer * mixer = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, %lf, %p)\n", __func__, (void*)widget,
+			value, (void*)data);
+#endif
 	mixer_set_value(mixer, widget, value);
 }

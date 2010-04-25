@@ -335,6 +335,10 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 		g_object_set_data(G_OBJECT(widget), "ctrl", p);
 		g_object_set_data(G_OBJECT(widget), "channel",
 				&p->un.value.level[i]);
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s(%p) g_signal_connect() \"%s\"\n",
+				__func__, (void*)mixer, "value-changed");
+#endif
 		g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(
 					on_value_changed), mixer);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
