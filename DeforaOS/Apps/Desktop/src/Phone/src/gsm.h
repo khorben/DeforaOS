@@ -42,6 +42,7 @@ void gsm_reset(GSM * gsm, unsigned int delay);
 int gsm_modem_call(GSM * gsm, char const * number);
 int gsm_modem_call_last(GSM * gsm);
 int gsm_modem_hangup(GSM * gsm);
+int gsm_modem_is_pin_needed(GSM * gsm);
 int gsm_modem_queue(GSM * gsm, char const * command);
 int gsm_modem_reset(GSM * gsm);
 int gsm_modem_send_dtmf(GSM * gsm, char const * sequence);

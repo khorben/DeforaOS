@@ -183,6 +183,9 @@ int gsm_call(GSM * gsm, char const * number)
 /* gsm_hangup */
 int gsm_hangup(GSM * gsm)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	/* FIXME check current status before hanging up */
 	return gsm_modem_hangup(gsm);
 }
@@ -233,6 +236,18 @@ int gsm_modem_hangup(GSM * gsm)
 }
 
 
+/* gsm_modem_is_pin_needed */
+int gsm_modem_is_pin_needed(GSM * gsm)
+{
+	char const cmd[] = "AT+CPIN?\r\n";
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	return gsm_modem_queue(gsm, cmd);
+}
+
+
 /* gsm_modem_queue */
 int gsm_modem_queue(GSM * gsm, char const * command)
 {
@@ -262,6 +277,9 @@ int gsm_modem_reset(GSM * gsm)
 	int ret;
 	char const cmd[] = "ATZ\r\n";
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	/* TODO
 	 * - queue all commands in sequence
 	 * - prepend this one to the list (flush the others?) */
@@ -284,6 +302,9 @@ int gsm_modem_send_dtmf(GSM * gsm, char const * sequence)
 	size_t len = sizeof(cmd) + strlen(sequence) + 2;
 	char * buf;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, sequence);
+#endif
 	if(!_is_number(sequence)) /* XXX is '+' allowed? */
 		return 1;
 	if((buf = malloc(len)) == NULL)
@@ -300,6 +321,10 @@ int gsm_modem_set_echo(GSM * gsm, int echo)
 {
 	char cmd[] = "ATE?\r\n";
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, (echo != 0) ? "TRUE"
+			: "FALSE");
+#endif
 	cmd[3] = (echo != 0) ? '1' : '0';
 	return gsm_modem_queue(gsm, cmd);
 }
@@ -313,6 +338,9 @@ int gsm_modem_set_pin(GSM * gsm, int oldpin, int newpin)
 	size_t len = sizeof(cmd) + 11;
 	char * buf;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d, %d)\n", __func__, oldpin, newpin);
+#endif
 	if(oldpin < 999 || oldpin > 9999 || newpin < 999 || newpin > 9999)
 		return 1; /* XXX probably limiting */
 	if((buf = malloc(len)) == NULL)
@@ -329,6 +357,9 @@ void gsm_reset(GSM * gsm, unsigned int delay)
 {
 	GError * error = NULL;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	free(gsm->rd_buf);
 	gsm->rd_buf = NULL;
 	gsm->rd_buf_cnt = 0;
@@ -418,21 +449,28 @@ static int _parse_init(GSM * gsm, char const * line)
 	gsm->source = 0;
 	gsm->status = GS_COMMAND;
 	gsm_modem_set_echo(gsm, FALSE);
+	gsm_modem_is_pin_needed(gsm);
 	return 0;
 }
 
 static int _command_cme_error(GSM * gsm, char const * line);
+static int _command_cpin(GSM * gsm, char const * line);
 static int _parse_command(GSM * gsm, char const * line)
 {
 	char const cme_error[] = "+CME ERROR: ";
+	char const cpin[] = "+CPIN: ";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
 #endif
-	if(strcmp(line, "OK") == 0 || strcmp(line, "ATE0") == 0)
+	if(strcmp(line, "OK") == 0)
+		return 0;
+	if(strncmp(line, "AT", 2) == 0) /* ignore echo */
 		return 0;
 	if(strncmp(line, cme_error, sizeof(cme_error) - 1) == 0)
 		return _command_cme_error(gsm, &line[sizeof(cme_error) - 1]);
+	if(strncmp(line, cpin, sizeof(cpin) - 1) == 0)
+		return _command_cpin(gsm, &line[sizeof(cpin) - 1]);
 	/* FIXME implement */
 	fprintf(stderr, "%s%s%s", "phone: ", line, ": Unknown answer\n");
 	return 1;
@@ -466,6 +504,17 @@ static int _command_cme_error(GSM * gsm, char const * line)
 	/* FIXME implement callbacks */
 	printf("%s%s\n", "phone: ", _gsm_cme_errors[i].error);
 	return 0;
+}
+
+static int _command_cpin(GSM * gsm, char const * line)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
+#endif
+	if(strcmp(line, "READY") == 0)
+		return 0;
+	/* FIXME implement */
+	return 1;
 }
 
 
