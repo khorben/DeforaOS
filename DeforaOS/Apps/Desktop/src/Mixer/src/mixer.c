@@ -462,7 +462,7 @@ void mixer_properties(Mixer * mixer)
 	mixer->properties = gtk_dialog_new_with_buttons(_("Mixer properties"),
 			GTK_WINDOW(mixer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+			GTK_STOCK_CLOSE, GTK_RESPONSE_ACCEPT, NULL);
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(mixer->properties));
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Name: "));
