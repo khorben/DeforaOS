@@ -574,8 +574,8 @@ static gboolean _on_reset(gpointer data)
 				__func__);
 	g_io_channel_set_buffered(gsm->channel, FALSE);
 	gsm->rd_io = g_io_add_watch(gsm->channel, G_IO_IN, _on_watch_read, gsm);
-	_reset_settle(gsm);
 	gsm->source = g_timeout_add(500, _reset_settle, gsm);
+	_reset_settle(gsm);
 	return FALSE;
 }
 
