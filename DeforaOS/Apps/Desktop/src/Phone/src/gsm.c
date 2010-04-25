@@ -305,6 +305,25 @@ int gsm_modem_set_echo(GSM * gsm, int echo)
 }
 
 
+/* gsm_modem_set_pin */
+int gsm_modem_set_pin(GSM * gsm, int oldpin, int newpin)
+{
+	int ret;
+	char cmd[] = "AT+CPIN=";
+	size_t len = sizeof(cmd) + 11;
+	char * buf;
+
+	if(oldpin < 999 || oldpin > 9999 || newpin < 999 || newpin > 9999)
+		return 1; /* XXX probably limiting */
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s%d,%d\r\n", cmd, oldpin, newpin);
+	ret = gsm_modem_queue(gsm, buf);
+	free(buf);
+	return ret;
+}
+
+
 /* gsm_reset */
 void gsm_reset(GSM * gsm, unsigned int delay)
 {
