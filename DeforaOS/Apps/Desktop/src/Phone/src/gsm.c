@@ -55,6 +55,33 @@ struct _GSM
 };
 
 
+/* variables */
+/* CME ERROR */
+static struct
+{
+	int code;
+	char const * error;
+} _gsm_cme_errors[] =
+{
+	{	0,	"Phone failure"					},
+	{	1,	"No connection to phone"			},
+	{	3,	"Operation not allowed"				},
+	{	4,	"Operation not supported"			},
+	{	10,	"SIM not inserted"				},
+	{	11,	"SIM PIN required"				},
+	{	12,	"SIM PUK required"				},
+	{	13,	"SIM failure"					},
+	{	14,	"SIM busy"					},
+	{	15,	"SIM wrong"					},
+	{	20,	"Memory full"					},
+	{	21,	"Invalid index"					},
+	{	30,	"No network service"				},
+	{	31,	"Network timeout"				},
+	{	32,	"Network not allowed - emergency calls only"	},
+	{	0,	NULL						}
+};
+
+
 /* prototypes */
 static int _gsm_parse(GSM * gsm);
 
@@ -375,17 +402,51 @@ static int _parse_init(GSM * gsm, char const * line)
 	return 0;
 }
 
+static int _command_cme_error(GSM * gsm, char const * line);
 static int _parse_command(GSM * gsm, char const * line)
 {
+	char const cme_error[] = "+CME ERROR: ";
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
 #endif
-	if(strcmp(line, "OK") == 0
-			|| strcmp(line, "ATE0") == 0)
+	if(strcmp(line, "OK") == 0 || strcmp(line, "ATE0") == 0)
 		return 0;
+	if(strncmp(line, cme_error, sizeof(cme_error) - 1) == 0)
+		return _command_cme_error(gsm, &line[sizeof(cme_error) - 1]);
 	/* FIXME implement */
 	fprintf(stderr, "%s%s%s", "phone: ", line, ": Unknown answer\n");
 	return 1;
+}
+
+static int _command_cme_error(GSM * gsm, char const * line)
+{
+	int code;
+	char * p;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
+#endif
+	code = strtol(line, &p, 10);
+	if(line[0] == '\0' || *p != '\0')
+	{
+		fprintf(stderr, "%s%s%s", "phone: ", line,
+				": Invalid CME error code\n");
+		return 1;
+	}
+	for(i = 0; _gsm_cme_errors[i].error != NULL; i++)
+		if(_gsm_cme_errors[i].code == code)
+			break;
+	if(_gsm_cme_errors[i].error == NULL)
+	{
+		fprintf(stderr, "%s%s%s", "phone: ", line,
+				": Unknown CME error code\n");
+		return 1;
+	}
+	/* FIXME implement callbacks */
+	printf("%s%s\n", "phone: ", _gsm_cme_errors[i].error);
+	return 0;
 }
 
 
