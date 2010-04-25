@@ -47,6 +47,7 @@ static GtkWidget * _new_dialpad(Phone * phone);
 Phone * phone_new(char const * device, unsigned int baudrate)
 {
 	Phone * phone;
+	PangoFontDescription * desc;
 	GtkWidget * window;
 	GtkWidget * vbox;
 	GtkWidget * widget;
@@ -56,6 +57,8 @@ Phone * phone_new(char const * device, unsigned int baudrate)
 #endif
 	if((phone = malloc(sizeof(*phone))) == NULL)
 		return NULL;
+	desc = pango_font_description_new();
+	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
@@ -71,12 +74,14 @@ Phone * phone_new(char const * device, unsigned int baudrate)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* entry */
 	phone->di_entry = gtk_entry_new();
+	gtk_widget_modify_font(phone->di_entry, desc);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->di_entry, FALSE, TRUE, 0);
 	/* dialpad */
 	widget = _new_dialpad(phone);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(window), vbox);
 	gtk_widget_show_all(window);
+	pango_font_description_free(desc);
 	return phone;
 }
 
