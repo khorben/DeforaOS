@@ -239,6 +239,9 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	gtk_widget_show_all(vbox);
 	mixer_show_class(mixer, AudioCoutputs);
 	gtk_widget_show(mixer->window);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() => %p\n", __func__, (void*)mixer);
+#endif
 	return mixer;
 }
 
