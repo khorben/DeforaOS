@@ -365,7 +365,8 @@ int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
 	int * q;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() fd=%d\n", __func__, mixer->fd);
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d\n", __func__, (void*)mixer,
+			mixer->fd);
 #endif
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
 	q = g_object_get_data(G_OBJECT(widget), "ord");
@@ -373,8 +374,8 @@ int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
 		return 1;
 	p->un.ord = *q;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() fd=%d ord=%d\n", __func__, mixer->fd,
-			p->un.ord);
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d ord=%d\n", __func__, (void*)mixer,
+			mixer->fd, p->un.ord);
 #endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
 		return 0;
@@ -393,7 +394,8 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	int i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%lf) fd=%d\n", __func__, value, mixer->fd);
+	fprintf(stderr, "DEBUG: %s(%p, %lf) fd=%d\n", __func__, (void*)mixer,
+			value, mixer->fd);
 #endif
 	b = g_object_get_data(G_OBJECT(widget), "bind");
 	p = g_object_get_data(G_OBJECT(widget), "ctrl");
@@ -407,8 +409,8 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 		for(i = 0; i < p->un.value.num_channels; i++)
 			p->un.value.level[i] = *level;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() fd=%d level=%u\n", __func__, mixer->fd,
-			*level);
+	fprintf(stderr, "DEBUG: %s(%p) fd=%d level=%u\n", __func__,
+			(void*)mixer, mixer->fd, *level);
 #endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
 		return 0;
