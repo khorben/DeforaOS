@@ -44,6 +44,7 @@ int gsm_modem_call_last(GSM * gsm);
 int gsm_modem_hangup(GSM * gsm);
 int gsm_modem_queue(GSM * gsm, char const * command);
 int gsm_modem_reset(GSM * gsm);
+int gsm_modem_send_dtmf(GSM * gsm, char const * sequence);
 int gsm_modem_set_echo(GSM * gsm, int echo);
 
 #endif /* !PHONE_GSM_H */

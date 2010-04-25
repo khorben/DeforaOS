@@ -31,6 +31,11 @@
 /* GSM */
 /* private */
 /* types */
+typedef enum _GSMStatus
+{
+	GS_INIT, GS_COMMAND
+} GSMStatus;
+
 struct _GSM
 {
 	char * device;
@@ -41,6 +46,7 @@ struct _GSM
 	size_t rd_buf_cnt;
 	char * wr_buf;
 	size_t wr_buf_cnt;
+	GSMStatus status;
 
 	/* internal */
 	guint source;
@@ -50,6 +56,8 @@ struct _GSM
 
 
 /* prototypes */
+static int _gsm_parse(GSM * gsm);
+
 static int _is_figure(int c);
 static int _is_number(char const * number);
 
@@ -81,6 +89,7 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 	gsm->rd_buf_cnt = 0;
 	gsm->wr_buf = NULL;
 	gsm->wr_buf_cnt = 0;
+	gsm->status = GS_INIT;
 	gsm->source = 0;
 	gsm->rd_io = 0;
 	gsm->wr_io = 0;
@@ -193,7 +202,7 @@ int gsm_modem_hangup(GSM * gsm)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	return gsm_modem_queue(gsm, "\r\nATH\r\n");
+	return gsm_modem_queue(gsm, "ATH\r\n");
 }
 
 
@@ -206,6 +215,8 @@ int gsm_modem_queue(GSM * gsm, char const * command)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, command);
 #endif
+	if(gsm->status != GS_COMMAND)
+		return 1; /* XXX queue for later instead */
 	if((p = realloc(gsm->wr_buf, gsm->wr_buf_cnt + len)) == NULL)
 		return phone_error(NULL, "malloc", 1);
 	gsm->wr_buf = p;
@@ -221,11 +232,39 @@ int gsm_modem_queue(GSM * gsm, char const * command)
 /* gsm_modem_reset */
 int gsm_modem_reset(GSM * gsm)
 {
+	int ret;
+	char const cmd[] = "ATZ\r\n";
+
 	/* TODO
 	 * - queue all commands in sequence
-	 * - prepend this one to the list (flush the others?)
-	 * - make sure the modem has settled before continuing */
-	return gsm_modem_queue(gsm, "\r\nATZ\r\n");
+	 * - prepend this one to the list (flush the others?) */
+	if(gsm->status == GS_INIT) /* XXX crude hack */
+	{
+		gsm->status = GS_COMMAND;
+		ret = gsm_modem_queue(gsm, cmd);
+		gsm->status = GS_INIT;
+		return ret;
+	}
+	return gsm_modem_queue(gsm, cmd);
+}
+
+
+/* gsm_modem_send_dtmf */
+int gsm_modem_send_dtmf(GSM * gsm, char const * sequence)
+{
+	int ret;
+	char const cmd[] = "AT+VTS=";
+	size_t len = sizeof(cmd) + strlen(sequence) + 2;
+	char * buf;
+
+	if(!_is_number(sequence)) /* XXX is '+' allowed? */
+		return 1;
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s%s\r\n", cmd, sequence);
+	ret = gsm_modem_queue(gsm, buf);
+	free(buf);
+	return ret;
 }
 
 
@@ -250,6 +289,7 @@ void gsm_reset(GSM * gsm, unsigned int delay)
 	free(gsm->wr_buf);
 	gsm->wr_buf = NULL;
 	gsm->wr_buf_cnt = 0;
+	gsm->status = GS_INIT;
 	if(gsm->source != 0)
 	{
 		g_source_remove(gsm->source);
@@ -280,6 +320,75 @@ void gsm_reset(GSM * gsm, unsigned int delay)
 
 /* private */
 /* functions */
+/* gsm_parse */
+static int _parse_init(GSM * gsm, char const * line);
+static int _parse_command(GSM * gsm, char const * line);
+
+static int _gsm_parse(GSM * gsm)
+{
+	int ret = 0;
+	size_t i = 0;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	while(i < gsm->rd_buf_cnt)
+	{
+		if(gsm->rd_buf[i++] != '\r')
+			continue;
+		if(i == gsm->rd_buf_cnt)
+			break;
+		if(gsm->rd_buf[i] != '\n')
+			continue;
+		gsm->rd_buf[i++ - 1] = '\0';
+		if(gsm->rd_buf[0] != '\0')
+			switch(gsm->status)
+			{
+				case GS_INIT:
+					ret |= _parse_init(gsm, gsm->rd_buf);
+					break;
+				case GS_COMMAND:
+					ret |= _parse_command(gsm, gsm->rd_buf);
+					break;
+			}
+		gsm->rd_buf_cnt -= i;
+		memmove(gsm->rd_buf, &gsm->rd_buf[i], gsm->rd_buf_cnt);
+		if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt)) != NULL)
+			gsm->rd_buf = p; /* we can ignore errors */
+		i = 0;
+	}
+	return ret;
+}
+
+static int _parse_init(GSM * gsm, char const * line)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
+#endif
+	if(strcmp(line, "OK") != 0)
+		return 0;
+	g_source_remove(gsm->source);
+	gsm->source = 0;
+	gsm->status = GS_COMMAND;
+	gsm_modem_set_echo(gsm, FALSE);
+	return 0;
+}
+
+static int _parse_command(GSM * gsm, char const * line)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
+#endif
+	if(strcmp(line, "OK") == 0
+			|| strcmp(line, "ATE0") == 0)
+		return 0;
+	/* FIXME implement */
+	fprintf(stderr, "%s%s%s", "phone: ", line, ": Unknown answer\n");
+	return 1;
+}
+
+
 /* is_figure */
 static int _is_figure(int c)
 {
@@ -306,6 +415,7 @@ static int _is_number(char const * number)
 /* callbacks */
 /* on_reset */
 static int _reset_do(GSM * gsm, int fd);
+static gboolean _reset_settle(gpointer data);
 
 static gboolean _on_reset(gpointer data)
 {
@@ -335,8 +445,8 @@ static gboolean _on_reset(gpointer data)
 				__func__);
 	g_io_channel_set_buffered(gsm->channel, FALSE);
 	gsm->rd_io = g_io_add_watch(gsm->channel, G_IO_IN, _on_watch_read, gsm);
-	gsm_modem_reset(gsm);
-	gsm_modem_set_echo(gsm, 0);
+	_reset_settle(gsm);
+	gsm->source = g_timeout_add(500, _reset_settle, gsm);
 	return FALSE;
 }
 
@@ -398,28 +508,40 @@ static int _reset_do(GSM * gsm, int fd)
 	return 0;
 }
 
+static gboolean _reset_settle(gpointer data)
+{
+	GSM * gsm = data;
+
+	gsm_modem_reset(gsm);
+	return TRUE;
+}
+
 
 /* on_watch_read */
 static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	GSM * gsm = data;
-	char buf[256];
 	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
+	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, condition);
 #endif
+	if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt + 256)) == NULL)
+		return FALSE; /* FIXME trouble here... */
+	gsm->rd_buf = p;
 	if(condition != G_IO_IN || source != gsm->channel)
 		return FALSE;
-	/* FIXME really implement */
-	status = g_io_channel_read_chars(source, buf, sizeof(buf), &cnt,
-			&error);
+	status = g_io_channel_read_chars(source, &gsm->rd_buf[gsm->rd_buf_cnt],
+			256, &cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, cnt);
+	fprintf(stderr, "%s", "DEBUG: modem: ");
+	fwrite(&gsm->rd_buf[gsm->rd_buf_cnt], 1, cnt, stderr);
 #endif
+	gsm->rd_buf_cnt += cnt;
 	switch(status)
 	{
 		case G_IO_STATUS_NORMAL:
@@ -434,11 +556,7 @@ static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 				gsm_reset(gsm, gsm->retry);
 			return FALSE;
 	}
-	/* FIXME parse and interpret the output */
-#ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: modem: ");
-	fwrite(buf, sizeof(*buf), cnt, stderr);
-#endif
+	_gsm_parse(gsm);
 	return TRUE;
 }
 
