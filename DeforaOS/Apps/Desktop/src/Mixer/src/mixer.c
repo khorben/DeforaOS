@@ -155,8 +155,8 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	gtk_window_set_icon_name(GTK_WINDOW(mixer->window), "gnome-mixer");
 #endif
 	gtk_window_set_title(GTK_WINDOW(mixer->window), PACKAGE);
-	g_signal_connect(G_OBJECT(mixer->window), "delete-event", G_CALLBACK(
-				on_closex), mixer);
+	g_signal_connect_swapped(G_OBJECT(mixer->window), "delete-event",
+			G_CALLBACK(on_closex), mixer);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, orientation == MO_VERTICAL
@@ -320,7 +320,7 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 	if((p = _mixer_get(mixer, dev)) == NULL)
 		return NULL;
 	hbox = gtk_hbox_new(TRUE, 0);
-	bind = gtk_toggle_button_new_with_label("Bind");
+	bind = gtk_toggle_button_new_with_label(_("Bind"));
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bind), TRUE);
 	for(i = 0; i < v->num_channels; i++)
 	{
@@ -444,6 +444,8 @@ void mixer_about(Mixer * mixer)
 void mixer_properties(Mixer * mixer)
 {
 	audio_device_t ad;
+	GtkSizeGroup * left;
+	GtkSizeGroup * right;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
@@ -463,25 +465,43 @@ void mixer_properties(Mixer * mixer)
 			GTK_WINDOW(mixer->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_ACCEPT, NULL);
+#if GTK_CHECK_VERSION(2, 14, 0)
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(mixer->properties));
+#else
+	vbox = GTK_DIALOG(mixer->properties)->vbox;
+#endif
+	left = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
+	right = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Name: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(ad.name);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Version: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(ad.version);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_label_new(_("Config: "));
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(left, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new(ad.config);
+	gtk_misc_set_alignment(GTK_MISC(widget), 0, 0);
+	gtk_size_group_add_widget(right, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 	gtk_widget_show_all(vbox);
 	g_signal_connect(mixer->properties, "response", G_CALLBACK(
 				gtk_widget_hide), NULL);

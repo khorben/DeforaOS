@@ -31,7 +31,7 @@
 /* functions */
 /* callbacks */
 /* on_closex */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+gboolean on_closex(gpointer data)
 {
 	gtk_main_quit();
 	return TRUE;
@@ -51,7 +51,7 @@ void on_file_properties(gpointer data)
 /* on_file_close */
 void on_file_close(gpointer data)
 {
-	on_closex(NULL, NULL, data);
+	on_closex(data);
 }
 
 
