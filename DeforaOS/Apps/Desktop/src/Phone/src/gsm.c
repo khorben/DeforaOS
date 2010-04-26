@@ -185,7 +185,7 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 			break;
 		default:
 			errno = EINVAL;
-			return phone_error(NULL, "baudrate", 0);
+			return phone_error(NULL, "baudrate", baudrate);
 	}
 	return baudrate;
 }
