@@ -84,7 +84,8 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	phone = phone_new(device, baudrate);
+	if((phone = phone_new(device, baudrate)) == NULL)
+		return 2;
 	_phone = phone;
 	sa.sa_handler = _main_sigusr1;
 	sigemptyset(&sa.sa_mask);

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <glib.h>
 #include "phone.h"
 #include "gsm.h"
@@ -183,7 +184,8 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 		case B460800:	case B921600:
 			break;
 		default:
-			return 0;
+			errno = EINVAL;
+			return phone_error(NULL, "baudrate", 0);
 	}
 	return baudrate;
 }
