@@ -93,6 +93,7 @@ static gboolean _new_idle(gpointer data)
 	phone_show_contacts(phone, FALSE);
 	phone_show_dialer(phone, TRUE);
 	phone_show_messages(phone, FALSE);
+	phone->source = 0;
 	return FALSE;
 }
 
