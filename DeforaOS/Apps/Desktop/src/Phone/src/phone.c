@@ -188,7 +188,7 @@ void phone_call(Phone * phone, char const * number)
 		number = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	if(number[0] == '\0')
 		number = NULL; /* call the last number dialled */
-	gsm_call(phone->gsm, number);
+	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
 }
 
 

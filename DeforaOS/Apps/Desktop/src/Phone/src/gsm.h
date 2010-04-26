@@ -21,6 +21,11 @@
 
 /* GSM */
 /* types */
+typedef enum _GSMCallType
+{
+	GSM_CALL_TYPE_DATA, GSM_CALL_TYPE_VOICE
+} GSMCallType;
+
 typedef struct _GSM GSM;
 
 
@@ -33,20 +38,8 @@ unsigned int gsm_get_retry(GSM * gsm);
 void gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */
-int gsm_call(GSM * gsm, char const * number);
+int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_hangup(GSM * gsm);
 void gsm_reset(GSM * gsm, unsigned int delay);
-
-/* modem */
-/* XXX considering making these private */
-int gsm_modem_call(GSM * gsm, char const * number);
-int gsm_modem_call_last(GSM * gsm);
-int gsm_modem_hangup(GSM * gsm);
-int gsm_modem_is_pin_needed(GSM * gsm);
-int gsm_modem_queue(GSM * gsm, char const * command);
-int gsm_modem_reset(GSM * gsm);
-int gsm_modem_send_dtmf(GSM * gsm, char const * sequence);
-int gsm_modem_set_echo(GSM * gsm, int echo);
-int gsm_modem_set_pin(GSM * gsm, int oldpin, int newpin);
 
 #endif /* !PHONE_GSM_H */

@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include <glib.h>
 #include "phone.h"
 #include "gsm.h"
@@ -31,31 +30,48 @@
 /* GSM */
 /* private */
 /* types */
+typedef enum _GSMPriority
+{
+	GSM_PRIORITY_LOW = 0, GSM_PRIORITY_NORMAL, GSM_PRIORITY_HIGH
+} GSMPriority;
+
+typedef struct _GSMCommand
+{
+		GSMPriority priority;
+		char * command;
+} GSMCommand;
+
 typedef enum _GSMStatus
 {
-	GS_INIT, GS_COMMAND
+	GSM_STATUS_INIT = 0, GSM_STATUS_COMMAND
 } GSMStatus;
 
 struct _GSM
 {
+	/* settings */
 	char * device;
 	unsigned int baudrate;
 	unsigned int retry;
+
+	/* queue */
+	GSList * queue;
+
+	/* internal */
+	GSMStatus status;
+	guint source;
 	GIOChannel * channel;
 	char * rd_buf;
 	size_t rd_buf_cnt;
+	guint rd_source;
 	char * wr_buf;
 	size_t wr_buf_cnt;
-	GSMStatus status;
-
-	/* internal */
-	guint source;
-	guint rd_io;
-	guint wr_io;
+	guint wr_source;
 };
 
 
 /* variables */
+/* ANSWERS */
+static char const * _gsm_answers[] = { "OK", "ERROR", "NO CARRIER", NULL };
 /* CME ERROR */
 static struct
 {
@@ -63,43 +79,66 @@ static struct
 	char const * error;
 } _gsm_cme_errors[] =
 {
-	{	0,	"Phone failure"					},
-	{	1,	"No connection to phone"			},
-	{	3,	"Operation not allowed"				},
-	{	4,	"Operation not supported"			},
-	{	10,	"SIM not inserted"				},
-	{	11,	"SIM PIN required"				},
-	{	12,	"SIM PUK required"				},
-	{	13,	"SIM failure"					},
-	{	14,	"SIM busy"					},
-	{	15,	"SIM wrong"					},
-	{	20,	"Memory full"					},
-	{	21,	"Invalid index"					},
-	{	30,	"No network service"				},
-	{	31,	"Network timeout"				},
-	{	32,	"Network not allowed - emergency calls only"	},
-	{	0,	NULL						}
+	{ 0,	"Phone failure"					},
+	{ 1,	"No connection to phone"			},
+	{ 3,	"Operation not allowed"				},
+	{ 4,	"Operation not supported"			},
+	{ 10,	"SIM not inserted"				},
+	{ 11,	"SIM PIN required"				},
+	{ 12,	"SIM PUK required"				},
+	{ 13,	"SIM failure"					},
+	{ 14,	"SIM busy"					},
+	{ 15,	"SIM wrong"					},
+	{ 20,	"Memory full"					},
+	{ 21,	"Invalid index"					},
+	{ 30,	"No network service"				},
+	{ 31,	"Network timeout"				},
+	{ 32,	"Network not allowed - emergency calls only"	},
+	{ 0,	NULL						}
 };
 
 
 /* prototypes */
-static int _gsm_parse(GSM * gsm);
-
 static int _is_figure(int c);
 static int _is_number(char const * number);
 
+/* commands */
+static GSMCommand * _gsm_command_new(GSMPriority priority,
+		char const * command);
+static void _gsm_command_delete(GSMCommand * command);
+
+/* modem commands */
+static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
+		char const * number);
+static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
+static int _gsm_modem_is_pin_needed(GSM * gsm);
+static int _gsm_modem_hangup(GSM * gsm);
+static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
+
+/* parsing */
+static int _gsm_parse(GSM * gsm);
+static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered);
+
+/* queue management */
+static int _gsm_queue_command(GSM * gsm, GSMPriority priority,
+		char const * command);
+static void _gsm_queue_flush(GSM * gsm);
+static void _gsm_queue_pop(GSM * gsm);
+static int _gsm_queue_push(GSM * gsm);
+
 /* callbacks */
 static gboolean _on_reset(gpointer data);
-
-static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
+static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
-static gboolean _on_watch_write(GIOChannel * source, GIOCondition condition,
+static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 
 
 /* public */
 /* functions */
 /* gsm_new */
+static unsigned int _new_baudrate(unsigned int baudrate);
+
 GSM * gsm_new(char const * device, unsigned int baudrate)
 {
 	GSM * gsm;
@@ -108,19 +147,24 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 		return NULL;
 	if((gsm = malloc(sizeof(*gsm))) == NULL)
 		return NULL;
+	/* settings */
 	gsm->device = strdup(device);
-	gsm->baudrate = baudrate;
+	gsm->baudrate = _new_baudrate(baudrate);
 	gsm->retry = 1000;
+	/* queue */
+	gsm->queue = NULL;
+	/* internal */
+	gsm->status = GSM_STATUS_INIT;
+	gsm->source = 0;
 	gsm->channel = NULL;
 	gsm->rd_buf = NULL;
 	gsm->rd_buf_cnt = 0;
+	gsm->rd_source = 0;
 	gsm->wr_buf = NULL;
 	gsm->wr_buf_cnt = 0;
-	gsm->status = GS_INIT;
-	gsm->source = 0;
-	gsm->rd_io = 0;
-	gsm->wr_io = 0;
-	if(gsm->device == NULL)
+	gsm->wr_source = 0;
+	/* error checking */
+	if(gsm->device == NULL || gsm->baudrate == 0)
 	{
 		gsm_delete(gsm);
 		return NULL;
@@ -129,24 +173,30 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 	return gsm;
 }
 
+static unsigned int _new_baudrate(unsigned int baudrate)
+{
+	switch(baudrate)
+	{
+		case B1200:	case B2400:	case B4800:	case B9600:
+		case B19200:	case B38400:	case B76800:
+		case B14400:	case B28800:	case B57600:	case B115200:
+		case B460800:	case B921600:
+			break;
+		default:
+			return 0;
+	}
+	return baudrate;
+}
+
 
 /* gsm_delete */
 void gsm_delete(GSM * gsm)
 {
+	if(gsm->rd_source != 0)
+		g_source_remove(gsm->rd_source);
+	gsm->rd_source = 0;
+	_gsm_queue_flush(gsm);
 	free(gsm->device);
-	if(gsm->channel != NULL)
-	{
-		g_io_channel_shutdown(gsm->channel, TRUE, NULL);
-		g_io_channel_unref(gsm->channel);
-	}
-	free(gsm->rd_buf);
-	free(gsm->wr_buf);
-	if(gsm->source != 0)
-		g_source_remove(gsm->source);
-	if(gsm->rd_io != 0)
-		g_source_remove(gsm->rd_io);
-	if(gsm->wr_io != 0)
-		g_source_remove(gsm->wr_io);
 	free(gsm);
 }
 
@@ -155,6 +205,9 @@ void gsm_delete(GSM * gsm)
 /* gsm_get_retry */
 unsigned int gsm_get_retry(GSM * gsm)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() => %u\n", __func__, gsm->retry);
+#endif
 	return gsm->retry;
 }
 
@@ -162,232 +215,34 @@ unsigned int gsm_get_retry(GSM * gsm)
 /* gsm_set_retry */
 void gsm_set_retry(GSM * gsm, unsigned int retry)
 {
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, retry);
+#endif
 	gsm->retry = retry;
 }
 
 
 /* useful */
 /* gsm_call */
-int gsm_call(GSM * gsm, char const * number)
+int gsm_call(GSM * gsm, GSMCallType calltype, char const * number)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, number);
-#endif
-	/* FIXME check current status before calling */
 	if(number == NULL)
-		return gsm_modem_call_last(gsm);
-	return gsm_modem_call(gsm, number);
+		return _gsm_modem_call_last(gsm, calltype);
+	return _gsm_modem_call(gsm, calltype, number);
 }
 
 
 /* gsm_hangup */
 int gsm_hangup(GSM * gsm)
 {
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	/* FIXME check current status before hanging up */
-	return gsm_modem_hangup(gsm);
-}
-
-
-/* gsm_modem_call */
-int gsm_modem_call(GSM * gsm, char const * number)
-{
-	int ret;
-	char const cmd[] = "ATD";
-	size_t len;
-	char * buf;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, number);
-#endif
-	if(!_is_number(number))
-		return 1;
-	len = sizeof(cmd) + strlen(number) + 3;
-	if((buf = malloc(len)) == NULL)
-		return phone_error(NULL, "malloc", 1);
-	snprintf(buf, len, "%s%s;\r\n", cmd, number);
-	ret = gsm_modem_queue(gsm, buf);
-	free(buf);
-	return ret;
-}
-
-
-/* gsm_modem_call_last */
-int gsm_modem_call_last(GSM * gsm)
-{
-	char const cmd[] = "ATDL;\r\n";
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	return gsm_modem_queue(gsm, cmd);
-}
-
-
-/* gsm_modem_hangup */
-int gsm_modem_hangup(GSM * gsm)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	return gsm_modem_queue(gsm, "ATH\r\n");
-}
-
-
-/* gsm_modem_is_pin_needed */
-int gsm_modem_is_pin_needed(GSM * gsm)
-{
-	char const cmd[] = "AT+CPIN?\r\n";
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	return gsm_modem_queue(gsm, cmd);
-}
-
-
-/* gsm_modem_queue */
-int gsm_modem_queue(GSM * gsm, char const * command)
-{
-	size_t len = strlen(command);
-	char * p;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, command);
-#endif
-	if(gsm->status != GS_COMMAND)
-		return 1; /* XXX queue for later instead */
-	if((p = realloc(gsm->wr_buf, gsm->wr_buf_cnt + len)) == NULL)
-		return phone_error(NULL, "malloc", 1);
-	gsm->wr_buf = p;
-	memcpy(&gsm->wr_buf[gsm->wr_buf_cnt], command, len);
-	gsm->wr_buf_cnt += len;
-	if(gsm->channel != NULL && gsm->wr_buf_cnt > 0 && gsm->wr_io == 0)
-		gsm->wr_io = g_io_add_watch(gsm->channel, G_IO_OUT,
-				_on_watch_write, gsm);
-	return 0;
-}
-
-
-/* gsm_modem_reset */
-int gsm_modem_reset(GSM * gsm)
-{
-	int ret;
-	char const cmd[] = "ATZ\r\n";
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	/* TODO
-	 * - queue all commands in sequence
-	 * - prepend this one to the list (flush the others?) */
-	if(gsm->status == GS_INIT) /* XXX crude hack */
-	{
-		gsm->status = GS_COMMAND;
-		ret = gsm_modem_queue(gsm, cmd);
-		gsm->status = GS_INIT;
-		return ret;
-	}
-	return gsm_modem_queue(gsm, cmd);
-}
-
-
-/* gsm_modem_send_dtmf */
-int gsm_modem_send_dtmf(GSM * gsm, char const * sequence)
-{
-	int ret;
-	char const cmd[] = "AT+VTS=";
-	size_t len = sizeof(cmd) + strlen(sequence) + 2;
-	char * buf;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, sequence);
-#endif
-	if(!_is_number(sequence)) /* XXX is '+' allowed? */
-		return 1;
-	if((buf = malloc(len)) == NULL)
-		return 1;
-	snprintf(buf, len, "%s%s\r\n", cmd, sequence);
-	ret = gsm_modem_queue(gsm, buf);
-	free(buf);
-	return ret;
-}
-
-
-/* gsm_modem_set_echo */
-int gsm_modem_set_echo(GSM * gsm, int echo)
-{
-	char cmd[] = "ATE?\r\n";
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%s)\n", __func__, (echo != 0) ? "TRUE"
-			: "FALSE");
-#endif
-	cmd[3] = (echo != 0) ? '1' : '0';
-	return gsm_modem_queue(gsm, cmd);
-}
-
-
-/* gsm_modem_set_pin */
-int gsm_modem_set_pin(GSM * gsm, int oldpin, int newpin)
-{
-	int ret;
-	char cmd[] = "AT+CPIN=";
-	size_t len = sizeof(cmd) + 11;
-	char * buf;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d, %d)\n", __func__, oldpin, newpin);
-#endif
-	if(oldpin < 999 || oldpin > 9999 || newpin < 999 || newpin > 9999)
-		return 1; /* XXX probably limiting */
-	if((buf = malloc(len)) == NULL)
-		return 1;
-	snprintf(buf, len, "%s%d,%d\r\n", cmd, oldpin, newpin);
-	ret = gsm_modem_queue(gsm, buf);
-	free(buf);
-	return ret;
+	return _gsm_modem_hangup(gsm);
 }
 
 
 /* gsm_reset */
 void gsm_reset(GSM * gsm, unsigned int delay)
 {
-	GError * error = NULL;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	free(gsm->rd_buf);
-	gsm->rd_buf = NULL;
-	gsm->rd_buf_cnt = 0;
-	free(gsm->wr_buf);
-	gsm->wr_buf = NULL;
-	gsm->wr_buf_cnt = 0;
-	gsm->status = GS_INIT;
-	if(gsm->source != 0)
-	{
-		g_source_remove(gsm->source);
-		gsm->source = 0;
-	}
-	if(gsm->rd_io != 0)
-	{
-		g_source_remove(gsm->rd_io);
-		gsm->rd_io = 0;
-	}
-	if(gsm->wr_io != 0)
-	{
-		g_source_remove(gsm->wr_io);
-		gsm->wr_io = 0;
-	}
-	if(gsm->channel != NULL)
-	{
-		g_io_channel_shutdown(gsm->channel, TRUE, &error);
-		g_io_channel_unref(gsm->channel);
-		gsm->channel = NULL;
-	}
+	_gsm_queue_flush(gsm);
 	if(delay > 0)
 		gsm->source = g_timeout_add(delay, _on_reset, gsm);
 	else
@@ -397,127 +252,6 @@ void gsm_reset(GSM * gsm, unsigned int delay)
 
 /* private */
 /* functions */
-/* gsm_parse */
-static int _parse_init(GSM * gsm, char const * line);
-static int _parse_command(GSM * gsm, char const * line);
-
-static int _gsm_parse(GSM * gsm)
-{
-	int ret = 0;
-	size_t i = 0;
-	char * p;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	while(i < gsm->rd_buf_cnt)
-	{
-		if(gsm->rd_buf[i++] != '\r')
-			continue;
-		if(i == gsm->rd_buf_cnt)
-			break;
-		if(gsm->rd_buf[i] != '\n')
-			continue;
-		gsm->rd_buf[i++ - 1] = '\0';
-		if(gsm->rd_buf[0] != '\0')
-			switch(gsm->status)
-			{
-				case GS_INIT:
-					ret |= _parse_init(gsm, gsm->rd_buf);
-					break;
-				case GS_COMMAND:
-					ret |= _parse_command(gsm, gsm->rd_buf);
-					break;
-			}
-		gsm->rd_buf_cnt -= i;
-		memmove(gsm->rd_buf, &gsm->rd_buf[i], gsm->rd_buf_cnt);
-		if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt)) != NULL)
-			gsm->rd_buf = p; /* we can ignore errors */
-		i = 0;
-	}
-	return ret;
-}
-
-static int _parse_init(GSM * gsm, char const * line)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
-#endif
-	if(strcmp(line, "OK") != 0)
-		return 0;
-	g_source_remove(gsm->source);
-	gsm->source = 0;
-	gsm->status = GS_COMMAND;
-	gsm_modem_set_echo(gsm, FALSE);
-	gsm_modem_is_pin_needed(gsm);
-	return 0;
-}
-
-static int _command_cme_error(GSM * gsm, char const * line);
-static int _command_cpin(GSM * gsm, char const * line);
-static int _parse_command(GSM * gsm, char const * line)
-{
-	char const cme_error[] = "+CME ERROR: ";
-	char const cpin[] = "+CPIN: ";
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
-#endif
-	if(strcmp(line, "OK") == 0)
-		return 0;
-	if(strncmp(line, "AT", 2) == 0) /* ignore echo */
-		return 0;
-	if(strncmp(line, cme_error, sizeof(cme_error) - 1) == 0)
-		return _command_cme_error(gsm, &line[sizeof(cme_error) - 1]);
-	if(strncmp(line, cpin, sizeof(cpin) - 1) == 0)
-		return _command_cpin(gsm, &line[sizeof(cpin) - 1]);
-	/* FIXME implement */
-	fprintf(stderr, "%s%s%s", "phone: ", line, ": Unknown answer\n");
-	return 1;
-}
-
-static int _command_cme_error(GSM * gsm, char const * line)
-{
-	int code;
-	char * p;
-	size_t i;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
-#endif
-	code = strtol(line, &p, 10);
-	if(line[0] == '\0' || *p != '\0')
-	{
-		fprintf(stderr, "%s%s%s", "phone: ", line,
-				": Invalid CME error code\n");
-		return 1;
-	}
-	for(i = 0; _gsm_cme_errors[i].error != NULL; i++)
-		if(_gsm_cme_errors[i].code == code)
-			break;
-	if(_gsm_cme_errors[i].error == NULL)
-	{
-		fprintf(stderr, "%s%s%s", "phone: ", line,
-				": Unknown CME error code\n");
-		return 1;
-	}
-	/* FIXME implement callbacks */
-	printf("%s%s\n", "phone: ", _gsm_cme_errors[i].error);
-	return 0;
-}
-
-static int _command_cpin(GSM * gsm, char const * line)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
-#endif
-	if(strcmp(line, "READY") == 0)
-		return 0;
-	/* FIXME implement */
-	return 1;
-}
-
-
 /* is_figure */
 static int _is_figure(int c)
 {
@@ -541,9 +275,372 @@ static int _is_number(char const * number)
 }
 
 
+/* commands */
+/* gsm_command_new */
+static GSMCommand * _gsm_command_new(GSMPriority priority,
+		char const * command)
+{
+	GSMCommand * gsmc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\")\n", __func__, priority, command);
+#endif
+	if((gsmc = malloc(sizeof(*gsmc))) == NULL)
+		return NULL; /* XXX report error */
+	gsmc->priority = priority;
+	gsmc->command = strdup(command);
+	/* check errors */
+	if(gsmc->command == NULL)
+	{
+		_gsm_command_delete(gsmc);
+		return NULL;
+	}
+	return gsmc;
+}
+
+
+/* gsm_command_delete */
+static void _gsm_command_delete(GSMCommand * gsmc)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	free(gsmc->command);
+	free(gsmc);
+}
+
+
+/* modem commands */
+/* gsm_modem_call */
+static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
+{
+	int ret;
+	char const cmd[] = "ATD";
+	char const * suffix = "";
+	size_t len;
+	char * buf;
+
+	switch(calltype)
+	{
+		case GSM_CALL_TYPE_DATA:
+			break;
+		case GSM_CALL_TYPE_VOICE:
+			suffix = ";";
+			break;
+		default:
+			return 1;
+	}
+	if(!_is_number(number))
+		return 1;
+	len = sizeof(cmd) + strlen(number) + 1;
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s%s%s", cmd, number, suffix);
+	ret = _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, buf);
+	free(buf);
+	return ret;
+}
+
+
+/* gsm_modem_call_last */
+static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
+{
+	char const cmddata[] = "ATDL";
+	char const cmdvoice[] = "ATDL;";
+	char const * cmd;
+
+	switch(calltype)
+	{
+		case GSM_CALL_TYPE_DATA:
+			cmd = cmddata;
+			break;
+		case GSM_CALL_TYPE_VOICE:
+			cmd = cmdvoice;
+			break;
+		default:
+			return 1;
+	}
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_hangup */
+static int _gsm_modem_hangup(GSM * gsm)
+{
+	char const cmd[] = "ATH";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_is_pin_needed */
+static int _gsm_modem_is_pin_needed(GSM * gsm)
+{
+	char const cmd[] = "AT+CPIN?";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_set_echo */
+static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
+{
+	char cmd[] = "ATE?";
+
+	cmd[3] = echo ? '1' : '0';
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_reset */
+static int _gsm_modem_reset(GSM * gsm)
+{
+	char const cmd[] = "ATZ";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_parse */
+static int _parse_do(GSM * gsm);
+
+static int _gsm_parse(GSM * gsm)
+{
+	int ret = 0;
+	size_t i = 0;
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() cnt=%zu\n", __func__, gsm->rd_buf_cnt);
+#endif
+	while(i < gsm->rd_buf_cnt)
+	{
+		if(gsm->rd_buf[i++] != '\r')
+			continue;
+		if(i == gsm->rd_buf_cnt)
+			break;
+		if(gsm->rd_buf[i] != '\n')
+			continue;
+		gsm->rd_buf[i++ - 1] = '\0';
+		if(gsm->rd_buf[0] != '\0')
+			ret |= _parse_do(gsm);
+		gsm->rd_buf_cnt -= i;
+		memmove(gsm->rd_buf, &gsm->rd_buf[i], gsm->rd_buf_cnt);
+		if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt)) != NULL)
+			gsm->rd_buf = p; /* we can ignore errors */
+		i = 0;
+	}
+	return ret;
+}
+
+static int _parse_do(GSM * gsm)
+{
+	gboolean answered = FALSE;
+
+	if(gsm->status == GSM_STATUS_INIT)
+	{
+		if(strcmp(gsm->rd_buf, "OK") != 0)
+			return 0;
+		g_source_remove(gsm->source);
+		gsm->source = 0;
+		gsm->status = GSM_STATUS_COMMAND;
+		_gsm_modem_set_echo(gsm, FALSE);
+		_gsm_modem_is_pin_needed(gsm);
+		_gsm_queue_push(gsm);
+	}
+	else if(gsm->status == GSM_STATUS_COMMAND)
+	{
+		_gsm_parse_line(gsm, gsm->rd_buf, &answered);
+		if(answered)
+		{
+			_gsm_queue_pop(gsm);
+			_gsm_queue_push(gsm);
+		}
+	}
+	return 0;
+}
+
+
+/* gsm_parse_line */
+static int _parse_line_cme_error(GSM * gsm, char const * error);
+static int _parse_line_cpin(GSM * gsm, char const * result);
+
+static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
+{
+	char const cme_error[] = "+CME ERROR: ";
+	char const cpin[] = "+CPIN: ";
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
+#endif
+	if(strncmp(line, "AT", 2) == 0) /* ignore echo (tighter check?) */
+		return 0;
+	for(i = 0; _gsm_answers[i] != NULL; i++)
+	{
+		if(strcmp(_gsm_answers[i], line) != 0)
+			continue;
+		if(answered != NULL)
+			*answered = TRUE;
+		return 0;
+	}
+	if(strncmp(line, cme_error, sizeof(cme_error) - 1) == 0)
+	{
+		if(answered != NULL)
+			*answered = TRUE;
+		return _parse_line_cme_error(gsm, &line[sizeof(cme_error) - 1]);
+	}
+	if(strncmp(line, cpin, sizeof(cpin) - 1) == 0)
+	{
+		if(answered != NULL)
+			*answered = TRUE;
+		return _parse_line_cpin(gsm, &line[sizeof(cpin) - 1]);
+	}
+	/* XXX implement more */
+	return 1;
+}
+
+static int _parse_line_cme_error(GSM * gsm, char const * error)
+{
+	int code;
+	char * p;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, error);
+#endif
+	code = strtol(error, &p, 10);
+	if(error[0] == '\0' || *p != '\0')
+		return 1;
+	for(i = 0; _gsm_cme_errors[i].error != NULL; i++)
+		if(_gsm_cme_errors[i].code == code)
+			break;
+	if(_gsm_cme_errors[i].error == NULL)
+		return 1;
+	/* FIXME implement callbacks */
+	return 0;
+}
+
+static int _parse_line_cpin(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(strcmp(result, "READY") == 0)
+		return 0;
+	/* FIXME implement callbacks */
+	return 1;
+}
+
+
+/* queue management */
+/* gsm_queue_command */
+static int _gsm_queue_command(GSM * gsm, GSMPriority priority,
+		char const * command)
+{
+	GSMCommand * gsmc;
+	GSList * l;
+	GSMCommand * p;
+
+	if(command == NULL || command[0] == '\0')
+		return 1;
+	if((gsmc = _gsm_command_new(priority, command)) == NULL)
+		return 1;
+	for(l = gsm->queue; l != NULL; l = l->next)
+	{
+		p = l->data;
+		if(p->priority < priority)
+			break;
+	}
+	if(l != NULL)
+		gsm->queue = g_slist_insert_before(gsm->queue, l, gsmc);
+	else if(gsm->queue == NULL && gsm->status == GSM_STATUS_COMMAND)
+	{
+		gsm->queue = g_slist_append(gsm->queue, gsmc);
+		_gsm_queue_push(gsm);
+	}
+	else if(gsm->status == GSM_STATUS_INIT && gsm->wr_source == 0)
+	{
+		gsm->queue = g_slist_append(gsm->queue, gsmc);
+		_gsm_queue_push(gsm);
+	}
+	else
+		gsm->queue = g_slist_append(gsm->queue, gsmc);
+	return 0;
+}
+
+
+/* _gsm_queue_flush */
+static void _gsm_queue_flush(GSM * gsm)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	for(; gsm->queue != NULL; gsm->queue = g_slist_delete_link(gsm->queue,
+				gsm->queue))
+		_gsm_command_delete(gsm->queue->data);
+	free(gsm->rd_buf);
+	gsm->rd_buf = NULL;
+	gsm->rd_buf_cnt = 0;
+	free(gsm->wr_buf);
+	gsm->wr_buf = NULL;
+	gsm->wr_buf_cnt = 0;
+	if(gsm->wr_source != 0)
+	{
+		g_source_remove(gsm->wr_source);
+		gsm->wr_source = 0;
+	}
+	if(gsm->source != 0)
+	{
+		g_source_remove(gsm->source);
+		gsm->source = 0;
+	}
+}
+
+
+/* gsm_queue_pop */
+static void _gsm_queue_pop(GSM * gsm)
+{
+	GSMCommand * gsmc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(gsm->queue == NULL)
+		return;
+	gsmc = gsm->queue->data;
+	_gsm_command_delete(gsmc);
+	gsm->queue = g_slist_remove(gsm->queue, gsmc);
+	if(gsm->status != GSM_STATUS_COMMAND)
+		return;
+}
+
+
+/* gsm_queue_push */
+static int _gsm_queue_push(GSM * gsm)
+{
+	GSMCommand * gsmc;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(gsm->queue == NULL)
+		return 0;
+	gsmc = gsm->queue->data;
+	gsm->wr_buf_cnt = strlen(gsmc->command) + 2;
+	if((gsm->wr_buf = malloc(gsm->wr_buf_cnt + 1)) == NULL)
+		return 1;
+	snprintf(gsm->wr_buf, gsm->wr_buf_cnt + 1, "%s%s", gsmc->command,
+			"\r\n");
+	gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
+			_on_watch_can_write, gsm);
+	return 0;
+}
+
+
 /* callbacks */
 /* on_reset */
-static int _reset_do(GSM * gsm, int fd);
+static int _reset_do(int fd);
 static gboolean _reset_settle(gpointer data);
 
 static gboolean _on_reset(gpointer data)
@@ -552,74 +649,45 @@ static gboolean _on_reset(gpointer data)
 	int fd;
 	GError * error = NULL;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	gsm->source = 0;
-	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0)
+	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
+			|| _reset_do(fd) != 0)
 	{
+		if(fd >= 0)
+			close(fd);
 		if(gsm->retry > 0)
 			gsm->source = g_timeout_add(gsm->retry, _on_reset, gsm);
-		return phone_error(NULL, "open", FALSE);
-	}
-	if(_reset_do(gsm, fd) != 0)
-	{
-		close(fd);
-		if(gsm->retry > 0)
-			gsm->source = g_timeout_add(gsm->retry, _on_reset, gsm);
-		return FALSE;
+		return phone_error(NULL, gsm->device, FALSE);
 	}
 	gsm->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(gsm->channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
-		/* XXX ugly */
-		fprintf(stderr, "ERROR: %s() g_io_channel_set_encoding\n",
-				__func__);
+		fprintf(stderr, "%s%s\n", "phone: ", error->message);
 	g_io_channel_set_buffered(gsm->channel, FALSE);
-	gsm->rd_io = g_io_add_watch(gsm->channel, G_IO_IN, _on_watch_read, gsm);
+	gsm->rd_source = g_io_add_watch(gsm->channel, G_IO_IN,
+			_on_watch_can_read, gsm);
 	gsm->source = g_timeout_add(500, _reset_settle, gsm);
 	_reset_settle(gsm);
 	return FALSE;
 }
 
-static int _reset_do(GSM * gsm, int fd)
+static int _reset_do(int fd)
 {
 	struct stat st;
 	int fl;
 	struct termios term;
 
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, fd);
-#endif
 	if(flock(fd, LOCK_EX | LOCK_NB) != 0)
-		return phone_error(NULL, "flock", 1);
+		return 1;
 	if(fstat(fd, &st) != 0)
-		return phone_error(NULL, "fstat", 1);
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d) mode 0%o\n", __func__, fd, st.st_mode);
-#endif
+		return 1;
 	if(st.st_mode & S_IFCHR) /* character special */
 	{
 		if(tcgetattr(fd, &term) != 0)
-			return phone_error(NULL, "tcgetattr", 1);
-		switch(gsm->baudrate) /* XXX rewrite this a nicer way */
-		{
-			case 4800:
-				term.c_cflag = B4800;
-				break;
-			case 9600:
-				term.c_cflag = B9600;
-				break;
-			case 19200:
-				term.c_cflag = B19200;
-				break;
-			case 38400:
-				term.c_cflag = B38400;
-				break;
-			case 115200:
-				term.c_cflag = B115200;
-				break;
-			default:
-				errno = EINVAL;
-				return phone_error(NULL, "baudrate", 1);
-		}
+			return 1;
 		term.c_cflag |= CS8;
 		term.c_cflag |= CREAD;
 		term.c_cflag |= CLOCAL;
@@ -629,11 +697,11 @@ static int _reset_do(GSM * gsm, int fd)
 		term.c_cc[VMIN] = 1;
 		term.c_cc[VTIME] = 0;
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
-			return phone_error(NULL, "tcsetattr", 1);
+			return 1;
 	}
 	fl = fcntl(fd, F_GETFL, 0);
 	if(fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
-		return phone_error(NULL, "fcntl", 1);
+		return 1;
 	return 0;
 }
 
@@ -641,13 +709,13 @@ static gboolean _reset_settle(gpointer data)
 {
 	GSM * gsm = data;
 
-	gsm_modem_reset(gsm);
+	_gsm_modem_reset(gsm);
 	return TRUE;
 }
 
 
-/* on_watch_read */
-static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
+/* on_watch_can_read */
+static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	GSM * gsm = data;
@@ -657,18 +725,18 @@ static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, condition);
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt + 256)) == NULL)
-		return FALSE; /* FIXME trouble here... */
-	gsm->rd_buf = p;
 	if(condition != G_IO_IN || source != gsm->channel)
-		return FALSE;
+		return FALSE; /* should not happen */
+	if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt + 256)) == NULL)
+		return TRUE; /* XXX retries immediately (delay?) */
+	gsm->rd_buf = p;
 	status = g_io_channel_read_chars(source, &gsm->rd_buf[gsm->rd_buf_cnt],
 			256, &cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: modem: ");
-	fwrite(&gsm->rd_buf[gsm->rd_buf_cnt], 1, cnt, stderr);
+	fprintf(stderr, "%s", "DEBUG: MODEM: ");
+	fwrite(&gsm->rd_buf[gsm->rd_buf_cnt], sizeof(*p), cnt, stderr);
 #endif
 	gsm->rd_buf_cnt += cnt;
 	switch(status)
@@ -676,13 +744,12 @@ static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			/* XXX report error, do not break */
-			fprintf(stderr, "%s%s\n", "phone: read: ",
-					error->message);
+			fprintf(stderr, "%s%s\n", "phone: ", error->message);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
 			if(gsm->retry > 0)
 				gsm_reset(gsm, gsm->retry);
+			gsm->rd_source = 0;
 			return FALSE;
 	}
 	_gsm_parse(gsm);
@@ -690,8 +757,8 @@ static gboolean _on_watch_read(GIOChannel * source, GIOCondition condition,
 }
 
 
-/* on_watch_write */
-static gboolean _on_watch_write(GIOChannel * source, GIOCondition condition,
+/* on_watch_can_write */
+static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	GSM * gsm = data;
@@ -701,43 +768,40 @@ static gboolean _on_watch_write(GIOChannel * source, GIOCondition condition,
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, condition);
+	fprintf(stderr, "DEBUG: %s() cnt=%zu\n", __func__, gsm->wr_buf_cnt);
 #endif
 	if(condition != G_IO_OUT || source != gsm->channel)
-		return FALSE;
+		return FALSE; /* should not happen */
 	status = g_io_channel_write_chars(source, gsm->wr_buf, gsm->wr_buf_cnt,
 			&cnt, &error);
 #ifdef DEBUG
-	fprintf(stderr, "%s", "DEBUG: phone: ");
-	fwrite(gsm->wr_buf, sizeof(*gsm->wr_buf), cnt, stderr);
+	fprintf(stderr, "%s", "DEBUG: PHONE: ");
+	fwrite(gsm->wr_buf, sizeof(*p), cnt, stderr);
 #endif
 	if(cnt != 0) /* some data may have been written anyway */
 	{
-		memmove(gsm->wr_buf, &gsm->wr_buf[cnt], gsm->wr_buf_cnt - cnt);
 		gsm->wr_buf_cnt -= cnt;
+		memmove(gsm->wr_buf, &gsm->wr_buf[cnt], gsm->wr_buf_cnt);
 		if((p = realloc(gsm->wr_buf, gsm->wr_buf_cnt)) != NULL)
-			gsm->wr_buf = p;
+			gsm->wr_buf = p; /* we can ignore errors */
 	}
 	switch(status)
 	{
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			/* XXX report error, do not break */
-#ifdef DEBUG
-			perror("phone: write");
-#else
-			fprintf(stderr, "%s%s\n", "phone: write: ",
-					error->message);
-#endif
+			fprintf(stderr, "phone: %s\n", error->message);
 		case G_IO_STATUS_EOF:
-		default: /* should not happen... */
+		default: /* should not happen */
 			if(gsm->retry > 0)
 				gsm_reset(gsm, gsm->retry);
+			gsm->wr_source = 0;
 			return FALSE;
 	}
 	if(gsm->wr_buf_cnt > 0) /* there is more data to write */
 		return TRUE;
-	gsm->wr_io = 0;
+	gsm->wr_source = 0;
+	if(gsm->status == GSM_STATUS_INIT)
+		_gsm_queue_pop(gsm);
 	return FALSE;
 }
