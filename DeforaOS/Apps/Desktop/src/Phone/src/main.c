@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 #include <locale.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -38,6 +39,10 @@
 #endif
 
 
+/* variables */
+static Phone * _phone;
+
+
 /* functions */
 /* usage */
 static int _usage(void)
@@ -48,6 +53,8 @@ static int _usage(void)
 
 
 /* main */
+static void _main_sigusr1(int signum);
+
 int main(int argc, char * argv[])
 {
 	int o;
@@ -55,6 +62,7 @@ int main(int argc, char * argv[])
 	char const * device = NULL;
 	unsigned int baudrate = 115200;
 	char * p;
+	struct sigaction sa;
 
 	setlocale(LC_ALL, "");
 	bindtextdomain(PACKAGE, LOCALEDIR);
@@ -77,7 +85,19 @@ int main(int argc, char * argv[])
 	if(optind != argc)
 		return _usage();
 	phone = phone_new(device, baudrate);
+	_phone = phone;
+	sa.sa_handler = _main_sigusr1;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	if(sigaction(SIGUSR1, &sa, NULL) == -1)
+		phone_error(NULL, "sigaction", 0);
 	gtk_main();
+	_phone = NULL;
 	phone_delete(phone);
 	return 0;
+}
+
+static void _main_sigusr1(int signum)
+{
+	phone_show_dialer(_phone, TRUE);
 }
