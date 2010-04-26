@@ -137,8 +137,8 @@ void phone_call(Phone * phone, char const * number)
 }
 
 
-/* phone_dialpad_append */
-void phone_dialpad_append(Phone * phone, char character)
+/* phone_dialer_append */
+void phone_dialer_append(Phone * phone, char character)
 {
 	char const * text;
 	size_t len;
@@ -206,6 +206,8 @@ void phone_show_dialer(Phone * phone, gboolean show)
 		/* entry */
 		phone->di_entry = gtk_entry_new();
 		gtk_widget_modify_font(phone->di_entry, phone->bold);
+		g_signal_connect(G_OBJECT(phone->di_entry), "activate",
+				G_CALLBACK(on_phone_dialer_call), phone);
 		gtk_box_pack_start(GTK_BOX(vbox), phone->di_entry, FALSE, TRUE,
 				0);
 		/* dialpad */
@@ -277,7 +279,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone)
 	gtk_button_set_image(GTK_BUTTON(button), image);
 	gtk_button_set_label(GTK_BUTTON(button), _("Call"));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
-			on_phone_dialpad_call), phone);
+			on_phone_dialer_call), phone);
 	gtk_table_attach(GTK_TABLE(table), button, 0, 3, 0, 1,
 			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 	button = gtk_button_new();
@@ -285,7 +287,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone)
 	gtk_button_set_image(GTK_BUTTON(button), image);
 	gtk_button_set_label(GTK_BUTTON(button), _("Hang up"));
 	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
-				on_phone_dialpad_hangup), phone);
+				on_phone_dialer_hangup), phone);
 	gtk_table_attach(GTK_TABLE(table), button, 3, 6, 0, 1,
 			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 	/* numbers */
@@ -300,7 +302,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone)
 		g_object_set_data(G_OBJECT(button), "character",
 				&numbers[i].character);
 		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					on_phone_dialpad_clicked), phone);
+					on_phone_dialer_clicked), phone);
 		gtk_table_attach(GTK_TABLE(table), button, (i % 3) * 2,
 				((i % 3) + 1) * 2, (i / 3) + 1, (i / 3) + 2,
 				GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL,

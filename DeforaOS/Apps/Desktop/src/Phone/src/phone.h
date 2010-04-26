@@ -43,6 +43,6 @@ void phone_show_messages(Phone * phone, gboolean show);
 void phone_call(Phone * phone, char const * number);
 void phone_hangup(Phone * phone);
 
-void phone_dialpad_append(Phone * phone, char character);
+void phone_dialer_append(Phone * phone, char character);
 
 #endif /* !PHONE_PHONE_H */

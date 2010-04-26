@@ -25,8 +25,8 @@
 gboolean on_phone_closex(gpointer data);
 
 /* dialpad */
-void on_phone_dialpad_call(gpointer data);
-void on_phone_dialpad_clicked(GtkWidget * widget, gpointer data);
-void on_phone_dialpad_hangup(gpointer data);
+void on_phone_dialer_call(gpointer data);
+void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
+void on_phone_dialer_hangup(gpointer data);
 
 #endif /* !PHONE_CALLBACKS_H */

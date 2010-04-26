@@ -30,9 +30,9 @@ gboolean on_phone_closex(gpointer data)
 }
 
 
-/* dialpad */
-/* on_phone_dialpad_call */
-void on_phone_dialpad_call(gpointer data)
+/* dialer */
+/* on_phone_dialer_call */
+void on_phone_dialer_call(gpointer data)
 {
 	Phone * phone = data;
 
@@ -40,19 +40,19 @@ void on_phone_dialpad_call(gpointer data)
 }
 
 
-/* on_phone_dialpad_clicked */
-void on_phone_dialpad_clicked(GtkWidget * widget, gpointer data)
+/* on_phone_dialer_clicked */
+void on_phone_dialer_clicked(GtkWidget * widget, gpointer data)
 {
 	Phone * phone = data;
 	char const * character;
 
 	character = g_object_get_data(G_OBJECT(widget), "character");
-	phone_dialpad_append(phone, *character);
+	phone_dialer_append(phone, *character);
 }
 
 
-/* on_phone_dialpad_hangup */
-void on_phone_dialpad_hangup(gpointer data)
+/* on_phone_dialer_hangup */
+void on_phone_dialer_hangup(gpointer data)
 {
 	Phone * phone = data;
 
