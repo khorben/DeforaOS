@@ -24,7 +24,10 @@
 /* callbacks */
 gboolean on_phone_closex(gpointer data);
 
-/* dialpad */
+/* contacts */
+void on_phone_contacts_show(gpointer data);
+
+/* dialer */
 void on_phone_dialer_call(gpointer data);
 void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);

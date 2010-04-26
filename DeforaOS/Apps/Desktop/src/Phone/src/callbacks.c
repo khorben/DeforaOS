@@ -30,6 +30,15 @@ gboolean on_phone_closex(gpointer data)
 }
 
 
+/* contacts */
+void on_phone_contacts_show(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_show_contacts(phone, TRUE);
+}
+
+
 /* dialer */
 /* on_phone_dialer_call */
 void on_phone_dialer_call(gpointer data)

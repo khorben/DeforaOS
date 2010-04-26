@@ -193,6 +193,7 @@ void phone_show_contacts(Phone * phone, gboolean show)
 void phone_show_dialer(Phone * phone, gboolean show)
 {
 	GtkWidget * vbox;
+	GtkWidget * hbox;
 	GtkWidget * widget;
 
 	if(phone->di_window == NULL)
@@ -204,11 +205,23 @@ void phone_show_dialer(Phone * phone, gboolean show)
 				phone->di_window);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* entry */
+		hbox = gtk_hbox_new(FALSE, 0);
 		phone->di_entry = gtk_entry_new();
 		gtk_widget_modify_font(phone->di_entry, phone->bold);
-		g_signal_connect(G_OBJECT(phone->di_entry), "activate",
+		g_signal_connect_swapped(G_OBJECT(phone->di_entry), "activate",
 				G_CALLBACK(on_phone_dialer_call), phone);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->di_entry, FALSE, TRUE,
+		gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE,
+				0);
+		widget = gtk_button_new();
+		gtk_button_set_image(GTK_BUTTON(widget),
+				gtk_image_new_from_icon_name(
+					"stock_addressbook",
+					GTK_ICON_SIZE_BUTTON));
+		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(on_phone_contacts_show), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE,
 				0);
 		/* dialpad */
 		widget = _phone_create_dialpad(phone);
