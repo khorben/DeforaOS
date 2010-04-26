@@ -34,127 +34,72 @@ struct _Phone
 	GSM * gsm;
 
 	/* widgets */
-	/* dialpad */
+	PangoFontDescription * bold;
+
+	/* contacts */
+	GtkWidget * co_window;
+
+	/* dialer */
+	GtkWidget * di_window;
 	GtkWidget * di_entry;
+
+	/* messages */
+	GtkWidget * me_window;
 };
+
+
+/* prototypes */
+static GtkWidget * _phone_create_dialpad(Phone * phone);
 
 
 /* public */
 /* functions */
 /* phone_new */
-static GtkWidget * _new_dialpad(Phone * phone);
+static gboolean _new_idle(gpointer data);
 
 Phone * phone_new(char const * device, unsigned int baudrate)
 {
 	Phone * phone;
-	PangoFontDescription * desc;
-	GtkWidget * window;
-	GtkWidget * vbox;
-	GtkWidget * widget;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, device, baudrate);
 #endif
 	if((phone = malloc(sizeof(*phone))) == NULL)
 		return NULL;
-	desc = pango_font_description_new();
-	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
+	/* widgets */
+	phone->bold = pango_font_description_new();
+	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
+	phone->di_window = NULL;
+	phone->co_window = NULL;
+	phone->me_window = NULL;
+	/* check errors */
 	if(phone->gsm == NULL)
 	{
 		phone_delete(phone);
 		return NULL;
 	}
-	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), "Phone");
-	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
-				on_phone_closex), phone);
-	vbox = gtk_vbox_new(FALSE, 0);
-	/* entry */
-	phone->di_entry = gtk_entry_new();
-	gtk_widget_modify_font(phone->di_entry, desc);
-	gtk_box_pack_start(GTK_BOX(vbox), phone->di_entry, FALSE, TRUE, 0);
-	/* dialpad */
-	widget = _new_dialpad(phone);
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(window), vbox);
-	gtk_widget_show_all(window);
-	pango_font_description_free(desc);
+	g_idle_add(_new_idle, phone);
 	return phone;
 }
 
-static GtkWidget * _new_dialpad(Phone * phone)
+static gboolean _new_idle(gpointer data)
 {
-	static struct
-	{
-		char character;
-		char const * label;
-	} numbers[12] = {
-		{ '1', "<b>_1</b>\n" },
-		{ '2', "<b>_2</b>\nABC" },
-		{ '3', "<b>_3</b>\nDEF" },
-		{ '4', "<b>_4</b>\nGHI" },
-		{ '5', "<b>_5</b>\nJKL" },
-		{ '6', "<b>_6</b>\nMNO" },
-		{ '7', "<b>_7</b>\nPQRS" },
-		{ '8', "<b>_8</b>\nTUV" },
-		{ '9', "<b>_9</b>\nWXYZ" },
-		{ '*', "<b>_*</b>\n+" },
-		{ '0', "<b>_0</b>\n" },
-		{ '#', "<b>_#</b>\n" }
-	};
-	GtkWidget * table;
-	GtkWidget * button;
-	GtkWidget * image;
-	GtkWidget * label;
-	int i;
+	Phone * phone = data;
 
-	table = gtk_table_new(5, 6, TRUE);
-	/* call */
-	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name("call-start",
-			GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(button), image);
-	gtk_button_set_label(GTK_BUTTON(button), _("Call"));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
-			on_phone_dialpad_call), phone);
-	gtk_table_attach(GTK_TABLE(table), button, 0, 3, 0, 1,
-			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
-	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name("call-stop", GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(button), image);
-	gtk_button_set_label(GTK_BUTTON(button), _("Hang up"));
-	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
-				on_phone_dialpad_hangup), phone);
-	gtk_table_attach(GTK_TABLE(table), button, 3, 6, 0, 1,
-			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
-	/* numbers */
-	for(i = 0; i < 12; i++)
-	{
-		button = gtk_button_new();
-		label = gtk_label_new(NULL);
-		gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
-		gtk_label_set_markup_with_mnemonic(GTK_LABEL(label),
-				numbers[i].label);
-		gtk_container_add(GTK_CONTAINER(button), label);
-		g_object_set_data(G_OBJECT(button), "character",
-				&numbers[i].character);
-		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
-					on_phone_dialpad_clicked), phone);
-		gtk_table_attach(GTK_TABLE(table), button, (i % 3) * 2,
-				((i % 3) + 1) * 2, (i / 3) + 1, (i / 3) + 2,
-				GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL,
-				2, 2);
-	}
-	return table;
+	phone_show_contacts(phone, FALSE);
+	phone_show_dialer(phone, TRUE);
+	phone_show_messages(phone, FALSE);
+	return FALSE;
 }
 
 
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
+	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
 		gsm_delete(phone->gsm);
 	free(phone);
@@ -221,4 +166,145 @@ void phone_hangup(Phone * phone)
 {
 	gsm_hangup(phone->gsm);
 	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
+}
+
+
+/* phone_show_contacts */
+void phone_show_contacts(Phone * phone, gboolean show)
+{
+	if(phone->co_window == NULL)
+	{
+		phone->co_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(phone->co_window),
+				_("Contacts"));
+		g_signal_connect_swapped(G_OBJECT(phone->co_window),
+				"delete-event", G_CALLBACK(on_phone_closex),
+				phone->co_window);
+		/* FIXME implement */
+	}
+	if(show)
+		gtk_widget_show(phone->co_window); /* XXX force focus? */
+	else
+		gtk_widget_hide(phone->co_window);
+}
+
+
+/* phone_show_dialer */
+void phone_show_dialer(Phone * phone, gboolean show)
+{
+	GtkWidget * vbox;
+	GtkWidget * widget;
+
+	if(phone->di_window == NULL)
+	{
+		phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
+		g_signal_connect_swapped(G_OBJECT(phone->di_window),
+				"delete-event", G_CALLBACK(on_phone_closex),
+				phone->di_window);
+		vbox = gtk_vbox_new(FALSE, 0);
+		/* entry */
+		phone->di_entry = gtk_entry_new();
+		gtk_widget_modify_font(phone->di_entry, phone->bold);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->di_entry, FALSE, TRUE,
+				0);
+		/* dialpad */
+		widget = _phone_create_dialpad(phone);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(phone->di_window), vbox);
+		gtk_widget_show_all(vbox);
+	}
+	if(show)
+		gtk_widget_show(phone->di_window); /* XXX force focus? */
+	else
+		gtk_widget_hide(phone->di_window);
+}
+
+
+/* phone_show_messages */
+void phone_show_messages(Phone * phone, gboolean show)
+{
+	if(phone->me_window == NULL)
+	{
+		phone->me_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(phone->me_window),
+				_("Messages"));
+		g_signal_connect_swapped(G_OBJECT(phone->me_window),
+				"delete-event", G_CALLBACK(on_phone_closex),
+				phone->me_window);
+		/* FIXME implement */
+	}
+	if(show)
+		gtk_widget_show(phone->me_window); /* XXX force focus? */
+	else
+		gtk_widget_hide(phone->me_window);
+}
+
+
+/* private */
+/* phone_create_dialpad */
+static GtkWidget * _phone_create_dialpad(Phone * phone)
+{
+	static struct
+	{
+		char character;
+		char const * label;
+	} numbers[12] = {
+		{ '1', "<b>_1</b>\n" },
+		{ '2', "<b>_2</b>\nABC" },
+		{ '3', "<b>_3</b>\nDEF" },
+		{ '4', "<b>_4</b>\nGHI" },
+		{ '5', "<b>_5</b>\nJKL" },
+		{ '6', "<b>_6</b>\nMNO" },
+		{ '7', "<b>_7</b>\nPQRS" },
+		{ '8', "<b>_8</b>\nTUV" },
+		{ '9', "<b>_9</b>\nWXYZ" },
+		{ '*', "<b>_*</b>\n+" },
+		{ '0', "<b>_0</b>\n" },
+		{ '#', "<b>_#</b>\n" }
+	};
+	GtkWidget * table;
+	GtkWidget * button;
+	GtkWidget * image;
+	GtkWidget * label;
+	int i;
+
+	table = gtk_table_new(5, 6, TRUE);
+	/* call */
+	button = gtk_button_new();
+	image = gtk_image_new_from_icon_name("call-start",
+			GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(button), image);
+	gtk_button_set_label(GTK_BUTTON(button), _("Call"));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
+			on_phone_dialpad_call), phone);
+	gtk_table_attach(GTK_TABLE(table), button, 0, 3, 0, 1,
+			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
+	button = gtk_button_new();
+	image = gtk_image_new_from_icon_name("call-stop", GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(button), image);
+	gtk_button_set_label(GTK_BUTTON(button), _("Hang up"));
+	g_signal_connect_swapped(G_OBJECT(button), "clicked", G_CALLBACK(
+				on_phone_dialpad_hangup), phone);
+	gtk_table_attach(GTK_TABLE(table), button, 3, 6, 0, 1,
+			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
+	/* numbers */
+	for(i = 0; i < 12; i++)
+	{
+		button = gtk_button_new();
+		label = gtk_label_new(NULL);
+		gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
+		gtk_label_set_markup_with_mnemonic(GTK_LABEL(label),
+				numbers[i].label);
+		gtk_container_add(GTK_CONTAINER(button), label);
+		g_object_set_data(G_OBJECT(button), "character",
+				&numbers[i].character);
+		g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(
+					on_phone_dialpad_clicked), phone);
+		gtk_table_attach(GTK_TABLE(table), button, (i % 3) * 2,
+				((i % 3) + 1) * 2, (i / 3) + 1, (i / 3) + 2,
+				GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL,
+				2, 2);
+	}
+	return table;
 }

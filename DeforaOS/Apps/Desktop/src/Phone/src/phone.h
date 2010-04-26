@@ -18,6 +18,8 @@
 #ifndef PHONE_PHONE_H
 # define PHONE_PHONE_H
 
+# include <glib.h>
+
 
 /* Phone */
 /* types */
@@ -32,6 +34,12 @@ void phone_delete(Phone * phone);
 /* useful */
 int phone_error(Phone * phone, char const * message, int ret);
 
+/* interface */
+void phone_show_contacts(Phone * phone, gboolean show);
+void phone_show_dialer(Phone * phone, gboolean show);
+void phone_show_messages(Phone * phone, gboolean show);
+
+/* dialer */
 void phone_call(Phone * phone, char const * number);
 void phone_hangup(Phone * phone);
 

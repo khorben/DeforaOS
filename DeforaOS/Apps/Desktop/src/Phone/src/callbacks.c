@@ -23,9 +23,10 @@
 /* on_phone_closex */
 gboolean on_phone_closex(gpointer data)
 {
-	/* FIXME is that all? */
-	gtk_main_quit();
-	return FALSE;
+	GtkWidget * widget = data;
+
+	gtk_widget_hide(widget);
+	return TRUE;
 }
 
 
