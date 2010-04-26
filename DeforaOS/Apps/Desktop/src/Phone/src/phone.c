@@ -32,6 +32,7 @@
 struct _Phone
 {
 	GSM * gsm;
+	guint source;
 
 	/* widgets */
 	PangoFontDescription * bold;
@@ -69,6 +70,7 @@ Phone * phone_new(char const * device, unsigned int baudrate)
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
+	phone->source = g_idle_add(_new_idle, phone);
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
@@ -81,7 +83,6 @@ Phone * phone_new(char const * device, unsigned int baudrate)
 		phone_delete(phone);
 		return NULL;
 	}
-	g_idle_add(_new_idle, phone);
 	return phone;
 }
 
@@ -99,6 +100,8 @@ static gboolean _new_idle(gpointer data)
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
+	if(phone->source != 0)
+		g_source_remove(phone->source);
 	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
 		gsm_delete(phone->gsm);

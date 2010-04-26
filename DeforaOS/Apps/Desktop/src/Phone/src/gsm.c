@@ -112,6 +112,7 @@ static void _gsm_command_delete(GSMCommand * command);
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
 static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
+static int _gsm_modem_get_signal_quality(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
@@ -241,6 +242,13 @@ int gsm_hangup(GSM * gsm)
 }
 
 
+/* gsm_report_signal_quality */
+int gsm_report_signal_quality(GSM * gsm)
+{
+	return _gsm_modem_get_signal_quality(gsm);
+}
+
+
 /* gsm_reset */
 void gsm_reset(GSM * gsm, unsigned int delay)
 {
@@ -338,7 +346,7 @@ static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
 	if((buf = malloc(len)) == NULL)
 		return 1;
 	snprintf(buf, len, "%s%s%s", cmd, number, suffix);
-	ret = _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, buf);
+	ret = _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, buf);
 	free(buf);
 	return ret;
 }
@@ -362,7 +370,16 @@ static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
 		default:
 			return 1;
 	}
-	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
+}
+
+
+/* gsm_modem_get_signal_quality */
+static int _gsm_modem_get_signal_quality(GSM * gsm)
+{
+	char const cmd[] = "AT+CSQ";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
 }
 
 
@@ -371,7 +388,7 @@ static int _gsm_modem_hangup(GSM * gsm)
 {
 	char const cmd[] = "ATH";
 
-	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
 }
 
 
@@ -390,7 +407,7 @@ static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 	char cmd[] = "ATE?";
 
 	cmd[3] = echo ? '1' : '0';
-	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
 }
 
 
@@ -399,7 +416,7 @@ static int _gsm_modem_reset(GSM * gsm)
 {
 	char const cmd[] = "ATZ";
 
-	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
 }
 
 

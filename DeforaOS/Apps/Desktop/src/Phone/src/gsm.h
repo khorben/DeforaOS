@@ -40,6 +40,7 @@ void gsm_set_retry(GSM * gsm, unsigned int retry);
 /* useful */
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_hangup(GSM * gsm);
+int gsm_report_signal_quality(GSM * gsm);
 void gsm_reset(GSM * gsm, unsigned int delay);
 
 #endif /* !PHONE_GSM_H */
