@@ -632,8 +632,9 @@ static int _gsm_queue_push(GSM * gsm)
 		return 1;
 	snprintf(gsm->wr_buf, gsm->wr_buf_cnt + 1, "%s%s", gsmc->command,
 			"\r\n");
-	gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
-			_on_watch_can_write, gsm);
+	if(gsm->channel != NULL && gsm->wr_source == 0)
+		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
+				_on_watch_can_write, gsm);
 	return 0;
 }
 
@@ -669,6 +670,9 @@ static gboolean _on_reset(gpointer data)
 	g_io_channel_set_buffered(gsm->channel, FALSE);
 	gsm->rd_source = g_io_add_watch(gsm->channel, G_IO_IN,
 			_on_watch_can_read, gsm);
+	if(gsm->wr_buf_cnt > 0)
+		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
+				_on_watch_can_write, gsm);
 	gsm->source = g_timeout_add(500, _reset_settle, gsm);
 	_reset_settle(gsm);
 	return FALSE;
