@@ -54,6 +54,7 @@ static int _usage(void)
 
 /* main */
 static void _main_sigusr1(int signum);
+static void _main_sigusr2(int signum);
 
 int main(int argc, char * argv[])
 {
@@ -98,6 +99,9 @@ int main(int argc, char * argv[])
 	sa.sa_flags = 0;
 	if(sigaction(SIGUSR1, &sa, NULL) == -1)
 		phone_error(NULL, "sigaction", 0);
+	sa.sa_handler = _main_sigusr2;
+	if(sigaction(SIGUSR2, &sa, NULL) == -1)
+		phone_error(NULL, "sigaction", 0);
 	gtk_main();
 	_phone = NULL;
 	phone_delete(phone);
@@ -107,4 +111,9 @@ int main(int argc, char * argv[])
 static void _main_sigusr1(int signum)
 {
 	phone_show_dialer(_phone, TRUE);
+}
+
+static void _main_sigusr2(int signum)
+{
+	phone_show_messages(_phone, TRUE);
 }
