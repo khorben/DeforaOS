@@ -82,6 +82,7 @@ typedef union _GSMEvent
 	/* GSM_EVENT_TYPE_OPERATOR */
 	struct
 	{
+		GSMEventType type;
 		unsigned int mode;
 		unsigned int format;
 		char const * operator;

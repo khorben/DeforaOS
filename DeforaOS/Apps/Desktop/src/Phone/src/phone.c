@@ -35,6 +35,9 @@ struct _Phone
 	guint ui_source;
 	guint si_source;
 
+	gdouble signal_level;
+	char * operator;
+
 	/* widgets */
 	PangoFontDescription * bold;
 
@@ -102,6 +105,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->gsm = gsm_new(device, baudrate);
 	phone->ui_source = g_idle_add(_new_idle, phone);
 	phone->si_source = 0;
+	phone->signal_level = 0.0 / 0.0;
+	phone->operator = NULL;
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
@@ -147,6 +152,7 @@ void phone_delete(Phone * phone)
 		g_source_remove(phone->ui_source);
 	if(phone->si_source != 0)
 		g_source_remove(phone->si_source);
+	free(phone->operator);
 	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
 		gsm_delete(phone->gsm);
@@ -603,13 +609,26 @@ static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 }
 
 
+/* phone_set_operator */
+static void _phone_set_operator(Phone * phone, char const * operator)
+{
+	free(phone->operator);
+	phone->operator = (operator != NULL) ? strdup(operator) : NULL;
+	/* XXX ugly */
+	_phone_set_signal_level(phone, phone->signal_level);
+}
+
+
 /* phone_set_signal_level */
 static void _phone_set_signal_level(Phone * phone, gdouble level)
 {
 	char buf[32];
 
+	phone->signal_level = level;
 	if(level >= 0.0 && level <= 1.0)
-		snprintf(buf, sizeof(buf), "%.0lf/10", level * 10);
+		snprintf(buf, sizeof(buf), "%.0lf/10 %s", level * 10,
+				(phone->operator != NULL) ? phone->operator
+				: "");
 	else
 	{
 		level = 0.0;
@@ -673,7 +692,7 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->message_list.end);
 			break;
 		case GSM_EVENT_TYPE_OPERATOR:
-			/* FIXME implement */
+			_phone_set_operator(phone, event->operator.operator);
 			break;
 		case GSM_EVENT_TYPE_REGISTRATION:
 			/* FIXME really implement, use an enumerated type */
