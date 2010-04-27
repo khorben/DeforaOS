@@ -32,7 +32,8 @@
 struct _Phone
 {
 	GSM * gsm;
-	guint source;
+	guint ui_source;
+	guint si_source;
 
 	/* widgets */
 	PangoFontDescription * bold;
@@ -46,14 +47,21 @@ struct _Phone
 
 	/* messages */
 	GtkWidget * me_window;
+
+	/* systray */
+	GtkWidget * sy_level;
 };
 
 
 /* prototypes */
 static GtkWidget * _phone_create_dialpad(Phone * phone);
-static void _phone_gsm_event(GSMEvent * event, gpointer data);
 
+static void _phone_set_signal_level(Phone * phone, gdouble level);
 static void _phone_set_status(Phone * phone, GSMStatus status);
+
+/* callbacks */
+static void _phone_gsm_event(GSMEvent * event, gpointer data);
+static gboolean _phone_timeout_signal_level(gpointer data);
 
 
 /* public */
@@ -73,7 +81,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
-	phone->source = g_idle_add(_new_idle, phone);
+	phone->ui_source = g_idle_add(_new_idle, phone);
+	phone->si_source = 0;
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
@@ -99,7 +108,7 @@ static gboolean _new_idle(gpointer data)
 	phone_show_contacts(phone, FALSE);
 	phone_show_dialer(phone, TRUE);
 	phone_show_messages(phone, FALSE);
-	phone->source = 0;
+	phone->ui_source = 0;
 	return FALSE;
 }
 
@@ -107,8 +116,10 @@ static gboolean _new_idle(gpointer data)
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
-	if(phone->source != 0)
-		g_source_remove(phone->source);
+	if(phone->ui_source != 0)
+		g_source_remove(phone->ui_source);
+	if(phone->si_source != 0)
+		g_source_remove(phone->si_source);
 	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
 		gsm_delete(phone->gsm);
@@ -222,6 +233,19 @@ void phone_show_dialer(Phone * phone, gboolean show)
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->di_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		/* XXX signal level (place in systray) */
+		hbox = gtk_hbox_new(FALSE, 0);
+		widget = gtk_label_new(_("Signal:"));
+		gtk_widget_modify_font(widget, phone->bold);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
+		phone->sy_level = gtk_progress_bar_new();
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(phone->sy_level),
+				0.0);
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(phone->sy_level),
+				" ");
+		gtk_box_pack_start(GTK_BOX(hbox), phone->sy_level, TRUE, TRUE,
+				2);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 		/* entry */
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->di_entry = gtk_entry_new();
@@ -343,6 +367,45 @@ static GtkWidget * _phone_create_dialpad(Phone * phone)
 }
 
 
+/* phone_set_signal_level */
+static void _phone_set_signal_level(Phone * phone, gdouble level)
+{
+	char buf[32];
+
+	if(level >= 0.0 && level <= 1.0)
+		snprintf(buf, sizeof(buf), "%.0lf/10", level * 10);
+	else
+	{
+		level = 0.0;
+		snprintf(buf, sizeof(buf), "%s", _("Unknown"));
+	}
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(phone->sy_level), level);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(phone->sy_level), buf);
+}
+
+
+/* phone_set_status */
+static void _phone_set_status(Phone * phone, GSMStatus status)
+{
+	switch(status)
+	{
+		case GSM_STATUS_INITIALIZED:
+			gsm_report_contacts(phone->gsm);
+			gsm_report_messages(phone->gsm);
+			if(phone->si_source == 0)
+				phone->si_source = g_timeout_add(2000,
+						_phone_timeout_signal_level,
+						phone);
+			/* FIXME trigger registration */
+			break;
+		case GSM_STATUS_REGISTERED:
+			/* FIXME implement */
+			break;
+	}
+}
+
+
+/* callbacks */
 /* phone_gsm_event */
 static void _phone_gsm_event(GSMEvent * event, gpointer data)
 {
@@ -356,6 +419,10 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_ERROR:
 			phone_error(phone, event->error.message, 0);
 			break;
+		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
+			_phone_set_signal_level(phone,
+					event->signal_level.level);
+			break;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
 			break;
@@ -363,18 +430,11 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 }
 
 
-/* phone_set_status */
-static void _phone_set_status(Phone * phone, GSMStatus status)
+/* phone_timeout_signal_level */
+static gboolean _phone_timeout_signal_level(gpointer data)
 {
-	switch(status)
-	{
-		case GSM_STATUS_INITIALIZED:
-			gsm_report_contacts(phone->gsm);
-			gsm_report_messages(phone->gsm);
-			/* FIXME trigger registration */
-			break;
-		case GSM_STATUS_REGISTERED:
-			/* FIXME implement */
-			break;
-	}
+	Phone * phone = data;
+
+	gsm_report_signal_level(phone->gsm);
+	return TRUE;
 }

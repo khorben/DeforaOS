@@ -28,7 +28,9 @@ typedef enum _GSMCallType
 
 typedef enum _GSMEventType
 {
-	GSM_EVENT_TYPE_ERROR, GSM_EVENT_TYPE_STATUS
+	GSM_EVENT_TYPE_ERROR = 0,
+	GSM_EVENT_TYPE_SIGNAL_LEVEL,
+	GSM_EVENT_TYPE_STATUS
 } GSMEventType;
 
 typedef enum _GSMError
@@ -51,6 +53,12 @@ typedef union _GSMEvent
 		GSMError error;
 		char const * message;
 	} error;
+
+	struct
+	{
+		GSMEventType type;
+		gdouble level;
+	} signal_level;
 
 	struct
 	{
@@ -79,7 +87,7 @@ int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_hangup(GSM * gsm);
 int gsm_report_contacts(GSM * gsm);
 int gsm_report_messages(GSM * gsm);
-int gsm_report_signal_quality(GSM * gsm);
+int gsm_report_signal_level(GSM * gsm);
 void gsm_reset(GSM * gsm, unsigned int delay);
 
 #endif /* !PHONE_GSM_H */
