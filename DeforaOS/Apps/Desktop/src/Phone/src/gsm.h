@@ -139,6 +139,7 @@ int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 int gsm_hangup(GSM * gsm);
+int gsm_is_pin_needed(GSM * gsm);
 int gsm_report_registration(GSM * gsm, int report);
 void gsm_reset(GSM * gsm, unsigned int delay);
 

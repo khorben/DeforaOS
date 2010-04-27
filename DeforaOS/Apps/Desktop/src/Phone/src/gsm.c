@@ -371,6 +371,13 @@ int gsm_hangup(GSM * gsm)
 }
 
 
+/* gsm_is_pin_needed */
+int gsm_is_pin_needed(GSM * gsm)
+{
+	return _gsm_modem_is_pin_needed(gsm);
+}
+
+
 /* gsm_report_registration */
 int gsm_report_registration(GSM * gsm, int report)
 {
@@ -760,7 +767,6 @@ static int _parse_do(GSM * gsm)
 		gsm->source = 0;
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
-		_gsm_modem_is_pin_needed(gsm);
 		_gsm_event(gsm, GSM_EVENT_TYPE_STATUS, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
