@@ -73,6 +73,7 @@ struct _GSM
 /* variables */
 /* ANSWERS */
 static char const * _gsm_answers[] = { "OK", "ERROR", "NO CARRIER", NULL };
+
 /* CME ERROR */
 static struct
 {
@@ -112,6 +113,7 @@ static void _gsm_command_delete(GSMCommand * command);
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
 static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
+static int _gsm_modem_get_contacts(GSM * gsm);
 static int _gsm_modem_get_signal_quality(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
@@ -242,6 +244,13 @@ int gsm_hangup(GSM * gsm)
 }
 
 
+/* gsm_report_contacts */
+int gsm_report_contacts(GSM * gsm)
+{
+	return _gsm_modem_get_contacts(gsm);
+}
+
+
 /* gsm_report_signal_quality */
 int gsm_report_signal_quality(GSM * gsm)
 {
@@ -342,7 +351,7 @@ static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
 	}
 	if(!_is_number(number))
 		return 1;
-	len = sizeof(cmd) + strlen(number) + 1;
+	len = sizeof(cmd) + strlen(number) + strlen(suffix);
 	if((buf = malloc(len)) == NULL)
 		return 1;
 	snprintf(buf, len, "%s%s%s", cmd, number, suffix);
@@ -371,6 +380,15 @@ static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
 			return 1;
 	}
 	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
+}
+
+
+/* gsm_modem_get_contacts */
+static int _gsm_modem_get_contacts(GSM * gsm)
+{
+	char const cmd[] = "AT+CPBR=?";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
 }
 
 
