@@ -40,7 +40,7 @@ void phone_delete(Phone * phone);
 int phone_error(Phone * phone, char const * message, int ret);
 
 /* interface */
-void phone_show_code(Phone * phone, gboolean show);
+void phone_show_code(Phone * phone, gboolean show, ...);
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
@@ -48,8 +48,7 @@ void phone_show_messages(Phone * phone, gboolean show);
 /* code */
 void phone_code_append(Phone * phone, char character);
 void phone_code_clear(Phone * phone);
-void phone_code_enter(Phone * phone, PhoneCode code);
-void phone_code_validate(Phone * phone);
+void phone_code_enter(Phone * phone);
 
 /* contacts */
 void phone_contact_add(Phone * phone, unsigned int index, char const * name,

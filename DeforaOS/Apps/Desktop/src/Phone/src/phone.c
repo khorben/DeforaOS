@@ -15,6 +15,7 @@
 
 
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -227,23 +228,19 @@ void phone_code_append(Phone * phone, char character)
 
 
 /* phone_code_enter */
-void phone_code_enter(Phone * phone, PhoneCode code)
+void phone_code_enter(Phone * phone)
 {
-	phone->en_code = code;
-	if(phone->en_window == NULL)
-		phone_show_code(phone, FALSE);
-	switch(code)
+	char const * p;
+
+	if(phone->en_code < 0)
+		return;
+	switch(phone->en_code)
 	{
 		case PHONE_CODE_SIM_PIN:
-			gtk_window_set_title(GTK_WINDOW(phone->en_window),
-					_("Enter SIM code"));
+			p = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
+			gsm_enter_pin(phone->gsm, p);
 			break;
-#ifndef DEBUG
-		default: /* should not happen */
-			return;
-#endif
 	}
-	gtk_widget_show(phone->en_window);
 }
 
 
@@ -252,25 +249,6 @@ void phone_code_enter(Phone * phone, PhoneCode code)
 void phone_code_clear(Phone * phone)
 {
 	gtk_entry_set_text(GTK_ENTRY(phone->en_entry), "");
-}
-
-
-/* phone_code_validate */
-void phone_code_validate(Phone * phone)
-{
-	PhoneCode code;
-	char const * p;
-
-	if(phone->en_code < 0)
-		return;
-	code = phone->en_code;
-	switch(code)
-	{
-		case PHONE_CODE_SIM_PIN:
-			p = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
-			gsm_enter_pin(phone->gsm, p);
-			break;
-	}
 }
 
 
@@ -324,12 +302,23 @@ void phone_hangup(Phone * phone)
 
 
 /* phone_show_code */
-void phone_show_code(Phone * phone, gboolean show)
+void phone_show_code(Phone * phone, gboolean show, ...)
 {
+	va_list ap;
+	PhoneCode code;
 	GtkWidget * vbox;
 	GtkWidget * hbox; /* XXX create in phone_create_dialpad? */
 	GtkWidget * widget;
 
+	if(show == FALSE)
+	{
+		if(phone->en_window != NULL)
+			gtk_widget_hide(phone->en_window);
+		return;
+	}
+	va_start(ap, show);
+	code = va_arg(ap, PhoneCode);
+	va_end(ap);
 	if(phone->en_window == NULL)
 	{
 		phone->en_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -364,10 +353,17 @@ void phone_show_code(Phone * phone, gboolean show)
 		gtk_container_add(GTK_CONTAINER(phone->en_window), vbox);
 		gtk_widget_show_all(vbox);
 	}
-	if(show && phone->en_code >= 0)
-		gtk_widget_show(phone->en_window); /* XXX force focus? */
-	else
-		gtk_widget_hide(phone->en_window);
+	switch(code)
+	{
+		case PHONE_CODE_SIM_PIN:
+			gtk_window_set_title(GTK_WINDOW(phone->en_window),
+					_("Enter SIM code"));
+			break;
+	}
+	if(phone->en_code != code)
+		phone_code_clear(phone);
+	phone->en_code = code;
+	gtk_widget_show(phone->en_window); /* XXX force focus? */
 }
 
 
@@ -682,7 +678,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 	{
 		case GSM_EVENT_TYPE_ERROR:
 			if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED)
-				phone_code_enter(phone, PHONE_CODE_SIM_PIN);
+				phone_show_code(phone, TRUE,
+						PHONE_CODE_SIM_PIN);
 			else
 				phone_error(phone, event->error.message, 0);
 			break;

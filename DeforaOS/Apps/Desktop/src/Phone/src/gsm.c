@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -56,7 +56,7 @@ void on_phone_code_enter(gpointer data)
 	Phone * phone = data;
 
 	phone_show_code(phone, FALSE);
-	phone_code_validate(phone);
+	phone_code_enter(phone);
 }
 
 
