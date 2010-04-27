@@ -32,6 +32,8 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_CONTACT,
 	GSM_EVENT_TYPE_CONTACT_LIST,
 	GSM_EVENT_TYPE_MESSAGE_LIST,
+	GSM_EVENT_TYPE_OPERATOR,
+	GSM_EVENT_TYPE_REGISTRATION,
 	GSM_EVENT_TYPE_SIGNAL_LEVEL,
 	GSM_EVENT_TYPE_STATUS
 } GSMEventType;
@@ -77,6 +79,25 @@ typedef union _GSMEvent
 		unsigned int end;
 	} contact_list, message_list;
 
+	/* GSM_EVENT_TYPE_OPERATOR */
+	struct
+	{
+		unsigned int mode;
+		unsigned int format;
+		char const * operator;
+		unsigned int lai;
+	} operator;
+
+	/* GSM_EVENT_TYPE_REGISTRATION */
+	struct
+	{
+		GSMEventType type;
+		unsigned int n;
+		unsigned int stat;
+		unsigned int cell;
+		unsigned int area;
+	} registration;
+
 	/* GSM_EVENT_TYPE_SIGNAL_LEVEL */
 	struct
 	{
@@ -114,8 +135,10 @@ int gsm_fetch_contact_list(GSM * gsm);
 int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_message_list(GSM * gsm);
 int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end);
+int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 int gsm_hangup(GSM * gsm);
+int gsm_report_registration(GSM * gsm, int report);
 void gsm_reset(GSM * gsm, unsigned int delay);
 
 #endif /* !PHONE_GSM_H */

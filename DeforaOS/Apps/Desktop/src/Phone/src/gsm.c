@@ -141,9 +141,12 @@ static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
 static int _gsm_modem_get_message_list(GSM * gsm);
 static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
 		unsigned int end);
+static int _gsm_modem_get_operator(GSM * gsm);
+static int _gsm_modem_get_registration(GSM * gsm);
 static int _gsm_modem_get_signal_level(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
+static int _gsm_modem_report_registration(GSM * gsm, gboolean report);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
 
 /* parsing */
@@ -160,8 +163,10 @@ static int _gsm_queue_push(GSM * gsm);
 /* triggers */
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
+static int _gsm_trigger_cops(GSM * gsm, char const * result);
 static int _gsm_trigger_cpbr(GSM * gsm, char const * result);
 static int _gsm_trigger_cpin(GSM * gsm, char const * result);
+static int _gsm_trigger_creg(GSM * gsm, char const * result);
 static int _gsm_trigger_csq(GSM * gsm, char const * result);
 
 /* triggers */
@@ -171,8 +176,10 @@ static GSMTrigger _gsm_triggers[] =
 	{ trigger, sizeof(trigger) - 1, _gsm_trigger_ ## callback }
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
+	GSM_TRIGGER("+COPS: ",		cops),
 	GSM_TRIGGER("+CPBR: ",		cpbr),
 	GSM_TRIGGER("+CPIN: ",		cpin),
+	GSM_TRIGGER("+CREG: ",		creg),
 	GSM_TRIGGER("+CSQ: ",		csq),
 	{ NULL, 0, NULL }
 };
@@ -336,6 +343,20 @@ int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end)
 }
 
 
+/* gsm_fetch_operator */
+int gsm_fetch_operator(GSM * gsm)
+{
+	return _gsm_modem_get_operator(gsm);
+}
+
+
+/* gsm_fetch_registration */
+int gsm_fetch_registration(GSM * gsm)
+{
+	return _gsm_modem_get_registration(gsm);
+}
+
+
 /* gsm_fetch_signal_level */
 int gsm_fetch_signal_level(GSM * gsm)
 {
@@ -347,6 +368,18 @@ int gsm_fetch_signal_level(GSM * gsm)
 int gsm_hangup(GSM * gsm)
 {
 	return _gsm_modem_hangup(gsm);
+}
+
+
+/* gsm_report_registration */
+int gsm_report_registration(GSM * gsm, int report)
+{
+	int ret;
+
+	ret = _gsm_modem_report_registration(gsm, (report != 0) ? TRUE
+			: FALSE);
+	ret |= gsm_fetch_registration(gsm);
+	return ret;
 }
 
 
@@ -438,7 +471,9 @@ static void _gsm_command_delete(GSMCommand * gsmc)
 static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 {
 	va_list ap;
+	GSMEvent * event = &gsm->event;
 
+	/* FIXME this function is completely superfluous */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, type);
 #endif
@@ -447,29 +482,39 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 	switch(type)
 	{
 		case GSM_EVENT_TYPE_ERROR:
-			gsm->event.error.error = va_arg(ap, GSMError);
-			gsm->event.error.message = va_arg(ap, char *);
+			event->error.error = va_arg(ap, GSMError);
+			event->error.message = va_arg(ap, char *);
 			break;
 		case GSM_EVENT_TYPE_CONTACT:
-			gsm->event.contact.index = va_arg(ap, unsigned int);
-			gsm->event.contact.name = va_arg(ap, char *);
-			gsm->event.contact.number = va_arg(ap, char *);
+			event->contact.index = va_arg(ap, unsigned int);
+			event->contact.name = va_arg(ap, char *);
+			event->contact.number = va_arg(ap, char *);
 			break;
 		case GSM_EVENT_TYPE_CONTACT_LIST:
-			gsm->event.contact_list.start = va_arg(ap,
-					unsigned int);
-			gsm->event.contact_list.end = va_arg(ap, unsigned int);
+			event->contact_list.start = va_arg(ap, unsigned int);
+			event->contact_list.end = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
-			gsm->event.message_list.start = va_arg(ap,
-					unsigned int);
-			gsm->event.message_list.end = va_arg(ap, unsigned int);
+			event->message_list.start = va_arg(ap, unsigned int);
+			event->message_list.end = va_arg(ap, unsigned int);
+			break;
+		case GSM_EVENT_TYPE_OPERATOR:
+			event->operator.mode = va_arg(ap, unsigned int);
+			event->operator.format = va_arg(ap, unsigned int);
+			event->operator.operator = va_arg(ap, char *);
+			event->operator.lai = va_arg(ap, unsigned int);
+			break;
+		case GSM_EVENT_TYPE_REGISTRATION:
+			event->registration.n = va_arg(ap, unsigned int);
+			event->registration.stat = va_arg(ap, unsigned int);
+			event->registration.area = va_arg(ap, unsigned int);
+			event->registration.cell = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
-			gsm->event.signal_level.level = va_arg(ap, gdouble);
+			event->signal_level.level = va_arg(ap, gdouble);
 			break;
 		case GSM_EVENT_TYPE_STATUS:
-			gsm->event.status.status = va_arg(ap, GSMStatus);
+			event->status.status = va_arg(ap, GSMStatus);
 			break;
 		default:
 			va_end(ap);
@@ -560,7 +605,7 @@ static int _gsm_modem_get_contact_list(GSM * gsm)
 {
 	char const cmd[] = "AT+CPBR=?";
 
-	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }
 
 
@@ -581,7 +626,7 @@ static int _gsm_modem_get_message_list(GSM * gsm)
 {
 	char const cmd[] = "AT+CMGL=?";
 
-	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }
 
 
@@ -594,6 +639,24 @@ static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
 	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CMGR=", start, end);
 
 	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
+}
+
+
+/* gsm_modem_get_operator */
+static int _gsm_modem_get_operator(GSM * gsm)
+{
+	char const cmd[] = "AT+COPS?";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_get_registration */
+static int _gsm_modem_get_registration(GSM * gsm)
+{
+	char const cmd[] = "AT+CREG?";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }
 
 
@@ -624,13 +687,13 @@ static int _gsm_modem_is_pin_needed(GSM * gsm)
 }
 
 
-/* gsm_modem_set_echo */
-static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
+/* gsm_modem_report_registration */
+static int _gsm_modem_report_registration(GSM * gsm, gboolean report)
 {
-	char cmd[] = "ATE?";
+	char cmd[] = "AT+CREG=X";
 
-	cmd[3] = echo ? '1' : '0';
-	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
+	cmd[8] = report ? '1' : '0';
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }
 
 
@@ -639,6 +702,16 @@ static int _gsm_modem_reset(GSM * gsm)
 {
 	char const cmd[] = "ATZ";
 
+	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
+}
+
+
+/* gsm_modem_set_echo */
+static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
+{
+	char cmd[] = "ATE?";
+
+	cmd[3] = echo ? '1' : '0';
 	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd);
 }
 
@@ -867,9 +940,8 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result)
 	if(_gsm_cme_errors[i].error == NULL)
 		return 1;
 	/* FIXME implement errors */
-	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN,
+	return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN,
 			_(_gsm_cme_errors[i].error));
-	return 0;
 }
 
 
@@ -884,8 +956,26 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 #endif
 	if(sscanf(result, "(%u-%u)", &start, &end) != 2)
 		return 1;
-	_gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_LIST, start, end);
-	return 0;
+	return _gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_LIST, start, end);
+}
+
+
+/* gsm_trigger_cops */
+static int _gsm_trigger_cops(GSM * gsm, char const * result)
+{
+	unsigned int mode;
+	unsigned int format;
+	char operator[32];
+	unsigned int lai;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u,%u,\"%31[^\"]\",%u", &mode, &format, operator,
+				&lai) == 4)
+		return _gsm_event(gsm, GSM_EVENT_TYPE_OPERATOR, mode, format,
+				operator, lai);
+	return 1;
 }
 
 
@@ -926,12 +1016,34 @@ static int _gsm_trigger_cpin(GSM * gsm, char const * result)
 	if(strcmp(result, "READY") == 0)
 		return 0;
 	if(strcmp(result, "SIM PIN") == 0)
-		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
+		return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_SIM_PIN_REQUIRED, NULL);
 	else
 		/* XXX nicer message */
-		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, result);
-	return 0;
+		return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR, result);
+}
+
+
+/* gsm_trigger_creg */
+static int _gsm_trigger_creg(GSM * gsm, char const * result)
+{
+	unsigned int n;
+	unsigned int stat;
+	unsigned int area;
+	unsigned int cell;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u,%u,%X,%X", &n, &stat, &area, &cell) == 4)
+		return _gsm_event(gsm, GSM_EVENT_TYPE_REGISTRATION, n, stat,
+				area, cell);
+	area = 0;
+	cell = 0;
+	if(sscanf(result, "%u,%u", &n, &stat) == 2)
+		return _gsm_event(gsm, GSM_EVENT_TYPE_REGISTRATION, n, stat,
+				area, cell);
+	return 1;
 }
 
 
@@ -952,8 +1064,7 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 		level /= level;
 	else
 		level /= 32;
-	_gsm_event(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL, level);
-	return 0;
+	return _gsm_event(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL, level);
 }
 
 

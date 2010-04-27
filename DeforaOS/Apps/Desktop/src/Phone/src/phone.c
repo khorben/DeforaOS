@@ -58,6 +58,7 @@ struct _Phone
 	GtkWidget * me_view;
 
 	/* systray */
+	GtkStatusIcon * sy_icon;
 	GtkWidget * sy_level;
 };
 
@@ -112,6 +113,9 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->di_window = NULL;
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
+	phone->sy_icon = gtk_status_icon_new_from_icon_name(
+			"stock_landline-phone");
+	gtk_status_icon_set_title(phone->sy_icon, _("Phone"));
 	/* check errors */
 	if(phone->gsm == NULL)
 	{
@@ -622,17 +626,17 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 	switch(status)
 	{
 		case GSM_STATUS_INITIALIZED:
-			/* XXX check SIM etc first */
+			/* XXX check SIM PIN etc first */
 			gsm_fetch_contact_list(phone->gsm);
 			gsm_fetch_message_list(phone->gsm);
+			gsm_report_registration(phone->gsm, 1);
+			break;
+		case GSM_STATUS_REGISTERED:
 			if(phone->si_source == 0)
 				phone->si_source = g_timeout_add(2000,
 						_phone_timeout_signal_level,
 						phone);
-			/* FIXME trigger registration */
-			break;
-		case GSM_STATUS_REGISTERED:
-			/* FIXME implement */
+			gsm_fetch_operator(phone->gsm);
 			break;
 	}
 }
@@ -667,6 +671,15 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_contacts(phone, event->message_list.start,
 					event->message_list.end);
+			break;
+		case GSM_EVENT_TYPE_OPERATOR:
+			/* FIXME implement */
+			break;
+		case GSM_EVENT_TYPE_REGISTRATION:
+			/* FIXME really implement, use an enumerated type */
+			if(event->registration.stat == 1
+					|| event->registration.stat == 5)
+				_phone_set_status(phone, GSM_STATUS_REGISTERED);
 			break;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			_phone_set_signal_level(phone,
