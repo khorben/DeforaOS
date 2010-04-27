@@ -47,7 +47,7 @@ static Phone * _phone;
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: phone -d device\n"), stderr);
+	fputs(_("Usage: phone -b baudrate -d device -r retry\n"), stderr);
 	return 1;
 }
 
@@ -61,6 +61,7 @@ int main(int argc, char * argv[])
 	Phone * phone;
 	char const * device = NULL;
 	unsigned int baudrate = 115200;
+	int retry = -1;
 	char * p;
 	struct sigaction sa;
 
@@ -68,23 +69,28 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "b:d:")) != -1)
+	while((o = getopt(argc, argv, "b:d:r:")) != -1)
 		switch(o)
 		{
 			case 'b':
-				baudrate = strtol(optarg, &p, 10);
+				baudrate = strtoul(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
 				break;
 			case 'd':
 				device = optarg;
 				break;
+			case 'r':
+				retry = strtol(optarg, &p, 10);
+				if(optarg[0] == '\0' || *p != '\0')
+					return _usage();
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	if((phone = phone_new(device, baudrate)) == NULL)
+	if((phone = phone_new(device, baudrate, retry)) == NULL)
 		return 2;
 	_phone = phone;
 	sa.sa_handler = _main_sigusr1;

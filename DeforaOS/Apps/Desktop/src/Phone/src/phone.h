@@ -27,7 +27,7 @@ typedef struct _Phone Phone;
 
 
 /* functions */
-Phone * phone_new(char const * device, unsigned int baudrate);
+Phone * phone_new(char const * device, unsigned int baudrate, int retry);
 void phone_delete(Phone * phone);
 
 

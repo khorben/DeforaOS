@@ -58,7 +58,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone);
 /* phone_new */
 static gboolean _new_idle(gpointer data);
 
-Phone * phone_new(char const * device, unsigned int baudrate)
+Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 {
 	Phone * phone;
 
@@ -70,6 +70,8 @@ Phone * phone_new(char const * device, unsigned int baudrate)
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
+	if(retry >= 0 && phone->gsm != NULL)
+		gsm_set_retry(phone->gsm, retry);
 	phone->source = g_idle_add(_new_idle, phone);
 	/* widgets */
 	phone->bold = pango_font_description_new();
