@@ -129,6 +129,7 @@ static void _gsm_command_delete(GSMCommand * command);
 
 /* events */
 static int _gsm_event(GSM * gsm, GSMEventType type, ...);
+static int _gsm_event_send(GSM * gsm, GSMEventType type);
 
 /* modem commands */
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
@@ -480,11 +481,9 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 	va_list ap;
 	GSMEvent * event = &gsm->event;
 
-	/* FIXME this function is completely superfluous */
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, type);
 #endif
-	gsm->event.type = type;
 	va_start(ap, type);
 	switch(type)
 	{
@@ -528,8 +527,15 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			return 1;
 	}
 	va_end(ap);
-	gsm->callback(&gsm->event, gsm->callback_data);
-	return 0;
+	return _gsm_event_send(gsm, type);
+}
+
+
+/* gsm_event_send */
+static int _gsm_event_send(GSM * gsm, GSMEventType type)
+{
+	gsm->event.type = type;
+	return gsm->callback(&gsm->event, gsm->callback_data);
 }
 
 
@@ -954,33 +960,29 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result)
 /* gsm_trigger_cmgl */
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 {
-	unsigned int start;
-	unsigned int end;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	if(sscanf(result, "(%u-%u)", &start, &end) != 2)
+	if(sscanf(result, "(%u-%u)", &gsm->event.message_list.start,
+				&gsm->event.message_list.end) != 2)
 		return 1;
-	return _gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_LIST, start, end);
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE_LIST);
 }
 
 
 /* gsm_trigger_cops */
 static int _gsm_trigger_cops(GSM * gsm, char const * result)
 {
-	unsigned int mode;
-	unsigned int format;
 	char operator[32];
-	unsigned int lai;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	if(sscanf(result, "%u,%u,\"%31[^\"]\",%u", &mode, &format, operator,
-				&lai) == 4)
-		return _gsm_event(gsm, GSM_EVENT_TYPE_OPERATOR, mode, format,
-				operator, lai);
+	gsm->event.operator.operator = operator;
+	if(sscanf(result, "%u,%u,\"%31[^\"]\",%u", &gsm->event.operator.mode,
+				&gsm->event.operator.format, operator,
+				&gsm->event.operator.lai) == 4)
+		return _gsm_event_send(gsm, GSM_EVENT_TYPE_OPERATOR);
 	return 1;
 }
 
@@ -1033,22 +1035,22 @@ static int _gsm_trigger_cpin(GSM * gsm, char const * result)
 /* gsm_trigger_creg */
 static int _gsm_trigger_creg(GSM * gsm, char const * result)
 {
-	unsigned int n;
-	unsigned int stat;
-	unsigned int area;
-	unsigned int cell;
+	int res;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	if(sscanf(result, "%u,%u,%X,%X", &n, &stat, &area, &cell) == 4)
-		return _gsm_event(gsm, GSM_EVENT_TYPE_REGISTRATION, n, stat,
-				area, cell);
-	area = 0;
-	cell = 0;
-	if(sscanf(result, "%u,%u", &n, &stat) == 2)
-		return _gsm_event(gsm, GSM_EVENT_TYPE_REGISTRATION, n, stat,
-				area, cell);
+	if((res = sscanf(result, "%u,%u,%X,%X", &gsm->event.registration.n,
+					&gsm->event.registration.stat,
+					&gsm->event.registration.area,
+					&gsm->event.registration.cell)) == 4)
+		return _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+	else if(res == 2)
+	{
+		gsm->event.registration.area = 0;
+		gsm->event.registration.cell = 0;
+		return _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+	}
 	return 1;
 }
 
@@ -1056,7 +1058,6 @@ static int _gsm_trigger_creg(GSM * gsm, char const * result)
 /* _gsm_trigger_csq */
 static int _gsm_trigger_csq(GSM * gsm, char const * result)
 {
-	gdouble level;
 	unsigned int rssi;
 	unsigned int ber;
 
@@ -1065,12 +1066,12 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 #endif
 	if(sscanf(result, "%u,%u", &rssi, &ber) != 2)
 		return 1;
-	level = rssi;
+	gsm->event.signal_level.level = rssi;
 	if(rssi > 31)
-		level /= level;
+		gsm->event.signal_level.level /= 0.0;
 	else
-		level /= 32;
-	return _gsm_event(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL, level);
+		gsm->event.signal_level.level /= 32;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL);
 }
 
 

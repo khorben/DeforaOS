@@ -114,7 +114,7 @@ typedef union _GSMEvent
 	} status;
 } GSMEvent;
 
-typedef void (*GSMCallback)(GSMEvent * event, gpointer data);
+typedef int (*GSMCallback)(GSMEvent * event, gpointer data);
 
 typedef struct _GSM GSM;
 

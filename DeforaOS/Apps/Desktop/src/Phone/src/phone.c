@@ -81,7 +81,7 @@ static void _phone_set_signal_level(Phone * phone, gdouble level);
 static void _phone_set_status(Phone * phone, GSMStatus status);
 
 /* callbacks */
-static void _phone_gsm_event(GSMEvent * event, gpointer data);
+static int _phone_gsm_event(GSMEvent * event, gpointer data);
 static gboolean _phone_timeout_signal_level(gpointer data);
 
 
@@ -664,7 +664,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 
 /* callbacks */
 /* phone_gsm_event */
-static void _phone_gsm_event(GSMEvent * event, gpointer data)
+static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
 	Phone * phone = data;
 
@@ -709,6 +709,7 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_set_status(phone, event->status.status);
 			break;
 	}
+	return 0;
 }
 
 
