@@ -46,7 +46,7 @@ void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
 
 /* code */
-void phone_code_append(Phone * phone, char character);
+int phone_code_append(Phone * phone, char character);
 void phone_code_clear(Phone * phone);
 void phone_code_enter(Phone * phone);
 
@@ -58,6 +58,6 @@ void phone_contact_add(Phone * phone, unsigned int index, char const * name,
 void phone_call(Phone * phone, char const * number);
 void phone_hangup(Phone * phone);
 
-void phone_dialer_append(Phone * phone, char character);
+int phone_dialer_append(Phone * phone, char character);
 
 #endif /* !PHONE_PHONE_H */

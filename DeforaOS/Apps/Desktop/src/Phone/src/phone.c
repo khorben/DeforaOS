@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include "gsm.h"
@@ -204,7 +205,7 @@ void phone_call(Phone * phone, char const * number)
 
 
 /* phone_code_append */
-void phone_code_append(Phone * phone, char character)
+int phone_code_append(Phone * phone, char character)
 {
 	char const * text;
 	size_t len;
@@ -215,14 +216,15 @@ void phone_code_append(Phone * phone, char character)
 #endif
 	if((character < '0' || character > '9') && character != '*'
 			&& character != '+' && character != '#')
-		return;
+		return 1; /* ignore the error */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
 	len = strlen(text);
 	if((p = malloc(len + 2)) == NULL)
-		return; /* XXX report error */
+		return phone_error(phone, strerror(errno), 1);
 	snprintf(p, len + 2, "%s%c", text, character);
 	gtk_entry_set_text(GTK_ENTRY(phone->en_entry), p);
 	free(p);
+	return 0;
 }
 
 
@@ -269,7 +271,7 @@ void phone_contact_add(Phone * phone, unsigned int index, char const * name,
 
 
 /* phone_dialer_append */
-void phone_dialer_append(Phone * phone, char character)
+int phone_dialer_append(Phone * phone, char character)
 {
 	char const * text;
 	size_t len;
@@ -280,15 +282,16 @@ void phone_dialer_append(Phone * phone, char character)
 #endif
 	if((character < '0' || character > '9') && character != '*'
 			&& character != '+' && character != '#')
-		return;
+		return 1; /* ignore the error */
 	/* FIXME ask GSM if in a call; if yes, send DTMF */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	len = strlen(text);
 	if((p = malloc(len + 2)) == NULL)
-		return; /* XXX report error */
+		return phone_error(phone, strerror(errno), 1);
 	snprintf(p, len + 2, "%s%c", text, character);
 	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), p);
 	free(p);
+	return 0;
 }
 
 
