@@ -54,6 +54,8 @@ struct _Phone
 
 	/* messages */
 	GtkWidget * me_window;
+	GtkListStore * me_store;
+	GtkWidget * me_view;
 
 	/* systray */
 	GtkWidget * sy_level;
@@ -108,6 +110,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 			G_TYPE_STRING);
 	phone->di_window = NULL;
 	phone->me_window = NULL;
+	phone->me_store = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
 	/* check errors */
 	if(phone->gsm == NULL)
 	{
@@ -371,11 +374,6 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				renderer, "text", 1, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
 				column);
-		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("Number"),
-				renderer, "text", 2, NULL);
-		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
-				column);
 		gtk_container_add(GTK_CONTAINER(widget), phone->co_view);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->co_window), vbox);
@@ -455,15 +453,36 @@ void phone_show_dialer(Phone * phone, gboolean show)
 /* phone_show_messages */
 void phone_show_messages(Phone * phone, gboolean show)
 {
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
 	if(phone->me_window == NULL)
 	{
 		phone->me_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(phone->me_window), 200,
+				300);
 		gtk_window_set_title(GTK_WINDOW(phone->me_window),
 				_("Messages"));
 		g_signal_connect_swapped(G_OBJECT(phone->me_window),
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->me_window);
-		/* FIXME implement */
+		vbox = gtk_vbox_new(FALSE, 0);
+		widget = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		phone->me_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+					phone->me_store));
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("Message"),
+				renderer, "text", 1, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->me_view),
+				column);
+		gtk_container_add(GTK_CONTAINER(widget), phone->me_view);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(phone->me_window), vbox);
+		gtk_widget_show_all(vbox);
 	}
 	if(show)
 		gtk_widget_show(phone->me_window); /* XXX force focus? */
