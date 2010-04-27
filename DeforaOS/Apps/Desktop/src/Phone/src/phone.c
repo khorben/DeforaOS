@@ -353,6 +353,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 	if(phone->co_window == NULL)
 	{
 		phone->co_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(phone->co_window), 200,
+				300);
 		gtk_window_set_title(GTK_WINDOW(phone->co_window),
 				_("Contacts"));
 		g_signal_connect_swapped(G_OBJECT(phone->co_window),
