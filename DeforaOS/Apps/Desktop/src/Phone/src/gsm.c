@@ -515,7 +515,7 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			break;
 		case GSM_EVENT_TYPE_OPERATOR:
 			event->operator.mode = va_arg(ap, unsigned int);
-			event->operator.format = va_arg(ap, unsigned int);
+			event->operator.format = va_arg(ap, GSMOperatorFormat);
 			event->operator.operator = va_arg(ap, char *);
 			event->operator.lai = va_arg(ap, unsigned int);
 			break;

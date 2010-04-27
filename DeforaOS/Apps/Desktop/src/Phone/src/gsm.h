@@ -91,7 +91,7 @@ typedef union _GSMEvent
 	{
 		GSMEventType type;
 		unsigned int mode;
-		unsigned int format;
+		GSMOperatorFormat format;
 		char const * operator;
 		unsigned int lai;
 	} operator;
