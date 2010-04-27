@@ -114,6 +114,9 @@ static GSMCommand * _gsm_command_new(GSMPriority priority,
 		char const * command);
 static void _gsm_command_delete(GSMCommand * command);
 
+/* events */
+static int _gsm_event(GSM * gsm, GSMEventType type, ...);
+
 /* modem commands */
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
@@ -354,6 +357,32 @@ static void _gsm_command_delete(GSMCommand * gsmc)
 }
 
 
+/* events */
+/* gsm_event */
+static int _gsm_event(GSM * gsm, GSMEventType type, ...)
+{
+	va_list ap;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, type);
+#endif
+	gsm->event.type = type;
+	va_start(ap, type);
+	switch(type)
+	{
+		case GSM_EVENT_TYPE_STATUS:
+			gsm->event.status.status = va_arg(ap, GSMStatus);
+			break;
+		default:
+			va_end(ap);
+			return 1;
+	}
+	va_end(ap);
+	gsm->callback(&gsm->event, gsm->callback_data);
+	return 0;
+}
+
+
 /* modem commands */
 /* gsm_modem_call */
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
@@ -517,6 +546,7 @@ static int _parse_do(GSM * gsm)
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
 		_gsm_modem_is_pin_needed(gsm);
+		_gsm_event(gsm, GSM_EVENT_TYPE_STATUS, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
 	else if(gsm->mode == GSM_MODE_COMMAND)

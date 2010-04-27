@@ -340,6 +340,9 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 {
 	Phone * phone = data;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, event->type);
+#endif
 	switch(event->type)
 	{
 		case GSM_EVENT_TYPE_STATUS:
