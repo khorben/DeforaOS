@@ -248,6 +248,13 @@ void phone_code_enter(Phone * phone, PhoneCode code)
 
 
 /* code */
+/* phone_code_clear */
+void phone_code_clear(Phone * phone)
+{
+	gtk_entry_set_text(GTK_ENTRY(phone->en_entry), "");
+}
+
+
 /* phone_code_validate */
 void phone_code_validate(Phone * phone)
 {
@@ -344,7 +351,8 @@ void phone_show_code(Phone * phone, gboolean show)
 				gtk_image_new_from_icon_name("edit-undo",
 					GTK_ICON_SIZE_BUTTON));
 		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
-		/* FIXME connect callback */
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(on_phone_code_clear), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 		widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),

@@ -47,6 +47,7 @@ void phone_show_messages(Phone * phone, gboolean show);
 
 /* code */
 void phone_code_append(Phone * phone, char character);
+void phone_code_clear(Phone * phone);
 void phone_code_enter(Phone * phone, PhoneCode code);
 void phone_code_validate(Phone * phone);
 

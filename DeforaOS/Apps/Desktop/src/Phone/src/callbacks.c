@@ -30,6 +30,15 @@ gboolean on_phone_closex(gpointer data)
 }
 
 
+/* on_phone_code_clear */
+void on_phone_code_clear(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_code_clear(phone);
+}
+
+
 /* on_phone_code_clicked */
 void on_phone_code_clicked(GtkWidget * widget, gpointer data)
 {
