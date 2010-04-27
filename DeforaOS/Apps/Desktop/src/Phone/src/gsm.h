@@ -26,6 +26,29 @@ typedef enum _GSMCallType
 	GSM_CALL_TYPE_DATA, GSM_CALL_TYPE_VOICE
 } GSMCallType;
 
+typedef enum _GSMEventType
+{
+	GSM_EVENT_TYPE_STATUS
+} GSMEventType;
+
+typedef enum _GSMStatus
+{
+	GSM_STATUS_INITIALIZED = 0, GSM_STATUS_REGISTERED
+} GSMStatus;
+
+typedef union _GSMEvent
+{
+	GSMEventType type;
+
+	struct
+	{
+		GSMEventType type;
+		GSMStatus status;
+	} status;
+} GSMEvent;
+
+typedef void (*GSMCallback)(GSMEvent * event, gpointer data);
+
 typedef struct _GSM GSM;
 
 
@@ -34,12 +57,16 @@ GSM * gsm_new(char const * device, unsigned int baudrate);
 void gsm_delete(GSM * gsm);
 
 /* accessors */
+void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data);
+
 unsigned int gsm_get_retry(GSM * gsm);
 void gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_hangup(GSM * gsm);
+int gsm_report_contacts(GSM * gsm);
+int gsm_report_messages(GSM * gsm);
 int gsm_report_signal_quality(GSM * gsm);
 void gsm_reset(GSM * gsm, unsigned int delay);
 

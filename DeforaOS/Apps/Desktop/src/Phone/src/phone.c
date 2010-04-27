@@ -51,6 +51,9 @@ struct _Phone
 
 /* prototypes */
 static GtkWidget * _phone_create_dialpad(Phone * phone);
+static void _phone_gsm_event(GSMEvent * event, gpointer data);
+
+static void _phone_set_status(Phone * phone, GSMStatus status);
 
 
 /* public */
@@ -70,8 +73,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
-	if(retry >= 0 && phone->gsm != NULL)
-		gsm_set_retry(phone->gsm, retry);
 	phone->source = g_idle_add(_new_idle, phone);
 	/* widgets */
 	phone->bold = pango_font_description_new();
@@ -85,6 +86,9 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 		phone_delete(phone);
 		return NULL;
 	}
+	if(retry >= 0)
+		gsm_set_retry(phone->gsm, retry);
+	gsm_set_callback(phone->gsm, _phone_gsm_event, phone);
 	return phone;
 }
 
@@ -95,7 +99,6 @@ static gboolean _new_idle(gpointer data)
 	phone_show_contacts(phone, FALSE);
 	phone_show_dialer(phone, TRUE);
 	phone_show_messages(phone, FALSE);
-	gsm_report_contacts(phone->gsm);
 	phone->source = 0;
 	return FALSE;
 }
@@ -329,4 +332,35 @@ static GtkWidget * _phone_create_dialpad(Phone * phone)
 				2, 2);
 	}
 	return table;
+}
+
+
+/* phone_gsm_event */
+static void _phone_gsm_event(GSMEvent * event, gpointer data)
+{
+	Phone * phone = data;
+
+	switch(event->type)
+	{
+		case GSM_EVENT_TYPE_STATUS:
+			_phone_set_status(phone, event->status.status);
+			break;
+	}
+}
+
+
+/* phone_set_status */
+static void _phone_set_status(Phone * phone, GSMStatus status)
+{
+	switch(status)
+	{
+		case GSM_STATUS_INITIALIZED:
+			gsm_report_contacts(phone->gsm);
+			gsm_report_messages(phone->gsm);
+			/* FIXME trigger registration */
+			break;
+		case GSM_STATUS_REGISTERED:
+			/* FIXME implement */
+			break;
+	}
 }

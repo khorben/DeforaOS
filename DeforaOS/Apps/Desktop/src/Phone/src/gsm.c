@@ -42,10 +42,10 @@ typedef struct _GSMCommand
 		char * command;
 } GSMCommand;
 
-typedef enum _GSMStatus
+typedef enum _GSMMode
 {
-	GSM_STATUS_INIT = 0, GSM_STATUS_COMMAND
-} GSMStatus;
+	GSM_MODE_INIT = 0, GSM_MODE_COMMAND
+} GSMMode;
 
 struct _GSM
 {
@@ -54,11 +54,16 @@ struct _GSM
 	unsigned int baudrate;
 	unsigned int retry;
 
+	/* callback */
+	GSMCallback callback;
+	gpointer callback_data;
+	GSMEvent event;
+
 	/* queue */
 	GSList * queue;
 
 	/* internal */
-	GSMStatus status;
+	GSMMode mode;
 	guint source;
 	GIOChannel * channel;
 	char * rd_buf;
@@ -114,6 +119,7 @@ static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
 static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
 static int _gsm_modem_get_contacts(GSM * gsm);
+static int _gsm_modem_get_messages(GSM * gsm);
 static int _gsm_modem_get_signal_quality(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
@@ -155,10 +161,14 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 	gsm->device = strdup(device);
 	gsm->baudrate = _new_baudrate(baudrate);
 	gsm->retry = 1000;
+	/* callback */
+	gsm->callback = NULL;
+	gsm->callback_data = NULL;
+	memset(&gsm->event, 0, sizeof(gsm->event));
 	/* queue */
 	gsm->queue = NULL;
 	/* internal */
-	gsm->status = GSM_STATUS_INIT;
+	gsm->mode = GSM_MODE_INIT;
 	gsm->source = 0;
 	gsm->channel = NULL;
 	gsm->rd_buf = NULL;
@@ -217,6 +227,14 @@ unsigned int gsm_get_retry(GSM * gsm)
 }
 
 
+/* gsm_set_callback */
+void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data)
+{
+	gsm->callback = callback;
+	gsm->callback_data = data;
+}
+
+
 /* gsm_set_retry */
 void gsm_set_retry(GSM * gsm, unsigned int retry)
 {
@@ -248,6 +266,13 @@ int gsm_hangup(GSM * gsm)
 int gsm_report_contacts(GSM * gsm)
 {
 	return _gsm_modem_get_contacts(gsm);
+}
+
+
+/* gsm_report_messages */
+int gsm_report_messages(GSM * gsm)
+{
+	return _gsm_modem_get_messages(gsm);
 }
 
 
@@ -392,6 +417,15 @@ static int _gsm_modem_get_contacts(GSM * gsm)
 }
 
 
+/* gsm_modem_get_messages */
+static int _gsm_modem_get_messages(GSM * gsm)
+{
+	char const cmd[] = "AT+CMGL=?";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
+}
+
+
 /* gsm_modem_get_signal_quality */
 static int _gsm_modem_get_signal_quality(GSM * gsm)
 {
@@ -474,18 +508,18 @@ static int _parse_do(GSM * gsm)
 {
 	gboolean answered = FALSE;
 
-	if(gsm->status == GSM_STATUS_INIT)
+	if(gsm->mode == GSM_MODE_INIT)
 	{
 		if(strcmp(gsm->rd_buf, "OK") != 0)
 			return 0;
 		g_source_remove(gsm->source);
 		gsm->source = 0;
-		gsm->status = GSM_STATUS_COMMAND;
+		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
 		_gsm_modem_is_pin_needed(gsm);
 		_gsm_queue_push(gsm);
 	}
-	else if(gsm->status == GSM_STATUS_COMMAND)
+	else if(gsm->mode == GSM_MODE_COMMAND)
 	{
 		_gsm_parse_line(gsm, gsm->rd_buf, &answered);
 		if(answered)
@@ -591,12 +625,12 @@ static int _gsm_queue_command(GSM * gsm, GSMPriority priority,
 	}
 	if(l != NULL)
 		gsm->queue = g_slist_insert_before(gsm->queue, l, gsmc);
-	else if(gsm->queue == NULL && gsm->status == GSM_STATUS_COMMAND)
+	else if(gsm->queue == NULL && gsm->mode == GSM_MODE_COMMAND)
 	{
 		gsm->queue = g_slist_append(gsm->queue, gsmc);
 		_gsm_queue_push(gsm);
 	}
-	else if(gsm->status == GSM_STATUS_INIT && gsm->wr_source == 0)
+	else if(gsm->mode == GSM_MODE_INIT && gsm->wr_source == 0)
 	{
 		gsm->queue = g_slist_append(gsm->queue, gsmc);
 		_gsm_queue_push(gsm);
@@ -648,7 +682,7 @@ static void _gsm_queue_pop(GSM * gsm)
 	gsmc = gsm->queue->data;
 	_gsm_command_delete(gsmc);
 	gsm->queue = g_slist_remove(gsm->queue, gsmc);
-	if(gsm->status != GSM_STATUS_COMMAND)
+	if(gsm->mode != GSM_MODE_COMMAND)
 		return;
 }
 
@@ -842,7 +876,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	if(gsm->wr_buf_cnt > 0) /* there is more data to write */
 		return TRUE;
 	gsm->wr_source = 0;
-	if(gsm->status == GSM_STATUS_INIT)
+	if(gsm->mode == GSM_MODE_INIT)
 		_gsm_queue_pop(gsm);
 	return FALSE;
 }
