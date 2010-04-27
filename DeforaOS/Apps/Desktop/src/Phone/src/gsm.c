@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include <libintl.h>
 #include <glib.h>
@@ -110,6 +111,7 @@ static struct
 
 
 /* prototypes */
+static int _is_code(char const * code);
 static int _is_figure(int c);
 static int _is_number(char const * number);
 
@@ -125,8 +127,13 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...);
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
 static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
-static int _gsm_modem_get_contacts(GSM * gsm);
-static int _gsm_modem_get_messages(GSM * gsm);
+static int _gsm_modem_enter_pin(GSM * gsm, char const * code);
+static int _gsm_modem_get_contact_list(GSM * gsm);
+static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
+		unsigned int end);
+static int _gsm_modem_get_message_list(GSM * gsm);
+static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
+		unsigned int end);
 static int _gsm_modem_get_signal_level(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
@@ -265,31 +272,54 @@ int gsm_call(GSM * gsm, GSMCallType calltype, char const * number)
 }
 
 
+/* gsm_enter_pin */
+int gsm_enter_pin(GSM * gsm, char const * code)
+{
+	if(code == NULL)
+		return _gsm_modem_is_pin_needed(gsm);
+	return _gsm_modem_enter_pin(gsm, code);
+}
+
+
+/* gsm_fetch_contact_list */
+int gsm_fetch_contact_list(GSM * gsm)
+{
+	return _gsm_modem_get_contact_list(gsm);
+}
+
+
+/* gsm_fetch_contacts */
+int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end)
+{
+	return _gsm_modem_get_contacts(gsm, start, end);
+}
+
+
+/* gsm_fetch_message_list */
+int gsm_fetch_message_list(GSM * gsm)
+{
+	return _gsm_modem_get_message_list(gsm);
+}
+
+
+/* gsm_fetch_messages */
+int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end)
+{
+	return _gsm_modem_get_messages(gsm, start, end);
+}
+
+
+/* gsm_fetch_signal_level */
+int gsm_fetch_signal_level(GSM * gsm)
+{
+	return _gsm_modem_get_signal_level(gsm);
+}
+
+
 /* gsm_hangup */
 int gsm_hangup(GSM * gsm)
 {
 	return _gsm_modem_hangup(gsm);
-}
-
-
-/* gsm_report_contacts */
-int gsm_report_contacts(GSM * gsm)
-{
-	return _gsm_modem_get_contacts(gsm);
-}
-
-
-/* gsm_report_messages */
-int gsm_report_messages(GSM * gsm)
-{
-	return _gsm_modem_get_messages(gsm);
-}
-
-
-/* gsm_report_signal_level */
-int gsm_report_signal_level(GSM * gsm)
-{
-	return _gsm_modem_get_signal_level(gsm);
 }
 
 
@@ -306,6 +336,18 @@ void gsm_reset(GSM * gsm, unsigned int delay)
 
 /* private */
 /* functions */
+/* is_code */
+static int _is_code(char const * code)
+{
+	int c;
+
+	while((c = *(code++)) != '\0')
+		if(!isdigit(c))
+			return 0;
+	return 1;
+}
+
+
 /* is_figure */
 static int _is_figure(int c)
 {
@@ -378,7 +420,18 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 	switch(type)
 	{
 		case GSM_EVENT_TYPE_ERROR:
+			gsm->event.error.error = va_arg(ap, GSMError);
 			gsm->event.error.message = va_arg(ap, char *);
+			break;
+		case GSM_EVENT_TYPE_CONTACT_LIST:
+			gsm->event.contact_list.start = va_arg(ap,
+					unsigned int);
+			gsm->event.contact_list.end = va_arg(ap, unsigned int);
+			break;
+		case GSM_EVENT_TYPE_MESSAGE_LIST:
+			gsm->event.message_list.start = va_arg(ap,
+					unsigned int);
+			gsm->event.message_list.end = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			gsm->event.signal_level.level = va_arg(ap, gdouble);
@@ -450,8 +503,28 @@ static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
 }
 
 
-/* gsm_modem_get_contacts */
-static int _gsm_modem_get_contacts(GSM * gsm)
+/* gsm_modem_enter_pin */
+static int _gsm_modem_enter_pin(GSM * gsm, char const * code)
+{
+	int ret;
+	char const cmd[] = "AT+CPIN=";
+	size_t len;
+	char * buf;
+
+	if(!_is_code(code))
+		return 1;
+	len = sizeof(cmd) + strlen(code);
+	if((buf = malloc(len)) == NULL)
+		return 1;
+	snprintf(buf, len, "%s%s", cmd, code);
+	ret = _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, buf);
+	free(buf);
+	return ret;
+}
+
+
+/* gsm_modem_get_contact_list */
+static int _gsm_modem_get_contact_list(GSM * gsm)
 {
 	char const cmd[] = "AT+CPBR=?";
 
@@ -459,10 +532,34 @@ static int _gsm_modem_get_contacts(GSM * gsm)
 }
 
 
-/* gsm_modem_get_messages */
-static int _gsm_modem_get_messages(GSM * gsm)
+/* gsm_modem_get_contacts */
+static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
+		unsigned int end)
+{
+	char cmd[32];
+	
+	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CPBR=", start, end);
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
+}
+
+
+/* gsm_modem_get_message_list */
+static int _gsm_modem_get_message_list(GSM * gsm)
 {
 	char const cmd[] = "AT+CMGL=?";
+
+	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
+}
+
+
+/* gsm_modem_get_messages */
+static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
+		unsigned int end)
+{
+	char cmd[32];
+	
+	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CMGR=", start, end);
 
 	return _gsm_queue_command(gsm, GSM_PRIORITY_LOW, cmd);
 }
@@ -577,12 +674,16 @@ static int _parse_do(GSM * gsm)
 
 /* gsm_parse_line */
 static int _parse_line_cme_error(GSM * gsm, char const * error);
+static int _parse_line_cmgl(GSM * gsm, char const * result);
+static int _parse_line_cpbr(GSM * gsm, char const * result);
 static int _parse_line_cpin(GSM * gsm, char const * result);
 static int _parse_line_csq(GSM * gsm, char const * result);
 
 static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 {
 	char const cme_error[] = "+CME ERROR: ";
+	char const cmgl[] = "+CMGL: ";
+	char const cpbr[] = "+CPBR: ";
 	char const cpin[] = "+CPIN: ";
 	char const csq[] = "+CSQ: ";
 	size_t i;
@@ -606,11 +707,15 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 			continue;
 		if(answered != NULL)
 			*answered = TRUE;
-		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, line);
+		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN, line);
 		return 0;
 	}
 	if(strncmp(line, cme_error, sizeof(cme_error) - 1) == 0)
 		return _parse_line_cme_error(gsm, &line[sizeof(cme_error) - 1]);
+	if(strncmp(line, cmgl, sizeof(cmgl) - 1) == 0)
+		return _parse_line_cmgl(gsm, &line[sizeof(cmgl) - 1]);
+	if(strncmp(line, cpbr, sizeof(cpbr) - 1) == 0)
+		return _parse_line_cpbr(gsm, &line[sizeof(cpbr) - 1]);
 	if(strncmp(line, cpin, sizeof(cpin) - 1) == 0)
 		return _parse_line_cpin(gsm, &line[sizeof(cpin) - 1]);
 	if(strncmp(line, csq, sizeof(csq) - 1) == 0)
@@ -636,7 +741,37 @@ static int _parse_line_cme_error(GSM * gsm, char const * error)
 			break;
 	if(_gsm_cme_errors[i].error == NULL)
 		return 1;
-	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, _(_gsm_cme_errors[i].error));
+	/* FIXME implement errors */
+	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN,
+			_(_gsm_cme_errors[i].error));
+	return 0;
+}
+
+static int _parse_line_cmgl(GSM * gsm, char const * result)
+{
+	unsigned int start;
+	unsigned int end;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "(%u-%u)", &start, &end) != 2)
+		return 1;
+	_gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_LIST, start, end);
+	return 0;
+}
+
+static int _parse_line_cpbr(GSM * gsm, char const * result)
+{
+	unsigned int start;
+	unsigned int end;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "(%u-%u)", &start, &end) != 2)
+		return 1;
+	_gsm_event(gsm, GSM_EVENT_TYPE_CONTACT_LIST, start, end);
 	return 0;
 }
 
@@ -647,7 +782,12 @@ static int _parse_line_cpin(GSM * gsm, char const * result)
 #endif
 	if(strcmp(result, "READY") == 0)
 		return 0;
-	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, result); /* XXX nicer message */
+	if(strcmp(result, "SIM PIN") == 0)
+		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_SIM_PIN_REQUIRED, NULL);
+	else
+		/* XXX nicer message */
+		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, result);
 	return 0;
 }
 

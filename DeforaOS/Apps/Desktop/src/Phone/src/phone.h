@@ -25,6 +25,11 @@
 /* types */
 typedef struct _Phone Phone;
 
+typedef enum _PhoneCode
+{
+	PHONE_CODE_SIM_PIN = 0
+} PhoneCode;
+
 
 /* functions */
 Phone * phone_new(char const * device, unsigned int baudrate, int retry);
@@ -35,9 +40,15 @@ void phone_delete(Phone * phone);
 int phone_error(Phone * phone, char const * message, int ret);
 
 /* interface */
+void phone_show_code(Phone * phone, gboolean show);
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
+
+/* code */
+void phone_code_append(Phone * phone, char character);
+void phone_code_enter(Phone * phone, PhoneCode code);
+void phone_code_validate(Phone * phone);
 
 /* dialer */
 void phone_call(Phone * phone, char const * number);

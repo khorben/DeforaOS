@@ -29,13 +29,16 @@ typedef enum _GSMCallType
 typedef enum _GSMEventType
 {
 	GSM_EVENT_TYPE_ERROR = 0,
+	GSM_EVENT_TYPE_CONTACT_LIST,
+	GSM_EVENT_TYPE_MESSAGE_LIST,
 	GSM_EVENT_TYPE_SIGNAL_LEVEL,
 	GSM_EVENT_TYPE_STATUS
 } GSMEventType;
 
 typedef enum _GSMError
 {
-	GSM_ERROR_UNKNOWN = 0
+	GSM_ERROR_UNKNOWN = 0,
+	GSM_ERROR_SIM_PIN_REQUIRED
 } GSMError;
 
 typedef enum _GSMStatus
@@ -47,6 +50,7 @@ typedef union _GSMEvent
 {
 	GSMEventType type;
 
+	/* GSM_EVENT_TYPE_ERROR */
 	struct
 	{
 		GSMEventType type;
@@ -54,12 +58,23 @@ typedef union _GSMEvent
 		char const * message;
 	} error;
 
+	/* GSM_EVENT_TYPE_CONTACT_LIST */
+	/* GSM_EVENT_TYPE_MESSAGE_LIST */
+	struct
+	{
+		GSMEventType type;
+		unsigned int start;
+		unsigned int end;
+	} contact_list, message_list;
+
+	/* GSM_EVENT_TYPE_SIGNAL_LEVEL */
 	struct
 	{
 		GSMEventType type;
 		gdouble level;
 	} signal_level;
 
+	/* GSM_EVENT_TYPE_STATUS */
 	struct
 	{
 		GSMEventType type;
@@ -84,10 +99,13 @@ void gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
+int gsm_enter_pin(GSM * gsm, char const * code);
+int gsm_fetch_contact_list(GSM * gsm);
+int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
+int gsm_fetch_message_list(GSM * gsm);
+int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end);
+int gsm_fetch_signal_level(GSM * gsm);
 int gsm_hangup(GSM * gsm);
-int gsm_report_contacts(GSM * gsm);
-int gsm_report_messages(GSM * gsm);
-int gsm_report_signal_level(GSM * gsm);
 void gsm_reset(GSM * gsm, unsigned int delay);
 
 #endif /* !PHONE_GSM_H */

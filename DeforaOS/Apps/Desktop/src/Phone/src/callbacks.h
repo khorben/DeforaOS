@@ -24,6 +24,11 @@
 /* callbacks */
 gboolean on_phone_closex(gpointer data);
 
+/* code */
+void on_phone_code_clicked(GtkWidget * widget, gpointer data);
+void on_phone_code_enter(gpointer data);
+void on_phone_code_leave(gpointer data);
+
 /* contacts */
 void on_phone_contacts_show(gpointer data);
 

@@ -30,6 +30,36 @@ gboolean on_phone_closex(gpointer data)
 }
 
 
+/* on_phone_code_clicked */
+void on_phone_code_clicked(GtkWidget * widget, gpointer data)
+{
+	Phone * phone = data;
+	char const * character;
+
+	character = g_object_get_data(G_OBJECT(widget), "character");
+	phone_code_append(phone, *character);
+}
+
+
+/* code */
+void on_phone_code_enter(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_show_code(phone, FALSE);
+	phone_code_validate(phone);
+}
+
+
+/* on_phone_code_leave */
+void on_phone_code_leave(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_show_code(phone, FALSE);
+}
+
+
 /* contacts */
 void on_phone_contacts_show(gpointer data)
 {
