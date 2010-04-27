@@ -44,6 +44,13 @@ typedef enum _GSMError
 	GSM_ERROR_SIM_PIN_REQUIRED
 } GSMError;
 
+typedef enum _GSMOperatorFormat
+{
+	GSM_OPERATOR_FORMAT_LONG = 0,
+	GSM_OPERATOR_FORMAT_SHORT = 1,
+	GSM_OPERATOR_FORMAT_LAI = 2
+} GSMOperatorFormat;
+
 typedef enum _GSMStatus
 {
 	GSM_STATUS_INITIALIZED = 0, GSM_STATUS_REGISTERED
@@ -127,6 +134,7 @@ void gsm_delete(GSM * gsm);
 void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data);
 
 unsigned int gsm_get_retry(GSM * gsm);
+void gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 void gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */

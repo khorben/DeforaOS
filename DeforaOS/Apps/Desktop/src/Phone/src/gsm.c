@@ -150,6 +150,7 @@ static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
 static int _gsm_modem_report_registration(GSM * gsm, gboolean report);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
+static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 
 /* parsing */
 static int _gsm_parse(GSM * gsm);
@@ -285,6 +286,13 @@ void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data)
 {
 	gsm->callback = callback;
 	gsm->callback_data = data;
+}
+
+
+/* gsm_set_operator_format */
+void gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format)
+{
+	_gsm_modem_set_operator_format(gsm, format);
 }
 
 
@@ -737,6 +745,25 @@ static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 }
 
 
+/* gsm_modem_set_operator_format */
+static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
+{
+	char cmd[] = "AT+COPS=3,X";
+
+	switch(format)
+	{
+		case GSM_OPERATOR_FORMAT_LONG:
+		case GSM_OPERATOR_FORMAT_SHORT:
+		case GSM_OPERATOR_FORMAT_LAI:
+			break;
+		default:
+			return 1;
+	}
+	cmd[10] = format + '0';
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
 /* gsm_parse */
 static int _parse_do(GSM * gsm);
 
@@ -781,6 +808,7 @@ static int _parse_do(GSM * gsm)
 		gsm->source = 0;
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
+		_gsm_modem_set_operator_format(gsm, GSM_OPERATOR_FORMAT_LONG);
 		_gsm_event(gsm, GSM_EVENT_TYPE_STATUS, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
