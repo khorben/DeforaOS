@@ -28,8 +28,13 @@ typedef enum _GSMCallType
 
 typedef enum _GSMEventType
 {
-	GSM_EVENT_TYPE_STATUS
+	GSM_EVENT_TYPE_ERROR, GSM_EVENT_TYPE_STATUS
 } GSMEventType;
+
+typedef enum _GSMError
+{
+	GSM_ERROR_UNKNOWN = 0
+} GSMError;
 
 typedef enum _GSMStatus
 {
@@ -39,6 +44,13 @@ typedef enum _GSMStatus
 typedef union _GSMEvent
 {
 	GSMEventType type;
+
+	struct
+	{
+		GSMEventType type;
+		GSMError error;
+		char const * message;
+	} error;
 
 	struct
 	{

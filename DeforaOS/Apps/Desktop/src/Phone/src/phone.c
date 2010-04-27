@@ -122,16 +122,24 @@ static int _error_text(char const * message, int ret);
 
 int phone_error(Phone * phone, char const * message, int ret)
 {
+	GtkWidget * dialog;
+
 	if(phone == NULL)
 		return _error_text(message, ret);
-	/* FIXME implement */
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
 	return ret;
 }
 
 static int _error_text(char const * message, int ret)
 {
-	fputs("phone: ", stderr);
-	perror(message);
+	fprintf(stderr, "phone: %s\n", message);
 	return ret;
 }
 
@@ -345,6 +353,9 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 #endif
 	switch(event->type)
 	{
+		case GSM_EVENT_TYPE_ERROR:
+			phone_error(phone, event->error.message, 0);
+			break;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
 			break;

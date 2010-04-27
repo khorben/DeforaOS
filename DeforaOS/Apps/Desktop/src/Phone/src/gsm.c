@@ -23,9 +23,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <libintl.h>
 #include <glib.h>
 #include "phone.h"
 #include "gsm.h"
+#define _(string) gettext(string)
 
 
 /* GSM */
@@ -38,8 +40,9 @@ typedef enum _GSMPriority
 
 typedef struct _GSMCommand
 {
-		GSMPriority priority;
-		char * command;
+	GSMPriority priority;
+	char * command;
+	/* XXX also track if was written? more robust when tracking answers */
 } GSMCommand;
 
 typedef enum _GSMMode
@@ -77,7 +80,7 @@ struct _GSM
 
 /* variables */
 /* ANSWERS */
-static char const * _gsm_answers[] = { "OK", "ERROR", "NO CARRIER", NULL };
+static char const * _gsm_errors[] = { "ERROR", "NO CARRIER", NULL };
 
 /* CME ERROR */
 static struct
@@ -192,6 +195,8 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 
 static unsigned int _new_baudrate(unsigned int baudrate)
 {
+	char buf[256];
+
 	switch(baudrate)
 	{
 		case B1200:	case B2400:	case B4800:	case B9600:
@@ -200,8 +205,9 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 		case B460800:	case B921600:
 			break;
 		default:
-			errno = EINVAL;
-			return phone_error(NULL, "baudrate", baudrate);
+			snprintf(buf, sizeof(buf), "%u%s", baudrate,
+					_(": Unknown baudrate"));
+			return phone_error(NULL, buf, baudrate);
 	}
 	return baudrate;
 }
@@ -370,6 +376,9 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 	va_start(ap, type);
 	switch(type)
 	{
+		case GSM_EVENT_TYPE_ERROR:
+			gsm->event.error.message = va_arg(ap, char *);
+			break;
 		case GSM_EVENT_TYPE_STATUS:
 			gsm->event.status.status = va_arg(ap, GSMStatus);
 			break;
@@ -575,28 +584,29 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
 #endif
+	if(answered != NULL)
+		*answered = FALSE;
 	if(strncmp(line, "AT", 2) == 0) /* ignore echo (tighter check?) */
 		return 0;
-	for(i = 0; _gsm_answers[i] != NULL; i++)
+	if(strcmp(line, "OK") == 0)
 	{
-		if(strcmp(_gsm_answers[i], line) != 0)
+		if(answered != NULL)
+			*answered = TRUE;
+		return 0;
+	}
+	for(i = 0; _gsm_errors[i] != NULL; i++)
+	{
+		if(strcmp(_gsm_errors[i], line) != 0)
 			continue;
 		if(answered != NULL)
 			*answered = TRUE;
+		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, line);
 		return 0;
 	}
 	if(strncmp(line, cme_error, sizeof(cme_error) - 1) == 0)
-	{
-		if(answered != NULL)
-			*answered = TRUE;
 		return _parse_line_cme_error(gsm, &line[sizeof(cme_error) - 1]);
-	}
 	if(strncmp(line, cpin, sizeof(cpin) - 1) == 0)
-	{
-		if(answered != NULL)
-			*answered = TRUE;
 		return _parse_line_cpin(gsm, &line[sizeof(cpin) - 1]);
-	}
 	/* XXX implement more */
 	return 1;
 }
@@ -618,7 +628,7 @@ static int _parse_line_cme_error(GSM * gsm, char const * error)
 			break;
 	if(_gsm_cme_errors[i].error == NULL)
 		return 1;
-	/* FIXME implement callbacks */
+	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, _gsm_cme_errors[i].error);
 	return 0;
 }
 
@@ -629,8 +639,8 @@ static int _parse_line_cpin(GSM * gsm, char const * result)
 #endif
 	if(strcmp(result, "READY") == 0)
 		return 0;
-	/* FIXME implement callbacks */
-	return 1;
+	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, result); /* XXX nicer message */
+	return 0;
 }
 
 
@@ -749,6 +759,7 @@ static gboolean _on_reset(gpointer data)
 {
 	GSM * gsm = data;
 	int fd;
+	char buf[256];
 	GError * error = NULL;
 
 #ifdef DEBUG
@@ -758,11 +769,13 @@ static gboolean _on_reset(gpointer data)
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
 			|| _reset_do(fd) != 0)
 	{
+		snprintf(buf, sizeof(buf), "%s%s%s", gsm->device, ": ",
+				strerror(errno));
 		if(fd >= 0)
 			close(fd);
 		if(gsm->retry > 0)
 			gsm->source = g_timeout_add(gsm->retry, _on_reset, gsm);
-		return phone_error(NULL, gsm->device, FALSE);
+		return phone_error(NULL, buf, FALSE);
 	}
 	gsm->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(gsm->channel, NULL, &error))

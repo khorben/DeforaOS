@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-27 03:28+0200\n"
+"POT-Creation-Date: 2010-04-27 04:14+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,26 +16,34 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: ../src/gsm.c:209
+msgid ": Unknown baudrate"
+msgstr ""
+
 #: ../src/main.c:50
 msgid "Usage: phone -b baudrate -d device -r retry\n"
 msgstr ""
 
-#: ../src/phone.c:189
+#: ../src/phone.c:130 ../src/phone.c:133
+msgid "Error"
+msgstr ""
+
+#: ../src/phone.c:197
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:212
+#: ../src/phone.c:220
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:256
+#: ../src/phone.c:264
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:303
+#: ../src/phone.c:311
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:311
+#: ../src/phone.c:319
 msgid "Hang up"
 msgstr "Raccrocher"

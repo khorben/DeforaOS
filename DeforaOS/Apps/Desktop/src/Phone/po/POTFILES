@@ -1,2 +1,3 @@
+../src/gsm.c
 ../src/main.c
 ../src/phone.c
