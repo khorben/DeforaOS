@@ -3,18 +3,17 @@ static char const _copyright[] =
 "Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>";
 /* This file is part of DeforaOS Desktop Surfer */
 static char const _license[] =
-"Surfer is free software; you can redistribute it and/or modify it\n"
-"under the terms of the GNU General Public License version 2 as\n"
-"published by the Free Software Foundation.\n"
+"This program is free software: you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation, version 3 of the License.\n"
 "\n"
-"Surfer is distributed in the hope that it will be useful, but WITHOUT ANY\n"
-"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n"
-"FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more\n"
-"details.\n"
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
 "\n"
-"You should have received a copy of the GNU General Public License along\n"
-"with Surfer; if not, write to the Free Software Foundation, Inc., 59 Temple\n"
-"Place, Suite 330, Boston, MA  02111-1307  USA\n";
+"You should have received a copy of the GNU General Public License\n"
+"along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 
 
 
