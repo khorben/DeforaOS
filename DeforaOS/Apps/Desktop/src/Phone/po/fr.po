@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-27 13:53+0200\n"
+"POT-Creation-Date: 2010-04-28 01:16+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,102 +16,130 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/gsm.c:93
+#: ../src/gsm.c:102
 msgid "Phone failure"
 msgstr "Défaillance du téléphone"
 
-#: ../src/gsm.c:94
+#: ../src/gsm.c:103
 msgid "No connection to phone"
 msgstr "Pas de connexion au téléphone"
 
-#: ../src/gsm.c:95
+#: ../src/gsm.c:104
 msgid "Operation not allowed"
 msgstr "Opération non autorisée"
 
-#: ../src/gsm.c:96
+#: ../src/gsm.c:105
 msgid "Operation not supported"
 msgstr "Opération non supportée"
 
-#: ../src/gsm.c:97
+#: ../src/gsm.c:106
 msgid "SIM not inserted"
 msgstr "SIM non insérée"
 
-#: ../src/gsm.c:98
+#: ../src/gsm.c:107
 msgid "SIM PIN required"
 msgstr "Code PIN requis"
 
-#: ../src/gsm.c:99
+#: ../src/gsm.c:108
 msgid "SIM PUK required"
 msgstr "Code PUK requis"
 
-#: ../src/gsm.c:100
+#: ../src/gsm.c:109
 msgid "SIM failure"
 msgstr "Défaillance SIM"
 
-#: ../src/gsm.c:101
+#: ../src/gsm.c:110
 msgid "SIM busy"
 msgstr "SIM occupée"
 
-#: ../src/gsm.c:102
+#: ../src/gsm.c:111
 msgid "SIM wrong"
 msgstr "SIM erronée"
 
-#: ../src/gsm.c:103
+#: ../src/gsm.c:112
 msgid "Memory full"
 msgstr "Mémoire pleine"
 
-#: ../src/gsm.c:104
+#: ../src/gsm.c:113
 msgid "Invalid index"
 msgstr "Index invalide"
 
-#: ../src/gsm.c:105
+#: ../src/gsm.c:114
 msgid "No network service"
 msgstr "Pas de couverture réseau"
 
-#: ../src/gsm.c:106
+#: ../src/gsm.c:115
 msgid "Network timeout"
 msgstr "Délai d'attente du réseau dépassé"
 
-#: ../src/gsm.c:107
+#: ../src/gsm.c:116
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:210
+#: ../src/gsm.c:253
 msgid ": Unknown baudrate"
 msgstr ": Débit inconnu"
+
+#: ../src/gsm.c:545
+msgid "Event not handled"
+msgstr "Événement non géré"
 
 #: ../src/main.c:50
 msgid "Usage: phone -b baudrate -d device -r retry\n"
 msgstr ""
 
-#: ../src/phone.c:141 ../src/phone.c:144
+#: ../src/phone.c:124
+msgid "Phone"
+msgstr "Téléphone"
+
+#: ../src/phone.c:177 ../src/phone.c:182
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:208
+#: ../src/phone.c:349
+msgid "Enter"
+msgstr "Entrer"
+
+#: ../src/phone.c:351
+msgid "Skip"
+msgstr "Ignorer"
+
+#: ../src/phone.c:362
+msgid "Enter SIM PIN code"
+msgstr "Entrer le code SIM PIN"
+
+#: ../src/phone.c:390
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:231
+#: ../src/phone.c:401
+msgid "Name"
+msgstr "Nom"
+
+#: ../src/phone.c:431
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:238
+#: ../src/phone.c:438
 msgid "Signal:"
-msgstr ""
+msgstr "Signal :"
 
-#: ../src/phone.c:288
-msgid "Messages"
-msgstr "Messages"
-
-#: ../src/phone.c:335
+#: ../src/phone.c:469
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:343
+#: ../src/phone.c:471
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:380
+#: ../src/phone.c:499
+msgid "Messages"
+msgstr "Messages"
+
+#: ../src/phone.c:510
+msgid "Message"
+msgstr "Message"
+
+#: ../src/phone.c:640
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"

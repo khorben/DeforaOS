@@ -359,7 +359,7 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 	{
 		case PHONE_CODE_SIM_PIN:
 			gtk_window_set_title(GTK_WINDOW(phone->en_window),
-					_("Enter SIM code"));
+					_("Enter SIM PIN code"));
 			break;
 	}
 	if(phone->en_code != code)
