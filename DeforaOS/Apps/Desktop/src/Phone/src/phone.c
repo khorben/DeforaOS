@@ -91,7 +91,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	Phone * phone;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, device, baudrate);
+	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, (device != NULL)
+			? device : "", baudrate);
 #endif
 	if((phone = malloc(sizeof(*phone))) == NULL)
 		return NULL;
@@ -160,9 +161,13 @@ int phone_error(Phone * phone, char const * message, int ret)
 	if(phone == NULL)
 		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", message);
+			"%s",
+#endif
+			message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
@@ -311,6 +316,10 @@ void phone_show_code(Phone * phone, gboolean show)
 	if(phone->en_window == NULL)
 	{
 		phone->en_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->en_window),
+				"stock_lock");
+#endif
 		vbox = gtk_vbox_new(FALSE, 0);
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->en_entry = gtk_entry_new();
@@ -356,6 +365,10 @@ void phone_show_contacts(Phone * phone, gboolean show)
 	if(phone->co_window == NULL)
 	{
 		phone->co_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->co_window),
+				"stock_addressbook");
+#endif
 		gtk_window_set_default_size(GTK_WINDOW(phone->co_window), 200,
 				300);
 		gtk_window_set_title(GTK_WINDOW(phone->co_window),
@@ -396,6 +409,10 @@ void phone_show_dialer(Phone * phone, gboolean show)
 	if(phone->di_window == NULL)
 	{
 		phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->di_window),
+				"stock_landline-phone");
+#endif
 		gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
 		g_signal_connect_swapped(G_OBJECT(phone->di_window),
 				"delete-event", G_CALLBACK(on_phone_closex),
