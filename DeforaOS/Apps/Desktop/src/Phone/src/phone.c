@@ -45,6 +45,8 @@ struct _Phone
 
 	/* contacts */
 	GtkWidget * co_window;
+	GtkListStore * co_store;
+	GtkWidget * co_view;
 
 	/* dialer */
 	GtkWidget * di_window;
@@ -102,6 +104,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->en_code = -1;
 	phone->en_window = NULL;
 	phone->co_window = NULL;
+	phone->co_store = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
+			G_TYPE_STRING);
 	phone->di_window = NULL;
 	phone->me_window = NULL;
 	/* check errors */
@@ -225,6 +229,7 @@ void phone_code_enter(Phone * phone, PhoneCode code)
 }
 
 
+/* code */
 /* phone_code_validate */
 void phone_code_validate(Phone * phone)
 {
@@ -241,6 +246,23 @@ void phone_code_validate(Phone * phone)
 			gsm_enter_pin(phone->gsm, p);
 			break;
 	}
+}
+
+
+/* contact */
+/* phone_contact_add */
+void phone_contact_add(Phone * phone, unsigned int index, char const * name,
+		char const * number)
+{
+	GtkTreeIter iter;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
+			name, number);
+#endif
+	gtk_list_store_append(phone->co_store, &iter);
+	gtk_list_store_set(phone->co_store, &iter, 0, index, 1, name, 2, number,
+			-1);
 }
 
 
@@ -323,6 +345,11 @@ void phone_show_code(Phone * phone, gboolean show)
 /* phone_show_contacts */
 void phone_show_contacts(Phone * phone, gboolean show)
 {
+	GtkWidget * vbox;
+	GtkWidget * widget;
+	GtkCellRenderer * renderer;
+	GtkTreeViewColumn * column;
+
 	if(phone->co_window == NULL)
 	{
 		phone->co_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -331,7 +358,26 @@ void phone_show_contacts(Phone * phone, gboolean show)
 		g_signal_connect_swapped(G_OBJECT(phone->co_window),
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->co_window);
-		/* FIXME implement */
+		vbox = gtk_vbox_new(FALSE, 0);
+		widget = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		phone->co_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+					phone->co_store));
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("Name"),
+				renderer, "text", 1, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
+				column);
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("Number"),
+				renderer, "text", 2, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
+				column);
+		gtk_container_add(GTK_CONTAINER(widget), phone->co_view);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+		gtk_container_add(GTK_CONTAINER(phone->co_window), vbox);
+		gtk_widget_show_all(vbox);
 	}
 	if(show)
 		gtk_widget_show(phone->co_window); /* XXX force focus? */
@@ -570,6 +616,11 @@ static void _phone_gsm_event(GSMEvent * event, gpointer data)
 				phone_code_enter(phone, PHONE_CODE_SIM_PIN);
 			else
 				phone_error(phone, event->error.message, 0);
+			break;
+		case GSM_EVENT_TYPE_CONTACT:
+			phone_contact_add(phone, event->contact.index,
+					event->contact.name,
+					event->contact.number);
 			break;
 		case GSM_EVENT_TYPE_CONTACT_LIST:
 			_phone_fetch_contacts(phone, event->contact_list.start,

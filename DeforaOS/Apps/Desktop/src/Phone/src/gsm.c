@@ -450,6 +450,11 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			gsm->event.error.error = va_arg(ap, GSMError);
 			gsm->event.error.message = va_arg(ap, char *);
 			break;
+		case GSM_EVENT_TYPE_CONTACT:
+			gsm->event.contact.index = va_arg(ap, unsigned int);
+			gsm->event.contact.name = va_arg(ap, char *);
+			gsm->event.contact.number = va_arg(ap, char *);
+			break;
 		case GSM_EVENT_TYPE_CONTACT_LIST:
 			gsm->event.contact_list.start = va_arg(ap,
 					unsigned int);
@@ -889,14 +894,26 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result)
 {
 	unsigned int start;
 	unsigned int end;
+	unsigned int index;
+	char number[32];
+	char name[32];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	if(sscanf(result, "(%u-%u)", &start, &end) != 2)
-		return 1;
-	_gsm_event(gsm, GSM_EVENT_TYPE_CONTACT_LIST, start, end);
-	return 0;
+	if(sscanf(result, "(%u-%u)", &start, &end) == 2)
+		return _gsm_event(gsm, GSM_EVENT_TYPE_CONTACT_LIST, start, end);
+	if(sscanf(result, "%u,\"%31[^\"]\",145,\"%31[^\"]\"", &index, number,
+				name) == 3
+			|| sscanf(result, "%u,\"%31[^\"]\",129,\"%31[^\"]\"",
+				&index, number, name) == 3)
+	{
+		number[sizeof(number) - 1] = '\0';
+		name[sizeof(name) - 1] = '\0';
+		return _gsm_event(gsm, GSM_EVENT_TYPE_CONTACT, index, name,
+				number);
+	}
+	return 1;
 }
 
 

@@ -50,6 +50,10 @@ void phone_code_append(Phone * phone, char character);
 void phone_code_enter(Phone * phone, PhoneCode code);
 void phone_code_validate(Phone * phone);
 
+/* contacts */
+void phone_contact_add(Phone * phone, unsigned int index, char const * name,
+		char const * number);
+
 /* dialer */
 void phone_call(Phone * phone, char const * number);
 void phone_hangup(Phone * phone);
