@@ -364,8 +364,7 @@ void phone_show_code(Phone * phone, gboolean show)
 		gtk_container_add(GTK_CONTAINER(phone->en_window), vbox);
 		gtk_widget_show_all(vbox);
 	}
-	if(show)
-		/* FIXME should only be shown with a valid code set */
+	if(show && phone->en_code >= 0)
 		gtk_widget_show(phone->en_window); /* XXX force focus? */
 	else
 		gtk_widget_hide(phone->en_window);
