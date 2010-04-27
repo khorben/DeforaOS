@@ -28,6 +28,7 @@
 #include "phone.h"
 #include "gsm.h"
 #define _(string) gettext(string)
+#define N_(string) (string)
 
 
 /* GSM */
@@ -89,21 +90,21 @@ static struct
 	char const * error;
 } _gsm_cme_errors[] =
 {
-	{ 0,	"Phone failure"					},
-	{ 1,	"No connection to phone"			},
-	{ 3,	"Operation not allowed"				},
-	{ 4,	"Operation not supported"			},
-	{ 10,	"SIM not inserted"				},
-	{ 11,	"SIM PIN required"				},
-	{ 12,	"SIM PUK required"				},
-	{ 13,	"SIM failure"					},
-	{ 14,	"SIM busy"					},
-	{ 15,	"SIM wrong"					},
-	{ 20,	"Memory full"					},
-	{ 21,	"Invalid index"					},
-	{ 30,	"No network service"				},
-	{ 31,	"Network timeout"				},
-	{ 32,	"Network not allowed - emergency calls only"	},
+	{ 0,	N_("Phone failure")				},
+	{ 1,	N_("No connection to phone")			},
+	{ 3,	N_("Operation not allowed")			},
+	{ 4,	N_("Operation not supported")			},
+	{ 10,	N_("SIM not inserted")				},
+	{ 11,	N_("SIM PIN required")				},
+	{ 12,	N_("SIM PUK required")				},
+	{ 13,	N_("SIM failure")				},
+	{ 14,	N_("SIM busy")					},
+	{ 15,	N_("SIM wrong")					},
+	{ 20,	N_("Memory full")				},
+	{ 21,	N_("Invalid index")				},
+	{ 30,	N_("No network service")			},
+	{ 31,	N_("Network timeout")				},
+	{ 32,	N_("Network not allowed - emergency calls only")},
 	{ 0,	NULL						}
 };
 
@@ -628,7 +629,7 @@ static int _parse_line_cme_error(GSM * gsm, char const * error)
 			break;
 	if(_gsm_cme_errors[i].error == NULL)
 		return 1;
-	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, _gsm_cme_errors[i].error);
+	_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, _(_gsm_cme_errors[i].error));
 	return 0;
 }
 

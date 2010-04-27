@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-27 04:14+0200\n"
+"POT-Creation-Date: 2010-04-27 04:17+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,9 +16,69 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/gsm.c:209
+#: ../src/gsm.c:93
+msgid "Phone failure"
+msgstr "Défaillance du téléphone"
+
+#: ../src/gsm.c:94
+msgid "No connection to phone"
+msgstr "Pas de connexion au téléphone"
+
+#: ../src/gsm.c:95
+msgid "Operation not allowed"
+msgstr "Opération non autorisée"
+
+#: ../src/gsm.c:96
+msgid "Operation not supported"
+msgstr "Opération non supportée"
+
+#: ../src/gsm.c:97
+msgid "SIM not inserted"
+msgstr "SIM non insérée"
+
+#: ../src/gsm.c:98
+msgid "SIM PIN required"
+msgstr "Code PIN requis"
+
+#: ../src/gsm.c:99
+msgid "SIM PUK required"
+msgstr "Code PUK requis"
+
+#: ../src/gsm.c:100
+msgid "SIM failure"
+msgstr "Défaillance SIM"
+
+#: ../src/gsm.c:101
+msgid "SIM busy"
+msgstr "SIM occupée"
+
+#: ../src/gsm.c:102
+msgid "SIM wrong"
+msgstr "SIM erronée"
+
+#: ../src/gsm.c:103
+msgid "Memory full"
+msgstr "Mémoire pleine"
+
+#: ../src/gsm.c:104
+msgid "Invalid index"
+msgstr "Index invalide"
+
+#: ../src/gsm.c:105
+msgid "No network service"
+msgstr "Pas de couverture réseau"
+
+#: ../src/gsm.c:106
+msgid "Network timeout"
+msgstr "Délai d'attente du réseau dépassé"
+
+#: ../src/gsm.c:107
+msgid "Network not allowed - emergency calls only"
+msgstr "Réseau non autorisé - appels d'urgence uniquement"
+
+#: ../src/gsm.c:210
 msgid ": Unknown baudrate"
-msgstr ""
+msgstr ": Débit inconnu"
 
 #: ../src/main.c:50
 msgid "Usage: phone -b baudrate -d device -r retry\n"
@@ -26,7 +86,7 @@ msgstr ""
 
 #: ../src/phone.c:130 ../src/phone.c:133
 msgid "Error"
-msgstr ""
+msgstr "Erreur"
 
 #: ../src/phone.c:197
 msgid "Contacts"
