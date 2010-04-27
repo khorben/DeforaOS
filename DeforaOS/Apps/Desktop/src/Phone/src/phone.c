@@ -43,7 +43,7 @@ struct _Phone
 	PangoFontDescription * bold;
 
 	/* code */
-	int en_code;
+	PhoneCode en_code;
 	GtkWidget * en_window;
 	GtkWidget * en_entry;
 
@@ -111,7 +111,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
-	phone->en_code = -1;
 	phone->en_window = NULL;
 	phone->co_window = NULL;
 	phone->co_store = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
@@ -232,7 +231,7 @@ void phone_code_enter(Phone * phone)
 {
 	char const * p;
 
-	if(phone->en_code < 0)
+	if(phone->en_window == NULL)
 		return;
 	switch(phone->en_code)
 	{
@@ -682,38 +681,41 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 						PHONE_CODE_SIM_PIN);
 			else
 				phone_error(phone, event->error.message, 0);
-			break;
+			return 0;
 		case GSM_EVENT_TYPE_CONTACT:
 			phone_contact_add(phone, event->contact.index,
 					event->contact.name,
 					event->contact.number);
-			break;
+			return 0;
 		case GSM_EVENT_TYPE_CONTACT_LIST:
 			_phone_fetch_contacts(phone, event->contact_list.start,
 					event->contact_list.end);
-			break;
+			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_contacts(phone, event->message_list.start,
 					event->message_list.end);
-			break;
+			return 0;
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);
-			break;
+			return 0;
 		case GSM_EVENT_TYPE_REGISTRATION:
 			/* FIXME really implement, use an enumerated type */
 			if(event->registration.stat == 1
 					|| event->registration.stat == 5)
+			{
 				_phone_set_status(phone, GSM_STATUS_REGISTERED);
+				return 0;
+			}
 			break;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			_phone_set_signal_level(phone,
 					event->signal_level.level);
-			break;
+			return 0;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
-			break;
+			return 0;
 	}
-	return 0;
+	return 1;
 }
 
 

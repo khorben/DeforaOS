@@ -535,8 +535,15 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 /* gsm_event_send */
 static int _gsm_event_send(GSM * gsm, GSMEventType type)
 {
+	int ret;
+	char buf[80];
+
 	gsm->event.type = type;
-	return gsm->callback(&gsm->event, gsm->callback_data);
+	ret = gsm->callback(&gsm->event, gsm->callback_data);
+	if(ret == 0)
+		return 0;
+	snprintf(buf, sizeof(buf), "%u: %s", type, _("Event not handled"));
+	return phone_error(NULL, buf, ret);
 }
 
 
