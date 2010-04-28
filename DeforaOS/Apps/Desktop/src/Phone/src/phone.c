@@ -785,6 +785,8 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 				phone->si_source = g_timeout_add(2000,
 						_phone_timeout_signal_level,
 						phone);
+			gsm_set_operator_format(phone->gsm,
+					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
 			return;
 	}

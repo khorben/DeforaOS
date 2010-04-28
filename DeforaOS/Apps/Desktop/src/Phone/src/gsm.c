@@ -920,7 +920,6 @@ static int _parse_do(GSM * gsm)
 		gsm->source = 0;
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
-		_gsm_modem_set_operator_format(gsm, GSM_OPERATOR_FORMAT_LONG);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
