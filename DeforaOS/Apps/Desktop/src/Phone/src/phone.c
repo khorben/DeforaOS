@@ -81,6 +81,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
 
+static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
 static void _phone_set_status(Phone * phone, GSMStatus status);
 
@@ -126,6 +127,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 			"stock_landline-phone");
 	gtk_status_icon_set_title(phone->sy_icon, _("Phone"));
 #endif
+	phone->sy_level = NULL;
 	/* check errors */
 	if(phone->gsm == NULL)
 	{
@@ -135,6 +137,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	if(retry >= 0)
 		gsm_set_retry(phone->gsm, retry);
 	gsm_set_callback(phone->gsm, _phone_gsm_event, phone);
+	_phone_set_operator(phone, _("Initializing..."));
 	return phone;
 }
 
@@ -488,10 +491,7 @@ void phone_show_dialer(Phone * phone, gboolean show)
 		gtk_widget_modify_font(widget, phone->bold);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 		phone->sy_level = gtk_progress_bar_new();
-		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(phone->sy_level),
-				0.0);
-		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(phone->sy_level),
-				" ");
+		_phone_set_signal_level(phone, phone->signal_level);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->sy_level, TRUE, TRUE,
 				2);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
@@ -731,6 +731,8 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 	char buf[32];
 
 	phone->signal_level = level;
+	if(phone->sy_level == NULL)
+		return;
 	if(level >= 0.0 && level <= 1.0)
 		snprintf(buf, sizeof(buf), "%.0lf/10 %s", level * 10,
 				(phone->operator != NULL) ? phone->operator
@@ -738,7 +740,7 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 	else
 	{
 		level = 0.0;
-		snprintf(buf, sizeof(buf), "%s", _("Unknown"));
+		snprintf(buf, sizeof(buf), "%s", phone->operator);
 	}
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(phone->sy_level), level);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(phone->sy_level), buf);
@@ -749,18 +751,25 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 static void _phone_set_status(Phone * phone, GSMStatus status)
 {
 	GSMRegistrationReport report;
+	char const * operator = _("Unknown");
 
 	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
 	switch(status)
 	{
 		case GSM_STATUS_UNKNOWN:
+			break;
 		case GSM_STATUS_REGISTERING:
+			operator = _("Registering...");
+			break;
 		case GSM_STATUS_REGISTERING_DENIED:
+			operator = _("Denied");
 			break;
 		case GSM_STATUS_INITIALIZED:
+			operator = _("PIN check...");
 			gsm_is_pin_needed(phone->gsm);
 			break;
 		case GSM_STATUS_READY:
+			operator = _("PIN ready...");
 			gsm_fetch_contact_list(phone->gsm);
 			gsm_fetch_message_list(phone->gsm);
 			gsm_is_registered(phone->gsm);
