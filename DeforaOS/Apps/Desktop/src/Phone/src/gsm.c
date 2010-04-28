@@ -985,6 +985,9 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 	{
 		if(answered != NULL)
 			*answered = TRUE;
+		if((command = g_slist_nth_data(gsm->queue, 0)) != NULL
+				&& command->callback != NULL)
+			command->callback(gsm);
 		return 0;
 	}
 	for(i = 0; _gsm_errors[i] != NULL; i++)
