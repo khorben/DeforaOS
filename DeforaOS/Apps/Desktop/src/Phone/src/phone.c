@@ -535,6 +535,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
+	GtkWidget * hbox;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
@@ -574,6 +575,23 @@ void phone_show_messages(Phone * phone, gboolean show)
 				G_CALLBACK(on_phone_messages_delete), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		/* selector */
+		hbox = gtk_hbox_new(TRUE, 0);
+		widget = gtk_button_new_with_label(_("Inbox"));
+		gtk_button_set_image(GTK_BUTTON(widget),
+				gtk_image_new_from_icon_name("stock_inbox",
+					GTK_ICON_SIZE_BUTTON));
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(on_phone_messages_inbox), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+		widget = gtk_button_new_with_label(_("Sent"));
+		gtk_button_set_image(GTK_BUTTON(widget),
+				gtk_image_new_from_icon_name("stock_outbox",
+					GTK_ICON_SIZE_BUTTON));
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(on_phone_messages_outbox), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),

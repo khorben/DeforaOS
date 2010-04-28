@@ -172,6 +172,24 @@ void on_phone_messages_delete(gpointer data)
 }
 
 
+/* on_phone_messages_inbox */
+void on_phone_messages_inbox(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_messages_outbox */
+void on_phone_messages_outbox(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
 /* on_phone_messages_reply */
 void on_phone_messages_reply(gpointer data)
 {
