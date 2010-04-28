@@ -63,7 +63,9 @@ struct _Phone
 	GtkWidget * me_view;
 
 	/* systray */
+#if GTK_CHECK_VERSION(2, 10, 0)
 	GtkStatusIcon * sy_icon;
+#endif
 	GtkWidget * sy_level;
 };
 
@@ -119,9 +121,11 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->di_window = NULL;
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
+#if GTK_CHECK_VERSION(2, 10, 0)
 	phone->sy_icon = gtk_status_icon_new_from_icon_name(
 			"stock_landline-phone");
 	gtk_status_icon_set_title(phone->sy_icon, _("Phone"));
+#endif
 	/* check errors */
 	if(phone->gsm == NULL)
 	{
