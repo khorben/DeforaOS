@@ -444,6 +444,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		phone->co_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->co_store));
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->co_view),
+				FALSE);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("Contact"),
 				renderer, "text", 1, NULL);
@@ -603,6 +605,8 @@ void phone_show_messages(Phone * phone, gboolean show)
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		phone->me_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->me_store));
+		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
+				FALSE);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("Message"),
 				renderer, "text", 1, NULL);
