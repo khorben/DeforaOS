@@ -1182,6 +1182,7 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result)
 	unsigned int index;
 	char number[32];
 	char name[32];
+	gchar * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
@@ -1189,16 +1190,20 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result)
 	if(sscanf(result, "(%u-%u)", &start, &end) == 2)
 		return _gsm_event(gsm, GSM_EVENT_TYPE_CONTACT_LIST, start, end);
 	if(sscanf(result, "%u,\"%31[^\"]\",145,\"%31[^\"]\"", &index, number,
-				name) == 3
-			|| sscanf(result, "%u,\"%31[^\"]\",129,\"%31[^\"]\"",
-				&index, number, name) == 3)
+				name) != 3
+			&& sscanf(result, "%u,\"%31[^\"]\",129,\"%31[^\"]\"",
+				&index, number, name) != 3)
+		return 1;
+	number[sizeof(number) - 1] = '\0';
+	name[sizeof(name) - 1] = '\0';
+	if((p = g_convert(name, -1, "UTF-8", "ISO-8859-1", NULL, NULL, NULL))
+			!= NULL)
 	{
-		number[sizeof(number) - 1] = '\0';
-		name[sizeof(name) - 1] = '\0';
-		return _gsm_event(gsm, GSM_EVENT_TYPE_CONTACT, index, name,
-				number);
+		snprintf(name, sizeof(name), "%s", p);
+		g_free(p);
 	}
-	return 1;
+	return _gsm_event(gsm, GSM_EVENT_TYPE_CONTACT, index, name,
+			number);
 }
 
 
