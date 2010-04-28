@@ -748,23 +748,41 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 /* phone_set_status */
 static void _phone_set_status(Phone * phone, GSMStatus status)
 {
+	GSMRegistrationReport report;
+
+	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
 	switch(status)
 	{
+		case GSM_STATUS_UNKNOWN:
+		case GSM_STATUS_REGISTERING:
+		case GSM_STATUS_REGISTERING_DENIED:
+			break;
 		case GSM_STATUS_INITIALIZED:
 			gsm_is_pin_needed(phone->gsm);
 			break;
 		case GSM_STATUS_READY:
 			gsm_fetch_contact_list(phone->gsm);
 			gsm_fetch_message_list(phone->gsm);
-			gsm_report_registration(phone->gsm, 1);
+			gsm_is_registered(phone->gsm);
+			gsm_set_operator_mode(phone->gsm,
+					GSM_OPERATOR_MODE_AUTOMATIC);
+			gsm_set_registration_report(phone->gsm, report);
 			break;
-		case GSM_STATUS_REGISTERED:
+		case GSM_STATUS_REGISTERED_HOME:
+		case GSM_STATUS_REGISTERED_ROAMING:
+			_phone_timeout_signal_level(phone);
 			if(phone->si_source == 0)
 				phone->si_source = g_timeout_add(2000,
 						_phone_timeout_signal_level,
 						phone);
 			gsm_fetch_operator(phone->gsm);
-			break;
+			return;
+	}
+	_phone_set_signal_level(phone, 0.0 / 0.0);
+	if(phone->si_source != 0)
+	{
+		g_source_remove(phone->si_source);
+		phone->si_source = 0;
 	}
 }
 
@@ -804,14 +822,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_set_operator(phone, event->operator.operator);
 			return 0;
 		case GSM_EVENT_TYPE_REGISTRATION:
-			/* FIXME really implement, use an enumerated type */
-			if(event->registration.stat == 1
-					|| event->registration.stat == 5)
-			{
-				_phone_set_status(phone, GSM_STATUS_REGISTERED);
-				return 0;
-			}
-			break;
+			/* we also get an event about it */
+			return 0;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			_phone_set_signal_level(phone,
 					event->signal_level.level);

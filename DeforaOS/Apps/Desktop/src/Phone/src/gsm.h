@@ -60,11 +60,32 @@ typedef enum _GSMOperatorMode
 	GSM_OPERATOR_MODE_MANUAL_WITH_FALLBACK = 4
 } GSMOperatorMode;
 
+typedef enum _GSMRegisrationReport
+{
+	GSM_REGISTRATION_REPORT_DISABLE_UNSOLLICITED = 0,
+	GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED = 1,
+	GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION = 2
+} GSMRegistrationReport;
+
+typedef enum _GSMRegistrationStatus
+{
+	GSM_REGISTRATION_STATUS_NOT_SEARCHING = 0,
+	GSM_REGISTRATION_STATUS_REGISTERED_HOME = 1,
+	GSM_REGISTRATION_STATUS_NOT_REGISTERED = 2,
+	GSM_REGISTRATION_STATUS_DENIED = 3,
+	GSM_REGISTRATION_STATUS_UNKNOWN = 4,
+	GSM_REGISTRATION_STATUS_REGISTERED_ROAMING = 5
+} GSMRegistrationStatus;
+
 typedef enum _GSMStatus
 {
-	GSM_STATUS_INITIALIZED = 0,
+	GSM_STATUS_UNKNOWN = 0,
+	GSM_STATUS_INITIALIZED,
 	GSM_STATUS_READY,
-	GSM_STATUS_REGISTERED
+	GSM_STATUS_REGISTERING,
+	GSM_STATUS_REGISTERING_DENIED,
+	GSM_STATUS_REGISTERED_HOME,
+	GSM_STATUS_REGISTERED_ROAMING
 } GSMStatus;
 
 typedef union _GSMEvent
@@ -111,8 +132,8 @@ typedef union _GSMEvent
 	struct
 	{
 		GSMEventType type;
-		unsigned int n;
-		unsigned int stat;
+		GSMRegistrationReport n;
+		GSMRegistrationStatus stat;
 		unsigned int cell;
 		unsigned int area;
 	} registration;
@@ -145,8 +166,10 @@ void gsm_delete(GSM * gsm);
 void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data);
 
 unsigned int gsm_get_retry(GSM * gsm);
-void gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
-void gsm_set_retry(GSM * gsm, unsigned int retry);
+int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
+int gsm_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
+int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report);
+int gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
@@ -157,10 +180,11 @@ int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_message_list(GSM * gsm);
 int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_operator(GSM * gsm);
+int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 int gsm_hangup(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);
-int gsm_report_registration(GSM * gsm, int report);
+int gsm_is_registered(GSM * gsm);
 void gsm_reset(GSM * gsm, unsigned int delay);
 
 #endif /* !PHONE_GSM_H */

@@ -71,6 +71,7 @@ struct _GSM
 	GSMCallback callback;
 	gpointer callback_data;
 	GSMEvent event;
+	GSMStatus status;
 
 	/* queue */
 	GSList * queue;
@@ -131,6 +132,7 @@ static void _gsm_command_delete(GSMCommand * command);
 /* events */
 static int _gsm_event(GSM * gsm, GSMEventType type, ...);
 static int _gsm_event_send(GSM * gsm, GSMEventType type);
+static int _gsm_event_set_status(GSM * gsm, GSMStatus status);
 
 /* modem commands */
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
@@ -149,10 +151,13 @@ static int _gsm_modem_get_operator(GSM * gsm);
 static int _gsm_modem_get_registration(GSM * gsm);
 static int _gsm_modem_get_signal_level(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
+static int _gsm_modem_is_registered(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
-static int _gsm_modem_report_registration(GSM * gsm, gboolean report);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
 static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format);
+static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
+static int _gsm_modem_set_registration_report(GSM * gsm,
+		GSMRegistrationReport report);
 
 /* parsing */
 static int _gsm_parse(GSM * gsm);
@@ -218,6 +223,7 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 	gsm->callback = NULL;
 	gsm->callback_data = NULL;
 	memset(&gsm->event, 0, sizeof(gsm->event));
+	gsm->status = GSM_STATUS_UNKNOWN;
 	/* queue */
 	gsm->queue = NULL;
 	/* internal */
@@ -301,19 +307,38 @@ void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data)
 
 
 /* gsm_set_operator_format */
-void gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format)
+int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 {
-	_gsm_modem_set_operator_format(gsm, format);
+	return _gsm_modem_set_operator_format(gsm, format);
+}
+
+
+/* gsm_set_operator_mode */
+int gsm_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
+{
+	return _gsm_modem_set_operator_mode(gsm, mode);
+}
+
+
+/* gsm_set_registration_report */
+int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report)
+{
+	int ret;
+
+	ret = _gsm_modem_set_registration_report(gsm, report);
+	ret |= gsm_fetch_registration(gsm);
+	return ret;
 }
 
 
 /* gsm_set_retry */
-void gsm_set_retry(GSM * gsm, unsigned int retry)
+int gsm_set_retry(GSM * gsm, unsigned int retry)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, retry);
 #endif
 	gsm->retry = retry;
+	return 0;
 }
 
 
@@ -406,15 +431,10 @@ int gsm_is_pin_needed(GSM * gsm)
 }
 
 
-/* gsm_report_registration */
-int gsm_report_registration(GSM * gsm, int report)
+/* gsm_is_registered */
+int gsm_is_registered(GSM * gsm)
 {
-	int ret;
-
-	ret = _gsm_modem_report_registration(gsm, (report != 0) ? TRUE
-			: FALSE);
-	ret |= gsm_fetch_registration(gsm);
-	return ret;
+	return _gsm_modem_is_registered(gsm);
 }
 
 
@@ -570,6 +590,16 @@ static int _gsm_event_send(GSM * gsm, GSMEventType type)
 		return 0;
 	snprintf(buf, sizeof(buf), "%u: %s", type, _("Event not handled"));
 	return phone_error(NULL, buf, ret);
+}
+
+
+/* gsm_event_set_status */
+static int _gsm_event_set_status(GSM * gsm, GSMStatus status)
+{
+	if(gsm->status == status)
+		return 0;
+	gsm->status = status;
+	return _gsm_event(gsm, GSM_EVENT_TYPE_STATUS, status);
 }
 
 
@@ -757,12 +787,11 @@ static int _gsm_modem_is_pin_needed(GSM * gsm)
 }
 
 
-/* gsm_modem_report_registration */
-static int _gsm_modem_report_registration(GSM * gsm, gboolean report)
+/* gsm_modem_is_registered */
+static int _gsm_modem_is_registered(GSM * gsm)
 {
-	char cmd[] = "AT+CREG=X";
+	char const cmd[] = "AT+CREG?";
 
-	cmd[8] = report ? '1' : '0';
 	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }
 
@@ -802,6 +831,47 @@ static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 	}
 	cmd[8] = GSM_OPERATOR_MODE_SET_FORMAT + '0';
 	cmd[10] = format + '0';
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_set_operator_mode */
+static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
+{
+	char cmd[] = "AT+COPS=X";
+
+	switch(mode)
+	{
+		case GSM_OPERATOR_MODE_AUTOMATIC:
+		case GSM_OPERATOR_MODE_MANUAL:
+		case GSM_OPERATOR_MODE_DEREGISTER:
+			break;
+		case GSM_OPERATOR_MODE_MANUAL_WITH_FALLBACK:
+			/* FIXME implement this one too */
+		default:
+			return 1;
+	}
+	cmd[8] = mode + '0';
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
+}
+
+
+/* gsm_modem_set_registration_report */
+static int _gsm_modem_set_registration_report(GSM * gsm,
+		GSMRegistrationReport report)
+{
+	char cmd[] = "AT+CREG=X";
+
+	switch(report)
+	{
+		case GSM_REGISTRATION_REPORT_DISABLE_UNSOLLICITED:
+		case GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED:
+		case GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION:
+			break;
+		default:
+			return 1;
+	}
+	cmd[8] = report + '0';
 	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }
 
@@ -851,7 +921,7 @@ static int _parse_do(GSM * gsm)
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
 		_gsm_modem_set_operator_format(gsm, GSM_OPERATOR_FORMAT_LONG);
-		_gsm_event(gsm, GSM_EVENT_TYPE_STATUS, GSM_STATUS_INITIALIZED);
+		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
 	else if(gsm->mode == GSM_MODE_COMMAND)
@@ -1100,7 +1170,7 @@ static int _gsm_trigger_cpin(GSM * gsm, char const * result)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
 	if(strcmp(result, "READY") == 0)
-		return _gsm_event(gsm, GSM_EVENT_TYPE_STATUS, GSM_STATUS_READY);
+		return _gsm_event_set_status(gsm, GSM_STATUS_READY);
 	if(strcmp(result, "SIM PIN") == 0)
 		return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_SIM_PIN_REQUIRED, NULL);
@@ -1113,6 +1183,7 @@ static int _gsm_trigger_cpin(GSM * gsm, char const * result)
 /* gsm_trigger_creg */
 static int _gsm_trigger_creg(GSM * gsm, char const * result)
 {
+	int ret;
 	int res;
 
 #ifdef DEBUG
@@ -1122,14 +1193,42 @@ static int _gsm_trigger_creg(GSM * gsm, char const * result)
 					&gsm->event.registration.stat,
 					&gsm->event.registration.area,
 					&gsm->event.registration.cell)) == 4)
-		return _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
 	else if(res == 2)
 	{
 		gsm->event.registration.area = 0;
 		gsm->event.registration.cell = 0;
-		return _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
 	}
-	return 1;
+	else
+		return 1;
+	switch(gsm->event.registration.stat)
+	{
+		case GSM_REGISTRATION_STATUS_NOT_SEARCHING:
+			ret |= _gsm_event_set_status(gsm, GSM_STATUS_READY);
+			break;
+		case GSM_REGISTRATION_STATUS_NOT_REGISTERED:
+			ret |= _gsm_event_set_status(gsm,
+					GSM_STATUS_REGISTERING);
+			break;
+		case GSM_REGISTRATION_STATUS_DENIED:
+			ret |= _gsm_event_set_status(gsm,
+					GSM_STATUS_REGISTERING_DENIED);
+			break;
+		case GSM_REGISTRATION_STATUS_REGISTERED_HOME:
+			ret |= _gsm_event_set_status(gsm,
+					GSM_STATUS_REGISTERED_HOME);
+			break;
+		case GSM_REGISTRATION_STATUS_REGISTERED_ROAMING:
+			ret |= _gsm_event_set_status(gsm,
+					GSM_STATUS_REGISTERED_ROAMING);
+			break;
+		case GSM_REGISTRATION_STATUS_UNKNOWN:
+		default:
+			ret |= _gsm_event_set_status(gsm, GSM_STATUS_UNKNOWN);
+			break;
+	}
+	return ret;
 }
 
 
