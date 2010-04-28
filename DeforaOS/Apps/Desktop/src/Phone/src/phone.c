@@ -415,6 +415,7 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->co_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		/* toolbar */
 		widget = gtk_toolbar_new();
 		toolitem = gtk_tool_button_new(NULL, _("Call"));
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
@@ -422,14 +423,29 @@ void phone_show_contacts(Phone * phone, gboolean show)
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_contacts_call), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_EDIT);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_contacts_edit), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("Write"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"mail-reply-sender");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_contacts_compose), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_contacts_delete), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		phone->co_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->co_store));
 		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("Name"),
+		column = gtk_tree_view_column_new_with_attributes(_("Contact"),
 				renderer, "text", 1, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
 				column);
@@ -533,6 +549,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->me_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		/* toolbar */
 		widget = gtk_toolbar_new();
 		toolitem = gtk_tool_button_new(NULL, _("Call"));
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
@@ -540,7 +557,24 @@ void phone_show_messages(Phone * phone, gboolean show)
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_messages_call), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("New message"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"stock_mail-compose");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_messages_compose), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("Reply"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"mail-reply-sender");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_messages_reply), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_messages_delete), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

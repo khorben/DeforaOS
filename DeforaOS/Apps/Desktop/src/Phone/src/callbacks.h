@@ -31,8 +31,11 @@ void on_phone_code_enter(gpointer data);
 void on_phone_code_leave(gpointer data);
 
 /* contacts */
-void on_phone_contacts_show(gpointer data);
 void on_phone_contacts_call(gpointer data);
+void on_phone_contacts_compose(gpointer data);
+void on_phone_contacts_delete(gpointer data);
+void on_phone_contacts_edit(gpointer data);
+void on_phone_contacts_show(gpointer data);
 
 /* dialer */
 void on_phone_dialer_call(gpointer data);
@@ -41,5 +44,8 @@ void on_phone_dialer_hangup(gpointer data);
 
 /* messages */
 void on_phone_messages_call(gpointer data);
+void on_phone_messages_compose(gpointer data);
+void on_phone_messages_delete(gpointer data);
+void on_phone_messages_reply(gpointer data);
 
 #endif /* !PHONE_CALLBACKS_H */

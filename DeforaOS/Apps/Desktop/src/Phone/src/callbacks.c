@@ -79,6 +79,33 @@ void on_phone_contacts_call(gpointer data)
 }
 
 
+/* on_phone_contacts_compose */
+void on_phone_contacts_compose(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_contacts_delete */
+void on_phone_contacts_delete(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_contacts_edit */
+void on_phone_contacts_edit(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
 /* on_phone_contacts_show */
 void on_phone_contacts_show(gpointer data)
 {
@@ -120,6 +147,33 @@ void on_phone_dialer_hangup(gpointer data)
 /* messages */
 /* on_phone_messages_call */
 void on_phone_messages_call(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_messages_compose */
+void on_phone_messages_compose(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_messages_delete */
+void on_phone_messages_delete(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_messages_reply */
+void on_phone_messages_reply(gpointer data)
 {
 	Phone * phone = data;
 
