@@ -765,11 +765,11 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			operator = _("Denied");
 			break;
 		case GSM_STATUS_INITIALIZED:
-			operator = _("PIN check...");
+			operator = _("SIM check...");
 			gsm_is_pin_needed(phone->gsm);
 			break;
 		case GSM_STATUS_READY:
-			operator = _("PIN ready...");
+			operator = _("SIM ready...");
 			gsm_fetch_contact_list(phone->gsm);
 			gsm_fetch_message_list(phone->gsm);
 			gsm_is_registered(phone->gsm);
