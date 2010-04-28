@@ -801,6 +801,8 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 
 /* callbacks */
 /* phone_gsm_event */
+static int _gsm_event_error(Phone * phone, GSMEvent * event);
+
 static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
 	Phone * phone = data;
@@ -811,12 +813,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 	switch(event->type)
 	{
 		case GSM_EVENT_TYPE_ERROR:
-			if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED)
-				phone_show_code(phone, TRUE,
-						PHONE_CODE_SIM_PIN);
-			else
-				phone_error(phone, event->error.message, 0);
-			return 0;
+			return _gsm_event_error(phone, event);
 		case GSM_EVENT_TYPE_CONTACT:
 			phone_contact_add(phone, event->contact.index,
 					event->contact.name,
@@ -845,6 +842,19 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			return 0;
 	}
 	return 1;
+}
+
+static int _gsm_event_error(Phone * phone, GSMEvent * event)
+{
+	if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED
+			|| event->error.error == GSM_ERROR_SIM_PIN_WRONG)
+		phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED
+			|| event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
+		return 0; /* XXX report this error */
+	else
+		phone_error(phone, event->error.message, 0);
+	return 0;
 }
 
 
