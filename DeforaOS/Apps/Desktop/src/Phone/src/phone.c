@@ -576,6 +576,11 @@ void phone_show_messages(Phone * phone, gboolean show)
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		/* selector */
+		/* FIXME consider:
+		 * - creating a notebook here ("Inbox", "Outbox", "All")
+		 * - each page has a GtkTreeView
+		 * - each GtkTreeView has a GtkTreeModelFilter as model
+		 * - each GtkTreeModelFilter is a variant of the GtkListStore */
 		hbox = gtk_hbox_new(TRUE, 0);
 		widget = gtk_button_new_with_label(_("Inbox"));
 		gtk_button_set_image(GTK_BUTTON(widget),
