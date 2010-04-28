@@ -706,7 +706,8 @@ static int _gsm_modem_enter_pin(GSM * gsm, char const * code)
 		return 1;
 	snprintf(buf, len, "%s%s", cmd, code);
 	ret = _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, buf,
-			GSM_ERROR_SIM_PIN_WRONG, _gsm_modem_is_pin_needed);
+			GSM_ERROR_SIM_PIN_WRONG,
+			(GSMCommandCallback)_gsm_modem_is_pin_needed);
 	free(buf);
 	return ret;
 }
