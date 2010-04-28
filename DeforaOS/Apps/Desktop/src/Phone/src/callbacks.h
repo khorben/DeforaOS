@@ -32,6 +32,7 @@ void on_phone_code_leave(gpointer data);
 
 /* contacts */
 void on_phone_contacts_show(gpointer data);
+void on_phone_contacts_call(gpointer data);
 
 /* dialer */
 void on_phone_dialer_call(gpointer data);

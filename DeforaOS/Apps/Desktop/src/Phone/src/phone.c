@@ -274,6 +274,24 @@ void phone_contact_add(Phone * phone, unsigned int index, char const * name,
 }
 
 
+/* phone_contact_call_selected */
+void phone_contact_call_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	unsigned int index;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->co_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter, 0, &index,
+			-1);
+	gsm_call_contact(phone->gsm, GSM_CALL_TYPE_VOICE, index);
+}
+
+
 /* phone_dialer_append */
 int phone_dialer_append(Phone * phone, char character)
 {
@@ -378,6 +396,7 @@ void phone_show_contacts(Phone * phone, gboolean show)
 {
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
@@ -396,6 +415,14 @@ void phone_show_contacts(Phone * phone, gboolean show)
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->co_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		widget = gtk_toolbar_new();
+		toolitem = gtk_tool_button_new(NULL, _("Call"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"call-start");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_contacts_call), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

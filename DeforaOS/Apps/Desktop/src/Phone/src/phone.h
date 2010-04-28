@@ -53,6 +53,7 @@ void phone_code_enter(Phone * phone);
 /* contacts */
 void phone_contact_add(Phone * phone, unsigned int index, char const * name,
 		char const * number);
+void phone_contact_call_selected(Phone * phone);
 
 /* dialer */
 void phone_call(Phone * phone, char const * number);

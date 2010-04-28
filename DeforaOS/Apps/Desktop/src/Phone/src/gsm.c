@@ -135,6 +135,8 @@ static int _gsm_event_send(GSM * gsm, GSMEventType type);
 /* modem commands */
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
+static int _gsm_modem_call_contact(GSM * gsm, GSMCallType calltype,
+		unsigned int index);
 static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
 static int _gsm_modem_enter_pin(GSM * gsm, char const * code);
 static int _gsm_modem_get_contact_list(GSM * gsm);
@@ -322,6 +324,13 @@ int gsm_call(GSM * gsm, GSMCallType calltype, char const * number)
 	if(number == NULL)
 		return _gsm_modem_call_last(gsm, calltype);
 	return _gsm_modem_call(gsm, calltype, number);
+}
+
+
+/* gsm_call_contact */
+int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index)
+{
+	return _gsm_modem_call_contact(gsm, calltype, index);
 }
 
 
@@ -593,6 +602,29 @@ static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
 	ret = _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, buf);
 	free(buf);
 	return ret;
+}
+
+
+/* gsm_modem_call_contact */
+static int _gsm_modem_call_contact(GSM * gsm, GSMCallType calltype,
+		unsigned int index)
+{
+	char const cmd[] = "ATD>";
+	char const * suffix = "";
+	char buf[32];
+
+	switch(calltype)
+	{
+		case GSM_CALL_TYPE_DATA:
+			break;
+		case GSM_CALL_TYPE_VOICE:
+			suffix = ";";
+			break;
+		default:
+			return 1;
+	}
+	snprintf(buf, sizeof(buf), "%s%u%s", cmd, index, suffix);
+	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, buf);
 }
 
 

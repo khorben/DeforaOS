@@ -70,6 +70,16 @@ void on_phone_code_leave(gpointer data)
 
 
 /* contacts */
+/* on_phone_contacts_call */
+void on_phone_contacts_call(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_contact_call_selected(phone);
+}
+
+
+/* on_phone_contacts_show */
 void on_phone_contacts_show(gpointer data)
 {
 	Phone * phone = data;
