@@ -39,4 +39,7 @@ void on_phone_dialer_call(gpointer data);
 void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);
 
+/* messages */
+void on_phone_messages_call(gpointer data);
+
 #endif /* !PHONE_CALLBACKS_H */

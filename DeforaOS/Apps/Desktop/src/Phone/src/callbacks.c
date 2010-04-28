@@ -116,3 +116,12 @@ void on_phone_dialer_hangup(gpointer data)
 
 	phone_hangup(phone);
 }
+
+/* messages */
+/* on_phone_messages_call */
+void on_phone_messages_call(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}

@@ -518,6 +518,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 {
 	GtkWidget * vbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
@@ -532,6 +533,14 @@ void phone_show_messages(Phone * phone, gboolean show)
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->me_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		widget = gtk_toolbar_new();
+		toolitem = gtk_tool_button_new(NULL, _("Call"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"call-start");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_messages_call), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
