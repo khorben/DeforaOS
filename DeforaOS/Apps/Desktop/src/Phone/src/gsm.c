@@ -1100,7 +1100,7 @@ static int _gsm_trigger_cpin(GSM * gsm, char const * result)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
 	if(strcmp(result, "READY") == 0)
-		return 0;
+		return _gsm_event(gsm, GSM_EVENT_TYPE_STATUS, GSM_STATUS_READY);
 	if(strcmp(result, "SIM PIN") == 0)
 		return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_SIM_PIN_REQUIRED, NULL);

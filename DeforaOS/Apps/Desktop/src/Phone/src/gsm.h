@@ -62,7 +62,9 @@ typedef enum _GSMOperatorMode
 
 typedef enum _GSMStatus
 {
-	GSM_STATUS_INITIALIZED = 0, GSM_STATUS_REGISTERED
+	GSM_STATUS_INITIALIZED = 0,
+	GSM_STATUS_READY,
+	GSM_STATUS_REGISTERED
 } GSMStatus;
 
 typedef union _GSMEvent

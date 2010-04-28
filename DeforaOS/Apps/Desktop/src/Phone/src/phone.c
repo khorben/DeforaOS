@@ -752,7 +752,8 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 	{
 		case GSM_STATUS_INITIALIZED:
 			gsm_is_pin_needed(phone->gsm);
-			/* XXX only when the PIN is known to be correct */
+			break;
+		case GSM_STATUS_READY:
 			gsm_fetch_contact_list(phone->gsm);
 			gsm_fetch_message_list(phone->gsm);
 			gsm_report_registration(phone->gsm, 1);
