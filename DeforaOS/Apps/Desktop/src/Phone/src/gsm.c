@@ -245,8 +245,17 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 	switch(baudrate)
 	{
 		case B1200:	case B2400:	case B4800:	case B9600:
-		case B19200:	case B38400:	case B76800:
-		case B14400:	case B28800:	case B57600:	case B115200:
+		case B19200:	case B38400:
+#ifdef B76800
+		case B76800:
+#endif
+#ifdef B14400
+		case B14400:
+#endif
+#ifdef B28800
+		case B28800:
+#endif
+		case B57600:	case B115200:
 		case B460800:	case B921600:
 			break;
 		default:
