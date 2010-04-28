@@ -848,7 +848,10 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 {
 	if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED
 			|| event->error.error == GSM_ERROR_SIM_PIN_WRONG)
+	{
+		phone_code_clear(phone);
 		phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+	}
 	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED
 			|| event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
 		return 0; /* XXX report this error */
