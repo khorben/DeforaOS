@@ -740,7 +740,8 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 	else
 	{
 		level = 0.0;
-		snprintf(buf, sizeof(buf), "%s", phone->operator);
+		snprintf(buf, sizeof(buf), "%s", (phone->operator != NULL)
+				? phone->operator : "");
 	}
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(phone->sy_level), level);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(phone->sy_level), buf);
