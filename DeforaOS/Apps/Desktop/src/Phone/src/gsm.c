@@ -514,7 +514,7 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->message_list.end = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_OPERATOR:
-			event->operator.mode = va_arg(ap, unsigned int);
+			event->operator.mode = va_arg(ap, GSMOperatorMode);
 			event->operator.format = va_arg(ap, GSMOperatorFormat);
 			event->operator.operator = va_arg(ap, char *);
 			event->operator.lai = va_arg(ap, unsigned int);
@@ -748,7 +748,7 @@ static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 /* gsm_modem_set_operator_format */
 static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 {
-	char cmd[] = "AT+COPS=3,X";
+	char cmd[] = "AT+COPS=X,X";
 
 	switch(format)
 	{
@@ -759,6 +759,7 @@ static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 		default:
 			return 1;
 	}
+	cmd[8] = GSM_OPERATOR_MODE_SET_FORMAT + '0';
 	cmd[10] = format + '0';
 	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd);
 }

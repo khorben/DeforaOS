@@ -51,6 +51,15 @@ typedef enum _GSMOperatorFormat
 	GSM_OPERATOR_FORMAT_LAI = 2
 } GSMOperatorFormat;
 
+typedef enum _GSMOperatorMode
+{
+	GSM_OPERATOR_MODE_AUTOMATIC = 0,
+	GSM_OPERATOR_MODE_MANUAL = 1,
+	GSM_OPERATOR_MODE_DEREGISTER = 2,
+	GSM_OPERATOR_MODE_SET_FORMAT = 3,
+	GSM_OPERATOR_MODE_MANUAL_WITH_FALLBACK = 4
+} GSMOperatorMode;
+
 typedef enum _GSMStatus
 {
 	GSM_STATUS_INITIALIZED = 0, GSM_STATUS_REGISTERED
@@ -90,7 +99,7 @@ typedef union _GSMEvent
 	struct
 	{
 		GSMEventType type;
-		unsigned int mode;
+		GSMOperatorMode mode;
 		GSMOperatorFormat format;
 		char const * operator;
 		unsigned int lai;
