@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Phone
+Comment=A telephony application
+Exec=phone
+Icon=stock_landline-phone
+Type=Application
+Categories=Network;Telephony;GTK;
+StartupNotify=true
