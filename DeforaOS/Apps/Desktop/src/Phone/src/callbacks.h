@@ -32,10 +32,10 @@ void on_phone_code_leave(gpointer data);
 
 /* contacts */
 void on_phone_contacts_call(gpointer data);
-void on_phone_contacts_compose(gpointer data);
 void on_phone_contacts_delete(gpointer data);
 void on_phone_contacts_edit(gpointer data);
 void on_phone_contacts_show(gpointer data);
+void on_phone_contacts_write(gpointer data);
 
 /* dialer */
 void on_phone_dialer_call(gpointer data);
@@ -44,10 +44,11 @@ void on_phone_dialer_hangup(gpointer data);
 
 /* messages */
 void on_phone_messages_call(gpointer data);
-void on_phone_messages_compose(gpointer data);
 void on_phone_messages_delete(gpointer data);
 void on_phone_messages_inbox(gpointer data);
 void on_phone_messages_outbox(gpointer data);
 void on_phone_messages_reply(gpointer data);
+void on_phone_messages_send(gpointer data);
+void on_phone_messages_write(gpointer data);
 
 #endif /* !PHONE_CALLBACKS_H */

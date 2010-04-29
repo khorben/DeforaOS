@@ -157,7 +157,10 @@ static int _gsm_modem_get_signal_level(GSM * gsm);
 static int _gsm_modem_is_pin_needed(GSM * gsm);
 static int _gsm_modem_is_registered(GSM * gsm);
 static int _gsm_modem_hangup(GSM * gsm);
+static int _gsm_modem_send_message(GSM * gsm, char const * number,
+		char const * text);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
+static int _gsm_modem_set_message_format(GSM * gsm, GSMMessageFormat format);
 static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
 static int _gsm_modem_set_registration_report(GSM * gsm,
@@ -444,13 +447,21 @@ int gsm_is_registered(GSM * gsm)
 
 
 /* gsm_reset */
-void gsm_reset(GSM * gsm, unsigned int delay)
+int gsm_reset(GSM * gsm, unsigned int delay)
 {
 	_gsm_queue_flush(gsm);
 	if(delay > 0)
 		gsm->source = g_timeout_add(delay, _on_reset, gsm);
 	else
 		gsm->source = g_idle_add(_on_reset, gsm);
+	return 0;
+}
+
+
+/* gsm_send_message */
+int gsm_send_message(GSM * gsm, char const * number, char const * text)
+{
+	return _gsm_modem_send_message(gsm, number, text);
 }
 
 
@@ -802,6 +813,21 @@ static int _gsm_modem_hangup(GSM * gsm)
 }
 
 
+/* gsm_modem_hangup */
+static int _gsm_modem_send_message(GSM * gsm, char const * number,
+		char const * text)
+{
+	char const cmd[] = "AT+CMGS=?"; /* FIXME this is just a test */
+
+	if(!_is_number(number) || text == NULL)
+		return 1;
+	if(_gsm_modem_set_message_format(gsm, GSM_MESSAGE_FORMAT_PDU) != 0)
+		return 1;
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
+}
+
+
 /* gsm_modem_is_pin_needed */
 static int _gsm_modem_is_pin_needed(GSM * gsm)
 {
@@ -839,6 +865,25 @@ static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 
 	cmd[3] = echo ? '1' : '0';
 	return _gsm_queue_command(gsm, GSM_PRIORITY_HIGH, cmd,
+			GSM_ERROR_UNKNOWN, NULL);
+}
+
+
+/* gsm_modem_set_message_format */
+static int _gsm_modem_set_message_format(GSM * gsm, GSMMessageFormat format)
+{
+	char cmd[] = "AT+CMGF=X";
+
+	switch(format)
+	{
+		case GSM_MESSAGE_FORMAT_PDU:
+		case GSM_MESSAGE_FORMAT_TEXT:
+			break;
+		default:
+			return 1;
+	}
+	cmd[8] = format + '0';
+	return _gsm_queue_command(gsm, GSM_PRIORITY_NORMAL, cmd,
 			GSM_ERROR_UNKNOWN, NULL);
 }
 

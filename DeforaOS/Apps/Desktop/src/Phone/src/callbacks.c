@@ -75,16 +75,7 @@ void on_phone_contacts_call(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_contact_call_selected(phone);
-}
-
-
-/* on_phone_contacts_compose */
-void on_phone_contacts_compose(gpointer data)
-{
-	Phone * phone = data;
-
-	/* FIXME implement */
+	phone_contacts_call_selected(phone);
 }
 
 
@@ -112,6 +103,15 @@ void on_phone_contacts_show(gpointer data)
 	Phone * phone = data;
 
 	phone_show_contacts(phone, TRUE);
+}
+
+
+/* on_phone_contacts_write */
+void on_phone_contacts_write(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_contacts_write_selected(phone);
 }
 
 
@@ -154,15 +154,6 @@ void on_phone_messages_call(gpointer data)
 }
 
 
-/* on_phone_messages_compose */
-void on_phone_messages_compose(gpointer data)
-{
-	Phone * phone = data;
-
-	/* FIXME implement */
-}
-
-
 /* on_phone_messages_delete */
 void on_phone_messages_delete(gpointer data)
 {
@@ -196,4 +187,22 @@ void on_phone_messages_reply(gpointer data)
 	Phone * phone = data;
 
 	/* FIXME implement */
+}
+
+
+/* on_phone_messages_send */
+void on_phone_messages_send(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_messages_send(phone);
+}
+
+
+/* on_phone_messages_write */
+void on_phone_messages_write(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_messages_write(phone, NULL, NULL);
 }

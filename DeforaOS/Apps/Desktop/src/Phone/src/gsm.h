@@ -45,11 +45,18 @@ typedef enum _GSMError
 	GSM_ERROR_CONTACT_LIST_FAILED,
 	GSM_ERROR_HANGUP_FAILED,
 	GSM_ERROR_MESSAGE_LIST_FAILED,
+	GSM_ERROR_MESSAGE_SEND_FAILED,
 	GSM_ERROR_SIGNAL_LEVEL_FAILED,
 	GSM_ERROR_RESET_FAILED,
 	GSM_ERROR_SIM_PIN_REQUIRED,
 	GSM_ERROR_SIM_PIN_WRONG
 } GSMError;
+
+typedef enum _GSMMessageFormat
+{
+	GSM_MESSAGE_FORMAT_PDU = 0,
+	GSM_MESSAGE_FORMAT_TEXT = 1
+} GSMMessageFormat;
 
 typedef enum _GSMOperatorFormat
 {
@@ -192,6 +199,7 @@ int gsm_fetch_signal_level(GSM * gsm);
 int gsm_hangup(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);
 int gsm_is_registered(GSM * gsm);
-void gsm_reset(GSM * gsm, unsigned int delay);
+int gsm_reset(GSM * gsm, unsigned int delay);
+int gsm_send_message(GSM * gsm, char const * number, char const * text);
 
 #endif /* !PHONE_GSM_H */

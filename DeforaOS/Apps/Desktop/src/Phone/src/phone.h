@@ -51,9 +51,14 @@ void phone_code_clear(Phone * phone);
 void phone_code_enter(Phone * phone);
 
 /* contacts */
-void phone_contact_add(Phone * phone, unsigned int index, char const * name,
+void phone_contacts_add(Phone * phone, unsigned int index, char const * name,
 		char const * number);
-void phone_contact_call_selected(Phone * phone);
+void phone_contacts_call_selected(Phone * phone);
+void phone_contacts_write_selected(Phone * phone);
+
+/* messages */
+void phone_messages_write(Phone * phone, char const * number,
+		char const * text);
 
 /* dialer */
 void phone_call(Phone * phone, char const * number);

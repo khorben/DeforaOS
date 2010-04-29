@@ -62,6 +62,11 @@ struct _Phone
 	GtkListStore * me_store;
 	GtkWidget * me_view;
 
+	/* write */
+	GtkWidget * wr_window;
+	GtkWidget * wr_entry;
+	GtkWidget * wr_view;
+
 	/* systray */
 #if GTK_CHECK_VERSION(2, 10, 0)
 	GtkStatusIcon * sy_icon;
@@ -122,6 +127,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->di_window = NULL;
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
+	phone->wr_window = NULL;
 #if GTK_CHECK_VERSION(2, 10, 0)
 	phone->sy_icon = gtk_status_icon_new_from_icon_name(
 			"stock_landline-phone");
@@ -260,9 +266,9 @@ void phone_code_clear(Phone * phone)
 }
 
 
-/* contact */
-/* phone_contact_add */
-void phone_contact_add(Phone * phone, unsigned int index, char const * name,
+/* contacts */
+/* phone_contacts_add */
+void phone_contacts_add(Phone * phone, unsigned int index, char const * name,
 		char const * number)
 {
 	GtkTreeIter iter;
@@ -277,8 +283,8 @@ void phone_contact_add(Phone * phone, unsigned int index, char const * name,
 }
 
 
-/* phone_contact_call_selected */
-void phone_contact_call_selected(Phone * phone)
+/* phone_contacts_call_selected */
+void phone_contacts_call_selected(Phone * phone)
 {
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
@@ -292,6 +298,26 @@ void phone_contact_call_selected(Phone * phone)
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter, 0, &index,
 			-1);
 	gsm_call_contact(phone->gsm, GSM_CALL_TYPE_VOICE, index);
+}
+
+
+/* phone_contacts_write_selected */
+void phone_contacts_write_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	gchar * name = NULL;
+	gchar * number = NULL;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->co_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) == TRUE)
+		gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
+				1, &name, 2, &number, -1);
+	phone_messages_write(phone, name, number);
+	g_free(name);
+	g_free(number);
 }
 
 
@@ -325,6 +351,82 @@ void phone_hangup(Phone * phone)
 {
 	gsm_hangup(phone->gsm);
 	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
+}
+
+
+/* messages */
+/* phone_messages_send */
+void phone_messages_send(Phone * phone)
+{
+	gchar const * number;
+	gchar * text;
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	if(phone->wr_window == NULL)
+		return;
+	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
+	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
+	text = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
+			FALSE);
+	if(number == NULL || number[0] == '\0' || text == NULL)
+		return;
+	gsm_send_message(phone->gsm, number, text);
+	g_free(text);
+}
+
+
+/* phone_messages_write */
+void phone_messages_write(Phone * phone, char const * number, char const * text)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkTextBuffer * tbuf;
+
+	if(phone->wr_window == NULL)
+	{
+		phone->wr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(phone->wr_window), 200,
+				300);
+		gtk_window_set_title(GTK_WINDOW(phone->wr_window),
+				_("Write message"));
+		g_signal_connect(G_OBJECT(phone->wr_window), "delete-event",
+				G_CALLBACK(on_phone_closex), phone->wr_window);
+		vbox = gtk_vbox_new(FALSE, 0);
+		hbox = gtk_hbox_new(FALSE, 0);
+		phone->wr_entry = gtk_entry_new();
+		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE,
+				2);
+		widget = gtk_button_new();
+		gtk_button_set_image(GTK_BUTTON(widget),
+				gtk_image_new_from_icon_name("mail-send",
+					GTK_ICON_SIZE_BUTTON));
+		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(on_phone_messages_send), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
+		widget = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		phone->wr_view = gtk_text_view_new();
+		gtk_container_add(GTK_CONTAINER(widget), phone->wr_view);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
+		gtk_container_add(GTK_CONTAINER(phone->wr_window), vbox);
+		gtk_widget_show_all(vbox);
+	}
+	if(number != NULL)
+		gtk_entry_set_text(GTK_ENTRY(phone->wr_entry), number);
+	if(text != NULL)
+	{
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+		gtk_text_buffer_set_text(tbuf, text, strlen(text));
+	}
+	gtk_widget_show(phone->wr_window);
 }
 
 
@@ -434,7 +536,7 @@ void phone_show_contacts(Phone * phone, gboolean show)
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
 				"mail-reply-sender");
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
-				G_CALLBACK(on_phone_contacts_compose), phone);
+				G_CALLBACK(on_phone_contacts_write), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
@@ -564,7 +666,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
 				"stock_mail-compose");
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
-				G_CALLBACK(on_phone_messages_compose), phone);
+				G_CALLBACK(on_phone_messages_write), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		toolitem = gtk_tool_button_new(NULL, _("Reply"));
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
@@ -815,7 +917,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_ERROR:
 			return _gsm_event_error(phone, event);
 		case GSM_EVENT_TYPE_CONTACT:
-			phone_contact_add(phone, event->contact.index,
+			phone_contacts_add(phone, event->contact.index,
 					event->contact.name,
 					event->contact.number);
 			return 0;
