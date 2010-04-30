@@ -196,7 +196,7 @@ int gsm_set_retry(GSM * gsm, unsigned int retry);
 /* useful */
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index);
-int gsm_enter_pin(GSM * gsm, char const * code);
+int gsm_enter_sim_pin(GSM * gsm, char const * code);
 int gsm_fetch_contact_list(GSM * gsm);
 int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_message_list(GSM * gsm);

@@ -177,7 +177,7 @@ static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 static int _gsm_modem_call_contact(GSM * gsm, GSMCallType calltype,
 		unsigned int index);
 static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype);
-static int _gsm_modem_enter_pin(GSM * gsm, char const * code);
+static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code);
 static int _gsm_modem_get_contact_list(GSM * gsm);
 static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
 		unsigned int end);
@@ -411,12 +411,12 @@ int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index)
 }
 
 
-/* gsm_enter_pin */
-int gsm_enter_pin(GSM * gsm, char const * code)
+/* gsm_enter_sim_pin */
+int gsm_enter_sim_pin(GSM * gsm, char const * code)
 {
 	if(code == NULL)
 		return _gsm_modem_is_pin_needed(gsm);
-	return _gsm_modem_enter_pin(gsm, code);
+	return _gsm_modem_enter_sim_pin(gsm, code);
 }
 
 
@@ -788,8 +788,8 @@ static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
 }
 
 
-/* gsm_modem_enter_pin */
-static int _gsm_modem_enter_pin(GSM * gsm, char const * code)
+/* gsm_modem_enter_sim_pin */
+static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 {
 	int ret;
 	char const cmd[] = "AT+CPIN=";
@@ -797,7 +797,10 @@ static int _gsm_modem_enter_pin(GSM * gsm, char const * code)
 	char * buf;
 
 	if(!_is_code(code))
+	{
+		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_SIM_PIN_WRONG);
 		return 1;
+	}
 	len = sizeof(cmd) + strlen(code);
 	if((buf = malloc(len)) == NULL)
 		return 1;

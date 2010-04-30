@@ -33,7 +33,8 @@
 /* types */
 typedef enum _PhoneTrack
 {
-	PHONE_TRACK_CONTACT_LIST = 0,
+	PHONE_TRACK_CODE_ENTERED = 0,
+	PHONE_TRACK_CONTACT_LIST,
 	PHONE_TRACK_MESSAGE_LIST,
 	PHONE_TRACK_MESSAGE_SENT,
 	PHONE_TRACK_REGISTRATION,
@@ -62,6 +63,7 @@ struct _Phone
 	PhoneCode en_code;
 	GtkWidget * en_window;
 	GtkWidget * en_entry;
+	GtkWidget * en_progress;
 
 	/* contacts */
 	GtkWidget * co_window;
@@ -151,6 +153,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
 	phone->en_window = NULL;
+	phone->en_progress = NULL;
 	phone->co_window = NULL;
 	phone->co_store = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
 			G_TYPE_STRING);
@@ -270,7 +273,11 @@ void phone_code_enter(Phone * phone)
 	{
 		case PHONE_CODE_SIM_PIN:
 			p = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
-			gsm_enter_pin(phone->gsm, p);
+			gsm_enter_sim_pin(phone->gsm, p);
+			phone->en_progress = _phone_create_progress(
+					phone->en_window,
+					_("Checking SIM PIN code..."));
+			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, TRUE);
 			break;
 	}
 }
@@ -1026,6 +1033,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			gsm_set_operator_format(phone->gsm,
 					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
+			gsm_fetch_signal_level(phone->gsm);
 			return;
 	}
 	_phone_track(phone, PHONE_TRACK_REGISTRATION, track_registration);
@@ -1110,11 +1118,16 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 
 static int _gsm_event_error(Phone * phone, GSMEvent * event)
 {
-	if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED
-			|| event->error.error == GSM_ERROR_SIM_PIN_WRONG)
+	if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED)
 	{
 		phone_code_clear(phone);
 		phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+	}
+	else if(event->error.error == GSM_ERROR_SIM_PIN_WRONG)
+	{
+		_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
+		phone->wr_progress = _phone_progress_delete(phone->en_progress);
+		_phone_error(phone->wr_window, _("Wrong SIM PIN code"));
 	}
 	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED)
 		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
@@ -1137,6 +1150,8 @@ static gboolean _phone_timeout_track(gpointer data)
 {
 	Phone * phone = data;
 
+	if(phone->tracks[PHONE_TRACK_CODE_ENTERED])
+		_phone_progress_pulse(phone->en_progress);
 	if(phone->tracks[PHONE_TRACK_CONTACT_LIST])
 	{
 		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, FALSE);
