@@ -1648,7 +1648,7 @@ static gboolean _on_reset(gpointer data)
 	gsm->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(gsm->channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
-		fprintf(stderr, "%s%s\n", "phone: ", error->message);
+		phone_error(NULL, error->message, 0);
 	g_io_channel_set_buffered(gsm->channel, FALSE);
 	gsm->rd_source = g_io_add_watch(gsm->channel, G_IO_IN,
 			_on_watch_can_read, gsm);
@@ -1730,7 +1730,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			fprintf(stderr, "%s%s\n", "phone: ", error->message);
+			phone_error(NULL, error->message, 0);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
 			if(gsm->retry > 0)
@@ -1777,7 +1777,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			fprintf(stderr, "phone: %s\n", error->message);
+			phone_error(NULL, error->message, 0);
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
 			if(gsm->retry > 0)
