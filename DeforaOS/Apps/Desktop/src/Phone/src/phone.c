@@ -85,6 +85,8 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
+static void _phone_fetch_messages(Phone * phone, unsigned int start,
+		unsigned int end);
 
 static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
@@ -819,13 +821,29 @@ static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 {
 	unsigned int i;
 
-	for(i = start; i < end; i+=10)
+	for(i = start + 10; i < end; i+=10)
 	{
 		gsm_fetch_contacts(phone->gsm, start, i);
 		start = i;
 	}
 	if(start < end)
 		gsm_fetch_contacts(phone->gsm, start, end);
+}
+
+
+/* phone_fetch_messages */
+static void _phone_fetch_messages(Phone * phone, unsigned int start,
+		unsigned int end)
+{
+	unsigned int i;
+
+	for(i = start + 10; i < end; i+=10)
+	{
+		gsm_fetch_messages(phone->gsm, start, i);
+		start = i;
+	}
+	if(start < end)
+		gsm_fetch_messages(phone->gsm, start, end);
 }
 
 
@@ -866,12 +884,13 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 static void _phone_set_status(Phone * phone, GSMStatus status)
 {
 	GSMRegistrationReport report;
-	char const * operator = _("Unknown");
+	char const * operator = NULL;
 
 	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
 	switch(status)
 	{
 		case GSM_STATUS_UNKNOWN:
+			operator = _("Unknown");
 			break;
 		case GSM_STATUS_REGISTERING:
 			operator = _("Registering...");
@@ -904,6 +923,8 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			gsm_fetch_operator(phone->gsm);
 			return;
 	}
+	if(operator != NULL)
+		_phone_set_operator(phone, operator);
 	_phone_set_signal_level(phone, 0.0 / 0.0);
 	if(phone->si_source != 0)
 	{
@@ -938,14 +959,14 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->contact_list.end);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
-			_phone_fetch_contacts(phone, event->message_list.start,
+			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);
 			return 0;
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);
 			return 0;
 		case GSM_EVENT_TYPE_REGISTRATION:
-			/* we also get an event about it */
+			/* we also get a status update about it */
 			return 0;
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			_phone_set_signal_level(phone,
