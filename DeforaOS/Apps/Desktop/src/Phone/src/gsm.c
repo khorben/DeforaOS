@@ -221,6 +221,7 @@ static int _gsm_queue_push(GSM * gsm);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
+static int _gsm_trigger_cmgs(GSM * gsm, char const * result);
 static int _gsm_trigger_cops(GSM * gsm, char const * result);
 static int _gsm_trigger_cpbr(GSM * gsm, char const * result);
 static int _gsm_trigger_cpin(GSM * gsm, char const * result);
@@ -235,6 +236,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
+	GSM_TRIGGER("+CMGS: ",		cmgs),
 	GSM_TRIGGER("+COPS: ",		cops),
 	GSM_TRIGGER("+CPBR: ",		cpbr),
 	GSM_TRIGGER("+CPIN: ",		cpin),
@@ -397,6 +399,7 @@ int gsm_call(GSM * gsm, GSMCallType calltype, char const * number)
 {
 	if(number == NULL)
 		return _gsm_modem_call_last(gsm, calltype);
+	/* FIXME if the number is not valid try from the address book */
 	return _gsm_modem_call(gsm, calltype, number);
 }
 
@@ -1493,6 +1496,18 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 				&gsm->event.message_list.end) != 2)
 		return 1;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE_LIST);
+}
+
+
+/* gsm_trigger_cmgs */
+static int _gsm_trigger_cmgs(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u", &gsm->event.message_sent.mr) != 1)
+		return 1;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE_SENT);
 }
 
 

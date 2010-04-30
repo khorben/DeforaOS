@@ -32,6 +32,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_CONTACT,
 	GSM_EVENT_TYPE_CONTACT_LIST,
 	GSM_EVENT_TYPE_MESSAGE_LIST,
+	GSM_EVENT_TYPE_MESSAGE_SENT,
 	GSM_EVENT_TYPE_OPERATOR,
 	GSM_EVENT_TYPE_REGISTRATION,
 	GSM_EVENT_TYPE_SIGNAL_LEVEL,
@@ -131,6 +132,13 @@ typedef union _GSMEvent
 		unsigned int start;
 		unsigned int end;
 	} contact_list, message_list;
+
+	/* GSM_EVENT_TYPE_MESSAGE_SENT */
+	struct
+	{
+		GSMEventType type;
+		unsigned int mr;
+	} message_sent;
 
 	/* GSM_EVENT_TYPE_OPERATOR */
 	struct

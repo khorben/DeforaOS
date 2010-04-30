@@ -31,15 +31,29 @@
 /* Phone */
 /* private */
 /* types */
+typedef enum _PhoneTrack
+{
+	PHONE_TRACK_CONTACT_LIST = 0,
+	PHONE_TRACK_MESSAGE_LIST,
+	PHONE_TRACK_MESSAGE_SENT,
+	PHONE_TRACK_REGISTRATION,
+	PHONE_TRACK_SIGNAL_LEVEL
+} PhoneTrack;
+#define PHONE_TRACK_LAST	PHONE_TRACK_SIGNAL_LEVEL
+#define PHONE_TRACK_COUNT	(PHONE_TRACK_LAST + 1)
+
 struct _Phone
 {
 	GSM * gsm;
 	guint ui_source;
-	guint si_source;
-	guint re_source;
 
+	/* status */
 	gdouble signal_level;
 	char * operator;
+
+	/* tracking */
+	guint tr_source;
+	gboolean tracks[PHONE_TRACK_COUNT];
 
 	/* widgets */
 	PangoFontDescription * bold;
@@ -67,6 +81,7 @@ struct _Phone
 	GtkWidget * wr_window;
 	GtkWidget * wr_entry;
 	GtkWidget * wr_view;
+	GtkWidget * wr_progress;
 
 	/* systray */
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -83,20 +98,30 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 		char const * button2_image, char const * button2_label,
 		GCallback button2_callback,
 		GCallback button_callback);
+static GtkWidget * _phone_create_progress(GtkWidget * parent,
+		char const * text);
+
+static void _phone_error(GtkWidget * window, char const * message);
 
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
 static void _phone_fetch_messages(Phone * phone, unsigned int start,
 		unsigned int end);
 
+static void _phone_info(GtkWidget * window, char const * message);
+
+static GtkWidget * _phone_progress_delete(GtkWidget * widget);
+static void _phone_progress_pulse(GtkWidget * widget);
+
 static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
 static void _phone_set_status(Phone * phone, GSMStatus status);
 
+static void _phone_track(Phone * phone, PhoneTrack what, gboolean track);
+
 /* callbacks */
 static int _phone_gsm_event(GSMEvent * event, gpointer data);
-static gboolean _phone_timeout_registration(gpointer data);
-static gboolean _phone_timeout_signal_level(gpointer data);
+static gboolean _phone_timeout_track(gpointer data);
 
 
 /* public */
@@ -118,8 +143,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate);
 	phone->ui_source = g_idle_add(_new_idle, phone);
-	phone->si_source = 0;
-	phone->re_source = 0;
+	phone->tr_source = 0;
+	memset(&phone->tracks, 0, sizeof(phone->tracks));
 	phone->signal_level = 0.0 / 0.0;
 	phone->operator = NULL;
 	/* widgets */
@@ -133,6 +158,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
 	phone->wr_window = NULL;
+	phone->wr_progress = NULL;
 #if GTK_CHECK_VERSION(2, 10, 0)
 	phone->sy_icon = gtk_status_icon_new_from_icon_name(
 			"stock_landline-phone");
@@ -169,10 +195,8 @@ void phone_delete(Phone * phone)
 {
 	if(phone->ui_source != 0)
 		g_source_remove(phone->ui_source);
-	if(phone->si_source != 0)
-		g_source_remove(phone->si_source);
-	if(phone->re_source != 0)
-		g_source_remove(phone->re_source);
+	if(phone->tr_source != 0)
+		g_source_remove(phone->tr_source);
 	free(phone->operator);
 	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
@@ -187,22 +211,9 @@ static int _error_text(char const * message, int ret);
 
 int phone_error(Phone * phone, char const * message, int ret)
 {
-	GtkWidget * dialog;
-
 	if(phone == NULL)
 		return _error_text(message, ret);
-	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s",
-#if GTK_CHECK_VERSION(2, 8, 0)
-			_("Error"));
-	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s",
-#endif
-			message);
-	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
-	gtk_widget_show(dialog);
+	_phone_error(NULL, message);
 	return ret;
 }
 
@@ -384,6 +395,9 @@ void phone_messages_send(Phone * phone)
 		return;
 	gsm_send_message(phone->gsm, number, text);
 	g_free(text);
+	phone->wr_progress = _phone_create_progress(phone->wr_window,
+			_("Sending message..."));
+	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 }
 
 
@@ -820,6 +834,54 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 }
 
 
+/* phone_create_progress */
+static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
+{
+	GtkWidget * window;
+	GtkWidget * vbox;
+	GtkWidget * widget;
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
+	gtk_window_set_title(GTK_WINDOW(window), _("Operation in progress..."));
+	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(parent));
+	vbox = gtk_vbox_new(FALSE, 0);
+	widget = gtk_label_new(text);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 2);
+	widget = gtk_progress_bar_new();
+	g_object_set_data(G_OBJECT(window), "progress", widget);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), " ");
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 2);
+	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
+	gtk_container_add(GTK_CONTAINER(window), vbox);
+	gtk_widget_show_all(window);
+	return window;
+}
+
+
+/* phone_error */
+static void _phone_error(GtkWidget * window, char const * message)
+{
+	GtkWidget * dialog;
+	GtkWindow * w = (window != NULL) ? GTK_WINDOW(window) : NULL;
+	GtkDialogFlags flags = (window != NULL)
+		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
+
+	dialog = gtk_message_dialog_new(w, flags, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+}
+
+
 /* phone_fetch_contacts */
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end)
@@ -849,6 +911,47 @@ static void _phone_fetch_messages(Phone * phone, unsigned int start,
 	}
 	if(start < end)
 		gsm_fetch_messages(phone->gsm, start, end);
+}
+
+
+/* phone_info */
+static void _phone_info(GtkWidget * window, char const * message)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Information"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Information"));
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
+				gtk_widget_destroy), NULL);
+	gtk_widget_show(dialog);
+}
+
+
+/* phone_progress_delete */
+static GtkWidget * _phone_progress_delete(GtkWidget * widget)
+{
+	if(widget != NULL)
+		gtk_widget_destroy(widget);
+	return NULL;
+}
+
+
+/* phone_progress_pulse */
+static void _phone_progress_pulse(GtkWidget * widget)
+{
+	GtkWidget * progress;
+
+	if((progress = g_object_get_data(G_OBJECT(widget), "progress")) == NULL)
+		return;
+	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress));
 }
 
 
@@ -886,82 +989,71 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 
 
 /* phone_set_status */
-static void _set_status_registration(Phone * phone, gboolean registration);
-
 static void _phone_set_status(Phone * phone, GSMStatus status)
 {
 	GSMRegistrationReport report;
 	char const * operator = NULL;
+	gboolean track_registration = TRUE;
 
 	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
 	switch(status)
 	{
 		case GSM_STATUS_UNKNOWN:
 			operator = _("Unknown");
-			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_REGISTERING:
 			operator = _("Registering...");
-			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_REGISTERING_DENIED:
 			operator = _("Denied");
-			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_INITIALIZED:
 			operator = _("SIM check...");
 			gsm_is_pin_needed(phone->gsm);
-			_set_status_registration(phone, FALSE);
 			break;
 		case GSM_STATUS_READY:
 			operator = _("SIM ready...");
-			gsm_fetch_contact_list(phone->gsm);
-			gsm_fetch_message_list(phone->gsm);
+			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
+			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);
-			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_REGISTERED_HOME:
 		case GSM_STATUS_REGISTERED_ROAMING:
-			if(phone->si_source == 0)
-			{
-				_phone_timeout_signal_level(phone);
-				phone->si_source = g_timeout_add(2000,
-						_phone_timeout_signal_level,
-						phone);
-			}
+			track_registration = FALSE;
+			_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, TRUE);
 			gsm_set_operator_format(phone->gsm,
 					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
-			_set_status_registration(phone, FALSE);
 			return;
 	}
+	_phone_track(phone, PHONE_TRACK_REGISTRATION, track_registration);
 	if(operator != NULL)
 		_phone_set_operator(phone, operator);
 	_phone_set_signal_level(phone, 0.0 / 0.0);
-	if(phone->si_source != 0)
-	{
-		g_source_remove(phone->si_source);
-		phone->si_source = 0;
-	}
 }
 
-static void _set_status_registration(Phone * phone, gboolean registration)
+
+/* phone_track */
+static void _phone_track(Phone * phone, PhoneTrack what, gboolean track)
 {
-	if(registration)
+	size_t i;
+
+	phone->tracks[what] = track;
+	if(track)
 	{
-		if(phone->re_source == 0)
-		{
-			_phone_timeout_registration(phone);
-			phone->re_source = g_timeout_add(2000,
-					_phone_timeout_registration, phone);
-		}
+		if(phone->tr_source == 0)
+			phone->tr_source = g_timeout_add(2000,
+					_phone_timeout_track, phone);
 	}
-	else if(phone->re_source != 0)
+	else if(phone->tr_source != 0)
 	{
-		g_source_remove(phone->re_source);
-		phone->re_source = 0;
+		for(i = 0; i < PHONE_TRACK_COUNT; i++)
+			if(phone->tracks[i] != FALSE)
+				return;
+		g_source_remove(phone->tr_source);
+		phone->tr_source = 0;
 	}
 }
 
@@ -994,12 +1086,17 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);
 			return 0;
+		case GSM_EVENT_TYPE_MESSAGE_SENT:
+			_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
+			phone->wr_progress = _phone_progress_delete(
+					phone->wr_progress);
+			_phone_info(phone->wr_window, _("Message sent"));
+			return 0;
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);
 			return 0;
 		case GSM_EVENT_TYPE_REGISTRATION:
-			/* we also get a status update about it */
-			return 0;
+			return 0; /* we also get a status update about it */
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			_phone_set_signal_level(phone,
 					event->signal_level.level);
@@ -1019,33 +1116,42 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 		phone_code_clear(phone);
 		phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
 	}
-	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED
-			|| event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
-		/* XXX try again later */
-		return 0;
+	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED)
+		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
+	else if(event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
+		_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 	else if(event->error.error == GSM_ERROR_MESSAGE_SEND_FAILED)
-		phone_error(phone, "Could not send message", 0);
+	{
+		_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
+		phone->wr_progress = _phone_progress_delete(phone->wr_progress);
+		_phone_error(phone->wr_window, _("Could not send message"));
+	}
 	else
 		phone_error(phone, event->error.message, 0);
 	return 0;
 }
 
 
-/* phone_timeout_registration */
-static gboolean _phone_timeout_registration(gpointer data)
+/* phone_timeout_track */
+static gboolean _phone_timeout_track(gpointer data)
 {
 	Phone * phone = data;
 
-	gsm_is_registered(phone->gsm);
-	return TRUE;
-}
-
-
-/* phone_timeout_signal_level */
-static gboolean _phone_timeout_signal_level(gpointer data)
-{
-	Phone * phone = data;
-
-	gsm_fetch_signal_level(phone->gsm);
+	if(phone->tracks[PHONE_TRACK_CONTACT_LIST])
+	{
+		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, FALSE);
+		gsm_fetch_contact_list(phone->gsm);
+	}
+	if(phone->tracks[PHONE_TRACK_MESSAGE_LIST])
+	{
+		_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, FALSE);
+		gsm_fetch_message_list(phone->gsm);
+	}
+	if(phone->tracks[PHONE_TRACK_MESSAGE_SENT])
+		_phone_progress_pulse(phone->wr_progress);
+	if(phone->tracks[PHONE_TRACK_REGISTRATION])
+		gsm_is_registered(phone->gsm);
+	if(phone->tracks[PHONE_TRACK_SIGNAL_LEVEL])
+		gsm_fetch_signal_level(phone->gsm);
 	return TRUE;
 }
