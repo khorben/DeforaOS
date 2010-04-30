@@ -36,6 +36,7 @@ struct _Phone
 	GSM * gsm;
 	guint ui_source;
 	guint si_source;
+	guint re_source;
 
 	gdouble signal_level;
 	char * operator;
@@ -94,6 +95,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status);
 
 /* callbacks */
 static int _phone_gsm_event(GSMEvent * event, gpointer data);
+static gboolean _phone_timeout_registration(gpointer data);
 static gboolean _phone_timeout_signal_level(gpointer data);
 
 
@@ -117,6 +119,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 	phone->gsm = gsm_new(device, baudrate);
 	phone->ui_source = g_idle_add(_new_idle, phone);
 	phone->si_source = 0;
+	phone->re_source = 0;
 	phone->signal_level = 0.0 / 0.0;
 	phone->operator = NULL;
 	/* widgets */
@@ -168,6 +171,8 @@ void phone_delete(Phone * phone)
 		g_source_remove(phone->ui_source);
 	if(phone->si_source != 0)
 		g_source_remove(phone->si_source);
+	if(phone->re_source != 0)
+		g_source_remove(phone->re_source);
 	free(phone->operator);
 	pango_font_description_free(phone->bold);
 	if(phone->gsm != NULL)
@@ -881,6 +886,8 @@ static void _phone_set_signal_level(Phone * phone, gdouble level)
 
 
 /* phone_set_status */
+static void _set_status_registration(Phone * phone, gboolean registration);
+
 static void _phone_set_status(Phone * phone, GSMStatus status)
 {
 	GSMRegistrationReport report;
@@ -891,36 +898,43 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 	{
 		case GSM_STATUS_UNKNOWN:
 			operator = _("Unknown");
+			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_REGISTERING:
 			operator = _("Registering...");
+			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_REGISTERING_DENIED:
 			operator = _("Denied");
+			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_INITIALIZED:
 			operator = _("SIM check...");
 			gsm_is_pin_needed(phone->gsm);
+			_set_status_registration(phone, FALSE);
 			break;
 		case GSM_STATUS_READY:
 			operator = _("SIM ready...");
 			gsm_fetch_contact_list(phone->gsm);
 			gsm_fetch_message_list(phone->gsm);
-			gsm_is_registered(phone->gsm);
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);
+			_set_status_registration(phone, TRUE);
 			break;
 		case GSM_STATUS_REGISTERED_HOME:
 		case GSM_STATUS_REGISTERED_ROAMING:
-			_phone_timeout_signal_level(phone);
 			if(phone->si_source == 0)
+			{
+				_phone_timeout_signal_level(phone);
 				phone->si_source = g_timeout_add(2000,
 						_phone_timeout_signal_level,
 						phone);
+			}
 			gsm_set_operator_format(phone->gsm,
 					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
+			_set_status_registration(phone, FALSE);
 			return;
 	}
 	if(operator != NULL)
@@ -930,6 +944,24 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 	{
 		g_source_remove(phone->si_source);
 		phone->si_source = 0;
+	}
+}
+
+static void _set_status_registration(Phone * phone, gboolean registration)
+{
+	if(registration)
+	{
+		if(phone->re_source == 0)
+		{
+			_phone_timeout_registration(phone);
+			phone->re_source = g_timeout_add(2000,
+					_phone_timeout_registration, phone);
+		}
+	}
+	else if(phone->re_source != 0)
+	{
+		g_source_remove(phone->re_source);
+		phone->re_source = 0;
 	}
 }
 
@@ -996,6 +1028,16 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 	else
 		phone_error(phone, event->error.message, 0);
 	return 0;
+}
+
+
+/* phone_timeout_registration */
+static gboolean _phone_timeout_registration(gpointer data)
+{
+	Phone * phone = data;
+
+	gsm_is_registered(phone->gsm);
+	return TRUE;
 }
 
 
