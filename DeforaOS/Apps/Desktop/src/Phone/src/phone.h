@@ -44,6 +44,7 @@ void phone_show_code(Phone * phone, gboolean show, ...);
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
+void phone_show_write(Phone * phone, gboolean show);
 
 /* code */
 int phone_code_append(Phone * phone, char character);
