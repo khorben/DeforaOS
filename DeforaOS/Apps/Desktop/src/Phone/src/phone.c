@@ -1136,6 +1136,9 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 		phone->en_progress = _phone_progress_delete(phone->en_progress);
 		_phone_error(phone->en_window, _("Wrong SIM PIN code"));
 	}
+	else if(event->error.error == GSM_ERROR_CONTACT_FETCH_FAILED
+			|| event->error.error == GSM_ERROR_MESSAGE_FETCH_FAILED)
+		return 0; /* we can ignore this error */
 	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED)
 		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
 	else if(event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
