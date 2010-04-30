@@ -366,7 +366,7 @@ void phone_messages_send(Phone * phone)
 	GtkTextIter start;
 	GtkTextIter end;
 
-	phone_show_messages(phone, TRUE);
+	phone_show_write(phone, TRUE);
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
@@ -968,7 +968,10 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 	}
 	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED
 			|| event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
-		return 0; /* XXX report this error */
+		/* XXX try again later */
+		return 0;
+	else if(event->error.error == GSM_ERROR_MESSAGE_SEND_FAILED)
+		phone_error(phone, "Could not send message", 0);
 	else
 		phone_error(phone, event->error.message, 0);
 	return 0;
