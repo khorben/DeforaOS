@@ -262,7 +262,8 @@ void phone_code_enter(Phone * phone)
 /* phone_code_clear */
 void phone_code_clear(Phone * phone)
 {
-	gtk_entry_set_text(GTK_ENTRY(phone->en_entry), "");
+	if(phone->en_window != NULL)
+		gtk_entry_set_text(GTK_ENTRY(phone->en_entry), "");
 }
 
 
@@ -331,6 +332,8 @@ int phone_dialer_append(Phone * phone, char character)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%c)\n", __func__, character);
 #endif
+	if(phone->di_window == NULL)
+		return 1;
 	if((character < '0' || character > '9') && character != '*'
 			&& character != '+' && character != '#')
 		return 1; /* ignore the error */
@@ -350,7 +353,8 @@ int phone_dialer_append(Phone * phone, char character)
 void phone_hangup(Phone * phone)
 {
 	gsm_hangup(phone->gsm);
-	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
+	if(phone->di_window != NULL)
+		gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
 }
 
 
