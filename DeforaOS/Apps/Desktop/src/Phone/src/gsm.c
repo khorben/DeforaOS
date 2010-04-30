@@ -789,6 +789,8 @@ static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
 
 
 /* gsm_modem_enter_sim_pin */
+static void _modem_enter_sim_pin_callback(GSM * gsm);
+
 static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 {
 	int ret;
@@ -806,10 +808,16 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 		return 1;
 	snprintf(buf, len, "%s%s", cmd, code);
 	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
-			GSM_ERROR_SIM_PIN_WRONG,
-			(GSMCommandCallback)_gsm_modem_is_pin_needed);
+			GSM_ERROR_SIM_PIN_WRONG, _modem_enter_sim_pin_callback);
 	free(buf);
 	return ret;
+}
+
+static void _modem_enter_sim_pin_callback(GSM * gsm)
+{
+	_gsm_event(gsm, GSM_EVENT_TYPE_SIM_PIN_VALID);
+	/* do we need another PIN code? */
+	_gsm_modem_is_pin_needed(gsm);
 }
 
 
@@ -830,8 +838,7 @@ static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
 	
 	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CPBR=", start, end);
 	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd,
-			GSM_ERROR_CONTACT_LIST_FAILED, /* XXX not accurate */
-			NULL);
+			GSM_ERROR_CONTACT_FETCH_FAILED, NULL);
 }
 
 
@@ -852,8 +859,7 @@ static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
 	
 	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CMGR=", start, end);
 	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd,
-			GSM_ERROR_MESSAGE_LIST_FAILED, /* XXX not accurate */
-			NULL);
+			GSM_ERROR_MESSAGE_FETCH_FAILED, NULL);
 }
 
 

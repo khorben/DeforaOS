@@ -1016,6 +1016,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			break;
 		case GSM_STATUS_INITIALIZED:
 			operator = _("SIM check...");
+			track_registration = FALSE;
 			gsm_is_pin_needed(phone->gsm);
 			break;
 		case GSM_STATUS_READY:
@@ -1109,6 +1110,12 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_set_signal_level(phone,
 					event->signal_level.level);
 			return 0;
+		case GSM_EVENT_TYPE_SIM_PIN_VALID:
+			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
+			phone->en_progress = _phone_progress_delete(
+					phone->en_progress);
+			_phone_info(phone->en_window, _("SIM PIN is valid"));
+			return 0;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
 			return 0;
@@ -1126,8 +1133,8 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 	else if(event->error.error == GSM_ERROR_SIM_PIN_WRONG)
 	{
 		_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
-		phone->wr_progress = _phone_progress_delete(phone->en_progress);
-		_phone_error(phone->wr_window, _("Wrong SIM PIN code"));
+		phone->en_progress = _phone_progress_delete(phone->en_progress);
+		_phone_error(phone->en_window, _("Wrong SIM PIN code"));
 	}
 	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED)
 		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
