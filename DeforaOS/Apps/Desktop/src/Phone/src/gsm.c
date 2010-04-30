@@ -953,6 +953,7 @@ static int _gsm_modem_send_message(GSM * gsm, char const * number,
 	if(addr == NULL || sept == NULL || buf1 == NULL || buf2 == NULL)
 	{
 		free(addr);
+		free(sept);
 		free(buf1);
 		free(buf2);
 		return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
@@ -971,6 +972,7 @@ static int _gsm_modem_send_message(GSM * gsm, char const * number,
 		_gsm_command_set_mode(gsmc, GSM_MODE_PDU);
 		_gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
 		if((gsmc = _gsm_command_new(buf2)) != NULL
+				/* XXX if this fails we're stuck in PDU mode */
 				&& (ret = _gsm_queue_command(gsm, gsmc)) == 0)
 		{
 			_gsm_command_set_error(gsmc,
