@@ -307,7 +307,6 @@ void phone_contacts_write_selected(Phone * phone)
 {
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
-	gchar * name = NULL;
 	gchar * number = NULL;
 
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
@@ -315,9 +314,8 @@ void phone_contacts_write_selected(Phone * phone)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) == TRUE)
 		gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
-				1, &name, 2, &number, -1);
-	phone_messages_write(phone, name, number);
-	g_free(name);
+				2, &number, -1);
+	phone_messages_write(phone, number, "");
 	g_free(number);
 }
 
