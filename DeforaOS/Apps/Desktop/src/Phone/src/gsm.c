@@ -656,6 +656,9 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->message_list.start = va_arg(ap, unsigned int);
 			event->message_list.end = va_arg(ap, unsigned int);
 			break;
+		case GSM_EVENT_TYPE_MESSAGE_SENT:
+			event->message_sent.mr = va_arg(ap, unsigned int);
+			break;
 		case GSM_EVENT_TYPE_OPERATOR:
 			event->operator.mode = va_arg(ap, GSMOperatorMode);
 			event->operator.format = va_arg(ap, GSMOperatorFormat);
@@ -671,12 +674,11 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
 			event->signal_level.level = va_arg(ap, gdouble);
 			break;
+		case GSM_EVENT_TYPE_SIM_PIN_VALID:
+			break;
 		case GSM_EVENT_TYPE_STATUS:
 			event->status.status = va_arg(ap, GSMStatus);
 			break;
-		default:
-			va_end(ap);
-			return 1;
 	}
 	va_end(ap);
 	return _gsm_event_send(gsm, type);
@@ -815,7 +817,7 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 
 static void _modem_enter_sim_pin_callback(GSM * gsm)
 {
-	_gsm_event(gsm, GSM_EVENT_TYPE_SIM_PIN_VALID);
+	_gsm_event_send(gsm, GSM_EVENT_TYPE_SIM_PIN_VALID);
 	/* do we need another PIN code? */
 	_gsm_modem_is_pin_needed(gsm);
 }
