@@ -956,10 +956,10 @@ static int _gsm_modem_send_message(GSM * gsm, char const * number,
 		return _gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
 	}
-	snprintf(buf2, len2, "%s%02zX%s%s%s%s%02zX%s\x1a", cmd2,
+	snprintf(buf2, len2, "%s%02lX%s%s%s%s%02lX%s\x1a", cmd2,
 			number[0] == '+' ? strlen(number) - 1 : strlen(number),
 			addr, pid, dcs, vp, strlen(text), sept);
-	snprintf(buf1, len1, "%s%zu", cmd1, (len2 - 1) / 2);
+	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
 	free(sept);
 	ret = _gsm_queue_full_mode(gsm, GSM_PRIORITY_NORMAL, buf1,
@@ -1138,7 +1138,7 @@ static int _gsm_parse(GSM * gsm)
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%zu\n", __func__, gsm->rd_buf_cnt);
+	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, gsm->rd_buf_cnt);
 #endif
 	while(i < gsm->rd_buf_cnt)
 	{
@@ -1755,7 +1755,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	GSMCommand * gsmc;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%zu\n", __func__, gsm->wr_buf_cnt);
+	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, gsm->wr_buf_cnt);
 #endif
 	if(condition != G_IO_OUT || source != gsm->channel)
 		return FALSE; /* should not happen */
