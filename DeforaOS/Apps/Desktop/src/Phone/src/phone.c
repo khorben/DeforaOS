@@ -754,6 +754,8 @@ void phone_show_write(Phone * phone, gboolean show)
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		phone->wr_view = gtk_text_view_new();
+		gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->wr_view),
+				GTK_WRAP_WORD_CHAR);
 		gtk_container_add(GTK_CONTAINER(widget), phone->wr_view);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
 		gtk_container_add(GTK_CONTAINER(phone->wr_window), vbox);
