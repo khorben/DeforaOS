@@ -43,7 +43,8 @@ typedef enum _GSMMode
 
 typedef enum _GSMPriority
 {
-	GSM_PRIORITY_LOW = 0, GSM_PRIORITY_NORMAL, GSM_PRIORITY_HIGH
+	GSM_PRIORITY_LOW = 0, GSM_PRIORITY_NORMAL, GSM_PRIORITY_HIGH,
+	GSM_PRIORITY_HIGHEST
 } GSMPriority;
 
 typedef void (*GSMCommandCallback)(GSM * gsm);
@@ -923,7 +924,7 @@ static char * _text_to_sept(char const * text);
 static int _gsm_modem_send_message(GSM * gsm, char const * number,
 		char const * text)
 {
-	int ret;
+	int ret = 1;
 	char const cmd1[] = "AT+CMGS=";
 	char * buf1;
 	size_t len1;
@@ -935,6 +936,7 @@ static int _gsm_modem_send_message(GSM * gsm, char const * number,
 	char const pid[] = "00";
 	char const dcs[] = "00";
 	char const vp[] = "AA";
+	GSMCommand * gsmc;
 
 	if(!_is_number(number) || text == NULL
 			|| _gsm_modem_set_message_format(gsm,
@@ -962,11 +964,22 @@ static int _gsm_modem_send_message(GSM * gsm, char const * number,
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
 	free(sept);
-	ret = _gsm_queue_full_mode(gsm, GSM_PRIORITY_NORMAL, buf1,
-			GSM_ERROR_MESSAGE_SEND_FAILED, NULL, GSM_MODE_PDU);
-	/* FIXME race condition if something urgent is queued */
-	ret |= _gsm_queue_full_mode(gsm, GSM_PRIORITY_NORMAL, buf2,
-			GSM_ERROR_MESSAGE_SEND_FAILED, NULL, GSM_MODE_COMMAND);
+	if((gsmc = _gsm_command_new(buf1)) != NULL
+			&& (ret = _gsm_queue_command(gsm, gsmc)) == 0)
+	{
+		_gsm_command_set_error(gsmc, GSM_ERROR_MESSAGE_SEND_FAILED);
+		_gsm_command_set_mode(gsmc, GSM_MODE_PDU);
+		_gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
+		if((gsmc = _gsm_command_new(buf2)) != NULL
+				&& (ret = _gsm_queue_command(gsm, gsmc)) == 0)
+		{
+			_gsm_command_set_error(gsmc,
+					GSM_ERROR_MESSAGE_SEND_FAILED);
+			_gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
+		}
+	}
+	if(ret != 0)
+		_gsm_command_delete(gsmc);
 	free(buf1);
 	free(buf2);
 	return ret;
@@ -1279,7 +1292,9 @@ static int _gsm_queue_command(GSM * gsm, GSMCommand * command)
 
 	if(command == NULL)
 		return 1;
-	priority = _gsm_command_get_priority(command);
+	/* the GSM_PRIORITY_HIGHEST priority is meant to avoid races */
+	if((priority = _gsm_command_get_priority(command)) > GSM_PRIORITY_HIGH)
+		priority = GSM_PRIORITY_HIGH;
 	for(l = gsm->queue; l != NULL; l = l->next)
 	{
 		p = l->data;
