@@ -71,6 +71,7 @@ struct _GSM
 	char * device;
 	unsigned int baudrate;
 	unsigned int retry;
+	unsigned int hwflow;
 
 	/* callback */
 	GSMCallback callback;
@@ -258,7 +259,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 /* gsm_new */
 static unsigned int _new_baudrate(unsigned int baudrate);
 
-GSM * gsm_new(char const * device, unsigned int baudrate)
+GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 {
 	GSM * gsm;
 
@@ -270,6 +271,7 @@ GSM * gsm_new(char const * device, unsigned int baudrate)
 	gsm->device = strdup(device);
 	gsm->baudrate = _new_baudrate(baudrate);
 	gsm->retry = 1000;
+	gsm->hwflow = hwflow;
 	/* callback */
 	gsm->callback = NULL;
 	gsm->callback_data = NULL;
@@ -1691,7 +1693,7 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 
 /* callbacks */
 /* on_reset */
-static int _reset_do(int fd);
+static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow);
 static gboolean _reset_settle(gpointer data);
 
 static gboolean _on_reset(gpointer data)
@@ -1713,7 +1715,7 @@ static gboolean _on_reset(gpointer data)
 		gsm->channel = NULL;
 	}
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
-			|| _reset_do(fd) != 0)
+			|| _reset_do(fd, gsm->baudrate, gsm->hwflow) != 0)
 	{
 		snprintf(buf, sizeof(buf), "%s%s%s", gsm->device, ": ",
 				strerror(errno));
@@ -1738,13 +1740,16 @@ static gboolean _on_reset(gpointer data)
 	return FALSE;
 }
 
-static int _reset_do(int fd)
+static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 {
 	struct stat st;
 	int fl;
 	struct termios term;
 
 	if(flock(fd, LOCK_EX | LOCK_NB) != 0)
+		return 1;
+	fl = fcntl(fd, F_GETFL, 0);
+	if(fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
 		return 1;
 	if(fstat(fd, &st) != 0)
 		return 1;
@@ -1754,18 +1759,22 @@ static int _reset_do(int fd)
 			return 1;
 		term.c_cflag |= CS8;
 		term.c_cflag |= CREAD;
-		term.c_cflag |= CLOCAL;
+		if(hwflow)
+			term.c_cflag |= CRTSCTS;
+		else
+			term.c_cflag |= CLOCAL;
 		term.c_iflag = (IGNPAR | IGNBRK);
 		term.c_lflag = 0;
 		term.c_oflag = 0;
 		term.c_cc[VMIN] = 1;
 		term.c_cc[VTIME] = 0;
+		if(cfsetospeed(&term, baudrate) != 0)
+			return 1;
+		term.c_cflag |= CRTSCTS;
+		term.c_cflag &= ~CRTSCTS;
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
 			return 1;
 	}
-	fl = fcntl(fd, F_GETFL, 0);
-	if(fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
-		return 1;
 	return 0;
 }
 

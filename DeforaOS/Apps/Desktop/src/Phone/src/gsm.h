@@ -184,7 +184,7 @@ typedef struct _GSM GSM;
 
 
 /* functions */
-GSM * gsm_new(char const * device, unsigned int baudrate);
+GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow);
 void gsm_delete(GSM * gsm);
 
 /* accessors */

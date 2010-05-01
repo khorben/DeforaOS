@@ -131,7 +131,8 @@ static gboolean _phone_timeout_track(gpointer data);
 /* phone_new */
 static gboolean _new_idle(gpointer data);
 
-Phone * phone_new(char const * device, unsigned int baudrate, int retry)
+Phone * phone_new(char const * device, unsigned int baudrate, int retry,
+		unsigned int hwflow)
 {
 	Phone * phone;
 
@@ -143,7 +144,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 		return NULL;
 	if(device == NULL)
 		device = "/dev/modem";
-	phone->gsm = gsm_new(device, baudrate);
+	phone->gsm = gsm_new(device, baudrate, hwflow);
 	phone->ui_source = g_idle_add(_new_idle, phone);
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));

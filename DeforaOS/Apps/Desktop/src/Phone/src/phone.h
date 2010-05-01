@@ -32,7 +32,8 @@ typedef enum _PhoneCode
 
 
 /* functions */
-Phone * phone_new(char const * device, unsigned int baudrate, int retry);
+Phone * phone_new(char const * device, unsigned int baudrate, int retry,
+		unsigned int hwflow);
 void phone_delete(Phone * phone);
 
 

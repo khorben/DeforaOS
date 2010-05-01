@@ -63,6 +63,7 @@ int main(int argc, char * argv[])
 	char const * device = NULL;
 	unsigned int baudrate = 115200;
 	int retry = -1;
+	unsigned int hwflow = 0;
 	char * p;
 	struct sigaction sa;
 
@@ -70,7 +71,7 @@ int main(int argc, char * argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 	gtk_init(&argc, &argv);
-	while((o = getopt(argc, argv, "b:d:r:")) != -1)
+	while((o = getopt(argc, argv, "b:d:r:F")) != -1)
 		switch(o)
 		{
 			case 'b':
@@ -86,12 +87,15 @@ int main(int argc, char * argv[])
 				if(optarg[0] == '\0' || *p != '\0')
 					return _usage();
 				break;
+			case 'F':
+				hwflow = 1;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind != argc)
 		return _usage();
-	if((phone = phone_new(device, baudrate, retry)) == NULL)
+	if((phone = phone_new(device, baudrate, retry, hwflow)) == NULL)
 		return 2;
 	_phone = phone;
 	sa.sa_handler = _main_sigusr1;
