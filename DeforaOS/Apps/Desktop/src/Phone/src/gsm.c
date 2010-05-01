@@ -1367,22 +1367,20 @@ static int _gsm_queue_error(GSM * gsm, char const * command, GSMError error)
 /* _gsm_queue_flush */
 static void _gsm_queue_flush(GSM * gsm)
 {
-	GSList * l;
-	GSMCommand * gsmc;
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	for(l = gsm->queue; l != NULL; l = l->next)
-	{
-		gsmc = l->data;
-		_gsm_command_delete(gsm->queue->data);
-	}
+	g_slist_foreach(gsm->queue, (GFunc)_gsm_command_delete, NULL);
 	g_slist_free(gsm->queue);
 	gsm->queue = NULL;
 	free(gsm->rd_buf);
 	gsm->rd_buf = NULL;
 	gsm->rd_buf_cnt = 0;
+	if(gsm->rd_source != 0)
+	{
+		g_source_remove(gsm->rd_source);
+		gsm->rd_source = 0;
+	}
 	free(gsm->wr_buf);
 	gsm->wr_buf = NULL;
 	gsm->wr_buf_cnt = 0;
@@ -1444,8 +1442,10 @@ static void _gsm_queue_pop(GSM * gsm)
 	gsmc = gsm->queue->data;
 	_gsm_command_delete(gsmc);
 	gsm->queue = g_slist_remove(gsm->queue, gsmc);
+#if 0 /* FIXME this is useless */
 	if(gsm->mode != GSM_MODE_COMMAND)
 		return;
+#endif
 }
 
 
