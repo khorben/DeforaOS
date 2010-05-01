@@ -47,7 +47,11 @@ static Phone * _phone;
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: phone -b baudrate -d device -r retry\n"), stderr);
+	fputs(_("Usage: phone -b baudrate -d device -r retry -F\n"
+"  -b	Speed to set before communicating with the device\n"
+"  -d	Path to the modem device\n"
+"  -r	Delay between two tries to open and settle with the modem (ms)\n"
+"  -F	Enable hardware flow control (RTS/CTS)\n"), stderr);
 	return 1;
 }
 
