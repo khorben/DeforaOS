@@ -50,7 +50,7 @@ typedef enum _GSMPriority
 typedef enum _GSMQuirk
 {
 	GSM_QUIRK_NONE = 0,
-	GSM_QUIRK_CPIN_QUOTES
+	GSM_QUIRK_CPIN_QUOTES_NEWLINE
 } GSMQuirk;
 
 typedef void (*GSMCommandCallback)(GSM * gsm);
@@ -165,7 +165,7 @@ static struct
 } _gsm_models[] =
 {
 	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
-		GSM_QUIRK_CPIN_QUOTES				},
+		GSM_QUIRK_CPIN_QUOTES_NEWLINE			},
 	{ NULL,	0						}
 };
 
@@ -851,11 +851,11 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_SIM_PIN_WRONG);
 		return 1;
 	}
-	len = sizeof(cmd) + 1 + strlen(code) + 1;
+	len = sizeof(cmd) + 1 + strlen(code) + 2;
 	if((buf = malloc(len)) == NULL)
 		return 1;
-	if(gsm->quirks & GSM_QUIRK_CPIN_QUOTES)
-		snprintf(buf, len, "%s\"%s\"", cmd, code);
+	if(gsm->quirks & GSM_QUIRK_CPIN_QUOTES_NEWLINE)
+		snprintf(buf, len, "%s\"%s\"\n", cmd, code);
 	else
 		snprintf(buf, len, "%s%s", cmd, code);
 	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
