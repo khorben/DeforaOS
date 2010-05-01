@@ -214,6 +214,7 @@ static int _gsm_modem_hangup(GSM * gsm);
 static int _gsm_modem_send_message(GSM * gsm, char const * number,
 		char const * text);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
+static int _gsm_modem_set_functional(GSM * gsm, gboolean functional);
 static int _gsm_modem_set_message_format(GSM * gsm, GSMMessageFormat format);
 static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
@@ -694,6 +695,9 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->contact_list.start = va_arg(ap, unsigned int);
 			event->contact_list.end = va_arg(ap, unsigned int);
 			break;
+		case GSM_EVENT_TYPE_FUNCTIONAL:
+			event->functional.functional = va_arg(ap, unsigned int);
+			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			event->message_list.start = va_arg(ap, unsigned int);
 			event->message_list.end = va_arg(ap, unsigned int);
@@ -1131,6 +1135,16 @@ static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 }
 
 
+/* gsm_modem_set_functional */
+static int _gsm_modem_set_functional(GSM * gsm, gboolean functional)
+{
+	char cmd[] = "AT+CFUN=X";
+
+	cmd[8] = functional ? '1' : '0';
+	return _gsm_queue_error(gsm, cmd, GSM_ERROR_FUNCTIONAL_FAILED);
+}
+
+
 /* gsm_modem_set_message_format */
 static int _gsm_modem_set_message_format(GSM * gsm, GSMMessageFormat format)
 {
@@ -1280,6 +1294,7 @@ static int _parse_do(GSM * gsm)
 		gsm->source = 0;
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
+		_gsm_modem_set_functional(gsm, TRUE);
 		_gsm_modem_get_model(gsm);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);

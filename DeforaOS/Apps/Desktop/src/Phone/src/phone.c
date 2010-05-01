@@ -1099,6 +1099,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_fetch_contacts(phone, event->contact_list.start,
 					event->contact_list.end);
 			return 0;
+		case GSM_EVENT_TYPE_FUNCTIONAL:
+			/* FIXME implement */
+			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);
@@ -1133,32 +1136,40 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 
 static int _gsm_event_error(Phone * phone, GSMEvent * event)
 {
-	if(event->error.error == GSM_ERROR_SIM_PIN_REQUIRED)
+	switch(event->error.error)
 	{
-		phone_code_clear(phone);
-		phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+		case GSM_ERROR_SIM_PIN_REQUIRED:
+			phone_code_clear(phone);
+			phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+			break;
+		case GSM_ERROR_SIM_PIN_WRONG:
+			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
+			phone->en_progress = _phone_progress_delete(
+					phone->en_progress);
+			_phone_error(phone->en_window, _("Wrong SIM PIN code"));
+			phone_code_clear(phone);
+			break;
+		case GSM_ERROR_CONTACT_FETCH_FAILED:
+		case GSM_ERROR_FUNCTIONAL_FAILED:
+		case GSM_ERROR_MESSAGE_FETCH_FAILED:
+			break; /* ignore these errors */
+		case GSM_ERROR_CONTACT_LIST_FAILED:
+			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
+			break;
+		case GSM_ERROR_MESSAGE_LIST_FAILED:
+			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
+			break;
+		case GSM_ERROR_MESSAGE_SEND_FAILED:
+			_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
+			phone->wr_progress = _phone_progress_delete(
+					phone->wr_progress);
+			_phone_error(phone->wr_window,
+					_("Could not send message"));
+			break;
+		default:
+			phone_error(phone, event->error.message, 0);
+			break;
 	}
-	else if(event->error.error == GSM_ERROR_SIM_PIN_WRONG)
-	{
-		_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
-		phone->en_progress = _phone_progress_delete(phone->en_progress);
-		_phone_error(phone->en_window, _("Wrong SIM PIN code"));
-	}
-	else if(event->error.error == GSM_ERROR_CONTACT_FETCH_FAILED
-			|| event->error.error == GSM_ERROR_MESSAGE_FETCH_FAILED)
-		return 0; /* we can ignore this error */
-	else if(event->error.error == GSM_ERROR_CONTACT_LIST_FAILED)
-		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
-	else if(event->error.error == GSM_ERROR_MESSAGE_LIST_FAILED)
-		_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
-	else if(event->error.error == GSM_ERROR_MESSAGE_SEND_FAILED)
-	{
-		_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
-		phone->wr_progress = _phone_progress_delete(phone->wr_progress);
-		_phone_error(phone->wr_window, _("Could not send message"));
-	}
-	else
-		phone_error(phone, event->error.message, 0);
 	return 0;
 }
 
