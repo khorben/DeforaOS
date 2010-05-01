@@ -851,6 +851,8 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	GtkWidget * widget;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
 	gtk_window_set_modal(GTK_WINDOW(window), TRUE);
 	gtk_window_set_title(GTK_WINDOW(window), _("Operation in progress..."));
 	gtk_window_set_transient_for(GTK_WINDOW(window), GTK_WINDOW(parent));
@@ -859,6 +861,7 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 2);
 	widget = gtk_progress_bar_new();
 	g_object_set_data(G_OBJECT(window), "progress", widget);
+	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(widget));
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), " ");
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 2);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 4);
