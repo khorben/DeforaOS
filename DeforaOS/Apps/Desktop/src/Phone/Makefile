@@ -1,5 +1,5 @@
 PACKAGE	= Phone
-VERSION	= 0.0.0
+VERSION	= 0.0.1
 SUBDIRS	= data po src
 RM	= rm -f
 LN	= ln -f
