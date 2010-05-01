@@ -50,8 +50,8 @@ typedef enum _GSMPriority
 typedef enum _GSMQuirk
 {
 	GSM_QUIRK_NONE = 0,
-	GSM_QUIRK_CPIN_QUOTES_NEWLINE,
-	GSM_QUIRK_COPS_NEWLINE
+	GSM_QUIRK_CPIN_QUOTES = 1,
+	GSM_QUIRK_NO_CARRIAGE_RETURN = 2
 } GSMQuirk;
 
 typedef void (*GSMCommandCallback)(GSM * gsm);
@@ -166,8 +166,8 @@ static struct
 } _gsm_models[] =
 {
 	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
-		GSM_QUIRK_CPIN_QUOTES_NEWLINE
-		| GSM_QUIRK_COPS_NEWLINE			},
+		GSM_QUIRK_CPIN_QUOTES
+		| GSM_QUIRK_NO_CARRIAGE_RETURN			},
 	{ NULL,	0						}
 };
 
@@ -853,11 +853,11 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_SIM_PIN_WRONG);
 		return 1;
 	}
-	len = sizeof(cmd) + 1 + strlen(code) + 2;
+	len = sizeof(cmd) + 1 + strlen(code) + 1;
 	if((buf = malloc(len)) == NULL)
 		return 1;
-	if(gsm->quirks & GSM_QUIRK_CPIN_QUOTES_NEWLINE)
-		snprintf(buf, len, "%s\"%s\"\n", cmd, code);
+	if(gsm->quirks & GSM_QUIRK_CPIN_QUOTES)
+		snprintf(buf, len, "%s\"%s\"", cmd, code);
 	else
 		snprintf(buf, len, "%s%s", cmd, code);
 	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
@@ -1188,7 +1188,7 @@ static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 /* gsm_modem_set_operator_mode */
 static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
 {
-	char cmd[] = "AT+COPS=X\0";
+	char cmd[] = "AT+COPS=X";
 
 	switch(mode)
 	{
@@ -1202,8 +1202,6 @@ static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
 			return 1;
 	}
 	cmd[8] = mode + '0';
-	if(gsm->quirks & GSM_QUIRK_COPS_NEWLINE)
-		cmd[9] = '\n';
 	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
 }
 
@@ -1512,6 +1510,8 @@ static void _gsm_queue_pop(GSM * gsm)
 static int _gsm_queue_push(GSM * gsm)
 {
 	GSMCommand * gsmc;
+	char const * suffix = (gsm->quirks & GSM_QUIRK_NO_CARRIAGE_RETURN)
+		? "\n" : "\r\n";
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -1519,11 +1519,11 @@ static int _gsm_queue_push(GSM * gsm)
 	if(gsm->queue == NULL)
 		return 0;
 	gsmc = gsm->queue->data;
-	gsm->wr_buf_cnt = strlen(gsmc->command) + 2;
+	gsm->wr_buf_cnt = strlen(gsmc->command) + strlen(suffix);
 	if((gsm->wr_buf = malloc(gsm->wr_buf_cnt + 1)) == NULL)
 		return 1;
 	snprintf(gsm->wr_buf, gsm->wr_buf_cnt + 1, "%s%s", gsmc->command,
-			"\r\n");
+			suffix);
 	if(gsm->channel != NULL && gsm->wr_source == 0)
 		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 				_on_watch_can_write, gsm);
