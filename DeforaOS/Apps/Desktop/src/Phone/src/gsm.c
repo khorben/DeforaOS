@@ -303,26 +303,43 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 
 	switch(baudrate)
 	{
-		case B1200:	case B2400:	case B4800:	case B9600:
-		case B19200:	case B38400:
+		case 1200:
+			return B1200;
+		case 2400:
+			return B2400;
+		case 4800:
+			return B4800;
+		case 9600:
+			return B9600;
+		case 19200:
+			return B19200;
+		case 38400:
+			return B38400;
 #ifdef B76800
-		case B76800:
+		case 76800:
+			return B76800;
 #endif
 #ifdef B14400
-		case B14400:
+		case 14400:
+			return B14400;
 #endif
 #ifdef B28800
-		case B28800:
+		case 28800:
+			return B28800;
 #endif
-		case B57600:	case B115200:
-		case B460800:	case B921600:
-			break;
+		case 57600:
+			return B57600;
+		case 115200:
+			return B115200;
+		case 460800:
+			return B460800;
+		case 921600:
+			return B921600;
 		default:
 			snprintf(buf, sizeof(buf), "%u%s", baudrate,
 					_(": Unknown baudrate"));
 			return phone_error(NULL, buf, baudrate);
 	}
-	return baudrate;
 }
 
 
@@ -1350,12 +1367,19 @@ static int _gsm_queue_error(GSM * gsm, char const * command, GSMError error)
 /* _gsm_queue_flush */
 static void _gsm_queue_flush(GSM * gsm)
 {
+	GSList * l;
+	GSMCommand * gsmc;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	for(; gsm->queue != NULL; gsm->queue = g_slist_delete_link(gsm->queue,
-				gsm->queue))
+	for(l = gsm->queue; l != NULL; l = l->next)
+	{
+		gsmc = l->data;
 		_gsm_command_delete(gsm->queue->data);
+	}
+	g_slist_free(gsm->queue);
+	gsm->queue = NULL;
 	free(gsm->rd_buf);
 	gsm->rd_buf = NULL;
 	gsm->rd_buf_cnt = 0;
