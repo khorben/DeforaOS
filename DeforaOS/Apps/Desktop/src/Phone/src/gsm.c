@@ -1239,13 +1239,11 @@ static int _gsm_parse(GSM * gsm)
 #endif
 	while(i < gsm->rd_buf_cnt)
 	{
-		if(gsm->rd_buf[i++] != '\r')
+		if(gsm->rd_buf[i++] != '\r' && gsm->rd_buf[i - 1] != '\n')
 			continue;
-		if(i == gsm->rd_buf_cnt)
-			break;
-		if(gsm->rd_buf[i] != '\n')
-			continue;
-		gsm->rd_buf[i++ - 1] = '\0';
+		gsm->rd_buf[i - 1] = '\0';
+		if(i < gsm->rd_buf_cnt && gsm->rd_buf[i] == '\n')
+			i++;
 		if(gsm->rd_buf[0] != '\0')
 			ret |= _parse_do(gsm);
 		gsm->rd_buf_cnt -= i;
