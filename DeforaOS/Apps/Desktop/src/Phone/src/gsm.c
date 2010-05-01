@@ -1200,7 +1200,9 @@ static int _gsm_parse(GSM * gsm)
 		gsm->rd_buf_cnt -= i;
 		memmove(gsm->rd_buf, &gsm->rd_buf[i], gsm->rd_buf_cnt);
 		if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt)) != NULL)
-			gsm->rd_buf = p; /* we can ignore errors */
+			gsm->rd_buf = p; /* we can ignore errors... */
+		else if(gsm->rd_buf_cnt == 0)
+			gsm->rd_buf = NULL; /* ...except when it's not one */
 		i = 0;
 	}
 	if(gsm->mode == GSM_MODE_PDU)
@@ -1223,7 +1225,9 @@ static int _parse_pdu(GSM * gsm)
 	gsm->rd_buf_cnt -= i;
 	memmove(gsm->rd_buf, &gsm->rd_buf[i], gsm->rd_buf_cnt);
 	if((p = realloc(gsm->rd_buf, gsm->rd_buf_cnt)) != NULL)
-		gsm->rd_buf = p; /* we can ignore errors */
+		gsm->rd_buf = p; /* we can ignore errors... */
+	else if(gsm->rd_buf_cnt == 0)
+		gsm->rd_buf = NULL; /* ...except when it's not one */
 	return 0;
 }
 
@@ -1837,7 +1841,9 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gsm->wr_buf_cnt -= cnt;
 		memmove(gsm->wr_buf, &gsm->wr_buf[cnt], gsm->wr_buf_cnt);
 		if((p = realloc(gsm->wr_buf, gsm->wr_buf_cnt)) != NULL)
-			gsm->wr_buf = p; /* we can ignore errors */
+			gsm->wr_buf = p; /* we can ignore errors... */
+		else if(gsm->wr_buf_cnt == 0)
+			gsm->wr_buf = NULL; /* ...except when it's not one */
 	}
 	switch(status)
 	{
