@@ -50,7 +50,8 @@ typedef enum _GSMPriority
 typedef enum _GSMQuirk
 {
 	GSM_QUIRK_NONE = 0,
-	GSM_QUIRK_CPIN_QUOTES_NEWLINE
+	GSM_QUIRK_CPIN_QUOTES_NEWLINE,
+	GSM_QUIRK_COPS_NEWLINE
 } GSMQuirk;
 
 typedef void (*GSMCommandCallback)(GSM * gsm);
@@ -165,7 +166,8 @@ static struct
 } _gsm_models[] =
 {
 	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
-		GSM_QUIRK_CPIN_QUOTES_NEWLINE			},
+		GSM_QUIRK_CPIN_QUOTES_NEWLINE
+		| GSM_QUIRK_COPS_NEWLINE			},
 	{ NULL,	0						}
 };
 
@@ -1186,7 +1188,7 @@ static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 /* gsm_modem_set_operator_mode */
 static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
 {
-	char cmd[] = "AT+COPS=X";
+	char cmd[] = "AT+COPS=X\0";
 
 	switch(mode)
 	{
@@ -1200,6 +1202,8 @@ static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
 			return 1;
 	}
 	cmd[8] = mode + '0';
+	if(gsm->quirks & GSM_QUIRK_COPS_NEWLINE)
+		cmd[9] = '\n';
 	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
 }
 
