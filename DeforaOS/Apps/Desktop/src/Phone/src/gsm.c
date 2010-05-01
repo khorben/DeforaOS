@@ -1770,8 +1770,6 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 		term.c_cc[VTIME] = 0;
 		if(cfsetospeed(&term, baudrate) != 0)
 			return 1;
-		term.c_cflag |= CRTSCTS;
-		term.c_cflag &= ~CRTSCTS;
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
 			return 1;
 	}
