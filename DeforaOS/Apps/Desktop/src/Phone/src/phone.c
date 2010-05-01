@@ -165,7 +165,9 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry)
 #if GTK_CHECK_VERSION(2, 10, 0)
 	phone->sy_icon = gtk_status_icon_new_from_icon_name(
 			"stock_landline-phone");
+# if GTK_CHECK_VERSION(2, 18, 0)
 	gtk_status_icon_set_title(phone->sy_icon, _("Phone"));
+# endif
 #endif
 	phone->sy_level = NULL;
 	/* check errors */
