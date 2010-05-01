@@ -1630,9 +1630,10 @@ static int _gsm_trigger_cops(GSM * gsm, char const * result)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
 	gsm->event.operator.operator = operator;
+	gsm->event.operator.lai = 0;
 	if(sscanf(result, "%u,%u,\"%31[^\"]\",%u", &gsm->event.operator.mode,
 				&gsm->event.operator.format, operator,
-				&gsm->event.operator.lai) == 4)
+				&gsm->event.operator.lai) >= 3)
 		return _gsm_event_send(gsm, GSM_EVENT_TYPE_OPERATOR);
 	return 1;
 }
