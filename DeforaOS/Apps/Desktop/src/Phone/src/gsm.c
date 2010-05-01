@@ -47,6 +47,12 @@ typedef enum _GSMPriority
 	GSM_PRIORITY_HIGHEST
 } GSMPriority;
 
+typedef enum _GSMQuirk
+{
+	GSM_QUIRK_NONE = 0,
+	GSM_QUIRK_CPIN_QUOTES
+} GSMQuirk;
+
 typedef void (*GSMCommandCallback)(GSM * gsm);
 
 typedef struct _GSMCommand
@@ -72,6 +78,7 @@ struct _GSM
 	unsigned int baudrate;
 	unsigned int retry;
 	unsigned int hwflow;
+	unsigned int quirks;
 
 	/* callback */
 	GSMCallback callback;
@@ -150,6 +157,17 @@ static struct
 	{ 0,	NULL						}
 };
 
+/* models */
+static struct
+{
+	char const * model;
+	unsigned int quirks;
+} _gsm_models[] =
+{
+	{ "Neo1973 GTA02 Embedded GSM Modem",	GSM_QUIRK_CPIN_QUOTES	},
+	{ NULL,					0			}
+};
+
 
 /* prototypes */
 static int _is_code(char const * code);
@@ -185,6 +203,7 @@ static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
 static int _gsm_modem_get_message_list(GSM * gsm);
 static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
 		unsigned int end);
+static int _gsm_modem_get_model(GSM * gsm);
 static int _gsm_modem_get_operator(GSM * gsm);
 static int _gsm_modem_get_registration(GSM * gsm);
 static int _gsm_modem_get_signal_level(GSM * gsm);
@@ -219,6 +238,7 @@ static void _gsm_queue_pop(GSM * gsm);
 static int _gsm_queue_push(GSM * gsm);
 
 /* triggers */
+static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
@@ -234,6 +254,7 @@ static GSMTrigger _gsm_triggers[] =
 {
 #define GSM_TRIGGER(trigger, callback) \
 	{ trigger, sizeof(trigger) - 1, _gsm_trigger_ ## callback }
+	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
@@ -272,6 +293,7 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 	gsm->baudrate = _new_baudrate(baudrate);
 	gsm->retry = 1000;
 	gsm->hwflow = hwflow;
+	gsm->quirks = 0;
 	/* callback */
 	gsm->callback = NULL;
 	gsm->callback_data = NULL;
@@ -824,10 +846,13 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_SIM_PIN_WRONG);
 		return 1;
 	}
-	len = sizeof(cmd) + strlen(code);
+	len = sizeof(cmd) + 1 + strlen(code) + 1;
 	if((buf = malloc(len)) == NULL)
 		return 1;
-	snprintf(buf, len, "%s%s", cmd, code);
+	if(gsm->quirks & GSM_QUIRK_CPIN_QUOTES)
+		snprintf(buf, len, "%s\"%s\"", cmd, code);
+	else
+		snprintf(buf, len, "%s%s", cmd, code);
 	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
 			GSM_ERROR_SIM_PIN_WRONG, _modem_enter_sim_pin_callback);
 	free(buf);
@@ -881,6 +906,15 @@ static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
 	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CMGR=", start, end);
 	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd,
 			GSM_ERROR_MESSAGE_FETCH_FAILED, NULL);
+}
+
+
+/* gsm_modem_get_model */
+static int _gsm_modem_get_model(GSM * gsm)
+{
+	char const cmd[] = "AT+CGMM";
+
+	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
 }
 
 
@@ -1245,6 +1279,7 @@ static int _parse_do(GSM * gsm)
 		gsm->source = 0;
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
+		_gsm_modem_get_model(gsm);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
@@ -1479,6 +1514,24 @@ static int _gsm_queue_push(GSM * gsm)
 
 
 /* triggers */
+/* gsm_trigger_cgmm */
+static int _gsm_trigger_cgmm(GSM * gsm, char const * result)
+{
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	for(i = 0; _gsm_models[i].model != NULL; i++)
+		if(strcmp(_gsm_models[i].model, result) == 0)
+			break;
+	if(_gsm_models[i].model == NULL)
+		return 1; /* we do not know this model */
+	gsm->quirks = _gsm_models[i].quirks;
+	return 0;
+}
+
+
 /* gsm_trigger_cme_error */
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result)
 {
