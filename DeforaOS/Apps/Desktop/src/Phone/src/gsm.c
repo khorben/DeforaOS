@@ -1705,6 +1705,13 @@ static gboolean _on_reset(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	gsm->source = 0;
+	if(gsm->channel != NULL)
+	{
+		/* XXX should the file descriptor also be freed? */
+		g_io_channel_shutdown(gsm->channel, TRUE, &error);
+		g_io_channel_unref(gsm->channel);
+		gsm->channel = NULL;
+	}
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
 			|| _reset_do(fd) != 0)
 	{
@@ -1863,7 +1870,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	gsm->wr_source = 0;
 	if(gsm->mode == GSM_MODE_INIT)
 		_gsm_queue_pop(gsm);
-	if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
+	else if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
 		gsm->mode = _gsm_command_get_mode(gsmc);
 	return FALSE;
 }
