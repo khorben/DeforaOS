@@ -1125,6 +1125,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
 			phone->en_progress = _phone_progress_delete(
 					phone->en_progress);
+			phone_show_code(phone, FALSE);
 			_phone_info(phone->en_window, _("SIM PIN is valid"));
 			return 0;
 		case GSM_EVENT_TYPE_STATUS:
