@@ -196,6 +196,7 @@ static int _gsm_event_send(GSM * gsm, GSMEventType type);
 static int _gsm_event_set_status(GSM * gsm, GSMStatus status);
 
 /* modem commands */
+static int _gsm_modem_answer(GSM * gsm);
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype,
 		char const * number);
 static int _gsm_modem_call_contact(GSM * gsm, GSMCallType calltype,
@@ -232,7 +233,8 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered);
 
 /* queue management */
 static GSMCommand * _gsm_queue(GSM * gsm, char const * command);
-static int _gsm_queue_error(GSM * gsm, char const * command, GSMError error);
+static int _gsm_queue_with_error(GSM * gsm, char const * command,
+		GSMError error);
 static int _gsm_queue_full(GSM * gsm, GSMPriority priority,
 		char const * command, char const * suffix, GSMError error,
 		GSMCommandCallback callback);
@@ -442,6 +444,13 @@ int gsm_set_retry(GSM * gsm, unsigned int retry)
 
 
 /* useful */
+/* gsm_answer */
+int gsm_answer(GSM * gsm)
+{
+	return _gsm_modem_answer(gsm);
+}
+
+
 /* gsm_call */
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number)
 {
@@ -772,6 +781,15 @@ static int _gsm_event_set_status(GSM * gsm, GSMStatus status)
 
 
 /* modem commands */
+/* gsm_modem_answer */
+static int _gsm_modem_answer(GSM * gsm)
+{
+	char const cmd[] = "ATA";
+
+	return _gsm_queue_with_error(gsm, cmd, GSM_ERROR_ANSWER_FAILED);
+}
+
+
 /* gsm_modem_call */
 static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
 {
@@ -896,7 +914,7 @@ static int _gsm_modem_get_contact_list(GSM * gsm)
 {
 	char const cmd[] = "AT+CPBR=?";
 
-	return _gsm_queue_error(gsm, cmd, GSM_ERROR_CONTACT_LIST_FAILED);
+	return _gsm_queue_with_error(gsm, cmd, GSM_ERROR_CONTACT_LIST_FAILED);
 }
 
 
@@ -917,7 +935,7 @@ static int _gsm_modem_get_message_list(GSM * gsm)
 {
 	char const cmd[] = "AT+CMGL=?";
 
-	return _gsm_queue_error(gsm, cmd, GSM_ERROR_MESSAGE_LIST_FAILED);
+	return _gsm_queue_with_error(gsm, cmd, GSM_ERROR_MESSAGE_LIST_FAILED);
 }
 
 
@@ -965,7 +983,7 @@ static int _gsm_modem_get_signal_level(GSM * gsm)
 {
 	char const cmd[] = "AT+CSQ";
 
-	return _gsm_queue_error(gsm, cmd, GSM_ERROR_SIGNAL_LEVEL_FAILED);
+	return _gsm_queue_with_error(gsm, cmd, GSM_ERROR_SIGNAL_LEVEL_FAILED);
 }
 
 
@@ -1160,7 +1178,7 @@ static int _gsm_modem_set_functional(GSM * gsm, gboolean functional)
 	char cmd[] = "AT+CFUN=X";
 
 	cmd[8] = functional ? '1' : '0';
-	return _gsm_queue_error(gsm, cmd, GSM_ERROR_FUNCTIONAL_FAILED);
+	return _gsm_queue_with_error(gsm, cmd, GSM_ERROR_FUNCTIONAL_FAILED);
 }
 
 
@@ -1448,7 +1466,8 @@ static int _gsm_queue_command(GSM * gsm, GSMCommand * command)
 
 
 /* gsm_queue_error */
-static int _gsm_queue_error(GSM * gsm, char const * command, GSMError error)
+static int _gsm_queue_with_error(GSM * gsm, char const * command,
+		GSMError error)
 {
 	GSMCommand * gsmc;
 

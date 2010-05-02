@@ -45,6 +45,7 @@ typedef enum _GSMEventType
 typedef enum _GSMError
 {
 	GSM_ERROR_UNKNOWN = 0,
+	GSM_ERROR_ANSWER_FAILED,
 	GSM_ERROR_CALL_FAILED,
 	GSM_ERROR_CONTACT_FETCH_FAILED,
 	GSM_ERROR_CONTACT_LIST_FAILED,
@@ -207,6 +208,7 @@ int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report);
 int gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */
+int gsm_answer(GSM * gsm);
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index);
 int gsm_enter_sim_pin(GSM * gsm, char const * code);
