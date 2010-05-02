@@ -60,6 +60,7 @@ typedef struct _GSMCommand
 {
 	GSMPriority priority;
 	char * command;
+	char const * suffix;
 	GSMError error;
 	GSMCommandCallback callback;
 	GSMMode mode;
@@ -187,6 +188,7 @@ static void _gsm_command_set_callback(GSMCommand * gsmc,
 static void _gsm_command_set_error(GSMCommand * gsmc, GSMError error);
 static void _gsm_command_set_mode(GSMCommand * gsmc, GSMMode mode);
 static void _gsm_command_set_priority(GSMCommand * gsmc, GSMPriority priority);
+static void _gsm_command_set_suffix(GSMCommand * gsmc, char const * suffix);
 
 /* events */
 static int _gsm_event(GSM * gsm, GSMEventType type, ...);
@@ -231,10 +233,10 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered);
 static GSMCommand * _gsm_queue(GSM * gsm, char const * command);
 static int _gsm_queue_error(GSM * gsm, char const * command, GSMError error);
 static int _gsm_queue_full(GSM * gsm, GSMPriority priority,
-		char const * command, GSMError error,
+		char const * command, char const * suffix, GSMError error,
 		GSMCommandCallback callback);
 static int _gsm_queue_full_mode(GSM * gsm, GSMPriority priority,
-		char const * command, GSMError error,
+		char const * command, char const * suffix, GSMError error,
 		GSMCommandCallback callback, GSMMode mode);
 static int _gsm_queue_command(GSM * gsm, GSMCommand * command);
 static void _gsm_queue_flush(GSM * gsm);
@@ -604,6 +606,7 @@ static GSMCommand * _gsm_command_new(char const * command)
 		return NULL; /* XXX report error */
 	gsmc->priority = GSM_PRIORITY_NORMAL;
 	gsmc->command = strdup(command);
+	gsmc->suffix = NULL;
 	gsmc->error = GSM_ERROR_UNKNOWN;
 	gsmc->callback = NULL;
 	gsmc->mode = GSM_MODE_COMMAND;
@@ -668,6 +671,13 @@ static void _gsm_command_set_mode(GSMCommand * gsmc, GSMMode mode)
 static void _gsm_command_set_priority(GSMCommand * gsmc, GSMPriority priority)
 {
 	gsmc->priority = priority;
+}
+
+
+/* gsm_command_set_suffix */
+static void _gsm_command_set_suffix(GSMCommand * gsmc, char const * suffix)
+{
+	gsmc->suffix = suffix;
 }
 
 
@@ -784,7 +794,7 @@ static int _gsm_modem_call(GSM * gsm, GSMCallType calltype, char const * number)
 	if((buf = malloc(len)) == NULL)
 		return 1;
 	snprintf(buf, len, "%s%s%s", cmd, number, suffix);
-	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
+	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf, NULL,
 			GSM_ERROR_CALL_FAILED, NULL);
 	free(buf);
 	return ret;
@@ -810,7 +820,7 @@ static int _gsm_modem_call_contact(GSM * gsm, GSMCallType calltype,
 			return 1;
 	}
 	snprintf(buf, sizeof(buf), "%s%u%s", cmd, index, suffix);
-	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
+	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf, NULL,
 			GSM_ERROR_CALL_FAILED, NULL);
 }
 
@@ -833,7 +843,7 @@ static int _gsm_modem_call_last(GSM * gsm, GSMCallType calltype)
 		default:
 			return 1;
 	}
-	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, cmd,
+	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, cmd, NULL,
 			GSM_ERROR_CALL_FAILED, NULL);
 }
 
@@ -845,6 +855,7 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 {
 	int ret;
 	char const cmd[] = "AT+CPIN=";
+	char const * suffix = NULL;
 	size_t len;
 	char * buf;
 
@@ -853,14 +864,17 @@ static int _gsm_modem_enter_sim_pin(GSM * gsm, char const * code)
 		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_SIM_PIN_WRONG);
 		return 1;
 	}
-	len = sizeof(cmd) + 1 + strlen(code) + 2;
+	len = sizeof(cmd) + 1 + strlen(code) + 1;
 	if((buf = malloc(len)) == NULL)
 		return 1;
 	if(gsm->quirks & GSM_QUIRK_CPIN_QUOTES_NEWLINE)
-		snprintf(buf, len, "%s\"%s\"\n", cmd, code);
+	{
+		snprintf(buf, len, "%s\"%s\"", cmd, code);
+		suffix = "\n";
+	}
 	else
 		snprintf(buf, len, "%s%s", cmd, code);
-	ret = _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, buf,
+	ret = _gsm_queue_full(gsm, GSM_PRIORITY_NORMAL, buf, suffix,
 			GSM_ERROR_SIM_PIN_WRONG, _modem_enter_sim_pin_callback);
 	free(buf);
 	return ret;
@@ -890,7 +904,7 @@ static int _gsm_modem_get_contacts(GSM * gsm, unsigned int start,
 	char cmd[32];
 	
 	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CPBR=", start, end);
-	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd,
+	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd, NULL,
 			GSM_ERROR_CONTACT_FETCH_FAILED, NULL);
 }
 
@@ -911,7 +925,7 @@ static int _gsm_modem_get_messages(GSM * gsm, unsigned int start,
 	char cmd[32];
 	
 	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CMGR=", start, end);
-	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd,
+	return _gsm_queue_full(gsm, GSM_PRIORITY_LOW, cmd, NULL,
 			GSM_ERROR_MESSAGE_FETCH_FAILED, NULL);
 }
 
@@ -958,7 +972,7 @@ static int _gsm_modem_hangup(GSM * gsm)
 	char const cmd[] = "ATH";
 
 	/* XXX probably should query the call status after that */
-	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, cmd,
+	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, cmd, NULL,
 			GSM_ERROR_HANGUP_FAILED, NULL);
 }
 
@@ -986,7 +1000,7 @@ static int _gsm_modem_reset(GSM * gsm)
 {
 	char const cmd[] = "ATZ";
 
-	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, cmd,
+	return _gsm_queue_full(gsm, GSM_PRIORITY_HIGH, cmd, NULL,
 			GSM_ERROR_RESET_FAILED, NULL);
 }
 
@@ -1188,7 +1202,8 @@ static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 /* gsm_modem_set_operator_mode */
 static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
 {
-	char cmd[] = "AT+COPS=X\0";
+	char cmd[] = "AT+COPS=X";
+	GSMCommand * gsmc;
 
 	switch(mode)
 	{
@@ -1202,9 +1217,11 @@ static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode)
 			return 1;
 	}
 	cmd[8] = mode + '0';
+	if((gsmc = _gsm_queue(gsm, cmd)) == NULL)
+		return 1;
 	if(gsm->quirks & GSM_QUIRK_COPS_NEWLINE)
-		cmd[9] = '\n';
-	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
+		_gsm_command_set_suffix(gsmc, "\n");
+	return 0;
 }
 
 
@@ -1458,17 +1475,17 @@ static void _gsm_queue_flush(GSM * gsm)
 
 /* gsm_queue_full */
 static int _gsm_queue_full(GSM * gsm, GSMPriority priority,
-		char const * command, GSMError error,
+		char const * command, char const * suffix, GSMError error,
 		GSMCommandCallback callback)
 {
-	return _gsm_queue_full_mode(gsm, priority, command, error, callback,
-			GSM_MODE_COMMAND);
+	return _gsm_queue_full_mode(gsm, priority, command, suffix, error,
+			callback, GSM_MODE_COMMAND);
 }
 
 
 /* gsm_queue_full_mode */
 static int _gsm_queue_full_mode(GSM * gsm, GSMPriority priority,
-		char const * command, GSMError error,
+		char const * command, char const * suffix, GSMError error,
 		GSMCommandCallback callback, GSMMode mode)
 {
 	GSMCommand * gsmc;
@@ -1478,6 +1495,7 @@ static int _gsm_queue_full_mode(GSM * gsm, GSMPriority priority,
 	if((gsmc = _gsm_command_new(command)) == NULL)
 		return 1;
 	_gsm_command_set_priority(gsmc, priority);
+	_gsm_command_set_suffix(gsmc, suffix);
 	_gsm_command_set_error(gsmc, error);
 	_gsm_command_set_callback(gsmc, callback);
 	_gsm_command_set_mode(gsmc, mode);
@@ -1512,6 +1530,7 @@ static void _gsm_queue_pop(GSM * gsm)
 static int _gsm_queue_push(GSM * gsm)
 {
 	GSMCommand * gsmc;
+	char const * suffix;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -1519,11 +1538,12 @@ static int _gsm_queue_push(GSM * gsm)
 	if(gsm->queue == NULL)
 		return 0;
 	gsmc = gsm->queue->data;
-	gsm->wr_buf_cnt = strlen(gsmc->command) + 2;
+	suffix = (gsmc->suffix != NULL) ? gsmc->suffix : "\r\n";
+	gsm->wr_buf_cnt = strlen(gsmc->command) + strlen(suffix);
 	if((gsm->wr_buf = malloc(gsm->wr_buf_cnt + 1)) == NULL)
 		return 1;
 	snprintf(gsm->wr_buf, gsm->wr_buf_cnt + 1, "%s%s", gsmc->command,
-			"\r\n");
+			suffix);
 	if(gsm->channel != NULL && gsm->wr_source == 0)
 		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 				_on_watch_can_write, gsm);
