@@ -711,6 +711,8 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_FUNCTIONAL:
 			event->functional.functional = va_arg(ap, unsigned int);
 			break;
+		case GSM_EVENT_TYPE_INCOMING_CALL:
+			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			event->message_list.start = va_arg(ap, unsigned int);
 			event->message_list.end = va_arg(ap, unsigned int);
@@ -1357,6 +1359,11 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 		*answered = FALSE;
 	if(strncmp(line, "AT", 2) == 0) /* ignore echo (tighter check?) */
 		return 0;
+	if(strcmp(line, "RING") == 0)
+	{
+		_gsm_event(gsm, GSM_EVENT_TYPE_INCOMING_CALL);
+		return 0;
+	}
 	if(strcmp(line, "OK") == 0)
 	{
 		if(answered != NULL)
