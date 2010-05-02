@@ -1872,8 +1872,7 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 		term.c_oflag = 0;
 		term.c_cc[VMIN] = 1;
 		term.c_cc[VTIME] = 0;
-		if(cfsetospeed(&term, baudrate) != 0)
-			return 1;
+		cfsetospeed(&term, baudrate); /* ignore errors */
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
 			return 1;
 	}
