@@ -219,6 +219,7 @@ static int _gsm_modem_hangup(GSM * gsm);
 static int _gsm_modem_send_message(GSM * gsm, char const * number,
 		char const * text);
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo);
+static int _gsm_modem_set_extended_ring(GSM * gsm, gboolean extended);
 static int _gsm_modem_set_functional(GSM * gsm, gboolean functional);
 static int _gsm_modem_set_message_format(GSM * gsm, GSMMessageFormat format);
 static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format);
@@ -442,6 +443,13 @@ int gsm_set_retry(GSM * gsm, unsigned int retry)
 #endif
 	gsm->retry = retry;
 	return 0;
+}
+
+
+/* gsm_set_extended_ring */
+int gsm_set_extended_ring(GSM * gsm, gboolean extended)
+{
+	return _gsm_modem_set_extended_ring(gsm, extended);
 }
 
 
@@ -1174,6 +1182,16 @@ static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 }
 
 
+/* gsm_modem_set_extended_ring */
+static int _gsm_modem_set_extended_ring(GSM * gsm, gboolean extended)
+{
+	char cmd[] = "AT+CRC=X";
+
+	cmd[7] = extended ? '1' : '0';
+	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_set_functional */
 static int _gsm_modem_set_functional(GSM * gsm, gboolean functional)
 {
@@ -1347,6 +1365,7 @@ static int _parse_do(GSM * gsm)
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
 		_gsm_modem_set_verbose(gsm, TRUE);
+		_gsm_modem_set_extended_ring(gsm, TRUE);
 		_gsm_modem_set_functional(gsm, TRUE);
 		_gsm_modem_get_model(gsm);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
