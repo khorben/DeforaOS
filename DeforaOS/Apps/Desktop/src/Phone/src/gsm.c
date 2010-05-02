@@ -256,6 +256,7 @@ static int _gsm_trigger_cops(GSM * gsm, char const * result);
 static int _gsm_trigger_cpbr(GSM * gsm, char const * result);
 static int _gsm_trigger_cpin(GSM * gsm, char const * result);
 static int _gsm_trigger_creg(GSM * gsm, char const * result);
+static int _gsm_trigger_cring(GSM * gsm, char const * result);
 static int _gsm_trigger_csq(GSM * gsm, char const * result);
 
 /* triggers */
@@ -272,6 +273,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CPBR: ",		cpbr),
 	GSM_TRIGGER("+CPIN: ",		cpin),
 	GSM_TRIGGER("+CREG: ",		creg),
+	GSM_TRIGGER("+CRING: ",		cring),
 	GSM_TRIGGER("+CSQ: ",		csq),
 	{ NULL, 0, NULL }
 };
@@ -1798,6 +1800,14 @@ static int _gsm_trigger_creg(GSM * gsm, char const * result)
 			break;
 	}
 	return ret;
+}
+
+
+/* gsm_trigger_cring */
+static int _gsm_trigger_cring(GSM * gsm, char const * result)
+{
+	/* FIXME implement the call type */
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_INCOMING_CALL);
 }
 
 
