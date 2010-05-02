@@ -1031,6 +1031,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			operator = _("SIM ready...");
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
+			gsm_set_functional(phone->gsm, TRUE);
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);

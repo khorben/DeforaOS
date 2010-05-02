@@ -410,6 +410,13 @@ void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data)
 }
 
 
+/* gsm_set_functional */
+int gsm_set_functional(GSM * gsm, int functional)
+{
+	return _gsm_modem_set_functional(gsm, (functional != 0) ? TRUE : FALSE);
+}
+
+
 /* gsm_set_operator_format */
 int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 {
@@ -1368,7 +1375,6 @@ static int _parse_do(GSM * gsm)
 		_gsm_modem_set_echo(gsm, FALSE);
 		_gsm_modem_set_verbose(gsm, TRUE);
 		_gsm_modem_set_extended_ring(gsm, TRUE);
-		_gsm_modem_set_functional(gsm, TRUE);
 		_gsm_modem_get_model(gsm);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
@@ -1937,7 +1943,9 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 		term.c_oflag = 0;
 		term.c_cc[VMIN] = 1;
 		term.c_cc[VTIME] = 0;
-		cfsetospeed(&term, baudrate); /* ignore errors */
+		if(cfsetospeed(&term, baudrate) != 0)
+			/* otherwise ignore error */
+			phone_error(NULL, "/dev/modem", 0);
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
 			return 1;
 	}
