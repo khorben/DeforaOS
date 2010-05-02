@@ -224,6 +224,7 @@ static int _gsm_modem_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 static int _gsm_modem_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
 static int _gsm_modem_set_registration_report(GSM * gsm,
 		GSMRegistrationReport report);
+static int _gsm_modem_set_verbose(GSM * gsm, gboolean verbose);
 
 /* parsing */
 static int _gsm_parse(GSM * gsm);
@@ -1144,7 +1145,7 @@ static char * _text_to_sept(char const * text)
 /* gsm_modem_set_echo */
 static int _gsm_modem_set_echo(GSM * gsm, gboolean echo)
 {
-	char cmd[] = "ATE?";
+	char cmd[] = "ATEX";
 
 	cmd[3] = echo ? '1' : '0';
 	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
@@ -1245,6 +1246,16 @@ static int _gsm_modem_set_registration_report(GSM * gsm,
 }
 
 
+/* gsm_modem_set_verbose */
+static int _gsm_modem_set_verbose(GSM * gsm, gboolean verbose)
+{
+	char cmd[] = "ATVX";
+
+	cmd[3] = verbose ? '1' : '0';
+	return (_gsm_queue(gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_parse */
 static int _parse_pdu(GSM * gsm);
 static int _parse_do(GSM * gsm);
@@ -1313,6 +1324,7 @@ static int _parse_do(GSM * gsm)
 		gsm->source = 0;
 		gsm->mode = GSM_MODE_COMMAND;
 		_gsm_modem_set_echo(gsm, FALSE);
+		_gsm_modem_set_verbose(gsm, TRUE);
 		_gsm_modem_set_functional(gsm, TRUE);
 		_gsm_modem_get_model(gsm);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
