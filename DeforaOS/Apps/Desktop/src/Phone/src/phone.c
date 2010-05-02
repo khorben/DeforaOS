@@ -1100,6 +1100,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->contact_list.end);
 			return 0;
 		case GSM_EVENT_TYPE_FUNCTIONAL:
+			/* FIXME implement */
+			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			/* FIXME implement */
 			return 0;

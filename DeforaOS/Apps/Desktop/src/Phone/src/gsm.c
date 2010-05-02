@@ -731,6 +731,8 @@ static int _gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->functional.functional = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
+			event->incoming_call.calltype = va_arg(ap,
+					unsigned int);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			event->message_list.start = va_arg(ap, unsigned int);
@@ -1400,7 +1402,8 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 		return 0;
 	if(strcmp(line, "RING") == 0)
 	{
-		_gsm_event(gsm, GSM_EVENT_TYPE_INCOMING_CALL);
+		_gsm_event(gsm, GSM_EVENT_TYPE_INCOMING_CALL,
+				GSM_CALL_TYPE_UNKNOWN);
 		return 0;
 	}
 	if(strcmp(line, "OK") == 0)
@@ -1825,8 +1828,15 @@ static int _gsm_trigger_creg(GSM * gsm, char const * result)
 /* gsm_trigger_cring */
 static int _gsm_trigger_cring(GSM * gsm, char const * result)
 {
-	/* FIXME implement the call type */
-	return _gsm_event_send(gsm, GSM_EVENT_TYPE_INCOMING_CALL);
+	GSMCallType calltype = GSM_CALL_TYPE_UNKNOWN;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	/* XXX implement the other call types */
+	if(strcmp(result, "VOICE") == 0)
+		calltype = GSM_CALL_TYPE_VOICE;
+	return _gsm_event(gsm, GSM_EVENT_TYPE_INCOMING_CALL, calltype);
 }
 
 

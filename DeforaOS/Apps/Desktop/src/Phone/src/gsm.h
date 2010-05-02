@@ -23,7 +23,9 @@
 /* types */
 typedef enum _GSMCallType
 {
-	GSM_CALL_TYPE_DATA, GSM_CALL_TYPE_VOICE
+	GSM_CALL_TYPE_UNKNOWN = 0,
+	GSM_CALL_TYPE_DATA,
+	GSM_CALL_TYPE_VOICE
 } GSMCallType;
 
 typedef enum _GSMEventType
@@ -82,7 +84,7 @@ typedef enum _GSMOperatorMode
 	GSM_OPERATOR_MODE_MANUAL_WITH_FALLBACK = 4
 } GSMOperatorMode;
 
-typedef enum _GSMRegisrationReport
+typedef enum _GSMRegistrationReport
 {
 	GSM_REGISTRATION_REPORT_DISABLE_UNSOLLICITED = 0,
 	GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED = 1,
@@ -146,6 +148,13 @@ typedef union _GSMEvent
 		GSMEventType type;
 		unsigned int functional;
 	} functional;
+
+	/* GSM_EVENT_TYPE_INCOMING_CALL */
+	struct
+	{
+		GSMEventType type;
+		GSMCallType calltype;
+	} incoming_call;
 
 	/* GSM_EVENT_TYPE_MESSAGE_SENT */
 	struct
