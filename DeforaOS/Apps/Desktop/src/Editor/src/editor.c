@@ -290,9 +290,9 @@ void editor_find(Editor * editor, char const * text)
 {
 	if(editor->fi_dialog == NULL)
 		_find_dialog(editor);
-	gtk_entry_set_text(GTK_ENTRY(editor->fi_text), (text != NULL) ? text
-			: "");
-	gtk_widget_show(editor->fi_dialog);
+	if(text != NULL)
+		gtk_entry_set_text(GTK_ENTRY(editor->fi_text), text);
+	gtk_window_present(GTK_WINDOW(editor->fi_dialog));
 }
 
 static void _find_dialog(Editor * editor)
