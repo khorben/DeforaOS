@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Mailer */
 /* Mailer is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2 as published by the Free
@@ -15,15 +15,34 @@
 
 
 
+#include <unistd.h>
+#include <stdio.h>
 #include "mailer.h"
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: mailer\n", stderr);
+	return 1;
+}
 
 
 /* main */
 int main(int argc, char * argv[])
 {
 	Mailer * mailer;
+	int o;
 
 	gtk_init(&argc, &argv);
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
 	if((mailer = mailer_new()) == NULL)
 		return 2;
 	gtk_main();
