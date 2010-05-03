@@ -717,9 +717,10 @@ void surfer_find(Surfer * surfer, char const * text)
 {
 	if(surfer->fi_dialog == NULL)
 		_find_dialog(surfer);
-	gtk_entry_set_text(GTK_ENTRY(surfer->fi_text), (text != NULL) ? text
-			: "");
-	gtk_widget_show(surfer->fi_dialog);
+	gtk_widget_grab_focus(surfer->fi_text);
+	if(text != NULL)
+		gtk_entry_set_text(GTK_ENTRY(surfer->fi_text), text);
+	gtk_window_present(GTK_WINDOW(surfer->fi_dialog));
 }
 
 static void _find_dialog(Surfer * surfer)
