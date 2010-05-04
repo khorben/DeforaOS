@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel c99 */
 /* c99 is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -632,10 +632,10 @@ int code_scope_pop(Code * code)
 		free(p->variables[i].name);
 	free(p->variables);
 	/* resize the scope array */
-	if((p = realloc(code->scopes, sizeof(*p) * (code->scopes_cnt - 1)))
-			!= NULL) /* ignoring the error is fine */
+	if((p = realloc(code->scopes, sizeof(*p) * (--code->scopes_cnt)))
+			!= NULL || code->scopes_cnt == 0)
 		code->scopes = p;
-	return --(code->scopes_cnt);
+	return code->scopes_cnt;
 }
 
 
