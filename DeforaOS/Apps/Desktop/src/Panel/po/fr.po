@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-04 02:57+0200\n"
+"POT-Creation-Date: 2010-05-04 03:15+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -24,11 +24,16 @@ msgstr ""
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/applets/clock.c:123
+#: ../src/applets/clock.c:81 ../src/applets/clock.c:92
+msgid "%H:%M"
+msgstr "%H:%M"
+
+#: ../src/applets/clock.c:90
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
-msgstr ""
+msgstr "%H:%M:%S\n"
+"%d/%m/%Y"
 
 #: ../src/applets/cpu.c:92
 msgid "CPU:"
