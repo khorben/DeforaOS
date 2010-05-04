@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS System libSystem */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,9 +95,7 @@ int buffer_set_size(Buffer * buffer, size_t size)
 {
 	char * p;
 
-	if(size == 0) /* XXX workaround to avoid freeing the data */
-		size++;
-	if((p = realloc(buffer->data, size)) == NULL)
+	if((p = realloc(buffer->data, size)) == NULL && size != 0)
 		return error_set_code(1, "%s", strerror(errno));
 	buffer->data = p;
 	if(size > buffer->size)
