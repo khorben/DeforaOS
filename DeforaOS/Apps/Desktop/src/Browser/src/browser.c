@@ -142,9 +142,11 @@ static DesktopMenubar _browser_menubar[] =
 /* toolbar */
 static DesktopToolbar _browser_toolbar[] =
 {
-	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, 0, NULL },
+	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
+		GDK_Left, NULL },
 	{ "Up", G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, 0, NULL },
-	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, 0, NULL },
+	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
+		GDK_MOD1_MASK, GDK_Right, NULL },
 	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
 	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
