@@ -136,7 +136,7 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 #ifdef AUDIO_MIXER_DEVINFO
 	volume->mix = -1;
 	volume->outputs = -1;
-	if((mixer = helper->config_get(helper->priv, NULL, "mixer_device"))
+	if((mixer = helper->config_get(helper->priv, "volume", "device"))
 			== NULL)
 		mixer = "/dev/mixer";
 	if((volume->fd = open(mixer, O_RDWR)) < 0)
