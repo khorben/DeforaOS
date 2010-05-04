@@ -243,7 +243,8 @@ static void _pager_do(Pager * pager)
 			gtk_widget_destroy(pager->widgets[i]);
 			pager->widgets[i] = NULL;
 		}
-	if((q = realloc(pager->widgets, l * sizeof(*q))) == NULL)
+	if((q = realloc(pager->widgets, l * sizeof(*q))) == NULL
+			&& l != 0)
 		return;
 	pager->widgets = q;
 	pager->widgets_cnt = l;
@@ -251,20 +252,13 @@ static void _pager_do(Pager * pager)
 	names = _pager_get_desktop_names(pager);
 	for(i = 0; i < l; i++)
 	{
-		snprintf(buf, sizeof(buf), "Desk %ld\n", i + 1);
-		if(names != NULL)
+		if(names != NULL && names[i] != NULL)
 		{
-			if(names[i] != NULL)
-			{
-				snprintf(buf, sizeof(buf), "%s", names[i]);
-				g_free(names[i]);
-			}
-			else
-			{
-				free(names);
-				names = NULL;
-			}
+			snprintf(buf, sizeof(buf), "%s", names[i]);
+			g_free(names[i]);
 		}
+		else
+			snprintf(buf, sizeof(buf), "Desk %ld\n", i + 1);
 		pager->widgets[i] = gtk_button_new_with_label(buf);
 		if(i == cur)
 			gtk_widget_set_sensitive(pager->widgets[i], FALSE);
