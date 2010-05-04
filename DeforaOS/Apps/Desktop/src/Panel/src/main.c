@@ -44,10 +44,12 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: panel [-m monitor][-sSx]\n"
+	fputs(_("Usage: panel [-m monitor][-BsSTx]\n"
+"  -B	Place the panel at the bottom of the screen (default)\n"
 "  -m	Monitor to use (default: 0)\n"
 "  -s	Use icons the size of a small toolbar\n"
 "  -S	Use icons the size of a large toolbar (default)\n"
+"  -T	Place the panel at the top of the screen\n"
 "  -x	Use icons the size of menus\n"), stderr);
 	return 1;
 }
@@ -70,9 +72,13 @@ int main(int argc, char * argv[])
 	gtk_init(&argc, &argv);
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.iconsize = PANEL_ICON_SIZE_LARGE;
-	while((o = getopt(argc, argv, "m:sSx")) != -1)
+	prefs.position = PANEL_POSITION_BOTTOM;
+	while((o = getopt(argc, argv, "Bm:sSTx")) != -1)
 		switch(o)
 		{
+			case 'B':
+				prefs.position = PANEL_POSITION_BOTTOM;
+				break;
 			case 'm':
 				prefs.monitor = strtol(optarg, &p, 10);
 				if(optarg[0] == '\0' || *p != '\0')
@@ -83,6 +89,9 @@ int main(int argc, char * argv[])
 				break;
 			case 'S':
 				prefs.iconsize = PANEL_ICON_SIZE_LARGE;
+				break;
+			case 'T':
+				prefs.position = PANEL_POSITION_TOP;
 				break;
 			case 'x':
 				prefs.iconsize = PANEL_ICON_SIZE_SMALLER;

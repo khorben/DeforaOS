@@ -25,10 +25,16 @@
 /* types */
 typedef struct _Panel Panel;
 
+typedef enum _PanelPosition
+{
+	PANEL_POSITION_TOP, PANEL_POSITION_BOTTOM
+} PanelPosition;
+
 typedef struct _PanelPrefs
 {
 	GtkIconSize iconsize;
 	int monitor;
+	PanelPosition position;
 } PanelPrefs;
 
 
