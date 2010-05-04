@@ -31,6 +31,7 @@
 typedef struct _Clock
 {
 	PanelAppletHelper * helper;
+	char const * format;
 	GtkWidget * label;
 	guint timeout;
 } Clock;
@@ -74,13 +75,22 @@ static GtkWidget * _clock_init(PanelApplet * applet)
 	applet->priv = clock;
 	clock->helper = applet->helper;
 	clock->label = gtk_label_new(" \n ");
+	if((clock->format = applet->helper->config_get(applet->helper->priv,
+					"clock", "format")) == NULL)
 #ifdef EMBEDDED
+		clock->format = _("%H:%M");
 	ret = clock->label;
 	desc = pango_font_description_new();
 	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	gtk_widget_modify_font(clock->label, desc);
 	pango_font_description_free(desc);
 #else
+	{
+		if(clock->helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
+			clock->format = _("%H:%M:%S\n%d/%m/%Y");
+		else
+			clock->format = _("%H:%M");
+	}
 	ret = gtk_frame_new(NULL);
 	gtk_frame_set_shadow_type(GTK_FRAME(ret), GTK_SHADOW_IN);
 	gtk_container_add(GTK_CONTAINER(ret), clock->label);
@@ -118,12 +128,7 @@ static gboolean _on_timeout(gpointer data)
 				TRUE);
 	t = tv.tv_sec;
 	localtime_r(&t, &tm);
-#ifndef EMBEDDED
-	if(clock->helper->icon_size == GTK_ICON_SIZE_LARGE_TOOLBAR)
-		strftime(buf, sizeof(buf), _("%H:%M:%S\n%d/%m/%Y"), &tm);
-	else
-#endif
-	strftime(buf, sizeof(buf), "%H:%M", &tm);
+	strftime(buf, sizeof(buf), clock->format, &tm);
 	gtk_label_set_text(GTK_LABEL(clock->label), buf);
 	return TRUE;
 }
