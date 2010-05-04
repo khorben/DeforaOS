@@ -78,6 +78,7 @@ static int _panel_helper_shutdown_dialog(void);
 /* panel_new */
 static int _new_config(Panel * panel);
 static gboolean _on_idle(gpointer data);
+static gboolean _idle_load(Panel * panel, char const * plugins);
 static gboolean _on_closex(void);
 
 Panel * panel_new(PanelPrefs * prefs)
@@ -177,7 +178,6 @@ static int _new_config(Panel * panel)
 static gboolean _on_idle(gpointer data)
 {
 	Panel * panel = data;
-	/* FIXME load all plugins, a configuration file or ask the user */
 #ifndef EMBEDDED
 	const char * plugins[] = { "volume", "systray", "battery", "bluetooth",
 		"clock", "swap", "memory", "cpufreq", "cpu", "desktop", "gps",
@@ -187,16 +187,48 @@ static gboolean _on_idle(gpointer data)
 		"clock", "cpufreq", "gps", "gsm", "main", "pager", "tasks",
 		NULL };
 #endif
+	char const * p;
 	size_t i;
 
+	if((p = config_get(panel->config, NULL, "plugins")) != NULL)
+		return _idle_load(panel, p);
 	for(i = 0; plugins[i] != NULL; i++)
-		if(panel_load(panel, plugins[i]))
+		if(panel_load(panel, plugins[i]) != 0)
 			error_print(PACKAGE); /* we can ignore errors */
+	return FALSE;
+}
+
+static gboolean _idle_load(Panel * panel, char const * plugins)
+{
+	char * p;
+	char * q;
+	size_t i;
+
+	if((p = strdup(plugins)) == NULL)
+		return panel_error(panel, "strdup", FALSE);
+	for(q = p, i = 0;;)
+	{
+		if(q[i] == '\0')
+		{
+			if(panel_load(panel, q) != 0)
+				error_print(PACKAGE); /* we can ignore errors */
+			break;
+		}
+		if(q[i++] != ',')
+			continue;
+		q[i - 1] = '\0';
+		if(panel_load(panel, q) != 0)
+			error_print(PACKAGE); /* we can ignore errors */
+		q += i;
+		i = 0;
+	}
+	free(p);
 	return FALSE;
 }
 
 static gboolean _on_closex(void)
 {
+	/* ignore delete events */
 	return TRUE;
 }
 
@@ -204,7 +236,7 @@ static gboolean _on_closex(void)
 /* panel_delete */
 void panel_delete(Panel * panel)
 {
-	/* FIXME destroy plugins */
+	/* FIXME destroy plugins as well */
 	if(panel->config != NULL)
 		config_delete(panel->config);
 	free(panel);
