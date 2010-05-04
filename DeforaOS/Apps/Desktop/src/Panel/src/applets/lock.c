@@ -26,7 +26,7 @@
 static GtkWidget * _lock_init(PanelApplet * applet);
 
 /* callbacks */
-static void _on_clicked(void);
+static void _on_clicked(gpointer data);
 
 
 /* public */
@@ -59,8 +59,8 @@ static GtkWidget * _lock_init(PanelApplet * applet)
 #if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(ret, _("Lock screen"));
 #endif
-	g_signal_connect(G_OBJECT(ret), "clicked", G_CALLBACK(_on_clicked),
-			NULL);
+	g_signal_connect_swapped(G_OBJECT(ret), "clicked", G_CALLBACK(
+				_on_clicked), applet->helper);
 	gtk_widget_show_all(ret);
 	return ret;
 }
@@ -68,12 +68,15 @@ static GtkWidget * _lock_init(PanelApplet * applet)
 
 /* callbacks */
 /* on_clicked */
-static void _on_clicked(void)
+static void _on_clicked(gpointer data)
 {
-	char * argv[] = { "xscreensaver-command", "-lock", NULL };
-	GSpawnFlags flags = G_SPAWN_SEARCH_PATH
-		| G_SPAWN_STDOUT_TO_DEV_NULL
-		| G_SPAWN_STDERR_TO_DEV_NULL;
+	PanelAppletHelper * helper = data;
+	char const * command = "xscreensaver-command -lock";
+	char const * p;
+	GError * error = NULL;
 
-	g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, NULL);
+	if((p = helper->config_get(helper->priv, "lock", "command")) != NULL)
+		command = p;
+	if(g_spawn_command_line_async(command, &error) != TRUE)
+		helper->error(NULL, error->message, 0);
 }
