@@ -129,14 +129,15 @@ static DesktopMenu _menu_view[] =
 	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
 		GDK_CONTROL_MASK, GDK_R },
-	{ N_("_Force refresh"),	G_CALLBACK(on_view_force_refresh), NULL, 0, 0 },
+	{ N_("_Force refresh"),	G_CALLBACK(on_view_force_refresh), NULL,
+		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_R },
 	{ N_("_Stop"),		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0,
 		GDK_Escape },
 	{ "",			NULL, NULL, 0, 0 },
-	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
-		"stock_view-html-source", GDK_CONTROL_MASK, GDK_U },
 	{ N_("Javascript _console"), G_CALLBACK(on_view_javascript_console),
 		NULL, 0, 0 },
+	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
+		"stock_view-html-source", GDK_CONTROL_MASK, GDK_U },
 	{ NULL,			NULL, NULL, 0, 0 }
 };
 
@@ -163,8 +164,10 @@ static DesktopMenubar _surfer_menubar[] =
 
 static DesktopToolbar _surfer_toolbar[] =
 {
-	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, 0, NULL },
-	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, 0, NULL },
+	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, GDK_MOD1_MASK,
+		GDK_Left, NULL },
+	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD,
+		GDK_MOD1_MASK, GDK_Right, NULL },
 	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, 0, NULL },
 	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0, NULL },
 	{ "", NULL, NULL, 0, 0, NULL },
