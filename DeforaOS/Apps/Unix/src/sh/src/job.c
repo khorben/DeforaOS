@@ -133,7 +133,8 @@ static int _job_remove(unsigned int id)
 	{
 		free(jobs[id - 1].command);
 		memmove(&jobs[id - 1], &jobs[id], (jobs_cnt - id) * sizeof(*p));
-		if((p = realloc(jobs, sizeof(*p) * --jobs_cnt)) == NULL)
+		if((p = realloc(jobs, sizeof(*p) * --jobs_cnt)) == NULL
+				&& jobs_cnt != 0)
 			return sh_error("malloc", 1);
 		jobs = p;
 	}
