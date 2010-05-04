@@ -138,7 +138,7 @@ Panel * panel_new(PanelPrefs * prefs)
 	/* panel */
 	g_idle_add(_on_idle, panel);
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 8);
+	panel->height = panel->icon_height + (PANEL_BORDER_WIDTH * 4);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() height=%d\n", __func__, panel->height);
 #endif
@@ -195,7 +195,10 @@ static gboolean _on_idle(gpointer data)
 	char const * p;
 	size_t i;
 
-	if((p = config_get(panel->config, NULL, "plugins")) != NULL)
+	p = config_get(panel->config, NULL, (panel->position
+				== PANEL_POSITION_TOP) ? "top" : "bottom");
+	if(p != NULL || (p = config_get(panel->config, NULL, "plugins"))
+			!= NULL)
 		return _idle_load(panel, p);
 	for(i = 0; plugins[i] != NULL; i++)
 		if(panel_load(panel, plugins[i]) != 0)
