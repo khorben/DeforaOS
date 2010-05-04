@@ -73,77 +73,82 @@ static DesktopAccel _surfer_accel[] =
 static DesktopMenu _menu_file[] =
 {
 	{ N_("_New tab"),	G_CALLBACK(on_file_new_tab), "tab-new",
-		GDK_T },
+		GDK_CONTROL_MASK, GDK_T },
 	{ N_("_New window"),	G_CALLBACK(on_file_new_window), "window-new",
-		GDK_N },
+		GDK_CONTROL_MASK, GDK_N },
 	{ N_("_Open..."),	G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
-		GDK_O },
-	{ N_("Open _URL..."),	G_CALLBACK(on_file_open_url), NULL, GDK_L },
-	{ "", NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_O },
+	{ N_("Open _URL..."),	G_CALLBACK(on_file_open_url), NULL,
+		GDK_CONTROL_MASK, GDK_L },
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("Save _as..."),	G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
-		GDK_S },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Print..."),	G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0 },
-	{ "", NULL, NULL, 0 },
-	{ N_("Close _tab"),	G_CALLBACK(on_file_close_tab), NULL, GDK_W },
-	{ N_("_Close"),		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_S },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Print..."),	G_CALLBACK(on_file_print), GTK_STOCK_PRINT, 0,
 		0 },
-	{ NULL,			NULL, NULL, 0 }
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("Close _tab"),	G_CALLBACK(on_file_close_tab), NULL,
+		GDK_CONTROL_MASK, GDK_W },
+	{ N_("_Close"),		G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0,
+		0 },
+	{ NULL,			NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_edit[] =
 {
-	{ N_("_Cut"),		NULL, GTK_STOCK_CUT, GDK_X },
-	{ N_("Cop_y"),		NULL, GTK_STOCK_COPY, GDK_C },
-	{ N_("_Paste"),		NULL, GTK_STOCK_PASTE, GDK_V },
-	{ "",			NULL, NULL, 0 },
+	{ N_("_Cut"),		NULL, GTK_STOCK_CUT, GDK_CONTROL_MASK, GDK_X },
+	{ N_("Cop_y"),		NULL, GTK_STOCK_COPY, GDK_CONTROL_MASK, GDK_C },
+	{ N_("_Paste"),		NULL, GTK_STOCK_PASTE, GDK_CONTROL_MASK,
+		GDK_V },
+	{ "",			NULL, NULL, 0, 0 },
 	{ N_("Select _all"),	G_CALLBACK(on_edit_select_all),
 #if GTK_CHECK_VERSION(2, 10, 0)
 		GTK_STOCK_SELECT_ALL,
 #else
 		NULL,
 #endif
-		GDK_A },
-	{ N_("Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0 },
-	{ "",			NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_A },
+	{ N_("Unselect all"),	G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
+	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Find"),		G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
-		GDK_F },
-	{ "",			NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_F },
+	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Preferences"),	G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
-	{ NULL,			NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+	{ NULL,			NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_view[] =
 {
 	{ N_("Zoom in"),	G_CALLBACK(on_view_zoom_in), "zoom-in",
-		GDK_plus },
+		GDK_CONTROL_MASK, GDK_plus },
 	{ N_("Zoom out"),	G_CALLBACK(on_view_zoom_out), "zoom-out",
-		GDK_minus },
+		GDK_CONTROL_MASK, GDK_minus },
 	{ N_("Normal size"),	G_CALLBACK(on_view_normal_size), "zoom-1",
-		GDK_0 },
-	{ "",			NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_0 },
+	{ "",			NULL, NULL, 0, 0 },
 	{ N_("_Refresh"),	G_CALLBACK(on_view_refresh), GTK_STOCK_REFRESH,
-		GDK_R },
-	{ N_("_Force refresh"),	G_CALLBACK(on_view_force_refresh), NULL, 0 },
-	{ N_("_Stop"),		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0 },
-	{ "",			NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_R },
+	{ N_("_Force refresh"),	G_CALLBACK(on_view_force_refresh), NULL, 0, 0 },
+	{ N_("_Stop"),		G_CALLBACK(on_view_stop), GTK_STOCK_STOP, 0,
+		GDK_Escape },
+	{ "",			NULL, NULL, 0, 0 },
 	{ N_("Page so_urce"),	G_CALLBACK(on_view_page_source),
-		"stock_view-html-source", GDK_U },
+		"stock_view-html-source", GDK_CONTROL_MASK, GDK_U },
 	{ N_("Javascript _console"), G_CALLBACK(on_view_javascript_console),
-		NULL, 0 },
-	{ NULL,			NULL, NULL, 0 }
+		NULL, 0, 0 },
+	{ NULL,			NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _menu_help[] =
 {
 	{ "_About",		G_CALLBACK(on_help_about),
 #if GTK_CHECK_VERSION(2, 6, 0)
-		GTK_STOCK_ABOUT, 0 },
+		GTK_STOCK_ABOUT, 0, 0 },
 #else
-		NULL, 0 },
+		NULL, 0, 0 },
 #endif
-	{ NULL,			NULL, NULL, 0 }
+	{ NULL,			NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _surfer_menubar[] =
@@ -158,13 +163,13 @@ static DesktopMenubar _surfer_menubar[] =
 
 static DesktopToolbar _surfer_toolbar[] =
 {
-	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, NULL },
-	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, NULL },
-	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, NULL },
-	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, NULL },
-	{ "", NULL, NULL, 0, NULL },
-	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, NULL },
-	{ NULL, NULL, NULL, 0, NULL }
+	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, 0, NULL },
+	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, 0, NULL },
+	{ "Stop", G_CALLBACK(on_stop), GTK_STOCK_STOP, 0, 0, NULL },
+	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 unsigned int surfer_cnt = 0;

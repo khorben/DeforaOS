@@ -74,7 +74,7 @@ static GtkWidget * _menubar_create_menu(DesktopMenu * menu, gpointer data,
 			gtk_widget_set_sensitive(menuitem, FALSE);
 		if(accel != NULL && p->accel != 0)
 			gtk_widget_add_accelerator(menuitem, "activate", accel,
-					p->accel, GDK_CONTROL_MASK,
+					p->accel, p->modifier,
 					GTK_ACCEL_VISIBLE);
 		gtk_menu_shell_append(GTK_MENU_SHELL(ret), menuitem);
 	}

@@ -97,29 +97,32 @@ static void _on_open_with(gpointer data);
 #ifndef EMBEDDED
 static DesktopMenu _view_menu_file[] =
 {
-	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
-	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _view_menu_file_edit[] =
 {
-	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, GDK_E },
-	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0 },
-	{ "", NULL, NULL, 0 },
-	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+	{ "_Edit", G_CALLBACK(_on_file_edit), GTK_STOCK_EDIT, GDK_CONTROL_MASK,
+		GDK_E },
+	{ "Open _with...", G_CALLBACK(_on_file_open_with), NULL, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Close", G_CALLBACK(_on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _view_menu_help[] =
 {
 # if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(_on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 # else
-	{ N_("_About"), G_CALLBACK(_on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(_on_help_about), NULL, 0, 0 },
 # endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _view_menubar[] =
@@ -138,12 +141,14 @@ static DesktopMenubar _view_menubar_edit[] =
 #else
 static DesktopToolbar _view_toolbar[] =
 {
-	{ N_("Open with..."), G_CALLBACK(_on_open_with), GTK_STOCK_OPEN, GDK_O,
-		NULL },
-	{ N_("Edit"), G_CALLBACK(_on_edit), GTK_STOCK_EDIT, GDK_E, NULL },
-	{ "", NULL, NULL, 0, 0 },
-	{ N_("Close"), G_CALLBACK(_on_close), GTK_STOCK_CLOSE, GDK_W, NULL },
-	{ NULL, NULL, NULL, 0, 0 }
+	{ N_("Open with..."), G_CALLBACK(_on_open_with), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_O, NULL },
+	{ N_("Edit"), G_CALLBACK(_on_edit), GTK_STOCK_EDIT, GDK_CONTROL_MASK,
+		GDK_E, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Close"), G_CALLBACK(_on_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 #endif /* EMBEDDED */
 

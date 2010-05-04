@@ -82,11 +82,14 @@ static char const * _authors[] =
 /* menubar */
 static DesktopMenu _file_menu[] =
 {
-	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_N },
-	{ N_("_Edit"), G_CALLBACK(on_file_edit), GTK_STOCK_EDIT, GDK_E },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
+		GDK_N },
+	{ N_("_Edit"), G_CALLBACK(on_file_edit), GTK_STOCK_EDIT,
+		GDK_CONTROL_MASK, GDK_E },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 static DesktopMenu _edit_menu[] =
 {
@@ -96,22 +99,22 @@ static DesktopMenu _edit_menu[] =
 #else
 	{ N_("_Select all"), G_CALLBACK(on_edit_select_all), "edit-select-all",
 #endif
-		GDK_A },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
-	{ "", NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_A },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Delete"), G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 static DesktopMenu _help_menu[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
 #endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 static DesktopMenubar _menubar[] =
 {
@@ -125,23 +128,24 @@ static DesktopMenubar _menubar[] =
 /* toolbar */
 static DesktopToolbar _toolbar[] =
 {
-	{ N_("New task"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
-	{ N_("Edit task"), G_CALLBACK(on_edit), GTK_STOCK_EDIT, 0, NULL },
-	{ "", NULL, NULL, 0, NULL },
+	{ N_("New task"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, 0, NULL },
+	{ N_("Edit task"), G_CALLBACK(on_edit), GTK_STOCK_EDIT, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
 #if GTK_CHECK_VERSION(2, 10, 0)
 	{ N_("Select all"), G_CALLBACK(on_select_all), GTK_STOCK_SELECT_ALL, 0,
-		NULL },
-#else
-	{ N_("Select all"), G_CALLBACK(on_select_all), "edit-select-all", 0,
-		NULL },
-#endif
-	{ N_("Delete task"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, NULL },
-#ifdef EMBEDDED
-	{ "", NULL, NULL, 0, NULL },
-	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
 		0, NULL },
+#else
+	{ N_("Select all"), G_CALLBACK(on_select_all), "edit-select-all", 0, 0,
+		NULL },
 #endif
-	{ NULL, NULL, NULL, 0, NULL }
+	{ N_("Delete task"), G_CALLBACK(on_delete), GTK_STOCK_DELETE, 0, 0,
+		NULL },
+#ifdef EMBEDDED
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
+		0, 0, NULL },
+#endif
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 

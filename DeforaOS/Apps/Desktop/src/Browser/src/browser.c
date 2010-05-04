@@ -62,63 +62,71 @@ static DesktopAccel _browser_accel[] =
 static DesktopMenu _browser_menu_file[] =
 {
 	{ N_("_New window"), G_CALLBACK(on_file_new_window), "window-new",
-		GDK_N },
-	{ N_("New _folder"), G_CALLBACK(on_file_new_folder), "folder-new", 0 },
+		GDK_CONTROL_MASK, GDK_N },
+	{ N_("New _folder"), G_CALLBACK(on_file_new_folder), "folder-new", 0,
+		0 },
 	{ N_("New _symbolic link..."), G_CALLBACK(on_file_new_symlink), NULL,
-		0 },
-	{ N_("Open file..."), G_CALLBACK(on_file_open_file), NULL, GDK_O },
-	{ "", NULL, NULL, 0 },
+		0, 0 },
+	{ N_("Open file..."), G_CALLBACK(on_file_open_file), NULL,
+		GDK_CONTROL_MASK, GDK_O },
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Properties"), G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES,
-		0 },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+		GDK_MOD1_MASK, GDK_Return },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _browser_menu_edit[] =
 {
-	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_X },
-	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY, GDK_C },
-	{ "_Paste", G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE, GDK_V },
-	{ "", NULL, NULL, 0 },
-	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0 },
-	{ "", NULL, NULL, 0 },
+	{ "_Cut", G_CALLBACK(on_edit_cut), GTK_STOCK_CUT, GDK_CONTROL_MASK,
+		GDK_X },
+	{ "Cop_y", G_CALLBACK(on_edit_copy), GTK_STOCK_COPY, GDK_CONTROL_MASK,
+		GDK_C },
+	{ "_Paste", G_CALLBACK(on_edit_paste), GTK_STOCK_PASTE,
+		GDK_CONTROL_MASK, GDK_V },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Delete", G_CALLBACK(on_edit_delete), GTK_STOCK_DELETE, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
 #if GTK_CHECK_VERSION(2, 10, 0)
 	{ "_Select all", G_CALLBACK(on_edit_select_all), GTK_STOCK_SELECT_ALL,
 #else
 	{ "_Select all", G_CALLBACK(on_edit_select_all), "edit-select-all",
 #endif
-		GDK_A },
-	{ "_Unselect all", G_CALLBACK(on_edit_unselect_all), NULL, 0 },
-	{ "", NULL, NULL, 0 },
+		GDK_CONTROL_MASK, GDK_A },
+	{ "_Unselect all", G_CALLBACK(on_edit_unselect_all), NULL, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
 	{ "_Preferences", G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _browser_menu_view[] =
 {
-	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, GDK_R },
-	{ "", NULL, NULL, 0 },
-	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME, 0 },
+	{ "_Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH,
+		GDK_CONTROL_MASK, GDK_R },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Home", G_CALLBACK(on_view_home), GTK_STOCK_HOME, GDK_MOD1_MASK,
+		GDK_Home },
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ "", NULL, NULL, 0 },
-	{ "_Details", G_CALLBACK(on_view_details), "stock_view-details", 0 },
-	{ "_Icons", G_CALLBACK(on_view_icons), NULL, 0 },
-	{ "_List", G_CALLBACK(on_view_list), NULL, 0 },
-	{ "_Thumbnails", G_CALLBACK(on_view_thumbnails), NULL, 0 },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Details", G_CALLBACK(on_view_details), "stock_view-details", 0, 0 },
+	{ "_Icons", G_CALLBACK(on_view_icons), NULL, 0, 0 },
+	{ "_List", G_CALLBACK(on_view_list), NULL, 0, 0 },
+	{ "_Thumbnails", G_CALLBACK(on_view_thumbnails), NULL, 0, 0 },
 #endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _browser_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
 #endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _browser_menubar[] =
@@ -134,19 +142,20 @@ static DesktopMenubar _browser_menubar[] =
 /* toolbar */
 static DesktopToolbar _browser_toolbar[] =
 {
-	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, NULL },
-	{ "Up", G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, NULL },
-	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, NULL },
-	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, NULL },
-	{ "", NULL, NULL, 0, NULL },
-	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, NULL },
-	{ "", NULL, NULL, 0, NULL },
-	{ "Cut", G_CALLBACK(on_cut), GTK_STOCK_CUT, 0, NULL },
-	{ "Copy", G_CALLBACK(on_copy), GTK_STOCK_COPY, 0, NULL },
-	{ "Paste", G_CALLBACK(on_paste), GTK_STOCK_PASTE, 0, NULL },
-	{ "", NULL, NULL, 0, NULL },
-	{ "Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0, NULL },
-	{ NULL, NULL, NULL, 0, NULL }
+	{ "Back", G_CALLBACK(on_back), GTK_STOCK_GO_BACK, 0, 0, NULL },
+	{ "Up", G_CALLBACK(on_updir), GTK_STOCK_GO_UP, 0, 0, NULL },
+	{ "Forward", G_CALLBACK(on_forward), GTK_STOCK_GO_FORWARD, 0, 0, NULL },
+	{ "Refresh", G_CALLBACK(on_refresh), GTK_STOCK_REFRESH, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Home", G_CALLBACK(on_home), GTK_STOCK_HOME, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Cut", G_CALLBACK(on_cut), GTK_STOCK_CUT, 0, 0, NULL },
+	{ "Copy", G_CALLBACK(on_copy), GTK_STOCK_COPY, 0, 0, NULL },
+	{ "Paste", G_CALLBACK(on_paste), GTK_STOCK_PASTE, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ "Properties", G_CALLBACK(on_properties), GTK_STOCK_PROPERTIES, 0, 0,
+		NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 

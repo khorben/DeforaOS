@@ -55,8 +55,8 @@ GtkWidget * desktop_toolbar_create(DesktopToolbar * toolbar, gpointer data,
 				G_CALLBACK(p->callback), data);
 		if(accel != NULL && p->accel != 0)
 			gtk_widget_add_accelerator(GTK_WIDGET(p->widget),
-					"clicked", accel, p->accel,
-					GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+					"clicked", accel, p->accel, p->modifier,
+					GTK_ACCEL_VISIBLE);
 		gtk_toolbar_insert(GTK_TOOLBAR(ret), p->widget, -1);
 	}
 	return ret;

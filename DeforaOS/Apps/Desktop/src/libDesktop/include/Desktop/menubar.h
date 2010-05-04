@@ -26,6 +26,7 @@ typedef struct _DesktopMenu
 	const char * name;
 	GtkSignalFunc callback;
 	const char * stock;
+	GdkModifierType modifier;
 	unsigned int accel;
 } DesktopMenu;
 

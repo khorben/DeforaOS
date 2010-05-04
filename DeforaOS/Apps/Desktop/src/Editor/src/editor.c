@@ -47,41 +47,47 @@ static DesktopAccel _editor_accel[] =
 #ifndef EMBEDDED
 static DesktopMenu _editor_menu_file[] =
 {
-	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_n },
-	{ N_("_Open"), G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_o },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE, GDK_s },
+	{ N_("_New"), G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_CONTROL_MASK,
+		GDK_n },
+	{ N_("_Open"), G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_o },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE,
+		GDK_CONTROL_MASK, GDK_s },
 	{ N_("_Save as..."), G_CALLBACK(on_file_save_as), GTK_STOCK_SAVE_AS,
-		GDK_S },
-	{ "", NULL, NULL, 0 },
-	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0 },
-	{ NULL, NULL, NULL, 0 }
+		GDK_CONTROL_MASK | GDK_SHIFT_MASK, GDK_S },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, 0, 0 },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _editor_menu_edit[] =
 {
-	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_z }, /* FIXME implement */
-	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_r }, /* FIXME implement */
-	{ "", NULL, NULL, 0 },
-	{ N_("_Cut"), NULL, GTK_STOCK_CUT, 0 }, /* FIXME implement */
-	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0 }, /* FIXME implement */
-	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, 0 }, /* FIXME implement */
-	{ "", NULL, NULL, 0 },
-	{ N_("_Find"), G_CALLBACK(on_edit_find), GTK_STOCK_FIND, GDK_F },
-	{ "", NULL, NULL, 0 },
+	/* FIXME implement undo and redo */
+	{ N_("_Undo"), NULL, GTK_STOCK_UNDO, GDK_CONTROL_MASK,
+		GDK_z },
+	{ N_("_Redo"), NULL, GTK_STOCK_REDO, GDK_CONTROL_MASK, GDK_r },
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Cut"), NULL, GTK_STOCK_CUT, 0, 0 }, /* FIXME implement */
+	{ N_("_Copy"), NULL, GTK_STOCK_COPY, 0, 0 }, /* FIXME implement */
+	{ N_("_Paste"), NULL, GTK_STOCK_PASTE, 0, 0 }, /* FIXME implement */
+	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Find"), G_CALLBACK(on_edit_find), GTK_STOCK_FIND,
+		GDK_CONTROL_MASK, GDK_F },
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Preferences"), G_CALLBACK(on_edit_preferences),
-		GTK_STOCK_PREFERENCES, GDK_p },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_p },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _editor_menu_help[] =
 {
 #if GTK_CHECK_VERSION(2, 6, 0)
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
 #else
-	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0 },
+	{ N_("_About"), G_CALLBACK(on_help_about), NULL, 0, 0 },
 #endif
-	{ NULL, NULL, NULL, 0 }
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _editor_menubar[] =
@@ -95,17 +101,18 @@ static DesktopMenubar _editor_menubar[] =
 
 static DesktopToolbar _editor_toolbar[] =
 {
-	{ N_("New"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, NULL },
-	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, NULL },
-	{ "", NULL, NULL, 0, NULL },
-	{ N_("Save"), G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, NULL },
-	{ N_("Save as"), G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, NULL },
+	{ N_("New"), G_CALLBACK(on_new), GTK_STOCK_NEW, 0, 0, NULL },
+	{ N_("Open"), G_CALLBACK(on_open), GTK_STOCK_OPEN, 0, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
+	{ N_("Save"), G_CALLBACK(on_save), GTK_STOCK_SAVE, 0, 0, NULL },
+	{ N_("Save as"), G_CALLBACK(on_save_as), GTK_STOCK_SAVE_AS, 0, 0,
+		NULL },
 #ifdef EMBEDDED
-	{ "", NULL, NULL, 0, NULL },
+	{ "", NULL, NULL, 0, 0, NULL },
 	{ N_("Preferences"), G_CALLBACK(on_preferences), GTK_STOCK_PREFERENCES,
-		0, NULL },
+		0, 0, NULL },
 #endif
-	{ NULL, NULL, NULL, 0, NULL }
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 

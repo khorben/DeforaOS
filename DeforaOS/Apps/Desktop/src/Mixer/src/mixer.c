@@ -69,28 +69,35 @@ static char const * _authors[] =
 static DesktopMenu _mixer_menu_file[] =
 {
 	{ N_("_Properties"), G_CALLBACK(on_file_properties),
-		GTK_STOCK_PROPERTIES, GDK_P },
-	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE, GDK_W },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_Return },
+	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
+		GDK_CONTROL_MASK, GDK_W },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _mixer_menu_view[] =
 {
-	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_A },
-	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_O },
-	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_I },
-	{ N_("_Record"), G_CALLBACK(on_view_record), NULL, GDK_R },
-	{ N_("Mo_nitor"), G_CALLBACK(on_view_monitor), NULL, GDK_N },
-	{ N_("_Equalization"), G_CALLBACK(on_view_equalization), NULL, GDK_E },
-	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_X },
-	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_M },
-	{ NULL, NULL, NULL, 0 }
+	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK, GDK_A },
+	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_CONTROL_MASK,
+		GDK_O },
+	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_CONTROL_MASK,
+		GDK_I },
+	{ N_("_Record"), G_CALLBACK(on_view_record), NULL, GDK_CONTROL_MASK,
+		GDK_R },
+	{ N_("Mo_nitor"), G_CALLBACK(on_view_monitor), NULL, GDK_CONTROL_MASK,
+		GDK_N },
+	{ N_("_Equalization"), G_CALLBACK(on_view_equalization), NULL,
+		GDK_CONTROL_MASK, GDK_E },
+	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_CONTROL_MASK, GDK_X },
+	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_CONTROL_MASK,
+		GDK_M },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _mixer_menu_help[] =
 {
-	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
-	{ NULL, NULL, NULL, 0 }
+	{ N_("_About"), G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _mixer_menubar[] =
@@ -409,6 +416,7 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	level = g_object_get_data(G_OBJECT(widget), "channel");
 	if(p == NULL || level == NULL)
 		return 1;
+	/* FIXME check this one */
 	*level = value * 255;
 	if(p->type == AUDIO_MIXER_VALUE && b != NULL
 			&& gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b)))
