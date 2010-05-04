@@ -102,7 +102,7 @@ static int _ln_multiple(LinkForce lf, LinkType lt, int argc, char * argv[])
 			continue;
 		}
 		dest = p;
-		sprintf(dest, "%s/%s", argv[argc - 1], argv[i]);
+		snprintf(dest, len, "%s/%s", argv[argc - 1], argv[i]);
 		_ln_single(lf, lt, argv[i], dest);
 	}
 	free(dest);
