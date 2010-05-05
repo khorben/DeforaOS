@@ -189,7 +189,8 @@ static Task * _task_new(Tasks * tasks, Window window, char const * name,
 			PANGO_WRAP_WORD_CHAR);
 #endif
 	gtk_box_pack_start(GTK_BOX(hbox), task->label, FALSE, TRUE, 4);
-	gtk_widget_set_size_request(task->widget, tasks->icon_width, -1);
+	gtk_widget_set_size_request(task->widget, tasks->icon_width,
+			tasks->icon_height);
 #endif
 	gtk_container_add(GTK_CONTAINER(task->widget), hbox);
 	_task_set(task, name, pixbuf);
