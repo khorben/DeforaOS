@@ -121,8 +121,8 @@ Panel * panel_new(PanelPrefs * prefs)
 	panel->helper.position_menu = _panel_helper_position_menu;
 	panel->helper.shutdown_dialog = _panel_helper_shutdown_dialog;
 	/* root window */
-	panel->root = gdk_screen_get_root_window(gdk_screen_get_default());
 	screen = gdk_screen_get_default();
+	panel->root = gdk_screen_get_root_window(screen);
 	if(prefs != NULL && prefs->monitor > 0
 			&& prefs->monitor < gdk_screen_get_n_monitors(screen))
 		monitor = prefs->monitor;
