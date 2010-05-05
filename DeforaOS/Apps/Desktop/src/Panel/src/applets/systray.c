@@ -75,6 +75,7 @@ PanelApplet applet =
 static GtkWidget * _systray_init(PanelApplet * applet)
 {
 	Systray * systray;
+	gint height = 24;
 
 	if((systray = malloc(sizeof(*systray))) == NULL)
 	{
@@ -83,6 +84,8 @@ static GtkWidget * _systray_init(PanelApplet * applet)
 	}
 	applet->priv = systray;
 	systray->hbox = gtk_hbox_new(FALSE, 0);
+	gtk_icon_size_lookup(applet->helper->icon_size, NULL, &height);
+	gtk_widget_set_size_request(systray->hbox, -1, height);
 	systray->owner = gtk_invisible_new();
 	g_signal_connect(G_OBJECT(systray->hbox), "screen-changed", G_CALLBACK(
 				_on_screen_changed), systray);
