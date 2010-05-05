@@ -27,7 +27,9 @@ typedef struct _Panel Panel;
 
 typedef enum _PanelPosition
 {
-	PANEL_POSITION_TOP, PANEL_POSITION_BOTTOM
+	PANEL_POSITION_BOTH,
+	PANEL_POSITION_BOTTOM,
+	PANEL_POSITION_TOP
 } PanelPosition;
 
 typedef struct _PanelPrefs

@@ -44,12 +44,13 @@
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: panel [-m monitor][-BsSTx]\n"
-"  -B	Place the panel at the bottom of the screen (default)\n"
+	fputs(_("Usage: panel [-m monitor][-bBsStx]\n"
+"  -B	Place the panel at both top and bottom of the screen\n"
+"  -b	Place the panel only at the bottom of the screen\n"
 "  -m	Monitor to use (default: 0)\n"
 "  -s	Use icons the size of a small toolbar\n"
 "  -S	Use icons the size of a large toolbar (default)\n"
-"  -T	Place the panel at the top of the screen\n"
+"  -t	Place the panel only at the top of the screen\n"
 "  -x	Use icons the size of menus\n"), stderr);
 	return 1;
 }
@@ -61,7 +62,8 @@ static void _main_sigchld(int signum);
 int main(int argc, char * argv[])
 {
 	int o;
-	Panel * panel;
+	Panel * panel1 = NULL;
+	Panel * panel2 = NULL;
 	PanelPrefs prefs;
 	char * p;
 	struct sigaction sa;
@@ -72,11 +74,14 @@ int main(int argc, char * argv[])
 	gtk_init(&argc, &argv);
 	memset(&prefs, 0, sizeof(prefs));
 	prefs.iconsize = PANEL_ICON_SIZE_LARGE;
-	prefs.position = PANEL_POSITION_BOTTOM;
-	while((o = getopt(argc, argv, "Bm:sSTx")) != -1)
+	prefs.position = PANEL_POSITION_BOTH;
+	while((o = getopt(argc, argv, "bBm:sStx")) != -1)
 		switch(o)
 		{
 			case 'B':
+				prefs.position = PANEL_POSITION_BOTH;
+				break;
+			case 'b':
 				prefs.position = PANEL_POSITION_BOTTOM;
 				break;
 			case 'm':
@@ -90,7 +95,7 @@ int main(int argc, char * argv[])
 			case 'S':
 				prefs.iconsize = PANEL_ICON_SIZE_LARGE;
 				break;
-			case 'T':
+			case 't':
 				prefs.position = PANEL_POSITION_TOP;
 				break;
 			case 'x':
@@ -101,15 +106,25 @@ int main(int argc, char * argv[])
 		}
 	if(optind != argc)
 		return _usage();
-	if((panel = panel_new(&prefs)) == NULL)
+	if(prefs.position == PANEL_POSITION_BOTH)
+	{
+		prefs.position = PANEL_POSITION_TOP;
+		if((panel1 = panel_new(&prefs)) == NULL)
+			return 2;
+		prefs.position = PANEL_POSITION_BOTTOM;
+	}
+	if((panel2 = panel_new(&prefs)) == NULL)
 		return 2;
 	sa.sa_handler = _main_sigchld;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	if(sigaction(SIGCHLD, &sa, NULL) == -1)
-		panel_error(panel, "sigaction", 0);
+		panel_error(NULL, "sigaction", 0);
 	gtk_main();
-	panel_delete(panel);
+	if(panel1 != NULL)
+		panel_delete(panel1);
+	if(panel2 != NULL)
+		panel_delete(panel2);
 	return 0;
 }
 
