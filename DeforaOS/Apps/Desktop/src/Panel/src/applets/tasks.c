@@ -279,6 +279,8 @@ static GtkWidget * _tasks_init(PanelApplet * applet)
 	tasks->icon_height = 48;
 	gtk_icon_size_lookup(tasks->icon_size, &tasks->icon_width,
 			&tasks->icon_height);
+	tasks->icon_width -= 4;
+	tasks->icon_height -= 4;
 	tasks->display = NULL;
 	tasks->screen = NULL;
 	tasks->root = NULL;
