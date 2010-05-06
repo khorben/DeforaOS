@@ -1714,7 +1714,7 @@ static void _install_target_script(Config * config, FILE * fp,
 		return;
 	if((script = config_get(config, target, "script")) == NULL)
 		return;
-	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(PREFIX)",
+	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(DESTDIR)$(PREFIX)",
 			*path ? "/" : "", *path ? path : "", "\" install \"",
 			target, "\"\n");
 }
@@ -1988,7 +1988,7 @@ static void _uninstall_target_script(Config * config, FILE * fp,
 
 	if((script = config_get(config, target, "script")) == NULL)
 		return;
-	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(PREFIX)",
+	fprintf(fp, "\t%s%s%s%s%s%s%s", script, " -p \"$(DESTDIR)$(PREFIX)",
 			*path ? "/" : "", *path ? path : "", "\" uninstall \"",
 			target, "\"\n");
 }
