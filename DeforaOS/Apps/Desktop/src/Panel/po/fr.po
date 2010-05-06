@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-04 03:15+0200\n"
+"POT-Creation-Date: 2010-05-06 15:30+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -18,9 +18,9 @@ msgstr ""
 
 #: ../src/applets/battery.c:145
 msgid "Unknown"
-msgstr ""
+msgstr "Inconnu"
 
-#: ../src/applets/battery.c:162 ../src/run.c:197 ../src/run.c:201
+#: ../src/applets/battery.c:162 ../src/run.c:196 ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
 
@@ -32,7 +32,8 @@ msgstr "%H:%M"
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
-msgstr "%H:%M:%S\n"
+msgstr ""
+"%H:%M:%S\n"
 "%d/%m/%Y"
 
 #: ../src/applets/cpu.c:92
@@ -60,10 +61,10 @@ msgstr "Verrouiller l'écran"
 msgid "Logging out is disabled"
 msgstr ""
 
-#: ../src/applets/logout.c:67 ../src/panel.c:352 ../src/panel.c:357
-#: ../src/panel.c:365
+#: ../src/applets/logout.c:67 ../src/panel.c:360 ../src/panel.c:365
+#: ../src/panel.c:373
 msgid "Logout"
-msgstr ""
+msgstr "Déconnexion"
 
 #: ../src/applets/main.c:130
 msgid "Main menu"
@@ -87,90 +88,90 @@ msgstr "Arrêter..."
 
 #: ../src/applets/memory.c:88
 msgid "RAM:"
-msgstr ""
+msgstr "Mémoire :"
 
 #: ../src/applets/swap.c:88
 msgid "Swap:"
-msgstr ""
+msgstr "Échange :"
 
-#: ../src/applets/tasks.c:453
+#: ../src/applets/tasks.c:456
 msgid "(Untitled)"
 msgstr "(Sans titre)"
 
-#: ../src/applets/tasks.c:711
+#: ../src/applets/tasks.c:728
 msgid "Move"
 msgstr "Déplacer"
 
-#: ../src/applets/tasks.c:713
+#: ../src/applets/tasks.c:730
 msgid "Resize"
 msgstr "Redimensionner"
 
-#: ../src/applets/tasks.c:715
+#: ../src/applets/tasks.c:732
 msgid "Minimize"
 msgstr "Réduire"
 
-#: ../src/applets/tasks.c:717
+#: ../src/applets/tasks.c:734
 msgid "Shade"
-msgstr ""
+msgstr "Masquer"
 
-#: ../src/applets/tasks.c:719
+#: ../src/applets/tasks.c:736
 msgid "Stick"
-msgstr ""
+msgstr "Attacher"
 
-#: ../src/applets/tasks.c:721
+#: ../src/applets/tasks.c:738
 msgid "Maximize horizontally"
 msgstr "Maximiser horizontalement"
 
-#: ../src/applets/tasks.c:723
+#: ../src/applets/tasks.c:740
 msgid "Maximize vertically"
 msgstr "Maximiser verticalement"
 
-#: ../src/applets/tasks.c:727
+#: ../src/applets/tasks.c:744
 msgid "Change desktop"
 msgstr "Déplacer vers le bureau"
 
-#: ../src/applets/tasks.c:764
+#: ../src/applets/tasks.c:781
 msgid "Maximize"
 msgstr "Maximiser"
 
-#: ../src/panel.c:344
+#: ../src/panel.c:352
 msgid ""
 "This will log you out of the current session, therefore closing any "
 "application currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:401
+#: ../src/panel.c:412
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:417 ../src/panel.c:422 ../src/panel.c:429
+#: ../src/panel.c:428 ../src/panel.c:433 ../src/panel.c:440
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:421
+#: ../src/panel.c:432
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: ../src/run.c:101 ../src/run.c:113
+#: ../src/run.c:100 ../src/run.c:112
 msgid "Run program..."
 msgstr "Exécuter..."
 
-#: ../src/run.c:107
+#: ../src/run.c:106
 msgid "Command:"
 msgstr "Commande :"
 
-#: ../src/run.c:122
+#: ../src/run.c:121
 msgid "Run in a terminal"
 msgstr "Exécuter dans un terminal"
 
-#: ../src/run.c:317
+#: ../src/run.c:315
 msgid "Child exited with error code 127"
 msgstr "La commande a retourné un code d'erreur 127"
 
-#: ../src/run.c:391
+#: ../src/run.c:389
 msgid "Usage: run\n"
 msgstr "Usage: run\n"
