@@ -35,12 +35,14 @@
 typedef struct _Keyboard
 {
 	PanelAppletHelper * helper;
+	GPid pid;
 	GtkWidget * window;
 } Keyboard;
 
 
 /* prototypes */
 static GtkWidget * _keyboard_init(PanelApplet * applet);
+static void _keyboard_destroy(PanelApplet * applet);
 
 /* callbacks */
 static void _on_keyboard_toggled(GtkWidget * widget, gpointer data);
@@ -52,7 +54,7 @@ PanelApplet applet =
 {
 	NULL,
 	_keyboard_init,
-	NULL,
+	_keyboard_destroy,
 	PANEL_APPLET_POSITION_START,
 	FALSE,
 	TRUE,
@@ -74,6 +76,7 @@ static GtkWidget * _keyboard_init(PanelApplet * applet)
 	if((keyboard = malloc(sizeof(*keyboard))) == NULL)
 		return NULL;
 	keyboard->helper = applet->helper;
+	keyboard->pid = -1;
 	keyboard->window = NULL;
 	ret = gtk_toggle_button_new();
 	gtk_button_set_relief(GTK_BUTTON(ret), GTK_RELIEF_NONE);
@@ -100,8 +103,9 @@ static gboolean _init_idle(gpointer data)
 
 	if(keyboard->window != NULL)
 		return FALSE;
-	if(g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH,
-			NULL, NULL, NULL, NULL, &out, NULL, &error) != TRUE)
+	if(g_spawn_async_with_pipes(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL,
+				NULL, &keyboard->pid, NULL, &out, NULL, &error)
+			!= TRUE)
 		return keyboard->helper->error(keyboard->helper->priv,
 				argv[0], FALSE);
 	if((size = read(out, buf, sizeof(buf) - 1)) <= 0) /* XXX may block */
@@ -117,6 +121,17 @@ static gboolean _init_idle(gpointer data)
 	gtk_socket_add_id(GTK_SOCKET(socket), xid);
 	gtk_widget_show(socket);
 	return FALSE;
+}
+
+
+/* keyboard_destroy */
+static void _keyboard_destroy(PanelApplet * applet)
+{
+	Keyboard * keyboard = applet->priv;
+
+	if(keyboard->pid > 0)
+		g_spawn_close_pid(keyboard->pid); /* XXX may be dead already */
+	free(keyboard);
 }
 
 
