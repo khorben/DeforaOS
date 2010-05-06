@@ -267,6 +267,8 @@ int _volume_set(Volume * volume, gdouble value)
 #else
 	int v = value * 100;
 
+	if(volume->fd < 0)
+		return 1;
 	v |= v << 8;
 # ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%lf) 0x%04x\n", __func__, value, v);
