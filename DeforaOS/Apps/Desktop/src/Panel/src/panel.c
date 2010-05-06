@@ -395,7 +395,8 @@ static void _panel_helper_position_menu(GtkMenu * menu, gint * x, gint * y,
 #endif
 	if(req.height <= 0)
 		return;
-	*x = PANEL_BORDER_WIDTH;
+	*x = (req.width < panel->root_width - PANEL_BORDER_WIDTH)
+		? PANEL_BORDER_WIDTH : 0;
 	if(panel->position == PANEL_POSITION_TOP)
 		*y = panel->height;
 	else

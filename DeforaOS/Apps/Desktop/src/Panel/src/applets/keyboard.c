@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - choose a correct size and position for the window
+ * - choose a correct size for the window
  * - track if xkbd's process ever dies
  * - write own keyboard implementation */
 
@@ -111,8 +111,8 @@ static gboolean _init_idle(gpointer data)
 	if(sscanf(buf, "%lu", &xid) != 1)
 		return FALSE; /* XXX warn the user */
 	keyboard->window = gtk_window_new(GTK_WINDOW_POPUP);
-	gtk_window_set_default_size(GTK_WINDOW(keyboard->window), 480, 120);
 	socket = gtk_socket_new();
+	gtk_widget_set_size_request(socket, 480, 150);
 	gtk_container_add(GTK_CONTAINER(keyboard->window), socket);
 	gtk_socket_add_id(GTK_SOCKET(socket), xid);
 	gtk_widget_show(socket);
@@ -125,11 +125,17 @@ static gboolean _init_idle(gpointer data)
 static void _on_keyboard_toggled(GtkWidget * widget, gpointer data)
 {
 	Keyboard * keyboard = data;
+	gint x = 0;
+	gint y = 0;
+	gboolean push_in;
 
 	if(keyboard->window == NULL)
 		_init_idle(keyboard);
 	if(keyboard->window == NULL)
 		return;
+	keyboard->helper->position_menu((GtkMenu*)keyboard->window, &x, &y,
+			&push_in, keyboard->helper->priv);
+	gtk_window_move(GTK_WINDOW(keyboard->window), x, y);
 	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 		gtk_widget_show(keyboard->window);
 	else
