@@ -61,7 +61,9 @@ typedef struct _Battery
 	/* widgets */
 	GtkWidget * hbox;
 	GtkWidget * image;
+#ifndef EMBEDDED
 	GtkWidget * scale;
+#endif
 	guint timeout;
 
 	/* platform-specific */
@@ -118,15 +120,19 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	battery->image = gtk_image_new_from_icon_name("battery",
 			applet->helper->icon_size);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->image, FALSE, TRUE, 0);
+#ifndef EMBEDDED
 	battery->scale = gtk_vscale_new_with_range(0, 100, 1);
 	gtk_widget_set_sensitive(battery->scale, FALSE);
 	gtk_range_set_inverted(GTK_RANGE(battery->scale), TRUE);
 	gtk_scale_set_value_pos(GTK_SCALE(battery->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->scale, FALSE, TRUE, 0);
+#endif
 	battery->timeout = g_timeout_add(5000, _on_timeout, battery);
 	_on_timeout(battery);
 	gtk_widget_show(battery->image);
+#ifndef EMBEDDED
 	gtk_widget_show(battery->scale);
+#endif
 	return hbox;
 }
 
@@ -175,7 +181,9 @@ static void _battery_set(Battery * battery, gdouble value)
 		value = 0.0;
 		snprintf(buf, sizeof(buf), "%s", _("Error"));
 	}
+#ifndef EMBEDDED
 	gtk_range_set_value(GTK_RANGE(battery->scale), value);
+#endif
 #if GTK_CHECK_VERSION(2, 12, 0)
 	/* FIXME use the tooltip to display the exact level */
 	gtk_widget_set_tooltip_text(battery->image, buf);
