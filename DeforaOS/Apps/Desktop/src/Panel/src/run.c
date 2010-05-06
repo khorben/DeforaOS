@@ -66,13 +66,12 @@ static int _run_error(char const * message, int ret);
 static char * _run_get_config_filename(void);
 
 /* callbacks */
-static gboolean _on_run_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void _on_run_cancel(GtkWidget * widget, gpointer data);
+static gboolean _on_run_closex(gpointer data);
+static void _on_run_cancel(gpointer data);
 static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 		gpointer data);
-static void _on_run_execute(GtkWidget * widget, gpointer data);
-static void _on_run_path_activate(GtkWidget * widget, gpointer data);
+static void _on_run_execute(gpointer data);
+static void _on_run_path_activate(gpointer data);
 static void _on_run_terminal_toggle(GtkWidget * widget, gpointer data);
 
 /* run_new */
@@ -99,7 +98,7 @@ static Run * _run_new(void)
 	gtk_window_set_resizable(window, FALSE);
 	gtk_window_set_skip_pager_hint(window, TRUE);
 	gtk_window_set_title(window, _("Run program..."));
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
 				_on_run_closex), run);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -107,7 +106,7 @@ static Run * _run_new(void)
 	widget = gtk_label_new(_("Command:"));
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
 	run->entry = _new_entry(run->config);
-	g_signal_connect(G_OBJECT(run->entry), "activate", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(run->entry), "activate", G_CALLBACK(
 				_on_run_path_activate), run);
 	gtk_box_pack_start(GTK_BOX(hbox), run->entry, TRUE, TRUE, 4);
 	widget = gtk_file_chooser_dialog_new(_("Run program..."), window,
@@ -125,13 +124,13 @@ static Run * _run_new(void)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_run_execute), run);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_run_cancel), run);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 4);
@@ -225,8 +224,7 @@ static char * _run_get_config_filename(void)
 
 /* callbacks */
 /* on_run_closex */
-static gboolean _on_run_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _on_run_closex(gpointer data)
 {
 	Run * run = data;
 
@@ -237,7 +235,7 @@ static gboolean _on_run_closex(GtkWidget * widget, GdkEvent * event,
 
 
 /* on_run_cancel */
-static void _on_run_cancel(GtkWidget * widget, gpointer data)
+static void _on_run_cancel(gpointer data)
 {
 	Run * run = data;
 
@@ -263,7 +261,7 @@ static void _on_run_choose_activate(GtkWidget * widget, gint arg1,
 static gboolean _execute_idle(gpointer data);
 static void _idle_save_config(Run * run);
 
-static void _on_run_execute(GtkWidget * widget, gpointer data)
+static void _on_run_execute(gpointer data)
 {
 	Run * run = data;
 	char const * path;
@@ -370,9 +368,9 @@ static void _idle_save_config(Run * run)
 
 
 /* on_run_path_activate */
-static void _on_run_path_activate(GtkWidget * widget, gpointer data)
+static void _on_run_path_activate(gpointer data)
 {
-	_on_run_execute(widget, data);
+	_on_run_execute(data);
 }
 
 
