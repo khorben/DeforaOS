@@ -105,7 +105,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 	gtk_range_set_inverted(GTK_RANGE(battery->scale), TRUE);
 	gtk_scale_set_value_pos(GTK_SCALE(battery->scale), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(hbox), battery->scale, FALSE, TRUE, 0);
-	battery->timeout = g_timeout_add(1000, _on_timeout, battery);
+	battery->timeout = g_timeout_add(5000, _on_timeout, battery);
 	_on_timeout(battery);
 	gtk_widget_show(battery->image);
 	gtk_widget_show(battery->scale);
