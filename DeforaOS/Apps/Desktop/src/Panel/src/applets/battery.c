@@ -41,13 +41,30 @@
 /* Battery */
 /* private */
 /* types */
+typedef enum _BatteryLevel
+{
+	BATTERY_LEVEL_UNKNOWN = 0,
+	BATTERY_LEVEL_ERROR,
+	BATTERY_LEVEL_CAUTION,
+	BATTERY_LEVEL_LOW,
+	BATTERY_LEVEL_NORMAL,
+	BATTERY_LEVEL_CHARGING
+} BatteryLevel;
+#define BATTERY_LEVEL_LAST	BATTERY_LEVEL_CHARGING
+#define BATTERY_LEVEL_COUNT	(BATTERY_LEVEL_LAST + 1)
+
 typedef struct _Battery
 {
 	PanelAppletHelper * helper;
+	BatteryLevel level;
+
+	/* widgets */
 	GtkWidget * hbox;
 	GtkWidget * image;
 	GtkWidget * scale;
 	guint timeout;
+
+	/* platform-specific */
 #if defined(__NetBSD__) || defined(__linux__)
 	int fd;
 #endif
@@ -91,6 +108,7 @@ static GtkWidget * _battery_init(PanelApplet * applet)
 		return NULL;
 	applet->priv = battery;
 	battery->helper = applet->helper;
+	battery->level = -1;
 	battery->timeout = 0;
 #if defined(__NetBSD__) || defined(__linux__)
 	battery->fd = -1;
@@ -129,35 +147,31 @@ static void _battery_destroy(PanelApplet * applet)
 
 
 /* battery_set */
+static void _set_image(Battery * battery, BatteryLevel level);
+
 static void _battery_set(Battery * battery, gdouble value)
 {
 	char buf[16];
 
 	snprintf(buf, sizeof(buf), "%.1lf%%", value);
-	/* XXX only set image and show when necessary? */
+	/* XXX only show when necessary? */
 	if(value >= 0.0 && value <= 100.0)
 		gtk_widget_show(battery->hbox);
 	if(value < 0.0)
 	{
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"stock_dialog-question",
-				battery->helper->icon_size);
+		_set_image(battery, BATTERY_LEVEL_UNKNOWN);
+		value = 0.0;
 		snprintf(buf, sizeof(buf), "%s", _("Unknown"));
 	}
 	else if(value <= 10.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery-caution", battery->helper->icon_size);
+		_set_image(battery, BATTERY_LEVEL_CAUTION);
 	else if(value <= 20.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery-low", battery->helper->icon_size);
+		_set_image(battery, BATTERY_LEVEL_LOW);
 	else if(value <= 100.0)
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"battery", battery->helper->icon_size);
+		_set_image(battery, BATTERY_LEVEL_NORMAL);
 	else
 	{
-		gtk_image_set_from_icon_name(GTK_IMAGE(battery->image),
-				"error", battery->helper->icon_size);
-		gtk_widget_hide(battery->hbox);
+		_set_image(battery, BATTERY_LEVEL_ERROR);
 		value = 0.0;
 		snprintf(buf, sizeof(buf), "%s", _("Error"));
 	}
@@ -166,6 +180,24 @@ static void _battery_set(Battery * battery, gdouble value)
 	/* FIXME use the tooltip to display the exact level */
 	gtk_widget_set_tooltip_text(battery->image, buf);
 #endif
+}
+
+static void _set_image(Battery * battery, BatteryLevel level)
+{
+	char const * icons[BATTERY_LEVEL_COUNT] =
+	{
+		"stock_dialog-question",
+		"stock_dialog-error",
+		"battery-caution",
+		"battery-low",
+		"battery",
+		"battery" /* XXX find a better icon */
+	};
+
+	if(battery->level == level)
+		return;
+	gtk_image_set_from_icon_name(GTK_IMAGE(battery->image), icons[level],
+			battery->helper->icon_size);
 }
 
 
