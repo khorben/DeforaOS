@@ -58,6 +58,7 @@ PanelApplet applet =
 typedef struct _Volume
 {
 	PanelAppletHelper * helper;
+	char const * device;
 #ifdef AUDIO_MIXER_DEVINFO
 	int fd;
 	int mix;
@@ -121,7 +122,6 @@ static void _volume_destroy(PanelApplet * applet)
 static Volume * _volume_new(PanelAppletHelper * helper)
 {
 	Volume * volume;
-	char const * mixer;
 #ifdef AUDIO_MIXER_DEVINFO
 	int i;
 	mixer_devinfo_t md;
@@ -133,15 +133,15 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 		return NULL;
 	}
 	volume->helper = helper;
+	if((volume->device = helper->config_get(helper->priv, "volume",
+					"device")) == NULL)
+		volume->device = "/dev/mixer";
 #ifdef AUDIO_MIXER_DEVINFO
 	volume->mix = -1;
 	volume->outputs = -1;
-	if((mixer = helper->config_get(helper->priv, "volume", "device"))
-			== NULL)
-		mixer = "/dev/mixer";
-	if((volume->fd = open(mixer, O_RDWR)) < 0)
+	if((volume->fd = open(volume->device, O_RDWR)) < 0)
 	{
-		helper->error(helper->priv, mixer, 0);
+		helper->error(helper->priv, volume->device, 0);
 		return volume;
 	}
 	for(i = 0; volume->outputs == -1 || volume->mix == -1; i++)
@@ -157,8 +157,8 @@ static Volume * _volume_new(PanelAppletHelper * helper)
 			volume->mix = i;
 	}
 #else
-	if((volume->fd = open(mixer, O_RDWR)) < 0)
-		helper->error(helper->priv, mixer, 0);
+	if((volume->fd = open(volume->device, O_RDWR)) < 0)
+		helper->error(helper->priv, volume->device, 0);
 #endif
 	return volume;
 }
@@ -169,10 +169,10 @@ static void _volume_delete(Volume * volume)
 {
 #ifdef AUDIO_MIXER_DEVINFO
 	if(volume->fd >= 0 && close(volume->fd) != 0)
-		volume->helper->error(volume->helper->priv, "/dev/mixer", 0);
+		volume->helper->error(volume->helper->priv, volume->device, 0);
 #else /* XXX equivalent for now */
 	if(volume->fd >= 0 && close(volume->fd) != 0)
-		volume->helper->error(volume->helper->priv, "/dev/mixer", 0);
+		volume->helper->error(volume->helper->priv, volume->device, 0);
 #endif
 	free(volume);
 }
