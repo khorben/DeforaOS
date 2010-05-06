@@ -490,14 +490,15 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 	long width;
 	long height;
 	unsigned long size;
-	unsigned char * pixbuf;
+	unsigned char * pixbuf = NULL;
 	unsigned long j;
 	GdkPixbuf * p;
+	unsigned long * best = NULL;
 
 	if(_tasks_get_window_property(tasks, window, TASKS_ATOM__NET_WM_ICON,
 				XA_CARDINAL, &cnt, (void*)&buf) != 0)
 		return NULL;
-	for(i = 0; i < cnt - 3; i++)
+	for(i = 0; i < cnt - 3; i += 2 + (width * height))
 	{
 		width = buf[i];
 		height = buf[i + 1];
@@ -505,29 +506,42 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 			break;
 		if(width <= 0 || height <= 0 || width != height)
 			continue;
-		size = width * height * 4;
-		if((pixbuf = malloc(size)) == NULL)
-			return NULL;
-		for(i+=2, j = 0; j < size; i++)
+		if(tasks->icon_width == width)
 		{
-			pixbuf[j++] = (buf[i] >> 16) & 0xff; /* red */
-			pixbuf[j++] = (buf[i] >> 8) & 0xff; /* green */
-			pixbuf[j++] = buf[i] & 0xff; /* blue */
-			pixbuf[j++] = buf[i] >> 24; /* alpha */
+			best = &buf[i];
+			break;
 		}
-		p = gdk_pixbuf_new_from_data(pixbuf, GDK_COLORSPACE_RGB,
-				TRUE, 8, width, height, width * 4,
-				(GdkPixbufDestroyNotify)free, NULL);
-		XFree(buf);
-		if(width == tasks->icon_width)
-			return p;
-		ret = gdk_pixbuf_scale_simple(p, tasks->icon_width,
-				tasks->icon_height,
-				GDK_INTERP_BILINEAR);
-		g_object_unref(p);
-		return ret;
+		if(best == NULL || best[0] < width) /* XXX bigger != better */
+			best = &buf[i];
 	}
-	return NULL;
+	if(best != NULL)
+	{
+		width = best[0];
+		height = best[1];
+		size = width * height * 4;
+		pixbuf = malloc(size);
+	}
+	if(best == NULL || pixbuf == NULL)
+	{
+		XFree(buf);
+		return NULL;
+	}
+	for(i = 2, j = 0; j < size; i++)
+	{
+		pixbuf[j++] = (best[i] >> 16) & 0xff; /* red */
+		pixbuf[j++] = (best[i] >> 8) & 0xff; /* green */
+		pixbuf[j++] = best[i] & 0xff; /* blue */
+		pixbuf[j++] = best[i] >> 24; /* alpha */
+	}
+	p = gdk_pixbuf_new_from_data(pixbuf, GDK_COLORSPACE_RGB, TRUE, 8, width,
+			height, width * 4, (GdkPixbufDestroyNotify)free, NULL);
+	XFree(buf);
+	if(width == tasks->icon_width)
+		return p;
+	ret = gdk_pixbuf_scale_simple(p, tasks->icon_width, tasks->icon_height,
+			GDK_INTERP_BILINEAR);
+	g_object_unref(p);
+	return ret;
 }
 
 static int _do_tasks_add(Tasks * tasks, int desktop, Window window,
