@@ -1612,6 +1612,7 @@ static int _gsm_queue_push(GSM * gsm)
 		return 1;
 	snprintf(gsm->wr_buf, gsm->wr_buf_cnt + 1, "%s%s", gsmc->command,
 			suffix);
+	/* FIXME shouldn't it always be the case? flush input queue first? */
 	if(gsm->channel != NULL && gsm->wr_source == 0)
 		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 				_on_watch_can_write, gsm);

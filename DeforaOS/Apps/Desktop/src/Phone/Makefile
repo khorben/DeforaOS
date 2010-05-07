@@ -23,6 +23,11 @@ dist:
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/phone.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-signal-00.png \
+		$(PACKAGE)-$(VERSION)/data/phone-signal-25.png \
+		$(PACKAGE)-$(VERSION)/data/phone-signal-50.png \
+		$(PACKAGE)-$(VERSION)/data/phone-signal-75.png \
+		$(PACKAGE)-$(VERSION)/data/phone-signal-100.png \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
