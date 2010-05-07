@@ -706,6 +706,10 @@ void phone_show_messages(Phone * phone, gboolean show)
 		phone->me_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_default_size(GTK_WINDOW(phone->me_window), 200,
 				300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->me_window),
+				"stock_mail-compose");
+#endif
 		gtk_window_set_title(GTK_WINDOW(phone->me_window),
 				_("Messages"));
 		g_signal_connect_swapped(G_OBJECT(phone->me_window),
