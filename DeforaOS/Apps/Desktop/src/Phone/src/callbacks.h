@@ -44,6 +44,7 @@ void on_phone_dialer_hangup(gpointer data);
 
 /* messages */
 void on_phone_messages_call(gpointer data);
+void on_phone_messages_changed(gpointer data);
 void on_phone_messages_delete(gpointer data);
 void on_phone_messages_inbox(gpointer data);
 void on_phone_messages_outbox(gpointer data);

@@ -59,6 +59,7 @@ void phone_contacts_call_selected(Phone * phone);
 void phone_contacts_write_selected(Phone * phone);
 
 /* messages */
+void phone_messages_count_buffer(Phone * phone);
 void phone_messages_send(Phone * phone);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);

@@ -93,6 +93,7 @@ struct _Phone
 	/* write */
 	GtkWidget * wr_window;
 	GtkWidget * wr_entry;
+	GtkWidget * wr_count;
 	GtkWidget * wr_view;
 	GtkWidget * wr_progress;
 
@@ -429,6 +430,32 @@ void phone_hangup(Phone * phone)
 
 
 /* messages */
+/* phone_messages_count_buffer */
+void phone_messages_count_buffer(Phone * phone)
+{
+	GtkTextBuffer * tbuf;
+	gint cnt;
+	gint msg_cnt;
+	gint cur_cnt;
+	char buf[32];
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	if((cnt = gtk_text_buffer_get_char_count(tbuf)) < 0)
+		return;
+	msg_cnt = (cnt / 140) + 1;
+	if((cur_cnt = cnt % 140) == 0)
+	{
+		msg_cnt--;
+		if(cnt > 0)
+			cur_cnt = 140;
+	}
+	snprintf(buf, sizeof(buf), _("%d message%s, %d/140 character%s"),
+			msg_cnt, (msg_cnt > 1) ? _("s") : _(""), cur_cnt,
+			(cur_cnt > 1) ? _("s") : _(""));
+	gtk_label_set_text(GTK_LABEL(phone->wr_count), buf);
+}
+
+
 /* phone_messages_send */
 void phone_messages_send(Phone * phone)
 {
@@ -763,6 +790,7 @@ void phone_show_write(Phone * phone, gboolean show)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkTextBuffer * tbuf;
 
 	if(phone->wr_window == NULL)
 	{
@@ -774,6 +802,7 @@ void phone_show_write(Phone * phone, gboolean show)
 		g_signal_connect(G_OBJECT(phone->wr_window), "delete-event",
 				G_CALLBACK(on_phone_closex), phone->wr_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		/* entry */
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->wr_entry = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE,
@@ -787,16 +816,27 @@ void phone_show_write(Phone * phone, gboolean show)
 				G_CALLBACK(on_phone_messages_send), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
+		/* character count */
+		hbox = gtk_hbox_new(FALSE, 0);
+		phone->wr_count = gtk_label_new(NULL);
+		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_count, TRUE, TRUE,
+				2);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
+		/* view */
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 		phone->wr_view = gtk_text_view_new();
 		gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->wr_view),
 				GTK_WRAP_WORD_CHAR);
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+		g_signal_connect_swapped(G_OBJECT(tbuf), "changed", G_CALLBACK(
+					on_phone_messages_changed), phone);
 		gtk_container_add(GTK_CONTAINER(widget), phone->wr_view);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
 		gtk_container_add(GTK_CONTAINER(phone->wr_window), vbox);
 		gtk_widget_show_all(vbox);
+		phone_messages_count_buffer(phone);
 	}
 	if(show)
 		gtk_window_present(GTK_WINDOW(phone->wr_window));

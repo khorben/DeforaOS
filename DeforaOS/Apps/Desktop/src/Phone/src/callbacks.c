@@ -153,6 +153,15 @@ void on_phone_messages_call(gpointer data)
 }
 
 
+/* on_phone_messages_changed */
+void on_phone_messages_changed(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_messages_count_buffer(phone);
+}
+
+
 /* on_phone_messages_delete */
 void on_phone_messages_delete(gpointer data)
 {
