@@ -1938,10 +1938,9 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 			return 1;
 		term.c_cflag |= CS8;
 		term.c_cflag |= CREAD;
+		term.c_cflag |= CLOCAL;
 		if(hwflow)
 			term.c_cflag |= CRTSCTS;
-		else
-			term.c_cflag |= CLOCAL;
 		term.c_iflag = (IGNPAR | IGNBRK);
 		term.c_lflag = 0;
 		term.c_oflag = 0;
