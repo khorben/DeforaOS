@@ -50,7 +50,7 @@ typedef enum _GSMPriority
 typedef enum _GSMQuirk
 {
 	GSM_QUIRK_NONE = 0,
-	GSM_QUIRK_CPIN_QUOTES
+	GSM_QUIRK_CPIN_QUOTES = 1
 } GSMQuirk;
 
 typedef void (*GSMCommandCallback)(GSM * gsm);
