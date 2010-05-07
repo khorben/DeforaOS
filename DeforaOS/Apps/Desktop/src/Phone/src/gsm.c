@@ -1936,6 +1936,7 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 	{
 		if(tcgetattr(fd, &term) != 0)
 			return 1;
+		term.c_cflag &= ~(CSIZE | PARENB);
 		term.c_cflag |= CS8;
 		term.c_cflag |= CREAD;
 		term.c_cflag |= CLOCAL;
