@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=Phone
-Comment=A telephony application
-Exec=phone
-Icon=stock_cell-phone
+Name=Contacts
+Comment=Phone address book
+Exec=phone-contacts
+Icon=stock_addressbook
 Type=Application
 Categories=Network;Telephony;GTK;
 StartupNotify=true

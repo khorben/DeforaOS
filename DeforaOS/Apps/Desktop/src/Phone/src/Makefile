@@ -1,4 +1,4 @@
-TARGETS	= contacts dialer messages phone
+TARGETS	= phone phone-contacts phone-dialer phone-messages
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -16,27 +16,6 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-contacts_OBJS = contacts.o
-contacts_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-contacts_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-contacts: $(contacts_OBJS)
-	$(CC) -o contacts $(contacts_OBJS) $(contacts_LDFLAGS)
-
-dialer_OBJS = dialer.o
-dialer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-dialer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-dialer: $(dialer_OBJS)
-	$(CC) -o dialer $(dialer_OBJS) $(dialer_LDFLAGS)
-
-messages_OBJS = messages.o
-messages_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-messages_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-messages: $(messages_OBJS)
-	$(CC) -o messages $(messages_OBJS) $(messages_LDFLAGS)
-
 phone_OBJS = callbacks.o gsm.o main.o phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
@@ -44,14 +23,26 @@ phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 phone: $(phone_OBJS)
 	$(CC) -o phone $(phone_OBJS) $(phone_LDFLAGS)
 
-contacts.o: contacts.c common.c
-	$(CC) $(contacts_CFLAGS) -c contacts.c
+phone-contacts_OBJS = contacts.o
+phone-contacts_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-contacts_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-dialer.o: dialer.c common.c
-	$(CC) $(dialer_CFLAGS) -c dialer.c
+phone-contacts: $(phone-contacts_OBJS)
+	$(CC) -o phone-contacts $(phone-contacts_OBJS) $(phone-contacts_LDFLAGS)
 
-messages.o: messages.c common.c
-	$(CC) $(messages_CFLAGS) -c messages.c
+phone-dialer_OBJS = dialer.o
+phone-dialer_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-dialer_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+phone-dialer: $(phone-dialer_OBJS)
+	$(CC) -o phone-dialer $(phone-dialer_OBJS) $(phone-dialer_LDFLAGS)
+
+phone-messages_OBJS = messages.o
+phone-messages_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-messages_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+phone-messages: $(phone-messages_OBJS)
+	$(CC) -o phone-messages $(phone-messages_OBJS) $(phone-messages_LDFLAGS)
 
 callbacks.o: callbacks.c phone.h callbacks.h
 	$(CC) $(phone_CFLAGS) -c callbacks.c
@@ -65,26 +56,35 @@ main.o: main.c phone.h ../config.h
 phone.o: phone.c gsm.h callbacks.h phone.h
 	$(CC) $(phone_CFLAGS) -c phone.c
 
+contacts.o: contacts.c common.c
+	$(CC) $(phone-contacts_CFLAGS) -c contacts.c
+
+dialer.o: dialer.c common.c
+	$(CC) $(phone-dialer_CFLAGS) -c dialer.c
+
+messages.o: messages.c common.c
+	$(CC) $(phone-messages_CFLAGS) -c messages.c
+
 clean:
-	$(RM) $(contacts_OBJS) $(dialer_OBJS) $(messages_OBJS) $(phone_OBJS)
+	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS)
 
 distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 contacts $(DESTDIR)$(BINDIR)/contacts
-	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 dialer $(DESTDIR)$(BINDIR)/dialer
-	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 messages $(DESTDIR)$(BINDIR)/messages
-	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 phone $(DESTDIR)$(BINDIR)/phone
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 phone-contacts $(DESTDIR)$(BINDIR)/phone-contacts
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 phone-dialer $(DESTDIR)$(BINDIR)/phone-dialer
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 phone-messages $(DESTDIR)$(BINDIR)/phone-messages
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/contacts
-	$(RM) $(DESTDIR)$(BINDIR)/dialer
-	$(RM) $(DESTDIR)$(BINDIR)/messages
 	$(RM) $(DESTDIR)$(BINDIR)/phone
+	$(RM) $(DESTDIR)$(BINDIR)/phone-contacts
+	$(RM) $(DESTDIR)$(BINDIR)/phone-dialer
+	$(RM) $(DESTDIR)$(BINDIR)/phone-messages
 
 .PHONY: all clean distclean install uninstall

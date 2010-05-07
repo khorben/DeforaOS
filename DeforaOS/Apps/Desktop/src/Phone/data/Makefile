@@ -13,7 +13,11 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone.desktop $(DESTDIR)$(PREFIX)/share/applications/phone.desktop
+	$(INSTALL) -m 0644 phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 phone-dialer.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 phone-messages.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps
 	$(INSTALL) -m 0644 phone-signal-00.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-00.png
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps
@@ -26,7 +30,9 @@ install: all
 	$(INSTALL) -m 0644 phone-signal-100.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-100.png
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/share/applications/phone.desktop
+	$(RM) $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
+	$(RM) $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
+	$(RM) $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
 	$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-00.png
 	$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-25.png
 	$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/22x22/apps/phone-signal-50.png

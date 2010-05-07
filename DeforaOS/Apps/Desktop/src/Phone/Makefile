@@ -22,7 +22,9 @@ dist:
 	$(LN) -s . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
-		$(PACKAGE)-$(VERSION)/data/phone.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-contacts.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-dialer.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-messages.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-00.png \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-25.png \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-50.png \
@@ -34,13 +36,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
-		$(PACKAGE)-$(VERSION)/src/contacts.c \
-		$(PACKAGE)-$(VERSION)/src/dialer.c \
-		$(PACKAGE)-$(VERSION)/src/messages.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/phone.c \
+		$(PACKAGE)-$(VERSION)/src/contacts.c \
+		$(PACKAGE)-$(VERSION)/src/dialer.c \
+		$(PACKAGE)-$(VERSION)/src/messages.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/gsm.h \

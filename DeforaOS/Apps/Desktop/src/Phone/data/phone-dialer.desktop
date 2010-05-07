@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Dialer
+Comment=Phone dialer
+Exec=phone-dialer
+Icon=stock_landline-phone
+Type=Application
+Categories=Network;Telephony;GTK;
+StartupNotify=true

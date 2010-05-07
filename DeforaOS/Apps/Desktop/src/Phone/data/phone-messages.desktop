@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Messages
+Comment=Phone messaging
+Exec=phone-messages
+Icon=stock_mail-compose
+Type=Application
+Categories=Network;Telephony;GTK;
+StartupNotify=true
