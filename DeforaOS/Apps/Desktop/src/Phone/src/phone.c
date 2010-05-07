@@ -448,7 +448,7 @@ void phone_messages_count_buffer(Phone * phone)
 			cur_cnt = max;
 	}
 	snprintf(buf, sizeof(buf), _("%d message%s, %d/%d characters"),
-			msg_cnt, (msg_cnt > 1) ? _("s") : _(""), cur_cnt, max);
+			msg_cnt, (msg_cnt > 1) ? _("s") : "", cur_cnt, max);
 	gtk_label_set_text(GTK_LABEL(phone->wr_count), buf);
 }
 
