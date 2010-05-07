@@ -15,6 +15,7 @@
 
 
 
+#include <gdk/gdkx.h>
 #include "phone.h"
 #include "callbacks.h"
 
@@ -27,6 +28,52 @@ gboolean on_phone_closex(gpointer data)
 
 	gtk_widget_hide(widget);
 	return TRUE;
+}
+
+
+/* on_phone_filter */
+static GdkFilterReturn _filter_message_show(Phone * phone,
+		PhoneMessageShow what, gboolean show);
+
+GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data)
+{
+	Phone * phone = data;
+	XEvent * xev = xevent;
+	XClientMessageEvent * xclient = &xev->xclient;
+	PhoneMessage message;
+
+	if(xev->type != ClientMessage)
+		return GDK_FILTER_CONTINUE;
+	if(xclient->message_type != gdk_x11_get_xatom_by_name(
+				PHONE_CLIENT_MESSAGE))
+		return GDK_FILTER_CONTINUE;
+	message = xclient->data.b[0];
+	switch(message)
+	{
+		case PHONE_MESSAGE_SHOW:
+			return _filter_message_show(phone, xclient->data.b[1],
+					xclient->data.b[2]);
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _filter_message_show(Phone * phone,
+		PhoneMessageShow what, gboolean show)
+{
+	switch(what)
+	{
+		case PHONE_MESSAGE_SHOW_CONTACTS:
+			phone_show_contacts(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_DIALER:
+			phone_show_dialer(phone, show);
+			break;
+		case PHONE_MESSAGE_SHOW_MESSAGES:
+			phone_show_messages(phone, show);
+			break;
+	}
+	return GDK_FILTER_CONTINUE;
 }
 
 
@@ -142,6 +189,7 @@ void on_phone_dialer_hangup(gpointer data)
 
 	phone_hangup(phone);
 }
+
 
 /* messages */
 /* on_phone_messages_call */

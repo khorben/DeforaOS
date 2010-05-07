@@ -104,10 +104,6 @@ struct _Phone
 };
 
 
-/* constants */
-#define PHONE_EMBED_MESSAGE	"DEFORAOS_DESKTOP_PHONE_EMBED"
-
-
 /* prototypes */
 static GtkWidget * _phone_create_dialpad(Phone * phone,
 		char const * button1_image, char const * button1_label,
@@ -225,7 +221,7 @@ static gboolean _new_idle(gpointer data)
 	Phone * phone = data;
 
 	phone_show_contacts(phone, FALSE);
-	phone_show_dialer(phone, TRUE);
+	phone_show_dialer(phone, FALSE);
 	phone_show_messages(phone, FALSE);
 	phone->ui_source = 0;
 	return FALSE;
@@ -655,6 +651,9 @@ void phone_show_dialer(Phone * phone, gboolean show)
 		g_signal_connect_swapped(G_OBJECT(phone->di_window),
 				"delete-event", G_CALLBACK(on_phone_closex),
 				phone->di_window);
+		gdk_add_client_message_filter(gdk_atom_intern(
+					PHONE_CLIENT_MESSAGE, FALSE),
+				on_phone_filter, phone);
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* entry */
 		hbox = gtk_hbox_new(FALSE, 0);
@@ -808,7 +807,7 @@ void phone_show_write(Phone * phone, gboolean show)
 		phone->wr_entry = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE,
 				2);
-		widget = gtk_button_new();
+		widget = gtk_button_new(); /* XXX this should open contacts */
 		gtk_button_set_image(GTK_BUTTON(widget),
 				gtk_image_new_from_icon_name("mail-send",
 					GTK_ICON_SIZE_BUTTON));
@@ -817,6 +816,7 @@ void phone_show_write(Phone * phone, gboolean show)
 				G_CALLBACK(on_phone_messages_send), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
+		/* XXX here should the send button be, along with... options? */
 		/* character count */
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->wr_count = gtk_label_new(NULL);

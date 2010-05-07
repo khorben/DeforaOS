@@ -30,6 +30,23 @@ typedef enum _PhoneCode
 	PHONE_CODE_SIM_PIN = 0
 } PhoneCode;
 
+typedef enum _PhoneMessage
+{
+	PHONE_MESSAGE_SHOW = 0
+} PhoneMessage;
+
+typedef enum _PhoneMessageShow
+{
+	PHONE_MESSAGE_SHOW_CONTACTS = 0,
+	PHONE_MESSAGE_SHOW_DIALER,
+	PHONE_MESSAGE_SHOW_MESSAGES
+} PhoneMessageShow;
+
+
+/* constants */
+# define PHONE_CLIENT_MESSAGE	"DEFORAOS_DESKTOP_PHONE_CLIENT"
+# define PHONE_EMBED_MESSAGE	"DEFORAOS_DESKTOP_PHONE_EMBED"
+
 
 /* functions */
 Phone * phone_new(char const * device, unsigned int baudrate, int retry,

@@ -34,6 +34,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
+		$(PACKAGE)-$(VERSION)/src/contacts.c \
+		$(PACKAGE)-$(VERSION)/src/dialer.c \
+		$(PACKAGE)-$(VERSION)/src/messages.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
@@ -42,6 +45,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/gsm.h \
 		$(PACKAGE)-$(VERSION)/src/phone.h \
+		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \

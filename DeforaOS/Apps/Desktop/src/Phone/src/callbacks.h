@@ -23,6 +23,8 @@
 
 /* callbacks */
 gboolean on_phone_closex(gpointer data);
+GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
+		gpointer data);
 
 /* code */
 void on_phone_code_clear(gpointer data);
