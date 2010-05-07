@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Panel 0.0.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-06 15:30+0200\n"
+"POT-Creation-Date: 2010-05-07 02:53+0200\n"
 "PO-Revision-Date: 2010-04-22 12:45+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,19 +16,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/applets/battery.c:145
+#: ../src/applets/battery.c:170
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/applets/battery.c:162 ../src/run.c:196 ../src/run.c:200
+#: ../src/applets/battery.c:182 ../src/run.c:196 ../src/run.c:200
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/applets/clock.c:81 ../src/applets/clock.c:92
+#: ../src/applets/clock.c:83 ../src/applets/clock.c:94
 msgid "%H:%M"
 msgstr "%H:%M"
 
-#: ../src/applets/clock.c:90
+#: ../src/applets/clock.c:92
 msgid ""
 "%H:%M:%S\n"
 "%d/%m/%Y"
@@ -141,18 +141,18 @@ msgid ""
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:412
+#: ../src/panel.c:413
 msgid ""
 "This will shutdown your computer, therefore closing any application "
 "currently opened and losing any unsaved data.\n"
 "Do you really want to proceed?"
 msgstr ""
 
-#: ../src/panel.c:428 ../src/panel.c:433 ../src/panel.c:440
+#: ../src/panel.c:429 ../src/panel.c:434 ../src/panel.c:441
 msgid "Shutdown"
 msgstr "Arrêter"
 
-#: ../src/panel.c:432
+#: ../src/panel.c:433
 msgid "Restart"
 msgstr "Redémarrer"
 
