@@ -204,6 +204,7 @@ static void _set_image(Battery * battery, BatteryLevel level)
 
 	if(battery->level == level)
 		return;
+	battery->level = level;
 	gtk_image_set_from_icon_name(GTK_IMAGE(battery->image), icons[level],
 			battery->helper->icon_size);
 }
