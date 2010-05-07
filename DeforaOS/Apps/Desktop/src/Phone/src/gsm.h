@@ -211,12 +211,12 @@ void gsm_delete(GSM * gsm);
 void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data);
 
 unsigned int gsm_get_retry(GSM * gsm);
+int gsm_set_extended_ring_reports(GSM * gsm, int extended);
 int gsm_set_functional(GSM * gsm, int functional);
 int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 int gsm_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
 int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report);
 int gsm_set_retry(GSM * gsm, unsigned int retry);
-int gsm_set_extended_ring(GSM * gsm, int extended);
 
 /* useful */
 int gsm_answer(GSM * gsm);

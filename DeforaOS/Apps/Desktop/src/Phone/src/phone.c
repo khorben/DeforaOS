@@ -125,7 +125,8 @@ static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 static void _phone_fetch_messages(Phone * phone, unsigned int start,
 		unsigned int end);
 
-static void _phone_info(GtkWidget * window, char const * message);
+static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
+		GCallback callback);
 
 static GtkWidget * _phone_progress_delete(GtkWidget * widget);
 static void _phone_progress_pulse(GtkWidget * widget);
@@ -1004,10 +1005,13 @@ static void _phone_fetch_messages(Phone * phone, unsigned int start,
 
 
 /* phone_info */
-static void _phone_info(GtkWidget * window, char const * message)
+static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
+		GCallback callback)
 {
 	GtkWidget * dialog;
 
+	if(callback == NULL)
+		callback = G_CALLBACK(gtk_widget_destroy);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s",
@@ -1018,8 +1022,8 @@ static void _phone_info(GtkWidget * window, char const * message)
 #endif
 			message);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Information"));
-	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
-				gtk_widget_destroy), NULL);
+	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(callback),
+			phone);
 	gtk_widget_show(dialog);
 }
 
@@ -1170,6 +1174,8 @@ static void _phone_track(Phone * phone, PhoneTrack what, gboolean track)
 /* callbacks */
 /* phone_gsm_event */
 static int _gsm_event_error(Phone * phone, GSMEvent * event);
+static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
+		gpointer data);
 
 static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
@@ -1205,7 +1211,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, FALSE);
 			phone->wr_progress = _phone_progress_delete(
 					phone->wr_progress);
-			_phone_info(phone->wr_window, _("Message sent"));
+			_phone_info(phone, phone->wr_window, _("Message sent"),
+					NULL);
 			return 0;
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);
@@ -1220,8 +1227,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
 			phone->en_progress = _phone_progress_delete(
 					phone->en_progress);
-			phone_show_code(phone, FALSE);
-			_phone_info(phone->en_window, _("SIM PIN is valid"));
+			_phone_info(phone, phone->en_window,
+					_("SIM PIN is valid"),
+					G_CALLBACK(_on_sim_pin_valid_response));
 			return 0;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
@@ -1267,6 +1275,15 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			break;
 	}
 	return 0;
+}
+
+static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
+		gpointer data)
+{
+	Phone * phone = data;
+
+	phone_show_code(phone, FALSE);
+	gtk_widget_destroy(widget);
 }
 
 
