@@ -178,6 +178,7 @@ static int _is_number(char const * number);
 /* commands */
 static GSMCommand * _gsm_command_new(char const * command);
 static void _gsm_command_delete(GSMCommand * command);
+static char const * _gsm_command_get_command(GSMCommand * command);
 static GSMMode _gsm_command_get_mode(GSMCommand * gsmc);
 static GSMPriority _gsm_command_get_priority(GSMCommand * gsmc);
 static void _gsm_command_set_callback(GSMCommand * gsmc,
@@ -659,6 +660,13 @@ static void _gsm_command_delete(GSMCommand * gsmc)
 #endif
 	free(gsmc->command);
 	free(gsmc);
+}
+
+
+/* gsm_command_get_command */
+static char const * _gsm_command_get_command(GSMCommand * gsmc)
+{
+	return gsmc->command;
 }
 
 
@@ -1402,8 +1410,10 @@ static int _parse_do(GSM * gsm, size_t * i)
 static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 {
 	size_t i;
-	GSMCommand * command;
+	GSMCommand * gsmc;
 	GSMError error = GSM_ERROR_UNKNOWN;
+	char const * cmd;
+	size_t j;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, line);
@@ -1422,19 +1432,20 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 	{
 		if(answered != NULL)
 			*answered = TRUE;
-		if((command = g_slist_nth_data(gsm->queue, 0)) != NULL
-				&& command->callback != NULL)
-			command->callback(gsm);
+		if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL
+				&& gsmc->callback != NULL)
+			gsmc->callback(gsm);
 		return 0;
 	}
+	gsmc = g_slist_nth_data(gsm->queue, 0);
 	for(i = 0; _gsm_errors[i] != NULL; i++)
 	{
 		if(strcmp(_gsm_errors[i], line) != 0)
 			continue;
 		if(answered != NULL)
 			*answered = TRUE;
-		if((command = g_slist_nth_data(gsm->queue, 0)) != NULL)
-			error = command->error;
+		if(gsmc != NULL)
+			error = gsmc->error;
 		_gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error, line);
 		return 0;
 	}
@@ -1443,7 +1454,15 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 					_gsm_triggers[i].trigger_cnt) == 0)
 			return _gsm_triggers[i].callback(gsm,
 					&line[_gsm_triggers[i].trigger_cnt]);
-	/* XXX not handled... */
+	/* XXX look for a potential trigger */
+	if(gsmc != NULL && (cmd = _gsm_command_get_command(gsmc)) != NULL
+			&& strncmp(cmd, "AT+", 3) == 0 && isupper(cmd[3]))
+	{
+		for(cmd += 2, j = 2; cmd[j] != '\0' && isupper(cmd[j]); j++);
+		for(i = 0; _gsm_triggers[i].trigger != NULL; i++)
+			if(strncmp(cmd, _gsm_triggers[i].trigger, j) == 0)
+				return _gsm_triggers[i].callback(gsm, line);
+	}
 	return 1;
 }
 
