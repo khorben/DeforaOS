@@ -1941,6 +1941,8 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 		term.c_cflag |= CLOCAL;
 		if(hwflow)
 			term.c_cflag |= CRTSCTS;
+		else
+			term.c_cflag &= ~CRTSCTS;
 		term.c_iflag = (IGNPAR | IGNBRK);
 		term.c_lflag = 0;
 		term.c_oflag = 0;
