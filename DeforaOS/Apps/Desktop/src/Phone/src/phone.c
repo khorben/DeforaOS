@@ -434,6 +434,7 @@ void phone_hangup(Phone * phone)
 void phone_messages_count_buffer(Phone * phone)
 {
 	GtkTextBuffer * tbuf;
+	const int max = 140;
 	gint cnt;
 	gint msg_cnt;
 	gint cur_cnt;
@@ -442,16 +443,15 @@ void phone_messages_count_buffer(Phone * phone)
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 	if((cnt = gtk_text_buffer_get_char_count(tbuf)) < 0)
 		return;
-	msg_cnt = (cnt / 140) + 1;
-	if((cur_cnt = cnt % 140) == 0)
+	msg_cnt = (cnt / max) + 1;
+	if((cur_cnt = cnt % max) == 0)
 	{
 		msg_cnt--;
 		if(cnt > 0)
-			cur_cnt = 140;
+			cur_cnt = max;
 	}
-	snprintf(buf, sizeof(buf), _("%d message%s, %d/140 character%s"),
-			msg_cnt, (msg_cnt > 1) ? _("s") : _(""), cur_cnt,
-			(cur_cnt > 1) ? _("s") : _(""));
+	snprintf(buf, sizeof(buf), _("%d message%s, %d/%d characters"),
+			msg_cnt, (msg_cnt > 1) ? _("s") : _(""), cur_cnt, max);
 	gtk_label_set_text(GTK_LABEL(phone->wr_count), buf);
 }
 
