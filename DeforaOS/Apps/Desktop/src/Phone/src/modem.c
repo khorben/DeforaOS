@@ -282,6 +282,15 @@ int gsm_modem_get_signal_level(GSMModem * gsmm)
 }
 
 
+/* gsm_modem_is_functional */
+int gsm_modem_is_functional(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CFUN?";
+
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_is_pin_needed */
 int gsm_modem_is_pin_needed(GSMModem * gsmm)
 {

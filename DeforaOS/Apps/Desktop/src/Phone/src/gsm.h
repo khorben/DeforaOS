@@ -255,6 +255,8 @@ int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 
+/* queries */
+int gsm_is_functional(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);
 int gsm_is_registered(GSM * gsm);
 

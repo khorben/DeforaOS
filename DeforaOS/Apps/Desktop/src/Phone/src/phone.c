@@ -47,6 +47,7 @@ typedef enum _PhoneTrack
 {
 	PHONE_TRACK_CODE_ENTERED = 0,
 	PHONE_TRACK_CONTACT_LIST,
+	PHONE_TRACK_FUNCTIONAL,
 	PHONE_TRACK_MESSAGE_LIST,
 	PHONE_TRACK_MESSAGE_SENT,
 	PHONE_TRACK_REGISTRATION,
@@ -1104,11 +1105,9 @@ static void _signal_level_set_image(Phone * phone, PhoneSignal signal)
 /* phone_set_status */
 static void _phone_set_status(Phone * phone, GSMStatus status)
 {
-	GSMRegistrationReport report;
 	char const * operator = NULL;
 	gboolean track_registration = TRUE;
 
-	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
 	switch(status)
 	{
 		case GSM_STATUS_UNKNOWN:
@@ -1128,12 +1127,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 		case GSM_STATUS_READY:
 			track_registration = FALSE;
 			operator = _("SIM ready...");
-			gsm_set_functional(phone->gsm, TRUE);
-			gsm_set_operator_mode(phone->gsm,
-					GSM_OPERATOR_MODE_AUTOMATIC);
-			gsm_set_registration_report(phone->gsm, report);
-			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
-			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
+			gsm_is_functional(phone->gsm);
 			break;
 		case GSM_STATUS_REGISTERED_HOME:
 		case GSM_STATUS_REGISTERED_ROAMING:
@@ -1184,10 +1178,12 @@ static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
 	Phone * phone = data;
+	GSMRegistrationReport report;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, event->type);
 #endif
+	report = GSM_REGISTRATION_REPORT_ENABLE_UNSOLLICITED_WITH_LOCATION;
 	switch(event->type)
 	{
 		case GSM_EVENT_TYPE_ERROR:
@@ -1202,7 +1198,16 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->contact_list.end);
 			return 0;
 		case GSM_EVENT_TYPE_FUNCTIONAL:
-			/* FIXME implement */
+			if(event->functional.functional != 1)
+			{
+				gsm_set_functional(phone->gsm, TRUE);
+				return 0;
+			}
+			gsm_set_operator_mode(phone->gsm,
+					GSM_OPERATOR_MODE_AUTOMATIC);
+			gsm_set_registration_report(phone->gsm, report);
+			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
+			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			/* FIXME implement */
@@ -1258,11 +1263,13 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			phone_code_clear(phone);
 			break;
 		case GSM_ERROR_CONTACT_FETCH_FAILED:
-		case GSM_ERROR_FUNCTIONAL_FAILED:
 		case GSM_ERROR_MESSAGE_FETCH_FAILED:
 			break; /* ignore these errors */
 		case GSM_ERROR_CONTACT_LIST_FAILED:
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
+			break;
+		case GSM_ERROR_FUNCTIONAL_FAILED:
+			_phone_track(phone, PHONE_TRACK_FUNCTIONAL, TRUE);
 			break;
 		case GSM_ERROR_MESSAGE_LIST_FAILED:
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
@@ -1302,6 +1309,11 @@ static gboolean _phone_timeout_track(gpointer data)
 	{
 		_phone_track(phone, PHONE_TRACK_CONTACT_LIST, FALSE);
 		gsm_fetch_contact_list(phone->gsm);
+	}
+	if(phone->tracks[PHONE_TRACK_FUNCTIONAL])
+	{
+		_phone_track(phone, PHONE_TRACK_FUNCTIONAL, FALSE);
+		gsm_is_functional(phone->gsm);
 	}
 	if(phone->tracks[PHONE_TRACK_MESSAGE_LIST])
 	{

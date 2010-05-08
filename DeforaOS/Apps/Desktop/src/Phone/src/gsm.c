@@ -161,6 +161,7 @@ static void _gsm_queue_pop(GSM * gsm);
 static int _gsm_queue_push(GSM * gsm);
 
 /* triggers */
+static int _gsm_trigger_cfun(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 		gboolean * answered);
@@ -180,6 +181,7 @@ static GSMTrigger _gsm_triggers[] =
 #define GSM_TRIGGER(trigger, callback) \
 	{ trigger, sizeof(trigger) - 1, \
 		(GSMTriggerCallback)_gsm_trigger_ ## callback }
+	GSM_TRIGGER("+CFUN: ",		cfun),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
@@ -538,6 +540,14 @@ int gsm_fetch_registration(GSM * gsm)
 int gsm_fetch_signal_level(GSM * gsm)
 {
 	return gsm_modem_get_signal_level(gsm->modem);
+}
+
+
+/* queries */
+/* gsm_is_functional */
+int gsm_is_functional(GSM * gsm)
+{
+	return gsm_modem_is_functional(gsm->modem);
 }
 
 
@@ -946,6 +956,20 @@ static int _gsm_queue_push(GSM * gsm)
 
 
 /* triggers */
+/* gsm_trigger_cfun */
+static int _gsm_trigger_cfun(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u", &gsm->event.functional.functional) != 1)
+		/* XXX nicer message */
+		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_FUNCTIONAL_FAILED, result);
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_FUNCTIONAL);
+}
+
+
 /* gsm_trigger_cgmm */
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result)
 {
@@ -1107,9 +1131,8 @@ static int _gsm_trigger_cpin(GSM * gsm, char const * result)
 	if(strcmp(result, "SIM PIN") == 0)
 		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_SIM_PIN_REQUIRED, NULL);
-	else
-		/* XXX nicer message */
-		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, result);
+	/* XXX nicer message */
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN, result);
 }
 
 
