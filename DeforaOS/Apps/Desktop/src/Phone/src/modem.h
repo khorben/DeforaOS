@@ -61,6 +61,7 @@ int gsm_modem_get_signal_level(GSMModem * gsmm);
 
 int gsm_modem_is_functional(GSMModem * gsmm);
 int gsm_modem_is_pin_needed(GSMModem * gsmm);
+int gsm_modem_is_pin_valid(GSMModem * gsmm);
 int gsm_modem_is_registered(GSMModem * gsmm);
 
 int gsm_modem_reset(GSMModem * gsmm);

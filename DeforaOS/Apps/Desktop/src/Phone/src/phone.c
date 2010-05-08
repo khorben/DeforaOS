@@ -333,6 +333,8 @@ void phone_code_enter(Phone * phone)
 /* phone_code_clear */
 void phone_code_clear(Phone * phone)
 {
+	_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
+	phone->en_progress = _phone_progress_delete(phone->en_progress);
 	if(phone->en_window != NULL)
 		gtk_entry_set_text(GTK_ENTRY(phone->en_entry), "");
 }
@@ -1231,9 +1233,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->signal_level.level);
 			return 0;
 		case GSM_EVENT_TYPE_SIM_PIN_VALID:
-			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
-			phone->en_progress = _phone_progress_delete(
-					phone->en_progress);
+			phone_code_clear(phone);
 			_phone_info(phone, phone->en_window,
 					_("SIM PIN is valid"),
 					G_CALLBACK(_on_sim_pin_valid_response));
@@ -1254,11 +1254,8 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
 			break;
 		case GSM_ERROR_SIM_PIN_WRONG:
-			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, FALSE);
-			phone->en_progress = _phone_progress_delete(
-					phone->en_progress);
-			_phone_error(phone->en_window, _("Wrong SIM PIN code"));
 			phone_code_clear(phone);
+			_phone_error(phone->en_window, _("Wrong SIM PIN code"));
 			break;
 		case GSM_ERROR_CONTACT_FETCH_FAILED:
 		case GSM_ERROR_MESSAGE_FETCH_FAILED:

@@ -258,6 +258,7 @@ int gsm_fetch_signal_level(GSM * gsm);
 /* queries */
 int gsm_is_functional(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);
+int gsm_is_pin_valid(GSM * gsm);
 int gsm_is_registered(GSM * gsm);
 
 /* queue management */

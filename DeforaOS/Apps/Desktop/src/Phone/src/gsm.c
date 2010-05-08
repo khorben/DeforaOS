@@ -424,7 +424,7 @@ int gsm_call_hangup(GSM * gsm)
 int gsm_enter_sim_pin(GSM * gsm, char const * code)
 {
 	if(code == NULL)
-		return gsm_modem_is_pin_needed(gsm->modem);
+		return gsm_modem_is_pin_valid(gsm->modem);
 	return gsm_modem_enter_sim_pin(gsm->modem, code);
 }
 
@@ -555,6 +555,13 @@ int gsm_is_functional(GSM * gsm)
 int gsm_is_pin_needed(GSM * gsm)
 {
 	return gsm_modem_is_pin_needed(gsm->modem);
+}
+
+
+/* gsm_is_pin_valid */
+int gsm_is_pin_valid(GSM * gsm)
+{
+	return gsm_modem_is_pin_valid(gsm->modem);
 }
 
 
@@ -828,8 +835,10 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 	gsmc = g_slist_nth_data(gsm->queue, 0);
 	if(strcmp(line, "OK") == 0)
 	{
+		/* XXX the trigger may not have been called (if any) */
 		if(answered != NULL)
 			*answered = TRUE;
+		/* XXX call it only if we were really answered? */
 		if(gsmc != NULL && (callback = gsm_command_get_callback(gsmc))
 				!= NULL)
 			callback(gsm);
@@ -1327,7 +1336,9 @@ static gboolean _reset_settle(gpointer data)
 static gboolean _on_timeout(gpointer data)
 {
 	GSM * gsm = data;
-	char const noop[] = "AT\r\n";
+	GSMCommand * gsmc;
+	char const * cmd;
+	size_t len;
 	char * p;
 
 #ifdef DEBUG
@@ -1338,12 +1349,17 @@ static gboolean _on_timeout(gpointer data)
 	/* check if the write handler is still running */
 	if(gsm->channel == NULL || gsm->wr_source != 0)
 		return FALSE;
-	/* inject the noop */
-	if((p = realloc(gsm->wr_buf, sizeof(noop) - 1)) == NULL)
+	if(gsm->queue == NULL || (gsmc = gsm->queue->data) == NULL)
+		return FALSE;
+	if((cmd = gsm_command_get_command(gsmc)) == NULL)
+		return FALSE;
+	len = strlen(cmd);
+	/* re-inject the command */
+	if((p = realloc(gsm->wr_buf, len)) == NULL)
 		return FALSE;
 	gsm->wr_buf = p;
-	memcpy(p, noop, sizeof(noop) - 1);
-	gsm->wr_buf_cnt = sizeof(noop) - 1;
+	memcpy(p, cmd, len);
+	gsm->wr_buf_cnt = len;
 	gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 			_on_watch_can_write, gsm);
 	return FALSE;

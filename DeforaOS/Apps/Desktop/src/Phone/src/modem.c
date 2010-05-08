@@ -169,7 +169,7 @@ int gsm_modem_call_last(GSMModem * gsmm, GSMCallType calltype)
 
 
 /* gsm_modem_enter_sim_pin */
-void _modem_enter_sim_pin_callback(GSM * gsm);
+static void _modem_enter_sim_pin_callback(GSM * gsm);
 
 int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code)
 {
@@ -180,7 +180,8 @@ int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code)
 
 	if(!_is_code(code))
 	{
-		gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_SIM_PIN_WRONG);
+		gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_SIM_PIN_WRONG);
 		return 1;
 	}
 	len = sizeof(cmd) + 1 + strlen(code) + 1;
@@ -196,11 +197,10 @@ int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code)
 	return ret;
 }
 
-void _modem_enter_sim_pin_callback(GSM * gsm)
+static void _modem_enter_sim_pin_callback(GSM * gsm)
 {
-	gsm_event(gsm, GSM_EVENT_TYPE_SIM_PIN_VALID);
-	/* do we need another PIN code? */
-	gsm_is_pin_needed(gsm);
+	/* did it really work? */
+	gsm_is_pin_valid(gsm);
 }
 
 
@@ -209,7 +209,8 @@ int gsm_modem_get_contact_list(GSMModem * gsmm)
 {
 	char const cmd[] = "AT+CPBR=?";
 
-	return gsm_queue_with_error(gsmm->gsm, cmd, GSM_ERROR_CONTACT_LIST_FAILED);
+	return gsm_queue_with_error(gsmm->gsm, cmd,
+			GSM_ERROR_CONTACT_LIST_FAILED);
 }
 
 
@@ -230,7 +231,8 @@ int gsm_modem_get_message_list(GSMModem * gsmm)
 {
 	char const cmd[] = "AT+CMGL=?";
 
-	return gsm_queue_with_error(gsmm->gsm, cmd, GSM_ERROR_MESSAGE_LIST_FAILED);
+	return gsm_queue_with_error(gsmm->gsm, cmd,
+			GSM_ERROR_MESSAGE_LIST_FAILED);
 }
 
 
@@ -278,7 +280,8 @@ int gsm_modem_get_signal_level(GSMModem * gsmm)
 {
 	char const cmd[] = "AT+CSQ";
 
-	return gsm_queue_with_error(gsmm->gsm, cmd, GSM_ERROR_SIGNAL_LEVEL_FAILED);
+	return gsm_queue_with_error(gsmm->gsm, cmd,
+			GSM_ERROR_SIGNAL_LEVEL_FAILED);
 }
 
 
@@ -297,6 +300,23 @@ int gsm_modem_is_pin_needed(GSMModem * gsmm)
 	char const cmd[] = "AT+CPIN?";
 
 	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
+/* gsm_modem_is_pin_valid */
+static void _modem_is_pin_valid_callback(GSM * gsm);
+
+int gsm_modem_is_pin_valid(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CPIN?";
+
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_SIM_PIN_WRONG, _modem_is_pin_valid_callback);
+}
+
+static void _modem_is_pin_valid_callback(GSM * gsm)
+{
+	gsm_event(gsm, GSM_EVENT_TYPE_SIM_PIN_VALID);
 }
 
 
@@ -375,7 +395,8 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 		gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
 		if((gsmc = gsm_command_new(buf2)) != NULL
 				/* XXX if this fails we're stuck in PDU mode */
-				&& (ret = gsm_queue_command(gsmm->gsm, gsmc)) == 0)
+				&& (ret = gsm_queue_command(gsmm->gsm, gsmc))
+				== 0)
 		{
 			gsm_command_set_error(gsmc,
 					GSM_ERROR_MESSAGE_SEND_FAILED);
@@ -486,12 +507,22 @@ int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended)
 
 
 /* gsm_modem_set_functional */
+static void _modem_set_functional_callback(GSM * gsm);
+
 int gsm_modem_set_functional(GSMModem * gsmm, gboolean functional)
 {
 	char cmd[] = "AT+CFUN=X";
 
 	cmd[8] = functional ? '1' : '0';
-	return gsm_queue_with_error(gsmm->gsm, cmd, GSM_ERROR_FUNCTIONAL_FAILED);
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_FUNCTIONAL_FAILED,
+			_modem_set_functional_callback);
+}
+
+static void _modem_set_functional_callback(GSM * gsm)
+{
+	/* did it really work? */
+	gsm_is_functional(gsm);
 }
 
 
