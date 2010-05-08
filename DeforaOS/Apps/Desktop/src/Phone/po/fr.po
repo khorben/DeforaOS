@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-07 19:56+0200\n"
+"POT-Creation-Date: 2010-05-08 03:31+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -16,119 +16,119 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/gsm.c:116
+#: ../src/gsm.c:89
 msgid "Phone failure"
 msgstr "Défaillance du téléphone"
 
-#: ../src/gsm.c:117
+#: ../src/gsm.c:90
 msgid "No connection to phone"
 msgstr "Pas de connexion au téléphone"
 
-#: ../src/gsm.c:118 ../src/gsm.c:152
+#: ../src/gsm.c:91 ../src/gsm.c:125
 msgid "Operation not allowed"
 msgstr "Opération non autorisée"
 
-#: ../src/gsm.c:119 ../src/gsm.c:153
+#: ../src/gsm.c:92 ../src/gsm.c:126
 msgid "Operation not supported"
 msgstr "Opération non supportée"
 
-#: ../src/gsm.c:120 ../src/gsm.c:155
+#: ../src/gsm.c:93 ../src/gsm.c:128
 msgid "SIM not inserted"
 msgstr "SIM non insérée"
 
-#: ../src/gsm.c:121 ../src/gsm.c:156
+#: ../src/gsm.c:94 ../src/gsm.c:129
 msgid "SIM PIN required"
 msgstr "Code SIM PIN requis"
 
-#: ../src/gsm.c:122
+#: ../src/gsm.c:95
 msgid "SIM PUK required"
 msgstr "Code PUK requis"
 
-#: ../src/gsm.c:123
+#: ../src/gsm.c:96
 msgid "SIM failure"
 msgstr "Défaillance SIM"
 
-#: ../src/gsm.c:124
+#: ../src/gsm.c:97
 msgid "SIM busy"
 msgstr "SIM occupée"
 
-#: ../src/gsm.c:125
+#: ../src/gsm.c:98
 msgid "SIM wrong"
 msgstr "SIM erronée"
 
-#: ../src/gsm.c:126
+#: ../src/gsm.c:99
 msgid "Incorrect password"
 msgstr "Mot de passe incorrect"
 
-#: ../src/gsm.c:127
+#: ../src/gsm.c:100
 msgid "SIM PIN2 required"
 msgstr "Code SIM PIN2 requis"
 
-#: ../src/gsm.c:128
+#: ../src/gsm.c:101
 msgid "SIM PUK2 required"
 msgstr "Code SIM PUK2 requis"
 
-#: ../src/gsm.c:129
+#: ../src/gsm.c:102
 msgid "Memory full"
 msgstr "Mémoire pleine"
 
-#: ../src/gsm.c:130
+#: ../src/gsm.c:103
 msgid "Invalid index"
 msgstr "Index invalide"
 
-#: ../src/gsm.c:131
+#: ../src/gsm.c:104
 msgid "Not found"
 msgstr "Non trouvé"
 
-#: ../src/gsm.c:132
+#: ../src/gsm.c:105
 msgid "Memory failure"
 msgstr "Défaillance mémoire"
 
-#: ../src/gsm.c:133
+#: ../src/gsm.c:106
 msgid "Text string too long"
 msgstr "Texte trop long"
 
-#: ../src/gsm.c:134
+#: ../src/gsm.c:107
 msgid "Invalid characters in text string"
 msgstr "Caractère invalide dans le texte"
 
-#: ../src/gsm.c:135
+#: ../src/gsm.c:108
 msgid "Dial string too long"
 msgstr "Le numéro composé est trop long"
 
-#: ../src/gsm.c:136
+#: ../src/gsm.c:109
 msgid "Invalid characters in dial string"
 msgstr "Caractères invalides dans le numéro"
 
-#: ../src/gsm.c:137
+#: ../src/gsm.c:110
 msgid "No network service"
 msgstr "Pas de couverture réseau"
 
-#: ../src/gsm.c:138
+#: ../src/gsm.c:111
 msgid "Network timeout"
 msgstr "Délai d'attente du réseau dépassé"
 
-#: ../src/gsm.c:139
+#: ../src/gsm.c:112
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:150
+#: ../src/gsm.c:123
 msgid "ME failure"
 msgstr "Défaillance ME"
 
-#: ../src/gsm.c:151
+#: ../src/gsm.c:124
 msgid "SMS service of ME reserved"
 msgstr "Service SMS du ME réservé"
 
-#: ../src/gsm.c:154
+#: ../src/gsm.c:127
 msgid "Invalid PDU mode parameter"
 msgstr "Paramètre de mode PDU invalide"
 
-#: ../src/gsm.c:373
+#: ../src/gsm.c:286
 msgid ": Unknown baudrate"
 msgstr ": Débit inconnu"
 
-#: ../src/gsm.c:784
+#: ../src/gsm.c:681
 msgid "Event not handled"
 msgstr "Événement non géré"
 
@@ -178,7 +178,7 @@ msgstr "Entrer le code SIM PIN"
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:590 ../src/phone.c:678 ../src/phone.c:717
+#: ../src/phone.c:590 ../src/phone.c:678 ../src/phone.c:721
 msgid "Call"
 msgstr "Appeler"
 
@@ -198,78 +198,78 @@ msgstr "Composer"
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:710
+#: ../src/phone.c:714
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:723
+#: ../src/phone.c:727
 msgid "New message"
 msgstr "Nouveau message"
 
-#: ../src/phone.c:729
+#: ../src/phone.c:733
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/phone.c:747
+#: ../src/phone.c:751
 msgid "Inbox"
 msgstr "Reçus"
 
-#: ../src/phone.c:754
+#: ../src/phone.c:758
 msgid "Sent"
 msgstr "Envoyés"
 
-#: ../src/phone.c:771
+#: ../src/phone.c:775
 msgid "Message"
 msgstr "Message"
 
-#: ../src/phone.c:801
+#: ../src/phone.c:805
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:935
+#: ../src/phone.c:939
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:963 ../src/phone.c:968
+#: ../src/phone.c:967 ../src/phone.c:972
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:1019 ../src/phone.c:1024
+#: ../src/phone.c:1023 ../src/phone.c:1028
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:1111
+#: ../src/phone.c:1115
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/phone.c:1114
+#: ../src/phone.c:1118
 msgid "Registering..."
 msgstr "Enregistrement..."
 
-#: ../src/phone.c:1117
+#: ../src/phone.c:1121
 msgid "Denied"
 msgstr "Refusé"
 
-#: ../src/phone.c:1120
+#: ../src/phone.c:1124
 msgid "SIM check..."
 msgstr "Vérification SIM..."
 
-#: ../src/phone.c:1126
+#: ../src/phone.c:1130
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:1214
+#: ../src/phone.c:1218
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:1231
+#: ../src/phone.c:1235
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:1253
+#: ../src/phone.c:1257
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/phone.c:1271
+#: ../src/phone.c:1275
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
