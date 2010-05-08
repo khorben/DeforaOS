@@ -648,6 +648,8 @@ int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error)
 int gsm_reset(GSM * gsm, unsigned int delay)
 {
 	_gsm_queue_flush(gsm);
+	if(gsm->source != 0)
+		g_source_remove(gsm->source);
 	if(delay > 0)
 		gsm->source = g_timeout_add(delay, _on_reset, gsm);
 	else
@@ -755,7 +757,8 @@ static int _parse_do(GSM * gsm, size_t * i)
 	{
 		if(strcmp(gsm->rd_buf, "OK") != 0)
 			return 0;
-		g_source_remove(gsm->source);
+		if(gsm->source != 0)
+			g_source_remove(gsm->source);
 		gsm->source = 0;
 		*i = gsm->rd_buf_cnt; /* XXX ugly: flush read buffer */
 		g_io_channel_flush(gsm->channel, NULL); /* XXX check errors? */
@@ -1188,7 +1191,8 @@ static gboolean _on_reset(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	gsm->source = 0;
+	if(gsm->source != 0)
+		g_source_remove(gsm->source);
 	if(gsm->channel != NULL)
 	{
 		/* XXX should the file descriptor also be freed? */
@@ -1205,6 +1209,7 @@ static gboolean _on_reset(gpointer data)
 			close(fd);
 		if(gsm->retry > 0)
 			gsm->source = g_timeout_add(gsm->retry, _on_reset, gsm);
+		gsm->source = 0;
 		return phone_error(NULL, buf, FALSE);
 	}
 	gsm->channel = g_io_channel_unix_new(fd);
