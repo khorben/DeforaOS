@@ -37,6 +37,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
+		$(PACKAGE)-$(VERSION)/src/command.c \
 		$(PACKAGE)-$(VERSION)/src/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/phone.c \
@@ -45,6 +46,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/messages.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
+		$(PACKAGE)-$(VERSION)/src/command.h \
 		$(PACKAGE)-$(VERSION)/src/gsm.h \
 		$(PACKAGE)-$(VERSION)/src/phone.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \

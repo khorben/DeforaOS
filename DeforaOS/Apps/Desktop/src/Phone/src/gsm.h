@@ -18,6 +18,8 @@
 #ifndef PHONE_GSM_H
 # define PHONE_GSM_H
 
+# include <glib.h>
+
 
 /* GSM */
 /* types */
@@ -68,6 +70,11 @@ typedef enum _GSMMessageFormat
 	GSM_MESSAGE_FORMAT_TEXT = 1
 } GSMMessageFormat;
 
+typedef enum _GSMMode
+{
+	GSM_MODE_INIT = 0, GSM_MODE_COMMAND, GSM_MODE_PDU
+} GSMMode;
+
 typedef enum _GSMOperatorFormat
 {
 	GSM_OPERATOR_FORMAT_LONG = 0,
@@ -83,6 +90,12 @@ typedef enum _GSMOperatorMode
 	GSM_OPERATOR_MODE_SET_FORMAT = 3,
 	GSM_OPERATOR_MODE_MANUAL_WITH_FALLBACK = 4
 } GSMOperatorMode;
+
+typedef enum _GSMPriority
+{
+	GSM_PRIORITY_LOW = 0, GSM_PRIORITY_NORMAL, GSM_PRIORITY_HIGH,
+	GSM_PRIORITY_HIGHEST
+} GSMPriority;
 
 typedef enum _GSMRegistrationReport
 {
