@@ -962,6 +962,8 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 	int code;
 	char * p;
 	size_t i;
+	GSMError error = GSM_ERROR_UNKNOWN;
+	GSMCommand * gsmc;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
@@ -975,9 +977,10 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 		if(_gsm_cme_errors[i].code == code)
 			break;
 	if(_gsm_cme_errors[i].error == NULL)
-		return 1;
-	/* FIXME implement errors */
-	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN,
+		return 1; /* XXX report an error anyway? */
+	if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
+		error = gsm_command_get_error(gsmc);
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error,
 			_(_gsm_cme_errors[i].error));
 }
 
@@ -988,6 +991,8 @@ static int _gsm_trigger_cms_error(GSM * gsm, char const * result)
 	int code;
 	char * p;
 	size_t i;
+	GSMError error = GSM_ERROR_UNKNOWN;
+	GSMCommand * gsmc;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
@@ -999,9 +1004,10 @@ static int _gsm_trigger_cms_error(GSM * gsm, char const * result)
 		if(_gsm_cms_errors[i].code == code)
 			break;
 	if(_gsm_cms_errors[i].error == NULL)
-		return 1;
-	/* FIXME implement errors */
-	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_UNKNOWN,
+		return 1; /* XXX report an error anyway? */
+	if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
+		error = gsm_command_get_error(gsmc);
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error,
 			_(_gsm_cms_errors[i].error));
 }
 
