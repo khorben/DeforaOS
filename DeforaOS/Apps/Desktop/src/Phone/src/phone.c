@@ -1065,8 +1065,6 @@ static void _signal_level_set_image(Phone * phone, PhoneSignal signal);
 
 static void _phone_set_signal_level(Phone * phone, gdouble level)
 {
-	char const * name;
-
 	if(level < 0.0)
 		_signal_level_set_image(phone, PHONE_SIGNAL_00);
 	else if(level < 0.25)
