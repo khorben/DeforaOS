@@ -23,12 +23,17 @@
 
 /* GSM */
 /* types */
+typedef struct _GSM GSM;
+
 typedef enum _GSMCallType
 {
 	GSM_CALL_TYPE_UNKNOWN = 0,
 	GSM_CALL_TYPE_DATA,
 	GSM_CALL_TYPE_VOICE
 } GSMCallType;
+
+typedef struct _GSMCommand GSMCommand;
+typedef void (*GSMCommandCallback)(GSM * gsm);
 
 typedef enum _GSMEventType
 {
@@ -213,8 +218,6 @@ typedef union _GSMEvent
 
 typedef int (*GSMCallback)(GSMEvent * event, gpointer data);
 
-typedef struct _GSM GSM;
-
 
 /* functions */
 GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow);
@@ -232,10 +235,18 @@ int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report);
 int gsm_set_retry(GSM * gsm, unsigned int retry);
 
 /* useful */
-int gsm_answer(GSM * gsm);
+/* call management */
+int gsm_call_answer(GSM * gsm);
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index);
+int gsm_call_hangup(GSM * gsm);
+
 int gsm_enter_sim_pin(GSM * gsm, char const * code);
+
+/* event */
+int gsm_event(GSM * gsm, GSMEventType type, ...);
+
+/* fetching data */
 int gsm_fetch_contact_list(GSM * gsm);
 int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_message_list(GSM * gsm);
@@ -243,10 +254,21 @@ int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
-int gsm_hangup(GSM * gsm);
+
 int gsm_is_pin_needed(GSM * gsm);
 int gsm_is_registered(GSM * gsm);
+
+/* queue management */
+GSMCommand * gsm_queue(GSM * gsm, char const * command);
+int gsm_queue_command(GSM * gsm, GSMCommand * command);
+int gsm_queue_full(GSM * gsm, GSMPriority priority, char const * command,
+		GSMError error, GSMCommandCallback callback);
+int gsm_queue_full_mode(GSM * gsm, GSMPriority priority, char const * command,
+		GSMError error, GSMCommandCallback callback, GSMMode mode);
+int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error);
+
 int gsm_reset(GSM * gsm, unsigned int delay);
+
 int gsm_send_message(GSM * gsm, char const * number, char const * text);
 
 #endif /* !PHONE_GSM_H */

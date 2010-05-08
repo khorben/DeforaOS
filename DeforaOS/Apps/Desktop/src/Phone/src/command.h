@@ -23,12 +23,6 @@
 
 /* GSMCommand */
 /* public */
-/* types */
-typedef struct _GSMCommand GSMCommand;
-
-typedef void (*GSMCommandCallback)(GSM * gsm);
-
-
 /* functions */
 /* commands */
 GSMCommand * gsm_command_new(char const * command);

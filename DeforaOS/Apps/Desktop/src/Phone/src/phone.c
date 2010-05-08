@@ -420,7 +420,7 @@ int phone_dialer_append(Phone * phone, char character)
 /* phone_hangup */
 void phone_hangup(Phone * phone)
 {
-	gsm_hangup(phone->gsm);
+	gsm_call_hangup(phone->gsm);
 	if(phone->di_window != NULL)
 		gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
 }

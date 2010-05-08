@@ -16,7 +16,7 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-phone_OBJS = callbacks.o command.o gsm.o main.o phone.o
+phone_OBJS = callbacks.o command.o gsm.o main.o modem.o phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 phone_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
@@ -47,14 +47,17 @@ phone-messages: $(phone-messages_OBJS)
 callbacks.o: callbacks.c phone.h callbacks.h
 	$(CC) $(phone_CFLAGS) -c callbacks.c
 
-command.o: command.c
+command.o: command.c gsm.h command.h
 	$(CC) $(phone_CFLAGS) -c command.c
 
-gsm.o: gsm.c command.h phone.h gsm.h
+gsm.o: gsm.c command.h phone.h modem.h gsm.h
 	$(CC) $(phone_CFLAGS) -c gsm.c
 
 main.o: main.c phone.h ../config.h
 	$(CC) $(phone_CFLAGS) -c main.c
+
+modem.o: modem.c gsm.h modem.h
+	$(CC) $(phone_CFLAGS) -c modem.c
 
 phone.o: phone.c gsm.h callbacks.h phone.h
 	$(CC) $(phone_CFLAGS) -c phone.c

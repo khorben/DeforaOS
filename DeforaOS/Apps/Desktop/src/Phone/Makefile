@@ -40,6 +40,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/command.c \
 		$(PACKAGE)-$(VERSION)/src/gsm.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/modem.c \
 		$(PACKAGE)-$(VERSION)/src/phone.c \
 		$(PACKAGE)-$(VERSION)/src/contacts.c \
 		$(PACKAGE)-$(VERSION)/src/dialer.c \
@@ -48,6 +49,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/command.h \
 		$(PACKAGE)-$(VERSION)/src/gsm.h \
+		$(PACKAGE)-$(VERSION)/src/modem.h \
 		$(PACKAGE)-$(VERSION)/src/phone.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
