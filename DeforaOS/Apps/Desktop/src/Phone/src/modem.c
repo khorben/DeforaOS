@@ -565,10 +565,11 @@ int gsm_modem_set_operator_format(GSMModem * gsmm, GSMOperatorFormat format)
 
 
 /* gsm_modem_set_operator_mode */
+static void _modem_set_operator_mode_callback(GSM * gsm);
+
 int gsm_modem_set_operator_mode(GSMModem * gsmm, GSMOperatorMode mode)
 {
 	char cmd[] = "AT+COPS=X";
-	GSMCommand * gsmc;
 
 	switch(mode)
 	{
@@ -582,9 +583,15 @@ int gsm_modem_set_operator_mode(GSMModem * gsmm, GSMOperatorMode mode)
 			return 1;
 	}
 	cmd[8] = mode + '0';
-	if((gsmc = gsm_queue(gsmm->gsm, cmd)) == NULL)
-		return 1;
-	return 0;
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_OPERATOR_MODE_FAILED,
+			_modem_set_operator_mode_callback);
+}
+
+static void _modem_set_operator_mode_callback(GSM * gsm)
+{
+	/* did it really work? */
+	gsm_fetch_operator(gsm);
 }
 
 
