@@ -1353,12 +1353,12 @@ static gboolean _on_timeout(gpointer data)
 		return FALSE;
 	if((cmd = gsm_command_get_command(gsmc)) == NULL)
 		return FALSE;
-	len = strlen(cmd);
+	len = strlen(cmd) + 2;
 	/* re-inject the command */
-	if((p = realloc(gsm->wr_buf, len)) == NULL)
+	if((p = realloc(gsm->wr_buf, len + 1)) == NULL)
 		return FALSE;
 	gsm->wr_buf = p;
-	memcpy(p, cmd, len);
+	snprintf(p, len + 1, "%s%s", cmd, "\r\n");
 	gsm->wr_buf_cnt = len;
 	gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 			_on_watch_can_write, gsm);
