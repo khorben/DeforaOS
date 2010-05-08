@@ -196,6 +196,7 @@ static GSMTrigger _gsm_triggers[] =
 
 /* callbacks */
 static gboolean _on_reset(gpointer data);
+static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
@@ -930,8 +931,16 @@ static int _gsm_queue_push(GSM * gsm)
 	snprintf(gsm->wr_buf, gsm->wr_buf_cnt--, "%s%s", command, suffix);
 	/* FIXME shouldn't it always be the case? flush input queue first? */
 	if(gsm->channel != NULL && gsm->wr_source == 0)
+	{
 		gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 				_on_watch_can_write, gsm);
+		if(gsm->source != 0 && gsm->mode != GSM_MODE_INIT)
+		{
+			/* XXX still not sure it is always _on_timeout */
+			g_source_remove(gsm->source);
+			gsm->source = 0;
+		}
+	}
 	return 0;
 }
 
@@ -1291,6 +1300,33 @@ static gboolean _reset_settle(gpointer data)
 }
 
 
+/* on_timeout */
+static gboolean _on_timeout(gpointer data)
+{
+	GSM * gsm = data;
+	char const noop[] = "AT\r\n";
+	char * p;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	gsm->source = 0;
+	/* FIXME this code partly duplicates _gsm_queue_push() */
+	/* check if the write handler is still running */
+	if(gsm->channel == NULL || gsm->wr_source != 0)
+		return FALSE;
+	/* inject the noop */
+	if((p = realloc(gsm->wr_buf, sizeof(noop) - 1)) == NULL)
+		return FALSE;
+	gsm->wr_buf = p;
+	memcpy(p, noop, sizeof(noop) - 1);
+	gsm->wr_buf_cnt = sizeof(noop) - 1;
+	gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
+			_on_watch_can_write, gsm);
+	return FALSE;
+}
+
+
 /* on_watch_can_read */
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data)
@@ -1383,7 +1419,13 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	gsm->wr_source = 0;
 	if(gsm->mode == GSM_MODE_INIT)
 		_gsm_queue_pop(gsm);
-	else if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
-		gsm->mode = gsm_command_get_mode(gsmc);
+	else
+	{
+		if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
+			gsm->mode = gsm_command_get_mode(gsmc);
+		if(gsm->source != 0)
+			g_source_remove(gsm->source);
+		gsm->source = g_timeout_add(2000, _on_timeout, gsm);
+	}
 	return FALSE;
 }
