@@ -37,11 +37,14 @@
 /* GSM */
 /* private */
 /* types */
+typedef int (*GSMTriggerCallback)(GSM * gsm, char const * result,
+		gboolean * answered);
+
 typedef struct _GSMTrigger
 {
 	char const * trigger;
 	size_t trigger_cnt;
-	int (*callback)(GSM * gsm, char const * result);
+	GSMTriggerCallback callback;
 } GSMTrigger;
 
 struct _GSM
@@ -159,7 +162,8 @@ static int _gsm_queue_push(GSM * gsm);
 
 /* triggers */
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
-static int _gsm_trigger_cme_error(GSM * gsm, char const * result);
+static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
+		gboolean * answered);
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgs(GSM * gsm, char const * result);
@@ -174,7 +178,8 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result);
 static GSMTrigger _gsm_triggers[] =
 {
 #define GSM_TRIGGER(trigger, callback) \
-	{ trigger, sizeof(trigger) - 1, _gsm_trigger_ ## callback }
+	{ trigger, sizeof(trigger) - 1, \
+		(GSMTriggerCallback)_gsm_trigger_ ## callback }
 	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
@@ -765,9 +770,8 @@ static int _parse_do(GSM * gsm, size_t * i)
 		gsm->mode = GSM_MODE_COMMAND;
 		gsm_modem_set_echo(gsm->modem, FALSE);
 		gsm_modem_set_verbose(gsm->modem, TRUE);
-#if 0 /* XXX errors are no longer detected as acknowledging a command */
+		/* XXX should probably not be set by us */
 		gsm_modem_set_extended_errors(gsm->modem, TRUE);
-#endif
 		gsm_modem_set_extended_ring_reports(gsm->modem, TRUE);
 		gsm_modem_get_model(gsm->modem);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
@@ -835,7 +839,8 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 		if(strncmp(line, _gsm_triggers[i].trigger,
 					_gsm_triggers[i].trigger_cnt) == 0)
 			return _gsm_triggers[i].callback(gsm,
-					&line[_gsm_triggers[i].trigger_cnt]);
+					&line[_gsm_triggers[i].trigger_cnt],
+					answered);
 	/* XXX look for a potential trigger */
 	if(gsmc != NULL && (cmd = gsm_command_get_command(gsmc)) != NULL
 			&& strncmp(cmd, "AT+", 3) == 0 && isupper((c = cmd[3])))
@@ -844,7 +849,8 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 				j++);
 		for(i = 0; _gsm_triggers[i].trigger != NULL; i++)
 			if(strncmp(cmd, _gsm_triggers[i].trigger, j) == 0)
-				return _gsm_triggers[i].callback(gsm, line);
+				return _gsm_triggers[i].callback(gsm, line,
+						answered);
 	}
 	return 1;
 }
@@ -950,7 +956,8 @@ static int _gsm_trigger_cgmm(GSM * gsm, char const * result)
 
 
 /* gsm_trigger_cme_error */
-static int _gsm_trigger_cme_error(GSM * gsm, char const * result)
+static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
+		gboolean * answered)
 {
 	int code;
 	char * p;
@@ -959,6 +966,8 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
+	if(answered != NULL)
+		*answered = TRUE;
 	code = strtol(result, &p, 10);
 	if(result[0] == '\0' || *p != '\0')
 		return 1;
