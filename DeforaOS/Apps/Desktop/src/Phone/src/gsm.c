@@ -113,6 +113,7 @@ static struct
 	{ 30,	N_("No network service")			},
 	{ 31,	N_("Network timeout")				},
 	{ 32,	N_("Network not allowed - emergency calls only")},
+	{ 100,	N_("Unknown error")				},
 	{ 0,	NULL						}
 };
 
