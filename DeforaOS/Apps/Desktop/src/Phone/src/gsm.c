@@ -169,6 +169,7 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgs(GSM * gsm, char const * result);
+static int _gsm_trigger_cmti(GSM * gsm, char const * result);
 static int _gsm_trigger_connect(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cops(GSM * gsm, char const * result);
@@ -198,6 +199,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
 	GSM_TRIGGER("+CMGS: ",		cmgs),
+	GSM_TRIGGER("+CMTI: ",		cmti),
 	GSM_TRIGGER("CONNECT",		connect),
 	GSM_TRIGGER("+COPS: ",		cops),
 	GSM_TRIGGER("+CPBR: ",		cpbr),
@@ -480,6 +482,12 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			break;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			event->incoming_call.calltype = va_arg(ap,
+					unsigned int);
+			break;
+		case GSM_EVENT_TYPE_INCOMING_MESSAGE:
+			event->incoming_message.memory = va_arg(ap,
+					char const *);
+			event->incoming_message.index = va_arg(ap,
 					unsigned int);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
@@ -1127,6 +1135,23 @@ static int _gsm_trigger_cmgs(GSM * gsm, char const * result)
 	if(sscanf(result, "%u", &gsm->event.message_sent.mr) != 1)
 		return 1;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE_SENT);
+}
+
+
+/* gsm_trigger_cmti */
+static int _gsm_trigger_cmti(GSM * gsm, char const * result)
+{
+	char memory[32];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "\"%31[^\"]\",%u", memory,
+				&gsm->event.incoming_message.index) != 2)
+		return 1;
+	memory[sizeof(memory) - 1] = '\0';
+	gsm->event.incoming_message.memory = memory;
+	return 0;
 }
 
 

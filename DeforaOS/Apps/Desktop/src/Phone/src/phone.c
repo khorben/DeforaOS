@@ -1444,6 +1444,12 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
 					"");
 			return 0;
+		case GSM_EVENT_TYPE_INCOMING_MESSAGE:
+			/* FIXME warn the user */
+			_phone_fetch_messages(phone,
+					event->incoming_message.index,
+					event->incoming_message.index);
+			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);
