@@ -1236,7 +1236,7 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 
 /* callbacks */
 /* on_reset */
-static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow);
+static int _reset_do(GSM * gsm, int fd);
 static gboolean _reset_settle(gpointer data);
 
 static gboolean _on_reset(gpointer data)
@@ -1259,7 +1259,7 @@ static gboolean _on_reset(gpointer data)
 		gsm->channel = NULL;
 	}
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
-			|| _reset_do(fd, gsm->baudrate, gsm->hwflow) != 0)
+			|| _reset_do(gsm, fd) != 0)
 	{
 		snprintf(buf, sizeof(buf), "%s%s%s", gsm->device, ": ",
 				strerror(errno));
@@ -1285,7 +1285,7 @@ static gboolean _on_reset(gpointer data)
 	return FALSE;
 }
 
-static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
+static int _reset_do(GSM * gsm, int fd)
 {
 	struct stat st;
 	int fl;
@@ -1306,7 +1306,7 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 		term.c_cflag |= CS8;
 		term.c_cflag |= CREAD;
 		term.c_cflag |= CLOCAL;
-		if(hwflow)
+		if(gsm->hwflow)
 			term.c_cflag |= CRTSCTS;
 		else
 			term.c_cflag &= ~CRTSCTS;
@@ -1316,9 +1316,9 @@ static int _reset_do(int fd, unsigned int baudrate, unsigned int hwflow)
 		term.c_cc[VMIN] = 1;
 		term.c_cc[VTIME] = 0;
 		if(cfsetispeed(&term, 0) != 0) /* same speed as output speed */
-			phone_error(NULL, "/dev/modem", 0); /* go on anyway */
-		if(cfsetospeed(&term, baudrate) != 0)
-			phone_error(NULL, "/dev/modem", 0); /* go on anyway */
+			phone_error(NULL, gsm->device, 0); /* go on anyway */
+		if(cfsetospeed(&term, gsm->baudrate) != 0)
+			phone_error(NULL, gsm->device, 0); /* go on anyway */
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
 			return 1;
 	}
