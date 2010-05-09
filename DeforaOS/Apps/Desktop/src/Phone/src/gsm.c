@@ -1041,6 +1041,7 @@ static int _gsm_trigger_clip(GSM * gsm, char const * result)
 	if(sscanf(result, "\"%31[^\"]\", %u", number,
 				&gsm->event.call_presentation.format) != 2)
 		return 1; /* XXX report error? */
+	number[sizeof(number) - 1] = '\0';
 	gsm->event.call_presentation.number = number;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_CALL_PRESENTATION);
 }
@@ -1167,7 +1168,6 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result)
 {
 	unsigned int start;
 	unsigned int end;
-	unsigned int index;
 	char number[32];
 	char name[32];
 	gchar * p;
@@ -1177,21 +1177,22 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result)
 #endif
 	if(sscanf(result, "(%u-%u)", &start, &end) == 2)
 		return gsm_event(gsm, GSM_EVENT_TYPE_CONTACT_LIST, start, end);
-	if(sscanf(result, "%u,\"%31[^\"]\",145,\"%31[^\"]\"", &index, number,
-				name) != 3
+	if(sscanf(result, "%u,\"%31[^\"]\",145,\"%31[^\"]\"",
+				&gsm->event.contact.index, number, name) != 3
 			&& sscanf(result, "%u,\"%31[^\"]\",129,\"%31[^\"]\"",
-				&index, number, name) != 3)
+				&gsm->event.contact.index, number, name) != 3)
 		return 1;
 	number[sizeof(number) - 1] = '\0';
+	gsm->event.contact.number = number;
 	name[sizeof(name) - 1] = '\0';
+	gsm->event.contact.name = name;
 	if((p = g_convert(name, -1, "UTF-8", "ISO-8859-1", NULL, NULL, NULL))
 			!= NULL)
 	{
 		snprintf(name, sizeof(name), "%s", p);
 		g_free(p);
 	}
-	/* XXX convert to _gsm_event_send() */
-	return gsm_event(gsm, GSM_EVENT_TYPE_CONTACT, index, name, number);
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_CONTACT);
 }
 
 
