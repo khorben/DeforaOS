@@ -73,6 +73,8 @@ struct _Phone
 
 	/* call */
 	GtkWidget * ca_window;
+	GtkWidget * ca_name;
+	GtkWidget * ca_number;
 	GtkWidget * ca_answer;
 	GtkWidget * ca_hangup;
 	GtkWidget * ca_image;
@@ -427,7 +429,7 @@ int phone_dialer_append(Phone * phone, char character)
 	if((character < '0' || character > '9') && character != '*'
 			&& character != '+' && character != '#')
 		return 1; /* ignore the error */
-	/* FIXME ask GSM if in a call; if yes, send DTMF */
+	/* FIXME if in a call send DTMF instead */
 	text = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	len = strlen(text);
 	if((p = malloc(len + 2)) == NULL)
@@ -442,12 +444,13 @@ int phone_dialer_append(Phone * phone, char character)
 /* phone_dialer_call */
 void phone_dialer_call(Phone * phone, char const * number)
 {
+	/* FIXME check if it's either a name or number */
 	if(number == NULL)
 		number = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
 	if(number[0] == '\0')
 		number = NULL; /* call the last number dialled */
 	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
-	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING);
+	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
 }
 
 
@@ -483,6 +486,8 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 {
 	va_list ap;
 	PhoneCall call;
+	char const * name = NULL;
+	char const * number = NULL;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 
@@ -494,6 +499,11 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	}
 	va_start(ap, show);
 	call = va_arg(ap, PhoneCall);
+	if(call == PHONE_CALL_INCOMING || call == PHONE_CALL_OUTGOING)
+	{
+		name = va_arg(ap, char const *);
+		number = va_arg(ap, char const *);
+	}
 	va_end(ap);
 	if(phone->ca_window == NULL)
 	{
@@ -506,6 +516,14 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 #endif
 		vbox = gtk_vbox_new(FALSE, 4);
 		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+		/* party */
+		phone->ca_name = gtk_label_new(NULL);
+		gtk_widget_modify_font(phone->ca_name, phone->bold);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_name, FALSE, TRUE,
+				0);
+		phone->ca_number = gtk_label_new(NULL);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_number, FALSE, TRUE,
+				0);
 		/* buttons */
 		/* answer */
 		phone->ca_answer = _phone_create_button("call-start",
@@ -564,6 +582,20 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 		gtk_container_add(GTK_CONTAINER(phone->ca_window), vbox);
 	}
 	phone_show_dialer(phone, FALSE);
+	if(name != NULL)
+	{
+		if(name[0] == '\0')
+			/* XXX look it up if we have the number */
+			name = _("Unknown contact");
+		gtk_label_set_text(GTK_LABEL(phone->ca_name), name);
+	}
+	if(number != NULL)
+	{
+		if(number[0] == '\0')
+			/* XXX look it up if we have the name */
+			number = _("Unknown number");
+		gtk_label_set_text(GTK_LABEL(phone->ca_number), number);
+	}
 	gtk_widget_show_all(phone->ca_window);
 	switch(call)
 	{
@@ -1382,6 +1414,11 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 	{
 		case GSM_EVENT_TYPE_ERROR:
 			return _gsm_event_error(phone, event);
+		case GSM_EVENT_TYPE_CALL_PRESENTATION:
+			/* FIXME convert number, the contact is automatic */
+			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
+					event->call_presentation.number);
+			return 0;
 		case GSM_EVENT_TYPE_CONTACT:
 			phone_contacts_add(phone, event->contact.index,
 					event->contact.name,
@@ -1404,7 +1441,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
-			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING);
+			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
+					"");
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,

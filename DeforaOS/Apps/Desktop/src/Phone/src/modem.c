@@ -477,6 +477,16 @@ char * _text_to_sept(char const * text)
 }
 
 
+/* gsm_modem_set_call_presentation */
+int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set)
+{
+	char cmd[] = "AT+CLIP=X";
+
+	cmd[8] = set ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_set_echo */
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo)
 {

@@ -68,6 +68,7 @@ int gsm_modem_reset(GSMModem * gsmm);
 
 int gsm_modem_send_message(GSMModem * gsmm, char const * number, char const * text);
 
+int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo);
 int gsm_modem_set_extended_errors(GSMModem * gsmm, gboolean extended);
 int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended);

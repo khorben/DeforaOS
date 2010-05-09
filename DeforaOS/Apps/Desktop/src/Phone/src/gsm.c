@@ -163,6 +163,7 @@ static int _gsm_trigger_busy(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cfun(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
+static int _gsm_trigger_clip(GSM * gsm, char const * result);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
@@ -192,6 +193,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("BUSY",		busy),
 	GSM_TRIGGER("+CFUN: ",		cfun),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
+	GSM_TRIGGER("+CLIP: ",		clip),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
@@ -456,12 +458,18 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 	{
 		case GSM_EVENT_TYPE_ERROR:
 			event->error.error = va_arg(ap, GSMError);
-			event->error.message = va_arg(ap, char *);
+			event->error.message = va_arg(ap, char const *);
+			break;
+		case GSM_EVENT_TYPE_CALL_PRESENTATION:
+			event->call_presentation.number = va_arg(ap,
+					char const *);
+			event->call_presentation.format = va_arg(ap,
+					unsigned int);
 			break;
 		case GSM_EVENT_TYPE_CONTACT:
 			event->contact.index = va_arg(ap, unsigned int);
-			event->contact.name = va_arg(ap, char *);
-			event->contact.number = va_arg(ap, char *);
+			event->contact.name = va_arg(ap, char const *);
+			event->contact.number = va_arg(ap, char const *);
 			break;
 		case GSM_EVENT_TYPE_CONTACT_LIST:
 			event->contact_list.start = va_arg(ap, unsigned int);
@@ -484,7 +492,7 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_OPERATOR:
 			event->operator.mode = va_arg(ap, GSMOperatorMode);
 			event->operator.format = va_arg(ap, GSMOperatorFormat);
-			event->operator.operator = va_arg(ap, char *);
+			event->operator.operator = va_arg(ap, char const *);
 			event->operator.lai = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_REGISTRATION:
@@ -804,6 +812,7 @@ static int _parse_do(GSM * gsm, size_t * i)
 		/* XXX should probably not be set by us */
 		gsm_modem_set_extended_errors(gsm->modem, TRUE);
 		gsm_modem_set_extended_ring_reports(gsm->modem, TRUE);
+		gsm_modem_set_call_presentation(gsm->modem, TRUE);
 		gsm_modem_get_model(gsm->modem);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
@@ -1021,6 +1030,22 @@ static int _gsm_trigger_cgmm(GSM * gsm, char const * result)
 }
 
 
+/* gsm_trigger_clip */
+static int _gsm_trigger_clip(GSM * gsm, char const * result)
+{
+	char number[32];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "\"%31[^\"]\", %u", number,
+				&gsm->event.call_presentation.format) != 2)
+		return 1; /* XXX report error? */
+	gsm->event.call_presentation.number = number;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_CALL_PRESENTATION);
+}
+
+
 /* gsm_trigger_cme_error */
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 		gboolean * answered)
@@ -1165,6 +1190,7 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result)
 		snprintf(name, sizeof(name), "%s", p);
 		g_free(p);
 	}
+	/* XXX convert to _gsm_event_send() */
 	return gsm_event(gsm, GSM_EVENT_TYPE_CONTACT, index, name, number);
 }
 

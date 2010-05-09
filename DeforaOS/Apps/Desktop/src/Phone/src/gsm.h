@@ -38,6 +38,7 @@ typedef void (*GSMCommandCallback)(GSM * gsm);
 typedef enum _GSMEventType
 {
 	GSM_EVENT_TYPE_ERROR = 0,
+	GSM_EVENT_TYPE_CALL_PRESENTATION,
 	GSM_EVENT_TYPE_CONTACT,
 	GSM_EVENT_TYPE_CONTACT_LIST,
 	GSM_EVENT_TYPE_FUNCTIONAL,
@@ -146,6 +147,14 @@ typedef union _GSMEvent
 		GSMError error;
 		char const * message;
 	} error;
+
+	/* GSM_EVENT_TYPE_CALL_PRESENTATION */
+	struct
+	{
+		GSMEventType type;
+		char const * number;
+		unsigned int format;
+	} call_presentation;
 
 	/* GSM_EVENT_TYPE_CONTACT */
 	struct
