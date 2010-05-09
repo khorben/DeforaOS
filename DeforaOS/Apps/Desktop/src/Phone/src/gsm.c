@@ -1005,12 +1005,14 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 	int code;
 	char * p;
 	size_t i;
-	GSMError error = GSM_ERROR_UNKNOWN;
+	GSMError type = GSM_ERROR_UNKNOWN;
+	char const * error;
 	GSMCommand * gsmc;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
+	error = _("Unknown error");
 	if(answered != NULL)
 		*answered = TRUE;
 	code = strtol(result, &p, 10);
@@ -1019,12 +1021,11 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 	for(i = 0; _gsm_cme_errors[i].error != NULL; i++)
 		if(_gsm_cme_errors[i].code == code)
 			break;
-	if(_gsm_cme_errors[i].error == NULL)
-		return 1; /* XXX report an error anyway? */
+	if(_gsm_cme_errors[i].error != NULL)
+		error = _(_gsm_cme_errors[i].error);
 	if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
-		error = gsm_command_get_error(gsmc);
-	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error,
-			_(_gsm_cme_errors[i].error));
+		type = gsm_command_get_error(gsmc);
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, type, error);
 }
 
 
