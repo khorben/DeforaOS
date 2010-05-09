@@ -99,6 +99,7 @@ struct _Phone
 	/* debugging */
 	GtkWidget * de_window;
 	GtkWidget * de_gsm;
+	GtkWidget * de_queue;
 #endif
 
 	/* dialer */
@@ -813,6 +814,7 @@ static struct
 };
 
 static void _on_debug_gsm_execute(gpointer data);
+static void _on_debug_queue_execute(gpointer data);
 
 void phone_show_debug(Phone * phone, gboolean show)
 {
@@ -833,18 +835,38 @@ void phone_show_debug(Phone * phone, gboolean show)
 		gtk_window_set_title(GTK_WINDOW(phone->de_window), "Debugging");
 		vbox = gtk_vbox_new(FALSE, 0);
 		/* gsm commands */
+		widget = gtk_label_new("GSM commands");
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
+		gtk_widget_modify_font(widget, phone->bold);
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->de_gsm = gtk_combo_box_new_text();
 		for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 			gtk_combo_box_append_text(GTK_COMBO_BOX(phone->de_gsm),
 					_debug_gsm_commands[i].name);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(phone->de_gsm), 0);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->de_gsm, TRUE, TRUE, 4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_gsm_execute), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		/* gsm queue */
+		widget = gtk_label_new("GSM queue");
+		gtk_widget_modify_font(widget, phone->bold);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
+		hbox = gtk_hbox_new(FALSE, 0);
+		phone->de_queue = gtk_entry_new();
+		g_signal_connect_swapped(G_OBJECT(phone->de_queue), "activate",
+				G_CALLBACK(_on_debug_queue_execute), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), phone->de_queue, TRUE, TRUE,
+				4);
+		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
+		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(_on_debug_queue_execute), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->de_window), vbox);
 		gtk_widget_show_all(vbox);
 	}
@@ -869,6 +891,16 @@ static void _on_debug_gsm_execute(gpointer data)
 	g_free(text);
 	if(_debug_gsm_commands[i].callback != NULL)
 		_debug_gsm_commands[i].callback(phone->gsm);
+}
+
+static void _on_debug_queue_execute(gpointer data)
+{
+	Phone * phone = data;
+	char const * text;
+
+	if((text = gtk_entry_get_text(GTK_ENTRY(phone->de_queue))) == NULL)
+		return;
+	gsm_queue(phone->gsm, text);
 }
 #endif
 
