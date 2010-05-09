@@ -224,6 +224,7 @@ static gboolean _new_idle(gpointer data)
 	phone_show_contacts(phone, FALSE);
 	phone_show_dialer(phone, FALSE);
 	phone_show_messages(phone, FALSE);
+	phone_show_write(phone, FALSE);
 	phone->ui_source = 0;
 	return FALSE;
 }
@@ -430,58 +431,6 @@ void phone_hangup(Phone * phone)
 
 
 /* messages */
-/* phone_messages_count_buffer */
-void phone_messages_count_buffer(Phone * phone)
-{
-	GtkTextBuffer * tbuf;
-	const int max = 140;
-	gint cnt;
-	gint msg_cnt;
-	gint cur_cnt;
-	char buf[32];
-
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
-	if((cnt = gtk_text_buffer_get_char_count(tbuf)) < 0)
-		return;
-	msg_cnt = (cnt / max) + 1;
-	if((cur_cnt = cnt % max) == 0)
-	{
-		msg_cnt--;
-		if(cnt > 0)
-			cur_cnt = max;
-	}
-	snprintf(buf, sizeof(buf), _("%d message%s, %d/%d characters"),
-			msg_cnt, (msg_cnt > 1) ? _("s") : "", cur_cnt, max);
-	gtk_label_set_text(GTK_LABEL(phone->wr_count), buf);
-}
-
-
-/* phone_messages_send */
-void phone_messages_send(Phone * phone)
-{
-	gchar const * number;
-	gchar * text;
-	GtkTextBuffer * tbuf;
-	GtkTextIter start;
-	GtkTextIter end;
-
-	phone_show_write(phone, TRUE);
-	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
-	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
-	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
-	text = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
-			FALSE);
-	if(number == NULL || number[0] == '\0' || text == NULL)
-		return;
-	gsm_send_message(phone->gsm, number, text);
-	g_free(text);
-	phone->wr_progress = _phone_create_progress(phone->wr_window,
-			_("Sending message..."));
-	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
-}
-
-
 /* phone_messages_write */
 void phone_messages_write(Phone * phone, char const * number, char const * text)
 {
@@ -498,6 +447,7 @@ void phone_messages_write(Phone * phone, char const * number, char const * text)
 }
 
 
+/* show */
 /* phone_show_code */
 void phone_show_code(Phone * phone, gboolean show, ...)
 {
@@ -801,6 +751,7 @@ void phone_show_write(Phone * phone, gboolean show)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+	GtkToolItem * toolitem;
 	GtkTextBuffer * tbuf;
 
 	if(phone->wr_window == NULL)
@@ -813,21 +764,48 @@ void phone_show_write(Phone * phone, gboolean show)
 		g_signal_connect(G_OBJECT(phone->wr_window), "delete-event",
 				G_CALLBACK(on_phone_closex), phone->wr_window);
 		vbox = gtk_vbox_new(FALSE, 0);
+		/* toolbar */
+		widget = gtk_toolbar_new();
+		toolitem = gtk_tool_button_new(NULL, _("Send"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"mail-send");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_write_send), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("Send"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"stock_attach");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_write_attach), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CUT);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_write_cut), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_COPY);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_write_copy), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PASTE);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_write_paste), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		/* entry */
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->wr_entry = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE,
 				2);
-		widget = gtk_button_new(); /* XXX this should open contacts */
+		widget = gtk_button_new();
 		gtk_button_set_image(GTK_BUTTON(widget),
-				gtk_image_new_from_icon_name("mail-send",
+				gtk_image_new_from_icon_name(
+					"stock_addressbook",
 					GTK_ICON_SIZE_BUTTON));
 		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
-				G_CALLBACK(on_phone_messages_send), phone);
+				G_CALLBACK(on_phone_contacts_show), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
-		/* XXX here should the send button be, along with... options? */
 		/* character count */
 		hbox = gtk_hbox_new(FALSE, 0);
 		phone->wr_count = gtk_label_new(NULL);
@@ -845,17 +823,70 @@ void phone_show_write(Phone * phone, gboolean show)
 				GTK_WRAP_WORD_CHAR);
 		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
 		g_signal_connect_swapped(G_OBJECT(tbuf), "changed", G_CALLBACK(
-					on_phone_messages_changed), phone);
+					on_phone_write_changed), phone);
 		gtk_container_add(GTK_CONTAINER(widget), phone->wr_view);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
 		gtk_container_add(GTK_CONTAINER(phone->wr_window), vbox);
 		gtk_widget_show_all(vbox);
-		phone_messages_count_buffer(phone);
+		phone_write_count_buffer(phone);
 	}
 	if(show)
 		gtk_window_present(GTK_WINDOW(phone->wr_window));
 	else
 		gtk_widget_hide(phone->wr_window);
+}
+
+
+/* write */
+/* phone_write_count_buffer */
+void phone_write_count_buffer(Phone * phone)
+{
+	GtkTextBuffer * tbuf;
+	const int max = 140;
+	gint cnt;
+	gint msg_cnt;
+	gint cur_cnt;
+	char buf[32];
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	if((cnt = gtk_text_buffer_get_char_count(tbuf)) < 0)
+		return;
+	msg_cnt = (cnt / max) + 1;
+	if((cur_cnt = cnt % max) == 0)
+	{
+		msg_cnt--;
+		if(cnt > 0)
+			cur_cnt = max;
+	}
+	snprintf(buf, sizeof(buf), _("%d message%s, %d/%d characters"),
+			msg_cnt, (msg_cnt > 1) ? _("s") : "", cur_cnt, max);
+	gtk_label_set_text(GTK_LABEL(phone->wr_count), buf);
+}
+
+
+/* phone_write_send */
+void phone_write_send(Phone * phone)
+{
+	gchar const * number;
+	gchar * text;
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+
+	phone_show_write(phone, TRUE);
+	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	gtk_text_buffer_get_start_iter(GTK_TEXT_BUFFER(tbuf), &start);
+	gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER(tbuf), &end);
+	text = gtk_text_buffer_get_text(GTK_TEXT_BUFFER(tbuf), &start, &end,
+			FALSE);
+	if(number == NULL || number[0] == '\0' || text == NULL)
+		return;
+	gsm_send_message(phone->gsm, number, text);
+	g_free(text);
+	phone->wr_progress = _phone_create_progress(phone->wr_window,
+			_("Sending message..."));
+	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 }
 
 

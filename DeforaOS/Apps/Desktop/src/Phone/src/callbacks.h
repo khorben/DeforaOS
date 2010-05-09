@@ -46,12 +46,18 @@ void on_phone_dialer_hangup(gpointer data);
 
 /* messages */
 void on_phone_messages_call(gpointer data);
-void on_phone_messages_changed(gpointer data);
 void on_phone_messages_delete(gpointer data);
 void on_phone_messages_inbox(gpointer data);
 void on_phone_messages_outbox(gpointer data);
 void on_phone_messages_reply(gpointer data);
-void on_phone_messages_send(gpointer data);
 void on_phone_messages_write(gpointer data);
+
+/* write */
+void on_phone_write_attach(gpointer data);
+void on_phone_write_changed(gpointer data);
+void on_phone_write_copy(gpointer data);
+void on_phone_write_cut(gpointer data);
+void on_phone_write_paste(gpointer data);
+void on_phone_write_send(gpointer data);
 
 #endif /* !PHONE_CALLBACKS_H */

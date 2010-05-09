@@ -75,16 +75,18 @@ void phone_contacts_add(Phone * phone, unsigned int index, char const * name,
 void phone_contacts_call_selected(Phone * phone);
 void phone_contacts_write_selected(Phone * phone);
 
-/* messages */
-void phone_messages_count_buffer(Phone * phone);
-void phone_messages_send(Phone * phone);
-void phone_messages_write(Phone * phone, char const * number,
-		char const * text);
-
 /* dialer */
 void phone_call(Phone * phone, char const * number);
 void phone_hangup(Phone * phone);
 
 int phone_dialer_append(Phone * phone, char character);
+
+/* messages */
+void phone_messages_write(Phone * phone, char const * number,
+		char const * text);
+
+/* write */
+void phone_write_count_buffer(Phone * phone);
+void phone_write_send(Phone * phone);
 
 #endif /* !PHONE_PHONE_H */

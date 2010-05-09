@@ -201,15 +201,6 @@ void on_phone_messages_call(gpointer data)
 }
 
 
-/* on_phone_messages_changed */
-void on_phone_messages_changed(gpointer data)
-{
-	Phone * phone = data;
-
-	phone_messages_count_buffer(phone);
-}
-
-
 /* on_phone_messages_delete */
 void on_phone_messages_delete(gpointer data)
 {
@@ -246,19 +237,57 @@ void on_phone_messages_reply(gpointer data)
 }
 
 
-/* on_phone_messages_send */
-void on_phone_messages_send(gpointer data)
-{
-	Phone * phone = data;
-
-	phone_messages_send(phone);
-}
-
-
 /* on_phone_messages_write */
 void on_phone_messages_write(gpointer data)
 {
 	Phone * phone = data;
 
 	phone_messages_write(phone, NULL, NULL);
+}
+
+
+/* write */
+/* on_phone_write_attach */
+void on_phone_write_attach(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_phone_write_changed */
+void on_phone_write_changed(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_write_count_buffer(phone);
+}
+
+
+/* on_phone_write_copy */
+void on_phone_write_copy(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_phone_write_cut */
+void on_phone_write_cut(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_phone_write_paste */
+void on_phone_write_paste(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_phone_write_send */
+void on_phone_write_send(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_write_send(phone);
 }
