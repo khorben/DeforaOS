@@ -81,21 +81,27 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 /* on_phone_call_answer */
 void on_phone_call_answer(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_call_answer(phone);
 }
 
 
 /* on_phone_call_hangup */
 void on_phone_call_hangup(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_call_hangup(phone);
 }
 
 
 /* on_phone_call_reject */
 void on_phone_call_reject(gpointer data)
 {
-	/* FIXME implement */
+	Phone * phone = data;
+
+	phone_call_hangup(phone);
 }
 
 
@@ -190,7 +196,7 @@ void on_phone_dialer_call(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_call(phone, NULL);
+	phone_dialer_call(phone, NULL);
 }
 
 
@@ -210,7 +216,7 @@ void on_phone_dialer_hangup(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_hangup(phone);
+	phone_dialer_hangup(phone);
 }
 
 

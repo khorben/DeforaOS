@@ -286,15 +286,17 @@ static int _error_text(char const * message, int ret)
 }
 
 
-/* phone_call */
-void phone_call(Phone * phone, char const * number)
+/* calls */
+void phone_call_answer(Phone * phone)
 {
-	if(number == NULL)
-		number = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
-	if(number[0] == '\0')
-		number = NULL; /* call the last number dialled */
-	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
-	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING);
+	gsm_call_answer(phone->gsm);
+}
+
+
+/* phone_call_hangup */
+void phone_call_hangup(Phone * phone)
+{
+	gsm_call_hangup(phone->gsm);
 }
 
 
@@ -407,6 +409,7 @@ void phone_contacts_write_selected(Phone * phone)
 }
 
 
+/* dialer */
 /* phone_dialer_append */
 int phone_dialer_append(Phone * phone, char character)
 {
@@ -434,8 +437,20 @@ int phone_dialer_append(Phone * phone, char character)
 }
 
 
-/* phone_hangup */
-void phone_hangup(Phone * phone)
+/* phone_dialer_call */
+void phone_dialer_call(Phone * phone, char const * number)
+{
+	if(number == NULL)
+		number = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
+	if(number[0] == '\0')
+		number = NULL; /* call the last number dialled */
+	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING);
+}
+
+
+/* phone_dialer_hangup */
+void phone_dialer_hangup(Phone * phone)
 {
 	gsm_call_hangup(phone->gsm);
 	if(phone->di_window != NULL)
