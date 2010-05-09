@@ -35,7 +35,8 @@ static GtkWidget * _phone_init(PanelApplet * applet);
 /* callbacks */
 static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
-static gboolean _on_plug_removed(void);
+static void _on_plug_added(GtkWidget * widget);
+static gboolean _on_plug_removed(GtkWidget * widget);
 static void _on_screen_changed(GtkWidget * widget);
 
 
@@ -62,11 +63,12 @@ static GtkWidget * _phone_init(PanelApplet * applet)
 	GtkWidget * socket;
 
 	socket = gtk_socket_new();
+	g_signal_connect(G_OBJECT(socket), "plug-added", G_CALLBACK(
+				_on_plug_added), NULL);
 	g_signal_connect(G_OBJECT(socket), "plug-removed", G_CALLBACK(
 				_on_plug_removed), NULL);
 	g_signal_connect(G_OBJECT(socket), "screen-changed", G_CALLBACK(
 				_on_screen_changed), NULL);
-	gtk_widget_show(socket);
 	return socket;
 }
 
@@ -93,9 +95,17 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 }
 
 
-/* on_plug_removed */
-static gboolean _on_plug_removed(void)
+/* on_plug_added */
+static void _on_plug_added(GtkWidget * widget)
 {
+	gtk_widget_show(widget);
+}
+
+
+/* on_plug_removed */
+static gboolean _on_plug_removed(GtkWidget * widget)
+{
+	gtk_widget_hide(widget);
 	return TRUE;
 }
 
