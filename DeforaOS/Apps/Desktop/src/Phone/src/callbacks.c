@@ -77,6 +77,29 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 }
 
 
+/* calls */
+/* on_phone_call_answer */
+void on_phone_call_answer(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_phone_call_hangup */
+void on_phone_call_hangup(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* on_phone_call_reject */
+void on_phone_call_reject(gpointer data)
+{
+	/* FIXME implement */
+}
+
+
+/* code */
 /* on_phone_code_clear */
 void on_phone_code_clear(gpointer data)
 {

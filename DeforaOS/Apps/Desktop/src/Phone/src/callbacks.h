@@ -26,6 +26,11 @@ gboolean on_phone_closex(gpointer data);
 GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
 		gpointer data);
 
+/* calls */
+void on_phone_call_answer(gpointer data);
+void on_phone_call_hangup(gpointer data);
+void on_phone_call_reject(gpointer data);
+
 /* code */
 void on_phone_code_clear(gpointer data);
 void on_phone_code_clicked(GtkWidget * widget, gpointer data);
