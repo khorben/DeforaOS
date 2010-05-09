@@ -294,6 +294,7 @@ void phone_call(Phone * phone, char const * number)
 	if(number[0] == '\0')
 		number = NULL; /* call the last number dialled */
 	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING);
 }
 
 
@@ -1358,7 +1359,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
-			/* FIXME implement */
+			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
