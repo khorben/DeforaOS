@@ -400,6 +400,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 		{
 			gsm_command_set_error(gsmc,
 					GSM_ERROR_MESSAGE_SEND_FAILED);
+			/* this ensures that no command gets in between */
 			gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
 		}
 	}
