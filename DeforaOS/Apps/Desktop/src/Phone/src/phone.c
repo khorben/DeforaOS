@@ -615,6 +615,8 @@ void phone_show_contacts(Phone * phone, gboolean show)
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
 		phone->co_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->co_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->co_view),
@@ -770,6 +772,8 @@ void phone_show_messages(Phone * phone, gboolean show)
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
 		phone->me_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->me_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
@@ -834,6 +838,8 @@ void phone_show_write(Phone * phone, gboolean show)
 		widget = gtk_scrolled_window_new(NULL, NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
 		phone->wr_view = gtk_text_view_new();
 		gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->wr_view),
 				GTK_WRAP_WORD_CHAR);
