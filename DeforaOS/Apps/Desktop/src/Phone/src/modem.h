@@ -51,22 +51,26 @@ int gsm_modem_call_last(GSMModem * gsmm, GSMCallType calltype);
 int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code);
 
 int gsm_modem_get_contact_list(GSMModem * gsmm);
-int gsm_modem_get_contacts(GSMModem * gsmm, unsigned int start, unsigned int end);
+int gsm_modem_get_contacts(GSMModem * gsmm, unsigned int start,
+		unsigned int end);
 int gsm_modem_get_message_list(GSMModem * gsmm);
-int gsm_modem_get_messages(GSMModem * gsmm, unsigned int start, unsigned int end);
+int gsm_modem_get_messages(GSMModem * gsmm, unsigned int start,
+		unsigned int end);
 int gsm_modem_get_model(GSMModem * gsmm);
 int gsm_modem_get_operator(GSMModem * gsmm);
 int gsm_modem_get_registration(GSMModem * gsmm);
 int gsm_modem_get_signal_level(GSMModem * gsmm);
 
 int gsm_modem_is_functional(GSMModem * gsmm);
+int gsm_modem_is_phone_active(GSMModem * gsmm);
 int gsm_modem_is_pin_needed(GSMModem * gsmm);
 int gsm_modem_is_pin_valid(GSMModem * gsmm);
 int gsm_modem_is_registered(GSMModem * gsmm);
 
 int gsm_modem_reset(GSMModem * gsmm);
 
-int gsm_modem_send_message(GSMModem * gsmm, char const * number, char const * text);
+int gsm_modem_send_message(GSMModem * gsmm, char const * number,
+		char const * text);
 
 int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo);

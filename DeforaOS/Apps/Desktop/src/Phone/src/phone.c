@@ -1398,6 +1398,7 @@ static void _phone_track(Phone * phone, PhoneTrack what, gboolean track)
 /* callbacks */
 /* phone_gsm_event */
 static int _gsm_event_error(Phone * phone, GSMEvent * event);
+static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity);
 static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 		gpointer data);
 
@@ -1437,6 +1438,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);
+			gsm_is_phone_active(phone->gsm);
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
 			return 0;
@@ -1464,6 +1466,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);
 			return 0;
+		case GSM_EVENT_TYPE_PHONE_ACTIVITY:
+			return _gsm_event_phone_activity(phone,
+					event->phone_activity.activity);
 		case GSM_EVENT_TYPE_REGISTRATION:
 			return 0; /* we also get a status update about it */
 		case GSM_EVENT_TYPE_SIGNAL_LEVEL:
@@ -1524,6 +1529,24 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			break;
 		default:
 			phone_error(phone, event->error.message, 0);
+			break;
+	}
+	return 0;
+}
+
+static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity)
+{
+	switch(activity)
+	{
+		case GSM_PHONE_ACTIVITY_CALL:
+			phone_show_call(phone, TRUE, PHONE_CALL_ESTABLISHED);
+			break;
+		case GSM_PHONE_ACTIVITY_READY:
+		case GSM_PHONE_ACTIVITY_UNKNOWN:
+			break; /* nothing to do */
+		case GSM_PHONE_ACTIVITY_RINGING:
+			phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, NULL,
+					NULL);
 			break;
 	}
 	return 0;

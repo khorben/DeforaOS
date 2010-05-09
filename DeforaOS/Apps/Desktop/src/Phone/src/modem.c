@@ -294,6 +294,15 @@ int gsm_modem_is_functional(GSMModem * gsmm)
 }
 
 
+/* gsm_modem_is_phone_active */
+int gsm_modem_is_phone_active(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CPAS";
+
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_is_pin_needed */
 int gsm_modem_is_pin_needed(GSMModem * gsmm)
 {

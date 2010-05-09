@@ -173,6 +173,7 @@ static int _gsm_trigger_cmti(GSM * gsm, char const * result);
 static int _gsm_trigger_connect(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cops(GSM * gsm, char const * result);
+static int _gsm_trigger_cpas(GSM * gsm, char const * result);
 static int _gsm_trigger_cpbr(GSM * gsm, char const * result);
 static int _gsm_trigger_cpin(GSM * gsm, char const * result);
 static int _gsm_trigger_creg(GSM * gsm, char const * result);
@@ -202,6 +203,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CMTI: ",		cmti),
 	GSM_TRIGGER("CONNECT",		connect),
 	GSM_TRIGGER("+COPS: ",		cops),
+	GSM_TRIGGER("+CPAS: ",		cpas),
 	GSM_TRIGGER("+CPBR: ",		cpbr),
 	GSM_TRIGGER("+CPIN: ",		cpin),
 	GSM_TRIGGER("+CREG: ",		creg),
@@ -503,6 +505,10 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->operator.operator = va_arg(ap, char const *);
 			event->operator.lai = va_arg(ap, unsigned int);
 			break;
+		case GSM_EVENT_TYPE_PHONE_ACTIVITY:
+			event->phone_activity.activity = va_arg(ap,
+					GSMPhoneActivity);
+			break;
 		case GSM_EVENT_TYPE_REGISTRATION:
 			event->registration.n = va_arg(ap, unsigned int);
 			event->registration.stat = va_arg(ap, unsigned int);
@@ -577,6 +583,13 @@ int gsm_fetch_signal_level(GSM * gsm)
 int gsm_is_functional(GSM * gsm)
 {
 	return gsm_modem_is_functional(gsm->modem);
+}
+
+
+/* gsm_is_phone_active */
+int gsm_is_phone_active(GSM * gsm)
+{
+	return gsm_modem_is_phone_active(gsm->modem);
 }
 
 
@@ -1185,6 +1198,18 @@ static int _gsm_trigger_cops(GSM * gsm, char const * result)
 				&gsm->event.operator.lai) >= 3)
 		return _gsm_event_send(gsm, GSM_EVENT_TYPE_OPERATOR);
 	return 1;
+}
+
+
+/* gsm_trigger_cpas */
+static int _gsm_trigger_cpas(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u", &gsm->event.phone_activity.activity) != 1)
+		return 1;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_PHONE_ACTIVITY);
 }
 
 

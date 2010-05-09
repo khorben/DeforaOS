@@ -47,6 +47,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_MESSAGE_LIST,
 	GSM_EVENT_TYPE_MESSAGE_SENT,
 	GSM_EVENT_TYPE_OPERATOR,
+	GSM_EVENT_TYPE_PHONE_ACTIVITY,
 	GSM_EVENT_TYPE_REGISTRATION,
 	GSM_EVENT_TYPE_SIGNAL_LEVEL,
 	GSM_EVENT_TYPE_SIM_PIN_VALID,
@@ -102,6 +103,14 @@ typedef enum _GSMOperatorMode
 	GSM_OPERATOR_MODE_SET_FORMAT = 3,
 	GSM_OPERATOR_MODE_MANUAL_WITH_FALLBACK = 4
 } GSMOperatorMode;
+
+typedef enum _GSMPhoneActivity
+{
+	GSM_PHONE_ACTIVITY_READY = 0,
+	GSM_PHONE_ACTIVITY_UNKNOWN = 2,
+	GSM_PHONE_ACTIVITY_RINGING = 3,
+	GSM_PHONE_ACTIVITY_CALL = 4
+} GSMPhoneActivity;
 
 typedef enum _GSMPriority
 {
@@ -214,6 +223,13 @@ typedef union _GSMEvent
 		unsigned int lai;
 	} operator;
 
+	/* GSM_EVENT_TYPE_PHONE_ACTIVITY */
+	struct
+	{
+		GSMEventType type;
+		GSMPhoneActivity activity;
+	} phone_activity;
+
 	/* GSM_EVENT_TYPE_REGISTRATION */
 	struct
 	{
@@ -280,6 +296,7 @@ int gsm_fetch_signal_level(GSM * gsm);
 
 /* queries */
 int gsm_is_functional(GSM * gsm);
+int gsm_is_phone_active(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);
 int gsm_is_pin_valid(GSM * gsm);
 int gsm_is_registered(GSM * gsm);
