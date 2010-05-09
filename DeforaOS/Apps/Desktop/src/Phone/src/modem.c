@@ -102,11 +102,19 @@ int gsm_modem_call(GSMModem * gsmm, GSMCallType calltype, char const * number)
 
 
 /* gsm_modem_call_answer */
+static void _modem_call_answer_callback(GSM * gsm);
+
 int gsm_modem_call_answer(GSMModem * gsmm)
 {
 	char const cmd[] = "ATA";
 
-	return gsm_queue_with_error(gsmm->gsm, cmd, GSM_ERROR_ANSWER_FAILED);
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
+			GSM_ERROR_ANSWER_FAILED, _modem_call_answer_callback);
+}
+
+static void _modem_call_answer_callback(GSM * gsm)
+{
+	gsm_is_phone_active(gsm);
 }
 
 
