@@ -87,6 +87,15 @@ void on_phone_call_answer(gpointer data)
 }
 
 
+/* on_phone_call_close */
+void on_phone_call_close(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_show_call(phone, FALSE);
+}
+
+
 /* on_phone_call_hangup */
 void on_phone_call_hangup(gpointer data)
 {

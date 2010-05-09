@@ -77,8 +77,10 @@ struct _Phone
 	GtkWidget * ca_hangup;
 	GtkWidget * ca_image;
 	GtkWidget * ca_reject;
+	GtkWidget * ca_close;
 	GtkWidget * ca_volume;
 	GtkWidget * ca_speaker;
+	GtkWidget * ca_mute;
 
 	/* code */
 	PhoneCode en_code;
@@ -505,25 +507,35 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 		vbox = gtk_vbox_new(FALSE, 4);
 		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 		/* buttons */
+		/* answer */
 		phone->ca_answer = _phone_create_button("call-start",
 				_("Answer"));
 		g_signal_connect_swapped(G_OBJECT(phone->ca_answer), "clicked",
 				G_CALLBACK(on_phone_call_answer), phone);
 		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_answer, FALSE, TRUE,
 				0);
+		/* hangup */
 		phone->ca_hangup = _phone_create_button("call-stop",
 				_("Hangup"));
 		g_signal_connect_swapped(G_OBJECT(phone->ca_hangup), "clicked",
 				G_CALLBACK(on_phone_call_hangup), phone);
 		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_hangup, FALSE, TRUE,
 				0);
+		/* reject */
 		phone->ca_reject = _phone_create_button("call-stop",
 				_("Reject"));
 		g_signal_connect_swapped(G_OBJECT(phone->ca_reject), "clicked",
 				G_CALLBACK(on_phone_call_reject), phone);
 		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_reject, FALSE, TRUE,
 				0);
+		/* close */
+		phone->ca_close = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+		g_signal_connect_swapped(G_OBJECT(phone->ca_close), "clicked",
+				G_CALLBACK(on_phone_call_close), phone);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_close, FALSE, TRUE,
+				0);
 		hbox = gtk_hbox_new(FALSE, 0);
+		/* volume bar */
 		phone->ca_image = gtk_image_new_from_icon_name(
 				"audio-volume-muted", GTK_ICON_SIZE_BUTTON);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE,
@@ -532,18 +544,26 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 		gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE,
 				0);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		/* speaker mode */
 		phone->ca_speaker = gtk_toggle_button_new_with_label(
 				_("Loudspeaker"));
 		gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
-				gtk_image_new_from_icon_name("stock_volume",
+				gtk_image_new_from_icon_name("stock_volume-max",
 					GTK_ICON_SIZE_BUTTON));
 		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_speaker, FALSE,
+				TRUE, 0);
+		/* mute microphone */
+		phone->ca_mute = gtk_toggle_button_new_with_label(
+				_("Mute microphone"));
+		gtk_button_set_image(GTK_BUTTON(phone->ca_mute),
+				gtk_image_new_from_icon_name(
+					"audio-input-microphone",
+					GTK_ICON_SIZE_BUTTON));
+		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_mute, FALSE,
 				TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->ca_window), vbox);
 	}
 	phone_show_dialer(phone, FALSE);
-	gtk_window_set_transient_for(GTK_WINDOW(phone->ca_window), GTK_WINDOW(
-				phone->di_window));
 	gtk_widget_show_all(phone->ca_window);
 	switch(call)
 	{
@@ -552,16 +572,26 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 					_("In conversation"));
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_reject);
+			gtk_widget_hide(phone->ca_close);
 			break;
 		case PHONE_CALL_INCOMING:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Incoming call"));
 			gtk_widget_hide(phone->ca_hangup);
+			gtk_widget_hide(phone->ca_close);
 			break;
 		case PHONE_CALL_OUTGOING:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Outgoing call"));
 			gtk_widget_hide(phone->ca_answer);
+			gtk_widget_hide(phone->ca_reject);
+			gtk_widget_hide(phone->ca_close);
+			break;
+		case PHONE_CALL_TERMINATED:
+			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
+					_("Call finished"));
+			gtk_widget_hide(phone->ca_answer);
+			gtk_widget_hide(phone->ca_hangup);
 			gtk_widget_hide(phone->ca_reject);
 			break;
 	}
@@ -1413,13 +1443,13 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 {
 	switch(event->error.error)
 	{
-		case GSM_ERROR_SIM_PIN_REQUIRED:
-			phone_code_clear(phone);
-			phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+		case GSM_ERROR_BUSY:
+		case GSM_ERROR_NO_ANSWER:
+		case GSM_ERROR_NO_DIALTONE:
+			_phone_error(phone->ca_window, event->error.message);
 			break;
-		case GSM_ERROR_SIM_PIN_WRONG:
-			phone_code_clear(phone);
-			_phone_error(phone->en_window, _("Wrong SIM PIN code"));
+		case GSM_ERROR_NO_CARRIER:
+			phone_show_call(phone, TRUE, PHONE_CALL_TERMINATED);
 			break;
 		case GSM_ERROR_CONTACT_FETCH_FAILED:
 		case GSM_ERROR_MESSAGE_FETCH_FAILED:
@@ -1439,6 +1469,14 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 					phone->wr_progress);
 			_phone_error(phone->wr_window,
 					_("Could not send message"));
+			break;
+		case GSM_ERROR_SIM_PIN_REQUIRED:
+			phone_code_clear(phone);
+			phone_show_code(phone, TRUE, PHONE_CODE_SIM_PIN);
+			break;
+		case GSM_ERROR_SIM_PIN_WRONG:
+			phone_code_clear(phone);
+			_phone_error(phone->en_window, _("Wrong SIM PIN code"));
 			break;
 		default:
 			phone_error(phone, event->error.message, 0);

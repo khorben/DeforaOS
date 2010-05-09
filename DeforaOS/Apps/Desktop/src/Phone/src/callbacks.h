@@ -28,6 +28,7 @@ GdkFilterReturn on_phone_filter(GdkXEvent * xevent, GdkEvent * event,
 
 /* calls */
 void on_phone_call_answer(gpointer data);
+void on_phone_call_close(gpointer data);
 void on_phone_call_hangup(gpointer data);
 void on_phone_call_reject(gpointer data);
 

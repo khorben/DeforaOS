@@ -79,9 +79,6 @@ struct _GSM
 
 
 /* variables */
-/* ANSWERS */
-static char const * _gsm_errors[] = { "ERROR", "NO CARRIER", NULL };
-
 /* CME ERROR */
 static struct
 {
@@ -162,6 +159,8 @@ static void _gsm_queue_pop(GSM * gsm);
 static int _gsm_queue_push(GSM * gsm);
 
 /* triggers */
+static int _gsm_trigger_busy(GSM * gsm, char const * result,
+		gboolean * answered);
 static int _gsm_trigger_cfun(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
 static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
@@ -169,12 +168,20 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgs(GSM * gsm, char const * result);
+static int _gsm_trigger_connect(GSM * gsm, char const * result,
+		gboolean * answered);
 static int _gsm_trigger_cops(GSM * gsm, char const * result);
 static int _gsm_trigger_cpbr(GSM * gsm, char const * result);
 static int _gsm_trigger_cpin(GSM * gsm, char const * result);
 static int _gsm_trigger_creg(GSM * gsm, char const * result);
 static int _gsm_trigger_cring(GSM * gsm, char const * result);
 static int _gsm_trigger_csq(GSM * gsm, char const * result);
+static int _gsm_trigger_no_answer(GSM * gsm, char const * result,
+		gboolean * answered);
+static int _gsm_trigger_no_carrier(GSM * gsm, char const * result,
+		gboolean * answered);
+static int _gsm_trigger_no_dialtone(GSM * gsm, char const * result,
+		gboolean * answered);
 
 /* triggers */
 static GSMTrigger _gsm_triggers[] =
@@ -182,18 +189,23 @@ static GSMTrigger _gsm_triggers[] =
 #define GSM_TRIGGER(trigger, callback) \
 	{ trigger, sizeof(trigger) - 1, \
 		(GSMTriggerCallback)_gsm_trigger_ ## callback }
+	GSM_TRIGGER("BUSY",		busy),
 	GSM_TRIGGER("+CFUN: ",		cfun),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
 	GSM_TRIGGER("+CMGS: ",		cmgs),
+	GSM_TRIGGER("CONNECT",		connect),
 	GSM_TRIGGER("+COPS: ",		cops),
 	GSM_TRIGGER("+CPBR: ",		cpbr),
 	GSM_TRIGGER("+CPIN: ",		cpin),
 	GSM_TRIGGER("+CREG: ",		creg),
 	GSM_TRIGGER("+CRING: ",		cring),
 	GSM_TRIGGER("+CSQ: ",		csq),
+	GSM_TRIGGER("NO ANSWER",	no_answer),
+	GSM_TRIGGER("NO CARRIER",	no_carrier),
+	GSM_TRIGGER("NO DIALTONE",	no_dialtone),
 	{ NULL, 0, NULL }
 };
 
@@ -845,23 +857,21 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 			callback(gsm);
 		return 0;
 	}
-	for(i = 0; _gsm_errors[i] != NULL; i++)
-	{
-		if(strcmp(_gsm_errors[i], line) != 0)
-			continue;
-		if(answered != NULL)
-			*answered = TRUE;
-		if(gsmc != NULL)
-			error = gsm_command_get_error(gsmc);
-		gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error, line);
-		return 0;
-	}
 	for(i = 0; _gsm_triggers[i].trigger != NULL; i++)
 		if(strncmp(line, _gsm_triggers[i].trigger,
 					_gsm_triggers[i].trigger_cnt) == 0)
 			return _gsm_triggers[i].callback(gsm,
 					&line[_gsm_triggers[i].trigger_cnt],
 					answered);
+	if(strcmp(line, "ERROR") == 0)
+	{
+		if(answered != NULL)
+			*answered = TRUE;
+		if(gsmc != NULL)
+			error = gsm_command_get_error(gsmc);
+		gsm_event(gsm, GSM_EVENT_TYPE_ERROR, error, _("Unknown error"));
+		return 0;
+	}
 	/* XXX look for a potential trigger */
 	if(gsmc != NULL && (cmd = gsm_command_get_command(gsmc)) != NULL
 			&& strncmp(cmd, "AT+", 3) == 0 && isupper((c = cmd[3])))
@@ -966,6 +976,19 @@ static int _gsm_queue_push(GSM * gsm)
 
 
 /* triggers */
+/* gsm_trigger_busy */
+static int _gsm_trigger_busy(GSM * gsm, char const * result,
+		gboolean * answered)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(answered != NULL)
+		*answered = TRUE;
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_BUSY, "BUSY");
+}
+
+
 /* gsm_trigger_cfun */
 static int _gsm_trigger_cfun(GSM * gsm, char const * result)
 {
@@ -1078,6 +1101,21 @@ static int _gsm_trigger_cmgs(GSM * gsm, char const * result)
 	if(sscanf(result, "%u", &gsm->event.message_sent.mr) != 1)
 		return 1;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE_SENT);
+}
+
+
+/* gsm_trigger_connect */
+static int _gsm_trigger_connect(GSM * gsm, char const * result,
+		gboolean * answered)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(answered != NULL)
+		*answered = TRUE;
+	/* FIXME implement pass-through */
+	/* FIXME reset is probably not enough (send "+++"?) */
+	return gsm_reset(gsm, gsm->retry);
 }
 
 
@@ -1231,6 +1269,48 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 	else
 		gsm->event.signal_level.level /= 32;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL);
+}
+
+
+/* gsm_trigger_no_answer */
+static int _gsm_trigger_no_answer(GSM * gsm, char const * result,
+		gboolean * answered)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(answered != NULL)
+		*answered = TRUE;
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_NO_ANSWER,
+			"NO ANSWER");
+}
+
+
+/* gsm_trigger_no_carrier */
+static int _gsm_trigger_no_carrier(GSM * gsm, char const * result,
+		gboolean * answered)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(answered != NULL)
+		*answered = TRUE;
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_NO_CARRIER,
+			"NO CARRIER");
+}
+
+
+/* gsm_trigger_no_dialtone */
+static int _gsm_trigger_no_dialtone(GSM * gsm, char const * result,
+		gboolean * answered)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(answered != NULL)
+		*answered = TRUE;
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_NO_DIALTONE,
+			"NO DIALTONE");
 }
 
 

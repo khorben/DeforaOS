@@ -29,7 +29,8 @@ typedef enum _PhoneCall
 {
 	PHONE_CALL_ESTABLISHED = 0,
 	PHONE_CALL_INCOMING,
-	PHONE_CALL_OUTGOING
+	PHONE_CALL_OUTGOING,
+	PHONE_CALL_TERMINATED
 } PhoneCall;
 
 typedef enum _PhoneCode
