@@ -4,5 +4,5 @@ Comment=Phone address book
 Exec=phone-contacts
 Icon=stock_addressbook
 Type=Application
-Categories=Network;Telephony;GTK;
+Categories=Office;ContactManagement;GTK;
 StartupNotify=true
