@@ -875,6 +875,13 @@ void phone_show_debug(Phone * phone, gboolean show)
 				G_CALLBACK(_on_debug_queue_execute), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		/* quit */
+		hbox = gtk_hbox_new(FALSE, 0);
+		widget = gtk_button_new_from_stock(GTK_STOCK_QUIT);
+		g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+					gtk_main_quit), NULL);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->de_window), vbox);
 		gtk_widget_show_all(vbox);
 	}
