@@ -90,8 +90,16 @@ form.explorer div.listing_thumbnails div.entry span {
 	display:		none;
 }
 
+form.explorer div.listing_thumbnails div.entry span.thumbnail img {
+	height:			48px;
+	width:			48px;
+}
+
 form.explorer div.listing_thumbnails div.entry {
 	float:			left;
+	height:			100px;
+	text-align:		center;
+	width:			100px;
 }
 
 form.explorer div.listing_thumbnails div.entry span.name {
