@@ -540,6 +540,16 @@ int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended)
 }
 
 
+/* gsm_modem_set_line_presentation */
+int gsm_modem_set_line_presentation(GSMModem * gsmm, gboolean set)
+{
+	char cmd[] = "AT+COLP=X";
+
+	cmd[8] = set ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_set_functional */
 static void _modem_set_functional_callback(GSM * gsm);
 

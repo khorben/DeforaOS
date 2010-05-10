@@ -348,6 +348,14 @@ void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data)
 }
 
 
+/* gsm_set_call_presentation */
+int gsm_set_call_presentation(GSM * gsm, int set)
+{
+	return gsm_modem_set_call_presentation(gsm->modem, (set != 0) ? TRUE
+			: FALSE);
+}
+
+
 /* gsm_set_extended_errors */
 int gsm_set_extended_errors(GSM * gsm, int extended)
 {
@@ -367,6 +375,14 @@ int gsm_set_extended_ring_reports(GSM * gsm, gboolean extended)
 int gsm_set_functional(GSM * gsm, int functional)
 {
 	return gsm_modem_set_functional(gsm->modem, (functional != 0) ? TRUE
+			: FALSE);
+}
+
+
+/* gsm_set_line_presentation */
+int gsm_set_line_presentation(GSM * gsm, int set)
+{
+	return gsm_modem_set_line_presentation(gsm->modem, (set != 0) ? TRUE
 			: FALSE);
 }
 

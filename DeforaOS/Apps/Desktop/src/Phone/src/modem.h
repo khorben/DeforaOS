@@ -76,6 +76,7 @@ int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo);
 int gsm_modem_set_extended_errors(GSMModem * gsmm, gboolean extended);
 int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended);
+int gsm_modem_set_line_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_functional(GSMModem * gsmm, gboolean functional);
 int gsm_modem_set_message_format(GSMModem * gsmm, GSMMessageFormat format);
 int gsm_modem_set_operator_format(GSMModem * gsmm, GSMOperatorFormat format);
