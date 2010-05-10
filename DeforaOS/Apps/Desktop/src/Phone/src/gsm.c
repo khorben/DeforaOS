@@ -866,6 +866,11 @@ static int _parse_do(GSM * gsm, size_t * i)
 		_gsm_parse_line(gsm, gsm->rd_buf, &answered);
 		if(answered)
 		{
+			if(gsm->source != 0)
+			{
+				g_source_remove(gsm->source);
+				gsm->source = 0;
+			}
 			_gsm_queue_pop(gsm);
 			_gsm_queue_push(gsm);
 		}
