@@ -511,7 +511,8 @@ static GdkPixbuf * _do_pixbuf(Tasks * tasks, Window window)
 			best = &buf[i];
 			break;
 		}
-		if(best == NULL || best[0] < width) /* XXX bigger != better */
+		if(best == NULL || abs(best[0] - tasks->icon_width)
+				> abs(width - tasks->icon_width))
 			best = &buf[i];
 	}
 	if(best != NULL)
