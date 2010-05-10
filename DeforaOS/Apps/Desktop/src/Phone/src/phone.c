@@ -1676,8 +1676,10 @@ static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity)
 			phone_show_call(phone, TRUE, PHONE_CALL_ESTABLISHED);
 			break;
 		case GSM_PHONE_ACTIVITY_READY:
+			phone_show_call(phone, FALSE);
+			break;
 		case GSM_PHONE_ACTIVITY_UNKNOWN:
-			break; /* nothing to do */
+			break; /* what should we do? */
 		case GSM_PHONE_ACTIVITY_RINGING:
 			phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, NULL,
 					NULL);

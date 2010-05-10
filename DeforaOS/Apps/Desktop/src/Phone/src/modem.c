@@ -143,13 +143,19 @@ int gsm_modem_call_contact(GSMModem * gsmm, GSMCallType calltype,
 
 
 /* gsm_modem_call_hangup */
+static void _modem_call_hangup_callback(GSM * gsm);
+
 int gsm_modem_call_hangup(GSMModem * gsmm)
 {
 	char const cmd[] = "ATH";
 
-	/* XXX probably should query the call status after that */
 	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
-			GSM_ERROR_HANGUP_FAILED, NULL);
+			GSM_ERROR_HANGUP_FAILED, _modem_call_hangup_callback);
+}
+
+static void _modem_call_hangup_callback(GSM * gsm)
+{
+	gsm_is_phone_active(gsm);
 }
 
 
