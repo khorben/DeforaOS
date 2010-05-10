@@ -182,6 +182,23 @@ int gsm_modem_call_last(GSMModem * gsmm, GSMCallType calltype)
 }
 
 
+/* gsm_modem_call_reject */
+static void _modem_call_reject_callback(GSM * gsm);
+
+int gsm_modem_call_reject(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CHUP";
+
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
+			GSM_ERROR_REJECT_FAILED, _modem_call_reject_callback);
+}
+
+static void _modem_call_reject_callback(GSM * gsm)
+{
+	gsm_is_phone_active(gsm);
+}
+
+
 /* gsm_modem_enter_sim_pin */
 static void _modem_enter_sim_pin_callback(GSM * gsm);
 

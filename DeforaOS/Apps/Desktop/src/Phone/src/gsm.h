@@ -71,8 +71,9 @@ typedef enum _GSMError
 	GSM_ERROR_NO_CARRIER,
 	GSM_ERROR_NO_DIALTONE,
 	GSM_ERROR_OPERATOR_MODE_FAILED,
-	GSM_ERROR_SIGNAL_LEVEL_FAILED,
+	GSM_ERROR_REJECT_FAILED,
 	GSM_ERROR_RESET_FAILED,
+	GSM_ERROR_SIGNAL_LEVEL_FAILED,
 	GSM_ERROR_SIM_PIN_REQUIRED,
 	GSM_ERROR_SIM_PIN_WRONG
 } GSMError;
@@ -281,6 +282,7 @@ int gsm_call_answer(GSM * gsm);
 int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index);
 int gsm_call_hangup(GSM * gsm);
+int gsm_call_reject(GSM * gsm);
 
 int gsm_enter_sim_pin(GSM * gsm, char const * code);
 

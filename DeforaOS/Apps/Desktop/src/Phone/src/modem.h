@@ -47,6 +47,7 @@ int gsm_modem_call_contact(GSMModem * gsmm, GSMCallType calltype,
 		unsigned int index);
 int gsm_modem_call_hangup(GSMModem * gsmm);
 int gsm_modem_call_last(GSMModem * gsmm, GSMCallType calltype);
+int gsm_modem_call_reject(GSMModem * gsmm);
 
 int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code);
 

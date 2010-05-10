@@ -323,6 +323,13 @@ void phone_call_hangup(Phone * phone)
 }
 
 
+/* phone_call_reject */
+void phone_call_reject(Phone * phone)
+{
+	gsm_call_reject(phone->gsm);
+}
+
+
 /* phone_code_append */
 int phone_code_append(Phone * phone, char character)
 {
@@ -807,6 +814,7 @@ static struct
 	{ "Phone functional",		gsm_is_functional		},
 	{ "Registered",			gsm_is_registered		},
 	{ "Registration",		gsm_fetch_registration		},
+	{ "Reject call",		gsm_call_reject			},
 	{ "Signal level",		gsm_fetch_signal_level		},
 	{ "SIM PIN status",		gsm_is_pin_needed		},
 	{ "SIM PIN valid",		gsm_is_pin_valid		},
@@ -1496,7 +1504,9 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
 			gsm_fetch_signal_level(phone->gsm);
+#ifndef DEBUG
 			_phone_track(phone, PHONE_TRACK_SIGNAL_LEVEL, TRUE);
+#endif
 			return;
 	}
 	_phone_track(phone, PHONE_TRACK_REGISTRATION, track_registration);
@@ -1573,8 +1583,10 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);
 			gsm_is_phone_active(phone->gsm);
+#ifndef DEBUG
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
+#endif
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_CALL:
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",

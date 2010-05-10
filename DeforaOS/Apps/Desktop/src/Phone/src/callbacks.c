@@ -110,7 +110,7 @@ void on_phone_call_reject(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_call_hangup(phone);
+	phone_call_reject(phone);
 }
 
 

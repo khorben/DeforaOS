@@ -455,6 +455,13 @@ int gsm_call_hangup(GSM * gsm)
 }
 
 
+/* gsm_call_reject */
+int gsm_call_reject(GSM * gsm)
+{
+	return gsm_modem_call_reject(gsm->modem);
+}
+
+
 /* gsm_enter_sim_pin */
 int gsm_enter_sim_pin(GSM * gsm, char const * code)
 {

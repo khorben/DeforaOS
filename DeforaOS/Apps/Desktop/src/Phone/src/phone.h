@@ -76,6 +76,7 @@ void phone_show_write(Phone * phone, gboolean show);
 /* calls */
 void phone_call_answer(Phone * phone);
 void phone_call_hangup(Phone * phone);
+void phone_call_reject(Phone * phone);
 
 /* code */
 int phone_code_append(Phone * phone, char character);
