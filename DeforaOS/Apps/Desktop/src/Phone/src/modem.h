@@ -84,6 +84,8 @@ int gsm_modem_set_operator_format(GSMModem * gsmm, GSMOperatorFormat format);
 int gsm_modem_set_operator_mode(GSMModem * gsmm, GSMOperatorMode mode);
 int gsm_modem_set_registration_report(GSMModem * gsmm,
 		GSMRegistrationReport report);
+int gsm_modem_set_supplementary_service_notifications(GSMModem * gsmm,
+		gboolean intermediate, gboolean unsollicited);
 int gsm_modem_set_verbose(GSMModem * gsmm, gboolean verbose);
 
 #endif /* !PHONE_MODEM_H */

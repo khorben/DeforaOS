@@ -676,6 +676,18 @@ int gsm_modem_set_registration_report(GSMModem * gsmm,
 }
 
 
+/* gsm_modem_set_supplementary_service_notifications */
+int gsm_modem_set_supplementary_service_notifications(GSMModem * gsmm,
+		gboolean intermediate, gboolean unsollicited)
+{
+	char cmd[] = "AT+CSSN=X,X";
+
+	cmd[8] = intermediate ? '1' : '0';
+	cmd[10] = unsollicited ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_set_verbose */
 int gsm_modem_set_verbose(GSMModem * gsmm, gboolean verbose)
 {

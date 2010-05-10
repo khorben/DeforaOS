@@ -178,6 +178,8 @@ static int _gsm_trigger_cpbr(GSM * gsm, char const * result);
 static int _gsm_trigger_cpin(GSM * gsm, char const * result);
 static int _gsm_trigger_creg(GSM * gsm, char const * result);
 static int _gsm_trigger_cring(GSM * gsm, char const * result);
+static int _gsm_trigger_cssi(GSM * gsm, char const * result);
+static int _gsm_trigger_cssu(GSM * gsm, char const * result);
 static int _gsm_trigger_csq(GSM * gsm, char const * result);
 static int _gsm_trigger_no_answer(GSM * gsm, char const * result,
 		gboolean * answered);
@@ -209,6 +211,8 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CREG: ",		creg),
 	GSM_TRIGGER("+CRING: ",		cring),
 	GSM_TRIGGER("+CSQ: ",		csq),
+	GSM_TRIGGER("+CSSI: ",		cssi),
+	GSM_TRIGGER("+CSSU: ",		cssu),
 	GSM_TRIGGER("NO ANSWER",	no_answer),
 	GSM_TRIGGER("NO CARRIER",	no_carrier),
 	GSM_TRIGGER("NO DIALTONE",	no_dialtone),
@@ -420,6 +424,21 @@ int gsm_set_retry(GSM * gsm, unsigned int retry)
 #endif
 	gsm->retry = retry;
 	return 0;
+}
+
+
+/* gsm_set_supplementary_service_notifications */
+int gsm_set_supplementary_service_notifications(GSM * gsm, int intermediate,
+		int unsollicited)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%s, %s)\n", __func__, (intermediate != 0)
+			? "TRUE" : "FALSE", (unsollicited != 0) ? "TRUE"
+			: "FALSE");
+#endif
+	return gsm_modem_set_supplementary_service_notifications(gsm->modem,
+			(intermediate != 0) ? TRUE : FALSE,
+			(unsollicited != 0) ? TRUE : FALSE);
 }
 
 
@@ -857,6 +876,8 @@ static int _parse_do(GSM * gsm, size_t * i)
 		gsm_modem_set_extended_errors(gsm->modem, TRUE);
 		gsm_modem_set_extended_ring_reports(gsm->modem, TRUE);
 		gsm_modem_set_call_presentation(gsm->modem, TRUE);
+		gsm_modem_set_supplementary_service_notifications(gsm->modem,
+				TRUE, TRUE);
 		gsm_modem_get_model(gsm->modem);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
@@ -1374,6 +1395,43 @@ static int _gsm_trigger_csq(GSM * gsm, char const * result)
 	else
 		gsm->event.signal_level.level /= 32;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_SIGNAL_LEVEL);
+}
+
+
+/* gsm_trigger_cssi */
+static int _gsm_trigger_cssi(GSM * gsm, char const * result)
+{
+	unsigned int i;
+	unsigned int index = 10; /* XXX not used */
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u,%u", &i, &index) < 1)
+		return 1;
+	if(i == 1) /* FIXME implement the rest */
+		i = GSM_PHONE_ACTIVITY_CALL;
+	else
+		i = GSM_PHONE_ACTIVITY_UNKNOWN;
+	return gsm_event(gsm, GSM_EVENT_TYPE_PHONE_ACTIVITY, i);
+}
+
+
+/* gsm_trigger_cssu */
+static int _gsm_trigger_cssu(GSM * gsm, char const * result)
+{
+	unsigned int code;
+	unsigned int index = 10;
+	char number[32];
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u,%u,\"%31[^\"]\"", &code, &index, number) < 1)
+		return 1;
+	number[sizeof(number) - 1] = '\0';
+	/* FIXME implement */
+	return 1;
 }
 
 

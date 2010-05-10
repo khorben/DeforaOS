@@ -275,6 +275,8 @@ int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 int gsm_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
 int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report);
 int gsm_set_retry(GSM * gsm, unsigned int retry);
+int gsm_set_supplementary_service_notifications(GSM * gsm, int intermediate,
+		int unsollicited);
 
 /* useful */
 /* call management */
