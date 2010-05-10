@@ -545,6 +545,7 @@ function _wiki_system_config_update($args)
 	if(!_user_admin($user_id))
 		return PERMISSION_DENIED;
 	$args['wiki_anonymous'] = isset($args['wiki_anonymous']) ? TRUE : FALSE;
+	$args['wiki_tags'] = isset($args['wiki_tags']) ? TRUE : FALSE;
 	_config_update('wiki', $args);
 	header('Location: '._module_link('wiki', 'admin'));
 	exit(0);

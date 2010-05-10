@@ -271,8 +271,9 @@ INSERT INTO daportal_module (name, enabled) VALUES ('article', '1');
 
 /* module: wiki */
 INSERT INTO daportal_module (name, enabled) VALUES ('wiki', '1');
-INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('15', 'Allow anonymous users on the wiki', 'bool', 'anonymous', '1');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('15', 'Allow anonymous users on the wiki', 'bool', 'anonymous', '1');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('15', 'Path to the wiki repository', 'string', 'root', '');
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('15', 'Let wiki pages be tagged', 'bool', 'tags', '0');
 
 
 /* module: webmail */
