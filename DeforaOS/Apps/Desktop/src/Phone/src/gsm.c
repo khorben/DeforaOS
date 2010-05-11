@@ -539,6 +539,8 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_MESSAGE:
 			/* FIXME implement correctly */
 			event->message.index = va_arg(ap, unsigned int);
+			event->message.date = va_arg(ap, time_t);
+			event->message.length = va_arg(ap, unsigned int);
 			event->message.content = va_arg(ap, char const *);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
@@ -602,6 +604,7 @@ int gsm_fetch_message_list(GSM * gsm, GSMMessageList list)
 /* gsm_fetch_message */
 int gsm_fetch_message(GSM * gsm, unsigned int index)
 {
+	gsm->event.message.index = index; /* FIXME may be over-written */
 	return gsm_modem_get_message(gsm->modem, index);
 }
 
@@ -1210,22 +1213,37 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 /* gsm_trigger_cmgr */
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 {
-	unsigned int stat;
+	char buf[32];
+	char date[32];
+	unsigned int mbox;
 	unsigned int alpha = 0;
-	unsigned int length;
+	unsigned int * length = &gsm->event.message.length;
+	struct tm t;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	/* FIXME implement:
-	 * - store the index (and length?) somewhere
-	 * - then we (blindly) parse the PDU and report the message */
-	if(sscanf(result, "%u,%u,%u", &stat, &alpha, &length) == 3
-			|| sscanf(result, "%u,,%u", &stat, &length) == 2)
+	/* FIXME report which mailbox contains the message? */
+	/* text mode support */
+	if(sscanf(result, "\"%31[^\"]\",\"%31[^\"]\",,\"%31[^\"]\"", buf,
+				buf, date) == 3) /* FIXME really implement */
+	{
+		date[sizeof(date) - 1] = '\0';
+		if(strptime(date, "%y/%m/%d,%T", &t) == NULL) /* XXX timezone */
+			localtime_r(NULL, &t);
+		gsm->event.message.date = mktime(&t);
+		*length = 0;
+		return 0; /* we need to wait for the next line */
+	}
+	/* PDU mode support */
+	if(sscanf(result, "%u,%u,%u", &mbox, &alpha, length) == 3
+			|| sscanf(result, "%u,,%u", &mbox, length) == 2)
 		return 0;
-	/* FIXME actually parse the PDU */
-	gsm->event.message.index = 0; /* FIXME implement */
-	gsm->event.message.content = result;
+	/* message content */
+	if(*length == 0) /* XXX assumes this is text mode */
+		gsm->event.message.content = result;
+	else /* FIXME actually parse the PDU */
+		gsm->event.message.content = result;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 }
 
