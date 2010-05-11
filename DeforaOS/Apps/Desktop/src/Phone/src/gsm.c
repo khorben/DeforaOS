@@ -963,10 +963,10 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 #endif
 	if(answered != NULL)
 		*answered = FALSE;
-	if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL)
-		cmd = gsm_command_get_command(gsmc);
-	if(strcmp(line, cmd) == 0) /* ignore echo */
-		return 0;
+	if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL
+			&& (cmd = gsm_command_get_command(gsmc)) != NULL
+			&& strcmp(line, cmd) == 0)
+		return 0; /* ignore echo */
 	if(strcmp(line, "RING") == 0)
 	{
 		gsm_event(gsm, GSM_EVENT_TYPE_INCOMING_CALL,
