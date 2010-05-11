@@ -395,11 +395,11 @@ void phone_code_enter(Phone * phone)
 	{
 		case PHONE_CODE_SIM_PIN:
 			p = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
-			gsm_enter_sim_pin(phone->gsm, p);
 			phone->en_progress = _phone_create_progress(
 					phone->en_window,
 					_("Checking SIM PIN code..."));
 			_phone_track(phone, PHONE_TRACK_CODE_ENTERED, TRUE);
+			gsm_enter_sim_pin(phone->gsm, p);
 			break;
 	}
 }
@@ -1456,11 +1456,11 @@ void phone_write_send(Phone * phone)
 			FALSE);
 	if(number == NULL || number[0] == '\0' || text == NULL)
 		return;
-	gsm_send_message(phone->gsm, number, text);
-	g_free(text);
 	phone->wr_progress = _phone_create_progress(phone->wr_window,
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
+	gsm_send_message(phone->gsm, number, text);
+	g_free(text);
 }
 
 
