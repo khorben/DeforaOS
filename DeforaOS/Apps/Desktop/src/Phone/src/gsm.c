@@ -1325,7 +1325,7 @@ static int _gsm_trigger_cmti(GSM * gsm, char const * result)
 		return 1;
 	memory[sizeof(memory) - 1] = '\0';
 	gsm->event.incoming_message.memory = memory;
-	return 0;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_INCOMING_MESSAGE);
 }
 
 
