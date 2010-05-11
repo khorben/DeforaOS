@@ -876,6 +876,7 @@ static int _gsm_fetch_message_list_read(GSM * gsm);
 static int _gsm_fetch_message_list_sent(GSM * gsm);
 static int _gsm_fetch_message_list_unread(GSM * gsm);
 static int _gsm_fetch_message_list_unsent(GSM * gsm);
+static int _gsm_reset(GSM * gsm);
 
 static struct
 {
@@ -897,6 +898,7 @@ static struct
 	{ "Registered",			gsm_is_registered		},
 	{ "Registration",		gsm_fetch_registration		},
 	{ "Reject call",		gsm_call_reject			},
+	{ "Reset",			_gsm_reset			},
 	{ "Signal level",		gsm_fetch_signal_level		},
 	{ "SIM PIN status",		gsm_is_pin_needed		},
 	{ "SIM PIN valid",		gsm_is_pin_valid		},
@@ -1023,6 +1025,11 @@ static int _gsm_fetch_message_list_unread(GSM * gsm)
 static int _gsm_fetch_message_list_unsent(GSM * gsm)
 {
 	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_UNSENT);
+}
+
+static int _gsm_reset(GSM * gsm)
+{
+	return gsm_reset(gsm, 0);
 }
 #endif
 
