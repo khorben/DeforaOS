@@ -105,6 +105,17 @@ void on_phone_call_hangup(gpointer data)
 }
 
 
+/* on_phone_call_mute */
+void on_phone_call_mute(GtkWidget * widget, gpointer data)
+{
+	Phone * phone = data;
+	gboolean mute;
+
+	mute = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	phone_call_mute(phone, mute);
+}
+
+
 /* on_phone_call_reject */
 void on_phone_call_reject(gpointer data)
 {

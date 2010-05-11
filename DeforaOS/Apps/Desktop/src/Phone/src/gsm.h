@@ -56,6 +56,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_MESSAGE,
 	GSM_EVENT_TYPE_MESSAGE_LIST,
 	GSM_EVENT_TYPE_MESSAGE_SENT,
+	GSM_EVENT_TYPE_MUTE,
 	GSM_EVENT_TYPE_OPERATOR,
 	GSM_EVENT_TYPE_PHONE_ACTIVITY,
 	GSM_EVENT_TYPE_REGISTRATION,
@@ -78,6 +79,7 @@ typedef enum _GSMError
 	GSM_ERROR_MESSAGE_FETCH_FAILED,
 	GSM_ERROR_MESSAGE_LIST_FAILED,
 	GSM_ERROR_MESSAGE_SEND_FAILED,
+	GSM_ERROR_MUTE_FAILED,
 	GSM_ERROR_NO_ANSWER,
 	GSM_ERROR_NO_CARRIER,
 	GSM_ERROR_NO_DIALTONE,
@@ -253,6 +255,13 @@ typedef union _GSMEvent
 		unsigned int mr;
 	} message_sent;
 
+	/* GSM_EVENT_TYPE_MUTE */
+	struct
+	{
+		GSMEventType type;
+		unsigned int mute;
+	} mute;
+
 	/* GSM_EVENT_TYPE_OPERATOR */
 	struct
 	{
@@ -310,6 +319,7 @@ int gsm_set_call_presentation(GSM * gsm, int set);
 int gsm_set_extended_ring_reports(GSM * gsm, int extended);
 int gsm_set_functional(GSM * gsm, int functional);
 int gsm_set_line_presentation(GSM * gsm, int set);
+int gsm_set_mute(GSM * gsm, int mute);
 int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 int gsm_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
 int gsm_set_registration_report(GSM * gsm, GSMRegistrationReport report);
@@ -336,12 +346,14 @@ int gsm_fetch_contact_list(GSM * gsm);
 int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_message_list(GSM * gsm, GSMMessageList list);
 int gsm_fetch_message(GSM * gsm, unsigned int index);
+int gsm_fetch_mute(GSM * gsm);
 int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 
 /* queries */
 int gsm_is_functional(GSM * gsm);
+int gsm_is_mute(GSM * gsm);
 int gsm_is_phone_active(GSM * gsm);
 int gsm_is_pin_needed(GSM * gsm);
 int gsm_is_pin_valid(GSM * gsm);

@@ -63,6 +63,7 @@ int gsm_modem_get_registration(GSMModem * gsmm);
 int gsm_modem_get_signal_level(GSMModem * gsmm);
 
 int gsm_modem_is_functional(GSMModem * gsmm);
+int gsm_modem_is_mute(GSMModem * gsmm);
 int gsm_modem_is_phone_active(GSMModem * gsmm);
 int gsm_modem_is_pin_needed(GSMModem * gsmm);
 int gsm_modem_is_pin_valid(GSMModem * gsmm);
@@ -80,6 +81,7 @@ int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended);
 int gsm_modem_set_line_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_functional(GSMModem * gsmm, gboolean functional);
 int gsm_modem_set_message_format(GSMModem * gsmm, GSMMessageFormat format);
+int gsm_modem_set_mute(GSMModem * gsmm, gboolean mute);
 int gsm_modem_set_operator_format(GSMModem * gsmm, GSMOperatorFormat format);
 int gsm_modem_set_operator_mode(GSMModem * gsmm, GSMOperatorMode mode);
 int gsm_modem_set_registration_report(GSMModem * gsmm,

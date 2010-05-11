@@ -346,6 +346,13 @@ void phone_call_hangup(Phone * phone)
 }
 
 
+/* phone_call_mute */
+void phone_call_mute(Phone * phone, gboolean mute)
+{
+	gsm_set_mute(phone->gsm, mute ? 1 : 0);
+}
+
+
 /* phone_call_reject */
 void phone_call_reject(Phone * phone)
 {
@@ -675,6 +682,8 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 				gtk_image_new_from_icon_name(
 					"audio-input-microphone",
 					GTK_ICON_SIZE_BUTTON));
+		g_signal_connect(G_OBJECT(phone->ca_mute), "toggled",
+				G_CALLBACK(on_phone_call_mute), phone);
 		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_mute, FALSE,
 				TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->ca_window), vbox);
@@ -893,6 +902,7 @@ static struct
 	{ "Messages sent",		_gsm_fetch_message_list_sent	},
 	{ "Messages unread",		_gsm_fetch_message_list_unread	},
 	{ "Messages unsent",		_gsm_fetch_message_list_unsent	},
+	{ "Mute",			gsm_is_mute			},
 	{ "Operator",			gsm_fetch_operator		},
 	{ "Phone active",		gsm_is_phone_active		},
 	{ "Phone functional",		gsm_is_functional		},
@@ -1843,6 +1853,12 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					phone->wr_progress);
 			_phone_info(phone, phone->wr_window, _("Message sent"),
 					NULL);
+			return 0;
+		case GSM_EVENT_TYPE_MUTE:
+			if(phone->ca_window != NULL)
+				gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(
+							phone->ca_mute),
+						event->mute.mute);
 			return 0;
 		case GSM_EVENT_TYPE_OPERATOR:
 			_phone_set_operator(phone, event->operator.operator);

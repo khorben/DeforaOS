@@ -352,6 +352,15 @@ int gsm_modem_is_functional(GSMModem * gsmm)
 }
 
 
+/* gsm_modem_is_mute */
+int gsm_modem_is_mute(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CMUT?";
+
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_is_phone_active */
 int gsm_modem_is_phone_active(GSMModem * gsmm)
 {
@@ -629,6 +638,25 @@ int gsm_modem_set_message_format(GSMModem * gsmm, GSMMessageFormat format)
 	}
 	cmd[8] = format + '0';
 	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
+/* gsm_modem_set_mute */
+static void _modem_set_mute_callback(GSM * gsm);
+
+int gsm_modem_set_mute(GSMModem * gsmm, gboolean mute)
+{
+	char cmd[] = "AT+CMUT=X";
+
+	cmd[8] = mute ? '1' : '0';
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_MUTE_FAILED, _modem_set_mute_callback);
+}
+
+static void _modem_set_mute_callback(GSM * gsm)
+{
+	/* did it really work? */
+	gsm_is_mute(gsm);
 }
 
 

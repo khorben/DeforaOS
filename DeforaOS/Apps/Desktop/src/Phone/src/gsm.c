@@ -173,6 +173,7 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgs(GSM * gsm, char const * result);
 static int _gsm_trigger_cmti(GSM * gsm, char const * result);
+static int _gsm_trigger_cmut(GSM * gsm, char const * result);
 static int _gsm_trigger_connect(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cops(GSM * gsm, char const * result);
@@ -208,6 +209,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CMGR: ",		cmgr),
 	GSM_TRIGGER("+CMGS: ",		cmgs),
 	GSM_TRIGGER("+CMTI: ",		cmti),
+	GSM_TRIGGER("+CMUT: ",		cmut),
 	GSM_TRIGGER("CONNECT",		connect),
 	GSM_TRIGGER("+COPS: ",		cops),
 	GSM_TRIGGER("+CPAS: ",		cpas),
@@ -396,6 +398,13 @@ int gsm_set_line_presentation(GSM * gsm, int set)
 }
 
 
+/* gsm_set_mute */
+int gsm_set_mute(GSM * gsm, int mute)
+{
+	return gsm_modem_set_mute(gsm->modem, (mute != 0) ? TRUE : FALSE);
+}
+
+
 /* gsm_set_operator_format */
 int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format)
 {
@@ -559,6 +568,9 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_MESSAGE_SENT:
 			event->message_sent.mr = va_arg(ap, unsigned int);
 			break;
+		case GSM_EVENT_TYPE_MUTE:
+			event->mute.mute = va_arg(ap, unsigned int);
+			break;
 		case GSM_EVENT_TYPE_OPERATOR:
 			event->operator.mode = va_arg(ap, GSMOperatorMode);
 			event->operator.format = va_arg(ap, GSMOperatorFormat);
@@ -651,6 +663,13 @@ int gsm_fetch_signal_level(GSM * gsm)
 int gsm_is_functional(GSM * gsm)
 {
 	return gsm_modem_is_functional(gsm->modem);
+}
+
+
+/* gsm_is_mute */
+int gsm_is_mute(GSM * gsm)
+{
+	return gsm_modem_is_mute(gsm->modem);
 }
 
 
@@ -1305,6 +1324,18 @@ static int _gsm_trigger_cmti(GSM * gsm, char const * result)
 	memory[sizeof(memory) - 1] = '\0';
 	gsm->event.incoming_message.memory = memory;
 	return 0;
+}
+
+
+/* gsm_trigger_cmut */
+static int _gsm_trigger_cmut(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u", &gsm->event.mute.mute) != 1)
+		return 1;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MUTE);
 }
 
 
