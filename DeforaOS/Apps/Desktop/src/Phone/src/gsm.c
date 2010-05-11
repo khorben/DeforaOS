@@ -921,7 +921,7 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 	GSMCommand * gsmc;
 	GSMCommandCallback callback;
 	GSMError error = GSM_ERROR_UNKNOWN;
-	char const * cmd;
+	char const * cmd = NULL;
 	size_t j;
 	int c;
 
@@ -930,7 +930,9 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 #endif
 	if(answered != NULL)
 		*answered = FALSE;
-	if(strncmp(line, "AT", 2) == 0) /* ignore echo (tighter check?) */
+	if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL)
+		cmd = gsm_command_get_command(gsmc);
+	if(strcmp(line, cmd) == 0) /* ignore echo */
 		return 0;
 	if(strcmp(line, "RING") == 0)
 	{
@@ -938,7 +940,6 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 				GSM_CALL_TYPE_UNKNOWN);
 		return 0;
 	}
-	gsmc = g_slist_nth_data(gsm->queue, 0);
 	if(strcmp(line, "OK") == 0)
 	{
 		/* XXX the trigger may not have been called (if any) */
@@ -966,8 +967,7 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 		return 0;
 	}
 	/* XXX look for a potential trigger */
-	if(gsmc != NULL && (cmd = gsm_command_get_command(gsmc)) != NULL
-			&& strncmp(cmd, "AT+", 3) == 0 && isupper((c = cmd[3])))
+	if(cmd != NULL && strncmp(cmd, "AT+", 3) == 0 && isupper((c = cmd[3])))
 	{
 		for(cmd += 2, j = 2; cmd[j] != '\0' && isupper((c = cmd[j]));
 				j++);
