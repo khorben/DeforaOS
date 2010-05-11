@@ -886,6 +886,8 @@ static int _gsm_fetch_message_list_sent(GSM * gsm);
 static int _gsm_fetch_message_list_unread(GSM * gsm);
 static int _gsm_fetch_message_list_unsent(GSM * gsm);
 static int _gsm_reset(GSM * gsm);
+static int _gsm_set_functional_disable(GSM * gsm);
+static int _gsm_set_functional_enable(GSM * gsm);
 
 static struct
 {
@@ -896,6 +898,8 @@ static struct
 	{ "Answer call",		gsm_call_answer			},
 	{ "Battery charge",		gsm_fetch_battery_charge	},
 	{ "Contact list",		gsm_fetch_contact_list		},
+	{ "Disable phone",		_gsm_set_functional_disable	},
+	{ "Enable phone",		_gsm_set_functional_enable	},
 	{ "Hangup call",		gsm_call_hangup			},
 	{ "Messages",			_gsm_fetch_message_list_all	},
 	{ "Messages read",		_gsm_fetch_message_list_read	},
@@ -1041,6 +1045,16 @@ static int _gsm_fetch_message_list_unsent(GSM * gsm)
 static int _gsm_reset(GSM * gsm)
 {
 	return gsm_reset(gsm, 0);
+}
+
+static int _gsm_set_functional_disable(GSM * gsm)
+{
+	return gsm_set_functional(gsm, FALSE);
+}
+
+static int _gsm_set_functional_enable(GSM * gsm)
+{
+	return gsm_set_functional(gsm, TRUE);
 }
 #endif
 
