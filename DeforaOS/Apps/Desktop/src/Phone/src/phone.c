@@ -1219,7 +1219,6 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 {
 	va_list ap;
 	GtkWidget * vbox;
-	GtkWidget * hbox;
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
 	GtkTextBuffer * tbuf;
