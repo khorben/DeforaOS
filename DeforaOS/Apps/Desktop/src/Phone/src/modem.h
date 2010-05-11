@@ -51,6 +51,7 @@ int gsm_modem_call_reject(GSMModem * gsmm);
 
 int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code);
 
+int gsm_modem_get_battery_charge(GSMModem * gsmm);
 int gsm_modem_get_contact_list(GSMModem * gsmm);
 int gsm_modem_get_contacts(GSMModem * gsmm, unsigned int start,
 		unsigned int end);

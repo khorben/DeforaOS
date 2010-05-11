@@ -162,6 +162,7 @@ static int _gsm_queue_push(GSM * gsm);
 /* triggers */
 static int _gsm_trigger_busy(GSM * gsm, char const * result,
 		gboolean * answered);
+static int _gsm_trigger_cbc(GSM * gsm, char const * result);
 static int _gsm_trigger_cfun(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
 static int _gsm_trigger_clip(GSM * gsm, char const * result);
@@ -197,6 +198,7 @@ static GSMTrigger _gsm_triggers[] =
 	{ trigger, sizeof(trigger) - 1, \
 		(GSMTriggerCallback)_gsm_trigger_ ## callback }
 	GSM_TRIGGER("BUSY",		busy),
+	GSM_TRIGGER("+CBC: ",		cbc),
 	GSM_TRIGGER("+CFUN: ",		cfun),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CLIP: ",		clip),
@@ -509,6 +511,11 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->error.error = va_arg(ap, GSMError);
 			event->error.message = va_arg(ap, char const *);
 			break;
+		case GSM_EVENT_TYPE_BATTERY_CHARGE:
+			event->battery_charge.status = va_arg(ap,
+					GSMBatteryStatus);
+			event->battery_charge.level = va_arg(ap, unsigned int);
+			break;
 		case GSM_EVENT_TYPE_CALL_PRESENTATION:
 			event->call_presentation.number = va_arg(ap,
 					char const *);
@@ -579,6 +586,13 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 	}
 	va_end(ap);
 	return _gsm_event_send(gsm, type);
+}
+
+
+/* gsm_fetch_battery_charge */
+int gsm_fetch_battery_charge(GSM * gsm)
+{
+	return gsm_modem_get_battery_charge(gsm->modem);
 }
 
 
@@ -1079,6 +1093,20 @@ static int _gsm_trigger_busy(GSM * gsm, char const * result,
 	if(answered != NULL)
 		*answered = TRUE;
 	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_BUSY, "BUSY");
+}
+
+
+/* gsm_trigger_cbc */
+static int _gsm_trigger_cbc(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	if(sscanf(result, "%u,%u", &gsm->event.battery_charge.status,
+				&gsm->event.battery_charge.level) != 2)
+		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_BATTERY_CHARGE_FAILED, result);
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_BATTERY_CHARGE);
 }
 
 

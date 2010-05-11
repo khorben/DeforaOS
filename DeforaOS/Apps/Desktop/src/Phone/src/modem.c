@@ -235,6 +235,16 @@ static void _modem_enter_sim_pin_callback(GSM * gsm)
 }
 
 
+/* gsm_modem_get_battery_charge */
+int gsm_modem_get_battery_charge(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CBC";
+
+	return gsm_queue_with_error(gsmm->gsm, cmd,
+			GSM_ERROR_BATTERY_CHARGE_FAILED);
+}
+
+
 /* gsm_modem_get_contact_list */
 int gsm_modem_get_contact_list(GSMModem * gsmm)
 {

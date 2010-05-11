@@ -885,6 +885,7 @@ static struct
 } _debug_gsm_commands[] =
 {
 	{ "Answer call",		gsm_call_answer			},
+	{ "Battery charge",		gsm_fetch_battery_charge	},
 	{ "Contact list",		gsm_fetch_contact_list		},
 	{ "Hangup call",		gsm_call_hangup			},
 	{ "Messages",			_gsm_fetch_message_list_all	},
@@ -965,7 +966,7 @@ void phone_show_debug(Phone * phone, gboolean show)
 		g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 					gtk_main_quit), NULL);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
 		gtk_container_add(GTK_CONTAINER(phone->de_window), vbox);
 		gtk_widget_show_all(vbox);
 	}
@@ -1785,6 +1786,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 	{
 		case GSM_EVENT_TYPE_ERROR:
 			return _gsm_event_error(phone, event);
+		case GSM_EVENT_TYPE_BATTERY_CHARGE:
+			/* FIXME implement */
+			return 0;
 		case GSM_EVENT_TYPE_CALL_PRESENTATION:
 			/* FIXME convert number, the contact is automatic */
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",

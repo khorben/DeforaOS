@@ -25,6 +25,14 @@
 /* types */
 typedef struct _GSM GSM;
 
+typedef enum _GSMBatteryStatus
+{
+	GSM_BATTERY_STATUS_POWERED = 0,
+	GSM_BATTERY_STATUS_NOT_POWERED = 1,
+	GSM_BATTERY_STATUS_NO_BATTERY = 2,
+	GSM_BATTERY_STATUS_POWER_FAULT = 3
+} GSMBatteryStatus;
+
 typedef enum _GSMCallType
 {
 	GSM_CALL_TYPE_UNKNOWN = 0,
@@ -38,6 +46,7 @@ typedef void (*GSMCommandCallback)(GSM * gsm);
 typedef enum _GSMEventType
 {
 	GSM_EVENT_TYPE_ERROR = 0,
+	GSM_EVENT_TYPE_BATTERY_CHARGE,
 	GSM_EVENT_TYPE_CALL_PRESENTATION,
 	GSM_EVENT_TYPE_CONTACT,
 	GSM_EVENT_TYPE_CONTACT_LIST,
@@ -59,6 +68,7 @@ typedef enum _GSMError
 {
 	GSM_ERROR_UNKNOWN = 0,
 	GSM_ERROR_ANSWER_FAILED,
+	GSM_ERROR_BATTERY_CHARGE_FAILED,
 	GSM_ERROR_BUSY,
 	GSM_ERROR_CALL_FAILED,
 	GSM_ERROR_CONTACT_FETCH_FAILED,
@@ -168,6 +178,14 @@ typedef union _GSMEvent
 		GSMError error;
 		char const * message;
 	} error;
+
+	/* GSM_EVENT_TYPE_BATTERY_CHARGE */
+	struct
+	{
+		GSMEventType type;
+		GSMBatteryStatus status;
+		unsigned int level;
+	} battery_charge;
 
 	/* GSM_EVENT_TYPE_CALL_PRESENTATION */
 	struct
@@ -313,6 +331,7 @@ int gsm_enter_sim_pin(GSM * gsm, char const * code);
 int gsm_event(GSM * gsm, GSMEventType type, ...);
 
 /* fetching data */
+int gsm_fetch_battery_charge(GSM * gsm);
 int gsm_fetch_contact_list(GSM * gsm);
 int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
 int gsm_fetch_message_list(GSM * gsm, GSMMessageList list);
