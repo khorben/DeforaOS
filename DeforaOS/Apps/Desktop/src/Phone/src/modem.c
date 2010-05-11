@@ -258,22 +258,38 @@ int gsm_modem_get_contacts(GSMModem * gsmm, unsigned int start,
 
 
 /* gsm_modem_get_message_list */
-int gsm_modem_get_message_list(GSMModem * gsmm)
+int gsm_modem_get_message_list(GSMModem * gsmm, GSMMessageList list)
 {
-	char const cmd[] = "AT+CMGL=?";
+	char cmd[] = "AT+CMGL=X";
 
+	switch(list)
+	{
+		case GSM_MESSAGE_LIST_UNREAD:
+		case GSM_MESSAGE_LIST_READ:
+		case GSM_MESSAGE_LIST_UNSENT:
+		case GSM_MESSAGE_LIST_SENT:
+		case GSM_MESSAGE_LIST_ALL:
+			break;
+		default:
+			return 1;
+	}
+	if(gsm_modem_set_message_format(gsmm, GSM_MESSAGE_FORMAT_PDU) != 0)
+		return 1;
+	cmd[8] = list + '0';
 	return gsm_queue_with_error(gsmm->gsm, cmd,
 			GSM_ERROR_MESSAGE_LIST_FAILED);
 }
 
 
-/* gsm_modem_get_messages */
-int gsm_modem_get_messages(GSMModem * gsmm, unsigned int start,
-		unsigned int end)
+/* gsm_modem_get_message */
+int gsm_modem_get_message(GSMModem * gsmm, unsigned int index)
 {
 	char cmd[32];
-	
-	snprintf(cmd, sizeof(cmd), "%s%u,%u", "AT+CMGR=", start, end);
+
+	if(gsm_modem_set_message_format(gsmm, GSM_MESSAGE_FORMAT_PDU) != 0)
+		return 1;
+	snprintf(cmd, sizeof(cmd), "%s%u", "AT+CMGR=", index);
+	/* XXX race condition here if the user forces out of PDU mode */
 	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_LOW, cmd,
 			GSM_ERROR_MESSAGE_FETCH_FAILED, NULL);
 }

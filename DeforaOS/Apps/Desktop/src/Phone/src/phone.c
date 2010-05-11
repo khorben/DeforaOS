@@ -490,6 +490,19 @@ void phone_dialer_hangup(Phone * phone)
 
 
 /* messages */
+/* phone_messages_add */
+void phone_messages_add(Phone * phone, unsigned int index, char const * content)
+{
+	GtkTreeIter iter;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\")\n", __func__, index, content);
+#endif
+	gtk_list_store_append(phone->me_store, &iter);
+	gtk_list_store_set(phone->me_store, &iter, 0, index, 1, content, -1);
+}
+
+
 /* phone_messages_write */
 void phone_messages_write(Phone * phone, char const * number, char const * text)
 {
@@ -808,7 +821,6 @@ static struct
 	{ "Answer call",		gsm_call_answer			},
 	{ "Contact list",		gsm_fetch_contact_list		},
 	{ "Hangup call",		gsm_call_hangup			},
-	{ "Message list",		gsm_fetch_message_list		},
 	{ "Operator",			gsm_fetch_operator		},
 	{ "Phone active",		gsm_is_phone_active		},
 	{ "Phone functional",		gsm_is_functional		},
@@ -1376,13 +1388,8 @@ static void _phone_fetch_messages(Phone * phone, unsigned int start,
 {
 	unsigned int i;
 
-	for(i = start + 10; i < end; i+=10)
-	{
-		gsm_fetch_messages(phone->gsm, start, i);
-		start = i;
-	}
-	if(start < end)
-		gsm_fetch_messages(phone->gsm, start, end);
+	for(i = start; i <= end; i++)
+		gsm_fetch_message(phone->gsm, i);
 }
 
 
@@ -1601,9 +1608,12 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_MESSAGE:
 			/* FIXME warn the user */
-			_phone_fetch_messages(phone,
-					event->incoming_message.index,
+			gsm_fetch_message(phone->gsm,
 					event->incoming_message.index);
+			return 0;
+		case GSM_EVENT_TYPE_MESSAGE:
+			phone_messages_add(phone, event->message.index,
+					event->message.content);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
@@ -1737,7 +1747,7 @@ static gboolean _phone_timeout_track(gpointer data)
 	if(phone->tracks[PHONE_TRACK_MESSAGE_LIST])
 	{
 		_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, FALSE);
-		gsm_fetch_message_list(phone->gsm);
+		gsm_fetch_message_list(phone->gsm, GSM_MESSAGE_LIST_ALL);
 	}
 	if(phone->tracks[PHONE_TRACK_MESSAGE_SENT])
 		_phone_progress_pulse(phone->wr_progress);

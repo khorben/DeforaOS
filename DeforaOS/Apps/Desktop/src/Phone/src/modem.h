@@ -54,9 +54,8 @@ int gsm_modem_enter_sim_pin(GSMModem * gsmm, char const * code);
 int gsm_modem_get_contact_list(GSMModem * gsmm);
 int gsm_modem_get_contacts(GSMModem * gsmm, unsigned int start,
 		unsigned int end);
-int gsm_modem_get_message_list(GSMModem * gsmm);
-int gsm_modem_get_messages(GSMModem * gsmm, unsigned int start,
-		unsigned int end);
+int gsm_modem_get_message_list(GSMModem * gsmm, GSMMessageList list);
+int gsm_modem_get_message(GSMModem * gsmm, unsigned int index);
 int gsm_modem_get_model(GSMModem * gsmm);
 int gsm_modem_get_operator(GSMModem * gsmm);
 int gsm_modem_get_registration(GSMModem * gsmm);

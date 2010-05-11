@@ -44,6 +44,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_FUNCTIONAL,
 	GSM_EVENT_TYPE_INCOMING_CALL,
 	GSM_EVENT_TYPE_INCOMING_MESSAGE,
+	GSM_EVENT_TYPE_MESSAGE,
 	GSM_EVENT_TYPE_MESSAGE_LIST,
 	GSM_EVENT_TYPE_MESSAGE_SENT,
 	GSM_EVENT_TYPE_OPERATOR,
@@ -83,6 +84,15 @@ typedef enum _GSMMessageFormat
 	GSM_MESSAGE_FORMAT_PDU = 0,
 	GSM_MESSAGE_FORMAT_TEXT = 1
 } GSMMessageFormat;
+
+typedef enum _GSMMessageList
+{
+	GSM_MESSAGE_LIST_UNREAD = 0,
+	GSM_MESSAGE_LIST_READ = 1,
+	GSM_MESSAGE_LIST_UNSENT = 2,
+	GSM_MESSAGE_LIST_SENT = 3,
+	GSM_MESSAGE_LIST_ALL = 4
+} GSMMessageList;
 
 typedef enum _GSMMode
 {
@@ -207,6 +217,14 @@ typedef union _GSMEvent
 		unsigned int index;
 	} incoming_message;
 
+	/* GSM_EVENT_TYPE_MESSAGE */
+	struct
+	{
+		GSMEventType type;
+		unsigned int index;
+		char const * content;
+	} message;
+
 	/* GSM_EVENT_TYPE_MESSAGE_SENT */
 	struct
 	{
@@ -294,8 +312,8 @@ int gsm_event(GSM * gsm, GSMEventType type, ...);
 /* fetching data */
 int gsm_fetch_contact_list(GSM * gsm);
 int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end);
-int gsm_fetch_message_list(GSM * gsm);
-int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end);
+int gsm_fetch_message_list(GSM * gsm, GSMMessageList list);
+int gsm_fetch_message(GSM * gsm, unsigned int index);
 int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);

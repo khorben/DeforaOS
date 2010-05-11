@@ -168,6 +168,7 @@ static int _gsm_trigger_cme_error(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cms_error(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result);
+static int _gsm_trigger_cmgr(GSM * gsm, char const * result);
 static int _gsm_trigger_cmgs(GSM * gsm, char const * result);
 static int _gsm_trigger_cmti(GSM * gsm, char const * result);
 static int _gsm_trigger_connect(GSM * gsm, char const * result,
@@ -201,6 +202,7 @@ static GSMTrigger _gsm_triggers[] =
 	GSM_TRIGGER("+CME ERROR: ",	cme_error),
 	GSM_TRIGGER("+CMS ERROR: ",	cms_error),
 	GSM_TRIGGER("+CMGL: ",		cmgl),
+	GSM_TRIGGER("+CMGR: ",		cmgr),
 	GSM_TRIGGER("+CMGS: ",		cmgs),
 	GSM_TRIGGER("+CMTI: ",		cmti),
 	GSM_TRIGGER("CONNECT",		connect),
@@ -534,6 +536,11 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->incoming_message.index = va_arg(ap,
 					unsigned int);
 			break;
+		case GSM_EVENT_TYPE_MESSAGE:
+			/* FIXME implement correctly */
+			event->message.index = va_arg(ap, unsigned int);
+			event->message.content = va_arg(ap, char const *);
+			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			event->message_list.start = va_arg(ap, unsigned int);
 			event->message_list.end = va_arg(ap, unsigned int);
@@ -586,16 +593,16 @@ int gsm_fetch_contacts(GSM * gsm, unsigned int start, unsigned int end)
 
 
 /* gsm_fetch_message_list */
-int gsm_fetch_message_list(GSM * gsm)
+int gsm_fetch_message_list(GSM * gsm, GSMMessageList list)
 {
-	return gsm_modem_get_message_list(gsm->modem);
+	return gsm_modem_get_message_list(gsm->modem, list);
 }
 
 
-/* gsm_fetch_messages */
-int gsm_fetch_messages(GSM * gsm, unsigned int start, unsigned int end)
+/* gsm_fetch_message */
+int gsm_fetch_message(GSM * gsm, unsigned int index)
 {
-	return gsm_modem_get_messages(gsm->modem, start, end);
+	return gsm_modem_get_message(gsm->modem, index);
 }
 
 
@@ -882,7 +889,9 @@ static int _parse_do(GSM * gsm, size_t * i)
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
 	}
-	else if(gsm->mode == GSM_MODE_COMMAND)
+	else if(gsm->mode == GSM_MODE_COMMAND
+			/* XXX not sure about PDU mode here */
+			|| gsm->mode == GSM_MODE_PDU)
 	{
 		_gsm_parse_line(gsm, gsm->rd_buf, &answered);
 		if(answered)
@@ -1178,13 +1187,46 @@ static int _gsm_trigger_cms_error(GSM * gsm, char const * result)
 /* gsm_trigger_cmgl */
 static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 {
+	unsigned int * start = &gsm->event.message_list.start;
+	unsigned int u;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	if(sscanf(result, "(%u-%u)", &gsm->event.message_list.start,
-				&gsm->event.message_list.end) != 2)
-		return 1;
+	/* FIXME this command may be long and the timeout triggered too soon */
+	/* XXX we could already be reading the message at this point */
+	if(sscanf(result, "%u,%u,%u,%u", start, &u, &u, &u) != 4
+			&& sscanf(result, "%u,%u,,%u", start, &u, &u) != 3)
+		/* XXX we may be stuck in PDU mode at this point */
+		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
+				GSM_ERROR_MESSAGE_FETCH_FAILED,
+				_("Unknown error"));
+	gsm->event.message_list.end = *start;
+	gsm->mode = GSM_MODE_PDU;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE_LIST);
+}
+
+
+/* gsm_trigger_cmgr */
+static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
+{
+	unsigned int stat;
+	unsigned int alpha = 0;
+	unsigned int length;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	/* FIXME implement:
+	 * - store the index (and length?) somewhere
+	 * - then we (blindly) parse the PDU and report the message */
+	if(sscanf(result, "%u,%u,%u", &stat, &alpha, &length) == 3
+			|| sscanf(result, "%u,,%u", &stat, &length) == 2)
+		return 0;
+	/* FIXME actually parse the PDU */
+	gsm->event.message.index = 0; /* FIXME implement */
+	gsm->event.message.content = result;
+	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 }
 
 
@@ -1582,7 +1624,7 @@ static gboolean _on_timeout(gpointer data)
 {
 	GSM * gsm = data;
 	GSMCommand * gsmc;
-	char const * cmd;
+	char const * cmd = "AT";
 	size_t len;
 	char * p;
 
@@ -1594,16 +1636,17 @@ static gboolean _on_timeout(gpointer data)
 	/* check if the write handler is still running */
 	if(gsm->channel == NULL || gsm->wr_source != 0)
 		return FALSE;
-	if(gsm->queue == NULL || (gsmc = gsm->queue->data) == NULL)
-		return FALSE;
-	if((cmd = gsm_command_get_command(gsmc)) == NULL)
+	if(gsm->mode == GSM_MODE_PDU) /* let's get out of here */
+		gsm->mode = GSM_MODE_COMMAND;
+	else if(gsm->queue == NULL || (gsmc = gsm->queue->data) == NULL
+			/* re-inject the command */
+			|| (cmd = gsm_command_get_command(gsmc)) == NULL)
 		return FALSE;
 	len = strlen(cmd) + 2;
-	/* re-inject the command */
 	if((p = realloc(gsm->wr_buf, len + 1)) == NULL)
 		return FALSE;
 	gsm->wr_buf = p;
-	snprintf(p, len + 1, "%s%s", cmd, "\r\n");
+	snprintf(gsm->wr_buf, len + 1, "%s%s", cmd, "\r\n");
 	gsm->wr_buf_cnt = len;
 	gsm->wr_source = g_io_add_watch(gsm->channel, G_IO_OUT,
 			_on_watch_can_write, gsm);

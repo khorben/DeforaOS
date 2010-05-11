@@ -95,6 +95,8 @@ void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
 /* messages */
+void phone_messages_add(Phone * phone, unsigned int index,
+		char const * content);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
 
