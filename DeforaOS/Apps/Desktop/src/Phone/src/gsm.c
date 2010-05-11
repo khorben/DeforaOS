@@ -139,6 +139,8 @@ static struct
 	unsigned long quirks;
 } _gsm_models[] =
 {
+	{ "\"Neo1973 Embedded GSM Modem\"",
+		GSM_MODEM_QUIRK_CPIN_QUOTES			},
 	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
 		GSM_MODEM_QUIRK_CPIN_QUOTES			},
 	{ NULL,	0						}
