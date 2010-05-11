@@ -76,6 +76,9 @@ struct _GSM
 	char * wr_buf;
 	size_t wr_buf_cnt;
 	guint wr_source;
+
+	/* temporary buffers */
+	char number[32];
 };
 
 
@@ -1277,11 +1280,13 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	/* FIXME report which mailbox contains the message? */
 	/* text mode support */
 	if(sscanf(result, "\"%31[^\"]\",\"%31[^\"]\",,\"%31[^\"]\"", buf,
-				buf, date) == 3) /* FIXME really implement */
+				gsm->number, date) == 3) /* XXX improve */
 	{
-		gsm->event.message.number = NULL;
+		gsm->number[sizeof(gsm->number) - 1] = '\0';
+		gsm->event.message.number = gsm->number;
 		date[sizeof(date) - 1] = '\0';
-		if(strptime(date, "%y/%m/%d,%T", &t) == NULL) /* XXX timezone */
+		if(strptime(date, "%y/%m/%d,%H:%M:%S", &t) == NULL)
+			/* XXX also parse the timezone? */
 			localtime_r(NULL, &t);
 		gsm->event.message.date = mktime(&t);
 		*length = 0;
@@ -1293,7 +1298,10 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		return 0;
 	/* message content */
 	if(*length == 0) /* XXX assumes this is text mode */
+	{
 		gsm->event.message.content = result;
+		*length = strlen(result);
+	}
 	else /* FIXME actually parse the PDU */
 		gsm->event.message.content = result;
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
