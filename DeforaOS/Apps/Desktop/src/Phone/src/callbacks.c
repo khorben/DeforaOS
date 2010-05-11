@@ -230,6 +230,15 @@ void on_phone_dialer_hangup(gpointer data)
 
 
 /* messages */
+/* on_phone_messages_activated */
+void on_phone_messages_activated(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_messages_read_selected(phone);
+}
+
+
 /* on_phone_messages_call */
 void on_phone_messages_call(gpointer data)
 {
@@ -281,6 +290,16 @@ void on_phone_messages_write(gpointer data)
 	Phone * phone = data;
 
 	phone_messages_write(phone, NULL, NULL);
+}
+
+
+/* read */
+/* on_phone_read_call */
+void on_phone_read_call(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
 }
 
 

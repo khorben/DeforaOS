@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -31,6 +32,17 @@
 /* Phone */
 /* private */
 /* types */
+typedef enum _PhoneMessageColumn
+{
+	PHONE_MESSAGE_COLUMN_INDEX = 0,
+	PHONE_MESSAGE_COLUMN_NUMBER,
+	PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY,
+	PHONE_MESSAGE_COLUMN_DATE,
+	PHONE_MESSAGE_COLUMN_CONTENT
+} PhoneMessageColumn;
+#define PHONE_MESSAGE_COLUMN_LAST	PHONE_MESSAGE_COLUMN_CONTENT
+#define PHONE_MESSAGE_COLUMN_COUNT	(PHONE_MESSAGE_COLUMN_LAST + 1)
+
 typedef enum _PhoneSignal
 {
 	PHONE_SIGNAL_UNKNOWN,
@@ -110,6 +122,13 @@ struct _Phone
 	GtkWidget * me_window;
 	GtkListStore * me_store;
 	GtkWidget * me_view;
+
+	/* read */
+	GtkWidget * re_window;
+	GtkWidget * re_name;
+	GtkWidget * re_number;
+	GtkWidget * re_date;
+	GtkWidget * re_view;
 
 	/* write */
 	GtkWidget * wr_window;
@@ -208,7 +227,10 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 #endif
 	phone->di_window = NULL;
 	phone->me_window = NULL;
-	phone->me_store = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
+	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
+			G_TYPE_STRING);
+	phone->re_window = NULL;
 	phone->wr_window = NULL;
 	phone->wr_progress = NULL;
 	/* signal level */
@@ -259,6 +281,7 @@ static gboolean _new_idle(gpointer data)
 #endif
 	phone_show_dialer(phone, FALSE);
 	phone_show_messages(phone, FALSE);
+	phone_show_read(phone, FALSE);
 	phone_show_write(phone, FALSE);
 	phone->ui_source = 0;
 	return FALSE;
@@ -491,15 +514,51 @@ void phone_dialer_hangup(Phone * phone)
 
 /* messages */
 /* phone_messages_add */
-void phone_messages_add(Phone * phone, unsigned int index, char const * content)
+void phone_messages_add(Phone * phone, unsigned int index, char const * number,
+		time_t date, char const * content)
 {
 	GtkTreeIter iter;
+	char buf[48];
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, \"%s\")\n", __func__, index, content);
 #endif
+	snprintf(buf, sizeof(buf), "%s\n%s", (number != NULL) ? number : "",
+			content);
 	gtk_list_store_append(phone->me_store, &iter);
-	gtk_list_store_set(phone->me_store, &iter, 0, index, 1, content, -1);
+	gtk_list_store_set(phone->me_store, &iter,
+			PHONE_MESSAGE_COLUMN_INDEX, index,
+			PHONE_MESSAGE_COLUMN_NUMBER, number,
+			PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, buf,
+			PHONE_MESSAGE_COLUMN_DATE, date,
+			PHONE_MESSAGE_COLUMN_CONTENT, content, -1);
+}
+
+
+/* phone_messages_read_selected */
+void phone_messages_read_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	unsigned int index;
+	char * number;
+	unsigned int date;
+	char * content;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->me_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
+			PHONE_MESSAGE_COLUMN_INDEX, &index,
+			PHONE_MESSAGE_COLUMN_NUMBER, &number,
+			PHONE_MESSAGE_COLUMN_DATE, &date,
+			PHONE_MESSAGE_COLUMN_CONTENT, &content,
+			-1);
+	phone_show_read(phone, TRUE, index, NULL, number, date, content);
+	g_free(number);
+	g_free(content);
 }
 
 
@@ -679,7 +738,7 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 	GtkWidget * hbox; /* XXX create in phone_create_dialpad? */
 	GtkWidget * widget;
 
-	if(show == FALSE)
+	if(show == FALSE) /* FIXME pre-build the window anyway */
 	{
 		if(phone->en_window != NULL)
 			gtk_widget_hide(phone->en_window);
@@ -812,6 +871,12 @@ void phone_show_contacts(Phone * phone, gboolean show)
 
 #ifdef DEBUG
 /* phone_show_debug */
+static int _gsm_fetch_message_list_all(GSM * gsm);
+static int _gsm_fetch_message_list_read(GSM * gsm);
+static int _gsm_fetch_message_list_sent(GSM * gsm);
+static int _gsm_fetch_message_list_unread(GSM * gsm);
+static int _gsm_fetch_message_list_unsent(GSM * gsm);
+
 static struct
 {
 	char const * name;
@@ -821,6 +886,11 @@ static struct
 	{ "Answer call",		gsm_call_answer			},
 	{ "Contact list",		gsm_fetch_contact_list		},
 	{ "Hangup call",		gsm_call_hangup			},
+	{ "Messages",			_gsm_fetch_message_list_all	},
+	{ "Messages read",		_gsm_fetch_message_list_read	},
+	{ "Messages sent",		_gsm_fetch_message_list_sent	},
+	{ "Messages unread",		_gsm_fetch_message_list_unread	},
+	{ "Messages unsent",		_gsm_fetch_message_list_unsent	},
 	{ "Operator",			gsm_fetch_operator		},
 	{ "Phone active",		gsm_is_phone_active		},
 	{ "Phone functional",		gsm_is_functional		},
@@ -928,6 +998,31 @@ static void _on_debug_queue_execute(gpointer data)
 	if((text = gtk_entry_get_text(GTK_ENTRY(phone->de_queue))) == NULL)
 		return;
 	gsm_queue(phone->gsm, text);
+}
+
+static int _gsm_fetch_message_list_all(GSM * gsm)
+{
+	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_ALL);
+}
+
+static int _gsm_fetch_message_list_read(GSM * gsm)
+{
+	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_READ);
+}
+
+static int _gsm_fetch_message_list_sent(GSM * gsm)
+{
+	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_SENT);
+}
+
+static int _gsm_fetch_message_list_unread(GSM * gsm)
+{
+	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_UNREAD);
+}
+
+static int _gsm_fetch_message_list_unsent(GSM * gsm)
+{
+	return gsm_fetch_message_list(gsm, GSM_MESSAGE_LIST_UNSENT);
 }
 #endif
 
@@ -1064,11 +1159,15 @@ void phone_show_messages(Phone * phone, gboolean show)
 				GTK_SHADOW_ETCHED_IN);
 		phone->me_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 					phone->me_store));
+		g_signal_connect_swapped(G_OBJECT(phone->me_view),
+				"row-activated", G_CALLBACK(
+					on_phone_messages_activated), phone);
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
 				FALSE);
 		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("Message"),
-				renderer, "text", 1, NULL);
+		column = gtk_tree_view_column_new_with_attributes(_("From"),
+				renderer, "text",
+				PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->me_view),
 				column);
 		gtk_container_add(GTK_CONTAINER(widget), phone->me_view);
@@ -1080,6 +1179,108 @@ void phone_show_messages(Phone * phone, gboolean show)
 		gtk_window_present(GTK_WINDOW(phone->me_window));
 	else
 		gtk_widget_hide(phone->me_window);
+}
+
+
+/* phone_show_read */
+void phone_show_read(Phone * phone, gboolean show, ...)
+{
+	va_list ap;
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkToolItem * toolitem;
+	GtkTextBuffer * tbuf;
+	unsigned int index;
+	char const * name;
+	char const * number;
+	time_t date;
+	char const * content;
+	struct tm t;
+	char buf[32];
+
+	if(show == FALSE)
+	{
+		if(phone->re_window != NULL)
+			gtk_widget_hide(phone->re_window);
+		return;
+	}
+	va_start(ap, show);
+	index = va_arg(ap, unsigned int);
+	name = va_arg(ap, char const *);
+	number = va_arg(ap, char const *);
+	date = va_arg(ap, time_t);
+	content = va_arg(ap, char const *);
+	va_end(ap);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %u, %s\n", __func__, index,
+			name, number, date, content);
+#endif
+	if(phone->re_window == NULL)
+	{
+		phone->re_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(phone->re_window), 200,
+				300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->re_window),
+				"stock_mail-compose");
+#endif
+		gtk_window_set_title(GTK_WINDOW(phone->re_window),
+				_("Read message"));
+		g_signal_connect(G_OBJECT(phone->re_window), "delete-event",
+				G_CALLBACK(on_phone_closex), phone->re_window);
+		vbox = gtk_vbox_new(FALSE, 0);
+		/* toolbar */
+		widget = gtk_toolbar_new();
+		toolitem = gtk_tool_button_new(NULL, _("Call"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"call-start");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_read_call), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		/* name */
+		phone->re_name = gtk_label_new(NULL);
+		gtk_widget_modify_font(phone->re_name, phone->bold);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->re_name, FALSE, TRUE,
+				0);
+		/* number */
+		phone->re_number = gtk_label_new(NULL);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->re_number, FALSE, TRUE,
+				0);
+		/* date */
+		phone->re_date = gtk_label_new(NULL);
+		gtk_box_pack_start(GTK_BOX(vbox), phone->re_date, FALSE, TRUE,
+				0);
+		/* view */
+		widget = gtk_scrolled_window_new(NULL, NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+				GTK_SHADOW_ETCHED_IN);
+		phone->re_view = gtk_text_view_new();
+		gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(phone->re_view),
+				FALSE);
+		gtk_text_view_set_editable(GTK_TEXT_VIEW(phone->re_view),
+				FALSE);
+		gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->re_view),
+				GTK_WRAP_WORD_CHAR);
+		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
+		gtk_container_add(GTK_CONTAINER(widget), phone->re_view);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
+		gtk_container_add(GTK_CONTAINER(phone->re_window), vbox);
+		gtk_widget_show_all(vbox);
+	}
+	if(name != NULL)
+		gtk_label_set_text(GTK_LABEL(phone->re_name), name);
+	if(number != NULL)
+		gtk_label_set_text(GTK_LABEL(phone->re_number), number);
+	gmtime_r(&date, &t);
+	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
+	if(content != NULL)
+		gtk_text_buffer_set_text(tbuf, content, -1);
+	gtk_window_present(GTK_WINDOW(phone->re_window));
 }
 
 
@@ -1097,6 +1298,10 @@ void phone_show_write(Phone * phone, gboolean show)
 		phone->wr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_default_size(GTK_WINDOW(phone->wr_window), 200,
 				300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->wr_window),
+				"stock_mail-compose");
+#endif
 		gtk_window_set_title(GTK_WINDOW(phone->wr_window),
 				_("Write message"));
 		g_signal_connect(G_OBJECT(phone->wr_window), "delete-event",
@@ -1110,7 +1315,7 @@ void phone_show_write(Phone * phone, gboolean show)
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_write_send), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new(NULL, _("Send"));
+		toolitem = gtk_tool_button_new(NULL, _("Attach"));
 		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
 				"stock_attach");
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
@@ -1613,6 +1818,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
 			phone_messages_add(phone, event->message.index,
+					event->message.number,
+					event->message.date,
 					event->message.content);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:

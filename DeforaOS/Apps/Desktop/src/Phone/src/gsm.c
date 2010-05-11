@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <ctype.h>
 #include <errno.h>
 #include <libintl.h>
@@ -539,6 +540,7 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_MESSAGE:
 			/* FIXME implement correctly */
 			event->message.index = va_arg(ap, unsigned int);
+			event->message.number = va_arg(ap, char const *);
 			event->message.date = va_arg(ap, time_t);
 			event->message.length = va_arg(ap, unsigned int);
 			event->message.content = va_arg(ap, char const *);
@@ -1228,6 +1230,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	if(sscanf(result, "\"%31[^\"]\",\"%31[^\"]\",,\"%31[^\"]\"", buf,
 				buf, date) == 3) /* FIXME really implement */
 	{
+		gsm->event.message.number = NULL;
 		date[sizeof(date) - 1] = '\0';
 		if(strptime(date, "%y/%m/%d,%T", &t) == NULL) /* XXX timezone */
 			localtime_r(NULL, &t);

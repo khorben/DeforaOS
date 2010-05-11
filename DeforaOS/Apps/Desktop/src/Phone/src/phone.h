@@ -71,6 +71,7 @@ void phone_show_code(Phone * phone, gboolean show, ...);
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show);
+void phone_show_read(Phone * phone, gboolean show, ...);
 void phone_show_write(Phone * phone, gboolean show);
 
 /* calls */
@@ -95,8 +96,9 @@ void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
 /* messages */
-void phone_messages_add(Phone * phone, unsigned int index,
-		char const * content);
+void phone_messages_add(Phone * phone, unsigned int index, char const * number,
+		time_t date, char const * content);
+void phone_messages_read_selected(Phone * phone);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
 

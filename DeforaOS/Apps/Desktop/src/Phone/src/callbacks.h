@@ -51,12 +51,16 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);
 
 /* messages */
+void on_phone_messages_activated(gpointer data);
 void on_phone_messages_call(gpointer data);
 void on_phone_messages_delete(gpointer data);
 void on_phone_messages_inbox(gpointer data);
 void on_phone_messages_outbox(gpointer data);
 void on_phone_messages_reply(gpointer data);
 void on_phone_messages_write(gpointer data);
+
+/* read */
+void on_phone_read_call(gpointer data);
 
 /* write */
 void on_phone_write_attach(gpointer data);

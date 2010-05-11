@@ -222,6 +222,7 @@ typedef union _GSMEvent
 	{
 		GSMEventType type;
 		unsigned int index;
+		char const * number;
 		time_t date;
 		unsigned int length; /* XXX may be removed */
 		char const * content;
