@@ -1637,7 +1637,8 @@ static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 
 	if(callback == NULL)
 		callback = G_CALLBACK(gtk_widget_destroy);
-	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+	dialog = gtk_message_dialog_new((window != NULL) ? GTK_WINDOW(window)
+			: NULL,
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "%s",
 #if GTK_CHECK_VERSION(2, 8, 0)
@@ -1846,7 +1847,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					"");
 			return 0;
 		case GSM_EVENT_TYPE_INCOMING_MESSAGE:
-			/* FIXME warn the user */
+			/* XXX propose to open the new message */
+			_phone_info(phone, phone->me_window,
+					_("New message received"), NULL);
 			gsm_fetch_message(phone->gsm,
 					event->incoming_message.index);
 			return 0;
