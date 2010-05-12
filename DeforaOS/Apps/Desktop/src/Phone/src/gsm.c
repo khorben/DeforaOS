@@ -132,7 +132,9 @@ static struct
 	{ 304,	N_("Invalid PDU mode parameter")		},
 	{ 310,	N_("SIM not inserted")				},
 	{ 311,	N_("SIM PIN required")				},
+	{ 320,	N_("Memory failure")				},
 	{ 321,	N_("Invalid memory index")			},
+	{ 322,	N_("Memory full")				},
 	{ 0,	NULL						}
 };
 
