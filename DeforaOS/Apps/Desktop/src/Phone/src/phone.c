@@ -538,7 +538,7 @@ void phone_messages_add(Phone * phone, unsigned int index, char const * number,
 		number = "";
 	if(content == NULL)
 		content = "";
-	snprintf(nd, sizeof(nd), "%s\n%12s%s", number, content,
+	snprintf(nd, sizeof(nd), "%s\n%.12s%s", number, content,
 			(strlen(content) > 12) ? "..." : "");
 	gmtime_r(&date, &t);
 	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
