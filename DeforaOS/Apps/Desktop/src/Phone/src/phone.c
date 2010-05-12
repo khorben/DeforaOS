@@ -38,6 +38,7 @@ typedef enum _PhoneMessageColumn
 	PHONE_MESSAGE_COLUMN_NUMBER,
 	PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY,
 	PHONE_MESSAGE_COLUMN_DATE,
+	PHONE_MESSAGE_COLUMN_DATE_DISPLAY,
 	PHONE_MESSAGE_COLUMN_CONTENT
 } PhoneMessageColumn;
 #define PHONE_MESSAGE_COLUMN_LAST	PHONE_MESSAGE_COLUMN_CONTENT
@@ -229,7 +230,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->me_window = NULL;
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
-			G_TYPE_STRING);
+			G_TYPE_STRING, G_TYPE_STRING);
 	phone->re_window = NULL;
 	phone->wr_window = NULL;
 	phone->wr_progress = NULL;
@@ -525,19 +526,28 @@ void phone_messages_add(Phone * phone, unsigned int index, char const * number,
 		time_t date, char const * content)
 {
 	GtkTreeIter iter;
-	char buf[48];
+	char nd[32];
+	char dd[32];
+	struct tm t;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, \"%s\")\n", __func__, index, content);
 #endif
-	snprintf(buf, sizeof(buf), "%s\n%s", (number != NULL) ? number : "",
-			content);
+	if(number == NULL)
+		number = "";
+	if(content == NULL)
+		content = "";
+	snprintf(nd, sizeof(nd), "%s\n%12s%s", number, content,
+			(strlen(content) > 12) ? "..." : "");
+	gmtime_r(&date, &t);
+	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_list_store_append(phone->me_store, &iter);
 	gtk_list_store_set(phone->me_store, &iter,
 			PHONE_MESSAGE_COLUMN_INDEX, index,
 			PHONE_MESSAGE_COLUMN_NUMBER, number,
-			PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, buf,
+			PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, nd,
 			PHONE_MESSAGE_COLUMN_DATE, date,
+			PHONE_MESSAGE_COLUMN_DATE_DISPLAY, dd,
 			PHONE_MESSAGE_COLUMN_CONTENT, content, -1);
 }
 
@@ -1195,11 +1205,17 @@ void phone_show_messages(Phone * phone, gboolean show)
 				"row-activated", G_CALLBACK(
 					on_phone_messages_activated), phone);
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->me_view),
-				FALSE);
+				FALSE); /* XXX consider reverting this */
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("From"),
 				renderer, "text",
 				PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, NULL);
+		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->me_view),
+				column);
+		renderer = gtk_cell_renderer_text_new();
+		column = gtk_tree_view_column_new_with_attributes(_("Date"),
+				renderer, "text",
+				PHONE_MESSAGE_COLUMN_DATE_DISPLAY, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->me_view),
 				column);
 		gtk_container_add(GTK_CONTAINER(widget), phone->me_view);
@@ -1308,6 +1324,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 		gtk_label_set_text(GTK_LABEL(phone->re_number), number);
 	gmtime_r(&date, &t);
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	gtk_label_set_text(GTK_LABEL(phone->re_date), buf);
 	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
 	if(content != NULL)
 		gtk_text_buffer_set_text(tbuf, content, -1);
@@ -1814,7 +1831,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			/* FIXME implement */
 			return 0;
 		case GSM_EVENT_TYPE_CALL_PRESENTATION:
-			/* FIXME convert number, the contact is automatic */
+			/* FIXME convert number, contact will be automatic */
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
 					event->call_presentation.number);
 			return 0;
