@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include <System.h>
 #include "gsm.h"
 #include "callbacks.h"
 #include "phone.h"
@@ -73,6 +74,7 @@ struct _Phone
 {
 	GSM * gsm;
 	guint ui_source;
+	Config * config;
 
 	/* status */
 	PhoneSignal signal;
@@ -145,6 +147,10 @@ struct _Phone
 };
 
 
+/* constants */
+#define PHONE_CONFIG_FILE	".phone"
+
+
 /* prototypes */
 static GtkWidget * _phone_create_button(char const * icon, char const * label);
 static GtkWidget * _phone_create_dialpad(Phone * phone,
@@ -189,6 +195,7 @@ void phone_show_debug(Phone * phone, gboolean show);
 #endif
 /* functions */
 /* phone_new */
+static void _new_config(Phone * phone);
 static gboolean _new_idle(gpointer data);
 static gboolean _on_plug_delete_event(gpointer data);
 static void _on_plug_embedded(gpointer data);
@@ -210,7 +217,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	if(device == NULL)
 		device = "/dev/modem";
 	phone->gsm = gsm_new(device, baudrate, hwflow);
-	phone->ui_source = g_idle_add(_new_idle, phone);
+	phone->ui_source = 0;
+	_new_config(phone);
 	phone->signal = -1;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
@@ -264,11 +272,30 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 		phone_delete(phone);
 		return NULL;
 	}
+	phone->ui_source = g_idle_add(_new_idle, phone);
 	if(retry >= 0)
 		gsm_set_retry(phone->gsm, retry);
 	gsm_set_callback(phone->gsm, _phone_gsm_event, phone);
 	_phone_set_operator(phone, _("Initializing..."));
 	return phone;
+}
+
+static void _new_config(Phone * phone)
+{
+	char const * homedir;
+	size_t len;
+	char * filename;
+
+	if((phone->config = config_new()) == NULL)
+		return;
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(PHONE_CONFIG_FILE);
+	if((filename = malloc(len)) == NULL)
+		return;
+	snprintf(filename, len, "%s/%s", homedir, PHONE_CONFIG_FILE);
+	config_load(phone->config, filename); /* we can ignore errors */
+	free(filename);
 }
 
 static gboolean _new_idle(gpointer data)
@@ -303,6 +330,8 @@ static void _on_plug_embedded(gpointer data)
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
+	if(phone->config != NULL)
+		config_delete(phone->config);
 	if(phone->ui_source != 0)
 		g_source_remove(phone->ui_source);
 	if(phone->tr_source != 0)
