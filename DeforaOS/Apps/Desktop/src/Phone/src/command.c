@@ -31,6 +31,7 @@ struct _GSMCommand
 {
 	GSMPriority priority;
 	char * command;
+	unsigned int timeout;
 	GSMError error;
 	GSMCommandCallback callback;
 	GSMMode mode;
@@ -51,6 +52,7 @@ GSMCommand * gsm_command_new(char const * command)
 		return NULL; /* XXX report error */
 	gsmc->priority = GSM_PRIORITY_NORMAL;
 	gsmc->command = strdup(command);
+	gsmc->timeout = 2000;
 	gsmc->error = GSM_ERROR_UNKNOWN;
 	gsmc->callback = NULL;
 	gsmc->mode = GSM_MODE_COMMAND;
@@ -111,6 +113,13 @@ GSMPriority gsm_command_get_priority(GSMCommand * gsmc)
 }
 
 
+/* gsm_command_get_timeout */
+unsigned int gsm_command_get_timeout(GSMCommand * gsmc)
+{
+	return gsmc->timeout;
+}
+
+
 /* gsm_command_set_callback */
 void gsm_command_set_callback(GSMCommand * gsmc,
 		GSMCommandCallback callback)
@@ -137,4 +146,11 @@ void gsm_command_set_mode(GSMCommand * gsmc, GSMMode mode)
 void gsm_command_set_priority(GSMCommand * gsmc, GSMPriority priority)
 {
 	gsmc->priority = priority;
+}
+
+
+/* gsm_command_set_timeout */
+void gsm_command_set_timeout(GSMCommand * gsmc, unsigned int timeout)
+{
+	gsmc->timeout = timeout;
 }

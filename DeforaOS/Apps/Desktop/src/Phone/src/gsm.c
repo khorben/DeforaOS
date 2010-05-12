@@ -1797,6 +1797,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	GIOStatus status;
 	char * p;
 	GSMCommand * gsmc;
+	unsigned int timeout = 2000;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__, gsm->wr_buf_cnt);
@@ -1839,10 +1840,14 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	else
 	{
 		if(gsm->queue != NULL && (gsmc = gsm->queue->data) != NULL)
+		{
 			gsm->mode = gsm_command_get_mode(gsmc);
+			timeout = gsm_command_get_timeout(gsmc);
+		}
 		if(gsm->source != 0)
 			g_source_remove(gsm->source);
-		gsm->source = g_timeout_add(2000, _on_timeout, gsm);
+		if(timeout != 0)
+			gsm->source = g_timeout_add(timeout, _on_timeout, gsm);
 	}
 	return FALSE;
 }

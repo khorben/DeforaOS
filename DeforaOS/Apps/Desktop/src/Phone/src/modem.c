@@ -38,6 +38,8 @@ static int _is_code(char const * code);
 static int _is_figure(int c);
 static int _is_number(char const * number);
 
+static int _modem_call_do(GSM * gsm, char const * command);
+
 
 /* public */
 /* functions */
@@ -94,8 +96,7 @@ int gsm_modem_call(GSMModem * gsmm, GSMCallType calltype, char const * number)
 	if((buf = malloc(len)) == NULL)
 		return 1;
 	snprintf(buf, len, "%s%s%s", cmd, number, suffix);
-	ret = gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, buf,
-			GSM_ERROR_CALL_FAILED, NULL);
+	ret = _modem_call_do(gsmm->gsm, buf);
 	free(buf);
 	return ret;
 }
@@ -137,8 +138,7 @@ int gsm_modem_call_contact(GSMModem * gsmm, GSMCallType calltype,
 			return 1;
 	}
 	snprintf(buf, sizeof(buf), "%s%u%s", cmd, index, suffix);
-	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, buf,
-			GSM_ERROR_CALL_FAILED, NULL);
+	return _modem_call_do(gsmm->gsm, buf);
 }
 
 
@@ -177,8 +177,7 @@ int gsm_modem_call_last(GSMModem * gsmm, GSMCallType calltype)
 		default:
 			return 1;
 	}
-	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
-			GSM_ERROR_CALL_FAILED, NULL);
+	return _modem_call_do(gsmm->gsm, cmd);
 }
 
 
@@ -786,5 +785,23 @@ static int _is_number(char const * number)
 	while(*number != '\0')
 		if(!_is_figure(*(number++)))
 			return 0;
+	return 1;
+}
+
+
+/* modem_call_queue */
+static int _modem_call_do(GSM * gsm, char const * command)
+{
+	GSMCommand * gsmc;
+
+	if((gsmc = gsm_command_new(command)) == NULL)
+		return 1;
+	gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGH);
+	gsm_command_set_error(gsmc, GSM_ERROR_CALL_FAILED);
+	gsm_command_set_callback(gsmc, NULL);
+	gsm_command_set_timeout(gsmc, 30000);
+	if(gsm_queue_command(gsm, gsmc) == 0)
+		return 0;
+	gsm_command_delete(gsmc);
 	return 1;
 }
