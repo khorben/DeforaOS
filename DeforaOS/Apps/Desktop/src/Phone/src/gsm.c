@@ -257,6 +257,8 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 	if((gsm = malloc(sizeof(*gsm))) == NULL)
 		return NULL;
 	/* settings */
+	if(device == NULL)
+		device = "/dev/modem";
 	gsm->device = strdup(device);
 	gsm->baudrate = _new_baudrate(baudrate);
 	gsm->retry = 1000;
@@ -292,7 +294,9 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 static unsigned int _new_baudrate(unsigned int baudrate)
 {
 	char buf[256];
-
+	char const * error;
+	
+	error = _(": Unknown baudrate, assuming 115200");
 	switch(baudrate)
 	{
 		case 1200:
@@ -328,9 +332,8 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 		case 921600:
 			return B921600;
 		default:
-			snprintf(buf, sizeof(buf), "%u%s", baudrate,
-					_(": Unknown baudrate"));
-			return phone_error(NULL, buf, baudrate);
+			snprintf(buf, sizeof(buf), "%u%s", baudrate, error);
+			return phone_error(NULL, buf, 115200);
 	}
 }
 

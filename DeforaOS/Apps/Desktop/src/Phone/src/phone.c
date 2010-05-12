@@ -201,12 +201,13 @@ static gboolean _on_plug_delete_event(gpointer data);
 static void _on_plug_embedded(gpointer data);
 
 Phone * phone_new(char const * device, unsigned int baudrate, int retry,
-		unsigned int hwflow)
+		int hwflow)
 {
 	Phone * phone;
 	GtkWidget * hbox;
 	GdkEvent event;
 	GdkEventClient * client = &event.client;
+	char const * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %u)\n", __func__, (device != NULL)
@@ -214,11 +215,25 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 #endif
 	if((phone = malloc(sizeof(*phone))) == NULL)
 		return NULL;
-	if(device == NULL)
-		device = "/dev/modem";
-	phone->gsm = gsm_new(device, baudrate, hwflow);
-	phone->ui_source = 0;
 	_new_config(phone);
+	if(phone->config != NULL)
+	{
+		if(device == NULL)
+			device = config_get(phone->config, NULL, "device");
+		p = config_get(phone->config, NULL, "baudrate");
+		if(baudrate == 0 && p != NULL)
+			baudrate = strtoul(p, NULL, 10);
+		p = config_get(phone->config, NULL, "hwflow");
+		if(hwflow < 0 && p != NULL)
+			hwflow = strtoul(p, NULL, 10);
+		p = config_get(phone->config, NULL, "retry");
+		if(retry < 0 && p != NULL)
+			retry = strtoul(p, NULL, 10);
+	}
+	phone->gsm = gsm_new(device, baudrate, hwflow);
+	if(retry >= 0)
+		gsm_set_retry(phone->gsm, retry);
+	phone->ui_source = 0;
 	phone->signal = -1;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
@@ -273,8 +288,6 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 		return NULL;
 	}
 	phone->ui_source = g_idle_add(_new_idle, phone);
-	if(retry >= 0)
-		gsm_set_retry(phone->gsm, retry);
 	gsm_set_callback(phone->gsm, _phone_gsm_event, phone);
 	_phone_set_operator(phone, _("Initializing..."));
 	return phone;

@@ -57,9 +57,9 @@ int main(int argc, char * argv[])
 	int o;
 	Phone * phone;
 	char const * device = NULL;
-	unsigned int baudrate = 115200;
+	unsigned int baudrate = 0;
 	int retry = -1;
-	unsigned int hwflow = 0;
+	int hwflow = -1;
 	char * p;
 
 	setlocale(LC_ALL, "");
