@@ -1,6 +1,6 @@
 PACKAGE	= Phone
 VERSION	= 0.0.4
-SUBDIRS	= data po src
+SUBDIRS	= data include po src
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -31,6 +31,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/phone-signal-75.png \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-100.png \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
+		$(PACKAGE)-$(VERSION)/include/Phone.h \
+		$(PACKAGE)-$(VERSION)/include/Makefile \
+		$(PACKAGE)-$(VERSION)/include/project.conf \
 		$(PACKAGE)-$(VERSION)/po/Makefile \
 		$(PACKAGE)-$(VERSION)/po/gettext.sh \
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
@@ -53,6 +56,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/phone.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
+		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \

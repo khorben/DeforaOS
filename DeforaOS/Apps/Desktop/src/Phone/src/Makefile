@@ -1,9 +1,10 @@
+SUBDIRS	= plugins
 TARGETS	= phone phone-contacts phone-dialer phone-messages
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
 CC	= cc
-CPPFLAGSF=
+CPPFLAGSF= -I ../include
 CPPFLAGS= -I $(PREFIX)/include
 CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2 -pedantic `pkg-config --cflags gtk+-2.0`
@@ -15,7 +16,10 @@ MKDIR	= mkdir -p
 INSTALL	= install
 
 
-all: $(TARGETS)
+all: subdirs $(TARGETS)
+
+subdirs:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
 
 phone_OBJS = callbacks.o command.o gsm.o main.o modem.o phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -60,7 +64,7 @@ main.o: main.c phone.h ../config.h
 modem.o: modem.c gsm.h modem.h
 	$(CC) $(phone_CFLAGS) -c modem.c
 
-phone.o: phone.c gsm.h callbacks.h phone.h
+phone.o: phone.c gsm.h callbacks.h phone.h ../config.h
 	$(CC) $(phone_CFLAGS) -c phone.c
 
 contacts.o: contacts.c common.c
@@ -73,12 +77,16 @@ messages.o: messages.c common.c
 	$(CC) $(phone-messages_CFLAGS) -c messages.c
 
 clean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
 	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS)
 
-distclean: clean
+distclean:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 phone $(DESTDIR)$(BINDIR)/phone
 	$(MKDIR) $(DESTDIR)$(BINDIR)
@@ -89,9 +97,10 @@ install: all
 	$(INSTALL) -m 0755 phone-messages $(DESTDIR)$(BINDIR)/phone-messages
 
 uninstall:
+	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
 	$(RM) $(DESTDIR)$(BINDIR)/phone
 	$(RM) $(DESTDIR)$(BINDIR)/phone-contacts
 	$(RM) $(DESTDIR)$(BINDIR)/phone-dialer
 	$(RM) $(DESTDIR)$(BINDIR)/phone-messages
 
-.PHONY: all clean distclean install uninstall
+.PHONY: all subdirs clean distclean install uninstall

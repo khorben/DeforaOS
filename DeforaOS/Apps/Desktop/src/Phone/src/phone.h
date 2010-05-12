@@ -15,8 +15,8 @@
 
 
 
-#ifndef PHONE_PHONE_H
-# define PHONE_PHONE_H
+#ifndef PHONE_SRC_PHONE_H
+# define PHONE_SRC_PHONE_H
 
 # include <glib.h>
 
@@ -103,8 +103,11 @@ void phone_messages_read_selected(Phone * phone);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
 
+/* plugins */
+int phone_load(Phone * phone, char const * plugin);
+
 /* write */
 void phone_write_count_buffer(Phone * phone);
 void phone_write_send(Phone * phone);
 
-#endif /* !PHONE_PHONE_H */
+#endif /* !PHONE_SRC_PHONE_H */

@@ -24,10 +24,19 @@
 #include <libintl.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#include "Phone.h"
 #include "gsm.h"
 #include "callbacks.h"
 #include "phone.h"
+#include "../config.h"
 #define _(string) gettext(string)
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef LIBDIR
+# define LIBDIR		PREFIX "/lib"
+#endif
 
 
 /* Phone */
@@ -73,7 +82,7 @@ typedef enum _PhoneTrack
 struct _Phone
 {
 	GSM * gsm;
-	guint ui_source;
+	guint source;
 	Config * config;
 
 	/* status */
@@ -82,6 +91,10 @@ struct _Phone
 	/* tracking */
 	guint tr_source;
 	gboolean tracks[PHONE_TRACK_COUNT];
+
+	/* plugins */
+	PhonePlugin ** plugins;
+	size_t plugins_cnt;
 
 	/* widgets */
 	PangoFontDescription * bold;
@@ -164,6 +177,8 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent,
 
 static void _phone_error(GtkWidget * window, char const * message);
 
+static void _phone_event(Phone * phone, PhoneEvent event);
+
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
 static void _phone_fetch_messages(Phone * phone, unsigned int start,
@@ -197,6 +212,7 @@ void phone_show_debug(Phone * phone, gboolean show);
 /* phone_new */
 static void _new_config(Phone * phone);
 static gboolean _new_idle(gpointer data);
+static void _idle_load_plugins(Phone * phone, char const * plugins);
 static gboolean _on_plug_delete_event(gpointer data);
 static void _on_plug_embedded(gpointer data);
 
@@ -233,10 +249,12 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->gsm = gsm_new(device, baudrate, hwflow);
 	if(retry >= 0)
 		gsm_set_retry(phone->gsm, retry);
-	phone->ui_source = 0;
+	phone->source = 0;
 	phone->signal = -1;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
+	phone->plugins = NULL;
+	phone->plugins_cnt = 0;
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
@@ -287,7 +305,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 		phone_delete(phone);
 		return NULL;
 	}
-	phone->ui_source = g_idle_add(_new_idle, phone);
+	phone->source = g_idle_add(_new_idle, phone);
 	gsm_set_callback(phone->gsm, _phone_gsm_event, phone);
 	_phone_set_operator(phone, _("Initializing..."));
 	return phone;
@@ -314,6 +332,7 @@ static void _new_config(Phone * phone)
 static gboolean _new_idle(gpointer data)
 {
 	Phone * phone = data;
+	char const * plugins;
 
 	phone_show_call(phone, FALSE);
 	phone_show_contacts(phone, FALSE);
@@ -324,8 +343,37 @@ static gboolean _new_idle(gpointer data)
 	phone_show_messages(phone, FALSE);
 	phone_show_read(phone, FALSE);
 	phone_show_write(phone, FALSE);
-	phone->ui_source = 0;
+	if((plugins = config_get(phone->config, NULL, "plugins")) != NULL)
+		_idle_load_plugins(phone, plugins);
+	phone->source = 0;
 	return FALSE;
+}
+
+static void _idle_load_plugins(Phone * phone, char const * plugins)
+{
+	char * p;
+	char * q;
+	size_t i;
+
+	if((p = strdup(plugins)) == NULL)
+		return;
+	for(q = p, i = 0;;)
+	{
+		if(q[i] == '\0')
+		{
+			if(phone_load(phone, q) != 0)
+				error_print("phone"); /* we can ignore errors */
+			break;
+		}
+		if(q[i++] != ',')
+			continue;
+		q[i - 1] = '\0';
+		if(phone_load(phone, q) != 0)
+			error_print("phone"); /* we can ignore errors */
+		q += i;
+		i = 0;
+	}
+	free(p);
 }
 
 static gboolean _on_plug_delete_event(gpointer data)
@@ -343,10 +391,19 @@ static void _on_plug_embedded(gpointer data)
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
+	size_t i;
+
+	for(i = 0; i < phone->plugins_cnt; i++)
+	{
+		if(phone->plugins[i]->destroy != NULL)
+			phone->plugins[i]->destroy();
+		plugin_delete(phone->plugins[i]);
+	}
+	free(phone->plugins);
 	if(phone->config != NULL)
 		config_delete(phone->config);
-	if(phone->ui_source != 0)
-		g_source_remove(phone->ui_source);
+	if(phone->source != 0)
+		g_source_remove(phone->source);
 	if(phone->tr_source != 0)
 		g_source_remove(phone->tr_source);
 	pango_font_description_free(phone->bold);
@@ -563,6 +620,29 @@ void phone_dialer_hangup(Phone * phone)
 }
 
 
+/* plugins */
+int phone_load(Phone * phone, char const * plugin)
+{
+	Plugin * p;
+	PhonePlugin * pp;
+	PhonePlugin ** q;
+
+	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
+		return -1;
+	if((pp = plugin_lookup(p, "plugin")) == NULL
+			|| (pp->init != NULL && pp->init() != 0)
+			|| (q = realloc(phone->plugins, sizeof(*q)
+					* (phone->plugins_cnt + 1))) == NULL)
+	{
+		plugin_delete(p);
+		return -1;
+	}
+	phone->plugins = q;
+	phone->plugins[phone->plugins_cnt++] = p;
+	return 0;
+}
+
+
 /* messages */
 /* phone_messages_add */
 void phone_messages_add(Phone * phone, unsigned int index, char const * number,
@@ -765,12 +845,14 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_reject);
 			gtk_widget_hide(phone->ca_close);
+			_phone_event(phone, PHONE_EVENT_CALL_ESTABLISHED);
 			break;
 		case PHONE_CALL_INCOMING:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Incoming call"));
 			gtk_widget_hide(phone->ca_hangup);
 			gtk_widget_hide(phone->ca_close);
+			_phone_event(phone, PHONE_EVENT_CALL_INCOMING);
 			break;
 		case PHONE_CALL_OUTGOING:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
@@ -778,6 +860,7 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_reject);
 			gtk_widget_hide(phone->ca_close);
+			_phone_event(phone, PHONE_EVENT_CALL_OUTGOING);
 			break;
 		case PHONE_CALL_TERMINATED:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
@@ -785,6 +868,7 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_hangup);
 			gtk_widget_hide(phone->ca_reject);
+			_phone_event(phone, PHONE_EVENT_CALL_TERMINATED);
 			break;
 	}
 	gtk_window_present(GTK_WINDOW(phone->ca_window));
@@ -1659,6 +1743,17 @@ static void _phone_error(GtkWidget * window, char const * message)
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
+}
+
+
+/* phone_event */
+static void _phone_event(Phone * phone, PhoneEvent event)
+{
+	size_t i;
+
+	for(i = 0; i < phone->plugins_cnt; i++)
+		if(phone->plugins[i]->event != NULL)
+			phone->plugins[i]->event(event);
 }
 
 
