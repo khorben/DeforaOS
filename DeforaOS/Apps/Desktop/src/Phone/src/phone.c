@@ -343,7 +343,8 @@ void phone_call_answer(Phone * phone)
 /* phone_call_hangup */
 void phone_call_hangup(Phone * phone)
 {
-	gsm_call_hangup(phone->gsm);
+	/* XXX seems to work better than hangup */
+	gsm_call_reject(phone->gsm);
 }
 
 
