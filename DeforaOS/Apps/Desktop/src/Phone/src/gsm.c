@@ -252,8 +252,6 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 {
 	GSM * gsm;
 
-	if(device == NULL)
-		return NULL;
 	if((gsm = malloc(sizeof(*gsm))) == NULL)
 		return NULL;
 	/* settings */
