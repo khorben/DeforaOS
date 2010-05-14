@@ -52,7 +52,7 @@ PhonePlugin plugin =
 
 /* private */
 /* functions */
-/* openmoko_init */
+/* openmoko_event */
 static int _event_mixer_set(char const * filename);
 
 static void _openmoko_event(PhoneEvent event, ...)
@@ -84,6 +84,9 @@ static int _event_mixer_set(char const * filename)
 	char * alsactl[] = { SBINDIR "/alsactl", "alsactl", "-f", NULL,
 		"restore", NULL };
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, filename);
+#endif
 	len = sizeof(scenarios) + 1 + strlen(filename);
 	if((pathname = malloc(len)) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
