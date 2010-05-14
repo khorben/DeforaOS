@@ -477,6 +477,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 					GSM_ERROR_MESSAGE_SEND_FAILED);
 			/* this ensures that no command gets in between */
 			gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGHEST);
+			gsm_command_set_timeout(gsmc, 60000);
 		}
 	}
 	if(ret != 0)
