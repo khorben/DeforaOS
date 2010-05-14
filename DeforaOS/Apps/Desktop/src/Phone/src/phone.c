@@ -54,6 +54,12 @@ typedef enum _PhoneMessageColumn
 #define PHONE_MESSAGE_COLUMN_LAST	PHONE_MESSAGE_COLUMN_CONTENT
 #define PHONE_MESSAGE_COLUMN_COUNT	(PHONE_MESSAGE_COLUMN_LAST + 1)
 
+typedef struct _PhonePluginEntry
+{
+	Plugin * p;
+	PhonePlugin * pp;
+} PhonePluginEntry;
+
 typedef enum _PhoneSignal
 {
 	PHONE_SIGNAL_UNKNOWN,
@@ -93,7 +99,7 @@ struct _Phone
 	gboolean tracks[PHONE_TRACK_COUNT];
 
 	/* plugins */
-	PhonePlugin ** plugins;
+	PhonePluginEntry * plugins;
 	size_t plugins_cnt;
 
 	/* widgets */
@@ -177,7 +183,7 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent,
 
 static void _phone_error(GtkWidget * window, char const * message);
 
-static void _phone_event(Phone * phone, PhoneEvent event);
+static void _phone_event(Phone * phone, PhoneEvent event, ...);
 
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
@@ -395,9 +401,9 @@ void phone_delete(Phone * phone)
 
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
-		if(phone->plugins[i]->destroy != NULL)
-			phone->plugins[i]->destroy();
-		plugin_delete(phone->plugins[i]);
+		if(phone->plugins[i].pp->destroy != NULL)
+			phone->plugins[i].pp->destroy();
+		plugin_delete(phone->plugins[i].p);
 	}
 	free(phone->plugins);
 	if(phone->config != NULL)
@@ -625,7 +631,7 @@ int phone_load(Phone * phone, char const * plugin)
 {
 	Plugin * p;
 	PhonePlugin * pp;
-	PhonePlugin ** q;
+	PhonePluginEntry * q;
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -1;
@@ -638,7 +644,8 @@ int phone_load(Phone * phone, char const * plugin)
 		return -1;
 	}
 	phone->plugins = q;
-	phone->plugins[phone->plugins_cnt++] = p;
+	phone->plugins[phone->plugins_cnt].p = p;
+	phone->plugins[phone->plugins_cnt++].pp = pp;
 	return 0;
 }
 
@@ -1590,6 +1597,7 @@ void phone_write_send(Phone * phone)
 	GtkTextBuffer * tbuf;
 	GtkTextIter start;
 	GtkTextIter end;
+	size_t len;
 
 	phone_show_write(phone, TRUE);
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
@@ -1603,6 +1611,8 @@ void phone_write_send(Phone * phone)
 	phone->wr_progress = _phone_create_progress(phone->wr_window,
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
+	len = strlen(text);
+	_phone_event(phone, PHONE_EVENT_SMS_SENT, text, &len);
 	gsm_send_message(phone->gsm, number, text);
 	g_free(text);
 }
@@ -1747,13 +1757,32 @@ static void _phone_error(GtkWidget * window, char const * message)
 
 
 /* phone_event */
-static void _phone_event(Phone * phone, PhoneEvent event)
+static void _phone_event(Phone * phone, PhoneEvent event, ...)
 {
 	size_t i;
+	va_list ap;
+	char * buf;
+	size_t * len;
 
 	for(i = 0; i < phone->plugins_cnt; i++)
-		if(phone->plugins[i]->event != NULL)
-			phone->plugins[i]->event(event);
+	{
+		if(phone->plugins[i].pp->event == NULL)
+			continue;
+		switch(event)
+		{
+			case PHONE_EVENT_SMS_RECEIVED:
+			case PHONE_EVENT_SMS_SENT:
+				va_start(ap, event);
+				buf = va_arg(ap, char *);
+				len = va_arg(ap, size_t *);
+				phone->plugins[i].pp->event(event, buf, len);
+				va_end(ap);
+				break;
+			default:
+				phone->plugins[i].pp->event(event);
+				break;
+		}
+	}
 }
 
 
@@ -2009,6 +2038,9 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->incoming_message.index);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
+			_phone_event(phone, PHONE_EVENT_SMS_RECEIVED,
+					event->message.content,
+					&event->message.length);
 			phone_messages_add(phone, event->message.index,
 					event->message.number,
 					event->message.date,
