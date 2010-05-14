@@ -25,14 +25,16 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_CALL_ESTABLISHED = 0,
 	PHONE_EVENT_CALL_INCOMING,
 	PHONE_EVENT_CALL_OUTGOING,
-	PHONE_EVENT_CALL_TERMINATED
+	PHONE_EVENT_CALL_TERMINATED,
+	PHONE_EVENT_SMS_SENT,		/* char * buffer, size_t * len */
+	PHONE_EVENT_SMS_RECEIVED	/* char * buffer, size_t * len */
 } PhoneEvent;
 
 typedef struct _PhonePlugin
 {
 	int (*init)(void);
 	int (*destroy)(void);
-	void (*event)(PhoneEvent event);
+	void (*event)(PhoneEvent event, ...);
 } PhonePlugin;
 
 #endif /* !PHONE_PHONE_H */

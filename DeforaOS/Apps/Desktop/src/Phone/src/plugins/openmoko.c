@@ -30,11 +30,14 @@
 #ifndef DATADIR
 # define DATADIR	PREFIX "/share"
 #endif
+#ifndef SBINDIR
+# define SBINDIR	PREFIX "/sbin"
+#endif
 
 
 /* Openmoko */
 /* private */
-static void _openmoko_event(PhoneEvent event);
+static void _openmoko_event(PhoneEvent event, ...);
 
 
 /* public */
@@ -52,7 +55,7 @@ PhonePlugin plugin =
 /* openmoko_init */
 static int _event_mixer_set(char const * filename);
 
-static void _openmoko_event(PhoneEvent event)
+static void _openmoko_event(PhoneEvent event, ...)
 {
 	switch(event)
 	{
@@ -66,6 +69,10 @@ static void _openmoko_event(PhoneEvent event)
 		case PHONE_EVENT_CALL_TERMINATED:
 			_event_mixer_set("speaker.xml");
 			break;
+		/* not relevant */
+		case PHONE_EVENT_SMS_RECEIVED:
+		case PHONE_EVENT_SMS_SENT:
+			break;
 	}
 }
 
@@ -74,7 +81,7 @@ static int _event_mixer_set(char const * filename)
 	char const scenarios[] = DATADIR "/openmoko/scenarios";
 	char * pathname;
 	size_t len;
-	char * alsactl[] = { "/usr/sbin/alsactl", "alsactl", "-f", NULL,
+	char * alsactl[] = { SBINDIR "/alsactl", "alsactl", "-f", NULL,
 		"restore", NULL };
 
 	len = sizeof(scenarios) + 1 + strlen(filename);
