@@ -27,9 +27,9 @@
 #include <ctype.h>
 #include <errno.h>
 #include <libintl.h>
+#include <System.h>
 #include "command.h"
 #include "modem.h"
-#include "phone.h"
 #include "gsm.h"
 #define _(string) gettext(string)
 #define N_(string) (string)
@@ -291,9 +291,8 @@ GSM * gsm_new(char const * device, unsigned int baudrate, unsigned int hwflow)
 
 static unsigned int _new_baudrate(unsigned int baudrate)
 {
-	char buf[256];
 	char const * error;
-	
+
 	error = _(": Unknown baudrate, assuming 115200");
 	switch(baudrate)
 	{
@@ -330,8 +329,8 @@ static unsigned int _new_baudrate(unsigned int baudrate)
 		case 921600:
 			return B921600;
 		default:
-			snprintf(buf, sizeof(buf), "%u%s", baudrate, error);
-			return phone_error(NULL, buf, 115200);
+			error_set("%u%s", baudrate, error, 115200);
+			return 115200;
 	}
 }
 
@@ -833,14 +832,12 @@ int gsm_send_message(GSM * gsm, char const * number, char const * text)
 static int _gsm_event_send(GSM * gsm, GSMEventType type)
 {
 	int ret;
-	char buf[80];
 
 	gsm->event.type = type;
 	ret = gsm->callback(&gsm->event, gsm->callback_data);
 	if(ret == 0)
 		return 0;
-	snprintf(buf, sizeof(buf), "%u: %s", type, _("Event not handled"));
-	return phone_error(NULL, buf, ret);
+	return error_set_code(ret, "%u: %s", type, _("Event not handled"));
 }
 
 
@@ -1581,7 +1578,7 @@ static int _gsm_trigger_no_answer(GSM * gsm, char const * result,
 	if(answered != NULL)
 		*answered = TRUE;
 	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_NO_ANSWER,
-			"NO ANSWER");
+			"No answer");
 }
 
 
@@ -1595,7 +1592,7 @@ static int _gsm_trigger_no_carrier(GSM * gsm, char const * result,
 	if(answered != NULL)
 		*answered = TRUE;
 	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_NO_CARRIER,
-			"NO CARRIER");
+			"No carrier");
 }
 
 
@@ -1609,7 +1606,7 @@ static int _gsm_trigger_no_dialtone(GSM * gsm, char const * result,
 	if(answered != NULL)
 		*answered = TRUE;
 	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR, GSM_ERROR_NO_DIALTONE,
-			"NO DIALTONE");
+			"No dialtone");
 }
 
 
@@ -1622,7 +1619,6 @@ static gboolean _on_reset(gpointer data)
 {
 	GSM * gsm = data;
 	int fd;
-	char buf[256];
 	GError * error = NULL;
 
 #ifdef DEBUG
@@ -1640,19 +1636,18 @@ static gboolean _on_reset(gpointer data)
 	if((fd = open(gsm->device, O_RDWR | O_NONBLOCK)) < 0
 			|| _reset_do(gsm, fd) != 0)
 	{
-		snprintf(buf, sizeof(buf), "%s%s%s", gsm->device, ": ",
-				strerror(errno));
 		if(fd >= 0)
 			close(fd);
 		if(gsm->retry > 0)
 			gsm->source = g_timeout_add(gsm->retry, _on_reset, gsm);
 		gsm->source = 0;
-		return phone_error(NULL, buf, FALSE);
+		return error_set_code(FALSE, "%s%s%s", gsm->device, ": ",
+				strerror(errno));
 	}
 	gsm->channel = g_io_channel_unix_new(fd);
 	if((g_io_channel_set_encoding(gsm->channel, NULL, &error))
 			!= G_IO_STATUS_NORMAL)
-		phone_error(NULL, error->message, 0);
+		error_set(0, "%s", error->message);
 	g_io_channel_set_buffered(gsm->channel, FALSE);
 	gsm->rd_source = g_io_add_watch(gsm->channel, G_IO_IN,
 			_on_watch_can_read, gsm);
@@ -1695,9 +1690,9 @@ static int _reset_do(GSM * gsm, int fd)
 		term.c_cc[VMIN] = 1;
 		term.c_cc[VTIME] = 0;
 		if(cfsetispeed(&term, 0) != 0) /* same speed as output speed */
-			phone_error(NULL, gsm->device, 0); /* go on anyway */
+			error_set("%s", gsm->device); /* go on anyway */
 		if(cfsetospeed(&term, gsm->baudrate) != 0)
-			phone_error(NULL, gsm->device, 0); /* go on anyway */
+			error_set("%s", gsm->device); /* go on anyway */
 		if(tcsetattr(fd, TCSAFLUSH, &term) != 0)
 			return 1;
 	}
@@ -1778,7 +1773,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			phone_error(NULL, error->message, 0);
+			error_set("%s", error->message); /* XXX really print */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
 			if(gsm->retry > 0)
@@ -1828,7 +1823,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_NORMAL:
 			break;
 		case G_IO_STATUS_ERROR:
-			phone_error(NULL, error->message, 0);
+			error_set("%s", error->message); /* XXX really print */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
 			if(gsm->retry > 0)

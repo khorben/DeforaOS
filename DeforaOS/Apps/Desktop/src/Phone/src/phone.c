@@ -42,9 +42,18 @@
 /* Phone */
 /* private */
 /* types */
+typedef enum _PhoneContactColumn
+{
+	PHONE_CONTACT_COLUMN_ID = 0,
+	PHONE_CONTACT_COLUMN_NAME,
+	PHONE_CONTACT_COLUMN_NUMBER
+} PhoneContactColumn;
+#define PHONE_CONTACT_COLUMN_LAST	PHONE_CONTACT_COLUMN_NUMBER
+#define PHONE_CONTACT_COLUMN_COUNT	(PHONE_CONTACT_COLUMN_LAST + 1)
+
 typedef enum _PhoneMessageColumn
 {
-	PHONE_MESSAGE_COLUMN_INDEX = 0,
+	PHONE_MESSAGE_COLUMN_ID = 0,
 	PHONE_MESSAGE_COLUMN_NUMBER,
 	PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY,
 	PHONE_MESSAGE_COLUMN_DATE,
@@ -99,6 +108,7 @@ struct _Phone
 	gboolean tracks[PHONE_TRACK_COUNT];
 
 	/* plugins */
+	PhonePluginHelper helper;
 	PhonePluginEntry * plugins;
 	size_t plugins_cnt;
 
@@ -171,6 +181,9 @@ struct _Phone
 
 
 /* prototypes */
+static char const * _phone_config_get(Phone * phone, char const * section,
+		char const * variable);
+
 static GtkWidget * _phone_create_button(char const * icon, char const * label);
 static GtkWidget * _phone_create_dialpad(Phone * phone,
 		char const * button1_image, char const * button1_label,
@@ -259,6 +272,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->signal = -1;
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
+	phone->helper.config_get = _phone_config_get;
+	phone->helper.phone = phone;
 	phone->plugins = NULL;
 	phone->plugins_cnt = 0;
 	/* widgets */
@@ -268,8 +283,8 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->en_window = NULL;
 	phone->en_progress = NULL;
 	phone->co_window = NULL;
-	phone->co_store = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
-			G_TYPE_STRING);
+	phone->co_store = gtk_list_store_new(PHONE_CONTACT_COLUMN_COUNT,
+			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 #ifdef DEBUG
 	phone->de_window = NULL;
 #endif
@@ -398,11 +413,13 @@ static void _on_plug_embedded(gpointer data)
 void phone_delete(Phone * phone)
 {
 	size_t i;
+	PhonePlugin * plugin;
 
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
-		if(phone->plugins[i].pp->destroy != NULL)
-			phone->plugins[i].pp->destroy();
+		plugin = phone->plugins[i].pp;
+		if(plugin->destroy != NULL)
+			plugin->destroy(plugin);
 		plugin_delete(phone->plugins[i].p);
 	}
 	free(phone->plugins);
@@ -524,22 +541,6 @@ void phone_code_clear(Phone * phone)
 
 
 /* contacts */
-/* phone_contacts_add */
-void phone_contacts_add(Phone * phone, unsigned int index, char const * name,
-		char const * number)
-{
-	GtkTreeIter iter;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
-			name, number);
-#endif
-	gtk_list_store_append(phone->co_store, &iter);
-	gtk_list_store_set(phone->co_store, &iter, 0, index, 1, name, 2, number,
-			-1);
-}
-
-
 /* phone_contacts_call_selected */
 void phone_contacts_call_selected(Phone * phone)
 {
@@ -552,9 +553,39 @@ void phone_contacts_call_selected(Phone * phone)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter, 0, &index,
-			-1);
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
+			PHONE_CONTACT_COLUMN_ID, &index, -1);
 	gsm_call_contact(phone->gsm, GSM_CALL_TYPE_VOICE, index);
+}
+
+
+/* phone_contacts_set */
+void phone_contacts_set(Phone * phone, unsigned int index, char const * name,
+		char const * number)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->co_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	unsigned int id;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
+			name, number);
+#endif
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PHONE_CONTACT_COLUMN_ID, &id,
+				-1);
+		if(id == index)
+			break;
+	}
+	if(valid != TRUE)
+		gtk_list_store_append(phone->co_store, &iter);
+	gtk_list_store_set(phone->co_store, &iter,
+			PHONE_CONTACT_COLUMN_ID, index,
+			PHONE_CONTACT_COLUMN_NAME, name,
+			PHONE_CONTACT_COLUMN_NUMBER, number, -1);
 }
 
 
@@ -570,7 +601,7 @@ void phone_contacts_write_selected(Phone * phone)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) == TRUE)
 		gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
-				2, &number, -1);
+				PHONE_CONTACT_COLUMN_NUMBER, &number, -1);
 	phone_messages_write(phone, number, "");
 	g_free(number);
 }
@@ -635,8 +666,13 @@ int phone_load(Phone * phone, char const * plugin)
 
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
 		return -1;
-	if((pp = plugin_lookup(p, "plugin")) == NULL
-			|| (pp->init != NULL && pp->init() != 0)
+	if((pp = plugin_lookup(p, "plugin")) == NULL)
+	{
+		plugin_delete(p);
+		return -1;
+	}
+	pp->helper = &phone->helper;
+	if((pp->init != NULL && pp->init(pp) != 0)
 			|| (q = realloc(phone->plugins, sizeof(*q)
 					* (phone->plugins_cnt + 1))) == NULL)
 	{
@@ -651,11 +687,14 @@ int phone_load(Phone * phone, char const * plugin)
 
 
 /* messages */
-/* phone_messages_add */
-void phone_messages_add(Phone * phone, unsigned int index, char const * number,
+/* phone_messages_set */
+void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 		time_t date, char const * content)
 {
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->me_store);
 	GtkTreeIter iter;
+	gboolean valid;
+	unsigned int id;
 	char nd[32];
 	char dd[32];
 	struct tm t;
@@ -663,6 +702,16 @@ void phone_messages_add(Phone * phone, unsigned int index, char const * number,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, \"%s\")\n", __func__, index, content);
 #endif
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PHONE_MESSAGE_COLUMN_ID, &id,
+				-1);
+		if(id == index)
+			break;
+	}
+	if(valid != TRUE)
+		gtk_list_store_append(phone->me_store, &iter);
 	if(number == NULL)
 		number = "";
 	if(content == NULL)
@@ -673,7 +722,7 @@ void phone_messages_add(Phone * phone, unsigned int index, char const * number,
 	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_list_store_append(phone->me_store, &iter);
 	gtk_list_store_set(phone->me_store, &iter,
-			PHONE_MESSAGE_COLUMN_INDEX, index,
+			PHONE_MESSAGE_COLUMN_ID, index,
 			PHONE_MESSAGE_COLUMN_NUMBER, number,
 			PHONE_MESSAGE_COLUMN_NUMBER_DISPLAY, nd,
 			PHONE_MESSAGE_COLUMN_DATE, date,
@@ -698,7 +747,7 @@ void phone_messages_read_selected(Phone * phone)
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
-			PHONE_MESSAGE_COLUMN_INDEX, &index,
+			PHONE_MESSAGE_COLUMN_ID, &index,
 			PHONE_MESSAGE_COLUMN_NUMBER, &number,
 			PHONE_MESSAGE_COLUMN_DATE, &date,
 			PHONE_MESSAGE_COLUMN_CONTENT, &content,
@@ -1006,10 +1055,15 @@ void phone_show_contacts(Phone * phone, gboolean show)
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->co_view),
 				FALSE);
 		renderer = gtk_cell_renderer_text_new();
-		column = gtk_tree_view_column_new_with_attributes(_("Contact"),
+		column = gtk_tree_view_column_new_with_attributes(_("Name"),
 				renderer, "text", 1, NULL);
+		gtk_tree_view_column_set_sort_column_id(column,
+				PHONE_CONTACT_COLUMN_NAME);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(phone->co_view),
 				column);
+		gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(
+					phone->co_store),
+				PHONE_CONTACT_COLUMN_NAME, GTK_SORT_ASCENDING);
 		gtk_container_add(GTK_CONTAINER(widget), phone->co_view);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->co_window), vbox);
@@ -1619,6 +1673,14 @@ void phone_write_send(Phone * phone)
 
 
 /* private */
+/* phone_config_get */
+static char const * _phone_config_get(Phone * phone, char const * section,
+		char const * variable)
+{
+	return config_get(phone->config, section, variable);
+}
+
+
 /* phone_create_button */
 static GtkWidget * _phone_create_button(char const * icon, char const * label)
 {
@@ -1760,13 +1822,15 @@ static void _phone_error(GtkWidget * window, char const * message)
 static void _phone_event(Phone * phone, PhoneEvent event, ...)
 {
 	size_t i;
+	PhonePlugin * plugin;
 	va_list ap;
 	char * buf;
 	size_t * len;
 
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
-		if(phone->plugins[i].pp->event == NULL)
+		plugin = phone->plugins[i].pp;
+		if(plugin->event == NULL)
 			continue;
 		switch(event)
 		{
@@ -1775,11 +1839,11 @@ static void _phone_event(Phone * phone, PhoneEvent event, ...)
 				va_start(ap, event);
 				buf = va_arg(ap, char *);
 				len = va_arg(ap, size_t *);
-				phone->plugins[i].pp->event(event, buf, len);
+				plugin->event(plugin, event, buf, len);
 				va_end(ap);
 				break;
 			default:
-				phone->plugins[i].pp->event(event);
+				plugin->event(plugin, event);
 				break;
 		}
 	}
@@ -2003,7 +2067,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->call_presentation.number);
 			return 0;
 		case GSM_EVENT_TYPE_CONTACT:
-			phone_contacts_add(phone, event->contact.index,
+			phone_contacts_set(phone, event->contact.index,
 					event->contact.name,
 					event->contact.number);
 			return 0;
@@ -2041,7 +2105,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_event(phone, PHONE_EVENT_SMS_RECEIVED,
 					event->message.content,
 					&event->message.length);
-			phone_messages_add(phone, event->message.index,
+			phone_messages_set(phone, event->message.index,
 					event->message.number,
 					event->message.date,
 					event->message.content);

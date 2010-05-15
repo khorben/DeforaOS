@@ -49,22 +49,22 @@ phone-messages_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 phone-messages: $(phone-messages_OBJS)
 	$(CC) -o phone-messages $(phone-messages_OBJS) $(phone-messages_LDFLAGS)
 
-callbacks.o: callbacks.c phone.h callbacks.h
+callbacks.o: callbacks.c ../include/Phone.h phone.h callbacks.h
 	$(CC) $(phone_CFLAGS) -c callbacks.c
 
 command.o: command.c gsm.h command.h
 	$(CC) $(phone_CFLAGS) -c command.c
 
-gsm.o: gsm.c command.h phone.h modem.h gsm.h
+gsm.o: gsm.c ../include/Phone.h phone.h command.h modem.h gsm.h
 	$(CC) $(phone_CFLAGS) -c gsm.c
 
-main.o: main.c phone.h ../config.h
+main.o: main.c ../include/Phone.h phone.h ../config.h
 	$(CC) $(phone_CFLAGS) -c main.c
 
 modem.o: modem.c gsm.h modem.h
 	$(CC) $(phone_CFLAGS) -c modem.c
 
-phone.o: phone.c gsm.h callbacks.h phone.h ../config.h
+phone.o: phone.c ../include/Phone.h phone.h gsm.h callbacks.h ../config.h
 	$(CC) $(phone_CFLAGS) -c phone.c
 
 contacts.o: contacts.c common.c

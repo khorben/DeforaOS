@@ -19,7 +19,23 @@
 # define PHONE_PHONE_H
 
 
+/* Phone */
 /* types */
+typedef struct _Phone Phone;
+
+typedef enum _PhoneCall
+{
+	PHONE_CALL_ESTABLISHED = 0,
+	PHONE_CALL_INCOMING,
+	PHONE_CALL_OUTGOING,
+	PHONE_CALL_TERMINATED
+} PhoneCall;
+
+typedef enum _PhoneCode
+{
+	PHONE_CODE_SIM_PIN = 0
+} PhoneCode;
+
 typedef enum _PhoneEvent
 {
 	PHONE_EVENT_CALL_ESTABLISHED = 0,
@@ -30,11 +46,45 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_SMS_RECEIVED	/* char * buffer, size_t * len */
 } PhoneEvent;
 
-typedef struct _PhonePlugin
+typedef struct _PhonePluginHelper
 {
-	int (*init)(void);
-	int (*destroy)(void);
-	void (*event)(PhoneEvent event, ...);
-} PhonePlugin;
+	char const * (*config_get)(Phone * phone, char const * section,
+			char const * variable);
+	Phone * phone;
+} PhonePluginHelper;
+
+typedef struct _PhonePlugin PhonePlugin;
+
+struct _PhonePlugin
+{
+	PhonePluginHelper * helper;
+	int (*init)(PhonePlugin * plugin);
+	int (*destroy)(PhonePlugin * plugin);
+	int (*event)(PhonePlugin * plugin, PhoneEvent event, ...);
+	void * priv;
+};
+
+
+/* functions */
+/* useful */
+int phone_error(Phone * phone, char const * message, int ret);
+
+/* interface */
+void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
+void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
+void phone_show_contacts(Phone * phone, gboolean show);
+void phone_show_dialer(Phone * phone, gboolean show);
+void phone_show_messages(Phone * phone, gboolean show);
+void phone_show_read(Phone * phone, gboolean show, ...);
+void phone_show_write(Phone * phone, gboolean show);
+
+/* calls */
+void phone_call_answer(Phone * phone);
+void phone_call_hangup(Phone * phone);
+void phone_call_mute(Phone * phone, gboolean mute);
+void phone_call_reject(Phone * phone);
+
+/* plugins */
+int phone_load(Phone * phone, char const * plugin);
 
 #endif /* !PHONE_PHONE_H */

@@ -37,7 +37,7 @@
 
 /* Openmoko */
 /* private */
-static void _openmoko_event(PhoneEvent event, ...);
+static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
 
 
 /* public */
@@ -46,7 +46,9 @@ PhonePlugin plugin =
 {
 	NULL,
 	NULL,
-	_openmoko_event
+	NULL,
+	_openmoko_event,
+	NULL
 };
 
 
@@ -55,25 +57,26 @@ PhonePlugin plugin =
 /* openmoko_event */
 static int _event_mixer_set(char const * filename);
 
-static void _openmoko_event(PhoneEvent event, ...)
+static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
 	switch(event)
 	{
 		case PHONE_EVENT_CALL_ESTABLISHED:
-			_event_mixer_set("gsmhandset.xml");
+			_event_mixer_set("gsmhandset.state");
 			break;
 		case PHONE_EVENT_CALL_INCOMING:
 		case PHONE_EVENT_CALL_OUTGOING:
 			/* FIXME is there anything to do? */
 			break;
 		case PHONE_EVENT_CALL_TERMINATED:
-			_event_mixer_set("speaker.xml");
+			_event_mixer_set("stereoout.state");
 			break;
 		/* not relevant */
 		case PHONE_EVENT_SMS_RECEIVED:
 		case PHONE_EVENT_SMS_SENT:
 			break;
 	}
+	return 0;
 }
 
 static int _event_mixer_set(char const * filename)

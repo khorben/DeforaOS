@@ -18,26 +18,12 @@
 #ifndef PHONE_SRC_PHONE_H
 # define PHONE_SRC_PHONE_H
 
+# include <Phone.h>
 # include <glib.h>
 
 
 /* Phone */
 /* types */
-typedef struct _Phone Phone;
-
-typedef enum _PhoneCall
-{
-	PHONE_CALL_ESTABLISHED = 0,
-	PHONE_CALL_INCOMING,
-	PHONE_CALL_OUTGOING,
-	PHONE_CALL_TERMINATED
-} PhoneCall;
-
-typedef enum _PhoneCode
-{
-	PHONE_CODE_SIM_PIN = 0
-} PhoneCode;
-
 typedef enum _PhoneMessage
 {
 	PHONE_MESSAGE_SHOW = 0
@@ -63,32 +49,15 @@ void phone_delete(Phone * phone);
 
 
 /* useful */
-int phone_error(Phone * phone, char const * message, int ret);
-
-/* interface */
-void phone_show_call(Phone * phone, gboolean show, ...);
-void phone_show_code(Phone * phone, gboolean show, ...);
-void phone_show_contacts(Phone * phone, gboolean show);
-void phone_show_dialer(Phone * phone, gboolean show);
-void phone_show_messages(Phone * phone, gboolean show);
-void phone_show_read(Phone * phone, gboolean show, ...);
-void phone_show_write(Phone * phone, gboolean show);
-
-/* calls */
-void phone_call_answer(Phone * phone);
-void phone_call_hangup(Phone * phone);
-void phone_call_mute(Phone * phone, gboolean mute);
-void phone_call_reject(Phone * phone);
-
 /* code */
 int phone_code_append(Phone * phone, char character);
 void phone_code_clear(Phone * phone);
 void phone_code_enter(Phone * phone);
 
 /* contacts */
-void phone_contacts_add(Phone * phone, unsigned int index, char const * name,
-		char const * number);
 void phone_contacts_call_selected(Phone * phone);
+void phone_contacts_set(Phone * phone, unsigned int index, char const * name,
+		char const * number);
 void phone_contacts_write_selected(Phone * phone);
 
 /* dialer */
@@ -97,14 +66,11 @@ void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
 /* messages */
-void phone_messages_add(Phone * phone, unsigned int index, char const * number,
-		time_t date, char const * content);
 void phone_messages_read_selected(Phone * phone);
+void phone_messages_set(Phone * phone, unsigned int index, char const * number,
+		time_t date, char const * content);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
-
-/* plugins */
-int phone_load(Phone * phone, char const * plugin);
 
 /* write */
 void phone_write_count_buffer(Phone * phone);
