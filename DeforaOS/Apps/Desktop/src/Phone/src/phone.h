@@ -66,6 +66,8 @@ void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
 /* messages */
+void phone_messages_call_selected(Phone * phone);
+void phone_messages_delete_selected(Phone * phone);
 void phone_messages_read_selected(Phone * phone);
 void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 		time_t date, char const * content);

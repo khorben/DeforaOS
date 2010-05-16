@@ -255,7 +255,7 @@ void on_phone_messages_call(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_messages_call_selected(phone);
 }
 
 
@@ -264,7 +264,7 @@ void on_phone_messages_delete(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_messages_delete_selected(phone);
 }
 
 

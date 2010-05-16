@@ -731,6 +731,34 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 }
 
 
+/* phone_messages_call_selected */
+void phone_messages_call_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	gchar * number = NULL;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->me_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
+			PHONE_MESSAGE_COLUMN_NUMBER, &number, -1);
+	if(number == NULL)
+		return;
+	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+	g_free(number);
+}
+
+
+/* phone_messages_delete_selected */
+void phone_messages_delete_selected(Phone * phone)
+{
+	/* FIXME implement */
+}
+
+
 /* phone_messages_read_selected */
 void phone_messages_read_selected(Phone * phone)
 {
