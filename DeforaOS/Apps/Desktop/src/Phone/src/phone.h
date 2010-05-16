@@ -74,6 +74,9 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
 
+/* read */
+void phone_read_call(Phone * phone);
+
 /* write */
 void phone_write_count_buffer(Phone * phone);
 void phone_write_send(Phone * phone);

@@ -802,6 +802,20 @@ void phone_messages_write(Phone * phone, char const * number, char const * text)
 }
 
 
+/* read */
+/* phone_read_call */
+void phone_read_call(Phone * phone)
+{
+	char const * number;
+
+	if(phone->re_window == NULL)
+		return;
+	if((number = gtk_label_get_text(GTK_LABEL(phone->re_number))) == NULL)
+		return;
+	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+}
+
+
 /* show */
 /* phone_show_call */
 void phone_show_call(Phone * phone, gboolean show, ...)

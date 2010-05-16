@@ -310,7 +310,7 @@ void on_phone_read_call(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_read_call(phone);
 }
 
 
