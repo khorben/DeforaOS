@@ -2056,6 +2056,8 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			break;
 		case GSM_STATUS_REGISTERING_DENIED:
 			operator = _("Denied");
+			gsm_set_operator_mode(phone->gsm,
+					GSM_OPERATOR_MODE_AUTOMATIC);
 			break;
 		case GSM_STATUS_INITIALIZED:
 			operator = _("SIM check...");
