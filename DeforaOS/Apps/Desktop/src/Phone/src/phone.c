@@ -657,6 +657,7 @@ void phone_dialer_hangup(Phone * phone)
 
 
 /* plugins */
+/* phone_load */
 int phone_load(Phone * phone, char const * plugin)
 {
 	Plugin * p;
@@ -674,12 +675,16 @@ int phone_load(Phone * phone, char const * plugin)
 		return phone_error(NULL, error_get(), -1);
 	}
 	pp->helper = &phone->helper;
-	if((pp->init != NULL && pp->init(pp) != 0)
-			|| (q = realloc(phone->plugins, sizeof(*q)
-					* (phone->plugins_cnt + 1))) == NULL)
+	if(pp->init != NULL && pp->init(pp) != 0)
 	{
 		plugin_delete(p);
-		return -1; /* XXX report error */
+		return phone_error(NULL, error_get(), -1);
+	}
+	if((q = realloc(phone->plugins, sizeof(*q) * (phone->plugins_cnt + 1)))
+			== NULL)
+	{
+		plugin_delete(p);
+		return phone_error(NULL, strerror(errno), -1);
 	}
 	phone->plugins = q;
 	phone->plugins[phone->plugins_cnt].p = p;
@@ -1165,6 +1170,7 @@ static struct
 static void _on_debug_gsm_execute(gpointer data);
 static void _on_debug_queue_execute(gpointer data);
 static void _on_debug_plugin_load(gpointer data);
+static void _on_debug_plugin_unload_all(gpointer data);
 
 void phone_show_debug(Phone * phone, gboolean show)
 {
@@ -1196,7 +1202,6 @@ void phone_show_debug(Phone * phone, gboolean show)
 		gtk_combo_box_set_active(GTK_COMBO_BOX(phone->de_gsm), 0);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->de_gsm, TRUE, TRUE, 4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_gsm_execute), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -1212,7 +1217,6 @@ void phone_show_debug(Phone * phone, gboolean show)
 		gtk_box_pack_start(GTK_BOX(hbox), phone->de_queue, TRUE, TRUE,
 				4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_queue_execute), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -1228,9 +1232,12 @@ void phone_show_debug(Phone * phone, gboolean show)
 		gtk_box_pack_start(GTK_BOX(hbox), phone->de_plugin, TRUE, TRUE,
 				4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
-		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_plugin_load), phone);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+		widget = gtk_button_new_with_label("Unload all");
+		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
+				G_CALLBACK(_on_debug_plugin_unload_all), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 		/* quit */
@@ -1284,6 +1291,23 @@ static void _on_debug_plugin_load(gpointer data)
 	if((text = gtk_entry_get_text(GTK_ENTRY(phone->de_plugin))) == NULL)
 		return;
 	phone_load(phone, text); /* we can ignore errors */
+}
+
+static void _on_debug_plugin_unload_all(gpointer data)
+{
+	Phone * phone = data;
+	size_t i;
+	PhonePlugin * plugin;
+
+	for(i = 0; i < phone->plugins_cnt; i++)
+	{
+		plugin = phone->plugins[i].pp;
+		if(plugin->destroy != NULL && plugin->destroy(plugin) != 0)
+			phone_error(NULL, error_get(), 0);
+	}
+	phone->plugins_cnt = 0;
+	free(phone->plugins);
+	phone->plugins = NULL;
 }
 
 static int _gsm_fetch_message_list_all(GSM * gsm)
