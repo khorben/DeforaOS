@@ -1,3 +1,4 @@
 ../src/gsm.c
 ../src/main.c
 ../src/phone.c
+../src/plugins/profiles.c
