@@ -18,6 +18,8 @@
 #ifndef PHONE_PHONE_H
 # define PHONE_PHONE_H
 
+# include <glib.h>
+
 
 /* Phone */
 /* types */

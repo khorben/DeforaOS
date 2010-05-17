@@ -19,7 +19,6 @@
 # define PHONE_SRC_PHONE_H
 
 # include <Phone.h>
-# include <glib.h>
 
 
 /* Phone */
