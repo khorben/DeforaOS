@@ -55,7 +55,7 @@ callbacks.o: callbacks.c ../include/Phone.h phone.h callbacks.h
 command.o: command.c gsm.h command.h
 	$(CC) $(phone_CFLAGS) -c command.c
 
-gsm.o: gsm.c ../include/Phone.h phone.h command.h modem.h gsm.h
+gsm.o: gsm.c command.h modem.h gsm.h
 	$(CC) $(phone_CFLAGS) -c gsm.c
 
 main.o: main.c ../include/Phone.h phone.h ../config.h
