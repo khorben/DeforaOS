@@ -192,7 +192,7 @@ static void _new_strut(Panel * panel, GdkRectangle * rect)
 	unsigned long strut[12];
 
 	window = gtk_widget_get_window(panel->window);
-	cardinal = gdk_atom_intern("XA_CARDINAL", FALSE);
+	cardinal = gdk_atom_intern("CARDINAL", FALSE);
 	memset(strut, 0, sizeof(strut));
 	if(panel->position == PANEL_POSITION_TOP)
 	{
