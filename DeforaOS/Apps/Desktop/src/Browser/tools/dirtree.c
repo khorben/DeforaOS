@@ -44,8 +44,7 @@ static int _dirtree_error(char const * message, int ret);
 /* dirtree_new */
 static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter);
 /* callbacks */
-static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _on_dirtree_closex(gpointer data);
 static void _on_dirtree_default(GtkTreeView * view, GtkTreePath * path,
 		GtkTreeViewColumn * column, gpointer data);
 
@@ -72,8 +71,8 @@ static int _dirtree_new(Prefs * prefs, char const * pathname)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Directory tree");
 	gtk_window_set_default_size(GTK_WINDOW(window), 480, 640);
-	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_on_dirtree_delete), window);
+	g_signal_connect_swapped(G_OBJECT(window), "delete-event", G_CALLBACK(
+				_on_dirtree_closex), window);
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	store = gtk_tree_store_new(3, GDK_TYPE_PIXBUF, G_TYPE_STRING,
 			G_TYPE_STRING);
@@ -150,8 +149,7 @@ static int _dirtree_add(GtkTreeStore * store, GtkTreeIter * iter)
 	return 0;
 }
 
-static gboolean _on_dirtree_delete(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _on_dirtree_closex(gpointer data)
 {
 	GtkWidget * window = data;
 
