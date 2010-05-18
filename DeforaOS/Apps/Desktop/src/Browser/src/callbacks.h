@@ -22,7 +22,7 @@
 
 
 /* window */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+gboolean on_closex(gpointer data);
 
 /* accelerators */
 gboolean on_close(gpointer data);

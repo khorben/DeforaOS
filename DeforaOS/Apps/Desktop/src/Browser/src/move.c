@@ -66,8 +66,7 @@ typedef struct _Move
 static void _move_refresh(Move * move);
 
 /* callbacks */
-static void _move_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static void _move_on_closex(void);
 static gboolean _move_idle_first(gpointer data);
 
 static int _move(Prefs * prefs, unsigned int filec, char * filev[])
@@ -149,8 +148,7 @@ static int _move_confirm(Move * move, char const * dst)
 	return ret == GTK_RESPONSE_YES ? 1 : 0;
 }
 
-static void _move_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static void _move_on_closex(void)
 {
 	gtk_main_quit();
 }

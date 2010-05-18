@@ -89,8 +89,7 @@ typedef struct _Copy
 static void _copy_refresh(Copy * copy);
 
 /* callbacks */
-static void _copy_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static void _copy_on_closex(void);
 static gboolean _copy_idle_first(gpointer data);
 
 static int _copy(Prefs * prefs, unsigned int filec, char * filev[])
@@ -234,8 +233,7 @@ static int _copy_confirm(Copy * copy, char const * dst)
 	return ret == GTK_RESPONSE_YES ? 1 : 0;
 }
 
-static void _copy_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static void _copy_on_closex(void)
 {
 	gtk_main_quit();
 }

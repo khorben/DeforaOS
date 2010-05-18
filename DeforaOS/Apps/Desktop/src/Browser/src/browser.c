@@ -253,8 +253,8 @@ Browser * browser_new(char const * directory)
 	gtk_window_set_icon_name(GTK_WINDOW(browser->window), ICON_NAME);
 #endif
 	gtk_window_set_title(GTK_WINDOW(browser->window), _("File browser"));
-	g_signal_connect(browser->window, "delete-event", G_CALLBACK(on_closex),
-			browser);
+	g_signal_connect_swapped(browser->window, "delete-event", G_CALLBACK(
+				on_closex), browser);
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* menubar */
 #ifndef EMBEDDED

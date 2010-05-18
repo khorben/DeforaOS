@@ -82,7 +82,7 @@ static int _iconlist_list(char * theme)
 /* iconlist_do */
 static void _do_iconview(GtkWidget * iconview, char const * theme);
 /* callbacks */
-static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data);
+static gboolean _on_closex(GtkWidget * widget);
 static void _on_theme_activate(GtkWidget * widget, gpointer data);
 
 static int _iconlist_do(void)
@@ -138,7 +138,7 @@ static int _iconlist_do(void)
 	return 0;
 }
 
-static gboolean _on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+static gboolean _on_closex(GtkWidget * widget)
 {
 	gtk_widget_hide(widget);
 	gtk_main_quit();

@@ -58,7 +58,7 @@ static GList * _copy_selection(Browser * browser);
 /* functions */
 /* callbacks */
 /* window */
-gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
+gboolean on_closex(gpointer data)
 {
 	Browser * browser = data;
 
@@ -73,7 +73,7 @@ gboolean on_closex(GtkWidget * widget, GdkEvent * event, gpointer data)
 /* on_close */
 gboolean on_close(gpointer data)
 {
-	on_closex(NULL, NULL, data);
+	on_closex(data);
 	return FALSE;
 }
 
@@ -146,7 +146,7 @@ void on_file_new_symlink(gpointer data)
 
 void on_file_close(gpointer data)
 {
-	on_closex(NULL, NULL, data);
+	on_closex(data);
 }
 
 
@@ -238,8 +238,7 @@ void on_edit_unselect_all(gpointer data)
 /* on_edit_preferences */
 static void _preferences_set(Browser * browser);
 /* callbacks */
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static gboolean _preferences_on_closex(gpointer data);
 static void _preferences_on_cancel(gpointer data);
 static void _preferences_on_ok(gpointer data);
 
@@ -326,8 +325,7 @@ static void _preferences_set(Browser * browser)
 			browser->prefs.show_hidden_files);
 }
 
-static gboolean _preferences_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _preferences_on_closex(gpointer data)
 {
 	Browser * browser = data;
 

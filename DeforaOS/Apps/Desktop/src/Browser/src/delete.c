@@ -63,8 +63,7 @@ typedef struct _Delete
 static void _delete_refresh(Delete * delete);
 
 /* callbacks */
-static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
+static void _delete_on_closex(void);
 static gboolean _delete_idle(gpointer data);
 
 static int _delete(Prefs * prefs, unsigned int filec, char * filev[])
@@ -133,8 +132,7 @@ static int _delete_error(Delete * delete, char const * message, int ret)
 	return ret;
 }
 
-static void _delete_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static void _delete_on_closex(void)
 {
 	gtk_main_quit();
 }
