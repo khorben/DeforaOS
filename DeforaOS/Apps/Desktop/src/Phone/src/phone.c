@@ -2178,9 +2178,13 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 				gsm_set_functional(phone->gsm, TRUE);
 				return 0;
 			}
+			gsm_set_call_presentation(phone->gsm, TRUE);
+			gsm_set_extended_ring_reports(phone->gsm, TRUE);
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);
+			gsm_set_supplementary_service_notifications(phone->gsm,
+					TRUE, TRUE);
 			gsm_is_phone_active(phone->gsm);
 #ifndef DEBUG
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);

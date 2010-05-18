@@ -923,12 +923,7 @@ static int _parse_do(GSM * gsm, size_t * i)
 		gsm->mode = GSM_MODE_COMMAND;
 		gsm_modem_set_echo(gsm->modem, FALSE);
 		gsm_modem_set_verbose(gsm->modem, TRUE);
-		/* XXX should probably not be set by us */
 		gsm_modem_set_extended_errors(gsm->modem, TRUE);
-		gsm_modem_set_extended_ring_reports(gsm->modem, TRUE);
-		gsm_modem_set_call_presentation(gsm->modem, TRUE);
-		gsm_modem_set_supplementary_service_notifications(gsm->modem,
-				TRUE, TRUE);
 		gsm_modem_get_model(gsm->modem);
 		_gsm_event_set_status(gsm, GSM_STATUS_INITIALIZED);
 		_gsm_queue_push(gsm);
