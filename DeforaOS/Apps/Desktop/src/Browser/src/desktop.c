@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME
- * - use _NET_WORKAREA to determine where to place the icons
  * - track multiple selection on delete/properties... */
 
 
@@ -32,6 +31,8 @@
 #include <libintl.h>
 #include <X11/Xlib.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <X11/Xatom.h>
 #include <System.h>
 #include "mime.h"
 #include "desktop.h"
@@ -64,30 +65,41 @@
 /* types */
 struct _Desktop
 {
-	DesktopLayout layout;
+	/* workarea */
+	gint x;
+	gint y;
+	gint width;
+	gint height;
+
+	/* icons */
 	DesktopIcon ** icon;
 	size_t icon_cnt;
-	Mime * mime;
-	char const * home;
+
+	/* layout */
+	DesktopLayout layout;
+	/* common */
 	char * path;
 	size_t path_cnt;
 	DIR * refresh_dir;
 	time_t refresh_mti;
+	/* files */
+	Mime * mime;
+	char const * home;
+	GdkPixbuf * file;
+	GdkPixbuf * folder;
 	/* applications */
 	GSList * apps;
 
-	GdkWindow * root;
-	GdkPixbuf * background;
-	GtkIconTheme * theme;
-	GdkPixbuf * file;
-	GdkPixbuf * folder;
-	GtkWidget * menu;
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_background;
 
-	gint width;
-	gint height;
+	/* internal */
+	GdkDisplay * display;
+	GdkWindow * root;
+	GdkPixbuf * background;
+	GtkIconTheme * theme;
+	GtkWidget * menu;
 };
 
 
@@ -95,7 +107,9 @@ struct _Desktop
 static int _desktop_error(Desktop * desktop, char const * message,
 		char const * error, int ret);
 static int _desktop_serror(Desktop * desktop, char const * message, int ret);
+
 static Config * _desktop_get_config(Desktop * desktop);
+static int _desktop_get_workarea(Desktop * desktop);
 
 
 /* public */
@@ -115,6 +129,7 @@ static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 Desktop * desktop_new(DesktopLayout layout)
 {
 	Desktop * desktop;
+	GdkScreen * screen;
 	const char * file[] = { "gnome-fs-regular",
 #if GTK_CHECK_VERSION(2, 6, 0)
 		GTK_STOCK_FILE,
@@ -132,20 +147,16 @@ Desktop * desktop_new(DesktopLayout layout)
 
 	if((desktop = malloc(sizeof(*desktop))) == NULL)
 		return NULL;
+	memset(desktop, 0, sizeof(*desktop));
+	/* workarea */
+	screen = gdk_screen_get_default();
+	desktop->display = gdk_screen_get_display(screen);
+	desktop->root = gdk_screen_get_root_window(screen);
+	_desktop_get_workarea(desktop);
+	/* layout */
 	desktop->layout = layout;
-	desktop->icon = NULL;
-	desktop->icon_cnt = 0;
-	desktop->path = NULL;
-	desktop->apps = NULL;
-	if((desktop->mime = mime_new()) == NULL
-			|| (desktop->icon = malloc(sizeof(*(desktop->icon))
-					* desktop->icon_cnt)) == NULL)
-	{
-		desktop_delete(desktop);
-		return NULL;
-	}
+	desktop->mime = mime_new();
 	desktop->theme = gtk_icon_theme_get_default();
-	desktop->file = NULL;
 	for(p = file; *p != NULL && desktop->file == NULL; p++)
 		desktop->file = gtk_icon_theme_load_icon(desktop->theme,
 				*p, DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -160,18 +171,11 @@ Desktop * desktop_new(DesktopLayout layout)
 		return _new_error(desktop, _("Creating desktop"));
 	desktop_refresh(desktop);
 	/* manage root window events */
-	desktop->menu = NULL;
-	desktop->root = gdk_screen_get_root_window(
-			gdk_display_get_default_screen(
-				gdk_display_get_default()));
-	desktop->background = NULL;
 	gdk_window_get_geometry(desktop->root, &x, &y, &desktop->width,
 			&desktop->height, &depth);
 	gdk_window_set_events(desktop->root, gdk_window_get_events(
 				desktop->root) | GDK_BUTTON_PRESS_MASK);
 	gdk_window_add_filter(desktop->root, _new_on_root_event, desktop);
-	/* preferences */
-	desktop->pr_window = NULL;
 	/* draw background when idle */
 	g_idle_add(_new_idle, desktop);
 	return desktop;
@@ -198,7 +202,7 @@ static int _new_create_desktop(Desktop * desktop)
 
 static int _new_create_desktop_applications(Desktop * desktop)
 {
-	const char path[] = PREFIX "/share/applications";
+	const char path[] = DATADIR "/applications";
 	struct stat st;
 
 	if((desktop->path = strdup(path)) == NULL)
@@ -215,13 +219,14 @@ static int _new_create_desktop_applications(Desktop * desktop)
 
 static int _new_create_desktop_files(Desktop * desktop)
 {
+	const char path[] = "/" DESKTOP;
 	struct stat st;
 
-	desktop->path_cnt = strlen(desktop->home) + strlen("/" DESKTOP) + 1;
+	desktop->path_cnt = strlen(desktop->home) + 1 + sizeof(path);
 	if((desktop->path = malloc(desktop->path_cnt)) == NULL)
 		return 1;
-	snprintf(desktop->path, desktop->path_cnt, "%s%s", desktop->home,
-			"/" DESKTOP);
+	snprintf(desktop->path, desktop->path_cnt, "%s/%s", desktop->home,
+			path);
 	if(stat(desktop->path, &st) == 0)
 	{
 		if(!S_ISDIR(st.st_mode))
@@ -230,7 +235,7 @@ static int _new_create_desktop_files(Desktop * desktop)
 			return 1;
 		}
 	}
-	else if(mkdir(desktop->path, 0777) != 0)
+	else if(errno != ENOENT || mkdir(desktop->path, 0777) != 0)
 		return 1;
 	_new_add_home(desktop);
 	return 0;
@@ -296,7 +301,10 @@ static gboolean _new_idle(gpointer data)
 static GdkFilterReturn _event_button_press(XButtonEvent * xbev,
 		Desktop * desktop);
 static GdkFilterReturn _event_expose(XExposeEvent * xevent, Desktop * desktop);
-static GdkFilterReturn _event_configure(XConfigureEvent * xevent, Desktop * desktop);
+static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
+		Desktop * desktop);
+static GdkFilterReturn _event_property(XPropertyEvent * xevent,
+		Desktop * desktop);
 static void _on_popup_new_folder(gpointer data);
 static void _on_popup_new_text_file(gpointer data);
 static void _on_popup_paste(gpointer data);
@@ -315,6 +323,8 @@ static GdkFilterReturn _new_on_root_event(GdkXEvent * xevent, GdkEvent * event,
 		return _event_expose(xevent, desktop);
 	else if(xev->type == ConfigureNotify)
 		return _event_configure(xevent, desktop);
+	else if(xev->type == PropertyNotify)
+		return _event_property(xevent, desktop);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %d\n", __func__, xev->type);
 #endif
@@ -406,6 +416,21 @@ static GdkFilterReturn _event_configure(XConfigureEvent * xevent,
 			desktop->height);
 #endif
 	g_idle_add(_new_idle, desktop); /* FIXME run it directly? */
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn _event_property(XPropertyEvent * xevent,
+		Desktop * desktop)
+{
+	Atom atom;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
+	if(xevent->atom != atom)
+		return GDK_FILTER_CONTINUE;
+	_desktop_get_workarea(desktop);
 	return GDK_FILTER_CONTINUE;
 }
 
@@ -940,21 +965,17 @@ static int _align_compare(const void * a, const void * b);
 
 void desktop_icons_align(Desktop * desktop)
 {
-	GdkScreen * screen;
-	int height = INT_MAX;
 	size_t i;
-	int x = 0;
-	int y = 0;
+	int x = desktop->x;
+	int y = desktop->y;
 
 	qsort(desktop->icon, desktop->icon_cnt, sizeof(void*), _align_compare);
-	if((screen = gdk_screen_get_default()) != NULL)
-		height = gdk_screen_get_height(screen);
 	for(i = 0; i < desktop->icon_cnt; i++)
 	{
-		if(y + DESKTOPICON_MAX_HEIGHT > height)
+		if(y + DESKTOPICON_MAX_HEIGHT > desktop->height)
 		{
 			x += DESKTOPICON_MAX_WIDTH;
-			y = 0;
+			y = desktop->y;
 		}
 		desktopicon_move(desktop->icon[i], x, y);
 		y += DESKTOPICON_MAX_HEIGHT;
@@ -1039,9 +1060,13 @@ static int _desktop_error(Desktop * desktop, char const * message,
 	if(desktop == NULL)
 		return _error_text(message, ret);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s: %s", message, error);
+			"%s: %s", message,
+#endif
+			error);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
 	{
@@ -1086,12 +1111,47 @@ static Config * _desktop_get_config(Desktop * desktop)
 }
 
 
+/* desktop_get_workarea */
+static int _desktop_get_workarea(Desktop * desktop)
+{
+	Atom atom;
+	Atom type;
+	int format;
+	unsigned long cnt;
+	unsigned long bytes;
+	unsigned char * p;
+	unsigned long * u;
+
+	atom = gdk_x11_get_xatom_by_name("_NET_WORKAREA");
+	if(XGetWindowProperty(GDK_DISPLAY_XDISPLAY(desktop->display),
+				GDK_WINDOW_XWINDOW(desktop->root), atom, 0,
+				G_MAXLONG, False, XA_CARDINAL, &type, &format,
+				&cnt, &bytes, &p) != Success)
+		return 1;
+	if(cnt >= 4)
+	{
+		u = (unsigned long *)p;
+		desktop->x = u[0];
+		desktop->y = u[1];
+		desktop->width = u[2];
+		desktop->height = u[3];
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: %s() (%d, %d) %dx%d\n", __func__,
+				desktop->x, desktop->y, desktop->width,
+				desktop->height);
+#endif
+	}
+	XFree(p);
+	return 0;
+}
+
+
 /* usage */
 static int _usage(void)
 {
 	fputs(_("Usage: desktop [-A | -F]\n"
 "  -A	Display the applications registered\n"
-"  -F	Display contents of the desktop folder [default]\n"), stderr);
+"  -F	Display contents of the desktop folder (default)\n"), stderr);
 	return 1;
 }
 
