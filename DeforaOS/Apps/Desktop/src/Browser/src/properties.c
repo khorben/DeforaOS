@@ -69,9 +69,8 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 		char const * filename);
 
 /* callbacks */
-static gboolean _properties_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data);
-static void _properties_on_close(GtkWidget * widget, gpointer data);
+static gboolean _properties_on_closex(GtkWidget * widget);
+static void _properties_on_close(GtkWidget * widget);
 static void _properties_on_apply(GtkWidget * widget, gpointer data);
 
 static int _properties(int filec, char * const filev[])
@@ -226,7 +225,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	gtk_window_set_title(GTK_WINDOW(window), buf);
 	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
-				_properties_on_closex), &_properties_cnt);
+				_properties_on_closex), NULL);
 	vbox = gtk_vbox_new(FALSE, 0);
 	hbox = gtk_hbox_new(FALSE, 0);
 	table = gtk_table_new(12, 2, FALSE);
@@ -304,7 +303,7 @@ static int _properties_do(Mime * mime, GtkIconTheme * theme,
 	hbox = gtk_hbox_new(FALSE, 0); /* close button */
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
-				_properties_on_close), &_properties_cnt);
+				_properties_on_close), NULL);
 	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 4);
 	if(properties != NULL)
 	{
@@ -452,19 +451,15 @@ static GtkWidget * _do_mode(GtkWidget ** widget, mode_t mode)
 
 
 /* callbacks */
-static gboolean _properties_on_closex(GtkWidget * widget, GdkEvent * event,
-		gpointer data)
+static gboolean _properties_on_closex(GtkWidget * widget)
 {
-	_properties_on_close(widget, data);
+	_properties_on_close(widget);
 	return FALSE;
 }
 
-static void _properties_on_close(GtkWidget * widget, gpointer data)
+static void _properties_on_close(GtkWidget * widget)
 {
-	unsigned int * cnt = data;
-
-	(*cnt)--;
-	if(*cnt == 0)
+	if(--_properties_cnt == 0)
 		gtk_main_quit();
 	else
 		gtk_widget_destroy(gtk_widget_get_toplevel(widget));
