@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include "Panel.h"
 #include "common.h"
 #include "../config.h"
@@ -78,6 +79,7 @@ static int _panel_helper_shutdown_dialog(void);
 /* public */
 /* panel_new */
 static int _new_config(Panel * panel);
+static void _new_strut(Panel * panel, GdkRectangle * rect);
 static gboolean _on_idle(gpointer data);
 static gboolean _idle_load(Panel * panel, char const * plugins);
 static gboolean _on_closex(void);
@@ -159,6 +161,7 @@ Panel * panel_new(PanelPrefs * prefs)
 	gtk_container_add(GTK_CONTAINER(panel->window), panel->hbox);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
 	gtk_widget_show_all(panel->window);
+	_new_strut(panel, &rect);
 	return panel;
 }
 
@@ -179,6 +182,36 @@ static int _new_config(Panel * panel)
 	config_load(panel->config, filename); /* we can ignore errors */
 	free(filename);
 	return 0;
+}
+
+static void _new_strut(Panel * panel, GdkRectangle * rect)
+{
+	GdkWindow * window;
+	GdkAtom atom;
+	GdkAtom cardinal;
+	unsigned long strut[12];
+
+	window = gtk_widget_get_window(panel->window);
+	cardinal = gdk_atom_intern("XA_CARDINAL", FALSE);
+	memset(strut, 0, sizeof(strut));
+	if(panel->position == PANEL_POSITION_TOP)
+	{
+		strut[2] = panel->height;
+		strut[8] = rect->x;
+		strut[9] = rect->x + rect->width;
+	}
+	else
+	{
+		strut[3] = panel->height;
+		strut[10] = rect->x;
+		strut[11] = rect->x + rect->width;
+	}
+	atom = gdk_atom_intern("_NET_WM_STRUT", FALSE);
+	gdk_property_change(window, atom, cardinal, 32, GDK_PROP_MODE_REPLACE,
+			(guchar*)strut, 4);
+	atom = gdk_atom_intern("_NET_WM_STRUT_PARTIAL", FALSE);
+	gdk_property_change(window, atom, cardinal, 32, GDK_PROP_MODE_REPLACE,
+			(guchar*)strut, 12);
 }
 
 static gboolean _on_idle(gpointer data)
@@ -253,6 +286,7 @@ void panel_delete(Panel * panel)
 
 
 /* useful */
+/* panel_error */
 int panel_error(Panel * panel, char const * message, int ret)
 {
 	GtkWidget * dialog;
@@ -264,7 +298,6 @@ int panel_error(Panel * panel, char const * message, int ret)
 	gtk_widget_destroy(dialog);
 	return ret;
 }
-
 
 
 /* panel_load */
