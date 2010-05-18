@@ -179,8 +179,8 @@ DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
 	GdkPixbuf * image = NULL;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\", \"%s\")\n", __func__,
-			(void *)desktop, name, exec, icon);
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\")\n", __func__, (void *)desktop,
+			path);
 #endif
 	if((config = config_new()) == NULL
 			|| config_load(config, path) != 0)
@@ -329,8 +329,8 @@ int desktopicon_set_name(DesktopIcon * desktopicon, char const * name)
 void desktopicon_set_selected(DesktopIcon * desktopicon, gboolean selected)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %p is %s\n", desktopicon, selected ? "selected"
-			: "deselected");
+	fprintf(stderr, "DEBUG: %p is %s\n", (void*)desktopicon,
+			selected ? "selected" : "deselected");
 #endif
 	desktopicon->selected = selected;
 	gtk_widget_set_state(desktopicon->event, selected
