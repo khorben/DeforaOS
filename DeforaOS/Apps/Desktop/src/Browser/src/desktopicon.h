@@ -54,6 +54,7 @@ char const * desktopicon_get_name(DesktopIcon * desktopicon);
 char const * desktopicon_get_path(DesktopIcon * desktopicon);
 gboolean desktopicon_get_selected(DesktopIcon * desktopicon);
 gboolean desktopicon_get_updated(DesktopIcon * desktopicon);
+void desktopicon_set_confirm(DesktopIcon * desktopicon, gboolean confirm);
 void desktopicon_set_executable(DesktopIcon * desktopicon, gboolean executable);
 void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first);
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);

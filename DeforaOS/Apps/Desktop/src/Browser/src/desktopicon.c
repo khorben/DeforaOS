@@ -55,6 +55,7 @@ struct _DesktopIcon
 	char * exec;
 	char * tryexec;
 
+	gboolean confirm;
 	gboolean immutable;		/* cannot be deleted */
 	gboolean selected;
 	gboolean updated;		/* XXX for desktop refresh */
@@ -152,9 +153,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 			name++;
 	}
 	if((desktopicon = _desktopicon_new_do(desktop, image, name)) == NULL)
-	{
 		return NULL;
-	}
 	desktopicon->isdir = isdir;
 	desktopicon_set_executable(desktopicon, isexec);
 	desktopicon->mimetype = mimetype;
@@ -231,6 +230,7 @@ DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
 	}
 	desktopicon->exec = exec;
 	desktopicon->tryexec = tryexec;
+	desktopicon_set_confirm(desktopicon, FALSE);
 	desktopicon_set_executable(desktopicon, TRUE);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	return desktopicon;
@@ -282,6 +282,13 @@ gboolean desktopicon_get_selected(DesktopIcon * desktopicon)
 gboolean desktopicon_get_updated(DesktopIcon * desktopicon)
 {
 	return desktopicon->updated;
+}
+
+
+/* desktopicon_set_confirm */
+void desktopicon_set_confirm(DesktopIcon * desktopicon, gboolean confirm)
+{
+	desktopicon->confirm = confirm;
 }
 
 
@@ -375,6 +382,7 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 		return NULL;
 	memset(desktopicon, 0, sizeof(*desktopicon));
 	desktopicon->desktop = desktop;
+	desktopicon->confirm = TRUE;
 	desktopicon->updated = TRUE;
 	/* window */
 	desktopicon->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -679,12 +687,41 @@ static void _on_icon_edit(gpointer data)
 	mime_action(mime, "edit", desktopicon->path);
 }
 
+static gboolean _run_confirm(DesktopIcon * desktopicon);
 static void _on_icon_run(gpointer data)
 {
 	DesktopIcon * desktopicon = data;
+	pid_t pid;
+
+	if(desktopicon->confirm != FALSE && _run_confirm(desktopicon) != TRUE)
+		return;
+	if((pid = fork()) == -1)
+		desktop_error(desktopicon->desktop, "fork", 0);
+	else if(pid != 0)
+		return;
+	if(desktopicon->tryexec != NULL) /* XXX ugly */
+	{
+		execlp(desktopicon->tryexec, desktopicon->tryexec, NULL);
+		desktop_error(NULL, desktopicon->tryexec, 0);
+	}
+	if(desktopicon->exec != NULL)
+	{
+		/* FIXME it's actually a format string */
+		execlp(desktopicon->exec, desktopicon->exec, NULL);
+		desktop_error(NULL, desktopicon->exec, 0);
+	}
+	else
+	{
+		execl(desktopicon->path, desktopicon->path, NULL);
+		desktop_error(NULL, desktopicon->path, 0);
+	}
+	exit(127);
+}
+
+static gboolean _run_confirm(DesktopIcon * desktopicon)
+{
 	GtkWidget * dialog;
 	int res;
-	pid_t pid;
 
 	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
@@ -697,31 +734,7 @@ static void _on_icon_run(gpointer data)
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	if(res != GTK_RESPONSE_YES)
-		return;
-	if((pid = fork()) == -1)
-		desktop_error(desktopicon->desktop, "fork", 0);
-	else if(pid == 0)
-	{
-		if(desktopicon->tryexec != NULL) /* XXX ugly */
-		{
-			execlp(desktopicon->tryexec, desktopicon->tryexec,
-					NULL);
-			desktop_error(NULL, desktopicon->tryexec, 0);
-		}
-		if(desktopicon->exec != NULL)
-		{
-			/* FIXME it's actually a format string */
-			execlp(desktopicon->exec, desktopicon->exec, NULL);
-			desktop_error(NULL, desktopicon->exec, 0);
-		}
-		else
-		{
-			execl(desktopicon->path, desktopicon->path, NULL);
-			desktop_error(NULL, desktopicon->path, 0);
-		}
-		exit(127);
-	}
+	return (res == GTK_RESPONSE_YES) ? TRUE : FALSE;
 }
 
 static void _on_icon_open_with(gpointer data)
