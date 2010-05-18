@@ -69,6 +69,10 @@ struct _DesktopIcon
 /* prototypes */
 static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 		char const * name);
+
+static void _desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon);
+static int _desktopicon_set_name(DesktopIcon * desktopicon, char const * name);
+
 static void _desktopicon_update_transparency(DesktopIcon * desktopicon);
 
 /* callbacks */
@@ -298,7 +302,7 @@ void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first)
 /* desktopicon_set_icon */
 void desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
 {
-	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
+	_desktopicon_set_icon(desktopicon, icon);
 	_desktopicon_update_transparency(desktopicon);
 }
 
@@ -313,13 +317,8 @@ void desktopicon_set_immutable(DesktopIcon * desktopicon, gboolean immutable)
 /* desktopicon_set_name */
 int desktopicon_set_name(DesktopIcon * desktopicon, char const * name)
 {
-	char * p;
-
-	if((p = strdup(name)) == NULL)
+	if(_desktopicon_set_name(desktopicon, name) != 0)
 		return 1;
-	free(desktopicon->name);
-	desktopicon->name = p;
-	gtk_label_set_text(GTK_LABEL(desktopicon->label), p);
 	_desktopicon_update_transparency(desktopicon);
 	return 0;
 }
@@ -433,9 +432,31 @@ static DesktopIcon * _desktopicon_new_do(Desktop * desktop, GdkPixbuf * image,
 			desktopicon->event);
 	if(image == NULL)
 		image = desktop_get_file(desktop);
-	desktopicon_set_icon(desktopicon, image);
-	desktopicon_set_name(desktopicon, name);
+	_desktopicon_set_icon(desktopicon, image);
+	_desktopicon_set_name(desktopicon, name);
+	_desktopicon_update_transparency(desktopicon);
 	return desktopicon;
+}
+
+
+/* desktopicon_set_icon */
+static void _desktopicon_set_icon(DesktopIcon * desktopicon, GdkPixbuf * icon)
+{
+	gtk_image_set_from_pixbuf(GTK_IMAGE(desktopicon->image), icon);
+}
+
+
+/* desktopicon_set_name */
+static int _desktopicon_set_name(DesktopIcon * desktopicon, char const * name)
+{
+	char * p;
+
+	if((p = strdup(name)) == NULL)
+		return 1;
+	free(desktopicon->name);
+	desktopicon->name = p;
+	gtk_label_set_text(GTK_LABEL(desktopicon->label), p);
+	return 0;
 }
 
 
