@@ -301,6 +301,7 @@ static void _on_clicked(GtkWidget * widget, gpointer data)
 	xev.xclient.format = 32;
 	memset(&xev.xclient.data, 0, sizeof(xev.xclient.data));
 	xev.xclient.data.l[0] = i;
+	xev.xclient.data.l[1] = gdk_x11_display_get_user_time(display);
 	XSendEvent(GDK_DISPLAY_XDISPLAY(display), GDK_WINDOW_XWINDOW(root),
 			False,
 			SubstructureNotifyMask | SubstructureRedirectMask,
@@ -324,7 +325,7 @@ static GdkFilterReturn _on_filter(GdkXEvent * xevent, GdkEvent * event,
 		if((cur = _pager_get_current_desktop(pager)) < 0)
 			return GDK_FILTER_CONTINUE;
 		for(i = 0; i < pager->widgets_cnt; i++)
-			gtk_widget_set_sensitive(pager->widgets[i], i == cur
+			gtk_widget_set_sensitive(pager->widgets[i], (i == cur)
 					? FALSE : TRUE);
 		return GDK_FILTER_CONTINUE;
 	}
