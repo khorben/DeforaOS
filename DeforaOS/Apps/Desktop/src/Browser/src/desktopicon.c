@@ -667,9 +667,12 @@ static void _on_icon_run(gpointer data)
 
 	dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
 			_("Warning"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s", _("Are you sure you want to execute this file?"));
+			"%s",
+#endif
+			_("Are you sure you want to execute this file?"));
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
