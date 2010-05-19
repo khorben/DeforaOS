@@ -563,6 +563,18 @@ int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set)
 }
 
 
+/* gsm_modem_set_call_waiting */
+int gsm_modem_set_call_waiting(GSMModem * gsmm, gboolean unsollicited,
+		gboolean mode)
+{
+	char cmd[] = "AT+CCWA=X,X";
+
+	cmd[8] = unsollicited ? '1' : '0';
+	cmd[10] = mode ? '1' : '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_set_echo */
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo)
 {

@@ -375,6 +375,14 @@ int gsm_set_call_presentation(GSM * gsm, int set)
 }
 
 
+/* gsm_set_call_waiting */
+int gsm_set_call_waiting(GSM * gsm, int unsollicited, int mode)
+{
+	return gsm_modem_set_call_waiting(gsm->modem, (unsollicited != 0) ? TRUE
+			: FALSE, (mode != 0) ? TRUE : FALSE);
+}
+
+
 /* gsm_set_extended_errors */
 int gsm_set_extended_errors(GSM * gsm, int extended)
 {

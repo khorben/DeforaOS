@@ -316,6 +316,7 @@ void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data);
 
 unsigned int gsm_get_retry(GSM * gsm);
 int gsm_set_call_presentation(GSM * gsm, int set);
+int gsm_set_call_waiting(GSM * gsm, int unsollicited, int mode);
 int gsm_set_extended_ring_reports(GSM * gsm, int extended);
 int gsm_set_functional(GSM * gsm, int functional);
 int gsm_set_line_presentation(GSM * gsm, int set);
