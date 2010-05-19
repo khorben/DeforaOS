@@ -89,7 +89,7 @@ static int _profiles_init(PhonePlugin * plugin)
 	}
 	mapi = pa_threaded_mainloop_get_api(profiles->pam);
 	/* XXX update the context name */
-	if((profiles->pac = pa_context_new(mapi, "Openmoko Dialer")) == NULL)
+	if((profiles->pac = pa_context_new(mapi, PACKAGE)) == NULL)
 	{
 		_profiles_destroy(plugin);
 		return error_set_code(1, "%s",
