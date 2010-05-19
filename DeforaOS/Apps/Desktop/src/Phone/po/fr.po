@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-17 16:21+0200\n"
+"POT-Creation-Date: 2010-05-19 12:53+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -112,7 +112,7 @@ msgstr "Délai d'attente du réseau dépassé"
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:117 ../src/gsm.c:1005 ../src/gsm.c:1201 ../src/gsm.c:1261
+#: ../src/gsm.c:117 ../src/gsm.c:1000 ../src/gsm.c:1196 ../src/gsm.c:1256
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -327,23 +327,23 @@ msgstr "Vérification SIM..."
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:2197
+#: ../src/phone.c:2201
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:2218
+#: ../src/phone.c:2222
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:2242
+#: ../src/phone.c:2246
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:2281
+#: ../src/phone.c:2285
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:2289
+#: ../src/phone.c:2293
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
