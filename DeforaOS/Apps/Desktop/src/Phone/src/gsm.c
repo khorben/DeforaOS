@@ -1178,7 +1178,7 @@ static int _gsm_trigger_clip(GSM * gsm, char const * result)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	if(sscanf(result, "\"%31[^\"]\", %u", number,
+	if(sscanf(result, "\"%31[^\"]\",%u", number,
 				&gsm->event.call_presentation.format) != 2)
 		return 1; /* XXX report error? */
 	number[sizeof(number) - 1] = '\0';
