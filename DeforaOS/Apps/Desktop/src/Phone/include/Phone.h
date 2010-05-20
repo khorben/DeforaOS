@@ -60,6 +60,7 @@ typedef struct _PhonePluginHelper
 	Phone * phone;
 	char const * (*config_get)(Phone * phone, char const * section,
 			char const * variable);
+	int (*error)(Phone * phone, char const * message, int ret);
 	void (*event)(Phone * phone, PhoneEvent event, ...);
 	int (*queue)(Phone * phone, char const * command);
 } PhonePluginHelper;

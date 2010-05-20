@@ -274,6 +274,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->tr_source = 0;
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
 	phone->helper.config_get = _phone_config_get;
+	phone->helper.error = phone_error;
 	phone->helper.event = phone_event;
 	phone->helper.queue = _phone_queue;
 	phone->helper.phone = phone;

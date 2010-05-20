@@ -14,11 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - implement notification light
- * - implement vibrator
  * - prevent deep sleep */
 
 
 
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,6 +61,7 @@ PhonePlugin plugin =
 /* functions */
 /* openmoko_event */
 static int _event_mixer_set(char const * filename);
+static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
@@ -99,10 +101,10 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			_event_mixer_set("gsmhandset.state");
 			break;
 		case PHONE_EVENT_VIBRATOR_OFF:
-			/* FIXME implement */
+			_event_vibrator(plugin, FALSE);
 			break;
 		case PHONE_EVENT_VIBRATOR_ON:
-			/* FIXME implement */
+			_event_vibrator(plugin, TRUE);
 			break;
 		/* not relevant */
 		case PHONE_EVENT_SIM_VALID: /* FIXME prevent deep sleep? */
@@ -133,4 +135,27 @@ static int _event_mixer_set(char const * filename)
 			NULL, NULL, NULL, NULL);
 	free(pathname);
 	return 0;
+}
+
+static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
+{
+	int ret = 0;
+	char const path[] = "/sys/class/leds/neo1973:vibrator/brightness";
+	int fd;
+	char buf[256];
+	int len;
+
+	if((fd = open(path, O_WRONLY)) < 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		return plugin->helper->error(NULL, buf, 1);
+	}
+	if((len = snprintf(buf, sizeof(buf), "%d", vibrate ? 255 : 0)) > 0
+			&& write(fd, buf, len) != len)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", path, strerror(errno));
+		ret = plugin->helper->error(NULL, buf, 1);
+	}
+	close(fd);
+	return ret;
 }
