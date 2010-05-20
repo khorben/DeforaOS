@@ -893,6 +893,8 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	{
 		if(phone->ca_window != NULL)
 			gtk_widget_hide(phone->ca_window);
+		/* XXX not sure if it should always be triggered */
+		phone_event(phone, PHONE_EVENT_CALL_TERMINATED);
 		return;
 	}
 	va_start(ap, show);
