@@ -48,6 +48,14 @@ void phone_delete(Phone * phone);
 
 
 /* useful */
+int phone_error(Phone * phone, char const * message, int ret);
+
+/* calls */
+void phone_call_answer(Phone * phone);
+void phone_call_hangup(Phone * phone);
+void phone_call_mute(Phone * phone, gboolean mute);
+void phone_call_reject(Phone * phone);
+
 /* code */
 int phone_code_append(Phone * phone, char character);
 void phone_code_clear(Phone * phone);
@@ -64,6 +72,18 @@ int phone_dialer_append(Phone * phone, char character);
 void phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_hangup(Phone * phone);
 
+/* events */
+void phone_event(Phone * phone, PhoneEvent event, ...);
+
+/* interface */
+void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
+void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
+void phone_show_contacts(Phone * phone, gboolean show);
+void phone_show_dialer(Phone * phone, gboolean show);
+void phone_show_messages(Phone * phone, gboolean show);
+void phone_show_read(Phone * phone, gboolean show, ...);
+void phone_show_write(Phone * phone, gboolean show);
+
 /* messages */
 void phone_messages_call_selected(Phone * phone);
 void phone_messages_delete_selected(Phone * phone);
@@ -72,6 +92,9 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 		time_t date, char const * content);
 void phone_messages_write(Phone * phone, char const * number,
 		char const * text);
+
+/* plugins */
+int phone_load(Phone * phone, char const * plugin);
 
 /* read */
 void phone_read_call(Phone * phone);

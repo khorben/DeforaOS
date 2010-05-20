@@ -135,7 +135,7 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			profiles->pao = pa_context_play_sample(profiles->pac,
 					"ringtone", NULL, PA_VOLUME_NORM, NULL,
 					NULL);
-			phone_event(plugin->helper->phone,
+			plugin->helper->event(plugin->helper->phone,
 					PHONE_EVENT_VIBRATOR_ON);
 			break;
 		case PHONE_EVENT_SMS_RECEIVED:
@@ -150,7 +150,7 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_CALL_OUTGOING:
 		case PHONE_EVENT_CALL_TERMINATED:
 		case PHONE_EVENT_CALL_ESTABLISHED:
-			phone_event(plugin->helper->phone,
+			plugin->helper->event(plugin->helper->phone,
 					PHONE_EVENT_VIBRATOR_OFF);
 			break;
 		/* not relevant */

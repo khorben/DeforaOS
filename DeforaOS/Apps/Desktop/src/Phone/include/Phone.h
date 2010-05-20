@@ -55,9 +55,10 @@ typedef enum _PhoneEvent
 
 typedef struct _PhonePluginHelper
 {
+	Phone * phone;
 	char const * (*config_get)(Phone * phone, char const * section,
 			char const * variable);
-	Phone * phone;
+	void (*event)(Phone * phone, PhoneEvent event, ...);
 } PhonePluginHelper;
 
 typedef struct _PhonePlugin PhonePlugin;
@@ -70,31 +71,5 @@ struct _PhonePlugin
 	int (*event)(PhonePlugin * plugin, PhoneEvent event, ...);
 	void * priv;
 };
-
-
-/* functions */
-/* useful */
-int phone_error(Phone * phone, char const * message, int ret);
-
-/* interface */
-void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
-void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
-void phone_show_contacts(Phone * phone, gboolean show);
-void phone_show_dialer(Phone * phone, gboolean show);
-void phone_show_messages(Phone * phone, gboolean show);
-void phone_show_read(Phone * phone, gboolean show, ...);
-void phone_show_write(Phone * phone, gboolean show);
-
-/* calls */
-void phone_call_answer(Phone * phone);
-void phone_call_hangup(Phone * phone);
-void phone_call_mute(Phone * phone, gboolean mute);
-void phone_call_reject(Phone * phone);
-
-/* events */
-void phone_event(Phone * phone, PhoneEvent event, ...);
-
-/* plugins */
-int phone_load(Phone * phone, char const * plugin);
 
 #endif /* !PHONE_PHONE_H */
