@@ -15,8 +15,7 @@
 /* TODO:
  * - implement notification light
  * - implement vibrator
- * - prevent deep sleep
- * - enable echo cancellation */
+ * - prevent deep sleep */
 
 
 
@@ -67,13 +66,22 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	switch(event)
 	{
 		case PHONE_EVENT_CALL_ESTABLISHED:
+			/* let us hear the call */
 			_event_mixer_set("gsmhandset.state");
+			/* enable echo cancellation */
+			plugin->helper->queue(plugin->helper->phone,
+					"AT%N0187");
 			break;
 		case PHONE_EVENT_CALL_INCOMING:
+			/* let us hear the ringtone */
+			_event_mixer_set("stereoout.state");
+			break;
 		case PHONE_EVENT_CALL_OUTGOING:
-			/* FIXME is there anything to do? */
+			/* let us hear the connection */
+			_event_mixer_set("gsmhandset.state");
 			break;
 		case PHONE_EVENT_CALL_TERMINATED:
+			/* restore regular audio */
 			_event_mixer_set("stereoout.state");
 			break;
 		case PHONE_EVENT_NOTIFICATION_OFF:
