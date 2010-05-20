@@ -342,6 +342,15 @@ int gsm_modem_get_signal_level(GSMModem * gsmm)
 }
 
 
+/* gsm_modem_is_alive */
+int gsm_modem_is_alive(GSMModem * gsmm)
+{
+	char const cmd[] = "AT";
+
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_is_functional */
 int gsm_modem_is_functional(GSMModem * gsmm)
 {

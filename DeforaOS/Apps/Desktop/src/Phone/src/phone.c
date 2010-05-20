@@ -1186,6 +1186,7 @@ static struct
 	int (*callback)(GSM * gsm);
 } _debug_gsm_commands[] =
 {
+	{ "Alive",			gsm_is_alive			},
 	{ "Answer call",		gsm_call_answer			},
 	{ "Battery charge",		gsm_fetch_battery_charge	},
 	{ "Contact list",		gsm_fetch_contact_list		},

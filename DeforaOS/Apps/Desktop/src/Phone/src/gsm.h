@@ -353,6 +353,7 @@ int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 
 /* queries */
+int gsm_is_alive(GSM * gsm);
 int gsm_is_functional(GSM * gsm);
 int gsm_is_mute(GSM * gsm);
 int gsm_is_phone_active(GSM * gsm);

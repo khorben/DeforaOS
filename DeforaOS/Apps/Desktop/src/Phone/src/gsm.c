@@ -675,6 +675,13 @@ int gsm_fetch_signal_level(GSM * gsm)
 
 
 /* queries */
+/* gsm_is_alive */
+int gsm_is_alive(GSM * gsm)
+{
+	return gsm_modem_is_alive(gsm->modem);
+}
+
+
 /* gsm_is_functional */
 int gsm_is_functional(GSM * gsm)
 {
