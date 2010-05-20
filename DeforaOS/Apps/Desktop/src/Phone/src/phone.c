@@ -197,8 +197,6 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent,
 
 static void _phone_error(GtkWidget * window, char const * message);
 
-static void _phone_event(Phone * phone, PhoneEvent event, ...);
-
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
 		unsigned int end);
 static void _phone_fetch_messages(Phone * phone, unsigned int start,
@@ -656,6 +654,48 @@ void phone_dialer_hangup(Phone * phone)
 }
 
 
+/* events */
+/* phone_event */
+void phone_event(Phone * phone, PhoneEvent event, ...)
+{
+	size_t i;
+	PhonePlugin * plugin;
+	va_list ap;
+	char * buf;
+	size_t * len;
+
+	for(i = 0; i < phone->plugins_cnt; i++)
+	{
+		plugin = phone->plugins[i].pp;
+		if(plugin->event == NULL)
+			continue;
+		switch(event)
+		{
+			case PHONE_EVENT_SMS_RECEIVED:
+			case PHONE_EVENT_SMS_SENT:
+				va_start(ap, event);
+				buf = va_arg(ap, char *);
+				len = va_arg(ap, size_t *);
+				plugin->event(plugin, event, buf, len);
+				va_end(ap);
+				break;
+			/* no arguments */
+			case PHONE_EVENT_CALL_ESTABLISHED:
+			case PHONE_EVENT_CALL_INCOMING:
+			case PHONE_EVENT_CALL_OUTGOING:
+			case PHONE_EVENT_CALL_TERMINATED:
+			case PHONE_EVENT_NOTIFICATION_OFF:
+			case PHONE_EVENT_NOTIFICATION_ON:
+			case PHONE_EVENT_SIM_VALID:
+			case PHONE_EVENT_VIBRATOR_OFF:
+			case PHONE_EVENT_VIBRATOR_ON:
+				plugin->event(plugin, event);
+				break;
+		}
+	}
+}
+
+
 /* plugins */
 /* phone_load */
 int phone_load(Phone * phone, char const * plugin)
@@ -950,14 +990,14 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_reject);
 			gtk_widget_hide(phone->ca_close);
-			_phone_event(phone, PHONE_EVENT_CALL_ESTABLISHED);
+			phone_event(phone, PHONE_EVENT_CALL_ESTABLISHED);
 			break;
 		case PHONE_CALL_INCOMING:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
 					_("Incoming call"));
 			gtk_widget_hide(phone->ca_hangup);
 			gtk_widget_hide(phone->ca_close);
-			_phone_event(phone, PHONE_EVENT_CALL_INCOMING);
+			phone_event(phone, PHONE_EVENT_CALL_INCOMING);
 			break;
 		case PHONE_CALL_OUTGOING:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
@@ -965,7 +1005,7 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_reject);
 			gtk_widget_hide(phone->ca_close);
-			_phone_event(phone, PHONE_EVENT_CALL_OUTGOING);
+			phone_event(phone, PHONE_EVENT_CALL_OUTGOING);
 			break;
 		case PHONE_CALL_TERMINATED:
 			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
@@ -973,7 +1013,7 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 			gtk_widget_hide(phone->ca_answer);
 			gtk_widget_hide(phone->ca_hangup);
 			gtk_widget_hide(phone->ca_reject);
-			_phone_event(phone, PHONE_EVENT_CALL_TERMINATED);
+			phone_event(phone, PHONE_EVENT_CALL_TERMINATED);
 			break;
 	}
 	gtk_window_present(GTK_WINDOW(phone->ca_window));
@@ -1761,7 +1801,7 @@ void phone_write_send(Phone * phone)
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 	len = strlen(text);
-	_phone_event(phone, PHONE_EVENT_SMS_SENT, text, &len);
+	phone_event(phone, PHONE_EVENT_SMS_SENT, text, &len);
 	gsm_send_message(phone->gsm, number, text);
 	g_free(text);
 }
@@ -1910,38 +1950,6 @@ static void _phone_error(GtkWidget * window, char const * message)
 	g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(
 				gtk_widget_destroy), NULL);
 	gtk_widget_show(dialog);
-}
-
-
-/* phone_event */
-static void _phone_event(Phone * phone, PhoneEvent event, ...)
-{
-	size_t i;
-	PhonePlugin * plugin;
-	va_list ap;
-	char * buf;
-	size_t * len;
-
-	for(i = 0; i < phone->plugins_cnt; i++)
-	{
-		plugin = phone->plugins[i].pp;
-		if(plugin->event == NULL)
-			continue;
-		switch(event)
-		{
-			case PHONE_EVENT_SMS_RECEIVED:
-			case PHONE_EVENT_SMS_SENT:
-				va_start(ap, event);
-				buf = va_arg(ap, char *);
-				len = va_arg(ap, size_t *);
-				plugin->event(plugin, event, buf, len);
-				va_end(ap);
-				break;
-			default:
-				plugin->event(plugin, event);
-				break;
-		}
-	}
 }
 
 
@@ -2204,7 +2212,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->incoming_message.index);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
-			_phone_event(phone, PHONE_EVENT_SMS_RECEIVED,
+			phone_event(phone, PHONE_EVENT_SMS_RECEIVED,
 					event->message.content,
 					&event->message.length);
 			phone_messages_set(phone, event->message.index,
@@ -2246,6 +2254,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_info(phone, phone->en_window,
 					_("SIM PIN is valid"),
 					G_CALLBACK(_on_sim_pin_valid_response));
+			phone_event(phone, PHONE_EVENT_SIM_VALID);
 			return 0;
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);

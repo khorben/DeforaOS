@@ -135,18 +135,29 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			profiles->pao = pa_context_play_sample(profiles->pac,
 					"ringtone", NULL, PA_VOLUME_NORM, NULL,
 					NULL);
+			phone_event(plugin->helper->phone,
+					PHONE_EVENT_VIBRATOR_ON);
 			break;
 		case PHONE_EVENT_SMS_RECEIVED:
 			profiles->pao = pa_context_play_sample(profiles->pac,
 					"message", NULL, PA_VOLUME_NORM, NULL,
 					NULL);
 			break;
+		case PHONE_EVENT_SIM_VALID:
 		case PHONE_EVENT_SMS_SENT:
-			break; /* anything to implement? */
+			/* FIXME beep in general profile? */
+			break;
 		case PHONE_EVENT_CALL_OUTGOING:
 		case PHONE_EVENT_CALL_TERMINATED:
 		case PHONE_EVENT_CALL_ESTABLISHED:
-			pa_operation_cancel(profiles->pao);
+			phone_event(plugin->helper->phone,
+					PHONE_EVENT_VIBRATOR_OFF);
+			break;
+		/* not relevant */
+		case PHONE_EVENT_NOTIFICATION_OFF:
+		case PHONE_EVENT_NOTIFICATION_ON:
+		case PHONE_EVENT_VIBRATOR_OFF:
+		case PHONE_EVENT_VIBRATOR_ON:
 			break;
 	}
 	profiles->event = event;

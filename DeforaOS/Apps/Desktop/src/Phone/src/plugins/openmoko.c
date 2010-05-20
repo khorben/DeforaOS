@@ -12,6 +12,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+/* TODO:
+ * - implement notification light
+ * - implement vibrator
+ * - prevent deep sleep
+ * - enable echo cancellation */
 
 
 
@@ -71,7 +76,20 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_CALL_TERMINATED:
 			_event_mixer_set("stereoout.state");
 			break;
+		case PHONE_EVENT_NOTIFICATION_OFF:
+			/* FIXME implement */
+			break;
+		case PHONE_EVENT_NOTIFICATION_ON:
+			/* FIXME implement */
+			break;
+		case PHONE_EVENT_VIBRATOR_OFF:
+			/* FIXME implement */
+			break;
+		case PHONE_EVENT_VIBRATOR_ON:
+			/* FIXME implement */
+			break;
 		/* not relevant */
+		case PHONE_EVENT_SIM_VALID: /* FIXME prevent deep sleep? */
 		case PHONE_EVENT_SMS_RECEIVED:
 		case PHONE_EVENT_SMS_SENT:
 			break;

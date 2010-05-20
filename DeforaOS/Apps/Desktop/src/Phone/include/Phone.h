@@ -44,8 +44,13 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_CALL_INCOMING,
 	PHONE_EVENT_CALL_OUTGOING,
 	PHONE_EVENT_CALL_TERMINATED,
+	PHONE_EVENT_NOTIFICATION_OFF,
+	PHONE_EVENT_NOTIFICATION_ON,
+	PHONE_EVENT_SIM_VALID,
 	PHONE_EVENT_SMS_SENT,		/* char * buffer, size_t * len */
-	PHONE_EVENT_SMS_RECEIVED	/* char * buffer, size_t * len */
+	PHONE_EVENT_SMS_RECEIVED,	/* char * buffer, size_t * len */
+	PHONE_EVENT_VIBRATOR_OFF,
+	PHONE_EVENT_VIBRATOR_ON
 } PhoneEvent;
 
 typedef struct _PhonePluginHelper
@@ -85,6 +90,9 @@ void phone_call_answer(Phone * phone);
 void phone_call_hangup(Phone * phone);
 void phone_call_mute(Phone * phone, gboolean mute);
 void phone_call_reject(Phone * phone);
+
+/* events */
+void phone_event(Phone * phone, PhoneEvent event, ...);
 
 /* plugins */
 int phone_load(Phone * phone, char const * plugin);
