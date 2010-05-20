@@ -137,6 +137,7 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	PhonePluginHelper * helper = plugin->helper;
 
 	if(profiles->event == (int)event)
+		/* FIXME this should probably only apply to phone calls */
 		return 0; /* already taking care of it */
 	if(profiles->source != 0)
 		g_source_remove(profiles->source);
