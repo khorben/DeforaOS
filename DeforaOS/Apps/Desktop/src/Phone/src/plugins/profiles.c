@@ -39,6 +39,11 @@
 typedef struct _Profiles
 {
 	int event;
+	guint source;
+
+	/* vibrator */
+	int vibrator;
+
 	/* pulseaudio */
 	pa_threaded_mainloop * pam;
 	pa_context * pac;
@@ -78,6 +83,8 @@ static int _profiles_init(PhonePlugin * plugin)
 		return error_set_code(1, "%s", strerror(errno));
 	plugin->priv = profiles;
 	profiles->event = -1;
+	profiles->source = 0;
+	profiles->vibrator = 0;
 	profiles->pam = pa_threaded_mainloop_new();
 	profiles->pac = NULL;
 	profiles->pao = NULL;
@@ -109,6 +116,8 @@ static int _profiles_destroy(PhonePlugin * plugin)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(profiles->source != 0)
+		g_source_remove(profiles->source);
 	if(profiles->pao != NULL)
 		pa_operation_cancel(profiles->pao);
 	if(profiles->pac != NULL)
@@ -120,12 +129,18 @@ static int _profiles_destroy(PhonePlugin * plugin)
 
 
 /* profiles_event */
+static gboolean _event_call_incoming_timeout(gpointer data);
+
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
 	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = plugin->helper;
 
 	if(profiles->event == (int)event)
-		return 0;
+		return 0; /* already taking care of it */
+	if(profiles->source != 0)
+		g_source_remove(profiles->source);
+	profiles->source = 0;
 	if(profiles->pao != NULL)
 		pa_operation_cancel(profiles->pao);
 	profiles->pao = NULL;
@@ -135,8 +150,10 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			profiles->pao = pa_context_play_sample(profiles->pac,
 					"ringtone", NULL, PA_VOLUME_NORM, NULL,
 					NULL);
-			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_VIBRATOR_ON);
+			profiles->source = g_timeout_add(500,
+					_event_call_incoming_timeout, plugin);
+			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
+			profiles->vibrator = 1;
 			break;
 		case PHONE_EVENT_SMS_RECEIVED:
 			profiles->pao = pa_context_play_sample(profiles->pac,
@@ -150,8 +167,8 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_CALL_OUTGOING:
 		case PHONE_EVENT_CALL_TERMINATED:
 		case PHONE_EVENT_CALL_ESTABLISHED:
-			plugin->helper->event(plugin->helper->phone,
-					PHONE_EVENT_VIBRATOR_OFF);
+			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_OFF);
+			profiles->vibrator = 0;
 			break;
 		/* not relevant */
 		case PHONE_EVENT_NOTIFICATION_OFF:
@@ -164,4 +181,33 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	}
 	profiles->event = event;
 	return 0;
+}
+
+static gboolean _event_call_incoming_timeout(gpointer data)
+{
+	PhonePlugin * plugin = data;
+	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = plugin->helper;
+
+	if(profiles->vibrator != 0) /* vibrating with a pause */
+	{
+		if(profiles->vibrator++ == 1)
+			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
+		else if((profiles->vibrator % 5) == 0)
+		{
+			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_OFF);
+			profiles->vibrator = 1;
+		}
+	}
+	if(profiles->pao != NULL) /* playing a sample */
+	{
+		if(pa_operation_get_state(profiles->pao)
+				== PA_OPERATION_RUNNING)
+			return TRUE; /* check again later */
+		pa_operation_unref(profiles->pao);
+		/* ring again */
+		profiles->pao = pa_context_play_sample(profiles->pac,
+				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
+	}
+	return TRUE;
 }
