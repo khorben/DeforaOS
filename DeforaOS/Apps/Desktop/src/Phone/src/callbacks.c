@@ -125,6 +125,17 @@ void on_phone_call_reject(gpointer data)
 }
 
 
+/* on_phone_call_speaker */
+void on_phone_call_speaker(GtkWidget * widget, gpointer data)
+{
+	Phone * phone = data;
+	gboolean speaker;
+
+	speaker = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	phone_call_speaker(phone, speaker);
+}
+
+
 /* code */
 /* on_phone_code_clear */
 void on_phone_code_clear(gpointer data)

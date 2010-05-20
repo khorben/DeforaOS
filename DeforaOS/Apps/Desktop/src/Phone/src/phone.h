@@ -55,6 +55,7 @@ void phone_call_answer(Phone * phone);
 void phone_call_hangup(Phone * phone);
 void phone_call_mute(Phone * phone, gboolean mute);
 void phone_call_reject(Phone * phone);
+void phone_call_speaker(Phone * phone, gboolean speaker);
 
 /* code */
 int phone_code_append(Phone * phone, char character);

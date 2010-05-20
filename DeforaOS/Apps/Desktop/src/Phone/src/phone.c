@@ -485,6 +485,14 @@ void phone_call_reject(Phone * phone)
 }
 
 
+/* phone_call_speaker */
+void phone_call_speaker(Phone * phone, gboolean speaker)
+{
+	phone_event(phone, speaker ? PHONE_EVENT_SPEAKER_ON
+			: PHONE_EVENT_SPEAKER_OFF);
+}
+
+
 /* phone_code_append */
 int phone_code_append(Phone * phone, char character)
 {
@@ -691,6 +699,8 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_NOTIFICATION_OFF:
 			case PHONE_EVENT_NOTIFICATION_ON:
 			case PHONE_EVENT_SIM_VALID:
+			case PHONE_EVENT_SPEAKER_OFF:
+			case PHONE_EVENT_SPEAKER_ON:
 			case PHONE_EVENT_VIBRATOR_OFF:
 			case PHONE_EVENT_VIBRATOR_ON:
 				plugin->event(plugin, event);
@@ -955,6 +965,8 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 		gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
 				gtk_image_new_from_icon_name("stock_volume-max",
 					GTK_ICON_SIZE_BUTTON));
+		g_signal_connect(G_OBJECT(phone->ca_speaker), "toggled",
+				G_CALLBACK(on_phone_call_speaker), phone);
 		gtk_box_pack_start(GTK_BOX(vbox), phone->ca_speaker, FALSE,
 				TRUE, 0);
 		/* mute microphone */

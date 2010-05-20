@@ -49,6 +49,8 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_SIM_VALID,
 	PHONE_EVENT_SMS_SENT,		/* char * buffer, size_t * len */
 	PHONE_EVENT_SMS_RECEIVED,	/* char * buffer, size_t * len */
+	PHONE_EVENT_SPEAKER_ON,
+	PHONE_EVENT_SPEAKER_OFF,
 	PHONE_EVENT_VIBRATOR_OFF,
 	PHONE_EVENT_VIBRATOR_ON
 } PhoneEvent;

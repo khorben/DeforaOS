@@ -156,6 +156,8 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		/* not relevant */
 		case PHONE_EVENT_NOTIFICATION_OFF:
 		case PHONE_EVENT_NOTIFICATION_ON:
+		case PHONE_EVENT_SPEAKER_OFF:
+		case PHONE_EVENT_SPEAKER_ON:
 		case PHONE_EVENT_VIBRATOR_OFF:
 		case PHONE_EVENT_VIBRATOR_ON:
 			break;

@@ -90,6 +90,14 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_NOTIFICATION_ON:
 			/* FIXME implement */
 			break;
+		case PHONE_EVENT_SPEAKER_ON:
+			/* XXX assumes there's an ongoing call */
+			_event_mixer_set("gsmspeakerout.state");
+			break;
+		case PHONE_EVENT_SPEAKER_OFF:
+			/* XXX assumes there's an ongoing call */
+			_event_mixer_set("gsmhandset.state");
+			break;
 		case PHONE_EVENT_VIBRATOR_OFF:
 			/* FIXME implement */
 			break;
