@@ -59,6 +59,7 @@ typedef struct _PhonePluginHelper
 	char const * (*config_get)(Phone * phone, char const * section,
 			char const * variable);
 	void (*event)(Phone * phone, PhoneEvent event, ...);
+	int (*queue)(Phone * phone, char const * command);
 } PhonePluginHelper;
 
 typedef struct _PhonePlugin PhonePlugin;

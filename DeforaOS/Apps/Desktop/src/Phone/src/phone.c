@@ -208,6 +208,8 @@ static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 static GtkWidget * _phone_progress_delete(GtkWidget * widget);
 static void _phone_progress_pulse(GtkWidget * widget);
 
+static int _phone_queue(Phone * phone, char const * command);
+
 static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
 static void _phone_set_status(Phone * phone, GSMStatus status);
@@ -273,6 +275,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	memset(&phone->tracks, 0, sizeof(phone->tracks));
 	phone->helper.config_get = _phone_config_get;
 	phone->helper.event = phone_event;
+	phone->helper.queue = _phone_queue;
 	phone->helper.phone = phone;
 	phone->plugins = NULL;
 	phone->plugins_cnt = 0;
@@ -2023,6 +2026,13 @@ static void _phone_progress_pulse(GtkWidget * widget)
 	if((progress = g_object_get_data(G_OBJECT(widget), "progress")) == NULL)
 		return;
 	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(progress));
+}
+
+
+/* phone_queue */
+static int _phone_queue(Phone * phone, char const * command)
+{
+	return (gsm_queue(phone->gsm, command) != NULL) ? 0 : 1;
 }
 
 
