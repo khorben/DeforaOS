@@ -1206,6 +1206,7 @@ static struct
 	{ "Alive",			gsm_is_alive			},
 	{ "Answer call",		gsm_call_answer			},
 	{ "Battery charge",		gsm_fetch_battery_charge	},
+	{ "Call waiting control",	gsm_is_call_waiting_control	},
 	{ "Contact list",		gsm_fetch_contact_list		},
 	{ "Disable phone",		_gsm_set_functional_disable	},
 	{ "Enable phone",		_gsm_set_functional_enable	},
@@ -2200,6 +2201,10 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			phone_show_call(phone, TRUE, PHONE_CALL_INCOMING, "",
 					event->call_presentation.number);
 			return 0;
+		case GSM_EVENT_TYPE_CALL_WAITING:
+			if(event->call_waiting_control.unsollicited == 0)
+				gsm_set_call_waiting_control(phone->gsm, TRUE);
+			return 0;
 		case GSM_EVENT_TYPE_CONTACT:
 			phone_contacts_set(phone, event->contact.index,
 					event->contact.name,
@@ -2216,14 +2221,13 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 				return 0;
 			}
 			gsm_set_call_presentation(phone->gsm, TRUE);
-			/* FIXME sometimes this fails (check it first) */
-			gsm_set_call_waiting(phone->gsm, TRUE, TRUE);
 			gsm_set_extended_ring_reports(phone->gsm, TRUE);
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);
 			gsm_set_supplementary_service_notifications(phone->gsm,
 					TRUE, TRUE);
+			gsm_is_call_waiting_control(phone->gsm);
 			gsm_is_phone_active(phone->gsm);
 #ifndef DEBUG
 			_phone_track(phone, PHONE_TRACK_CONTACT_LIST, TRUE);

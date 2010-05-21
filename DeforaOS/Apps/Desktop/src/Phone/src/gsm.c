@@ -377,11 +377,11 @@ int gsm_set_call_presentation(GSM * gsm, int set)
 }
 
 
-/* gsm_set_call_waiting */
-int gsm_set_call_waiting(GSM * gsm, int unsollicited, int mode)
+/* gsm_set_call_waiting_control */
+int gsm_set_call_waiting_control(GSM * gsm, int unsollicited)
 {
-	return gsm_modem_set_call_waiting(gsm->modem, (unsollicited != 0) ? TRUE
-			: FALSE, (mode != 0) ? TRUE : FALSE);
+	return gsm_modem_set_call_waiting_control(gsm->modem,
+			(unsollicited != 0) ? TRUE : FALSE);
 }
 
 
@@ -549,6 +549,10 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->call_presentation.format = va_arg(ap,
 					unsigned int);
 			break;
+		case GSM_EVENT_TYPE_CALL_WAITING:
+			event->call_waiting_control.unsollicited = va_arg(ap,
+					unsigned int);
+			break;
 		case GSM_EVENT_TYPE_CONTACT:
 			event->contact.index = va_arg(ap, unsigned int);
 			event->contact.name = va_arg(ap, char const *);
@@ -684,10 +688,10 @@ int gsm_is_alive(GSM * gsm)
 }
 
 
-/* gsm_is_call_waiting */
-int gsm_is_call_waiting(GSM * gsm)
+/* gsm_is_call_waiting_control */
+int gsm_is_call_waiting_control(GSM * gsm)
 {
-	return gsm_modem_is_call_waiting(gsm->modem);
+	return gsm_modem_is_call_waiting_control(gsm->modem);
 }
 
 
@@ -1160,8 +1164,11 @@ static int _gsm_trigger_ccwa(GSM * gsm, char const * result)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
 #endif
-	/* FIXME implement */
-	return 1;
+	if(sscanf(result, "%u", &gsm->event.call_waiting_control.unsollicited)
+			== 1)
+		return _gsm_event_send(gsm, GSM_EVENT_TYPE_CALL_WAITING);
+	return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
+			GSM_ERROR_CALL_WAITING_FAILED, result);
 }
 
 

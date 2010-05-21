@@ -48,6 +48,7 @@ typedef enum _GSMEventType
 	GSM_EVENT_TYPE_ERROR = 0,
 	GSM_EVENT_TYPE_BATTERY_CHARGE,
 	GSM_EVENT_TYPE_CALL_PRESENTATION,
+	GSM_EVENT_TYPE_CALL_WAITING,
 	GSM_EVENT_TYPE_CONTACT,
 	GSM_EVENT_TYPE_CONTACT_LIST,
 	GSM_EVENT_TYPE_FUNCTIONAL,
@@ -198,6 +199,13 @@ typedef union _GSMEvent
 		unsigned int format;
 	} call_presentation;
 
+	/* GSM_EVENT_TYPE_CALL_WAITING_CONTROL */
+	struct
+	{
+		GSMEventType type;
+		unsigned int unsollicited;
+	} call_waiting_control;
+
 	/* GSM_EVENT_TYPE_CONTACT */
 	struct
 	{
@@ -317,7 +325,7 @@ void gsm_set_callback(GSM * gsm, GSMCallback callback, gpointer data);
 
 unsigned int gsm_get_retry(GSM * gsm);
 int gsm_set_call_presentation(GSM * gsm, int set);
-int gsm_set_call_waiting(GSM * gsm, int unsollicited, int mode);
+int gsm_set_call_waiting_control(GSM * gsm, int unsollicited);
 int gsm_set_extended_ring_reports(GSM * gsm, int extended);
 int gsm_set_functional(GSM * gsm, int functional);
 int gsm_set_line_presentation(GSM * gsm, int set);
@@ -355,7 +363,7 @@ int gsm_fetch_signal_level(GSM * gsm);
 
 /* queries */
 int gsm_is_alive(GSM * gsm);
-int gsm_is_call_waiting(GSM * gsm);
+int gsm_is_call_waiting_control(GSM * gsm);
 int gsm_is_functional(GSM * gsm);
 int gsm_is_mute(GSM * gsm);
 int gsm_is_phone_active(GSM * gsm);

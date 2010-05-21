@@ -63,7 +63,7 @@ int gsm_modem_get_registration(GSMModem * gsmm);
 int gsm_modem_get_signal_level(GSMModem * gsmm);
 
 int gsm_modem_is_alive(GSMModem * gsmm);
-int gsm_modem_is_call_waiting(GSMModem * gsmm);
+int gsm_modem_is_call_waiting_control(GSMModem * gsmm);
 int gsm_modem_is_functional(GSMModem * gsmm);
 int gsm_modem_is_mute(GSMModem * gsmm);
 int gsm_modem_is_phone_active(GSMModem * gsmm);
@@ -77,8 +77,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 		char const * text);
 
 int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
-int gsm_modem_set_call_waiting(GSMModem * gsmm, gboolean unsollicited,
-		gboolean mode);
+int gsm_modem_set_call_waiting_control(GSMModem * gsmm, gboolean unsollicited);
 int gsm_modem_set_echo(GSMModem * gsmm, gboolean echo);
 int gsm_modem_set_extended_errors(GSMModem * gsmm, gboolean extended);
 int gsm_modem_set_extended_ring_reports(GSMModem * gsmm, gboolean extended);
