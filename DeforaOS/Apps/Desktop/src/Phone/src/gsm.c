@@ -171,6 +171,7 @@ static int _gsm_queue_push(GSM * gsm);
 static int _gsm_trigger_busy(GSM * gsm, char const * result,
 		gboolean * answered);
 static int _gsm_trigger_cbc(GSM * gsm, char const * result);
+static int _gsm_trigger_ccwa(GSM * gsm, char const * result);
 static int _gsm_trigger_cfun(GSM * gsm, char const * result);
 static int _gsm_trigger_cgmm(GSM * gsm, char const * result);
 static int _gsm_trigger_clip(GSM * gsm, char const * result);
@@ -208,6 +209,7 @@ static GSMTrigger _gsm_triggers[] =
 		(GSMTriggerCallback)_gsm_trigger_ ## callback }
 	GSM_TRIGGER("BUSY",		busy),
 	GSM_TRIGGER("+CBC: ",		cbc),
+	GSM_TRIGGER("+CCWA: ",		ccwa),
 	GSM_TRIGGER("+CFUN: ",		cfun),
 	GSM_TRIGGER("+CGMM: ",		cgmm),
 	GSM_TRIGGER("+CLIP: ",		clip),
@@ -682,6 +684,13 @@ int gsm_is_alive(GSM * gsm)
 }
 
 
+/* gsm_is_call_waiting */
+int gsm_is_call_waiting(GSM * gsm)
+{
+	return gsm_modem_is_call_waiting(gsm->modem);
+}
+
+
 /* gsm_is_functional */
 int gsm_is_functional(GSM * gsm)
 {
@@ -1142,6 +1151,17 @@ static int _gsm_trigger_cbc(GSM * gsm, char const * result)
 		return gsm_event(gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_BATTERY_CHARGE_FAILED, result);
 	return _gsm_event_send(gsm, GSM_EVENT_TYPE_BATTERY_CHARGE);
+}
+
+
+/* gsm_trigger_ccwa */
+static int _gsm_trigger_ccwa(GSM * gsm, char const * result)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
+#endif
+	/* FIXME implement */
+	return 1;
 }
 
 

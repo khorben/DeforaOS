@@ -351,6 +351,15 @@ int gsm_modem_is_alive(GSMModem * gsmm)
 }
 
 
+/* gsm_modem_is_call_waiting */
+int gsm_modem_is_call_waiting(GSMModem * gsmm)
+{
+	char const cmd[] = "AT+CCWA";
+
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
 /* gsm_modem_is_functional */
 int gsm_modem_is_functional(GSMModem * gsmm)
 {
@@ -573,6 +582,8 @@ int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set)
 
 
 /* gsm_modem_set_call_waiting */
+static void _modem_set_call_waiting_callback(GSM * gsm);
+
 int gsm_modem_set_call_waiting(GSMModem * gsmm, gboolean unsollicited,
 		gboolean mode)
 {
@@ -580,7 +591,15 @@ int gsm_modem_set_call_waiting(GSMModem * gsmm, gboolean unsollicited,
 
 	cmd[8] = unsollicited ? '1' : '0';
 	cmd[10] = mode ? '1' : '0';
-	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_CALL_WAITING_FAILED,
+			_modem_set_call_waiting_callback);
+}
+
+static void _modem_set_call_waiting_callback(GSM * gsm)
+{
+	/* did it really work? */
+	gsm_is_call_waiting(gsm);
 }
 
 

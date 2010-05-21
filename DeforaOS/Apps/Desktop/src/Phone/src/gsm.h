@@ -72,6 +72,7 @@ typedef enum _GSMError
 	GSM_ERROR_BATTERY_CHARGE_FAILED,
 	GSM_ERROR_BUSY,
 	GSM_ERROR_CALL_FAILED,
+	GSM_ERROR_CALL_WAITING_FAILED,
 	GSM_ERROR_CONTACT_FETCH_FAILED,
 	GSM_ERROR_CONTACT_LIST_FAILED,
 	GSM_ERROR_FUNCTIONAL_FAILED,
@@ -354,6 +355,7 @@ int gsm_fetch_signal_level(GSM * gsm);
 
 /* queries */
 int gsm_is_alive(GSM * gsm);
+int gsm_is_call_waiting(GSM * gsm);
 int gsm_is_functional(GSM * gsm);
 int gsm_is_mute(GSM * gsm);
 int gsm_is_phone_active(GSM * gsm);

@@ -2214,6 +2214,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 				return 0;
 			}
 			gsm_set_call_presentation(phone->gsm, TRUE);
+			/* FIXME sometimes this fails (check it first) */
 			gsm_set_call_waiting(phone->gsm, TRUE, TRUE);
 			gsm_set_extended_ring_reports(phone->gsm, TRUE);
 			gsm_set_operator_mode(phone->gsm,
