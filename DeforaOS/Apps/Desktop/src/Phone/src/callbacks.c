@@ -72,6 +72,9 @@ static GdkFilterReturn _filter_message_show(Phone * phone,
 		case PHONE_MESSAGE_SHOW_MESSAGES:
 			phone_show_messages(phone, show);
 			break;
+		case PHONE_MESSAGE_SHOW_SETTINGS:
+			phone_show_settings(phone, show);
+			break;
 	}
 	return GDK_FILTER_CONTINUE;
 }

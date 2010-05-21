@@ -163,6 +163,9 @@ struct _Phone
 	GtkWidget * re_date;
 	GtkWidget * re_view;
 
+	/* settings */
+	GtkWidget * se_window;
+
 	/* write */
 	GtkWidget * wr_window;
 	GtkWidget * wr_entry;
@@ -298,6 +301,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING, G_TYPE_STRING);
 	phone->re_window = NULL;
+	phone->se_window = NULL;
 	phone->wr_window = NULL;
 	phone->wr_progress = NULL;
 	/* signal level */
@@ -1675,6 +1679,31 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	if(content != NULL)
 		gtk_text_buffer_set_text(tbuf, content, -1);
 	gtk_window_present(GTK_WINDOW(phone->re_window));
+}
+
+
+/* phone_show_settings */
+void phone_show_settings(Phone * phone, gboolean show)
+{
+	/* FIXME really implement */
+	if(phone->se_window == NULL)
+	{
+		phone->se_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(phone->se_window), 200,
+				300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+		gtk_window_set_icon_name(GTK_WINDOW(phone->se_window),
+				"stock_cell-phone");
+#endif
+		gtk_window_set_title(GTK_WINDOW(phone->se_window),
+				_("Phone settings"));
+		g_signal_connect(G_OBJECT(phone->se_window), "delete-event",
+				G_CALLBACK(on_phone_closex), phone->se_window);
+	}
+	if(show)
+		gtk_window_present(GTK_WINDOW(phone->se_window));
+	else
+		gtk_widget_hide(phone->se_window);
 }
 
 

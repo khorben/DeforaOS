@@ -25,6 +25,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/phone-contacts.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-dialer.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-messages.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-00.png \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-25.png \
 		$(PACKAGE)-$(VERSION)/data/phone-signal-50.png \
@@ -48,6 +49,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/contacts.c \
 		$(PACKAGE)-$(VERSION)/src/dialer.c \
 		$(PACKAGE)-$(VERSION)/src/messages.c \
+		$(PACKAGE)-$(VERSION)/src/settings.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/command.h \

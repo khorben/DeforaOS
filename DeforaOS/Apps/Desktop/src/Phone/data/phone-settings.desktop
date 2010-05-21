@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Phone settings
+Exec=phone-settings
+Icon=stock_cell-phone
+Type=Application
+Categories=Settings;Telephony;GTK;
+StartupNotify=true

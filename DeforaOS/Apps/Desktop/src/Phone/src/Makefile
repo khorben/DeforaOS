@@ -1,5 +1,5 @@
 SUBDIRS	= plugins
-TARGETS	= phone phone-contacts phone-dialer phone-messages
+TARGETS	= phone phone-contacts phone-dialer phone-messages phone-settings
 PREFIX	= /usr/local
 DESTDIR	= 
 BINDIR	= $(PREFIX)/bin
@@ -49,6 +49,13 @@ phone-messages_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 phone-messages: $(phone-messages_OBJS)
 	$(CC) -o phone-messages $(phone-messages_OBJS) $(phone-messages_LDFLAGS)
 
+phone-settings_OBJS = settings.o
+phone-settings_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+phone-settings_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+phone-settings: $(phone-settings_OBJS)
+	$(CC) -o phone-settings $(phone-settings_OBJS) $(phone-settings_LDFLAGS)
+
 callbacks.o: callbacks.c ../include/Phone.h phone.h callbacks.h
 	$(CC) $(phone_CFLAGS) -c callbacks.c
 
@@ -76,13 +83,16 @@ dialer.o: dialer.c common.c
 messages.o: messages.c common.c
 	$(CC) $(phone-messages_CFLAGS) -c messages.c
 
+settings.o: settings.c common.c
+	$(CC) $(phone-settings_CFLAGS) -c settings.c
+
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS)
+	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS)
+	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
 	$(RM) $(TARGETS)
 
 install: all
@@ -95,6 +105,8 @@ install: all
 	$(INSTALL) -m 0755 phone-dialer $(DESTDIR)$(BINDIR)/phone-dialer
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 phone-messages $(DESTDIR)$(BINDIR)/phone-messages
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 phone-settings $(DESTDIR)$(BINDIR)/phone-settings
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
@@ -102,5 +114,6 @@ uninstall:
 	$(RM) $(DESTDIR)$(BINDIR)/phone-contacts
 	$(RM) $(DESTDIR)$(BINDIR)/phone-dialer
 	$(RM) $(DESTDIR)$(BINDIR)/phone-messages
+	$(RM) $(DESTDIR)$(BINDIR)/phone-settings
 
 .PHONY: all subdirs clean distclean install uninstall

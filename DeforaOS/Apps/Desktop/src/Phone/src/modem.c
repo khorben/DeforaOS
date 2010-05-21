@@ -115,6 +115,7 @@ int gsm_modem_call_answer(GSMModem * gsmm)
 
 static void _modem_call_answer_callback(GSM * gsm)
 {
+	/* FIXME trigger a "established" event before closing if failed? */
 	gsm_is_phone_active(gsm);
 }
 
