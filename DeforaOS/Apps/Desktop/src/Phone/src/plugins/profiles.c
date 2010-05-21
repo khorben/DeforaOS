@@ -38,7 +38,6 @@
 /* types */
 typedef struct _Profiles
 {
-	int event;
 	guint source;
 
 	/* vibrator */
@@ -82,7 +81,6 @@ static int _profiles_init(PhonePlugin * plugin)
 	if((profiles = malloc(sizeof(*profiles))) == NULL)
 		return error_set_code(1, "%s", strerror(errno));
 	plugin->priv = profiles;
-	profiles->event = -1;
 	profiles->source = 0;
 	profiles->vibrator = 0;
 	profiles->pam = pa_threaded_mainloop_new();
@@ -129,6 +127,7 @@ static int _profiles_destroy(PhonePlugin * plugin)
 
 
 /* profiles_event */
+static void _event_call_incoming_do(PhonePlugin * plugin);
 static gboolean _event_call_incoming_timeout(gpointer data);
 
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
@@ -136,30 +135,17 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	Profiles * profiles = plugin->priv;
 	PhonePluginHelper * helper = plugin->helper;
 
-	if(profiles->event == (int)event)
-		/* FIXME this should probably only apply to phone calls */
-		return 0; /* already taking care of it */
-	if(profiles->source != 0)
-		g_source_remove(profiles->source);
-	profiles->source = 0;
-	if(profiles->pao != NULL)
-		pa_operation_cancel(profiles->pao);
-	profiles->pao = NULL;
 	switch(event)
 	{
 		case PHONE_EVENT_CALL_INCOMING:
-			profiles->pao = pa_context_play_sample(profiles->pac,
-					"ringtone", NULL, PA_VOLUME_NORM, NULL,
-					NULL);
-			profiles->source = g_timeout_add(500,
-					_event_call_incoming_timeout, plugin);
-			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
-			profiles->vibrator = 1;
+			_event_call_incoming_do(plugin);
 			break;
 		case PHONE_EVENT_SMS_RECEIVED:
-			profiles->pao = pa_context_play_sample(profiles->pac,
-					"message", NULL, PA_VOLUME_NORM, NULL,
-					NULL);
+			if(profiles->pao == NULL)
+				/* FIXME else queue the notification */
+				profiles->pao = pa_context_play_sample(
+						profiles->pac, "message", NULL,
+						PA_VOLUME_NORM, NULL, NULL);
 			break;
 		case PHONE_EVENT_SIM_VALID:
 		case PHONE_EVENT_SMS_SENT:
@@ -169,13 +155,40 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		case PHONE_EVENT_CALL_TERMINATED:
 		case PHONE_EVENT_CALL_ESTABLISHED:
 			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_OFF);
+			/* cancel the incoming call notification */
+			if(profiles->source != 0)
+				g_source_remove(profiles->source);
+			profiles->source = 0;
+			if(profiles->pao != NULL)
+				pa_operation_cancel(profiles->pao);
+			profiles->pao = NULL;
 			profiles->vibrator = 0;
 			break;
 		default: /* not relevant */
 			break;
 	}
-	profiles->event = event;
 	return 0;
+}
+
+static void _event_call_incoming_do(PhonePlugin * plugin)
+{
+	Profiles * profiles = plugin->priv;
+	PhonePluginHelper * helper = plugin->helper;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(profiles->pao == NULL)
+		profiles->pao = pa_context_play_sample(profiles->pac,
+				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
+	if(profiles->vibrator == 0)
+	{
+		helper->event(helper->phone, PHONE_EVENT_VIBRATOR_ON);
+		profiles->vibrator = 1;
+	}
+	if(profiles->source == 0)
+		profiles->source = g_timeout_add(500,
+				_event_call_incoming_timeout, plugin);
 }
 
 static gboolean _event_call_incoming_timeout(gpointer data)
@@ -184,6 +197,9 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 	Profiles * profiles = plugin->priv;
 	PhonePluginHelper * helper = plugin->helper;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	if(profiles->vibrator != 0) /* vibrating with a pause */
 	{
 		if(profiles->vibrator++ == 1)
@@ -194,11 +210,9 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 			profiles->vibrator = 1;
 		}
 	}
-	if(profiles->pao != NULL) /* playing a sample */
+	if(profiles->pao != NULL && pa_operation_get_state(profiles->pao)
+			!= PA_OPERATION_RUNNING)
 	{
-		if(pa_operation_get_state(profiles->pao)
-				== PA_OPERATION_RUNNING)
-			return TRUE; /* check again later */
 		pa_operation_unref(profiles->pao);
 		/* ring again */
 		profiles->pao = pa_context_play_sample(profiles->pac,
