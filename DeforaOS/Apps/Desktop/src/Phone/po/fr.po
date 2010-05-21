@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-19 14:34+0200\n"
+"POT-Creation-Date: 2010-05-21 15:17+0200\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -112,7 +112,7 @@ msgstr "Délai d'attente du réseau dépassé"
 msgid "Network not allowed - emergency calls only"
 msgstr "Réseau non autorisé - appels d'urgence uniquement"
 
-#: ../src/gsm.c:117 ../src/gsm.c:1008 ../src/gsm.c:1204 ../src/gsm.c:1264
+#: ../src/gsm.c:117 ../src/gsm.c:1028 ../src/gsm.c:1238 ../src/gsm.c:1298
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
@@ -132,11 +132,11 @@ msgstr "Paramètre de mode PDU invalide"
 msgid "Invalid memory index"
 msgstr "Index mémoire invalide"
 
-#: ../src/gsm.c:296
+#: ../src/gsm.c:298
 msgid ": Unknown baudrate, assuming 115200"
 msgstr ": Débit inconnu, tente 115200"
 
-#: ../src/gsm.c:848
+#: ../src/gsm.c:868
 msgid "Event not handled"
 msgstr "Événement non géré"
 
@@ -149,204 +149,204 @@ msgid ""
 "  -F\tEnable hardware flow control (RTS/CTS)\n"
 msgstr ""
 
-#: ../src/phone.c:332
+#: ../src/phone.c:335
 msgid "Initializing..."
 msgstr "Initialisation..."
 
-#: ../src/phone.c:523
+#: ../src/phone.c:534
 msgid "Checking SIM PIN code..."
 msgstr "Vérification du code SIM PIN..."
 
-#: ../src/phone.c:873
+#: ../src/phone.c:932
 msgid "Answer"
 msgstr "Répondre"
 
-#: ../src/phone.c:880
+#: ../src/phone.c:939
 msgid "Hangup"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:887
+#: ../src/phone.c:946
 msgid "Reject"
 msgstr "Rejeter"
 
-#: ../src/phone.c:910
+#: ../src/phone.c:969
 msgid "Loudspeaker"
 msgstr "Haut-parleur"
 
-#: ../src/phone.c:918
+#: ../src/phone.c:979
 msgid "Mute microphone"
 msgstr "Couper le microphone"
 
-#: ../src/phone.c:934
+#: ../src/phone.c:995
 msgid "Unknown contact"
 msgstr "Contact inconnu"
 
-#: ../src/phone.c:941
+#: ../src/phone.c:1002
 msgid "Unknown number"
 msgstr "Numéro inconnu"
 
-#: ../src/phone.c:949
+#: ../src/phone.c:1010
 msgid "In conversation"
 msgstr "En conversation"
 
-#: ../src/phone.c:957
+#: ../src/phone.c:1018
 msgid "Incoming call"
 msgstr "Appel entrant"
 
-#: ../src/phone.c:964
+#: ../src/phone.c:1025
 msgid "Outgoing call"
 msgstr "Appel sortant"
 
-#: ../src/phone.c:972
+#: ../src/phone.c:1033
 msgid "Call finished"
 msgstr "Appel terminé"
 
-#: ../src/phone.c:1026
+#: ../src/phone.c:1087
 msgid "Enter"
 msgstr "Entrer"
 
-#: ../src/phone.c:1028
+#: ../src/phone.c:1089
 msgid "Skip"
 msgstr "Ignorer"
 
-#: ../src/phone.c:1039
+#: ../src/phone.c:1100
 msgid "Enter SIM PIN code"
 msgstr "Entrer le code SIM PIN"
 
-#: ../src/phone.c:1068
+#: ../src/phone.c:1129
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:1075 ../src/phone.c:1397 ../src/phone.c:1440
-#: ../src/phone.c:1565
+#: ../src/phone.c:1136 ../src/phone.c:1460 ../src/phone.c:1503
+#: ../src/phone.c:1628
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:1085
+#: ../src/phone.c:1146
 msgid "Write"
 msgstr "Écrire"
 
-#: ../src/phone.c:1107
+#: ../src/phone.c:1168
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/phone.c:1369
+#: ../src/phone.c:1432
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:1399
+#: ../src/phone.c:1462
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:1433
+#: ../src/phone.c:1496
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:1446
+#: ../src/phone.c:1509
 msgid "New message"
 msgstr "Nouveau message"
 
-#: ../src/phone.c:1452
+#: ../src/phone.c:1515
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/phone.c:1470
+#: ../src/phone.c:1533
 msgid "Inbox"
 msgstr "Reçus"
 
-#: ../src/phone.c:1474
+#: ../src/phone.c:1537
 msgid "Sent"
 msgstr "Envoyés"
 
-#: ../src/phone.c:1493
+#: ../src/phone.c:1556
 msgid "From"
 msgstr "De"
 
-#: ../src/phone.c:1499
+#: ../src/phone.c:1562
 msgid "Date"
 msgstr "Date"
 
-#: ../src/phone.c:1559
+#: ../src/phone.c:1622
 msgid "Read message"
 msgstr "Lire le message"
 
-#: ../src/phone.c:1637
+#: ../src/phone.c:1700
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:1643
+#: ../src/phone.c:1706
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/phone.c:1649
+#: ../src/phone.c:1712
 msgid "Attach"
 msgstr "Attacher"
 
-#: ../src/phone.c:1735
+#: ../src/phone.c:1798
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:1736
+#: ../src/phone.c:1799
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:1761
+#: ../src/phone.c:1824
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:1876
+#: ../src/phone.c:1939
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:1904 ../src/phone.c:1909
+#: ../src/phone.c:1967 ../src/phone.c:1972
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:1988 ../src/phone.c:1993
+#: ../src/phone.c:2019 ../src/phone.c:2024
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:2076
+#: ../src/phone.c:2114
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: ../src/phone.c:2079
+#: ../src/phone.c:2117
 msgid "Registering..."
 msgstr "Enregistrement..."
 
-#: ../src/phone.c:2082
+#: ../src/phone.c:2120
 msgid "Denied"
 msgstr "Refusé"
 
-#: ../src/phone.c:2087
+#: ../src/phone.c:2125
 msgid "SIM check..."
 msgstr "Vérification SIM..."
 
-#: ../src/phone.c:2093
+#: ../src/phone.c:2131
 msgid "SIM ready..."
 msgstr "SIM prête..."
 
-#: ../src/phone.c:2202
+#: ../src/phone.c:2244
 msgid "New message received"
 msgstr "Nouveau message reçu"
 
-#: ../src/phone.c:2223
+#: ../src/phone.c:2265
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:2247
+#: ../src/phone.c:2289
 msgid "SIM PIN is valid"
 msgstr "Code SIM PIN valide"
 
-#: ../src/phone.c:2286
+#: ../src/phone.c:2329
 msgid "Could not send message"
 msgstr "Le message n'a pas pu être envoyé"
 
-#: ../src/phone.c:2294
+#: ../src/phone.c:2337
 msgid "Wrong SIM PIN code"
 msgstr "Code SIM PIN erroné"
 
-#: ../src/plugins/profiles.c:88 ../src/plugins/profiles.c:96
+#: ../src/plugins/profiles.c:93 ../src/plugins/profiles.c:101
 msgid "Could not initialize PulseAudio"
 msgstr "Impossible d'initialiser PulseAudio"
