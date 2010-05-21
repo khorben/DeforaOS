@@ -109,6 +109,8 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 		/* not relevant */
 		case PHONE_EVENT_SIM_VALID: /* FIXME prevent deep sleep? */
 		case PHONE_EVENT_SMS_RECEIVED:
+		case PHONE_EVENT_SMS_RECEIVING:
+		case PHONE_EVENT_SMS_SENDING:
 		case PHONE_EVENT_SMS_SENT:
 			break;
 	}

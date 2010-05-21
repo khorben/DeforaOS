@@ -684,8 +684,8 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 			continue;
 		switch(event)
 		{
-			case PHONE_EVENT_SMS_RECEIVED:
-			case PHONE_EVENT_SMS_SENT:
+			case PHONE_EVENT_SMS_RECEIVING:
+			case PHONE_EVENT_SMS_SENDING:
 				va_start(ap, event);
 				buf = va_arg(ap, char *);
 				len = va_arg(ap, size_t *);
@@ -700,6 +700,8 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_NOTIFICATION_OFF:
 			case PHONE_EVENT_NOTIFICATION_ON:
 			case PHONE_EVENT_SIM_VALID:
+			case PHONE_EVENT_SMS_RECEIVED:
+			case PHONE_EVENT_SMS_SENT:
 			case PHONE_EVENT_SPEAKER_OFF:
 			case PHONE_EVENT_SPEAKER_ON:
 			case PHONE_EVENT_VIBRATOR_OFF:
@@ -1821,7 +1823,7 @@ void phone_write_send(Phone * phone)
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 	len = strlen(text);
-	phone_event(phone, PHONE_EVENT_SMS_SENT, text, &len);
+	phone_event(phone, PHONE_EVENT_SMS_SENDING, text, &len);
 	gsm_send_message(phone->gsm, number, text);
 	g_free(text);
 }
@@ -2240,7 +2242,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->incoming_message.index);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
-			phone_event(phone, PHONE_EVENT_SMS_RECEIVED,
+			phone_event(phone, PHONE_EVENT_SMS_RECEIVING,
 					event->message.content,
 					&event->message.length);
 			phone_messages_set(phone, event->message.index,

@@ -171,13 +171,7 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			helper->event(helper->phone, PHONE_EVENT_VIBRATOR_OFF);
 			profiles->vibrator = 0;
 			break;
-		/* not relevant */
-		case PHONE_EVENT_NOTIFICATION_OFF:
-		case PHONE_EVENT_NOTIFICATION_ON:
-		case PHONE_EVENT_SPEAKER_OFF:
-		case PHONE_EVENT_SPEAKER_ON:
-		case PHONE_EVENT_VIBRATOR_OFF:
-		case PHONE_EVENT_VIBRATOR_ON:
+		default: /* not relevant */
 			break;
 	}
 	profiles->event = event;
