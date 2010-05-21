@@ -1,5 +1,5 @@
 PACKAGE	= Phone
-VERSION	= 0.0.5
+VERSION	= 0.0.6
 SUBDIRS	= data include po src
 RM	= rm -f
 LN	= ln -f
@@ -58,6 +58,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/profiles.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
