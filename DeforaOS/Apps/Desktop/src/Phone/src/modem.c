@@ -433,8 +433,8 @@ int gsm_modem_reset(GSMModem * gsmm)
 
 
 /* gsm_modem_send_message */
-char * _number_to_address(char const * number);
-char * _text_to_sept(char const * text);
+static char * _number_to_address(char const * number);
+static char * _text_to_sept(char const * text);
 
 int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 		char const * text)
@@ -505,7 +505,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 	return ret;
 }
 
-char * _number_to_address(char const * number)
+static char * _number_to_address(char const * number)
 {
 	char * buf;
 	size_t len;
@@ -535,7 +535,7 @@ char * _number_to_address(char const * number)
 }
 
 /* this function is heavily inspired from gsmd, (c) 2007 OpenMoko, Inc. */
-char * _text_to_sept(char const * text)
+static char * _text_to_sept(char const * text)
 {
 	char const tab[] = "0123456789ABCDEF";
 	unsigned char const * t = (unsigned char const *)text;
@@ -548,7 +548,7 @@ char * _text_to_sept(char const * text)
 	int shift = 0;
 
 	len = strlen(text);
-	if((buf = malloc(len + 1)) == NULL)
+	if((buf = malloc((len * 2) + 1)) == NULL)
 		return NULL;
 	p = buf;
 	for(i = 0; i < len; i++)
