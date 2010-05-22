@@ -50,9 +50,12 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
 PhonePlugin plugin =
 {
 	NULL,
+	"Openmoko",
+	NULL,
 	NULL,
 	NULL,
 	_openmoko_event,
+	NULL,
 	NULL
 };
 

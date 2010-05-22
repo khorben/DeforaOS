@@ -98,6 +98,7 @@ void phone_messages_write(Phone * phone, char const * number,
 
 /* plugins */
 int phone_load(Phone * phone, char const * plugin);
+void phone_unload_all(Phone * phone);
 
 /* read */
 void phone_read_call(Phone * phone);

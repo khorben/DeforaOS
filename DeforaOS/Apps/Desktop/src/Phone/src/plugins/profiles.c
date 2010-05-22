@@ -53,6 +53,7 @@ typedef struct _Profiles
 static int _profiles_init(PhonePlugin * plugin);
 static int _profiles_destroy(PhonePlugin * plugin);
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...);
+static GtkWidget * _profiles_settings(PhonePlugin * plugin);
 
 
 /* public */
@@ -60,9 +61,12 @@ static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...);
 PhonePlugin plugin =
 {
 	NULL,
+	"Profiles",
+	"gnome-settings",
 	_profiles_init,
 	_profiles_destroy,
 	_profiles_event,
+	_profiles_settings,
 	NULL
 };
 
@@ -219,4 +223,12 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 				"ringtone", NULL, PA_VOLUME_NORM, NULL, NULL);
 	}
 	return TRUE;
+}
+
+
+/* profiles_settings */
+static GtkWidget * _profiles_settings(PhonePlugin * plugin)
+{
+	/* FIXME implement */
+	return NULL;
 }
