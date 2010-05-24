@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include <libintl.h>
+#include <gtk/gtk.h>
 #include <pulse/pulseaudio.h>
 #include <System.h>
 #include "Phone.h"
@@ -36,12 +37,39 @@
 /* Profiles */
 /* private */
 /* types */
+typedef enum _ProfileVolume
+{
+	PROFILE_VOLUME_SILENT = 0,
+	PROFILE_VOLUME_25,
+	PROFILE_VOLUME_50,
+	PROFILE_VOLUME_75,
+	PROFILE_VOLUME_100,
+	PROFILE_VOLUME_ASC
+} ProfileVolume;
+
+typedef struct _ProfileDefinition
+{
+	char const * name;
+	gboolean online;
+	ProfileVolume volume;
+	gboolean vibrate;
+} ProfileDefinition;
+
 typedef struct _Profiles
 {
 	guint source;
 
+	/* profiles */
+	ProfileDefinition * profiles;
+	size_t profiles_cnt;
+	size_t profiles_cur;
+
 	/* vibrator */
 	int vibrator;
+
+	/* settings */
+	GtkWidget * window;
+	GtkWidget * combo;
 
 	/* pulseaudio */
 	pa_threaded_mainloop * pam;
@@ -49,11 +77,19 @@ typedef struct _Profiles
 	pa_operation * pao;
 } Profiles;
 
+/* variables */
+static ProfileDefinition _profiles_definitions[] =
+{
+	{ "General",	TRUE,	PROFILE_VOLUME_ASC,	TRUE	},
+	{ "Silent",	TRUE,	PROFILE_VOLUME_SILENT,	TRUE	},
+	{ "Offline",	FALSE,	PROFILE_VOLUME_SILENT,	FALSE	}
+};
+
 /* prototypes */
 static int _profiles_init(PhonePlugin * plugin);
 static int _profiles_destroy(PhonePlugin * plugin);
 static int _profiles_event(PhonePlugin * plugin, PhoneEvent event, ...);
-static GtkWidget * _profiles_settings(PhonePlugin * plugin);
+static void _profiles_settings(PhonePlugin * plugin);
 
 
 /* public */
@@ -86,7 +122,11 @@ static int _profiles_init(PhonePlugin * plugin)
 		return error_set_code(1, "%s", strerror(errno));
 	plugin->priv = profiles;
 	profiles->source = 0;
+	profiles->profiles = _profiles_definitions;
+	profiles->profiles_cnt = 3;
+	profiles->profiles_cur = 0;
 	profiles->vibrator = 0;
+	profiles->window = NULL;
 	profiles->pam = pa_threaded_mainloop_new();
 	profiles->pac = NULL;
 	profiles->pao = NULL;
@@ -227,8 +267,47 @@ static gboolean _event_call_incoming_timeout(gpointer data)
 
 
 /* profiles_settings */
-static GtkWidget * _profiles_settings(PhonePlugin * plugin)
+static gboolean _on_profiles_closex(gpointer data);
+
+static void _profiles_settings(PhonePlugin * plugin)
 {
-	/* FIXME implement */
-	return NULL;
+	Profiles * profiles = plugin->priv;
+	GtkWidget * vbox;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, plugin->name);
+#endif
+	if(profiles->window == NULL)
+	{
+		profiles->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_default_size(GTK_WINDOW(profiles->window), 200,
+				300);
+		gtk_window_set_title(GTK_WINDOW(profiles->window), "Profiles");
+		g_signal_connect_swapped(G_OBJECT(profiles->window),
+				"delete-event", G_CALLBACK(_on_profiles_closex),
+				profiles);
+		vbox = gtk_vbox_new(FALSE, 0);
+		/* entry */
+		profiles->combo = gtk_combo_box_new_text();
+		for(i = 0; i < profiles->profiles_cnt; i++)
+			gtk_combo_box_append_text(GTK_COMBO_BOX(
+						profiles->combo),
+					profiles->profiles[i].name);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->combo),
+				profiles->profiles_cur);
+		gtk_box_pack_start(GTK_BOX(vbox), profiles->combo, FALSE, TRUE,
+				0);
+		gtk_container_add(GTK_CONTAINER(profiles->window), vbox);
+		gtk_widget_show_all(vbox);
+	}
+	gtk_window_present(GTK_WINDOW(profiles->window));
+}
+
+static gboolean _on_profiles_closex(gpointer data)
+{
+	Profiles * profiles = data;
+
+	gtk_widget_hide(profiles->window);
+	return TRUE;
 }

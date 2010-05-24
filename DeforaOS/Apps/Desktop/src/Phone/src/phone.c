@@ -906,6 +906,26 @@ void phone_read_call(Phone * phone)
 }
 
 
+/* settings */
+/* phone_settings_open_selected */
+void phone_settings_open_selected(Phone * phone)
+{
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	PhonePlugin * plugin = NULL;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->se_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->se_store), &iter,
+			PHONE_SETTINGS_COLUMN_PLUGIN, &plugin, -1);
+	if(plugin != NULL && plugin->settings != NULL)
+		plugin->settings(plugin);
+}
+
+
 /* show */
 /* phone_show_call */
 void phone_show_call(Phone * phone, gboolean show, ...)
@@ -1716,6 +1736,9 @@ void phone_show_settings(Phone * phone, gboolean show)
 					phone->se_store));
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(phone->se_view),
 				FALSE);
+		g_signal_connect_swapped(G_OBJECT(phone->se_view),
+				"row-activated", G_CALLBACK(
+					phone_settings_open_selected), phone);
 		/* icon */
 		renderer = gtk_cell_renderer_pixbuf_new();
 		column = gtk_tree_view_column_new_with_attributes(NULL,

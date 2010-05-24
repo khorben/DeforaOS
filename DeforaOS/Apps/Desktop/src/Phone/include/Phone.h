@@ -18,7 +18,7 @@
 #ifndef PHONE_PHONE_H
 # define PHONE_PHONE_H
 
-# include <gtk/gtk.h>
+# include <glib.h>
 
 
 /* Phone */
@@ -77,7 +77,7 @@ struct _PhonePlugin
 	int (*init)(PhonePlugin * plugin);
 	int (*destroy)(PhonePlugin * plugin);
 	int (*event)(PhonePlugin * plugin, PhoneEvent event, ...);
-	GtkWidget * (*settings)(PhonePlugin * plugin);
+	void (*settings)(PhonePlugin * plugin);
 	void * priv;
 };
 

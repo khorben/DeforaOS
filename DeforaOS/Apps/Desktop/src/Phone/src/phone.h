@@ -103,6 +103,9 @@ void phone_unload_all(Phone * phone);
 /* read */
 void phone_read_call(Phone * phone);
 
+/* settings */
+void phone_settings_open_selected(Phone * phone);
+
 /* write */
 void phone_write_count_buffer(Phone * phone);
 void phone_write_send(Phone * phone);
