@@ -33,7 +33,10 @@ typedef struct _DesktopIcon DesktopIcon;
 #  define Desktop Desktop
 typedef struct _Desktop Desktop;
 # endif
-typedef enum _DesktopLayout { DL_FILES, DL_APPLICATIONS } DesktopLayout;
+typedef enum _DesktopLayout
+{
+	DL_APPLICATIONS, DL_CATEGORIES, DL_FILES, DL_HOMESCREEN
+} DesktopLayout;
 
 
 /* functions */
@@ -47,6 +50,8 @@ GdkPixbuf * desktop_get_file(Desktop * desktop);
 GdkPixbuf * desktop_get_folder(Desktop * desktop);
 Mime * desktop_get_mime(Desktop * desktop);
 GtkIconTheme * desktop_get_theme(Desktop * desktop);
+
+void desktop_set_layout(Desktop * desktop, DesktopLayout layout);
 
 /* useful */
 int desktop_error(Desktop * desktop, char const * message, int ret);

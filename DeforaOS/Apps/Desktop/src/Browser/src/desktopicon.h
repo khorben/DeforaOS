@@ -32,6 +32,7 @@ typedef struct _Desktop Desktop;
 #  define DesktopIcon DesktopIcon
 typedef struct _DesktopIcon DesktopIcon;
 # endif
+typedef void (*DesktopIconCallback)(Desktop * desktop, gpointer data);
 
 
 /* constants */
@@ -46,14 +47,20 @@ typedef struct _DesktopIcon DesktopIcon;
 DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		char const * url);
 DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path);
+DesktopIcon * desktopicon_new_category(Desktop * desktop, char const * name,
+		char const * icon);
 void desktopicon_delete(DesktopIcon * desktopicon);
 
 /* accessors */
 gboolean desktopicon_get_first(DesktopIcon * desktopicon);
+gboolean desktopicon_get_immutable(DesktopIcon * desktopicon);
 char const * desktopicon_get_name(DesktopIcon * desktopicon);
 char const * desktopicon_get_path(DesktopIcon * desktopicon);
 gboolean desktopicon_get_selected(DesktopIcon * desktopicon);
 gboolean desktopicon_get_updated(DesktopIcon * desktopicon);
+
+void desktopicon_set_callback(DesktopIcon * desktopicon,
+		DesktopIconCallback callback, gpointer data);
 void desktopicon_set_confirm(DesktopIcon * desktopicon, gboolean confirm);
 void desktopicon_set_executable(DesktopIcon * desktopicon, gboolean executable);
 void desktopicon_set_first(DesktopIcon * desktopicon, gboolean first);

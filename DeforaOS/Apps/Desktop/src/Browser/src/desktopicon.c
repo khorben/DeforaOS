@@ -55,6 +55,10 @@ struct _DesktopIcon
 	char * exec;
 	char * tryexec;
 
+	/* callback */
+	DesktopIconCallback callback;
+	gpointer data;
+
 	gboolean confirm;
 	gboolean immutable;		/* cannot be deleted */
 	gboolean selected;
@@ -118,7 +122,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
 			(void *)desktop, name, path);
 #endif
-	if(stat(path, &st) == 0)
+	if(path != NULL && stat(path, &st) == 0)
 	{
 		mime = desktop_get_mime(desktop);
 		if(S_ISDIR(st.st_mode))
@@ -144,7 +148,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 		if((p = g_filename_to_utf8(path, -1, NULL, NULL, &error))
 				== NULL)
 		{
-			printf("%s\n", error->message);
+			fprintf(stderr, "%s%s\n", "desktop: ", error->message);
 			name = path;
 		}
 		else
@@ -157,7 +161,7 @@ DesktopIcon * desktopicon_new(Desktop * desktop, char const * name,
 	desktopicon->isdir = isdir;
 	desktopicon_set_executable(desktopicon, isexec);
 	desktopicon->mimetype = mimetype;
-	if((desktopicon->path = strdup(path)) == NULL)
+	if(path != NULL && (desktopicon->path = strdup(path)) == NULL)
 	{
 		desktopicon_delete(desktopicon);
 		return NULL;
@@ -237,6 +241,26 @@ DesktopIcon * desktopicon_new_application(Desktop * desktop, char const * path)
 }
 
 
+/* desktopicon_new_category */
+DesktopIcon * desktopicon_new_category(Desktop * desktop, char const * name,
+		char const * icon)
+{
+	DesktopIcon * desktopicon;
+	GdkPixbuf * image;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
+			(void *)desktop, name, icon);
+#endif
+	image = gtk_icon_theme_load_icon(desktop_get_theme(desktop), icon,
+			DESKTOPICON_ICON_SIZE, 0, NULL);
+	if((desktopicon = _desktopicon_new_do(desktop, image, name)) == NULL)
+		return NULL;
+	desktopicon_set_immutable(desktopicon, TRUE);
+	return desktopicon;
+}
+
+
 /* desktopicon_delete */
 void desktopicon_delete(DesktopIcon * desktopicon)
 {
@@ -254,6 +278,13 @@ void desktopicon_delete(DesktopIcon * desktopicon)
 gboolean desktopicon_get_first(DesktopIcon * desktopicon)
 {
 	return desktopicon->isfirst;
+}
+
+
+/* desktopicon_get_immutable */
+gboolean desktopicon_get_immutable(DesktopIcon * desktopicon)
+{
+	return desktopicon->immutable;
 }
 
 
@@ -282,6 +313,15 @@ gboolean desktopicon_get_selected(DesktopIcon * desktopicon)
 gboolean desktopicon_get_updated(DesktopIcon * desktopicon)
 {
 	return desktopicon->updated;
+}
+
+
+/* desktopicon_set_callback */
+void desktopicon_set_callback(DesktopIcon * desktopicon,
+		DesktopIconCallback callback, gpointer data)
+{
+	desktopicon->callback = callback;
+	desktopicon->data = data;
 }
 
 
@@ -533,6 +573,7 @@ static gboolean _on_desktopicon_closex(GtkWidget * widget, GdkEvent * event,
 /* FIXME some code is duplicated from callbacks.c */
 /* on_icon_button_press */
 static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon);
+static void _popup_callback(GtkWidget * menu, DesktopIcon * desktopicon);
 static void _popup_file(GtkWidget * menu, DesktopIcon * desktopicon);
 static void _popup_mime(Mime * mime, char const * mimetype, char const * action,
 		char const * label, GCallback callback, DesktopIcon * icon,
@@ -566,6 +607,8 @@ static gboolean _on_icon_button_press(GtkWidget * widget,
 	menu = gtk_menu_new();
 	if(desktopicon->isdir == TRUE)
 		_popup_directory(menu, desktopicon);
+	else if(desktopicon->callback != NULL)
+		_popup_callback(menu, desktopicon);
 	else
 		_popup_file(menu, desktopicon);
 	if(desktopicon->immutable != TRUE)
@@ -600,6 +643,16 @@ static void _popup_directory(GtkWidget * menu, DesktopIcon * desktopicon)
 	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
 	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
 				_on_icon_open), desktopicon);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+}
+
+static void _popup_callback(GtkWidget * menu, DesktopIcon * desktopicon)
+{
+	GtkWidget * menuitem;
+
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_OPEN, NULL);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate",
+			G_CALLBACK(_on_icon_open), desktopicon);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
@@ -658,6 +711,11 @@ static void _on_icon_open(gpointer data)
 	Mime * mime;
 	pid_t pid;
 
+	if(desktopicon->path == NULL && desktopicon->callback != NULL)
+	{
+		desktopicon->callback(desktopicon->desktop, desktopicon->data);
+		return;
+	}
 	if(desktopicon->isdir == FALSE)
 	{
 		mime = desktop_get_mime(desktopicon->desktop);
