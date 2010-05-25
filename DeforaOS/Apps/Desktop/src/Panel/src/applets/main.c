@@ -84,7 +84,7 @@ static GtkWidget * _main_menuitem(char const * label, char const * stock);
 /* callbacks */
 static void _on_clicked(gpointer data);
 static gboolean _on_idle(gpointer data);
-static void _on_lock(void);
+static void _on_lock(gpointer data);
 static void _on_logout(gpointer data);
 static void _on_run(void);
 static void _on_shutdown(gpointer data);
@@ -143,7 +143,8 @@ static void _main_destroy(PanelApplet * applet)
 
 	if(main->idle != 0)
 		g_source_remove(main->idle);
-	/* FIXME free main->apps */
+	g_slist_foreach(main->apps, (GFunc)config_delete, NULL);
+	g_slist_free(main->apps);
 	free(main);
 }
 
@@ -298,8 +299,8 @@ static void _on_clicked(gpointer data)
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	menuitem = _main_menuitem(_("Lock screen"), "gnome-lockscreen");
-	g_signal_connect(G_OBJECT(menuitem), "activate", G_CALLBACK(_on_lock),
-			NULL);
+	g_signal_connect_swapped(G_OBJECT(menuitem), "activate", G_CALLBACK(
+				_on_lock), main);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	if(main->helper->logout_dialog != NULL)
 	{
@@ -413,14 +414,18 @@ static gint _idle_apps_compare(gconstpointer a, gconstpointer b)
 
 
 /* on_lock */
-static void _on_lock(void)
+static void _on_lock(gpointer data)
 {
-	char * argv[] = { "xscreensaver-command", "-lock", NULL };
-	GSpawnFlags flags = G_SPAWN_SEARCH_PATH
-		| G_SPAWN_STDOUT_TO_DEV_NULL
-		| G_SPAWN_STDERR_TO_DEV_NULL;
+	Main * main = data;
+	PanelAppletHelper * helper = main->helper;
+	char const * command = "xscreensaver-command -lock";
+	char const * p;
+	GError * error = NULL;
 
-	g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, NULL);
+	if((p = helper->config_get(helper->priv, "lock", "command")) != NULL)
+		command = p;
+	if(g_spawn_command_line_async(command, &error) != TRUE)
+		helper->error(NULL, error->message, 0);
 }
 
 
