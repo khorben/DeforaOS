@@ -59,6 +59,8 @@
 /* Desktop */
 /* private */
 /* types */
+typedef struct _DesktopCategory DesktopCategory;
+
 struct _Desktop
 {
 	/* workarea */
@@ -83,6 +85,8 @@ struct _Desktop
 	char const * home;
 	GdkPixbuf * file;
 	GdkPixbuf * folder;
+	/* applications */
+	DesktopCategory * category;
 	/* categories */
 	GSList * apps;
 
@@ -98,13 +102,13 @@ struct _Desktop
 	GtkWidget * menu;
 };
 
-typedef struct _DesktopCategory
+struct _DesktopCategory
 {
 	gboolean show;
 	char const * category;
 	char const * name;
 	char const * icon;
-} DesktopCategory;
+};
 
 
 /* constants */
@@ -632,6 +636,7 @@ GtkIconTheme * desktop_get_theme(Desktop * desktop)
 /* desktop_set_layout */
 static void _layout_delete(Desktop * desktop);
 static int _layout_applications(Desktop * desktop);
+static void _layout_applications_open(Desktop * desktop, gpointer data);
 static int _layout_categories(Desktop * desktop);
 static int _layout_files(Desktop * desktop);
 static void _layout_files_add_home(Desktop * desktop);
@@ -669,13 +674,20 @@ static void _layout_delete(Desktop * desktop)
 	desktop->path = NULL;
 	desktop->path_cnt = 0;
 	for(i = 0; i < desktop->icon_cnt; i++)
+	{
+		desktopicon_set_immutable(desktop->icon[i], FALSE);
 		desktopicon_set_updated(desktop->icon[i], FALSE);
+	}
+	for(i = 0; _desktop_categories[i].name != NULL; i++)
+		_desktop_categories[i].show = FALSE;
 }
 
 static int _layout_applications(Desktop * desktop)
 {
 	const char path[] = DATADIR "/applications";
 	struct stat st;
+	DesktopIcon * desktopicon;
+	GdkPixbuf * icon;
 
 	if((desktop->path = strdup(path)) == NULL)
 		return desktop_error(NULL, strerror(errno), 1);
@@ -683,11 +695,31 @@ static int _layout_applications(Desktop * desktop)
 	if(stat(desktop->path, &st) == 0)
 		if(!S_ISDIR(st.st_mode))
 			return desktop_error(NULL, strerror(ENOTDIR), 1);
+	if(desktop->category != NULL)
+	{
+		desktopicon = desktopicon_new(desktop, _("Back"), NULL);
+		desktopicon_set_callback(desktopicon, _layout_applications_open,
+				NULL);
+		icon = gtk_icon_theme_load_icon(desktop->theme, "back",
+				DESKTOPICON_ICON_SIZE, 0, NULL);
+		if(icon != NULL)
+			desktopicon_set_icon(desktopicon, icon);
+		desktop_icon_add(desktop, desktopicon);
+	}
 	return 0;
+}
+
+static void _layout_applications_open(Desktop * desktop, gpointer data)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	desktop_set_layout(desktop, DL_CATEGORIES);
 }
 
 static int _layout_categories(Desktop * desktop)
 {
+	desktop->category = NULL;
 	return _layout_applications(desktop);
 }
 
@@ -882,6 +914,8 @@ static int _current_loop_applications(Desktop * desktop)
 	const char ext[] = ".desktop";
 	char * path = NULL;
 	char * p;
+	Config * config;
+	char const * q;
 	DesktopIcon * icon;
 
 	while((de = readdir(desktop->refresh_dir)) != NULL)
@@ -906,6 +940,22 @@ static int _current_loop_applications(Desktop * desktop)
 #ifdef DEBUG
 		fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, path);
 #endif
+		/* XXX not very elegant */
+		if(desktop->category != NULL && (config = config_new()) != NULL)
+		{
+			if(config_load(config, path) != 0
+					|| (q = config_get(config,
+							"Desktop Entry",
+							"Categories")) == NULL
+					|| string_find(q,
+						desktop->category->name)
+					== NULL)
+			{
+				config_delete(config);
+				continue;
+			}
+			config_delete(config);
+		}
 		if((icon = desktopicon_new_application(desktop, path)) == NULL)
 			continue;
 		desktop_icon_add(desktop, icon);
@@ -1117,7 +1167,7 @@ static void _done_categories_open(Desktop * desktop, gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, dc->name);
 #endif
-	/* FIXME only display the relevant ones */
+	desktop->category = dc;
 	desktop_set_layout(desktop, DL_APPLICATIONS);
 }
 
