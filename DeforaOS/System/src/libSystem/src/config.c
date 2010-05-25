@@ -80,6 +80,8 @@ int config_set(Config * config, char const * section, char const * variable,
 	char * q;
 	char * v = NULL;
 
+	if(section == NULL)
+		section = "";
 	if((hash = hash_get(config, section)) == NULL)
 	{
 		/* create a new section */
