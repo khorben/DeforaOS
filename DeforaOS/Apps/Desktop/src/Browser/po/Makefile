@@ -31,15 +31,15 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	./gettext.sh -p "$(PREFIX)" install "de.mo"
-	./gettext.sh -p "$(PREFIX)" install "es.mo"
-	./gettext.sh -p "$(PREFIX)" install "fr.mo"
-	./gettext.sh -p "$(PREFIX)" install "it.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "de.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "es.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "it.mo"
 
 uninstall:
-	./gettext.sh -p "$(PREFIX)" uninstall "de.mo"
-	./gettext.sh -p "$(PREFIX)" uninstall "es.mo"
-	./gettext.sh -p "$(PREFIX)" uninstall "fr.mo"
-	./gettext.sh -p "$(PREFIX)" uninstall "it.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "de.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "es.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "fr.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "it.mo"
 
 .PHONY: all clean distclean install uninstall
