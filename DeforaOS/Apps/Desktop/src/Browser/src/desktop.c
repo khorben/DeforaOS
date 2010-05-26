@@ -122,7 +122,7 @@ static DesktopCategory _desktop_categories[] =
 	{ FALSE, "Education;",	"Education",	"applications-science"	},
 	{ FALSE, "Game;",	"Games",	"applications-games"	},
 	{ FALSE, "Graphics;",	"Graphics",	"applications-graphics"	},
-	{ FALSE, "AudioVideo;","Multimedia",	"applications-multimedia"},
+	{ FALSE, "AudioVideo;",	"Multimedia",	"applications-multimedia"},
 	{ FALSE, "Network;",	"Network",	"applications-internet" },
 	{ FALSE, "Office;",	"Office",	"applications-office"	},
 	{ FALSE, "Settings;",	"Settings",	"gnome-settings"	},
@@ -1219,7 +1219,8 @@ void desktop_icon_remove(Desktop * desktop, DesktopIcon * icon)
 		for(desktop->icon_cnt--; i < desktop->icon_cnt; i++)
 			desktop->icon[i] = desktop->icon[i + 1];
 		if((p = realloc(desktop->icon, sizeof(*p)
-						* (desktop->icon_cnt))) != NULL)
+						* (desktop->icon_cnt))) != NULL
+				|| desktop->icon_cnt == 0)
 			desktop->icon = p;
 		desktop_icons_align(desktop);
 		break;
