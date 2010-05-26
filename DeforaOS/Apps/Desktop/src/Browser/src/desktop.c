@@ -358,7 +358,7 @@ static GdkFilterReturn _event_property(XPropertyEvent * xevent,
 
 static void _on_popup_new_folder(gpointer data)
 {
-	static char const newfolder[] = "New folder";
+	static char const newfolder[] = N_("New folder");
 	Desktop * desktop = data;
 	String * path;
 
@@ -636,12 +636,12 @@ GtkIconTheme * desktop_get_theme(Desktop * desktop)
 /* desktop_set_layout */
 static void _layout_delete(Desktop * desktop);
 static int _layout_applications(Desktop * desktop);
-static void _layout_applications_open(Desktop * desktop, gpointer data);
 static int _layout_categories(Desktop * desktop);
 static int _layout_files(Desktop * desktop);
 static void _layout_files_add_home(Desktop * desktop);
 static int _layout_homescreen(Desktop * desktop);
-static void _layout_homescreen_open(Desktop * desktop, gpointer data);
+static void _layout_set_categories(Desktop * desktop, gpointer data);
+static void _layout_set_homescreen(Desktop * desktop, gpointer data);
 
 void desktop_set_layout(Desktop * desktop, DesktopLayout layout)
 {
@@ -698,7 +698,7 @@ static int _layout_applications(Desktop * desktop)
 	if(desktop->category != NULL)
 	{
 		desktopicon = desktopicon_new(desktop, _("Back"), NULL);
-		desktopicon_set_callback(desktopicon, _layout_applications_open,
+		desktopicon_set_callback(desktopicon, _layout_set_categories,
 				NULL);
 		icon = gtk_icon_theme_load_icon(desktop->theme, "back",
 				DESKTOPICON_ICON_SIZE, 0, NULL);
@@ -709,18 +709,23 @@ static int _layout_applications(Desktop * desktop)
 	return 0;
 }
 
-static void _layout_applications_open(Desktop * desktop, gpointer data)
-{
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	desktop_set_layout(desktop, DL_CATEGORIES);
-}
-
 static int _layout_categories(Desktop * desktop)
 {
+	DesktopIcon * desktopicon;
+	GdkPixbuf * icon;
+
 	desktop->category = NULL;
-	return _layout_applications(desktop);
+	_layout_applications(desktop); /* XXX hack */
+	desktopicon = desktopicon_new(desktop, _("Back"), NULL);
+	desktopicon_set_callback(desktopicon, _layout_set_homescreen, NULL);
+	desktopicon_set_first(desktopicon, TRUE);
+	desktopicon_set_immutable(desktopicon, TRUE);
+	icon = gtk_icon_theme_load_icon(desktop->theme, "back",
+			DESKTOPICON_ICON_SIZE, 0, NULL);
+	if(icon != NULL)
+		desktopicon_set_icon(desktopicon, icon);
+	desktop_icon_add(desktop, desktopicon);
+	return 0;
 }
 
 static int _layout_files(Desktop * desktop)
@@ -794,7 +799,7 @@ static int _layout_homescreen(Desktop * desktop)
 	if((desktopicon = desktopicon_new(desktop, _("Applications"), NULL))
 			== NULL)
 		return desktop_error(NULL, error_get(), 1);
-	desktopicon_set_callback(desktopicon, _layout_homescreen_open, NULL);
+	desktopicon_set_callback(desktopicon, _layout_set_categories, NULL);
 	desktopicon_set_immutable(desktopicon, TRUE);
 	desktop_icon_add(desktop, desktopicon);
 	icon = gtk_icon_theme_load_icon(desktop->theme, "gnome-applications",
@@ -804,12 +809,20 @@ static int _layout_homescreen(Desktop * desktop)
 	return 0;
 }
 
-static void _layout_homescreen_open(Desktop * desktop, gpointer data)
+static void _layout_set_categories(Desktop * desktop, gpointer data)
 {
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	desktop_set_layout(desktop, DL_CATEGORIES);
+}
+
+static void _layout_set_homescreen(Desktop * desktop, gpointer data)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	desktop_set_layout(desktop, DL_HOMESCREEN);
 }
 
 
@@ -852,6 +865,11 @@ void desktop_refresh(Desktop * desktop)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(desktop->path == NULL)
+	{
+		_refresh_current(desktop);
+		return;
+	}
 #ifdef __sun__
 	if((fd = open(desktop->path, O_RDONLY)) < 0
 			|| fstat(fd, &st) != 0
@@ -1116,7 +1134,9 @@ static gboolean _current_done(Desktop * desktop)
 			desktop_icon_remove(desktop, desktop->icon[i]);
 		else
 			desktopicon_set_updated(desktop->icon[i++], FALSE);
-	closedir(desktop->refresh_dir);
+	if(desktop->refresh_dir != NULL)
+		closedir(desktop->refresh_dir);
+	desktop->refresh_dir = NULL;
 	g_timeout_add(1000, _done_timeout, desktop);
 	return FALSE;
 }
