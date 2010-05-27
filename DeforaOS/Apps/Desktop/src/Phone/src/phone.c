@@ -807,6 +807,7 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 		number = "";
 	if(content == NULL)
 		content = "";
+	/* FIXME this may cut in the middle of a UTF-8 character */
 	snprintf(nd, sizeof(nd), "%s\n%.12s%s", number, content,
 			(strlen(content) > 12) ? "..." : "");
 	gmtime_r(&date, &t);
