@@ -296,8 +296,7 @@ int gsm_modem_get_message(GSMModem * gsmm, unsigned int index)
 {
 	char cmd[32];
 
-	/* FIXME should default to PDU mode */
-	if(gsm_modem_set_message_format(gsmm, GSM_MESSAGE_FORMAT_TEXT) != 0)
+	if(gsm_modem_set_message_format(gsmm, GSM_MESSAGE_FORMAT_PDU) != 0)
 		return 1;
 	snprintf(cmd, sizeof(cmd), "%s%u", "AT+CMGR=", index);
 	/* XXX race condition here if the user forces out of PDU mode */

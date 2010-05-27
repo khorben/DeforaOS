@@ -83,6 +83,59 @@ struct _GSM
 
 
 /* variables */
+/* conversions */
+static struct
+{
+	unsigned char gsm;
+	unsigned char iso;
+} _gsm_conv[] =
+{
+	{ '\0',	'@'	},
+	{ 0x01,	163	},
+	{ 0x02,	'$'	},
+	{ 0x03,	165	},
+	{ 0x04,	232	},
+	{ 0x05,	233	},
+	{ 0x06,	249	},
+	{ 0x07,	236	},
+	{ 0x08,	242	},
+	{ 0x09,	199	},
+	{ 0x0b,	216	},
+	{ 0x0c,	248	},
+	{ 0x0e,	197	},
+	{ 0x0f,	229	},
+	{ 0x10,	' '	}, /* XXX delta */
+	{ 0x11,	'_'	},
+	{ 0x12,	' '	}, /* XXX phi */
+	{ 0x13,	' '	}, /* XXX gamma */
+	{ 0x14,	' '	}, /* XXX lambda */
+	{ 0x15,	' '	}, /* XXX omega */
+	{ 0x16,	' '	}, /* XXX pi */
+	{ 0x17,	' '	}, /* XXX psi */
+	{ 0x18,	' '	}, /* XXX sigma */
+	{ 0x19,	' '	}, /* XXX theta */
+	{ 0x1a,	' '	}, /* XXX xi */
+	{ 0x1b,	' '	}, /* FIXME escape */
+	{ 0x1c,	198	},
+	{ 0x1d,	230	},
+	{ 0x1e,	223	},
+	{ 0x1f,	201	},
+	{ 0x24,	164	},
+	{ 0x40,	161	},
+	{ 0x5b,	196	},
+	{ 0x5c,	214	},
+	{ 0x5d,	209	},
+	{ 0x5e,	220	},
+	{ 0x5f,	167	},
+	{ 0x60,	191	},
+	{ 0x7b,	228	},
+	{ 0x7c,	246	},
+	{ 0x7d,	241	},
+	{ 0x7e,	252	},
+	{ 0x7f,	224	}
+};
+
+/* errors */
 /* CME ERROR */
 static struct
 {
@@ -154,6 +207,9 @@ static struct
 
 
 /* prototypes */
+/* conversions */
+static unsigned char _gsm_convert_to_iso(unsigned char c);
+
 /* events */
 static int _gsm_event_send(GSM * gsm, GSMEventType type);
 static int _gsm_event_set_status(GSM * gsm, GSMStatus status);
@@ -855,6 +911,19 @@ int gsm_send_message(GSM * gsm, char const * number, char const * text)
 
 /* private */
 /* functions */
+/* conversions */
+/* gsm_convert_to_iso */
+static unsigned char _gsm_convert_to_iso(unsigned char c)
+{
+	size_t i;
+
+	for(i = 0; i < sizeof(_gsm_conv) / sizeof(*_gsm_conv); i++)
+		if(_gsm_conv[i].gsm == c)
+			return _gsm_conv[i].iso;
+	return c;
+}
+
+
 /* events */
 /* gsm_event_send */
 static int _gsm_event_send(GSM * gsm, GSMEventType type)
@@ -1303,6 +1372,8 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 
 
 /* gsm_trigger_cmgr */
+static unsigned char * _cmgr_pdu_parse(char const * pdu);
+
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 {
 	char buf[32];
@@ -1311,6 +1382,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	unsigned int alpha = 0;
 	unsigned int * length = &gsm->event.message.length;
 	struct tm t;
+	unsigned char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
@@ -1331,18 +1403,114 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		return 0; /* we need to wait for the next line */
 	}
 	/* PDU mode support */
-	if(sscanf(result, "%u,%u,%u", &mbox, &alpha, length) == 3
-			|| sscanf(result, "%u,,%u", &mbox, length) == 2)
+	else if(sscanf(result, "%u,%u,%u", &mbox, &alpha, length) != 3
+			&& sscanf(result, "%u,,%u", &mbox, length) != 2)
 		return 0;
 	/* message content */
 	if(*length == 0) /* XXX assumes this is text mode */
 	{
 		gsm->event.message.content = result;
 		*length = strlen(result);
+		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 	}
-	else /* FIXME actually parse the PDU */
-		gsm->event.message.content = result;
-	return _gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
+	else if((p = _cmgr_pdu_parse(result)) != NULL)
+	{
+		gsm->event.message.content = (char *)p;
+		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
+		free(p);
+	}
+	return 0;
+}
+
+/* XXX this function is fat and ugly */
+static unsigned char * _cmgr_pdu_parse(char const * pdu)
+{
+	size_t len;
+	unsigned int smscl;
+	unsigned int addrl;
+	unsigned int pid;
+	unsigned int dcs;
+	unsigned int datal;
+	unsigned int u;
+	unsigned char * p;
+	char const * q;
+	size_t i;
+	size_t j;
+	unsigned char byte;
+	unsigned char rest;
+	int shift;
+
+	len = strlen(pdu);
+	if(sscanf(pdu, "%02X", &smscl) != 1) /* SMSC length */
+		return NULL;
+	if((smscl * 2) + 2 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2;
+	if(sscanf(q, "%02X", &u) != 1)
+		return NULL;
+	if((u & 0x04) != 0x04) /* SMS-DELIVER */
+		return NULL;
+	if((smscl * 2) + 4 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 4;
+	if(sscanf(q, "%02X", &addrl) != 1) /* address length */
+		return NULL;
+	if((smscl * 2) + 6 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 6;
+	if(sscanf(q, "%02X", &u) != 1) /* type of address */
+		return NULL;
+	/* FIXME this probably depends on the type of address */
+	if(addrl % 2 == 1)
+		addrl++;
+	if((smscl * 2) + 2 + 4 + addrl + 2 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 2;
+	if(sscanf(q, "%02X", &pid) != 1) /* PID */
+		return NULL;
+	if((smscl * 2) + 2 + 4 + addrl + 4 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 4;
+	if(sscanf(q, "%02X", &dcs) != 1) /* DCS */
+		return NULL;
+	/* FIXME check the DCS */
+	if((smscl * 2) + 2 + 4 + addrl + 6 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6;
+	/* FIXME implement timestamp */
+	if((smscl * 2) + 2 + 4 + addrl + 6 + 14 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6 + 14;
+	if(sscanf(q, "%02X", &datal) != 1) /* data length */
+		return NULL;
+	/* XXX check the data length */
+	if((smscl * 2) + 2 + 4 + addrl + 6 + 16 > len)
+		return NULL;
+	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6 + 16;
+	i = (smscl * 2) + 2 + 4 + addrl + 6 + 16;
+	if((p = malloc((len - i) * 2)) == NULL)
+		return NULL;
+	p[0] = '\0';
+	for(j = 0, rest = 0, shift = 0; i + 1 < len; i+=2)
+	{
+		q = &pdu[i];
+		if(sscanf(q, "%02X", &u) != 1)
+			break;
+		byte = u;
+		p[j] = (byte << (shift + 1) >> (shift + 1) << shift) & 0x7f;
+		p[j] |= rest;
+		p[j] = _gsm_convert_to_iso(p[j]);
+		j++;
+		rest = (byte >> (7 - shift)) & 0x7f;
+		if(++shift == 7)
+		{
+			shift = 0;
+			p[j++] = rest;
+			rest = 0;
+		}
+	}
+	p[j] = '\0';
+	return p;
 }
 
 
