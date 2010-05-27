@@ -34,6 +34,8 @@
 #define _(string) gettext(string)
 #define N_(string) (string)
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 
 /* GSM */
 /* private */
@@ -1372,7 +1374,8 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 
 
 /* gsm_trigger_cmgr */
-static unsigned char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp);
+static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
+		char number[32]);
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
@@ -1383,7 +1386,8 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	unsigned int alpha = 0;
 	unsigned int * length = &gsm->event.message.length;
 	struct tm t;
-	unsigned char * p;
+	char * p;
+	char * q;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
@@ -1414,11 +1418,18 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		*length = strlen(result);
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 	}
-	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date)) != NULL)
+	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date,
+					gsm->number)) != NULL)
 	{
-		gsm->event.message.number = NULL; /* FIXME implement */
-		gsm->event.message.content = (char *)p;
-		*length = strlen(result); /* XXX should not be necessary */
+		if((q = g_convert(p, -1, "UTF-8", "ISO-8859-1", NULL, NULL,
+						NULL)) != NULL)
+		{
+			free(p);
+			p = q;
+		}
+		*length = strlen(p); /* XXX should not be necessary */
+		gsm->event.message.number = gsm->number; /* XXX ugly */
+		gsm->event.message.content = p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 		free(p);
 	}
@@ -1426,7 +1437,8 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 }
 
 /* XXX this function is fat and ugly */
-static unsigned char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp)
+static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
+		char number[32])
 {
 	size_t len;
 	unsigned int smscl;
@@ -1471,6 +1483,8 @@ static unsigned char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp)
 		addrl++;
 	if((smscl * 2) + 2 + 4 + addrl + 2 > len)
 		return NULL;
+	/* FIXME actually parse the number */
+	snprintf(number, min(addrl + 1, sizeof(number)), "%s", q + 2);
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 2;
 	if(sscanf(q, "%02X", &pid) != 1) /* PID */
 		return NULL;
@@ -1517,7 +1531,7 @@ static unsigned char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp)
 		}
 	}
 	p[j] = '\0';
-	return p;
+	return (char *)p;
 }
 
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
