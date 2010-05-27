@@ -828,7 +828,7 @@ static int _is_number(char const * number)
 }
 
 
-/* modem_call_queue */
+/* modem_call_do */
 static int _modem_call_do(GSM * gsm, char const * command)
 {
 	GSMCommand * gsmc;
@@ -837,8 +837,8 @@ static int _modem_call_do(GSM * gsm, char const * command)
 		return 1;
 	gsm_command_set_priority(gsmc, GSM_PRIORITY_HIGH);
 	gsm_command_set_error(gsmc, GSM_ERROR_CALL_FAILED);
-	gsm_command_set_callback(gsmc, NULL);
-	gsm_command_set_timeout(gsmc, 30000);
+	gsm_command_set_callback(gsmc, NULL); /* XXX check if active? */
+	gsm_command_set_timeout(gsmc, 30000); /* XXX is it really necessary? */
 	if(gsm_queue_command(gsm, gsmc) == 0)
 		return 0;
 	gsm_command_delete(gsmc);

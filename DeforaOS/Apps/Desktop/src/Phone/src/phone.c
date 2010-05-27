@@ -838,6 +838,7 @@ void phone_messages_call_selected(Phone * phone)
 	if(number == NULL)
 		return;
 	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
 	g_free(number);
 }
 
@@ -903,6 +904,7 @@ void phone_read_call(Phone * phone)
 	if((number = gtk_label_get_text(GTK_LABEL(phone->re_number))) == NULL)
 		return;
 	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
+	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
 }
 
 
