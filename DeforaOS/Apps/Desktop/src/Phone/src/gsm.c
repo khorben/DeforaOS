@@ -1372,7 +1372,8 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 
 
 /* gsm_trigger_cmgr */
-static unsigned char * _cmgr_pdu_parse(char const * pdu);
+static unsigned char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp);
+static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 {
@@ -1413,7 +1414,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		*length = strlen(result);
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 	}
-	else if((p = _cmgr_pdu_parse(result)) != NULL)
+	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date)) != NULL)
 	{
 		gsm->event.message.content = (char *)p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
@@ -1423,7 +1424,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 }
 
 /* XXX this function is fat and ugly */
-static unsigned char * _cmgr_pdu_parse(char const * pdu)
+static unsigned char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp)
 {
 	size_t len;
 	unsigned int smscl;
@@ -1480,7 +1481,8 @@ static unsigned char * _cmgr_pdu_parse(char const * pdu)
 	if((smscl * 2) + 2 + 4 + addrl + 6 > len)
 		return NULL;
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6;
-	/* FIXME implement timestamp */
+	if(timestamp != NULL)
+		*timestamp = _cmgr_pdu_parse_timestamp(q);
 	if((smscl * 2) + 2 + 4 + addrl + 6 + 14 > len)
 		return NULL;
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6 + 14;
@@ -1514,6 +1516,28 @@ static unsigned char * _cmgr_pdu_parse(char const * pdu)
 	}
 	p[j] = '\0';
 	return p;
+}
+
+static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
+{
+	char const * p = timestamp;
+	size_t i;
+	struct tm t;
+
+	if(strlen(p) < 14)
+		return 0;
+	for(i = 0; i < 14; i++)
+		if(p[i] < '0' || p[i] > '9')
+			return 0;
+	memset(&t, 0, sizeof(t));
+	t.tm_year = (p[0] - '0') + ((p[1] - '0') * 10);
+	t.tm_year = (t.tm_year > 70) ? t.tm_year : (100 + t.tm_year);
+	t.tm_mon = (p[2] - '0') + ((p[3] - '0') * 10);
+	t.tm_mday = (p[4] - '0') + ((p[5] - '0') * 10);
+	t.tm_hour = (p[6] - '0') + ((p[7] - '0') * 10);
+	t.tm_min = (p[8] - '0') + ((p[9] - '0') * 10);
+	t.tm_sec = (p[10] - '0') + ((p[11] - '0') * 10);
+	return mktime(&t);
 }
 
 
