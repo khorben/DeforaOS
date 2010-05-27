@@ -790,7 +790,8 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 	struct tm t;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%u, \"%s\")\n", __func__, index, content);
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\", \"%s\")\n", __func__, index,
+			number, content);
 #endif
 	valid = gtk_tree_model_get_iter_first(model, &iter);
 	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
