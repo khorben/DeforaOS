@@ -34,6 +34,7 @@ struct _GSMCommand
 	unsigned int timeout;
 	GSMError error;
 	GSMCommandCallback callback;
+	void * data;
 	GSMMode mode;
 };
 
@@ -55,6 +56,7 @@ GSMCommand * gsm_command_new(char const * command)
 	gsmc->timeout = 2000;
 	gsmc->error = GSM_ERROR_UNKNOWN;
 	gsmc->callback = NULL;
+	gsmc->data = NULL;
 	gsmc->mode = GSM_MODE_COMMAND;
 	/* check errors */
 	if(gsmc->command == NULL)
@@ -92,6 +94,13 @@ char const * gsm_command_get_command(GSMCommand * gsmc)
 }
 
 
+/* gsm_command_get_data */
+void * gsm_command_get_data(GSMCommand * gsmc)
+{
+	return gsmc->data;
+}
+
+
 /* gsm_command_get_error */
 GSMError gsm_command_get_error(GSMCommand * gsmc)
 {
@@ -125,6 +134,13 @@ void gsm_command_set_callback(GSMCommand * gsmc,
 		GSMCommandCallback callback)
 {
 	gsmc->callback = callback;
+}
+
+
+/* gsm_command_set_data */
+void gsm_command_set_data(GSMCommand * gsmc, void * data)
+{
+	gsmc->data = data;
 }
 
 

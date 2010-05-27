@@ -31,12 +31,14 @@ void gsm_command_delete(GSMCommand * gsmc);
 /* accessors */
 GSMCommandCallback gsm_command_get_callback(GSMCommand * gsmc);
 char const * gsm_command_get_command(GSMCommand * gsmc);
+void * gsm_command_get_data(GSMCommand * gsmc);
 GSMError gsm_command_get_error(GSMCommand * gsmc);
 GSMMode gsm_command_get_mode(GSMCommand * gsmc);
 GSMPriority gsm_command_get_priority(GSMCommand * gsmc);
 unsigned int gsm_command_get_timeout(GSMCommand * gsmc);
 
 void gsm_command_set_callback(GSMCommand * gsmc, GSMCommandCallback callback);
+void gsm_command_set_data(GSMCommand * gsmc, void * data);
 void gsm_command_set_error(GSMCommand * gsmc, GSMError error);
 void gsm_command_set_mode(GSMCommand * gsmc, GSMMode mode);
 void gsm_command_set_priority(GSMCommand * gsmc, GSMPriority priority);
