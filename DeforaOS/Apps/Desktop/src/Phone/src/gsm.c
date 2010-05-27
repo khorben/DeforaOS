@@ -1416,7 +1416,9 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	}
 	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date)) != NULL)
 	{
+		gsm->event.message.number = NULL; /* FIXME implement */
 		gsm->event.message.content = (char *)p;
+		*length = strlen(result); /* XXX should not be necessary */
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 		free(p);
 	}
