@@ -833,7 +833,7 @@ void phone_messages_call_selected(Phone * phone)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
 			PHONE_MESSAGE_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
