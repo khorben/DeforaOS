@@ -712,7 +712,6 @@ int gsm_fetch_message_list(GSM * gsm, GSMMessageList list)
 /* gsm_fetch_message */
 int gsm_fetch_message(GSM * gsm, unsigned int index)
 {
-	gsm->event.message.index = index; /* FIXME may be over-written */
 	return gsm_modem_get_message(gsm->modem, index);
 }
 
@@ -1387,6 +1386,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	unsigned int * length = &gsm->event.message.length;
 	struct tm t;
 	char * p;
+	GSMCommand * gsmc;
 	char * q;
 
 #ifdef DEBUG
@@ -1421,6 +1421,10 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date,
 					gsm->number)) != NULL)
 	{
+		gsm->event.message.index = 0;
+		if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL)
+			gsm->event.message.index /* XXX ugly */
+				= (unsigned long)gsm_command_get_data(gsmc);
 		if((q = g_convert(p, -1, "UTF-8", "ISO-8859-1", NULL, NULL,
 						NULL)) != NULL)
 		{
@@ -1484,7 +1488,7 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 	if((smscl * 2) + 2 + 4 + addrl + 2 > len)
 		return NULL;
 	/* FIXME actually parse the number */
-	snprintf(number, min(addrl + 1, sizeof(number)), "%s", q + 2);
+	snprintf(number, min(addrl + 1, 32), "%s", q + 2);
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 2;
 	if(sscanf(q, "%02X", &pid) != 1) /* PID */
 		return NULL;
