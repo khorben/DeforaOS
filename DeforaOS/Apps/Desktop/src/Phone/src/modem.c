@@ -451,10 +451,10 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 	int ret = 1;
 	char const cmd1[] = "AT+CMGS=";
 	char * buf1;
-	size_t len1;
+	unsigned long len1;
 	char const cmd2[] = "1100";
 	char * buf2;
-	size_t len2;
+	unsigned long len2;
 	char * addr;
 	char * sept;
 	char const pid[] = "00";
