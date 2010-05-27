@@ -63,7 +63,7 @@ PhonePlugin plugin =
 /* private */
 /* functions */
 /* openmoko_event */
-static int _event_mixer_set(char const * filename);
+static int _event_mixer_set(PhonePlugin * plugin, char const * filename);
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate);
 
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
@@ -72,22 +72,22 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	{
 		case PHONE_EVENT_CALL_ESTABLISHED:
 			/* let us hear the call */
-			_event_mixer_set("gsmhandset.state");
+			_event_mixer_set(plugin, "gsmhandset.state");
 			/* enable echo cancellation */
 			plugin->helper->queue(plugin->helper->phone,
 					"AT%N0187");
 			break;
 		case PHONE_EVENT_CALL_INCOMING:
 			/* let us hear the ringtone */
-			_event_mixer_set("stereoout.state");
+			_event_mixer_set(plugin, "stereoout.state");
 			break;
 		case PHONE_EVENT_CALL_OUTGOING:
 			/* let us hear the connection */
-			_event_mixer_set("gsmhandset.state");
+			_event_mixer_set(plugin, "gsmhandset.state");
 			break;
 		case PHONE_EVENT_CALL_TERMINATED:
 			/* restore regular audio */
-			_event_mixer_set("stereoout.state");
+			_event_mixer_set(plugin, "stereoout.state");
 			break;
 		case PHONE_EVENT_NOTIFICATION_OFF:
 			/* FIXME implement */
@@ -97,11 +97,11 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			break;
 		case PHONE_EVENT_SPEAKER_ON:
 			/* XXX assumes there's an ongoing call */
-			_event_mixer_set("gsmspeakerout.state");
+			_event_mixer_set(plugin, "gsmspeakerout.state");
 			break;
 		case PHONE_EVENT_SPEAKER_OFF:
 			/* XXX assumes there's an ongoing call */
-			_event_mixer_set("gsmhandset.state");
+			_event_mixer_set(plugin, "gsmhandset.state");
 			break;
 		case PHONE_EVENT_VIBRATOR_OFF:
 			_event_vibrator(plugin, FALSE);
@@ -120,26 +120,29 @@ static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	return 0;
 }
 
-static int _event_mixer_set(char const * filename)
+static int _event_mixer_set(PhonePlugin * plugin, char const * filename)
 {
+	int ret = 0;
 	char const scenarios[] = DATADIR "/openmoko/scenarios";
 	char * pathname;
 	size_t len;
 	char * alsactl[] = { SBINDIR "/alsactl", "alsactl", "-f", NULL,
 		"restore", NULL };
+	GError * error = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, filename);
 #endif
 	len = sizeof(scenarios) + 1 + strlen(filename);
 	if((pathname = malloc(len)) == NULL)
-		return error_set_code(1, "%s", strerror(errno));
+		return plugin->helper->error(NULL, strerror(errno), 1);
 	snprintf(pathname, len, "%s/%s", scenarios, filename);
 	alsactl[3] = pathname;
-	g_spawn_async(NULL, alsactl, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
-			NULL, NULL, NULL, NULL);
+	if(g_spawn_async(NULL, alsactl, NULL, G_SPAWN_FILE_AND_ARGV_ZERO,
+				NULL, NULL, NULL, &error) == FALSE)
+		ret = plugin->helper->error(NULL, error->message, 1);
 	free(pathname);
-	return 0;
+	return ret;
 }
 
 static int _event_vibrator(PhonePlugin * plugin, gboolean vibrate)
