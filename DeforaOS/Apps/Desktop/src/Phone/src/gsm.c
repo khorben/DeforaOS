@@ -1403,8 +1403,8 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		return 0; /* we need to wait for the next line */
 	}
 	/* PDU mode support */
-	else if(sscanf(result, "%u,%u,%u", &mbox, &alpha, length) != 3
-			&& sscanf(result, "%u,,%u", &mbox, length) != 2)
+	if(sscanf(result, "%u,%u,%u", &mbox, &alpha, length) == 3
+			|| sscanf(result, "%u,,%u", &mbox, length) == 2)
 		return 0;
 	/* message content */
 	if(*length == 0) /* XXX assumes this is text mode */
@@ -1440,6 +1440,9 @@ static unsigned char * _cmgr_pdu_parse(char const * pdu)
 	unsigned char rest;
 	int shift;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pdu);
+#endif
 	len = strlen(pdu);
 	if(sscanf(pdu, "%02X", &smscl) != 1) /* SMSC length */
 		return NULL;
