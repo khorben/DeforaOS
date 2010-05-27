@@ -485,7 +485,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 	}
 	snprintf(buf2, len2, "%s%02lX%s%s%s%s%02lX%s\x1a", cmd2,
 			number[0] == '+' ? strlen(number) - 1 : strlen(number),
-			addr, pid, dcs, vp, strlen(text), sept);
+			addr, pid, dcs, vp, (unsigned long)strlen(text), sept);
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
 	free(sept);
