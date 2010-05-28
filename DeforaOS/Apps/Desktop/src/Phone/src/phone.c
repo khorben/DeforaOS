@@ -812,7 +812,6 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 			(strlen(content) > 12) ? "..." : "");
 	gmtime_r(&date, &t);
 	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
-	gtk_list_store_append(phone->me_store, &iter);
 	gtk_list_store_set(phone->me_store, &iter,
 			PHONE_MESSAGE_COLUMN_ID, index,
 			PHONE_MESSAGE_COLUMN_NUMBER, number,
