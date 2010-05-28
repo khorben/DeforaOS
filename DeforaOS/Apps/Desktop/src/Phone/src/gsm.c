@@ -1375,6 +1375,8 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 /* gsm_trigger_cmgr */
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		char number[32]);
+static void _cmgr_pdu_parse_number(char const * number, size_t length,
+		char buf[32]);
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
@@ -1487,8 +1489,7 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		addrl++;
 	if((smscl * 2) + 2 + 4 + addrl + 2 > len)
 		return NULL;
-	/* FIXME actually parse the number */
-	snprintf(number, min(addrl + 1, 32), "%s", q + 2);
+	_cmgr_pdu_parse_number(q + 2, addrl + 1, number);
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 2;
 	if(sscanf(q, "%02X", &pid) != 1) /* PID */
 		return NULL;
@@ -1536,6 +1537,23 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 	}
 	p[j] = '\0';
 	return (char *)p;
+}
+
+static void _cmgr_pdu_parse_number(char const * number, size_t length,
+		char buf[32])
+{
+	size_t i;
+
+	for(i = 0; i < length - 1 && i < 32 - 1; i+=2)
+	{
+		if((number[i] != 'F' && (number[i] < '0' || number[i] > '9'))
+				|| number[i + 1] < '0' || number[i + 1] > '9')
+			break;
+		buf[i] = number[i + 1];
+		if((buf[i + 1] = number[i]) == 'F')
+			buf[i + 1] = '\0';
+	}
+	buf[31] = '\0';
 }
 
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
