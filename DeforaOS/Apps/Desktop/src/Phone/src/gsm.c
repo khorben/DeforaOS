@@ -1412,7 +1412,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	/* PDU mode support */
 	if(sscanf(result, "%u,%u,%u", &mbox, &alpha, length) == 3
 			|| sscanf(result, "%u,,%u", &mbox, length) == 2)
-		return 0;
+		return 0; /* we need to wait for the next line */
 	/* message content */
 	if(*length == 0) /* XXX assumes this is text mode */
 	{
