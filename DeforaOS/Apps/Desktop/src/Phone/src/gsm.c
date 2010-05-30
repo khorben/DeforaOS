@@ -935,7 +935,7 @@ static unsigned char _gsm_convert_from_iso(unsigned char c)
 	for(i = 0; i < sizeof(_gsm_conv) / sizeof(*_gsm_conv); i++)
 		if(_gsm_conv[i].iso == c)
 			return _gsm_conv[i].gsm;
-	return c;
+	return c & 0x7f;
 }
 
 
