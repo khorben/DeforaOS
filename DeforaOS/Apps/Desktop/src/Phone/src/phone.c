@@ -1924,6 +1924,7 @@ void phone_write_send(Phone * phone)
 	GtkTextIter start;
 	GtkTextIter end;
 	size_t len;
+	gchar * p;
 
 	phone_show_write(phone, TRUE);
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
@@ -1934,6 +1935,12 @@ void phone_write_send(Phone * phone)
 			FALSE);
 	if(number == NULL || number[0] == '\0' || text == NULL)
 		return;
+	if((p = g_convert(text, -1, "ISO-8859-1", "UTF-8", NULL, NULL, NULL))
+			!= NULL)
+	{
+		g_free(text);
+		text = p;
+	}
 	phone->wr_progress = _phone_create_progress(phone->wr_window,
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);

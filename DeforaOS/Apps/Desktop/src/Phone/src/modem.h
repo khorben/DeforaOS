@@ -74,7 +74,7 @@ int gsm_modem_is_registered(GSMModem * gsmm);
 int gsm_modem_reset(GSMModem * gsmm);
 
 int gsm_modem_send_message(GSMModem * gsmm, char const * number,
-		char const * text);
+		char const * text, size_t len);
 
 int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_call_waiting_control(GSMModem * gsmm, gboolean unsollicited);

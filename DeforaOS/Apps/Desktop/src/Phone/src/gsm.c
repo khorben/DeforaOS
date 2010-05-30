@@ -210,6 +210,7 @@ static struct
 
 /* prototypes */
 /* conversions */
+static unsigned char _gsm_convert_from_iso(unsigned char c);
 static unsigned char _gsm_convert_to_iso(unsigned char c);
 
 /* events */
@@ -906,13 +907,38 @@ int gsm_reset(GSM * gsm, unsigned int delay)
 /* gsm_send_message */
 int gsm_send_message(GSM * gsm, char const * number, char const * text)
 {
-	return gsm_modem_send_message(gsm->modem, number, text);
+	int ret;
+	size_t len;
+	char * p;
+	size_t i;
+
+	len = strlen(text);
+	if((p = malloc(len)) == NULL)
+		return 1; /* XXX report error */
+	/* XXX support more alphabets */
+	for(i = 0; i < len; i++)
+		p[i] = _gsm_convert_from_iso(text[i]);
+	ret = gsm_modem_send_message(gsm->modem, number, text, len);
+	free(p);
+	return ret;
 }
 
 
 /* private */
 /* functions */
 /* conversions */
+/* gsm_convert_from_iso */
+static unsigned char _gsm_convert_from_iso(unsigned char c)
+{
+	size_t i;
+
+	for(i = 0; i < sizeof(_gsm_conv) / sizeof(*_gsm_conv); i++)
+		if(_gsm_conv[i].iso == c)
+			return _gsm_conv[i].gsm;
+	return c;
+}
+
+
 /* gsm_convert_to_iso */
 static unsigned char _gsm_convert_to_iso(unsigned char c)
 {
