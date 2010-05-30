@@ -1294,6 +1294,8 @@ void phone_show_debug(Phone * phone, gboolean show)
 	if(phone->de_window == NULL)
 	{
 		phone->de_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_container_set_border_width(GTK_CONTAINER(phone->de_window),
+				4);
 		gtk_window_set_default_size(GTK_WINDOW(phone->de_window), 200,
 				300);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1301,18 +1303,18 @@ void phone_show_debug(Phone * phone, gboolean show)
 				"stock_compile");
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->de_window), "Debugging");
-		vbox = gtk_vbox_new(FALSE, 0);
+		vbox = gtk_vbox_new(FALSE, 4);
 		/* gsm commands */
 		widget = gtk_label_new("GSM commands");
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
 		gtk_widget_modify_font(widget, phone->bold);
-		hbox = gtk_hbox_new(FALSE, 0);
+		hbox = gtk_hbox_new(FALSE, 4);
 		phone->de_gsm = gtk_combo_box_new_text();
 		for(i = 0; _debug_gsm_commands[i].name != NULL; i++)
 			gtk_combo_box_append_text(GTK_COMBO_BOX(phone->de_gsm),
 					_debug_gsm_commands[i].name);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(phone->de_gsm), 0);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->de_gsm, TRUE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(hbox), phone->de_gsm, TRUE, TRUE, 0);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_gsm_execute), phone);
@@ -1321,13 +1323,13 @@ void phone_show_debug(Phone * phone, gboolean show)
 		/* gsm queue */
 		widget = gtk_label_new("GSM queue");
 		gtk_widget_modify_font(widget, phone->bold);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
-		hbox = gtk_hbox_new(FALSE, 0);
+		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+		hbox = gtk_hbox_new(FALSE, 4);
 		phone->de_queue = gtk_entry_new();
 		g_signal_connect_swapped(G_OBJECT(phone->de_queue), "activate",
 				G_CALLBACK(_on_debug_queue_execute), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->de_queue, TRUE, TRUE,
-				4);
+				0);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_queue_execute), phone);
@@ -1337,12 +1339,12 @@ void phone_show_debug(Phone * phone, gboolean show)
 		widget = gtk_label_new("Load plug-ins");
 		gtk_widget_modify_font(widget, phone->bold);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 4);
-		hbox = gtk_hbox_new(FALSE, 0);
+		hbox = gtk_hbox_new(FALSE, 4);
 		phone->de_plugin = gtk_entry_new();
 		g_signal_connect_swapped(G_OBJECT(phone->de_plugin), "activate",
 				G_CALLBACK(_on_debug_plugin_load), phone);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->de_plugin, TRUE, TRUE,
-				4);
+				0);
 		widget = gtk_button_new_from_stock(GTK_STOCK_EXECUTE);
 		g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 				G_CALLBACK(_on_debug_plugin_load), phone);
@@ -1353,12 +1355,12 @@ void phone_show_debug(Phone * phone, gboolean show)
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 		/* quit */
-		hbox = gtk_hbox_new(FALSE, 0);
+		hbox = gtk_hbox_new(FALSE, 4);
 		widget = gtk_button_new_from_stock(GTK_STOCK_QUIT);
 		g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
 					gtk_main_quit), NULL);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 4);
-		gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 4);
+		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+		gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 		gtk_container_add(GTK_CONTAINER(phone->de_window), vbox);
 		gtk_widget_show_all(vbox);
 	}
