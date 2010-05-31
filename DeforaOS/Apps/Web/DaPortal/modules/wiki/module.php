@@ -223,44 +223,7 @@ function wiki_default($args)
 		include('./modules/wiki/default.tpl');
 		print('<h2 class="title wiki">'._html_safe(RECENT_CHANGES)
 				."</h2>\n");
-		$sql = 'SELECT content_id AS id, timestamp AS date'
-			.', name AS module, title'
-			.', daportal_user.user_id AS user_id, username'
-			.', content FROM daportal_content, daportal_module'
-			.', daportal_user WHERE daportal_content.module_id'
-			.'=daportal_module.module_id'
-			.' AND daportal_content.user_id=daportal_user.user_id'
-			." AND daportal_module.name='wiki'"
-			." AND daportal_content.enabled='1'"
-			.' ORDER BY timestamp DESC '._sql_offset(0, 10);
-		$res = _sql_array($sql);
-		if(!is_array($res))
-			return _error('Could not list recent changes');
-		for($i = 0, $cnt = count($res); $i < $cnt; $i++)
-		{
-			$res[$i]['icon'] = 'icons/16x16/wiki.png';
-			$res[$i]['action'] = 'display';
-			$res[$i]['name'] = $res[$i]['title'];
-			$res[$i]['date'] = substr($res[$i]['date'], 0, 19);
-			$res[$i]['date'] = strftime('%d/%m/%Y %H:%M:%S',
-					strtotime($res[$i]['date']));
-			$res[$i]['date'] = _html_safe($res[$i]['date']);
-			$res[$i]['content'] = str_replace("\n", ' ',
-					substr($res[$i]['content'], 0, 40))
-				.'...';
-			$res[$i]['tag'] = $res[$i]['title'];
-			$res[$i]['username'] = '<a href="'
-				._html_link('user', FALSE, $res[$i]['user_id'],
-						$res[$i]['username']).'">'
-				._html_safe($res[$i]['username']).'</a>';
-			$res[$i]['content'] = _html_safe($res[$i]['content']);
-		}
-		_module('explorer', 'browse_trusted', array('entries' => $res,
-					'class' => array('date' => DATE,
-						'username' => AUTHOR,
-						'content' => PREVIEW),
-					'view' => 'details', 'toolbar' => 0));
-		return;
+		return wiki_recent($args);
 	}
 	$title = stripslashes($args['title']);
 	$sql = 'SELECT content_id AS id, name AS module, title, content'
@@ -513,6 +476,54 @@ function wiki_new($args)
 		return _error(PERMISSION_DENIED);
 	$title = NEW_WIKI_PAGE;
 	include('./modules/wiki/update.tpl');
+}
+
+
+function wiki_recent($args)
+{
+	$npp = 6;
+	$classes = array('date' => DATE, 'username' => AUTHOR,
+			'content' => PREVIEW);
+	$header = 1;
+	if(isset($args['npp']) && is_numeric($args['npp']))
+	{
+		$npp = $args['npp'];
+		$classes = array('content' => PREVIEW);
+		$header = 0;
+	}
+	$sql = 'SELECT content_id AS id, timestamp AS date, name AS module'
+		.', title, daportal_user.user_id AS user_id, username'
+		.', content FROM daportal_content, daportal_module'
+		.', daportal_user WHERE daportal_content.module_id'
+		.'=daportal_module.module_id'
+		.' AND daportal_content.user_id=daportal_user.user_id'
+		." AND daportal_module.name='wiki'"
+		." AND daportal_content.enabled='1'"
+		.' ORDER BY timestamp DESC '._sql_offset(0, 6);
+	$res = _sql_array($sql);
+	if(!is_array($res))
+		return _error('Could not list recent changes');
+	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
+	{
+		$res[$i]['icon'] = 'icons/16x16/wiki.png';
+		$res[$i]['action'] = 'display';
+		$res[$i]['name'] = $res[$i]['title'];
+		$res[$i]['date'] = substr($res[$i]['date'], 0, 19);
+		$res[$i]['date'] = strftime('%d/%m/%Y %H:%M:%S', strtotime(
+					$res[$i]['date']));
+		$res[$i]['date'] = _html_safe($res[$i]['date']);
+		$res[$i]['content'] = str_replace("\n", ' ',
+				substr($res[$i]['content'], 0, 40)).'...';
+		$res[$i]['tag'] = $res[$i]['title'];
+		$res[$i]['username'] = '<a href="'
+			._html_link('user', FALSE, $res[$i]['user_id'],
+					$res[$i]['username']).'">'
+			._html_safe($res[$i]['username']).'</a>';
+		$res[$i]['content'] = _html_safe($res[$i]['content']);
+	}
+	_module('explorer', 'browse_trusted', array('entries' => $res,
+				'class' => $classes, 'view' => 'details',
+				'toolbar' => 0, 'header' => $header));
 }
 
 
