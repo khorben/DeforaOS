@@ -635,10 +635,10 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 					unsigned int);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE:
-			/* FIXME implement correctly */
 			event->message.index = va_arg(ap, unsigned int);
 			event->message.number = va_arg(ap, char const *);
 			event->message.date = va_arg(ap, time_t);
+			event->message.encoding = va_arg(ap, GSMEncoding);
 			event->message.length = va_arg(ap, unsigned int);
 			event->message.content = va_arg(ap, char const *);
 			break;
@@ -1459,6 +1459,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	/* message content */
 	if(*length == 0) /* XXX assumes this is text mode */
 	{
+		gsm->event.message.encoding = GSM_ENCODING_UTF8;
 		gsm->event.message.content = result;
 		*length = strlen(result);
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
@@ -1478,6 +1479,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		}
 		*length = strlen(p); /* XXX should not be necessary */
 		gsm->event.message.number = gsm->number; /* XXX ugly */
+		gsm->event.message.encoding = GSM_ENCODING_UTF8;
 		gsm->event.message.content = p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 		free(p);

@@ -2371,7 +2371,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->incoming_message.index);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
-			encoding = PHONE_ENCODING_UTF8; /* XXX may not be */
+			encoding = event->message.encoding;
 			if((content = malloc(event->message.length)) == NULL)
 				return 1; /* XXX report error */
 			memcpy(content, event->message.content,
@@ -2379,6 +2379,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			phone_event(phone, PHONE_EVENT_SMS_RECEIVING, &encoding,
 					&content, &event->message.length);
 			phone_event(phone, PHONE_EVENT_SMS_RECEIVED);
+			/* FIXME may be unsuitable (eg not UTF-8...) */
 			phone_messages_set(phone, event->message.index,
 					event->message.number,
 					event->message.date, content);

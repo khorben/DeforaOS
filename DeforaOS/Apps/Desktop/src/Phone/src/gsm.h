@@ -259,7 +259,8 @@ typedef union _GSMEvent
 		unsigned int index;
 		char const * number;
 		time_t date;
-		unsigned int length; /* XXX may be removed */
+		GSMEncoding encoding;
+		unsigned int length;
 		char const * content;
 	} message;
 
