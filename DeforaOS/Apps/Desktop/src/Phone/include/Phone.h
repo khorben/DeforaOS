@@ -38,6 +38,13 @@ typedef enum _PhoneCode
 	PHONE_CODE_SIM_PIN = 0
 } PhoneCode;
 
+typedef enum _PhoneEncoding
+{
+	/* XXX must match GSMEncoding from src/gsm.h */
+	PHONE_ENCODING_UTF8 = 0,
+	PHONE_ENCODING_DATA
+} PhoneEncoding;
+
 typedef enum _PhoneEvent
 {
 	PHONE_EVENT_CALL_ESTABLISHED = 0,
@@ -48,8 +55,8 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_NOTIFICATION_ON,
 	PHONE_EVENT_SIM_VALID,
 	PHONE_EVENT_SMS_RECEIVED,
-	PHONE_EVENT_SMS_RECEIVING,	/* char * buffer, size_t * len */
-	PHONE_EVENT_SMS_SENDING,	/* char * buffer, size_t * len */
+	PHONE_EVENT_SMS_RECEIVING,	/* GSMEncoding *, char **, size_t * */
+	PHONE_EVENT_SMS_SENDING,	/* GSMEncoding *, char **, size_t * */
 	PHONE_EVENT_SMS_SENT,
 	PHONE_EVENT_SPEAKER_ON,
 	PHONE_EVENT_SPEAKER_OFF,
