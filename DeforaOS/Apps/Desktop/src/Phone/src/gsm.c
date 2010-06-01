@@ -905,21 +905,38 @@ int gsm_reset(GSM * gsm, unsigned int delay)
 
 
 /* gsm_send_message */
-int gsm_send_message(GSM * gsm, char const * number, char const * text)
+static int _send_message_utf8(GSM * gsm, char const * number, char const * text,
+		size_t length);
+
+int gsm_send_message(GSM * gsm, char const * number, GSMEncoding encoding,
+		char const * text, size_t length)
+{
+	switch(encoding)
+	{
+		case GSM_ENCODING_UTF8:
+			return _send_message_utf8(gsm, number, text, length);
+		case GSM_ENCODING_RAW_DATA:
+			return gsm_modem_send_message(gsm->modem, number,
+					GSM_MODEM_ALPHABET_DATA, text, length);
+	}
+	return 1; /* should not be reached */
+}
+
+static int _send_message_utf8(GSM * gsm, char const * number, char const * text,
+		size_t length)
 {
 	int ret;
-	size_t len;
-	char * p;
+	gchar * p;
 	size_t i;
 
-	len = strlen(text);
-	if((p = malloc(len)) == NULL)
+	if((p = g_convert(text, length, "ISO-8859-1", "UTF-8", NULL, &length,
+					NULL)) == NULL)
 		return 1; /* XXX report error */
-	/* XXX support more alphabets */
-	for(i = 0; i < len; i++)
+	for(i = 0; i < length; i++)
 		p[i] = _gsm_convert_from_iso(text[i]);
-	ret = gsm_modem_send_message(gsm->modem, number, text, len);
-	free(p);
+	ret = gsm_modem_send_message(gsm->modem, number,
+			GSM_MODEM_ALPHABET_DEFAULT, text, length);
+	g_free(p);
 	return ret;
 }
 

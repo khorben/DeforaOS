@@ -443,10 +443,11 @@ int gsm_modem_reset(GSMModem * gsmm)
 
 /* gsm_modem_send_message */
 static char * _number_to_address(char const * number);
+static char * _text_to_data(char const * text, size_t length);
 static char * _text_to_sept(char const * text, size_t length);
 
 int gsm_modem_send_message(GSMModem * gsmm, char const * number,
-		char const * text, size_t length)
+		GSMModemAlphabet alphabet, char const * text, size_t length)
 {
 	int ret = 1;
 	char const cmd1[] = "AT+CMGS=";
@@ -456,9 +457,9 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 	char * buf2;
 	unsigned long len2;
 	char * addr;
-	char * sept;
+	char * data = NULL;
 	char const pid[] = "00";
-	char const dcs[] = "00";
+	char dcs[] = "0X";
 	char const vp[] = "AA";
 	GSMCommand * gsmc;
 
@@ -467,29 +468,40 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 				GSM_MESSAGE_FORMAT_PDU) != 0)
 		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
+	switch(alphabet)
+	{
+		case GSM_MODEM_ALPHABET_DEFAULT:
+			dcs[1] = '0';
+			data = _text_to_sept(text, length);
+			break;
+		case GSM_MODEM_ALPHABET_DATA:
+			dcs[1] = '4';
+			data = _text_to_data(text, length);
+			break;
+	}
 	addr = _number_to_address(number);
-	sept = _text_to_sept(text, length);
 	len2 = sizeof(cmd2) + 2 + strlen(addr ? addr : "") + sizeof(pid)
-		+ sizeof(dcs) + 2 + strlen(sept ? sept : "") + 1;
+		+ sizeof(dcs) + sizeof(vp) + 2 + strlen(data ? data : "") + 1;
 	buf2 = malloc(len2);
-	len1 = sizeof(cmd1) + 2;
+	len1 = sizeof(cmd1) + 3;
 	buf1 = malloc(len1);
-	if(addr == NULL || sept == NULL || buf1 == NULL || buf2 == NULL)
+	if(addr == NULL || data == NULL || buf1 == NULL || buf2 == NULL)
 	{
 		free(addr);
-		free(sept);
+		free(data);
 		free(buf1);
 		free(buf2);
 		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
 	}
-	snprintf(buf2, len2, "%s%02lX%s%s%s%s%02lX%s\x1a", cmd2,
-			(unsigned long)((number[0] == '+')
-				? strlen(number) - 1 : strlen(number)),
-			addr, pid, dcs, vp, (unsigned long)strlen(text), sept);
+	fprintf(stderr, "DEBUG: len2=%lu\n", len2);
+	if(number[0] == '+')
+		number++;
+	snprintf(buf2, len2, "%s%02lX%s%s%s%s%02lX%s\x1a", cmd2, strlen(number),
+			addr, pid, dcs, vp, length, data);
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
-	free(sept);
+	free(data);
 	if((gsmc = gsm_command_new(buf1)) != NULL
 			&& (ret = gsm_queue_command(gsmm->gsm, gsmc)) == 0)
 	{
@@ -544,10 +556,27 @@ static char * _number_to_address(char const * number)
 	return buf;
 }
 
+static char * _text_to_data(char const * text, size_t length)
+{
+	char const tab[16] = "0123456789ABCDEF";
+	char * buf;
+	size_t i;
+
+	if((buf = malloc((length * 2) + 1)) == NULL)
+		return NULL;
+	for(i = 0; i < length; i++)
+	{
+		buf[i * 2] = tab[text[i] & 0x0f];
+		buf[(i * 2) + 1] = tab[((text[i] & 0xf0) >> 4) & 0x0f];
+	}
+	buf[i * 2] = '\0';
+	return buf;
+}
+
 /* this function is heavily inspired from gsmd, (c) 2007 OpenMoko, Inc. */
 static char * _text_to_sept(char const * text, size_t length)
 {
-	char const tab[] = "0123456789ABCDEF";
+	char const tab[16] = "0123456789ABCDEF";
 	unsigned char const * t = (unsigned char const *)text;
 	char * buf;
 	char * p;
@@ -556,7 +585,6 @@ static char * _text_to_sept(char const * text, size_t length)
 	unsigned char ch2;
 	int shift = 0;
 
-	length = strlen(text);
 	if((buf = malloc((length * 2) + 1)) == NULL)
 		return NULL;
 	p = buf;

@@ -43,6 +43,12 @@ typedef enum _GSMCallType
 typedef struct _GSMCommand GSMCommand;
 typedef void (*GSMCommandCallback)(GSM * gsm);
 
+typedef enum _GSMEncoding
+{
+	GSM_ENCODING_UTF8 = 0,
+	GSM_ENCODING_RAW_DATA
+} GSMEncoding;
+
 typedef enum _GSMEventType
 {
 	GSM_EVENT_TYPE_ERROR = 0,
@@ -382,6 +388,7 @@ int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error);
 
 int gsm_reset(GSM * gsm, unsigned int delay);
 
-int gsm_send_message(GSM * gsm, char const * number, char const * text);
+int gsm_send_message(GSM * gsm, char const * number, GSMEncoding encoding,
+		char const * text, size_t length);
 
 #endif /* !PHONE_GSM_H */

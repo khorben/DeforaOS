@@ -683,9 +683,13 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 	size_t i;
 	PhonePlugin * plugin;
 	va_list ap;
-	char * buf;
+	GSMEncoding * encoding;
+	char ** buf;
 	size_t * len;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event);
+#endif
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
 		plugin = phone->plugins[i].pp;
@@ -696,9 +700,11 @@ void phone_event(Phone * phone, PhoneEvent event, ...)
 			case PHONE_EVENT_SMS_RECEIVING:
 			case PHONE_EVENT_SMS_SENDING:
 				va_start(ap, event);
-				buf = va_arg(ap, char *);
+				encoding = va_arg(ap, GSMEncoding *);
+				buf = va_arg(ap, char **);
 				len = va_arg(ap, size_t *);
-				plugin->event(plugin, event, buf, len);
+				plugin->event(plugin, event, encoding, buf,
+						len);
 				va_end(ap);
 				break;
 			/* no arguments */
@@ -1925,8 +1931,8 @@ void phone_write_send(Phone * phone)
 	GtkTextBuffer * tbuf;
 	GtkTextIter start;
 	GtkTextIter end;
-	size_t len;
-	gchar * p;
+	size_t length;
+	GSMEncoding encoding = GSM_ENCODING_UTF8;
 
 	phone_show_write(phone, TRUE);
 	number = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
@@ -1937,18 +1943,12 @@ void phone_write_send(Phone * phone)
 			FALSE);
 	if(number == NULL || number[0] == '\0' || text == NULL)
 		return;
-	if((p = g_convert(text, -1, "ISO-8859-1", "UTF-8", NULL, NULL, NULL))
-			!= NULL)
-	{
-		g_free(text);
-		text = p;
-	}
 	phone->wr_progress = _phone_create_progress(phone->wr_window,
 			_("Sending message..."));
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
-	len = strlen(text);
-	phone_event(phone, PHONE_EVENT_SMS_SENDING, text, &len);
-	gsm_send_message(phone->gsm, number, text);
+	length = strlen(text);
+	phone_event(phone, PHONE_EVENT_SMS_SENDING, &encoding, &text, &length);
+	gsm_send_message(phone->gsm, number, encoding, text, length);
 	g_free(text);
 }
 
@@ -2307,6 +2307,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
 	Phone * phone = data;
 	GSMRegistrationReport report;
+	GSMEncoding encoding;
+	char * content;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, event->type);
@@ -2369,13 +2371,18 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->incoming_message.index);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
-			phone_event(phone, PHONE_EVENT_SMS_RECEIVING,
-					event->message.content,
-					&event->message.length);
+			encoding = PHONE_ENCODING_UTF8; /* XXX may not be */
+			if((content = malloc(event->message.length)) == NULL)
+				return 1; /* XXX report error */
+			memcpy(content, event->message.content,
+					event->message.length);
+			phone_event(phone, PHONE_EVENT_SMS_RECEIVING, &encoding,
+					&content, &event->message.length);
+			phone_event(phone, PHONE_EVENT_SMS_RECEIVED);
 			phone_messages_set(phone, event->message.index,
 					event->message.number,
-					event->message.date,
-					event->message.content);
+					event->message.date, content);
+			free(content);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,

@@ -60,6 +60,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/profiles.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \

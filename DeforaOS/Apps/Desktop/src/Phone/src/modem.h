@@ -26,6 +26,12 @@
 /* types */
 typedef struct _GSMModem GSMModem;
 
+typedef enum _GSMModemAlphabet
+{
+	GSM_MODEM_ALPHABET_DEFAULT = 0,
+	GSM_MODEM_ALPHABET_DATA
+} GSMModemAlphabet;
+
 typedef enum _GSMModemQuirk
 {
 	GSM_MODEM_QUIRK_NONE = 0,
@@ -74,7 +80,7 @@ int gsm_modem_is_registered(GSMModem * gsmm);
 int gsm_modem_reset(GSMModem * gsmm);
 
 int gsm_modem_send_message(GSMModem * gsmm, char const * number,
-		char const * text, size_t len);
+		GSMModemAlphabet alphabet, char const * text, size_t length);
 
 int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_call_waiting_control(GSMModem * gsmm, gboolean unsollicited);
