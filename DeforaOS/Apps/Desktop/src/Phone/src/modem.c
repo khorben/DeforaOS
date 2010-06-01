@@ -494,11 +494,11 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 		return gsm_event(gsmm->gsm, GSM_EVENT_TYPE_ERROR,
 				GSM_ERROR_MESSAGE_SEND_FAILED, NULL);
 	}
-	fprintf(stderr, "DEBUG: len2=%lu\n", len2);
 	if(number[0] == '+')
 		number++;
 	snprintf(buf2, len2, "%s%02lX%s%s%s%s%02lX%s\x1a", cmd2, strlen(number),
 			addr, pid, dcs, vp, length, data);
+	len2 = strlen(buf2);
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
 	free(data);
@@ -566,8 +566,8 @@ static char * _text_to_data(char const * text, size_t length)
 		return NULL;
 	for(i = 0; i < length; i++)
 	{
-		buf[i * 2] = tab[text[i] & 0x0f];
-		buf[(i * 2) + 1] = tab[((text[i] & 0xf0) >> 4) & 0x0f];
+		buf[(i * 2) + 1] = tab[text[i] & 0x0f];
+		buf[i * 2] = tab[((text[i] & 0xf0) >> 4) & 0x0f];
 	}
 	buf[i * 2] = '\0';
 	return buf;
