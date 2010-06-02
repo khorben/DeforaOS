@@ -2055,6 +2055,7 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
+	/* FIXME add a cancel button? */
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window), "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
@@ -2256,7 +2257,7 @@ static void _phone_set_status(Phone * phone, GSMStatus status)
 			break;
 		case GSM_STATUS_REGISTERED_HOME:
 		case GSM_STATUS_REGISTERED_ROAMING:
-			track_registration = FALSE;
+			_phone_track(phone, PHONE_TRACK_REGISTRATION, FALSE);
 			gsm_set_operator_format(phone->gsm,
 					GSM_OPERATOR_FORMAT_LONG);
 			gsm_fetch_operator(phone->gsm);
