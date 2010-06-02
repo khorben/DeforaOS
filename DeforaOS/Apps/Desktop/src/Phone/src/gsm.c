@@ -1417,10 +1417,14 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 
 /* gsm_trigger_cmgr */
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
-		char number[32]);
+		char number[32], GSMEncoding * encoding);
 static void _cmgr_pdu_parse_number(char const * number, size_t length,
 		char buf[32]);
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
+static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
+		size_t i, size_t hdr, GSMEncoding * encoding);
+static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
+		size_t i, size_t hdr, GSMEncoding * encoding);
 
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 {
@@ -1465,7 +1469,8 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 	}
 	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date,
-					gsm->number)) != NULL)
+					gsm->number,
+					&gsm->event.message.encoding)) != NULL)
 	{
 		gsm->event.message.index = 0;
 		if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL)
@@ -1489,22 +1494,19 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 
 /* XXX this function is fat and ugly */
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
-		char number[32])
+		char number[32], GSMEncoding * encoding)
 {
 	size_t len;
 	unsigned int smscl;
+	unsigned int tp;
+	unsigned int hdr;
 	unsigned int addrl;
 	unsigned int pid;
 	unsigned int dcs;
 	unsigned int datal;
 	unsigned int u;
-	unsigned char * p;
 	char const * q;
 	size_t i;
-	size_t j;
-	unsigned char byte;
-	unsigned char rest;
-	int shift;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, pdu);
@@ -1515,10 +1517,11 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 	if((smscl * 2) + 2 > len)
 		return NULL;
 	q = pdu + (smscl * 2) + 2;
-	if(sscanf(q, "%02X", &u) != 1)
+	if(sscanf(q, "%02X", &tp) != 1)
 		return NULL;
-	if((u & 0x04) != 0x04) /* SMS-DELIVER */
+	if((tp & 0x03) != 0x00) /* TP-MTI not SMS-DELIVER */
 		return NULL;
+	hdr = ((tp & 0x40) == 0x40) ? 1 : 0; /* TP-UDHI header present */
 	if((smscl * 2) + 4 > len)
 		return NULL;
 	q = pdu + (smscl * 2) + 4;
@@ -1543,7 +1546,6 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 4;
 	if(sscanf(q, "%02X", &dcs) != 1) /* DCS */
 		return NULL;
-	/* FIXME check the DCS */
 	if((smscl * 2) + 2 + 4 + addrl + 6 > len)
 		return NULL;
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6;
@@ -1555,18 +1557,46 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 	if(sscanf(q, "%02X", &datal) != 1) /* data length */
 		return NULL;
 	/* XXX check the data length */
-	if((smscl * 2) + 2 + 4 + addrl + 6 + 16 > len)
+	if((i = (smscl * 2) + 2 + 4 + addrl + 6 + 16) > len)
 		return NULL;
-	q = pdu + (smscl * 2) + 2 + 4 + addrl + 6 + 16;
-	i = (smscl * 2) + 2 + 4 + addrl + 6 + 16;
+	if(hdr != 0 && sscanf(&pdu[i], "%02X", &hdr) != 1)
+		return NULL;
+	if(dcs == 0x00)
+		return _cmgr_pdu_parse_encoding_default(pdu, len, i, hdr,
+				encoding);
+	if(dcs == 0x04)
+		return _cmgr_pdu_parse_encoding_data(pdu, len, i, hdr,
+				encoding);
+	return NULL;
+}
+
+static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
+		size_t i, size_t hdr, GSMEncoding * encoding)
+{
+	unsigned char * p;
+	size_t j;
+	unsigned char rest;
+	int shift = 0;
+	char const * q;
+	unsigned int u;
+	unsigned char byte;
+
 	if((p = malloc((len - i) * 2)) == NULL)
 		return NULL;
+	if(hdr != 0)
+	{
+		/* FIXME actually parse the header */
+		u = 2 + (hdr * 2);
+		if(u % 7 != 0) /* fill bits */
+			u += 7 - (u % 7);
+		i += u;
+	}
 	p[0] = '\0';
-	for(j = 0, rest = 0, shift = 0; i + 1 < len; i+=2)
+	for(j = 0, rest = 0; i + 1 < len; i+=2)
 	{
 		q = &pdu[i];
 		if(sscanf(q, "%02X", &u) != 1)
-			break;
+			break; /* FIXME report an error instead? */
 		byte = u;
 		p[j] = (byte << (shift + 1) >> (shift + 1) << shift) & 0x7f;
 		p[j] |= rest;
@@ -1581,6 +1611,31 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		}
 	}
 	p[j] = '\0';
+	*encoding = GSM_ENCODING_UTF8;
+	return (char *)p;
+}
+
+static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
+		size_t i, size_t hdr, GSMEncoding * encoding)
+{
+	unsigned char * p;
+	size_t j;
+	unsigned int u;
+
+	if((p = malloc((len - i) * 2)) == NULL) /* XXX 4 times big enough? */
+		return NULL;
+	/* FIXME actually parse the header */
+	i += 2 + (hdr * 2);
+	for(j = 0; i + 1 < len; i+=2)
+	{
+		if(sscanf(&pdu[i], "%02X", &u) != 1)
+		{
+			free(p);
+			return NULL;
+		}
+		p[j++] = u;
+	}
+	*encoding = GSM_ENCODING_RAW_DATA;
 	return (char *)p;
 }
 
@@ -1599,6 +1654,10 @@ static void _cmgr_pdu_parse_number(char const * number, size_t length,
 			buf[i + 1] = '\0';
 	}
 	buf[31] = '\0';
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\", %lu) => \"%s\"\n", __func__, number,
+			length, buf);
+#endif
 }
 
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
@@ -1606,6 +1665,9 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	char const * p = timestamp;
 	size_t i;
 	struct tm t;
+#ifdef DEBUG
+	char buf[32];
+#endif
 
 	if(strlen(p) < 14)
 		return 0;
@@ -1620,6 +1682,10 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	t.tm_hour = (p[6] - '0') + ((p[7] - '0') * 10);
 	t.tm_min = (p[8] - '0') + ((p[9] - '0') * 10);
 	t.tm_sec = (p[10] - '0') + ((p[11] - '0') * 10);
+#ifdef DEBUG
+	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, buf);
+#endif
 	return mktime(&t);
 }
 
