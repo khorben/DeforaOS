@@ -1,6 +1,6 @@
 PACKAGE	= Phone
 VERSION	= 0.0.8
-SUBDIRS	= data include po src
+SUBDIRS	= data include po src tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -63,6 +63,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/smscrypt.c \
+		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/config.h \
