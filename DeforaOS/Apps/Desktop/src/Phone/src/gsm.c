@@ -1640,7 +1640,7 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 	size_t j;
 	unsigned int u;
 
-	if((p = malloc(len - i + 1)) == NULL) /* XXX 4 times big enough? */
+	if((p = malloc(len - i + 1)) == NULL) /* XXX 2 times big enough? */
 		return NULL;
 	/* FIXME actually parse the header */
 	if(hdr != 0)
