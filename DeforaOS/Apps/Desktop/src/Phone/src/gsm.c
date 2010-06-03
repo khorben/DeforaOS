@@ -1487,7 +1487,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 			free(p);
 			p = q;
 		}
-		*length = strlen(p); /* XXX should not be necessary */
+		*length = strlen(p); /* FIXME get it from _cmgr_pdu_parse() */
 		gsm->event.message.number = gsm->number; /* XXX ugly */
 		gsm->event.message.content = p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
@@ -1639,6 +1639,7 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 		}
 		p[j++] = u;
 	}
+	p[j] = '\0';
 	*encoding = GSM_ENCODING_RAW_DATA;
 	return (char *)p;
 }
