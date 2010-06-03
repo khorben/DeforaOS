@@ -35,7 +35,8 @@ typedef enum _GSMModemAlphabet
 typedef enum _GSMModemQuirk
 {
 	GSM_MODEM_QUIRK_NONE = 0,
-	GSM_MODEM_QUIRK_CPIN_QUOTES = 1
+	GSM_MODEM_QUIRK_CPIN_QUOTES = 1,
+	GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU = 2
 } GSMModemQuirk;
 
 
