@@ -480,7 +480,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 			break;
 	}
 	addr = _number_to_address(number);
-	len2 = sizeof(cmd2) + 2 + strlen(addr ? addr : "") + sizeof(pid)
+	len2 = 2 + sizeof(cmd2) + 2 + strlen(addr ? addr : "") + sizeof(pid)
 		+ sizeof(dcs) + sizeof(vp) + 2 + strlen(data ? data : "") + 1;
 	buf2 = malloc(len2);
 	len1 = sizeof(cmd1) + 4;
@@ -496,9 +496,13 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 	}
 	if(number[0] == '+')
 		number++;
-	snprintf(buf2, len2, "%s%02lX%s%s%s%s%02lX%s\x1a", cmd2, strlen(number),
+	snprintf(buf2, len2, "%s%s%02lX%s%s%s%s%02lX%s\x1a", gsmm->quirks
+			& GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU ? "00" : "",
+			cmd2, strlen(number),
 			addr, pid, dcs, vp, length, data);
 	len2 = strlen(buf2);
+	if(gsmm->quirks & GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU)
+		len2 -= 2;
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
 	free(addr);
 	free(data);
