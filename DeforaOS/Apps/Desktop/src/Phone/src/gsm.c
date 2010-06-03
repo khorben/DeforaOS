@@ -1480,7 +1480,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	{
 		gsm->event.message.encoding = GSM_ENCODING_UTF8;
 		gsm->event.message.content = result;
-		*length = strlen(result);
+		*length = strlen(result) + 1;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 	}
 	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date,
@@ -1492,14 +1492,16 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL)
 			gsm->event.message.index /* XXX ugly */
 				= (unsigned long)gsm_command_get_data(gsmc);
-		if((q = g_convert(p, -1, "UTF-8", "ISO-8859-1", NULL, NULL,
-						NULL)) != NULL)
+		gsm->event.message.number = gsm->number; /* XXX ugly */
+		if(gsm->event.message.encoding == GSM_ENCODING_UTF8
+				&& (q = g_convert(p, -1, "UTF-8", "ISO-8859-1",
+						NULL, NULL, NULL)) != NULL)
 		{
 			free(p);
 			p = q;
+			l = strlen(p) + 1;
 		}
 		gsm->event.message.length = l;
-		gsm->event.message.number = gsm->number; /* XXX ugly */
 		gsm->event.message.content = p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 		free(p);
@@ -1596,7 +1598,7 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 	unsigned int u;
 	unsigned char byte;
 
-	if((p = malloc((len - i) * 2)) == NULL)
+	if((p = malloc(len - i + 1)) == NULL)
 		return NULL;
 	if(hdr != 0)
 	{
@@ -1638,7 +1640,7 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 	size_t j;
 	unsigned int u;
 
-	if((p = malloc((len - i) * 2)) == NULL) /* XXX 4 times big enough? */
+	if((p = malloc(len - i + 1)) == NULL) /* XXX 4 times big enough? */
 		return NULL;
 	/* FIXME actually parse the header */
 	if(hdr != 0)
