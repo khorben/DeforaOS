@@ -1422,14 +1422,14 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 
 /* gsm_trigger_cmgr */
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
-		char number[32], GSMEncoding * encoding);
+		char number[32], GSMEncoding * encoding, size_t * length);
 static void _cmgr_pdu_parse_number(char const * number, size_t length,
 		char buf[32]);
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
-		size_t i, size_t hdr, GSMEncoding * encoding);
+		size_t i, size_t hdr, GSMEncoding * encoding, size_t * length);
 static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
-		size_t i, size_t hdr, GSMEncoding * encoding);
+		size_t i, size_t hdr, GSMEncoding * encoding, size_t * length);
 
 static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 {
@@ -1442,6 +1442,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	char * p;
 	GSMCommand * gsmc;
 	char * q;
+	size_t l = 0;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, result);
@@ -1475,7 +1476,8 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 	}
 	else if((p = _cmgr_pdu_parse(result, &gsm->event.message.date,
 					gsm->number,
-					&gsm->event.message.encoding)) != NULL)
+					&gsm->event.message.encoding,
+					&l)) != NULL)
 	{
 		gsm->event.message.index = 0;
 		if((gsmc = g_slist_nth_data(gsm->queue, 0)) != NULL)
@@ -1487,7 +1489,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 			free(p);
 			p = q;
 		}
-		*length = strlen(p); /* FIXME get it from _cmgr_pdu_parse() */
+		*length = l;
 		gsm->event.message.number = gsm->number; /* XXX ugly */
 		gsm->event.message.content = p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
@@ -1498,7 +1500,7 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 
 /* XXX this function is fat and ugly */
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
-		char number[32], GSMEncoding * encoding)
+		char number[32], GSMEncoding * encoding, size_t * length)
 {
 	size_t len;
 	unsigned int smscl;
@@ -1567,15 +1569,15 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		return NULL;
 	if(dcs == 0x00)
 		return _cmgr_pdu_parse_encoding_default(pdu, len, i, hdr,
-				encoding);
+				encoding, length);
 	if(dcs == 0x04)
 		return _cmgr_pdu_parse_encoding_data(pdu, len, i, hdr,
-				encoding);
+				encoding, length);
 	return NULL;
 }
 
 static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
-		size_t i, size_t hdr, GSMEncoding * encoding)
+		size_t i, size_t hdr, GSMEncoding * encoding, size_t * length)
 {
 	unsigned char * p;
 	size_t j;
@@ -1614,13 +1616,14 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 			rest = 0;
 		}
 	}
-	p[j] = '\0';
 	*encoding = GSM_ENCODING_UTF8;
+	*length = j;
+	p[j] = '\0';
 	return (char *)p;
 }
 
 static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
-		size_t i, size_t hdr, GSMEncoding * encoding)
+		size_t i, size_t hdr, GSMEncoding * encoding, size_t * length)
 {
 	unsigned char * p;
 	size_t j;
@@ -1639,8 +1642,9 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 		}
 		p[j++] = u;
 	}
-	p[j] = '\0';
 	*encoding = GSM_ENCODING_RAW_DATA;
+	*length = j;
+	p[j] = '\0';
 	return (char *)p;
 }
 
