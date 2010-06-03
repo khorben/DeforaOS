@@ -298,6 +298,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
 	phone->ca_window = NULL;
+	phone->en_code = -1;
 	phone->en_window = NULL;
 	phone->en_progress = NULL;
 	phone->co_window = NULL;
