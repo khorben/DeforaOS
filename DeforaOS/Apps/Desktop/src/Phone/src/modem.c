@@ -483,7 +483,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 	len2 = sizeof(cmd2) + 2 + strlen(addr ? addr : "") + sizeof(pid)
 		+ sizeof(dcs) + sizeof(vp) + 2 + strlen(data ? data : "") + 1;
 	buf2 = malloc(len2);
-	len1 = sizeof(cmd1) + 3;
+	len1 = sizeof(cmd1) + 4;
 	buf1 = malloc(len1);
 	if(addr == NULL || data == NULL || buf1 == NULL || buf2 == NULL)
 	{
