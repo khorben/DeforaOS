@@ -425,9 +425,7 @@ static void _modem_is_pin_valid_callback(GSM * gsm)
 /* gsm_modem_is_registered */
 int gsm_modem_is_registered(GSMModem * gsmm)
 {
-	char const cmd[] = "AT+CREG?";
-
-	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+	return gsm_modem_get_registration(gsmm);
 }
 
 
