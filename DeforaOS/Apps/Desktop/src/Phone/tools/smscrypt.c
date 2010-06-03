@@ -41,7 +41,9 @@ static void _hexdump(char const * buf, size_t len)
 	for(i = 0; i < len; i++)
 	{
 		printf(" %02x", b[i]);
-		if((i % 16) == 15)
+		if((i % 16) == 7)
+			fputc(' ', stdout);
+		else if((i % 16) == 15)
 			fputc('\n', stdout);
 	}
 	fputc('\n', stdout);
@@ -73,6 +75,7 @@ int main(void)
 		return 2;
 	len = strlen(p);
 	_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, &encoding, &p, &len);
+	printf("Encrypted:\n");
 	_hexdump(p, len);
 	_smscrypt_event(&plugin, PHONE_EVENT_SMS_RECEIVING, &encoding, &p,
 			&len);
