@@ -500,7 +500,7 @@ int gsm_modem_send_message(GSMModem * gsmm, char const * number,
 			& GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU ? "00" : "",
 			cmd2, strlen(number),
 			addr, pid, dcs, vp, length, data);
-	len2 = strlen(buf2);
+	len2 = strlen(buf2); /* XXX obtain it from snprintf() */
 	if(gsmm->quirks & GSM_MODEM_QUIRK_WANT_SMSC_IN_PDU)
 		len2 -= 2;
 	snprintf(buf1, len1, "%s%lu", cmd1, (len2 - 1) / 2);
@@ -716,6 +716,28 @@ int gsm_modem_set_message_format(GSMModem * gsmm, GSMMessageFormat format)
 			return 1;
 	}
 	cmd[8] = format + '0';
+	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+}
+
+
+/* gsm_modem_set_message_indications */
+int gsm_modem_set_message_indications(GSMModem * gsmm, GSMMessageMode mode,
+		gboolean unsollicited)
+{
+	char cmd[] = "AT+CNMI=X,X";
+
+	switch(mode)
+	{
+		case GSM_MESSAGE_MODE_BUFFER_REPLACE:
+		case GSM_MESSAGE_MODE_DISCARD_REJECT:
+		case GSM_MESSAGE_MODE_BUFFER_FLUSH:
+		case GSM_MESSAGE_MODE_FORWARD:
+			break;
+		default:
+			return 1;
+	}
+	cmd[8] = mode + '0';
+	cmd[10] = unsollicited ? '1' : '0';
 	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
 }
 

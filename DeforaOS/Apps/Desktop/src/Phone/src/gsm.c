@@ -480,6 +480,15 @@ int gsm_set_line_presentation(GSM * gsm, int set)
 }
 
 
+/* gsm_set_message_indications */
+int gsm_set_message_indications(GSM * gsm, GSMMessageMode mode,
+		int unsollicited)
+{
+	return gsm_modem_set_message_indications(gsm->modem, mode,
+			(unsollicited != 0) ? TRUE : FALSE);
+}
+
+
 /* gsm_set_mute */
 int gsm_set_mute(GSM * gsm, int mute)
 {

@@ -2348,6 +2348,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			}
 			gsm_set_call_presentation(phone->gsm, TRUE);
 			gsm_set_extended_ring_reports(phone->gsm, TRUE);
+			gsm_set_message_indications(phone->gsm,
+					GSM_MESSAGE_MODE_BUFFER_FLUSH, TRUE);
 			gsm_set_operator_mode(phone->gsm,
 					GSM_OPERATOR_MODE_AUTOMATIC);
 			gsm_set_registration_report(phone->gsm, report);

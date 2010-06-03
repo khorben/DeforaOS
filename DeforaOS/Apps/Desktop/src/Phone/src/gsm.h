@@ -114,6 +114,14 @@ typedef enum _GSMMessageList
 	GSM_MESSAGE_LIST_ALL = 4
 } GSMMessageList;
 
+typedef enum _GSMMessageMode
+{
+	GSM_MESSAGE_MODE_BUFFER_REPLACE = 0,
+	GSM_MESSAGE_MODE_DISCARD_REJECT = 1,
+	GSM_MESSAGE_MODE_BUFFER_FLUSH = 2,
+	GSM_MESSAGE_MODE_FORWARD = 3
+} GSMMessageMode;
+
 typedef enum _GSMMode
 {
 	GSM_MODE_INIT = 0, GSM_MODE_COMMAND, GSM_MODE_PDU
@@ -336,6 +344,8 @@ int gsm_set_call_waiting_control(GSM * gsm, int unsollicited);
 int gsm_set_extended_ring_reports(GSM * gsm, int extended);
 int gsm_set_functional(GSM * gsm, int functional);
 int gsm_set_line_presentation(GSM * gsm, int set);
+int gsm_set_message_indications(GSM * gsm, GSMMessageMode mode,
+		int unsollicited);
 int gsm_set_mute(GSM * gsm, int mute);
 int gsm_set_operator_format(GSM * gsm, GSMOperatorFormat format);
 int gsm_set_operator_mode(GSM * gsm, GSMOperatorMode mode);
