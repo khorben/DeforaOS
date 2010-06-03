@@ -432,8 +432,6 @@ static void _on_plug_embedded(gpointer data)
 /* phone_delete */
 void phone_delete(Phone * phone)
 {
-	PhonePlugin * plugin;
-
 	phone_unload_all(phone);
 	if(phone->config != NULL)
 		config_delete(phone->config);
@@ -2472,9 +2470,10 @@ static int _gsm_event_message(Phone * phone, GSMEvent * event)
 
 	encoding = event->message.encoding;
 	length = event->message.length;
-	if((content = malloc(length)) == NULL)
+	if((content = malloc(length + 1)) == NULL)
 		return 1; /* XXX report error */
 	memcpy(content, event->message.content, length);
+	content[length] = '\0'; /* just in case */
 	phone_event(phone, PHONE_EVENT_SMS_RECEIVING, &encoding, &content,
 			&length);
 	phone_event(phone, PHONE_EVENT_SMS_RECEIVED);
