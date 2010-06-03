@@ -51,15 +51,16 @@ static void _hexdump(char const * buf, size_t len)
 
 
 /* main */
-int main(void)
+int main(int argc, char * argv[])
 {
 	PhonePluginHelper helper;
 	Config * config;
-	char const message[] = "A sample message.";
 	PhoneEncoding encoding = PHONE_ENCODING_UTF8;
 	char * p;
 	size_t len;
 
+	if(argc != 2)
+		return 1;
 	config = config_new();
 	config_load(config, "/home/khorben/.phone"); /* FIXME hardcoded */
 	helper.phone = (Phone *)config;
@@ -70,8 +71,8 @@ int main(void)
 		error_print("smscrypt");
 		return 2;
 	}
-	printf("Message: \"%s\"\n", message);
-	if((p = strdup(message)) == NULL)
+	printf("Message: \"%s\"\n", argv[1]);
+	if((p = strdup(argv[1])) == NULL)
 		return 2;
 	len = strlen(p);
 	_smscrypt_event(&plugin, PHONE_EVENT_SMS_SENDING, &encoding, &p, &len);
