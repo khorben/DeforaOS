@@ -22,9 +22,9 @@ distclean: clean
 	$(RM) $(TARGETS)
 
 install: all
-	./gettext.sh -p "$(PREFIX)" install "fr.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"
 
 uninstall:
-	./gettext.sh -p "$(PREFIX)" uninstall "fr.mo"
+	./gettext.sh -p "$(DESTDIR)$(PREFIX)" uninstall "fr.mo"
 
 .PHONY: all clean distclean install uninstall
