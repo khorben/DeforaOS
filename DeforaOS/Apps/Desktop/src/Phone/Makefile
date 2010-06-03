@@ -63,6 +63,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/pdu.c \
 		$(PACKAGE)-$(VERSION)/tools/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
