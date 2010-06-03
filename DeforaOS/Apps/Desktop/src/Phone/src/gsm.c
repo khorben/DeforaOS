@@ -1672,7 +1672,7 @@ static void _cmgr_pdu_parse_number(char const * number, size_t length,
 		if((buf[i + 1] = number[i]) == 'F')
 			buf[i + 1] = '\0';
 	}
-	buf[31] = '\0';
+	buf[i] = '\0';
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %lu) => \"%s\"\n", __func__, number,
 			length, buf);
