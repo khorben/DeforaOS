@@ -2300,6 +2300,7 @@ static void _phone_track(Phone * phone, PhoneTrack what, gboolean track)
 /* callbacks */
 /* phone_gsm_event */
 static int _gsm_event_error(Phone * phone, GSMEvent * event);
+static int _gsm_event_message(Phone * phone, GSMEvent * event);
 static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity);
 static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -2308,8 +2309,6 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
 	Phone * phone = data;
 	GSMRegistrationReport report;
-	GSMEncoding encoding;
-	char * content;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%d)\n", __func__, event->type);
@@ -2374,20 +2373,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 					event->incoming_message.index);
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
-			encoding = event->message.encoding;
-			if((content = malloc(event->message.length)) == NULL)
-				return 1; /* XXX report error */
-			memcpy(content, event->message.content,
-					event->message.length);
-			phone_event(phone, PHONE_EVENT_SMS_RECEIVING, &encoding,
-					&content, &event->message.length);
-			phone_event(phone, PHONE_EVENT_SMS_RECEIVED);
-			/* FIXME may be unsuitable (eg not UTF-8...) */
-			phone_messages_set(phone, event->message.index,
-					event->message.number,
-					event->message.date, content);
-			free(content);
-			return 0;
+			return _gsm_event_message(phone, event);
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);
@@ -2474,6 +2460,38 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			phone_error(phone, event->error.message, 0);
 			break;
 	}
+	return 0;
+}
+
+static int _gsm_event_message(Phone * phone, GSMEvent * event)
+{
+	GSMEncoding encoding;
+	char * content;
+	size_t length;
+
+	encoding = event->message.encoding;
+	length = event->message.length;
+	if((content = malloc(length)) == NULL)
+		return 1; /* XXX report error */
+	memcpy(content, event->message.content, length);
+	phone_event(phone, PHONE_EVENT_SMS_RECEIVING, &encoding, &content,
+			&length);
+	phone_event(phone, PHONE_EVENT_SMS_RECEIVED);
+	switch(encoding)
+	{
+		case GSM_ENCODING_UTF8:
+			phone_messages_set(phone, event->message.index,
+					event->message.number,
+					event->message.date, content);
+			break;
+		case GSM_ENCODING_RAW_DATA:
+			phone_messages_set(phone, event->message.index,
+					event->message.number,
+					event->message.date,
+					"Raw data (not shown)");
+			break;
+	}
+	free(content);
 	return 0;
 }
 
