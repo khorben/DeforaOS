@@ -1632,7 +1632,8 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 	if((p = malloc((len - i) * 2)) == NULL) /* XXX 4 times big enough? */
 		return NULL;
 	/* FIXME actually parse the header */
-	i += 2 + (hdr * 2);
+	if(hdr != 0)
+		i += 2 + (hdr * 2);
 	for(j = 0; i + 1 < len; i+=2)
 	{
 		if(sscanf(&pdu[i], "%02X", &u) != 1)
