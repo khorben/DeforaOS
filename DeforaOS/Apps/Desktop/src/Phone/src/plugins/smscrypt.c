@@ -16,13 +16,27 @@
 
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <System.h>
 #include "Phone.h"
 
 
 /* SMSCrypt */
 /* private */
+/* types */
+typedef struct _SMSCrypt
+{
+	char * secret;
+	size_t secret_len;
+} SMSCrypt;
+
+
+/* prototypes */
 static int _smscrypt_init(PhonePlugin * plugin);
+static int _smscrypt_destroy(PhonePlugin * plugin);
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...);
 static void _smscrypt_settings(PhonePlugin * plugin);
 
@@ -35,7 +49,7 @@ PhonePlugin plugin =
 	"SMS encryption",
 	NULL,
 	_smscrypt_init,
-	NULL,
+	_smscrypt_destroy,
 	_smscrypt_event,
 	_smscrypt_settings,
 	NULL
@@ -47,23 +61,51 @@ PhonePlugin plugin =
 /* smscrypt_init */
 static int _smscrypt_init(PhonePlugin * plugin)
 {
+	SMSCrypt * smscrypt;
+	char const * secret;
+
+	if((secret = plugin->helper->config_get(plugin->helper->phone,
+					"smscrypt", "secret")) == NULL)
+		return 1;
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() secret=\"%s\"\n", __func__,
-			plugin->helper->config_get(plugin->helper->phone,
-				"smscrypt", "secret"));
+	fprintf(stderr, "DEBUG: %s() secret=\"%s\"\n", __func__, secret);
 #endif
+	if((smscrypt = malloc(sizeof(*smscrypt))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	plugin->priv = smscrypt;
+	smscrypt->secret = strdup(secret);
+	smscrypt->secret_len = strlen(secret);
+	if(smscrypt->secret == NULL || smscrypt->secret_len == 0)
+	{
+		_smscrypt_destroy(plugin);
+		return error_set_code(1, "%s", strerror(errno));
+	}
+	return 0;
+}
+
+
+/* smscrypt_destroy */
+static int _smscrypt_destroy(PhonePlugin * plugin)
+{
+	SMSCrypt * smscrypt = plugin->priv;
+
+	if(smscrypt->secret != NULL)
+		memset(smscrypt->secret, 0, smscrypt->secret_len);
+	free(smscrypt->secret);
+	free(smscrypt);
 	return 0;
 }
 
 
 /* smscrypt_event */
-static void _smscrypt_event_sms_received(PhoneEncoding * encoding, char ** buf,
-		size_t * len);
-static void _smscrypt_event_sms_sending(PhoneEncoding * encoding, char ** buf,
-		size_t * len);
+static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
+		PhoneEncoding * encoding, char ** buf, size_t * len);
+static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
+		PhoneEncoding * encoding, char ** buf, size_t * len);
 
 static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 {
+	SMSCrypt * smscrypt = plugin->priv;
 	va_list ap;
 	PhoneEncoding * encoding;
 	char ** buf;
@@ -77,13 +119,15 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
-			_smscrypt_event_sms_received(encoding, buf, len);
+			_smscrypt_event_sms_receiving(smscrypt, encoding, buf,
+					len);
 			break;
 		case PHONE_EVENT_SMS_SENDING:
 			encoding = va_arg(ap, PhoneEncoding *);
 			buf = va_arg(ap, char **);
 			len = va_arg(ap, size_t *);
-			_smscrypt_event_sms_sending(encoding, buf, len);
+			_smscrypt_event_sms_sending(smscrypt, encoding, buf,
+					len);
 			break;
 		/* ignore the rest */
 		default:
@@ -93,28 +137,42 @@ static int _smscrypt_event(PhonePlugin * plugin, PhoneEvent event, ...)
 	return 0;
 }
 
-static void _smscrypt_event_sms_received(PhoneEncoding * encoding, char ** buf,
-		size_t * len)
+static void _smscrypt_event_sms_receiving(SMSCrypt * smscrypt,
+		PhoneEncoding * encoding, char ** buf, size_t * len)
 {
+	size_t i;
+	size_t j = 0;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, buf, %lu)\n", __func__, *encoding,
 			*len);
 #endif
-	if(*encoding == PHONE_ENCODING_UTF8)
+	if(*encoding != PHONE_ENCODING_DATA)
 		return; /* not for us */
-	/* FIXME really implement */
+	for(i = 0; i < *len; i++)
+	{
+		(*buf)[i] ^= smscrypt->secret[j++];
+		j %= smscrypt->secret_len;
+	}
 	*encoding = PHONE_ENCODING_UTF8;
 }
 
-static void _smscrypt_event_sms_sending(PhoneEncoding * encoding, char ** buf,
-		size_t * len)
+static void _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
+		PhoneEncoding * encoding, char ** buf, size_t * len)
 {
+	size_t i;
+	size_t j = 0;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u, buf, %lu)\n", __func__, *encoding, *len);
 #endif
 	if(*encoding != PHONE_ENCODING_UTF8)
 		return; /* not for us */
-	/* FIXME really implement */
+	for(i = 0; i < *len; i++)
+	{
+		(*buf)[i] ^= smscrypt->secret[j++];
+		j %= smscrypt->secret_len;
+	}
 	*encoding = PHONE_ENCODING_DATA;
 }
 
