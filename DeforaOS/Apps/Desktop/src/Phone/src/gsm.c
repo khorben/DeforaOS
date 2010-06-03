@@ -1489,7 +1489,6 @@ static int _gsm_trigger_cmgr(GSM * gsm, char const * result)
 		}
 		*length = strlen(p); /* XXX should not be necessary */
 		gsm->event.message.number = gsm->number; /* XXX ugly */
-		gsm->event.message.encoding = GSM_ENCODING_UTF8;
 		gsm->event.message.content = p;
 		_gsm_event_send(gsm, GSM_EVENT_TYPE_MESSAGE);
 		free(p);
