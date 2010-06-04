@@ -63,6 +63,8 @@ void on_phone_messages_write(gpointer data);
 
 /* read */
 void on_phone_read_call(gpointer data);
+void on_phone_read_delete(gpointer data);
+void on_phone_read_reply(gpointer data);
 
 /* write */
 void on_phone_write_attach(gpointer data);

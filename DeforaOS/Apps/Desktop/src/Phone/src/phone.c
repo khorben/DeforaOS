@@ -1670,6 +1670,16 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
 				G_CALLBACK(on_phone_read_call), phone);
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new(NULL, _("Reply"));
+		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+				"mail-reply-sender");
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_read_reply), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_DELETE);
+		g_signal_connect_swapped(G_OBJECT(toolitem), "clicked",
+				G_CALLBACK(on_phone_read_delete), phone);
+		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		/* name */
 		phone->re_name = gtk_label_new(NULL);

@@ -328,6 +328,24 @@ void on_phone_read_call(gpointer data)
 }
 
 
+/* on_phone_read_delete */
+void on_phone_read_delete(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
+/* on_phone_read_reply */
+void on_phone_read_reply(gpointer data)
+{
+	Phone * phone = data;
+
+	/* FIXME implement */
+}
+
+
 /* write */
 /* on_phone_write_attach */
 void on_phone_write_attach(gpointer data)
