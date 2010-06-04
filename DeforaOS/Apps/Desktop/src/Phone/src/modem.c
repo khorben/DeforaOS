@@ -429,22 +429,23 @@ int gsm_modem_is_registered(GSMModem * gsmm)
 }
 
 
-/* gsm_modem_reset */
-int gsm_modem_reset(GSMModem * gsmm)
+/* gsm_modem_message_delete */
+int gsm_modem_message_delete(GSMModem * gsmm, unsigned int index)
 {
-	char const cmd[] = "ATZ";
+	char cmd[32];
 
-	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
-			GSM_ERROR_RESET_FAILED, NULL);
+	snprintf(cmd, sizeof(cmd), "%s%u", "AT+CMGD=", index);
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_MESSAGE_DELETE_FAILED, NULL);
 }
 
 
-/* gsm_modem_send_message */
+/* gsm_modem_message_send */
 static char * _number_to_address(char const * number);
 static char * _text_to_data(char const * text, size_t length);
 static char * _text_to_sept(char const * text, size_t length);
 
-int gsm_modem_send_message(GSMModem * gsmm, char const * number,
+int gsm_modem_message_send(GSMModem * gsmm, char const * number,
 		GSMModemAlphabet alphabet, char const * text, size_t length)
 {
 	int ret = 1;
@@ -607,6 +608,16 @@ static char * _text_to_sept(char const * text, size_t length)
 	}
 	*p = '\0';
 	return buf;
+}
+
+
+/* gsm_modem_reset */
+int gsm_modem_reset(GSMModem * gsmm)
+{
+	char const cmd[] = "ATZ";
+
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_HIGH, cmd,
+			GSM_ERROR_RESET_FAILED, NULL);
 }
 
 

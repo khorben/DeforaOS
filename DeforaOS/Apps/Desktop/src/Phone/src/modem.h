@@ -78,10 +78,11 @@ int gsm_modem_is_pin_needed(GSMModem * gsmm);
 int gsm_modem_is_pin_valid(GSMModem * gsmm);
 int gsm_modem_is_registered(GSMModem * gsmm);
 
-int gsm_modem_reset(GSMModem * gsmm);
-
-int gsm_modem_send_message(GSMModem * gsmm, char const * number,
+int gsm_modem_message_delete(GSMModem * gsmm, unsigned int index);
+int gsm_modem_message_send(GSMModem * gsmm, char const * number,
 		GSMModemAlphabet alphabet, char const * text, size_t length);
+
+int gsm_modem_reset(GSMModem * gsmm);
 
 int gsm_modem_set_call_presentation(GSMModem * gsmm, gboolean set);
 int gsm_modem_set_call_waiting_control(GSMModem * gsmm, gboolean unsollicited);

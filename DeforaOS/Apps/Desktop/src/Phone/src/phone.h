@@ -102,6 +102,7 @@ void phone_unload_all(Phone * phone);
 
 /* read */
 void phone_read_call(Phone * phone);
+void phone_read_delete(Phone * phone);
 
 /* settings */
 void phone_settings_open_selected(Phone * phone);

@@ -166,6 +166,7 @@ struct _Phone
 	GtkWidget * me_view;
 
 	/* read */
+	unsigned int re_index;
 	GtkWidget * re_window;
 	GtkWidget * re_name;
 	GtkWidget * re_number;
@@ -312,6 +313,7 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING, G_TYPE_STRING);
+	phone->re_index = 0;
 	phone->re_window = NULL;
 	phone->se_window = NULL;
 	phone->se_store = gtk_list_store_new(PHONE_SETTINGS_COLUMN_COUNT,
@@ -852,7 +854,21 @@ void phone_messages_call_selected(Phone * phone)
 /* phone_messages_delete_selected */
 void phone_messages_delete_selected(Phone * phone)
 {
-	/* FIXME implement */
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	unsigned int index;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
+						phone->me_view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
+			PHONE_MESSAGE_COLUMN_ID, &index, -1);
+	/* FIXME ask for confirmation first, add a progress window */
+	gsm_message_delete(phone->gsm, index);
+	if(phone->re_index == index)
+		phone_show_read(phone, FALSE);
 }
 
 
@@ -911,6 +927,15 @@ void phone_read_call(Phone * phone)
 		return;
 	gsm_call(phone->gsm, GSM_CALL_TYPE_VOICE, number);
 	phone_show_call(phone, TRUE, PHONE_CALL_OUTGOING, " ", number);
+}
+
+
+/* phone_read_delete */
+void phone_read_delete(Phone * phone)
+{
+	/* FIXME ask for confirmation first, add a progress window */
+	gsm_message_delete(phone->gsm, phone->re_index);
+	phone_show_read(phone, FALSE);
 }
 
 
@@ -1623,7 +1648,6 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	GtkWidget * widget;
 	GtkToolItem * toolitem;
 	GtkTextBuffer * tbuf;
-	unsigned int index;
 	char const * name;
 	char const * number;
 	time_t date;
@@ -1638,15 +1662,15 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 		return;
 	}
 	va_start(ap, show);
-	index = va_arg(ap, unsigned int);
+	phone->re_index = va_arg(ap, unsigned int);
 	name = va_arg(ap, char const *);
 	number = va_arg(ap, char const *);
 	date = va_arg(ap, time_t);
 	content = va_arg(ap, char const *);
 	va_end(ap);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %u, %s\n", __func__, index,
-			name, number, date, content);
+	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %u, %s\n", __func__,
+			phone->re_index, name, number, date, content);
 #endif
 	if(phone->re_window == NULL)
 	{
@@ -1957,7 +1981,7 @@ void phone_write_send(Phone * phone)
 	_phone_track(phone, PHONE_TRACK_MESSAGE_SENT, TRUE);
 	length = strlen(text);
 	phone_event(phone, PHONE_EVENT_SMS_SENDING, &encoding, &text, &length);
-	gsm_send_message(phone->gsm, number, encoding, text, length);
+	gsm_message_send(phone->gsm, number, encoding, text, length);
 	g_free(text);
 }
 

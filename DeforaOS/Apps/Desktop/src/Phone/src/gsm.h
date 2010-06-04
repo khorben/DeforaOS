@@ -84,6 +84,7 @@ typedef enum _GSMError
 	GSM_ERROR_CONTACT_LIST_FAILED,
 	GSM_ERROR_FUNCTIONAL_FAILED,
 	GSM_ERROR_HANGUP_FAILED,
+	GSM_ERROR_MESSAGE_DELETE_FAILED,
 	GSM_ERROR_MESSAGE_FETCH_FAILED,
 	GSM_ERROR_MESSAGE_LIST_FAILED,
 	GSM_ERROR_MESSAGE_SEND_FAILED,
@@ -378,6 +379,11 @@ int gsm_fetch_operator(GSM * gsm);
 int gsm_fetch_registration(GSM * gsm);
 int gsm_fetch_signal_level(GSM * gsm);
 
+/* messaging */
+int gsm_message_delete(GSM * gsm, unsigned int index);
+int gsm_message_send(GSM * gsm, char const * number, GSMEncoding encoding,
+		char const * text, size_t length);
+
 /* queries */
 int gsm_is_alive(GSM * gsm);
 int gsm_is_call_waiting_control(GSM * gsm);
@@ -398,8 +404,5 @@ int gsm_queue_full_mode(GSM * gsm, GSMPriority priority, char const * command,
 int gsm_queue_with_error(GSM * gsm, char const * command, GSMError error);
 
 int gsm_reset(GSM * gsm, unsigned int delay);
-
-int gsm_send_message(GSM * gsm, char const * number, GSMEncoding encoding,
-		char const * text, size_t length);
 
 #endif /* !PHONE_GSM_H */
