@@ -586,6 +586,20 @@ int gsm_call_reject(GSM * gsm)
 }
 
 
+/* callbacks */
+/* gsm_callback_on_message_deleted */
+void gsm_callback_on_message_deleted(GSM * gsm)
+{
+	GSMCommand * gsmc;
+	unsigned long index;
+
+	if((gsmc = g_slist_nth_data(gsm->queue, 0)) == NULL)
+		return;
+	index = (unsigned long)gsm_command_get_data(gsmc);
+	gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_DELETED, index);
+}
+
+
 /* gsm_enter_sim_pin */
 int gsm_enter_sim_pin(GSM * gsm, char const * code)
 {
@@ -657,6 +671,7 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->message.content = va_arg(ap, char const *);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE_DELETED:
+			event->message.index = va_arg(ap, unsigned int);
 			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			event->message_list.start = va_arg(ap, unsigned int);

@@ -274,6 +274,13 @@ typedef union _GSMEvent
 		char const * content;
 	} message;
 
+	/* GSM_EVENT_TYPE_MESSAGE_DELETED */
+	struct
+	{
+		GSMEventType type;
+		unsigned int index;
+	} message_deleted;
+
 	/* GSM_EVENT_TYPE_MESSAGE_SENT */
 	struct
 	{
@@ -363,6 +370,9 @@ int gsm_call(GSM * gsm, GSMCallType calltype, char const * number);
 int gsm_call_contact(GSM * gsm, GSMCallType calltype, unsigned int index);
 int gsm_call_hangup(GSM * gsm);
 int gsm_call_reject(GSM * gsm);
+
+/* callbacks */
+void gsm_callback_on_message_deleted(GSM * gsm);
 
 int gsm_enter_sim_pin(GSM * gsm, char const * code);
 

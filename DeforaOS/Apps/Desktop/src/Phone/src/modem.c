@@ -303,7 +303,6 @@ int gsm_modem_get_message(GSMModem * gsmm, unsigned int index)
 	snprintf(cmd, sizeof(cmd), "%s%u", "AT+CMGR=", index);
 	if((gsmc = gsm_command_new(cmd)) == NULL)
 		return 1;
-	gsm_command_set_priority(gsmc, GSM_PRIORITY_NORMAL);
 	gsm_command_set_error(gsmc, GSM_ERROR_MESSAGE_FETCH_FAILED);
 	gsm_command_set_data(gsmc, (void *)i); /* XXX ugly */
 	/* XXX race condition here if the user forces out of PDU mode */
@@ -430,21 +429,22 @@ int gsm_modem_is_registered(GSMModem * gsmm)
 
 
 /* gsm_modem_message_delete */
-static void _modem_message_delete_callback(GSM * gsm);
-
 int gsm_modem_message_delete(GSMModem * gsmm, unsigned int index)
 {
+	GSMCommand * gsmc;
 	char cmd[32];
+	unsigned long i = index;
 
 	snprintf(cmd, sizeof(cmd), "%s%u", "AT+CMGD=", index);
-	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
-			GSM_ERROR_MESSAGE_DELETE_FAILED,
-			_modem_message_delete_callback);
-}
-
-static void _modem_message_delete_callback(GSM * gsm)
-{
-	gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_DELETED);
+	if((gsmc = gsm_command_new(cmd)) == NULL)
+		return 1;
+	gsm_command_set_error(gsmc, GSM_ERROR_MESSAGE_DELETE_FAILED);
+	gsm_command_set_data(gsmc, (void *)i); /* XXX ugly */
+	gsm_command_set_callback(gsmc, gsm_callback_on_message_deleted);
+	if(gsm_queue_command(gsmm->gsm, gsmc) == 0)
+		return 0;
+	gsm_command_delete(gsmc);
+	return 1;
 }
 
 

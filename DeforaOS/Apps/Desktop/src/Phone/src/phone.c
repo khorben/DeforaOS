@@ -2372,6 +2372,7 @@ static void _phone_track(Phone * phone, PhoneTrack what, gboolean track)
 /* phone_gsm_event */
 static int _gsm_event_error(Phone * phone, GSMEvent * event);
 static int _gsm_event_message(Phone * phone, GSMEvent * event);
+static int _gsm_event_message_deleted(Phone * phone, GSMEvent * event);
 static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity);
 static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 		gpointer data);
@@ -2446,11 +2447,7 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_MESSAGE:
 			return _gsm_event_message(phone, event);
 		case GSM_EVENT_TYPE_MESSAGE_DELETED:
-			phone->me_progress = _phone_progress_delete(
-					phone->me_progress);
-			_phone_info(phone, phone->me_window,
-					_("Message deleted"), NULL);
-			return 0;
+			return _gsm_event_message_deleted(phone, event);
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);
@@ -2570,6 +2567,29 @@ static int _gsm_event_message(Phone * phone, GSMEvent * event)
 			break;
 	}
 	free(content);
+	return 0;
+}
+
+static int _gsm_event_message_deleted(Phone * phone, GSMEvent * event)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(phone->me_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	unsigned int id;
+
+	phone->me_progress = _phone_progress_delete(phone->me_progress);
+	_phone_info(phone, phone->me_window, _("Message deleted"), NULL);
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PHONE_MESSAGE_COLUMN_ID, &id,
+				-1);
+		if(id == event->message_deleted.index)
+			break;
+	}
+	if(valid != TRUE)
+		return 1; /* not found */
+	gtk_list_store_remove(phone->me_store, &iter);
 	return 0;
 }
 
