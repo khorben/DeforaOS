@@ -1710,6 +1710,8 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	t.tm_year = (p[0] - '0') + ((p[1] - '0') * 10);
 	t.tm_year = (t.tm_year > 70) ? t.tm_year : (100 + t.tm_year);
 	t.tm_mon = (p[2] - '0') + ((p[3] - '0') * 10);
+	if(t.tm_mon > 0)
+		t.tm_mon--;
 	t.tm_mday = (p[4] - '0') + ((p[5] - '0') * 10);
 	t.tm_hour = (p[6] - '0') + ((p[7] - '0') * 10);
 	t.tm_min = (p[8] - '0') + ((p[9] - '0') * 10);
