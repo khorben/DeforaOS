@@ -17,6 +17,9 @@ static char const _license[] =
 
 
 
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -47,10 +50,10 @@ struct _Todo
 
 
 /* constants */
-enum { TD_COL_DONE, TD_COL_TITLE, TD_COL_START, TD_COL_DISPLAY_START,
-	TD_COL_END, TD_COL_DISPLAY_END, TD_COL_PRIORITY, TD_COL_CATEGORY,
-	TD_COL_COMMENT };
-#define TD_COL_LAST TD_COL_COMMENT
+enum { TD_COL_TASK, TD_COL_DONE, TD_COL_TITLE, TD_COL_START,
+	TD_COL_DISPLAY_START, TD_COL_END, TD_COL_DISPLAY_END, TD_COL_PRIORITY,
+	TD_COL_DISPLAY_PRIORITY, TD_COL_CATEGORY };
+#define TD_COL_LAST TD_COL_CATEGORY
 #define TD_NUM_COLS (TD_COL_LAST + 1)
 
 static struct
@@ -67,6 +70,7 @@ static struct
 			on_task_title_edited) },
 	{ TD_COL_DISPLAY_START, N_("Beginning"), TD_COL_START, NULL },
 	{ TD_COL_DISPLAY_END, N_("Completion"), TD_COL_END, NULL },
+	{ TD_COL_DISPLAY_PRIORITY, N_("Priority"), TD_COL_PRIORITY, NULL },
 	{ 0, NULL, 0, NULL }
 };
 
@@ -149,10 +153,17 @@ static DesktopToolbar _toolbar[] =
 };
 
 
+/* prototypes */
+static char * _todo_task_get_directory(void);
+static char * _todo_task_get_filename(char const * filename);
+static char * _todo_task_get_new_filename(void);
+
+
 /* public */
 /* functions */
 /* todo_new */
 static void _new_view(Todo * todo);
+static gboolean _new_idle(gpointer data);
 
 Todo * todo_new(void)
 {
@@ -196,6 +207,7 @@ Todo * todo_new(void)
 	todo->about = NULL;
 	gtk_container_add(GTK_CONTAINER(todo->window), vbox);
 	gtk_widget_show_all(todo->window);
+	g_idle_add(_new_idle, todo);
 	return todo;
 }
 
@@ -206,9 +218,17 @@ static void _new_view(Todo * todo)
 	GtkCellRenderer * renderer;
 	GtkTreeViewColumn * column;
 
-	todo->store = gtk_list_store_new(TD_NUM_COLS, G_TYPE_BOOLEAN,
-			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_UINT,
-			G_TYPE_STRING, G_TYPE_UINT, G_TYPE_UINT, G_TYPE_STRING);
+	todo->store = gtk_list_store_new(TD_NUM_COLS,
+			G_TYPE_POINTER, /* task */
+			G_TYPE_BOOLEAN, /* done */
+			G_TYPE_STRING,	/* title */
+			G_TYPE_UINT,	/* start */
+			G_TYPE_STRING,	/* display start */
+			G_TYPE_UINT,	/* end */
+			G_TYPE_STRING,	/* display end */
+			G_TYPE_UINT,	/* priority */
+			G_TYPE_STRING,	/* display priority */
+			G_TYPE_STRING);	/* category */
 	todo->view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(todo->store));
 	if((sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
 			!= NULL)
@@ -247,10 +267,20 @@ static void _new_view(Todo * todo)
 	gtk_container_add(GTK_CONTAINER(todo->scrolled), todo->view);
 }
 
+static gboolean _new_idle(gpointer data)
+{
+	Todo * todo = data;
+
+	todo_task_reload_all(todo);
+	return FALSE;
+}
+
 
 /* todo_delete */
 void todo_delete(Todo * todo)
 {
+	todo_task_save_all(todo);
+	todo_task_remove_all(todo);
 	free(todo);
 }
 
@@ -277,14 +307,100 @@ void todo_about(Todo * todo)
 }
 
 
+/* todo_error */
+int todo_error(Todo * todo, char const * message, int ret)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(todo->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+#endif
+			message);
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+
 /* tasks */
 /* todo_task_add */
-void todo_task_add(Todo * todo)
+Task * todo_task_add(Todo * todo, Task * task)
 {
 	GtkTreeIter iter;
+	char * filename;
 
+	if(task == NULL)
+	{
+		if((task = task_new()) == NULL)
+			return NULL;
+		if((filename = _todo_task_get_new_filename()) == NULL)
+		{
+			todo_error(todo, error_get(), 0);
+			task_delete(task);
+			return NULL;
+		}
+		task_set_filename(task, filename);
+		free(filename);
+		task_set_title(task, _("New task"));
+	}
 	gtk_list_store_insert(todo->store, &iter, 0);
-	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, _("New task"), -1);
+	gtk_list_store_set(todo->store, &iter, TD_COL_TASK, task,
+			TD_COL_TITLE, task_get_title(task), -1);
+	return task;
+}
+
+
+/* todo_task_delete_selected */
+static void _task_delete_selected_foreach(GtkTreeRowReference * reference,
+		Todo * todo);
+
+void todo_task_delete_selected(Todo * todo)
+{
+	GtkTreeSelection * treesel;
+	GList * selected;
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	GtkTreeRowReference * reference;
+	GList * s;
+	GtkTreePath * path;
+
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
+			== NULL)
+		return;
+	selected = gtk_tree_selection_get_selected_rows(treesel, NULL);
+	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
+	{
+		if((path = s->data) == NULL)
+			continue;
+		reference = gtk_tree_row_reference_new(model, path);
+		s->data = reference;
+		gtk_tree_path_free(path);
+	}
+	g_list_foreach(selected, (GFunc)_task_delete_selected_foreach, todo);
+	g_list_free(selected);
+}
+
+static void _task_delete_selected_foreach(GtkTreeRowReference * reference,
+		Todo * todo)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	GtkTreePath * path;
+	GtkTreeIter iter;
+	Task * task;
+
+	if(reference == NULL)
+		return;
+	if((path = gtk_tree_row_reference_get_path(reference)) == NULL)
+		return;
+	if(gtk_tree_model_get_iter(model, &iter, path) == TRUE)
+	{
+		gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
+		task_unlink(task);
+		task_delete(task);
+	}
+	gtk_list_store_remove(todo->store, &iter);
+	gtk_tree_path_free(path);
 }
 
 
@@ -295,10 +411,82 @@ void todo_task_edit(Todo * todo)
 }
 
 
-/* todo_task_remove */
-void todo_task_remove(Todo * todo)
+/* todo_task_reload_all */
+int todo_task_reload_all(Todo * todo)
 {
-	/* FIXME implement */
+	int ret = 0;
+	char * filename;
+	DIR * dir;
+	struct dirent * de;
+	Task * task;
+
+	if((filename = _todo_task_get_directory()) == NULL)
+		return todo_error(todo, error_get(), 1);
+	if((dir = opendir(filename)) == NULL)
+	{
+		if(errno != ENOENT)
+		{
+			error_set("%s: %s", filename, strerror(errno));
+			ret = todo_error(todo, error_get(), 1);
+		}
+	}
+	else
+	{
+		todo_task_remove_all(todo);
+		while((de = readdir(dir)) != NULL)
+		{
+			if(strncmp(de->d_name, "task.", 5) != 0)
+				continue;
+			free(filename);
+			if((filename = _todo_task_get_filename(de->d_name))
+					== NULL)
+				continue; /* XXX report error */
+			if((task = task_new_from_file(filename)) == NULL)
+				continue; /* XXX report error */
+			if(todo_task_add(todo, task) == NULL)
+			{
+				task_delete(task);
+				continue; /* XXX report error */
+			}
+		}
+	}
+	free(filename);
+	return ret;
+}
+
+
+/* todo_task_remove_all */
+void todo_task_remove_all(Todo * todo)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	GtkTreeIter iter;
+	gboolean valid;
+	Task * task;
+
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
+		task_delete(task);
+	}
+	gtk_list_store_clear(todo->store);
+}
+
+
+/* todo_task_save_all */
+void todo_task_save_all(Todo * todo)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	GtkTreeIter iter;
+	gboolean valid;
+	Task * task;
+
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
+		task_save(task);
+	}
 }
 
 
@@ -315,9 +503,13 @@ void todo_task_select_all(Todo * todo)
 /* todo_task_set_title */
 void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title)
 {
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
 	GtkTreeIter iter;
+	Task * task;
 
-	gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->store), &iter, path);
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
+	task_set_title(task, title);
 	gtk_list_store_set(todo->store, &iter, TD_COL_TITLE, title, -1);
 }
 
@@ -333,4 +525,72 @@ void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
 			&done, -1);
 	done = !done;
 	gtk_list_store_set(todo->store, &iter, TD_COL_DONE, done, -1);
+}
+
+
+/* private */
+/* functions */
+/* todo_task_get_directory */
+static char * _todo_task_get_directory(void)
+{
+	char const * homedir;
+	size_t len;
+	char const directory[] = ".todo";
+	char * filename;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(directory);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, directory);
+	return filename;
+}
+
+
+/* todo_task_get_filename */
+static char * _todo_task_get_filename(char const * filenam)
+{
+	char const * homedir;
+	int len;
+	char const directory[] = ".todo";
+	char * pathname;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(directory) + 1 + strlen(filenam) + 1;
+	if((pathname = malloc(len)) == NULL)
+		return NULL;
+	snprintf(pathname, len, "%s/%s/%s", homedir, directory, filenam);
+	return pathname;
+}
+
+
+/* todo_task_get_new_filename */
+static char * _todo_task_get_new_filename(void)
+{
+	char const * homedir;
+	int len;
+	char const directory[] = ".todo";
+	char template[] = "task.XXXXXX";
+	char * filename;
+	int fd;
+
+	if((homedir = getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	len = strlen(homedir) + 1 + sizeof(directory) + 1 + sizeof(template);
+	if((filename = malloc(len)) == NULL)
+		return NULL;
+	snprintf(filename, len, "%s/%s", homedir, directory);
+	if((mkdir(filename, 0777) != 0 && errno != EEXIST)
+			|| snprintf(filename, len, "%s/%s/%s", homedir,
+				directory, template) >= len
+			|| (fd = mkstemp(filename)) < 0)
+	{
+		error_set("%s: %s", filename, strerror(errno));
+		free(filename);
+		return NULL;
+	}
+	close(fd);
+	return filename;
 }

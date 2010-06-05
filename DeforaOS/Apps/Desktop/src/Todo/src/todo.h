@@ -18,6 +18,7 @@
 #ifndef TODO_TODO_H
 # define TODO_TODO_H
 
+# include "task.h"
 # include <gtk/gtk.h>
 
 
@@ -32,15 +33,19 @@ void todo_delete(Todo * todo);
 
 /* useful */
 void todo_about(Todo * todo);
+int todo_error(Todo * todo, char const * message, int ret);
 
 /* tasks */
-void todo_task_add(Todo * todo);
-void todo_task_remove(Todo * todo);
+Task * todo_task_add(Todo * todo, Task * task);
+void todo_task_delete_selected(Todo * todo);
+void todo_task_remove_all(Todo * todo);
 
 /* accessors */
 void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title);
 
 void todo_task_edit(Todo * todo);
+int todo_task_reload_all(Todo * todo);
+void todo_task_save_all(Todo * todo);
 void todo_task_select_all(Todo * todo);
 void todo_task_toggle_done(Todo * todo, GtkTreePath * path);
 

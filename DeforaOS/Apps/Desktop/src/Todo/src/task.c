@@ -1,0 +1,143 @@
+/* $Id$ */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
+/* This file is part of DeforaOS Desktop Todo */
+/* This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <System.h>
+#include "task.h"
+
+
+/* Task */
+/* private */
+/* types */
+struct _Task
+{
+	Config * config;
+
+	/* internal */
+	char * filename;
+};
+
+
+/* public */
+/* functions */
+/* task_new */
+Task * task_new(void)
+{
+	Task * task;
+
+	if((task = malloc(sizeof(*task))) == NULL)
+		return NULL;
+	task->config = config_new();
+	task->filename = NULL;
+	if(task->config == NULL)
+	{
+		task_delete(task);
+		return NULL;
+	}
+	return task;
+}
+
+
+/* task_new_from_file */
+Task * task_new_from_file(char const * filename)
+{
+	Task * task;
+
+	if((task = task_new()) == NULL)
+		return NULL;
+	if(task_set_filename(task, filename) != 0
+			|| task_load(task) != 0)
+	{
+		task_delete(task);
+		return NULL;
+	}
+	return task;
+}
+
+
+/* task_delete */
+void task_delete(Task * task)
+{
+	free(task->filename);
+	if(task->config != NULL)
+		config_delete(task->config);
+	free(task);
+}
+
+
+/* accessors */
+/* task_get_filename */
+char const * task_get_filename(Task * task)
+{
+	return task->filename;
+}
+
+
+/* task_get_title */
+char const * task_get_title(Task * task)
+{
+	return config_get(task->config, NULL, "title");
+}
+
+
+/* task_set_filename */
+int task_set_filename(Task * task, char const * filename)
+{
+	char * p;
+
+	if((p = strdup(filename)) == NULL)
+		return 1; /* XXX set error */
+	free(task->filename);
+	task->filename = p;
+	return 0;
+}
+
+
+/* task_set_title */
+int task_set_title(Task * task, char const * title)
+{
+	return config_set(task->config, NULL, "title", title);
+}
+
+
+/* useful */
+/* task_load */
+int task_load(Task * task)
+{
+	config_reset(task->config);
+	return config_load(task->config, task->filename);
+}
+
+
+/* task_save */
+int task_save(Task * task)
+{
+	if(task->filename == NULL)
+		return 1; /* XXX set error */
+	return config_save(task->config, task->filename);
+}
+
+
+/* task_unlink */
+int task_unlink(Task * task)
+{
+	if(task->filename == NULL)
+		return 1; /* XXX set error */
+	return unlink(task->filename);
+}

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2009 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Todo */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ void on_file_new(gpointer data)
 {
 	Todo * todo = data;
 
-	todo_task_add(todo);
+	todo_task_add(todo, NULL);
 }
 
 
@@ -64,7 +64,7 @@ void on_edit_delete(gpointer data)
 {
 	Todo * todo = data;
 
-	todo_task_remove(todo);
+	todo_task_delete_selected(todo);
 }
 
 
@@ -102,7 +102,7 @@ void on_delete(gpointer data)
 {
 	Todo * todo = data;
 
-	todo_task_remove(todo);
+	todo_task_delete_selected(todo);
 }
 
 
@@ -120,7 +120,7 @@ void on_new(gpointer data)
 {
 	Todo * todo = data;
 
-	todo_task_add(todo);
+	todo_task_add(todo, NULL);
 }
 
 

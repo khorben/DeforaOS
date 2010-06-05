@@ -29,10 +29,12 @@ dist:
 		$(PACKAGE)-$(VERSION)/po/POTFILES \
 		$(PACKAGE)-$(VERSION)/po/fr.po \
 		$(PACKAGE)-$(VERSION)/po/project.conf \
+		$(PACKAGE)-$(VERSION)/src/task.c \
 		$(PACKAGE)-$(VERSION)/src/todo.c \
 		$(PACKAGE)-$(VERSION)/src/callbacks.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
+		$(PACKAGE)-$(VERSION)/src/task.h \
 		$(PACKAGE)-$(VERSION)/src/todo.h \
 		$(PACKAGE)-$(VERSION)/src/callbacks.h \
 		$(PACKAGE)-$(VERSION)/src/project.conf \

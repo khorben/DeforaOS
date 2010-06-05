@@ -17,14 +17,17 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-todo_OBJS = todo.o callbacks.o main.o
+todo_OBJS = task.o todo.o callbacks.o main.o
 todo_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 todo_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 todo: $(todo_OBJS)
 	$(CC) -o todo $(todo_OBJS) $(todo_LDFLAGS)
 
-todo.o: todo.c callbacks.h todo.h ../config.h
+task.o: task.c task.h
+	$(CC) $(todo_CFLAGS) -c task.c
+
+todo.o: todo.c callbacks.h task.h todo.h ../config.h
 	$(CC) $(todo_CFLAGS) -c todo.c
 
 callbacks.o: callbacks.c todo.h callbacks.h
