@@ -944,8 +944,6 @@ void phone_read_delete(Phone * phone)
 			!= 0)
 		return;
 	phone_show_read(phone, FALSE);
-	gsm_message_delete(phone->gsm, phone->re_index);
-	phone_show_read(phone, FALSE);
 	phone->me_progress = _phone_create_progress(phone->me_window,
 			_("Deleting message..."));
 	gsm_message_delete(phone->gsm, phone->re_index);
