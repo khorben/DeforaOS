@@ -430,13 +430,21 @@ int gsm_modem_is_registered(GSMModem * gsmm)
 
 
 /* gsm_modem_message_delete */
+static void _modem_message_delete_callback(GSM * gsm);
+
 int gsm_modem_message_delete(GSMModem * gsmm, unsigned int index)
 {
 	char cmd[32];
 
 	snprintf(cmd, sizeof(cmd), "%s%u", "AT+CMGD=", index);
 	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
-			GSM_ERROR_MESSAGE_DELETE_FAILED, NULL);
+			GSM_ERROR_MESSAGE_DELETE_FAILED,
+			_modem_message_delete_callback);
+}
+
+static void _modem_message_delete_callback(GSM * gsm)
+{
+	gsm_event(gsm, GSM_EVENT_TYPE_MESSAGE_DELETED);
 }
 
 

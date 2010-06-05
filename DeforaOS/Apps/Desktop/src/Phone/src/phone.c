@@ -164,6 +164,7 @@ struct _Phone
 	GtkWidget * me_window;
 	GtkListStore * me_store;
 	GtkWidget * me_view;
+	GtkWidget * me_progress;
 
 	/* read */
 	unsigned int re_index;
@@ -210,6 +211,8 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 static GtkWidget * _phone_create_progress(GtkWidget * parent,
 		char const * text);
 
+static int _phone_confirm(Phone * phone, GtkWidget * window,
+		char const * message);
 static void _phone_error(GtkWidget * window, char const * message);
 
 static void _phone_fetch_contacts(Phone * phone, unsigned int start,
@@ -865,10 +868,14 @@ void phone_messages_delete_selected(Phone * phone)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
 			PHONE_MESSAGE_COLUMN_ID, &index, -1);
-	/* FIXME ask for confirmation first, add a progress window */
-	gsm_message_delete(phone->gsm, index);
+	if(_phone_confirm(phone, phone->me_window, _("Delete this message?"))
+			!= 0)
+		return;
 	if(phone->re_index == index)
 		phone_show_read(phone, FALSE);
+	phone->me_progress = _phone_create_progress(phone->me_window,
+			_("Deleting message..."));
+	gsm_message_delete(phone->gsm, index);
 }
 
 
@@ -933,9 +940,15 @@ void phone_read_call(Phone * phone)
 /* phone_read_delete */
 void phone_read_delete(Phone * phone)
 {
-	/* FIXME ask for confirmation first, add a progress window */
+	if(_phone_confirm(phone, phone->re_window, _("Delete this message?"))
+			!= 0)
+		return;
+	phone_show_read(phone, FALSE);
 	gsm_message_delete(phone->gsm, phone->re_index);
 	phone_show_read(phone, FALSE);
+	phone->me_progress = _phone_create_progress(phone->me_window,
+			_("Deleting message..."));
+	gsm_message_delete(phone->gsm, phone->re_index);
 }
 
 
@@ -2110,6 +2123,31 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 }
 
 
+/* phone_confirm */
+static int _phone_confirm(Phone * phone, GtkWidget * window,
+		char const * message)
+{
+	GtkWidget * dialog;
+	int res;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res == GTK_RESPONSE_YES)
+		return 0;
+	return 1;
+}
+
+
 /* phone_error */
 static void _phone_error(GtkWidget * window, char const * message)
 {
@@ -2407,6 +2445,12 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			return 0;
 		case GSM_EVENT_TYPE_MESSAGE:
 			return _gsm_event_message(phone, event);
+		case GSM_EVENT_TYPE_MESSAGE_DELETED:
+			phone->me_progress = _phone_progress_delete(
+					phone->me_progress);
+			_phone_info(phone, phone->me_window,
+					_("Message deleted"), NULL);
+			return 0;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			_phone_fetch_messages(phone, event->message_list.start,
 					event->message_list.end);

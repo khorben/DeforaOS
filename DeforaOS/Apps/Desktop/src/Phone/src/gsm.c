@@ -656,6 +656,8 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->message.length = va_arg(ap, unsigned int);
 			event->message.content = va_arg(ap, char const *);
 			break;
+		case GSM_EVENT_TYPE_MESSAGE_DELETED:
+			break;
 		case GSM_EVENT_TYPE_MESSAGE_LIST:
 			event->message_list.start = va_arg(ap, unsigned int);
 			event->message_list.end = va_arg(ap, unsigned int);
