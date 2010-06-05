@@ -1442,8 +1442,8 @@ static int _gsm_trigger_cmgl(GSM * gsm, char const * result)
 /* gsm_trigger_cmgr */
 static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		char number[32], GSMEncoding * encoding, size_t * length);
-static void _cmgr_pdu_parse_number(char const * number, size_t length,
-		char buf[32]);
+static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
+		size_t length, char buf[32]);
 static time_t _cmgr_pdu_parse_timestamp(char const * timestamp);
 static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 		size_t i, size_t hdr, GSMEncoding * encoding, size_t * length);
@@ -1555,7 +1555,7 @@ static char * _cmgr_pdu_parse(char const * pdu, time_t * timestamp,
 		addrl++;
 	if((smscl * 2) + 2 + 4 + addrl + 2 > len)
 		return NULL;
-	_cmgr_pdu_parse_number(q + 2, addrl + 1, number);
+	_cmgr_pdu_parse_number(u, q + 2, addrl, number);
 	q = pdu + (smscl * 2) + 2 + 4 + addrl + 2;
 	if(sscanf(q, "%02X", &pid) != 1) /* PID */
 		return NULL;
@@ -1668,24 +1668,27 @@ static char * _cmgr_pdu_parse_encoding_data(char const * pdu, size_t len,
 	return (char *)p;
 }
 
-static void _cmgr_pdu_parse_number(char const * number, size_t length,
-		char buf[32])
+static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
+		size_t length, char buf[32])
 {
+	char * b = buf;
 	size_t i;
 
+	if(type == 0x91)
+		*(b++) = '+';
 	for(i = 0; i < length - 1 && i < 32 - 1; i+=2)
 	{
 		if((number[i] != 'F' && (number[i] < '0' || number[i] > '9'))
 				|| number[i + 1] < '0' || number[i + 1] > '9')
 			break;
-		buf[i] = number[i + 1];
-		if((buf[i + 1] = number[i]) == 'F')
-			buf[i + 1] = '\0';
+		b[i] = number[i + 1];
+		if((b[i + 1] = number[i]) == 'F')
+			b[i + 1] = '\0';
 	}
-	buf[i] = '\0';
+	b[i] = '\0';
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\", %lu) => \"%s\"\n", __func__, number,
-			length, buf);
+			length, b);
 #endif
 }
 
