@@ -1567,7 +1567,7 @@ void phone_show_messages(Phone * phone, gboolean show)
 				300);
 #if GTK_CHECK_VERSION(2, 6, 0)
 		gtk_window_set_icon_name(GTK_WINDOW(phone->me_window),
-				"stock_mail-compose");
+				"stock_mail-send-receive");
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->me_window),
 				_("Messages"));
@@ -1692,7 +1692,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 				300);
 #if GTK_CHECK_VERSION(2, 6, 0)
 		gtk_window_set_icon_name(GTK_WINDOW(phone->re_window),
-				"stock_mail-compose");
+				"stock_mail-open");
 #endif
 		gtk_window_set_title(GTK_WINDOW(phone->re_window),
 				_("Read message"));
