@@ -26,6 +26,14 @@
 /* types */
 typedef struct _Todo Todo;
 
+typedef enum _TodoPriority
+{
+	TODO_PRIORITY_UNKNOWN,
+	TODO_PRIORITY_LOW,
+	TODO_PRIORITY_MEDIUM,
+	TODO_PRIORITY_HIGH
+} TodoPriority;
+
 
 /* functions */
 Todo * todo_new(void);
@@ -41,6 +49,8 @@ void todo_task_delete_selected(Todo * todo);
 void todo_task_remove_all(Todo * todo);
 
 /* accessors */
+void todo_task_set_priority(Todo * todo, GtkTreePath * path,
+		char const * priority);
 void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title);
 
 void todo_task_edit(Todo * todo);

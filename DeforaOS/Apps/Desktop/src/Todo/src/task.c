@@ -101,6 +101,13 @@ char const * task_get_filename(Task * task)
 }
 
 
+/* task_get_priority */
+char const * task_get_priority(Task * task)
+{
+	return config_get(task->config, NULL, "priority");
+}
+
+
 /* task_get_title */
 char const * task_get_title(Task * task)
 {
@@ -125,6 +132,13 @@ int task_set_filename(Task * task, char const * filename)
 	free(task->filename);
 	task->filename = p;
 	return 0;
+}
+
+
+/* task_set_priority */
+int task_set_priority(Task * task, char const * priority)
+{
+	return config_set(task->config, NULL, "priority", priority);
 }
 
 

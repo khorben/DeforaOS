@@ -48,6 +48,8 @@ void on_preferences(gpointer data);
 /* view */
 void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
 		gpointer data);
+void on_task_priority_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * priority, gpointer data);
 void on_task_title_edited(GtkCellRendererText * renderer, gchar * path,
 		gchar * title, gpointer data);
 

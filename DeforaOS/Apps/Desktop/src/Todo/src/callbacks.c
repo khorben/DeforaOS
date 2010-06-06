@@ -156,6 +156,19 @@ void on_task_done_toggled(GtkCellRendererToggle * renderer, gchar * path,
 }
 
 
+/* on_task_priority_edited */
+void on_task_priority_edited(GtkCellRendererText * renderer, gchar * path,
+		gchar * priority, gpointer data)
+{
+	Todo * todo = data;
+	GtkTreePath * treepath;
+
+	treepath = gtk_tree_path_new_from_string(path);
+	todo_task_set_priority(todo, treepath, priority);
+	gtk_tree_path_free(treepath);
+}
+
+
 /* on_task_title_edited */
 void on_task_title_edited(GtkCellRendererText * renderer, gchar * path,
 		gchar * title, gpointer data)
