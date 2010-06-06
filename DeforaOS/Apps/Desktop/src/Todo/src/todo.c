@@ -157,6 +157,7 @@ static DesktopToolbar _toolbar[] =
 static char * _todo_task_get_directory(void);
 static char * _todo_task_get_filename(char const * filename);
 static char * _todo_task_get_new_filename(void);
+static void _todo_task_save(Todo * todo, GtkTreeIter * iter);
 
 
 /* public */
@@ -347,6 +348,7 @@ Task * todo_task_add(Todo * todo, Task * task)
 	}
 	gtk_list_store_insert(todo->store, &iter, 0);
 	gtk_list_store_set(todo->store, &iter, TD_COL_TASK, task,
+			TD_COL_DONE, task_get_done(task) > 0 ? TRUE : FALSE,
 			TD_COL_TITLE, task_get_title(task), -1);
 	return task;
 }
@@ -479,14 +481,10 @@ void todo_task_save_all(Todo * todo)
 	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
 	GtkTreeIter iter;
 	gboolean valid;
-	Task * task;
 
 	valid = gtk_tree_model_get_iter_first(model, &iter);
 	for(; valid == TRUE; valid = gtk_tree_model_iter_next(model, &iter))
-	{
-		gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
-		task_save(task);
-	}
+		_todo_task_save(todo, &iter);
 }
 
 
@@ -593,4 +591,18 @@ static char * _todo_task_get_new_filename(void)
 	}
 	close(fd);
 	return filename;
+}
+
+
+/* todo_task_save */
+static void _todo_task_save(Todo * todo, GtkTreeIter * iter)
+{
+	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
+	Task * task;
+	gboolean done;
+
+	gtk_tree_model_get(model, iter, TD_COL_TASK, &task,
+			TD_COL_DONE, &done, -1);
+	task_set_done(task, done);
+	task_save(task);
 }

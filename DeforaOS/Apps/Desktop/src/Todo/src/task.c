@@ -34,6 +34,11 @@ struct _Task
 };
 
 
+/* prototype */
+static int _task_config_get_boolean(Task * task, char const * section,
+		char const * variable);
+
+
 /* public */
 /* functions */
 /* task_new */
@@ -82,6 +87,13 @@ void task_delete(Task * task)
 
 
 /* accessors */
+/* task_get_done */
+int task_get_done(Task * task)
+{
+	return _task_config_get_boolean(task, NULL, "done");
+}
+
+
 /* task_get_filename */
 char const * task_get_filename(Task * task)
 {
@@ -93,6 +105,13 @@ char const * task_get_filename(Task * task)
 char const * task_get_title(Task * task)
 {
 	return config_get(task->config, NULL, "title");
+}
+
+
+/* task_set_done */
+int task_set_done(Task * task, int done)
+{
+	return config_set(task->config, NULL, "done", done ? "1" : "0");
 }
 
 
@@ -140,4 +159,23 @@ int task_unlink(Task * task)
 	if(task->filename == NULL)
 		return 1; /* XXX set error */
 	return unlink(task->filename);
+}
+
+
+/* private */
+/* functions */
+/* task_config_get_boolean */
+static int _task_config_get_boolean(Task * task, char const * section,
+		char const * variable)
+{
+	int ret;
+	char const * string;
+	char * p;
+
+	if((string = config_get(task->config, section, variable)) == NULL)
+		return -1;
+	ret = strtol(string, &p, 10);
+	if(string[0] == '\0' || *p != '\0')
+		return -1;
+	return ret ? 1 : 0;
 }
