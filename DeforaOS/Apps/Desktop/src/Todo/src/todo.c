@@ -167,6 +167,7 @@ static DesktopToolbar _toolbar[] =
 
 
 /* prototypes */
+static int _todo_confirm(GtkWidget * window, char const * message);
 static char * _todo_task_get_directory(void);
 static char * _todo_task_get_filename(char const * filename);
 static char * _todo_task_get_new_filename(void);
@@ -388,7 +389,7 @@ Task * todo_task_add(Todo * todo, Task * task)
 	}
 	gtk_list_store_insert(todo->store, &iter, 0);
 	priority = task_get_priority(task);
-	for(i = 0; _todo_priorities[i].title != NULL; i++)
+	for(i = 0; priority != NULL && _todo_priorities[i].title != NULL; i++)
 		if(strcmp(_(_todo_priorities[i].title), priority) == 0)
 		{
 			tp = _todo_priorities[i].priority;
@@ -419,7 +420,12 @@ void todo_task_delete_selected(Todo * todo)
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(todo->view)))
 			== NULL)
 		return;
-	selected = gtk_tree_selection_get_selected_rows(treesel, NULL);
+	if((selected = gtk_tree_selection_get_selected_rows(treesel, NULL))
+			== NULL)
+		return;
+	if(_todo_confirm(todo->window, _("Are you sure you want to delete the"
+					" selected task(s)?")) != 0)
+		return;
 	for(s = g_list_first(selected); s != NULL; s = g_list_next(s))
 	{
 		if((path = s->data) == NULL)
@@ -601,6 +607,30 @@ void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
 
 /* private */
 /* functions */
+/* todo_confirm */
+static int _todo_confirm(GtkWidget * window, char const * message)
+{
+	GtkWidget * dialog;
+	int res;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, "%s",
+#if GTK_CHECK_VERSION(2, 8, 0)
+			_("Question"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s",
+#endif
+			message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Question"));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	if(res == GTK_RESPONSE_YES)
+		return 0;
+	return 1;
+}
+
+
 /* todo_task_get_directory */
 static char * _todo_task_get_directory(void)
 {
