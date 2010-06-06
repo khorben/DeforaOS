@@ -30,10 +30,10 @@ task.o: task.c task.h
 todo.o: todo.c callbacks.h task.h todo.h ../config.h
 	$(CC) $(todo_CFLAGS) -c todo.c
 
-callbacks.o: callbacks.c todo.h callbacks.h
+callbacks.o: callbacks.c task.h todo.h callbacks.h
 	$(CC) $(todo_CFLAGS) -c callbacks.c
 
-main.o: main.c todo.h ../config.h
+main.o: main.c task.h todo.h ../config.h
 	$(CC) $(todo_CFLAGS) -c main.c
 
 clean:
