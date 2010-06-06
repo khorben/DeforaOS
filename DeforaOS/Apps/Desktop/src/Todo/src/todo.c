@@ -53,7 +53,7 @@ struct _Todo
 /* constants */
 enum { TD_COL_TASK, TD_COL_DONE, TD_COL_TITLE, TD_COL_START,
 	TD_COL_DISPLAY_START, TD_COL_END, TD_COL_DISPLAY_END, TD_COL_PRIORITY,
-	TD_COL_CATEGORY };
+	TD_COL_DISPLAY_PRIORITY, TD_COL_CATEGORY };
 #define TD_COL_LAST TD_COL_CATEGORY
 #define TD_NUM_COLS (TD_COL_LAST + 1)
 
@@ -241,7 +241,8 @@ static void _new_view(Todo * todo)
 			G_TYPE_STRING,	/* display start */
 			G_TYPE_UINT,	/* end */
 			G_TYPE_STRING,	/* display end */
-			G_TYPE_STRING,	/* priority */
+			G_TYPE_UINT,	/* priority */
+			G_TYPE_STRING,	/* display priority */
 			G_TYPE_STRING);	/* category */
 	todo->priorities = gtk_list_store_new(2, G_TYPE_UINT, G_TYPE_STRING);
 	for(i = 0; _todo_priorities[i].title != NULL; i++)
@@ -294,7 +295,7 @@ static void _new_view(Todo * todo)
 	g_signal_connect(renderer, "edited", G_CALLBACK(
 				on_task_priority_edited), todo);
 	column = gtk_tree_view_column_new_with_attributes(_("Priority"),
-			renderer, "text", TD_COL_PRIORITY, NULL);
+			renderer, "text", TD_COL_DISPLAY_PRIORITY, NULL);
 	gtk_tree_view_column_set_sort_column_id(column, TD_COL_PRIORITY);
 	gtk_container_add(GTK_CONTAINER(todo->scrolled), todo->view);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(todo->view), column);
@@ -363,6 +364,9 @@ Task * todo_task_add(Todo * todo, Task * task)
 {
 	GtkTreeIter iter;
 	char * filename;
+	char const * priority;
+	TodoPriority tp = TODO_PRIORITY_UNKNOWN;
+	size_t i;
 
 	if(task == NULL)
 	{
@@ -379,10 +383,18 @@ Task * todo_task_add(Todo * todo, Task * task)
 		task_set_title(task, _("New task"));
 	}
 	gtk_list_store_insert(todo->store, &iter, 0);
+	priority = task_get_priority(task);
+	for(i = 0; _todo_priorities[i].title != NULL; i++)
+		if(strcmp(_(_todo_priorities[i].title), priority) == 0)
+		{
+			tp = _todo_priorities[i].priority;
+			break;
+		}
 	gtk_list_store_set(todo->store, &iter, TD_COL_TASK, task,
 			TD_COL_DONE, task_get_done(task) > 0 ? TRUE : FALSE,
 			TD_COL_TITLE, task_get_title(task),
-			TD_COL_PRIORITY, task_get_priority(task), -1);
+			TD_COL_PRIORITY, tp,
+			TD_COL_DISPLAY_PRIORITY, priority, -1);
 	return task;
 }
 
@@ -538,11 +550,20 @@ void todo_task_set_priority(Todo * todo, GtkTreePath * path,
 	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
 	GtkTreeIter iter;
 	Task * task;
+	size_t i;
+	TodoPriority tp = TODO_PRIORITY_UNKNOWN;
 
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, TD_COL_TASK, &task, -1);
 	task_set_priority(task, priority);
-	gtk_list_store_set(todo->store, &iter, TD_COL_PRIORITY, priority, -1);
+	for(i = 0; _todo_priorities[i].title != NULL; i++)
+		if(strcmp(_(_todo_priorities[i].title), priority) == 0)
+		{
+			tp = _todo_priorities[i].priority;
+			break;
+		}
+	gtk_list_store_set(todo->store, &iter, TD_COL_PRIORITY, tp,
+			TD_COL_DISPLAY_PRIORITY, priority, -1);
 }
 
 
