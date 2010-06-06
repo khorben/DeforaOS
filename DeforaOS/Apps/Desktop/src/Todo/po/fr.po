@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Todo 0.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-06 03:23+0200\n"
+"POT-Creation-Date: 2010-06-06 03:33+0200\n"
 "PO-Revision-Date: 2010-04-23 14:35+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -88,7 +88,7 @@ msgstr "_Fichier"
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/todo.c:148 ../src/todo.c:383
+#: ../src/todo.c:148 ../src/todo.c:387
 msgid "New task"
 msgstr "Nouvelle tâche"
 
@@ -115,3 +115,7 @@ msgstr "Todo"
 #: ../src/todo.c:297
 msgid "Priority"
 msgstr "Priorité"
+
+#: ../src/todo.c:353 ../src/todo.c:358
+msgid "Error"
+msgstr "Erreur"
