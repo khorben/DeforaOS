@@ -208,7 +208,8 @@ function _module_list($enabled = FALSE)
 {
 	$enabled = ($enabled !== FALSE && $enabled == 0) ? ''
 		: " WHERE enabled='1'";
-	$sql = 'SELECT module_id AS id, name FROM daportal_module'.$enabled;
+	$sql = 'SELECT module_id AS id, name FROM daportal_module'.$enabled
+		.' ORDER BY name ASC';
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return FALSE;
