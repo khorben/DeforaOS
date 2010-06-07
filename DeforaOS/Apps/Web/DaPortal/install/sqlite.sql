@@ -35,7 +35,7 @@ INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES 
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default language', 'string', 'lang', 'en');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default theme', 'string', 'theme', 'DaPortal');
 INSERT INTO daportal_config (module_id, title, type, name, value_string) VALUES ('1', 'Default title', 'string', 'title', 'DaPortal');
-INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('4', 'Highlight search results', 'bool', 'title', FALSE);
+INSERT INTO daportal_config (module_id, title, type, name, value_bool) VALUES ('4', 'Highlight search results', 'bool', 'title', 0);
 
 
 CREATE TABLE daportal_lang (
