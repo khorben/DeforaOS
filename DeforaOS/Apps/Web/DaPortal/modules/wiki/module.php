@@ -31,6 +31,8 @@ $text['ALIGN_RIGHT'] = 'Align right';
 $text['BOLD'] = 'Bold';
 $text['BULLETS'] = 'Bullets';
 $text['COPY'] = 'Copy';
+$text['CREATE'] = 'Create';
+$text['CREATE_A_PAGE'] = 'Create a page';
 $text['CUT'] = 'Cut';
 $text['DOCUMENT_NOT_VALID'] = 'Document not valid';
 $text['ENUMERATED'] = 'Enumerated';
@@ -41,6 +43,7 @@ $text['INSERT_IMAGE'] = 'Insert image';
 $text['INSERT_LINK'] = 'Insert link';
 $text['ITALIC'] = 'Italic';
 $text['LOOK_FOR_A_PAGE'] = 'Look for a page';
+$text['LOOK_INSIDE_PAGES'] = 'Look inside pages';
 $text['MESSAGE'] = 'Message';
 $text['MODIFICATION_OF_WIKI_PAGE'] = 'Modification of wiki page';
 $text['NEW_WIKI_PAGE'] = 'New wiki page';
@@ -59,6 +62,7 @@ $text['UNDERLINE'] = 'Underline';
 $text['UNINDENT'] = 'Unindent';
 $text['UNDO'] = 'Undo';
 $text['WIKI'] = 'Wiki';
+$text['WIKI_SEARCH'] = 'Wiki search';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
 $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 $text['WIKI_PAGES_LIST'] = 'Wiki pages list';
@@ -237,17 +241,20 @@ function wiki_default($args)
 		_error(INVALID_ARGUMENT);
 	else if(count($res) == 0)
 	{
+		print('<h1 class="title wiki">'._html_safe(WIKI_SEARCH)
+				."</h1>\n");
+		include('./modules/wiki/default.tpl');
 		print('<p>There was no match, but you can <a href="'
 				._html_link('wiki', 'insert', FALSE,
 					FALSE, array('title' => $title))
 				.'">create the page</a>.</p>');
-		return include('./modules/wiki/default.tpl');
+		return;
 	}
 	if(count($res) == 1)
 		return wiki_display(array('id' => $res[0]['id']));
-	print('<h1 class="title wiki">'._html_safe(WIKI)."</h1>\n");
+	print('<h1 class="title wiki">'._html_safe(WIKI_SEARCH)."</h1>\n");
 	include('./modules/wiki/default.tpl');
-	_info('More than one page matched:', 1);
+	print('<p>More than one page matched:</p>'."\n");
 	for($i = 0, $cnt = count($res); $i < $cnt; $i++)
 	{
 		$res[$i]['icon'] = 'icons/16x16/wiki.png';
@@ -499,7 +506,7 @@ function wiki_recent($args)
 		.' AND daportal_content.user_id=daportal_user.user_id'
 		." AND daportal_module.name='wiki'"
 		." AND daportal_content.enabled='1'"
-		.' ORDER BY timestamp DESC '._sql_offset(0, 6);
+		.' ORDER BY timestamp DESC '._sql_offset(0, $npp);
 	$res = _sql_array($sql);
 	if(!is_array($res))
 		return _error('Could not list recent changes');
