@@ -1,3 +1,5 @@
+<?php global $user_id;
+if($user_id != 0 || _config_get('wiki', 'anonymous') == TRUE) { ?>
 <form action="index.php" method="get">
 	<input type="hidden" name="module" value="wiki"/>
 	<input type="hidden" name="action" value="insert"/>
@@ -6,6 +8,7 @@
 		<tr><td></td><td><input type="submit" value="<?php echo _html_safe(CREATE); ?>" class="icon submit"/></td></tr>
 	</table>
 </form>
+<?php } ?>
 <form action="index.php" method="get">
 	<input type="hidden" name="module" value="wiki"/>
 	<table>
