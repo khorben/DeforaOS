@@ -62,10 +62,10 @@ $text['UNDERLINE'] = 'Underline';
 $text['UNINDENT'] = 'Unindent';
 $text['UNDO'] = 'Undo';
 $text['WIKI'] = 'Wiki';
-$text['WIKI_SEARCH'] = 'Wiki search';
 $text['WIKI_ADMINISTRATION'] = 'Wiki administration';
 $text['WIKI_PAGE_PREVIEW'] = 'Wiki page preview';
 $text['WIKI_PAGES_LIST'] = 'Wiki pages list';
+$text['WIKI_SEARCH'] = 'Wiki search';
 global $lang;
 if($lang == 'fr')
 {
