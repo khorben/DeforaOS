@@ -125,7 +125,6 @@ function _wiki_root()
 	return $root;
 }
 
-
 function _wiki_validate_title($title)
 {
 	if(strlen($title) == 0 || $title == '.' || $title == '..')
