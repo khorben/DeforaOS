@@ -22,6 +22,17 @@
 #include "../src/plugins/engineering.c"
 
 
+/* private */
+/* types */
+typedef struct _PhoneEngineering
+{
+	Config * config;
+	PhonePlugin * plugin;
+	PhoneTriggerCallback * callback;
+} PhoneEngineering;
+
+
+/* functions */
 /* helper_config_get */
 static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable)
@@ -35,30 +46,50 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 /* helper_queue */
 static int _helper_queue(Phone * phone, char const * command)
 {
-	char const * answers[] =
+	PhoneEngineering * pe = (PhoneEngineering *)phone;
+	char const * answers1[] =
 	{
-		"%EM: 6",
-		"763,766,771,778,780,773",
-		"20,8,14,18,17,8",
-		"20,8,14,18,17,8",
-		"73,46,54,51,13,12",
-		"6753,10951,3531,0,1933,1924",
-		"100,100,300,300,300,100",
-		"80229,961995,0,1166923,0,2715553",
-		"3504,724,0,3724,4,1112",
-		"0,0,0,0,0,0",
-		"0,0,0,0,0,0",
-		"2,2,2,2,2,2",
-		"0,0,0,0,0,0",
-		"0,0,0,0,0,0",
-		"0,0,0,0,0,0",
-		"10,10,10,10,10,10",
+		"%EM: 860,21,21,20,24,59693,13,1,0,0,0,0,0,0,0,293,0,0,2,255",
 		NULL
 	};
+	char const * answers2[] = { "%EM: 0,0,0,0,0,255,255,0,0,0,0", NULL };
+	char const * answers3[] =
+	{
+		"%EM: 5",
+		"825,794,838,812,982,0",
+		"18,21,3,20,20,0",
+		"18,21,15,20,2,0",
+		"19,22,16,21,21,0",
+		"28,30,28,28,30,0",
+		"51433,48353,48503,51453,19913,0",
+		"293,293,293,293,293,0",
+		"2534077,63,232981,0,22,0",
+		"2524,1420,4092,0,4384,0",
+		"0,0,0,0,0,0",
+		"0,0,0,0,0,0",
+		"2,2,2,2,2,0",
+		"0,0,0,0,0,255",
+		"0,0,6,0,9,0",
+		"0,0,0,0,0,0",
+		"3,3,15,3,3,0",
+		NULL
+	};
+	char const * answers4[] = { "%EM: 5,120,262,003,0", NULL };
+	char const ** answers;
 	size_t i;
 
+	if(strcmp(command, "AT%EM=2,1") == 0)
+		answers = answers1;
+	else if(strcmp(command, "AT%EM=2,2") == 0)
+		answers = answers2;
+	else if(strcmp(command, "AT%EM=2,3") == 0)
+		answers = answers3;
+	else if(strcmp(command, "AT%EM=2,4") == 0)
+		answers = answers4;
+	else
+		return pe->callback(pe->plugin, "ERROR");
 	for(i = 0; answers[i] != NULL; i++)
-		if(_on_engineering_trigger_em(&plugin, answers[i]) != 0)
+		if(pe->callback(pe->plugin, answers[i]) != 0)
 			error_print("engineering");
 	return 0;
 }
@@ -68,6 +99,10 @@ static int _helper_queue(Phone * phone, char const * command)
 static int _helper_register_trigger(Phone * phone, PhonePlugin * plugin,
 		char const * trigger, PhoneTriggerCallback callback)
 {
+	PhoneEngineering * pe = (PhoneEngineering *)phone;
+
+	pe->plugin = plugin;
+	pe->callback = callback;
 	return 0;
 }
 
@@ -76,12 +111,14 @@ static int _helper_register_trigger(Phone * phone, PhonePlugin * plugin,
 int main(int argc, char * argv[])
 {
 	PhonePluginHelper helper;
-	Config * config;
+	PhoneEngineering pe;
+	Phone * p;
 
 	gtk_init(&argc, &argv);
-	config = config_new();
-	config_load(config, "/home/khorben/.phone"); /* FIXME hardcoded */
-	helper.phone = (Phone *)config;
+	pe.config = config_new();
+	config_load(pe.config, "/home/khorben/.phone"); /* FIXME hardcoded */
+	p = &pe;
+	helper.phone = p;
 	helper.config_get = _helper_config_get;
 	helper.queue = _helper_queue;
 	helper.register_trigger = _helper_register_trigger;
@@ -89,6 +126,6 @@ int main(int argc, char * argv[])
 	_engineering_init(&plugin);
 	gtk_main();
 	_engineering_destroy(&plugin);
-	config_delete(config);
+	config_delete(pe.config);
 	return 0;
 }
