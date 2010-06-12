@@ -57,6 +57,7 @@ typedef struct _Engineering
 
 	/* widgets */
 	GtkWidget * window;
+	GtkToolItem * play;
 	GtkListStore * store;
 	GtkWidget * view;
 } Engineering;
@@ -93,6 +94,7 @@ static int _engineering_destroy(PhonePlugin * plugin);
 
 /* callbacks */
 static gboolean _on_engineering_closex(gpointer data);
+static void _on_engineering_play_toggled(gpointer data);
 static gboolean _on_engineering_timeout(gpointer data);
 static int _on_engineering_trigger_em(PhonePlugin * plugin,
 		char const * result);
@@ -120,6 +122,7 @@ static int _engineering_init(PhonePlugin * plugin)
 {
 	Engineering * engineering;
 	GtkWidget * vbox;
+	GtkWidget * toolbar;
 	GtkWidget * scrolled;
 	size_t i;
 	GtkCellRenderer * renderer;
@@ -129,9 +132,7 @@ static int _engineering_init(PhonePlugin * plugin)
 		return error_set_code(1, "%s", strerror(errno));
 	plugin->priv = engineering;
 	engineering->helper = plugin->helper;
-	/* FIXME wait until some event? (eg PIN ready) */
-	engineering->source = g_timeout_add(5000, _on_engineering_timeout,
-			engineering);
+	engineering->source = 0;
 	engineering->enci = 0;
 	engineering->enci_cnt = 0;
 	/* widgets */
@@ -147,6 +148,14 @@ static int _engineering_init(PhonePlugin * plugin)
 	g_signal_connect_swapped(G_OBJECT(engineering->window), "delete-event",
 			G_CALLBACK(_on_engineering_closex), engineering);
 	vbox = gtk_vbox_new(FALSE, 0);
+	/* toolbar */
+	toolbar = gtk_toolbar_new();
+	engineering->play = gtk_toggle_tool_button_new_from_stock(
+			GTK_STOCK_MEDIA_PLAY);
+	g_signal_connect_swapped(G_OBJECT(engineering->play), "toggled",
+			G_CALLBACK(_on_engineering_play_toggled), engineering);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), engineering->play, -1);
+	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* store */
 	engineering->store = gtk_list_store_new(COL_COUNT,
 			G_TYPE_STRING,		/* COL_FREQUENCY */
@@ -182,9 +191,6 @@ static int _engineering_init(PhonePlugin * plugin)
 	/* trigger */
 	plugin->helper->register_trigger(plugin->helper->phone, plugin, "%EM",
 			_on_engineering_trigger_em);
-#ifdef DEBUG
-	_on_engineering_timeout(engineering);
-#endif
 	return 0;
 }
 
@@ -211,6 +217,22 @@ static gboolean _on_engineering_closex(gpointer data)
 	gtk_widget_hide(engineering->window);
 	/* FIXME unload the plugin */
 	return TRUE;
+}
+
+
+/* on_engineering_play_toggled */
+static void _on_engineering_play_toggled(gpointer data)
+{
+	Engineering * engineering = data;
+
+	if(gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(
+					engineering->play)))
+		engineering->source = _on_engineering_timeout(engineering);
+	else if(engineering->source != 0)
+	{
+		g_source_remove(engineering->source);
+		engineering->source = 0;
+	}
 }
 
 
