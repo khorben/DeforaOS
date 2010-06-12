@@ -707,6 +707,9 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 		case GSM_EVENT_TYPE_STATUS:
 			event->status.status = va_arg(ap, GSMStatus);
 			break;
+		case GSM_EVENT_TYPE_UNKNOWN:
+			event->unknown.result = va_arg(ap, char const *);
+			break;
 	}
 	va_end(ap);
 	return _gsm_event_send(gsm, type);
@@ -1190,7 +1193,7 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 				return _gsm_triggers[i].callback(gsm, line,
 						answered);
 	}
-	return 1;
+	return gsm_event(gsm, GSM_EVENT_TYPE_UNKNOWN, line);
 }
 
 

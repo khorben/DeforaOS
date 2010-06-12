@@ -58,11 +58,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/phone.h \
 		$(PACKAGE)-$(VERSION)/src/common.c \
 		$(PACKAGE)-$(VERSION)/src/project.conf \
+		$(PACKAGE)-$(VERSION)/src/plugins/engineering.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/openmoko.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/profiles.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/Makefile \
 		$(PACKAGE)-$(VERSION)/src/plugins/project.conf \
+		$(PACKAGE)-$(VERSION)/tools/engineering.c \
 		$(PACKAGE)-$(VERSION)/tools/pdu.c \
 		$(PACKAGE)-$(VERSION)/tools/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \

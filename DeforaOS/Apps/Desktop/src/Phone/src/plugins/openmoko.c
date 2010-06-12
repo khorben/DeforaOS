@@ -42,6 +42,7 @@
 
 /* Openmoko */
 /* private */
+/* prototypes */
 static int _openmoko_event(PhonePlugin * plugin, PhoneEvent event, ...);
 
 

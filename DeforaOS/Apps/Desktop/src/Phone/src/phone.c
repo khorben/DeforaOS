@@ -103,6 +103,14 @@ typedef enum _PhoneTrack
 #define PHONE_TRACK_LAST	PHONE_TRACK_SIGNAL_LEVEL
 #define PHONE_TRACK_COUNT	(PHONE_TRACK_LAST + 1)
 
+typedef struct _PhoneTrigger
+{
+	PhonePlugin * plugin;
+	char * trigger;
+	size_t trigger_cnt;
+	PhoneTriggerCallback * callback;
+} PhoneTrigger;
+
 struct _Phone
 {
 	GSM * gsm;
@@ -120,6 +128,10 @@ struct _Phone
 	PhonePluginHelper helper;
 	PhonePluginEntry * plugins;
 	size_t plugins_cnt;
+
+	/* triggers */
+	PhoneTrigger * triggers;
+	size_t triggers_cnt;
 
 	/* widgets */
 	PangoFontDescription * bold;
@@ -228,6 +240,9 @@ static void _phone_progress_pulse(GtkWidget * widget);
 
 static int _phone_queue(Phone * phone, char const * command);
 
+static int _phone_register_trigger(Phone * phone, PhonePlugin * plugin,
+		char const * trigger, PhoneTriggerCallback callback);
+
 static void _phone_set_operator(Phone * phone, char const * operator);
 static void _phone_set_signal_level(Phone * phone, gdouble level);
 static void _phone_set_status(Phone * phone, GSMStatus status);
@@ -295,9 +310,12 @@ Phone * phone_new(char const * device, unsigned int baudrate, int retry,
 	phone->helper.error = phone_error;
 	phone->helper.event = phone_event;
 	phone->helper.queue = _phone_queue;
+	phone->helper.register_trigger = _phone_register_trigger;
 	phone->helper.phone = phone;
 	phone->plugins = NULL;
 	phone->plugins_cnt = 0;
+	phone->triggers = NULL;
+	phone->triggers_cnt = 0;
 	/* widgets */
 	phone->bold = pango_font_description_new();
 	pango_font_description_set_weight(phone->bold, PANGO_WEIGHT_BOLD);
@@ -1926,7 +1944,15 @@ void phone_unload_all(Phone * phone)
 	size_t i;
 	PhonePlugin * plugin;
 
+	/* view */
 	gtk_list_store_clear(phone->se_store);
+	/* triggers */
+	for(i = 0; i < phone->triggers_cnt; i++)
+		free(phone->triggers[i].trigger);
+	phone->triggers_cnt = 0;
+	free(phone->triggers);
+	phone->triggers = NULL;
+	/* plugins */
 	for(i = 0; i < phone->plugins_cnt; i++)
 	{
 		plugin = phone->plugins[i].pp;
@@ -2248,6 +2274,28 @@ static int _phone_queue(Phone * phone, char const * command)
 }
 
 
+/* phone_register_trigger */
+static int _phone_register_trigger(Phone * phone, PhonePlugin * plugin,
+		char const * trigger, PhoneTriggerCallback callback)
+{
+	PhoneTrigger * p;
+	char * q;
+
+	if((p = realloc(phone->triggers, sizeof(*p)
+					* (phone->triggers_cnt + 1))) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	phone->triggers = p;
+	if((q = strdup(trigger)) == NULL)
+		return error_set_code(1, "%s", strerror(errno));
+	p = &phone->triggers[phone->triggers_cnt++];
+	p->plugin = plugin;
+	p->trigger = q;
+	p->trigger_cnt = strlen(trigger);
+	p->callback = callback;
+	return 0;
+}
+
+
 /* phone_set_operator */
 static void _phone_set_operator(Phone * phone, char const * operator)
 {
@@ -2374,6 +2422,7 @@ static int _gsm_event_message_deleted(Phone * phone, GSMEvent * event);
 static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity);
 static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 		gpointer data);
+static int _gsm_event_unknown(Phone * phone, char const * result);
 
 static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
@@ -2485,6 +2534,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 		case GSM_EVENT_TYPE_STATUS:
 			_phone_set_status(phone, event->status.status);
 			return 0;
+		case GSM_EVENT_TYPE_UNKNOWN:
+			return _gsm_event_unknown(phone, event->unknown.result);
 	}
 	return 1;
 }
@@ -2618,6 +2669,21 @@ static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 
 	phone_show_code(phone, FALSE);
 	gtk_widget_destroy(widget);
+}
+
+static int _gsm_event_unknown(Phone * phone, char const * result)
+{
+	int ret = 0;
+	size_t i;
+	PhoneTrigger * trigger;
+
+	for(i = 0; i < phone->triggers_cnt; i++)
+	{
+		trigger = &phone->triggers[i];
+		if(strncmp(trigger->trigger, result, trigger->trigger_cnt) == 0)
+			ret |= trigger->callback(trigger->plugin, result);
+	}
+	return ret;
 }
 
 

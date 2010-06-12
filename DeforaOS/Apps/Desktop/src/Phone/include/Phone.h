@@ -64,6 +64,10 @@ typedef enum _PhoneEvent
 	PHONE_EVENT_VIBRATOR_ON
 } PhoneEvent;
 
+typedef struct _PhonePlugin PhonePlugin;
+
+typedef int (PhoneTriggerCallback)(PhonePlugin * plugin, char const * result);
+
 typedef struct _PhonePluginHelper
 {
 	Phone * phone;
@@ -72,9 +76,9 @@ typedef struct _PhonePluginHelper
 	int (*error)(Phone * phone, char const * message, int ret);
 	void (*event)(Phone * phone, PhoneEvent event, ...);
 	int (*queue)(Phone * phone, char const * command);
+	int (*register_trigger)(Phone * phone, PhonePlugin * plugin,
+			char const * trigger, PhoneTriggerCallback callback);
 } PhonePluginHelper;
-
-typedef struct _PhonePlugin PhonePlugin;
 
 struct _PhonePlugin
 {
