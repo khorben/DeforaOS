@@ -1891,8 +1891,22 @@ static int _gsm_trigger_creg(GSM * gsm, char const * result)
 					&gsm->event.registration.area,
 					&gsm->event.registration.cell)) == 4)
 		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+	else if(res == 3)
+	{
+		gsm->event.registration.stat = gsm->event.registration.n;
+		gsm->event.registration.n = 2;
+		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+	}
 	else if(res == 2)
 	{
+		gsm->event.registration.area = 0;
+		gsm->event.registration.cell = 0;
+		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
+	}
+	else if(res == 1)
+	{
+		gsm->event.registration.stat = gsm->event.registration.n;
+		gsm->event.registration.n = 2;
 		gsm->event.registration.area = 0;
 		gsm->event.registration.cell = 0;
 		ret = _gsm_event_send(gsm, GSM_EVENT_TYPE_REGISTRATION);
