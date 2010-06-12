@@ -129,6 +129,7 @@ static int _engineering_init(PhonePlugin * plugin)
 		return error_set_code(1, "%s", strerror(errno));
 	plugin->priv = engineering;
 	engineering->helper = plugin->helper;
+	/* FIXME wait until some event? (eg PIN ready) */
 	engineering->source = g_timeout_add(5000, _on_engineering_timeout,
 			engineering);
 	engineering->enci = 0;
@@ -222,7 +223,7 @@ static gboolean _on_engineering_timeout(gpointer data)
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
 	engineering->source = 0;
-	engineering->helper->queue(engineering->helper->phone, "AT%EM=2,1");
+	engineering->helper->queue(engineering->helper->phone, "AT%EM=2,3");
 	return FALSE;
 }
 
