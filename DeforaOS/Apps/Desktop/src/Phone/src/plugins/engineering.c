@@ -129,8 +129,9 @@ static struct
 
 /* neighbor cells */
 enum { NC_COL_FREQUENCY, NC_COL_C1, NC_COL_C2, NC_COL_RXLEV, NC_COL_BSIC,
-	NC_COL_CELL_ID, NC_COL_LAC, NC_COL_FRAME_OFFSET, NC_COL_CELL_TYPE_IND };
-#define NC_COL_LAST NC_COL_CELL_TYPE_IND
+	NC_COL_CELL_ID, NC_COL_LAC, NC_COL_FRAME_OFFSET, NC_COL_CELL_TYPE_IND,
+	NC_COL_RAC };
+#define NC_COL_LAST NC_COL_RAC
 #define NC_COL_COUNT (NC_COL_LAST + 1)
 
 static struct
@@ -148,6 +149,7 @@ static struct
 	{ NC_COL_LAC, "Area code" },
 	{ NC_COL_FRAME_OFFSET, "Frame offset" },
 	{ NC_COL_CELL_TYPE_IND, "Cell type" },
+	{ NC_COL_RAC, "Routing area code" },
 	{ 0, NULL }
 };
 
@@ -266,7 +268,8 @@ static int _engineering_init(PhonePlugin * plugin)
 			G_TYPE_STRING,		/* NC_COL_CELL_ID */
 			G_TYPE_STRING,		/* NC_COL_LAC */
 			G_TYPE_STRING,		/* NC_COL_FRAME_OFFSET */
-			G_TYPE_STRING);		/* NC_COL_CELL_TYPE_IND */
+			G_TYPE_STRING,		/* NC_COL_CELL_TYPE_IND */
+			G_TYPE_STRING);		/* NC_COL_RAC */
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -414,7 +417,8 @@ static int _do_cba(Engineering * engineering, unsigned int cba);
 static int _do_cbq(Engineering * engineering, unsigned int cbq);
 static int _do_cell_type_ind(Engineering * engineering,
 		unsigned int cell_type_ind, GtkTreeIter * iter);
-static int _do_rac(Engineering * engineering, unsigned int rac);
+static int _do_rac(Engineering * engineering, unsigned int rac,
+		GtkTreeIter * iter);
 static int _do_cell_resel_offset(Engineering * engineering,
 		unsigned int cell_resel_offset);
 static int _do_temp_offset(Engineering * engineering, unsigned int temp_offset);
@@ -606,7 +610,7 @@ static int _trigger_em3_do(Engineering * engineering, char const * buf,
 		case ENCI_CELL_TYPE_IND:
 			return _do_cell_type_ind(engineering, u, iter);
 		case ENCI_RAC:
-			return _do_rac(engineering, u);
+			return _do_rac(engineering, u, iter);
 		case ENCI_CELL_RESEL_OFFSET:
 			return _do_cell_resel_offset(engineering, u);
 		case ENCI_TEMP_OFFSET:
@@ -771,8 +775,13 @@ static int _do_cell_type_ind(Engineering * engineering,
 	return 0;
 }
 
-static int _do_rac(Engineering * engineering, unsigned int rac)
+static int _do_rac(Engineering * engineering, unsigned int rac,
+		GtkTreeIter * iter)
 {
+	char buf[32];
+
+	snprintf(buf, sizeof(buf), "%u", rac);
+	gtk_list_store_set(engineering->nc_store, iter, NC_COL_RAC, buf, -1);
 	return 0;
 }
 
