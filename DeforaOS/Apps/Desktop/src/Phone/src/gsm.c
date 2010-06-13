@@ -708,6 +708,7 @@ int gsm_event(GSM * gsm, GSMEventType type, ...)
 			event->status.status = va_arg(ap, GSMStatus);
 			break;
 		case GSM_EVENT_TYPE_UNKNOWN:
+			event->unknown.command = va_arg(ap, char const *);
 			event->unknown.result = va_arg(ap, char const *);
 			break;
 	}
@@ -1186,14 +1187,14 @@ static int _gsm_parse_line(GSM * gsm, char const * line, gboolean * answered)
 	/* XXX look for a potential trigger */
 	if(cmd != NULL && strncmp(cmd, "AT+", 3) == 0 && isupper((c = cmd[3])))
 	{
-		for(cmd += 2, j = 2; cmd[j] != '\0' && isupper((c = cmd[j]));
+		for(j = 2; cmd[j + 2] != '\0' && isupper((c = cmd[j + 2]));
 				j++);
 		for(i = 0; _gsm_triggers[i].trigger != NULL; i++)
-			if(strncmp(cmd, _gsm_triggers[i].trigger, j) == 0)
+			if(strncmp(cmd + 2, _gsm_triggers[i].trigger, j) == 0)
 				return _gsm_triggers[i].callback(gsm, line,
 						answered);
 	}
-	return gsm_event(gsm, GSM_EVENT_TYPE_UNKNOWN, line);
+	return gsm_event(gsm, GSM_EVENT_TYPE_UNKNOWN, cmd, line);
 }
 
 

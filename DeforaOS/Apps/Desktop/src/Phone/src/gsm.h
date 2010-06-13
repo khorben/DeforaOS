@@ -63,6 +63,7 @@ typedef enum _GSMError
 	GSM_ERROR_HANGUP_FAILED,
 	GSM_ERROR_MESSAGE_DELETE_FAILED,
 	GSM_ERROR_MESSAGE_FETCH_FAILED,
+	GSM_ERROR_MESSAGE_INDICATIONS_FAILED,
 	GSM_ERROR_MESSAGE_LIST_FAILED,
 	GSM_ERROR_MESSAGE_SEND_FAILED,
 	GSM_ERROR_MUTE_FAILED,
@@ -341,6 +342,7 @@ typedef union _GSMEvent
 	struct
 	{
 		GSMEventType type;
+		char const * command;
 		char const * result;
 	} unknown;
 } GSMEvent;

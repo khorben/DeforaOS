@@ -2422,7 +2422,8 @@ static int _gsm_event_message_deleted(Phone * phone, GSMEvent * event);
 static int _gsm_event_phone_activity(Phone * phone, GSMPhoneActivity activity);
 static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 		gpointer data);
-static int _gsm_event_unknown(Phone * phone, char const * result);
+static int _gsm_event_unknown(Phone * phone, char const * command,
+		char const * result);
 
 static int _phone_gsm_event(GSMEvent * event, gpointer data)
 {
@@ -2535,7 +2536,8 @@ static int _phone_gsm_event(GSMEvent * event, gpointer data)
 			_phone_set_status(phone, event->status.status);
 			return 0;
 		case GSM_EVENT_TYPE_UNKNOWN:
-			return _gsm_event_unknown(phone, event->unknown.result);
+			return _gsm_event_unknown(phone, event->unknown.command,
+					event->unknown.result);
 	}
 	return 1;
 }
@@ -2560,6 +2562,10 @@ static int _gsm_event_error(Phone * phone, GSMEvent * event)
 			break;
 		case GSM_ERROR_FUNCTIONAL_FAILED:
 			_phone_track(phone, PHONE_TRACK_FUNCTIONAL, TRUE);
+			break;
+		case GSM_ERROR_MESSAGE_INDICATIONS_FAILED:
+			phone_error(phone, _("Could not request new message"
+						" indications"), 0);
 			break;
 		case GSM_ERROR_MESSAGE_LIST_FAILED:
 			_phone_track(phone, PHONE_TRACK_MESSAGE_LIST, TRUE);
@@ -2671,16 +2677,24 @@ static void _on_sim_pin_valid_response(GtkWidget * widget, gint response,
 	gtk_widget_destroy(widget);
 }
 
-static int _gsm_event_unknown(Phone * phone, char const * result)
+static int _gsm_event_unknown(Phone * phone, char const * command,
+		char const * result)
 {
 	int ret = 0;
 	size_t i;
 	PhoneTrigger * trigger;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(phone, \"%s\", \"%s\")\n", __func__, command,
+			result);
+#endif
 	for(i = 0; i < phone->triggers_cnt; i++)
 	{
 		trigger = &phone->triggers[i];
-		if(strncmp(trigger->trigger, result, trigger->trigger_cnt) == 0)
+		if(strncmp(trigger->trigger, result, trigger->trigger_cnt) == 0
+				|| (strlen(command) > 2 && strncmp(
+						trigger->trigger, &command[2],
+						trigger->trigger_cnt) == 0))
 			ret |= trigger->callback(trigger->plugin, result);
 	}
 	return ret;

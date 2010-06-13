@@ -755,7 +755,8 @@ int gsm_modem_set_message_indications(GSMModem * gsmm, GSMMessageMode mode,
 	}
 	cmd[8] = mode + '0';
 	cmd[10] = unsollicited ? '1' : '0';
-	return (gsm_queue(gsmm->gsm, cmd) != NULL) ? 0 : 1;
+	return gsm_queue_full(gsmm->gsm, GSM_PRIORITY_NORMAL, cmd,
+			GSM_ERROR_MESSAGE_INDICATIONS_FAILED, NULL);
 }
 
 
