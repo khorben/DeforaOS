@@ -479,7 +479,9 @@ static int _on_engineering_trigger_em(PhonePlugin * plugin, char const * result)
 		valid = gtk_tree_model_iter_next(GTK_TREE_MODEL(
 					engineering->nc_store), &iter);
 	}
-	/* FIXME remove the following entries */
+	if(valid && gtk_tree_model_iter_next(GTK_TREE_MODEL(
+					engineering->nc_store), &iter))
+		while(gtk_list_store_remove(engineering->nc_store, &iter));
 	engineering->enci++;
 	return 0;
 }
