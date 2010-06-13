@@ -90,7 +90,8 @@ typedef struct _Engineering
 
 	/* widgets */
 	GtkWidget * window;
-	GtkToolItem * play;
+	GtkToolItem * tb_play;
+	GtkToolItem * tb_fullscreen;
 	GtkListStore * sc_store;
 	GtkWidget * sc_view;
 	GtkListStore * nc_store;
@@ -165,6 +166,7 @@ static double _engineering_get_frequency(unsigned int arfcn);
 /* callbacks */
 static gboolean _on_engineering_closex(gpointer data);
 static void _on_engineering_play_toggled(gpointer data);
+static void _on_engineering_fullscreen_toggled(gpointer data);
 static gboolean _on_engineering_timeout(gpointer data);
 static int _on_engineering_trigger_em(PhonePlugin * plugin,
 		char const * result);
@@ -221,11 +223,19 @@ static int _engineering_init(PhonePlugin * plugin)
 	vbox = gtk_vbox_new(FALSE, 0);
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
-	engineering->play = gtk_toggle_tool_button_new_from_stock(
+	engineering->tb_play = gtk_toggle_tool_button_new_from_stock(
 			GTK_STOCK_MEDIA_PLAY);
-	g_signal_connect_swapped(G_OBJECT(engineering->play), "toggled",
+	g_signal_connect_swapped(G_OBJECT(engineering->tb_play), "toggled",
 			G_CALLBACK(_on_engineering_play_toggled), engineering);
-	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), engineering->play, -1);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), engineering->tb_play, -1);
+	engineering->tb_fullscreen = gtk_toggle_tool_button_new_from_stock(
+			GTK_STOCK_FULLSCREEN);
+	g_signal_connect_swapped(G_OBJECT(engineering->tb_fullscreen),
+			"toggled", G_CALLBACK(
+				_on_engineering_fullscreen_toggled),
+			engineering);
+	gtk_toolbar_insert(GTK_TOOLBAR(toolbar), engineering->tb_fullscreen,
+			-1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* serving cell view */
 	frame = gtk_frame_new("Serving cell");
@@ -357,13 +367,26 @@ static gboolean _on_engineering_closex(gpointer data)
 }
 
 
+/* on_engineering_fullscreen_toggled */
+static void _on_engineering_fullscreen_toggled(gpointer data)
+{
+	Engineering * engineering = data;
+
+	if(gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(
+					engineering->tb_fullscreen)))
+		gtk_window_fullscreen(engineering->window);
+	else
+		gtk_window_unfullscreen(engineering->window);
+}
+
+
 /* on_engineering_play_toggled */
 static void _on_engineering_play_toggled(gpointer data)
 {
 	Engineering * engineering = data;
 
 	if(gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(
-					engineering->play)))
+					engineering->tb_play)))
 		engineering->source = _on_engineering_timeout(engineering);
 	else if(engineering->source != 0)
 	{
