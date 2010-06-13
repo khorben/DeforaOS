@@ -401,10 +401,8 @@ static int _trigger_em4_do(Engineering * engineering, unsigned int * p,
 		size_t cnt);
 static int _do_arfcn(Engineering * engineering, unsigned int arfcn,
 		GtkTreeIter * iter);
-static int _do_c1(Engineering * engineering, unsigned int c1,
-		GtkTreeIter * iter);
-static int _do_c2(Engineering * engineering, unsigned int c2,
-		GtkTreeIter * iter);
+static int _do_c1(Engineering * engineering, int c1, GtkTreeIter * iter);
+static int _do_c2(Engineering * engineering, int c2, GtkTreeIter * iter);
 static int _do_rxlev(Engineering * engineering, unsigned int rxlev,
 		GtkTreeIter * iter);
 static int _do_bsic(Engineering * engineering, unsigned int bsic,
@@ -673,22 +671,20 @@ static int _do_arfcn(Engineering * engineering, unsigned int arfcn,
 	return 0;
 }
 
-static int _do_c1(Engineering * engineering, unsigned int c1,
-		GtkTreeIter * iter)
+static int _do_c1(Engineering * engineering, int c1, GtkTreeIter * iter)
 {
 	char buf[32];
 
-	snprintf(buf, sizeof(buf), "%u", c1);
+	snprintf(buf, sizeof(buf), "%d", c1);
 	gtk_list_store_set(engineering->nc_store, iter, NC_COL_C1, buf, -1);
 	return 0;
 }
 
-static int _do_c2(Engineering * engineering, unsigned int c2,
-		GtkTreeIter * iter)
+static int _do_c2(Engineering * engineering, int c2, GtkTreeIter * iter)
 {
 	char buf[32];
 
-	snprintf(buf, sizeof(buf), "%u", c2);
+	snprintf(buf, sizeof(buf), "%d", c2);
 	gtk_list_store_set(engineering->nc_store, iter, NC_COL_C2, buf, -1);
 	return 0;
 }
