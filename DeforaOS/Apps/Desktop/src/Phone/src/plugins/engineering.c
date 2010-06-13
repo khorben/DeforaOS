@@ -255,6 +255,9 @@ static int _engineering_init(PhonePlugin * plugin)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	engineering->sc_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				engineering->sc_store));
+	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(
+					engineering->sc_view)),
+			GTK_SELECTION_NONE);
 	/* columns */
 	for(i = 0; _engineering_sc_columns[i].title != NULL; i++)
 	{
@@ -289,6 +292,9 @@ static int _engineering_init(PhonePlugin * plugin)
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 	engineering->nc_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
 				engineering->nc_store));
+	gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(
+					engineering->nc_view)),
+			GTK_SELECTION_NONE);
 	/* columns */
 	for(i = 0; _engineering_nc_columns[i].title != NULL; i++)
 	{
