@@ -251,8 +251,7 @@ static int _engineering_init(PhonePlugin * plugin)
 		gtk_tree_view_append_column(GTK_TREE_VIEW(engineering->sc_view),
 				column);
 	}
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled),
-			engineering->sc_view);
+	gtk_container_add(GTK_CONTAINER(scrolled), engineering->sc_view);
 	gtk_container_add(GTK_CONTAINER(frame), scrolled);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
@@ -283,8 +282,7 @@ static int _engineering_init(PhonePlugin * plugin)
 		gtk_tree_view_append_column(GTK_TREE_VIEW(engineering->nc_view),
 				column);
 	}
-	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled),
-			engineering->nc_view);
+	gtk_container_add(GTK_CONTAINER(scrolled), engineering->nc_view);
 	gtk_container_add(GTK_CONTAINER(frame), scrolled);
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
 	gtk_container_add(GTK_CONTAINER(engineering->window), vbox);
