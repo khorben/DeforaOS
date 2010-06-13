@@ -129,8 +129,8 @@ static struct
 
 /* neighbor cells */
 enum { NC_COL_FREQUENCY, NC_COL_C1, NC_COL_C2, NC_COL_RXLEV, NC_COL_BSIC,
-	NC_COL_CELL_ID, NC_COL_LAC, NC_COL_FRAME_OFFSET, NC_COL_CELL_TYPE_IND,
-	NC_COL_RAC };
+	NC_COL_CELL_ID, NC_COL_LAC, NC_COL_FRAME_OFFSET, NC_COL_CBA, NC_COL_CBQ,
+	NC_COL_CELL_TYPE_IND, NC_COL_RAC };
 #define NC_COL_LAST NC_COL_RAC
 #define NC_COL_COUNT (NC_COL_LAST + 1)
 
@@ -148,6 +148,8 @@ static struct
 	{ NC_COL_CELL_ID, "Cell ID" },
 	{ NC_COL_LAC, "Area code" },
 	{ NC_COL_FRAME_OFFSET, "Frame offset" },
+	{ NC_COL_CBA, "Cell Bar Access" },
+	{ NC_COL_CBQ, "Cell Bar Qualify" },
 	{ NC_COL_CELL_TYPE_IND, "Cell type" },
 	{ NC_COL_RAC, "Routing area code" },
 	{ 0, NULL }
@@ -268,6 +270,8 @@ static int _engineering_init(PhonePlugin * plugin)
 			G_TYPE_STRING,		/* NC_COL_CELL_ID */
 			G_TYPE_STRING,		/* NC_COL_LAC */
 			G_TYPE_STRING,		/* NC_COL_FRAME_OFFSET */
+			G_TYPE_STRING,		/* NC_COL_CBA */
+			G_TYPE_STRING,		/* NC_COL_CBQ */
 			G_TYPE_STRING,		/* NC_COL_CELL_TYPE_IND */
 			G_TYPE_STRING);		/* NC_COL_RAC */
 	scrolled = gtk_scrolled_window_new(NULL, NULL);
@@ -413,8 +417,10 @@ static int _do_frame_offset(Engineering * engineering,
 		unsigned int frame_offset, GtkTreeIter * iter);
 static int _do_time_alignment(Engineering * engineering,
 		unsigned int time_alignment);
-static int _do_cba(Engineering * engineering, unsigned int cba);
-static int _do_cbq(Engineering * engineering, unsigned int cbq);
+static int _do_cba(Engineering * engineering, unsigned int cba,
+		GtkTreeIter * iter);
+static int _do_cbq(Engineering * engineering, unsigned int cbq,
+		GtkTreeIter * iter);
 static int _do_cell_type_ind(Engineering * engineering,
 		unsigned int cell_type_ind, GtkTreeIter * iter);
 static int _do_rac(Engineering * engineering, unsigned int rac,
@@ -604,9 +610,9 @@ static int _trigger_em3_do(Engineering * engineering, char const * buf,
 		case ENCI_TIME_ALIGNMENT:
 			return _do_time_alignment(engineering, u);
 		case ENCI_CBA:
-			return _do_cba(engineering, u);
+			return _do_cba(engineering, u, iter);
 		case ENCI_CBQ:
-			return _do_cbq(engineering, u);
+			return _do_cbq(engineering, u, iter);
 		case ENCI_CELL_TYPE_IND:
 			return _do_cell_type_ind(engineering, u, iter);
 		case ENCI_RAC:
@@ -746,13 +752,21 @@ static int _do_time_alignment(Engineering * engineering,
 	return 0;
 }
 
-static int _do_cba(Engineering * engineering, unsigned int cba)
+static int _do_cba(Engineering * engineering, unsigned int cba,
+		GtkTreeIter * iter)
 {
+	char const * buf = cba ? "Yes" : "No";
+
+	gtk_list_store_set(engineering->nc_store, iter, NC_COL_CBA, buf, -1);
 	return 0;
 }
 
-static int _do_cbq(Engineering * engineering, unsigned int cbq)
+static int _do_cbq(Engineering * engineering, unsigned int cbq,
+		GtkTreeIter * iter)
 {
+	char const * buf = cbq ? "Yes" : "No";
+
+	gtk_list_store_set(engineering->nc_store, iter, NC_COL_CBQ, buf, -1);
 	return 0;
 }
 
