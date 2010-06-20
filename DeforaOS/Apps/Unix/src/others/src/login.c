@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Unix others */
 /* others is not free software; you can redistribute it and/or modify it under
  * the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <pwd.h>
+#include <signal.h>
 #include <errno.h>
 
 
@@ -53,9 +54,7 @@ static int _login_do(char const * user)
 	struct passwd * pw;
 	char const * password = NULL;
 
-	if(user == NULL)
-		user = _do_ask_username();
-	if(user == NULL)
+	if(user == NULL && (user = _do_ask_username()) == NULL)
 		return 1;
 	pw = getpwnam(user);
 	if(getuid() != 0
@@ -156,5 +155,6 @@ int main(int argc, char * argv[])
 	if(optind != argc
 			&& optind + 1 != argc)
 		return _usage();
+	signal(SIGINT, SIG_IGN);
 	return _login(user) ? 0 : 2;
 }
