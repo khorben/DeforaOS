@@ -35,18 +35,18 @@ static char const _license[] =
 /* Surfer */
 /* private */
 /* types */
-typedef struct _SurferIdle
-{
-	Surfer * surfer;
-	char * url;
-} SurferIdle;
-
 typedef enum _SurferConsoleMessage
 {
 	SCM_MESSAGE = 0, SCM_SOURCE, SCM_LINE, SCM_DISPLAY_LINE
 } SurferConsoleMessage;
 #define SCM_LAST	SCM_DISPLAY_LINE
 #define SCM_COUNT	(SCM_LAST + 1)
+
+typedef struct _SurferIdle
+{
+	Surfer * surfer;
+	char * url;
+} SurferIdle;
 
 
 /* constants */

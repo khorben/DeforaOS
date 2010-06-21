@@ -38,8 +38,6 @@
 # define SURFER_DEFAULT_FANTASY_FONT		"Comic Sans MS"
 # define SURFER_DEFAULT_TITLE			"Web surfer"
 
-# define SURFER_GTKMOZEMBED_COMPPATH		"/usr/pkg/lib/firefox"
-
 
 /* types */
 typedef struct _Surfer Surfer;

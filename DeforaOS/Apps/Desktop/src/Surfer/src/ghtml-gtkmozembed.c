@@ -17,15 +17,24 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <gtkmozembed.h>
+#include <mozilla-config.h>
 #include "callbacks.h"
 #include "ghtml.h"
-#include "common.h" /* XXX should not be needed */
+#include "../config.h"
+
+
+/* constants */
+#define xstr(s)				str(s)
+#define str(s)				# s
+#define SURFER_GTKMOZEMBED_COMPPATH	PREFIX "/lib/" xstr(MOZ_BUILD_APP)
 
 
 /* prototypes */
 /* private */
 /* callbacks */
+static void _on_js_status(GtkMozEmbed * view, gpointer data);
 static void _on_link_message(GtkMozEmbed * view, gpointer data);
 static void _on_location(GtkMozEmbed * view, gpointer data);
 static void _on_net_start(GtkMozEmbed * view, gpointer data);
@@ -47,6 +56,19 @@ static void _on_popup_title(GtkMozEmbed * view, gpointer data);
 /* functions */
 /* private */
 /* callbacks */
+static void _on_js_status(GtkMozEmbed * view, gpointer data)
+{
+	Surfer * surfer = data;
+	char * str;
+
+	if((str = gtk_moz_embed_get_js_status(view)) == NULL)
+		return;
+	if(strlen(str) > 0)
+		surfer_console_message(surfer, str, NULL, -1);
+	free(str);
+}
+
+
 static void _on_link_message(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
@@ -71,12 +93,16 @@ static void _on_net_start(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
 
+#if 0
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
 			ghtml_can_go_back(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
 			ghtml_can_go_forward(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_refresh), TRUE);
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), TRUE);
+#else /* XXX hack, partially functional */
+	_on_location(view, surfer);
+#endif
 }
 
 
@@ -84,11 +110,15 @@ static void _on_net_stop(GtkMozEmbed * view, gpointer data)
 {
 	Surfer * surfer = data;
 
+#if 0
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_back),
 			ghtml_can_go_back(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_forward),
 			ghtml_can_go_forward(GTK_WIDGET(view)));
 	gtk_widget_set_sensitive(GTK_WIDGET(surfer->tb_stop), FALSE);
+#else /* XXX hack, partially functional */
+	_on_location(view, surfer);
+#endif
 	surfer_set_status(surfer, NULL);
 }
 
@@ -108,10 +138,12 @@ static void _on_new_window(GtkMozEmbed * view, GtkMozEmbed ** ret, guint mask,
 	if((mask & GTK_MOZ_EMBED_FLAG_WINDOWRESIZEON)
 			!= GTK_MOZ_EMBED_FLAG_WINDOWRESIZEON)
 		gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
+#if 0 /* FIXME disabled for now */
 	if((mask & GTK_MOZ_EMBED_FLAG_MODAL)
 			== GTK_MOZ_EMBED_FLAG_MODAL)
 		gtk_window_set_transient_for(GTK_WINDOW(window),
 				GTK_WINDOW(surfer->window));
+#endif
 	vbox = gtk_vbox_new(FALSE, 0);
 	if((mask & GTK_MOZ_EMBED_FLAG_MENUBARON)
 			!= GTK_MOZ_EMBED_FLAG_MENUBARON)
@@ -225,13 +257,15 @@ GtkWidget * ghtml_new(Surfer * surfer)
 
 	if(init == 0)
 	{
-		gtk_moz_embed_set_comp_path(SURFER_GTKMOZEMBED_COMPPATH);
+		gtk_moz_embed_set_path(SURFER_GTKMOZEMBED_COMPPATH);
 		if((buf = _new_get_prefs_directory()) != NULL)
 			gtk_moz_embed_set_profile_path(buf, "gecko");
 		init = 1;
 	}
 	ghtml = gtk_moz_embed_new();
 	/* FIXME handle callbacks in a common way */
+	g_signal_connect(G_OBJECT(ghtml), "js_status", G_CALLBACK(
+				_on_js_status), surfer);
 	g_signal_connect(G_OBJECT(ghtml), "link_message", G_CALLBACK(
 				_on_link_message), surfer);
 	g_signal_connect(G_OBJECT(ghtml), "location", G_CALLBACK(_on_location),
