@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Surfer 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-21 13:32+0200\n"
+"POT-Creation-Date: 2010-07-03 00:44+0200\n"
 "PO-Revision-Date: 2010-04-01 19:40+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: Spanish\n"
@@ -16,39 +16,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../src/callbacks.c:294
-msgid "About "
-msgstr "Acercia de "
-
-#: ../src/callbacks.c:303
-msgid "C_redits"
-msgstr "C_réditos"
-
-#: ../src/callbacks.c:307
-msgid "_License"
-msgstr "_Licencia"
-
-#: ../src/callbacks.c:357
-msgid "Credits"
-msgstr "Créditos"
-
-#: ../src/callbacks.c:380
-msgid "Written by"
-msgstr "Escrito pot"
-
-#: ../src/callbacks.c:409
-msgid "License"
-msgstr "Licencia"
-
-#: ../src/callbacks.c:630
+#: ../src/callbacks.c:419
 msgid "Web surfer preferences"
 msgstr "Web surfer preferencias"
 
-#: ../src/callbacks.c:641
+#: ../src/callbacks.c:431
 msgid "Homepage:"
 msgstr ""
 
-#: ../src/callbacks.c:648
+#: ../src/callbacks.c:439
+msgid "Focus new tabs"
+msgstr ""
+
+#: ../src/callbacks.c:443
 msgid "General"
 msgstr ""
 
@@ -114,8 +94,8 @@ msgstr ""
 msgid "Close window when the download is complete"
 msgstr ""
 
-#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:677
-#: ../src/surfer.c:680
+#: ../src/download.c:263 ../src/download.c:572 ../src/surfer.c:722
+#: ../src/surfer.c:725
 msgid "Error"
 msgstr ""
 
@@ -158,7 +138,7 @@ msgstr ""
 msgid "Code "
 msgstr ""
 
-#: ../src/download.c:546 ../src/ghtml-webkit.c:472 ../src/surfer.c:679
+#: ../src/download.c:546 ../src/ghtml-webkit.c:472 ../src/surfer.c:724
 msgid "Unknown error"
 msgstr ""
 
@@ -202,191 +182,209 @@ msgstr ""
 msgid "Usage: surfer [URL...]\n"
 msgstr "Usage: surfer [URL...]\n"
 
-#: ../src/surfer.c:64
+#: ../src/surfer.c:75
 msgid "_New tab"
 msgstr ""
 
-#: ../src/surfer.c:66
+#: ../src/surfer.c:77
 msgid "_New window"
 msgstr ""
 
-#: ../src/surfer.c:68
+#: ../src/surfer.c:79
 msgid "_Open..."
 msgstr "_Abrir..."
 
-#: ../src/surfer.c:70
+#: ../src/surfer.c:81
 msgid "Open _URL..."
 msgstr "Abrir _URL..."
 
-#: ../src/surfer.c:72
+#: ../src/surfer.c:84
 msgid "Save _as..."
 msgstr "Guardar _como..."
 
-#: ../src/surfer.c:75
+#: ../src/surfer.c:87
 msgid "_Print..."
 msgstr ""
 
-#: ../src/surfer.c:77
+#: ../src/surfer.c:90
 msgid "Close _tab"
 msgstr ""
 
-#: ../src/surfer.c:78
+#: ../src/surfer.c:92
 msgid "_Close"
 msgstr ""
 
-#: ../src/surfer.c:85
+#: ../src/surfer.c:99
 msgid "_Cut"
 msgstr ""
 
-#: ../src/surfer.c:86
+#: ../src/surfer.c:100
 msgid "Cop_y"
 msgstr ""
 
-#: ../src/surfer.c:87
+#: ../src/surfer.c:101
 msgid "_Paste"
 msgstr ""
 
-#: ../src/surfer.c:89
+#: ../src/surfer.c:104
 msgid "Select _all"
 msgstr ""
 
-#: ../src/surfer.c:96
+#: ../src/surfer.c:111
 msgid "Unselect all"
 msgstr ""
 
-#: ../src/surfer.c:98
+#: ../src/surfer.c:113
 msgid "_Find"
 msgstr ""
 
-#: ../src/surfer.c:101
+#: ../src/surfer.c:116
 msgid "_Preferences"
 msgstr ""
 
-#: ../src/surfer.c:108
+#: ../src/surfer.c:123
 msgid "Zoom in"
 msgstr ""
 
-#: ../src/surfer.c:110
+#: ../src/surfer.c:125
 msgid "Zoom out"
 msgstr ""
 
-#: ../src/surfer.c:112
+#: ../src/surfer.c:127
 msgid "Normal size"
 msgstr ""
 
-#: ../src/surfer.c:115
+#: ../src/surfer.c:130
 msgid "_Refresh"
 msgstr ""
 
-#: ../src/surfer.c:117
+#: ../src/surfer.c:132
 msgid "_Force refresh"
 msgstr ""
 
-#: ../src/surfer.c:118
+#: ../src/surfer.c:134
 msgid "_Stop"
 msgstr ""
 
-#: ../src/surfer.c:120
-msgid "Page so_urce"
-msgstr ""
-
-#: ../src/surfer.c:122
+#: ../src/surfer.c:137
 msgid "Javascript _console"
 msgstr ""
 
-#: ../src/surfer.c:140
+#: ../src/surfer.c:139
+msgid "Page so_urce"
+msgstr ""
+
+#: ../src/surfer.c:157
 msgid "_File"
 msgstr ""
 
-#: ../src/surfer.c:141
+#: ../src/surfer.c:158
 msgid "_Edit"
 msgstr ""
 
-#: ../src/surfer.c:142
+#: ../src/surfer.c:159
 msgid "_View"
 msgstr ""
 
-#: ../src/surfer.c:143
+#: ../src/surfer.c:160
 msgid "_Help"
 msgstr ""
 
-#: ../src/surfer.c:226 ../src/surfer.c:491
+#: ../src/surfer.c:247 ../src/surfer.c:511
 msgid "Web surfer"
 msgstr "Web surfer"
 
-#: ../src/surfer.c:279
+#: ../src/surfer.c:295
 msgid " Location: "
 msgstr ""
 
-#: ../src/surfer.c:461
+#: ../src/surfer.c:481
 msgid "Ready"
 msgstr ""
 
-#: ../src/surfer.c:504 ../src/surfer.c:869
+#: ../src/surfer.c:524 ../src/surfer.c:919
 msgid "Untitled"
 msgstr ""
 
-#: ../src/surfer.c:580 ../src/surfer.c:583 ../src/surfer.c:930
-#: ../src/surfer.c:933
+#: ../src/surfer.c:625 ../src/surfer.c:628 ../src/surfer.c:981
+#: ../src/surfer.c:984
 msgid "Question"
 msgstr ""
 
-#: ../src/surfer.c:646 ../src/surfer.c:996
+#: ../src/surfer.c:691 ../src/surfer.c:1047
 msgid "Save file as..."
 msgstr "Guardar como..."
 
-#: ../src/surfer.c:707
+#: ../src/surfer.c:753
 msgid "Find text"
 msgstr "Buscar"
 
-#: ../src/surfer.c:714
+#: ../src/surfer.c:760
 msgid "Text:"
 msgstr ""
 
-#: ../src/surfer.c:721
+#: ../src/surfer.c:767
 msgid "Case-sensitive"
 msgstr ""
 
-#: ../src/surfer.c:723
+#: ../src/surfer.c:769
 msgid "Wrap"
 msgstr ""
 
-#: ../src/surfer.c:749
+#: ../src/surfer.c:795
 msgid "Text not found"
 msgstr ""
 
-#: ../src/surfer.c:837
+#: ../src/surfer.c:883
 msgid "Open file..."
 msgstr "Abrir..."
 
-#: ../src/surfer.c:863
+#: ../src/surfer.c:912
 msgid "Could not initialize HTML renderer"
 msgstr ""
 
-#: ../src/surfer.c:1055
+#: ../src/surfer.c:1106
 msgid "Javascript console"
 msgstr ""
 
-#: ../src/surfer.c:1060
+#: ../src/surfer.c:1111
 msgid "Command:"
 msgstr ""
 
-#: ../src/surfer.c:1079
+#: ../src/surfer.c:1130
 msgid "Message"
 msgstr ""
 
-#: ../src/surfer.c:1084
+#: ../src/surfer.c:1135
 msgid "Source"
 msgstr ""
 
-#: ../src/surfer.c:1089
+#: ../src/surfer.c:1140
 msgid "Line"
 msgstr ""
 
-#: ../src/surfer.c:1214
+#: ../src/surfer.c:1265
 msgid "Web surfer - Source of "
 msgstr ""
 
-#: ../src/surfer.c:1255 ../src/surfer.c:1258
+#: ../src/surfer.c:1306 ../src/surfer.c:1309
 msgid "Warning"
 msgstr ""
+
+#~ msgid "About "
+#~ msgstr "Acercia de "
+
+#~ msgid "C_redits"
+#~ msgstr "C_réditos"
+
+#~ msgid "_License"
+#~ msgstr "_Licencia"
+
+#~ msgid "Credits"
+#~ msgstr "Créditos"
+
+#~ msgid "Written by"
+#~ msgstr "Escrito pot"
+
+#~ msgid "License"
+#~ msgstr "Licencia"
