@@ -182,6 +182,8 @@ unsigned int surfer_cnt = 0;
 static char * _config_get_filename(void);
 static int _config_load_string(Config * config, char const * variable,
 		char ** value);
+static int _config_save_boolean(Config * config, char const * variable,
+		gboolean value);
 static int _config_save_string(Config * config, char const * variable,
 		char const * value);
 
@@ -408,6 +410,14 @@ void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen)
 }
 
 
+/* surfer_set_homepage */
+void surfer_set_homepage(Surfer * surfer, char const * homepage)
+{
+	free(surfer->homepage);
+	surfer->homepage = strdup(homepage);
+}
+
+
 /* surfer_set_location */
 void surfer_set_location(Surfer * surfer, char const * url)
 {
@@ -591,6 +601,9 @@ int surfer_config_save(Surfer * surfer)
 		return 1;
 	ret |= _config_save_string(surfer->config, "homepage",
 			surfer->homepage);
+	ret |= _config_save_boolean(surfer->config, "focus_new_tabs",
+			gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
+					surfer->pr_focus_tabs)));
 	if(ret == 0)
 		ret |= config_save(surfer->config, filename);
 	free(filename);
@@ -890,23 +903,28 @@ static GtkWidget * _tab_button(Surfer * surfer, GtkWidget * widget,
 void surfer_open_tab(Surfer * surfer, char const * url)
 {
 	GtkWidget * widget;
+	GtkNotebook * notebook = GTK_NOTEBOOK(surfer->notebook);
+	int i;
+	char const * p;
 
 	if((widget = ghtml_new(surfer)) == NULL)
 	{
 		surfer_error(NULL, _("Could not initialize HTML renderer"), 0);
 		return;
 	}
+	gtk_widget_show_all(widget); /* must be before set_current_page() */
 	if(url != NULL)
 		ghtml_load_url(widget, url);
-	gtk_notebook_append_page(GTK_NOTEBOOK(surfer->notebook), widget,
-			_tab_button(surfer, widget, _("Untitled")));
-	if(gtk_notebook_get_n_pages(GTK_NOTEBOOK(surfer->notebook)) > 1)
-		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
-				TRUE);
+	if((i = gtk_notebook_append_page(notebook, widget, _tab_button(surfer,
+						widget, _("Untitled")))) > 0)
+	{
+		gtk_notebook_set_show_tabs(notebook, TRUE);
+		if((p = config_get(surfer->config, "", "focus_new_tabs"))
+				!= NULL && strcmp(p, "1") == 0)
+			gtk_notebook_set_current_page(notebook, i);
+	}
 	else
-		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(surfer->notebook),
-				FALSE);
-	gtk_widget_show_all(widget);
+		gtk_notebook_set_show_tabs(notebook, FALSE);
 }
 
 static GtkWidget * _tab_button(Surfer * surfer, GtkWidget * widget,
@@ -1358,6 +1376,13 @@ static int _config_load_string(Config * config, char const * variable,
 	free(*value);
 	*value = p;
 	return 0;
+}
+
+
+static int _config_save_boolean(Config * config, char const * variable,
+		gboolean value)
+{
+	return config_set(config, "", variable, value ? "1" : "0");
 }
 
 

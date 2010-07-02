@@ -54,6 +54,7 @@ struct _Surfer
 	/* preferences */
 	GtkWidget * pr_window;
 	GtkWidget * pr_homepage;
+	GtkWidget * pr_focus_tabs;
 
 	/* find */
 	GtkWidget * fi_dialog;

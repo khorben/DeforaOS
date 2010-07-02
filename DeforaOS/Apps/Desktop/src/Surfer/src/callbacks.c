@@ -400,7 +400,6 @@ static void _preferences_on_ok(gpointer data);
 void on_preferences(gpointer data)
 {
 	Surfer * surfer = data;
-	PangoFontDescription * desc;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 	GtkWidget * notebook;
@@ -414,8 +413,6 @@ void on_preferences(gpointer data)
 		return;
 	}
 	/* FIXME consider using gtk_dialog_new() */
-	desc = pango_font_description_new();
-	pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
 	surfer->pr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_resizable(GTK_WINDOW(surfer->pr_window), FALSE);
 	gtk_window_set_title(GTK_WINDOW(surfer->pr_window),
@@ -429,12 +426,18 @@ void on_preferences(gpointer data)
 	notebook = gtk_notebook_new();
 	/* general */
 	page = gtk_vbox_new(FALSE, 0);
+	/* homepage */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new(_("Homepage:"));
-	gtk_widget_modify_font(widget, desc);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	surfer->pr_homepage = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_homepage, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
+	/* focus tabs */
+	hbox = gtk_hbox_new(FALSE, 4);
+	surfer->pr_focus_tabs = gtk_check_button_new_with_label(
+			_("Focus new tabs"));
+	gtk_box_pack_start(GTK_BOX(hbox), surfer->pr_focus_tabs, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(page), hbox, TRUE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), page,
 			gtk_label_new(_("General")));
@@ -461,13 +464,21 @@ void on_preferences(gpointer data)
 	_preferences_set(surfer);
 	gtk_container_add(GTK_CONTAINER(surfer->pr_window), vbox);
 	gtk_widget_show_all(surfer->pr_window);
-	pango_font_description_free(desc);
 }
 
 static void _preferences_set(Surfer * surfer)
 {
+	char const * p;
+
 	gtk_entry_set_text(GTK_ENTRY(surfer->pr_homepage), surfer->homepage
 			!= NULL ? surfer->homepage : "");
+	if((p = config_get(surfer->config, "", "focus_new_tabs")) != NULL
+			&& strcmp(p, "1") == 0)
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					surfer->pr_focus_tabs), TRUE);
+	else
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+					surfer->pr_focus_tabs), FALSE);
 }
 
 static gboolean _preferences_on_closex(gpointer data)
@@ -491,8 +502,7 @@ static void _preferences_on_ok(gpointer data)
 	Surfer * surfer = data;
 
 	gtk_widget_hide(surfer->pr_window);
-	free(surfer->homepage);
-	surfer->homepage = strdup(gtk_entry_get_text(GTK_ENTRY(
+	surfer_set_homepage(surfer, gtk_entry_get_text(GTK_ENTRY(
 					surfer->pr_homepage)));
 	surfer_config_save(surfer);
 }

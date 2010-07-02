@@ -53,6 +53,7 @@ void surfer_delete(Surfer * surfer);
 GtkWidget * surfer_get_view(Surfer * surfer);
 
 void surfer_set_fullscreen(Surfer * surfer, gboolean fullscreen);
+void surfer_set_homepage(Surfer * surfer, char const * homepage);
 void surfer_set_location(Surfer * surfer, char const * url);
 void surfer_set_progress(Surfer * surfer, gdouble fraction);
 void surfer_set_status(Surfer * surfer, char const * status);
