@@ -168,10 +168,10 @@ function _project_timeline($id, $cvsroot, $cpp = FALSE)
 		unset($icon);
 		switch($fields[0][0])
 		{
-			case 'A': $event = 'Add'; $icon = 'added';      break;
-			case 'F': $event = 'Release';                   break;
+			case 'A': $event = 'Add'; $icon = 'added';	break;
+			case 'F': $event = 'Release';			break;
 			case 'M': $event = 'Modify'; $icon = 'modified';break;
-			case 'R': $event = 'Remove'; $icon = 'removed'; break;
+			case 'R': $event = 'Remove'; $icon = 'removed';	break;
 		}
 		if(!isset($event))
 			continue;
@@ -1470,11 +1470,10 @@ function project_lastcommits($args)
 {
 	$cpp = 6;
 	if(isset($args['cpp']) && is_numeric($args['cpp']))
-	$cpp = $args['cpp'];
+		$cpp = $args['cpp'];
 	if(($entries = _project_timeline(FALSE, '', $cpp)) === FALSE)
 		return;
-	_module('explorer', 'browse_trusted', array(
-			'entries' => $entries,
+	_module('explorer', 'browse_trusted', array('entries' => $entries,
 			'class' => array('date' => DATE, 'event' => ACTION,
 				'revision' => REVISION,
 				'author' => AUTHOR), 'toolbar' => 0,
