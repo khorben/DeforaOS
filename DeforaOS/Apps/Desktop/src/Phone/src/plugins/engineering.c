@@ -380,9 +380,9 @@ static void _on_engineering_fullscreen_toggled(gpointer data)
 
 	if(gtk_toggle_tool_button_get_active(GTK_TOGGLE_TOOL_BUTTON(
 					engineering->tb_fullscreen)))
-		gtk_window_fullscreen(engineering->window);
+		gtk_window_fullscreen(GTK_WINDOW(engineering->window));
 	else
-		gtk_window_unfullscreen(engineering->window);
+		gtk_window_unfullscreen(GTK_WINDOW(engineering->window));
 }
 
 
