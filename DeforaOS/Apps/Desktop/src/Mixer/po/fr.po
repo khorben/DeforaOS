@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mixer 0.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-04-23 04:16+0200\n"
+"POT-Creation-Date: 2010-05-10 09:56+0200\n"
 "PO-Revision-Date: 2010-04-23 04:08+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: French\n"
@@ -23,6 +23,10 @@ msgid ""
 "  -V\tShow the classes on top of each other\n"
 "  -d\tThe mixer device to use\n"
 msgstr ""
+"Usage: mixer [-H|-V][-d périphérique]\n"
+"  -H\tAffichage horizontal des catégories\n"
+"  -V\tAffichage vertical des catégories\n"
+"  -d\tChoix du périphérique sonore\n"
 
 #: ../src/mixer.c:71
 msgid "_Properties"
@@ -32,66 +36,70 @@ msgstr "_Propriétés"
 msgid "_Close"
 msgstr "_Fermer"
 
-#: ../src/mixer.c:79
+#: ../src/mixer.c:80
 msgid "_All"
 msgstr "_Tous"
 
-#: ../src/mixer.c:80
+#: ../src/mixer.c:81
 msgid "_Outputs"
 msgstr "_Sorties"
 
-#: ../src/mixer.c:81
+#: ../src/mixer.c:83
 msgid "_Inputs"
 msgstr "_Entrées"
 
-#: ../src/mixer.c:82
+#: ../src/mixer.c:85
 msgid "_Record"
 msgstr "En_registrement"
 
-#: ../src/mixer.c:83
+#: ../src/mixer.c:87
 msgid "Mo_nitor"
 msgstr "Sui_vi"
 
-#: ../src/mixer.c:84
+#: ../src/mixer.c:89
 msgid "_Equalization"
 msgstr "É_galisation"
 
-#: ../src/mixer.c:85
+#: ../src/mixer.c:91
 msgid "Mi_x"
 msgstr "Mi_x"
 
-#: ../src/mixer.c:86
+#: ../src/mixer.c:92
 msgid "_Modem"
 msgstr "_Modem"
 
-#: ../src/mixer.c:92
+#: ../src/mixer.c:99
 msgid "_About"
 msgstr "À _propos"
 
-#: ../src/mixer.c:98
+#: ../src/mixer.c:105
 msgid "_File"
 msgstr "_Fichier"
 
-#: ../src/mixer.c:99
+#: ../src/mixer.c:106
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/mixer.c:100
+#: ../src/mixer.c:107
 msgid "_Help"
 msgstr "_Aide"
 
-#: ../src/mixer.c:454
+#: ../src/mixer.c:333
+msgid "Bind"
+msgstr "Lier"
+
+#: ../src/mixer.c:481
 msgid "Mixer properties"
 msgstr "Propriétés du mixer"
 
-#: ../src/mixer.c:460
+#: ../src/mixer.c:493
 msgid "Name: "
 msgstr "Nom : "
 
-#: ../src/mixer.c:466
+#: ../src/mixer.c:503
 msgid "Version: "
 msgstr "Version : "
 
-#: ../src/mixer.c:472
+#: ../src/mixer.c:513
 msgid "Config: "
 msgstr "Config : "
