@@ -22,6 +22,8 @@ static char _license[] =
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
