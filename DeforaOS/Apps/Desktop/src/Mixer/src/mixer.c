@@ -334,10 +334,10 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bind), TRUE);
 	for(i = 0; i < v->num_channels; i++)
 	{
-		widget = gtk_vscale_new_with_range(0.0, 1.0, 0.02);
+		widget = gtk_vscale_new_with_range(0.0, 100.0, 1.0);
 		gtk_range_set_inverted(GTK_RANGE(widget), TRUE);
 		gtk_range_set_value(GTK_RANGE(widget),
-				p->un.value.level[i] / 255.0);
+				(p->un.value.level[i] / 255.0) * 100.0);
 		g_object_set_data(G_OBJECT(widget), "bind", bind);
 		g_object_set_data(G_OBJECT(widget), "ctrl", p);
 		g_object_set_data(G_OBJECT(widget), "channel",
@@ -417,7 +417,7 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	if(p == NULL || level == NULL)
 		return 1;
 	/* FIXME check this one */
-	*level = value * 255;
+	*level = (value / 100.0) * 255;
 	if(p->type == AUDIO_MIXER_VALUE && b != NULL
 			&& gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b)))
 		/* FIXME update the other controls as well */
