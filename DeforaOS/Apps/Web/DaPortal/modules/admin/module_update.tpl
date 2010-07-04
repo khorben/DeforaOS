@@ -8,7 +8,7 @@
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="<?php echo _html_safe(INSERT); ?>" class="icon submit"/></td>
+			<td><a href="<?php echo _html_link('admin', 'admin'); ?>"><button class="icon cancel"><?php echo _html_safe(CANCEL); ?></button></a> <input type="submit" value="<?php echo _html_safe(INSERT); ?>" class="icon submit"/></td>
 		</tr>
 	</table>
 </form>
