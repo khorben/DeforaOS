@@ -24,6 +24,7 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 
 //lang
 $text = array();
+$text['ADD'] = 'Add';
 $text['ALREADY_LINKED'] = 'Already linked';
 $text['ASSOCIATE_TO_CONTENT'] = 'Associate to content';
 $text['CATEGORIES_ADMINISTRATION'] = 'Categories administration';
@@ -41,6 +42,7 @@ if($lang == 'de')
 	$text['DESCRIPTION'] = 'Beschreibung';
 else if($lang == 'fr')
 {
+	$text['ADD'] = 'Ajouter';
 	$text['ALREADY_LINKED'] = 'Déjà lié';
 	$text['ASSOCIATE_TO_CONTENT'] = 'Lier au contenu';
 	$text['CATEGORIES_ADMINISTRATION'] = 'Administration des catégories';
@@ -453,23 +455,23 @@ function category_set($args)
 {
 	global $user_id;
 
-	if(!isset($args['id']))
+	if(!isset($args['id']) || !is_numeric($args['id']))
 		return _error(INVALID_ARGUMENT);
+	$id = $args['id'];
 	if($user_id == 0 || _sql_single('SELECT user_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."'") != $user_id)
+			." WHERE content_id='$id'") != $user_id)
 		return _error(PERMISSION_DENIED);
 	$module = _module_id('category');
 	if(_sql_single('SELECT module_id FROM daportal_content'
-			." WHERE content_id='".$args['id']."'") == $module)
+			." WHERE content_id='$id'") == $module)
 		return _error(INVALID_ARGUMENT);
 	require_once('./system/content.php');
-	if(!_content_display($args['id']))
+	if(!_content_display($id))
 		return _error('Could not display content');
 	print('<h2 class="title category">'.CHOOSE_CATEGORIES.'</h2>'."\n");
 	$categories = _sql_array('SELECT content_id AS id, title'
-			.' FROM daportal_content'
-			." WHERE module_id='$module'"." AND enabled='1'"
-			.' ORDER BY title ASC');
+			." FROM daportal_content WHERE module_id='$module'"
+			." AND enabled='1' ORDER BY title ASC");
 	if(!is_array($categories))
 		return _error('Could not list categories');
 	$cnt = count($categories);
@@ -490,7 +492,9 @@ function category_set($args)
 	_module('explorer', 'browse', array('entries' => $categories,
 				'view' => 'list', 'toolbar' => $toolbar,
 				'module' => 'category', 'action' => 'set',
-				'id' => $args['id']));
+				'id' => $id));
+	$module = _content_module($id);
+	$title = _content_title($id);
 	include('./modules/category/choose.tpl');
 }
 

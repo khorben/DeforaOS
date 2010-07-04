@@ -71,6 +71,17 @@ function _content_insert($title, $content, $enabled = 0)
 }
 
 
+function _content_module($id)
+{
+	return _sql_single('SELECT name FROM daportal_content, daportal_module'
+			." WHERE content_id='$id'"
+			.' AND daportal_content.module_id'
+			.'=daportal_module.module_id'
+			." AND daportal_content.enabled='1'"
+			." AND daportal_module.enabled='1'");
+}
+
+
 function _content_readable($id)
 {
 	global $user_id;
@@ -104,6 +115,13 @@ function _content_select($id, $enabled = '')
 	$content['tag'] = $content['title'];
 	_content_select_lang($id, $content['title'], $content['content']);
 	return $content;
+}
+
+
+function _content_title($id)
+{
+	return _sql_single('SELECT title FROM daportal_content'
+			." WHERE content_id='$id' AND enabled='1'");
 }
 
 
