@@ -117,8 +117,7 @@ function _project_members($id)
 {
 	$admin = _sql_array('SELECT daportal_user.user_id AS id'
 			.', username FROM daportal_project, daportal_content'
-			.', daportal_user'
-			.' WHERE daportal_project.project_id'
+			.', daportal_user WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			.' AND daportal_content.user_id=daportal_user.user_id'
 			." AND daportal_content.enabled='1'"
@@ -143,6 +142,75 @@ function _project_name($id)
 			.', daportal_content WHERE daportal_project.project_id'
 			.'=daportal_content.content_id'
 			." AND project_id='$id'");
+}
+
+
+function _project_timeline($id, $cvsroot, $cpp = FALSE)
+{
+	if(($cvsrep = _config_get('project', 'cvsroot')) == FALSE
+			|| ($fp = fopen($cvsrep.'/CVSROOT/history', 'r'))
+			== FALSE)
+	{
+		_error('Unable to open history file');
+		return array();
+	}
+	$entries = array();
+	$i = 0;
+	$len = strlen($cvsroot);
+	while(($line = fgets($fp)) != FALSE)
+	{
+		$fields = explode('|', $line);
+		if(strcmp('', $fields[4]) == 0)
+			continue;
+		if(strncmp($fields[3], $cvsroot, $len) != 0)
+			continue;
+		unset($event);
+		unset($icon);
+		switch($fields[0][0])
+		{
+			case 'A': $event = 'Add'; $icon = 'added';      break;
+			case 'F': $event = 'Release';                   break;
+			case 'M': $event = 'Modify'; $icon = 'modified';break;
+			case 'R': $event = 'Remove'; $icon = 'removed'; break;
+		}
+		if(!isset($event))
+			continue;
+		$icon = isset($icon) ? 'icons/48x48/cvs-'.$icon.'.png' : '';
+		$name = substr($fields[3], $len ? $len + 1 : $len).'/'
+			.$fields[5];
+		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
+		$date = date('d/m/Y H:i', $date);
+		if(($author = _user_id($fields[1])) != 0)
+			$author = '<a href="'._html_link('project', 'list', '',
+				'', 'user_id='._html_safe($author)).'">'
+					._html_safe($fields[1]).'</a>';
+		else
+			$author = _html_safe($fields[1]);
+		$entry = array('name' => _html_safe($name),
+				'icon' => $icon, 'thumbnail' => $icon,
+				'date' => _html_safe($date),
+				'event' => _html_safe($event),
+				'revision' => _html_safe($fields[4]),
+				'author' => $author);
+		if($id !== FALSE)
+		{
+			$entry['module'] = 'project';
+			$entry['action'] = 'browse';
+			$entry['id'] = $id;
+			$entry['args'] = 'file='._html_safe($name).',v';
+			$entry['revision'] = '<a href="'._html_link('project',
+				'browse', $id, FALSE, 'file='._html_safe($name)
+					.',v&amp;revision='
+					.$entry['revision']).'">'
+					.$entry['revision'].'</a>';
+		}
+		$entries[] = $entry;
+	}
+	fclose($fp);
+	$entries = array_reverse($entries);
+	if($cpp !== FALSE)
+		array_splice($entries, $cpp);
+	return $entries;
 }
 
 
@@ -1397,6 +1465,23 @@ function project_insert($args)
 }
 
 
+//project_lastcommits
+function project_lastcommits($args)
+{
+	$cpp = 6;
+	if(isset($args['cpp']) && is_numeric($args['cpp']))
+	$cpp = $args['cpp'];
+	if(($entries = _project_timeline(FALSE, '', $cpp)) === FALSE)
+		return;
+	_module('explorer', 'browse_trusted', array(
+			'entries' => $entries,
+			'class' => array('date' => DATE, 'event' => ACTION,
+				'revision' => REVISION,
+				'author' => AUTHOR), 'toolbar' => 0,
+			'view' => 'details'));
+}
+
+
 //project_list
 function project_list($args)
 {
@@ -1726,54 +1811,7 @@ function project_timeline($args)
 	}
 	print('<h1 class="title project">'._html_safe($project['name'])
 			.' '._html_safe(TIMELINE).'</h1>'."\n");
-	if(($cvsrep = _config_get('project', 'cvsroot')) == FALSE
-			|| ($fp = fopen($cvsrep.'/CVSROOT/history', 'r'))
-			== FALSE)
-		return _error('Unable to open history file');
-	$entries = array();
-	$i = 0;
-	$len = strlen($project['cvsroot']);
-	while(($line = fgets($fp)) != FALSE)
-	{
-		$fields = explode('|', $line);
-		if(strcmp('', $fields[4]) == 0)
-			continue;
-		if(strncmp($fields[3], $project['cvsroot'], $len) != 0)
-			continue;
-		unset($event);
-		unset($icon);
-		switch($fields[0][0])
-		{
-			case 'A': $event = 'Add'; $icon = 'added';	break;
-			case 'F': $event = 'Release';			break;
-			case 'M': $event = 'Modify'; $icon = 'modified';break;
-			case 'R': $event = 'Remove'; $icon = 'removed';	break;
-		}
-		if(!isset($event))
-			continue;
-		$icon = isset($icon) ? 'icons/48x48/cvs-'.$icon.'.png' : '';
-		$name = substr($fields[3], $len + 1).'/'.$fields[5];
-		$date = base_convert(substr($fields[0], 1, 9), 16, 10);
-		$date = date('d/m/Y H:i', $date);
-		if(($author = _user_id($fields[1])) != 0)
-			$author = '<a href="'._html_link('project', 'list', '',
-				'', 'user_id='._html_safe($author)).'">'
-					._html_safe($fields[1]).'</a>';
-		else
-			$author = _html_safe($fields[1]);
-		$entries[] = array('module' => 'project', 'action' => 'browse',
-				'id' => $args['id'],
-				'args' => 'file='._html_safe($name).',v',
-				'name' => _html_safe($name),
-				'icon' => $icon, 'thumbnail' => $icon,
-				'date' => _html_safe($date),
-				'event' => _html_safe($event),
-				'revision' => '<a href="'._html_link('project',
-			'browse', $args['id'], FALSE, 'file='._html_safe($name)
-				.',v&amp;revision='._html_safe($fields[4])).'">'
-				._html_safe($fields[4]).'</a>',
-				'author' => $author);
-	}
+	$entries = _project_timeline($project['id'], $project['cvsroot']);
 	$toolbar = array();
 	$toolbar[] = array('title' => BACK, 'class' => 'back',
 			'onclick' => 'history.back(); return false');
@@ -1785,12 +1823,11 @@ function project_timeline($args)
 				$project['id'], $project['name']),
 			'onclick' => 'location.reload(); return false');
 	_module('explorer', 'browse_trusted', array(
-			'entries' => array_reverse($entries),
+			'entries' => $entries,
 			'class' => array('date' => DATE, 'event' => ACTION,
 					'revision' => REVISION,
 					'author' => AUTHOR),
 			'toolbar' => $toolbar, 'view' => 'details'));
-	fclose($fp);
 }
 
 
