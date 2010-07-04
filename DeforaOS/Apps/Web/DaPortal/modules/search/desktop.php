@@ -26,6 +26,9 @@ global $lang;
 if($lang == 'de')
 	$title = 'Suche';
 else if($lang == 'fr')
+{
 	$title = 'Recherche';
+	$actions['advanced'] = 'Avancée';
+}
 
 ?>

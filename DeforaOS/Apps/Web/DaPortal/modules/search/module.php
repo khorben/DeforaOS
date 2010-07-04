@@ -25,13 +25,15 @@ if(!ereg('/index.php$', $_SERVER['SCRIPT_NAME']))
 //lang
 $text = array();
 $text['ADVANCED_SEARCH'] = 'Advanced search';
-$text['CONTENTS'] = 'Contents';
 $text['CONTENT_FROM'] = 'Content from';
+$text['CONTENTS'] = 'Contents';
 $text['IN_MODULE'] = 'In module';
 $text['RESULTS_FOUND'] = 'result(s) found';
 $text['QUERY'] = 'Query';
 $text['SEARCH_ADMINISTRATION'] = 'Search administration';
+$text['SEARCH_BY'] = 'By';
 $text['SEARCH_IN'] = 'Search in';
+$text['SEARCH_ON'] = 'on';
 $text['SEARCH_RESULTS'] = 'Search results';
 $text['SETTINGS'] = 'Settings';
 $text['SIMPLER_SEARCH'] = 'Simpler search';
@@ -39,8 +41,18 @@ $text['TITLES'] = 'Titles';
 global $lang;
 if($lang == 'fr')
 {
+	$text['ADVANCED_SEARCH'] = 'Recherche avancée';
+	$text['CONTENT_FROM'] = 'Contenus de';
+	$text['CONTENTS'] = 'Contenus';
+	$text['IN_MODULE'] = 'Du module';
+	$text['QUERY'] = 'Critères';
 	$text['RESULTS_FOUND'] = 'résultat(s) trouvés';
+	$text['SEARCH_BY'] = 'Par';
+	$text['SEARCH_IN'] = 'Rechercher dans';
+	$text['SEARCH_ON'] = 'le';
 	$text['SEARCH_RESULTS'] = 'Résultats de la recherche';
+	$text['SIMPLER_SEARCH'] = 'Recherche simplifiée';
+	$text['TITLES'] = 'Titres';
 }
 _lang($text);
 
@@ -107,6 +119,7 @@ function _search_do($q, $intitle, $incontent, $spp, $page, $user = FALSE,
 		$i++;
 	}
 	include('./modules/search/search_bottom.tpl');
+	//FIXME doesn't work for advanced search
 	_html_paging(_html_link('search', $advanced ? 'advanced' : FALSE, FALSE,
 				FALSE, array('q' => _html_safe($query),
 					'page' => '')), $page, $pages);

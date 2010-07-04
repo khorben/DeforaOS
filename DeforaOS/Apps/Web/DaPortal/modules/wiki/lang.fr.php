@@ -1,5 +1,5 @@
 <?php //$Id$
-//Copyright (c) 2007 Pierre Pronchery <khorben@defora.org>
+//Copyright (c) 2010 Pierre Pronchery <khorben@defora.org>
 //This file is part of DaPortal
 //
 //DaPortal is free software; you can redistribute it and/or modify
@@ -28,12 +28,17 @@ $text['ALIGN_LEFT'] = 'Aligner à gauche';
 $text['ALIGN_RIGHT'] = 'Aligner à droite';
 $text['BOLD'] = 'Gras';
 $text['COPY'] = 'Copier';
+$text['CREATE'] = 'Créer';
+$text['CREATE_A_PAGE'] = 'Créer une page';
 $text['CUT'] = 'Couper';
 $text['DOCUMENT_NOT_VALID'] = 'Document non valide';
 $text['FONT'] = 'Fonte';
 $text['ITALIC'] = 'Italique';
+$text['LOOK_FOR_A_PAGE'] = 'Chercher une page';
+$text['LOOK_INSIDE_PAGES'] = 'Chercher dans les pages';
 $text['NEW_WIKI_PAGE'] = 'Nouvelle page Wiki';
 $text['PASTE'] = 'Coller';
+$text['RECENT_CHANGES'] = 'Changements récents';
 $text['REDO'] = 'Refaire';
 $text['SIZE'] = 'Taille';
 $text['STRIKE'] = 'Barré';
@@ -44,5 +49,6 @@ $text['UNDO'] = 'Annuler';
 $text['WIKI_ADMINISTRATION'] = 'Administration du wiki';
 $text['WIKI_PAGE_PREVIEW'] = 'Prévisualisation de page Wiki';
 $text['WIKI_PAGES_LIST'] = 'Liste des pages Wiki';
+$text['WIKI_SEARCH'] = 'Recherche wiki';
 
 ?>
