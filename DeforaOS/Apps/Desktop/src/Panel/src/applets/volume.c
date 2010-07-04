@@ -18,7 +18,7 @@
 
 
 #include <sys/ioctl.h>
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__sun__)
 # include <sys/audioio.h>
 #else
 # include <sys/soundcard.h>
