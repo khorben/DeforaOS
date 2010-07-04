@@ -1376,7 +1376,7 @@ static int _clean_targets(Config * config, FILE * fp)
 	if((targets = string_new(p)) == NULL)
 		return 1;
 	q = targets;
-	fputs("\t$(RM)", fp);
+	fputs("\t$(RM) --", fp);
 	for(i = 0;; i++)
 	{
 		if(targets[i] != ',' && targets[i] != '\0')
@@ -1386,7 +1386,7 @@ static int _clean_targets(Config * config, FILE * fp)
 		fprintf(fp, "%s%s%s", " $(", targets, "_OBJS)");
 		if(c == '\0')
 			break;
-		targets += i+1;
+		targets += i + 1;
 		i = 0;
 	}
 	fputc('\n', fp);
@@ -1410,7 +1410,7 @@ static int _write_distclean(Configure * configure, FILE * fp)
 		_clean_targets(configure->config, fp);
 	}
 	if(config_get(configure->config, "", "targets") != NULL)
-		fputs("\t$(RM) $(TARGETS)\n", fp);
+		fputs("\t$(RM) -- $(TARGETS)\n", fp);
 	return 0;
 }
 
@@ -1429,9 +1429,9 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 	version = config_get(configure->config, "", "version");
 	if(package == NULL || version == NULL)
 		return 0;
-	fputs("\ndist:\n\t$(RM) -r $(PACKAGE)-$(VERSION)\n"
-			"\t$(LN) -s . $(PACKAGE)-$(VERSION)\n"
-			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \\\n", fp);
+	fputs("\ndist:\n\t$(RM) -r -- $(PACKAGE)-$(VERSION)\n"
+			"\t$(LN) -s -- . $(PACKAGE)-$(VERSION)\n"
+			"\t@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \\\n", fp);
 	for(i = from + 1; i < to; i++)
 	{
 		array_get_copy(ca, i, &p);
@@ -1444,7 +1444,7 @@ static int _write_dist(Configure * configure, FILE * fp, configArray * ca,
 	}
 	else
 		return 1;
-	fputs("\t$(RM) $(PACKAGE)-$(VERSION)\n", fp);
+	fputs("\t$(RM) -- $(PACKAGE)-$(VERSION)\n", fp);
 	return 0;
 }
 
@@ -1634,7 +1634,7 @@ static void _install_target_binary(Config * config, FILE * fp,
 	if((path = config_get(config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
-	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0755 ", target,
+	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0755 -- ", target,
 			" $(DESTDIR)", path, target);
 }
 
@@ -1648,7 +1648,7 @@ static int _install_target_library(Config * config, FILE * fp,
 	if((path = config_get(config, target, "install")) == NULL)
 		return 0;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 ", target,
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 -- ", target,
 			".a $(DESTDIR)", path, target, ".a\n");
 	if((p = config_get(config, target, "soname")) != NULL)
 		soname = string_new(p);
@@ -1656,11 +1656,11 @@ static int _install_target_library(Config * config, FILE * fp,
 		soname = string_new_append(target, ".so.0", NULL);
 	if(soname == NULL)
 		return 1;
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 ", target,
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0755 -- ", target,
 			".so $(DESTDIR)", path, soname, ".0\n");
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s ", soname,
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s -- ", soname,
 			".0 $(DESTDIR)", path, soname, "\n");
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s ", soname,
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(LN) -s -- ", soname,
 			".0 $(DESTDIR)", path, target, ".so\n");
 	string_delete(soname);
 	return 0;
@@ -1688,7 +1688,7 @@ static void _install_target_object(Config * config, FILE * fp,
 	if((path = config_get(config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
-	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ", target,
+	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 -- ", target,
 			" $(DESTDIR)", path, target);
 }
 
@@ -1700,7 +1700,7 @@ static void _install_target_plugin(Config * config, FILE * fp,
 	if((path = config_get(config, target, "install")) == NULL)
 		return;
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", path);
-	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 ", target,
+	fprintf(fp, "%s%s%s%s/%s%s", "\t$(INSTALL) -m 0644 -- ", target,
 			".so $(DESTDIR)", path, target, ".so\n");
 }
 
@@ -1758,7 +1758,7 @@ static int _install_include(Config * config, FILE * fp, String const * include)
 	if((install = config_get(config, include, "install")) == NULL)
 		install = "$(INCLUDEDIR)";
 	fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", install);
-	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 ", include,
+	fprintf(fp, "%s%s%s%s/%s\n", "\t$(INSTALL) -m 0644 -- ", include,
 			" $(DESTDIR)", install, include);
 	return 0;
 }
@@ -1793,8 +1793,8 @@ static int _install_dist(Configure * configure, FILE * fp)
 		if((d = config_get(configure->config, dist, "install")) != NULL)
 		{
 			fprintf(fp, "%s%s\n", "\t$(MKDIR) $(DESTDIR)", d);
-			fprintf(fp, "%s%s%s%s%s%s/%s\n", "\t$(INSTALL) -m ",
-					m, " ", dist, " $(DESTDIR)", d, dist);
+			fprintf(fp, "%s%s%s%s%s%s/%s\n", "\t$(INSTALL) -m ", m,
+					" -- ", dist, " $(DESTDIR)", d, dist);
 		}
 		if(c == '\0')
 			break;
@@ -1924,7 +1924,7 @@ static int _uninstall_target(Config * config, FILE * fp, String const * target)
 	String const * type;
 	String const * path;
 	TargetType tt;
-	const String * rm_destdir = "$(RM) $(DESTDIR)";
+	const String * rm_destdir = "$(RM) -- $(DESTDIR)";
 
 	if((type = config_get(config, target, "type")) == NULL)
 		return 1;
@@ -1965,7 +1965,7 @@ static void _uninstall_target_library(Config * config, FILE * fp,
 {
 	String const * soname;
 	const String * format = "\t%s%s/%s%s";
-	const String * rm_destdir = "$(RM) $(DESTDIR)";
+	const String * rm_destdir = "$(RM) -- $(DESTDIR)";
 
 	fprintf(fp, format, rm_destdir, path, target, ".a\n");
 	if((soname = config_get(config, target, "soname")) == NULL)
@@ -2000,7 +2000,7 @@ static int _uninstall_include(Config * config, FILE * fp,
 
 	if((install = config_get(config, include, "install")) == NULL)
 		install = "$(INCLUDEDIR)";
-	fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", install, include);
+	fprintf(fp, "%s%s/%s\n", "\t$(RM) -- $(DESTDIR)", install, include);
 	return 0;
 }
 
@@ -2010,6 +2010,6 @@ static int _uninstall_dist(Config * config, FILE * fp, String const * dist)
 
 	if((install = config_get(config, dist, "install")) == NULL)
 		return 0;
-	fprintf(fp, "%s%s/%s\n", "\t$(RM) $(DESTDIR)", install, dist);
+	fprintf(fp, "%s%s/%s\n", "\t$(RM) -- $(DESTDIR)", install, dist);
 	return 0;
 }
