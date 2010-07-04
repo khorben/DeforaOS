@@ -18,7 +18,7 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(__sun__)
 # include <sys/audioio.h>
 #endif
 #include <Desktop.h>
@@ -64,6 +64,7 @@ void on_view_all(gpointer data)
 }
 
 
+#ifdef AUDIO_MIXER_DEVINFO
 /* on_view_outputs */
 void on_view_outputs(gpointer data)
 {
@@ -125,6 +126,7 @@ void on_view_modem(gpointer data)
 
 	mixer_show_class(mixer, AudioCmodem);
 }
+#endif
 
 
 /* on_help_about */

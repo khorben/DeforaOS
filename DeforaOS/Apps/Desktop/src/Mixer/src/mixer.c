@@ -90,6 +90,7 @@ static DesktopMenu _mixer_menu_file[] =
 static DesktopMenu _mixer_menu_view[] =
 {
 	{ N_("_All"), G_CALLBACK(on_view_all), NULL, GDK_CONTROL_MASK, GDK_A },
+#ifdef AUDIO_MIXER_DEVINFO
 	{ N_("_Outputs"), G_CALLBACK(on_view_outputs), NULL, GDK_CONTROL_MASK,
 		GDK_O },
 	{ N_("_Inputs"), G_CALLBACK(on_view_inputs), NULL, GDK_CONTROL_MASK,
@@ -103,6 +104,7 @@ static DesktopMenu _mixer_menu_view[] =
 	{ N_("Mi_x"), G_CALLBACK(on_view_mix), NULL, GDK_CONTROL_MASK, GDK_X },
 	{ N_("_Modem"), G_CALLBACK(on_view_modem), NULL, GDK_CONTROL_MASK,
 		GDK_M },
+#endif
 	{ NULL, NULL, NULL, 0, 0 }
 };
 
