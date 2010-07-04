@@ -18,9 +18,9 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) -s . $(PACKAGE)-$(VERSION)
-	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+	$(RM) -r -- $(PACKAGE)-$(VERSION)
+	$(LN) -s -- . $(PACKAGE)-$(VERSION)
+	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/browser.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
@@ -62,7 +62,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -- $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

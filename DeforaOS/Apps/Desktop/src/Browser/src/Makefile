@@ -109,37 +109,37 @@ view.o: view.c mime.o
 	$(CC) $(view_CFLAGS) -c view.c
 
 clean:
-	$(RM) $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
+	$(RM) -- $(browser_OBJS) $(copy_OBJS) $(delete_OBJS) $(desktop_OBJS) $(move_OBJS) $(open_OBJS) $(properties_OBJS) $(view_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 browser $(DESTDIR)$(BINDIR)/browser
+	$(INSTALL) -m 0755 -- browser $(DESTDIR)$(BINDIR)/browser
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 copy $(DESTDIR)$(BINDIR)/copy
+	$(INSTALL) -m 0755 -- copy $(DESTDIR)$(BINDIR)/copy
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 delete $(DESTDIR)$(BINDIR)/delete
+	$(INSTALL) -m 0755 -- delete $(DESTDIR)$(BINDIR)/delete
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 desktop $(DESTDIR)$(BINDIR)/desktop
+	$(INSTALL) -m 0755 -- desktop $(DESTDIR)$(BINDIR)/desktop
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 move $(DESTDIR)$(BINDIR)/move
+	$(INSTALL) -m 0755 -- move $(DESTDIR)$(BINDIR)/move
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 open $(DESTDIR)$(BINDIR)/open
+	$(INSTALL) -m 0755 -- open $(DESTDIR)$(BINDIR)/open
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 properties $(DESTDIR)$(BINDIR)/properties
+	$(INSTALL) -m 0755 -- properties $(DESTDIR)$(BINDIR)/properties
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 view $(DESTDIR)$(BINDIR)/view
+	$(INSTALL) -m 0755 -- view $(DESTDIR)$(BINDIR)/view
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/browser
-	$(RM) $(DESTDIR)$(BINDIR)/copy
-	$(RM) $(DESTDIR)$(BINDIR)/delete
-	$(RM) $(DESTDIR)$(BINDIR)/desktop
-	$(RM) $(DESTDIR)$(BINDIR)/move
-	$(RM) $(DESTDIR)$(BINDIR)/open
-	$(RM) $(DESTDIR)$(BINDIR)/properties
-	$(RM) $(DESTDIR)$(BINDIR)/view
+	$(RM) -- $(DESTDIR)$(BINDIR)/browser
+	$(RM) -- $(DESTDIR)$(BINDIR)/copy
+	$(RM) -- $(DESTDIR)$(BINDIR)/delete
+	$(RM) -- $(DESTDIR)$(BINDIR)/desktop
+	$(RM) -- $(DESTDIR)$(BINDIR)/move
+	$(RM) -- $(DESTDIR)$(BINDIR)/open
+	$(RM) -- $(DESTDIR)$(BINDIR)/properties
+	$(RM) -- $(DESTDIR)$(BINDIR)/view
 
 .PHONY: all clean distclean install uninstall

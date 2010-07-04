@@ -59,25 +59,25 @@ smscrypt.o: smscrypt.c ../../include/Phone.h
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
-	$(RM) $(engineering_OBJS) $(openmoko_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(engineering_OBJS) $(openmoko_OBJS) $(profiles_OBJS) $(smscrypt_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
+	$(INSTALL) -m 0644 -- engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
+	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
+	$(INSTALL) -m 0644 -- profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
+	$(INSTALL) -m 0644 -- smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 
 .PHONY: all clean distclean install uninstall

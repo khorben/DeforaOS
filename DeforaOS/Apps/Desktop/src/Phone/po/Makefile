@@ -16,10 +16,10 @@ fr.mo: Phone.pot fr.po
 	./gettext.sh "fr.mo"
 
 clean:
-	$(RM) $(Phone.pot_OBJS) $(fr.mo_OBJS)
+	$(RM) -- $(Phone.pot_OBJS) $(fr.mo_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"

@@ -37,16 +37,16 @@ project.o: project.c
 	$(CC) $(gedi_CFLAGS) -c project.c
 
 clean:
-	$(RM) $(gedi_OBJS)
+	$(RM) -- $(gedi_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 gedi $(DESTDIR)$(BINDIR)/gedi
+	$(INSTALL) -m 0755 -- gedi $(DESTDIR)$(BINDIR)/gedi
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/gedi
+	$(RM) -- $(DESTDIR)$(BINDIR)/gedi
 
 .PHONY: all clean distclean install uninstall

@@ -16,10 +16,10 @@ fr.mo: Player.pot fr.po
 	./gettext.sh "fr.mo"
 
 clean:
-	$(RM) $(Player.pot_OBJS) $(fr.mo_OBJS)
+	$(RM) -- $(Player.pot_OBJS) $(fr.mo_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"

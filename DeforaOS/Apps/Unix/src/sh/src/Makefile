@@ -41,16 +41,16 @@ sh.o: sh.c
 	$(CC) $(sh_CFLAGS) -c sh.c
 
 clean:
-	$(RM) $(sh_OBJS)
+	$(RM) -- $(sh_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 sh $(DESTDIR)$(BINDIR)/sh
+	$(INSTALL) -m 0755 -- sh $(DESTDIR)$(BINDIR)/sh
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/sh
+	$(RM) -- $(DESTDIR)$(BINDIR)/sh
 
 .PHONY: all clean distclean install uninstall

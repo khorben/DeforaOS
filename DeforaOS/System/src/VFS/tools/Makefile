@@ -33,10 +33,10 @@ libvfs.o: libvfs.c ../src/common.c ../include/VFS.h
 	$(CC) $(libvfs_CFLAGS) -c libvfs.c
 
 clean:
-	$(RM) $(libvfs_OBJS)
+	$(RM) -- $(libvfs_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 

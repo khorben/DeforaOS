@@ -16,10 +16,10 @@ fr.mo: Panel.pot fr.po
 	./gettext.sh "fr.mo"
 
 clean:
-	$(RM) $(Panel.pot_OBJS) $(fr.mo_OBJS)
+	$(RM) -- $(Panel.pot_OBJS) $(fr.mo_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "fr.mo"

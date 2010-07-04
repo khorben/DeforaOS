@@ -46,10 +46,10 @@ smscrypt.o: smscrypt.c ../include/Phone.h ../src/plugins/smscrypt.c
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
-	$(RM) $(engineering_OBJS) $(pdu_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(engineering_OBJS) $(pdu_OBJS) $(smscrypt_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 

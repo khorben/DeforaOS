@@ -47,22 +47,22 @@ progress.o: progress.c
 	$(CC) $(progress_CFLAGS) -c progress.c
 
 clean:
-	$(RM) $(calendar_OBJS) $(fontsel_OBJS) $(progress_OBJS)
+	$(RM) -- $(calendar_OBJS) $(fontsel_OBJS) $(progress_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 calendar $(DESTDIR)$(BINDIR)/calendar
+	$(INSTALL) -m 0755 -- calendar $(DESTDIR)$(BINDIR)/calendar
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 fontsel $(DESTDIR)$(BINDIR)/fontsel
+	$(INSTALL) -m 0755 -- fontsel $(DESTDIR)$(BINDIR)/fontsel
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 progress $(DESTDIR)$(BINDIR)/progress
+	$(INSTALL) -m 0755 -- progress $(DESTDIR)$(BINDIR)/progress
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/calendar
-	$(RM) $(DESTDIR)$(BINDIR)/fontsel
-	$(RM) $(DESTDIR)$(BINDIR)/progress
+	$(RM) -- $(DESTDIR)$(BINDIR)/calendar
+	$(RM) -- $(DESTDIR)$(BINDIR)/fontsel
+	$(RM) -- $(DESTDIR)$(BINDIR)/progress
 
 .PHONY: all clean distclean install uninstall

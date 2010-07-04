@@ -72,22 +72,22 @@ token.o: token.c token.h
 	$(CC) $(libSystem_CFLAGS) -c token.c
 
 clean:
-	$(RM) $(libSystem_OBJS)
+	$(RM) -- $(libSystem_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 libSystem.a $(DESTDIR)$(LIBDIR)/libSystem.a
-	$(INSTALL) -m 0755 libSystem.so $(DESTDIR)$(LIBDIR)/libSystem.so.0.0
-	$(LN) -s libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so.0
-	$(LN) -s libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so
+	$(INSTALL) -m 0644 -- libSystem.a $(DESTDIR)$(LIBDIR)/libSystem.a
+	$(INSTALL) -m 0755 -- libSystem.so $(DESTDIR)$(LIBDIR)/libSystem.so.0.0
+	$(LN) -s -- libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so.0
+	$(LN) -s -- libSystem.so.0.0 $(DESTDIR)$(LIBDIR)/libSystem.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.a
-	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.so.0.0
-	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.so.0
-	$(RM) $(DESTDIR)$(LIBDIR)/libSystem.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libSystem.a
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libSystem.so.0.0
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libSystem.so.0
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libSystem.so
 
 .PHONY: all clean distclean install uninstall

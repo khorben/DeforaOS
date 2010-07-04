@@ -31,16 +31,16 @@ main.o: main.c
 	$(CC) $(framer_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(framer_OBJS)
+	$(RM) -- $(framer_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 framer $(DESTDIR)$(BINDIR)/framer
+	$(INSTALL) -m 0755 -- framer $(DESTDIR)$(BINDIR)/framer
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/framer
+	$(RM) -- $(DESTDIR)$(BINDIR)/framer
 
 .PHONY: all clean distclean install uninstall

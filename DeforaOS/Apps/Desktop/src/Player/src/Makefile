@@ -34,16 +34,16 @@ main.o: main.c player.h
 	$(CC) $(player_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(player_OBJS)
+	$(RM) -- $(player_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 player $(DESTDIR)$(BINDIR)/player
+	$(INSTALL) -m 0755 -- player $(DESTDIR)$(BINDIR)/player
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/player
+	$(RM) -- $(DESTDIR)$(BINDIR)/player
 
 .PHONY: all clean distclean install uninstall

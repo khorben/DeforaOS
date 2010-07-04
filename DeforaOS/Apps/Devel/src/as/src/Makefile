@@ -65,29 +65,29 @@ main.o: main.c ../include/as.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(libas_OBJS) $(as_OBJS)
+	$(RM) -- $(libas_OBJS) $(as_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(libas_OBJS) $(as_OBJS)
-	$(RM) $(TARGETS)
+	$(RM) -- $(libas_OBJS) $(as_OBJS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 libas.a $(DESTDIR)$(LIBDIR)/libas.a
-	$(INSTALL) -m 0755 libas.so $(DESTDIR)$(LIBDIR)/libas.so.0.0
-	$(LN) -s libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so.0
-	$(LN) -s libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so
+	$(INSTALL) -m 0644 -- libas.a $(DESTDIR)$(LIBDIR)/libas.a
+	$(INSTALL) -m 0755 -- libas.so $(DESTDIR)$(LIBDIR)/libas.so.0.0
+	$(LN) -s -- libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so.0
+	$(LN) -s -- libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 as $(DESTDIR)$(BINDIR)/as
+	$(INSTALL) -m 0755 -- as $(DESTDIR)$(BINDIR)/as
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(LIBDIR)/libas.a
-	$(RM) $(DESTDIR)$(LIBDIR)/libas.so.0.0
-	$(RM) $(DESTDIR)$(LIBDIR)/libas.so.0
-	$(RM) $(DESTDIR)$(LIBDIR)/libas.so
-	$(RM) $(DESTDIR)$(BINDIR)/as
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libas.a
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libas.so.0.0
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libas.so.0
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libas.so
+	$(RM) -- $(DESTDIR)$(BINDIR)/as
 
 .PHONY: all subdirs clean distclean install uninstall

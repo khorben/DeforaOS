@@ -37,16 +37,16 @@ main.o: main.c task.h todo.h ../config.h
 	$(CC) $(todo_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(todo_OBJS)
+	$(RM) -- $(todo_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 todo $(DESTDIR)$(BINDIR)/todo
+	$(INSTALL) -m 0755 -- todo $(DESTDIR)$(BINDIR)/todo
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/todo
+	$(RM) -- $(DESTDIR)$(BINDIR)/todo
 
 .PHONY: all clean distclean install uninstall

@@ -46,23 +46,23 @@ run.o: run.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(panel_OBJS) $(run_OBJS)
+	$(RM) -- $(panel_OBJS) $(run_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(panel_OBJS) $(run_OBJS)
-	$(RM) $(TARGETS)
+	$(RM) -- $(panel_OBJS) $(run_OBJS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 panel $(DESTDIR)$(BINDIR)/panel
+	$(INSTALL) -m 0755 -- panel $(DESTDIR)$(BINDIR)/panel
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 run $(DESTDIR)$(BINDIR)/run
+	$(INSTALL) -m 0755 -- run $(DESTDIR)$(BINDIR)/run
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(BINDIR)/panel
-	$(RM) $(DESTDIR)$(BINDIR)/run
+	$(RM) -- $(DESTDIR)$(BINDIR)/panel
+	$(RM) -- $(DESTDIR)$(BINDIR)/run
 
 .PHONY: all subdirs clean distclean install uninstall

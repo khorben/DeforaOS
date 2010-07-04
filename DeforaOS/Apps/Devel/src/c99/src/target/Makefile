@@ -49,22 +49,22 @@ indent.o: indent.c ../../include/c99/target.h
 	$(CC) $(indent_CFLAGS) -c indent.c
 
 clean:
-	$(RM) $(as_OBJS) $(graph_OBJS) $(indent_OBJS)
+	$(RM) -- $(as_OBJS) $(graph_OBJS) $(indent_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 as.so $(DESTDIR)$(LIBDIR)/c99/target/as.so
+	$(INSTALL) -m 0644 -- as.so $(DESTDIR)$(LIBDIR)/c99/target/as.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(INSTALL) -m 0644 -- graph.so $(DESTDIR)$(LIBDIR)/c99/target/graph.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/c99/target
-	$(INSTALL) -m 0644 indent.so $(DESTDIR)$(LIBDIR)/c99/target/indent.so
+	$(INSTALL) -m 0644 -- indent.so $(DESTDIR)$(LIBDIR)/c99/target/indent.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/as.so
-	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/graph.so
-	$(RM) $(DESTDIR)$(LIBDIR)/c99/target/indent.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/as.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/graph.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/c99/target/indent.so
 
 .PHONY: all clean distclean install uninstall

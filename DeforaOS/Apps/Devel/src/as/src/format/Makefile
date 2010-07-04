@@ -39,19 +39,19 @@ flat.o: flat.c format.h
 	$(CC) $(flat_CFLAGS) -c flat.c
 
 clean:
-	$(RM) $(elf_OBJS) $(flat_OBJS)
+	$(RM) -- $(elf_OBJS) $(flat_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
-	$(INSTALL) -m 0644 elf.so $(DESTDIR)$(LIBDIR)/as/format/elf.so
+	$(INSTALL) -m 0644 -- elf.so $(DESTDIR)$(LIBDIR)/as/format/elf.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/as/format
-	$(INSTALL) -m 0644 flat.so $(DESTDIR)$(LIBDIR)/as/format/flat.so
+	$(INSTALL) -m 0644 -- flat.so $(DESTDIR)$(LIBDIR)/as/format/flat.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/elf.so
-	$(RM) $(DESTDIR)$(LIBDIR)/as/format/flat.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/elf.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/as/format/flat.so
 
 .PHONY: all clean distclean install uninstall

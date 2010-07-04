@@ -41,19 +41,19 @@ damon.o: damon.c ../config.h
 	$(CC) $(DaMon_CFLAGS) -c damon.c
 
 clean:
-	$(RM) $(../data/Probe.h_OBJS) $(Probe_OBJS) $(DaMon_OBJS)
+	$(RM) -- $(../data/Probe.h_OBJS) $(Probe_OBJS) $(DaMon_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 Probe $(DESTDIR)$(BINDIR)/Probe
+	$(INSTALL) -m 0755 -- Probe $(DESTDIR)$(BINDIR)/Probe
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 DaMon $(DESTDIR)$(BINDIR)/DaMon
+	$(INSTALL) -m 0755 -- DaMon $(DESTDIR)$(BINDIR)/DaMon
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/Probe
-	$(RM) $(DESTDIR)$(BINDIR)/DaMon
+	$(RM) -- $(DESTDIR)$(BINDIR)/Probe
+	$(RM) -- $(DESTDIR)$(BINDIR)/DaMon
 
 .PHONY: all clean distclean install uninstall

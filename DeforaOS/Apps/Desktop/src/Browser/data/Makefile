@@ -13,9 +13,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 browser.desktop $(DESTDIR)$(PREFIX)/share/applications/browser.desktop
+	$(INSTALL) -m 0644 -- browser.desktop $(DESTDIR)$(PREFIX)/share/applications/browser.desktop
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/share/applications/browser.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/browser.desktop
 
 .PHONY: all clean distclean install uninstall

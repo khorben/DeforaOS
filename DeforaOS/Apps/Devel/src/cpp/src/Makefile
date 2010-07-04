@@ -50,25 +50,25 @@ main.o: main.c ../include/cpp.h
 	$(CC) $(cpp_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(libcpp_OBJS) $(cpp_OBJS)
+	$(RM) -- $(libcpp_OBJS) $(cpp_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)
-	$(INSTALL) -m 0644 libcpp.a $(DESTDIR)$(LIBDIR)/libcpp.a
-	$(INSTALL) -m 0755 libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
-	$(LN) -s libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so.0
-	$(LN) -s libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so
+	$(INSTALL) -m 0644 -- libcpp.a $(DESTDIR)$(LIBDIR)/libcpp.a
+	$(INSTALL) -m 0755 -- libcpp.so $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
+	$(LN) -s -- libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so.0
+	$(LN) -s -- libcpp.so.0.0 $(DESTDIR)$(LIBDIR)/libcpp.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 cpp $(DESTDIR)$(BINDIR)/cpp
+	$(INSTALL) -m 0755 -- cpp $(DESTDIR)$(BINDIR)/cpp
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.a
-	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
-	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so.0
-	$(RM) $(DESTDIR)$(LIBDIR)/libcpp.so
-	$(RM) $(DESTDIR)$(BINDIR)/cpp
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libcpp.a
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libcpp.so.0.0
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libcpp.so.0
+	$(RM) -- $(DESTDIR)$(LIBDIR)/libcpp.so
+	$(RM) -- $(DESTDIR)$(BINDIR)/cpp
 
 .PHONY: all clean distclean install uninstall

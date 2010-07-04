@@ -51,23 +51,23 @@ main.o: main.c surfer.h ../config.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(download_OBJS) $(surfer_OBJS)
+	$(RM) -- $(download_OBJS) $(surfer_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(download_OBJS) $(surfer_OBJS)
-	$(RM) $(TARGETS)
+	$(RM) -- $(download_OBJS) $(surfer_OBJS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 download $(DESTDIR)$(BINDIR)/download
+	$(INSTALL) -m 0755 -- download $(DESTDIR)$(BINDIR)/download
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 surfer $(DESTDIR)$(BINDIR)/surfer
+	$(INSTALL) -m 0755 -- surfer $(DESTDIR)$(BINDIR)/surfer
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(BINDIR)/download
-	$(RM) $(DESTDIR)$(BINDIR)/surfer
+	$(RM) -- $(DESTDIR)$(BINDIR)/download
+	$(RM) -- $(DESTDIR)$(BINDIR)/surfer
 
 .PHONY: all subdirs clean distclean install uninstall

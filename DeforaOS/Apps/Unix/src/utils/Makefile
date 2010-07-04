@@ -18,9 +18,9 @@ distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) -r $(PACKAGE)-$(VERSION)
-	$(LN) -s . $(PACKAGE)-$(VERSION)
-	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz \
+	$(RM) -r -- $(PACKAGE)-$(VERSION)
+	$(LN) -s -- . $(PACKAGE)-$(VERSION)
+	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/src/basename.c \
 		$(PACKAGE)-$(VERSION)/src/cat.c \
 		$(PACKAGE)-$(VERSION)/src/chgrp.c \
@@ -79,7 +79,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/Makefile \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/project.conf
-	$(RM) $(PACKAGE)-$(VERSION)
+	$(RM) -- $(PACKAGE)-$(VERSION)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done

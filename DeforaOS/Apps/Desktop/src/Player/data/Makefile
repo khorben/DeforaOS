@@ -13,9 +13,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 player.desktop $(DESTDIR)$(PREFIX)/share/applications/player.desktop
+	$(INSTALL) -m 0644 -- player.desktop $(DESTDIR)$(PREFIX)/share/applications/player.desktop
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/share/applications/player.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/player.desktop
 
 .PHONY: all clean distclean install uninstall

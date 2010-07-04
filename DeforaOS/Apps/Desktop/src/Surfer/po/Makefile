@@ -25,10 +25,10 @@ it.mo: Surfer.pot it.po
 	./gettext.sh "it.mo"
 
 clean:
-	$(RM) $(Surfer.pot_OBJS) $(de.mo_OBJS) $(es.mo_OBJS) $(fr.mo_OBJS) $(it.mo_OBJS)
+	$(RM) -- $(Surfer.pot_OBJS) $(de.mo_OBJS) $(es.mo_OBJS) $(fr.mo_OBJS) $(it.mo_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	./gettext.sh -p "$(DESTDIR)$(PREFIX)" install "de.mo"

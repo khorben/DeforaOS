@@ -13,9 +13,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 surfer.desktop $(DESTDIR)$(PREFIX)/share/applications/surfer.desktop
+	$(INSTALL) -m 0644 -- surfer.desktop $(DESTDIR)$(PREFIX)/share/applications/surfer.desktop
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/share/applications/surfer.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/surfer.desktop
 
 .PHONY: all clean distclean install uninstall

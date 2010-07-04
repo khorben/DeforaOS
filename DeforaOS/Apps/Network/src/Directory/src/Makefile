@@ -34,16 +34,16 @@ main.o: main.c directory.h
 	$(CC) $(Directory_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(../data/Directory.h_OBJS) $(Directory_OBJS)
+	$(RM) -- $(../data/Directory.h_OBJS) $(Directory_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 Directory $(DESTDIR)$(BINDIR)/Directory
+	$(INSTALL) -m 0755 -- Directory $(DESTDIR)$(BINDIR)/Directory
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/Directory
+	$(RM) -- $(DESTDIR)$(BINDIR)/Directory
 
 .PHONY: all clean distclean install uninstall

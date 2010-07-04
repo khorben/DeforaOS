@@ -47,20 +47,20 @@ main.o: main.c mailer.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(mailer_OBJS)
+	$(RM) -- $(mailer_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(mailer_OBJS)
-	$(RM) $(TARGETS)
+	$(RM) -- $(mailer_OBJS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 mailer $(DESTDIR)$(BINDIR)/mailer
+	$(INSTALL) -m 0755 -- mailer $(DESTDIR)$(BINDIR)/mailer
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(BINDIR)/mailer
+	$(RM) -- $(DESTDIR)$(BINDIR)/mailer
 
 .PHONY: all subdirs clean distclean install uninstall

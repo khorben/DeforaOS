@@ -13,9 +13,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/etc/AppInterface
-	$(INSTALL) -m 0644 Init.interface $(DESTDIR)$(PREFIX)/etc/AppInterface/Init.interface
+	$(INSTALL) -m 0644 -- Init.interface $(DESTDIR)$(PREFIX)/etc/AppInterface/Init.interface
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/etc/AppInterface/Init.interface
+	$(RM) -- $(DESTDIR)$(PREFIX)/etc/AppInterface/Init.interface
 
 .PHONY: all clean distclean install uninstall

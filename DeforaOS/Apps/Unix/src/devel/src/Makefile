@@ -26,16 +26,16 @@ ar.o: ar.c
 	$(CC) $(ar_CFLAGS) -c ar.c
 
 clean:
-	$(RM) $(ar_OBJS)
+	$(RM) -- $(ar_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 ar $(DESTDIR)$(BINDIR)/ar
+	$(INSTALL) -m 0755 -- ar $(DESTDIR)$(BINDIR)/ar
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/ar
+	$(RM) -- $(DESTDIR)$(BINDIR)/ar
 
 .PHONY: all clean distclean install uninstall

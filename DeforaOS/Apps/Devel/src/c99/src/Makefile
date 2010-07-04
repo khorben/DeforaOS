@@ -48,20 +48,20 @@ tokenset.o: tokenset.c common.h code.h tokenset.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(c99_OBJS)
+	$(RM) -- $(c99_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(c99_OBJS)
-	$(RM) $(TARGETS)
+	$(RM) -- $(c99_OBJS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 c99 $(DESTDIR)$(BINDIR)/c99
+	$(INSTALL) -m 0755 -- c99 $(DESTDIR)$(BINDIR)/c99
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(BINDIR)/c99
+	$(RM) -- $(DESTDIR)$(BINDIR)/c99
 
 .PHONY: all subdirs clean distclean install uninstall

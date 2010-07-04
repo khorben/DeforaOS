@@ -15,9 +15,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 cpp.h $(DESTDIR)$(INCLUDEDIR)/cpp.h
+	$(INSTALL) -m 0644 -- cpp.h $(DESTDIR)$(INCLUDEDIR)/cpp.h
 
 uninstall:
-	$(RM) $(DESTDIR)$(INCLUDEDIR)/cpp.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/cpp.h
 
 .PHONY: all clean distclean install uninstall

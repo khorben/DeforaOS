@@ -209,70 +209,70 @@ volume.o: volume.c ../../include/Panel.h
 	$(CC) $(volume_CFLAGS) -c volume.c
 
 clean:
-	$(RM) $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
+	$(RM) -- $(battery_OBJS) $(bluetooth_OBJS) $(clock_OBJS) $(cpu_OBJS) $(cpufreq_OBJS) $(desktop_OBJS) $(gps_OBJS) $(gsm_OBJS) $(keyboard_OBJS) $(lock_OBJS) $(logout_OBJS) $(main_OBJS) $(memory_OBJS) $(pager_OBJS) $(phone_OBJS) $(swap_OBJS) $(systray_OBJS) $(tasks_OBJS) $(volume_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 battery.so $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
+	$(INSTALL) -m 0644 -- battery.so $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 bluetooth.so $(DESTDIR)$(LIBDIR)/Panel/applets/bluetooth.so
+	$(INSTALL) -m 0644 -- bluetooth.so $(DESTDIR)$(LIBDIR)/Panel/applets/bluetooth.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 clock.so $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
+	$(INSTALL) -m 0644 -- clock.so $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 cpu.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
+	$(INSTALL) -m 0644 -- cpu.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 cpufreq.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
+	$(INSTALL) -m 0644 -- cpufreq.so $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 desktop.so $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
+	$(INSTALL) -m 0644 -- desktop.so $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 gps.so $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
+	$(INSTALL) -m 0644 -- gps.so $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 gsm.so $(DESTDIR)$(LIBDIR)/Panel/applets/gsm.so
+	$(INSTALL) -m 0644 -- gsm.so $(DESTDIR)$(LIBDIR)/Panel/applets/gsm.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 keyboard.so $(DESTDIR)$(LIBDIR)/Panel/applets/keyboard.so
+	$(INSTALL) -m 0644 -- keyboard.so $(DESTDIR)$(LIBDIR)/Panel/applets/keyboard.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 lock.so $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
+	$(INSTALL) -m 0644 -- lock.so $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 logout.so $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
+	$(INSTALL) -m 0644 -- logout.so $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 main.so $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
+	$(INSTALL) -m 0644 -- main.so $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 memory.so $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
+	$(INSTALL) -m 0644 -- memory.so $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 pager.so $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
+	$(INSTALL) -m 0644 -- pager.so $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 phone.so $(DESTDIR)$(LIBDIR)/Panel/applets/phone.so
+	$(INSTALL) -m 0644 -- phone.so $(DESTDIR)$(LIBDIR)/Panel/applets/phone.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 swap.so $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
+	$(INSTALL) -m 0644 -- swap.so $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 systray.so $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
+	$(INSTALL) -m 0644 -- systray.so $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
+	$(INSTALL) -m 0644 -- tasks.so $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Panel/applets
-	$(INSTALL) -m 0644 volume.so $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
+	$(INSTALL) -m 0644 -- volume.so $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/bluetooth.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/gsm.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/keyboard.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/phone.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
-	$(RM) $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/battery.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/bluetooth.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/clock.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/cpu.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/cpufreq.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/desktop.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/gps.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/gsm.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/keyboard.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/lock.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/logout.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/main.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/memory.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/pager.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/phone.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/swap.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/systray.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/tasks.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Panel/applets/volume.so
 
 .PHONY: all clean distclean install uninstall

@@ -15,9 +15,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 Panel.h $(DESTDIR)$(INCLUDEDIR)/Panel.h
+	$(INSTALL) -m 0644 -- Panel.h $(DESTDIR)$(INCLUDEDIR)/Panel.h
 
 uninstall:
-	$(RM) $(DESTDIR)$(INCLUDEDIR)/Panel.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/Panel.h
 
 .PHONY: all clean distclean install uninstall

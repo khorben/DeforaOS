@@ -36,10 +36,10 @@ oinit.o: oinit.c
 	$(CC) $(oinit_CFLAGS) -c oinit.c
 
 clean:
-	$(RM) $(linuxrc_OBJS) $(oinit_OBJS)
+	$(RM) -- $(linuxrc_OBJS) $(oinit_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 

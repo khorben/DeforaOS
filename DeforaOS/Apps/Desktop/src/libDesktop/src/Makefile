@@ -45,22 +45,22 @@ toolbar.o: toolbar.c
 	$(CC) $(libDesktop_CFLAGS) -c toolbar.c
 
 clean:
-	$(RM) $(libDesktop_OBJS)
+	$(RM) -- $(libDesktop_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/lib
-	$(INSTALL) -m 0644 libDesktop.a $(DESTDIR)$(PREFIX)/lib/libDesktop.a
-	$(INSTALL) -m 0755 libDesktop.so $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0
-	$(LN) -s libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0
-	$(LN) -s libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so
+	$(INSTALL) -m 0644 -- libDesktop.a $(DESTDIR)$(PREFIX)/lib/libDesktop.a
+	$(INSTALL) -m 0755 -- libDesktop.so $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0
+	$(LN) -s -- libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0
+	$(LN) -s -- libDesktop.so.0.0 $(DESTDIR)$(PREFIX)/lib/libDesktop.so
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/lib/libDesktop.a
-	$(RM) $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0
-	$(RM) $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0
-	$(RM) $(DESTDIR)$(PREFIX)/lib/libDesktop.so
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libDesktop.a
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0.0
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libDesktop.so.0
+	$(RM) -- $(DESTDIR)$(PREFIX)/lib/libDesktop.so
 
 .PHONY: all clean distclean install uninstall

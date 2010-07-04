@@ -38,16 +38,16 @@ appclient.o: appclient.c
 	$(CC) $(AppClient_CFLAGS) -c appclient.c
 
 clean:
-	$(RM) $(AppBroker_OBJS) $(AppClient_OBJS)
+	$(RM) -- $(AppBroker_OBJS) $(AppClient_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 AppBroker $(DESTDIR)$(BINDIR)/AppBroker
+	$(INSTALL) -m 0755 -- AppBroker $(DESTDIR)$(BINDIR)/AppBroker
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/AppBroker
+	$(RM) -- $(DESTDIR)$(BINDIR)/AppBroker
 
 .PHONY: all clean distclean install uninstall

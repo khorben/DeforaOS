@@ -34,16 +34,16 @@ main.o: main.c
 	$(CC) $(VFS_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(../data/VFS.h_OBJS) $(VFS_OBJS)
+	$(RM) -- $(../data/VFS.h_OBJS) $(VFS_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 VFS $(DESTDIR)$(BINDIR)/VFS
+	$(INSTALL) -m 0755 -- VFS $(DESTDIR)$(BINDIR)/VFS
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/VFS
+	$(RM) -- $(DESTDIR)$(BINDIR)/VFS
 
 .PHONY: all clean distclean install uninstall

@@ -15,9 +15,9 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 Phone.h $(DESTDIR)$(INCLUDEDIR)/Phone.h
+	$(INSTALL) -m 0644 -- Phone.h $(DESTDIR)$(INCLUDEDIR)/Phone.h
 
 uninstall:
-	$(RM) $(DESTDIR)$(INCLUDEDIR)/Phone.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/Phone.h
 
 .PHONY: all clean distclean install uninstall

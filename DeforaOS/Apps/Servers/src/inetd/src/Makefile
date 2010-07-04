@@ -61,16 +61,16 @@ echo.o: echo.c
 	$(CC) $(echo_CFLAGS) -c echo.c
 
 clean:
-	$(RM) $(inetd_OBJS) $(discard_OBJS) $(echo_OBJS)
+	$(RM) -- $(inetd_OBJS) $(discard_OBJS) $(echo_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 inetd $(DESTDIR)$(BINDIR)/inetd
+	$(INSTALL) -m 0755 -- inetd $(DESTDIR)$(BINDIR)/inetd
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/inetd
+	$(RM) -- $(DESTDIR)$(BINDIR)/inetd
 
 .PHONY: all clean distclean install uninstall

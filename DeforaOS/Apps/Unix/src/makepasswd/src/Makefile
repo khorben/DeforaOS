@@ -30,16 +30,16 @@ md5.o: md5.c
 	$(CC) $(makepasswd_CFLAGS) -c md5.c
 
 clean:
-	$(RM) $(makepasswd_OBJS)
+	$(RM) -- $(makepasswd_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 makepasswd $(DESTDIR)$(BINDIR)/makepasswd
+	$(INSTALL) -m 0755 -- makepasswd $(DESTDIR)$(BINDIR)/makepasswd
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/makepasswd
+	$(RM) -- $(DESTDIR)$(BINDIR)/makepasswd
 
 .PHONY: all clean distclean install uninstall

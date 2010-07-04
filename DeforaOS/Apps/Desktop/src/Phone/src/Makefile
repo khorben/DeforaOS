@@ -88,32 +88,32 @@ settings.o: settings.c common.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
+	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
-	$(RM) $(TARGETS)
+	$(RM) -- $(phone_OBJS) $(phone-contacts_OBJS) $(phone-dialer_OBJS) $(phone-messages_OBJS) $(phone-settings_OBJS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 phone $(DESTDIR)$(BINDIR)/phone
+	$(INSTALL) -m 0755 -- phone $(DESTDIR)$(BINDIR)/phone
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 phone-contacts $(DESTDIR)$(BINDIR)/phone-contacts
+	$(INSTALL) -m 0755 -- phone-contacts $(DESTDIR)$(BINDIR)/phone-contacts
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 phone-dialer $(DESTDIR)$(BINDIR)/phone-dialer
+	$(INSTALL) -m 0755 -- phone-dialer $(DESTDIR)$(BINDIR)/phone-dialer
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 phone-messages $(DESTDIR)$(BINDIR)/phone-messages
+	$(INSTALL) -m 0755 -- phone-messages $(DESTDIR)$(BINDIR)/phone-messages
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 phone-settings $(DESTDIR)$(BINDIR)/phone-settings
+	$(INSTALL) -m 0755 -- phone-settings $(DESTDIR)$(BINDIR)/phone-settings
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(BINDIR)/phone
-	$(RM) $(DESTDIR)$(BINDIR)/phone-contacts
-	$(RM) $(DESTDIR)$(BINDIR)/phone-dialer
-	$(RM) $(DESTDIR)$(BINDIR)/phone-messages
-	$(RM) $(DESTDIR)$(BINDIR)/phone-settings
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-contacts
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-dialer
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-messages
+	$(RM) -- $(DESTDIR)$(BINDIR)/phone-settings
 
 .PHONY: all subdirs clean distclean install uninstall

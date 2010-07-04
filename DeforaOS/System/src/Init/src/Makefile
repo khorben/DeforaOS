@@ -40,16 +40,16 @@ session.o: session.c
 	$(CC) $(Init_CFLAGS) -c session.c
 
 clean:
-	$(RM) $(../data/Init.h_OBJS) $(Init_OBJS)
+	$(RM) -- $(../data/Init.h_OBJS) $(Init_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 Init $(DESTDIR)$(BINDIR)/Init
+	$(INSTALL) -m 0755 -- Init $(DESTDIR)$(BINDIR)/Init
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/Init
+	$(RM) -- $(DESTDIR)$(BINDIR)/Init
 
 .PHONY: all clean distclean install uninstall

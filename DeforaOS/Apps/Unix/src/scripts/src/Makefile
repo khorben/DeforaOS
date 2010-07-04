@@ -13,15 +13,15 @@ distclean: clean
 
 install: all
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
-	$(INSTALL) -m 0755 dirstats $(DESTDIR)$(PREFIX)/bin/dirstats
+	$(INSTALL) -m 0755 -- dirstats $(DESTDIR)$(PREFIX)/bin/dirstats
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
-	$(INSTALL) -m 0755 watch $(DESTDIR)$(PREFIX)/bin/watch
+	$(INSTALL) -m 0755 -- watch $(DESTDIR)$(PREFIX)/bin/watch
 	$(MKDIR) $(DESTDIR)$(PREFIX)/bin
-	$(INSTALL) -m 0755 which $(DESTDIR)$(PREFIX)/bin/which
+	$(INSTALL) -m 0755 -- which $(DESTDIR)$(PREFIX)/bin/which
 
 uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/bin/dirstats
-	$(RM) $(DESTDIR)$(PREFIX)/bin/watch
-	$(RM) $(DESTDIR)$(PREFIX)/bin/which
+	$(RM) -- $(DESTDIR)$(PREFIX)/bin/dirstats
+	$(RM) -- $(DESTDIR)$(PREFIX)/bin/watch
+	$(RM) -- $(DESTDIR)$(PREFIX)/bin/which
 
 .PHONY: all clean distclean install uninstall

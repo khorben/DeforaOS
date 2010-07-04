@@ -29,10 +29,10 @@ utils.o: utils.c utilbox.h
 	$(CC) $(utilbox_CFLAGS) -c utils.c
 
 clean:
-	$(RM) $(utilbox_OBJS)
+	$(RM) -- $(utilbox_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 

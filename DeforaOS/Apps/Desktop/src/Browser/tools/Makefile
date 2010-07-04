@@ -37,10 +37,10 @@ iconlist.o: iconlist.c
 	$(CC) $(iconlist_CFLAGS) -c iconlist.c
 
 clean:
-	$(RM) $(dirtree_OBJS) $(iconlist_OBJS)
+	$(RM) -- $(dirtree_OBJS) $(iconlist_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 

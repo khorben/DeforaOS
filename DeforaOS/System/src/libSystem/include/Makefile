@@ -22,10 +22,10 @@ distclean:
 install: all
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)
-	$(INSTALL) -m 0644 System.h $(DESTDIR)$(INCLUDEDIR)/System.h
+	$(INSTALL) -m 0644 -- System.h $(DESTDIR)$(INCLUDEDIR)/System.h
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
-	$(RM) $(DESTDIR)$(INCLUDEDIR)/System.h
+	$(RM) -- $(DESTDIR)$(INCLUDEDIR)/System.h
 
 .PHONY: all subdirs clean distclean install uninstall

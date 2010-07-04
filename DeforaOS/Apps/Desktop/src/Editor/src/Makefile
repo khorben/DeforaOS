@@ -34,16 +34,16 @@ main.o: main.c
 	$(CC) $(editor_CFLAGS) -c main.c
 
 clean:
-	$(RM) $(editor_OBJS)
+	$(RM) -- $(editor_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 editor $(DESTDIR)$(BINDIR)/editor
+	$(INSTALL) -m 0755 -- editor $(DESTDIR)$(BINDIR)/editor
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/editor
+	$(RM) -- $(DESTDIR)$(BINDIR)/editor
 
 .PHONY: all clean distclean install uninstall

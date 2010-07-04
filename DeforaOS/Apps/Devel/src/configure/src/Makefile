@@ -44,16 +44,16 @@ makedepend.o: makedepend.c
 	$(CC) $(makedepend_CFLAGS) -c makedepend.c
 
 clean:
-	$(RM) $(configure_OBJS) $(makedepend_OBJS)
+	$(RM) -- $(configure_OBJS) $(makedepend_OBJS)
 
 distclean: clean
-	$(RM) $(TARGETS)
+	$(RM) -- $(TARGETS)
 
 install: all
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 configure $(DESTDIR)$(BINDIR)/configure
+	$(INSTALL) -m 0755 -- configure $(DESTDIR)$(BINDIR)/configure
 
 uninstall:
-	$(RM) $(DESTDIR)$(BINDIR)/configure
+	$(RM) -- $(DESTDIR)$(BINDIR)/configure
 
 .PHONY: all clean distclean install uninstall
