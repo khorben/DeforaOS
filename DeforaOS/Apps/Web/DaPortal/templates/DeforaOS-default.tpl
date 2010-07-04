@@ -11,7 +11,7 @@ if($lang == 'fr')
 	$text['LATEST_NEWS'] = 'Actualités';
 	$text['LATEST_WIKI_CHANGES'] = 'Dernières modifications du wiki';
 	$text['MORE_NEWS'] = 'Suite';
-	$text['Public wiki'] = 'Wiki public...';
+	$text['PUBLIC_WIKI'] = 'Wiki public';
 }
 _lang($text);
 ?>
