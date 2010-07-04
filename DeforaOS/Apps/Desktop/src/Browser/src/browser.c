@@ -536,9 +536,13 @@ int browser_error(Browser * browser, char const * message, int ret)
 	error = strerror(errno);
 	dialog = gtk_message_dialog_new(GTK_WINDOW(browser->window),
 			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+			GTK_BUTTONS_CLOSE, "%s",
+#if GTK_CHECK_VERSION(2, 6, 0)
+			_("Error"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
-			"%s: %s", message, error);
+			"%s: %s", message,
+#endif
+			error);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	if(ret < 0)
 	{
