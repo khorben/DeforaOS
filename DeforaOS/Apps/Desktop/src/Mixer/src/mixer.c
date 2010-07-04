@@ -110,6 +110,7 @@ static DesktopMenubar _mixer_menubar[] =
 
 
 /* prototypes */
+static int _mixer_error(Mixer * mixer, char const * message, int ret);
 static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev);
 
 
@@ -148,8 +149,7 @@ Mixer * mixer_new(char const * device, MixerOrientation orientation)
 	mixer->mc_cnt = 0;
 	if(mixer->fd < 0)
 	{
-		fprintf(stderr, "%s: %s: %s\n", PACKAGE, device,
-				strerror(errno));
+		_mixer_error(NULL, device, 0);
 		mixer_delete(mixer);
 		return NULL;
 	}
@@ -393,9 +393,7 @@ int mixer_set_enum(Mixer * mixer, GtkWidget * widget)
 #endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
 		return 0;
-	fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
-			strerror(errno));
-	return 1;
+	return _mixer_error(mixer, "AUDIO_MIXER_WRITE", 1);
 }
 
 
@@ -429,9 +427,7 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 #endif
 	if(ioctl(mixer->fd, AUDIO_MIXER_WRITE, p) == 0)
 		return 0;
-	fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_WRITE",
-			strerror(errno));
-	return 1;
+	return _mixer_error(mixer, "AUDIO_MIXER_WRITE", 1);
 }
 
 
@@ -474,8 +470,7 @@ void mixer_properties(Mixer * mixer)
 	}
 	if(ioctl(mixer->fd, AUDIO_GETDEV, &ad) != 0)
 	{
-		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_GETDEV",
-				strerror(errno));
+		_mixer_error(mixer, "AUDIO_GETDEV", 1);
 		return;
 	}
 	mixer->properties = gtk_dialog_new_with_buttons(_("Mixer properties"),
@@ -576,6 +571,35 @@ void mixer_show_class(Mixer * mixer, char const * name)
 
 /* private */
 /* functions */
+/* mixer_error */
+static int _error_text(char const * message, int ret);
+
+static int _mixer_error(Mixer * mixer, char const * message, int ret)
+{
+	GtkWidget * dialog;
+	char const * error;
+
+	if(mixer == NULL)
+		return _error_text(message, ret);
+	error = strerror(errno);
+	dialog = gtk_message_dialog_new(GTK_WINDOW(mixer->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "%s", _("Error"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+			"%s: %s", message, error);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
+{
+	fputs(PACKAGE ": ", stderr);
+	perror(message);
+	return ret;
+}
+
+
 /* mixer_get */
 static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
 {
@@ -598,8 +622,7 @@ static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
 		p->un.value.num_channels = md.un.v.num_channels;
 	if(ioctl(mixer->fd, AUDIO_MIXER_READ, p) != 0)
 	{
-		fprintf(stderr, "%s: %s: %s\n", PACKAGE, "AUDIO_MIXER_READ",
-				strerror(errno));
+		_mixer_error(mixer, "AUDIO_MIXER_READ", 0);
 		free(p);
 		return NULL;
 	}
