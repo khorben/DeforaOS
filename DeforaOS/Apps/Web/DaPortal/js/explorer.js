@@ -9,6 +9,7 @@ function change_class(id, newClass)
 
 	tag = document.getElementById(id);
 	tag.className = newClass;
+	return false;
 }
 
 
@@ -63,6 +64,7 @@ function select_all(explorer)
 {
 	_entry_click_last[explorer] = 0;
 	for(var i = 1; _entry_set(explorer, i, 1) == 0; i++);
+	return false;
 }
 
 
@@ -94,4 +96,5 @@ function selection_apply(explorer, action, confirm)
 	explorer = document.getElementsByName('explorer_'+explorer).item(0);
 	explorer.apply.value = action;
 	explorer.submit();
+	return false;
 }
