@@ -110,7 +110,7 @@ static DesktopMenubar _mixer_menubar[] =
 
 
 /* prototypes */
-mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev);
+static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev);
 
 
 /* public */
@@ -577,7 +577,7 @@ void mixer_show_class(Mixer * mixer, char const * name)
 /* private */
 /* functions */
 /* mixer_get */
-mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
+static mixer_ctrl_t * _mixer_get(Mixer * mixer, int dev)
 {
 	mixer_ctrl_t * p;
 	struct mixer_devinfo md;
