@@ -324,6 +324,7 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 	int i;
 	GtkWidget * widget;
 	GtkWidget * bind;
+	GSList * list = NULL;
 
 	if(v->num_channels <= 0)
 		return NULL;
@@ -349,7 +350,9 @@ static GtkWidget * _new_value(Mixer * mixer, int dev,
 		g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(
 					on_value_changed), mixer);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+		list = g_slist_append(list, widget);
 	}
+	g_object_set_data(G_OBJECT(bind), "list", list);
 	if(v->num_channels < 2)
 		return hbox;
 	vbox = gtk_vbox_new(FALSE, 0);
@@ -404,6 +407,7 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	mixer_ctrl_t * p;
 	u_char * level;
 	int i;
+	GSList * q;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, %lf) fd=%d\n", __func__, (void*)mixer,
@@ -418,9 +422,13 @@ int mixer_set_value(Mixer * mixer, GtkWidget * widget, gdouble value)
 	*level = (value / 100.0) * 255;
 	if(p->type == AUDIO_MIXER_VALUE && b != NULL
 			&& gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b)))
-		/* FIXME update the other controls as well */
+	{
 		for(i = 0; i < p->un.value.num_channels; i++)
 			p->un.value.level[i] = *level;
+		for(q = g_object_get_data(G_OBJECT(b), "list"); q != NULL;
+				q = q->next)
+			gtk_range_set_value(GTK_RANGE(q->data), value);
+	}
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p) fd=%d level=%u\n", __func__,
 			(void*)mixer, mixer->fd, *level);
