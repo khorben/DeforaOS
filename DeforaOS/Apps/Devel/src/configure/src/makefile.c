@@ -454,7 +454,7 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	asf = config_get(configure->config, "", "asflags");
 	if(as != NULL || asf != NULL)
 		fprintf(fp, "%s%s%s%s\n", "AS\t= ", as != NULL ? as : "as",
-				"\nASFLAGS\t= ", asf);
+				"\nASFLAGS\t= ", asf != NULL ? asf : "");
 }
 
 static void _targets_cxxflags(Configure * configure, FILE * fp)
