@@ -156,9 +156,8 @@ function _project_timeline($id, $cvsroot, $cpp = FALSE)
 		return array();
 	}
 	$entries = array();
-	$i = 0;
 	$len = strlen($cvsroot);
-	while(($line = fgets($fp)) != FALSE)
+	for($i = 0; ($line = fgets($fp)) != FALSE;)
 	{
 		$fields = explode('|', $line);
 		if(strcmp('', $fields[4]) == 0)
@@ -205,12 +204,12 @@ function _project_timeline($id, $cvsroot, $cpp = FALSE)
 					.$entry['revision']).'">'
 					.$entry['revision'].'</a>';
 		}
+		if($cpp !== FALSE && $i++ >= $cpp)
+			array_shift($entries);
 		$entries[] = $entry;
 	}
 	fclose($fp);
 	$entries = array_reverse($entries);
-	if($cpp !== FALSE)
-		array_splice($entries, $cpp);
 	return $entries;
 }
 
