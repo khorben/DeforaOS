@@ -1,4 +1,6 @@
 <h1 class="title project"><?php echo _html_safe(PROJECTS); ?></h1>
+<h2 class="title project"><?php echo 'Last commits'; ?></h2>
+<?php _module('project', 'lastcommits'); ?>
 <h2 class="title stats"><?php echo _html_safe(STATISTICS); ?></h2>
 <p><?php echo _html_safe(THERE_ARE).' '.$project_cnt; ?> <a href="<?php echo _html_link('project', 'list'); ?>"><?php echo _html_safe(PROJECTS_REGISTERED); ?></a>.</p>
 <?php $keys = array_keys($cols); foreach($keys as $k) { ?>
