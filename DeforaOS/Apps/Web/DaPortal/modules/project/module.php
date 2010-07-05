@@ -147,6 +147,7 @@ function _project_name($id)
 
 function _project_timeline($id, $cvsroot, $cpp = FALSE)
 {
+	require_once('./system/user.php');
 	if(($cvsrep = _config_get('project', 'cvsroot')) == FALSE
 			|| ($fp = fopen($cvsrep.'/CVSROOT/history', 'r'))
 			== FALSE)
