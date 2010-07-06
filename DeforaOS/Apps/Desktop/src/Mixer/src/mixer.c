@@ -659,6 +659,7 @@ static int _mixer_error(Mixer * mixer, char const * message, int ret)
 			error);
 	gtk_window_set_title(GTK_WINDOW(dialog), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	return ret;
 }
 
