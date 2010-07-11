@@ -7,34 +7,35 @@
 @import url("../icons/gnome/icons.css");
 
 
-/* DeforaOS theme */
-html, iframe {
-	background-color:		#636363;
-}
 
-html, button, input, select, table, textarea {
-	color:				#000000;
-	font-family:			bitstream vera sans, sans-serif;
-	font-size:			90%;
-	text-align:			justify;
+/* global */
+html {
+	background-color:		#404040;
+	color:				#ffffff;
+	margin:				0;
+	padding:			20px;
 }
 
 body {
 	background-color:		#000000;
-	border:				1px solid #959595;
-	margin:				10px;
-	margin-top:			2.5em;
-	padding-bottom:			10pt;
-	padding-left:			200px;
-	padding-right:			10px;
+	border:				1px solid #a0a0a0;
+	margin:				0;
+	margin-left:			auto;
+	margin-right:			auto;
+	max-width:			800px;
+	padding:			4px;
+	padding-bottom:			8px;
+	padding-top:			8px;
+	text-align:			justify;
 }
 
-body, table {
-	color:				#ffffff;
+html, body {
+	font-family:			"Bitstream Vera Sans", sans-serif;
+	font-size:			12px;
 }
 
 a {
-	color:				#959595;
+	color:				#a0a0a0;
 	text-decoration:		none;
 }
 
@@ -42,243 +43,186 @@ a:hover {
 	text-decoration:		underline;
 }
 
-h1, h2 {
+form {
+	padding:			4px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	background-color:		#800000;
+	clear:				left;
+	color:				#a0a0a0;
 	font-style:			italic;
 	font-variant:			small-caps;
-	font-weight:			bold;
 	letter-spacing:			3pt;
-	text-align:			left;
-}
-
-h1 img, h2 img {
-	vertical-align:			middle;
-}
-
-h2 img {
-	max-height:			24px;
-}
-
-hr {
-	border:				1px solid #959595;
-	width:				95%;
+	margin:				0;
+	margin-left:			-4px;
+	margin-right:			-4px;
+	padding:			4px;
 }
 
 img {
 	border-width:			0;
-	vertical-align:			text-bottom;
+	vertical-align:			middle;
 }
 
-button, input, select, textarea {
-	background-color:		#959595;
-	border:				1px solid #636363;
+button, iframe, input[type="password"], input[type="submit"],
+input[type="text"], select, textarea {
+	background-color:		#a0a0a0;
+	border-width:			1px;
 }
 
-input, option {
+button, input[type="submit"] {
+	padding:			4px;
+}
+
+input[type="password"], input[type="text"], option {
 	padding:			2px;
 }
 
-button, input[type="button"], input[type="submit"] {
-	padding:			4px;
-}
-
-button, input {
-	border:				1px solid #636363;
-	border-left:			1px solid #b0b0b0;
-	border-top:			1px solid #b0b0b0;
-}
-
-iframe, input[type="password"], input[type="text"], select, textarea {
-	border:				1px solid #636363;
-	border-bottom:			1px solid #b0b0b0;
-	border-right:			1px solid #b0b0b0;
-}
-
-input[type="password"], input[type="text"] {
-	padding:			4px;
-}
-
-p {
-	text-align:			justify;
-}
-
-pre {
-	border:				1px solid #959595;
-	font-family:			bitstream vera sans mono, monospace;
-	margin:				10px;
-	overflow:			auto;
-	padding:			10px;
-}
-
-strong {
-	font-style:			italic;
-}
-
-
-/* title corrections */
-h1.title, h2.title, h3.title {
-	background-color:		#000000;
+table td, table th {
+	text-align:			left;
 }
 
 
 /* classes */
-form.lang {
-	padding-top:			10px;
-	margin-left:			10px;
-}
-
-table.bordered {
-	border:				1px solid #959595;
-	border-collapse:		collapse;
-}
-
-table.bordered td {
-	border:				1px dotted #959595;
-}
-
-table.bordered th {
-	background-color:		#790000;
-	border:				1px solid #959595;
-}
-
-.highlight {
-	background-color:		#ffff00;
-	color:				#000000;
-}
-
-.toolbar .separator {
+/* explorer */
+form.explorer div.header {
 	background-color:		#404040;
-	margin:				0;
-	padding:			0;
-	padding-left:			1px;
 }
 
-
-/* module article */
-.article.entry {
-	padding-bottom:			10px;
+form.explorer .selected {
+	background-color:		#800000;
 }
 
-.article .author, .article .date, .article .edit {
-	display:			inline;
-}
-
-.article .content {
-	padding:			10px;
-}
-
-
-/* module blog */
-.blog .title {
-	background-color:		#000000;
-	border-bottom:			solid 2px #790000;
-}
-
-.blog .title img {
-	float:				right;
-}
-
-.blog .title span {
-	background-color:		#790000;
-	background-image:		url("DeforaOS-rtl.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	padding-left:			10px;
-	padding-top:			2px;
-}
-
-.blog .title span span {
-	background-color:		#000000;
-	background-image:		url("DeforaOS-bbl.png");
-	background-position:		bottom right;
-	background-repeat:		no-repeat;
-	padding:			0;
-	padding-right:			10px;
-	padding-top:			2px;
-}
-
-.blog .title span span span {
-	background-color:		#790000;
-	background-image:		url("DeforaOS-rtr.png");
-	background-position:		top right;
-	background-repeat:		no-repeat;
-	padding-right:			10px;
-}
-
-.blog .author, .blog .date, .blog .edit {
-	display:			inline;
-}
-
-
-/* module project */
-.bug_reply {
-	background-color:		#400000;
-	border:				1px solid #959595;
-	margin-top:			20px;
-}
-
-.bug_reply div {
-	padding:			5px;
-}
-
-.bug_reply .status {
+/* field */
+.field {
 	font-weight:			bold;
 }
 
-.bug_reply .title {
-	background-color:		#400000;
+/* hidden */
+.hidden {
+	display:			none;
 }
 
-.bug_reply .author {
-	display:			inline;
-	padding-right:			0;
+/* logo */
+.logo {
+	background-image:		url("DeforaOS-logo.png");
+	background-position:		top right;
+	background-repeat:		no-repeat;
+	height:				51px;
+	margin-bottom:			16px;
+	margin-right:			30px;
+	margin-top:			16px;
 }
 
-.bug_reply .date {
-	display:			inline;
-	padding-left:			0;
+/* menu */
+ul.menu {
+	margin:				4px;
+	margin-left:			auto;
+	margin-right:			auto;
+	padding:			4px;
 }
 
+ul.menu a:hover {
+	background-image:		url("DeforaOS-gradient3.png");
+	background-position:		top left;
+	background-repeat:		repeat-x;
+	text-decoration:		none;
+}
 
-/* module comment */
-.comment pre {
+ul.menu li {
+	border-right:			1px solid #404040;
+	float:				left;
+	list-style-type:		none;
+	width:				14em;
+}
+
+ul.menu li a {
+	display:			block;
+	font-weight:			bold;
+	font-size:			120%;
+	padding:			4px;
+}
+
+ul.menu li ul {
 	background-color:		#000000;
+	border:				1px solid #404040;
+	border-top:			0;
+	display:			none;
+	margin:				0;
+	padding:			0;
 }
 
-.comment .author, .comment .date {
-	display:			inline;
+ul.menu li ul li {
+	border-right:			0;
+	float:				none;
+	margin:				0;
 }
 
-.comment .comment {
-	margin-left:			15px;
+ul.menu li:hover {
+	background-color:		#800000;
 }
 
-.comment .container {
-	background-color:		#400000;
-	border:				1px solid #959595;
-	margin:				10px;
-	padding:			5px;
+ul.menu li:hover ul {
+	display:			block;
+	margin-left:			-1px;
+	position:			absolute;
 }
 
-.comment .content {
-	padding:			5px;
+ul.menu li:hover ul li ul {
+	display:			none;
 }
 
-.comment .status {
-	background-color:		#400000;
+/* style1 */
+.style1 {
+	background-color:		#800000;
+	background-image:		url("DeforaOS-gradient3.png");
+	background-position:		top left;
+	background-repeat:		repeat-x;
+	color:				#a0a0a0;
+	font-weight:			bold;
+	margin-left:			-4px;
+	margin-right:			-4px;
+	padding:			2px;
+	padding-left:			4px;
 }
 
-.comment .title {
-	background-color:		#400000;
+/* table */
+table.bordered {
+	border:				1px solid #808080;
+	border-collapse:		collapse;
+	margin:				4px;
+	padding:			0;
 }
 
-.debug, .headline {
-	background-color:		#400000;
+table.bordered td {
+	border:				1px dotted #808080;
+	padding:			2px;
+}
+
+table.bordered th {
+	background-color:		#800000;
+	border:				1px solid #808080;
+	padding:			2px;
+}
+
+/* debug */
+.debug {
+	clear:				left;
+}
+
+/* headline */
+.headline {
 	border:				1px solid #404040;
 	margin:				10px;
 	padding:			10px;
 	text-align:			left;
 }
 
+<<<<<<< DeforaOS.css
+/* title */
+.title {
+=======
 .debug {
 	font-family:			monospace;
 }
@@ -377,103 +321,73 @@ form.explorer div.toolbar {
 }
 
 .field {
+>>>>>>> 1.68
 	font-weight:			bold;
-	vertical-align:			top;
 }
 
-.hidden {
-	display:			none;
+/* toolbar */
+.toolbar {
+	clear:				left;
 }
 
-.logo {
-	background-image:		url("DeforaOS-logo.png");
-	background-position:		top right;
-	background-repeat:		no-repeat;
-	height:				51px;
-	margin-bottom:			16px;
-	margin-right:			30px;
-	margin-top:			16px;
-}
-
-ul.menu {
-	background-image:		url("DeforaOS-menusep.png");
-	background-position:		bottom center;
-	background-repeat:		no-repeat;
+/* top_search */
+.top_search {
 	float:				left;
-	list-style-type:		none;
-	margin-left:			-180px;
-	margin-right:			10px;
-	margin-top:			10px;
-	padding:			0px;
-	padding-bottom:			30px;
-	width:				160px;
 }
 
-ul.menu a {
+
+/* module blog */
+.blog {
+	margin-top:			20px;
+	margin-bottom:			20px;
+}
+
+.blog .title {
+	background-color:		#000000;
+	border-bottom:			solid 2px #790000;
+}
+
+/* .blog .title img {
+	float:				right;
+} */
+
+.blog .title span {
+	background-color:		#790000;
+	background-image:		url("DeforaOS-rtl.png");
+	background-position:		top left;
+	background-repeat:		no-repeat;
+	padding-left:			10px;
+	padding-top:			2px;
+}
+
+.blog .title span span {
+	background-color:		#000000;
+	background-image:		url("DeforaOS-bbl.png");
+	background-position:		bottom right;
+	background-repeat:		no-repeat;
+	padding:			0;
+	padding-right:			10px;
+	padding-top:			2px;
+}
+
+.blog .title span span span {
 	background-color:		#790000;
 	background-image:		url("DeforaOS-rtr.png");
 	background-position:		top right;
 	background-repeat:		no-repeat;
-	border:				1px solid black;
-	display:			block;
-	font-variant:			small-caps;
+	padding-right:			10px;
+}
+
+.blog .author, .blog .date, .blog .edit {
+	display:			inline;
+}
+
+.blog .edit {
 	font-style:			italic;
-	font-weight:			bold;
-	letter-spacing:			2pt;
-	padding:			3px;
-	padding-left:			5px;
-	text-decoration:		none;
 }
 
-ul.menu a:hover {
-	border:				1px solid #636363;
-	border-left:			1px solid #959595;
-	border-top:			1px solid #959595;
-}
-
-ul.menu ul {
-	list-style-type:		none;
-	margin:				0px;
-	padding:			0px;
-}
-
-ul.menu ul a:hover {
-	border:				1px solid #000000;
-}
-
-ul.menu ul li a {
-	background-color:		#000000;
-	background-image:		none;
-	font-variant:			normal;
-	font-size:			85%;
-	font-style:			normal;
-	border:				1px solid #000000;
-	letter-spacing:			0pt;
-	padding-left:			16px;
-}
-
-ul.menu ul li a:hover {
-	background-color:		#000000;
-	background-image:		url("DeforaOS-right.png");
-	background-position:		center left;
-	background-repeat:		no-repeat;
-}
-
-ul.menu ul li ul {
-	display:			none;
-}
-
-ul.menu ul li:hover ul {
-	border:				1px solid #636363;
-	display:			block;
-	margin-left:			140px;
-	margin-top:			-2em;
-	position:			absolute;
-	width:				160px;
-}
-
-ul.menu ul li:hover ul a {
-	padding-left:			16px;
+.blog .content {
+	padding:			10px;
 }
 
 
@@ -486,10 +400,6 @@ ul.menu ul li:hover ul a {
 .news .title {
 	background-color:		#000000;
 	border-bottom:			solid 2px #790000;
-}
-
-.news .title img {
-	float:				right;
 }
 
 .news .title span {
@@ -532,104 +442,18 @@ ul.menu ul li:hover ul a {
 }
 
 
-/* module search */
-.search .entry {
-	margin-bottom:			20px;
-}
-
-.search .entry .title {
-	background-color:		#000000;
-	border-bottom:			solid 2px #790000;
-}
-
-.search .entry .title span {
-	background-color:		#790000;
-	background-image:		url("DeforaOS-rtl.png");
-	background-position:		top left;
-	background-repeat:		no-repeat;
-	padding-left:			10px;
-	padding-top:			2px;
-}
-
-.search .entry .title span span {
-	background-color:		#000000;
-	background-image:		url("DeforaOS-bbl.png");
-	background-position:		bottom right;
-	background-repeat:		no-repeat;
-	padding:			0;
-	padding-right:			10px;
-	padding-top:			2px;
-}
-
-.search .entry .title span span span {
-	background-color:		#790000;
-	background-image:		url("DeforaOS-rtr.png");
-	background-position:		top right;
-	background-repeat:		no-repeat;
-	padding-right:			10px;
-}
-
-.search .entry .author, .search .entry .date {
-	display:			inline;
-}
-
-.status {
-	background-color:		#790000;
-}
-
-.style1 {
-	background-color:		#790000;
-	font-weight:			bold;
-	margin-left:			-200px;
-	margin-right:			-10px;
-	padding-left:			200px;
-}
-
-.style1 a {
-	color:				#ffffff;
-}
-
-.style1 img {
-	padding:			2px;
-	vertical-align:			middle;
-}
-
-.title {
-	background-color:		#790000;
-	font-weight:			bold;
-}
-
-
 /* module top */
 div.top {
 	background-color:		#b0b0b0;
-	border-bottom:			1px solid #959595;
+	border:				1px solid #959595;
 	color:				#000000;
-	left:				0;
-	padding-bottom:			2px;
-	padding-top:			2px;
-	position:			absolute;
+	margin:				-4px;
+	margin-top:			-8px;
+	padding:			2px;
 	text-align:			center;
 	top:				0;
-	width:				100%;
 }
 
 div.top a {
 	color:				#313131;
-}
-
-.top_search {
-	float:				left;
-	margin-left:			-180px;
-	margin-top:			19px;
-	width:				160px;
-}
-
-.top_search input {
-	font-size:			85%;
-}
-
-.top_search input[type="text"] {
-	margin-bottom:			2px;
-	width:				158px;
 }
