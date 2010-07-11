@@ -93,14 +93,18 @@ dedicated micro-kernel may also be useful at some later stage.
 <?php } ?>
 
 		<table>
-		<tr><td style="vertical-align: top"><h3 class="title news"><?php echo _html_safe(LATEST_NEWS); ?></h3>
-		<p>
+			<tr>
+				<td><h3 class="title news"><?php echo _html_safe(LATEST_NEWS); ?></h3></td>
+				<td><h3 class="title wiki"><?php echo _html_safe(LATEST_WIKI_CHANGES); ?></h3></td>
+			</tr>
+			<tr>
+				<td><p>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
 <a href="<?php echo _html_link('news'); ?>" title="DeforaOS news"><span class="icon add"><?php echo _html_safe(MORE_NEWS); ?>...</span></a>
-		</p></td>
-		<td style="vertical-align: top"><h3 class="title wiki"><?php echo _html_safe(LATEST_WIKI_CHANGES); ?></h3>
-		<p>
+				</p></td>
+				<td><p>
 <?php _module('wiki', 'recent', array('npp' => 6)); ?>
 <a href="<?php echo _html_link('wiki'); ?>" title="DeforaOS wiki"><span class="icon add"><?php echo _html_safe(PUBLIC_WIKI); ?>...</span></a>
-		</p></td></tr>
+				</p></td>
+			</tr>
 		</table>
