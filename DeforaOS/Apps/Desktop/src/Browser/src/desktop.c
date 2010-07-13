@@ -1276,10 +1276,18 @@ static int _align_compare(const void * a, const void * b)
 	DesktopIcon * iconb = *(DesktopIcon**)b;
 	gboolean firsta = desktopicon_get_first(icona);
 	gboolean firstb = desktopicon_get_first(iconb);
+	gboolean dira;
+	gboolean dirb;
 
-	if(firsta)
-		return firstb ? 0 : -1;
+	if(firsta && !firstb)
+		return -1;
 	else if(firstb)
+		return 1;
+	dira = desktopicon_get_isdir(icona);
+	dirb = desktopicon_get_isdir(iconb);
+	if(dira && !dirb)
+		return -1;
+	else if(dirb)
 		return 1;
 	return strcmp(desktopicon_get_name(icona), desktopicon_get_name(iconb));
 }

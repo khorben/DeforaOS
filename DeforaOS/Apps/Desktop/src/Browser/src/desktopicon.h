@@ -54,6 +54,7 @@ void desktopicon_delete(DesktopIcon * desktopicon);
 /* accessors */
 gboolean desktopicon_get_first(DesktopIcon * desktopicon);
 gboolean desktopicon_get_immutable(DesktopIcon * desktopicon);
+gboolean desktopicon_get_isdir(DesktopIcon * desktopicon);
 char const * desktopicon_get_name(DesktopIcon * desktopicon);
 char const * desktopicon_get_path(DesktopIcon * desktopicon);
 gboolean desktopicon_get_selected(DesktopIcon * desktopicon);

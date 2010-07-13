@@ -288,6 +288,13 @@ gboolean desktopicon_get_immutable(DesktopIcon * desktopicon)
 }
 
 
+/* desktopicon_get_isdir */
+gboolean desktopicon_get_isdir(DesktopIcon * desktopicon)
+{
+	return desktopicon->isdir;
+}
+
+
 /* desktopicon_get_name */
 char const * desktopicon_get_name(DesktopIcon * desktopicon)
 {
