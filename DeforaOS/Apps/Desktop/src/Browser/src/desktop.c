@@ -409,9 +409,9 @@ static void _on_popup_paste(gpointer data)
 static void _preferences_set(Desktop * desktop);
 static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data);
-static void _on_preferences_ok(GtkWidget * widget, gpointer data);
-static void _on_preferences_apply(GtkWidget * widget, gpointer data);
-static void _on_preferences_cancel(GtkWidget * widget, gpointer data);
+static void _on_preferences_ok(gpointer data);
+static void _on_preferences_apply(gpointer data);
+static void _on_preferences_cancel(gpointer data);
 static void _on_popup_preferences(gpointer data)
 {
 	Desktop * desktop = data;
@@ -463,17 +463,17 @@ static void _on_popup_preferences(gpointer data)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_ok), desktop);
 	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_APPLY);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_apply), desktop);
 	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_size_group_add_widget(group, widget);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(
+	g_signal_connect_swapped(G_OBJECT(widget), "clicked", G_CALLBACK(
 				_on_preferences_cancel), desktop);
 	gtk_box_pack_end(GTK_BOX(hbox2), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox2, FALSE, TRUE, 4);
@@ -488,19 +488,19 @@ static gboolean _on_preferences_closex(GtkWidget * widget, GdkEvent * event,
 		gpointer data)
 {
 	gtk_widget_hide(widget);
-	_on_preferences_cancel(NULL, data);
+	_on_preferences_cancel(data);
 	return TRUE;
 }
 
-static void _on_preferences_ok(GtkWidget * widget, gpointer data)
+static void _on_preferences_ok(gpointer data)
 {
 	Desktop * desktop = data;
 
 	gtk_widget_hide(desktop->pr_window);
-	_on_preferences_apply(widget, data);
+	_on_preferences_apply(data);
 }
 
-static void _on_preferences_apply(GtkWidget * widget, gpointer data)
+static void _on_preferences_apply(gpointer data)
 {
 	Desktop * desktop = data;
 	Config * config;
@@ -523,7 +523,7 @@ static void _on_preferences_apply(GtkWidget * widget, gpointer data)
 	g_idle_add(_new_idle, desktop);
 }
 
-static void _on_preferences_cancel(GtkWidget * widget, gpointer data)
+static void _on_preferences_cancel(gpointer data)
 {
 	Desktop * desktop = data;
 
