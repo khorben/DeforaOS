@@ -18,6 +18,8 @@
 #ifndef TODO_TASK_H
 # define TODO_TASK_H
 
+# include <time.h>
+
 
 /* Task */
 /* types */
@@ -34,11 +36,13 @@ void task_delete(Task * task);
 int task_get_done(Task * task);
 char const * task_get_filename(Task * task);
 char const * task_get_priority(Task * task);
+time_t task_get_start(Task * task);
 char const * task_get_title(Task * task);
 
 int task_set_done(Task * task, int done);
 int task_set_filename(Task * task, char const * filename);
 int task_set_priority(Task * task, char const * priority);
+int task_set_start(Task * task, time_t start);
 int task_set_title(Task * task, char const * title);
 
 

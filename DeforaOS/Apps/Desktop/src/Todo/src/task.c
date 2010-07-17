@@ -16,6 +16,7 @@
 
 
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <System.h>
@@ -55,6 +56,7 @@ Task * task_new(void)
 		task_delete(task);
 		return NULL;
 	}
+	task_set_start(task, time(NULL));
 	return task;
 }
 
@@ -108,6 +110,17 @@ char const * task_get_priority(Task * task)
 }
 
 
+/* task_get_start */
+time_t task_get_start(Task * task)
+{
+	char const * start;
+
+	if((start = config_get(task->config, NULL, "start")) == NULL)
+		return 0;
+	return atoi(start);
+}
+
+
 /* task_get_title */
 char const * task_get_title(Task * task)
 {
@@ -128,7 +141,7 @@ int task_set_filename(Task * task, char const * filename)
 	char * p;
 
 	if((p = strdup(filename)) == NULL)
-		return 1; /* XXX set error */
+		return -1; /* XXX set error */
 	free(task->filename);
 	task->filename = p;
 	return 0;
@@ -139,6 +152,16 @@ int task_set_filename(Task * task, char const * filename)
 int task_set_priority(Task * task, char const * priority)
 {
 	return config_set(task->config, NULL, "priority", priority);
+}
+
+
+/* task_set_start */
+int task_set_start(Task * task, time_t start)
+{
+	char buf[16];
+
+	snprintf(buf, sizeof(buf), "%u", start);
+	return config_set(task->config, NULL, "start", buf);
 }
 
 
@@ -162,7 +185,7 @@ int task_load(Task * task)
 int task_save(Task * task)
 {
 	if(task->filename == NULL)
-		return 1; /* XXX set error */
+		return -1; /* XXX set error */
 	return config_save(task->config, task->filename);
 }
 
@@ -171,7 +194,7 @@ int task_save(Task * task)
 int task_unlink(Task * task)
 {
 	if(task->filename == NULL)
-		return 1; /* XXX set error */
+		return -1; /* XXX set error */
 	return unlink(task->filename);
 }
 

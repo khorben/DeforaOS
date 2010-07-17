@@ -21,7 +21,9 @@ static char const _license[] =
 #include <dirent.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
@@ -84,6 +86,7 @@ static struct
 	{ TODO_PRIORITY_LOW,	N_("Low")	},
 	{ TODO_PRIORITY_MEDIUM,	N_("Medium")	},
 	{ TODO_PRIORITY_HIGH,	N_("High")	},
+	{ TODO_PRIORITY_URGENT,	N_("Urgent")	},
 	{ 0,			NULL		}
 };
 
@@ -369,6 +372,9 @@ Task * todo_task_add(Todo * todo, Task * task)
 {
 	GtkTreeIter iter;
 	char * filename;
+	time_t start;
+	struct tm t;
+	char beginning[32] = "";
 	char const * priority;
 	TodoPriority tp = TODO_PRIORITY_UNKNOWN;
 	size_t i;
@@ -388,6 +394,11 @@ Task * todo_task_add(Todo * todo, Task * task)
 		task_set_title(task, _("New task"));
 	}
 	gtk_list_store_insert(todo->store, &iter, 0);
+	if((start = task_get_start(task)) != 0)
+	{
+		localtime_r(&start, &t);
+		strftime(beginning, sizeof(beginning), "%c", &t);
+	}
 	priority = task_get_priority(task);
 	for(i = 0; priority != NULL && _todo_priorities[i].title != NULL; i++)
 		if(strcmp(_(_todo_priorities[i].title), priority) == 0)
@@ -398,6 +409,8 @@ Task * todo_task_add(Todo * todo, Task * task)
 	gtk_list_store_set(todo->store, &iter, TD_COL_TASK, task,
 			TD_COL_DONE, task_get_done(task) > 0 ? TRUE : FALSE,
 			TD_COL_TITLE, task_get_title(task),
+			TD_COL_START, start,
+			TD_COL_DISPLAY_START, beginning,
 			TD_COL_PRIORITY, tp,
 			TD_COL_DISPLAY_PRIORITY, priority, -1);
 	return task;
