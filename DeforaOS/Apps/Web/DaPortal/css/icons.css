@@ -2,29 +2,15 @@
 
 
 
-h1.title, h2.title, h3.title {
-	background-position:		4px 0;
-	background-repeat:		no-repeat;
-	min-height:			44px;
-	padding-left:			56px;
-	padding-top:			4px;
-}
-
-h2.title {
-	min-height:			28px;
-	padding-left:			40px;
-}
-
-h3.title {
-	min-height:			12px;
-	padding-left:			24px;
+h1.title:before, h2.title:before, h3.title:before {
+	vertical-align:			middle;
 }
 
 button.icon, input[type="submit"].icon {
 	background-position:	4px center;
 	background-repeat:	no-repeat;
 	padding:		4px;
-	padding-left:		22px;
+	padding-left:		20px;
 }
 
 div.icon {
@@ -33,7 +19,7 @@ div.icon {
 
 div.icon, span.icon {
 	padding:		2px;
-	padding-left:		20px;
+	padding-left:		18px;
 }
 
 div.icon, div.thumbnail, span.icon, span.thumbnail {

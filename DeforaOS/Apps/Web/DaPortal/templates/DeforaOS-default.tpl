@@ -1,110 +1,109 @@
 <?php
 $text = array();
-$text['ABOUT_THE_PROJECT'] = 'About the project';
+$text['DEFORAOS_PROJECT'] = 'DeforaOS Project';
 $text['LATEST_NEWS'] = 'Latest news';
 $text['LATEST_WIKI_CHANGES'] = 'Latest wiki changes';
 $text['MORE_NEWS'] = 'More news';
+$text['MULTI_PURPOSE_OPERATING_SYSTEM'] = 'Multi-purpose Operating System';
 $text['PUBLIC_WIKI'] = 'Public wiki';
 if($lang == 'fr')
 {
-	$text['ABOUT_THE_PROJECT'] = 'À propos du projet';
+	$text['DEFORAOS_PROJECT'] = 'Projet DeforaOS';
 	$text['LATEST_NEWS'] = 'Actualités';
 	$text['LATEST_WIKI_CHANGES'] = 'Dernières modifications du wiki';
 	$text['MORE_NEWS'] = 'Suite';
+	$text['MULTI_PURPOSE_OPERATING_SYSTEM'] = "Système d'exploitation flexible";
 	$text['PUBLIC_WIKI'] = 'Wiki public';
 }
 _lang($text);
 ?>
-		<h1 class="title home">DeforaOS <?php echo _html_safe(HOMEPAGE); ?></h1>
-		<h3 class="title about"><?php echo _html_safe(ABOUT_THE_PROJECT); ?></h3>
+		<h1 class="title home"><?php echo _html_safe(DEFORAOS_PROJECT); ?></h1>
+		<h3 class="title about"><?php echo _html_safe(MULTI_PURPOSE_OPERATING_SYSTEM); ?></h3>
 <?php switch($lang) { ?>
 <?php case 'fr': ?>
 		<p>
-<strong>DeforaOS est un système d'exploitation (OS)</strong> comprenant
-plusieurs objectifs, dont l'implémentation d'une infrastructure communiquante,
-sécurisée et indépendante du noyau (kernel) utilisé.
+Infrastructure communiquante, sécurisée et indépendante du noyau (kernel) utilisé.
 		</p>
 		<table cellpadding="4px">
-		<tr><th>1. Base innovante</th><th>2. Cross-platform framework</th><th>3. Environnement de bureau</th></tr>
+		<tr><th>1. Base innovante</th><th>2. Structure portable</th><th>3. Environnement de bureau</th></tr>
 		<tr>
 		<td>
-Le but principal est de permettre un accès <b>ubiquitaire</b>, <b>sécurisé</b>
+<p>Le but principal est de permettre un accès <b>ubiquitaire</b>, <b>sécurisé</b>
 et <b>transparent</b> à ses ressources. Elles ne sont pas limitées aux données
 dans ce contexte, avec la possibilité d'échanger des applications fonctionnant à
-distance.
+distance.</p>
 		</td>
 		<td>
-Le projet contient un environnement compatible POSIX, tout en étant capable de
+<p>Le projet contient un environnement compatible POSIX, tout en étant capable de
 fonctionner sur une base de système Linux, *BSD ou Solaris. Développé en pensant
 d'abord à sa <b>simplicité</b> et son <b>efficacité</b>, il peut également
-répondre aux contraintes des plate-formes <b>embarquées</b>.
+répondre aux contraintes des plate-formes <b>embarquées</b>.</p>
 		</td>
 		<td>
-Beaucoup d'importance est également accordée à l'<b>ergonomie</b>, la
+<p>Beaucoup d'importance est également accordée à l'<b>ergonomie</b>, la
 <b>cohérence</b> et l'<b>intégration</b>. En conséquence, le projet propose un
 certain nombre d'applications graphiques. Bien que déjà utiles sur les systèmes
-actuels, elles vont directement exploiter les spécificités de DeforaOS.
+actuels, elles vont directement exploiter les spécificités de DeforaOS.</p>
 		</td>
 		</tr>
-		<tr><th colspan="3">4. Cutting-edge platform for today's needs</th></tr>
+		<tr><th colspan="3">4. Plate-forme de pointe pour les besoins actuels</th></tr>
 		<tr><td colspan="3">
-Ce projet <b>expérimental</b> a pour <b>ambition</b> de résoudre autant de
+<p>Ce projet <b>expérimental</b> a pour <b>ambition</b> de résoudre autant de
 problèmes récurrents des systèmes d'exploitation actuels que possible, par une
 <b>révision de la conception</b> de la plupart de leurs composants.<br/>
 Notamment, bien que le système actuel soit indépendant du noyau utilisé, le
-développement d'un micro-noyau dédié pourrait avoir du sens à terme.
+développement d'un micro-noyau dédié pourrait avoir du sens à terme.</p>
 		</td></tr>
 		</table>
 <?php break; case 'en': default: ?>
 		<p>
-<strong>DeforaOS is a multi-purpose Operating System</strong> project, aiming at
-the implementation of a kernel-independent, networked and secure infrastructure.
+Kernel-independent, networked and secure infrastructure:
 		</p>
 		<table cellpadding="4px">
 		<tr><th>1. Innovative foundation</th><th>2. Cross-platform framework</th><th>3. Desktop environment</th></tr>
 		<tr>
 		<td>
-The main goal is to provide <b>ubiquitous</b>, <b>secure</b> and
+<p>The main goal is to provide <b>ubiquitous</b>, <b>secure</b> and
 <b>transparent</b> access to one's resources. This is not limited to data, with
-the possibility to resume applications running remotely.
+the possibility to resume applications running remotely.</p>
 		</td>
 		<td>
-The system features a POSIX-compliant environment, and is already able to
+<p>The system features a POSIX-compliant environment, and is already able to
 function on top of most Linux, *BSD or Solaris-based systems. Developed with
 <b>simplicity</b> and <b>efficiency</b> in mind, it is believed to suit modern
-<b>embedded</b> platforms as well.
+<b>embedded</b> platforms as well.</p>
 		</td>
 		<td>
-The project is also focused on <b>usability</b>, <b>coherence</b> and
+<p>The project is also focused on <b>usability</b>, <b>coherence</b> and
 <b>integration</b>, and therefore featuring a number of desktop applications.
 Although already intended to be useful on current systems, they eventually
-benefit from DeforaOS' own set of features.
+benefit from DeforaOS' own set of features.</p>
 		</td>
 		</tr>
 		<tr><th colspan="3">4. Cutting-edge platform for today's needs</th></tr>
 		<tr><td colspan="3">
-This <b>experimental</b> project has the <b>ambition</b> to address a number of
+<p>This <b>experimental</b> project has the <b>ambition</b> to address a number of
 recurring issues with contemporary Operating Systems, with the <b>re-design</b>
 of most of their components.<br/>
 Additionally, even though the system is kernel-agnostic at the moment, a
-dedicated micro-kernel may also be useful at some later stage.
+dedicated micro-kernel may also be useful at some later stage.</p>
 		</td></tr>
 		</table>
 <?php } ?>
 
 		<table>
 			<tr>
-				<td><h3 class="title news"><?php echo _html_safe(LATEST_NEWS); ?></h3></td>
-				<td><h3 class="title wiki"><?php echo _html_safe(LATEST_WIKI_CHANGES); ?></h3></td>
+				<th><h3 class="title news"><?php echo _html_safe(LATEST_NEWS); ?></h3></th>
+				<th><h3 class="title wiki"><?php echo _html_safe(LATEST_WIKI_CHANGES); ?></h3></th>
 			</tr>
 			<tr>
-				<td><p>
+				<td>
 <?php _module('news', 'headline', array('npp' => 6)); ?>
 <a href="<?php echo _html_link('news'); ?>" title="DeforaOS news"><span class="icon add"><?php echo _html_safe(MORE_NEWS); ?>...</span></a>
-				</p></td>
-				<td><p>
+				</td>
+				<td>
 <?php _module('wiki', 'recent', array('npp' => 6)); ?>
 <a href="<?php echo _html_link('wiki'); ?>" title="DeforaOS wiki"><span class="icon add"><?php echo _html_safe(PUBLIC_WIKI); ?>...</span></a>
-				</p></td>
+				</td>
 			</tr>
 		</table>

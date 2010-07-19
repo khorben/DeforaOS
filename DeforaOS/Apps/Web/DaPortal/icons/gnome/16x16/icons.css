@@ -1,193 +1,193 @@
-.icon.about {
-	background-image:		url('about.png');
+.icon.about:before {
+	content:			url('about.png');
 }
 
-.icon.add {
-	background-image:		url('add.png');
+.icon.add:before {
+	content:			url('add.png');
 }
 
-.icon.admin {
-	background-image:		url('admin.png');
+.icon.admin:before {
+	content:			url('admin.png');
 }
 
-.icon.align_center {
-	background-image:		url('align_center.png');
+.icon.align_center:before {
+	content:			url('align_center.png');
 }
 
-.icon.align_justify {
-	background-image:		url('align_justify.png');
+.icon.align_justify:before {
+	content:			url('align_justify.png');
 }
 
-.icon.align_left {
-	background-image:		url('align_left.png');
+.icon.align_left:before {
+	content:			url('align_left.png');
 }
 
-.icon.align_right {
-	background-image:		url('align_right.png');
+.icon.align_right:before {
+	content:			url('align_right.png');
 }
 
-.icon.back {
-	background-image:		url('back.png');
+.icon.back:before {
+	content:			url('back.png');
 }
 
-.icon.bold {
-	background-image:		url('bold.png');
+.icon.bold:before {
+	content:			url('bold.png');
 }
 
-.icon.bug {
-	background-image:		url('bug.png');
+.icon.bug:before {
+	content:			url('bug.png');
 }
 
-.icon.bullet {
-	background-image:		url('bullet.png');
+.icon.bullet:before {
+	content:			url('bullet.png');
 }
 
-.icon.copy {
-	background-image:		url('copy.png');
+.icon.copy:before {
+	content:			url('copy.png');
 }
 
-.icon.cut {
-	background-image:		url('cut.png');
+.icon.cut:before {
+	content:			url('cut.png');
 }
 
-.icon.delete {
-	background-image:		url('delete.png');
+.icon.delete:before {
+	content:			url('delete.png');
 }
 
-.icon.disabled, .icon.cancel {
-	background-image:		url('disabled.png');
+.icon.disabled:before, .icon.cancel:before {
+	content:			url('disabled.png');
 }
 
-.icon.browse, .icon.download {
-	background-image:		url('download.png');
+.icon.browse:before, .icon.download:before {
+	content:			url('download.png');
 }
 
-.icon.edit {
-	background-image:		url('edit.png');
+.icon.edit:before {
+	content:			url('edit.png');
 }
 
-.icon.enabled, .icon.submit {
-	background-image:		url('enabled.png');
+.icon.enabled:before, .icon.submit:before {
+	content:			url('enabled.png');
 }
 
-.icon.enum {
-	background-image:		url('enum.png');
+.icon.enum:before {
+	content:			url('enum.png');
 }
 
-.icon.forward {
-	background-image:		url('forward.png');
+.icon.forward:before {
+	content:			url('forward.png');
 }
 
-.icon.home {
-	background-image:		url('home.png');
+.icon.home:before {
+	content:			url('home.png');
 }
 
-.icon.hrule {
-	background-image:		url('hrule.png');
+.icon.hrule:before {
+	content:			url('hrule.png');
 }
 
-.icon.indent {
-	background-image:		url('indent.png');
+.icon.indent:before {
+	content:			url('indent.png');
 }
 
-.icon.insert-image {
-	background-image:		url('insert-image.png');
+.icon.insert-image:before {
+	content:			url('insert-image.png');
 }
 
-.icon.italic {
-	background-image:		url('italic.png');
+.icon.italic:before {
+	content:			url('italic.png');
 }
 
-.icon.link {
-	background-image:		url('news.png');
+.icon.link:before {
+	content:			url('news.png');
 }
 
-.icon.listing_details {
+.icon.listing_details:before {
 	/* FIXME work-around for explorer */
 	display:			inline;
-	background-image:		url('listing_details.png');
+	content:			url('listing_details.png');
 }
 
-.icon.listing_list {
-	background-image:		url('listing_list.png');
+.icon.listing_list:before {
+	content:			url('listing_list.png');
 }
 
-.icon.listing_thumbnails {
-	background-image:		url('listing_thumbnails.png');
+.icon.listing_thumbnails:before {
+	content:			url('listing_thumbnails.png');
 }
 
-.icon.new {
-	background-image:		url('new.png');
+.icon.new:before {
+	content:			url('new.png');
 }
 
-.icon.new_directory {
-	background-image:		url('new_directory.png');
+.icon.new_directory:before {
+	content:			url('new_directory.png');
 }
 
-.icon.parent_directory {
-	background-image:		url('parent_directory.png');
+.icon.parent_directory:before {
+	content:			url('parent_directory.png');
 }
 
-.icon.paste {
-	background-image:		url('paste.png');
+.icon.paste:before {
+	content:			url('paste.png');
 }
 
-.icon.read {
-	background-image:		url('read.png');
+.icon.read:before {
+	content:			url('read.png');
 }
 
-.icon.redo {
-	background-image:		url('redo.png');
+.icon.redo:before {
+	content:			url('redo.png');
 }
 
-.icon.refresh {
-	background-image:		url('refresh.png');
+.icon.refresh:before {
+	content:			url('refresh.png');
 }
 
-.icon.remove {
-	background-image:		url('remove.png');
+.icon.remove:before {
+	content:			url('remove.png');
 }
 
-.icon.reply {
-	background-image:		url('reply.png');
+.icon.reply:before {
+	content:			url('reply.png');
 }
 
-.icon.reset {
-	background-image:		url('reset.png');
+.icon.reset:before {
+	content:			url('reset.png');
 }
 
-.icon.search, h3.title.search, .icon.preview {
-	background-image:		url('search.png');
+.icon.search:before, h3.title.search:before, .icon.preview:before {
+	content:			url('search.png');
 }
 
-.icon.select_all {
-	background-image:		url('select_all.png');
+.icon.select_all:before {
+	content:			url('select_all.png');
 }
 
-.icon.strikethrough {
-	background-image:		url('strikethrough.png');
+.icon.strikethrough:before {
+	content:			url('strikethrough.png');
 }
 
-.icon.subscript {
-	background-image:		url('subscript.png');
+.icon.subscript:before {
+	content:			url('subscript.png');
 }
 
-.icon.superscript {
-	background-image:		url('superscript.png');
+.icon.superscript:before {
+	content:			url('superscript.png');
 }
 
-.icon.underline {
-	background-image:		url('underline.png');
+.icon.underline:before {
+	content:			url('underline.png');
 }
 
-.icon.undo {
-	background-image:		url('undo.png');
+.icon.undo:before {
+	content:			url('undo.png');
 }
 
-.icon.unindent {
-	background-image:		url('unindent.png');
+.icon.unindent:before {
+	content:			url('unindent.png');
 }
 
-.icon.upload_file {
-	background-image:		url('upload_file.png');
+.icon.upload_file:before {
+	content:			url('upload_file.png');
 }

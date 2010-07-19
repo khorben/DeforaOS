@@ -9,29 +9,37 @@
 
 
 /* global */
+* {
+	margin:				0;
+	padding:			0;
+}
+
 html {
 	background-color:		#404040;
 	color:				#ffffff;
-	margin:				0;
-	padding:			20px;
+	font-family:			"Nimbus", "Bitstream Vera Sans", sans-serif;
+	font-size:			14px;
+	padding:			1.5em;
 }
 
 body {
 	background-color:		#000000;
 	border:				1px solid #a0a0a0;
-	margin:				0;
 	margin-left:			auto;
 	margin-right:			auto;
-	max-width:			800px;
-	padding:			4px;
-	padding-bottom:			8px;
-	padding-top:			8px;
+	max-width:			60em;
+	padding:			1em;
+	padding-top:			1.5em;
 	text-align:			justify;
 }
 
-html, body {
-	font-family:			"Bitstream Vera Sans", sans-serif;
-	font-size:			12px;
+form, h1, h2, h3, h4, h5, h6, ol, p, table, ul {
+	margin-bottom:			0.5em;
+	margin-top:			1em;
+}
+
+li {
+	margin-left:			2em;
 }
 
 a {
@@ -44,20 +52,26 @@ a:hover {
 }
 
 form {
-	padding:			4px;
+	padding:			0.5em;
+}
+
+h1 {
+	background-color:		#800000;
+	font-size:			2em;
+	margin-left:			-0.5em;
+	margin-right:			-0.5em;
+}
+
+h2 {
+	font-size:			1.5em;
 }
 
 h1, h2, h3, h4, h5, h6 {
-	background-color:		#800000;
 	clear:				left;
 	color:				#a0a0a0;
 	font-style:			italic;
 	font-variant:			small-caps;
 	letter-spacing:			3pt;
-	margin:				0;
-	margin-left:			-4px;
-	margin-right:			-4px;
-	padding:			4px;
 }
 
 img {
@@ -69,18 +83,23 @@ button, iframe, input[type="password"], input[type="submit"],
 input[type="text"], select, textarea {
 	background-color:		#a0a0a0;
 	border-width:			1px;
+	margin:				0.2em;
 }
 
 button, input[type="submit"] {
-	padding:			4px;
+	padding:			0.5em;
 }
 
 input[type="password"], input[type="text"], option {
-	padding:			2px;
+	padding:			0.2em;
 }
 
 table td, table th {
 	text-align:			left;
+}
+
+table th {
+	font-size:			110%;
 }
 
 
@@ -117,10 +136,10 @@ form.explorer .selected {
 
 /* menu */
 ul.menu {
-	margin:				4px;
+	margin:				1em;
 	margin-left:			auto;
 	margin-right:			auto;
-	padding:			4px;
+	padding:			0.2em;
 }
 
 ul.menu a:hover {
@@ -134,6 +153,7 @@ ul.menu li {
 	border-right:			1px solid #404040;
 	float:				left;
 	list-style-type:		none;
+	margin-left:			0;
 	width:				14em;
 }
 
@@ -141,7 +161,7 @@ ul.menu li a {
 	display:			block;
 	font-weight:			bold;
 	font-size:			120%;
-	padding:			4px;
+	padding:			0.3em;
 }
 
 ul.menu li ul {
@@ -181,29 +201,29 @@ ul.menu li:hover ul li ul {
 	background-repeat:		repeat-x;
 	color:				#a0a0a0;
 	font-weight:			bold;
-	margin-left:			-4px;
-	margin-right:			-4px;
-	padding:			2px;
-	padding-left:			4px;
+	margin-left:			-1em;
+	margin-right:			-1em;
+	padding:			0.2em;
+	padding-left:			1em;
 }
 
 /* table */
 table.bordered {
 	border:				1px solid #808080;
 	border-collapse:		collapse;
-	margin:				4px;
+	margin:				0.2em;
 	padding:			0;
 }
 
 table.bordered td {
 	border:				1px dotted #808080;
-	padding:			2px;
+	padding:			0.2em;
 }
 
 table.bordered th {
 	background-color:		#800000;
 	border:				1px solid #808080;
-	padding:			2px;
+	padding:			0.2em;
 }
 
 /* debug */
@@ -214,8 +234,8 @@ table.bordered th {
 /* headline */
 .headline {
 	border:				1px solid #404040;
-	margin:				10px;
-	padding:			10px;
+	margin:				1em;
+	padding:			1em;
 	text-align:			left;
 }
 
@@ -243,12 +263,8 @@ table.bordered th {
 
 .blog .title {
 	background-color:		#000000;
-	border-bottom:			solid 2px #790000;
+	border-bottom:			2px solid #790000;
 }
-
-/* .blog .title img {
-	float:				right;
-} */
 
 .blog .title span {
 	background-color:		#790000;
@@ -343,12 +359,10 @@ table.bordered th {
 
 /* module top */
 div.top {
-	background-color:		#b0b0b0;
-	border:				1px solid #959595;
+	background-color:		#a0a0a0;
 	color:				#000000;
-	margin:				-4px;
-	margin-top:			-8px;
-	padding:			2px;
+	margin-top:			-1.5em;
+	padding:			0.1em;
 	text-align:			center;
 	top:				0;
 }
