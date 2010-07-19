@@ -6,11 +6,11 @@
 		<div class="content"><?php echo _html_pre($comment['content']); ?></div>
 <?php if(!isset($comment['preview'])) { ?>
 		<div class="status">
-			<a href="<?php echo _html_link($comment['module'], 'reply', $comment['parent'], FALSE, 'parent='.$comment['id']); ?>#edit"><div class="icon reply"></div> <?php echo _html_safe(REPLY); ?></a>
+			<a href="<?php echo _html_link($comment['module'], 'reply', $comment['parent'], FALSE, 'parent='.$comment['id']); ?>#edit"><span class="icon reply"></span> <?php echo _html_safe(REPLY); ?></a>
 <?php global $user_id; require_once('./system/user.php');
 if($comment['id'] && _user_admin($user_id)) { ?>
 			<span class="middot">&middot;</span>
-			<a href="<?php echo _html_link('content', 'update', $comment['id']); ?>"><div class="icon edit"></div> <?php echo _html_safe(EDIT); ?></a>
+			<a href="<?php echo _html_link('content', 'update', $comment['id']); ?>"><span class="icon edit"></span> <?php echo _html_safe(EDIT); ?></a>
 <?php } ?>
 		</div>
 <?php } ?>

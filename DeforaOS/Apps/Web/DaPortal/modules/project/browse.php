@@ -250,11 +250,11 @@ function _browse_file_revision($id, $project, $cvsrep, $cvsroot, $filename,
 			._html_safe($filename));
 	print('<div class="toolbar"><a href="'.$link.'"'
 			.' title="'._html_safe(BROWSE_REVISIONS).'">'
-			.'<div class="icon parent_directory"></div>'
+			.'<span class="icon parent_directory"></span>'
 			._html_safe(BROWSE_REVISIONS).'</a>'
 			.' &middot; <a href="'.$link."&amp;revision=$revision"
 			.'&amp;download=1" title="'._html_safe(DOWNLOAD_FILE)
-			.'"><div class="icon download"></div>'
+			.'"><span class="icon download"></span>'
 			._html_safe(DOWNLOAD_FILE).'</a></div>'."\n");
 	if(strncmp('image/', $mime, 6) == 0)
 		return print('<pre><img src="'.$link.' alt=""/></pre>'."\n");
