@@ -242,6 +242,7 @@ table.bordered th {
 /* title */
 .title {
 	font-weight:			bold;
+	padding-left:			0.2em;
 }
 
 /* toolbar */
