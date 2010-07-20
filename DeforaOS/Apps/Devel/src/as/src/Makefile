@@ -1,5 +1,5 @@
 SUBDIRS	= arch format
-TARGETS	= libas.a libas.so as
+TARGETS	= libas.a libas.so as disas
 PREFIX	= /usr/local
 DESTDIR	= 
 LIBDIR	= $(PREFIX)/lib
@@ -42,6 +42,13 @@ as_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -las
 as: $(as_OBJS) libas.so
 	$(CC) -o as $(as_OBJS) $(as_LDFLAGS)
 
+disas_OBJS = disas.o
+disas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+disas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+disas: $(disas_OBJS)
+	$(CC) -o disas $(disas_OBJS) $(disas_LDFLAGS)
+
 as.o: as.c ../include/as.h ../config.h
 	$(CC) $(libas_CFLAGS) -c as.c
 
@@ -63,13 +70,16 @@ format/format.o: format/format.c format/format.h
 main.o: main.c ../include/as.h
 	$(CC) $(as_CFLAGS) -c main.c
 
+disas.o: disas.c
+	$(CC) $(disas_CFLAGS) -c disas.c
+
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(libas_OBJS) $(as_OBJS)
+	$(RM) -- $(libas_OBJS) $(as_OBJS) $(disas_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(libas_OBJS) $(as_OBJS)
+	$(RM) -- $(libas_OBJS) $(as_OBJS) $(disas_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: all
@@ -81,6 +91,8 @@ install: all
 	$(LN) -s -- libas.so.0.0 $(DESTDIR)$(LIBDIR)/libas.so
 	$(MKDIR) $(DESTDIR)$(BINDIR)
 	$(INSTALL) -m 0755 -- as $(DESTDIR)$(BINDIR)/as
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 -- disas $(DESTDIR)$(BINDIR)/disas
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
@@ -89,5 +101,6 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/libas.so.0
 	$(RM) -- $(DESTDIR)$(LIBDIR)/libas.so
 	$(RM) -- $(DESTDIR)$(BINDIR)/as
+	$(RM) -- $(DESTDIR)$(BINDIR)/disas
 
 .PHONY: all subdirs clean distclean install uninstall

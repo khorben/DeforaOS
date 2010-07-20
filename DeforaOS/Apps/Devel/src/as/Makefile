@@ -28,6 +28,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/arch/arch.c \
 		$(PACKAGE)-$(VERSION)/src/format/format.c \
 		$(PACKAGE)-$(VERSION)/src/main.c \
+		$(PACKAGE)-$(VERSION)/src/disas.c \
 		$(PACKAGE)-$(VERSION)/src/Makefile \
 		$(PACKAGE)-$(VERSION)/src/code.h \
 		$(PACKAGE)-$(VERSION)/src/common.h \
