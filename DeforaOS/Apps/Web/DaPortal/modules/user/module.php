@@ -115,16 +115,16 @@ function user_admin($args)
 		include('./system/config.tpl');
 	}
 	print('<h2 class="title users">'._html_safe(USERS).'</h2>'."\n");
-	$order = 'name';
+	$order = 'name ASC';
 	if(isset($args['sort']))
 		switch($args['sort'])
 		{
-			case 'admin':	$order = 'admin';	break;
-			case 'email':	$order = 'email';	break;
+			case 'admin':	$order = 'admin DESC';	break;
+			case 'email':	$order = 'email ASC';	break;
+			case 'enabled':	$order = 'enabled DESC';break;
 		}
 	$users = _sql_array('SELECT user_id AS id, username AS name, enabled'
-			.', admin, email FROM daportal_user'
-			.' ORDER BY '.$order.' ASC');
+			.', admin, email FROM daportal_user ORDER BY '.$order);
 	if(!is_array($users))
 		return _error('Unable to list users');
 	$count = count($users);
