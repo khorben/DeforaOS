@@ -7,32 +7,20 @@ h1.title:before, h2.title:before, h3.title:before {
 }
 
 button.icon, input[type="submit"].icon {
-	background-position:	4px center;
-	background-repeat:	no-repeat;
-	padding:		4px;
-	padding-left:		20px;
+	padding:			0.2em;
 }
 
-div.icon {
-	display:		inline;
-}
-
-div.icon, span.icon {
-	padding:		2px;
-}
-
-div.icon, div.thumbnail, span.icon, span.thumbnail {
-	background-position:	2px 2px;
-	background-repeat:	no-repeat;
-	margin:			0;
-}
-
-
-/* existing icons */
-.icon.disabled {
-	background-image:		url('../icons/16x16/disabled.png');
-}
-
-.icon.enabled {
+input[type="submit"].icon {
 	background-image:		url('../icons/16x16/enabled.png');
+	background-position:		2px 2px;
+	background-repeat:		no-repeat;
+	min-height:			20px;
+	padding-left:			16px;
+}
+
+div.thumbnail {
+	background-position:		2px 2px;
+	background-repeat:		no-repeat;
+	margin:				0;
+	padding:			2px;
 }
