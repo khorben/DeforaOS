@@ -112,6 +112,18 @@ ArchRegister * arch_register_get(Arch * arch, size_t index)
 }
 
 
+/* arch_register_get_by_id */
+ArchRegister * arch_register_get_by_id(Arch * arch, unsigned int id)
+{
+	size_t i;
+
+	for(i = 0; i < arch->registers_cnt; i++)
+		if(arch->registers[i].id == id)
+			return &arch->registers[i];
+	return NULL;
+}
+
+
 /* ArchOperands */
 int archoperands_count(int operands)
 {

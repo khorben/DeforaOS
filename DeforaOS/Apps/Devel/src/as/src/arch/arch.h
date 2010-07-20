@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2007 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -77,6 +77,7 @@ ArchInstruction * arch_instruction_get(Arch * arch, size_t index);
 ArchInstruction * arch_instruction_get_by_opcode(Arch * arch,
 		unsigned long opcode);
 ArchRegister * arch_register_get(Arch * arch, size_t index);
+ArchRegister * arch_register_get_by_id(Arch * arch, unsigned int id);
 
 
 /* ArchOperands */

@@ -59,6 +59,7 @@ static int _do_elf64_strtab(char const * filename, FILE * fp, Elf64_Shdr * shdr,
 /* Flat */
 static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 		size_t size);
+static int _do_flat_print(Arch * arch, ArchInstruction * ai);
 
 static int _disas(char const * arch, char const * filename)
 {
@@ -301,13 +302,41 @@ static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 	{
 		if((c = fgetc(fp)) == EOF)
 			break;
+		printf("%5zx:  ", i);
 		if((ai = arch_instruction_get_by_opcode(arch, c)) != NULL)
-			printf("%5zx:  %02x\t%s\n", i, c, ai->name);
+			i += _do_flat_print(arch, ai);
 		else
-			printf("%5zx:  %02x\n", i, c);
+			printf("%02x", c);
+		fputc('\n', stdout);
 	}
 	arch_delete(arch);
 	return 0;
+}
+
+static int _do_flat_print(Arch * arch, ArchInstruction * ai)
+{
+	int ret = 0;
+	ArchOperands operands;
+	unsigned int reg;
+	ArchRegister * ar;
+	char const * sep = " ";
+
+	printf("%02lx\t%s", ai->opcode, ai->name);
+	for(operands = ai->operands; operands > 0; operands >>= 8)
+	{
+		if(!(operands & _AO_OP))
+			continue;
+		if(operands & _AO_REG)
+		{
+			reg = (operands & 0xff) >> 2;
+			if((ar = arch_register_get_by_id(arch, reg)) != NULL)
+				printf("%s%%%s", sep, ar->name);
+			else
+				printf("%s%d", sep, reg);
+			sep = ", ";
+		}
+	}
+	return ret;
 }
 
 
