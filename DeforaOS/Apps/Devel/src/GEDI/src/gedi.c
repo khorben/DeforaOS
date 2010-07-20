@@ -39,33 +39,38 @@
 /* menubar */
 static DesktopMenu _gedi_menu_file[] =
 {
-	{ "_New file...", G_CALLBACK(on_file_new), GTK_STOCK_NEW, GDK_N },
-	{ "_Open file...", G_CALLBACK(on_file_open), GTK_STOCK_OPEN, GDK_O },
-	{ "", NULL , NULL, 0 },
+	{ "_New file...", G_CALLBACK(on_file_new), GTK_STOCK_NEW,
+		GDK_CONTROL_MASK, GDK_N },
+	{ "_Open file...", G_CALLBACK(on_file_open), GTK_STOCK_OPEN,
+		GDK_CONTROL_MASK, GDK_O },
+	{ "", NULL , NULL, 0, 0 },
 	{ "_Preferences...", G_CALLBACK(on_file_preferences),
-		GTK_STOCK_PREFERENCES, GDK_P },
-	{ "", NULL, NULL, 0 },
-	{ "_Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, GDK_Q },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PREFERENCES, GDK_CONTROL_MASK, GDK_P },
+	{ "", NULL, NULL, 0, 0 },
+	{ "_Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, GDK_CONTROL_MASK,
+		GDK_Q },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _gedi_menu_projects[] = /* FIXME will certainly be dynamic */
 {
-	{ "_New project...", G_CALLBACK(on_project_new), GTK_STOCK_NEW, 0 },
-	{ "_Open project...", G_CALLBACK(on_project_open), GTK_STOCK_OPEN, 0 },
-	{ "_Save project", G_CALLBACK(on_project_save), GTK_STOCK_SAVE, GDK_S },
+	{ "_New project...", G_CALLBACK(on_project_new), GTK_STOCK_NEW, 0, 0 },
+	{ "_Open project...", G_CALLBACK(on_project_open), GTK_STOCK_OPEN, 0,
+		0 },
+	{ "_Save project", G_CALLBACK(on_project_save), GTK_STOCK_SAVE,
+		GDK_CONTROL_MASK, GDK_S },
 	{ "Save project _as...", G_CALLBACK(on_project_save_as),
-		GTK_STOCK_SAVE_AS, 0 },
-	{ "", NULL, NULL, 0 },
+		GTK_STOCK_SAVE_AS, 0, 0 },
+	{ "", NULL, NULL, 0, 0 },
 	{ "_Properties...", G_CALLBACK(on_project_properties),
-		GTK_STOCK_PROPERTIES, 0 },
-	{ NULL, NULL, NULL, 0 }
+		GTK_STOCK_PROPERTIES, GDK_MOD1_MASK, GDK_Return },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenu _gedi_menu_help[] =
 {
-	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0 },
-	{ NULL, NULL, NULL, 0 }
+	{ "_About", G_CALLBACK(on_help_about), GTK_STOCK_ABOUT, 0, 0 },
+	{ NULL, NULL, NULL, 0, 0 }
 };
 
 static DesktopMenubar _gedi_menubar[] =
@@ -79,8 +84,8 @@ static DesktopMenubar _gedi_menubar[] =
 /* toolbar */
 static DesktopToolbar _gedi_toolbar[] =
 {
-	{ "Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, 0, NULL },
-	{ NULL, NULL, NULL, 0, NULL }
+	{ "Exit", G_CALLBACK(on_file_exit), GTK_STOCK_QUIT, 0, 0, NULL },
+	{ NULL, NULL, NULL, 0, 0, NULL }
 };
 
 
