@@ -118,7 +118,7 @@ h1.title.user:before {
 	content:			url('user.png');
 }
 
-h1.title.users, h1.title.members:before {
+h1.title.users:before, h1.title.members:before {
 	content:			url('users.png');
 }
 
