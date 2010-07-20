@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2008 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Devel as */
 /* as is not free software; you can redistribute it and/or modify it under the
  * terms of the Creative Commons Attribution-NonCommercial-ShareAlike 3.0
@@ -142,21 +142,13 @@ char const * as_get_format(As * as)
 /* as_parse */
 int as_parse(As * as, char const * infile, char const * outfile)
 {
-	Code * code;
 	int ret;
 
-	if((ret = as_close(as)) != 0)
-		return ret;
-	if((code = code_new(as->arch, as->format, outfile)) == NULL)
-		ret = 1;
-	else
-	{
-		ret = parser(code, infile);
-		ret |= code_delete(code);
-		if(ret != 0 && unlink(outfile) != 0)
-			ret |= error_set_code(3, "%s: %s", outfile, strerror(
-						errno));
-	}
+	if(as_open(as, outfile) != 0)
+		return 1;
+	ret = parser(as->code, infile);
+	if(ret != 0 && unlink(outfile) != 0)
+		ret |= error_set_code(3, "%s: %s", outfile, strerror(errno));
 	ret |= as_close(as);
 	return ret;
 }
