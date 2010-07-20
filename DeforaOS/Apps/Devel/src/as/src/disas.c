@@ -77,7 +77,7 @@ static int _disas(char const * filename)
 static int _do_elf(char const * filename, FILE * fp)
 {
 	union {
-		unsigned char e_ident[ELF_NIDENT];
+		unsigned char e_ident[EI_NIDENT];
 		Elf32_Ehdr ehdr32;
 		Elf64_Ehdr ehdr64;
 	} u;
