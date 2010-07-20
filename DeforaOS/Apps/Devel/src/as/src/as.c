@@ -119,6 +119,7 @@ As * as_new(char const * arch, char const * format)
 /* as_delete */
 void as_delete(As * as)
 {
+	as_close(as);
 	object_delete(as);
 }
 
@@ -247,7 +248,7 @@ int as_plugin_list(AsPluginType type)
 	{
 		if((len = strlen(de->d_name)) < 4)
 			continue;
-		if(strcmp(".so", &de->d_name[len-3]) != 0)
+		if(strcmp(".so", &de->d_name[len - 3]) != 0)
 			continue;
 		de->d_name[len - 3] = '\0';
 		fprintf(stderr, " %s", de->d_name);
