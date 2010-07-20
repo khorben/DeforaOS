@@ -107,6 +107,9 @@ static DesktopMenu _file_menu[] =
 	{ N_("_Edit"), G_CALLBACK(on_file_edit), GTK_STOCK_EDIT,
 		GDK_CONTROL_MASK, GDK_E },
 	{ "", NULL, NULL, 0, 0 },
+	{ N_("_Save"), G_CALLBACK(on_file_save), GTK_STOCK_SAVE,
+		GDK_CONTROL_MASK, GDK_S },
+	{ "", NULL, NULL, 0, 0 },
 	{ N_("_Close"), G_CALLBACK(on_file_close), GTK_STOCK_CLOSE,
 		GDK_CONTROL_MASK, GDK_W },
 	{ NULL, NULL, NULL, 0, 0 }

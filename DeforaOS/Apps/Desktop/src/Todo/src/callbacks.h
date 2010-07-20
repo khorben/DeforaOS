@@ -28,6 +28,7 @@ gboolean on_closex(gpointer data);
 /* file menu */
 void on_file_new(gpointer data);
 void on_file_edit(gpointer data);
+void on_file_save(gpointer data);
 void on_file_close(gpointer data);
 
 /* edit menu */
