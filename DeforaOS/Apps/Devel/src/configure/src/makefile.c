@@ -359,6 +359,7 @@ static void _executables_variables(Configure * configure, FILE * fp,
 	switch(tt)
 	{
 		case TT_BINARY:
+		case TT_OBJECT:
 			_variables_binary(configure, fp, done);
 			break;
 		case TT_LIBRARY:
@@ -371,7 +372,6 @@ static void _executables_variables(Configure * configure, FILE * fp,
 		case TT_SCRIPT:
 			_variables_script(configure, fp, done);
 			break;
-		case TT_OBJECT:
 		case TT_UNKNOWN:
 			break;
 	}
@@ -379,6 +379,7 @@ static void _executables_variables(Configure * configure, FILE * fp,
 	return;
 }
 
+static void _targets_asflags(Configure * configure, FILE * fp);
 static void _targets_cflags(Configure * configure, FILE * fp);
 static void _targets_cxxflags(Configure * configure, FILE * fp);
 static void _targets_ldflags(Configure * configure, FILE * fp);
@@ -398,10 +399,23 @@ static void _variables_binary(Configure * configure, FILE * fp, char * done)
 				configure->prefs->bindir);
 	if(!done[TT_LIBRARY])
 	{
+		_targets_asflags(configure, fp);
 		_targets_cflags(configure, fp);
 		_targets_cxxflags(configure, fp);
 		_targets_ldflags(configure, fp);
 	}
+}
+
+static void _targets_asflags(Configure * configure, FILE * fp)
+{
+	String const * as;
+	String const * asf;
+
+	as = config_get(configure->config, "", "as");
+	asf = config_get(configure->config, "", "asflags");
+	if(as != NULL || asf != NULL)
+		fprintf(fp, "%s%s%s%s\n", "AS\t= ", as != NULL ? as : "as",
+				"\nASFLAGS\t= ", asf != NULL ? asf : "");
 }
 
 static void _targets_cflags(Configure * configure, FILE * fp)
@@ -411,8 +425,6 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 	String const * cf;
 	String const * cppf;
 	String const * cpp;
-	String const * as;
-	String const * asf;
 
 	/* FIXME should output CPPFLAGS even without cflags */
 	cppf = config_get(configure->config, "", "cppflags_force");
@@ -450,11 +462,6 @@ static void _targets_cflags(Configure * configure, FILE * fp)
 			fputs(" -D _GNU_SOURCE", fp);
 		fputc('\n', fp);
 	}
-	as = config_get(configure->config, "", "as");
-	asf = config_get(configure->config, "", "asflags");
-	if(as != NULL || asf != NULL)
-		fprintf(fp, "%s%s%s%s\n", "AS\t= ", as != NULL ? as : "as",
-				"\nASFLAGS\t= ", asf != NULL ? asf : "");
 }
 
 static void _targets_cxxflags(Configure * configure, FILE * fp)
