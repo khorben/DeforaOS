@@ -17,7 +17,7 @@
 html {
 	background-color:		#404040;
 	color:				#ffffff;
-	font-family:			"Nimbus", "Bitstream Vera Sans", sans-serif;
+	font-family:			"Lucida Sans", "DejaVu Sans", "Bitstream Vera Sans", sans-serif;
 	font-size:			14px;
 	padding:			1.5em;
 }
@@ -84,10 +84,6 @@ input[type="text"], select, textarea {
 	background-color:		#a0a0a0;
 	border-width:			1px;
 	margin:				0.2em;
-}
-
-button, input[type="submit"] {
-	padding:			0.5em;
 }
 
 input[type="password"], input[type="text"], option {
