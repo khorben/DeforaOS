@@ -221,17 +221,10 @@ form.explorer .header div.sort {
 	background-repeat:	no-repeat;
 }
 
-form.explorer .listing_details, .explorer .listing_list,
-	.explorer .listing_thumbnails {
-	border-bottom:		1px solid #ffffff;
-	width:			100%;
-}
-
-form.explorer .listing_list .entry {
+form.explorer .listing_list div.entry {
 	height:			20px;
 	overflow:		hidden;
 	white-space:		nowrap;
-	width:			200px;
 }
 
 form.explorer .listing_thumbnails .entry {
