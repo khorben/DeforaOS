@@ -141,7 +141,7 @@ static int _do_elf32(As * as, char const * filename, FILE * fp,
 		free(shdr);
 		return 1;
 	}
-	printf("\n%s: %s\n", filename, __func__);
+	printf("\n%s: elf-%s\n", filename, as_get_arch(as));
 	for(i = 0; i < ehdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_name >= shstrtab_cnt)
