@@ -74,6 +74,8 @@ void arch_delete(Arch * arch);
 
 /* accessors */
 ArchInstruction * arch_instruction_get(Arch * arch, size_t index);
+ArchInstruction * arch_instruction_get_by_opcode(Arch * arch,
+		unsigned long opcode);
 ArchRegister * arch_register_get(Arch * arch, size_t index);
 
 

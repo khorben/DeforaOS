@@ -16,12 +16,15 @@
 
 
 
+#include <System.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <elf.h>
+#include "as.h"
+#include "arch/arch.h"
 
 
 /* disas */
@@ -32,17 +35,21 @@ static int _disas_error(char const * message, int ret);
 
 /* functions */
 /* disas */
+static int _disas_do(As * as, char const * filename);
+
 /* ELF */
-static int _do_elf(char const * filename, FILE * fp);
+static int _do_elf(As * as, char const * filename, FILE * fp);
 /* ELF32 */
-static int _do_elf32(char const * filename, FILE * fp, Elf32_Ehdr * ehdr);
+static int _do_elf32(As * as, char const * filename, FILE * fp,
+		Elf32_Ehdr * ehdr);
 static Elf32_Shdr * _do_elf32_shdr(char const * filename, FILE * fp,
 		Elf32_Ehdr * ehdr);
 static int _do_elf32_strtab(char const * filename, FILE * fp, Elf32_Shdr * shdr,
 		size_t shdr_cnt, uint16_t ndx, char ** strtab,
 		size_t * strtab_cnt);
 /* ELF64 */
-static int _do_elf64(char const * filename, FILE * fp, Elf64_Ehdr * ehdr);
+static int _do_elf64(As * as, char const * filename, FILE * fp,
+		Elf64_Ehdr * ehdr);
 static Elf64_Shdr * _do_elf64_shdr(char const * filename, FILE * fp,
 		Elf64_Ehdr * ehdr);
 static int _do_elf64_strtab(char const * filename, FILE * fp, Elf64_Shdr * shdr,
@@ -50,10 +57,22 @@ static int _do_elf64_strtab(char const * filename, FILE * fp, Elf64_Shdr * shdr,
 		size_t * strtab_cnt);
 
 /* Flat */
-static int _do_flat(char const * filename, FILE * fp, size_t offset,
+static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 		size_t size);
 
-static int _disas(char const * filename)
+static int _disas(char const * arch, char const * filename)
+{
+	int ret;
+	As * as;
+
+	if((as = as_new(arch, NULL)) == NULL)
+		return error_print("disas");
+	ret = _disas_do(as, filename);
+	as_delete(as);
+	return ret;
+}
+
+static int _disas_do(As * as, char const * filename)
 {
 	int ret = 1;
 	FILE * fp;
@@ -65,16 +84,16 @@ static int _disas(char const * filename)
 		return _disas_error(filename, 1);
 	s = fread(buf, sizeof(*buf), sizeof(buf), fp);
 	if(s > SELFMAG && memcmp(ELFMAG, buf, SELFMAG) == 0)
-		ret = _do_elf(filename, fp);
+		ret = _do_elf(as, filename, fp);
 	else if(fstat(fileno(fp), &st) != 0)
 		ret = _disas_error(filename, 1);
 	else
-		ret = _do_flat(filename, fp, 0, st.st_size);
+		ret = _do_flat(as, filename, fp, 0, st.st_size);
 	fclose(fp);
 	return ret;
 }
 
-static int _do_elf(char const * filename, FILE * fp)
+static int _do_elf(As * as, char const * filename, FILE * fp)
 {
 	union {
 		unsigned char e_ident[EI_NIDENT];
@@ -97,16 +116,17 @@ static int _do_elf(char const * filename, FILE * fp)
 	switch(u.e_ident[EI_CLASS])
 	{
 		case ELFCLASS32:
-			return _do_elf32(filename, fp, &u.ehdr32);
+			return _do_elf32(as, filename, fp, &u.ehdr32);
 		case ELFCLASS64:
-			return _do_elf64(filename, fp, &u.ehdr64);
+			return _do_elf64(as, filename, fp, &u.ehdr64);
 	}
 	fprintf(stderr, "disas: %s: %s 0x%x\n", filename,
 			"Unsupported ELF class ", u.e_ident[EI_CLASS]);
 	return 1;
 }
 
-static int _do_elf32(char const * filename, FILE * fp, Elf32_Ehdr * ehdr)
+static int _do_elf32(As * as, char const * filename, FILE * fp,
+		Elf32_Ehdr * ehdr)
 {
 	Elf32_Shdr * shdr;
 	char * shstrtab = NULL;
@@ -130,7 +150,7 @@ static int _do_elf32(char const * filename, FILE * fp, Elf32_Ehdr * ehdr)
 		{
 			printf("\nDisassembly of section %s:\n",
 					&shstrtab[shdr[i].sh_name]);
-			_do_flat(filename, fp, shdr[i].sh_offset,
+			_do_flat(as, filename, fp, shdr[i].sh_offset,
 					shdr[i].sh_size);
 		}
 	}
@@ -185,7 +205,8 @@ static int _do_elf32_strtab(char const * filename, FILE * fp, Elf32_Shdr * shdr,
 	return 0;
 }
 
-static int _do_elf64(char const * filename, FILE * fp, Elf64_Ehdr * ehdr)
+static int _do_elf64(As * as, char const * filename, FILE * fp,
+		Elf64_Ehdr * ehdr)
 {
 	Elf64_Shdr * shdr;
 	char * shstrtab = NULL;
@@ -205,7 +226,7 @@ static int _do_elf64(char const * filename, FILE * fp, Elf64_Ehdr * ehdr)
 		if(shdr[i].sh_name >= shstrtab_cnt)
 			continue;
 		if(strcmp(".text", &shstrtab[shdr[i].sh_name]) == 0)
-			_do_flat(filename, fp, shdr[i].sh_offset,
+			_do_flat(as, filename, fp, shdr[i].sh_offset,
 					shdr[i].sh_size);
 	}
 	free(shstrtab);
@@ -259,27 +280,34 @@ static int _do_elf64_strtab(char const * filename, FILE * fp, Elf64_Shdr * shdr,
 	return 0;
 }
 
-static int _do_flat(char const * filename, FILE * fp, size_t offset,
+static int _do_flat(As * as, char const * filename, FILE * fp, size_t offset,
 		size_t size)
 {
+	Arch * arch;
 	size_t i;
 	int c;
+	ArchInstruction * ai;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\", %p, 0x%zx, 0x%zx\n", __func__,
-			filename, fp, offset, size);
+	fprintf(stderr, "DEBUG: %s(\"%s\", %p, 0x%zx, 0x%zx) arch=\"%s\"\n",
+			__func__, filename, fp, offset, size, as_get_arch(as));
 #endif
 	if(fseek(fp, offset, SEEK_SET) != 0)
 		return _disas_error(filename, 1);
+	if((arch = arch_new(as_get_arch(as))) == NULL)
+		return error_print("disas");
 	printf("\n%08zx:\n", offset);
 	for(i = 0; i < size; i++)
 	{
 		if((c = fgetc(fp)) == EOF)
 			break;
-		printf("%5zx:  %02x\n", i, c);
+		if((ai = arch_instruction_get_by_opcode(arch, c)) != NULL)
+			printf("%5zx:  %02x\t%s\n", i, c, ai->name);
+		else
+			printf("%5zx:  %02x\n", i, c);
 	}
-	/* FIXME implement */
-	return 1;
+	arch_delete(arch);
+	return 0;
 }
 
 
@@ -295,7 +323,7 @@ static int _disas_error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: disas filename\n", stderr);
+	fputs("Usage: disas [-a arch] filename\n", stderr);
 	return 1;
 }
 
@@ -304,14 +332,18 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int o;
+	char const * arch = NULL;
 
-	while((o = getopt(argc, argv, "")) != -1)
+	while((o = getopt(argc, argv, "a:")) != -1)
 		switch(o)
 		{
+			case 'a':
+				arch = optarg;
+				break;
 			default:
 				return _usage();
 		}
 	if(optind + 1 != argc)
 		return _usage();
-	return (_disas(argv[optind])) == 0 ? 0 : 2;
+	return (_disas(arch, argv[optind])) == 0 ? 0 : 2;
 }

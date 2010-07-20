@@ -90,6 +90,19 @@ ArchInstruction * arch_instruction_get(Arch * arch, size_t index)
 }
 
 
+/* arch_instruction_get_by_opcode */
+ArchInstruction * arch_instruction_get_by_opcode(Arch * arch,
+		unsigned long opcode)
+{
+	size_t i;
+
+	for(i = 0; i < arch->instructions_cnt; i++)
+		if(arch->instructions[i].opcode == opcode)
+			return &arch->instructions[i];
+	return NULL;
+}
+
+
 /* arch_register_get */
 ArchRegister * arch_register_get(Arch * arch, size_t index)
 {

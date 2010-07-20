@@ -44,9 +44,9 @@ as: $(as_OBJS) libas.so
 
 disas_OBJS = disas.o
 disas_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-disas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+disas_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -L . -Wl,-rpath,$(LIBDIR) -las
 
-disas: $(disas_OBJS)
+disas: $(disas_OBJS) libas.so
 	$(CC) -o disas $(disas_OBJS) $(disas_LDFLAGS)
 
 as.o: as.c ../include/as.h ../config.h
@@ -70,7 +70,7 @@ format/format.o: format/format.c format/format.h
 main.o: main.c ../include/as.h
 	$(CC) $(as_CFLAGS) -c main.c
 
-disas.o: disas.c
+disas.o: disas.c ../include/as.h
 	$(CC) $(disas_CFLAGS) -c disas.c
 
 clean:
