@@ -96,6 +96,17 @@ int task_get_done(Task * task)
 }
 
 
+/* task_get_end */
+time_t task_get_end(Task * task)
+{
+	char const * end;
+
+	if((end = config_get(task->config, NULL, "end")) == NULL)
+		return 0;
+	return atoi(end);
+}
+
+
 /* task_get_filename */
 char const * task_get_filename(Task * task)
 {
@@ -131,7 +142,20 @@ char const * task_get_title(Task * task)
 /* task_set_done */
 int task_set_done(Task * task, int done)
 {
+	task_set_end(task, done ? time(NULL) : 0);
 	return config_set(task->config, NULL, "done", done ? "1" : "0");
+}
+
+
+/* task_set_emd */
+int task_set_end(Task * task, time_t end)
+{
+	char buf[16];
+
+	if(end == 0)
+		return config_set(task->config, NULL, "end", NULL);
+	snprintf(buf, sizeof(buf), "%u", end);
+	return config_set(task->config, NULL, "end", buf);
 }
 
 

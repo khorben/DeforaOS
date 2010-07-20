@@ -375,6 +375,8 @@ Task * todo_task_add(Todo * todo, Task * task)
 	time_t start;
 	struct tm t;
 	char beginning[32] = "";
+	time_t end;
+	char completion[32] = "";
 	char const * priority;
 	TodoPriority tp = TODO_PRIORITY_UNKNOWN;
 	size_t i;
@@ -399,6 +401,11 @@ Task * todo_task_add(Todo * todo, Task * task)
 		localtime_r(&start, &t);
 		strftime(beginning, sizeof(beginning), "%c", &t);
 	}
+	if((end = task_get_end(task)) != 0)
+	{
+		localtime_r(&end, &t);
+		strftime(completion, sizeof(completion), "%c", &t);
+	}
 	priority = task_get_priority(task);
 	for(i = 0; priority != NULL && _todo_priorities[i].title != NULL; i++)
 		if(strcmp(_(_todo_priorities[i].title), priority) == 0)
@@ -411,6 +418,8 @@ Task * todo_task_add(Todo * todo, Task * task)
 			TD_COL_TITLE, task_get_title(task),
 			TD_COL_START, start,
 			TD_COL_DISPLAY_START, beginning,
+			TD_COL_END, end,
+			TD_COL_DISPLAY_END, completion,
 			TD_COL_PRIORITY, tp,
 			TD_COL_DISPLAY_PRIORITY, priority, -1);
 	return task;
@@ -608,13 +617,24 @@ void todo_task_set_title(Todo * todo, GtkTreePath * path, char const * title)
 void todo_task_toggle_done(Todo * todo, GtkTreePath * path)
 {
 	GtkTreeIter iter;
+	Task * task;
 	gboolean done;
+	time_t end;
+	struct tm t;
+	char completion[32] = "";
 
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(todo->store), &iter, path);
-	gtk_tree_model_get(GTK_TREE_MODEL(todo->store), &iter, TD_COL_DONE,
-			&done, -1);
+	gtk_tree_model_get(GTK_TREE_MODEL(todo->store), &iter,
+			TD_COL_TASK, &task, TD_COL_DONE, &done, -1);
 	done = !done;
-	gtk_list_store_set(todo->store, &iter, TD_COL_DONE, done, -1);
+	task_set_done(task, done);
+	if((end = task_get_end(task)) != 0) /* XXX code duplication */
+	{
+		localtime_r(&end, &t);
+		strftime(completion, sizeof(completion), "%c", &t);
+	}
+	gtk_list_store_set(todo->store, &iter, TD_COL_DONE, done,
+			TD_COL_END, end, TD_COL_DISPLAY_END, completion, -1);
 }
 
 
@@ -715,10 +735,7 @@ static void _todo_task_save(Todo * todo, GtkTreeIter * iter)
 {
 	GtkTreeModel * model = GTK_TREE_MODEL(todo->store);
 	Task * task;
-	gboolean done;
 
-	gtk_tree_model_get(model, iter, TD_COL_TASK, &task,
-			TD_COL_DONE, &done, -1);
-	task_set_done(task, done);
+	gtk_tree_model_get(model, iter, TD_COL_TASK, &task, -1);
 	task_save(task);
 }
