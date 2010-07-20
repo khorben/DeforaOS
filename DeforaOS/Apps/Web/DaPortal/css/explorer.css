@@ -73,6 +73,7 @@ form.explorer div.listing_list div.entry span {
 
 form.explorer div.listing_list div.entry {
 	float:			left;
+	width:			10em;
 }
 
 form.explorer div.listing_list div.entry span.icon,
