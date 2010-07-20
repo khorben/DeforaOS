@@ -1,6 +1,6 @@
 PACKAGE	= as
 VERSION	= 0.1.0
-SUBDIRS	= src include
+SUBDIRS	= src src/test include
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -67,6 +67,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/format/Makefile \
 		$(PACKAGE)-$(VERSION)/src/format/format.h \
 		$(PACKAGE)-$(VERSION)/src/format/project.conf \
+		$(PACKAGE)-$(VERSION)/src/test/i386.S \
+		$(PACKAGE)-$(VERSION)/src/test/i386_real.S \
+		$(PACKAGE)-$(VERSION)/src/test/i486.S \
+		$(PACKAGE)-$(VERSION)/src/test/Makefile \
+		$(PACKAGE)-$(VERSION)/src/test/project.conf \
 		$(PACKAGE)-$(VERSION)/include/as.h \
 		$(PACKAGE)-$(VERSION)/include/Makefile \
 		$(PACKAGE)-$(VERSION)/include/project.conf \
